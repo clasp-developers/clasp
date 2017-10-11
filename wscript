@@ -720,6 +720,7 @@ def configure(cfg):
     cfg.define("METER_ALLOCATIONS",1)
     cfg.define("DEBUG_TRACE_INTERPRETED_CLOSURES",1)
     cfg.define("DEBUG_ENVIRONMENTS",1)
+    cfg.define("DEBUG_RELEASE",1)   # Turn off optimization for a few C++ functions; undef this to optimize everything
 #    cfg.define("DEBUG_CACHE",1)      # Debug the dispatch caches - see cache.cc
 #    cfg.define("DEBUG_BITUNIT_CONTAINER",1)  # prints debug info for bitunit containers
 #    cfg.define("DEBUG_ZERO_KIND",1);
@@ -1067,7 +1068,7 @@ class run_aclasp(Task.Task):
                 "--feature", "no-implicit-compilation",
                 "--feature", "jit-log-symbols",
                 "--feature", "clasp-min",
-                "--feature", "debug-run-clang",
+#                "--feature", "debug-run-clang",
                 "--eval", '(load "sys:kernel;clasp-builder.lsp")',
                 "--eval", "(load-aclasp)",
                 "--"] +  self.bld.clasp_aclasp
@@ -1092,7 +1093,7 @@ class compile_aclasp(Task.Task):
                       "--ignore-image",
                       "--feature", "clasp-min",
                       "--feature", "jit-log-symbols",
-                      "--feature", "debug-run-clang",
+#                      "--feature", "debug-run-clang",
                       "--eval", '(load "sys:kernel;clasp-builder.lsp")' ]
 #                      "--eval", '(setq cmp:*compile-file-debug-dump-module* t)',
 #                      "--eval", '(setq cmp:*compile-debug-dump-module* t)'
@@ -1122,7 +1123,7 @@ class compile_bclasp(Task.Task):
                           '--feature', 'pause-pid' ]
         cmd = cmd + [ "--norc",
                       "--image", self.inputs[1].abspath(),
-                      "--feature", "debug-run-clang",
+#                      "--feature", "debug-run-clang",
                       "--feature", "jit-log-symbols",
                       "--eval", '(load "sys:kernel;clasp-builder.lsp")' ]
         cmd = cmd + ["--eval", "(core:compile-bclasp :output-file #P\"%s\")" % self.outputs[0] ,
@@ -1148,7 +1149,7 @@ class compile_cclasp(Task.Task):
                           '--feature', 'pause-pid' ]
         cmd = cmd + [ "--norc",
                       "--image", self.inputs[1].abspath(),
-                      "--feature", "debug-run-clang",
+#                      "--feature", "debug-run-clang",
                       "--feature", "jit-log-symbols",
                       "--eval", "(load \"sys:kernel;clasp-builder.lsp\")" ]
         if (self.bld.command ):
@@ -1174,7 +1175,8 @@ class recompile_cclasp(Task.Task):
         if not os.path.isfile(other_clasp):
             raise Exception("To use the recompile targets you need to provide a working clasp executable. See wscript.config and/or set the CLASP env variable.")
         cmd = [ other_clasp ]
-        cmd = cmd + [ "--feature", "debug-run-clang",
+        cmd = cmd + [
+#            "--feature", "debug-run-clang",
                       "--feature", "jit-log-symbols",
                       "--feature", "ignore-extensions",
                       "--resource-dir", "%s/%s/%s" % (self.bld.path.abspath(),out,self.bld.variant_obj.variant_dir()),
@@ -1200,7 +1202,7 @@ class compile_addons(Task.Task):
         cmd = cmd + [ "--norc",
                       "--feature", "ignore-extensions",
                       "--feature", "jit-log-symbols",
-                      "--feature", "debug-run-clang",
+#                      "--feature", "debug-run-clang",
                       "--eval", '(load "sys:kernel;clasp-builder.lsp")'
                       "--eval", "(core:compile-addons)",
                       "--eval", "(core:link-addons)",
@@ -1225,7 +1227,7 @@ class compile_module(Task.Task):
         cmd = cmd + [ "--norc",
                       "--feature", "ignore-extensions",
                       "--feature", "jit-log-symbols",
-                      "--feature", "debug-run-clang",
+#                      "--feature", "debug-run-clang",
                       "--eval", "(compile-file #P\"%s\" :output-file #P\"%s\" :output-type :fasl)" % (self.inputs[2], self.outputs[0]),
                       "--eval", "(core:quit)" ]
         print("  cmd: %s" % cmd)
