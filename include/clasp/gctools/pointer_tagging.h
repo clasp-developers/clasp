@@ -341,7 +341,7 @@ template <class T>
     return reinterpret_cast<T>(reinterpret_cast<uintptr_clasp_t>(ptr) - general_tag);
   }
   template <class T>
-    inline void *untag_valist(T ptr) {
+    inline core::Vaslist* untag_valist(T ptr) {
     GCTOOLS_ASSERT((reinterpret_cast<uintptr_clasp_t>(ptr) & tag_mask) == valist_tag);
     return reinterpret_cast<core::Vaslist*>(reinterpret_cast<uintptr_clasp_t>(ptr) - valist_tag);
   }

@@ -310,7 +310,7 @@
     new-env))
 
 
-
+#+(or)
 (defun irc-new-value-environment-of-size (old-env &key number-of-arguments fill-runtime-form (label "env") )
   "Create a new environment and a new runtime environment"
   (or fill-runtime-form (error "You must provide a fill-runtime-form - if you want to fill later then use irc-new-unbound-value-environment"))

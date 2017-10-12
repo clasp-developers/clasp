@@ -37,53 +37,50 @@
 ;;; and a LET* that binds lexical variables in registers into bclasp
 ;;; variables in an activation frame
 
-(defun transform-lambda-parts (lambda-list-handler declares docstring code)
-  (let ((lambda-list (core:lambda-list-handler-lambda-list lambda-list-handler)))
-    (multiple-value-bind (reqargs optargs rest-var key-flag keyargs allow-other-keys auxargs varest-p)
-        (core:process-lambda-list lambda-list 'function)
-      (let ((creqs (mapcar (lambda (x) (gensym "REQ")) (cdr reqargs)))
-            (crest (if rest-var (gensym "REST") nil)))
-        (multiple-value-bind (copts opt-assign)
-            (transform-optionals optargs)
-          (multiple-value-bind (ckeys key-assign)
-              (transform-keys keyargs)
-            (let ((aux-args-pairs (let (ta)
-                                    (if auxargs
-                                        (do* ((cur auxargs (cddr cur))
-                                              (var (car cur) (car cur))
-                                              (val (cadr cur) (cadr cur)))
-                                             ((null cur))
-                                          (push (list var val) ta)))
-                                    (nreverse ta))))
-              (let* ((cleavir-lambda-list
-                       `(,@creqs
-                         ,@(if copts (list* '&optional copts) nil)
-                         ,@(if crest (list (if varest-p 'core:&va-rest '&rest) crest) nil)
-                         ,@(if key-flag (list* '&key ckeys) nil)
-                         ,@(if allow-other-keys (list '&allow-other-keys) nil)))
-                     (assignments (append
-                                   (mapcar (lambda (req creq) (list req creq)) (cdr reqargs) creqs)
-                                   opt-assign
-                                   (if rest-var (list (list rest-var crest)) nil)
-                                   key-assign
-                                   aux-args-pairs))
-                     (new-body `(let* (,@assignments)
-                                  ,@(if declares (list `(declare ,@declares)) nil)
-                                  ,@(if docstring (list docstring) nil)
-                                  ,@code)))
-                (values cleavir-lambda-list new-body)))))))))
+(defun transform-lambda-parts (lambda-list declares docstring code)
+  (multiple-value-bind (reqargs optargs rest-var key-flag keyargs allow-other-keys auxargs varest-p)
+      (core:process-lambda-list lambda-list 'function)
+    (let ((creqs (mapcar (lambda (x) (gensym "REQ")) (cdr reqargs)))
+          (crest (if rest-var (gensym "REST") nil)))
+      (multiple-value-bind (copts opt-assign)
+          (transform-optionals optargs)
+        (multiple-value-bind (ckeys key-assign)
+            (transform-keys keyargs)
+          (let ((aux-args-pairs (let (ta)
+                                  (if auxargs
+                                      (do* ((cur auxargs (cddr cur))
+                                            (var (car cur) (car cur))
+                                            (val (cadr cur) (cadr cur)))
+                                           ((null cur))
+                                        (push (list var val) ta)))
+                                  (nreverse ta))))
+            (let* ((cleavir-lambda-list
+                     `(,@creqs
+                       ,@(if copts (list* '&optional copts) nil)
+                       ,@(if crest (list (if varest-p 'core:&va-rest '&rest) crest) nil)
+                       ,@(if key-flag (list* '&key ckeys) nil)
+                       ,@(if allow-other-keys (list '&allow-other-keys) nil)))
+                   (assignments (append
+                                 (mapcar (lambda (req creq) (list req creq)) (cdr reqargs) creqs)
+                                 opt-assign
+                                 (if rest-var (list (list rest-var crest)) nil)
+                                 key-assign
+                                 aux-args-pairs))
+                   (new-body `(let* (,@assignments)
+                                ,@(if declares (list `(declare ,@declares)) nil)
+                                ,@(if docstring (list docstring) nil)
+                                ,@code)))
+              (values cleavir-lambda-list new-body))))))))
 
 (defun transform-lambda (form)
   (let ((lambda-list (second form))
         (body        (cddr form)))
     (multiple-value-bind (declares code docstring specials)
         (process-declarations body t)
-      (let ((lambda-list-handler (make-lambda-list-handler lambda-list declares 'core::function)))
-        (transform-lambda-parts lambda-list-handler declares docstring code)))))
+      (transform-lambda-parts lambda-list declares docstring code))))
 
 
-;;;(transform-lambda (core:make-lambda-list-handler '(x y &optional z core:&va-rest r &key ((:a a) 1) (b (binit) bp) c))
-;;;                  '(declare (special a)) "Hello there" '(the-body-code))
+;;;(transform-lambda '(x y &optional z core:&va-rest r &key ((:a a) 1) (b (binit) bp) c) '(declare (special a)) "Hello there" '(the-body-code))
 #| (#:REQ8085 #:REQ8086 &OPTIONAL (#:OPT8088 #:OPTP8089) &VA-REST #:REST8087 &KEY
  (:A #:KEY8090 #:KEYP8091) (:B #:KEY8092 #:KEYP8093) (:C #:KEY8094 #:KEYP8095))
 (LET ((X #:REQ8085) (Y #:REQ8086))

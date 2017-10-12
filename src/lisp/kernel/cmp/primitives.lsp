@@ -264,6 +264,9 @@
     (primitive-nounwind "cc_popLandingPadFrame" %void% (list %t*%))
     (primitive          "cc_landingpadUnwindMatchFrameElseRethrow" %size_t% (list %i8*% %t*%))
 
+    (primitive-nounwind "cc_vaslist_va_list_address" %va_list*% (list %t*%))
+    (primitive-nounwind "cc_vaslist_remaining_nargs_address" %size_t*% (list %t*%))
+    
     ;; === CLASP-FFI TRANSLATORS ===
 
     ;; !!! NOTE !!! => PORTING ISSUE/TODO !

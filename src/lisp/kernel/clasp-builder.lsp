@@ -328,8 +328,6 @@ Return files."
 
 
 (defun load-aclasp (&key clean
-                      (output-file (build-common-lisp-bitcode-pathname))
-                      (target-backend (default-target-backend))
                       (system (command-line-arguments-as-list)))
   (aclasp-features)
   (if clean (clean-system #P"src/lisp/kernel/tag/min-start" :no-prompt t :system system))
