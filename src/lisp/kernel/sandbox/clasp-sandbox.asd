@@ -6,4 +6,5 @@
   :components ((:file "packages")
                (:file "setf" :depends-on ("packages"))
                (:file "sandbox" :depends-on ("packages"))
+               (:file "cleavir" :depends-on ("sandbox" "packages"))
                (:file "fill" :depends-on ("packages"))))
