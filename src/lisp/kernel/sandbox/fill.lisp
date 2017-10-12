@@ -197,11 +197,11 @@
 
 ;;; Intended as a one-shot function to get the most I've got working.
 ;;; It's not all in one function so that environments can be set up differently or more finely in the future.
-(defun fill (environment)
+(defun fill-environment (environment)
   (install-basics environment)
   (install-sandbox-accessors environment)
   (install-cl-special-operators environment)
-  (import-macros *special-macros*)
+;  (import-macros environment *special-macros*) ; not all have macro definitions in clasp at the moment.
   (import-macros environment *safe-macros*)
   (import-macros environment *setf-macros*)
   (install-coerce-fdesignator environment)
