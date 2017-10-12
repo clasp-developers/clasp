@@ -23,6 +23,14 @@
     (def cl:special-operator-p (symbol)
       (sicl-genv:special-operator symbol environment))
 
+    ;; We can't just have &optional (env nil) as NIL is a designator for the global environment.
+    (def cl:macro-function (symbol &optional env)
+      (let ((env (if (null env) environment env)))
+        (sicl-genv:macro-function symbol env)))
+    (def (setf cl:macro-function) (new-function symbol &optional env)
+      (let ((env (if (null env) environment env)))
+        (setf (sicl-genv:macro-function symbol env) new-function)))
+
     ;;; TODO: boundp
     (def cl:symbol-value (symbol)
       ;; this is inefficient in that it will look up the cell (a hash lookup)
@@ -50,13 +58,21 @@
   (setf (sicl-genv:constant-variable 'sicl-genv:+global-environment+ environment) environment)
   (setf (sicl-genv:fdefinition 'sicl-genv:global-environment environment)
         (lambda () environment))
-  (setf (sicl-genv:fdefinition 'sicl-genv:macro-function environment) #'sicl-genv:macro-function)
-  (setf (sicl-genv:fdefinition 'sicl-genv:function-cell environment) #'sicl-genv:function-cell)
-  (setf (sicl-genv:fdefinition 'sicl-genv:variable-cell environment) #'sicl-genv:variable-cell)
-  (setf (sicl-genv:fdefinition 'sicl-genv:variable-unbound environment) #'sicl-genv:variable-unbound)
-  (setf (sicl-genv:fdefinition 'core:symbol-value-from-cell environment) #'core:symbol-value-from-cell)
-  (setf (sicl-genv:fdefinition 'core:setf-symbol-value-from-cell environment) #'core:setf-symbol-value-from-cell)
-  (setf (sicl-genv:fdefinition 'core:multiple-value-funcall environment) #'core:multiple-value-funcall))
+  (macrolet ((copy (name)
+               `(setf (sicl-genv:fdefinition ',name environment) #',name)))
+    (copy sicl-genv:macro-function)
+    (copy sicl-genv:function-cell)
+    (copy sicl-genv:variable-cell)
+    (copy sicl-genv:variable-unbound)
+    (copy core:symbol-value-from-cell)
+    (copy core:setf-symbol-value-from-cell)
+    (copy core:multiple-value-funcall)
+    ;; used in defmacro/destructuring-bind
+    (copy core::dm-too-few-arguments) (copy core::dm-too-many-arguments)
+    ;; used from backquote
+    (copy core:backquote-append)
+    (copy core:backquote-append-list))
+  (setf (sicl-genv:macro-function 'core:backquote environment) (macro-function 'core:backquote)))
 
 (defun install-default-setf-expander (environment)
   ;; basically copied from SICL/Code/Compiler/Extrinsic-environment/define-default-setf-expander.lisp
@@ -85,6 +101,12 @@
     ;; the other commented aren't provided by cleavir
     (setf (sicl-genv:special-operator s environment) t)))
 
+(defun install-truly-the (environment)
+  ;; used in defmacro expansion, among other places
+  (setf (sicl-genv:macro-function 'ext:truly-the environment)
+        (macro-lambda ext:truly-the (type form)
+          `(the ,type ,form))))
+
 (defun install-cleavir-primops (environment)
   (do-external-symbols (s "CLEAVIR-PRIMOP")
     (if (eq s 'cleavir-primop:call-with-variable-bound)
@@ -95,7 +117,7 @@
 (defparameter *cl-environment*
   '(;; "core" functions that need to be defined with sicl-genv
     proclaim fdefinition symbol-function symbol-value find-class get-setf-expansion
-    fboundp fmakunbound boundp makunbound special-operator-p
+    fboundp fmakunbound boundp makunbound special-operator-p macro-function
     constantp ; "core" behavior is distinguishing constant variable
     ;; package designators and generally packages (some also core)
     export find-symbol find-package find-all-symbols import list-all-packages rename-package
@@ -103,7 +125,7 @@
     intern package-name package-nicknames package-shadowing-symbols package-use-list package-used-by-list
     ;; have a defaulting optional environment parameter
     make-load-form make-load-form-saving-slots
-    ;; in clasp we don't have to do macro-function etc, since they use cleavir-env:macro-function already
+    macroexpand-1 macroexpand
     ;; class/condition type designators
     make-instance error cerror signal warn make-condition
     ;; function designators
@@ -147,7 +169,10 @@
       (when (and (fboundp s)
                  (not (macro-function s))
                  (not (special-operator-p s)))
-        (setf (sicl-genv:fdefinition s environment) (fdefinition s))))))
+        (setf (sicl-genv:fdefinition s environment) (fdefinition s)))
+      (let ((s `(setf ,s)))
+        (when (fboundp s)
+          (setf (sicl-genv:fdefinition s environment) (fdefinition s)))))))
 
 (defun install-defmacro (environment)
   (setf (sicl-genv:macro-function 'defmacro environment)
@@ -156,7 +181,7 @@
           (multiple-value-bind (function pprint docstring)
               (sys::expand-defmacro name lambda-list body)
             `(eval-when (:compile-toplevel :load-toplevel :execute)
-               (setf (sicl-genv:macro-function ',name sicl-genv:+global-environment+)
+               (setf (macro-function ',name)
                      #',function)
                ',name)))))
 
@@ -209,17 +234,32 @@
                (coerce:fdesignator ,function-form)
              ,@forms))))
 
+(defun install-funcall (environment)
+  (setf (sicl-genv:fdefinition 'funcall environment)
+        ;; FIXME: we could use a more basic apply that doesn't check designators or the type.
+        ;; Also this is an awkward way to write.
+        ;; Note the cl: are unnecessary, just intended to emphasize this is in no way recursive.
+        (let ((coerce (sicl-genv:fdefinition 'coerce:fdesignator environment)))
+          (lambda (fdesignator &rest arguments)
+            (cl:apply (cl:funcall coerce fdesignator) arguments))))
+  (setf (sicl-genv:compiler-macro-function 'funcall environment)
+        (compiler-macro-lambda funcall (fdesignator &rest arguments)
+          `(cleavir-primop:funcall (coerce:fdesignator ,fdesignator) ,@arguments))))
+
 ;;; Intended as a one-shot function to get the most I've got working.
 ;;; It's not all in one function so that environments can be set up differently or more finely in the future.
 (defun fill-environment (environment)
   (install-basics environment)
   (install-sandbox-accessors environment)
   (install-cl-special-operators environment)
+  (install-truly-the environment)
   (install-cleavir-primops environment)
 ;  (import-macros environment *special-macros*) ; not all have macro definitions in clasp at the moment.
   (import-macros environment *safe-macros*)
   (import-macros environment *setf-macros*)
+  (install-default-setf-expander environment)
   (install-coerce-fdesignator environment)
+  (install-funcall environment)
   (install-multiple-value-call environment)
   (import-cl-functions environment *cl-environment*)
   (values))
