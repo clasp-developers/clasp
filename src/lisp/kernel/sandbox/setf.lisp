@@ -1,3 +1,5 @@
+(in-package #:clasp-sandbox)
+
 (defmethod sicl-genv:setf-expander (symbol clasp-cleavir:clasp-global-environment)
   ;; SICL and clasp give setf expanders different arguments, so we have to translate.
   (let ((f (system:get-sysprop symbol 'system::setf-method)))
