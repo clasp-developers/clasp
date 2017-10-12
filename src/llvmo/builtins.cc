@@ -7,6 +7,7 @@
 #include <clasp/core/instance.h>
 #include <clasp/core/wrappedPointer.h>
 #include <clasp/core/funcallableInstance.h>
+#include <clasp/gctools/gcStack.h>
 #include <clasp/llvmo/intrinsics.h>
 
 #if 0 // DEBUGGING
@@ -166,6 +167,14 @@ BUILTIN_ATTRIBUTES core::T_O** activationFrameReferenceFromClosure(core::T_O* cl
   return NULL;
 }
 
-
+BUILTIN_ATTRIBUTES void* cc_vaslist_va_list_address(core::T_O* vaslist)
+{
+  return &(gctools::untag_valist(vaslist)->_Args);
 };
 
+BUILTIN_ATTRIBUTES size_t* cc_vaslist_remaining_nargs_address(core::Vaslist* vaslist)
+{
+  return &(gctools::untag_valist(vaslist)->_remaining_nargs);
+};
+
+};

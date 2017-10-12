@@ -7,6 +7,7 @@
 (defconstant +special-operator-dispatch+
   '(
     (progn codegen-progn convert-progn)
+    (ext::bind-va-list codegen-bind-va-list nil)
     (if codegen-if convert-if)
     (block  codegen-block convert-block)
     (return-from  codegen-return-from convert-return-from)
@@ -375,16 +376,16 @@ env is the parent environment of the (result-af) value frame"
 				 (t (error "let/let* doesn't understand operator symbol[~a]" operator-symbol))))
 		 traceid)
 	    (with-try
-	      (progn
-		(irc-branch-to-and-begin-block (irc-basic-block-create
-						(bformat nil "%s-start" (symbol-name operator-symbol))))
-		(if (eq operator-symbol 'let)
-		    (codegen-fill-let-environment new-env lambda-list-handler expressions env evaluate-env)
-		    (codegen-fill-let*-environment new-env lambda-list-handler expressions env evaluate-env))
-		(cmp-log "About to evaluate codegen-progn\n")
-		(codegen-progn result code new-env))
+                (progn
+                  (irc-branch-to-and-begin-block (irc-basic-block-create
+                                                  (bformat nil "%s-start" (symbol-name operator-symbol))))
+                  (if (eq operator-symbol 'let)
+                      (codegen-fill-let-environment new-env lambda-list-handler expressions env evaluate-env)
+                      (codegen-fill-let*-environment new-env lambda-list-handler expressions env evaluate-env))
+                  (cmp-log "About to evaluate codegen-progn\n")
+                  (codegen-progn result code new-env))
 	      ((cleanup)
-;;               (dbg-set-activation-frame-for-ihs-top (irc-renv new-env))
+               ;;               (dbg-set-activation-frame-for-ihs-top (irc-renv new-env))
 	       (irc-unwind-environment new-env)
 	       ))
 	    )
@@ -808,43 +809,39 @@ jump to blocks within this tagbody."
                  (,env-name ,compiler-env))
              ,@body))))
 
-#|
 #+(or)
+(defmacro blog (fmt &rest fargs)
+  `(core:bformat *debug-io* ,fmt ,@fargs))
+(defmacro blog (fmt &rest fargs) nil)
+
+;;; core:bind-va-list
 (defun codegen-bind-va-list (result form evaluate-env)
   (let ((lambda-list (first form))
         (vaslist     (second form))
         (body        (cddr form)))
+    (blog "evaluate-env -> %s\n" evaluate-env)
     (multiple-value-bind (declares code docstring specials)
         (process-declarations body t)
-      (let ((lambda-list-handler (make-lambda-list-handler lambda-list declares 'core::function)))
-        (multiple-value-bind (cleavir-lambda-list new-body)
-            (transform-lambda-parts lambda-list-handler declares docstring code)
-          
-             (c
-             (new-env (irc-new-unbound-value-environment-of-size
-                       evaluate-env
-                       :number-of-arguments (number-of-lexical-variables lambda-list-handler)
-                       :label 'core:bind-va-list))
-             (debug-on nil)
-             (setup (make-calling-convention-setup
-                     :use-only-registers nil
-                     :vaslist* (irc-alloca-vaslist :label "vaslist")
-                     :register-save-area* (irc-alloca-register-save-area :label "register-save-area")
-                     :invocation-history-frame* (and debug-on (irc-alloca-invocation-history-frame :label "invocation-history-frame"))))
-             (_        (COPY_VASLIST_INTO_ARGUMENTS????????))
-             (callconv (initialize-calling-convention ARGUMENTS setup)))
-        (calling-convention-maybe-push-invocation-history-frame callconv)
-;;;        (irc-make-value-frame (irc-renv new-env) (number-of-lexical-variables lambda-list-handler))
-        (irc-make-value-frame-set-parent (irc-renv new-env) (number-of-lexical-variables lambda-list-handler) evaluate-env) ; (irc-intrinsic "setParentOfActivationFrame" (irc-renv new-env) (irc-renv evaluate-env))
-        (with-try
-            (progn
-              (compile-general-lambda-list-code lambda-list-handler evaluate-env callconv new-env)
-              (codegen-progn result code new-env))
-          ((cleanup)
-           (cmp-log "About to calling-convention-maybe-pop-invocation-history-frame\n")
-           (calling-convention-maybe-pop-invocation-history-frame callconf)
-           (irc-unwind-environment new-env)))))))
-|#  
+      (multiple-value-bind (cleavir-lambda-list new-body)
+          (transform-lambda-parts lambda-list declares docstring code)   ; take out docstringb
+        (blog "got cleavir-lambda-list -> %s\n" cleavir-lambda-list)
+        (let ((debug-on nil)
+              (temp-vaslist (irc-alloca-t* :label "bind-vaslist")))
+          (codegen temp-vaslist vaslist evaluate-env)
+          (let* ((lvaslist (irc-load temp-vaslist "lvaslist"))
+                 (callconv (make-calling-convention-impl :nargs (irc-load (irc-intrinsic "cc_vaslist_remaining_nargs_address" lvaslist))
+                                                         :va-list* (irc-intrinsic "cc_vaslist_va_list_address" lvaslist "vaslist_address")
+                                                         :remaining-nargs* (irc-intrinsic "cc_vaslist_remaining_nargs_address" lvaslist "vaslist_remaining_nargs"))))
+            ;; Don't rewind vaslist or va_start it
+            (blog "About to maybe push ihf\n")
+            (calling-convention-maybe-push-invocation-history-frame callconv)
+            (let ((new-env (bclasp-compile-lambda-list-code cleavir-lambda-list evaluate-env callconv)))
+              (cmp:with-try
+                  (codegen-let/let* 'let* result (cdr new-body) new-env)
+                ((cleanup)
+                 (calling-convention-maybe-pop-invocation-history-frame callconv)
+                 (irc-unwind-environment new-env))))))))))
+
 
 ;;; MULTIPLE-VALUE-FOREIGN-CALL
 

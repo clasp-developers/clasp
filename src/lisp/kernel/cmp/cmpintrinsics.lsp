@@ -348,7 +348,7 @@ Boehm and MPS use a single pointer"
 ;; Parse the function arguments into a calling-convention
 ;;
 ;; What if we don't want/need to spill the registers to the register-save-area?
-(defun initialize-calling-convention (arguments setup)
+(defun initialize-calling-convention (arguments setup &optional (rewind t))
   (if (null (calling-convention-setup-vaslist* setup))
       ;; If there is no vaslist then only register arguments are available
       ;;    no registers are spilled to the register-save-area and no InvocationHistoryFrame
@@ -376,7 +376,7 @@ Boehm and MPS use a single pointer"
                (remaining-nargs*-uint       (irc-add vaslist-addr-uint (jit-constant-uintptr_t +vaslist-remaining-nargs-offset+) "remaining-nargs*-uint"))
                (remaining-nargs*            (irc-int-to-ptr remaining-nargs*-uint %size_t*% "remaining-nargs*"))
                #++(_dbg                        (irc-intrinsic "debugPointer" (irc-bit-cast remaining-nargs* %i8*%)))
-               (_                           (spill-to-register-save-area arguments register-save-area*))
+               (_                           (maybe-spill-to-register-save-area arguments register-save-area*))
                (cc                          (make-calling-convention-impl :closure (first arguments)
                                                                           :nargs (second arguments) ;; The number of arguments
                                                                           :register-args (nthcdr 2 arguments)
@@ -385,7 +385,8 @@ Boehm and MPS use a single pointer"
                                                                           :remaining-nargs* remaining-nargs*
                                                                           :register-save-area* (calling-convention-setup-register-save-area* setup)
                                                                           :invocation-history-frame* (calling-convention-setup-invocation-history-frame* setup)))
-               (_                           (calling-convention-args.va-start cc))
+               ;; va-start is done in caller
+               #+(or)(_                           (calling-convention-args.va-start cc))
                #++(_dbg                        (progn
                                                  (llvm-print "After calling-convention-args.va-start\n")
                                                  (irc-intrinsic "debug_va_list" va-list*))))
@@ -395,6 +396,7 @@ Boehm and MPS use a single pointer"
 ;; Parse the function arguments into a calling-convention
 ;;
 ;; What if we don't want/need to spill the registers to the register-save-area?
+#+(or)
 (defun initialize-calling-convention-for-method (arguments setup)
   (let* ((vaslist                    (calling-convention-setup-vaslist* setup))
          #++(_dbg                        (progn
@@ -410,7 +412,7 @@ Boehm and MPS use a single pointer"
          (remaining-nargs*-uint       (irc-add vaslist-addr-uint (jit-constant-uintptr_t +vaslist-remaining-nargs-offset+) "remaining-nargs*-uint"))
          (remaining-nargs*            (irc-int-to-ptr remaining-nargs*-uint %size_t*% "remaining-nargs*"))
          #++(_dbg                        (irc-intrinsic "debugPointer" (irc-bit-cast remaining-nargs* %i8*%)))
-         (_                           (spill-to-register-save-area arguments register-save-area*))
+         (_                           (maybe-spill-to-register-save-area arguments register-save-area*))
          (cc                          (make-calling-convention-impl :use-only-registers nil
                                                                     :va-list* va-list*
                                                                     :remaining-nargs* remaining-nargs*
@@ -455,17 +457,16 @@ Boehm and MPS use a single pointer"
          (result                (irc-va_arg (calling-convention-va-list* cc) %t*% )))
     result))
 
-  (defun calling-convention-args.va-start (cc)
-    "Like va-start - but it rewinds the va-list to start at the third argument. 
+(defun calling-convention-args.va-start (cc &optional (rewind t))
+  "Like va-start - but it rewinds the va-list to start at the third argument. 
 This allows all of the arguments to be accessed with successive calls to calling-convention-args.va-arg.
 eg:  (f closure-ptr nargs a b c d ...)
                           ^-----  after calling-convention-args.va-start the va-list will point here.
                                   and remaining-nargs will contain nargs."
-    (let* (
                                         ; Initialize the va_list - the only valid field will be overflow-area
-           (va-list*                      (calling-convention-va-list* cc))
-           (_                             (irc-intrinsic "llvm.va_start" (irc-bit-cast va-list* %i8*%)))
-           (_                             (calling-convention-rewind-va-list-to-start-on-third-argument cc)))))
+  (let* ((va-list*                      (calling-convention-va-list* cc)))
+    (irc-intrinsic "llvm.va_start" (irc-bit-cast va-list* %i8*%))
+    (when rewind (calling-convention-rewind-va-list-to-start-on-third-argument cc))))
 
 
 #+x86-64
@@ -495,20 +496,23 @@ eg:  (f closure-ptr nargs a b c d ...)
                                              %i8*%
                                              (/ +register-save-area-size+ +void*-size+)))
   (define-symbol-macro %register-save-area*% (llvm-sys:type-get-pointer-to %register-save-area%))
-  (defun spill-to-register-save-area (registers register-save-area*)
-    (labels ((spill-reg (idx reg)
-               (let* ((addr-name     (bformat nil "addr%d" idx))
-                      (addr          (irc-gep register-save-area* (list (jit-constant-size_t 0) (jit-constant-size_t idx)) addr-name))
-                      (reg-i8*       (irc-bit-cast reg %i8*% "reg-i8*"))
-                      (_             (irc-store reg-i8* addr)))
-                 addr)))
-      (let* (
-             (addr-closure  (spill-reg 0 (elt registers 0)))
-             (addr-nargs    (spill-reg 1 (irc-int-to-ptr (elt registers 1) %i8*%)))
-             (addr-farg0    (spill-reg 2 (elt registers 2))) ; this is the first fixed arg currently.
-             (addr-farg1    (spill-reg 3 (elt registers 3)))
-             (addr-farg2    (spill-reg 4 (elt registers 4)))
-             (addr-farg3    (spill-reg 5 (elt registers 5)))))))
+  (defun maybe-spill-to-register-save-area (registers register-save-area*)
+    (unless registers
+      (and register-save-area* (error "If registers is NIL then register-save-area* also must be NIL")))
+    (when registers
+      (labels ((spill-reg (idx reg)
+                 (let* ((addr-name     (bformat nil "addr%d" idx))
+                        (addr          (irc-gep register-save-area* (list (jit-constant-size_t 0) (jit-constant-size_t idx)) addr-name))
+                        (reg-i8*       (irc-bit-cast reg %i8*% "reg-i8*"))
+                        (_             (irc-store reg-i8* addr)))
+                   addr)))
+        (let* (
+               (addr-closure  (spill-reg 0 (elt registers 0)))
+               (addr-nargs    (spill-reg 1 (irc-int-to-ptr (elt registers 1) %i8*%)))
+               (addr-farg0    (spill-reg 2 (elt registers 2))) ; this is the first fixed arg currently.
+               (addr-farg1    (spill-reg 3 (elt registers 3)))
+               (addr-farg2    (spill-reg 4 (elt registers 4)))
+               (addr-farg3    (spill-reg 5 (elt registers 5))))))))
 
 
   (defun calling-convention-rewind-va-list-to-start-on-third-argument (cc)

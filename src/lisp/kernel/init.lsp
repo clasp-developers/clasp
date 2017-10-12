@@ -116,6 +116,7 @@
 
 (export '(*module-provider-functions*
           *source-location-kinds*
+          bind-va-list
           current-source-location
           source-location
           source-location-pathname

@@ -435,7 +435,9 @@
 
 (defun cclasp-setup-calling-convention (arguments lambda-list debug-on)
   (let ((setup (cclasp-maybe-alloc-cc-setup lambda-list debug-on)))
-    (cmp:initialize-calling-convention arguments setup)))
+    (let ((cc (cmp:initialize-calling-convention arguments setup)))
+      (calling-convention-args.va-start cc)
+      cc)))
 
 
 (defun cclasp-compile-lambda-list-code (lambda-list outputs calling-conv
@@ -450,70 +452,72 @@
 ;;; bclasp 
 ;;;
 
-(defun bclasp-compile-lambda-list-code (cleavir-lambda-list fn-env callconv)
-  (cmp-log "Entered bclasp-compile-lambda-list-code\n")
+
+(defun bclasp-map-lambda-list-symbols-to-indices (cleavir-lambda-list)
   (multiple-value-bind (reqs opts rest key-flag keys aok-p auxargs-dummy va-rest-p)
       (process-cleavir-lambda-list cleavir-lambda-list)
     ;; Create the register lexicals using allocas
-    (let (accum
+    (let (bindings
           (index -1))
       (cmp-log "Processing reqs -> %s\n" reqs)
       (dolist (req (cdr reqs))
         (cmp-log "Add req %s\n" req)
-        (push (cons req (incf index)) accum))
+        (push (cons req (incf index)) bindings))
       (cmp-log "Processing opts -> %s\n" opts)
       (do* ((cur (cdr opts) (cdddr cur))
             (opt (car cur) (car cur))
             (optp (cadr cur) (cadr cur)))
            ((null cur))
         (cmp-log "Add opt %s %s\n" opt optp)
-        (push (cons opt (incf index)) accum)
-        (push (cons optp (incf index)) accum))
+        (push (cons opt (incf index)) bindings)
+        (push (cons optp (incf index)) bindings))
       (cmp-log "Processing rest -> %s\n" rest)
       (when rest
-        (push (cons rest (incf index)) accum))
+        (push (cons rest (incf index)) bindings))
       (cmp-log "Processing keys -> %s\n" keys)
       (do* ((cur (cdr keys) (cddddr cur))
             (key (third cur) (third cur))
             (keyp (fourth cur) (fourth cur)))
            ((null cur))
-        (push (cons key (incf index)) accum)
-        (push (cons keyp (incf index)) accum))
-      (let* ((new-env (irc-new-unbound-value-environment-of-size
-                       fn-env
-                       :number-of-arguments (length accum)
-                       :label "arguments-env"))
-             (output-bindings (nreverse accum))
-             (outputs (mapcar #'car output-bindings)))
-        (irc-make-value-frame-set-parent new-env (length output-bindings) fn-env)
-        (cmp-log "outputs: %s\n" outputs)
-        (cmp-log "output-bindings: %s\n" output-bindings)
-        (mapc (lambda (ob)
-                (cmp-log "Adding to environment: %s\n" ob)
-                (core:value-environment-define-lexical-binding new-env (car ob) (cdr ob)))
-              output-bindings)
-        (cmp-log "register-environment contents -> %s\n" new-env)
-        (compile-lambda-list-code
-         cleavir-lambda-list
-         outputs
-         callconv
-         :translate-datum (lambda (datum)
-                            (let* ((info (assoc datum output-bindings))
-                                   (symbol (car info))
-                                   (index (cdr info))
-                                   (ref (codegen-lexical-var-reference symbol 0 index new-env)))
-                              ;;;(bformat *debug-io* "translate-datum %s -> %s\n" datum ref)
-                              ref)))
-        new-env))))
+        (push (cons key (incf index)) bindings)
+        (push (cons keyp (incf index)) bindings))
+      (nreverse bindings))))
+
+(defun bclasp-compile-lambda-list-code (cleavir-lambda-list fn-env callconv)
+  (cmp-log "Entered bclasp-compile-lambda-list-code\n")
+  (let* ((output-bindings (bclasp-map-lambda-list-symbols-to-indices cleavir-lambda-list))
+         (new-env (irc-new-unbound-value-environment-of-size
+                   fn-env
+                   :number-of-arguments (length output-bindings)
+                   :label "arguments-env")))
+    (irc-make-value-frame-set-parent new-env (length output-bindings) fn-env)
+    (cmp-log "output-bindings: %s\n" output-bindings)
+    (mapc (lambda (ob)
+            (cmp-log "Adding to environment: %s\n" ob)
+            (core:value-environment-define-lexical-binding new-env (car ob) (cdr ob)))
+          output-bindings)
+    (cmp-log "register-environment contents -> %s\n" new-env)
+    (compile-lambda-list-code
+     cleavir-lambda-list
+     (mapcar #'car output-bindings)
+     callconv
+     :translate-datum (lambda (datum)
+                        (let* ((info (assoc datum output-bindings))
+                               (symbol (car info))
+                               (index (cdr info))
+                               (ref (codegen-lexical-var-reference symbol 0 index new-env)))
+;;;(bformat *debug-io* "translate-datum %s -> %s\n" datum ref)
+                          ref)))
+    new-env))
 
 
-(defun bclasp-maybe-alloc-cc-info (lambda-list-handler debug-on)
+(defun bclasp-maybe-alloc-cc-info (lambda-list debug-on)
   "Maybe allocate slots in the stack frame to handle the calls
-   depending on what is in the lambda-list-handler (&rest, &key etc) and debug-on.
+   depending on what is in the lambda-list (&rest, &key etc) and debug-on.
    Return a calling-convention-setup object that describes what was allocated.
    See the cclasp version in arguments.lisp "
-  (multiple-value-bind (reqargs optargs rest-var key-flag keyargs allow-other-keys auxargs)
-      (process-lambda-list-handler lambda-list-handler)
+  (multiple-value-bind (reqargs optargs rest-var key-flag keyargs allow-other-keys auxargs varest-p)
+      (core:process-lambda-list lambda-list 'function)
     ;; Currently if nargs <= +args-in-registers+ required arguments and (null debug-on)
     ;;      then can optimize and use the arguments in registers directly
     ;;  If anything else then allocate space to spill the registers
@@ -548,6 +552,8 @@
            :register-save-area* (irc-alloca-register-save-area :label "register-save-area")
            :invocation-history-frame* (and debug-on (irc-alloca-invocation-history-frame :label "invocation-history-frame")))))))
 
-(defun bclasp-setup-calling-convention (arguments lambda-list-handler debug-on)
-  (let ((setup (bclasp-maybe-alloc-cc-info lambda-list-handler debug-on)))
-    (initialize-calling-convention arguments setup)))
+(defun bclasp-setup-calling-convention (arguments lambda-list debug-on)
+  (let ((setup (bclasp-maybe-alloc-cc-info lambda-list debug-on)))
+    (let ((cc (initialize-calling-convention arguments setup)))
+      (calling-convention-args.va-start cc)
+      cc)))
