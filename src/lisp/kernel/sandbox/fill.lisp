@@ -17,7 +17,7 @@
     (def cl:fboundp (function-name) (sicl-genv:fboundp function-name environment))
     (def cl:fdefinition (function-name) (sicl-genv:fdefinition function-name environment))
     (def (setf cl:fdefinition) (new-function function-name)
-      (setf (sicl-genv:fdefinition function-name) new-function))
+      (setf (sicl-genv:fdefinition function-name environment) new-function))
     (def cl:fmakunbound (function-name) (sicl-genv:fmakunbound function-name environment))
 
     (def cl:special-operator-p (symbol)
@@ -56,6 +56,8 @@
 
 (defun install-basics (environment)
   (setf (sicl-genv:constant-variable 'sicl-genv:+global-environment+ environment) environment)
+  ;; only used in the compile-file/loader stuff, and kind of dumbly
+  (setf (sicl-genv:special-variable 'sicl-genv:*global-environment* environment nil) nil)
   (setf (sicl-genv:fdefinition 'sicl-genv:global-environment environment)
         (lambda () environment))
   (macrolet ((copy (name)

@@ -55,7 +55,9 @@
     (terpri stream)))
 
 (defun repl (environment &optional (stream *terminal-io*))
-  (let ((*macroexpand-hook* #'funcall)) ; FIXME: should not be necessary
+  (let ((sicl-genv:*global-environment* environment) ; FIXME: see comments in cleavir.lisp
+        (*macroexpand-hook* #'funcall)) ; FIXME: should not be necessary
+    (declare (special sicl-genv:*global-environment*))
     (loop
       (with-simple-restart (abort "Return to REPL.")
         (fresh-line stream)
