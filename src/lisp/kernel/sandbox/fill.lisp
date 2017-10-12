@@ -55,7 +55,8 @@
   (setf (sicl-genv:fdefinition 'sicl-genv:variable-cell environment) #'sicl-genv:variable-cell)
   (setf (sicl-genv:fdefinition 'sicl-genv:variable-unbound environment) #'sicl-genv:variable-unbound)
   (setf (sicl-genv:fdefinition 'core:symbol-value-from-cell environment) #'core:symbol-value-from-cell)
-  (setf (sicl-genv:fdefinition 'core:setf-symbol-value-from-cell environment) #'core:setf-symbol-value-from-cell))
+  (setf (sicl-genv:fdefinition 'core:setf-symbol-value-from-cell environment) #'core:setf-symbol-value-from-cell)
+  (setf (sicl-genv:fdefinition 'core:multiple-value-funcall environment) #'core:multiple-value-funcall))
 
 (defun install-default-setf-expander (environment)
   ;; basically copied from SICL/Code/Compiler/Extrinsic-environment/define-default-setf-expander.lisp
@@ -83,6 +84,12 @@
     ;; no m-v-c since it takes a function designator
     ;; the other commented aren't provided by cleavir
     (setf (sicl-genv:special-operator s environment) t)))
+
+(defun install-cleavir-primops (environment)
+  (do-external-symbols (s "CLEAVIR-PRIMOP")
+    (if (eq s 'cleavir-primop:call-with-variable-bound)
+        (setf (sicl-genv:fdefinition s environment) (fdefinition s))
+        (setf (sicl-genv:special-operator s environment) t))))
 
 ;;; CL functions that cannot be used without opening the veil.
 (defparameter *cl-environment*
@@ -191,6 +198,13 @@
 (defun install-multiple-value-call (environment)
   (setf (sicl-genv:macro-function 'cl:multiple-value-call environment)
         (macro-lambda multiple-value-call (function-form &rest forms)
+          #+clasp
+          (if (eql (length forms) 1)
+              `(cleavir-primop:multiple-value-call (coerce:fdesignator ,function-form) ,@forms)
+              `(core:multiple-value-funcall
+                (coerce:fdesignator ,function-form)
+                ,@(mapcar (lambda (x) `#'(lambda () (progn ,x))) forms)))
+          #-clasp
           `(cleavir-primop:multiple-value-call
                (coerce:fdesignator ,function-form)
              ,@forms))))
@@ -201,6 +215,7 @@
   (install-basics environment)
   (install-sandbox-accessors environment)
   (install-cl-special-operators environment)
+  (install-cleavir-primops environment)
 ;  (import-macros environment *special-macros*) ; not all have macro definitions in clasp at the moment.
   (import-macros environment *safe-macros*)
   (import-macros environment *setf-macros*)
