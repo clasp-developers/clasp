@@ -1000,35 +1000,6 @@ CL_DEFUN T_mv cl__identity(T_sp arg) {
   return (Values(arg));
 };
 
-CL_LAMBDA(macro-function form macro-env);
-CL_DECLARE();
-CL_DOCSTRING("macroexpand_default Default value of *macroexpand-hook*");
-CL_DEFUN T_mv core__macroexpand_default(Function_sp macro_function, T_sp form, T_sp macro_env) {
-  Function_sp debugMacroFunction = macro_function;
-  T_sp debugForm = form;
-  T_sp debugEnvironment = macro_env;
-  T_sp tllh = macro_function->functionLambdaListHandler();
-  if (LambdaListHandler_sp llh = tllh.asOrNull<LambdaListHandler_O>()) {
-    if (llh->numberOfRequiredArguments() != 2) {
-      stringstream err;
-      err << __FILE__ << ":" << __LINE__ << " Caught a problem in af_macroexpand_default - the macro_function requires " << llh->numberOfRequiredArguments() << " arguments but I'm only going to pass 2!!!" << std::endl;
-      err << "lambda_list: " << _rep_(llh) << std::endl;
-      err << "Passing argument 1: " << _rep_(form) << std::endl;
-      err << "Passing argument 2: " << _rep_(macro_env) << std::endl;
-      Closure_sp closure = macro_function;
-      err << "macro_function[" << _rep_(macro_function->functionName()) << std::endl;
-      if (auto ic = closure.as<InterpretedClosure_O>()) {
-        err << "code: " << _rep_(ic->code());
-      } else {
-        err << "macro_function is not an interpreted function";
-      }
-      SIMPLE_ERROR(BF("Wrong number of arguments %d within macroexpand_default when trying to invoke macro %s\nMore detail: %s") % llh->numberOfRequiredArguments() % _rep_(macro_function->functionName()) % err.str());
-    }
-  }
-  T_sp result = eval::funcall(macro_function, form, macro_env);
-  return (Values(result));
-};
-
 CL_LAMBDA(obj);
 CL_DECLARE();
 CL_DOCSTRING("null test - return true if the object is the empty list otherwise return nil");
@@ -2380,7 +2351,6 @@ void print_add_two_numbers(int x, int y) {
   SYMBOL_SC_(CorePkg, mapappend);
   SYMBOL_EXPORT_SC_(ClPkg, mapcan);
   SYMBOL_EXPORT_SC_(ClPkg, mapcon);
-  SYMBOL_SC_(CorePkg, macroexpand_default);
   SYMBOL_EXPORT_SC_(ClPkg, append);
   SYMBOL_EXPORT_SC_(ClPkg, classOf);
   SYMBOL_EXPORT_SC_(ClPkg, identity);

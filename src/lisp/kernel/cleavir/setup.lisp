@@ -272,17 +272,6 @@
 (defmethod cleavir-env:upgraded-array-element-types ((environment null))
   (cleavir-env:upgraded-array-element-types clasp-cleavir:*clasp-env*))
 
-(setq cl:*macroexpand-hook* (lambda (macro-function macro-form environment)
-			      (cond
-				((typep environment 'core:environment)
-				 (core:macroexpand-default macro-function macro-form environment))
-				((or (null environment) (typep environment 'clasp-global-environment))
-				 (core:macroexpand-default macro-function macro-form nil))
-				((typep environment 'cleavir-environment::entry)
-                                 (funcall macro-function macro-form environment))
-                                (t
-                                 (error "Add support to macroexpand of ~a using non-bclasp, non-top-level environment like: ~a" macro-form environment)))))
-
 (defun cleavir-env->interpreter (env)
   ;; Convert a cleavir ENTRY (or null) into an environment clasp's interpreter can use.
   ;; Only for compile time environments, so it's symbol macros, macros, and declarations.
