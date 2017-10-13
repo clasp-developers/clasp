@@ -57,7 +57,7 @@
 (defun install-basics (environment)
   (setf (sicl-genv:constant-variable 'sicl-genv:+global-environment+ environment) environment)
   ;; only used in the compile-file/loader stuff, and kind of dumbly
-  (setf (sicl-genv:special-variable 'sicl-genv:*global-environment* environment nil) nil)
+  (setf (sicl-genv:special-variable 'sicl-genv:*global-environment* environment t) environment)
   (setf (sicl-genv:fdefinition 'sicl-genv:global-environment environment)
         (lambda () environment))
   (macrolet ((copy (name)
