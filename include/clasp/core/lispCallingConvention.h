@@ -115,7 +115,7 @@ namespace gctools {
 
 /* ASSERT that the first argument is a VaList_sp */
 #define ASSERT_FIRST_ARG_IS_VALIST() ASSERT(gctools::tagged_valistp(lcc_fixed_arg0))
-#define LCC_ARG0_VALIST() gctools::smart_ptr<core::VaList_S>((gc::Tagged)lcc_fixed_arg0)
+#define LCC_ARG0_VALIST() gctools::smart_ptr<core::Vaslist>((gc::Tagged)lcc_fixed_arg0)
 #define LCC_ARG0() gctools::smart_ptr<core::T_O>((gc::Tagged)lcc_fixed_arg0)
 #define LCC_ARG1() gctools::smart_ptr<core::T_O>((gc::Tagged)lcc_fixed_arg1)
 #define LCC_ARG2() gctools::smart_ptr<core::T_O>((gc::Tagged)lcc_fixed_arg2)
@@ -190,7 +190,7 @@ namespace gctools {
     (_valist_s_)._Args->gp_offset = sizeof(core::T_O*) * (LCC_ABI_ARGS_IN_REGISTERS - LCC_ARGS_IN_REGISTERS);                           \
   }
 
-#define INITIALIZE_VA_LIST() ::core::VaList_S lcc_arglist_s(lcc_nargs);\
+#define INITIALIZE_VA_LIST() ::core::Vaslist lcc_arglist_s(lcc_nargs);\
   va_start(lcc_arglist_s._Args, LCC_VA_START_ARG); \
   core::VaList_sp lcc_vargs(&lcc_arglist_s); \
   LCC_SPILL_REGISTER_ARGUMENTS_TO_VA_LIST(lcc_arglist_s); \
@@ -200,7 +200,7 @@ namespace gctools {
   va_start(passed_args,LCC_VA_START_ARG); \
   core::T_O* lcc_passed_valist = va_arg(passed_args,core::T_O*); \
   va_end(passed_args); \
-  ::core::VaList_S lcc_arglist_s(*(VaList_S*)gctools::untag_valist(lcc_passed_valist));\
+  ::core::Vaslist lcc_arglist_s(*(Vaslist*)gctools::untag_valist(lcc_passed_valist));\
   core::VaList_sp lcc_vargs(&lcc_arglist_s); 
 
 #define private_LCC_VA_LIST_TOTAL_NUMBER_OF_ARGUMENTS(_args) (size_t)(((uintptr_clasp_t *)(_args[0].reg_save_area))[LCC_NARGS_REGISTER])
@@ -272,7 +272,7 @@ namespace gctools {
 
 
 #define LCC_CALL_WITH_ARGS_IN_FRAME(_result, _closure, _frame)          \
-  core::VaList_S valist_s(_frame);                                      \
+  core::Vaslist valist_s(_frame);                                      \
   printf("%s:%d  This needs to be reimplemented to handle the new calling convention\n", __FILE__, __LINE__ ); \
   LCC_SPILL_CLOSURE_TO_VA_LIST(valist_s,_closure.raw_());                \
   size_t lcc_nargs = (_frame).number_of_arguments();                    \
@@ -300,11 +300,11 @@ namespace gctools {
 
 
 #define LCC_DECLARE_VA_LIST()                           \
-  VaList_S lcc_arglist_struct(lcc_nargs);               \
+  Vaslist lcc_arglist_struct(lcc_nargs);               \
   va_start(lcc_arglist_struct._Args, LCC_VA_START_ARG); \
   VaList_sp lcc_arglist(&lcc_arglist_struct);
 
-/*! Initialize a VaList_S struct from a Frame object */
+/*! Initialize a Vaslist struct from a Frame object */
 #define LCC_SETUP_VA_LIST_FROM_FRAME(_va_list_, _frame_) { \
     (_va_list_)[0].reg_save_area = (_frame_).reg_save_area_ptr(); \
     (_va_list_)[0].overflow_arg_area = (_frame_).overflow_arg_area_ptr(); \
@@ -312,7 +312,7 @@ namespace gctools {
     (_va_list_)[0].fp_offset = 304; \
   }
 
-/*! Initialize a VaList_S struct from a Frame object */
+/*! Initialize a Vaslist struct from a Frame object */
 #define LCC_REWIND_VA_LIST(_va_list_, _register_save_areaP_) { \
     (_va_list_)[0].reg_save_area = (void*)_register_save_areaP_; \
     (_va_list_)[0].gp_offset = 16; \
@@ -347,7 +347,7 @@ typedef LCC_RETURN (*ShutdownFunction_fptr_type)();
 #ifdef LCC_FUNCALL
 extern "C" {
 
-// Return true if the VaList_S is at the head of the list and false if it is used up
+// Return true if the Vaslist is at the head of the list and false if it is used up
 inline void dump_va_list(va_list val) {
   const char* atpos = "";
   if (val[0].gp_offset==0x10) atpos = "atStartReg";
@@ -366,9 +366,9 @@ inline void dump_va_list(va_list val) {
 };
 
 
-// Return true if the VaList_S is at the head of the list and false if it is used up
-inline bool dump_VaList_S_ptr(VaList_S* args_orig) {
-  VaList_S args(*args_orig);
+// Return true if the Vaslist is at the head of the list and false if it is used up
+inline bool dump_Vaslist_ptr(Vaslist* args_orig) {
+  Vaslist args(*args_orig);
   printf("va_list dump @%p\n", (void*)args_orig);
   printf("va_list remaining_args = %lu\n", args.remaining_nargs());
   bool atHead = (args.remaining_nargs() != args.total_nargs());

@@ -63,7 +63,7 @@ typedef int32_t integer32_t;
 typedef int64_t integer64_t;
 
 namespace core {
-  class VaList_S;
+  class Vaslist;
   class Code_S;
 };
 
@@ -96,7 +96,7 @@ namespace gctools {
 /*! A pointer that is already tagged can be passed to smart_ptr constructors
       by first reinterpret_casting it to Tagged */
   typedef uintptr_clasp_t Tagged;
-  typedef uintptr_clasp_t TaggedVaList; // Used in situations where only a tagged VaList_S ptr is accepted
+  typedef uintptr_clasp_t TaggedVaList; // Used in situations where only a tagged Vaslist ptr is accepted
   static const int tag_shift = 3;
   static const int fixnum_bits = 62;
   static const int fixnum_shift = 2;
@@ -329,7 +329,7 @@ template <class T>
     return reinterpret_cast<T>(global_tagged_Symbol_OP_sameAsKey);
   }
   template <class T>
-    inline T tag_valist(core::VaList_S *p) {
+    inline T tag_valist(core::Vaslist *p) {
     GCTOOLS_ASSERT((reinterpret_cast<uintptr_clasp_t>(p) & tag_mask) == 0);
     return reinterpret_cast<T>(reinterpret_cast<uintptr_clasp_t>(p) + valist_tag);
   }
@@ -341,9 +341,9 @@ template <class T>
     return reinterpret_cast<T>(reinterpret_cast<uintptr_clasp_t>(ptr) - general_tag);
   }
   template <class T>
-    inline void *untag_valist(T ptr) {
+    inline core::Vaslist* untag_valist(T ptr) {
     GCTOOLS_ASSERT((reinterpret_cast<uintptr_clasp_t>(ptr) & tag_mask) == valist_tag);
-    return reinterpret_cast<core::VaList_S*>(reinterpret_cast<uintptr_clasp_t>(ptr) - valist_tag);
+    return reinterpret_cast<core::Vaslist*>(reinterpret_cast<uintptr_clasp_t>(ptr) - valist_tag);
   }
 
 

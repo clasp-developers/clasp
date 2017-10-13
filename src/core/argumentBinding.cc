@@ -112,7 +112,7 @@ void PASS_FUNCTION_REST(RestArgument const &restarg,
                         int arg_idx,
                         DynamicScopeManager &scope) {
   if (restarg.VaRest) {
-    scope.valist().set_from_other_VaList_S(&*arglist); // _change_nargs(&*arglist, n_args - arg_idx);
+    scope.valist().set_from_other_Vaslist(&*arglist); // _change_nargs(&*arglist, n_args - arg_idx);
     scope.va_rest_binding(restarg);
   } else {
     Cons_O::CdrType_sp rest = _Nil<Cons_O::CdrType_O>();

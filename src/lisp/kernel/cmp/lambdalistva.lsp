@@ -85,7 +85,7 @@
     (let* ((target-symbol (cdr target))
 	   (irc-target (irc-global-symbol target-symbol env)))
       (irc-intrinsic "pushDynamicBinding" irc-target)
-      (when make-unbound
+      #+(or)(when make-unbound
 	(irc-intrinsic "makeUnboundTsp" (irc-intrinsic "symbolValueReference" irc-target)))
       (irc-push-unwind env `(symbolValueRestore ,target-symbol))
       ;; Make the variable locally special
@@ -93,53 +93,6 @@
 
 
 
-
-(defun compile-target-reference* (env target)
-  "This function determines if target is special or lexical and generates
-code to get the reference to the target.
-It then returns (values target-ref target-type target-symbol target-lexical-index).
-If target-type=='special-var then target-lexical-index will be nil.
-You don't want to only write into the target-reference because
-you need to also bind the target in the compile-time environment "
-  (cmp-log "compile-target-reference target[%s]\n" target)
-  (cond
-    ((eq (car target) 'ext:special-var)
-     (cmp-log "compiling as a special-var\n")
-     (values (irc-intrinsic "symbolValueReference" (irc-global-symbol (cdr target) env))
-	     (car target)		; target-type --> 'special-var
-	     (cdr target)		; target-symbol
-	     ))
-    ((eq (car target) 'ext:lexical-var)
-     (cmp-log "compiling as a ext:lexical-var\n")
-     (values #+(or)(irc-intrinsic "lexicalValueReference"
-		       (jit-constant-i32 0)
-		       (jit-constant-i32 (cddr target))
-		       (irc-renv env))
-             (codegen-lexical-var-reference 0 #|<-depth|# (cddr target) (irc-renv env))
-	     (car target)		; target-type --> 'ext:lexical-var
-	     (cadr target)		; target-symbol
-	     (cddr target)		; target-lexical-index
-	     ))
-    (t (error "Illegal target type[~a] for argument" target))))
-
-
-
-
-(defun define-binding-in-value-environment* (env target)
-  "Define the target within the ValueEnvironment in env.
-If the target is special then define-special-binding.
-If the target is lexical then define-lexical-binding."
-  (cmp-log "define-binding-in-value-environment for target: %s\n" target)
-  (cond
-    ((eq (car target) 'ext:special-var)
-     (let ((target-symbol (cdr target)))
-       (value-environment-define-special-binding env target-symbol)))
-    ((eq (car target) 'ext:lexical-var)
-     (let ((target-symbol (cadr target))
-	   (target-lexical-index (cddr target)))
-       (value-environment-define-lexical-binding env target-symbol target-lexical-index)))
-    (t (error "Illegal target-type ~a" (car target))))
-)
 
 
 
@@ -292,7 +245,7 @@ will put a value into target-ref."
   (irc-branch-to-and-begin-block (irc-basic-block-create "process-rest-arguments"))
   (if varest
       (with-target-reference-do (rest-ref rest-var new-env)
-        (let ((temp-valist (irc-alloca-VaList_S)))
+        (let ((temp-valist (irc-alloca-vaslist)))
           (irc-intrinsic "copyTspTptr"
                          rest-ref
                          (irc-intrinsic "cc_gatherVaRestArguments"
@@ -651,7 +604,7 @@ lambda-list-handler/env/argument-activation-frame"
            :use-only-registers t)
           (make-calling-convention-setup
            :use-only-registers may-use-only-registers ; if may-use-only-registers then debug-on is T and we could use only registers
-           :VaList_S* (irc-alloca-VaList_S :label "VaList_S")
+           :vaslist* (irc-alloca-vaslist :label "vaslist")
            :register-save-area* (irc-alloca-register-save-area :label "register-save-area")
            :invocation-history-frame* (and debug-on (irc-alloca-invocation-history-frame :label "invocation-history-frame")))))))
 

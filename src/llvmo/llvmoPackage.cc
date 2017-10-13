@@ -227,14 +227,14 @@ CL_DEFUN core::T_sp llvm_sys__cxxDataStructuresInfo() {
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("CONS-CAR-OFFSET"), make_fixnum(core::Cons_O::car_offset())), list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("CONS-CDR-OFFSET"), make_fixnum(core::Cons_O::cdr_offset())), list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("UINTPTR_T-SIZE"), make_fixnum(sizeof(uintptr_clasp_t))), list);
-  list = Cons_O::create(Cons_O::create(lisp_internKeyword("VALIST_S-SIZE"), make_fixnum(sizeof(VaList_S))), list);
-  list = Cons_O::create(Cons_O::create(lisp_internKeyword("VALIST_S-VALIST-OFFSET"), make_fixnum((int)offsetof(VaList_S,_Args))),list);
+  list = Cons_O::create(Cons_O::create(lisp_internKeyword("VASLIST-SIZE"), make_fixnum(sizeof(Vaslist))), list);
+  list = Cons_O::create(Cons_O::create(lisp_internKeyword("VASLIST-VALIST-OFFSET"), make_fixnum((int)offsetof(Vaslist,_Args))),list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("HEADER-SIZE"), make_fixnum(sizeof(gctools::Header_s))), list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("REGISTER-SAVE-AREA-SIZE"), make_fixnum(LCC_TOTAL_REGISTERS*sizeof(void*))), list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("ALIGNMENT"),make_fixnum(gctools::Alignment())),list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("VOID*-SIZE"),make_fixnum(sizeof(void*))),list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("CLOSURE-ENTRY-POINT-OFFSET"),make_fixnum(offsetof(core::Function_O,entry))),list);
-  list = Cons_O::create(Cons_O::create(lisp_internKeyword("VALIST_S-REMAINING-NARGS-OFFSET"),make_fixnum(offsetof(core::VaList_S,_remaining_nargs))),list);
+  list = Cons_O::create(Cons_O::create(lisp_internKeyword("VASLIST-REMAINING-NARGS-OFFSET"),make_fixnum(offsetof(core::Vaslist,_remaining_nargs))),list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("SIZE_T-BITS"),make_fixnum(sizeof(size_t)*8)),list);
 #define ENTRY(list, name, code) list = Cons_O::create(Cons_O::create(lisp_internKeyword(name), code), list)
   LoadTimeValues_O tempLtv;
@@ -295,8 +295,8 @@ CL_DEFUN void llvm_sys__throwIfMismatchedStructureSizes(core::Fixnum_sp tspSize,
   }
   if (tvalistsize.fixnump()) {
     size_t valistsize = tvalistsize.unsafe_fixnum();
-    if (valistsize != sizeof(VaList_S)) {
-      SIMPLE_ERROR(BF("VaList_S size %d mismatch with Common Lisp code %d") % sizeof(VaList_S) % valistsize);
+    if (valistsize != sizeof(Vaslist)) {
+      SIMPLE_ERROR(BF("Vaslist size %d mismatch with Common Lisp code %d") % sizeof(Vaslist) % valistsize);
     }
   }
   if (tRegisterSaveAreaSize.fixnump()) {

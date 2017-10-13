@@ -165,6 +165,9 @@
 (defmethod cleavir-env:declarations ((environment null))
   (cleavir-env:declarations *clasp-env*))
 
+(defmethod cleavir-env:declarations ((environment core:value-environment))
+  (cleavir-env:declarations (core:get-parent-environment environment)))
+
 ;;; TODO: Handle (declaim (declaration ...))
 (defmethod cleavir-env:declarations
     ((environment clasp-global-environment))
@@ -189,20 +192,17 @@
 (defvar *global-policy*
   (cleavir-policy:compute-policy *global-optimize* *clasp-env*))
 
-(eval-when (:compile-toplevel)
-  (format t "About to compile cleavir-env:optimize-info~%"))
-
 (defmethod cleavir-env:optimize-info ((environment clasp-global-environment))
   ;; The default values are all 3.
   (make-instance 'cleavir-env:optimize-info
                  :optimize *global-optimize*
                  :policy *global-policy*))
 
-(eval-when (:compile-toplevel)
-  (format t "Done compile cleavir-env:optimize-info~%"))
-
 (defmethod cleavir-env:optimize-info ((environment NULL))
   (cleavir-env:optimize-info *clasp-env*))
+
+(defmethod cleavir-env:optimize-info ((environment core:value-environment))
+  (cleavir-env:optimize-info (core:get-parent-environment environment)))
 
 
 (defmethod cleavir-environment:macro-function (symbol (environment clasp-global-environment))

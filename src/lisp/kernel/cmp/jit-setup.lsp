@@ -55,6 +55,33 @@
   (warn "Do something with dump-function"))
 (export 'dump-function)
 
+(defun write-bitcode (module output-path)
+  ;; Write bitcode as either .bc files or .ll files
+  (if *use-human-readable-bitcode*
+      (let* ((filename (make-pathname :type "ll" :defaults (pathname output-path)))
+             (output-name (namestring filename))
+             (fout (open output-name :direction :output)))
+        (unwind-protect
+             (llvm-sys:dump-module module fout)
+          (close fout)))
+      (llvm-sys:write-bitcode-to-file module output-path)))
+
+(defun load-bitcode (filename)
+  (if *use-human-readable-bitcode*
+      (let* ((input-name (make-pathname :type "ll" :defaults (pathname filename))))
+        (llvm-sys:load-bitcode-ll input-name))
+      (llvm-sys:load-bitcode filename)))
+
+(defun parse-bitcode (filename context)
+  ;; Load a module from a bitcode or .ll file
+  (if *use-human-readable-bitcode*
+      (let ((input-name (make-pathname :type "ll" :defaults (pathname filename))))
+        (llvm-sys:parse-irfile input-name context))
+      (llvm-sys:parse-bitcode-file filename context)))
+
+(export '(write-bitcode load-bitcode parse-bitcode))
+
+
 (defvar *builtins-module* nil)
 
 (defun get-builtins-module ()
@@ -199,31 +226,31 @@ No DIBuilder is defined for the default module")
 
 
 (defun jit-constant-size_t (val)
-  (let ((sizeof-size_t (cdr (assoc 'core:size-t (llvm-sys:cxx-data-structures-info)))))
+  (let ((sizeof-size_t +size_t-bits+))
     (cond
-      ((= 8 sizeof-size_t) (jit-constant-i64 val))
-      ((= 4 sizeof-size_t) (jit-constant-i32 val))
+      ((= 64 sizeof-size_t) (jit-constant-i64 val))
+      ((= 32 sizeof-size_t) (jit-constant-i32 val))
       (t (error "Add support for size_t sizeof = ~a" sizeof-size_t)))))
 
 (defun jit-constant-uintptr_t (val)
-  (let ((sizeof-size_t (cdr (assoc 'core:size-t (llvm-sys:cxx-data-structures-info)))))
+  (let ((sizeof-size_t +size_t-bits+))
     (cond
-      ((= 8 sizeof-size_t) (jit-constant-ui64 val))
-      ((= 4 sizeof-size_t) (jit-constant-ui32 val))
+      ((= 64 sizeof-size_t) (jit-constant-ui64 val))
+      ((= 32 sizeof-size_t) (jit-constant-ui32 val))
       (t (error "Add support for size_t sizeof = ~a" sizeof-size_t)))))
 
 (defun jit-constant-intptr_t (val)
-  (let ((sizeof-size_t (cdr (assoc 'core:size-t (llvm-sys:cxx-data-structures-info)))))
+  (let ((sizeof-size_t +size_t-bits+))
     (cond
-      ((= 8 sizeof-size_t) (jit-constant-i64 val))
-      ((= 4 sizeof-size_t) (jit-constant-i32 val))
+      ((= 64 sizeof-size_t) (jit-constant-i64 val))
+      ((= 32 sizeof-size_t) (jit-constant-i32 val))
       (t (error "Add support for size_t sizeof = ~a" sizeof-size_t)))))
 
 (defun jit-constant-size_t (val)
-  (let ((sizeof-size_t (cdr (assoc 'core:size-t (llvm-sys:cxx-data-structures-info)))))
+  (let ((sizeof-size_t +size_t-bits+))
     (cond
-      ((= 8 sizeof-size_t) (jit-constant-ui64 val))
-      ((= 4 sizeof-size_t) (jit-constant-ui32 val))
+      ((= 64 sizeof-size_t) (jit-constant-ui64 val))
+      ((= 32 sizeof-size_t) (jit-constant-ui32 val))
       (t (error "Add support for size_t sizeof = ~a" sizeof-size_t)))))
 
 
@@ -446,7 +473,15 @@ The passed module is modified as a side-effect."
   (declare (type (or null llvm-sys:module) module))
   (when (and *optimizations-on* module)
     #++(let ((call-sites (call-sites-to-always-inline module)))
-      (bformat t "Call-sites -> %s\n" call-sites))
+         (bformat t "Call-sites -> %s\n" call-sites))
+    ;; Link in the builtins as part of the optimization
+    #+(or)(progn
+      (let ((linker (llvm-sys:make-linker module))
+            (builtins-clone (llvm-sys:clone-module (get-builtins-module))))
+        ;;(remove-always-inline-from-functions builtins-clone)
+        (quick-module-dump builtins-clone "builtins-clone")
+        (llvm-sys:link-in-module linker builtins-clone)))
+    
     (let* ((pass-manager-builder (llvm-sys:make-pass-manager-builder))
            (mpm (llvm-sys:make-pass-manager))
            (fpm (llvm-sys:make-function-pass-manager module))
@@ -458,11 +493,22 @@ The passed module is modified as a side-effect."
                      (t (error "Unsupported optimize-level ~a - only :-O3 :-O2 :-O1 :-O0 are allowed" optimize-level)))))
       (llvm-sys:pass-manager-builder-setf-opt-level pass-manager-builder olevel)
       (llvm-sys:pass-manager-builder-setf-size-level pass-manager-builder size-level)
-      (llvm-sys:populate-ltopass-manager pass-manager-builder mpm)
-      (llvm-sys:pass-manager-run mpm module)))
+      (progn
+        (llvm-sys:pass-manager-builder-setf-inliner pass-manager-builder (llvm-sys:create-always-inliner-legacy-pass))
+        (llvm-sys:populate-function-pass-manager pass-manager-builder fpm)
+        (llvm-sys:populate-module-pass-manager pass-manager-builder mpm))
+      #+(or)(llvm-sys:populate-ltopass-manager pass-manager-builder mpm)
+      (llvm-sys:pass-manager-run mpm module))
+    #+(or)(llvm-sys:remove-always-inline-functions module))
   module)
 
 
+(defun optimize-module-for-compile (module)
+  #+(or)(bformat *debug-io* "In optimize-module-for-compile\n")
+  #+(or)(llvm-sys:dump-module module)
+  module)
+
+#+(or)
 (defun optimize-module-for-compile (module &optional (optimize-level *optimization-level*) (size-level *size-level*))
   (declare (type (or null llvm-sys:module) module))
   (when (and *optimizations-on* module)
@@ -558,19 +604,16 @@ The passed module is modified as a side-effect."
 (progn
   (defun jit-add-module-return-function (original-module repl-fn startup-fn shutdown-fn literals-list)
     ;; Link the builtins into the module and optimize them
+    (quick-module-dump original-module "before-link-builtins")
     (jit-link-builtins-module original-module)
     (if *jit-dump-module-before-optimizations*
         (llvm-sys:dump-module original-module))
     #+(or)(optimize-module-for-compile original-module)
-    #+(or)(quick-module-dump original-module "module after-optimize")
+    (quick-module-dump original-module "module-before-optimize")
     (let ((module original-module))
       ;;#+threads(mp:get-lock *jit-engine-mutex*)
       ;;    (bformat t "In jit-add-module-return-function dumping module\n")
       ;;    (llvm-sys:print-module-to-stream module *standard-output*)
-      (if *declare-dump-module*
-          (progn
-            (core:bformat t "Dumping module\n")
-            (llvm-sys:dump-module module)))
       (let* ((repl-name (llvm-sys:get-name repl-fn))
              (startup-name (llvm-sys:get-name startup-fn))
              (shutdown-name (llvm-sys:get-name shutdown-fn))

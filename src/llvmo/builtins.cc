@@ -7,6 +7,7 @@
 #include <clasp/core/instance.h>
 #include <clasp/core/wrappedPointer.h>
 #include <clasp/core/funcallableInstance.h>
+#include <clasp/gctools/gcStack.h>
 #include <clasp/llvmo/intrinsics.h>
 
 #if 0 // DEBUGGING
@@ -49,8 +50,8 @@ BUILTIN_ATTRIBUTES void cc_rewind_va_list(core::T_O* tagged_closure, va_list va_
 }
 
 BUILTIN_ATTRIBUTES
-core::T_O *va_symbolFunction(core::T_sp *symP) {
-  core::Symbol_sp sym((gctools::Tagged)symP->raw_());
+core::T_O *va_symbolFunction(core::T_O *symP) {
+  core::Symbol_sp sym((gctools::Tagged)symP);
   unlikely_if (!sym->fboundp()) intrinsic_error(llvmo::noFunctionBoundToSymbol, sym);
   core::Function_sp func((gc::Tagged)(sym)->_Function.theObject);
   return func.raw_();
@@ -66,12 +67,19 @@ BUILTIN_ATTRIBUTES core::T_sp *symbolValueReference(core::T_sp *symbolP)
 #endif
 
 
-BUILTIN_ATTRIBUTES core::T_sp *lexicalValueReference(int depth, int index, core::ActivationFrame_sp *frameP)
+BUILTIN_ATTRIBUTES core::T_sp *lexicalValueReference(int depth, int index, core::ActivationFrame_O *frameP)
 {
-  core::ActivationFrame_sp af = gctools::reinterpret_cast_smart_ptr<core::ActivationFrame_O>(*frameP);
+  core::ActivationFrame_sp af((gctools::Tagged)frameP);
   return const_cast<core::T_sp *>(&core::value_frame_lookup_reference(af, depth, index));
 }
 
+BUILTIN_ATTRIBUTES core::T_sp *registerReference(core::T_sp* register_)
+{
+  return register_;
+}
+
+
+#if 0
 BUILTIN_ATTRIBUTES void sp_lexicalValueRead(core::T_sp *resultP, int depth, int index, core::ActivationFrame_sp *renvP)
 {
   (*resultP) = core::value_frame_lookup_reference(*renvP,depth,index);
@@ -80,7 +88,7 @@ BUILTIN_ATTRIBUTES void mv_lexicalValueRead(core::T_mv *resultP, int depth, int 
 {
   (*resultP) = core::value_frame_lookup_reference(*renvP,depth,index);
 }
-
+#endif
 
 // The following two are only valid for non-simple arrays. Be careful!
 BUILTIN_ATTRIBUTES core::T_O* cc_realArrayDisplacement(core::T_O* tarray) {
@@ -117,5 +125,56 @@ BUILTIN_ATTRIBUTES void cc_simpleBitVectorAset(core::T_O* tarray, size_t index, 
   array->setBit(index, v);
 }
 
+BUILTIN_ATTRIBUTES core::T_O* invisible_makeValueFrameSetParent(core::T_O* parent) {
+  return parent;
+}
+
+BUILTIN_ATTRIBUTES core::T_O* invisible_makeValueFrameSetParentFromClosure(core::T_O* closureRaw) {
+  if (closureRaw!=NULL) {
+    core::Closure_O* closureP = reinterpret_cast<core::Closure_O*>(gc::untag_general<core::T_O*>(closureRaw));
+    core::T_sp activationFrame = closureP->closedEnvironment();
+    return activationFrame.raw_(); // >rawRef_() = closureRaw; //  = activationFrame;
+  } else {
+    return _Nil<core::T_O>().raw_();
+  }
+}
+
+
+/*! Return i32 1 if (valP) is != unbound 0 if it is */
+BUILTIN_ATTRIBUTES int isBound(core::T_O *valP)
+{
+  return gctools::tagged_unboundp<core::T_O*>(valP) ? 0 : 1;
+}
+
+/*! Return i32 1 if (valP) is != nil 0 if it is */
+BUILTIN_ATTRIBUTES int isTrue(core::T_O* valP)
+{
+  return gctools::tagged_nilp<core::T_O*>(valP) ? 0 : 1;
+}
+
+/*! Return i32 1 if (valP) is != nil 0 if it is */
+BUILTIN_ATTRIBUTES core::T_O* valueOrNilIfZero(gctools::return_type val) {
+  return val.nvals ? val.ret0[0] : _Nil<core::T_O>().raw_();
+}
+
+BUILTIN_ATTRIBUTES core::T_O** activationFrameReferenceFromClosure(core::T_O* closureRaw)
+{
+  ASSERT(closureRaw);
+  if (closureRaw!=NULL) {
+    core::ClosureWithFrame_sp closure = core::ClosureWithFrame_sp((gctools::Tagged)closureRaw);
+    return &closure->_closedEnvironment.rawRef_();
+  }
+  return NULL;
+}
+
+BUILTIN_ATTRIBUTES void* cc_vaslist_va_list_address(core::T_O* vaslist)
+{
+  return &(gctools::untag_valist(vaslist)->_Args);
 };
 
+BUILTIN_ATTRIBUTES size_t* cc_vaslist_remaining_nargs_address(core::Vaslist* vaslist)
+{
+  return &(gctools::untag_valist(vaslist)->_remaining_nargs);
+};
+
+};

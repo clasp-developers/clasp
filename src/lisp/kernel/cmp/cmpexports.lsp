@@ -5,6 +5,8 @@
           *compile-debug-dump-module*  ;; Dump intermediate modules
           quick-module-dump
           quick-message-dump
+          write-bitcode
+          load-bitcode
           *irbuilder*
           %ltv*%
           irc-function-create
@@ -38,7 +40,7 @@
           +header-size+
           +cons-tag+
           +fixnum-tag+
-          +Valist_S-tag+
+          +vaslist-tag+
           +single-float-tag+
           +character-tag+
           +general-tag+
@@ -53,13 +55,13 @@
           %mv-struct%
           %size_t%
           %t*%
-          %tsp[0]%
+          %t*[0]%
           %tsp%
-          %tsp[0]*%
+          %t*[0]*%
           %tsp*%
           %t**%
-          %tsp[DUMMY]%
-          %tsp[DUMMY]*%
+          %t*[DUMMY]%
+          %t*[DUMMY]*%
           null-t-ptr
           %gcroots-in-module%
           %gcroots-in-module*%
@@ -144,7 +146,6 @@
           irc-ret
           irc-undef-value-get
           irc-store
-          irc-store-t*
           irc-switch
           irc-unreachable
           irc-trunc
@@ -185,7 +186,7 @@
           +simple-vector._length-offset+
           %uintptr_t%
           %return_type%
-          %VaList_S%
+          %vaslist%
           %InvocationHistoryFrame%
           %register-save-area%
           null-t-ptr

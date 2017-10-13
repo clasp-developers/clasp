@@ -11,7 +11,7 @@
     (describe-form form))
   (literal:with-top-level-form
    (dbg-set-current-source-pos form)
-    (compile-thunk 'repl form nil)
+    (compile-thunk 'repl form nil t)
     ;; After this literals are codegen'd into the RUN-ALL function
     ;; by with-top-level-form
     ))

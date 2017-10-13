@@ -12,6 +12,9 @@
 
 (in-package "CLOS")
 
+#+(or)(eval-when (:execute)
+  (setq core:*echo-repl-read* t))
+
 (defparameter *clos-booted* nil)
 
 ;;; ----------------------------------------------------------------------
@@ -143,6 +146,9 @@
 			 args
 			 nil)))
 	  t))
+
+#+(or)(eval-when (:execute :compile-toplevel :load-toplevel)
+  (setq cmp::*jit-dump-module-before-optimizations* t))
 
 (defun set-generic-function-dispatch (gfun)
   ;;

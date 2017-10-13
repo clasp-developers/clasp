@@ -324,7 +324,7 @@ class ClosureWithFrame_O : public FunctionClosure_O {
 public:
   T_sp _closedEnvironment;
 public:
-  T_sp closedEnvironment() const { ASSERT(this->_closedEnvironment.generalp()); return this->_closedEnvironment;};
+  CL_DEFMETHOD T_sp closedEnvironment() const { ASSERT(this->_closedEnvironment.generalp()); return this->_closedEnvironment;};
  ClosureWithFrame_O(claspFunction fptr, T_sp fn, Symbol_sp k, T_sp env, SOURCE_INFO) : Base(fptr,fn,k,SOURCE_INFO_PASS), _closedEnvironment(env) {
     ASSERT(env.nilp() || env.asOrNull<Environment_O>() );
   };
@@ -356,7 +356,7 @@ public:
   bool interpretedP() const { return true; };
   T_sp docstring() const { return this->_docstring; };
   List_sp declares() const { return this->_declares; };
-  List_sp code() const { return this->_code; };
+  CL_DEFMETHOD List_sp code() const { return this->_code; };
   LambdaListHandler_sp lambdaListHandler() const { return this->_lambdaListHandler; };
   T_sp lambda_list() const;
   void setf_lambda_list(List_sp lambda_list);

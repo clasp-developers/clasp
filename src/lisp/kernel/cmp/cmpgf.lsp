@@ -672,7 +672,7 @@
                 (general-bb (irc-basic-block-create "general-bb"))
                 (single-float-bb (irc-basic-block-create "single-float-bb"))
                 (character-bb (irc-basic-block-create "character-bb"))
-                (valist_s-bb (irc-basic-block-create "valists-bb"))
+                (vaslist-bb (irc-basic-block-create "valists-bb"))
                 (general-or-instance-bb (irc-basic-block-create "general-or-instance-bb"))
                 (instance-bb (irc-basic-block-create "instance-bb"))
                 (maybe-funcallable-instance-bb (irc-basic-block-create "funcallable-instance-bb"))
@@ -687,9 +687,9 @@
                           (list +cons-tag+ cons-bb)
                           (list +single-float-tag+ single-float-bb)
                           (list +character-tag+ character-bb)
-                          (list +valist_s-tag+ valist_s-bb)
+                          (list +vaslist-tag+ vaslist-bb)
                           (list +general-tag+ general-or-instance-bb)))
-              (let (fixnum-stamp fixnum1-stamp cons-stamp general-stamp instance-stamp single-float-stamp character-stamp valist_s-stamp)
+              (let (fixnum-stamp fixnum1-stamp cons-stamp general-stamp instance-stamp single-float-stamp character-stamp vaslist-stamp)
                 (irc-begin-block fixnum-bb)
                 (setf fixnum-stamp (jit-constant-i64 +fixnum-stamp+))
                 (insert-message)
@@ -706,8 +706,8 @@
                 (setf character-stamp (jit-constant-i64 +character-stamp+))
                 (insert-message)
                 (irc-br done-bb)
-                (irc-begin-block valist_s-bb)
-                (setf valist_s-stamp (jit-constant-i64 +valist_s-stamp+))
+                (irc-begin-block vaslist-bb)
+                (setf vaslist-stamp (jit-constant-i64 +vaslist-stamp+))
                 (insert-message)
                 (irc-br done-bb)
                 (irc-begin-block general-or-instance-bb)
@@ -742,7 +742,7 @@
                                       (list cons-stamp cons-bb)
                                       (list single-float-stamp single-float-bb)
                                       (list character-stamp character-bb)
-                                      (list valist_s-stamp valist_s-bb)
+                                      (list vaslist-stamp vaslist-bb)
                                       (list general-stamp general-bb)
                                       (list instance-stamp instance-bb)))
                        (stamp-phi (irc-phi %i64% (length phi-bbs) "stamp")))
@@ -861,10 +861,10 @@
 	       (*current-function* disp-fn)
                (*gf-data* 
 		(llvm-sys:make-global-variable *the-module*
-					       cmp:%tsp[DUMMY]% ; type
+					       cmp:%t*[DUMMY]% ; type
 					       nil ; isConstant
 					       'llvm-sys:internal-linkage
-					       (llvm-sys:undef-value-get cmp:%tsp[DUMMY]%)
+					       (llvm-sys:undef-value-get cmp:%t*[DUMMY]%)
 					       ;; nil ; initializer
 					       (next-value-table-holder-name "dummy")))
                (*gcroots-in-module* 
@@ -893,7 +893,7 @@
 	    (with-irbuilder (irbuilder-alloca)
 	      (let* ((in-frame-va_list/va_list*              (irc-alloca-va_list :label "in-frame-va_list/va_list*"))
                      (passed-args-tagged/uintptr_t  (irc-ptr-to-int passed-args %uintptr_t% "passed-args-tagged/uintptr_t"))
-                     (passed-args-va_list/uintptr_t (irc-add passed-args-tagged/uintptr_t (jit-constant-intptr_t (- +VaList_S-valist-offset+ +VaList_S-tag+)) "passed-args-va_list/uintptr_t"))
+                     (passed-args-va_list/uintptr_t (irc-add passed-args-tagged/uintptr_t (jit-constant-intptr_t (- +vaslist-valist-offset+ +vaslist-tag+)) "passed-args-va_list/uintptr_t"))
                      (passed-args-va_list/va_list*           (irc-int-to-ptr passed-args-va_list/uintptr_t %va_list*% "passed-args-va_list/va_list*"))
                      (_                             (insert-message))
                      (_                             (debug-arglist (irc-ptr-to-int passed-args %uintptr_t%)))
@@ -911,14 +911,14 @@
 		(irc-begin-block miss-bb)
 		(irc-intrinsic-call "llvm.va_end" (list (irc-pointer-cast in-frame-va_list/va_list* %i8*% "in-frame-va_list/i8*")))
 		(irc-ret (irc-intrinsic-call "cc_dispatch_miss" (list gf passed-args) "ret")))))
-          (let* ((array-type (llvm-sys:array-type-get cmp:%tsp% *gf-data-id*))
+          (let* ((array-type (llvm-sys:array-type-get cmp:%t*% *gf-data-id*))
 		 (correct-size-holder (llvm-sys:make-global-variable *the-module*
 								     array-type
 								     nil ; isConstant
 								     'llvm-sys:internal-linkage
 								     (llvm-sys:undef-value-get array-type)
 								     (bformat nil "CONSTANTS-%d" (incf *dispatcher-count*))))
-		 (bitcast-correct-size-holder (irc-bit-cast correct-size-holder %tsp[DUMMY]*% "bitcast-table")))
+		 (bitcast-correct-size-holder (irc-bit-cast correct-size-holder %t*[DUMMY]*% "bitcast-table")))
             (multiple-value-bind (startup-fn shutdown-fn)
                 (codegen-startup-shutdown *gcroots-in-module* correct-size-holder *gf-data-id*)
               (llvm-sys:replace-all-uses-with *gf-data* bitcast-correct-size-holder)

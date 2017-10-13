@@ -61,6 +61,7 @@ THE SOFTWARE.
 #include <llvm/IR/Instructions.h>
 #include <llvm/IR/Mangler.h>
 #include <llvm/Transforms/Instrumentation.h>
+#include <llvm/Transforms/Utils/BasicBlockUtils.h>
 #include <llvm/Transforms/IPO.h>
 #include <llvm/IR/InlineAsm.h>
 #include <llvm/Support/FormattedStream.h>
@@ -1744,6 +1745,9 @@ CL_DEFMETHOD void Instruction_O::setMetadata(core::String_sp kind, MDNode_sp mdn
   CL_LISPIFY_NAME(getParent);
   CL_EXTERN_DEFMETHOD(Instruction_O, (llvm::BasicBlock * (llvm::Instruction::*)()) & llvm::Instruction::getParent);
 
+  CL_LISPIFY_NAME(eraseFromParent);
+  CL_EXTERN_DEFMETHOD(Instruction_O, & llvm::Instruction::eraseFromParent);
+
 ;
 
 
@@ -1760,6 +1764,49 @@ CL_DEFMETHOD bool Instruction_O::terminatorInstP() const {
 }; // llvmo
 
 namespace llvmo {
+
+CL_DEFUN llvm::Instruction* llvm_sys__replace_call(llvm::Instruction* callOrInvoke, llvm::Function* func, llvm::ArrayRef<llvm::Value *> args) {
+//  printf("%s:%d In llvm-sys::replace-call\n",__FILE__, __LINE__);
+  llvm::CallSite CS(callOrInvoke);
+  llvm::Instruction *NewCI = NULL;
+  if (llvm::isa<llvm::CallInst>(callOrInvoke)) {
+    llvm::CallInst* NewCall = llvm::CallInst::Create(func,args);
+    NewCall->setCallingConv(func->getCallingConv());
+    NewCI = NewCall;
+  } else if (llvm::isa<llvm::InvokeInst>(callOrInvoke)) {
+    llvm::InvokeInst* invoke = llvm::cast<llvm::InvokeInst>(callOrInvoke);
+    llvm::BasicBlock* ifNormal = invoke->getNormalDest();
+    llvm::BasicBlock* ifException = invoke->getUnwindDest();
+    llvm::InvokeInst* NewInvoke = llvm::InvokeInst::Create(func,ifNormal,ifException,args);
+    NewInvoke->setCallingConv(func->getCallingConv());
+    NewCI = NewInvoke;
+  }
+  if (!callOrInvoke->use_empty()) {
+    callOrInvoke->replaceAllUsesWith(NewCI);
+  }
+  llvm::ReplaceInstWithInst(callOrInvoke,NewCI);
+  return NewCI;
+};
+
+
+core::List_sp CallInst_O::getArgumentList() const {
+  ql::list l;
+  for ( auto arg = this->wrappedPtr()->arg_begin(), argEnd(this->wrappedPtr()->arg_end());
+        arg != argEnd; ++arg ) {
+    l << translate::to_object<llvm::Value*>::convert(*arg);
+  }
+  return l.cons();
+};  
+
+CL_DEFUN core::List_sp llvm_sys__call_or_invoke_getArgumentList(Instruction_sp callOrInvoke) {
+  if (gc::IsA<CallInst_sp>(callOrInvoke)) {
+    return gc::As<CallInst_sp>(callOrInvoke)->getArgumentList();
+  } else if (gc::IsA<InvokeInst_sp>(callOrInvoke)) {
+    return gc::As<InvokeInst_sp>(callOrInvoke)->getArgumentList();
+  }
+  SIMPLE_ERROR(BF("Only call or invoke can provide arguments"));
+}
+
 
 CL_DEFMETHOD void CallInst_O::addParamAttr(unsigned index, llvm::Attribute::AttrKind attrkind)
 {
@@ -1779,37 +1826,16 @@ CL_DEFMETHOD llvm::Function* InvokeInst_O::getCalledFunction() {
   return this->wrappedPtr()->getCalledFunction();
 }
 
-}; // llvmo
-namespace llvmo {
-}
-
-namespace llvmo {
-
-
-;
-
-}; // llvmo
-namespace llvmo {
-}
-
-namespace llvmo {
-
-
-;
+core::List_sp InvokeInst_O::getArgumentList() const {
+  ql::list l;
+  for ( auto arg = this->wrappedPtr()->arg_begin(), argEnd(this->wrappedPtr()->arg_end());
+        arg != argEnd; ++arg ) {
+    l << translate::to_object<llvm::Value*>::convert(*arg);
+  }
+  return l.cons();
+};  
 
 }; // llvmo
-namespace llvmo {
-}
-
-namespace llvmo {
-
-
-;
-
-}; // llvmo
-namespace llvmo {
-}
-
 namespace llvmo {
 
 
@@ -1862,6 +1888,13 @@ namespace llvmo {
   CL_LISPIFY_NAME(setAlignment);
   CL_EXTERN_DEFMETHOD(AllocaInst_O, &AllocaInst_O::ExternalType::setAlignment);;
 
+CL_DEFUN llvm::AllocaInst* llvm_sys__insert_alloca_before_terminator(llvm::Type* type, const llvm::Twine& name, llvm::BasicBlock* block)
+{
+//  printf("%s:%d   llvm-sys::insert-alloca\n", __FILE__, __LINE__ );
+  llvm::Instruction* insertBefore = block->getTerminator();
+  llvm::AllocaInst* alloca = new llvm::AllocaInst(type,0,name,insertBefore);
+  return alloca;
+}
 ;
 
 }; // llvmo
@@ -2868,6 +2901,9 @@ namespace llvmo {
 CL_LISPIFY_NAME(getParent);
 CL_EXTERN_DEFMETHOD(BasicBlock_O,(llvm::Function *(llvm::BasicBlock::*)())&llvm::BasicBlock::getParent);
 
+CL_LISPIFY_NAME(getTerminator);
+CL_EXTERN_DEFMETHOD(BasicBlock_O,(llvm::TerminatorInst *(llvm::BasicBlock::*)())&llvm::BasicBlock::getTerminator);
+
 CL_LAMBDA("context &optional (name \"\") parent basic-block");
 CL_LISPIFY_NAME(basic-block-create);
 CL_EXTERN_DEFUN( &llvm::BasicBlock::Create );
@@ -3868,44 +3904,14 @@ CL_DEFUN void llvm_sys__remove_useless_global_ctors(Module_sp module) {
     
   
 
+CL_DEFUN llvm::Module* llvm_sys_optimizeModule(llvm::Module* module)
+{
+  std::shared_ptr<llvm::Module> M(module);
+  return &*optimizeModule(std::move(M));
+}
 
-std::shared_ptr<llvm::Module> ClaspJIT_O::optimizeModule(std::shared_ptr<llvm::Module> M) {
-  core::LightTimer timer;
-  timer.start();
-  // Create a function pass manager.
-  auto FPM = llvm::make_unique<llvm::legacy::FunctionPassManager>(M.get());
 
-  // Add some optimizations.
-  FPM->add(createInstructionCombiningPass());
-  FPM->add(createReassociatePass());
-  FPM->add(createNewGVNPass());
-  FPM->add(createCFGSimplificationPass());
-//  FPM->add(createFunctionInliningPass());
-  FPM->doInitialization();
-
-  // Run the optimizations over all functions in the module being added to
-  // the JIT.
-  for (auto &F : *M)
-    FPM->run(F);
-
-  llvm::legacy::PassManager my_passes;
-  my_passes.add(llvm::createFunctionInliningPass(4096));
-  my_passes.run(*M);
-  // Silently remove llvm.used functions if they are defined
-  //     I may use this to prevent functions from being removed from the bitcode
-  //     by clang before we need them.
-  llvm::GlobalVariable* used = M->getGlobalVariable("llvm.used");
-  if (used) {
-    Value* init = used->getInitializer();
-#if 0
-    printf("%s:%d   init is a ConstantArray -> %d\n", __FILE__, __LINE__, llvm::isa<ConstantArray>(init));
-    printf("%s:%d   init is a Constant -> %d\n", __FILE__, __LINE__, llvm::isa<Constant>(init));
-    printf("%s:%d   init is a User -> %d\n", __FILE__, __LINE__, llvm::isa<User>(init));
-    printf("%s:%d   init is a Value -> %d\n", __FILE__, __LINE__, llvm::isa<User>(init));
-    printf("%s:%d init -> %p\n", __FILE__, __LINE__, (void*)init );
-#endif
-    used->eraseFromParent();
-  }
+void removeAlwaysInlineFunctions(llvm::Module* M) {
   // Silently remove always-inline functions from the module
   std::vector<llvm::Function*> inline_funcs;
   for (auto &F : *M) {
@@ -3917,20 +3923,83 @@ std::shared_ptr<llvm::Module> ClaspJIT_O::optimizeModule(std::shared_ptr<llvm::M
 //    printf("%s:%d Erasing function: %s\n", __FILE__, __LINE__, f->getName().str().c_str());
     f->eraseFromParent();
   }
+}
+
+CL_DEFUN void llvm_sys__removeAlwaysInlineFunctions(llvm::Module* module)
+{
+  removeAlwaysInlineFunctions(module);
+}
+
+
+std::shared_ptr<llvm::Module> optimizeModule(std::shared_ptr<llvm::Module> M) {
+#if 0
+  Module_sp om = Module_O::create();
+  om->set_wrapped(&*M);
+  om = core::eval::funcall(comp::_sym_optimize_module_for_compile,om);
+  std::shared_ptr<llvm::Module> result(om->wrappedPtr());
+  printf("%s:%d  Returning module\n", __FILE__, __LINE__ );
+  return result;
+#else
   
+  core::LightTimer timer;
+  timer.start();
+  // Create a function pass manager.
+  auto FPM = llvm::make_unique<llvm::legacy::FunctionPassManager>(M.get());
+
+  // Add some optimizations.
+  FPM->add(createInstructionCombiningPass());
+  FPM->add(createReassociatePass());
+  FPM->add(createNewGVNPass());
+  FPM->add(createCFGSimplificationPass());
+  FPM->add(createPromoteMemoryToRegisterPass());
+//  FPM->add(createFunctionInliningPass());
+  FPM->doInitialization();
+
+  // !!!! I run this after inlining again -
+  // - But if I don't run it here - it crashes when I try to clone the module for disassemble
+  // Run the optimizations over all functions in the module being added to the JIT.
+  for (auto &F : *M)
+    FPM->run(F);
+  
+  llvm::legacy::PassManager my_passes;
+  my_passes.add(llvm::createFunctionInliningPass(4096));
+  my_passes.run(*M);
+
+    // After inlining - run the optimizations over all functions again
+  for (auto &F : *M)
+    FPM->run(F);
+  
+  // Silently remove llvm.used functions if they are defined
+  //     I may use this to prevent functions from being removed from the bitcode
+  //     by clang before we need them.
+  llvm::GlobalVariable* used = M->getGlobalVariable("llvm.used");
+  if (used) {
+    Value* init = used->getInitializer();
+    used->eraseFromParent();
+  }
+
+  removeAlwaysInlineFunctions(&*M);
   timer.stop();
   double thisTime = timer.getAccumulatedTime();
   accumulate_llvm_timing_data(thisTime);
 
   if ((!comp::_sym_STARsave_module_for_disassembleSTAR.unboundp()) &&
       comp::_sym_STARsave_module_for_disassembleSTAR->symbolValue().notnilp()) {
-    printf("%s:%d     About to save the module *save-module-for-disassemble*->%s\n",__FILE__, __LINE__, _rep_(comp::_sym_STARsave_module_for_disassembleSTAR->symbolValue()).c_str());
+    //printf("%s:%d     About to save the module *save-module-for-disassemble*->%s\n",__FILE__, __LINE__, _rep_(comp::_sym_STARsave_module_for_disassembleSTAR->symbolValue()).c_str());
     llvm::Module* o = &*M;
     std::unique_ptr<llvm::Module> cm = llvm::CloneModule(o);
     Module_sp module = core::RP_Create_wrapped<Module_O,llvm::Module*>(cm.release());
     comp::_sym_STARsaved_module_from_clasp_jitSTAR->setf_symbolValue(module);
   }
+  // Check if we should dump the module for debugging
+  {
+    Module_sp module = core::RP_Create_wrapped<Module_O,llvm::Module*>(&*M);
+    core::SimpleBaseString_sp label = core::SimpleBaseString_O::make("after-optimize");
+    core::eval::funcall(comp::_sym_compile_quick_module_dump,module,label);
+  }
+  //printf("%s:%d  Done optimizeModule\n", __FILE__, __LINE__ );
   return M;
+#endif
 }
 
 

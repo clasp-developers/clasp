@@ -570,12 +570,12 @@ CL_DEFUN void core__lowLevelDescribe(T_sp obj) {
 void dbg_VaList_sp_describe(T_sp obj) {
     // Convert the T_sp object into a VaList_sp object
     VaList_sp vl = VaList_sp((gc::Tagged)obj.raw_());
-    printf("Original va_list at: %p\n", &((VaList_S *)gc::untag_valist(reinterpret_cast<VaList_S *>(obj.raw_())))->_Args);
-    // Create a copy of the VaList_S with a va_copy of the va_list
-    VaList_S vlcopy_s(*vl);
+    printf("Original va_list at: %p\n", &((Vaslist *)gc::untag_valist(reinterpret_cast<Vaslist *>(obj.raw_())))->_Args);
+    // Create a copy of the Vaslist with a va_copy of the va_list
+    Vaslist vlcopy_s(*vl);
     VaList_sp vlcopy(&vlcopy_s);
-    printf("Calling dump_VaList_S_ptr\n");
-    bool atHead = dump_VaList_S_ptr(&vlcopy_s);
+    printf("Calling dump_Vaslist_ptr\n");
+    bool atHead = dump_Vaslist_ptr(&vlcopy_s);
     if (atHead) {
       for (size_t i(0), iEnd(vlcopy->remaining_nargs()); i < iEnd; ++i) {
         T_sp v = vlcopy->next_arg();
@@ -705,6 +705,7 @@ void dbg_controlC() {
 };
 
 
+
 extern "C" {
 
 void tprint(void* ptr)
@@ -712,8 +713,12 @@ void tprint(void* ptr)
   core::dbg_printTPtr((uintptr_clasp_t) ptr,false);
 }
 
-void tbacktrace() {
+void c_bt() {
   core::eval::funcall(core::_sym_bt->symbolFunction());
+};
+
+void c_btcl() {
+  core::eval::funcall(core::_sym_btcl->symbolFunction());
 };
 
 void tsymbol(void* ptr)

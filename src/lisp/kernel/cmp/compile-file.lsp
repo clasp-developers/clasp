@@ -99,7 +99,7 @@
 
 (defun cfp-output-extension (output-type)
   (cond
-    ((eq output-type :bitcode) "bc")
+    ((eq output-type :bitcode) (if *use-human-readable-bitcode* "ll" "bc"))
     ((eq output-type :object) "o")
     ((eq output-type :fasl) "fasl")
     ((eq output-type :executable) #-windows "" #+windows "exe")
@@ -214,9 +214,9 @@ Compile a lisp source file into an LLVM module.  type can be :kernel or :user"
          (clasp-source-root (translate-logical-pathname "source-dir:"))
          (clasp-source (merge-pathnames (make-pathname :directory '(:relative :wild-inferiors) :name :wild :type :wild) clasp-source-root))
          (source-location
-          (if (pathname-match-p given-input-pathname clasp-source)
-              (enough-namestring given-input-pathname clasp-source-root)
-              given-input-pathname))
+           (if (pathname-match-p given-input-pathname clasp-source)
+               (enough-namestring given-input-pathname clasp-source-root)
+               given-input-pathname))
          (input-pathname (probe-file given-input-pathname))
 	 (source-sin (open input-pathname :direction :input))
          (module (llvm-create-module (namestring input-pathname)))
@@ -236,13 +236,13 @@ Compile a lisp source file into an LLVM module.  type can be :kernel or :user"
           (let* ((*compile-file-pathname* (pathname (merge-pathnames given-input-pathname)))
                  (*compile-file-truename* (translate-logical-pathname *compile-file-pathname*)))
             (with-module (:module module
-                                  :source-namestring (namestring source-location)
-                                  :source-debug-namestring source-debug-namestring
-                                  :source-debug-offset source-debug-offset
-                                  :optimize (when optimize #'optimize-module-for-compile-file)
-                                  :optimize-level optimize-level)
+                          :source-namestring (namestring source-location)
+                          :source-debug-namestring source-debug-namestring
+                          :source-debug-offset source-debug-offset
+                          :optimize (when optimize #'optimize-module-for-compile-file)
+                          :optimize-level optimize-level)
               (with-debug-info-generator (:module *the-module*
-                                                  :pathname *compile-file-truename*)
+                                          :pathname *compile-file-truename*)
                 (or *the-module* (error "*the-module* is NIL"))
                 (let ((eof-value (gensym)))
                   (with-make-new-run-all (run-all-function)
@@ -255,17 +255,17 @@ Compile a lisp source file into an LLVM module.  type can be :kernel or :user"
                                        *gv-source-file-info-handle*))
                     (with-literal-table
                         (loop
-                           (let ((eof (peek-char t source-sin nil eof-value)))
-                             (unless (eq eof eof-value)
-                               (let ((pos (core:input-stream-source-pos-info source-sin)))
-                                 (setq *current-form-lineno* (core:source-file-pos-lineno pos)))))
-                           (let ((form (read source-sin nil eof-value)))
-                             (when *debug-compile-file* (bformat t "compile-file: cf%d -> %s\n" (incf *debug-compile-file-counter*) form))
-                             (if (eq form eof-value)
-                                 (return nil)
-                                 (if *debug-compile-file*
-                                     (time (compile-file-form form compile-file-hook))
-                                     (compile-file-form form compile-file-hook)))))
+                          (let ((eof (peek-char t source-sin nil eof-value)))
+                            (unless (eq eof eof-value)
+                              (let ((pos (core:input-stream-source-pos-info source-sin)))
+                                (setq *current-form-lineno* (core:source-file-pos-lineno pos)))))
+                          (let ((form (read source-sin nil eof-value)))
+                            (when *debug-compile-file* (bformat t "compile-file: cf%d -> %s\n" (incf *debug-compile-file-counter*) form))
+                            (if (eq form eof-value)
+                                (return nil)
+                                (if *debug-compile-file*
+                                    (time (compile-file-form form compile-file-hook))
+                                    (compile-file-form form compile-file-hook)))))
                       (make-boot-function-global-variable *the-module* run-all-function)))))
               (cmp-log "About to verify the module\n")
               (cmp-log-dump-module *the-module*)
@@ -316,7 +316,7 @@ Compile a lisp source file into an LLVM module.  type can be :kernel or :user"
          (when verbose (bformat t "Writing object to %s\n" (core:coerce-to-filename output-path)))
          (ensure-directories-exist output-path)
          ;; Save the bitcode
-         (llvm-sys:write-bitcode-to-file module (core:coerce-to-filename (cfp-output-file-default output-path :bitcode)))
+         (write-bitcode module (core:coerce-to-filename (cfp-output-file-default output-path :bitcode)))
          (with-open-file (fout output-path :direction :output)
            (let ((reloc-model (cond
                                 ((member :target-os-linux *features*) 'llvm-sys:reloc-model-pic-)
@@ -325,13 +325,13 @@ Compile a lisp source file into an LLVM module.  type can be :kernel or :user"
         ((eq output-type :bitcode)
          (when verbose (bformat t "Writing bitcode to %s\n" (core:coerce-to-filename output-path)))
          (ensure-directories-exist output-path)
-         (llvm-sys:write-bitcode-to-file module (core:coerce-to-filename output-path)))
+         (write-bitcode module (core:coerce-to-filename output-path)))
         ((eq output-type :fasl)
          (ensure-directories-exist output-path)
          (let ((temp-bitcode-file (compile-file-pathname input-file :output-file output-file :output-type :bitcode)))
            (ensure-directories-exist temp-bitcode-file)
            (bformat t "Writing temporary bitcode file to: %s\n" temp-bitcode-file)
-           (llvm-sys:write-bitcode-to-file module (core:coerce-to-filename temp-bitcode-file))
+           (write-bitcode module (core:coerce-to-filename temp-bitcode-file))
            (bformat t "Writing fasl file to: %s\n" output-file)
            (llvm-link output-file
                       :lisp-bitcode-files (list temp-bitcode-file))))
