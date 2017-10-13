@@ -21,7 +21,9 @@
     (def cl:fmakunbound (function-name) (sicl-genv:fmakunbound function-name environment))
 
     (def cl:special-operator-p (symbol)
-      (sicl-genv:special-operator symbol environment))
+      (if (symbolp symbol)
+          (sicl-genv:special-operator symbol environment)
+          nil))
 
     ;; We can't just have &optional (env nil) as NIL is a designator for the global environment.
     (def cl:macro-function (symbol &optional env)
@@ -195,9 +197,7 @@
     with-standard-io-syntax with-accessors when prog1 call-method do do* and with-compilation-unit
     print-unreadable-object multiple-value-setq unless destructuring-bind with-slots cond
     multiple-value-bind dolist multiple-value-list loop-finish lambda time return with-output-to-string
-    or ecase
-    ;; in clasp these are macros, and safe ones, just converting to calls.
-    unwind-protect throw catch))
+    or ecase))
 
 (defparameter *setf-macros*
   '(setf psetf shiftf rotatef
