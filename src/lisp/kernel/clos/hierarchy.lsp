@@ -21,6 +21,14 @@
 
 (in-package "CLOS")
 
+#+(or)
+(eval-when (:compile-toplevel :execute :load-toplevel)
+  (push :mlog *features*)
+  (defmacro mlog (fmt &rest fmtargs)
+    `(core:bformat *debug-io* ,fmt ,@fmtargs)))
+(defmacro mlog (fmt &rest fmtargs) nil)
+
+
 #+clasp(defvar *optimize-slot-access* t
 	 "In ECL this is in ecl/src/c/symbol_table.h")
 

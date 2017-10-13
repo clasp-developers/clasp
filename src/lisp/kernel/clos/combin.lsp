@@ -62,6 +62,7 @@
           ((atom form)
            (error "Malformed effective method form:~%~A" form))
           ((eq (setf first (first form)) 'MAKE-METHOD)
+           (core:bformat *debug-io* "effective-method-function form -> %s\n" form)
            (maybe-compile `(lambda (.method-args. .next-methods.)
                              (declare (core:lambda-name effective-method-function.make-method))
                              (flet ((call-next-method (&va-rest args)
@@ -113,13 +114,14 @@
       ;; .method-args. can be a valist or a regular list
       (funcall method .method-args. rest-methods)))
 
-(defun combine-method-functions3 (method rest-methods)
+(defun combine-method-functions3 (gf method rest-methods)
   (declare (si::c-local))
   #'(lambda (.method-args. .next-methods.)
       (declare (ignorable .next-methods. #|no-next-methods|#)
                (core:lambda-name combine-method-functions3.lambda))
       ;; TODO: Optimize this application and GF dispatch should be more efficient
       ;; .method-args. can be a valist or a regular list
+      (mlog "In combine-method-functions3.lambda - About to call method %s for gf %s\n" method gf)
       (funcall method .method-args. rest-methods)))
 
 (defmacro call-method (method &optional rest-methods)
@@ -180,6 +182,7 @@
       (when (null primary)
 	(return-from standard-compute-effective-method
 	  #'(lambda (&rest args)
+              (declare (core:lambda-name standard-compute-effective-method.no-primary-method))
 	      (apply 'no-primary-method gf args))))
       ;; PRIMARY, BEFORE and AROUND are reversed because they have to
       ;; be on most-specific-first order (ANSI 7.6.6.2), while AFTER
@@ -196,7 +199,7 @@
 				      (nconc (rest around) main)))
 	  (if (or before after)
 	      (standard-main-effective-method before primary after)
-	      (combine-method-functions3 (first primary) (rest primary)))))))
+	      (combine-method-functions3 gf (first primary) (rest primary)))))))
 
 ;; ----------------------------------------------------------------------
 ;; DEFINE-METHOD-COMBINATION
@@ -255,7 +258,9 @@
       (principal (,name) :REQUIRED t))
      ,documentation
      (let ((main-effective-method
-	    `(,',operator ,@(mapcar #'(lambda (x) `(CALL-METHOD ,x NIL))
+             `(,',operator ,@(mapcar #'(lambda (x)
+                                         (declare (core:lambda-name define-simple-method-combination.lambda))
+                                         `(CALL-METHOD ,x NIL))
 				    (if (eql order :MOST-SPECIFIC-LAST)
 					(reverse principal)
 					principal)))))

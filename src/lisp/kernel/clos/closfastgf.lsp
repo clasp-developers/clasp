@@ -407,10 +407,10 @@ It takes the arguments in two forms, as a vaslist and as a list of arguments."
                                               :log t)))
               (when can-memoize (memoize-call generic-function vaslist-arguments effective-method-function))
               (gf-log "Calling effective-method-function %s\n" effective-method-function)
-              #+debug-fastgf(let ((results (multiple-value-list (apply effective-method-function arguments nil arguments))))
+              #+debug-fastgf(let ((results (multiple-value-list (funcall effective-method-function vaslist-arguments nil))))
                               (gf-log "----}---- Completed call to effective-method-function for %s results -> %s\n" (clos::generic-function-name generic-function) results)
                               (values-list results))
-              #-debug-fastgf(apply effective-method-function arguments nil arguments)))
+              #-debug-fastgf(funcall effective-method-function vaslist-arguments nil)))
           (progn
             (gf-log-dispatch-miss "no-applicable-method" generic-function vaslist-arguments)
             (apply #'no-applicable-method generic-function arguments))))))

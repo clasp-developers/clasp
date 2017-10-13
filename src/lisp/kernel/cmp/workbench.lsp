@@ -7,6 +7,7 @@
 (defun foo (core:&va-rest r) (core:bind-va-list (x y) r (list x y)))
 (defun foo (core:&va-rest r) (core::bind-va-list (x &optional (y :testing)) r (list x y)))
 (defun foo (core:&va-rest r) (core:bind-va-list (x &rest y) r (list* x y)))
+(defun foo (x core:&va-rest r) (core:bind-va-list (x &rest y) r (unless (eq x 0) (setq x 0)) (let ((z (list* x y))) (print z) z)))
 
 (trace treat-as-special-operator)
 
