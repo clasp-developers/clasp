@@ -1,5 +1,7 @@
 (defpackage #:clasp-sandbox
-  (:use #:cl))
+  (:use #:cl)
+  (:export #:sandbox-environment #:repl)
+  (:export #:fill-environment))
 
 (defpackage #:coerce
   (:export #:fdesignator))
