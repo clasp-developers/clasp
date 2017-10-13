@@ -325,12 +325,13 @@
                  required
                  parsed-lambda-list
                  idspecs
-                 (cleavir-generate-ast::make-body rdspecs forms nil nil #| block-name block-name-p |#)
+                 (cleavir-generate-ast::make-body rdspecs forms nil nil)
                  environment
                  system)
               (cc-ast:make-bind-va-list-ast
-               (cleavir-generate-ast::convert va-list-form environment system)
-               ast lexical-lambda-list))))))))
+                lexical-lambda-list
+                (cleavir-generate-ast::convert va-list-form environment system)
+                ast))))))))
 
 (defmethod cleavir-generate-ast:check-special-form-syntax
     ((head (eql 'core::bind-va-list)) form)

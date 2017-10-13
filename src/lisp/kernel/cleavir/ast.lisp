@@ -336,9 +336,9 @@
 ;;; A lot like a function-ast, but not actually one because it just binds.
 
 (defclass bind-va-list-ast (cleavir-ast:ast)
-  ((%lambda-list :initarg :lambda-list :reader lambda-list)
+  ((%lambda-list :initarg :lambda-list :reader cleavir-ast:lambda-list)
    (%va-list-ast :initarg :va-list :reader va-list-ast)
-   (%body-ast :initarg :body-ast :reader body-ast)))
+   (%body-ast :initarg :body-ast :reader cleavir-ast:body-ast)))
 
 (defun make-bind-va-list-ast (lambda-list va-list-ast body-ast &key origin (policy cleavir-ast:*policy*))
   (make-instance 'bind-va-list-ast
@@ -346,14 +346,14 @@
     :va-list va-list-ast :body-ast body-ast :lambda-list lambda-list))
 
 (cleavir-io:define-save-info bind-va-list-ast
-    (:lambda-list lambda-list)
+    (:lambda-list cleavir-ast:lambda-list)
   (:va-list va-list-ast)
-  (:body-ast body-ast))
+  (:body-ast cleavir-ast:body-ast))
 
 (defmethod cleavir-ast:children ((ast bind-va-list-ast))
   (list* (va-list-ast ast)
-         (body-ast ast)
-         (loop for entry in (lambda-list ast)
+         (cleavir-ast:body-ast ast)
+         (loop for entry in (cleavir-ast:lambda-list ast)
                append (cond ((symbolp entry) '())
                             ((consp entry)
                              (if (= (length entry) 2)
@@ -376,7 +376,7 @@
 
 
 
-(defun generate-new-precalculated-value-index (form read-only-p)
+(defun generate-new-precalculated-value-index (env form read-only-p)
   "Generates code for the form that places the result into a precalculated-vector and returns the precalculated-vector index.
 If this form has already been precalculated then just return the precalculated-value index"
   (cond
@@ -395,11 +395,11 @@ If this form has already been precalculated then just return the precalculated-v
          ;; and arrange for it's evaluation at load time
          ;; and to make its result available as a value
          (literal:with-load-time-value-cleavir
-             (clasp-cleavir:compile-form form)
+             (clasp-cleavir:compile-form form env)
            #+(or)(literal:compile-load-time-value-thunk form))
          ;; COMPILE on the other hand evaluates the form and puts its
          ;; value in the run-time environment
-         (let ((value (eval form)))
+         (let ((value (clasp-cleavir::cclasp-eval form env)))
            (cmp:codegen-rtv nil value))))))
 
 
@@ -420,14 +420,14 @@ If this form has already been precalculated then just return the precalculated-v
 			       :from-end t))))))
       (traverse ast nil))))
 
-(defun hoist-load-time-value (ast)
+(defun hoist-load-time-value (ast env)
   (let* ((load-time-value-asts (find-load-time-value-asts ast))
 	 (forms (mapcar (lambda (ast-parent)
                           (cleavir-ast:form (first ast-parent)))
                         load-time-value-asts)))
     (loop for (ast parent) in load-time-value-asts
        do (change-class ast 'precalc-value-reference-ast ; 'cleavir-ast:t-aref-ast
-                        :index (generate-new-precalculated-value-index
+                        :index (generate-new-precalculated-value-index env
                                 (cleavir-ast:form ast) (cleavir-ast:read-only-p ast))
                         :original-object (cleavir-ast:form ast)))
     (clasp-cleavir-ast:make-precalc-vector-function-ast
