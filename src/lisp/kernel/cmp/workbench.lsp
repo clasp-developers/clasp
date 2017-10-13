@@ -1,12 +1,12 @@
 
-;;; Test ext:bind-va-list special operator
+;;; Test core:bind-va-list special operator
 
 (in-package :cmp)
 
 (setq cmp:*compile-debug-dump-module* t)
-(defun foo (core:&va-rest r) (ext:bind-va-list (x y) r (list x y)))
-(defun foo (core:&va-rest r) (ext:bind-va-list (x &optional (y :testing)) r (list x y)))
-(defun foo (core:&va-rest r) (ext:bind-va-list (x &rest y) r (list* x y)))
+(defun foo (core:&va-rest r) (core:bind-va-list (x y) r (list x y)))
+(defun foo (core:&va-rest r) (core::bind-va-list (x &optional (y :testing)) r (list x y)))
+(defun foo (core:&va-rest r) (core:bind-va-list (x &rest y) r (list* x y)))
 
 (trace treat-as-special-operator)
 

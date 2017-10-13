@@ -441,7 +441,8 @@ Boehm and MPS use a single pointer"
 
 
 (defun calling-convention-args.va-end (cc)
-  (let* ((_        (irc-intrinsic "llvm.va_end" (calling-convention-va-list* cc))))))
+  (when (calling-convention-va-list* cc)
+    (irc-intrinsic "llvm.va_end" (calling-convention-va-list* cc))))
 
 ;;;
 ;;; Read the next argument from the va_list
@@ -465,8 +466,9 @@ eg:  (f closure-ptr nargs a b c d ...)
                                   and remaining-nargs will contain nargs."
                                         ; Initialize the va_list - the only valid field will be overflow-area
   (let* ((va-list*                      (calling-convention-va-list* cc)))
-    (irc-intrinsic "llvm.va_start" (irc-bit-cast va-list* %i8*%))
-    (when rewind (calling-convention-rewind-va-list-to-start-on-third-argument cc))))
+    (when va-list*
+      (irc-intrinsic "llvm.va_start" (irc-bit-cast va-list* %i8*%))
+      (when rewind (calling-convention-rewind-va-list-to-start-on-third-argument cc)))))
 
 
 #+x86-64

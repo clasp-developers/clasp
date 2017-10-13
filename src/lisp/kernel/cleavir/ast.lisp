@@ -350,7 +350,7 @@
   (:va-list va-list-ast)
   (:body-ast body-ast))
 
-(defmethod children ((ast bind-va-list-ast))
+(defmethod cleavir-ast:children ((ast bind-va-list-ast))
   (list* (va-list-ast ast)
          (body-ast ast)
          (loop for entry in (lambda-list ast)
