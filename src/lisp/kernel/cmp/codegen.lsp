@@ -37,7 +37,7 @@ Could return more functions that provide lambda-list for swank for example"
   (when (core:extract-dump-module-from-declares declares)
     (setf *declare-dump-module* t))
   (multiple-value-bind (cleavir-lambda-list new-body)
-      (transform-lambda-parts lambda-list declares docstring code)
+      (transform-lambda-parts lambda-list declares code)
     (cmp-log "generate-llvm-function-from-code\n")
     (cmp-log "cleavir-lambda-list -> %s\n" cleavir-lambda-list)
     (cmp-log "new-body -> %s\n" new-body)
@@ -267,7 +267,7 @@ then compile it and return (values compiled-llvm-function lambda-name)"
          ((eq sym 'core:multiple-value-foreign-call) t) ;; Call intrinsic functions
          ((eq sym 'core:foreign-call-pointer) t) ;; Call function pointers
          ((eq sym 'core:foreign-call) t) ;; Call foreign function
-         ((eq sym 'ext:bind-va-list) t) ;; bind-va-list
+         ((eq sym 'core:bind-va-list) t) ;; bind-va-list
          (t (special-operator-p sym))))
 
 (export 'treat-as-special-operator-p)

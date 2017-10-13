@@ -357,14 +357,12 @@ Return files."
   (if (or (out-of-date-bitcodes #P"src/lisp/kernel/tag/min-start" #P"src/lisp/kernel/tag/min-end" :system system)
           (null (probe-file output-file)))
       (progn
-        (bformat *debug-io* "About to load-system")
         (load-system
          (butlast (select-source-files #P"src/lisp/kernel/tag/after-init" #P"src/lisp/kernel/tag/min-pre-epilogue" :system system)))
         (let* ((*target-backend* target-backend)
                (files (out-of-date-bitcodes #P"src/lisp/kernel/tag/min-start" #P"src/lisp/kernel/tag/min-pre-epilogue" :system system))
                (files-with-epilogue (out-of-date-bitcodes #P"src/lisp/kernel/tag/min-start" #P"src/lisp/kernel/tag/min-end" :system system)))
           (with-compilation-unit ()
-            (bformat *debug-io* "About to compile-system")
             (let ((cmp::*activation-frame-optimize* nil))
               (compile-system files :reload t)
               (if files-with-epilogue (compile-system (bitcode-pathnames #P"src/lisp/kernel/tag/min-pre-epilogue" #P"src/lisp/kernel/tag/min-end" :system system) :reload nil))))

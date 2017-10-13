@@ -7,7 +7,7 @@
 (defconstant +special-operator-dispatch+
   '(
     (progn codegen-progn convert-progn)
-    (ext::bind-va-list codegen-bind-va-list nil)
+    (core:bind-va-list codegen-bind-va-list nil)
     (if codegen-if convert-if)
     (block  codegen-block convert-block)
     (return-from  codegen-return-from convert-return-from)
@@ -823,24 +823,30 @@ jump to blocks within this tagbody."
     (multiple-value-bind (declares code docstring specials)
         (process-declarations body t)
       (multiple-value-bind (cleavir-lambda-list new-body)
-          (transform-lambda-parts lambda-list declares docstring code)   ; take out docstringb
+          (transform-lambda-parts lambda-list declares code)
         (blog "got cleavir-lambda-list -> %s\n" cleavir-lambda-list)
         (let ((debug-on nil)
-              (temp-vaslist (irc-alloca-t* :label "bind-vaslist")))
-          (codegen temp-vaslist vaslist evaluate-env)
-          (let* ((lvaslist (irc-load temp-vaslist "lvaslist"))
-                 (callconv (make-calling-convention-impl :nargs (irc-load (irc-intrinsic "cc_vaslist_remaining_nargs_address" lvaslist))
-                                                         :va-list* (irc-intrinsic "cc_vaslist_va_list_address" lvaslist "vaslist_address")
-                                                         :remaining-nargs* (irc-intrinsic "cc_vaslist_remaining_nargs_address" lvaslist "vaslist_remaining_nargs"))))
-            ;; Don't rewind vaslist or va_start it
-            (blog "About to maybe push ihf\n")
-            (calling-convention-maybe-push-invocation-history-frame callconv)
+              (eval-vaslist (irc-alloca-t* :label "bind-vaslist")))
+          (codegen eval-vaslist vaslist evaluate-env)
+          (let* ((lvaslist (irc-load eval-vaslist "lvaslist"))
+                 (src-remaining-nargs* (irc-intrinsic "cc_vaslist_remaining_nargs_address" lvaslist))
+                 (src-va_list* (irc-intrinsic "cc_vaslist_va_list_address" lvaslist "vaslist_address"))
+                 (local-remaining-nargs* (irc-alloca-size_t :label "local-remaining-nargs"))
+                 (local-va_list* (irc-alloca-va_list :label "local-va_list"))
+                 (_             (irc-store (irc-load src-remaining-nargs*) local-remaining-nargs*))
+                 (_             (irc-intrinsic-call "llvm.va_copy" (list (irc-pointer-cast local-va_list* %i8*%)
+                                                                         (irc-pointer-cast src-va_list* %i8*%))))
+                 (callconv (make-calling-convention-impl :nargs (irc-load src-remaining-nargs*)
+                                                         :va-list* local-va_list*
+                                                         :remaining-nargs* local-remaining-nargs*)))
             (let ((new-env (bclasp-compile-lambda-list-code cleavir-lambda-list evaluate-env callconv)))
-              (cmp:with-try
-                  (codegen-let/let* 'let* result (cdr new-body) new-env)
-                ((cleanup)
-                 (calling-convention-maybe-pop-invocation-history-frame callconv)
-                 (irc-unwind-environment new-env))))))))))
+              (irc-intrinsic-call "llvm.va_end" (list (irc-pointer-cast local-va_list* %i8*%)))
+              (codegen-let/let* (car new-body) result (cdr new-body) new-env)
+              #+(or)(cmp:with-try
+                        (codegen-let/let* 'let* result (cdr new-body) new-env)
+                      ((cleanup)
+                       (calling-convention-maybe-pop-invocation-history-frame callconv)
+                       (irc-unwind-environment new-env))))))))))
 
 
 ;;; MULTIPLE-VALUE-FOREIGN-CALL

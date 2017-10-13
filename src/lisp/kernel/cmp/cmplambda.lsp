@@ -37,7 +37,7 @@
 ;;; and a LET* that binds lexical variables in registers into bclasp
 ;;; variables in an activation frame
 
-(defun transform-lambda-parts (lambda-list declares docstring code)
+(defun transform-lambda-parts (lambda-list declares code)
   (multiple-value-bind (reqargs optargs rest-var key-flag keyargs allow-other-keys auxargs varest-p)
       (core:process-lambda-list lambda-list 'function)
     (let ((creqs (mapcar (lambda (x) (gensym "REQ")) (cdr reqargs)))
@@ -68,7 +68,6 @@
                                  aux-args-pairs))
                    (new-body `(let* (,@assignments)
                                 ,@(if declares (list `(declare ,@declares)) nil)
-                                ,@(if docstring (list docstring) nil)
                                 ,@code)))
               (values cleavir-lambda-list new-body))))))))
 
@@ -77,7 +76,7 @@
         (body        (cddr form)))
     (multiple-value-bind (declares code docstring specials)
         (process-declarations body t)
-      (transform-lambda-parts lambda-list declares docstring code))))
+      (transform-lambda-parts lambda-list declares code))))
 
 
 ;;;(transform-lambda '(x y &optional z core:&va-rest r &key ((:a a) 1) (b (binit) bp) c) '(declare (special a)) "Hello there" '(the-body-code))
