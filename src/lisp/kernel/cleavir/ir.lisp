@@ -58,6 +58,9 @@
 (defun alloca-vaslist (&optional (label "vaslist"))
   (cmp:irc-alloca-vaslist :label label))
 
+(defun alloca-va_list (&optional (label "vaslist"))
+  (cmp:irc-alloca-va_list :label label))
+
 (defun alloca-invocation-history-frame (&optional (label "ihf"))
   (cmp:irc-alloca-invocation-history-frame :label label))
 
@@ -125,6 +128,9 @@
 
 (defun %bit-cast (val type &optional (label ""))
   (llvm-sys:create-bit-cast cmp:*irbuilder* val type label))
+
+(defun %pointer-cast (from totype &optional (label ""))
+  (cmp:irc-pointer-cast from totype label))
 
 (defun %ptrtoint (val type &optional (label ""))
   (llvm-sys:create-ptr-to-int cmp:*irbuilder* val type label))

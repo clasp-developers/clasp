@@ -302,6 +302,7 @@ and cannot be added to ~A." method other-gf gf)))
 ;;; Error messages
 
 (defmethod no-applicable-method (gf &rest args)
+  (declare (optimize (debug 3)))
   (error "No applicable method for ~S with ~
           ~:[no arguments~;arguments of types ~:*~{~& ~A~}~]."
          (generic-function-name gf)

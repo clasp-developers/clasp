@@ -338,25 +338,29 @@ when this is t a lot of graphs will be generated.")
 
 (defmethod translate-simple-instruction
     ((instr clasp-cleavir-hir:bind-va-list-instruction) return-value inputs outputs (abi abi-x86-64) function-info)
-  (let* ((lambda-list (cleavir-ir:lambda-list instr))
-         (vaslist (car inputs))
-         (src-remaining-nargs* (irc-intrinsic "cc_vaslist_remaining_nargs_address" vaslist))
-         (src-va_list* (irc-intrinsic "cc_vaslist_va_list_address" vaslist "vaslist_address"))
-         (local-remaining-nargs* (irc-alloca-size_t :label "local-remaining-nargs"))
-         (local-va_list* (irc-alloca-va_list :label "local-va_list"))
-         (_             (irc-store (irc-load src-remaining-nargs*) local-remaining-nargs*))
-         (_             (irc-intrinsic-call "llvm.va_copy" (list (irc-pointer-cast local-va_list* %i8*%)
-                                                                 (irc-pointer-cast src-va_list* %i8*%))))
-         (callconv (make-calling-convention-impl :nargs (irc-load src-remaining-nargs*)
-                                                 :va-list* local-va_list*
-                                                 :remaining-nargs* local-remaining-nargs*)))
+  (let* ((lambda-list                   (cleavir-ir:lambda-list instr))
+         (vaslist                       (car inputs))
+         (src-remaining-nargs*          (%intrinsic-call "cc_vaslist_remaining_nargs_address" (list (%load vaslist))))
+         (src-va_list*                  (%intrinsic-call "cc_vaslist_va_list_address" (list (%load vaslist)) "vaslist_address"))
+         (local-remaining-nargs*        (alloca-size_t "local-remaining-nargs"))
+         (local-va_list*                (alloca-va_list "local-va_list"))
+         (_                             (%store (%load src-remaining-nargs*) local-remaining-nargs*))
+         (_                             (%intrinsic-call "llvm.va_copy" (list (%pointer-cast local-va_list* cmp:%i8*%)
+                                                                              (%pointer-cast src-va_list* cmp:%i8*%))))
+         (callconv                      (cmp:make-calling-convention-impl :nargs (%load src-remaining-nargs*)
+                                                                          :va-list* local-va_list*
+                                                                          :remaining-nargs* local-remaining-nargs*)))
     #++(progn
          (format t "           outputs: ~s~%" outputs)
          (format t "translated outputs: ~s~%" (mapcar (lambda (x) (translate-datum x)) outputs))
          (format t "       lambda-list: ~a~%" lambda-list))
     (cmp:with-landing-pad (landing-pad-for-cleanup function-info)
-      (cmp:compile-lambda-list-code lambda-list outputs calling-convention
-                                    :translate-datum #'translate-datum))))
+      (cmp:compile-lambda-list-code lambda-list outputs callconv
+                                    :translate-datum (lambda (datum)
+;;                                                       (core:bformat *debug-io* "datum: %s\n" datum)
+                                                       (if (typep datum 'cleavir-ir:lexical-location)
+                                                           (translate-datum datum)
+                                                           datum))))))
 
 
 (defmethod translate-simple-instruction

@@ -375,11 +375,10 @@ FIXME!!!! This code will have problems with multithreading if a generic function
 and calls the effective-method-function that is calculated.
 It takes the arguments in two forms, as a vaslist and as a list of arguments."
   (let ((can-memoize t))
-    (multiple-value-bind (method-list ok)
         ;; What if another thread adds/removes method during c-a-m-u-c???????
-        (clos::compute-applicable-methods-using-classes
-         generic-function
-         (mapcar #'class-of arguments))
+    (multiple-value-bind (method-list ok)
+        (clos::compute-applicable-methods-using-classes generic-function (mapcar #'class-of arguments))
+      (declare (core:lambda-name do-dispatch-miss.multiple-value-bind.lambda))
       ;; If ok is NIL then what do we use as the key
       (gf-log "Called compute-applicable-methods-using-classes - returned method-list: %s  ok: %s\n" method-list ok)
       (unless ok
