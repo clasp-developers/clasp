@@ -391,19 +391,6 @@ ALWAYS_INLINE void cc_writeCell(core::T_O *cell, core::T_O* val)
   NO_UNWIND_END();
 }
 
-ALWAYS_INLINE core::T_O *cc_readCell(core::T_O *cell)
-{NO_UNWIND_BEGIN();
-  core::Cons_O* cp = reinterpret_cast<core::Cons_O*>(gctools::untag_cons(cell));
-  core::T_sp val = cp->ocar();
-#ifdef DEBUG_ENSURE_VALID_OBJECT
-  ENSURE_VALID_OBJECT(val.raw_());
-#endif
-#ifdef DEBUG_CC
-  printf("%s:%d readCell cell[%p] --> value[%p]\n", __FILE__, __LINE__, cell, val.px);
-#endif
-  return val.raw_();
-  NO_UNWIND_END();
-}
 
 
 core::T_O *cc_fetch(core::T_O *tagged_closure, std::size_t idx)
