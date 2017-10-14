@@ -234,7 +234,6 @@ and wraps it in an flet |#
       (values method-lambda declarations documentation))))
 
 (defun make-method-lambda (gf method method-lambda env)
-  #+clasp
   (multiple-value-bind (call-next-method-p next-method-p-p)
       (walk-method-lambda method-lambda env)
     (multiple-value-bind (declarations body doc)
@@ -263,17 +262,7 @@ and wraps it in an flet |#
                      (core::bind-va-list ,lambda-list .method-args.
                                          (declare ,@declarations)
                                          ,@body)))
-                nil))))
-  #+ecl
-  (multiple-value-bind (call-next-method-p next-method-p-p in-closure-p)
-      (walk-method-lambda method-lambda env)
-    (values `(lambda (.combined-method-args. *next-methods*)
-               (declare (special .combined-method-args. *next-methods*))
-               (apply ,(if in-closure-p
-                           (add-call-next-method-closure method-lambda)
-                           method-lambda)
-                      .combined-method-args.))
-            nil)))
+                nil)))))
 
 ;;; Clasp doesn't use this anymore because we pass the method-args and next-methods as
 ;;;       the first two arguments.
