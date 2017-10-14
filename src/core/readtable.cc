@@ -200,9 +200,23 @@ CL_DEFUN T_mv core__reader_backquoted_expression(T_sp sin, Character_sp ch) {
 
 CL_LAMBDA(sin ch);
 CL_DECLARE();
+CL_DOCSTRING("Error signaler for when a comma (or splice) is outside a backquote.");
+CL_DEFUN T_mv core__reader_error_backquote_context(T_sp sin) {
+  SourceFileInfo_sp info = core__source_file_info(sin);
+  // FIXME: Use a real condition class.
+  SIMPLE_ERROR(BF("Comma outside of backquote in file: %s line: %s") % info->fileName() % clasp_input_lineno(sin));
+
+  return (Values(_Nil<T_O>()));
+};
+
+CL_LAMBDA(sin ch);
+CL_DECLARE();
 CL_DOCSTRING("reader_comma_form");
 CL_DEFUN T_sp core__reader_comma_form(T_sp sin, Character_sp ch) {
   Fixnum_sp backquote_level = gc::As<Fixnum_sp>(_sym_STARbackquote_levelSTAR->symbolValue());
+  // Note that backquote_level is a fixnum, i.e. shifted, so comparisons could be dangerous.
+  if (backquote_level == 0)
+    core__reader_error_backquote_context(sin);
   Fixnum_sp new_backquote_level = make_fixnum(unbox_fixnum(backquote_level) - 1);
   DynamicScopeManager scope(_sym_STARbackquote_levelSTAR, new_backquote_level);
   char nextc = clasp_peek_char(sin);

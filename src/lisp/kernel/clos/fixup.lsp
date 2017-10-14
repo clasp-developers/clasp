@@ -45,6 +45,11 @@
   (setq *load-print* t)
   (setq *echo-repl-read* t))
 
+#+mlog
+(eval-when (:compile-toplevel :execute)
+  (core:debug-method-cache t)
+  (setq core::*debug-dispatch* t))
+
 
 (defmethod reader-method-class ((class std-class)
 				(direct-slot direct-slot-definition)
@@ -211,13 +216,17 @@ and cannot be added to ~A." method other-gf gf)))
   gf)
 
 (defun function-to-method (name specializers lambda-list)
+  (mlog "function-to-method name -> %s specializers -> %s  lambda-list -> %s\n" name specializers lambda-list)
   (let ((function (fdefinition name)))
+    (mlog "function-to-method  function -> %s\n" function)
     (install-method 'function-to-method-temp
                     nil
                     specializers
                     lambda-list
-                    (lambda (.method-args. .next-methods. #+ecl &rest #+clasp &va-rest args)
-                      (apply function args)))
+                    (lambda (.method-args. .next-methods. #| #+ecl &rest #+clasp &va-rest args |#)
+                      (declare (core:lambda-name function-to-method.lambda))
+                      (mlog "In function-to-method.lambda  about to call %s with args %s\n" function (core:list-from-va-list .method-args.))
+                      (apply function .method-args.)))  ;; FIXME - should this use bind-va-list???????
     (setf (fdefinition name) #'function-to-method-temp
           (generic-function-name #'function-to-method-temp) name)
     (fmakunbound 'function-to-method-temp)))
@@ -293,6 +302,7 @@ and cannot be added to ~A." method other-gf gf)))
 ;;; Error messages
 
 (defmethod no-applicable-method (gf &rest args)
+  (declare (optimize (debug 3)))
   (error "No applicable method for ~S with ~
           ~:[no arguments~;arguments of types ~:*~{~& ~A~}~]."
          (generic-function-name gf)

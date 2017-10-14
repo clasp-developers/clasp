@@ -92,6 +92,7 @@
    #:landing-pad-return-instruction
    #:landing-pad
    #:jump-id
+   #:lambda-list
    #:make-named-enter-instruction
    #:debug-message-instruction
    #:multiple-value-foreign-call-instruction

@@ -85,7 +85,9 @@
 
 (defun bind-simple-restarts (tag names)
   (flet ((simple-restart-function (tag code)
-	   #'(lambda (&rest args) (throw tag (values code args)))))
+	   #'(lambda (&rest args)
+               (declare (core:lambda-name bind-simple-restarts.lambda))
+               (throw tag (values code args)))))
     (cons (loop for i from 1
 	     for n in (if (atom names) (list names) names)
 	     for f = (simple-restart-function tag i)

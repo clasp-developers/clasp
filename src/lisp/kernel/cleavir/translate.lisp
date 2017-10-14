@@ -336,6 +336,31 @@ when this is t a lot of graphs will be generated.")
         (cmp:compile-lambda-list-code lambda-list args calling-convention
                                       :translate-datum #'translate-datum)))))
 
+(defmethod translate-simple-instruction
+    ((instr clasp-cleavir-hir:bind-va-list-instruction) return-value inputs outputs (abi abi-x86-64) function-info)
+  (let* ((lambda-list                   (cleavir-ir:lambda-list instr))
+         (vaslist                       (car inputs))
+         (src-remaining-nargs*          (%intrinsic-call "cc_vaslist_remaining_nargs_address" (list (%load vaslist))))
+         (src-va_list*                  (%intrinsic-call "cc_vaslist_va_list_address" (list (%load vaslist)) "vaslist_address"))
+         (local-remaining-nargs*        (alloca-size_t "local-remaining-nargs"))
+         (local-va_list*                (alloca-va_list "local-va_list"))
+         (_                             (%store (%load src-remaining-nargs*) local-remaining-nargs*))
+         (_                             (%intrinsic-call "llvm.va_copy" (list (%pointer-cast local-va_list* cmp:%i8*%)
+                                                                              (%pointer-cast src-va_list* cmp:%i8*%))))
+         (callconv                      (cmp:make-calling-convention-impl :nargs (%load src-remaining-nargs*)
+                                                                          :va-list* local-va_list*
+                                                                          :remaining-nargs* local-remaining-nargs*)))
+    #++(progn
+         (format t "           outputs: ~s~%" outputs)
+         (format t "translated outputs: ~s~%" (mapcar (lambda (x) (translate-datum x)) outputs))
+         (format t "       lambda-list: ~a~%" lambda-list))
+    (cmp:with-landing-pad (landing-pad-for-cleanup function-info)
+      (cmp:compile-lambda-list-code lambda-list outputs callconv
+                                    :translate-datum (lambda (datum)
+;;                                                       (core:bformat *debug-io* "datum: %s\n" datum)
+                                                       (if (typep datum 'cleavir-ir:lexical-location)
+                                                           (translate-datum datum)
+                                                           datum))))))
 
 
 (defmethod translate-simple-instruction
@@ -1109,7 +1134,12 @@ when this is t a lot of graphs will be generated.")
 
 (defparameter *enable-type-inference* t)
 
-(defun my-hir-transformations (init-instr implementation processor os)
+(defun my-hir-transformations (init-instr system env)
+  ;; FIXME: Per Cleavir rules, we shouldn't need the environment at this point.
+  ;; We do anyway because of the possibility that a load-time-value input is introduced
+  ;; in HIR that needs the environment to compile, e.g. the form is a constant variable,
+  ;; or an object needing a make-load-form.
+  ;; That shouldn't actually happen, but it's a little ambiguous in Cleavir right now.
   (quick-draw-hir init-instr "hir-before-transformations")
   ;; required by most of the below
   (cleavir-hir-transformations:process-captured-variables init-instr)
@@ -1146,7 +1176,7 @@ when this is t a lot of graphs will be generated.")
   (cc-hir-to-mir:reduce-typeqs init-instr)
   (setf *ct-eliminate-typeq* (compiler-timer-elapsed))
   (quick-draw-hir init-instr "hir-after-eliminate-typeq")
-  (clasp-cleavir::eliminate-load-time-value-inputs init-instr *clasp-system*)
+  (clasp-cleavir::eliminate-load-time-value-inputs init-instr system env)
   (quick-draw-hir init-instr "hir-after-eliminate-load-time-value-inputs")
   (setf *ct-eliminate-load-time-value-inputs* (compiler-timer-elapsed)))
 
@@ -1158,13 +1188,13 @@ COMPILE-FILE will use the default *clasp-env*."
   (let* ((clasp-system *clasp-system*)
 	 (ast (prog1 (cleavir-generate-ast:generate-ast FORM ENV clasp-system)
                 (setf *ct-generate-ast* (compiler-timer-elapsed))))
-	 (hoisted-ast (prog1 (clasp-cleavir-ast:hoist-load-time-value ast)
+	 (hoisted-ast (prog1 (clasp-cleavir-ast:hoist-load-time-value ast env)
                         (setf *ct-hoist-ast* (compiler-timer-elapsed))))
 	 (hir (prog1 (cleavir-ast-to-hir:compile-toplevel hoisted-ast)
                 (setf *ct-generate-hir* (compiler-timer-elapsed)))))
     (let ((map-enter-to-function-info (prog1 (clasp-cleavir:convert-funcalls hir)
                                         (setf *ct-convert-funcalls* (compiler-timer-elapsed)))))
-      (my-hir-transformations hir clasp-system nil nil)
+      (my-hir-transformations hir clasp-system env)
       (quick-draw-hir hir "hir-pre-mir")
       (cleavir-ir:hir-to-mir hir clasp-system nil nil)
       #+stealth-gids(cc-mir:assign-mir-instruction-datum-ids hir)
@@ -1245,7 +1275,7 @@ that llvm function. This works like compile-lambda-function in bclasp."
           (let ((enclosed-function (funcall setup-function)))
             (values enclosed-function)))))))
 
-(defun compile-form (form)
+(defun compile-form (form &optional (env *clasp-env*))
   (handler-bind
       ((cleavir-env:no-variable-info
         (lambda (condition)
@@ -1262,7 +1292,7 @@ that llvm function. This works like compile-lambda-function in bclasp."
     (when *compile-print* (describe-form form))
     (cmp:analyze-top-level-form form)
     (multiple-value-bind (mir map-enter-to-landing-pad)
-        (compile-form-to-mir form *clasp-env*)
+        (compile-form-to-mir form env)
       (multiple-value-prog1 (translate mir map-enter-to-landing-pad *abi-x86-64*)
         (setf *ct-translate* (compiler-timer-elapsed))))))
 

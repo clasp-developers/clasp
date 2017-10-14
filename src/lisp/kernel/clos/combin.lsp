@@ -62,18 +62,16 @@
           ((atom form)
            (error "Malformed effective method form:~%~A" form))
           ((eq (setf first (first form)) 'MAKE-METHOD)
-           (maybe-compile `(lambda (.method-args. .next-methods. &va-rest args)
+           (core:bformat *debug-io* "effective-method-function form -> %s\n" form)
+           (maybe-compile `(lambda (.method-args. .next-methods.)
                              (declare (core:lambda-name effective-method-function.make-method))
                              (flet ((call-next-method (&va-rest args)
                                       (if (not .next-methods.)
                                           (error "No next method")
                                           (let ((use-args (if (> (va-list-length args) 0) args .method-args.)))
-                                            (apply
-                                             (car .next-methods.)
-                                             use-args ; (or args .method-args)
-                                             (cdr .next-methods.)
-                                             use-args ; (or args .method-args.)
-                                             ))))
+                                            (funcall (car .next-methods.)
+                                                     args ; (or args .method-args)
+                                                     (cdr .next-methods.)))))
                                     (next-method-p ()
                                       (and .next-methods. t)))
                                ,(second form)))))
@@ -82,7 +80,7 @@
             (effective-method-function (second form))
             (mapcar #'effective-method-function (third form))))
           (top-level
-           (maybe-compile `(lambda (.method-args. .next-methods. &va-rest args #|no-next-methods|#)
+           (maybe-compile `(lambda (.method-args. .next-methods.)
                              (declare (ignorable .next-methods.)
                                       (core:lambda-name effective-method-function.top-level))
                              ,form)))
@@ -100,33 +98,31 @@
 ;;; a different name to track down problems
 (defun combine-method-functions1 (method rest-methods)
   (declare (si::c-local))
-  #'(lambda (.method-args. .next-methods. &va-rest args #|no-next-methods|#)
+  #'(lambda (.method-args. .next-methods.)
       (declare (ignorable .next-methods. #|no-next-methods|#)
                (core:lambda-name combine-method-functions1.lambda))
       ;; TODO: Optimize this application and GF dispatch should be more efficient
       ;; .method-args. can be a valist or a regular list
-      #++(core:multiple-value-foreign-call "apply_method1" method .method-args. rest-methods args)
-      (apply method .method-args. rest-methods args)))
+      (funcall method .method-args. rest-methods)))
 
 (defun combine-method-functions2 (method rest-methods)
   (declare (si::c-local))
-  #'(lambda (.method-args. .next-methods. &va-rest args #|no-next-methods|#)
+  #'(lambda (.method-args. .next-methods.)
       (declare (ignorable .next-methods. #|no-next-methods|#)
                (core:lambda-name combine-method-functions2.lambda))
       ;; TODO: Optimize this application and GF dispatch should be more efficient
       ;; .method-args. can be a valist or a regular list
-      #++(core:multiple-value-foreign-call "apply_method2" method .method-args. rest-methods args)
-      (apply method .method-args. rest-methods args)))
+      (funcall method .method-args. rest-methods)))
 
-(defun combine-method-functions3 (method rest-methods)
+(defun combine-method-functions3 (gf method rest-methods)
   (declare (si::c-local))
-  #'(lambda (.method-args. .next-methods. &va-rest args #|no-next-methods|#)
+  #'(lambda (.method-args. .next-methods.)
       (declare (ignorable .next-methods. #|no-next-methods|#)
                (core:lambda-name combine-method-functions3.lambda))
       ;; TODO: Optimize this application and GF dispatch should be more efficient
       ;; .method-args. can be a valist or a regular list
-      #++(core:multiple-value-foreign-call "apply_method3" method .method-args. rest-methods args)
-      (apply method .method-args. rest-methods args)))
+      (mlog "In combine-method-functions3.lambda - About to call method %s for gf %s\n" method gf)
+      (funcall method .method-args. rest-methods)))
 
 (defmacro call-method (method &optional rest-methods)
   #++`(core:multiple-value-foreign-call "apply_method4"
@@ -136,12 +132,11 @@
                                      .method-args.
                                      ',(and rest-methods (mapcar #'effective-method-function rest-methods))
                                      .method-args.)
-  `(apply ,(effective-method-function method)
-          ;; This is a stab in the dark - I don't know if .method-args.
-          ;; will be defined in the lexical environment
-          .method-args.
-          ',(and rest-methods (mapcar #'effective-method-function rest-methods))
-          .method-args.)
+  `(funcall ,(effective-method-function method)
+            ;; This is a stab in the dark - I don't know if .method-args.
+            ;; will be defined in the lexical environment
+            .method-args.
+            ',(and rest-methods (mapcar #'effective-method-function rest-methods)))
   )
 
 (defun error-qualifier (m qualifier)
@@ -153,21 +148,17 @@
 
 (defun standard-main-effective-method (before primary after)
   (declare (si::c-local))
-  #'(lambda (.method-args. no-next-method #+ecl &rest #+clasp &va-rest args) #|DANGER|#
+  #'(lambda (.method-args. no-next-method #| #+ecl &rest #+clasp &va-rest args |#) #|DANGER|#
       (declare (ignore no-next-method)
                (core:lambda-name standard-main-effective-method.lambda))
       (dolist (i before)
-        #++(core:multiple-value-foreign-call "apply_method5" i .method-args. nil .method-args.)
-        (apply i .method-args. nil .method-args.))
+        (funcall i .method-args. nil))
       (if after
 	  (multiple-value-prog1
-              #++(core:multiple-value-foreign-call "apply_method6" (first primary) .method-args. (rest primary) .method-args.)
-              (apply (first primary) .method-args. (rest primary) .method-args.)
+              (funcall (first primary) .method-args. (rest primary))
               (dolist (i after)
-                #++(core:multiple-value-foreign-call "apply_method7" i .method-args. nil .method-args.)
-                (apply i .method-args. nil .method-args.)))
-          #++(core:multiple-value-foreign-call "apply_method8" (first primary) .method-args. (rest primary) .method-args.)
-          (apply (first primary) .method-args. (rest primary) .method-args.))))
+                (funcall i .method-args. nil)))
+          (funcall (first primary) .method-args. (rest primary)))))
 
 
 (defun standard-compute-effective-method (gf methods)
@@ -191,6 +182,7 @@
       (when (null primary)
 	(return-from standard-compute-effective-method
 	  #'(lambda (&rest args)
+              (declare (core:lambda-name standard-compute-effective-method.no-primary-method))
 	      (apply 'no-primary-method gf args))))
       ;; PRIMARY, BEFORE and AROUND are reversed because they have to
       ;; be on most-specific-first order (ANSI 7.6.6.2), while AFTER
@@ -207,7 +199,7 @@
 				      (nconc (rest around) main)))
 	  (if (or before after)
 	      (standard-main-effective-method before primary after)
-	      (combine-method-functions3 (first primary) (rest primary)))))))
+	      (combine-method-functions3 gf (first primary) (rest primary)))))))
 
 ;; ----------------------------------------------------------------------
 ;; DEFINE-METHOD-COMBINATION
@@ -266,7 +258,9 @@
       (principal (,name) :REQUIRED t))
      ,documentation
      (let ((main-effective-method
-	    `(,',operator ,@(mapcar #'(lambda (x) `(CALL-METHOD ,x NIL))
+             `(,',operator ,@(mapcar #'(lambda (x)
+                                         (declare (core:lambda-name define-simple-method-combination.lambda))
+                                         `(CALL-METHOD ,x NIL))
 				    (if (eql order :MOST-SPECIFIC-LAST)
 					(reverse principal)
 					principal)))))
@@ -385,8 +379,8 @@
 ;; I don't use compiler macros anyway so I'll feature this out
 
 ;; TODO: Turn this back on
-#-clasp
-(eval-when (compile :load-toplevel)
+;;#-clasp
+(eval-when (compile :load-toplevel :execute)
   (let* ((class (find-class 'method-combination)))
     (define-compiler-macro method-combination-compiler (o)
       `(si::instance-ref ,o ,(slot-definition-location (gethash 'compiler (slot-table class)))))

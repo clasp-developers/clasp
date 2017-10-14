@@ -1,3 +1,37 @@
+
+;;; Test core:bind-va-list special operator
+
+(in-package :cmp)
+
+(setq cmp:*compile-debug-dump-module* t)
+(defun foo (core:&va-rest r) (core:bind-va-list (x y) r (list x y)))
+(defun foo (core:&va-rest r) (core::bind-va-list (x &optional (y :testing)) r (list x y)))
+(defun foo (core:&va-rest r) (core:bind-va-list (x &rest y) r (list* x y)))
+(defun foo (x core:&va-rest r) (core:bind-va-list (x &rest y) r (unless (eq x 0) (setq x 0)) (let ((z (list* x y))) (print z) z)))
+
+
+(clasp-cleavir:cleavir-compile 'foo '(lambda (core:&va-rest r) (core::bind-va-list (x y z &rest a) r (list* z y x a))))
+(defparameter *f* '(lambda (core:&va-rest r) (core::bind-va-list (x &rest y) r (list* x y))))
+(defparameter *a* (cleavir-generate-ast:generate-ast *f* clasp-cleavir::*clasp-env* clasp-cleavir::*clasp-system*))
+(cleavir-ast-to-hir:compile-toplevel-unhoisted *a*)
+
+(clasp-cleavir:cleavir-compile 'foo *f*)
+
+
+
+(trace treat-as-special-operator)
+
+(apropos "&va-rest")
+
+
+
+
+;;;  Fastgf stuff
+
+
+
+
+
 (in-package :cl-user)
 
 (progn

@@ -92,6 +92,7 @@ CL_DEFUN T_mv core__compile_form_and_eval_with_env(T_sp form, T_sp env, T_sp ste
 CL_LAMBDA(head &va-rest args);
 CL_DECLARE();
 CL_DOCSTRING("apply");
+DONT_OPTIMIZE_WHEN_DEBUG_RELEASE
 CL_DEFUN T_mv cl__apply(T_sp head, VaList_sp args) {
   Function_sp func = coerce::functionDesignator(head);
   int lenTotalArgs = args->total_nargs();

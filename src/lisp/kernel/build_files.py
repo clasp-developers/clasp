@@ -7,11 +7,11 @@ def aclasp(wrappers):
     # Don't use wrappers for now - the direct CALL to THROW-FUNCTION needs to use INVOKE and the landing-pad
     # otherwise the exception handling will break because cleanup forms in the wrapper won't be evaluated
     # This is a problem if cc_push_InvocationHistoryFrame/cc_pull_InvocationHistoryFrame are used
-#    if (wrappers):
-#        result = result + [
-#            "src/lisp/kernel/lsp/direct-calls",
-#            "generated/cl-wrappers"
-#        ]
+    if (wrappers):
+        result = result + [
+            "src/lisp/kernel/lsp/direct-calls",
+            "generated/cl-wrappers"
+        ]
     result = result + [  
         "src/lisp/kernel/tag/min-start",
         "src/lisp/kernel/init",

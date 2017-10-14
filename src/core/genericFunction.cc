@@ -207,6 +207,7 @@ LCC_RETURN standard_dispatch(T_sp gf, VaList_sp arglist, Cache_sp cache) {
 	   exists then use that.   If an effective-method does not exist then calculate it and put it in the cache.
 	   Then call the effective method with the saved arguments.
 	*/
+//  printf("%s:%d standard_dispatch gf->%s  arglist->%s\n", __FILE__, __LINE__, _rep_(gf).c_str(), _rep_(arglist).c_str());
   gctools::Vec0<T_sp> &vektor = fill_spec_vector(gf, cache->keys(), arglist);
   CacheRecord *e; //gctools::StackRootedPointer<CacheRecord> e;
   try {
@@ -222,6 +223,10 @@ LCC_RETURN standard_dispatch(T_sp gf, VaList_sp arglist, Cache_sp cache) {
   Function_sp func;
   if (e->_key.notnilp()) {
     func = gc::reinterpret_cast_smart_ptr<Function_O>(e->_value);
+#ifdef DEBUG_CACHE
+    printf("%s:%d  e->_key was notnil\n", __FILE__, __LINE__);
+    printf("%s:%d  new keys -> %s  func -> %s\n", __FILE__, __LINE__, _rep_(e->_key).c_str(), _rep_(func).c_str());
+#endif
   } else {
     /* The keys and the cache may change while we
 	     * compute the applicable methods. We must save
@@ -230,10 +235,15 @@ LCC_RETURN standard_dispatch(T_sp gf, VaList_sp arglist, Cache_sp cache) {
     T_sp keys = SimpleVector_O::make(vektor.size(),_Nil<T_O>(),true,vektor.size(),&(vektor[0])); // VectorObjects_O::create(vektor);
     T_mv mv = compute_applicable_method(gf, arglist);
     func = Function_sp((gc::Tagged)mv.raw_());
+#ifdef DEBUG_CACHE
+    printf("%s:%d  e->_key was nil\n", __FILE__, __LINE__);
+    printf("%s:%d  new keys -> %s  func -> %s\n", __FILE__, __LINE__, _rep_(keys).c_str(), _rep_(func).c_str());
+#endif
     if (mv.valueGet_(1).notnilp()) {
       if (e->_key.notnilp()) {
         try {
           cache->search_cache(e); // e = ecl_search_cache(cache);
+          printf("%s:%d Returned from search_cache\n", __FILE__, __LINE__);
         } catch (CacheError &err) {
           printf("%s:%d - There was an CacheError searching the GF cache for the keys"
                  "  You should try and get into cache->search_cache to see where the error is\n",
@@ -244,11 +254,11 @@ LCC_RETURN standard_dispatch(T_sp gf, VaList_sp arglist, Cache_sp cache) {
       }
       e->_key = keys;
       e->_value = func;
+#ifdef DEBUG_GFDISPATH
+  if (_sym_STARdebug_dispatchSTAR->symbolValue().notnilp()) {
       // Save the results in the call history for later optimization
       // Strip the first element of the key - which from ECL is the generic function
       T_sp call_history_key = SimpleVector_O::make(vektor.size()-1,_Nil<T_O>(),true,vektor.size()-1,&(vektor[1]));
-#ifdef DEBUG_GFDISPATH
-  if (_sym_STARdebug_dispatchSTAR->symbolValue().notnilp()) {
       printf("%s:%d call_history_key -> %s\n", __FILE__, __LINE__, _rep_(call_history_key).c_str());
   }
 #endif

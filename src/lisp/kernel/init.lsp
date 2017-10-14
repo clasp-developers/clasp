@@ -360,6 +360,7 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 (core::export 'defun)
 (eval-when (:execute :compile-toplevel :load-toplevel)
   (core::select-package :core))
+(export 'bind-va-list)
 
 (defparameter *debug-bclasp* t)
 

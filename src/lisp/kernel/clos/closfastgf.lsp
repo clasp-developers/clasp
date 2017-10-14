@@ -375,11 +375,10 @@ FIXME!!!! This code will have problems with multithreading if a generic function
 and calls the effective-method-function that is calculated.
 It takes the arguments in two forms, as a vaslist and as a list of arguments."
   (let ((can-memoize t))
-    (multiple-value-bind (method-list ok)
         ;; What if another thread adds/removes method during c-a-m-u-c???????
-        (clos::compute-applicable-methods-using-classes
-         generic-function
-         (mapcar #'class-of arguments))
+    (multiple-value-bind (method-list ok)
+        (clos::compute-applicable-methods-using-classes generic-function (mapcar #'class-of arguments))
+      (declare (core:lambda-name do-dispatch-miss.multiple-value-bind.lambda))
       ;; If ok is NIL then what do we use as the key
       (gf-log "Called compute-applicable-methods-using-classes - returned method-list: %s  ok: %s\n" method-list ok)
       (unless ok
@@ -407,10 +406,10 @@ It takes the arguments in two forms, as a vaslist and as a list of arguments."
                                               :log t)))
               (when can-memoize (memoize-call generic-function vaslist-arguments effective-method-function))
               (gf-log "Calling effective-method-function %s\n" effective-method-function)
-              #+debug-fastgf(let ((results (multiple-value-list (apply effective-method-function arguments nil arguments))))
+              #+debug-fastgf(let ((results (multiple-value-list (funcall effective-method-function vaslist-arguments nil))))
                               (gf-log "----}---- Completed call to effective-method-function for %s results -> %s\n" (clos::generic-function-name generic-function) results)
                               (values-list results))
-              #-debug-fastgf(apply effective-method-function arguments nil arguments)))
+              #-debug-fastgf(funcall effective-method-function vaslist-arguments nil)))
           (progn
             (gf-log-dispatch-miss "no-applicable-method" generic-function vaslist-arguments)
             (apply #'no-applicable-method generic-function arguments))))))

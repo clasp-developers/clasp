@@ -20,7 +20,7 @@
           `(progn
              (let ((,source-info (source-info (fdefinition ',lisp-name)))) ;;save source info
                (defun ,lisp-name ,lambda-list
-                 (core:multiple-value-foreign-call ,c-name ,@(core:names-of-lexical-variables
+*                 (core:multiple-value-foreign-call ,c-name ,@(core:names-of-lexical-variables
                                                               (core:make-lambda-list-handler
                                                                lambda-list nil 'function))))
                (set-source-info (fdefinition ',lisp-name) ,source-info)))

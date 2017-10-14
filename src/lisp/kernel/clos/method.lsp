@@ -94,6 +94,7 @@ in the generic function lambda-list to the generic function lambda-list"
 	(parse-specialized-lambda-list specialized-lambda-list)
       (multiple-value-bind (lambda-form declarations documentation)
 	  (make-raw-lambda name lambda-list required-parameters specializers body env #+clasp qualifiers)
+        (mlog "In defmethod lambda-list %s   lambda-form %s\n" lambda-list lambda-form) 
 	(let* ((generic-function (ensure-generic-function name))
 	       (method-class (progn
 			       (generic-function-method-class generic-function)))
@@ -238,38 +239,31 @@ and wraps it in an flet |#
       (walk-method-lambda method-lambda env)
     (multiple-value-bind (declarations body doc)
         (process-declarations (cddr method-lambda) t) ; We expect docstring
-;; source location here?
-      (values `(lambda (.method-args. .next-methods. ,@(cadr method-lambda))
-                 (declare #+(or)(core:lambda-name make-method-lambda.lambda) ,@declarations)
-                 ,doc
-                 (flet (,@(and call-next-method-p
-                               `((call-next-method (&va-rest args)    #|DANGER|#
-                                                   (if (not .next-methods.)
-                                                       ;; But how do I generate code that can be compiled
-                                                       ;; that will get access to the current method and
-                                                       ;; current generic function?   (apply #'no-next-method ,gf ,method ...)
-                                                       ;; won't work because the compiler will need to externalize the generic function gf
-                                                       ;; and the method method.
-                                                       #+(or)(apply #'no-next-method ,gf ,method
-                                                                    (or args .method-args.))
-                                                       (error "No next method") ;; Should be what is above -> (apply #'no-next-method ...)
-                                                       (let ((use-args (if (> (va-list-length args) 0) args .method-args.)))
-                                                         #++(core:multiple-value-foreign-call "apply_call_next_method2"
-                                                          (car .next-methods.)
-                                                          use-args ; (or args .method-args.)
-                                                          (cdr .next-methods.)
-                                                          use-args ; (or args .method-args.)
-                                                          )
-                                                         (apply (car .next-methods.)
-                                                                use-args ; (or args .method-args.)
-                                                                (cdr .next-methods.)
-                                                                use-args ; (or args .method-args.)
-                                                                ))))))
-                        ,@(and next-method-p-p
-                               `((next-method-p ()
-                                                (and .next-methods. t)))))
-                   ,@body))
-              nil)))
+      ;; source location here?
+      (let ((lambda-list (second method-lambda)))
+        (values `(lambda (.method-args. .next-methods.)
+                   (declare (core:lambda-name make-method-lambda.lambda))
+                   ,doc
+                   (flet (,@(and call-next-method-p
+                              `((call-next-method (&va-rest args)    #|DANGER|#
+                                                  (if (not .next-methods.)
+                                                      ;; But how do I generate code that can be compiled
+                                                      ;; that will get access to the current method and
+                                                      ;; current generic function?   (apply #'no-next-method ,gf ,method ...)
+                                                      ;; won't work because the compiler will need to externalize the generic function gf
+                                                      ;; and the method method.
+                                                      (error "No next method") ;; Should be what is above -> (apply #'no-next-method ...)
+                                                      (let ((use-args (if (> (va-list-length args) 0) args .method-args.)))
+                                                        (funcall (car .next-methods.)
+                                                                 use-args ; (or args .method-args.)
+                                                                 (cdr .next-methods.)))))))
+                          ,@(and next-method-p-p
+                              `((next-method-p ()
+                                               (and .next-methods. t)))))
+                     (core::bind-va-list ,lambda-list .method-args.
+                                         (declare ,@declarations)
+                                         ,@body)))
+                nil))))
   #+ecl
   (multiple-value-bind (call-next-method-p next-method-p-p in-closure-p)
       (walk-method-lambda method-lambda env)

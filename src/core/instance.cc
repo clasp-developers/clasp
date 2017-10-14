@@ -237,6 +237,9 @@ CL_DEFUN T_sp core__allocate_raw_instance(T_sp orig, Class_sp class_, size_t num
     Instance_sp iorig = gc::As_unsafe<Instance_sp>(orig);
     iorig->_Class = class_;
     iorig->_Rack = gc::As_unsafe<Instance_sp>(output)->_Rack; // orig->adoptSlots(output);
+#ifdef DEBUG_CACHE
+    if (iorig.nilp()) printf("%s:%d  allocate_raw_instance is returning NIL!\n", __FILE__, __LINE__ );
+#endif
     return iorig;
   }
   {
@@ -244,6 +247,9 @@ CL_DEFUN T_sp core__allocate_raw_instance(T_sp orig, Class_sp class_, size_t num
     FuncallableInstance_sp iorig = gc::As_unsafe<FuncallableInstance_sp>(orig);
     iorig->_Class = class_;
     iorig->_Rack = gc::As_unsafe<Instance_sp>(output)->_Rack; // orig->adoptSlots(output);
+#ifdef DEBUG_CACHE
+    if (iorig.nilp()) printf("%s:%d  allocate_raw_instance is returning NIL!\n", __FILE__, __LINE__ );
+#endif
     return iorig;
   }
 }
@@ -267,11 +273,19 @@ CL_DEFUN T_sp core__allocate_raw_class(T_sp orig, Class_sp cMetaClass, int slots
     cb = gctools::GC<core::BuiltInObjectCreator<Class_O>>::allocate();
   };
   newClass->initializeClassSlots(cb,gctools::NextStamp());
-  if (orig.nilp()) return newClass;
+  if (orig.nilp()) {
+#ifdef DEBUG_CACHE
+    if (newClass.nilp()) printf("%s:%d  allocate_raw_class is returning NIL!\n", __FILE__, __LINE__ );
+#endif
+    return newClass;
+  }
   ASSERT(gc::IsA<Class_sp>(orig));
   Instance_sp iorig = gc::As_unsafe<Instance_sp>(orig);
   iorig->_Class = cMetaClass;
   iorig->_Rack = newClass->_Rack;
+#ifdef DEBUG_CACHE
+  if (iorig.nilp()) printf("%s:%d  allocate_raw_class is returning NIL!\n", __FILE__, __LINE__ );
+#endif
   return iorig;
 };
 

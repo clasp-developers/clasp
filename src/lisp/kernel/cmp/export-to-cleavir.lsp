@@ -126,6 +126,7 @@
           with-irbuilder
           with-landing-pad
           irc-alloca-vaslist
+          irc-alloca-va_list
           irc-alloca-register-save-area
           irc-alloca-invocation-history-frame
           irc-alloca-size_t
@@ -133,6 +134,7 @@
           ltv-global
           bclasp-compile
           make-uintptr_t
+          make-calling-convention-impl
           +cons-car-offset+
           +cons-cdr-offset+
           +simple-vector._length-offset+
