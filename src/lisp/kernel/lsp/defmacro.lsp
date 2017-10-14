@@ -157,10 +157,6 @@
                                                  (eq (second (second ,whole)) ',macro-name))
                                             (cddr (ext:truly-the cons ,whole))
                                             (cdr (ext:truly-the cons ,whole)))
-                                       #+(or)(if (and (eq (car ,whole) 'cl:funcall)
-                                                      (eq (caadr ,whole) 'cl:function))
-                                                 (cddr (ext:truly-the cons ,whole))
-                                                 (cdr (ext:truly-the cons ,whole))) ;; original code for the expr above
                                        `(cdr (ext:truly-the cons ,whole)))
                                    whole))
 		 (dolist (v (cdr reqs))
