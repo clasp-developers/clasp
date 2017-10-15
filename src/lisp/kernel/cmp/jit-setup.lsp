@@ -579,18 +579,21 @@ The passed module is modified as a side-effect."
   "This is a callback from llvmoExpose.cc::save_symbol_info for registering JITted symbols"
   (core:hash-table-setf-gethash *jit-saved-symbol-info* symbol-name-string symbol-info)
   (if (member :jit-log-symbols *features*)
-      (progn
-        (if (not (boundp '*jit-log-stream*))
-            (let ((filename (core:mkstemp (core:bformat nil "/tmp/clasp-symbols-%s-" (core:getpid)))))
-              (core:bformat *debug-io* "Writing jitted symbols to %s\n" filename)
-              (setq *jit-log-stream* (open filename :direction :output))))
-        (princ (core:pointer-as-string (cadr symbol-info)) *jit-log-stream*)
-        (princ #\space *jit-log-stream*)
-        (princ (car symbol-info) *jit-log-stream*)
-        (princ #\space *jit-log-stream*)
-        (princ symbol-name-string *jit-log-stream*)
-        (terpri *jit-log-stream*)
-        (finish-output *jit-log-stream*))))
+      (unwind-protect
+           (progn
+             (mp:lock *jit-lock* t)
+             (if (not (boundp '*jit-log-stream*))
+                 (let ((filename (core:mkstemp (core:bformat nil "/tmp/clasp-symbols-%s-" (core:getpid)))))
+                   (core:bformat *debug-io* "Writing jitted symbols to %s\n" filename)
+                   (setq *jit-log-stream* (open filename :direction :output))))
+             (princ (core:pointer-as-string (cadr symbol-info)) *jit-log-stream*)
+             (princ #\space *jit-log-stream*)
+             (princ (car symbol-info) *jit-log-stream*)
+             (princ #\space *jit-log-stream*)
+             (princ symbol-name-string *jit-log-stream*)
+             (terpri *jit-log-stream*)
+             (finish-output *jit-log-stream*))
+        (mp:unlock *jit-lock*))))
 
 (progn
   (defvar *jit-engine* (make-cxx-object 'llvm-sys:clasp-jit))
