@@ -51,7 +51,8 @@
    (provide-declaration% :initform t :initarg :provide-declaration% :accessor provide-declaration%)))
 
 (defclass expose-extern-defun (expose-code function-mixin)
-  ((pointer% :initform nil :initarg :pointer% :accessor pointer%)))
+  ((pointer% :initform nil :initarg :pointer% :accessor pointer%)
+   (function-ptr% :initform nil :initarg :function-ptr% :accessor function-ptr%)))
 
 (defclass method-mixin ()
   ((class% :initform nil :initarg :class% :accessor class%)
@@ -323,12 +324,12 @@ This interprets the tags and generates objects that are used to generate code."
                                           (packaged-name cur-namespace-tag tag packages)
                                           packages)))
                (let* ((namespace (tags:namespace% cur-namespace-tag))
-                     (signature (tags:signature-text% tag))
-                     (signature-text (tags:signature-text% tag))
-                     (lambda-list (or (tags:maybe-lambda-list cur-lambda)
-                                      (parse-lambda-list-from-signature signature-text)))
-                     (declare-form (tags:maybe-declare cur-declare))
-                     (docstring (tags:maybe-docstring cur-docstring)))
+                      (signature (tags:signature-text% tag))
+                      (signature-text (tags:signature-text% tag))
+                      (lambda-list (or (tags:maybe-lambda-list cur-lambda)
+                                       (parse-lambda-list-from-signature signature-text)))
+                      (declare-form (tags:maybe-declare cur-declare))
+                      (docstring (tags:maybe-docstring cur-docstring)))
                  (multiple-value-bind (function-name full-function-name simple-function)
                      (extract-function-name-from-signature signature-text tag)
                    (declare (ignore function-name))
@@ -354,15 +355,19 @@ This interprets the tags and generates objects that are used to generate code."
             (tags:cl-extern-defun-tag
              (error-if-bad-expose-info-setup tag cur-name cur-lambda cur-declare cur-docstring)
              (let* ((packaged-function-name
-                     (maybe-override-name
-                      cur-namespace-tag
-                      cur-name
-                      (packaged-name cur-namespace-tag tag packages)
-                      packages))
+                      (maybe-override-name
+                       cur-namespace-tag
+                       cur-name
+                       (packaged-name cur-namespace-tag tag packages)
+                       packages))
                     (namespace (tags:namespace% cur-namespace-tag))
-                    (pointer (tags:pointer% tag))
+                    (pointer (string-trim " " (tags:pointer% tag)))
                     (function-name (extract-function-name-from-pointer pointer tag))
-                    (lambda-list (or (tags:maybe-lambda-list cur-lambda) ""))
+                    (function-ptr (esrap:parse 'function-ptr pointer))
+                    (namespace (function-ptr-namespace function-ptr))
+                    (lambda-list (or (tags:maybe-lambda-list cur-lambda)
+                                     (and (function-ptr-type function-ptr)
+                                          (convert-function-ptr-to-lambda-list function-ptr))))
                     (declare-form (tags:maybe-declare cur-declare))
                     (docstring (tags:maybe-docstring cur-docstring)))
                (pushnew (make-instance 'expose-extern-defun
@@ -375,7 +380,8 @@ This interprets the tags and generates objects that are used to generate code."
                                        :lambda-list% lambda-list
                                        :declare% declare-form
                                        :docstring% docstring
-                                       :pointer% pointer)
+                                       :pointer% pointer
+                                       :function-ptr% function-ptr)
                         functions
                         :test #'string=
                         :key #'lisp-name% )

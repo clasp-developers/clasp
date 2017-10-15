@@ -477,7 +477,7 @@ CL_DEFUN Triple_sp Triple_O::make(const string &triple) {
 };
 
 CL_PKG_NAME(LlvmoPkg,"triple-normalize");
-CL_EXTERN_DEFUN(&llvm::Triple::normalize);
+CL_EXTERN_DEFUN(( std::string(*)(llvm::StringRef str))&llvm::Triple::normalize);
 
   CL_LISPIFY_NAME(getTriple);
   CL_EXTERN_DEFMETHOD(Triple_O, &llvm::Triple::getTriple);
@@ -1007,11 +1007,6 @@ CL_DEFUN Module_sp llvm_sys__clone_module(Module_sp original)
 
 
 
-
-#if 0
-  CL_PKG_NAME(LlvmoPkg,"attributeSetGet");
-  CL_EXTERN_DEFUN((llvm::AttributeSet (*)(llvm::LLVMContext &, unsigned, llvm::ArrayRef<llvm::Attribute::AttrKind>)) & llvm::AttributeSet::get);
-#endif
 
 CL_LAMBDA(module value &optional label);
 CL_DEFUN Value_sp llvm_sys__makeStringGlobal(Module_sp module, core::String_sp svalue, core::T_sp label) {
@@ -2011,7 +2006,7 @@ namespace llvmo {
   CL_LISPIFY_NAME(constantFpGetTypeDouble);
   CL_EXTERN_DEFUN((llvm::Constant *(*)(llvm::Type *, double)) &llvm::ConstantFP::get );
   CL_LISPIFY_NAME(constantFpGetTypeStringref);
-  CL_EXTERN_DEFUN((llvm::Constant *(*)(llvm::Type *, llvm::StringRef))&llvm::ConstantFP::get);
+  CL_EXTERN_DEFUN((llvm::Constant *(*)(llvm::Type * type, llvm::StringRef label))&llvm::ConstantFP::get);
 
 ;
 
@@ -2072,7 +2067,7 @@ UndefValue_sp UndefValue_O::create(llvm::UndefValue *ptr) {
 
 
   CL_LISPIFY_NAME(UNDEF_VALUE-GET);
-  CL_EXTERN_DEFUN(&llvm::UndefValue::get);
+CL_EXTERN_DEFUN((llvm::UndefValue* (*)(llvm::Type* type))&llvm::UndefValue::get);
 
 ;
 
@@ -2092,7 +2087,7 @@ ConstantPointerNull_sp ConstantPointerNull_O::create(llvm::ConstantPointerNull *
 
 
   CL_LISPIFY_NAME(constant-pointer-null-get);
-  CL_EXTERN_DEFUN(&llvm::ConstantPointerNull::get);
+CL_EXTERN_DEFUN((llvm::ConstantPointerNull* (*)(llvm::PointerType *T))&llvm::ConstantPointerNull::get);
 
 ;
 
@@ -2483,7 +2478,7 @@ CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateAdd);
 CL_EXTERN_DEFMETHOD(IRBuilder_O, (AllocaInst* (IRBuilder_O::ExternalType::*)(llvm::Type *, llvm::Value *,
                            const Twine &))&IRBuilder_O::ExternalType::CreateAlloca);
   CL_LISPIFY_NAME(CreateStore);
-  CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateStore);
+CL_EXTERN_DEFMETHOD(IRBuilder_O, (llvm::StoreInst (*)(llvm::Value *Val, llvm::Value *Ptr, bool isVolatile)) &IRBuilder_O::ExternalType::CreateStore);
   CL_LISPIFY_NAME(CreateFence);
   CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateFence);
   CL_LISPIFY_NAME(CreateAtomicCmpXchg);
@@ -2906,7 +2901,7 @@ CL_EXTERN_DEFMETHOD(BasicBlock_O,(llvm::TerminatorInst *(llvm::BasicBlock::*)())
 
 CL_LAMBDA("context &optional (name \"\") parent basic-block");
 CL_LISPIFY_NAME(basic-block-create);
-CL_EXTERN_DEFUN( &llvm::BasicBlock::Create );
+CL_EXTERN_DEFUN((llvm::BasicBlock * (*)(llvm::LLVMContext &Context, const llvm::Twine &Name, llvm::Function *Parent, llvm::BasicBlock *InsertBefore)) &llvm::BasicBlock::Create );
 
 ;
 
@@ -2982,60 +2977,49 @@ CL_DEFMETHOD core::Integer_sp Type_O::getArrayNumElements() const {
   core::Integer_sp ival = core::Integer_O::create(v64);
   return ival;
 }
-#if 0
-CL_EXTERN_DEFMETHOD(Type_O,&llvm::Type::dump);
-#endif
-
 CL_EXTERN_DEFMETHOD(Type_O,&llvm::Type::getSequentialElementType);
 
-CL_PKG_NAME(LlvmoPkg, "type-get-float-ty");
-CL_EXTERN_DEFUN(&llvm::Type::getFloatTy);
-
-#if 0
-  CL_LISPIFY_NAME(dump);
-  CL_EXTERN_DEFMETHOD(Type_O, &llvm::Type::dump);
-#endif
-  CL_LISPIFY_NAME(getSequentialElementType);
-  CL_EXTERN_DEFMETHOD(Type_O, &llvm::Type::getSequentialElementType);;
+CL_LISPIFY_NAME(getSequentialElementType);
+CL_EXTERN_DEFMETHOD(Type_O, &llvm::Type::getSequentialElementType);;
 
   CL_LISPIFY_NAME("type-get-void-ty");
-  CL_EXTERN_DEFUN( &llvm::Type::getVoidTy);
+  CL_EXTERN_DEFUN((llvm::Type * (*) (llvm::LLVMContext &C)) &llvm::Type::getVoidTy);
   CL_LISPIFY_NAME("type-get-float-ty");
-  CL_EXTERN_DEFUN( &llvm::Type::getFloatTy);
+  CL_EXTERN_DEFUN((llvm::Type * (*) (llvm::LLVMContext &C)) &llvm::Type::getFloatTy);
   CL_LISPIFY_NAME("type-get-double-ty");
-  CL_EXTERN_DEFUN( &llvm::Type::getDoubleTy);
+  CL_EXTERN_DEFUN((llvm::Type * (*) (llvm::LLVMContext &C)) &llvm::Type::getDoubleTy);
   CL_LISPIFY_NAME("type-get-int-nty");
-  CL_EXTERN_DEFUN( &llvm::Type::getIntNTy);
+CL_EXTERN_DEFUN((llvm::IntegerType * (*) (llvm::LLVMContext &C, unsigned N)) &llvm::Type::getIntNTy);
   CL_LISPIFY_NAME("type-get-int1-ty");
-  CL_EXTERN_DEFUN( &llvm::Type::getInt1Ty);
+  CL_EXTERN_DEFUN((llvm::IntegerType * (*) (llvm::LLVMContext &C))&llvm::Type::getInt1Ty);
   CL_LISPIFY_NAME("type-get-int8-ty");
-  CL_EXTERN_DEFUN( &llvm::Type::getInt8Ty);
+  CL_EXTERN_DEFUN((llvm::IntegerType * (*) (llvm::LLVMContext &C))&llvm::Type::getInt8Ty);
   CL_LISPIFY_NAME("type-get-int16-ty");
-  CL_EXTERN_DEFUN( &llvm::Type::getInt16Ty);
+  CL_EXTERN_DEFUN((llvm::IntegerType * (*) (llvm::LLVMContext &C))&llvm::Type::getInt16Ty);
   CL_LISPIFY_NAME("type-get-int32-ty");
-  CL_EXTERN_DEFUN( &llvm::Type::getInt32Ty);
+  CL_EXTERN_DEFUN((llvm::IntegerType * (*) (llvm::LLVMContext &C))&llvm::Type::getInt32Ty);
   CL_LISPIFY_NAME("type-get-int64-ty");
-  CL_EXTERN_DEFUN( &llvm::Type::getInt64Ty);
+  CL_EXTERN_DEFUN((llvm::IntegerType * (*) (llvm::LLVMContext &C))&llvm::Type::getInt64Ty);
   CL_LISPIFY_NAME("type-get-int128-ty");
-  CL_EXTERN_DEFUN( &llvm::Type::getInt128Ty);
+  CL_EXTERN_DEFUN((llvm::IntegerType * (*) (llvm::LLVMContext &C))&llvm::Type::getInt128Ty);
 
   CL_LISPIFY_NAME("type-get-float-ptr-ty");
-  CL_EXTERN_DEFUN( &llvm::Type::getFloatPtrTy);
+CL_EXTERN_DEFUN((llvm::PointerType * (*) (llvm::LLVMContext &C, unsigned AS))&llvm::Type::getFloatPtrTy);
   CL_LISPIFY_NAME("type-get-double-ptr-ty");
-  CL_EXTERN_DEFUN( &llvm::Type::getDoublePtrTy);
+CL_EXTERN_DEFUN((llvm::PointerType * (*) (llvm::LLVMContext &C, unsigned AS))&llvm::Type::getDoublePtrTy);
 
   CL_LISPIFY_NAME("type-get-int-nptr-ty");
-  CL_EXTERN_DEFUN( &llvm::Type::getIntNPtrTy);
+CL_EXTERN_DEFUN((llvm::PointerType * (*) (llvm::LLVMContext &C, unsigned AS))&llvm::Type::getIntNPtrTy);
   CL_LISPIFY_NAME("type-get-int1-ptr-ty");
-  CL_EXTERN_DEFUN( &llvm::Type::getInt1PtrTy);
+CL_EXTERN_DEFUN((llvm::PointerType * (*) (llvm::LLVMContext &C, unsigned AS))&llvm::Type::getInt1PtrTy);
   CL_LISPIFY_NAME("type-get-int8-ptr-ty");
-  CL_EXTERN_DEFUN( &llvm::Type::getInt8PtrTy);
+CL_EXTERN_DEFUN((llvm::PointerType * (*) (llvm::LLVMContext &C, unsigned AS))&llvm::Type::getInt8PtrTy);
   CL_LISPIFY_NAME("type-get-int16-ptr-ty");
-  CL_EXTERN_DEFUN( &llvm::Type::getInt16PtrTy);
+CL_EXTERN_DEFUN((llvm::PointerType * (*) (llvm::LLVMContext &C, unsigned AS))&llvm::Type::getInt16PtrTy);
   CL_LISPIFY_NAME("type-get-int32-ptr-ty");
-  CL_EXTERN_DEFUN( &llvm::Type::getInt32PtrTy);
+CL_EXTERN_DEFUN((llvm::PointerType * (*) (llvm::LLVMContext &C, unsigned AS))&llvm::Type::getInt32PtrTy);
   CL_LISPIFY_NAME("type-get-int64-ptr-ty");
-  CL_EXTERN_DEFUN( &llvm::Type::getInt64PtrTy);
+CL_EXTERN_DEFUN((llvm::PointerType * (*) (llvm::LLVMContext &C, unsigned AS))&llvm::Type::getInt64PtrTy);
 
 ;
 
@@ -3385,7 +3369,7 @@ CL_DEFUN core::Function_sp finalizeEngineAndRegisterWithGcAndGetCompiledFunction
 //  CL_LISPIFY_NAME(createAliasAnalysisCounterPass);
 //  CL_EXTERN_DEFUN( &llvm::createAliasAnalysisCounterPass);
   CL_LISPIFY_NAME(createFunctionInliningPass);
-CL_EXTERN_DEFUN( (llvm::Pass * (*)(unsigned, unsigned,bool)) & llvm::createFunctionInliningPass);
+CL_EXTERN_DEFUN((llvm::Pass * (*)(unsigned, unsigned,bool)) & llvm::createFunctionInliningPass);
 
   CL_LISPIFY_NAME(createAlwaysInlinerLegacyPass);
   CL_EXTERN_DEFUN( (llvm::Pass * (*)()) & llvm::createAlwaysInlinerLegacyPass);
@@ -3456,18 +3440,18 @@ CL_EXTERN_DEFUN( &llvm::createMemDepPrinter);
   //    core::af_def(LlvmoPkg,"createScalarReplAggregatesPassWithThreshold",&llvm::createScalarReplAggregatesPassWithThreshold);
   //    core::af_def(LlvmoPkg,"createSimplifyLibCallsPass",&llvm::createSimplifyLibCallsPass);
   CL_LISPIFY_NAME(createTailCallEliminationPass);
-  CL_EXTERN_DEFUN( &llvm::createTailCallEliminationPass);
+  CL_EXTERN_DEFUN(&llvm::createTailCallEliminationPass);
   CL_LISPIFY_NAME(createConstantPropagationPass);
-  CL_EXTERN_DEFUN( &llvm::createConstantPropagationPass);
+  CL_EXTERN_DEFUN(&llvm::createConstantPropagationPass);
   //    core::af_def(LlvmoPkg,"createDemoteMemoryToRegisterPass",&llvm::createDemoteMemoryToRegisterPass);
   CL_LISPIFY_NAME(createVerifierPass);
-  CL_EXTERN_DEFUN( &llvm::createVerifierPass);
+  CL_EXTERN_DEFUN(&llvm::createVerifierPass);
   CL_LISPIFY_NAME(createCorrelatedValuePropagationPass);
-  CL_EXTERN_DEFUN( &llvm::createCorrelatedValuePropagationPass);
+  CL_EXTERN_DEFUN(&llvm::createCorrelatedValuePropagationPass);
   CL_LISPIFY_NAME(createEarlyCSEPass);
-  CL_EXTERN_DEFUN( &llvm::createEarlyCSEPass);
+  CL_EXTERN_DEFUN(&llvm::createEarlyCSEPass);
   CL_LISPIFY_NAME(createLowerExpectIntrinsicPass);
-  CL_EXTERN_DEFUN( &llvm::createLowerExpectIntrinsicPass);
+  CL_EXTERN_DEFUN(   &llvm::createLowerExpectIntrinsicPass);
 //  CL_LISPIFY_NAME(createTypeBasedAliasAnalysisPass);
 //  CL_EXTERN_DEFUN( &llvm::createTypeBasedAliasAnalysisPass);
 //  CL_LISPIFY_NAME(createBasicAliasAnalysisPass);

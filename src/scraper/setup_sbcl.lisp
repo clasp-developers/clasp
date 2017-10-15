@@ -1,0 +1,7 @@
+(defun setup-sbcl (source output)
+  (format *debug-io* "source -> ~a~%" source)
+  (load (merge-pathnames #P"sbcl/libraries/bundle.lisp" source))
+  (funcall (find-symbol "LOAD-SYSTEM" "ASDF") :esrap)
+  (let ((fout (open output :direction :output)))
+    (format fout "#define SBCL_SETUP_DONE 1~%")
+    (close fout)))

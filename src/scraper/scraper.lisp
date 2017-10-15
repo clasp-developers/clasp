@@ -9,6 +9,10 @@
 (let ((lt (or *compile-file-truename* *load-truename*)))
   (setf *default-pathname-defaults* (make-pathname :name nil :type nil :defaults lt)))
 
+;(ql:quickload "esrap")
+(load "sbcl/libraries/bundle.lisp")
+(asdf:load-system :alexandria)
+(asdf:load-system :esrap)
 (load "packages.lisp")
 (in-package :cscrape)
 (defvar *generated-headers-path*)

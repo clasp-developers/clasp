@@ -177,4 +177,11 @@ BUILTIN_ATTRIBUTES size_t* cc_vaslist_remaining_nargs_address(core::Vaslist* vas
   return &(gctools::untag_valist(vaslist)->_remaining_nargs);
 };
 
+
+BUILTIN_ATTRIBUTES core::T_O *cc_readCell(core::T_O *cell)
+{
+  core::Cons_O* cp = reinterpret_cast<core::Cons_O*>(gctools::untag_cons(cell));
+  return cp->_Car.raw_();
+}
+
 };
