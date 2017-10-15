@@ -1152,7 +1152,7 @@ when this is t a lot of graphs will be generated.")
   (setf *ct-thes->typeqs* (compiler-timer-elapsed))
 
   ;;; See comment in policy.lisp. tl;dr these analyses are slow.
-  (let ((do-dx (policy-anywhere-p init-instr 'do-dx-analysis))
+  #+(or)(let ((do-dx (policy-anywhere-p init-instr 'do-dx-analysis))
         (do-ty (policy-anywhere-p init-instr 'do-type-inference)))
     (when (or do-dx do-ty)
       (let ((liveness (cleavir-liveness:liveness init-instr)))

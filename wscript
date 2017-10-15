@@ -828,6 +828,15 @@ def build(bld):
     wscript_node = bld.path.find_resource("wscript")
     extension_headers_node = variant.extension_headers_node(bld)
     print("extension_headers_node = %s" % extension_headers_node.abspath())
+
+    setup_sbcl_task = setup_sbcl(env=bld.env)
+    #    setup_sbcl_task.set_inputs([os.path.join(self.env.BUILD_ROOT, "src/scraper/setup_sbcl.lisp")])
+    setup_path = bld.path.find_or_declare("src/scraper/setup_sbcl.lisp")
+    #    setup_sbcl_task.set_inputs([os.path.join(self.env.BUILD_ROOT, "src/scraper/setup_sbcl.lisp")])
+    setup_sbcl_task.set_inputs([setup_path])
+    setup_sbcl_task.set_outputs([bld.path.find_or_declare("generated/setup_sbcl.h")])
+    bld.add_to_group(setup_sbcl_task)
+
     extensions_task = build_extension_headers(env=bld.env)
     inputs = [wscript_node] + bld.extensions_gcinterface_include_files
     extensions_task.set_inputs(inputs)
@@ -1245,6 +1254,20 @@ class compile_module(Task.Task):
 #            all_inputs.write(' %s' % x)
 #        return self.exec_command('llvm-ar a %s %s' % ( self.outputs[0], all_inputs.getvalue()) )
 
+class setup_sbcl(Task.Task):
+#    print("DEBUG build_extension_headers directory = %s\n" % root )
+#    print("DEBUG build_extension_headers headers_list=%s\n"% headers_list)
+    def run(self):
+        cmd = [] + self.env.SCRAPER_LISP + [
+            "--load", self.inputs[0].abspath(), 
+            "--eval", "(setup-sbcl #P\"%s\" #P\"%s\")" % (self.inputs[0].abspath(),self.outputs[0].abspath()),
+            "--eval", "(quit)" ]
+        print( "setup_sbcl  cmd -> %s" % cmd)
+        return self.exec_command(cmd,shell=True)
+
+    def keyword(ctx):
+        return "Setting up to scrape"
+    
 class build_extension_headers(Task.Task):
 #    print("DEBUG build_extension_headers directory = %s\n" % root )
 #    print("DEBUG build_extension_headers headers_list=%s\n"% headers_list)
