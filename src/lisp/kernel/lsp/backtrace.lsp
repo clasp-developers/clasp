@@ -217,9 +217,14 @@ is one way to eliminate frames that aren't interesting to the user."
           (push frame result))))
     (nreverse result)))
       
-(defun btcl ()
+(defun btcl (&key all)
   "Print backtrace of just common lisp frames"
-  (let ((l (common-lisp-backtrace-frames)))
+  (let ((l (if all
+               (common-lisp-backtrace-frames)
+               (common-lisp-backtrace-frames
+                :gather-start-trigger
+                (lambda (x)
+                  (eq 'core:universal-error-handler (backtrace-frame-function-name x)))))))
     (dolist (e l)
       (let ((name (backtrace-frame-print-name e))
             (arguments (backtrace-frame-arguments e)))

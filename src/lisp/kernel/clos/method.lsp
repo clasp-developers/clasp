@@ -239,9 +239,11 @@ and wraps it in an flet |#
     (multiple-value-bind (declarations body doc)
         (process-declarations (cddr method-lambda) t) ; We expect docstring
       ;; source location here?
-      (let ((lambda-list (second method-lambda)))
+      (let ((lambda-list (second method-lambda))
+            (lambda-name-declaration (or (find 'core::lambda-name declarations :key #'car)
+                                         '(core:lambda-name make-method-lambda.lambda))))
         (values `(lambda (.method-args. .next-methods.)
-                   (declare (core:lambda-name make-method-lambda.lambda))
+                   (declare ,lambda-name-declaration)
                    ,doc
                    (flet (,@(and call-next-method-p
                               `((call-next-method (&va-rest args)    #|DANGER|#

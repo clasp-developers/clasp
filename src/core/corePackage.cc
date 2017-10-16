@@ -1108,6 +1108,7 @@ void CoreExposer_O::define_essential_globals(Lisp_sp lisp) {
   // Set up a hash table to save JIT info
   HashTableEqual_sp jit_save = HashTableEqual_O::create_default();
 #ifdef CLASP_THREADS
+  // When threading - make *jit-saved-symbol-info* a thread safe hash table
   jit_save->_Mutex = mp::SharedMutex_O::make_shared_mutex(_Nil<T_O>());
 #endif
   comp::_sym_STARjit_saved_symbol_infoSTAR->defparameter(jit_save);

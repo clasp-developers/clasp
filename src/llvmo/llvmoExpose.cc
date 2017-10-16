@@ -2478,7 +2478,7 @@ CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateAdd);
 CL_EXTERN_DEFMETHOD(IRBuilder_O, (AllocaInst* (IRBuilder_O::ExternalType::*)(llvm::Type *, llvm::Value *,
                            const Twine &))&IRBuilder_O::ExternalType::CreateAlloca);
   CL_LISPIFY_NAME(CreateStore);
-CL_EXTERN_DEFMETHOD(IRBuilder_O, (llvm::StoreInst (*)(llvm::Value *Val, llvm::Value *Ptr, bool isVolatile)) &IRBuilder_O::ExternalType::CreateStore);
+CL_EXTERN_DEFMETHOD(IRBuilder_O, (llvm::StoreInst* (llvm::IRBuilder<llvm::ConstantFolder, llvm::IRBuilderDefaultInserter>::*)(llvm::Value *Val, llvm::Value *Ptr, bool isVolatile)) &IRBuilder_O::ExternalType::CreateStore);
   CL_LISPIFY_NAME(CreateFence);
   CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateFence);
   CL_LISPIFY_NAME(CreateAtomicCmpXchg);
@@ -3695,16 +3695,6 @@ https://groups.google.com/forum/#!topic/llvm-dev/m3JjMNswgcU
                                          ),
                            GDBEventListener(JITEventListener::createGDBRegistrationListener())
 {
-#if 0
-  RTDyldObjectLinkingLayer::NotifyLoadedFtor notify_func = [this](llvm::orc::RTDyldObjectLinkingLayer::ObjHandleT H,
-                                                                  const RTDyldObjectLinkingLayer::ObjectPtr& Obj,
-                                                                  const RuntimeDyld::LoadedObjectInfo &Info) {
-//          printf("%s:%d:%s informing GDBEventListener  i=%d &Objects[i]->%p  &Infos[i]->%p\n", __FILE__, __LINE__, __FUNCTION__, i, Objects[i].get(), Infos[i].get());
-      this->GDBEventListener->NotifyObjectEmitted(*(Obj->getBinary()), Info);
-      save_symbol_info(*(Obj->getBinary()), Info);
-  };
-  this->ObjectLayer.NotifyLoadedFtor = notify_func;
-#endif
   llvm::sys::DynamicLibrary::LoadLibraryPermanently(nullptr);
 }
 
@@ -3917,6 +3907,7 @@ CL_DEFUN void llvm_sys__removeAlwaysInlineFunctions(llvm::Module* module)
 
 std::shared_ptr<llvm::Module> optimizeModule(std::shared_ptr<llvm::Module> M) {
 #if 0
+  // An attempt to move optimization into Common Lisp
   Module_sp om = Module_O::create();
   om->set_wrapped(&*M);
   om = core::eval::funcall(comp::_sym_optimize_module_for_compile,om);
@@ -3924,7 +3915,7 @@ std::shared_ptr<llvm::Module> optimizeModule(std::shared_ptr<llvm::Module> M) {
   printf("%s:%d  Returning module\n", __FILE__, __LINE__ );
   return result;
 #else
-  
+  // Optimize in C++
   core::LightTimer timer;
   timer.start();
   // Create a function pass manager.
