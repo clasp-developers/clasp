@@ -255,7 +255,7 @@
                (coerce:fdesignator ,function-form)
              ,@forms))))
 
-(defun install-funcall (environment)
+(defun install-funcall-apply (environment)
   (setf (sicl-genv:fdefinition 'funcall environment)
         ;; FIXME: we could use a more basic apply that doesn't check designators or the type.
         ;; Also this is an awkward way to write.
@@ -265,7 +265,15 @@
             (cl:apply (cl:funcall coerce fdesignator) arguments))))
   (setf (sicl-genv:compiler-macro-function 'funcall environment)
         (compiler-macro-lambda funcall (fdesignator &rest arguments)
-                               `(cleavir-primop:funcall (coerce:fdesignator ,fdesignator) ,@arguments))))
+                               `(cleavir-primop:funcall (coerce:fdesignator ,fdesignator) ,@arguments)))
+  ;;; FIXME: Because we do not have an APPLY that does not coerce function designators, we cannot put
+  ;;; it in the environment for APPLY calls to inline to. We could make our own, basically just apply but
+  ;;; maybe with a check-type, but that wouldn't really help efficiency.
+  (setf (sicl-genv:fdefinition 'apply environment)
+        (let ((coerce (sicl-genv:fdefinition 'coerce:fdesignator environment)))
+          (lambda (fdesignator &rest spreadable-arguments)
+            (cl:apply #'cl:apply (cl:funcall coerce fdesignator) spreadable-arguments))))
+  (values))
 
 (defun import-setfs (environment)
   ;; note that (sicl-genv:setf-expander whatever nil) won't work until setf.lisp is loaded.
@@ -301,7 +309,7 @@
   (import-macros environment *setf-macros*)
   (install-default-setf-expander environment)
   (install-coerce-fdesignator environment)
-  (install-funcall environment)
+  (install-funcall-apply environment)
   (install-multiple-value-call environment)
   (import-cl-functions environment *cl-environment*)
   (import-setfs environment)

@@ -76,7 +76,7 @@
         ((null l))
       (setf (car arg) (if take-car (caar l) (car l)))
       (setf (car l) (cdar l)))
-    (setq res (apply fun args))
+    (setq res (explicit:apply fun args))
     (case accumulate
       (:nconc
        (when res

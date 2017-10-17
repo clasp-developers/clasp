@@ -3,11 +3,13 @@
 
 ;;; Should compile in any environment with the explicit: known, and CL standard functions, though.
 
+#+(or)
+(progn ; defined in fill
 (defun funcall (fdesignator &rest arguments)
-  (explicit:apply (coerce:function-designator fdesignator) arguments))
+  (explicit:apply (coerce:fdesignator fdesignator) arguments))
 
 (define-compiler-macro funcall (fdesignator &rest arguments)
-  `(explicit:funcall (coerce:function-designator ,fdesignator) ,@arguments))
+  `(explicit:funcall (coerce:fdesignator ,fdesignator) ,@arguments))
 
 (defun apply (fdesignator &rest spreadable-arguments)
   ;; Weird but true, since it's not just a list of arguments, it's a list where the
@@ -15,7 +17,8 @@
   (explicit:apply #'explicit:apply fdesignator spreadable-arguments))
 
 (define-compiler-macro apply (fdesignator &rest spreadable-arguments)
-  `(explicit:apply (coerce:function-designator ,fdesignator) ,@spreadable-arguments))
+  `(explicit:apply (coerce:fdesignator ,fdesignator) ,@spreadable-arguments))
+)
 
 #+(or)
 (defun export (symbols &optional package)
@@ -25,43 +28,43 @@
     t))
 
 (defun member (item list &key (test nil testp) (test-not nil test-not-p) (key #'identity))
-  (let ((key (coerce-fdesignator key)))
+  (let ((key (coerce:fdesignator key)))
     (if testp
         (if test-not-p
             (error "Both :test and :test-not specified")
-            (explicit:member item list (coerce-fdesignator test) key))
+            (explicit:member item list (coerce:fdesignator test) key))
         (if test-not-p
-            (explicit:member-not item list (coerce-fdesignator test-not) key)
+            (explicit:member-not item list (coerce:fdesignator test-not) key)
             (explicit:member item list #'eql key)))))
 
 (defun member-if (test list &key (key #'identity))
-  (explicit:member-if (coerce-fdesignator test) list (coerce-fdesignator key)))
+  (explicit:member-if (coerce:fdesignator test) list (coerce:fdesignator key)))
 (defun member-if-not (test list &key (key #'identity))
-  (explicit:member-if-not (coerce-fdesignator test) list (coerce-fdesignator key))))
+  (explicit:member-if-not (coerce:fdesignator test) list (coerce:fdesignator key)))
 
 (defun assoc (item alist &key (test nil testp) (test-not nil test-not-p) (key #'identity))
-  (let ((key (coerce-fdesignator key)))
+  (let ((key (coerce:fdesignator key)))
     (if testp
         (if test-not-p
             (error "Both :test and :test-not specified")
-            (explicit:assoc item list (coerce-fdesignator test) key))
+            (explicit:assoc item alist (coerce:fdesignator test) key))
         (if test-not-p
-            (explicit:assoc-not item list (coerce-fdesignator test-not) key)
-            (explicit:assoc item list #'eql key)))))
+            (explicit:assoc-not item alist (coerce:fdesignator test-not) key)
+            (explicit:assoc item alist #'eql key)))))
 
 (defun assoc-if (test list &key (key #'identity))
-  (explicit:assoc-if (coerce-fdesignator test) list (coerce-fdesignator key)))
+  (explicit:assoc-if (coerce:fdesignator test) list (coerce:fdesignator key)))
 (defun assoc-if-not (test list &key (key #'identity))
-  (explicit:assoc-if-not (coerce-fdesignator test) list (coerce-fdesignator key)))
+  (explicit:assoc-if-not (coerce:fdesignator test) list (coerce:fdesignator key)))
 
-(macrolet ((defmapfoo (name)
+(macrolet ((defmapfoo (name explicit)
              `(progn
                 (defun ,name (fdesignator &rest lists)
-                  (apply #',name (coerce-fdesignator fdesignator) lists))
+                  (apply #',explicit (coerce:fdesignator fdesignator) lists))
                 (define-compiler-macro ,name (fdesignator &rest lists)
-                  (list* ,name (list 'coerce-fdesignator fdesignator) lists)))))
-  (defmapfoo mapc) (defmapfoo mapcar)  (defmapfoo mapcan)
-  (defmapfoo mapl) (defmapfoo maplist) (defmapfoo mapcon))
+                  (list* ',explicit (list 'coerce:fdesignator fdesignator) lists)))))
+  (defmapfoo mapc explicit:mapc) (defmapfoo mapcar  explicit:mapcar)  (defmapfoo mapcan explicit:mapcan)
+  (defmapfoo mapl explicit:mapl) (defmapfoo maplist explicit:maplist) (defmapfoo mapcon explicit:mapcon))
 
 #+(or)
 (progn
