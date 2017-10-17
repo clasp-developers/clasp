@@ -4,9 +4,11 @@
   (:export #:fill-environment))
 
 (defpackage #:coerce
+  (:use)
   (:export #:fdesignator))
 
 (defpackage #:explicit
+  (:use)
   (:export #:funcall #:apply)
   (:export #:member #:member-not #:member-if #:member-if-not
            #:assoc #:assoc-not #:assoc-if #:assoc-if-not)
