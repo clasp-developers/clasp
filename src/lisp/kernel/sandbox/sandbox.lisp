@@ -56,7 +56,9 @@
 
 (defun repl (environment &optional (stream *terminal-io*))
   (let ((sicl-genv:*global-environment* environment) ; FIXME: see comments in cleavir.lisp
-        (*macroexpand-hook* #'funcall)) ; FIXME: should not be necessary
+        ;; This is kind of bad: we bind these as thread local so that we can set them
+        ;; easily and having that be visible from within the evaluator.
+        +++ ++ + /// // / *** ** * -)
     (declare (special sicl-genv:*global-environment*))
     (loop
       (with-simple-restart (abort "Return to REPL.")

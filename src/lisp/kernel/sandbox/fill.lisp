@@ -296,6 +296,23 @@
             (apply #'compile-file input-file keys))))
   (setf (sicl-genv:fdefinition 'core:load-bundle environment) #'core:load-bundle))
 
+(defun install-variables (environment)
+  (macrolet ((dvar (name &optional (value nil value-p))
+               (if value-p
+                   `(setf (sicl-genv:special-variable ',name environment t) ,value)
+                   `(setf (sicl-genv:special-variable ',name environment nil) nil)))
+             (dvars (&rest names)
+               `(progn ,@(loop for name in names collecting `(dvar ,name)))))
+    (dvars +++ ++ + /// // / *** ** * -)
+    (dvar *features*))
+  (values))
+
+(defun install-constants (environment)
+  (macrolet ((dconst (name value)
+               `(setf (sicl-genv:constant-variable ,name environment) ,value)))
+    (dconst t t) (dconst nil nil)
+    (dconst pi pi)))
+
 ;;; Intended as a one-shot function to get the most I've got working.
 ;;; It's not all in one function so that environments can be set up differently or more finely in the future.
 (defun fill-environment (environment)
@@ -313,4 +330,6 @@
   (install-multiple-value-call environment)
   (import-cl-functions environment *cl-environment*)
   (import-setfs environment)
+  (install-variables environment)
+  (install-constants environment)
   (values))
