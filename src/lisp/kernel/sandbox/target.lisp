@@ -4,11 +4,20 @@
 ;;; Should compile in any environment with the explicit: known, and CL standard functions, though.
 
 (defun funcall (fdesignator &rest arguments)
-  (explicit:apply (coerce-fdesignator fdesignator) arguments))
+  (explicit:apply (coerce:function-designator fdesignator) arguments))
 
 (define-compiler-macro funcall (fdesignator &rest arguments)
-  `(explicit:funcall (coerce-fdesignator ,fdesignator) ,@arguments))
+  `(explicit:funcall (coerce:function-designator ,fdesignator) ,@arguments))
 
+(defun apply (fdesignator &rest spreadable-arguments)
+  ;; Weird but true, since it's not just a list of arguments, it's a list where the
+  ;; last element is a list (a spreadable argument list)
+  (explicit:apply #'explicit:apply fdesignator spreadable-arguments))
+
+(define-compiler-macro apply (fdesignator &rest spreadable-arguments)
+  `(explicit:apply (coerce:function-designator ,fdesignator) ,@spreadable-arguments))
+
+#+(or)
 (defun export (symbols &optional package)
   (let ((symbols (mapcar #'coerce-symbol-designator (coerce-list-designator symbols)))
         (package (coerce-package-designator package)))
@@ -51,8 +60,20 @@
                   (apply #',name (coerce-fdesignator fdesignator) lists))
                 (define-compiler-macro ,name (fdesignator &rest lists)
                   (list* ,name (list 'coerce-fdesignator fdesignator) lists)))))
-  (defmapfoo mapc) (defmapfoo mapcar) (defmapfoo mapcan)
+  (defmapfoo mapc) (defmapfoo mapcar)  (defmapfoo mapcan)
   (defmapfoo mapl) (defmapfoo maplist) (defmapfoo mapcon))
+
+#+(or)
+(progn
+;;; whoa! not a generic function!
+(defun make-instance (class &rest initargs &key &allow-other-keys)
+  (apply #'explicit:make-instance
+         (coerce:class-designator class)
+         initargs))
+
+(define-compiler-macro make-instance (class &rest initargs &key &allow-other-keys)
+  `(explicit:make-instance (coerce:class-designator ,class) ,@initargs))
+)
 
 ;; FIXME: break on signals, warning output stream, etc
 #+(or)
@@ -66,51 +87,3 @@
   (defsignaler warn simple-warning)
   (defsignaler error simple-error)
   (defsignaler cerror simple-error))
-
-;;; Designator resolution
-
-(defun coerce-fdesignator (fdesignator)
-  (etypecase fdesignator
-    (symbol (symbol-function fdesignator))
-    (function fdesignator)))
-
-(define-compiler-macro coerce-fdesignator (&whole whole fdesignator)
-  (if (and (consp fdesignator)
-           (consp (cdr fdesignator))
-           (null (cddr fdesignator)))
-      (cond ((eq (car fdesignator) 'quote)
-             `(symbol-function ,fdesignator))
-            ((eq (car fdesignator) 'function)
-             fdesignator)
-            (t whole))
-      whole))
-
-(defun coerce-string-designator (sdesignator)
-  (etypecase sdesignator
-    (string sdesignator)
-    (symbol (symbol-name sdesignator))
-    (character (make-string 1 :initial-element sdesignator))))
-
-(defun coerce-package-designator (package-designator)
-  (if (packagep package-designator)
-      package-designator
-      (find-package (coerce-string-designator package-designator))))
-
-(defun coerce-list-designator (list-designator)
-  (typecase list-designator
-    (null list-designator)
-    (cons list-designator)
-    (t (list list-designator))))
-
-;;; CLHS 9.1.2.1
-(defun coerce-to-condition (simple-type datum &rest arguments)
-  (etypecase datum
-    (symbol
-     (apply #'make-condition datum arguments))
-    ((or string function) ; format control
-     (make-condition simple-type
-                     :format-control datum
-                     :format-arguments arguments))
-    (condition
-     (assert (null arguments))
-     datum)))

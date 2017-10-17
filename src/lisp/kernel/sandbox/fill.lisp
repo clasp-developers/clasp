@@ -33,6 +33,13 @@
       (let ((env (if (null env) environment env)))
         (setf (sicl-genv:macro-function symbol env) new-function)))
 
+    (def cl:compiler-macro-function (function-name &optional env)
+      (let ((env (if (null env) environment env)))
+        (sicl-genv:compiler-macro-function function-name env)))
+    (def (setf cl:compiler-macro-function) (cmf function-name &optional env)
+      (let ((env (if (null env) environment env)))
+        (setf (sicl-genv:compiler-macro-function function-name env) cmf)))
+
     ;;; TODO: boundp
     (def cl:symbol-value (symbol)
       ;; this is inefficient in that it will look up the cell (a hash lookup)
@@ -56,27 +63,39 @@
     ;;; TODO: packages?
     ))
 
+;;; FIXME: this isn't really "basics" so much as a grab bag after the first few.
 (defun install-basics (environment)
   (setf (sicl-genv:constant-variable 'sicl-genv:+global-environment+ environment) environment)
   ;; only used in the compile-file/loader stuff, and kind of dumbly
   (setf (sicl-genv:special-variable 'sicl-genv:*global-environment* environment t) environment)
   (setf (sicl-genv:fdefinition 'sicl-genv:global-environment environment)
         (lambda () environment))
-  (macrolet ((copy (name)
-               `(setf (sicl-genv:fdefinition ',name environment) #',name)))
-    (copy sicl-genv:macro-function)
-    (copy sicl-genv:function-cell)
-    (copy sicl-genv:variable-cell)
-    (copy sicl-genv:variable-unbound)
-    (copy core:symbol-value-from-cell)
-    (copy core:setf-symbol-value-from-cell)
-    (copy core:multiple-value-funcall)
+  (macrolet ((copyf (name)
+               `(setf (sicl-genv:fdefinition ',name environment) #',name))
+             (copym (name)
+               `(setf (sicl-genv:macro-function ',name environment) (macro-function ',name))))
+    (copyf sicl-genv:macro-function)
+    (copyf sicl-genv:function-cell)
+    (copyf sicl-genv:variable-cell)
+    (copyf sicl-genv:variable-unbound)
+    (copyf core:symbol-value-from-cell)
+    (copyf core:setf-symbol-value-from-cell)
+    (copyf core:multiple-value-funcall)
     ;; used in defmacro/destructuring-bind
-    (copy core::dm-too-few-arguments) (copy core::dm-too-many-arguments)
-    ;; used from backquote
-    (copy core:backquote-append)
-    (copy core:backquote-append-list))
-  (setf (sicl-genv:macro-function 'core:backquote environment) (macro-function 'core:backquote)))
+    (copyf core::expand-defmacro) ; macro time
+    (copyf core::dm-too-few-arguments) (copyf core::dm-too-many-arguments) ; runtime
+    ;; backquote
+    (copym core:backquote)
+    (copyf core:backquote-append)
+    (copyf core:backquote-append-list)
+    ;; loop
+    (copym core::loop-body)
+    (copym core::loop-really-desetq)
+    (copym core:cons-car) (copym core:cons-cdr)
+    ;; do et al.
+    (copym core::until) (copym core::while)
+    )
+  (values))
 
 (defun install-default-setf-expander (environment)
   ;; basically copied from SICL/Code/Compiler/Extrinsic-environment/define-default-setf-expander.lisp
@@ -246,7 +265,28 @@
             (cl:apply (cl:funcall coerce fdesignator) arguments))))
   (setf (sicl-genv:compiler-macro-function 'funcall environment)
         (compiler-macro-lambda funcall (fdesignator &rest arguments)
-          `(cleavir-primop:funcall (coerce:fdesignator ,fdesignator) ,@arguments))))
+                               `(cleavir-primop:funcall (coerce:fdesignator ,fdesignator) ,@arguments))))
+
+(defun import-setfs (environment)
+  ;; note that (sicl-genv:setf-expander whatever nil) won't work until setf.lisp is loaded.
+  (macrolet ((copy (name)
+               `(setf (sicl-genv:setf-expander ',name environment)
+                      (sicl-genv:setf-expander ',name nil))))
+    (copy car) (copy cdr) (copy caar) (copy cadr) (copy cdar) (copy cddr)
+    (copy caaar) (copy caadr) (copy cadar) (copy caddr) (copy cdaar) (copy cdadr) (copy cddar) (copy cdddr)
+    (copy caaaar) (copy caaadr) (copy caadar) (copy caaddr)
+    (copy cadaar) (copy cadadr) (copy caddar) (copy cadddr)
+    (copy cdaaar) (copy cdaadr) (copy cdadar) (copy cdaddr)
+    (copy cddaar) (copy cddadr) (copy cdddar) (copy cddddr))
+  (values))
+
+(defun install-system-construction (environment)
+  ;;; FIXME: compile-file uses cl:read, so it's problematic
+  (setf (sicl-genv:fdefinition 'compile-file environment)
+        (lambda (input-file &rest keys &key &allow-other-keys)
+          (let ((cmp:*cleavir-compile-file-hook* (sandbox-compile-file-hook environment)))
+            (apply #'compile-file input-file keys))))
+  (setf (sicl-genv:fdefinition 'core:load-bundle environment) #'core:load-bundle))
 
 ;;; Intended as a one-shot function to get the most I've got working.
 ;;; It's not all in one function so that environments can be set up differently or more finely in the future.
@@ -264,4 +304,5 @@
   (install-funcall environment)
   (install-multiple-value-call environment)
   (import-cl-functions environment *cl-environment*)
+  (import-setfs environment)
   (values))

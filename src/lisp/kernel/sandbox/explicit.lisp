@@ -11,8 +11,13 @@
   `(cleavir-primop:funcall ,function ,@arguments))
 
 #+clasp
+(progn
+;;; FIXME, though small priority, an APPLY that doesn't coerce fdesignator
 (defun explicit:apply (function &rest spreadable-arguments)
-  (cl:apply function spreadable-arguments))
+  (cl:apply #'cl:apply function spreadable-arguments))
+(define-compiler-macro explicit:apply (function &rest spreadable-arguments)
+  `(cl:apply ,function ,@spreadable-arguments))
+)
 
 (defun explicit:member (item list test key)
   (loop for ls on list
@@ -56,7 +61,7 @@
 
 ;;; From SBCL
 ;;; Package should be fixed/it should be file local?
-(defun map1 (fun arglists accumulate take-car)
+(defun explicit::map1 (fun arglists accumulate take-car)
   (do* ((non-acc-result (car arglists))
         (ret-list (list nil))
         (temp ret-list)
@@ -86,7 +91,7 @@
 
 (macrolet ((defmap (name accumulate take-car)
              `(defun ,name (function list &rest more-lists)
-                (map1 ,function (cons ,list ,more-lists) ,accumulate ,take-car))))
+                (explicit::map1 function (cons list more-lists) ,accumulate ,take-car))))
   (defmap explicit:mapc nil t) (defmap explicit:mapl nil nil)
   (defmap explicit:mapcar :list t) (defmap explicit:maplist :list nil)
   (defmap explicit:mapcan :nconc t) (defmap explicit:mapcon :nconc nil))
@@ -97,6 +102,9 @@
 (defun explicit:maphash (function table)
   (maphash function table))
 
+;;; FIXME: Signals working environment independently is difficult because it's very
+;;; typep based. Typep is used for *break-on-signals* and, more critically, for finding
+;;; handlers. But type specifiers are certainly environment dependent.
 (defun explicit:signal (condition)
   (signal condition))
 
@@ -114,6 +122,8 @@
   (format error-output "~&;;; Warning: ~A~%" condition))
 )
 
+#+(or)
+(progn
 (defgeneric explicit:make-instance (class &rest initargs))
 (defmethod explicit:make-instance ((class standard-class) &rest initargs)
   #+clasp
@@ -159,10 +169,12 @@
            `(find-class ',name))
           (t
            (error "Could not dump ~s: it has no name in environment ~s" object environment)))))
+)
 
 ;;; I actually am not sure how this could be environment-dependent.
 ;;; I suppose if it was generic, you could specialize it for environments which... call allocate-instance
 ;;; something else? Dunno.
+#+(or)
 (defun explicit:make-load-form-saving-slots (object environment &key (slot-names nil slot-names-p))
   (declare (ignore environment))
   (let ((class (class-of object)))
@@ -203,7 +215,3 @@
 #+clasp
 (defun explicit:eval (form environment)
   (clasp-cleavir::cclasp-eval form environment))
-
-#+clasp
-(defun explicit:compile (lambda-expression environment)
-  (cmp:compile-in-env nil lambda-expression environment cmp:*cleavir-compile-hook* 'llvm-sys:external-linkage))
