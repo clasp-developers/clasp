@@ -81,6 +81,8 @@
     (copyf core:symbol-value-from-cell)
     (copyf core:setf-symbol-value-from-cell)
     (copyf core:multiple-value-funcall)
+    ;; remf
+    (copyf core:rem-f)
     ;; used in defmacro/destructuring-bind
     (copyf core::expand-defmacro) ; macro time
     (copyf core::dm-too-few-arguments) (copyf core::dm-too-many-arguments) ; runtime
@@ -89,6 +91,10 @@
     (copyf core:backquote-append)
     (copyf core:backquote-append-list)
     ;; loop
+    (copym core::with-loop-list-collection-head)
+    (copym core::loop-collect-rplacd)
+    (copym core::loop-collect-answer)
+    (copym core::loop-copylist*)
     (copym core::loop-body)
     (copym core::loop-really-desetq)
     (copym core:cons-car) (copym core:cons-cdr)
@@ -141,6 +147,7 @@
   '(;; "core" functions that need to be defined with sicl-genv
     proclaim fdefinition symbol-function symbol-value find-class get-setf-expansion
     fboundp fmakunbound boundp makunbound special-operator-p macro-function
+    ensure-generic-function
     constantp ; "core" behavior is distinguishing constant variable
     ;; package designators and generally packages (some also core)
     export find-symbol find-package find-all-symbols import list-all-packages rename-package
@@ -313,6 +320,166 @@
     (dconst t t) (dconst nil nil)
     (dconst pi pi)))
 
+;;; KLUDGE: Honestly the whole thing. Clasp's reader is not flexible enough to do it right.
+#+(or)
+(defun install-reader (environment)
+  (let ((standard-readtable (copy-readtable nil)))
+    (labels ((force (fdesignator)
+               (assert (not (null fdesignator)))
+               (if (symbolp fdesignator) (symbol-function fdesignator) fdesignator))
+             (copy (char)
+               (multiple-value-bind (function non-terminating-p)
+                   (get-macro-character char standard-readtable)
+                 (set-macro-character char (force function) non-terminating-p standard-readtable)))
+             (copyd (disp-char sub-char)
+               (set-dispatch-macro-character
+                disp-char sub-char
+                (force (get-dispatch-macro-character disp-char sub-char standard-readtable))
+                standard-readtable))
+             (copys (sub-char)
+               (copyd #\# sub-char)))
+      ;; Skipping #. #s
+      (copy #\() (copy #\)) (copy #\') (copy #\;) (copy #\") (copy #\`) (copy #\,)
+      (copys #\\) (copys #\') (copys #\() (copys #\*) (copys #\:) (copys #\b)
+      (copys #\B) (copys #\o) (copys #\O) (copys #\x) (copys #\X) (copys #\r)
+      (copys #\R) (copys #\c) (copys #\C) (copys #\a) (copys #\A) (copys #\p)
+      (copys #\P) (copys #\#) (copys #\=) (copys #\|) (copys #\<) (copys #\)))
+    (set-dispatch-macro-character
+     #\# #\.
+     (lambda (stream subchar parameter)
+       (declare (ignore subchar parameter))
+       (let ((core::*backquote-level* 0))
+         (let ((expr (read stream t nil t)))
+           (cond (*read-suppress* nil)
+                 (*read-eval* (eval-in-env expr environment))
+                 (t #|FIXME|# (error 'reader-error :stream stream)))))))
+    ;; FIXME: Currently clasp #s gets the constructor by looking in the system properties table,
+    ;; which is not suitable for this. We'd rather want the constructor available in the class,
+    ;; but this doesn't seem to be done...?
+
+    ;; Anyway, here's where we actually install the danged thing
+    ;; readtable itself is inaccessible and used as the standard readtable.
+    ;; it's used as such in copy-readtable, set-syntax-from-char, and with-standard-io-syntax.
+    (setf (sicl-genv:special-variable '*readtable* environment t)
+          (copy-readtable readtable))
+    (setf (sicl-genv:fdefinition 'copy-readtable environment)
+          (lambda (&optional (from-readtable standard-readtable) to-readtable)
+            (declare (core:lambda-name copy-readtable))
+            (copy-readtable from-readtable to-readtable)))
+    ;; KLUDGE: We don't copy most of the functions, because to make the reader work like this at
+    ;; all, we need to rebind the reader variables, including *READTABLE*, thread locally.
+    ;; This means that clasp's functions will refer to them properly.
+    (setf (sicl-genv:fdefinition 'set-syntax-from-char environment)
+          (lambda (to-char from-char
+                   &optional (to-readtable *readtable*) (from-readtable standard-readtable))
+            (declare (core:lambda-name set-syntax-from-char))
+            (set-syntax-from-char to-char from-char to-readtable from-readtable)))
+    ;; KLUDGE: The reader would do lookups in clasp's environment, so we can't allow symbols.
+    (setf (sicl-genv:fdefinition 'set-dispatch-macro-character environment)
+          (lambda (disp-char sub-char new-function &optional (readtable *readtable*))
+            (declare (core:lambda-name set-dispatch-macro-character))
+            (when (and (symbolp new-function) (not (null new-function)))
+              (warn "In ~a: Sandbox environments do not yet support storing function designators
+in readtables. Coercing ~a to function." 'set-dispatch-macro-character new-function)
+              (setf new-function (sicl-genv:fdefinition new-function environment)))
+            (set-dispatch-macro-character disp-char sub-char new-function readtable)))
+    (setf (sicl-genv:fdefinition 'set-macro-character environment)
+          (lambda (char new-function &optional non-terminating-p (readtable *readtable*))
+            (declare (core:lambda-name set-macro-character))
+            (when (and (symbolp new-function) (not (null new-function)))
+              (warn "In ~a: Sandbox environments do not yet support storing function designators
+in readtables. Coercing ~a to function." 'set-macro-character new-function)
+              (setf new-function (sicl-genv:fdefinition new-function environment)))
+            (set-macro-character char new-function non-terminating-p readtable)))
+
+    ;; FIXME: we could actually skip this if the clasp macro bound (*readtable* (copy-readtable nil))
+    (setf (sicl-genv:macro-function 'with-standard-io-syntax environment)
+          (macro-lambda with-standard-io-syntax (&body body)
+            `(let ((*package* (find-package "CL-USER"))
+                   (*print-array* t)
+                   (*print-base* 10)
+                   (*print-case* :upcase)
+                   (*print-circle* nil)
+                   (*print-escape* t)
+                   (*print-gensym* t)
+                   (*print-length* nil)
+                   (*print-level* nil)
+                   (*print-lines* nil)
+                   (*print-miser-width* nil)
+                   (*print-pprint-dispatch* (core::copy-standard-pprint-dispatch-table))
+                   (*print-pretty* nil)
+                   (*print-radix* nil)
+                   (*print-readably* t)
+                   (*print-right-margin* nil)
+                   (*read-base* 10)
+                   (*read-default-float-format* 'single-float)
+                   (*read-eval* t)
+                   (*read-suppress* nil)
+                   (*readtable* (copy-readtable nil)))
+               ,@body)))
+    ;; Helper function that returns the standard table (since it's not dumpable or readably printable)
+    (setf (sicl-genv:fdefinition 'core::copy-standard-pprint-dispatch-table environment)
+          (lambda ()
+            (declare (core:lambda-name core::copy-standard-pprint-dispatch-table))
+            ;; this is used in clasp's with-standard-io-syntax.
+            ;; since the initial and standard tables are distinct, this is kind of weird,
+            ;; but obscure anyway
+            core::*initial-pprint-dispatch*)))
+  (values))
+
+(defun install-ensure-generic-function (environment)
+  (let* ((egfuc
+           (make-instance 'standard-generic-function
+             :lambda-list '(gf-or-nil fname &key argument-precedence-order declarations documentation
+                            generic-function-class lambda-list method-class method-combination name
+                            &allow-other-keys)
+             :name 'clos:ensure-generic-function-using-class))
+         (method-class (clos:generic-function-method-class egfuc)))
+    (multiple-value-bind (lambda initargs)
+        (clos:make-method-lambda
+         egfuc
+         (clos:class-prototype method-class)
+         '(lambda (gf-or-nil fname &rest keys
+                   &key (generic-function-class (find-class 'standard-generic-function))
+                   (method-class nil method-class-p)
+                   (environment (sicl-genv:global-environment))
+                   &allow-other-keys)
+           (loop while (remf keys :generic-function-class))
+           (loop while (remf keys :environment))
+           (when (symbolp generic-function-class)
+             (setf generic-function-class (sicl-genv:find-class generic-function-class environment)))
+           (when (and method-class-p (symbolp method-class))
+             (setf method-class (sicl-genv:find-class method-class environment)))
+           (setf (sicl-genv:fdefinition fname environment)
+            (if method-class-p
+                (apply #'make-instance generic-function-class :method-class method-class :name fname keys)
+                (apply #'make-instance generic-function-class :name fname keys))))
+         environment)
+      (add-method egfuc
+                  (apply #'make-instance method-class
+                         :function (cmp:compile-in-env nil lambda environment
+                                                       cmp:*cleavir-compile-hook* 'llvm-sys:external-linkage)
+                         :specializers (list (find-class 'null) (find-class 't))
+                         :qualifiers '()
+                         :lambda-list '(gf-or-nil fname &rest keys
+                                        &key (generic-function-class (find-class 'standard-generic-function))
+                                        (method-class nil method-class-p)
+                                        (environment (sicl-genv:global-environment))
+                                        &allow-other-keys)
+                         initargs)))
+    (setf (sicl-genv:fdefinition 'clos:ensure-generic-function-using-class environment)
+          egfuc))
+  (values))
+
+(defun import-classes (environment)
+  (flet ((maybe-import (symbol)
+           (let ((class (find-class symbol nil)))
+             (when class
+               (setf (sicl-genv:find-class symbol environment) class)))))
+    (do-external-symbols (s "CL")   (maybe-import s))
+    (do-external-symbols (s "CLOS") (maybe-import s)))
+  (values))
+
 ;;; Intended as a one-shot function to get the most I've got working.
 ;;; It's not all in one function so that environments can be set up differently or more finely in the future.
 (defun fill-environment (environment)
@@ -332,4 +499,5 @@
   (import-setfs environment)
   (install-variables environment)
   (install-constants environment)
+  (import-classes environment)
   (values))

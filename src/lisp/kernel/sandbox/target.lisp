@@ -66,6 +66,10 @@
   (defmapfoo mapc explicit:mapc) (defmapfoo mapcar  explicit:mapcar)  (defmapfoo mapcan explicit:mapcan)
   (defmapfoo mapl explicit:mapl) (defmapfoo maplist explicit:maplist) (defmapfoo mapcon explicit:mapcon))
 
+(defun macroexpand-1 (form &optional (environment (sicl-genv:global-environment)))
+  ;; FIXME: macroexpand-hook
+  (explicit:macroexpand-1 form environment #'funcall))
+
 #+(or)
 (progn
 ;;; whoa! not a generic function!
@@ -90,3 +94,14 @@
   (defsignaler warn simple-warning)
   (defsignaler error simple-error)
   (defsignaler cerror simple-error))
+
+(defun ensure-generic-function (function-name &rest keys &key &allow-other-keys)
+  (apply #'clos:ensure-generic-function-using-class
+         (if (fboundp function-name)
+             (if (or (macro-function function-name) (special-operator-p function-name))
+                 (error "oh no")
+                 ;; FIXME: We should check if it's a generic function... but have no typep
+                 (fdefinition function-name))
+             nil)
+         function-name
+         keys))
