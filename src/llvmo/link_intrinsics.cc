@@ -116,6 +116,12 @@ core::T_sp  global_arg2;
     {
       SIMPLE_ERROR(BF("The object with pointer %p is not a cell") % arg0.raw_());
     }
+  case slot_reader_problem: {
+    SIMPLE_ERROR(BF("TRAPPED SLOT READER PROBLEM!!!   The slot accessor efm returned %s and the direct slot read at %d returned %s") % _rep_(arg0) % _rep_(arg1) % _rep_(arg2));
+  }
+  case slot_writer_problem: {
+    SIMPLE_ERROR(BF("TRAPPED SLOT WRITER PROBLEM!!!   The expected slot at %d value %s was unchanged!  The value should be %s") % _rep_(arg0) % _rep_(arg1) % _rep_(arg2) );
+  }
   default:
     SIMPLE_ERROR(BF("An intrinsicError %d was signaled and there needs to be a more descriptive error message for it in gctools::intrinsic_error arg0: %s arg1: %s arg2: %s") % err % _rep_(arg0) % _rep_(arg1) % _rep_(arg2));
   };
@@ -644,15 +650,8 @@ void invokeTopLevelFunction(core::T_mv *resultP,
   (*onearg)[0] = *ltvPP; // Leave the tag on
   core::Vaslist onearg_valist_s(onearg);
   LCC_SPILL_CLOSURE_TO_VA_LIST(onearg_valist_s,tc.raw_());
-#ifdef USE_EXPENSIVE_BACKTRACE
-  // Why do this?
   core::InvocationHistoryFrame invFrame(onearg_valist_s._Args,onearg_valist_s.remaining_nargs());
-#endif
-#if 0
-  *resultP = fptr(LCC_PASS_ARGS1_VA_LIST(onearg[0])); // Was  (ltvP));
-#else
   *resultP = fptr(LCC_PASS_ARGS0_VA_LIST(tc.raw_()));
-#endif
 #ifdef TIME_TOP_LEVEL_FUNCTIONS
   if (core::_sym_STARdebugStartupSTAR->symbolValue().notnilp()) {
     core::Number_sp endTime = gc::As<core::Number_sp>(core::cl__get_internal_real_time());
@@ -1756,4 +1755,33 @@ void initialize_link_intrinsics() {
 	printf("Called testTwoReturns  foo.raw_() = %p   foo.two = %d\n", foo.raw_(), foo.number_of_values() );
 #endif
 }
+};
+
+
+extern "C" {
+
+gctools::return_type cc_dispatch_slot_reader_index_debug(core::T_O* toptimized_slot_reader, size_t index, core::T_O* tvargs) {
+  core::SimpleVector_sp optimized_slot_reader((gctools::Tagged)toptimized_slot_reader);
+  core::VaList_sp vargs((gctools::Tagged)tvargs);
+  va_list vat;
+  va_copy(vat,vargs->_Args);
+  core::Instance_sp instance((gctools::Tagged)va_arg(vat,core::T_O*));
+  va_end(vat);
+  core::T_sp result = core::eval::funcall(clos::_sym_dispatch_slot_reader_index_debug,optimized_slot_reader,instance,vargs);
+  return result.as_return_type();
+}
+
+gctools::return_type cc_dispatch_slot_writer_index_debug(core::T_O* toptimized_slot_writer, size_t index, core::T_O* tvargs) {
+  core::SimpleVector_sp optimized_slot_writer((gctools::Tagged)toptimized_slot_writer);
+  core::VaList_sp vargs((gctools::Tagged)tvargs);
+  va_list vat;
+  va_copy(vat,vargs->_Args);
+  core::T_sp value((gctools::Tagged)va_arg(vat,core::T_O*));
+  core::Instance_sp instance((gctools::Tagged)va_arg(vat,core::T_O*));
+  va_end(vat);
+  core::T_sp result = core::eval::funcall(clos::_sym_dispatch_slot_writer_index_debug,optimized_slot_writer,value,instance,vargs);
+  return result.as_return_type();
+}
+
+
 };

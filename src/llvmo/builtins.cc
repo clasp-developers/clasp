@@ -5,6 +5,7 @@
 #include <clasp/core/object.h>
 #include <clasp/core/array.h>
 #include <clasp/core/instance.h>
+#include <clasp/core/accessor.h>
 #include <clasp/core/wrappedPointer.h>
 #include <clasp/core/funcallableInstance.h>
 #include <clasp/gctools/gcStack.h>
@@ -178,10 +179,83 @@ BUILTIN_ATTRIBUTES size_t* cc_vaslist_remaining_nargs_address(core::Vaslist* vas
 };
 
 
+BUILTIN_ATTRIBUTES core::T_O *cc_fetch(core::T_O *tagged_closure, std::size_t idx)
+{
+  gctools::smart_ptr<core::ClosureWithSlots_O> c = gctools::smart_ptr<core::ClosureWithSlots_O>((gc::Tagged)tagged_closure);
+  return (*c)[idx].raw_();
+}
+
 BUILTIN_ATTRIBUTES core::T_O *cc_readCell(core::T_O *cell)
 {
   core::Cons_O* cp = reinterpret_cast<core::Cons_O*>(gctools::untag_cons(cell));
   return cp->_Car.raw_();
+}
+
+
+
+BUILTIN_ATTRIBUTES gctools::return_type cc_dispatch_slot_reader_index(size_t index, core::T_O* tvargs) {
+  core::VaList_sp vargs((gctools::Tagged)tvargs);
+  core::T_sp tinstance = vargs->next_arg();
+  va_end(vargs->_Args);
+  core::Instance_sp instance = gc::As_unsafe<core::Instance_sp>(tinstance);
+  core::T_sp value = instance->instanceRef(index);
+  if (value.unboundp()) {
+    printf("%s:%d Handle unbound slot\n",__FILE__, __LINE__);
+  }
+  return value.as_return_type();
+}
+
+
+BUILTIN_ATTRIBUTES gctools::return_type cc_dispatch_slot_reader(core::T_O* tindex, core::T_O* tgf, core::T_O* tvargs) {
+  core::VaList_sp vargs((gctools::Tagged)tvargs);
+  core::T_sp tinstance = vargs->next_arg();
+  va_end(vargs->_Args);
+  core::Instance_sp instance = gc::As_unsafe<core::Instance_sp>(tinstance);
+  return core::do_slot_read((gctools::Tagged)tindex,(gctools::Tagged)tgf,instance.tagged_());
+}
+
+BUILTIN_ATTRIBUTES gctools::return_type cc_dispatch_slot_writer_index(size_t index, core::T_O* tvargs) { 
+  core::VaList_sp vargs((gctools::Tagged)tvargs);
+  core::T_sp value = vargs->next_arg();
+  core::T_sp tinstance = vargs->next_arg();
+  va_end(vargs->_Args);
+  core::Instance_sp instance = gc::As_unsafe<core::Instance_sp>(tinstance);
+  instance->instanceSet(index,value);
+  return value.as_return_type();
+}
+
+
+
+
+
+
+
+BUILTIN_ATTRIBUTES gctools::return_type cc_dispatch_slot_writer(core::T_O* tindex, core::T_O* tgf, core::T_O* tvargs) { 
+  core::VaList_sp vargs((gctools::Tagged)tvargs);
+  core::T_sp value = vargs->next_arg();
+  core::T_sp tinstance = vargs->next_arg();
+  va_end(vargs->_Args);
+  core::Instance_sp instance = gc::As_unsafe<core::Instance_sp>(tinstance);
+  core::do_slot_write((gctools::Tagged)tindex,(gctools::Tagged)tgf,instance.tagged_(),value.tagged_());
+  return value.as_return_type();
+}
+
+
+
+BUILTIN_ATTRIBUTES gctools::return_type cc_dispatch_effective_method(core::T_O* teffective_method, core::T_O* tgf, core::T_O* tgf_args_valist_s) {
+  core::Function_sp effective_method((gctools::Tagged)teffective_method);
+//  core::T_sp gf((gctools::Tagged)tgf);
+  core::T_sp gf_args((gctools::Tagged)tgf_args_valist_s);
+//  printf("%s:%d  Invoking effective-method %s with arguments %s\n", __FILE__, __LINE__,
+  // Arguments are .method-args. .next-methods.
+
+  return (*effective_method).entry(LCC_PASS_ARGS2_ELLIPSIS(teffective_method,gf_args.raw_(),_Nil<core::T_O>().raw_()));
+#if 0
+  return (apply_method0(effective_method.raw_(),
+                        gf_args.raw_(),
+                        _Nil<core::T_O>().raw_(),
+                        gf_args.raw_());
+#endif
 }
 
 };

@@ -423,6 +423,20 @@ and cannot be added to ~A." method other-gf gf)))
 ;;;     do (bformat t "switch-to-fastgf -> %s\n" gf)
      do (switch-to-fastgf gf)))
 
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Define a print-object method on T so that we can print
+;;;
+;;; This was moved from print.lsp
+
+(defmethod print-object ((instance t) stream)
+  (print-unreadable-object (instance stream)
+    (let ((*package* (find-package "CL")))
+      (format stream "~S"
+	      (class-name (si:instance-class instance)))))
+  instance)
+
 ;;;#+(or)
 #-boehmdc
 (eval-when (:execute :load-toplevel)

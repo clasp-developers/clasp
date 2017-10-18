@@ -166,6 +166,8 @@ printer and we should rather use MAKE-LOAD-FORM."
 ;;; Printing
 ;;; ----------------------------------------------------------------------
 
+;;; General method was moved up to fixup.lsp 
+#+(or)
 (defmethod print-object ((instance t) stream)
   (print-unreadable-object (instance stream)
     (let ((*package* (find-package "CL")))

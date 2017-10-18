@@ -731,13 +731,16 @@ def configure(cfg):
 #    cfg.define("DEBUG_NO_UNWIND",1)
 #    cfg.define("DEBUG_ENSURE_VALID_OBJECT",1)
 #    cfg.define("DEBUG_THREADS",1)
-#    cfg.define("DEBUG_BOUNDS_ASSERT",1)
 #    cfg.define("DEBUG_QUICK_VALIDATE",1)    # quick/cheap validate if on and comprehensive validate if not
 #    cfg.define("DEBUG_STARTUP",1)
 #    cfg.define("DEBUG_ACCESSORS",1)
 #    cfg.define("DEBUG_GFDISPATCH",1)
 ##  Generate per-thread logs in /tmp/dispatch-history/**  of the slow path of fastgf 
-#    cfg.define("DEBUG_FASTGF",1)
+#    cfg.define("DEBUG_CMPFASTGF",1)  # debug dispatch functions by inserting code into them that traces them
+#    cfg.define("DEBUG_FASTGF",1)   # generate slow gf dispatch logging and write out dispatch functions to /tmp/dispatch-history-**
+#    cfg.define("DEBUG_BOUNDS_ASSERT",1)
+#    cfg.define("DEBUG_SLOT_ACCESSORS",1)
+    cfg.define("DISABLE_TYPE_INFERENCE",1)
 # -----------------
 # defines that slow down program execution
 #  There are more defined in clasp/include/gctools/configure_memory.h

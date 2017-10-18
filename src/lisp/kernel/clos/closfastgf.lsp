@@ -32,20 +32,28 @@
 
 
 #+debug-fastgf
-(progn
+(eval-when (:execute :load-toplevel)
   (defstruct (debug-fastgf-struct (:type vector))
     stream
     didx
     indent
     miss-count)
   (defvar *dmspaces* "| | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | ")
-  ;;; Cleanup up the directory
-  (ensure-directories-exist "/tmp/dispatch-history/")
-  (dolist (f (directory "/tmp/dispatch-history/*.*"))
-    (delete-file f))
+;;; Cleanup up the directory
+
+  (defvar *dispatch-history-dir*
+    (let ((dir (core:bformat nil "/tmp/dispatch-history-%d/" (core:getpid))))
+      (ensure-directories-exist dir)
+      (core:bformat *debug-io*  "!!!!  Created gf dispatch monitor directory: %s\n" dir)
+      (core:bformat *debug-io*  "!!!!     Run clasp with --feature fastgf-dump-module to write dispatchers to this directory\n")
+      (dolist (f (directory (core:bformat nil "%s/*.*" dir)))
+        (delete-file f))
+      dir))
   (defun lazy-initialize-debug-fastgf ()
     (unless core:*debug-fastgf*
-      (let ((filename (core:bformat nil "/tmp/dispatch-history/debug-miss-thread%s.log" (core:pointer-as-string (mp:thread-id mp:*current-process*)))))
+      (let ((filename (core:bformat nil "%s/debug-miss-thread%s.log"
+                                    *dispatch-history-dir*
+                                    (core:pointer-as-string (mp:thread-id mp:*current-process*)))))
         (setf core:*debug-fastgf* (make-debug-fastgf-struct :stream (open filename :direction :output)
                                                             :didx 0
                                                             :indent 0
@@ -92,7 +100,8 @@
   (defun graph-call-history (generic-function output)
     (cmp:generate-dot-file generic-function output))
   (defun log-cmpgf-filename (gfname suffix extension)
-    (pathname (core:bformat nil "/tmp/dispatch-history/dispatch-%s%05d-%s-thread%s.%s"
+    (pathname (core:bformat nil "%s/dispatch-%s%05d-%s-thread%s.%s"
+                            *dispatch-history-dir*
                             suffix
                             (debug-fastgf-didx)
                             (core:bformat nil "%s" gfname)
@@ -158,7 +167,7 @@
   (defmacro gf-do (&body code) `(progn ,@code)))
 
 #-debug-fastgf
-(progn
+(eval-when (:execute :load-toplevel)
   (defmacro gf-log-sorted-roots (roots) nil)
   (defmacro gf-log-dispatch-graph (gf) nil)
   (defmacro gf-log-dispatch-miss (msg gf va-args) nil)
@@ -191,6 +200,63 @@
 
 (defparameter *trap* nil)
 (defparameter *dispatch-log* nil)
+
+
+;;; Takes three arguments ((x cmp::optimized-slot-reader) instance vargs)
+(defun dispatch-slot-reader-index-debug (opt-slot-reader instance vargs)
+  ;; Do the slot read and check against the slot index
+  (let ((opt-method (cmp::optimized-slot-reader-method opt-slot-reader))
+        (opt-class (cmp::optimized-slot-reader-class opt-slot-reader))
+        (slot-name (cmp::optimized-slot-reader-slot-name opt-slot-reader))
+        (opt-index (cmp::optimized-slot-reader-index opt-slot-reader)))
+    (let* ((slot (effective-slot-from-accessor-method opt-method opt-class :instance instance))
+           (lookup-index (slot-definition-location slot)))
+      (unless (= opt-index lookup-index)
+        (error "The dispatch-slot-reader-index-debug function caught a difference between the slot opt-index ~a and the looked up slot index ~a for opt-method ~a/ opt-class ~a/ slot-name ~a" opt-index lookup-index opt-method opt-class slot-name))
+      (let ((direct-result (core:instance-ref instance opt-index))
+            (efm-result (funcall (cmp::optimized-slot-reader-effective-method-function opt-slot-reader) vargs nil)))
+        (unless (eql direct-result efm-result)
+          ;; Do what std-class-optimized-accessors does...
+          (let* ((efm-class (si:instance-class instance))
+                 (efm-table (class-location-table efm-class))
+                 (efm-index (gethash slot-name efm-table))
+                 (efm-value (if (si::fixnump efm-index)
+                                (si:instance-ref instance (truly-the fixnum efm-index))
+                                (car (truly-the cons efm-index)))))
+            (format *debug-io* "DATA FOR READER ERROR!!!!!!!!!!!!!!!!!!!!!~%")
+            (format *debug-io* "slot-name -----> ~s~%" slot-name)
+            (format *debug-io* "opt-index -----> ~s~%" opt-index)
+            (format *debug-io* "opt-method ----> ~s~%" opt-method)
+            (format *debug-io* "opt-class -----> ~s~%" opt-class)
+            (format *debug-io* "(core:instance-stamp instance) --------------------------------------------> ~s~%" (core:instance-stamp instance))
+            (format *debug-io* "(core:lookup-class-with-stamp (core:instance-stamp instance)) -------------> ~s~%" (core:lookup-class-with-stamp (core:instance-stamp instance)))
+            (format *debug-io* "(core:class-stamp-for-instances opt-class) --------------------------------> ~s~%" (core:class-stamp-for-instances opt-class))
+            (format *debug-io* "(core:lookup-class-with-stamp (core:class-stamp-for-instances opt-class)) -> ~s~%" (core:lookup-class-with-stamp (core:class-stamp-for-instances opt-class)))
+            (format *debug-io* "efm-class -----> ~s~%" efm-class)
+            (format *debug-io* "efm-index -----> ~s~%" efm-index)
+            (format *debug-io* "efm-value -----> ~s~%" efm-value)
+            (format *debug-io* "(core::object-address instance) -> ~s~%" (core::object-address instance))
+            (error "The dispatch-slot-reader-index-debug function caught a difference between reading the slot and calling the effective-method-function")))
+        efm-result))))
+
+;;; Takes four arguments ((x cmp::optimized-slot-writer) value instance vargs)
+(defun dispatch-slot-writer-index-debug (opt-slot-writer value instance vargs)
+  ;; Check against the slot index and Do the slot write and check against the slot index
+  (let ((opt-method (cmp::optimized-slot-writer-method opt-slot-writer))
+        (class (cmp::optimized-slot-writer-class opt-slot-writer))
+        (slot-name (cmp::optimized-slot-writer-slot-name opt-slot-writer))
+        (opt-index (cmp::optimized-slot-writer-index opt-slot-writer)))
+    (let* ((slot (effective-slot-from-accessor-method opt-method class :instance instance))
+           (lookup-index (slot-definition-location slot)))
+      (unless (= opt-index lookup-index)
+        (error "The dispatch-slot-writer-index-debug function caught a difference between the optimized slot index ~a and the looked up slot index ~a for opt-method ~a/ class ~a/ slot-name ~a" opt-index lookup-index opt-method class slot-name))
+      (let ((efm-result (funcall (cmp::optimized-slot-writer-effective-method-function opt-slot-writer) vargs nil))
+            (after-write-read (core:instance-ref instance opt-index)))
+        (unless (eql efm-result after-write-read)
+          (let ((*print-circle* nil))
+            (error "The dispatch-slot-writer-index-debug function caught a difference between what should be in the slot opt-index ~a~% (read value -> ~s)~% after writing ~s into it using the effective-method-function.~% This is for opt-method ~s/class ~s/slot-name ~s~% and (core:class-stamp-for-instances class) -> ~s    (core:instance-stamp instance) -> ~s~%  (core:object-address instance) -> ~s~%" 
+                   opt-index after-write-read efm-result opt-method class slot-name (core:class-stamp-for-instances class) (core:instance-stamp instance) (core:object-address instance))))
+        efm-result))))
 
 (defun maybe-update-instances (arguments)
   (let ((invalid-instance nil))
@@ -266,10 +332,59 @@
        (gf-log "with-generic-function-shared-lock unlock %s | %s\n" ,generic-function ,where)
        (mp:shared-unlock (generic-function-lock ,generic-function)))))
 
-(defun compute-effective-method-function-maybe-log (generic-function method-combination methods &key log)
-  (let ((effective-method-function (compute-effective-method-function generic-function
-                                                                      method-combination
-                                                                      methods)))
+(defun effective-slot-from-accessor-method (method class &key log instance)
+  (let* ((direct-slot (accessor-method-slot-definition method))
+         (direct-slot-name (slot-definition-name direct-slot))
+         (effective-slot-defs (class-slots class))
+         (slot (loop for effective-slot in effective-slot-defs
+                     when (eq direct-slot-name (slot-definition-name effective-slot)) return effective-slot)))
+    (when (null slot)
+      (when log (gf-log "Could not find slot - starting from method %s got specializer class %s and slot-defs %s instance %s\n"
+                        method class effective-slot-defs instance))
+      (error "Could not find slot - starting from method ~s got specializer class ~s and slot-defs ~s and slot-name ~s : maybe-instance -> ~s"
+             method class effective-slot-defs direct-slot-name instance))
+    (when log (gf-log "++++ Slot value -> %s\n" slot))
+    slot))
+
+(defun compute-effective-method-function-maybe-optimize (generic-function method-combination methods actual-specializers &key log
+                                                                                                                           actual-arguments)
+  ;; calculate the effective-method-function as well as an optimized one
+  ;;   so that we can apply the e-m-f to the arguments if we need to
+  (let* ((efm (compute-effective-method-function generic-function
+                                                 method-combination
+                                                 methods))
+         (optimized
+           (flet ()
+             (cond
+               ((and (= (length methods) 1)
+                     (typep (first methods) 'standard-reader-method)
+                     #| FIXME TEST FOR slot-value-using-class |#)
+                (when log (gf-log "++++ compute-effective-method-function-maybe-optimize optimizing reader\n"))
+                (let* ((method (first methods))
+                       (specializers (method-specializers method))
+                       (class (first actual-specializers))
+                       (slot (effective-slot-from-accessor-method method class :log log :instance (first actual-arguments))))
+                  (when log (gf-log "++++ compute-effective-method-function-maybe-optimize optimizing reader data: %d\n" (slot-definition-location slot)))
+                  (cmp::make-optimized-slot-reader :index (slot-definition-location slot)
+                                                   :effective-method-function efm
+                                                   :slot-name (slot-definition-name slot)
+                                                   :method method
+                                                   :class class)))
+               ((and (= (length methods) 1)
+                     (typep (first methods) 'standard-writer-method)
+                     #| FIXME TEST FOR (setf slot-value-using-class) |#)
+                (when log (gf-log "++++ compute-effective-method-function-maybe-optimize optimizing writer\n"))
+                (let* ((method (first methods))
+                       (specializers (method-specializers method))
+                       (class (second actual-specializers))
+                       (slot (effective-slot-from-accessor-method method class :log log :instance (first actual-arguments))))
+                  (when log (gf-log "++++ compute-effective-method-function-maybe-optimize optimizing writer data: %d\n" (slot-definition-location slot)))
+                  (cmp::make-optimized-slot-writer :index (slot-definition-location slot)
+                                                   :effective-method-function efm
+                                                   :slot-name (slot-definition-name slot)
+                                                   :method method
+                                                   :class class)))
+               (t efm)))))
     #+debug-fastgf
     (when log
       (gf-log "vvv************************vvv\n")
@@ -277,9 +392,10 @@
       (gf-log "There are %d methods...\n" (length methods))
       (dolist (m methods)
         (gf-log "Method: %s %s %s\n" (clos::method-specializers m) (clos::method-qualifiers m) m))
-      (gf-log "Effective method function at -> %s\n" (core:object-address effective-method-function))
+      (gf-log "Effective method function -> %s\n" optimized)
+      (gf-log "Effective method function address -> %s\n" (core:object-address optimized))
       (gf-log "^^^************************^^^\n"))
-    effective-method-function))
+    optimized))
 
 (defun update-call-history-for-add-method (generic-function orig-call-history method)
   "When a method is added then we update the effective-method-functions for
@@ -291,10 +407,11 @@
        do (let* ((methods (compute-applicable-methods-using-specializers
                            generic-function
                            specializers))
-                 (effective-method-function (compute-effective-method-function-maybe-log
+                 (effective-method-function (compute-effective-method-function-maybe-optimize
                                              generic-function
                                              (generic-function-method-combination generic-function)
-                                             methods)))
+                                             methods
+                                             specializers)))    ;;; I have actual specializers from the call history in specializers
             (rplacd entry effective-method-function)))
     call-history))
 
@@ -316,10 +433,11 @@ FIXME!!!! This code will have problems with multithreading if a generic function
                            generic-function
                            specializers))
                  (effective-method-function (if methods
-                                                (compute-effective-method-function-maybe-log
+                                                (compute-effective-method-function-maybe-optimize
                                                  generic-function
                                                  (generic-function-method-combination generic-function)
-                                                 methods)
+                                                 methods
+                                                 specializers) ;; I have the actual specializers in specializers
                                                 nil)))
             (when effective-method-function
               (push (cons (car entry) effective-method-function) new-call-history)))
@@ -340,9 +458,11 @@ FIXME!!!! This code will have problems with multithreading if a generic function
 
 (defun calculate-discriminator-function (generic-function)
   "This is called from set-generic-function-dispatch - which is called whenever a method is added or removed "
-  (calculate-fastgf-dispatch-function generic-function
-                                      #+debug-fastgf :output-path
-                                      #+debug-fastgf (log-cmpgf-filename (clos::generic-function-name generic-function) "func" "ll")))
+  (let ((output-path (log-cmpgf-filename (clos::generic-function-name generic-function) "func" "ll")))
+    (core::bformat *debug-io* "calculate-discriminator-function dumping dispatcher %s\n" output-path)
+    (calculate-fastgf-dispatch-function generic-function
+                                        #+debug-fastgf :output-path
+                                        #+debug-fastgf output-path)))
 
 (defun erase-generic-function-call-history (generic-function)
   (loop for call-history = (generic-function-call-history generic-function)
@@ -369,6 +489,15 @@ FIXME!!!! This code will have problems with multithreading if a generic function
      until (eq exchanged new-call-history))
   (set-funcallable-instance-function generic-function 'invalidated-dispatch-function)
   (return-from memoize-call))
+
+
+(defun funcall-effective-method-function (efm arguments)
+  (cond
+    ((cmp::optimized-slot-reader-p efm)
+     (funcall (cmp::optimized-slot-reader-effective-method-function efm) arguments nil))
+    ((cmp::optimized-slot-writer-p efm)
+     (funcall (cmp::optimized-slot-writer-effective-method-function efm) arguments nil))
+    (t (funcall efm arguments nil))))
 
 (defun do-dispatch-miss (generic-function vaslist-arguments arguments)
   "This effectively does what compute-discriminator-function does and maybe memoizes the result 
@@ -398,18 +527,21 @@ It takes the arguments in two forms, as a vaslist and as a list of arguments."
       ;;(gf-log "        check if method list (1) has one entry (2) is a reader or writer - if so - optimize it\n")
       ;;(gf-log "             method-list -> %s\n" method-list)
       (if method-list
-          (progn
-            (let ((effective-method-function (compute-effective-method-function-maybe-log
-                                              generic-function
-                                              (clos::generic-function-method-combination generic-function)
-                                              method-list
-                                              :log t)))
-              (when can-memoize (memoize-call generic-function vaslist-arguments effective-method-function))
-              (gf-log "Calling effective-method-function %s\n" effective-method-function)
-              #+debug-fastgf(let ((results (multiple-value-list (funcall effective-method-function vaslist-arguments nil))))
-                              (gf-log "----}---- Completed call to effective-method-function for %s results -> %s\n" (clos::generic-function-name generic-function) results)
-                              (values-list results))
-              #-debug-fastgf(funcall effective-method-function vaslist-arguments nil)))
+          (let ((effective-method-function (compute-effective-method-function-maybe-optimize
+                                            generic-function
+                                            (clos::generic-function-method-combination generic-function)
+                                            method-list
+                                            (mapcar #'core:instance-class arguments)
+                                            :log t
+                                            :actual-arguments arguments)))
+            (when can-memoize (memoize-call generic-function vaslist-arguments effective-method-function))
+            (gf-log "Calling effective-method-function %s\n" effective-method-function)
+            #+debug-fastgf
+            (let ((results (multiple-value-list (funcall-effective-method-function effective-method-function vaslist-arguments))))
+              (gf-log "----}---- Completed call to effective-method-function for %s results -> %s\n" (clos::generic-function-name generic-function) results)
+              (values-list results))
+            #-debug-fastgf
+            (funcall-effective-method-function effective-method-function vaslist-arguments))
           (progn
             (gf-log-dispatch-miss "no-applicable-method" generic-function vaslist-arguments)
             (apply #'no-applicable-method generic-function arguments))))))
@@ -426,7 +558,7 @@ It takes the arguments in two forms, as a vaslist and as a list of arguments."
            (if invalid-instance
                (apply generic-function valist-args)
                (progn
-                 (gf-log "----{---- A dispatch-miss occurred -> %s  " (clos::generic-function-name generic-function))
+                 (gf-log "----{---- A dispatch-miss occurred -> %s  \n" (clos::generic-function-name generic-function))
                  (dolist (arg (core:list-from-va-list valist-args))
                    (gf-log-noindent "%s[%s/%d] " arg (class-of arg) (core:instance-stamp arg)))
                  (gf-log-noindent "\n")
@@ -475,7 +607,9 @@ It takes the arguments in two forms, as a vaslist and as a list of arguments."
   (if (generic-function-call-history generic-function)
       (cmp:codegen-dispatcher generic-function
                               :generic-function-name (core:function-name generic-function)
-                              :output-path output-path)
+                              :output-path output-path
+                              #+debug-fastgf :log-gf
+                              #+debug-fastgf (debug-fastgf-stream)) ;; the stream better be initialized
       'invalidated-dispatch-function))
 
 (defun invalidated-dispatch-function (generic-function valist-args)
@@ -483,10 +617,20 @@ It takes the arguments in two forms, as a vaslist and as a list of arguments."
   ;;;   being extremely careful NOT to use any generic-function calls.
   ;;;   Then redo the call.
   ;;; If there is no call history then treat this like a dispatch-miss.
+  (gf-log "Entered invalidated-dispatch-function - avoiding generic function calls until return!!!\n")
   (if (generic-function-call-history generic-function)
-      (progn
+      (let (log-output)
+        #+debug-fastgf(progn
+                        (if (eq (class-of generic-function) (find-class 'standard-generic-function))
+                            (let ((generic-function-name (core:low-level-standard-generic-function-name generic-function)))
+                              (setf log-output (log-cmpgf-filename generic-function-name "func" "ll"))
+                              (gf-log "Writing dispatcher to %s\n" log-output))
+                            (setf log-output (log-cmpgf-filename (generic-function-name generic-function) "func" "ll")))
+                        (incf-debug-fastgf-didx))
         (set-funcallable-instance-function generic-function
-                                           (calculate-fastgf-dispatch-function generic-function))
+                                           (calculate-fastgf-dispatch-function
+                                            generic-function
+                                            :output-path log-output))
         (apply generic-function valist-args))
       (dispatch-miss generic-function valist-args)))
 
@@ -591,7 +735,7 @@ It takes the arguments in two forms, as a vaslist and as a list of arguments."
 			     (cons element set))
 			   (cartesian-product (cdr sets))))))
 
-(defun calculate-all-argument-subclasses-of-method (specializers profile)
+(defun calculate-all-specific-specializers-from-general-specializers (specializers profile)
   (let ((sets (loop for class in specializers
                   for flag in profile
                   collect (if (null flag)
@@ -599,22 +743,23 @@ It takes the arguments in two forms, as a vaslist and as a list of arguments."
                               (subclasses* class)))))
     (cartesian-product sets)))
 
-(defun add-to-call-history (generic-function specializers profile verbose)
-  (let* ((all-arguments-subclassed-for-method (calculate-all-argument-subclasses-of-method specializers profile)))
+(defun add-to-call-history (generic-function most-general-specializers profile verbose)
+  (let ((all-arguments-subclassed-for-method (calculate-all-specific-specializers-from-general-specializers most-general-specializers profile)))
     (loop for call-history = (generic-function-call-history generic-function)
-         for new-call-history = (let ((new-call-history call-history))
-                                  (loop for combination in all-arguments-subclassed-for-method
-                                     for methods = (std-compute-applicable-methods-using-classes generic-function combination)
-                                     for effective-method-function = (compute-effective-method-function-maybe-log
-                                                                      generic-function
-                                                                      (generic-function-method-combination generic-function)
-                                                                      methods)
-                                     do (push (cons (coerce combination 'vector) effective-method-function)
-                                              new-call-history))
-                                  new-call-history)
-       for exchange = (generic-function-call-history-compare-exchange generic-function call-history new-call-history)
-       when verbose do (core:bformat t "Selector: %s\n    Applicable methods: %s\n" combination (mapcar (lambda (m) (method-specializers m)) methods))
-       until (eq exchange new-call-history))))
+          for new-call-history = (let ((new-call-history call-history))
+                                   (loop for specific-specializers in all-arguments-subclassed-for-method
+                                         for methods = (std-compute-applicable-methods-using-classes generic-function specific-specializers)
+                                         for effective-method-function = (compute-effective-method-function-maybe-optimize
+                                                                          generic-function
+                                                                          (generic-function-method-combination generic-function)
+                                                                          methods
+                                                                          specific-specializers)
+                                         do (push (cons (coerce specific-specializers 'vector) effective-method-function)
+                                                  new-call-history))
+                                   new-call-history)
+          for exchange = (generic-function-call-history-compare-exchange generic-function call-history new-call-history)
+          when verbose do (core:bformat t "Selector: %s\n    Applicable methods: %s\n" specific-specializers (mapcar (lambda (m) (method-specializers m)) methods))
+            until (eq exchange new-call-history))))
 
 (defun load-generic-function (generic-function list-of-specializers-names verbose)
   "If a list of lists of specializer names (like specializers of a method but the names and not classes)

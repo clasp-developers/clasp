@@ -191,6 +191,10 @@
     (primitive          "cc_bad_tag" %void% (list %t*% %t*%)) ;; gf gf-args
     (primitive          "cc_dispatch_invalid" %return_type% (list %t*% %t*%)) ;; gf gf-args
     (primitive          "cc_dispatch_miss" %return_type% (list %t*% %t*%)) ;; gf gf-args
+    (primitive          "cc_dispatch_slot_reader_index_debug"   %return_type% (list %t*% %size_t% %t*% %t*%)) ; effective-method gf gf-args
+    (primitive          "cc_dispatch_slot_writer_index_debug"   %return_type% (list %t*% %size_t% %t*% %t*%)) ; effective-method gf gf-args
+    (primitive          "cc_dispatch_slot_reader_index"   %return_type% (list %size_t% %t*%)) ; effective-method gf gf-args
+    (primitive          "cc_dispatch_slot_writer_index"   %return_type% (list %size_t% %t*%)) ; effective-method gf gf-args
     (primitive          "cc_dispatch_slot_reader"   %return_type% (list %t*% %t*% %t*%)) ; effective-method gf gf-args
     (primitive          "cc_dispatch_slot_writer"   %return_type% (list %t*% %t*% %t*%)) ; effective-method gf gf-args
     (primitive          "cc_dispatch_effective_method"   %return_type% (list %t*% %t*% %t*%)) ; effective-method gf gf-args

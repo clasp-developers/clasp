@@ -169,6 +169,11 @@ T_sp FuncallableInstance_O::instanceSet(size_t idx, T_sp val) {
   return val;
 }
 
+CL_DEFUN T_sp core__low_level_standard_generic_function_name(FuncallableInstance_sp gfun)
+{
+  return gfun->GFUN_NAME();
+}
+
 string FuncallableInstance_O::__repr__() const {
   stringstream ss;
   ss << "#S(";

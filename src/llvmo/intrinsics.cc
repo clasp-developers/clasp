@@ -393,19 +393,6 @@ ALWAYS_INLINE void cc_writeCell(core::T_O *cell, core::T_O* val)
 
 
 
-core::T_O *cc_fetch(core::T_O *tagged_closure, std::size_t idx)
-{NO_UNWIND_BEGIN();
-  //	core::ValueFrame_sp a = gctools::smart_ptr<core::ValueFrame_O>(reinterpret_cast<core::ValueFrame_O*>(array));
-  gctools::smart_ptr<core::ClosureWithSlots_O> c = gctools::smart_ptr<core::ClosureWithSlots_O>((gc::Tagged)tagged_closure);
-#ifdef DEBUG_CC
-  printf("%s:%d fetch array@%p idx[%zu] -->cell[%p]\n", __FILE__, __LINE__, array, idx, (*c)[idx].raw_());
-#endif
-  ASSERT(c.notnilp());
-  return (*c)[idx].raw_();
-  NO_UNWIND_END();
-}
-
-
 ALWAYS_INLINE void cc_push_InvocationHistoryFrame(core::T_O* tagged_closure, InvocationHistoryFrame* frame, va_list va_args, size_t* nargsP)
 {NO_UNWIND_BEGIN();
   new (frame) InvocationHistoryFrame(va_args, *nargsP);
@@ -578,40 +565,6 @@ void cc_bad_tag(core::T_O* gf, core::T_O* gf_args)
   abort();
 };
 
-gctools::return_type cc_dispatch_slot_reader(core::T_O* tindex, core::T_O* tgf, core::T_O* tvargs) {
-  VaList_sp vargs((gctools::Tagged)tvargs);
-  T_sp tinstance = vargs->next_arg();
-  Instance_sp instance = gc::As_unsafe<Instance_sp>(tinstance);
-  return do_slot_read((gctools::Tagged)tindex,(gctools::Tagged)tgf,instance.tagged_());
-}
-
-
-gctools::return_type cc_dispatch_slot_writer(core::T_O* tindex, core::T_O* tgf, core::T_O* tvargs) { 
-  VaList_sp vargs((gctools::Tagged)tvargs);
-  T_sp value = vargs->next_arg();
-  T_sp tinstance = vargs->next_arg();
-  Instance_sp instance = gc::As_unsafe<Instance_sp>(tinstance);
-  do_slot_write((gctools::Tagged)tindex,(gctools::Tagged)tgf,instance.tagged_(),value.tagged_());
-  return value.as_return_type();
-}
-
-
-
-gctools::return_type cc_dispatch_effective_method(core::T_O* teffective_method, core::T_O* tgf, core::T_O* tgf_args_valist_s) {
-  core::Function_sp effective_method((gctools::Tagged)teffective_method);
-//  core::T_sp gf((gctools::Tagged)tgf);
-  core::T_sp gf_args((gctools::Tagged)tgf_args_valist_s);
-//  printf("%s:%d  Invoking effective-method %s with arguments %s\n", __FILE__, __LINE__,
-  // Arguments are .method-args. .next-methods.
-
-  return (*effective_method).entry(LCC_PASS_ARGS2_ELLIPSIS(teffective_method,gf_args.raw_(),_Nil<core::T_O>().raw_()));
-#if 0
-  return (apply_method0(effective_method.raw_(),
-                        gf_args.raw_(),
-                        _Nil<core::T_O>().raw_(),
-                        gf_args.raw_());
-#endif
-}
 
 };
 

@@ -377,6 +377,7 @@ No DIBuilder is defined for the default module")
        ((string= lname "UNNAMED-LAMBDA") lname) ; this one is ok
        ((string= lname "lambda") lname)         ; this one is ok
        ((string= lname "ltv-literal") lname)    ; this one is ok
+       ((string= lname "disassemble") lname)    ; this one is ok
        (t (bformat t "jit-function-name lname = %s\n" lname)
           (break "Always pass symbol as name") lname)))
     ((symbolp lname)

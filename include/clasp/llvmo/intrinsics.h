@@ -202,7 +202,9 @@ namespace llvmo {
                  unboundSymbolFunction,
                  unboundSymbolSetfFunction,
                  no_applicable_reader_method,
-                 no_applicable_writer_method
+                 no_applicable_writer_method,
+                 slot_reader_problem,
+                 slot_writer_problem
   } ErrorCode;
 
   [[noreturn]]extern void intrinsic_error(ErrorCode err, core::T_sp arg0 = _Nil<core::T_O>(), core::T_sp arg1 = _Nil<core::T_O>(), core::T_sp arg2 = _Nil<core::T_O>());

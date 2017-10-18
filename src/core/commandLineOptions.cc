@@ -78,6 +78,7 @@ CommandLineOptions::CommandLineOptions(int argc, char *argv[])
              "*feature* settings\n"
              " debug-startup       - Print a message for every top level form at startup\n"
              " exit-backtrace      - Print a backtrace if a non-zero exit code is used to exit\n"
+             " jit-log-symbols     - Generate a log of JITted symbols\n"
              " pause-pid           - Print the PID and pause at startup for a debugger to attach\n"
              " ignore-extensions   - Ignore any extensions startup scripts\n"
              " clasp-builder-repl  - Stop in the clasp builder repl to debug bootstrapping\n"

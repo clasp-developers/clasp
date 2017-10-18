@@ -345,6 +345,11 @@ T_sp Instance_O::instanceRef(size_t idx) const {
 #if DEBUG_CLOS >= 2
   printf("\nMLOG INSTANCE-REF[%d] of Instance %p --->%s\n", idx, (void *)(this), this->_Rack[idx+1]->__repr__().c_str());
 #endif
+#ifdef DEBUG_BOUNDS_ASSERT
+  if ( (idx+1)>=(this->_Rack)->length()) {
+    SIMPLE_ERROR(BF("The slot index %lu must be less than the size %lu\n") % idx % (this->_Rack->length()-1));
+  }
+#endif
   return ((*this->_Rack)[idx+1]);
 }
 T_sp Instance_O::instanceSet(size_t idx, T_sp val) {
@@ -359,6 +364,11 @@ T_sp Instance_O::instanceSet(size_t idx, T_sp val) {
 #endif
 #if DEBUG_CLOS >= 2
   printf("\nMLOG SI-INSTANCE-SET[%d] of Instance %p to val: %s\n", idx, (void *)(this), val->__repr__().c_str());
+#endif
+#ifdef DEBUG_BOUNDS_ASSERT
+  if ( (idx+1)>=(this->_Rack)->length()) {
+    SIMPLE_ERROR(BF("The slot index %lu must be less than the size %lu\n") % idx % (this->_Rack->length()-1));
+  }
 #endif
   (*this->_Rack)[idx+1] = val;
 #ifdef DEBUG_GUARD_VALIDATE

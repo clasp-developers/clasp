@@ -88,7 +88,8 @@
       (t (remove-address line)))))
 
 (defun trace-tips (fin)
-    (let ((header (read-dtrace-header fin)))
+  (let ((header (read-dtrace-header fin)))
+    (declare (ignore header))
       (let ((tips (loop for backtrace = (read-dtrace-backtrace fin nil :eof)
                         until (eq backtrace :eof)
                         when (> (length backtrace) 0)
@@ -127,6 +128,7 @@
 
 (defun trace-calls (fin)
   (let ((header (read-dtrace-header fin)))
+    (declare (ignore header))
     (let ((calls (loop for backtrace = (read-dtrace-backtrace fin nil :eof)
                        until (eq backtrace :eof)
                        when (> (length backtrace) 0)
