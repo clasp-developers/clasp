@@ -201,6 +201,11 @@
 (defparameter *trap* nil)
 (defparameter *dispatch-log* nil)
 
+;;; Called from cc_dispatch_slot_reader_index via intrinsic_error
+(defun fastgf-slot-unbound (opt-slot-reader instance)
+  (slot-unbound (optimized-slot-reader-class opt-slot-reader)
+                instance
+                (optimized-slot-reader-slot-name opt-slot-reader)))
 
 ;;; Takes three arguments ((x cmp::optimized-slot-reader) instance vargs)
 (defun dispatch-slot-reader-index-debug (opt-slot-reader instance vargs)
@@ -348,8 +353,8 @@
 
 (defun compute-effective-method-function-maybe-optimize (generic-function method-combination methods actual-specializers &key log
                                                                                                                            actual-arguments)
-  ;; calculate the effective-method-function as well as an optimized one
-  ;;   so that we can apply the e-m-f to the arguments if we need to
+  ;; Calculate the effective-method-function as well as an optimized one
+  ;; so that we can apply the e-m-f to the arguments if we need to debug the optimized version.
   (let* ((efm (compute-effective-method-function generic-function
                                                  method-combination
                                                  methods))
@@ -514,18 +519,12 @@ It takes the arguments in two forms, as a vaslist and as a list of arguments."
         ;; What if another thread adds/removes method during c-a-m???????
         (setf method-list (clos::compute-applicable-methods generic-function arguments))
         (gf-log "compute-applicable-methods-using-classes returned NIL for second argument\n")
-        ;; MOP says we can only memoize results if c-a-m-u-c returns T as its second return value
-        ;;     But for standard-generic-functions we can memoize the effective-method-function
-        ;;        even if c-a-m-u-c returns NIL as its second return value
-        ;;        because it is illegal to implement new methods on c-a-m specialized
-        ;;        on standard-generic-function.
+        ;; MOP says we can only memoize results if c-a-m-u-c returns T as its second return value.
+        ;;  But for standard-generic-functions we can memoize the effective-method-function
+        ;;  even if c-a-m-u-c returns NIL as its second return value
+        ;;  because it is illegal to implement new methods on c-a-m specialized
+        ;;  on standard-generic-function.
         (setf can-memoize (eq (class-of generic-function) (find-class 'standard-generic-function))))
-      ;; If the method list contains a single entry and it is an accessor - then we can
-      ;; create an optimized reader/writer and put that in the call history
-      ;; FIXME:  To achieve optimized slot access - I need here to determine if I can use an optimized slot accessor.
-      ;;         Can I use the method-list?
-      ;;(gf-log "        check if method list (1) has one entry (2) is a reader or writer - if so - optimize it\n")
-      ;;(gf-log "             method-list -> %s\n" method-list)
       (if method-list
           (let ((effective-method-function (compute-effective-method-function-maybe-optimize
                                             generic-function

@@ -511,11 +511,10 @@
 	(effective-method-block (irc-basic-block-create "effective-method")))
     (setf (gethash outcome *outcomes*) gf-data-id)
     (irc-branch-to-and-begin-block effective-method-block)
-    (let ((effective-method
-            #+debug-slot-accessors (irc-load (irc-gep *gf-data*
-                                                      (list (jit-constant-size_t 0)
-                                                            (jit-constant-size_t gf-data-id))) "load")
-            #-debug-slot-accessors nil))
+    (let ((slot-read-info
+            (irc-load (irc-gep *gf-data*
+                               (list (jit-constant-size_t 0)
+                                     (jit-constant-size_t gf-data-id))) "load")))
       (irc-intrinsic-call "llvm.va_end" (list (irc-pointer-cast args %i8*% "local-arglist-i8*")))
       (let ((opt-data (optimized-slot-reader-index outcome)))
         (irc-ret
@@ -523,9 +522,7 @@
            ((fixnump opt-data)
             (irc-intrinsic-call #+debug-slot-accessors "cc_dispatch_slot_reader_index_debug"
                                 #-debug-slot-accessors "cc_dispatch_slot_reader_index"
-                                (list #+debug-slot-accessors effective-method
-                                      (jit-constant-size_t opt-data)
-                                      gf-args)))
+                                (list slot-read-info (jit-constant-size_t opt-data) gf-args)))
            (t (irc-intrinsic-call "cc_dispatch_slot_reader" (list opt-data gf gf-args) "ret"))))))))
 
 (defun codegen-slot-writer (outcome args gf gf-args)

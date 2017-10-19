@@ -69,13 +69,7 @@ using namespace core;
 #pragma GCC visibility push(default)
 
 namespace llvmo {
-core::T_sp  global_arg0;
-core::T_sp  global_arg1;
-core::T_sp  global_arg2;
 [[noreturn]] __attribute__((optnone))  void intrinsic_error(ErrorCode err, core::T_sp arg0, core::T_sp arg1, core::T_sp arg2) {
-  global_arg0 = arg0;
-  global_arg1 = arg1;
-  global_arg2 = arg2;
   switch (err) {
   case noFunctionBoundToSymbol:
     {
@@ -84,13 +78,13 @@ core::T_sp  global_arg2;
     }
     break;
   case badKeywordArgument:
-    SIMPLE_ERROR(BF("Bad keyword argument %s") % _rep_(arg0));
+      SIMPLE_ERROR(BF("Bad keyword argument %s") % _rep_(arg0));
   case couldNotCoerceToClosure:
-    SIMPLE_ERROR(BF(" symbol %s") % _rep_(arg0));
+      SIMPLE_ERROR(BF(" symbol %s") % _rep_(arg0));
   case destinationMustBeActivationFrame:
-    SIMPLE_ERROR(BF("Destination must be ActivationFrame"));
+      SIMPLE_ERROR(BF("Destination must be ActivationFrame"));
   case invalidIndexForFunctionFrame:
-    SIMPLE_ERROR(BF("Invalid index[%d] for FunctionFrame(size=%d)") % _rep_(arg0) % _rep_(arg1));
+      SIMPLE_ERROR(BF("Invalid index[%d] for FunctionFrame(size=%d)") % _rep_(arg0) % _rep_(arg1));
   case no_applicable_reader_method:
       core::eval::funcall(::cl::_sym_no_applicable_method,arg0,arg1);
       UNREACHABLE();
@@ -123,11 +117,17 @@ core::T_sp  global_arg2;
     SIMPLE_ERROR(BF("TRAPPED SLOT WRITER PROBLEM!!!   The expected slot at %d value %s was unchanged!  The value should be %s") % _rep_(arg0) % _rep_(arg1) % _rep_(arg2) );
   }
   default:
-    SIMPLE_ERROR(BF("An intrinsicError %d was signaled and there needs to be a more descriptive error message for it in gctools::intrinsic_error arg0: %s arg1: %s arg2: %s") % err % _rep_(arg0) % _rep_(arg1) % _rep_(arg2));
+      SIMPLE_ERROR(BF("An intrinsicError %d was signaled and there needs to be a more descriptive error message for it in gctools::intrinsic_error arg0: %s arg1: %s arg2: %s") % err % _rep_(arg0) % _rep_(arg1) % _rep_(arg2));
   };
 };
+
 };
 
+namespace llvmo {
+core::T_sp intrinsic_slot_unbound(core::T_sp slot_info, core::T_sp instance ) {
+  return core::eval::funcall(clos::_sym_fastgf_slot_unbound,slot_info,instance);
+};
+};
 
 
 
