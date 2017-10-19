@@ -564,7 +564,7 @@ The passed module is modified as a side-effect."
            (progn
              (mp:lock *jit-lock* t)
              (if (not (boundp '*jit-log-stream*))
-                 (let ((filename (core:mkstemp (core:bformat nil "/tmp/clasp-symbols-%s-" (core:getpid)))))
+                 (let ((filename (core:bformat nil "/tmp/clasp-symbols-%s" (core:getpid))))
                    (core:bformat *debug-io* "Writing jitted symbols to %s\n" filename)
                    (setq *jit-log-stream* (open filename :direction :output))))
              (princ (core:pointer-as-string (cadr symbol-info)) *jit-log-stream*)
