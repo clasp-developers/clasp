@@ -1362,6 +1362,9 @@ CL_DEFMETHOD size_t DataLayout_O::getTypeAllocSize(llvm::Type* ty)
   return this->_DataLayout->getTypeAllocSize(ty);
 }
 
+CL_LISPIFY_NAME(getStringRepresentation);
+CL_EXTERN_DEFMETHOD(DataLayout_O,&llvm::DataLayout::getStringRepresentation);
+
 
 }; // llvmo
 
