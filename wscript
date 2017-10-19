@@ -738,6 +738,7 @@ def configure(cfg):
 ##  Generate per-thread logs in /tmp/dispatch-history/**  of the slow path of fastgf 
 #    cfg.define("DEBUG_CMPFASTGF",1)  # debug dispatch functions by inserting code into them that traces them
 #    cfg.define("DEBUG_FASTGF",1)   # generate slow gf dispatch logging and write out dispatch functions to /tmp/dispatch-history-**
+#    cfg.define("DEBUG_BCLASP_LISP",1)  # Generate debugging frames for all bclasp code - like declaim
 #    cfg.define("DEBUG_BOUNDS_ASSERT",1)
 #    cfg.define("DEBUG_SLOT_ACCESSORS",1)
 #    cfg.define("DISABLE_TYPE_INFERENCE",1)
