@@ -1,0 +1,4 @@
+#! /bin/bash
+./symbolicate.lisp -i /tmp/out.user_stacks -o /tmp/out-symbol.user_stacks -s $1
+~/Development/FlameGraph/stackcollapse.pl /tmp/out-symbol.user_stacks >/tmp/out-symbol.folded
+~/Development/FlameGraph/flamegraph.pl /tmp/out-symbol.folded >/tmp/out.svg
