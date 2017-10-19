@@ -56,6 +56,7 @@
                                      (jit-constant-size_t depth)
                                      (jit-constant-size_t index)
                                      start-renv)))
+    #+optimize-bclasp
     (push (make-lexical-function-reference :instruction instruction
                                            :depth depth
                                            :index index
@@ -359,6 +360,7 @@
                               (irc-renv visible-ancestor-environment)))
          (parent-renv (irc-load parent-renv-ref))
          (instr (irc-intrinsic "makeValueFrameSetParent" size parent-renv)))
+    #+optimize-bclasp
     (push (make-value-frame-maker-reference :instruction instr
                                             :new-env new-env
                                             :new-renv new-renv

@@ -48,33 +48,36 @@
 ;;; These can be used at the end of compilation to convert
 ;;; variables in activation frame slots that don't need to be closed over
 ;;; into allocas in the current function.
-(defstruct (lexical-variable-reference (:type vector))
-  symbol start-env start-renv depth index instruction ref-env)
-(defvar *lexical-variable-references*)
+#+optimize-bclasp
+(progn
+  (defstruct (lexical-variable-reference (:type vector))
+    symbol start-env start-renv depth index instruction ref-env)
+  (defvar *lexical-variable-references*))
 
 
 ;;; kind can be :make-value-frame-set-parent-from-closure or
 ;;;   :make-value-frame-set-parent
-(defstruct (value-frame-maker-reference (:type vector))
-  instruction new-env new-renv parent-env parent-renv)
-(defvar *make-value-frame-instructions*)
+#+optimize-bclasp
+(progn
+  (defstruct (value-frame-maker-reference (:type vector))
+    instruction new-env new-renv parent-env parent-renv)
+  (defvar *make-value-frame-instructions*))
 
 
-(defstruct (tagbody-frame-maker (:type vector))
-  instruction )
+#+optimize-bclasp
+(progn
+  (defstruct (tagbody-frame-maker (:type vector))
+    instruction )
+  (defvar *tagbody-frame-makers*)
 
-(defvar *tagbody-frame-makers*)
-
-(defstruct (throw-dynamic-go (:type vector))
-  instruction index depth start-env start-renv tagbody-env)
-
-(defvar *throw-dynamic-go-instructions*)
-
-
-(defstruct (lexical-function-reference (:type vector))
-  instruction index depth start-env start-renv function-env)
-
-(defvar *lexical-function-references*)
+  (defstruct (throw-dynamic-go (:type vector))
+    instruction index depth start-env start-renv tagbody-env)
+  (defvar *throw-dynamic-go-instructions*))
+#+optimize-bclasp
+(progn
+  (defstruct (lexical-function-reference (:type vector))
+    instruction index depth start-env start-renv function-env)
+  (defvar *lexical-function-references*))
 
 
 (defun generate-register-alloca (symbol env)
@@ -294,6 +297,8 @@
 ;;;  The cmp::*activation-frame-optimize* variable is defined in init.lsp
 ;;;      and it's temporarily bound to NIL in clasp-builder.lsp
 (defmacro with-lexical-variable-optimizer ((optimize) &rest body)
+  #-optimize-bclasp`(progn ,@body)
+  #+optimize-bclasp
   (let ((variable-map (gensym)))
     `(let ((*lexical-variable-references* nil)
            (*make-value-frame-instructions* nil)
@@ -406,15 +411,14 @@
       result))
   ;; This second option saves information that can be used later to convert local lexical variables into allocas
   (let* ((start-renv (irc-load (irc-renv env)))
-         (instruction (irc-intrinsic "lexicalValueReference" (jit-constant-i32 depth) (jit-constant-i32 index) start-renv))
-         (ref (make-lexical-variable-reference :symbol symbol
-                                               :start-env env
-                                               :start-renv start-renv
-                                               :depth depth
-                                               :index index
-                                               :instruction instruction)))
-    #+(or)(core:bformat t "Pushed ref -> %s\n" ref)
-    (push ref *lexical-variable-references*)
+         (instruction (irc-intrinsic "lexicalValueReference" (jit-constant-i32 depth) (jit-constant-i32 index) start-renv)))
+    #+optimize-bclasp(push (make-lexical-variable-reference :symbol symbol
+                                                            :start-env env
+                                                            :start-renv start-renv
+                                                            :depth depth
+                                                            :index index
+                                                            :instruction instruction)
+                           *lexical-variable-references*)
     instruction))
 
 (defun codegen-lexical-var-value (symbol depth index env)

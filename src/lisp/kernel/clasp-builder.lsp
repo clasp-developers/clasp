@@ -373,7 +373,7 @@ Return files."
 (export '(bclasp-features with-bclasp-features))
 (defun bclasp-features()
   (remove-stage-features)
-  (setq *features* (list* :clos :bclasp *features*))
+  (setq *features* (list* :optimize-bclasp :clos :bclasp *features*))
   (setq *target-backend* (default-target-backend)))
 (core:fset 'with-bclasp-features
             #'(lambda (whole env)
