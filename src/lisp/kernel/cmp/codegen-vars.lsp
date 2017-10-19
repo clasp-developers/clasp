@@ -267,7 +267,32 @@
     (resize-closures-and-make-non-closures-invisible make-value-environment-instructions
                                                      closure-environments)))
 
-(defvar *activation-frame-optimize* t)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Carry out a collection of optimization passes on the LLVM-IR
+;;;   after codegen that is done in the body.
+;;; In other words - the bclasp compiler in 'body' codegens a top-level form
+;;;   and gathers information in the dynamic variables bound below.
+;;;   Then the optimization passes after 'body' operate on the llvm-ir in
+;;;   the passes:
+;;;      optimize-closures - identifies lexical variables that must be closures
+;;;      rewrite-lexical-variable-references-for-new-depth -
+;;;              rewrites closed over lexical variable access to account
+;;;              for activation frames that are now not necessary
+;;;      rewrite-dynamic-go-for-new-depth - rewrites dynamic-go instructions
+;;;              to account for the activation frames that are not necessary
+;;;      rewrite-lexical-function-references-for-new-depth -
+;;;              rewrites lexical function references to account for the
+;;;              activation frames that are no longer necessary.
+;;;      convert-instructions-to-use-registers - converts lexical variable
+;;;              references that are not closed over to use registers and allocas
+;;;
+;;;   These optimizations take time - and when the interpreter is starting up
+;;;     they may take more time than they take to run.
+;;;     They can be turned off using *activation-frame-optimize* (NIL is off)
+;;;
+;;;  The cmp::*activation-frame-optimize* variable is defined in init.lsp
+;;;      and it's temporarily bound to NIL in clasp-builder.lsp
 (defmacro with-lexical-variable-optimizer ((optimize) &rest body)
   (let ((variable-map (gensym)))
     `(let ((*lexical-variable-references* nil)
@@ -280,6 +305,8 @@
          (when (and ,optimize *activation-frame-optimize*)
            (let ((,variable-map (optimize-value-environments *lexical-variable-references*)))
              (cv-log "optimize-closures ,variable-map \n")
+             ;; Identify activation frame/environments that must be closures
+             ;; and optimize all other references to use alloca's in the stack frame
              (optimize-closures ,variable-map *make-value-frame-instructions*)
              ;; Rewrite lexical variable references to take into account the newly invisible environments
              (cv-log "rewrite-lexical-variable-references-for-new-depth \n")

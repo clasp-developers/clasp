@@ -70,6 +70,9 @@
 (eval-when (:execute :compile-toplevel :load-toplevel)
   (core::select-package :cmp))
 (export '(llvm-link link-bitcode-modules))
+;;; Turn on aclasp/bclasp activation-frame optimization
+(sys:*make-special '*activation-frame-optimize*)
+(setq *activation-frame-optimize* t)
 (sys:*make-special '*enable-profiling*)
 (if (member :enable-profiling *features*)
     (setq *enable-profiling* t)
