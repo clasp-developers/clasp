@@ -73,6 +73,7 @@
 ;;; Turn on aclasp/bclasp activation-frame optimization
 (sys:*make-special '*activation-frame-optimize*)
 (setq *activation-frame-optimize* t)
+(setq *features* (cons :optimize-bclasp *features*))
 (sys:*make-special '*enable-profiling*)
 (if (member :enable-profiling *features*)
     (setq *enable-profiling* t)
