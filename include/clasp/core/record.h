@@ -246,6 +246,52 @@ public:
   }
 
   template <typename OT>
+    void field_if_not_unbound(Symbol_sp name, gc::smart_ptr<OT> &value) {
+    switch (this->stage()) {
+    case saving: {
+      if (!value.unboundp()) {
+        Cons_sp apair = Cons_O::create(name, value);
+        this->_alist = Cons_O::create(apair, this->_alist);
+      }
+    } break;
+    case initializing: {
+      // I could speed this up if I cache the entry after this find
+      // and search from there and reverse the alist once it's done
+      List_sp find = core__alist_assoc_eq(this->_alist, name);
+      if (find.nilp())
+        value = _Unbound<OT>();
+      else {
+        Cons_sp apair = gc::As<Cons_sp>(oCar(find));
+        value = gc::As<gc::smart_ptr<OT>>(oCdr(apair));
+        this->flagSeen(apair);
+      }
+    } break;
+    case loading: {
+      // I could speed this up if I cache the entry after this find
+      // and search from there and reverse the alist once it's done
+      List_sp find = core__alist_assoc_eq(this->_alist, name);
+      if (find.nilp())
+        value = _Unbound<OT>();
+      else {
+        Cons_sp apair = gc::As<Cons_sp>(oCar(find));
+        // When loading the object oCdr(apair) may not be of the
+        // same type as value - it may be a symbol - used for patching
+        // use As_unsafe for this.
+        value = gc::As_unsafe<gc::smart_ptr<OT>>(oCdr(apair));
+      }
+    } break;
+    case patching: {
+      if (!value.unboundp()) {
+        gc::smart_ptr<T_O> orig((gc::Tagged)value.raw_());
+        T_sp patch = record_circle_subst(this->_replacement_table, orig);
+        if (patch != orig)
+          value.setRaw_(reinterpret_cast<gc::Tagged>(patch.raw_()));
+      }
+    } break;
+    }
+  }
+  
+  template <typename OT>
   void field_if_not_nil(Symbol_sp name, gc::Nilable<gc::smart_ptr<OT>> &value) {
     switch (this->stage()) {
     case saving: {
