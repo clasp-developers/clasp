@@ -157,9 +157,10 @@
     
 (defun extract-backtrace-frame-name (line)
   ;; On OS X this is how we get the name part
-  (let* ((pos0 (position-if (lambda (c) (char/= c #\space)) line)) ; skip initial whitespace
-         (pos0e (position-if (lambda (c) (char= c #\space)) line :start pos0)) ; skip chars
-         (pos1 (position-if (lambda (c) (char/= c #\space)) line :start pos0e)) ; skip whitespace
+  ;; The format seems to be as follows:
+  ;; "framenumber    processname        address      functionname"
+  ;; with variable numbers of spaces. processname is always at character 4 so we start there.
+  (let* ((pos1 (position-if (lambda (c) (char/= c #\space)) line :start 4)) ; skip whitespace
          (pos1e (position-if (lambda (c) (char= c #\space)) line :start pos1)) ; skip chars
          (pos2 (position-if (lambda (c) (char/= c #\space)) line :start pos1e))
          (pos2e (position-if (lambda (c) (char= c #\space)) line :start pos2)) ; skip chars
