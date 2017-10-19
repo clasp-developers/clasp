@@ -805,7 +805,7 @@ extern core::T_O* setfSymbolFunctionRead(const core::T_O *tsymP)
 {NO_UNWIND_BEGIN();
  const core::Symbol_sp sym((gctools::Tagged)tsymP);
  core::Function_sp setfFunc = sym->getSetfFdefinition(); //_lisp->get_setfDefinition(*symP);
- ASSERTF(setfFunc, BF("There is no setf function bound to symbol[%s]") % _rep_((*symP)));
+ ASSERTF(setfFunc, BF("There is no setf function bound to symbol[%s]") % _rep_(sym));
  return setfFunc.raw_();
   NO_UNWIND_END();
 }

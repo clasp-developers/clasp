@@ -473,7 +473,6 @@ ALWAYS_INLINE void setParentOfActivationFrameFromClosure(core::T_O *resultP, cor
   } else {
     parentP = _Nil<core::T_O>().raw_();
   }
-  ASSERT((*resultP).isA<ActivationFrame_O>());
   ActivationFrame_sp af((gctools::Tagged)resultP);
   af->setParentFrame(parentP);
   NO_UNWIND_END();
