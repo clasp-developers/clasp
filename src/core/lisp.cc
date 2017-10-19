@@ -1779,7 +1779,7 @@ CL_DEFUN T_sp core__lookup_class_with_stamp(Fixnum stamp) {
 CL_LAMBDA(symbol &optional (errorp t) env);
 CL_DECLARE();
 CL_DOCSTRING("find-class");
-CL_DEFUN Class_mv core__lookup_class(Symbol_sp symbol, bool errorp, T_sp env) {
+CL_DEFUN Class_mv cl__find_class(Symbol_sp symbol, bool errorp, T_sp env) {
   ASSERTF(env.nilp(), BF("Handle non nil environment"));
   // Should only be single threaded here
   if (_lisp->bootClassTableIsValid()) {
@@ -1836,13 +1836,6 @@ CL_DEFUN Class_mv core__set_class(T_sp newValue, Symbol_sp name) {
   }
 };
 
-
-CL_LAMBDA(symbol &optional (errorp t) env);
-CL_DECLARE();
-CL_DOCSTRING("find-class");
-CL_DEFUN Class_mv cl__find_class(Symbol_sp symbol, bool errorp, T_sp env) {
-  return core__lookup_class(symbol,errorp,env);
-}
 
 CL_LAMBDA(new-value name);
 CL_DECLARE();
