@@ -1302,6 +1302,10 @@ Write T_O* pointers into the current multiple-values array starting at the (offs
                                  args))
          (i 0))
     (declare (ignore _))
+    (unless (primitive-varargs info)
+      (unless (= (length required-args-ty) (length passed-args-ty))
+        (error "Constructing call to intrinsic ~a - mismatch in the number of arguments, expected ~a - received ~a"
+               fn-name (length required-args-ty) (length passed-args-ty))))
     (mapc #'(lambda (x y z)
               (unless (equal x y)
                 (error "Constructing call to intrinsic ~a - mismatch of arg#~a value[~a], expected type ~a - received type ~a" fn-name i z x y))

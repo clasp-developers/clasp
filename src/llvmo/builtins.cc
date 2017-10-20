@@ -193,56 +193,49 @@ BUILTIN_ATTRIBUTES core::T_O *cc_readCell(core::T_O *cell)
 
 
 
-BUILTIN_ATTRIBUTES gctools::return_type cc_dispatch_slot_reader_index(core::T_O* toptimized_slot_reader, size_t index, core::T_O* tvargs) {
-  core::VaList_sp vargs((gctools::Tagged)tvargs);
-  core::T_sp tinstance = vargs->next_arg();
-  va_end(vargs->_Args);
-  core::Instance_sp instance = gc::As_unsafe<core::Instance_sp>(tinstance);
+BUILTIN_ATTRIBUTES core::T_O* cc_dispatch_slot_reader_index(size_t index, core::T_O* tinstance) {
+  core::Instance_sp instance((gctools::Tagged)tinstance);
   core::T_sp value = low_level_instanceRef(instance->_Rack,index);
+  return value.raw_();
+}
+
+BUILTIN_ATTRIBUTES core::T_O* cc_dispatch_slot_reader_cons(core::T_O* toptinfo) {
+  core::SimpleVector_sp optinfo((gctools::Tagged)toptinfo);
+  core::Cons_sp cons = gc::As_unsafe<core::Cons_sp>((*optinfo)[OPTIMIZED_SLOT_INDEX_INDEX]);
+  core::T_sp value = CONS_CAR(cons);
+  return value.raw_();
+}
+
+BUILTIN_ATTRIBUTES gctools::return_type cc_bound_or_error(core::T_O* toptimized_slot_reader, core::T_O* tinstance, core::T_O* tvalue) {
+  core::T_sp value((gctools::Tagged)tvalue);
   if (value.unboundp()) {
+    core::Instance_sp instance((gctools::Tagged)tinstance);
     core::T_sp optimized_slot_info((gctools::Tagged)toptimized_slot_reader);
     return llvmo::intrinsic_slot_unbound(optimized_slot_info,instance).as_return_type();
   }
   return value.as_return_type();
 }
 
-
-BUILTIN_ATTRIBUTES gctools::return_type cc_dispatch_slot_reader(core::T_O* tindex, core::T_O* tgf, core::T_O* tvargs) {
-  core::VaList_sp vargs((gctools::Tagged)tvargs);
-  core::T_sp tinstance = vargs->next_arg();
-  va_end(vargs->_Args);
-  core::Instance_sp instance = gc::As_unsafe<core::Instance_sp>(tinstance);
-  // FIXME: Pass the optimized slot info
-  return core::do_slot_read((gctools::Tagged)tindex,(gctools::Tagged)tgf,instance.tagged_());
-}
-
-BUILTIN_ATTRIBUTES gctools::return_type cc_dispatch_slot_writer_index(size_t index, core::T_O* tvargs) { 
-  core::VaList_sp vargs((gctools::Tagged)tvargs);
-  core::T_sp value = vargs->next_arg();
-  core::T_sp tinstance = vargs->next_arg();
-  va_end(vargs->_Args);
-  core::Instance_sp instance = gc::As_unsafe<core::Instance_sp>(tinstance);
+BUILTIN_ATTRIBUTES gctools::return_type cc_dispatch_slot_writer_index(core::T_O* tvalue, size_t index, core::T_O* tinstance) {
+  core::T_sp value((gctools::Tagged)tvalue);
+  core::Instance_sp instance((gctools::Tagged)tinstance);
   low_level_instanceSet(instance->_Rack,index,value);
   return value.as_return_type();
 }
 
-
-
-
-
-
-
-BUILTIN_ATTRIBUTES gctools::return_type cc_dispatch_slot_writer(core::T_O* tindex, core::T_O* tgf, core::T_O* tvargs) { 
-  core::VaList_sp vargs((gctools::Tagged)tvargs);
-  core::T_sp value = vargs->next_arg();
-  core::T_sp tinstance = vargs->next_arg();
-  va_end(vargs->_Args);
-  core::Instance_sp instance = gc::As_unsafe<core::Instance_sp>(tinstance);
-  core::do_slot_write((gctools::Tagged)tindex,(gctools::Tagged)tgf,instance.tagged_(),value.tagged_());
+BUILTIN_ATTRIBUTES gctools::return_type cc_dispatch_slot_writer_cons(core::T_O* tvalue, core::T_O* toptinfo) {
+  core::SimpleVector_sp optinfo((gctools::Tagged)toptinfo);
+  core::Cons_sp cons = gc::As_unsafe<core::Cons_sp>((*optinfo)[OPTIMIZED_SLOT_INDEX_INDEX]);
+  core::T_sp value((gctools::Tagged)tvalue);
+  CONS_CAR(cons) = value;
   return value.as_return_type();
 }
 
 
+BUILTIN_ATTRIBUTES void cc_vaslist_end(core::T_O* tvaslist) {
+  core::VaList_sp vaslist((gctools::Tagged)tvaslist);
+  va_end(vaslist->_Args);
+}
 
 BUILTIN_ATTRIBUTES gctools::return_type cc_dispatch_effective_method(core::T_O* teffective_method, core::T_O* tgf, core::T_O* tgf_args_valist_s) {
   core::Function_sp effective_method((gctools::Tagged)teffective_method);

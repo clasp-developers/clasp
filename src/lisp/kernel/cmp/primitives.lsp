@@ -8,6 +8,10 @@
   argument-attributes
   properties)
 
+(defun primitive-varargs (prim)
+  (let ((props (primitive-properties prim)))
+    (getf props :varargs)))
+
 (defun define-primitive-info (name return-ty-attributes passed-args-ty varargs does-not-throw does-not-return)
   (let (reversed-argument-types
         return-ty
@@ -191,14 +195,16 @@
     (primitive          "cc_bad_tag" %void% (list %t*% %t*%)) ;; gf gf-args
     (primitive          "cc_dispatch_invalid" %return_type% (list %t*% %t*%)) ;; gf gf-args
     (primitive          "cc_dispatch_miss" %return_type% (list %t*% %t*%)) ;; gf gf-args
-    (primitive          "cc_dispatch_slot_reader_index_debug"   %return_type% (list %t*% %size_t% %t*% %t*%)) ; effective-method gf gf-args
-    (primitive          "cc_dispatch_slot_writer_index_debug"   %return_type% (list %t*% %size_t% %t*% %t*%)) ; effective-method gf gf-args
-    (primitive          "cc_dispatch_slot_reader_index"   %return_type% (list %t*% %size_t% %t*%)) ; effective-method gf gf-args
-    (primitive          "cc_dispatch_slot_writer_index"   %return_type% (list %size_t% %t*%)) ; effective-method gf gf-args
-    (primitive          "cc_dispatch_slot_reader"   %return_type% (list %t*% %t*% %t*%)) ; effective-method gf gf-args
-    (primitive          "cc_dispatch_slot_writer"   %return_type% (list %t*% %t*% %t*%)) ; effective-method gf gf-args
+;;;    (primitive          "cc_dispatch_slot_reader_index_debug"   %return_type% (list %t*% %size_t% %t*% %t*%)) ; effective-method gf gf-args
+;;;    (primitive          "cc_dispatch_slot_writer_index_debug"   %return_type% (list %t*% %size_t% %t*% %t*%)) ; effective-method gf gf-args
+    (primitive-nounwind "cc_dispatch_slot_reader_index"  %t*% (list %size_t% %t*%)) ; index instance
+    (primitive-nounwind "cc_dispatch_slot_reader_cons"   %t*% (list %t*%)) ; cons
+    (primitive-nounwind "cc_dispatch_slot_writer_index"  %return_type% (list %t*% %size_t% %t*%)) ; value index instance
+    (primitive-nounwind "cc_dispatch_slot_writer_cons"   %return_type% (list %t*% %t*%)) ; value cons
     (primitive          "cc_dispatch_effective_method"   %return_type% (list %t*% %t*% %t*%)) ; effective-method gf gf-args
     (primitive          "cc_dispatch_debug" %void% (list %i32% %uintptr_t%))
+    (primitive          "cc_bound_or_error" %return_type% (list %t*% %t*% %t*%)) ; optimized-data instance value
+    (primitive-nounwind "cc_vaslist_end" %void% (list %t*%))
 
     (primitive-nounwind "cc_ensure_valid_object" %t*% (list %t*%))
     (primitive-nounwind "cc_getPointer" %i8*% (list %t*%))

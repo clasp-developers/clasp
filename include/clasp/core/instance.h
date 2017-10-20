@@ -220,7 +220,9 @@ namespace core {
 
   }; // Instance class
 
-  template <class RackType_sp>
+  #define OPTIMIZED_SLOT_INDEX_INDEX 1
+
+    template <class RackType_sp>
     inline T_sp low_level_instanceRef(RackType_sp rack, size_t index) { return (*rack)[index+RACK_SLOT_START]; }
   template <class RackType_sp>
     inline void low_level_instanceSet(RackType_sp rack, size_t index, T_sp value) { (*rack)[index+RACK_SLOT_START] = value; }

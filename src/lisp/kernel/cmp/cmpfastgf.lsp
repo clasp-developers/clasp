@@ -30,6 +30,10 @@
 ;;; Add :LOG-CMPGF to log fastgf messages during the slow path.
 ;;;    
 
+#+(or)
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (setf *echo-repl-read* t))
+
 (defvar *log-gf* nil)
 (defvar *debug-cmpfastgf-trace* nil)
 (defvar *message-counter* nil)
@@ -79,6 +83,10 @@
   (defmacro insert-message ()))
 
 
+(defmacro cf-log (fmt &body args)
+  nil
+  #+(or)`(core:bformat *debug-io* ,fmt ,@args))
+
 ;;; ------------------------------------------------------------
 ;;;
 ;;; Convert a generic function call-history to an internal representation
@@ -94,9 +102,17 @@
 (defvar *bad-tag-bb*)
 (defvar *eql-selectors*)
 
-(defstruct (optimized-slot-reader (:type vector) :named) effective-method-function index slot-name method class)
-(defstruct (optimized-slot-writer (:type vector) :named) effective-method-function index slot-name method class)
-
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Sanity check for slot index value
+;;;
+;;; index must the at position 1 of the optimized-slot-(reader|writer)
+;;;
+(eval-when (:compile-toplevel :execute :load-toplevel)
+  (unless (= (cdr (assoc :optimized-slot-index-index (llvm-sys:cxx-data-structures-info))) 1)
+    (error "The index of the slot index must be 1")))
+(defstruct (optimized-slot-reader (:type vector) :named) index #| << must be here |# effective-method-function slot-name method class)
+(defstruct (optimized-slot-writer (:type vector) :named) index #| << must be here |# effective-method-function slot-name method class)
 (defstruct (klass (:type vector) :named) stamp name)
 (defstruct (outcome (:type vector) :named) outcome)
 (defstruct (match (:type vector) :named) outcome)
@@ -105,6 +121,14 @@
 (defstruct (skip (:include match) (:type vector) :named))
 (defstruct (node (:type vector) :named) (eql-specializers (make-hash-table :test #'eql) :type hash-table)
            (class-specializers nil :type list))
+
+
+(defstruct (argument-holder (:type vector) :named) (history nil) va-list gf-args gf)
+
+(defun argument-next (arguments)
+  (let ((arg (irc-va_arg (argument-holder-va-list arguments) %t*%)))
+    (push arg (argument-holder-history arguments))
+    arg))
 
 (defstruct (dtree (:type vector) :named) root)
 
@@ -443,14 +467,18 @@
       (core:bformat fout "%s [ label = \"Start\", shape = diamond ];\n" (string startid))
       (core:bformat fout "%s -> %s;\n" (string startid) (string (draw-node fout (dtree-root dtree)))))))
 
+(defun register-runtime-data (value table)
+  (let ((index (prog1 *gf-data-id* (incf *gf-data-id*))))
+    (setf (gethash value table) index)
+    index))
+
 (defun lookup-eql-selector (eql-test)
   (let ((tagged-immediate (core:create-tagged-immediate-value-or-nil eql-test)))
     (if tagged-immediate
 	(irc-int-to-ptr (jit-constant-i64 tagged-immediate) %t*%)
 	(let ((eql-selector-id (gethash eql-test *eql-selectors*)))
 	  (unless eql-selector-id
-	    (setf eql-selector-id (prog1 *gf-data-id* (incf *gf-data-id*)))
-	    (setf (gethash eql-test *eql-selectors*) eql-selector-id))
+            (setf eql-selector-id (register-runtime-data eql-test *eql-selectors*)))
 	  (let* ((eql-selector (irc-load (irc-gep *gf-data*
                                                   (list (jit-constant-size_t 0)
                                                         (jit-constant-size_t eql-selector-id))) "load")))
@@ -462,7 +490,8 @@
 ;;;   described by a DTREE.
 ;;;
 
-(defun codegen-remaining-eql-tests (eql-tests eql-fail-branch arg args gf gf-args)
+(defun codegen-remaining-eql-tests (arguments eql-tests eql-fail-branch arg)
+  (cf-log "codegen-remaining-eql-tests\n")
   (if (null eql-tests)
       (irc-br eql-fail-branch)
       (let* ((eql-test (car eql-tests))
@@ -480,11 +509,12 @@
 	       (next-eql-test (irc-basic-block-create "next-eql-test")))
 	  (irc-cond-br eql-cmp eql-branch next-eql-test)
 	  (irc-begin-block next-eql-test)
-	  (codegen-remaining-eql-tests eql-rest eql-fail-branch arg args gf gf-args))
+	  (codegen-remaining-eql-tests arguments eql-rest eql-fail-branch arg))
 	(irc-begin-block eql-branch)
-	(codegen-node-or-outcome eql-outcome args gf gf-args))))
+	(codegen-node-or-outcome arguments eql-outcome))))
 
-(defun codegen-eql-specializers (node arg args gf gf-args)
+(defun codegen-eql-specializers (arguments node arg)
+  (cf-log "codegen-eql-specializers\n")
   (let ((eql-tests (let (result)
                      (maphash (lambda (key value)
                                 (push (list key value) result))
@@ -494,7 +524,7 @@
                    using (hash-value value)
                    collect (list key value)))
 	(on-to-class-specializers (irc-basic-block-create "on-to-class-specializers")))
-    (codegen-remaining-eql-tests eql-tests on-to-class-specializers arg args gf gf-args)
+    (codegen-remaining-eql-tests arguments eql-tests on-to-class-specializers arg)
     (irc-begin-block on-to-class-specializers)))
 
 #++(defun gather-outcomes (outcome)
@@ -503,42 +533,52 @@
     tag))
 
 
-(defun codegen-slot-reader (outcome args gf gf-args)
+(defun codegen-slot-reader (arguments outcome)
+  (cf-log "entered codegen-slot-reader\n")
 ;;; If the (cdr outcome) is a fixnum then we can generate code to read the slot
 ;;;    directly and remhash the outcome from the *outcomes* hash table.
 ;;; otherwise create an entry for the outcome and call the slot reader.
-  (let ((gf-data-id (prog1 *gf-data-id* (incf *gf-data-id*)))
+  (let ((gf-data-id (register-runtime-data outcome *outcomes*))
 	(effective-method-block (irc-basic-block-create "effective-method")))
-    (setf (gethash outcome *outcomes*) gf-data-id)
     (irc-branch-to-and-begin-block effective-method-block)
     (let ((slot-read-info
             (irc-load (irc-gep *gf-data*
                                (list (jit-constant-size_t 0)
                                      (jit-constant-size_t gf-data-id))) "load")))
-      (irc-intrinsic-call "llvm.va_end" (list (irc-pointer-cast args %i8*% "local-arglist-i8*")))
+      (cf-log "Ad\n")
+      (irc-intrinsic-call "llvm.va_end" (list (irc-pointer-cast (argument-holder-va-list arguments) %i8*% "local-arglist-i8*")))
+      (cf-log "Ada\n")
       (let ((opt-data (optimized-slot-reader-index outcome)))
+        (cf-log "Ae\n")
         (irc-ret
          (cond
            ((fixnump opt-data)
-            (irc-intrinsic-call #+debug-slot-accessors "cc_dispatch_slot_reader_index_debug"
-                                #-debug-slot-accessors "cc_dispatch_slot_reader_index"
-                                (list slot-read-info (jit-constant-size_t opt-data) gf-args)))
-           (t (irc-intrinsic-call "cc_dispatch_slot_reader" (list opt-data gf gf-args) "ret"))))))))
+            ;; FIXME   The argument-holder-gf-args is a vaslist!!!! not a va_list - they are just coincident!!!
+            (irc-intrinsic-call "cc_vaslist_end" (list (argument-holder-gf-args arguments)))
+            (let ((value (irc-intrinsic-call #+debug-slot-accessors "cc_dispatch_slot_reader_index_debug"
+                                             #-debug-slot-accessors "cc_dispatch_slot_reader_index"
+                                             (list (jit-constant-size_t opt-data) (first (argument-holder-history arguments))))))
+              (irc-intrinsic-call "cc_bound_or_error" (list slot-read-info (first (argument-holder-history arguments)) value))))
+           ((consp opt-data)
+            (cf-log "Generating slot reader for cons at %s\n" (core:object-address opt-data))
+            (let* ((value (irc-intrinsic-call "cc_dispatch_slot_reader_cons" (list slot-read-info))))
+              (irc-intrinsic-call "cc_bound_or_error" (list slot-read-info (first (argument-holder-history arguments)) value))))
+           (t (error "Unknown opt-data type ~a" opt-data))))))))
 
-(defun codegen-slot-writer (outcome args gf gf-args)
+(defun codegen-slot-writer (arguments outcome)
+  (cf-log "codegen-slot-writer\n")
 ;;; If the (optimized-slot-writer-data outcome) is a fixnum then we can generate code to read the slot
 ;;;    directly and remhash the outcome from the *outcomes* hash table.
 ;;; otherwise create an entry for the outcome and call the slot reader.
-  (let ((gf-data-id (prog1 *gf-data-id* (incf *gf-data-id*)))
+  (let ((gf-data-id (register-runtime-data outcome *outcomes*))
 	(effective-method-block (irc-basic-block-create "effective-method")))
-    (setf (gethash outcome *outcomes*) gf-data-id)
     (irc-branch-to-and-begin-block effective-method-block)
-    (let ((effective-method
-            #+debug-slot-accessors (irc-load (irc-gep *gf-data*
-                                                      (list (jit-constant-size_t 0)
-                                                            (jit-constant-size_t gf-data-id))) "load")
-            #-debug-slot-accessors nil))
-      (irc-intrinsic-call "llvm.va_end" (list (irc-pointer-cast args %i8*% "local-arglist-i8*")))
+    (let ((slot-write-info
+            (irc-load (irc-gep *gf-data*
+                               (list (jit-constant-size_t 0)
+                                     (jit-constant-size_t gf-data-id))) "write")))
+      (irc-intrinsic-call "llvm.va_end" (list (irc-pointer-cast (argument-holder-va-list arguments) %i8*% "local-arglist-i8*")))
+      (irc-intrinsic-call "cc_vaslist_end" (list (argument-holder-gf-args arguments)))
       (let ((opt-data (optimized-slot-writer-index outcome)))
         (irc-ret
          (cond
@@ -546,14 +586,19 @@
             (irc-intrinsic-call #+debug-slot-accessors "cc_dispatch_slot_writer_index_debug"
                                 #-debug-slot-accessors "cc_dispatch_slot_writer_index"
                                 (list #+debug-slot-accessors effective-method
-                                      (jit-constant-size_t opt-data)
-                                      gf-args)))
-           (t (irc-intrinsic-call "cc_dispatch_slot_writer" (list opt-data gf gf-args) "ret"))))))))
+                                      (second (argument-holder-history arguments)) ; value
+                                      (jit-constant-size_t opt-data) ; index
+                                      (first (argument-holder-history arguments))))) ; instance
+           ((consp opt-data)
+            (let ()
+              (irc-intrinsic-call "cc_dispatch_slot_writer_cons" (list (second (argument-holder-history arguments)) ; falue
+                                                                       slot-write-info))))
+           (t (error "Unknown opt-data ~a" opt-data))))))))
 
-(defun codegen-effective-method-call (outcome args gf gf-args)
-  (let ((gf-data-id (prog1 *gf-data-id* (incf *gf-data-id*)))
+(defun codegen-effective-method-call (arguments outcome)
+  (cf-log "codegen-effective-method-call\n")
+  (let ((gf-data-id (register-runtime-data outcome *outcomes*))
 	(effective-method-block (irc-basic-block-create "effective-method")))
-    (setf (gethash outcome *outcomes*) gf-data-id)
     (irc-branch-to-and-begin-block effective-method-block)
     (let ((effective-method
             (irc-load (irc-gep *gf-data*
@@ -564,13 +609,16 @@
                                (list (jit-constant-size_t 0)
                                      (jit-constant-size_t gf-data-id))) %uintptr_t%))
       (debug-call "debugPointer" (list (irc-bit-cast effective-method %i8*%)))
-      (irc-intrinsic-call "llvm.va_end" (list (irc-pointer-cast args %i8*% "local-arglist-i8*")))
+      (irc-intrinsic-call "llvm.va_end" (list (irc-pointer-cast (argument-holder-va-list arguments) %i8*% "local-arglist-i8*")))
       ;; This is where I could insert the slot reader if the effective method wraps a single accessor
       ;;
       (debug-dispatch effective-method)
-      (irc-ret (irc-intrinsic-call "cc_dispatch_effective_method" (list effective-method gf gf-args) "ret")))))
+      (irc-ret (irc-intrinsic-call "cc_dispatch_effective_method" (list effective-method
+                                                                        (argument-holder-gf arguments)
+                                                                        (argument-holder-gf-args arguments)) "ret")))))
 
-(defun codegen-outcome (node args gf gf-args)
+(defun codegen-outcome (arguments node)
+  (cf-log "codegen-outcome\n")
   ;; The effective method will be found in a slot in the modules *gf-data* array
   ;;    the slot index will be in gf-data-id
   (let* ((outcome (outcome-outcome node))
@@ -581,12 +629,13 @@
 	(irc-br existing-effective-method-block)
         (cond
           ((optimized-slot-reader-p outcome)
-           (codegen-slot-reader outcome args gf gf-args))
+           (codegen-slot-reader arguments outcome))
           ((optimized-slot-writer-p outcome)
-           (codegen-slot-writer outcome args gf gf-args))
-          (t (codegen-effective-method-call outcome args gf gf-args))))))
+           (codegen-slot-writer arguments outcome))
+          (t (codegen-effective-method-call arguments outcome))))))
 
-(defun codegen-class-binary-search (matches stamp-var args gf gf-args)
+(defun codegen-class-binary-search (arguments matches stamp-var)
+  (cf-log "codegen-class-binary-search\n")
   (insert-message)
   (cond
     ((null matches)
@@ -599,7 +648,7 @@
 		 (false-branch (irc-basic-block-create "cont")))
 	     (irc-cond-br cmpeq true-branch false-branch)
 	     (irc-begin-block true-branch)
-	     (codegen-node-or-outcome (single-outcome match) args gf gf-args)
+	     (codegen-node-or-outcome arguments (single-outcome match))
 	     (irc-begin-block false-branch)
 	     (irc-br (gethash :miss *outcomes*)))
 	   (let ((ge-first-branch (irc-basic-block-create "gefirst"))
@@ -611,7 +660,7 @@
 	     (let ((cmple (irc-icmp-sle stamp-var (jit-constant-i64 (range-last-stamp match)) "le")))
 	       (irc-cond-br cmple le-last-branch miss-branch)
 	       (irc-begin-block le-last-branch)
-	       (codegen-node-or-outcome (match-outcome match) args gf gf-args))))))
+	       (codegen-node-or-outcome arguments (match-outcome match)))))))
     (t
      (let* ((len-div-2 (floor (length matches) 2))
 	    (left-matches (subseq matches 0 len-div-2))
@@ -625,44 +674,49 @@
 	     (cmplt (irc-icmp-slt stamp-var (jit-constant-i64 right-stamp) "lt")))
 	 (irc-cond-br cmplt lt-branch gte-branch)
 	 (irc-begin-block lt-branch)
-	 (codegen-class-binary-search left-matches stamp-var args gf gf-args)
+	 (codegen-class-binary-search arguments left-matches stamp-var)
 	 (irc-begin-block gte-branch)
-	 (codegen-class-binary-search right-matches stamp-var args gf gf-args))))))
+	 (codegen-class-binary-search arguments right-matches stamp-var))))))
 
 (defun codegen-arg-stamp (arg)
+  (cf-log "codegen-arg-stamp\n")
   "Return a uintptr_t llvm::Value that contains the stamp for this object"
   ;; First check the tag
   (let ((stamp (irc-intrinsic-call "cc_read_stamp" (list (irc-bit-cast arg %i8*%)))))
     (debug-stamp stamp)
     stamp))
 
-(defun codegen-class-specializers (node arg args gf gf-args)
+(defun codegen-class-specializers (arguments node arg)
+  (cf-log "entered codegen-class-specializer\n")
       (let ((arg-stamp (codegen-arg-stamp arg)))
-        (codegen-class-binary-search (node-class-specializers node) arg-stamp args gf gf-args)))
+        (codegen-class-binary-search arguments (node-class-specializers node) arg-stamp)))
 
-(defun codegen-skip-node (node args gf gf-args)
+(defun codegen-skip-node (arguments node)
+  (cf-log "entered codegen-skip-node\n")
   ;;;
   ;;; Here I could do an optimization.
   ;;;   If it's skip-nodes all the way to the outcome
   ;;;    - then just do the outcome
   (let ((skip-node (first (node-class-specializers node))))
-    (codegen-node-or-outcome (skip-outcome skip-node) args gf gf-args)))
+    (codegen-node-or-outcome arguments (skip-outcome skip-node))))
 
-(defun codegen-node (node args gf gf-args)
-  (let ((arg (irc-va_arg args %t*%)))
+(defun codegen-node (arguments node)
+  (cf-log "entered codegen-node\n")
+  (let ((arg (argument-next arguments)))
     (debug-call "debugPointer" (list (irc-bit-cast arg %i8*%)))
     (insert-message)
     (if (skip-node-p node)
-        (codegen-skip-node node args gf gf-args)
+        (codegen-skip-node arguments node)
         (progn
-          (codegen-eql-specializers node arg args gf gf-args)
-          (codegen-class-specializers node arg args gf gf-args)))))
+          (codegen-eql-specializers arguments node arg)
+          (codegen-class-specializers arguments node arg)))))
 
-(defun codegen-node-or-outcome (node-or-outcome args gf gf-args)
+(defun codegen-node-or-outcome (arguments node-or-outcome)
+  (cf-log "entered codegen-node-or-outcome\n")
   (insert-message)
   (if (outcome-p node-or-outcome)
-      (codegen-outcome node-or-outcome args gf gf-args)
-      (codegen-node node-or-outcome args gf gf-args)))
+      (codegen-outcome arguments node-or-outcome)
+      (codegen-node arguments node-or-outcome)))
 
 ;;; --------------------------------------------------
 ;;;
@@ -838,6 +892,9 @@
 	    ;; Setup exception handling and cleanup landing pad
 	    (with-irbuilder (irbuilder-alloca)
 	      (let* ((in-frame-va_list/va_list*              (irc-alloca-va_list :label "in-frame-va_list/va_list*"))
+                     (arguments                     (make-argument-holder :va-list in-frame-va_list/va_list*
+                                                                          :gf-args passed-args
+                                                                          :gf gf))
                      (passed-args-tagged/uintptr_t  (irc-ptr-to-int passed-args %uintptr_t% "passed-args-tagged/uintptr_t"))
                      (passed-args-va_list/uintptr_t (irc-add passed-args-tagged/uintptr_t (jit-constant-intptr_t (- +vaslist-valist-offset+ +vaslist-tag+)) "passed-args-va_list/uintptr_t"))
                      (passed-args-va_list/va_list*           (irc-int-to-ptr passed-args-va_list/uintptr_t %va_list*% "passed-args-va_list/va_list*"))
@@ -849,7 +906,7 @@
                      (_                             (debug-va_list (irc-ptr-to-int in-frame-va_list/va_list* %uintptr_t%)))
                      (_                             (irc-br body-bb)))
 		(with-irbuilder (irbuilder-body)
-		  (codegen-node-or-outcome (dtree-root dtree) in-frame-va_list/va_list* gf passed-args))
+		  (codegen-node-or-outcome arguments (dtree-root dtree)))
 		(irc-begin-block *bad-tag-bb*)
 		(irc-intrinsic-call "llvm.va_end" (list (irc-pointer-cast in-frame-va_list/va_list* %i8*% "in-frame-va_list/i8*")))
 		(irc-intrinsic-call "cc_bad_tag" (list gf passed-args))

@@ -1071,8 +1071,8 @@ T_mv sp_tagbody(List_sp args, T_sp env) {
   // Find all the tags and tell the TagbodyEnvironment where they are in the list of forms.
   //
   for (auto cur : args) {
-    T_sp tagOrForm = oCar(cur);
-    if (cl__symbolp(tagOrForm)) {
+    T_sp tagOrForm = CONS_CAR(cur);
+    if (!tagOrForm.consp() && cl__symbolp(tagOrForm)) {
       Symbol_sp tag = gc::As<Symbol_sp>(tagOrForm);
       // The tag is associated with its position in list of forms
       tagbodyEnv->addTag(tag, cur);
@@ -1083,8 +1083,8 @@ T_mv sp_tagbody(List_sp args, T_sp env) {
   int frame = my_thread->exceptionStack().push(TagbodyFrame, tagbodyId);
   // Start to evaluate the tagbody
   List_sp ip = args;
-  while (ip.notnilp()) {
-    T_sp tagOrForm = oCar(ip);
+  while (ip.consp()) {
+    T_sp tagOrForm = CONS_CAR(ip);
     if ((tagOrForm).consp()) {
       try {
         eval::evaluate(tagOrForm, tagbodyEnv);
@@ -1102,7 +1102,7 @@ T_mv sp_tagbody(List_sp args, T_sp env) {
         ip = tagbodyEnv->codePos(index);
       }
     }
-    ip = oCdr(ip);
+    ip = CONS_CDR(ip);
   }
   LOG(BF("Leaving sp_tagbody"));
   my_thread->exceptionStack().unwind(frame);
