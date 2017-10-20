@@ -109,7 +109,7 @@
 ;;; index must the at position 1 of the optimized-slot-(reader|writer)
 ;;;
 (eval-when (:compile-toplevel :execute :load-toplevel)
-  (unless (= (cdr (assoc :optimized-slot-index-index (llvm-sys:cxx-data-structures-info))) 1)
+  (unless (= +optimized-slot-index-index+ 1)
     (error "The index of the slot index must be 1")))
 (defstruct (optimized-slot-reader (:type vector) :named) index #| << must be here |# effective-method-function slot-name method class)
 (defstruct (optimized-slot-writer (:type vector) :named) index #| << must be here |# effective-method-function slot-name method class)

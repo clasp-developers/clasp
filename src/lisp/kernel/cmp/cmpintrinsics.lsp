@@ -72,21 +72,16 @@ Set this to other IRBuilders to make code go where you want")
 
 (define-symbol-macro %i128% (llvm-sys:type-get-int128-ty *llvm-context*)) ;; -> NOT USED !!!
 
-(define-symbol-macro %fixnum% (if (member :address-model-64 *features*) ;; -> FIXNUM
-                     %i64%
-                     (error "Add support for non 64-bit address model")))
+(define-symbol-macro %fixnum% #+address-model-64 %i64%
+                              #+address-model-32 %i32%)
 (define-symbol-macro %uint% %i32%) ; FIXME: export from C++ probably
 
 (define-symbol-macro %float% (llvm-sys:type-get-float-ty *llvm-context*))
 (define-symbol-macro %double% (llvm-sys:type-get-double-ty *llvm-context*))
 #+long-float (define-symbol-macro %long-float% (llvm-sys:type-get-long-float-ty *llvm-context*))
 
-(define-symbol-macro %size_t%
-  (let ((sizeof-size_t (cdr (assoc 'core:size-t (llvm-sys:cxx-data-structures-info)))))
-    (cond
-      ((= 8 sizeof-size_t) %i64%)
-      ((= 4 sizeof-size_t) %i32%)
-      (t (error "Add support for size_t sizeof = ~a" sizeof-size_t)))))
+(define-symbol-macro %size_t% #+address-model-64 %i64%
+                              #+address-model-32 %i32%)
 (define-symbol-macro %size_t*% (llvm-sys:type-get-pointer-to %size_t%))
 (define-symbol-macro %size_t**% (llvm-sys:type-get-pointer-to %size_t*%))
 
@@ -120,16 +115,10 @@ Set this to other IRBuilders to make code go where you want")
 (define-symbol-macro %global-ctors-struct[1]% (llvm-sys:array-type-get %global-ctors-struct% 1))
 
 
-(define-symbol-macro %intptr_t%
-  (cond
-    ((= 8 +uintptr_t-size+) %i64%)
-    ((= 4 +uintptr_t-size+) %i32%)
-    (t (error "Add support for size uintptr_t = ~a" +uintptr_t-size+))))
-(define-symbol-macro %uintptr_t%
-  (cond
-    ((= 8 +uintptr_t-size+) %i64%)
-    ((= 4 +uintptr_t-size+) %i32%)
-    (t (error "Add support for size uintptr_t = ~a" +uintptr_t-size+))))
+(define-symbol-macro %intptr_t% #+address-model-64 %i64%
+                                #+address-model-32 %i32%)
+(define-symbol-macro %uintptr_t% #+address-model-64 %i64%
+                                #+address-model-32 %i32%)
 (define-symbol-macro %uintptr_t*% (llvm-sys:type-get-pointer-to %uintptr_t%))
 (defun make-uintptr_t (x)
   (and (> x most-positive-fixnum) (error "make sure the integer ~s fits in a %i64%" x))
@@ -238,7 +227,7 @@ Boehm and MPS use a single pointer"
 #+(or)(defvar +ltvsp**+ (llvm-sys:type-get-pointer-to +ltvsp*+))
 
 
-(define-symbol-macro %mv-limit% (cdr (assoc :multiple-values-limit (llvm-sys:cxx-data-structures-info))))
+(define-symbol-macro %mv-limit% +multiple-values-limit+)
 (define-symbol-macro %mv-values-array% (llvm-sys:array-type-get %t*% %mv-limit%))
 (define-symbol-macro %mv-struct% (llvm-sys:struct-type-get *llvm-context* (list %size_t% %mv-values-array%) nil #|| is-packed ||#))
 (define-symbol-macro %mv-struct*% (llvm-sys:type-get-pointer-to %mv-struct%))
