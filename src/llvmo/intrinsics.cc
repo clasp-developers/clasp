@@ -47,7 +47,6 @@ extern "C" {
 #include <clasp/core/designators.h>
 #include <clasp/core/compPackage.h>
 #include <clasp/core/package.h>
-#include <clasp/core/accessor.h>
 #include <clasp/core/fli.h>
 #include <clasp/core/instance.h>
 #include <clasp/core/funcallableInstance.h>

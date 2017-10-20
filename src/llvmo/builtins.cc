@@ -5,7 +5,6 @@
 #include <clasp/core/object.h>
 #include <clasp/core/array.h>
 #include <clasp/core/instance.h>
-#include <clasp/core/accessor.h>
 #include <clasp/core/wrappedPointer.h>
 #include <clasp/core/funcallableInstance.h>
 #include <clasp/gctools/gcStack.h>
@@ -206,6 +205,7 @@ BUILTIN_ATTRIBUTES core::T_O* cc_dispatch_slot_reader_cons(core::T_O* toptinfo) 
   return value.raw_();
 }
 
+
 BUILTIN_ATTRIBUTES gctools::return_type cc_bound_or_error(core::T_O* toptimized_slot_reader, core::T_O* tinstance, core::T_O* tvalue) {
   core::T_sp value((gctools::Tagged)tvalue);
   if (value.unboundp()) {
@@ -236,6 +236,7 @@ BUILTIN_ATTRIBUTES void cc_vaslist_end(core::T_O* tvaslist) {
   core::VaList_sp vaslist((gctools::Tagged)tvaslist);
   va_end(vaslist->_Args);
 }
+
 
 BUILTIN_ATTRIBUTES gctools::return_type cc_dispatch_effective_method(core::T_O* teffective_method, core::T_O* tgf, core::T_O* tgf_args_valist_s) {
   core::Function_sp effective_method((gctools::Tagged)teffective_method);

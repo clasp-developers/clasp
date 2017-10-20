@@ -17,7 +17,6 @@ def build(bld):
             'weakPointer',
             'compiler',
             'genericFunction',
-            'accessor',
             'instance',
             'funcallableInstance',
             'cache',

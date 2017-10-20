@@ -46,7 +46,6 @@ THE SOFTWARE.
 #include <clasp/core/hashTableEq.h>
 #include <clasp/core/evaluator.h>
 #include <clasp/core/genericFunction.h>
-#include <clasp/core/accessor.h>
 #include <clasp/core/funcallableInstance.h>
 #include <clasp/core/wrappers.h>
 
@@ -570,17 +569,6 @@ T_sp FuncallableInstance_O::setFuncallableInstanceFunction(T_sp functionOrT) {
   } else if (functionOrT.nilp()) {
     this->_isgf = CLASP_NOT_FUNCALLABLE;
     FuncallableInstance_O::ensureClosure(&not_funcallable_dispatch);
-  } else if (functionOrT == clos::_sym_standardOptimizedReaderMethod) {
-    /* WARNING: We assume that f(a,...) behaves as f(a,b) */
-    this->_isgf = CLASP_READER_DISPATCH;
-    // TODO: Switch to using slotReaderDispatch like ECL for improved performace
-    //	    this->_Entry = &slotReaderDispatch;
-    //FuncallableInstance_O::ensureClosure(&generic_function_dispatch);
-    FuncallableInstance_O::ensureClosure(&optimized_slot_reader_dispatch);
-  } else if (functionOrT == clos::_sym_standardOptimizedWriterMethod) {
-    /* WARNING: We assume that f(a,...) behaves as f(a,b) */
-    this->_isgf = CLASP_WRITER_DISPATCH;
-    FuncallableInstance_O::ensureClosure(&optimized_slot_writer_dispatch);
   } else if (gc::IsA<CompiledDispatchFunction_sp>(functionOrT)) {
     this->_isgf = CLASP_FASTGF_DISPATCH;
     this->GFUN_DISPATCHER_set(functionOrT);
@@ -722,10 +710,6 @@ CL_DEFUN T_mv clos__getFuncallableInstanceFunction(T_sp obj) {
         return Values(_lisp->_true(),Pointer_O::create((void*)iobj->_entryPoint.load()));
     case CLASP_RESTRICTED_DISPATCH:
         return Values(cl::_sym_standardGenericFunction,Pointer_O::create((void*)iobj->_entryPoint.load()));
-    case CLASP_READER_DISPATCH:
-        return Values(clos::_sym_standardOptimizedReaderMethod,Pointer_O::create((void*)iobj->_entryPoint.load()));
-    case CLASP_WRITER_DISPATCH:
-        return Values(clos::_sym_standardOptimizedWriterMethod,Pointer_O::create((void*)iobj->_entryPoint.load()));
     case CLASP_USER_DISPATCH:
         return Values(iobj->userFuncallableInstanceFunction(),Pointer_O::create((void*)iobj->_entryPoint.load()));
     case CLASP_FASTGF_DISPATCH:

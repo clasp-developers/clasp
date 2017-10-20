@@ -164,8 +164,6 @@
   ;;	   is so large that they cannot be handled by the C dispatchers with
   ;;	   with memoization.
   ;;	2* The generic function is not a s-g-f but takes less than 64 arguments
-  ;;	3* The generic function is a standard-generic-function and all its slots
-  ;;	   are standard-{reader,writer}-slots
   ;;	4* The generic function is a standard-generic-function with less
   ;;	   than 64 arguments
   ;;
@@ -211,15 +209,6 @@
 	  t)
 	 ((null methods)
 	  'standard-generic-function)
-	 ;; Cases 3*
-	 ((loop with class = (find-class 'standard-optimized-reader-method nil)
-	     for m in methods
-	     always (eq class (class-of m)))
-	  'standard-optimized-reader-method)
-	 ((loop with class = (find-class 'standard-optimized-writer-method nil)
-	     for m in methods
-	     always (eq class (class-of m)))
-	  'standard-optimized-writer-method)
 	 ;; Case 4*
 	 (t
 	  'standard-generic-function))))))
