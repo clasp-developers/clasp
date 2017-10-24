@@ -115,13 +115,13 @@ CL_DEFUN T_mv cl__apply(T_sp head, VaList_sp args) {
     Vaslist valist_struct(frame);
     VaList_sp valist(&valist_struct); // = frame.setupVaList(valist_struct);;
     return funcall_consume_valist_<core::Function_O>(func.tagged_(), valist);
-  } else if (gctools::tagged_valistp(lastArgRaw) && lenArgs == 1) {
+  } else if (gctools::tagged_vaslistp(lastArgRaw) && lenArgs == 1) {
 //    printf("%s:%d apply with one argument and its a valist\n", __FILE__, __LINE__ );
     VaList_sp valast((gc::Tagged)lastArgRaw);
     Vaslist valast_copy(*valast);
     VaList_sp valast_copy_sp(&valast_copy);
     return funcall_consume_valist_<core::Function_O>(func.tagged_(), valast_copy_sp);
-  } else if (gctools::tagged_valistp(lastArgRaw)) {
+  } else if (gctools::tagged_vaslistp(lastArgRaw)) {
     // The last argument is a VaList - so we need to create a new frame
     // to hold the contents of the two lists of arguments
     VaList_sp valast((gc::Tagged)lastArgRaw);
@@ -218,7 +218,7 @@ gctools::return_type fast_apply_general(T_O* func_tagged, T_O* args_tagged) {
 template <typename... FixedArgs>
 LCC_RETURN fast_apply_(T_O* function_tagged, T_O* rest_args_tagged, FixedArgs&&...fixedArgs) {
   int nargs;
-  LIKELY_if ( gctools::tagged_valistp(rest_args_tagged) ) {
+  LIKELY_if ( gctools::tagged_vaslistp(rest_args_tagged) ) {
     VaList_sp rest_args_as_VaList_sp((gctools::Tagged)rest_args_tagged);
     Vaslist va_rest_copy_S(*rest_args_as_VaList_sp);
     VaList_sp va_rest_args(&va_rest_copy_S);

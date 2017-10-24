@@ -161,8 +161,8 @@ public:
     return untag_fixnum<Type *>(this->theObject);
   };
 
-  bool valistp() const { return tagged_valistp(this->theObject); };
-  void *unsafe_valist() const { return untag_valist(this->theObject); };
+  bool valistp() const { return tagged_vaslistp(this->theObject); };
+  void *unsafe_valist() const { return untag_vaslist(this->theObject); };
   void *safe_valist() const {
     GCTOOLS_ASSERT(this->valistp());
     return this->unsafe_valist();
@@ -637,8 +637,8 @@ public:
   inline Fixnum unsafe_fixnum() const { return untag_fixnum(this->theObject); };
   bool single_floatp() const { return tagged_single_floatp<Type *>(this->theObject); };
   float unsafe_single_float() const { return untag_single_float<Type *>(this->theObject); };
-  bool valistp() const { return tagged_valistp(this->theObject); };
-  void *unsafe_valist() const { return untag_valist(this->theObject); };
+  bool valistp() const { return tagged_vaslistp(this->theObject); };
+  void *unsafe_valist() const { return untag_vaslist(this->theObject); };
   void *safe_valist() const {
     GCTOOLS_ASSERT(this->valistp());
     return this->unsafe_valist();
@@ -733,7 +733,7 @@ public:
   smart_ptr() noexcept : theObject(NULL){};
   //    	explicit smart_ptr(uintptr_clasp_t p) : theObject(p) {}; // TODO: this converts ints to smart_ptr's - its dangerous
   //! Construct a FRAME object - I need to get rid of these
-  //smart_ptr( core::T_O** p ) : theObject(tag_valist(p)) { /*printf("%s:%d Creating Frame \n", __FILE__, __LINE__ );*/ };
+  //smart_ptr( core::T_O** p ) : theObject(tag_vaslist(p)) { /*printf("%s:%d Creating Frame \n", __FILE__, __LINE__ );*/ };
   //smart_ptr( Type* objP) : theObject(tag_object(objP)) {};
   // explicit smart_ptr( void* objP) : theObject(reinterpret_cast<Type*>(objP)) {};
 

@@ -223,7 +223,7 @@ extern "C" {
 void client_describe(void *taggedClient) {
   if (gctools::tagged_generalp(taggedClient)
       || gctools::tagged_consp(taggedClient)
-      || gctools::tagged_valistp(taggedClient)) {
+      || gctools::tagged_vaslistp(taggedClient)) {
     printf("%s:%d  GC managed object - describing header\n", __FILE__, __LINE__);
     // Currently this assumes that Conses and General objects share the same header
     // this may not be true in the future
@@ -234,7 +234,7 @@ void client_describe(void *taggedClient) {
       gctools::rawHeaderDescribe(headerP);
     } else if (gctools::tagged_consp(taggedClient)) {
       printf("%s:%d A cons pointer\n", __FILE__, __LINE__ );
-    } else if (gctools::tagged_valistp(taggedClient)) {
+    } else if (gctools::tagged_vaslistp(taggedClient)) {
       printf("%s:%d A valist pointer\n", __FILE__, __LINE__ );
     }
   } else {

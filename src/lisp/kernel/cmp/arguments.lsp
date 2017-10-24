@@ -395,7 +395,7 @@
 (defun cclasp-maybe-alloc-cc-setup (lambda-list debug-on)
   "Maybe allocate slots in the stack frame to handle the calls
    depending on what is in the lambda-list (&rest, &key etc) and debug-on.
-   Return a calling-convention-setup object that describes what was allocated.
+   Return a calling-convention-configuration object that describes what was allocated.
    See the bclasp version in lambdalistva.lsp."
   (multiple-value-bind (reqargs optargs rest-var key-flag keyargs allow-other-keys unused-auxs varest-p)
       (core:process-lambda-list lambda-list 'core::function)
@@ -422,11 +422,11 @@
            ;;          and (<= num-req +args-in-register+)
            ;;          and not debugging
            ;;     --> Use only register arguments
-           (may-use-only-registers (and req-opt-only (<= num-req cmp::+args-in-registers+) (eql 0 num-opt))))
+           (may-use-only-registers (and req-opt-only (<= num-req +args-in-registers+) (eql 0 num-opt))))
       (if (and may-use-only-registers (null debug-on))
-          (cmp::make-calling-convention-setup
+          (make-calling-convention-configuration
            :use-only-registers t)
-          (cmp::make-calling-convention-setup
+          (make-calling-convention-configuration
            :use-only-registers may-use-only-registers ; if may-use-only-registers then debug-on is T and we could use only registers
            :vaslist* (irc-alloca-vaslist :label "vaslist")
            :register-save-area* (irc-alloca-register-save-area :label "register-save-area")
@@ -514,10 +514,10 @@
 (defun bclasp-maybe-alloc-cc-info (lambda-list debug-on)
   "Maybe allocate slots in the stack frame to handle the calls
    depending on what is in the lambda-list (&rest, &key etc) and debug-on.
-   Return a calling-convention-setup object that describes what was allocated.
+   Return a calling-convention-configuration object that describes what was allocated.
    See the cclasp version in arguments.lisp "
   (multiple-value-bind (reqargs optargs rest-var key-flag keyargs allow-other-keys auxargs varest-p)
-      (core:process-lambda-list lambda-list 'function)
+      (core:process-lambda-list lambda-list 'core::function)
     ;; Currently if nargs <= +args-in-registers+ required arguments and (null debug-on)
     ;;      then can optimize and use the arguments in registers directly
     ;;  If anything else then allocate space to spill the registers
@@ -534,7 +534,6 @@
     (let* ((req-opt-only (and (not rest-var)
                               (not key-flag)
                               (eql 0 (car keyargs))
-                              (eql 0 (car auxargs))
                               (not allow-other-keys)))
            (num-req (car reqargs))
            (num-opt (car optargs))
@@ -544,9 +543,9 @@
            ;;     --> Use only register arguments
            (may-use-only-registers (and req-opt-only (<= num-req +args-in-registers+) (eql 0 num-opt))))
       (if (and may-use-only-registers (null debug-on))
-          (make-calling-convention-setup
+          (make-calling-convention-configuration
            :use-only-registers t)
-          (make-calling-convention-setup
+          (make-calling-convention-configuration
            :use-only-registers may-use-only-registers ; if may-use-only-registers then debug-on is T and we could use only registers
            :vaslist* (irc-alloca-vaslist :label "vaslist")
            :register-save-area* (irc-alloca-register-save-area :label "register-save-area")

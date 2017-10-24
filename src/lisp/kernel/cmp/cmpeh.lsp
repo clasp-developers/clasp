@@ -184,10 +184,7 @@ eg: '(block ((exception var) code...))"
       (let* ((landpad                   (irc-create-landing-pad 1))
              (_                         (llvm-sys:add-clause landpad (llvm-sys:constant-pointer-null-get %i8*%)))
              (_                         (dbg-set-current-debug-location-here))
-             (_                         (irc-intrinsic "clasp_terminate" (irc-constant-string-ptr *gv-source-namestring*)
-                                                       (irc-size_t-*current-source-pos-info*-lineno) 
-                                                       (irc-size_t-*current-source-pos-info*-column) 
-                                                       (irc-constant-string-ptr *gv-current-function-name* )))
+             (_                         (irc-intrinsic "clasp_terminate"))
              (_                         (irc-unreachable)))))
     terminate-basic-block))
                            

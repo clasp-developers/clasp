@@ -896,8 +896,6 @@
 				       linkage
 				       llvm-function-name
 				       module)))
-    (when *enable-profiling*
-      (llvm-sys:add-fn-attr2string fn "counting-function" *mcount-name*))
     (dolist (temp function-attributes)
       (cond
         ((symbolp temp) (llvm-sys:add-fn-attr fn temp))
@@ -1105,6 +1103,11 @@ Within the _irbuilder_ dynamic environment...
   (with-alloca-insert-point-no-cleanup irbuilder
     :alloca (llvm-sys::create-alloca *irbuilder* %tmv% (jit-constant-i32 1) label)
     :init (lambda (a) (irc-intrinsic "newTmv" a))))
+
+(defun irc-alloca-return-type (&key (irbuilder *irbuilder-function-alloca*) (label ""))
+  (with-alloca-insert-point-no-cleanup
+    irbuilder
+    :alloca (llvm-sys:create-alloca irbuilder %return_type% (jit-constant-i32 1) label)))
 
 (defun irc-alloca-t* (&key (irbuilder *irbuilder-function-alloca*) (label ""))
   "Allocate a T_O* on the stack"

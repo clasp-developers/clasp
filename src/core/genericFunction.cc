@@ -396,7 +396,7 @@ LCC_RETURN apply_method(T_O* func_tagged, T_O* arg0_tagged, T_O* arg1_tagged, T_
 //  if (lenTotalArgs == 0) eval::errorApplyZeroArguments();
   T_O* lastArgRaw = rest_args_tagged;
   int lenTotalArgs;
-  LIKELY_if (gctools::tagged_valistp(rest_args_tagged)) {
+  LIKELY_if (gctools::tagged_vaslistp(rest_args_tagged)) {
     VaList_sp rest_args_as_VaList_sp((gctools::Tagged)rest_args_tagged);
     Vaslist va_rest_copy_S(*rest_args_as_VaList_sp);
     VaList_sp va_rest_args(&va_rest_copy_S);

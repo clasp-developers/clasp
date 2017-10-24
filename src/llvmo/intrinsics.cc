@@ -213,7 +213,7 @@ ALWAYS_INLINE T_O *cc_precalcValue(core::LoadTimeValues_O **tarray, size_t idx)
 
 ALWAYS_INLINE void cc_copy_va_list(size_t nargs, T_O **mvPtr, Vaslist *va_args)
 {NO_UNWIND_BEGIN();
-  Vaslist *vl = reinterpret_cast<Vaslist *>(gc::untag_valist((void *)va_args));
+  Vaslist *vl = reinterpret_cast<Vaslist *>(gc::untag_vaslist((void *)va_args));
   for (int i = LCC_FIXED_ARGS; i < nargs; ++i) {
     mvPtr[i] = va_arg(vl->_Args, core::T_O *);
   }
@@ -392,9 +392,9 @@ ALWAYS_INLINE void cc_writeCell(core::T_O *cell, core::T_O* val)
 
 
 
-ALWAYS_INLINE void cc_push_InvocationHistoryFrame(core::T_O* tagged_closure, InvocationHistoryFrame* frame, va_list va_args, size_t* nargsP)
+ALWAYS_INLINE void cc_push_InvocationHistoryFrame(core::T_O* tagged_closure, InvocationHistoryFrame* frame, va_list va_args, size_t nargs)
 {NO_UNWIND_BEGIN();
-  new (frame) InvocationHistoryFrame(va_args, *nargsP);
+  new (frame) InvocationHistoryFrame(va_args, nargs);
   core::push_InvocationHistoryStack(frame);
 #if 0
   if (core::debug_InvocationHistoryFrame) {
@@ -557,7 +557,7 @@ int cc_eql(core::T_O* x, core::T_O* y)
   NO_UNWIND_END();
 };
 
-void cc_bad_tag(core::T_O* gf, core::T_O* gf_args)
+void cc_bad_tag(core::T_O* gf)
 {
   printf("%s:%d  A bad tag was encountered - aborting\n", __FILE__, __LINE__ );
   abort();

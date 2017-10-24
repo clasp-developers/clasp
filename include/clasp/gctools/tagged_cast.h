@@ -394,7 +394,7 @@ namespace gctools {
     typedef core::Vaslist *ToType;
     typedef FROM FromType;
     inline static bool isA(FromType ptr) {
-      return tagged_valistp(ptr);
+      return tagged_vaslistp(ptr);
     }
     inline static ToType castOrNULL(FromType client) {
       if (TaggedCast<ToType, FromType>::isA(client))

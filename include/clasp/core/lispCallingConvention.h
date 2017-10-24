@@ -114,7 +114,7 @@ namespace gctools {
 #define MULTIPLE_VALUES_ARRAY core::lisp_multipleValues()
 
 /* ASSERT that the first argument is a VaList_sp */
-#define ASSERT_FIRST_ARG_IS_VALIST() ASSERT(gctools::tagged_valistp(lcc_fixed_arg0))
+#define ASSERT_FIRST_ARG_IS_VALIST() ASSERT(gctools::tagged_vaslistp(lcc_fixed_arg0))
 #define LCC_ARG0_VALIST() gctools::smart_ptr<core::Vaslist>((gc::Tagged)lcc_fixed_arg0)
 #define LCC_ARG0() gctools::smart_ptr<core::T_O>((gc::Tagged)lcc_fixed_arg0)
 #define LCC_ARG1() gctools::smart_ptr<core::T_O>((gc::Tagged)lcc_fixed_arg1)
@@ -200,7 +200,7 @@ namespace gctools {
   va_start(passed_args,LCC_VA_START_ARG); \
   core::T_O* lcc_passed_valist = va_arg(passed_args,core::T_O*); \
   va_end(passed_args); \
-  ::core::Vaslist lcc_arglist_s(*(Vaslist*)gctools::untag_valist(lcc_passed_valist));\
+  ::core::Vaslist lcc_arglist_s(*(Vaslist*)gctools::untag_vaslist(lcc_passed_valist));\
   core::VaList_sp lcc_vargs(&lcc_arglist_s); 
 
 #define private_LCC_VA_LIST_TOTAL_NUMBER_OF_ARGUMENTS(_args) (size_t)(((uintptr_clasp_t *)(_args[0].reg_save_area))[LCC_NARGS_REGISTER])
@@ -312,7 +312,12 @@ namespace gctools {
     (_va_list_)[0].fp_offset = 304; \
   }
 
-/*! Initialize a Vaslist struct from a Frame object */
+/*! Rewind the general pointer area for a va_list to the first required argument */
+#define LCC_REWIND_VA_LIST_KEEP_REGISTER_SAVE_AREA(_va_list_) { \
+    (_va_list_)[0].gp_offset = 16; \
+  }
+
+/*! Rewind the general pointer area for a va_list to the first required argument */
 #define LCC_REWIND_VA_LIST(_va_list_, _register_save_areaP_) { \
     (_va_list_)[0].reg_save_area = (void*)_register_save_areaP_; \
     (_va_list_)[0].gp_offset = 16; \

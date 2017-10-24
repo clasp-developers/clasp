@@ -37,7 +37,7 @@ BUILTIN_ATTRIBUTES void newTmv(core::T_mv *sharedP)
   new (sharedP) core::T_mv();
 }
 
-BUILTIN_ATTRIBUTES void cc_rewind_va_list(core::T_O* tagged_closure, va_list va_args, size_t* nargsP, void** register_save_areaP)
+BUILTIN_ATTRIBUTES void cc_rewind_va_list(va_list va_args, size_t* nargsP, void** register_save_areaP)
 {NO_UNWIND_BEGIN_BUILTINS();
 #if 0
   if (core::debug_InvocationHistoryFrame==3) {
@@ -47,6 +47,40 @@ BUILTIN_ATTRIBUTES void cc_rewind_va_list(core::T_O* tagged_closure, va_list va_
   LCC_REWIND_VA_LIST(va_args,register_save_areaP);
   *nargsP = (uintptr_t)register_save_areaP[1];
   NO_UNWIND_END_BUILTINS();
+}
+
+BUILTIN_ATTRIBUTES core::T_O* cc_rewind_vaslist(core::Vaslist* vaslist, va_list va_args, void** register_save_areaP)
+{
+#if 0
+  if (core::debug_InvocationHistoryFrame==3) {
+    printf("%s:%d cc_rewind_va_list     va_args=%p     nargsP = %p      register_save_areaP = %p\n", __FILE__, __LINE__, va_args, nargsP, register_save_areaP );
+  }
+#endif
+  va_copy(vaslist->_Args,va_args);
+  LCC_REWIND_VA_LIST(vaslist->_Args,register_save_areaP);
+  vaslist->remaining_nargs() = (uintptr_t)register_save_areaP[1];
+  return gctools::tag_vaslist<core::T_O*>(vaslist);
+}
+
+/* cc_setup_vaslist
+
+   Builds a vaslist rewound to the first required argument from a va_list.
+   Return the tagged vaslist.
+*/
+BUILTIN_ATTRIBUTES core::T_O* cc_setup_vaslist(core::Vaslist* vaslist, va_list va_args, size_t nargs)
+{
+  new (vaslist) core::Vaslist(nargs,va_args);
+  LCC_REWIND_VA_LIST_KEEP_REGISTER_SAVE_AREA(vaslist->_Args);
+  return gctools::tag_vaslist<core::T_O*>(vaslist);
+}
+
+/* Setup the vaslist and rewind it using the va_list inside of the vaslist.
+   Return the tagged vaslist. */
+BUILTIN_ATTRIBUTES core::T_O* cc_setup_vaslist_internal(core::Vaslist* vaslist, size_t nargs)
+{
+  LCC_REWIND_VA_LIST_KEEP_REGISTER_SAVE_AREA(vaslist->_Args);
+  vaslist->remaining_nargs() = nargs;
+  return gctools::tag_vaslist<core::T_O*>(vaslist);
 }
 
 BUILTIN_ATTRIBUTES
@@ -169,12 +203,12 @@ BUILTIN_ATTRIBUTES core::T_O** activationFrameReferenceFromClosure(core::T_O* cl
 
 BUILTIN_ATTRIBUTES void* cc_vaslist_va_list_address(core::T_O* vaslist)
 {
-  return &(gctools::untag_valist(vaslist)->_Args);
+  return &(gctools::untag_vaslist(vaslist)->_Args);
 };
 
 BUILTIN_ATTRIBUTES size_t* cc_vaslist_remaining_nargs_address(core::Vaslist* vaslist)
 {
-  return &(gctools::untag_valist(vaslist)->_remaining_nargs);
+  return &(gctools::untag_vaslist(vaslist)->_remaining_nargs);
 };
 
 
@@ -238,20 +272,10 @@ BUILTIN_ATTRIBUTES void cc_vaslist_end(core::T_O* tvaslist) {
 }
 
 
-BUILTIN_ATTRIBUTES gctools::return_type cc_dispatch_effective_method(core::T_O* teffective_method, core::T_O* tgf, core::T_O* tgf_args_valist_s) {
+BUILTIN_ATTRIBUTES gctools::return_type cc_dispatch_effective_method(core::T_O* teffective_method, core::T_O* tgf, core::T_O* tgf_args_vaslist) {
   core::Function_sp effective_method((gctools::Tagged)teffective_method);
-//  core::T_sp gf((gctools::Tagged)tgf);
-  core::T_sp gf_args((gctools::Tagged)tgf_args_valist_s);
-//  printf("%s:%d  Invoking effective-method %s with arguments %s\n", __FILE__, __LINE__,
-  // Arguments are .method-args. .next-methods.
-
-  return (*effective_method).entry(LCC_PASS_ARGS2_ELLIPSIS(teffective_method,gf_args.raw_(),_Nil<core::T_O>().raw_()));
-#if 0
-  return (apply_method0(effective_method.raw_(),
-                        gf_args.raw_(),
-                        _Nil<core::T_O>().raw_(),
-                        gf_args.raw_());
-#endif
+  core::T_sp gf_vaslist((gctools::Tagged)tgf_args_vaslist);
+  return (*effective_method).entry(LCC_PASS_ARGS2_ELLIPSIS(teffective_method,gf_vaslist.raw_(),_Nil<core::T_O>().raw_()));
 }
 
 };

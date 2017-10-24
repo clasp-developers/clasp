@@ -537,7 +537,7 @@ NOINLINE void va_notEnoughArgumentsException(const char *funcName, std::size_t g
 NOINLINE extern void va_ifExcessKeywordArgumentsException(char *fnName, std::size_t nargs, Vaslist *varglist, size_t argIdx) {
   if (argIdx >= nargs)
     return;
-  Vaslist *vl = reinterpret_cast<Vaslist *>(gc::untag_valist((void *)varglist));
+  Vaslist *vl = reinterpret_cast<Vaslist *>(gc::untag_vaslist((void *)varglist));
   va_list vrest;
   va_copy(vrest, vl->_Args);
   stringstream ss;
@@ -895,7 +895,7 @@ void debugPointer(const unsigned char *ptr)
 
 void debug_vaslistPtr(Vaslist *vargs)
 {NO_UNWIND_BEGIN();
-  Vaslist *args = reinterpret_cast<Vaslist *>(gc::untag_valist((void *)vargs));
+  Vaslist *args = reinterpret_cast<Vaslist *>(gc::untag_vaslist((void *)vargs));
   printf("++++++ debug_va_list: reg_save_area @%p \n", args->_Args[0].reg_save_area);
   printf("++++++ debug_va_list: gp_offset %d \n", args->_Args[0].gp_offset);
   printf("++++++      next reg arg: %p\n", (void *)(((uintptr_clasp_t *)((char *)args->_Args[0].reg_save_area + args->_Args[0].gp_offset))[0]));
@@ -1662,15 +1662,15 @@ T_mv cc_multiple_value_prog1_function(core::T_mv* result, core::T_O* tfunc1, cor
 #endif
 
 
-gctools::return_type cc_dispatch_miss(core::T_O* gf, core::T_O* gf_valist_s)
+gctools::return_type cc_dispatch_miss(core::T_O* tgf, core::T_O* tgf_vaslist)
 {
-  core::Instance_sp tgf((gctools::Tagged)gf);
-  core::VaList_sp tgf_valist((gctools::Tagged)gf_valist_s);
-  if (!gc::tagged_valistp(gf_valist_s)) {
-    printf("%s:%d The argument to cc_dispatch_miss is not a tagged_valist\n", __FILE__, __LINE__ );
-    SIMPLE_ERROR(BF("cc_dispatch_miss did not get a tagged_valist as an argument"));
+  core::FuncallableInstance_sp gf((gctools::Tagged)tgf);
+  if (!gc::tagged_vaslistp(tgf_vaslist)) {
+    printf("%s:%d The argument to cc_dispatch_miss is not a tagged_vaslist\n", __FILE__, __LINE__ );
+    SIMPLE_ERROR(BF("cc_dispatch_miss did not get a tagged_vaslist as an argument"));
   }
-  core::T_mv result = core::eval::funcall(clos::_sym_dispatch_miss,tgf,tgf_valist);
+  core::VaList_sp gf_vaslist((gctools::Tagged)tgf_vaslist);
+  core::T_mv result = core::eval::funcall(clos::_sym_dispatch_miss,gf,gf_vaslist);
 #ifdef DEBUG_GFDISPATCH
   printf("%s:%d  Returning from cc_dispatch_miss\n", __FILE__, __LINE__ );
 #endif
@@ -1734,11 +1734,10 @@ void cc_dispatch_debug(int msg_id, uintptr_clasp_t val)
   fflush(stdout);
 }
 
-void clasp_terminate(const char *file, size_t line, size_t column, const char *func)
-{NO_UNWIND_BEGIN();
-  printf("Terminating file: %s  func: %s\n", file, func);
+void clasp_terminate()
+{
+  printf("Terminating clasp from clasp_terminate\n");
   abort();
-  NO_UNWIND_END();
 }
 };
 
