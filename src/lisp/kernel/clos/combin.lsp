@@ -317,7 +317,7 @@
 	  (when required
 	    (push `(unless ,group-name
 		     (error "Method combination: ~S. No methods ~
-			    in required group ~S." ,name ,group-name))
+			    in required group ~S." ',name ,group-name))
 		  group-after))
 	  (case order
 	    (:most-specific-first
@@ -337,7 +337,7 @@
 								 (cond ,@(nreverse group-checks)
 								       (t (invalid-method-error .method.
 												"Method qualifiers ~S are not allowed in the method~
-			      combination ~S." .method-qualifiers. ,name)))))
+			      combination ~S." .method-qualifiers. ',name)))))
 							     ,@group-after
 							     (effective-method-function (progn ,@body) t)))
 				   #+clasp(lambda (,generic-function .methods-list. ,@lambda-list)
@@ -349,7 +349,7 @@
 						    (cond ,@(nreverse group-checks)
 							  (t (invalid-method-error .method.
 										   "Method qualifiers ~S are not allowed in the method~
-			      combination ~S." .method-qualifiers. ,name)))))
+			      combination ~S." .method-qualifiers. ',name)))))
                                                 ,@group-after
                                                 (effective-method-function (progn ,@body) t))))))))
 
