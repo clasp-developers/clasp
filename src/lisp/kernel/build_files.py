@@ -98,6 +98,7 @@ def bclasp(wrappers):
         "src/lisp/kernel/clos/boot",
         "src/lisp/kernel/clos/kernel",
         "src/lisp/kernel/clos/closfastgf",
+        "src/lisp/kernel/clos/satiation",
         "src/lisp/kernel/clos/method",
         "src/lisp/kernel/clos/combin",
         "src/lisp/kernel/clos/std-accessors",

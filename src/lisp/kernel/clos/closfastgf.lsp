@@ -616,7 +616,12 @@ It takes the arguments in two forms, as a vaslist and as a list of arguments."
   ;;;   being extremely careful NOT to use any generic-function calls.
   ;;;   Then redo the call.
   ;;; If there is no call history then treat this like a dispatch-miss.
-  (gf-log "Entered invalidated-dispatch-function - avoiding generic function calls until return!!!\n")
+  #+debug-fastgf
+  (if (eq (class-of generic-function) (find-class 'standard-generic-function))
+      (gf-log "Entered invalidated-dispatch-function for %s - avoiding generic function calls until return!!!\n"
+              (core:low-level-standard-generic-function-name generic-function))
+      (gf-log "Entered invalidated-dispatch-function - avoiding generic function calls until return!!!\n"))
+  (gf-log "Specializer profile is %s\n" (generic-function-specializer-profile generic-function))
   (if (generic-function-call-history generic-function)
       (let (log-output)
         #+debug-fastgf(progn

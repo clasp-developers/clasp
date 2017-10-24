@@ -26,6 +26,7 @@
   (push :mlog *features*)
   (defmacro mlog (fmt &rest fmtargs)
     `(core:bformat *debug-io* ,fmt ,@fmtargs)))
+;;#+(or)
 (defmacro mlog (fmt &rest fmtargs) nil)
 
 
@@ -345,7 +346,9 @@
 ;;;
 ;;;#+cclasp
 #+(or)(eval-when (:compile-toplevel :execute :load-toplevel)
-  (setq clasp-cleavir:*use-type-inference* nil))
+        (setq clasp-cleavir:*use-type-inference* nil))
+
+;;; Some classes are in here multiple times because they are created then recreated (in boot.lsp)
 
 (eval-when (eval #+clasp :compile-toplevel #+clasp :load-toplevel  )
   (locally (declare (optimize (debug 0)))

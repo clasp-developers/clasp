@@ -446,7 +446,7 @@ have disappeared."
       (compute-g-f-spec-list gf)
 ;;      #+clasp (update-specializer-profile gf (method-specializers method))
 ;;      #+clasp (update-call-history-for-add-method gf method)
-      (set-generic-function-dispatch gf)
+      (set-funcallable-instance-function gf 'invalidated-dispatch-function)
       method)))
 
 (defun find-method (gf qualifiers specializers &optional (errorp t))
