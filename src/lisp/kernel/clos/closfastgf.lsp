@@ -203,9 +203,9 @@
 
 ;;; Called from cc_dispatch_slot_reader_index via intrinsic_error
 (defun fastgf-slot-unbound (opt-slot-reader instance)
-  (slot-unbound (optimized-slot-reader-class opt-slot-reader)
+  (slot-unbound (cmp::optimized-slot-reader-class opt-slot-reader)
                 instance
-                (optimized-slot-reader-slot-name opt-slot-reader)))
+                (cmp::optimized-slot-reader-slot-name opt-slot-reader)))
 
 ;;; Takes three arguments ((x cmp::optimized-slot-reader) instance vargs)
 (defun dispatch-slot-reader-index-debug (opt-slot-reader instance vargs)
