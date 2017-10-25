@@ -62,7 +62,7 @@
           ((atom form)
            (error "Malformed effective method form:~%~A" form))
           ((eq (setf first (first form)) 'MAKE-METHOD)
-           (core:bformat *debug-io* "effective-method-function form -> %s\n" form)
+           (mlog "effective-method-function form -> %s\n" form)
            (maybe-compile `(lambda (.method-args. .next-methods.)
                              (declare (core:lambda-name effective-method-function.make-method))
                              (flet ((call-next-method (&va-rest args)
@@ -139,79 +139,23 @@
           a method with ~S was found."
 	 m qualifier))
 
-(defun standard-main-effective-method (before primary after)
-  (declare (si::c-local))
-  #'(lambda (.method-args. no-next-method #| #+ecl &rest #+clasp &va-rest args |#) #|DANGER|#
-      (declare (ignore no-next-method)
-               (core:lambda-name standard-main-effective-method.lambda))
-      (dolist (i before)
-        (funcall i .method-args. nil))
-      (if after
-	  (multiple-value-prog1
-              (funcall (first primary) .method-args. (rest primary))
-              (dolist (i after)
-                (funcall i .method-args. nil)))
-          (funcall (first primary) .method-args. (rest primary)))))
-
-
-(defun standard-compute-effective-method (gf methods)
-  (with-early-accessors (+standard-method-slots+)
-    (let* ((before ())
-	   (primary ())
-	   (after ())
-	   (around ()))
-      (dolist (m methods)
-	(let* ((qualifiers (method-qualifiers m))
-	       (f (method-function m)))
-	  (cond ((null qualifiers) (push f primary))
-		((rest qualifiers) (error-qualifier m qualifiers))
-		((eq (setq qualifiers (first qualifiers)) :BEFORE)
-		 (push f before))
-		((eq qualifiers :AFTER) (push f after))
-		((eq qualifiers :AROUND) (push f around))
-		(t (error-qualifier m qualifiers)))))
-      ;; When there are no primary methods, an error is to be signaled,
-      ;; and we need not care about :AROUND, :AFTER or :BEFORE methods.
-      (when (null primary)
-	(return-from standard-compute-effective-method
-	  #'(lambda (&rest args)
-              (declare (core:lambda-name standard-compute-effective-method.no-primary-method))
-	      (apply 'no-primary-method gf args))))
-      ;; PRIMARY, BEFORE and AROUND are reversed because they have to
-      ;; be on most-specific-first order (ANSI 7.6.6.2), while AFTER
-      ;; may remain as it is because it is least-specific-order.
-      (setf primary (nreverse primary)
-	    before (nreverse before))
-      (if around
-	  (let ((main (if (or before after)
-			  (list
-			   (standard-main-effective-method before primary after))
-			  primary)))
-	    (setf around (nreverse around))
-	    (combine-method-functions2 (first around)
-				      (nconc (rest around) main)))
-	  (if (or before after)
-	      (standard-main-effective-method before primary after)
-	      (combine-method-functions3 gf (first primary) (rest primary)))))))
-
 ;; ----------------------------------------------------------------------
 ;; DEFINE-METHOD-COMBINATION
 ;;
-;; METHOD-COMBINATION objects are just a list
-;;	(name arg*)
-;; where NAME is the name of the method combination type defined with
-;; DEFINE-METHOD-COMBINATION, and ARG* is zero or more arguments.
+;; METHOD-COMBINATION objects are instances defined in hierarchy.lsp.
+;; They have slots for the name, compiler, and options. Name is obvious,
+;; and the options are those provided to the thing.
+;; The "compiler" is somewhat misleadingly named; it's the function that
+;; outptus the effective method form.
+;; These functions are stored in the global *method-combinations* hash
+;; table. (the standard method on) FIND-METHOD-COMBINATION ignores the gf,
+;; and makes a new METHOD-COMBINATION instance with the "compiler" looked
+;; up in the hash table, and the name and options.
+;; The "compiler" functions take two arguments, plus the lambda-list from
+;; the define-method-combination. The first argument is the generic function
+;; (used for the :generic-function option of D-M-C), the second is the sorted
+;; list of applicable methods, and the rest are the method combination options.
 ;;
-;; For each method combination type there is an associated function,
-;; and the list of all known method combination types is kept in
-;; *METHOD-COMBINATIONS* in the form of property list:
-;;	(mc-type-name1 function1 mc-type-name2 function2 ....)
-;;
-;; FUNCTIONn is the function associated to a method combination. It
-;; is of type (FUNCTION (generic-function method-list) FUNCTION),
-;; and it outputs an anonymous function which is the effective method.
-;;
-
 
 #+threads
 (defparameter *method-combinations-lock* (mp:make-lock :name 'find-method-combination))
@@ -236,6 +180,7 @@
        :options options)
     o))
 
+;; Will be upgraded into a generic function later.
 (defun find-method-combination (gf method-combination-type-name method-combination-options)
   (make-method-combination method-combination-type-name
 			   (search-method-combination method-combination-type-name)
@@ -295,22 +240,28 @@
 	      (push group-name group-names)
 	      (syntax-error))
 	  (let ((condition
-		 (cond ((eql predicate '*) 'T)
-		       ((and predicate (symbolp predicate))
-			`(,predicate .METHOD-QUALIFIERS.))
-		       ((and (listp predicate)
-			     (let* ((q (last predicate 0))
-				    (p (copy-list (butlast predicate 0))))
-			       (when (every #'symbolp p)
-				 (if (eql q '*)
-				     `(every #'equal ',p .METHOD-QUALIFIERS.)
-				     `(equal ',p .METHOD-QUALIFIERS.))))))
-		       (t (syntax-error)))))
+                  (cond ((eql predicate '*) 'T)
+                        ((null predicate) `(null .method-qualifiers.))
+                        ((symbolp predicate)
+                         `(,predicate .METHOD-QUALIFIERS.))
+                        ((consp predicate)
+                         (let* ((q (last predicate 0))
+                                (p (copy-list (butlast predicate 0))))
+                           (when (every #'symbolp p)
+                             (if (eql q '*)
+                                 `(every #'equal ',p .METHOD-QUALIFIERS.)
+                                 `(equal ',p .METHOD-QUALIFIERS.)))))
+                        (t (syntax-error)))))
 	    (push `(,condition (push .METHOD. ,group-name)) group-checks))
 	  (when required
 	    (push `(unless ,group-name
-		     (error "Method combination: ~S. No methods ~
-			    in required group ~S." ',name ,group-name))
+                     ;; Effective methods can be computed in other situations than being about to call them.
+                     ;; As such, compute-effective-method should not signal an error unless the computation
+                     ;; is impossible. Lacking a required method is by contrast a problem that only needs to
+                     ;; be signaled when the function is actually being called. So we return an error form.
+                     ;; (NO-REQUIRED-METHOD is defined in fixup, but we could move it here.)
+                     (return-from ,name
+                       '(no-required-method ,generic-function .methods-list. ',name)))
 		  group-after))
 	  (case order
 	    (:most-specific-first
@@ -344,7 +295,7 @@
 										   "Method qualifiers ~S are not allowed in the method~
 			      combination ~S." .method-qualifiers. ',name)))))
                                                 ,@group-after
-                                                (effective-method-function (progn ,@body) t))))))))
+                                                ,@body)))))))
 
 (defmacro define-method-combination (name &body body)
   (if (and body (listp (first body)))
@@ -367,12 +318,6 @@
 ;;; COMPUTE-EFFECTIVE-METHOD
 ;;;
 
-;; The following chokes in clasp because I don't have the method-combination class defined
-;; during compilation of the full clasp source code.
-;; I don't use compiler macros anyway so I'll feature this out
-
-;; TODO: Turn this back on
-;;#-clasp
 (eval-when (compile :load-toplevel :execute)
   (let* ((class (find-class 'method-combination)))
     (define-compiler-macro method-combination-compiler (o)
@@ -380,10 +325,20 @@
     (define-compiler-macro method-combination-options (o)
       `(si::instance-ref ,o ,(slot-definition-location (gethash 'options (slot-table class)))))))
 
+(defun compute-effective-method-function (gf method-combination applicable-methods)
+  (effective-method-function
+   (compute-effective-method gf method-combination applicable-methods)
+   t))
+
+;; will be upgraded into being the standard method on compute-effective-method in fixup.
 (defun std-compute-effective-method (gf method-combination applicable-methods)
   (declare (type method-combination method-combination)
 	   (type generic-function gf)
 	   (optimize speed (safety 0)))
+  ;; FIXME: early accessors here could technically be bad, if someone subclasses method-combination
+  ;; On the other hand, I've never seen anyone do that. D-M-C already has arbitrary code, and
+  ;; method combinations have no defined accessors - all you could do is add methods to
+  ;; compute-effective-method, itself unusual because, again, arbitrary code.
   (with-early-accessors (+method-combination-slots+)
     (let* ((compiler (method-combination-compiler method-combination))
 	   (options (method-combination-options method-combination)))
@@ -391,33 +346,37 @@
 	  (apply compiler gf applicable-methods options)
 	  (funcall compiler gf applicable-methods)))))
 
-(defun compute-effective-method-function (gf method-combination applicable-methods)
-  ;; Cannot be inlined because it will be a method
-  (declare (notinline compute-effective-method))
-  (let ((form (compute-effective-method gf method-combination applicable-methods)))
-    (let ((aux form) f)
-      (if (and (listp aux)
-		 (eq (pop aux) 'funcall)
-		 (functionp (setf f (pop aux)))
-		 (eq (pop aux) '.method-args.)
-		 (eq (pop aux) '.next-methods.))
-	  f
-	  (effective-method-function form t)))))
+(define-method-combination standard ()
+    ((around (:around))
+     (before (:before))
+     (primary () :required t)
+     (after (:after)))
+  (flet ((call-methods (methods)
+           (mapcar (lambda (method)
+                     `(call-method ,method))
+                   methods)))
+    ;; We're a bit more hopeful about avoiding make-method and m-v-p1 than
+    ;; the example in CLHS define-method-combination.
+    ;; Performance impact is likely to be marginal at best, but why not try?
+    (let* ((call-primary `(call-method ,(first primary) ,(rest primary)))
+           (call-before (if before
+                            `(progn ,@(call-methods before) ,call-primary)
+                            call-primary))
+           (call-after (if after
+                           `(multiple-value-prog1 ,call-before
+                              ,@(call-methods (reverse after)))
+                           call-before))
+           (call-around (if around
+                            (if (and (null before) (null after))
+                                `(call-method ,(first around)
+                                              (,@(rest around)
+                                               ,@primary))
+                                `(call-method ,(first around)
+                                              (,@(rest around)
+                                               (make-method ,call-after))))
+                            call-after)))
+      call-around)))
 
-;;; compute-effective-method is called by compute-effective-method-function
-;;; and if you look at it - you will see that it unpacks the form returned
-;;; by compute-effective-method to extract the method from the form.
-;;; compute-effective-method-function is expecting `(funcall fn .method-args. .next-methods.)
-;;; it can't handle (core:multiple-value-foreign-call "apply_method9" fn .method-args .next-methods. .method-args.
-;;; which I wrote for debugging purposes
-(defun compute-effective-method (gf method-combination applicable-methods)
-  `(funcall ,(std-compute-effective-method gf method-combination applicable-methods)
-	    .method-args. .next-methods.))
-
-;;
-;; These method combinations are bytecompiled, for simplicity.
-;;
-(install-method-combination 'standard 'standard-compute-effective-method)
 #+ecl(eval '(progn
              (define-method-combination progn :identity-with-one-argument t)
              (define-method-combination and :identity-with-one-argument t)
