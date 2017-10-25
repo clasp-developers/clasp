@@ -136,7 +136,8 @@
   methods-vaslist-t*
   invocation-history-frame*
   cleanup-action
-  continue-after-dispatch)
+  continue-after-dispatch
+  miss-basic-block)
 
 (defun argument-get (arguments index)
   (elt (argument-holder-dispatch-arguments arguments) index))
@@ -652,7 +653,7 @@
   (insert-message)
   (cond
     ((null matches)
-     (irc-br (gethash :miss *outcomes*)))
+     (irc-br (argument-holder-miss-basic-block arguments)))
     ((= (length matches) 1)
      (let ((match (car matches)))
        (if (single-p match)
@@ -663,10 +664,10 @@
 	     (irc-begin-block true-branch)
 	     (codegen-node-or-outcome arguments cur-arg (single-outcome match))
 	     (irc-begin-block false-branch)
-	     (irc-br (gethash :miss *outcomes*)))
+	     (irc-br (argument-holder-miss-basic-block arguments)))
 	   (let ((ge-first-branch (irc-basic-block-create "gefirst"))
 		 (le-last-branch (irc-basic-block-create "lelast"))
-		 (miss-branch (gethash :miss *outcomes*))
+		 (miss-branch (argument-holder-miss-basic-block arguments))
 		 (cmpge (irc-icmp-sge stamp-var (jit-constant-i64 (range-first-stamp match)) "ge")))
 	     (irc-cond-br cmpge ge-first-branch miss-branch)
 	     (irc-begin-block ge-first-branch)
@@ -779,8 +780,7 @@
                  (push (cons v k) values))
                eql-selectors)
       (maphash (lambda (k v)
-                 (unless (eq k :miss)
-                   (push (cons v k) values)))
+                   (push (cons v k) values))
                outcomes)
       (let ((sorted (sort values #'< :key #'car)))
         (mapcar #'extract-outcome sorted)))))
@@ -829,7 +829,7 @@
 
 ;;; Determine if any of the effective methods need the full method arguments list
 ;;; If any of them do - then we have to allocate space for a vaslist 
-(defun analyze-generic-function-make-arguments (generic-function register-arguments debug-on)
+(defun analyze-generic-function-make-arguments (generic-function register-arguments debug-on miss-basic-block)
   (let* ((call-history (clos:generic-function-call-history generic-function))
          (specializer-profile (clos:generic-function-specializer-profile generic-function))
          (last-specializer-index (position t specializer-profile :from-end t))
@@ -895,16 +895,20 @@
                                 :vaslist* vaslist*
                                 :methods-vaslist-t* vaslist-t*
                                 :cleanup-action cleanup-action
-                                :invocation-history-frame* invocation-history-frame*))))))
+                                :invocation-history-frame* invocation-history-frame*
+                                :miss-basic-block miss-basic-block))))))
 
 
 ;;; Keeps track of the number of dispatchers that were compiled and
 ;;;   is used to give the roots array in each dispatcher a unique name.
 (defparameter *dispatcher-count* 0)
-(defun codegen-dispatcher (generic-function &key generic-function-name output-path log-gf (debug-on t))
+(defun codegen-dispatcher (generic-function &key generic-function-name output-path log-gf (debug-on t debug-on-p))
   (let* ((*log-gf* log-gf)
          (raw-call-history (clos:generic-function-call-history generic-function))
          (call-history (optimized-call-history generic-function))
+         (debug-on (if debug-on-p
+                       debug-on
+                       (core:get-funcallable-instance-debug-on generic-function)))
          (dtree (let ((dt (make-dtree)))
                   (cond
                     (call-history
@@ -971,7 +975,6 @@
           (cmp:irc-set-insert-point-basic-block entry-bb irbuilder-alloca)
           (let ((body-bb (irc-basic-block-create "body" disp-fn))
                 (miss-bb (irc-basic-block-create "miss" disp-fn)))
-            (setf (gethash :miss *outcomes*) miss-bb)
             (irc-set-insert-point-basic-block body-bb irbuilder-body)
             (with-irbuilder (irbuilder-body)
               ;; Analyze the call history to see if there are optimizations that we can
@@ -981,7 +984,7 @@
               ;;  (2) If there are more required arguments than the number of register arguments
               ;;      then we need to allocate a va_list to use when we run out of register arguments.
               ;; Setup exception handling and cleanup landing pad
-              (let* ((arguments (analyze-generic-function-make-arguments generic-function register-arguments debug-on)))
+              (let* ((arguments (analyze-generic-function-make-arguments generic-function register-arguments debug-on miss-bb)))
                 (flet ((codegen-rest-of-dispatcher ()
                          (with-irbuilder (*irbuilder-function-alloca*)
                            (irc-br body-bb))
@@ -1011,7 +1014,7 @@
                               (irc-begin-block (argument-holder-continue-after-dispatch arguments)))
                           ((cleanup)
                            (funcall (argument-holder-cleanup-action arguments) arguments))))
-                      (progn
+                      (with-landing-pad nil
                         (codegen-node-or-outcome arguments -1 (dtree-root dtree))
                         (codegen-rest-of-dispatcher)
                         (irc-begin-block (argument-holder-continue-after-dispatch arguments)))))

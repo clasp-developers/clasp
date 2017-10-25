@@ -612,6 +612,13 @@ void FuncallableInstance_O::describe(T_sp stream) {
   clasp_write_string(ss.str(), stream);
 }
 
+CL_DEFUN void core__set_funcallable_instance_debug_on(FuncallableInstance_sp instance, bool debugOn) {
+  instance->_DebugOn = debugOn;
+}
+
+CL_DEFUN bool core__get_funcallable_instance_debug_on(FuncallableInstance_sp instance) {
+  return instance->_DebugOn;
+}
 
 
 
