@@ -370,8 +370,7 @@
 				 (destructuring-bind ,required-arguments %list
 				   (list ,@a-p-o)))
 			      'function))))))
-	(setf (generic-function-a-p-o-function gf) function)
-	(si:clear-gfun-hash gf)))))
+	(setf (generic-function-a-p-o-function gf) function)))))
 
 (defun print-object (object stream)
   (print-unreadable-object (object stream)))

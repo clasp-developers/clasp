@@ -266,7 +266,6 @@ and cannot be added to ~A." method other-gf gf)))
   (setf (generic-function-methods gf)
 	(delete method (generic-function-methods gf))
 	(method-generic-function method) nil)
-  (si:clear-gfun-hash gf)
   (loop for spec in (method-specializers method)
      do (remove-direct-method spec method))
   (compute-g-f-spec-list gf)
@@ -301,6 +300,7 @@ and cannot be added to ~A." method other-gf gf)))
 
 (defun no-primary-method (gf &rest args)
   (error "Generic function: ~A. No primary method given arguments: ~S"
+         ;; FIXME: Is the expand needed any more?
 	 (generic-function-name gf) (core:maybe-expand-generic-function-arguments args)))
 
 ;;; Now we protect classes from redefinition:

@@ -553,15 +553,7 @@ T_sp FuncallableInstance_O::setFuncallableInstanceFunction(T_sp functionOrT) {
   SYMBOL_SC_(ClosPkg, standardOptimizedReaderFunction);
   SYMBOL_SC_(ClosPkg, standardOptimizedWriterFunction);
   SYMBOL_SC_(ClosPkg, invalidated_dispatch_function );
-  if (functionOrT == _lisp->_true()) {
-    this->_isgf = CLASP_STANDARD_DISPATCH;
-    this->entry = this->entry_point;
-    FuncallableInstance_O::ensureClosure(&generic_function_dispatch);
-  } else if (functionOrT == cl::_sym_standardGenericFunction) {
-    this->_isgf = CLASP_RESTRICTED_DISPATCH; 
-    this->entry = this->entry_point;
-    FuncallableInstance_O::ensureClosure(&generic_function_dispatch);
-  } else if (functionOrT == clos::_sym_invalidated_dispatch_function) {
+  if (functionOrT == clos::_sym_invalidated_dispatch_function) {
     this->_isgf = CLASP_INVALIDATED_DISPATCH;
     // FIXME Jump straight to the invalidated-dispatch-function
     this->entry = this->entry_point;
@@ -714,10 +706,6 @@ CL_DEFUN List_sp clos__call_history_find_key(List_sp generic_function_call_histo
 CL_DEFUN T_mv clos__getFuncallableInstanceFunction(T_sp obj) {
   if (FuncallableInstance_sp iobj = obj.asOrNull<FuncallableInstance_O>()) {
     switch (iobj->_isgf) {
-    case CLASP_STANDARD_DISPATCH:
-        return Values(_lisp->_true(),Pointer_O::create((void*)iobj->_entryPoint.load()));
-    case CLASP_RESTRICTED_DISPATCH:
-        return Values(cl::_sym_standardGenericFunction,Pointer_O::create((void*)iobj->_entryPoint.load()));
     case CLASP_USER_DISPATCH:
         return Values(iobj->userFuncallableInstanceFunction(),Pointer_O::create((void*)iobj->_entryPoint.load()));
     case CLASP_FASTGF_DISPATCH:

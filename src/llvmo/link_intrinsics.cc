@@ -85,12 +85,6 @@ namespace llvmo {
       SIMPLE_ERROR(BF("Destination must be ActivationFrame"));
   case invalidIndexForFunctionFrame:
       SIMPLE_ERROR(BF("Invalid index[%d] for FunctionFrame(size=%d)") % _rep_(arg0) % _rep_(arg1));
-  case no_applicable_reader_method:
-      core::eval::funcall(::cl::_sym_no_applicable_method,arg0,arg1);
-      UNREACHABLE();
-  case no_applicable_writer_method:
-      core::eval::funcall(::cl::_sym_no_applicable_method,arg0,arg1,arg2);
-      UNREACHABLE();
   case unboundSymbolValue:
     {
       core::Symbol_sp sym = gc::As<core::Symbol_sp>(arg0);

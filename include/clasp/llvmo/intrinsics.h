@@ -201,8 +201,6 @@ namespace llvmo {
                  unboundSymbolValue,
                  unboundSymbolFunction,
                  unboundSymbolSetfFunction,
-                 no_applicable_reader_method,
-                 no_applicable_writer_method,
                  slot_reader_problem,
                  slot_writer_problem,
                  dummyErrorCode
