@@ -5,6 +5,8 @@
           *compile-debug-dump-module*  ;; Dump intermediate modules
           quick-module-dump
           quick-message-dump
+          write-bitcode
+          load-bitcode
           *irbuilder*
           %ltv*%
           irc-function-create
@@ -53,13 +55,13 @@
           %mv-struct%
           %size_t%
           %t*%
-          %tsp[0]%
+          %t*[0]%
           %tsp%
-          %tsp[0]*%
+          %t*[0]*%
           %tsp*%
           %t**%
-          %tsp[DUMMY]%
-          %tsp[DUMMY]*%
+          %t*[DUMMY]%
+          %t*[DUMMY]*%
           null-t-ptr
           %gcroots-in-module%
           %gcroots-in-module*%
@@ -144,7 +146,6 @@
           irc-ret
           irc-undef-value-get
           irc-store
-          irc-store-t*
           irc-switch
           irc-unreachable
           irc-trunc

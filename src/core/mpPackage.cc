@@ -255,9 +255,12 @@ CL_DEFUN Process_sp mp__process_run_function(core::T_sp name, core::T_sp functio
   core::Cons_sp fastgf = core::Cons_O::create(core::_sym_STARdebug_fastgfSTAR,_Nil<core::T_O>());
   special_bindings = core::Cons_O::create(fastgf,special_bindings);
 #endif
-  Process_sp p = Process_O::make_process(name,function,_Nil<core::T_O>(),special_bindings,DEFAULT_THREAD_STACK_SIZE);
-  p->enable();
-  return p;
+  if (cl__functionp(function)) {
+    Process_sp p = Process_O::make_process(name,function,_Nil<core::T_O>(),special_bindings,DEFAULT_THREAD_STACK_SIZE);
+    p->enable();
+    return p;
+  }
+  SIMPLE_ERROR(BF("%s is not a function - you must provide a function to run in a separate process") % _rep_(function));
 };
 
 CL_DEFUN core::List_sp mp__all_processes() {

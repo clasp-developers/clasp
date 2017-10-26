@@ -325,8 +325,8 @@ the value is put into *default-load-time-value-vector* and its index is returned
                                                      cmp:*load-time-value-holder-global-var*
                                                      (list (jit-constant-i32 0)
                                                            (jit-constant-i32 idx))
-                                                     (bformat nil "CONTAB[%d]%tsp" idx)))
-                    (arg (irc-smart-ptr-extract (irc-load entry) (bformat nil "CONTAB[%d]%t*" idx))))
+                                                     (bformat nil "CONTAB[%d]%t*" idx)))
+                    (arg (irc-load entry (bformat nil "CONTAB[%d]%t*" idx))))
                arg))
            (fix-args (args)
              "Convert the args from Lisp form into llvm::Value*'s"
@@ -431,10 +431,10 @@ Return the index of the load-time-value"
                                         "constants-table"))
         (cmp:*load-time-value-holder-global-var*
          (llvm-sys:make-global-variable *the-module*
-                                        cmp:%tsp[DUMMY]% ; type
+                                        cmp:%t*[DUMMY]% ; type
                                         nil              ; isConstant
                                         'llvm-sys:internal-linkage
-                                        (llvm-sys:undef-value-get cmp:%tsp[DUMMY]%)
+                                        (llvm-sys:undef-value-get cmp:%t*[DUMMY]%)
                                         ;; nil ; initializer
                                         (next-value-table-holder-name "dummy")))
         (*llvm-values* (make-hash-table))
@@ -466,14 +466,14 @@ Return the index of the load-time-value"
       (when (> table-entries 0)
         ;; We have a new table, replace the old one and generate code to register the new one
         ;; and gc roots tabl
-        (let* ((array-type (llvm-sys:array-type-get cmp:%tsp% table-entries))
+        (let* ((array-type (llvm-sys:array-type-get cmp:%t*% table-entries))
                (correct-size-holder (llvm-sys:make-global-variable *the-module*
                                                                    array-type
                                                                    nil ; isConstant
                                                                    'llvm-sys:internal-linkage
                                                                    (llvm-sys:undef-value-get array-type)
                                                                    real-name))
-               (bitcast-correct-size-holder (irc-bit-cast correct-size-holder cmp:%tsp[DUMMY]*% "bitcast-table"))
+               (bitcast-correct-size-holder (irc-bit-cast correct-size-holder cmp:%t*[DUMMY]*% "bitcast-table"))
                (holder-ptr (llvm-sys:create-geparray *irbuilder* correct-size-holder
                                                      (list (cmp:jit-constant-size_t 0)
                                                            (cmp:jit-constant-size_t 0)) "table")))
@@ -481,7 +481,7 @@ Return the index of the load-time-value"
           (with-run-all-entry-codegen
               (cmp:irc-intrinsic-call "cc_initialize_gcroots_in_module"
                                       (list *gcroots-in-module*
-                                            (irc-pointer-cast correct-size-holder cmp:%tsp*% "")
+                                            (irc-pointer-cast correct-size-holder cmp:%t**% "")
                                             (cmp:jit-constant-size_t table-entries)
                                             (cmp:irc-int-to-ptr (cmp:jit-constant-uintptr_t 0) %t*%))))
           ;; Erase the dummy holder
@@ -510,7 +510,7 @@ and  return the sorted values and the constant-table or (values nil nil)."
          (*table-index* 0)
          (*load-time-value-holder-global-var*
           (llvm-sys:make-global-variable *the-module*
-                                         %tsp[0]% ; type
+                                         %t*[0]% ; type
                                          nil      ; isConstant
                                          'llvm-sys:internal-linkage
                                          nil
@@ -530,7 +530,7 @@ Return the orderered-raw-constants-list and the constants-table GlobalVariable"
                (bformat t "Number of run-time-values: %d\n" (length run-time-values)))
        (when (> num-elements 0)
          (let* ((ordered-constant-list (sort run-time-values #'< :key #'literal-node-runtime-index))
-                (array-type (llvm-sys:array-type-get %tsp% (length ordered-constant-list))))
+                (array-type (llvm-sys:array-type-get %t*% (length ordered-constant-list))))
            (setf ordered-raw-constant-list
                  (mapcar (lambda (x) (literal-node-runtime-object x)) ordered-constant-list)
                  constant-table (llvm-sys:make-global-variable *the-module*
@@ -540,7 +540,7 @@ Return the orderered-raw-constants-list and the constants-table GlobalVariable"
                                                                (llvm-sys:undef-value-get array-type)
                                                                (next-value-table-holder-name)))
 
-           (let ((bitcast-constant-table (irc-bit-cast constant-table %tsp[0]*% "bitcast-table")))
+           (let ((bitcast-constant-table (irc-bit-cast constant-table %t*[0]*% "bitcast-table")))
              (llvm-sys:replace-all-uses-with *load-time-value-holder-global-var* bitcast-constant-table))))
        (llvm-sys:erase-from-parent *load-time-value-holder-global-var*)
        (multiple-value-bind (startup-fn shutdown-fn)
@@ -692,7 +692,7 @@ Return the orderered-raw-constants-list and the constants-table GlobalVariable"
           index)
         (let ((immediate immediate?literal-node-runtime))
           (when result
-            (irc-store-t* immediate result))
+            (irc-store immediate result))
           :poison-value-from-codegen-rtv))))
 
 (defun codegen-literal (result object env)
@@ -707,7 +707,7 @@ If it isn't NIL then copy the literal from its index in the LTV into result."
           data-or-index)
         (progn
           (when result
-            (irc-store-t* data-or-index result))
+            (irc-store data-or-index result))
           :poison-value-from-codegen-literal))))
 
 ;; Should be bclasp-compile-load-time-value-thunk

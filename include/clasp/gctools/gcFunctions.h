@@ -4,7 +4,7 @@
 namespace gctools {
   /*! Return true if any debugging flags are set and a description of all debugging flag
 settings in string stream */
-  bool debugging_configuration(stringstream& ss);
+  bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& ss);
 
   void gctools__cleanup(bool verbose=false);
 

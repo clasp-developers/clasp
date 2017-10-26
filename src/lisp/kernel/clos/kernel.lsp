@@ -12,6 +12,9 @@
 
 (in-package "CLOS")
 
+#+(or)(eval-when (:execute)
+  (setq core:*echo-repl-read* t))
+
 (defparameter *clos-booted* nil)
 
 ;;; ----------------------------------------------------------------------
@@ -72,6 +75,7 @@
 ;  (record-definition 'method `(method ,name ,@qualifiers ,specializers))
   (let* ((gf (ensure-generic-function name))
 	 (specializers (mapcar #'(lambda (x)
+                                   (declare (core:lambda-name install-method.lambda))
 				   (cond ((consp x) (intern-eql-specializer (second x)))
 					 ((typep x 'specializer) x)
 					 ((find-class x nil))
@@ -107,7 +111,7 @@
 	      :declarations nil
 	      :dependents nil)
 	;; create a new gfun
-	(set-funcallable-instance-function gfun 'standard-generic-function)
+	(set-funcallable-instance-function gfun 'invalidated-dispatch-function)
 	(setf (fdefinition name) gfun)
 	gfun)))
 
@@ -127,6 +131,7 @@
 
 (defun compute-discriminating-function (generic-function)
   (values #'(lambda (&rest args)
+              (declare (core:lambda-name compute-discriminating-function.lambda))
 	      (multiple-value-bind (method-list ok)
 		  (compute-applicable-methods-using-classes
 		   generic-function
@@ -136,86 +141,16 @@
 			(compute-applicable-methods generic-function args))
 		  (unless method-list
 		    (apply #'no-applicable-method generic-function args)))
-		(apply (compute-effective-method-function
+		(funcall (compute-effective-method-function
 			  generic-function
 			  (generic-function-method-combination generic-function)
 			  method-list)
 			 args
-			 nil
-                         args)))
+			 nil)))
 	  t))
 
-(defun set-generic-function-dispatch (gfun)
-  ;;
-  ;; We have to decide which discriminating function to install:
-  ;;	1* One supplied by the user
-  ;;	2* One coded in C that follows the MOP
-  ;;	3* One in C specialized for slot accessors
-  ;;	4* One in C that does not use generic versions of compute-applicable-...
-  ;; Respectively
-  ;;	1* The user supplies a discriminating function, or the number of arguments
-  ;;	   is so large that they cannot be handled by the C dispatchers with
-  ;;	   with memoization.
-  ;;	2* The generic function is not a s-g-f but takes less than 64 arguments
-  ;;	3* The generic function is a standard-generic-function and all its slots
-  ;;	   are standard-{reader,writer}-slots
-  ;;	4* The generic function is a standard-generic-function with less
-  ;;	   than 64 arguments
-  ;;
-  ;; This chain of reasoning uses the fact that the user cannot override methods
-  ;; such as COMPUTE-APPLICABLE-METHODS, or COMPUTE-EFFECTIVE-METHOD, or
-  ;; COMPUTE-DISCRIMINATING-FUNCTION acting on STANDARD-GENERIC-FUNCTION.
-  ;;
-  (declare (notinline compute-discriminating-function))
-  (multiple-value-bind (default-function optimizable)
-      ;;
-      ;; If the class is not a standard-generic-function, we must honor whatever function
-      ;; the user provides. However, we still recognize the case without user-computed
-      ;; function, where we can replace the output of COMPUTE-DISCRIMINATING-FUNCTION with
-      ;; a similar implementation in C
-      (compute-discriminating-function gfun)
-;;    (print "HUNT kernel.lsp set-generic-function-dispatch")
-    (let ((methods (slot-value gfun 'methods)))
-      (set-funcallable-instance-function
-       gfun
-       (cond
-         #+fast-dispatch
-         ((typep (get-funcallable-instance-function gfun) 'core:compiled-dispatch-function)
-          'invalidated-dispatch-function
-          #+(or)(clos::calculate-dispatch-function gfun))
-         #+fast-dispatch
-         ((eq (get-funcallable-instance-function gfun) 'clos::invalidated-dispatch-function)
-          'clos::invalidated-dispatch-function)
-         ;; If *enable-fastgf* is T then new generic functions use fastgf
-         #+fast-dispatch
-         (*enable-fastgf*
-          ;; Add optimized reader and writer methods
-          'invalidated-dispatch-function
-          #+(or)(clos::calculate-dispatch-function gfun))
-	 ;; Case 1*
-	 ((or (not optimizable)
-	      (> (length (slot-value gfun 'spec-list))
-		 si::c-arguments-limit))
-	  default-function)
-	 ;; Case 2*
-	 ((and (not (eq (slot-value (class-of gfun) 'name)
-			'standard-generic-function))
-	       *clos-booted*)
-	  t)
-	 ((null methods)
-	  'standard-generic-function)
-	 ;; Cases 3*
-	 ((loop with class = (find-class 'standard-optimized-reader-method nil)
-	     for m in methods
-	     always (eq class (class-of m)))
-	  'standard-optimized-reader-method)
-	 ((loop with class = (find-class 'standard-optimized-writer-method nil)
-	     for m in methods
-	     always (eq class (class-of m)))
-	  'standard-optimized-writer-method)
-	 ;; Case 4*
-	 (t
-	  'standard-generic-function))))))
+#+(or)(eval-when (:execute :compile-toplevel :load-toplevel)
+  (setq cmp::*jit-dump-module-before-optimizations* t))
 
 ;;; ----------------------------------------------------------------------
 ;;; COMPUTE-APPLICABLE-METHODS
@@ -258,9 +193,37 @@
 	 when (applicable-method-p method args)
 	 collect method))))
 
+#+mlog
+(defun std-compute-applicable-methods-using-classes (gf classes)
+  (declare (optimize (speed 3)))
+  (with-early-accessors
+      (+standard-method-slots+ +eql-specializer-slots+ +standard-generic-function-slots+)
+    (flet ((applicable-method-p (method classes)
+             (loop for spec in (method-specializers method)
+                   for class in classes
+                   always (cond ((eql-specializer-flag spec)
+                                 ;; EQL specializer invalidate computation                       
+                                 ;; we return NIL                                                
+                                 (when (si::of-class-p (eql-specializer-object spec) class)
+                                   (return-from std-compute-applicable-methods-using-classes
+                                     (values nil nil)))
+                                 nil)
+                                ((si::subclassp class spec))))))
+      (mlog "std-compute-applicable-methods-using-classes gf -> %s classes -> %s\n" gf classes)
+      (let ((result (sort-applicable-methods
+                     gf
+                     (loop for method in (generic-function-methods gf)
+                           when (applicable-method-p method classes)
+                             collect method)
+                     classes)))
+        (mlog "  result -> %s\n" result)
+        (values result t)))))
+
+#-mlog
 (defun std-compute-applicable-methods-using-classes (gf classes)
   (declare (optimize (speed 3)))
   (with-early-accessors (+standard-method-slots+ +eql-specializer-slots+ +standard-generic-function-slots+)
+    (mlog "std-compute-applicable-methods-using-classes gf -> %s classes -> %s\n" gf classes)
     (flet ((applicable-method-p (method classes)
 	     (loop for spec in (method-specializers method)
 		for class in classes
@@ -407,8 +370,7 @@
 				 (destructuring-bind ,required-arguments %list
 				   (list ,@a-p-o)))
 			      'function))))))
-	(setf (generic-function-a-p-o-function gf) function)
-	(si:clear-gfun-hash gf)))))
+	(setf (generic-function-a-p-o-function gf) function)))))
 
 (defun print-object (object stream)
   (print-unreadable-object (object stream)))

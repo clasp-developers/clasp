@@ -13,7 +13,16 @@
 
 (load "/Users/meister/Development/clasp/src/scraper/tags.lisp" :print t)
 
-(cscrape:generate-one-sif "/Users/meister/Development/externals-clasp/build/release/bin/clang++ -E -DSCRAPING -I./ -I/Users/meister/Development/externals-clasp/build/release/include -std=c++11 -Wno-macro-redefined -Wno-deprecated-register -Wno-expansion-to-defined -Wno-return-type-c-linkage -Wno-invalid-offsetof -Wno-#pragma-messages -Wno-inconsistent-missing-override -O3 -g -I. -I../.. -I../../src/main -I../../include -Igenerated -I../../../externals-clasp/build/release/include -I/usr/include /Users/meister/Development/clasp/src/gctools/memoryManagement.cc" #P"/Users/meister/Development/clasp/build/boehm/src/gctools/memoryManagement.sif")
+(cscrape:generate-one-sif "/Users/meister/Development/externals-clasp/build/release/bin/clang++ -E -DSCRAPING -I./ -I/Users/meister/Development/externals-clasp/build/release/include -std=c++11 -Wno-macro-redefined -Wno-deprecated-register -Wno-expansion-to-defined -Wno-return-type-c-linkage -Wno-invalid-offsetof -Wno-#pragma-messages -Wno-inconsistent-missing-override -O3 -g -I. -I../.. -I../../src/main -I../../include -Igenerated -I../../../externals-clasp/build/release/include -I/usr/include /Users/meister/Development/clasp/src/llvmo/llvmoExpose.cc" #P"/tmp/llvmoExpose.sif")
+
+(apropos "parse-lambda-list")
+
+
+(parse-lambda-list-from-signature "APFloat_sp APFloat_O::makeAPFloatFloat(core::SingleFloat_sp value)")
+
+(separate-type-pointer "&llvm::IRBuilderBase::SetInsertPoint")
+(separate-type-pointer "(void (llvm::IRBuilderBase::*)(llvm::BasicBlock *))&llvm::IRBuilderBase::SetInsertPoint")
+
 
 
 (in-package :cscrape)

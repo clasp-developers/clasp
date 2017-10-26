@@ -742,184 +742,14 @@ CL_DEFUN void gctools__cleanup(bool verbose) {
 #endif
 }
 
-  CL_DOCSTRING("Set the number of signal polling ticks per GC cleanup and message processing.");
-  CL_LAMBDA(&optional verbose);
-  CL_DEFUN void gctools__poll_ticks_per_cleanup(int ticks) {
+CL_DOCSTRING("Set the number of signal polling ticks per GC cleanup and message processing.");
+CL_LAMBDA(&optional verbose);
+CL_DEFUN void gctools__poll_ticks_per_cleanup(int ticks) {
 #ifdef USE_MPS
-    global_pollTicksPerCleanup = ticks;
+  global_pollTicksPerCleanup = ticks;
 #endif
-  };
+};
 
-
-
-
-bool debugging_configuration(stringstream& ss) {
-  bool debugging = false;
-  bool use_boehm_memory_marker = false;
-#ifdef USE_BOEHM_MEMORY_MARKER
-  use_boehm_memory_marker = true;
-  debugging = true;
-#endif
-  ss << (BF("USE_BOEHM_MEMORY_MARKER = %s\n") % (use_boehm_memory_marker ? "defined" : "undefined") ).str();
-  bool use_alloca_for_frame = false;
-#ifdef USE_ALLOCA_FOR_FRAME
-  use_alloca_for_frame = true;
-  debugging = true;
-#endif
-  ss << (BF("USE_ALLOCA_FOR_FRAME = %s\n") % (use_alloca_for_frame ? "defined" : "undefined") ).str();
-
-  bool use_amc_pool = false;
-#ifdef USE_AMC_POOL
-  use_amc_pool = true;
-#else
-  debugging = true;
-#endif
-  ss << (BF("USE_AMC_POOL = %s\n") % (use_amc_pool ? "defined" : "undefined") ).str();
-
-  bool mps_recognize_all_tags = false;
-#ifdef MPS_RECOGNIZE_ALL_TAGS
-  mps_recognize_all_tags = true;
-  debugging = true;
-#endif
-  ss << (BF("MPS_RECOGNIZE_ALL_TAGS = %s\n") % (mps_recognize_all_tags ? "defined" : "undefined") ).str();
-
-  bool mps_recognize_zero_tags = false;
-#ifdef MPS_RECOGNIZE_ZERO_TAGS
-  mps_recognize_zero_tags = true;
-  debugging = true;
-#endif
-  ss << (BF("MPS_RECOGNIZE_ZERO_TAGS = %s\n") % (mps_recognize_zero_tags ? "defined" : "undefined") ).str();
-
-  bool use_symbols_in_global_array = false;
-#ifdef USE_SYMBOLS_IN_GLOBAL_ARRAY
-  use_symbols_in_global_array = true;
-#endif
-  ss << (BF("USE_SYMBOLS_IN_GLOBAL_ARRAY = %s\n") % (use_symbols_in_global_array ? "defined" : "undefined") ).str();
-
-  bool use_static_analyzer_global_symbols = false;
-#ifdef USE_STATIC_ANALYZER_GLOBAL_SYMBOLS
-  use_static_analyzer_global_symbols = true;
-#endif
-  ss << (BF("USE_STATIC_ANALYZER_GLOBAL_SYMBOLS = %s\n") % (use_static_analyzer_global_symbols ? "defined" : "undefined") ).str();
-
-  bool debug_throw_if_invalid_client_on = false;
-#ifdef DEBUG_THROW_IF_INVALID_CLIENT_ON
-  debug_throw_if_invalid_client_on = true;
-  debugging = true;
-#endif
-  ss << (BF("DEBUG_THROW_IF_INVALID_CLIENT_ON = %s\n") % (debug_throw_if_invalid_client_on ? "defined" : "undefined") ).str();
-
-    bool debug_telemetry = false;
-#ifdef DEBUG_TELEMETRY
-  debug_telemetry = true;
-  debugging = true;
-#endif
-  ss << (BF("DEBUG_TELEMETRY = %s\n") % (debug_telemetry ? "defined" : "undefined") ).str();
-
-  bool debug_stack_telemetry = false;
-#ifdef DEBUG_STACK_TELEMETRY
-  debug_stack_telemetry = true;
-  debugging = true;
-#endif
-  ss << (BF("DEBUG_STACK_TELEMETRY = %s\n") % (debug_stack_telemetry ? "defined" : "undefined") ).str();
-
-  bool debug_mps_underscanning = false;
-#ifdef DEBUG_MPS_UNDERSCANNING
-  debug_mps_underscanning = true;
-  bool debug_mps_underscanning_initial = DEBUG_MPS_UNDERSCANNING_INITIAL;
-  debugging = true;
-#else
-  bool debug_mps_underscanning_initial = false;
-#endif
-  ss << (BF("DEBUG_MPS_UNDERSCANNING = %s\n") % (debug_mps_underscanning ? "defined" : "undefined") ).str();
-  ss << (BF("DEBUG_MPS_UNDERSCANNING_INITIAL = %s\n") % (debug_mps_underscanning_initial ? "true" : "false") ).str();
-
-  bool debug_recursive_allocations = false;
-#ifdef DEBUG_RECURSIVE_ALLOCATIONS
-  debug_recursive_allocations = true;
-  debugging = true;
-#endif
-  ss << (BF("DEBUG_RECURSIVE_ALLOCATIONS = %s\n") % (debug_recursive_allocations ? "defined" : "undefined") ).str();
-
-  bool config_var_cool = false;
-#ifdef CONFIG_VAR_COOL
-  config_var_cool = true;
-  debugging = true;
-#endif
-  ss << (BF("CONFIG_VAR_COOL = %s\n") % (config_var_cool ? "defined" : "undefined") ).str();
-
-  bool debug_guard = false;
-#ifdef DEBUG_GUARD
-  debug_guard = true;
-  debugging = true;
-#endif
-  ss << (BF("DEBUG_GUARD = %s\n") % (debug_guard ? "defined" : "undefined") ).str();
-
-  bool debug_validate_guard = false;
-#ifdef DEBUG_VALIDATE_GUARD
-  debug_validate_guard = true;
-  debugging = true;
-#endif
-  ss << (BF("DEBUG_VALIDATE_GUARD = %s\n") % (debug_validate_guard ? "defined" : "undefined") ).str();
-
-  bool debug_function_call_counter = false;
-#ifdef DEBUG_FUNCTION_CALL_COUNTER
-  debug_function_call_counter = true;
-  debugging = true;
-#endif
-  ss << (BF("DEBUG_FUNCTION_CALL_COUNTER = %s\n") % (debug_function_call_counter ? "defined" : "undefined") ).str();
-
-  bool meter_allocations = false;
-#ifdef METER_ALLOCATIONS
-  meter_allocations = true;
-  debugging = true;
-#endif
-  ss << (BF("METER_ALLOCATIONS = %s\n") % (meter_allocations ? "defined" : "undefined") ).str();
-
-  bool debug_cache = false;
-#ifdef DEBUG_CACHE
-  debug_cache = true;
-  debugging = true;
-#endif
-  ss << (BF("DEBUG_CACHE = %s\n") % (debug_cache ? "defined" : "undefined") ).str();
-
-  bool debug_threads = false;
-#ifdef DEBUG_THREADS
-  debug_threads = true;
-  debugging = true;
-#endif
-  ss << (BF("DEBUG_THREADS = %s\n") % (debug_threads ? "defined" : "undefined") ).str();
-
-  bool debug_gfdispatch = false;
-#ifdef DEBUG_GFDISPATCH
-  debug_gfdispatch = true;
-  debugging = true;
-#endif
-  ss << (BF("DEBUG_GFDISPATCH = %s\n") % (debug_gfdispatch ? "defined" : "undefined") ).str();
-
-  bool debug_ihs = false;
-#ifdef DEBUG_IHS
-  debug_ihs = true;
-  debugging = true;
-#endif
-  ss << (BF("DEBUG_IHS = %s\n") % (debug_ihs ? "defined" : "undefined") ).str();
-
-  bool debug_enable_profiling = false;
-#ifdef ENABLE_PROFILING
-  debug_enable_profiling = true;
-  debugging = true;
-#endif
-  ss << (BF("ENABLE_PROFILING = %s\n") % (debug_ihs ? "defined" : "undefined") ).str();
-
-  return debugging;
-}
-
-CL_DEFUN void gctools__configuration()
-{
-  stringstream ss;
-  bool debugging = debugging_configuration(ss);
-  core::clasp_writeln_string(ss.str());
-}
 
 
 #define ARGS_gctools__debug_allocations "(arg)"
@@ -929,34 +759,250 @@ CL_DEFUN void gctools__debug_allocations(core::T_sp debugOn) {
   _GlobalDebugAllocations = debugOn.isTrue();
 };
 
+bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& ss) {
+  core::List_sp features = cl::_sym_STARfeaturesSTAR->symbolValue();
+  bool debugging = false;
+  bool use_boehm_memory_marker = false;
+#ifdef USE_BOEHM_MEMORY_MARKER
+  use_boehm_memory_marker = true;
+  debugging = true;
+#endif
+  if (buildReport) ss << (BF("USE_BOEHM_MEMORY_MARKER = %s\n") % (use_boehm_memory_marker ? "defined" : "undefined") ).str();
+  bool use_alloca_for_frame = false;
+#ifdef USE_ALLOCA_FOR_FRAME
+  use_alloca_for_frame = true;
+  debugging = true;
+#endif
+  if (buildReport) ss << (BF("USE_ALLOCA_FOR_FRAME = %s\n") % (use_alloca_for_frame ? "defined" : "undefined") ).str();
+
+  bool use_amc_pool = false;
+#ifdef USE_AMC_POOL
+  use_amc_pool = true;
+#else
+  debugging = true;
+#endif
+  if (buildReport) ss << (BF("USE_AMC_POOL = %s\n") % (use_amc_pool ? "defined" : "undefined") ).str();
+
+  bool mps_recognize_all_tags = false;
+#ifdef MPS_RECOGNIZE_ALL_TAGS
+  mps_recognize_all_tags = true;
+  debugging = true;
+#endif
+  if (buildReport) ss << (BF("MPS_RECOGNIZE_ALL_TAGS = %s\n") % (mps_recognize_all_tags ? "defined" : "undefined") ).str();
+
+  bool mps_recognize_zero_tags = false;
+#ifdef MPS_RECOGNIZE_ZERO_TAGS
+  mps_recognize_zero_tags = true;
+  debugging = true;
+#endif
+  if (buildReport) ss << (BF("MPS_RECOGNIZE_ZERO_TAGS = %s\n") % (mps_recognize_zero_tags ? "defined" : "undefined") ).str();
+
+  bool use_symbols_in_global_array = false;
+#ifdef USE_SYMBOLS_IN_GLOBAL_ARRAY
+  use_symbols_in_global_array = true;
+#endif
+  if (buildReport) ss << (BF("USE_SYMBOLS_IN_GLOBAL_ARRAY = %s\n") % (use_symbols_in_global_array ? "defined" : "undefined") ).str();
+
+  bool use_static_analyzer_global_symbols = false;
+#ifdef USE_STATIC_ANALYZER_GLOBAL_SYMBOLS
+  use_static_analyzer_global_symbols = true;
+#endif
+  if (buildReport) ss << (BF("USE_STATIC_ANALYZER_GLOBAL_SYMBOLS = %s\n") % (use_static_analyzer_global_symbols ? "defined" : "undefined") ).str();
+
+  bool debug_throw_if_invalid_client_on = false;
+#ifdef DEBUG_THROW_IF_INVALID_CLIENT_ON
+  debug_throw_if_invalid_client_on = true;
+  debugging = true;
+#endif
+  if (buildReport) ss << (BF("DEBUG_THROW_IF_INVALID_CLIENT_ON = %s\n") % (debug_throw_if_invalid_client_on ? "defined" : "undefined") ).str();
+
+    bool debug_telemetry = false;
+#ifdef DEBUG_TELEMETRY
+  debug_telemetry = true;
+  debugging = true;
+#endif
+  if (buildReport) ss << (BF("DEBUG_TELEMETRY = %s\n") % (debug_telemetry ? "defined" : "undefined") ).str();
+
+  bool debug_stack_telemetry = false;
+#ifdef DEBUG_STACK_TELEMETRY
+  debug_stack_telemetry = true;
+  debugging = true;
+#endif
+  if (buildReport) ss << (BF("DEBUG_STACK_TELEMETRY = %s\n") % (debug_stack_telemetry ? "defined" : "undefined") ).str();
+
+  bool debug_mps_underscanning = false;
+#ifdef DEBUG_MPS_UNDERSCANNING
+  debug_mps_underscanning = true;
+  bool debug_mps_underscanning_initial = DEBUG_MPS_UNDERSCANNING_INITIAL;
+  debugging = true;
+#else
+  bool debug_mps_underscanning_initial = false;
+#endif
+  if (buildReport) ss << (BF("DEBUG_MPS_UNDERSCANNING = %s\n") % (debug_mps_underscanning ? "defined" : "undefined") ).str();
+  if (buildReport) ss << (BF("DEBUG_MPS_UNDERSCANNING_INITIAL = %s\n") % (debug_mps_underscanning_initial ? "true" : "false") ).str();
+
+  bool debug_recursive_allocations = false;
+#ifdef DEBUG_RECURSIVE_ALLOCATIONS
+  debug_recursive_allocations = true;
+  debugging = true;
+#endif
+  if (buildReport) ss << (BF("DEBUG_RECURSIVE_ALLOCATIONS = %s\n") % (debug_recursive_allocations ? "defined" : "undefined") ).str();
+
+  bool config_var_cool = false;
+#ifdef CONFIG_VAR_COOL
+  config_var_cool = true;
+  debugging = true;
+#endif
+  if (buildReport) ss << (BF("CONFIG_VAR_COOL = %s\n") % (config_var_cool ? "defined" : "undefined") ).str();
+
+  bool debug_guard = false;
+#ifdef DEBUG_GUARD
+  debug_guard = true;
+  debugging = true;
+  if (setFeatures)  features = core::Cons_O::create(_lisp->internKeyword("DEBUG-GUARD"), features);
+#endif
+  if (buildReport) ss << (BF("DEBUG_GUARD = %s\n") % (debug_guard ? "defined" : "undefined") ).str();
+
+  bool debug_validate_guard = false;
+#ifdef DEBUG_VALIDATE_GUARD
+  debug_validate_guard = true;
+  debugging = true;
+#endif
+  if (buildReport) ss << (BF("DEBUG_VALIDATE_GUARD = %s\n") % (debug_validate_guard ? "defined" : "undefined") ).str();
+
+  bool debug_function_call_counter = false;
+#ifdef DEBUG_FUNCTION_CALL_COUNTER
+  debug_function_call_counter = true;
+  debugging = true;
+#endif
+  if (buildReport) ss << (BF("DEBUG_FUNCTION_CALL_COUNTER = %s\n") % (debug_function_call_counter ? "defined" : "undefined") ).str();
+
+  bool meter_allocations = false;
+#ifdef METER_ALLOCATIONS
+  meter_allocations = true;
+  debugging = true;
+  if (setFeatures)  features = core::Cons_O::create(_lisp->internKeyword("METER-ALLOCATIONS"),features);
+#endif
+  if (buildReport) ss << (BF("METER_ALLOCATIONS = %s\n") % (meter_allocations ? "defined" : "undefined") ).str();
+
+  bool debug_ensure_valid_object = false;
+#ifdef DEBUG_ENSURE_VALID_OBJECT
+  debug_ensure_valid_object = true;
+  debugging = true;
+  if (setFeatures)  features = core::Cons_O::create(_lisp->internKeyword("DEBUG-ENSURE-VALID-OBJECT"),features);
+#endif  
+  if (buildReport) ss << (BF("DEBUG_ENSURE_VALID_OBJECT = %s\n") % (debug_ensure_valid_object ? "defined" : "undefined") ).str();
+  
+  bool debug_cache = false;
+#ifdef DEBUG_CACHE
+  debug_cache = true;
+  debugging = true;
+#endif
+  if (buildReport) ss << (BF("DEBUG_CACHE = %s\n") % (debug_cache ? "defined" : "undefined") ).str();
+
+  bool debug_threads = false;
+#ifdef DEBUG_THREADS
+  debug_threads = true;
+  debugging = true;
+#endif
+  if (buildReport) ss << (BF("DEBUG_THREADS = %s\n") % (debug_threads ? "defined" : "undefined") ).str();
+
+  bool debug_gfdispatch = false;
+#ifdef DEBUG_GFDISPATCH
+  debug_gfdispatch = true;
+  debugging = true;
+#endif
+  if (buildReport) ss << (BF("DEBUG_GFDISPATCH = %s\n") % (debug_gfdispatch ? "defined" : "undefined") ).str();
+
+  bool debug_ihs = false;
+#ifdef DEBUG_IHS
+  debug_ihs = true;
+  debugging = true;
+#endif
+  if (buildReport) ss << (BF("DEBUG_IHS = %s\n") % (debug_ihs ? "defined" : "undefined") ).str();
+
+  bool debug_enable_profiling = false;
+#ifdef ENABLE_PROFILING
+  debug_enable_profiling = true;
+  debugging = true;
+  if (setFeatures)  features = core::Cons_O::create(_lisp->internKeyword("ENABLE-PROFILING"),features);
+#endif
+  if (buildReport) ss << (BF("ENABLE_PROFILING = %s\n") % (debug_enable_profiling ? "defined" : "undefined") ).str();
+
+  bool debug_release = false;
+#ifdef DEBUG_RELEASE
+  debug_release = true;
+  debugging = true;
+#endif
+  if (buildReport) ss << (BF("DEBUG_RELEASE = %s\n") % (debug_release ? "defined" : "undefined") ).str();
+
+  bool debug_bounds_assert = false;
+#ifdef DEBUG_BOUNDS_ASSERT
+  debug_bounds_assert = true;
+  debugging = true;
+#endif
+  if (buildReport) ss << (BF("DEBUG_BOUNDS_ASSERT = %s\n") % (debug_bounds_assert ? "defined" : "undefined") ).str();
+
+  bool debug_slot_accessors = false;
+#ifdef DEBUG_SLOT_ACCESSORS
+  debug_slot_accessors = true;
+  debugging = true;
+  if (setFeatures)  features = core::Cons_O::create(_lisp->internKeyword("DEBUG-SLOT-ACCESSORS"),features);
+#endif
+  if (buildReport) ss << (BF("DEBUG_SLOT_ACCESSORS = %s\n") % (debug_slot_accessors ? "defined" : "undefined") ).str();
+
+  bool debug_cmpfastgf = false;
+#ifdef DEBUG_CMPFASTGF
+  debug_cmpfastgf = true;
+  debugging = true;
+  if (setFeatures) features = core::Cons_O::create(_lisp->internKeyword("DEBUG-CMPFASTGF"),features);
+#endif
+  if (buildReport) ss << (BF("DEBUG_CMPFASTGF = %s\n") % (debug_cmpfastgf ? "defined" : "undefined") ).str();
+  
+  bool debug_fastgf = false;
+#ifdef DEBUG_FASTGF
+  debug_fastgf = true;
+  debugging = true;
+  if (setFeatures) features = core::Cons_O::create(_lisp->internKeyword("DEBUG-FASTGF"),features);
+#endif
+  if (buildReport) ss << (BF("DEBUG_FASTGF = %s\n") % (debug_fastgf ? "defined" : "undefined") ).str();
+
+  bool debug_bclasp_lisp = false;
+#ifdef DEBUG_BCLASP_LISP
+  debug_bclasp_lisp = true;
+  debugging = true;
+  if (setFeatures) features = core::Cons_O::create(_lisp->internKeyword("DEBUG-BCLASP-LISP"),features);
+#endif
+  if (buildReport) ss << (BF("DEBUG_BCLASP_LISP = %s\n") % (debug_bclasp_lisp ? "defined" : "undefined") ).str();
+  
+  bool disable_type_inference = false;
+#ifdef DISABLE_TYPE_INFERENCE
+  disable_type_inference = true;
+  debugging = true;
+  if (setFeatures)  features = core::Cons_O::create(_lisp->internKeyword("DISABLE-TYPE-INFERENCE"),features);
+#endif
+  if (buildReport) ss << (BF("DISABLE_TYPE_INFERENCE = %s\n") % (disable_type_inference ? "defined" : "undefined") ).str();
+
+  if (setFeatures) cl::_sym_STARfeaturesSTAR->setf_symbolValue(features);
+  
+  // ---- return with the debugging flag
+  return debugging;
+}
+
+CL_DEFUN void gctools__configuration()
+{
+  stringstream ss;
+  bool debugging = debugging_configuration(false,true,ss);
+  core::clasp_writeln_string(ss.str());
+}
+
 
 void initialize_gc_functions() {
-
-  //            core::af_def(GcToolsPkg,"testVec0",&af_testVec0);
-  //            core::af_def(GcToolsPkg,"testArray0",&af_testArray0);
-//  core::af_def(GcToolsPkg, "gcInfo", &gctools__gc_info);
-//  core::af_def(GcToolsPkg, "gcMarker", &gctools__gc_marker, ARGS_gctools__gc_marker, DECL_gctools__gc_marker, DOCS_gctools__gc_marker);
-//  core::af_def(GcToolsPkg, "monitorAllocations", &gctools__monitor_allocations, ARGS_gctools__monitor_allocations, DECL_gctools__monitor_allocations, DOCS_gctools__monitor_allocations);
-//  core::af_def(GcToolsPkg, "garbageCollect", &gctools__garbage_collect);
-//  core::af_def(GcToolsPkg, "stackDepth", &gctools__stack_depth);
-//  core::af_def(GcToolsPkg, "cleanup", &gctools__cleanup);
-//  core::af_def(GcToolsPkg, "maxBootstrapKinds", &gctools__max_bootstrap_kinds);
-//  core::af_def(GcToolsPkg, "bootstrapKindP", &gctools__bootstrap_kind_p);
-//  core::af_def(GcToolsPkg, "bootstrapKindSymbols", &gctools__bootstrap_kind_symbols);
-//  core::af_def(GcToolsPkg, "allocPatternBegin", &gctools__alloc_pattern_begin);
-//  core::af_def(GcToolsPkg, "allocPatternEnd", &gctools__alloc_pattern_end);
-//  core::af_def(GcToolsPkg, "bytes_allocated", &gctools__bytes_allocated);
-//  core::af_def(GcToolsPkg, "deallocate_unmanaged_instance", &gctools__deallocate_unmanaged_instance );
-
   _sym_STARallocPatternStackSTAR->defparameter(_Nil<core::T_O>());
 #ifdef USE_MPS
 //  core::af_def(GcToolsPkg, "mpsTelemetrySet", &gctools__mpsTelemetrySet);
 //  core::af_def(GcToolsPkg, "mpsTelemetryReset", &gctools__mpsTelemetryReset);
 //  core::af_def(GcToolsPkg, "mpsTelemetryFlush", &gctools__mpsTelemetryFlush);
 #endif
-
-  //	    SYMBOL_EXPORT_SC_(GcTools,linkExternalGlobalsInModule);
-  //	    Defun(linkExternalGlobalsInModule);
-//  Gctools_temp_Defun(debug_allocations);
 };
 };

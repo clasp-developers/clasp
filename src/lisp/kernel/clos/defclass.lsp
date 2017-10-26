@@ -29,7 +29,9 @@
 	  (si::simple-program-error "~S is duplicated in :DEFAULT-INITARGS form ~S"
 				    slot-name default-initargs)
 	  (push slot-name already-supplied))
-      (push `(list ',slot-name ',initform (lambda () ,initform))
+      (push `(list ',slot-name ',initform (lambda ()
+                                            (declare (core:lambda-name parse-default-initargs.lambda))
+                                            ,initform))
 	    output-list))))
 
 (defmacro defclass (&whole form &rest args)

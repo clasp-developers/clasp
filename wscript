@@ -719,6 +719,8 @@ def configure(cfg):
 # Keep track of every allocation
     cfg.define("METER_ALLOCATIONS",1)
     cfg.define("DEBUG_TRACE_INTERPRETED_CLOSURES",1)
+    cfg.define("DEBUG_ENVIRONMENTS",1)
+    cfg.define("DEBUG_RELEASE",1)   # Turn off optimization for a few C++ functions; undef this to optimize everything
 #    cfg.define("DEBUG_CACHE",1)      # Debug the dispatch caches - see cache.cc
 #    cfg.define("DEBUG_BITUNIT_CONTAINER",1)  # prints debug info for bitunit containers
 #    cfg.define("DEBUG_ZERO_KIND",1);
@@ -729,13 +731,17 @@ def configure(cfg):
 #    cfg.define("DEBUG_NO_UNWIND",1)
 #    cfg.define("DEBUG_ENSURE_VALID_OBJECT",1)
 #    cfg.define("DEBUG_THREADS",1)
-#    cfg.define("DEBUG_BOUNDS_ASSERT",1)
 #    cfg.define("DEBUG_QUICK_VALIDATE",1)    # quick/cheap validate if on and comprehensive validate if not
 #    cfg.define("DEBUG_STARTUP",1)
 #    cfg.define("DEBUG_ACCESSORS",1)
 #    cfg.define("DEBUG_GFDISPATCH",1)
 ##  Generate per-thread logs in /tmp/dispatch-history/**  of the slow path of fastgf 
-#    cfg.define("DEBUG_FASTGF",1)
+#    cfg.define("DEBUG_CMPFASTGF",1)  # debug dispatch functions by inserting code into them that traces them
+#    cfg.define("DEBUG_FASTGF",1)   # generate slow gf dispatch logging and write out dispatch functions to /tmp/dispatch-history-**
+#    cfg.define("DEBUG_BCLASP_LISP",1)  # Generate debugging frames for all bclasp code - like declaim
+#    cfg.define("DEBUG_BOUNDS_ASSERT",1)
+#    cfg.define("DEBUG_SLOT_ACCESSORS",1)
+#    cfg.define("DISABLE_TYPE_INFERENCE",1)
 # -----------------
 # defines that slow down program execution
 #  There are more defined in clasp/include/gctools/configure_memory.h
@@ -826,6 +832,15 @@ def build(bld):
     wscript_node = bld.path.find_resource("wscript")
     extension_headers_node = variant.extension_headers_node(bld)
     print("extension_headers_node = %s" % extension_headers_node.abspath())
+
+    setup_sbcl_task = setup_sbcl(env=bld.env)
+    #    setup_sbcl_task.set_inputs([os.path.join(self.env.BUILD_ROOT, "src/scraper/setup_sbcl.lisp")])
+    setup_path = bld.path.find_or_declare("src/scraper/setup_sbcl.lisp")
+    #    setup_sbcl_task.set_inputs([os.path.join(self.env.BUILD_ROOT, "src/scraper/setup_sbcl.lisp")])
+    setup_sbcl_task.set_inputs([setup_path])
+    setup_sbcl_task.set_outputs([bld.path.find_or_declare("generated/setup_sbcl.h")])
+    bld.add_to_group(setup_sbcl_task)
+
     extensions_task = build_extension_headers(env=bld.env)
     inputs = [wscript_node] + bld.extensions_gcinterface_include_files
     extensions_task.set_inputs(inputs)
@@ -1066,7 +1081,7 @@ class run_aclasp(Task.Task):
                 "--feature", "no-implicit-compilation",
                 "--feature", "jit-log-symbols",
                 "--feature", "clasp-min",
-                "--feature", "debug-run-clang",
+#                "--feature", "debug-run-clang",
                 "--eval", '(load "sys:kernel;clasp-builder.lsp")',
                 "--eval", "(load-aclasp)",
                 "--"] +  self.bld.clasp_aclasp
@@ -1091,7 +1106,7 @@ class compile_aclasp(Task.Task):
                       "--ignore-image",
                       "--feature", "clasp-min",
                       "--feature", "jit-log-symbols",
-                      "--feature", "debug-run-clang",
+#                      "--feature", "debug-run-clang",
                       "--eval", '(load "sys:kernel;clasp-builder.lsp")' ]
 #                      "--eval", '(setq cmp:*compile-file-debug-dump-module* t)',
 #                      "--eval", '(setq cmp:*compile-debug-dump-module* t)'
@@ -1121,7 +1136,7 @@ class compile_bclasp(Task.Task):
                           '--feature', 'pause-pid' ]
         cmd = cmd + [ "--norc",
                       "--image", self.inputs[1].abspath(),
-                      "--feature", "debug-run-clang",
+#                      "--feature", "debug-run-clang",
                       "--feature", "jit-log-symbols",
                       "--eval", '(load "sys:kernel;clasp-builder.lsp")' ]
         cmd = cmd + ["--eval", "(core:compile-bclasp :output-file #P\"%s\")" % self.outputs[0] ,
@@ -1147,7 +1162,7 @@ class compile_cclasp(Task.Task):
                           '--feature', 'pause-pid' ]
         cmd = cmd + [ "--norc",
                       "--image", self.inputs[1].abspath(),
-                      "--feature", "debug-run-clang",
+#                      "--feature", "debug-run-clang",
                       "--feature", "jit-log-symbols",
                       "--eval", "(load \"sys:kernel;clasp-builder.lsp\")" ]
         if (self.bld.command ):
@@ -1173,7 +1188,8 @@ class recompile_cclasp(Task.Task):
         if not os.path.isfile(other_clasp):
             raise Exception("To use the recompile targets you need to provide a working clasp executable. See wscript.config and/or set the CLASP env variable.")
         cmd = [ other_clasp ]
-        cmd = cmd + [ "--feature", "debug-run-clang",
+        cmd = cmd + [
+#            "--feature", "debug-run-clang",
                       "--feature", "jit-log-symbols",
                       "--feature", "ignore-extensions",
                       "--resource-dir", "%s/%s/%s" % (self.bld.path.abspath(),out,self.bld.variant_obj.variant_dir()),
@@ -1199,7 +1215,7 @@ class compile_addons(Task.Task):
         cmd = cmd + [ "--norc",
                       "--feature", "ignore-extensions",
                       "--feature", "jit-log-symbols",
-                      "--feature", "debug-run-clang",
+#                      "--feature", "debug-run-clang",
                       "--eval", '(load "sys:kernel;clasp-builder.lsp")'
                       "--eval", "(core:compile-addons)",
                       "--eval", "(core:link-addons)",
@@ -1224,7 +1240,7 @@ class compile_module(Task.Task):
         cmd = cmd + [ "--norc",
                       "--feature", "ignore-extensions",
                       "--feature", "jit-log-symbols",
-                      "--feature", "debug-run-clang",
+#                      "--feature", "debug-run-clang",
                       "--eval", "(compile-file #P\"%s\" :output-file #P\"%s\" :output-type :fasl)" % (self.inputs[2], self.outputs[0]),
                       "--eval", "(core:quit)" ]
         print("  cmd: %s" % cmd)
@@ -1242,6 +1258,20 @@ class compile_module(Task.Task):
 #            all_inputs.write(' %s' % x)
 #        return self.exec_command('llvm-ar a %s %s' % ( self.outputs[0], all_inputs.getvalue()) )
 
+class setup_sbcl(Task.Task):
+#    print("DEBUG build_extension_headers directory = %s\n" % root )
+#    print("DEBUG build_extension_headers headers_list=%s\n"% headers_list)
+    def run(self):
+        cmd = [] + self.env.SCRAPER_LISP + [
+            "--load", self.inputs[0].abspath(), 
+            "--eval", "(setup-sbcl #P\"%s\" #P\"%s\")" % (self.inputs[0].abspath(),self.outputs[0].abspath()),
+            "--eval", "(quit)" ]
+        print( "setup_sbcl  cmd -> %s" % cmd)
+        return self.exec_command(cmd,shell=True)
+
+    def keyword(ctx):
+        return "Setting up to scrape"
+    
 class build_extension_headers(Task.Task):
 #    print("DEBUG build_extension_headers directory = %s\n" % root )
 #    print("DEBUG build_extension_headers headers_list=%s\n"% headers_list)

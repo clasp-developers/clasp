@@ -44,6 +44,9 @@ SYMBOL_EXPORT_SC_(CompPkg, jit_register_symbol);
 SYMBOL_EXPORT_SC_(CompPkg, STARjit_saved_symbol_infoSTAR);
 SYMBOL_EXPORT_SC_(CompPkg, STARsave_module_for_disassembleSTAR);
 SYMBOL_EXPORT_SC_(CompPkg, STARsaved_module_from_clasp_jitSTAR);
+SYMBOL_EXPORT_SC_(CompPkg, optimize_module_for_compile);
+SYMBOL_EXPORT_SC_(CompPkg, compile_quick_module_dump);
+SYMBOL_EXPORT_SC_(CompPkg, compile_quick_module_dump);
 void initialize_compPackage() {
   list<string> lnicknames = {"CMP"};
   list<string> luse = {"COMMON-LISP"};

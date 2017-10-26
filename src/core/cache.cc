@@ -191,17 +191,17 @@ void Cache_O::search_cache(CacheRecord *&min_e) {
 	 * deleted, but we might find our data ahead. */
     } else if (argno == (reinterpret_cast<SimpleVector_O*>(&*hkey))->length()) {
 #ifdef DEBUG_CACHE
-    if (this->_debug) {
-      printf("%s:%d    argno length matches\n",__FILE__,__LINE__);
-    }
+      if (this->_debug) {
+        printf("%s:%d    argno length matches\n",__FILE__,__LINE__);
+      }
 #endif
       int n;                                                         // cl_index n;
       for (n = 0; n < argno; n++) {
         if (keys[n] != (*reinterpret_cast<SimpleVector_O*>(&*hkey))[n]) {
 #ifdef DEBUG_CACHE
-    if (this->_debug) {
-      printf("%s:%d    mismatch in arg %d  keys[n]=%p    hkey[n]=%p\n", __FILE__, __LINE__, n, (void*)keys[n].raw_(), (void*)((*reinterpret_cast<SimpleVector_O*>(&*hkey))[n]).raw_());
-    }
+          if (this->_debug) {
+            printf("%s:%d    mismatch in arg %d  keys[n]=%p    hkey[n]=%p\n", __FILE__, __LINE__, n, (void*)keys[n].raw_(), (void*)((*reinterpret_cast<SimpleVector_O*>(&*hkey))[n]).raw_());
+          }
 #endif
 
           // if (keys->vector.self.t[n] != hkey->vector.self.t[n])

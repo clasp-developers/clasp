@@ -336,9 +336,9 @@
 ;;; A lot like a function-ast, but not actually one because it just binds.
 
 (defclass bind-va-list-ast (cleavir-ast:ast)
-  ((%lambda-list :initarg :lambda-list :reader lambda-list)
+  ((%lambda-list :initarg :lambda-list :reader cleavir-ast:lambda-list)
    (%va-list-ast :initarg :va-list :reader va-list-ast)
-   (%body-ast :initarg :body-ast :reader body-ast)))
+   (%body-ast :initarg :body-ast :reader cleavir-ast:body-ast)))
 
 (defun make-bind-va-list-ast (lambda-list va-list-ast body-ast &key origin (policy cleavir-ast:*policy*))
   (make-instance 'bind-va-list-ast
@@ -346,14 +346,14 @@
     :va-list va-list-ast :body-ast body-ast :lambda-list lambda-list))
 
 (cleavir-io:define-save-info bind-va-list-ast
-    (:lambda-list lambda-list)
+    (:lambda-list cleavir-ast:lambda-list)
   (:va-list va-list-ast)
-  (:body-ast body-ast))
+  (:body-ast cleavir-ast:body-ast))
 
-(defmethod children ((ast bind-va-list-ast))
+(defmethod cleavir-ast:children ((ast bind-va-list-ast))
   (list* (va-list-ast ast)
-         (body-ast ast)
-         (loop for entry in (lambda-list ast)
+         (cleavir-ast:body-ast ast)
+         (loop for entry in (cleavir-ast:lambda-list ast)
                append (cond ((symbolp entry) '())
                             ((consp entry)
                              (if (= (length entry) 2)

@@ -142,12 +142,10 @@ inline void pop_InvocationHistoryStack(const InvocationHistoryFrame* frame) {
   };
 };
 
-#ifdef USE_EXPENSIVE_BACKTRACE
-#define INVOCATION_HISTORY_FRAME() \
+#define ALWAYS_INVOCATION_HISTORY_FRAME() \
   core::InvocationHistoryFrame zzzFrame(lcc_arglist_s._Args,lcc_arglist_s.remaining_nargs()); \
   core::SafeUpdateInvocationHistoryStack zzzStackUpdate(&zzzFrame);
-#else
+
 #define INVOCATION_HISTORY_FRAME()
-#endif
 
 #endif /* _core_stacks_H_ */

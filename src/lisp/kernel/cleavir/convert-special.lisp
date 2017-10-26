@@ -315,7 +315,7 @@
         (let ((canonicalized-dspecs
                 (cleavir-code-utilities:canonicalize-declaration-specifiers
                  (reduce #'append (mapcar #'cdr declarations))
-                 (cleavir-env:declarations env))))
+                 (cleavir-env:declarations environment))))
           (multiple-value-bind (idspecs rdspecs)
               (cleavir-generate-ast::itemize-declaration-specifiers
                (cleavir-generate-ast::itemize-lambda-list parsed-lambda-list)
@@ -325,12 +325,13 @@
                  required
                  parsed-lambda-list
                  idspecs
-                 (cleavir-generate-ast::make-body rdspecs forms block-name block-name-p)
-                 env
+                 (cleavir-generate-ast::make-body rdspecs forms nil nil)
+                 environment
                  system)
               (cc-ast:make-bind-va-list-ast
-               (cleavir-generate-ast::convert va-list-form environment system)
-               ast lexical-lambda-list))))))))
+                lexical-lambda-list
+                (cleavir-generate-ast::convert va-list-form environment system)
+                ast))))))))
 
 (defmethod cleavir-generate-ast:check-special-form-syntax
     ((head (eql 'core::bind-va-list)) form)

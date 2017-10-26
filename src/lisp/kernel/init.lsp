@@ -6,6 +6,7 @@
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (core:select-package "CORE"))
 
+
 #+(or)(setq *features* (cons :dbg-print *features*))
 (SYS:*MAKE-SPECIAL '*echo-repl-tpl-read*)
 (export '(*echo-repl-tpl-read*
@@ -69,15 +70,17 @@
 (eval-when (:execute :compile-toplevel :load-toplevel)
   (core::select-package :cmp))
 (export '(llvm-link link-bitcode-modules))
-(sys:*make-special '*enable-profiling*)
-(if (member :enable-profiling *features*)
-    (setq *enable-profiling* t)
-    (setq *enable-profiling* nil))
+;;; Turn on aclasp/bclasp activation-frame optimization
+(sys:*make-special '*activation-frame-optimize*)
+(setq *activation-frame-optimize* t)
+(setq *features* (cons :optimize-bclasp *features*))
+(sys:*make-special '*use-human-readable-bitcode*)
+(setq *use-human-readable-bitcode* (member :use-human-readable-bitcode *features*))
 (sys:*make-special '*compile-file-debug-dump-module*)
 (sys:*make-special '*debug-compile-file*)
 (if (boundp '*compile-file-debug-dump-module*)
     nil
-    (setq *compile-file-debug-dump-module* nil))
+    (setq *compile-file-debug-dump-module* t))
 (sys:*make-special '*compile-debug-dump-module*)
 (if (boundp '*compile-debug-dump-module*)
     nil
@@ -357,8 +360,9 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 (core::export 'defun)
 (eval-when (:execute :compile-toplevel :load-toplevel)
   (core::select-package :core))
+(export 'bind-va-list)
 
-(defparameter *debug-bclasp* nil)
+(defparameter *debug-bclasp* (member :debug-bclasp-lisp *features*))
 
 (defvar *special-init-defun-symbol* (gensym "special-init-defun-symbol"))
 (defvar *special-defun-symbol* (gensym "special-defun-symbol"))
@@ -492,11 +496,14 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
     bitcode-host))
 
 (defun default-target-stage ()
-  (if (member :cclasp *features*)
-      "c"
-      (if (member :bclasp *features*)
-          "b"
-          "a")))
+  (let ((stage (if (member :cclasp *features*)
+                   "c"
+                   (if (member :bclasp *features*)
+                       (if (member :compiling-cleavir *features*)
+                           "pre"
+                           "b")
+                       "a"))))
+    stage))
 
 
 (defun build-configuration ()
@@ -547,6 +554,14 @@ a relative path from there."
   (defconstant +image-pathname+ (make-pathname :directory '(:relative) :name "image" :type "fasl"))
   (export '(+image-pathname+ )))
 
+(defun build-extension (type)
+  (if (eq type :fasl)
+      "fasl"
+      (if (eq type :bitcode)
+          "bc"
+          (if (eq type :ll)
+              "ll"
+              (error "Unsupported build-extension type ~a" type)))))
 
 (defun build-pathname (partial-pathname &optional (type :lisp) stage)
   "If partial-pathname is nil and type is :fasl or :executable then construct the name using
@@ -563,34 +578,34 @@ the stage, the +application-name+ and the +bitcode-name+"
       #+dbg-print(bformat t "DBG-PRINT build-pathname target-host: %s\n" target-host)
       #+dbg-print(bformat t "DBG-PRINT build-pathname target-dir: %s\n" target-dir)
       (let ((result
-             (cond
-               ((eq type :lisp)
-                (let ((module (ensure-relative-pathname partial-pathname)))
-                  (cond
-                    ((string= "generated" (second (pathname-directory module)))
-                     ;; Strip the "generated" part of the directory
-                     (find-lisp-source (make-pathname
-                                        :directory (cons :relative (cddr (pathname-directory module)))
-                                        :name (pathname-name module))
-                                       (translate-logical-pathname "GENERATED:")))
-                    (t
-                     (find-lisp-source module (translate-logical-pathname "SOURCE-DIR:"))))))
-               ((and partial-pathname (or (eq type :fasl) (eq type :bc)))
-                (merge-pathnames (merge-pathnames (ensure-relative-pathname partial-pathname)
-                                                  (make-pathname :directory (list :relative target-dir) :type (string-downcase (string type))))
-                                 (translate-logical-pathname (make-pathname :host target-host))))
-               ((and (null partial-pathname) (eq type :fasl))
-                (let* ((stage-char (default-target-stage))
-                       (filename (bformat nil "%s%s-%s-image" stage-char +application-name+ +bitcode-name+))
-                       (exec-pathname (merge-pathnames (make-pathname :name filename :type "fasl") (translate-logical-pathname "app-fasl:"))))
-                  exec-pathname))
-               ((eq type :executable)
-                (let* ((stage-char (default-target-stage))
-                       (filename (bformat nil "%s%s-%s" stage-char +application-name+ +bitcode-name+))
-                       (exec-pathname (merge-pathnames (make-pathname :name filename :type nil) (translate-logical-pathname "app-executable:") )))
-                  exec-pathname))
-               (t (error "Add support for build-pathname type: ~a" type)))))
-        #+dbg-print(bformat t "DBG-PRINT build-pathname   result: %s\n" result)
+              (cond
+                ((eq type :lisp)
+                 (let ((module (ensure-relative-pathname partial-pathname)))
+                   (cond
+                     ((string= "generated" (second (pathname-directory module)))
+                      ;; Strip the "generated" part of the directory
+                      (find-lisp-source (make-pathname
+                                         :directory (cons :relative (cddr (pathname-directory module)))
+                                         :name (pathname-name module))
+                                        (translate-logical-pathname "GENERATED:")))
+                     (t
+                      (find-lisp-source module (translate-logical-pathname "SOURCE-DIR:"))))))
+                ((and partial-pathname (or (eq type :fasl) (eq type :bitcode)))
+                 (if cmp::*use-human-readable-bitcode* (setq type :ll))
+                 (merge-pathnames (merge-pathnames (ensure-relative-pathname partial-pathname)
+                                                   (make-pathname :directory (list :relative target-dir) :type (build-extension type)))
+                                  (translate-logical-pathname (make-pathname :host target-host))))
+                ((and (null partial-pathname) (eq type :fasl))
+                 (let* ((stage-char (default-target-stage))
+                        (filename (bformat nil "%s%s-%s-image" stage-char +application-name+ +bitcode-name+))
+                        (exec-pathname (merge-pathnames (make-pathname :name filename :type "fasl") (translate-logical-pathname "app-fasl:"))))
+                   exec-pathname))
+                ((eq type :executable)
+                 (let* ((stage-char (default-target-stage))
+                        (filename (bformat nil "%s%s-%s" stage-char +application-name+ +bitcode-name+))
+                        (exec-pathname (merge-pathnames (make-pathname :name filename :type nil) (translate-logical-pathname "app-executable:") )))
+                   exec-pathname))
+                (t (error "Add support for build-pathname type: ~a" type)))))
         result))))
 (export '(build-pathname))
 
@@ -623,7 +638,7 @@ the stage, the +application-name+ and the +bitcode-name+"
   #+dbg-print(bformat t "DBG-PRINT iload fn: %s\n" fn)
   (let* ((fn (entry-filename entry))
          (lsp-path (build-pathname fn))
-	 (bc-path (build-pathname fn :bc))
+	 (bc-path (build-pathname fn :bitcode))
 	 (load-bc (if (not (probe-file lsp-path))
 		      t
 		      (if (not (probe-file bc-path))
@@ -635,7 +650,7 @@ the stage, the +application-name+ and the +bitcode-name+"
     (if load-bc
 	(progn
 	  (bformat t "Loading bitcode file: %s\n" bc-path)
-	  (llvm-sys:load-bitcode bc-path))
+	  (cmp:load-bitcode bc-path))
 	(if (probe-file-case lsp-path)
 	    (progn
               (if cmp:*implicit-compile-hook*
@@ -646,7 +661,7 @@ the stage, the +application-name+ and the +bitcode-name+"
 
 (defun delete-init-file (entry &key (really-delete t) stage)
   (let* ((module (entry-filename entry))
-         (bitcode-path (build-pathname module :bc stage)))
+         (bitcode-path (build-pathname module :bitcode stage)))
     (if (probe-file bitcode-path)
 	(if really-delete
 	    (progn
@@ -670,7 +685,7 @@ the stage, the +application-name+ and the +bitcode-name+"
 (defun bitcode-exists-and-up-to-date (entry)
   (let* ((filename (entry-filename entry))
          (source-path (build-pathname filename))
-         (bitcode-path (build-pathname filename :bc))
+         (bitcode-path (build-pathname filename :bitcode))
          (found-bitcode (probe-file bitcode-path)))
     (if found-bitcode
         (> (file-write-date bitcode-path)

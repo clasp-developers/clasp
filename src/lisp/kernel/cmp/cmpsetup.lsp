@@ -93,7 +93,7 @@ Options are :tagbody :go :all :eh-landing-pads
   (bformat t "!\n!\n!\n!  Turning on compiler debugging\n!\n!\n!\n"))
 
 
-#+(or)
+;;#+(or)
 (progn
   (defmacro debug-print-i32 (num) nil)
   (defmacro cmp-log-dump-function (fn) nil)
@@ -101,8 +101,10 @@ Options are :tagbody :go :all :eh-landing-pads
   (defmacro cmp-log (fmt &rest args ) nil)
   (defun is-debug-compiler-on () nil))
 
-;;#+(or)
+#+(or)
 (progn
+  (eval-when (:compile-toplevel :load-toplevel :execute)
+    (core:bformat *debug-io* "!\n!\n!   WARNING - cmp-log (bclasp compiler debugging) is on - Disable the macros in cmpsetup.lsp\n!\n!\n!\n"))
   (defun is-debug-compiler-on ()
     *debug-compiler*)
   (defmacro debug-print-i32 (num)

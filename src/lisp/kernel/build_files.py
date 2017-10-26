@@ -7,11 +7,11 @@ def aclasp(wrappers):
     # Don't use wrappers for now - the direct CALL to THROW-FUNCTION needs to use INVOKE and the landing-pad
     # otherwise the exception handling will break because cleanup forms in the wrapper won't be evaluated
     # This is a problem if cc_push_InvocationHistoryFrame/cc_pull_InvocationHistoryFrame are used
-#    if (wrappers):
-#        result = result + [
-#            "src/lisp/kernel/lsp/direct-calls",
-#            "generated/cl-wrappers"
-#        ]
+    if (wrappers):
+        result = result + [
+            "src/lisp/kernel/lsp/direct-calls",
+            "generated/cl-wrappers"
+        ]
     result = result + [  
         "src/lisp/kernel/tag/min-start",
         "src/lisp/kernel/init",
@@ -52,8 +52,10 @@ def aclasp(wrappers):
         "src/lisp/kernel/cmp/cmpir",
         "src/lisp/kernel/cmp/cmpeh",
         "src/lisp/kernel/cmp/debuginfo",
-        "src/lisp/kernel/cmp/lambdalistva",
+#        "src/lisp/kernel/cmp/lambdalistva",
         "src/lisp/kernel/cmp/codegen-vars",
+        "src/lisp/kernel/cmp/arguments",
+        "src/lisp/kernel/cmp/cmplambda",
         "src/lisp/kernel/cmp/cmprunall",
         "src/lisp/kernel/cmp/cmpliteral",
         "src/lisp/kernel/cmp/typeq",
@@ -96,6 +98,7 @@ def bclasp(wrappers):
         "src/lisp/kernel/clos/boot",
         "src/lisp/kernel/clos/kernel",
         "src/lisp/kernel/clos/closfastgf",
+        "src/lisp/kernel/clos/satiation",
         "src/lisp/kernel/clos/method",
         "src/lisp/kernel/clos/combin",
         "src/lisp/kernel/clos/std-accessors",

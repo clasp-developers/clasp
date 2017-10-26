@@ -37,7 +37,7 @@
 		 (:file "ir")
 		 (:file "gml-drawing")
 		 (:file "landing-pad")
-		 (:file "arguments")
+;;		 (:file "arguments")
                  (:file "closure-optimize")
 		 (:file "translate")
                  (:file "inline-prep")

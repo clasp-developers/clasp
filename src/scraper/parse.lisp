@@ -253,4 +253,212 @@ CL call to (core:magic-name ...)"
               (format nil "(core:magic-intern ~a)" args)))
         (format nil "(core:magic-intern ~a)" maybe-magic-name))))
 
-          
+
+(defstruct ptr-name-struct ptr-name)
+(defstruct argument-struct type name)
+(defstruct namespace-name namespaces name)
+(defstruct template-args-struct args)
+(defstruct type-struct const type pointer-ref-template)
+(defstruct function-type-struct return name arguments)
+(defstruct function-ptr type name namespace nameonly)
+
+(defun type-as-string (type)
+  (with-output-to-string (sout)
+    (if (type-struct-const type)
+        (progn
+          (princ (type-struct-const type) sout)
+          (princ #\space sout)))
+    (princ (type-struct-type type) sout)
+    (when (type-struct-pointer-ref-template type)
+      (let ((tsp (type-struct-pointer-ref-template type)))
+        (typecase tsp
+          (template-args-struct
+           (let ((args (template-args-struct-args tsp)))
+             (princ (with-output-to-string (stemp)
+                      (princ #\< stemp)
+                      (princ (type-as-string (first args)) stemp)
+                      (mapc (lambda (a)
+                              (princ #\, stemp)
+                              (princ (type-as-string a) stemp))
+                            (cdr args))
+                      (princ #\> stemp))
+                    sout)))
+          (otherwise (princ (type-struct-pointer-ref-template type) sout)))))))
+
+(defun convert-function-ptr-to-lambda-list (func-ptr)
+  (let ((index 1)
+        (type (function-ptr-type func-ptr)))
+    (if type
+        (let ((args (function-type-struct-arguments (function-ptr-type func-ptr))))
+          (values (with-output-to-string (sout)
+                    (loop for arg in args
+                          do (if (argument-struct-name arg)
+                                 (progn
+                                   (princ #\space sout)
+                                   (princ (argument-struct-name arg) sout))
+                                 (progn
+                                   (princ #\space sout)
+                                   (princ " arg" sout)
+                                   (princ index sout)))
+                          do (incf index)))
+                  t))
+        (values nil nil))))
+
+(defun convert-function-ptr-to-c++-types (func-ptr)
+  (declare (optimize (debug 3)))
+  (let* ((type (function-ptr-type func-ptr))
+         (return (function-type-struct-return type))
+         (args (function-type-struct-arguments type)))
+    (values (type-as-string return)
+            (mapcar (lambda (a) (type-as-string (argument-struct-type a))) args))))
+                 
+  
+
+(defun separate-type-pointer (str)
+  (let* ((ptr-pos (position #\& str :from-end t))
+         (pointer (subseq str (1+ ptr-pos) (length str)))
+         (type (subseq str 0 ptr-pos)))
+    (values (string-trim " " type) (string-trim " " pointer))))
+
+
+(defun not-integer (string)
+  (when (find-if-not #'digit-char-p string)
+    t))
+
+(esrap:defrule whitespace (+ (or #\space #\tab #\newline))
+  (:constant nil))
+
+(esrap:defrule alphanumeric (or ":" (alphanumericp character)))
+
+(esrap:defrule cidentifier (not-integer (+ alphanumeric))
+  (:lambda (s)
+    (esrap:text s)))
+
+
+(esrap:defrule ctype-exp (and (esrap:? whitespace) ctype)
+  (:lambda (list)
+    (second list)))
+
+(esrap:defrule template-list (and #\< (and ctype-exp (* (and #\, ctype-exp))) (esrap:? whitespace) #\>)
+  (:lambda (list)
+    (let ((head (first (second list)))
+          (tail (first (cdr (second list)))))
+      (make-template-args-struct :args (list* head
+                                              (loop for cur = tail then (cdr cur)
+                                                    while cur
+                                                    collect (second (first cur))))))))
+                                  
+(esrap:defrule ctype (and (or (and "const" whitespace) (esrap:? whitespace)) cidentifier (esrap:? whitespace) (or template-list "**" #\* #\& (esrap:? whitespace)))
+  (:lambda (list)
+    (make-type-struct :const (first (first list))
+                      :type (car (cdr list))
+                      :pointer-ref-template (third (cdr list)))))
+
+(esrap:defrule ptr-function-name-part (and #\( (esrap:? whitespace) #\* (esrap:? whitespace) (esrap:? cidentifier) (esrap:? whitespace) #\))
+  (:lambda (list)
+    (make-ptr-name-struct :ptr-name (fifth list))))
+
+(esrap:defrule cargument (and ctype (esrap:? whitespace) (esrap:? cidentifier))
+  (:lambda (list)
+    (make-argument-struct :type (first list)
+                          :name (cond
+                                  ((string= "" (third list))
+                                    nil)
+                                  ((string-equal "t" (third list))
+                                   "tt")
+                                  (t (third list))))))
+
+(esrap:defrule cargument-exp (and (esrap:? whitespace) cargument)
+  (:destructure (w s)
+                (declare (ignore w))
+                s))
+
+(esrap:defrule comma-cargument-exp (and #\, cargument-exp)
+  (:lambda (list)
+    (second list)))
+
+(esrap:defrule cargument-list (and #\( (or (and cargument-exp (* comma-cargument-exp)) (esrap:? whitespace)) (esrap:? whitespace) #\))
+  (:lambda (all)
+    (let ((list (second all)))
+      (if list
+          (list* (first list)
+                 (second list))
+          nil))))
+
+#|:destructure
+   (open-paren list-or-nil ws close-paren)
+   (declare (ignore open-paren ws close-paren))
+   (if list-or-nil
+       (destructuring-bind (head tail)
+           list-or-nil
+         (list head
+               (loop for arg on tail
+                     collect (second arg))))
+       nil)))
+|#
+
+
+
+(esrap:defrule function-type-in-paren (and #\( (esrap:? whitespace) function-type-naked (esrap:? whitespace) #\))
+  (:lambda (list)
+    (third list)))
+
+(esrap:defrule function-type-naked (and ctype (esrap:? whitespace) ptr-function-name-part (esrap:? whitespace) cargument-list)
+  (:lambda (list)
+    (make-function-type-struct :return (first list)
+                              :name (third list)
+                              :arguments (fifth list))))
+(esrap:defrule function-type (or function-type-naked function-type-in-paren))
+
+(esrap:defrule function-ptr (and (or (esrap:? function-type) (esrap:? whitespace)) (esrap:? whitespace) #\& (esrap:? whitespace) cidentifier)
+  (:lambda (list)
+    (let* ((type (first list))
+           (name (fifth list))
+           (colon (position #\: name :from-end t))
+           (namespace (subseq name 0 (- colon 1)))
+           (nameonly (subseq name (1+ colon) (length name))))
+    (make-function-ptr :type (first list)
+                       :name (fifth list)
+                       :namespace namespace
+                       :nameonly nameonly))))
+
+#|
+(esrap:parse 'ptr-function-name-part "( * foo )")
+(esrap:parse 'ctype "foo**")
+(argument-struct-name (esrap:parse 'cargument "int"))
+(esrap:parse 'cargument "int x")
+(esrap:parse 'cargument-list "( int x, int y, int z )")
+(esrap:parse 'cargument-list "( )")
+(esrap:parse 'function-type-naked "void (*)(int x, int y, int z)")
+(esrap:parse 'function-type-in-paren "(void (*)(int x, int y, int z))")
+
+(esrap:parse 'function-type "(void (*)(int x, int y, int z))")
+
+(esrap:parse 'function-ptr "int (*) (int w, int x) &foo")
+
+
+(defparameter *p* (esrap:parse 'function-ptr "int (*) (int w, int x) &foo"))
+(defparameter *p* (esrap:parse 'function-ptr "int (*) (int w, int x, double) &foo"))
+(print *p*)
+(convert-function-ptr-to-lambda-list *p*)
+(convert-function-ptr-to-lambda-list (esrap:parse 'function-ptr "int (*) (int int) &foo"))
+
+(esrap:parse 'function-ptr "(llvm::ConstantFP *(*)(llvm::LLVMContext &, const llvm::APFloat &)) &llvm::ConstantFP::get")
+
+(esrap:parse 'function-ptr "&foo")
+
+(convert-function-ptr-to-c++-types (esrap:parse 'function-ptr "(llvm::ConstantFP *(*)(llvm::LLVMContext &, const llvm::APFloat &)) &llvm::ConstantFP::get"))
+
+-->"llvm::ConstantFP*"
+   ("llvm::LLVMContext&" "const llvm::APFloat&")
+
+
+(esrap:parse 'function-ptr "(llvm::Constant *(*)(llvm::Type* type, llvm::StringRef label)) &foo")
+
+
+(convert-function-ptr-to-c++-types (esrap:parse 'function-ptr "(llvm::Constant *(*)(llvm::StructType *T, llvm::ArrayRef<llvm::Constant *,int,int>)) &ll"))
+(convert-function-ptr-to-c++-types (esrap:parse 'function-ptr "(llvm::Constant *(*)(int, int )) &ll"))
+|#
+
+
+

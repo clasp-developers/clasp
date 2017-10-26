@@ -92,6 +92,7 @@ CL_DEFUN T_mv core__compile_form_and_eval_with_env(T_sp form, T_sp env, T_sp ste
 CL_LAMBDA(head &va-rest args);
 CL_DECLARE();
 CL_DOCSTRING("apply");
+DONT_OPTIMIZE_WHEN_DEBUG_RELEASE
 CL_DEFUN T_mv cl__apply(T_sp head, VaList_sp args) {
   Function_sp func = coerce::functionDesignator(head);
   int lenTotalArgs = args->total_nargs();
@@ -114,13 +115,13 @@ CL_DEFUN T_mv cl__apply(T_sp head, VaList_sp args) {
     Vaslist valist_struct(frame);
     VaList_sp valist(&valist_struct); // = frame.setupVaList(valist_struct);;
     return funcall_consume_valist_<core::Function_O>(func.tagged_(), valist);
-  } else if (gctools::tagged_valistp(lastArgRaw) && lenArgs == 1) {
+  } else if (gctools::tagged_vaslistp(lastArgRaw) && lenArgs == 1) {
 //    printf("%s:%d apply with one argument and its a valist\n", __FILE__, __LINE__ );
     VaList_sp valast((gc::Tagged)lastArgRaw);
     Vaslist valast_copy(*valast);
     VaList_sp valast_copy_sp(&valast_copy);
     return funcall_consume_valist_<core::Function_O>(func.tagged_(), valast_copy_sp);
-  } else if (gctools::tagged_valistp(lastArgRaw)) {
+  } else if (gctools::tagged_vaslistp(lastArgRaw)) {
     // The last argument is a VaList - so we need to create a new frame
     // to hold the contents of the two lists of arguments
     VaList_sp valast((gc::Tagged)lastArgRaw);
@@ -217,7 +218,7 @@ gctools::return_type fast_apply_general(T_O* func_tagged, T_O* args_tagged) {
 template <typename... FixedArgs>
 LCC_RETURN fast_apply_(T_O* function_tagged, T_O* rest_args_tagged, FixedArgs&&...fixedArgs) {
   int nargs;
-  LIKELY_if ( gctools::tagged_valistp(rest_args_tagged) ) {
+  LIKELY_if ( gctools::tagged_vaslistp(rest_args_tagged) ) {
     VaList_sp rest_args_as_VaList_sp((gctools::Tagged)rest_args_tagged);
     Vaslist va_rest_copy_S(*rest_args_as_VaList_sp);
     VaList_sp va_rest_args(&va_rest_copy_S);
@@ -581,15 +582,17 @@ List_sp separateTopLevelForms(List_sp accumulated, T_sp possibleForms) {
 T_sp af_interpreter_lookup_variable(Symbol_sp sym, T_sp env) {
   if (env.notnilp()) {
     int depth, index;
+    bool crossesFunction;
     Environment_O::ValueKind valueKind;
     T_sp value;
+    T_sp result_env;
 #if 0
     printf("%s:%d Looking for %s\n", __FILE__, __LINE__, _rep_(sym).c_str());
     if ( Environment_sp e = env.asOrNull<Environment_O>() ) {
       e->dump();
     }
 #endif
-    bool found = Environment_O::clasp_findValue(env, sym, depth, index, valueKind, value);
+    bool found = Environment_O::clasp_findValue(env, sym, depth, index, crossesFunction, valueKind, value, result_env);
     if (found) {
       switch (valueKind) {
       case Environment_O::lexicalValue:
@@ -613,7 +616,8 @@ Function_sp interpreter_lookup_function_or_error(T_sp name, T_sp env) {
     Function_sp fn;
     int depth;
     int index;
-    if (Environment_O::clasp_findFunction(env, name, depth, index, fn)) return fn;
+    T_sp functionEnv;
+    if (Environment_O::clasp_findFunction(env, name, depth, index, fn, functionEnv)) return fn;
   }
   if (name.consp()) {
     T_sp head = CONS_CAR(name);
@@ -643,8 +647,9 @@ T_sp af_interpreter_lookup_setf_function(List_sp setf_name, T_sp env) {
     Function_sp fn;
     int depth;
     int index;
+    T_sp functionEnv;
     // TODO: This may not work properly - it looks like it will find regular functions
-    if (Environment_O::clasp_findFunction(env, name, depth, index, fn))
+    if (Environment_O::clasp_findFunction(env, name, depth, index, fn, functionEnv))
       return fn;
   }
   if (name->setf_fboundp())
@@ -739,7 +744,7 @@ void setq_symbol_value(Symbol_sp symbol, T_sp value, T_sp environment) {
   } else  {
     bool updated = false;
     if (environment.notnilp()) {
-      updated = af_updateValue(environment, symbol, value);
+      updated = clasp_updateValue(environment, symbol, value);
     }
     if (!updated) {
       symbol->setf_symbolValue(value);
@@ -1066,8 +1071,8 @@ T_mv sp_tagbody(List_sp args, T_sp env) {
   // Find all the tags and tell the TagbodyEnvironment where they are in the list of forms.
   //
   for (auto cur : args) {
-    T_sp tagOrForm = oCar(cur);
-    if (cl__symbolp(tagOrForm)) {
+    T_sp tagOrForm = CONS_CAR(cur);
+    if (!tagOrForm.consp() && cl__symbolp(tagOrForm)) {
       Symbol_sp tag = gc::As<Symbol_sp>(tagOrForm);
       // The tag is associated with its position in list of forms
       tagbodyEnv->addTag(tag, cur);
@@ -1078,8 +1083,8 @@ T_mv sp_tagbody(List_sp args, T_sp env) {
   int frame = my_thread->exceptionStack().push(TagbodyFrame, tagbodyId);
   // Start to evaluate the tagbody
   List_sp ip = args;
-  while (ip.notnilp()) {
-    T_sp tagOrForm = oCar(ip);
+  while (ip.consp()) {
+    T_sp tagOrForm = CONS_CAR(ip);
     if ((tagOrForm).consp()) {
       try {
         eval::evaluate(tagOrForm, tagbodyEnv);
@@ -1097,7 +1102,7 @@ T_mv sp_tagbody(List_sp args, T_sp env) {
         ip = tagbodyEnv->codePos(index);
       }
     }
-    ip = oCdr(ip);
+    ip = CONS_CDR(ip);
   }
   LOG(BF("Leaving sp_tagbody"));
   my_thread->exceptionStack().unwind(frame);

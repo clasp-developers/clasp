@@ -47,7 +47,6 @@ extern "C" {
 #include <clasp/core/designators.h>
 #include <clasp/core/compPackage.h>
 #include <clasp/core/package.h>
-#include <clasp/core/accessor.h>
 #include <clasp/core/fli.h>
 #include <clasp/core/instance.h>
 #include <clasp/core/funcallableInstance.h>
@@ -82,32 +81,30 @@ extern void dump_backtrace(core::InvocationHistoryFrame* frame);
 
 
 
-ALWAYS_INLINE void makeFunctionFrame(core::ActivationFrame_sp *resultP, int numargs, core::ActivationFrame_sp *parentP)
+ALWAYS_INLINE core::T_O* makeFunctionFrame( int numargs, core::T_O *parentP)
 // was ActivationFrame_sp
 {
-  ASSERT(resultP != NULL);
-  ASSERT(parentP != NULL);
-  (*resultP) = core::FunctionFrame_sp(core::FunctionFrame_O::create(numargs, (*parentP)));
-  ASSERTNOTNULL(*resultP);
+  core::T_sp parent((gctools::Tagged)parentP);
+  core::T_sp functionFrame = core::FunctionFrame_O::create(numargs, parent);
+  return functionFrame.raw_();
 }
 
-ALWAYS_INLINE core::T_sp *functionFrameReference(core::ActivationFrame_sp *frameP, int idx) {
-  ASSERT(frameP != NULL);
-  ASSERT(frameP->objectp());
-  core::FunctionFrame_sp frame = gctools::reinterpret_cast_smart_ptr<core::FunctionFrame_O>((*frameP));
+ALWAYS_INLINE core::T_O** functionFrameReference(core::T_O* frameP, int idx) {
+  core::FunctionFrame_sp frame((gctools::Tagged)frameP);
 #ifdef DEBUG_ASSERT
   if (idx < 0 || idx >= frame->length()) {
     intrinsic_error(llvmo::invalidIndexForFunctionFrame, clasp_make_fixnum(idx), clasp_make_fixnum(frame->length()));
   }
 #endif
-  core::T_sp *pos_gc_safe = const_cast<core::T_sp *>(&frame->entryReference(idx));
-  return pos_gc_safe;
+  core::T_sp& cell = frame->entryReference(idx);
+  return &cell.rawRef_();
 }
 
 
 
 
 
+#if 0
 ALWAYS_INLINE void sp_lexicalFunctionRead(core::T_sp *resultP, int depth, int index, core::ActivationFrame_sp *renvP)
 {NO_UNWIND_BEGIN();
   (*resultP) = core::function_frame_lookup(*renvP,depth,index);
@@ -119,6 +116,8 @@ ALWAYS_INLINE void mv_lexicalFunctionRead(core::T_mv *resultP, int depth, int in
   (*resultP) = core::function_frame_lookup(*renvP,depth,index);
   NO_UNWIND_END();
 }
+#endif
+
 
 #if 0
 ALWAYS_INLINE void newTsp(core::T_sp *sharedP)
@@ -136,94 +135,19 @@ ALWAYS_INLINE extern int compareTspTptr(core::T_sp *xP, core::T_O *yP)
   NO_UNWIND_END();
 }
 
-ALWAYS_INLINE extern void sp_copyTsp(core::T_sp *destP, core::T_sp *sourceP)
-{NO_UNWIND_BEGIN();
-  //	ASSERT(sourceP!=NULL);
-  //	ASSERT(destP!=NULL);
-  *destP = *sourceP;
-  NO_UNWIND_END();
-}
-
-ALWAYS_INLINE extern void mv_copyTsp(core::T_mv *destP, core::T_sp *sourceP)
-{NO_UNWIND_BEGIN();
-  ASSERT(sourceP != NULL);
-  ASSERT(destP != NULL);
-  *destP = Values(*sourceP);
-  NO_UNWIND_END();
-}
-
-ALWAYS_INLINE extern void sp_copyTspTptr(core::T_sp *destP, core::T_O *source)
-{NO_UNWIND_BEGIN();
-  *destP = gc::smart_ptr<core::T_O>((gc::Tagged)source);
-  NO_UNWIND_END();
-}
-
-ALWAYS_INLINE extern void mv_copyTspTptr(core::T_mv *destP, core::T_O *source)
-{NO_UNWIND_BEGIN();
-  ASSERT(destP != NULL);
-  *destP = Values(gc::smart_ptr<core::T_O>((gc::Tagged)source));
-  NO_UNWIND_END();
-}
-
-/*! This copies a T_mv from source to dest */
-ALWAYS_INLINE void mv_copyTmvOrSlice(core::T_mv *destP, core::T_mv *sourceP)
-{NO_UNWIND_BEGIN();
-  //	printf("intrinsics.cc mv_copyTmvOrSlice copying %d values\n", (*sourceP).number_of_values());
-  (*destP) = (*sourceP);
-  NO_UNWIND_END();
-}
-
-/*! This slices a T_mv in source down to a T_sp in dest */
-ALWAYS_INLINE void sp_copyTmvOrSlice(core::T_sp *destP, core::T_mv *sourceP)
-{NO_UNWIND_BEGIN();
-  if ((*sourceP).number_of_values() == 0) {
-    (*destP) = _Nil<T_O>();
-  } else
-    (*destP) = (*sourceP);
-  NO_UNWIND_END();
-}
-
-ALWAYS_INLINE void sp_makeNil(core::T_sp *result)
-{NO_UNWIND_BEGIN();
-  (*result) = _Nil<core::T_O>();
-  NO_UNWIND_END();
-}
-
-ALWAYS_INLINE void mv_makeNil(core::T_mv *result)
-{NO_UNWIND_BEGIN();
-  (*result) = Values(_Nil<core::T_O>());
-  NO_UNWIND_END();
-}
-
-ALWAYS_INLINE void makeT(core::T_sp *result)
-{NO_UNWIND_BEGIN();
-  (*result) = _lisp->_true();
-  NO_UNWIND_END();
-}
-
-ALWAYS_INLINE void makeCons(core::T_sp *resultConsP, core::T_sp *carP, core::T_sp *cdrP)
-{NO_UNWIND_BEGIN();
-  (*resultConsP) = core::Cons_O::create(*carP, *cdrP);
-  NO_UNWIND_END();
-}
 
 
-ALWAYS_INLINE core::T_sp *symbolValueReference(core::T_sp *symbolP)
+ALWAYS_INLINE core::T_O** symbolValueReference(core::T_O *symbolP)
 {
-  core::Symbol_sp sym((gctools::Tagged)ENSURE_VALID_OBJECT(symbolP->raw_()));
-  return sym->valueReference(&sym->_GlobalValue);
+  core::Symbol_sp sym((gctools::Tagged)symbolP);
+  return &sym->valueReference(&sym->_GlobalValue)->rawRef_();
 }
 
-ALWAYS_INLINE void sp_symbolValueRead(core::T_sp *resultP, const core::T_sp *tsymP) {
-  Symbol_sp sym((gctools::Tagged)(tsymP->raw_()));
+ALWAYS_INLINE core::T_O* symbolValueRead(const core::T_O* tsymP) {
+  Symbol_sp sym((gctools::Tagged)(tsymP));
   T_sp sv = sym->symbolValueUnsafe();
   if (sv.unboundp()) sym->symbolUnboundError();
-  *resultP = sv;
-}
-ALWAYS_INLINE void mv_symbolValueRead(core::T_mv *resultP, const core::Symbol_sp *symP) {
-  T_sp sv = (*symP)->symbolValueUnsafe();
-  if (sv.unboundp()) (*symP)->symbolUnboundError();
-  *resultP = sv;
+  return sv.raw_();
 }
 
 #if 0
@@ -289,7 +213,7 @@ ALWAYS_INLINE T_O *cc_precalcValue(core::LoadTimeValues_O **tarray, size_t idx)
 
 ALWAYS_INLINE void cc_copy_va_list(size_t nargs, T_O **mvPtr, Vaslist *va_args)
 {NO_UNWIND_BEGIN();
-  Vaslist *vl = reinterpret_cast<Vaslist *>(gc::untag_valist((void *)va_args));
+  Vaslist *vl = reinterpret_cast<Vaslist *>(gc::untag_vaslist((void *)va_args));
   for (int i = LCC_FIXED_ARGS; i < nargs; ++i) {
     mvPtr[i] = va_arg(vl->_Args, core::T_O *);
   }
@@ -371,38 +295,25 @@ ALWAYS_INLINE gc::return_type cc_call_callback(LCC_ARGS_CC_CALL_ELLIPSIS) {
   return closure(LCC_PASS_ARGS);
 }
 
-void makeFixnum(core::T_sp *fnP, gc::Fixnum s)
-{NO_UNWIND_BEGIN();
-  ASSERT(fnP != NULL);
-  (*fnP) = core::Fixnum_sp(core::make_fixnum(s));
-  NO_UNWIND_END();
-}
 
-void makeCharacter(core::T_sp *fnP, int s)
-{NO_UNWIND_BEGIN();
-  ASSERT(fnP != NULL);
-  (*fnP) = core::clasp_make_character((char)s);
-  NO_UNWIND_END();
-}
-
-
-ALWAYS_INLINE void makeTagbodyFrame(core::ActivationFrame_sp *resultP)
+ALWAYS_INLINE T_O* makeTagbodyFrameSetParent(T_O* parentP)
 {NO_UNWIND_BEGIN();
   core::TagbodyFrame_sp tagbodyFrame(core::TagbodyFrame_O::create(_Nil<core::T_O>()));
-  (*resultP) = tagbodyFrame;
+  tagbodyFrame->setParentFrame(parentP);
+  return tagbodyFrame.raw_();
   NO_UNWIND_END();
 }
 
 
-ALWAYS_INLINE void makeValueFrame(core::T_sp *resultActivationFrameP, size_t numargs)
+ALWAYS_INLINE core::T_O* makeValueFrame( size_t numargs)
 {NO_UNWIND_BEGIN();
   core::ValueFrame_sp valueFrame(core::ValueFrame_O::create(numargs, _Nil<core::T_O>()));
 //  valueFrame->setEnvironmentId(id);   // I don't use id anymore
-  (*resultActivationFrameP) = valueFrame;
+  return valueFrame.raw_();
   NO_UNWIND_END();
 }
 
-
+#if 0
 ALWAYS_INLINE core::T_sp *valueFrameReference(core::ActivationFrame_sp *frameP, int idx)
 {NO_UNWIND_BEGIN();
   ASSERT(frameP != NULL);
@@ -411,15 +322,6 @@ ALWAYS_INLINE core::T_sp *valueFrameReference(core::ActivationFrame_sp *frameP, 
   core::ValueFrame_sp frame = gctools::As_unsafe<core::ValueFrame_sp>(*frameP);
   core::T_sp *pos_gc_safe = const_cast<core::T_sp *>(&frame->entryReference(idx));
   return pos_gc_safe;
-  NO_UNWIND_END();
-}
-
-#if 0
-ALWAYS_INLINE size_t cc_va_list_length(T_O* list)
-{NO_UNWIND_BEGIN();
-  IMPLEMENT_MEF("This should use the untagged va_list structure");
-  VaList_sp va_list_sp((gctools::Tagged)list);
-  return va_list_sp->remaining_nargs();
   NO_UNWIND_END();
 }
 #endif
@@ -488,37 +390,11 @@ ALWAYS_INLINE void cc_writeCell(core::T_O *cell, core::T_O* val)
   NO_UNWIND_END();
 }
 
-ALWAYS_INLINE core::T_O *cc_readCell(core::T_O *cell)
+
+
+ALWAYS_INLINE void cc_push_InvocationHistoryFrame(core::T_O* tagged_closure, InvocationHistoryFrame* frame, va_list va_args, size_t nargs)
 {NO_UNWIND_BEGIN();
-  core::Cons_O* cp = reinterpret_cast<core::Cons_O*>(gctools::untag_cons(cell));
-  core::T_sp val = cp->ocar();
-#ifdef DEBUG_ENSURE_VALID_OBJECT
-  ENSURE_VALID_OBJECT(val.raw_());
-#endif
-#ifdef DEBUG_CC
-  printf("%s:%d readCell cell[%p] --> value[%p]\n", __FILE__, __LINE__, cell, val.px);
-#endif
-  return val.raw_();
-  NO_UNWIND_END();
-}
-
-
-core::T_O *cc_fetch(core::T_O *tagged_closure, std::size_t idx)
-{NO_UNWIND_BEGIN();
-  //	core::ValueFrame_sp a = gctools::smart_ptr<core::ValueFrame_O>(reinterpret_cast<core::ValueFrame_O*>(array));
-  gctools::smart_ptr<core::ClosureWithSlots_O> c = gctools::smart_ptr<core::ClosureWithSlots_O>((gc::Tagged)tagged_closure);
-#ifdef DEBUG_CC
-  printf("%s:%d fetch array@%p idx[%zu] -->cell[%p]\n", __FILE__, __LINE__, array, idx, (*c)[idx].raw_());
-#endif
-  ASSERT(c.notnilp());
-  return (*c)[idx].raw_();
-  NO_UNWIND_END();
-}
-
-
-ALWAYS_INLINE void cc_push_InvocationHistoryFrame(core::T_O* tagged_closure, InvocationHistoryFrame* frame, va_list va_args, size_t* nargsP)
-{NO_UNWIND_BEGIN();
-  new (frame) InvocationHistoryFrame(va_args, *nargsP);
+  new (frame) InvocationHistoryFrame(va_args, nargs);
   core::push_InvocationHistoryStack(frame);
 #if 0
   if (core::debug_InvocationHistoryFrame) {
@@ -566,7 +442,25 @@ ALWAYS_INLINE char *cc_getPointer(core::T_O *pointer_object)
 
 extern "C" {
 
-ALWAYS_INLINE void setParentOfActivationFrameFromClosure(core::T_sp *resultP, core::T_O *closureRaw)
+ALWAYS_INLINE core::T_O* makeValueFrameSetParentFromClosure(size_t numargs, core::T_O* closureRaw)
+{NO_UNWIND_BEGIN();
+//  valueFrame->setEnvironmentId(id);   // I don't use id anymore
+  core::T_O* parentP;
+  if (closureRaw != NULL ) {
+    Closure_sp closure = Closure_sp((gctools::Tagged)closureRaw);
+    T_sp activationFrame = closure->closedEnvironment();
+//    printf("%s:%d:%s     activationFrame = %p\n", __FILE__, __LINE__, __FUNCTION__, activationFrame.raw_());
+    parentP =  activationFrame.raw_();
+  } else {
+    parentP = _Nil<core::T_O>().raw_();
+  }
+  core::ValueFrame_sp valueFrame(core::ValueFrame_O::create(numargs, _Nil<core::T_O>()));
+  valueFrame->setParentFrame(parentP);
+  return valueFrame.raw_();
+  NO_UNWIND_END();
+}
+
+ALWAYS_INLINE void setParentOfActivationFrameFromClosure(core::T_O *resultP, core::T_O *closureRaw)
 {NO_UNWIND_BEGIN();
 //  printf("%s:%d:%s  closureRaw = %p\n", __FILE__, __LINE__, __FUNCTION__, closureRaw);
   core::T_O* parentP;
@@ -578,17 +472,24 @@ ALWAYS_INLINE void setParentOfActivationFrameFromClosure(core::T_sp *resultP, co
   } else {
     parentP = _Nil<core::T_O>().raw_();
   }
-  ASSERT((*resultP).isA<ActivationFrame_O>());
-  ActivationFrame_sp af = gc::reinterpret_cast_smart_ptr<ActivationFrame_O, T_O>((*resultP));
+  ActivationFrame_sp af((gctools::Tagged)resultP);
   af->setParentFrame(parentP);
   NO_UNWIND_END();
 }
 
-ALWAYS_INLINE void setParentOfActivationFrame(core::T_sp *resultP, core::T_sp *parentsp)
+
+ALWAYS_INLINE core::T_O* makeValueFrameSetParent(size_t numargs, core::T_O *parentP)
 {NO_UNWIND_BEGIN();
-  T_O *parentP = parentsp->raw_();
-  ASSERT((*resultP).isA<ActivationFrame_O>());
-  ActivationFrame_sp af = gc::reinterpret_cast_smart_ptr<ActivationFrame_O, T_O>((*resultP));
+//  valueFrame->setEnvironmentId(id);   // I don't use id anymore
+  core::ValueFrame_sp valueFrame(core::ValueFrame_O::create(numargs, _Nil<core::T_O>()));
+  valueFrame->setParentFrame(parentP);
+  return valueFrame.raw_();
+  NO_UNWIND_END();
+}
+
+ALWAYS_INLINE void setParentOfActivationFrame(core::T_O *resultP, core::T_O *parentP)
+{NO_UNWIND_BEGIN();
+  ActivationFrame_sp af((gctools::Tagged)resultP);
   af->setParentFrame(parentP);
   return;
   NO_UNWIND_END();
@@ -656,39 +557,12 @@ int cc_eql(core::T_O* x, core::T_O* y)
   NO_UNWIND_END();
 };
 
-void cc_bad_tag(core::T_O* gf, core::T_O* gf_args)
+void cc_bad_tag(core::T_O* gf)
 {
   printf("%s:%d  A bad tag was encountered - aborting\n", __FILE__, __LINE__ );
   abort();
 };
 
-gctools::return_type cc_dispatch_slot_reader(core::T_O* tindex, core::T_O* tgf, core::T_O* tvargs) {
-  VaList_sp vargs((gctools::Tagged)tvargs);
-  T_sp tinstance = vargs->next_arg();
-  Instance_sp instance = gc::As_unsafe<Instance_sp>(tinstance);
-  return do_slot_read((gctools::Tagged)tindex,(gctools::Tagged)tgf,instance.tagged_());
-}
-
-
-gctools::return_type cc_dispatch_slot_writer(core::T_O* tindex, core::T_O* tgf, core::T_O* tvargs) { 
-  VaList_sp vargs((gctools::Tagged)tvargs);
-  T_sp value = vargs->next_arg();
-  T_sp tinstance = vargs->next_arg();
-  Instance_sp instance = gc::As_unsafe<Instance_sp>(tinstance);
-  do_slot_write((gctools::Tagged)tindex,(gctools::Tagged)tgf,instance.tagged_(),value.tagged_());
-  return value.as_return_type();
-}
-
-
-
-gctools::return_type cc_dispatch_effective_method(core::T_O* teffective_method, core::T_O* tgf, core::T_O* tgf_args_valist_s) {
-  core::T_sp effective_method((gctools::Tagged)teffective_method);
-  core::T_sp gf((gctools::Tagged)tgf);
-  core::T_sp gf_args((gctools::Tagged)tgf_args_valist_s);
-//  printf("%s:%d  Invoking effective-method %s with arguments %s\n", __FILE__, __LINE__,
-  // Arguments are .method-args. .next-methods.
-  return apply_method0(effective_method.raw_(),gf_args.raw_(),_Nil<core::T_O>().raw_(),gf_args.raw_());
-}
 
 };
 

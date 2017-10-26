@@ -38,10 +38,6 @@ THE SOFTWARE.
 
 /*! Different values for Instance_O.isgf */
 #define CLASP_NOT_FUNCALLABLE 0
-#define CLASP_STANDARD_DISPATCH 1
-#define CLASP_RESTRICTED_DISPATCH 2
-#define CLASP_READER_DISPATCH 3
-#define CLASP_WRITER_DISPATCH 4
 #define CLASP_USER_DISPATCH 5
 #define CLASP_FASTGF_DISPATCH 6
 #define CLASP_INVALIDATED_DISPATCH 7
@@ -69,13 +65,14 @@ namespace core {
                    MIN_GFUN_SLOTS = 4 } GenericFunctionSlots;
   public: // ctor/dtor for classes with shared virtual base
     // entry_point is the LISP_CALLING_CONVENTION() macro
-  FuncallableInstance_O() : Base(entry_point), _isgf(CLASP_NOT_FUNCALLABLE), _entryPoint(NULL), _Class(_Nil<Class_O>()), _Sig(_Nil<T_O>()), _CallHistory(_Nil<T_O>()),
+  FuncallableInstance_O() : Base(entry_point), _isgf(CLASP_NOT_FUNCALLABLE), _DebugOn(false), _entryPoint(NULL), _Class(_Nil<Class_O>()), _Sig(_Nil<T_O>()), _CallHistory(_Nil<T_O>()),
       _SpecializerProfile(_Nil<T_O>()),
       _Lock(mp::SharedMutex_O::make_shared_mutex(_Nil<T_O>())),
       _CompiledDispatchFunction(_Nil<T_O>()) {};
     explicit FuncallableInstance_O(Class_sp metaClass, size_t slots) :
     Base(entry_point),
       _Class(metaClass)
+      ,_DebugOn(false)
       ,_Sig(_Unbound<T_O>())
       , _CallHistory(_Nil<T_O>())
       ,_SpecializerProfile(_Nil<T_O>())
@@ -95,6 +92,7 @@ namespace core {
         - then the instances can be updated*/
     std::atomic<DispatchFunction_fptr_type> _entryPoint;
     int    _isgf;
+    bool   _DebugOn;
     T_sp   _Sig;
     std::atomic<T_sp>   _CallHistory;
     std::atomic<T_sp>   _SpecializerProfile;

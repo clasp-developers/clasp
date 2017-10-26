@@ -9,6 +9,10 @@
 (let ((lt (or *compile-file-truename* *load-truename*)))
   (setf *default-pathname-defaults* (make-pathname :name nil :type nil :defaults lt)))
 
+;(ql:quickload "esrap")
+(load "sbcl/libraries/bundle.lisp")
+(asdf:load-system :alexandria)
+(asdf:load-system :esrap)
 (load "packages.lisp")
 (in-package :cscrape)
 (defvar *generated-headers-path*)
@@ -16,9 +20,9 @@
 (defparameter *tags* nil)
 
 (load "foundation.lisp")
-(load "serialize.lisp")
 (load "parse.lisp")
 (load "tags.lisp")
+(load "serialize.lisp")
 (load "extract-tags.lisp")
 (load "sif-file.lisp")
 (load "conditions.lisp")

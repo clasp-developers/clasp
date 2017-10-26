@@ -169,6 +169,7 @@ SYMBOL_EXPORT_SC_(ExtPkg, STARinvoke_debugger_hookSTAR);
 SYMBOL_EXPORT_SC_(CorePkg,variable_source_location)
 SYMBOL_EXPORT_SC_(CorePkg,class_source_location)
 SYMBOL_EXPORT_SC_(CorePkg,bt)
+SYMBOL_EXPORT_SC_(CorePkg,btcl)
 SYMBOL_EXPORT_SC_(CorePkg,STARdebug_fastgfSTAR);
 SYMBOL_EXPORT_SC_(CorePkg,cxx_method_source_location);
 SYMBOL_EXPORT_SC_(CompPkg, STARllvm_contextSTAR);
@@ -358,6 +359,7 @@ SYMBOL_EXPORT_SC_(ExtPkg, float_infinity_string);
 SYMBOL_EXPORT_SC_(ExtPkg, STARdefault_external_formatSTAR);
 SYMBOL_EXPORT_SC_(ExtPkg, truly_the);
 SYMBOL_EXPORT_SC_(ExtPkg, specialVar);
+SYMBOL_EXPORT_SC_(ExtPkg, registerVar);
 SYMBOL_EXPORT_SC_(ExtPkg, lexicalVar);
 SYMBOL_EXPORT_SC_(ExtPkg, stackVar);
 SYMBOL_EXPORT_SC_(CorePkg, _PLUS_numberOfFixedArguments_PLUS_);
@@ -602,6 +604,7 @@ SYMBOL_EXPORT_SC_(ClPkg, method);
 SYMBOL_EXPORT_SC_(ClPkg, generic_function);
 SYMBOL_SC_(CorePkg, STARenvironmentPrintingTabSTAR);
 SYMBOL_SC_(CorePkg, STARenvironmentPrintingTabIncrementSTAR);
+SYMBOL_EXPORT_SC_(CorePkg, STARenvironment_debugSTAR);
 SYMBOL_SC_(CorePkg, _PLUS_activationFrameNil_PLUS_);
 SYMBOL_EXPORT_SC_(ClPkg, cond);
 SYMBOL_SC_(CorePkg, parse_macro);
@@ -959,6 +962,7 @@ void CoreExposer_O::define_essential_globals(Lisp_sp lisp) {
   cl::_sym_STARread_evalSTAR->defparameter(_lisp->_true());
   _sym_STARenvironmentPrintingTabSTAR->defparameter(make_fixnum(0));
   _sym_STARenvironmentPrintingTabIncrementSTAR->defparameter(make_fixnum(6));
+  _sym_STARenvironment_debugSTAR->defparameter(_Nil<T_O>());
   SYMBOL_EXPORT_SC_(ClPkg, most_negative_fixnum);
   cl::_sym_most_negative_fixnum->defconstant(make_fixnum(MOST_NEGATIVE_FIXNUM));
   SYMBOL_EXPORT_SC_(ClPkg, most_positive_fixnum);
@@ -1104,6 +1108,7 @@ void CoreExposer_O::define_essential_globals(Lisp_sp lisp) {
   // Set up a hash table to save JIT info
   HashTableEqual_sp jit_save = HashTableEqual_O::create_default();
 #ifdef CLASP_THREADS
+  // When threading - make *jit-saved-symbol-info* a thread safe hash table
   jit_save->_Mutex = mp::SharedMutex_O::make_shared_mutex(_Nil<T_O>());
 #endif
   comp::_sym_STARjit_saved_symbol_infoSTAR->defparameter(jit_save);

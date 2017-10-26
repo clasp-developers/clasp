@@ -123,7 +123,38 @@
 	   ))
     (dbg-standard "Done allocate-raw-instance unbound x ->~a~%" (eq (core:unbound) x))
     (si::instance-sig-set x)
+    (mlog "In allocate-instance  x -> %s\n" x)
+    #+mlog(or x (error "allocate-raw-xxxx returned nil  (core:subclassp class *the-class-class*) -> ~a" (core:subclassp class *the-class-class*)))
     x))
+
+(eval-when (:compile-toplevel :execute)
+  (mlog "Expanding defmethod allocate-instance -> %s\n"
+        (macroexpand-1 '(defmethod allocate-instance ((class class) &rest initargs)
+                         (declare (ignore initargs))
+                         ;; FIXME! Inefficient! We should keep a list of dependent classes.
+                         (unless (class-finalized-p class)
+                           (finalize-inheritance class))
+                         #+clasp(unless *the-class-class*
+                                  (setq *the-class-class* (find-class 'class)))
+                         (dbg-standard "About to allocate-raw-instance class->~a~%" class)
+                         (let ((x #-clasp(si::allocate-raw-instance nil class (class-size class))
+                                  #+clasp(if (core:subclassp class *the-class-class*)
+                                             (ALLOCATE-RAW-CLASS nil class (class-size class))
+                                             (si::allocate-raw-instance nil class (class-size class)))
+                                  ))
+                           (dbg-standard "Done allocate-raw-instance unbound x ->~a~%" (eq (core:unbound) x))
+                           (si::instance-sig-set x)
+                           (mlog "In allocate-instance  x -> %s\n" x)
+                           #+mlog(or x (error "allocate-raw-xxxx returned nil  (core:subclassp class *the-class-class*) -> ~a" (core:subclassp class *the-class-class*)))
+                           x)))))
+
+
+
+
+
+
+
+                                                         
 
 (defmethod make-instance ((class class) &rest initargs)
   (dbg-standard "standard.lsp:128  make-instance class ->~a~%" class)
@@ -141,6 +172,7 @@
 			(precompute-valid-initarg-keywords class)))))
     (check-initargs class initargs nil (class-slots class) keywords))
   (let ((instance (apply #'allocate-instance class initargs)))
+    #+mlog(or instance (error "allocate-instance returned NIL!!!!!!! class -> ~a initargs -> ~a" class initargs))
     (dbg-standard "standard.lsp:143   allocate-instance class -> ~a  instance checking if unbound -> ~a~%" class (eq instance (core:unbound)))
     (apply #'initialize-instance instance initargs)
     instance))
@@ -497,7 +529,8 @@ because it contains a reference to the undefined class~%  ~A"
 (defmethod ensure-class-using-class ((class class) name &rest rest
 				     &key direct-slots direct-default-initargs)
   (declare (ignore direct-default-initargs direct-slots))
-  (clos::gf-log "In ensure-class-using-class (class class) -> %s\n" name)
+  (clos::gf-log "In ensure-class-using-class (class class) \n")
+  (clos::gf-log "     name -> %s\n" name)
   (multiple-value-bind (metaclass direct-superclasses options)
       (apply #'help-ensure-class rest)
     (declare (ignore #-clasp direct-superclasses))
@@ -517,7 +550,7 @@ because it contains a reference to the undefined class~%  ~A"
     (when name
       (si:create-type-name name)
       (setf (find-class name) class))
-    (clos::gf-log "In ensure-class-using-class (class class) Z\n")
+    (clos::gf-log "In ensure-class-using-class (class class)\n")
     #+fast-dispatch
     (clos:invalidate-generic-functions-with-class-selector class)
     (clos::gf-log "Returning from ensure-class-using-class (class class)\n")

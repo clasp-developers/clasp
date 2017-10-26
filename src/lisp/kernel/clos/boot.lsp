@@ -39,11 +39,11 @@
   (let* ((the-metaclass (progn
                           (debug-boot "    About to do the~%")
                           (the class
-                               #+clasp(core:lookup-class metaclass nil)
+                               #+clasp(find-class metaclass nil)
                                #+ecl(gethash metaclass si::*class-name-hash-table*))))
          (class (progn
                   (debug-boot "    About to allocate-raw-class~%")
-                  (or #+clasp(core:lookup-class name nil)
+                  (or #+clasp(find-class name nil)
                       #+ecl(gethash name si::*class-name-hash-table*)
                       #+clasp
                       (core:allocate-raw-class nil the-metaclass #.(length +standard-class-slots+) creates-classes)

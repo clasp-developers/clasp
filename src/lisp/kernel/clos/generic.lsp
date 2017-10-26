@@ -167,6 +167,7 @@
   ;;
   (when (and l-l-p (slot-boundp gfun 'methods))
     (unless (every #'(lambda (x)
+                       (declare (core:lambda-name shared-initialize.lambda))
 		       (congruent-lambda-p lambda-list x))
 		 (mapcar #'method-lambda-list (generic-function-methods gfun)))
       (simple-program-error "Cannot replace the lambda list of ~A with ~A because it is incongruent with some of the methods"
@@ -179,9 +180,10 @@
   (when (and l-l-p (not a-o-p))
     (setf (generic-function-argument-precedence-order gfun)
 	  (lambda-list-required-arguments lambda-list)))
-  (set-generic-function-dispatch gfun)
+  (set-funcallable-instance-function gfun 'invalidated-dispatch-function)
   gfun)
 
+;;; FIXME: break up the two ways of using this function.
 (defun initialize-generic-function-specializer-profile (gfun &key initial-vec errorp)
   (loop for profile = (generic-function-specializer-profile gfun)
      for new-profile = (or initial-vec
@@ -227,6 +229,7 @@
        (method-class 'STANDARD-METHOD method-class-p)
        (generic-function-class (class-of gfun))
        (delete-methods nil))
+  (mlog "In ensure-generic-function-using-class (gfun generic-function) gfun -> %s  name -> %s args -> %s\n" gfun name args)
   ;; modify the existing object
   (setf args (copy-list args))
   (remf args :generic-function-class)
@@ -259,6 +262,7 @@
                                    (generic-function-class 'STANDARD-GENERIC-FUNCTION)
                                    (delete-methods nil))
   (declare (ignore delete-methods gfun))
+  (mlog "In ensure-generic-function-using-class (gfun generic-function) gfun -> %s  name -> %s args -> %s\n" gfun name args)
   ;; else create a new generic function object
   (setf args (copy-list args))
   (remf args :generic-function-class)
@@ -268,25 +272,3 @@
   (when (and method-class-p (symbolp generic-function-class))
     (setf args (list* :method-class (find-class method-class) args)))
   (apply #'make-instance generic-function-class :name name args))
-
-(defun ensure-generic-function (name &rest args &key &allow-other-keys)
-  (let ((gfun (si::traced-old-definition name)))
-    (cond ((not (legal-generic-function-name-p name))
-	   (simple-program-error "~A is not a valid generic function name" name))
-          ((not (fboundp name))
-           ;;           (break "About to setf (fdefinition name)")
-	   (setf (fdefinition name)
-		 (apply #'ensure-generic-function-using-class gfun name args)))
-          ((si::instancep (or gfun (setf gfun (fdefinition name))))
-	   (let ((new-gf (apply #'ensure-generic-function-using-class gfun name args)))
-	     new-gf))
-	  ((special-operator-p name)
-	   (simple-program-error "The special operator ~A is not a valid name for a generic function" name))
-	  ((macro-function name)
-	   (simple-program-error "The symbol ~A is bound to a macro and is not a valid name for a generic function" name))
-          ((not *clos-booted*)
-           (setf (fdefinition name)
-		 (apply #'ensure-generic-function-using-class nil name args))
-           (fdefinition name))
-	  (t
-	   (simple-program-error "The symbol ~A is bound to an ordinary function and is not a valid name for a generic function" name)))))

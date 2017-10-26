@@ -366,7 +366,7 @@ List_sp Cons_O::memberEq(T_sp item) const {
 
 List_sp Cons_O::memberEql(T_sp item) const {
   for (auto cur : (List_sp) this->asSmartPtr()) {
-    if (cl__eql(oCar(cur), item))
+    if (cl__eql(CONS_CAR(cur), item))
       return cur;
   }
   return _Nil<T_O>();
@@ -882,20 +882,23 @@ string Cons_O::__repr__() const {
   return ((sout.str()));
 }
 
+#if 0
 CL_DEFUN List_sp core__alist_erase(List_sp alist, T_sp key) {
-  if (alist.nilp())
-    return alist;
-  if (oCar(oCar(alist)) == key)
-    return oCdr(alist);
-  List_sp prev_alist = alist;
-  List_sp cur = oCdr(alist);
-  while (alist.notnilp()) {
-    if (oCar(oCar(alist)) == key) {
-      prev_alist.asCons()->rplacd(oCdr(alist.asCons()));
-      return alist;
+  if (alist.consp()) {
+    if (oCar(CONS_CAR(alist)) == key) return CONS_CDR(alist);
+    List_sp prev_alist = alist;
+    for ( auto cur : CONS_CDR(alist) ) {
+      while (alist.consp()) {
+      if (oCar(CONS_CAR(alist)) == key) {
+        prev_alist.unsafe_cons()->rplacd(CONS_CDR(alist));
+        return alist;
+      }
+      if (cur.consp()) {
+        prev_alist = cur;
+        cur = CONS_CDR(cur);
+      }
     }
-    prev_alist = cur;
-    cur = oCdr(cur);
+    return alist;
   }
   return alist;
 }
@@ -905,27 +908,25 @@ CL_DEFUN List_sp core__alist_push(List_sp alist, T_sp key, T_sp val) {
   alist = Cons_O::create(one, alist);
   return alist;
 }
+#endif
 
-CL_DEFUN List_sp core__alist_get(List_sp alist, T_sp key) {
-  while (alist.notnilp()) {
-    if (oCar(oCar(alist)) == key) {
-      return alist;
+ void not_alist_error(T_sp obj) {
+   SIMPLE_ERROR(BF("Not an alist -> %s") % _rep_(obj));
+ }
+ 
+CL_DEFUN List_sp core__alist_assoc_eq(List_sp alist, T_sp key) {
+  if (alist.consp()) {
+    for ( auto cur : alist ) {
+      T_sp pair = CONS_CAR(cur);
+      if (pair.consp()) {
+        if (CONS_CAR(pair) == key) return pair;
+      } else {
+        not_alist_error(alist);
+      }
     }
-    alist = oCdr(alist);
   }
   return _Nil<T_O>();
 }
-
-CL_DEFUN string core__alist_asString(List_sp alist) {
-  stringstream ss;
-  while (alist.notnilp()) {
-    ss << _rep_(oCar(oCar(alist))) << " ";
-    alist = oCdr(alist);
-  }
-  return ss.str();
-}
-
-
   SYMBOL_EXPORT_SC_(ClPkg, make_list);
   SYMBOL_EXPORT_SC_(ClPkg, cons);
   SYMBOL_EXPORT_SC_(ClPkg, getf);

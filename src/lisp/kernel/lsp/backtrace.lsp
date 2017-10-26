@@ -20,6 +20,7 @@
   base-pointer
   next-base-pointer
   arguments
+  shadow-frame
   )
 
 (defun dump-jit-symbol-info ()
@@ -113,27 +114,53 @@
         (frame-address (frame-iterator-frame-address entry)))
     (do* ((cur frames (cdr cur))
           (frame (car cur) (car cur)))
-         ((null cur) (or cur saved-frames))
+         ((null cur) (values (or cur saved-frames) nil))
       (let ((bp (backtrace-frame-base-pointer frame))
             (next-bp (backtrace-frame-next-base-pointer frame)))
         (when (and bp next-bp
                    (pointer-in-pointer-range frame-address bp next-bp))
-          (return-from search-for-matching-frame cur))))))
+          (return-from search-for-matching-frame (values cur t)))))))
 
-(defun add-call-arguments (frames shadow-backtrace)
-  (dolist (shadow-entry shadow-backtrace)
-    (let ((frame-cur (search-for-matching-frame frames shadow-entry)))
-      (if frame-cur
-          (let ((frame (car frame-cur)))
-            (setf (backtrace-frame-arguments frame) (frame-iterator-arguments shadow-entry))
-            (setf frames frame-cur))
-          (bformat t "Could not find stack frame for address: %s\n" (frame-iterator-frame-address shadow-entry))))))
+(defun merge-shadow-backtrace (orig-frames shadow-backtrace)
+  (let ((frames orig-frames))
+    (dolist (shadow-entry shadow-backtrace)
+      (multiple-value-bind (frame-cur found)
+          (search-for-matching-frame frames shadow-entry)
+        (if found
+            (let ((frame (car frame-cur)))
+              (setf (backtrace-frame-arguments frame) (frame-iterator-arguments shadow-entry))
+              (setf frames frame-cur)
+              (setf (backtrace-frame-shadow-frame frame) shadow-entry))
+            (bformat t "Could not find stack frame for address: %s\n" (frame-iterator-frame-address shadow-entry))))))
+  (let ((new-frames (add-interpreter-frames orig-frames)))
+    (nreverse new-frames)))
 
+(defconstant +interpreted-closure-entry-point+ "core::interpretedClosureEntryPoint")
+(defconstant +interpreted-closure-entry-point-length+ (length +interpreted-closure-entry-point+))
+(defun add-interpreter-frames (frames)
+  (let (new-frames)
+    (dolist (frame frames)
+      (when (backtrace-frame-shadow-frame frame)
+        (when (string= +interpreted-closure-entry-point+ (backtrace-frame-function-name frame)
+                       :start2 0 :end2 +interpreted-closure-entry-point-length+)
+          (let* ((shadow-frame (backtrace-frame-shadow-frame frame))
+                 (interpreted-frame (make-backtrace-frame :type :lisp
+                                                          :return-address nil 
+                                                          :raw-name (core:frame-iterator-function-name shadow-frame)
+                                                          :function-name (core:frame-iterator-function-name shadow-frame)
+                                                          :print-name (core:frame-iterator-function-name shadow-frame)
+                                                          :arguments (core:frame-iterator-arguments shadow-frame))))
+            (push interpreted-frame new-frames))))
+      (push frame new-frames))
+    new-frames))
+
+    
 (defun extract-backtrace-frame-name (line)
   ;; On OS X this is how we get the name part
-  (let* ((pos0 (position-if (lambda (c) (char/= c #\space)) line)) ; skip initial whitespace
-         (pos0e (position-if (lambda (c) (char= c #\space)) line :start pos0)) ; skip chars
-         (pos1 (position-if (lambda (c) (char/= c #\space)) line :start pos0e)) ; skip whitespace
+  ;; The format seems to be as follows:
+  ;; "framenumber    processname        address      functionname"
+  ;; with variable numbers of spaces. processname is always at character 4 so we start there.
+  (let* ((pos1 (position-if (lambda (c) (char/= c #\space)) line :start 4)) ; skip whitespace
          (pos1e (position-if (lambda (c) (char= c #\space)) line :start pos1)) ; skip chars
          (pos2 (position-if (lambda (c) (char/= c #\space)) line :start pos1e))
          (pos2e (position-if (lambda (c) (char= c #\space)) line :start pos2)) ; skip chars
@@ -161,8 +188,7 @@
 (defun backtrace-with-arguments ()
   (let ((ordered (backtrace-as-list))
         (shadow-backtrace (core:shadow-backtrace-as-list)))
-    (add-call-arguments ordered shadow-backtrace)
-    ordered))
+    (merge-shadow-backtrace ordered shadow-backtrace)))
 
 (defun common-lisp-backtrace-frames (&key verbose (focus t)
                                        (gather-start-trigger nil))
@@ -191,22 +217,53 @@ is one way to eliminate frames that aren't interesting to the user."
           (when verbose (bformat t "     PUSHED!\n"))
           (push frame result))))
     (nreverse result)))
-      
-(defun btcl ()
-  "Print backtrace of just common lisp frames"
-  (let ((l (common-lisp-backtrace-frames)))
+
+;;; A quick and dirty way to work with btcl frames
+(defvar *current-btcl-frames* nil)
+(defvar *current-btcl-index* 0)
+(defun cbtcl-frame (index)
+  (elt *current-btcl-frames* index))
+
+(defun cbtcl-func (index)
+  (backtrace-frame-print-name (cbtcl-frame index)))
+
+(defun cbtcl-arguments (index)
+  (backtrace-frame-arguments (cbtcl-frame index)))
+
+(defun btcl-frames (&key all)
+  (setq *current-btcl-index* 0)
+  (let ((frames (if all
+                    (common-lisp-backtrace-frames)
+                    (common-lisp-backtrace-frames
+                     :gather-start-trigger
+                     (lambda (x)
+                       (eq 'core:universal-error-handler (backtrace-frame-function-name x)))))))
+    (setq *current-btcl-frames* frames)
+    frames))
+
+(defun btcl (&key all (args t))
+  "Print backtrace of just common lisp frames.  Set args to nil if you don't want arguments printed"
+  (let ((l (btcl-frames :all all))
+        (index 0))
     (dolist (e l)
       (let ((name (backtrace-frame-print-name e))
             (arguments (backtrace-frame-arguments e)))
         (if arguments
             (progn
-              (princ "(")
+              (prin1 (prog1 index (incf index)))
+              (princ " (")
               (princ name)
-              (dotimes (i (length arguments))
-                (princ #\space)
-                (prin1 (aref arguments i)))
-              (princ ")"))
+              (if (> (length arguments) 0)
+                  (progn
+                    (if args 
+                        (dotimes (i (length arguments))
+                          (princ #\space)
+                          (prin1 (aref arguments i)))
+                        (prin1 " -args-suppressed-"))
+                    (princ ")"))))
             (progn
+              (prin1 (prog1 index (incf index)))
+              (princ #\space )
               (princ name)))
         (terpri)))))
 

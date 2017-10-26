@@ -590,6 +590,7 @@ void fillVec0FromCons(gctools::Vec0<T> &vec, List_sp list) {
 }; // core namespace
 
 namespace core {
+#if 0
 /* Erase the entry with _key_ from the list. Return the new list. 
      In cases where the key was in the first entry the first entry is unhooked and the CDR is returned.
     In other cases the entry is unhooked from the inside of the alist*/
@@ -598,10 +599,12 @@ List_sp core__alist_erase(List_sp alist, T_sp key);
 /*! Push the key/val onto the alist.  This will shadow other entries with the same val */
 List_sp core__alist_push(List_sp alist, T_sp key, T_sp val);
 
-/*! Lookup the key and return the Cons containing the key/val pair - or return NIL if not found */
-List_sp core__alist_get(List_sp alist, T_sp key);
 
 string core__alist_asString(List_sp alist);
+#endif
+/*! Lookup the key and return the Cons containing the key/val pair - or return NIL if not found */
+List_sp core__alist_assoc_eq(List_sp alist, T_sp key);
+ 
 };
 
 namespace core {
@@ -617,6 +620,8 @@ T_sp cl__getf(List_sp plist, T_sp indicator, T_sp default_value);
 List_sp core__put_f(List_sp plist, T_sp value, T_sp indicator);
 T_mv core__rem_f(List_sp plist, Symbol_sp indicator);
  List_sp cl__make_list(Fixnum_sp osize, T_sp initial_element);
+
+ void not_alist_error(T_sp l);
 };
 
 namespace core {

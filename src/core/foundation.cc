@@ -196,7 +196,7 @@ void lisp_errorDereferencedUnbound() {
   SIMPLE_ERROR(BF("Tried to dereference unbound"));
 }
 
-void lisp_errorUnexpectedType(class_id expectedTyp, class_id givenTyp, core::T_O *objP) {
+DONT_OPTIMIZE_ALWAYS void lisp_errorUnexpectedType(class_id expectedTyp, class_id givenTyp, core::T_O *objP) {
   if (expectedTyp >= _lisp->classSymbolsHolder().size()) {
     core::lisp_error_simple(__FUNCTION__, __FILE__, __LINE__, boost::format("expected class_id %d out of range max[%d]") % expectedTyp % _lisp->classSymbolsHolder().size());
   }
@@ -217,32 +217,32 @@ void lisp_errorUnexpectedType(class_id expectedTyp, class_id givenTyp, core::T_O
   TYPE_ERROR(obj, expectedSym);
 }
 
-void lisp_errorBadCastToFixnum(class_id from_typ, core::T_O *objP) {
+DONT_OPTIMIZE_ALWAYS void lisp_errorBadCastToFixnum(class_id from_typ, core::T_O *objP) {
   class_id to_typ = reg::registered_class<core::Fixnum_I>::id;
   core::lisp_errorUnexpectedType(to_typ, from_typ, objP);
 }
 
-void lisp_errorBadCast(class_id toType, class_id fromType, core::T_O *objP) {
+DONT_OPTIMIZE_ALWAYS void lisp_errorBadCast(class_id toType, class_id fromType, core::T_O *objP) {
   lisp_errorUnexpectedType(toType, fromType, objP);
 }
 
-void lisp_errorBadCastFromT_O(class_id toType, core::T_O *objP) {
+DONT_OPTIMIZE_ALWAYS void lisp_errorBadCastFromT_O(class_id toType, core::T_O *objP) {
   class_id from_typ = reg::registered_class<core::T_O>::id;
   lisp_errorUnexpectedType(toType, from_typ, objP);
 }
 
-void lisp_errorBadCastFromT_OToCons_O(core::T_O *objP) {
+DONT_OPTIMIZE_ALWAYS void lisp_errorBadCastFromT_OToCons_O(core::T_O *objP) {
   class_id to_typ = reg::registered_class<core::Cons_O>::id;
   class_id from_typ = reg::registered_class<core::T_O>::id;
   lisp_errorUnexpectedType(to_typ, from_typ, objP);
 }
 
-void lisp_errorBadCastFromSymbol_O(class_id toType, core::Symbol_O *objP) {
+DONT_OPTIMIZE_ALWAYS void lisp_errorBadCastFromSymbol_O(class_id toType, core::Symbol_O *objP) {
   class_id from_typ = reg::registered_class<core::Symbol_O>::id;
   lisp_errorUnexpectedType(toType, from_typ, reinterpret_cast<core::T_O *>(objP));
 }
 
-void lisp_errorUnexpectedNil(class_id expectedTyp) {
+DONT_OPTIMIZE_ALWAYS void lisp_errorUnexpectedNil(class_id expectedTyp) {
   if (expectedTyp >= _lisp->classSymbolsHolder().size()) {
     core::lisp_error_simple(__FUNCTION__, __FILE__, __LINE__, boost::format("expected class_id %" PRu " out of range max[%zu]") % expectedTyp % _lisp->classSymbolsHolder().size());
   }

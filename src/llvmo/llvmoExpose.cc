@@ -61,6 +61,7 @@ THE SOFTWARE.
 #include <llvm/IR/Instructions.h>
 #include <llvm/IR/Mangler.h>
 #include <llvm/Transforms/Instrumentation.h>
+#include <llvm/Transforms/Utils/BasicBlockUtils.h>
 #include <llvm/Transforms/IPO.h>
 #include <llvm/IR/InlineAsm.h>
 #include <llvm/Support/FormattedStream.h>
@@ -476,7 +477,7 @@ CL_DEFUN Triple_sp Triple_O::make(const string &triple) {
 };
 
 CL_PKG_NAME(LlvmoPkg,"triple-normalize");
-CL_EXTERN_DEFUN(&llvm::Triple::normalize);
+CL_EXTERN_DEFUN(( std::string(*)(llvm::StringRef str))&llvm::Triple::normalize);
 
   CL_LISPIFY_NAME(getTriple);
   CL_EXTERN_DEFMETHOD(Triple_O, &llvm::Triple::getTriple);
@@ -1007,11 +1008,6 @@ CL_DEFUN Module_sp llvm_sys__clone_module(Module_sp original)
 
 
 
-#if 0
-  CL_PKG_NAME(LlvmoPkg,"attributeSetGet");
-  CL_EXTERN_DEFUN((llvm::AttributeSet (*)(llvm::LLVMContext &, unsigned, llvm::ArrayRef<llvm::Attribute::AttrKind>)) & llvm::AttributeSet::get);
-#endif
-
 CL_LAMBDA(module value &optional label);
 CL_DEFUN Value_sp llvm_sys__makeStringGlobal(Module_sp module, core::String_sp svalue, core::T_sp label) {
     llvm::Module &M = *(module->wrappedPtr());
@@ -1365,6 +1361,9 @@ CL_DEFMETHOD size_t DataLayout_O::getTypeAllocSize(llvm::Type* ty)
 {
   return this->_DataLayout->getTypeAllocSize(ty);
 }
+
+CL_LISPIFY_NAME(getStringRepresentation);
+CL_EXTERN_DEFMETHOD(DataLayout_O,&llvm::DataLayout::getStringRepresentation);
 
 
 }; // llvmo
@@ -1744,6 +1743,9 @@ CL_DEFMETHOD void Instruction_O::setMetadata(core::String_sp kind, MDNode_sp mdn
   CL_LISPIFY_NAME(getParent);
   CL_EXTERN_DEFMETHOD(Instruction_O, (llvm::BasicBlock * (llvm::Instruction::*)()) & llvm::Instruction::getParent);
 
+  CL_LISPIFY_NAME(eraseFromParent);
+  CL_EXTERN_DEFMETHOD(Instruction_O, & llvm::Instruction::eraseFromParent);
+
 ;
 
 
@@ -1760,6 +1762,49 @@ CL_DEFMETHOD bool Instruction_O::terminatorInstP() const {
 }; // llvmo
 
 namespace llvmo {
+
+CL_DEFUN llvm::Instruction* llvm_sys__replace_call(llvm::Instruction* callOrInvoke, llvm::Function* func, llvm::ArrayRef<llvm::Value *> args) {
+//  printf("%s:%d In llvm-sys::replace-call\n",__FILE__, __LINE__);
+  llvm::CallSite CS(callOrInvoke);
+  llvm::Instruction *NewCI = NULL;
+  if (llvm::isa<llvm::CallInst>(callOrInvoke)) {
+    llvm::CallInst* NewCall = llvm::CallInst::Create(func,args);
+    NewCall->setCallingConv(func->getCallingConv());
+    NewCI = NewCall;
+  } else if (llvm::isa<llvm::InvokeInst>(callOrInvoke)) {
+    llvm::InvokeInst* invoke = llvm::cast<llvm::InvokeInst>(callOrInvoke);
+    llvm::BasicBlock* ifNormal = invoke->getNormalDest();
+    llvm::BasicBlock* ifException = invoke->getUnwindDest();
+    llvm::InvokeInst* NewInvoke = llvm::InvokeInst::Create(func,ifNormal,ifException,args);
+    NewInvoke->setCallingConv(func->getCallingConv());
+    NewCI = NewInvoke;
+  }
+  if (!callOrInvoke->use_empty()) {
+    callOrInvoke->replaceAllUsesWith(NewCI);
+  }
+  llvm::ReplaceInstWithInst(callOrInvoke,NewCI);
+  return NewCI;
+};
+
+
+core::List_sp CallInst_O::getArgumentList() const {
+  ql::list l;
+  for ( auto arg = this->wrappedPtr()->arg_begin(), argEnd(this->wrappedPtr()->arg_end());
+        arg != argEnd; ++arg ) {
+    l << translate::to_object<llvm::Value*>::convert(*arg);
+  }
+  return l.cons();
+};  
+
+CL_DEFUN core::List_sp llvm_sys__call_or_invoke_getArgumentList(Instruction_sp callOrInvoke) {
+  if (gc::IsA<CallInst_sp>(callOrInvoke)) {
+    return gc::As<CallInst_sp>(callOrInvoke)->getArgumentList();
+  } else if (gc::IsA<InvokeInst_sp>(callOrInvoke)) {
+    return gc::As<InvokeInst_sp>(callOrInvoke)->getArgumentList();
+  }
+  SIMPLE_ERROR(BF("Only call or invoke can provide arguments"));
+}
+
 
 CL_DEFMETHOD void CallInst_O::addParamAttr(unsigned index, llvm::Attribute::AttrKind attrkind)
 {
@@ -1779,37 +1824,16 @@ CL_DEFMETHOD llvm::Function* InvokeInst_O::getCalledFunction() {
   return this->wrappedPtr()->getCalledFunction();
 }
 
-}; // llvmo
-namespace llvmo {
-}
-
-namespace llvmo {
-
-
-;
-
-}; // llvmo
-namespace llvmo {
-}
-
-namespace llvmo {
-
-
-;
+core::List_sp InvokeInst_O::getArgumentList() const {
+  ql::list l;
+  for ( auto arg = this->wrappedPtr()->arg_begin(), argEnd(this->wrappedPtr()->arg_end());
+        arg != argEnd; ++arg ) {
+    l << translate::to_object<llvm::Value*>::convert(*arg);
+  }
+  return l.cons();
+};  
 
 }; // llvmo
-namespace llvmo {
-}
-
-namespace llvmo {
-
-
-;
-
-}; // llvmo
-namespace llvmo {
-}
-
 namespace llvmo {
 
 
@@ -1862,6 +1886,13 @@ namespace llvmo {
   CL_LISPIFY_NAME(setAlignment);
   CL_EXTERN_DEFMETHOD(AllocaInst_O, &AllocaInst_O::ExternalType::setAlignment);;
 
+CL_DEFUN llvm::AllocaInst* llvm_sys__insert_alloca_before_terminator(llvm::Type* type, const llvm::Twine& name, llvm::BasicBlock* block)
+{
+//  printf("%s:%d   llvm-sys::insert-alloca\n", __FILE__, __LINE__ );
+  llvm::Instruction* insertBefore = block->getTerminator();
+  llvm::AllocaInst* alloca = new llvm::AllocaInst(type,0,name,insertBefore);
+  return alloca;
+}
 ;
 
 }; // llvmo
@@ -1978,7 +2009,7 @@ namespace llvmo {
   CL_LISPIFY_NAME(constantFpGetTypeDouble);
   CL_EXTERN_DEFUN((llvm::Constant *(*)(llvm::Type *, double)) &llvm::ConstantFP::get );
   CL_LISPIFY_NAME(constantFpGetTypeStringref);
-  CL_EXTERN_DEFUN((llvm::Constant *(*)(llvm::Type *, llvm::StringRef))&llvm::ConstantFP::get);
+  CL_EXTERN_DEFUN((llvm::Constant *(*)(llvm::Type * type, llvm::StringRef label))&llvm::ConstantFP::get);
 
 ;
 
@@ -2039,7 +2070,7 @@ UndefValue_sp UndefValue_O::create(llvm::UndefValue *ptr) {
 
 
   CL_LISPIFY_NAME(UNDEF_VALUE-GET);
-  CL_EXTERN_DEFUN(&llvm::UndefValue::get);
+CL_EXTERN_DEFUN((llvm::UndefValue* (*)(llvm::Type* type))&llvm::UndefValue::get);
 
 ;
 
@@ -2059,7 +2090,7 @@ ConstantPointerNull_sp ConstantPointerNull_O::create(llvm::ConstantPointerNull *
 
 
   CL_LISPIFY_NAME(constant-pointer-null-get);
-  CL_EXTERN_DEFUN(&llvm::ConstantPointerNull::get);
+CL_EXTERN_DEFUN((llvm::ConstantPointerNull* (*)(llvm::PointerType *T))&llvm::ConstantPointerNull::get);
 
 ;
 
@@ -2450,7 +2481,7 @@ CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateAdd);
 CL_EXTERN_DEFMETHOD(IRBuilder_O, (AllocaInst* (IRBuilder_O::ExternalType::*)(llvm::Type *, llvm::Value *,
                            const Twine &))&IRBuilder_O::ExternalType::CreateAlloca);
   CL_LISPIFY_NAME(CreateStore);
-  CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateStore);
+CL_EXTERN_DEFMETHOD(IRBuilder_O, (llvm::StoreInst* (llvm::IRBuilder<llvm::ConstantFolder, llvm::IRBuilderDefaultInserter>::*)(llvm::Value *Val, llvm::Value *Ptr, bool isVolatile)) &IRBuilder_O::ExternalType::CreateStore);
   CL_LISPIFY_NAME(CreateFence);
   CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateFence);
   CL_LISPIFY_NAME(CreateAtomicCmpXchg);
@@ -2868,9 +2899,12 @@ namespace llvmo {
 CL_LISPIFY_NAME(getParent);
 CL_EXTERN_DEFMETHOD(BasicBlock_O,(llvm::Function *(llvm::BasicBlock::*)())&llvm::BasicBlock::getParent);
 
+CL_LISPIFY_NAME(getTerminator);
+CL_EXTERN_DEFMETHOD(BasicBlock_O,(llvm::TerminatorInst *(llvm::BasicBlock::*)())&llvm::BasicBlock::getTerminator);
+
 CL_LAMBDA("context &optional (name \"\") parent basic-block");
 CL_LISPIFY_NAME(basic-block-create);
-CL_EXTERN_DEFUN( &llvm::BasicBlock::Create );
+CL_EXTERN_DEFUN((llvm::BasicBlock * (*)(llvm::LLVMContext &Context, const llvm::Twine &Name, llvm::Function *Parent, llvm::BasicBlock *InsertBefore)) &llvm::BasicBlock::Create );
 
 ;
 
@@ -2946,60 +2980,49 @@ CL_DEFMETHOD core::Integer_sp Type_O::getArrayNumElements() const {
   core::Integer_sp ival = core::Integer_O::create(v64);
   return ival;
 }
-#if 0
-CL_EXTERN_DEFMETHOD(Type_O,&llvm::Type::dump);
-#endif
-
 CL_EXTERN_DEFMETHOD(Type_O,&llvm::Type::getSequentialElementType);
 
-CL_PKG_NAME(LlvmoPkg, "type-get-float-ty");
-CL_EXTERN_DEFUN(&llvm::Type::getFloatTy);
-
-#if 0
-  CL_LISPIFY_NAME(dump);
-  CL_EXTERN_DEFMETHOD(Type_O, &llvm::Type::dump);
-#endif
-  CL_LISPIFY_NAME(getSequentialElementType);
-  CL_EXTERN_DEFMETHOD(Type_O, &llvm::Type::getSequentialElementType);;
+CL_LISPIFY_NAME(getSequentialElementType);
+CL_EXTERN_DEFMETHOD(Type_O, &llvm::Type::getSequentialElementType);;
 
   CL_LISPIFY_NAME("type-get-void-ty");
-  CL_EXTERN_DEFUN( &llvm::Type::getVoidTy);
+  CL_EXTERN_DEFUN((llvm::Type * (*) (llvm::LLVMContext &C)) &llvm::Type::getVoidTy);
   CL_LISPIFY_NAME("type-get-float-ty");
-  CL_EXTERN_DEFUN( &llvm::Type::getFloatTy);
+  CL_EXTERN_DEFUN((llvm::Type * (*) (llvm::LLVMContext &C)) &llvm::Type::getFloatTy);
   CL_LISPIFY_NAME("type-get-double-ty");
-  CL_EXTERN_DEFUN( &llvm::Type::getDoubleTy);
+  CL_EXTERN_DEFUN((llvm::Type * (*) (llvm::LLVMContext &C)) &llvm::Type::getDoubleTy);
   CL_LISPIFY_NAME("type-get-int-nty");
-  CL_EXTERN_DEFUN( &llvm::Type::getIntNTy);
+CL_EXTERN_DEFUN((llvm::IntegerType * (*) (llvm::LLVMContext &C, unsigned N)) &llvm::Type::getIntNTy);
   CL_LISPIFY_NAME("type-get-int1-ty");
-  CL_EXTERN_DEFUN( &llvm::Type::getInt1Ty);
+  CL_EXTERN_DEFUN((llvm::IntegerType * (*) (llvm::LLVMContext &C))&llvm::Type::getInt1Ty);
   CL_LISPIFY_NAME("type-get-int8-ty");
-  CL_EXTERN_DEFUN( &llvm::Type::getInt8Ty);
+  CL_EXTERN_DEFUN((llvm::IntegerType * (*) (llvm::LLVMContext &C))&llvm::Type::getInt8Ty);
   CL_LISPIFY_NAME("type-get-int16-ty");
-  CL_EXTERN_DEFUN( &llvm::Type::getInt16Ty);
+  CL_EXTERN_DEFUN((llvm::IntegerType * (*) (llvm::LLVMContext &C))&llvm::Type::getInt16Ty);
   CL_LISPIFY_NAME("type-get-int32-ty");
-  CL_EXTERN_DEFUN( &llvm::Type::getInt32Ty);
+  CL_EXTERN_DEFUN((llvm::IntegerType * (*) (llvm::LLVMContext &C))&llvm::Type::getInt32Ty);
   CL_LISPIFY_NAME("type-get-int64-ty");
-  CL_EXTERN_DEFUN( &llvm::Type::getInt64Ty);
+  CL_EXTERN_DEFUN((llvm::IntegerType * (*) (llvm::LLVMContext &C))&llvm::Type::getInt64Ty);
   CL_LISPIFY_NAME("type-get-int128-ty");
-  CL_EXTERN_DEFUN( &llvm::Type::getInt128Ty);
+  CL_EXTERN_DEFUN((llvm::IntegerType * (*) (llvm::LLVMContext &C))&llvm::Type::getInt128Ty);
 
   CL_LISPIFY_NAME("type-get-float-ptr-ty");
-  CL_EXTERN_DEFUN( &llvm::Type::getFloatPtrTy);
+CL_EXTERN_DEFUN((llvm::PointerType * (*) (llvm::LLVMContext &C, unsigned AS))&llvm::Type::getFloatPtrTy);
   CL_LISPIFY_NAME("type-get-double-ptr-ty");
-  CL_EXTERN_DEFUN( &llvm::Type::getDoublePtrTy);
+CL_EXTERN_DEFUN((llvm::PointerType * (*) (llvm::LLVMContext &C, unsigned AS))&llvm::Type::getDoublePtrTy);
 
   CL_LISPIFY_NAME("type-get-int-nptr-ty");
-  CL_EXTERN_DEFUN( &llvm::Type::getIntNPtrTy);
+CL_EXTERN_DEFUN((llvm::PointerType * (*) (llvm::LLVMContext &C, unsigned AS))&llvm::Type::getIntNPtrTy);
   CL_LISPIFY_NAME("type-get-int1-ptr-ty");
-  CL_EXTERN_DEFUN( &llvm::Type::getInt1PtrTy);
+CL_EXTERN_DEFUN((llvm::PointerType * (*) (llvm::LLVMContext &C, unsigned AS))&llvm::Type::getInt1PtrTy);
   CL_LISPIFY_NAME("type-get-int8-ptr-ty");
-  CL_EXTERN_DEFUN( &llvm::Type::getInt8PtrTy);
+CL_EXTERN_DEFUN((llvm::PointerType * (*) (llvm::LLVMContext &C, unsigned AS))&llvm::Type::getInt8PtrTy);
   CL_LISPIFY_NAME("type-get-int16-ptr-ty");
-  CL_EXTERN_DEFUN( &llvm::Type::getInt16PtrTy);
+CL_EXTERN_DEFUN((llvm::PointerType * (*) (llvm::LLVMContext &C, unsigned AS))&llvm::Type::getInt16PtrTy);
   CL_LISPIFY_NAME("type-get-int32-ptr-ty");
-  CL_EXTERN_DEFUN( &llvm::Type::getInt32PtrTy);
+CL_EXTERN_DEFUN((llvm::PointerType * (*) (llvm::LLVMContext &C, unsigned AS))&llvm::Type::getInt32PtrTy);
   CL_LISPIFY_NAME("type-get-int64-ptr-ty");
-  CL_EXTERN_DEFUN( &llvm::Type::getInt64PtrTy);
+CL_EXTERN_DEFUN((llvm::PointerType * (*) (llvm::LLVMContext &C, unsigned AS))&llvm::Type::getInt64PtrTy);
 
 ;
 
@@ -3200,7 +3223,7 @@ CL_DEFUN core::Function_sp finalizeEngineAndRegisterWithGcAndGetCompiledFunction
     if (!p) {
       SIMPLE_ERROR(BF("Could not get a pointer to the function finalizeEngineAndGetDispatchFunction: %s") % _rep_(functionName));
     }
-    core::DispatchFunction_fptr_type dispatchFunction = (core::DispatchFunction_fptr_type)(p);
+    core::claspFunction dispatchFunction = (core::claspFunction)(p);
     core::ShutdownFunction_fptr_type shutdownFunction = (core::ShutdownFunction_fptr_type)(engine->getPointerToFunction(shutdownFn->wrappedPtr()));
     gctools::smart_ptr<core::CompiledDispatchFunction_O> functoid = gctools::GC<core::CompiledDispatchFunction_O>::allocate(functionName, kw::_sym_dispatch_function, dispatchFunction, _Unbound<Module_O>() );
     void* pstartup = engine->getPointerToFunction(startupFn->wrappedPtr());
@@ -3349,7 +3372,7 @@ CL_DEFUN core::Function_sp finalizeEngineAndRegisterWithGcAndGetCompiledFunction
 //  CL_LISPIFY_NAME(createAliasAnalysisCounterPass);
 //  CL_EXTERN_DEFUN( &llvm::createAliasAnalysisCounterPass);
   CL_LISPIFY_NAME(createFunctionInliningPass);
-CL_EXTERN_DEFUN( (llvm::Pass * (*)(unsigned, unsigned,bool)) & llvm::createFunctionInliningPass);
+CL_EXTERN_DEFUN((llvm::Pass * (*)(unsigned, unsigned,bool)) & llvm::createFunctionInliningPass);
 
   CL_LISPIFY_NAME(createAlwaysInlinerLegacyPass);
   CL_EXTERN_DEFUN( (llvm::Pass * (*)()) & llvm::createAlwaysInlinerLegacyPass);
@@ -3420,18 +3443,18 @@ CL_EXTERN_DEFUN( &llvm::createMemDepPrinter);
   //    core::af_def(LlvmoPkg,"createScalarReplAggregatesPassWithThreshold",&llvm::createScalarReplAggregatesPassWithThreshold);
   //    core::af_def(LlvmoPkg,"createSimplifyLibCallsPass",&llvm::createSimplifyLibCallsPass);
   CL_LISPIFY_NAME(createTailCallEliminationPass);
-  CL_EXTERN_DEFUN( &llvm::createTailCallEliminationPass);
+  CL_EXTERN_DEFUN(&llvm::createTailCallEliminationPass);
   CL_LISPIFY_NAME(createConstantPropagationPass);
-  CL_EXTERN_DEFUN( &llvm::createConstantPropagationPass);
+  CL_EXTERN_DEFUN(&llvm::createConstantPropagationPass);
   //    core::af_def(LlvmoPkg,"createDemoteMemoryToRegisterPass",&llvm::createDemoteMemoryToRegisterPass);
   CL_LISPIFY_NAME(createVerifierPass);
-  CL_EXTERN_DEFUN( &llvm::createVerifierPass);
+  CL_EXTERN_DEFUN(&llvm::createVerifierPass);
   CL_LISPIFY_NAME(createCorrelatedValuePropagationPass);
-  CL_EXTERN_DEFUN( &llvm::createCorrelatedValuePropagationPass);
+  CL_EXTERN_DEFUN(&llvm::createCorrelatedValuePropagationPass);
   CL_LISPIFY_NAME(createEarlyCSEPass);
-  CL_EXTERN_DEFUN( &llvm::createEarlyCSEPass);
+  CL_EXTERN_DEFUN(&llvm::createEarlyCSEPass);
   CL_LISPIFY_NAME(createLowerExpectIntrinsicPass);
-  CL_EXTERN_DEFUN( &llvm::createLowerExpectIntrinsicPass);
+  CL_EXTERN_DEFUN(   &llvm::createLowerExpectIntrinsicPass);
 //  CL_LISPIFY_NAME(createTypeBasedAliasAnalysisPass);
 //  CL_EXTERN_DEFUN( &llvm::createTypeBasedAliasAnalysisPass);
 //  CL_LISPIFY_NAME(createBasicAliasAnalysisPass);
@@ -3675,16 +3698,6 @@ https://groups.google.com/forum/#!topic/llvm-dev/m3JjMNswgcU
                                          ),
                            GDBEventListener(JITEventListener::createGDBRegistrationListener())
 {
-#if 0
-  RTDyldObjectLinkingLayer::NotifyLoadedFtor notify_func = [this](llvm::orc::RTDyldObjectLinkingLayer::ObjHandleT H,
-                                                                  const RTDyldObjectLinkingLayer::ObjectPtr& Obj,
-                                                                  const RuntimeDyld::LoadedObjectInfo &Info) {
-//          printf("%s:%d:%s informing GDBEventListener  i=%d &Objects[i]->%p  &Infos[i]->%p\n", __FILE__, __LINE__, __FUNCTION__, i, Objects[i].get(), Infos[i].get());
-      this->GDBEventListener->NotifyObjectEmitted(*(Obj->getBinary()), Info);
-      save_symbol_info(*(Obj->getBinary()), Info);
-  };
-  this->ObjectLayer.NotifyLoadedFtor = notify_func;
-#endif
   llvm::sys::DynamicLibrary::LoadLibraryPermanently(nullptr);
 }
 
@@ -3868,44 +3881,14 @@ CL_DEFUN void llvm_sys__remove_useless_global_ctors(Module_sp module) {
     
   
 
+CL_DEFUN llvm::Module* llvm_sys_optimizeModule(llvm::Module* module)
+{
+  std::shared_ptr<llvm::Module> M(module);
+  return &*optimizeModule(std::move(M));
+}
 
-std::shared_ptr<llvm::Module> ClaspJIT_O::optimizeModule(std::shared_ptr<llvm::Module> M) {
-  core::LightTimer timer;
-  timer.start();
-  // Create a function pass manager.
-  auto FPM = llvm::make_unique<llvm::legacy::FunctionPassManager>(M.get());
 
-  // Add some optimizations.
-  FPM->add(createInstructionCombiningPass());
-  FPM->add(createReassociatePass());
-  FPM->add(createNewGVNPass());
-  FPM->add(createCFGSimplificationPass());
-//  FPM->add(createFunctionInliningPass());
-  FPM->doInitialization();
-
-  // Run the optimizations over all functions in the module being added to
-  // the JIT.
-  for (auto &F : *M)
-    FPM->run(F);
-
-  llvm::legacy::PassManager my_passes;
-  my_passes.add(llvm::createFunctionInliningPass(4096));
-  my_passes.run(*M);
-  // Silently remove llvm.used functions if they are defined
-  //     I may use this to prevent functions from being removed from the bitcode
-  //     by clang before we need them.
-  llvm::GlobalVariable* used = M->getGlobalVariable("llvm.used");
-  if (used) {
-    Value* init = used->getInitializer();
-#if 0
-    printf("%s:%d   init is a ConstantArray -> %d\n", __FILE__, __LINE__, llvm::isa<ConstantArray>(init));
-    printf("%s:%d   init is a Constant -> %d\n", __FILE__, __LINE__, llvm::isa<Constant>(init));
-    printf("%s:%d   init is a User -> %d\n", __FILE__, __LINE__, llvm::isa<User>(init));
-    printf("%s:%d   init is a Value -> %d\n", __FILE__, __LINE__, llvm::isa<User>(init));
-    printf("%s:%d init -> %p\n", __FILE__, __LINE__, (void*)init );
-#endif
-    used->eraseFromParent();
-  }
+void removeAlwaysInlineFunctions(llvm::Module* M) {
   // Silently remove always-inline functions from the module
   std::vector<llvm::Function*> inline_funcs;
   for (auto &F : *M) {
@@ -3917,20 +3900,84 @@ std::shared_ptr<llvm::Module> ClaspJIT_O::optimizeModule(std::shared_ptr<llvm::M
 //    printf("%s:%d Erasing function: %s\n", __FILE__, __LINE__, f->getName().str().c_str());
     f->eraseFromParent();
   }
+}
+
+CL_DEFUN void llvm_sys__removeAlwaysInlineFunctions(llvm::Module* module)
+{
+  removeAlwaysInlineFunctions(module);
+}
+
+
+std::shared_ptr<llvm::Module> optimizeModule(std::shared_ptr<llvm::Module> M) {
+#if 0
+  // An attempt to move optimization into Common Lisp
+  Module_sp om = Module_O::create();
+  om->set_wrapped(&*M);
+  om = core::eval::funcall(comp::_sym_optimize_module_for_compile,om);
+  std::shared_ptr<llvm::Module> result(om->wrappedPtr());
+  printf("%s:%d  Returning module\n", __FILE__, __LINE__ );
+  return result;
+#else
+  // Optimize in C++
+  core::LightTimer timer;
+  timer.start();
+  // Create a function pass manager.
+  auto FPM = llvm::make_unique<llvm::legacy::FunctionPassManager>(M.get());
+
+  // Add some optimizations.
+  FPM->add(createInstructionCombiningPass());
+  FPM->add(createReassociatePass());
+  FPM->add(createNewGVNPass());
+  FPM->add(createCFGSimplificationPass());
+  FPM->add(createPromoteMemoryToRegisterPass());
+//  FPM->add(createFunctionInliningPass());
+  FPM->doInitialization();
+
+  // !!!! I run this after inlining again -
+  // - But if I don't run it here - it crashes when I try to clone the module for disassemble
+  // Run the optimizations over all functions in the module being added to the JIT.
+  for (auto &F : *M)
+    FPM->run(F);
   
+  llvm::legacy::PassManager my_passes;
+  my_passes.add(llvm::createFunctionInliningPass(4096));
+  my_passes.run(*M);
+
+    // After inlining - run the optimizations over all functions again
+  for (auto &F : *M)
+    FPM->run(F);
+  
+  // Silently remove llvm.used functions if they are defined
+  //     I may use this to prevent functions from being removed from the bitcode
+  //     by clang before we need them.
+  llvm::GlobalVariable* used = M->getGlobalVariable("llvm.used");
+  if (used) {
+    Value* init = used->getInitializer();
+    used->eraseFromParent();
+  }
+
+  removeAlwaysInlineFunctions(&*M);
   timer.stop();
   double thisTime = timer.getAccumulatedTime();
   accumulate_llvm_timing_data(thisTime);
 
   if ((!comp::_sym_STARsave_module_for_disassembleSTAR.unboundp()) &&
       comp::_sym_STARsave_module_for_disassembleSTAR->symbolValue().notnilp()) {
-    printf("%s:%d     About to save the module *save-module-for-disassemble*->%s\n",__FILE__, __LINE__, _rep_(comp::_sym_STARsave_module_for_disassembleSTAR->symbolValue()).c_str());
+    //printf("%s:%d     About to save the module *save-module-for-disassemble*->%s\n",__FILE__, __LINE__, _rep_(comp::_sym_STARsave_module_for_disassembleSTAR->symbolValue()).c_str());
     llvm::Module* o = &*M;
     std::unique_ptr<llvm::Module> cm = llvm::CloneModule(o);
     Module_sp module = core::RP_Create_wrapped<Module_O,llvm::Module*>(cm.release());
     comp::_sym_STARsaved_module_from_clasp_jitSTAR->setf_symbolValue(module);
   }
+  // Check if we should dump the module for debugging
+  {
+    Module_sp module = core::RP_Create_wrapped<Module_O,llvm::Module*>(&*M);
+    core::SimpleBaseString_sp label = core::SimpleBaseString_O::make("after-optimize");
+    core::eval::funcall(comp::_sym_compile_quick_module_dump,module,label);
+  }
+  //printf("%s:%d  Done optimizeModule\n", __FILE__, __LINE__ );
   return M;
+#endif
 }
 
 
@@ -3949,19 +3996,9 @@ ModuleHandle_O::~ModuleHandle_O() {
 
 CL_DEFUN core::Function_sp llvm_sys__jitFinalizeReplFunction(ClaspJIT_sp jit, ModuleHandle_sp handle, const string& replName, const string& startupName, const string& shutdownName, core::T_sp initialData, Function_sp fn, core::T_sp activationFrameEnvironment) {
   // Stuff to support MCJIT
-#if 0
-  printf("%s:%d     replName = %s\n", __FILE__, __LINE__, replName.c_str() );
-  printf("%s:%d  startupName = %s\n", __FILE__, __LINE__, startupName.c_str() );
-  printf("%s:%d shutdownName = %s\n", __FILE__, __LINE__, shutdownName.c_str() );
-#endif
   core::Pointer_sp replPtr = jit->findSymbolIn(handle,replName,false);
   core::Pointer_sp startupPtr = jit->findSymbolIn(handle,startupName,false);
   core::Pointer_sp shutdownPtr = jit->findSymbolIn(handle,shutdownName,false);
-#if 0
-  printf("%s:%d     replPtr = %s\n", __FILE__, __LINE__, _rep_(replPtr).c_str());
-  printf("%s:%d  startupPtr = %s\n", __FILE__, __LINE__, _rep_(startupPtr).c_str());
-  printf("%s:%d shutdownPtr = %s\n", __FILE__, __LINE__, _rep_(shutdownPtr).c_str());
-#endif
   core::CompiledClosure_fptr_type lisp_funcPtr = (core::CompiledClosure_fptr_type)(gc::As_unsafe<core::Pointer_sp>(replPtr)->ptr());
   gctools::smart_ptr<core::CompiledClosure_O> functoid =
     gctools::GC<core::CompiledClosure_O>::allocate( lisp_funcPtr,
@@ -3975,22 +4012,14 @@ CL_DEFUN core::Function_sp llvm_sys__jitFinalizeReplFunction(ClaspJIT_sp jit, Mo
   return functoid;
 }
 
-
-
 CL_DEFUN core::Function_sp llvm_sys__jitFinalizeDispatchFunction(ClaspJIT_sp jit, ModuleHandle_sp handle, const string& dispatchName, const string& startupName, const string& shutdownName, core::T_sp initialData ) {
-  // Stuff to support MCJIT
-//  printf("%s:%d dispatchName = %s\n", __FILE__, __LINE__, dispatchName.c_str() );
-//  printf("%s:%d  startupName = %s\n", __FILE__, __LINE__, startupName.c_str() );
-//  printf("%s:%d shutdownName = %s\n", __FILE__, __LINE__, shutdownName.c_str() );
   core::Pointer_sp dispatchPtr = jit->findSymbolIn(handle,dispatchName,false);
   core::Pointer_sp startupPtr = jit->findSymbolIn(handle,startupName,false);
   core::Pointer_sp shutdownPtr = jit->findSymbolIn(handle,shutdownName,false);
-//  printf("%s:%d dispatchPtr = %p\n", __FILE__, __LINE__, (void*)gc::As_unsafe<core::Pointer_sp>(dispatchPtr)->ptr());
-//  printf("%s:%d  startupPtr = %p\n", __FILE__, __LINE__, (void*)gc::As_unsafe<core::Pointer_sp>(startupPtr)->ptr() );
-//  printf("%s:%d shutdownPtr = %p\n", __FILE__, __LINE__, (void*)gc::As_unsafe<core::Pointer_sp>(shutdownPtr)->ptr() );
-  core::DispatchFunction_fptr_type dispatchFunction = (core::DispatchFunction_fptr_type)(gc::As_unsafe<core::Pointer_sp>(dispatchPtr)->ptr());
+  core::claspFunction dispatchFunction = (core::claspFunction)(gc::As_unsafe<core::Pointer_sp>(dispatchPtr)->ptr());
   core::ShutdownFunction_fptr_type shutdownFunction = (core::ShutdownFunction_fptr_type)(gc::As_unsafe<core::Pointer_sp>(shutdownPtr)->ptr());
   handle->set_shutdown_function(shutdownFunction);
+//  printf("%s:%d  jitFinalizeDispatchFunction %p\n", __FILE__, __LINE__, (void*)dispatchFunction);
   gctools::smart_ptr<core::CompiledDispatchFunction_O> functoid = gctools::GC<core::CompiledDispatchFunction_O>::allocate(core::SimpleBaseString_O::make(dispatchName), kw::_sym_dispatch_function, dispatchFunction, handle );
   void* pstartup = gc::As_unsafe<core::Pointer_sp>(startupPtr)->ptr();
   if (pstartup == NULL ) {

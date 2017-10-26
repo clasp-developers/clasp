@@ -46,65 +46,72 @@
 (defvar *primitives*)
 (export '*primitives*)
 
+;;; Bound thread-local when the builtins module is needed
+(defvar *thread-local-builtins-module* nil)
+
 ;;;(defvar *llvm-context* (llvm-sys:create-llvm-context))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Thread-local special variables to support the LLVM compiler
+;;;
+;;; To allow LLVM to run in different threads, certain things need to be thread local
+;;; 
 (mp:push-default-special-binding 'cmp:*llvm-context* '(llvm-sys:create-llvm-context))
 (mp:push-default-special-binding 'cmp:*primitives* nil)
-
+(mp:push-default-special-binding '*thread-local-builtins-module* nil)
 
 (defun dump-function (func)
   (warn "Do something with dump-function"))
 (export 'dump-function)
 
-(defvar *builtins-module* nil)
+(defun write-bitcode (module output-path)
+  ;; Write bitcode as either .bc files or .ll files
+  (if *use-human-readable-bitcode*
+      (let* ((filename (make-pathname :type "ll" :defaults (pathname output-path)))
+             (output-name (namestring filename))
+             (fout (open output-name :direction :output)))
+        (unwind-protect
+             (llvm-sys:dump-module module fout)
+          (close fout)))
+      (llvm-sys:write-bitcode-to-file module output-path)))
+
+(defun load-bitcode (filename)
+  (if *use-human-readable-bitcode*
+      (let* ((input-name (make-pathname :type "ll" :defaults (pathname filename))))
+        (llvm-sys:load-bitcode-ll input-name))
+      (llvm-sys:load-bitcode filename)))
+
+(defun parse-bitcode (filename context)
+  ;; Load a module from a bitcode or .ll file
+  (if *use-human-readable-bitcode*
+      (let ((input-name (make-pathname :type "ll" :defaults (pathname filename))))
+        (llvm-sys:parse-irfile input-name context))
+      (llvm-sys:parse-bitcode-file filename context)))
+
+(export '(write-bitcode load-bitcode parse-bitcode))
 
 (defun get-builtins-module ()
-  (if *builtins-module*
-      *builtins-module*
+  (if *thread-local-builtins-module*
+      *thread-local-builtins-module*
     (let* ((builtins-bitcode-name (namestring (truename (build-inline-bitcode-pathname :compile :builtins))))
-           (builtins-module (llvm-sys:parse-bitcode-file builtins-bitcode-name *llvm-context*)))
-      (llvm-sys:remove-useless-global-ctors builtins-module)
-      (setq *builtins-module* builtins-module)
-      builtins-module)))
+           (thread-local-builtins-module (llvm-sys:parse-bitcode-file builtins-bitcode-name *llvm-context*)))
+      (llvm-sys:remove-useless-global-ctors thread-local-builtins-module)
+      (setq *thread-local-builtins-module* thread-local-builtins-module)
+      thread-local-builtins-module)))
 
-(defun generate-target-triple ()
+(defun get-builtin-target-triple-and-data-layout ()
   "Uses *features* to generate the target triple for the current machine
 using features defined in corePackage.cc"
   (let ((builtins-module (get-builtins-module)))
-    (values (llvm-sys:get-target-triple builtins-module) (llvm-sys:get-data-layout-str builtins-module))
-    #+(or)(cond
-            ((and (member :target-os-darwin *features*)
-                  (member :address-model-64 *features*))
-             (values "x86_64-apple-macosx10.10.0" "e-m:o-i64:64-f80:128-n8:16:32:64-S128"))
-            ((and (member :target-os-linux *features*)
-                  (member :address-model-64 *features*))
-             (values "x86_64-pc-linux-gnu"       "e-m:e-i64:64-f80:128-n8:16:32:64-S128"))
-            (t (error "Could not identify target triple for features ~a" *features*)))))
-
-(defun generate-data-layout ()
-  (let* ((triple (generate-target-triple))
-         (target (llvm-sys:target-registry-lookup-target.string triple))
-         (target-options (llvm-sys:make-target-options))
-         (target-machine (llvm-sys:create-target-machine
-                          target
-                          triple
-                          ""
-                          ""
-                          target-options
-                          'llvm-sys:reloc-model-undefined
-                          'llvm-sys:code-model-default
-                          'llvm-sys:code-gen-opt-default)))
-    (llvm-sys:create-data-layout target-machine)))
-
-(defvar *default-target-triple* (generate-target-triple)
-  "The default target-triple for this machine")
-
-(defvar *default-data-layout* (generate-data-layout))
+    (values (llvm-sys:get-target-triple builtins-module) (llvm-sys:get-data-layout-str builtins-module))))
 
 (defun llvm-create-module (name)
   (let ((m (llvm-sys:make-module (string name) *llvm-context*)))
-    (llvm-sys:set-target-triple m *default-target-triple*)
-    (llvm-sys:set-data-layout m *default-data-layout*)
-    m))
+    (multiple-value-bind (target-triple data-layout)
+        (get-builtin-target-triple-and-data-layout)
+      (llvm-sys:set-target-triple m target-triple)
+      (llvm-sys:set-data-layout.string m data-layout)
+      m)))
 
 (defvar *run-time-module-counter* 1)
 (defun next-run-time-module-name ()
@@ -350,6 +357,7 @@ No DIBuilder is defined for the default module")
        ((string= lname "UNNAMED-LAMBDA") lname) ; this one is ok
        ((string= lname "lambda") lname)         ; this one is ok
        ((string= lname "ltv-literal") lname)    ; this one is ok
+       ((string= lname "disassemble") lname)    ; this one is ok
        (t (bformat t "jit-function-name lname = %s\n" lname)
           (break "Always pass symbol as name") lname)))
     ((symbolp lname)
@@ -446,7 +454,15 @@ The passed module is modified as a side-effect."
   (declare (type (or null llvm-sys:module) module))
   (when (and *optimizations-on* module)
     #++(let ((call-sites (call-sites-to-always-inline module)))
-      (bformat t "Call-sites -> %s\n" call-sites))
+         (bformat t "Call-sites -> %s\n" call-sites))
+    ;; Link in the builtins as part of the optimization
+    #+(or)(progn
+      (let ((linker (llvm-sys:make-linker module))
+            (builtins-clone (llvm-sys:clone-module (get-builtins-module))))
+        ;;(remove-always-inline-from-functions builtins-clone)
+        (quick-module-dump builtins-clone "builtins-clone")
+        (llvm-sys:link-in-module linker builtins-clone)))
+    
     (let* ((pass-manager-builder (llvm-sys:make-pass-manager-builder))
            (mpm (llvm-sys:make-pass-manager))
            (fpm (llvm-sys:make-function-pass-manager module))
@@ -458,11 +474,22 @@ The passed module is modified as a side-effect."
                      (t (error "Unsupported optimize-level ~a - only :-O3 :-O2 :-O1 :-O0 are allowed" optimize-level)))))
       (llvm-sys:pass-manager-builder-setf-opt-level pass-manager-builder olevel)
       (llvm-sys:pass-manager-builder-setf-size-level pass-manager-builder size-level)
-      (llvm-sys:populate-ltopass-manager pass-manager-builder mpm)
-      (llvm-sys:pass-manager-run mpm module)))
+      (progn
+        (llvm-sys:pass-manager-builder-setf-inliner pass-manager-builder (llvm-sys:create-always-inliner-legacy-pass))
+        (llvm-sys:populate-function-pass-manager pass-manager-builder fpm)
+        (llvm-sys:populate-module-pass-manager pass-manager-builder mpm))
+      #+(or)(llvm-sys:populate-ltopass-manager pass-manager-builder mpm)
+      (llvm-sys:pass-manager-run mpm module))
+    #+(or)(llvm-sys:remove-always-inline-functions module))
   module)
 
 
+(defun optimize-module-for-compile (module)
+  #+(or)(bformat *debug-io* "In optimize-module-for-compile\n")
+  #+(or)(llvm-sys:dump-module module)
+  module)
+
+#+(or)
 (defun optimize-module-for-compile (module &optional (optimize-level *optimization-level*) (size-level *size-level*))
   (declare (type (or null llvm-sys:module) module))
   (when (and *optimizations-on* module)
@@ -533,16 +560,21 @@ The passed module is modified as a side-effect."
   "This is a callback from llvmoExpose.cc::save_symbol_info for registering JITted symbols"
   (core:hash-table-setf-gethash *jit-saved-symbol-info* symbol-name-string symbol-info)
   (if (member :jit-log-symbols *features*)
-      (progn
-        (if (not (boundp '*jit-log-stream*))
-            (setq *jit-log-stream* (open (core:bformat nil "app-bitcode:%s.symbols" (core::build-configuration)) :direction :output)))
-        (princ (core:pointer-as-string (cadr symbol-info)) *jit-log-stream*)
-        (princ #\space *jit-log-stream*)
-        (princ (car symbol-info) *jit-log-stream*)
-        (princ #\space *jit-log-stream*)
-        (princ symbol-name-string *jit-log-stream*)
-        (terpri *jit-log-stream*)
-        (finish-output *jit-log-stream*))))
+      (unwind-protect
+           (progn
+             (mp:lock *jit-lock* t)
+             (if (not (boundp '*jit-log-stream*))
+                 (let ((filename (core:bformat nil "/tmp/clasp-symbols-%s" (core:getpid))))
+                   (core:bformat *debug-io* "Writing jitted symbols to %s\n" filename)
+                   (setq *jit-log-stream* (open filename :direction :output))))
+             (princ (core:pointer-as-string (cadr symbol-info)) *jit-log-stream*)
+             (princ #\space *jit-log-stream*)
+             (princ (car symbol-info) *jit-log-stream*)
+             (princ #\space *jit-log-stream*)
+             (princ symbol-name-string *jit-log-stream*)
+             (terpri *jit-log-stream*)
+             (finish-output *jit-log-stream*))
+        (mp:unlock *jit-lock*))))
 
 (progn
   (defvar *jit-engine* (make-cxx-object 'llvm-sys:clasp-jit))
@@ -558,19 +590,16 @@ The passed module is modified as a side-effect."
 (progn
   (defun jit-add-module-return-function (original-module repl-fn startup-fn shutdown-fn literals-list)
     ;; Link the builtins into the module and optimize them
+    (quick-module-dump original-module "before-link-builtins")
     (jit-link-builtins-module original-module)
     (if *jit-dump-module-before-optimizations*
         (llvm-sys:dump-module original-module))
     #+(or)(optimize-module-for-compile original-module)
-    #+(or)(quick-module-dump original-module "module after-optimize")
+    (quick-module-dump original-module "module-before-optimize")
     (let ((module original-module))
       ;;#+threads(mp:get-lock *jit-engine-mutex*)
       ;;    (bformat t "In jit-add-module-return-function dumping module\n")
       ;;    (llvm-sys:print-module-to-stream module *standard-output*)
-      (if *declare-dump-module*
-          (progn
-            (core:bformat t "Dumping module\n")
-            (llvm-sys:dump-module module)))
       (let* ((repl-name (llvm-sys:get-name repl-fn))
              (startup-name (llvm-sys:get-name startup-fn))
              (shutdown-name (llvm-sys:get-name shutdown-fn))

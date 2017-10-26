@@ -449,14 +449,14 @@ CL_DEFUN core::Fixnum gctools__next_header_kind()
 
 /*! initial_data is a gctools::Tagged pointer to a List of tagged pointers.
 */
-void initialize_gcroots_in_module(GCRootsInModule* roots, core::T_sp* root_address, size_t num_roots, gctools::Tagged initial_data) {
-  core::T_sp* shadow_mem = NULL;
+void initialize_gcroots_in_module(GCRootsInModule* roots, core::T_O** root_address, size_t num_roots, gctools::Tagged initial_data) {
+  core::T_O** shadow_mem = NULL;
 #ifdef USE_BOEHM
-  shadow_mem = reinterpret_cast<core::T_sp*>(boehm_create_shadow_table(num_roots));
+  shadow_mem = reinterpret_cast<core::T_O**>(boehm_create_shadow_table(num_roots));
 #endif
   // Get the address of the memory space in the llvm::Module
   uintptr_clasp_t address = reinterpret_cast<uintptr_clasp_t>(root_address);
-  core::T_sp* module_mem = reinterpret_cast<core::T_sp*>(address);
+  core::T_O** module_mem = reinterpret_cast<core::T_O**>(address);
 //  printf("%s:%d:%s address=%p nargs=%" PRu "\n", __FILE__, __LINE__, __FUNCTION__, (void*)address, nargs);
 //  printf("%s:%d:%s constants-table contents: vvvvv\n", __FILE__, __LINE__, __FUNCTION__ );
   // Create a GCRootsInModule structure to write the constants with
@@ -491,14 +491,14 @@ void shutdown_gcroots_in_module(GCRootsInModule* roots) {
 
 CL_LAMBDA(address args);
 CL_DEFUN void gctools__register_roots(core::T_sp taddress, core::List_sp args) {
-  core::T_sp* shadow_mem = NULL;
+  core::T_O** shadow_mem = NULL;
   size_t nargs = core::cl__length(args);
 #ifdef USE_BOEHM
-  shadow_mem = reinterpret_cast<core::T_sp*>(boehm_create_shadow_table(nargs));
+  shadow_mem = reinterpret_cast<core::T_O**>(boehm_create_shadow_table(nargs));
 #endif
   // Get the address of the memory space in the llvm::Module
   uintptr_clasp_t address = translate::from_object<uintptr_clasp_t>(taddress)._v;
-  core::T_sp* module_mem = reinterpret_cast<core::T_sp*>(address);
+  core::T_O** module_mem = reinterpret_cast<core::T_O**>(address);
 //  printf("%s:%d:%s address=%p nargs=%" PRu "\n", __FILE__, __LINE__, __FUNCTION__, (void*)address, nargs);
 //  printf("%s:%d:%s constants-table contents: vvvvv\n", __FILE__, __LINE__, __FUNCTION__ );
   // Create a ConstantsTable structure to write the constants with
@@ -583,9 +583,9 @@ int startupGarbageCollectorAndSystem(MainFunctionType startupFn, int argc, char 
 Tagged GCRootsInModule::set(size_t index, Tagged val) {
 #ifdef USE_BOEHM
   // shadow_memory is only used by Boehm
-  reinterpret_cast<core::T_sp*>(this->_boehm_shadow_memory)[index] = core::T_sp(val);
+  reinterpret_cast<core::T_O**>(this->_boehm_shadow_memory)[index] = reinterpret_cast<core::T_O*>(val);
 #endif
-  reinterpret_cast<core::T_sp*>(this->_module_memory)[index] = core::T_sp(val);
+  reinterpret_cast<core::T_O**>(this->_module_memory)[index] = reinterpret_cast<core::T_O*>(val);
   return val;
 }
 };
