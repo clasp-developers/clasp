@@ -173,10 +173,6 @@ namespace core {
 // thread local caches work fine
     /*! SingleDispatchGenericFunction cache */
     Cache_sp _SingleDispatchMethodCachePtr;
-    /*! Generic functions method cache */
-    Cache_sp _MethodCachePtr;
-    /*! Generic functions slot cache */
-    Cache_sp _SlotCachePtr;
 #endif
     /*! Pending interrupts */
     List_sp _PendingInterrupts;

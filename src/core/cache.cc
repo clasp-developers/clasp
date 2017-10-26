@@ -267,37 +267,6 @@ FOUND:
   return;
 }
 
-CL_LAMBDA();
-CL_DECLARE();
-CL_DOCSTRING("clearGenericFunctionDispatchCache");
-CL_DEFUN void core__clear_generic_function_dispatch_cache() {
-  printf("%s:%d Clearing generic function dispatch cache\n", __FILE__, __LINE__);
-  my_thread->_MethodCachePtr->empty();
-};
-
-
-CL_LAMBDA(pow);
-CL_DECLARE();
-CL_DOCSTRING("cache_resize - Resize the cache to 2^pow");
-CL_DEFUN void core__method_cache_resize(Fixnum pow) {
-  if (pow < 2 || pow > 64) {
-    SIMPLE_ERROR(BF("Cache power must be in the range of 2...64"));
-  }
-  size_t size = 1 << pow;
-  return my_thread->_MethodCachePtr->setup(Lisp_O::MaxFunctionArguments, size);
-}
-
-CL_LAMBDA(pow);
-CL_DECLARE();
-CL_DOCSTRING("cache_resize - Resize the cache to 2^pow");
-CL_DEFUN void core__slot_cache_resize(Fixnum pow) {
-  if (pow < 2 || pow > 64) {
-    SIMPLE_ERROR(BF("Cache power must be in the range of 2...64"));
-  }
-  size_t size = 1 << pow;
-  return my_thread->_SlotCachePtr->setup(Lisp_O::MaxClosSlots, size);
-}
-
 CL_LAMBDA(pow);
 CL_DECLARE();
 CL_DOCSTRING("cache_resize - Resize the cache to 2^pow");
@@ -312,23 +281,6 @@ CL_DEFUN void core__single_dispatch_method_cache_resize(Fixnum pow) {
 CL_LAMBDA();
 CL_DECLARE();
 CL_DOCSTRING("cache_status - (values searches misses total-depth)");
-CL_DEFUN T_mv core__method_cache_status() {
-  return Values(clasp_make_fixnum(my_thread->_MethodCachePtr->_searches),
-                clasp_make_fixnum(my_thread->_MethodCachePtr->_misses),
-                clasp_make_fixnum(my_thread->_MethodCachePtr->_total_depth));
-}
-CL_LAMBDA();
-CL_DECLARE();
-CL_DOCSTRING("cache_status - (values searches misses total-depth)");
-CL_DEFUN T_mv core__slot_cache_status() {
-  return Values(clasp_make_fixnum(my_thread->_SlotCachePtr->_searches),
-                clasp_make_fixnum(my_thread->_SlotCachePtr->_misses),
-                clasp_make_fixnum(my_thread->_SlotCachePtr->_total_depth));
-}
-
-CL_LAMBDA();
-CL_DECLARE();
-CL_DOCSTRING("cache_status - (values searches misses total-depth)");
 CL_DEFUN T_mv core__single_dispatch_method_cache_status() {
   return Values(clasp_make_fixnum(my_thread->_SingleDispatchMethodCachePtr->_searches),
                 clasp_make_fixnum(my_thread->_SingleDispatchMethodCachePtr->_misses),
@@ -337,44 +289,11 @@ CL_DEFUN T_mv core__single_dispatch_method_cache_status() {
 
 #ifdef DEBUG_CACHE
 CL_DOCSTRING("Turn debugging on and off for cache");
-CL_DEFUN void core__debug_method_cache(bool debug)
-{
-  my_thread->_MethodCachePtr->_debug = debug;
-}
-
-CL_DOCSTRING("Turn debugging on and off for cache");
-CL_DEFUN void core__debug_slot_cache(bool debug)
-{
-  my_thread->_SlotCachePtr->_debug = debug;
-}
-CL_DOCSTRING("Turn debugging on and off for cache");
 CL_DEFUN void core__debug_single_dispatch_method_cache(bool debug)
 {
   my_thread->_SingleDispatchMethodCachePtr->_debug = debug;
 }
 #endif
-
-CL_DEFUN void core__debug_search_method_cache(T_sp gf) {
-  for (int i(0); i < my_thread->_MethodCachePtr->_table.size(); ++i) {
-    if (gc::IsA<SimpleVector_sp>(my_thread->_MethodCachePtr->_table[i]._key)) {
-      SimpleVector_sp key = gc::As_unsafe<SimpleVector_sp>(my_thread->_MethodCachePtr->_table[i]._key);
-      if (gf == (*key)[0]) {
-        printf("%s:%d:%s    found key at %d\n", __FILE__, __LINE__, __FUNCTION__, i );
-      }
-    }
-  }
-}
-
-CL_DEFUN void core__debug_search_slot_cache(T_sp gf) {
-  for (int i(0); i < my_thread->_SlotCachePtr->_table.size(); ++i) {
-    if (gc::IsA<SimpleVector_sp>(my_thread->_SlotCachePtr->_table[i]._key)) {
-      SimpleVector_sp key = gc::As_unsafe<SimpleVector_sp>(my_thread->_SlotCachePtr->_table[i]._key);
-      if (gf == (*key)[0]) {
-        printf("%s:%d:%s    found key at %d\n", __FILE__, __LINE__, __FUNCTION__, i );
-      }
-    }
-  }
-}
 
 
    

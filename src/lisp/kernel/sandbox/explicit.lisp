@@ -187,6 +187,7 @@
         ,@(loop for name in slot-names
                 collect `(setf (slot-value ,object ',name) ',(slot-value object name)))))))
 
+#+(or) ; typecase
 (defun explicit:macroexpand-1 (form environment hook)
   (typecase form
     (symbol
@@ -204,6 +205,7 @@
            (values form nil))))
     (t (values form nil))))
 
+#+(or)
 (defun explicit:macroexpand (form environment hook)
   (loop with ever-expanded = nil
         do (multiple-value-bind (expansion expanded)

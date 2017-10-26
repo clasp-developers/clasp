@@ -306,10 +306,6 @@ class Lisp_O {
     // One set of caches for the entire system doesn't work with multi-threading
         /*! SingleDispatchGenericFunction cache */
     Cache_sp _SingleDispatchMethodCachePtr;
-    /*! Generic functions method cache */
-    Cache_sp _MethodCachePtr;
-    /*! Generic functions slot cache */
-    Cache_sp _SlotCachePtr;
 #endif
     GCRoots();
   };
@@ -549,8 +545,6 @@ public: // numerical constants
 #endif // ifdef CLASP_LONG_FLOAT
 public:
   Cache_sp singleDispatchMethodCachePtr() const { return my_thread->_SingleDispatchMethodCachePtr; };
-  Cache_sp methodCachePtr() const { return my_thread->_MethodCachePtr; };
-  Cache_sp slotCachePtr() const { return my_thread->_SlotCachePtr; };
 public:
   /*! Setup makePackage and exportSymbol callbacks */
   void setMakePackageAndExportSymbolCallbacks(MakePackageCallback mpc, ExportSymbolCallback esc);

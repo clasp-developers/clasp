@@ -140,9 +140,4 @@
             (core:low-level-standard-generic-function-name proto-gf)
             (generic-function-specializer-profile proto-gf))))
 
-(defun cache-status ()
-  (format t "                method-cache: ~a~%" (multiple-value-list (core:method-cache-status)))
-  (format t "single-dispatch-method-cache: ~a~%" (multiple-value-list (core:single-dispatch-method-cache-status)))
-  (format t "                  slot-cache: ~a~%" (multiple-value-list (core:slot-cache-status))))
-
-(export '(cache-status satiate-standard-generic-functions))
+(export '(satiate-standard-generic-functions))
