@@ -1656,13 +1656,16 @@ T_mv cc_multiple_value_prog1_function(core::T_mv* result, core::T_O* tfunc1, cor
 #endif
 
 
+gctools::return_type cc_dispatch_effective_method(core::T_O* teffective_method, core::T_O* tgf, core::T_O* tgf_args_vaslist) {
+  core::Function_sp effective_method((gctools::Tagged)teffective_method);
+  core::T_sp gf_vaslist((gctools::Tagged)tgf_args_vaslist);
+  return (*effective_method).entry(LCC_PASS_ARGS2_ELLIPSIS(teffective_method,gf_vaslist.raw_(),_Nil<core::T_O>().raw_()));
+}
+
+
 gctools::return_type cc_dispatch_miss(core::T_O* tgf, core::T_O* tgf_vaslist)
 {
   core::FuncallableInstance_sp gf((gctools::Tagged)tgf);
-  if (!gc::tagged_vaslistp(tgf_vaslist)) {
-    printf("%s:%d The argument to cc_dispatch_miss is not a tagged_vaslist\n", __FILE__, __LINE__ );
-    SIMPLE_ERROR(BF("cc_dispatch_miss did not get a tagged_vaslist as an argument"));
-  }
   core::VaList_sp gf_vaslist((gctools::Tagged)tgf_vaslist);
   core::T_mv result = core::eval::funcall(clos::_sym_dispatch_miss,gf,gf_vaslist);
 #ifdef DEBUG_GFDISPATCH
@@ -1670,6 +1673,7 @@ gctools::return_type cc_dispatch_miss(core::T_O* tgf, core::T_O* tgf_vaslist)
 #endif
   return result.as_return_type();
 }
+
 
 
 void cc_dispatch_debug(int msg_id, uintptr_clasp_t val)

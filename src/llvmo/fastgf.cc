@@ -78,9 +78,106 @@ BUILTIN_ATTRIBUTES int64_t cc_read_stamp(void* tagged_pointer)
   return 123456;
 }
 
+
 };
 
 
 
 
 
+extern "C" {
+
+
+BUILTIN_ATTRIBUTES core::T_O* cc_dispatch_slot_reader_index(size_t index, core::T_O* tinstance) {
+  core::Instance_sp instance((gctools::Tagged)tinstance);
+  core::T_sp value = low_level_instanceRef(instance->_Rack,index);
+  return value.raw_();
+}
+
+BUILTIN_ATTRIBUTES core::T_O* cc_dispatch_slot_reader_cons(core::T_O* toptinfo) {
+  core::SimpleVector_sp optinfo((gctools::Tagged)toptinfo);
+  core::Cons_sp cons = gc::As_unsafe<core::Cons_sp>((*optinfo)[OPTIMIZED_SLOT_INDEX_INDEX]);
+  core::T_sp value = CONS_CAR(cons);
+  return value.raw_();
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+BUILTIN_ATTRIBUTES void cc_vaslist_end(core::T_O* tvaslist) {
+  core::VaList_sp vaslist((gctools::Tagged)tvaslist);
+  va_end(vaslist->_Args);
+}
+
+
+BUILTIN_ATTRIBUTES core::T_O* cc_dispatch_slot_writer_cons(core::T_O* tvalue, core::T_O* toptinfo) {
+  core::SimpleVector_sp optinfo((gctools::Tagged)toptinfo);
+  core::Cons_sp cons = gc::As_unsafe<core::Cons_sp>((*optinfo)[OPTIMIZED_SLOT_INDEX_INDEX]);
+  core::T_sp value((gctools::Tagged)tvalue);
+  CONS_CAR(cons) = value;
+  return value.raw_();
+}
+
+BUILTIN_ATTRIBUTES core::T_O* cc_dispatch_slot_writer_index(core::T_O* tvalue, size_t index, core::T_O* tinstance) {
+  core::T_sp value((gctools::Tagged)tvalue);
+  core::Instance_sp instance((gctools::Tagged)tinstance);
+  low_level_instanceSet(instance->_Rack,index,value);
+  return value.raw_();
+}
+
+
+
+BUILTIN_ATTRIBUTES core::T_O* cc_bound_or_error(core::T_O* toptimized_slot_reader, core::T_O* tinstance, core::T_O* tvalue) {
+  core::T_sp value((gctools::Tagged)tvalue);
+  if (value.unboundp()) {
+    core::Instance_sp instance((gctools::Tagged)tinstance);
+    core::T_sp optimized_slot_info((gctools::Tagged)toptimized_slot_reader);
+    return llvmo::intrinsic_slot_unbound(optimized_slot_info,instance).raw_();
+  }
+  return value.raw_();
+}
+
+
+BUILTIN_ATTRIBUTES core::T_O* cc_fastgf_nil() {
+  return _Nil<core::T_O>().raw_();
+}
+
+
+BUILTIN_ATTRIBUTES core::T_O* cc_rewind_vaslist(core::Vaslist* vaslist, va_list va_args, void** register_save_areaP)
+{
+#if 0
+  if (core::debug_InvocationHistoryFrame==3) {
+    printf("%s:%d cc_rewind_va_list     va_args=%p     nargsP = %p      register_save_areaP = %p\n", __FILE__, __LINE__, va_args, nargsP, register_save_areaP );
+  }
+#endif
+  va_copy(vaslist->_Args,va_args);
+  LCC_REWIND_VA_LIST(vaslist->_Args,register_save_areaP);
+  vaslist->remaining_nargs() = (uintptr_t)register_save_areaP[1];
+  return gctools::tag_vaslist<core::T_O*>(vaslist);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+};

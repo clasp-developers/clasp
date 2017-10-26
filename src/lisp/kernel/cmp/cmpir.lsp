@@ -1277,12 +1277,16 @@ Write T_O* pointers into the current multiple-values array starting at the (offs
                                                              :initial-element (null-t-ptr)))
                                      args)))
     real-args))
-         
-(defun irc-funcall (result closure args &optional (label ""))
+
+(defun irc-funcall-results-in-registers (closure args &optional (label ""))
   (let* ((entry-point         (irc-calculate-entry closure))   ; Calculate the function pointer
          (real-args           (irc-calculate-real-args args))  ; fill in NULL for missing register arguments
-         (result-in-registers (irc-create-invoke entry-point (list* closure (jit-constant-size_t (length args)) real-args) *current-unwind-landing-pad-dest* label))
-         (_                   (irc-store-result result result-in-registers)))))
+         (result-in-registers (irc-call-or-invoke entry-point (list* closure (jit-constant-size_t (length args)) real-args) *current-unwind-landing-pad-dest* label)))
+    result-in-registers))
+
+(defun irc-funcall (result closure args &optional (label ""))
+  (let ((result-in-registers (irc-funcall-results-in-registers closure args label)))
+    (irc-store-result result result-in-registers)))
 
 ;----------------------------------------------------------------------
 

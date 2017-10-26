@@ -625,11 +625,11 @@
       ;; This is where I could insert the slot reader if the effective method wraps a single accessor
       ;;
       (debug-dispatch effective-method)
-      (let ((retval (irc-intrinsic-call-or-invoke "cc_dispatch_effective_method" (list effective-method
-                                                                                       (first (argument-holder-register-arguments arguments))
-                                                                                       (argument-holder-methods-vaslist-t* arguments)) "ret")))
-        (irc-store retval (argument-holder-return-value arguments))
-        (irc-br (argument-holder-continue-after-dispatch arguments))))))
+      (irc-funcall (argument-holder-return-value arguments)
+                   effective-method
+                   (list (argument-holder-methods-vaslist-t* arguments)
+                         (irc-intrinsic "cc_fastgf_nil")))
+      (irc-br (argument-holder-continue-after-dispatch arguments)))))
 
 (defun codegen-outcome (arguments cur-arg node)
   (cf-log "codegen-outcome\n")

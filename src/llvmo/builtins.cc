@@ -49,18 +49,6 @@ BUILTIN_ATTRIBUTES void cc_rewind_va_list(va_list va_args, size_t* nargsP, void*
   NO_UNWIND_END_BUILTINS();
 }
 
-BUILTIN_ATTRIBUTES core::T_O* cc_rewind_vaslist(core::Vaslist* vaslist, va_list va_args, void** register_save_areaP)
-{
-#if 0
-  if (core::debug_InvocationHistoryFrame==3) {
-    printf("%s:%d cc_rewind_va_list     va_args=%p     nargsP = %p      register_save_areaP = %p\n", __FILE__, __LINE__, va_args, nargsP, register_save_areaP );
-  }
-#endif
-  va_copy(vaslist->_Args,va_args);
-  LCC_REWIND_VA_LIST(vaslist->_Args,register_save_areaP);
-  vaslist->remaining_nargs() = (uintptr_t)register_save_areaP[1];
-  return gctools::tag_vaslist<core::T_O*>(vaslist);
-}
 
 /* cc_setup_vaslist
 
@@ -226,56 +214,8 @@ BUILTIN_ATTRIBUTES core::T_O *cc_readCell(core::T_O *cell)
 
 
 
-BUILTIN_ATTRIBUTES core::T_O* cc_dispatch_slot_reader_index(size_t index, core::T_O* tinstance) {
-  core::Instance_sp instance((gctools::Tagged)tinstance);
-  core::T_sp value = low_level_instanceRef(instance->_Rack,index);
-  return value.raw_();
-}
-
-BUILTIN_ATTRIBUTES core::T_O* cc_dispatch_slot_reader_cons(core::T_O* toptinfo) {
-  core::SimpleVector_sp optinfo((gctools::Tagged)toptinfo);
-  core::Cons_sp cons = gc::As_unsafe<core::Cons_sp>((*optinfo)[OPTIMIZED_SLOT_INDEX_INDEX]);
-  core::T_sp value = CONS_CAR(cons);
-  return value.raw_();
-}
-
-
-BUILTIN_ATTRIBUTES gctools::return_type cc_bound_or_error(core::T_O* toptimized_slot_reader, core::T_O* tinstance, core::T_O* tvalue) {
-  core::T_sp value((gctools::Tagged)tvalue);
-  if (value.unboundp()) {
-    core::Instance_sp instance((gctools::Tagged)tinstance);
-    core::T_sp optimized_slot_info((gctools::Tagged)toptimized_slot_reader);
-    return llvmo::intrinsic_slot_unbound(optimized_slot_info,instance).as_return_type();
-  }
-  return value.as_return_type();
-}
-
-BUILTIN_ATTRIBUTES gctools::return_type cc_dispatch_slot_writer_index(core::T_O* tvalue, size_t index, core::T_O* tinstance) {
-  core::T_sp value((gctools::Tagged)tvalue);
-  core::Instance_sp instance((gctools::Tagged)tinstance);
-  low_level_instanceSet(instance->_Rack,index,value);
-  return value.as_return_type();
-}
-
-BUILTIN_ATTRIBUTES gctools::return_type cc_dispatch_slot_writer_cons(core::T_O* tvalue, core::T_O* toptinfo) {
-  core::SimpleVector_sp optinfo((gctools::Tagged)toptinfo);
-  core::Cons_sp cons = gc::As_unsafe<core::Cons_sp>((*optinfo)[OPTIMIZED_SLOT_INDEX_INDEX]);
-  core::T_sp value((gctools::Tagged)tvalue);
-  CONS_CAR(cons) = value;
-  return value.as_return_type();
-}
-
-
-BUILTIN_ATTRIBUTES void cc_vaslist_end(core::T_O* tvaslist) {
-  core::VaList_sp vaslist((gctools::Tagged)tvaslist);
-  va_end(vaslist->_Args);
-}
-
-
-BUILTIN_ATTRIBUTES gctools::return_type cc_dispatch_effective_method(core::T_O* teffective_method, core::T_O* tgf, core::T_O* tgf_args_vaslist) {
-  core::Function_sp effective_method((gctools::Tagged)teffective_method);
-  core::T_sp gf_vaslist((gctools::Tagged)tgf_args_vaslist);
-  return (*effective_method).entry(LCC_PASS_ARGS2_ELLIPSIS(teffective_method,gf_vaslist.raw_(),_Nil<core::T_O>().raw_()));
-}
 
 };
+
+
+
