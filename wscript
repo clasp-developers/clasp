@@ -741,7 +741,7 @@ def configure(cfg):
 #    cfg.define("DEBUG_BCLASP_LISP",1)  # Generate debugging frames for all bclasp code - like declaim
 #    cfg.define("DEBUG_BOUNDS_ASSERT",1)
 #    cfg.define("DEBUG_SLOT_ACCESSORS",1)
-#    cfg.define("DISABLE_TYPE_INFERENCE",1)
+    cfg.define("DISABLE_TYPE_INFERENCE",1)
 # -----------------
 # defines that slow down program execution
 #  There are more defined in clasp/include/gctools/configure_memory.h
