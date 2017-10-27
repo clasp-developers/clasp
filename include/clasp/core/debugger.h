@@ -90,6 +90,9 @@ void af_gotoIhsNext();
 void af_gotoIhsPrev();
 void af_printCurrentIhsFrame();
 void af_evalPrint(const string &expr);
+
+// Generate a backtrace with JIT symbols resolved 
+void c_bt();
 };
 };
 #endif
