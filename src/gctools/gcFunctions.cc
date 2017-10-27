@@ -967,6 +967,22 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
 #endif
   if (buildReport) ss << (BF("DEBUG_FASTGF = %s\n") % (debug_fastgf ? "defined" : "undefined") ).str();
 
+  bool debug_rehash_count = false;
+#ifdef DEBUG_REHASH_COUNT
+  debug_rehash_count = true;
+  debugging = true;
+  if (setFeatures) features = core::Cons_O::create(_lisp->internKeyword("DEBUG-REHASH_COUNT"),features);
+#endif
+  if (buildReport) ss << (BF("DEBUG_REHASH_COUNT = %s\n") % (debug_rehash_count ? "defined" : "undefined") ).str();
+  
+  bool debug_monitor = false;
+#ifdef DEBUG_MONITOR
+  debug_monitor = true;
+  debugging = true;
+  if (setFeatures) features = core::Cons_O::create(_lisp->internKeyword("DEBUG-MONITOR"),features);
+#endif
+  if (buildReport) ss << (BF("DEBUG_MONITOR = %s\n") % (debug_monitor ? "defined" : "undefined") ).str();
+  
   bool debug_bclasp_lisp = false;
 #ifdef DEBUG_BCLASP_LISP
   debug_bclasp_lisp = true;
