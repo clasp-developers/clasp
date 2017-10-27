@@ -22,20 +22,7 @@
 
 
 ;;; ----------------------------------------------------------------------
-;;;                                                                  slots
-
-#|
-(defclass effective-slot-definition (slot-definition))
-
-(defclass direct-slot-definition (slot-definition))
-
-(defclass standard-slot-definition (slot-definition))
-
-(defclass standard-direct-slot-definition (standard-slot-definition direct-slot-definition))
-
-(defclass standard-effective-slot-definition (standard-slot-definition direct-slot-definition))
-|#
-
+;;;                                                for debugging this file
 
 ;;; This will print every form as its compiled
 #+(or)
@@ -47,68 +34,127 @@
 
 #+mlog
 (eval-when (:compile-toplevel :execute)
-  (core:debug-method-cache t)
   (setq core::*debug-dispatch* t))
 
+;;; ----------------------------------------------------------------------
+;;;                                     define generics for core functions
 
-(defmethod reader-method-class ((class std-class)
-				(direct-slot direct-slot-definition)
-				&rest initargs)
-  (declare (ignore class direct-slot initargs))
-  (find-class (if (member (class-name (class-of class))
-			  '(standard-class
-			    funcallable-standard-class
-			    structure-class))
-		  'standard-optimized-reader-method
-		  'standard-reader-method)))
+(defun function-to-method (name lambda-list specializers
+                           &optional (function (fdefinition name)))
+  (mlog "function-to-method: name -> %s specializers -> %s  lambda-list -> %s\n" name specializers lambda-list)
+  (mlog "function-to-method:  function -> %s\n" function)
+  ;; since we still have method.lsp's add-method in place, it will try to add
+  ;; the function-to-method-temp entry to *early-methods*. but then we unbind
+  ;; that, so things are a bit screwy. We do it more manually.
+  (let ((f (ensure-generic-function 'function-to-method-temp)) ; FIXME: just make an anonymous one?
+        (method
+          (let ((*early-methods* nil))
+            (install-method 'function-to-method-temp
+                            nil
+                            specializers
+                            lambda-list
+                            (lambda (.method-args. .next-methods.)
+                              (declare (core:lambda-name function-to-method.lambda))
+                              (mlog "In function-to-method.lambda  about to call %s with args %s\n" function (core:list-from-va-list .method-args.))
+                              (apply function .method-args.))))))
+    (mlog "function-to-method: installed method\n")
+    (setf (fdefinition name) f
+          (generic-function-name f) name)
+    (when (boundp '*early-methods*)
+      (push (cons name (list method)) *early-methods*)))
+  (fmakunbound 'function-to-method-temp))
 
+(function-to-method 'compute-applicable-methods
+                    '(generic-function arguments)
+                    '(standard-generic-function t)
+                    #'std-compute-applicable-methods)
 
-(defmethod writer-method-class ((class std-class)
-				(direct-slot direct-slot-definition)
-				&rest initargs)
-  (declare (ignore class direct-slot initargs))
-  (find-class (if (member (class-name (class-of class))
-			  '(standard-class
-			    funcallable-standard-class
-			    structure-class))
-		  'standard-optimized-writer-method
-		  'standard-reader-method)))
+(function-to-method 'compute-applicable-methods-using-classes
+                    '(generic-function classes)
+                    '(standard-generic-function t)
+                    #'std-compute-applicable-methods-using-classes)
+
+(function-to-method 'compute-effective-method
+                    '(generic-function method-combination applicable-methods)
+                    '(standard-generic-function method-combination t))
+
+(mlog "done with the first function-to-methods\n")
 
 ;;; ----------------------------------------------------------------------
-;;; Fixup
+;;;                                                                satiate
+
+;;; Every gf needs a specializer profile, not just satiated ones
+;;; They pretty much all need one, and before any gf calls, so we do this
+;;; before calling add-direct-method below
+
+(dolist (method-info *early-methods*)
+  (satiation-setup-specializer-profile
+   (fdefinition (car method-info))))
+
+(mlog "About to satiate\n")
+
+(satiate-standard-generic-functions)
+
+(mlog "Done satiating\n")
+
+;;; Generic functions can be called now!
+
+;;; ----------------------------------------------------------------------
+;;;                                                      make methods real
+
+;;; First generic function calls done here.
+
 (defun register-method-with-specializers (method)
   (declare (si::c-local))
   (loop for spec in (method-specializers method)
-     do (add-direct-method spec method)))
+        do (add-direct-method spec method)))
 
+(dolist (method-info *early-methods*)
+  (dolist (method (cdr method-info))
+    (register-method-with-specializers method)))
 
-(dolist (method-info *early-methods* (makunbound '*EARLY-METHODS*))
-  (let* ((method-name (car method-info))
-	 (gfun (fdefinition method-name))
-	 (standard-method-class (find-class 'standard-method)))
-    (when (eq 'T (class-id (si:instance-class gfun)))
-      ;; complete the generic function object
-      (si:instance-class-set gfun (find-class 'STANDARD-GENERIC-FUNCTION))
-      (si::instance-sig-set gfun)
-      (setf (slot-value gfun 'method-class) standard-method-class)
-      (setf (slot-value gfun 'docstring) nil)
-      )
-    (dolist (method (cdr method-info))
-      ;; complete the method object
-      (let ((old-class (si::instance-class method)))
-	(si::instance-class-set method
-				(cond ((null old-class)
-				       (find-class 'standard-method))
-				      ((symbolp old-class)
-				       (find-class (truly-the symbol old-class)))
-				      (t
-				       old-class))))
-      (si::instance-sig-set gfun)
-      (register-method-with-specializers method)
-      )
-    ))
+(makunbound '*early-methods*)
 
+;;; *early-methods* is used by the primitive add-method in method.lsp.
+;;; Avoid defining any new methods until the new add-method is installed.
 
+;;; ----------------------------------------------------------------------
+;;;                                       redefine ensure-generic-function
+
+;;; Uses generic functions properly now.
+;;; DEFMETHOD and INSTALL-METHOD and stuff call ensure-generic-function,
+;;; so after this they will do generic function calls.
+
+(defun ensure-generic-function (name &rest args &key &allow-other-keys)
+  (mlog "ensure-generic-function  name -> %s  args -> %s \n" name args)
+  (mlog "(not (fboundp name)) -> %s\n" (not (fboundp name)))
+  (let ((gfun (si::traced-old-definition name)))
+    (cond ((not (legal-generic-function-name-p name))
+	   (simple-program-error "~A is not a valid generic function name" name))
+          ((not (fboundp name))
+           (mlog "A gfun -> %s name -> %s  args -> %s\n" gfun name args)
+           ;;           (break "About to setf (fdefinition name)")
+           (mlog "#'ensure-generic-function-using-class -> %s\n" #'ensure-generic-function-using-class )
+	   (setf (fdefinition name)
+		 (apply #'ensure-generic-function-using-class gfun name args)))
+          ((si::instancep (or gfun (setf gfun (fdefinition name))))
+           (mlog "B\n")
+	   (let ((new-gf (apply #'ensure-generic-function-using-class gfun name args)))
+	     new-gf))
+	  ((special-operator-p name)
+           (mlog "C\n")
+	   (simple-program-error "The special operator ~A is not a valid name for a generic function" name))
+	  ((macro-function name)
+           (mlog "D\n")
+	   (simple-program-error
+            "The symbol ~A is bound to a macro and is not a valid name for a generic function" name))
+          ((not *clos-booted*)
+           (mlog "E\n")
+           (setf (fdefinition name)
+		 (apply #'ensure-generic-function-using-class nil name args))
+           (fdefinition name))
+	  (t
+	   (simple-program-error "The symbol ~A is bound to an ordinary function and is not a valid name for a generic function" name)))))
 
 ;;; ----------------------------------------------------------------------
 ;;;                                                              redefined
@@ -153,6 +199,7 @@
                                      (all-keywords keywords2))))
            t))))
 
+;;; It's possible we could use DEFMETHOD for these.
 
 (defun add-method (gf method)
   ;; during boot it's a structure accessor
@@ -205,98 +252,37 @@ and cannot be added to ~A." method other-gf gf)))
   (compute-g-f-spec-list gf)
   ;; Clasp must update the specializer-profile
   #+clasp
-  (when *clos-booted*
+  (progn
     (update-specializer-profile gf (method-specializers method))
     (update-generic-function-call-history-for-add-method gf method))
-  (set-generic-function-dispatch gf)
+  (set-funcallable-instance-function gf 'invalidated-dispatch-function)
   ;;  iv) Update dependents.
   (update-dependents gf (list 'add-method method))
   ;;  v) Register with specializers
   (register-method-with-specializers method)
   gf)
 
-(defun function-to-method (name specializers lambda-list)
-  (mlog "function-to-method name -> %s specializers -> %s  lambda-list -> %s\n" name specializers lambda-list)
-  (let ((function (fdefinition name)))
-    (mlog "function-to-method  function -> %s\n" function)
-    (install-method 'function-to-method-temp
-                    nil
-                    specializers
-                    lambda-list
-                    (lambda (.method-args. .next-methods. #| #+ecl &rest #+clasp &va-rest args |#)
-                      (declare (core:lambda-name function-to-method.lambda))
-                      (mlog "In function-to-method.lambda  about to call %s with args %s\n" function (core:list-from-va-list .method-args.))
-                      (apply function .method-args.)))  ;; FIXME - should this use bind-va-list???????
-    (setf (fdefinition name) #'function-to-method-temp
-          (generic-function-name #'function-to-method-temp) name)
-    (fmakunbound 'function-to-method-temp)))
-
 (defun remove-method (gf method)
   (setf (generic-function-methods gf)
 	(delete method (generic-function-methods gf))
 	(method-generic-function method) nil)
-  (si:clear-gfun-hash gf)
   (loop for spec in (method-specializers method)
      do (remove-direct-method spec method))
   (compute-g-f-spec-list gf)
   #+clasp
-  (when *clos-booted*
+  (progn
     (compute-and-set-specializer-profile gf)
     (update-generic-function-call-history-for-remove-method gf method))
-  (set-generic-function-dispatch gf)
+  (set-funcallable-instance-function gf 'invalidated-dispatch-function)
   (update-dependents gf (list 'remove-method method))
   gf)
 
 
 ;;(setq cmp:*debug-compiler* t)
-(function-to-method 'add-method '(standard-generic-function standard-method)
-                    '(gf method))
-(function-to-method 'remove-method '(standard-generic-function standard-method)
-                    '(gf method))
-
-(function-to-method 'find-method '(standard-generic-function t t)
-                    '(gf qualifiers specializers &optional error))
-
-;;; COMPUTE-APPLICABLE-METHODS is used by the core in various places,
-;;; including instance initialization. This means we cannot just redefine it.
-;;; Instead, we create an auxiliary function and move definitions from one to
-;;; the other.
-
-#+(or)
-(defgeneric aux-compute-applicable-methods (gf args)
-  (:method ((gf standard-generic-function) args)
-    (std-compute-applicable-methods gf args)))
-
-(defmethod aux-compute-applicable-methods ((gf standard-generic-function) args)
-  (std-compute-applicable-methods gf args))
-(let ((aux #'aux-compute-applicable-methods))
-  (setf (generic-function-name aux) 'compute-applicable-methods
-	(fdefinition 'compute-applicable-methods) aux))
-
-#+(or)
-(eval-when (:compile-toplevel :load-toplevel)
-  ;;#+(or)
-  (defgeneric aux-compute-applicable-methods (gf args)
-    (:method ((gf standard-generic-function) args)
-      (std-compute-applicable-methods gf args)))
-
-
-  (defmethod aux-compute-applicable-methods ((gf standard-generic-function) args)
-    (std-compute-applicable-methods gf args))
-
-
-  (let ((aux #'aux-compute-applicable-methods))
-    (setf (generic-function-name aux) 'compute-applicable-methods
-	  (fdefinition 'compute-applicable-methods) aux))
-)  
-
-(defmethod compute-applicable-methods-using-classes
-    ((gf standard-generic-function) classes)
-  (std-compute-applicable-methods-using-classes gf classes))
-
-(function-to-method 'compute-effective-method
-                    '(standard-generic-function t t)
-                    '(gf method-combination applicable-methods))
+(function-to-method 'add-method '(gf method) '(standard-generic-function standard-method))
+(function-to-method 'remove-method '(gf method) '(standard-generic-function standard-method))
+(function-to-method 'find-method '(gf qualifiers specializers &optional error)
+                    '(standard-generic-function t t))
 
 ;;; ----------------------------------------------------------------------
 ;;; Error messages
@@ -314,6 +300,7 @@ and cannot be added to ~A." method other-gf gf)))
 
 (defun no-primary-method (gf &rest args)
   (error "Generic function: ~A. No primary method given arguments: ~S"
+         ;; FIXME: Is the expand needed any more?
 	 (generic-function-name gf) (core:maybe-expand-generic-function-arguments args)))
 
 ;;; Now we protect classes from redefinition:
@@ -336,6 +323,21 @@ and cannot be added to ~A." method other-gf gf)))
       (t (error "~A is not a class." new-value))))
   new-value)
 )
+
+;;; ----------------------------------------------------------------------
+;;;                                                             miscellany
+
+(defmethod reader-method-class ((class std-class)
+				(direct-slot direct-slot-definition)
+				&rest initargs)
+  (declare (ignore class direct-slot initargs))
+  (find-class 'standard-reader-method))
+
+(defmethod writer-method-class ((class std-class)
+				(direct-slot direct-slot-definition)
+				&rest initargs)
+  (declare (ignore class direct-slot initargs))
+  (find-class 'standard-writer-method))
 
 ;;; ----------------------------------------------------------------------
 ;;; DEPENDENT MAINTENANCE PROTOCOL
@@ -388,44 +390,28 @@ and cannot be added to ~A." method other-gf gf)))
 
 
 (function-to-method 'make-method-lambda
-                    '(standard-generic-function standard-method t t)
-                    '(gf method lambda-form environment))
+                    '(gf method lambda-form environment)
+                    '(standard-generic-function standard-method t t))
 
-(function-to-method 'compute-discriminating-function
-                    '(standard-generic-function) '(gf))
+(function-to-method 'compute-discriminating-function '(gf)
+                    '(standard-generic-function))
 
-(function-to-method 'generic-function-method-class
-                    '(standard-generic-function) '(gf))
+(function-to-method 'generic-function-method-class '(gf)
+                    '(standard-generic-function))
 
 (function-to-method 'find-method-combination
-                    '(standard-generic-function t t)
-                    '(gf method-combination-type-name method-combination-options))
+                    '(gf method-combination-type-name method-combination-options)
+                    '(standard-generic-function t t))
 
-
-  
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
-;;;   Startup fastgf
+;;; Define a print-object method on T so that we can print
 ;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; This was moved from print.lsp
 
-;;; MUST initialize specializer-profiles
-;;; Because when the generic functions were set up they had no
-;;; lambda-list slot!!!!
-
-(defun startup-fastgf ()
-  (setf clos:*enable-fastgf* t)
-  (satiate-standard-generic-functions :verbose nil)
-  (loop for gf in (clos::all-generic-functions)
-     when (not (functionp (clos::get-funcallable-instance-function gf)))
-;;;     do (bformat t "switch-to-fastgf -> %s\n" gf)
-     do (switch-to-fastgf gf)))
-
-;;;#+(or)
-#-boehmdc
-(eval-when (:execute :load-toplevel)
-;;;(trace startup-fastgf satiate-standard-generic-functions satiate-generic-function)
-  (startup-fastgf))
-
+(defmethod print-object ((instance t) stream)
+  (print-unreadable-object (instance stream)
+    (let ((*package* (find-package "CL")))
+      (format stream "~S"
+	      (class-name (si:instance-class instance)))))
+  instance)

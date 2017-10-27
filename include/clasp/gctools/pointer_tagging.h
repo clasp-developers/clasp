@@ -243,7 +243,7 @@ ABI's  */
   static const char * tagged_unbound_str = "UNBOUND";
   static const char * tagged_deleted_str = "DELETED";
   static const char * tagged_same_as_key_str = "SAME-AS -EY";
-  static const char * tagged_valist_str = "VALIST";
+  static const char * tagged_vaslist_str = "VALIST";
   static const char * tagged_nil_str = "NIL";
   static const char * tagged_general_str = "GENERAL";
 
@@ -329,7 +329,7 @@ template <class T>
     return reinterpret_cast<T>(global_tagged_Symbol_OP_sameAsKey);
   }
   template <class T>
-    inline T tag_valist(core::Vaslist *p) {
+    inline T tag_vaslist(core::Vaslist *p) {
     GCTOOLS_ASSERT((reinterpret_cast<uintptr_clasp_t>(p) & tag_mask) == 0);
     return reinterpret_cast<T>(reinterpret_cast<uintptr_clasp_t>(p) + valist_tag);
   }
@@ -341,7 +341,7 @@ template <class T>
     return reinterpret_cast<T>(reinterpret_cast<uintptr_clasp_t>(ptr) - general_tag);
   }
   template <class T>
-    inline core::Vaslist* untag_valist(T ptr) {
+    inline core::Vaslist* untag_vaslist(T ptr) {
     GCTOOLS_ASSERT((reinterpret_cast<uintptr_clasp_t>(ptr) & tag_mask) == valist_tag);
     return reinterpret_cast<core::Vaslist*>(reinterpret_cast<uintptr_clasp_t>(ptr) - valist_tag);
   }
@@ -406,7 +406,7 @@ template <class T>
     return ((uintptr_clasp_t)(ptr) & tag_mask) == general_tag;
   }
   template <class T>
-    inline bool tagged_valistp(T ptr) {
+    inline bool tagged_vaslistp(T ptr) {
     return ((reinterpret_cast<uintptr_clasp_t>(ptr) & tag_mask) == valist_tag);
   };
 
@@ -451,9 +451,9 @@ template <class T>
       return std::string( tagged_same_as_key_str );
     }
 
-    if( tagged_valistp( tagged_obj )  )
+    if( tagged_vaslistp( tagged_obj )  )
     {
-      return std::string( tagged_valist_str );
+      return std::string( tagged_vaslist_str );
     }
 
     if( tagged_fixnump( tagged_obj )  )

@@ -69,13 +69,7 @@ using namespace core;
 #pragma GCC visibility push(default)
 
 namespace llvmo {
-core::T_sp  global_arg0;
-core::T_sp  global_arg1;
-core::T_sp  global_arg2;
 [[noreturn]] __attribute__((optnone))  void intrinsic_error(ErrorCode err, core::T_sp arg0, core::T_sp arg1, core::T_sp arg2) {
-  global_arg0 = arg0;
-  global_arg1 = arg1;
-  global_arg2 = arg2;
   switch (err) {
   case noFunctionBoundToSymbol:
     {
@@ -84,19 +78,13 @@ core::T_sp  global_arg2;
     }
     break;
   case badKeywordArgument:
-    SIMPLE_ERROR(BF("Bad keyword argument %s") % _rep_(arg0));
+      SIMPLE_ERROR(BF("Bad keyword argument %s") % _rep_(arg0));
   case couldNotCoerceToClosure:
-    SIMPLE_ERROR(BF(" symbol %s") % _rep_(arg0));
+      SIMPLE_ERROR(BF(" symbol %s") % _rep_(arg0));
   case destinationMustBeActivationFrame:
-    SIMPLE_ERROR(BF("Destination must be ActivationFrame"));
+      SIMPLE_ERROR(BF("Destination must be ActivationFrame"));
   case invalidIndexForFunctionFrame:
-    SIMPLE_ERROR(BF("Invalid index[%d] for FunctionFrame(size=%d)") % _rep_(arg0) % _rep_(arg1));
-  case no_applicable_reader_method:
-      core::eval::funcall(::cl::_sym_no_applicable_method,arg0,arg1);
-      UNREACHABLE();
-  case no_applicable_writer_method:
-      core::eval::funcall(::cl::_sym_no_applicable_method,arg0,arg1,arg2);
-      UNREACHABLE();
+      SIMPLE_ERROR(BF("Invalid index[%d] for FunctionFrame(size=%d)") % _rep_(arg0) % _rep_(arg1));
   case unboundSymbolValue:
     {
       core::Symbol_sp sym = gc::As<core::Symbol_sp>(arg0);
@@ -116,12 +104,24 @@ core::T_sp  global_arg2;
     {
       SIMPLE_ERROR(BF("The object with pointer %p is not a cell") % arg0.raw_());
     }
+  case slot_reader_problem: {
+    SIMPLE_ERROR(BF("TRAPPED SLOT READER PROBLEM!!!   The slot accessor efm returned %s and the direct slot read at %d returned %s") % _rep_(arg0) % _rep_(arg1) % _rep_(arg2));
+  }
+  case slot_writer_problem: {
+    SIMPLE_ERROR(BF("TRAPPED SLOT WRITER PROBLEM!!!   The expected slot at %d value %s was unchanged!  The value should be %s") % _rep_(arg0) % _rep_(arg1) % _rep_(arg2) );
+  }
   default:
-    SIMPLE_ERROR(BF("An intrinsicError %d was signaled and there needs to be a more descriptive error message for it in gctools::intrinsic_error arg0: %s arg1: %s arg2: %s") % err % _rep_(arg0) % _rep_(arg1) % _rep_(arg2));
+      SIMPLE_ERROR(BF("An intrinsicError %d was signaled and there needs to be a more descriptive error message for it in gctools::intrinsic_error arg0: %s arg1: %s arg2: %s") % err % _rep_(arg0) % _rep_(arg1) % _rep_(arg2));
   };
 };
+
 };
 
+namespace llvmo {
+core::T_sp intrinsic_slot_unbound(core::T_sp slot_info, core::T_sp instance ) {
+  return core::eval::funcall(clos::_sym_fastgf_slot_unbound,slot_info,instance);
+};
+};
 
 
 
@@ -531,7 +531,7 @@ NOINLINE void va_notEnoughArgumentsException(const char *funcName, std::size_t g
 NOINLINE extern void va_ifExcessKeywordArgumentsException(char *fnName, std::size_t nargs, Vaslist *varglist, size_t argIdx) {
   if (argIdx >= nargs)
     return;
-  Vaslist *vl = reinterpret_cast<Vaslist *>(gc::untag_valist((void *)varglist));
+  Vaslist *vl = reinterpret_cast<Vaslist *>(gc::untag_vaslist((void *)varglist));
   va_list vrest;
   va_copy(vrest, vl->_Args);
   stringstream ss;
@@ -644,15 +644,8 @@ void invokeTopLevelFunction(core::T_mv *resultP,
   (*onearg)[0] = *ltvPP; // Leave the tag on
   core::Vaslist onearg_valist_s(onearg);
   LCC_SPILL_CLOSURE_TO_VA_LIST(onearg_valist_s,tc.raw_());
-#ifdef USE_EXPENSIVE_BACKTRACE
-  // Why do this?
   core::InvocationHistoryFrame invFrame(onearg_valist_s._Args,onearg_valist_s.remaining_nargs());
-#endif
-#if 0
-  *resultP = fptr(LCC_PASS_ARGS1_VA_LIST(onearg[0])); // Was  (ltvP));
-#else
   *resultP = fptr(LCC_PASS_ARGS0_VA_LIST(tc.raw_()));
-#endif
 #ifdef TIME_TOP_LEVEL_FUNCTIONS
   if (core::_sym_STARdebugStartupSTAR->symbolValue().notnilp()) {
     core::Number_sp endTime = gc::As<core::Number_sp>(core::cl__get_internal_real_time());
@@ -806,7 +799,7 @@ extern core::T_O* setfSymbolFunctionRead(const core::T_O *tsymP)
 {NO_UNWIND_BEGIN();
  const core::Symbol_sp sym((gctools::Tagged)tsymP);
  core::Function_sp setfFunc = sym->getSetfFdefinition(); //_lisp->get_setfDefinition(*symP);
- ASSERTF(setfFunc, BF("There is no setf function bound to symbol[%s]") % _rep_((*symP)));
+ ASSERTF(setfFunc, BF("There is no setf function bound to symbol[%s]") % _rep_(sym));
  return setfFunc.raw_();
   NO_UNWIND_END();
 }
@@ -896,7 +889,7 @@ void debugPointer(const unsigned char *ptr)
 
 void debug_vaslistPtr(Vaslist *vargs)
 {NO_UNWIND_BEGIN();
-  Vaslist *args = reinterpret_cast<Vaslist *>(gc::untag_valist((void *)vargs));
+  Vaslist *args = reinterpret_cast<Vaslist *>(gc::untag_vaslist((void *)vargs));
   printf("++++++ debug_va_list: reg_save_area @%p \n", args->_Args[0].reg_save_area);
   printf("++++++ debug_va_list: gp_offset %d \n", args->_Args[0].gp_offset);
   printf("++++++      next reg arg: %p\n", (void *)(((uintptr_clasp_t *)((char *)args->_Args[0].reg_save_area + args->_Args[0].gp_offset))[0]));
@@ -1663,20 +1656,24 @@ T_mv cc_multiple_value_prog1_function(core::T_mv* result, core::T_O* tfunc1, cor
 #endif
 
 
-gctools::return_type cc_dispatch_miss(core::T_O* gf, core::T_O* gf_valist_s)
+gctools::return_type cc_dispatch_effective_method(core::T_O* teffective_method, core::T_O* tgf, core::T_O* tgf_args_vaslist) {
+  core::Function_sp effective_method((gctools::Tagged)teffective_method);
+  core::T_sp gf_vaslist((gctools::Tagged)tgf_args_vaslist);
+  return (*effective_method).entry(LCC_PASS_ARGS2_ELLIPSIS(teffective_method,gf_vaslist.raw_(),_Nil<core::T_O>().raw_()));
+}
+
+
+gctools::return_type cc_dispatch_miss(core::T_O* tgf, core::T_O* tgf_vaslist)
 {
-  core::Instance_sp tgf((gctools::Tagged)gf);
-  core::VaList_sp tgf_valist((gctools::Tagged)gf_valist_s);
-  if (!gc::tagged_valistp(gf_valist_s)) {
-    printf("%s:%d The argument to cc_dispatch_miss is not a tagged_valist\n", __FILE__, __LINE__ );
-    SIMPLE_ERROR(BF("cc_dispatch_miss did not get a tagged_valist as an argument"));
-  }
-  core::T_mv result = core::eval::funcall(clos::_sym_dispatch_miss,tgf,tgf_valist);
+  core::FuncallableInstance_sp gf((gctools::Tagged)tgf);
+  core::VaList_sp gf_vaslist((gctools::Tagged)tgf_vaslist);
+  core::T_mv result = core::eval::funcall(clos::_sym_dispatch_miss,gf,gf_vaslist);
 #ifdef DEBUG_GFDISPATCH
   printf("%s:%d  Returning from cc_dispatch_miss\n", __FILE__, __LINE__ );
 #endif
   return result.as_return_type();
 }
+
 
 
 void cc_dispatch_debug(int msg_id, uintptr_clasp_t val)
@@ -1735,11 +1732,10 @@ void cc_dispatch_debug(int msg_id, uintptr_clasp_t val)
   fflush(stdout);
 }
 
-void clasp_terminate(const char *file, size_t line, size_t column, const char *func)
-{NO_UNWIND_BEGIN();
-  printf("Terminating file: %s  func: %s\n", file, func);
+void clasp_terminate()
+{
+  printf("Terminating clasp from clasp_terminate\n");
   abort();
-  NO_UNWIND_END();
 }
 };
 
@@ -1756,4 +1752,33 @@ void initialize_link_intrinsics() {
 	printf("Called testTwoReturns  foo.raw_() = %p   foo.two = %d\n", foo.raw_(), foo.number_of_values() );
 #endif
 }
+};
+
+
+extern "C" {
+
+gctools::return_type cc_dispatch_slot_reader_index_debug(core::T_O* toptimized_slot_reader, size_t index, core::T_O* tvargs) {
+  core::SimpleVector_sp optimized_slot_reader((gctools::Tagged)toptimized_slot_reader);
+  core::VaList_sp vargs((gctools::Tagged)tvargs);
+  va_list vat;
+  va_copy(vat,vargs->_Args);
+  core::Instance_sp instance((gctools::Tagged)va_arg(vat,core::T_O*));
+  va_end(vat);
+  core::T_sp result = core::eval::funcall(clos::_sym_dispatch_slot_reader_index_debug,optimized_slot_reader,instance,vargs);
+  return result.as_return_type();
+}
+
+gctools::return_type cc_dispatch_slot_writer_index_debug(core::T_O* toptimized_slot_writer, size_t index, core::T_O* tvargs) {
+  core::SimpleVector_sp optimized_slot_writer((gctools::Tagged)toptimized_slot_writer);
+  core::VaList_sp vargs((gctools::Tagged)tvargs);
+  va_list vat;
+  va_copy(vat,vargs->_Args);
+  core::T_sp value((gctools::Tagged)va_arg(vat,core::T_O*));
+  core::Instance_sp instance((gctools::Tagged)va_arg(vat,core::T_O*));
+  va_end(vat);
+  core::T_sp result = core::eval::funcall(clos::_sym_dispatch_slot_writer_index_debug,optimized_slot_writer,value,instance,vargs);
+  return result.as_return_type();
+}
+
+
 };

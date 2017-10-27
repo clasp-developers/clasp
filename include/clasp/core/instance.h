@@ -46,6 +46,8 @@ namespace core {
 
   class Instance_O : public General_O {
     LISP_CLASS(core, CorePkg, Instance_O, "Instance",General_O);
+    // Store the stamp in slot 0 - so offset all the other slots
+#define RACK_SLOT_START 1
   // These must be exposed in core__class_slot_sanity_check()
 #define NUMBER_OF_SPECIALIZER_SLOTS 5
 #define CLASS_SLOT_OFFSET NUMBER_OF_SPECIALIZER_SLOTS
@@ -213,7 +215,17 @@ namespace core {
     virtual void describe(T_sp stream);
 
     void __write__(T_sp sout) const; // Look in write_ugly.cc
+
+
+
   }; // Instance class
+
+  #define OPTIMIZED_SLOT_INDEX_INDEX 1
+
+    template <class RackType_sp>
+    inline T_sp low_level_instanceRef(RackType_sp rack, size_t index) { return (*rack)[index+RACK_SLOT_START]; }
+  template <class RackType_sp>
+    inline void low_level_instanceSet(RackType_sp rack, size_t index, T_sp value) { (*rack)[index+RACK_SLOT_START] = value; }
 
 }; // core namespace
 

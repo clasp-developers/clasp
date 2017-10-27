@@ -472,6 +472,7 @@ jump to blocks within this tagbody."
     (let* ((renv (irc-load (irc-renv env)))
            (instruction (irc-intrinsic "makeTagbodyFrameSetParent" renv)))
       (irc-store instruction (irc-renv tagbody-env))
+      #+optimize-bclasp
       (push (make-tagbody-frame-maker :instruction instruction)
             *tagbody-frame-makers*))
     (irc-low-level-trace :tagbody)
@@ -531,6 +532,7 @@ jump to blocks within this tagbody."
                                            (jit-constant-size_t depth)
                                            (jit-constant-size_t index)
                                            start-renv)))
+           #+optimize-bclasp
            (push (make-throw-dynamic-go :instruction instruction
                                         :depth depth
                                         :index index

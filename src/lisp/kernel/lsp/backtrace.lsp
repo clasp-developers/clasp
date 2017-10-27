@@ -157,9 +157,10 @@
     
 (defun extract-backtrace-frame-name (line)
   ;; On OS X this is how we get the name part
-  (let* ((pos0 (position-if (lambda (c) (char/= c #\space)) line)) ; skip initial whitespace
-         (pos0e (position-if (lambda (c) (char= c #\space)) line :start pos0)) ; skip chars
-         (pos1 (position-if (lambda (c) (char/= c #\space)) line :start pos0e)) ; skip whitespace
+  ;; The format seems to be as follows:
+  ;; "framenumber    processname        address      functionname"
+  ;; with variable numbers of spaces. processname is always at character 4 so we start there.
+  (let* ((pos1 (position-if (lambda (c) (char/= c #\space)) line :start 4)) ; skip whitespace
          (pos1e (position-if (lambda (c) (char= c #\space)) line :start pos1)) ; skip chars
          (pos2 (position-if (lambda (c) (char/= c #\space)) line :start pos1e))
          (pos2e (position-if (lambda (c) (char= c #\space)) line :start pos2)) ; skip chars
@@ -216,27 +217,53 @@ is one way to eliminate frames that aren't interesting to the user."
           (when verbose (bformat t "     PUSHED!\n"))
           (push frame result))))
     (nreverse result)))
-      
-(defun btcl (&key all)
-  "Print backtrace of just common lisp frames"
-  (let ((l (if all
-               (common-lisp-backtrace-frames)
-               (common-lisp-backtrace-frames
-                :gather-start-trigger
-                (lambda (x)
-                  (eq 'core:universal-error-handler (backtrace-frame-function-name x)))))))
+
+;;; A quick and dirty way to work with btcl frames
+(defvar *current-btcl-frames* nil)
+(defvar *current-btcl-index* 0)
+(defun cbtcl-frame (index)
+  (elt *current-btcl-frames* index))
+
+(defun cbtcl-func (index)
+  (backtrace-frame-print-name (cbtcl-frame index)))
+
+(defun cbtcl-arguments (index)
+  (backtrace-frame-arguments (cbtcl-frame index)))
+
+(defun btcl-frames (&key all)
+  (setq *current-btcl-index* 0)
+  (let ((frames (if all
+                    (common-lisp-backtrace-frames)
+                    (common-lisp-backtrace-frames
+                     :gather-start-trigger
+                     (lambda (x)
+                       (eq 'core:universal-error-handler (backtrace-frame-function-name x)))))))
+    (setq *current-btcl-frames* frames)
+    frames))
+
+(defun btcl (&key all (args t))
+  "Print backtrace of just common lisp frames.  Set args to nil if you don't want arguments printed"
+  (let ((l (btcl-frames :all all))
+        (index 0))
     (dolist (e l)
       (let ((name (backtrace-frame-print-name e))
             (arguments (backtrace-frame-arguments e)))
         (if arguments
             (progn
-              (princ "(")
+              (prin1 (prog1 index (incf index)))
+              (princ " (")
               (princ name)
-              (dotimes (i (length arguments))
-                (princ #\space)
-                (prin1 (aref arguments i)))
-              (princ ")"))
+              (if (> (length arguments) 0)
+                  (progn
+                    (if args 
+                        (dotimes (i (length arguments))
+                          (princ #\space)
+                          (prin1 (aref arguments i)))
+                        (prin1 " -args-suppressed-"))
+                    (princ ")"))))
             (progn
+              (prin1 (prog1 index (incf index)))
+              (princ #\space )
               (princ name)))
         (terpri)))))
 

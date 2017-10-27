@@ -208,22 +208,30 @@
     (declare (core:lambda-name writer-closure.lambda))
     (si::instance-set object index value)))
 
-(labels ((generate-accessors (class)
-	   (declare (optimize speed (safety 0)))
-	   (if (and (typep class 'std-class)
-		    #+(or)(not (member (slot-value class 'name)
-				       '(slot-definition
-					 direct-slot-definition
-					 effective-slot-definition
-					 standard-slot-definition
-					 standard-direct-slot-definition
-					 standard-effective-slot-definition))))
-	       (std-class-generate-accessors class t)
-	       (loop for slotd in (slot-value class 'slots)
-		  for index = (slot-value slotd 'location)
-		  do (loop for reader in (slot-value slotd 'readers)
-			do (setf (fdefinition reader) (reader-closure index)))
-		  do (loop for writer in (slot-value slotd 'writers)
-			do (setf (fdefinition writer) (writer-closure index)))))
-	   (mapc #'generate-accessors (slot-value class 'direct-subclasses))))
-  (generate-accessors +the-t-class+))
+;;; Loop through the entire class hierarchy making accessors.
+;;; Some classes may be reachable from multiple superclasses, so we have to
+;;; track which ones we've already generated accessors for (the early add-method
+;;; never replaces old methods, even with the same specializers and qualifiers!)
+
+(let ((seen nil))
+  (labels ((generate-accessors (class)
+             (cond ((find class seen) (return-from generate-accessors))
+                   ((and (typep class 'std-class)
+                         #+(or)(not (member (slot-value class 'name)
+                                            '(slot-definition
+                                              direct-slot-definition
+                                              effective-slot-definition
+                                              standard-slot-definition
+                                              standard-direct-slot-definition
+                                              standard-effective-slot-definition))))
+                    (std-class-generate-accessors class t))
+                   (t
+                    (loop for slotd in (slot-value class 'slots)
+                          for index = (slot-value slotd 'location)
+                          do (loop for reader in (slot-value slotd 'readers)
+                                   do (setf (fdefinition reader) (reader-closure index)))
+                          do (loop for writer in (slot-value slotd 'writers)
+                                   do (setf (fdefinition writer) (writer-closure index))))))
+             (push class seen)
+             (mapc #'generate-accessors (slot-value class 'direct-subclasses))))
+    (generate-accessors +the-t-class+)))

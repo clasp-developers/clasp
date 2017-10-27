@@ -702,10 +702,6 @@ void Lisp_O::startupLispEnvironment(Bundle *bundle) {
     // initialize caches
     my_thread->_SingleDispatchMethodCachePtr = gc::GC<Cache_O>::allocate();
     my_thread->_SingleDispatchMethodCachePtr->setup(2, Lisp_O::SingleDispatchMethodCacheSize);
-    my_thread->_MethodCachePtr = gctools::GC<Cache_O>::allocate();
-    my_thread->_MethodCachePtr->setup(Lisp_O::MaxFunctionArguments, Lisp_O::ClosCacheSize);
-    my_thread->_SlotCachePtr = gctools::GC<Cache_O>::allocate();
-    my_thread->_SlotCachePtr->setup(Lisp_O::MaxClosSlots, Lisp_O::ClosCacheSize);
   }
 //  printf("%s:%d  After my_thread->initialize_thread  my_thread->_Process -> %p\n", __FILE__, __LINE__, (void*)my_thread->_Process.raw_());
   {
@@ -1394,29 +1390,14 @@ void Lisp_O::parseCommandLineArguments(int argc, char *argv[], const CommandLine
   features = Cons_O::create(_lisp->internKeyword("USE-AMC-POOL"), features);
 #endif
 #endif
-#ifdef USE_EXPENSIVE_BACKTRACE
-  features = Cons_O::create(_lisp->internKeyword("USE-EXPENSIVE-BACKTRACE"), features);
-#endif
-#ifdef DEBUG_GUARD
-  features = Cons_O::create(_lisp->internKeyword("DEBUG-GUARD"), features);
-#endif
-#ifdef DEBUG_ENSURE_VALID_OBJECT
-  features = Cons_O::create(_lisp->internKeyword("DEBUG-ENSURE-VALID-OBJECT"),features);
-#endif  
 #ifdef CLASP_THREADS
   features = Cons_O::create(_lisp->internKeyword("THREADS"),features);
 #endif
-#ifdef METER_ALLOCATIONS
-  features = Cons_O::create(_lisp->internKeyword("METER-ALLOCATIONS"),features);
-#endif
-#ifdef ENABLE_PROFILING
-  features = Cons_O::create(_lisp->internKeyword("ENABLE-PROFILING"),features);
-#endif
-#ifdef DEBUG_FASTGF
-  features = Cons_O::create(_lisp->internKeyword("DEBUG-FASTGF"),features);
-#endif
-  
   cl::_sym_STARfeaturesSTAR->setf_symbolValue(features);
+  // Set additional features for debugging flags
+  //  pass a dummy stringstream that builds a report
+  stringstream ss;
+  gctools::debugging_configuration(true,false,ss);
 
   SYMBOL_EXPORT_SC_(CorePkg, STARprintVersionOnStartupSTAR);
   _sym_STARprintVersionOnStartupSTAR->defparameter(_lisp->_boolean(options._Version));
@@ -1424,7 +1405,7 @@ void Lisp_O::parseCommandLineArguments(int argc, char *argv[], const CommandLine
   _sym_STARsilentStartupSTAR->defparameter(_lisp->_boolean(options._SilentStartup));
   if (!options._SilentStartup) {
     stringstream sdebug;
-    bool debugging = gctools::debugging_configuration(sdebug);
+    bool debugging = gctools::debugging_configuration(false,true,sdebug);
     if ( debugging ) {
       printf("%s:%d Debugging flags are set - configuration:\n%s\n", __FILE__, __LINE__, sdebug.str().c_str());
     }
@@ -1777,10 +1758,24 @@ CL_DEFUN T_mv core__getline(String_sp prompt) {
 */
 
 
+CL_DOCSTRING("lookup-class-with-stamp");
+CL_DEFUN T_sp core__lookup_class_with_stamp(Fixnum stamp) {
+  WITH_READ_LOCK(_lisp->_Roots._ClassTableMutex);
+  HashTable_sp classNames = _lisp->_Roots._ClassTable;
+  T_sp foundClass = _Nil<T_O>();
+  classNames->maphash([stamp,&foundClass] (T_sp key, T_sp tclass_) {
+      Class_sp class_ = gc::As<Class_sp>(tclass_);
+      if (class_->CLASS_stamp_for_instances() == stamp) {
+        foundClass = class_;
+      }
+    } );
+  return foundClass;
+}
+
 CL_LAMBDA(symbol &optional (errorp t) env);
 CL_DECLARE();
 CL_DOCSTRING("find-class");
-CL_DEFUN Class_mv core__lookup_class(Symbol_sp symbol, bool errorp, T_sp env) {
+CL_DEFUN Class_mv cl__find_class(Symbol_sp symbol, bool errorp, T_sp env) {
   ASSERTF(env.nilp(), BF("Handle non nil environment"));
   // Should only be single threaded here
   if (_lisp->bootClassTableIsValid()) {
@@ -1837,13 +1832,6 @@ CL_DEFUN Class_mv core__set_class(T_sp newValue, Symbol_sp name) {
   }
 };
 
-
-CL_LAMBDA(symbol &optional (errorp t) env);
-CL_DECLARE();
-CL_DOCSTRING("find-class");
-CL_DEFUN Class_mv cl__find_class(Symbol_sp symbol, bool errorp, T_sp env) {
-  return core__lookup_class(symbol,errorp,env);
-}
 
 CL_LAMBDA(new-value name);
 CL_DECLARE();

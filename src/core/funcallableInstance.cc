@@ -46,7 +46,6 @@ THE SOFTWARE.
 #include <clasp/core/hashTableEq.h>
 #include <clasp/core/evaluator.h>
 #include <clasp/core/genericFunction.h>
-#include <clasp/core/accessor.h>
 #include <clasp/core/funcallableInstance.h>
 #include <clasp/core/wrappers.h>
 
@@ -167,6 +166,11 @@ T_sp FuncallableInstance_O::instanceSet(size_t idx, T_sp val) {
   client_validate(this->_Rack);
 #endif
   return val;
+}
+
+CL_DEFUN T_sp core__low_level_standard_generic_function_name(FuncallableInstance_sp gfun)
+{
+  return gfun->GFUN_NAME();
 }
 
 string FuncallableInstance_O::__repr__() const {
@@ -545,51 +549,33 @@ void FuncallableInstance_O::ensureClosure(DispatchFunction_fptr_type entryPoint)
 };
 
 T_sp FuncallableInstance_O::setFuncallableInstanceFunction(T_sp functionOrT) {
-  if (this->_isgf == CLASP_USER_DISPATCH) {
-    this->reshapeInstance(-1);
-    this->_isgf = CLASP_NOT_FUNCALLABLE;
-  }
   SYMBOL_EXPORT_SC_(ClPkg, standardGenericFunction);
   SYMBOL_SC_(ClosPkg, standardOptimizedReaderFunction);
   SYMBOL_SC_(ClosPkg, standardOptimizedWriterFunction);
   SYMBOL_SC_(ClosPkg, invalidated_dispatch_function );
-  if (functionOrT == _lisp->_true()) {
-    this->_isgf = CLASP_STANDARD_DISPATCH;
-    FuncallableInstance_O::ensureClosure(&generic_function_dispatch);
-  } else if (functionOrT == cl::_sym_standardGenericFunction) {
-    this->_isgf = CLASP_RESTRICTED_DISPATCH;
-    FuncallableInstance_O::ensureClosure(&generic_function_dispatch);
-  } else if (functionOrT == clos::_sym_invalidated_dispatch_function) {
+  if (functionOrT == clos::_sym_invalidated_dispatch_function) {
     this->_isgf = CLASP_INVALIDATED_DISPATCH;
+    // FIXME Jump straight to the invalidated-dispatch-function
+    this->entry = this->entry_point;
     FuncallableInstance_O::ensureClosure(&invalidated_dispatch);
   } else if (functionOrT.nilp()) {
     this->_isgf = CLASP_NOT_FUNCALLABLE;
+    this->entry = this->entry_point;
     FuncallableInstance_O::ensureClosure(&not_funcallable_dispatch);
-  } else if (functionOrT == clos::_sym_standardOptimizedReaderMethod) {
-    /* WARNING: We assume that f(a,...) behaves as f(a,b) */
-    this->_isgf = CLASP_READER_DISPATCH;
-    // TODO: Switch to using slotReaderDispatch like ECL for improved performace
-    //	    this->_Entry = &slotReaderDispatch;
-    //FuncallableInstance_O::ensureClosure(&generic_function_dispatch);
-    FuncallableInstance_O::ensureClosure(&optimized_slot_reader_dispatch);
-  } else if (functionOrT == clos::_sym_standardOptimizedWriterMethod) {
-    /* WARNING: We assume that f(a,...) behaves as f(a,b) */
-    this->_isgf = CLASP_WRITER_DISPATCH;
-    FuncallableInstance_O::ensureClosure(&optimized_slot_writer_dispatch);
   } else if (gc::IsA<CompiledDispatchFunction_sp>(functionOrT)) {
     this->_isgf = CLASP_FASTGF_DISPATCH;
     this->GFUN_DISPATCHER_set(functionOrT);
-    FuncallableInstance_O::ensureClosure(gc::As_unsafe<CompiledDispatchFunction_sp>(functionOrT)->entryPoint());
-  } else if (!cl__functionp(functionOrT)) {
+    this->entry = gc::As_unsafe<CompiledDispatchFunction_sp>(functionOrT)->entry;
+//    FuncallableInstance_O::ensureClosure(gc::As_unsafe<CompiledDispatchFunction_sp>(functionOrT)->entryPoint());
+  } else if (gc::IsA<Function_sp>(functionOrT)) {
+    printf("%s:%d  Installing CLASP_USER_DISPATCH: %s\n", __FILE__, __LINE__, _rep_(functionOrT).c_str());
+    this->_isgf = CLASP_USER_DISPATCH;
+    this->entry = gc::As_unsafe<Function_sp>(functionOrT)->entry;
+  } else {
     TYPE_ERROR(functionOrT, cl::_sym_function);
     //SIMPLE_ERROR(BF("Wrong type argument: %s") % functionOrT->__repr__());
-  } else {
-    printf("%s:%d  Installing CLASP_USER_DISPATCH: %s\n", __FILE__, __LINE__, _rep_(functionOrT).c_str());
-    this->reshapeInstance(+1);
-    (*this->_Rack)[this->_Rack->length() - 1] = functionOrT;
-    this->_isgf = CLASP_USER_DISPATCH;
-    FuncallableInstance_O::ensureClosure(&user_function_dispatch);
   }
+
   return ((this->sharedThis<FuncallableInstance_O>()));
 }
 
@@ -618,6 +604,13 @@ void FuncallableInstance_O::describe(T_sp stream) {
   clasp_write_string(ss.str(), stream);
 }
 
+CL_DEFUN void core__set_funcallable_instance_debug_on(FuncallableInstance_sp instance, bool debugOn) {
+  instance->_DebugOn = debugOn;
+}
+
+CL_DEFUN bool core__get_funcallable_instance_debug_on(FuncallableInstance_sp instance) {
+  return instance->_DebugOn;
+}
 
 
 
@@ -713,18 +706,10 @@ CL_DEFUN List_sp clos__call_history_find_key(List_sp generic_function_call_histo
 CL_DEFUN T_mv clos__getFuncallableInstanceFunction(T_sp obj) {
   if (FuncallableInstance_sp iobj = obj.asOrNull<FuncallableInstance_O>()) {
     switch (iobj->_isgf) {
-    case CLASP_STANDARD_DISPATCH:
-        return Values(_lisp->_true(),Pointer_O::create((void*)iobj->_entryPoint.load()));
-    case CLASP_RESTRICTED_DISPATCH:
-        return Values(cl::_sym_standardGenericFunction,Pointer_O::create((void*)iobj->_entryPoint.load()));
-    case CLASP_READER_DISPATCH:
-        return Values(clos::_sym_standardOptimizedReaderMethod,Pointer_O::create((void*)iobj->_entryPoint.load()));
-    case CLASP_WRITER_DISPATCH:
-        return Values(clos::_sym_standardOptimizedWriterMethod,Pointer_O::create((void*)iobj->_entryPoint.load()));
     case CLASP_USER_DISPATCH:
         return Values(iobj->userFuncallableInstanceFunction(),Pointer_O::create((void*)iobj->_entryPoint.load()));
     case CLASP_FASTGF_DISPATCH:
-        return Values(iobj->GFUN_DISPATCHER(),Pointer_O::create((void*)iobj->_entryPoint.load()));
+        return Values(iobj->GFUN_DISPATCHER(),Pointer_O::create((void*)iobj->entry));
     case CLASP_INVALIDATED_DISPATCH:
         return Values(clos::_sym_invalidated_dispatch_function,Pointer_O::create((void*)iobj->_entryPoint.load()));
     case CLASP_NOT_FUNCALLABLE:

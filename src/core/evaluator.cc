@@ -115,13 +115,13 @@ CL_DEFUN T_mv cl__apply(T_sp head, VaList_sp args) {
     Vaslist valist_struct(frame);
     VaList_sp valist(&valist_struct); // = frame.setupVaList(valist_struct);;
     return funcall_consume_valist_<core::Function_O>(func.tagged_(), valist);
-  } else if (gctools::tagged_valistp(lastArgRaw) && lenArgs == 1) {
+  } else if (gctools::tagged_vaslistp(lastArgRaw) && lenArgs == 1) {
 //    printf("%s:%d apply with one argument and its a valist\n", __FILE__, __LINE__ );
     VaList_sp valast((gc::Tagged)lastArgRaw);
     Vaslist valast_copy(*valast);
     VaList_sp valast_copy_sp(&valast_copy);
     return funcall_consume_valist_<core::Function_O>(func.tagged_(), valast_copy_sp);
-  } else if (gctools::tagged_valistp(lastArgRaw)) {
+  } else if (gctools::tagged_vaslistp(lastArgRaw)) {
     // The last argument is a VaList - so we need to create a new frame
     // to hold the contents of the two lists of arguments
     VaList_sp valast((gc::Tagged)lastArgRaw);
@@ -218,7 +218,7 @@ gctools::return_type fast_apply_general(T_O* func_tagged, T_O* args_tagged) {
 template <typename... FixedArgs>
 LCC_RETURN fast_apply_(T_O* function_tagged, T_O* rest_args_tagged, FixedArgs&&...fixedArgs) {
   int nargs;
-  LIKELY_if ( gctools::tagged_valistp(rest_args_tagged) ) {
+  LIKELY_if ( gctools::tagged_vaslistp(rest_args_tagged) ) {
     VaList_sp rest_args_as_VaList_sp((gctools::Tagged)rest_args_tagged);
     Vaslist va_rest_copy_S(*rest_args_as_VaList_sp);
     VaList_sp va_rest_args(&va_rest_copy_S);
@@ -1071,8 +1071,8 @@ T_mv sp_tagbody(List_sp args, T_sp env) {
   // Find all the tags and tell the TagbodyEnvironment where they are in the list of forms.
   //
   for (auto cur : args) {
-    T_sp tagOrForm = oCar(cur);
-    if (cl__symbolp(tagOrForm)) {
+    T_sp tagOrForm = CONS_CAR(cur);
+    if (!tagOrForm.consp() && cl__symbolp(tagOrForm)) {
       Symbol_sp tag = gc::As<Symbol_sp>(tagOrForm);
       // The tag is associated with its position in list of forms
       tagbodyEnv->addTag(tag, cur);
@@ -1083,8 +1083,8 @@ T_mv sp_tagbody(List_sp args, T_sp env) {
   int frame = my_thread->exceptionStack().push(TagbodyFrame, tagbodyId);
   // Start to evaluate the tagbody
   List_sp ip = args;
-  while (ip.notnilp()) {
-    T_sp tagOrForm = oCar(ip);
+  while (ip.consp()) {
+    T_sp tagOrForm = CONS_CAR(ip);
     if ((tagOrForm).consp()) {
       try {
         eval::evaluate(tagOrForm, tagbodyEnv);
@@ -1102,7 +1102,7 @@ T_mv sp_tagbody(List_sp args, T_sp env) {
         ip = tagbodyEnv->codePos(index);
       }
     }
-    ip = oCdr(ip);
+    ip = CONS_CDR(ip);
   }
   LOG(BF("Leaving sp_tagbody"));
   my_thread->exceptionStack().unwind(frame);
@@ -2052,7 +2052,7 @@ struct InterpreterTrace {
   };
 };
 
-DONT_OPTIMIZE_WHEN_DEBUG_RELEASE T_mv evaluate(T_sp exp, T_sp environment) {
+T_mv evaluate(T_sp exp, T_sp environment) {
   //	    Environment_sp localEnvironment = environment;
   //            printf("%s:%d evaluate %s environment@%p\n", __FILE__, __LINE__, _rep_(exp).c_str(), environment.raw_());
   //            printf("    environment: %s\n", _rep_(environment).c_str() );

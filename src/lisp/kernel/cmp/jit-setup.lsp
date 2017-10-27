@@ -46,10 +46,19 @@
 (defvar *primitives*)
 (export '*primitives*)
 
+;;; Bound thread-local when the builtins module is needed
+(defvar *thread-local-builtins-module* nil)
+
 ;;;(defvar *llvm-context* (llvm-sys:create-llvm-context))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Thread-local special variables to support the LLVM compiler
+;;;
+;;; To allow LLVM to run in different threads, certain things need to be thread local
+;;; 
 (mp:push-default-special-binding 'cmp:*llvm-context* '(llvm-sys:create-llvm-context))
 (mp:push-default-special-binding 'cmp:*primitives* nil)
-
+(mp:push-default-special-binding '*thread-local-builtins-module* nil)
 
 (defun dump-function (func)
   (warn "Do something with dump-function"))
@@ -81,57 +90,28 @@
 
 (export '(write-bitcode load-bitcode parse-bitcode))
 
-
-(defvar *builtins-module* nil)
-
 (defun get-builtins-module ()
-  (if *builtins-module*
-      *builtins-module*
+  (if *thread-local-builtins-module*
+      *thread-local-builtins-module*
     (let* ((builtins-bitcode-name (namestring (truename (build-inline-bitcode-pathname :compile :builtins))))
-           (builtins-module (llvm-sys:parse-bitcode-file builtins-bitcode-name *llvm-context*)))
-      (llvm-sys:remove-useless-global-ctors builtins-module)
-      (setq *builtins-module* builtins-module)
-      builtins-module)))
+           (thread-local-builtins-module (llvm-sys:parse-bitcode-file builtins-bitcode-name *llvm-context*)))
+      (llvm-sys:remove-useless-global-ctors thread-local-builtins-module)
+      (setq *thread-local-builtins-module* thread-local-builtins-module)
+      thread-local-builtins-module)))
 
-(defun generate-target-triple ()
+(defun get-builtin-target-triple-and-data-layout ()
   "Uses *features* to generate the target triple for the current machine
 using features defined in corePackage.cc"
   (let ((builtins-module (get-builtins-module)))
-    (values (llvm-sys:get-target-triple builtins-module) (llvm-sys:get-data-layout-str builtins-module))
-    #+(or)(cond
-            ((and (member :target-os-darwin *features*)
-                  (member :address-model-64 *features*))
-             (values "x86_64-apple-macosx10.10.0" "e-m:o-i64:64-f80:128-n8:16:32:64-S128"))
-            ((and (member :target-os-linux *features*)
-                  (member :address-model-64 *features*))
-             (values "x86_64-pc-linux-gnu"       "e-m:e-i64:64-f80:128-n8:16:32:64-S128"))
-            (t (error "Could not identify target triple for features ~a" *features*)))))
-
-(defun generate-data-layout ()
-  (let* ((triple (generate-target-triple))
-         (target (llvm-sys:target-registry-lookup-target.string triple))
-         (target-options (llvm-sys:make-target-options))
-         (target-machine (llvm-sys:create-target-machine
-                          target
-                          triple
-                          ""
-                          ""
-                          target-options
-                          'llvm-sys:reloc-model-undefined
-                          'llvm-sys:code-model-default
-                          'llvm-sys:code-gen-opt-default)))
-    (llvm-sys:create-data-layout target-machine)))
-
-(defvar *default-target-triple* (generate-target-triple)
-  "The default target-triple for this machine")
-
-(defvar *default-data-layout* (generate-data-layout))
+    (values (llvm-sys:get-target-triple builtins-module) (llvm-sys:get-data-layout-str builtins-module))))
 
 (defun llvm-create-module (name)
   (let ((m (llvm-sys:make-module (string name) *llvm-context*)))
-    (llvm-sys:set-target-triple m *default-target-triple*)
-    (llvm-sys:set-data-layout m *default-data-layout*)
-    m))
+    (multiple-value-bind (target-triple data-layout)
+        (get-builtin-target-triple-and-data-layout)
+      (llvm-sys:set-target-triple m target-triple)
+      (llvm-sys:set-data-layout.string m data-layout)
+      m)))
 
 (defvar *run-time-module-counter* 1)
 (defun next-run-time-module-name ()
@@ -377,6 +357,7 @@ No DIBuilder is defined for the default module")
        ((string= lname "UNNAMED-LAMBDA") lname) ; this one is ok
        ((string= lname "lambda") lname)         ; this one is ok
        ((string= lname "ltv-literal") lname)    ; this one is ok
+       ((string= lname "disassemble") lname)    ; this one is ok
        (t (bformat t "jit-function-name lname = %s\n" lname)
           (break "Always pass symbol as name") lname)))
     ((symbolp lname)
@@ -583,7 +564,7 @@ The passed module is modified as a side-effect."
            (progn
              (mp:lock *jit-lock* t)
              (if (not (boundp '*jit-log-stream*))
-                 (let ((filename (core:mkstemp (core:bformat nil "/tmp/clasp-symbols-%s-" (core:getpid)))))
+                 (let ((filename (core:bformat nil "/tmp/clasp-symbols-%s" (core:getpid))))
                    (core:bformat *debug-io* "Writing jitted symbols to %s\n" filename)
                    (setq *jit-log-stream* (open filename :direction :output))))
              (princ (core:pointer-as-string (cadr symbol-info)) *jit-log-stream*)

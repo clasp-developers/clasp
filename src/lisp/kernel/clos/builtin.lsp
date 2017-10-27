@@ -29,7 +29,8 @@
 (si::*make-constant '+builtin-classes+ +builtin-classes-pre-array+)
 
 (defmethod ensure-class-using-class ((class null) name &rest rest)
-  (clos::gf-log "In ensure-class-using-class (class null) class -> %s\n" name)
+  (clos::gf-log "In ensure-class-using-class (class null)\n")
+  (clos::gf-log "     class -> %s\n" name)
   (multiple-value-bind (metaclass direct-superclasses options)
       (apply #'help-ensure-class rest)
     (declare (ignore #-clasp direct-superclasses))

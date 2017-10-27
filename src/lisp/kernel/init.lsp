@@ -70,10 +70,10 @@
 (eval-when (:execute :compile-toplevel :load-toplevel)
   (core::select-package :cmp))
 (export '(llvm-link link-bitcode-modules))
-(sys:*make-special '*enable-profiling*)
-(if (member :enable-profiling *features*)
-    (setq *enable-profiling* t)
-    (setq *enable-profiling* nil))
+;;; Turn on aclasp/bclasp activation-frame optimization
+(sys:*make-special '*activation-frame-optimize*)
+(setq *activation-frame-optimize* t)
+(setq *features* (cons :optimize-bclasp *features*))
 (sys:*make-special '*use-human-readable-bitcode*)
 (setq *use-human-readable-bitcode* (member :use-human-readable-bitcode *features*))
 (sys:*make-special '*compile-file-debug-dump-module*)
@@ -362,7 +362,7 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
   (core::select-package :core))
 (export 'bind-va-list)
 
-(defparameter *debug-bclasp* t)
+(defparameter *debug-bclasp* (member :debug-bclasp-lisp *features*))
 
 (defvar *special-init-defun-symbol* (gensym "special-init-defun-symbol"))
 (defvar *special-defun-symbol* (gensym "special-defun-symbol"))

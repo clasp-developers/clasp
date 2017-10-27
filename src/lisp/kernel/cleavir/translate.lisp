@@ -254,7 +254,7 @@ when this is t a lot of graphs will be generated.")
                                      (list (cmp:calling-convention-closure cc)
                                            (cmp:calling-convention-invocation-history-frame* cc)
                                            (cmp:calling-convention-va-list* cc)
-                                           (cmp:calling-convention-remaining-nargs* cc)))))
+                                           (cmp:irc-load (cmp:calling-convention-remaining-nargs* cc))))))
                 (on-exit-for-cleanup current-function-info)
                 (lambda (function-info)
                   (let ((cc (calling-convention function-info)))
@@ -1152,7 +1152,8 @@ when this is t a lot of graphs will be generated.")
   (setf *ct-thes->typeqs* (compiler-timer-elapsed))
 
   ;;; See comment in policy.lisp. tl;dr these analyses are slow.
-  #+(or)(let ((do-dx (policy-anywhere-p init-instr 'do-dx-analysis))
+  #-disable-type-inference
+  (let ((do-dx (policy-anywhere-p init-instr 'do-dx-analysis))
         (do-ty (policy-anywhere-p init-instr 'do-type-inference)))
     (when (or do-dx do-ty)
       (let ((liveness (cleavir-liveness:liveness init-instr)))
@@ -1296,14 +1297,14 @@ that llvm function. This works like compile-lambda-function in bclasp."
       (multiple-value-prog1 (translate mir map-enter-to-landing-pad *abi-x86-64*)
         (setf *ct-translate* (compiler-timer-elapsed))))))
 
-(defun cleavir-compile-file-form (form)
+(defun cleavir-compile-file-form (form &optional (env *clasp-env*))
   (let ((cleavir-generate-ast:*compiler* 'cl:compile-file)
         (core:*use-cleavir-compiler* t))
     (literal:with-top-level-form
      (cmp:dbg-set-current-source-pos form)
       (if cmp::*debug-compile-file*
-          (compiler-time (compile-form form))
-          (compile-form form)))))
+          (compiler-time (compile-form form env))
+          (compile-form form env)))))
 
 (defun cclasp-compile-in-env (name form &optional env)
   (let ((cleavir-generate-ast:*compiler* 'cl:compile)

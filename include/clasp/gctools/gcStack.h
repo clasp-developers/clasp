@@ -123,7 +123,7 @@ DO NOT CHANGE THE ORDER OF THESE OBJECTS WITHOUT UPDATING THE DEFINITION OF +va_
 #endif
 
   inline core::T_O *asTaggedPtr() {
-    return gctools::tag_valist<core::T_O *>(this);
+    return gctools::tag_vaslist<core::T_O *>(this);
   }
   Vaslist(gc::Frame* frame) {
     LCC_SETUP_VA_LIST_FROM_FRAME(this->_Args, *frame);
@@ -179,8 +179,10 @@ DO NOT CHANGE THE ORDER OF THESE OBJECTS WITHOUT UPDATING THE DEFINITION OF +va_
 
 
 
-  inline size_t remaining_nargs() const {
-    this->check_remaining_nargs();
+  inline const size_t& remaining_nargs() const {
+    return this->_remaining_nargs;
+  }
+  inline size_t& remaining_nargs() {
     return this->_remaining_nargs;
   }
 #if 0
@@ -223,7 +225,7 @@ public:
 public:
   //Default constructor, set theObject to NULL
  smart_ptr() : theObject((Type*)NULL){};
-  explicit inline smart_ptr(core::Vaslist *ptr) : theObject((Type*)gctools::tag_valist<Type *>(ptr)) {
+  explicit inline smart_ptr(core::Vaslist *ptr) : theObject((Type*)gctools::tag_vaslist<Type *>(ptr)) {
 //    GCTOOLS_ASSERT(this->valistp());
   };
   /*! Create a smart pointer from an existing tagged pointer */
@@ -255,7 +257,7 @@ public:
   inline bool generalp() const { return tagged_generalp(this->theObject); };
   inline bool consp() const { return tagged_consp(this->theObject); };
   inline bool objectp() const { return this->generalp() || this->consp(); };
-  inline Type* unsafe_valist() const { return reinterpret_cast<Type*>(untag_valist(this->theObject)); };
+  inline Type* unsafe_valist() const { return reinterpret_cast<Type*>(untag_vaslist(this->theObject)); };
   inline core::T_O *raw_() const { return reinterpret_cast<core::T_O *>(this->theObject); };
   inline gctools::Tagged tagged_() const { return reinterpret_cast<gctools::Tagged>(this->theObject); }
 

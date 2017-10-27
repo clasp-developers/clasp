@@ -278,9 +278,7 @@ LCC_RETURN interpretedClosureEntryPoint(LCC_ARGS_FUNCALL_ELLIPSIS) {
 //  printf("%s:%d ValueEnvironment_O:createForLambdaListHandler llh: %s\n", __FILE__, __LINE__, _rep_(this->_lambdaListHandler).c_str());
 //  newValueEnvironment->dump();
   ValueEnvironmentDynamicScopeManager scope(newValueEnvironment);
-//#ifdef USE_EXPENSIVE_BACKTRACE
   ALWAYS_INVOCATION_HISTORY_FRAME(); // InvocationHistoryFrame _frame(&lcc_arglist_s._Args);
-//#endif
   lambdaListHandler_createBindings(closure->asSmartPtr(), closure->_lambdaListHandler, scope, LCC_PASS_ARGS_LLH);
 //  printf("%s:%d     after lambdaListHandler_createbindings\n", __FILE__, __LINE__);
 //  newValueEnvironment->dump();
@@ -321,7 +319,7 @@ LCC_RETURN InstanceClosure_O::LISP_CALLING_CONVENTION() {
 // Copy the arguments passed in registers into the multiple_values array and those
 // will be processed by the generic function
 #ifdef _DEBUG_BUILD
-  Vaslist saved_args(*reinterpret_cast<Vaslist *>(untag_valist(lcc_arglist)));
+  Vaslist saved_args(*reinterpret_cast<Vaslist *>(untag_vaslist(lcc_arglist)));
 #endif
   VaList_sp gfargs((gc::Tagged)lcc_arglist);
   return (this->entryPoint)(this->instance, gfargs);

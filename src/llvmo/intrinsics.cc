@@ -47,7 +47,6 @@ extern "C" {
 #include <clasp/core/designators.h>
 #include <clasp/core/compPackage.h>
 #include <clasp/core/package.h>
-#include <clasp/core/accessor.h>
 #include <clasp/core/fli.h>
 #include <clasp/core/instance.h>
 #include <clasp/core/funcallableInstance.h>
@@ -214,7 +213,7 @@ ALWAYS_INLINE T_O *cc_precalcValue(core::LoadTimeValues_O **tarray, size_t idx)
 
 ALWAYS_INLINE void cc_copy_va_list(size_t nargs, T_O **mvPtr, Vaslist *va_args)
 {NO_UNWIND_BEGIN();
-  Vaslist *vl = reinterpret_cast<Vaslist *>(gc::untag_valist((void *)va_args));
+  Vaslist *vl = reinterpret_cast<Vaslist *>(gc::untag_vaslist((void *)va_args));
   for (int i = LCC_FIXED_ARGS; i < nargs; ++i) {
     mvPtr[i] = va_arg(vl->_Args, core::T_O *);
   }
@@ -393,22 +392,9 @@ ALWAYS_INLINE void cc_writeCell(core::T_O *cell, core::T_O* val)
 
 
 
-core::T_O *cc_fetch(core::T_O *tagged_closure, std::size_t idx)
+ALWAYS_INLINE void cc_push_InvocationHistoryFrame(core::T_O* tagged_closure, InvocationHistoryFrame* frame, va_list va_args, size_t nargs)
 {NO_UNWIND_BEGIN();
-  //	core::ValueFrame_sp a = gctools::smart_ptr<core::ValueFrame_O>(reinterpret_cast<core::ValueFrame_O*>(array));
-  gctools::smart_ptr<core::ClosureWithSlots_O> c = gctools::smart_ptr<core::ClosureWithSlots_O>((gc::Tagged)tagged_closure);
-#ifdef DEBUG_CC
-  printf("%s:%d fetch array@%p idx[%zu] -->cell[%p]\n", __FILE__, __LINE__, array, idx, (*c)[idx].raw_());
-#endif
-  ASSERT(c.notnilp());
-  return (*c)[idx].raw_();
-  NO_UNWIND_END();
-}
-
-
-ALWAYS_INLINE void cc_push_InvocationHistoryFrame(core::T_O* tagged_closure, InvocationHistoryFrame* frame, va_list va_args, size_t* nargsP)
-{NO_UNWIND_BEGIN();
-  new (frame) InvocationHistoryFrame(va_args, *nargsP);
+  new (frame) InvocationHistoryFrame(va_args, nargs);
   core::push_InvocationHistoryStack(frame);
 #if 0
   if (core::debug_InvocationHistoryFrame) {
@@ -486,7 +472,6 @@ ALWAYS_INLINE void setParentOfActivationFrameFromClosure(core::T_O *resultP, cor
   } else {
     parentP = _Nil<core::T_O>().raw_();
   }
-  ASSERT((*resultP).isA<ActivationFrame_O>());
   ActivationFrame_sp af((gctools::Tagged)resultP);
   af->setParentFrame(parentP);
   NO_UNWIND_END();
@@ -572,46 +557,12 @@ int cc_eql(core::T_O* x, core::T_O* y)
   NO_UNWIND_END();
 };
 
-void cc_bad_tag(core::T_O* gf, core::T_O* gf_args)
+void cc_bad_tag(core::T_O* gf)
 {
   printf("%s:%d  A bad tag was encountered - aborting\n", __FILE__, __LINE__ );
   abort();
 };
 
-gctools::return_type cc_dispatch_slot_reader(core::T_O* tindex, core::T_O* tgf, core::T_O* tvargs) {
-  VaList_sp vargs((gctools::Tagged)tvargs);
-  T_sp tinstance = vargs->next_arg();
-  Instance_sp instance = gc::As_unsafe<Instance_sp>(tinstance);
-  return do_slot_read((gctools::Tagged)tindex,(gctools::Tagged)tgf,instance.tagged_());
-}
-
-
-gctools::return_type cc_dispatch_slot_writer(core::T_O* tindex, core::T_O* tgf, core::T_O* tvargs) { 
-  VaList_sp vargs((gctools::Tagged)tvargs);
-  T_sp value = vargs->next_arg();
-  T_sp tinstance = vargs->next_arg();
-  Instance_sp instance = gc::As_unsafe<Instance_sp>(tinstance);
-  do_slot_write((gctools::Tagged)tindex,(gctools::Tagged)tgf,instance.tagged_(),value.tagged_());
-  return value.as_return_type();
-}
-
-
-
-gctools::return_type cc_dispatch_effective_method(core::T_O* teffective_method, core::T_O* tgf, core::T_O* tgf_args_valist_s) {
-  core::Function_sp effective_method((gctools::Tagged)teffective_method);
-//  core::T_sp gf((gctools::Tagged)tgf);
-  core::T_sp gf_args((gctools::Tagged)tgf_args_valist_s);
-//  printf("%s:%d  Invoking effective-method %s with arguments %s\n", __FILE__, __LINE__,
-  // Arguments are .method-args. .next-methods.
-
-  return (*effective_method).entry(LCC_PASS_ARGS2_ELLIPSIS(teffective_method,gf_args.raw_(),_Nil<core::T_O>().raw_()));
-#if 0
-  return (apply_method0(effective_method.raw_(),
-                        gf_args.raw_(),
-                        _Nil<core::T_O>().raw_(),
-                        gf_args.raw_());
-#endif
-}
 
 };
 
@@ -1245,3 +1196,5 @@ void initialize_intrinsics( void )
 }; // namespace llvmo
 
 #pragma GCC visibility pop
+
+

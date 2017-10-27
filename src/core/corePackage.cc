@@ -1038,7 +1038,7 @@ void CoreExposer_O::define_essential_globals(Lisp_sp lisp) {
   _lisp->_Roots._TerminalIO = terminal;
   cl::_sym_STARterminal_ioSTAR->defparameter(terminal);
   _sym_STARsystem_defsetf_update_functionsSTAR->defparameter(_Nil<T_O>());
-  cl::_sym_STARmacroexpand_hookSTAR->defparameter(_sym_macroexpand_default);
+  cl::_sym_STARmacroexpand_hookSTAR->defparameter(cl::_sym_funcall);
   _sym_STARsharp_equal_final_tableSTAR->defparameter(_Nil<T_O>());
   _sym__PLUS_activationFrameNil_PLUS_->defconstant(_Nil<T_O>());
   _sym__PLUS_variant_name_PLUS_->defconstant(SimpleBaseString_O::make(VARIANT_NAME));

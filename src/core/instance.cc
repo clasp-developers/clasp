@@ -47,7 +47,6 @@ THE SOFTWARE.
 #include <clasp/core/hashTableEq.h>
 #include <clasp/core/evaluator.h>
 #include <clasp/core/genericFunction.h>
-#include <clasp/core/accessor.h>
 #include <clasp/core/instance.h>
 #include <clasp/core/funcallableInstance.h>
 #include <clasp/core/wrappers.h>
@@ -81,7 +80,7 @@ CL_DEFUN T_sp core__copy_instance(T_sp obj) {
 };
 
 void Instance_O::initializeSlots(gctools::Stamp stamp, size_t numberOfSlots) {
-  this->_Rack = SimpleVector_O::make(numberOfSlots+1,_Unbound<T_O>(),true);
+  this->_Rack = SimpleVector_O::make(numberOfSlots+RACK_SLOT_START,_Unbound<T_O>(),true);
   this->stamp_set(stamp);
 #ifdef DEBUG_GUARD_VALIDATE
   client_validate(this->_Rack);
@@ -303,7 +302,7 @@ void Instance_O::stamp_set(Fixnum s) {
 };
 
 size_t Instance_O::numberOfSlots() const {
-  return this->_Rack->length()-1;
+  return this->_Rack->length()-RACK_SLOT_START;
 };
 
 
@@ -343,9 +342,15 @@ T_sp Instance_O::instanceRef(size_t idx) const {
   client_validate(this->_Rack);
 #endif
 #if DEBUG_CLOS >= 2
-  printf("\nMLOG INSTANCE-REF[%d] of Instance %p --->%s\n", idx, (void *)(this), this->_Rack[idx+1]->__repr__().c_str());
+  printf("\nMLOG INSTANCE-REF[%d] of Instance %p --->%s\n", idx, (void *)(this), this->_Rack[idx+RACK_SLOT_START]->__repr__().c_str());
 #endif
-  return ((*this->_Rack)[idx+1]);
+#ifdef DEBUG_BOUNDS_ASSERT
+  if ( (idx+RACK_SLOT_START)>=(this->_Rack)->length()) {
+    SIMPLE_ERROR(BF("The slot index %lu must be less than the size %lu\n") % idx % (this->_Rack->length()-RACK_SLOT_START));
+  }
+#endif
+  return low_level_instanceRef(this->_Rack,idx);
+//  return ((*this->_Rack)[idx+RACK_SLOT_START]);
 }
 T_sp Instance_O::instanceSet(size_t idx, T_sp val) {
 #if 0
@@ -360,7 +365,13 @@ T_sp Instance_O::instanceSet(size_t idx, T_sp val) {
 #if DEBUG_CLOS >= 2
   printf("\nMLOG SI-INSTANCE-SET[%d] of Instance %p to val: %s\n", idx, (void *)(this), val->__repr__().c_str());
 #endif
-  (*this->_Rack)[idx+1] = val;
+#ifdef DEBUG_BOUNDS_ASSERT
+  if ( (idx+RACK_SLOT_START)>=(this->_Rack)->length()) {
+    SIMPLE_ERROR(BF("The slot index %lu must be less than the size %lu\n") % idx % (this->_Rack->length()-RACK_SLOT_START));
+  }
+#endif
+  low_level_instanceSet(this->_Rack,idx,val);
+  // (*this->_Rack)[idx+RACK_SLOT_START] = val;
 #ifdef DEBUG_GUARD_VALIDATE
   client_validate(this->_Rack);
 #endif

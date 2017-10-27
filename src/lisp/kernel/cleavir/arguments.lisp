@@ -380,7 +380,7 @@
 (defun cclasp-maybe-alloc-cc-setup (lambda-list debug-on)
   "Maybe allocate slots in the stack frame to handle the calls
    depending on what is in the lambda-list (&rest, &key etc) and debug-on.
-   Return a calling-convention-setup object that describes what was allocated.
+   Return a calling-convention-configuration object that describes what was allocated.
    See the bclasp version in lambdalistva.lsp."
   (multiple-value-bind (reqargs optargs rest-var key-flag keyargs allow-other-keys unused-auxs varest-p)
       (core:process-lambda-list lambda-list 'core::function)
@@ -409,9 +409,9 @@
            ;;     --> Use only register arguments
            (may-use-only-registers (and req-opt-only (<= num-req cmp::+args-in-registers+) (eql 0 num-opt))))
       (if (and may-use-only-registers (null debug-on))
-          (cmp::make-calling-convention-setup
+          (cmp::make-calling-convention-configuration
            :use-only-registers t)
-          (cmp::make-calling-convention-setup
+          (cmp::make-calling-convention-configuration
            :use-only-registers may-use-only-registers ; if may-use-only-registers then debug-on is T and we could use only registers
            :vaslist* (alloca-vaslist "vaslist")
            :register-save-area* (alloca-register-save-area "register-save-area")

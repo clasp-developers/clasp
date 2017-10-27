@@ -209,10 +209,6 @@ void ThreadLocalState::initialize_thread(mp::Process_sp process) {
 #if 1
   this->_SingleDispatchMethodCachePtr = gc::GC<Cache_O>::allocate();
   this->_SingleDispatchMethodCachePtr->setup(2, Lisp_O::SingleDispatchMethodCacheSize);
-  this->_MethodCachePtr = gctools::GC<Cache_O>::allocate();
-  this->_MethodCachePtr->setup(Lisp_O::MaxFunctionArguments, Lisp_O::ClosCacheSize);
-  this->_SlotCachePtr = gctools::GC<Cache_O>::allocate();
-  this->_SlotCachePtr->setup(Lisp_O::MaxClosSlots, Lisp_O::ClosCacheSize);
 #endif
   this->_PendingInterrupts = _Nil<T_O>();
   this->_SparePendingInterruptRecords = cl__make_list(clasp_make_fixnum(16),_Nil<T_O>());

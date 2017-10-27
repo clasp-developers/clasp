@@ -37,7 +37,7 @@ BUILTIN_ATTRIBUTES void newTmv(core::T_mv *sharedP)
   new (sharedP) core::T_mv();
 }
 
-BUILTIN_ATTRIBUTES void cc_rewind_va_list(core::T_O* tagged_closure, va_list va_args, size_t* nargsP, void** register_save_areaP)
+BUILTIN_ATTRIBUTES void cc_rewind_va_list(va_list va_args, size_t* nargsP, void** register_save_areaP)
 {NO_UNWIND_BEGIN_BUILTINS();
 #if 0
   if (core::debug_InvocationHistoryFrame==3) {
@@ -47,6 +47,28 @@ BUILTIN_ATTRIBUTES void cc_rewind_va_list(core::T_O* tagged_closure, va_list va_
   LCC_REWIND_VA_LIST(va_args,register_save_areaP);
   *nargsP = (uintptr_t)register_save_areaP[1];
   NO_UNWIND_END_BUILTINS();
+}
+
+
+/* cc_setup_vaslist
+
+   Builds a vaslist rewound to the first required argument from a va_list.
+   Return the tagged vaslist.
+*/
+BUILTIN_ATTRIBUTES core::T_O* cc_setup_vaslist(core::Vaslist* vaslist, va_list va_args, size_t nargs)
+{
+  new (vaslist) core::Vaslist(nargs,va_args);
+  LCC_REWIND_VA_LIST_KEEP_REGISTER_SAVE_AREA(vaslist->_Args);
+  return gctools::tag_vaslist<core::T_O*>(vaslist);
+}
+
+/* Setup the vaslist and rewind it using the va_list inside of the vaslist.
+   Return the tagged vaslist. */
+BUILTIN_ATTRIBUTES core::T_O* cc_setup_vaslist_internal(core::Vaslist* vaslist, size_t nargs)
+{
+  LCC_REWIND_VA_LIST_KEEP_REGISTER_SAVE_AREA(vaslist->_Args);
+  vaslist->remaining_nargs() = nargs;
+  return gctools::tag_vaslist<core::T_O*>(vaslist);
 }
 
 BUILTIN_ATTRIBUTES
@@ -169,14 +191,20 @@ BUILTIN_ATTRIBUTES core::T_O** activationFrameReferenceFromClosure(core::T_O* cl
 
 BUILTIN_ATTRIBUTES void* cc_vaslist_va_list_address(core::T_O* vaslist)
 {
-  return &(gctools::untag_valist(vaslist)->_Args);
+  return &(gctools::untag_vaslist(vaslist)->_Args);
 };
 
 BUILTIN_ATTRIBUTES size_t* cc_vaslist_remaining_nargs_address(core::Vaslist* vaslist)
 {
-  return &(gctools::untag_valist(vaslist)->_remaining_nargs);
+  return &(gctools::untag_vaslist(vaslist)->_remaining_nargs);
 };
 
+
+BUILTIN_ATTRIBUTES core::T_O *cc_fetch(core::T_O *tagged_closure, std::size_t idx)
+{
+  gctools::smart_ptr<core::ClosureWithSlots_O> c = gctools::smart_ptr<core::ClosureWithSlots_O>((gc::Tagged)tagged_closure);
+  return (*c)[idx].raw_();
+}
 
 BUILTIN_ATTRIBUTES core::T_O *cc_readCell(core::T_O *cell)
 {
@@ -184,4 +212,10 @@ BUILTIN_ATTRIBUTES core::T_O *cc_readCell(core::T_O *cell)
   return cp->_Car.raw_();
 }
 
+
+
+
 };
+
+
+

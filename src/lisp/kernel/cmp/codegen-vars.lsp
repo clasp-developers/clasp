@@ -48,33 +48,36 @@
 ;;; These can be used at the end of compilation to convert
 ;;; variables in activation frame slots that don't need to be closed over
 ;;; into allocas in the current function.
-(defstruct (lexical-variable-reference (:type vector))
-  symbol start-env start-renv depth index instruction ref-env)
-(defvar *lexical-variable-references*)
+#+optimize-bclasp
+(progn
+  (defstruct (lexical-variable-reference (:type vector))
+    symbol start-env start-renv depth index instruction ref-env)
+  (defvar *lexical-variable-references*))
 
 
 ;;; kind can be :make-value-frame-set-parent-from-closure or
 ;;;   :make-value-frame-set-parent
-(defstruct (value-frame-maker-reference (:type vector))
-  instruction new-env new-renv parent-env parent-renv)
-(defvar *make-value-frame-instructions*)
+#+optimize-bclasp
+(progn
+  (defstruct (value-frame-maker-reference (:type vector))
+    instruction new-env new-renv parent-env parent-renv)
+  (defvar *make-value-frame-instructions*))
 
 
-(defstruct (tagbody-frame-maker (:type vector))
-  instruction )
+#+optimize-bclasp
+(progn
+  (defstruct (tagbody-frame-maker (:type vector))
+    instruction )
+  (defvar *tagbody-frame-makers*)
 
-(defvar *tagbody-frame-makers*)
-
-(defstruct (throw-dynamic-go (:type vector))
-  instruction index depth start-env start-renv tagbody-env)
-
-(defvar *throw-dynamic-go-instructions*)
-
-
-(defstruct (lexical-function-reference (:type vector))
-  instruction index depth start-env start-renv function-env)
-
-(defvar *lexical-function-references*)
+  (defstruct (throw-dynamic-go (:type vector))
+    instruction index depth start-env start-renv tagbody-env)
+  (defvar *throw-dynamic-go-instructions*))
+#+optimize-bclasp
+(progn
+  (defstruct (lexical-function-reference (:type vector))
+    instruction index depth start-env start-renv function-env)
+  (defvar *lexical-function-references*))
 
 
 (defun generate-register-alloca (symbol env)
@@ -267,8 +270,35 @@
     (resize-closures-and-make-non-closures-invisible make-value-environment-instructions
                                                      closure-environments)))
 
-(defvar *activation-frame-optimize* t)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Carry out a collection of optimization passes on the LLVM-IR
+;;;   after codegen that is done in the body.
+;;; In other words - the bclasp compiler in 'body' codegens a top-level form
+;;;   and gathers information in the dynamic variables bound below.
+;;;   Then the optimization passes after 'body' operate on the llvm-ir in
+;;;   the passes:
+;;;      optimize-closures - identifies lexical variables that must be closures
+;;;      rewrite-lexical-variable-references-for-new-depth -
+;;;              rewrites closed over lexical variable access to account
+;;;              for activation frames that are now not necessary
+;;;      rewrite-dynamic-go-for-new-depth - rewrites dynamic-go instructions
+;;;              to account for the activation frames that are not necessary
+;;;      rewrite-lexical-function-references-for-new-depth -
+;;;              rewrites lexical function references to account for the
+;;;              activation frames that are no longer necessary.
+;;;      convert-instructions-to-use-registers - converts lexical variable
+;;;              references that are not closed over to use registers and allocas
+;;;
+;;;   These optimizations take time - and when the interpreter is starting up
+;;;     they may take more time than they take to run.
+;;;     They can be turned off using *activation-frame-optimize* (NIL is off)
+;;;
+;;;  The cmp::*activation-frame-optimize* variable is defined in init.lsp
+;;;      and it's temporarily bound to NIL in clasp-builder.lsp
 (defmacro with-lexical-variable-optimizer ((optimize) &rest body)
+  #-optimize-bclasp`(progn ,@body)
+  #+optimize-bclasp
   (let ((variable-map (gensym)))
     `(let ((*lexical-variable-references* nil)
            (*make-value-frame-instructions* nil)
@@ -280,6 +310,8 @@
          (when (and ,optimize *activation-frame-optimize*)
            (let ((,variable-map (optimize-value-environments *lexical-variable-references*)))
              (cv-log "optimize-closures ,variable-map \n")
+             ;; Identify activation frame/environments that must be closures
+             ;; and optimize all other references to use alloca's in the stack frame
              (optimize-closures ,variable-map *make-value-frame-instructions*)
              ;; Rewrite lexical variable references to take into account the newly invisible environments
              (cv-log "rewrite-lexical-variable-references-for-new-depth \n")
@@ -379,15 +411,14 @@
       result))
   ;; This second option saves information that can be used later to convert local lexical variables into allocas
   (let* ((start-renv (irc-load (irc-renv env)))
-         (instruction (irc-intrinsic "lexicalValueReference" (jit-constant-i32 depth) (jit-constant-i32 index) start-renv))
-         (ref (make-lexical-variable-reference :symbol symbol
-                                               :start-env env
-                                               :start-renv start-renv
-                                               :depth depth
-                                               :index index
-                                               :instruction instruction)))
-    #+(or)(core:bformat t "Pushed ref -> %s\n" ref)
-    (push ref *lexical-variable-references*)
+         (instruction (irc-intrinsic "lexicalValueReference" (jit-constant-i32 depth) (jit-constant-i32 index) start-renv)))
+    #+optimize-bclasp(push (make-lexical-variable-reference :symbol symbol
+                                                            :start-env env
+                                                            :start-renv start-renv
+                                                            :depth depth
+                                                            :index index
+                                                            :instruction instruction)
+                           *lexical-variable-references*)
     instruction))
 
 (defun codegen-lexical-var-value (symbol depth index env)

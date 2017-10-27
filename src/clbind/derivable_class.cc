@@ -71,8 +71,10 @@ THE SOFTWARE.
 namespace clbind {
 
 void validateRackOffset(size_t wrapped_type_offset) {
-    printf("%s:%d The Derivable class _Rack offset (%lu) must be at the same offset as Instance_O::_Rack (%lu)\n",
+    /*
+     * printf("%s:%d The Derivable class _Rack offset (%lu) must be at the same offset as Instance_O::_Rack (%lu)\n",
              __FILE__, __LINE__, wrapped_type_offset, offsetof(core::Instance_O,_Rack));
+     */
     if (wrapped_type_offset != offsetof(core::Instance_O,_Rack)) {
       printf("The Derivable class _Rack offset (%lu) must be at the same offset as Instance_O::_Rack (%lu) - but it is not\n",
              wrapped_type_offset, offsetof(core::Instance_O,_Rack));
@@ -139,7 +141,7 @@ void derivable_class_registration::register_() const {
     casts->insert(e.src, e.target, e.cast);
   }
 
-  printf("%s:%d Registering Derivable class %s\n", __FILE__, __LINE__, _rep_(className).c_str());
+//  printf("%s:%d Registering Derivable class %s\n", __FILE__, __LINE__, _rep_(className).c_str());
   if (m_bases.size() == 0) {
     // If no base classes are specified then make T a base class from Common Lisp's point of view
     //
@@ -152,7 +154,7 @@ void derivable_class_registration::register_() const {
 
       // the baseclass' class_rep structure
       ClassRep_sp bcrep = registry->find_class(i->first);
-      printf("%s:%d         %s inherits from %s\n", __FILE__, __LINE__, _rep_(className).c_str(), _rep_(bcrep).c_str());
+//      printf("%s:%d         %s inherits from %s\n", __FILE__, __LINE__, _rep_(className).c_str(), _rep_(bcrep).c_str());
       ASSERTF(bcrep.notnilp(), BF("Could not find base class %s") % i->first.name());
       // Add it to the DirectSuperClass list
       crep->addInstanceBaseClass(bcrep->_className());

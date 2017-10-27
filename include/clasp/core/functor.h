@@ -426,15 +426,14 @@ namespace core {
   class CompiledDispatchFunction_O : public core::Closure_O {
     LISP_CLASS(core,CorePkg,CompiledDispatchFunction_O,"CompiledDispatchFunction",core::Closure_O);
   public:
-    DispatchFunction_fptr_type _dispatchEntryPoint;
+//    DispatchFunction_fptr_type _dispatchEntryPoint;
     llvmo::ModuleHandle_sp  _llvmModule;
   public:
     virtual const char *describe() const { return "CompiledDispatchFunction"; };
     virtual size_t templatedSizeof() const { return sizeof(*this); };
   public:
-  CompiledDispatchFunction_O(core::T_sp functionName, core::Symbol_sp type, core::DispatchFunction_fptr_type ptr, llvmo::ModuleHandle_sp module ) : Base(compiledDispatchFunctionDummyEntryPoint,functionName), _dispatchEntryPoint(ptr), _llvmModule(module) {};
+  CompiledDispatchFunction_O(core::T_sp functionName, core::Symbol_sp type, claspFunction ptr, llvmo::ModuleHandle_sp module ) : Base(ptr,functionName), _llvmModule(module) {};
     bool compiledP() const { return true; };
-    DispatchFunction_fptr_type entryPoint() { return this->_dispatchEntryPoint;};
     core::T_sp lambda_list() const { return Cons_O::createList(cl::_sym_generic_function, core::_sym_arguments); };
     void setf_lambda_list(core::List_sp lambda_list);
     CL_DEFMETHOD T_sp llvm_module() const { return this->_llvmModule;};

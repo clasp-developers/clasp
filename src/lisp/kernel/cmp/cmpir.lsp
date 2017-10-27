@@ -56,6 +56,7 @@
                                      (jit-constant-size_t depth)
                                      (jit-constant-size_t index)
                                      start-renv)))
+    #+optimize-bclasp
     (push (make-lexical-function-reference :instruction instruction
                                            :depth depth
                                            :index index
@@ -359,6 +360,7 @@
                               (irc-renv visible-ancestor-environment)))
          (parent-renv (irc-load parent-renv-ref))
          (instr (irc-intrinsic "makeValueFrameSetParent" size parent-renv)))
+    #+optimize-bclasp
     (push (make-value-frame-maker-reference :instruction instr
                                             :new-env new-env
                                             :new-renv new-renv
@@ -894,8 +896,6 @@
 				       linkage
 				       llvm-function-name
 				       module)))
-    (when *enable-profiling*
-      (llvm-sys:add-fn-attr2string fn "counting-function" *mcount-name*))
     (dolist (temp function-attributes)
       (cond
         ((symbolp temp) (llvm-sys:add-fn-attr fn temp))
@@ -1104,6 +1104,11 @@ Within the _irbuilder_ dynamic environment...
     :alloca (llvm-sys::create-alloca *irbuilder* %tmv% (jit-constant-i32 1) label)
     :init (lambda (a) (irc-intrinsic "newTmv" a))))
 
+(defun irc-alloca-return-type (&key (irbuilder *irbuilder-function-alloca*) (label ""))
+  (with-alloca-insert-point-no-cleanup
+    irbuilder
+    :alloca (llvm-sys:create-alloca irbuilder %return_type% (jit-constant-i32 1) label)))
+
 (defun irc-alloca-t* (&key (irbuilder *irbuilder-function-alloca*) (label ""))
   "Allocate a T_O* on the stack"
   (with-alloca-insert-point-no-cleanup
@@ -1272,12 +1277,16 @@ Write T_O* pointers into the current multiple-values array starting at the (offs
                                                              :initial-element (null-t-ptr)))
                                      args)))
     real-args))
-         
-(defun irc-funcall (result closure args &optional (label ""))
+
+(defun irc-funcall-results-in-registers (closure args &optional (label ""))
   (let* ((entry-point         (irc-calculate-entry closure))   ; Calculate the function pointer
          (real-args           (irc-calculate-real-args args))  ; fill in NULL for missing register arguments
-         (result-in-registers (irc-create-invoke entry-point (list* closure (jit-constant-size_t (length args)) real-args) *current-unwind-landing-pad-dest* label))
-         (_                   (irc-store-result result result-in-registers)))))
+         (result-in-registers (irc-call-or-invoke entry-point (list* closure (jit-constant-size_t (length args)) real-args) *current-unwind-landing-pad-dest* label)))
+    result-in-registers))
+
+(defun irc-funcall (result closure args &optional (label ""))
+  (let ((result-in-registers (irc-funcall-results-in-registers closure args label)))
+    (irc-store-result result result-in-registers)))
 
 ;----------------------------------------------------------------------
 
@@ -1300,6 +1309,10 @@ Write T_O* pointers into the current multiple-values array starting at the (offs
                                  args))
          (i 0))
     (declare (ignore _))
+    (unless (primitive-varargs info)
+      (unless (= (length required-args-ty) (length passed-args-ty))
+        (error "Constructing call to intrinsic ~a - mismatch in the number of arguments, expected ~a - received ~a"
+               fn-name (length required-args-ty) (length passed-args-ty))))
     (mapc #'(lambda (x y z)
               (unless (equal x y)
                 (error "Constructing call to intrinsic ~a - mismatch of arg#~a value[~a], expected type ~a - received type ~a" fn-name i z x y))

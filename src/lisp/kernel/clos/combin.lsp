@@ -125,13 +125,6 @@
       (funcall method .method-args. rest-methods)))
 
 (defmacro call-method (method &optional rest-methods)
-  #++`(core:multiple-value-foreign-call "apply_method4"
-                                     ,(effective-method-function method)
-                                     ;; This is a stab in the dark - I don't know if .method-args.
-                                     ;; will be defined in the lexical environment
-                                     .method-args.
-                                     ',(and rest-methods (mapcar #'effective-method-function rest-methods))
-                                     .method-args.)
   `(funcall ,(effective-method-function method)
             ;; This is a stab in the dark - I don't know if .method-args.
             ;; will be defined in the lexical environment
@@ -317,7 +310,7 @@
 	  (when required
 	    (push `(unless ,group-name
 		     (error "Method combination: ~S. No methods ~
-			    in required group ~S." ,name ,group-name))
+			    in required group ~S." ',name ,group-name))
 		  group-after))
 	  (case order
 	    (:most-specific-first
@@ -337,7 +330,7 @@
 								 (cond ,@(nreverse group-checks)
 								       (t (invalid-method-error .method.
 												"Method qualifiers ~S are not allowed in the method~
-			      combination ~S." .method-qualifiers. ,name)))))
+			      combination ~S." .method-qualifiers. ',name)))))
 							     ,@group-after
 							     (effective-method-function (progn ,@body) t)))
 				   #+clasp(lambda (,generic-function .methods-list. ,@lambda-list)
@@ -349,7 +342,7 @@
 						    (cond ,@(nreverse group-checks)
 							  (t (invalid-method-error .method.
 										   "Method qualifiers ~S are not allowed in the method~
-			      combination ~S." .method-qualifiers. ,name)))))
+			      combination ~S." .method-qualifiers. ',name)))))
                                                 ,@group-after
                                                 (effective-method-function (progn ,@body) t))))))))
 
@@ -420,12 +413,6 @@
 (defun compute-effective-method (gf method-combination applicable-methods)
   `(funcall ,(std-compute-effective-method gf method-combination applicable-methods)
 	    .method-args. .next-methods.))
-
-#+(or)
-(defun compute-effective-method (gf method-combination applicable-methods)
-  `(core:multiple-value-foreign-call
-    "apply_method9" ,(std-compute-effective-method gf method-combination applicable-methods)
-    .method-args. .next-methods. .method-args.))
 
 ;;
 ;; These method combinations are bytecompiled, for simplicity.

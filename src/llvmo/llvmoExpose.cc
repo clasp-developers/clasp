@@ -1362,6 +1362,9 @@ CL_DEFMETHOD size_t DataLayout_O::getTypeAllocSize(llvm::Type* ty)
   return this->_DataLayout->getTypeAllocSize(ty);
 }
 
+CL_LISPIFY_NAME(getStringRepresentation);
+CL_EXTERN_DEFMETHOD(DataLayout_O,&llvm::DataLayout::getStringRepresentation);
+
 
 }; // llvmo
 
@@ -3220,7 +3223,7 @@ CL_DEFUN core::Function_sp finalizeEngineAndRegisterWithGcAndGetCompiledFunction
     if (!p) {
       SIMPLE_ERROR(BF("Could not get a pointer to the function finalizeEngineAndGetDispatchFunction: %s") % _rep_(functionName));
     }
-    core::DispatchFunction_fptr_type dispatchFunction = (core::DispatchFunction_fptr_type)(p);
+    core::claspFunction dispatchFunction = (core::claspFunction)(p);
     core::ShutdownFunction_fptr_type shutdownFunction = (core::ShutdownFunction_fptr_type)(engine->getPointerToFunction(shutdownFn->wrappedPtr()));
     gctools::smart_ptr<core::CompiledDispatchFunction_O> functoid = gctools::GC<core::CompiledDispatchFunction_O>::allocate(functionName, kw::_sym_dispatch_function, dispatchFunction, _Unbound<Module_O>() );
     void* pstartup = engine->getPointerToFunction(startupFn->wrappedPtr());
@@ -3993,19 +3996,9 @@ ModuleHandle_O::~ModuleHandle_O() {
 
 CL_DEFUN core::Function_sp llvm_sys__jitFinalizeReplFunction(ClaspJIT_sp jit, ModuleHandle_sp handle, const string& replName, const string& startupName, const string& shutdownName, core::T_sp initialData, Function_sp fn, core::T_sp activationFrameEnvironment) {
   // Stuff to support MCJIT
-#if 0
-  printf("%s:%d     replName = %s\n", __FILE__, __LINE__, replName.c_str() );
-  printf("%s:%d  startupName = %s\n", __FILE__, __LINE__, startupName.c_str() );
-  printf("%s:%d shutdownName = %s\n", __FILE__, __LINE__, shutdownName.c_str() );
-#endif
   core::Pointer_sp replPtr = jit->findSymbolIn(handle,replName,false);
   core::Pointer_sp startupPtr = jit->findSymbolIn(handle,startupName,false);
   core::Pointer_sp shutdownPtr = jit->findSymbolIn(handle,shutdownName,false);
-#if 0
-  printf("%s:%d     replPtr = %s\n", __FILE__, __LINE__, _rep_(replPtr).c_str());
-  printf("%s:%d  startupPtr = %s\n", __FILE__, __LINE__, _rep_(startupPtr).c_str());
-  printf("%s:%d shutdownPtr = %s\n", __FILE__, __LINE__, _rep_(shutdownPtr).c_str());
-#endif
   core::CompiledClosure_fptr_type lisp_funcPtr = (core::CompiledClosure_fptr_type)(gc::As_unsafe<core::Pointer_sp>(replPtr)->ptr());
   gctools::smart_ptr<core::CompiledClosure_O> functoid =
     gctools::GC<core::CompiledClosure_O>::allocate( lisp_funcPtr,
@@ -4019,22 +4012,14 @@ CL_DEFUN core::Function_sp llvm_sys__jitFinalizeReplFunction(ClaspJIT_sp jit, Mo
   return functoid;
 }
 
-
-
 CL_DEFUN core::Function_sp llvm_sys__jitFinalizeDispatchFunction(ClaspJIT_sp jit, ModuleHandle_sp handle, const string& dispatchName, const string& startupName, const string& shutdownName, core::T_sp initialData ) {
-  // Stuff to support MCJIT
-//  printf("%s:%d dispatchName = %s\n", __FILE__, __LINE__, dispatchName.c_str() );
-//  printf("%s:%d  startupName = %s\n", __FILE__, __LINE__, startupName.c_str() );
-//  printf("%s:%d shutdownName = %s\n", __FILE__, __LINE__, shutdownName.c_str() );
   core::Pointer_sp dispatchPtr = jit->findSymbolIn(handle,dispatchName,false);
   core::Pointer_sp startupPtr = jit->findSymbolIn(handle,startupName,false);
   core::Pointer_sp shutdownPtr = jit->findSymbolIn(handle,shutdownName,false);
-//  printf("%s:%d dispatchPtr = %p\n", __FILE__, __LINE__, (void*)gc::As_unsafe<core::Pointer_sp>(dispatchPtr)->ptr());
-//  printf("%s:%d  startupPtr = %p\n", __FILE__, __LINE__, (void*)gc::As_unsafe<core::Pointer_sp>(startupPtr)->ptr() );
-//  printf("%s:%d shutdownPtr = %p\n", __FILE__, __LINE__, (void*)gc::As_unsafe<core::Pointer_sp>(shutdownPtr)->ptr() );
-  core::DispatchFunction_fptr_type dispatchFunction = (core::DispatchFunction_fptr_type)(gc::As_unsafe<core::Pointer_sp>(dispatchPtr)->ptr());
+  core::claspFunction dispatchFunction = (core::claspFunction)(gc::As_unsafe<core::Pointer_sp>(dispatchPtr)->ptr());
   core::ShutdownFunction_fptr_type shutdownFunction = (core::ShutdownFunction_fptr_type)(gc::As_unsafe<core::Pointer_sp>(shutdownPtr)->ptr());
   handle->set_shutdown_function(shutdownFunction);
+//  printf("%s:%d  jitFinalizeDispatchFunction %p\n", __FILE__, __LINE__, (void*)dispatchFunction);
   gctools::smart_ptr<core::CompiledDispatchFunction_O> functoid = gctools::GC<core::CompiledDispatchFunction_O>::allocate(core::SimpleBaseString_O::make(dispatchName), kw::_sym_dispatch_function, dispatchFunction, handle );
   void* pstartup = gc::As_unsafe<core::Pointer_sp>(startupPtr)->ptr();
   if (pstartup == NULL ) {

@@ -39,7 +39,7 @@ Return T if disassembly was achieved - otherwise NIL"
         (if symbol-info
             (let ((bytes (first symbol-info))
                   (address (second symbol-info)))
-              (llvm-sys:disassemble-instructions (llvm-sys:get-default-target-triple)
+              (llvm-sys:disassemble-instructions (get-builtin-target-triple-and-data-layout)
                                                  address
                                                  :start-byte-offset 09
                                                  :end-byte-offset bytes)
@@ -58,7 +58,7 @@ Return T if disassembly was achieved - otherwise NIL"
        (if success
            t
            (progn
-             (llvm-sys:disassemble-instructions (llvm-sys:get-default-target-triple)
+             (llvm-sys:disassemble-instructions (get-builtin-target-triple-and-data-layout)
                                                 (core:function-pointer module-or-func)
                                                 :start-instruction-index start-instruction-index
                                                 :num-instructions num-instructions)))))
@@ -66,7 +66,7 @@ Return T if disassembly was achieved - otherwise NIL"
 
 (defun disassemble-from-address (address &key (start-instruction-index 0) (num-instructions 16)
                                            start-byte-offset end-byte-offset)
-  (llvm-sys:disassemble-instructions (llvm-sys:get-default-target-triple)
+  (llvm-sys:disassemble-instructions (get-builtin-target-triple-and-data-layout)
                                      address
                                      :start-instruction-index start-instruction-index
                                      :num-instructions num-instructions
@@ -114,7 +114,7 @@ Return T if disassembly was achieved - otherwise NIL"
 	   ((interpreted-function-p fn)
 	    (format t "This is a interpreted function - compile it first~%"))
            ((eq type :asm)
-            (llvm-sys:disassemble-instructions (llvm-sys:get-default-target-triple) (core:function-pointer fn) :start-instruction-index start-instruction-index :num-instructions num-instructions))
+            (llvm-sys:disassemble-instructions (get-builtin-target-triple-and-data-layout) (core:function-pointer fn) :start-instruction-index start-instruction-index :num-instructions num-instructions))
 	   (t (error "Unknown target for disassemble: ~a" fn)))))
       (t (error "Cannot disassemble"))))
   nil)
