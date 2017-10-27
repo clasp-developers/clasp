@@ -272,6 +272,14 @@ class Lisp_O {
     /*! Store a table of generic functions - should this be a HashTable?  What about (setf XXX) generic functions? Aug2013 */
     /*SymbolMap<SingleDispatchGenericFunction_O> 	_SingleDispatchGenericFunctionTable;*/
     HashTableEq_sp _SingleDispatchGenericFunctionTable;
+
+#ifdef DEBUG_MONITOR
+#ifdef CLASP_THREADS
+    mutable mp::Mutex _LogMutex;
+#endif
+    std::ofstream _LogStream;
+#endif
+    
 #ifdef CLASP_THREADS
     mutable mp::SharedMutex _SingleDispatchGenericFunctionTableMutex;
 #endif
@@ -1077,6 +1085,12 @@ namespace core {
 
 namespace core {
   void initialize_Lisp_O();
+#ifdef DEBUG_MONITOR
+  void monitor_message(const std::string& msg);
+#define MONITOR(x) monitor_message((x).str());
+#else
+#define MONITOR(x)
+#endif
 };
 
 
