@@ -49,7 +49,11 @@ namespace core {
     void fields(Record_sp node);
 
     friend T_mv cl__maphash(T_sp function_desig, T_sp hash_table);
-  HashTable_O() : _RehashCount(0), _RehashSize(_Nil<Number_O>()), _RehashThreshold(1.2), _HashTable(_Nil<VectorObjects_O>()), _HashTableCount(0)
+  HashTable_O() :
+#ifdef DEBUG_REHASH_COUNT
+    _RehashCount(0),
+#endif
+      _RehashSize(_Nil<Number_O>()), _RehashThreshold(1.2), _HashTable(_Nil<VectorObjects_O>()), _HashTableCount(0)
     {};
     virtual ~HashTable_O(){};
   //	DEFAULT_CTOR_DTOR(HashTable_O);
