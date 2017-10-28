@@ -380,14 +380,6 @@ void monitorAllocation(stamp_t k, size_t sz) {
 }
 
 
-#ifdef USE_BOEHM
-void clasp_warn_proc(char *msg, GC_word arg) {
-  printf("%s:%d clasp trapped Boehm-gc warning...\n", __FILE__, __LINE__);
-  printf(msg, arg);
-}
-#endif
-
-
 gc::GCStack *threadLocalStack() {
   return &_ThreadLocalStack;
 }

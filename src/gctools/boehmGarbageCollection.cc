@@ -33,9 +33,18 @@ THE SOFTWARE.
 #include <clasp/gctools/gctoolsPackage.h>
 #ifdef USE_BOEHM // whole file #ifdef USE_BOEHM
 #include <clasp/gctools/boehmGarbageCollection.h>
-
+#include <clasp/core/debugger.h>
 
 namespace gctools {
+
+
+
+void clasp_warn_proc(char *msg, GC_word arg) {
+  printf("%s:%d clasp trapped Boehm-gc warning...\n", __FILE__, __LINE__);
+  printf(msg, arg);
+}
+
+
 
 void run_finalizers(core::T_sp obj, void* data)
 {

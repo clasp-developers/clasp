@@ -128,7 +128,7 @@ void HashTable_O::set_thread_safe(bool thread_safe)
 #endif
 }
 
-CL_LAMBDA(&key (test (function eql)) (size 16) (rehash-size 1.5) (rehash-threshold 1.0) weakness debug thread_safe);
+CL_LAMBDA(&key (test (function eql)) (size 64) (rehash-size 2.0) (rehash-threshold 1.0) weakness debug thread_safe);
 CL_DECLARE();
 CL_DOCSTRING("see CLHS");
 CL_DEFUN T_sp cl__make_hash_table(T_sp test, Fixnum_sp size, Number_sp rehash_size, Real_sp orehash_threshold, Symbol_sp weakness, T_sp debug, T_sp thread_safe) {
@@ -279,7 +279,6 @@ void HashTable_O::clrhash() {
 void HashTable_O::setup(uint sz, Number_sp rehashSize, double rehashThreshold) {
   HT_WRITE_LOCK(this);
   sz = this->resizeEmptyTable_no_lock(sz);
-  this->_InitialSize = sz;
   this->_RehashSize = rehashSize;
   ASSERT(!clasp_zerop(this->_RehashSize));
   this->_RehashThreshold = rehashThreshold;
@@ -637,17 +636,21 @@ List_sp HashTable_O::findAssoc_no_lock(gc::Fixnum index, T_sp key) const {
   //        printf("%s:%d rehash of hash-table@%p\n", __FILE__, __LINE__,  this );
     ASSERTF(!clasp_zerop(this->_RehashSize), BF("RehashSize is zero - it shouldn't be"));
     ASSERTF(cl__length(ENSURE_VALID_OBJECT(this->_HashTable)) != 0, BF("HashTable is empty in expandHashTable - this shouldn't be"));
+#ifdef DEBUG_REHASH_COUNT
+    this->_RehashCount++;
+#endif
     List_sp foundKeyValuePair(_Nil<T_O>());
     LOG(BF("At start of expandHashTable current hash table size: %d") % cl__length(ENSURE_VALID_OBJECT(this->_HashTable)));
+    gc::Fixnum curSize = cl__length(ENSURE_VALID_OBJECT(this->_HashTable));
     gc::Fixnum newSize = 0;
     if (expandTable) {
       if (cl__integerp(this->_RehashSize)) {
-        newSize = cl__length(ENSURE_VALID_OBJECT(this->_HashTable)) + clasp_to_int(gc::As<Integer_sp>(this->_RehashSize));
+        newSize = curSize + clasp_to_int(gc::As<Integer_sp>(this->_RehashSize));
       } else if (cl__floatp(this->_RehashSize)) {
-        newSize = cl__length(ENSURE_VALID_OBJECT(this->_HashTable)) * clasp_to_double(this->_RehashSize);
+        newSize = curSize * clasp_to_double(this->_RehashSize);
       }
     } else {
-      newSize = cl__length(ENSURE_VALID_OBJECT(this->_HashTable));
+      newSize = curSize;
     }
     VectorObjects_sp oldTable = ENSURE_VALID_OBJECT(this->_HashTable);
     newSize = this->resizeEmptyTable_no_lock(newSize);
@@ -655,9 +658,9 @@ List_sp HashTable_O::findAssoc_no_lock(gc::Fixnum index, T_sp key) const {
     size_t oldSize = cl__length(oldTable);
     for (size_t it(0), itEnd(oldSize); it < itEnd; ++it) {
       for (auto cur : coerce_to_list((*oldTable)[it])) {
-        List_sp pair = oCar(cur);
-        T_sp key = oCar(pair);
-        T_sp value = oCdr(pair);
+        List_sp pair = CONS_CAR(cur);
+        T_sp key = CONS_CAR(pair);
+        T_sp value = CONS_CDR(pair);
         if (!value.unboundp()) {
           // key/value represent a valid entry in the hash table
           //
@@ -680,6 +683,24 @@ List_sp HashTable_O::findAssoc_no_lock(gc::Fixnum index, T_sp key) const {
         }
       }
     }
+#ifdef DEBUG_MONITOR
+    size_t max_alist_len = 0;
+    size_t count = 0;
+    for (size_t _xxx(0); _xxx<newSize; ++_xxx) {
+      size_t this_len = cl__length((this->_HashTable)->operator[](_xxx));
+      count += this_len;
+      max_alist_len = (max_alist_len<this_len) ? this_len : max_alist_len;
+    }
+    MONITOR(BF("hash-table %p Resizing from %d to %d buckets - "
+#ifdef DEBUG_REHASH_COUNT
+               "rehash-count: %d "
+#endif
+               "max-alist-length: %d hash-table-count: %d \n") % ((void*)this) % curSize % newSize
+#ifdef DEBUG_REHASH_COUNT
+            % this->_RehashCount
+#endif
+            % max_alist_len % count );
+#endif
     return foundKeyValuePair;
   }
 

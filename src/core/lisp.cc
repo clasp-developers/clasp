@@ -486,6 +486,19 @@ Lisp_sp Lisp_O::createLispEnvironment(bool mpiEnabled, int mpiRank, int mpiSize)
   return _lisp;
 }
 
+#ifdef DEBUG_MONITOR
+void monitor_message(const std::string& msg)
+{
+#ifdef CLASP_THREADS
+  _lisp->_Roots._LogMutex.lock();
+#endif
+  _lisp->_Roots._LogStream << msg;
+  _lisp->_Roots._LogStream.flush();
+#ifdef CLASP_THREADS
+  _lisp->_Roots._LogMutex.unlock();
+#endif
+}
+#endif
 void Lisp_O::setupMpi(bool mpiEnabled, int mpiRank, int mpiSize) {
   this->_MpiEnabled = mpiEnabled;
   this->_MpiRank = mpiRank;
@@ -513,6 +526,14 @@ void testStrings() {
 }
 
 void Lisp_O::startupLispEnvironment(Bundle *bundle) {
+#ifdef DEBUG_MONITOR
+  {
+    stringstream ss;
+    ss << "/tmp/clasp-log-" << getpid();
+    this->_Roots._LogStream.open(ss.str(), std::fstream::out);
+    printf("%s:%d   Opening file %s for logging\n", __FILE__, __LINE__, ss.str().c_str());
+  }
+#endif
   { // Trap symbols as they are interned
     if (offsetof(Function_O,entry)!=offsetof(FuncallableInstance_O,entry)) {
       printf("%s:%d  The offsetf(Function_O,entry)/%lu!=offsetof(FuncallableInstance_O,entry)/%lu!!!!\n", __FILE__, __LINE__, offsetof(Function_O,entry),offsetof(FuncallableInstance_O,entry) );
