@@ -49,16 +49,22 @@
 ;;; Bound thread-local when the builtins module is needed
 (defvar *thread-local-builtins-module* nil)
 
+(defvar *thread-local-fastgf-module* nil)
+
 ;;;(defvar *llvm-context* (llvm-sys:create-llvm-context))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; Thread-local special variables to support the LLVM compiler
 ;;;
 ;;; To allow LLVM to run in different threads, certain things need to be thread local
-;;; 
-(mp:push-default-special-binding 'cmp:*llvm-context* '(llvm-sys:create-llvm-context))
-(mp:push-default-special-binding 'cmp:*primitives* nil)
-(mp:push-default-special-binding '*thread-local-builtins-module* nil)
+;;;
+(eval-when (:load-toplevel :execute)
+  (mp:push-default-special-binding 'cmp:*llvm-context* '(llvm-sys:create-llvm-context))
+  (mp:push-default-special-binding 'cmp:*primitives* nil)
+  (mp:push-default-special-binding 'cmp::*thread-local-builtins-module* nil)
+  (mp:push-default-special-binding 'cmp::*thread-local-fastgf-module* nil)
+  ;;;
+  )
 
 (defun dump-function (func)
   (warn "Do something with dump-function"))
@@ -431,15 +437,15 @@ The passed module is modified as a side-effect."
 (defun jit-link-fastgf-module (module)
   "Merge the intrinsics module with the passed module.
 The passed module is modified as a side-effect."
-  (unless *fastgf-module*
+  (unless *thread-local-fastgf-module*
     (let* ((fastgf-bitcode-name (namestring (truename (build-inline-bitcode-pathname :compile :fastgf))))
            (fastgf-module (llvm-sys:parse-bitcode-file fastgf-bitcode-name *llvm-context*)))
       (llvm-sys:remove-useless-global-ctors fastgf-module)
-      (setf *fastgf-module* fastgf-module)))
+      (setf *thread-local-fastgf-module* fastgf-module)))
   ;; Clone the intrinsics module and link it in
   (quick-module-dump module "module before linking fastgf-clone")
   (let ((linker (llvm-sys:make-linker module))
-        (fastgf-clone (llvm-sys:clone-module *fastgf-module*)))
+        (fastgf-clone (llvm-sys:clone-module *thread-local-fastgf-module*)))
     ;;(remove-always-inline-from-functions fastgf-clone)
     (quick-module-dump fastgf-clone "fastgf-clone")
     (llvm-sys:link-in-module linker fastgf-clone))
@@ -580,7 +586,6 @@ The passed module is modified as a side-effect."
   (defvar *jit-engine* (make-cxx-object 'llvm-sys:clasp-jit))
   #+threads(defvar *jit-lock* (mp:make-lock :name 'jit-engine-mutex :recursive t))
   (export '(jit-add-module-return-function jit-add-module-return-dispatch-function jit-remove-module))
-  (defvar *fastgf-module* nil)
   (defparameter *fastgf-dump-module* nil)
   (defvar *declare-dump-module* t)
   (defvar *jit-repl-module-handles* nil)
