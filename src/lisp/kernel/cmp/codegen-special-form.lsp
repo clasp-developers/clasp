@@ -508,8 +508,8 @@ jump to blocks within this tagbody."
          (let* ((go-index (irc-intrinsic "tagbodyDynamicGoIndexElseRethrow" exception-ptr frame))
                 (default-block (irc-basic-block-create "switch-default"))
                 (sw (irc-switch go-index default-block (length enumerated-tag-blocks))))
-           (mapc #'(lambda (one) (llvm-sys:add-case sw (jit-constant-size_t (car one))
-                                                    (cadr one))) enumerated-tag-blocks)
+           (mapc #'(lambda (one) (irc-add-case sw (jit-constant-size_t (car one)) (cadr one)))
+                 enumerated-tag-blocks)
            (irc-begin-block default-block)
            (irc-intrinsic "throwIllegalSwitchValue"
                           go-index (jit-constant-size_t (length enumerated-tag-blocks))))))

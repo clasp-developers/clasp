@@ -184,6 +184,10 @@ gctools::return_type cc_dispatch_effective_method(core::T_O* teffective_method, 
 
 extern "C" {
 extern int64_t cc_read_stamp(void* tagged_pointer);
+  void cc_error_too_few_arguments(size_t nargs, size_t minargs);
+  void cc_error_too_many_arguments(size_t nargs, size_t maxargs);
+
+
 }
 namespace llvmo {
 
@@ -208,6 +212,7 @@ namespace llvmo {
 
 
   [[noreturn]]extern void intrinsic_error(ErrorCode err, core::T_sp arg0 = _Nil<core::T_O>(), core::T_sp arg1 = _Nil<core::T_O>(), core::T_sp arg2 = _Nil<core::T_O>());
+
 
   core::T_sp intrinsic_slot_unbound(core::T_sp info, core::T_sp instance);
   

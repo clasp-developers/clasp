@@ -1781,4 +1781,12 @@ gctools::return_type cc_dispatch_slot_writer_index_debug(core::T_O* toptimized_s
 }
 
 
+void cc_error_too_few_arguments(size_t nargs, size_t minargs) {
+  SIMPLE_ERROR(BF("Not enough arguments - you provided %lu and %lu are required") % nargs % minargs );
+}
+
+void cc_error_too_many_arguments(size_t nargs, size_t maxargs) {
+  SIMPLE_ERROR(BF("Too many arguments - you provided %lu and %lu are allowed") % nargs % maxargs );
+}
+
 };
