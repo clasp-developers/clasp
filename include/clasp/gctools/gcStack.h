@@ -195,13 +195,17 @@ DO NOT CHANGE THE ORDER OF THESE OBJECTS WITHOUT UPDATING THE DEFINITION OF +va_
 #endif
   inline core::T_O* next_arg_raw() {
     --this->_remaining_nargs;
+ #ifdef _DEBUG_BUILD
     this->check_remaining_nargs();
+ #endif
     return LCC_NEXT_ARG_RAW_AND_ADVANCE(this);
   }
 
   inline core::T_sp next_arg() {
     --this->_remaining_nargs;
+#ifdef _DEBUG_BUILD
     this->check_remaining_nargs();
+#endif
     T_O* ptr = LCC_NEXT_ARG_RAW_AND_ADVANCE(this);
     return T_sp(reinterpret_cast<gctools::Tagged>(ptr));
   }

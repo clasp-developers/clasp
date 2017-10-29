@@ -93,85 +93,104 @@ CL_LAMBDA(head &va-rest args);
 CL_DECLARE();
 CL_DOCSTRING("apply");
 DONT_OPTIMIZE_WHEN_DEBUG_RELEASE
-CL_DEFUN T_mv cl__apply(T_sp head, VaList_sp args) {
-  Function_sp func = coerce::functionDesignator(head);
-  int lenTotalArgs = args->total_nargs();
-  if (lenTotalArgs == 0) eval::errorApplyZeroArguments();
-  int lenArgs = args->remaining_nargs(); // lenTotalArgs - args->current_index();
-  T_O* lastArgRaw = args->relative_indexed_arg(lenArgs-1); // LCC_VA_LIST_INDEXED_ARG(lastArgRaw,args,lenArgs-1);
-//  printf("%s:%d  lenTotalArgs = %d lenArgs = %d\n", __FILE__, __LINE__, lenTotalArgs, lenArgs );
-  if (gctools::tagged_nilp(lastArgRaw)) {
-//    printf("%s:%d apply with nil last arg\n", __FILE__, __LINE__ );
-    // NIL as last argument
-    int nargs = args->remaining_nargs()-1;
-//    printf("%s:%d apply with multiple arguments and the last is nil nargs=%d\n", __FILE__, __LINE__, nargs );
-    MAKE_STACK_FRAME( frame, func.raw_(), nargs);
-    T_sp obj = args;
+CL_DEFUN T_mv cl__apply( T_sp head, VaList_sp args )
+{
+  Function_sp func         = coerce::functionDesignator( head );
+  int         lenArgs      = 0;
+
+  if ( args->total_nargs() == 0 )
+    eval::errorApplyZeroArguments();
+
+  lenArgs = args->remaining_nargs();
+
+  T_O* lastArgRaw = args->relative_indexed_arg( lenArgs - 1 );
+
+  if ( gctools::tagged_nilp( lastArgRaw ))
+  {
+    int nargs = args->remaining_nargs() - 1;
+
+    MAKE_STACK_FRAME( frame, func.raw_(), nargs );
+
     size_t idx = 0;
-    for (int i(0); i < nargs; ++i) {
-      (*frame)[idx] = args->next_arg_raw();
-      ++idx;
+    for ( int i(0); i < nargs; ++i )
+    {
+      (*frame)[idx++] = args->next_arg_raw();
     }
-    Vaslist valist_struct(frame);
-    VaList_sp valist(&valist_struct); // = frame.setupVaList(valist_struct);;
-    return funcall_consume_valist_<core::Function_O>(func.tagged_(), valist);
-  } else if (gctools::tagged_vaslistp(lastArgRaw) && lenArgs == 1) {
-//    printf("%s:%d apply with one argument and its a valist\n", __FILE__, __LINE__ );
-    VaList_sp valast((gc::Tagged)lastArgRaw);
-    Vaslist valast_copy(*valast);
-    VaList_sp valast_copy_sp(&valast_copy);
-    return funcall_consume_valist_<core::Function_O>(func.tagged_(), valast_copy_sp);
-  } else if (gctools::tagged_vaslistp(lastArgRaw)) {
-    // The last argument is a VaList - so we need to create a new frame
-    // to hold the contents of the two lists of arguments
-    VaList_sp valast((gc::Tagged)lastArgRaw);
-    Vaslist valist_scopy(*valast);
-    VaList_sp lastArgs(&valist_scopy); // = gc::smart_ptr<Vaslist>((gc::Tagged)last.raw_());
-    int lenFirst = args->remaining_nargs()-1;
-    int lenRest = lastArgs->remaining_nargs(); // LCC_VA_LIST_NUMBER_OF_ARGUMENTS(lastArgs);
-    int nargs = lenFirst + lenRest;
-//    printf("%s:%d apply with multiple arguments and the last is a valist: nargs=%d lenFirst=%d lenRest=%d\n", __FILE__, __LINE__, nargs, lenFirst, lenRest );
-    // Allocate a frame on the side stack that can take all arguments
-    MAKE_STACK_FRAME(frame, func.raw_(), nargs);
-    T_sp obj = args;
-    size_t idx = 0;
-    for (int i(0); i < lenFirst; ++i) {
-      (*frame)[idx] = args->next_arg_raw();
-      ++idx;
-    }
-    for (int i(0); i < lenRest; ++i) {
-      (*frame)[idx] = lastArgs->next_arg_raw();
-      ++idx;
-    }
-    Vaslist valist_struct(frame);
-    VaList_sp valist(&valist_struct); // = frame.setupVaList(valist_struct);
-    return funcall_consume_valist_<core::Function_O>(func.tagged_(), valist);
-  } else if (gctools::tagged_consp(lastArgRaw)) {
-    // Cons as last argument
-    int lenFirst = args->remaining_nargs()-1;
-    Cons_sp last((gc::Tagged)lastArgRaw);
-    int lenRest = cl__length(last);
-    int nargs = lenFirst + lenRest;
-//    printf("%s:%d apply with multiple arguments and the last is a list nargs=%d lenFirst=%d lenRest=%d\n", __FILE__, __LINE__, nargs,lenFirst,lenRest );
-    MAKE_STACK_FRAME( frame, func.raw_(), nargs);
-    T_sp obj = args;
-    size_t idx = 0;
-    for (int i(0); i < lenFirst; ++i) {
-      (*frame)[idx] = args->next_arg_raw();
-      ++idx;
-    }
-    List_sp cargs = gc::As<Cons_sp>(last);
-    for (int i(0); i < lenRest; ++i) {
-      (*frame)[idx] = oCar(cargs).raw_();
-      cargs = oCdr(cargs);
-      ++idx;
-    }
-    Vaslist valist_struct(frame);
-    VaList_sp valist(&valist_struct); // = frame.setupVaList(valist_struct);;
-    return funcall_consume_valist_<core::Function_O>(func.tagged_(), valist);
+
+    Vaslist valist_struct( frame );
+    VaList_sp valist( &valist_struct );
+    return funcall_consume_valist_<core::Function_O>( func.tagged_(), valist );
   }
-  T_sp lastArg((gc::Tagged)lastArgRaw);
-  eval::errorApplyLastArgumentNotList(lastArg);
+  else
+    if ( gctools::tagged_vaslistp( lastArgRaw ) && ( lenArgs == 1 ))
+    {
+      VaList_sp valast( (gc::Tagged) lastArgRaw );
+      Vaslist valast_copy( *valast );
+      VaList_sp valast_copy_sp( &valast_copy );
+      return funcall_consume_valist_<core::Function_O>( func.tagged_(), valast_copy_sp );
+    }
+    else
+      if ( gctools::tagged_vaslistp( lastArgRaw ))
+      {
+        VaList_sp valast( (gc::Tagged) lastArgRaw );
+        Vaslist valist_scopy( *valast );
+        VaList_sp lastArgs( &valist_scopy );
+
+        int lenFirst = args->remaining_nargs() - 1;
+        int lenRest = lastArgs->remaining_nargs();
+        int nargs = lenFirst + lenRest;
+
+        MAKE_STACK_FRAME(frame, func.raw_(), nargs);
+
+        size_t idx = 0;
+        for ( int i(0); i < lenFirst; ++i )
+        {
+          (*frame)[ idx++ ] = args->next_arg_raw();
+        }
+
+        for ( int i(0); i < lenRest; ++i )
+        {
+          (*frame)[idx++] = lastArgs->next_arg_raw();
+        }
+
+        Vaslist valist_struct( frame );
+        VaList_sp valist( &valist_struct );
+        return funcall_consume_valist_<core::Function_O>( func.tagged_(), valist );
+      }
+      else
+        if ( gctools::tagged_consp( lastArgRaw ))
+        {
+          // Cons as last argument
+          int lenFirst = args->remaining_nargs() - 1;
+
+          Cons_sp last( (gc::Tagged) lastArgRaw );
+
+          // int lenRest = last.unsafe_cons()->length();
+          int lenRest = last->length();
+          int nargs = lenFirst + lenRest;
+
+          MAKE_STACK_FRAME( frame, func.raw_(), nargs);
+
+          size_t idx = 0;
+          for ( int i(0); i < lenFirst; ++i )
+          {
+            (*frame)[idx++] = args->next_arg_raw();
+          }
+
+          List_sp cargs = gc::As<Cons_sp>( last );
+          for ( int i(0); i < lenRest; ++i )
+          {
+            (*frame)[idx++] = oCar( cargs ).raw_();
+            cargs = oCdr(cargs);
+          }
+
+          Vaslist valist_struct(frame);
+          VaList_sp valist(&valist_struct); // = frame.setupVaList(valist_struct);;
+          return funcall_consume_valist_<core::Function_O>( func.tagged_(), valist );
+        }
+
+  T_sp lastArg( (gc::Tagged) lastArgRaw );
+  eval::errorApplyLastArgumentNotList( lastArg );
   UNREACHABLE();
 }
 
@@ -399,7 +418,7 @@ CL_DEFUN T_mv core__process_declarations(List_sp inputBody, T_sp expectDocString
   List_sp code;
   List_sp specials;
   eval::extract_declares_docstring_code_specials(inputBody, declares,
-                                           b_expect_doc, docstring, code, specials);
+                                                 b_expect_doc, docstring, code, specials);
   T_sp tdeclares = canonicalize_declarations(declares);
   return Values(tdeclares, code, (T_sp)docstring, specials);
 };
@@ -500,8 +519,8 @@ T_mv core__classify_let_variables_and_declares(List_sp variables, List_sp declar
     specialsSet->insert(oCar(cur)); //make(declaredSpecials);
   HashTableEq_sp specialInVariables(HashTableEq_O::create_default());
   HashTable_sp indices = cl__make_hash_table(cl::_sym_eq, make_fixnum(8),
-                                            DoubleFloat_O::create(1.5),
-                                            DoubleFloat_O::create(1.0));
+                                             DoubleFloat_O::create(1.5),
+                                             DoubleFloat_O::create(1.0));
   ql::list classified;
   size_t indicesSize = 0;
   for (auto cur : variables) {
@@ -527,10 +546,10 @@ T_mv core__classify_let_variables_and_declares(List_sp variables, List_sp declar
     }
   }
   specialsSet->maphash([&classified, &specialInVariables](T_sp s, T_sp val) {
-                    if ( !specialInVariables->contains(s) ) {
-                        classified << Cons_O::create(core::_sym_declaredSpecial,s);
-                    }
-  });
+      if ( !specialInVariables->contains(s) ) {
+        classified << Cons_O::create(core::_sym_declaredSpecial,s);
+      }
+    });
   T_sp tclassified = classified.cons();
   return Values(tclassified, make_fixnum((int)indicesSize));
 }
