@@ -148,7 +148,7 @@
 ;;; INSTANCE UPDATE PREVIOUS
 ;;;
 (eval-when (:compile-toplevel :execute #+clasp-boot :load-toplevel)
-  (defmacro ensure-up-to-date-instance (instance)
+  #+(or)(defmacro ensure-up-to-date-instance (instance)
     ;; The up-to-date status of a class is determined by
     ;; instance.sig. This slot of the C structure contains a list of
     ;; slot definitions that was used to create the instance. When the
@@ -178,7 +178,7 @@
 (defun standard-instance-get (instance location)
   (with-early-accessors (+standard-class-slots+
 			 +slot-definition-slots+)
-    (ensure-up-to-date-instance instance)
+    #+(or)(ensure-up-to-date-instance instance)
     (cond ((si:fixnump location)
 	   ;; local slot
 	   (si:instance-ref instance (truly-the fixnum location)))
@@ -191,7 +191,7 @@
 (defun standard-instance-set (val instance location)
   (with-early-accessors (+standard-class-slots+
 			 +slot-definition-slots+)
-    (ensure-up-to-date-instance instance)
+    #+(or)(ensure-up-to-date-instance instance)
     (cond ((si:fixnump location)
 	   ;; local slot
 	   (si:instance-set instance (truly-the fixnum location) val))
