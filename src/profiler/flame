@@ -1,5 +1,4 @@
 #! /bin/bash
-cat $1 >/tmp/out-symbol-flame.user_stacks
 #PID=$1
 #TIME=${2:-60s}
 #RATE=${3:-97}
@@ -11,6 +10,6 @@ cat $1 >/tmp/out-symbol-flame.user_stacks
 #else
 #   cp /tmp/out-$1.user_stacks /tmp/out-symbol-$1.user_stacks
 #fi
-$FLAME_GRAPH_HOME/stackcollapse.pl /tmp/out-symbol-flame.user_stacks >/tmp/out-symbol-flame.folded
+$FLAME_GRAPH_HOME/stackcollapse.pl $1 >/tmp/out-symbol-flame.folded
 $FLAME_GRAPH_HOME/flamegraph.pl /tmp/out-symbol-flame.folded >/tmp/out-flame.svg
 echo /tmp/out-flame.svg

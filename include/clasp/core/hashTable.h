@@ -84,6 +84,8 @@ namespace core {
     static HashTable_sp create(T_sp test); // set everything up with defaults
 
   public:
+    static void sxhash_eq(Hash1Generator &running_hash, T_sp obj, LocationDependencyPtrT);
+    static void sxhash_eql(Hash1Generator &running_hash, T_sp obj, LocationDependencyPtrT);
     static void sxhash_eq(HashGenerator &running_hash, T_sp obj, LocationDependencyPtrT);
     static void sxhash_eql(HashGenerator &running_hash, T_sp obj, LocationDependencyPtrT);
     static void sxhash_equal(HashGenerator &running_hash, T_sp obj, LocationDependencyPtrT);
@@ -129,7 +131,7 @@ namespace core {
   /*! I'm not sure I need this and tableRef */
     List_sp bucketsFind_no_lock(T_sp key) const;
   /*! I'm not sure I need this and bucketsFind */
-    List_sp tableRef_no_lock(T_sp key);
+    virtual List_sp tableRef_no_lock(T_sp key);
     List_sp findAssoc_no_lock(gc::Fixnum index, T_sp searchKey) const;
 
   /*! Return true if the key is within the hash table */

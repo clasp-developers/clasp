@@ -232,8 +232,7 @@ CL_DEFUN int core__hash_eql(List_sp args) {
   HashGenerator hg;
   for (auto cur : args) {
     HashTable_O::sxhash_eql(hg, oCar(cur), NULL);
-    if (hg.isFull())
-      break;
+    if (!hg.isFilling()) break;
   }
   return hg.hash();
 };
@@ -286,6 +285,22 @@ void HashTable_O::setup(uint sz, Number_sp rehashSize, double rehashThreshold) {
 }
 
 void HashTable_O::sxhash_eq(HashGenerator &hg, T_sp obj, LocationDependencyPtrT ld) {
+  volatile void* address = (void*)obj.raw_();
+#ifdef USE_MPS
+  if (ld) mps_ld_add(ld, global_arena, (mps_addr_t)address );
+#endif
+  hg.addPart((Fixnum)(((uintptr_clasp_t)address)>>gctools::tag_shift));
+}
+
+void HashTable_O::sxhash_eq(Hash1Generator &hg, T_sp obj, LocationDependencyPtrT ld) {
+  volatile void* address = (void*)obj.raw_();
+#ifdef USE_MPS
+  if (ld) mps_ld_add(ld, global_arena, (mps_addr_t)address );
+#endif
+  hg.addPart((Fixnum)(((uintptr_clasp_t)address)>>gctools::tag_shift));
+}
+
+void HashTable_O::sxhash_eql(Hash1Generator &hg, T_sp obj, LocationDependencyPtrT ld) {
   if (obj.fixnump()) {
     if (hg.isFilling())
       hg.addPart(obj.unsafe_fixnum());
@@ -298,16 +313,18 @@ void HashTable_O::sxhash_eq(HashGenerator &hg, T_sp obj, LocationDependencyPtrT 
     if (hg.isFilling())
       hg.addPart(obj.unsafe_character());
     return;
+  } else if (obj.generalp()) {
+    if ( gc::IsA<Number_sp>(obj)) {
+      hg.hashObject(obj);
+      return;
+    }
   }
-  if (obj.objectp()) {
-    volatile void* address = &(*obj);
+  volatile void* address = &(*obj);
 #ifdef USE_MPS
-    if (ld) mps_ld_add(ld, global_arena, (mps_addr_t)address );
+  if (ld) mps_ld_add(ld, global_arena, (mps_addr_t)address );
 #endif
-    hg.addPart((Fixnum)(((uintptr_clasp_t)address)>>gctools::tag_shift));
-    return;
-  }
-  SIMPLE_ERROR(BF("sxhash_eq cannot hash object"));
+  hg.addPart((Fixnum)(((uintptr_clasp_t)address)>>gctools::tag_shift));
+  return;
 }
 
 void HashTable_O::sxhash_eql(HashGenerator &hg, T_sp obj, LocationDependencyPtrT ld) {
@@ -512,37 +529,34 @@ List_sp HashTable_O::findAssoc_no_lock(gc::Fixnum index, T_sp key) const {
   return _Nil<T_O>();
 }
 
-  CL_LAMBDA(key hash-table &optional default-value);
-  CL_DECLARE();
-  CL_DOCSTRING("gethash");
-  CL_DEFUN T_mv cl__gethash(T_sp key, T_sp hashTable, T_sp default_value) {
-    HashTable_sp ht = gc::As<HashTable_sp>(hashTable);
-    return ht->gethash(key, default_value);
-  };
+CL_LAMBDA(key hash-table &optional default-value);
+CL_DECLARE();
+CL_DOCSTRING("gethash");
+CL_DEFUN T_mv cl__gethash(T_sp key, T_sp hashTable, T_sp default_value) {
+  HashTable_sp ht = gc::As<HashTable_sp>(hashTable);
+  return ht->gethash(key, default_value);
+};
 
-  List_sp HashTable_O::bucketsFind_no_lock(T_sp key) const {
-    ASSERT(this->_HashTable);
-    cl_index length = cl__length(ENSURE_VALID_OBJECT(this->_HashTable));
-//  printf("%s:%d:%s  _HashTable length = %ld\n", __FILE__, __LINE__, __FUNCTION__, length );
+List_sp HashTable_O::tableRef_no_lock(T_sp key) {
+    ASSERT(gc::IsA<Array_sp>(this->_HashTable));
+    cl_index length = ENSURE_VALID_OBJECT(this->_HashTable)->length();
     cl_index index = this->safe_sxhashKey(key, length, false);
-    List_sp keyValueCons = this->findAssoc_no_lock(index, key);
-    return keyValueCons;
-  }
-
-  List_sp HashTable_O::tableRef_no_lock(T_sp key) {
-    List_sp keyValueCons = this->bucketsFind_no_lock(key);
-    if (keyValueCons.notnilp())
-      return keyValueCons;
+    List_sp pair = _Nil<T_O>();
+    for (auto cur : gc::As_unsafe<List_sp>((*ENSURE_VALID_OBJECT(this->_HashTable))[index])) {
+      pair = CONS_CAR(cur);
+      ASSERT(pair.consp());
+      if (this->keyTest(CONS_CAR(pair), key)) return pair;
+    }
 #if defined(USE_MPS)
   // Location dependency test if key is stale
     if (key.objectp()) {
       void *blockAddr = &(*key);
       if (mps_ld_isstale(const_cast<mps_ld_t>(&(this->_LocationDependency)), global_arena, blockAddr)) {
-        keyValueCons = this->rehash_no_lock(false, key);
+        return this->rehash_no_lock(false, key);
       }
     }
 #endif
-    return keyValueCons;
+    return _Nil<T_O>();
   }
 
   CL_LAMBDA(ht);
@@ -557,50 +571,47 @@ List_sp HashTable_O::findAssoc_no_lock(gc::Fixnum index, T_sp key) const {
     HT_READ_LOCK(this);
     List_sp keyValuePair = this->tableRef_no_lock(key);
     LOG(BF("Found keyValueCons")); // % keyValueCons->__repr__() ); INFINITE-LOOP
-    if (keyValuePair.nilp()) {
-      LOG(BF("valueOrUnbound is unbound - returning default"));
-      return (Values(default_value, _Nil<T_O>()));
-    }
-    T_sp value = oCdr(keyValuePair);
-    if (value.unboundp()) {
-      LOG(BF("valueOrUnbound is unbound - returning default"));
-      return (Values(default_value, _Nil<T_O>()));
-    }
-    LOG(BF("Found assoc - returning")); // : %s") % res->__repr__() );  INFINITE-LOOP
-    return (Values(value, _lisp->_true()));
+    if (keyValuePair.consp()) {
+      T_sp value = CONS_CDR(keyValuePair);
+      if (value.unboundp()) {
+        LOG(BF("valueOrUnbound is unbound - returning default"));
+        return (Values(default_value, _Nil<T_O>()));
+      }
+      LOG(BF("Found assoc - returning")); // : %s") % res->__repr__() );  INFINITE-LOOP
+      return Values(value, _lisp->_true());
+    }      
+    return Values(default_value, _Nil<T_O>());
   }
 
   CL_LISPIFY_NAME("core:hashIndex");
   CL_DEFMETHOD gc::Fixnum HashTable_O::hashIndex(T_sp key) const {
-    gc::Fixnum idx = this->safe_sxhashKey(key, cl__length(ENSURE_VALID_OBJECT(this->_HashTable)), false);
+    gc::Fixnum idx = this->safe_sxhashKey(key, ENSURE_VALID_OBJECT(this->_HashTable)->length(), false);
     return idx;
   }
 
   List_sp HashTable_O::find(T_sp key) {
     HT_READ_LOCK(this);
     List_sp keyValue = this->tableRef_no_lock(key);
-    if (keyValue.nilp()) return keyValue;
-    if (oCdr(keyValue).unboundp()) return _Nil<T_O>();
+    if (!keyValue.consp()) return keyValue;
+    if (CONS_CDR(keyValue).unboundp()) return _Nil<T_O>();
     return keyValue;
   }
 
   bool HashTable_O::contains(T_sp key) {
     HT_READ_LOCK(this);
     List_sp keyValue = this->find(key);
-    if (keyValue.nilp())
-      return false;
-    return true;
+    return keyValue.consp();
   }
 
   bool HashTable_O::remhash(T_sp key) {
     HT_WRITE_LOCK(this);
     List_sp keyValuePair = this->tableRef_no_lock(key);
-    if (keyValuePair.nilp() || oCdr(keyValuePair).unboundp()) return false;
-    {
-      keyValuePair.asCons()->setCdr(_Unbound<T_O>());
+    if (keyValuePair.consp() && !CONS_CDR(keyValuePair).unboundp()) {
+      CONS_CDR(keyValuePair) = _Unbound<T_O>();
       this->_HashTableCount--;
+      return true;
     }
-    return true;
+    return false;
   }
 
   CL_LISPIFY_NAME("core:hashTableSetfGethash");

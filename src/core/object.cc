@@ -410,6 +410,15 @@ bool General_O::isAInstanceOf(Class_sp mc) {
 }
 #endif
 
+void Hash1Generator::hashObject(T_sp obj) {
+  clasp_sxhash(obj, *this);
+}
+
+/*! Recursive hashing of objects need to be prevented from 
+    infinite recursion.   So we keep track of the depth of
+    recursion.  clasp_sxhash will modify this->_Depth and
+    when we return we have to restore _Depth to its
+    value when it entered here. */
 void HashGenerator::hashObject(T_sp obj) {
   int depth = this->_Depth;
   ++this->_Depth;
@@ -442,6 +451,14 @@ bool HashGenerator::addPart(const mpz_class &bignum) {
   } else {
     this->addPart(0);
   }
+  return this->isFilling();
+}
+
+
+bool Hash1Generator::addPart(const mpz_class &bignum) {
+  HashGenerator hg;
+  hg.addPart(bignum);
+  this->_Part = hg.hash(0);
   return this->isFilling();
 }
 
