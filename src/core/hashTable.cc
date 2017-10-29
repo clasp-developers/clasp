@@ -323,9 +323,8 @@ void HashTable_O::sxhash_eql(HashGenerator &hg, T_sp obj, LocationDependencyPtrT
     if (hg.isFilling())
       hg.addPart(obj.unsafe_character());
     return;
-  }
-  if (obj.objectp()) {
-    if (cl__numberp(obj)) {
+  } else if (obj.generalp()) {
+    if ( gc::IsA<Number_sp>(obj)) {
       hg.hashObject(obj);
       return;
     }
