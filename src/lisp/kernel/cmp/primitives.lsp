@@ -212,7 +212,7 @@
     (primitive-unwinds "cc_bound_or_error" %t*% (list %t*% %t*% %t*%)) ; optimized-data instance value
     (primitive         "cc_vaslist_end" %void% (list %t*%))
 
-    (primitive-unwinds "cc_error_if_wrong_number_of_arguments" %void% (list %size_t% %size_t% %size_t%))
+    (primitive-unwinds "cc_check_if_wrong_number_of_arguments" %void% (list %size_t% %size_t% %size_t%))
     (primitive         "cc_ensure_valid_object" %t*% (list %t*%))
     (primitive         "cc_getPointer" %i8*% (list %t*%))
     (primitive         "cc_setTmvToNil" %void% (list %tmv*%))

@@ -31,13 +31,28 @@
 (dolist (l *d*) (setf (gethash l *ht-eql*) l))
 (defparameter *ht-eq* (make-hash-table :test 'eq))
 (dolist (l *d*) (setf (gethash l *ht-eq*) l))
+(defparameter *ht-equal* (make-hash-table :test 'equal))
+(dolist (l *d*) (setf (gethash l *ht-equal*) l))
 ;; Make the list circular
 (rplacd (last *d*) *d*)
-(defun do-gethash-eql (n) (dotimes (i n) (gethash *d* *ht-eql*) (setf *d* (cdr *d*))))
-(time-run 'do-gethash-eql)
 
-(defun do-gethash-eq (n) (dotimes (i n) (gethash *d* *ht-eq*) (setf *d* (cdr *d*))))
-(time-run 'do-gethash-eq)
+(defun do-notinline-gethash-eq (n) (declare (notinline gethash))  (dotimes (i n) (gethash *d* *ht-eq*) (setf *d* (cdr *d*))))
+(time-run 'do-notinline-gethash-eq)
+
+#+clasp
+(progn
+  (declaim (inline gethash))
+  (core::generate-direct-call-defun (core:magic-intern "cl__gethash") (key hash-table &optional default-value) "wrapped_cl__gethash_T_spT_spT_sp" )
+  (declaim (notinline gethash)))
+
+(defun do-inline-gethash-eq (n) (declare (inline gethash))  (dotimes (i n) (gethash *d* *ht-eq*) (setf *d* (cdr *d*))))
+(time-run 'do-inline-gethash-eq)
+
+(defun do-notinline-gethash-eql (n) (declare (notinline gethash))  (dotimes (i n) (gethash *d* *ht-eql*) (setf *d* (cdr *d*))))
+(time-run 'do-notinline-gethash-eql)
+
+(defun do-notinline-gethash-equal (n) (declare (notinline gethash))  (dotimes (i n) (gethash *d* *ht-equal*) (setf *d* (cdr *d*))))
+(time-run 'do-notinline-gethash-equal)
 
 (defun do-sxhash (n) (dotimes (i n) (sxhash 1234)))
 (time-run 'do-sxhash 6)
@@ -59,3 +74,5 @@
 
 (defun do-alloc10000000 (n) (dotimes (i n) (setq *dump* (make-list 10000000))))
 (time-run 'do-alloc10000000 0)
+
+

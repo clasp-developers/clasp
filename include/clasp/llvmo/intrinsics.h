@@ -184,8 +184,8 @@ gctools::return_type cc_dispatch_effective_method(core::T_O* teffective_method, 
 
 extern "C" {
 extern int64_t cc_read_stamp(void* tagged_pointer);
-  void cc_error_too_few_arguments(size_t nargs, size_t minargs);
-  void cc_error_too_many_arguments(size_t nargs, size_t maxargs);
+[[noreturn]] void cc_error_too_few_arguments(size_t nargs, size_t minargs);
+[[noreturn]] void cc_error_too_many_arguments(size_t nargs, size_t maxargs);
 
 
 }
