@@ -120,7 +120,7 @@
 	  (idx 0 (1+ idx)))
 	 ((null cur-key) nil)
       (let ((supplied-alloca (funcall *translate-datum* supplied)))
-	(irc-store (irc-t) supplied-alloca)))
+	(irc-store (irc-nil) supplied-alloca)))
     (let* ((entry-saw-aok (irc-size_t (if lambda-list-allow-other-keys 2 0)))
 	   (entry-bad-kw-idx (irc-size_t 65536))
 	   (aok-val (irc-literal :allow-other-keys "aok"))
