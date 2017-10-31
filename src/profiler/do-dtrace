@@ -2,10 +2,9 @@
 # arguments:   pid [output-file [time] [sample-speed-hz] [stack-frames]
 
 PID=$1
-OUTFILE=${2:-"/tmp/out-$1.user_stacks"}
-TIME=${3:-30s}
-RATE=${4:-97}
-FRAMES=${5:-1000}
+TIME=${2:-30s}
+RATE=${3:-97}
+FRAMES=${4:-1000}
 sudo rm -f /tmp/out-$1.user_stacks && sudo dtrace -p $PID -x ustackframes=${FRAMES} -n  "profile-$RATE /pid == $PID && arg1 / { @[ustack()] = count(); } tick-$TIME { exit(0); }" -o /tmp/out-$1.user_stacks
 if [ -f /tmp/clasp-symbols-$1 ]; then
    ./symbolicate.lisp -i /tmp/out-$1.user_stacks -o /tmp/out-symbol-$1.user_stacks -s /tmp/clasp-symbols-$1

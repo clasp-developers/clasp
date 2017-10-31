@@ -48,6 +48,12 @@
 (defun do-inline-gethash-eq (n) (declare (inline gethash))  (dotimes (i n) (gethash *d* *ht-eq*) (setf *d* (cdr *d*))))
 (time-run 'do-inline-gethash-eq)
 
+#+clasp
+(progn
+  (defun do-notinline-gethash3-eq (n) (declare (notinline gethash))  (dotimes (i n) (core:gethash3 *d* *ht-eq* nil) (setf *d* (cdr *d*))))
+  (time-run 'do-notinline-gethash3-eq))
+
+
 (defun do-notinline-gethash-eql (n) (declare (notinline gethash))  (dotimes (i n) (gethash *d* *ht-eql*) (setf *d* (cdr *d*))))
 (time-run 'do-notinline-gethash-eql)
 
