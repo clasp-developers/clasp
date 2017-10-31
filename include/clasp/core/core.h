@@ -499,7 +499,7 @@ namespace core {
   [[noreturn]]void lisp_errorUnexpectedType(class_id expectedTyp, class_id givenTyp, core::T_O *objP);
   [[noreturn]]void lisp_errorUnexpectedNil(class_id expectedTyp);
   [[noreturn]]void lisp_errorDereferencedNil();
-  [[noreturn]]void lisp_error_no_stamp();
+  [[noreturn]]void lisp_error_no_stamp(void* obj);
   [[noreturn]]void lisp_errorDereferencedUnbound();
   [[noreturn]]void lisp_errorIllegalDereference(void *v);
   [[noreturn]]void lisp_errorExpectedList(core::T_O* objP);

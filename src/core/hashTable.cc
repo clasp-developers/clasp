@@ -128,7 +128,7 @@ void HashTable_O::set_thread_safe(bool thread_safe)
 #endif
 }
 
-CL_LAMBDA(&key (test (function eql)) (size 64) (rehash-size 2.0) (rehash-threshold 1.0) weakness debug thread_safe);
+CL_LAMBDA(&key (test (function eql)) (size 64) (rehash-size 2.0) (rehash-threshold 1.0) weakness debug thread-safe);
 CL_DECLARE();
 CL_DOCSTRING("see CLHS");
 CL_DEFUN T_sp cl__make_hash_table(T_sp test, Fixnum_sp size, Number_sp rehash_size, Real_sp orehash_threshold, Symbol_sp weakness, T_sp debug, T_sp thread_safe) {
