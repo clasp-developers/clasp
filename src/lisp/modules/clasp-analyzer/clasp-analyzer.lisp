@@ -340,6 +340,7 @@
 
 (defun generate-dynamic-cast-code (fout analysis)
   (maphash (lambda (key enum) 
+             (declare (core:lambda-name generate-dynamic-cast-code.lambda))
              (when (and (not (abstract-species-enum-p enum analysis))
                         (enum-in-hierarchy enum))
                (format fout "// ~a~%" (build-enum-name enum))
@@ -371,6 +372,7 @@
 
 (defun generate-typeq-code (fout analysis)
   (maphash (lambda (key enum)
+             (declare (core:lambda-name generate-typeq-code.lambda))
              (when (and (not (abstract-species-enum-p enum analysis))
                         (enum-in-hierarchy enum)
                         (derived-from-cclass key "core::General_O" (analysis-project analysis)))
@@ -1270,6 +1272,7 @@ can be saved and reloaded within the project for later analysis"
                   (clang-tool:mtag-node match-info :whole)
                   (clang-tool:ast-context match-info)
                   (lambda (minfo)
+                    (declare (core:lambda-name setup-cclasp-search.lambda))
                     (let* ((field-node (clang-tool:mtag-node minfo :field))
                            (type (progn
                                    (or field-node (error "field-node is nil"))
@@ -1296,6 +1299,7 @@ can be saved and reloaded within the project for later analysis"
                   (clang-tool:mtag-node match-info :whole)
                   (clang-tool:ast-context match-info)
                   (lambda (minfo)
+                    (declare (core:lambda-name setup-cclasp-search-*method-submatcher*.lambda))
                     (let* ((method-node (clang-tool:mtag-node minfo :method))
                            (location (clang-tool:mtag-loc-start minfo :method))
                            (method-name (clang-tool:mtag-name minfo :method)))
@@ -1307,6 +1311,7 @@ can be saved and reloaded within the project for later analysis"
                   class-node
                   (clang-tool:ast-context match-info)
                   (lambda (minfo)
+                    (declare (core:lambda-name setup-cclasp-search-*metadata-submatcher*.lambda))
                     (let* ((metadata-node (clang-tool:mtag-node minfo :metadata))
                            (metadata-name (string-upcase (clang-tool:mtag-name minfo :metadata))))
                       (push (intern metadata-name :keyword) metadata))))
