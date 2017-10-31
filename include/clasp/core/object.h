@@ -526,7 +526,7 @@ namespace core {
   /*! Return number of slots if instance of Instance_O otherwise return nil */
     virtual T_sp ofuncallableInstanceP() const { return _Nil<T_O>(); }; //
     bool funcallableInstanceP() const { return ofuncallableInstanceP().isTrue(); };
-    virtual Fixnum get_stamp_() const { lisp_error_no_stamp(); };
+    virtual Fixnum get_stamp_() const { lisp_error_no_stamp((void*)this); };
   };
 };
 

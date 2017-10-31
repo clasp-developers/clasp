@@ -48,6 +48,7 @@ namespace core {
   public:
     explicit DerivableCxxObject_O() : Base(){};
     virtual ~DerivableCxxObject_O(){};
+    virtual Fixnum get_stamp_() const { return this->stamp(); };
   };
 };
 #endif //]
