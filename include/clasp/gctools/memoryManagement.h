@@ -706,54 +706,55 @@ namespace core {
   class FuncallableInstance_O;
   typedef Instance_O Class_O;
 }
+#if 0 // commented out Nov 2017
 #if defined(USE_CXX_DYNAMIC_CAST) || defined(RUNNING_GC_BUILDER)
 template <> class gctools::GCStamp<core::Fixnum_dummy_O> {
 public:
-  static gctools::GCStampEnum const Stamp = gctools::STAMP_LISPALLOC_core__Fixnum_dummy_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__Fixnum_dummy_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER;
 };
 template <> class gctools::GCStamp<core::SingleFloat_dummy_O> {
 public:
-  static gctools::GCStampEnum const Stamp = gctools::STAMP_LISPALLOC_core__SingleFloat_dummy_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__SingleFloat_dummy_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER;
 };
 template <> class gctools::GCStamp<core::Character_dummy_O> {
 public:
-  static gctools::GCStampEnum const Stamp = gctools::STAMP_LISPALLOC_core__Character_dummy_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__Character_dummy_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER;
 };
 template <> class gctools::GCStamp<core::CPointer_dummy_O> {
 public:
-  static gctools::GCStampEnum const Stamp = gctools::STAMP_LISPALLOC_core__CPointer_dummy_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_CPOINTER ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER;
 };
 template <> class gctools::GCStamp<core::Cons_O> {
 public:
-  static gctools::GCStampEnum const Stamp = gctools::STAMP_LISPALLOC_core__Cons_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__Cons_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER;
 };
 template <> class gctools::GCStamp<core::VaList_dummy_O> {
 public:
-  static gctools::GCStampEnum const Stamp = gctools::STAMP_LISPALLOC_core__VaList_dummy_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__VaList_dummy_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER;
 };
 template <> class gctools::GCStamp<core::Instance_O> {
 public:
-  static gctools::GCStampEnum const Stamp = gctools::STAMP_LISPALLOC_core__Instance_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__Instance_O ;
   static const size_t Flags = FLAGS_STAMP_IN_RACK;
 };
 template <> class gctools::GCStamp<core::FuncallableInstance_O> {
 public:
-  static gctools::GCStampEnum const Stamp = gctools::STAMP_LISPALLOC_core__FuncallableInstance_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__FuncallableInstance_O ;
   static const size_t Flags = FLAGS_STAMP_IN_RACK;
 };
 template <> class gctools::GCStamp<core::WrappedPointer_O> {
 public:
-  static gctools::GCStampEnum const Stamp = gctools::STAMP_TEMPLATED_LISPALLOC_core__WrappedPointer_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__WrappedPointer_O ;
   static const size_t Flags = FLAGS_STAMP_IN_WRAPPER;
 };
 #endif
-
+#endif
 namespace gctools {
 
 /*
