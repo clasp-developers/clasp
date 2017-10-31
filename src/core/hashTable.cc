@@ -530,10 +530,15 @@ List_sp HashTable_O::findAssoc_no_lock(gc::Fixnum index, T_sp key) const {
 }
 
 CL_LAMBDA(key hash-table &optional default-value);
-CL_DECLARE();
 CL_DOCSTRING("gethash");
 CL_DEFUN T_mv cl__gethash(T_sp key, T_sp hashTable, T_sp default_value) {
   HashTable_sp ht = gc::As<HashTable_sp>(hashTable);
+  return ht->gethash(key, default_value);
+};
+
+CL_DOCSTRING("gethash3");
+CL_DEFUN T_mv core__gethash3(T_sp key, T_sp hashTable, T_sp default_value) {
+  HashTable_sp ht = gc::As_unsafe<HashTable_sp>(hashTable);
   return ht->gethash(key, default_value);
 };
 
