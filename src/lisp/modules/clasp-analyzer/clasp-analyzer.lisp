@@ -39,6 +39,7 @@
 ;;; --------------------------------------------------
 ;;; --------------------------------------------------
 (defmacro gclog (fmt &rest args))
+;;(defmacro gclog (fmt &rest args) `(format *debug-io* ,fmt ,@args))
 
 
 ;; ----------------------------------------------------------------------
@@ -1237,26 +1238,54 @@ can be saved and reloaded within the project for later analysis"
 
 
 (defun setup-cclass-search (mtool)
-  (symbol-macrolet ((results (project-classes (clang-tool:multitool-results mtool))))
-    (labels ((%%new-class-callback (match-info class-node record-key template-specializer)
+  (symbol-macrolet
+      ((results (project-classes (clang-tool:multitool-results mtool))))
+    (labels ((%%new-class-callback
+                 (match-info class-node record-key template-specializer)
+               (declare (core:lambda-name %%new-class-callback))
+               (gclog "Entered %%new-class-callback~%")
                (let ((cname (clang-tool:mtag-name match-info :whole))
                      (record-decl (clang-tool:mtag-node match-info :whole))
                      bases vbases fields method-names metadata )
+                 (gclog "In let~%")
                  ;;
                  ;; Run a matcher to find the base classes and their namespaces
                  ;;
+                 (gclog "Starting (ext:do-c++-iterator (it (cast:bases-iterator class-node))~%")
+                 (multiple-value-bind (start end)
+                     (cast:bases-iterator class-node)
+                   (let* ((next1 (sys:iterator-step start))
+                          (next2 (sys:iterator-step next1)))
+				      
+                     (gclog "(cast:bases-iterator class-node) start == end -> ~s~%" (core:iterator= start end))
+                     (gclog "(cast:bases-iterator class-node) next1 == end -> ~s~%" (core:iterator= next1 end))
+                     (gclog "(cast:bases-iterator class-node) next2 == end -> ~s~%" (core:iterator= next2 end))))
                  (ext:do-c++-iterator (it (cast:bases-iterator class-node))
+                   (gclog "In do-c++-iterator bases-iterator~%")
+                   (gclog "In do-c++-iterator bases-iterator it -> ~s~%" it)
                    (unless it
                      (multiple-value-bind (start end)
                          (cast:bases-iterator class-node)
                        (format t "(cast:bases-iterator  ~s -> ~s~%" start end)
                        (error "bases-iterator is nil for class -> ~s" class-node)))
-                   (let* ((qty (cast:get-type it))
-                          (canonical-qty (cast:get-canonical-type-internal (cast:get-type-ptr-or-null qty)))
-                          (base-decl (cast:get-as-cxxrecord-decl (cast:get-type-ptr-or-null canonical-qty))))
+                   (gclog "About to try and get type~%")
+                   (let* ((qty (let ((qty (cast:get-type it)))
+                                 (gclog "Got type ~s~%" qty)
+                                 (gclog "    get-as-string -> ~s~%" (cast:get-as-string qty))
+                                 qty))
+                          (canonical-qty (let ((x (cast:get-canonical-type-internal (cast:get-type-ptr-or-null qty))))
+                                           (gclog "got canonical-qty ~s~%" x)
+                                           x))
+                          (base-decl (let ((x (cast:get-as-cxxrecord-decl (cast:get-type-ptr-or-null canonical-qty))))
+                                       (gclog "got base-decl ~s~%" x)
+                                       x)))
+                     (gclog "In inner let~%")
                      (when base-decl
                        (push (record-key base-decl) bases))))
+                 (gclog "Starting (ext:do-c++-iterator (it (cast:vbases-iterator class-node))~%")
                  (ext:do-c++-iterator (it (cast:vbases-iterator class-node))
+                   (gclog "In do-c++-iterator vbases-iterator~%")
+                   (gclog "In do-c++-iterator vbases-iterator it -> ~s~%" it)
                    (or it (error "vbases-iterator is nil for class -> ~s" class-node))
                    (let* ((qty (cast:get-type it))
                           (canonical-qty (cast:get-canonical-type-internal (cast:get-type-ptr-or-null qty)))
@@ -1272,7 +1301,7 @@ can be saved and reloaded within the project for later analysis"
                   (clang-tool:mtag-node match-info :whole)
                   (clang-tool:ast-context match-info)
                   (lambda (minfo)
-                    (declare (core:lambda-name setup-cclasp-search.lambda))
+                    (declare (core:lambda-name %%new-class-callback.lambda))
                     (let* ((field-node (clang-tool:mtag-node minfo :field))
                            (type (progn
                                    (or field-node (error "field-node is nil"))
@@ -1299,7 +1328,7 @@ can be saved and reloaded within the project for later analysis"
                   (clang-tool:mtag-node match-info :whole)
                   (clang-tool:ast-context match-info)
                   (lambda (minfo)
-                    (declare (core:lambda-name setup-cclasp-search-*method-submatcher*.lambda))
+                    (declare (core:lambda-name %%new-class-callback-*method-submatcher*.lambda))
                     (let* ((method-node (clang-tool:mtag-node minfo :method))
                            (location (clang-tool:mtag-loc-start minfo :method))
                            (method-name (clang-tool:mtag-name minfo :method)))
@@ -1311,7 +1340,7 @@ can be saved and reloaded within the project for later analysis"
                   class-node
                   (clang-tool:ast-context match-info)
                   (lambda (minfo)
-                    (declare (core:lambda-name setup-cclasp-search-*metadata-submatcher*.lambda))
+                    (declare (core:lambda-name %%new-class-callback-*metadata-submatcher*.lambda))
                     (let* ((metadata-node (clang-tool:mtag-node minfo :metadata))
                            (metadata-name (string-upcase (clang-tool:mtag-name minfo :metadata))))
                       (push (intern metadata-name :keyword) metadata))))
@@ -1325,28 +1354,31 @@ can be saved and reloaded within the project for later analysis"
                                     :metadata metadata
                                     :fields fields))))
              (%%class-callback (match-info)
+               (declare (core:lambda-name %%class-callback))
                (gclog "MATCH: ------------------~%")
                (gclog "    Start:~%~a~%" (clang-tool:mtag-loc-start match-info :whole))
                (gclog "    Name: ~a~%" (clang-tool:mtag-name match-info :whole))
                (let* ((class-node (clang-tool:mtag-node match-info :whole)))
+                 (gclog "    Got class-node~%")
+                 (gclog "       class-node: ~a~%" class-node)
                  (multiple-value-bind (record-key template-specializer)
                      (record-key class-node)
+                   (gclog "    called record-key~%")
+                   (gclog "    record-key -> ~a~%" record-key)
                    (unless (or (typep class-node 'cast:class-template-partial-specialization-decl) ; ignore partial specializations
                                (and (typep class-node 'cast:class-template-specialization-decl) ; ignore template specializations that have undeclared specialization alloc
                                     (eq (cast:get-specialization-kind class-node) 'ast-tooling:tsk-undeclared))
                                (gethash record-key results)) ; ignore if we've seen it before
+                     (gclog "About to call %%new-class-callback~%")
                      (%%new-class-callback match-info class-node record-key template-specializer))))))
       (clang-tool:multitool-add-matcher mtool
-                             :name :cclasses
-                             :matcher-sexp *class-matcher*
-                             :initializer (lambda () (setf results (make-hash-table :test #'equal :thread-safe t)))
-                             :callback (make-instance 'clang-tool:code-match-callback
-                                                      :timer (make-instance 'clang-tool:code-match-timer
-                                                                            :name 'class-callback)
-                                                      :match-code (function %%class-callback))))))
-
-
-
+                                        :name :cclasses
+                                        :matcher-sexp *class-matcher*
+                                        :initializer (lambda () (setf results (make-hash-table :test #'equal :thread-safe t)))
+                                        :callback (make-instance 'clang-tool:code-match-callback
+                                                                 :timer (make-instance 'clang-tool:code-match-timer
+                                                                                       :name 'class-callback)
+                                                                 :match-code (function %%class-callback))))))
 
 ;; ----------------------------------------------------------------------
 ;; ----------------------------------------------------------------------

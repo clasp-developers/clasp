@@ -54,7 +54,6 @@ public:
   virtual bool operator==(T_sp other) const { SUBIMP(); };
   virtual bool operator<(T_sp other) const { SUBIMP(); };
   virtual bool eql_(T_sp other) const { return this->operator==(other); };
-
   virtual size_t templatedSizeof() const { SUBIMP(); };
 
   // Old way of doing things
@@ -68,13 +67,13 @@ CL_DEFMETHOD   virtual void next() {
     _OF();
     SUBCLASS_MUST_IMPLEMENT();
   };
-CL_LISPIFY_NAME("isDone");
-CL_DEFMETHOD   virtual bool isDone() {
-    _OF();
-    SUBCLASS_MUST_IMPLEMENT();
+
+ CL_LISPIFY_NAME("iterator_EQ_");
+ CL_DEFMETHOD   virtual bool iteratorEQ_(core::T_sp other) {
+   return this->operator==(other);
   };
-CL_LISPIFY_NAME("notDone");
-CL_DEFMETHOD   virtual bool notDone() { return !this->isDone(); };
+ size_t iterator_distance(core::T_sp other);
+ 
 CL_LISPIFY_NAME("currentObject");
 CL_DEFMETHOD   virtual T_sp currentObject() {
     _OF();
