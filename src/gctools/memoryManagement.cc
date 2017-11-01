@@ -144,13 +144,7 @@ void register_thread(mp::Process_sp process, void* stack_base) {
 //  GC_register_my_thread(&gc_stack_base);
 #endif
 #ifdef USE_MPS
-  mps_res_t result = mps_thread_reg(process->thr_o,global_arena);
-  if (result != MPS_RES_OK) {
-    printf("%s:%d Could not register thread\n", __FILE__, __LINE__ );
-    abort();
-  }
-//    printf("%s:%d  add support to add threads for MPS\n", __FILE__, __LINE__ );
-  //#error "add support to add threads for MPS"
+  my_mps_thread_reg(process);
 #endif
 };
 

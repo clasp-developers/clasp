@@ -33,7 +33,6 @@ THE SOFTWARE.
 #include <boost/utility/binary.hpp>
 
 
-
 extern "C" {
 typedef struct SegStruct *Seg;
 typedef mps_arena_t Arena;
@@ -270,6 +269,10 @@ namespace gctools {
 class GCStack;
 void mpsAllocateStack(GCStack *stack);
 void mpsDeallocateStack(GCStack *stack);
+
+ void my_mps_thread_reg(mps_thr_t* threadP);
+ void my_mps_thread_deref(mps_thr_t thread);
+
 };
 
 extern "C" {
