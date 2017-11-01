@@ -161,6 +161,48 @@ namespace core {
     virtual bool mapKeyValue(T_sp key, T_sp value) = 0;
   };
 
+  /* A lighter weight hash generator for EQ and EQL tests. 
+     It has only a single part. */
+class Hash1Generator {
+ public:
+  Fixnum _Part;
+ public:
+  gc::Fixnum hash(gc::Fixnum bound = 0) const {
+    gc::Fixnum hash = 5381;
+    hash = (gc::Fixnum)hash_word((cl_intptr_t)5381,(cl_intptr_t)this->_Part);
+    if (bound) return ((cl_intptr_t)hash) % bound;
+#ifdef DEBUG_HASH_GENERATOR
+    if (this->_debug) {
+      printf("%s:%d  final hash = %lu\n", __FILE__, __LINE__, hash);
+    }
+#endif
+    return hash;
+  }
+  gc::Fixnum hashBound(gc::Fixnum bound) const {
+    gc::Fixnum hash = 5381;
+    hash = (gc::Fixnum)hash_word((cl_intptr_t)5381,(cl_intptr_t)this->_Part);
+#ifdef DEBUG_HASH_GENERATOR
+    if (this->_debug) {
+      printf("%s:%d  final hash = %lu\n", __FILE__, __LINE__, hash);
+    }
+#endif
+    return ((cl_intptr_t)hash) % bound;
+  }
+  bool addPart(Fixnum part) {
+    this->_Part = part;
+#ifdef DEBUG_HASH_GENERATOR
+    if (this->_debug) {
+      printf("%s:%d Added part --> %ld\n", __FILE__, __LINE__, part);
+    }
+#endif
+    return true;
+  }
+  bool isFilling() const { return true; };
+  /*Add the bignum across multiple parts, return true if everything was added */
+  bool addPart(const mpz_class &bignum);
+  void hashObject(T_sp obj);
+};
+ 
 //#define DEBUG_HASH_GENERATOR
   class HashGenerator {
     static const int MaxParts = 32;
@@ -484,7 +526,7 @@ namespace core {
   /*! Return number of slots if instance of Instance_O otherwise return nil */
     virtual T_sp ofuncallableInstanceP() const { return _Nil<T_O>(); }; //
     bool funcallableInstanceP() const { return ofuncallableInstanceP().isTrue(); };
-    virtual Fixnum get_stamp_() const { lisp_error_no_stamp(); };
+    virtual Fixnum get_stamp_() const { lisp_error_no_stamp((void*)this); };
   };
 };
 
@@ -596,6 +638,27 @@ namespace core {
     } else if ( obj.generalp() ) {
       General_O* general = obj.unsafe_general();
       general->sxhash_(hg);
+      return;
+    }
+    SIMPLE_ERROR_SPRINTF("Handle sxhash_ for object");
+  };
+  inline void clasp_sxhash(T_sp obj, Hash1Generator &hg) {
+    if (obj.fixnump()) {
+      hg.addPart(obj.unsafe_fixnum());
+      return;
+    } else if (obj.single_floatp()) {
+      hg.addPart((gc::Fixnum)::std::abs((int)::floor(obj.unsafe_single_float())));
+      return;
+    } else if (obj.characterp()) {
+      hg.addPart(obj.unsafe_character());
+      return;
+    } else if (obj.consp() ) {
+      Cons_O* cons = obj.unsafe_cons();
+      hg.addPart((gc::Fixnum)cons);
+      return;
+    } else if ( obj.generalp() ) {
+      General_O* general = obj.unsafe_general();
+      hg.addPart((gc::Fixnum)general);
       return;
     }
     SIMPLE_ERROR_SPRINTF("Handle sxhash_ for object");

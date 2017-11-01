@@ -46,7 +46,7 @@
 			 (standard-object self)
                          (core:lambda-name std-class-optimized-accessors.reader.lambda))
                 (core::bind-va-list (self) .method-args.
-                                    (ensure-up-to-date-instance self)
+                                    #+(or)(ensure-up-to-date-instance self)
                                     (let* ((class (si:instance-class self))
                                            (table (class-location-table class))
                                            (index (gethash slot-name table))
@@ -62,7 +62,7 @@
                          (standard-object self)
                          (core:lambda-name std-class-optimized-accessors.writer.lambda))
                 (core::bind-va-list (value self) .method-args.
-                                    (ensure-up-to-date-instance self)
+                                    #+(or)(ensure-up-to-date-instance self)
                                     (let* ((class (si:instance-class self))
                                            (table (class-location-table class))
                                            (index (gethash slot-name table)))
@@ -79,7 +79,7 @@
                        (standard-object self)
                        (core:lambda-name std-class-sealed-accessors.reader.lambda))
               (core::bind-va-list (self) .method-args.
-                                  (ensure-up-to-date-instance self)
+                                  #+(or)(ensure-up-to-date-instance self)
                                   (safe-instance-ref self index)))
 	  #'(lambda (.method-args. .next-methods. #|value self|#)
               (declare (optimize (safety 0) (speed 3) (debug 0))
@@ -87,7 +87,7 @@
                        (standard-object self)
                        (core:lambda-name std-class-sealed-accessors.writer.lambda))
               (core::bind-va-list (value self) .method-args.
-                                  (ensure-up-to-date-instance self)
+                                  #+(or)(ensure-up-to-date-instance self)
                                   (si:instance-set self index value)))))
 
 (defun std-class-accessors (slot-name)

@@ -189,9 +189,9 @@ Bundle::Bundle(const string &raw_argv0, const string &appDirName) {
     printf("%s:%d The ContentsDir could not be found\n", __FILE__, __LINE__ );
     abort();
   }
-#ifdef USE_BOEHM
+#if defined(USE_BOEHM)
   std::string target = "boehm";
-#elif USE_MPS
+#elif defined(USE_MPS)
   std::string target = "mps";
 #else
 #error "There must be a target - only boehm and mps are supported"

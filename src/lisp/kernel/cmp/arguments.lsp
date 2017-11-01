@@ -16,22 +16,6 @@
       (irc-begin-block cont-block)
       )))
 
-
-(defun compile-error-if-wrong-number-of-arguments (nargs required-number-of-arguments)
-  "If nargs /= lv-required-number-of-arguments then throw an exception - no cleanup needed/nothing was created"
-  (let* ((error-block (irc-basic-block-create "error"))
-	 (cont-block (irc-basic-block-create "continue"))
-	 (given-number-of-arguments nargs )
-	 (required-number-of-arguments (jit-constant-size_t required-number-of-arguments))
-	 (cmp (irc-icmp-ne given-number-of-arguments required-number-of-arguments "correct-num-args")))
-    (irc-cond-br cmp error-block cont-block)
-    (irc-begin-block error-block)
-    (compile-error-if-not-enough-arguments given-number-of-arguments required-number-of-arguments)
-    (irc-intrinsic-call-or-invoke "va_tooManyArgumentsException" (list (irc-constant-string-ptr *gv-current-function-name*) given-number-of-arguments required-number-of-arguments))
-    (irc-unreachable)
-    (irc-begin-block cont-block)
-    ))
-
 (defun compile-error-if-too-many-arguments (nargs maximum-number-of-arguments)
   "If nargs > lv-maximum-number-of-arguments then throw an exception - no cleanup needed/nothing was created"
   (let* ((error-block (irc-basic-block-create "error"))
@@ -261,7 +245,7 @@
               (out-alloca (funcall *translate-datum* (pop outputs))))
           (irc-store (cmp:irc-load req-alloca) out-alloca)))
       (when (or (> (first optargs) 0) key-flag)
-        (setq true-val (irc-literal t "T")))
+        (setq true-val (irc-t)))
       (when (> (first optargs) 0)
         (gather-optional-arguments optargs calling-conv arg-idx-alloca true-val)
         (do* ((cur-opt (cdr optargs) (cdddr cur-opt))
@@ -294,19 +278,60 @@
           (cmp:compile-error-if-too-many-arguments (cmp:calling-convention-nargs calling-conv) (+ (car reqargs) (car optargs))))))))
 
 
-(defun compile-all-register-required-arguments (reqargs outputs cc &key translate-datum)
+(defun compile-only-reg-and-opt-arguments (reqargs optargs outputs cc &key translate-datum)
   (let ((*translate-datum* (lambda (datum) (funcall translate-datum datum))))
-    (cmp:compile-error-if-wrong-number-of-arguments (cmp:calling-convention-nargs cc) (car reqargs))
-    (let ((fixed-args (cmp:calling-convention-register-args cc)))
+    (let ((register-args (cmp:calling-convention-register-args cc))
+          (req-bb (irc-basic-block-create "req-bb")))
+      (if (> (first optargs) 0)
+          (let* ((true-val (irc-t)) #+(or)(literal::immediate-object-or-nil 1)
+                 (false-val (irc-nil) #+(or)(irc-intrinsic "cc_builtin_nil"))
+                 (opt-rel-idx (irc-sub (cmp:calling-convention-nargs cc) (jit-constant-size_t (first reqargs))))
+                 (cases (let (cases)
+                          (dotimes (i (1+ (first optargs)))
+                            (push (irc-basic-block-create (core:bformat nil "case-opt%d-bb" i)) cases))
+                          (nreverse cases)))
+                 (sw (irc-switch opt-rel-idx (car cases) (first optargs))))
+            (dotimes (opti (1+ (first optargs)))
+              (let ((case-bb (elt cases opti)))
+                (irc-begin-block case-bb)
+                (if (= opti 0)
+                    (irc-intrinsic "cc_check_if_wrong_number_of_arguments"
+                                   (cmp:calling-convention-nargs cc)
+                                   (jit-constant-size_t (car reqargs))
+                                   (jit-constant-size_t (+ (car reqargs) (car optargs))))
+                    (irc-add-case sw (jit-constant-size_t opti) case-bb))
+                (do* ((optj 0 (1+ optj))
+                      (cur-target (cdr optargs) (cdddr cur-target))
+                      (cur-register-args (nthcdr (first reqargs) register-args) (cdr cur-register-args))
+                      (cur-output (nthcdr (first reqargs) outputs) (cddr cur-output))
+                      (target (first cur-output) (first cur-output))
+                      (targetp (second cur-output) (second cur-output))
+                      (arg (car cur-register-args) (car cur-register-args)))
+                     ((null cur-target))
+                  (let ((dest (funcall *translate-datum* target))
+                        (destp (funcall *translate-datum* targetp)))
+                    (if (>= optj opti)
+                        (progn
+                          (irc-store false-val destp))
+                        (progn
+                          (irc-store arg dest)
+                          (irc-store true-val destp)))))
+                (irc-br req-bb))))
+          (progn
+            (irc-intrinsic "cc_check_if_wrong_number_of_arguments"
+                           (cmp:calling-convention-nargs cc)
+                           (jit-constant-size_t (car reqargs))
+                           (jit-constant-size_t (+ (car reqargs) (car optargs))))
+            (irc-br req-bb)))
+      (irc-begin-block req-bb)
       (do* ((cur-target (cdr reqargs) (cdr cur-target))
-            (cur-fixed-args fixed-args (cdr cur-fixed-args))
+            (cur-register-args register-args (cdr cur-register-args))
             (cur-output outputs (cdr cur-output))
             (target (car cur-output) (car cur-output))
-            (arg (car cur-fixed-args) (car cur-fixed-args)))
+            (arg (car cur-register-args) (car cur-register-args)))
            ((null cur-target))
-        (let ((dest (funcall *translate-datum* target)))
-          #+(or)(format t "compile-all-register-required-arguments store: ~a to ~a  target: ~a~%" arg dest target)
-          (irc-store arg dest))))))
+        #+(or)(format t "compile-all-register-required-arguments store: ~a to ~a  target: ~a~%" arg dest target)
+        (irc-store arg (funcall *translate-datum* target))))))
 
 (defun process-cleavir-lambda-list (lambda-list)
   ;; We assume that the lambda list is in its correct format:
@@ -376,23 +401,25 @@
     (cmp-log "    outputs -> %s\n" outputs)
     (if (calling-convention-use-only-registers calling-conv)
         ;; Special cases (foo) (foo x) (foo x y) (foo x y z)  - passed in registers
-        (compile-all-register-required-arguments reqargs outputs calling-conv
-                                                 :translate-datum translate-datum)
+        (progn
+          (compile-only-reg-and-opt-arguments reqargs optargs outputs calling-conv
+                                              :translate-datum translate-datum))
         ;; Test for
         ;; (x &optional y)
         ;; (x y &optional z)
-        (compile-general-lambda-list-code reqargs 
-                                          optargs 
-                                          rest-var
-                                          varest-p
-                                          key-flag 
-                                          keyargs 
-                                          allow-other-keys
-                                          outputs
-                                          calling-conv
-                                          :translate-datum translate-datum))))
+        (progn
+          (compile-general-lambda-list-code reqargs 
+                                            optargs 
+                                            rest-var
+                                            varest-p
+                                            key-flag 
+                                            keyargs 
+                                            allow-other-keys
+                                            outputs
+                                            calling-conv
+                                            :translate-datum translate-datum)))))
 
-(defun cclasp-maybe-alloc-cc-setup (lambda-list debug-on)
+(defun maybe-alloc-cc-setup (lambda-list debug-on)
   "Maybe allocate slots in the stack frame to handle the calls
    depending on what is in the lambda-list (&rest, &key etc) and debug-on.
    Return a calling-convention-configuration object that describes what was allocated.
@@ -418,11 +445,10 @@
                               (not allow-other-keys)))
            (num-req (car reqargs))
            (num-opt (car optargs))
-           ;; Currently only required arguments are accepted
-           ;;          and (<= num-req +args-in-register+)
-           ;;          and not debugging
-           ;;     --> Use only register arguments
-           (may-use-only-registers (and req-opt-only (<= num-req +args-in-registers+) (eql 0 num-opt))))
+           ;; If only required or optional arguments are used
+           ;; and the sum of required and optional arguments is less
+           ;; than the number +args-in-register+ then use only registers.
+           (may-use-only-registers (and req-opt-only (<= (+ num-req num-opt) +args-in-registers+))))
       (if (and may-use-only-registers (null debug-on))
           (make-calling-convention-configuration
            :use-only-registers t)
@@ -434,7 +460,7 @@
 
 
 (defun cclasp-setup-calling-convention (arguments lambda-list debug-on)
-  (let ((setup (cclasp-maybe-alloc-cc-setup lambda-list debug-on)))
+  (let ((setup (maybe-alloc-cc-setup lambda-list debug-on)))
     (let ((cc (cmp:initialize-calling-convention arguments setup)))
       (calling-convention-args.va-start cc)
       cc)))
@@ -511,7 +537,8 @@
     new-env))
 
 
-(defun bclasp-maybe-alloc-cc-info (lambda-list debug-on)
+#+(or)
+(defun clasp-maybe-alloc-cc-info (lambda-list debug-on)
   "Maybe allocate slots in the stack frame to handle the calls
    depending on what is in the lambda-list (&rest, &key etc) and debug-on.
    Return a calling-convention-configuration object that describes what was allocated.
@@ -552,7 +579,7 @@
            :invocation-history-frame* (and debug-on (irc-alloca-invocation-history-frame :label "invocation-history-frame")))))))
 
 (defun bclasp-setup-calling-convention (arguments lambda-list debug-on)
-  (let ((setup (bclasp-maybe-alloc-cc-info lambda-list debug-on)))
+  (let ((setup (maybe-alloc-cc-setup lambda-list debug-on)))
     (let ((cc (initialize-calling-convention arguments setup)))
       (calling-convention-args.va-start cc)
       cc)))

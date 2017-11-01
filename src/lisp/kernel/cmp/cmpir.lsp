@@ -43,10 +43,6 @@
 	(scope-msg (cadddr scope-info)))
     (irc-intrinsic scope-exit-fn scope-level scope-msg)))
 
-(defun irc-t ()
-  (compile-reference-to-literal t))
-
-
 (defun irc-lexical-function-lookup (classified start-env)
   (let* ((depth (third classified))
          (index (fourth classified))
@@ -404,8 +400,11 @@
 (defun irc-literal (lit &optional (label "literal"))
   (irc-load (literal:compile-reference-to-literal lit)))
 
+(defun irc-t ()
+  (irc-literal t "T"))
+
 (defun irc-nil ()
-  (irc-literal nil))
+  (irc-literal nil "NIL"))
 
 (defun irc-intrinsic-invoke-if-landing-pad-or-call (function-name args &optional (label "") (maybe-landing-pad *current-unwind-landing-pad-dest*))
   ;; FIXME:   If the current function has a landing pad - then use INVOKE

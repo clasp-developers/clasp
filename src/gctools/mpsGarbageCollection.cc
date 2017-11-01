@@ -62,6 +62,7 @@ templated_class_jump_table_index, jump_table_index, NULL
 #include <clasp/core/evaluator.h>
 #include <clasp/gctools/globals.h>
 #include <clasp/core/wrappers.h>
+#include <clasp/core/mpPackage.h>
 #include <clasp/gctools/gc_interface.fwd.h>
 
 #ifdef USE_MPS
@@ -1051,4 +1052,25 @@ void check_all_clients() {
 
 };
 
+
+
+namespace gctools {
+
+void my_mps_thread_reg(mps_thr_t* threadP) {
+  mps_res_t result = mps_thread_reg(threadP,global_arena);
+  if (result != MPS_RES_OK) {
+    printf("%s:%d Could not register thread\n", __FILE__, __LINE__ );
+    abort();
+  }
+}
+
+void my_mps_thread_deref(mps_thr_t thread) {
+  mps_res_t result = mps_thread_dereg(thread);
+  if (result != MPS_RES_OK) {
+    printf("%s:%d Could not register thread\n", __FILE__, __LINE__ );
+    abort();
+  }
+}
+
+};
 #endif // whole file #ifdef USE_MPS

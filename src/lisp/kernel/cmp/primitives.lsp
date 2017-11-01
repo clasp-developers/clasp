@@ -212,6 +212,7 @@
     (primitive-unwinds "cc_bound_or_error" %t*% (list %t*% %t*% %t*%)) ; optimized-data instance value
     (primitive         "cc_vaslist_end" %void% (list %t*%))
 
+    (primitive-unwinds "cc_check_if_wrong_number_of_arguments" %void% (list %size_t% %size_t% %size_t%))
     (primitive         "cc_ensure_valid_object" %t*% (list %t*%))
     (primitive         "cc_getPointer" %i8*% (list %t*%))
     (primitive         "cc_setTmvToNil" %void% (list %tmv*%))
@@ -222,6 +223,7 @@
     (primitive         "cc_readCell" %t*% (list %t*%))
     (primitive         "cc_t_reference" %t**% nil)
     (primitive         "cc_nil_reference" %t**% nil)
+    (primitive         "cc_builtin_nil" %t*% nil)
     (primitive         "cc_fetch" %t*% (list %t*% %size_t%))
 ;;    (primitive         "cc_va_arg" %t*% (list %vaslist*%))
 ;;    (primitive         "cc_va_list_length" %size_t% (list %vaslist*%))

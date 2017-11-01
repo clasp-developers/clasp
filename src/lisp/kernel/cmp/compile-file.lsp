@@ -182,11 +182,11 @@ and the pathname of the source file - this will also be used as the module initi
 (defvar *compile-file-output-pathname* nil)
 
 
-(defun compile-file-form (form compile-file-hook)
+(defun compile-file-form (form environment compile-file-hook)
   ;; If the Cleavir compiler hook is set up then use that
   ;; to generate code 
   (if compile-file-hook
-      (funcall compile-file-hook form)
+      (funcall compile-file-hook form environment)
       (t1expr form)))
 
 (defun compile-file-to-module (given-input-pathname
@@ -197,16 +197,18 @@ and the pathname of the source file - this will also be used as the module initi
                                  (source-debug-offset 0)
                                  (print *compile-print*)
                                  (verbose *compile-verbose*)
+                                 environment
                                  (optimize t)
                                  (optimize-level :|-O3|))
   "* Arguments
 - given-input-pathname :: A pathname.
 - output-path :: A pathname.
 - compile-file-hook :: A function that will do the compile-file
-- type :: :kernel or :user (I'm not sure this is useful anymore
+- type :: :kernel or :user (I'm not sure this is useful anymore)
 - source-debug-namestring :: A namestring.
 - source-debug-offset :: An integer.
-Compile a lisp source file into an LLVM module.  type can be :kernel or :user"
+- environment :: Arbitrary, passed only to hook
+Compile a lisp source file into an LLVM module."
   ;; TODO: Save read-table and package with unwind-protect
   (let* ((*package* *package*)
          (*compile-print* print)
@@ -259,13 +261,15 @@ Compile a lisp source file into an LLVM module.  type can be :kernel or :user"
                             (unless (eq eof eof-value)
                               (let ((pos (core:input-stream-source-pos-info source-sin)))
                                 (setq *current-form-lineno* (core:source-file-pos-lineno pos)))))
+                          ;; FIXME: if :environment is provided we should probably use a different read somehow
                           (let ((form (read source-sin nil eof-value)))
-                            (when *debug-compile-file* (bformat t "compile-file: cf%d -> %s\n" (incf *debug-compile-file-counter*) form))
+                            (when *debug-compile-file*
+                              (bformat t "compile-file: cf%d -> %s\n" (incf *debug-compile-file-counter*) form))
                             (if (eq form eof-value)
                                 (return nil)
                                 (if *debug-compile-file*
-                                    (time (compile-file-form form compile-file-hook))
-                                    (compile-file-form form compile-file-hook)))))
+                                    (time (compile-file-form form environment compile-file-hook))
+                                    (compile-file-form form environment compile-file-hook)))))
                       (make-boot-function-global-variable *the-module* run-all-function)))))
               (cmp-log "About to verify the module\n")
               (cmp-log-dump-module *the-module*)
@@ -293,6 +297,9 @@ Compile a lisp source file into an LLVM module.  type can be :kernel or :user"
                        (output-type :fasl)
                        ;; type can be either :kernel or :user
                        (type :user)
+                       ;; ignored by bclasp
+                       ;; but passed to hook functions
+                       environment
                      &aux conditions)
   "See CLHS compile-file."
   (if system-p-p (error "I don't support system-p keyword argument - use output-type"))
@@ -309,6 +316,7 @@ Compile a lisp source file into an LLVM module.  type can be :kernel or :user"
                                            :source-debug-namestring source-debug-namestring
                                            :source-debug-offset source-debug-offset
                                            :compile-file-hook *cleavir-compile-file-hook*
+                                           :environment environment
                                            :optimize optimize
                                            :optimize-level optimize-level)))
       (cond

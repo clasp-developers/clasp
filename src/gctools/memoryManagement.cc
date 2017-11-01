@@ -144,8 +144,7 @@ void register_thread(mp::Process_sp process, void* stack_base) {
 //  GC_register_my_thread(&gc_stack_base);
 #endif
 #ifdef USE_MPS
-  printf("%s:%d  add support to add threads for MPS\n", __FILE__, __LINE__ );
-//#error "add support to add threads for MPS"
+  my_mps_thread_reg(process);
 #endif
 };
 
@@ -155,7 +154,12 @@ void unregister_thread(mp::Process_sp process) {
 //  GC_unregister_my_thread();
 #endif
 #ifdef USE_MPS
-  printf("%s:%d  add support to add threads for MPS\n", __FILE__, __LINE__ );
+  mps_res_t result = mps_thread_dereg(process->thr_o);
+  if (result != MPS_RES_OK) {
+    printf("%s:%d Could not register thread\n", __FILE__, __LINE__ );
+    abort();
+  }
+//  printf("%s:%d  add support to add threads for MPS\n", __FILE__, __LINE__ );
 #endif
 };
 

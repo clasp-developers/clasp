@@ -15,6 +15,7 @@
 (defmacro mapappend (fun &rest args)
   `(reduce #'append (mapcar ,fun ,@args)))
 
+#+(or)
 (defmacro ensure-up-to-date-instance (instance)
   ;; The up-to-date status of a class is determined by
   ;; instance.sig. This slot of the C structure contains a list of

@@ -26,7 +26,7 @@ mps_pool_t clasp_pool_of_addr(void* vaddr)
   Arena arena = (Arena)global_arena;
   Addr addr = (Addr)vaddr;
   ArenaEnter(arena);
-  bool success = PoolOfAddr(&pool_return,arena,addr);
+  int success = PoolOfAddr(&pool_return,arena,addr);
   if (!success) pool_return = NULL;
   ArenaLeave(arena);
   return (mps_pool_t)pool_return;

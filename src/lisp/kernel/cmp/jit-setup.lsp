@@ -463,11 +463,11 @@ The passed module is modified as a side-effect."
          (bformat t "Call-sites -> %s\n" call-sites))
     ;; Link in the builtins as part of the optimization
     #+(or)(progn
-      (let ((linker (llvm-sys:make-linker module))
-            (builtins-clone (llvm-sys:clone-module (get-builtins-module))))
-        ;;(remove-always-inline-from-functions builtins-clone)
-        (quick-module-dump builtins-clone "builtins-clone")
-        (llvm-sys:link-in-module linker builtins-clone)))
+            (let ((linker (llvm-sys:make-linker module))
+                  (builtins-clone (llvm-sys:clone-module (get-builtins-module))))
+              ;;(remove-always-inline-from-functions builtins-clone)
+              (quick-module-dump builtins-clone "builtins-clone")
+              (llvm-sys:link-in-module linker builtins-clone)))
     
     (let* ((pass-manager-builder (llvm-sys:make-pass-manager-builder))
            (mpm (llvm-sys:make-pass-manager))

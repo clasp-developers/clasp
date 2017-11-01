@@ -6,9 +6,9 @@
         (read-line stream eofp eof)
         (read-line stream eofp eof)))
 
-(defun write-dtrace-header (stream &optional eofp eof)
+(defun write-dtrace-header (stream lines)
   (dolist (l lines)
-    (write l :stream stream)))
+    (write-line l stream)))
 
 (defun remove-offset (line)
   (let ((offset (search "+0x" line)))
@@ -40,7 +40,7 @@
        (concatenate 'string (subseq line 0 pos) (subseq line (+ pos #.(length "iclasp-boehm`")) (length line))))
       (t line))))
 
-(defun prune-backtrace (backtrace)
+(defun cleanup-backtrace (backtrace)
   (declare (optimize speed))
   (list*
    (cleanup-frame (car backtrace))
@@ -61,21 +61,21 @@
       unless (search "COMBINE-METHOD-FUNCTIONS3.LAMBDA" line)
       collect (cleanup-frame line))))
 
-(defun prune-dtrace-log (fin fout &key (verbose t))
+(defun cleanup-dtrace-log (fin fout &key (verbose t))
   (let ((count 0))
     (let ((header (read-dtrace-header fin)))
       (write-block fout header)
       (loop for backtrace = (read-dtrace-backtrace fin nil :eof)
             until (eq backtrace :eof)
-            for pruned = (prune-backtrace backtrace)
+            for cleaned = (cleanup-backtrace backtrace)
             when (> (length backtrace) 4000)
               do (progn
                    (format *debug-io* "------------ input file pos: ~a~%" (file-position fin))
                    (format *debug-io* "Backtrace with ~a frames~%" (length backtrace))
-                   (format *debug-io* "~a~%" pruned #++(last backtrace 5)))
-            do (write-block fout pruned)
+                   (format *debug-io* "~a~%" cleaned #++(last backtrace 5)))
+            do (write-block fout cleaned)
             do (incf count)))
-    (when verbose (format *debug-io* "Pruned ~a stacks~%" count))))
+    (when verbose (format *debug-io* "Cleaned ~a stacks~%" count))))
 
 
 (defun remove-address (line)
@@ -165,28 +165,30 @@
           (format fout "HashTable_O related counts: ~a~%" hash-table-counts))))))
 
 
-;;; Focus in on a function in the backtraces.
+;;; Prune backtraces down to a specific function in the backtraces.
 ;;; Look down each backtrace from until you find a frame with the function name that contains the focus-name.
 ;;; Write out the top of the backtrace to that point.
 ;;; If the backtrace doesn't contain that function - then write out an empty frame.
 ;;; This will let us build flame graphs by focusing in on function calls within a complex operation like compilation.
-(defun focus (fin fout focus-name)
+(defun prune (fin fout prune-name)
+  (format *debug-io* "Looking for ~s~%" prune-name)
   (let ((header (read-dtrace-header fin)))
     (write-dtrace-header fout header))
   (loop for backtrace = (read-dtrace-backtrace fin nil :eof)
         until (eq backtrace :eof)
-        when (> (length backtrace) 0)
-          do (let ((one-bt-counts (make-hash-table :test #'equal))
-                   (focus-name-index nil))
-               (loop for line in backtrace
-                     for name = (string-trim " " line)
-                     for index from 0
-                     until (search focus-name name)
-                     finally (setf focus-name-index index))
-               (when focus-name-index
-                 (dotimes (index focus-name-index)
-                   (write (elt backtrace index) :stream fout)))
-               (write-line "main" fout))))
+        do (let ((prune-name-index nil))
+             (loop for line in (butlast backtrace)
+                   for name = (string-trim " " line)
+                   for index from 0
+                   when (search prune-name name)
+                     do (progn
+                          (setf prune-name-index (1+ index))
+                          (return)))
+             (when prune-name-index
+               (dotimes (index prune-name-index)
+                 (write-line (elt backtrace index) fout)))
+             (write-line (car (last backtrace)) fout)
+             (terpri fout))))
 
 (defun fraction (fin stop-at)
   (let ((header (read-dtrace-header fin)))
@@ -223,9 +225,16 @@
     (dolist (result sorted)
       (format fout "~5d ~5,3f ~a~%" (car result) (float (/ (car result) num-backtraces)) (cdr result)))))
 
-(let ((cmd (third sb-ext:*posix-argv*))
-      (args (make-hash-table :test #'equal)))
-  (loop for cur = (cdddr sb-ext:*posix-argv*) then (cddr cur)
+(format *debug-io* "sb-ext:*posix-argv* -> ~s~%" sb-ext:*posix-argv*)
+(let* ((sym-link (null (search "stacks.lisp" (second sb-ext:*posix-argv*))))
+       (cmd (if sym-link
+                (second sb-ext:*posix-argv*)
+                (third sb-ext:*posix-argv*)))
+       (argv (if sym-link
+                 (cddr sb-ext:*posix-argv*)
+                 (cdddr sb-ext:*posix-argv*)))
+       (args (make-hash-table :test #'equal)))
+  (loop for cur = argv then (cddr cur)
         for key = (car cur)
         for val = (cadr cur)
         while cur
@@ -240,21 +249,20 @@
                           (open out-file :direction :output :if-exists :supersede :external-format :latin-1)
                           *standard-output*))))
     (cond
-      ((search "prune-trace" cmd)
-       (prune-dtrace-log in-stream out-stream))
+      ((search "cleanup-stacks" cmd)
+       (cleanup-dtrace-log in-stream out-stream))
       ((search "count-tips" cmd)
        (count-tips in-stream out-stream))
       ((search "count-calls" cmd)
        (count-calls in-stream out-stream))
-      ((search "focus" cmd)
-       (let ((focus-name (gethash "-s" args)))
-         (unless focus-name
-           (error "You must provide the name (-s name) of a function to focus on"))
-         (focus in-stream out-stream focus-name)))
-      ((search "fraction" cmd)
-       (format *debug-io* "fraction~%")
+      ((search "prune-count" cmd)
        (let ((stop-at (gethash "-s" args nil)))
          (print-fraction in-stream out-stream :stop-at stop-at)))
+      ((search "prune" cmd)
+       (let ((prune-name (gethash "-s" args)))
+         (unless prune-name
+           (error "You must provide the name (-s name) of a function to prune on"))
+         (prune in-stream out-stream prune-name)))
       (t (error "Unknown command")))
     (unless (eq in-stream *standard-input*)
       (close in-stream))

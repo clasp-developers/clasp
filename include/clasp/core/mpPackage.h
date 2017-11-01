@@ -126,6 +126,9 @@ namespace mp {
     size_t _StackSize;
     pthread_t _Thread;
     Mutex _ExitBarrier;
+#ifdef USE_MPS
+    mps_thr_t thr_o;
+#endif
   public:
   Process_O(core::T_sp name, core::T_sp function, core::List_sp arguments, core::List_sp initialSpecialBindings=_Nil<core::T_O>(), size_t stack_size=8*1024*1024) : _Name(name), _Function(function), _Arguments(arguments), _InitialSpecialBindings(initialSpecialBindings), _ThreadInfo(NULL), _ReturnValuesList(_Nil<core::T_O>()), _StackSize(stack_size), _Phase(Booting) {
       if (!function) {
