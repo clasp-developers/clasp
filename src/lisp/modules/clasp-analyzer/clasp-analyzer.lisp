@@ -653,9 +653,13 @@ to expose."
                           (ctype-key (base one))))))))
 
 
-(defgeneric codegen-field-data (type-symbol))
-(defmethod codegen-field-data ((type-symbol T)) T)
-(defmethod codegen-field-data ((type-symbol (eql 'ctype_int))) nil)
+(defgeneric expose-fixed-field-type (type-symbol))
+(defmethod expose-fixed-field-type ((type-symbol T)) T)
+(defmethod expose-fixed-field-type ((type-symbol (eql 'ctype_int))) nil)
+(defmethod expose-fixed-field-type ((type-symbol (eql 'ctype_unsigned_int))) nil)
+(defmethod expose-fixed-field-type ((type-symbol (eql 'ctype__Bool))) nil)
+(defmethod expose-fixed-field-type ((type-symbol (eql 'ctype_long))) nil)
+(defmethod expose-fixed-field-type ((type-symbol (eql 'ctype_long))) nil)
 
 (defun codegen-full (stream layout analysis)
   (dolist (one (fixed-part layout))

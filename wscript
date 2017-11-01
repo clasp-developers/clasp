@@ -97,7 +97,7 @@ def analyze_clasp(cfg):
     run_program_echo("build/boehm/iclasp-boehm",
                      "-i", "./build/boehm/fasl/cclasp-boehm-image.fasl",
                      "-f", "ignore-extensions",
-                     "-l", "sys:modules;clasp-analyzer;run-analyzer.lisp",
+                     "-l", "sys:modules;clasp-analyzer;run-serial-analyzer.lisp",
                      "-e", "(core:quit)")
     print("\n\n\n----------------- proceeding with static analysis --------------------")
 
