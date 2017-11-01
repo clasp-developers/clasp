@@ -94,8 +94,7 @@ def sync_submodules(cfg):
 # ./waf analyze_clasp
 # This is the static analyzer - formerly called 'redeye'
 def analyze_clasp(cfg):
-    run_program_echo("build/boehm/iclasp-boehm",
-                     "-i", "./build/boehm/fasl/cclasp-boehm-image.fasl",
+    run_program_echo("build/boehm/cclasp-boehm",
                      "-f", "ignore-extensions",
                      "-l", "sys:modules;clasp-analyzer;run-serial-analyzer.lisp",
                      "-e", "(core:quit)")
