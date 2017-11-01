@@ -659,7 +659,6 @@ to expose."
 (defmethod expose-fixed-field-type ((type-symbol (eql 'ctype_unsigned_int))) nil)
 (defmethod expose-fixed-field-type ((type-symbol (eql 'ctype__Bool))) nil)
 (defmethod expose-fixed-field-type ((type-symbol (eql 'ctype_long))) nil)
-(defmethod expose-fixed-field-type ((type-symbol (eql 'ctype_long))) nil)
 
 (defun codegen-full (stream layout analysis)
   (dolist (one (fixed-part layout))
