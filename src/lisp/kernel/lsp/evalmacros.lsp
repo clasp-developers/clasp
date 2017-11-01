@@ -360,8 +360,6 @@ FORM returns no value, NIL."
     (declare (fixnum n))
     (push `(SETQ ,(car vl) (NTH ,n ,sym)) forms)))
 
-;; We do not use this macroexpanso, and thus we do not care whether
-;; it is efficiently compiled by ECL or not.
 (defmacro multiple-value-bind (vars form &rest body)
   "Syntax: (multiple-value-bind ({var}*) init {decl}* {form}*)
 
@@ -369,7 +367,12 @@ Evaluates INIT and binds the N-th VAR to the N-th value of INIT or, if INIT
 returns less than N values, to NIL.  Then evaluates FORMs, and returns all
 values of the last FORM.  If no FORM is given, returns NIL."
   (declare (notinline mapcar))
-  `(multiple-value-call #'(lambda (&optional ,@(mapcar #'list vars) &rest ,(gensym)) ,@body) ,form))
+  (if (= (length vars) 1)
+      ;; at the moment we don't handle multiple-value-call well, so this is probably
+      ;; faster. Might be so in the future too.
+      ;; Who would write m-v-b with one variable, you ask? Computers! (Mostly SETF.)
+      `(let ((,(first vars) ,form)) ,@body)
+      `(multiple-value-call #'(lambda (&optional ,@(mapcar #'list vars) &rest ,(gensym)) ,@body) ,form)))
 
 (defun while-until (test body jmp-op)
   (declare (si::c-local))
