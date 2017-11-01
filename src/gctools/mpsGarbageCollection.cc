@@ -1065,11 +1065,7 @@ void my_mps_thread_reg(mps_thr_t* threadP) {
 }
 
 void my_mps_thread_deref(mps_thr_t thread) {
-  mps_res_t result = mps_thread_dereg(thread);
-  if (result != MPS_RES_OK) {
-    printf("%s:%d Could not register thread\n", __FILE__, __LINE__ );
-    abort();
-  }
+   mps_thread_dereg(thread);
 }
 
 };
