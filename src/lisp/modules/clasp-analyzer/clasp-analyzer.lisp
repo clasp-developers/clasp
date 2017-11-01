@@ -608,7 +608,6 @@ to expose."
     ((find "_LocationDependency" name-list :test #'string=) t)
     (t nil)))
   
-
 (defun codegen-variable-part (stream variable-fields analysis)
     (let* ((array (offset-field-with-name variable-fields "_Data"))
            (length (or (offset-field-with-name variable-fields "_Length")
@@ -652,6 +651,9 @@ to expose."
                           (ctype-key (base one))))))))
 
 
+(defgeneric codegen-field-data (type-symbol))
+(defmethod codegen-field-data ((type-symbol T)) T)
+(defmethod codegen-field-data ((type-symbol (eql 'ctype_int))) nil)
 
 (defun codegen-full (stream layout analysis)
   (dolist (one (fixed-part layout))
@@ -659,7 +661,9 @@ to expose."
            (public (mapcar (lambda (iv) (eq (instance-field-access iv) 'ast-tooling:as-public)) (fields one)))
            (all-public (every #'identity public))
            (good-name (not (is-bad-special-case-variable-name (layout-offset-field-names one))))
-           (expose-it (and (or all-public fixable) good-name))
+           (expose-it (and (or all-public fixable)
+			   good-name
+			   (expose-fixed-field-type (intern (string-upcase (offset-type-c++-identifier one))))))
            (base (base one)) ;; The outermost class that contains this offset
            (*print-pretty* nil))
       (format stream "~a {  fixed_field, ~a, sizeof(~a), offsetof(SAFE_TYPE_MACRO(~a),~{~a~}), \"~{~a~}\" }, // public: ~a fixable: ~a good-name: ~a~%"
