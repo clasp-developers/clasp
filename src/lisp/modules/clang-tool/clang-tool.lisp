@@ -868,6 +868,14 @@ Return the source code for the node that has been associated with the tag."
   (let* ((node (mtag-node match-info tag)))
     (mtag-source-impl match-info node)))
 
+(defvar *probed-files* (make-hash-table :test #'equal))
+
+(defun memoized-probe-file (pathname)
+  (let ((lookup (gethash pathname *probed-files*)))
+    (if lookup
+        lookup
+        (setf (gethash pathname *probed-files*) (probe-file pathname)))))
+  
 (defun ploc-as-string (ploc)
   (declare (special *compilation-tool-database*))
   (when (ast-tooling:is-invalid ploc)
@@ -877,7 +885,7 @@ Return the source code for the node that has been associated with the tag."
          (pathname (merge-pathnames (make-pathname :host (pathname-host absolute)
                                                    :device (pathname-device absolute)
                                                    :defaults relative) absolute))
-         (probed-file (probe-file pathname)))
+         (probed-file (memoized-probe-file pathname)))
     (if (null probed-file)
         (format nil "[ploc-as-string could not locate ~a --> result after merging ~a]" relative pathname)
         (format nil "~a:~a:~a" (namestring probed-file) (ast-tooling:get-line ploc) (ast-tooling:get-column ploc)))))
