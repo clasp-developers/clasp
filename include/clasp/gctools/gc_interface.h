@@ -128,4 +128,8 @@ void initialize_source_info();
 void initialize_classes_and_methods();
 core::T_sp generate_type_header_value_map();
 
+
+extern std::map<std::string,size_t> _global_stamp_names;
+extern size_t _global_last_stamp;
+
 #endif
