@@ -218,8 +218,8 @@ Set gather-all-frames to T and you can gather C++ and Common Lisp frames"
                    (setq state new-state)
                    (when (and (eq state :gather) (or gather-all-frames (eq (backtrace-frame-type frame) :lisp)))
                      (when verbose (bformat t "     PUSHED!\n"))
-                     (push frame result)))))
-             (nreverse result)))
+                     (push frame result))))
+               (nreverse result))))
       (let ((frames (gather-frames gather-start-trigger)))
         (if frames
             frames
