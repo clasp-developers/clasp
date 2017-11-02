@@ -1,10 +1,18 @@
 (defmacro defun (name lambda-list &body body)
-  `(progn
-     (setf (fdefinition ',name)
-           (lambda ,lambda-list
-             (declare (core:lambda-name ,name))
-             ,@body))
-     ',name))
+  (multiple-value-bind (decls body docstring)
+      (core:process-declarations body t)
+    `(progn
+       (eval-when (:compile-toplevel)
+         (declare-function ',name ',lambda-list))
+       (eval-when (:load-toplevel :execute)
+         (setf (fdefinition ',name)
+               (lambda ,lambda-list
+                 ,@(when docstring (list docstring))
+                 (declare (core:lambda-name ,name)
+                          ,@decls)
+                 (block ,(core:function-block-name name)
+                   ,@body))))
+       ',name)))
 
 #+(or)
 (defmacro define-symbol-macro (symbol expansion)
@@ -12,6 +20,7 @@
      (setf (ext:symbol-macro ',symbol) ',expansion)
      ',symbol))
 
+#+(or)
 (defmacro defparameter (name initial-value &optional documentation)
   (declare (ignorable documentation))
   `(progn
@@ -22,6 +31,7 @@
          `((setf (documentation ',name 'variable) ,documentation)))
      ',name))
 
+#+(or)
 (defmacro defvar (name &optional (initial-value nil ivp) documentation)
   (declare (ignorable documentation))
   `(progn
@@ -34,6 +44,7 @@
          `((setf (documentation ',name 'variable) ,documentation)))
      ',name))
 
+#+(or)
 (defmacro define-compiler-macro (name lambda-list &body body)
   (multiple-value-bind (function pprint docstring)
       (core::expand-defmacro name lambda-list body 'define-compiler-macro)
@@ -54,6 +65,7 @@
          `((setf (documentation ',name 'variable) ,documentation)))
      ',name))
 
+#+(or)
 (defmacro defgeneric (function-name gf-lambda-list &rest options-and-methods)
   (loop for (key . rest) in options-and-methods
         if (eq key 'declare)
@@ -90,6 +102,7 @@
                        (fdefinition ',function-name)
                        ,@(loop for method in methods collecting `(defmethod ,@method)))))))))
 
+#+(or)
 (defmacro defmethod (function-name &rest args &environment env)
   (let* ((ll-pos (position-if #'listp args))
          (qualifiers (subseq args 0 ll-pos))
