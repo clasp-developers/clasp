@@ -291,6 +291,63 @@ CL_DEFUN List_sp core__shadow_backtrace_as_list() {
 }
 
 
+bool search_for_matching_close_bracket(const std::string& sin, size_t& pos, stringstream& sacc) {
+  for ( size_t i=pos; i<sin.size(); ++i ) {
+    if (sin[i] == '>') {
+      pos = i+1;
+      return true;
+    }
+    if (sin[i] == '<') {
+      pos = i;
+      return search_for_matching_close_bracket(sin,pos,sacc);
+    }
+    sacc << sin[i];
+  }
+  return false;
+}
+
+
+std::string global_smart_ptr_head = "gctools::smart_ptr<";
+
+bool mangle_next_smartPtr(const std::string& str, size_t& pos, stringstream& sout) {
+  size_t smartPtrStart = str.find(global_smart_ptr_head,pos);
+  if (smartPtrStart != std::string::npos ) {
+    sout << str.substr(pos,smartPtrStart-pos);
+    size_t bracketStart = smartPtrStart+global_smart_ptr_head.size(); // length of "gctools::smartPtr<"
+    stringstream sinner;
+    search_for_matching_close_bracket(str,bracketStart,sinner);
+    std::string innerType = sinner.str();
+    if (innerType.size() > 2) {
+      if (innerType.substr(innerType.size()-2,2) == "_O") {
+        sout << innerType.substr(0,innerType.size()-2);
+        sout << "_sp";
+      } else if (innerType.substr(innerType.size()-2,2) == "_V") {
+        sout << innerType.substr(0,innerType.size()-2);
+        sout << "_sp";
+      } else {
+        sout << innerType << "_sp";
+      }
+    } else {
+      sout << innerType;
+    }
+    pos = bracketStart;
+    return true;
+  }
+  sout << str.substr(pos,str.size()-pos);
+  return false;
+}
+
+
+CL_DEFUN SimpleBaseString_sp core__ever_so_slightly_mangle_cxx_names(const std::string& raw_name)
+{
+  stringstream sout;
+  size_t pos = 0;
+  while (mangle_next_smartPtr(raw_name,pos,sout));
+  return SimpleBaseString_O::make(sout.str());
+}
+  
+  
+
 void low_level_backtrace(bool with_args) {
   const InvocationHistoryFrame *top = my_thread->_InvocationHistoryStackTop;
   if (top == NULL) {
@@ -387,7 +444,7 @@ CL_DEFUN T_sp core__maybe_demangle(core::String_sp s)
   if (status == 0) {
     std::string demangled(funcname);
     free(ret);
-    return SimpleBaseString_O::make(demangled);
+    return core__ever_so_slightly_mangle_cxx_names(demangled);
   } else {
     if (funcname) free(funcname);
     return _Nil<T_O>();
