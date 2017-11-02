@@ -225,7 +225,46 @@
     (dolist (result sorted)
       (format fout "~5d ~5,3f ~a~%" (car result) (float (/ (car result) num-backtraces)) (cdr result)))))
 
-(format *debug-io* "sb-ext:*posix-argv* -> ~s~%" sb-ext:*posix-argv*)
+
+(defun callers (in-stream out-stream callee-name)
+  (declare (optimize (debug 3)))
+  (read-dtrace-header in-stream)
+  (format *debug-io* "In callers~%")
+  (let ((callers (make-hash-table :test #'equal)))
+    (loop for backtrace = (read-dtrace-backtrace in-stream nil :eof)
+          until (eq backtrace :eof)
+          do (loop for line in backtrace
+                   for prev-name = nil then name
+                   for name = (string-trim " " line)
+                   for found = (search callee-name prev-name)
+                   when (and prev-name found)
+                     do (progn
+                          (incf (gethash name callers 0)))))
+    (let (counts
+          (total-counts 0))
+      (maphash (lambda (k v)
+                 (incf total-counts v)
+                 (push (cons v k) counts))
+               callers)
+      (let ((sorted (sort counts #'<= :key #'car)))
+        (format out-stream "~a total calls to ~a~%" total-counts callee-name)
+        (loop for (count . name) in sorted
+              do (format out-stream "~5d ~20a~%" count name))))))
+
+
+;;; ----------------------------------------------------------------------
+;;;
+;;;  Invoke functions using either ./stacks.lisp <operation> <arguments>
+;;;
+;;;  General arguments:
+;;;    -i <input file>    Default is *standard-input*
+;;;    -o <output file>   Default is *standard-output*
+;;;
+;;;  Commands can have other arguments:
+;;;
+;;;  callers -i <in> -o <out> -c <callee-name>
+;;;      generates a list of callers of callee-name and how often they call
+
 (let* ((sym-link (null (search "stacks.lisp" (second sb-ext:*posix-argv*))))
        (cmd (if sym-link
                 (second sb-ext:*posix-argv*)
@@ -234,6 +273,7 @@
                  (cddr sb-ext:*posix-argv*)
                  (cdddr sb-ext:*posix-argv*)))
        (args (make-hash-table :test #'equal)))
+  (declare (optimize (debug 3)))
   (loop for cur = argv then (cddr cur)
         for key = (car cur)
         for val = (cadr cur)
@@ -244,6 +284,7 @@
                      (if in-file
                          (open in-file :direction :input :external-format :latin-1)
                          *standard-input*)))
+        (out-file (gethash "-o" args))
         (out-stream (let ((out-file (gethash "-o" args)))
                       (if out-file
                           (open out-file :direction :output :if-exists :supersede :external-format :latin-1)
@@ -263,8 +304,16 @@
          (unless prune-name
            (error "You must provide the name (-s name) of a function to prune on"))
          (prune in-stream out-stream prune-name)))
+      ((search "callers" cmd)
+       (let ((callee-name (gethash "-c" args)))
+         (unless callee-name
+           (error "You must provide the name (-c name) of the callee function"))
+         (format *debug-io* "Callers of ~a~%" callee-name)
+         (callers in-stream out-stream callee-name)))
       (t (error "Unknown command")))
     (unless (eq in-stream *standard-input*)
       (close in-stream))
     (unless (eq out-stream *standard-output*)
+      (when out-file (format *debug-io* "~a~%" out-file))
       (close out-stream))))
+
