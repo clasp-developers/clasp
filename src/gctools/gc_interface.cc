@@ -678,6 +678,22 @@ struct TempClass {
 };
 
 
+std::map<std::string,size_t> _global_stamp_names;
+size_t _global_last_stamp = 0;
+
+void register_stamp_name(const std::string& stamp_name, size_t stamp_num) {
+  _global_stamp_names[stamp_name] = stamp_num;
+  if (stamp_num>_global_last_stamp) {
+    _global_last_stamp = stamp_num;
+  }
+}
+
+void define_builtin_cxx_classes() {
+#define GC_ENUM_NAMES
+#include INIT_CLASSES_INC_H
+#undef GC_ENUM_NAMES
+}
+
 
 void create_packages()
 {
@@ -834,6 +850,7 @@ void initialize_clasp()
   core_T_O_var->setInstanceBaseClasses(_Nil<core::T_O>());
   
   create_packages();
+  define_builtin_cxx_classes();
 
   bootStrapCoreSymbolMap.finish_setup_of_symbols();
 
