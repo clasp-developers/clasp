@@ -730,6 +730,16 @@ CL_DEFUN void gctools__garbage_collect() {
   //        printf("Garbage collection done\n");
 };
 
+
+
+CL_DEFUN core::T_sp gctools__get_builtin_stamps() {
+  core::List_sp l = _Nil<core::T_O>();
+  for ( auto it : _global_stamp_names ) {
+    l = core::Cons_O::create(core::Cons_O::create(core::SimpleBaseString_O::make(it.first),core::make_fixnum(it.second)),l);
+  }
+  return l;
+}
+
 CL_DOCSTRING("Process finalizers");
 CL_LAMBDA(&optional verbose)
 CL_DEFUN void gctools__cleanup(bool verbose) {
