@@ -1,7 +1,13 @@
 (defpackage #:clasp-sandbox
   (:use #:cl)
   (:export #:sandbox-environment #:repl)
-  (:export #:fill-environment))
+  (:export #:fill-environment)
+  (:export #:retarget))
+
+(defpackage #:compilation-environment
+  (:use #:cl)
+  (:export #:compilation-environment)
+  (:export #:evaluation-environment))
 
 (defpackage #:coerce
   (:use)
