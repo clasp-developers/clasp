@@ -2393,42 +2393,40 @@ CL_DEFUN List_sp cl__member(T_sp item, T_sp tlist, T_sp key, T_sp test, T_sp tes
     return _lisp->singleDispatchGenericFunctionTable();
   };
 
-  CL_LAMBDA();
-  CL_DECLARE();
-  CL_DOCSTRING("invokeInternalDebuggerFromGdb");
-  CL_DEFUN void core__invoke_internal_debugger_from_gdb() {
-    eval::funcall(_sym_invokeInternalDebugger);
-    SIMPLE_ERROR(BF("This should never happen"));
-  };
+CL_LAMBDA();
+CL_DOCSTRING("invokeInternalDebuggerFromGdb");
+CL_DEFUN void core__invoke_internal_debugger_from_gdb() {
+  eval::funcall(_sym_invokeInternalDebugger);
+  SIMPLE_ERROR(BF("This should never happen"));
+};
 
-  CL_LAMBDA(datum &rest arguments);
-  CL_DECLARE();
-  CL_DOCSTRING("See CLHS error");
-  __attribute__((optnone))
-    CL_DEFUN void cl__error(T_sp datum, List_sp initializers) {
-    volatile T_sp saved_datum = datum;
-    volatile List_sp saved_initializers = initializers;
-    int nestedErrorDepth = unbox_fixnum(gc::As<Fixnum_sp>(_sym_STARnestedErrorDepthSTAR->symbolValue()));
-    if (nestedErrorDepth > 10) {
+CL_LAMBDA(datum &rest arguments);
+CL_DECLARE((optimize (debug 3)));
+__attribute__((optnone))
+CL_DEFUN void cl__error(T_sp datum, List_sp initializers) {
+  volatile T_sp saved_datum = datum;
+  volatile List_sp saved_initializers = initializers;
+  int nestedErrorDepth = unbox_fixnum(gc::As<Fixnum_sp>(_sym_STARnestedErrorDepthSTAR->symbolValue()));
+  if (nestedErrorDepth > 10) {
     // TODO: Disable this code once error handling and conditions work properly
     // It's only here to identify errors that would cause infinite looping
     // as we get error handling and conditions working properly
-      printf("%s:%d -- *nested-error-depth* --> %d  datum: %s\n", __FILE__, __LINE__, nestedErrorDepth, _rep_(datum).c_str());
-      asm("int $03");
-      if (initializers.notnilp()) {
-        printf("               initializers: %s\n", _rep_(initializers).c_str());
-      }
-      printf("Dumping backtrace\n");
-      core__low_level_backtrace();
+    printf("%s:%d -- *nested-error-depth* --> %d  datum: %s\n", __FILE__, __LINE__, nestedErrorDepth, _rep_(datum).c_str());
+    asm("int $03");
+    if (initializers.notnilp()) {
+      printf("               initializers: %s\n", _rep_(initializers).c_str());
     }
-    ++nestedErrorDepth;
-    DynamicScopeManager scope(_sym_STARnestedErrorDepthSTAR, make_fixnum(nestedErrorDepth));
-    if (_sym_universalErrorHandler->fboundp()) {
-      Function_sp fn = _sym_universalErrorHandler->symbolFunction();
-      eval::funcall(fn, _Nil<T_O>(), datum, initializers);
-    }
-    THROW_HARD_ERROR(BF("cl__error should never return because universal-error-handler should never return - but it did"));
+    printf("Dumping backtrace\n");
+    core__low_level_backtrace();
   }
+  ++nestedErrorDepth;
+  DynamicScopeManager scope(_sym_STARnestedErrorDepthSTAR, make_fixnum(nestedErrorDepth));
+  if (_sym_universalErrorHandler->fboundp()) {
+    Function_sp fn = _sym_universalErrorHandler->symbolFunction();
+    eval::funcall(fn, _Nil<T_O>(), datum, initializers);
+  }
+  THROW_HARD_ERROR(BF("cl__error should never return because universal-error-handler should never return - but it did"));
+}
 
   CL_LAMBDA(cformat eformat &rest arguments);
   CL_DECLARE();
