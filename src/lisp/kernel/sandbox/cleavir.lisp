@@ -58,10 +58,10 @@
               `',(cleavir-env:name info)
               t)
              (cleavir-ast:make-load-time-value-ast
-              '(sicl-genv:variable-cell ',(cleavir-env:name info) sicl-genv:*global-environment*)
+              `(sicl-genv:variable-cell ',(cleavir-env:name info) sicl-genv:*global-environment*)
               t)
              (cleavir-ast:make-load-time-value-ast
-              '(sicl-genv:variable-unbound ',(cleavir-env:name info) sicl-genv:*global-environment*))))))
+              `(sicl-genv:variable-unbound ',(cleavir-env:name info) sicl-genv:*global-environment*))))))
 
 (defmethod cleavir-generate-ast:convert-setq-special-variable
     ((info cleavir-env:special-variable-info) var form-ast (env sandbox-environment) system)
@@ -78,7 +78,7 @@
 	  t)
          form-ast
 	 (cleavir-ast:make-load-time-value-ast
-	  '(sicl-genv:variable-cell ',(cleavir-env:name info) sicl-genv:*global-environment*)
+	  `(sicl-genv:variable-cell ',(cleavir-env:name info) sicl-genv:*global-environment*)
 	  nil))))
 
 (defmethod cleavir-env:eval (form environment (dispatch sandbox-environment))
