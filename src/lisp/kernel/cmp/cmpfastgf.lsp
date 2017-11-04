@@ -637,8 +637,8 @@
   ;;    the slot index will be in gf-data-id
   (let* ((outcome (outcome-outcome node))
          (existing-effective-method-block (gethash outcome *outcomes*)))
-    (when *log-gf*
-      (core:bformat *log-gf* "About to codegen-outcome -> %s\n" outcome))
+    #+(or)(when *log-gf*
+            (core:bformat *log-gf* "About to codegen-outcome -> %s\n" outcome))
     (if existing-effective-method-block
 	(irc-br existing-effective-method-block)
         (cond
