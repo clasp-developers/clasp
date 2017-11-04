@@ -209,9 +209,6 @@
                                    maximize value)))
       (setf (next-stamp-value gen) (1+ max-builtin-stamp)))))
 
-(defun reset-stamp-value-generator (analysis)
-  (setf (analysis-stamp-value-generator analysis) (make-instance 'stamp-value-generator)))
-
 
 (defstruct analysis
   project
@@ -225,6 +222,10 @@
   (scanner-jump-table-indices-for-stamp-names (make-hash-table :test #'equal))
   stamp-roots
   )
+
+(defun reset-stamp-value-generator (analysis)
+  (setf (analysis-stamp-value-generator analysis) (make-instance 'stamp-value-generator)))
+
 
 (defun analysis-get-stamp-value (analysis stamp)
   (let ((stamp-name (get-stamp-name stamp))
@@ -3131,8 +3132,8 @@ Recursively analyze x and return T if x contains fixable pointers."
                  (setq maxstamp (stamp-value stamp))))
           (analysis-sorted-stamps anal))
     (maphash (lambda (stamp-name value)
-               (format fout "// Missing ~a = ~a, ~%" stamp-name value))
-             (analysis-stamp-value-generator anal))
+               (format fout "// Unused ~a = ~a, ~%" stamp-name value))
+             (unused-builtin-stamps (analysis-stamp-value-generator anal)))
     (format fout "  STAMP_max = ~a,~%" maxstamp)
     (format fout "~%" )))
 
