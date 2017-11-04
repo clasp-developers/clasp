@@ -211,4 +211,7 @@ THE SOFTWARE.
 #include <clasp/core/tnc.h>
 #include <clasp/core/translators.h>
 #include <core/weakReference.h>
+#include <clasp/core/fli.h>
+#include <clasp/core/queue.h>
+
 #include <clasp/core/wrappers.h>

@@ -447,7 +447,11 @@
 (defun %foreign-symbol-pointer (name module)
   "Return a pointer (of type ForeignData_sp / FOREIGN_DATA to a foreign symbol."
   (declare (ignore module))
-  (%dlsym name))
+  (multiple-value-bind (handle error)
+      (%dlsym name)
+    (if (not handle)
+        (error "~A" error)
+        handle)))
 
 ;;;----------------------------------------------------------------------------
 ;;;
@@ -473,7 +477,7 @@
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (defun mangled-callback-name (name)
-    (format nil "clasp_ffi_cb_~a" name)))
+    (format nil "___CLASP_FFI_CB_~A" (string-upcase name))))
 
 (defun %expand-callback-definition (name-and-options return-type-kw argument-symbols argument-type-kws body)
 

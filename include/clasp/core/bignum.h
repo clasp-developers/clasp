@@ -56,7 +56,7 @@ public: // Functions here
   static Bignum_sp create( gc::Fixnum i )
   {
     GC_ALLOCATE(Bignum_O, b);
-    b->_value = static_cast<long>(i);
+    b->_value = static_cast< signed long int >( i );
     return b;
   };
 
@@ -67,7 +67,7 @@ public: // Functions here
     return b;
   };
 
-#if !defined( CLASP_FIXNUM_IS_INT64 )
+#if !defined( CLASP_FIXNUM_IS_INT64 ) && !defined( CLASP_LONG_IS_INT64 )
 
   static Bignum_sp create( int64_t v )
   {
@@ -78,12 +78,16 @@ public: // Functions here
 
 #endif
 
+#if !defined( CLASP_UNSIGNED_LONG_IS_UINT64 )
+
   static Bignum_sp create( uint64_t v )
   {
     GC_ALLOCATE(Bignum_O, b);
     b->_value = (unsigned long int) v;
     return b;
   };
+
+#endif
 
 #if !defined( CLASP_LONG_LONG_IS_INT64 )
 
@@ -127,8 +131,8 @@ public: // Functions here
   /*! Return true if the number fits in a signed int */
   bool fits_sint_p();
 
-  virtual void increment() { ++this->_value; };
-  virtual void decrement() { --this->_value; };
+  virtual void increment() { ++( this->_value ); }; // TODO: Check thread-safety! frgo, 2017-04-16
+  virtual void decrement() { --( this->_value ); }; // TODO: Check thread-safety! frgo, 2017-04-16
   //virtual Number_sp copy() const;
   string description() const {
     stringstream ss;

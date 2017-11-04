@@ -24,6 +24,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
+#include <libgen.h>
+
 #include <execinfo.h>
 #include <clasp/core/foundation.h>
 #include <clasp/core/stacks.h>
