@@ -312,26 +312,6 @@
                                                    s))
                                    specializers)))
 
-(defmacro with-generic-function-write-lock ((generic-function &optional (where "")) &body body)
-  `(unwind-protect
-        (progn
-          (gf-log "with-generic-function-write-lock lock %s | %s\n" ,generic-function ,where)
-          (mp:write-lock (generic-function-lock ,generic-function))
-          ,@body)
-     (progn
-       (gf-log "with-generic-function-write-lock unlock %s | %s\n" ,generic-function ,where)
-       (mp:write-unlock (generic-function-lock ,generic-function)))))
-
-(defmacro with-generic-function-shared-lock ((generic-function &optional (where "")) &body body)
-  `(unwind-protect
-        (progn
-          (gf-log "with-generic-function-shared-lock lock %s | %s\n" ,generic-function ,where)
-          (mp:shared-lock (generic-function-lock ,generic-function))
-          ,@body)
-     (progn
-       (gf-log "with-generic-function-shared-lock unlock %s | %s\n" ,generic-function ,where)
-       (mp:shared-unlock (generic-function-lock ,generic-function)))))
-
 (defun effective-slot-from-accessor-method (method class &key log instance)
   (let* ((direct-slot (accessor-method-slot-definition method))
          (direct-slot-name (slot-definition-name direct-slot))
@@ -605,6 +585,9 @@ It takes the arguments in two forms, as a vaslist and as a list of arguments."
                               #+debug-fastgf :log-gf
                               #+debug-fastgf (debug-fastgf-stream)) ;; the stream better be initialized
       'invalidated-dispatch-function))
+
+(defun not-funcallable-dispatch-function (generic-function valist-args)
+  (error "The funcallable-instance ~s is not funcallable" generic-function))
 
 (defun invalidated-dispatch-function (generic-function valist-args)
   ;;; If there is a call history then compile a dispatch function
