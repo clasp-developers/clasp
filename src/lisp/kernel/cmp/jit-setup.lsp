@@ -65,7 +65,7 @@
   (mp:push-default-special-binding 'cmp::*thread-local-builtins-module* nil)
   (mp:push-default-special-binding 'cmp::*thread-local-fastgf-module* nil)
   (mp:push-default-special-binding 'cmp::*thread-local-jit-engine* nil)
-  ;;;
+  ;;; more thread-local special variables may be added in the future
   )
 
 (defun dump-function (func)
