@@ -3696,7 +3696,8 @@ https://groups.google.com/forum/#!topic/llvm-dev/m3JjMNswgcU
                                            return optimizeModule(std::move(M));
                                          }
                                          ),
-                           GDBEventListener(JITEventListener::createGDBRegistrationListener())
+                           GDBEventListener(JITEventListener::createGDBRegistrationListener()),
+                           ModuleHandles(_Nil<core::T_O>())
 {
   llvm::sys::DynamicLibrary::LoadLibraryPermanently(nullptr);
 }
@@ -3798,6 +3799,7 @@ CL_DEFMETHOD ModuleHandle_sp ClaspJIT_O::addModule(Module_sp cM) {
   timer.stop();
   double thisTime = timer.getAccumulatedTime();
   accumulate_llvm_timing_data(thisTime);
+  this->ModuleHandles = core::Cons_O::create(mh,this->ModuleHandles);
   return mh;
 }
 
@@ -3994,7 +3996,7 @@ ModuleHandle_O::~ModuleHandle_O() {
 }
 
 
-CL_DEFUN core::Function_sp llvm_sys__jitFinalizeReplFunction(ClaspJIT_sp jit, ModuleHandle_sp handle, const string& replName, const string& startupName, const string& shutdownName, core::T_sp initialData, Function_sp fn, core::T_sp activationFrameEnvironment) {
+CL_DEFUN core::Function_sp llvm_sys__jitFinalizeReplFunction(ClaspJIT_sp jit, ModuleHandle_sp handle, const string& replName, const string& startupName, const string& shutdownName, core::T_sp initialData) {
   // Stuff to support MCJIT
   core::Pointer_sp replPtr = jit->findSymbolIn(handle,replName,false);
   core::Pointer_sp startupPtr = jit->findSymbolIn(handle,startupName,false);
@@ -4004,7 +4006,7 @@ CL_DEFUN core::Function_sp llvm_sys__jitFinalizeReplFunction(ClaspJIT_sp jit, Mo
     gctools::GC<core::CompiledClosure_O>::allocate( lisp_funcPtr,
                                                     core::SimpleBaseString_O::make(replName),
                                                     kw::_sym_function,
-                                                    activationFrameEnvironment,
+                                                    _Nil<core::T_O>() /*activationFrameEnvironment */,
                                                     _Nil<core::T_O>() /*lambdaList*/,
                                                     0, 0, 0, 0 );
   core::module_startup_function_type startup = reinterpret_cast<core::module_startup_function_type>(gc::As_unsafe<core::Pointer_sp>(startupPtr)->ptr());
@@ -4012,6 +4014,7 @@ CL_DEFUN core::Function_sp llvm_sys__jitFinalizeReplFunction(ClaspJIT_sp jit, Mo
   return functoid;
 }
 
+#if 0
 CL_DEFUN core::Function_sp llvm_sys__jitFinalizeDispatchFunction(ClaspJIT_sp jit, ModuleHandle_sp handle, const string& dispatchName, const string& startupName, const string& shutdownName, core::T_sp initialData ) {
   core::Pointer_sp dispatchPtr = jit->findSymbolIn(handle,dispatchName,false);
   core::Pointer_sp startupPtr = jit->findSymbolIn(handle,startupName,false);
@@ -4029,6 +4032,6 @@ CL_DEFUN core::Function_sp llvm_sys__jitFinalizeDispatchFunction(ClaspJIT_sp jit
   startup(initialData.tagged_());
   return functoid;
 }
-
+#endif
 };
 

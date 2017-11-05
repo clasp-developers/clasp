@@ -279,7 +279,7 @@ ALWAYS_INLINE gc::return_type cc_call(LCC_ARGS_CC_CALL_ELLIPSIS) {
   LCC_SPILL_REGISTER_ARGUMENTS_TO_VA_LIST(lcc_arglist_s);
 #endif
   core::T_O *lcc_arglist = lcc_arglist_s.asTaggedPtr();
-  return closure->entry(LCC_PASS_ARGS);
+  return closure->entry.load()(LCC_PASS_ARGS);
 }
 
 ALWAYS_INLINE gc::return_type cc_call_callback(LCC_ARGS_CC_CALL_ELLIPSIS) {

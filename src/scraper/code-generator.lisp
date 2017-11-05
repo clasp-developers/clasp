@@ -210,7 +210,7 @@ Convert colons to underscores"
             (format cl-code-info ";;;            Found at ~a:~a~%----------~%" (file% func) (line% func))
             (let* ((raw-lisp-name (lisp-name% func))
                    (maybe-fixed-magic-name (maybe-fix-magic-name raw-lisp-name)))
-              (format cl-code "(generate-direct-call-defun ~a (~a) ~s )~%" maybe-fixed-magic-name (lambda-list% func) wrapped-name ))))
+              (format cl-code "(generate-direct-call-defun ~a (~a) (~a) ~s )~%" maybe-fixed-magic-name (declare% func) (lambda-list% func) wrapped-name ))))
         (call-next-method))))
 
 (defmethod direct-call-function (c-code cl-code (func expose-defun) c-code-info cl-code-info)
@@ -231,7 +231,7 @@ Convert colons to underscores"
       (format cl-code-info ";;;            Found at ~a:~a~%----------~%" (file% func) (line% func))
       (let* ((raw-lisp-name (lisp-name% func))
              (maybe-fixed-magic-name (maybe-fix-magic-name raw-lisp-name)))
-        (format cl-code "(generate-direct-call-defun ~a (~a) ~s )~%" maybe-fixed-magic-name (lambda-list% func) wrapped-name )))))
+        (format cl-code "(generate-direct-call-defun ~a (~a) (~a) ~s )~%" maybe-fixed-magic-name (declare% func) (lambda-list% func) wrapped-name )))))
                                
 (defun generate-code-for-direct-call-functions (functions classes)
   (let ((c-code (make-string-output-stream))

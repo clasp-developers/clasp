@@ -4,43 +4,43 @@
 
 #ifdef APPLY_TO_FRAME    // Reg = -1
 case 0:
-return (*func).entry(func.raw_(), 0  , LCC_UNUSED , LCC_UNUSED , LCC_UNUSED , LCC_UNUSED     );
+return (*func).entry.load()(func.raw_(), 0  , LCC_UNUSED , LCC_UNUSED , LCC_UNUSED , LCC_UNUSED     );
 // Reg = 0
 case 1:
-return (*func).entry(func.raw_(), 1 , ENSURE_VALID_OBJECT((*frame)[0])  , LCC_UNUSED , LCC_UNUSED , LCC_UNUSED     );
+return (*func).entry.load()(func.raw_(), 1 , ENSURE_VALID_OBJECT((*frame)[0])  , LCC_UNUSED , LCC_UNUSED , LCC_UNUSED     );
 // Reg = 1
 case 2:
-return (*func).entry(func.raw_(), 2 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1])  , LCC_UNUSED ,
+return (*func).entry.load()(func.raw_(), 2 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1])  , LCC_UNUSED ,
     LCC_UNUSED     );
 // Reg = 2
 case 3:
-return (*func).entry(func.raw_(), 3 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
+return (*func).entry.load()(func.raw_(), 3 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
     ENSURE_VALID_OBJECT((*frame)[2])  , LCC_UNUSED     );
 // Reg = 3
 case 4:
-return (*func).entry(func.raw_(), 4 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
+return (*func).entry.load()(func.raw_(), 4 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
     ENSURE_VALID_OBJECT((*frame)[2]) , ENSURE_VALID_OBJECT((*frame)[3])      );
 // Reg = 3
 case 5:
-return (*func).entry(func.raw_(), 5 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
+return (*func).entry.load()(func.raw_(), 5 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
     ENSURE_VALID_OBJECT((*frame)[2]) , ENSURE_VALID_OBJECT((*frame)[3])        , ENSURE_VALID_OBJECT((*frame)[4])
 );
 // Reg = 3
 case 6:
-return (*func).entry(func.raw_(), 6 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
+return (*func).entry.load()(func.raw_(), 6 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
     ENSURE_VALID_OBJECT((*frame)[2]) , ENSURE_VALID_OBJECT((*frame)[3])        , ENSURE_VALID_OBJECT((*frame)[4])
 , ENSURE_VALID_OBJECT((*frame)[5])
 );
 // Reg = 3
 case 7:
-return (*func).entry(func.raw_(), 7 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
+return (*func).entry.load()(func.raw_(), 7 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
     ENSURE_VALID_OBJECT((*frame)[2]) , ENSURE_VALID_OBJECT((*frame)[3])        , ENSURE_VALID_OBJECT((*frame)[4])
 , ENSURE_VALID_OBJECT((*frame)[5])
 , ENSURE_VALID_OBJECT((*frame)[6])
 );
 // Reg = 3
 case 8:
-return (*func).entry(func.raw_(), 8 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
+return (*func).entry.load()(func.raw_(), 8 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
     ENSURE_VALID_OBJECT((*frame)[2]) , ENSURE_VALID_OBJECT((*frame)[3])        , ENSURE_VALID_OBJECT((*frame)[4])
 , ENSURE_VALID_OBJECT((*frame)[5])
 , ENSURE_VALID_OBJECT((*frame)[6])
@@ -48,7 +48,7 @@ return (*func).entry(func.raw_(), 8 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_
 );
 // Reg = 3
 case 9:
-return (*func).entry(func.raw_(), 9 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
+return (*func).entry.load()(func.raw_(), 9 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
     ENSURE_VALID_OBJECT((*frame)[2]) , ENSURE_VALID_OBJECT((*frame)[3])        , ENSURE_VALID_OBJECT((*frame)[4])
 , ENSURE_VALID_OBJECT((*frame)[5])
 , ENSURE_VALID_OBJECT((*frame)[6])
@@ -57,7 +57,7 @@ return (*func).entry(func.raw_(), 9 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_
 );
 // Reg = 3
 case 10:
-return (*func).entry(func.raw_(), 10 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
+return (*func).entry.load()(func.raw_(), 10 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
     ENSURE_VALID_OBJECT((*frame)[2]) , ENSURE_VALID_OBJECT((*frame)[3])        , ENSURE_VALID_OBJECT((*frame)[4])
 , ENSURE_VALID_OBJECT((*frame)[5])
 , ENSURE_VALID_OBJECT((*frame)[6])
@@ -67,7 +67,7 @@ return (*func).entry(func.raw_(), 10 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE
 );
 // Reg = 3
 case 11:
-return (*func).entry(func.raw_(), 11 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
+return (*func).entry.load()(func.raw_(), 11 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
     ENSURE_VALID_OBJECT((*frame)[2]) , ENSURE_VALID_OBJECT((*frame)[3])        , ENSURE_VALID_OBJECT((*frame)[4])
 , ENSURE_VALID_OBJECT((*frame)[5])
 , ENSURE_VALID_OBJECT((*frame)[6])
@@ -78,7 +78,7 @@ return (*func).entry(func.raw_(), 11 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE
 );
 // Reg = 3
 case 12:
-return (*func).entry(func.raw_(), 12 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
+return (*func).entry.load()(func.raw_(), 12 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
     ENSURE_VALID_OBJECT((*frame)[2]) , ENSURE_VALID_OBJECT((*frame)[3])        , ENSURE_VALID_OBJECT((*frame)[4])
 , ENSURE_VALID_OBJECT((*frame)[5])
 , ENSURE_VALID_OBJECT((*frame)[6])
@@ -90,7 +90,7 @@ return (*func).entry(func.raw_(), 12 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE
 );
 // Reg = 3
 case 13:
-return (*func).entry(func.raw_(), 13 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
+return (*func).entry.load()(func.raw_(), 13 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
     ENSURE_VALID_OBJECT((*frame)[2]) , ENSURE_VALID_OBJECT((*frame)[3])        , ENSURE_VALID_OBJECT((*frame)[4])
 , ENSURE_VALID_OBJECT((*frame)[5])
 , ENSURE_VALID_OBJECT((*frame)[6])
@@ -103,7 +103,7 @@ return (*func).entry(func.raw_(), 13 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE
 );
 // Reg = 3
 case 14:
-return (*func).entry(func.raw_(), 14 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
+return (*func).entry.load()(func.raw_(), 14 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
     ENSURE_VALID_OBJECT((*frame)[2]) , ENSURE_VALID_OBJECT((*frame)[3])        , ENSURE_VALID_OBJECT((*frame)[4])
 , ENSURE_VALID_OBJECT((*frame)[5])
 , ENSURE_VALID_OBJECT((*frame)[6])
@@ -117,7 +117,7 @@ return (*func).entry(func.raw_(), 14 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE
 );
 // Reg = 3
 case 15:
-return (*func).entry(func.raw_(), 15 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
+return (*func).entry.load()(func.raw_(), 15 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
     ENSURE_VALID_OBJECT((*frame)[2]) , ENSURE_VALID_OBJECT((*frame)[3])        , ENSURE_VALID_OBJECT((*frame)[4])
 , ENSURE_VALID_OBJECT((*frame)[5])
 , ENSURE_VALID_OBJECT((*frame)[6])
@@ -132,7 +132,7 @@ return (*func).entry(func.raw_(), 15 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE
 );
 // Reg = 3
 case 16:
-return (*func).entry(func.raw_(), 16 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
+return (*func).entry.load()(func.raw_(), 16 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
     ENSURE_VALID_OBJECT((*frame)[2]) , ENSURE_VALID_OBJECT((*frame)[3])        , ENSURE_VALID_OBJECT((*frame)[4])
 , ENSURE_VALID_OBJECT((*frame)[5])
 , ENSURE_VALID_OBJECT((*frame)[6])
@@ -148,7 +148,7 @@ return (*func).entry(func.raw_(), 16 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE
 );
 // Reg = 3
 case 17:
-return (*func).entry(func.raw_(), 17 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
+return (*func).entry.load()(func.raw_(), 17 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
     ENSURE_VALID_OBJECT((*frame)[2]) , ENSURE_VALID_OBJECT((*frame)[3])        , ENSURE_VALID_OBJECT((*frame)[4])
 , ENSURE_VALID_OBJECT((*frame)[5])
 , ENSURE_VALID_OBJECT((*frame)[6])
@@ -165,7 +165,7 @@ return (*func).entry(func.raw_(), 17 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE
 );
 // Reg = 3
 case 18:
-return (*func).entry(func.raw_(), 18 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
+return (*func).entry.load()(func.raw_(), 18 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
     ENSURE_VALID_OBJECT((*frame)[2]) , ENSURE_VALID_OBJECT((*frame)[3])        , ENSURE_VALID_OBJECT((*frame)[4])
 , ENSURE_VALID_OBJECT((*frame)[5])
 , ENSURE_VALID_OBJECT((*frame)[6])
@@ -183,7 +183,7 @@ return (*func).entry(func.raw_(), 18 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE
 );
 // Reg = 3
 case 19:
-return (*func).entry(func.raw_(), 19 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
+return (*func).entry.load()(func.raw_(), 19 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
     ENSURE_VALID_OBJECT((*frame)[2]) , ENSURE_VALID_OBJECT((*frame)[3])        , ENSURE_VALID_OBJECT((*frame)[4])
 , ENSURE_VALID_OBJECT((*frame)[5])
 , ENSURE_VALID_OBJECT((*frame)[6])
@@ -202,7 +202,7 @@ return (*func).entry(func.raw_(), 19 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE
 );
 // Reg = 3
 case 20:
-return (*func).entry(func.raw_(), 20 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
+return (*func).entry.load()(func.raw_(), 20 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
     ENSURE_VALID_OBJECT((*frame)[2]) , ENSURE_VALID_OBJECT((*frame)[3])        , ENSURE_VALID_OBJECT((*frame)[4])
 , ENSURE_VALID_OBJECT((*frame)[5])
 , ENSURE_VALID_OBJECT((*frame)[6])
@@ -222,7 +222,7 @@ return (*func).entry(func.raw_(), 20 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE
 );
 // Reg = 3
 case 21:
-return (*func).entry(func.raw_(), 21 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
+return (*func).entry.load()(func.raw_(), 21 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
     ENSURE_VALID_OBJECT((*frame)[2]) , ENSURE_VALID_OBJECT((*frame)[3])        , ENSURE_VALID_OBJECT((*frame)[4])
 , ENSURE_VALID_OBJECT((*frame)[5])
 , ENSURE_VALID_OBJECT((*frame)[6])
@@ -243,7 +243,7 @@ return (*func).entry(func.raw_(), 21 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE
 );
 // Reg = 3
 case 22:
-return (*func).entry(func.raw_(), 22 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
+return (*func).entry.load()(func.raw_(), 22 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
     ENSURE_VALID_OBJECT((*frame)[2]) , ENSURE_VALID_OBJECT((*frame)[3])        , ENSURE_VALID_OBJECT((*frame)[4])
 , ENSURE_VALID_OBJECT((*frame)[5])
 , ENSURE_VALID_OBJECT((*frame)[6])
@@ -265,7 +265,7 @@ return (*func).entry(func.raw_(), 22 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE
 );
 // Reg = 3
 case 23:
-return (*func).entry(func.raw_(), 23 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
+return (*func).entry.load()(func.raw_(), 23 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
     ENSURE_VALID_OBJECT((*frame)[2]) , ENSURE_VALID_OBJECT((*frame)[3])        , ENSURE_VALID_OBJECT((*frame)[4])
 , ENSURE_VALID_OBJECT((*frame)[5])
 , ENSURE_VALID_OBJECT((*frame)[6])
@@ -288,7 +288,7 @@ return (*func).entry(func.raw_(), 23 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE
 );
 // Reg = 3
 case 24:
-return (*func).entry(func.raw_(), 24 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
+return (*func).entry.load()(func.raw_(), 24 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
     ENSURE_VALID_OBJECT((*frame)[2]) , ENSURE_VALID_OBJECT((*frame)[3])        , ENSURE_VALID_OBJECT((*frame)[4])
 , ENSURE_VALID_OBJECT((*frame)[5])
 , ENSURE_VALID_OBJECT((*frame)[6])
@@ -312,7 +312,7 @@ return (*func).entry(func.raw_(), 24 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE
 );
 // Reg = 3
 case 25:
-return (*func).entry(func.raw_(), 25 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
+return (*func).entry.load()(func.raw_(), 25 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
     ENSURE_VALID_OBJECT((*frame)[2]) , ENSURE_VALID_OBJECT((*frame)[3])        , ENSURE_VALID_OBJECT((*frame)[4])
 , ENSURE_VALID_OBJECT((*frame)[5])
 , ENSURE_VALID_OBJECT((*frame)[6])
@@ -337,7 +337,7 @@ return (*func).entry(func.raw_(), 25 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE
 );
 // Reg = 3
 case 26:
-return (*func).entry(func.raw_(), 26 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
+return (*func).entry.load()(func.raw_(), 26 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
     ENSURE_VALID_OBJECT((*frame)[2]) , ENSURE_VALID_OBJECT((*frame)[3])        , ENSURE_VALID_OBJECT((*frame)[4])
 , ENSURE_VALID_OBJECT((*frame)[5])
 , ENSURE_VALID_OBJECT((*frame)[6])
@@ -363,7 +363,7 @@ return (*func).entry(func.raw_(), 26 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE
 );
 // Reg = 3
 case 27:
-return (*func).entry(func.raw_(), 27 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
+return (*func).entry.load()(func.raw_(), 27 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
     ENSURE_VALID_OBJECT((*frame)[2]) , ENSURE_VALID_OBJECT((*frame)[3])        , ENSURE_VALID_OBJECT((*frame)[4])
 , ENSURE_VALID_OBJECT((*frame)[5])
 , ENSURE_VALID_OBJECT((*frame)[6])
@@ -390,7 +390,7 @@ return (*func).entry(func.raw_(), 27 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE
 );
 // Reg = 3
 case 28:
-return (*func).entry(func.raw_(), 28 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
+return (*func).entry.load()(func.raw_(), 28 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
     ENSURE_VALID_OBJECT((*frame)[2]) , ENSURE_VALID_OBJECT((*frame)[3])        , ENSURE_VALID_OBJECT((*frame)[4])
 , ENSURE_VALID_OBJECT((*frame)[5])
 , ENSURE_VALID_OBJECT((*frame)[6])
@@ -418,7 +418,7 @@ return (*func).entry(func.raw_(), 28 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE
 );
 // Reg = 3
 case 29:
-return (*func).entry(func.raw_(), 29 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
+return (*func).entry.load()(func.raw_(), 29 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
     ENSURE_VALID_OBJECT((*frame)[2]) , ENSURE_VALID_OBJECT((*frame)[3])        , ENSURE_VALID_OBJECT((*frame)[4])
 , ENSURE_VALID_OBJECT((*frame)[5])
 , ENSURE_VALID_OBJECT((*frame)[6])
@@ -447,7 +447,7 @@ return (*func).entry(func.raw_(), 29 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE
 );
 // Reg = 3
 case 30:
-return (*func).entry(func.raw_(), 30 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
+return (*func).entry.load()(func.raw_(), 30 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
     ENSURE_VALID_OBJECT((*frame)[2]) , ENSURE_VALID_OBJECT((*frame)[3])        , ENSURE_VALID_OBJECT((*frame)[4])
 , ENSURE_VALID_OBJECT((*frame)[5])
 , ENSURE_VALID_OBJECT((*frame)[6])
@@ -477,7 +477,7 @@ return (*func).entry(func.raw_(), 30 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE
 );
 // Reg = 3
 case 31:
-return (*func).entry(func.raw_(), 31 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
+return (*func).entry.load()(func.raw_(), 31 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
     ENSURE_VALID_OBJECT((*frame)[2]) , ENSURE_VALID_OBJECT((*frame)[3])        , ENSURE_VALID_OBJECT((*frame)[4])
 , ENSURE_VALID_OBJECT((*frame)[5])
 , ENSURE_VALID_OBJECT((*frame)[6])
@@ -508,7 +508,7 @@ return (*func).entry(func.raw_(), 31 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE
 );
 // Reg = 3
 case 32:
-return (*func).entry(func.raw_(), 32 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
+return (*func).entry.load()(func.raw_(), 32 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
     ENSURE_VALID_OBJECT((*frame)[2]) , ENSURE_VALID_OBJECT((*frame)[3])        , ENSURE_VALID_OBJECT((*frame)[4])
 , ENSURE_VALID_OBJECT((*frame)[5])
 , ENSURE_VALID_OBJECT((*frame)[6])
@@ -540,7 +540,7 @@ return (*func).entry(func.raw_(), 32 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE
 );
 // Reg = 3
 case 33:
-return (*func).entry(func.raw_(), 33 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
+return (*func).entry.load()(func.raw_(), 33 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
     ENSURE_VALID_OBJECT((*frame)[2]) , ENSURE_VALID_OBJECT((*frame)[3])        , ENSURE_VALID_OBJECT((*frame)[4])
 , ENSURE_VALID_OBJECT((*frame)[5])
 , ENSURE_VALID_OBJECT((*frame)[6])
@@ -573,7 +573,7 @@ return (*func).entry(func.raw_(), 33 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE
 );
 // Reg = 3
 case 34:
-return (*func).entry(func.raw_(), 34 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
+return (*func).entry.load()(func.raw_(), 34 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
     ENSURE_VALID_OBJECT((*frame)[2]) , ENSURE_VALID_OBJECT((*frame)[3])        , ENSURE_VALID_OBJECT((*frame)[4])
 , ENSURE_VALID_OBJECT((*frame)[5])
 , ENSURE_VALID_OBJECT((*frame)[6])
@@ -607,7 +607,7 @@ return (*func).entry(func.raw_(), 34 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE
 );
 // Reg = 3
 case 35:
-return (*func).entry(func.raw_(), 35 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
+return (*func).entry.load()(func.raw_(), 35 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
     ENSURE_VALID_OBJECT((*frame)[2]) , ENSURE_VALID_OBJECT((*frame)[3])        , ENSURE_VALID_OBJECT((*frame)[4])
 , ENSURE_VALID_OBJECT((*frame)[5])
 , ENSURE_VALID_OBJECT((*frame)[6])
@@ -642,7 +642,7 @@ return (*func).entry(func.raw_(), 35 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE
 );
 // Reg = 3
 case 36:
-return (*func).entry(func.raw_(), 36 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
+return (*func).entry.load()(func.raw_(), 36 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
     ENSURE_VALID_OBJECT((*frame)[2]) , ENSURE_VALID_OBJECT((*frame)[3])        , ENSURE_VALID_OBJECT((*frame)[4])
 , ENSURE_VALID_OBJECT((*frame)[5])
 , ENSURE_VALID_OBJECT((*frame)[6])
@@ -678,7 +678,7 @@ return (*func).entry(func.raw_(), 36 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE
 );
 // Reg = 3
 case 37:
-return (*func).entry(func.raw_(), 37 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
+return (*func).entry.load()(func.raw_(), 37 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
     ENSURE_VALID_OBJECT((*frame)[2]) , ENSURE_VALID_OBJECT((*frame)[3])        , ENSURE_VALID_OBJECT((*frame)[4])
 , ENSURE_VALID_OBJECT((*frame)[5])
 , ENSURE_VALID_OBJECT((*frame)[6])
@@ -715,7 +715,7 @@ return (*func).entry(func.raw_(), 37 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE
 );
 // Reg = 3
 case 38:
-return (*func).entry(func.raw_(), 38 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
+return (*func).entry.load()(func.raw_(), 38 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
     ENSURE_VALID_OBJECT((*frame)[2]) , ENSURE_VALID_OBJECT((*frame)[3])        , ENSURE_VALID_OBJECT((*frame)[4])
 , ENSURE_VALID_OBJECT((*frame)[5])
 , ENSURE_VALID_OBJECT((*frame)[6])
@@ -753,7 +753,7 @@ return (*func).entry(func.raw_(), 38 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE
 );
 // Reg = 3
 case 39:
-return (*func).entry(func.raw_(), 39 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
+return (*func).entry.load()(func.raw_(), 39 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
     ENSURE_VALID_OBJECT((*frame)[2]) , ENSURE_VALID_OBJECT((*frame)[3])        , ENSURE_VALID_OBJECT((*frame)[4])
 , ENSURE_VALID_OBJECT((*frame)[5])
 , ENSURE_VALID_OBJECT((*frame)[6])
@@ -792,7 +792,7 @@ return (*func).entry(func.raw_(), 39 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE
 );
 // Reg = 3
 case 40:
-return (*func).entry(func.raw_(), 40 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
+return (*func).entry.load()(func.raw_(), 40 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
     ENSURE_VALID_OBJECT((*frame)[2]) , ENSURE_VALID_OBJECT((*frame)[3])        , ENSURE_VALID_OBJECT((*frame)[4])
 , ENSURE_VALID_OBJECT((*frame)[5])
 , ENSURE_VALID_OBJECT((*frame)[6])
@@ -832,7 +832,7 @@ return (*func).entry(func.raw_(), 40 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE
 );
 // Reg = 3
 case 41:
-return (*func).entry(func.raw_(), 41 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
+return (*func).entry.load()(func.raw_(), 41 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
     ENSURE_VALID_OBJECT((*frame)[2]) , ENSURE_VALID_OBJECT((*frame)[3])        , ENSURE_VALID_OBJECT((*frame)[4])
 , ENSURE_VALID_OBJECT((*frame)[5])
 , ENSURE_VALID_OBJECT((*frame)[6])
@@ -873,7 +873,7 @@ return (*func).entry(func.raw_(), 41 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE
 );
 // Reg = 3
 case 42:
-return (*func).entry(func.raw_(), 42 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
+return (*func).entry.load()(func.raw_(), 42 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
     ENSURE_VALID_OBJECT((*frame)[2]) , ENSURE_VALID_OBJECT((*frame)[3])        , ENSURE_VALID_OBJECT((*frame)[4])
 , ENSURE_VALID_OBJECT((*frame)[5])
 , ENSURE_VALID_OBJECT((*frame)[6])
@@ -915,7 +915,7 @@ return (*func).entry(func.raw_(), 42 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE
 );
 // Reg = 3
 case 43:
-return (*func).entry(func.raw_(), 43 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
+return (*func).entry.load()(func.raw_(), 43 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
     ENSURE_VALID_OBJECT((*frame)[2]) , ENSURE_VALID_OBJECT((*frame)[3])        , ENSURE_VALID_OBJECT((*frame)[4])
 , ENSURE_VALID_OBJECT((*frame)[5])
 , ENSURE_VALID_OBJECT((*frame)[6])
@@ -958,7 +958,7 @@ return (*func).entry(func.raw_(), 43 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE
 );
 // Reg = 3
 case 44:
-return (*func).entry(func.raw_(), 44 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
+return (*func).entry.load()(func.raw_(), 44 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
     ENSURE_VALID_OBJECT((*frame)[2]) , ENSURE_VALID_OBJECT((*frame)[3])        , ENSURE_VALID_OBJECT((*frame)[4])
 , ENSURE_VALID_OBJECT((*frame)[5])
 , ENSURE_VALID_OBJECT((*frame)[6])
@@ -1002,7 +1002,7 @@ return (*func).entry(func.raw_(), 44 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE
 );
 // Reg = 3
 case 45:
-return (*func).entry(func.raw_(), 45 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
+return (*func).entry.load()(func.raw_(), 45 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
     ENSURE_VALID_OBJECT((*frame)[2]) , ENSURE_VALID_OBJECT((*frame)[3])        , ENSURE_VALID_OBJECT((*frame)[4])
 , ENSURE_VALID_OBJECT((*frame)[5])
 , ENSURE_VALID_OBJECT((*frame)[6])
@@ -1047,7 +1047,7 @@ return (*func).entry(func.raw_(), 45 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE
 );
 // Reg = 3
 case 46:
-return (*func).entry(func.raw_(), 46 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
+return (*func).entry.load()(func.raw_(), 46 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
     ENSURE_VALID_OBJECT((*frame)[2]) , ENSURE_VALID_OBJECT((*frame)[3])        , ENSURE_VALID_OBJECT((*frame)[4])
 , ENSURE_VALID_OBJECT((*frame)[5])
 , ENSURE_VALID_OBJECT((*frame)[6])
@@ -1093,7 +1093,7 @@ return (*func).entry(func.raw_(), 46 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE
 );
 // Reg = 3
 case 47:
-return (*func).entry(func.raw_(), 47 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
+return (*func).entry.load()(func.raw_(), 47 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
     ENSURE_VALID_OBJECT((*frame)[2]) , ENSURE_VALID_OBJECT((*frame)[3])        , ENSURE_VALID_OBJECT((*frame)[4])
 , ENSURE_VALID_OBJECT((*frame)[5])
 , ENSURE_VALID_OBJECT((*frame)[6])
@@ -1140,7 +1140,7 @@ return (*func).entry(func.raw_(), 47 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE
 );
 // Reg = 3
 case 48:
-return (*func).entry(func.raw_(), 48 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
+return (*func).entry.load()(func.raw_(), 48 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
     ENSURE_VALID_OBJECT((*frame)[2]) , ENSURE_VALID_OBJECT((*frame)[3])        , ENSURE_VALID_OBJECT((*frame)[4])
 , ENSURE_VALID_OBJECT((*frame)[5])
 , ENSURE_VALID_OBJECT((*frame)[6])
@@ -1188,7 +1188,7 @@ return (*func).entry(func.raw_(), 48 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE
 );
 // Reg = 3
 case 49:
-return (*func).entry(func.raw_(), 49 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
+return (*func).entry.load()(func.raw_(), 49 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
     ENSURE_VALID_OBJECT((*frame)[2]) , ENSURE_VALID_OBJECT((*frame)[3])        , ENSURE_VALID_OBJECT((*frame)[4])
 , ENSURE_VALID_OBJECT((*frame)[5])
 , ENSURE_VALID_OBJECT((*frame)[6])
@@ -1237,7 +1237,7 @@ return (*func).entry(func.raw_(), 49 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE
 );
 // Reg = 3
 case 50:
-return (*func).entry(func.raw_(), 50 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
+return (*func).entry.load()(func.raw_(), 50 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
     ENSURE_VALID_OBJECT((*frame)[2]) , ENSURE_VALID_OBJECT((*frame)[3])        , ENSURE_VALID_OBJECT((*frame)[4])
 , ENSURE_VALID_OBJECT((*frame)[5])
 , ENSURE_VALID_OBJECT((*frame)[6])
@@ -1287,7 +1287,7 @@ return (*func).entry(func.raw_(), 50 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE
 );
 // Reg = 3
 case 51:
-return (*func).entry(func.raw_(), 51 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
+return (*func).entry.load()(func.raw_(), 51 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
     ENSURE_VALID_OBJECT((*frame)[2]) , ENSURE_VALID_OBJECT((*frame)[3])        , ENSURE_VALID_OBJECT((*frame)[4])
 , ENSURE_VALID_OBJECT((*frame)[5])
 , ENSURE_VALID_OBJECT((*frame)[6])
@@ -1338,7 +1338,7 @@ return (*func).entry(func.raw_(), 51 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE
 );
 // Reg = 3
 case 52:
-return (*func).entry(func.raw_(), 52 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
+return (*func).entry.load()(func.raw_(), 52 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
     ENSURE_VALID_OBJECT((*frame)[2]) , ENSURE_VALID_OBJECT((*frame)[3])        , ENSURE_VALID_OBJECT((*frame)[4])
 , ENSURE_VALID_OBJECT((*frame)[5])
 , ENSURE_VALID_OBJECT((*frame)[6])
@@ -1390,7 +1390,7 @@ return (*func).entry(func.raw_(), 52 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE
 );
 // Reg = 3
 case 53:
-return (*func).entry(func.raw_(), 53 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
+return (*func).entry.load()(func.raw_(), 53 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
     ENSURE_VALID_OBJECT((*frame)[2]) , ENSURE_VALID_OBJECT((*frame)[3])        , ENSURE_VALID_OBJECT((*frame)[4])
 , ENSURE_VALID_OBJECT((*frame)[5])
 , ENSURE_VALID_OBJECT((*frame)[6])
@@ -1443,7 +1443,7 @@ return (*func).entry(func.raw_(), 53 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE
 );
 // Reg = 3
 case 54:
-return (*func).entry(func.raw_(), 54 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
+return (*func).entry.load()(func.raw_(), 54 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
     ENSURE_VALID_OBJECT((*frame)[2]) , ENSURE_VALID_OBJECT((*frame)[3])        , ENSURE_VALID_OBJECT((*frame)[4])
 , ENSURE_VALID_OBJECT((*frame)[5])
 , ENSURE_VALID_OBJECT((*frame)[6])
@@ -1497,7 +1497,7 @@ return (*func).entry(func.raw_(), 54 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE
 );
 // Reg = 3
 case 55:
-return (*func).entry(func.raw_(), 55 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
+return (*func).entry.load()(func.raw_(), 55 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
     ENSURE_VALID_OBJECT((*frame)[2]) , ENSURE_VALID_OBJECT((*frame)[3])        , ENSURE_VALID_OBJECT((*frame)[4])
 , ENSURE_VALID_OBJECT((*frame)[5])
 , ENSURE_VALID_OBJECT((*frame)[6])
@@ -1552,7 +1552,7 @@ return (*func).entry(func.raw_(), 55 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE
 );
 // Reg = 3
 case 56:
-return (*func).entry(func.raw_(), 56 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
+return (*func).entry.load()(func.raw_(), 56 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
     ENSURE_VALID_OBJECT((*frame)[2]) , ENSURE_VALID_OBJECT((*frame)[3])        , ENSURE_VALID_OBJECT((*frame)[4])
 , ENSURE_VALID_OBJECT((*frame)[5])
 , ENSURE_VALID_OBJECT((*frame)[6])
@@ -1608,7 +1608,7 @@ return (*func).entry(func.raw_(), 56 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE
 );
 // Reg = 3
 case 57:
-return (*func).entry(func.raw_(), 57 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
+return (*func).entry.load()(func.raw_(), 57 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
     ENSURE_VALID_OBJECT((*frame)[2]) , ENSURE_VALID_OBJECT((*frame)[3])        , ENSURE_VALID_OBJECT((*frame)[4])
 , ENSURE_VALID_OBJECT((*frame)[5])
 , ENSURE_VALID_OBJECT((*frame)[6])
@@ -1665,7 +1665,7 @@ return (*func).entry(func.raw_(), 57 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE
 );
 // Reg = 3
 case 58:
-return (*func).entry(func.raw_(), 58 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
+return (*func).entry.load()(func.raw_(), 58 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
     ENSURE_VALID_OBJECT((*frame)[2]) , ENSURE_VALID_OBJECT((*frame)[3])        , ENSURE_VALID_OBJECT((*frame)[4])
 , ENSURE_VALID_OBJECT((*frame)[5])
 , ENSURE_VALID_OBJECT((*frame)[6])
@@ -1723,7 +1723,7 @@ return (*func).entry(func.raw_(), 58 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE
 );
 // Reg = 3
 case 59:
-return (*func).entry(func.raw_(), 59 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
+return (*func).entry.load()(func.raw_(), 59 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
     ENSURE_VALID_OBJECT((*frame)[2]) , ENSURE_VALID_OBJECT((*frame)[3])        , ENSURE_VALID_OBJECT((*frame)[4])
 , ENSURE_VALID_OBJECT((*frame)[5])
 , ENSURE_VALID_OBJECT((*frame)[6])
@@ -1782,7 +1782,7 @@ return (*func).entry(func.raw_(), 59 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE
 );
 // Reg = 3
 case 60:
-return (*func).entry(func.raw_(), 60 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
+return (*func).entry.load()(func.raw_(), 60 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
     ENSURE_VALID_OBJECT((*frame)[2]) , ENSURE_VALID_OBJECT((*frame)[3])        , ENSURE_VALID_OBJECT((*frame)[4])
 , ENSURE_VALID_OBJECT((*frame)[5])
 , ENSURE_VALID_OBJECT((*frame)[6])
@@ -1842,7 +1842,7 @@ return (*func).entry(func.raw_(), 60 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE
 );
 // Reg = 3
 case 61:
-return (*func).entry(func.raw_(), 61 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
+return (*func).entry.load()(func.raw_(), 61 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
     ENSURE_VALID_OBJECT((*frame)[2]) , ENSURE_VALID_OBJECT((*frame)[3])        , ENSURE_VALID_OBJECT((*frame)[4])
 , ENSURE_VALID_OBJECT((*frame)[5])
 , ENSURE_VALID_OBJECT((*frame)[6])
@@ -1903,7 +1903,7 @@ return (*func).entry(func.raw_(), 61 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE
 );
 // Reg = 3
 case 62:
-return (*func).entry(func.raw_(), 62 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
+return (*func).entry.load()(func.raw_(), 62 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
     ENSURE_VALID_OBJECT((*frame)[2]) , ENSURE_VALID_OBJECT((*frame)[3])        , ENSURE_VALID_OBJECT((*frame)[4])
 , ENSURE_VALID_OBJECT((*frame)[5])
 , ENSURE_VALID_OBJECT((*frame)[6])
@@ -1965,7 +1965,7 @@ return (*func).entry(func.raw_(), 62 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE
 );
 // Reg = 3
 case 63:
-return (*func).entry(func.raw_(), 63 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
+return (*func).entry.load()(func.raw_(), 63 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
     ENSURE_VALID_OBJECT((*frame)[2]) , ENSURE_VALID_OBJECT((*frame)[3])        , ENSURE_VALID_OBJECT((*frame)[4])
 , ENSURE_VALID_OBJECT((*frame)[5])
 , ENSURE_VALID_OBJECT((*frame)[6])
@@ -2028,7 +2028,7 @@ return (*func).entry(func.raw_(), 63 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE
 );
 // Reg = 3
 case 64:
-return (*func).entry(func.raw_(), 64 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
+return (*func).entry.load()(func.raw_(), 64 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
     ENSURE_VALID_OBJECT((*frame)[2]) , ENSURE_VALID_OBJECT((*frame)[3])        , ENSURE_VALID_OBJECT((*frame)[4])
 , ENSURE_VALID_OBJECT((*frame)[5])
 , ENSURE_VALID_OBJECT((*frame)[6])
@@ -2092,7 +2092,7 @@ return (*func).entry(func.raw_(), 64 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE
 );
 // Reg = 3
 case 65:
-return (*func).entry(func.raw_(), 65 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
+return (*func).entry.load()(func.raw_(), 65 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
     ENSURE_VALID_OBJECT((*frame)[2]) , ENSURE_VALID_OBJECT((*frame)[3])        , ENSURE_VALID_OBJECT((*frame)[4])
 , ENSURE_VALID_OBJECT((*frame)[5])
 , ENSURE_VALID_OBJECT((*frame)[6])
@@ -2157,7 +2157,7 @@ return (*func).entry(func.raw_(), 65 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE
 );
 // Reg = 3
 case 66:
-return (*func).entry(func.raw_(), 66 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
+return (*func).entry.load()(func.raw_(), 66 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
     ENSURE_VALID_OBJECT((*frame)[2]) , ENSURE_VALID_OBJECT((*frame)[3])        , ENSURE_VALID_OBJECT((*frame)[4])
 , ENSURE_VALID_OBJECT((*frame)[5])
 , ENSURE_VALID_OBJECT((*frame)[6])
@@ -2223,7 +2223,7 @@ return (*func).entry(func.raw_(), 66 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE
 );
 // Reg = 3
 case 67:
-return (*func).entry(func.raw_(), 67 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
+return (*func).entry.load()(func.raw_(), 67 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
     ENSURE_VALID_OBJECT((*frame)[2]) , ENSURE_VALID_OBJECT((*frame)[3])        , ENSURE_VALID_OBJECT((*frame)[4])
 , ENSURE_VALID_OBJECT((*frame)[5])
 , ENSURE_VALID_OBJECT((*frame)[6])
@@ -2290,7 +2290,7 @@ return (*func).entry(func.raw_(), 67 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE
 );
 // Reg = 3
 case 68:
-return (*func).entry(func.raw_(), 68 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
+return (*func).entry.load()(func.raw_(), 68 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
     ENSURE_VALID_OBJECT((*frame)[2]) , ENSURE_VALID_OBJECT((*frame)[3])        , ENSURE_VALID_OBJECT((*frame)[4])
 , ENSURE_VALID_OBJECT((*frame)[5])
 , ENSURE_VALID_OBJECT((*frame)[6])
@@ -2358,7 +2358,7 @@ return (*func).entry(func.raw_(), 68 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE
 );
 // Reg = 3
 case 69:
-return (*func).entry(func.raw_(), 69 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
+return (*func).entry.load()(func.raw_(), 69 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
     ENSURE_VALID_OBJECT((*frame)[2]) , ENSURE_VALID_OBJECT((*frame)[3])        , ENSURE_VALID_OBJECT((*frame)[4])
 , ENSURE_VALID_OBJECT((*frame)[5])
 , ENSURE_VALID_OBJECT((*frame)[6])
@@ -2427,7 +2427,7 @@ return (*func).entry(func.raw_(), 69 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE
 );
 // Reg = 3
 case 70:
-return (*func).entry(func.raw_(), 70 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
+return (*func).entry.load()(func.raw_(), 70 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
     ENSURE_VALID_OBJECT((*frame)[2]) , ENSURE_VALID_OBJECT((*frame)[3])        , ENSURE_VALID_OBJECT((*frame)[4])
 , ENSURE_VALID_OBJECT((*frame)[5])
 , ENSURE_VALID_OBJECT((*frame)[6])
@@ -2497,7 +2497,7 @@ return (*func).entry(func.raw_(), 70 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE
 );
 // Reg = 3
 case 71:
-return (*func).entry(func.raw_(), 71 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
+return (*func).entry.load()(func.raw_(), 71 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
     ENSURE_VALID_OBJECT((*frame)[2]) , ENSURE_VALID_OBJECT((*frame)[3])        , ENSURE_VALID_OBJECT((*frame)[4])
 , ENSURE_VALID_OBJECT((*frame)[5])
 , ENSURE_VALID_OBJECT((*frame)[6])
@@ -2568,7 +2568,7 @@ return (*func).entry(func.raw_(), 71 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE
 );
 // Reg = 3
 case 72:
-return (*func).entry(func.raw_(), 72 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
+return (*func).entry.load()(func.raw_(), 72 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
     ENSURE_VALID_OBJECT((*frame)[2]) , ENSURE_VALID_OBJECT((*frame)[3])        , ENSURE_VALID_OBJECT((*frame)[4])
 , ENSURE_VALID_OBJECT((*frame)[5])
 , ENSURE_VALID_OBJECT((*frame)[6])
@@ -2640,7 +2640,7 @@ return (*func).entry(func.raw_(), 72 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE
 );
 // Reg = 3
 case 73:
-return (*func).entry(func.raw_(), 73 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
+return (*func).entry.load()(func.raw_(), 73 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
     ENSURE_VALID_OBJECT((*frame)[2]) , ENSURE_VALID_OBJECT((*frame)[3])        , ENSURE_VALID_OBJECT((*frame)[4])
 , ENSURE_VALID_OBJECT((*frame)[5])
 , ENSURE_VALID_OBJECT((*frame)[6])
@@ -2713,7 +2713,7 @@ return (*func).entry(func.raw_(), 73 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE
 );
 // Reg = 3
 case 74:
-return (*func).entry(func.raw_(), 74 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
+return (*func).entry.load()(func.raw_(), 74 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
     ENSURE_VALID_OBJECT((*frame)[2]) , ENSURE_VALID_OBJECT((*frame)[3])        , ENSURE_VALID_OBJECT((*frame)[4])
 , ENSURE_VALID_OBJECT((*frame)[5])
 , ENSURE_VALID_OBJECT((*frame)[6])
@@ -2787,7 +2787,7 @@ return (*func).entry(func.raw_(), 74 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE
 );
 // Reg = 3
 case 75:
-return (*func).entry(func.raw_(), 75 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
+return (*func).entry.load()(func.raw_(), 75 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
     ENSURE_VALID_OBJECT((*frame)[2]) , ENSURE_VALID_OBJECT((*frame)[3])        , ENSURE_VALID_OBJECT((*frame)[4])
 , ENSURE_VALID_OBJECT((*frame)[5])
 , ENSURE_VALID_OBJECT((*frame)[6])
@@ -2862,7 +2862,7 @@ return (*func).entry(func.raw_(), 75 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE
 );
 // Reg = 3
 case 76:
-return (*func).entry(func.raw_(), 76 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
+return (*func).entry.load()(func.raw_(), 76 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
     ENSURE_VALID_OBJECT((*frame)[2]) , ENSURE_VALID_OBJECT((*frame)[3])        , ENSURE_VALID_OBJECT((*frame)[4])
 , ENSURE_VALID_OBJECT((*frame)[5])
 , ENSURE_VALID_OBJECT((*frame)[6])
@@ -2938,7 +2938,7 @@ return (*func).entry(func.raw_(), 76 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE
 );
 // Reg = 3
 case 77:
-return (*func).entry(func.raw_(), 77 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
+return (*func).entry.load()(func.raw_(), 77 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
     ENSURE_VALID_OBJECT((*frame)[2]) , ENSURE_VALID_OBJECT((*frame)[3])        , ENSURE_VALID_OBJECT((*frame)[4])
 , ENSURE_VALID_OBJECT((*frame)[5])
 , ENSURE_VALID_OBJECT((*frame)[6])
@@ -3015,7 +3015,7 @@ return (*func).entry(func.raw_(), 77 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE
 );
 // Reg = 3
 case 78:
-return (*func).entry(func.raw_(), 78 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
+return (*func).entry.load()(func.raw_(), 78 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
     ENSURE_VALID_OBJECT((*frame)[2]) , ENSURE_VALID_OBJECT((*frame)[3])        , ENSURE_VALID_OBJECT((*frame)[4])
 , ENSURE_VALID_OBJECT((*frame)[5])
 , ENSURE_VALID_OBJECT((*frame)[6])
@@ -3093,7 +3093,7 @@ return (*func).entry(func.raw_(), 78 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE
 );
 // Reg = 3
 case 79:
-return (*func).entry(func.raw_(), 79 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
+return (*func).entry.load()(func.raw_(), 79 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
     ENSURE_VALID_OBJECT((*frame)[2]) , ENSURE_VALID_OBJECT((*frame)[3])        , ENSURE_VALID_OBJECT((*frame)[4])
 , ENSURE_VALID_OBJECT((*frame)[5])
 , ENSURE_VALID_OBJECT((*frame)[6])
@@ -3172,7 +3172,7 @@ return (*func).entry(func.raw_(), 79 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE
 );
 // Reg = 3
 case 80:
-return (*func).entry(func.raw_(), 80 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
+return (*func).entry.load()(func.raw_(), 80 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
     ENSURE_VALID_OBJECT((*frame)[2]) , ENSURE_VALID_OBJECT((*frame)[3])        , ENSURE_VALID_OBJECT((*frame)[4])
 , ENSURE_VALID_OBJECT((*frame)[5])
 , ENSURE_VALID_OBJECT((*frame)[6])
@@ -3252,7 +3252,7 @@ return (*func).entry(func.raw_(), 80 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE
 );
 // Reg = 3
 case 81:
-return (*func).entry(func.raw_(), 81 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
+return (*func).entry.load()(func.raw_(), 81 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
     ENSURE_VALID_OBJECT((*frame)[2]) , ENSURE_VALID_OBJECT((*frame)[3])        , ENSURE_VALID_OBJECT((*frame)[4])
 , ENSURE_VALID_OBJECT((*frame)[5])
 , ENSURE_VALID_OBJECT((*frame)[6])
@@ -3333,7 +3333,7 @@ return (*func).entry(func.raw_(), 81 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE
 );
 // Reg = 3
 case 82:
-return (*func).entry(func.raw_(), 82 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
+return (*func).entry.load()(func.raw_(), 82 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
     ENSURE_VALID_OBJECT((*frame)[2]) , ENSURE_VALID_OBJECT((*frame)[3])        , ENSURE_VALID_OBJECT((*frame)[4])
 , ENSURE_VALID_OBJECT((*frame)[5])
 , ENSURE_VALID_OBJECT((*frame)[6])
@@ -3415,7 +3415,7 @@ return (*func).entry(func.raw_(), 82 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE
 );
 // Reg = 3
 case 83:
-return (*func).entry(func.raw_(), 83 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
+return (*func).entry.load()(func.raw_(), 83 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
     ENSURE_VALID_OBJECT((*frame)[2]) , ENSURE_VALID_OBJECT((*frame)[3])        , ENSURE_VALID_OBJECT((*frame)[4])
 , ENSURE_VALID_OBJECT((*frame)[5])
 , ENSURE_VALID_OBJECT((*frame)[6])
@@ -3498,7 +3498,7 @@ return (*func).entry(func.raw_(), 83 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE
 );
 // Reg = 3
 case 84:
-return (*func).entry(func.raw_(), 84 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
+return (*func).entry.load()(func.raw_(), 84 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
     ENSURE_VALID_OBJECT((*frame)[2]) , ENSURE_VALID_OBJECT((*frame)[3])        , ENSURE_VALID_OBJECT((*frame)[4])
 , ENSURE_VALID_OBJECT((*frame)[5])
 , ENSURE_VALID_OBJECT((*frame)[6])
@@ -3582,7 +3582,7 @@ return (*func).entry(func.raw_(), 84 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE
 );
 // Reg = 3
 case 85:
-return (*func).entry(func.raw_(), 85 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
+return (*func).entry.load()(func.raw_(), 85 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
     ENSURE_VALID_OBJECT((*frame)[2]) , ENSURE_VALID_OBJECT((*frame)[3])        , ENSURE_VALID_OBJECT((*frame)[4])
 , ENSURE_VALID_OBJECT((*frame)[5])
 , ENSURE_VALID_OBJECT((*frame)[6])
@@ -3667,7 +3667,7 @@ return (*func).entry(func.raw_(), 85 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE
 );
 // Reg = 3
 case 86:
-return (*func).entry(func.raw_(), 86 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
+return (*func).entry.load()(func.raw_(), 86 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
     ENSURE_VALID_OBJECT((*frame)[2]) , ENSURE_VALID_OBJECT((*frame)[3])        , ENSURE_VALID_OBJECT((*frame)[4])
 , ENSURE_VALID_OBJECT((*frame)[5])
 , ENSURE_VALID_OBJECT((*frame)[6])
@@ -3753,7 +3753,7 @@ return (*func).entry(func.raw_(), 86 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE
 );
 // Reg = 3
 case 87:
-return (*func).entry(func.raw_(), 87 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
+return (*func).entry.load()(func.raw_(), 87 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
     ENSURE_VALID_OBJECT((*frame)[2]) , ENSURE_VALID_OBJECT((*frame)[3])        , ENSURE_VALID_OBJECT((*frame)[4])
 , ENSURE_VALID_OBJECT((*frame)[5])
 , ENSURE_VALID_OBJECT((*frame)[6])
@@ -3840,7 +3840,7 @@ return (*func).entry(func.raw_(), 87 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE
 );
 // Reg = 3
 case 88:
-return (*func).entry(func.raw_(), 88 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
+return (*func).entry.load()(func.raw_(), 88 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
     ENSURE_VALID_OBJECT((*frame)[2]) , ENSURE_VALID_OBJECT((*frame)[3])        , ENSURE_VALID_OBJECT((*frame)[4])
 , ENSURE_VALID_OBJECT((*frame)[5])
 , ENSURE_VALID_OBJECT((*frame)[6])
@@ -3928,7 +3928,7 @@ return (*func).entry(func.raw_(), 88 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE
 );
 // Reg = 3
 case 89:
-return (*func).entry(func.raw_(), 89 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
+return (*func).entry.load()(func.raw_(), 89 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
     ENSURE_VALID_OBJECT((*frame)[2]) , ENSURE_VALID_OBJECT((*frame)[3])        , ENSURE_VALID_OBJECT((*frame)[4])
 , ENSURE_VALID_OBJECT((*frame)[5])
 , ENSURE_VALID_OBJECT((*frame)[6])
@@ -4017,7 +4017,7 @@ return (*func).entry(func.raw_(), 89 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE
 );
 // Reg = 3
 case 90:
-return (*func).entry(func.raw_(), 90 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
+return (*func).entry.load()(func.raw_(), 90 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
     ENSURE_VALID_OBJECT((*frame)[2]) , ENSURE_VALID_OBJECT((*frame)[3])        , ENSURE_VALID_OBJECT((*frame)[4])
 , ENSURE_VALID_OBJECT((*frame)[5])
 , ENSURE_VALID_OBJECT((*frame)[6])
@@ -4107,7 +4107,7 @@ return (*func).entry(func.raw_(), 90 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE
 );
 // Reg = 3
 case 91:
-return (*func).entry(func.raw_(), 91 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
+return (*func).entry.load()(func.raw_(), 91 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
     ENSURE_VALID_OBJECT((*frame)[2]) , ENSURE_VALID_OBJECT((*frame)[3])        , ENSURE_VALID_OBJECT((*frame)[4])
 , ENSURE_VALID_OBJECT((*frame)[5])
 , ENSURE_VALID_OBJECT((*frame)[6])
@@ -4198,7 +4198,7 @@ return (*func).entry(func.raw_(), 91 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE
 );
 // Reg = 3
 case 92:
-return (*func).entry(func.raw_(), 92 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
+return (*func).entry.load()(func.raw_(), 92 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
     ENSURE_VALID_OBJECT((*frame)[2]) , ENSURE_VALID_OBJECT((*frame)[3])        , ENSURE_VALID_OBJECT((*frame)[4])
 , ENSURE_VALID_OBJECT((*frame)[5])
 , ENSURE_VALID_OBJECT((*frame)[6])
@@ -4290,7 +4290,7 @@ return (*func).entry(func.raw_(), 92 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE
 );
 // Reg = 3
 case 93:
-return (*func).entry(func.raw_(), 93 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
+return (*func).entry.load()(func.raw_(), 93 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
     ENSURE_VALID_OBJECT((*frame)[2]) , ENSURE_VALID_OBJECT((*frame)[3])        , ENSURE_VALID_OBJECT((*frame)[4])
 , ENSURE_VALID_OBJECT((*frame)[5])
 , ENSURE_VALID_OBJECT((*frame)[6])
@@ -4383,7 +4383,7 @@ return (*func).entry(func.raw_(), 93 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE
 );
 // Reg = 3
 case 94:
-return (*func).entry(func.raw_(), 94 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
+return (*func).entry.load()(func.raw_(), 94 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
     ENSURE_VALID_OBJECT((*frame)[2]) , ENSURE_VALID_OBJECT((*frame)[3])        , ENSURE_VALID_OBJECT((*frame)[4])
 , ENSURE_VALID_OBJECT((*frame)[5])
 , ENSURE_VALID_OBJECT((*frame)[6])
@@ -4477,7 +4477,7 @@ return (*func).entry(func.raw_(), 94 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE
 );
 // Reg = 3
 case 95:
-return (*func).entry(func.raw_(), 95 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
+return (*func).entry.load()(func.raw_(), 95 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
     ENSURE_VALID_OBJECT((*frame)[2]) , ENSURE_VALID_OBJECT((*frame)[3])        , ENSURE_VALID_OBJECT((*frame)[4])
 , ENSURE_VALID_OBJECT((*frame)[5])
 , ENSURE_VALID_OBJECT((*frame)[6])
@@ -4572,7 +4572,7 @@ return (*func).entry(func.raw_(), 95 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE
 );
 // Reg = 3
 case 96:
-return (*func).entry(func.raw_(), 96 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
+return (*func).entry.load()(func.raw_(), 96 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
     ENSURE_VALID_OBJECT((*frame)[2]) , ENSURE_VALID_OBJECT((*frame)[3])        , ENSURE_VALID_OBJECT((*frame)[4])
 , ENSURE_VALID_OBJECT((*frame)[5])
 , ENSURE_VALID_OBJECT((*frame)[6])
@@ -4668,7 +4668,7 @@ return (*func).entry(func.raw_(), 96 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE
 );
 // Reg = 3
 case 97:
-return (*func).entry(func.raw_(), 97 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
+return (*func).entry.load()(func.raw_(), 97 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
     ENSURE_VALID_OBJECT((*frame)[2]) , ENSURE_VALID_OBJECT((*frame)[3])        , ENSURE_VALID_OBJECT((*frame)[4])
 , ENSURE_VALID_OBJECT((*frame)[5])
 , ENSURE_VALID_OBJECT((*frame)[6])
@@ -4765,7 +4765,7 @@ return (*func).entry(func.raw_(), 97 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE
 );
 // Reg = 3
 case 98:
-return (*func).entry(func.raw_(), 98 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
+return (*func).entry.load()(func.raw_(), 98 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
     ENSURE_VALID_OBJECT((*frame)[2]) , ENSURE_VALID_OBJECT((*frame)[3])        , ENSURE_VALID_OBJECT((*frame)[4])
 , ENSURE_VALID_OBJECT((*frame)[5])
 , ENSURE_VALID_OBJECT((*frame)[6])
@@ -4863,7 +4863,7 @@ return (*func).entry(func.raw_(), 98 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE
 );
 // Reg = 3
 case 99:
-return (*func).entry(func.raw_(), 99 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
+return (*func).entry.load()(func.raw_(), 99 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
     ENSURE_VALID_OBJECT((*frame)[2]) , ENSURE_VALID_OBJECT((*frame)[3])        , ENSURE_VALID_OBJECT((*frame)[4])
 , ENSURE_VALID_OBJECT((*frame)[5])
 , ENSURE_VALID_OBJECT((*frame)[6])
@@ -4962,7 +4962,7 @@ return (*func).entry(func.raw_(), 99 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE
 );
 // Reg = 3
 case 100:
-return (*func).entry(func.raw_(), 100 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
+return (*func).entry.load()(func.raw_(), 100 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
     ENSURE_VALID_OBJECT((*frame)[2]) , ENSURE_VALID_OBJECT((*frame)[3])        , ENSURE_VALID_OBJECT((*frame)[4])
 , ENSURE_VALID_OBJECT((*frame)[5])
 , ENSURE_VALID_OBJECT((*frame)[6])
@@ -5062,7 +5062,7 @@ return (*func).entry(func.raw_(), 100 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSUR
 );
 // Reg = 3
 case 101:
-return (*func).entry(func.raw_(), 101 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
+return (*func).entry.load()(func.raw_(), 101 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
     ENSURE_VALID_OBJECT((*frame)[2]) , ENSURE_VALID_OBJECT((*frame)[3])        , ENSURE_VALID_OBJECT((*frame)[4])
 , ENSURE_VALID_OBJECT((*frame)[5])
 , ENSURE_VALID_OBJECT((*frame)[6])
@@ -5163,7 +5163,7 @@ return (*func).entry(func.raw_(), 101 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSUR
 );
 // Reg = 3
 case 102:
-return (*func).entry(func.raw_(), 102 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
+return (*func).entry.load()(func.raw_(), 102 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
     ENSURE_VALID_OBJECT((*frame)[2]) , ENSURE_VALID_OBJECT((*frame)[3])        , ENSURE_VALID_OBJECT((*frame)[4])
 , ENSURE_VALID_OBJECT((*frame)[5])
 , ENSURE_VALID_OBJECT((*frame)[6])
@@ -5265,7 +5265,7 @@ return (*func).entry(func.raw_(), 102 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSUR
 );
 // Reg = 3
 case 103:
-return (*func).entry(func.raw_(), 103 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
+return (*func).entry.load()(func.raw_(), 103 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
     ENSURE_VALID_OBJECT((*frame)[2]) , ENSURE_VALID_OBJECT((*frame)[3])        , ENSURE_VALID_OBJECT((*frame)[4])
 , ENSURE_VALID_OBJECT((*frame)[5])
 , ENSURE_VALID_OBJECT((*frame)[6])
@@ -5368,7 +5368,7 @@ return (*func).entry(func.raw_(), 103 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSUR
 );
 // Reg = 3
 case 104:
-return (*func).entry(func.raw_(), 104 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
+return (*func).entry.load()(func.raw_(), 104 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
     ENSURE_VALID_OBJECT((*frame)[2]) , ENSURE_VALID_OBJECT((*frame)[3])        , ENSURE_VALID_OBJECT((*frame)[4])
 , ENSURE_VALID_OBJECT((*frame)[5])
 , ENSURE_VALID_OBJECT((*frame)[6])
@@ -5472,7 +5472,7 @@ return (*func).entry(func.raw_(), 104 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSUR
 );
 // Reg = 3
 case 105:
-return (*func).entry(func.raw_(), 105 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
+return (*func).entry.load()(func.raw_(), 105 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
     ENSURE_VALID_OBJECT((*frame)[2]) , ENSURE_VALID_OBJECT((*frame)[3])        , ENSURE_VALID_OBJECT((*frame)[4])
 , ENSURE_VALID_OBJECT((*frame)[5])
 , ENSURE_VALID_OBJECT((*frame)[6])
@@ -5577,7 +5577,7 @@ return (*func).entry(func.raw_(), 105 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSUR
 );
 // Reg = 3
 case 106:
-return (*func).entry(func.raw_(), 106 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
+return (*func).entry.load()(func.raw_(), 106 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
     ENSURE_VALID_OBJECT((*frame)[2]) , ENSURE_VALID_OBJECT((*frame)[3])        , ENSURE_VALID_OBJECT((*frame)[4])
 , ENSURE_VALID_OBJECT((*frame)[5])
 , ENSURE_VALID_OBJECT((*frame)[6])
@@ -5683,7 +5683,7 @@ return (*func).entry(func.raw_(), 106 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSUR
 );
 // Reg = 3
 case 107:
-return (*func).entry(func.raw_(), 107 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
+return (*func).entry.load()(func.raw_(), 107 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
     ENSURE_VALID_OBJECT((*frame)[2]) , ENSURE_VALID_OBJECT((*frame)[3])        , ENSURE_VALID_OBJECT((*frame)[4])
 , ENSURE_VALID_OBJECT((*frame)[5])
 , ENSURE_VALID_OBJECT((*frame)[6])
@@ -5790,7 +5790,7 @@ return (*func).entry(func.raw_(), 107 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSUR
 );
 // Reg = 3
 case 108:
-return (*func).entry(func.raw_(), 108 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
+return (*func).entry.load()(func.raw_(), 108 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
     ENSURE_VALID_OBJECT((*frame)[2]) , ENSURE_VALID_OBJECT((*frame)[3])        , ENSURE_VALID_OBJECT((*frame)[4])
 , ENSURE_VALID_OBJECT((*frame)[5])
 , ENSURE_VALID_OBJECT((*frame)[6])
@@ -5898,7 +5898,7 @@ return (*func).entry(func.raw_(), 108 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSUR
 );
 // Reg = 3
 case 109:
-return (*func).entry(func.raw_(), 109 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
+return (*func).entry.load()(func.raw_(), 109 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
     ENSURE_VALID_OBJECT((*frame)[2]) , ENSURE_VALID_OBJECT((*frame)[3])        , ENSURE_VALID_OBJECT((*frame)[4])
 , ENSURE_VALID_OBJECT((*frame)[5])
 , ENSURE_VALID_OBJECT((*frame)[6])
@@ -6007,7 +6007,7 @@ return (*func).entry(func.raw_(), 109 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSUR
 );
 // Reg = 3
 case 110:
-return (*func).entry(func.raw_(), 110 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
+return (*func).entry.load()(func.raw_(), 110 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
     ENSURE_VALID_OBJECT((*frame)[2]) , ENSURE_VALID_OBJECT((*frame)[3])        , ENSURE_VALID_OBJECT((*frame)[4])
 , ENSURE_VALID_OBJECT((*frame)[5])
 , ENSURE_VALID_OBJECT((*frame)[6])
@@ -6117,7 +6117,7 @@ return (*func).entry(func.raw_(), 110 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSUR
 );
 // Reg = 3
 case 111:
-return (*func).entry(func.raw_(), 111 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
+return (*func).entry.load()(func.raw_(), 111 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
     ENSURE_VALID_OBJECT((*frame)[2]) , ENSURE_VALID_OBJECT((*frame)[3])        , ENSURE_VALID_OBJECT((*frame)[4])
 , ENSURE_VALID_OBJECT((*frame)[5])
 , ENSURE_VALID_OBJECT((*frame)[6])
@@ -6228,7 +6228,7 @@ return (*func).entry(func.raw_(), 111 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSUR
 );
 // Reg = 3
 case 112:
-return (*func).entry(func.raw_(), 112 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
+return (*func).entry.load()(func.raw_(), 112 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
     ENSURE_VALID_OBJECT((*frame)[2]) , ENSURE_VALID_OBJECT((*frame)[3])        , ENSURE_VALID_OBJECT((*frame)[4])
 , ENSURE_VALID_OBJECT((*frame)[5])
 , ENSURE_VALID_OBJECT((*frame)[6])
@@ -6340,7 +6340,7 @@ return (*func).entry(func.raw_(), 112 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSUR
 );
 // Reg = 3
 case 113:
-return (*func).entry(func.raw_(), 113 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
+return (*func).entry.load()(func.raw_(), 113 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
     ENSURE_VALID_OBJECT((*frame)[2]) , ENSURE_VALID_OBJECT((*frame)[3])        , ENSURE_VALID_OBJECT((*frame)[4])
 , ENSURE_VALID_OBJECT((*frame)[5])
 , ENSURE_VALID_OBJECT((*frame)[6])
@@ -6453,7 +6453,7 @@ return (*func).entry(func.raw_(), 113 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSUR
 );
 // Reg = 3
 case 114:
-return (*func).entry(func.raw_(), 114 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
+return (*func).entry.load()(func.raw_(), 114 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
     ENSURE_VALID_OBJECT((*frame)[2]) , ENSURE_VALID_OBJECT((*frame)[3])        , ENSURE_VALID_OBJECT((*frame)[4])
 , ENSURE_VALID_OBJECT((*frame)[5])
 , ENSURE_VALID_OBJECT((*frame)[6])
@@ -6567,7 +6567,7 @@ return (*func).entry(func.raw_(), 114 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSUR
 );
 // Reg = 3
 case 115:
-return (*func).entry(func.raw_(), 115 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
+return (*func).entry.load()(func.raw_(), 115 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
     ENSURE_VALID_OBJECT((*frame)[2]) , ENSURE_VALID_OBJECT((*frame)[3])        , ENSURE_VALID_OBJECT((*frame)[4])
 , ENSURE_VALID_OBJECT((*frame)[5])
 , ENSURE_VALID_OBJECT((*frame)[6])
@@ -6682,7 +6682,7 @@ return (*func).entry(func.raw_(), 115 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSUR
 );
 // Reg = 3
 case 116:
-return (*func).entry(func.raw_(), 116 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
+return (*func).entry.load()(func.raw_(), 116 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
     ENSURE_VALID_OBJECT((*frame)[2]) , ENSURE_VALID_OBJECT((*frame)[3])        , ENSURE_VALID_OBJECT((*frame)[4])
 , ENSURE_VALID_OBJECT((*frame)[5])
 , ENSURE_VALID_OBJECT((*frame)[6])
@@ -6798,7 +6798,7 @@ return (*func).entry(func.raw_(), 116 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSUR
 );
 // Reg = 3
 case 117:
-return (*func).entry(func.raw_(), 117 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
+return (*func).entry.load()(func.raw_(), 117 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
     ENSURE_VALID_OBJECT((*frame)[2]) , ENSURE_VALID_OBJECT((*frame)[3])        , ENSURE_VALID_OBJECT((*frame)[4])
 , ENSURE_VALID_OBJECT((*frame)[5])
 , ENSURE_VALID_OBJECT((*frame)[6])
@@ -6915,7 +6915,7 @@ return (*func).entry(func.raw_(), 117 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSUR
 );
 // Reg = 3
 case 118:
-return (*func).entry(func.raw_(), 118 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
+return (*func).entry.load()(func.raw_(), 118 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
     ENSURE_VALID_OBJECT((*frame)[2]) , ENSURE_VALID_OBJECT((*frame)[3])        , ENSURE_VALID_OBJECT((*frame)[4])
 , ENSURE_VALID_OBJECT((*frame)[5])
 , ENSURE_VALID_OBJECT((*frame)[6])
@@ -7033,7 +7033,7 @@ return (*func).entry(func.raw_(), 118 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSUR
 );
 // Reg = 3
 case 119:
-return (*func).entry(func.raw_(), 119 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
+return (*func).entry.load()(func.raw_(), 119 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
     ENSURE_VALID_OBJECT((*frame)[2]) , ENSURE_VALID_OBJECT((*frame)[3])        , ENSURE_VALID_OBJECT((*frame)[4])
 , ENSURE_VALID_OBJECT((*frame)[5])
 , ENSURE_VALID_OBJECT((*frame)[6])
@@ -7152,7 +7152,7 @@ return (*func).entry(func.raw_(), 119 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSUR
 );
 // Reg = 3
 case 120:
-return (*func).entry(func.raw_(), 120 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
+return (*func).entry.load()(func.raw_(), 120 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
     ENSURE_VALID_OBJECT((*frame)[2]) , ENSURE_VALID_OBJECT((*frame)[3])        , ENSURE_VALID_OBJECT((*frame)[4])
 , ENSURE_VALID_OBJECT((*frame)[5])
 , ENSURE_VALID_OBJECT((*frame)[6])
@@ -7272,7 +7272,7 @@ return (*func).entry(func.raw_(), 120 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSUR
 );
 // Reg = 3
 case 121:
-return (*func).entry(func.raw_(), 121 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
+return (*func).entry.load()(func.raw_(), 121 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
     ENSURE_VALID_OBJECT((*frame)[2]) , ENSURE_VALID_OBJECT((*frame)[3])        , ENSURE_VALID_OBJECT((*frame)[4])
 , ENSURE_VALID_OBJECT((*frame)[5])
 , ENSURE_VALID_OBJECT((*frame)[6])
@@ -7393,7 +7393,7 @@ return (*func).entry(func.raw_(), 121 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSUR
 );
 // Reg = 3
 case 122:
-return (*func).entry(func.raw_(), 122 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
+return (*func).entry.load()(func.raw_(), 122 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
     ENSURE_VALID_OBJECT((*frame)[2]) , ENSURE_VALID_OBJECT((*frame)[3])        , ENSURE_VALID_OBJECT((*frame)[4])
 , ENSURE_VALID_OBJECT((*frame)[5])
 , ENSURE_VALID_OBJECT((*frame)[6])
@@ -7515,7 +7515,7 @@ return (*func).entry(func.raw_(), 122 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSUR
 );
 // Reg = 3
 case 123:
-return (*func).entry(func.raw_(), 123 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
+return (*func).entry.load()(func.raw_(), 123 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
     ENSURE_VALID_OBJECT((*frame)[2]) , ENSURE_VALID_OBJECT((*frame)[3])        , ENSURE_VALID_OBJECT((*frame)[4])
 , ENSURE_VALID_OBJECT((*frame)[5])
 , ENSURE_VALID_OBJECT((*frame)[6])
@@ -7638,7 +7638,7 @@ return (*func).entry(func.raw_(), 123 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSUR
 );
 // Reg = 3
 case 124:
-return (*func).entry(func.raw_(), 124 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
+return (*func).entry.load()(func.raw_(), 124 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
     ENSURE_VALID_OBJECT((*frame)[2]) , ENSURE_VALID_OBJECT((*frame)[3])        , ENSURE_VALID_OBJECT((*frame)[4])
 , ENSURE_VALID_OBJECT((*frame)[5])
 , ENSURE_VALID_OBJECT((*frame)[6])
@@ -7762,7 +7762,7 @@ return (*func).entry(func.raw_(), 124 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSUR
 );
 // Reg = 3
 case 125:
-return (*func).entry(func.raw_(), 125 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
+return (*func).entry.load()(func.raw_(), 125 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
     ENSURE_VALID_OBJECT((*frame)[2]) , ENSURE_VALID_OBJECT((*frame)[3])        , ENSURE_VALID_OBJECT((*frame)[4])
 , ENSURE_VALID_OBJECT((*frame)[5])
 , ENSURE_VALID_OBJECT((*frame)[6])
@@ -7887,7 +7887,7 @@ return (*func).entry(func.raw_(), 125 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSUR
 );
 // Reg = 3
 case 126:
-return (*func).entry(func.raw_(), 126 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
+return (*func).entry.load()(func.raw_(), 126 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
     ENSURE_VALID_OBJECT((*frame)[2]) , ENSURE_VALID_OBJECT((*frame)[3])        , ENSURE_VALID_OBJECT((*frame)[4])
 , ENSURE_VALID_OBJECT((*frame)[5])
 , ENSURE_VALID_OBJECT((*frame)[6])
@@ -8013,7 +8013,7 @@ return (*func).entry(func.raw_(), 126 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSUR
 );
 // Reg = 3
 case 127:
-return (*func).entry(func.raw_(), 127 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
+return (*func).entry.load()(func.raw_(), 127 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
     ENSURE_VALID_OBJECT((*frame)[2]) , ENSURE_VALID_OBJECT((*frame)[3])        , ENSURE_VALID_OBJECT((*frame)[4])
 , ENSURE_VALID_OBJECT((*frame)[5])
 , ENSURE_VALID_OBJECT((*frame)[6])
@@ -8140,7 +8140,7 @@ return (*func).entry(func.raw_(), 127 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSUR
 );
 // Reg = 3
 case 128:
-return (*func).entry(func.raw_(), 128 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
+return (*func).entry.load()(func.raw_(), 128 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
     ENSURE_VALID_OBJECT((*frame)[2]) , ENSURE_VALID_OBJECT((*frame)[3])        , ENSURE_VALID_OBJECT((*frame)[4])
 , ENSURE_VALID_OBJECT((*frame)[5])
 , ENSURE_VALID_OBJECT((*frame)[6])
@@ -8268,7 +8268,7 @@ return (*func).entry(func.raw_(), 128 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSUR
 );
 // Reg = 3
 case 129:
-return (*func).entry(func.raw_(), 129 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
+return (*func).entry.load()(func.raw_(), 129 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
     ENSURE_VALID_OBJECT((*frame)[2]) , ENSURE_VALID_OBJECT((*frame)[3])        , ENSURE_VALID_OBJECT((*frame)[4])
 , ENSURE_VALID_OBJECT((*frame)[5])
 , ENSURE_VALID_OBJECT((*frame)[6])
@@ -8397,7 +8397,7 @@ return (*func).entry(func.raw_(), 129 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSUR
 );
 // Reg = 3
 case 130:
-return (*func).entry(func.raw_(), 130 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
+return (*func).entry.load()(func.raw_(), 130 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
     ENSURE_VALID_OBJECT((*frame)[2]) , ENSURE_VALID_OBJECT((*frame)[3])        , ENSURE_VALID_OBJECT((*frame)[4])
 , ENSURE_VALID_OBJECT((*frame)[5])
 , ENSURE_VALID_OBJECT((*frame)[6])
@@ -8527,7 +8527,7 @@ return (*func).entry(func.raw_(), 130 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSUR
 );
 // Reg = 3
 case 131:
-return (*func).entry(func.raw_(), 131 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
+return (*func).entry.load()(func.raw_(), 131 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
     ENSURE_VALID_OBJECT((*frame)[2]) , ENSURE_VALID_OBJECT((*frame)[3])        , ENSURE_VALID_OBJECT((*frame)[4])
 , ENSURE_VALID_OBJECT((*frame)[5])
 , ENSURE_VALID_OBJECT((*frame)[6])
@@ -8658,7 +8658,7 @@ return (*func).entry(func.raw_(), 131 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSUR
 );
 // Reg = 3
 case 132:
-return (*func).entry(func.raw_(), 132 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
+return (*func).entry.load()(func.raw_(), 132 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
     ENSURE_VALID_OBJECT((*frame)[2]) , ENSURE_VALID_OBJECT((*frame)[3])        , ENSURE_VALID_OBJECT((*frame)[4])
 , ENSURE_VALID_OBJECT((*frame)[5])
 , ENSURE_VALID_OBJECT((*frame)[6])
@@ -8790,7 +8790,7 @@ return (*func).entry(func.raw_(), 132 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSUR
 );
 // Reg = 3
 case 133:
-return (*func).entry(func.raw_(), 133 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
+return (*func).entry.load()(func.raw_(), 133 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
     ENSURE_VALID_OBJECT((*frame)[2]) , ENSURE_VALID_OBJECT((*frame)[3])        , ENSURE_VALID_OBJECT((*frame)[4])
 , ENSURE_VALID_OBJECT((*frame)[5])
 , ENSURE_VALID_OBJECT((*frame)[6])
@@ -8923,7 +8923,7 @@ return (*func).entry(func.raw_(), 133 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSUR
 );
 // Reg = 3
 case 134:
-return (*func).entry(func.raw_(), 134 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
+return (*func).entry.load()(func.raw_(), 134 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
     ENSURE_VALID_OBJECT((*frame)[2]) , ENSURE_VALID_OBJECT((*frame)[3])        , ENSURE_VALID_OBJECT((*frame)[4])
 , ENSURE_VALID_OBJECT((*frame)[5])
 , ENSURE_VALID_OBJECT((*frame)[6])
@@ -9057,7 +9057,7 @@ return (*func).entry(func.raw_(), 134 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSUR
 );
 // Reg = 3
 case 135:
-return (*func).entry(func.raw_(), 135 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
+return (*func).entry.load()(func.raw_(), 135 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
     ENSURE_VALID_OBJECT((*frame)[2]) , ENSURE_VALID_OBJECT((*frame)[3])        , ENSURE_VALID_OBJECT((*frame)[4])
 , ENSURE_VALID_OBJECT((*frame)[5])
 , ENSURE_VALID_OBJECT((*frame)[6])
@@ -9192,7 +9192,7 @@ return (*func).entry(func.raw_(), 135 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSUR
 );
 // Reg = 3
 case 136:
-return (*func).entry(func.raw_(), 136 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
+return (*func).entry.load()(func.raw_(), 136 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
     ENSURE_VALID_OBJECT((*frame)[2]) , ENSURE_VALID_OBJECT((*frame)[3])        , ENSURE_VALID_OBJECT((*frame)[4])
 , ENSURE_VALID_OBJECT((*frame)[5])
 , ENSURE_VALID_OBJECT((*frame)[6])
@@ -9328,7 +9328,7 @@ return (*func).entry(func.raw_(), 136 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSUR
 );
 // Reg = 3
 case 137:
-return (*func).entry(func.raw_(), 137 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
+return (*func).entry.load()(func.raw_(), 137 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
     ENSURE_VALID_OBJECT((*frame)[2]) , ENSURE_VALID_OBJECT((*frame)[3])        , ENSURE_VALID_OBJECT((*frame)[4])
 , ENSURE_VALID_OBJECT((*frame)[5])
 , ENSURE_VALID_OBJECT((*frame)[6])
@@ -9465,7 +9465,7 @@ return (*func).entry(func.raw_(), 137 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSUR
 );
 // Reg = 3
 case 138:
-return (*func).entry(func.raw_(), 138 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
+return (*func).entry.load()(func.raw_(), 138 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
     ENSURE_VALID_OBJECT((*frame)[2]) , ENSURE_VALID_OBJECT((*frame)[3])        , ENSURE_VALID_OBJECT((*frame)[4])
 , ENSURE_VALID_OBJECT((*frame)[5])
 , ENSURE_VALID_OBJECT((*frame)[6])
@@ -9603,7 +9603,7 @@ return (*func).entry(func.raw_(), 138 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSUR
 );
 // Reg = 3
 case 139:
-return (*func).entry(func.raw_(), 139 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
+return (*func).entry.load()(func.raw_(), 139 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
     ENSURE_VALID_OBJECT((*frame)[2]) , ENSURE_VALID_OBJECT((*frame)[3])        , ENSURE_VALID_OBJECT((*frame)[4])
 , ENSURE_VALID_OBJECT((*frame)[5])
 , ENSURE_VALID_OBJECT((*frame)[6])
@@ -9742,7 +9742,7 @@ return (*func).entry(func.raw_(), 139 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSUR
 );
 // Reg = 3
 case 140:
-return (*func).entry(func.raw_(), 140 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
+return (*func).entry.load()(func.raw_(), 140 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSURE_VALID_OBJECT((*frame)[1]) ,
     ENSURE_VALID_OBJECT((*frame)[2]) , ENSURE_VALID_OBJECT((*frame)[3])        , ENSURE_VALID_OBJECT((*frame)[4])
 , ENSURE_VALID_OBJECT((*frame)[5])
 , ENSURE_VALID_OBJECT((*frame)[6])
@@ -9886,25 +9886,25 @@ return (*func).entry(func.raw_(), 140 , ENSURE_VALID_OBJECT((*frame)[0]) , ENSUR
 /* */
 
 inline gctools::return_type funcall_va_list_0(Function_sp func, VaList_sp args) {
-return func->entry(func.raw_()
+return func->entry.load()(func.raw_()
 , 0  , LCC_UNUSED , LCC_UNUSED , LCC_UNUSED , LCC_UNUSED    );
 }
 inline gctools::return_type funcall_va_list_1(Function_sp func, VaList_sp args) {
 T_O* arg0 = ENSURE_VALID_OBJECT(args->next_arg_raw());
-return func->entry(func.raw_()
+return func->entry.load()(func.raw_()
 , 1 , arg0  , LCC_UNUSED , LCC_UNUSED , LCC_UNUSED    );
 }
 inline gctools::return_type funcall_va_list_2(Function_sp func, VaList_sp args) {
 T_O* arg0 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg1 = ENSURE_VALID_OBJECT(args->next_arg_raw());
-return func->entry(func.raw_()
+return func->entry.load()(func.raw_()
 , 2 , arg0 , arg1  , LCC_UNUSED , LCC_UNUSED    );
 }
 inline gctools::return_type funcall_va_list_3(Function_sp func, VaList_sp args) {
 T_O* arg0 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg1 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg2 = ENSURE_VALID_OBJECT(args->next_arg_raw());
-return func->entry(func.raw_()
+return func->entry.load()(func.raw_()
 , 3 , arg0 , arg1 , arg2  , LCC_UNUSED    );
 }
 inline gctools::return_type funcall_va_list_4(Function_sp func, VaList_sp args) {
@@ -9912,7 +9912,7 @@ T_O* arg0 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg1 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg2 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg3 = ENSURE_VALID_OBJECT(args->next_arg_raw());
-return func->entry(func.raw_()
+return func->entry.load()(func.raw_()
 , 4 , arg0 , arg1 , arg2 , arg3     );
 }
 inline gctools::return_type funcall_va_list_5(Function_sp func, VaList_sp args) {
@@ -9921,7 +9921,7 @@ T_O* arg1 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg2 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg3 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg4 = ENSURE_VALID_OBJECT(args->next_arg_raw());
-return func->entry(func.raw_()
+return func->entry.load()(func.raw_()
 , 5 , arg0 , arg1 , arg2 , arg3     , arg4  );
 }
 inline gctools::return_type funcall_va_list_6(Function_sp func, VaList_sp args) {
@@ -9931,7 +9931,7 @@ T_O* arg2 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg3 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg4 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg5 = ENSURE_VALID_OBJECT(args->next_arg_raw());
-return func->entry(func.raw_()
+return func->entry.load()(func.raw_()
 , 6 , arg0 , arg1 , arg2 , arg3     , arg4  , arg5  );
 }
 inline gctools::return_type funcall_va_list_7(Function_sp func, VaList_sp args) {
@@ -9942,7 +9942,7 @@ T_O* arg3 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg4 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg5 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg6 = ENSURE_VALID_OBJECT(args->next_arg_raw());
-return func->entry(func.raw_()
+return func->entry.load()(func.raw_()
 , 7 , arg0 , arg1 , arg2 , arg3     , arg4  , arg5  , arg6  );
 }
 inline gctools::return_type funcall_va_list_8(Function_sp func, VaList_sp args) {
@@ -9954,7 +9954,7 @@ T_O* arg4 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg5 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg6 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg7 = ENSURE_VALID_OBJECT(args->next_arg_raw());
-return func->entry(func.raw_()
+return func->entry.load()(func.raw_()
 , 8 , arg0 , arg1 , arg2 , arg3     , arg4  , arg5  , arg6  , arg7  );
 }
 inline gctools::return_type funcall_va_list_9(Function_sp func, VaList_sp args) {
@@ -9967,7 +9967,7 @@ T_O* arg5 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg6 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg7 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg8 = ENSURE_VALID_OBJECT(args->next_arg_raw());
-return func->entry(func.raw_()
+return func->entry.load()(func.raw_()
 , 9 , arg0 , arg1 , arg2 , arg3     , arg4  , arg5  , arg6  , arg7  , arg8  );
 }
 inline gctools::return_type funcall_va_list_10(Function_sp func, VaList_sp args) {
@@ -9981,7 +9981,7 @@ T_O* arg6 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg7 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg8 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg9 = ENSURE_VALID_OBJECT(args->next_arg_raw());
-return func->entry(func.raw_()
+return func->entry.load()(func.raw_()
 , 10 , arg0 , arg1 , arg2 , arg3     , arg4  , arg5  , arg6  , arg7  , arg8  , arg9  );
 }
 inline gctools::return_type funcall_va_list_11(Function_sp func, VaList_sp args) {
@@ -9996,7 +9996,7 @@ T_O* arg7 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg8 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg9 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg10 = ENSURE_VALID_OBJECT(args->next_arg_raw());
-return func->entry(func.raw_()
+return func->entry.load()(func.raw_()
 , 11 , arg0 , arg1 , arg2 , arg3     , arg4  , arg5  , arg6  , arg7  , arg8  , arg9  , arg10  );
 }
 inline gctools::return_type funcall_va_list_12(Function_sp func, VaList_sp args) {
@@ -10012,7 +10012,7 @@ T_O* arg8 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg9 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg10 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg11 = ENSURE_VALID_OBJECT(args->next_arg_raw());
-return func->entry(func.raw_()
+return func->entry.load()(func.raw_()
 , 12 , arg0 , arg1 , arg2 , arg3     , arg4  , arg5  , arg6  , arg7  , arg8  , arg9  , arg10  , arg11  );
 }
 inline gctools::return_type funcall_va_list_13(Function_sp func, VaList_sp args) {
@@ -10029,7 +10029,7 @@ T_O* arg9 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg10 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg11 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg12 = ENSURE_VALID_OBJECT(args->next_arg_raw());
-return func->entry(func.raw_()
+return func->entry.load()(func.raw_()
 , 13 , arg0 , arg1 , arg2 , arg3     , arg4  , arg5  , arg6  , arg7  , arg8  , arg9  , arg10  , arg11  , arg12  );
 }
 inline gctools::return_type funcall_va_list_14(Function_sp func, VaList_sp args) {
@@ -10047,7 +10047,7 @@ T_O* arg10 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg11 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg12 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg13 = ENSURE_VALID_OBJECT(args->next_arg_raw());
-return func->entry(func.raw_()
+return func->entry.load()(func.raw_()
 , 14 , arg0 , arg1 , arg2 , arg3     , arg4  , arg5  , arg6  , arg7  , arg8  , arg9  , arg10  , arg11  , arg12  , arg13  );
 }
 inline gctools::return_type funcall_va_list_15(Function_sp func, VaList_sp args) {
@@ -10066,7 +10066,7 @@ T_O* arg11 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg12 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg13 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg14 = ENSURE_VALID_OBJECT(args->next_arg_raw());
-return func->entry(func.raw_()
+return func->entry.load()(func.raw_()
 , 15 , arg0 , arg1 , arg2 , arg3     , arg4  , arg5  , arg6  , arg7  , arg8  , arg9  , arg10  , arg11  , arg12  , arg13  , arg14  );
 }
 inline gctools::return_type funcall_va_list_16(Function_sp func, VaList_sp args) {
@@ -10086,7 +10086,7 @@ T_O* arg12 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg13 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg14 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg15 = ENSURE_VALID_OBJECT(args->next_arg_raw());
-return func->entry(func.raw_()
+return func->entry.load()(func.raw_()
 , 16 , arg0 , arg1 , arg2 , arg3     , arg4  , arg5  , arg6  , arg7  , arg8  , arg9  , arg10  , arg11  , arg12  , arg13  , arg14  ,
     arg15  );
 }
@@ -10108,7 +10108,7 @@ T_O* arg13 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg14 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg15 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg16 = ENSURE_VALID_OBJECT(args->next_arg_raw());
-return func->entry(func.raw_()
+return func->entry.load()(func.raw_()
 , 17 , arg0 , arg1 , arg2 , arg3     , arg4  , arg5  , arg6  , arg7  , arg8  , arg9  , arg10  , arg11  , arg12  , arg13  , arg14  ,
     arg15  , arg16  );
 }
@@ -10131,7 +10131,7 @@ T_O* arg14 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg15 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg16 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg17 = ENSURE_VALID_OBJECT(args->next_arg_raw());
-return func->entry(func.raw_()
+return func->entry.load()(func.raw_()
 , 18 , arg0 , arg1 , arg2 , arg3     , arg4  , arg5  , arg6  , arg7  , arg8  , arg9  , arg10  , arg11  , arg12  , arg13  , arg14  ,
     arg15  , arg16  , arg17  );
 }
@@ -10155,7 +10155,7 @@ T_O* arg15 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg16 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg17 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg18 = ENSURE_VALID_OBJECT(args->next_arg_raw());
-return func->entry(func.raw_()
+return func->entry.load()(func.raw_()
 , 19 , arg0 , arg1 , arg2 , arg3     , arg4  , arg5  , arg6  , arg7  , arg8  , arg9  , arg10  , arg11  , arg12  , arg13  , arg14  ,
     arg15  , arg16  , arg17  , arg18  );
 }
@@ -10180,7 +10180,7 @@ T_O* arg16 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg17 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg18 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg19 = ENSURE_VALID_OBJECT(args->next_arg_raw());
-return func->entry(func.raw_()
+return func->entry.load()(func.raw_()
 , 20 , arg0 , arg1 , arg2 , arg3     , arg4  , arg5  , arg6  , arg7  , arg8  , arg9  , arg10  , arg11  , arg12  , arg13  , arg14  ,
     arg15  , arg16  , arg17  , arg18  , arg19  );
 }
@@ -10206,7 +10206,7 @@ T_O* arg17 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg18 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg19 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg20 = ENSURE_VALID_OBJECT(args->next_arg_raw());
-return func->entry(func.raw_()
+return func->entry.load()(func.raw_()
 , 21 , arg0 , arg1 , arg2 , arg3     , arg4  , arg5  , arg6  , arg7  , arg8  , arg9  , arg10  , arg11  , arg12  , arg13  , arg14  ,
     arg15  , arg16  , arg17  , arg18  , arg19  , arg20  );
 }
@@ -10233,7 +10233,7 @@ T_O* arg18 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg19 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg20 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg21 = ENSURE_VALID_OBJECT(args->next_arg_raw());
-return func->entry(func.raw_()
+return func->entry.load()(func.raw_()
 , 22 , arg0 , arg1 , arg2 , arg3     , arg4  , arg5  , arg6  , arg7  , arg8  , arg9  , arg10  , arg11  , arg12  , arg13  , arg14  ,
     arg15  , arg16  , arg17  , arg18  , arg19  , arg20  , arg21  );
 }
@@ -10261,7 +10261,7 @@ T_O* arg19 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg20 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg21 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg22 = ENSURE_VALID_OBJECT(args->next_arg_raw());
-return func->entry(func.raw_()
+return func->entry.load()(func.raw_()
 , 23 , arg0 , arg1 , arg2 , arg3     , arg4  , arg5  , arg6  , arg7  , arg8  , arg9  , arg10  , arg11  , arg12  , arg13  , arg14  ,
     arg15  , arg16  , arg17  , arg18  , arg19  , arg20  , arg21  , arg22  );
 }
@@ -10290,7 +10290,7 @@ T_O* arg20 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg21 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg22 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg23 = ENSURE_VALID_OBJECT(args->next_arg_raw());
-return func->entry(func.raw_()
+return func->entry.load()(func.raw_()
 , 24 , arg0 , arg1 , arg2 , arg3     , arg4  , arg5  , arg6  , arg7  , arg8  , arg9  , arg10  , arg11  , arg12  , arg13  , arg14  ,
     arg15  , arg16  , arg17  , arg18  , arg19  , arg20  , arg21  , arg22  , arg23  );
 }
@@ -10320,7 +10320,7 @@ T_O* arg21 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg22 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg23 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg24 = ENSURE_VALID_OBJECT(args->next_arg_raw());
-return func->entry(func.raw_()
+return func->entry.load()(func.raw_()
 , 25 , arg0 , arg1 , arg2 , arg3     , arg4  , arg5  , arg6  , arg7  , arg8  , arg9  , arg10  , arg11  , arg12  , arg13  , arg14  ,
     arg15  , arg16  , arg17  , arg18  , arg19  , arg20  , arg21  , arg22  , arg23  , arg24  );
 }
@@ -10351,7 +10351,7 @@ T_O* arg22 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg23 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg24 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg25 = ENSURE_VALID_OBJECT(args->next_arg_raw());
-return func->entry(func.raw_()
+return func->entry.load()(func.raw_()
 , 26 , arg0 , arg1 , arg2 , arg3     , arg4  , arg5  , arg6  , arg7  , arg8  , arg9  , arg10  , arg11  , arg12  , arg13  , arg14  ,
     arg15  , arg16  , arg17  , arg18  , arg19  , arg20  , arg21  , arg22  , arg23  , arg24  , arg25  );
 }
@@ -10383,7 +10383,7 @@ T_O* arg23 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg24 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg25 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg26 = ENSURE_VALID_OBJECT(args->next_arg_raw());
-return func->entry(func.raw_()
+return func->entry.load()(func.raw_()
 , 27 , arg0 , arg1 , arg2 , arg3     , arg4  , arg5  , arg6  , arg7  , arg8  , arg9  , arg10  , arg11  , arg12  , arg13  , arg14  ,
     arg15  , arg16  , arg17  , arg18  , arg19  , arg20  , arg21  , arg22  , arg23  , arg24  , arg25  , arg26  );
 }
@@ -10416,7 +10416,7 @@ T_O* arg24 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg25 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg26 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg27 = ENSURE_VALID_OBJECT(args->next_arg_raw());
-return func->entry(func.raw_()
+return func->entry.load()(func.raw_()
 , 28 , arg0 , arg1 , arg2 , arg3     , arg4  , arg5  , arg6  , arg7  , arg8  , arg9  , arg10  , arg11  , arg12  , arg13  , arg14  ,
     arg15  , arg16  , arg17  , arg18  , arg19  , arg20  , arg21  , arg22  , arg23  , arg24  , arg25  , arg26  , arg27  );
 }
@@ -10450,7 +10450,7 @@ T_O* arg25 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg26 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg27 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg28 = ENSURE_VALID_OBJECT(args->next_arg_raw());
-return func->entry(func.raw_()
+return func->entry.load()(func.raw_()
 , 29 , arg0 , arg1 , arg2 , arg3     , arg4  , arg5  , arg6  , arg7  , arg8  , arg9  , arg10  , arg11  , arg12  , arg13  , arg14  ,
     arg15  , arg16  , arg17  , arg18  , arg19  , arg20  , arg21  , arg22  , arg23  , arg24  , arg25  , arg26  , arg27  , arg28  );
 }
@@ -10485,7 +10485,7 @@ T_O* arg26 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg27 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg28 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg29 = ENSURE_VALID_OBJECT(args->next_arg_raw());
-return func->entry(func.raw_()
+return func->entry.load()(func.raw_()
 , 30 , arg0 , arg1 , arg2 , arg3     , arg4  , arg5  , arg6  , arg7  , arg8  , arg9  , arg10  , arg11  , arg12  , arg13  , arg14  ,
     arg15  , arg16  , arg17  , arg18  , arg19  , arg20  , arg21  , arg22  , arg23  , arg24  , arg25  , arg26  , arg27  , arg28  ,
     arg29  );
@@ -10522,7 +10522,7 @@ T_O* arg27 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg28 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg29 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg30 = ENSURE_VALID_OBJECT(args->next_arg_raw());
-return func->entry(func.raw_()
+return func->entry.load()(func.raw_()
 , 31 , arg0 , arg1 , arg2 , arg3     , arg4  , arg5  , arg6  , arg7  , arg8  , arg9  , arg10  , arg11  , arg12  , arg13  , arg14  ,
     arg15  , arg16  , arg17  , arg18  , arg19  , arg20  , arg21  , arg22  , arg23  , arg24  , arg25  , arg26  , arg27  , arg28  ,
     arg29  , arg30  );
@@ -10560,7 +10560,7 @@ T_O* arg28 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg29 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg30 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg31 = ENSURE_VALID_OBJECT(args->next_arg_raw());
-return func->entry(func.raw_()
+return func->entry.load()(func.raw_()
 , 32 , arg0 , arg1 , arg2 , arg3     , arg4  , arg5  , arg6  , arg7  , arg8  , arg9  , arg10  , arg11  , arg12  , arg13  , arg14  ,
     arg15  , arg16  , arg17  , arg18  , arg19  , arg20  , arg21  , arg22  , arg23  , arg24  , arg25  , arg26  , arg27  , arg28  ,
     arg29  , arg30  , arg31  );
@@ -10599,7 +10599,7 @@ T_O* arg29 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg30 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg31 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg32 = ENSURE_VALID_OBJECT(args->next_arg_raw());
-return func->entry(func.raw_()
+return func->entry.load()(func.raw_()
 , 33 , arg0 , arg1 , arg2 , arg3     , arg4  , arg5  , arg6  , arg7  , arg8  , arg9  , arg10  , arg11  , arg12  , arg13  , arg14  ,
     arg15  , arg16  , arg17  , arg18  , arg19  , arg20  , arg21  , arg22  , arg23  , arg24  , arg25  , arg26  , arg27  , arg28  ,
     arg29  , arg30  , arg31  , arg32  );
@@ -10639,7 +10639,7 @@ T_O* arg30 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg31 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg32 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg33 = ENSURE_VALID_OBJECT(args->next_arg_raw());
-return func->entry(func.raw_()
+return func->entry.load()(func.raw_()
 , 34 , arg0 , arg1 , arg2 , arg3     , arg4  , arg5  , arg6  , arg7  , arg8  , arg9  , arg10  , arg11  , arg12  , arg13  , arg14  ,
     arg15  , arg16  , arg17  , arg18  , arg19  , arg20  , arg21  , arg22  , arg23  , arg24  , arg25  , arg26  , arg27  , arg28  ,
     arg29  , arg30  , arg31  , arg32  , arg33  );
@@ -10680,7 +10680,7 @@ T_O* arg31 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg32 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg33 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg34 = ENSURE_VALID_OBJECT(args->next_arg_raw());
-return func->entry(func.raw_()
+return func->entry.load()(func.raw_()
 , 35 , arg0 , arg1 , arg2 , arg3     , arg4  , arg5  , arg6  , arg7  , arg8  , arg9  , arg10  , arg11  , arg12  , arg13  , arg14  ,
     arg15  , arg16  , arg17  , arg18  , arg19  , arg20  , arg21  , arg22  , arg23  , arg24  , arg25  , arg26  , arg27  , arg28  ,
     arg29  , arg30  , arg31  , arg32  , arg33  , arg34  );
@@ -10722,7 +10722,7 @@ T_O* arg32 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg33 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg34 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg35 = ENSURE_VALID_OBJECT(args->next_arg_raw());
-return func->entry(func.raw_()
+return func->entry.load()(func.raw_()
 , 36 , arg0 , arg1 , arg2 , arg3     , arg4  , arg5  , arg6  , arg7  , arg8  , arg9  , arg10  , arg11  , arg12  , arg13  , arg14  ,
     arg15  , arg16  , arg17  , arg18  , arg19  , arg20  , arg21  , arg22  , arg23  , arg24  , arg25  , arg26  , arg27  , arg28  ,
     arg29  , arg30  , arg31  , arg32  , arg33  , arg34  , arg35  );
@@ -10765,7 +10765,7 @@ T_O* arg33 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg34 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg35 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg36 = ENSURE_VALID_OBJECT(args->next_arg_raw());
-return func->entry(func.raw_()
+return func->entry.load()(func.raw_()
 , 37 , arg0 , arg1 , arg2 , arg3     , arg4  , arg5  , arg6  , arg7  , arg8  , arg9  , arg10  , arg11  , arg12  , arg13  , arg14  ,
     arg15  , arg16  , arg17  , arg18  , arg19  , arg20  , arg21  , arg22  , arg23  , arg24  , arg25  , arg26  , arg27  , arg28  ,
     arg29  , arg30  , arg31  , arg32  , arg33  , arg34  , arg35  , arg36  );
@@ -10809,7 +10809,7 @@ T_O* arg34 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg35 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg36 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg37 = ENSURE_VALID_OBJECT(args->next_arg_raw());
-return func->entry(func.raw_()
+return func->entry.load()(func.raw_()
 , 38 , arg0 , arg1 , arg2 , arg3     , arg4  , arg5  , arg6  , arg7  , arg8  , arg9  , arg10  , arg11  , arg12  , arg13  , arg14  ,
     arg15  , arg16  , arg17  , arg18  , arg19  , arg20  , arg21  , arg22  , arg23  , arg24  , arg25  , arg26  , arg27  , arg28  ,
     arg29  , arg30  , arg31  , arg32  , arg33  , arg34  , arg35  , arg36  , arg37  );
@@ -10854,7 +10854,7 @@ T_O* arg35 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg36 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg37 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg38 = ENSURE_VALID_OBJECT(args->next_arg_raw());
-return func->entry(func.raw_()
+return func->entry.load()(func.raw_()
 , 39 , arg0 , arg1 , arg2 , arg3     , arg4  , arg5  , arg6  , arg7  , arg8  , arg9  , arg10  , arg11  , arg12  , arg13  , arg14  ,
     arg15  , arg16  , arg17  , arg18  , arg19  , arg20  , arg21  , arg22  , arg23  , arg24  , arg25  , arg26  , arg27  , arg28  ,
     arg29  , arg30  , arg31  , arg32  , arg33  , arg34  , arg35  , arg36  , arg37  , arg38  );
@@ -10900,7 +10900,7 @@ T_O* arg36 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg37 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg38 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg39 = ENSURE_VALID_OBJECT(args->next_arg_raw());
-return func->entry(func.raw_()
+return func->entry.load()(func.raw_()
 , 40 , arg0 , arg1 , arg2 , arg3     , arg4  , arg5  , arg6  , arg7  , arg8  , arg9  , arg10  , arg11  , arg12  , arg13  , arg14  ,
     arg15  , arg16  , arg17  , arg18  , arg19  , arg20  , arg21  , arg22  , arg23  , arg24  , arg25  , arg26  , arg27  , arg28  ,
     arg29  , arg30  , arg31  , arg32  , arg33  , arg34  , arg35  , arg36  , arg37  , arg38  , arg39  );
@@ -10947,7 +10947,7 @@ T_O* arg37 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg38 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg39 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg40 = ENSURE_VALID_OBJECT(args->next_arg_raw());
-return func->entry(func.raw_()
+return func->entry.load()(func.raw_()
 , 41 , arg0 , arg1 , arg2 , arg3     , arg4  , arg5  , arg6  , arg7  , arg8  , arg9  , arg10  , arg11  , arg12  , arg13  , arg14  ,
     arg15  , arg16  , arg17  , arg18  , arg19  , arg20  , arg21  , arg22  , arg23  , arg24  , arg25  , arg26  , arg27  , arg28  ,
     arg29  , arg30  , arg31  , arg32  , arg33  , arg34  , arg35  , arg36  , arg37  , arg38  , arg39  , arg40  );
@@ -10995,7 +10995,7 @@ T_O* arg38 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg39 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg40 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg41 = ENSURE_VALID_OBJECT(args->next_arg_raw());
-return func->entry(func.raw_()
+return func->entry.load()(func.raw_()
 , 42 , arg0 , arg1 , arg2 , arg3     , arg4  , arg5  , arg6  , arg7  , arg8  , arg9  , arg10  , arg11  , arg12  , arg13  , arg14  ,
     arg15  , arg16  , arg17  , arg18  , arg19  , arg20  , arg21  , arg22  , arg23  , arg24  , arg25  , arg26  , arg27  , arg28  ,
     arg29  , arg30  , arg31  , arg32  , arg33  , arg34  , arg35  , arg36  , arg37  , arg38  , arg39  , arg40  , arg41  );
@@ -11044,7 +11044,7 @@ T_O* arg39 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg40 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg41 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg42 = ENSURE_VALID_OBJECT(args->next_arg_raw());
-return func->entry(func.raw_()
+return func->entry.load()(func.raw_()
 , 43 , arg0 , arg1 , arg2 , arg3     , arg4  , arg5  , arg6  , arg7  , arg8  , arg9  , arg10  , arg11  , arg12  , arg13  , arg14  ,
     arg15  , arg16  , arg17  , arg18  , arg19  , arg20  , arg21  , arg22  , arg23  , arg24  , arg25  , arg26  , arg27  , arg28  ,
     arg29  , arg30  , arg31  , arg32  , arg33  , arg34  , arg35  , arg36  , arg37  , arg38  , arg39  , arg40  , arg41  , arg42  );
@@ -11094,7 +11094,7 @@ T_O* arg40 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg41 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg42 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg43 = ENSURE_VALID_OBJECT(args->next_arg_raw());
-return func->entry(func.raw_()
+return func->entry.load()(func.raw_()
 , 44 , arg0 , arg1 , arg2 , arg3     , arg4  , arg5  , arg6  , arg7  , arg8  , arg9  , arg10  , arg11  , arg12  , arg13  , arg14  ,
     arg15  , arg16  , arg17  , arg18  , arg19  , arg20  , arg21  , arg22  , arg23  , arg24  , arg25  , arg26  , arg27  , arg28  ,
     arg29  , arg30  , arg31  , arg32  , arg33  , arg34  , arg35  , arg36  , arg37  , arg38  , arg39  , arg40  , arg41  , arg42  ,
@@ -11146,7 +11146,7 @@ T_O* arg41 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg42 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg43 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg44 = ENSURE_VALID_OBJECT(args->next_arg_raw());
-return func->entry(func.raw_()
+return func->entry.load()(func.raw_()
 , 45 , arg0 , arg1 , arg2 , arg3     , arg4  , arg5  , arg6  , arg7  , arg8  , arg9  , arg10  , arg11  , arg12  , arg13  , arg14  ,
     arg15  , arg16  , arg17  , arg18  , arg19  , arg20  , arg21  , arg22  , arg23  , arg24  , arg25  , arg26  , arg27  , arg28  ,
     arg29  , arg30  , arg31  , arg32  , arg33  , arg34  , arg35  , arg36  , arg37  , arg38  , arg39  , arg40  , arg41  , arg42  ,
@@ -11199,7 +11199,7 @@ T_O* arg42 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg43 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg44 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg45 = ENSURE_VALID_OBJECT(args->next_arg_raw());
-return func->entry(func.raw_()
+return func->entry.load()(func.raw_()
 , 46 , arg0 , arg1 , arg2 , arg3     , arg4  , arg5  , arg6  , arg7  , arg8  , arg9  , arg10  , arg11  , arg12  , arg13  , arg14  ,
     arg15  , arg16  , arg17  , arg18  , arg19  , arg20  , arg21  , arg22  , arg23  , arg24  , arg25  , arg26  , arg27  , arg28  ,
     arg29  , arg30  , arg31  , arg32  , arg33  , arg34  , arg35  , arg36  , arg37  , arg38  , arg39  , arg40  , arg41  , arg42  ,
@@ -11253,7 +11253,7 @@ T_O* arg43 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg44 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg45 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg46 = ENSURE_VALID_OBJECT(args->next_arg_raw());
-return func->entry(func.raw_()
+return func->entry.load()(func.raw_()
 , 47 , arg0 , arg1 , arg2 , arg3     , arg4  , arg5  , arg6  , arg7  , arg8  , arg9  , arg10  , arg11  , arg12  , arg13  , arg14  ,
     arg15  , arg16  , arg17  , arg18  , arg19  , arg20  , arg21  , arg22  , arg23  , arg24  , arg25  , arg26  , arg27  , arg28  ,
     arg29  , arg30  , arg31  , arg32  , arg33  , arg34  , arg35  , arg36  , arg37  , arg38  , arg39  , arg40  , arg41  , arg42  ,
@@ -11308,7 +11308,7 @@ T_O* arg44 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg45 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg46 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg47 = ENSURE_VALID_OBJECT(args->next_arg_raw());
-return func->entry(func.raw_()
+return func->entry.load()(func.raw_()
 , 48 , arg0 , arg1 , arg2 , arg3     , arg4  , arg5  , arg6  , arg7  , arg8  , arg9  , arg10  , arg11  , arg12  , arg13  , arg14  ,
     arg15  , arg16  , arg17  , arg18  , arg19  , arg20  , arg21  , arg22  , arg23  , arg24  , arg25  , arg26  , arg27  , arg28  ,
     arg29  , arg30  , arg31  , arg32  , arg33  , arg34  , arg35  , arg36  , arg37  , arg38  , arg39  , arg40  , arg41  , arg42  ,
@@ -11364,7 +11364,7 @@ T_O* arg45 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg46 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg47 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg48 = ENSURE_VALID_OBJECT(args->next_arg_raw());
-return func->entry(func.raw_()
+return func->entry.load()(func.raw_()
 , 49 , arg0 , arg1 , arg2 , arg3     , arg4  , arg5  , arg6  , arg7  , arg8  , arg9  , arg10  , arg11  , arg12  , arg13  , arg14  ,
     arg15  , arg16  , arg17  , arg18  , arg19  , arg20  , arg21  , arg22  , arg23  , arg24  , arg25  , arg26  , arg27  , arg28  ,
     arg29  , arg30  , arg31  , arg32  , arg33  , arg34  , arg35  , arg36  , arg37  , arg38  , arg39  , arg40  , arg41  , arg42  ,
@@ -11421,7 +11421,7 @@ T_O* arg46 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg47 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg48 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg49 = ENSURE_VALID_OBJECT(args->next_arg_raw());
-return func->entry(func.raw_()
+return func->entry.load()(func.raw_()
 , 50 , arg0 , arg1 , arg2 , arg3     , arg4  , arg5  , arg6  , arg7  , arg8  , arg9  , arg10  , arg11  , arg12  , arg13  , arg14  ,
     arg15  , arg16  , arg17  , arg18  , arg19  , arg20  , arg21  , arg22  , arg23  , arg24  , arg25  , arg26  , arg27  , arg28  ,
     arg29  , arg30  , arg31  , arg32  , arg33  , arg34  , arg35  , arg36  , arg37  , arg38  , arg39  , arg40  , arg41  , arg42  ,
@@ -11479,7 +11479,7 @@ T_O* arg47 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg48 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg49 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg50 = ENSURE_VALID_OBJECT(args->next_arg_raw());
-return func->entry(func.raw_()
+return func->entry.load()(func.raw_()
 , 51 , arg0 , arg1 , arg2 , arg3     , arg4  , arg5  , arg6  , arg7  , arg8  , arg9  , arg10  , arg11  , arg12  , arg13  , arg14  ,
     arg15  , arg16  , arg17  , arg18  , arg19  , arg20  , arg21  , arg22  , arg23  , arg24  , arg25  , arg26  , arg27  , arg28  ,
     arg29  , arg30  , arg31  , arg32  , arg33  , arg34  , arg35  , arg36  , arg37  , arg38  , arg39  , arg40  , arg41  , arg42  ,
@@ -11538,7 +11538,7 @@ T_O* arg48 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg49 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg50 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg51 = ENSURE_VALID_OBJECT(args->next_arg_raw());
-return func->entry(func.raw_()
+return func->entry.load()(func.raw_()
 , 52 , arg0 , arg1 , arg2 , arg3     , arg4  , arg5  , arg6  , arg7  , arg8  , arg9  , arg10  , arg11  , arg12  , arg13  , arg14  ,
     arg15  , arg16  , arg17  , arg18  , arg19  , arg20  , arg21  , arg22  , arg23  , arg24  , arg25  , arg26  , arg27  , arg28  ,
     arg29  , arg30  , arg31  , arg32  , arg33  , arg34  , arg35  , arg36  , arg37  , arg38  , arg39  , arg40  , arg41  , arg42  ,
@@ -11598,7 +11598,7 @@ T_O* arg49 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg50 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg51 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg52 = ENSURE_VALID_OBJECT(args->next_arg_raw());
-return func->entry(func.raw_()
+return func->entry.load()(func.raw_()
 , 53 , arg0 , arg1 , arg2 , arg3     , arg4  , arg5  , arg6  , arg7  , arg8  , arg9  , arg10  , arg11  , arg12  , arg13  , arg14  ,
     arg15  , arg16  , arg17  , arg18  , arg19  , arg20  , arg21  , arg22  , arg23  , arg24  , arg25  , arg26  , arg27  , arg28  ,
     arg29  , arg30  , arg31  , arg32  , arg33  , arg34  , arg35  , arg36  , arg37  , arg38  , arg39  , arg40  , arg41  , arg42  ,
@@ -11659,7 +11659,7 @@ T_O* arg50 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg51 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg52 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg53 = ENSURE_VALID_OBJECT(args->next_arg_raw());
-return func->entry(func.raw_()
+return func->entry.load()(func.raw_()
 , 54 , arg0 , arg1 , arg2 , arg3     , arg4  , arg5  , arg6  , arg7  , arg8  , arg9  , arg10  , arg11  , arg12  , arg13  , arg14  ,
     arg15  , arg16  , arg17  , arg18  , arg19  , arg20  , arg21  , arg22  , arg23  , arg24  , arg25  , arg26  , arg27  , arg28  ,
     arg29  , arg30  , arg31  , arg32  , arg33  , arg34  , arg35  , arg36  , arg37  , arg38  , arg39  , arg40  , arg41  , arg42  ,
@@ -11721,7 +11721,7 @@ T_O* arg51 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg52 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg53 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg54 = ENSURE_VALID_OBJECT(args->next_arg_raw());
-return func->entry(func.raw_()
+return func->entry.load()(func.raw_()
 , 55 , arg0 , arg1 , arg2 , arg3     , arg4  , arg5  , arg6  , arg7  , arg8  , arg9  , arg10  , arg11  , arg12  , arg13  , arg14  ,
     arg15  , arg16  , arg17  , arg18  , arg19  , arg20  , arg21  , arg22  , arg23  , arg24  , arg25  , arg26  , arg27  , arg28  ,
     arg29  , arg30  , arg31  , arg32  , arg33  , arg34  , arg35  , arg36  , arg37  , arg38  , arg39  , arg40  , arg41  , arg42  ,
@@ -11784,7 +11784,7 @@ T_O* arg52 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg53 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg54 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg55 = ENSURE_VALID_OBJECT(args->next_arg_raw());
-return func->entry(func.raw_()
+return func->entry.load()(func.raw_()
 , 56 , arg0 , arg1 , arg2 , arg3     , arg4  , arg5  , arg6  , arg7  , arg8  , arg9  , arg10  , arg11  , arg12  , arg13  , arg14  ,
     arg15  , arg16  , arg17  , arg18  , arg19  , arg20  , arg21  , arg22  , arg23  , arg24  , arg25  , arg26  , arg27  , arg28  ,
     arg29  , arg30  , arg31  , arg32  , arg33  , arg34  , arg35  , arg36  , arg37  , arg38  , arg39  , arg40  , arg41  , arg42  ,
@@ -11848,7 +11848,7 @@ T_O* arg53 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg54 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg55 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg56 = ENSURE_VALID_OBJECT(args->next_arg_raw());
-return func->entry(func.raw_()
+return func->entry.load()(func.raw_()
 , 57 , arg0 , arg1 , arg2 , arg3     , arg4  , arg5  , arg6  , arg7  , arg8  , arg9  , arg10  , arg11  , arg12  , arg13  , arg14  ,
     arg15  , arg16  , arg17  , arg18  , arg19  , arg20  , arg21  , arg22  , arg23  , arg24  , arg25  , arg26  , arg27  , arg28  ,
     arg29  , arg30  , arg31  , arg32  , arg33  , arg34  , arg35  , arg36  , arg37  , arg38  , arg39  , arg40  , arg41  , arg42  ,
@@ -11913,7 +11913,7 @@ T_O* arg54 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg55 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg56 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg57 = ENSURE_VALID_OBJECT(args->next_arg_raw());
-return func->entry(func.raw_()
+return func->entry.load()(func.raw_()
 , 58 , arg0 , arg1 , arg2 , arg3     , arg4  , arg5  , arg6  , arg7  , arg8  , arg9  , arg10  , arg11  , arg12  , arg13  , arg14  ,
     arg15  , arg16  , arg17  , arg18  , arg19  , arg20  , arg21  , arg22  , arg23  , arg24  , arg25  , arg26  , arg27  , arg28  ,
     arg29  , arg30  , arg31  , arg32  , arg33  , arg34  , arg35  , arg36  , arg37  , arg38  , arg39  , arg40  , arg41  , arg42  ,
@@ -11980,7 +11980,7 @@ T_O* arg55 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg56 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg57 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg58 = ENSURE_VALID_OBJECT(args->next_arg_raw());
-return func->entry(func.raw_()
+return func->entry.load()(func.raw_()
 , 59 , arg0 , arg1 , arg2 , arg3     , arg4  , arg5  , arg6  , arg7  , arg8  , arg9  , arg10  , arg11  , arg12  , arg13  , arg14  ,
     arg15  , arg16  , arg17  , arg18  , arg19  , arg20  , arg21  , arg22  , arg23  , arg24  , arg25  , arg26  , arg27  , arg28  ,
     arg29  , arg30  , arg31  , arg32  , arg33  , arg34  , arg35  , arg36  , arg37  , arg38  , arg39  , arg40  , arg41  , arg42  ,
@@ -12048,7 +12048,7 @@ T_O* arg56 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg57 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg58 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg59 = ENSURE_VALID_OBJECT(args->next_arg_raw());
-return func->entry(func.raw_()
+return func->entry.load()(func.raw_()
 , 60 , arg0 , arg1 , arg2 , arg3     , arg4  , arg5  , arg6  , arg7  , arg8  , arg9  , arg10  , arg11  , arg12  , arg13  , arg14  ,
     arg15  , arg16  , arg17  , arg18  , arg19  , arg20  , arg21  , arg22  , arg23  , arg24  , arg25  , arg26  , arg27  , arg28  ,
     arg29  , arg30  , arg31  , arg32  , arg33  , arg34  , arg35  , arg36  , arg37  , arg38  , arg39  , arg40  , arg41  , arg42  ,
@@ -12117,7 +12117,7 @@ T_O* arg57 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg58 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg59 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg60 = ENSURE_VALID_OBJECT(args->next_arg_raw());
-return func->entry(func.raw_()
+return func->entry.load()(func.raw_()
 , 61 , arg0 , arg1 , arg2 , arg3     , arg4  , arg5  , arg6  , arg7  , arg8  , arg9  , arg10  , arg11  , arg12  , arg13  , arg14  ,
     arg15  , arg16  , arg17  , arg18  , arg19  , arg20  , arg21  , arg22  , arg23  , arg24  , arg25  , arg26  , arg27  , arg28  ,
     arg29  , arg30  , arg31  , arg32  , arg33  , arg34  , arg35  , arg36  , arg37  , arg38  , arg39  , arg40  , arg41  , arg42  ,
@@ -12187,7 +12187,7 @@ T_O* arg58 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg59 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg60 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg61 = ENSURE_VALID_OBJECT(args->next_arg_raw());
-return func->entry(func.raw_()
+return func->entry.load()(func.raw_()
 , 62 , arg0 , arg1 , arg2 , arg3     , arg4  , arg5  , arg6  , arg7  , arg8  , arg9  , arg10  , arg11  , arg12  , arg13  , arg14  ,
     arg15  , arg16  , arg17  , arg18  , arg19  , arg20  , arg21  , arg22  , arg23  , arg24  , arg25  , arg26  , arg27  , arg28  ,
     arg29  , arg30  , arg31  , arg32  , arg33  , arg34  , arg35  , arg36  , arg37  , arg38  , arg39  , arg40  , arg41  , arg42  ,
@@ -12258,7 +12258,7 @@ T_O* arg59 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg60 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg61 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg62 = ENSURE_VALID_OBJECT(args->next_arg_raw());
-return func->entry(func.raw_()
+return func->entry.load()(func.raw_()
 , 63 , arg0 , arg1 , arg2 , arg3     , arg4  , arg5  , arg6  , arg7  , arg8  , arg9  , arg10  , arg11  , arg12  , arg13  , arg14  ,
     arg15  , arg16  , arg17  , arg18  , arg19  , arg20  , arg21  , arg22  , arg23  , arg24  , arg25  , arg26  , arg27  , arg28  ,
     arg29  , arg30  , arg31  , arg32  , arg33  , arg34  , arg35  , arg36  , arg37  , arg38  , arg39  , arg40  , arg41  , arg42  ,
@@ -12330,7 +12330,7 @@ T_O* arg60 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg61 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg62 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg63 = ENSURE_VALID_OBJECT(args->next_arg_raw());
-return func->entry(func.raw_()
+return func->entry.load()(func.raw_()
 , 64 , arg0 , arg1 , arg2 , arg3     , arg4  , arg5  , arg6  , arg7  , arg8  , arg9  , arg10  , arg11  , arg12  , arg13  , arg14  ,
     arg15  , arg16  , arg17  , arg18  , arg19  , arg20  , arg21  , arg22  , arg23  , arg24  , arg25  , arg26  , arg27  , arg28  ,
     arg29  , arg30  , arg31  , arg32  , arg33  , arg34  , arg35  , arg36  , arg37  , arg38  , arg39  , arg40  , arg41  , arg42  ,
@@ -12403,7 +12403,7 @@ T_O* arg61 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg62 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg63 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg64 = ENSURE_VALID_OBJECT(args->next_arg_raw());
-return func->entry(func.raw_()
+return func->entry.load()(func.raw_()
 , 65 , arg0 , arg1 , arg2 , arg3     , arg4  , arg5  , arg6  , arg7  , arg8  , arg9  , arg10  , arg11  , arg12  , arg13  , arg14  ,
     arg15  , arg16  , arg17  , arg18  , arg19  , arg20  , arg21  , arg22  , arg23  , arg24  , arg25  , arg26  , arg27  , arg28  ,
     arg29  , arg30  , arg31  , arg32  , arg33  , arg34  , arg35  , arg36  , arg37  , arg38  , arg39  , arg40  , arg41  , arg42  ,
@@ -12477,7 +12477,7 @@ T_O* arg62 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg63 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg64 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg65 = ENSURE_VALID_OBJECT(args->next_arg_raw());
-return func->entry(func.raw_()
+return func->entry.load()(func.raw_()
 , 66 , arg0 , arg1 , arg2 , arg3     , arg4  , arg5  , arg6  , arg7  , arg8  , arg9  , arg10  , arg11  , arg12  , arg13  , arg14  ,
     arg15  , arg16  , arg17  , arg18  , arg19  , arg20  , arg21  , arg22  , arg23  , arg24  , arg25  , arg26  , arg27  , arg28  ,
     arg29  , arg30  , arg31  , arg32  , arg33  , arg34  , arg35  , arg36  , arg37  , arg38  , arg39  , arg40  , arg41  , arg42  ,
@@ -12552,7 +12552,7 @@ T_O* arg63 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg64 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg65 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg66 = ENSURE_VALID_OBJECT(args->next_arg_raw());
-return func->entry(func.raw_()
+return func->entry.load()(func.raw_()
 , 67 , arg0 , arg1 , arg2 , arg3     , arg4  , arg5  , arg6  , arg7  , arg8  , arg9  , arg10  , arg11  , arg12  , arg13  , arg14  ,
     arg15  , arg16  , arg17  , arg18  , arg19  , arg20  , arg21  , arg22  , arg23  , arg24  , arg25  , arg26  , arg27  , arg28  ,
     arg29  , arg30  , arg31  , arg32  , arg33  , arg34  , arg35  , arg36  , arg37  , arg38  , arg39  , arg40  , arg41  , arg42  ,
@@ -12628,7 +12628,7 @@ T_O* arg64 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg65 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg66 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg67 = ENSURE_VALID_OBJECT(args->next_arg_raw());
-return func->entry(func.raw_()
+return func->entry.load()(func.raw_()
 , 68 , arg0 , arg1 , arg2 , arg3     , arg4  , arg5  , arg6  , arg7  , arg8  , arg9  , arg10  , arg11  , arg12  , arg13  , arg14  ,
     arg15  , arg16  , arg17  , arg18  , arg19  , arg20  , arg21  , arg22  , arg23  , arg24  , arg25  , arg26  , arg27  , arg28  ,
     arg29  , arg30  , arg31  , arg32  , arg33  , arg34  , arg35  , arg36  , arg37  , arg38  , arg39  , arg40  , arg41  , arg42  ,
@@ -12705,7 +12705,7 @@ T_O* arg65 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg66 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg67 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg68 = ENSURE_VALID_OBJECT(args->next_arg_raw());
-return func->entry(func.raw_()
+return func->entry.load()(func.raw_()
 , 69 , arg0 , arg1 , arg2 , arg3     , arg4  , arg5  , arg6  , arg7  , arg8  , arg9  , arg10  , arg11  , arg12  , arg13  , arg14  ,
     arg15  , arg16  , arg17  , arg18  , arg19  , arg20  , arg21  , arg22  , arg23  , arg24  , arg25  , arg26  , arg27  , arg28  ,
     arg29  , arg30  , arg31  , arg32  , arg33  , arg34  , arg35  , arg36  , arg37  , arg38  , arg39  , arg40  , arg41  , arg42  ,
@@ -12783,7 +12783,7 @@ T_O* arg66 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg67 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg68 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg69 = ENSURE_VALID_OBJECT(args->next_arg_raw());
-return func->entry(func.raw_()
+return func->entry.load()(func.raw_()
 , 70 , arg0 , arg1 , arg2 , arg3     , arg4  , arg5  , arg6  , arg7  , arg8  , arg9  , arg10  , arg11  , arg12  , arg13  , arg14  ,
     arg15  , arg16  , arg17  , arg18  , arg19  , arg20  , arg21  , arg22  , arg23  , arg24  , arg25  , arg26  , arg27  , arg28  ,
     arg29  , arg30  , arg31  , arg32  , arg33  , arg34  , arg35  , arg36  , arg37  , arg38  , arg39  , arg40  , arg41  , arg42  ,
@@ -12862,7 +12862,7 @@ T_O* arg67 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg68 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg69 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg70 = ENSURE_VALID_OBJECT(args->next_arg_raw());
-return func->entry(func.raw_()
+return func->entry.load()(func.raw_()
 , 71 , arg0 , arg1 , arg2 , arg3     , arg4  , arg5  , arg6  , arg7  , arg8  , arg9  , arg10  , arg11  , arg12  , arg13  , arg14  ,
     arg15  , arg16  , arg17  , arg18  , arg19  , arg20  , arg21  , arg22  , arg23  , arg24  , arg25  , arg26  , arg27  , arg28  ,
     arg29  , arg30  , arg31  , arg32  , arg33  , arg34  , arg35  , arg36  , arg37  , arg38  , arg39  , arg40  , arg41  , arg42  ,
@@ -12942,7 +12942,7 @@ T_O* arg68 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg69 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg70 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg71 = ENSURE_VALID_OBJECT(args->next_arg_raw());
-return func->entry(func.raw_()
+return func->entry.load()(func.raw_()
 , 72 , arg0 , arg1 , arg2 , arg3     , arg4  , arg5  , arg6  , arg7  , arg8  , arg9  , arg10  , arg11  , arg12  , arg13  , arg14  ,
     arg15  , arg16  , arg17  , arg18  , arg19  , arg20  , arg21  , arg22  , arg23  , arg24  , arg25  , arg26  , arg27  , arg28  ,
     arg29  , arg30  , arg31  , arg32  , arg33  , arg34  , arg35  , arg36  , arg37  , arg38  , arg39  , arg40  , arg41  , arg42  ,
@@ -13024,7 +13024,7 @@ T_O* arg69 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg70 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg71 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg72 = ENSURE_VALID_OBJECT(args->next_arg_raw());
-return func->entry(func.raw_()
+return func->entry.load()(func.raw_()
 , 73 , arg0 , arg1 , arg2 , arg3     , arg4  , arg5  , arg6  , arg7  , arg8  , arg9  , arg10  , arg11  , arg12  , arg13  , arg14  ,
     arg15  , arg16  , arg17  , arg18  , arg19  , arg20  , arg21  , arg22  , arg23  , arg24  , arg25  , arg26  , arg27  , arg28  ,
     arg29  , arg30  , arg31  , arg32  , arg33  , arg34  , arg35  , arg36  , arg37  , arg38  , arg39  , arg40  , arg41  , arg42  ,
@@ -13107,7 +13107,7 @@ T_O* arg70 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg71 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg72 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg73 = ENSURE_VALID_OBJECT(args->next_arg_raw());
-return func->entry(func.raw_()
+return func->entry.load()(func.raw_()
 , 74 , arg0 , arg1 , arg2 , arg3     , arg4  , arg5  , arg6  , arg7  , arg8  , arg9  , arg10  , arg11  , arg12  , arg13  , arg14  ,
     arg15  , arg16  , arg17  , arg18  , arg19  , arg20  , arg21  , arg22  , arg23  , arg24  , arg25  , arg26  , arg27  , arg28  ,
     arg29  , arg30  , arg31  , arg32  , arg33  , arg34  , arg35  , arg36  , arg37  , arg38  , arg39  , arg40  , arg41  , arg42  ,
@@ -13191,7 +13191,7 @@ T_O* arg71 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg72 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg73 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg74 = ENSURE_VALID_OBJECT(args->next_arg_raw());
-return func->entry(func.raw_()
+return func->entry.load()(func.raw_()
 , 75 , arg0 , arg1 , arg2 , arg3     , arg4  , arg5  , arg6  , arg7  , arg8  , arg9  , arg10  , arg11  , arg12  , arg13  , arg14  ,
     arg15  , arg16  , arg17  , arg18  , arg19  , arg20  , arg21  , arg22  , arg23  , arg24  , arg25  , arg26  , arg27  , arg28  ,
     arg29  , arg30  , arg31  , arg32  , arg33  , arg34  , arg35  , arg36  , arg37  , arg38  , arg39  , arg40  , arg41  , arg42  ,
@@ -13276,7 +13276,7 @@ T_O* arg72 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg73 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg74 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg75 = ENSURE_VALID_OBJECT(args->next_arg_raw());
-return func->entry(func.raw_()
+return func->entry.load()(func.raw_()
 , 76 , arg0 , arg1 , arg2 , arg3     , arg4  , arg5  , arg6  , arg7  , arg8  , arg9  , arg10  , arg11  , arg12  , arg13  , arg14  ,
     arg15  , arg16  , arg17  , arg18  , arg19  , arg20  , arg21  , arg22  , arg23  , arg24  , arg25  , arg26  , arg27  , arg28  ,
     arg29  , arg30  , arg31  , arg32  , arg33  , arg34  , arg35  , arg36  , arg37  , arg38  , arg39  , arg40  , arg41  , arg42  ,
@@ -13362,7 +13362,7 @@ T_O* arg73 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg74 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg75 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg76 = ENSURE_VALID_OBJECT(args->next_arg_raw());
-return func->entry(func.raw_()
+return func->entry.load()(func.raw_()
 , 77 , arg0 , arg1 , arg2 , arg3     , arg4  , arg5  , arg6  , arg7  , arg8  , arg9  , arg10  , arg11  , arg12  , arg13  , arg14  ,
     arg15  , arg16  , arg17  , arg18  , arg19  , arg20  , arg21  , arg22  , arg23  , arg24  , arg25  , arg26  , arg27  , arg28  ,
     arg29  , arg30  , arg31  , arg32  , arg33  , arg34  , arg35  , arg36  , arg37  , arg38  , arg39  , arg40  , arg41  , arg42  ,
@@ -13449,7 +13449,7 @@ T_O* arg74 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg75 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg76 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg77 = ENSURE_VALID_OBJECT(args->next_arg_raw());
-return func->entry(func.raw_()
+return func->entry.load()(func.raw_()
 , 78 , arg0 , arg1 , arg2 , arg3     , arg4  , arg5  , arg6  , arg7  , arg8  , arg9  , arg10  , arg11  , arg12  , arg13  , arg14  ,
     arg15  , arg16  , arg17  , arg18  , arg19  , arg20  , arg21  , arg22  , arg23  , arg24  , arg25  , arg26  , arg27  , arg28  ,
     arg29  , arg30  , arg31  , arg32  , arg33  , arg34  , arg35  , arg36  , arg37  , arg38  , arg39  , arg40  , arg41  , arg42  ,
@@ -13537,7 +13537,7 @@ T_O* arg75 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg76 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg77 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg78 = ENSURE_VALID_OBJECT(args->next_arg_raw());
-return func->entry(func.raw_()
+return func->entry.load()(func.raw_()
 , 79 , arg0 , arg1 , arg2 , arg3     , arg4  , arg5  , arg6  , arg7  , arg8  , arg9  , arg10  , arg11  , arg12  , arg13  , arg14  ,
     arg15  , arg16  , arg17  , arg18  , arg19  , arg20  , arg21  , arg22  , arg23  , arg24  , arg25  , arg26  , arg27  , arg28  ,
     arg29  , arg30  , arg31  , arg32  , arg33  , arg34  , arg35  , arg36  , arg37  , arg38  , arg39  , arg40  , arg41  , arg42  ,
@@ -13626,7 +13626,7 @@ T_O* arg76 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg77 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg78 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg79 = ENSURE_VALID_OBJECT(args->next_arg_raw());
-return func->entry(func.raw_()
+return func->entry.load()(func.raw_()
 , 80 , arg0 , arg1 , arg2 , arg3     , arg4  , arg5  , arg6  , arg7  , arg8  , arg9  , arg10  , arg11  , arg12  , arg13  , arg14  ,
     arg15  , arg16  , arg17  , arg18  , arg19  , arg20  , arg21  , arg22  , arg23  , arg24  , arg25  , arg26  , arg27  , arg28  ,
     arg29  , arg30  , arg31  , arg32  , arg33  , arg34  , arg35  , arg36  , arg37  , arg38  , arg39  , arg40  , arg41  , arg42  ,
@@ -13716,7 +13716,7 @@ T_O* arg77 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg78 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg79 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg80 = ENSURE_VALID_OBJECT(args->next_arg_raw());
-return func->entry(func.raw_()
+return func->entry.load()(func.raw_()
 , 81 , arg0 , arg1 , arg2 , arg3     , arg4  , arg5  , arg6  , arg7  , arg8  , arg9  , arg10  , arg11  , arg12  , arg13  , arg14  ,
     arg15  , arg16  , arg17  , arg18  , arg19  , arg20  , arg21  , arg22  , arg23  , arg24  , arg25  , arg26  , arg27  , arg28  ,
     arg29  , arg30  , arg31  , arg32  , arg33  , arg34  , arg35  , arg36  , arg37  , arg38  , arg39  , arg40  , arg41  , arg42  ,
@@ -13807,7 +13807,7 @@ T_O* arg78 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg79 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg80 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg81 = ENSURE_VALID_OBJECT(args->next_arg_raw());
-return func->entry(func.raw_()
+return func->entry.load()(func.raw_()
 , 82 , arg0 , arg1 , arg2 , arg3     , arg4  , arg5  , arg6  , arg7  , arg8  , arg9  , arg10  , arg11  , arg12  , arg13  , arg14  ,
     arg15  , arg16  , arg17  , arg18  , arg19  , arg20  , arg21  , arg22  , arg23  , arg24  , arg25  , arg26  , arg27  , arg28  ,
     arg29  , arg30  , arg31  , arg32  , arg33  , arg34  , arg35  , arg36  , arg37  , arg38  , arg39  , arg40  , arg41  , arg42  ,
@@ -13899,7 +13899,7 @@ T_O* arg79 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg80 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg81 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg82 = ENSURE_VALID_OBJECT(args->next_arg_raw());
-return func->entry(func.raw_()
+return func->entry.load()(func.raw_()
 , 83 , arg0 , arg1 , arg2 , arg3     , arg4  , arg5  , arg6  , arg7  , arg8  , arg9  , arg10  , arg11  , arg12  , arg13  , arg14  ,
     arg15  , arg16  , arg17  , arg18  , arg19  , arg20  , arg21  , arg22  , arg23  , arg24  , arg25  , arg26  , arg27  , arg28  ,
     arg29  , arg30  , arg31  , arg32  , arg33  , arg34  , arg35  , arg36  , arg37  , arg38  , arg39  , arg40  , arg41  , arg42  ,
@@ -13992,7 +13992,7 @@ T_O* arg80 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg81 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg82 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg83 = ENSURE_VALID_OBJECT(args->next_arg_raw());
-return func->entry(func.raw_()
+return func->entry.load()(func.raw_()
 , 84 , arg0 , arg1 , arg2 , arg3     , arg4  , arg5  , arg6  , arg7  , arg8  , arg9  , arg10  , arg11  , arg12  , arg13  , arg14  ,
     arg15  , arg16  , arg17  , arg18  , arg19  , arg20  , arg21  , arg22  , arg23  , arg24  , arg25  , arg26  , arg27  , arg28  ,
     arg29  , arg30  , arg31  , arg32  , arg33  , arg34  , arg35  , arg36  , arg37  , arg38  , arg39  , arg40  , arg41  , arg42  ,
@@ -14086,7 +14086,7 @@ T_O* arg81 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg82 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg83 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg84 = ENSURE_VALID_OBJECT(args->next_arg_raw());
-return func->entry(func.raw_()
+return func->entry.load()(func.raw_()
 , 85 , arg0 , arg1 , arg2 , arg3     , arg4  , arg5  , arg6  , arg7  , arg8  , arg9  , arg10  , arg11  , arg12  , arg13  , arg14  ,
     arg15  , arg16  , arg17  , arg18  , arg19  , arg20  , arg21  , arg22  , arg23  , arg24  , arg25  , arg26  , arg27  , arg28  ,
     arg29  , arg30  , arg31  , arg32  , arg33  , arg34  , arg35  , arg36  , arg37  , arg38  , arg39  , arg40  , arg41  , arg42  ,
@@ -14181,7 +14181,7 @@ T_O* arg82 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg83 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg84 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg85 = ENSURE_VALID_OBJECT(args->next_arg_raw());
-return func->entry(func.raw_()
+return func->entry.load()(func.raw_()
 , 86 , arg0 , arg1 , arg2 , arg3     , arg4  , arg5  , arg6  , arg7  , arg8  , arg9  , arg10  , arg11  , arg12  , arg13  , arg14  ,
     arg15  , arg16  , arg17  , arg18  , arg19  , arg20  , arg21  , arg22  , arg23  , arg24  , arg25  , arg26  , arg27  , arg28  ,
     arg29  , arg30  , arg31  , arg32  , arg33  , arg34  , arg35  , arg36  , arg37  , arg38  , arg39  , arg40  , arg41  , arg42  ,
@@ -14278,7 +14278,7 @@ T_O* arg83 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg84 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg85 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg86 = ENSURE_VALID_OBJECT(args->next_arg_raw());
-return func->entry(func.raw_()
+return func->entry.load()(func.raw_()
 , 87 , arg0 , arg1 , arg2 , arg3     , arg4  , arg5  , arg6  , arg7  , arg8  , arg9  , arg10  , arg11  , arg12  , arg13  , arg14  ,
     arg15  , arg16  , arg17  , arg18  , arg19  , arg20  , arg21  , arg22  , arg23  , arg24  , arg25  , arg26  , arg27  , arg28  ,
     arg29  , arg30  , arg31  , arg32  , arg33  , arg34  , arg35  , arg36  , arg37  , arg38  , arg39  , arg40  , arg41  , arg42  ,
@@ -14376,7 +14376,7 @@ T_O* arg84 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg85 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg86 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg87 = ENSURE_VALID_OBJECT(args->next_arg_raw());
-return func->entry(func.raw_()
+return func->entry.load()(func.raw_()
 , 88 , arg0 , arg1 , arg2 , arg3     , arg4  , arg5  , arg6  , arg7  , arg8  , arg9  , arg10  , arg11  , arg12  , arg13  , arg14  ,
     arg15  , arg16  , arg17  , arg18  , arg19  , arg20  , arg21  , arg22  , arg23  , arg24  , arg25  , arg26  , arg27  , arg28  ,
     arg29  , arg30  , arg31  , arg32  , arg33  , arg34  , arg35  , arg36  , arg37  , arg38  , arg39  , arg40  , arg41  , arg42  ,
@@ -14475,7 +14475,7 @@ T_O* arg85 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg86 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg87 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg88 = ENSURE_VALID_OBJECT(args->next_arg_raw());
-return func->entry(func.raw_()
+return func->entry.load()(func.raw_()
 , 89 , arg0 , arg1 , arg2 , arg3     , arg4  , arg5  , arg6  , arg7  , arg8  , arg9  , arg10  , arg11  , arg12  , arg13  , arg14  ,
     arg15  , arg16  , arg17  , arg18  , arg19  , arg20  , arg21  , arg22  , arg23  , arg24  , arg25  , arg26  , arg27  , arg28  ,
     arg29  , arg30  , arg31  , arg32  , arg33  , arg34  , arg35  , arg36  , arg37  , arg38  , arg39  , arg40  , arg41  , arg42  ,
@@ -14575,7 +14575,7 @@ T_O* arg86 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg87 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg88 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg89 = ENSURE_VALID_OBJECT(args->next_arg_raw());
-return func->entry(func.raw_()
+return func->entry.load()(func.raw_()
 , 90 , arg0 , arg1 , arg2 , arg3     , arg4  , arg5  , arg6  , arg7  , arg8  , arg9  , arg10  , arg11  , arg12  , arg13  , arg14  ,
     arg15  , arg16  , arg17  , arg18  , arg19  , arg20  , arg21  , arg22  , arg23  , arg24  , arg25  , arg26  , arg27  , arg28  ,
     arg29  , arg30  , arg31  , arg32  , arg33  , arg34  , arg35  , arg36  , arg37  , arg38  , arg39  , arg40  , arg41  , arg42  ,
@@ -14676,7 +14676,7 @@ T_O* arg87 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg88 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg89 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg90 = ENSURE_VALID_OBJECT(args->next_arg_raw());
-return func->entry(func.raw_()
+return func->entry.load()(func.raw_()
 , 91 , arg0 , arg1 , arg2 , arg3     , arg4  , arg5  , arg6  , arg7  , arg8  , arg9  , arg10  , arg11  , arg12  , arg13  , arg14  ,
     arg15  , arg16  , arg17  , arg18  , arg19  , arg20  , arg21  , arg22  , arg23  , arg24  , arg25  , arg26  , arg27  , arg28  ,
     arg29  , arg30  , arg31  , arg32  , arg33  , arg34  , arg35  , arg36  , arg37  , arg38  , arg39  , arg40  , arg41  , arg42  ,
@@ -14778,7 +14778,7 @@ T_O* arg88 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg89 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg90 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg91 = ENSURE_VALID_OBJECT(args->next_arg_raw());
-return func->entry(func.raw_()
+return func->entry.load()(func.raw_()
 , 92 , arg0 , arg1 , arg2 , arg3     , arg4  , arg5  , arg6  , arg7  , arg8  , arg9  , arg10  , arg11  , arg12  , arg13  , arg14  ,
     arg15  , arg16  , arg17  , arg18  , arg19  , arg20  , arg21  , arg22  , arg23  , arg24  , arg25  , arg26  , arg27  , arg28  ,
     arg29  , arg30  , arg31  , arg32  , arg33  , arg34  , arg35  , arg36  , arg37  , arg38  , arg39  , arg40  , arg41  , arg42  ,
@@ -14881,7 +14881,7 @@ T_O* arg89 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg90 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg91 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg92 = ENSURE_VALID_OBJECT(args->next_arg_raw());
-return func->entry(func.raw_()
+return func->entry.load()(func.raw_()
 , 93 , arg0 , arg1 , arg2 , arg3     , arg4  , arg5  , arg6  , arg7  , arg8  , arg9  , arg10  , arg11  , arg12  , arg13  , arg14  ,
     arg15  , arg16  , arg17  , arg18  , arg19  , arg20  , arg21  , arg22  , arg23  , arg24  , arg25  , arg26  , arg27  , arg28  ,
     arg29  , arg30  , arg31  , arg32  , arg33  , arg34  , arg35  , arg36  , arg37  , arg38  , arg39  , arg40  , arg41  , arg42  ,
@@ -14985,7 +14985,7 @@ T_O* arg90 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg91 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg92 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg93 = ENSURE_VALID_OBJECT(args->next_arg_raw());
-return func->entry(func.raw_()
+return func->entry.load()(func.raw_()
 , 94 , arg0 , arg1 , arg2 , arg3     , arg4  , arg5  , arg6  , arg7  , arg8  , arg9  , arg10  , arg11  , arg12  , arg13  , arg14  ,
     arg15  , arg16  , arg17  , arg18  , arg19  , arg20  , arg21  , arg22  , arg23  , arg24  , arg25  , arg26  , arg27  , arg28  ,
     arg29  , arg30  , arg31  , arg32  , arg33  , arg34  , arg35  , arg36  , arg37  , arg38  , arg39  , arg40  , arg41  , arg42  ,
@@ -15090,7 +15090,7 @@ T_O* arg91 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg92 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg93 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg94 = ENSURE_VALID_OBJECT(args->next_arg_raw());
-return func->entry(func.raw_()
+return func->entry.load()(func.raw_()
 , 95 , arg0 , arg1 , arg2 , arg3     , arg4  , arg5  , arg6  , arg7  , arg8  , arg9  , arg10  , arg11  , arg12  , arg13  , arg14  ,
     arg15  , arg16  , arg17  , arg18  , arg19  , arg20  , arg21  , arg22  , arg23  , arg24  , arg25  , arg26  , arg27  , arg28  ,
     arg29  , arg30  , arg31  , arg32  , arg33  , arg34  , arg35  , arg36  , arg37  , arg38  , arg39  , arg40  , arg41  , arg42  ,
@@ -15196,7 +15196,7 @@ T_O* arg92 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg93 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg94 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg95 = ENSURE_VALID_OBJECT(args->next_arg_raw());
-return func->entry(func.raw_()
+return func->entry.load()(func.raw_()
 , 96 , arg0 , arg1 , arg2 , arg3     , arg4  , arg5  , arg6  , arg7  , arg8  , arg9  , arg10  , arg11  , arg12  , arg13  , arg14  ,
     arg15  , arg16  , arg17  , arg18  , arg19  , arg20  , arg21  , arg22  , arg23  , arg24  , arg25  , arg26  , arg27  , arg28  ,
     arg29  , arg30  , arg31  , arg32  , arg33  , arg34  , arg35  , arg36  , arg37  , arg38  , arg39  , arg40  , arg41  , arg42  ,
@@ -15303,7 +15303,7 @@ T_O* arg93 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg94 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg95 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg96 = ENSURE_VALID_OBJECT(args->next_arg_raw());
-return func->entry(func.raw_()
+return func->entry.load()(func.raw_()
 , 97 , arg0 , arg1 , arg2 , arg3     , arg4  , arg5  , arg6  , arg7  , arg8  , arg9  , arg10  , arg11  , arg12  , arg13  , arg14  ,
     arg15  , arg16  , arg17  , arg18  , arg19  , arg20  , arg21  , arg22  , arg23  , arg24  , arg25  , arg26  , arg27  , arg28  ,
     arg29  , arg30  , arg31  , arg32  , arg33  , arg34  , arg35  , arg36  , arg37  , arg38  , arg39  , arg40  , arg41  , arg42  ,
@@ -15411,7 +15411,7 @@ T_O* arg94 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg95 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg96 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg97 = ENSURE_VALID_OBJECT(args->next_arg_raw());
-return func->entry(func.raw_()
+return func->entry.load()(func.raw_()
 , 98 , arg0 , arg1 , arg2 , arg3     , arg4  , arg5  , arg6  , arg7  , arg8  , arg9  , arg10  , arg11  , arg12  , arg13  , arg14  ,
     arg15  , arg16  , arg17  , arg18  , arg19  , arg20  , arg21  , arg22  , arg23  , arg24  , arg25  , arg26  , arg27  , arg28  ,
     arg29  , arg30  , arg31  , arg32  , arg33  , arg34  , arg35  , arg36  , arg37  , arg38  , arg39  , arg40  , arg41  , arg42  ,
@@ -15520,7 +15520,7 @@ T_O* arg95 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg96 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg97 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg98 = ENSURE_VALID_OBJECT(args->next_arg_raw());
-return func->entry(func.raw_()
+return func->entry.load()(func.raw_()
 , 99 , arg0 , arg1 , arg2 , arg3     , arg4  , arg5  , arg6  , arg7  , arg8  , arg9  , arg10  , arg11  , arg12  , arg13  , arg14  ,
     arg15  , arg16  , arg17  , arg18  , arg19  , arg20  , arg21  , arg22  , arg23  , arg24  , arg25  , arg26  , arg27  , arg28  ,
     arg29  , arg30  , arg31  , arg32  , arg33  , arg34  , arg35  , arg36  , arg37  , arg38  , arg39  , arg40  , arg41  , arg42  ,
@@ -15630,7 +15630,7 @@ T_O* arg96 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg97 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg98 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg99 = ENSURE_VALID_OBJECT(args->next_arg_raw());
-return func->entry(func.raw_()
+return func->entry.load()(func.raw_()
 , 100 , arg0 , arg1 , arg2 , arg3     , arg4  , arg5  , arg6  , arg7  , arg8  , arg9  , arg10  , arg11  , arg12  , arg13  ,
     arg14  , arg15  , arg16  , arg17  , arg18  , arg19  , arg20  , arg21  , arg22  , arg23  , arg24  , arg25  , arg26  , arg27  ,
     arg28  , arg29  , arg30  , arg31  , arg32  , arg33  , arg34  , arg35  , arg36  , arg37  , arg38  , arg39  , arg40  , arg41  ,
@@ -15742,7 +15742,7 @@ T_O* arg97 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg98 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg99 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg100 = ENSURE_VALID_OBJECT(args->next_arg_raw());
-return func->entry(func.raw_()
+return func->entry.load()(func.raw_()
 , 101 , arg0 , arg1 , arg2 , arg3     , arg4  , arg5  , arg6  , arg7  , arg8  , arg9  , arg10  , arg11  , arg12  , arg13  ,
     arg14  , arg15  , arg16  , arg17  , arg18  , arg19  , arg20  , arg21  , arg22  , arg23  , arg24  , arg25  , arg26  , arg27  ,
     arg28  , arg29  , arg30  , arg31  , arg32  , arg33  , arg34  , arg35  , arg36  , arg37  , arg38  , arg39  , arg40  , arg41  ,
@@ -15855,7 +15855,7 @@ T_O* arg98 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg99 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg100 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg101 = ENSURE_VALID_OBJECT(args->next_arg_raw());
-return func->entry(func.raw_()
+return func->entry.load()(func.raw_()
 , 102 , arg0 , arg1 , arg2 , arg3     , arg4  , arg5  , arg6  , arg7  , arg8  , arg9  , arg10  , arg11  , arg12  , arg13  ,
     arg14  , arg15  , arg16  , arg17  , arg18  , arg19  , arg20  , arg21  , arg22  , arg23  , arg24  , arg25  , arg26  , arg27  ,
     arg28  , arg29  , arg30  , arg31  , arg32  , arg33  , arg34  , arg35  , arg36  , arg37  , arg38  , arg39  , arg40  , arg41  ,
@@ -15969,7 +15969,7 @@ T_O* arg99 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg100 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg101 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg102 = ENSURE_VALID_OBJECT(args->next_arg_raw());
-return func->entry(func.raw_()
+return func->entry.load()(func.raw_()
 , 103 , arg0 , arg1 , arg2 , arg3     , arg4  , arg5  , arg6  , arg7  , arg8  , arg9  , arg10  , arg11  , arg12  , arg13  ,
     arg14  , arg15  , arg16  , arg17  , arg18  , arg19  , arg20  , arg21  , arg22  , arg23  , arg24  , arg25  , arg26  , arg27  ,
     arg28  , arg29  , arg30  , arg31  , arg32  , arg33  , arg34  , arg35  , arg36  , arg37  , arg38  , arg39  , arg40  , arg41  ,
@@ -16084,7 +16084,7 @@ T_O* arg100 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg101 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg102 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg103 = ENSURE_VALID_OBJECT(args->next_arg_raw());
-return func->entry(func.raw_()
+return func->entry.load()(func.raw_()
 , 104 , arg0 , arg1 , arg2 , arg3     , arg4  , arg5  , arg6  , arg7  , arg8  , arg9  , arg10  , arg11  , arg12  , arg13  ,
     arg14  , arg15  , arg16  , arg17  , arg18  , arg19  , arg20  , arg21  , arg22  , arg23  , arg24  , arg25  , arg26  , arg27  ,
     arg28  , arg29  , arg30  , arg31  , arg32  , arg33  , arg34  , arg35  , arg36  , arg37  , arg38  , arg39  , arg40  , arg41  ,
@@ -16200,7 +16200,7 @@ T_O* arg101 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg102 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg103 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg104 = ENSURE_VALID_OBJECT(args->next_arg_raw());
-return func->entry(func.raw_()
+return func->entry.load()(func.raw_()
 , 105 , arg0 , arg1 , arg2 , arg3     , arg4  , arg5  , arg6  , arg7  , arg8  , arg9  , arg10  , arg11  , arg12  , arg13  ,
     arg14  , arg15  , arg16  , arg17  , arg18  , arg19  , arg20  , arg21  , arg22  , arg23  , arg24  , arg25  , arg26  , arg27  ,
     arg28  , arg29  , arg30  , arg31  , arg32  , arg33  , arg34  , arg35  , arg36  , arg37  , arg38  , arg39  , arg40  , arg41  ,
@@ -16317,7 +16317,7 @@ T_O* arg102 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg103 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg104 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg105 = ENSURE_VALID_OBJECT(args->next_arg_raw());
-return func->entry(func.raw_()
+return func->entry.load()(func.raw_()
 , 106 , arg0 , arg1 , arg2 , arg3     , arg4  , arg5  , arg6  , arg7  , arg8  , arg9  , arg10  , arg11  , arg12  , arg13  ,
     arg14  , arg15  , arg16  , arg17  , arg18  , arg19  , arg20  , arg21  , arg22  , arg23  , arg24  , arg25  , arg26  , arg27  ,
     arg28  , arg29  , arg30  , arg31  , arg32  , arg33  , arg34  , arg35  , arg36  , arg37  , arg38  , arg39  , arg40  , arg41  ,
@@ -16435,7 +16435,7 @@ T_O* arg103 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg104 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg105 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg106 = ENSURE_VALID_OBJECT(args->next_arg_raw());
-return func->entry(func.raw_()
+return func->entry.load()(func.raw_()
 , 107 , arg0 , arg1 , arg2 , arg3     , arg4  , arg5  , arg6  , arg7  , arg8  , arg9  , arg10  , arg11  , arg12  , arg13  ,
     arg14  , arg15  , arg16  , arg17  , arg18  , arg19  , arg20  , arg21  , arg22  , arg23  , arg24  , arg25  , arg26  , arg27  ,
     arg28  , arg29  , arg30  , arg31  , arg32  , arg33  , arg34  , arg35  , arg36  , arg37  , arg38  , arg39  , arg40  , arg41  ,
@@ -16554,7 +16554,7 @@ T_O* arg104 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg105 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg106 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg107 = ENSURE_VALID_OBJECT(args->next_arg_raw());
-return func->entry(func.raw_()
+return func->entry.load()(func.raw_()
 , 108 , arg0 , arg1 , arg2 , arg3     , arg4  , arg5  , arg6  , arg7  , arg8  , arg9  , arg10  , arg11  , arg12  , arg13  ,
     arg14  , arg15  , arg16  , arg17  , arg18  , arg19  , arg20  , arg21  , arg22  , arg23  , arg24  , arg25  , arg26  , arg27  ,
     arg28  , arg29  , arg30  , arg31  , arg32  , arg33  , arg34  , arg35  , arg36  , arg37  , arg38  , arg39  , arg40  , arg41  ,
@@ -16674,7 +16674,7 @@ T_O* arg105 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg106 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg107 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg108 = ENSURE_VALID_OBJECT(args->next_arg_raw());
-return func->entry(func.raw_()
+return func->entry.load()(func.raw_()
 , 109 , arg0 , arg1 , arg2 , arg3     , arg4  , arg5  , arg6  , arg7  , arg8  , arg9  , arg10  , arg11  , arg12  , arg13  ,
     arg14  , arg15  , arg16  , arg17  , arg18  , arg19  , arg20  , arg21  , arg22  , arg23  , arg24  , arg25  , arg26  , arg27  ,
     arg28  , arg29  , arg30  , arg31  , arg32  , arg33  , arg34  , arg35  , arg36  , arg37  , arg38  , arg39  , arg40  , arg41  ,
@@ -16795,7 +16795,7 @@ T_O* arg106 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg107 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg108 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg109 = ENSURE_VALID_OBJECT(args->next_arg_raw());
-return func->entry(func.raw_()
+return func->entry.load()(func.raw_()
 , 110 , arg0 , arg1 , arg2 , arg3     , arg4  , arg5  , arg6  , arg7  , arg8  , arg9  , arg10  , arg11  , arg12  , arg13  ,
     arg14  , arg15  , arg16  , arg17  , arg18  , arg19  , arg20  , arg21  , arg22  , arg23  , arg24  , arg25  , arg26  , arg27  ,
     arg28  , arg29  , arg30  , arg31  , arg32  , arg33  , arg34  , arg35  , arg36  , arg37  , arg38  , arg39  , arg40  , arg41  ,
@@ -16917,7 +16917,7 @@ T_O* arg107 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg108 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg109 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg110 = ENSURE_VALID_OBJECT(args->next_arg_raw());
-return func->entry(func.raw_()
+return func->entry.load()(func.raw_()
 , 111 , arg0 , arg1 , arg2 , arg3     , arg4  , arg5  , arg6  , arg7  , arg8  , arg9  , arg10  , arg11  , arg12  , arg13  ,
     arg14  , arg15  , arg16  , arg17  , arg18  , arg19  , arg20  , arg21  , arg22  , arg23  , arg24  , arg25  , arg26  , arg27  ,
     arg28  , arg29  , arg30  , arg31  , arg32  , arg33  , arg34  , arg35  , arg36  , arg37  , arg38  , arg39  , arg40  , arg41  ,
@@ -17041,7 +17041,7 @@ T_O* arg108 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg109 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg110 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg111 = ENSURE_VALID_OBJECT(args->next_arg_raw());
-return func->entry(func.raw_()
+return func->entry.load()(func.raw_()
 , 112 , arg0 , arg1 , arg2 , arg3     , arg4  , arg5  , arg6  , arg7  , arg8  , arg9  , arg10  , arg11  , arg12  , arg13  ,
     arg14  , arg15  , arg16  , arg17  , arg18  , arg19  , arg20  , arg21  , arg22  , arg23  , arg24  , arg25  , arg26  , arg27  ,
     arg28  , arg29  , arg30  , arg31  , arg32  , arg33  , arg34  , arg35  , arg36  , arg37  , arg38  , arg39  , arg40  , arg41  ,
@@ -17166,7 +17166,7 @@ T_O* arg109 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg110 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg111 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg112 = ENSURE_VALID_OBJECT(args->next_arg_raw());
-return func->entry(func.raw_()
+return func->entry.load()(func.raw_()
 , 113 , arg0 , arg1 , arg2 , arg3     , arg4  , arg5  , arg6  , arg7  , arg8  , arg9  , arg10  , arg11  , arg12  , arg13  ,
     arg14  , arg15  , arg16  , arg17  , arg18  , arg19  , arg20  , arg21  , arg22  , arg23  , arg24  , arg25  , arg26  , arg27  ,
     arg28  , arg29  , arg30  , arg31  , arg32  , arg33  , arg34  , arg35  , arg36  , arg37  , arg38  , arg39  , arg40  , arg41  ,
@@ -17292,7 +17292,7 @@ T_O* arg110 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg111 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg112 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg113 = ENSURE_VALID_OBJECT(args->next_arg_raw());
-return func->entry(func.raw_()
+return func->entry.load()(func.raw_()
 , 114 , arg0 , arg1 , arg2 , arg3     , arg4  , arg5  , arg6  , arg7  , arg8  , arg9  , arg10  , arg11  , arg12  , arg13  ,
     arg14  , arg15  , arg16  , arg17  , arg18  , arg19  , arg20  , arg21  , arg22  , arg23  , arg24  , arg25  , arg26  , arg27  ,
     arg28  , arg29  , arg30  , arg31  , arg32  , arg33  , arg34  , arg35  , arg36  , arg37  , arg38  , arg39  , arg40  , arg41  ,
@@ -17419,7 +17419,7 @@ T_O* arg111 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg112 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg113 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg114 = ENSURE_VALID_OBJECT(args->next_arg_raw());
-return func->entry(func.raw_()
+return func->entry.load()(func.raw_()
 , 115 , arg0 , arg1 , arg2 , arg3     , arg4  , arg5  , arg6  , arg7  , arg8  , arg9  , arg10  , arg11  , arg12  , arg13  ,
     arg14  , arg15  , arg16  , arg17  , arg18  , arg19  , arg20  , arg21  , arg22  , arg23  , arg24  , arg25  , arg26  , arg27  ,
     arg28  , arg29  , arg30  , arg31  , arg32  , arg33  , arg34  , arg35  , arg36  , arg37  , arg38  , arg39  , arg40  , arg41  ,
@@ -17547,7 +17547,7 @@ T_O* arg112 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg113 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg114 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg115 = ENSURE_VALID_OBJECT(args->next_arg_raw());
-return func->entry(func.raw_()
+return func->entry.load()(func.raw_()
 , 116 , arg0 , arg1 , arg2 , arg3     , arg4  , arg5  , arg6  , arg7  , arg8  , arg9  , arg10  , arg11  , arg12  , arg13  ,
     arg14  , arg15  , arg16  , arg17  , arg18  , arg19  , arg20  , arg21  , arg22  , arg23  , arg24  , arg25  , arg26  , arg27  ,
     arg28  , arg29  , arg30  , arg31  , arg32  , arg33  , arg34  , arg35  , arg36  , arg37  , arg38  , arg39  , arg40  , arg41  ,
@@ -17676,7 +17676,7 @@ T_O* arg113 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg114 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg115 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg116 = ENSURE_VALID_OBJECT(args->next_arg_raw());
-return func->entry(func.raw_()
+return func->entry.load()(func.raw_()
 , 117 , arg0 , arg1 , arg2 , arg3     , arg4  , arg5  , arg6  , arg7  , arg8  , arg9  , arg10  , arg11  , arg12  , arg13  ,
     arg14  , arg15  , arg16  , arg17  , arg18  , arg19  , arg20  , arg21  , arg22  , arg23  , arg24  , arg25  , arg26  , arg27  ,
     arg28  , arg29  , arg30  , arg31  , arg32  , arg33  , arg34  , arg35  , arg36  , arg37  , arg38  , arg39  , arg40  , arg41  ,
@@ -17806,7 +17806,7 @@ T_O* arg114 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg115 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg116 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg117 = ENSURE_VALID_OBJECT(args->next_arg_raw());
-return func->entry(func.raw_()
+return func->entry.load()(func.raw_()
 , 118 , arg0 , arg1 , arg2 , arg3     , arg4  , arg5  , arg6  , arg7  , arg8  , arg9  , arg10  , arg11  , arg12  , arg13  ,
     arg14  , arg15  , arg16  , arg17  , arg18  , arg19  , arg20  , arg21  , arg22  , arg23  , arg24  , arg25  , arg26  , arg27  ,
     arg28  , arg29  , arg30  , arg31  , arg32  , arg33  , arg34  , arg35  , arg36  , arg37  , arg38  , arg39  , arg40  , arg41  ,
@@ -17937,7 +17937,7 @@ T_O* arg115 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg116 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg117 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg118 = ENSURE_VALID_OBJECT(args->next_arg_raw());
-return func->entry(func.raw_()
+return func->entry.load()(func.raw_()
 , 119 , arg0 , arg1 , arg2 , arg3     , arg4  , arg5  , arg6  , arg7  , arg8  , arg9  , arg10  , arg11  , arg12  , arg13  ,
     arg14  , arg15  , arg16  , arg17  , arg18  , arg19  , arg20  , arg21  , arg22  , arg23  , arg24  , arg25  , arg26  , arg27  ,
     arg28  , arg29  , arg30  , arg31  , arg32  , arg33  , arg34  , arg35  , arg36  , arg37  , arg38  , arg39  , arg40  , arg41  ,
@@ -18069,7 +18069,7 @@ T_O* arg116 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg117 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg118 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg119 = ENSURE_VALID_OBJECT(args->next_arg_raw());
-return func->entry(func.raw_()
+return func->entry.load()(func.raw_()
 , 120 , arg0 , arg1 , arg2 , arg3     , arg4  , arg5  , arg6  , arg7  , arg8  , arg9  , arg10  , arg11  , arg12  , arg13  ,
     arg14  , arg15  , arg16  , arg17  , arg18  , arg19  , arg20  , arg21  , arg22  , arg23  , arg24  , arg25  , arg26  , arg27  ,
     arg28  , arg29  , arg30  , arg31  , arg32  , arg33  , arg34  , arg35  , arg36  , arg37  , arg38  , arg39  , arg40  , arg41  ,
@@ -18202,7 +18202,7 @@ T_O* arg117 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg118 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg119 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg120 = ENSURE_VALID_OBJECT(args->next_arg_raw());
-return func->entry(func.raw_()
+return func->entry.load()(func.raw_()
 , 121 , arg0 , arg1 , arg2 , arg3     , arg4  , arg5  , arg6  , arg7  , arg8  , arg9  , arg10  , arg11  , arg12  , arg13  ,
     arg14  , arg15  , arg16  , arg17  , arg18  , arg19  , arg20  , arg21  , arg22  , arg23  , arg24  , arg25  , arg26  , arg27  ,
     arg28  , arg29  , arg30  , arg31  , arg32  , arg33  , arg34  , arg35  , arg36  , arg37  , arg38  , arg39  , arg40  , arg41  ,
@@ -18336,7 +18336,7 @@ T_O* arg118 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg119 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg120 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg121 = ENSURE_VALID_OBJECT(args->next_arg_raw());
-return func->entry(func.raw_()
+return func->entry.load()(func.raw_()
 , 122 , arg0 , arg1 , arg2 , arg3     , arg4  , arg5  , arg6  , arg7  , arg8  , arg9  , arg10  , arg11  , arg12  , arg13  ,
     arg14  , arg15  , arg16  , arg17  , arg18  , arg19  , arg20  , arg21  , arg22  , arg23  , arg24  , arg25  , arg26  , arg27  ,
     arg28  , arg29  , arg30  , arg31  , arg32  , arg33  , arg34  , arg35  , arg36  , arg37  , arg38  , arg39  , arg40  , arg41  ,
@@ -18471,7 +18471,7 @@ T_O* arg119 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg120 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg121 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg122 = ENSURE_VALID_OBJECT(args->next_arg_raw());
-return func->entry(func.raw_()
+return func->entry.load()(func.raw_()
 , 123 , arg0 , arg1 , arg2 , arg3     , arg4  , arg5  , arg6  , arg7  , arg8  , arg9  , arg10  , arg11  , arg12  , arg13  ,
     arg14  , arg15  , arg16  , arg17  , arg18  , arg19  , arg20  , arg21  , arg22  , arg23  , arg24  , arg25  , arg26  , arg27  ,
     arg28  , arg29  , arg30  , arg31  , arg32  , arg33  , arg34  , arg35  , arg36  , arg37  , arg38  , arg39  , arg40  , arg41  ,
@@ -18607,7 +18607,7 @@ T_O* arg120 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg121 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg122 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg123 = ENSURE_VALID_OBJECT(args->next_arg_raw());
-return func->entry(func.raw_()
+return func->entry.load()(func.raw_()
 , 124 , arg0 , arg1 , arg2 , arg3     , arg4  , arg5  , arg6  , arg7  , arg8  , arg9  , arg10  , arg11  , arg12  , arg13  ,
     arg14  , arg15  , arg16  , arg17  , arg18  , arg19  , arg20  , arg21  , arg22  , arg23  , arg24  , arg25  , arg26  , arg27  ,
     arg28  , arg29  , arg30  , arg31  , arg32  , arg33  , arg34  , arg35  , arg36  , arg37  , arg38  , arg39  , arg40  , arg41  ,
@@ -18745,7 +18745,7 @@ T_O* arg121 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg122 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg123 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg124 = ENSURE_VALID_OBJECT(args->next_arg_raw());
-return func->entry(func.raw_()
+return func->entry.load()(func.raw_()
 , 125 , arg0 , arg1 , arg2 , arg3     , arg4  , arg5  , arg6  , arg7  , arg8  , arg9  , arg10  , arg11  , arg12  , arg13  ,
     arg14  , arg15  , arg16  , arg17  , arg18  , arg19  , arg20  , arg21  , arg22  , arg23  , arg24  , arg25  , arg26  , arg27  ,
     arg28  , arg29  , arg30  , arg31  , arg32  , arg33  , arg34  , arg35  , arg36  , arg37  , arg38  , arg39  , arg40  , arg41  ,
@@ -18884,7 +18884,7 @@ T_O* arg122 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg123 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg124 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg125 = ENSURE_VALID_OBJECT(args->next_arg_raw());
-return func->entry(func.raw_()
+return func->entry.load()(func.raw_()
 , 126 , arg0 , arg1 , arg2 , arg3     , arg4  , arg5  , arg6  , arg7  , arg8  , arg9  , arg10  , arg11  , arg12  , arg13  ,
     arg14  , arg15  , arg16  , arg17  , arg18  , arg19  , arg20  , arg21  , arg22  , arg23  , arg24  , arg25  , arg26  , arg27  ,
     arg28  , arg29  , arg30  , arg31  , arg32  , arg33  , arg34  , arg35  , arg36  , arg37  , arg38  , arg39  , arg40  , arg41  ,
@@ -19024,7 +19024,7 @@ T_O* arg123 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg124 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg125 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg126 = ENSURE_VALID_OBJECT(args->next_arg_raw());
-return func->entry(func.raw_()
+return func->entry.load()(func.raw_()
 , 127 , arg0 , arg1 , arg2 , arg3     , arg4  , arg5  , arg6  , arg7  , arg8  , arg9  , arg10  , arg11  , arg12  , arg13  ,
     arg14  , arg15  , arg16  , arg17  , arg18  , arg19  , arg20  , arg21  , arg22  , arg23  , arg24  , arg25  , arg26  , arg27  ,
     arg28  , arg29  , arg30  , arg31  , arg32  , arg33  , arg34  , arg35  , arg36  , arg37  , arg38  , arg39  , arg40  , arg41  ,
@@ -19165,7 +19165,7 @@ T_O* arg124 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg125 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg126 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg127 = ENSURE_VALID_OBJECT(args->next_arg_raw());
-return func->entry(func.raw_()
+return func->entry.load()(func.raw_()
 , 128 , arg0 , arg1 , arg2 , arg3     , arg4  , arg5  , arg6  , arg7  , arg8  , arg9  , arg10  , arg11  , arg12  , arg13  ,
     arg14  , arg15  , arg16  , arg17  , arg18  , arg19  , arg20  , arg21  , arg22  , arg23  , arg24  , arg25  , arg26  , arg27  ,
     arg28  , arg29  , arg30  , arg31  , arg32  , arg33  , arg34  , arg35  , arg36  , arg37  , arg38  , arg39  , arg40  , arg41  ,
@@ -19307,7 +19307,7 @@ T_O* arg125 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg126 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg127 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg128 = ENSURE_VALID_OBJECT(args->next_arg_raw());
-return func->entry(func.raw_()
+return func->entry.load()(func.raw_()
 , 129 , arg0 , arg1 , arg2 , arg3     , arg4  , arg5  , arg6  , arg7  , arg8  , arg9  , arg10  , arg11  , arg12  , arg13  ,
     arg14  , arg15  , arg16  , arg17  , arg18  , arg19  , arg20  , arg21  , arg22  , arg23  , arg24  , arg25  , arg26  , arg27  ,
     arg28  , arg29  , arg30  , arg31  , arg32  , arg33  , arg34  , arg35  , arg36  , arg37  , arg38  , arg39  , arg40  , arg41  ,
@@ -19450,7 +19450,7 @@ T_O* arg126 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg127 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg128 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg129 = ENSURE_VALID_OBJECT(args->next_arg_raw());
-return func->entry(func.raw_()
+return func->entry.load()(func.raw_()
 , 130 , arg0 , arg1 , arg2 , arg3     , arg4  , arg5  , arg6  , arg7  , arg8  , arg9  , arg10  , arg11  , arg12  , arg13  ,
     arg14  , arg15  , arg16  , arg17  , arg18  , arg19  , arg20  , arg21  , arg22  , arg23  , arg24  , arg25  , arg26  , arg27  ,
     arg28  , arg29  , arg30  , arg31  , arg32  , arg33  , arg34  , arg35  , arg36  , arg37  , arg38  , arg39  , arg40  , arg41  ,
@@ -19594,7 +19594,7 @@ T_O* arg127 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg128 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg129 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg130 = ENSURE_VALID_OBJECT(args->next_arg_raw());
-return func->entry(func.raw_()
+return func->entry.load()(func.raw_()
 , 131 , arg0 , arg1 , arg2 , arg3     , arg4  , arg5  , arg6  , arg7  , arg8  , arg9  , arg10  , arg11  , arg12  , arg13  ,
     arg14  , arg15  , arg16  , arg17  , arg18  , arg19  , arg20  , arg21  , arg22  , arg23  , arg24  , arg25  , arg26  , arg27  ,
     arg28  , arg29  , arg30  , arg31  , arg32  , arg33  , arg34  , arg35  , arg36  , arg37  , arg38  , arg39  , arg40  , arg41  ,
@@ -19739,7 +19739,7 @@ T_O* arg128 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg129 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg130 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg131 = ENSURE_VALID_OBJECT(args->next_arg_raw());
-return func->entry(func.raw_()
+return func->entry.load()(func.raw_()
 , 132 , arg0 , arg1 , arg2 , arg3     , arg4  , arg5  , arg6  , arg7  , arg8  , arg9  , arg10  , arg11  , arg12  , arg13  ,
     arg14  , arg15  , arg16  , arg17  , arg18  , arg19  , arg20  , arg21  , arg22  , arg23  , arg24  , arg25  , arg26  , arg27  ,
     arg28  , arg29  , arg30  , arg31  , arg32  , arg33  , arg34  , arg35  , arg36  , arg37  , arg38  , arg39  , arg40  , arg41  ,
@@ -19885,7 +19885,7 @@ T_O* arg129 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg130 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg131 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg132 = ENSURE_VALID_OBJECT(args->next_arg_raw());
-return func->entry(func.raw_()
+return func->entry.load()(func.raw_()
 , 133 , arg0 , arg1 , arg2 , arg3     , arg4  , arg5  , arg6  , arg7  , arg8  , arg9  , arg10  , arg11  , arg12  , arg13  ,
     arg14  , arg15  , arg16  , arg17  , arg18  , arg19  , arg20  , arg21  , arg22  , arg23  , arg24  , arg25  , arg26  , arg27  ,
     arg28  , arg29  , arg30  , arg31  , arg32  , arg33  , arg34  , arg35  , arg36  , arg37  , arg38  , arg39  , arg40  , arg41  ,
@@ -20032,7 +20032,7 @@ T_O* arg130 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg131 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg132 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg133 = ENSURE_VALID_OBJECT(args->next_arg_raw());
-return func->entry(func.raw_()
+return func->entry.load()(func.raw_()
 , 134 , arg0 , arg1 , arg2 , arg3     , arg4  , arg5  , arg6  , arg7  , arg8  , arg9  , arg10  , arg11  , arg12  , arg13  ,
     arg14  , arg15  , arg16  , arg17  , arg18  , arg19  , arg20  , arg21  , arg22  , arg23  , arg24  , arg25  , arg26  , arg27  ,
     arg28  , arg29  , arg30  , arg31  , arg32  , arg33  , arg34  , arg35  , arg36  , arg37  , arg38  , arg39  , arg40  , arg41  ,
@@ -20180,7 +20180,7 @@ T_O* arg131 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg132 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg133 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg134 = ENSURE_VALID_OBJECT(args->next_arg_raw());
-return func->entry(func.raw_()
+return func->entry.load()(func.raw_()
 , 135 , arg0 , arg1 , arg2 , arg3     , arg4  , arg5  , arg6  , arg7  , arg8  , arg9  , arg10  , arg11  , arg12  , arg13  ,
     arg14  , arg15  , arg16  , arg17  , arg18  , arg19  , arg20  , arg21  , arg22  , arg23  , arg24  , arg25  , arg26  , arg27  ,
     arg28  , arg29  , arg30  , arg31  , arg32  , arg33  , arg34  , arg35  , arg36  , arg37  , arg38  , arg39  , arg40  , arg41  ,
@@ -20329,7 +20329,7 @@ T_O* arg132 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg133 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg134 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg135 = ENSURE_VALID_OBJECT(args->next_arg_raw());
-return func->entry(func.raw_()
+return func->entry.load()(func.raw_()
 , 136 , arg0 , arg1 , arg2 , arg3     , arg4  , arg5  , arg6  , arg7  , arg8  , arg9  , arg10  , arg11  , arg12  , arg13  ,
     arg14  , arg15  , arg16  , arg17  , arg18  , arg19  , arg20  , arg21  , arg22  , arg23  , arg24  , arg25  , arg26  , arg27  ,
     arg28  , arg29  , arg30  , arg31  , arg32  , arg33  , arg34  , arg35  , arg36  , arg37  , arg38  , arg39  , arg40  , arg41  ,
@@ -20480,7 +20480,7 @@ T_O* arg133 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg134 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg135 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg136 = ENSURE_VALID_OBJECT(args->next_arg_raw());
-return func->entry(func.raw_()
+return func->entry.load()(func.raw_()
 , 137 , arg0 , arg1 , arg2 , arg3     , arg4  , arg5  , arg6  , arg7  , arg8  , arg9  , arg10  , arg11  , arg12  , arg13  ,
     arg14  , arg15  , arg16  , arg17  , arg18  , arg19  , arg20  , arg21  , arg22  , arg23  , arg24  , arg25  , arg26  , arg27  ,
     arg28  , arg29  , arg30  , arg31  , arg32  , arg33  , arg34  , arg35  , arg36  , arg37  , arg38  , arg39  , arg40  , arg41  ,
@@ -20632,7 +20632,7 @@ T_O* arg134 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg135 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg136 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg137 = ENSURE_VALID_OBJECT(args->next_arg_raw());
-return func->entry(func.raw_()
+return func->entry.load()(func.raw_()
 , 138 , arg0 , arg1 , arg2 , arg3     , arg4  , arg5  , arg6  , arg7  , arg8  , arg9  , arg10  , arg11  , arg12  , arg13  ,
     arg14  , arg15  , arg16  , arg17  , arg18  , arg19  , arg20  , arg21  , arg22  , arg23  , arg24  , arg25  , arg26  , arg27  ,
     arg28  , arg29  , arg30  , arg31  , arg32  , arg33  , arg34  , arg35  , arg36  , arg37  , arg38  , arg39  , arg40  , arg41  ,
@@ -20785,7 +20785,7 @@ T_O* arg135 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg136 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg137 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg138 = ENSURE_VALID_OBJECT(args->next_arg_raw());
-return func->entry(func.raw_()
+return func->entry.load()(func.raw_()
 , 139 , arg0 , arg1 , arg2 , arg3     , arg4  , arg5  , arg6  , arg7  , arg8  , arg9  , arg10  , arg11  , arg12  , arg13  ,
     arg14  , arg15  , arg16  , arg17  , arg18  , arg19  , arg20  , arg21  , arg22  , arg23  , arg24  , arg25  , arg26  , arg27  ,
     arg28  , arg29  , arg30  , arg31  , arg32  , arg33  , arg34  , arg35  , arg36  , arg37  , arg38  , arg39  , arg40  , arg41  ,
@@ -20939,7 +20939,7 @@ T_O* arg136 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg137 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg138 = ENSURE_VALID_OBJECT(args->next_arg_raw());
 T_O* arg139 = ENSURE_VALID_OBJECT(args->next_arg_raw());
-return func->entry(func.raw_()
+return func->entry.load()(func.raw_()
 , 140 , arg0 , arg1 , arg2 , arg3     , arg4  , arg5  , arg6  , arg7  , arg8  , arg9  , arg10  , arg11  , arg12  , arg13  ,
     arg14  , arg15  , arg16  , arg17  , arg18  , arg19  , arg20  , arg21  , arg22  , arg23  , arg24  , arg25  , arg26  , arg27  ,
     arg28  , arg29  , arg30  , arg31  , arg32  , arg33  , arg34  , arg35  , arg36  , arg37  , arg38  , arg39  , arg40  , arg41  ,

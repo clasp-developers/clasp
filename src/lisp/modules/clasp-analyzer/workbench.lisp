@@ -20,9 +20,11 @@
 (defvar *db* (clasp-analyzer:setup-clasp-analyzer-compilation-tool-database
               (pathname *compile-commands*)
               :selection-pattern "gc_interface.cc" ))
-(defvar *p* (serial-search/generate-code *db* :output-file #P"gc_interface_only.dat"))
+(defvar *p* (serial-search/generate-code *db* :output-file #P"/tmp/data.dat"))
 
-(load-project "gc_interface_only.dat")
+(defparameter *p1* (load-project "/tmp/data.dat"))
+
+
 
 
 

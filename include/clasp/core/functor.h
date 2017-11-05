@@ -92,7 +92,7 @@ namespace core {
   class Function_O : public General_O {
     LISP_ABSTRACT_CLASS(core,ClPkg,Function_O,"FUNCTION",General_O);
   public:
-    claspFunction    entry;
+    std::atomic<claspFunction>    entry;
 #ifdef DEBUG_FUNCTION_CALL_COUNTER
     size_t _TimesCalled;
 #endif

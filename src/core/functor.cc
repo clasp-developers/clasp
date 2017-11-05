@@ -65,7 +65,7 @@ CL_DEFUN size_t core__function_call_counter(Function_sp f)
 #endif
 
 CL_DEFMETHOD Pointer_sp Function_O::function_pointer() const {
-  return Pointer_O::create((void*)this->entry);
+  return Pointer_O::create((void*)this->entry.load());
 };
 string Function_O::__repr__() const {
   T_sp name = this->functionName();
@@ -78,7 +78,7 @@ string Function_O::__repr__() const {
   ss << " :ftype " << _rep_(this->getKind());
   ss << " lambda-list: " << _rep_(this->lambda_list());
   if ( this->entry != NULL ) {
-    ss << " :fptr " << reinterpret_cast<void*>(this->entry);
+    ss << " :fptr " << reinterpret_cast<void*>(this->entry.load());
   }
   
   ss << ">";

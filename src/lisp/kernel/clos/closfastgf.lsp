@@ -81,7 +81,6 @@
     (incf (debug-fastgf-struct-indent core:*debug-fastgf*) 2))
   (defun decf-debug-fastgf-indent ()
     (decf (debug-fastgf-struct-indent core:*debug-fastgf*) 2))
-  
   (defmacro bformat-noindent (fmt &rest args)
     `(progn
        (lazy-initialize-debug-fastgf)
@@ -91,21 +90,15 @@
        (lazy-initialize-debug-fastgf)
        (core:bformat (debug-fastgf-stream) (subseq *dmspaces* 0 (min (length *dmspaces*) (debug-fastgf-indent))))
        (core:bformat (debug-fastgf-stream) ,fmt ,@args)))
-  (defun history-entry (entry)
-    (mapcar (lambda (e)
-              (if (consp e)
-                  (list 'eql (car e))
-                  e))
-            (coerce entry 'list)))
   (defun graph-call-history (generic-function output)
     (cmp:generate-dot-file generic-function output))
   (defun log-cmpgf-filename (gfname suffix extension)
-    (pathname (core:bformat nil "%s/dispatch-%s%05d-%s-thread%s.%s"
+    (pathname (core:bformat nil "%s/dispatch-thread%s-%s%05d-%s.%s"
                             *dispatch-history-dir*
+                            (pointer-as-string (mp:thread-id mp:*current-process*))
                             suffix
                             (debug-fastgf-didx)
                             (core:bformat nil "%s" gfname)
-                            (pointer-as-string (mp:thread-id mp:*current-process*))
                             extension)))
   (defmacro gf-log-dispatch-graph (gf)
     `(graph-call-history ,gf (log-cmpgf-filename (clos::generic-function-name gf) "graph" "dot")))
@@ -121,6 +114,26 @@
        (let ((x 0))
          (mapc (lambda (root)
                  (bformat-indent "  root[%d]: %s\n" (prog1 x (incf x)) root))))))
+  (defun pretty-selector-as-string (selector)
+    (cond
+      ((consp selector)
+       (core:bformat nil "(EQL %s)" (car selector))) ; for EQL specializer
+      ((null selector)
+       (core:bformat nil "NULL/(not-specialized?)"))
+      ((classp selector)               ; A class
+       (core:bformat nil "[class %s/%d]" (class-name selector) (core:class-stamp-for-instances selector)))
+      (t                                ; This shouldn't happen
+       (core:bformat nil "!!!!!ILLEGAL-SELECTOR-IN-CALL-HISTORY-ENTRY-KEY!!!!!"))))
+  (defmacro gf-print-entry (index entry)
+    (let ((selector (gensym))
+          (key (gensym)))
+      `(progn
+         (bformat-indent "        entry#%3d: (" (prog1 ,index (incf ,index)))
+         (let ((,key (car ,entry)))
+           ;;(bformat-indent "          ----> %s\n" history-entry)
+           (dolist (,selector (coerce ,key 'list))
+             (bformat-noindent " %s" (pretty-selector-as-string ,selector)))
+           (bformat-noindent ")\n")))))
   (defmacro gf-log-dispatch-miss (msg gf va-args)
     `(progn
        (incf-debug-fastgf-didx)
@@ -130,38 +143,20 @@
        (let* ((args-as-list (core:list-from-va-list ,va-args))
               (call-history (clos::generic-function-call-history ,gf))
               (specializer-profile (clos::generic-function-specializer-profile ,gf)))
-         (bformat-indent "    args (num args -> %d):  " (length args-as-list))
-         (dolist (arg args-as-list)
-           (bformat-noindent "%s[%s/%d] " arg (class-of arg) (core:instance-stamp arg)))
-         (bformat-indent "\n")
+         (bformat-indent "    args (num args -> %d):  \n" (length args-as-list))
+         (let ((arg-index -1))
+           (dolist (arg args-as-list)
+             (bformat-indent "argument# %d: %s[%s/%d] \n" (incf arg-index) arg (class-of arg) (core:instance-stamp arg))))
          (let ((index 0))
-           (bformat-indent "    raw call-history (length -> %d):\n" (length call-history))
+           (bformat-indent " raw call-history (length -> %d):\n" (length call-history))
            (dolist (entry call-history)
-             #+(or)(bformat-indent "    entry #%3d: %s\n" (prog1 index (incf index)) entry))
-           (dolist (entry call-history)
-             (bformat-indent "        entry#%3d: (" (prog1 index (incf index)))
-             (dolist (c (history-entry (car entry)))
-               (if (consp c)
-                   (bformat-noindent "%s " c)
-                   (bformat-noindent "[%s/%d] " (class-name c) (core:class-stamp-for-instances c))))
-             (bformat-noindent ") -> %s\n" (core:object-address (cdr entry)))))
+             (gf-print-entry index entry)))
          (let ((optimized-call-history (cmp::optimized-call-history generic-function))
                (index 0))
            (bformat-indent "    optimized call-history (length -> %d):\n" (length optimized-call-history))
            (dolist (entry optimized-call-history)
-             (bformat-indent "        entry#%3d: (" (prog1 index (incf index)))
-             (let ((history-entry (history-entry (car entry))))
-               ;;(bformat-indent "          ----> %s\n" history-entry)
-               (dolist (c history-entry)
-                 ;;(bformat-indent "    c -> %s   (type-of c) -> %s (consp c) -> %s\n" c (type-of c) (consp c))
-                 (cond
-                   ((consp c) (bformat-noindent "%s " c))
-                   ((null c) (bformat-noindent "NIL "))
-                   (t (bformat-noindent "[%s/%d] " (class-name c) (core:class-stamp-for-instances c))))))
-             (bformat-noindent ")\n")))
-         (finish-output (debug-fastgf-stream))
-         #++(when (string= (subseq args 0 2) "''")
-              (break "Check backtrace")))))
+             (gf-print-entry index entry))))
+       (finish-output (debug-fastgf-stream))))
   (defmacro gf-log (fmt &rest fmt-args) `(bformat-indent ,fmt ,@fmt-args))
   (defmacro gf-log-noindent (fmt &rest fmt-args) `(bformat-noindent ,fmt ,@fmt-args))
   (defmacro gf-do (&body code) `(progn ,@code)))
@@ -316,26 +311,6 @@
                                                    (class-of (car s))
                                                    s))
                                    specializers)))
-
-(defmacro with-generic-function-write-lock ((generic-function &optional (where "")) &body body)
-  `(unwind-protect
-        (progn
-          (gf-log "with-generic-function-write-lock lock %s | %s\n" ,generic-function ,where)
-          (mp:write-lock (generic-function-lock ,generic-function))
-          ,@body)
-     (progn
-       (gf-log "with-generic-function-write-lock unlock %s | %s\n" ,generic-function ,where)
-       (mp:write-unlock (generic-function-lock ,generic-function)))))
-
-(defmacro with-generic-function-shared-lock ((generic-function &optional (where "")) &body body)
-  `(unwind-protect
-        (progn
-          (gf-log "with-generic-function-shared-lock lock %s | %s\n" ,generic-function ,where)
-          (mp:shared-lock (generic-function-lock ,generic-function))
-          ,@body)
-     (progn
-       (gf-log "with-generic-function-shared-lock unlock %s | %s\n" ,generic-function ,where)
-       (mp:shared-unlock (generic-function-lock ,generic-function)))))
 
 (defun effective-slot-from-accessor-method (method class &key log instance)
   (let* ((direct-slot (accessor-method-slot-definition method))
@@ -610,6 +585,9 @@ It takes the arguments in two forms, as a vaslist and as a list of arguments."
                               #+debug-fastgf :log-gf
                               #+debug-fastgf (debug-fastgf-stream)) ;; the stream better be initialized
       'invalidated-dispatch-function))
+
+(defun not-funcallable-dispatch-function (generic-function valist-args)
+  (error "The funcallable-instance ~s is not funcallable" generic-function))
 
 (defun invalidated-dispatch-function (generic-function valist-args)
   ;;; If there is a call history then compile a dispatch function

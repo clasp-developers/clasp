@@ -48,6 +48,16 @@
              (evalcompile form environment)))
         (t form)))))
 
+;;; FIXME: move this probably
+;;; Define in the compiler environment.
+;;; has the compile-time side effect of defun, i.e., makes the compiler know it exists
+;;; so that references to it pass silently
+(defun declare-function (name lambda-list environment)
+  ;; if it has a type, it's "known" already, so skip.
+  (unless (sicl-genv:function-type name environment)
+    (setf (sicl-genv:function-type name environment)
+          `(function ,(cleavir-code-utilities:lambda-list-type-specifier lambda-list) *))))
+
 (defun repl-print (values &optional (stream *terminal-io*))
   (fresh-line stream)
   (dolist (v values)

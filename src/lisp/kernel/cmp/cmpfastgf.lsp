@@ -92,8 +92,6 @@
 ;;; Convert a generic function call-history to an internal representation
 ;;;   called a DTREE (dispatch-tree) made up of the structs below.
 
-(defvar *accumulated-values* nil
-  "Accumulate values that the dispatch function needs")
 (defvar *outcomes* nil
   "Map effective methods and symbols to basic-blocks")
 (defvar *gf-data-id* nil)
@@ -543,12 +541,6 @@
     (codegen-remaining-eql-tests arguments cur-arg eql-tests on-to-class-specializers)
     (irc-begin-block on-to-class-specializers)))
 
-#++(defun gather-outcomes (outcome)
-  (let ((tag (intern (core:bformat nil "T%s" (hash-table-count *map-tag-outcomes*)))))
-    (setf (gethash tag *map-tag-outcomes*) outcome)
-    tag))
-
-
 (defun codegen-slot-reader (arguments cur-arg outcome)
   (cf-log "entered codegen-slot-reader\n")
 ;;; If the (cdr outcome) is a fixnum then we can generate code to read the slot
@@ -637,8 +629,8 @@
   ;;    the slot index will be in gf-data-id
   (let* ((outcome (outcome-outcome node))
          (existing-effective-method-block (gethash outcome *outcomes*)))
-    (when *log-gf*
-      (core:bformat *log-gf* "About to codegen-outcome -> %s\n" outcome))
+    #+(or)(when *log-gf*
+            (core:bformat *log-gf* "About to codegen-outcome -> %s\n" outcome))
     (if existing-effective-method-block
 	(irc-br existing-effective-method-block)
         (cond
@@ -736,35 +728,12 @@
 ;;;
 ;;; Debugging a generic function dispatcher
 ;;;
-(defvar *disp-fn-name*)
-(defvar *startup-fn-name*)
-(defvar *shutdown-fn-name*)
-(defvar *sorted-roots*)
-(defvar *generic-function*)
-
-
 (defun debug-save-dispatcher (gf module disp-fn startup-fn shutdown-fn sorted-roots &optional (output-path #P"/tmp/dispatcher.ll"))
   "Save everything about the generic function so that it can be saved to a file and then edited and re-installed"
-  (setq *disp-fn-name* (llvm-sys:get-name disp-fn)
-        *startup-fn-name* (llvm-sys:get-name startup-fn)
-        *shutdown-fn-name* (llvm-sys:get-name shutdown-fn)
-        *sorted-roots* sorted-roots
-        *generic-function* gf)
   ;;  (cmp::gf-log-sorted-roots sorted-roots)
   (let ((fout (open output-path :direction :output)))
     (unwind-protect (llvm-sys:dump-module module fout)
       (close fout))))
-#||
-(defun debug-load-dispatcher (function-name)
-  (let* ((module (llvm-sys:parse-irfile #P"/tmp/dispatcher.ll" cmp:*llvm-context*))
-         (disp-fn (llvm-sys:get-function module *disp-fn-name*))
-         (startup-fn (llvm-sys:get-function module *startup-fn-name*))
-         (shutdown-fn (llvm-sys:get-function module *shutdown-fn-name*))
-         (compiled-dispatcher (jit-add-module-return-dispatch-function
-                               module
-                               disp-fn startup-fn shutdown-fn *sorted-roots*)))
-    (clos::safe-set-funcallable-instance-function *generic-function* compiled-dispatcher)))
-||#
 
 (defun gather-sorted-outcomes (eql-selectors outcomes)
   (labels ((extract-outcome (outcome)
@@ -901,7 +870,23 @@
 
 ;;; Keeps track of the number of dispatchers that were compiled and
 ;;;   is used to give the roots array in each dispatcher a unique name.
-(defparameter *dispatcher-count* 0)
+#+threads(defvar *dispatcher-count-lock* (mp:make-lock :name '*dispatcher-count-lock* ))
+(defvar *dispatcher-count* 0)
+(defun increment-dispatcher-count ()
+  #-threads(incf *dispatcher-count*)
+  #+threads(unwind-protect
+       (progn
+         (mp:lock *dispatcher-count-lock* t)
+         (incf *dispatcher-count*))
+    (mp:unlock *dispatcher-count-lock*)))
+(defun dispatcher-count ()
+  #-threads *dispatcher-count*
+  #+threads(unwind-protect
+                (progn
+                  (mp:lock *dispatcher-count-lock* t)
+                  *dispatcher-count*)
+             (mp:unlock *dispatcher-count-lock*)))
+
 (defun codegen-dispatcher (generic-function &key generic-function-name output-path log-gf (debug-on t debug-on-p))
   (let* ((*log-gf* log-gf)
          (raw-call-history (clos:generic-function-call-history generic-function))
@@ -1025,7 +1010,7 @@
                                                                      nil ; isConstant
                                                                      'llvm-sys:internal-linkage
                                                                      (llvm-sys:undef-value-get array-type)
-                                                                     (bformat nil "CONSTANTS-%d" (incf *dispatcher-count*))))
+                                                                     (bformat nil "CONSTANTS-%d" (increment-dispatcher-count))))
                  (bitcast-correct-size-holder (irc-bit-cast correct-size-holder %t*[DUMMY]*% "bitcast-table")))
             (multiple-value-bind (startup-fn shutdown-fn)
                 (codegen-startup-shutdown *gcroots-in-module* correct-size-holder *gf-data-id*)
