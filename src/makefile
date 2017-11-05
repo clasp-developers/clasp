@@ -36,13 +36,13 @@ mps-submodule:
 
 
 pump:
-	$(PYTHON2) $(CLASP_HOME)/src/common/pump.py core/applyToFrame.pmp core/include/generated/applyToFrame.h
-	$(PYTHON2) $(CLASP_HOME)/src/common/pump.py core/wrappers_functoids.pmp core/include/generated/wrappers_functoids.h
-	$(PYTHON2) $(CLASP_HOME)/src/common/pump.py core/wrappers_methoids.pmp core/include/generated/wrappers_methoids.h
-	$(PYTHON2) $(CLASP_HOME)/src/common/pump.py core/external_wrappers_indirect_methoids.pmp core/include/generated/external_wrappers_indirect_methoids.h
-	$(PYTHON2) $(CLASP_HOME)/src/common/pump.py clbind/clbind_constructor_functoids.pmp clbind/include/generated/clbind_constructor_functoids.h
-	$(PYTHON2) $(CLASP_HOME)/src/common/pump.py clbind/clbind_functoids.pmp clbind/include/generated/clbind_functoids.h
-	$(PYTHON2) $(CLASP_HOME)/src/common/pump.py clbind/clbind_methoids.pmp clbind/include/generated/clbind_methoids.h
-	$(PYTHON2) $(CLASP_HOME)/src/common/pump.py clbind/clbind_static_members.pmp clbind/include/generated/clbind_static_members.h
-#	$(PYTHON2) $(CLASP_HOME)/src/common/pump.py core/applyArguments.pmp core/include/generated/applyArguments.h
+	$(PYTHON2) ./common/pump.py core/applyToFrame.pmp core/include/generated/applyToFrame.h
+	$(PYTHON2) ./common/pump.py core/wrappers_functoids.pmp core/include/generated/wrappers_functoids.h
+	$(PYTHON2) ./common/pump.py core/wrappers_methoids.pmp core/include/generated/wrappers_methoids.h
+	$(PYTHON2) ./common/pump.py core/external_wrappers_indirect_methoids.pmp core/include/generated/external_wrappers_indirect_methoids.h
+	$(PYTHON2) ./common/pump.py clbind/clbind_constructor_functoids.pmp clbind/include/generated/clbind_constructor_functoids.h
+	$(PYTHON2) ./common/pump.py clbind/clbind_functoids.pmp clbind/include/generated/clbind_functoids.h
+	$(PYTHON2) ./common/pump.py clbind/clbind_methoids.pmp clbind/include/generated/clbind_methoids.h
+	$(PYTHON2) ./common/pump.py clbind/clbind_static_members.pmp clbind/include/generated/clbind_static_members.h
+#	$(PYTHON2) ./common/pump.py core/applyArguments.pmp core/include/generated/applyArguments.h
 

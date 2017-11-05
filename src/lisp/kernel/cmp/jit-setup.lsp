@@ -591,51 +591,56 @@ The passed module is modified as a side-effect."
   (defvar *jit-repl-module-handles* nil)
   (defvar *jit-fastgf-module-handles* nil)
   (defvar *jit-dump-module-before-optimizations* nil)
+  (eval-when (:execute :load-toplevel)
+    (setq *fastgf-dump-module* (member :fastgf-dump-module *features*)))
   )
 (progn
-  (defun jit-add-module-return-function (original-module repl-fn startup-fn shutdown-fn literals-list)
+  (defun jit-add-module-return-function (original-module main-fn startup-fn shutdown-fn literals-list &optional dispatcher )
     ;; Link the builtins into the module and optimize them
-    (quick-module-dump original-module "before-link-builtins")
-    (jit-link-builtins-module original-module)
-    (if *jit-dump-module-before-optimizations*
-        (llvm-sys:dump-module original-module))
-    #+(or)(optimize-module-for-compile original-module)
-    (quick-module-dump original-module "module-before-optimize")
+    (if (null dispatcher)
+        (progn
+          (quick-module-dump original-module "before-link-builtins")
+          (jit-link-builtins-module original-module)
+          (quick-module-dump original-module "module-before-optimize"))
+        (progn
+          (jit-link-fastgf-module original-module)
+          (when *fastgf-dump-module*
+            (core:bformat t "literals-list -> %s\n" literals-list)
+            (llvm-sys:dump-module module))))
     (let ((module original-module))
       ;;#+threads(mp:get-lock *jit-engine-mutex*)
       ;;    (bformat t "In jit-add-module-return-function dumping module\n")
       ;;    (llvm-sys:print-module-to-stream module *standard-output*)
-      (let* ((repl-name (llvm-sys:get-name repl-fn))
-             (startup-name (llvm-sys:get-name startup-fn))
-             (shutdown-name (llvm-sys:get-name shutdown-fn))
-             (handle (llvm-sys:clasp-jit-add-module *jit-engine* module)))
+      (let ((repl-name (llvm-sys:get-name main-fn))
+            (startup-name (llvm-sys:get-name startup-fn))
+            (shutdown-name (llvm-sys:get-name shutdown-fn)))
         (unwind-protect
              (progn
                (mp:lock *jit-lock* t)
-               (setq *jit-repl-module-handles* (cons handle *jit-repl-module-handles*))
-               (llvm-sys:jit-finalize-repl-function *jit-engine* handle repl-name startup-name shutdown-name literals-list repl-fn nil))
+               (let ((handle (llvm-sys:clasp-jit-add-module *jit-engine* module)))
+                 (setq *jit-repl-module-handles* (cons handle *jit-repl-module-handles*))
+                 (llvm-sys:jit-finalize-repl-function *jit-engine* handle repl-name startup-name shutdown-name literals-list)))
           (mp:unlock *jit-lock*)))))
 
-  (eval-when (:execute :load-toplevel)
-    (setq *fastgf-dump-module* (member :fastgf-dump-module *features*)))
-  
   (defun jit-add-module-return-dispatch-function (original-module dispatch-fn startup-fn shutdown-fn literals-list)
-    (jit-link-fastgf-module original-module)
-    (let ((module original-module))
-      (if *fastgf-dump-module*
-          (progn
+    (jit-add-module-return-function original-module dispatch-fn startup-fn shutdown-fn literals-list t))
+    
+  #+(or)(defun jit-add-module-return-dispatch-function (original-module dispatch-fn startup-fn shutdown-fn literals-list)
+          (jit-link-fastgf-module original-module)
+          (when *fastgf-dump-module*
             (core:bformat t "literals-list -> %s\n" literals-list)
-            (llvm-sys:dump-module module)))
-      (let* ((dispatch-name (llvm-sys:get-name dispatch-fn))
-             (startup-name (llvm-sys:get-name startup-fn))
-             (shutdown-name (llvm-sys:get-name shutdown-fn))
-             (handle (llvm-sys:clasp-jit-add-module *jit-engine* module)))
-        (unwind-protect
-             (progn
-               (mp:lock *jit-lock* t)
-               (setq *jit-fastgf-module-handles* (cons handle *jit-fastgf-module-handles*))
-               (llvm-sys:jit-finalize-dispatch-function *jit-engine* handle dispatch-name startup-name shutdown-name literals-list))
-          (mp:unlock *jit-lock*)))))
+            (llvm-sys:dump-module module))
+          (let ((module original-module))
+            (let* ((dispatch-name (llvm-sys:get-name dispatch-fn))
+                   (startup-name (llvm-sys:get-name startup-fn))
+                   (shutdown-name (llvm-sys:get-name shutdown-fn))
+                   (handle (llvm-sys:clasp-jit-add-module *jit-engine* module)))
+              (unwind-protect
+                   (progn
+                     (mp:lock *jit-lock* t)
+                     (setq *jit-fastgf-module-handles* (cons handle *jit-fastgf-module-handles*))
+                     (llvm-sys:jit-finalize-dispatch-function *jit-engine* handle dispatch-name startup-name shutdown-name literals-list))
+                (mp:unlock *jit-lock*)))))
       
   (defun jit-remove-module (handle)
     (unwind-protect

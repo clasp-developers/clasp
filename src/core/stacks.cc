@@ -81,7 +81,7 @@ void validate_InvocationHistoryStack(int pushPop, const InvocationHistoryFrame* 
 void error_InvocationHistoryStack(const InvocationHistoryFrame* frame, const InvocationHistoryFrame* stackTop) {
 //  printf("%s:%d  Error in closure @%p\n", __FILE__, __LINE__, (void*)tagged_closure);
   printf("\n%s:%d ------- the my_thread->_InvocationHistoryStackTop pointer @%p\n", __FILE__, __LINE__, my_thread->_InvocationHistoryStackTop );
-  printf("          does not match the current frame being popped @%p  closure@%p  func_ptr@%p\n", frame, frame->function().raw_(), gc::As<Function_sp>(frame->function())->entry );
+  printf("          does not match the current frame being popped @%p  closure@%p  func_ptr@%p\n", frame, frame->function().raw_(), gc::As<Function_sp>(frame->function())->entry.load() );
   if (my_thread->_InvocationHistoryStackTop < frame ) {
     printf("     It appears that a function did not clean up after itself\n");
     printf("     and at least one frame was left on the stack when it should have been popped\n");
@@ -307,7 +307,7 @@ void invocation_history_stack_dump(const InvocationHistoryFrame* frame, const ch
     T_sp tfn = cur->function();
     if (gc::IsA<Function_sp>(tfn)) {
       Function_sp fn = gc::As_unsafe<Function_sp>(tfn);
-      printf("    frame[%4lu] @%p (previous %p)  this->_args@%p this->_args->reg_save_area@%p closure@%p  fptr@%p: %s\n", count, cur, cur->_Previous, &cur->_args, cur->_args->reg_save_area, tfn.raw_(), (void*)fn->entry, _rep_(fn->functionName()).c_str());
+      printf("    frame[%4lu] @%p (previous %p)  this->_args@%p this->_args->reg_save_area@%p closure@%p  fptr@%p: %s\n", count, cur, cur->_Previous, &cur->_args, cur->_args->reg_save_area, tfn.raw_(), (void*)fn->entry.load(), _rep_(fn->functionName()).c_str());
     } else {
       printf("    frame[%4lu] @%p (previous %p)  this->_args@%p this->_args->reg_save_area@%p  BAD-CLOSURE-INFO closure@%p\n", count, cur, cur->_Previous, &cur->_args, cur->_args->reg_save_area, tfn.raw_() );
     }
