@@ -50,6 +50,7 @@
 (defvar *thread-local-builtins-module* nil)
 
 (defvar *thread-local-fastgf-module* nil)
+(defvar *thread-local-jit-engine* nil)
 
 ;;;(defvar *llvm-context* (llvm-sys:create-llvm-context))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -63,6 +64,7 @@
   (mp:push-default-special-binding 'cmp:*primitives* nil)
   (mp:push-default-special-binding 'cmp::*thread-local-builtins-module* nil)
   (mp:push-default-special-binding 'cmp::*thread-local-fastgf-module* nil)
+  (mp:push-default-special-binding 'cmp::*thread-local-jit-engine* nil)
   ;;;
   )
 
@@ -451,6 +453,12 @@ The passed module is modified as a side-effect."
     (llvm-sys:link-in-module linker fastgf-clone))
   module)
 
+(defun jit-engine ()
+  "Lazy initialize the *thread-local-jit-engine* and return it"
+  (if *thread-local-jit-engine*
+      *thread-local-jit-engine*
+      (setf *thread-local-jit-engine* (make-cxx-object 'llvm-sys:clasp-jit))))
+
 (defvar *optimizations-on* t)
 (defvar *optimization-level* :-O3)
 (defvar *size-level* 1)
@@ -560,6 +568,7 @@ The passed module is modified as a side-effect."
 ;;;
 
 ;;; jit-register-symbol is a call
+#+threads(defvar *jit-log-lock* (mp:make-lock :name 'jit-log-lock :recursive t))
 (defvar *jit-log-stream*)
 
 (defun jit-register-symbol (symbol-name-string symbol-info)
@@ -568,7 +577,7 @@ The passed module is modified as a side-effect."
   (if (member :jit-log-symbols *features*)
       (unwind-protect
            (progn
-             (mp:lock *jit-lock* t)
+             #+threads(mp:lock *jit-log-lock* t)
              (if (not (boundp '*jit-log-stream*))
                  (let ((filename (core:bformat nil "/tmp/clasp-symbols-%s" (core:getpid))))
                    (core:bformat *debug-io* "Writing jitted symbols to %s\n" filename)
@@ -580,21 +589,11 @@ The passed module is modified as a side-effect."
              (princ symbol-name-string *jit-log-stream*)
              (terpri *jit-log-stream*)
              (finish-output *jit-log-stream*))
-        (mp:unlock *jit-lock*))))
+        (progn
+          #+threads(mp:unlock *jit-log-lock*)))))
 
 (progn
-  (defvar *jit-engine* (make-cxx-object 'llvm-sys:clasp-jit))
-  #+threads(defvar *jit-lock* (mp:make-lock :name 'jit-engine-mutex :recursive t))
   (export '(jit-add-module-return-function jit-add-module-return-dispatch-function jit-remove-module))
-  (defparameter *fastgf-dump-module* nil)
-  (defvar *declare-dump-module* t)
-  (defvar *jit-repl-module-handles* nil)
-  (defvar *jit-fastgf-module-handles* nil)
-  (defvar *jit-dump-module-before-optimizations* nil)
-  (eval-when (:execute :load-toplevel)
-    (setq *fastgf-dump-module* (member :fastgf-dump-module *features*)))
-  )
-(progn
   (defun jit-add-module-return-function (original-module main-fn startup-fn shutdown-fn literals-list &optional dispatcher )
     ;; Link the builtins into the module and optimize them
     (if (null dispatcher)
@@ -603,52 +602,18 @@ The passed module is modified as a side-effect."
           (jit-link-builtins-module original-module)
           (quick-module-dump original-module "module-before-optimize"))
         (progn
-          (jit-link-fastgf-module original-module)
-          (when *fastgf-dump-module*
-            (core:bformat t "literals-list -> %s\n" literals-list)
-            (llvm-sys:dump-module module))))
+          (jit-link-fastgf-module original-module)))
     (let ((module original-module))
-      ;;#+threads(mp:get-lock *jit-engine-mutex*)
-      ;;    (bformat t "In jit-add-module-return-function dumping module\n")
-      ;;    (llvm-sys:print-module-to-stream module *standard-output*)
-      (let ((repl-name (llvm-sys:get-name main-fn))
+      (let ((jit-engine (jit-engine))
+            (repl-name (llvm-sys:get-name main-fn))
             (startup-name (llvm-sys:get-name startup-fn))
             (shutdown-name (llvm-sys:get-name shutdown-fn)))
-        (unwind-protect
-             (progn
-               (mp:lock *jit-lock* t)
-               (let ((handle (llvm-sys:clasp-jit-add-module *jit-engine* module)))
-                 (setq *jit-repl-module-handles* (cons handle *jit-repl-module-handles*))
-                 (llvm-sys:jit-finalize-repl-function *jit-engine* handle repl-name startup-name shutdown-name literals-list)))
-          (mp:unlock *jit-lock*)))))
+        (let ((handle (llvm-sys:clasp-jit-add-module jit-engine module)))
+          (llvm-sys:jit-finalize-repl-function jit-engine handle repl-name startup-name shutdown-name literals-list)))))
 
   (defun jit-add-module-return-dispatch-function (original-module dispatch-fn startup-fn shutdown-fn literals-list)
-    (jit-add-module-return-function original-module dispatch-fn startup-fn shutdown-fn literals-list t))
-    
-  #+(or)(defun jit-add-module-return-dispatch-function (original-module dispatch-fn startup-fn shutdown-fn literals-list)
-          (jit-link-fastgf-module original-module)
-          (when *fastgf-dump-module*
-            (core:bformat t "literals-list -> %s\n" literals-list)
-            (llvm-sys:dump-module module))
-          (let ((module original-module))
-            (let* ((dispatch-name (llvm-sys:get-name dispatch-fn))
-                   (startup-name (llvm-sys:get-name startup-fn))
-                   (shutdown-name (llvm-sys:get-name shutdown-fn))
-                   (handle (llvm-sys:clasp-jit-add-module *jit-engine* module)))
-              (unwind-protect
-                   (progn
-                     (mp:lock *jit-lock* t)
-                     (setq *jit-fastgf-module-handles* (cons handle *jit-fastgf-module-handles*))
-                     (llvm-sys:jit-finalize-dispatch-function *jit-engine* handle dispatch-name startup-name shutdown-name literals-list))
-                (mp:unlock *jit-lock*)))))
-      
+    (jit-add-module-return-function original-module dispatch-fn startup-fn shutdown-fn literals-list :dispatch))
+     
   (defun jit-remove-module (handle)
-    (unwind-protect
-         (progn
-           (mp:lock *jit-lock* t)
-           (llvm-sys:clasp-jit-remove-module *jit-engine* handle))
-      (mp:unlock *jit-lock*)))
-
-;;; Maybe add more jit engine code here
-  )
+    (llvm-sys:clasp-jit-remove-module (jit-engine) handle)))
 

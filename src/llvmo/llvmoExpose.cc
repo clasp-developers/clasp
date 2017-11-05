@@ -3696,7 +3696,8 @@ https://groups.google.com/forum/#!topic/llvm-dev/m3JjMNswgcU
                                            return optimizeModule(std::move(M));
                                          }
                                          ),
-                           GDBEventListener(JITEventListener::createGDBRegistrationListener())
+                           GDBEventListener(JITEventListener::createGDBRegistrationListener()),
+                           ModuleHandles(_Nil<core::T_O>())
 {
   llvm::sys::DynamicLibrary::LoadLibraryPermanently(nullptr);
 }
@@ -3798,6 +3799,7 @@ CL_DEFMETHOD ModuleHandle_sp ClaspJIT_O::addModule(Module_sp cM) {
   timer.stop();
   double thisTime = timer.getAccumulatedTime();
   accumulate_llvm_timing_data(thisTime);
+  this->ModuleHandles = core::Cons_O::create(mh,this->ModuleHandles);
   return mh;
 }
 
