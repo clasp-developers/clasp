@@ -245,13 +245,19 @@ void FuncallableInstance_O::LISP_INVOKE() {
 #endif
 }
 
-LCC_RETURN FuncallableInstance_O::LISP_CALLING_CONVENTION() {
+LCC_RETURN FuncallableInstance_O::invalidated_entry_point(LCC_ARGS_ELLIPSIS) {
   SETUP_CLOSURE(FuncallableInstance_O,closure);
   INCREMENT_FUNCTION_CALL_COUNTER(closure);
   INITIALIZE_VA_LIST();
-  return ((closure->_entryPoint).load())(closure->asSmartPtr().tagged_(), lcc_vargs.tagged_());
+  return core::eval::funcall(clos::_sym_invalidated_dispatch_function, closure->asSmartPtr(), lcc_vargs);
 }
 
+LCC_RETURN FuncallableInstance_O::not_funcallable_entry_point(LCC_ARGS_ELLIPSIS) {
+  SETUP_CLOSURE(FuncallableInstance_O,closure);
+  INCREMENT_FUNCTION_CALL_COUNTER(closure);
+  INITIALIZE_VA_LIST();
+  return core::eval::funcall(clos::_sym_not_funcallable_dispatch_function, closure->asSmartPtr(), lcc_vargs);
+}
 
 };
 
@@ -536,17 +542,14 @@ void FuncallableInstance_O::set_kind(Symbol_sp k) {
 }
 
 T_sp FuncallableInstance_O::copyInstance() const {
+  DEPRECATED();
   FuncallableInstance_sp iobj = gc::As<FuncallableInstance_sp>(allocate_instance(this->_Class,1));
   iobj->_Rack = this->_Rack;
   iobj->_Sig = this->_Sig;
-  iobj->_entryPoint.store(this->_entryPoint.load());
+//  iobj->_entryPoint.store(this->_entryPoint.load());
   iobj->_isgf = this->_isgf;
   return iobj;
 }
-
-void FuncallableInstance_O::ensureClosure(DispatchFunction_fptr_type entryPoint) {
-  this->_entryPoint = entryPoint;
-};
 
 T_sp FuncallableInstance_O::setFuncallableInstanceFunction(T_sp functionOrT) {
   SYMBOL_EXPORT_SC_(ClPkg, standardGenericFunction);
@@ -556,37 +559,20 @@ T_sp FuncallableInstance_O::setFuncallableInstanceFunction(T_sp functionOrT) {
   if (functionOrT == clos::_sym_invalidated_dispatch_function) {
     this->_isgf = CLASP_INVALIDATED_DISPATCH;
     // FIXME Jump straight to the invalidated-dispatch-function
-    this->entry = this->entry_point;
-    FuncallableInstance_O::ensureClosure(&invalidated_dispatch);
+    this->entry.store(this->invalidated_entry_point);
   } else if (functionOrT.nilp()) {
     this->_isgf = CLASP_NOT_FUNCALLABLE;
-    this->entry = this->entry_point;
-    FuncallableInstance_O::ensureClosure(&not_funcallable_dispatch);
-  } else if (gc::IsA<CompiledDispatchFunction_sp>(functionOrT)) {
-    this->_isgf = CLASP_FASTGF_DISPATCH;
-    this->GFUN_DISPATCHER_set(functionOrT);
-    this->entry = gc::As_unsafe<CompiledDispatchFunction_sp>(functionOrT)->entry;
-//    FuncallableInstance_O::ensureClosure(gc::As_unsafe<CompiledDispatchFunction_sp>(functionOrT)->entryPoint());
+    this->entry.store(this->not_funcallable_entry_point);
   } else if (gc::IsA<Function_sp>(functionOrT)) {
-    printf("%s:%d  Installing CLASP_USER_DISPATCH: %s\n", __FILE__, __LINE__, _rep_(functionOrT).c_str());
-    this->_isgf = CLASP_USER_DISPATCH;
-    this->entry = gc::As_unsafe<Function_sp>(functionOrT)->entry;
+    this->_isgf = CLASP_NORMAL_DISPATCH;
+    this->GFUN_DISPATCHER_set(functionOrT);
+    this->entry.store(gc::As_unsafe<Function_sp>(functionOrT)->entry.load());
   } else {
     TYPE_ERROR(functionOrT, cl::_sym_function);
     //SIMPLE_ERROR(BF("Wrong type argument: %s") % functionOrT->__repr__());
   }
 
   return ((this->sharedThis<FuncallableInstance_O>()));
-}
-
-T_sp FuncallableInstance_O::userFuncallableInstanceFunction() const
-{
-  if (this->_isgf == CLASP_USER_DISPATCH) {
-    T_sp user_dispatch_fn = (*this->_Rack)[this->_Rack->length()-1];
-    return user_dispatch_fn;
-  }
-  // Otherwise return NIL
-  return _Nil<T_O>();
 }
 
 bool FuncallableInstance_O::genericFunctionP() const {
@@ -706,12 +692,10 @@ CL_DEFUN List_sp clos__call_history_find_key(List_sp generic_function_call_histo
 CL_DEFUN T_mv clos__getFuncallableInstanceFunction(T_sp obj) {
   if (FuncallableInstance_sp iobj = obj.asOrNull<FuncallableInstance_O>()) {
     switch (iobj->_isgf) {
-    case CLASP_USER_DISPATCH:
-        return Values(iobj->userFuncallableInstanceFunction(),Pointer_O::create((void*)iobj->_entryPoint.load()));
-    case CLASP_FASTGF_DISPATCH:
-        return Values(iobj->GFUN_DISPATCHER(),Pointer_O::create((void*)iobj->entry));
+    case CLASP_NORMAL_DISPATCH:
+        return Values(_lisp->_true(),Pointer_O::create((void*)iobj->entry.load()));
     case CLASP_INVALIDATED_DISPATCH:
-        return Values(clos::_sym_invalidated_dispatch_function,Pointer_O::create((void*)iobj->_entryPoint.load()));
+        return Values(clos::_sym_invalidated_dispatch_function,Pointer_O::create((void*)iobj->entry.load()));
     case CLASP_NOT_FUNCALLABLE:
         return Values(clos::_sym_not_funcallable);
     }
@@ -931,12 +915,15 @@ CL_DEFUN T_sp clos__generic_function_call_history_compare_exchange(FuncallableIn
   return gf->GFUN_CALL_HISTORY_compare_exchange(expected,new_value);
 }
 
+#if 0
 CL_DEFUN T_sp clos__generic_function_lock(T_sp obj) {
   return gc::As<FuncallableInstance_sp>(obj)->GFUN_LOCK();
 }
 CL_DEFUN void clos__set_generic_function_lock(T_sp obj, T_sp val) {
   gc::As<FuncallableInstance_sp>(obj)->GFUN_LOCK_set(val);
 }
+#endif
+
 
 CL_DEFUN T_sp clos__generic_function_compiled_dispatch_function(T_sp obj) {
   return gc::As<FuncallableInstance_sp>(obj)->GFUN_DISPATCHER();

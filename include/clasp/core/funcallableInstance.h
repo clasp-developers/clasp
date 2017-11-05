@@ -38,9 +38,8 @@ THE SOFTWARE.
 
 /*! Different values for Instance_O.isgf */
 #define CLASP_NOT_FUNCALLABLE 0
-#define CLASP_USER_DISPATCH 5
-#define CLASP_FASTGF_DISPATCH 6
-#define CLASP_INVALIDATED_DISPATCH 7
+#define CLASP_NORMAL_DISPATCH 1
+#define CLASP_INVALIDATED_DISPATCH 3
 
 namespace core {
   FORWARD(FuncallableInstance);
@@ -65,18 +64,18 @@ namespace core {
                    MIN_GFUN_SLOTS = 4 } GenericFunctionSlots;
   public: // ctor/dtor for classes with shared virtual base
     // entry_point is the LISP_CALLING_CONVENTION() macro
-  FuncallableInstance_O() : Base(entry_point), _isgf(CLASP_NOT_FUNCALLABLE), _DebugOn(false), _entryPoint(NULL), _Class(_Nil<Class_O>()), _Sig(_Nil<T_O>()), _CallHistory(_Nil<T_O>()),
+  FuncallableInstance_O() : Base(not_funcallable_entry_point), _isgf(CLASP_NOT_FUNCALLABLE), _DebugOn(false), _Class(_Nil<Class_O>()), _Sig(_Nil<T_O>()), _CallHistory(_Nil<T_O>()),
       _SpecializerProfile(_Nil<T_O>()),
-      _Lock(mp::SharedMutex_O::make_shared_mutex(_Nil<T_O>())),
+//      _Lock(mp::SharedMutex_O::make_shared_mutex(_Nil<T_O>())),
       _CompiledDispatchFunction(_Nil<T_O>()) {};
     explicit FuncallableInstance_O(Class_sp metaClass, size_t slots) :
-    Base(entry_point),
+    Base(not_funcallable_entry_point),
       _Class(metaClass)
       ,_DebugOn(false)
       ,_Sig(_Unbound<T_O>())
       , _CallHistory(_Nil<T_O>())
       ,_SpecializerProfile(_Nil<T_O>())
-      ,_Lock(mp::SharedMutex_O::make_shared_mutex(_Nil<T_O>()))
+//      ,_Lock(mp::SharedMutex_O::make_shared_mutex(_Nil<T_O>()))
       , _CompiledDispatchFunction(_Nil<T_O>())
     {};
     virtual ~FuncallableInstance_O(){};
@@ -87,23 +86,16 @@ namespace core {
     // _Rack    (matches offset of Instance_O)
     Class_sp _Class;
     SimpleVector_sp _Rack;
-  /*! Mimicking ECL instance->sig generation signature
-        This is pointed to the class slots in case they change 
-        - then the instances can be updated*/
-    std::atomic<DispatchFunction_fptr_type> _entryPoint;
     int    _isgf;
     bool   _DebugOn;
     T_sp   _Sig;
     std::atomic<T_sp>   _CallHistory;
     std::atomic<T_sp>   _SpecializerProfile;
-    T_sp   _Lock;
-    T_sp   _CompiledDispatchFunction;
+//    T_sp   _Lock;
+    std::atomic<T_sp>   _CompiledDispatchFunction;
   public:
 //    static FuncallableInstance_sp createClassUncollectable(gctools::Stamp is,Class_sp metaClass, size_t number_of_slots, Creator_sp creator);
     static Class_sp create(Symbol_sp symbol,Class_sp metaClass,Creator_sp creator);
-
-  public:
-    bool isCallable() const { return (bool)(this->_entryPoint); };
   public:
     T_sp GFUN_NAME() const { return this->instanceRef(REF_GFUN_NAME); };
     T_sp GFUN_SPECIALIZERS() const { return this->instanceRef(REF_GFUN_SPECIALIZERS); };
@@ -122,8 +114,8 @@ namespace core {
     T_sp GFUN_CALL_HISTORY() const { return this->_CallHistory.load(); };
     T_sp GFUN_CALL_HISTORY_compare_exchange(T_sp expected, T_sp new_value);
 
-    mp::SharedMutex_sp GFUN_LOCK() const { return gc::As<mp::SharedMutex_sp>(this->_Lock);};
-    void GFUN_LOCK_set(T_sp l) { this->_Lock = l; };
+//    mp::SharedMutex_sp GFUN_LOCK() const { return gc::As<mp::SharedMutex_sp>(this->_Lock);};
+//    void GFUN_LOCK_set(T_sp l) { this->_Lock = l; };
     T_sp GFUN_DISPATCHER() const { return this->_CompiledDispatchFunction; };
     void GFUN_DISPATCHER_set(T_sp val) { this->_CompiledDispatchFunction = val; };
   public:
@@ -157,7 +149,6 @@ namespace core {
   public: // The hard-coded indexes above are defined below to be used by Class
     void initializeSlots(gctools::Stamp is, size_t numberOfSlots);
     void initializeClassSlots(Creator_sp creator, gctools::Stamp class_stamp);
-    void ensureClosure(DispatchFunction_fptr_type entryPoint);
     virtual void setf_lambda_list(List_sp lambda_list) { if (!this->_isgf) {SIMPLE_ERROR_SPRINTF("Cannot set lambda list of non gf function ll->%s", _rep_(lambda_list).c_str());} this->GFUN_LAMBDA_LIST_set(lambda_list); }; //{ this->_lambda_list = lambda_list; };
     virtual T_sp lambda_list() const { return this->GFUN_LAMBDA_LIST(); };
   public:
@@ -202,19 +193,17 @@ namespace core {
 
     T_sp setFuncallableInstanceFunction(T_sp functionOrT);
 
-    T_sp userFuncallableInstanceFunction() const;
-
     bool genericFunctionP() const;
 
     void describe(T_sp stream);
 
     void __write__(T_sp sout) const; // Look in write_ugly.cc
 
-    static  LCC_RETURN LISP_CALLING_CONVENTION();
-
+    static LCC_RETURN invalidated_entry_point(LCC_ARGS_ELLIPSIS);
+    static LCC_RETURN not_funcallable_entry_point(LCC_ARGS_ELLIPSIS);
   }; // FuncallableInstance class
 
-
+#if 0
   struct GFReadLock {
     FuncallableInstance_sp _GF;
   GFReadLock(FuncallableInstance_sp gf) : _GF(gf) {
@@ -238,7 +227,7 @@ namespace core {
       this->_GF->GFUN_LOCK()->write_unlock();
     }
   };
-
+#endif
   
 }; // core namespace
 

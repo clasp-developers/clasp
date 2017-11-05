@@ -1659,7 +1659,7 @@ T_mv cc_multiple_value_prog1_function(core::T_mv* result, core::T_O* tfunc1, cor
 gctools::return_type cc_dispatch_effective_method(core::T_O* teffective_method, core::T_O* tgf, core::T_O* tgf_args_vaslist) {
   core::Function_sp effective_method((gctools::Tagged)teffective_method);
   core::T_sp gf_vaslist((gctools::Tagged)tgf_args_vaslist);
-  return (*effective_method).entry(LCC_PASS_ARGS2_ELLIPSIS(teffective_method,gf_vaslist.raw_(),_Nil<core::T_O>().raw_()));
+  return (*effective_method).entry.load()(LCC_PASS_ARGS2_ELLIPSIS(teffective_method,gf_vaslist.raw_(),_Nil<core::T_O>().raw_()));
 }
 
 

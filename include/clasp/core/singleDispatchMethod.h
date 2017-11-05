@@ -46,7 +46,7 @@ namespace core {
       SingleDispatchMethodFunction_O* closure = gctools::untag_general<SingleDispatchMethodFunction_O*>((SingleDispatchMethodFunction_O*)lcc_closure);
       COPY_VA_LIST();
       INCREMENT_FUNCTION_CALL_COUNTER(closure);
-      return (closure->_body->entry)(LCC_PASS_ARGS_VASLIST(closure->_body.raw_(),lcc_vargs));
+      return (closure->_body->entry.load())(LCC_PASS_ARGS_VASLIST(closure->_body.raw_(),lcc_vargs));
 //      return funcall_consume_valist_<core::Function_O>(closure->_body.tagged_(),lcc_vargs);
     };
   };

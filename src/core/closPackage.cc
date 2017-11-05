@@ -68,6 +68,9 @@ SYMBOL_EXPORT_SC_(ClosPkg, fastgf_slot_unbound);
 SYMBOL_EXPORT_SC_(ClosPkg, dispatch_slot_reader_index_debug);
 SYMBOL_EXPORT_SC_(ClosPkg, dispatch_slot_writer_index_debug);
 
+SYMBOL_EXPORT_SC_(ClosPkg, invalidated_dispatch_function);
+SYMBOL_EXPORT_SC_(ClosPkg, not_funcallable_dispatch_function);
+
 void initialize_closPackage() {
   list<string> lnicknames;
   list<string> luse = {"COMMON-LISP"};

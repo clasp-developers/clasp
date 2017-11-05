@@ -113,7 +113,7 @@ LCC_RETURN SingleDispatchCxxEffectiveMethodFunction_O::LISP_CALLING_CONVENTION()
   INCREMENT_FUNCTION_CALL_COUNTER(closure);
   COPY_VA_LIST();
   // INITIALIZE_VA_LIST(); // This was done by the caller
-  return (closure->_onlyCxxMethodFunction)->entry(LCC_PASS_ARGS_VASLIST(closure->_onlyCxxMethodFunction.raw_(),lcc_vargs));
+  return (closure->_onlyCxxMethodFunction)->entry.load()(LCC_PASS_ARGS_VASLIST(closure->_onlyCxxMethodFunction.raw_(),lcc_vargs));
 };
 
 
@@ -125,19 +125,19 @@ LCC_RETURN SingleDispatchEffectiveMethodFunction_O::LISP_CALLING_CONVENTION() {
     Vaslist before_args_s(*lcc_vargs);
     VaList_sp before_args(&before_args_s);
     Function_sp before((gctools::Tagged)oCar(cur).raw_());
-    (*before).entry(LCC_PASS_ARGS_VASLIST(before.raw_(),before_args));
+    (*before).entry.load()(LCC_PASS_ARGS_VASLIST(before.raw_(),before_args));
   }
   MultipleValues save;
   Function_sp primary0((gctools::Tagged)oCar(closure->_Primaries).raw_());
   Vaslist primary_args_s(*lcc_vargs);
   VaList_sp primary_args(&primary_args_s);
-  T_mv val0 = (*primary0).entry(LCC_PASS_ARGS_VASLIST(primary0.raw_(),primary_args));
+  T_mv val0 = (*primary0).entry.load()(LCC_PASS_ARGS_VASLIST(primary0.raw_(),primary_args));
   multipleValuesSaveToMultipleValues(val0, &save);
   for ( auto cur : closure->_Afters ) {
     Vaslist after_args_s(*lcc_vargs);
     VaList_sp after_args(&after_args_s);
     Function_sp after((gctools::Tagged)oCar(cur).raw_());
-    (*after).entry(LCC_PASS_ARGS_VASLIST(after.raw_(),after_args));
+    (*after).entry.load()(LCC_PASS_ARGS_VASLIST(after.raw_(),after_args));
   }
   return multipleValuesLoadFromMultipleValues(&save);
 }
@@ -209,7 +209,7 @@ LCC_RETURN SingleDispatchGenericFunctionClosure_O::LISP_CALLING_CONVENTION() {
   }
   // WARNING: DO NOT alter contents of _lisp->callArgs() or _lisp->multipleValues() above.
   // LISP_PASS ARGS relys on the extra arguments being passed transparently
-  return func->entry(LCC_PASS_ARGS_VASLIST(func.raw_(),lcc_vargs));
+  return func->entry.load()(LCC_PASS_ARGS_VASLIST(func.raw_(),lcc_vargs));
 }
 
 class SingleDispatch_OrderByClassPrecedence {
