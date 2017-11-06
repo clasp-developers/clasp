@@ -628,7 +628,7 @@ bool maybeParseClaspMpsConfig(size_t &arenaMb, size_t &spareCommitLimitMb, size_
   size_t values[20];
   int numValues = 0;
   if (cur) {
-    printf("Default CLASP_MPS_CONFIG = %" PRu " %lu %lu %lu %lu %lu %lu\n",
+    printf("Default CLASP_MPS_CONFIG = %" PRsize_t " %lu %lu %lu %lu %lu %lu\n",
            arenaMb,
            spareCommitLimitMb,
            nurseryKb,
@@ -659,13 +659,13 @@ bool maybeParseClaspMpsConfig(size_t &arenaMb, size_t &spareCommitLimitMb, size_
     case 1:
         arenaMb = values[0];
         printf("CLASP_MPS_CONFIG...\n");
-        printf("                    arenaMb = %" PRu "\n", arenaMb);
-        printf("         spareCommitLimitMb = %" PRu "\n", spareCommitLimitMb);
-        printf("                  nurseryKb = %" PRu "\n", nurseryKb);
-        printf("    nurseryMortalityPercent = %" PRu "\n", nurseryMortalityPercent);
-        printf("              generation1Kb = %" PRu "\n", generation1Kb);
-        printf("generation1MortalityPercent = %" PRu "\n", generation1MortalityPercent);
-        printf("              keyExtendByKb = %" PRu "\n", keyExtendByKb );
+        printf("                    arenaMb = %" PRsize_t "\n", arenaMb);
+        printf("         spareCommitLimitMb = %" PRsize_t "\n", spareCommitLimitMb);
+        printf("                  nurseryKb = %" PRsize_t "\n", nurseryKb);
+        printf("    nurseryMortalityPercent = %" PRsize_t "\n", nurseryMortalityPercent);
+        printf("              generation1Kb = %" PRsize_t "\n", generation1Kb);
+        printf("generation1MortalityPercent = %" PRsize_t "\n", generation1MortalityPercent);
+        printf("              keyExtendByKb = %" PRsize_t "\n", keyExtendByKb );
         return true;
         break;
     default:
@@ -992,7 +992,8 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
 #else
   #if 1
   run_quick_tests();
-  core::ThreadLocalState thread_local_state;
+  void* stackTop = NULL;
+  core::ThreadLocalState thread_local_state(&stackTop);
   my_thread = &thread_local_state;
   exit_code = startupFn(argc, argv, mpiEnabled, mpiRank, mpiSize);
   #else

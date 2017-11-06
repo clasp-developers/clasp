@@ -163,11 +163,18 @@ namespace gctools {
   
 #define STAMP_DUMMY_FOR_CPOINTER 0
     typedef enum {
-        STAMP_null = 0,
-#ifndef SCRAPING        
+#ifndef SCRAPING
+#ifdef USE_BOEHM
 #define GC_ENUM
+        STAMP_null = 0,
 #include INIT_CLASSES_INC_H // REPLACED CLASP_GC_FILENAME
 #undef GC_ENUM
+#endif
+#ifdef USE_MPS
+#define GC_STAMP
+#include CLASP_GC_FILENAME
+#undef GC_STAMP
+#endif
         STAMP_VA_LIST_S = STAMP_core__VaList_dummy_O, 
         STAMP_CONS = STAMP_core__Cons_O, 
         STAMP_CHARACTER = STAMP_core__Character_dummy_O, 

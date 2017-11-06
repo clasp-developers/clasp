@@ -680,12 +680,10 @@ to expose."
                           (ctype-key (base one))))))))
 
 
-(defgeneric expose-fixed-field-type (type-symbol))
-(defmethod expose-fixed-field-type ((type-symbol T)) T)
-(defmethod expose-fixed-field-type ((type-symbol (eql 'ctype_int))) nil)
-(defmethod expose-fixed-field-type ((type-symbol (eql 'ctype_unsigned_int))) nil)
-(defmethod expose-fixed-field-type ((type-symbol (eql 'ctype__Bool))) nil)
-(defmethod expose-fixed-field-type ((type-symbol (eql 'ctype_long))) nil)
+(defun expose-fixed-field-type (type-symbol)
+  (if (member type-symbol '(ctype_int ctype_unsigned_int ctype_unsigned_long ctype__Bool ctype_long))
+      nil
+      t))
 
 (defun codegen-full (stream layout analysis)
   (dolist (one (fixed-part layout))

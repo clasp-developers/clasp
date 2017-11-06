@@ -515,7 +515,6 @@ int startupGarbageCollectorAndSystem(MainFunctionType startupFn, int argc, char 
   gctools::_global_stack_max_size = stackMax;
 //  printf("%s:%d       global_stack_marker = %p\n", __FILE__, __LINE__, gctools::_global_stack_marker );
   global_alignup_sizeof_header = AlignUp(sizeof(Header_s));
-
   { // Debugging info
     size_t alignment = Alignment();
 #if 0
@@ -529,20 +528,16 @@ int startupGarbageCollectorAndSystem(MainFunctionType startupFn, int argc, char 
     printf("%s:%d global_alignup_sizeof_header = %" PRu "\n", __FILE__, __LINE__, global_alignup_sizeof_header );
 #endif
   }
-
   build_kind_field_layout_tables();
-
 #ifdef SIGRTMIN
 # define DEFAULT_THREAD_INTERRUPT_SIGNAL SIGRTMIN + 2
 #else
 # define DEFAULT_THREAD_INTERRUPT_SIGNAL SIGUSR1
 #endif
   gctools::initialize_signals(DEFAULT_THREAD_INTERRUPT_SIGNAL);
-
 #if defined(USE_MPS)
   int exitCode = gctools::initializeMemoryPoolSystem(startupFn, argc, argv, mpiEnabled, mpiRank, mpiSize);
 #endif
-
 #if defined(USE_BOEHM)
   GC_INIT();
   GC_allow_register_threads();
