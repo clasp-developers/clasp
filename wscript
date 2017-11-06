@@ -1,5 +1,4 @@
 #-*- mode: python; coding: utf-8-unix -*-
-
 import subprocess
 from waflib.Tools import c_preproc
 from waflib.Tools.compiler_cxx import cxx_compiler
