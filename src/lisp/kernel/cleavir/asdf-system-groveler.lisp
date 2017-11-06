@@ -49,7 +49,7 @@
   ())
 
 (defmethod asdf:component-depends-on ((op sticky-beak-op) component)
-  (append (list (cons 'sticky-beak-op (asdf::component-load-dependencies component)))
+  (append (list (cons 'sticky-beak-op (asdf::component-sideway-dependencies component)))
 	  (call-next-method)))
 
 (defmethod asdf:perform ((op sticky-beak-op) (component t))

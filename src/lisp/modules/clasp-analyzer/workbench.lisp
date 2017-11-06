@@ -22,19 +22,28 @@
               :selection-pattern "gc_interface.cc" ))
 (defvar *p* (serial-search/generate-code *db* :output-file #P"/tmp/data.dat"))
 
-(defparameter *p1* (load-project "/tmp/data.dat"))
+
+;;; ------------------------------------------------------------
+;;;
+;;; Load an existing project
+;;;
+(defvar *compile-commands* "~/Development/clasp/compile_commands.json")
+(defvar *db* (clasp-analyzer:setup-clasp-analyzer-compilation-tool-database
+              (pathname *compile-commands*)))
+(progn
+  (defparameter *p1* (load-project "~/Development/clasp/project.dat"))
+  (format t "Done read project~%"))
+
+
+(progn
+  (defparameter *analysis* (analyze-project *p1*))
+  (generate-code *analysis* :output-file #P"/tmp/clasp_gc.cc")
+  (format t "Done analyze and generate-code for project~%"))
 
 
 
 
 
-
-
-
-
-
-
-(defparameter *analysis* (analyze-project *project*))
 (analysis-enum-roots *analysis*)
 *analysis*
 (analyze-only *db*)
