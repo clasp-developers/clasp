@@ -40,7 +40,7 @@ successfully, T is returned, else error."
   (let ((*autoload-translations* nil))
     (unless (or (string-equal host "sys")
                 (si::pathname-translations host))
-      (with-open-file (in-str (make-pathname :defaults #+clasp "sys:translations;" #+(and ecl (not clasp)) "sys"
+      (with-open-file (in-str (make-pathname :defaults "sys:translations;"
                                              :name (string-downcase host)
                                              :type "translations"))
         (if *load-verbose*
@@ -71,8 +71,6 @@ successfully, T is returned, else error."
          llh-calls-begin llh-calls-end
 	 gc-end)
     ;; Garbage collection forces counters to be updated
-    #-clasp(si::gc t)
-    #-clasp(setf gc-start (si::gc-time))
     (multiple-value-setq (clasp-bytes-start)
       (gctools:bytes-allocated))
     (setq interpreted-calls-start (core:interpreted-closure-calls))
@@ -174,7 +172,7 @@ Evaluates FORM, outputs the realtime and runtime used for the evaluation to
 (defconstant month-startdays #(0 31 59 90 120 151 181 212 243 273 304 334 365))
 
 
-#-(or ecl-min clasp-min)
+#-clasp-min
 (defun get-local-time-zone ()
   "Returns the number of hours West of Greenwich for the local time zone."
   (declare (si::c-local))
@@ -266,7 +264,7 @@ Universal Time UT, which defaults to the current time."
 			#.(encode-universal-time 0 0 0 1 1 2032 0)
 			#.(encode-universal-time 0 0 0 1 1 2033 0))
 		    (- universal-time (encode-universal-time 0 0 0 1 1 year 0) utc-1-1-1970)))))
-    #-(or ecl-min clasp-min)
+    #-clasp-min
     (core:unix-daylight-saving-time unix-time)))
 
 (defun get-decoded-time ()

@@ -34,6 +34,7 @@ def aclasp(wrappers):
         "src/lisp/kernel/lsp/mislib",
         "src/lisp/kernel/lsp/defstruct",
         "src/lisp/kernel/lsp/predlib",
+        "src/lisp/kernel/lsp/cdr-5",
         "src/lisp/kernel/lsp/seq",
         "src/lisp/kernel/lsp/cmuutil",
         "src/lisp/kernel/lsp/seqmacros",

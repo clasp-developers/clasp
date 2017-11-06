@@ -177,9 +177,7 @@ printed.  If FORMAT-STRING is NIL, however, no prompt will appear."
   (declare (ignore subchar))
   (when (and arg (null *read-suppress*))
         (error "~S is an extra argument for the #s readmacro." arg))
-;;; meister 2015 - I believe the following should be (read stream t nil t) so that
-;;; things like (defstruct foo a) (read-from-string "(#1=\"Hello\" #S(FOO :A #1#))") work
-  (let ((l #+ecl(read stream) #+clasp(read stream t nil t)))
+  (let ((l (read stream t nil t)))
     (when *read-suppress*
       (return-from sharp-s-reader nil))
     (unless (get-sysprop (car l) 'is-a-structure)
@@ -233,7 +231,7 @@ is not given, ends the recording."
 				   *dribble-closure* nil))))
            (multiple-value-bind (sec min hour day month year)
                (get-decoded-time)
-             (format dribble-stream "~&Starts dribbling to ~A (~d/~d/~d, ~d:~d:~d)."
+             (format dribble-stream "~&Starts dribbling to ~A (~d/~d/~d, ~2,'0d:~2,'0d:~2,'0d)."
                      namestring year month day hour min sec)
 	     (setq *standard-input* dribble-stream
 		   *standard-output* dribble-stream
@@ -319,7 +317,7 @@ the one used internally by ECL compiled files."
     ((symbolp mapping)
      (let ((var (intern (symbol-name mapping) (find-package "EXT"))))
        (unless (boundp var)
-	 (set var (ext::make-encoding (load-encoding mapping))))
+         (setf (symbol-value var) (ext::make-encoding (load-encoding mapping))))
        (symbol-value var)))
     ((consp mapping)
      (let ((output (make-hash-table :size 512 :test 'eq)))

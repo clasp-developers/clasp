@@ -14,80 +14,46 @@
 
 (in-package "SYSTEM")
 
-#+(or ecl-min clasp-min)
+#+clasp-min
 (si::fset 'push
-	  (function 
-	   #+ecl(ext::lambda-block push (args env)
-				   (let* ((what (second args))
-					  (where (caddr args)))
-				     `(setq ,where (cons ,what ,where))))
-	   #+clasp(lambda (args env)
-	    (declare (core:lambda-name push))
-	    (block push
-	      (let* ((what (second args))
-		     (where (caddr args)))
-		`(setq ,where (cons ,what ,where)))))
-	   )
+	   #'(lambda (args env)
+               (declare (core:lambda-name push))
+               (let* ((what (second args))
+                      (where (caddr args)))
+                 `(setq ,where (cons ,what ,where))))
 	  t)
 
-#+(or ecl-min clasp-min)
+#+clasp-min
 (si::fset 'pop
-	  (function 
-	   #+ecl(ext::lambda-block pop (args env)
-				   (let ((where (cadr args)))
-				     `(let* ((l ,where)
-					     (v (car l)))
-					(setq ,where (cdr l))
-					v)))
-	   #+clasp(lambda (args env)
-	    (declare (core:lambda-name pop))
-	    (block pop
-	      (let ((where (cadr args)))
-		`(let* ((l ,where)
-			(v (car l)))
-		   (setq ,where (cdr l))
-		   v))))
-	   )
+	   #'(lambda (args env)
+               (declare (core:lambda-name pop))
+               (let ((where (cadr args)))
+                 `(let* ((l ,where)
+                         (v (car l)))
+                    (setq ,where (cdr l))
+                    v)))
 	  t)
 
-#+(or ecl-min clasp-min)
+#+clasp-min
 (si::fset 'incf
-	  (function 
-	   #+ecl(ext::lambda-block incf (args env)
-				   (let* ((where (second args))
-					  (what (caddr args)))
-				     (if what
-					 `(setq ,where (+ ,where ,what))
-					 `(setq ,where (1+ ,where)))))
-	   #+clasp(lambda (args env)
-	    (declare (core:lambda-name incf))
-	    (block incf
-	      (let* ((where (second args))
-		     (what (caddr args)))
-		(if what
-		    `(setq ,where (+ ,where ,what))
-		    `(setq ,where (1+ ,where))))))
-	   )
+	   #'(lambda (args env)
+               (declare (core:lambda-name incf))
+               (let* ((where (second args))
+                      (what (caddr args)))
+                 (if what
+                     `(setq ,where (+ ,where ,what))
+                     `(setq ,where (1+ ,where)))))
 	  t)
 
-#+(or ecl-min clasp-min)
+#+clasp-min
 (si::fset 'decf
-	  (function 
-	   #+ecl(ext::lambda-block decf (args env)
-				   (let* ((where (second args))
-					  (what (caddr args)))
-				     (if what
-					 `(setq ,where (- ,where ,what))
-					 `(setq ,where (1- ,where)))))
-	   #+clasp(lambda (args env)
-	    (declare (core:lambda-name decf))
-	    (block decf
-	      (let* ((where (second args))
-		     (what (caddr args)))
-		(if what
-		    `(setq ,where (- ,where ,what))
-		    `(setq ,where (1- ,where))))))
-	   )
+	   #'(lambda (args env)
+               (declare (core:lambda-name decf))
+               (let* ((where (second args))
+                      (what (caddr args)))
+                 (if what
+                     `(setq ,where (- ,where ,what))
+                     `(setq ,where (1- ,where)))))
 	  t)
 
 (defun sys::search-keyword (list key)
@@ -110,10 +76,10 @@
       (error "keyword list is not a proper list")
       (setq arg (car tail) tail (cdr tail)))
     (cond ((eq head :allow-other-keys)
-	   (when (not aok-flag)
-	     (setq allow-other-keys tail aok-flag t)))
-	  ((not (member head keywords))
-	   (setq err head)))))
+           (when (not aok-flag)
+             (setq allow-other-keys arg aok-flag t)))
+          ((not (member head keywords))
+           (setq err head)))))
 
 (defun dm-too-many-arguments (*current-form*)
   (error "Too many arguments supplied to a macro or a destructuring-bind form:~%~s"
@@ -207,20 +173,20 @@
 	   (dm-v (v init)
 	     (cond ((and v (symbolp v))
                     (let ((push-val (if init (list v init) v)))
-                      (push (if init (list v init) v) *dl*)))
-		   ((and v (atom v))
-		    (error "destructure: ~A is not a list nor a symbol" v))
-		   ((eq (first v) '&whole)
-		    (let ((whole-var (second v)))
-		      (if (listp whole-var)
-			  (let ((new-whole (tempsym)))
-			    (dm-v new-whole init)
-			    (dm-vl whole-var new-whole nil)
-			    (setq whole-var new-whole))
-			  (dm-v whole-var init))
-		      (dm-vl (cddr v) whole-var nil)))
-		   (t
-		    (let* ((temp (tempsym))
+                      (push push-val *dl*)))
+                   ((and v (atom v))
+                    (error "destructure: ~A is not a list nor a symbol" v))
+                   ((eq (first v) '&whole)
+                    (let ((whole-var (second v)))
+                      (if (listp whole-var)
+                          (let ((new-whole (tempsym)))
+                            (dm-v new-whole init)
+                            (dm-vl whole-var new-whole nil)
+                            (setq whole-var new-whole))
+                          (dm-v whole-var init))
+                      (dm-vl (cddr v) whole-var nil)))
+                   (t
+                    (let* ((temp (tempsym))
                            (push-val (if init (list temp init) temp)))
 		      (push push-val *dl*)
 		      (dm-vl v temp nil))))))
@@ -306,44 +272,20 @@
                                         ;(bformat t "About to call multiple-value-call\n")
       (multiple-value-bind (ppn whole dl arg-check ignorables)
           (destructure vl context name)
-        #+ecl(values 
-              `(ext::lambda-block ,name (,whole ,env-part &aux ,@dl)
-                                  (declare (ignorable ,@ignorables))
-                                  ,@decls 
-                                  ,@arg-check
-                                  ,@body)
-              ppn
-              doc)
-        #+clasp(values 
-                `(lambda (,whole ,env-part &aux ,@dl)
-                   (declare (ignorable ,@ignorables) (core:lambda-name ,name))
-                   ,@decls
-                   (block ,(si::function-block-name name)
-                     ,@arg-check
-                     ,@body))
-                ppn
-                doc)))))
+        (values 
+         `(lambda (,whole ,env-part &aux ,@dl)
+            (declare (ignorable ,@ignorables) (core:lambda-name ,name))
+            ,@decls
+            (block ,(si::function-block-name name)
+              ,@arg-check
+              ,@body))
+         ppn
+         doc)))))
 
-#+(or ecl-min clasp-min)
+#+clasp-min
 (si::fset 'defmacro
-	  (function 
-	   #+ecl(ext::lambda-block defmacro (def env)
-				   (declare (ignore env))
-				   (let* ((name (second def))
-					  (vl (third def))
-					  (body (cdddr def))
-					  (function))
-				     (multiple-value-bind (function pprint doc)
-					 (sys::expand-defmacro name vl body)
-				       (declare (ignore doc))
-				       (setq function `(function ,function))
-				       (when *dump-defmacro-definitions*
-					 (print function)
-					 (setq function `(si::bc-disassemble ,function)))
-				       (ext:register-with-pde def `(si::fset ',name ,function t ,pprint)))))
-	   #+clasp(lambda (def env)
-	    (declare (ignore env) (core:lambda-name defmacro))
-	    (block defmacro
+          #'(lambda (def env)
+              (declare (ignore env) (core:lambda-name defmacro))
 	      (let* ((name (second def))
 		     (vl (third def))
 		     (body (cdddr def))
@@ -359,7 +301,7 @@
                                                         t ; macro
                                                         ,pprint ; ecl pprint
                                                         ',vl ; lambda-list
-                                                        )))))))
+                                                        )))))
 	  t)
 
 ;;; valid lambda-list to DESTRUCTURING-BIND is:
@@ -401,72 +343,3 @@
          ,@decls
          ,@arg-check
          ,@body))))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
-;;; MACROLET HELPER
-;;;
-#-clasp
-(defun cmp-env-for-bytecodes (old-env)
-  "Produce an environment which is safe to pass to the bytecodes
-compiler. We remove all blocks and tags and ensure that
-references to local variables will cause an error. This
-environment can be used to bytecompile the functions in MACROLET
-or SYMBOL-MACRO forms, and also to evaluate other forms."
-  (declare (si::c-local))
-  (flet ((local-var-error-function (name)
-	  #'(lambda (whole env)
-	      (declare (ignore whole env))
-	      (error
-"In a MACROLET function you tried to access a local variable, ~A,
-from the function in which it appears." name)))
-	 (local-fun-error-function (name)
-	  #'(lambda (whole env)
-	      (declare (ignore whole env))
-	      (error
-"In a MACROLET function you tried to access a local function, ~A,
-from the function in which it appears." name))))
-    (cons (do ((env (car old-env) (cdr env))
-	       (variables '()))
-	      ((endp env) (nreverse variables))
-	    (let ((i (car env)))
-	      (if (consp i)
-		(let ((name (first i)))
-		  (if (not (keywordp name))
-		      (push (if (second i)
-				i
-			      (list name 'si::symbol-macro (local-var-error-function name)))
-			    variables))))))
-	  (do ((env (cdr old-env) (cdr env))
-	       (macros '()))
-	      ((endp env) (nreverse macros))
-	    (let ((i (car env)))
-	      (if (consp i)
-		(push (if (eq (second i) 'SI::MACRO)
-			  i
-			(list (first i) 'SI:MACRO (local-fun-error-function (first i))))
-		      macros)))))))
-
-#-clasp
-(defun macrolet-functions (definitions old-env)
-  (declare (si::c-local))
-  (let ((env (cmp-env-for-bytecodes old-env)))
-    (core:eval-with-env
-     (cons 'list
-	   (mapcar #'(lambda (x)
-		       (let* ((name (first x))
-			      (llist (second x))
-			      (def (cddr x)))
-			 `(list ',name ,(si::expand-defmacro name llist def))))
-		   definitions))
-     env nil t)))
-
-#-clasp
-(defun cmp-env-register-macrolet (definitions old-env)
-  (let ((macros (cdr old-env)))
-    (dolist (record (macrolet-functions definitions old-env))
-      (push (list (first record) 'si::macro (second record))
-	    macros))
-    (rplacd (ext:truly-the cons old-env) macros)))
-
-

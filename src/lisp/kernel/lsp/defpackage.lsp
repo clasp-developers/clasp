@@ -36,32 +36,6 @@
 ;;; 
 ;;; -----------------------------------------------------------------
 
-;;; -----------------------------------------------------------------
-;;;
-;;;	DEFPACKAGE - This files attempts to define a portable
-;;;	implementation for DEFPACKAGE, as defined in "Common LISP, The
-;;;	Language", by Guy L. Steele, Jr., Second Edition, 1990, Digital
-;;;	Press.
-;;;
-;;;	Send comments, suggestions, and/or questions to:
-;;;
-;;;		Stephen L Nicoud <snicoud@boeing.com>
-;;;
-;;;	An early version of this file was tested in Symbolics Common
-;;;	Lisp (Genera 7.2 & 8.0 on a Symbolics 3650 Lisp Machine),
-;;;	Franz's Allegro Common Lisp (Release 3.1.13 on a Sun 4, SunOS
-;;;	4.1), and Sun Common Lisp (Lucid Common Lisp 3.0.2 on a Sun 3,
-;;;	SunOS 4.1).
-;;;
-;;;	91/5/23 (SLN) - Since the initial testing, modifications have
-;;;	been made to reflect new understandings of what DEFPACKAGE
-;;;	should do.  These new understandings are the result of
-;;;	discussions appearing on the X3J13 and Common Lisp mailing
-;;;	lists.  Cursory testing was done on the modified version only
-;;;	in Allegro Common Lisp (Release 3.1.13 on a Sun 4, SunOS 4.1).
-;;;
-;;; -----------------------------------------------------------------
-
 (in-package "SYSTEM")
 
 (defmacro DEFPACKAGE (name &rest options)
