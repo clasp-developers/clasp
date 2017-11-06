@@ -15,8 +15,6 @@
   
 (in-package "SI")
 
-#-clasp(declaim #.+ecl-unsafe-declarations+)
-
 ;;;; Pretty streams
 
 ;;; There are three different units for measuring character positions:
@@ -874,41 +872,24 @@
 		       ((nil) '*standard-output*)
 		       ((t) '*terminal-io*)
 		       (t stream-symbol)))
-	 (function
-	  `#+ecl(ext::lambda-block ,block-name (,object-var ,stream-var
-							    &aux (,count-name 0))
-				   (declare (ignorable ,object-var ,stream-var ,count-name))
-				   (macrolet ((pprint-pop ()
-						'(progn
-						  (unless (pprint-pop-helper ,object-var ,count-name
-									     ,stream-var)
-						    (return-from ,block-name nil))
-						  (incf ,count-name)
-						  ,(if object `(pop ,object-var) nil)))
-					      (pprint-exit-if-list-exhausted ()
-						,(if object
-						     `'(when (null ,object-var)
-							(return-from ,block-name nil))
-						     `'(return-from ,block-name nil))))
-				     ,@body))
-	  #+clasp(lambda (,object-var ,stream-var &aux (,count-name 0))
-	   (declare (ignorable ,object-var ,stream-var ,count-name) 
-		    (core:lambda-name ,block-name))
-	   (block ,block-name 
-	     (macrolet ((pprint-pop ()
-			  '(progn
-			    (unless (pprint-pop-helper ,object-var ,count-name
-						       ,stream-var)
-			      (return-from ,block-name nil))
-			    (incf ,count-name)
-			    ,(if object `(pop ,object-var) nil)))
-			(pprint-exit-if-list-exhausted ()
-			  ,(if object
-			       `'(when (null ,object-var)
-				  (return-from ,block-name nil))
-			       `'(return-from ,block-name nil))))
-	       ,@body)))
-	  ))
+         (function
+	  `(lambda (,object-var ,stream-var &aux (,count-name 0))
+             (declare (ignorable ,object-var ,stream-var ,count-name) 
+                      (core:lambda-name ,block-name))
+             (block ,block-name 
+               (macrolet ((pprint-pop ()
+                            '(progn
+                              (unless (pprint-pop-helper ,object-var ,count-name
+                                                         ,stream-var)
+                                (return-from ,block-name nil))
+                              (incf ,count-name)
+                              ,(if object `(pop ,object-var) nil)))
+                          (pprint-exit-if-list-exhausted ()
+                            ,(if object
+                                 `'(when (null ,object-var)
+                                    (return-from ,block-name nil))
+                                 `'(return-from ,block-name nil))))
+                 ,@body)))))
       `(pprint-logical-block-helper #',function ,object ,stream-symbol
 				    ,prefix ,per-line-prefix-p ,suffix)))
 
@@ -951,9 +932,7 @@
    next line.  (See PPRINT-INDENT.)"
   (declare (type (member :linear :miser :fill :mandatory) kind)
 	   (type (or stream (member t nil)) stream)
-	   (values null)
-	   (ext:check-arguments-type)
-	   #.+ecl-safe-declarations+)
+	   (ext:check-arguments-type))
   (let ((stream (case stream
 		  ((t) *terminal-io*)
 		  ((nil) *standard-output*)
@@ -975,9 +954,7 @@
   (declare (type (member :block :current) relative-to)
 	   (type real n)
 	   (type (or stream (member t nil)) stream)
-	   (values null)
-	   (ext:check-arguments-type)
-	   #.+ecl-safe-declarations+)
+	   (ext:check-arguments-type))
   (let ((stream (case stream
 		  ((t) *terminal-io*)
 		  ((nil) *standard-output*)
@@ -1001,9 +978,7 @@
   (declare (type (member :line :section :line-relative :section-relative) kind)
 	   (type unsigned-byte colnum colinc)
 	   (type (or stream (member t nil)) stream)
-	   (values null)
-	   (ext:check-arguments-type)
-	   #.+ecl-safe-declarations+)
+	   (ext:check-arguments-type))
   (let ((stream (case stream
 		  ((t) *terminal-io*)
 		  ((nil) *standard-output*)
@@ -1059,8 +1034,8 @@
    the ~/.../ format directive."
   (declare (ignore atsign?)
            (type (or stream (member t nil)) stream)
-	   (ext:check-arguments-type)
-	   #.+ecl-safe-declarations+)
+           (type (or unsigned-byte null) tabsize)
+           (ext:check-arguments-type))
   (pprint-logical-block (stream list
 				:prefix (if colon? "(" "")
 				:suffix (if colon? ")" ""))
@@ -1075,6 +1050,7 @@
 
 ;;;; Pprint-dispatch tables.
 
+(defvar *standard-pprint-dispatch*)
 (defvar *initial-pprint-dispatch*)
 
 (defstruct (pprint-dispatch-entry
@@ -1101,7 +1077,9 @@
 	    (pprint-dispatch-entry-initial-p entry))))
 
 (defstruct (pprint-dispatch-table
-	    (:print-function %print-pprint-dispatch-table))
+            (:print-function %print-pprint-dispatch-table))
+  ;; Are we allowed to modify this table?
+  (read-only-p nil)
   ;;
   ;; A list of all the entries (except for CONS entries below) in highest
   ;; to lowest priority.
@@ -1183,9 +1161,12 @@
 			    (priority 0) (table *print-pprint-dispatch*))
   (declare (type t type)
            (type (or null function symbol) function)
-	   (type real priority)
-	   #+(or)(type pprint-dispatch-table table)
-	   #.+ecl-safe-declarations+)
+           (type real priority)
+           (type pprint-dispatch-table table))
+  (when (pprint-dispatch-table-read-only-p table)
+    (cerror "Ignore and continue"
+            "Tried to modify a read-only pprint dispatch table: ~A"
+            table))
   ;; FIXME! This check should be automatically generated when compiling
   ;; with high enough safety mode.
   (unless (typep priority 'real)
@@ -1424,7 +1405,7 @@
 	  (pprint-newline :linear stream)
 	  (write-object (pprint-pop) stream)))))
 
-#+(or ecl-min clasp)
+;;#+clasp-min
 (defmacro pprint-tagbody-guts (stream)
   `(loop
      (pprint-exit-if-list-exhausted)
@@ -1619,9 +1600,10 @@
 			   (symbol-function (second magic-form))))
     (setf *initial-pprint-dispatch* *print-pprint-dispatch*)
     )
-  (setf *print-pprint-dispatch* (copy-pprint-dispatch nil))
-  (setf (first (cdr si::+io-syntax-progv-list+)) *initial-pprint-dispatch*)
-  (setf (first (cdr si::+ecl-syntax-progv-list+)) *initial-pprint-dispatch*)
-  #-(or ecl-min clasp-min)
-  (setf *print-pretty* t)
-)
+  (setf *print-pprint-dispatch* (copy-pprint-dispatch nil)
+        *standard-pprint-dispatch* *initial-pprint-dispatch*)
+  (setf (pprint-dispatch-table-read-only-p *standard-pprint-dispatch*) t)
+  (setf (first (cdr si::+io-syntax-progv-list+)) *standard-pprint-dispatch*)
+  (setf (first (cdr si::+ecl-syntax-progv-list+)) *standard-pprint-dispatch*)
+  #-clasp-min
+  (setf *print-pretty* t))

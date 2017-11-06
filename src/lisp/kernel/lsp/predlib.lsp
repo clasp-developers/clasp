@@ -128,8 +128,7 @@ bignums."
 (deftype ext::byte64 () '(INTEGER 0 #xFFFFFFFFFFFFFFFF))
 (deftype ext::integer64 () '(INTEGER #x-8000000000000000 #x7FFFFFFFFFFFFFFF))
 (deftype ext::cl-fixnum () '(SIGNED-BYTE #.sys:CL-FIXNUM-BITS))  ;; Clasp change
-#+ecl(deftype ext::cl-index () '(UNSIGNED-BYTE #.sys:CL-FIXNUM-BITS))
-#+clasp(deftype ext::cl-index () '(UNSIGNED-BYTE #.cmp::+size_t-bits+)) ;; Clasp change
+(deftype ext::cl-index () '(UNSIGNED-BYTE #.cmp::+size_t-bits+)) ;; Clasp change
 
 (deftype real (&optional (start '* start-p) (end '*))
   (if start-p
@@ -166,6 +165,7 @@ bignums."
       `(single-float ,@args)
       'single-float))
 
+#-long-float
 (deftype long-float (&rest args)
   (if args
       `(double-float ,@args)
@@ -333,6 +333,7 @@ and is not adjustable."
       (COMPLEX . COMPLEXP)
       (COMPLEX-ARRAY . COMPLEX-ARRAY-P)
       (CONS . CONSP)
+      (DOUBLE-FLOAT . CORE:DOUBLE-FLOAT-P)
       (FLOAT . FLOATP)
       (FUNCTION . FUNCTIONP)
       (HASH-TABLE . HASH-TABLE-P)
@@ -354,6 +355,7 @@ and is not adjustable."
       (SIMPLE-BIT-VECTOR . SIMPLE-BIT-VECTOR-P)
       (SIMPLE-STRING . SIMPLE-STRING-P)
       (SIMPLE-VECTOR . SIMPLE-VECTOR-P)
+      (SINGLE-FLOAT . CORE:SINGLE-FLOAT-P)
       (STREAM . STREAMP)
       (STRING . STRINGP)
       (STRUCTURE . SYS:STRUCTUREP)
@@ -364,19 +366,7 @@ and is not adjustable."
 (dolist (l +known-typep-predicates+)
   (put-sysprop (car l) 'TYPE-PREDICATE (cdr l)))
 
-#+ecl
 (defconstant +upgraded-array-element-types+
-  '#.(append '(NIL BASE-CHAR #+unicode CHARACTER BIT EXT:BYTE8 EXT:INTEGER8)
-             #+:uint16-t '(EXT:BYTE16 EXT:INTEGER16)
-             #+:uint32-t '(EXT:BYTE32 EXT:INTEGER32)
-             (when (< 32 #+ecl cl-fixnum-bits #+clasp core:cl-fixnum-bits 64) '(EXT::CL-INDEX FIXNUM))
-             #+:uint64-t '(EXT:BYTE64 EXT:INTEGER64)
-             (when (< 64 #+ecl cl-fixnum-bits #+clasp core:cl-fixnum-bits) '(EXT::CL-INDEX FIXNUM))
-             '(SINGLE-FLOAT DOUBLE-FLOAT T)))
-
-#+clasp
-(defconstant +upgraded-array-element-types+
-;;  '#.(append '(nil base-char #+unicode character bit double-float T)))
   '#.(append '(NIL BASE-CHAR #+unicode CHARACTER BIT EXT:BYTE8 EXT:INTEGER8)
              '(EXT:BYTE16 EXT:INTEGER16)
              '(EXT:BYTE32 EXT:INTEGER32)
@@ -403,19 +393,6 @@ and is not adjustable."
 	  (row-major-aset *upgraded-array-element-type-cache* hash
                           (cons element-type answer))
 	  answer))))
-
-#+(or) ;; was #+clasp
-(defun upgraded-array-element-type (element-type &optional env)
-  (cond
-    ((eq element-type t) 't)
-    ((eq element-type 'character) 'character)
-    ((eq element-type 'base-char) 'base-char)
-    ((eq element-type 'bit) 'bit)
-    ((subtypep element-type nil) nil) 
-    ((subtypep element-type 'bit) 'bit)
-    ((subtypep element-type 'base-char) 'base-char)
-    ((subtypep element-type 'character) 'character)
-    (t T)))
 
 (defun upgraded-complex-part-type (real-type &optional env)
   (declare (ignore env))
@@ -450,13 +427,6 @@ and is not adjustable."
 (defun error-type-specifier (type)
   (declare (si::c-local))
   (error "~S is not a valid type specifier." type))
-
-#||
-(gdb "About to compile match-dimensions")
-(setq cmp:*debug-compiler* t)
-
-;; I was experiencing crashes when compiling the next function
-||#
 
 (defun match-dimensions (array pat)
   (declare (si::c-local))
@@ -517,225 +487,10 @@ and is not adjustable."
           (t
            whole))))
 
-;;; The following is very sensitive to compiler and runtime internals.
-#+(or)
-(progn
-(defun has-primitive-typep-p (type)
-  (gethash type core:+type-header-value-map+))
-
-(defun gen-primitive-typep (var type)
-  `(if (cmp::typeq ,var ,type) t nil))
-
-;;; FIXME: Move these?
-(defparameter +simple-vector-type-map+
-  '((bit . simple-bit-vector)
-    (fixnum . core:simple-vector-fixnum)
-    (ext:byte8 . core:simple-vector-byte8-t)
-    (ext:byte16 . core:simple-vector-byte16-t)
-    (ext:byte32 . core:simple-vector-byte32-t)
-    (ext:byte64 . core:simple-vector-byte64-t)
-    (ext:integer8 . core:simple-vector-int8-t)
-    (ext:integer16 . core:simple-vector-int16-t)
-    (ext:integer32 . core:simple-vector-int32-t)
-    (ext:integer64 . core:simple-vector-int64-t)
-    ;; ext:cl-index is apparently byte64. ??
-    (single-float . core:simple-vector-float)
-    (double-float . core:simple-vector-double)
-    (base-char . simple-base-string)
-    (character . simple-string)
-    (t . simple-vector)))
-
-(defun simple-vector-type (uaet)
-  (let ((pair (assoc uaet +simple-vector-type-map+)))
-    (if pair
-        (cdr pair)
-        (error "BUG: Unknown UAET ~a in simple-vector-type" uaet))))
-
-(defun all-simple-vector-types ()
-  (mapcar #'cdr +simple-vector-type-map+))
-
-(defparameter +simple-mdarray-type-map+
-  '((bit . core:simple-mdarray-bit)
-    (fixnum . core:simple-mdarray-fixnum)
-    (ext:byte8 . core:simple-mdarray-byte8-t)
-    (ext:byte16 . core:simple-mdarray-byte16-t)
-    (ext:byte32 . core:simple-mdarray-byte32-t)
-    (ext:byte64 . core:simple-mdarray-byte64-t)
-    (ext:integer8 . core:simple-mdarray-int8-t)
-    (ext:integer16 . core:simple-mdarray-int16-t)
-    (ext:integer32 . core:simple-mdarray-int32-t)
-    (ext:integer64 . core:simple-mdarray-int64-t)
-    ;; cl-index?
-    (single-float . core:simple-mdarray-float)
-    (double-float . core:simple-mdarray-double)
-    (base-char . core:simple-mdarray-base-char)
-    (character . core:simple-mdarray-character)
-    (t . simple-mdarray-t)))
-
-(defun simple-mdarray-type (uaet)
-  (let ((pair (assoc uaet +simple-mdarray-type-map+)))
-    (if pair
-        (cdr pair)
-        (error "BUG: Unknown UAET ~a in simple-mdarray-type" uaet))))
-
-(defun all-simple-mdarray-types ()
-  (mapcar #'cdr +simple-mdarray-type-map+))
-
-(defparameter +complex-mdarray-type-map+
-  '((bit . core:mdarray-bit)
-    (fixnum . core:mdarray-fixnum)
-    (ext:byte8 . core:mdarray-byte8-t)
-    (ext:byte16 . core:mdarray-byte16-t)
-    (ext:byte32 . core:mdarray-byte32-t)
-    (ext:byte64 . core:mdarray-byte64-t)
-    (ext:integer8 . core:mdarray-int8-t)
-    (ext:integer16 . core:mdarray-int16-t)
-    (ext:integer32 . core:mdarray-int32-t)
-    (ext:integer64 . core:mdarray-int64-t)
-    ;; cl-index?
-    (single-float . core:mdarray-float)
-    (double-float . core:mdarray-double)
-    (base-char . core:mdarray-base-char)
-    (character . core:mdarray-character)
-    (t . mdarray-t)))
-
-(defun complex-mdarray-type (uaet)
-  (let ((pair (assoc uaet +complex-mdarray-type-map+)))
-    (if pair
-        (cdr pair)
-        (error "BUG: Unknown UAET ~a in complex-mdarray-type" uaet))))
-
-(defun all-complex-mdarray-types ()
-  (mapcar #'cdr +complex-mdarray-type-map+))
-
-(defun gen-array-typep (var element-type dimensions simple-only-p)
-  (let* ((dimensions (if (integerp dimensions) (list dimensions) dimensions))
-         (rank (if (eq dimensions '*) '* (length dimensions))))
-    `(and ,(if (eq element-type '*)
-               ;; This turns out pretty long. Check how it works for speed.
-               `(and ,@(when (or (eql rank '*) (eql rank 1))
-                         (list (gen-primitive-typep var 'core:abstract-simple-vector)))
-                     ,@(when (or (eql rank '*) (not (eql rank 1)))
-                         (list
-                          (if simple-only-p
-                              (gen-primitive-typep var 'core:simple-mdarray)
-                              (gen-primitive-typep var 'core:mdarray)))))
-               `(and ,@(when (or (eql rank '*) (eql rank 1))
-                         (list (gen-primitive-typep var (simple-vector-type element-type))))
-                     ,@(when (or (eql rank '*) (not (eql rank 1)))
-                         (list (gen-primitive-typep var (simple-mdarray-type element-type))))
-                     ,@(unless simple-only-p
-                         (list (gen-primitive-typep var (complex-mdarray-type element-type))))))
-          ;; no LOOP, so do something dumb
-          ,@(unless (eql rank '*)
-              (mapcar (let ((count 0))
-                        (lambda (dim)
-                          (prog1
-                              (if (eq dim '*)
-                                  't ; don't check
-                                  `(eql (array-dimension ,var ,count) ,dim))
-                            (incf count))))
-                      dimensions)))))
-
-(defun gen-interval-typep (var head low high)
-  (let ((prims
-          (case head ; don't have ecase yet :(
-            ((integer)
-             ;; we special case fixnum.
-             (if (and (or (eql low most-negative-fixnum)
-                          (and (listp low) (eql (car low) (1- most-negative-fixnum))))
-                      (or (eql high most-positive-fixnum)
-                          (and (listp high) (eql (car high) (1+ most-positive-fixnum)))))
-                 (progn (setf low '* high '*)
-                        '(fixnum))
-                 '(fixnum bignum)))
-            ((rational) '(fixnum bignum ratio))
-            #+short-float ((short-float) '(short-float))
-            ((single-float) '(single-float))
-            ((double-float) '(double-float))
-            #+long-float ((long-float) '(long-float))
-            ((float) '(#+short-float short-float single-float
-                       double-float #+long-float long-float))
-            ((real) '(fixnum bignum ratio #+short-float short-float
-                      single-float double-float #+long-float long-float))
-            (otherwise (error "BUG: Unknown thing ~a passed to gen-interval-typep"
-                              head)))))
-    `(and (or ,@(mapcar (lambda (prim) (gen-primitive-typep var prim)) prims))
-          ,@(unless (eq low '*)
-              (if (listp low)
-                  `((> ,var ,(first low)))
-                  `((>= ,var ,low))))
-          ,@(unless (eq high '*)
-              (if (listp high)
-                  `((< ,var ,(first high)))
-                  `((<= ,var ,high)))))))
-
-(define-compiler-macro typep (&whole whole object type &optional environment
-                                     &environment expansion-env)
-  (when environment (return-from typep whole))
-  (if (constantp type)
-      (let ((type (eval type)) ; constant-form-value
-            (o (gensym "TYPEP-OBJECT")))
-        `(let ((,o ,object))
-           (declare (ignorable ,o))
-           ,(multiple-value-bind (head args) (normalize-type type)
-              (case head
-                ((t) (if (null args) 't (return-from typep whole)))
-                ((nil) (if (null args) 'nil (return-from typep whole)))
-                ((and) `(and ,@(mapcar (lambda (type) `(typep ,o ',type)) args)))
-                ((or) `(or ,@(mapcar (lambda (type) `(typep ,o ',type)) args)))
-                ((not) (destructuring-bind (negation) args
-                         `(not (typep ,o ',negation))))
-                ((eql) (destructuring-bind (lit) args
-                         `(eql ,o ',lit)))
-                ((member) `(or ,@(mapcar (lambda (lit) `(eql ,o ',lit)) args)))
-                ((satisfies) (destructuring-bind (fname) args
-                               `(,fname ,o)))
-                ((cons)
-                 (destructuring-bind (&optional (car '*) (cdr '*)) args
-                   `(and ,(gen-primitive-typep o 'cons)
-                         ,@(unless (eq car '*) `((typep (car ,o) ',car)))
-                         ,@(unless (eq cdr '*) `((typep (cdr ,o) ',cdr))))))
-                ((simple-array)
-                 (destructuring-bind (&optional (et '*) (dims '*)) args
-                   (gen-array-typep
-                    o (if (eq et '*) '* (upgraded-array-element-type et expansion-env))
-                    dims t)))
-                ((array)
-                 (destructuring-bind (&optional (et '*) (dims '*)) args
-                   (gen-array-typep
-                    o (if (eq et '*) '* (upgraded-array-element-type et expansion-env))
-                    dims nil)))
-                ((#+short-float short-float single-float
-                  double-float #+long-float long-float
-                  float rational real)
-                 (destructuring-bind (&optional (low '*) (high '*)) args
-                   (gen-interval-typep o head low high)))
-                ((function)
-                 (if args ; runtime error
-                     (return-from typep whole)
-                     (gen-primitive-typep o 'function)))
-                ((values) ; runtime error
-                 (return-from typep whole))
-                (t 
-                 (cond (args (return-from typep whole))
-                       ((has-primitive-typep-p head)
-                        (gen-primitive-typep o head))
-                       ((find-class head nil expansion-env)
-                        ;; environment confusion?
-                        ;; original code was
-                        #+(or)(if (find-class type nil)
-                                  `(subclassp (class-of ,object) (find-class ,type nil)))
-                        ;; not sure if there's a better way
-                        `(subclassp (class-of ,o) (find-class ',head)))
-                       (t (return-from typep whole))))))))
-      whole))
-)
-
 (defun typep (object type &optional env &aux tp i c)
   "Args: (object type)
 Returns T if X belongs to TYPE; NIL otherwise."
-  (declare (ignore env) (notinline funcall))
+  (declare (ignore env))
   (cond ((symbolp type)
 	 (let ((f (get-sysprop type 'TYPE-PREDICATE)))
 	   (cond (f (return-from typep (funcall f object)))
@@ -868,8 +623,8 @@ Returns T if X belongs to TYPE; NIL otherwise."
 #+clos
 (defun of-class-p (object class)
   (declare (optimize (speed 3) (safety 0))
-           #+clasp(special clos::*class-precedence-list-ndx*
-                           clos::*class-name-ndx*))
+           (special clos::*class-precedence-list-ndx*
+                    clos::*class-name-ndx*))
   (macrolet ((clos::class-precedence-list (x)
 	       `(si::instance-ref ,x
                                   #+ecl clos::+class-precedence-list-ndx+
@@ -883,7 +638,7 @@ Returns T if X belongs to TYPE; NIL otherwise."
       (if (eq x-class class)
 	  t
 	  (let ((x-cpl (clos::class-precedence-list x-class)))
-	    (if #-clasp(instancep class) #+clasp(clos::classp class)
+	    (if (clos::classp class)
 		(member class x-cpl :test #'eq)
 		(dolist (c x-cpl)
 		  (declare (class c))
@@ -1279,7 +1034,7 @@ if not possible."
       (and (not (clos::class-finalized-p class))
            (throw '+canonical-type-failure+ nil))
       (register-type class
-		     #'(lambda (c) (or #-clasp(si::instancep c) #+clasp(clos::classp c) (symbolp c)))
+		     #'(lambda (c) (or (clos::classp c) (symbolp c)))
 		     #'(lambda (c1 c2)
 			 (when (symbolp c1)
 			   (setq c1 (find-class c1 nil)))
@@ -1299,14 +1054,6 @@ if not possible."
 					  +upgraded-array-element-types+))))
 	  ((find-registered-tag (setq type (list array-class elt-type dimensions))))
 	  (t
-	   #+nil
-	   (when (and (consp dimensions) (> (count-if #'numberp dimensions) 1))
-	     (dotimes (i (length dimensions))
-	       (when (numberp (elt dimensions i))
-		 (let ((dims (make-list (length dimensions) :initial-element '*)))
-		   (setf (elt dims i) (elt dimensions i))
-		   (register-type (list array-class elt-type dims)
-				  #'array-type-p #'array-type-<=)))))
 	   (register-type type #'array-type-p #'array-type-<=)))))
 
 ;;
@@ -1479,22 +1226,7 @@ if not possible."
     (upgraded-complex-part-type real-type))
   (or (find-registered-tag '(COMPLEX REAL))
       (let ((tag (new-type-tag)))
-	(push-type '(COMPLEX REAL) tag)))
-;; used to be #+(or)
-  #+always-fail
-  (case real-type
-    ((SINGLE-FLOAT DOUBLE-FLOAT INTEGER RATIO #+long-float LONG-FLOAT)
-     (let ((tag (new-type-tag)))
-       (push-type `(COMPLEX ,real-type) tag)))
-    ((RATIONAL) (canonical-type '(OR (COMPLEX INTEGER) (COMPLEX RATIO))))
-    ((FLOAT) (canonical-type '(OR (COMPLEX SINGLE-FLOAT) (COMPLEX DOUBLE-FLOAT)
-			       #+long-float (COMPLEX LONG-FLOAT))))
-    ((* NIL REAL) (canonical-type
-		   '(OR (COMPLEX INTEGER) (COMPLEX RATIO)
-		        (COMPLEX SINGLE-FLOAT) (COMPLEX DOUBLE-FLOAT)
-		     #+long-float (COMPLEX LONG-FLOAT)
-		     )))
-    (otherwise (canonical-complex-type (upgraded-complex-part-type real-type)))))
+	(push-type '(COMPLEX REAL) tag))))
 
 ;;----------------------------------------------------------------------
 ;; CONS types. Only (CONS T T) and variants, as well as (CONS NIL *), etc
@@ -1504,9 +1236,6 @@ if not possible."
   ;; The problem with the code below is that it does not suport infinite
   ;; recursion. Instead we just canonicalize everything to CONS, irrespective
   ;; of whether the arguments are valid types or not!
-  ;; used to be #+(or)
-  #+always-fail 
-  (canonical-type 'CONS)
   (let ((car-tag (if (eq car-type '*) -1 (canonical-type car-type)))
 	(cdr-tag (if (eq cdr-type '*) -1 (canonical-type cdr-type))))
     (cond ((or (zerop car-tag) (zerop cdr-tag))
@@ -1549,9 +1278,13 @@ if not possible."
 	       (RATIONAL (OR INTEGER RATIO))
 	       (FLOAT (OR SINGLE-FLOAT DOUBLE-FLOAT
                        #+long-float LONG-FLOAT))
-	       (REAL (OR INTEGER SINGLE-FLOAT DOUBLE-FLOAT
-		      #+long-float LONG-FLOAT RATIO))
-	       (COMPLEX (COMPLEX REAL))
+               (REAL (OR INTEGER
+                      #+short-float SHORT-FLOAT
+                      SINGLE-FLOAT
+                      DOUBLE-FLOAT
+                      #+long-float LONG-FLOAT
+                      RATIO))
+               (COMPLEX (COMPLEX REAL))
 
 	       (NUMBER (OR REAL COMPLEX))
 
@@ -1662,10 +1395,6 @@ if not possible."
                (CODE-BLOCK)
 	       ))
 
-
-;;(print "\n\n\n\n\nFIX hash-table-fill\n\n\n\n")
-
-
 (defun hash-table-fill (ht values)
   (dolist (pair values)
     (let ((key (car pair))
@@ -1679,7 +1408,6 @@ if not possible."
      '#.sys::+built-in-type-list+)) ;; Clasp change
 
 (defun find-built-in-tag (name)
-;;  (declare (si::c-local))
   (let (record)
     (cond ((eq name T)
 	   -1)
@@ -1707,35 +1435,6 @@ if not possible."
 	(cons-setf-cdr type (logior tag other-tag))))))
 
 ;;----------------------------------------------------------------------
-;; CANONICALIZE (removed)
-;;
-;; This function takes a type tag and produces a more or less human
-;; readable representation of the type in terms of elementary types,
-;; intervals, arrays and classes.
-;;
-#+always-fail
-(defun canonicalize (type)
-  (let ((*highest-type-tag* *highest-type-tag*)
-	(*save-types-database* t)
-	(*member-types* *member-types*)
-	(*elementary-types* *elementary-types*))
-    (let ((tag (canonical-type type))
-	  (out))
-      (setq tag (canonical-type type))
-      ;;(print-types-database *elementary-types*)
-      ;;(print-types-database *member-types*)
-      (dolist (i *member-types*)
-	(unless (zerop (logand (cdr i) tag))
-	  (push (car i) out)))
-      (when out
-	(setq out `((MEMBER ,@out))))
-      (dolist (i *elementary-types*)
-	(unless (zerop (logand (cdr i) tag))
-	  ;;(print (list tag (cdr i) (logand tag (cdr i))))
-	  (push (car i) out)))
-	(values tag `(OR ,@out)))))
-
-;;----------------------------------------------------------------------
 ;; (CANONICAL-TYPE TYPE)
 ;;
 ;; This function registers all types mentioned in the given expression,
@@ -1744,7 +1443,7 @@ if not possible."
 ;; *ELEMENTARY-TYPES* and *MEMBER-TYPES*.
 ;;
 (defun canonical-type (type)
-  (declare (notinline clos::classp funcall))
+  (declare (notinline clos::classp))
   (cond ((find-registered-tag type))
 	((eq type 'T) -1)
 	((eq type 'NIL) 0)
@@ -1822,12 +1521,6 @@ if not possible."
 	   (values (zerop (logandc2 (safe-canonical-type t1)
 				    (safe-canonical-type t2)))
 		   t))
-	  #+nil
-	  ((null tag1)
-	   (error "Unknown type specifier ~S." t1))
-	  #+nil
-	  ((null tag2)
-	   (error "Unknown type specifier ~S." t2))
 	  (t
 	   (values nil nil)))))
 
@@ -1837,14 +1530,12 @@ if not possible."
   (when (eq t1 t2)
     (return-from subtypep (values t t)))
   ;; Another easy case: types are classes.
-  (when #-clasp(and (instancep t1) (instancep t2)
-		    (clos::classp t1) (clos::classp t2))
-	#+clasp(and (clos::classp t1) (clos::classp t2))
+  (when (and (clos::classp t1) (clos::classp t2))
     (return-from subtypep (values (subclassp t1 t2) t)))
   ;; Finally, cached results.
   (let* ((cache *subtypep-cache*)
-	 (hash (truly-the (integer 0 255) (logand (HASH-EQL t1 t2) 255)))
-	 (elt (aref cache hash)))
+         (hash (truly-the (integer 0 255) (logand (hash-eql t1 t2) 255)))
+         (elt (aref cache hash)))
     (when (and elt (eq (caar elt) t1) (eq (cdar elt) t2))
       (setq elt (cdr elt))
       (return-from subtypep (values (car elt) (cdr elt))))
@@ -1866,12 +1557,6 @@ if not possible."
     (cond ((and (numberp tag1) (numberp tag2))
 	   (values (= (safe-canonical-type t1) (safe-canonical-type t2))
 		   t))
-	  #+nil
-	  ((null tag1)
-	   (error "Unknown type specifier ~S." t1))
-	  #+nil
-	  ((null tag2)
-	   (error "Unknown type specifier ~S." t2))
 	  (t
 	   (values nil nil)))))
 

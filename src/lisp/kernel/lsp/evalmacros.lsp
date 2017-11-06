@@ -41,16 +41,6 @@ last FORM.  If not, simply returns NIL."
        ,@(si::expand-set-documentation name 'function doc-string)
        ',name)))
 
-(defun si::register-global (name)
-  "This should augment a global environment object that the compiler uses
-rather than modify the runtime environment"
-;;  (bformat t "si::register-global %s\n" name)
-  (si:*make-special name))
-#||
-  (pushnew name cmp::*global-vars*)
-  (values))
-||#
-
 (defmacro defvar (&whole whole var &optional (form nil form-sp) doc-string)
   "Syntax: (defvar name [form [doc]])
 Declares the variable named by NAME as a special variable.  If the variable
@@ -58,17 +48,13 @@ does not have a value, then evaluates FORM and assigns the value to the
 variable.  FORM defaults to NIL.  The doc-string DOC, if supplied, is saved
 as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
   `(LOCALLY (DECLARE (SPECIAL ,var))
-    (SYS:*MAKE-SPECIAL ',var)
+     (eval-when (:compile-toplevel :load-toplevel :execute)
+       (SYS:*MAKE-SPECIAL ',var))
     ,@(when form-sp
 	  `((UNLESS (BOUNDP ',var)
 	      (SETQ ,var ,form))))
     ,@(si::expand-set-documentation var 'variable doc-string)
     ,(ext:register-with-pde whole)
-    ,(if *bytecodes-compiler*
-         `(eval-when (:compile-toplevel)
-            (sys:*make-special ',var))
-         `(eval-when (:compile-toplevel)
-            (si::register-global ',var)))
     ',var))
 
 
@@ -78,16 +64,12 @@ Declares the global variable named by NAME as a special variable and assigns
 the value of FORM to the variable.  The doc-string DOC, if supplied, is saved
 as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
   `(LOCALLY (DECLARE (SPECIAL ,var))
-    (SYS:*MAKE-SPECIAL ',var)
-    (SETQ ,var ,form)
-    ,@(si::expand-set-documentation var 'variable doc-string)
-    ,(ext:register-with-pde whole)
-    ,(if *bytecodes-compiler*
-         `(eval-when (:compile-toplevel)
-            (sys:*make-special ',var))
-         `(eval-when (:compile-toplevel)
-            (si::register-global ',var)))
-    ',var))
+     (eval-when (:compile-toplevel :load-toplevel :execute)
+       (SYS:*MAKE-SPECIAL ',var))
+     (SETQ ,var ,form)
+     ,@(si::expand-set-documentation var 'variable doc-string)
+     ,(ext:register-with-pde whole)
+     ',var))
 
 
 
@@ -99,38 +81,14 @@ Declares that the global variable named by SYMBOL is a constant with the value
 of FORM as its constant value.  The doc-string DOC, if supplied, is saved as a
 VARIABLE doc and can be retrieved by (DOCUMENTATION 'SYMBOL 'VARIABLE)."
   `(PROGN
-     (SYS:*MAKE-CONSTANT ',var ,form)
+     (eval-when (:compile-toplevel :load-toplevel :execute)
+       (SYS:*MAKE-CONSTANT ',var ,form))
     ,@(si::expand-set-documentation var 'variable doc-string)
     ,(ext:register-with-pde whole)
-    ,(if *bytecodes-compiler*
-         `(eval-when (:compile-toplevel)
-            (sys:*make-constant ',var ,form))
-         `(eval-when (:compile-toplevel)
-            (sys:*make-constant ',var ,form)
-            (si::register-global ',var)))
     ',var))
 
 
-#+ecl
-(defmacro defun (&whole whole name vl &body body &environment env &aux doc-string)
-  ;; Documentation in help.lsp
-  (multiple-value-setq (body doc-string) (remove-documentation body))
-  (let* ((function `#'(ext::lambda-block ,name ,vl ,@body))
-	 (global-function `#'(ext::lambda-block ,name ,vl
-						(declare (si::c-global))
-						,@body)
-	  ))
-    (when *dump-defun-definitions*
-      (print function)
-      (setq function `(si::bc-disassemble ,function)))
-    `(progn
-       ,(ext:register-with-pde whole `(si::fset ',name ,global-function))
-       ,@(si::expand-set-documentation name 'function doc-string)
-       ,(and *defun-inline-hook* (funcall *defun-inline-hook* name global-function env))
-       ',name)))
-
 ;;; DEFUN that generates interpreted functions
-#+clasp
 (si::fset 'defun
           #'(lambda (def env)
               (let ((whole def)
@@ -179,7 +137,7 @@ VARIABLE doc and can be retrieved by (DOCUMENTATION 'SYMBOL 'VARIABLE)."
       (print function)
       (setq function `(si::bc-disassemble ,function)))
     `(progn
-       (core:setf-compiler-macro-function ',name ,function) ;;(put-sysprop ',name 'sys::compiler-macro ,function)
+       (core:setf-compiler-macro-function ',name ,function)
        ,@(si::expand-set-documentation name 'function doc-string)
        ,(ext:register-with-pde whole)
        ',name)))
@@ -235,11 +193,6 @@ terminated by a non-local exit."
 
 (defmacro lambda (&rest body) `(function (lambda ,@body)))
 
-#+ecl(defmacro ext::lambda-block (name lambda-list &rest lambda-body)
-       (multiple-value-bind (decls body doc)
-	   (si::process-declarations lambda-body t)
-	 `(lambda ,lambda-list (declare (core:lambda-block ,name) ,@decls) ,@doc
-		  (block ,(si::function-block-name name) ,@body))))
 ; assignment
 
 #-clasp-min
@@ -261,15 +214,7 @@ the corresponding VAR.  Returns NIL."
 	 (UNLESS (ENDP L) (GO top))
 	 (RETURN-FROM NIL
 	   (PROGN
-	     (LIST* 'LET* (NREVERSE BINDINGS) (NREVERSE (CONS NIL FORMS))))))))
-  #||(do ((l args (cddr l))
-  (forms nil)
-  (bindings nil))
-	    ((endp l) (list* 'LET* (nreverse bindings) (nreverse (cons nil forms))))
-	  (let ((sym (gensym)))
-            (push (list sym (cadr l)) bindings)
-            (push (list 'setq (car l) sym) forms)))||#
-  )
+	     (LIST* 'LET* (NREVERSE BINDINGS) (NREVERSE (CONS NIL FORMS)))))))))
 
 
 ; conditionals
@@ -342,9 +287,6 @@ SECOND-FORM."
 (defmacro multiple-value-list (form)
   "Evaluates FORM and returns a list of all values FORM returns."
   `(MULTIPLE-VALUE-CALL #'LIST ,form))
-;;
-;; The statement above used to be:
-;; `(MULTIPLE-VALUE-CALL 'LIST ,form))
 
 (defmacro multiple-value-setq (vars form)
   "Syntax: (multiple-value-setq {var}* form)
@@ -385,10 +327,6 @@ values of the last FORM.  If no FORM is given, returns NIL."
       ,exit
 	(,jmp-op ,test (GO ,label)))))
 
-#|
-(evaluate-verbosity 1)
-(break "about to do while")
-|#
 (defmacro sys::while (test &body body)
   (while-until test body 'when))
 
@@ -471,19 +409,3 @@ values of the last FORM.  If no FORM is given, returns NIL."
   (if (and (consp form) (eq (car form) 'quote))
       (second form)
       form))
-
-#-clasp(defun maybe-quote (form)
-  ;; Quotes a form only if strictly required. This happens only when FORM is
-  ;; either a symbol and not a keyword
-  (if (if (atom form)
-	  (typep form '(and symbol (not keyword) (not boolean)))
-	  (not (eq (first form) 'quote)))
-      (list 'quote form)
-      form))
-
-;; CLOS needs this in the ext package and I can't find it anywhere but here - meister 2013
-#| #+clasp |#
-#+(or)(progn
-	  (import 'maybe-quote :ext)
-	  (export 'maybe-quote :ext))
-

@@ -52,7 +52,7 @@
   (let (elt-type length name args)
     (cond ((consp type)
 	   (setq name (first type) args (cdr type)))
-	  (#-clasp(si::instancep type) #+clasp(clos::classp type)
+	  ((clos::classp type)
 	   (setf name (class-name (truly-the class type)) args nil))
 	  (t
 	   (setq name type args nil)))
@@ -103,9 +103,8 @@
        ;; Furthermore, we also give up trying to find if the element
        ;; type is *. Instead we just compare with some specialized
        ;; types and otherwise fail.
-       (when (subtypep type nil env) ; why would you do this
-         (return-from closest-sequence-type (values nil nil nil)))
-       (dolist (i '((LIST . LIST)
+       (dolist (i '((NIL . NIL)
+                    (LIST . LIST)
                     (STRING . CHARACTER)
                     . #.(mapcar #'(lambda (i) `((VECTOR ,i) . ,i))
                          sys::+upgraded-array-element-types+)) ;; clasp change
@@ -131,7 +130,7 @@ default value of INITIAL-ELEMENT depends on TYPE."
                  (error-sequence-length result type size))))
           (t
            (let ((result (sys:make-vector (if (eq element-type '*) 't element-type)
-                                          size nil nil nil #+ecl nil #+clasp 0)))
+                                          size nil nil nil 0)))
              ;; Don't know why we don't just pass make-vector the initial element.
              (when iesp
                (si::fill-array-with-elt result initial-element 0 nil))

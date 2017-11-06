@@ -124,16 +124,7 @@ by ALLOW-WITH-INTERRUPTS."
 (defmacro with-lock ((lock-form &rest options) &body body)
   #-threads
   `(progn ,@body)
-  ;; Why do we need %count? Even if get-lock succeeeds, an interrupt may
-  ;; happen between the end of get-lock and when we save the output of
-  ;; the function. That means we lose the information and ignore that
-  ;; the lock was actually acquired. Furthermore, a lock can be recursive
-  ;; and mp:lock-holder is also not reliable.
-  ;;
-  ;; Next notice how we need to disable interrupts around the body and
-  ;; the get-lock statement, to ensure that the unlocking is done with
-  ;; interrupts disabled.
-  #+(and clasp threads)
+  #+threads
   (with-unique-names (lock)
     `(let ((,lock ,lock-form))
        (unwind-protect
@@ -141,29 +132,7 @@ by ALLOW-WITH-INTERRUPTS."
               (mp:get-lock ,lock)
               (locally ,@body))
          (progn
-           (mp:giveup-lock ,lock)))))
-  #+(and ecl threads)
-  (with-unique-names (lock owner count process)
-    `(let* ((,lock ,lock-form)
-            (,owner (mp:lock-owner ,lock))
-            (,count (mp:lock-count ,lock)))
-       (declare (type fixnum ,count))
-       (without-interrupts
-           (unwind-protect
-                (with-restored-interrupts
-                    (debug-mp "with-lock get-lock -> ~a  owner -> ~a   process -> ~a~%" ,lock ,owner mp:*current-process* )
-                  (mp::get-lock ,lock)
-                  (locally ,@body))
-             (let ((,process mp:*current-process*))
-               (declare (optimize (speed 3) (safety 0) (debug 0)))
-               (if (and (eq ,process (mp:lock-owner ,lock))
-                        (or (not (eq ,owner ,process))
-                            (> (the fixnum (mp:lock-count ,lock))
-                               (the fixnum ,count))))
-                   (progn
-                     (debug-mp "with-lock giveup-lock lock -> ~a~%" ,lock)
-                     (mp::giveup-lock ,lock))
-                   (format t "with-lock NOT giveup-lock lock -> ~a  reasons? ,process -> ~a  (mp:lock-owner ,lock) -> ~a  (mp:lock-count ,lock) -> ~a    ,count -> ~a~%" ,lock ,process (mp:lock-owner ,lock) (mp:lock-count ,lock) ,count ))))))))
+           (mp:giveup-lock ,lock))))))
 
 #+ecl-read-write-lock
 (defmacro with-rwlock ((lock op) &body body)

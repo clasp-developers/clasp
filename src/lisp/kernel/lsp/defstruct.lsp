@@ -181,10 +181,10 @@
 	      #-CLOS
               (sys:make-structure ',name ,@slot-names)
 	      ;; the class is defined by an enclosing LET form
-	      #+(and clos clasp)(sys:make-structure
-                      (let ((x (load-time-value (list nil))))
-                        (or (car x) (car (rplaca x (find-class ',name))))) ,@slot-names)
-              #+(and clos ecl)(sys:make-structure .structure-constructor-class. ,@slot-names)
+	      #+clos
+              (sys:make-structure
+               (let ((x (load-time-value (list nil))))
+                 (or (car x) (car (rplaca x (find-class ',name))))) ,@slot-names)
               ))
 	  ((subtypep type '(VECTOR T))
 	   `(defun ,constructor-name ,keys
