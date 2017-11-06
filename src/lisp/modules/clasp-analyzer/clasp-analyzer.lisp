@@ -317,8 +317,8 @@
      "FLAGS_STAMP_IN_HEADER")))
   
 (defun traverse (name analysis)
-  (let ((stamp (gethash name (analysis-stamps analysis)))
-        (stamp-value (analysis-get-stamp-value analysis stamp)))
+  (let* ((stamp (gethash name (analysis-stamps analysis)))
+         (stamp-value (analysis-get-stamp-value analysis stamp)))
     (setf (stamp-value stamp) stamp-value)
     (setf (stamp-flags stamp) (calculate-flags name))
     (setf (stamp-in-hierarchy stamp) t)
@@ -365,7 +365,7 @@
              (declare (core:lambda-name generate-dynamic-cast-code.lambda))
              (when (and (not (abstract-species-stamp-p stamp analysis))
                         (stamp-in-hierarchy stamp))
-               (format fout "// ~a~%" (build-stamp-name stamp))
+               (format fout "// ~a~%" (get-stamp-name stamp))
                (format fout "template <typename FP> struct Cast<~a*,FP> {~%" key )
                (format fout "  inline static bool isA(FP client) {~%" key)
                (format fout "      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));~%")
@@ -716,7 +716,7 @@ to expose."
   (codegen-variable-part stream (fixed-part layout) analysis))
 
 (defun codegen-bitunit-container-layout (stream stamp key layout analysis)
-  (format stream "{ bitunit_container_kind, ~a, sizeof(~a), ~a, \"~a\" },~%" (build-stamp-name stamp) key (species-bitwidth (stamp-species stamp)) key )
+  (format stream "{ bitunit_container_kind, ~a, sizeof(~a), ~a, \"~a\" },~%" (get-stamp-name stamp) key (species-bitwidth (stamp-species stamp)) key )
   ;; There is no fixed part for bitunits
   (codegen-variable-part stream (fixed-part layout) analysis))
 
