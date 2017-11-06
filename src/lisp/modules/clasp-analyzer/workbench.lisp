@@ -34,7 +34,6 @@
   (defparameter *p1* (load-project "~/Development/clasp/project.dat"))
   (format t "Done read project~%"))
 
-
 (progn
   (defparameter *analysis* (analyze-project *p1*))
   (generate-code *analysis* :output-file #P"/tmp/clasp_gc.cc")

@@ -137,6 +137,7 @@
 
 (defstruct stamp
   key
+  value-source
   value
   flags
   cclass
@@ -207,7 +208,7 @@
   (when (or (eq slot-names t) (member 'next-stamp-value slot-names))
     (let ((max-builtin-stamp (loop for value being the hash-values in (unused-builtin-stamps gen)
                                    maximize value)))
-      (setf (next-stamp-value gen) (1+ max-builtin-stamp)))))
+      (setf (next-stamp-value gen) max-builtin-stamp))))
 
 
 (defstruct analysis
@@ -235,8 +236,8 @@
           (progn
             (remhash stamp-name (unused-builtin-stamps generator))
             (setf (gethash stamp-name (used-builtin-stamps generator)) builtin)
-            builtin)
-          (incf (next-stamp-value generator))))))
+            (values builtin :from-scraper))
+          (values (incf (next-stamp-value generator)) :from-static-analyzer)))))
 
 (defmethod print-object ((object analysis) stream)
   (format stream "#<analysis>"))
@@ -317,13 +318,15 @@
      "FLAGS_STAMP_IN_HEADER")))
   
 (defun traverse (name analysis)
-  (let* ((stamp (gethash name (analysis-stamps analysis)))
-         (stamp-value (analysis-get-stamp-value analysis stamp)))
-    (setf (stamp-value stamp) stamp-value)
-    (setf (stamp-flags stamp) (calculate-flags name))
-    (setf (stamp-in-hierarchy stamp) t)
-    (dolist (child (gethash stamp (analysis-stamp-children analysis)))
-      (traverse child analysis))))
+  (let* ((stamp (gethash name (analysis-stamps analysis))))
+    (multiple-value-bind (stamp-value stamp-value-source)
+        (analysis-get-stamp-value analysis stamp)
+      (setf (stamp-value stamp) stamp-value)
+      (setf (stamp-value-source stamp) stamp-value-source)
+      (setf (stamp-flags stamp) (calculate-flags name))
+      (setf (stamp-in-hierarchy stamp) t)
+      (dolist (child (gethash stamp (analysis-stamp-children analysis)))
+        (traverse child analysis)))))
 
 (defun initialize-stamp-values (analysis)
   (setf (analysis-stamp-children analysis) (make-hash-table))
@@ -340,8 +343,11 @@
 (defun assign-stamp-values-to-those-without (analysis)
   (maphash (lambda (name stamp)
              (when (eq (stamp-value stamp) :unassigned)
-               (setf (stamp-value stamp) (analysis-get-stamp-value analysis stamp))
-               (setf (stamp-in-hierarchy stamp) nil)))
+               (multiple-value-bind (stamp-value stamp-value-source)
+                   (analysis-get-stamp-value analysis stamp)
+                 (setf (stamp-value stamp) stamp-value
+                       (stamp-value-source stamp) stamp-value-source
+                       (stamp-in-hierarchy stamp) nil))))
            (analysis-stamps analysis)))
 
 (defun analyze-hierarchy (analysis)
@@ -3127,7 +3133,7 @@ Recursively analyze x and return T if x contains fixable pointers."
     #+(or)(let ((hardwired-kinds (core:hardwired-kinds)))
             (mapc (lambda (kv) (format fout "STAMP_~a = ~a, ~%" (car kv) (cdr kv))) hardwired-kinds))
     (mapc (lambda (stamp)
-               (format fout "~A = ~A,~%" (get-stamp-name stamp) (stamp-value stamp))
+               (format fout "~A = ~A, // ~A~%" (get-stamp-name stamp) (stamp-value stamp) (stamp-value-source stamp))
                (when (> (stamp-value stamp) maxstamp)
                  (setq maxstamp (stamp-value stamp))))
           (analysis-sorted-stamps anal))
