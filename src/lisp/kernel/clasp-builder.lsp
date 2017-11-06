@@ -427,14 +427,12 @@ Return files."
 
 
 (defun link-cclasp (&key (output-file (build-common-lisp-bitcode-pathname)) (system (command-line-arguments-as-list)))
-  #+use-boehmdc (setq system (remove-files-for-boehmdc system))
   (let ((all-bitcode (bitcode-pathnames #P"src/lisp/kernel/tag/start" #P"src/lisp/kernel/tag/cclasp" :system system)))
     (cmp:link-bitcode-modules output-file all-bitcode)))
 
 (defun compile-cclasp* (output-file system)
   "Turn off generation of inlining code until its turned back on by the source code.
 Compile the cclasp source code."
-  #+use-boehmdc (setq system (remove-files-for-boehmdc system))
   (let ((ensure-adjacent (select-source-files #P"src/lisp/kernel/cleavir/inline-prep" #P"src/lisp/kernel/cleavir/auto-compile" :system system)))
     (or (= (length ensure-adjacent) 2) (error "src/lisp/kernel/inline-prep MUST immediately preceed src/lisp/kernel/auto-compile - currently the order is: ~a" ensure-adjacent)))
   (let ((files (append (out-of-date-bitcodes #P"src/lisp/kernel/tag/start" #P"src/lisp/kernel/cleavir/inline-prep" :system system)
@@ -453,13 +451,11 @@ Compile the cclasp source code."
   (compile-cclasp* output-file system))
 
 (defun load-cclasp (&key (system (command-line-arguments-as-list)))
-  #+use-boehmdc (setq system (remove-files-for-boehmdc system))
   (load-system (select-source-files #P"src/lisp/kernel/tag/bclasp" #P"src/lisp/kernel/cleavir/inline-prep" :system system) :compile-file-load t)
   (load-system (select-source-files #P"src/lisp/kernel/cleavir/auto-compile" #P"src/lisp/kernel/tag/cclasp" :system system) :compile-file-load nil ))
 (export '(load-cclasp))
 
 (defun compile-cclasp (&key clean (output-file (build-common-lisp-bitcode-pathname)) (system (command-line-arguments-as-list)))
-  #+use-boehmdc (setq system (remove-files-for-boehmdc system))
   (handler-bind
       ((error #'build-failure))
     (cclasp-features)
