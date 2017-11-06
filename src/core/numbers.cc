@@ -1950,7 +1950,8 @@ bool Complex_O::eql_(T_sp o) const {
 }
 
 Number_sp Complex_O::abs_() const {
-  IMPLEMENT_ME();
+  return clasp_sqrt(clasp_plus(clasp_times(this->_real, this->_real),
+                               clasp_times(this->_imaginary, this->_imaginary)));
 }
 
 
