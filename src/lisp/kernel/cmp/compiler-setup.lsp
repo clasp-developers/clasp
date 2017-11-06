@@ -24,19 +24,4 @@
 
 ;; -^-
 
-(defvar *engine-builder* (llvm-sys:make-engine-builder *the-module*))
-;; NOTE:  *the-module* becomes invalid after call to make-engine-builder - is this OK?
-
-
-
-;;
-;; --------       Here set the execution engine kind
-;;                INTERPRETER or JIT (for native code)
-;;
-;;(llvm-sys:set-engine-kind *engine-builder* 'llvm-sys:interpreter)
-(let ((target-options (llvm-sys:make-target-options)))
-       ;; module is invalid after make-engine-builder call
-  (llvm-sys:set-target-options *engine-builder* target-options)
-(defvar *the-execution-engine* (llvm-sys:create *engine-builder*))
-(if (is-undefined *the-execution-engine*)
-  (error "The execution engine could not be created: ~a" (llvm-sys:error-string *engine-builder*)))
+;;; Does nothing after I removed the execution-engine initialization now that we use ORC

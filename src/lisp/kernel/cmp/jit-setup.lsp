@@ -135,20 +135,6 @@ Return the module and the global variable that represents the load-time-value-ho
 \(value module global-run-time-values function-pass-manager\)."
   (llvm-create-module (next-run-time-module-name)))
 
-
-(defun create-run-time-execution-engine (module)
-  (let ((engine-builder (llvm-sys:make-engine-builder module))
-	(target-options (llvm-sys:make-target-options)))
-    (llvm-sys:set-target-options engine-builder target-options)
-    (if (member :use-orc *features*)
-        (progn
-          (llvm-sys:set-use-orc-mcjitreplacement engine-builder t)
-          (bformat t "Using ORC\n")))
-    (llvm-sys:create engine-builder)))
-
-
-
-
 (llvm-sys:initialize-native-target)
 
 (defvar *run-time-module* nil)
