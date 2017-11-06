@@ -580,6 +580,7 @@ The passed module is modified as a side-effect."
 
 (progn
   (export '(jit-add-module-return-function jit-add-module-return-dispatch-function jit-remove-module))
+  (defparameter *jit-lock* (mp:make-lock :name 'jit-lock :recursive t))
   (defun jit-add-module-return-function (original-module main-fn startup-fn shutdown-fn literals-list &optional dispatcher )
     ;; Link the builtins into the module and optimize them
     (if (null dispatcher)
@@ -594,8 +595,12 @@ The passed module is modified as a side-effect."
             (repl-name (llvm-sys:get-name main-fn))
             (startup-name (llvm-sys:get-name startup-fn))
             (shutdown-name (llvm-sys:get-name shutdown-fn)))
-        (let ((handle (llvm-sys:clasp-jit-add-module jit-engine module)))
-          (llvm-sys:jit-finalize-repl-function jit-engine handle repl-name startup-name shutdown-name literals-list)))))
+        (unwind-protect
+             (progn
+               (mp:lock *jit-lock* t)
+               (let ((handle (llvm-sys:clasp-jit-add-module jit-engine module)))
+                 (llvm-sys:jit-finalize-repl-function jit-engine handle repl-name startup-name shutdown-name literals-list)))
+          (mp:unlock *jit-lock*)))))
 
   (defun jit-add-module-return-dispatch-function (original-module dispatch-fn startup-fn shutdown-fn literals-list)
     (jit-add-module-return-function original-module dispatch-fn startup-fn shutdown-fn literals-list :dispatch))
