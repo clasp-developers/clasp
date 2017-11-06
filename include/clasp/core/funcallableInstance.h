@@ -27,7 +27,6 @@ THE SOFTWARE.
 #ifndef _core_funcallable_instance_H_
 #define _core_funcallable_instance_H_
 
-#include <atomic>
 #include <clasp/core/object.h>
 #include <clasp/core/array.h>
 #include <clasp/core/hashTable.fwd.h>
@@ -89,10 +88,10 @@ namespace core {
     int    _isgf;
     bool   _DebugOn;
     T_sp   _Sig;
-    std::atomic<T_sp>   _CallHistory;
-    std::atomic<T_sp>   _SpecializerProfile;
+    gc::atomic_wrapper<T_sp>   _CallHistory;
+    gc::atomic_wrapper<T_sp>   _SpecializerProfile;
 //    T_sp   _Lock;
-    std::atomic<T_sp>   _CompiledDispatchFunction;
+    gc::atomic_wrapper<T_sp>   _CompiledDispatchFunction;
   public:
 //    static FuncallableInstance_sp createClassUncollectable(gctools::Stamp is,Class_sp metaClass, size_t number_of_slots, Creator_sp creator);
     static Class_sp create(Symbol_sp symbol,Class_sp metaClass,Creator_sp creator);
@@ -116,8 +115,8 @@ namespace core {
 
 //    mp::SharedMutex_sp GFUN_LOCK() const { return gc::As<mp::SharedMutex_sp>(this->_Lock);};
 //    void GFUN_LOCK_set(T_sp l) { this->_Lock = l; };
-    T_sp GFUN_DISPATCHER() const { return this->_CompiledDispatchFunction; };
-    void GFUN_DISPATCHER_set(T_sp val) { this->_CompiledDispatchFunction = val; };
+    T_sp GFUN_DISPATCHER() const { return this->_CompiledDispatchFunction.load(); };
+    void GFUN_DISPATCHER_set(T_sp val) { this->_CompiledDispatchFunction.store(val); };
   public:
 
     void accumulateSuperClasses(HashTableEq_sp supers, VectorObjects_sp arrayedSupers, Class_sp mc);
