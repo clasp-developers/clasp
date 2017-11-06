@@ -7077,12 +7077,12 @@ public:
 // not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::Package_O),_AmpPackage._M_base._M_i), "_AmpPackage._M_base._M_i" }, // public: (T NIL NIL) fixable: NIL good-name: T
 // not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::Package_O),_ActsLikeKeywordPackage._M_base._M_i), "_ActsLikeKeywordPackage._M_base._M_i" }, // public: (T NIL NIL) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::List_V>), offsetof(SAFE_TYPE_MACRO(core::Package_O),_Nicknames), "_Nicknames" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::Package_O),_Lock._r._Mutex.__count), "_Lock._r._Mutex.__count" }, // public: (T T T T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(core::Package_O),_Lock._r._Mutex.__value.__wch), "_Lock._r._Mutex.__value.__wch" }, // public: (T T T T T) fixable: NIL good-name: T
+// {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::Package_O),_Lock._r._Mutex.__count), "_Lock._r._Mutex.__count" }, // public: (T T T T) fixable: NIL good-name: T
+// {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(core::Package_O),_Lock._r._Mutex.__value.__wch), "_Lock._r._Mutex.__value.__wch" }, // public: (T T T T T) fixable: NIL good-name: T
  {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::Package_O),_Lock._r._Counter), "_Lock._r._Counter" }, // public: (T T T) fixable: NIL good-name: T
  {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::Package_O),_Lock._r._Recursive), "_Lock._r._Recursive" }, // public: (T T T) fixable: NIL good-name: T
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::Package_O),_Lock._g._Mutex.__count), "_Lock._g._Mutex.__count" }, // public: (T T T T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(core::Package_O),_Lock._g._Mutex.__value.__wch), "_Lock._g._Mutex.__value.__wch" }, // public: (T T T T T) fixable: NIL good-name: T
+// {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::Package_O),_Lock._g._Mutex.__count), "_Lock._g._Mutex.__count" }, // public: (T T T T) fixable: NIL good-name: T
+// {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(core::Package_O),_Lock._g._Mutex.__value.__wch), "_Lock._g._Mutex.__value.__wch" }, // public: (T T T T T) fixable: NIL good-name: T
  {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::Package_O),_Lock._g._Counter), "_Lock._g._Counter" }, // public: (T T T) fixable: NIL good-name: T
  {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::Package_O),_Lock._g._Recursive), "_Lock._g._Recursive" }, // public: (T T T) fixable: NIL good-name: T
  {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::Package_O),_Lock._b), "_Lock._b" }, // public: (T T) fixable: NIL good-name: T
@@ -7513,8 +7513,8 @@ public:
 { class_kind, STAMP_clcenv__GlobalEnvironment_O, sizeof(clcenv::GlobalEnvironment_O), 0, "clcenv::GlobalEnvironment_O" },
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(clcenv::GlobalEnvironment_O),_Next), "_Next" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 { class_kind, STAMP_mp__ConditionVariable_O, sizeof(mp::ConditionVariable_O), 0, "mp::ConditionVariable_O" },
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(mp::ConditionVariable_O),_ConditionVariable._ConditionVariable.__count), "_ConditionVariable._ConditionVariable.__count" }, // public: (T T T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(mp::ConditionVariable_O),_ConditionVariable._ConditionVariable.__value.__wch), "_ConditionVariable._ConditionVariable.__value.__wch" }, // public: (T T T T) fixable: NIL good-name: T
+// {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(mp::ConditionVariable_O),_ConditionVariable._ConditionVariable.__count), "_ConditionVariable._ConditionVariable.__count" }, // public: (T T T) fixable: NIL good-name: T
+// {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(mp::ConditionVariable_O),_ConditionVariable._ConditionVariable.__value.__wch), "_ConditionVariable._ConditionVariable.__value.__wch" }, // public: (T T T T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(mp::ConditionVariable_O),_Name), "_Name" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 { class_kind, STAMP_mp__SharedMutex_O, sizeof(mp::SharedMutex_O), 0, "mp::SharedMutex_O" },
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(mp::SharedMutex_O),_Name), "_Name" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
@@ -7522,26 +7522,26 @@ public:
  {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(mp::SharedMutex_O),_SharedMutex.mReadsBlocked), "_SharedMutex.mReadsBlocked" }, // public: (T T) fixable: NIL good-name: T
  {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(mp::SharedMutex_O),_SharedMutex.mMaxReaders), "_SharedMutex.mMaxReaders" }, // public: (T T) fixable: NIL good-name: T
  {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(mp::SharedMutex_O),_SharedMutex.mReaders), "_SharedMutex.mReaders" }, // public: (T T) fixable: NIL good-name: T
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(mp::SharedMutex_O),_SharedMutex.mReadMutex._Mutex.__count), "_SharedMutex.mReadMutex._Mutex.__count" }, // public: (T T T T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(mp::SharedMutex_O),_SharedMutex.mReadMutex._Mutex.__value.__wch), "_SharedMutex.mReadMutex._Mutex.__value.__wch" }, // public: (T T T T T) fixable: NIL good-name: T
+// {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(mp::SharedMutex_O),_SharedMutex.mReadMutex._Mutex.__count), "_SharedMutex.mReadMutex._Mutex.__count" }, // public: (T T T T) fixable: NIL good-name: T
+// {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(mp::SharedMutex_O),_SharedMutex.mReadMutex._Mutex.__value.__wch), "_SharedMutex.mReadMutex._Mutex.__value.__wch" }, // public: (T T T T T) fixable: NIL good-name: T
  {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(mp::SharedMutex_O),_SharedMutex.mReadMutex._Counter), "_SharedMutex.mReadMutex._Counter" }, // public: (T T T) fixable: NIL good-name: T
  {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(mp::SharedMutex_O),_SharedMutex.mReadMutex._Recursive), "_SharedMutex.mReadMutex._Recursive" }, // public: (T T T) fixable: NIL good-name: T
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(mp::SharedMutex_O),_SharedMutex.mWriteMutex._Mutex.__count), "_SharedMutex.mWriteMutex._Mutex.__count" }, // public: (T T T T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(mp::SharedMutex_O),_SharedMutex.mWriteMutex._Mutex.__value.__wch), "_SharedMutex.mWriteMutex._Mutex.__value.__wch" }, // public: (T T T T T) fixable: NIL good-name: T
+// {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(mp::SharedMutex_O),_SharedMutex.mWriteMutex._Mutex.__count), "_SharedMutex.mWriteMutex._Mutex.__count" }, // public: (T T T T) fixable: NIL good-name: T
+// {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(mp::SharedMutex_O),_SharedMutex.mWriteMutex._Mutex.__value.__wch), "_SharedMutex.mWriteMutex._Mutex.__value.__wch" }, // public: (T T T T T) fixable: NIL good-name: T
  {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(mp::SharedMutex_O),_SharedMutex.mWriteMutex._Counter), "_SharedMutex.mWriteMutex._Counter" }, // public: (T T T) fixable: NIL good-name: T
  {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(mp::SharedMutex_O),_SharedMutex.mWriteMutex._Recursive), "_SharedMutex.mWriteMutex._Recursive" }, // public: (T T T) fixable: NIL good-name: T
 { class_kind, STAMP_mp__Mutex_O, sizeof(mp::Mutex_O), 0, "mp::Mutex_O" },
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(mp::Mutex_O),_Name), "_Name" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(mp::Mutex_O),_Owner), "_Owner" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(mp::Mutex_O),_Mutex._Mutex.__count), "_Mutex._Mutex.__count" }, // public: (T T T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(mp::Mutex_O),_Mutex._Mutex.__value.__wch), "_Mutex._Mutex.__value.__wch" }, // public: (T T T T) fixable: NIL good-name: T
+// {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(mp::Mutex_O),_Mutex._Mutex.__count), "_Mutex._Mutex.__count" }, // public: (T T T) fixable: NIL good-name: T
+// {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(mp::Mutex_O),_Mutex._Mutex.__value.__wch), "_Mutex._Mutex.__value.__wch" }, // public: (T T T T) fixable: NIL good-name: T
  {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(mp::Mutex_O),_Mutex._Counter), "_Mutex._Counter" }, // public: (T T) fixable: NIL good-name: T
  {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(mp::Mutex_O),_Mutex._Recursive), "_Mutex._Recursive" }, // public: (T T) fixable: NIL good-name: T
 { class_kind, STAMP_mp__RecursiveMutex_O, sizeof(mp::RecursiveMutex_O), 0, "mp::RecursiveMutex_O" },
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(mp::RecursiveMutex_O),_Name), "_Name" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(mp::RecursiveMutex_O),_Owner), "_Owner" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(mp::RecursiveMutex_O),_Mutex._Mutex.__count), "_Mutex._Mutex.__count" }, // public: (T T T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(mp::RecursiveMutex_O),_Mutex._Mutex.__value.__wch), "_Mutex._Mutex.__value.__wch" }, // public: (T T T T) fixable: NIL good-name: T
+// {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(mp::RecursiveMutex_O),_Mutex._Mutex.__count), "_Mutex._Mutex.__count" }, // public: (T T T) fixable: NIL good-name: T
+// {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(mp::RecursiveMutex_O),_Mutex._Mutex.__value.__wch), "_Mutex._Mutex.__value.__wch" }, // public: (T T T T) fixable: NIL good-name: T
  {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(mp::RecursiveMutex_O),_Mutex._Counter), "_Mutex._Counter" }, // public: (T T) fixable: NIL good-name: T
  {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(mp::RecursiveMutex_O),_Mutex._Recursive), "_Mutex._Recursive" }, // public: (T T) fixable: NIL good-name: T
 { class_kind, STAMP_mp__Process_O, sizeof(mp::Process_O), 0, "mp::Process_O" },
@@ -7552,8 +7552,8 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::List_V>), offsetof(SAFE_TYPE_MACRO(mp::Process_O),_ReturnValuesList), "_ReturnValuesList" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(mp::Process_O),_StackSize), "_StackSize" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(mp::Process_O),_Thread), "_Thread" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(mp::Process_O),_ExitBarrier._Mutex.__count), "_ExitBarrier._Mutex.__count" }, // public: (T T T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(mp::Process_O),_ExitBarrier._Mutex.__value.__wch), "_ExitBarrier._Mutex.__value.__wch" }, // public: (T T T T) fixable: NIL good-name: T
+// {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(mp::Process_O),_ExitBarrier._Mutex.__count), "_ExitBarrier._Mutex.__count" }, // public: (T T T) fixable: NIL good-name: T
+// {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(mp::Process_O),_ExitBarrier._Mutex.__value.__wch), "_ExitBarrier._Mutex.__value.__wch" }, // public: (T T T T) fixable: NIL good-name: T
  {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(mp::Process_O),_ExitBarrier._Counter), "_ExitBarrier._Counter" }, // public: (T T) fixable: NIL good-name: T
  {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(mp::Process_O),_ExitBarrier._Recursive), "_ExitBarrier._Recursive" }, // public: (T T) fixable: NIL good-name: T
 { class_kind, STAMP_core__SourceManager_O, sizeof(core::SourceManager_O), 0, "core::SourceManager_O" },
