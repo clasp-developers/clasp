@@ -469,7 +469,7 @@ CL_DEFUN T_sp core__libunwind_backtrace_as_list() {
     if (pi_res<0) {
       printf("%s:%d unw_get_proc_info returned error %d\n", __FILE__, __LINE__, pi_res);
     } else {
-      printf("          start: %p   end: %p\n", proc_info.start_ip, proc_info.end_ip);
+      printf("          start: %p   end: %p\n", (void*)proc_info.start_ip, (void*)proc_info.end_ip);
     }
     step = unw_step(&cursor);
     if ( step < 0 ) {
