@@ -991,10 +991,10 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
   exit_code = 0;
 #else
   #if 1
-  run_quick_tests();
   void* stackTop = NULL;
   core::ThreadLocalState thread_local_state(&stackTop);
   my_thread = &thread_local_state;
+  run_quick_tests();
   exit_code = startupFn(argc, argv, mpiEnabled, mpiRank, mpiSize);
   #else
   printf("%s:%d Skipping startupFn\n", __FILE__, __LINE__ );
