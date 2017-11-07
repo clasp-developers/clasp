@@ -46,6 +46,7 @@ THE SOFTWARE.
 #include <clasp/core/lispStream.h>
 #include <clasp/llvmo/llvmoExpose.h>
 #include <clasp/core/wrappers.h>
+#include <libunwind.h>
 
 namespace core {
 
@@ -450,8 +451,34 @@ CL_DEFUN T_sp core__maybe_demangle(core::String_sp s)
     return _Nil<T_O>();
   }
 }
-  
 
+CL_DEFUN T_sp core__libunwind_backtrace_as_list() {
+  unw_context_t context;
+  unw_getcontext(&context);
+  unw_cursor_t cursor;
+  unw_init_local(&cursor,&context);
+  char buffer[1024];
+  unw_word_t offset;
+  int step;
+  do {
+    int res = unw_get_proc_name(&cursor,buffer,1024,&offset);
+    if ( res < 0 ) printf("%s:%d unw_get_proc_name returned error %d\n", __FILE__, __LINE__, res);
+    printf("%s:%d  %s\n", __FILE__, __LINE__, buffer );
+    unw_proc_info_t proc_info;
+    int pi_res = unw_get_proc_info(&cursor,&proc_info);
+    if (pi_res<0) {
+      printf("%s:%d unw_get_proc_info returned error %d\n", __FILE__, __LINE__, pi_res);
+    } else {
+      printf("          start: %p   end: %p\n", proc_info.start_ip, proc_info.end_ip);
+    }
+    step = unw_step(&cursor);
+    if ( step < 0 ) {
+      printf("%s:%d unw_step returned error %d\n", __FILE__, __LINE__, step);
+    }
+  } while (step>0);
+  return _Nil<T_O>();
+}
+    
 CL_LAMBDA(&optional (depth 0));
 CL_DECLARE();
 CL_DOCSTRING("backtrace");

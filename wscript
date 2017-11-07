@@ -688,6 +688,7 @@ def configure(cfg):
         cfg.env.append_value('LINKFLAGS', ['-stdlib=libstdc++'])
         cfg.env.append_value('LINKFLAGS', ['-lstdc++'])
         cfg.env.append_value('LINKFLAGS', '-pthread')
+        cfg.env.append_value('INCLUDES', '-I/usr/local/Cellar/libunwind-headers/35.3/include')  # brew install libunwind-headers
     elif (cfg.env['DEST_OS'] == DARWIN_OS ):
         cfg.env.append_value('LINKFLAGS', ['-Wl,-export_dynamic'])
         cfg.env.append_value('LINKFLAGS', ['-Wl,-stack_size,0x1000000'])
