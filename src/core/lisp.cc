@@ -591,7 +591,6 @@ void Lisp_O::startupLispEnvironment(Bundle *bundle) {
     initialize_clasp();
     _lisp->_Roots._CorePackage = gc::As<Package_sp>(_lisp->findPackage(CorePkg));
     _lisp->_Roots._KeywordPackage = gc::As<Package_sp>(_lisp->findPackage(KeywordPkg));
-    _lisp->_Roots._KeywordPackage->setKeywordPackage(true);
     _lisp->_Roots._CommonLispPackage = gc::As<Package_sp>(_lisp->findPackage(ClPkg));
 #ifdef DEFINE_CL_SYMBOLS
     initializeAllClSymbols(_lisp->_Roots._CommonLispPackage);
