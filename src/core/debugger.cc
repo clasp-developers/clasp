@@ -27,6 +27,9 @@ THE SOFTWARE.
 //#define DEBUG_LEVEL_FULL
 
 #include <csignal>
+#ifdef USE_LIBUNWIND
+#include <libunwind.h>
+#endif
 #include <execinfo.h>
 #include <clasp/core/foundation.h>
 #ifdef USE_LIBUNWIND
@@ -456,7 +459,16 @@ CL_DEFUN T_sp core__maybe_demangle(core::String_sp s)
 
 CL_DEFUN T_sp core__libunwind_backtrace_as_list() {
 #ifdef USE_LIBUNWIND
+<<<<<<< HEAD
+=======
+#ifdef _TARGET_OS_DARWIN
+  ucontext_t context;
+#endif
+#ifdef _TARGET_OS_LINUX
+>>>>>>> Added libunwind-dynamic registration code
   unw_context_t context;
+#endif
+  
   unw_getcontext(&context);
   unw_cursor_t cursor;
   unw_init_local(&cursor,&context);
@@ -486,7 +498,6 @@ CL_DEFUN T_sp core__libunwind_backtrace_as_list() {
 #endif
   return _Nil<T_O>();
 }
-
 
 CL_LAMBDA(&optional (depth 0));
 CL_DECLARE();
