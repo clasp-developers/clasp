@@ -46,7 +46,9 @@ THE SOFTWARE.
 #include <clasp/core/lispStream.h>
 #include <clasp/llvmo/llvmoExpose.h>
 #include <clasp/core/wrappers.h>
+#ifdef _TARGET_OS_LINUX
 #include <libunwind.h>
+#endif
 
 namespace core {
 
@@ -452,6 +454,7 @@ CL_DEFUN T_sp core__maybe_demangle(core::String_sp s)
   }
 }
 
+#ifdef _TARGET_OS_DARWIN
 CL_DEFUN T_sp core__libunwind_backtrace_as_list() {
   unw_context_t context;
   unw_getcontext(&context);
@@ -462,8 +465,11 @@ CL_DEFUN T_sp core__libunwind_backtrace_as_list() {
   int step;
   do {
     int res = unw_get_proc_name(&cursor,buffer,1024,&offset);
-    if ( res < 0 ) printf("%s:%d unw_get_proc_name returned error %d\n", __FILE__, __LINE__, res);
-    printf("%s:%d  %s\n", __FILE__, __LINE__, buffer );
+    if ( res < 0 ) {
+      printf("%s:%d unw_get_proc_name returned error %d\n", __FILE__, __LINE__, res);
+    } else {
+      printf("%s:%d  %s\n", __FILE__, __LINE__, buffer );
+    }
     unw_proc_info_t proc_info;
     int pi_res = unw_get_proc_info(&cursor,&proc_info);
     if (pi_res<0) {
@@ -476,14 +482,16 @@ CL_DEFUN T_sp core__libunwind_backtrace_as_list() {
       printf("%s:%d unw_step returned error %d\n", __FILE__, __LINE__, step);
     }
   } while (step>0);
+  printf("%s:%d  End of backtrace\n", __FILE__, __LINE__);
   return _Nil<T_O>();
 }
-    
+#endif
 CL_LAMBDA(&optional (depth 0));
 CL_DECLARE();
 CL_DOCSTRING("backtrace");
 CL_DEFUN T_sp core__clib_backtrace_as_list() {
 // Play with Unix backtrace(3)
+#ifdef _TARGET_OS_DARWIN
   char *funcname = (char *)malloc(1024);
   size_t funcnamesize = 1024;
   void** buffer = NULL;
@@ -507,6 +515,9 @@ CL_DEFUN T_sp core__clib_backtrace_as_list() {
     if (strings) free(strings);
     return result.cons();
   }
+#else
+  return _Nil<T_O>();
+#endif
 };
 
 CL_LAMBDA(&optional (depth 0));
