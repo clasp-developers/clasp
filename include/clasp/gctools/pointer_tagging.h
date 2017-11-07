@@ -229,6 +229,7 @@ ABI's  */
        If the ranges aren't sufficiently large (general or alien)
        then move the numbers around.
        We need at least 62 bits to represent general CLOS objects.  */
+  static const uintptr_clasp_t stamp_first_general   = 1; //skip 0
   static const uintptr_clasp_t stamp_last_general   = 4095;
   static const uintptr_clasp_t stamp_first_alien    = 4096;
   static const uintptr_clasp_t stamp_last_alien     = 65535;

@@ -65,15 +65,15 @@ namespace cast {
 
 #ifdef USE_MPS
 //----------------------------------------------------------------------
-#ifndef RUNNING_GC_BUILDER
+#if !defined(RUNNING_GC_BUILDER) && !defined(SCRAPING)
 #define DECLARE_FORWARDS
-#include CLASP_GC_FILENAME
+#include INIT_CLASSES_INC_H  // Replaced CLASP_GC_FILENAME
 #undef DECLARE_FORWARDS
 #endif
 namespace cast {
-#if !defined(RUNNING_GC_BUILDER)
+#if !defined(RUNNING_GC_BUILDER) && !defined(SCRAPING)
 #define GC_DYNAMIC_CAST
-#include CLASP_GC_FILENAME // "main/clasp_gc.cc"
+#include INIT_CLASSES_INC_H  // Replaced CLASP_GC_FILENAME
 #undef GC_DYNAMIC_CAST
 #endif
 };
