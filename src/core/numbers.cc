@@ -2010,7 +2010,7 @@ Number_sp Bignum_O::sqrt_() const {
   // Duplicates some code of DoubleFloat_O::sqrt_ to avoid consing an intermediate DoubleFloat_O
   double z = this->as_double_();
   if (z < 0)
-    return Complex_O::create(DoubleFloat_O::create(0.0), DoubleFloat_O::create(sqrt(z)));
+    return Complex_O::create(DoubleFloat_O::create(0.0), DoubleFloat_O::create(sqrt(-z)));
   else
     return DoubleFloat_O::create(sqrt(z));
 }
