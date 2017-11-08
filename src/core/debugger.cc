@@ -456,25 +456,7 @@ CL_DEFUN T_sp core__maybe_demangle(core::String_sp s)
 
 CL_DEFUN T_sp core__libunwind_backtrace_as_list() {
 #ifdef USE_LIBUNWIND
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> Added libunwind-dynamic registration code
-=======
-#ifdef _TARGET_OS_DARWIN
-  ucontext_t context;
-#endif
-#ifdef _TARGET_OS_LINUX
->>>>>>> Added libunwind-dynamic registration code
-<<<<<<< HEAD
-=======
->>>>>>> Fixed include of libunwind.h
-=======
->>>>>>> Added libunwind-dynamic registration code
   unw_context_t context;
-#endif
-  
   unw_getcontext(&context);
   unw_cursor_t cursor;
   unw_init_local(&cursor,&context);
