@@ -2006,6 +2006,15 @@ Number_sp Complex_O::sqrt_() const {
   return cl__expt(this->asSmartPtr(), _lisp->plusHalf());
 }
 
+Number_sp Bignum_O::sqrt_() const {
+  // Duplicates some code of DoubleFloat_O::sqrt_ to avoid consing an intermediate DoubleFloat_O
+  double z = this->as_double_();
+  if (z < 0)
+    return Complex_O::create(DoubleFloat_O::create(0.0), DoubleFloat_O::create(sqrt(-z)));
+  else
+    return DoubleFloat_O::create(sqrt(z));
+}
+
 CL_LAMBDA(arg);
 CL_DECLARE();
 CL_DOCSTRING("sqrt");

@@ -587,6 +587,14 @@ def configure(cfg):
     cfg.check_cxx(lib='ncurses', cflags='-Wall', uselib_store='NCURSES')
 #    cfg.check_cxx(stlib='lldb', cflags='-Wall', uselib_store='LLDB')
     cfg.check_cxx(lib='m', cflags='-Wall', uselib_store='M')
+    if (cfg.env['DEST_OS'] == DARWIN_OS ):
+        pass
+    elif (cfg.env['DEST_OS'] == LINUX_OS ):
+        cfg.check_cxx(stlib='unwind-x86_64', cflags='-Wall', uselib_store='UNWIND_X86_64')
+#        cfg.check_cxx(stlib='unwind', cflags='-Wall', uselib_store='UNWIND')
+        cfg.check_cxx(stlib='lzma', cflags='-Wall', uselib_store='LZMA')
+    else:
+        pass
     cfg.check_cxx(stlib=BOOST_LIBRARIES, cflags='-Wall', uselib_store='BOOST')
     cfg.extensions_include_dirs = []
     cfg.extensions_gcinterface_include_files = []
@@ -770,6 +778,9 @@ def configure(cfg):
     cfg.env.append_value('STLIB', cfg.env.STLIB_Z)
     if (cfg.env['DEST_OS'] == LINUX_OS ):
         cfg.env.append_value('LIB', cfg.env.LIB_DL)
+        cfg.env.append_value('STLIB', cfg.env.STLIB_UNWIND_X86_64)
+#        cfg.env.append_value('STLIB', cfg.env.STLIB_UNWIND)
+        cfg.env.append_value('STLIB', cfg.env.STLIB_LZMA)
     cfg.env.append_value('LIB', cfg.env.LIB_CLANG)
     cfg.env.append_value('LIB', cfg.env.LIB_LLVM)
     cfg.env.append_value('LIB', cfg.env.LIB_NCURSES)

@@ -85,18 +85,18 @@ SETF doc and can be retrieved by (documentation 'SYMBOL 'setf)."
               stores `(,(gensym)))
         (let* ((args (first rest))
                (body (cddr rest)))
-          (setq stores (second rest)
-                documentation (find-documentation body)
-                function `#'(lambda (,@stores ,@args)
-                              (declare (core:lambda-name ,access-fn))
-                              ,@body))))
-    `(eval-when (compile load eval)
+          (multiple-value-bind (decls body doc)
+              (core:process-declarations body t)
+            (setq stores (second rest)
+                  documentation doc
+                  function `#'(lambda (,@stores ,@args)
+                                (declare (core:lambda-name ,access-fn) ,@decls)
+                                (block ,access-fn
+                                  ,@body))))))
+    `(eval-when (:compile-toplevel :load-toplevel :execute)
        ,(ext:register-with-pde whole `(do-defsetf ',access-fn ,function ,(length stores)))
        ,@(si::expand-set-documentation access-fn 'setf documentation)
        ',access-fn)))
-
-
-
 
 ;;; DEFINE-SETF-METHOD macro.
 (defmacro define-setf-expander (access-fn args &rest lambda-body)
