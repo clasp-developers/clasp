@@ -135,10 +135,6 @@ cl_intptr_t Cache_O::vector_hash_key(gctools::Vec0<T_sp> &keys) {
 
 /*! TODO: I don't think this cache is location aware - it may need to be tuned to handle a moving garbage collector */
 void Cache_O::search_cache(CacheRecord *&min_e) {
-#ifdef USE_MPS
-  printf("Make this cache location aware because degraded caches really slow things down\n");
-  abort();
-#endif
 #ifdef CLASP_THREADS
   if (this->_clear_list_safe.notnilp()) {
     this->clearListFromCache();
