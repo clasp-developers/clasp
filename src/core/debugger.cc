@@ -46,7 +46,7 @@ THE SOFTWARE.
 #include <clasp/core/lispStream.h>
 #include <clasp/llvmo/llvmoExpose.h>
 #include <clasp/core/wrappers.h>
-#ifdef _TARGET_OS_LINUX
+#if 1 // ndef _TARGET_OS_LINUX
 #include <libunwind.h>
 #endif
 
@@ -454,7 +454,7 @@ CL_DEFUN T_sp core__maybe_demangle(core::String_sp s)
   }
 }
 
-#ifdef _TARGET_OS_DARWIN
+#if 1 // def _TARGET_OS_DARWIN
 CL_DEFUN T_sp core__libunwind_backtrace_as_list() {
   unw_context_t context;
   unw_getcontext(&context);
