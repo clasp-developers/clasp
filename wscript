@@ -489,27 +489,25 @@ def run_llvm_config_for_libs(cfg, *args):
 
 def configure(cfg):
     def update_exe_search_path(cfg):
-        externals = cfg.env.EXTERNALS_CLASP_DIR
-        if (externals!=[]):
-            print("externals = |%s|" % externals)
-            assert os.path.isdir(externals), "Please provide a valid EXTERNALS_CLASP_DIR instead of '%s'. See the wscript.config.template file." % externals
+        llvm_config_binary = cfg.env.LLVM_CONFIG_BINARY
+        if (llvm_config_binary!=[]):
+            print("llvm_config_binary = |%s|" % llvm_config_binary)
             path = os.getenv("PATH").split(os.pathsep)
-            externals_bin_dir = os.path.join(externals, "build/release/bin/")
+            externals_bin_dir = run_llvm_config(cfg,"--bindir")
+            assert os.path.isdir(externals_bin_dir), "Please provide a valid LLVM_CONFIG_BINARY path instead of '%s'. See the wscript.config.template file." % llvm_config_binary
             path.insert(0, externals_bin_dir)
             cfg.environ["PATH"] = os.pathsep.join(path)
             print("PATH has been prefixed with '%s'" % externals_bin_dir)
-            cfg.env['LLVM_CONFIG_BINARY'] = "%s/build/release/bin/llvm-config" % externals
         #print("Updated search path for binaries: '%s'" % cfg.environ["PATH"])
 
     def check_externals_clasp_version(cfg):
         print("Hello there - check externals-clasp from here")
-        externals = cfg.env['EXTERNALS_CLASP_DIR']
-        if (externals == []):
-            print("Not checking externals-clasp because EXTERNALS_CLASP_DIR was not set")
+        llvm_config_binary = cfg.env['LLVM_CONFIG_BINARY']
+        if (not "externals-clasp" in llvm_config_binary):
+            print("Not checking externals-clasp because LLVM_CONFIG_BINARY does not include externals-clasp")
             return
-        print("   externals = %s" % externals)
-        fin = open(externals+"/makefile","r")
-        externals_clasp_llvm_hash = "c54021df3fd4d71d822b3112cba4e43d94927378"
+        fin = open(run_llvm_config(cfg,"--prefix")+"/../../makefile","r")
+        externals_clasp_llvm_hash = "0bc70c306ccbf483a029a25a6fd851bc332accff"   # update this when externals-clasp is updated
         correct_version = False
         for x in fin:
             if (externals_clasp_llvm_hash in x):
