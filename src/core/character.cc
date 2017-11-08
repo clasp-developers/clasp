@@ -344,6 +344,9 @@ void CharacterInfo::initialize() {
     const char* name = OrderedCharacterNames[fci];
 //    printf("%s:%d Adding char: %s  at: %d\n", __FILE__, __LINE__, name, fci);
     this->gNamesToCharacterIndex[name] = fci;
+#ifdef DEBUG_GUARD
+    printf("%s:%d Allocating char: %s at %zu\n", __FILE__, __LINE__, name, fci );
+#endif
     this->gIndexedCharacters[fci] = clasp_make_standard_character((char)fci);
     this->gCharacterNames[fci] = SimpleBaseString_O::make(std::string(name));
   }
