@@ -1225,7 +1225,6 @@ extern core::T_O* saveValues(core::T_mv *mvP)
 extern void loadValues(core::T_mv *resultP, core::T_O* simpleVectorP)
 {NO_UNWIND_BEGIN();
   ASSERT(resultP != NULL);
-  ASSERTF(*simpleVectorP, BF("*simpleVectorP is UNDEFINED"));
   // I'm not sure the following can ever happen
   if (!simpleVectorP) {
     // If there was a non-local exit then *vectorObjectP will be NULL

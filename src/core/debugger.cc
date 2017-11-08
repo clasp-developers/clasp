@@ -29,6 +29,9 @@ THE SOFTWARE.
 #include <csignal>
 #include <execinfo.h>
 #include <clasp/core/foundation.h>
+#ifdef USE_LIBUNWIND
+#include <libunwind.h>
+#endif
 #include <clasp/core/object.h>
 #include <clasp/core/lisp.h>
 #include <clasp/core/conditions.h>
@@ -46,9 +49,6 @@ THE SOFTWARE.
 #include <clasp/core/lispStream.h>
 #include <clasp/llvmo/llvmoExpose.h>
 #include <clasp/core/wrappers.h>
-#if 1 // ndef _TARGET_OS_LINUX
-#include <libunwind.h>
-#endif
 
 namespace core {
 
@@ -454,8 +454,8 @@ CL_DEFUN T_sp core__maybe_demangle(core::String_sp s)
   }
 }
 
-#if 1 // def _TARGET_OS_DARWIN
 CL_DEFUN T_sp core__libunwind_backtrace_as_list() {
+#ifdef USE_LIBUNWIND
   unw_context_t context;
   unw_getcontext(&context);
   unw_cursor_t cursor;
@@ -483,9 +483,11 @@ CL_DEFUN T_sp core__libunwind_backtrace_as_list() {
     }
   } while (step>0);
   printf("%s:%d  End of backtrace\n", __FILE__, __LINE__);
+#endif
   return _Nil<T_O>();
 }
-#endif
+
+
 CL_LAMBDA(&optional (depth 0));
 CL_DECLARE();
 CL_DOCSTRING("backtrace");

@@ -850,6 +850,9 @@ void initialize_clasp()
   core_T_O_var->setInstanceBaseClasses(_Nil<core::T_O>());
   
   create_packages();
+  // have to do this before symbols are finalized so that keywords are all bound properly.
+  gc::As<core::Package_sp>(_lisp->findPackage("KEYWORD"))->setKeywordPackage(true);
+  
   define_builtin_cxx_classes();
 
   bootStrapCoreSymbolMap.finish_setup_of_symbols();

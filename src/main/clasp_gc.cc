@@ -6769,7 +6769,7 @@ public:
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(llvmo::EngineBuilder_O),_ErrorStr.NO-NAME._M_allocated_capacity), "_ErrorStr.NO-NAME._M_allocated_capacity" }, // public: (NIL NIL T) fixable: NIL good-name: T
 { class_kind, STAMP_llvmo__Module_O, sizeof(llvmo::Module_O), 0, "llvmo::Module_O" },
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), offsetof(SAFE_TYPE_MACRO(llvmo::Module_O),_Class), "_Class" }, // public: (NIL) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(llvmo::Module_O),_Id), "_Id" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(llvmo::Module_O),_Id), "_Id" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::HashTableEqual_O>), offsetof(SAFE_TYPE_MACRO(llvmo::Module_O),_UniqueGlobalVariableStrings), "_UniqueGlobalVariableStrings" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 { class_kind, STAMP_llvmo__ExecutionEngine_O, sizeof(llvmo::ExecutionEngine_O), 0, "llvmo::ExecutionEngine_O" },
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), offsetof(SAFE_TYPE_MACRO(llvmo::ExecutionEngine_O),_Class), "_Class" }, // public: (NIL) fixable: SMART-PTR-FIX good-name: T
@@ -6932,7 +6932,7 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::List_V>), offsetof(SAFE_TYPE_MACRO(core::SingleDispatchMethod_O),_declares), "_declares" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::SingleDispatchMethod_O),_docstring), "_docstring" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 { templated_kind, STAMP_core__WrappedPointer_O, sizeof(core::WrappedPointer_O), 0, "core::WrappedPointer_O" },
- {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::WrappedPointer_O),Stamp_), "Stamp_" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::WrappedPointer_O),Stamp_), "Stamp_" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), offsetof(SAFE_TYPE_MACRO(core::WrappedPointer_O),Class_), "Class_" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 { class_kind, STAMP_core__ReadTable_O, sizeof(core::ReadTable_O), 0, "core::ReadTable_O" },
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), offsetof(SAFE_TYPE_MACRO(core::ReadTable_O),_Case), "_Case" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
@@ -6947,29 +6947,29 @@ public:
 { class_kind, STAMP_core__SharpEqualWrapper_O, sizeof(core::SharpEqualWrapper_O), 0, "core::SharpEqualWrapper_O" },
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::SharpEqualWrapper_O),_Value), "_Value" }, // public: (NIL) fixable: SMART-PTR-FIX good-name: T
 { class_kind, STAMP_core__Archive_O, sizeof(core::Archive_O), 0, "core::Archive_O" },
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::Archive_O),_Version), "_Version" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::Archive_O),_Version), "_Version" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, POINTER_OFFSET, sizeof(UnknownType), offsetof(SAFE_TYPE_MACRO(core::Archive_O),_TopNode.theObject), "_TopNode.theObject" }, // public: (T T) fixable: RAW-TAGGED-POINTER-FIX good-name: T
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::Archive_O),_NextUniqueId), "_NextUniqueId" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::Archive_O),_NextUniqueId), "_NextUniqueId" }, // public: (T) fixable: NIL good-name: T
 { class_kind, STAMP_core__SaveArchive_O, sizeof(core::SaveArchive_O), 0, "core::SaveArchive_O" },
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::SaveArchive_O),_Version), "_Version" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::SaveArchive_O),_Version), "_Version" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, POINTER_OFFSET, sizeof(UnknownType), offsetof(SAFE_TYPE_MACRO(core::SaveArchive_O),_TopNode.theObject), "_TopNode.theObject" }, // public: (T T) fixable: RAW-TAGGED-POINTER-FIX good-name: T
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::SaveArchive_O),_NextUniqueId), "_NextUniqueId" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::SaveArchive_O),_NextUniqueId), "_NextUniqueId" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::HashTable_O>), offsetof(SAFE_TYPE_MACRO(core::SaveArchive_O),_SNodeForObject), "_SNodeForObject" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 { class_kind, STAMP_core__SexpSaveArchive_O, sizeof(core::SexpSaveArchive_O), 0, "core::SexpSaveArchive_O" },
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::SexpSaveArchive_O),_Version), "_Version" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::SexpSaveArchive_O),_Version), "_Version" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, POINTER_OFFSET, sizeof(UnknownType), offsetof(SAFE_TYPE_MACRO(core::SexpSaveArchive_O),_TopNode.theObject), "_TopNode.theObject" }, // public: (T T) fixable: RAW-TAGGED-POINTER-FIX good-name: T
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::SexpSaveArchive_O),_NextUniqueId), "_NextUniqueId" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::SexpSaveArchive_O),_NextUniqueId), "_NextUniqueId" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::HashTable_O>), offsetof(SAFE_TYPE_MACRO(core::SexpSaveArchive_O),_SNodeForObject), "_SNodeForObject" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 { class_kind, STAMP_core__LoadArchive_O, sizeof(core::LoadArchive_O), 0, "core::LoadArchive_O" },
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::LoadArchive_O),_Version), "_Version" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::LoadArchive_O),_Version), "_Version" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, POINTER_OFFSET, sizeof(UnknownType), offsetof(SAFE_TYPE_MACRO(core::LoadArchive_O),_TopNode.theObject), "_TopNode.theObject" }, // public: (T T) fixable: RAW-TAGGED-POINTER-FIX good-name: T
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::LoadArchive_O),_NextUniqueId), "_NextUniqueId" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::LoadArchive_O),_NextUniqueId), "_NextUniqueId" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::HashTable_O>), offsetof(SAFE_TYPE_MACRO(core::LoadArchive_O),_ObjectForSNode), "_ObjectForSNode" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::HashTable_O>), offsetof(SAFE_TYPE_MACRO(core::LoadArchive_O),_NodesToFinalize), "_NodesToFinalize" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 { class_kind, STAMP_core__SexpLoadArchive_O, sizeof(core::SexpLoadArchive_O), 0, "core::SexpLoadArchive_O" },
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::SexpLoadArchive_O),_Version), "_Version" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::SexpLoadArchive_O),_Version), "_Version" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, POINTER_OFFSET, sizeof(UnknownType), offsetof(SAFE_TYPE_MACRO(core::SexpLoadArchive_O),_TopNode.theObject), "_TopNode.theObject" }, // public: (T T) fixable: RAW-TAGGED-POINTER-FIX good-name: T
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::SexpLoadArchive_O),_NextUniqueId), "_NextUniqueId" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::SexpLoadArchive_O),_NextUniqueId), "_NextUniqueId" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::HashTable_O>), offsetof(SAFE_TYPE_MACRO(core::SexpLoadArchive_O),_ObjectForSNode), "_ObjectForSNode" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::HashTable_O>), offsetof(SAFE_TYPE_MACRO(core::SexpLoadArchive_O),_NodesToFinalize), "_NodesToFinalize" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 { class_kind, STAMP_core__SNode_O, sizeof(core::SNode_O), 0, "core::SNode_O" },
@@ -7001,22 +7001,22 @@ public:
 // not-exposing {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(mp::ConcurrentQueue_O),_Queue.nextExplicitConsumerId._M_i), "_Queue.nextExplicitConsumerId._M_i" }, // public: (NIL NIL NIL) fixable: NIL good-name: T
 // not-exposing {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(mp::ConcurrentQueue_O),_Queue.globalExplicitConsumerOffset._M_i), "_Queue.globalExplicitConsumerOffset._M_i" }, // public: (NIL NIL NIL) fixable: NIL good-name: T
 { class_kind, STAMP_core__LambdaListHandler_O, sizeof(core::LambdaListHandler_O), 0, "core::LambdaListHandler_O" },
- {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::LambdaListHandler_O),_CreatesBindings), "_CreatesBindings" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::LambdaListHandler_O),_CreatesBindings), "_CreatesBindings" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::List_V>), offsetof(SAFE_TYPE_MACRO(core::LambdaListHandler_O),_ClassifiedSymbolList), "_ClassifiedSymbolList" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, POINTER_OFFSET, sizeof(UnknownType), offsetof(SAFE_TYPE_MACRO(core::LambdaListHandler_O),_SpecialSymbolSet.theObject), "_SpecialSymbolSet.theObject" }, // public: (T T) fixable: RAW-TAGGED-POINTER-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::List_V>), offsetof(SAFE_TYPE_MACRO(core::LambdaListHandler_O),_DeclareSpecifierList), "_DeclareSpecifierList" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<core::RequiredArgument>>), offsetof(SAFE_TYPE_MACRO(core::LambdaListHandler_O),_RequiredArguments._Vector._Contents), "_RequiredArguments._Vector._Contents" }, // public: (T T T) fixable: TAGGED-POINTER-FIX good-name: T
  {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<core::OptionalArgument>>), offsetof(SAFE_TYPE_MACRO(core::LambdaListHandler_O),_OptionalArguments._Vector._Contents), "_OptionalArguments._Vector._Contents" }, // public: (T T T) fixable: TAGGED-POINTER-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::LambdaListHandler_O),_RestArgument._ArgTarget), "_RestArgument._ArgTarget" }, // public: (T T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::LambdaListHandler_O),_RestArgument._ArgTargetFrameIndex), "_RestArgument._ArgTargetFrameIndex" }, // public: (T T) fixable: NIL good-name: T
- {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::LambdaListHandler_O),_RestArgument.VaRest), "_RestArgument.VaRest" }, // public: (T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::LambdaListHandler_O),_RestArgument._ArgTargetFrameIndex), "_RestArgument._ArgTargetFrameIndex" }, // public: (T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::LambdaListHandler_O),_RestArgument.VaRest), "_RestArgument.VaRest" }, // public: (T T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::LambdaListHandler_O),_KeyFlag), "_KeyFlag" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<core::KeywordArgument>>), offsetof(SAFE_TYPE_MACRO(core::LambdaListHandler_O),_KeywordArguments._Vector._Contents), "_KeywordArguments._Vector._Contents" }, // public: (T T T) fixable: TAGGED-POINTER-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::LambdaListHandler_O),_AllowOtherKeys), "_AllowOtherKeys" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<core::AuxArgument>>), offsetof(SAFE_TYPE_MACRO(core::LambdaListHandler_O),_AuxArguments._Vector._Contents), "_AuxArguments._Vector._Contents" }, // public: (T T T) fixable: TAGGED-POINTER-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::SimpleString_O>), offsetof(SAFE_TYPE_MACRO(core::LambdaListHandler_O),_Comment), "_Comment" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::LambdaListHandler_O),_NumberOfLexicalVariables), "_NumberOfLexicalVariables" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::LambdaListHandler_O),_RequiredLexicalArgumentsOnly), "_RequiredLexicalArgumentsOnly" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::LambdaListHandler_O),_NumberOfLexicalVariables), "_NumberOfLexicalVariables" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::LambdaListHandler_O),_RequiredLexicalArgumentsOnly), "_RequiredLexicalArgumentsOnly" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::LambdaListHandler_O),_LexicalVariableNamesForDebugging), "_LexicalVariableNamesForDebugging" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 { class_kind, STAMP_core__InvocationHistoryFrameIterator_O, sizeof(core::InvocationHistoryFrameIterator_O), 0, "core::InvocationHistoryFrameIterator_O" },
 // not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::InvocationHistoryFrameIterator_O),_Index), "_Index" }, // public: (NIL) fixable: NIL good-name: T
@@ -7030,7 +7030,7 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Number_O>), offsetof(SAFE_TYPE_MACRO(core::HashTable_O),_RehashSize), "_RehashSize" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, ctype_double, sizeof(double), offsetof(SAFE_TYPE_MACRO(core::HashTable_O),_RehashThreshold), "_RehashThreshold" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::MDArrayT_O>), offsetof(SAFE_TYPE_MACRO(core::HashTable_O),_HashTable), "_HashTable" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(core::HashTable_O),_HashTableCount), "_HashTableCount" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(core::HashTable_O),_HashTableCount), "_HashTableCount" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<mp::SharedMutex_O>), offsetof(SAFE_TYPE_MACRO(core::HashTable_O),_Mutex), "_Mutex" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::HashTable_O),_LocationDependency._epoch), "_LocationDependency._epoch" }, // public: (T T) fixable: NIL good-name: NIL
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::HashTable_O),_LocationDependency._rs), "_LocationDependency._rs" }, // public: (T T) fixable: NIL good-name: NIL
@@ -7038,7 +7038,7 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Number_O>), offsetof(SAFE_TYPE_MACRO(core::HashTableEqualp_O),_RehashSize), "_RehashSize" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, ctype_double, sizeof(double), offsetof(SAFE_TYPE_MACRO(core::HashTableEqualp_O),_RehashThreshold), "_RehashThreshold" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::MDArrayT_O>), offsetof(SAFE_TYPE_MACRO(core::HashTableEqualp_O),_HashTable), "_HashTable" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(core::HashTableEqualp_O),_HashTableCount), "_HashTableCount" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(core::HashTableEqualp_O),_HashTableCount), "_HashTableCount" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<mp::SharedMutex_O>), offsetof(SAFE_TYPE_MACRO(core::HashTableEqualp_O),_Mutex), "_Mutex" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::HashTableEqualp_O),_LocationDependency._epoch), "_LocationDependency._epoch" }, // public: (T T) fixable: NIL good-name: NIL
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::HashTableEqualp_O),_LocationDependency._rs), "_LocationDependency._rs" }, // public: (T T) fixable: NIL good-name: NIL
@@ -7046,7 +7046,7 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Number_O>), offsetof(SAFE_TYPE_MACRO(core::HashTableEql_O),_RehashSize), "_RehashSize" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, ctype_double, sizeof(double), offsetof(SAFE_TYPE_MACRO(core::HashTableEql_O),_RehashThreshold), "_RehashThreshold" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::MDArrayT_O>), offsetof(SAFE_TYPE_MACRO(core::HashTableEql_O),_HashTable), "_HashTable" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(core::HashTableEql_O),_HashTableCount), "_HashTableCount" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(core::HashTableEql_O),_HashTableCount), "_HashTableCount" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<mp::SharedMutex_O>), offsetof(SAFE_TYPE_MACRO(core::HashTableEql_O),_Mutex), "_Mutex" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::HashTableEql_O),_LocationDependency._epoch), "_LocationDependency._epoch" }, // public: (T T) fixable: NIL good-name: NIL
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::HashTableEql_O),_LocationDependency._rs), "_LocationDependency._rs" }, // public: (T T) fixable: NIL good-name: NIL
@@ -7054,7 +7054,7 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Number_O>), offsetof(SAFE_TYPE_MACRO(core::HashTableEqual_O),_RehashSize), "_RehashSize" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, ctype_double, sizeof(double), offsetof(SAFE_TYPE_MACRO(core::HashTableEqual_O),_RehashThreshold), "_RehashThreshold" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::MDArrayT_O>), offsetof(SAFE_TYPE_MACRO(core::HashTableEqual_O),_HashTable), "_HashTable" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(core::HashTableEqual_O),_HashTableCount), "_HashTableCount" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(core::HashTableEqual_O),_HashTableCount), "_HashTableCount" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<mp::SharedMutex_O>), offsetof(SAFE_TYPE_MACRO(core::HashTableEqual_O),_Mutex), "_Mutex" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::HashTableEqual_O),_LocationDependency._epoch), "_LocationDependency._epoch" }, // public: (T T) fixable: NIL good-name: NIL
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::HashTableEqual_O),_LocationDependency._rs), "_LocationDependency._rs" }, // public: (T T) fixable: NIL good-name: NIL
@@ -7062,7 +7062,7 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Number_O>), offsetof(SAFE_TYPE_MACRO(core::HashTableEq_O),_RehashSize), "_RehashSize" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, ctype_double, sizeof(double), offsetof(SAFE_TYPE_MACRO(core::HashTableEq_O),_RehashThreshold), "_RehashThreshold" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::MDArrayT_O>), offsetof(SAFE_TYPE_MACRO(core::HashTableEq_O),_HashTable), "_HashTable" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(core::HashTableEq_O),_HashTableCount), "_HashTableCount" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(core::HashTableEq_O),_HashTableCount), "_HashTableCount" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<mp::SharedMutex_O>), offsetof(SAFE_TYPE_MACRO(core::HashTableEq_O),_Mutex), "_Mutex" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::HashTableEq_O),_LocationDependency._epoch), "_LocationDependency._epoch" }, // public: (T T) fixable: NIL good-name: NIL
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::HashTableEq_O),_LocationDependency._rs), "_LocationDependency._rs" }, // public: (T T) fixable: NIL good-name: NIL
@@ -7077,251 +7077,251 @@ public:
 // not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::Package_O),_AmpPackage._M_base._M_i), "_AmpPackage._M_base._M_i" }, // public: (T NIL NIL) fixable: NIL good-name: T
 // not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::Package_O),_ActsLikeKeywordPackage._M_base._M_i), "_ActsLikeKeywordPackage._M_base._M_i" }, // public: (T NIL NIL) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::List_V>), offsetof(SAFE_TYPE_MACRO(core::Package_O),_Nicknames), "_Nicknames" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
-// {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::Package_O),_Lock._r._Mutex.__count), "_Lock._r._Mutex.__count" }, // public: (T T T T) fixable: NIL good-name: T
-// {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(core::Package_O),_Lock._r._Mutex.__value.__wch), "_Lock._r._Mutex.__value.__wch" }, // public: (T T T T T) fixable: NIL good-name: T
- {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::Package_O),_Lock._r._Counter), "_Lock._r._Counter" }, // public: (T T T) fixable: NIL good-name: T
- {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::Package_O),_Lock._r._Recursive), "_Lock._r._Recursive" }, // public: (T T T) fixable: NIL good-name: T
-// {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::Package_O),_Lock._g._Mutex.__count), "_Lock._g._Mutex.__count" }, // public: (T T T T) fixable: NIL good-name: T
-// {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(core::Package_O),_Lock._g._Mutex.__value.__wch), "_Lock._g._Mutex.__value.__wch" }, // public: (T T T T T) fixable: NIL good-name: T
- {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::Package_O),_Lock._g._Counter), "_Lock._g._Counter" }, // public: (T T T) fixable: NIL good-name: T
- {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::Package_O),_Lock._g._Recursive), "_Lock._g._Recursive" }, // public: (T T T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::Package_O),_Lock._b), "_Lock._b" }, // public: (T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::Package_O),_Lock._r._Mutex.__count), "_Lock._r._Mutex.__count" }, // public: (T T T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(core::Package_O),_Lock._r._Mutex.__value.__wch), "_Lock._r._Mutex.__value.__wch" }, // public: (T T T T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::Package_O),_Lock._r._Counter), "_Lock._r._Counter" }, // public: (T T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::Package_O),_Lock._r._Recursive), "_Lock._r._Recursive" }, // public: (T T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::Package_O),_Lock._g._Mutex.__count), "_Lock._g._Mutex.__count" }, // public: (T T T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(core::Package_O),_Lock._g._Mutex.__value.__wch), "_Lock._g._Mutex.__value.__wch" }, // public: (T T T T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::Package_O),_Lock._g._Counter), "_Lock._g._Counter" }, // public: (T T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::Package_O),_Lock._g._Recursive), "_Lock._g._Recursive" }, // public: (T T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::Package_O),_Lock._b), "_Lock._b" }, // public: (T T) fixable: NIL good-name: T
 { class_kind, STAMP_core__Stream_O, sizeof(core::Stream_O), 0, "core::Stream_O" },
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::Stream_O),_Closed), "_Closed" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::Stream_O),_Closed), "_Closed" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::Stream_O),_Format), "_Format" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::Stream_O),_ByteSize), "_ByteSize" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::Stream_O),_Flags), "_Flags" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::Stream_O),_ByteSize), "_ByteSize" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::Stream_O),_Flags), "_Flags" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::List_V>), offsetof(SAFE_TYPE_MACRO(core::Stream_O),_ByteStack), "_ByteStack" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::Stream_O),_FormatTable), "_FormatTable" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::Stream_O),_EofChar), "_EofChar" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::Stream_O),_LastOp), "_LastOp" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::Stream_O),_LastChar), "_LastChar" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::Stream_O),_EofChar), "_EofChar" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::Stream_O),_LastOp), "_LastOp" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::Stream_O),_LastChar), "_LastChar" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::Stream_O),_ExternalFormat), "_ExternalFormat" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::Stream_O),_OutputColumn), "_OutputColumn" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::Stream_O),_InputCursor._CursorIsValid), "_InputCursor._CursorIsValid" }, // public: (T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::Stream_O),_OutputColumn), "_OutputColumn" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::Stream_O),_InputCursor._CursorIsValid), "_InputCursor._CursorIsValid" }, // public: (T T) fixable: NIL good-name: T
  {  fixed_field, ctype_long_long, sizeof(long long), offsetof(SAFE_TYPE_MACRO(core::Stream_O),_InputCursor._LineNumber), "_InputCursor._LineNumber" }, // public: (T T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(core::Stream_O),_InputCursor._Column), "_InputCursor._Column" }, // public: (T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(core::Stream_O),_InputCursor._Column), "_InputCursor._Column" }, // public: (T T) fixable: NIL good-name: T
  {  fixed_field, ctype_long_long, sizeof(long long), offsetof(SAFE_TYPE_MACRO(core::Stream_O),_InputCursor._PrevLineNumber), "_InputCursor._PrevLineNumber" }, // public: (T T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(core::Stream_O),_InputCursor._PrevColumn), "_InputCursor._PrevColumn" }, // public: (T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(core::Stream_O),_InputCursor._PrevColumn), "_InputCursor._PrevColumn" }, // public: (T T) fixable: NIL good-name: T
 { class_kind, STAMP_core__AnsiStream_O, sizeof(core::AnsiStream_O), 0, "core::AnsiStream_O" },
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::AnsiStream_O),_Closed), "_Closed" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::AnsiStream_O),_Closed), "_Closed" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::AnsiStream_O),_Format), "_Format" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::AnsiStream_O),_ByteSize), "_ByteSize" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::AnsiStream_O),_Flags), "_Flags" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::AnsiStream_O),_ByteSize), "_ByteSize" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::AnsiStream_O),_Flags), "_Flags" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::List_V>), offsetof(SAFE_TYPE_MACRO(core::AnsiStream_O),_ByteStack), "_ByteStack" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::AnsiStream_O),_FormatTable), "_FormatTable" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::AnsiStream_O),_EofChar), "_EofChar" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::AnsiStream_O),_LastOp), "_LastOp" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::AnsiStream_O),_LastChar), "_LastChar" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::AnsiStream_O),_EofChar), "_EofChar" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::AnsiStream_O),_LastOp), "_LastOp" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::AnsiStream_O),_LastChar), "_LastChar" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::AnsiStream_O),_ExternalFormat), "_ExternalFormat" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::AnsiStream_O),_OutputColumn), "_OutputColumn" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::AnsiStream_O),_InputCursor._CursorIsValid), "_InputCursor._CursorIsValid" }, // public: (T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::AnsiStream_O),_OutputColumn), "_OutputColumn" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::AnsiStream_O),_InputCursor._CursorIsValid), "_InputCursor._CursorIsValid" }, // public: (T T) fixable: NIL good-name: T
  {  fixed_field, ctype_long_long, sizeof(long long), offsetof(SAFE_TYPE_MACRO(core::AnsiStream_O),_InputCursor._LineNumber), "_InputCursor._LineNumber" }, // public: (T T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(core::AnsiStream_O),_InputCursor._Column), "_InputCursor._Column" }, // public: (T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(core::AnsiStream_O),_InputCursor._Column), "_InputCursor._Column" }, // public: (T T) fixable: NIL good-name: T
  {  fixed_field, ctype_long_long, sizeof(long long), offsetof(SAFE_TYPE_MACRO(core::AnsiStream_O),_InputCursor._PrevLineNumber), "_InputCursor._PrevLineNumber" }, // public: (T T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(core::AnsiStream_O),_InputCursor._PrevColumn), "_InputCursor._PrevColumn" }, // public: (T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(core::AnsiStream_O),_InputCursor._PrevColumn), "_InputCursor._PrevColumn" }, // public: (T T) fixable: NIL good-name: T
 { class_kind, STAMP_core__EchoStream_O, sizeof(core::EchoStream_O), 0, "core::EchoStream_O" },
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::EchoStream_O),_Closed), "_Closed" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::EchoStream_O),_Closed), "_Closed" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::EchoStream_O),_Format), "_Format" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::EchoStream_O),_ByteSize), "_ByteSize" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::EchoStream_O),_Flags), "_Flags" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::EchoStream_O),_ByteSize), "_ByteSize" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::EchoStream_O),_Flags), "_Flags" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::List_V>), offsetof(SAFE_TYPE_MACRO(core::EchoStream_O),_ByteStack), "_ByteStack" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::EchoStream_O),_FormatTable), "_FormatTable" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::EchoStream_O),_EofChar), "_EofChar" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::EchoStream_O),_LastOp), "_LastOp" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::EchoStream_O),_LastChar), "_LastChar" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::EchoStream_O),_EofChar), "_EofChar" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::EchoStream_O),_LastOp), "_LastOp" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::EchoStream_O),_LastChar), "_LastChar" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::EchoStream_O),_ExternalFormat), "_ExternalFormat" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::EchoStream_O),_OutputColumn), "_OutputColumn" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::EchoStream_O),_InputCursor._CursorIsValid), "_InputCursor._CursorIsValid" }, // public: (T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::EchoStream_O),_OutputColumn), "_OutputColumn" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::EchoStream_O),_InputCursor._CursorIsValid), "_InputCursor._CursorIsValid" }, // public: (T T) fixable: NIL good-name: T
  {  fixed_field, ctype_long_long, sizeof(long long), offsetof(SAFE_TYPE_MACRO(core::EchoStream_O),_InputCursor._LineNumber), "_InputCursor._LineNumber" }, // public: (T T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(core::EchoStream_O),_InputCursor._Column), "_InputCursor._Column" }, // public: (T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(core::EchoStream_O),_InputCursor._Column), "_InputCursor._Column" }, // public: (T T) fixable: NIL good-name: T
  {  fixed_field, ctype_long_long, sizeof(long long), offsetof(SAFE_TYPE_MACRO(core::EchoStream_O),_InputCursor._PrevLineNumber), "_InputCursor._PrevLineNumber" }, // public: (T T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(core::EchoStream_O),_InputCursor._PrevColumn), "_InputCursor._PrevColumn" }, // public: (T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(core::EchoStream_O),_InputCursor._PrevColumn), "_InputCursor._PrevColumn" }, // public: (T T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::EchoStream_O),_In), "_In" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::EchoStream_O),_Out), "_Out" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 { class_kind, STAMP_core__ConcatenatedStream_O, sizeof(core::ConcatenatedStream_O), 0, "core::ConcatenatedStream_O" },
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::ConcatenatedStream_O),_Closed), "_Closed" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::ConcatenatedStream_O),_Closed), "_Closed" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::ConcatenatedStream_O),_Format), "_Format" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::ConcatenatedStream_O),_ByteSize), "_ByteSize" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::ConcatenatedStream_O),_Flags), "_Flags" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::ConcatenatedStream_O),_ByteSize), "_ByteSize" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::ConcatenatedStream_O),_Flags), "_Flags" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::List_V>), offsetof(SAFE_TYPE_MACRO(core::ConcatenatedStream_O),_ByteStack), "_ByteStack" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::ConcatenatedStream_O),_FormatTable), "_FormatTable" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::ConcatenatedStream_O),_EofChar), "_EofChar" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::ConcatenatedStream_O),_LastOp), "_LastOp" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::ConcatenatedStream_O),_LastChar), "_LastChar" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::ConcatenatedStream_O),_EofChar), "_EofChar" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::ConcatenatedStream_O),_LastOp), "_LastOp" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::ConcatenatedStream_O),_LastChar), "_LastChar" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::ConcatenatedStream_O),_ExternalFormat), "_ExternalFormat" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::ConcatenatedStream_O),_OutputColumn), "_OutputColumn" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::ConcatenatedStream_O),_InputCursor._CursorIsValid), "_InputCursor._CursorIsValid" }, // public: (T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::ConcatenatedStream_O),_OutputColumn), "_OutputColumn" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::ConcatenatedStream_O),_InputCursor._CursorIsValid), "_InputCursor._CursorIsValid" }, // public: (T T) fixable: NIL good-name: T
  {  fixed_field, ctype_long_long, sizeof(long long), offsetof(SAFE_TYPE_MACRO(core::ConcatenatedStream_O),_InputCursor._LineNumber), "_InputCursor._LineNumber" }, // public: (T T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(core::ConcatenatedStream_O),_InputCursor._Column), "_InputCursor._Column" }, // public: (T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(core::ConcatenatedStream_O),_InputCursor._Column), "_InputCursor._Column" }, // public: (T T) fixable: NIL good-name: T
  {  fixed_field, ctype_long_long, sizeof(long long), offsetof(SAFE_TYPE_MACRO(core::ConcatenatedStream_O),_InputCursor._PrevLineNumber), "_InputCursor._PrevLineNumber" }, // public: (T T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(core::ConcatenatedStream_O),_InputCursor._PrevColumn), "_InputCursor._PrevColumn" }, // public: (T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(core::ConcatenatedStream_O),_InputCursor._PrevColumn), "_InputCursor._PrevColumn" }, // public: (T T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::ConcatenatedStream_O),_List), "_List" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 { class_kind, STAMP_core__BroadcastStream_O, sizeof(core::BroadcastStream_O), 0, "core::BroadcastStream_O" },
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::BroadcastStream_O),_Closed), "_Closed" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::BroadcastStream_O),_Closed), "_Closed" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::BroadcastStream_O),_Format), "_Format" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::BroadcastStream_O),_ByteSize), "_ByteSize" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::BroadcastStream_O),_Flags), "_Flags" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::BroadcastStream_O),_ByteSize), "_ByteSize" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::BroadcastStream_O),_Flags), "_Flags" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::List_V>), offsetof(SAFE_TYPE_MACRO(core::BroadcastStream_O),_ByteStack), "_ByteStack" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::BroadcastStream_O),_FormatTable), "_FormatTable" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::BroadcastStream_O),_EofChar), "_EofChar" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::BroadcastStream_O),_LastOp), "_LastOp" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::BroadcastStream_O),_LastChar), "_LastChar" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::BroadcastStream_O),_EofChar), "_EofChar" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::BroadcastStream_O),_LastOp), "_LastOp" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::BroadcastStream_O),_LastChar), "_LastChar" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::BroadcastStream_O),_ExternalFormat), "_ExternalFormat" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::BroadcastStream_O),_OutputColumn), "_OutputColumn" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::BroadcastStream_O),_InputCursor._CursorIsValid), "_InputCursor._CursorIsValid" }, // public: (T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::BroadcastStream_O),_OutputColumn), "_OutputColumn" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::BroadcastStream_O),_InputCursor._CursorIsValid), "_InputCursor._CursorIsValid" }, // public: (T T) fixable: NIL good-name: T
  {  fixed_field, ctype_long_long, sizeof(long long), offsetof(SAFE_TYPE_MACRO(core::BroadcastStream_O),_InputCursor._LineNumber), "_InputCursor._LineNumber" }, // public: (T T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(core::BroadcastStream_O),_InputCursor._Column), "_InputCursor._Column" }, // public: (T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(core::BroadcastStream_O),_InputCursor._Column), "_InputCursor._Column" }, // public: (T T) fixable: NIL good-name: T
  {  fixed_field, ctype_long_long, sizeof(long long), offsetof(SAFE_TYPE_MACRO(core::BroadcastStream_O),_InputCursor._PrevLineNumber), "_InputCursor._PrevLineNumber" }, // public: (T T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(core::BroadcastStream_O),_InputCursor._PrevColumn), "_InputCursor._PrevColumn" }, // public: (T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(core::BroadcastStream_O),_InputCursor._PrevColumn), "_InputCursor._PrevColumn" }, // public: (T T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::BroadcastStream_O),_Streams), "_Streams" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 { class_kind, STAMP_core__TwoWayStream_O, sizeof(core::TwoWayStream_O), 0, "core::TwoWayStream_O" },
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::TwoWayStream_O),_Closed), "_Closed" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::TwoWayStream_O),_Closed), "_Closed" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::TwoWayStream_O),_Format), "_Format" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::TwoWayStream_O),_ByteSize), "_ByteSize" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::TwoWayStream_O),_Flags), "_Flags" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::TwoWayStream_O),_ByteSize), "_ByteSize" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::TwoWayStream_O),_Flags), "_Flags" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::List_V>), offsetof(SAFE_TYPE_MACRO(core::TwoWayStream_O),_ByteStack), "_ByteStack" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::TwoWayStream_O),_FormatTable), "_FormatTable" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::TwoWayStream_O),_EofChar), "_EofChar" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::TwoWayStream_O),_LastOp), "_LastOp" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::TwoWayStream_O),_LastChar), "_LastChar" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::TwoWayStream_O),_EofChar), "_EofChar" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::TwoWayStream_O),_LastOp), "_LastOp" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::TwoWayStream_O),_LastChar), "_LastChar" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::TwoWayStream_O),_ExternalFormat), "_ExternalFormat" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::TwoWayStream_O),_OutputColumn), "_OutputColumn" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::TwoWayStream_O),_InputCursor._CursorIsValid), "_InputCursor._CursorIsValid" }, // public: (T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::TwoWayStream_O),_OutputColumn), "_OutputColumn" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::TwoWayStream_O),_InputCursor._CursorIsValid), "_InputCursor._CursorIsValid" }, // public: (T T) fixable: NIL good-name: T
  {  fixed_field, ctype_long_long, sizeof(long long), offsetof(SAFE_TYPE_MACRO(core::TwoWayStream_O),_InputCursor._LineNumber), "_InputCursor._LineNumber" }, // public: (T T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(core::TwoWayStream_O),_InputCursor._Column), "_InputCursor._Column" }, // public: (T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(core::TwoWayStream_O),_InputCursor._Column), "_InputCursor._Column" }, // public: (T T) fixable: NIL good-name: T
  {  fixed_field, ctype_long_long, sizeof(long long), offsetof(SAFE_TYPE_MACRO(core::TwoWayStream_O),_InputCursor._PrevLineNumber), "_InputCursor._PrevLineNumber" }, // public: (T T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(core::TwoWayStream_O),_InputCursor._PrevColumn), "_InputCursor._PrevColumn" }, // public: (T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(core::TwoWayStream_O),_InputCursor._PrevColumn), "_InputCursor._PrevColumn" }, // public: (T T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::TwoWayStream_O),_In), "_In" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::TwoWayStream_O),_Out), "_Out" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 { class_kind, STAMP_core__SynonymStream_O, sizeof(core::SynonymStream_O), 0, "core::SynonymStream_O" },
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::SynonymStream_O),_Closed), "_Closed" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::SynonymStream_O),_Closed), "_Closed" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::SynonymStream_O),_Format), "_Format" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::SynonymStream_O),_ByteSize), "_ByteSize" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::SynonymStream_O),_Flags), "_Flags" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::SynonymStream_O),_ByteSize), "_ByteSize" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::SynonymStream_O),_Flags), "_Flags" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::List_V>), offsetof(SAFE_TYPE_MACRO(core::SynonymStream_O),_ByteStack), "_ByteStack" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::SynonymStream_O),_FormatTable), "_FormatTable" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::SynonymStream_O),_EofChar), "_EofChar" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::SynonymStream_O),_LastOp), "_LastOp" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::SynonymStream_O),_LastChar), "_LastChar" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::SynonymStream_O),_EofChar), "_EofChar" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::SynonymStream_O),_LastOp), "_LastOp" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::SynonymStream_O),_LastChar), "_LastChar" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::SynonymStream_O),_ExternalFormat), "_ExternalFormat" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::SynonymStream_O),_OutputColumn), "_OutputColumn" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::SynonymStream_O),_InputCursor._CursorIsValid), "_InputCursor._CursorIsValid" }, // public: (T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::SynonymStream_O),_OutputColumn), "_OutputColumn" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::SynonymStream_O),_InputCursor._CursorIsValid), "_InputCursor._CursorIsValid" }, // public: (T T) fixable: NIL good-name: T
  {  fixed_field, ctype_long_long, sizeof(long long), offsetof(SAFE_TYPE_MACRO(core::SynonymStream_O),_InputCursor._LineNumber), "_InputCursor._LineNumber" }, // public: (T T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(core::SynonymStream_O),_InputCursor._Column), "_InputCursor._Column" }, // public: (T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(core::SynonymStream_O),_InputCursor._Column), "_InputCursor._Column" }, // public: (T T) fixable: NIL good-name: T
  {  fixed_field, ctype_long_long, sizeof(long long), offsetof(SAFE_TYPE_MACRO(core::SynonymStream_O),_InputCursor._PrevLineNumber), "_InputCursor._PrevLineNumber" }, // public: (T T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(core::SynonymStream_O),_InputCursor._PrevColumn), "_InputCursor._PrevColumn" }, // public: (T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(core::SynonymStream_O),_InputCursor._PrevColumn), "_InputCursor._PrevColumn" }, // public: (T T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), offsetof(SAFE_TYPE_MACRO(core::SynonymStream_O),_SynonymSymbol), "_SynonymSymbol" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 { class_kind, STAMP_core__StringStream_O, sizeof(core::StringStream_O), 0, "core::StringStream_O" },
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::StringStream_O),_Closed), "_Closed" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::StringStream_O),_Closed), "_Closed" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::StringStream_O),_Format), "_Format" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::StringStream_O),_ByteSize), "_ByteSize" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::StringStream_O),_Flags), "_Flags" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::StringStream_O),_ByteSize), "_ByteSize" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::StringStream_O),_Flags), "_Flags" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::List_V>), offsetof(SAFE_TYPE_MACRO(core::StringStream_O),_ByteStack), "_ByteStack" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::StringStream_O),_FormatTable), "_FormatTable" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::StringStream_O),_EofChar), "_EofChar" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::StringStream_O),_LastOp), "_LastOp" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::StringStream_O),_LastChar), "_LastChar" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::StringStream_O),_EofChar), "_EofChar" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::StringStream_O),_LastOp), "_LastOp" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::StringStream_O),_LastChar), "_LastChar" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::StringStream_O),_ExternalFormat), "_ExternalFormat" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::StringStream_O),_OutputColumn), "_OutputColumn" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::StringStream_O),_InputCursor._CursorIsValid), "_InputCursor._CursorIsValid" }, // public: (T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::StringStream_O),_OutputColumn), "_OutputColumn" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::StringStream_O),_InputCursor._CursorIsValid), "_InputCursor._CursorIsValid" }, // public: (T T) fixable: NIL good-name: T
  {  fixed_field, ctype_long_long, sizeof(long long), offsetof(SAFE_TYPE_MACRO(core::StringStream_O),_InputCursor._LineNumber), "_InputCursor._LineNumber" }, // public: (T T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(core::StringStream_O),_InputCursor._Column), "_InputCursor._Column" }, // public: (T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(core::StringStream_O),_InputCursor._Column), "_InputCursor._Column" }, // public: (T T) fixable: NIL good-name: T
  {  fixed_field, ctype_long_long, sizeof(long long), offsetof(SAFE_TYPE_MACRO(core::StringStream_O),_InputCursor._PrevLineNumber), "_InputCursor._PrevLineNumber" }, // public: (T T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(core::StringStream_O),_InputCursor._PrevColumn), "_InputCursor._PrevColumn" }, // public: (T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(core::StringStream_O),_InputCursor._PrevColumn), "_InputCursor._PrevColumn" }, // public: (T T) fixable: NIL good-name: T
 { class_kind, STAMP_core__StringInputStream_O, sizeof(core::StringInputStream_O), 0, "core::StringInputStream_O" },
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::StringInputStream_O),_Closed), "_Closed" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::StringInputStream_O),_Closed), "_Closed" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::StringInputStream_O),_Format), "_Format" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::StringInputStream_O),_ByteSize), "_ByteSize" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::StringInputStream_O),_Flags), "_Flags" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::StringInputStream_O),_ByteSize), "_ByteSize" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::StringInputStream_O),_Flags), "_Flags" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::List_V>), offsetof(SAFE_TYPE_MACRO(core::StringInputStream_O),_ByteStack), "_ByteStack" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::StringInputStream_O),_FormatTable), "_FormatTable" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::StringInputStream_O),_EofChar), "_EofChar" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::StringInputStream_O),_LastOp), "_LastOp" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::StringInputStream_O),_LastChar), "_LastChar" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::StringInputStream_O),_EofChar), "_EofChar" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::StringInputStream_O),_LastOp), "_LastOp" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::StringInputStream_O),_LastChar), "_LastChar" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::StringInputStream_O),_ExternalFormat), "_ExternalFormat" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::StringInputStream_O),_OutputColumn), "_OutputColumn" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::StringInputStream_O),_InputCursor._CursorIsValid), "_InputCursor._CursorIsValid" }, // public: (T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::StringInputStream_O),_OutputColumn), "_OutputColumn" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::StringInputStream_O),_InputCursor._CursorIsValid), "_InputCursor._CursorIsValid" }, // public: (T T) fixable: NIL good-name: T
  {  fixed_field, ctype_long_long, sizeof(long long), offsetof(SAFE_TYPE_MACRO(core::StringInputStream_O),_InputCursor._LineNumber), "_InputCursor._LineNumber" }, // public: (T T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(core::StringInputStream_O),_InputCursor._Column), "_InputCursor._Column" }, // public: (T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(core::StringInputStream_O),_InputCursor._Column), "_InputCursor._Column" }, // public: (T T) fixable: NIL good-name: T
  {  fixed_field, ctype_long_long, sizeof(long long), offsetof(SAFE_TYPE_MACRO(core::StringInputStream_O),_InputCursor._PrevLineNumber), "_InputCursor._PrevLineNumber" }, // public: (T T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(core::StringInputStream_O),_InputCursor._PrevColumn), "_InputCursor._PrevColumn" }, // public: (T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(core::StringInputStream_O),_InputCursor._PrevColumn), "_InputCursor._PrevColumn" }, // public: (T T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Array_O>), offsetof(SAFE_TYPE_MACRO(core::StringInputStream_O),_Contents), "_Contents" }, // public: (NIL) fixable: SMART-PTR-FIX good-name: T
 // not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::StringInputStream_O),_InputPosition), "_InputPosition" }, // public: (NIL) fixable: NIL good-name: T
 // not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::StringInputStream_O),_InputLimit), "_InputLimit" }, // public: (NIL) fixable: NIL good-name: T
 { class_kind, STAMP_core__StringOutputStream_O, sizeof(core::StringOutputStream_O), 0, "core::StringOutputStream_O" },
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::StringOutputStream_O),_Closed), "_Closed" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::StringOutputStream_O),_Closed), "_Closed" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::StringOutputStream_O),_Format), "_Format" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::StringOutputStream_O),_ByteSize), "_ByteSize" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::StringOutputStream_O),_Flags), "_Flags" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::StringOutputStream_O),_ByteSize), "_ByteSize" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::StringOutputStream_O),_Flags), "_Flags" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::List_V>), offsetof(SAFE_TYPE_MACRO(core::StringOutputStream_O),_ByteStack), "_ByteStack" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::StringOutputStream_O),_FormatTable), "_FormatTable" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::StringOutputStream_O),_EofChar), "_EofChar" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::StringOutputStream_O),_LastOp), "_LastOp" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::StringOutputStream_O),_LastChar), "_LastChar" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::StringOutputStream_O),_EofChar), "_EofChar" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::StringOutputStream_O),_LastOp), "_LastOp" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::StringOutputStream_O),_LastChar), "_LastChar" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::StringOutputStream_O),_ExternalFormat), "_ExternalFormat" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::StringOutputStream_O),_OutputColumn), "_OutputColumn" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::StringOutputStream_O),_InputCursor._CursorIsValid), "_InputCursor._CursorIsValid" }, // public: (T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::StringOutputStream_O),_OutputColumn), "_OutputColumn" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::StringOutputStream_O),_InputCursor._CursorIsValid), "_InputCursor._CursorIsValid" }, // public: (T T) fixable: NIL good-name: T
  {  fixed_field, ctype_long_long, sizeof(long long), offsetof(SAFE_TYPE_MACRO(core::StringOutputStream_O),_InputCursor._LineNumber), "_InputCursor._LineNumber" }, // public: (T T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(core::StringOutputStream_O),_InputCursor._Column), "_InputCursor._Column" }, // public: (T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(core::StringOutputStream_O),_InputCursor._Column), "_InputCursor._Column" }, // public: (T T) fixable: NIL good-name: T
  {  fixed_field, ctype_long_long, sizeof(long long), offsetof(SAFE_TYPE_MACRO(core::StringOutputStream_O),_InputCursor._PrevLineNumber), "_InputCursor._PrevLineNumber" }, // public: (T T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(core::StringOutputStream_O),_InputCursor._PrevColumn), "_InputCursor._PrevColumn" }, // public: (T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(core::StringOutputStream_O),_InputCursor._PrevColumn), "_InputCursor._PrevColumn" }, // public: (T T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Array_O>), offsetof(SAFE_TYPE_MACRO(core::StringOutputStream_O),_Contents), "_Contents" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 { class_kind, STAMP_core__FileStream_O, sizeof(core::FileStream_O), 0, "core::FileStream_O" },
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::FileStream_O),_Closed), "_Closed" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::FileStream_O),_Closed), "_Closed" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::FileStream_O),_Format), "_Format" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::FileStream_O),_ByteSize), "_ByteSize" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::FileStream_O),_Flags), "_Flags" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::FileStream_O),_ByteSize), "_ByteSize" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::FileStream_O),_Flags), "_Flags" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::List_V>), offsetof(SAFE_TYPE_MACRO(core::FileStream_O),_ByteStack), "_ByteStack" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::FileStream_O),_FormatTable), "_FormatTable" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::FileStream_O),_EofChar), "_EofChar" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::FileStream_O),_LastOp), "_LastOp" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::FileStream_O),_LastChar), "_LastChar" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::FileStream_O),_EofChar), "_EofChar" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::FileStream_O),_LastOp), "_LastOp" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::FileStream_O),_LastChar), "_LastChar" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::FileStream_O),_ExternalFormat), "_ExternalFormat" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::FileStream_O),_OutputColumn), "_OutputColumn" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::FileStream_O),_InputCursor._CursorIsValid), "_InputCursor._CursorIsValid" }, // public: (T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::FileStream_O),_OutputColumn), "_OutputColumn" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::FileStream_O),_InputCursor._CursorIsValid), "_InputCursor._CursorIsValid" }, // public: (T T) fixable: NIL good-name: T
  {  fixed_field, ctype_long_long, sizeof(long long), offsetof(SAFE_TYPE_MACRO(core::FileStream_O),_InputCursor._LineNumber), "_InputCursor._LineNumber" }, // public: (T T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(core::FileStream_O),_InputCursor._Column), "_InputCursor._Column" }, // public: (T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(core::FileStream_O),_InputCursor._Column), "_InputCursor._Column" }, // public: (T T) fixable: NIL good-name: T
  {  fixed_field, ctype_long_long, sizeof(long long), offsetof(SAFE_TYPE_MACRO(core::FileStream_O),_InputCursor._PrevLineNumber), "_InputCursor._PrevLineNumber" }, // public: (T T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(core::FileStream_O),_InputCursor._PrevColumn), "_InputCursor._PrevColumn" }, // public: (T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(core::FileStream_O),_InputCursor._PrevColumn), "_InputCursor._PrevColumn" }, // public: (T T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::FileStream_O),_Filename), "_Filename" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::FileStream_O),_ElementType), "_ElementType" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 { class_kind, STAMP_core__IOStreamStream_O, sizeof(core::IOStreamStream_O), 0, "core::IOStreamStream_O" },
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::IOStreamStream_O),_Closed), "_Closed" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::IOStreamStream_O),_Closed), "_Closed" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::IOStreamStream_O),_Format), "_Format" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::IOStreamStream_O),_ByteSize), "_ByteSize" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::IOStreamStream_O),_Flags), "_Flags" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::IOStreamStream_O),_ByteSize), "_ByteSize" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::IOStreamStream_O),_Flags), "_Flags" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::List_V>), offsetof(SAFE_TYPE_MACRO(core::IOStreamStream_O),_ByteStack), "_ByteStack" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::IOStreamStream_O),_FormatTable), "_FormatTable" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::IOStreamStream_O),_EofChar), "_EofChar" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::IOStreamStream_O),_LastOp), "_LastOp" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::IOStreamStream_O),_LastChar), "_LastChar" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::IOStreamStream_O),_EofChar), "_EofChar" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::IOStreamStream_O),_LastOp), "_LastOp" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::IOStreamStream_O),_LastChar), "_LastChar" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::IOStreamStream_O),_ExternalFormat), "_ExternalFormat" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::IOStreamStream_O),_OutputColumn), "_OutputColumn" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::IOStreamStream_O),_InputCursor._CursorIsValid), "_InputCursor._CursorIsValid" }, // public: (T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::IOStreamStream_O),_OutputColumn), "_OutputColumn" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::IOStreamStream_O),_InputCursor._CursorIsValid), "_InputCursor._CursorIsValid" }, // public: (T T) fixable: NIL good-name: T
  {  fixed_field, ctype_long_long, sizeof(long long), offsetof(SAFE_TYPE_MACRO(core::IOStreamStream_O),_InputCursor._LineNumber), "_InputCursor._LineNumber" }, // public: (T T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(core::IOStreamStream_O),_InputCursor._Column), "_InputCursor._Column" }, // public: (T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(core::IOStreamStream_O),_InputCursor._Column), "_InputCursor._Column" }, // public: (T T) fixable: NIL good-name: T
  {  fixed_field, ctype_long_long, sizeof(long long), offsetof(SAFE_TYPE_MACRO(core::IOStreamStream_O),_InputCursor._PrevLineNumber), "_InputCursor._PrevLineNumber" }, // public: (T T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(core::IOStreamStream_O),_InputCursor._PrevColumn), "_InputCursor._PrevColumn" }, // public: (T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(core::IOStreamStream_O),_InputCursor._PrevColumn), "_InputCursor._PrevColumn" }, // public: (T T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::IOStreamStream_O),_Filename), "_Filename" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::IOStreamStream_O),_ElementType), "_ElementType" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 { class_kind, STAMP_core__IOFileStream_O, sizeof(core::IOFileStream_O), 0, "core::IOFileStream_O" },
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::IOFileStream_O),_Closed), "_Closed" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::IOFileStream_O),_Closed), "_Closed" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::IOFileStream_O),_Format), "_Format" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::IOFileStream_O),_ByteSize), "_ByteSize" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::IOFileStream_O),_Flags), "_Flags" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::IOFileStream_O),_ByteSize), "_ByteSize" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::IOFileStream_O),_Flags), "_Flags" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::List_V>), offsetof(SAFE_TYPE_MACRO(core::IOFileStream_O),_ByteStack), "_ByteStack" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::IOFileStream_O),_FormatTable), "_FormatTable" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::IOFileStream_O),_EofChar), "_EofChar" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::IOFileStream_O),_LastOp), "_LastOp" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::IOFileStream_O),_LastChar), "_LastChar" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::IOFileStream_O),_EofChar), "_EofChar" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::IOFileStream_O),_LastOp), "_LastOp" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::IOFileStream_O),_LastChar), "_LastChar" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::IOFileStream_O),_ExternalFormat), "_ExternalFormat" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::IOFileStream_O),_OutputColumn), "_OutputColumn" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::IOFileStream_O),_InputCursor._CursorIsValid), "_InputCursor._CursorIsValid" }, // public: (T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::IOFileStream_O),_OutputColumn), "_OutputColumn" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::IOFileStream_O),_InputCursor._CursorIsValid), "_InputCursor._CursorIsValid" }, // public: (T T) fixable: NIL good-name: T
  {  fixed_field, ctype_long_long, sizeof(long long), offsetof(SAFE_TYPE_MACRO(core::IOFileStream_O),_InputCursor._LineNumber), "_InputCursor._LineNumber" }, // public: (T T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(core::IOFileStream_O),_InputCursor._Column), "_InputCursor._Column" }, // public: (T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(core::IOFileStream_O),_InputCursor._Column), "_InputCursor._Column" }, // public: (T T) fixable: NIL good-name: T
  {  fixed_field, ctype_long_long, sizeof(long long), offsetof(SAFE_TYPE_MACRO(core::IOFileStream_O),_InputCursor._PrevLineNumber), "_InputCursor._PrevLineNumber" }, // public: (T T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(core::IOFileStream_O),_InputCursor._PrevColumn), "_InputCursor._PrevColumn" }, // public: (T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(core::IOFileStream_O),_InputCursor._PrevColumn), "_InputCursor._PrevColumn" }, // public: (T T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::IOFileStream_O),_Filename), "_Filename" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::IOFileStream_O),_ElementType), "_ElementType" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 // not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::IOFileStream_O),_FileDescriptor), "_FileDescriptor" }, // public: (NIL) fixable: NIL good-name: T
@@ -7348,7 +7348,7 @@ public:
 { class_kind, STAMP_core__Iterator_O, sizeof(core::Iterator_O), 0, "core::Iterator_O" },
 { class_kind, STAMP_core__RecursiveDirectoryIterator_O, sizeof(core::RecursiveDirectoryIterator_O), 0, "core::RecursiveDirectoryIterator_O" },
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Path_O>), offsetof(SAFE_TYPE_MACRO(core::RecursiveDirectoryIterator_O),_Path), "_Path" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::RecursiveDirectoryIterator_O),_EnterHidden), "_EnterHidden" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::RecursiveDirectoryIterator_O),_EnterHidden), "_EnterHidden" }, // public: (T) fixable: NIL good-name: T
 { class_kind, STAMP_core__DirectoryIterator_O, sizeof(core::DirectoryIterator_O), 0, "core::DirectoryIterator_O" },
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Path_O>), offsetof(SAFE_TYPE_MACRO(core::DirectoryIterator_O),_Path), "_Path" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 { class_kind, STAMP_core__SymbolToEnumConverter_O, sizeof(core::SymbolToEnumConverter_O), 0, "core::SymbolToEnumConverter_O" },
@@ -7513,88 +7513,88 @@ public:
 { class_kind, STAMP_clcenv__GlobalEnvironment_O, sizeof(clcenv::GlobalEnvironment_O), 0, "clcenv::GlobalEnvironment_O" },
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(clcenv::GlobalEnvironment_O),_Next), "_Next" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 { class_kind, STAMP_mp__ConditionVariable_O, sizeof(mp::ConditionVariable_O), 0, "mp::ConditionVariable_O" },
-// {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(mp::ConditionVariable_O),_ConditionVariable._ConditionVariable.__count), "_ConditionVariable._ConditionVariable.__count" }, // public: (T T T) fixable: NIL good-name: T
-// {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(mp::ConditionVariable_O),_ConditionVariable._ConditionVariable.__value.__wch), "_ConditionVariable._ConditionVariable.__value.__wch" }, // public: (T T T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(mp::ConditionVariable_O),_ConditionVariable._ConditionVariable.__count), "_ConditionVariable._ConditionVariable.__count" }, // public: (T T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(mp::ConditionVariable_O),_ConditionVariable._ConditionVariable.__value.__wch), "_ConditionVariable._ConditionVariable.__value.__wch" }, // public: (T T T T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(mp::ConditionVariable_O),_Name), "_Name" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 { class_kind, STAMP_mp__SharedMutex_O, sizeof(mp::SharedMutex_O), 0, "mp::SharedMutex_O" },
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(mp::SharedMutex_O),_Name), "_Name" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(mp::SharedMutex_O),_Owner), "_Owner" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(mp::SharedMutex_O),_SharedMutex.mReadsBlocked), "_SharedMutex.mReadsBlocked" }, // public: (T T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(mp::SharedMutex_O),_SharedMutex.mMaxReaders), "_SharedMutex.mMaxReaders" }, // public: (T T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(mp::SharedMutex_O),_SharedMutex.mReaders), "_SharedMutex.mReaders" }, // public: (T T) fixable: NIL good-name: T
-// {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(mp::SharedMutex_O),_SharedMutex.mReadMutex._Mutex.__count), "_SharedMutex.mReadMutex._Mutex.__count" }, // public: (T T T T) fixable: NIL good-name: T
-// {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(mp::SharedMutex_O),_SharedMutex.mReadMutex._Mutex.__value.__wch), "_SharedMutex.mReadMutex._Mutex.__value.__wch" }, // public: (T T T T T) fixable: NIL good-name: T
- {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(mp::SharedMutex_O),_SharedMutex.mReadMutex._Counter), "_SharedMutex.mReadMutex._Counter" }, // public: (T T T) fixable: NIL good-name: T
- {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(mp::SharedMutex_O),_SharedMutex.mReadMutex._Recursive), "_SharedMutex.mReadMutex._Recursive" }, // public: (T T T) fixable: NIL good-name: T
-// {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(mp::SharedMutex_O),_SharedMutex.mWriteMutex._Mutex.__count), "_SharedMutex.mWriteMutex._Mutex.__count" }, // public: (T T T T) fixable: NIL good-name: T
-// {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(mp::SharedMutex_O),_SharedMutex.mWriteMutex._Mutex.__value.__wch), "_SharedMutex.mWriteMutex._Mutex.__value.__wch" }, // public: (T T T T T) fixable: NIL good-name: T
- {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(mp::SharedMutex_O),_SharedMutex.mWriteMutex._Counter), "_SharedMutex.mWriteMutex._Counter" }, // public: (T T T) fixable: NIL good-name: T
- {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(mp::SharedMutex_O),_SharedMutex.mWriteMutex._Recursive), "_SharedMutex.mWriteMutex._Recursive" }, // public: (T T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(mp::SharedMutex_O),_SharedMutex.mReadsBlocked), "_SharedMutex.mReadsBlocked" }, // public: (T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(mp::SharedMutex_O),_SharedMutex.mMaxReaders), "_SharedMutex.mMaxReaders" }, // public: (T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(mp::SharedMutex_O),_SharedMutex.mReaders), "_SharedMutex.mReaders" }, // public: (T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(mp::SharedMutex_O),_SharedMutex.mReadMutex._Mutex.__count), "_SharedMutex.mReadMutex._Mutex.__count" }, // public: (T T T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(mp::SharedMutex_O),_SharedMutex.mReadMutex._Mutex.__value.__wch), "_SharedMutex.mReadMutex._Mutex.__value.__wch" }, // public: (T T T T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(mp::SharedMutex_O),_SharedMutex.mReadMutex._Counter), "_SharedMutex.mReadMutex._Counter" }, // public: (T T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(mp::SharedMutex_O),_SharedMutex.mReadMutex._Recursive), "_SharedMutex.mReadMutex._Recursive" }, // public: (T T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(mp::SharedMutex_O),_SharedMutex.mWriteMutex._Mutex.__count), "_SharedMutex.mWriteMutex._Mutex.__count" }, // public: (T T T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(mp::SharedMutex_O),_SharedMutex.mWriteMutex._Mutex.__value.__wch), "_SharedMutex.mWriteMutex._Mutex.__value.__wch" }, // public: (T T T T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(mp::SharedMutex_O),_SharedMutex.mWriteMutex._Counter), "_SharedMutex.mWriteMutex._Counter" }, // public: (T T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(mp::SharedMutex_O),_SharedMutex.mWriteMutex._Recursive), "_SharedMutex.mWriteMutex._Recursive" }, // public: (T T T) fixable: NIL good-name: T
 { class_kind, STAMP_mp__Mutex_O, sizeof(mp::Mutex_O), 0, "mp::Mutex_O" },
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(mp::Mutex_O),_Name), "_Name" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(mp::Mutex_O),_Owner), "_Owner" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
-// {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(mp::Mutex_O),_Mutex._Mutex.__count), "_Mutex._Mutex.__count" }, // public: (T T T) fixable: NIL good-name: T
-// {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(mp::Mutex_O),_Mutex._Mutex.__value.__wch), "_Mutex._Mutex.__value.__wch" }, // public: (T T T T) fixable: NIL good-name: T
- {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(mp::Mutex_O),_Mutex._Counter), "_Mutex._Counter" }, // public: (T T) fixable: NIL good-name: T
- {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(mp::Mutex_O),_Mutex._Recursive), "_Mutex._Recursive" }, // public: (T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(mp::Mutex_O),_Mutex._Mutex.__count), "_Mutex._Mutex.__count" }, // public: (T T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(mp::Mutex_O),_Mutex._Mutex.__value.__wch), "_Mutex._Mutex.__value.__wch" }, // public: (T T T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(mp::Mutex_O),_Mutex._Counter), "_Mutex._Counter" }, // public: (T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(mp::Mutex_O),_Mutex._Recursive), "_Mutex._Recursive" }, // public: (T T) fixable: NIL good-name: T
 { class_kind, STAMP_mp__RecursiveMutex_O, sizeof(mp::RecursiveMutex_O), 0, "mp::RecursiveMutex_O" },
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(mp::RecursiveMutex_O),_Name), "_Name" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(mp::RecursiveMutex_O),_Owner), "_Owner" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
-// {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(mp::RecursiveMutex_O),_Mutex._Mutex.__count), "_Mutex._Mutex.__count" }, // public: (T T T) fixable: NIL good-name: T
-// {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(mp::RecursiveMutex_O),_Mutex._Mutex.__value.__wch), "_Mutex._Mutex.__value.__wch" }, // public: (T T T T) fixable: NIL good-name: T
- {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(mp::RecursiveMutex_O),_Mutex._Counter), "_Mutex._Counter" }, // public: (T T) fixable: NIL good-name: T
- {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(mp::RecursiveMutex_O),_Mutex._Recursive), "_Mutex._Recursive" }, // public: (T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(mp::RecursiveMutex_O),_Mutex._Mutex.__count), "_Mutex._Mutex.__count" }, // public: (T T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(mp::RecursiveMutex_O),_Mutex._Mutex.__value.__wch), "_Mutex._Mutex.__value.__wch" }, // public: (T T T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(mp::RecursiveMutex_O),_Mutex._Counter), "_Mutex._Counter" }, // public: (T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(mp::RecursiveMutex_O),_Mutex._Recursive), "_Mutex._Recursive" }, // public: (T T) fixable: NIL good-name: T
 { class_kind, STAMP_mp__Process_O, sizeof(mp::Process_O), 0, "mp::Process_O" },
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(mp::Process_O),_Name), "_Name" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(mp::Process_O),_Function), "_Function" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::List_V>), offsetof(SAFE_TYPE_MACRO(mp::Process_O),_Arguments), "_Arguments" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::List_V>), offsetof(SAFE_TYPE_MACRO(mp::Process_O),_InitialSpecialBindings), "_InitialSpecialBindings" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::List_V>), offsetof(SAFE_TYPE_MACRO(mp::Process_O),_ReturnValuesList), "_ReturnValuesList" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(mp::Process_O),_StackSize), "_StackSize" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(mp::Process_O),_Thread), "_Thread" }, // public: (T) fixable: NIL good-name: T
-// {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(mp::Process_O),_ExitBarrier._Mutex.__count), "_ExitBarrier._Mutex.__count" }, // public: (T T T) fixable: NIL good-name: T
-// {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(mp::Process_O),_ExitBarrier._Mutex.__value.__wch), "_ExitBarrier._Mutex.__value.__wch" }, // public: (T T T T) fixable: NIL good-name: T
- {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(mp::Process_O),_ExitBarrier._Counter), "_ExitBarrier._Counter" }, // public: (T T) fixable: NIL good-name: T
- {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(mp::Process_O),_ExitBarrier._Recursive), "_ExitBarrier._Recursive" }, // public: (T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(mp::Process_O),_StackSize), "_StackSize" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(mp::Process_O),_Thread), "_Thread" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(mp::Process_O),_ExitBarrier._Mutex.__count), "_ExitBarrier._Mutex.__count" }, // public: (T T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(mp::Process_O),_ExitBarrier._Mutex.__value.__wch), "_ExitBarrier._Mutex.__value.__wch" }, // public: (T T T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(mp::Process_O),_ExitBarrier._Counter), "_ExitBarrier._Counter" }, // public: (T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(mp::Process_O),_ExitBarrier._Recursive), "_ExitBarrier._Recursive" }, // public: (T T) fixable: NIL good-name: T
 { class_kind, STAMP_core__SourceManager_O, sizeof(core::SourceManager_O), 0, "core::SourceManager_O" },
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::WeakKeyHashTable_O>), offsetof(SAFE_TYPE_MACRO(core::SourceManager_O),_SourcePosInfo), "_SourcePosInfo" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 { class_kind, STAMP_core__SourcePosInfo_O, sizeof(core::SourcePosInfo_O), 0, "core::SourcePosInfo_O" },
- {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(core::SourcePosInfo_O),_FileId), "_FileId" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SourcePosInfo_O),_Filepos), "_Filepos" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(core::SourcePosInfo_O),_Lineno), "_Lineno" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(core::SourcePosInfo_O),_Column), "_Column" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(core::SourcePosInfo_O),_FileId), "_FileId" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SourcePosInfo_O),_Filepos), "_Filepos" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(core::SourcePosInfo_O),_Lineno), "_Lineno" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(core::SourcePosInfo_O),_Column), "_Column" }, // public: (T) fixable: NIL good-name: T
 { class_kind, STAMP_core__SourceFileInfo_O, sizeof(core::SourceFileInfo_O), 0, "core::SourceFileInfo_O" },
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Pathname_O>), offsetof(SAFE_TYPE_MACRO(core::SourceFileInfo_O),_pathname), "_pathname" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::SourceFileInfo_O),_FileHandle), "_FileHandle" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::SourceFileInfo_O),_FileHandle), "_FileHandle" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::SourceFileInfo_O),_SourceDebugNamestring), "_SourceDebugNamestring" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SourceFileInfo_O),_SourceDebugOffset), "_SourceDebugOffset" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::SourceFileInfo_O),_TrackLineno), "_TrackLineno" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SourceFileInfo_O),_SourceDebugOffset), "_SourceDebugOffset" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::SourceFileInfo_O),_TrackLineno), "_TrackLineno" }, // public: (T) fixable: NIL good-name: T
 { class_kind, STAMP_core__WeakHashTable_O, sizeof(core::WeakHashTable_O), 0, "core::WeakHashTable_O" },
 { class_kind, STAMP_core__WeakKeyHashTable_O, sizeof(core::WeakKeyHashTable_O), 0, "core::WeakKeyHashTable_O" },
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::WeakKeyHashTable_O),_HashTable._Length), "_HashTable._Length" }, // public: (T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::WeakKeyHashTable_O),_HashTable._Length), "_HashTable._Length" }, // public: (T T) fixable: NIL good-name: T
  {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::Buckets<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>,gctools::WeakLinks>>), offsetof(SAFE_TYPE_MACRO(core::WeakKeyHashTable_O),_HashTable._Keys), "_HashTable._Keys" }, // public: (T T) fixable: TAGGED-POINTER-FIX good-name: T
  {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::Buckets<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>,gctools::StrongLinks>>), offsetof(SAFE_TYPE_MACRO(core::WeakKeyHashTable_O),_HashTable._Values), "_HashTable._Values" }, // public: (T T) fixable: TAGGED-POINTER-FIX good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::WeakKeyHashTable_O),_HashTable._LocationDependency._epoch), "_HashTable._LocationDependency._epoch" }, // public: (T T T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::WeakKeyHashTable_O),_HashTable._LocationDependency._rs), "_HashTable._LocationDependency._rs" }, // public: (T T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::WeakKeyHashTable_O),_HashTable._LocationDependency._epoch), "_HashTable._LocationDependency._epoch" }, // public: (T T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::WeakKeyHashTable_O),_HashTable._LocationDependency._rs), "_HashTable._LocationDependency._rs" }, // public: (T T T) fixable: NIL good-name: T
 { class_kind, STAMP_core__StandardObject_O, sizeof(core::StandardObject_O), 0, "core::StandardObject_O" },
 { class_kind, STAMP_core__Instance_O, sizeof(core::Instance_O), 0, "core::Instance_O" },
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::Instance_O),_Sig), "_Sig" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), offsetof(SAFE_TYPE_MACRO(core::Instance_O),_Class), "_Class" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::SimpleVector_O>), offsetof(SAFE_TYPE_MACRO(core::Instance_O),_Rack), "_Rack" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::Instance_O),_allocation_counter), "_allocation_counter" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::Instance_O),_allocation_total_size), "_allocation_total_size" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::Instance_O),_allocation_counter), "_allocation_counter" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::Instance_O),_allocation_total_size), "_allocation_total_size" }, // public: (T) fixable: NIL good-name: T
 { class_kind, STAMP_core__DerivableCxxObject_O, sizeof(core::DerivableCxxObject_O), 0, "core::DerivableCxxObject_O" },
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::DerivableCxxObject_O),_Sig), "_Sig" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), offsetof(SAFE_TYPE_MACRO(core::DerivableCxxObject_O),_Class), "_Class" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::SimpleVector_O>), offsetof(SAFE_TYPE_MACRO(core::DerivableCxxObject_O),_Rack), "_Rack" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::DerivableCxxObject_O),_allocation_counter), "_allocation_counter" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::DerivableCxxObject_O),_allocation_total_size), "_allocation_total_size" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::DerivableCxxObject_O),_allocation_counter), "_allocation_counter" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::DerivableCxxObject_O),_allocation_total_size), "_allocation_total_size" }, // public: (T) fixable: NIL good-name: T
 { class_kind, STAMP_clbind__ClassRep_O, sizeof(clbind::ClassRep_O), 0, "clbind::ClassRep_O" },
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(clbind::ClassRep_O),_Sig), "_Sig" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), offsetof(SAFE_TYPE_MACRO(clbind::ClassRep_O),_Class), "_Class" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::SimpleVector_O>), offsetof(SAFE_TYPE_MACRO(clbind::ClassRep_O),_Rack), "_Rack" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(clbind::ClassRep_O),_allocation_counter), "_allocation_counter" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(clbind::ClassRep_O),_allocation_total_size), "_allocation_total_size" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(clbind::ClassRep_O),_allocation_counter), "_allocation_counter" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(clbind::ClassRep_O),_allocation_total_size), "_allocation_total_size" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<gctools::smart_ptr<core::Cons_O>>>), offsetof(SAFE_TYPE_MACRO(clbind::ClassRep_O),m_bases._Vector._Contents), "m_bases._Vector._Contents" }, // public: (NIL T T) fixable: TAGGED-POINTER-FIX good-name: T
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(clbind::ClassRep_O),m_name._M_string_length), "m_name._M_string_length" }, // public: (NIL NIL) fixable: NIL good-name: T
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(clbind::ClassRep_O),m_name.NO-NAME._M_allocated_capacity), "m_name.NO-NAME._M_allocated_capacity" }, // public: (NIL NIL T) fixable: NIL good-name: T
@@ -7605,12 +7605,12 @@ public:
 { class_kind, STAMP_core__FuncallableInstance_O, sizeof(core::FuncallableInstance_O), 0, "core::FuncallableInstance_O" },
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), offsetof(SAFE_TYPE_MACRO(core::FuncallableInstance_O),_Class), "_Class" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::SimpleVector_O>), offsetof(SAFE_TYPE_MACRO(core::FuncallableInstance_O),_Rack), "_Rack" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::FuncallableInstance_O),_isgf), "_isgf" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::FuncallableInstance_O),_DebugOn), "_DebugOn" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::FuncallableInstance_O),_isgf), "_isgf" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::FuncallableInstance_O),_DebugOn), "_DebugOn" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::FuncallableInstance_O),_Sig), "_Sig" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::FuncallableInstance_O),_CallHistory._M_i), "_CallHistory._M_i" }, // public: (T NIL) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::FuncallableInstance_O),_SpecializerProfile._M_i), "_SpecializerProfile._M_i" }, // public: (T NIL) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::FuncallableInstance_O),_CompiledDispatchFunction._M_i), "_CompiledDispatchFunction._M_i" }, // public: (T NIL) fixable: SMART-PTR-FIX good-name: T
+ {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::FuncallableInstance_O),_CallHistory._Contents), "_CallHistory._Contents" }, // public: (T T) fixable: SMART-PTR-FIX good-name: T
+ {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::FuncallableInstance_O),_SpecializerProfile._Contents), "_SpecializerProfile._Contents" }, // public: (T T) fixable: SMART-PTR-FIX good-name: T
+ {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::FuncallableInstance_O),_CompiledDispatchFunction._Contents), "_CompiledDispatchFunction._Contents" }, // public: (T T) fixable: SMART-PTR-FIX good-name: T
 { templated_kind, STAMP_core__Creator_O, sizeof(core::Creator_O), 0, "core::Creator_O" },
 { class_kind, STAMP_core__DerivableCxxClassCreator_O, sizeof(core::DerivableCxxClassCreator_O), 0, "core::DerivableCxxClassCreator_O" },
 { class_kind, STAMP_core__StructureClassCreator_O, sizeof(core::StructureClassCreator_O), 0, "core::StructureClassCreator_O" },
@@ -7636,28 +7636,28 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::FunctionClosure_O),_name), "_name" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), offsetof(SAFE_TYPE_MACRO(core::FunctionClosure_O),kind), "kind" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::FunctionClosure_O),_cleavir_ast), "_cleavir_ast" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::FunctionClosure_O),_sourceFileInfoHandle), "_sourceFileInfoHandle" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::FunctionClosure_O),_filePos), "_filePos" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::FunctionClosure_O),_lineno), "_lineno" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::FunctionClosure_O),_column), "_column" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::FunctionClosure_O),_sourceFileInfoHandle), "_sourceFileInfoHandle" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::FunctionClosure_O),_filePos), "_filePos" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::FunctionClosure_O),_lineno), "_lineno" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::FunctionClosure_O),_column), "_column" }, // public: (T) fixable: NIL good-name: T
 { class_kind, STAMP_core__SingleDispatchGenericFunctionClosure_O, sizeof(core::SingleDispatchGenericFunctionClosure_O), 0, "core::SingleDispatchGenericFunctionClosure_O" },
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::SingleDispatchGenericFunctionClosure_O),_name), "_name" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), offsetof(SAFE_TYPE_MACRO(core::SingleDispatchGenericFunctionClosure_O),kind), "kind" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::SingleDispatchGenericFunctionClosure_O),_cleavir_ast), "_cleavir_ast" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::SingleDispatchGenericFunctionClosure_O),_sourceFileInfoHandle), "_sourceFileInfoHandle" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::SingleDispatchGenericFunctionClosure_O),_filePos), "_filePos" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::SingleDispatchGenericFunctionClosure_O),_lineno), "_lineno" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::SingleDispatchGenericFunctionClosure_O),_column), "_column" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::SingleDispatchGenericFunctionClosure_O),_sourceFileInfoHandle), "_sourceFileInfoHandle" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::SingleDispatchGenericFunctionClosure_O),_filePos), "_filePos" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::SingleDispatchGenericFunctionClosure_O),_lineno), "_lineno" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::SingleDispatchGenericFunctionClosure_O),_column), "_column" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::List_V>), offsetof(SAFE_TYPE_MACRO(core::SingleDispatchGenericFunctionClosure_O),_Methods), "_Methods" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::LambdaListHandler_O>), offsetof(SAFE_TYPE_MACRO(core::SingleDispatchGenericFunctionClosure_O),_lambdaListHandler), "_lambdaListHandler" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 { class_kind, STAMP_core__SingleDispatchEffectiveMethodFunction_O, sizeof(core::SingleDispatchEffectiveMethodFunction_O), 0, "core::SingleDispatchEffectiveMethodFunction_O" },
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::SingleDispatchEffectiveMethodFunction_O),_name), "_name" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), offsetof(SAFE_TYPE_MACRO(core::SingleDispatchEffectiveMethodFunction_O),kind), "kind" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::SingleDispatchEffectiveMethodFunction_O),_cleavir_ast), "_cleavir_ast" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::SingleDispatchEffectiveMethodFunction_O),_sourceFileInfoHandle), "_sourceFileInfoHandle" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::SingleDispatchEffectiveMethodFunction_O),_filePos), "_filePos" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::SingleDispatchEffectiveMethodFunction_O),_lineno), "_lineno" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::SingleDispatchEffectiveMethodFunction_O),_column), "_column" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::SingleDispatchEffectiveMethodFunction_O),_sourceFileInfoHandle), "_sourceFileInfoHandle" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::SingleDispatchEffectiveMethodFunction_O),_filePos), "_filePos" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::SingleDispatchEffectiveMethodFunction_O),_lineno), "_lineno" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::SingleDispatchEffectiveMethodFunction_O),_column), "_column" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::List_V>), offsetof(SAFE_TYPE_MACRO(core::SingleDispatchEffectiveMethodFunction_O),_Befores), "_Befores" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::List_V>), offsetof(SAFE_TYPE_MACRO(core::SingleDispatchEffectiveMethodFunction_O),_Primaries), "_Primaries" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::List_V>), offsetof(SAFE_TYPE_MACRO(core::SingleDispatchEffectiveMethodFunction_O),_Afters), "_Afters" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
@@ -7665,56 +7665,56 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::SingleDispatchCxxEffectiveMethodFunction_O),_name), "_name" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), offsetof(SAFE_TYPE_MACRO(core::SingleDispatchCxxEffectiveMethodFunction_O),kind), "kind" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::SingleDispatchCxxEffectiveMethodFunction_O),_cleavir_ast), "_cleavir_ast" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::SingleDispatchCxxEffectiveMethodFunction_O),_sourceFileInfoHandle), "_sourceFileInfoHandle" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::SingleDispatchCxxEffectiveMethodFunction_O),_filePos), "_filePos" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::SingleDispatchCxxEffectiveMethodFunction_O),_lineno), "_lineno" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::SingleDispatchCxxEffectiveMethodFunction_O),_column), "_column" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::SingleDispatchCxxEffectiveMethodFunction_O),_sourceFileInfoHandle), "_sourceFileInfoHandle" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::SingleDispatchCxxEffectiveMethodFunction_O),_filePos), "_filePos" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::SingleDispatchCxxEffectiveMethodFunction_O),_lineno), "_lineno" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::SingleDispatchCxxEffectiveMethodFunction_O),_column), "_column" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::CxxMethodFunction_O>), offsetof(SAFE_TYPE_MACRO(core::SingleDispatchCxxEffectiveMethodFunction_O),_onlyCxxMethodFunction), "_onlyCxxMethodFunction" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 { class_kind, STAMP_core__SingleDispatchMethodFunction_O, sizeof(core::SingleDispatchMethodFunction_O), 0, "core::SingleDispatchMethodFunction_O" },
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::SingleDispatchMethodFunction_O),_name), "_name" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), offsetof(SAFE_TYPE_MACRO(core::SingleDispatchMethodFunction_O),kind), "kind" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::SingleDispatchMethodFunction_O),_cleavir_ast), "_cleavir_ast" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::SingleDispatchMethodFunction_O),_sourceFileInfoHandle), "_sourceFileInfoHandle" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::SingleDispatchMethodFunction_O),_filePos), "_filePos" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::SingleDispatchMethodFunction_O),_lineno), "_lineno" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::SingleDispatchMethodFunction_O),_column), "_column" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::SingleDispatchMethodFunction_O),_sourceFileInfoHandle), "_sourceFileInfoHandle" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::SingleDispatchMethodFunction_O),_filePos), "_filePos" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::SingleDispatchMethodFunction_O),_lineno), "_lineno" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::SingleDispatchMethodFunction_O),_column), "_column" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Function_O>), offsetof(SAFE_TYPE_MACRO(core::SingleDispatchMethodFunction_O),_body), "_body" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 { class_kind, STAMP_core__CxxMethodFunction_O, sizeof(core::CxxMethodFunction_O), 0, "core::CxxMethodFunction_O" },
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::CxxMethodFunction_O),_name), "_name" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), offsetof(SAFE_TYPE_MACRO(core::CxxMethodFunction_O),kind), "kind" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::CxxMethodFunction_O),_cleavir_ast), "_cleavir_ast" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::CxxMethodFunction_O),_sourceFileInfoHandle), "_sourceFileInfoHandle" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::CxxMethodFunction_O),_filePos), "_filePos" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::CxxMethodFunction_O),_lineno), "_lineno" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::CxxMethodFunction_O),_column), "_column" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::CxxMethodFunction_O),_sourceFileInfoHandle), "_sourceFileInfoHandle" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::CxxMethodFunction_O),_filePos), "_filePos" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::CxxMethodFunction_O),_lineno), "_lineno" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::CxxMethodFunction_O),_column), "_column" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Function_O>), offsetof(SAFE_TYPE_MACRO(core::CxxMethodFunction_O),_body), "_body" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 { class_kind, STAMP_core__ClosureWithFrame_O, sizeof(core::ClosureWithFrame_O), 0, "core::ClosureWithFrame_O" },
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::ClosureWithFrame_O),_name), "_name" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), offsetof(SAFE_TYPE_MACRO(core::ClosureWithFrame_O),kind), "kind" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::ClosureWithFrame_O),_cleavir_ast), "_cleavir_ast" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::ClosureWithFrame_O),_sourceFileInfoHandle), "_sourceFileInfoHandle" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::ClosureWithFrame_O),_filePos), "_filePos" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::ClosureWithFrame_O),_lineno), "_lineno" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::ClosureWithFrame_O),_column), "_column" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::ClosureWithFrame_O),_sourceFileInfoHandle), "_sourceFileInfoHandle" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::ClosureWithFrame_O),_filePos), "_filePos" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::ClosureWithFrame_O),_lineno), "_lineno" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::ClosureWithFrame_O),_column), "_column" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::ClosureWithFrame_O),_closedEnvironment), "_closedEnvironment" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 { class_kind, STAMP_core__CompiledClosure_O, sizeof(core::CompiledClosure_O), 0, "core::CompiledClosure_O" },
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::CompiledClosure_O),_name), "_name" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), offsetof(SAFE_TYPE_MACRO(core::CompiledClosure_O),kind), "kind" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::CompiledClosure_O),_cleavir_ast), "_cleavir_ast" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::CompiledClosure_O),_sourceFileInfoHandle), "_sourceFileInfoHandle" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::CompiledClosure_O),_filePos), "_filePos" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::CompiledClosure_O),_lineno), "_lineno" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::CompiledClosure_O),_column), "_column" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::CompiledClosure_O),_sourceFileInfoHandle), "_sourceFileInfoHandle" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::CompiledClosure_O),_filePos), "_filePos" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::CompiledClosure_O),_lineno), "_lineno" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::CompiledClosure_O),_column), "_column" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::CompiledClosure_O),_closedEnvironment), "_closedEnvironment" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::CompiledClosure_O),_lambdaList), "_lambdaList" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 { class_kind, STAMP_core__InterpretedClosure_O, sizeof(core::InterpretedClosure_O), 0, "core::InterpretedClosure_O" },
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::InterpretedClosure_O),_name), "_name" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), offsetof(SAFE_TYPE_MACRO(core::InterpretedClosure_O),kind), "kind" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::InterpretedClosure_O),_cleavir_ast), "_cleavir_ast" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::InterpretedClosure_O),_sourceFileInfoHandle), "_sourceFileInfoHandle" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::InterpretedClosure_O),_filePos), "_filePos" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::InterpretedClosure_O),_lineno), "_lineno" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::InterpretedClosure_O),_column), "_column" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::InterpretedClosure_O),_sourceFileInfoHandle), "_sourceFileInfoHandle" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::InterpretedClosure_O),_filePos), "_filePos" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::InterpretedClosure_O),_lineno), "_lineno" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::InterpretedClosure_O),_column), "_column" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::InterpretedClosure_O),_closedEnvironment), "_closedEnvironment" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::LambdaListHandler_O>), offsetof(SAFE_TYPE_MACRO(core::InterpretedClosure_O),_lambdaListHandler), "_lambdaListHandler" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::List_V>), offsetof(SAFE_TYPE_MACRO(core::InterpretedClosure_O),_declares), "_declares" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
@@ -7724,10 +7724,10 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::ClosureWithSlots_O),_name), "_name" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), offsetof(SAFE_TYPE_MACRO(core::ClosureWithSlots_O),kind), "kind" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::ClosureWithSlots_O),_cleavir_ast), "_cleavir_ast" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::ClosureWithSlots_O),_sourceFileInfoHandle), "_sourceFileInfoHandle" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::ClosureWithSlots_O),_filePos), "_filePos" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::ClosureWithSlots_O),_lineno), "_lineno" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::ClosureWithSlots_O),_column), "_column" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::ClosureWithSlots_O),_sourceFileInfoHandle), "_sourceFileInfoHandle" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::ClosureWithSlots_O),_filePos), "_filePos" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::ClosureWithSlots_O),_lineno), "_lineno" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::ClosureWithSlots_O),_column), "_column" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::ClosureWithSlots_O),_lambdaList), "_lambdaList" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::ClosureWithSlots_O),_Slots._Data), "_Slots._Data" },
 {  variable_capacity, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::ClosureWithSlots_O),_Slots._Length), offsetof(SAFE_TYPE_MACRO(core::ClosureWithSlots_O),_Slots._Length), NULL },
@@ -7736,10 +7736,10 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::BuiltinClosure_O),_name), "_name" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), offsetof(SAFE_TYPE_MACRO(core::BuiltinClosure_O),kind), "kind" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::BuiltinClosure_O),_cleavir_ast), "_cleavir_ast" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::BuiltinClosure_O),_sourceFileInfoHandle), "_sourceFileInfoHandle" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::BuiltinClosure_O),_filePos), "_filePos" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::BuiltinClosure_O),_lineno), "_lineno" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::BuiltinClosure_O),_column), "_column" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::BuiltinClosure_O),_sourceFileInfoHandle), "_sourceFileInfoHandle" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::BuiltinClosure_O),_filePos), "_filePos" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::BuiltinClosure_O),_lineno), "_lineno" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::BuiltinClosure_O),_column), "_column" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::LambdaListHandler_O>), offsetof(SAFE_TYPE_MACRO(core::BuiltinClosure_O),_lambdaListHandler), "_lambdaListHandler" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::List_V>), offsetof(SAFE_TYPE_MACRO(core::BuiltinClosure_O),_declares), "_declares" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::BuiltinClosure_O),_docstring), "_docstring" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
@@ -7747,10 +7747,10 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::TemplatedFunctionBase_O),_name), "_name" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), offsetof(SAFE_TYPE_MACRO(core::TemplatedFunctionBase_O),kind), "kind" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::TemplatedFunctionBase_O),_cleavir_ast), "_cleavir_ast" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::TemplatedFunctionBase_O),_sourceFileInfoHandle), "_sourceFileInfoHandle" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::TemplatedFunctionBase_O),_filePos), "_filePos" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::TemplatedFunctionBase_O),_lineno), "_lineno" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::TemplatedFunctionBase_O),_column), "_column" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::TemplatedFunctionBase_O),_sourceFileInfoHandle), "_sourceFileInfoHandle" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::TemplatedFunctionBase_O),_filePos), "_filePos" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::TemplatedFunctionBase_O),_lineno), "_lineno" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::TemplatedFunctionBase_O),_column), "_column" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::LambdaListHandler_O>), offsetof(SAFE_TYPE_MACRO(core::TemplatedFunctionBase_O),_lambdaListHandler), "_lambdaListHandler" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::List_V>), offsetof(SAFE_TYPE_MACRO(core::TemplatedFunctionBase_O),_declares), "_declares" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::TemplatedFunctionBase_O),_docstring), "_docstring" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
@@ -7761,10 +7761,10 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::Symbol_O),_GlobalValue), "_GlobalValue" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::Symbol_O),_Function), "_Function" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::Symbol_O),_SetfFunction), "_SetfFunction" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::Symbol_O),_Binding), "_Binding" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::Symbol_O),_IsSpecial), "_IsSpecial" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::Symbol_O),_IsConstant), "_IsConstant" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::Symbol_O),_ReadOnlyFunction), "_ReadOnlyFunction" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::Symbol_O),_Binding), "_Binding" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::Symbol_O),_IsSpecial), "_IsSpecial" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::Symbol_O),_IsConstant), "_IsConstant" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::Symbol_O),_ReadOnlyFunction), "_ReadOnlyFunction" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::List_V>), offsetof(SAFE_TYPE_MACRO(core::Symbol_O),_PropertyList), "_PropertyList" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 { class_kind, STAMP_core__Null_O, sizeof(core::Null_O), 0, "core::Null_O" },
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::SimpleString_O>), offsetof(SAFE_TYPE_MACRO(core::Null_O),_Name), "_Name" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
@@ -7773,10 +7773,10 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::Null_O),_GlobalValue), "_GlobalValue" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::Null_O),_Function), "_Function" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::Null_O),_SetfFunction), "_SetfFunction" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::Null_O),_Binding), "_Binding" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::Null_O),_IsSpecial), "_IsSpecial" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::Null_O),_IsConstant), "_IsConstant" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::Null_O),_ReadOnlyFunction), "_ReadOnlyFunction" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::Null_O),_Binding), "_Binding" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::Null_O),_IsSpecial), "_IsSpecial" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::Null_O),_IsConstant), "_IsConstant" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::Null_O),_ReadOnlyFunction), "_ReadOnlyFunction" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::List_V>), offsetof(SAFE_TYPE_MACRO(core::Null_O),_PropertyList), "_PropertyList" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 { class_kind, STAMP_core__Environment_O, sizeof(core::Environment_O), 0, "core::Environment_O" },
 { class_kind, STAMP_core__ActivationFrame_O, sizeof(core::ActivationFrame_O), 0, "core::ActivationFrame_O" },
@@ -7831,12 +7831,12 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::RuntimeVisibleEnvironment_O),_ParentEnvironment), "_ParentEnvironment" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::HashTableEq_O>), offsetof(SAFE_TYPE_MACRO(core::RuntimeVisibleEnvironment_O),_Metadata), "_Metadata" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::RuntimeVisibleEnvironment_O),_RuntimeEnvironment), "_RuntimeEnvironment" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::RuntimeVisibleEnvironment_O),_Invisible), "_Invisible" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::RuntimeVisibleEnvironment_O),_Invisible), "_Invisible" }, // public: (T) fixable: NIL good-name: T
 { class_kind, STAMP_core__TagbodyEnvironment_O, sizeof(core::TagbodyEnvironment_O), 0, "core::TagbodyEnvironment_O" },
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::TagbodyEnvironment_O),_ParentEnvironment), "_ParentEnvironment" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::HashTableEq_O>), offsetof(SAFE_TYPE_MACRO(core::TagbodyEnvironment_O),_Metadata), "_Metadata" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::TagbodyEnvironment_O),_RuntimeEnvironment), "_RuntimeEnvironment" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::TagbodyEnvironment_O),_Invisible), "_Invisible" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::TagbodyEnvironment_O),_Invisible), "_Invisible" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::HashTableEq_O>), offsetof(SAFE_TYPE_MACRO(core::TagbodyEnvironment_O),_Tags), "_Tags" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<gctools::smart_ptr<core::List_V>>>), offsetof(SAFE_TYPE_MACRO(core::TagbodyEnvironment_O),_TagCode._Vector._Contents), "_TagCode._Vector._Contents" }, // public: (T T T) fixable: TAGGED-POINTER-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::ActivationFrame_O>), offsetof(SAFE_TYPE_MACRO(core::TagbodyEnvironment_O),_ActivationFrame), "_ActivationFrame" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
@@ -7844,14 +7844,14 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::FunctionValueEnvironment_O),_ParentEnvironment), "_ParentEnvironment" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::HashTableEq_O>), offsetof(SAFE_TYPE_MACRO(core::FunctionValueEnvironment_O),_Metadata), "_Metadata" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::FunctionValueEnvironment_O),_RuntimeEnvironment), "_RuntimeEnvironment" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::FunctionValueEnvironment_O),_Invisible), "_Invisible" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::FunctionValueEnvironment_O),_Invisible), "_Invisible" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::HashTableEqual_O>), offsetof(SAFE_TYPE_MACRO(core::FunctionValueEnvironment_O),_FunctionIndices), "_FunctionIndices" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::FunctionFrame_O>), offsetof(SAFE_TYPE_MACRO(core::FunctionValueEnvironment_O),_FunctionFrame), "_FunctionFrame" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 { class_kind, STAMP_core__ValueEnvironment_O, sizeof(core::ValueEnvironment_O), 0, "core::ValueEnvironment_O" },
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::ValueEnvironment_O),_ParentEnvironment), "_ParentEnvironment" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::HashTableEq_O>), offsetof(SAFE_TYPE_MACRO(core::ValueEnvironment_O),_Metadata), "_Metadata" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::ValueEnvironment_O),_RuntimeEnvironment), "_RuntimeEnvironment" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::ValueEnvironment_O),_Invisible), "_Invisible" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::ValueEnvironment_O),_Invisible), "_Invisible" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::List_V>), offsetof(SAFE_TYPE_MACRO(core::ValueEnvironment_O),_SymbolIndex_alist), "_SymbolIndex_alist" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::ValueFrame_O>), offsetof(SAFE_TYPE_MACRO(core::ValueEnvironment_O),_ActivationFrame), "_ActivationFrame" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 { class_kind, STAMP_core__Array_O, sizeof(core::Array_O), 0, "core::Array_O" },
@@ -7920,7 +7920,7 @@ public:
 {    variable_field, ctype_double, sizeof(double), 0, "only" },
 { class_kind, STAMP_core__SimpleBitVector_O, sizeof(core::SimpleBitVector_O), 0, "core::SimpleBitVector_O" },
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), offsetof(SAFE_TYPE_MACRO(core::SimpleBitVector_O),_Length), "_Length" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleBitVector_O),_Data._Length), "_Data._Length" }, // public: (T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleBitVector_O),_Data._Length), "_Data._Length" }, // public: (T T) fixable: NIL good-name: T
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), offsetof(SAFE_TYPE_MACRO(core::SimpleBitVector_O),_Data._Data), "_Data._Data" }, // public: (T T) fixable: NIL good-name: T
 { class_kind, STAMP_core__SimpleVector_O, sizeof(core::SimpleVector_O), 0, "core::SimpleVector_O" },
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), offsetof(SAFE_TYPE_MACRO(core::SimpleVector_O),_Length), "_Length" }, // public: (T) fixable: NIL good-name: T
@@ -7941,381 +7941,381 @@ public:
 {    variable_field, ctype_unsigned_char, sizeof(unsigned char), 0, "only" },
 { class_kind, STAMP_core__MDArray_O, sizeof(core::MDArray_O), 0, "core::MDArray_O" },
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), offsetof(SAFE_TYPE_MACRO(core::MDArray_O),_Length), "_Length" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_O),_FillPointerOrLengthOrDummy), "_FillPointerOrLengthOrDummy" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_O),_ArrayTotalSize), "_ArrayTotalSize" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_O),_FillPointerOrLengthOrDummy), "_FillPointerOrLengthOrDummy" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_O),_ArrayTotalSize), "_ArrayTotalSize" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Array_O>), offsetof(SAFE_TYPE_MACRO(core::MDArray_O),_Data), "_Data" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_O),_DisplacedIndexOffset), "_DisplacedIndexOffset" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_O),_Flags._Flags), "_Flags._Flags" }, // public: (T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_O),_DisplacedIndexOffset), "_DisplacedIndexOffset" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_O),_Flags._Flags), "_Flags._Flags" }, // public: (T T) fixable: NIL good-name: T
 {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::MDArray_O),_Dimensions._Data), "_Dimensions._Data" },
 {  variable_capacity, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_O),_Dimensions._Length), offsetof(SAFE_TYPE_MACRO(core::MDArray_O),_Dimensions._Length), NULL },
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
 { class_kind, STAMP_core__MDArray_int8_t_O, sizeof(core::MDArray_int8_t_O), 0, "core::MDArray_int8_t_O" },
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), offsetof(SAFE_TYPE_MACRO(core::MDArray_int8_t_O),_Length), "_Length" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_int8_t_O),_FillPointerOrLengthOrDummy), "_FillPointerOrLengthOrDummy" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_int8_t_O),_ArrayTotalSize), "_ArrayTotalSize" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_int8_t_O),_FillPointerOrLengthOrDummy), "_FillPointerOrLengthOrDummy" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_int8_t_O),_ArrayTotalSize), "_ArrayTotalSize" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Array_O>), offsetof(SAFE_TYPE_MACRO(core::MDArray_int8_t_O),_Data), "_Data" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_int8_t_O),_DisplacedIndexOffset), "_DisplacedIndexOffset" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_int8_t_O),_Flags._Flags), "_Flags._Flags" }, // public: (T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_int8_t_O),_DisplacedIndexOffset), "_DisplacedIndexOffset" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_int8_t_O),_Flags._Flags), "_Flags._Flags" }, // public: (T T) fixable: NIL good-name: T
 {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::MDArray_int8_t_O),_Dimensions._Data), "_Dimensions._Data" },
 {  variable_capacity, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_int8_t_O),_Dimensions._Length), offsetof(SAFE_TYPE_MACRO(core::MDArray_int8_t_O),_Dimensions._Length), NULL },
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
 { class_kind, STAMP_core__MDArray_byte8_t_O, sizeof(core::MDArray_byte8_t_O), 0, "core::MDArray_byte8_t_O" },
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), offsetof(SAFE_TYPE_MACRO(core::MDArray_byte8_t_O),_Length), "_Length" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_byte8_t_O),_FillPointerOrLengthOrDummy), "_FillPointerOrLengthOrDummy" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_byte8_t_O),_ArrayTotalSize), "_ArrayTotalSize" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_byte8_t_O),_FillPointerOrLengthOrDummy), "_FillPointerOrLengthOrDummy" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_byte8_t_O),_ArrayTotalSize), "_ArrayTotalSize" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Array_O>), offsetof(SAFE_TYPE_MACRO(core::MDArray_byte8_t_O),_Data), "_Data" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_byte8_t_O),_DisplacedIndexOffset), "_DisplacedIndexOffset" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_byte8_t_O),_Flags._Flags), "_Flags._Flags" }, // public: (T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_byte8_t_O),_DisplacedIndexOffset), "_DisplacedIndexOffset" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_byte8_t_O),_Flags._Flags), "_Flags._Flags" }, // public: (T T) fixable: NIL good-name: T
 {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::MDArray_byte8_t_O),_Dimensions._Data), "_Dimensions._Data" },
 {  variable_capacity, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_byte8_t_O),_Dimensions._Length), offsetof(SAFE_TYPE_MACRO(core::MDArray_byte8_t_O),_Dimensions._Length), NULL },
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
 { class_kind, STAMP_core__MDArray_int16_t_O, sizeof(core::MDArray_int16_t_O), 0, "core::MDArray_int16_t_O" },
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), offsetof(SAFE_TYPE_MACRO(core::MDArray_int16_t_O),_Length), "_Length" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_int16_t_O),_FillPointerOrLengthOrDummy), "_FillPointerOrLengthOrDummy" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_int16_t_O),_ArrayTotalSize), "_ArrayTotalSize" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_int16_t_O),_FillPointerOrLengthOrDummy), "_FillPointerOrLengthOrDummy" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_int16_t_O),_ArrayTotalSize), "_ArrayTotalSize" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Array_O>), offsetof(SAFE_TYPE_MACRO(core::MDArray_int16_t_O),_Data), "_Data" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_int16_t_O),_DisplacedIndexOffset), "_DisplacedIndexOffset" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_int16_t_O),_Flags._Flags), "_Flags._Flags" }, // public: (T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_int16_t_O),_DisplacedIndexOffset), "_DisplacedIndexOffset" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_int16_t_O),_Flags._Flags), "_Flags._Flags" }, // public: (T T) fixable: NIL good-name: T
 {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::MDArray_int16_t_O),_Dimensions._Data), "_Dimensions._Data" },
 {  variable_capacity, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_int16_t_O),_Dimensions._Length), offsetof(SAFE_TYPE_MACRO(core::MDArray_int16_t_O),_Dimensions._Length), NULL },
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
 { class_kind, STAMP_core__MDArray_byte16_t_O, sizeof(core::MDArray_byte16_t_O), 0, "core::MDArray_byte16_t_O" },
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), offsetof(SAFE_TYPE_MACRO(core::MDArray_byte16_t_O),_Length), "_Length" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_byte16_t_O),_FillPointerOrLengthOrDummy), "_FillPointerOrLengthOrDummy" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_byte16_t_O),_ArrayTotalSize), "_ArrayTotalSize" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_byte16_t_O),_FillPointerOrLengthOrDummy), "_FillPointerOrLengthOrDummy" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_byte16_t_O),_ArrayTotalSize), "_ArrayTotalSize" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Array_O>), offsetof(SAFE_TYPE_MACRO(core::MDArray_byte16_t_O),_Data), "_Data" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_byte16_t_O),_DisplacedIndexOffset), "_DisplacedIndexOffset" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_byte16_t_O),_Flags._Flags), "_Flags._Flags" }, // public: (T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_byte16_t_O),_DisplacedIndexOffset), "_DisplacedIndexOffset" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_byte16_t_O),_Flags._Flags), "_Flags._Flags" }, // public: (T T) fixable: NIL good-name: T
 {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::MDArray_byte16_t_O),_Dimensions._Data), "_Dimensions._Data" },
 {  variable_capacity, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_byte16_t_O),_Dimensions._Length), offsetof(SAFE_TYPE_MACRO(core::MDArray_byte16_t_O),_Dimensions._Length), NULL },
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
 { class_kind, STAMP_core__MDArray_int32_t_O, sizeof(core::MDArray_int32_t_O), 0, "core::MDArray_int32_t_O" },
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), offsetof(SAFE_TYPE_MACRO(core::MDArray_int32_t_O),_Length), "_Length" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_int32_t_O),_FillPointerOrLengthOrDummy), "_FillPointerOrLengthOrDummy" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_int32_t_O),_ArrayTotalSize), "_ArrayTotalSize" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_int32_t_O),_FillPointerOrLengthOrDummy), "_FillPointerOrLengthOrDummy" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_int32_t_O),_ArrayTotalSize), "_ArrayTotalSize" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Array_O>), offsetof(SAFE_TYPE_MACRO(core::MDArray_int32_t_O),_Data), "_Data" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_int32_t_O),_DisplacedIndexOffset), "_DisplacedIndexOffset" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_int32_t_O),_Flags._Flags), "_Flags._Flags" }, // public: (T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_int32_t_O),_DisplacedIndexOffset), "_DisplacedIndexOffset" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_int32_t_O),_Flags._Flags), "_Flags._Flags" }, // public: (T T) fixable: NIL good-name: T
 {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::MDArray_int32_t_O),_Dimensions._Data), "_Dimensions._Data" },
 {  variable_capacity, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_int32_t_O),_Dimensions._Length), offsetof(SAFE_TYPE_MACRO(core::MDArray_int32_t_O),_Dimensions._Length), NULL },
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
 { class_kind, STAMP_core__MDArray_byte32_t_O, sizeof(core::MDArray_byte32_t_O), 0, "core::MDArray_byte32_t_O" },
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), offsetof(SAFE_TYPE_MACRO(core::MDArray_byte32_t_O),_Length), "_Length" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_byte32_t_O),_FillPointerOrLengthOrDummy), "_FillPointerOrLengthOrDummy" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_byte32_t_O),_ArrayTotalSize), "_ArrayTotalSize" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_byte32_t_O),_FillPointerOrLengthOrDummy), "_FillPointerOrLengthOrDummy" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_byte32_t_O),_ArrayTotalSize), "_ArrayTotalSize" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Array_O>), offsetof(SAFE_TYPE_MACRO(core::MDArray_byte32_t_O),_Data), "_Data" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_byte32_t_O),_DisplacedIndexOffset), "_DisplacedIndexOffset" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_byte32_t_O),_Flags._Flags), "_Flags._Flags" }, // public: (T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_byte32_t_O),_DisplacedIndexOffset), "_DisplacedIndexOffset" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_byte32_t_O),_Flags._Flags), "_Flags._Flags" }, // public: (T T) fixable: NIL good-name: T
 {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::MDArray_byte32_t_O),_Dimensions._Data), "_Dimensions._Data" },
 {  variable_capacity, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_byte32_t_O),_Dimensions._Length), offsetof(SAFE_TYPE_MACRO(core::MDArray_byte32_t_O),_Dimensions._Length), NULL },
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
 { class_kind, STAMP_core__MDArray_int64_t_O, sizeof(core::MDArray_int64_t_O), 0, "core::MDArray_int64_t_O" },
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), offsetof(SAFE_TYPE_MACRO(core::MDArray_int64_t_O),_Length), "_Length" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_int64_t_O),_FillPointerOrLengthOrDummy), "_FillPointerOrLengthOrDummy" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_int64_t_O),_ArrayTotalSize), "_ArrayTotalSize" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_int64_t_O),_FillPointerOrLengthOrDummy), "_FillPointerOrLengthOrDummy" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_int64_t_O),_ArrayTotalSize), "_ArrayTotalSize" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Array_O>), offsetof(SAFE_TYPE_MACRO(core::MDArray_int64_t_O),_Data), "_Data" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_int64_t_O),_DisplacedIndexOffset), "_DisplacedIndexOffset" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_int64_t_O),_Flags._Flags), "_Flags._Flags" }, // public: (T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_int64_t_O),_DisplacedIndexOffset), "_DisplacedIndexOffset" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_int64_t_O),_Flags._Flags), "_Flags._Flags" }, // public: (T T) fixable: NIL good-name: T
 {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::MDArray_int64_t_O),_Dimensions._Data), "_Dimensions._Data" },
 {  variable_capacity, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_int64_t_O),_Dimensions._Length), offsetof(SAFE_TYPE_MACRO(core::MDArray_int64_t_O),_Dimensions._Length), NULL },
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
 { class_kind, STAMP_core__MDArray_byte64_t_O, sizeof(core::MDArray_byte64_t_O), 0, "core::MDArray_byte64_t_O" },
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), offsetof(SAFE_TYPE_MACRO(core::MDArray_byte64_t_O),_Length), "_Length" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_byte64_t_O),_FillPointerOrLengthOrDummy), "_FillPointerOrLengthOrDummy" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_byte64_t_O),_ArrayTotalSize), "_ArrayTotalSize" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_byte64_t_O),_FillPointerOrLengthOrDummy), "_FillPointerOrLengthOrDummy" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_byte64_t_O),_ArrayTotalSize), "_ArrayTotalSize" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Array_O>), offsetof(SAFE_TYPE_MACRO(core::MDArray_byte64_t_O),_Data), "_Data" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_byte64_t_O),_DisplacedIndexOffset), "_DisplacedIndexOffset" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_byte64_t_O),_Flags._Flags), "_Flags._Flags" }, // public: (T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_byte64_t_O),_DisplacedIndexOffset), "_DisplacedIndexOffset" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_byte64_t_O),_Flags._Flags), "_Flags._Flags" }, // public: (T T) fixable: NIL good-name: T
 {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::MDArray_byte64_t_O),_Dimensions._Data), "_Dimensions._Data" },
 {  variable_capacity, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_byte64_t_O),_Dimensions._Length), offsetof(SAFE_TYPE_MACRO(core::MDArray_byte64_t_O),_Dimensions._Length), NULL },
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
 { class_kind, STAMP_core__MDArray_fixnum_O, sizeof(core::MDArray_fixnum_O), 0, "core::MDArray_fixnum_O" },
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), offsetof(SAFE_TYPE_MACRO(core::MDArray_fixnum_O),_Length), "_Length" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_fixnum_O),_FillPointerOrLengthOrDummy), "_FillPointerOrLengthOrDummy" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_fixnum_O),_ArrayTotalSize), "_ArrayTotalSize" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_fixnum_O),_FillPointerOrLengthOrDummy), "_FillPointerOrLengthOrDummy" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_fixnum_O),_ArrayTotalSize), "_ArrayTotalSize" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Array_O>), offsetof(SAFE_TYPE_MACRO(core::MDArray_fixnum_O),_Data), "_Data" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_fixnum_O),_DisplacedIndexOffset), "_DisplacedIndexOffset" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_fixnum_O),_Flags._Flags), "_Flags._Flags" }, // public: (T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_fixnum_O),_DisplacedIndexOffset), "_DisplacedIndexOffset" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_fixnum_O),_Flags._Flags), "_Flags._Flags" }, // public: (T T) fixable: NIL good-name: T
 {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::MDArray_fixnum_O),_Dimensions._Data), "_Dimensions._Data" },
 {  variable_capacity, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_fixnum_O),_Dimensions._Length), offsetof(SAFE_TYPE_MACRO(core::MDArray_fixnum_O),_Dimensions._Length), NULL },
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
 { class_kind, STAMP_core__MDArray_size_t_O, sizeof(core::MDArray_size_t_O), 0, "core::MDArray_size_t_O" },
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), offsetof(SAFE_TYPE_MACRO(core::MDArray_size_t_O),_Length), "_Length" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_size_t_O),_FillPointerOrLengthOrDummy), "_FillPointerOrLengthOrDummy" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_size_t_O),_ArrayTotalSize), "_ArrayTotalSize" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_size_t_O),_FillPointerOrLengthOrDummy), "_FillPointerOrLengthOrDummy" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_size_t_O),_ArrayTotalSize), "_ArrayTotalSize" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Array_O>), offsetof(SAFE_TYPE_MACRO(core::MDArray_size_t_O),_Data), "_Data" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_size_t_O),_DisplacedIndexOffset), "_DisplacedIndexOffset" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_size_t_O),_Flags._Flags), "_Flags._Flags" }, // public: (T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_size_t_O),_DisplacedIndexOffset), "_DisplacedIndexOffset" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_size_t_O),_Flags._Flags), "_Flags._Flags" }, // public: (T T) fixable: NIL good-name: T
 {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::MDArray_size_t_O),_Dimensions._Data), "_Dimensions._Data" },
 {  variable_capacity, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_size_t_O),_Dimensions._Length), offsetof(SAFE_TYPE_MACRO(core::MDArray_size_t_O),_Dimensions._Length), NULL },
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
 { class_kind, STAMP_core__MDArrayFloat_O, sizeof(core::MDArrayFloat_O), 0, "core::MDArrayFloat_O" },
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), offsetof(SAFE_TYPE_MACRO(core::MDArrayFloat_O),_Length), "_Length" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArrayFloat_O),_FillPointerOrLengthOrDummy), "_FillPointerOrLengthOrDummy" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArrayFloat_O),_ArrayTotalSize), "_ArrayTotalSize" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArrayFloat_O),_FillPointerOrLengthOrDummy), "_FillPointerOrLengthOrDummy" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArrayFloat_O),_ArrayTotalSize), "_ArrayTotalSize" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Array_O>), offsetof(SAFE_TYPE_MACRO(core::MDArrayFloat_O),_Data), "_Data" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArrayFloat_O),_DisplacedIndexOffset), "_DisplacedIndexOffset" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArrayFloat_O),_Flags._Flags), "_Flags._Flags" }, // public: (T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArrayFloat_O),_DisplacedIndexOffset), "_DisplacedIndexOffset" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArrayFloat_O),_Flags._Flags), "_Flags._Flags" }, // public: (T T) fixable: NIL good-name: T
 {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::MDArrayFloat_O),_Dimensions._Data), "_Dimensions._Data" },
 {  variable_capacity, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArrayFloat_O),_Dimensions._Length), offsetof(SAFE_TYPE_MACRO(core::MDArrayFloat_O),_Dimensions._Length), NULL },
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
 { class_kind, STAMP_core__MDArrayDouble_O, sizeof(core::MDArrayDouble_O), 0, "core::MDArrayDouble_O" },
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), offsetof(SAFE_TYPE_MACRO(core::MDArrayDouble_O),_Length), "_Length" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArrayDouble_O),_FillPointerOrLengthOrDummy), "_FillPointerOrLengthOrDummy" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArrayDouble_O),_ArrayTotalSize), "_ArrayTotalSize" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArrayDouble_O),_FillPointerOrLengthOrDummy), "_FillPointerOrLengthOrDummy" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArrayDouble_O),_ArrayTotalSize), "_ArrayTotalSize" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Array_O>), offsetof(SAFE_TYPE_MACRO(core::MDArrayDouble_O),_Data), "_Data" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArrayDouble_O),_DisplacedIndexOffset), "_DisplacedIndexOffset" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArrayDouble_O),_Flags._Flags), "_Flags._Flags" }, // public: (T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArrayDouble_O),_DisplacedIndexOffset), "_DisplacedIndexOffset" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArrayDouble_O),_Flags._Flags), "_Flags._Flags" }, // public: (T T) fixable: NIL good-name: T
 {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::MDArrayDouble_O),_Dimensions._Data), "_Dimensions._Data" },
 {  variable_capacity, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArrayDouble_O),_Dimensions._Length), offsetof(SAFE_TYPE_MACRO(core::MDArrayDouble_O),_Dimensions._Length), NULL },
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
 { class_kind, STAMP_core__MDArrayCharacter_O, sizeof(core::MDArrayCharacter_O), 0, "core::MDArrayCharacter_O" },
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), offsetof(SAFE_TYPE_MACRO(core::MDArrayCharacter_O),_Length), "_Length" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArrayCharacter_O),_FillPointerOrLengthOrDummy), "_FillPointerOrLengthOrDummy" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArrayCharacter_O),_ArrayTotalSize), "_ArrayTotalSize" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArrayCharacter_O),_FillPointerOrLengthOrDummy), "_FillPointerOrLengthOrDummy" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArrayCharacter_O),_ArrayTotalSize), "_ArrayTotalSize" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Array_O>), offsetof(SAFE_TYPE_MACRO(core::MDArrayCharacter_O),_Data), "_Data" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArrayCharacter_O),_DisplacedIndexOffset), "_DisplacedIndexOffset" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArrayCharacter_O),_Flags._Flags), "_Flags._Flags" }, // public: (T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArrayCharacter_O),_DisplacedIndexOffset), "_DisplacedIndexOffset" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArrayCharacter_O),_Flags._Flags), "_Flags._Flags" }, // public: (T T) fixable: NIL good-name: T
 {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::MDArrayCharacter_O),_Dimensions._Data), "_Dimensions._Data" },
 {  variable_capacity, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArrayCharacter_O),_Dimensions._Length), offsetof(SAFE_TYPE_MACRO(core::MDArrayCharacter_O),_Dimensions._Length), NULL },
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
 { class_kind, STAMP_core__MDArrayBaseChar_O, sizeof(core::MDArrayBaseChar_O), 0, "core::MDArrayBaseChar_O" },
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), offsetof(SAFE_TYPE_MACRO(core::MDArrayBaseChar_O),_Length), "_Length" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArrayBaseChar_O),_FillPointerOrLengthOrDummy), "_FillPointerOrLengthOrDummy" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArrayBaseChar_O),_ArrayTotalSize), "_ArrayTotalSize" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArrayBaseChar_O),_FillPointerOrLengthOrDummy), "_FillPointerOrLengthOrDummy" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArrayBaseChar_O),_ArrayTotalSize), "_ArrayTotalSize" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Array_O>), offsetof(SAFE_TYPE_MACRO(core::MDArrayBaseChar_O),_Data), "_Data" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArrayBaseChar_O),_DisplacedIndexOffset), "_DisplacedIndexOffset" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArrayBaseChar_O),_Flags._Flags), "_Flags._Flags" }, // public: (T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArrayBaseChar_O),_DisplacedIndexOffset), "_DisplacedIndexOffset" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArrayBaseChar_O),_Flags._Flags), "_Flags._Flags" }, // public: (T T) fixable: NIL good-name: T
 {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::MDArrayBaseChar_O),_Dimensions._Data), "_Dimensions._Data" },
 {  variable_capacity, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArrayBaseChar_O),_Dimensions._Length), offsetof(SAFE_TYPE_MACRO(core::MDArrayBaseChar_O),_Dimensions._Length), NULL },
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
 { class_kind, STAMP_core__MDArrayBit_O, sizeof(core::MDArrayBit_O), 0, "core::MDArrayBit_O" },
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), offsetof(SAFE_TYPE_MACRO(core::MDArrayBit_O),_Length), "_Length" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArrayBit_O),_FillPointerOrLengthOrDummy), "_FillPointerOrLengthOrDummy" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArrayBit_O),_ArrayTotalSize), "_ArrayTotalSize" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArrayBit_O),_FillPointerOrLengthOrDummy), "_FillPointerOrLengthOrDummy" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArrayBit_O),_ArrayTotalSize), "_ArrayTotalSize" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Array_O>), offsetof(SAFE_TYPE_MACRO(core::MDArrayBit_O),_Data), "_Data" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArrayBit_O),_DisplacedIndexOffset), "_DisplacedIndexOffset" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArrayBit_O),_Flags._Flags), "_Flags._Flags" }, // public: (T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArrayBit_O),_DisplacedIndexOffset), "_DisplacedIndexOffset" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArrayBit_O),_Flags._Flags), "_Flags._Flags" }, // public: (T T) fixable: NIL good-name: T
 {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::MDArrayBit_O),_Dimensions._Data), "_Dimensions._Data" },
 {  variable_capacity, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArrayBit_O),_Dimensions._Length), offsetof(SAFE_TYPE_MACRO(core::MDArrayBit_O),_Dimensions._Length), NULL },
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
 { class_kind, STAMP_core__MDArrayT_O, sizeof(core::MDArrayT_O), 0, "core::MDArrayT_O" },
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), offsetof(SAFE_TYPE_MACRO(core::MDArrayT_O),_Length), "_Length" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArrayT_O),_FillPointerOrLengthOrDummy), "_FillPointerOrLengthOrDummy" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArrayT_O),_ArrayTotalSize), "_ArrayTotalSize" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArrayT_O),_FillPointerOrLengthOrDummy), "_FillPointerOrLengthOrDummy" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArrayT_O),_ArrayTotalSize), "_ArrayTotalSize" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Array_O>), offsetof(SAFE_TYPE_MACRO(core::MDArrayT_O),_Data), "_Data" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArrayT_O),_DisplacedIndexOffset), "_DisplacedIndexOffset" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArrayT_O),_Flags._Flags), "_Flags._Flags" }, // public: (T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArrayT_O),_DisplacedIndexOffset), "_DisplacedIndexOffset" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArrayT_O),_Flags._Flags), "_Flags._Flags" }, // public: (T T) fixable: NIL good-name: T
 {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::MDArrayT_O),_Dimensions._Data), "_Dimensions._Data" },
 {  variable_capacity, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArrayT_O),_Dimensions._Length), offsetof(SAFE_TYPE_MACRO(core::MDArrayT_O),_Dimensions._Length), NULL },
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
 { class_kind, STAMP_core__BitVectorNs_O, sizeof(core::BitVectorNs_O), 0, "core::BitVectorNs_O" },
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), offsetof(SAFE_TYPE_MACRO(core::BitVectorNs_O),_Length), "_Length" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::BitVectorNs_O),_FillPointerOrLengthOrDummy), "_FillPointerOrLengthOrDummy" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::BitVectorNs_O),_ArrayTotalSize), "_ArrayTotalSize" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::BitVectorNs_O),_FillPointerOrLengthOrDummy), "_FillPointerOrLengthOrDummy" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::BitVectorNs_O),_ArrayTotalSize), "_ArrayTotalSize" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Array_O>), offsetof(SAFE_TYPE_MACRO(core::BitVectorNs_O),_Data), "_Data" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::BitVectorNs_O),_DisplacedIndexOffset), "_DisplacedIndexOffset" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::BitVectorNs_O),_Flags._Flags), "_Flags._Flags" }, // public: (T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::BitVectorNs_O),_DisplacedIndexOffset), "_DisplacedIndexOffset" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::BitVectorNs_O),_Flags._Flags), "_Flags._Flags" }, // public: (T T) fixable: NIL good-name: T
 {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::BitVectorNs_O),_Dimensions._Data), "_Dimensions._Data" },
 {  variable_capacity, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::BitVectorNs_O),_Dimensions._Length), offsetof(SAFE_TYPE_MACRO(core::BitVectorNs_O),_Dimensions._Length), NULL },
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
 { class_kind, STAMP_core__StrNs_O, sizeof(core::StrNs_O), 0, "core::StrNs_O" },
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), offsetof(SAFE_TYPE_MACRO(core::StrNs_O),_Length), "_Length" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::StrNs_O),_FillPointerOrLengthOrDummy), "_FillPointerOrLengthOrDummy" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::StrNs_O),_ArrayTotalSize), "_ArrayTotalSize" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::StrNs_O),_FillPointerOrLengthOrDummy), "_FillPointerOrLengthOrDummy" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::StrNs_O),_ArrayTotalSize), "_ArrayTotalSize" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Array_O>), offsetof(SAFE_TYPE_MACRO(core::StrNs_O),_Data), "_Data" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::StrNs_O),_DisplacedIndexOffset), "_DisplacedIndexOffset" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::StrNs_O),_Flags._Flags), "_Flags._Flags" }, // public: (T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::StrNs_O),_DisplacedIndexOffset), "_DisplacedIndexOffset" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::StrNs_O),_Flags._Flags), "_Flags._Flags" }, // public: (T T) fixable: NIL good-name: T
 {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::StrNs_O),_Dimensions._Data), "_Dimensions._Data" },
 {  variable_capacity, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::StrNs_O),_Dimensions._Length), offsetof(SAFE_TYPE_MACRO(core::StrNs_O),_Dimensions._Length), NULL },
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
 { class_kind, STAMP_core__StrWNs_O, sizeof(core::StrWNs_O), 0, "core::StrWNs_O" },
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), offsetof(SAFE_TYPE_MACRO(core::StrWNs_O),_Length), "_Length" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::StrWNs_O),_FillPointerOrLengthOrDummy), "_FillPointerOrLengthOrDummy" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::StrWNs_O),_ArrayTotalSize), "_ArrayTotalSize" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::StrWNs_O),_FillPointerOrLengthOrDummy), "_FillPointerOrLengthOrDummy" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::StrWNs_O),_ArrayTotalSize), "_ArrayTotalSize" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Array_O>), offsetof(SAFE_TYPE_MACRO(core::StrWNs_O),_Data), "_Data" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::StrWNs_O),_DisplacedIndexOffset), "_DisplacedIndexOffset" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::StrWNs_O),_Flags._Flags), "_Flags._Flags" }, // public: (T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::StrWNs_O),_DisplacedIndexOffset), "_DisplacedIndexOffset" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::StrWNs_O),_Flags._Flags), "_Flags._Flags" }, // public: (T T) fixable: NIL good-name: T
 {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::StrWNs_O),_Dimensions._Data), "_Dimensions._Data" },
 {  variable_capacity, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::StrWNs_O),_Dimensions._Length), offsetof(SAFE_TYPE_MACRO(core::StrWNs_O),_Dimensions._Length), NULL },
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
 { class_kind, STAMP_core__Str8Ns_O, sizeof(core::Str8Ns_O), 0, "core::Str8Ns_O" },
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), offsetof(SAFE_TYPE_MACRO(core::Str8Ns_O),_Length), "_Length" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::Str8Ns_O),_FillPointerOrLengthOrDummy), "_FillPointerOrLengthOrDummy" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::Str8Ns_O),_ArrayTotalSize), "_ArrayTotalSize" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::Str8Ns_O),_FillPointerOrLengthOrDummy), "_FillPointerOrLengthOrDummy" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::Str8Ns_O),_ArrayTotalSize), "_ArrayTotalSize" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Array_O>), offsetof(SAFE_TYPE_MACRO(core::Str8Ns_O),_Data), "_Data" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::Str8Ns_O),_DisplacedIndexOffset), "_DisplacedIndexOffset" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::Str8Ns_O),_Flags._Flags), "_Flags._Flags" }, // public: (T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::Str8Ns_O),_DisplacedIndexOffset), "_DisplacedIndexOffset" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::Str8Ns_O),_Flags._Flags), "_Flags._Flags" }, // public: (T T) fixable: NIL good-name: T
 {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::Str8Ns_O),_Dimensions._Data), "_Dimensions._Data" },
 {  variable_capacity, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::Str8Ns_O),_Dimensions._Length), offsetof(SAFE_TYPE_MACRO(core::Str8Ns_O),_Dimensions._Length), NULL },
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
 { class_kind, STAMP_core__SimpleMDArray_O, sizeof(core::SimpleMDArray_O), 0, "core::SimpleMDArray_O" },
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_O),_Length), "_Length" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_O),_FillPointerOrLengthOrDummy), "_FillPointerOrLengthOrDummy" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_O),_ArrayTotalSize), "_ArrayTotalSize" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_O),_FillPointerOrLengthOrDummy), "_FillPointerOrLengthOrDummy" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_O),_ArrayTotalSize), "_ArrayTotalSize" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Array_O>), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_O),_Data), "_Data" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_O),_DisplacedIndexOffset), "_DisplacedIndexOffset" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_O),_Flags._Flags), "_Flags._Flags" }, // public: (T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_O),_DisplacedIndexOffset), "_DisplacedIndexOffset" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_O),_Flags._Flags), "_Flags._Flags" }, // public: (T T) fixable: NIL good-name: T
 {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_O),_Dimensions._Data), "_Dimensions._Data" },
 {  variable_capacity, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_O),_Dimensions._Length), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_O),_Dimensions._Length), NULL },
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
 { class_kind, STAMP_core__SimpleMDArray_int8_t_O, sizeof(core::SimpleMDArray_int8_t_O), 0, "core::SimpleMDArray_int8_t_O" },
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_int8_t_O),_Length), "_Length" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_int8_t_O),_FillPointerOrLengthOrDummy), "_FillPointerOrLengthOrDummy" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_int8_t_O),_ArrayTotalSize), "_ArrayTotalSize" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_int8_t_O),_FillPointerOrLengthOrDummy), "_FillPointerOrLengthOrDummy" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_int8_t_O),_ArrayTotalSize), "_ArrayTotalSize" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Array_O>), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_int8_t_O),_Data), "_Data" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_int8_t_O),_DisplacedIndexOffset), "_DisplacedIndexOffset" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_int8_t_O),_Flags._Flags), "_Flags._Flags" }, // public: (T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_int8_t_O),_DisplacedIndexOffset), "_DisplacedIndexOffset" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_int8_t_O),_Flags._Flags), "_Flags._Flags" }, // public: (T T) fixable: NIL good-name: T
 {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_int8_t_O),_Dimensions._Data), "_Dimensions._Data" },
 {  variable_capacity, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_int8_t_O),_Dimensions._Length), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_int8_t_O),_Dimensions._Length), NULL },
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
 { class_kind, STAMP_core__SimpleMDArray_byte8_t_O, sizeof(core::SimpleMDArray_byte8_t_O), 0, "core::SimpleMDArray_byte8_t_O" },
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_byte8_t_O),_Length), "_Length" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_byte8_t_O),_FillPointerOrLengthOrDummy), "_FillPointerOrLengthOrDummy" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_byte8_t_O),_ArrayTotalSize), "_ArrayTotalSize" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_byte8_t_O),_FillPointerOrLengthOrDummy), "_FillPointerOrLengthOrDummy" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_byte8_t_O),_ArrayTotalSize), "_ArrayTotalSize" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Array_O>), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_byte8_t_O),_Data), "_Data" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_byte8_t_O),_DisplacedIndexOffset), "_DisplacedIndexOffset" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_byte8_t_O),_Flags._Flags), "_Flags._Flags" }, // public: (T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_byte8_t_O),_DisplacedIndexOffset), "_DisplacedIndexOffset" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_byte8_t_O),_Flags._Flags), "_Flags._Flags" }, // public: (T T) fixable: NIL good-name: T
 {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_byte8_t_O),_Dimensions._Data), "_Dimensions._Data" },
 {  variable_capacity, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_byte8_t_O),_Dimensions._Length), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_byte8_t_O),_Dimensions._Length), NULL },
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
 { class_kind, STAMP_core__SimpleMDArray_int16_t_O, sizeof(core::SimpleMDArray_int16_t_O), 0, "core::SimpleMDArray_int16_t_O" },
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_int16_t_O),_Length), "_Length" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_int16_t_O),_FillPointerOrLengthOrDummy), "_FillPointerOrLengthOrDummy" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_int16_t_O),_ArrayTotalSize), "_ArrayTotalSize" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_int16_t_O),_FillPointerOrLengthOrDummy), "_FillPointerOrLengthOrDummy" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_int16_t_O),_ArrayTotalSize), "_ArrayTotalSize" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Array_O>), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_int16_t_O),_Data), "_Data" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_int16_t_O),_DisplacedIndexOffset), "_DisplacedIndexOffset" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_int16_t_O),_Flags._Flags), "_Flags._Flags" }, // public: (T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_int16_t_O),_DisplacedIndexOffset), "_DisplacedIndexOffset" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_int16_t_O),_Flags._Flags), "_Flags._Flags" }, // public: (T T) fixable: NIL good-name: T
 {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_int16_t_O),_Dimensions._Data), "_Dimensions._Data" },
 {  variable_capacity, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_int16_t_O),_Dimensions._Length), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_int16_t_O),_Dimensions._Length), NULL },
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
 { class_kind, STAMP_core__SimpleMDArray_byte16_t_O, sizeof(core::SimpleMDArray_byte16_t_O), 0, "core::SimpleMDArray_byte16_t_O" },
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_byte16_t_O),_Length), "_Length" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_byte16_t_O),_FillPointerOrLengthOrDummy), "_FillPointerOrLengthOrDummy" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_byte16_t_O),_ArrayTotalSize), "_ArrayTotalSize" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_byte16_t_O),_FillPointerOrLengthOrDummy), "_FillPointerOrLengthOrDummy" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_byte16_t_O),_ArrayTotalSize), "_ArrayTotalSize" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Array_O>), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_byte16_t_O),_Data), "_Data" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_byte16_t_O),_DisplacedIndexOffset), "_DisplacedIndexOffset" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_byte16_t_O),_Flags._Flags), "_Flags._Flags" }, // public: (T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_byte16_t_O),_DisplacedIndexOffset), "_DisplacedIndexOffset" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_byte16_t_O),_Flags._Flags), "_Flags._Flags" }, // public: (T T) fixable: NIL good-name: T
 {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_byte16_t_O),_Dimensions._Data), "_Dimensions._Data" },
 {  variable_capacity, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_byte16_t_O),_Dimensions._Length), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_byte16_t_O),_Dimensions._Length), NULL },
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
 { class_kind, STAMP_core__SimpleMDArray_int32_t_O, sizeof(core::SimpleMDArray_int32_t_O), 0, "core::SimpleMDArray_int32_t_O" },
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_int32_t_O),_Length), "_Length" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_int32_t_O),_FillPointerOrLengthOrDummy), "_FillPointerOrLengthOrDummy" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_int32_t_O),_ArrayTotalSize), "_ArrayTotalSize" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_int32_t_O),_FillPointerOrLengthOrDummy), "_FillPointerOrLengthOrDummy" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_int32_t_O),_ArrayTotalSize), "_ArrayTotalSize" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Array_O>), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_int32_t_O),_Data), "_Data" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_int32_t_O),_DisplacedIndexOffset), "_DisplacedIndexOffset" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_int32_t_O),_Flags._Flags), "_Flags._Flags" }, // public: (T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_int32_t_O),_DisplacedIndexOffset), "_DisplacedIndexOffset" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_int32_t_O),_Flags._Flags), "_Flags._Flags" }, // public: (T T) fixable: NIL good-name: T
 {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_int32_t_O),_Dimensions._Data), "_Dimensions._Data" },
 {  variable_capacity, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_int32_t_O),_Dimensions._Length), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_int32_t_O),_Dimensions._Length), NULL },
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
 { class_kind, STAMP_core__SimpleMDArray_byte32_t_O, sizeof(core::SimpleMDArray_byte32_t_O), 0, "core::SimpleMDArray_byte32_t_O" },
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_byte32_t_O),_Length), "_Length" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_byte32_t_O),_FillPointerOrLengthOrDummy), "_FillPointerOrLengthOrDummy" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_byte32_t_O),_ArrayTotalSize), "_ArrayTotalSize" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_byte32_t_O),_FillPointerOrLengthOrDummy), "_FillPointerOrLengthOrDummy" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_byte32_t_O),_ArrayTotalSize), "_ArrayTotalSize" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Array_O>), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_byte32_t_O),_Data), "_Data" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_byte32_t_O),_DisplacedIndexOffset), "_DisplacedIndexOffset" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_byte32_t_O),_Flags._Flags), "_Flags._Flags" }, // public: (T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_byte32_t_O),_DisplacedIndexOffset), "_DisplacedIndexOffset" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_byte32_t_O),_Flags._Flags), "_Flags._Flags" }, // public: (T T) fixable: NIL good-name: T
 {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_byte32_t_O),_Dimensions._Data), "_Dimensions._Data" },
 {  variable_capacity, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_byte32_t_O),_Dimensions._Length), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_byte32_t_O),_Dimensions._Length), NULL },
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
 { class_kind, STAMP_core__SimpleMDArray_int64_t_O, sizeof(core::SimpleMDArray_int64_t_O), 0, "core::SimpleMDArray_int64_t_O" },
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_int64_t_O),_Length), "_Length" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_int64_t_O),_FillPointerOrLengthOrDummy), "_FillPointerOrLengthOrDummy" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_int64_t_O),_ArrayTotalSize), "_ArrayTotalSize" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_int64_t_O),_FillPointerOrLengthOrDummy), "_FillPointerOrLengthOrDummy" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_int64_t_O),_ArrayTotalSize), "_ArrayTotalSize" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Array_O>), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_int64_t_O),_Data), "_Data" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_int64_t_O),_DisplacedIndexOffset), "_DisplacedIndexOffset" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_int64_t_O),_Flags._Flags), "_Flags._Flags" }, // public: (T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_int64_t_O),_DisplacedIndexOffset), "_DisplacedIndexOffset" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_int64_t_O),_Flags._Flags), "_Flags._Flags" }, // public: (T T) fixable: NIL good-name: T
 {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_int64_t_O),_Dimensions._Data), "_Dimensions._Data" },
 {  variable_capacity, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_int64_t_O),_Dimensions._Length), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_int64_t_O),_Dimensions._Length), NULL },
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
 { class_kind, STAMP_core__SimpleMDArray_byte64_t_O, sizeof(core::SimpleMDArray_byte64_t_O), 0, "core::SimpleMDArray_byte64_t_O" },
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_byte64_t_O),_Length), "_Length" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_byte64_t_O),_FillPointerOrLengthOrDummy), "_FillPointerOrLengthOrDummy" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_byte64_t_O),_ArrayTotalSize), "_ArrayTotalSize" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_byte64_t_O),_FillPointerOrLengthOrDummy), "_FillPointerOrLengthOrDummy" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_byte64_t_O),_ArrayTotalSize), "_ArrayTotalSize" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Array_O>), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_byte64_t_O),_Data), "_Data" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_byte64_t_O),_DisplacedIndexOffset), "_DisplacedIndexOffset" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_byte64_t_O),_Flags._Flags), "_Flags._Flags" }, // public: (T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_byte64_t_O),_DisplacedIndexOffset), "_DisplacedIndexOffset" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_byte64_t_O),_Flags._Flags), "_Flags._Flags" }, // public: (T T) fixable: NIL good-name: T
 {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_byte64_t_O),_Dimensions._Data), "_Dimensions._Data" },
 {  variable_capacity, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_byte64_t_O),_Dimensions._Length), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_byte64_t_O),_Dimensions._Length), NULL },
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
 { class_kind, STAMP_core__SimpleMDArray_fixnum_O, sizeof(core::SimpleMDArray_fixnum_O), 0, "core::SimpleMDArray_fixnum_O" },
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_fixnum_O),_Length), "_Length" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_fixnum_O),_FillPointerOrLengthOrDummy), "_FillPointerOrLengthOrDummy" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_fixnum_O),_ArrayTotalSize), "_ArrayTotalSize" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_fixnum_O),_FillPointerOrLengthOrDummy), "_FillPointerOrLengthOrDummy" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_fixnum_O),_ArrayTotalSize), "_ArrayTotalSize" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Array_O>), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_fixnum_O),_Data), "_Data" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_fixnum_O),_DisplacedIndexOffset), "_DisplacedIndexOffset" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_fixnum_O),_Flags._Flags), "_Flags._Flags" }, // public: (T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_fixnum_O),_DisplacedIndexOffset), "_DisplacedIndexOffset" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_fixnum_O),_Flags._Flags), "_Flags._Flags" }, // public: (T T) fixable: NIL good-name: T
 {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_fixnum_O),_Dimensions._Data), "_Dimensions._Data" },
 {  variable_capacity, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_fixnum_O),_Dimensions._Length), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_fixnum_O),_Dimensions._Length), NULL },
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
 { class_kind, STAMP_core__SimpleMDArray_size_t_O, sizeof(core::SimpleMDArray_size_t_O), 0, "core::SimpleMDArray_size_t_O" },
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_size_t_O),_Length), "_Length" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_size_t_O),_FillPointerOrLengthOrDummy), "_FillPointerOrLengthOrDummy" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_size_t_O),_ArrayTotalSize), "_ArrayTotalSize" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_size_t_O),_FillPointerOrLengthOrDummy), "_FillPointerOrLengthOrDummy" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_size_t_O),_ArrayTotalSize), "_ArrayTotalSize" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Array_O>), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_size_t_O),_Data), "_Data" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_size_t_O),_DisplacedIndexOffset), "_DisplacedIndexOffset" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_size_t_O),_Flags._Flags), "_Flags._Flags" }, // public: (T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_size_t_O),_DisplacedIndexOffset), "_DisplacedIndexOffset" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_size_t_O),_Flags._Flags), "_Flags._Flags" }, // public: (T T) fixable: NIL good-name: T
 {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_size_t_O),_Dimensions._Data), "_Dimensions._Data" },
 {  variable_capacity, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_size_t_O),_Dimensions._Length), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_size_t_O),_Dimensions._Length), NULL },
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
 { class_kind, STAMP_core__SimpleMDArrayFloat_O, sizeof(core::SimpleMDArrayFloat_O), 0, "core::SimpleMDArrayFloat_O" },
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayFloat_O),_Length), "_Length" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayFloat_O),_FillPointerOrLengthOrDummy), "_FillPointerOrLengthOrDummy" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayFloat_O),_ArrayTotalSize), "_ArrayTotalSize" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayFloat_O),_FillPointerOrLengthOrDummy), "_FillPointerOrLengthOrDummy" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayFloat_O),_ArrayTotalSize), "_ArrayTotalSize" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Array_O>), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayFloat_O),_Data), "_Data" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayFloat_O),_DisplacedIndexOffset), "_DisplacedIndexOffset" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayFloat_O),_Flags._Flags), "_Flags._Flags" }, // public: (T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayFloat_O),_DisplacedIndexOffset), "_DisplacedIndexOffset" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayFloat_O),_Flags._Flags), "_Flags._Flags" }, // public: (T T) fixable: NIL good-name: T
 {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayFloat_O),_Dimensions._Data), "_Dimensions._Data" },
 {  variable_capacity, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayFloat_O),_Dimensions._Length), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayFloat_O),_Dimensions._Length), NULL },
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
 { class_kind, STAMP_core__SimpleMDArrayDouble_O, sizeof(core::SimpleMDArrayDouble_O), 0, "core::SimpleMDArrayDouble_O" },
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayDouble_O),_Length), "_Length" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayDouble_O),_FillPointerOrLengthOrDummy), "_FillPointerOrLengthOrDummy" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayDouble_O),_ArrayTotalSize), "_ArrayTotalSize" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayDouble_O),_FillPointerOrLengthOrDummy), "_FillPointerOrLengthOrDummy" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayDouble_O),_ArrayTotalSize), "_ArrayTotalSize" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Array_O>), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayDouble_O),_Data), "_Data" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayDouble_O),_DisplacedIndexOffset), "_DisplacedIndexOffset" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayDouble_O),_Flags._Flags), "_Flags._Flags" }, // public: (T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayDouble_O),_DisplacedIndexOffset), "_DisplacedIndexOffset" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayDouble_O),_Flags._Flags), "_Flags._Flags" }, // public: (T T) fixable: NIL good-name: T
 {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayDouble_O),_Dimensions._Data), "_Dimensions._Data" },
 {  variable_capacity, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayDouble_O),_Dimensions._Length), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayDouble_O),_Dimensions._Length), NULL },
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
 { class_kind, STAMP_core__SimpleMDArrayCharacter_O, sizeof(core::SimpleMDArrayCharacter_O), 0, "core::SimpleMDArrayCharacter_O" },
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayCharacter_O),_Length), "_Length" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayCharacter_O),_FillPointerOrLengthOrDummy), "_FillPointerOrLengthOrDummy" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayCharacter_O),_ArrayTotalSize), "_ArrayTotalSize" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayCharacter_O),_FillPointerOrLengthOrDummy), "_FillPointerOrLengthOrDummy" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayCharacter_O),_ArrayTotalSize), "_ArrayTotalSize" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Array_O>), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayCharacter_O),_Data), "_Data" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayCharacter_O),_DisplacedIndexOffset), "_DisplacedIndexOffset" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayCharacter_O),_Flags._Flags), "_Flags._Flags" }, // public: (T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayCharacter_O),_DisplacedIndexOffset), "_DisplacedIndexOffset" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayCharacter_O),_Flags._Flags), "_Flags._Flags" }, // public: (T T) fixable: NIL good-name: T
 {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayCharacter_O),_Dimensions._Data), "_Dimensions._Data" },
 {  variable_capacity, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayCharacter_O),_Dimensions._Length), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayCharacter_O),_Dimensions._Length), NULL },
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
 { class_kind, STAMP_core__SimpleMDArrayBaseChar_O, sizeof(core::SimpleMDArrayBaseChar_O), 0, "core::SimpleMDArrayBaseChar_O" },
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayBaseChar_O),_Length), "_Length" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayBaseChar_O),_FillPointerOrLengthOrDummy), "_FillPointerOrLengthOrDummy" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayBaseChar_O),_ArrayTotalSize), "_ArrayTotalSize" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayBaseChar_O),_FillPointerOrLengthOrDummy), "_FillPointerOrLengthOrDummy" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayBaseChar_O),_ArrayTotalSize), "_ArrayTotalSize" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Array_O>), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayBaseChar_O),_Data), "_Data" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayBaseChar_O),_DisplacedIndexOffset), "_DisplacedIndexOffset" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayBaseChar_O),_Flags._Flags), "_Flags._Flags" }, // public: (T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayBaseChar_O),_DisplacedIndexOffset), "_DisplacedIndexOffset" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayBaseChar_O),_Flags._Flags), "_Flags._Flags" }, // public: (T T) fixable: NIL good-name: T
 {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayBaseChar_O),_Dimensions._Data), "_Dimensions._Data" },
 {  variable_capacity, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayBaseChar_O),_Dimensions._Length), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayBaseChar_O),_Dimensions._Length), NULL },
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
 { class_kind, STAMP_core__SimpleMDArrayBit_O, sizeof(core::SimpleMDArrayBit_O), 0, "core::SimpleMDArrayBit_O" },
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayBit_O),_Length), "_Length" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayBit_O),_FillPointerOrLengthOrDummy), "_FillPointerOrLengthOrDummy" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayBit_O),_ArrayTotalSize), "_ArrayTotalSize" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayBit_O),_FillPointerOrLengthOrDummy), "_FillPointerOrLengthOrDummy" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayBit_O),_ArrayTotalSize), "_ArrayTotalSize" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Array_O>), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayBit_O),_Data), "_Data" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayBit_O),_DisplacedIndexOffset), "_DisplacedIndexOffset" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayBit_O),_Flags._Flags), "_Flags._Flags" }, // public: (T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayBit_O),_DisplacedIndexOffset), "_DisplacedIndexOffset" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayBit_O),_Flags._Flags), "_Flags._Flags" }, // public: (T T) fixable: NIL good-name: T
 {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayBit_O),_Dimensions._Data), "_Dimensions._Data" },
 {  variable_capacity, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayBit_O),_Dimensions._Length), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayBit_O),_Dimensions._Length), NULL },
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
 { class_kind, STAMP_core__SimpleMDArrayT_O, sizeof(core::SimpleMDArrayT_O), 0, "core::SimpleMDArrayT_O" },
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayT_O),_Length), "_Length" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayT_O),_FillPointerOrLengthOrDummy), "_FillPointerOrLengthOrDummy" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayT_O),_ArrayTotalSize), "_ArrayTotalSize" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayT_O),_FillPointerOrLengthOrDummy), "_FillPointerOrLengthOrDummy" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayT_O),_ArrayTotalSize), "_ArrayTotalSize" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Array_O>), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayT_O),_Data), "_Data" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayT_O),_DisplacedIndexOffset), "_DisplacedIndexOffset" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayT_O),_Flags._Flags), "_Flags._Flags" }, // public: (T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayT_O),_DisplacedIndexOffset), "_DisplacedIndexOffset" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayT_O),_Flags._Flags), "_Flags._Flags" }, // public: (T T) fixable: NIL good-name: T
 {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayT_O),_Dimensions._Data), "_Dimensions._Data" },
 {  variable_capacity, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayT_O),_Dimensions._Length), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayT_O),_Dimensions._Length), NULL },
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
@@ -8344,45 +8344,45 @@ public:
 { class_kind, STAMP_core__Lisp_O, sizeof(core::Lisp_O), 0, "core::Lisp_O" },
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._TerminalIO), "_Roots._TerminalIO" }, // public: (T T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::List_V>), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._ActiveThreads), "_Roots._ActiveThreads" }, // public: (T T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._ActiveThreadsMutex._r._Mutex.__count), "_Roots._ActiveThreadsMutex._r._Mutex.__count" }, // public: (T T T T T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._ActiveThreadsMutex._r._Mutex.__value.__wch), "_Roots._ActiveThreadsMutex._r._Mutex.__value.__wch" }, // public: (T T T T T T) fixable: NIL good-name: T
- {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._ActiveThreadsMutex._r._Counter), "_Roots._ActiveThreadsMutex._r._Counter" }, // public: (T T T T) fixable: NIL good-name: T
- {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._ActiveThreadsMutex._r._Recursive), "_Roots._ActiveThreadsMutex._r._Recursive" }, // public: (T T T T) fixable: NIL good-name: T
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._ActiveThreadsMutex._g._Mutex.__count), "_Roots._ActiveThreadsMutex._g._Mutex.__count" }, // public: (T T T T T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._ActiveThreadsMutex._g._Mutex.__value.__wch), "_Roots._ActiveThreadsMutex._g._Mutex.__value.__wch" }, // public: (T T T T T T) fixable: NIL good-name: T
- {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._ActiveThreadsMutex._g._Counter), "_Roots._ActiveThreadsMutex._g._Counter" }, // public: (T T T T) fixable: NIL good-name: T
- {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._ActiveThreadsMutex._g._Recursive), "_Roots._ActiveThreadsMutex._g._Recursive" }, // public: (T T T T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._ActiveThreadsMutex._b), "_Roots._ActiveThreadsMutex._b" }, // public: (T T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._ActiveThreadsMutex._r._Mutex.__count), "_Roots._ActiveThreadsMutex._r._Mutex.__count" }, // public: (T T T T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._ActiveThreadsMutex._r._Mutex.__value.__wch), "_Roots._ActiveThreadsMutex._r._Mutex.__value.__wch" }, // public: (T T T T T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._ActiveThreadsMutex._r._Counter), "_Roots._ActiveThreadsMutex._r._Counter" }, // public: (T T T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._ActiveThreadsMutex._r._Recursive), "_Roots._ActiveThreadsMutex._r._Recursive" }, // public: (T T T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._ActiveThreadsMutex._g._Mutex.__count), "_Roots._ActiveThreadsMutex._g._Mutex.__count" }, // public: (T T T T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._ActiveThreadsMutex._g._Mutex.__value.__wch), "_Roots._ActiveThreadsMutex._g._Mutex.__value.__wch" }, // public: (T T T T T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._ActiveThreadsMutex._g._Counter), "_Roots._ActiveThreadsMutex._g._Counter" }, // public: (T T T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._ActiveThreadsMutex._g._Recursive), "_Roots._ActiveThreadsMutex._g._Recursive" }, // public: (T T T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._ActiveThreadsMutex._b), "_Roots._ActiveThreadsMutex._b" }, // public: (T T T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::List_V>), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._DefaultSpecialBindings), "_Roots._DefaultSpecialBindings" }, // public: (T T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._DefaultSpecialBindingsMutex._r._Mutex.__count), "_Roots._DefaultSpecialBindingsMutex._r._Mutex.__count" }, // public: (T T T T T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._DefaultSpecialBindingsMutex._r._Mutex.__value.__wch), "_Roots._DefaultSpecialBindingsMutex._r._Mutex.__value.__wch" }, // public: (T T T T T T) fixable: NIL good-name: T
- {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._DefaultSpecialBindingsMutex._r._Counter), "_Roots._DefaultSpecialBindingsMutex._r._Counter" }, // public: (T T T T) fixable: NIL good-name: T
- {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._DefaultSpecialBindingsMutex._r._Recursive), "_Roots._DefaultSpecialBindingsMutex._r._Recursive" }, // public: (T T T T) fixable: NIL good-name: T
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._DefaultSpecialBindingsMutex._g._Mutex.__count), "_Roots._DefaultSpecialBindingsMutex._g._Mutex.__count" }, // public: (T T T T T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._DefaultSpecialBindingsMutex._g._Mutex.__value.__wch), "_Roots._DefaultSpecialBindingsMutex._g._Mutex.__value.__wch" }, // public: (T T T T T T) fixable: NIL good-name: T
- {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._DefaultSpecialBindingsMutex._g._Counter), "_Roots._DefaultSpecialBindingsMutex._g._Counter" }, // public: (T T T T) fixable: NIL good-name: T
- {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._DefaultSpecialBindingsMutex._g._Recursive), "_Roots._DefaultSpecialBindingsMutex._g._Recursive" }, // public: (T T T T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._DefaultSpecialBindingsMutex._b), "_Roots._DefaultSpecialBindingsMutex._b" }, // public: (T T T) fixable: NIL good-name: T
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._SyspropMutex._r._Mutex.__count), "_Roots._SyspropMutex._r._Mutex.__count" }, // public: (T T T T T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._SyspropMutex._r._Mutex.__value.__wch), "_Roots._SyspropMutex._r._Mutex.__value.__wch" }, // public: (T T T T T T) fixable: NIL good-name: T
- {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._SyspropMutex._r._Counter), "_Roots._SyspropMutex._r._Counter" }, // public: (T T T T) fixable: NIL good-name: T
- {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._SyspropMutex._r._Recursive), "_Roots._SyspropMutex._r._Recursive" }, // public: (T T T T) fixable: NIL good-name: T
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._SyspropMutex._g._Mutex.__count), "_Roots._SyspropMutex._g._Mutex.__count" }, // public: (T T T T T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._SyspropMutex._g._Mutex.__value.__wch), "_Roots._SyspropMutex._g._Mutex.__value.__wch" }, // public: (T T T T T T) fixable: NIL good-name: T
- {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._SyspropMutex._g._Counter), "_Roots._SyspropMutex._g._Counter" }, // public: (T T T T) fixable: NIL good-name: T
- {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._SyspropMutex._g._Recursive), "_Roots._SyspropMutex._g._Recursive" }, // public: (T T T T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._SyspropMutex._b), "_Roots._SyspropMutex._b" }, // public: (T T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._DefaultSpecialBindingsMutex._r._Mutex.__count), "_Roots._DefaultSpecialBindingsMutex._r._Mutex.__count" }, // public: (T T T T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._DefaultSpecialBindingsMutex._r._Mutex.__value.__wch), "_Roots._DefaultSpecialBindingsMutex._r._Mutex.__value.__wch" }, // public: (T T T T T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._DefaultSpecialBindingsMutex._r._Counter), "_Roots._DefaultSpecialBindingsMutex._r._Counter" }, // public: (T T T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._DefaultSpecialBindingsMutex._r._Recursive), "_Roots._DefaultSpecialBindingsMutex._r._Recursive" }, // public: (T T T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._DefaultSpecialBindingsMutex._g._Mutex.__count), "_Roots._DefaultSpecialBindingsMutex._g._Mutex.__count" }, // public: (T T T T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._DefaultSpecialBindingsMutex._g._Mutex.__value.__wch), "_Roots._DefaultSpecialBindingsMutex._g._Mutex.__value.__wch" }, // public: (T T T T T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._DefaultSpecialBindingsMutex._g._Counter), "_Roots._DefaultSpecialBindingsMutex._g._Counter" }, // public: (T T T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._DefaultSpecialBindingsMutex._g._Recursive), "_Roots._DefaultSpecialBindingsMutex._g._Recursive" }, // public: (T T T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._DefaultSpecialBindingsMutex._b), "_Roots._DefaultSpecialBindingsMutex._b" }, // public: (T T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._SyspropMutex._r._Mutex.__count), "_Roots._SyspropMutex._r._Mutex.__count" }, // public: (T T T T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._SyspropMutex._r._Mutex.__value.__wch), "_Roots._SyspropMutex._r._Mutex.__value.__wch" }, // public: (T T T T T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._SyspropMutex._r._Counter), "_Roots._SyspropMutex._r._Counter" }, // public: (T T T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._SyspropMutex._r._Recursive), "_Roots._SyspropMutex._r._Recursive" }, // public: (T T T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._SyspropMutex._g._Mutex.__count), "_Roots._SyspropMutex._g._Mutex.__count" }, // public: (T T T T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._SyspropMutex._g._Mutex.__value.__wch), "_Roots._SyspropMutex._g._Mutex.__value.__wch" }, // public: (T T T T T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._SyspropMutex._g._Counter), "_Roots._SyspropMutex._g._Counter" }, // public: (T T T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._SyspropMutex._g._Recursive), "_Roots._SyspropMutex._g._Recursive" }, // public: (T T T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._SyspropMutex._b), "_Roots._SyspropMutex._b" }, // public: (T T T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::HashTable_O>), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._Sysprop), "_Roots._Sysprop" }, // public: (T T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::HashTable_O>), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._ClassTable), "_Roots._ClassTable" }, // public: (T T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._ClassTableMutex._r._Mutex.__count), "_Roots._ClassTableMutex._r._Mutex.__count" }, // public: (T T T T T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._ClassTableMutex._r._Mutex.__value.__wch), "_Roots._ClassTableMutex._r._Mutex.__value.__wch" }, // public: (T T T T T T) fixable: NIL good-name: T
- {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._ClassTableMutex._r._Counter), "_Roots._ClassTableMutex._r._Counter" }, // public: (T T T T) fixable: NIL good-name: T
- {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._ClassTableMutex._r._Recursive), "_Roots._ClassTableMutex._r._Recursive" }, // public: (T T T T) fixable: NIL good-name: T
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._ClassTableMutex._g._Mutex.__count), "_Roots._ClassTableMutex._g._Mutex.__count" }, // public: (T T T T T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._ClassTableMutex._g._Mutex.__value.__wch), "_Roots._ClassTableMutex._g._Mutex.__value.__wch" }, // public: (T T T T T T) fixable: NIL good-name: T
- {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._ClassTableMutex._g._Counter), "_Roots._ClassTableMutex._g._Counter" }, // public: (T T T T) fixable: NIL good-name: T
- {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._ClassTableMutex._g._Recursive), "_Roots._ClassTableMutex._g._Recursive" }, // public: (T T T T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._ClassTableMutex._b), "_Roots._ClassTableMutex._b" }, // public: (T T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._ClassTableMutex._r._Mutex.__count), "_Roots._ClassTableMutex._r._Mutex.__count" }, // public: (T T T T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._ClassTableMutex._r._Mutex.__value.__wch), "_Roots._ClassTableMutex._r._Mutex.__value.__wch" }, // public: (T T T T T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._ClassTableMutex._r._Counter), "_Roots._ClassTableMutex._r._Counter" }, // public: (T T T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._ClassTableMutex._r._Recursive), "_Roots._ClassTableMutex._r._Recursive" }, // public: (T T T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._ClassTableMutex._g._Mutex.__count), "_Roots._ClassTableMutex._g._Mutex.__count" }, // public: (T T T T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._ClassTableMutex._g._Mutex.__value.__wch), "_Roots._ClassTableMutex._g._Mutex.__value.__wch" }, // public: (T T T T T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._ClassTableMutex._g._Counter), "_Roots._ClassTableMutex._g._Counter" }, // public: (T T T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._ClassTableMutex._g._Recursive), "_Roots._ClassTableMutex._g._Recursive" }, // public: (T T T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._ClassTableMutex._b), "_Roots._ClassTableMutex._b" }, // public: (T T T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Integer_O>), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._IntegerOverflowAdjust), "_Roots._IntegerOverflowAdjust" }, // public: (T T) fixable: SMART-PTR-FIX good-name: T
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots.charInfo.gNamesToCharacterIndex._M_t._M_impl._M_node_count), "_Roots.charInfo.gNamesToCharacterIndex._M_t._M_impl._M_node_count" }, // public: (T T T NIL NIL T) fixable: NIL good-name: T
  {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<gctools::smart_ptr<core::T_O>>>), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots.charInfo.gIndexedCharacters._Vector._Contents), "_Roots.charInfo.gIndexedCharacters._Vector._Contents" }, // public: (T T T T T) fixable: TAGGED-POINTER-FIX good-name: T
@@ -8390,28 +8390,28 @@ public:
  {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<gctools::smart_ptr<core::Symbol_O>>>), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._ClassSymbolsHolder._Vector._Contents), "_Roots._ClassSymbolsHolder._Vector._Contents" }, // public: (T T T T) fixable: TAGGED-POINTER-FIX good-name: T
  {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<gctools::smart_ptr<core::SourceFileInfo_O>>>), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._SourceFiles._Vector._Contents), "_Roots._SourceFiles._Vector._Contents" }, // public: (T T T T) fixable: TAGGED-POINTER-FIX good-name: T
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._SourceFileIndices._M_t._M_impl._M_node_count), "_Roots._SourceFileIndices._M_t._M_impl._M_node_count" }, // public: (T T NIL NIL T) fixable: NIL good-name: T
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._SourceFilesMutex._r._Mutex.__count), "_Roots._SourceFilesMutex._r._Mutex.__count" }, // public: (T T T T T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._SourceFilesMutex._r._Mutex.__value.__wch), "_Roots._SourceFilesMutex._r._Mutex.__value.__wch" }, // public: (T T T T T T) fixable: NIL good-name: T
- {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._SourceFilesMutex._r._Counter), "_Roots._SourceFilesMutex._r._Counter" }, // public: (T T T T) fixable: NIL good-name: T
- {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._SourceFilesMutex._r._Recursive), "_Roots._SourceFilesMutex._r._Recursive" }, // public: (T T T T) fixable: NIL good-name: T
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._SourceFilesMutex._g._Mutex.__count), "_Roots._SourceFilesMutex._g._Mutex.__count" }, // public: (T T T T T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._SourceFilesMutex._g._Mutex.__value.__wch), "_Roots._SourceFilesMutex._g._Mutex.__value.__wch" }, // public: (T T T T T T) fixable: NIL good-name: T
- {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._SourceFilesMutex._g._Counter), "_Roots._SourceFilesMutex._g._Counter" }, // public: (T T T T) fixable: NIL good-name: T
- {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._SourceFilesMutex._g._Recursive), "_Roots._SourceFilesMutex._g._Recursive" }, // public: (T T T T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._SourceFilesMutex._b), "_Roots._SourceFilesMutex._b" }, // public: (T T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._SourceFilesMutex._r._Mutex.__count), "_Roots._SourceFilesMutex._r._Mutex.__count" }, // public: (T T T T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._SourceFilesMutex._r._Mutex.__value.__wch), "_Roots._SourceFilesMutex._r._Mutex.__value.__wch" }, // public: (T T T T T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._SourceFilesMutex._r._Counter), "_Roots._SourceFilesMutex._r._Counter" }, // public: (T T T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._SourceFilesMutex._r._Recursive), "_Roots._SourceFilesMutex._r._Recursive" }, // public: (T T T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._SourceFilesMutex._g._Mutex.__count), "_Roots._SourceFilesMutex._g._Mutex.__count" }, // public: (T T T T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._SourceFilesMutex._g._Mutex.__value.__wch), "_Roots._SourceFilesMutex._g._Mutex.__value.__wch" }, // public: (T T T T T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._SourceFilesMutex._g._Counter), "_Roots._SourceFilesMutex._g._Counter" }, // public: (T T T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._SourceFilesMutex._g._Recursive), "_Roots._SourceFilesMutex._g._Recursive" }, // public: (T T T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._SourceFilesMutex._b), "_Roots._SourceFilesMutex._b" }, // public: (T T T) fixable: NIL good-name: T
  {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<core::SymbolClassPair>>), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots.bootClassTable._Vector._Contents), "_Roots.bootClassTable._Vector._Contents" }, // public: (T T T T) fixable: TAGGED-POINTER-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::List_V>), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._CommandLineArguments), "_Roots._CommandLineArguments" }, // public: (T T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<gctools::smart_ptr<core::Package_O>>>), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._Packages._Vector._Contents), "_Roots._Packages._Vector._Contents" }, // public: (T T T T) fixable: TAGGED-POINTER-FIX good-name: T
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._PackageNameIndexMap._M_t._M_impl._M_node_count), "_Roots._PackageNameIndexMap._M_t._M_impl._M_node_count" }, // public: (T T NIL NIL T) fixable: NIL good-name: T
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._PackagesMutex._r._Mutex.__count), "_Roots._PackagesMutex._r._Mutex.__count" }, // public: (T T T T T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._PackagesMutex._r._Mutex.__value.__wch), "_Roots._PackagesMutex._r._Mutex.__value.__wch" }, // public: (T T T T T T) fixable: NIL good-name: T
- {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._PackagesMutex._r._Counter), "_Roots._PackagesMutex._r._Counter" }, // public: (T T T T) fixable: NIL good-name: T
- {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._PackagesMutex._r._Recursive), "_Roots._PackagesMutex._r._Recursive" }, // public: (T T T T) fixable: NIL good-name: T
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._PackagesMutex._g._Mutex.__count), "_Roots._PackagesMutex._g._Mutex.__count" }, // public: (T T T T T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._PackagesMutex._g._Mutex.__value.__wch), "_Roots._PackagesMutex._g._Mutex.__value.__wch" }, // public: (T T T T T T) fixable: NIL good-name: T
- {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._PackagesMutex._g._Counter), "_Roots._PackagesMutex._g._Counter" }, // public: (T T T T) fixable: NIL good-name: T
- {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._PackagesMutex._g._Recursive), "_Roots._PackagesMutex._g._Recursive" }, // public: (T T T T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._PackagesMutex._b), "_Roots._PackagesMutex._b" }, // public: (T T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._PackagesMutex._r._Mutex.__count), "_Roots._PackagesMutex._r._Mutex.__count" }, // public: (T T T T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._PackagesMutex._r._Mutex.__value.__wch), "_Roots._PackagesMutex._r._Mutex.__value.__wch" }, // public: (T T T T T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._PackagesMutex._r._Counter), "_Roots._PackagesMutex._r._Counter" }, // public: (T T T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._PackagesMutex._r._Recursive), "_Roots._PackagesMutex._r._Recursive" }, // public: (T T T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._PackagesMutex._g._Mutex.__count), "_Roots._PackagesMutex._g._Mutex.__count" }, // public: (T T T T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._PackagesMutex._g._Mutex.__value.__wch), "_Roots._PackagesMutex._g._Mutex.__value.__wch" }, // public: (T T T T T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._PackagesMutex._g._Counter), "_Roots._PackagesMutex._g._Counter" }, // public: (T T T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._PackagesMutex._g._Recursive), "_Roots._PackagesMutex._g._Recursive" }, // public: (T T T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._PackagesMutex._b), "_Roots._PackagesMutex._b" }, // public: (T T T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._TheClass), "_Roots._TheClass" }, // public: (T T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._TheBuiltInClass), "_Roots._TheBuiltInClass" }, // public: (T T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._TheStandardClass), "_Roots._TheStandardClass" }, // public: (T T) fixable: SMART-PTR-FIX good-name: T
@@ -8422,29 +8422,29 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Package_O>), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._CommonLispPackage), "_Roots._CommonLispPackage" }, // public: (T T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::HashTableEq_O>), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._SpecialForms), "_Roots._SpecialForms" }, // public: (T T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::HashTableEq_O>), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._SingleDispatchGenericFunctionTable), "_Roots._SingleDispatchGenericFunctionTable" }, // public: (T T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._SingleDispatchGenericFunctionTableMutex._r._Mutex.__count), "_Roots._SingleDispatchGenericFunctionTableMutex._r._Mutex.__count" }, // public: (T T T T T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._SingleDispatchGenericFunctionTableMutex._r._Mutex.__value.__wch), "_Roots._SingleDispatchGenericFunctionTableMutex._r._Mutex.__value.__wch" }, // public: (T T T T T T) fixable: NIL good-name: T
- {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._SingleDispatchGenericFunctionTableMutex._r._Counter), "_Roots._SingleDispatchGenericFunctionTableMutex._r._Counter" }, // public: (T T T T) fixable: NIL good-name: T
- {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._SingleDispatchGenericFunctionTableMutex._r._Recursive), "_Roots._SingleDispatchGenericFunctionTableMutex._r._Recursive" }, // public: (T T T T) fixable: NIL good-name: T
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._SingleDispatchGenericFunctionTableMutex._g._Mutex.__count), "_Roots._SingleDispatchGenericFunctionTableMutex._g._Mutex.__count" }, // public: (T T T T T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._SingleDispatchGenericFunctionTableMutex._g._Mutex.__value.__wch), "_Roots._SingleDispatchGenericFunctionTableMutex._g._Mutex.__value.__wch" }, // public: (T T T T T T) fixable: NIL good-name: T
- {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._SingleDispatchGenericFunctionTableMutex._g._Counter), "_Roots._SingleDispatchGenericFunctionTableMutex._g._Counter" }, // public: (T T T T) fixable: NIL good-name: T
- {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._SingleDispatchGenericFunctionTableMutex._g._Recursive), "_Roots._SingleDispatchGenericFunctionTableMutex._g._Recursive" }, // public: (T T T T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._SingleDispatchGenericFunctionTableMutex._b), "_Roots._SingleDispatchGenericFunctionTableMutex._b" }, // public: (T T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._SingleDispatchGenericFunctionTableMutex._r._Mutex.__count), "_Roots._SingleDispatchGenericFunctionTableMutex._r._Mutex.__count" }, // public: (T T T T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._SingleDispatchGenericFunctionTableMutex._r._Mutex.__value.__wch), "_Roots._SingleDispatchGenericFunctionTableMutex._r._Mutex.__value.__wch" }, // public: (T T T T T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._SingleDispatchGenericFunctionTableMutex._r._Counter), "_Roots._SingleDispatchGenericFunctionTableMutex._r._Counter" }, // public: (T T T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._SingleDispatchGenericFunctionTableMutex._r._Recursive), "_Roots._SingleDispatchGenericFunctionTableMutex._r._Recursive" }, // public: (T T T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._SingleDispatchGenericFunctionTableMutex._g._Mutex.__count), "_Roots._SingleDispatchGenericFunctionTableMutex._g._Mutex.__count" }, // public: (T T T T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._SingleDispatchGenericFunctionTableMutex._g._Mutex.__value.__wch), "_Roots._SingleDispatchGenericFunctionTableMutex._g._Mutex.__value.__wch" }, // public: (T T T T T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._SingleDispatchGenericFunctionTableMutex._g._Counter), "_Roots._SingleDispatchGenericFunctionTableMutex._g._Counter" }, // public: (T T T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._SingleDispatchGenericFunctionTableMutex._g._Recursive), "_Roots._SingleDispatchGenericFunctionTableMutex._g._Recursive" }, // public: (T T T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._SingleDispatchGenericFunctionTableMutex._b), "_Roots._SingleDispatchGenericFunctionTableMutex._b" }, // public: (T T T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._TrueObject), "_Roots._TrueObject" }, // public: (T T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::DoubleFloat_O>), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._RehashSize), "_Roots._RehashSize" }, // public: (T T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::DoubleFloat_O>), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._RehashThreshold), "_Roots._RehashThreshold" }, // public: (T T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._NullStream), "_Roots._NullStream" }, // public: (T T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::List_V>), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._ThePathnameTranslations), "_Roots._ThePathnameTranslations" }, // public: (T T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._ThePathnameTranslationsMutex._r._Mutex.__count), "_Roots._ThePathnameTranslationsMutex._r._Mutex.__count" }, // public: (T T T T T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._ThePathnameTranslationsMutex._r._Mutex.__value.__wch), "_Roots._ThePathnameTranslationsMutex._r._Mutex.__value.__wch" }, // public: (T T T T T T) fixable: NIL good-name: T
- {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._ThePathnameTranslationsMutex._r._Counter), "_Roots._ThePathnameTranslationsMutex._r._Counter" }, // public: (T T T T) fixable: NIL good-name: T
- {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._ThePathnameTranslationsMutex._r._Recursive), "_Roots._ThePathnameTranslationsMutex._r._Recursive" }, // public: (T T T T) fixable: NIL good-name: T
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._ThePathnameTranslationsMutex._g._Mutex.__count), "_Roots._ThePathnameTranslationsMutex._g._Mutex.__count" }, // public: (T T T T T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._ThePathnameTranslationsMutex._g._Mutex.__value.__wch), "_Roots._ThePathnameTranslationsMutex._g._Mutex.__value.__wch" }, // public: (T T T T T T) fixable: NIL good-name: T
- {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._ThePathnameTranslationsMutex._g._Counter), "_Roots._ThePathnameTranslationsMutex._g._Counter" }, // public: (T T T T) fixable: NIL good-name: T
- {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._ThePathnameTranslationsMutex._g._Recursive), "_Roots._ThePathnameTranslationsMutex._g._Recursive" }, // public: (T T T T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._ThePathnameTranslationsMutex._b), "_Roots._ThePathnameTranslationsMutex._b" }, // public: (T T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._ThePathnameTranslationsMutex._r._Mutex.__count), "_Roots._ThePathnameTranslationsMutex._r._Mutex.__count" }, // public: (T T T T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._ThePathnameTranslationsMutex._r._Mutex.__value.__wch), "_Roots._ThePathnameTranslationsMutex._r._Mutex.__value.__wch" }, // public: (T T T T T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._ThePathnameTranslationsMutex._r._Counter), "_Roots._ThePathnameTranslationsMutex._r._Counter" }, // public: (T T T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._ThePathnameTranslationsMutex._r._Recursive), "_Roots._ThePathnameTranslationsMutex._r._Recursive" }, // public: (T T T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._ThePathnameTranslationsMutex._g._Mutex.__count), "_Roots._ThePathnameTranslationsMutex._g._Mutex.__count" }, // public: (T T T T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._ThePathnameTranslationsMutex._g._Mutex.__value.__wch), "_Roots._ThePathnameTranslationsMutex._g._Mutex.__value.__wch" }, // public: (T T T T T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._ThePathnameTranslationsMutex._g._Counter), "_Roots._ThePathnameTranslationsMutex._g._Counter" }, // public: (T T T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._ThePathnameTranslationsMutex._g._Recursive), "_Roots._ThePathnameTranslationsMutex._g._Recursive" }, // public: (T T T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._ThePathnameTranslationsMutex._b), "_Roots._ThePathnameTranslationsMutex._b" }, // public: (T T T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Complex_O>), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._ImaginaryUnit), "_Roots._ImaginaryUnit" }, // public: (T T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Complex_O>), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._ImaginaryUnitNegative), "_Roots._ImaginaryUnitNegative" }, // public: (T T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Ratio_O>), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._PlusHalf), "_Roots._PlusHalf" }, // public: (T T) fixable: SMART-PTR-FIX good-name: T
@@ -8455,54 +8455,54 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::DoubleFloat_O>), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._DoubleFloatPlusZero), "_Roots._DoubleFloatPlusZero" }, // public: (T T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::SingleFloat_I>), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._SingleFloatOne), "_Roots._SingleFloatOne" }, // public: (T T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::DoubleFloat_O>), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._DoubleFloatOne), "_Roots._DoubleFloatOne" }, // public: (T T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._Booted), "_Roots._Booted" }, // public: (T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._Booted), "_Roots._Booted" }, // public: (T T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::HashTableEq_O>), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._KnownSignals), "_Roots._KnownSignals" }, // public: (T T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_TrapIntern), "_TrapIntern" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_TrapIntern), "_TrapIntern" }, // public: (T) fixable: NIL good-name: T
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_TrapInternPackage._M_string_length), "_TrapInternPackage._M_string_length" }, // public: (T NIL) fixable: NIL good-name: T
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_TrapInternPackage.NO-NAME._M_allocated_capacity), "_TrapInternPackage.NO-NAME._M_allocated_capacity" }, // public: (T NIL T) fixable: NIL good-name: T
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_TrapInternName._M_string_length), "_TrapInternName._M_string_length" }, // public: (T NIL) fixable: NIL good-name: T
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_TrapInternName.NO-NAME._M_allocated_capacity), "_TrapInternName.NO-NAME._M_allocated_capacity" }, // public: (T NIL T) fixable: NIL good-name: T
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_OpenDynamicLibraryHandles._M_t._M_impl._M_node_count), "_OpenDynamicLibraryHandles._M_t._M_impl._M_node_count" }, // public: (T NIL NIL T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_StackWarnSize), "_StackWarnSize" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_StackSampleCount), "_StackSampleCount" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_StackSampleSize), "_StackSampleSize" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_StackSampleMax), "_StackSampleMax" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_PrintSymbolsProperly), "_PrintSymbolsProperly" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Argc), "_Argc" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Mode), "_Mode" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_ReplCounter), "_ReplCounter" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_IntegerOrdering._BigEndian), "_IntegerOrdering._BigEndian" }, // public: (T T) fixable: NIL good-name: T
- {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_IntegerOrdering._MostSignificantWordFirst), "_IntegerOrdering._MostSignificantWordFirst" }, // public: (T T) fixable: NIL good-name: T
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_IntegerOrdering._mpz_import_word_order), "_IntegerOrdering._mpz_import_word_order" }, // public: (T T) fixable: NIL good-name: T
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_IntegerOrdering._mpz_import_size), "_IntegerOrdering._mpz_import_size" }, // public: (T T) fixable: NIL good-name: T
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_IntegerOrdering._mpz_import_endian), "_IntegerOrdering._mpz_import_endian" }, // public: (T T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_SingleStepLevel), "_SingleStepLevel" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_TraceLevel), "_TraceLevel" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_DebuggerLevel), "_DebuggerLevel" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_LockGlobalInitialization), "_LockGlobalInitialization" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_MpiEnabled), "_MpiEnabled" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_MpiRank), "_MpiRank" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_MpiSize), "_MpiSize" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Interactive), "_Interactive" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_EmbeddedInPython), "_EmbeddedInPython" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_StackWarnSize), "_StackWarnSize" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_StackSampleCount), "_StackSampleCount" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_StackSampleSize), "_StackSampleSize" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_StackSampleMax), "_StackSampleMax" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_PrintSymbolsProperly), "_PrintSymbolsProperly" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Argc), "_Argc" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Mode), "_Mode" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_ReplCounter), "_ReplCounter" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_IntegerOrdering._BigEndian), "_IntegerOrdering._BigEndian" }, // public: (T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_IntegerOrdering._MostSignificantWordFirst), "_IntegerOrdering._MostSignificantWordFirst" }, // public: (T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_IntegerOrdering._mpz_import_word_order), "_IntegerOrdering._mpz_import_word_order" }, // public: (T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_IntegerOrdering._mpz_import_size), "_IntegerOrdering._mpz_import_size" }, // public: (T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_IntegerOrdering._mpz_import_endian), "_IntegerOrdering._mpz_import_endian" }, // public: (T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_SingleStepLevel), "_SingleStepLevel" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_TraceLevel), "_TraceLevel" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_DebuggerLevel), "_DebuggerLevel" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_LockGlobalInitialization), "_LockGlobalInitialization" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_MpiEnabled), "_MpiEnabled" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_MpiRank), "_MpiRank" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_MpiSize), "_MpiSize" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Interactive), "_Interactive" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_EmbeddedInPython), "_EmbeddedInPython" }, // public: (T) fixable: NIL good-name: T
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_FunctionName._M_string_length), "_FunctionName._M_string_length" }, // public: (T NIL) fixable: NIL good-name: T
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_FunctionName.NO-NAME._M_allocated_capacity), "_FunctionName.NO-NAME._M_allocated_capacity" }, // public: (T NIL T) fixable: NIL good-name: T
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_RCFileName._M_string_length), "_RCFileName._M_string_length" }, // public: (T NIL) fixable: NIL good-name: T
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_RCFileName.NO-NAME._M_allocated_capacity), "_RCFileName.NO-NAME._M_allocated_capacity" }, // public: (T NIL T) fixable: NIL good-name: T
- {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_IgnoreInitImage), "_IgnoreInitImage" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_IgnoreInitLsp), "_IgnoreInitLsp" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_EnvironmentId), "_EnvironmentId" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_RequireLevel), "_RequireLevel" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_CoreBuiltInClassesInitialized), "_CoreBuiltInClassesInitialized" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_BuiltInClassesInitialized), "_BuiltInClassesInitialized" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_PackagesInitialized), "_PackagesInitialized" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_EnvironmentInitialized), "_EnvironmentInitialized" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_NilsCreated), "_NilsCreated" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_IgnoreInitImage), "_IgnoreInitImage" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_IgnoreInitLsp), "_IgnoreInitLsp" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_EnvironmentId), "_EnvironmentId" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_RequireLevel), "_RequireLevel" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_CoreBuiltInClassesInitialized), "_CoreBuiltInClassesInitialized" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_BuiltInClassesInitialized), "_BuiltInClassesInitialized" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_PackagesInitialized), "_PackagesInitialized" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_EnvironmentInitialized), "_EnvironmentInitialized" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_NilsCreated), "_NilsCreated" }, // public: (T) fixable: NIL good-name: T
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_LastCompileErrorMessage._M_string_length), "_LastCompileErrorMessage._M_string_length" }, // public: (T NIL) fixable: NIL good-name: T
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_LastCompileErrorMessage.NO-NAME._M_allocated_capacity), "_LastCompileErrorMessage.NO-NAME._M_allocated_capacity" }, // public: (T NIL T) fixable: NIL good-name: T
- {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_BootClassTableIsValid), "_BootClassTableIsValid" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_PathMax), "_PathMax" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_LineNumber), "_LineNumber" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_BootClassTableIsValid), "_BootClassTableIsValid" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_PathMax), "_PathMax" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_LineNumber), "_LineNumber" }, // public: (T) fixable: NIL good-name: T
 { class_kind, STAMP_clbind__detail__class_map, sizeof(clbind::detail::class_map), 0, "clbind::detail::class_map" },
  {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<gctools::smart_ptr<clbind::ClassRep_O>>>), offsetof(SAFE_TYPE_MACRO(clbind::detail::class_map),m_classes._Vector._Contents), "m_classes._Vector._Contents" }, // public: (T T T) fixable: TAGGED-POINTER-FIX good-name: T
 { container_kind, STAMP_gctools__GCArray_moveable_double_, sizeof(gctools::GCArray_moveable<double>), 0, "gctools::GCArray_moveable<double>" },
@@ -8677,20 +8677,20 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(asttooling::DerivableFrontendActionFactory),_Sig), "_Sig" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), offsetof(SAFE_TYPE_MACRO(asttooling::DerivableFrontendActionFactory),_Class), "_Class" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::SimpleVector_O>), offsetof(SAFE_TYPE_MACRO(asttooling::DerivableFrontendActionFactory),_Rack), "_Rack" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(asttooling::DerivableFrontendActionFactory),_allocation_counter), "_allocation_counter" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(asttooling::DerivableFrontendActionFactory),_allocation_total_size), "_allocation_total_size" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(asttooling::DerivableFrontendActionFactory),_allocation_counter), "_allocation_counter" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(asttooling::DerivableFrontendActionFactory),_allocation_total_size), "_allocation_total_size" }, // public: (T) fixable: NIL good-name: T
 { class_kind, STAMP_asttooling__DerivableMatchCallback, sizeof(asttooling::DerivableMatchCallback), 0, "asttooling::DerivableMatchCallback" },
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(asttooling::DerivableMatchCallback),_Sig), "_Sig" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), offsetof(SAFE_TYPE_MACRO(asttooling::DerivableMatchCallback),_Class), "_Class" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::SimpleVector_O>), offsetof(SAFE_TYPE_MACRO(asttooling::DerivableMatchCallback),_Rack), "_Rack" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(asttooling::DerivableMatchCallback),_allocation_counter), "_allocation_counter" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(asttooling::DerivableMatchCallback),_allocation_total_size), "_allocation_total_size" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(asttooling::DerivableMatchCallback),_allocation_counter), "_allocation_counter" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(asttooling::DerivableMatchCallback),_allocation_total_size), "_allocation_total_size" }, // public: (T) fixable: NIL good-name: T
 { class_kind, STAMP_asttooling__DerivableSyntaxOnlyAction, sizeof(asttooling::DerivableSyntaxOnlyAction), 0, "asttooling::DerivableSyntaxOnlyAction" },
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(asttooling::DerivableSyntaxOnlyAction),_Sig), "_Sig" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), offsetof(SAFE_TYPE_MACRO(asttooling::DerivableSyntaxOnlyAction),_Class), "_Class" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::SimpleVector_O>), offsetof(SAFE_TYPE_MACRO(asttooling::DerivableSyntaxOnlyAction),_Rack), "_Rack" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(asttooling::DerivableSyntaxOnlyAction),_allocation_counter), "_allocation_counter" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(asttooling::DerivableSyntaxOnlyAction),_allocation_total_size), "_allocation_total_size" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(asttooling::DerivableSyntaxOnlyAction),_allocation_counter), "_allocation_counter" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(asttooling::DerivableSyntaxOnlyAction),_allocation_total_size), "_allocation_total_size" }, // public: (T) fixable: NIL good-name: T
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(asttooling::DerivableSyntaxOnlyAction),CurrentInput.File._M_string_length), "CurrentInput.File._M_string_length" }, // public: (NIL NIL NIL) fixable: NIL good-name: T
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(asttooling::DerivableSyntaxOnlyAction),CurrentInput.File.NO-NAME._M_allocated_capacity), "CurrentInput.File.NO-NAME._M_allocated_capacity" }, // public: (NIL NIL NIL T) fixable: NIL good-name: T
 // not-exposing {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(asttooling::DerivableSyntaxOnlyAction),CurrentInput.Kind.Lang), "CurrentInput.Kind.Lang" }, // public: (NIL NIL NIL) fixable: NIL good-name: T
@@ -8701,8 +8701,8 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(asttooling::DerivableASTFrontendAction),_Sig), "_Sig" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), offsetof(SAFE_TYPE_MACRO(asttooling::DerivableASTFrontendAction),_Class), "_Class" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::SimpleVector_O>), offsetof(SAFE_TYPE_MACRO(asttooling::DerivableASTFrontendAction),_Rack), "_Rack" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(asttooling::DerivableASTFrontendAction),_allocation_counter), "_allocation_counter" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(asttooling::DerivableASTFrontendAction),_allocation_total_size), "_allocation_total_size" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(asttooling::DerivableASTFrontendAction),_allocation_counter), "_allocation_counter" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(asttooling::DerivableASTFrontendAction),_allocation_total_size), "_allocation_total_size" }, // public: (T) fixable: NIL good-name: T
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(asttooling::DerivableASTFrontendAction),CurrentInput.File._M_string_length), "CurrentInput.File._M_string_length" }, // public: (NIL NIL NIL) fixable: NIL good-name: T
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(asttooling::DerivableASTFrontendAction),CurrentInput.File.NO-NAME._M_allocated_capacity), "CurrentInput.File.NO-NAME._M_allocated_capacity" }, // public: (NIL NIL NIL T) fixable: NIL good-name: T
 // not-exposing {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(asttooling::DerivableASTFrontendAction),CurrentInput.Kind.Lang), "CurrentInput.Kind.Lang" }, // public: (NIL NIL NIL) fixable: NIL good-name: T
@@ -8718,10 +8718,10 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::TranslationFunctor),_name), "_name" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), offsetof(SAFE_TYPE_MACRO(core::TranslationFunctor),kind), "kind" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::TranslationFunctor),_cleavir_ast), "_cleavir_ast" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::TranslationFunctor),_sourceFileInfoHandle), "_sourceFileInfoHandle" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::TranslationFunctor),_filePos), "_filePos" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::TranslationFunctor),_lineno), "_lineno" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::TranslationFunctor),_column), "_column" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::TranslationFunctor),_sourceFileInfoHandle), "_sourceFileInfoHandle" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::TranslationFunctor),_filePos), "_filePos" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::TranslationFunctor),_lineno), "_lineno" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::TranslationFunctor),_column), "_column" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::LambdaListHandler_O>), offsetof(SAFE_TYPE_MACRO(core::TranslationFunctor),_lambdaListHandler), "_lambdaListHandler" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::List_V>), offsetof(SAFE_TYPE_MACRO(core::TranslationFunctor),_declares), "_declares" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::TranslationFunctor),_docstring), "_docstring" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
@@ -8729,20 +8729,20 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::MacroClosure_O),_name), "_name" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), offsetof(SAFE_TYPE_MACRO(core::MacroClosure_O),kind), "kind" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::MacroClosure_O),_cleavir_ast), "_cleavir_ast" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::MacroClosure_O),_sourceFileInfoHandle), "_sourceFileInfoHandle" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::MacroClosure_O),_filePos), "_filePos" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::MacroClosure_O),_lineno), "_lineno" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::MacroClosure_O),_column), "_column" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::MacroClosure_O),_sourceFileInfoHandle), "_sourceFileInfoHandle" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::MacroClosure_O),_filePos), "_filePos" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::MacroClosure_O),_lineno), "_lineno" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::MacroClosure_O),_column), "_column" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::LambdaListHandler_O>), offsetof(SAFE_TYPE_MACRO(core::MacroClosure_O),_lambdaListHandler), "_lambdaListHandler" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::List_V>), offsetof(SAFE_TYPE_MACRO(core::MacroClosure_O),_declares), "_declares" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::MacroClosure_O),_docstring), "_docstring" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 { class_kind, STAMP_core__Cache_O, sizeof(core::Cache_O), 0, "core::Cache_O" },
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::Cache_O),_searches), "_searches" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::Cache_O),_misses), "_misses" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::Cache_O),_total_depth), "_total_depth" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::Cache_O),_searches), "_searches" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::Cache_O),_misses), "_misses" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::Cache_O),_total_depth), "_total_depth" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<gctools::smart_ptr<core::T_O>>>), offsetof(SAFE_TYPE_MACRO(core::Cache_O),_keys._Vector._Contents), "_keys._Vector._Contents" }, // public: (T T T) fixable: TAGGED-POINTER-FIX good-name: T
  {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<core::CacheRecord>>), offsetof(SAFE_TYPE_MACRO(core::Cache_O),_table._Vector._Contents), "_table._Vector._Contents" }, // public: (T T T) fixable: TAGGED-POINTER-FIX good-name: T
- {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::Cache_O),_generation), "_generation" }, // public: (T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::Cache_O),_generation), "_generation" }, // public: (T) fixable: NIL good-name: T
 // not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::Cache_O),_clear_list_spinlock.lck._M_i), "_clear_list_spinlock.lck._M_i" }, // public: (T NIL T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::Cache_O),_clear_list_safe), "_clear_list_safe" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 

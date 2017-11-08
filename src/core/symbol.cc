@@ -175,7 +175,10 @@ Symbol_O::Symbol_O() : Base(),
 void Symbol_O::finish_setup(Package_sp pkg, bool exportp, bool shadowp) {
   ASSERTF(pkg, BF("The package is UNDEFINED"));
   this->_HomePackage = pkg;
-  this->_GlobalValue = _Unbound<T_O>();
+  if (pkg->actsLikeKeywordPackage())
+    this->_GlobalValue = this->asSmartPtr();
+  else
+    this->_GlobalValue = _Unbound<T_O>();
   this->_Function = _Unbound<T_O>();
   this->_SetfFunction = _Unbound<T_O>();
   pkg->bootstrap_add_symbol_to_package(this->symbolName()->get().c_str(), this->sharedThis<Symbol_O>(), exportp, shadowp);

@@ -627,6 +627,7 @@ def configure(cfg):
 #    cfg.check_cxx(stlib=CLANG_LIBRARIES, cflags='-Wall', uselib_store='CLANG', stlibpath = llvm_lib_dir )
     llvm_include_dir = run_llvm_config_for_libs(cfg, "--includedir")
     print("llvm_include_dir = %s" % llvm_include_dir)
+    cfg.define("USE_LIBUNWIND",1) # use LIBUNWIND
     cfg.env.append_value('CXXFLAGS', ['-I./', '-I' + llvm_include_dir])
     cfg.env.append_value('CFLAGS', ['-I./'])
     if (cfg.env["PROFILING"] == True):

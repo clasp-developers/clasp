@@ -27,6 +27,9 @@ THE SOFTWARE.
 //#define DEBUG_LEVEL_FULL
 
 //#include <llvm/Support/system_error.h>
+#if defined(USE_LIBUNWIND) && defined(_TARGET_OS_LINUX)
+#include <libunwind.h>
+#endif
 #include <clasp/core/foundation.h>
 #include <llvm/ExecutionEngine/GenericValue.h>
 #include <llvm/ExecutionEngine/SectionMemoryManager.h>
@@ -3702,7 +3705,23 @@ https://groups.google.com/forum/#!topic/llvm-dev/m3JjMNswgcU
   llvm::sys::DynamicLibrary::LoadLibraryPermanently(nullptr);
 }
 
-
+void register_symbol_with_libunwind(const std::string& name, uint64_t start, size_t size) {
+#if defined(USE_LIBUNWIND) && defined(_TARGET_OS_LINUX)
+  unw_dyn_info info;
+  info.start_ip = start;
+  info.end_ip = start+size;
+  info.gp = 0;
+  info.format = UNW_INFO_FORMAT_DYNAMIC;
+  const char* saved_name = (const char*)malloc(name.size()+1);
+  strncpy( saved_name, name.c_str(), name.size());
+  saved_name[name.size()] = '\0';
+  info.pi.name_ptr = saved_name;
+  info.pi.segbase = 0;
+  info.pi.table_len = 0;
+  info.pi.table_data = 0;
+  dyn_register(&info);
+#endif
+}
 
 void save_symbol_info(const llvm::object::ObjectFile& object_file, const llvm::RuntimeDyld::LoadedObjectInfo& loaded_object_info)
 {
@@ -3721,6 +3740,7 @@ void save_symbol_info(const llvm::object::ObjectFile& object_file, const llvm::R
         uint64_t section_address = loaded_object_info.getSectionLoadAddress(section_ref);
         if (((char*)section_address+address) != NULL ) {
           core::Cons_sp symbol_info = core::Cons_O::createList(core::make_fixnum((Fixnum)size),core::Pointer_O::create((void*)((char*)section_address+address)));
+          register_symbol_with_libunwind(name,section_address+address,size);
           if ((!comp::_sym_jit_register_symbol.unboundp()) && comp::_sym_jit_register_symbol->fboundp()) {
             core::eval::funcall(comp::_sym_jit_register_symbol,core::SimpleBaseString_O::make(name),symbol_info);
 //            printf("%s:%d  Registering symbol -> %s : %s\n", __FILE__, __LINE__, name.c_str(), _rep_(symbol_info).c_str() );
