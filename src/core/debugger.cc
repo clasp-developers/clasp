@@ -27,11 +27,11 @@ THE SOFTWARE.
 //#define DEBUG_LEVEL_FULL
 
 #include <csignal>
+#include <execinfo.h>
+#include <clasp/core/foundation.h>
 #ifdef USE_LIBUNWIND
 #include <libunwind.h>
 #endif
-#include <execinfo.h>
-#include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 #include <clasp/core/lisp.h>
 #include <clasp/core/conditions.h>
@@ -456,12 +456,7 @@ CL_DEFUN T_sp core__maybe_demangle(core::String_sp s)
 
 CL_DEFUN T_sp core__libunwind_backtrace_as_list() {
 #ifdef USE_LIBUNWIND
-#ifdef _TARGET_OS_DARWIN
-  ucontext_t context;
-#endif
-#ifdef _TARGET_OS_LINUX
   unw_context_t context;
-#endif
   unw_getcontext(&context);
   unw_cursor_t cursor;
   unw_init_local(&cursor,&context);
