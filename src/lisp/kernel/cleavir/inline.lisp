@@ -1,7 +1,7 @@
 (in-package :clasp-cleavir)
 
 (eval-when (:execute)
-  (setq core:*echo-repl-tpl-read* t))
+  (setq core:*echo-repl-read* t))
 
 #+(or)
 (defmacro debug-inline (msg &rest msg-args)

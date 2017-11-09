@@ -365,12 +365,13 @@ namespace gctools {
     }
   public:
     Value header;
+    // The additional_data[0] must fall right after the header or pads might try to write into the wrong place
+    tagged_stamp_t additional_data[0]; // The 0th element intrudes into the client data unless DEBUG_GUARD is on
 #ifdef DEBUG_GUARD
     int tail_start;
     int tail_size;
     tagged_stamp_t guard;
 #endif
-    tagged_stamp_t additional_data[0]; // The 0th element intrudes into the client data
   public:
 #if !defined(DEBUG_GUARD) 
   Header_s(const Value& k) : header(k) {}

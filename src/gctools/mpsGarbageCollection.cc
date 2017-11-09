@@ -863,11 +863,24 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
     GC_RESULT_ERROR(res, "Couldn't create global_non_moving_ap");
 #endif
 
+  mps_fmt_t obj_fmt_zero;
+  MPS_ARGS_BEGIN(args) {
+    MPS_ARGS_ADD(args, MPS_KEY_FMT_HEADER_SIZE, sizeof(Header_s));
+    MPS_ARGS_ADD(args, MPS_KEY_FMT_ALIGN, Alignment());
+    MPS_ARGS_ADD(args, MPS_KEY_FMT_SKIP, obj_skip);
+    MPS_ARGS_ADD(args, MPS_KEY_FMT_FWD, obj_fwd);
+    MPS_ARGS_ADD(args, MPS_KEY_FMT_ISFWD, obj_isfwd);
+    MPS_ARGS_ADD(args, MPS_KEY_FMT_PAD, obj_pad);
+    res = mps_fmt_create_k(&obj_fmt_zero, global_arena, args);
+  }
+  MPS_ARGS_END(args);
+  if (res != MPS_RES_OK)
+    GC_RESULT_ERROR(res, "Could not create obj_fmt_zero format");
 
   // Create the AMCZ pool
   mps_pool_t _global_amcz_pool;
   MPS_ARGS_BEGIN(args) {
-    MPS_ARGS_ADD(args, MPS_KEY_FORMAT, obj_fmt);
+    MPS_ARGS_ADD(args, MPS_KEY_FORMAT, obj_fmt_zero);
     MPS_ARGS_ADD(args, MPS_KEY_CHAIN, general_chain);
     res = mps_pool_create_k(&_global_amcz_pool, global_arena, mps_class_amcz(), args);
   }
@@ -1018,6 +1031,7 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
   mps_ap_destroy(global_non_moving_ap);
   mps_pool_destroy(_global_awl_pool);
   mps_pool_destroy(_global_amcz_pool);
+  mps_fmt_destroy(obj_fmt_zero);
   mps_pool_destroy(global_non_moving_pool);
   mps_pool_destroy(global_amc_cons_pool);
   mps_pool_destroy(_global_amc_pool);

@@ -805,11 +805,20 @@ void initialize_classes_and_methods()
 
 void initialize_clasp_Kinds()
 {
+#ifdef USE_BOEHM
   #define SET_CLASS_KINDS
   #ifndef SCRAPING
     #include INIT_CLASSES_INC_H
   #endif
   #undef SET_CLASS_KINDS
+#endif
+#ifdef USE_MPS
+  #define GC_SET_CLASS_STAMPS
+  #ifndef RUNNING_GC_BUILDER
+    #include CLASP_GC_FILENAME
+  #endif
+  #undef GC_SET_CLASS_STAMPS
+#endif
 }
 
 void initialize_clasp()
