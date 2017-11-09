@@ -338,7 +338,6 @@ Convert colons to underscores"
   (let ((sorted-classes (sort-classes-by-inheritance exposed-classes))
         cur-package)
     (format sout "#ifdef SET_CLASS_SYMBOLS~%")
-    (generate-mps-poison sout)
     (dolist (exposed-class sorted-classes)
       (format sout "set_one_static_class_symbol<~a::~a>(bootStrapSymbolMap,~a);~%"
               (tags:namespace% (class-tag% exposed-class))
