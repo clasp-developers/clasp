@@ -39,10 +39,6 @@
   (generate-code *analysis* :output-file #P"/tmp/clasp_gc.cc")
   (format t "Done analyze and generate-code for project~%"))
 
-
-
-
-
 (analysis-enum-roots *analysis*)
 *analysis*
 (analyze-only *db*)
