@@ -30,34 +30,13 @@
 ;;; Describing top level forms (for compile-verbose)
 
 (defun describe-form (form)
-  (cond
-    ((and (consp form) (eq 'core:fset (car form)))
-     (let* ((name (cadr (cadr form)))
-	    (is-macro (cadddr form))
-	    (header (if is-macro
-			"DEFMACRO"
-			"DEFUN")))
-       (bformat t ";    %s %s\n" header name)))
-    ((and (consp form)
-          (eq (first form) 'cl:let)
-          (and (let ((x (third form)))
-                 (and (consp x) (eq 'cl:quote (first x))
-                      (eq core::*special-defun-symbol* (second x))))))
-     (bformat t ";    DEFUN %s\n" (second (fourth form))))
-    ((and (consp form)
-          (eq (first form) 'core::do-defsetf))
-     ;; (do-defsetf 'name ...)
-     (bformat t ";    DEFSETF %s\n" (second (second form))))
-    ((and (consp form)
-          (eq (first form) 'core::do-deftype))
-     ;; (do-deftype 'name ...)
-     (bformat t ";    DEFTYPE %s\n" (second (second form))))
-    ((and *compile-verbose* (consp form))
-     (let* ((second-part (bformat nil "%s %s %s" (second form) (third form) (fourth form)))
-            (trimmed-second-part (if (> (length second-part) 60)
-                                     (bformat nil "%s..." (subseq second-part 0 60))
-                                     second-part)))
-       (bformat t";    %s %s\n" (car form) trimmed-second-part)))))
+  ;; We could be smarter about this. For example, for (progn ...) nothing very interesting
+  ;; will print, even though subforms are just as toplevel.
+  ;; But it's just aesthetic, so cheaping out a little is okay.
+  (write-string ";   ")
+  (write form :length 2 :level 2 :lines 1 :pretty nil)
+  (terpri)
+  (values))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -185,6 +164,7 @@ and the pathname of the source file - this will also be used as the module initi
 
 
 (defun compile-file-form (form environment compile-file-hook)
+  (when *compile-print* (describe-form form))
   ;; If the Cleavir compiler hook is set up then use that
   ;; to generate code 
   (if compile-file-hook
