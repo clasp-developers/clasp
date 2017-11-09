@@ -63,7 +63,7 @@ namespace core {
   class RequiredArgument;
   class SymbolClassPair;
   class SymbolStorage;
-  class TranslationFunctor;
+  class TranslationFunctor_O;
   class DynamicBinding;
   class AuxArgument;
   class OptionalArgument;

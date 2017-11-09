@@ -36,17 +36,18 @@ THE SOFTWARE.
 
 namespace core {
 
-  class TranslationFunctor : public BuiltinClosure_O {
+  class TranslationFunctor_O : public BuiltinClosure_O {
+    LISP_CLASS(core,CorePkg,TranslationFunctor_O,"TranslationFunctor",BuiltinClosure_O);
   public:
     typedef core::T_O* (*Type)(core::T_O* arg);
     Type fptr;
   public:
-  TranslationFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : BuiltinClosure_O(TranslationFunctor::entry_point,name,funcType,SOURCE_INFO_PASS), fptr(ptr) {};
+  TranslationFunctor_O(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : BuiltinClosure_O(TranslationFunctor_O::entry_point,name,funcType,SOURCE_INFO_PASS), fptr(ptr) {};
   public:
     typedef BuiltinClosure_O TemplatedBase;
-    virtual size_t templatedSizeof() const { return sizeof(TranslationFunctor); };
+    virtual size_t templatedSizeof() const { return sizeof(TranslationFunctor_O); };
     static inline LCC_RETURN LISP_CALLING_CONVENTION() {
-      TranslationFunctor* closure = gctools::untag_general<TranslationFunctor*>((TranslationFunctor*)lcc_closure);
+      TranslationFunctor_O* closure = gctools::untag_general<TranslationFunctor_O*>((TranslationFunctor_O*)lcc_closure);
       return gctools::return_type((closure->fptr)(lcc_fixed_arg0),1);
     }
   };
@@ -91,7 +92,7 @@ namespace core {
   inline void wrap_translator(const string &packageName, const string &name, core::T_O* (*fp)(core::T_O*), const string &arguments = "", const string &declares = "", const string &docstring = "", const string &sourceFile = "", int sourceLine = 0) {
   Symbol_sp symbol = lispify_intern(name, packageName);
   SourcePosInfo_sp spi = lisp_createSourcePosInfo(sourceFile, 0, sourceLine);
-  BuiltinClosure_sp f = gctools::GC<TranslationFunctor>::allocate(symbol, kw::_sym_function, fp, SOURCE_POS_INFO_FIELDS(spi));
+  BuiltinClosure_sp f = gctools::GC<TranslationFunctor_O>::allocate(symbol, kw::_sym_function, fp, SOURCE_POS_INFO_FIELDS(spi));
   lisp_defun(symbol, packageName, f, arguments, declares, docstring, sourceFile, sourceLine, true, 1);
 }
 

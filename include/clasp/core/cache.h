@@ -46,6 +46,7 @@ namespace core {
   FORWARD(Cache);
   class Cache_O : public General_O {
     FRIEND_GC_SCANNER(core::CacheRecord);
+    LISP_CLASS(core, CorePkg, Cache_O, "Cache", General_O );
   public:
     size_t _searches;
     size_t _misses;

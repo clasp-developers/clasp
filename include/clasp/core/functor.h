@@ -458,6 +458,7 @@ namespace core {
 namespace core {
 
 class MacroClosure_O : public BuiltinClosure_O {
+    LISP_CLASS(core,CorePkg,MacroClosure_O,"MacroClosure",BuiltinClosure_O);
 private:
   typedef T_mv (*MacroPtr)(List_sp, T_sp);
   MacroPtr mptr;
