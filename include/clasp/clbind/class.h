@@ -162,6 +162,7 @@ class shared_ptr;
 namespace clbind {
 
 class DummyCreator_O : public core::Creator_O {
+  LISP_CLASS(clbind,ClbindPkg,DummyCreator_O,"DummyCreator",core::Creator_O);
   string _name;
 
 public:
