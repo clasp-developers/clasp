@@ -77,7 +77,9 @@ namespace asttooling {
   class DerivableFrontendActionFactory;
 };
 
-
+////////////////////////////////////////////////////////////
+//
+// Forward definition for classes
 #ifdef BUILD_EXTENSION
 #define GC_INTERFACE_FORWARD
 #include <project_headers.h>
@@ -88,20 +90,40 @@ namespace asttooling {
 #undef GC_INTERFACE_GC_MANAGED_TYPES
 #endif
 
+#ifdef USE_BOEHM
 #ifndef SCRAPING
   #define DECLARE_FORWARDS
   #include INIT_CLASSES_INC_H // REPLACED CLASP_GC_FILENAME // "main/clasp_gc.cc"
   #undef DECLARE_FORWARDS
 #endif
-
+#endif
+#ifdef USE_MPS
+#ifndef RUNNING_GC_BUILDER
+  #define DECLARE_FORWARDS
+  #include CLASP_GC_FILENAME // "main/clasp_gc.cc"
+  #undef DECLARE_FORWARDS
+#endif
+#endif
 namespace gctools {
 
+
+////////////////////////////////////////////////////////////
+//
+// Define the stamps  
+#ifdef USE_BOEHM  
 #ifndef SCRAPING
 #define GC_STAMP_SELECTORS
 #include INIT_CLASSES_INC_H // REPLACED CLASP_GC_FILENAME
 #undef GC_STAMP_SELECTORS
 #endif
-
+#endif
+#ifdef USE_MPS
+#ifndef RUNNING_GC_BUILDER
+ #define GC_STAMP_SELECTORS
+ #include CLASP_GC_FILENAME // "main/clasp_gc.cc"
+ #undef GC_STAMP_SELECTORS
+#endif
+#endif
 };
 
 #include <clasp/gctools/other_tagged_casts.h>
