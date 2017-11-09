@@ -14,9 +14,6 @@
 ;;;          in the function fill_spec_vector.
 ;;;          https://github.com/drmeister/clasp/blob/dev/src/core/genericFunction.cc#L194
 ;;;
-;;; clos:*enable-fastgf* and :fast-dispatch feature.
-;;;    When the :fast-dispatch feature exists and clos:*enable-fastgf* == t
-;;;    then fast dispatch will be used for new generic functions.
 
 (in-package :clos)
 

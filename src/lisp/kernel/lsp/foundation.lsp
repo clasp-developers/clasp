@@ -14,9 +14,8 @@
       #'(lambda (whole env) t)
       t)
 
-
-(fset '1- #'(lambda (num) (declare (core::lambda-name 1-)) (- num 1)))
-(fset '1+ #'(lambda (num) (declare (core::lambda-name 1+)) (+ num 1)))
+(defun 1- (num) (- num 1))
+(defun 1+ (num) (+ num 1))
 
 
 

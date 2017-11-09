@@ -276,8 +276,6 @@ SYMBOL_EXPORT_SC_(CorePkg, STARcxxDocumentationSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, topLevel);
 SYMBOL_EXPORT_SC_(CorePkg, scharSet);
 SYMBOL_EXPORT_SC_(CorePkg, STARuseInterpreterForEvalSTAR);
-SYMBOL_EXPORT_SC_(CorePkg, STARnotify_on_compileSTAR);
-SYMBOL_EXPORT_SC_(CorePkg, STARtrace_startupSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARllvmVersionSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARdebugInterpretedClosureSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARdebugFlowControlSTAR);
@@ -688,8 +686,6 @@ SYMBOL_EXPORT_SC_(ClPkg, bit);
 SYMBOL_SC_(CorePkg, __init__);
 SYMBOL_EXPORT_SC_(ClPkg, STARreadtableSTAR);
 SYMBOL_SC_(CorePkg, input_stream_designator);
-/*! Set to true if you want SourceCodeCons to print line no info */
-SYMBOL_SC_(CorePkg, STARprint_source_code_consSTAR);
 /*! Set to true if you want the repl to print what was read */
 SYMBOL_SC_(CorePkg, STARechoReplReadSTAR);
 SYMBOL_EXPORT_SC_(KeywordPkg, invalid_character);
@@ -956,7 +952,6 @@ void CoreExposer_O::define_essential_globals(Lisp_sp lisp) {
   cl::_sym_STARpackageSTAR->exportYourself()->defparameter(lisp->_Roots._CorePackage);
   _sym_STARpreserve_whitespace_pSTAR->defparameter(_lisp->_false());
   _sym_STARechoReplReadSTAR->exportYourself()->defparameter(_lisp->_false());
-  _sym_STARprint_source_code_consSTAR->exportYourself()->defparameter(_lisp->_false());
   _sym_STARbackquote_levelSTAR->defparameter(make_fixnum(0));
   cl::_sym_STARmodulesSTAR->defparameter(_Nil<T_O>());
   cl::_sym_STARread_evalSTAR->defparameter(_lisp->_true());
@@ -1097,8 +1092,6 @@ void CoreExposer_O::define_essential_globals(Lisp_sp lisp) {
   _sym_STARdebugInterpretedFunctionsSTAR->defparameter(_Nil<T_O>());
   _sym_STARuseInterpreterForEvalSTAR->defparameter(_Nil<T_O>()); // _lisp->_true());
   _sym_STARcxxDocumentationSTAR->defparameter(_Nil<T_O>());
-  _sym_STARnotify_on_compileSTAR->defparameter(_Nil<T_O>());
-  _sym_STARtrace_startupSTAR->defparameter(_Nil<T_O>());
   _sym_STARinterpreterTraceSTAR->defparameter(_Nil<T_O>());
   _sym__PLUS_type_header_value_map_PLUS_->defparameter(generate_type_header_value_map());
   gctools::_sym_STARfinalizersSTAR->defparameter(WeakKeyHashTable_O::create());

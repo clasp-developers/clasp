@@ -13,11 +13,6 @@
           run-repl
           cons-car
           cons-cdr))
-(sys:*make-special 'core::*notify-on-compile*)
-(setq *notify-on-compile* (member :notify-on-compile *features*))
-(export '*notify-on-compile*)
-(sys:*make-special 'core::*trace-startup*)
-(setq *trace-startup* (member :trace-startup *features*))
 (sys:*make-special 'core::*dump-defmacro-definitions*)
 (setq *dump-defmacro-definitions* NIL)
 (sys:*make-special 'core::*dump-defun-definitions*)
@@ -28,7 +23,6 @@
 (setq *echo-repl-tpl-read* (member :emacs-inferior-lisp *features*))
 (setq *echo-repl-read* nil)
 (setq *load-print* nil)
-(setq *print-source-code-cons* nil)
 
 (sys:*make-special 'core::*boot-verbose*)
 (setq core::*boot-verbose* nil)
@@ -47,14 +41,7 @@
 (setq *features* (cons :clasp-boot *features*)) ;; When bootstrapping in stages
 
 ;; Set up a few things for the CLOS package
-(eval-when (:execute :compile-toplevel :load-toplevel)
-  (core::select-package :clos)
-  ;; enable the fast-dispatch code
-  (setq *features* (cons :fast-dispatch *features*))
-  (sys:*make-special 'clos::*enable-fastgf*)
-  (setq clos::*enable-fastgf* nil)
-)
-(export '(standard-class *enable-fastgf*))
+(export '(clos::standard-class) "CLOS")
 
 ;; Setup a few things for the GRAY streams package
 (eval-when (:execute :compile-toplevel :load-toplevel)
