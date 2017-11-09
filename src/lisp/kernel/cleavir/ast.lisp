@@ -398,8 +398,10 @@ If this form has already been precalculated then just return the precalculated-v
              (clasp-cleavir:compile-form form env)
            #+(or)(literal:compile-load-time-value-thunk form))
          ;; COMPILE on the other hand evaluates the form and puts its
-         ;; value in the run-time environment
-         (let ((value (clasp-cleavir::cclasp-eval form env)))
+         ;; value in the run-time environment.
+         ;; We use cleavir-env:eval rather than cclasp-eval-with-env so that it works
+         ;; more correctly with alternate global environments.
+         (let ((value (cleavir-env:eval form env env)))
            (cmp:codegen-rtv nil value))))))
 
 
