@@ -3716,10 +3716,10 @@ void register_symbol_with_libunwind(const std::string& name, uint64_t start, siz
   char* saved_name = (char*)malloc(name.size()+1);
   strncpy( saved_name, name.c_str(), name.size());
   saved_name[name.size()] = '\0';
-  info.pi.name_ptr = saved_name;
-  info.pi.segbase = 0;
-  info.pi.table_len = 0;
-  info.pi.table_data = 0;
+  info.u.pi.name_ptr = saved_name;
+  info.u.pi.segbase = 0;
+  info.u.pi.table_len = 0;
+  info.u.pi.table_data = 0;
   dyn_register(&info);
 #endif
 }
