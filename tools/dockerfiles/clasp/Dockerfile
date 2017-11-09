@@ -9,7 +9,7 @@ RUN echo 'deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial-5.0 main'\
 
 # Copied from the original dependencies
 RUN apt-get update && apt-get upgrade -y && apt-get install -y \
-  libgc-dev libgmp-dev binutils-gold binutils-dev \
+  libgc-dev libunwind-dev liblzma-dev libgmp-dev binutils-gold binutils-dev \
   zlib1g-dev libbz2-dev libexpat-dev
 
 # Maybe need these...
