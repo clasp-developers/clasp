@@ -57,6 +57,7 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
     ,(ext:register-with-pde whole)
     ',var))
 
+
 (defmacro defparameter (&whole whole var form &optional doc-string)
   "Syntax: (defparameter name form [doc])
 Declares the global variable named by NAME as a special variable and assigns
@@ -69,6 +70,9 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
      ,@(si::expand-set-documentation var 'variable doc-string)
      ,(ext:register-with-pde whole)
      ',var))
+
+
+
 
 (defmacro defconstant (&whole whole var form &optional doc-string)
   "Syntax: (defconstant symbol form [doc])
@@ -83,43 +87,48 @@ VARIABLE doc and can be retrieved by (DOCUMENTATION 'SYMBOL 'VARIABLE)."
     ,(ext:register-with-pde whole)
     ',var))
 
-(defmacro defun (&whole whole name vl &body body &environment env)
-  ;; Documentation in help.lsp
-  (multiple-value-bind (decls body doc-string) 
-      (process-declarations body t)
-    (let* ((loc (ext:current-source-location))
-           (filepos (if loc (source-file-pos-filepos loc) 0))
-           (lineno (if loc (source-file-pos-lineno loc) 0))
-           (column (if loc (source-file-pos-column loc) 0))
-           (fn (gensym))
-           (doclist (when doc-string (list doc-string)))
-           (global-function
-             `#'(lambda ,vl 
-                  (declare (core:lambda-name ,name core:current-source-file ,filepos ,lineno ,column) ,@decls) 
-                  ,@doclist
-                  (block ,(si::function-block-name name) ,@body))))
-      ;;(bformat t "macro expansion of defun current-source-location -> %s\n" current-source-location)
-      ;;(bformat t "DEFUN global-function --> %s\n" global-function )
-      `(progn
-         (eval-when (:compile-toplevel)
-           ;; this function won't be ready for a while, but it's okay as there's no
-           ;; compiler to run :compile-toplevel forms anyway.
-           (cmp::register-global-function-def 'defun ',name))
-         ,@(and *defun-inline-hook*
-                (list `(eval-when (:compile-toplevel :load-toplevel :execute)
-                         ,(funcall *defun-inline-hook* name global-function env))))
-         (let ((,fn ,global-function))
-           ;;(bformat t "Performing DEFUN   core:*current-source-pos-info* -> %s\n" core:*current-source-pos-info*)
-           ,(ext:register-with-pde whole `(si::fset ',name ,fn nil t ',vl))
-           (core:set-source-info ,fn ',(list 'core:current-source-file filepos lineno column))
-           ,@(si::expand-set-documentation name 'function doc-string)
-           (setq cmp::*current-form-lineno* ,lineno)
-           ',name)))))
+
+;;; DEFUN that generates interpreted functions
+(si::fset 'defun
+          #'(lambda (def env)
+              (let ((whole def)
+                    (name (cadr def))
+                    (vl (caddr def))
+                    (body (cdddr def)))
+                ;; Documentation in help.lsp
+                (multiple-value-bind (decls body doc-string) 
+                    (process-declarations body t)
+                  (let* ((loc (ext:current-source-location))
+                         (filepos (if loc (source-file-pos-filepos loc) 0))
+                         (lineno (if loc (source-file-pos-lineno loc) 0))
+                         (column (if loc (source-file-pos-column loc) 0))
+                         (fn (gensym))
+                         (doclist (when doc-string (list doc-string)))
+                         (global-function `#'(lambda ,vl 
+                                               (declare (core:lambda-name ,name core:current-source-file ,filepos ,lineno ,column) ,@decls) 
+                                               ,@doclist (block ,(si::function-block-name name) ,@body))))
+                    ;;(bformat t "macro expansion of defun current-source-location -> %s\n" current-source-location)
+                    ;;(bformat t "DEFUN global-function --> %s\n" global-function )
+                    `(let () ',*special-defun-symbol* ',name
+                          (let ((,fn ,global-function))
+                            ',*special-defun-symbol* ',name
+                            ;;(bformat t "Performing DEFUN   core:*current-source-pos-info* -> %s\n" core:*current-source-pos-info*)
+                            ,(ext:register-with-pde whole `(si::fset ',name ,fn nil t ',vl))
+                            (core:set-source-info ,fn ',(list 'core:current-source-file filepos lineno column))
+                            ,@(si::expand-set-documentation name 'function doc-string)
+                            (setq cmp::*current-form-lineno* ,lineno)
+                            ,(and *defun-inline-hook*
+                                  (funcall *defun-inline-hook* name global-function env))
+                            ',name))))))
+          t
+          nil
+          '(name lambda-list &body body))
 
 ;;;
 ;;; This is a no-op unless the compiler is installed
 ;;;
 (defmacro define-compiler-macro (&whole whole name vl &rest body)
+;  (or (not (eq name 'funcall)) (error "You currently cannot define a compiler macro named funcall"))
   (multiple-value-bind (function pprint doc-string)
       (sys::expand-defmacro name vl body 'cl:define-compiler-macro)
     (declare (ignore pprint))
@@ -127,8 +136,7 @@ VARIABLE doc and can be retrieved by (DOCUMENTATION 'SYMBOL 'VARIABLE)."
     (when *dump-defun-definitions*
       (print function)
       (setq function `(si::bc-disassemble ,function)))
-    ;; CLHS doesn't actually say d-c-m has compile time effects, but it's nice to match defmacro
-    `(eval-when (:compile-toplevel :load-toplevel :execute)
+    `(progn
        (core:setf-compiler-macro-function ',name ,function)
        ,@(si::expand-set-documentation name 'function doc-string)
        ,(ext:register-with-pde whole)

@@ -6,6 +6,9 @@
 ;;; compile-thunk (in codegen.lsp) to do the actual compiling.
 
 (defun compile-top-level (form)
+  (analyze-top-level-form form)
+  (when *compile-print*
+    (describe-form form))
   (literal:with-top-level-form
    (dbg-set-current-source-pos form)
     (compile-thunk 'repl form nil t)
