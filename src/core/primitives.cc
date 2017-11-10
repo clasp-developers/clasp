@@ -150,6 +150,7 @@ CL_DOCSTRING("A list of all symbols defined in C++");
 CL_DEFUN T_sp core__interpreter_symbols() {
   List_sp ls = _Nil<T_O>();
 
+#ifndef SCRAPING
 #define DO_SYMBOL(package, name, _a, _b, _c, _d) ls = Cons_O::create(package::name, ls);
 
 #define ClPkg_SYMBOLS
@@ -193,7 +194,7 @@ CL_DEFUN T_sp core__interpreter_symbols() {
 #undef GcToolsPkg_SYMBOLS
 
 #undef DO_SYMBOL
-
+#endif // #ifndef SCRAPING
   return ls;
 }
 

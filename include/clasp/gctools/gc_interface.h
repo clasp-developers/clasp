@@ -112,9 +112,9 @@ namespace gctools {
 // Define the stamps  
 #ifdef USE_BOEHM  
 #ifndef SCRAPING
-#define GC_STAMP_SELECTORS
-#include INIT_CLASSES_INC_H // REPLACED CLASP_GC_FILENAME
-#undef GC_STAMP_SELECTORS
+ #define GC_STAMP_SELECTORS
+ #include INIT_CLASSES_INC_H // REPLACED CLASP_GC_FILENAME
+ #undef GC_STAMP_SELECTORS
 #endif
 #endif
 #ifdef USE_MPS

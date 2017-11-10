@@ -689,9 +689,11 @@ void register_stamp_name(const std::string& stamp_name, size_t stamp_num) {
 }
 
 void define_builtin_cxx_classes() {
-#define GC_ENUM_NAMES
-#include INIT_CLASSES_INC_H
-#undef GC_ENUM_NAMES
+#ifndef SCRAPING
+ #define GC_ENUM_NAMES
+  #include INIT_CLASSES_INC_H
+ #undef GC_ENUM_NAMES
+#endif
 }
 
 
@@ -766,17 +768,17 @@ core::T_sp generate_type_header_value_map() {
 #include <clasp/core/wrappers.h>
 #include <clasp/core/external_wrappers.h>
 
-#define EXPOSE_STATIC_CLASS_VARIABLES
 #ifndef SCRAPING
+ #define EXPOSE_STATIC_CLASS_VARIABLES
   #include INIT_CLASSES_INC_H
+ #undef EXPOSE_STATIC_CLASS_VARIABLES
 #endif
-#undef EXPOSE_STATIC_CLASS_VARIABLES
 
-#define EXPOSE_METHODS
 #ifndef SCRAPING
+ #define EXPOSE_METHODS
   #include INIT_CLASSES_INC_H
+ #undef EXPOSE_METHODS
 #endif
-#undef EXPOSE_METHODS
 
 void initialize_enums()
 {
@@ -790,11 +792,11 @@ void initialize_enums()
 
 void initialize_classes_and_methods()
 {
-#define EXPOSE_CLASSES_AND_METHODS
 #ifndef SCRAPING
+ #define EXPOSE_CLASSES_AND_METHODS
   #include INIT_CLASSES_INC_H
+ #undef EXPOSE_CLASSES_AND_METHODS
 #endif
-#undef EXPOSE_CLASSES_AND_METHODS
 }
 
 #if 0
@@ -805,11 +807,11 @@ void initialize_classes_and_methods()
 
 void initialize_clasp_Kinds()
 {
-  #define SET_CLASS_KINDS
   #ifndef SCRAPING
+   #define SET_CLASS_KINDS
     #include INIT_CLASSES_INC_H
+   #undef SET_CLASS_KINDS
   #endif
-  #undef SET_CLASS_KINDS
 }
 
 void initialize_clasp()
@@ -842,11 +844,11 @@ void initialize_clasp()
   _lisp->_Roots._TheStructureClass->_Class = _lisp->_Roots._TheStandardClass;
   _lisp->_Roots._TheDerivableCxxClass->_Class = _lisp->_Roots._TheStandardClass;
   MPS_LOG("initialize_clasp ALLOCATE_ALL_CLASSES");
-  #define ALLOCATE_ALL_CLASSES
   #ifndef SCRAPING
+   #define ALLOCATE_ALL_CLASSES
     #include INIT_CLASSES_INC_H
+   #undef ALLOCATE_ALL_CLASSES
   #endif
-  #undef ALLOCATE_ALL_CLASSES
   core_T_O_var->setInstanceBaseClasses(_Nil<core::T_O>());
   
   create_packages();
@@ -858,18 +860,18 @@ void initialize_clasp()
   bootStrapCoreSymbolMap.finish_setup_of_symbols();
 
   // Define base classes
-  #define SET_BASES_ALL_CLASSES
   #ifndef SCRAPING
+   #define SET_BASES_ALL_CLASSES
     #include INIT_CLASSES_INC_H
+   #undef SET_BASES_ALL_CLASSES
   #endif
-  #undef SET_BASES_ALL_CLASSES
 
     // Define base classes
-  #define CALCULATE_CLASS_PRECEDENCE_ALL_CLASSES
   #ifndef SCRAPING
+   #define CALCULATE_CLASS_PRECEDENCE_ALL_CLASSES
     #include INIT_CLASSES_INC_H
+   #undef CALCULATE_CLASS_PRECEDENCE_ALL_CLASSES
   #endif
-  #undef CALCULATE_CLASS_PRECEDENCE_ALL_CLASSES
 
   _lisp->_Roots._TheClass->stamp_set(TheStandardClass_stamp);
   _lisp->_Roots._TheClass->instanceSet(core::Class_O::REF_CLASS_SLOTS,_Nil<core::T_O>());

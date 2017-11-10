@@ -1,4 +1,4 @@
-#ifdef oGC_DECLARE_FORWARDS
+#ifdef GC_DECLARE_FORWARDS
  namespace clbind {
     class DummyCreator_O;
     class ClassRep_O;
@@ -781,7 +781,7 @@ STAMP_asttooling__DerivableSyntaxOnlyAction = 409, // FROM-STATIC-ANALYZER
 STAMP_clbind__Derivable_clang__ASTFrontendAction_ = 410, // FROM-STATIC-ANALYZER
 STAMP_asttooling__DerivableASTFrontendAction = 411, // FROM-STATIC-ANALYZER
 STAMP_core__TranslationFunctor = 412, // FROM-STATIC-ANALYZER
-#error "The normal lisp exposed class (non-templated) that inherits from core::General_O core::TranslationFunctor was identified by the static analyzer but wasn't identified by the scraper!!!!  You probably forgot to add a LISP_CLASS definition to the class definition at "[ploc-as-string could not locate ../../include/clasp/core/wrappers.h --> result after merging /Development/clasp/../../include/clasp/core/wrappers.h]"
+//#error "The normal lisp exposed class (non-templated) that inherits from core::General_O core::TranslationFunctor was identified by the static analyzer but wasn't identified by the scraper!!!!  You probably forgot to add a LISP_CLASS definition to the class definition at "[ploc-as-string could not locate ../../include/clasp/core/wrappers.h --> result after merging /Development/clasp/../../include/clasp/core/wrappers.h]"
 // Class record: #S(CCLASS :KEY "core::TranslationFunctor" :TEMPLATE-SPECIALIZER NIL :LOCATION "[ploc-as-string could not locate ../../include/clasp/core/wrappers.h --> result after merging /Development/clasp/../../include/clasp/core/wrappers.h]" :BASES ("core::BuiltinClosure_O") :VBASES NIL :FIELDS (#S(INSTANCE-VARIABLE :ACCESS AS-PUBLIC :CTYPE #S(POINTER-CTYPE :KEY NIL :POINTEE #S(FUNCTION-PROTO-CTYPE :KEY "core::T_O *(class core::T_O *)")) :FIELD-NAME "fptr" :LOCATION "[ploc-as-string could not locate ../../include/clasp/core/wrappers.h --> result after merging /Development/clasp/../../include/clasp/core/wrappers.h]")) :SIZE NIL :METHOD-NAMES ("NO-NAME" "NO-NAME" "NO-NAME" "NO-NAME" "NO-NAME" "entry_point" "templatedSizeof" "NO-NAME") :METADATA NIL)
 STAMP_core__template_SimpleVector_core__SimpleVectorFloat_O_float_core__AbstractSimpleVector_O_ = 413, // FROM-STATIC-ANALYZER
 STAMP_core__template_SimpleVector_core__SimpleVector_byte64_t_O_unsigned_long_core__AbstractSimpleVector_O_ = 414, // FROM-STATIC-ANALYZER
@@ -4715,1957 +4715,1957 @@ template <typename FP> struct Cast<core::MultiStringBuffer_O*,FP> {
 #if defined(GC_STAMP_SELECTORS)
 template <> class gctools::GCStamp<llvmo::NamedMDNode_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_llvmo__NamedMDNode_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__NamedMDNode_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::MDArray_size_t_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__MDArray_size_t_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__MDArray_size_t_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::SimpleVector_byte16_t_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__SimpleVector_byte16_t_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__SimpleVector_byte16_t_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<mp::ConcurrentQueue_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_mp__ConcurrentQueue_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_mp__ConcurrentQueue_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<float>> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_gctools__GCVector_moveable_float_ ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_gctools__GCVector_moveable_float_ ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<gctools::GCArray_moveable<unsigned short>> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_gctools__GCArray_moveable_unsigned_short_ ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_gctools__GCArray_moveable_unsigned_short_ ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::SimpleMDArray_fixnum_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__SimpleMDArray_fixnum_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__SimpleMDArray_fixnum_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::SimpleVector_byte64_t_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__SimpleVector_byte64_t_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__SimpleVector_byte64_t_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::TargetMachine_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_llvmo__TargetMachine_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__TargetMachine_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::Value_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_llvmo__Value_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__Value_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::SimpleBaseString_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__SimpleBaseString_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__SimpleBaseString_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::Integer_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__Integer_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__Integer_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::SimpleMDArray_int32_t_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__SimpleMDArray_int32_t_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__SimpleMDArray_int32_t_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<clbind::ClassRegistry_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_clbind__ClassRegistry_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_clbind__ClassRegistry_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::Metadata_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_llvmo__Metadata_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__Metadata_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<asttooling::AstVisitor_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_asttooling__AstVisitor_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_asttooling__AstVisitor_O ;
   static const size_t Flags = FLAGS_STAMP_IN_CALLBACK ;
 };
 template <> class gctools::GCStamp<mp::Process_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_mp__Process_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_mp__Process_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::MDArray_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__MDArray_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__MDArray_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::Record_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__Record_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__Record_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<core::OptionalArgument>> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_gctools__GCVector_moveable_core__OptionalArgument_ ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_gctools__GCVector_moveable_core__OptionalArgument_ ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::LightUserData_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__LightUserData_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__LightUserData_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<core::T_O *>> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_gctools__GCVector_moveable_core__T_O___ ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_gctools__GCVector_moveable_core__T_O___ ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<clcenv::FunctionIgnore_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_clcenv__FunctionIgnore_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_clcenv__FunctionIgnore_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::MDArrayT_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__MDArrayT_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__MDArrayT_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<clbind::ClassRep_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_clbind__ClassRep_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_clbind__ClassRep_O ;
   static const size_t Flags = FLAGS_STAMP_IN_RACK ;
 };
 template <> class gctools::GCStamp<core::DirectoryEntry_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__DirectoryEntry_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__DirectoryEntry_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<clcenv::GlobalFunctionInfo_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_clcenv__GlobalFunctionInfo_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_clcenv__GlobalFunctionInfo_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::ConstantInt_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_llvmo__ConstantInt_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__ConstantInt_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::Linker_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_llvmo__Linker_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__Linker_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::SourceFileInfo_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__SourceFileInfo_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__SourceFileInfo_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::IntArray_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__IntArray_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__IntArray_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<gctools::GCArray_moveable<double>> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_gctools__GCArray_moveable_double_ ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_gctools__GCArray_moveable_double_ ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::SimpleMDArray_int16_t_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__SimpleMDArray_int16_t_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__SimpleMDArray_int16_t_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::CompositeType_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_llvmo__CompositeType_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__CompositeType_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::SimpleMDArrayT_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__SimpleMDArrayT_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__SimpleMDArrayT_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::SourcePosInfo_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__SourcePosInfo_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__SourcePosInfo_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::BranchInst_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_llvmo__BranchInst_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__BranchInst_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<clcenv::Entry_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_clcenv__Entry_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_clcenv__Entry_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::ActivationFrame_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__ActivationFrame_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__ActivationFrame_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::PassManagerBase_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_llvmo__PassManagerBase_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__PassManagerBase_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::AllocaInst_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_llvmo__AllocaInst_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__AllocaInst_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::LoadInst_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_llvmo__LoadInst_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__LoadInst_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::StandardClassCreator_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__StandardClassCreator_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__StandardClassCreator_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::ConstantStruct_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_llvmo__ConstantStruct_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__ConstantStruct_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::Exposer_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__Exposer_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__Exposer_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::SingleDispatchCxxEffectiveMethodFunction_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__SingleDispatchCxxEffectiveMethodFunction_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__SingleDispatchCxxEffectiveMethodFunction_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::DirectoryIterator_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__DirectoryIterator_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__DirectoryIterator_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<clcenv::Macro_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_clcenv__Macro_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_clcenv__Macro_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<clbind::detail::class_map> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_clbind__detail__class_map ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_clbind__detail__class_map ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<gctools::smart_ptr<core::SourceFileInfo_O>>> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__SourceFileInfo_O__ ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__SourceFileInfo_O__ ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::DISubroutineType_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_llvmo__DISubroutineType_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__DISubroutineType_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::LexicalEnvironment_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__LexicalEnvironment_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__LexicalEnvironment_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<clcenv::LambdaNameInfo_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_clcenv__LambdaNameInfo_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_clcenv__LambdaNameInfo_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::HashTable_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__HashTable_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__HashTable_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::PosixTime_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__PosixTime_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__PosixTime_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<gctools::GCArray_moveable<float>> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_gctools__GCArray_moveable_float_ ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_gctools__GCArray_moveable_float_ ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<gctools::smart_ptr<core::Package_O>>> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__Package_O__ ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__Package_O__ ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::SimpleBitVector_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__SimpleBitVector_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__SimpleBitVector_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::FunctionContainerEnvironment_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__FunctionContainerEnvironment_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__FunctionContainerEnvironment_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<clcenv::SpecialVariable_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_clcenv__SpecialVariable_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_clcenv__SpecialVariable_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::SimpleVector_int8_t_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__SimpleVector_int8_t_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__SimpleVector_int8_t_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<clcenv::VariableInfo_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_clcenv__VariableInfo_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_clcenv__VariableInfo_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::ResumeInst_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_llvmo__ResumeInst_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__ResumeInst_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::Function_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_llvmo__Function_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__Function_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::InvocationHistoryFrameIterator_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__InvocationHistoryFrameIterator_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__InvocationHistoryFrameIterator_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::DIType_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_llvmo__DIType_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__DIType_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<gctools::smart_ptr<core::SingleDispatchMethod_O>>> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__SingleDispatchMethod_O__ ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__SingleDispatchMethod_O__ ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::SimpleVector_size_t_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__SimpleVector_size_t_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__SimpleVector_size_t_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::SimpleMDArrayFloat_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__SimpleMDArrayFloat_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__SimpleMDArrayFloat_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::DIScope_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_llvmo__DIScope_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__DIScope_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::FileStatus_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__FileStatus_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__FileStatus_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<core::SymbolClassPair>> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_gctools__GCVector_moveable_core__SymbolClassPair_ ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_gctools__GCVector_moveable_core__SymbolClassPair_ ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::IndirectBrInst_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_llvmo__IndirectBrInst_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__IndirectBrInst_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<gctools::smart_ptr<core::T_O>>> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__T_O__ ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__T_O__ ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<clcenv::LexicalVariable_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_clcenv__LexicalVariable_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_clcenv__LexicalVariable_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<clcenv::VariableDynamicExtent_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_clcenv__VariableDynamicExtent_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_clcenv__VariableDynamicExtent_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::IRBuilder_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_llvmo__IRBuilder_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__IRBuilder_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::ConstantArray_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_llvmo__ConstantArray_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__ConstantArray_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::PHINode_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_llvmo__PHINode_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__PHINode_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<gctools::smart_ptr<core::Symbol_O>>> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__Symbol_O__ ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__Symbol_O__ ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::ClaspJIT_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_llvmo__ClaspJIT_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__ClaspJIT_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::NamedFunction_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__NamedFunction_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__NamedFunction_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::Package_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__Package_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__Package_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::SimpleMDArrayBaseChar_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__SimpleMDArrayBaseChar_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__SimpleMDArrayBaseChar_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::FunctionClosure_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__FunctionClosure_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__FunctionClosure_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<clcenv::GlobalEnvironment_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_clcenv__GlobalEnvironment_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_clcenv__GlobalEnvironment_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::SimpleVector_byte8_t_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__SimpleVector_byte8_t_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__SimpleVector_byte8_t_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::DILexicalBlockBase_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_llvmo__DILexicalBlockBase_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__DILexicalBlockBase_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::SimpleMDArray_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__SimpleMDArray_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__SimpleMDArray_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::MDNode_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_llvmo__MDNode_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__MDNode_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::Stream_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__Stream_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__Stream_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::CandoException_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__CandoException_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__CandoException_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<int>> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_gctools__GCVector_moveable_int_ ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_gctools__GCVector_moveable_int_ ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<mp::RecursiveMutex_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_mp__RecursiveMutex_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_mp__RecursiveMutex_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<gctools::GCArray_moveable<long>> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_gctools__GCArray_moveable_long_ ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_gctools__GCArray_moveable_long_ ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<clcenv::FunctionType_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_clcenv__FunctionType_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_clcenv__FunctionType_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<clcenv::Block_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_clcenv__Block_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_clcenv__Block_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::VAArgInst_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_llvmo__VAArgInst_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__VAArgInst_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::MDString_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_llvmo__MDString_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__MDString_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::ShortFloat_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__ShortFloat_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__ShortFloat_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::MDArray_fixnum_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__MDArray_fixnum_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__MDArray_fixnum_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::Number_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__Number_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__Number_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::SharpEqualWrapper_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__SharpEqualWrapper_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__SharpEqualWrapper_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::T_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__T_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__T_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::DICompileUnit_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_llvmo__DICompileUnit_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__DICompileUnit_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<clcenv::Tag_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_clcenv__Tag_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_clcenv__Tag_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<clcenv::ConstantVariableInfo_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_clcenv__ConstantVariableInfo_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_clcenv__ConstantVariableInfo_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::SimpleMDArrayDouble_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__SimpleMDArrayDouble_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__SimpleMDArrayDouble_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<asttooling::DerivableMatchCallback> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_asttooling__DerivableMatchCallback ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_asttooling__DerivableMatchCallback ;
   static const size_t Flags = FLAGS_STAMP_IN_RACK ;
 };
 template <> class gctools::GCStamp<core::Cache_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__Cache_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__Cache_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::LoadTimeValues_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__LoadTimeValues_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__LoadTimeValues_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::DIFile_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_llvmo__DIFile_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__DIFile_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::AbstractSimpleVector_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__AbstractSimpleVector_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__AbstractSimpleVector_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::InterpretedClosure_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__InterpretedClosure_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__InterpretedClosure_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::SimpleMDArray_byte16_t_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__SimpleMDArray_byte16_t_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__SimpleMDArray_byte16_t_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::Pathname_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__Pathname_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__Pathname_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::Str8Ns_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__Str8Ns_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__Str8Ns_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::DataLayout_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_llvmo__DataLayout_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__DataLayout_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::FunctionPass_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_llvmo__FunctionPass_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__FunctionPass_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::SourceManager_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__SourceManager_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__SourceManager_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::BasicBlock_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_llvmo__BasicBlock_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__BasicBlock_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::SimpleMDArray_int8_t_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__SimpleMDArray_int8_t_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__SimpleMDArray_int8_t_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::UndefValue_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_llvmo__UndefValue_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__UndefValue_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<core::AuxArgument>> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_gctools__GCVector_moveable_core__AuxArgument_ ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_gctools__GCVector_moveable_core__AuxArgument_ ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::EngineBuilder_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_llvmo__EngineBuilder_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__EngineBuilder_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<gctools::GCArray_moveable<gctools::smart_ptr<core::T_O>>> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_gctools__GCArray_moveable_gctools__smart_ptr_core__T_O__ ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_gctools__GCArray_moveable_gctools__smart_ptr_core__T_O__ ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::MDArray_byte32_t_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__MDArray_byte32_t_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__MDArray_byte32_t_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::Character_dummy_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__Character_dummy_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__Character_dummy_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::TagbodyEnvironment_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__TagbodyEnvironment_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__TagbodyEnvironment_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::ConsStepper_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__ConsStepper_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__ConsStepper_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::Constant_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_llvmo__Constant_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__Constant_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::CompileTimeEnvironment_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__CompileTimeEnvironment_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__CompileTimeEnvironment_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::SpecialForm_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__SpecialForm_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__SpecialForm_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::Path_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__Path_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__Path_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<mp::SharedMutex_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_mp__SharedMutex_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_mp__SharedMutex_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<mp::BlockingConcurrentQueue_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_mp__BlockingConcurrentQueue_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_mp__BlockingConcurrentQueue_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<clcenv::SpecialOperatorInfo_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_clcenv__SpecialOperatorInfo_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_clcenv__SpecialOperatorInfo_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::SexpSaveArchive_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__SexpSaveArchive_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__SexpSaveArchive_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<clcenv::SymbolMacroInfo_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_clcenv__SymbolMacroInfo_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_clcenv__SymbolMacroInfo_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<gctools::GCArray_moveable<unsigned char>> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_gctools__GCArray_moveable_unsigned_char_ ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_gctools__GCArray_moveable_unsigned_char_ ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<gctools::GCArray_moveable<int>> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_gctools__GCArray_moveable_int_ ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_gctools__GCArray_moveable_int_ ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::NativeVector_int_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__NativeVector_int_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__NativeVector_int_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::DIBasicType_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_llvmo__DIBasicType_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__DIBasicType_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::DIBuilder_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_llvmo__DIBuilder_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__DIBuilder_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<asttooling::DerivableASTFrontendAction> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_asttooling__DerivableASTFrontendAction ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_asttooling__DerivableASTFrontendAction ;
   static const size_t Flags = FLAGS_STAMP_IN_RACK ;
 };
 template <> class gctools::GCStamp<core::InstanceCreator_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__InstanceCreator_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__InstanceCreator_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::APInt_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_llvmo__APInt_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__APInt_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::StandardObject_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__StandardObject_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__StandardObject_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::Symbol_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__Symbol_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__Symbol_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::IOStreamStream_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__IOStreamStream_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__IOStreamStream_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<clcenv::FunctionInfo_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_clcenv__FunctionInfo_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_clcenv__FunctionInfo_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::APFloat_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_llvmo__APFloat_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__APFloat_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>>> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__T_O__gctools__smart_ptr_core__T_O___ ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__T_O__gctools__smart_ptr_core__T_O___ ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::SimpleMDArrayCharacter_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__SimpleMDArrayCharacter_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__SimpleMDArrayCharacter_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::SimpleCharacterString_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__SimpleCharacterString_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__SimpleCharacterString_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<clcenv::LambdaName_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_clcenv__LambdaName_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_clcenv__LambdaName_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<gctools::smart_ptr<core::List_V>>> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__List_V__ ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__List_V__ ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<clcenv::LocalFunctionInfo_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_clcenv__LocalFunctionInfo_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_clcenv__LocalFunctionInfo_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::Array_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__Array_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__Array_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::InsertPoint_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_llvmo__InsertPoint_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__InsertPoint_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::Argument_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_llvmo__Argument_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__Argument_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<clcenv::Optimize_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_clcenv__Optimize_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_clcenv__Optimize_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::StrWNs_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__StrWNs_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__StrWNs_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::Iterator_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__Iterator_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__Iterator_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::IRBuilderBase_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_llvmo__IRBuilderBase_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__IRBuilderBase_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<core::ExceptionEntry>> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_gctools__GCVector_moveable_core__ExceptionEntry_ ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_gctools__GCVector_moveable_core__ExceptionEntry_ ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::EchoStream_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__EchoStream_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__EchoStream_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::Null_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__Null_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__Null_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::MDArrayBit_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__MDArrayBit_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__MDArrayBit_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::SimpleMDArrayBit_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__SimpleMDArrayBit_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__SimpleMDArrayBit_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<gctools::GCArray_moveable<signed char>> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_gctools__GCArray_moveable_signed_char_ ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_gctools__GCArray_moveable_signed_char_ ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::SingleDispatchMethod_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__SingleDispatchMethod_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__SingleDispatchMethod_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<clcenv::Closure_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_clcenv__Closure_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_clcenv__Closure_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<clcenv::Inline_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_clcenv__Inline_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_clcenv__Inline_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<clcenv::LexicalVariableInfo_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_clcenv__LexicalVariableInfo_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_clcenv__LexicalVariableInfo_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::TagbodyFrame_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__TagbodyFrame_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__TagbodyFrame_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::NativeVector_double_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__NativeVector_double_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__NativeVector_double_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::DILocalScope_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_llvmo__DILocalScope_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__DILocalScope_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::GlueEnvironment_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__GlueEnvironment_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__GlueEnvironment_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::CxxObject_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__CxxObject_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__CxxObject_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<asttooling::DerivableFrontendActionFactory> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_asttooling__DerivableFrontendActionFactory ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_asttooling__DerivableFrontendActionFactory ;
   static const size_t Flags = FLAGS_STAMP_IN_RACK ;
 };
 template <> class gctools::GCStamp<llvmo::ReturnInst_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_llvmo__ReturnInst_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__ReturnInst_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::FunctionType_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_llvmo__FunctionType_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__FunctionType_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<clbind::DummyCreator_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_clbind__DummyCreator_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_clbind__DummyCreator_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::ClassCreator_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__ClassCreator_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__ClassCreator_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::MDArray_byte16_t_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__MDArray_byte16_t_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__MDArray_byte16_t_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>>> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__T_O___ ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__T_O___ ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::DILexicalBlock_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_llvmo__DILexicalBlock_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__DILexicalBlock_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::DITypeRefArray_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_llvmo__DITypeRefArray_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__DITypeRefArray_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::Pointer_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__Pointer_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__Pointer_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::Type_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_llvmo__Type_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__Type_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::SimpleVectorFloat_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__SimpleVectorFloat_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__SimpleVectorFloat_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<mp::Mutex_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_mp__Mutex_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_mp__Mutex_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::ModuleHandle_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_llvmo__ModuleHandle_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__ModuleHandle_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<clcenv::BlockInfo_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_clcenv__BlockInfo_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_clcenv__BlockInfo_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::RecursiveDirectoryIterator_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__RecursiveDirectoryIterator_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__RecursiveDirectoryIterator_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::UnreachableInst_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_llvmo__UnreachableInst_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__UnreachableInst_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::MacroClosure_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__MacroClosure_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__MacroClosure_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::SNode_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__SNode_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__SNode_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::VectorStepper_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__VectorStepper_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__VectorStepper_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::LoadArchive_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__LoadArchive_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__LoadArchive_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::StringInputStream_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__StringInputStream_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__StringInputStream_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::ModulePass_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_llvmo__ModulePass_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__ModulePass_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::Float_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__Float_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__Float_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::DIDerivedType_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_llvmo__DIDerivedType_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__DIDerivedType_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<clbind::ConstructorCreator_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_clbind__ConstructorCreator_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_clbind__ConstructorCreator_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::FunctionFrame_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__FunctionFrame_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__FunctionFrame_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::LongFloat_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__LongFloat_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__LongFloat_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::SimpleVector_int64_t_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__SimpleVector_int64_t_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__SimpleVector_int64_t_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::ConstantDataSequential_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_llvmo__ConstantDataSequential_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__ConstantDataSequential_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<gctools::GCBitUnitArray_moveable<1,unsigned int,int>> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_gctools__GCBitUnitArray_moveable_1_unsigned_int_int_ ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_gctools__GCBitUnitArray_moveable_1_unsigned_int_int_ ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::TargetLibraryInfoWrapperPass_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_llvmo__TargetLibraryInfoWrapperPass_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__TargetLibraryInfoWrapperPass_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::StoreInst_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_llvmo__StoreInst_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__StoreInst_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<asttooling::DerivableSyntaxOnlyAction> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_asttooling__DerivableSyntaxOnlyAction ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_asttooling__DerivableSyntaxOnlyAction ;
   static const size_t Flags = FLAGS_STAMP_IN_RACK ;
 };
 template <> class gctools::GCStamp<llvmo::User_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_llvmo__User_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__User_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::DebugLoc_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_llvmo__DebugLoc_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__DebugLoc_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::WeakPointer_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__WeakPointer_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__WeakPointer_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::LeafSNode_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__LeafSNode_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__LeafSNode_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::MDArray_int16_t_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__MDArray_int16_t_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__MDArray_int16_t_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<clcenv::OptimizeInfo_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_clcenv__OptimizeInfo_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_clcenv__OptimizeInfo_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::IOFileStream_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__IOFileStream_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__IOFileStream_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::FenceInst_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_llvmo__FenceInst_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__FenceInst_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::RuntimeVisibleEnvironment_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__RuntimeVisibleEnvironment_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__RuntimeVisibleEnvironment_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::AtomicCmpXchgInst_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_llvmo__AtomicCmpXchgInst_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__AtomicCmpXchgInst_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::ValueFrame_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__ValueFrame_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__ValueFrame_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<gctools::GCArray_moveable<unsigned long>> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_gctools__GCArray_moveable_unsigned_long_ ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_gctools__GCArray_moveable_unsigned_long_ ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::SimpleMDArray_byte8_t_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__SimpleMDArray_byte8_t_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__SimpleMDArray_byte8_t_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::SaveArchive_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__SaveArchive_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__SaveArchive_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::SimpleVector_int32_t_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__SimpleVector_int32_t_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__SimpleVector_int32_t_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::SequenceStepper_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__SequenceStepper_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__SequenceStepper_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::Complex_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__Complex_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__Complex_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::ConstantPointerNull_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_llvmo__ConstantPointerNull_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__ConstantPointerNull_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::VectorType_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_llvmo__VectorType_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__VectorType_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::Instruction_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_llvmo__Instruction_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__Instruction_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::FileStream_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__FileStream_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__FileStream_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::ValueAsMetadata_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_llvmo__ValueAsMetadata_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__ValueAsMetadata_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::Rational_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__Rational_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__Rational_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::ConstantExpr_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_llvmo__ConstantExpr_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__ConstantExpr_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::SingleDispatchEffectiveMethodFunction_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__SingleDispatchEffectiveMethodFunction_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__SingleDispatchEffectiveMethodFunction_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::LandingPadInst_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_llvmo__LandingPadInst_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__LandingPadInst_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::MDArrayCharacter_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__MDArrayCharacter_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__MDArrayCharacter_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::Function_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__Function_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__Function_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<gctools::smart_ptr<clbind::ClassRep_O>>> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_gctools__GCVector_moveable_gctools__smart_ptr_clbind__ClassRep_O__ ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_gctools__GCVector_moveable_gctools__smart_ptr_clbind__ClassRep_O__ ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::StructType_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_llvmo__StructType_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__StructType_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<clcenv::FunctionDynamicExtent_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_clcenv__FunctionDynamicExtent_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_clcenv__FunctionDynamicExtent_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::RandomState_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__RandomState_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__RandomState_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::MDArrayFloat_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__MDArrayFloat_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__MDArrayFloat_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::HashTableEql_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__HashTableEql_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__HashTableEql_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::Target_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_llvmo__Target_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__Target_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::MDArray_byte64_t_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__MDArray_byte64_t_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__MDArray_byte64_t_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<mp::ConditionVariable_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_mp__ConditionVariable_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_mp__ConditionVariable_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::Real_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__Real_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__Real_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<core::DynamicBinding>> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_gctools__GCVector_moveable_core__DynamicBinding_ ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_gctools__GCVector_moveable_core__DynamicBinding_ ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::SimpleVector_fixnum_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__SimpleVector_fixnum_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__SimpleVector_fixnum_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::FuncallableInstanceCreator_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__FuncallableInstanceCreator_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__FuncallableInstanceCreator_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::SimpleVector_byte32_t_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__SimpleVector_byte32_t_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__SimpleVector_byte32_t_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::SexpLoadArchive_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__SexpLoadArchive_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__SexpLoadArchive_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::MDArray_byte8_t_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__MDArray_byte8_t_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__MDArray_byte8_t_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::SingleDispatchGenericFunctionClosure_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__SingleDispatchGenericFunctionClosure_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__SingleDispatchGenericFunctionClosure_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::StringOutputStream_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__StringOutputStream_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__StringOutputStream_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::AnsiStream_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__AnsiStream_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__AnsiStream_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::BranchSNode_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__BranchSNode_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__BranchSNode_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::TerminatorInst_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_llvmo__TerminatorInst_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__TerminatorInst_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::Module_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_llvmo__Module_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__Module_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::BuiltinClosure_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__BuiltinClosure_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__BuiltinClosure_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::SingleFloat_dummy_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__SingleFloat_dummy_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__SingleFloat_dummy_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::ValueEnvironment_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__ValueEnvironment_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__ValueEnvironment_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::CxxMethodFunction_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__CxxMethodFunction_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__CxxMethodFunction_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::InvokeInst_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_llvmo__InvokeInst_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__InvokeInst_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::Environment_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__Environment_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__Environment_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<clcenv::SymbolMacro_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_clcenv__SymbolMacro_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_clcenv__SymbolMacro_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::AttributeSet_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_llvmo__AttributeSet_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__AttributeSet_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<clcenv::LocalMacroInfo_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_clcenv__LocalMacroInfo_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_clcenv__LocalMacroInfo_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::AtomicRMWInst_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_llvmo__AtomicRMWInst_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__AtomicRMWInst_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::StrNs_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__StrNs_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__StrNs_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::PassManager_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_llvmo__PassManager_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__PassManager_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::UnwindProtectEnvironment_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__UnwindProtectEnvironment_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__UnwindProtectEnvironment_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<clasp_ffi::ForeignData_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_clasp_ffi__ForeignData_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_clasp_ffi__ForeignData_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::SimpleVector_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__SimpleVector_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__SimpleVector_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<clcenv::GlobalMacroInfo_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_clcenv__GlobalMacroInfo_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_clcenv__GlobalMacroInfo_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::CallInst_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_llvmo__CallInst_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__CallInst_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::DISubprogram_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_llvmo__DISubprogram_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__DISubprogram_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::FunctionPassManager_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_llvmo__FunctionPassManager_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__FunctionPassManager_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::DoubleFloat_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__DoubleFloat_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__DoubleFloat_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<clcenv::Info_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_clcenv__Info_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_clcenv__Info_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::Creator_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__Creator_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__Creator_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::ArrayType_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_llvmo__ArrayType_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__ArrayType_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::SimpleMDArray_int64_t_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__SimpleMDArray_int64_t_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__SimpleMDArray_int64_t_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::SimpleString_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__SimpleString_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__SimpleString_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::MCSubtargetInfo_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_llvmo__MCSubtargetInfo_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__MCSubtargetInfo_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::BlockAddress_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_llvmo__BlockAddress_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__BlockAddress_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<gctools::GCArray_moveable<short>> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_gctools__GCArray_moveable_short_ ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_gctools__GCArray_moveable_short_ ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::DICompositeType_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_llvmo__DICompositeType_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__DICompositeType_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::FunctionValueEnvironment_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__FunctionValueEnvironment_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__FunctionValueEnvironment_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::DerivableCxxClassCreator_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__DerivableCxxClassCreator_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__DerivableCxxClassCreator_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::TemplatedFunctionBase_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__TemplatedFunctionBase_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__TemplatedFunctionBase_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::HashTableEq_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__HashTableEq_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__HashTableEq_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::StringStream_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__StringStream_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__StringStream_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<core::SymbolStorage>> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_gctools__GCVector_moveable_core__SymbolStorage_ ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_gctools__GCVector_moveable_core__SymbolStorage_ ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::MDArray_int32_t_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__MDArray_int32_t_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__MDArray_int32_t_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::IntegerType_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_llvmo__IntegerType_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__IntegerType_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<asttooling::AsttoolingExposer_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_asttooling__AsttoolingExposer_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_asttooling__AsttoolingExposer_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::HashTableEqualp_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__HashTableEqualp_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__HashTableEqualp_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::LambdaListHandler_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__LambdaListHandler_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__LambdaListHandler_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::MDArray_int64_t_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__MDArray_int64_t_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__MDArray_int64_t_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::SimpleMDArray_size_t_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__SimpleMDArray_size_t_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__SimpleMDArray_size_t_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::StructureClassCreator_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__StructureClassCreator_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__StructureClassCreator_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<double>> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_gctools__GCVector_moveable_double_ ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_gctools__GCVector_moveable_double_ ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::ConcatenatedStream_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__ConcatenatedStream_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__ConcatenatedStream_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::SmallMultimap_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__SmallMultimap_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__SmallMultimap_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::PassManagerBuilder_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_llvmo__PassManagerBuilder_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__PassManagerBuilder_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::SymbolMacroletEnvironment_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__SymbolMacroletEnvironment_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__SymbolMacroletEnvironment_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::MDArray_int8_t_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__MDArray_int8_t_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__MDArray_int8_t_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::Fixnum_dummy_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__Fixnum_dummy_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__Fixnum_dummy_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::ConstantFP_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_llvmo__ConstantFP_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__ConstantFP_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::SingleDispatchMethodFunction_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__SingleDispatchMethodFunction_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__SingleDispatchMethodFunction_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::MacroletEnvironment_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__MacroletEnvironment_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__MacroletEnvironment_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::Cons_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__Cons_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__Cons_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::CompiledFunction_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__CompiledFunction_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__CompiledFunction_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::ImmutablePass_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_llvmo__ImmutablePass_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__ImmutablePass_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::FuncallableInstance_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__FuncallableInstance_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__FuncallableInstance_O ;
   static const size_t Flags = FLAGS_STAMP_IN_RACK ;
 };
 template <> class gctools::GCStamp<llvmo::LLVMContext_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_llvmo__LLVMContext_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__LLVMContext_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::MDArrayDouble_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__MDArrayDouble_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__MDArrayDouble_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::SynonymStream_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__SynonymStream_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__SynonymStream_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::WeakKeyHashTable_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__WeakKeyHashTable_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__WeakKeyHashTable_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::CompiledDispatchFunction_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__CompiledDispatchFunction_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__CompiledDispatchFunction_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::Ratio_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__Ratio_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__Ratio_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<gctools::smart_ptr<core::SequenceStepper_O>>> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__SequenceStepper_O__ ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__SequenceStepper_O__ ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::MDArrayBaseChar_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__MDArrayBaseChar_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__MDArrayBaseChar_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::UserData_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__UserData_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__UserData_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::ExternalObject_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__ExternalObject_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__ExternalObject_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::DINode_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_llvmo__DINode_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__DINode_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::GlobalVariable_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_llvmo__GlobalVariable_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__GlobalVariable_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::ClosureWithSlots_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__ClosureWithSlots_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__ClosureWithSlots_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::BroadcastStream_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__BroadcastStream_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__BroadcastStream_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::ExecutionEngine_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_llvmo__ExecutionEngine_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__ExecutionEngine_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<gctools::smart_ptr<core::Cons_O>>> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__Cons_O__ ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__Cons_O__ ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::SimpleVector_int16_t_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__SimpleVector_int16_t_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__SimpleVector_int16_t_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<clcenv::Function_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_clcenv__Function_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_clcenv__Function_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::General_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__General_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__General_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::Attribute_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_llvmo__Attribute_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__Attribute_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::DerivableCxxObject_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__DerivableCxxObject_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__DerivableCxxObject_O ;
   static const size_t Flags = FLAGS_STAMP_IN_RACK ;
 };
 template <> class gctools::GCStamp<core::WeakKeyMapping_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__WeakKeyMapping_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__WeakKeyMapping_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::Closure_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__Closure_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__Closure_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::Reader_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__Reader_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__Reader_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::SwitchInst_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_llvmo__SwitchInst_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__SwitchInst_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::SymbolToEnumConverter_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__SymbolToEnumConverter_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__SymbolToEnumConverter_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<clcenv::VariableIgnore_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_clcenv__VariableIgnore_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_clcenv__VariableIgnore_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<clcenv::SpecialVariableInfo_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_clcenv__SpecialVariableInfo_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_clcenv__SpecialVariableInfo_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::NativeVector_float_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__NativeVector_float_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__NativeVector_float_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::SimpleVectorDouble_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__SimpleVectorDouble_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__SimpleVectorDouble_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<core::RequiredArgument>> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_gctools__GCVector_moveable_core__RequiredArgument_ ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_gctools__GCVector_moveable_core__RequiredArgument_ ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::Pass_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_llvmo__Pass_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__Pass_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::Lisp_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__Lisp_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__Lisp_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::VaList_dummy_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__VaList_dummy_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__VaList_dummy_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::BlockEnvironment_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__BlockEnvironment_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__BlockEnvironment_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::ClosureWithFrame_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__ClosureWithFrame_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__ClosureWithFrame_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<core::CacheRecord>> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_gctools__GCVector_moveable_core__CacheRecord_ ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_gctools__GCVector_moveable_core__CacheRecord_ ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::CatchEnvironment_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__CatchEnvironment_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__CatchEnvironment_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::DINodeArray_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_llvmo__DINodeArray_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__DINodeArray_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::LogicalPathname_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__LogicalPathname_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__LogicalPathname_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::TargetSubtargetInfo_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_llvmo__TargetSubtargetInfo_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__TargetSubtargetInfo_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::Archive_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__Archive_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__Archive_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::CompiledClosure_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__CompiledClosure_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__CompiledClosure_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::ConstantDataArray_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_llvmo__ConstantDataArray_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__ConstantDataArray_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::SmallMap_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__SmallMap_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__SmallMap_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::WrappedPointer_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__WrappedPointer_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__WrappedPointer_O ;
   static const size_t Flags = FLAGS_STAMP_IN_WRAPPER ;
 };
 template <> class gctools::GCStamp<llvmo::TargetOptions_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_llvmo__TargetOptions_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__TargetOptions_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::Instance_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__Instance_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__Instance_O ;
   static const size_t Flags = FLAGS_STAMP_IN_RACK ;
 };
 template <> class gctools::GCStamp<clasp_ffi::ForeignTypeSpec_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_clasp_ffi__ForeignTypeSpec_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_clasp_ffi__ForeignTypeSpec_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::SimpleMDArray_byte32_t_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__SimpleMDArray_byte32_t_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__SimpleMDArray_byte32_t_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::Bignum_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__Bignum_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__Bignum_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::TranslationFunctor> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__TranslationFunctor ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__TranslationFunctor ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::PosixTimeDuration_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__PosixTimeDuration_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__PosixTimeDuration_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::LLVMTargetMachine_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_llvmo__LLVMTargetMachine_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__LLVMTargetMachine_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::ReadTable_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__ReadTable_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__ReadTable_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<clcenv::VariableType_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_clcenv__VariableType_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_clcenv__VariableType_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::HashTableEqual_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__HashTableEqual_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__HashTableEqual_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::SequentialType_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_llvmo__SequentialType_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__SequentialType_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::Triple_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_llvmo__Triple_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__Triple_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::BitVectorNs_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__BitVectorNs_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__BitVectorNs_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::SimpleMDArray_byte64_t_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__SimpleMDArray_byte64_t_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__SimpleMDArray_byte64_t_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::UnaryInstruction_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_llvmo__UnaryInstruction_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__UnaryInstruction_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::CoreExposer_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__CoreExposer_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__CoreExposer_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::GlobalValue_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_llvmo__GlobalValue_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__GlobalValue_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::PointerType_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_llvmo__PointerType_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__PointerType_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<gctools::GCArray_moveable<unsigned int>> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_gctools__GCArray_moveable_unsigned_int_ ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_gctools__GCArray_moveable_unsigned_int_ ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::WeakHashTable_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__WeakHashTable_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__WeakHashTable_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<core::KeywordArgument>> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_gctools__GCVector_moveable_core__KeywordArgument_ ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_gctools__GCVector_moveable_core__KeywordArgument_ ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::TwoWayStream_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__TwoWayStream_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__TwoWayStream_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::MultiStringBuffer_O> {
 public:
-  static gctools::GCStamp const Stamp = gctools::STAMP_core__MultiStringBuffer_O ;
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__MultiStringBuffer_O ;
   static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 #endif // defined(GC_STAMP_SELECTORS)
