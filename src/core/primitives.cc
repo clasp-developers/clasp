@@ -143,6 +143,60 @@ CL_DEFUN void cl__sleep(T_sp oseconds) {
   clasp_musleep(dsec,false);
 }
 
+
+CL_LAMBDA();
+CL_DECLARE();
+CL_DOCSTRING("A list of all symbols defined in C++");
+CL_DEFUN T_sp core__interpreter_symbols() {
+  List_sp ls = _Nil<T_O>();
+
+#define DO_SYMBOL(package, name, _a, _b, _c, _d) ls = Cons_O::create(package::name, ls);
+
+#define ClPkg_SYMBOLS
+#define AstToolingPkg_SYMBOLS
+#define CorePkg_SYMBOLS
+#define ExtPkg_SYMBOLS
+#define LlvmoPkg_SYMBOLS
+#define ClbindPkg_SYMBOLS
+#define MpPkg_SYMBOLS
+#define KeywordPkg_SYMBOLS
+#define Clasp_ffi_pkg_SYMBOLS
+#define SocketsPkg_SYMBOLS
+#define ServeEventPkg_SYMBOLS
+#define CompPkg_SYMBOLS
+#define CleavirEnvPkg_SYMBOLS
+#define CleavirPrimopsPkg_SYMBOLS
+#define ClosPkg_SYMBOLS
+#define GrayPkg_SYMBOLS
+#define ClcenvPkg_SYMBOLS
+#define GcToolsPkg_SYMBOLS
+  
+#include SYMBOLS_SCRAPED_INC_H
+  
+#undef ClPkg_SYMBOLS
+#undef AstToolingPkg_SYMBOLS
+#undef CorePkg_SYMBOLS
+#undef ExtPkg_SYMBOLS
+#undef LlvmoPkg_SYMBOLS
+#undef ClbindPkg_SYMBOLS
+#undef MpPkg_SYMBOLS
+#undef KeywordPkg_SYMBOLS
+#undef Clasp_ffi_pkg_SYMBOLS
+#undef SocketsPkg_SYMBOLS
+#undef ServeEventPkg_SYMBOLS
+#undef CompPkg_SYMBOLS
+#undef CleavirEnvPkg_SYMBOLS
+#undef CleavirPrimopsPkg_SYMBOLS
+#undef ClosPkg_SYMBOLS
+#undef GrayPkg_SYMBOLS
+#undef ClcenvPkg_SYMBOLS
+#undef GcToolsPkg_SYMBOLS
+
+#undef DO_SYMBOL
+
+  return ls;
+}
+
 CL_LAMBDA();
 CL_DECLARE();
 CL_DOCSTRING("lispImplementationType");

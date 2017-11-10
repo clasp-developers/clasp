@@ -2709,7 +2709,7 @@ so that they don't have to be constantly recalculated"
 ;;       (format stream "//GCTemplatedKind for ~a~%" stamp)
        (format stream "template <> class gctools::GCStamp<~A> {~%" (stamp-key stamp))))
     (format stream "public:~%")
-    (format stream "  static gctools::GCStamp const Stamp = gctools::~a ;~%" stamp-name)
+    (format stream "  static gctools::GCStampEnum const Stamp = gctools::~a ;~%" stamp-name)
     (format stream "  static const size_t Flags = ~a ;~%" (stamp-flags stamp))
     (format stream "};~%")))
 

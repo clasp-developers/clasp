@@ -19,8 +19,6 @@
 
 #-clasp-min
 (defun wrong-type-argument (object type &optional place function)
-  #-ecl-min
-  (declare (policy-debug-ihs-frame))
   (tagbody again
      (restart-case
 	 (error 'simple-type-error
