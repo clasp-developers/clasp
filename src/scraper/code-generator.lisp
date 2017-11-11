@@ -409,7 +409,6 @@ Convert colons to underscores"
                                          exposed-classes)
                                 (sort sc #'< :key #'stamp%))))
           (format sout "#ifdef GC_ENUM~%")
-          (generate-mps-poison sout)
           (dolist (c sorted-classes)
             (format sout "STAMP_~a = ~a,~%" (build-enum-name (class-key% c)) (stamp% c))
             (setf stamp-max (max stamp-max (stamp% c))))
