@@ -680,8 +680,8 @@ to expose."
                           (ctype-key (base one))))))))
 
 
-(defun expose-fixed-field-type (type-symbol)
-  (if (member type-symbol '(ctype_int ctype_unsigned_int ctype_unsigned_long ctype__Bool ctype_long))
+(defun expose-fixed-field-type (type-name)
+  (if (member type-name '("ctype_int" "ctype_unsigned_int" "ctype_unsigned_long" "ctype__Bool" "ctype_long") :test #'string=)
       nil
       t))
 
@@ -693,7 +693,7 @@ to expose."
            (good-name (not (is-bad-special-case-variable-name (layout-offset-field-names one))))
            (expose-it (and (or all-public fixable)
 			   good-name
-			   (expose-fixed-field-type (intern (string-upcase (offset-type-c++-identifier one))))))
+			   (expose-fixed-field-type (offset-type-c++-identifier one))))
            (base (base one)) ;; The outermost class that contains this offset
            (*print-pretty* nil))
       (format stream "~a {  fixed_field, ~a, sizeof(~a), offsetof(SAFE_TYPE_MACRO(~a),~{~a~}), \"~{~a~}\" }, // public: ~a fixable: ~a good-name: ~a~%"
@@ -1200,12 +1200,14 @@ can be saved and reloaded within the project for later analysis"
       (with-open-file (fout (project-pathname "project" "dat") :direction :output)
         (prin1 project fout))))
 
-(defun load-project (db)
+(defun load-project (db &optional pathname)
   (let ((*package* (find-package :clasp-analyzer)))
     (clang-tool:with-compilation-tool-database db
-      (let ((project (load-data (project-pathname "project" "dat"))))
-        (setq *project* project)
-        project))))
+      (let ((project-pathname (if pathname pathname (project-pathname "project" "dat"))))
+        (format t "Loading project from: ~a~%" project-pathname)
+        (let ((project (load-data project-pathname)))
+          (setq *project* project)
+          project)))))
         
 
 

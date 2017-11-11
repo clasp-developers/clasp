@@ -47,15 +47,20 @@
 ;;;
 ;;; To load and analyze the project
 ;;;
-(defparameter *compile-commands* (probe-file "~/Dev/clasp/build/mpsprep/compile_commands.json"))
+(defparameter *compile-commands* (probe-file "~/aws/static-analyze-clasp/results/compile_commands.json"))
 (setf *print-pretty* nil)
 (defvar *db* (clasp-analyzer:setup-clasp-analyzer-compilation-tool-database
                 (pathname *compile-commands*)))
 (time
  (progn
    (format t "Loading project~%")
-   (load-project *db*)
+   (defparameter *p1* (load-project *db* "~/aws/static-analyze-clasp/results/project.dat"))
    (format t "Done loading project~%")))
+
+(progn
+  (defparameter *analysis* (analyze-project *p1*))
+  (generate-code *analysis* :output-file #P"/tmp/clasp_gc.cc")
+  (format t "Done analyze and generate-code for project~%"))
 
 
 (analyze-only *db*)
