@@ -26,10 +26,10 @@
       (cmp:*cleavir-compile-file-hook* 'clasp-cleavir::cleavir-compile-file-form)
       (core:*use-cleavir-compiler* t)
       (core:*eval-with-env-hook* 'clasp-cleavir::cclasp-eval))
-  (format t "Loading inline.lisp~%")
+  (format t "Loading inline2.lisp~%")
   (finish-output)
-  (time (load "sys:kernel;cleavir;inline.lisp" :print t))
-  (format t "Done loading inline.lisp~%"))
+  (time (load "sys:kernel;cleavir;inline2.lisp" :print t))
+  (format t "Done loading inline2.lisp~%"))
 
 
 (load "sys:tests;tt-00001-preoptimize.ll")
