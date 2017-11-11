@@ -101,3 +101,7 @@
 
 
 (export '(*simple-environment* *code-walker*))
+
+(eval-when (:compile-toplevel :execute :load-toplevel)
+  (setq core:*defun-inline-hook* 'defun-inline-hook)
+  (setq core:*proclaim-hook* 'proclaim-hook))
