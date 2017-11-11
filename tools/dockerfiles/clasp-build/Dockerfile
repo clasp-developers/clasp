@@ -7,7 +7,7 @@ RUN apt-get update && apt-get -y upgrade && apt-get install -y \
 RUN curl http://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add -
 RUN apt-add-repository "deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial-5.0 main"
 RUN apt-get update && apt-get install -y \
-  gcc g++ llvm clang cmake libgc-dev libgmp-dev binutils-gold binutils-dev \
+  gcc g++ llvm clang cmake libgc-dev libunwind-dev liblzma-dev libgmp-dev binutils-gold binutils-dev \
   zlib1g-dev libncurses-dev libboost-filesystem-dev libboost-regex-dev \
   libboost-date-time-dev libboost-program-options-dev libboost-system-dev \
   libboost-iostreams-dev csh flex gfortran zlib1g-dev libbz2-dev patch \

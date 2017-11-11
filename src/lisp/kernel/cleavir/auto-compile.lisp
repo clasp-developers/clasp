@@ -36,10 +36,6 @@
 (eval-when (:compile-toplevel :execute)
   (setq cmp::*jit-dump-module* t))
 
-(eval-when (:compile-toplevel :execute :load-toplevel)
-  (setq core:*defun-inline-hook* 'defun-inline-hook)
-  (setq core:*proclaim-hook* 'proclaim-hook))
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;; Set up the cmp:*CLEAVIR-COMPILE-HOOK* so that COMPILE uses Cleavir

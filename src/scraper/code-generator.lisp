@@ -160,6 +160,7 @@
                          (princ buffer sout))
                        tags-data-ht)))))
 
+
 (defun generate-code-for-init-functions (functions)
   (declare (optimize (speed 3)))
   (with-output-to-string (sout)
@@ -379,15 +380,20 @@ Convert colons to underscores"
              classes)
     namespaces))
 
+(defun generate-mps-poison (sout)
+  "Sections that are only applicable to Boehm builds include this to prevent them from compiling in MPS builds"
+  (format sout " #ifdef USE_MPS~%")
+  (format sout "  #error \"Do not include this section when USE_MPS is defined - use the section from clasp_gc_xxx.cc\"~%")
+  (format sout " #endif // USE_MPS~%"))
+
 (defun generate-code-for-init-classes-and-methods (exposed-classes gc-managed-types)
   (declare (optimize (speed 3)))
   (with-output-to-string (sout)
     (let ((sorted-classes (sort-classes-by-inheritance exposed-classes))
           cur-package)
-      (generate-code-for-init-class-kinds exposed-classes sout)
-      (generate-code-for-init-classes-class-symbols exposed-classes sout)
       (progn
         (format sout "#ifdef DECLARE_FORWARDS~%")
+        (generate-mps-poison sout)
         (let ((forwards (extract-forwards exposed-classes)))
           (maphash (lambda (namespace classes)
                      (format sout "namespace ~a {~%" namespace)
@@ -426,6 +432,7 @@ Convert colons to underscores"
                  (format sout "  static const size_t Flags = ~a;~%" flags)
                  (format sout "};~%")))
           (format sout "#ifdef GC_STAMP_SELECTORS~%")
+          (generate-mps-poison sout)
           (dolist (c sorted-classes)
             (write-one-gcstamp (class-key% c) (build-enum-name (class-key% c)) (string (flags% c))))
           (maphash (lambda (key type)
@@ -433,6 +440,7 @@ Convert colons to underscores"
                    gc-managed-types))
         (format sout "#endif // GC_STAMP_SELECTORS~%")
         (format sout "#ifdef GC_DYNAMIC_CAST~%")
+        (generate-mps-poison sout)
         (dolist (c sorted-classes)
           (format sout "template <typename FP> struct Cast<~a*,FP> {~%" (class-key% c))
           (format sout "  inline static bool isA(FP client) {~%")
@@ -458,6 +466,8 @@ Convert colons to underscores"
                 (format sout "    add_single_typeq_test<~a>(theMap);  // stamp = ~a ~%" (class-key% c) (stamp% c))
                 (format sout "    add_range_typeq_test<~a,~a>(theMap); // stamp in ~a - ~a~%" (class-key% c) (class-key% high-class) (stamp% c) (stamp% high-class)))))
         (format sout "#endif // GC_TYPEQ~%"))
+      (generate-code-for-init-class-kinds exposed-classes sout)
+      (generate-code-for-init-classes-class-symbols exposed-classes sout)
       (progn
         (format sout "#ifdef ALLOCATE_ALL_CLASSES~%")
         (dolist (exposed-class sorted-classes)

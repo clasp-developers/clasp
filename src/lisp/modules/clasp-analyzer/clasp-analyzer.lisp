@@ -680,8 +680,8 @@ to expose."
                           (ctype-key (base one))))))))
 
 
-(defun expose-fixed-field-type (type-symbol)
-  (if (member type-symbol '(ctype_int ctype_unsigned_int ctype_unsigned_long ctype__Bool ctype_long))
+(defun expose-fixed-field-type (type-name)
+  (if (member type-name '("ctype_int" "ctype_unsigned_int" "ctype_unsigned_long" "ctype__Bool" "ctype_long") :test #'string=)
       nil
       t))
 
@@ -693,7 +693,7 @@ to expose."
            (good-name (not (is-bad-special-case-variable-name (layout-offset-field-names one))))
            (expose-it (and (or all-public fixable)
 			   good-name
-			   (expose-fixed-field-type (intern (string-upcase (offset-type-c++-identifier one))))))
+			   (expose-fixed-field-type (offset-type-c++-identifier one))))
            (base (base one)) ;; The outermost class that contains this offset
            (*print-pretty* nil))
       (format stream "~a {  fixed_field, ~a, sizeof(~a), offsetof(SAFE_TYPE_MACRO(~a),~{~a~}), \"~{~a~}\" }, // public: ~a fixable: ~a good-name: ~a~%"
@@ -1200,12 +1200,14 @@ can be saved and reloaded within the project for later analysis"
       (with-open-file (fout (project-pathname "project" "dat") :direction :output)
         (prin1 project fout))))
 
-(defun load-project (db)
+(defun load-project (db &optional pathname)
   (let ((*package* (find-package :clasp-analyzer)))
     (clang-tool:with-compilation-tool-database db
-      (let ((project (load-data (project-pathname "project" "dat"))))
-        (setq *project* project)
-        project))))
+      (let ((project-pathname (if pathname pathname (project-pathname "project" "dat"))))
+        (format t "Loading project from: ~a~%" project-pathname)
+        (let ((project (load-data project-pathname)))
+          (setq *project* project)
+          project)))))
         
 
 
@@ -2709,7 +2711,7 @@ so that they don't have to be constantly recalculated"
 ;;       (format stream "//GCTemplatedKind for ~a~%" stamp)
        (format stream "template <> class gctools::GCStamp<~A> {~%" (stamp-key stamp))))
     (format stream "public:~%")
-    (format stream "  static gctools::GCStampStamp const Stamp = gctools::~a ;~%" stamp-name)
+    (format stream "  static gctools::GCStampEnum const Stamp = gctools::~a ;~%" stamp-name)
     (format stream "  static const size_t Flags = ~a ;~%" (stamp-flags stamp))
     (format stream "};~%")))
 
@@ -3125,19 +3127,27 @@ Recursively analyze x and return T if x contains fixable pointers."
       "template <>"
       ""))
 
-(defun generate-alloc-stamp (&optional (fout t) (anal *analysis*))
+(defun generate-alloc-stamp (&optional (fout t) (analysis *analysis*))
   (let ((maxstamp 0))
     (format fout "STAMP_null = 0, ~%")
     #+(or)(let ((hardwired-kinds (core:hardwired-kinds)))
             (mapc (lambda (kv) (format fout "STAMP_~a = ~a, ~%" (car kv) (cdr kv))) hardwired-kinds))
     (mapc (lambda (stamp)
-               (format fout "~A = ~A, // ~A~%" (get-stamp-name stamp) (stamp-value stamp) (stamp-value-source stamp))
-               (when (> (stamp-value stamp) maxstamp)
-                 (setq maxstamp (stamp-value stamp))))
-          (analysis-sorted-stamps anal))
+            (format fout "~A = ~A, // ~A~%" (get-stamp-name stamp) (stamp-value stamp) (stamp-value-source stamp))
+            (when (and (eq (stamp-value-source stamp) :from-static-analyzer)
+                       (null (cclass-template-specializer (stamp-cclass stamp)))
+                       (not (inherits-from-multiple-classes (stamp-cclass stamp)))
+                       (derived-from-cclass (cclass-key (stamp-cclass stamp)) "core::General_O" (analysis-project analysis)))
+              (format fout "#error \"The normal lisp exposed class (non-templated) that inherits from core::General_O ~a was identified by the static analyzer but wasn't identified by the scraper!!!!  You probably forgot to add a LISP_CLASS definition to the class definition at ~s~%" (cclass-key (stamp-cclass stamp)) (cclass-location (stamp-cclass stamp)))
+              (let ((*print-pretty* nil))
+                (format fout "// Class record: ~a~%" (stamp-cclass stamp)))
+              )
+            (when (> (stamp-value stamp) maxstamp)
+              (setq maxstamp (stamp-value stamp))))
+          (analysis-sorted-stamps analysis))
     (maphash (lambda (stamp-name value)
                (format fout "// Unused ~a = ~a, ~%" stamp-name value))
-             (unused-builtin-stamps (analysis-stamp-value-generator anal)))
+             (unused-builtin-stamps (analysis-stamp-value-generator analysis)))
     (format fout "  STAMP_max = ~a,~%" maxstamp)
     (format fout "~%" )))
 
@@ -3257,9 +3267,9 @@ Pointers to these objects are fixed in obj_scan or they must be roots."
   (format t "About to generate code~%")
   (or output-file (error "You must provide an output-file"))
   (with-open-file (stream output-file :direction :output :if-exists :supersede)
-    (format stream "#ifdef DECLARE_FORWARDS~%")
+    (format stream "#ifdef GC_DECLARE_FORWARDS~%")
     (code-for-namespace-names stream (merge-forward-names-by-namespace analysis))
-    (format stream "#endif // DECLARE_FORWARDS~%")
+    (format stream "#endif // GC_DECLARE_FORWARDS~%")
     (format stream "#if defined(GC_STAMP)~%")
     (generate-alloc-stamp stream analysis)
     (format stream "#endif // defined(GC_STAMP)~%")

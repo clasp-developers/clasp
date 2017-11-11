@@ -9,12 +9,12 @@ RUN echo 'deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial-5.0 main'\
 
 # Copied from the original dependencies
 RUN apt-get update && apt-get upgrade -y && apt-get install -y \
-  libgc-dev libgmp-dev binutils-gold binutils-dev \
+  libgc-dev libunwind-dev liblzma-dev libgmp-dev binutils-gold binutils-dev \
   zlib1g-dev libbz2-dev libexpat-dev
 
 RUN apt-get install -y libncurses-dev libboost-filesystem-dev libboost-regex-dev \
       libboost-date-time-dev libboost-program-options-dev libboost-system-dev \
-      libboost-iostreams-dev libgc-dev libgmp-dev 
+      libboost-iostreams-dev 
 # csh flex gfortran \
 #  clang-5.0 libclang-common-5.0-dev libclang-5.0-dev libclang1-5.0 clang1-5.0-dbg \
 #  libllvm5.0 libllvm5.0-dbg lldb-5.0 llvm-5.0 llvm-5.0-dev llvm-5.0-doc \

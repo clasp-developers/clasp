@@ -43,6 +43,7 @@ typedef enum { no_default_constructor } no_default_constructor_type;
 typedef constructor<> default_constructor;
 
 class ConstructorCreator_O : public core::Creator_O {
+  LISP_CLASS(clbind,ClbindPkg,ConstructorCreator_O,"ConstructorCreator",core::Creator_O);
 public:
   ConstructorCreator_O(core::Symbol_sp c) : _mostDerivedClassSymbol(c){};
   core::Symbol_sp _mostDerivedClassSymbol;

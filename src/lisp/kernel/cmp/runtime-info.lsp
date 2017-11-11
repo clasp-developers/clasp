@@ -2,9 +2,6 @@
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (core:select-package :cmp))
 
-(defvar +header-size+ 8) ; FIXME: where does this come from?
-
-
 (defvar +cxx-data-structures-info+ (llvm-sys:cxx-data-structures-info))
 
 (defun get-cxx-data-structure-info (name &optional (info +cxx-data-structures-info+))

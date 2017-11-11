@@ -163,17 +163,20 @@ namespace gctools {
   
 #define STAMP_DUMMY_FOR_CPOINTER 0
     typedef enum {
-#ifndef SCRAPING
-#ifdef USE_BOEHM
-#define GC_ENUM
+#if !defined(SCRAPING)
+#if defined(USE_BOEHM) || defined(RUNNING_GC_BUILDER)
+ #define GC_ENUM
         STAMP_null = 0,
-#include INIT_CLASSES_INC_H // REPLACED CLASP_GC_FILENAME
-#undef GC_ENUM
+  #include INIT_CLASSES_INC_H // REPLACED CLASP_GC_FILENAME
+ #undef GC_ENUM
 #endif
-#ifdef USE_MPS
-#define GC_STAMP
-#include CLASP_GC_FILENAME
-#undef GC_STAMP
+#endif        
+#ifndef RUNNING_GC_BUILDER
+ #ifdef USE_MPS
+  #define GC_STAMP
+  #include CLASP_GC_FILENAME
+  #undef GC_STAMP
+ #endif
 #endif
         STAMP_VA_LIST_S = STAMP_core__VaList_dummy_O, 
         STAMP_CONS = STAMP_core__Cons_O, 
@@ -184,7 +187,6 @@ namespace gctools {
         STAMP_INSTANCE = STAMP_core__Instance_O,
         STAMP_FUNCALLABLE_INSTANCE = STAMP_core__FuncallableInstance_O,
         STAMP_WRAPPED_POINTER = STAMP_core__WrappedPointer_O
-#endif
     } GCStampEnum;
 
 };
@@ -227,13 +229,13 @@ namespace gctools {
       64 bits total -> |    62 bits | 2 bits |
 
       The 'tag' - two least-significant bits of the header uintptr_clasp_t value describe
-      what the rest of the header data means.
+      what the rest of the header data means.  This is used for General_O and derived objects.
       #B00 == This is an illegal value for the two lsbs,
               it indictates that this is not a valid header.
       #B01 == This is the 'stamp_tag' and indicates that the other bits in the header
               represent a stamp value and flags that indicate 
-              whether there is and where to find the extended stamp.
-      #B10 == This tag indicates that the remainint data bits in the header contains a forwarding
+              whether there is an extended-stamp and where to find the extended-stamp.
+      #B10 == This tag indicates that the remaining data bits in the header contains a forwarding
               pointer.  The uintptr_clasp_t in additional_data[0] contains the length of
               the block from the client pointer.
       #B11 == This indicates that the header contains a pad; check the
@@ -244,7 +246,7 @@ namespace gctools {
       64 bits total -> |    60 bits | 2 bits | 2 bits |
       
       The flags...
-      #B00    The value in the rest of the header is the stamp of the object
+      #B00    The value in the rest of the header is the stamp of the object.
       #B01    This object is an instance of Instance_O or a subclass and the Rack contains 
               the extended-stamp (64-bits).
       #B10    The stamp is in a WrappedPointer_O object
@@ -254,6 +256,9 @@ namespace gctools {
       #B11    This object inherits from Instance_O the virtual function get_stamp() needs to be
               called to get the extended-stamp because the Rack won't be at 
               a specific offset in the object.
+              The virtual function get_Instance_O_offset() must also be provided to
+              calculate the offset of the Instance_O object from the client pointer
+              so that MPS knows where to find pointers.
 
       The 'stamp' is a 64 bit value (zero extended, 0==illegal) that tells
       the MPS GC what the layout of the object is and is used to determine

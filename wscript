@@ -590,9 +590,11 @@ def configure(cfg):
     if (cfg.env['DEST_OS'] == DARWIN_OS ):
         pass
     elif (cfg.env['DEST_OS'] == LINUX_OS ):
-        cfg.check_cxx(stlib='unwind-x86_64', cflags='-Wall', uselib_store='UNWIND_X86_64')
-#        cfg.check_cxx(stlib='unwind', cflags='-Wall', uselib_store='UNWIND')
-        cfg.check_cxx(stlib='lzma', cflags='-Wall', uselib_store='LZMA')
+        pass
+        cfg.check_cxx(lib='gcc_s', cflags='-Wall', uselib_store="GCC_S")
+        cfg.check_cxx(lib='unwind-x86_64', cflags='-Wall', uselib_store='UNWIND_X86_64')
+        cfg.check_cxx(lib='unwind', cflags='-Wall', uselib_store='UNWIND')
+        cfg.check_cxx(lib='lzma', cflags='-Wall', uselib_store='LZMA')
     else:
         pass
     cfg.check_cxx(stlib=BOOST_LIBRARIES, cflags='-Wall', uselib_store='BOOST')
@@ -623,7 +625,6 @@ def configure(cfg):
 #    cfg.check_cxx(stlib=CLANG_LIBRARIES, cflags='-Wall', uselib_store='CLANG', stlibpath = llvm_lib_dir )
     llvm_include_dir = run_llvm_config_for_libs(cfg, "--includedir")
     print("llvm_include_dir = %s" % llvm_include_dir)
-    cfg.define("USE_LIBUNWIND",1) # use LIBUNWIND
     cfg.env.append_value('CXXFLAGS', ['-I./', '-I' + llvm_include_dir])
     cfg.env.append_value('CFLAGS', ['-I./'])
     if (cfg.env["PROFILING"] == True):
@@ -644,8 +645,10 @@ def configure(cfg):
     print("cfg.env['DEST_OS'] == %s\n" % cfg.env['DEST_OS'])
     if (cfg.env['DEST_OS'] == DARWIN_OS ):
         cfg.define("_TARGET_OS_DARWIN",1)
+        cfg.define("USE_LIBUNWIND",1) # use LIBUNWIND
     elif (cfg.env['DEST_OS'] == LINUX_OS ):
         cfg.define("_TARGET_OS_LINUX",1);
+#        cfg.define("USE_LIBUNWIND",1) # dont use LIBUNWIND for now
     else:
         raise Exception("Unknown OS %s"%cfg.env['DEST_OS'])
     cfg.define("PROGRAM_CLASP",1)
@@ -778,9 +781,10 @@ def configure(cfg):
     cfg.env.append_value('STLIB', cfg.env.STLIB_Z)
     if (cfg.env['DEST_OS'] == LINUX_OS ):
         cfg.env.append_value('LIB', cfg.env.LIB_DL)
-        cfg.env.append_value('STLIB', cfg.env.STLIB_UNWIND_X86_64)
-#        cfg.env.append_value('STLIB', cfg.env.STLIB_UNWIND)
-        cfg.env.append_value('STLIB', cfg.env.STLIB_LZMA)
+        cfg.env.append_value('LIB', cfg.env.LIB_GCC_S)
+        cfg.env.append_value('LIB', cfg.env.LIB_UNWIND_X86_64)
+        cfg.env.append_value('LIB', cfg.env.LIB_UNWIND)
+        cfg.env.append_value('LIB', cfg.env.LIB_LZMA)
     cfg.env.append_value('LIB', cfg.env.LIB_CLANG)
     cfg.env.append_value('LIB', cfg.env.LIB_LLVM)
     cfg.env.append_value('LIB', cfg.env.LIB_NCURSES)

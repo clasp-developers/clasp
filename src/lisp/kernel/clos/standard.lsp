@@ -540,7 +540,7 @@ because it contains a reference to the undefined class~%  ~A"
     ;; regular classes then it will get an Instance allocator
     ;; If one of them is a ClbindClass then this will inherit a
     ;; duplicate of its allocator
-    #+clasp(setf (creator class) (sys:compute-instance-creator class metaclass direct-superclasses))
+    (setf (creator class) (sys:compute-instance-creator class metaclass direct-superclasses))
     (cond ((forward-referenced-class-p class)
 	   (change-class class metaclass))
 	  ((not (eq (class-of class) metaclass))
@@ -551,7 +551,6 @@ because it contains a reference to the undefined class~%  ~A"
       (si:create-type-name name)
       (setf (find-class name) class))
     (clos::gf-log "In ensure-class-using-class (class class)\n")
-    #+fast-dispatch
     (clos:invalidate-generic-functions-with-class-selector class)
     (clos::gf-log "Returning from ensure-class-using-class (class class)\n")
     class))

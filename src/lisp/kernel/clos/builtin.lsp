@@ -42,8 +42,8 @@
     ;; regular classes then it will get an Instance allocator
     ;; If one of them is a ClbindClass then this will inherit a
     ;; duplicate of its allocator
-    #+clasp(setf (creator class) (sys:compute-instance-creator class metaclass direct-superclasses))
-    #+fast-dispatch(invalidate-generic-functions-with-class-selector class)
+    (setf (creator class) (sys:compute-instance-creator class metaclass direct-superclasses))
+    (invalidate-generic-functions-with-class-selector class)
     (when name
       (si:create-type-name name)
       (setf (find-class name) class))))
