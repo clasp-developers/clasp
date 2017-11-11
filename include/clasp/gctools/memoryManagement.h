@@ -163,14 +163,14 @@ namespace gctools {
   
 #define STAMP_DUMMY_FOR_CPOINTER 0
     typedef enum {
-#if !defined(SCRAPING) && !defined(RUNNING_GC_BUILDER)
-#ifdef USE_BOEHM
+#if !defined(SCRAPING)
+#if defined(USE_BOEHM) || defined(RUNNING_GC_BUILDER)
  #define GC_ENUM
         STAMP_null = 0,
   #include INIT_CLASSES_INC_H // REPLACED CLASP_GC_FILENAME
  #undef GC_ENUM
 #endif
-        
+#endif        
 #ifndef RUNNING_GC_BUILDER
  #ifdef USE_MPS
   #define GC_STAMP
@@ -187,7 +187,6 @@ namespace gctools {
         STAMP_INSTANCE = STAMP_core__Instance_O,
         STAMP_FUNCALLABLE_INSTANCE = STAMP_core__FuncallableInstance_O,
         STAMP_WRAPPED_POINTER = STAMP_core__WrappedPointer_O
-#endif
     } GCStampEnum;
 
 };
