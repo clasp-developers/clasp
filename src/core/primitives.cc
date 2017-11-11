@@ -716,11 +716,11 @@ CL_DOCSTRING("values");
 CL_DEFUN T_mv cl__values(VaList_sp vargs) {
   // returns multiple values
   size_t nargs = vargs->remaining_nargs();
+  SUPPRESS_GC();
+#ifdef DEBUG_VALUES
   if (nargs >= core::MultipleValues::MultipleValuesLimit) {
     SIMPLE_ERROR(BF("Too many arguments to values - only %d are supported and you tried to return %d values") % core::MultipleValues::MultipleValuesLimit % nargs );
   }
-  SUPPRESS_GC();
-#ifdef DEBUG_VALUES
   if (_sym_STARdebug_valuesSTAR &&
       _sym_STARdebug_valuesSTAR->boundP() &&
       _sym_STARdebug_valuesSTAR->symbolValue().notnilp()) {
@@ -735,13 +735,16 @@ CL_DEFUN T_mv cl__values(VaList_sp vargs) {
 #endif
   core::MultipleValues &me = (core::lisp_multipleValues());
   me.setSize(0);
-  core::T_sp first = vargs->next_arg();
-  for (size_t i(1); i< nargs; ++i ) {
-    T_O* tcsp = ENSURE_VALID_OBJECT(vargs->next_arg_raw());
-    T_sp csp((gctools::Tagged)tcsp);
-    me.valueSet(i, csp);
+  core::T_sp first(_Nil<core::T_O>());
+  if (nargs > 0) {
+    first = vargs->next_arg();
+    for (size_t i(1); i< nargs; ++i ) {
+      T_O* tcsp = ENSURE_VALID_OBJECT(vargs->next_arg_raw());
+      T_sp csp((gctools::Tagged)tcsp);
+      me.valueSet(i, csp);
+    }
+    me.setSize(nargs);
   }
-  me.setSize(nargs);
   ENABLE_GC();
   core::T_mv mv = gctools::multiple_values<core::T_O>(first,nargs);
   return mv;
