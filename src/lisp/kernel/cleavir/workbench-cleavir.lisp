@@ -16,13 +16,21 @@
   (time (load "sys:modules;asdf;build;asdf.fasl"))
   (load "sys:local-asdf-config.lisp"))
 
-(trace asdf/operate:operate asdf/operate:load-system asdf/operation:make-operation asdf/plan:make-plan asdf/plan:perform-plan asdf/system:reset-system ASDF/PARSE-DEFSYSTEM:REGISTER-SYSTEM-DEFINITION change-class)
-
 (progn
   (format t "Loading :clasp-cleavir system~%")
   (finish-output)
   (time (asdf:load-system "clasp-cleavir"))
   (format t "Done  pid = ~a~%"  (core:getpid)))
+
+(let ((cmp:*cleavir-compile-hook* 'clasp-cleavir::cclasp-compile*)
+      (cmp:*cleavir-compile-file-hook* 'clasp-cleavir::cleavir-compile-file-form)
+      (core:*use-cleavir-compiler* t)
+      (core:*eval-with-env-hook* 'clasp-cleavir::cclasp-eval))
+  (format t "Loading inline.lisp~%")
+  (finish-output)
+  (time (load "sys:kernel;cleavir;inline.lisp" :print t))
+  (format t "Done loading inline.lisp~%"))
+
 
 (load "sys:tests;tt-00001-preoptimize.ll")
 (core::foo)
