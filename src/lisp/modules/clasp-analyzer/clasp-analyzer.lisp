@@ -140,6 +140,7 @@
   value-source
   value
   flags
+  root-cclass
   cclass
   species ;; can be nil
   in-hierarchy ;; only generate TaggedCast entry for those in hierarchy
@@ -202,14 +203,7 @@
                                             do (setf (gethash name ht) stamp))
                                       ht) :accessor unused-builtin-stamps)
    (used-builtin-stamps :initform (make-hash-table :test #'equal) :accessor used-builtin-stamps)
-   (next-stamp-value :accessor next-stamp-value)))
-
-(defmethod shared-initialize :after ((gen stamp-value-generator) slot-names &rest initargs &key &allow-other-keys)
-  (when (or (eq slot-names t) (member 'next-stamp-value slot-names))
-    (let ((max-builtin-stamp (loop for value being the hash-values in (unused-builtin-stamps gen)
-                                   maximize value)))
-      (setf (next-stamp-value gen) max-builtin-stamp))))
-
+   (next-stamp-value :initform 0 :accessor next-stamp-value)))
 
 (defstruct analysis
   project
@@ -217,6 +211,7 @@
   inline
   (stamp-value-generator (make-instance 'stamp-value-generator))
   (forwards (make-hash-table :test #'equal))
+  stamp-value-problems
   (stamps (make-hash-table :test #'equal))
   stamp-children
   sorted-stamps
@@ -227,17 +222,22 @@
 (defun reset-stamp-value-generator (analysis)
   (setf (analysis-stamp-value-generator analysis) (make-instance 'stamp-value-generator)))
 
-
-(defun analysis-get-stamp-value (analysis stamp)
-  (let ((stamp-name (get-stamp-name stamp))
-        (generator (analysis-stamp-value-generator analysis)))
-    (let ((builtin (gethash stamp-name (unused-builtin-stamps generator))))
-      (if builtin
-          (progn
+(defun assign-stamp-value (analysis stamp operation)
+  (let ((stamp-value (stamp-value stamp))
+        (generator (analysis-stamp-value-generator analysis))
+        (stamp-name (get-stamp-name stamp)))
+    (if stamp-value
+        (push (format nil "Attempted to assign stamp to class ~a due to ~a but it already has one due to inheritance from ~a"
+                      (stamp-key stamp)
+                      operation
+                      (stamp-root-cclass stamp))
+              (analysis-stamp-value-problems analysis))
+        (let ((scraper-stamp (gethash stamp-name (unused-builtin-stamps generator))))
+          (when scraper-stamp
             (remhash stamp-name (unused-builtin-stamps generator))
-            (setf (gethash stamp-name (used-builtin-stamps generator)) builtin)
-            (values builtin :from-scraper))
-          (values (incf (next-stamp-value generator)) :from-static-analyzer)))))
+            (setf (gethash stamp-name (used-builtin-stamps generator)) scraper-stamp))
+          (setf stamp-value (incf (next-stamp-value generator)))))
+    stamp-value))
 
 (defmethod print-object ((object analysis) stream)
   (format stream "#<analysis>"))
@@ -316,17 +316,22 @@
      "FLAGS_STAMP_IN_CALLBACK")
     (t
      "FLAGS_STAMP_IN_HEADER")))
-  
-(defun traverse (name analysis)
+
+(defun traverse-inheritance-tree (name analysis operation root-cclass)
   (let* ((stamp (gethash name (analysis-stamps analysis))))
     (multiple-value-bind (stamp-value stamp-value-source)
-        (analysis-get-stamp-value analysis stamp)
+        (assign-stamp-value analysis stamp operation)
       (setf (stamp-value stamp) stamp-value)
       (setf (stamp-value-source stamp) stamp-value-source)
       (setf (stamp-flags stamp) (calculate-flags name))
+      (setf (stamp-root-cclass stamp) root-cclass)
       (setf (stamp-in-hierarchy stamp) t)
       (dolist (child (gethash stamp (analysis-stamp-children analysis)))
-        (traverse child analysis)))))
+        (traverse-inheritance-tree child analysis operation root-cclass)))))
+
+(defun children-of-class-named (name analysis)
+  (let ((stamp (gethash name (analysis-stamps analysis))))
+    (gethash stamp (analysis-stamp-children analysis))))
 
 (defun initialize-stamp-values (analysis)
   (setf (analysis-stamp-children analysis) (make-hash-table))
@@ -337,14 +342,15 @@
 
 (defun assign-stamp-values-to-hierarchy (analysis)
   (initialize-stamp-values analysis)
-  (dolist (root (analysis-stamp-roots analysis))
-    (traverse root analysis)))
+  (traverse-inheritance-tree "core::T_O" analysis "inherit from core::T_O" "core::T_O")
+  (dolist (root (remove "core::T_O" (analysis-stamp-roots analysis) :test #'string=))
+    (traverse-inheritance-tree root analysis (format nil "inherit from ~a" root) root)))
 
-(defun assign-stamp-values-to-those-without (analysis)
+(defun assign-stamp-values-to-those-without (analysis operation)
   (maphash (lambda (name stamp)
              (when (eq (stamp-value stamp) :unassigned)
                (multiple-value-bind (stamp-value stamp-value-source)
-                   (analysis-get-stamp-value analysis stamp)
+                   (assign-stamp-value analysis stamp)
                  (setf (stamp-value stamp) stamp-value
                        (stamp-value-source stamp) stamp-value-source
                        (stamp-in-hierarchy stamp) nil))))
@@ -352,18 +358,40 @@
 
 (defun analyze-hierarchy (analysis)
   (assign-stamp-values-to-hierarchy analysis)
-  (assign-stamp-values-to-those-without analysis))
+  (assign-stamp-values-to-those-without analysis "outside of hierarchy"))
 
-(defun hierarchy-end-value (class-name analysis)
-  (let ((stamp (gethash class-name (analysis-stamps analysis))))
-    (if (null (gethash stamp (analysis-stamp-children analysis)))
-        stamp
-        (hierarchy-end-value (car (last (gethash stamp (analysis-stamp-children analysis)))) analysis))))
+(defvar *accumulate-stamps* nil)
 
-        
+(defun accumulate-stamp-values (stamp analysis)
+  "Recursively walk the tree of children (analysis-stamp-children analysis)
+   and accumulate the stamp values into a list in *accumulate-stamps*"
+  (push (cons (stamp-value stamp) stamp) *accumulate-stamps*)
+  (let ((child-stamps (gethash stamp (analysis-stamp-children analysis))))
+    (loop for child-stamp-name in child-stamps
+          for child-stamp = (gethash child-stamp-name (analysis-stamps analysis))
+          do (accumulate-stamp-values child-stamp analysis))))
+
+(defun verify-stamp-values-are-contiguous-return-range (stamp-values)
+  "Verify that the stamps are a contiguous range - if not return NIL as the first return value.
+   If they are then return (values T first-stamp-value last-stamp-value last-stamp)"
+  (let ((sorted-stamp-values (sort stamp-values #'< :key #'car)))
+    (block verify
+      (loop for cur on sorted-stamp-values
+            for x = (first cur)
+            for y = (second cur)
+            while y
+            if (/= (- (car y) (car x)) 1)
+              do (return-from verify (values nil)))
+      (let* ((first-stamp-value (car (first sorted-stamp-values)))
+             (last-pair (car (last sorted-stamp-values)))
+             (last-stamp-value (car last-pair))
+             (last-stamp (cdr last-pair)))
+        (values t first-stamp-value last-stamp-value last-stamp)))))
+
 (defun hierarchy-class-stamp-range (class-name analysis)
-  (let ((stamp (gethash class-name (analysis-stamps analysis))))
-    (values stamp (hierarchy-end-value class-name analysis))))
+  (let ((*accumulate-stamps* nil))
+    (accumulate-stamp-values (gethash class-name (analysis-stamps analysis)) analysis)
+    (verify-stamp-values-are-contiguous-return-range *accumulate-stamps*)))
 
 
 (defun generate-dynamic-cast-code (fout analysis)
@@ -382,18 +410,24 @@
                  (format fout "//           but derivable_classes inherit from Instance_O and whatever else they are defined to inherit from.~%")
                  (format fout "//           For now I'll special case core::Instance_O and fall back to dynamic_cast~%"))
                (format fout "      int kindVal = header->stamp();~%")
-               (multiple-value-bind (low high)
+               (multiple-value-bind (contig stamp-value-low stamp-value-high)
                    (hierarchy-class-stamp-range key analysis)
-                 (format fout "      // low high --> ~a ~a ~%" (stamp-value low) (stamp-value high))
-                 (if (string= key "core::Instance_O") ; special case core::Instance_O
+                 ;; Check the stamp-value range and ensure that it matches what the scraper found
+                 (if (null contig)
+                     (format fout "#error \"The stamps of children of ~a do not form a contiguious range!!!\"~%" key)
                      (progn
-                       (if (eq low high)
-                           (format fout "      if (kindVal == ~a) return true;~%" (stamp-value low)
-                                   (format fout "      if ((~a <= kindVal) && (kindVal <= ~a)) return true;~%" (stamp-value low) (stamp-value high)))
-                           (format fout "      return (dynamic_cast<core::Instance_O*>(client)!=NULL);~%")))
-                     (if (eq low high)
-                         (format fout "      return (kindVal == ~a);~%" (stamp-value low))
-                         (format fout "      return ((~a <= kindVal) && (kindVal <= ~a));~%" (stamp-value low) (stamp-value high)))))
+                       (if (= stamp-value-low stamp-value-high)
+                           (format fout "    // IsA-stamp-range ~a val -> ~a~%" key stamp-value-low)
+                           (format fout "    // IsA-stamp-range ~a low high --> ~a ~a ~%" key stamp-value-low stamp-value-high))
+                       (if (string= key "core::Instance_O") ; special case core::Instance_O
+                           (progn
+                             (if (= stamp-value-low stamp-value-high)
+                                 (format fout "      if (kindVal == ~a) return true;~%" stamp-value-low)
+                                 (format fout "      if ((~a <= kindVal) && (kindVal <= ~a)) return true;~%" stamp-value-low stamp-value-high))
+                             (format fout "      return (dynamic_cast<core::Instance_O*>(client)!=NULL);~%"))
+                           (if (= stamp-value-low stamp-value-high)
+                               (format fout "      return (kindVal == ~a);~%" stamp-value-low)
+                               (format fout "      return ((~a <= kindVal) && (kindVal <= ~a));~%" stamp-value-low stamp-value-high))))))
                (format fout "  };~%")
                (format fout "};~%")))
            (analysis-stamps analysis)))
@@ -403,16 +437,18 @@
              (declare (core:lambda-name generate-typeq-code.lambda))
              (when (and (not (abstract-species-stamp-p stamp analysis))
                         (stamp-in-hierarchy stamp)
-                        (derived-from-cclass key "core::General_O" (analysis-project analysis)))
-               (multiple-value-bind (low high)
+                        (derived-from-cclass key "core::T_O" (analysis-project analysis)))
+               (multiple-value-bind (contig low high high-stamp)
                    (hierarchy-class-stamp-range key analysis)
-                 (if (string= key "core::Instance_O") ; special case core::Instance_O
-                     (if (eql low high)
-                         (format fout "      add_single_typeq_test_instance<~a>(theMap);~%" key)
-                         (format fout "      add_range_typeq_test_instance<~a,~a>(theMap);~%" key (stamp-key high)))
-                     (if (eql low high)
-                         (format fout "      add_single_typeq_test<~a>(theMap);~%" key)
-                         (format fout "      add_range_typeq_test<~a,~a>(theMap);~%" key (stamp-key high)))))))
+                 (if (null contig)
+                     (format fout "#error \"The stamp values of child classes of ~a do not form a contiguious range!!!\"~%" key)
+                     (if (string= key "core::Instance_O") ; special case core::Instance_O
+                         (if (= low high)
+                             (format fout "      ADD_SINGLE_TYPEQ_TEST_INSTANCE(~a,~a);~%" key low)
+                             (format fout "      ADD_RANGE_TYPEQ_TEST_INSTANCE(~a,~a,~a,~a);~%" key (stamp-key high-stamp) low high))
+                         (if (= low high)
+                             (format fout "      ADD_SINGLE_TYPEQ_TEST(~a,~a);~%" key low)
+                             (format fout "      ADD_RANGE_TYPEQ_TEST(~a,~a,~a,~a);~%" key (stamp-key high-stamp) low high)))))))
            (analysis-stamps analysis)))
 
 
@@ -2085,10 +2121,11 @@ so that they don't have to be constantly recalculated"
            (base-class-key (car base-classes)))
       (when (and base-class-key (not (string= base-class-key "_RootDummyClass")))
         (ensure-stamp-for-ancestors base-class-key analysis))
+      (format t "MAKE-STAMP ~a~%" class-key)
       (setf (gethash class-key (analysis-stamps analysis))
             (make-stamp :key class-key
-                       :species (manager-abstract-species (analysis-manager analysis))
-                       :cclass class)))))
+                        :species (manager-abstract-species (analysis-manager analysis))
+                        :cclass class)))))
   
 (defun ensure-stamp-for-alloc-and-parent-classes (alloc analysis)
   (let* ((manager (analysis-manager analysis))
@@ -2098,7 +2135,7 @@ so that they don't have to be constantly recalculated"
          (alloc-stamp (gethash class-key (project-classes project)))
          (base-classes (cclass-bases alloc-stamp))
          (base-class-key (car base-classes)))
-    (unless (string= base-class-key "_RootDummyClass")
+    (unless #+(or)base-class-key (string= base-class-key "_RootDummyClass")
       (ensure-stamp-for-ancestors base-class-key analysis))
     (cond
       ((and (not (containeralloc-p alloc))
@@ -2594,6 +2631,8 @@ so that they don't have to be constantly recalculated"
 
 
 
+(defun sort-order (names)
+  (sort names #'< :key #'car))
 
 (defun sort-stamps-by-value (analysis)
   (let (names)
@@ -2603,7 +2642,7 @@ so that they don't have to be constantly recalculated"
     (setf (analysis-sorted-stamps analysis)
           (mapcar #'(lambda (val-stamp)
                     (cdr val-stamp))
-                (sort names #'< :key #'car)))))
+                (sort-order names)))))
 
 
 
@@ -3133,7 +3172,7 @@ Recursively analyze x and return T if x contains fixable pointers."
     #+(or)(let ((hardwired-kinds (core:hardwired-kinds)))
             (mapc (lambda (kv) (format fout "STAMP_~a = ~a, ~%" (car kv) (cdr kv))) hardwired-kinds))
     (mapc (lambda (stamp)
-            (format fout "~A = ~A, // ~A~%" (get-stamp-name stamp) (stamp-value stamp) (stamp-value-source stamp))
+            (format fout "~A = ~A,~%" (get-stamp-name stamp) (stamp-value stamp))
             (when (and (eq (stamp-value-source stamp) :from-static-analyzer)
                        (null (cclass-template-specializer (stamp-cclass stamp)))
                        (not (inherits-from-multiple-classes (stamp-cclass stamp)))
@@ -3271,6 +3310,8 @@ Pointers to these objects are fixed in obj_scan or they must be roots."
     (code-for-namespace-names stream (merge-forward-names-by-namespace analysis))
     (format stream "#endif // GC_DECLARE_FORWARDS~%")
     (format stream "#if defined(GC_STAMP)~%")
+    (loop for problem in (analysis-stamp-value-problems analysis)
+          do (format stream "// ~a~%" problem))
     (generate-alloc-stamp stream analysis)
     (format stream "#endif // defined(GC_STAMP)~%")
     (format stream "#if defined(GC_DYNAMIC_CAST)~%")
@@ -3283,14 +3324,14 @@ Pointers to these objects are fixed in obj_scan or they must be roots."
     (generate-gckind-for-stamps stream analysis)
     (format stream "#endif // defined(GC_STAMP_SELECTORS)~%")
     (do-generator stream analysis
-                  :table-name "OBJ_SCAN"
-                  :function-declaration "GC_RESULT ~a(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit)"
-                  :function-prefix "obj_scan"
-                  :function-table-type "GC_RESULT (*OBJ_SCAN_table[])(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit)"
-                  :jump-table-index-function 'scanner-jump-table-index-for-stamp-name
-                  :generator (lambda (dest anal)
-                               (dolist (stamp (analysis-sorted-stamps anal))
-                                 (funcall (species-scan (stamp-species stamp)) dest stamp anal))))
+      :table-name "OBJ_SCAN"
+      :function-declaration "GC_RESULT ~a(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit)"
+      :function-prefix "obj_scan"
+      :function-table-type "GC_RESULT (*OBJ_SCAN_table[])(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit)"
+      :jump-table-index-function 'scanner-jump-table-index-for-stamp-name
+      :generator (lambda (dest anal)
+                   (dolist (stamp (analysis-sorted-stamps anal))
+                     (funcall (species-scan (stamp-species stamp)) dest stamp anal))))
     (do-generator stream analysis
                   :table-name "OBJ_FINALIZE"
                   :function-declaration "void ~a(mps_addr_t client)"
@@ -3307,12 +3348,14 @@ Pointers to these objects are fixed in obj_scan or they must be roots."
                   :generator (lambda (dest anal)
                                (dolist (stamp (analysis-sorted-stamps anal))
                                  (funcall (species-deallocator (stamp-species stamp)) dest stamp anal))))
-    (format stream "#if defined(GC_GLOBALS)~%")
-    (generate-code-for-global-non-symbol-variables stream analysis)
-    (format stream "#endif // defined(GC_GLOBALS)~%")
-    (format stream "#if defined(GC_GLOBAL_SYMBOLS)~%")
-    (generate-code-for-global-symbols stream analysis)
-    (format stream "#endif // defined(GC_GLOBAL_SYMBOLS)~%")
+    #+(or)(progn
+            (format stream "#if defined(GC_GLOBALS)~%")
+            (generate-code-for-global-non-symbol-variables stream analysis)
+            (format stream "#endif // defined(GC_GLOBALS)~%"))
+    #+(or)(progn
+            (format stream "#if defined(GC_GLOBAL_SYMBOLS)~%")
+            (generate-code-for-global-symbols stream analysis)
+            (format stream "#endif // defined(GC_GLOBAL_SYMBOLS)~%"))
     )
   (format t "Done generate-code~%"))
 

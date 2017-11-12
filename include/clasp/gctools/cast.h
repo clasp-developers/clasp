@@ -48,15 +48,15 @@ namespace clbind {
 #ifdef USE_BOEHM
 //----------------------------------------------------------------------
 #ifndef SCRAPING
-#define DECLARE_FORWARDS
-#include INIT_CLASSES_INC_H // REPLACED CLASP_GC_FILENAME // "main/clasp_gc.cc"
-#undef DECLARE_FORWARDS
+ #define DECLARE_FORWARDS
+  #include INIT_CLASSES_INC_H // REPLACED CLASP_GC_FILENAME // "main/clasp_gc.cc"
+ #undef DECLARE_FORWARDS
 #endif
 namespace cast {
 #ifndef SCRAPING
-#define GC_DYNAMIC_CAST
-#include INIT_CLASSES_INC_H // REPLACED CLASP_GC_FILENAME // "main/clasp_gc.cc"
-#undef GC_DYNAMIC_CAST
+ #define GC_DYNAMIC_CAST
+  #include INIT_CLASSES_INC_H // REPLACED CLASP_GC_FILENAME // "main/clasp_gc.cc"
+ #undef GC_DYNAMIC_CAST
 #endif
 };
 //----------------------------------------------------------------------
@@ -65,17 +65,17 @@ namespace cast {
 
 #ifdef USE_MPS
 //----------------------------------------------------------------------
-#if !defined(RUNNING_GC_BUILDER) && !defined(SCRAPING)
-#define GC_DECLARE_FORWARDS
-#include CLASP_GC_FILENAME
-#undef GC_DECLARE_FORWARDS
-#endif
+ #if !defined(RUNNING_GC_BUILDER) && !defined(SCRAPING)
+  #define GC_DECLARE_FORWARDS
+   #include CLASP_GC_FILENAME
+  #undef GC_DECLARE_FORWARDS
+ #endif
 namespace cast {
-#if !defined(RUNNING_GC_BUILDER) && !defined(SCRAPING)
-#define GC_DYNAMIC_CAST
-#include CLASP_GC_FILENAME
-#undef GC_DYNAMIC_CAST
-#endif
+ #if !defined(RUNNING_GC_BUILDER) && !defined(SCRAPING)
+  #define GC_DYNAMIC_CAST
+   #include CLASP_GC_FILENAME
+  #undef GC_DYNAMIC_CAST
+ #endif
 };
 #endif // #ifdef USE_MPS
 

@@ -164,17 +164,17 @@ namespace gctools {
 #define STAMP_DUMMY_FOR_CPOINTER 0
     typedef enum {
 #if !defined(SCRAPING)
-#if defined(USE_BOEHM) || defined(RUNNING_GC_BUILDER)
- #define GC_ENUM
+ #if defined(USE_BOEHM) || defined(RUNNING_GC_BUILDER)
+  #define GC_ENUM
         STAMP_null = 0,
-  #include INIT_CLASSES_INC_H // REPLACED CLASP_GC_FILENAME
- #undef GC_ENUM
-#endif
+   #include INIT_CLASSES_INC_H // REPLACED CLASP_GC_FILENAME
+  #undef GC_ENUM
+ #endif
 #endif        
 #ifndef RUNNING_GC_BUILDER
  #ifdef USE_MPS
   #define GC_STAMP
-  #include CLASP_GC_FILENAME
+   #include CLASP_GC_FILENAME
   #undef GC_STAMP
  #endif
 #endif
@@ -392,6 +392,7 @@ namespace gctools {
           this->fill_tail();
         };
 #endif
+    static GCStampEnum value_to_stamp(Fixnum value) { return (GCStampEnum)((value&stamp_mask) >> stamp_shift); };
   public:
       bool invalidP() const { return (this->header._value & tag_mask) == invalid_tag; };
       bool stampP() const { return (this->header._value & tag_mask) == stamp_tag; };
@@ -400,7 +401,7 @@ namespace gctools {
       bool padP() const { return (this->header._value & pad_mask) == pad_tag; };
       bool pad1P() const { return (this->header._value & pad_mask) == pad1_tag; };
   /*! No sanity checking done - this function assumes kindP == true */
-      GCStampEnum stamp() const { return (GCStampEnum)((this->header._value&stamp_mask) >> stamp_shift); };
+      GCStampEnum stamp() const { return (GCStampEnum)(value_to_stamp(this->header._value)); };
   /*! setKind wipes out the stamp */
 //      void setKind(GCStampEnum k) { this->header._value = (k << stamp_shift) | stamp_tag; };
   /*! No sanity checking done - this function assumes fwdP == true */

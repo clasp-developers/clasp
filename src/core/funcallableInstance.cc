@@ -555,7 +555,6 @@ T_sp FuncallableInstance_O::setFuncallableInstanceFunction(T_sp functionOrT) {
   SYMBOL_EXPORT_SC_(ClPkg, standardGenericFunction);
   SYMBOL_SC_(ClosPkg, standardOptimizedReaderFunction);
   SYMBOL_SC_(ClosPkg, standardOptimizedWriterFunction);
-  SYMBOL_SC_(ClosPkg, invalidated_dispatch_function );
   if (functionOrT == clos::_sym_invalidated_dispatch_function) {
     this->_isgf = CLASP_INVALIDATED_DISPATCH;
     // FIXME Jump straight to the invalidated-dispatch-function
