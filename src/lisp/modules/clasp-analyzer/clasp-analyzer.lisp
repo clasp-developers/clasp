@@ -3323,15 +3323,15 @@ Pointers to these objects are fixed in obj_scan or they must be roots."
     (format stream "#if defined(GC_STAMP_SELECTORS)~%")
     (generate-gckind-for-stamps stream analysis)
     (format stream "#endif // defined(GC_STAMP_SELECTORS)~%")
-    #+(or)(do-generator stream analysis
-            :table-name "OBJ_SCAN"
-            :function-declaration "GC_RESULT ~a(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit)"
-            :function-prefix "obj_scan"
-            :function-table-type "GC_RESULT (*OBJ_SCAN_table[])(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit)"
-            :jump-table-index-function 'scanner-jump-table-index-for-stamp-name
-            :generator (lambda (dest anal)
-                         (dolist (stamp (analysis-sorted-stamps anal))
-                           (funcall (species-scan (stamp-species stamp)) dest stamp anal))))
+    (do-generator stream analysis
+      :table-name "OBJ_SCAN"
+      :function-declaration "GC_RESULT ~a(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit)"
+      :function-prefix "obj_scan"
+      :function-table-type "GC_RESULT (*OBJ_SCAN_table[])(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit)"
+      :jump-table-index-function 'scanner-jump-table-index-for-stamp-name
+      :generator (lambda (dest anal)
+                   (dolist (stamp (analysis-sorted-stamps anal))
+                     (funcall (species-scan (stamp-species stamp)) dest stamp anal))))
     (do-generator stream analysis
                   :table-name "OBJ_FINALIZE"
                   :function-declaration "void ~a(mps_addr_t client)"

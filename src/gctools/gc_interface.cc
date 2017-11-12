@@ -347,11 +347,12 @@ mps_addr_t obj_skip(mps_addr_t client) {
   DEBUG_THROW_IF_INVALID_CLIENT(client);
   if (header->stampP()) {
     gctools::GCStampEnum stamp = header->stamp();
-    if ( stamp > STAMP_max ) stamp = GCStamp<core::Instance_O>::Stamp;
+    if (header->header.flags() == FLAGS_STAMP_IN_CALLBACK) {
+      printf("%s:%d Handle FLAGS_STAMP_IN_CALLBACK\n", __FILE__, __LINE__ );
+    }
     const Kind_layout& stamp_layout = global_kind_layout[stamp];
 #ifndef RUNNING_GC_BUILDER
     if ( stamp_layout.layout_op == class_container_op ) {
-      size = stamp_layout.size;
       if ( stamp_layout.container_layout ) {
         Container_layout& container_layout = *stamp_layout.container_layout;
         if (stamp_layout.bits_per_bitunit!=0) {
@@ -359,9 +360,12 @@ mps_addr_t obj_skip(mps_addr_t client) {
         }
         size_t capacity = *(size_t*)((const char*)client + container_layout.capacity_offset);
         size = container_layout.element_size*capacity + container_layout.data_offset;
+      } else {
+        size = stamp_layout.size;
       }
     } else {
-      size = ((core::General_O*)client)->templatedSizeof();
+      size = stamp_layout.size;
+        //size = ((core::General_O*)client)->templatedSizeof();
     }
         client = (mps_addr_t)((char*)client + AlignUp(size + sizeof(Header_s))
 #ifdef DEBUG_GUARD
@@ -412,7 +416,9 @@ GC_RESULT obj_scan(mps_ss_t ss, mps_addr_t client, mps_addr_t limit) {
       original_client = (mps_addr_t)client;
       if (header->stampP()) {
         stamp = header->stamp();
-        if ( stamp > STAMP_max ) stamp = GCStamp<core::Instance_O>::Stamp;
+        if (header->header.flags() == FLAGS_STAMP_IN_CALLBACK) {
+          printf("%s:%d Handle FLAGS_STAMP_IN_CALLBACK\n", __FILE__, __LINE__ );
+        }
         const Kind_layout& stamp_layout = global_kind_layout[stamp];
 #ifndef RUNNING_GC_BUILDER
         size = stamp_layout.size;
@@ -427,8 +433,7 @@ GC_RESULT obj_scan(mps_ss_t ss, mps_addr_t client, mps_addr_t limit) {
             POINTER_FIX(field);
             ++field_layout_cur;
           }
-        }
-        if ( stamp_layout.container_layout ) {
+        } else if ( stamp_layout.container_layout ) {
           Container_layout& container_layout = *stamp_layout.container_layout;
           size_t capacity = *(size_t*)((const char*)client + container_layout.capacity_offset);
           size = container_layout.element_size*capacity + container_layout.data_offset;
@@ -467,10 +472,10 @@ GC_RESULT obj_scan(mps_ss_t ss, mps_addr_t client, mps_addr_t limit) {
     TOP:
       continue;
     }
+    }
+    MPS_SCAN_END(GC_SCAN_STATE);
+    return MPS_RES_OK;
   }
-  MPS_SCAN_END(GC_SCAN_STATE);
-  return MPS_RES_OK;
-}
 };
 #endif // ifdef USE_MPS
 
