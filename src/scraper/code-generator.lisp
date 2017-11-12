@@ -450,10 +450,10 @@ Convert colons to underscores"
               (highest-stamp-class c)
             (if (eq (stamp% c) high-stamp)
                 (progn
-                  (format sout "    // val -> ~a~%" (stamp% c))
+                  (format sout "    // IsA-stamp-range ~a val -> ~a~%" (class-key% c) (stamp% c))
                   (format sout "    return (kindVal == ~a);~%" (stamp% c)))
                 (progn
-                  (format sout "    // low high -> ~a ~a~%" (stamp% c) high-stamp)
+                  (format sout "    // IsA-stamp-range ~a low high -> ~a ~a~%" (class-key% c) (stamp% c) high-stamp)
                   (format sout "    return ((~a <= kindVal) && (kindVal <= ~a));~%" (stamp% c) high-stamp))))
           (format sout "  };~%")
           (format sout "};~%"))
@@ -463,8 +463,8 @@ Convert colons to underscores"
           (multiple-value-bind (high-stamp high-class)
               (highest-stamp-class c)
             (if (eq (stamp% c) high-stamp)
-                (format sout "    add_single_typeq_test<~a>(theMap);  // stamp = ~a ~%" (class-key% c) (stamp% c))
-                (format sout "    add_range_typeq_test<~a,~a>(theMap); // stamp in ~a - ~a~%" (class-key% c) (class-key% high-class) (stamp% c) (stamp% high-class)))))
+                (format sout "    ADD_SINGLE_TYPEQ_TEST(~a,~a); ~%" (class-key% c) (stamp% c))
+                (format sout "    ADD_RANGE_TYPEQ_TEST(~a,~a,~a,~a);~%" (class-key% c) (class-key% high-class) (stamp% c) (stamp% high-class)))))
         (format sout "#endif // GC_TYPEQ~%"))
       (generate-code-for-init-class-kinds exposed-classes sout)
       (generate-code-for-init-classes-class-symbols exposed-classes sout)

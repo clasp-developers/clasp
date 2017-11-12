@@ -116,6 +116,16 @@ CL_DEFUN core::T_sp core__header_value(core::T_sp obj) {
 }
 
 
+CL_DOCSTRING("Return the header value for the object");
+CL_DEFUN core::T_sp core__header_value_to_stamp(core::T_sp value) {
+  if (value.fixnump()) {
+    Fixnum fvalue = value.unsafe_fixnum();
+    return core::make_fixnum(Header_s::value_to_stamp(fvalue));
+  }
+  TYPE_ERROR(value,cl::_sym_fixnum);
+}
+
+
 
 
 CL_DOCSTRING("Return the header kind for the object");

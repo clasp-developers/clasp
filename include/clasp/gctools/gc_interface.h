@@ -148,7 +148,7 @@ void initialize_clasp();
 void initialize_functions();
 void initialize_source_info();
 void initialize_classes_and_methods();
-core::T_sp generate_type_header_value_map();
+void initialize_typeq_map();
 
 
 extern std::map<std::string,size_t> _global_stamp_names;

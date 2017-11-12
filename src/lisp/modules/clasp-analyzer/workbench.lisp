@@ -13,6 +13,47 @@
 (in-package :clasp-analyzer)
 
 
+
+;;; ------------------------------------------------------------
+;;;
+;;; To load and analyze the project
+;;;
+(progn
+  (defparameter *compile-commands* (probe-file "~/aws/static-analyze-clasp/results/compile_commands.json"))
+  (defvar *db* (clasp-analyzer:setup-clasp-analyzer-compilation-tool-database
+                (pathname *compile-commands*)))
+
+  (time
+   (progn
+     (format t "Loading project~%")
+     (defparameter *p1* (load-project *db* "~/aws/static-analyze-clasp/results/project.dat"))
+     (format t "Done loading project~%"))))
+
+(progn
+  (defparameter *analysis* (analyze-project *p1*))
+  (generate-code *analysis* :output-file #P"/tmp/clasp_gc.cc")
+  (format t "Done analyze and generate-code for project~%")))
+
+(defparameter *analysis* (analyze-project *p1*))
+
+(analysis-stamp-roots *analysis*)
+("clang::ast_matchers::MatchFinder::MatchCallback"
+ "core::Lisp_O"
+ "clang::RecursiveASTVisitor<asttooling::AstVisitor_O>"
+ "gctools::GCContainer"
+ "clang::FrontendAction"
+ "clang::tooling::ToolAction"
+ "core::T_O"
+ "clbind::detail::class_map")
+
+(children-of-class-named  *analysis*)q
+
+(gethash "core::Array_O" (project-classes *project*))
+
+(analyze-only *db*)
+
+
+
 (defvar *compile-commands* "~/Development/clasp/build/mpsprep/compile_commands.json")
 (defvar *compile-commands* "~/Development/clasp/build/boehm/compile_commands.json")
 
@@ -39,30 +80,15 @@
   (generate-code *analysis* :output-file #P"/tmp/clasp_gc.cc")
   (format t "Done analyze and generate-code for project~%"))
 
+
+(defparameter *a* (gethash "core::Array_O" (project-classes *project*)))
+
+(analysis-stamps *analysis*)
+(stamp-value (hierarchy-end-value "core::Array_O" *analysis*))
+
+
 (analysis-enum-roots *analysis*)
 *analysis*
-(analyze-only *db*)
-
-;;; ------------------------------------------------------------
-;;;
-;;; To load and analyze the project
-;;;
-(defparameter *compile-commands* (probe-file "~/aws/static-analyze-clasp/results/compile_commands.json"))
-(setf *print-pretty* nil)
-(defvar *db* (clasp-analyzer:setup-clasp-analyzer-compilation-tool-database
-                (pathname *compile-commands*)))
-(time
- (progn
-   (format t "Loading project~%")
-   (defparameter *p1* (load-project *db* "~/aws/static-analyze-clasp/results/project.dat"))
-   (format t "Done loading project~%")))
-
-(progn
-  (defparameter *analysis* (analyze-project *p1*))
-  (generate-code *analysis* :output-file #P"/tmp/clasp_gc.cc")
-  (format t "Done analyze and generate-code for project~%"))
-
-
 (analyze-only *db*)
 
 

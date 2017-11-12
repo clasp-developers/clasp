@@ -355,7 +355,7 @@ mps_addr_t obj_skip(mps_addr_t client) {
       if ( stamp_layout.container_layout ) {
         Container_layout& container_layout = *stamp_layout.container_layout;
         if (stamp_layout.bits_per_bitunit!=0) {
-          printf("%s:%d A bitvector was encountered with stamp_layout.bits_per_bitunit = %" PRu "\n", __FILE__, __LINE__, stamp_layout.bits_per_bitunit );
+          printf("%s:%d A bitvector was encountered with stamp_layout.bits_per_bitunit = %" PRsize_t "\n", __FILE__, __LINE__, stamp_layout.bits_per_bitunit );
         }
         size_t capacity = *(size_t*)((const char*)client + container_layout.capacity_offset);
         size = container_layout.element_size*capacity + container_layout.data_offset;
@@ -724,14 +724,15 @@ void calculate_class_precedence_lists()
 //
 
 template <typename TSingle>
-void add_single_typeq_test(core::HashTable_sp theMap) {
+void add_single_typeq_test(const string& cname, core::HashTable_sp theMap) {
   Fixnum header_val = gctools::Header_s::Value::GenerateHeaderValue<TSingle>();
 //  printf("%s:%d Header value for type %s -> %lld    stamp: %u  flags: %zu\n", __FILE__, __LINE__, _rep_(TSingle::static_class_symbol).c_str(), header_val, gctools::GCStamp<TSingle>::Stamp, gctools::GCStamp<TSingle>::Flags);
   theMap->setf_gethash(TSingle::static_class_symbol,core::make_fixnum(gctools::Header_s::Value::GenerateHeaderValue<TSingle>()));
 }
 
 template <typename TRangeFirst,typename TRangeLast>
-void add_range_typeq_test(core::HashTable_sp theMap) {
+void add_range_typeq_test(const string& cname, core::HashTable_sp theMap) {
+  
   theMap->setf_gethash(TRangeFirst::static_class_symbol,
                        core::Cons_O::create(core::make_fixnum(gctools::Header_s::Value::GenerateHeaderValue<TRangeFirst>()),
                                             core::make_fixnum(gctools::Header_s::Value::GenerateHeaderValue<TRangeLast>())));
@@ -748,14 +749,43 @@ void add_range_typeq_test_instance(core::HashTable_sp theMap) {
                                             core::make_fixnum(gctools::Header_s::Value::GenerateHeaderValue<TRangeLast>())));
 }
   
-core::T_sp generate_type_header_value_map() {
-  core::HashTable_sp theMap = core::HashTableEqual_O::create_default();
+void initialize_typeq_map() {
+  core::HashTableEqual_sp classNameToLispName = core::HashTableEqual_O::create_default();
+  core::HashTableEq_sp theTypeqMap = core::HashTableEq_O::create_default();
+#define ADD_SINGLE_TYPEQ_TEST(type,stamp) { \
+    classNameToLispName->setf_gethash(core::SimpleBaseString_O::make(#type),type::static_class_symbol); \
+    theTypeqMap->setf_gethash(type::static_class_symbol,core::make_fixnum(gctools::Header_s::Value::GenerateHeaderValue<type>())); \
+  }
+#define ADD_RANGE_TYPEQ_TEST(type_low,type_high,stamp_low,stamp_high) { \
+    classNameToLispName->setf_gethash(core::SimpleBaseString_O::make(#type_low),type_low::static_class_symbol); \
+    theTypeqMap->setf_gethash(type_low::static_class_symbol, \
+                              core::Cons_O::create(core::make_fixnum(gctools::Header_s::Value::GenerateHeaderValue<type_low>()), \
+                                                   core::make_fixnum(gctools::Header_s::Value::GenerateHeaderValue<type_high>()))); \
+  }
+#define ADD_SINGLE_TYPEQ_TEST_INSTANCE(type,stamp) { \
+    classNameToLispName->setf_gethash(core::SimpleBaseString_O::make(#type),type::static_class_symbol); \
+    theTypeqMap->setf_gethash(type::static_class_symbol,core::make_fixnum(gctools::Header_s::Value::GenerateHeaderValue<type>())); \
+  }
+#define ADD_RANGE_TYPEQ_TEST_INSTANCE(type_low,type_high,stamp_low,stamp_high) { \
+    classNameToLispName->setf_gethash(core::SimpleBaseString_O::make(#type_low),type_low::static_class_symbol); \
+    theTypeqMap->setf_gethash(type_low::static_class_symbol, \
+                              core::Cons_O::create(core::make_fixnum(gctools::Header_s::Value::GenerateHeaderValue<type_low>()), \
+                                                   core::make_fixnum(gctools::Header_s::Value::GenerateHeaderValue<type_high>()))); \
+  }
 #ifndef SCRAPING
+ #ifdef USE_BOEHM
   #define GC_TYPEQ
     #include INIT_CLASSES_INC_H // REPLACED CLASP_GC_FILENAME
   #undef GC_TYPEQ
+ #endif
+ #if defined(USE_MPS) && !defined(RUN_GC_BUILDER)
+  #define GC_TYPEQ
+   #include CLASP_GC_FILENAME
+  #undef GC_TYPEQ
+ #endif
 #endif
-  return theMap;
+  core::_sym__PLUS_class_name_to_lisp_name_PLUS_->defparameter(classNameToLispName);
+  core::_sym__PLUS_type_header_value_map_PLUS_->defparameter(theTypeqMap);
 };
 
 // ----------------------------------------------------------------------
