@@ -370,9 +370,8 @@ namespace gctools {
     }
   public:
     Value header;
-    // The additional_data[0] array must immediately follow header otherwise
-    // MPS will lock up when DEBUG_GUARD is 
-    tagged_stamp_t additional_data[0]; // The 0th element intrudes into the client data
+    // The additional_data[0] must fall right after the header or pads might try to write into the wrong place
+    tagged_stamp_t additional_data[0]; // The 0th element intrudes into the client data unless DEBUG_GUARD is on
 #ifdef DEBUG_GUARD
     int tail_start;
     int tail_size;

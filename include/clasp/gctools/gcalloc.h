@@ -203,7 +203,8 @@ namespace gctools {
     mps_addr_t addr;
     typedef typename PTR_TYPE::Type T;
     typedef typename GCHeader<T>::HeaderType HeadT;
-    GCTOOLS_ASSERT(the_header.stamp()>=stamp_first_general);
+//    GCTOOLS_ASSERT(the_header.stamp()>=stamp_first_general);
+    GCTOOLS_ASSERT(the_header.stamp()!=STAMP_core__General_O);
     // BF("The kind value[%d] must be > %d - if the type being allocated is a templated type then it should have the same kind as its TemplateBase ... eg:\n"\
       // "template <typename T>\n"\
            // "class gctools::GCStamp<clbind::Wrapper<T, T *>> {\n"\
