@@ -449,7 +449,7 @@
 (defun array-rank (array)
   (etypecase array
     ((simple-array * (*)) 1)
-    (t (core::%array-rank array))))
+    (array (core::%array-rank array))))
 
 (declaim (inline array-dimension))
 (defun array-dimension (array axis-number)
