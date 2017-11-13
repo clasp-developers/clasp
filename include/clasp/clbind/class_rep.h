@@ -132,7 +132,7 @@ public:
     return *m_classes;
   }
 
- private:
+ public:
   // this is a pointer to the type_info structure for
   // this type
   // warning: this may be a problem when using dll:s, since

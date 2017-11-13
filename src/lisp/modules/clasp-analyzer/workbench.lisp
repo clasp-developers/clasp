@@ -36,6 +36,10 @@
 
 (defparameter *analysis* (analyze-project *p1*))
 
+
+(gethash (gethash "core::DerivableCxxObject_O" (analysis-stamps *analysis*)) (analysis-stamp-children *analysis*))
+
+(
 (analysis-stamp-roots *analysis*)
 ("clang::ast_matchers::MatchFinder::MatchCallback"
  "core::Lisp_O"

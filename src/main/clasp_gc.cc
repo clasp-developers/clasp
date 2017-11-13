@@ -385,6 +385,14 @@
 // Attempted to assign stamp to class clbind::Derivable<clang::ASTFrontendAction> due to inherit from clang::FrontendAction but it already has one due to inheritance from core::T_O
 // Attempted to assign stamp to class asttooling::DerivableMatchCallback due to inherit from clang::ast_matchers::MatchFinder::MatchCallback but it already has one due to inheritance from core::T_O
 // Attempted to assign stamp to class clbind::Derivable<clang::ast_matchers::MatchFinder::MatchCallback> due to inherit from clang::ast_matchers::MatchFinder::MatchCallback but it already has one due to inheritance from core::T_O
+// Attempted to assign stamp to class asttooling::DerivableASTFrontendAction due to inherit from core::T_O but it already has one due to inheritance from core::DerivableCxxObject_O
+// Attempted to assign stamp to class clbind::Derivable<clang::ASTFrontendAction> due to inherit from core::T_O but it already has one due to inheritance from core::DerivableCxxObject_O
+// Attempted to assign stamp to class asttooling::DerivableSyntaxOnlyAction due to inherit from core::T_O but it already has one due to inheritance from core::DerivableCxxObject_O
+// Attempted to assign stamp to class clbind::Derivable<clang::SyntaxOnlyAction> due to inherit from core::T_O but it already has one due to inheritance from core::DerivableCxxObject_O
+// Attempted to assign stamp to class asttooling::DerivableMatchCallback due to inherit from core::T_O but it already has one due to inheritance from core::DerivableCxxObject_O
+// Attempted to assign stamp to class clbind::Derivable<clang::ast_matchers::MatchFinder::MatchCallback> due to inherit from core::T_O but it already has one due to inheritance from core::DerivableCxxObject_O
+// Attempted to assign stamp to class asttooling::DerivableFrontendActionFactory due to inherit from core::T_O but it already has one due to inheritance from core::DerivableCxxObject_O
+// Attempted to assign stamp to class clbind::Derivable<clang::tooling::FrontendActionFactory> due to inherit from core::T_O but it already has one due to inheritance from core::DerivableCxxObject_O
 STAMP_null = 0, 
 STAMP_core__T_O = 1,
 STAMP_core__VaList_dummy_O = 2,
@@ -397,446 +405,438 @@ STAMP_core__PosixTimeDuration_O = 8,
 STAMP_clasp_ffi__ForeignTypeSpec_O = 9,
 STAMP_core__Instance_O = 10,
 STAMP_core__DerivableCxxObject_O = 11,
-STAMP_clbind__Derivable_clang__tooling__FrontendActionFactory_ = 12,
-STAMP_asttooling__DerivableFrontendActionFactory = 13,
-STAMP_clbind__Derivable_clang__ast_matchers__MatchFinder__MatchCallback_ = 14,
-STAMP_asttooling__DerivableMatchCallback = 15,
-STAMP_clbind__Derivable_clang__SyntaxOnlyAction_ = 16,
-STAMP_asttooling__DerivableSyntaxOnlyAction = 17,
-STAMP_clbind__Derivable_clang__ASTFrontendAction_ = 18,
-STAMP_asttooling__DerivableASTFrontendAction = 19,
-STAMP_clbind__ClassRep_O = 20,
-STAMP_core__SmallMap_O = 21,
-STAMP_core__WrappedPointer_O = 22,
-STAMP_core__Archive_O = 23,
-STAMP_core__SaveArchive_O = 24,
-STAMP_core__SexpSaveArchive_O = 25,
-STAMP_core__LoadArchive_O = 26,
-STAMP_core__SexpLoadArchive_O = 27,
-STAMP_core__SymbolToEnumConverter_O = 28,
-STAMP_core__Reader_O = 29,
-STAMP_core__WeakKeyMapping_O = 30,
-STAMP_llvmo__Attribute_O = 31,
-STAMP_core__ExternalObject_O = 32,
-STAMP_llvmo__Triple_O = 33,
-STAMP_llvmo__TargetOptions_O = 34,
-STAMP_llvmo__Pass_O = 35,
-STAMP_llvmo__ModulePass_O = 36,
-STAMP_llvmo__ImmutablePass_O = 37,
-STAMP_llvmo__TargetLibraryInfoWrapperPass_O = 38,
-STAMP_llvmo__FunctionPass_O = 39,
-STAMP_llvmo__ExecutionEngine_O = 40,
-STAMP_llvmo__LLVMContext_O = 41,
-STAMP_llvmo__PassManagerBuilder_O = 42,
-STAMP_llvmo__MCSubtargetInfo_O = 43,
-STAMP_llvmo__TargetSubtargetInfo_O = 44,
-STAMP_clasp_ffi__ForeignData_O = 45,
-STAMP_llvmo__Module_O = 46,
-STAMP_llvmo__Target_O = 47,
-STAMP_llvmo__Type_O = 48,
-STAMP_llvmo__IntegerType_O = 49,
-STAMP_llvmo__FunctionType_O = 50,
-STAMP_llvmo__CompositeType_O = 51,
-STAMP_llvmo__SequentialType_O = 52,
-STAMP_llvmo__PointerType_O = 53,
-STAMP_llvmo__ArrayType_O = 54,
-STAMP_llvmo__VectorType_O = 55,
-STAMP_llvmo__StructType_O = 56,
-STAMP_llvmo__IRBuilderBase_O = 57,
-STAMP_llvmo__IRBuilder_O = 58,
-STAMP_llvmo__APFloat_O = 59,
-STAMP_llvmo__APInt_O = 60,
-STAMP_llvmo__DIBuilder_O = 61,
-STAMP_llvmo__EngineBuilder_O = 62,
-STAMP_llvmo__PassManagerBase_O = 63,
-STAMP_llvmo__FunctionPassManager_O = 64,
-STAMP_llvmo__PassManager_O = 65,
-STAMP_llvmo__Linker_O = 66,
-STAMP_llvmo__Metadata_O = 67,
-STAMP_llvmo__ValueAsMetadata_O = 68,
-STAMP_llvmo__MDString_O = 69,
-STAMP_llvmo__MDNode_O = 70,
-STAMP_llvmo__DINode_O = 71,
-STAMP_llvmo__DIScope_O = 72,
-STAMP_llvmo__DILocalScope_O = 73,
-STAMP_llvmo__DISubprogram_O = 74,
-STAMP_llvmo__DILexicalBlockBase_O = 75,
-STAMP_llvmo__DILexicalBlock_O = 76,
-STAMP_llvmo__DIFile_O = 77,
-STAMP_llvmo__DICompileUnit_O = 78,
-STAMP_llvmo__DIType_O = 79,
-STAMP_llvmo__DICompositeType_O = 80,
-STAMP_llvmo__DIDerivedType_O = 81,
-STAMP_llvmo__DIBasicType_O = 82,
-STAMP_llvmo__DISubroutineType_O = 83,
-STAMP_llvmo__Value_O = 84,
-STAMP_llvmo__User_O = 85,
-STAMP_llvmo__Instruction_O = 86,
-STAMP_llvmo__UnaryInstruction_O = 87,
-STAMP_llvmo__VAArgInst_O = 88,
-STAMP_llvmo__LoadInst_O = 89,
-STAMP_llvmo__AllocaInst_O = 90,
-STAMP_llvmo__CallInst_O = 91,
-STAMP_llvmo__AtomicRMWInst_O = 92,
-STAMP_llvmo__TerminatorInst_O = 93,
-STAMP_llvmo__SwitchInst_O = 94,
-STAMP_llvmo__InvokeInst_O = 95,
-STAMP_llvmo__UnreachableInst_O = 96,
-STAMP_llvmo__ReturnInst_O = 97,
-STAMP_llvmo__IndirectBrInst_O = 98,
-STAMP_llvmo__ResumeInst_O = 99,
-STAMP_llvmo__BranchInst_O = 100,
-STAMP_llvmo__LandingPadInst_O = 101,
-STAMP_llvmo__AtomicCmpXchgInst_O = 102,
-STAMP_llvmo__FenceInst_O = 103,
-STAMP_llvmo__StoreInst_O = 104,
-STAMP_llvmo__PHINode_O = 105,
-STAMP_llvmo__Constant_O = 106,
-STAMP_llvmo__GlobalValue_O = 107,
-STAMP_llvmo__GlobalVariable_O = 108,
-STAMP_llvmo__Function_O = 109,
-STAMP_llvmo__ConstantFP_O = 110,
-STAMP_llvmo__BlockAddress_O = 111,
-STAMP_llvmo__ConstantExpr_O = 112,
-STAMP_llvmo__ConstantPointerNull_O = 113,
-STAMP_llvmo__ConstantDataSequential_O = 114,
-STAMP_llvmo__ConstantDataArray_O = 115,
-STAMP_llvmo__UndefValue_O = 116,
-STAMP_llvmo__ConstantArray_O = 117,
-STAMP_llvmo__ConstantStruct_O = 118,
-STAMP_llvmo__ConstantInt_O = 119,
-STAMP_llvmo__Argument_O = 120,
-STAMP_llvmo__BasicBlock_O = 121,
-STAMP_llvmo__TargetMachine_O = 122,
-STAMP_llvmo__LLVMTargetMachine_O = 123,
-STAMP_llvmo__NamedMDNode_O = 124,
-STAMP_core__SmallMultimap_O = 125,
-STAMP_core__LambdaListHandler_O = 126,
-STAMP_llvmo__AttributeSet_O = 127,
-STAMP_core__Environment_O = 128,
-STAMP_core__GlueEnvironment_O = 129,
-STAMP_core__LexicalEnvironment_O = 130,
-STAMP_core__RuntimeVisibleEnvironment_O = 131,
-STAMP_core__FunctionValueEnvironment_O = 132,
-STAMP_core__ValueEnvironment_O = 133,
-STAMP_core__TagbodyEnvironment_O = 134,
-STAMP_core__CompileTimeEnvironment_O = 135,
-STAMP_core__CatchEnvironment_O = 136,
-STAMP_core__BlockEnvironment_O = 137,
-STAMP_core__MacroletEnvironment_O = 138,
-STAMP_core__SymbolMacroletEnvironment_O = 139,
-STAMP_core__UnwindProtectEnvironment_O = 140,
-STAMP_core__FunctionContainerEnvironment_O = 141,
-STAMP_core__ActivationFrame_O = 142,
-STAMP_core__ValueFrame_O = 143,
-STAMP_core__FunctionFrame_O = 144,
-STAMP_core__TagbodyFrame_O = 145,
-STAMP_core__RandomState_O = 146,
-STAMP_core__Function_O = 147,
-STAMP_core__FuncallableInstance_O = 148,
-STAMP_core__Creator_O = 149,
-STAMP_core__StructureClassCreator_O = 150,
-STAMP_core__DerivableCxxClassCreator_O = 151,
-STAMP_core__FuncallableInstanceCreator_O = 152,
-STAMP_clbind__ConstructorCreator_O = 153,
-STAMP_core__ClassCreator_O = 154,
-STAMP_clbind__DummyCreator_O = 155,
-STAMP_core__InstanceCreator_O = 156,
-STAMP_core__StandardClassCreator_O = 157,
-STAMP_core__NamedFunction_O = 158,
-STAMP_core__Closure_O = 159,
-STAMP_core__CompiledDispatchFunction_O = 160,
-STAMP_core__CompiledFunction_O = 161,
-STAMP_core__FunctionClosure_O = 162,
-STAMP_core__ClosureWithFrame_O = 163,
-STAMP_core__CompiledClosure_O = 164,
-STAMP_core__InterpretedClosure_O = 165,
-STAMP_core__ClosureWithSlots_O = 166,
-STAMP_core__SingleDispatchMethodFunction_O = 167,
-STAMP_core__CxxMethodFunction_O = 168,
-STAMP_core__BuiltinClosure_O = 169,
-STAMP_core__TemplatedFunctionBase_O = 170,
-STAMP_core__TranslationFunctor_O = 171,
-STAMP_core__MacroClosure_O = 172,
-STAMP_core__SingleDispatchGenericFunctionClosure_O = 173,
-STAMP_core__SingleDispatchEffectiveMethodFunction_O = 174,
-STAMP_core__SingleDispatchCxxEffectiveMethodFunction_O = 175,
-STAMP_core__SpecialForm_O = 176,
-STAMP_core__SequenceStepper_O = 177,
-STAMP_core__VectorStepper_O = 178,
-STAMP_core__ConsStepper_O = 179,
-STAMP_core__WeakPointer_O = 180,
-STAMP_llvmo__DebugLoc_O = 181,
-STAMP_core__SNode_O = 182,
-STAMP_core__BranchSNode_O = 183,
-STAMP_core__LeafSNode_O = 184,
-STAMP_llvmo__ModuleHandle_O = 185,
-STAMP_core__Pointer_O = 186,
-STAMP_core__CxxObject_O = 187,
-STAMP_llvmo__DINodeArray_O = 188,
-STAMP_core__NativeVector_float_O = 189,
-STAMP_clcenv__Info_O = 190,
-STAMP_clcenv__OptimizeInfo_O = 191,
-STAMP_clcenv__BlockInfo_O = 192,
-STAMP_clcenv__FunctionInfo_O = 193,
-STAMP_clcenv__GlobalMacroInfo_O = 194,
-STAMP_clcenv__LocalMacroInfo_O = 195,
-STAMP_clcenv__LocalFunctionInfo_O = 196,
-STAMP_clcenv__SpecialOperatorInfo_O = 197,
-STAMP_clcenv__LambdaNameInfo_O = 198,
-STAMP_clcenv__GlobalFunctionInfo_O = 199,
-STAMP_clcenv__VariableInfo_O = 200,
-STAMP_clcenv__SpecialVariableInfo_O = 201,
-STAMP_clcenv__LexicalVariableInfo_O = 202,
-STAMP_clcenv__SymbolMacroInfo_O = 203,
-STAMP_clcenv__ConstantVariableInfo_O = 204,
-STAMP_mp__ConditionVariable_O = 205,
-STAMP_mp__Mutex_O = 206,
-STAMP_mp__RecursiveMutex_O = 207,
-STAMP_llvmo__DITypeRefArray_O = 208,
-STAMP_core__NativeVector_double_O = 209,
-STAMP_core__NativeVector_int_O = 210,
-STAMP_mp__SharedMutex_O = 211,
-STAMP_clcenv__Entry_O = 212,
-STAMP_clcenv__VariableType_O = 213,
-STAMP_clcenv__VariableIgnore_O = 214,
-STAMP_clcenv__Function_O = 215,
-STAMP_clcenv__SymbolMacro_O = 216,
-STAMP_clcenv__FunctionDynamicExtent_O = 217,
-STAMP_clcenv__Inline_O = 218,
-STAMP_clcenv__Closure_O = 219,
-STAMP_clcenv__Optimize_O = 220,
-STAMP_clcenv__LambdaName_O = 221,
-STAMP_clcenv__Tag_O = 222,
-STAMP_clcenv__Block_O = 223,
-STAMP_clcenv__FunctionType_O = 224,
-STAMP_clcenv__GlobalEnvironment_O = 225,
-STAMP_clcenv__VariableDynamicExtent_O = 226,
-STAMP_clcenv__LexicalVariable_O = 227,
-STAMP_clcenv__SpecialVariable_O = 228,
-STAMP_clcenv__Macro_O = 229,
-STAMP_clcenv__FunctionIgnore_O = 230,
-STAMP_mp__Process_O = 231,
-STAMP_core__SingleDispatchMethod_O = 232,
-STAMP_core__Iterator_O = 233,
-STAMP_core__RecursiveDirectoryIterator_O = 234,
-STAMP_core__DirectoryIterator_O = 235,
-STAMP_llvmo__InsertPoint_O = 236,
-STAMP_core__Array_O = 237,
-STAMP_core__AbstractSimpleVector_O = 238,
-STAMP_core__template_SimpleVector_core__SimpleVectorFloat_O_float_core__AbstractSimpleVector_O_ = 239,
-STAMP_core__SimpleVectorFloat_O = 240,
-STAMP_core__template_SimpleVector_core__SimpleVector_byte64_t_O_unsigned_long_core__AbstractSimpleVector_O_ = 241,
-STAMP_core__SimpleVector_byte64_t_O = 242,
-STAMP_core__template_SimpleVector_core__SimpleVector_int64_t_O_long_core__AbstractSimpleVector_O_ = 243,
-STAMP_core__SimpleVector_int64_t_O = 244,
-STAMP_core__SimpleString_O = 245,
-STAMP_core__template_SimpleVector_core__SimpleCharacterString_O_int_core__SimpleString_O_ = 246,
-STAMP_core__SimpleCharacterString_O = 247,
-STAMP_core__template_SimpleVector_core__SimpleBaseString_O_unsigned_char_core__SimpleString_O_ = 248,
-STAMP_core__SimpleBaseString_O = 249,
-STAMP_core__template_SimpleVector_core__SimpleVector_int16_t_O_short_core__AbstractSimpleVector_O_ = 250,
-STAMP_core__SimpleVector_int16_t_O = 251,
-STAMP_core__template_SimpleVector_core__SimpleVector_byte16_t_O_unsigned_short_core__AbstractSimpleVector_O_ = 252,
-STAMP_core__SimpleVector_byte16_t_O = 253,
-STAMP_core__template_SimpleVector_core__SimpleVector_fixnum_O_long_core__AbstractSimpleVector_O_ = 254,
-STAMP_core__SimpleVector_fixnum_O = 255,
-STAMP_core__template_SimpleVector_core__SimpleVector_int8_t_O_signed_char_core__AbstractSimpleVector_O_ = 256,
-STAMP_core__SimpleVector_int8_t_O = 257,
-STAMP_core__template_SimpleVector_core__SimpleVector_O_gctools__smart_ptr_core__T_O__core__AbstractSimpleVector_O_ = 258,
-STAMP_core__SimpleVector_O = 259,
-STAMP_core__template_SimpleVector_core__SimpleVector_byte8_t_O_unsigned_char_core__AbstractSimpleVector_O_ = 260,
-STAMP_core__SimpleVector_byte8_t_O = 261,
-STAMP_core__template_SimpleVector_core__SimpleVector_int32_t_O_int_core__AbstractSimpleVector_O_ = 262,
-STAMP_core__SimpleVector_int32_t_O = 263,
-STAMP_core__SimpleBitVector_O = 264,
-STAMP_core__template_SimpleVector_core__SimpleVector_byte32_t_O_unsigned_int_core__AbstractSimpleVector_O_ = 265,
-STAMP_core__SimpleVector_byte32_t_O = 266,
-STAMP_core__template_SimpleVector_core__SimpleVector_size_t_O_unsigned_long_core__AbstractSimpleVector_O_ = 267,
-STAMP_core__SimpleVector_size_t_O = 268,
-STAMP_core__template_SimpleVector_core__SimpleVectorDouble_O_double_core__AbstractSimpleVector_O_ = 269,
-STAMP_core__SimpleVectorDouble_O = 270,
-STAMP_core__MDArray_O = 271,
-STAMP_core__BitVectorNs_O = 272,
-STAMP_core__template_Array_core__MDArray_byte64_t_O_core__SimpleMDArray_byte64_t_O_core__SimpleVector_byte64_t_O_core__MDArray_O_ = 273,
-STAMP_core__MDArray_byte64_t_O = 274,
-STAMP_core__template_Array_core__MDArray_int16_t_O_core__SimpleMDArray_int16_t_O_core__SimpleVector_int16_t_O_core__MDArray_O_ = 275,
-STAMP_core__MDArray_int16_t_O = 276,
-STAMP_core__template_Array_core__MDArray_int8_t_O_core__SimpleMDArray_int8_t_O_core__SimpleVector_int8_t_O_core__MDArray_O_ = 277,
-STAMP_core__MDArray_int8_t_O = 278,
-STAMP_core__template_Array_core__MDArrayCharacter_O_core__SimpleMDArrayCharacter_O_core__SimpleCharacterString_O_core__MDArray_O_ = 279,
-STAMP_core__MDArrayCharacter_O = 280,
-STAMP_core__template_Array_core__MDArray_int32_t_O_core__SimpleMDArray_int32_t_O_core__SimpleVector_int32_t_O_core__MDArray_O_ = 281,
-STAMP_core__MDArray_int32_t_O = 282,
-STAMP_core__template_Array_core__MDArrayFloat_O_core__SimpleMDArrayFloat_O_core__SimpleVectorFloat_O_core__MDArray_O_ = 283,
-STAMP_core__MDArrayFloat_O = 284,
-STAMP_core__StrNs_O = 285,
-STAMP_core__template_Vector_core__StrWNs_O_core__SimpleCharacterString_O_core__StrNs_O_ = 286,
-STAMP_core__StrWNs_O = 287,
-STAMP_core__template_Vector_core__Str8Ns_O_core__SimpleBaseString_O_core__StrNs_O_ = 288,
-STAMP_core__Str8Ns_O = 289,
-STAMP_core__template_Array_core__MDArrayDouble_O_core__SimpleMDArrayDouble_O_core__SimpleVectorDouble_O_core__MDArray_O_ = 290,
-STAMP_core__MDArrayDouble_O = 291,
-STAMP_core__template_Array_core__MDArrayT_O_core__SimpleMDArrayT_O_core__SimpleVector_O_core__MDArray_O_ = 292,
-STAMP_core__MDArrayT_O = 293,
-STAMP_core__template_Array_core__MDArray_size_t_O_core__SimpleMDArray_size_t_O_core__SimpleVector_size_t_O_core__MDArray_O_ = 294,
-STAMP_core__MDArray_size_t_O = 295,
-STAMP_core__template_Array_core__MDArray_byte8_t_O_core__SimpleMDArray_byte8_t_O_core__SimpleVector_byte8_t_O_core__MDArray_O_ = 296,
-STAMP_core__MDArray_byte8_t_O = 297,
-STAMP_core__MDArrayBit_O = 298,
-STAMP_core__template_Array_core__MDArray_int64_t_O_core__SimpleMDArray_int64_t_O_core__SimpleVector_int64_t_O_core__MDArray_O_ = 299,
-STAMP_core__MDArray_int64_t_O = 300,
-STAMP_core__template_Array_core__MDArray_byte16_t_O_core__SimpleMDArray_byte16_t_O_core__SimpleVector_byte16_t_O_core__MDArray_O_ = 301,
-STAMP_core__MDArray_byte16_t_O = 302,
-STAMP_core__template_Array_core__MDArray_byte32_t_O_core__SimpleMDArray_byte32_t_O_core__SimpleVector_byte32_t_O_core__MDArray_O_ = 303,
-STAMP_core__MDArray_byte32_t_O = 304,
-STAMP_core__SimpleMDArray_O = 305,
-STAMP_core__template_SimpleArray_core__SimpleMDArray_int8_t_O_core__SimpleVector_int8_t_O_core__SimpleMDArray_O_ = 306,
-STAMP_core__SimpleMDArray_int8_t_O = 307,
-STAMP_core__template_SimpleArray_core__SimpleMDArrayCharacter_O_core__SimpleCharacterString_O_core__SimpleMDArray_O_ = 308,
-STAMP_core__SimpleMDArrayCharacter_O = 309,
-STAMP_core__template_SimpleArray_core__SimpleMDArray_fixnum_O_core__SimpleVector_fixnum_O_core__SimpleMDArray_O_ = 310,
-STAMP_core__SimpleMDArray_fixnum_O = 311,
-STAMP_core__template_SimpleArray_core__SimpleMDArray_byte32_t_O_core__SimpleVector_byte32_t_O_core__SimpleMDArray_O_ = 312,
-STAMP_core__SimpleMDArray_byte32_t_O = 313,
-STAMP_core__template_SimpleArray_core__SimpleMDArray_byte16_t_O_core__SimpleVector_byte16_t_O_core__SimpleMDArray_O_ = 314,
-STAMP_core__SimpleMDArray_byte16_t_O = 315,
-STAMP_core__template_SimpleArray_core__SimpleMDArrayT_O_core__SimpleVector_O_core__SimpleMDArray_O_ = 316,
-STAMP_core__SimpleMDArrayT_O = 317,
-STAMP_core__template_SimpleArray_core__SimpleMDArray_int32_t_O_core__SimpleVector_int32_t_O_core__SimpleMDArray_O_ = 318,
-STAMP_core__SimpleMDArray_int32_t_O = 319,
-STAMP_core__template_SimpleArray_core__SimpleMDArrayDouble_O_core__SimpleVectorDouble_O_core__SimpleMDArray_O_ = 320,
-STAMP_core__SimpleMDArrayDouble_O = 321,
-STAMP_core__template_SimpleArray_core__SimpleMDArrayBaseChar_O_core__SimpleBaseString_O_core__SimpleMDArray_O_ = 322,
-STAMP_core__SimpleMDArrayBaseChar_O = 323,
-STAMP_core__template_SimpleArray_core__SimpleMDArray_byte64_t_O_core__SimpleVector_byte64_t_O_core__SimpleMDArray_O_ = 324,
-STAMP_core__SimpleMDArray_byte64_t_O = 325,
-STAMP_core__SimpleMDArrayBit_O = 326,
-STAMP_core__template_SimpleArray_core__SimpleMDArray_int16_t_O_core__SimpleVector_int16_t_O_core__SimpleMDArray_O_ = 327,
-STAMP_core__SimpleMDArray_int16_t_O = 328,
-STAMP_core__template_SimpleArray_core__SimpleMDArray_byte8_t_O_core__SimpleVector_byte8_t_O_core__SimpleMDArray_O_ = 329,
-STAMP_core__SimpleMDArray_byte8_t_O = 330,
-STAMP_core__template_SimpleArray_core__SimpleMDArray_size_t_O_core__SimpleVector_size_t_O_core__SimpleMDArray_O_ = 331,
-STAMP_core__SimpleMDArray_size_t_O = 332,
-STAMP_core__template_SimpleArray_core__SimpleMDArray_int64_t_O_core__SimpleVector_int64_t_O_core__SimpleMDArray_O_ = 333,
-STAMP_core__SimpleMDArray_int64_t_O = 334,
-STAMP_core__template_SimpleArray_core__SimpleMDArrayFloat_O_core__SimpleVectorFloat_O_core__SimpleMDArray_O_ = 335,
-STAMP_core__SimpleMDArrayFloat_O = 336,
-STAMP_core__template_Array_core__MDArray_fixnum_O_core__SimpleMDArray_fixnum_O_core__SimpleVector_fixnum_O_core__MDArray_O_ = 337,
-STAMP_core__MDArray_fixnum_O = 338,
-STAMP_core__template_Array_core__MDArrayBaseChar_O_core__SimpleMDArrayBaseChar_O_core__SimpleBaseString_O_core__MDArray_O_ = 339,
-STAMP_core__MDArrayBaseChar_O = 340,
-STAMP_core__Symbol_O = 341,
-STAMP_core__Null_O = 342,
-STAMP_core__StandardObject_O = 343,
-STAMP_mp__BlockingConcurrentQueue_O = 344,
-STAMP_core__Path_O = 345,
-STAMP_core__Character_dummy_O = 346,
-STAMP_core__SourceManager_O = 347,
-STAMP_llvmo__DataLayout_O = 348,
-STAMP_core__Pathname_O = 349,
-STAMP_core__LogicalPathname_O = 350,
-STAMP_core__Cache_O = 351,
-STAMP_core__LoadTimeValues_O = 352,
-STAMP_core__SharpEqualWrapper_O = 353,
-STAMP_core__Number_O = 354,
-STAMP_core__Real_O = 355,
-STAMP_core__Rational_O = 356,
-STAMP_core__Ratio_O = 357,
-STAMP_core__Integer_O = 358,
-STAMP_core__Bignum_O = 359,
-STAMP_core__Fixnum_dummy_O = 360,
-STAMP_core__Float_O = 361,
-STAMP_core__DoubleFloat_O = 362,
-STAMP_core__SingleFloat_dummy_O = 363,
-STAMP_core__LongFloat_O = 364,
-STAMP_core__ShortFloat_O = 365,
-STAMP_core__Complex_O = 366,
-STAMP_core__CandoException_O = 367,
-STAMP_core__Stream_O = 368,
-STAMP_core__AnsiStream_O = 369,
-STAMP_core__TwoWayStream_O = 370,
-STAMP_core__BroadcastStream_O = 371,
-STAMP_core__SynonymStream_O = 372,
-STAMP_core__ConcatenatedStream_O = 373,
-STAMP_core__StringStream_O = 374,
-STAMP_core__StringOutputStream_O = 375,
-STAMP_core__StringInputStream_O = 376,
-STAMP_core__FileStream_O = 377,
-STAMP_core__IOFileStream_O = 378,
-STAMP_core__IOStreamStream_O = 379,
-STAMP_core__EchoStream_O = 380,
-STAMP_core__Package_O = 381,
-STAMP_llvmo__ClaspJIT_O = 382,
-STAMP_core__FileStatus_O = 383,
-STAMP_core__InvocationHistoryFrameIterator_O = 384,
-STAMP_core__PosixTime_O = 385,
-STAMP_core__HashTable_O = 386,
-STAMP_core__HashTableEqual_O = 387,
-STAMP_core__HashTableEqualp_O = 388,
-STAMP_core__HashTableEq_O = 389,
-STAMP_core__HashTableEql_O = 390,
-STAMP_core__Exposer_O = 391,
-STAMP_core__CoreExposer_O = 392,
-STAMP_asttooling__AsttoolingExposer_O = 393,
-STAMP_core__SourcePosInfo_O = 394,
-STAMP_core__IntArray_O = 395,
-STAMP_core__SourceFileInfo_O = 396,
-STAMP_core__DirectoryEntry_O = 397,
-STAMP_core__LightUserData_O = 398,
-STAMP_core__UserData_O = 399,
-STAMP_core__Record_O = 400,
-STAMP_clbind__ClassRegistry_O = 401,
-STAMP_mp__ConcurrentQueue_O = 402,
-STAMP_core__Cons_O = 403,
-STAMP_clang__ast_matchers__MatchFinder__MatchCallback = 404,
-STAMP_core__Lisp_O = 405,
-STAMP_clang__RecursiveASTVisitor_asttooling__AstVisitor_O_ = 406,
-STAMP_asttooling__AstVisitor_O = 407,
-STAMP_gctools__GCContainer = 408,
-STAMP_gctools__GCVector_moveable_core__KeywordArgument_ = 409,
-STAMP_gctools__GCArray_moveable_unsigned_int_ = 410,
-STAMP_gctools__GCVector_moveable_core__CacheRecord_ = 411,
-STAMP_gctools__GCVector_moveable_core__RequiredArgument_ = 412,
-STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__Cons_O__ = 413,
-STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__SequenceStepper_O__ = 414,
-STAMP_gctools__GCVector_moveable_double_ = 415,
-STAMP_gctools__GCVector_moveable_core__SymbolStorage_ = 416,
-STAMP_gctools__GCArray_moveable_short_ = 417,
-STAMP_gctools__GCVector_moveable_core__DynamicBinding_ = 418,
-STAMP_gctools__GCVector_moveable_gctools__smart_ptr_clbind__ClassRep_O__ = 419,
-STAMP_gctools__GCArray_moveable_unsigned_long_ = 420,
-STAMP_gctools__GCBitUnitArray_moveable_1_unsigned_int_int_ = 421,
-STAMP_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__T_O___ = 422,
-STAMP_gctools__GCArray_moveable_signed_char_ = 423,
-STAMP_gctools__GCVector_moveable_core__ExceptionEntry_ = 424,
-STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__List_V__ = 425,
-STAMP_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__T_O__gctools__smart_ptr_core__T_O___ = 426,
-STAMP_gctools__GCArray_moveable_int_ = 427,
-STAMP_gctools__GCArray_moveable_unsigned_char_ = 428,
-STAMP_gctools__GCArray_moveable_gctools__smart_ptr_core__T_O__ = 429,
-STAMP_gctools__GCVector_moveable_core__AuxArgument_ = 430,
-STAMP_gctools__GCArray_moveable_long_ = 431,
-STAMP_gctools__GCVector_moveable_int_ = 432,
-STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__Symbol_O__ = 433,
-STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__T_O__ = 434,
-STAMP_gctools__GCVector_moveable_core__SymbolClassPair_ = 435,
-STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__SingleDispatchMethod_O__ = 436,
-STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__Package_O__ = 437,
-STAMP_gctools__GCArray_moveable_float_ = 438,
-STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__SourceFileInfo_O__ = 439,
-STAMP_gctools__GCArray_moveable_double_ = 440,
-STAMP_gctools__GCVector_moveable_core__T_O___ = 441,
-STAMP_gctools__GCVector_moveable_core__OptionalArgument_ = 442,
-STAMP_gctools__GCArray_moveable_unsigned_short_ = 443,
-STAMP_gctools__GCVector_moveable_float_ = 444,
-STAMP_clang__FrontendAction = 445,
-STAMP_clang__ASTFrontendAction = 446,
-STAMP_clang__SyntaxOnlyAction = 447,
-STAMP_clang__tooling__ToolAction = 448,
-STAMP_clang__tooling__FrontendActionFactory = 449,
-STAMP_clbind__detail__class_map = 450,
-  STAMP_max = 450,
+STAMP_clbind__ClassRep_O = 12,
+STAMP_core__SmallMap_O = 13,
+STAMP_core__WrappedPointer_O = 14,
+STAMP_core__Archive_O = 15,
+STAMP_core__SaveArchive_O = 16,
+STAMP_core__SexpSaveArchive_O = 17,
+STAMP_core__LoadArchive_O = 18,
+STAMP_core__SexpLoadArchive_O = 19,
+STAMP_core__SymbolToEnumConverter_O = 20,
+STAMP_core__Reader_O = 21,
+STAMP_core__WeakKeyMapping_O = 22,
+STAMP_llvmo__Attribute_O = 23,
+STAMP_core__ExternalObject_O = 24,
+STAMP_llvmo__Triple_O = 25,
+STAMP_llvmo__TargetOptions_O = 26,
+STAMP_llvmo__Pass_O = 27,
+STAMP_llvmo__ModulePass_O = 28,
+STAMP_llvmo__ImmutablePass_O = 29,
+STAMP_llvmo__TargetLibraryInfoWrapperPass_O = 30,
+STAMP_llvmo__FunctionPass_O = 31,
+STAMP_llvmo__ExecutionEngine_O = 32,
+STAMP_llvmo__LLVMContext_O = 33,
+STAMP_llvmo__PassManagerBuilder_O = 34,
+STAMP_llvmo__MCSubtargetInfo_O = 35,
+STAMP_llvmo__TargetSubtargetInfo_O = 36,
+STAMP_clasp_ffi__ForeignData_O = 37,
+STAMP_llvmo__Module_O = 38,
+STAMP_llvmo__Target_O = 39,
+STAMP_llvmo__Type_O = 40,
+STAMP_llvmo__IntegerType_O = 41,
+STAMP_llvmo__FunctionType_O = 42,
+STAMP_llvmo__CompositeType_O = 43,
+STAMP_llvmo__SequentialType_O = 44,
+STAMP_llvmo__PointerType_O = 45,
+STAMP_llvmo__ArrayType_O = 46,
+STAMP_llvmo__VectorType_O = 47,
+STAMP_llvmo__StructType_O = 48,
+STAMP_llvmo__IRBuilderBase_O = 49,
+STAMP_llvmo__IRBuilder_O = 50,
+STAMP_llvmo__APFloat_O = 51,
+STAMP_llvmo__APInt_O = 52,
+STAMP_llvmo__DIBuilder_O = 53,
+STAMP_llvmo__EngineBuilder_O = 54,
+STAMP_llvmo__PassManagerBase_O = 55,
+STAMP_llvmo__FunctionPassManager_O = 56,
+STAMP_llvmo__PassManager_O = 57,
+STAMP_llvmo__Linker_O = 58,
+STAMP_llvmo__Metadata_O = 59,
+STAMP_llvmo__ValueAsMetadata_O = 60,
+STAMP_llvmo__MDString_O = 61,
+STAMP_llvmo__MDNode_O = 62,
+STAMP_llvmo__DINode_O = 63,
+STAMP_llvmo__DIScope_O = 64,
+STAMP_llvmo__DILocalScope_O = 65,
+STAMP_llvmo__DISubprogram_O = 66,
+STAMP_llvmo__DILexicalBlockBase_O = 67,
+STAMP_llvmo__DILexicalBlock_O = 68,
+STAMP_llvmo__DIFile_O = 69,
+STAMP_llvmo__DICompileUnit_O = 70,
+STAMP_llvmo__DIType_O = 71,
+STAMP_llvmo__DICompositeType_O = 72,
+STAMP_llvmo__DIDerivedType_O = 73,
+STAMP_llvmo__DIBasicType_O = 74,
+STAMP_llvmo__DISubroutineType_O = 75,
+STAMP_llvmo__Value_O = 76,
+STAMP_llvmo__User_O = 77,
+STAMP_llvmo__Instruction_O = 78,
+STAMP_llvmo__UnaryInstruction_O = 79,
+STAMP_llvmo__VAArgInst_O = 80,
+STAMP_llvmo__LoadInst_O = 81,
+STAMP_llvmo__AllocaInst_O = 82,
+STAMP_llvmo__CallInst_O = 83,
+STAMP_llvmo__AtomicRMWInst_O = 84,
+STAMP_llvmo__TerminatorInst_O = 85,
+STAMP_llvmo__SwitchInst_O = 86,
+STAMP_llvmo__InvokeInst_O = 87,
+STAMP_llvmo__UnreachableInst_O = 88,
+STAMP_llvmo__ReturnInst_O = 89,
+STAMP_llvmo__IndirectBrInst_O = 90,
+STAMP_llvmo__ResumeInst_O = 91,
+STAMP_llvmo__BranchInst_O = 92,
+STAMP_llvmo__LandingPadInst_O = 93,
+STAMP_llvmo__AtomicCmpXchgInst_O = 94,
+STAMP_llvmo__FenceInst_O = 95,
+STAMP_llvmo__StoreInst_O = 96,
+STAMP_llvmo__PHINode_O = 97,
+STAMP_llvmo__Constant_O = 98,
+STAMP_llvmo__GlobalValue_O = 99,
+STAMP_llvmo__GlobalVariable_O = 100,
+STAMP_llvmo__Function_O = 101,
+STAMP_llvmo__ConstantFP_O = 102,
+STAMP_llvmo__BlockAddress_O = 103,
+STAMP_llvmo__ConstantExpr_O = 104,
+STAMP_llvmo__ConstantPointerNull_O = 105,
+STAMP_llvmo__ConstantDataSequential_O = 106,
+STAMP_llvmo__ConstantDataArray_O = 107,
+STAMP_llvmo__UndefValue_O = 108,
+STAMP_llvmo__ConstantArray_O = 109,
+STAMP_llvmo__ConstantStruct_O = 110,
+STAMP_llvmo__ConstantInt_O = 111,
+STAMP_llvmo__Argument_O = 112,
+STAMP_llvmo__BasicBlock_O = 113,
+STAMP_llvmo__TargetMachine_O = 114,
+STAMP_llvmo__LLVMTargetMachine_O = 115,
+STAMP_llvmo__NamedMDNode_O = 116,
+STAMP_core__SmallMultimap_O = 117,
+STAMP_core__LambdaListHandler_O = 118,
+STAMP_llvmo__AttributeSet_O = 119,
+STAMP_core__Environment_O = 120,
+STAMP_core__GlueEnvironment_O = 121,
+STAMP_core__LexicalEnvironment_O = 122,
+STAMP_core__RuntimeVisibleEnvironment_O = 123,
+STAMP_core__FunctionValueEnvironment_O = 124,
+STAMP_core__ValueEnvironment_O = 125,
+STAMP_core__TagbodyEnvironment_O = 126,
+STAMP_core__CompileTimeEnvironment_O = 127,
+STAMP_core__CatchEnvironment_O = 128,
+STAMP_core__BlockEnvironment_O = 129,
+STAMP_core__MacroletEnvironment_O = 130,
+STAMP_core__SymbolMacroletEnvironment_O = 131,
+STAMP_core__UnwindProtectEnvironment_O = 132,
+STAMP_core__FunctionContainerEnvironment_O = 133,
+STAMP_core__ActivationFrame_O = 134,
+STAMP_core__ValueFrame_O = 135,
+STAMP_core__FunctionFrame_O = 136,
+STAMP_core__TagbodyFrame_O = 137,
+STAMP_core__RandomState_O = 138,
+STAMP_core__Function_O = 139,
+STAMP_core__FuncallableInstance_O = 140,
+STAMP_core__Creator_O = 141,
+STAMP_core__StructureClassCreator_O = 142,
+STAMP_core__DerivableCxxClassCreator_O = 143,
+STAMP_core__FuncallableInstanceCreator_O = 144,
+STAMP_clbind__ConstructorCreator_O = 145,
+STAMP_core__ClassCreator_O = 146,
+STAMP_clbind__DummyCreator_O = 147,
+STAMP_core__InstanceCreator_O = 148,
+STAMP_core__StandardClassCreator_O = 149,
+STAMP_core__NamedFunction_O = 150,
+STAMP_core__Closure_O = 151,
+STAMP_core__CompiledDispatchFunction_O = 152,
+STAMP_core__CompiledFunction_O = 153,
+STAMP_core__FunctionClosure_O = 154,
+STAMP_core__ClosureWithFrame_O = 155,
+STAMP_core__CompiledClosure_O = 156,
+STAMP_core__InterpretedClosure_O = 157,
+STAMP_core__ClosureWithSlots_O = 158,
+STAMP_core__SingleDispatchMethodFunction_O = 159,
+STAMP_core__CxxMethodFunction_O = 160,
+STAMP_core__BuiltinClosure_O = 161,
+STAMP_core__TemplatedFunctionBase_O = 162,
+STAMP_core__TranslationFunctor_O = 163,
+STAMP_core__MacroClosure_O = 164,
+STAMP_core__SingleDispatchGenericFunctionClosure_O = 165,
+STAMP_core__SingleDispatchEffectiveMethodFunction_O = 166,
+STAMP_core__SingleDispatchCxxEffectiveMethodFunction_O = 167,
+STAMP_core__SpecialForm_O = 168,
+STAMP_core__SequenceStepper_O = 169,
+STAMP_core__VectorStepper_O = 170,
+STAMP_core__ConsStepper_O = 171,
+STAMP_core__WeakPointer_O = 172,
+STAMP_llvmo__DebugLoc_O = 173,
+STAMP_core__SNode_O = 174,
+STAMP_core__BranchSNode_O = 175,
+STAMP_core__LeafSNode_O = 176,
+STAMP_llvmo__ModuleHandle_O = 177,
+STAMP_core__Pointer_O = 178,
+STAMP_core__CxxObject_O = 179,
+STAMP_llvmo__DINodeArray_O = 180,
+STAMP_core__NativeVector_float_O = 181,
+STAMP_clcenv__Info_O = 182,
+STAMP_clcenv__OptimizeInfo_O = 183,
+STAMP_clcenv__BlockInfo_O = 184,
+STAMP_clcenv__FunctionInfo_O = 185,
+STAMP_clcenv__GlobalMacroInfo_O = 186,
+STAMP_clcenv__LocalMacroInfo_O = 187,
+STAMP_clcenv__LocalFunctionInfo_O = 188,
+STAMP_clcenv__SpecialOperatorInfo_O = 189,
+STAMP_clcenv__LambdaNameInfo_O = 190,
+STAMP_clcenv__GlobalFunctionInfo_O = 191,
+STAMP_clcenv__VariableInfo_O = 192,
+STAMP_clcenv__SpecialVariableInfo_O = 193,
+STAMP_clcenv__LexicalVariableInfo_O = 194,
+STAMP_clcenv__SymbolMacroInfo_O = 195,
+STAMP_clcenv__ConstantVariableInfo_O = 196,
+STAMP_mp__ConditionVariable_O = 197,
+STAMP_mp__Mutex_O = 198,
+STAMP_mp__RecursiveMutex_O = 199,
+STAMP_llvmo__DITypeRefArray_O = 200,
+STAMP_core__NativeVector_double_O = 201,
+STAMP_core__NativeVector_int_O = 202,
+STAMP_mp__SharedMutex_O = 203,
+STAMP_clcenv__Entry_O = 204,
+STAMP_clcenv__VariableType_O = 205,
+STAMP_clcenv__VariableIgnore_O = 206,
+STAMP_clcenv__Function_O = 207,
+STAMP_clcenv__SymbolMacro_O = 208,
+STAMP_clcenv__FunctionDynamicExtent_O = 209,
+STAMP_clcenv__Inline_O = 210,
+STAMP_clcenv__Closure_O = 211,
+STAMP_clcenv__Optimize_O = 212,
+STAMP_clcenv__LambdaName_O = 213,
+STAMP_clcenv__Tag_O = 214,
+STAMP_clcenv__Block_O = 215,
+STAMP_clcenv__FunctionType_O = 216,
+STAMP_clcenv__GlobalEnvironment_O = 217,
+STAMP_clcenv__VariableDynamicExtent_O = 218,
+STAMP_clcenv__LexicalVariable_O = 219,
+STAMP_clcenv__SpecialVariable_O = 220,
+STAMP_clcenv__Macro_O = 221,
+STAMP_clcenv__FunctionIgnore_O = 222,
+STAMP_mp__Process_O = 223,
+STAMP_core__SingleDispatchMethod_O = 224,
+STAMP_core__Iterator_O = 225,
+STAMP_core__RecursiveDirectoryIterator_O = 226,
+STAMP_core__DirectoryIterator_O = 227,
+STAMP_llvmo__InsertPoint_O = 228,
+STAMP_core__Array_O = 229,
+STAMP_core__AbstractSimpleVector_O = 230,
+STAMP_core__template_SimpleVector_core__SimpleVectorFloat_O_float_core__AbstractSimpleVector_O_ = 231,
+STAMP_core__SimpleVectorFloat_O = 232,
+STAMP_core__template_SimpleVector_core__SimpleVector_byte64_t_O_unsigned_long_core__AbstractSimpleVector_O_ = 233,
+STAMP_core__SimpleVector_byte64_t_O = 234,
+STAMP_core__template_SimpleVector_core__SimpleVector_int64_t_O_long_core__AbstractSimpleVector_O_ = 235,
+STAMP_core__SimpleVector_int64_t_O = 236,
+STAMP_core__SimpleString_O = 237,
+STAMP_core__template_SimpleVector_core__SimpleCharacterString_O_int_core__SimpleString_O_ = 238,
+STAMP_core__SimpleCharacterString_O = 239,
+STAMP_core__template_SimpleVector_core__SimpleBaseString_O_unsigned_char_core__SimpleString_O_ = 240,
+STAMP_core__SimpleBaseString_O = 241,
+STAMP_core__template_SimpleVector_core__SimpleVector_int16_t_O_short_core__AbstractSimpleVector_O_ = 242,
+STAMP_core__SimpleVector_int16_t_O = 243,
+STAMP_core__template_SimpleVector_core__SimpleVector_byte16_t_O_unsigned_short_core__AbstractSimpleVector_O_ = 244,
+STAMP_core__SimpleVector_byte16_t_O = 245,
+STAMP_core__template_SimpleVector_core__SimpleVector_fixnum_O_long_core__AbstractSimpleVector_O_ = 246,
+STAMP_core__SimpleVector_fixnum_O = 247,
+STAMP_core__template_SimpleVector_core__SimpleVector_int8_t_O_signed_char_core__AbstractSimpleVector_O_ = 248,
+STAMP_core__SimpleVector_int8_t_O = 249,
+STAMP_core__template_SimpleVector_core__SimpleVector_O_gctools__smart_ptr_core__T_O__core__AbstractSimpleVector_O_ = 250,
+STAMP_core__SimpleVector_O = 251,
+STAMP_core__template_SimpleVector_core__SimpleVector_byte8_t_O_unsigned_char_core__AbstractSimpleVector_O_ = 252,
+STAMP_core__SimpleVector_byte8_t_O = 253,
+STAMP_core__template_SimpleVector_core__SimpleVector_int32_t_O_int_core__AbstractSimpleVector_O_ = 254,
+STAMP_core__SimpleVector_int32_t_O = 255,
+STAMP_core__SimpleBitVector_O = 256,
+STAMP_core__template_SimpleVector_core__SimpleVector_byte32_t_O_unsigned_int_core__AbstractSimpleVector_O_ = 257,
+STAMP_core__SimpleVector_byte32_t_O = 258,
+STAMP_core__template_SimpleVector_core__SimpleVector_size_t_O_unsigned_long_core__AbstractSimpleVector_O_ = 259,
+STAMP_core__SimpleVector_size_t_O = 260,
+STAMP_core__template_SimpleVector_core__SimpleVectorDouble_O_double_core__AbstractSimpleVector_O_ = 261,
+STAMP_core__SimpleVectorDouble_O = 262,
+STAMP_core__MDArray_O = 263,
+STAMP_core__BitVectorNs_O = 264,
+STAMP_core__template_Array_core__MDArray_byte64_t_O_core__SimpleMDArray_byte64_t_O_core__SimpleVector_byte64_t_O_core__MDArray_O_ = 265,
+STAMP_core__MDArray_byte64_t_O = 266,
+STAMP_core__template_Array_core__MDArray_int16_t_O_core__SimpleMDArray_int16_t_O_core__SimpleVector_int16_t_O_core__MDArray_O_ = 267,
+STAMP_core__MDArray_int16_t_O = 268,
+STAMP_core__template_Array_core__MDArray_int8_t_O_core__SimpleMDArray_int8_t_O_core__SimpleVector_int8_t_O_core__MDArray_O_ = 269,
+STAMP_core__MDArray_int8_t_O = 270,
+STAMP_core__template_Array_core__MDArrayCharacter_O_core__SimpleMDArrayCharacter_O_core__SimpleCharacterString_O_core__MDArray_O_ = 271,
+STAMP_core__MDArrayCharacter_O = 272,
+STAMP_core__template_Array_core__MDArray_int32_t_O_core__SimpleMDArray_int32_t_O_core__SimpleVector_int32_t_O_core__MDArray_O_ = 273,
+STAMP_core__MDArray_int32_t_O = 274,
+STAMP_core__template_Array_core__MDArrayFloat_O_core__SimpleMDArrayFloat_O_core__SimpleVectorFloat_O_core__MDArray_O_ = 275,
+STAMP_core__MDArrayFloat_O = 276,
+STAMP_core__StrNs_O = 277,
+STAMP_core__template_Vector_core__StrWNs_O_core__SimpleCharacterString_O_core__StrNs_O_ = 278,
+STAMP_core__StrWNs_O = 279,
+STAMP_core__template_Vector_core__Str8Ns_O_core__SimpleBaseString_O_core__StrNs_O_ = 280,
+STAMP_core__Str8Ns_O = 281,
+STAMP_core__template_Array_core__MDArrayDouble_O_core__SimpleMDArrayDouble_O_core__SimpleVectorDouble_O_core__MDArray_O_ = 282,
+STAMP_core__MDArrayDouble_O = 283,
+STAMP_core__template_Array_core__MDArrayT_O_core__SimpleMDArrayT_O_core__SimpleVector_O_core__MDArray_O_ = 284,
+STAMP_core__MDArrayT_O = 285,
+STAMP_core__template_Array_core__MDArray_size_t_O_core__SimpleMDArray_size_t_O_core__SimpleVector_size_t_O_core__MDArray_O_ = 286,
+STAMP_core__MDArray_size_t_O = 287,
+STAMP_core__template_Array_core__MDArray_byte8_t_O_core__SimpleMDArray_byte8_t_O_core__SimpleVector_byte8_t_O_core__MDArray_O_ = 288,
+STAMP_core__MDArray_byte8_t_O = 289,
+STAMP_core__MDArrayBit_O = 290,
+STAMP_core__template_Array_core__MDArray_int64_t_O_core__SimpleMDArray_int64_t_O_core__SimpleVector_int64_t_O_core__MDArray_O_ = 291,
+STAMP_core__MDArray_int64_t_O = 292,
+STAMP_core__template_Array_core__MDArray_byte16_t_O_core__SimpleMDArray_byte16_t_O_core__SimpleVector_byte16_t_O_core__MDArray_O_ = 293,
+STAMP_core__MDArray_byte16_t_O = 294,
+STAMP_core__template_Array_core__MDArray_byte32_t_O_core__SimpleMDArray_byte32_t_O_core__SimpleVector_byte32_t_O_core__MDArray_O_ = 295,
+STAMP_core__MDArray_byte32_t_O = 296,
+STAMP_core__SimpleMDArray_O = 297,
+STAMP_core__template_SimpleArray_core__SimpleMDArray_int8_t_O_core__SimpleVector_int8_t_O_core__SimpleMDArray_O_ = 298,
+STAMP_core__SimpleMDArray_int8_t_O = 299,
+STAMP_core__template_SimpleArray_core__SimpleMDArrayCharacter_O_core__SimpleCharacterString_O_core__SimpleMDArray_O_ = 300,
+STAMP_core__SimpleMDArrayCharacter_O = 301,
+STAMP_core__template_SimpleArray_core__SimpleMDArray_fixnum_O_core__SimpleVector_fixnum_O_core__SimpleMDArray_O_ = 302,
+STAMP_core__SimpleMDArray_fixnum_O = 303,
+STAMP_core__template_SimpleArray_core__SimpleMDArray_byte32_t_O_core__SimpleVector_byte32_t_O_core__SimpleMDArray_O_ = 304,
+STAMP_core__SimpleMDArray_byte32_t_O = 305,
+STAMP_core__template_SimpleArray_core__SimpleMDArray_byte16_t_O_core__SimpleVector_byte16_t_O_core__SimpleMDArray_O_ = 306,
+STAMP_core__SimpleMDArray_byte16_t_O = 307,
+STAMP_core__template_SimpleArray_core__SimpleMDArrayT_O_core__SimpleVector_O_core__SimpleMDArray_O_ = 308,
+STAMP_core__SimpleMDArrayT_O = 309,
+STAMP_core__template_SimpleArray_core__SimpleMDArray_int32_t_O_core__SimpleVector_int32_t_O_core__SimpleMDArray_O_ = 310,
+STAMP_core__SimpleMDArray_int32_t_O = 311,
+STAMP_core__template_SimpleArray_core__SimpleMDArrayDouble_O_core__SimpleVectorDouble_O_core__SimpleMDArray_O_ = 312,
+STAMP_core__SimpleMDArrayDouble_O = 313,
+STAMP_core__template_SimpleArray_core__SimpleMDArrayBaseChar_O_core__SimpleBaseString_O_core__SimpleMDArray_O_ = 314,
+STAMP_core__SimpleMDArrayBaseChar_O = 315,
+STAMP_core__template_SimpleArray_core__SimpleMDArray_byte64_t_O_core__SimpleVector_byte64_t_O_core__SimpleMDArray_O_ = 316,
+STAMP_core__SimpleMDArray_byte64_t_O = 317,
+STAMP_core__SimpleMDArrayBit_O = 318,
+STAMP_core__template_SimpleArray_core__SimpleMDArray_int16_t_O_core__SimpleVector_int16_t_O_core__SimpleMDArray_O_ = 319,
+STAMP_core__SimpleMDArray_int16_t_O = 320,
+STAMP_core__template_SimpleArray_core__SimpleMDArray_byte8_t_O_core__SimpleVector_byte8_t_O_core__SimpleMDArray_O_ = 321,
+STAMP_core__SimpleMDArray_byte8_t_O = 322,
+STAMP_core__template_SimpleArray_core__SimpleMDArray_size_t_O_core__SimpleVector_size_t_O_core__SimpleMDArray_O_ = 323,
+STAMP_core__SimpleMDArray_size_t_O = 324,
+STAMP_core__template_SimpleArray_core__SimpleMDArray_int64_t_O_core__SimpleVector_int64_t_O_core__SimpleMDArray_O_ = 325,
+STAMP_core__SimpleMDArray_int64_t_O = 326,
+STAMP_core__template_SimpleArray_core__SimpleMDArrayFloat_O_core__SimpleVectorFloat_O_core__SimpleMDArray_O_ = 327,
+STAMP_core__SimpleMDArrayFloat_O = 328,
+STAMP_core__template_Array_core__MDArray_fixnum_O_core__SimpleMDArray_fixnum_O_core__SimpleVector_fixnum_O_core__MDArray_O_ = 329,
+STAMP_core__MDArray_fixnum_O = 330,
+STAMP_core__template_Array_core__MDArrayBaseChar_O_core__SimpleMDArrayBaseChar_O_core__SimpleBaseString_O_core__MDArray_O_ = 331,
+STAMP_core__MDArrayBaseChar_O = 332,
+STAMP_core__Symbol_O = 333,
+STAMP_core__Null_O = 334,
+STAMP_core__StandardObject_O = 335,
+STAMP_mp__BlockingConcurrentQueue_O = 336,
+STAMP_core__Path_O = 337,
+STAMP_core__Character_dummy_O = 338,
+STAMP_core__SourceManager_O = 339,
+STAMP_llvmo__DataLayout_O = 340,
+STAMP_core__Pathname_O = 341,
+STAMP_core__LogicalPathname_O = 342,
+STAMP_core__Cache_O = 343,
+STAMP_core__LoadTimeValues_O = 344,
+STAMP_core__SharpEqualWrapper_O = 345,
+STAMP_core__Number_O = 346,
+STAMP_core__Real_O = 347,
+STAMP_core__Rational_O = 348,
+STAMP_core__Ratio_O = 349,
+STAMP_core__Integer_O = 350,
+STAMP_core__Bignum_O = 351,
+STAMP_core__Fixnum_dummy_O = 352,
+STAMP_core__Float_O = 353,
+STAMP_core__DoubleFloat_O = 354,
+STAMP_core__SingleFloat_dummy_O = 355,
+STAMP_core__LongFloat_O = 356,
+STAMP_core__ShortFloat_O = 357,
+STAMP_core__Complex_O = 358,
+STAMP_core__CandoException_O = 359,
+STAMP_core__Stream_O = 360,
+STAMP_core__AnsiStream_O = 361,
+STAMP_core__TwoWayStream_O = 362,
+STAMP_core__BroadcastStream_O = 363,
+STAMP_core__SynonymStream_O = 364,
+STAMP_core__ConcatenatedStream_O = 365,
+STAMP_core__StringStream_O = 366,
+STAMP_core__StringOutputStream_O = 367,
+STAMP_core__StringInputStream_O = 368,
+STAMP_core__FileStream_O = 369,
+STAMP_core__IOFileStream_O = 370,
+STAMP_core__IOStreamStream_O = 371,
+STAMP_core__EchoStream_O = 372,
+STAMP_core__Package_O = 373,
+STAMP_llvmo__ClaspJIT_O = 374,
+STAMP_core__FileStatus_O = 375,
+STAMP_core__InvocationHistoryFrameIterator_O = 376,
+STAMP_core__PosixTime_O = 377,
+STAMP_core__HashTable_O = 378,
+STAMP_core__HashTableEqual_O = 379,
+STAMP_core__HashTableEqualp_O = 380,
+STAMP_core__HashTableEq_O = 381,
+STAMP_core__HashTableEql_O = 382,
+STAMP_core__Exposer_O = 383,
+STAMP_core__CoreExposer_O = 384,
+STAMP_asttooling__AsttoolingExposer_O = 385,
+STAMP_core__SourcePosInfo_O = 386,
+STAMP_core__IntArray_O = 387,
+STAMP_core__SourceFileInfo_O = 388,
+STAMP_core__DirectoryEntry_O = 389,
+STAMP_core__LightUserData_O = 390,
+STAMP_core__UserData_O = 391,
+STAMP_core__Record_O = 392,
+STAMP_clbind__ClassRegistry_O = 393,
+STAMP_mp__ConcurrentQueue_O = 394,
+STAMP_core__Cons_O = 395,
+STAMP_clang__ast_matchers__MatchFinder__MatchCallback = 396,
+STAMP_core__Lisp_O = 397,
+STAMP_clang__RecursiveASTVisitor_asttooling__AstVisitor_O_ = 398,
+STAMP_asttooling__AstVisitor_O = 399,
+STAMP_gctools__GCContainer = 400,
+STAMP_gctools__GCVector_moveable_core__KeywordArgument_ = 401,
+STAMP_gctools__GCArray_moveable_unsigned_int_ = 402,
+STAMP_gctools__GCVector_moveable_core__CacheRecord_ = 403,
+STAMP_gctools__GCVector_moveable_core__RequiredArgument_ = 404,
+STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__Cons_O__ = 405,
+STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__SequenceStepper_O__ = 406,
+STAMP_gctools__GCVector_moveable_double_ = 407,
+STAMP_gctools__GCVector_moveable_core__SymbolStorage_ = 408,
+STAMP_gctools__GCArray_moveable_short_ = 409,
+STAMP_gctools__GCVector_moveable_core__DynamicBinding_ = 410,
+STAMP_gctools__GCVector_moveable_gctools__smart_ptr_clbind__ClassRep_O__ = 411,
+STAMP_gctools__GCArray_moveable_unsigned_long_ = 412,
+STAMP_gctools__GCBitUnitArray_moveable_1_unsigned_int_int_ = 413,
+STAMP_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__T_O___ = 414,
+STAMP_gctools__GCArray_moveable_signed_char_ = 415,
+STAMP_gctools__GCVector_moveable_core__ExceptionEntry_ = 416,
+STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__List_V__ = 417,
+STAMP_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__T_O__gctools__smart_ptr_core__T_O___ = 418,
+STAMP_gctools__GCArray_moveable_int_ = 419,
+STAMP_gctools__GCArray_moveable_unsigned_char_ = 420,
+STAMP_gctools__GCArray_moveable_gctools__smart_ptr_core__T_O__ = 421,
+STAMP_gctools__GCVector_moveable_core__AuxArgument_ = 422,
+STAMP_gctools__GCArray_moveable_long_ = 423,
+STAMP_gctools__GCVector_moveable_int_ = 424,
+STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__Symbol_O__ = 425,
+STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__T_O__ = 426,
+STAMP_gctools__GCVector_moveable_core__SymbolClassPair_ = 427,
+STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__SingleDispatchMethod_O__ = 428,
+STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__Package_O__ = 429,
+STAMP_gctools__GCArray_moveable_float_ = 430,
+STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__SourceFileInfo_O__ = 431,
+STAMP_gctools__GCArray_moveable_double_ = 432,
+STAMP_gctools__GCVector_moveable_core__T_O___ = 433,
+STAMP_gctools__GCVector_moveable_core__OptionalArgument_ = 434,
+STAMP_gctools__GCArray_moveable_unsigned_short_ = 435,
+STAMP_gctools__GCVector_moveable_float_ = 436,
+STAMP_clang__FrontendAction = 437,
+STAMP_clang__ASTFrontendAction = 438,
+STAMP_clang__SyntaxOnlyAction = 439,
+STAMP_clang__tooling__ToolAction = 440,
+STAMP_clang__tooling__FrontendActionFactory = 441,
+STAMP_clbind__detail__class_map = 442,
+  STAMP_max = 442,
 
 #endif // defined(GC_STAMP)
 #if defined(GC_DYNAMIC_CAST)
@@ -845,8 +845,8 @@ template <typename FP> struct Cast<llvmo::NamedMDNode_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range llvmo::NamedMDNode_O val -> 124
-      return (kindVal == 124);
+    // IsA-stamp-range llvmo::NamedMDNode_O val -> 116
+      return (kindVal == 116);
   };
 };
 // STAMP_core__MDArray_size_t_O
@@ -854,8 +854,8 @@ template <typename FP> struct Cast<core::MDArray_size_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::MDArray_size_t_O val -> 295
-      return (kindVal == 295);
+    // IsA-stamp-range core::MDArray_size_t_O val -> 287
+      return (kindVal == 287);
   };
 };
 // STAMP_core__SimpleVector_byte16_t_O
@@ -863,8 +863,8 @@ template <typename FP> struct Cast<core::SimpleVector_byte16_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::SimpleVector_byte16_t_O val -> 253
-      return (kindVal == 253);
+    // IsA-stamp-range core::SimpleVector_byte16_t_O val -> 245
+      return (kindVal == 245);
   };
 };
 // STAMP_mp__ConcurrentQueue_O
@@ -872,8 +872,8 @@ template <typename FP> struct Cast<mp::ConcurrentQueue_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range mp::ConcurrentQueue_O val -> 402
-      return (kindVal == 402);
+    // IsA-stamp-range mp::ConcurrentQueue_O val -> 394
+      return (kindVal == 394);
   };
 };
 // STAMP_gctools__GCVector_moveable_float_
@@ -881,8 +881,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<float>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range gctools::GCVector_moveable<float> val -> 444
-      return (kindVal == 444);
+    // IsA-stamp-range gctools::GCVector_moveable<float> val -> 436
+      return (kindVal == 436);
   };
 };
 // STAMP_gctools__GCArray_moveable_unsigned_short_
@@ -890,8 +890,8 @@ template <typename FP> struct Cast<gctools::GCArray_moveable<unsigned short>*,FP
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range gctools::GCArray_moveable<unsigned short> val -> 443
-      return (kindVal == 443);
+    // IsA-stamp-range gctools::GCArray_moveable<unsigned short> val -> 435
+      return (kindVal == 435);
   };
 };
 // STAMP_core__SimpleMDArray_fixnum_O
@@ -899,8 +899,8 @@ template <typename FP> struct Cast<core::SimpleMDArray_fixnum_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::SimpleMDArray_fixnum_O val -> 311
-      return (kindVal == 311);
+    // IsA-stamp-range core::SimpleMDArray_fixnum_O val -> 303
+      return (kindVal == 303);
   };
 };
 // STAMP_core__SimpleVector_byte64_t_O
@@ -908,8 +908,8 @@ template <typename FP> struct Cast<core::SimpleVector_byte64_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::SimpleVector_byte64_t_O val -> 242
-      return (kindVal == 242);
+    // IsA-stamp-range core::SimpleVector_byte64_t_O val -> 234
+      return (kindVal == 234);
   };
 };
 // STAMP_llvmo__TargetMachine_O
@@ -917,8 +917,8 @@ template <typename FP> struct Cast<llvmo::TargetMachine_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range llvmo::TargetMachine_O low high --> 122 123 
-      return ((122 <= kindVal) && (kindVal <= 123));
+    // IsA-stamp-range llvmo::TargetMachine_O low high --> 114 115 
+      return ((114 <= kindVal) && (kindVal <= 115));
   };
 };
 // STAMP_llvmo__Value_O
@@ -926,8 +926,8 @@ template <typename FP> struct Cast<llvmo::Value_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range llvmo::Value_O low high --> 84 121 
-      return ((84 <= kindVal) && (kindVal <= 121));
+    // IsA-stamp-range llvmo::Value_O low high --> 76 113 
+      return ((76 <= kindVal) && (kindVal <= 113));
   };
 };
 // STAMP_core__SimpleBaseString_O
@@ -935,8 +935,8 @@ template <typename FP> struct Cast<core::SimpleBaseString_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::SimpleBaseString_O val -> 249
-      return (kindVal == 249);
+    // IsA-stamp-range core::SimpleBaseString_O val -> 241
+      return (kindVal == 241);
   };
 };
 // STAMP_clbind__ClassRegistry_O
@@ -944,8 +944,8 @@ template <typename FP> struct Cast<clbind::ClassRegistry_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range clbind::ClassRegistry_O val -> 401
-      return (kindVal == 401);
+    // IsA-stamp-range clbind::ClassRegistry_O val -> 393
+      return (kindVal == 393);
   };
 };
 // STAMP_core__Integer_O
@@ -953,8 +953,8 @@ template <typename FP> struct Cast<core::Integer_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::Integer_O low high --> 358 360 
-      return ((358 <= kindVal) && (kindVal <= 360));
+    // IsA-stamp-range core::Integer_O low high --> 350 352 
+      return ((350 <= kindVal) && (kindVal <= 352));
   };
 };
 // STAMP_core__SimpleMDArray_int32_t_O
@@ -962,8 +962,8 @@ template <typename FP> struct Cast<core::SimpleMDArray_int32_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::SimpleMDArray_int32_t_O val -> 319
-      return (kindVal == 319);
+    // IsA-stamp-range core::SimpleMDArray_int32_t_O val -> 311
+      return (kindVal == 311);
   };
 };
 // STAMP_llvmo__Metadata_O
@@ -971,8 +971,8 @@ template <typename FP> struct Cast<llvmo::Metadata_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range llvmo::Metadata_O low high --> 67 83 
-      return ((67 <= kindVal) && (kindVal <= 83));
+    // IsA-stamp-range llvmo::Metadata_O low high --> 59 75 
+      return ((59 <= kindVal) && (kindVal <= 75));
   };
 };
 // STAMP_asttooling__AstVisitor_O
@@ -980,8 +980,8 @@ template <typename FP> struct Cast<asttooling::AstVisitor_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range asttooling::AstVisitor_O val -> 407
-      return (kindVal == 407);
+    // IsA-stamp-range asttooling::AstVisitor_O val -> 399
+      return (kindVal == 399);
   };
 };
 // STAMP_mp__Process_O
@@ -989,8 +989,8 @@ template <typename FP> struct Cast<mp::Process_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range mp::Process_O val -> 231
-      return (kindVal == 231);
+    // IsA-stamp-range mp::Process_O val -> 223
+      return (kindVal == 223);
   };
 };
 // STAMP_core__Record_O
@@ -998,8 +998,8 @@ template <typename FP> struct Cast<core::Record_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::Record_O val -> 400
-      return (kindVal == 400);
+    // IsA-stamp-range core::Record_O val -> 392
+      return (kindVal == 392);
   };
 };
 // STAMP_core__MDArray_O
@@ -1007,8 +1007,8 @@ template <typename FP> struct Cast<core::MDArray_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::MDArray_O low high --> 271 340 
-      return ((271 <= kindVal) && (kindVal <= 340));
+    // IsA-stamp-range core::MDArray_O low high --> 263 332 
+      return ((263 <= kindVal) && (kindVal <= 332));
   };
 };
 // STAMP_gctools__GCVector_moveable_core__OptionalArgument_
@@ -1016,8 +1016,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<core::OptionalArgu
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range gctools::GCVector_moveable<core::OptionalArgument> val -> 442
-      return (kindVal == 442);
+    // IsA-stamp-range gctools::GCVector_moveable<core::OptionalArgument> val -> 434
+      return (kindVal == 434);
   };
 };
 // STAMP_core__LightUserData_O
@@ -1025,8 +1025,8 @@ template <typename FP> struct Cast<core::LightUserData_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::LightUserData_O low high --> 398 399 
-      return ((398 <= kindVal) && (kindVal <= 399));
+    // IsA-stamp-range core::LightUserData_O low high --> 390 391 
+      return ((390 <= kindVal) && (kindVal <= 391));
   };
 };
 // STAMP_gctools__GCVector_moveable_core__T_O___
@@ -1034,8 +1034,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<core::T_O *>*,FP> 
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range gctools::GCVector_moveable<core::T_O *> val -> 441
-      return (kindVal == 441);
+    // IsA-stamp-range gctools::GCVector_moveable<core::T_O *> val -> 433
+      return (kindVal == 433);
   };
 };
 // STAMP_clcenv__FunctionIgnore_O
@@ -1043,8 +1043,8 @@ template <typename FP> struct Cast<clcenv::FunctionIgnore_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range clcenv::FunctionIgnore_O val -> 230
-      return (kindVal == 230);
+    // IsA-stamp-range clcenv::FunctionIgnore_O val -> 222
+      return (kindVal == 222);
   };
 };
 // STAMP_core__MDArrayT_O
@@ -1052,8 +1052,8 @@ template <typename FP> struct Cast<core::MDArrayT_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::MDArrayT_O val -> 293
-      return (kindVal == 293);
+    // IsA-stamp-range core::MDArrayT_O val -> 285
+      return (kindVal == 285);
   };
 };
 // STAMP_clbind__ClassRep_O
@@ -1061,8 +1061,8 @@ template <typename FP> struct Cast<clbind::ClassRep_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range clbind::ClassRep_O val -> 20
-      return (kindVal == 20);
+    // IsA-stamp-range clbind::ClassRep_O val -> 12
+      return (kindVal == 12);
   };
 };
 // STAMP_core__DirectoryEntry_O
@@ -1070,8 +1070,8 @@ template <typename FP> struct Cast<core::DirectoryEntry_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::DirectoryEntry_O val -> 397
-      return (kindVal == 397);
+    // IsA-stamp-range core::DirectoryEntry_O val -> 389
+      return (kindVal == 389);
   };
 };
 // STAMP_clcenv__GlobalFunctionInfo_O
@@ -1079,8 +1079,8 @@ template <typename FP> struct Cast<clcenv::GlobalFunctionInfo_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range clcenv::GlobalFunctionInfo_O val -> 199
-      return (kindVal == 199);
+    // IsA-stamp-range clcenv::GlobalFunctionInfo_O val -> 191
+      return (kindVal == 191);
   };
 };
 // STAMP_llvmo__ConstantInt_O
@@ -1088,8 +1088,8 @@ template <typename FP> struct Cast<llvmo::ConstantInt_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range llvmo::ConstantInt_O val -> 119
-      return (kindVal == 119);
+    // IsA-stamp-range llvmo::ConstantInt_O val -> 111
+      return (kindVal == 111);
   };
 };
 // STAMP_llvmo__Linker_O
@@ -1097,8 +1097,8 @@ template <typename FP> struct Cast<llvmo::Linker_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range llvmo::Linker_O val -> 66
-      return (kindVal == 66);
+    // IsA-stamp-range llvmo::Linker_O val -> 58
+      return (kindVal == 58);
   };
 };
 // STAMP_core__SourceFileInfo_O
@@ -1106,8 +1106,8 @@ template <typename FP> struct Cast<core::SourceFileInfo_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::SourceFileInfo_O val -> 396
-      return (kindVal == 396);
+    // IsA-stamp-range core::SourceFileInfo_O val -> 388
+      return (kindVal == 388);
   };
 };
 // STAMP_core__IntArray_O
@@ -1115,8 +1115,8 @@ template <typename FP> struct Cast<core::IntArray_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::IntArray_O val -> 395
-      return (kindVal == 395);
+    // IsA-stamp-range core::IntArray_O val -> 387
+      return (kindVal == 387);
   };
 };
 // STAMP_gctools__GCArray_moveable_double_
@@ -1124,8 +1124,8 @@ template <typename FP> struct Cast<gctools::GCArray_moveable<double>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range gctools::GCArray_moveable<double> val -> 440
-      return (kindVal == 440);
+    // IsA-stamp-range gctools::GCArray_moveable<double> val -> 432
+      return (kindVal == 432);
   };
 };
 // STAMP_core__SimpleMDArray_int16_t_O
@@ -1133,8 +1133,8 @@ template <typename FP> struct Cast<core::SimpleMDArray_int16_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::SimpleMDArray_int16_t_O val -> 328
-      return (kindVal == 328);
+    // IsA-stamp-range core::SimpleMDArray_int16_t_O val -> 320
+      return (kindVal == 320);
   };
 };
 // STAMP_llvmo__CompositeType_O
@@ -1142,8 +1142,8 @@ template <typename FP> struct Cast<llvmo::CompositeType_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range llvmo::CompositeType_O low high --> 51 56 
-      return ((51 <= kindVal) && (kindVal <= 56));
+    // IsA-stamp-range llvmo::CompositeType_O low high --> 43 48 
+      return ((43 <= kindVal) && (kindVal <= 48));
   };
 };
 // STAMP_core__SimpleMDArrayT_O
@@ -1151,8 +1151,8 @@ template <typename FP> struct Cast<core::SimpleMDArrayT_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::SimpleMDArrayT_O val -> 317
-      return (kindVal == 317);
+    // IsA-stamp-range core::SimpleMDArrayT_O val -> 309
+      return (kindVal == 309);
   };
 };
 // STAMP_llvmo__BranchInst_O
@@ -1160,8 +1160,8 @@ template <typename FP> struct Cast<llvmo::BranchInst_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range llvmo::BranchInst_O val -> 100
-      return (kindVal == 100);
+    // IsA-stamp-range llvmo::BranchInst_O val -> 92
+      return (kindVal == 92);
   };
 };
 // STAMP_core__SourcePosInfo_O
@@ -1169,8 +1169,8 @@ template <typename FP> struct Cast<core::SourcePosInfo_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::SourcePosInfo_O val -> 394
-      return (kindVal == 394);
+    // IsA-stamp-range core::SourcePosInfo_O val -> 386
+      return (kindVal == 386);
   };
 };
 // STAMP_clcenv__Entry_O
@@ -1178,8 +1178,8 @@ template <typename FP> struct Cast<clcenv::Entry_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range clcenv::Entry_O low high --> 212 230 
-      return ((212 <= kindVal) && (kindVal <= 230));
+    // IsA-stamp-range clcenv::Entry_O low high --> 204 222 
+      return ((204 <= kindVal) && (kindVal <= 222));
   };
 };
 // STAMP_core__ActivationFrame_O
@@ -1187,8 +1187,8 @@ template <typename FP> struct Cast<core::ActivationFrame_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::ActivationFrame_O low high --> 142 145 
-      return ((142 <= kindVal) && (kindVal <= 145));
+    // IsA-stamp-range core::ActivationFrame_O low high --> 134 137 
+      return ((134 <= kindVal) && (kindVal <= 137));
   };
 };
 // STAMP_llvmo__AllocaInst_O
@@ -1196,8 +1196,8 @@ template <typename FP> struct Cast<llvmo::AllocaInst_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range llvmo::AllocaInst_O val -> 90
-      return (kindVal == 90);
+    // IsA-stamp-range llvmo::AllocaInst_O val -> 82
+      return (kindVal == 82);
   };
 };
 // STAMP_llvmo__PassManagerBase_O
@@ -1205,8 +1205,8 @@ template <typename FP> struct Cast<llvmo::PassManagerBase_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range llvmo::PassManagerBase_O low high --> 63 65 
-      return ((63 <= kindVal) && (kindVal <= 65));
+    // IsA-stamp-range llvmo::PassManagerBase_O low high --> 55 57 
+      return ((55 <= kindVal) && (kindVal <= 57));
   };
 };
 // STAMP_llvmo__LoadInst_O
@@ -1214,8 +1214,8 @@ template <typename FP> struct Cast<llvmo::LoadInst_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range llvmo::LoadInst_O val -> 89
-      return (kindVal == 89);
+    // IsA-stamp-range llvmo::LoadInst_O val -> 81
+      return (kindVal == 81);
   };
 };
 // STAMP_core__StandardClassCreator_O
@@ -1223,8 +1223,8 @@ template <typename FP> struct Cast<core::StandardClassCreator_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::StandardClassCreator_O val -> 157
-      return (kindVal == 157);
+    // IsA-stamp-range core::StandardClassCreator_O val -> 149
+      return (kindVal == 149);
   };
 };
 // STAMP_core__Exposer_O
@@ -1232,8 +1232,8 @@ template <typename FP> struct Cast<core::Exposer_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::Exposer_O low high --> 391 393 
-      return ((391 <= kindVal) && (kindVal <= 393));
+    // IsA-stamp-range core::Exposer_O low high --> 383 385 
+      return ((383 <= kindVal) && (kindVal <= 385));
   };
 };
 // STAMP_llvmo__ConstantStruct_O
@@ -1241,8 +1241,8 @@ template <typename FP> struct Cast<llvmo::ConstantStruct_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range llvmo::ConstantStruct_O val -> 118
-      return (kindVal == 118);
+    // IsA-stamp-range llvmo::ConstantStruct_O val -> 110
+      return (kindVal == 110);
   };
 };
 // STAMP_core__SingleDispatchCxxEffectiveMethodFunction_O
@@ -1250,8 +1250,8 @@ template <typename FP> struct Cast<core::SingleDispatchCxxEffectiveMethodFunctio
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::SingleDispatchCxxEffectiveMethodFunction_O val -> 175
-      return (kindVal == 175);
+    // IsA-stamp-range core::SingleDispatchCxxEffectiveMethodFunction_O val -> 167
+      return (kindVal == 167);
   };
 };
 // STAMP_core__DirectoryIterator_O
@@ -1259,8 +1259,8 @@ template <typename FP> struct Cast<core::DirectoryIterator_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::DirectoryIterator_O val -> 235
-      return (kindVal == 235);
+    // IsA-stamp-range core::DirectoryIterator_O val -> 227
+      return (kindVal == 227);
   };
 };
 // STAMP_clcenv__Macro_O
@@ -1268,8 +1268,8 @@ template <typename FP> struct Cast<clcenv::Macro_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range clcenv::Macro_O val -> 229
-      return (kindVal == 229);
+    // IsA-stamp-range clcenv::Macro_O val -> 221
+      return (kindVal == 221);
   };
 };
 // STAMP_clbind__detail__class_map
@@ -1277,8 +1277,8 @@ template <typename FP> struct Cast<clbind::detail::class_map*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range clbind::detail::class_map val -> 450
-      return (kindVal == 450);
+    // IsA-stamp-range clbind::detail::class_map val -> 442
+      return (kindVal == 442);
   };
 };
 // STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__SourceFileInfo_O__
@@ -1286,8 +1286,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range gctools::GCVector_moveable<gctools::smart_ptr<core::SourceFileInfo_O>> val -> 439
-      return (kindVal == 439);
+    // IsA-stamp-range gctools::GCVector_moveable<gctools::smart_ptr<core::SourceFileInfo_O>> val -> 431
+      return (kindVal == 431);
   };
 };
 // STAMP_llvmo__DISubroutineType_O
@@ -1295,8 +1295,8 @@ template <typename FP> struct Cast<llvmo::DISubroutineType_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range llvmo::DISubroutineType_O val -> 83
-      return (kindVal == 83);
+    // IsA-stamp-range llvmo::DISubroutineType_O val -> 75
+      return (kindVal == 75);
   };
 };
 // STAMP_core__LexicalEnvironment_O
@@ -1304,8 +1304,8 @@ template <typename FP> struct Cast<core::LexicalEnvironment_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::LexicalEnvironment_O low high --> 130 141 
-      return ((130 <= kindVal) && (kindVal <= 141));
+    // IsA-stamp-range core::LexicalEnvironment_O low high --> 122 133 
+      return ((122 <= kindVal) && (kindVal <= 133));
   };
 };
 // STAMP_core__HashTable_O
@@ -1313,8 +1313,8 @@ template <typename FP> struct Cast<core::HashTable_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::HashTable_O low high --> 386 390 
-      return ((386 <= kindVal) && (kindVal <= 390));
+    // IsA-stamp-range core::HashTable_O low high --> 378 382 
+      return ((378 <= kindVal) && (kindVal <= 382));
   };
 };
 // STAMP_clcenv__LambdaNameInfo_O
@@ -1322,8 +1322,8 @@ template <typename FP> struct Cast<clcenv::LambdaNameInfo_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range clcenv::LambdaNameInfo_O val -> 198
-      return (kindVal == 198);
+    // IsA-stamp-range clcenv::LambdaNameInfo_O val -> 190
+      return (kindVal == 190);
   };
 };
 // STAMP_core__PosixTime_O
@@ -1331,8 +1331,8 @@ template <typename FP> struct Cast<core::PosixTime_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::PosixTime_O val -> 385
-      return (kindVal == 385);
+    // IsA-stamp-range core::PosixTime_O val -> 377
+      return (kindVal == 377);
   };
 };
 // STAMP_gctools__GCArray_moveable_float_
@@ -1340,8 +1340,8 @@ template <typename FP> struct Cast<gctools::GCArray_moveable<float>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range gctools::GCArray_moveable<float> val -> 438
-      return (kindVal == 438);
+    // IsA-stamp-range gctools::GCArray_moveable<float> val -> 430
+      return (kindVal == 430);
   };
 };
 // STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__Package_O__
@@ -1349,8 +1349,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range gctools::GCVector_moveable<gctools::smart_ptr<core::Package_O>> val -> 437
-      return (kindVal == 437);
+    // IsA-stamp-range gctools::GCVector_moveable<gctools::smart_ptr<core::Package_O>> val -> 429
+      return (kindVal == 429);
   };
 };
 // STAMP_core__SimpleBitVector_O
@@ -1358,8 +1358,8 @@ template <typename FP> struct Cast<core::SimpleBitVector_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::SimpleBitVector_O val -> 264
-      return (kindVal == 264);
+    // IsA-stamp-range core::SimpleBitVector_O val -> 256
+      return (kindVal == 256);
   };
 };
 // STAMP_core__FunctionContainerEnvironment_O
@@ -1367,8 +1367,8 @@ template <typename FP> struct Cast<core::FunctionContainerEnvironment_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::FunctionContainerEnvironment_O val -> 141
-      return (kindVal == 141);
+    // IsA-stamp-range core::FunctionContainerEnvironment_O val -> 133
+      return (kindVal == 133);
   };
 };
 // STAMP_clcenv__SpecialVariable_O
@@ -1376,8 +1376,8 @@ template <typename FP> struct Cast<clcenv::SpecialVariable_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range clcenv::SpecialVariable_O val -> 228
-      return (kindVal == 228);
+    // IsA-stamp-range clcenv::SpecialVariable_O val -> 220
+      return (kindVal == 220);
   };
 };
 // STAMP_core__SimpleVector_int8_t_O
@@ -1385,8 +1385,8 @@ template <typename FP> struct Cast<core::SimpleVector_int8_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::SimpleVector_int8_t_O val -> 257
-      return (kindVal == 257);
+    // IsA-stamp-range core::SimpleVector_int8_t_O val -> 249
+      return (kindVal == 249);
   };
 };
 // STAMP_clcenv__VariableInfo_O
@@ -1394,8 +1394,8 @@ template <typename FP> struct Cast<clcenv::VariableInfo_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range clcenv::VariableInfo_O low high --> 200 204 
-      return ((200 <= kindVal) && (kindVal <= 204));
+    // IsA-stamp-range clcenv::VariableInfo_O low high --> 192 196 
+      return ((192 <= kindVal) && (kindVal <= 196));
   };
 };
 // STAMP_llvmo__ResumeInst_O
@@ -1403,8 +1403,8 @@ template <typename FP> struct Cast<llvmo::ResumeInst_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range llvmo::ResumeInst_O val -> 99
-      return (kindVal == 99);
+    // IsA-stamp-range llvmo::ResumeInst_O val -> 91
+      return (kindVal == 91);
   };
 };
 // STAMP_llvmo__Function_O
@@ -1412,8 +1412,8 @@ template <typename FP> struct Cast<llvmo::Function_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range llvmo::Function_O val -> 109
-      return (kindVal == 109);
+    // IsA-stamp-range llvmo::Function_O val -> 101
+      return (kindVal == 101);
   };
 };
 // STAMP_llvmo__DIType_O
@@ -1421,8 +1421,8 @@ template <typename FP> struct Cast<llvmo::DIType_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range llvmo::DIType_O low high --> 79 83 
-      return ((79 <= kindVal) && (kindVal <= 83));
+    // IsA-stamp-range llvmo::DIType_O low high --> 71 75 
+      return ((71 <= kindVal) && (kindVal <= 75));
   };
 };
 // STAMP_core__InvocationHistoryFrameIterator_O
@@ -1430,8 +1430,8 @@ template <typename FP> struct Cast<core::InvocationHistoryFrameIterator_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::InvocationHistoryFrameIterator_O val -> 384
-      return (kindVal == 384);
+    // IsA-stamp-range core::InvocationHistoryFrameIterator_O val -> 376
+      return (kindVal == 376);
   };
 };
 // STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__SingleDispatchMethod_O__
@@ -1439,8 +1439,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range gctools::GCVector_moveable<gctools::smart_ptr<core::SingleDispatchMethod_O>> val -> 436
-      return (kindVal == 436);
+    // IsA-stamp-range gctools::GCVector_moveable<gctools::smart_ptr<core::SingleDispatchMethod_O>> val -> 428
+      return (kindVal == 428);
   };
 };
 // STAMP_core__SimpleVector_size_t_O
@@ -1448,8 +1448,8 @@ template <typename FP> struct Cast<core::SimpleVector_size_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::SimpleVector_size_t_O val -> 268
-      return (kindVal == 268);
+    // IsA-stamp-range core::SimpleVector_size_t_O val -> 260
+      return (kindVal == 260);
   };
 };
 // STAMP_core__SimpleMDArrayFloat_O
@@ -1457,8 +1457,8 @@ template <typename FP> struct Cast<core::SimpleMDArrayFloat_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::SimpleMDArrayFloat_O val -> 336
-      return (kindVal == 336);
+    // IsA-stamp-range core::SimpleMDArrayFloat_O val -> 328
+      return (kindVal == 328);
   };
 };
 // STAMP_llvmo__DIScope_O
@@ -1466,8 +1466,8 @@ template <typename FP> struct Cast<llvmo::DIScope_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range llvmo::DIScope_O low high --> 72 83 
-      return ((72 <= kindVal) && (kindVal <= 83));
+    // IsA-stamp-range llvmo::DIScope_O low high --> 64 75 
+      return ((64 <= kindVal) && (kindVal <= 75));
   };
 };
 // STAMP_core__FileStatus_O
@@ -1475,8 +1475,8 @@ template <typename FP> struct Cast<core::FileStatus_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::FileStatus_O val -> 383
-      return (kindVal == 383);
+    // IsA-stamp-range core::FileStatus_O val -> 375
+      return (kindVal == 375);
   };
 };
 // STAMP_gctools__GCVector_moveable_core__SymbolClassPair_
@@ -1484,8 +1484,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<core::SymbolClassP
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range gctools::GCVector_moveable<core::SymbolClassPair> val -> 435
-      return (kindVal == 435);
+    // IsA-stamp-range gctools::GCVector_moveable<core::SymbolClassPair> val -> 427
+      return (kindVal == 427);
   };
 };
 // STAMP_llvmo__IndirectBrInst_O
@@ -1493,8 +1493,8 @@ template <typename FP> struct Cast<llvmo::IndirectBrInst_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range llvmo::IndirectBrInst_O val -> 98
-      return (kindVal == 98);
+    // IsA-stamp-range llvmo::IndirectBrInst_O val -> 90
+      return (kindVal == 90);
   };
 };
 // STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__T_O__
@@ -1502,8 +1502,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range gctools::GCVector_moveable<gctools::smart_ptr<core::T_O>> val -> 434
-      return (kindVal == 434);
+    // IsA-stamp-range gctools::GCVector_moveable<gctools::smart_ptr<core::T_O>> val -> 426
+      return (kindVal == 426);
   };
 };
 // STAMP_clcenv__LexicalVariable_O
@@ -1511,8 +1511,8 @@ template <typename FP> struct Cast<clcenv::LexicalVariable_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range clcenv::LexicalVariable_O val -> 227
-      return (kindVal == 227);
+    // IsA-stamp-range clcenv::LexicalVariable_O val -> 219
+      return (kindVal == 219);
   };
 };
 // STAMP_clcenv__VariableDynamicExtent_O
@@ -1520,8 +1520,8 @@ template <typename FP> struct Cast<clcenv::VariableDynamicExtent_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range clcenv::VariableDynamicExtent_O val -> 226
-      return (kindVal == 226);
+    // IsA-stamp-range clcenv::VariableDynamicExtent_O val -> 218
+      return (kindVal == 218);
   };
 };
 // STAMP_llvmo__PHINode_O
@@ -1529,8 +1529,8 @@ template <typename FP> struct Cast<llvmo::PHINode_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range llvmo::PHINode_O val -> 105
-      return (kindVal == 105);
+    // IsA-stamp-range llvmo::PHINode_O val -> 97
+      return (kindVal == 97);
   };
 };
 // STAMP_llvmo__ConstantArray_O
@@ -1538,8 +1538,8 @@ template <typename FP> struct Cast<llvmo::ConstantArray_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range llvmo::ConstantArray_O val -> 117
-      return (kindVal == 117);
+    // IsA-stamp-range llvmo::ConstantArray_O val -> 109
+      return (kindVal == 109);
   };
 };
 // STAMP_llvmo__IRBuilder_O
@@ -1547,8 +1547,8 @@ template <typename FP> struct Cast<llvmo::IRBuilder_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range llvmo::IRBuilder_O val -> 58
-      return (kindVal == 58);
+    // IsA-stamp-range llvmo::IRBuilder_O val -> 50
+      return (kindVal == 50);
   };
 };
 // STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__Symbol_O__
@@ -1556,8 +1556,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range gctools::GCVector_moveable<gctools::smart_ptr<core::Symbol_O>> val -> 433
-      return (kindVal == 433);
+    // IsA-stamp-range gctools::GCVector_moveable<gctools::smart_ptr<core::Symbol_O>> val -> 425
+      return (kindVal == 425);
   };
 };
 // STAMP_llvmo__ClaspJIT_O
@@ -1565,8 +1565,8 @@ template <typename FP> struct Cast<llvmo::ClaspJIT_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range llvmo::ClaspJIT_O val -> 382
-      return (kindVal == 382);
+    // IsA-stamp-range llvmo::ClaspJIT_O val -> 374
+      return (kindVal == 374);
   };
 };
 // STAMP_core__NamedFunction_O
@@ -1574,8 +1574,8 @@ template <typename FP> struct Cast<core::NamedFunction_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::NamedFunction_O low high --> 158 176 
-      return ((158 <= kindVal) && (kindVal <= 176));
+    // IsA-stamp-range core::NamedFunction_O low high --> 150 168 
+      return ((150 <= kindVal) && (kindVal <= 168));
   };
 };
 // STAMP_core__SimpleMDArrayBaseChar_O
@@ -1583,8 +1583,8 @@ template <typename FP> struct Cast<core::SimpleMDArrayBaseChar_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::SimpleMDArrayBaseChar_O val -> 323
-      return (kindVal == 323);
+    // IsA-stamp-range core::SimpleMDArrayBaseChar_O val -> 315
+      return (kindVal == 315);
   };
 };
 // STAMP_core__Package_O
@@ -1592,8 +1592,8 @@ template <typename FP> struct Cast<core::Package_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::Package_O val -> 381
-      return (kindVal == 381);
+    // IsA-stamp-range core::Package_O val -> 373
+      return (kindVal == 373);
   };
 };
 // STAMP_core__FunctionClosure_O
@@ -1601,8 +1601,8 @@ template <typename FP> struct Cast<core::FunctionClosure_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::FunctionClosure_O low high --> 162 175 
-      return ((162 <= kindVal) && (kindVal <= 175));
+    // IsA-stamp-range core::FunctionClosure_O low high --> 154 167 
+      return ((154 <= kindVal) && (kindVal <= 167));
   };
 };
 // STAMP_clcenv__GlobalEnvironment_O
@@ -1610,8 +1610,8 @@ template <typename FP> struct Cast<clcenv::GlobalEnvironment_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range clcenv::GlobalEnvironment_O val -> 225
-      return (kindVal == 225);
+    // IsA-stamp-range clcenv::GlobalEnvironment_O val -> 217
+      return (kindVal == 217);
   };
 };
 // STAMP_core__SimpleVector_byte8_t_O
@@ -1619,8 +1619,8 @@ template <typename FP> struct Cast<core::SimpleVector_byte8_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::SimpleVector_byte8_t_O val -> 261
-      return (kindVal == 261);
+    // IsA-stamp-range core::SimpleVector_byte8_t_O val -> 253
+      return (kindVal == 253);
   };
 };
 // STAMP_llvmo__DILexicalBlockBase_O
@@ -1628,8 +1628,8 @@ template <typename FP> struct Cast<llvmo::DILexicalBlockBase_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range llvmo::DILexicalBlockBase_O low high --> 75 76 
-      return ((75 <= kindVal) && (kindVal <= 76));
+    // IsA-stamp-range llvmo::DILexicalBlockBase_O low high --> 67 68 
+      return ((67 <= kindVal) && (kindVal <= 68));
   };
 };
 // STAMP_core__SimpleMDArray_O
@@ -1637,8 +1637,8 @@ template <typename FP> struct Cast<core::SimpleMDArray_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::SimpleMDArray_O low high --> 305 336 
-      return ((305 <= kindVal) && (kindVal <= 336));
+    // IsA-stamp-range core::SimpleMDArray_O low high --> 297 328 
+      return ((297 <= kindVal) && (kindVal <= 328));
   };
 };
 // STAMP_llvmo__MDNode_O
@@ -1646,8 +1646,8 @@ template <typename FP> struct Cast<llvmo::MDNode_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range llvmo::MDNode_O low high --> 70 83 
-      return ((70 <= kindVal) && (kindVal <= 83));
+    // IsA-stamp-range llvmo::MDNode_O low high --> 62 75 
+      return ((62 <= kindVal) && (kindVal <= 75));
   };
 };
 // STAMP_core__Stream_O
@@ -1655,8 +1655,8 @@ template <typename FP> struct Cast<core::Stream_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::Stream_O low high --> 368 380 
-      return ((368 <= kindVal) && (kindVal <= 380));
+    // IsA-stamp-range core::Stream_O low high --> 360 372 
+      return ((360 <= kindVal) && (kindVal <= 372));
   };
 };
 // STAMP_core__CandoException_O
@@ -1664,8 +1664,8 @@ template <typename FP> struct Cast<core::CandoException_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::CandoException_O val -> 367
-      return (kindVal == 367);
+    // IsA-stamp-range core::CandoException_O val -> 359
+      return (kindVal == 359);
   };
 };
 // STAMP_gctools__GCVector_moveable_int_
@@ -1673,8 +1673,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<int>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range gctools::GCVector_moveable<int> val -> 432
-      return (kindVal == 432);
+    // IsA-stamp-range gctools::GCVector_moveable<int> val -> 424
+      return (kindVal == 424);
   };
 };
 // STAMP_mp__RecursiveMutex_O
@@ -1682,8 +1682,8 @@ template <typename FP> struct Cast<mp::RecursiveMutex_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range mp::RecursiveMutex_O val -> 207
-      return (kindVal == 207);
+    // IsA-stamp-range mp::RecursiveMutex_O val -> 199
+      return (kindVal == 199);
   };
 };
 // STAMP_gctools__GCArray_moveable_long_
@@ -1691,8 +1691,8 @@ template <typename FP> struct Cast<gctools::GCArray_moveable<long>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range gctools::GCArray_moveable<long> val -> 431
-      return (kindVal == 431);
+    // IsA-stamp-range gctools::GCArray_moveable<long> val -> 423
+      return (kindVal == 423);
   };
 };
 // STAMP_clcenv__FunctionType_O
@@ -1700,8 +1700,8 @@ template <typename FP> struct Cast<clcenv::FunctionType_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range clcenv::FunctionType_O val -> 224
-      return (kindVal == 224);
+    // IsA-stamp-range clcenv::FunctionType_O val -> 216
+      return (kindVal == 216);
   };
 };
 // STAMP_clcenv__Block_O
@@ -1709,8 +1709,8 @@ template <typename FP> struct Cast<clcenv::Block_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range clcenv::Block_O val -> 223
-      return (kindVal == 223);
+    // IsA-stamp-range clcenv::Block_O val -> 215
+      return (kindVal == 215);
   };
 };
 // STAMP_llvmo__VAArgInst_O
@@ -1718,8 +1718,8 @@ template <typename FP> struct Cast<llvmo::VAArgInst_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range llvmo::VAArgInst_O val -> 88
-      return (kindVal == 88);
+    // IsA-stamp-range llvmo::VAArgInst_O val -> 80
+      return (kindVal == 80);
   };
 };
 // STAMP_llvmo__MDString_O
@@ -1727,8 +1727,8 @@ template <typename FP> struct Cast<llvmo::MDString_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range llvmo::MDString_O val -> 69
-      return (kindVal == 69);
+    // IsA-stamp-range llvmo::MDString_O val -> 61
+      return (kindVal == 61);
   };
 };
 // STAMP_core__ShortFloat_O
@@ -1736,8 +1736,8 @@ template <typename FP> struct Cast<core::ShortFloat_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::ShortFloat_O val -> 365
-      return (kindVal == 365);
+    // IsA-stamp-range core::ShortFloat_O val -> 357
+      return (kindVal == 357);
   };
 };
 // STAMP_core__Number_O
@@ -1745,8 +1745,8 @@ template <typename FP> struct Cast<core::Number_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::Number_O low high --> 354 366 
-      return ((354 <= kindVal) && (kindVal <= 366));
+    // IsA-stamp-range core::Number_O low high --> 346 358 
+      return ((346 <= kindVal) && (kindVal <= 358));
   };
 };
 // STAMP_core__MDArray_fixnum_O
@@ -1754,8 +1754,8 @@ template <typename FP> struct Cast<core::MDArray_fixnum_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::MDArray_fixnum_O val -> 338
-      return (kindVal == 338);
+    // IsA-stamp-range core::MDArray_fixnum_O val -> 330
+      return (kindVal == 330);
   };
 };
 // STAMP_core__T_O
@@ -1763,8 +1763,8 @@ template <typename FP> struct Cast<core::T_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::T_O low high --> 1 403 
-      return ((1 <= kindVal) && (kindVal <= 403));
+    // IsA-stamp-range core::T_O low high --> 1 395 
+      return ((1 <= kindVal) && (kindVal <= 395));
   };
 };
 // STAMP_llvmo__DICompileUnit_O
@@ -1772,8 +1772,8 @@ template <typename FP> struct Cast<llvmo::DICompileUnit_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range llvmo::DICompileUnit_O val -> 78
-      return (kindVal == 78);
+    // IsA-stamp-range llvmo::DICompileUnit_O val -> 70
+      return (kindVal == 70);
   };
 };
 // STAMP_core__SharpEqualWrapper_O
@@ -1781,8 +1781,8 @@ template <typename FP> struct Cast<core::SharpEqualWrapper_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::SharpEqualWrapper_O val -> 353
-      return (kindVal == 353);
+    // IsA-stamp-range core::SharpEqualWrapper_O val -> 345
+      return (kindVal == 345);
   };
 };
 // STAMP_clcenv__Tag_O
@@ -1790,8 +1790,8 @@ template <typename FP> struct Cast<clcenv::Tag_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range clcenv::Tag_O val -> 222
-      return (kindVal == 222);
+    // IsA-stamp-range clcenv::Tag_O val -> 214
+      return (kindVal == 214);
   };
 };
 // STAMP_core__SimpleMDArrayDouble_O
@@ -1799,8 +1799,8 @@ template <typename FP> struct Cast<core::SimpleMDArrayDouble_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::SimpleMDArrayDouble_O val -> 321
-      return (kindVal == 321);
+    // IsA-stamp-range core::SimpleMDArrayDouble_O val -> 313
+      return (kindVal == 313);
   };
 };
 // STAMP_clcenv__ConstantVariableInfo_O
@@ -1808,8 +1808,8 @@ template <typename FP> struct Cast<clcenv::ConstantVariableInfo_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range clcenv::ConstantVariableInfo_O val -> 204
-      return (kindVal == 204);
+    // IsA-stamp-range clcenv::ConstantVariableInfo_O val -> 196
+      return (kindVal == 196);
   };
 };
 // STAMP_core__LoadTimeValues_O
@@ -1817,17 +1817,8 @@ template <typename FP> struct Cast<core::LoadTimeValues_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::LoadTimeValues_O val -> 352
-      return (kindVal == 352);
-  };
-};
-// STAMP_asttooling__DerivableMatchCallback
-template <typename FP> struct Cast<asttooling::DerivableMatchCallback*,FP> {
-  inline static bool isA(FP client) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->stamp();
-    // IsA-stamp-range asttooling::DerivableMatchCallback val -> 15
-      return (kindVal == 15);
+    // IsA-stamp-range core::LoadTimeValues_O val -> 344
+      return (kindVal == 344);
   };
 };
 // STAMP_core__Cache_O
@@ -1835,8 +1826,8 @@ template <typename FP> struct Cast<core::Cache_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::Cache_O val -> 351
-      return (kindVal == 351);
+    // IsA-stamp-range core::Cache_O val -> 343
+      return (kindVal == 343);
   };
 };
 // STAMP_llvmo__DIFile_O
@@ -1844,8 +1835,8 @@ template <typename FP> struct Cast<llvmo::DIFile_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range llvmo::DIFile_O val -> 77
-      return (kindVal == 77);
+    // IsA-stamp-range llvmo::DIFile_O val -> 69
+      return (kindVal == 69);
   };
 };
 // STAMP_core__InterpretedClosure_O
@@ -1853,8 +1844,8 @@ template <typename FP> struct Cast<core::InterpretedClosure_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::InterpretedClosure_O val -> 165
-      return (kindVal == 165);
+    // IsA-stamp-range core::InterpretedClosure_O val -> 157
+      return (kindVal == 157);
   };
 };
 // STAMP_core__AbstractSimpleVector_O
@@ -1862,8 +1853,8 @@ template <typename FP> struct Cast<core::AbstractSimpleVector_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::AbstractSimpleVector_O low high --> 238 270 
-      return ((238 <= kindVal) && (kindVal <= 270));
+    // IsA-stamp-range core::AbstractSimpleVector_O low high --> 230 262 
+      return ((230 <= kindVal) && (kindVal <= 262));
   };
 };
 // STAMP_core__SimpleMDArray_byte16_t_O
@@ -1871,8 +1862,8 @@ template <typename FP> struct Cast<core::SimpleMDArray_byte16_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::SimpleMDArray_byte16_t_O val -> 315
-      return (kindVal == 315);
+    // IsA-stamp-range core::SimpleMDArray_byte16_t_O val -> 307
+      return (kindVal == 307);
   };
 };
 // STAMP_core__Pathname_O
@@ -1880,8 +1871,8 @@ template <typename FP> struct Cast<core::Pathname_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::Pathname_O low high --> 349 350 
-      return ((349 <= kindVal) && (kindVal <= 350));
+    // IsA-stamp-range core::Pathname_O low high --> 341 342 
+      return ((341 <= kindVal) && (kindVal <= 342));
   };
 };
 // STAMP_llvmo__FunctionPass_O
@@ -1889,8 +1880,8 @@ template <typename FP> struct Cast<llvmo::FunctionPass_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range llvmo::FunctionPass_O val -> 39
-      return (kindVal == 39);
+    // IsA-stamp-range llvmo::FunctionPass_O val -> 31
+      return (kindVal == 31);
   };
 };
 // STAMP_llvmo__DataLayout_O
@@ -1898,8 +1889,8 @@ template <typename FP> struct Cast<llvmo::DataLayout_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range llvmo::DataLayout_O val -> 348
-      return (kindVal == 348);
+    // IsA-stamp-range llvmo::DataLayout_O val -> 340
+      return (kindVal == 340);
   };
 };
 // STAMP_core__Str8Ns_O
@@ -1907,8 +1898,8 @@ template <typename FP> struct Cast<core::Str8Ns_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::Str8Ns_O val -> 289
-      return (kindVal == 289);
+    // IsA-stamp-range core::Str8Ns_O val -> 281
+      return (kindVal == 281);
   };
 };
 // STAMP_llvmo__BasicBlock_O
@@ -1916,8 +1907,8 @@ template <typename FP> struct Cast<llvmo::BasicBlock_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range llvmo::BasicBlock_O val -> 121
-      return (kindVal == 121);
+    // IsA-stamp-range llvmo::BasicBlock_O val -> 113
+      return (kindVal == 113);
   };
 };
 // STAMP_core__SourceManager_O
@@ -1925,8 +1916,8 @@ template <typename FP> struct Cast<core::SourceManager_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::SourceManager_O val -> 347
-      return (kindVal == 347);
+    // IsA-stamp-range core::SourceManager_O val -> 339
+      return (kindVal == 339);
   };
 };
 // STAMP_core__SimpleMDArray_int8_t_O
@@ -1934,8 +1925,8 @@ template <typename FP> struct Cast<core::SimpleMDArray_int8_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::SimpleMDArray_int8_t_O val -> 307
-      return (kindVal == 307);
+    // IsA-stamp-range core::SimpleMDArray_int8_t_O val -> 299
+      return (kindVal == 299);
   };
 };
 // STAMP_llvmo__UndefValue_O
@@ -1943,8 +1934,8 @@ template <typename FP> struct Cast<llvmo::UndefValue_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range llvmo::UndefValue_O val -> 116
-      return (kindVal == 116);
+    // IsA-stamp-range llvmo::UndefValue_O val -> 108
+      return (kindVal == 108);
   };
 };
 // STAMP_gctools__GCVector_moveable_core__AuxArgument_
@@ -1952,8 +1943,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<core::AuxArgument>
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range gctools::GCVector_moveable<core::AuxArgument> val -> 430
-      return (kindVal == 430);
+    // IsA-stamp-range gctools::GCVector_moveable<core::AuxArgument> val -> 422
+      return (kindVal == 422);
   };
 };
 // STAMP_llvmo__EngineBuilder_O
@@ -1961,8 +1952,8 @@ template <typename FP> struct Cast<llvmo::EngineBuilder_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range llvmo::EngineBuilder_O val -> 62
-      return (kindVal == 62);
+    // IsA-stamp-range llvmo::EngineBuilder_O val -> 54
+      return (kindVal == 54);
   };
 };
 // STAMP_gctools__GCArray_moveable_gctools__smart_ptr_core__T_O__
@@ -1970,8 +1961,8 @@ template <typename FP> struct Cast<gctools::GCArray_moveable<gctools::smart_ptr<
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range gctools::GCArray_moveable<gctools::smart_ptr<core::T_O>> val -> 429
-      return (kindVal == 429);
+    // IsA-stamp-range gctools::GCArray_moveable<gctools::smart_ptr<core::T_O>> val -> 421
+      return (kindVal == 421);
   };
 };
 // STAMP_core__MDArray_byte32_t_O
@@ -1979,8 +1970,8 @@ template <typename FP> struct Cast<core::MDArray_byte32_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::MDArray_byte32_t_O val -> 304
-      return (kindVal == 304);
+    // IsA-stamp-range core::MDArray_byte32_t_O val -> 296
+      return (kindVal == 296);
   };
 };
 // STAMP_core__Character_dummy_O
@@ -1988,8 +1979,8 @@ template <typename FP> struct Cast<core::Character_dummy_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::Character_dummy_O val -> 346
-      return (kindVal == 346);
+    // IsA-stamp-range core::Character_dummy_O val -> 338
+      return (kindVal == 338);
   };
 };
 // STAMP_core__TagbodyEnvironment_O
@@ -1997,8 +1988,8 @@ template <typename FP> struct Cast<core::TagbodyEnvironment_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::TagbodyEnvironment_O val -> 134
-      return (kindVal == 134);
+    // IsA-stamp-range core::TagbodyEnvironment_O val -> 126
+      return (kindVal == 126);
   };
 };
 // STAMP_core__ConsStepper_O
@@ -2006,8 +1997,8 @@ template <typename FP> struct Cast<core::ConsStepper_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::ConsStepper_O val -> 179
-      return (kindVal == 179);
+    // IsA-stamp-range core::ConsStepper_O val -> 171
+      return (kindVal == 171);
   };
 };
 // STAMP_core__CompileTimeEnvironment_O
@@ -2015,8 +2006,8 @@ template <typename FP> struct Cast<core::CompileTimeEnvironment_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::CompileTimeEnvironment_O low high --> 135 141 
-      return ((135 <= kindVal) && (kindVal <= 141));
+    // IsA-stamp-range core::CompileTimeEnvironment_O low high --> 127 133 
+      return ((127 <= kindVal) && (kindVal <= 133));
   };
 };
 // STAMP_llvmo__Constant_O
@@ -2024,8 +2015,8 @@ template <typename FP> struct Cast<llvmo::Constant_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range llvmo::Constant_O low high --> 106 119 
-      return ((106 <= kindVal) && (kindVal <= 119));
+    // IsA-stamp-range llvmo::Constant_O low high --> 98 111 
+      return ((98 <= kindVal) && (kindVal <= 111));
   };
 };
 // STAMP_core__SpecialForm_O
@@ -2033,8 +2024,8 @@ template <typename FP> struct Cast<core::SpecialForm_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::SpecialForm_O val -> 176
-      return (kindVal == 176);
+    // IsA-stamp-range core::SpecialForm_O val -> 168
+      return (kindVal == 168);
   };
 };
 // STAMP_core__Path_O
@@ -2042,8 +2033,8 @@ template <typename FP> struct Cast<core::Path_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::Path_O val -> 345
-      return (kindVal == 345);
+    // IsA-stamp-range core::Path_O val -> 337
+      return (kindVal == 337);
   };
 };
 // STAMP_mp__BlockingConcurrentQueue_O
@@ -2051,8 +2042,8 @@ template <typename FP> struct Cast<mp::BlockingConcurrentQueue_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range mp::BlockingConcurrentQueue_O val -> 344
-      return (kindVal == 344);
+    // IsA-stamp-range mp::BlockingConcurrentQueue_O val -> 336
+      return (kindVal == 336);
   };
 };
 // STAMP_mp__SharedMutex_O
@@ -2060,8 +2051,8 @@ template <typename FP> struct Cast<mp::SharedMutex_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range mp::SharedMutex_O val -> 211
-      return (kindVal == 211);
+    // IsA-stamp-range mp::SharedMutex_O val -> 203
+      return (kindVal == 203);
   };
 };
 // STAMP_clcenv__SpecialOperatorInfo_O
@@ -2069,8 +2060,8 @@ template <typename FP> struct Cast<clcenv::SpecialOperatorInfo_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range clcenv::SpecialOperatorInfo_O val -> 197
-      return (kindVal == 197);
+    // IsA-stamp-range clcenv::SpecialOperatorInfo_O val -> 189
+      return (kindVal == 189);
   };
 };
 // STAMP_core__SexpSaveArchive_O
@@ -2078,8 +2069,8 @@ template <typename FP> struct Cast<core::SexpSaveArchive_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::SexpSaveArchive_O val -> 25
-      return (kindVal == 25);
+    // IsA-stamp-range core::SexpSaveArchive_O val -> 17
+      return (kindVal == 17);
   };
 };
 // STAMP_clcenv__SymbolMacroInfo_O
@@ -2087,8 +2078,8 @@ template <typename FP> struct Cast<clcenv::SymbolMacroInfo_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range clcenv::SymbolMacroInfo_O val -> 203
-      return (kindVal == 203);
+    // IsA-stamp-range clcenv::SymbolMacroInfo_O val -> 195
+      return (kindVal == 195);
   };
 };
 // STAMP_gctools__GCArray_moveable_unsigned_char_
@@ -2096,8 +2087,8 @@ template <typename FP> struct Cast<gctools::GCArray_moveable<unsigned char>*,FP>
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range gctools::GCArray_moveable<unsigned char> val -> 428
-      return (kindVal == 428);
+    // IsA-stamp-range gctools::GCArray_moveable<unsigned char> val -> 420
+      return (kindVal == 420);
   };
 };
 // STAMP_gctools__GCArray_moveable_int_
@@ -2105,8 +2096,8 @@ template <typename FP> struct Cast<gctools::GCArray_moveable<int>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range gctools::GCArray_moveable<int> val -> 427
-      return (kindVal == 427);
+    // IsA-stamp-range gctools::GCArray_moveable<int> val -> 419
+      return (kindVal == 419);
   };
 };
 // STAMP_core__NativeVector_int_O
@@ -2114,8 +2105,8 @@ template <typename FP> struct Cast<core::NativeVector_int_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::NativeVector_int_O val -> 210
-      return (kindVal == 210);
+    // IsA-stamp-range core::NativeVector_int_O val -> 202
+      return (kindVal == 202);
   };
 };
 // STAMP_llvmo__DIBasicType_O
@@ -2123,17 +2114,8 @@ template <typename FP> struct Cast<llvmo::DIBasicType_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range llvmo::DIBasicType_O val -> 82
-      return (kindVal == 82);
-  };
-};
-// STAMP_asttooling__DerivableASTFrontendAction
-template <typename FP> struct Cast<asttooling::DerivableASTFrontendAction*,FP> {
-  inline static bool isA(FP client) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->stamp();
-    // IsA-stamp-range asttooling::DerivableASTFrontendAction val -> 19
-      return (kindVal == 19);
+    // IsA-stamp-range llvmo::DIBasicType_O val -> 74
+      return (kindVal == 74);
   };
 };
 // STAMP_llvmo__DIBuilder_O
@@ -2141,8 +2123,8 @@ template <typename FP> struct Cast<llvmo::DIBuilder_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range llvmo::DIBuilder_O val -> 61
-      return (kindVal == 61);
+    // IsA-stamp-range llvmo::DIBuilder_O val -> 53
+      return (kindVal == 53);
   };
 };
 // STAMP_core__InstanceCreator_O
@@ -2150,8 +2132,8 @@ template <typename FP> struct Cast<core::InstanceCreator_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::InstanceCreator_O val -> 156
-      return (kindVal == 156);
+    // IsA-stamp-range core::InstanceCreator_O val -> 148
+      return (kindVal == 148);
   };
 };
 // STAMP_core__StandardObject_O
@@ -2159,8 +2141,8 @@ template <typename FP> struct Cast<core::StandardObject_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::StandardObject_O val -> 343
-      return (kindVal == 343);
+    // IsA-stamp-range core::StandardObject_O val -> 335
+      return (kindVal == 335);
   };
 };
 // STAMP_llvmo__APInt_O
@@ -2168,8 +2150,8 @@ template <typename FP> struct Cast<llvmo::APInt_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range llvmo::APInt_O val -> 60
-      return (kindVal == 60);
+    // IsA-stamp-range llvmo::APInt_O val -> 52
+      return (kindVal == 52);
   };
 };
 // STAMP_core__Symbol_O
@@ -2177,8 +2159,8 @@ template <typename FP> struct Cast<core::Symbol_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::Symbol_O low high --> 341 342 
-      return ((341 <= kindVal) && (kindVal <= 342));
+    // IsA-stamp-range core::Symbol_O low high --> 333 334 
+      return ((333 <= kindVal) && (kindVal <= 334));
   };
 };
 // STAMP_llvmo__APFloat_O
@@ -2186,8 +2168,8 @@ template <typename FP> struct Cast<llvmo::APFloat_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range llvmo::APFloat_O val -> 59
-      return (kindVal == 59);
+    // IsA-stamp-range llvmo::APFloat_O val -> 51
+      return (kindVal == 51);
   };
 };
 // STAMP_clcenv__FunctionInfo_O
@@ -2195,8 +2177,8 @@ template <typename FP> struct Cast<clcenv::FunctionInfo_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range clcenv::FunctionInfo_O low high --> 193 199 
-      return ((193 <= kindVal) && (kindVal <= 199));
+    // IsA-stamp-range clcenv::FunctionInfo_O low high --> 185 191 
+      return ((185 <= kindVal) && (kindVal <= 191));
   };
 };
 // STAMP_core__IOStreamStream_O
@@ -2204,8 +2186,8 @@ template <typename FP> struct Cast<core::IOStreamStream_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::IOStreamStream_O val -> 379
-      return (kindVal == 379);
+    // IsA-stamp-range core::IOStreamStream_O val -> 371
+      return (kindVal == 371);
   };
 };
 // STAMP_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__T_O__gctools__smart_ptr_core__T_O___
@@ -2213,8 +2195,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<std::pair<gctools:
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>> val -> 426
-      return (kindVal == 426);
+    // IsA-stamp-range gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>> val -> 418
+      return (kindVal == 418);
   };
 };
 // STAMP_core__SimpleMDArrayCharacter_O
@@ -2222,8 +2204,8 @@ template <typename FP> struct Cast<core::SimpleMDArrayCharacter_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::SimpleMDArrayCharacter_O val -> 309
-      return (kindVal == 309);
+    // IsA-stamp-range core::SimpleMDArrayCharacter_O val -> 301
+      return (kindVal == 301);
   };
 };
 // STAMP_core__SimpleCharacterString_O
@@ -2231,8 +2213,8 @@ template <typename FP> struct Cast<core::SimpleCharacterString_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::SimpleCharacterString_O val -> 247
-      return (kindVal == 247);
+    // IsA-stamp-range core::SimpleCharacterString_O val -> 239
+      return (kindVal == 239);
   };
 };
 // STAMP_clcenv__LambdaName_O
@@ -2240,8 +2222,8 @@ template <typename FP> struct Cast<clcenv::LambdaName_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range clcenv::LambdaName_O val -> 221
-      return (kindVal == 221);
+    // IsA-stamp-range clcenv::LambdaName_O val -> 213
+      return (kindVal == 213);
   };
 };
 // STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__List_V__
@@ -2249,8 +2231,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range gctools::GCVector_moveable<gctools::smart_ptr<core::List_V>> val -> 425
-      return (kindVal == 425);
+    // IsA-stamp-range gctools::GCVector_moveable<gctools::smart_ptr<core::List_V>> val -> 417
+      return (kindVal == 417);
   };
 };
 // STAMP_clcenv__LocalFunctionInfo_O
@@ -2258,8 +2240,8 @@ template <typename FP> struct Cast<clcenv::LocalFunctionInfo_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range clcenv::LocalFunctionInfo_O val -> 196
-      return (kindVal == 196);
+    // IsA-stamp-range clcenv::LocalFunctionInfo_O val -> 188
+      return (kindVal == 188);
   };
 };
 // STAMP_core__Array_O
@@ -2267,8 +2249,8 @@ template <typename FP> struct Cast<core::Array_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::Array_O low high --> 237 340 
-      return ((237 <= kindVal) && (kindVal <= 340));
+    // IsA-stamp-range core::Array_O low high --> 229 332 
+      return ((229 <= kindVal) && (kindVal <= 332));
   };
 };
 // STAMP_llvmo__InsertPoint_O
@@ -2276,8 +2258,8 @@ template <typename FP> struct Cast<llvmo::InsertPoint_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range llvmo::InsertPoint_O val -> 236
-      return (kindVal == 236);
+    // IsA-stamp-range llvmo::InsertPoint_O val -> 228
+      return (kindVal == 228);
   };
 };
 // STAMP_llvmo__Argument_O
@@ -2285,8 +2267,8 @@ template <typename FP> struct Cast<llvmo::Argument_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range llvmo::Argument_O val -> 120
-      return (kindVal == 120);
+    // IsA-stamp-range llvmo::Argument_O val -> 112
+      return (kindVal == 112);
   };
 };
 // STAMP_clcenv__Optimize_O
@@ -2294,8 +2276,8 @@ template <typename FP> struct Cast<clcenv::Optimize_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range clcenv::Optimize_O val -> 220
-      return (kindVal == 220);
+    // IsA-stamp-range clcenv::Optimize_O val -> 212
+      return (kindVal == 212);
   };
 };
 // STAMP_core__StrWNs_O
@@ -2303,8 +2285,8 @@ template <typename FP> struct Cast<core::StrWNs_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::StrWNs_O val -> 287
-      return (kindVal == 287);
+    // IsA-stamp-range core::StrWNs_O val -> 279
+      return (kindVal == 279);
   };
 };
 // STAMP_core__Iterator_O
@@ -2312,8 +2294,8 @@ template <typename FP> struct Cast<core::Iterator_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::Iterator_O low high --> 233 235 
-      return ((233 <= kindVal) && (kindVal <= 235));
+    // IsA-stamp-range core::Iterator_O low high --> 225 227 
+      return ((225 <= kindVal) && (kindVal <= 227));
   };
 };
 // STAMP_llvmo__IRBuilderBase_O
@@ -2321,8 +2303,8 @@ template <typename FP> struct Cast<llvmo::IRBuilderBase_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range llvmo::IRBuilderBase_O low high --> 57 58 
-      return ((57 <= kindVal) && (kindVal <= 58));
+    // IsA-stamp-range llvmo::IRBuilderBase_O low high --> 49 50 
+      return ((49 <= kindVal) && (kindVal <= 50));
   };
 };
 // STAMP_gctools__GCVector_moveable_core__ExceptionEntry_
@@ -2330,8 +2312,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<core::ExceptionEnt
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range gctools::GCVector_moveable<core::ExceptionEntry> val -> 424
-      return (kindVal == 424);
+    // IsA-stamp-range gctools::GCVector_moveable<core::ExceptionEntry> val -> 416
+      return (kindVal == 416);
   };
 };
 // STAMP_core__EchoStream_O
@@ -2339,8 +2321,8 @@ template <typename FP> struct Cast<core::EchoStream_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::EchoStream_O val -> 380
-      return (kindVal == 380);
+    // IsA-stamp-range core::EchoStream_O val -> 372
+      return (kindVal == 372);
   };
 };
 // STAMP_core__Null_O
@@ -2348,8 +2330,8 @@ template <typename FP> struct Cast<core::Null_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::Null_O val -> 342
-      return (kindVal == 342);
+    // IsA-stamp-range core::Null_O val -> 334
+      return (kindVal == 334);
   };
 };
 // STAMP_core__SimpleMDArrayBit_O
@@ -2357,8 +2339,8 @@ template <typename FP> struct Cast<core::SimpleMDArrayBit_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::SimpleMDArrayBit_O val -> 326
-      return (kindVal == 326);
+    // IsA-stamp-range core::SimpleMDArrayBit_O val -> 318
+      return (kindVal == 318);
   };
 };
 // STAMP_core__MDArrayBit_O
@@ -2366,8 +2348,8 @@ template <typename FP> struct Cast<core::MDArrayBit_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::MDArrayBit_O val -> 298
-      return (kindVal == 298);
+    // IsA-stamp-range core::MDArrayBit_O val -> 290
+      return (kindVal == 290);
   };
 };
 // STAMP_gctools__GCArray_moveable_signed_char_
@@ -2375,8 +2357,8 @@ template <typename FP> struct Cast<gctools::GCArray_moveable<signed char>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range gctools::GCArray_moveable<signed char> val -> 423
-      return (kindVal == 423);
+    // IsA-stamp-range gctools::GCArray_moveable<signed char> val -> 415
+      return (kindVal == 415);
   };
 };
 // STAMP_core__SingleDispatchMethod_O
@@ -2384,8 +2366,8 @@ template <typename FP> struct Cast<core::SingleDispatchMethod_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::SingleDispatchMethod_O val -> 232
-      return (kindVal == 232);
+    // IsA-stamp-range core::SingleDispatchMethod_O val -> 224
+      return (kindVal == 224);
   };
 };
 // STAMP_clcenv__Closure_O
@@ -2393,8 +2375,8 @@ template <typename FP> struct Cast<clcenv::Closure_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range clcenv::Closure_O val -> 219
-      return (kindVal == 219);
+    // IsA-stamp-range clcenv::Closure_O val -> 211
+      return (kindVal == 211);
   };
 };
 // STAMP_clcenv__Inline_O
@@ -2402,8 +2384,8 @@ template <typename FP> struct Cast<clcenv::Inline_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range clcenv::Inline_O val -> 218
-      return (kindVal == 218);
+    // IsA-stamp-range clcenv::Inline_O val -> 210
+      return (kindVal == 210);
   };
 };
 // STAMP_clcenv__LexicalVariableInfo_O
@@ -2411,8 +2393,8 @@ template <typename FP> struct Cast<clcenv::LexicalVariableInfo_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range clcenv::LexicalVariableInfo_O val -> 202
-      return (kindVal == 202);
+    // IsA-stamp-range clcenv::LexicalVariableInfo_O val -> 194
+      return (kindVal == 194);
   };
 };
 // STAMP_core__TagbodyFrame_O
@@ -2420,8 +2402,8 @@ template <typename FP> struct Cast<core::TagbodyFrame_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::TagbodyFrame_O val -> 145
-      return (kindVal == 145);
+    // IsA-stamp-range core::TagbodyFrame_O val -> 137
+      return (kindVal == 137);
   };
 };
 // STAMP_core__NativeVector_double_O
@@ -2429,8 +2411,8 @@ template <typename FP> struct Cast<core::NativeVector_double_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::NativeVector_double_O val -> 209
-      return (kindVal == 209);
+    // IsA-stamp-range core::NativeVector_double_O val -> 201
+      return (kindVal == 201);
   };
 };
 // STAMP_core__GlueEnvironment_O
@@ -2438,8 +2420,8 @@ template <typename FP> struct Cast<core::GlueEnvironment_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::GlueEnvironment_O val -> 129
-      return (kindVal == 129);
+    // IsA-stamp-range core::GlueEnvironment_O val -> 121
+      return (kindVal == 121);
   };
 };
 // STAMP_llvmo__DILocalScope_O
@@ -2447,8 +2429,8 @@ template <typename FP> struct Cast<llvmo::DILocalScope_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range llvmo::DILocalScope_O low high --> 73 76 
-      return ((73 <= kindVal) && (kindVal <= 76));
+    // IsA-stamp-range llvmo::DILocalScope_O low high --> 65 68 
+      return ((65 <= kindVal) && (kindVal <= 68));
   };
 };
 // STAMP_core__CxxObject_O
@@ -2456,8 +2438,8 @@ template <typename FP> struct Cast<core::CxxObject_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::CxxObject_O low high --> 187 231 
-      return ((187 <= kindVal) && (kindVal <= 231));
+    // IsA-stamp-range core::CxxObject_O low high --> 179 223 
+      return ((179 <= kindVal) && (kindVal <= 223));
   };
 };
 // STAMP_llvmo__ReturnInst_O
@@ -2465,17 +2447,8 @@ template <typename FP> struct Cast<llvmo::ReturnInst_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range llvmo::ReturnInst_O val -> 97
-      return (kindVal == 97);
-  };
-};
-// STAMP_asttooling__DerivableFrontendActionFactory
-template <typename FP> struct Cast<asttooling::DerivableFrontendActionFactory*,FP> {
-  inline static bool isA(FP client) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->stamp();
-    // IsA-stamp-range asttooling::DerivableFrontendActionFactory val -> 13
-      return (kindVal == 13);
+    // IsA-stamp-range llvmo::ReturnInst_O val -> 89
+      return (kindVal == 89);
   };
 };
 // STAMP_llvmo__FunctionType_O
@@ -2483,8 +2456,8 @@ template <typename FP> struct Cast<llvmo::FunctionType_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range llvmo::FunctionType_O val -> 50
-      return (kindVal == 50);
+    // IsA-stamp-range llvmo::FunctionType_O val -> 42
+      return (kindVal == 42);
   };
 };
 // STAMP_clbind__DummyCreator_O
@@ -2492,8 +2465,8 @@ template <typename FP> struct Cast<clbind::DummyCreator_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range clbind::DummyCreator_O val -> 155
-      return (kindVal == 155);
+    // IsA-stamp-range clbind::DummyCreator_O val -> 147
+      return (kindVal == 147);
   };
 };
 // STAMP_core__ClassCreator_O
@@ -2501,8 +2474,8 @@ template <typename FP> struct Cast<core::ClassCreator_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::ClassCreator_O val -> 154
-      return (kindVal == 154);
+    // IsA-stamp-range core::ClassCreator_O val -> 146
+      return (kindVal == 146);
   };
 };
 // STAMP_core__MDArray_byte16_t_O
@@ -2510,8 +2483,8 @@ template <typename FP> struct Cast<core::MDArray_byte16_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::MDArray_byte16_t_O val -> 302
-      return (kindVal == 302);
+    // IsA-stamp-range core::MDArray_byte16_t_O val -> 294
+      return (kindVal == 294);
   };
 };
 // STAMP_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__T_O___
@@ -2519,8 +2492,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<std::pair<gctools:
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>> val -> 422
-      return (kindVal == 422);
+    // IsA-stamp-range gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>> val -> 414
+      return (kindVal == 414);
   };
 };
 // STAMP_llvmo__DITypeRefArray_O
@@ -2528,8 +2501,8 @@ template <typename FP> struct Cast<llvmo::DITypeRefArray_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range llvmo::DITypeRefArray_O val -> 208
-      return (kindVal == 208);
+    // IsA-stamp-range llvmo::DITypeRefArray_O val -> 200
+      return (kindVal == 200);
   };
 };
 // STAMP_llvmo__DILexicalBlock_O
@@ -2537,8 +2510,8 @@ template <typename FP> struct Cast<llvmo::DILexicalBlock_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range llvmo::DILexicalBlock_O val -> 76
-      return (kindVal == 76);
+    // IsA-stamp-range llvmo::DILexicalBlock_O val -> 68
+      return (kindVal == 68);
   };
 };
 // STAMP_core__Pointer_O
@@ -2546,8 +2519,8 @@ template <typename FP> struct Cast<core::Pointer_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::Pointer_O val -> 186
-      return (kindVal == 186);
+    // IsA-stamp-range core::Pointer_O val -> 178
+      return (kindVal == 178);
   };
 };
 // STAMP_llvmo__Type_O
@@ -2555,8 +2528,8 @@ template <typename FP> struct Cast<llvmo::Type_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range llvmo::Type_O low high --> 48 56 
-      return ((48 <= kindVal) && (kindVal <= 56));
+    // IsA-stamp-range llvmo::Type_O low high --> 40 48 
+      return ((40 <= kindVal) && (kindVal <= 48));
   };
 };
 // STAMP_core__SimpleVectorFloat_O
@@ -2564,8 +2537,8 @@ template <typename FP> struct Cast<core::SimpleVectorFloat_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::SimpleVectorFloat_O val -> 240
-      return (kindVal == 240);
+    // IsA-stamp-range core::SimpleVectorFloat_O val -> 232
+      return (kindVal == 232);
   };
 };
 // STAMP_mp__Mutex_O
@@ -2573,8 +2546,8 @@ template <typename FP> struct Cast<mp::Mutex_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range mp::Mutex_O low high --> 206 207 
-      return ((206 <= kindVal) && (kindVal <= 207));
+    // IsA-stamp-range mp::Mutex_O low high --> 198 199 
+      return ((198 <= kindVal) && (kindVal <= 199));
   };
 };
 // STAMP_llvmo__ModuleHandle_O
@@ -2582,8 +2555,8 @@ template <typename FP> struct Cast<llvmo::ModuleHandle_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range llvmo::ModuleHandle_O val -> 185
-      return (kindVal == 185);
+    // IsA-stamp-range llvmo::ModuleHandle_O val -> 177
+      return (kindVal == 177);
   };
 };
 // STAMP_clcenv__BlockInfo_O
@@ -2591,8 +2564,8 @@ template <typename FP> struct Cast<clcenv::BlockInfo_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range clcenv::BlockInfo_O val -> 192
-      return (kindVal == 192);
+    // IsA-stamp-range clcenv::BlockInfo_O val -> 184
+      return (kindVal == 184);
   };
 };
 // STAMP_core__RecursiveDirectoryIterator_O
@@ -2600,8 +2573,8 @@ template <typename FP> struct Cast<core::RecursiveDirectoryIterator_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::RecursiveDirectoryIterator_O val -> 234
-      return (kindVal == 234);
+    // IsA-stamp-range core::RecursiveDirectoryIterator_O val -> 226
+      return (kindVal == 226);
   };
 };
 // STAMP_llvmo__UnreachableInst_O
@@ -2609,8 +2582,8 @@ template <typename FP> struct Cast<llvmo::UnreachableInst_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range llvmo::UnreachableInst_O val -> 96
-      return (kindVal == 96);
+    // IsA-stamp-range llvmo::UnreachableInst_O val -> 88
+      return (kindVal == 88);
   };
 };
 // STAMP_core__MacroClosure_O
@@ -2618,8 +2591,8 @@ template <typename FP> struct Cast<core::MacroClosure_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::MacroClosure_O val -> 172
-      return (kindVal == 172);
+    // IsA-stamp-range core::MacroClosure_O val -> 164
+      return (kindVal == 164);
   };
 };
 // STAMP_core__SNode_O
@@ -2627,8 +2600,8 @@ template <typename FP> struct Cast<core::SNode_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::SNode_O low high --> 182 184 
-      return ((182 <= kindVal) && (kindVal <= 184));
+    // IsA-stamp-range core::SNode_O low high --> 174 176 
+      return ((174 <= kindVal) && (kindVal <= 176));
   };
 };
 // STAMP_core__VectorStepper_O
@@ -2636,8 +2609,8 @@ template <typename FP> struct Cast<core::VectorStepper_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::VectorStepper_O val -> 178
-      return (kindVal == 178);
+    // IsA-stamp-range core::VectorStepper_O val -> 170
+      return (kindVal == 170);
   };
 };
 // STAMP_core__StringInputStream_O
@@ -2645,8 +2618,8 @@ template <typename FP> struct Cast<core::StringInputStream_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::StringInputStream_O val -> 376
-      return (kindVal == 376);
+    // IsA-stamp-range core::StringInputStream_O val -> 368
+      return (kindVal == 368);
   };
 };
 // STAMP_core__LoadArchive_O
@@ -2654,8 +2627,8 @@ template <typename FP> struct Cast<core::LoadArchive_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::LoadArchive_O low high --> 26 27 
-      return ((26 <= kindVal) && (kindVal <= 27));
+    // IsA-stamp-range core::LoadArchive_O low high --> 18 19 
+      return ((18 <= kindVal) && (kindVal <= 19));
   };
 };
 // STAMP_core__Float_O
@@ -2663,8 +2636,8 @@ template <typename FP> struct Cast<core::Float_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::Float_O low high --> 361 365 
-      return ((361 <= kindVal) && (kindVal <= 365));
+    // IsA-stamp-range core::Float_O low high --> 353 357 
+      return ((353 <= kindVal) && (kindVal <= 357));
   };
 };
 // STAMP_llvmo__ModulePass_O
@@ -2672,8 +2645,8 @@ template <typename FP> struct Cast<llvmo::ModulePass_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range llvmo::ModulePass_O low high --> 36 38 
-      return ((36 <= kindVal) && (kindVal <= 38));
+    // IsA-stamp-range llvmo::ModulePass_O low high --> 28 30 
+      return ((28 <= kindVal) && (kindVal <= 30));
   };
 };
 // STAMP_llvmo__DIDerivedType_O
@@ -2681,8 +2654,8 @@ template <typename FP> struct Cast<llvmo::DIDerivedType_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range llvmo::DIDerivedType_O val -> 81
-      return (kindVal == 81);
+    // IsA-stamp-range llvmo::DIDerivedType_O val -> 73
+      return (kindVal == 73);
   };
 };
 // STAMP_clbind__ConstructorCreator_O
@@ -2690,8 +2663,8 @@ template <typename FP> struct Cast<clbind::ConstructorCreator_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range clbind::ConstructorCreator_O val -> 153
-      return (kindVal == 153);
+    // IsA-stamp-range clbind::ConstructorCreator_O val -> 145
+      return (kindVal == 145);
   };
 };
 // STAMP_core__FunctionFrame_O
@@ -2699,8 +2672,8 @@ template <typename FP> struct Cast<core::FunctionFrame_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::FunctionFrame_O val -> 144
-      return (kindVal == 144);
+    // IsA-stamp-range core::FunctionFrame_O val -> 136
+      return (kindVal == 136);
   };
 };
 // STAMP_core__LongFloat_O
@@ -2708,8 +2681,8 @@ template <typename FP> struct Cast<core::LongFloat_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::LongFloat_O val -> 364
-      return (kindVal == 364);
+    // IsA-stamp-range core::LongFloat_O val -> 356
+      return (kindVal == 356);
   };
 };
 // STAMP_core__SimpleVector_int64_t_O
@@ -2717,8 +2690,8 @@ template <typename FP> struct Cast<core::SimpleVector_int64_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::SimpleVector_int64_t_O val -> 244
-      return (kindVal == 244);
+    // IsA-stamp-range core::SimpleVector_int64_t_O val -> 236
+      return (kindVal == 236);
   };
 };
 // STAMP_core__TranslationFunctor_O
@@ -2726,8 +2699,8 @@ template <typename FP> struct Cast<core::TranslationFunctor_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::TranslationFunctor_O val -> 171
-      return (kindVal == 171);
+    // IsA-stamp-range core::TranslationFunctor_O val -> 163
+      return (kindVal == 163);
   };
 };
 // STAMP_llvmo__ConstantDataSequential_O
@@ -2735,8 +2708,8 @@ template <typename FP> struct Cast<llvmo::ConstantDataSequential_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range llvmo::ConstantDataSequential_O low high --> 114 115 
-      return ((114 <= kindVal) && (kindVal <= 115));
+    // IsA-stamp-range llvmo::ConstantDataSequential_O low high --> 106 107 
+      return ((106 <= kindVal) && (kindVal <= 107));
   };
 };
 // STAMP_gctools__GCBitUnitArray_moveable_1_unsigned_int_int_
@@ -2744,8 +2717,8 @@ template <typename FP> struct Cast<gctools::GCBitUnitArray_moveable<1,unsigned i
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range gctools::GCBitUnitArray_moveable<1,unsigned int,int> val -> 421
-      return (kindVal == 421);
+    // IsA-stamp-range gctools::GCBitUnitArray_moveable<1,unsigned int,int> val -> 413
+      return (kindVal == 413);
   };
 };
 // STAMP_llvmo__TargetLibraryInfoWrapperPass_O
@@ -2753,8 +2726,8 @@ template <typename FP> struct Cast<llvmo::TargetLibraryInfoWrapperPass_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range llvmo::TargetLibraryInfoWrapperPass_O val -> 38
-      return (kindVal == 38);
+    // IsA-stamp-range llvmo::TargetLibraryInfoWrapperPass_O val -> 30
+      return (kindVal == 30);
   };
 };
 // STAMP_llvmo__StoreInst_O
@@ -2762,8 +2735,8 @@ template <typename FP> struct Cast<llvmo::StoreInst_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range llvmo::StoreInst_O val -> 104
-      return (kindVal == 104);
+    // IsA-stamp-range llvmo::StoreInst_O val -> 96
+      return (kindVal == 96);
   };
 };
 // STAMP_llvmo__DebugLoc_O
@@ -2771,17 +2744,8 @@ template <typename FP> struct Cast<llvmo::DebugLoc_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range llvmo::DebugLoc_O val -> 181
-      return (kindVal == 181);
-  };
-};
-// STAMP_asttooling__DerivableSyntaxOnlyAction
-template <typename FP> struct Cast<asttooling::DerivableSyntaxOnlyAction*,FP> {
-  inline static bool isA(FP client) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->stamp();
-    // IsA-stamp-range asttooling::DerivableSyntaxOnlyAction val -> 17
-      return (kindVal == 17);
+    // IsA-stamp-range llvmo::DebugLoc_O val -> 173
+      return (kindVal == 173);
   };
 };
 // STAMP_llvmo__User_O
@@ -2789,8 +2753,8 @@ template <typename FP> struct Cast<llvmo::User_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range llvmo::User_O low high --> 85 119 
-      return ((85 <= kindVal) && (kindVal <= 119));
+    // IsA-stamp-range llvmo::User_O low high --> 77 111 
+      return ((77 <= kindVal) && (kindVal <= 111));
   };
 };
 // STAMP_core__WeakPointer_O
@@ -2798,8 +2762,8 @@ template <typename FP> struct Cast<core::WeakPointer_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::WeakPointer_O val -> 180
-      return (kindVal == 180);
+    // IsA-stamp-range core::WeakPointer_O val -> 172
+      return (kindVal == 172);
   };
 };
 // STAMP_core__LeafSNode_O
@@ -2807,8 +2771,8 @@ template <typename FP> struct Cast<core::LeafSNode_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::LeafSNode_O val -> 184
-      return (kindVal == 184);
+    // IsA-stamp-range core::LeafSNode_O val -> 176
+      return (kindVal == 176);
   };
 };
 // STAMP_core__MDArray_int16_t_O
@@ -2816,8 +2780,8 @@ template <typename FP> struct Cast<core::MDArray_int16_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::MDArray_int16_t_O val -> 276
-      return (kindVal == 276);
+    // IsA-stamp-range core::MDArray_int16_t_O val -> 268
+      return (kindVal == 268);
   };
 };
 // STAMP_clcenv__OptimizeInfo_O
@@ -2825,8 +2789,8 @@ template <typename FP> struct Cast<clcenv::OptimizeInfo_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range clcenv::OptimizeInfo_O val -> 191
-      return (kindVal == 191);
+    // IsA-stamp-range clcenv::OptimizeInfo_O val -> 183
+      return (kindVal == 183);
   };
 };
 // STAMP_core__IOFileStream_O
@@ -2834,8 +2798,8 @@ template <typename FP> struct Cast<core::IOFileStream_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::IOFileStream_O val -> 378
-      return (kindVal == 378);
+    // IsA-stamp-range core::IOFileStream_O val -> 370
+      return (kindVal == 370);
   };
 };
 // STAMP_llvmo__FenceInst_O
@@ -2843,8 +2807,8 @@ template <typename FP> struct Cast<llvmo::FenceInst_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range llvmo::FenceInst_O val -> 103
-      return (kindVal == 103);
+    // IsA-stamp-range llvmo::FenceInst_O val -> 95
+      return (kindVal == 95);
   };
 };
 // STAMP_core__RuntimeVisibleEnvironment_O
@@ -2852,8 +2816,8 @@ template <typename FP> struct Cast<core::RuntimeVisibleEnvironment_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::RuntimeVisibleEnvironment_O low high --> 131 134 
-      return ((131 <= kindVal) && (kindVal <= 134));
+    // IsA-stamp-range core::RuntimeVisibleEnvironment_O low high --> 123 126 
+      return ((123 <= kindVal) && (kindVal <= 126));
   };
 };
 // STAMP_core__ValueFrame_O
@@ -2861,8 +2825,8 @@ template <typename FP> struct Cast<core::ValueFrame_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::ValueFrame_O val -> 143
-      return (kindVal == 143);
+    // IsA-stamp-range core::ValueFrame_O val -> 135
+      return (kindVal == 135);
   };
 };
 // STAMP_llvmo__AtomicCmpXchgInst_O
@@ -2870,8 +2834,8 @@ template <typename FP> struct Cast<llvmo::AtomicCmpXchgInst_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range llvmo::AtomicCmpXchgInst_O val -> 102
-      return (kindVal == 102);
+    // IsA-stamp-range llvmo::AtomicCmpXchgInst_O val -> 94
+      return (kindVal == 94);
   };
 };
 // STAMP_gctools__GCArray_moveable_unsigned_long_
@@ -2879,8 +2843,8 @@ template <typename FP> struct Cast<gctools::GCArray_moveable<unsigned long>*,FP>
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range gctools::GCArray_moveable<unsigned long> val -> 420
-      return (kindVal == 420);
+    // IsA-stamp-range gctools::GCArray_moveable<unsigned long> val -> 412
+      return (kindVal == 412);
   };
 };
 // STAMP_core__SimpleMDArray_byte8_t_O
@@ -2888,8 +2852,8 @@ template <typename FP> struct Cast<core::SimpleMDArray_byte8_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::SimpleMDArray_byte8_t_O val -> 330
-      return (kindVal == 330);
+    // IsA-stamp-range core::SimpleMDArray_byte8_t_O val -> 322
+      return (kindVal == 322);
   };
 };
 // STAMP_core__SequenceStepper_O
@@ -2897,8 +2861,8 @@ template <typename FP> struct Cast<core::SequenceStepper_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::SequenceStepper_O low high --> 177 179 
-      return ((177 <= kindVal) && (kindVal <= 179));
+    // IsA-stamp-range core::SequenceStepper_O low high --> 169 171 
+      return ((169 <= kindVal) && (kindVal <= 171));
   };
 };
 // STAMP_core__SimpleVector_int32_t_O
@@ -2906,8 +2870,8 @@ template <typename FP> struct Cast<core::SimpleVector_int32_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::SimpleVector_int32_t_O val -> 263
-      return (kindVal == 263);
+    // IsA-stamp-range core::SimpleVector_int32_t_O val -> 255
+      return (kindVal == 255);
   };
 };
 // STAMP_core__SaveArchive_O
@@ -2915,8 +2879,8 @@ template <typename FP> struct Cast<core::SaveArchive_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::SaveArchive_O low high --> 24 25 
-      return ((24 <= kindVal) && (kindVal <= 25));
+    // IsA-stamp-range core::SaveArchive_O low high --> 16 17 
+      return ((16 <= kindVal) && (kindVal <= 17));
   };
 };
 // STAMP_core__Complex_O
@@ -2924,8 +2888,8 @@ template <typename FP> struct Cast<core::Complex_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::Complex_O val -> 366
-      return (kindVal == 366);
+    // IsA-stamp-range core::Complex_O val -> 358
+      return (kindVal == 358);
   };
 };
 // STAMP_llvmo__ConstantPointerNull_O
@@ -2933,8 +2897,8 @@ template <typename FP> struct Cast<llvmo::ConstantPointerNull_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range llvmo::ConstantPointerNull_O val -> 113
-      return (kindVal == 113);
+    // IsA-stamp-range llvmo::ConstantPointerNull_O val -> 105
+      return (kindVal == 105);
   };
 };
 // STAMP_llvmo__Instruction_O
@@ -2942,8 +2906,8 @@ template <typename FP> struct Cast<llvmo::Instruction_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range llvmo::Instruction_O low high --> 86 105 
-      return ((86 <= kindVal) && (kindVal <= 105));
+    // IsA-stamp-range llvmo::Instruction_O low high --> 78 97 
+      return ((78 <= kindVal) && (kindVal <= 97));
   };
 };
 // STAMP_llvmo__VectorType_O
@@ -2951,8 +2915,8 @@ template <typename FP> struct Cast<llvmo::VectorType_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range llvmo::VectorType_O val -> 55
-      return (kindVal == 55);
+    // IsA-stamp-range llvmo::VectorType_O val -> 47
+      return (kindVal == 47);
   };
 };
 // STAMP_core__FileStream_O
@@ -2960,8 +2924,8 @@ template <typename FP> struct Cast<core::FileStream_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::FileStream_O low high --> 377 379 
-      return ((377 <= kindVal) && (kindVal <= 379));
+    // IsA-stamp-range core::FileStream_O low high --> 369 371 
+      return ((369 <= kindVal) && (kindVal <= 371));
   };
 };
 // STAMP_llvmo__ValueAsMetadata_O
@@ -2969,8 +2933,8 @@ template <typename FP> struct Cast<llvmo::ValueAsMetadata_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range llvmo::ValueAsMetadata_O val -> 68
-      return (kindVal == 68);
+    // IsA-stamp-range llvmo::ValueAsMetadata_O val -> 60
+      return (kindVal == 60);
   };
 };
 // STAMP_core__Rational_O
@@ -2978,8 +2942,8 @@ template <typename FP> struct Cast<core::Rational_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::Rational_O low high --> 356 360 
-      return ((356 <= kindVal) && (kindVal <= 360));
+    // IsA-stamp-range core::Rational_O low high --> 348 352 
+      return ((348 <= kindVal) && (kindVal <= 352));
   };
 };
 // STAMP_llvmo__ConstantExpr_O
@@ -2987,8 +2951,8 @@ template <typename FP> struct Cast<llvmo::ConstantExpr_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range llvmo::ConstantExpr_O val -> 112
-      return (kindVal == 112);
+    // IsA-stamp-range llvmo::ConstantExpr_O val -> 104
+      return (kindVal == 104);
   };
 };
 // STAMP_llvmo__LandingPadInst_O
@@ -2996,8 +2960,8 @@ template <typename FP> struct Cast<llvmo::LandingPadInst_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range llvmo::LandingPadInst_O val -> 101
-      return (kindVal == 101);
+    // IsA-stamp-range llvmo::LandingPadInst_O val -> 93
+      return (kindVal == 93);
   };
 };
 // STAMP_core__MDArrayCharacter_O
@@ -3005,8 +2969,8 @@ template <typename FP> struct Cast<core::MDArrayCharacter_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::MDArrayCharacter_O val -> 280
-      return (kindVal == 280);
+    // IsA-stamp-range core::MDArrayCharacter_O val -> 272
+      return (kindVal == 272);
   };
 };
 // STAMP_core__SingleDispatchEffectiveMethodFunction_O
@@ -3014,8 +2978,8 @@ template <typename FP> struct Cast<core::SingleDispatchEffectiveMethodFunction_O
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::SingleDispatchEffectiveMethodFunction_O val -> 174
-      return (kindVal == 174);
+    // IsA-stamp-range core::SingleDispatchEffectiveMethodFunction_O val -> 166
+      return (kindVal == 166);
   };
 };
 // STAMP_core__Function_O
@@ -3023,8 +2987,8 @@ template <typename FP> struct Cast<core::Function_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::Function_O low high --> 147 176 
-      return ((147 <= kindVal) && (kindVal <= 176));
+    // IsA-stamp-range core::Function_O low high --> 139 168 
+      return ((139 <= kindVal) && (kindVal <= 168));
   };
 };
 // STAMP_gctools__GCVector_moveable_gctools__smart_ptr_clbind__ClassRep_O__
@@ -3032,8 +2996,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range gctools::GCVector_moveable<gctools::smart_ptr<clbind::ClassRep_O>> val -> 419
-      return (kindVal == 419);
+    // IsA-stamp-range gctools::GCVector_moveable<gctools::smart_ptr<clbind::ClassRep_O>> val -> 411
+      return (kindVal == 411);
   };
 };
 // STAMP_llvmo__StructType_O
@@ -3041,8 +3005,8 @@ template <typename FP> struct Cast<llvmo::StructType_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range llvmo::StructType_O val -> 56
-      return (kindVal == 56);
+    // IsA-stamp-range llvmo::StructType_O val -> 48
+      return (kindVal == 48);
   };
 };
 // STAMP_clcenv__FunctionDynamicExtent_O
@@ -3050,8 +3014,8 @@ template <typename FP> struct Cast<clcenv::FunctionDynamicExtent_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range clcenv::FunctionDynamicExtent_O val -> 217
-      return (kindVal == 217);
+    // IsA-stamp-range clcenv::FunctionDynamicExtent_O val -> 209
+      return (kindVal == 209);
   };
 };
 // STAMP_core__RandomState_O
@@ -3059,8 +3023,8 @@ template <typename FP> struct Cast<core::RandomState_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::RandomState_O val -> 146
-      return (kindVal == 146);
+    // IsA-stamp-range core::RandomState_O val -> 138
+      return (kindVal == 138);
   };
 };
 // STAMP_core__MDArrayFloat_O
@@ -3068,8 +3032,8 @@ template <typename FP> struct Cast<core::MDArrayFloat_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::MDArrayFloat_O val -> 284
-      return (kindVal == 284);
+    // IsA-stamp-range core::MDArrayFloat_O val -> 276
+      return (kindVal == 276);
   };
 };
 // STAMP_core__HashTableEql_O
@@ -3077,8 +3041,8 @@ template <typename FP> struct Cast<core::HashTableEql_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::HashTableEql_O val -> 390
-      return (kindVal == 390);
+    // IsA-stamp-range core::HashTableEql_O val -> 382
+      return (kindVal == 382);
   };
 };
 // STAMP_llvmo__Target_O
@@ -3086,8 +3050,8 @@ template <typename FP> struct Cast<llvmo::Target_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range llvmo::Target_O val -> 47
-      return (kindVal == 47);
+    // IsA-stamp-range llvmo::Target_O val -> 39
+      return (kindVal == 39);
   };
 };
 // STAMP_core__MDArray_byte64_t_O
@@ -3095,8 +3059,8 @@ template <typename FP> struct Cast<core::MDArray_byte64_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::MDArray_byte64_t_O val -> 274
-      return (kindVal == 274);
+    // IsA-stamp-range core::MDArray_byte64_t_O val -> 266
+      return (kindVal == 266);
   };
 };
 // STAMP_mp__ConditionVariable_O
@@ -3104,8 +3068,8 @@ template <typename FP> struct Cast<mp::ConditionVariable_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range mp::ConditionVariable_O val -> 205
-      return (kindVal == 205);
+    // IsA-stamp-range mp::ConditionVariable_O val -> 197
+      return (kindVal == 197);
   };
 };
 // STAMP_core__Real_O
@@ -3113,8 +3077,8 @@ template <typename FP> struct Cast<core::Real_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::Real_O low high --> 355 365 
-      return ((355 <= kindVal) && (kindVal <= 365));
+    // IsA-stamp-range core::Real_O low high --> 347 357 
+      return ((347 <= kindVal) && (kindVal <= 357));
   };
 };
 // STAMP_gctools__GCVector_moveable_core__DynamicBinding_
@@ -3122,8 +3086,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<core::DynamicBindi
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range gctools::GCVector_moveable<core::DynamicBinding> val -> 418
-      return (kindVal == 418);
+    // IsA-stamp-range gctools::GCVector_moveable<core::DynamicBinding> val -> 410
+      return (kindVal == 410);
   };
 };
 // STAMP_core__SimpleVector_fixnum_O
@@ -3131,8 +3095,8 @@ template <typename FP> struct Cast<core::SimpleVector_fixnum_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::SimpleVector_fixnum_O val -> 255
-      return (kindVal == 255);
+    // IsA-stamp-range core::SimpleVector_fixnum_O val -> 247
+      return (kindVal == 247);
   };
 };
 // STAMP_core__FuncallableInstanceCreator_O
@@ -3140,8 +3104,8 @@ template <typename FP> struct Cast<core::FuncallableInstanceCreator_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::FuncallableInstanceCreator_O val -> 152
-      return (kindVal == 152);
+    // IsA-stamp-range core::FuncallableInstanceCreator_O val -> 144
+      return (kindVal == 144);
   };
 };
 // STAMP_core__SimpleVector_byte32_t_O
@@ -3149,8 +3113,8 @@ template <typename FP> struct Cast<core::SimpleVector_byte32_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::SimpleVector_byte32_t_O val -> 266
-      return (kindVal == 266);
+    // IsA-stamp-range core::SimpleVector_byte32_t_O val -> 258
+      return (kindVal == 258);
   };
 };
 // STAMP_core__MDArray_byte8_t_O
@@ -3158,8 +3122,8 @@ template <typename FP> struct Cast<core::MDArray_byte8_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::MDArray_byte8_t_O val -> 297
-      return (kindVal == 297);
+    // IsA-stamp-range core::MDArray_byte8_t_O val -> 289
+      return (kindVal == 289);
   };
 };
 // STAMP_core__SexpLoadArchive_O
@@ -3167,8 +3131,8 @@ template <typename FP> struct Cast<core::SexpLoadArchive_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::SexpLoadArchive_O val -> 27
-      return (kindVal == 27);
+    // IsA-stamp-range core::SexpLoadArchive_O val -> 19
+      return (kindVal == 19);
   };
 };
 // STAMP_core__SingleDispatchGenericFunctionClosure_O
@@ -3176,8 +3140,8 @@ template <typename FP> struct Cast<core::SingleDispatchGenericFunctionClosure_O*
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::SingleDispatchGenericFunctionClosure_O val -> 173
-      return (kindVal == 173);
+    // IsA-stamp-range core::SingleDispatchGenericFunctionClosure_O val -> 165
+      return (kindVal == 165);
   };
 };
 // STAMP_core__StringOutputStream_O
@@ -3185,8 +3149,8 @@ template <typename FP> struct Cast<core::StringOutputStream_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::StringOutputStream_O val -> 375
-      return (kindVal == 375);
+    // IsA-stamp-range core::StringOutputStream_O val -> 367
+      return (kindVal == 367);
   };
 };
 // STAMP_core__AnsiStream_O
@@ -3194,8 +3158,8 @@ template <typename FP> struct Cast<core::AnsiStream_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::AnsiStream_O low high --> 369 380 
-      return ((369 <= kindVal) && (kindVal <= 380));
+    // IsA-stamp-range core::AnsiStream_O low high --> 361 372 
+      return ((361 <= kindVal) && (kindVal <= 372));
   };
 };
 // STAMP_core__BranchSNode_O
@@ -3203,8 +3167,8 @@ template <typename FP> struct Cast<core::BranchSNode_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::BranchSNode_O val -> 183
-      return (kindVal == 183);
+    // IsA-stamp-range core::BranchSNode_O val -> 175
+      return (kindVal == 175);
   };
 };
 // STAMP_llvmo__TerminatorInst_O
@@ -3212,8 +3176,8 @@ template <typename FP> struct Cast<llvmo::TerminatorInst_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range llvmo::TerminatorInst_O low high --> 93 100 
-      return ((93 <= kindVal) && (kindVal <= 100));
+    // IsA-stamp-range llvmo::TerminatorInst_O low high --> 85 92 
+      return ((85 <= kindVal) && (kindVal <= 92));
   };
 };
 // STAMP_llvmo__Module_O
@@ -3221,8 +3185,8 @@ template <typename FP> struct Cast<llvmo::Module_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range llvmo::Module_O val -> 46
-      return (kindVal == 46);
+    // IsA-stamp-range llvmo::Module_O val -> 38
+      return (kindVal == 38);
   };
 };
 // STAMP_core__BuiltinClosure_O
@@ -3230,8 +3194,8 @@ template <typename FP> struct Cast<core::BuiltinClosure_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::BuiltinClosure_O low high --> 169 172 
-      return ((169 <= kindVal) && (kindVal <= 172));
+    // IsA-stamp-range core::BuiltinClosure_O low high --> 161 164 
+      return ((161 <= kindVal) && (kindVal <= 164));
   };
 };
 // STAMP_core__SingleFloat_dummy_O
@@ -3239,8 +3203,8 @@ template <typename FP> struct Cast<core::SingleFloat_dummy_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::SingleFloat_dummy_O val -> 363
-      return (kindVal == 363);
+    // IsA-stamp-range core::SingleFloat_dummy_O val -> 355
+      return (kindVal == 355);
   };
 };
 // STAMP_core__ValueEnvironment_O
@@ -3248,8 +3212,8 @@ template <typename FP> struct Cast<core::ValueEnvironment_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::ValueEnvironment_O val -> 133
-      return (kindVal == 133);
+    // IsA-stamp-range core::ValueEnvironment_O val -> 125
+      return (kindVal == 125);
   };
 };
 // STAMP_core__CxxMethodFunction_O
@@ -3257,8 +3221,8 @@ template <typename FP> struct Cast<core::CxxMethodFunction_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::CxxMethodFunction_O val -> 168
-      return (kindVal == 168);
+    // IsA-stamp-range core::CxxMethodFunction_O val -> 160
+      return (kindVal == 160);
   };
 };
 // STAMP_llvmo__InvokeInst_O
@@ -3266,8 +3230,8 @@ template <typename FP> struct Cast<llvmo::InvokeInst_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range llvmo::InvokeInst_O val -> 95
-      return (kindVal == 95);
+    // IsA-stamp-range llvmo::InvokeInst_O val -> 87
+      return (kindVal == 87);
   };
 };
 // STAMP_core__Environment_O
@@ -3275,8 +3239,8 @@ template <typename FP> struct Cast<core::Environment_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::Environment_O low high --> 128 145 
-      return ((128 <= kindVal) && (kindVal <= 145));
+    // IsA-stamp-range core::Environment_O low high --> 120 137 
+      return ((120 <= kindVal) && (kindVal <= 137));
   };
 };
 // STAMP_clcenv__SymbolMacro_O
@@ -3284,8 +3248,8 @@ template <typename FP> struct Cast<clcenv::SymbolMacro_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range clcenv::SymbolMacro_O val -> 216
-      return (kindVal == 216);
+    // IsA-stamp-range clcenv::SymbolMacro_O val -> 208
+      return (kindVal == 208);
   };
 };
 // STAMP_llvmo__AttributeSet_O
@@ -3293,8 +3257,8 @@ template <typename FP> struct Cast<llvmo::AttributeSet_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range llvmo::AttributeSet_O val -> 127
-      return (kindVal == 127);
+    // IsA-stamp-range llvmo::AttributeSet_O val -> 119
+      return (kindVal == 119);
   };
 };
 // STAMP_clcenv__LocalMacroInfo_O
@@ -3302,8 +3266,8 @@ template <typename FP> struct Cast<clcenv::LocalMacroInfo_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range clcenv::LocalMacroInfo_O val -> 195
-      return (kindVal == 195);
+    // IsA-stamp-range clcenv::LocalMacroInfo_O val -> 187
+      return (kindVal == 187);
   };
 };
 // STAMP_llvmo__AtomicRMWInst_O
@@ -3311,8 +3275,8 @@ template <typename FP> struct Cast<llvmo::AtomicRMWInst_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range llvmo::AtomicRMWInst_O val -> 92
-      return (kindVal == 92);
+    // IsA-stamp-range llvmo::AtomicRMWInst_O val -> 84
+      return (kindVal == 84);
   };
 };
 // STAMP_llvmo__PassManager_O
@@ -3320,8 +3284,8 @@ template <typename FP> struct Cast<llvmo::PassManager_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range llvmo::PassManager_O val -> 65
-      return (kindVal == 65);
+    // IsA-stamp-range llvmo::PassManager_O val -> 57
+      return (kindVal == 57);
   };
 };
 // STAMP_core__StrNs_O
@@ -3329,8 +3293,8 @@ template <typename FP> struct Cast<core::StrNs_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::StrNs_O low high --> 285 289 
-      return ((285 <= kindVal) && (kindVal <= 289));
+    // IsA-stamp-range core::StrNs_O low high --> 277 281 
+      return ((277 <= kindVal) && (kindVal <= 281));
   };
 };
 // STAMP_clasp_ffi__ForeignData_O
@@ -3338,8 +3302,8 @@ template <typename FP> struct Cast<clasp_ffi::ForeignData_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range clasp_ffi::ForeignData_O val -> 45
-      return (kindVal == 45);
+    // IsA-stamp-range clasp_ffi::ForeignData_O val -> 37
+      return (kindVal == 37);
   };
 };
 // STAMP_core__SimpleVector_O
@@ -3347,8 +3311,8 @@ template <typename FP> struct Cast<core::SimpleVector_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::SimpleVector_O val -> 259
-      return (kindVal == 259);
+    // IsA-stamp-range core::SimpleVector_O val -> 251
+      return (kindVal == 251);
   };
 };
 // STAMP_core__UnwindProtectEnvironment_O
@@ -3356,8 +3320,8 @@ template <typename FP> struct Cast<core::UnwindProtectEnvironment_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::UnwindProtectEnvironment_O val -> 140
-      return (kindVal == 140);
+    // IsA-stamp-range core::UnwindProtectEnvironment_O val -> 132
+      return (kindVal == 132);
   };
 };
 // STAMP_clcenv__GlobalMacroInfo_O
@@ -3365,8 +3329,8 @@ template <typename FP> struct Cast<clcenv::GlobalMacroInfo_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range clcenv::GlobalMacroInfo_O val -> 194
-      return (kindVal == 194);
+    // IsA-stamp-range clcenv::GlobalMacroInfo_O val -> 186
+      return (kindVal == 186);
   };
 };
 // STAMP_llvmo__CallInst_O
@@ -3374,8 +3338,8 @@ template <typename FP> struct Cast<llvmo::CallInst_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range llvmo::CallInst_O val -> 91
-      return (kindVal == 91);
+    // IsA-stamp-range llvmo::CallInst_O val -> 83
+      return (kindVal == 83);
   };
 };
 // STAMP_llvmo__DISubprogram_O
@@ -3383,8 +3347,8 @@ template <typename FP> struct Cast<llvmo::DISubprogram_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range llvmo::DISubprogram_O val -> 74
-      return (kindVal == 74);
+    // IsA-stamp-range llvmo::DISubprogram_O val -> 66
+      return (kindVal == 66);
   };
 };
 // STAMP_llvmo__FunctionPassManager_O
@@ -3392,8 +3356,8 @@ template <typename FP> struct Cast<llvmo::FunctionPassManager_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range llvmo::FunctionPassManager_O val -> 64
-      return (kindVal == 64);
+    // IsA-stamp-range llvmo::FunctionPassManager_O val -> 56
+      return (kindVal == 56);
   };
 };
 // STAMP_core__DoubleFloat_O
@@ -3401,8 +3365,8 @@ template <typename FP> struct Cast<core::DoubleFloat_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::DoubleFloat_O val -> 362
-      return (kindVal == 362);
+    // IsA-stamp-range core::DoubleFloat_O val -> 354
+      return (kindVal == 354);
   };
 };
 // STAMP_clcenv__Info_O
@@ -3410,8 +3374,8 @@ template <typename FP> struct Cast<clcenv::Info_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range clcenv::Info_O low high --> 190 204 
-      return ((190 <= kindVal) && (kindVal <= 204));
+    // IsA-stamp-range clcenv::Info_O low high --> 182 196 
+      return ((182 <= kindVal) && (kindVal <= 196));
   };
 };
 // STAMP_core__Creator_O
@@ -3419,8 +3383,8 @@ template <typename FP> struct Cast<core::Creator_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::Creator_O low high --> 149 157 
-      return ((149 <= kindVal) && (kindVal <= 157));
+    // IsA-stamp-range core::Creator_O low high --> 141 149 
+      return ((141 <= kindVal) && (kindVal <= 149));
   };
 };
 // STAMP_llvmo__ArrayType_O
@@ -3428,8 +3392,8 @@ template <typename FP> struct Cast<llvmo::ArrayType_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range llvmo::ArrayType_O val -> 54
-      return (kindVal == 54);
+    // IsA-stamp-range llvmo::ArrayType_O val -> 46
+      return (kindVal == 46);
   };
 };
 // STAMP_core__SimpleMDArray_int64_t_O
@@ -3437,8 +3401,8 @@ template <typename FP> struct Cast<core::SimpleMDArray_int64_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::SimpleMDArray_int64_t_O val -> 334
-      return (kindVal == 334);
+    // IsA-stamp-range core::SimpleMDArray_int64_t_O val -> 326
+      return (kindVal == 326);
   };
 };
 // STAMP_core__SimpleString_O
@@ -3446,8 +3410,8 @@ template <typename FP> struct Cast<core::SimpleString_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::SimpleString_O low high --> 245 249 
-      return ((245 <= kindVal) && (kindVal <= 249));
+    // IsA-stamp-range core::SimpleString_O low high --> 237 241 
+      return ((237 <= kindVal) && (kindVal <= 241));
   };
 };
 // STAMP_llvmo__MCSubtargetInfo_O
@@ -3455,8 +3419,8 @@ template <typename FP> struct Cast<llvmo::MCSubtargetInfo_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range llvmo::MCSubtargetInfo_O low high --> 43 44 
-      return ((43 <= kindVal) && (kindVal <= 44));
+    // IsA-stamp-range llvmo::MCSubtargetInfo_O low high --> 35 36 
+      return ((35 <= kindVal) && (kindVal <= 36));
   };
 };
 // STAMP_llvmo__BlockAddress_O
@@ -3464,8 +3428,8 @@ template <typename FP> struct Cast<llvmo::BlockAddress_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range llvmo::BlockAddress_O val -> 111
-      return (kindVal == 111);
+    // IsA-stamp-range llvmo::BlockAddress_O val -> 103
+      return (kindVal == 103);
   };
 };
 // STAMP_gctools__GCArray_moveable_short_
@@ -3473,8 +3437,8 @@ template <typename FP> struct Cast<gctools::GCArray_moveable<short>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range gctools::GCArray_moveable<short> val -> 417
-      return (kindVal == 417);
+    // IsA-stamp-range gctools::GCArray_moveable<short> val -> 409
+      return (kindVal == 409);
   };
 };
 // STAMP_llvmo__DICompositeType_O
@@ -3482,8 +3446,8 @@ template <typename FP> struct Cast<llvmo::DICompositeType_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range llvmo::DICompositeType_O val -> 80
-      return (kindVal == 80);
+    // IsA-stamp-range llvmo::DICompositeType_O val -> 72
+      return (kindVal == 72);
   };
 };
 // STAMP_core__FunctionValueEnvironment_O
@@ -3491,8 +3455,8 @@ template <typename FP> struct Cast<core::FunctionValueEnvironment_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::FunctionValueEnvironment_O val -> 132
-      return (kindVal == 132);
+    // IsA-stamp-range core::FunctionValueEnvironment_O val -> 124
+      return (kindVal == 124);
   };
 };
 // STAMP_core__DerivableCxxClassCreator_O
@@ -3500,8 +3464,8 @@ template <typename FP> struct Cast<core::DerivableCxxClassCreator_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::DerivableCxxClassCreator_O val -> 151
-      return (kindVal == 151);
+    // IsA-stamp-range core::DerivableCxxClassCreator_O val -> 143
+      return (kindVal == 143);
   };
 };
 // STAMP_core__TemplatedFunctionBase_O
@@ -3509,8 +3473,8 @@ template <typename FP> struct Cast<core::TemplatedFunctionBase_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::TemplatedFunctionBase_O val -> 170
-      return (kindVal == 170);
+    // IsA-stamp-range core::TemplatedFunctionBase_O val -> 162
+      return (kindVal == 162);
   };
 };
 // STAMP_core__StringStream_O
@@ -3518,8 +3482,8 @@ template <typename FP> struct Cast<core::StringStream_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::StringStream_O low high --> 374 376 
-      return ((374 <= kindVal) && (kindVal <= 376));
+    // IsA-stamp-range core::StringStream_O low high --> 366 368 
+      return ((366 <= kindVal) && (kindVal <= 368));
   };
 };
 // STAMP_core__HashTableEq_O
@@ -3527,8 +3491,8 @@ template <typename FP> struct Cast<core::HashTableEq_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::HashTableEq_O val -> 389
-      return (kindVal == 389);
+    // IsA-stamp-range core::HashTableEq_O val -> 381
+      return (kindVal == 381);
   };
 };
 // STAMP_gctools__GCVector_moveable_core__SymbolStorage_
@@ -3536,8 +3500,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<core::SymbolStorag
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range gctools::GCVector_moveable<core::SymbolStorage> val -> 416
-      return (kindVal == 416);
+    // IsA-stamp-range gctools::GCVector_moveable<core::SymbolStorage> val -> 408
+      return (kindVal == 408);
   };
 };
 // STAMP_core__MDArray_int32_t_O
@@ -3545,8 +3509,8 @@ template <typename FP> struct Cast<core::MDArray_int32_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::MDArray_int32_t_O val -> 282
-      return (kindVal == 282);
+    // IsA-stamp-range core::MDArray_int32_t_O val -> 274
+      return (kindVal == 274);
   };
 };
 // STAMP_llvmo__IntegerType_O
@@ -3554,8 +3518,8 @@ template <typename FP> struct Cast<llvmo::IntegerType_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range llvmo::IntegerType_O val -> 49
-      return (kindVal == 49);
+    // IsA-stamp-range llvmo::IntegerType_O val -> 41
+      return (kindVal == 41);
   };
 };
 // STAMP_asttooling__AsttoolingExposer_O
@@ -3563,8 +3527,8 @@ template <typename FP> struct Cast<asttooling::AsttoolingExposer_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range asttooling::AsttoolingExposer_O val -> 393
-      return (kindVal == 393);
+    // IsA-stamp-range asttooling::AsttoolingExposer_O val -> 385
+      return (kindVal == 385);
   };
 };
 // STAMP_core__HashTableEqualp_O
@@ -3572,8 +3536,8 @@ template <typename FP> struct Cast<core::HashTableEqualp_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::HashTableEqualp_O val -> 388
-      return (kindVal == 388);
+    // IsA-stamp-range core::HashTableEqualp_O val -> 380
+      return (kindVal == 380);
   };
 };
 // STAMP_core__LambdaListHandler_O
@@ -3581,8 +3545,8 @@ template <typename FP> struct Cast<core::LambdaListHandler_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::LambdaListHandler_O val -> 126
-      return (kindVal == 126);
+    // IsA-stamp-range core::LambdaListHandler_O val -> 118
+      return (kindVal == 118);
   };
 };
 // STAMP_core__MDArray_int64_t_O
@@ -3590,8 +3554,8 @@ template <typename FP> struct Cast<core::MDArray_int64_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::MDArray_int64_t_O val -> 300
-      return (kindVal == 300);
+    // IsA-stamp-range core::MDArray_int64_t_O val -> 292
+      return (kindVal == 292);
   };
 };
 // STAMP_core__SimpleMDArray_size_t_O
@@ -3599,8 +3563,8 @@ template <typename FP> struct Cast<core::SimpleMDArray_size_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::SimpleMDArray_size_t_O val -> 332
-      return (kindVal == 332);
+    // IsA-stamp-range core::SimpleMDArray_size_t_O val -> 324
+      return (kindVal == 324);
   };
 };
 // STAMP_core__StructureClassCreator_O
@@ -3608,8 +3572,8 @@ template <typename FP> struct Cast<core::StructureClassCreator_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::StructureClassCreator_O val -> 150
-      return (kindVal == 150);
+    // IsA-stamp-range core::StructureClassCreator_O val -> 142
+      return (kindVal == 142);
   };
 };
 // STAMP_gctools__GCVector_moveable_double_
@@ -3617,8 +3581,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<double>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range gctools::GCVector_moveable<double> val -> 415
-      return (kindVal == 415);
+    // IsA-stamp-range gctools::GCVector_moveable<double> val -> 407
+      return (kindVal == 407);
   };
 };
 // STAMP_core__ConcatenatedStream_O
@@ -3626,8 +3590,8 @@ template <typename FP> struct Cast<core::ConcatenatedStream_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::ConcatenatedStream_O val -> 373
-      return (kindVal == 373);
+    // IsA-stamp-range core::ConcatenatedStream_O val -> 365
+      return (kindVal == 365);
   };
 };
 // STAMP_core__SmallMultimap_O
@@ -3635,8 +3599,8 @@ template <typename FP> struct Cast<core::SmallMultimap_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::SmallMultimap_O val -> 125
-      return (kindVal == 125);
+    // IsA-stamp-range core::SmallMultimap_O val -> 117
+      return (kindVal == 117);
   };
 };
 // STAMP_llvmo__PassManagerBuilder_O
@@ -3644,8 +3608,8 @@ template <typename FP> struct Cast<llvmo::PassManagerBuilder_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range llvmo::PassManagerBuilder_O val -> 42
-      return (kindVal == 42);
+    // IsA-stamp-range llvmo::PassManagerBuilder_O val -> 34
+      return (kindVal == 34);
   };
 };
 // STAMP_core__SymbolMacroletEnvironment_O
@@ -3653,8 +3617,8 @@ template <typename FP> struct Cast<core::SymbolMacroletEnvironment_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::SymbolMacroletEnvironment_O val -> 139
-      return (kindVal == 139);
+    // IsA-stamp-range core::SymbolMacroletEnvironment_O val -> 131
+      return (kindVal == 131);
   };
 };
 // STAMP_core__Fixnum_dummy_O
@@ -3662,8 +3626,8 @@ template <typename FP> struct Cast<core::Fixnum_dummy_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::Fixnum_dummy_O val -> 360
-      return (kindVal == 360);
+    // IsA-stamp-range core::Fixnum_dummy_O val -> 352
+      return (kindVal == 352);
   };
 };
 // STAMP_core__MDArray_int8_t_O
@@ -3671,8 +3635,8 @@ template <typename FP> struct Cast<core::MDArray_int8_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::MDArray_int8_t_O val -> 278
-      return (kindVal == 278);
+    // IsA-stamp-range core::MDArray_int8_t_O val -> 270
+      return (kindVal == 270);
   };
 };
 // STAMP_llvmo__ConstantFP_O
@@ -3680,8 +3644,8 @@ template <typename FP> struct Cast<llvmo::ConstantFP_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range llvmo::ConstantFP_O val -> 110
-      return (kindVal == 110);
+    // IsA-stamp-range llvmo::ConstantFP_O val -> 102
+      return (kindVal == 102);
   };
 };
 // STAMP_core__SingleDispatchMethodFunction_O
@@ -3689,8 +3653,8 @@ template <typename FP> struct Cast<core::SingleDispatchMethodFunction_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::SingleDispatchMethodFunction_O low high --> 167 168 
-      return ((167 <= kindVal) && (kindVal <= 168));
+    // IsA-stamp-range core::SingleDispatchMethodFunction_O low high --> 159 160 
+      return ((159 <= kindVal) && (kindVal <= 160));
   };
 };
 // STAMP_core__MacroletEnvironment_O
@@ -3698,8 +3662,8 @@ template <typename FP> struct Cast<core::MacroletEnvironment_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::MacroletEnvironment_O val -> 138
-      return (kindVal == 138);
+    // IsA-stamp-range core::MacroletEnvironment_O val -> 130
+      return (kindVal == 130);
   };
 };
 // STAMP_core__Cons_O
@@ -3707,8 +3671,8 @@ template <typename FP> struct Cast<core::Cons_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::Cons_O val -> 403
-      return (kindVal == 403);
+    // IsA-stamp-range core::Cons_O val -> 395
+      return (kindVal == 395);
   };
 };
 // STAMP_core__CompiledFunction_O
@@ -3716,8 +3680,8 @@ template <typename FP> struct Cast<core::CompiledFunction_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::CompiledFunction_O val -> 161
-      return (kindVal == 161);
+    // IsA-stamp-range core::CompiledFunction_O val -> 153
+      return (kindVal == 153);
   };
 };
 // STAMP_llvmo__ImmutablePass_O
@@ -3725,8 +3689,8 @@ template <typename FP> struct Cast<llvmo::ImmutablePass_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range llvmo::ImmutablePass_O low high --> 37 38 
-      return ((37 <= kindVal) && (kindVal <= 38));
+    // IsA-stamp-range llvmo::ImmutablePass_O low high --> 29 30 
+      return ((29 <= kindVal) && (kindVal <= 30));
   };
 };
 // STAMP_core__FuncallableInstance_O
@@ -3734,8 +3698,8 @@ template <typename FP> struct Cast<core::FuncallableInstance_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::FuncallableInstance_O val -> 148
-      return (kindVal == 148);
+    // IsA-stamp-range core::FuncallableInstance_O val -> 140
+      return (kindVal == 140);
   };
 };
 // STAMP_llvmo__LLVMContext_O
@@ -3743,8 +3707,8 @@ template <typename FP> struct Cast<llvmo::LLVMContext_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range llvmo::LLVMContext_O val -> 41
-      return (kindVal == 41);
+    // IsA-stamp-range llvmo::LLVMContext_O val -> 33
+      return (kindVal == 33);
   };
 };
 // STAMP_core__MDArrayDouble_O
@@ -3752,8 +3716,8 @@ template <typename FP> struct Cast<core::MDArrayDouble_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::MDArrayDouble_O val -> 291
-      return (kindVal == 291);
+    // IsA-stamp-range core::MDArrayDouble_O val -> 283
+      return (kindVal == 283);
   };
 };
 // STAMP_core__SynonymStream_O
@@ -3761,8 +3725,8 @@ template <typename FP> struct Cast<core::SynonymStream_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::SynonymStream_O val -> 372
-      return (kindVal == 372);
+    // IsA-stamp-range core::SynonymStream_O val -> 364
+      return (kindVal == 364);
   };
 };
 // STAMP_core__WeakKeyHashTable_O
@@ -3779,8 +3743,8 @@ template <typename FP> struct Cast<core::CompiledDispatchFunction_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::CompiledDispatchFunction_O val -> 160
-      return (kindVal == 160);
+    // IsA-stamp-range core::CompiledDispatchFunction_O val -> 152
+      return (kindVal == 152);
   };
 };
 // STAMP_core__Ratio_O
@@ -3788,8 +3752,8 @@ template <typename FP> struct Cast<core::Ratio_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::Ratio_O val -> 357
-      return (kindVal == 357);
+    // IsA-stamp-range core::Ratio_O val -> 349
+      return (kindVal == 349);
   };
 };
 // STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__SequenceStepper_O__
@@ -3797,8 +3761,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range gctools::GCVector_moveable<gctools::smart_ptr<core::SequenceStepper_O>> val -> 414
-      return (kindVal == 414);
+    // IsA-stamp-range gctools::GCVector_moveable<gctools::smart_ptr<core::SequenceStepper_O>> val -> 406
+      return (kindVal == 406);
   };
 };
 // STAMP_core__MDArrayBaseChar_O
@@ -3806,8 +3770,8 @@ template <typename FP> struct Cast<core::MDArrayBaseChar_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::MDArrayBaseChar_O val -> 340
-      return (kindVal == 340);
+    // IsA-stamp-range core::MDArrayBaseChar_O val -> 332
+      return (kindVal == 332);
   };
 };
 // STAMP_core__UserData_O
@@ -3815,8 +3779,8 @@ template <typename FP> struct Cast<core::UserData_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::UserData_O val -> 399
-      return (kindVal == 399);
+    // IsA-stamp-range core::UserData_O val -> 391
+      return (kindVal == 391);
   };
 };
 // STAMP_llvmo__GlobalVariable_O
@@ -3824,8 +3788,8 @@ template <typename FP> struct Cast<llvmo::GlobalVariable_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range llvmo::GlobalVariable_O val -> 108
-      return (kindVal == 108);
+    // IsA-stamp-range llvmo::GlobalVariable_O val -> 100
+      return (kindVal == 100);
   };
 };
 // STAMP_core__ClosureWithSlots_O
@@ -3833,8 +3797,8 @@ template <typename FP> struct Cast<core::ClosureWithSlots_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::ClosureWithSlots_O val -> 166
-      return (kindVal == 166);
+    // IsA-stamp-range core::ClosureWithSlots_O val -> 158
+      return (kindVal == 158);
   };
 };
 // STAMP_llvmo__DINode_O
@@ -3842,8 +3806,8 @@ template <typename FP> struct Cast<llvmo::DINode_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range llvmo::DINode_O low high --> 71 83 
-      return ((71 <= kindVal) && (kindVal <= 83));
+    // IsA-stamp-range llvmo::DINode_O low high --> 63 75 
+      return ((63 <= kindVal) && (kindVal <= 75));
   };
 };
 // STAMP_core__ExternalObject_O
@@ -3851,8 +3815,8 @@ template <typename FP> struct Cast<core::ExternalObject_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::ExternalObject_O low high --> 32 124 
-      return ((32 <= kindVal) && (kindVal <= 124));
+    // IsA-stamp-range core::ExternalObject_O low high --> 24 116 
+      return ((24 <= kindVal) && (kindVal <= 116));
   };
 };
 // STAMP_core__BroadcastStream_O
@@ -3860,8 +3824,8 @@ template <typename FP> struct Cast<core::BroadcastStream_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::BroadcastStream_O val -> 371
-      return (kindVal == 371);
+    // IsA-stamp-range core::BroadcastStream_O val -> 363
+      return (kindVal == 363);
   };
 };
 // STAMP_llvmo__ExecutionEngine_O
@@ -3869,8 +3833,8 @@ template <typename FP> struct Cast<llvmo::ExecutionEngine_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range llvmo::ExecutionEngine_O val -> 40
-      return (kindVal == 40);
+    // IsA-stamp-range llvmo::ExecutionEngine_O val -> 32
+      return (kindVal == 32);
   };
 };
 // STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__Cons_O__
@@ -3878,8 +3842,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range gctools::GCVector_moveable<gctools::smart_ptr<core::Cons_O>> val -> 413
-      return (kindVal == 413);
+    // IsA-stamp-range gctools::GCVector_moveable<gctools::smart_ptr<core::Cons_O>> val -> 405
+      return (kindVal == 405);
   };
 };
 // STAMP_core__SimpleVector_int16_t_O
@@ -3887,8 +3851,8 @@ template <typename FP> struct Cast<core::SimpleVector_int16_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::SimpleVector_int16_t_O val -> 251
-      return (kindVal == 251);
+    // IsA-stamp-range core::SimpleVector_int16_t_O val -> 243
+      return (kindVal == 243);
   };
 };
 // STAMP_core__General_O
@@ -3896,8 +3860,8 @@ template <typename FP> struct Cast<core::General_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::General_O low high --> 3 402 
-      return ((3 <= kindVal) && (kindVal <= 402));
+    // IsA-stamp-range core::General_O low high --> 3 394 
+      return ((3 <= kindVal) && (kindVal <= 394));
   };
 };
 // STAMP_clcenv__Function_O
@@ -3905,8 +3869,8 @@ template <typename FP> struct Cast<clcenv::Function_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range clcenv::Function_O val -> 215
-      return (kindVal == 215);
+    // IsA-stamp-range clcenv::Function_O val -> 207
+      return (kindVal == 207);
   };
 };
 // STAMP_core__DerivableCxxObject_O
@@ -3914,8 +3878,8 @@ template <typename FP> struct Cast<core::DerivableCxxObject_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::DerivableCxxObject_O low high --> 11 19 
-      return ((11 <= kindVal) && (kindVal <= 19));
+    // IsA-stamp-range core::DerivableCxxObject_O val -> 11
+      return (kindVal == 11);
   };
 };
 // STAMP_llvmo__Attribute_O
@@ -3923,8 +3887,8 @@ template <typename FP> struct Cast<llvmo::Attribute_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range llvmo::Attribute_O val -> 31
-      return (kindVal == 31);
+    // IsA-stamp-range llvmo::Attribute_O val -> 23
+      return (kindVal == 23);
   };
 };
 // STAMP_core__WeakKeyMapping_O
@@ -3932,8 +3896,8 @@ template <typename FP> struct Cast<core::WeakKeyMapping_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::WeakKeyMapping_O val -> 30
-      return (kindVal == 30);
+    // IsA-stamp-range core::WeakKeyMapping_O val -> 22
+      return (kindVal == 22);
   };
 };
 // STAMP_core__Closure_O
@@ -3941,8 +3905,8 @@ template <typename FP> struct Cast<core::Closure_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::Closure_O low high --> 159 175 
-      return ((159 <= kindVal) && (kindVal <= 175));
+    // IsA-stamp-range core::Closure_O low high --> 151 167 
+      return ((151 <= kindVal) && (kindVal <= 167));
   };
 };
 // STAMP_core__Reader_O
@@ -3950,8 +3914,8 @@ template <typename FP> struct Cast<core::Reader_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::Reader_O val -> 29
-      return (kindVal == 29);
+    // IsA-stamp-range core::Reader_O val -> 21
+      return (kindVal == 21);
   };
 };
 // STAMP_core__SymbolToEnumConverter_O
@@ -3959,8 +3923,8 @@ template <typename FP> struct Cast<core::SymbolToEnumConverter_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::SymbolToEnumConverter_O val -> 28
-      return (kindVal == 28);
+    // IsA-stamp-range core::SymbolToEnumConverter_O val -> 20
+      return (kindVal == 20);
   };
 };
 // STAMP_llvmo__SwitchInst_O
@@ -3968,8 +3932,8 @@ template <typename FP> struct Cast<llvmo::SwitchInst_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range llvmo::SwitchInst_O val -> 94
-      return (kindVal == 94);
+    // IsA-stamp-range llvmo::SwitchInst_O val -> 86
+      return (kindVal == 86);
   };
 };
 // STAMP_clcenv__VariableIgnore_O
@@ -3977,8 +3941,8 @@ template <typename FP> struct Cast<clcenv::VariableIgnore_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range clcenv::VariableIgnore_O val -> 214
-      return (kindVal == 214);
+    // IsA-stamp-range clcenv::VariableIgnore_O val -> 206
+      return (kindVal == 206);
   };
 };
 // STAMP_clcenv__SpecialVariableInfo_O
@@ -3986,8 +3950,8 @@ template <typename FP> struct Cast<clcenv::SpecialVariableInfo_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range clcenv::SpecialVariableInfo_O val -> 201
-      return (kindVal == 201);
+    // IsA-stamp-range clcenv::SpecialVariableInfo_O val -> 193
+      return (kindVal == 193);
   };
 };
 // STAMP_core__NativeVector_float_O
@@ -3995,8 +3959,8 @@ template <typename FP> struct Cast<core::NativeVector_float_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::NativeVector_float_O val -> 189
-      return (kindVal == 189);
+    // IsA-stamp-range core::NativeVector_float_O val -> 181
+      return (kindVal == 181);
   };
 };
 // STAMP_core__SimpleVectorDouble_O
@@ -4004,8 +3968,8 @@ template <typename FP> struct Cast<core::SimpleVectorDouble_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::SimpleVectorDouble_O val -> 270
-      return (kindVal == 270);
+    // IsA-stamp-range core::SimpleVectorDouble_O val -> 262
+      return (kindVal == 262);
   };
 };
 // STAMP_gctools__GCVector_moveable_core__RequiredArgument_
@@ -4013,8 +3977,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<core::RequiredArgu
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range gctools::GCVector_moveable<core::RequiredArgument> val -> 412
-      return (kindVal == 412);
+    // IsA-stamp-range gctools::GCVector_moveable<core::RequiredArgument> val -> 404
+      return (kindVal == 404);
   };
 };
 // STAMP_llvmo__Pass_O
@@ -4022,8 +3986,8 @@ template <typename FP> struct Cast<llvmo::Pass_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range llvmo::Pass_O low high --> 35 39 
-      return ((35 <= kindVal) && (kindVal <= 39));
+    // IsA-stamp-range llvmo::Pass_O low high --> 27 31 
+      return ((27 <= kindVal) && (kindVal <= 31));
   };
 };
 // STAMP_core__Lisp_O
@@ -4031,8 +3995,8 @@ template <typename FP> struct Cast<core::Lisp_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::Lisp_O val -> 405
-      return (kindVal == 405);
+    // IsA-stamp-range core::Lisp_O val -> 397
+      return (kindVal == 397);
   };
 };
 // STAMP_core__VaList_dummy_O
@@ -4049,8 +4013,8 @@ template <typename FP> struct Cast<core::BlockEnvironment_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::BlockEnvironment_O val -> 137
-      return (kindVal == 137);
+    // IsA-stamp-range core::BlockEnvironment_O val -> 129
+      return (kindVal == 129);
   };
 };
 // STAMP_core__ClosureWithFrame_O
@@ -4058,8 +4022,8 @@ template <typename FP> struct Cast<core::ClosureWithFrame_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::ClosureWithFrame_O low high --> 163 165 
-      return ((163 <= kindVal) && (kindVal <= 165));
+    // IsA-stamp-range core::ClosureWithFrame_O low high --> 155 157 
+      return ((155 <= kindVal) && (kindVal <= 157));
   };
 };
 // STAMP_gctools__GCVector_moveable_core__CacheRecord_
@@ -4067,8 +4031,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<core::CacheRecord>
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range gctools::GCVector_moveable<core::CacheRecord> val -> 411
-      return (kindVal == 411);
+    // IsA-stamp-range gctools::GCVector_moveable<core::CacheRecord> val -> 403
+      return (kindVal == 403);
   };
 };
 // STAMP_core__CatchEnvironment_O
@@ -4076,8 +4040,8 @@ template <typename FP> struct Cast<core::CatchEnvironment_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::CatchEnvironment_O val -> 136
-      return (kindVal == 136);
+    // IsA-stamp-range core::CatchEnvironment_O val -> 128
+      return (kindVal == 128);
   };
 };
 // STAMP_llvmo__DINodeArray_O
@@ -4085,8 +4049,8 @@ template <typename FP> struct Cast<llvmo::DINodeArray_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range llvmo::DINodeArray_O val -> 188
-      return (kindVal == 188);
+    // IsA-stamp-range llvmo::DINodeArray_O val -> 180
+      return (kindVal == 180);
   };
 };
 // STAMP_core__LogicalPathname_O
@@ -4094,8 +4058,8 @@ template <typename FP> struct Cast<core::LogicalPathname_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::LogicalPathname_O val -> 350
-      return (kindVal == 350);
+    // IsA-stamp-range core::LogicalPathname_O val -> 342
+      return (kindVal == 342);
   };
 };
 // STAMP_core__CompiledClosure_O
@@ -4103,8 +4067,8 @@ template <typename FP> struct Cast<core::CompiledClosure_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::CompiledClosure_O val -> 164
-      return (kindVal == 164);
+    // IsA-stamp-range core::CompiledClosure_O val -> 156
+      return (kindVal == 156);
   };
 };
 // STAMP_core__Archive_O
@@ -4112,8 +4076,8 @@ template <typename FP> struct Cast<core::Archive_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::Archive_O low high --> 23 27 
-      return ((23 <= kindVal) && (kindVal <= 27));
+    // IsA-stamp-range core::Archive_O low high --> 15 19 
+      return ((15 <= kindVal) && (kindVal <= 19));
   };
 };
 // STAMP_llvmo__TargetSubtargetInfo_O
@@ -4121,8 +4085,8 @@ template <typename FP> struct Cast<llvmo::TargetSubtargetInfo_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range llvmo::TargetSubtargetInfo_O val -> 44
-      return (kindVal == 44);
+    // IsA-stamp-range llvmo::TargetSubtargetInfo_O val -> 36
+      return (kindVal == 36);
   };
 };
 // STAMP_llvmo__ConstantDataArray_O
@@ -4130,8 +4094,8 @@ template <typename FP> struct Cast<llvmo::ConstantDataArray_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range llvmo::ConstantDataArray_O val -> 115
-      return (kindVal == 115);
+    // IsA-stamp-range llvmo::ConstantDataArray_O val -> 107
+      return (kindVal == 107);
   };
 };
 // STAMP_llvmo__TargetOptions_O
@@ -4139,8 +4103,8 @@ template <typename FP> struct Cast<llvmo::TargetOptions_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range llvmo::TargetOptions_O val -> 34
-      return (kindVal == 34);
+    // IsA-stamp-range llvmo::TargetOptions_O val -> 26
+      return (kindVal == 26);
   };
 };
 // STAMP_core__WrappedPointer_O
@@ -4148,8 +4112,8 @@ template <typename FP> struct Cast<core::WrappedPointer_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::WrappedPointer_O val -> 22
-      return (kindVal == 22);
+    // IsA-stamp-range core::WrappedPointer_O val -> 14
+      return (kindVal == 14);
   };
 };
 // STAMP_core__SmallMap_O
@@ -4157,22 +4121,17 @@ template <typename FP> struct Cast<core::SmallMap_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::SmallMap_O val -> 21
-      return (kindVal == 21);
+    // IsA-stamp-range core::SmallMap_O val -> 13
+      return (kindVal == 13);
   };
 };
 // STAMP_core__Instance_O
 template <typename FP> struct Cast<core::Instance_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-// FIXME!!!  There is a HUGE problem here - derivable_class_'s inherit from Instance_O  but the STAMP test won't show that!!!!
-//           Something needs to be done to allow derivable_classes to be defined without screwing up the class hierarchy!!!
-//           The problem is that isA relationships defined by Clasp can only work with single inheritance
-//           but derivable_classes inherit from Instance_O and whatever else they are defined to inherit from.
-//           For now I'll special case core::Instance_O and fall back to dynamic_cast
       int kindVal = header->stamp();
-    // IsA-stamp-range core::Instance_O low high --> 10 20 
-      if ((10 <= kindVal) && (kindVal <= 20)) return true;
+    // IsA-stamp-range core::Instance_O low high --> 10 12 
+      if ((10 <= kindVal) && (kindVal <= 12)) return true;
       return (dynamic_cast<core::Instance_O*>(client)!=NULL);
   };
 };
@@ -4190,8 +4149,8 @@ template <typename FP> struct Cast<core::SimpleMDArray_byte32_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::SimpleMDArray_byte32_t_O val -> 313
-      return (kindVal == 313);
+    // IsA-stamp-range core::SimpleMDArray_byte32_t_O val -> 305
+      return (kindVal == 305);
   };
 };
 // STAMP_core__Bignum_O
@@ -4199,8 +4158,8 @@ template <typename FP> struct Cast<core::Bignum_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::Bignum_O val -> 359
-      return (kindVal == 359);
+    // IsA-stamp-range core::Bignum_O val -> 351
+      return (kindVal == 351);
   };
 };
 // STAMP_llvmo__LLVMTargetMachine_O
@@ -4208,8 +4167,8 @@ template <typename FP> struct Cast<llvmo::LLVMTargetMachine_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range llvmo::LLVMTargetMachine_O val -> 123
-      return (kindVal == 123);
+    // IsA-stamp-range llvmo::LLVMTargetMachine_O val -> 115
+      return (kindVal == 115);
   };
 };
 // STAMP_core__PosixTimeDuration_O
@@ -4235,8 +4194,8 @@ template <typename FP> struct Cast<core::HashTableEqual_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::HashTableEqual_O val -> 387
-      return (kindVal == 387);
+    // IsA-stamp-range core::HashTableEqual_O val -> 379
+      return (kindVal == 379);
   };
 };
 // STAMP_llvmo__SequentialType_O
@@ -4244,8 +4203,8 @@ template <typename FP> struct Cast<llvmo::SequentialType_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range llvmo::SequentialType_O low high --> 52 55 
-      return ((52 <= kindVal) && (kindVal <= 55));
+    // IsA-stamp-range llvmo::SequentialType_O low high --> 44 47 
+      return ((44 <= kindVal) && (kindVal <= 47));
   };
 };
 // STAMP_clcenv__VariableType_O
@@ -4253,8 +4212,8 @@ template <typename FP> struct Cast<clcenv::VariableType_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range clcenv::VariableType_O val -> 213
-      return (kindVal == 213);
+    // IsA-stamp-range clcenv::VariableType_O val -> 205
+      return (kindVal == 205);
   };
 };
 // STAMP_llvmo__Triple_O
@@ -4262,8 +4221,8 @@ template <typename FP> struct Cast<llvmo::Triple_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range llvmo::Triple_O val -> 33
-      return (kindVal == 33);
+    // IsA-stamp-range llvmo::Triple_O val -> 25
+      return (kindVal == 25);
   };
 };
 // STAMP_core__BitVectorNs_O
@@ -4271,8 +4230,8 @@ template <typename FP> struct Cast<core::BitVectorNs_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::BitVectorNs_O val -> 272
-      return (kindVal == 272);
+    // IsA-stamp-range core::BitVectorNs_O val -> 264
+      return (kindVal == 264);
   };
 };
 // STAMP_core__SimpleMDArray_byte64_t_O
@@ -4280,8 +4239,8 @@ template <typename FP> struct Cast<core::SimpleMDArray_byte64_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::SimpleMDArray_byte64_t_O val -> 325
-      return (kindVal == 325);
+    // IsA-stamp-range core::SimpleMDArray_byte64_t_O val -> 317
+      return (kindVal == 317);
   };
 };
 // STAMP_llvmo__UnaryInstruction_O
@@ -4289,8 +4248,8 @@ template <typename FP> struct Cast<llvmo::UnaryInstruction_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range llvmo::UnaryInstruction_O low high --> 87 90 
-      return ((87 <= kindVal) && (kindVal <= 90));
+    // IsA-stamp-range llvmo::UnaryInstruction_O low high --> 79 82 
+      return ((79 <= kindVal) && (kindVal <= 82));
   };
 };
 // STAMP_core__CoreExposer_O
@@ -4298,8 +4257,8 @@ template <typename FP> struct Cast<core::CoreExposer_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::CoreExposer_O val -> 392
-      return (kindVal == 392);
+    // IsA-stamp-range core::CoreExposer_O val -> 384
+      return (kindVal == 384);
   };
 };
 // STAMP_llvmo__GlobalValue_O
@@ -4307,8 +4266,8 @@ template <typename FP> struct Cast<llvmo::GlobalValue_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range llvmo::GlobalValue_O low high --> 107 109 
-      return ((107 <= kindVal) && (kindVal <= 109));
+    // IsA-stamp-range llvmo::GlobalValue_O low high --> 99 101 
+      return ((99 <= kindVal) && (kindVal <= 101));
   };
 };
 // STAMP_llvmo__PointerType_O
@@ -4316,8 +4275,8 @@ template <typename FP> struct Cast<llvmo::PointerType_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range llvmo::PointerType_O val -> 53
-      return (kindVal == 53);
+    // IsA-stamp-range llvmo::PointerType_O val -> 45
+      return (kindVal == 45);
   };
 };
 // STAMP_gctools__GCArray_moveable_unsigned_int_
@@ -4325,8 +4284,8 @@ template <typename FP> struct Cast<gctools::GCArray_moveable<unsigned int>*,FP> 
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range gctools::GCArray_moveable<unsigned int> val -> 410
-      return (kindVal == 410);
+    // IsA-stamp-range gctools::GCArray_moveable<unsigned int> val -> 402
+      return (kindVal == 402);
   };
 };
 // STAMP_core__WeakHashTable_O
@@ -4343,8 +4302,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<core::KeywordArgum
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range gctools::GCVector_moveable<core::KeywordArgument> val -> 409
-      return (kindVal == 409);
+    // IsA-stamp-range gctools::GCVector_moveable<core::KeywordArgument> val -> 401
+      return (kindVal == 401);
   };
 };
 // STAMP_core__MultiStringBuffer_O
@@ -4361,2321 +4320,1910 @@ template <typename FP> struct Cast<core::TwoWayStream_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->stamp();
-    // IsA-stamp-range core::TwoWayStream_O val -> 370
-      return (kindVal == 370);
+    // IsA-stamp-range core::TwoWayStream_O val -> 362
+      return (kindVal == 362);
   };
 };
 #endif // defined(GC_DYNAMIC_CAST)
 #if defined(GC_TYPEQ)
-      ADD_SINGLE_TYPEQ_TEST(llvmo::NamedMDNode_O,124);
-      ADD_SINGLE_TYPEQ_TEST(core::MDArray_size_t_O,295);
-      ADD_SINGLE_TYPEQ_TEST(core::SimpleVector_byte16_t_O,253);
-      ADD_SINGLE_TYPEQ_TEST(mp::ConcurrentQueue_O,402);
-      ADD_SINGLE_TYPEQ_TEST(core::SimpleMDArray_fixnum_O,311);
-      ADD_SINGLE_TYPEQ_TEST(core::SimpleVector_byte64_t_O,242);
-      ADD_RANGE_TYPEQ_TEST(llvmo::TargetMachine_O,llvmo::LLVMTargetMachine_O,122,123);
-      ADD_RANGE_TYPEQ_TEST(llvmo::Value_O,llvmo::BasicBlock_O,84,121);
-      ADD_SINGLE_TYPEQ_TEST(core::SimpleBaseString_O,249);
-      ADD_SINGLE_TYPEQ_TEST(clbind::ClassRegistry_O,401);
-      ADD_RANGE_TYPEQ_TEST(core::Integer_O,core::Fixnum_dummy_O,358,360);
-      ADD_SINGLE_TYPEQ_TEST(core::SimpleMDArray_int32_t_O,319);
-      ADD_RANGE_TYPEQ_TEST(llvmo::Metadata_O,llvmo::DISubroutineType_O,67,83);
-      ADD_SINGLE_TYPEQ_TEST(asttooling::AstVisitor_O,407);
-      ADD_SINGLE_TYPEQ_TEST(mp::Process_O,231);
-      ADD_SINGLE_TYPEQ_TEST(core::Record_O,400);
-      ADD_RANGE_TYPEQ_TEST(core::MDArray_O,core::MDArrayBaseChar_O,271,340);
-      ADD_RANGE_TYPEQ_TEST(core::LightUserData_O,core::UserData_O,398,399);
-      ADD_SINGLE_TYPEQ_TEST(clcenv::FunctionIgnore_O,230);
-      ADD_SINGLE_TYPEQ_TEST(core::MDArrayT_O,293);
-      ADD_SINGLE_TYPEQ_TEST(clbind::ClassRep_O,20);
-      ADD_SINGLE_TYPEQ_TEST(core::DirectoryEntry_O,397);
-      ADD_SINGLE_TYPEQ_TEST(clcenv::GlobalFunctionInfo_O,199);
-      ADD_SINGLE_TYPEQ_TEST(llvmo::ConstantInt_O,119);
-      ADD_SINGLE_TYPEQ_TEST(llvmo::Linker_O,66);
-      ADD_SINGLE_TYPEQ_TEST(core::SourceFileInfo_O,396);
-      ADD_SINGLE_TYPEQ_TEST(core::IntArray_O,395);
-      ADD_SINGLE_TYPEQ_TEST(core::SimpleMDArray_int16_t_O,328);
-      ADD_RANGE_TYPEQ_TEST(llvmo::CompositeType_O,llvmo::StructType_O,51,56);
-      ADD_SINGLE_TYPEQ_TEST(core::SimpleMDArrayT_O,317);
-      ADD_SINGLE_TYPEQ_TEST(llvmo::BranchInst_O,100);
-      ADD_SINGLE_TYPEQ_TEST(core::SourcePosInfo_O,394);
-      ADD_RANGE_TYPEQ_TEST(clcenv::Entry_O,clcenv::FunctionIgnore_O,212,230);
-      ADD_RANGE_TYPEQ_TEST(core::ActivationFrame_O,core::TagbodyFrame_O,142,145);
-      ADD_SINGLE_TYPEQ_TEST(llvmo::AllocaInst_O,90);
-      ADD_RANGE_TYPEQ_TEST(llvmo::PassManagerBase_O,llvmo::PassManager_O,63,65);
-      ADD_SINGLE_TYPEQ_TEST(llvmo::LoadInst_O,89);
-      ADD_SINGLE_TYPEQ_TEST(core::StandardClassCreator_O,157);
-      ADD_RANGE_TYPEQ_TEST(core::Exposer_O,asttooling::AsttoolingExposer_O,391,393);
-      ADD_SINGLE_TYPEQ_TEST(llvmo::ConstantStruct_O,118);
-      ADD_SINGLE_TYPEQ_TEST(core::SingleDispatchCxxEffectiveMethodFunction_O,175);
-      ADD_SINGLE_TYPEQ_TEST(core::DirectoryIterator_O,235);
-      ADD_SINGLE_TYPEQ_TEST(clcenv::Macro_O,229);
-      ADD_SINGLE_TYPEQ_TEST(llvmo::DISubroutineType_O,83);
-      ADD_RANGE_TYPEQ_TEST(core::LexicalEnvironment_O,core::FunctionContainerEnvironment_O,130,141);
-      ADD_RANGE_TYPEQ_TEST(core::HashTable_O,core::HashTableEql_O,386,390);
-      ADD_SINGLE_TYPEQ_TEST(clcenv::LambdaNameInfo_O,198);
-      ADD_SINGLE_TYPEQ_TEST(core::PosixTime_O,385);
-      ADD_SINGLE_TYPEQ_TEST(core::SimpleBitVector_O,264);
-      ADD_SINGLE_TYPEQ_TEST(core::FunctionContainerEnvironment_O,141);
-      ADD_SINGLE_TYPEQ_TEST(clcenv::SpecialVariable_O,228);
-      ADD_SINGLE_TYPEQ_TEST(core::SimpleVector_int8_t_O,257);
-      ADD_RANGE_TYPEQ_TEST(clcenv::VariableInfo_O,clcenv::ConstantVariableInfo_O,200,204);
-      ADD_SINGLE_TYPEQ_TEST(llvmo::ResumeInst_O,99);
-      ADD_SINGLE_TYPEQ_TEST(llvmo::Function_O,109);
-      ADD_RANGE_TYPEQ_TEST(llvmo::DIType_O,llvmo::DISubroutineType_O,79,83);
-      ADD_SINGLE_TYPEQ_TEST(core::InvocationHistoryFrameIterator_O,384);
-      ADD_SINGLE_TYPEQ_TEST(core::SimpleVector_size_t_O,268);
-      ADD_SINGLE_TYPEQ_TEST(core::SimpleMDArrayFloat_O,336);
-      ADD_RANGE_TYPEQ_TEST(llvmo::DIScope_O,llvmo::DISubroutineType_O,72,83);
-      ADD_SINGLE_TYPEQ_TEST(core::FileStatus_O,383);
-      ADD_SINGLE_TYPEQ_TEST(llvmo::IndirectBrInst_O,98);
-      ADD_SINGLE_TYPEQ_TEST(clcenv::LexicalVariable_O,227);
-      ADD_SINGLE_TYPEQ_TEST(clcenv::VariableDynamicExtent_O,226);
-      ADD_SINGLE_TYPEQ_TEST(llvmo::PHINode_O,105);
-      ADD_SINGLE_TYPEQ_TEST(llvmo::ConstantArray_O,117);
-      ADD_SINGLE_TYPEQ_TEST(llvmo::IRBuilder_O,58);
-      ADD_SINGLE_TYPEQ_TEST(llvmo::ClaspJIT_O,382);
-      ADD_RANGE_TYPEQ_TEST(core::NamedFunction_O,core::SpecialForm_O,158,176);
-      ADD_SINGLE_TYPEQ_TEST(core::SimpleMDArrayBaseChar_O,323);
-      ADD_SINGLE_TYPEQ_TEST(core::Package_O,381);
-      ADD_RANGE_TYPEQ_TEST(core::FunctionClosure_O,core::SingleDispatchCxxEffectiveMethodFunction_O,162,175);
-      ADD_SINGLE_TYPEQ_TEST(clcenv::GlobalEnvironment_O,225);
-      ADD_SINGLE_TYPEQ_TEST(core::SimpleVector_byte8_t_O,261);
-      ADD_RANGE_TYPEQ_TEST(llvmo::DILexicalBlockBase_O,llvmo::DILexicalBlock_O,75,76);
-      ADD_RANGE_TYPEQ_TEST(core::SimpleMDArray_O,core::SimpleMDArrayFloat_O,305,336);
-      ADD_RANGE_TYPEQ_TEST(llvmo::MDNode_O,llvmo::DISubroutineType_O,70,83);
-      ADD_RANGE_TYPEQ_TEST(core::Stream_O,core::EchoStream_O,368,380);
-      ADD_SINGLE_TYPEQ_TEST(core::CandoException_O,367);
-      ADD_SINGLE_TYPEQ_TEST(mp::RecursiveMutex_O,207);
-      ADD_SINGLE_TYPEQ_TEST(clcenv::FunctionType_O,224);
-      ADD_SINGLE_TYPEQ_TEST(clcenv::Block_O,223);
-      ADD_SINGLE_TYPEQ_TEST(llvmo::VAArgInst_O,88);
-      ADD_SINGLE_TYPEQ_TEST(llvmo::MDString_O,69);
-      ADD_SINGLE_TYPEQ_TEST(core::ShortFloat_O,365);
-      ADD_RANGE_TYPEQ_TEST(core::Number_O,core::Complex_O,354,366);
-      ADD_SINGLE_TYPEQ_TEST(core::MDArray_fixnum_O,338);
-      ADD_RANGE_TYPEQ_TEST(core::T_O,core::Cons_O,1,403);
-      ADD_SINGLE_TYPEQ_TEST(llvmo::DICompileUnit_O,78);
-      ADD_SINGLE_TYPEQ_TEST(core::SharpEqualWrapper_O,353);
-      ADD_SINGLE_TYPEQ_TEST(clcenv::Tag_O,222);
-      ADD_SINGLE_TYPEQ_TEST(core::SimpleMDArrayDouble_O,321);
-      ADD_SINGLE_TYPEQ_TEST(clcenv::ConstantVariableInfo_O,204);
-      ADD_SINGLE_TYPEQ_TEST(core::LoadTimeValues_O,352);
-      ADD_SINGLE_TYPEQ_TEST(asttooling::DerivableMatchCallback,15);
-      ADD_SINGLE_TYPEQ_TEST(core::Cache_O,351);
-      ADD_SINGLE_TYPEQ_TEST(llvmo::DIFile_O,77);
-      ADD_SINGLE_TYPEQ_TEST(core::InterpretedClosure_O,165);
-      ADD_RANGE_TYPEQ_TEST(core::AbstractSimpleVector_O,core::SimpleVectorDouble_O,238,270);
-      ADD_SINGLE_TYPEQ_TEST(core::SimpleMDArray_byte16_t_O,315);
-      ADD_RANGE_TYPEQ_TEST(core::Pathname_O,core::LogicalPathname_O,349,350);
-      ADD_SINGLE_TYPEQ_TEST(llvmo::FunctionPass_O,39);
-      ADD_SINGLE_TYPEQ_TEST(llvmo::DataLayout_O,348);
-      ADD_SINGLE_TYPEQ_TEST(core::Str8Ns_O,289);
-      ADD_SINGLE_TYPEQ_TEST(llvmo::BasicBlock_O,121);
-      ADD_SINGLE_TYPEQ_TEST(core::SourceManager_O,347);
-      ADD_SINGLE_TYPEQ_TEST(core::SimpleMDArray_int8_t_O,307);
-      ADD_SINGLE_TYPEQ_TEST(llvmo::UndefValue_O,116);
-      ADD_SINGLE_TYPEQ_TEST(llvmo::EngineBuilder_O,62);
-      ADD_SINGLE_TYPEQ_TEST(core::MDArray_byte32_t_O,304);
-      ADD_SINGLE_TYPEQ_TEST(core::Character_dummy_O,346);
-      ADD_SINGLE_TYPEQ_TEST(core::TagbodyEnvironment_O,134);
-      ADD_SINGLE_TYPEQ_TEST(core::ConsStepper_O,179);
-      ADD_RANGE_TYPEQ_TEST(core::CompileTimeEnvironment_O,core::FunctionContainerEnvironment_O,135,141);
-      ADD_RANGE_TYPEQ_TEST(llvmo::Constant_O,llvmo::ConstantInt_O,106,119);
-      ADD_SINGLE_TYPEQ_TEST(core::SpecialForm_O,176);
-      ADD_SINGLE_TYPEQ_TEST(core::Path_O,345);
-      ADD_SINGLE_TYPEQ_TEST(mp::BlockingConcurrentQueue_O,344);
-      ADD_SINGLE_TYPEQ_TEST(mp::SharedMutex_O,211);
-      ADD_SINGLE_TYPEQ_TEST(clcenv::SpecialOperatorInfo_O,197);
-      ADD_SINGLE_TYPEQ_TEST(core::SexpSaveArchive_O,25);
-      ADD_SINGLE_TYPEQ_TEST(clcenv::SymbolMacroInfo_O,203);
-      ADD_SINGLE_TYPEQ_TEST(core::NativeVector_int_O,210);
-      ADD_SINGLE_TYPEQ_TEST(llvmo::DIBasicType_O,82);
-      ADD_SINGLE_TYPEQ_TEST(asttooling::DerivableASTFrontendAction,19);
-      ADD_SINGLE_TYPEQ_TEST(llvmo::DIBuilder_O,61);
-      ADD_SINGLE_TYPEQ_TEST(core::InstanceCreator_O,156);
-      ADD_SINGLE_TYPEQ_TEST(core::StandardObject_O,343);
-      ADD_SINGLE_TYPEQ_TEST(llvmo::APInt_O,60);
-      ADD_RANGE_TYPEQ_TEST(core::Symbol_O,core::Null_O,341,342);
-      ADD_SINGLE_TYPEQ_TEST(llvmo::APFloat_O,59);
-      ADD_RANGE_TYPEQ_TEST(clcenv::FunctionInfo_O,clcenv::GlobalFunctionInfo_O,193,199);
-      ADD_SINGLE_TYPEQ_TEST(core::IOStreamStream_O,379);
-      ADD_SINGLE_TYPEQ_TEST(core::SimpleMDArrayCharacter_O,309);
-      ADD_SINGLE_TYPEQ_TEST(core::SimpleCharacterString_O,247);
-      ADD_SINGLE_TYPEQ_TEST(clcenv::LambdaName_O,221);
-      ADD_SINGLE_TYPEQ_TEST(clcenv::LocalFunctionInfo_O,196);
-      ADD_RANGE_TYPEQ_TEST(core::Array_O,core::MDArrayBaseChar_O,237,340);
-      ADD_SINGLE_TYPEQ_TEST(llvmo::InsertPoint_O,236);
-      ADD_SINGLE_TYPEQ_TEST(llvmo::Argument_O,120);
-      ADD_SINGLE_TYPEQ_TEST(clcenv::Optimize_O,220);
-      ADD_SINGLE_TYPEQ_TEST(core::StrWNs_O,287);
-      ADD_RANGE_TYPEQ_TEST(core::Iterator_O,core::DirectoryIterator_O,233,235);
-      ADD_RANGE_TYPEQ_TEST(llvmo::IRBuilderBase_O,llvmo::IRBuilder_O,57,58);
-      ADD_SINGLE_TYPEQ_TEST(core::EchoStream_O,380);
-      ADD_SINGLE_TYPEQ_TEST(core::Null_O,342);
-      ADD_SINGLE_TYPEQ_TEST(core::SimpleMDArrayBit_O,326);
-      ADD_SINGLE_TYPEQ_TEST(core::MDArrayBit_O,298);
-      ADD_SINGLE_TYPEQ_TEST(core::SingleDispatchMethod_O,232);
-      ADD_SINGLE_TYPEQ_TEST(clcenv::Closure_O,219);
-      ADD_SINGLE_TYPEQ_TEST(clcenv::Inline_O,218);
-      ADD_SINGLE_TYPEQ_TEST(clcenv::LexicalVariableInfo_O,202);
-      ADD_SINGLE_TYPEQ_TEST(core::TagbodyFrame_O,145);
-      ADD_SINGLE_TYPEQ_TEST(core::NativeVector_double_O,209);
-      ADD_SINGLE_TYPEQ_TEST(core::GlueEnvironment_O,129);
-      ADD_RANGE_TYPEQ_TEST(llvmo::DILocalScope_O,llvmo::DILexicalBlock_O,73,76);
-      ADD_RANGE_TYPEQ_TEST(core::CxxObject_O,mp::Process_O,187,231);
-      ADD_SINGLE_TYPEQ_TEST(llvmo::ReturnInst_O,97);
-      ADD_SINGLE_TYPEQ_TEST(asttooling::DerivableFrontendActionFactory,13);
-      ADD_SINGLE_TYPEQ_TEST(llvmo::FunctionType_O,50);
-      ADD_SINGLE_TYPEQ_TEST(clbind::DummyCreator_O,155);
-      ADD_SINGLE_TYPEQ_TEST(core::ClassCreator_O,154);
-      ADD_SINGLE_TYPEQ_TEST(core::MDArray_byte16_t_O,302);
-      ADD_SINGLE_TYPEQ_TEST(llvmo::DITypeRefArray_O,208);
-      ADD_SINGLE_TYPEQ_TEST(llvmo::DILexicalBlock_O,76);
-      ADD_SINGLE_TYPEQ_TEST(core::Pointer_O,186);
-      ADD_RANGE_TYPEQ_TEST(llvmo::Type_O,llvmo::StructType_O,48,56);
-      ADD_SINGLE_TYPEQ_TEST(core::SimpleVectorFloat_O,240);
-      ADD_RANGE_TYPEQ_TEST(mp::Mutex_O,mp::RecursiveMutex_O,206,207);
-      ADD_SINGLE_TYPEQ_TEST(llvmo::ModuleHandle_O,185);
-      ADD_SINGLE_TYPEQ_TEST(clcenv::BlockInfo_O,192);
-      ADD_SINGLE_TYPEQ_TEST(core::RecursiveDirectoryIterator_O,234);
-      ADD_SINGLE_TYPEQ_TEST(llvmo::UnreachableInst_O,96);
-      ADD_SINGLE_TYPEQ_TEST(core::MacroClosure_O,172);
-      ADD_RANGE_TYPEQ_TEST(core::SNode_O,core::LeafSNode_O,182,184);
-      ADD_SINGLE_TYPEQ_TEST(core::VectorStepper_O,178);
-      ADD_SINGLE_TYPEQ_TEST(core::StringInputStream_O,376);
-      ADD_RANGE_TYPEQ_TEST(core::LoadArchive_O,core::SexpLoadArchive_O,26,27);
-      ADD_RANGE_TYPEQ_TEST(core::Float_O,core::ShortFloat_O,361,365);
-      ADD_RANGE_TYPEQ_TEST(llvmo::ModulePass_O,llvmo::TargetLibraryInfoWrapperPass_O,36,38);
-      ADD_SINGLE_TYPEQ_TEST(llvmo::DIDerivedType_O,81);
-      ADD_SINGLE_TYPEQ_TEST(clbind::ConstructorCreator_O,153);
-      ADD_SINGLE_TYPEQ_TEST(core::FunctionFrame_O,144);
-      ADD_SINGLE_TYPEQ_TEST(core::LongFloat_O,364);
-      ADD_SINGLE_TYPEQ_TEST(core::SimpleVector_int64_t_O,244);
-      ADD_SINGLE_TYPEQ_TEST(core::TranslationFunctor_O,171);
-      ADD_RANGE_TYPEQ_TEST(llvmo::ConstantDataSequential_O,llvmo::ConstantDataArray_O,114,115);
-      ADD_SINGLE_TYPEQ_TEST(llvmo::TargetLibraryInfoWrapperPass_O,38);
-      ADD_SINGLE_TYPEQ_TEST(llvmo::StoreInst_O,104);
-      ADD_SINGLE_TYPEQ_TEST(llvmo::DebugLoc_O,181);
-      ADD_SINGLE_TYPEQ_TEST(asttooling::DerivableSyntaxOnlyAction,17);
-      ADD_RANGE_TYPEQ_TEST(llvmo::User_O,llvmo::ConstantInt_O,85,119);
-      ADD_SINGLE_TYPEQ_TEST(core::WeakPointer_O,180);
-      ADD_SINGLE_TYPEQ_TEST(core::LeafSNode_O,184);
-      ADD_SINGLE_TYPEQ_TEST(core::MDArray_int16_t_O,276);
-      ADD_SINGLE_TYPEQ_TEST(clcenv::OptimizeInfo_O,191);
-      ADD_SINGLE_TYPEQ_TEST(core::IOFileStream_O,378);
-      ADD_SINGLE_TYPEQ_TEST(llvmo::FenceInst_O,103);
-      ADD_RANGE_TYPEQ_TEST(core::RuntimeVisibleEnvironment_O,core::TagbodyEnvironment_O,131,134);
-      ADD_SINGLE_TYPEQ_TEST(core::ValueFrame_O,143);
-      ADD_SINGLE_TYPEQ_TEST(llvmo::AtomicCmpXchgInst_O,102);
-      ADD_SINGLE_TYPEQ_TEST(core::SimpleMDArray_byte8_t_O,330);
-      ADD_RANGE_TYPEQ_TEST(core::SequenceStepper_O,core::ConsStepper_O,177,179);
-      ADD_SINGLE_TYPEQ_TEST(core::SimpleVector_int32_t_O,263);
-      ADD_RANGE_TYPEQ_TEST(core::SaveArchive_O,core::SexpSaveArchive_O,24,25);
-      ADD_SINGLE_TYPEQ_TEST(core::Complex_O,366);
-      ADD_SINGLE_TYPEQ_TEST(llvmo::ConstantPointerNull_O,113);
-      ADD_RANGE_TYPEQ_TEST(llvmo::Instruction_O,llvmo::PHINode_O,86,105);
-      ADD_SINGLE_TYPEQ_TEST(llvmo::VectorType_O,55);
-      ADD_RANGE_TYPEQ_TEST(core::FileStream_O,core::IOStreamStream_O,377,379);
-      ADD_SINGLE_TYPEQ_TEST(llvmo::ValueAsMetadata_O,68);
-      ADD_RANGE_TYPEQ_TEST(core::Rational_O,core::Fixnum_dummy_O,356,360);
-      ADD_SINGLE_TYPEQ_TEST(llvmo::ConstantExpr_O,112);
-      ADD_SINGLE_TYPEQ_TEST(llvmo::LandingPadInst_O,101);
-      ADD_SINGLE_TYPEQ_TEST(core::MDArrayCharacter_O,280);
-      ADD_SINGLE_TYPEQ_TEST(core::SingleDispatchEffectiveMethodFunction_O,174);
-      ADD_RANGE_TYPEQ_TEST(core::Function_O,core::SpecialForm_O,147,176);
-      ADD_SINGLE_TYPEQ_TEST(llvmo::StructType_O,56);
-      ADD_SINGLE_TYPEQ_TEST(clcenv::FunctionDynamicExtent_O,217);
-      ADD_SINGLE_TYPEQ_TEST(core::RandomState_O,146);
-      ADD_SINGLE_TYPEQ_TEST(core::MDArrayFloat_O,284);
-      ADD_SINGLE_TYPEQ_TEST(core::HashTableEql_O,390);
-      ADD_SINGLE_TYPEQ_TEST(llvmo::Target_O,47);
-      ADD_SINGLE_TYPEQ_TEST(core::MDArray_byte64_t_O,274);
-      ADD_SINGLE_TYPEQ_TEST(mp::ConditionVariable_O,205);
-      ADD_RANGE_TYPEQ_TEST(core::Real_O,core::ShortFloat_O,355,365);
-      ADD_SINGLE_TYPEQ_TEST(core::SimpleVector_fixnum_O,255);
-      ADD_SINGLE_TYPEQ_TEST(core::FuncallableInstanceCreator_O,152);
-      ADD_SINGLE_TYPEQ_TEST(core::SimpleVector_byte32_t_O,266);
-      ADD_SINGLE_TYPEQ_TEST(core::MDArray_byte8_t_O,297);
-      ADD_SINGLE_TYPEQ_TEST(core::SexpLoadArchive_O,27);
-      ADD_SINGLE_TYPEQ_TEST(core::SingleDispatchGenericFunctionClosure_O,173);
-      ADD_SINGLE_TYPEQ_TEST(core::StringOutputStream_O,375);
-      ADD_RANGE_TYPEQ_TEST(core::AnsiStream_O,core::EchoStream_O,369,380);
-      ADD_SINGLE_TYPEQ_TEST(core::BranchSNode_O,183);
-      ADD_RANGE_TYPEQ_TEST(llvmo::TerminatorInst_O,llvmo::BranchInst_O,93,100);
-      ADD_SINGLE_TYPEQ_TEST(llvmo::Module_O,46);
-      ADD_RANGE_TYPEQ_TEST(core::BuiltinClosure_O,core::MacroClosure_O,169,172);
-      ADD_SINGLE_TYPEQ_TEST(core::SingleFloat_dummy_O,363);
-      ADD_SINGLE_TYPEQ_TEST(core::ValueEnvironment_O,133);
-      ADD_SINGLE_TYPEQ_TEST(core::CxxMethodFunction_O,168);
-      ADD_SINGLE_TYPEQ_TEST(llvmo::InvokeInst_O,95);
-      ADD_RANGE_TYPEQ_TEST(core::Environment_O,core::TagbodyFrame_O,128,145);
-      ADD_SINGLE_TYPEQ_TEST(clcenv::SymbolMacro_O,216);
-      ADD_SINGLE_TYPEQ_TEST(llvmo::AttributeSet_O,127);
-      ADD_SINGLE_TYPEQ_TEST(clcenv::LocalMacroInfo_O,195);
-      ADD_SINGLE_TYPEQ_TEST(llvmo::AtomicRMWInst_O,92);
-      ADD_SINGLE_TYPEQ_TEST(llvmo::PassManager_O,65);
-      ADD_RANGE_TYPEQ_TEST(core::StrNs_O,core::Str8Ns_O,285,289);
-      ADD_SINGLE_TYPEQ_TEST(clasp_ffi::ForeignData_O,45);
-      ADD_SINGLE_TYPEQ_TEST(core::SimpleVector_O,259);
-      ADD_SINGLE_TYPEQ_TEST(core::UnwindProtectEnvironment_O,140);
-      ADD_SINGLE_TYPEQ_TEST(clcenv::GlobalMacroInfo_O,194);
-      ADD_SINGLE_TYPEQ_TEST(llvmo::CallInst_O,91);
-      ADD_SINGLE_TYPEQ_TEST(llvmo::DISubprogram_O,74);
-      ADD_SINGLE_TYPEQ_TEST(llvmo::FunctionPassManager_O,64);
-      ADD_SINGLE_TYPEQ_TEST(core::DoubleFloat_O,362);
-      ADD_RANGE_TYPEQ_TEST(clcenv::Info_O,clcenv::ConstantVariableInfo_O,190,204);
-      ADD_RANGE_TYPEQ_TEST(core::Creator_O,core::StandardClassCreator_O,149,157);
-      ADD_SINGLE_TYPEQ_TEST(llvmo::ArrayType_O,54);
-      ADD_SINGLE_TYPEQ_TEST(core::SimpleMDArray_int64_t_O,334);
-      ADD_RANGE_TYPEQ_TEST(core::SimpleString_O,core::SimpleBaseString_O,245,249);
-      ADD_RANGE_TYPEQ_TEST(llvmo::MCSubtargetInfo_O,llvmo::TargetSubtargetInfo_O,43,44);
-      ADD_SINGLE_TYPEQ_TEST(llvmo::BlockAddress_O,111);
-      ADD_SINGLE_TYPEQ_TEST(llvmo::DICompositeType_O,80);
-      ADD_SINGLE_TYPEQ_TEST(core::FunctionValueEnvironment_O,132);
-      ADD_SINGLE_TYPEQ_TEST(core::DerivableCxxClassCreator_O,151);
-      ADD_SINGLE_TYPEQ_TEST(core::TemplatedFunctionBase_O,170);
-      ADD_RANGE_TYPEQ_TEST(core::StringStream_O,core::StringInputStream_O,374,376);
-      ADD_SINGLE_TYPEQ_TEST(core::HashTableEq_O,389);
-      ADD_SINGLE_TYPEQ_TEST(core::MDArray_int32_t_O,282);
-      ADD_SINGLE_TYPEQ_TEST(llvmo::IntegerType_O,49);
-      ADD_SINGLE_TYPEQ_TEST(asttooling::AsttoolingExposer_O,393);
-      ADD_SINGLE_TYPEQ_TEST(core::HashTableEqualp_O,388);
-      ADD_SINGLE_TYPEQ_TEST(core::LambdaListHandler_O,126);
-      ADD_SINGLE_TYPEQ_TEST(core::MDArray_int64_t_O,300);
-      ADD_SINGLE_TYPEQ_TEST(core::SimpleMDArray_size_t_O,332);
-      ADD_SINGLE_TYPEQ_TEST(core::StructureClassCreator_O,150);
-      ADD_SINGLE_TYPEQ_TEST(core::ConcatenatedStream_O,373);
-      ADD_SINGLE_TYPEQ_TEST(core::SmallMultimap_O,125);
-      ADD_SINGLE_TYPEQ_TEST(llvmo::PassManagerBuilder_O,42);
-      ADD_SINGLE_TYPEQ_TEST(core::SymbolMacroletEnvironment_O,139);
-      ADD_SINGLE_TYPEQ_TEST(core::Fixnum_dummy_O,360);
-      ADD_SINGLE_TYPEQ_TEST(core::MDArray_int8_t_O,278);
-      ADD_SINGLE_TYPEQ_TEST(llvmo::ConstantFP_O,110);
-      ADD_RANGE_TYPEQ_TEST(core::SingleDispatchMethodFunction_O,core::CxxMethodFunction_O,167,168);
-      ADD_SINGLE_TYPEQ_TEST(core::MacroletEnvironment_O,138);
-      ADD_SINGLE_TYPEQ_TEST(core::Cons_O,403);
-      ADD_SINGLE_TYPEQ_TEST(core::CompiledFunction_O,161);
-      ADD_RANGE_TYPEQ_TEST(llvmo::ImmutablePass_O,llvmo::TargetLibraryInfoWrapperPass_O,37,38);
-      ADD_SINGLE_TYPEQ_TEST(core::FuncallableInstance_O,148);
-      ADD_SINGLE_TYPEQ_TEST(llvmo::LLVMContext_O,41);
-      ADD_SINGLE_TYPEQ_TEST(core::MDArrayDouble_O,291);
-      ADD_SINGLE_TYPEQ_TEST(core::SynonymStream_O,372);
+      ADD_SINGLE_TYPEQ_TEST(llvmo::NamedMDNode_O,116);
+      ADD_SINGLE_TYPEQ_TEST(core::MDArray_size_t_O,287);
+      ADD_SINGLE_TYPEQ_TEST(core::SimpleVector_byte16_t_O,245);
+      ADD_SINGLE_TYPEQ_TEST(mp::ConcurrentQueue_O,394);
+      ADD_SINGLE_TYPEQ_TEST(core::SimpleMDArray_fixnum_O,303);
+      ADD_SINGLE_TYPEQ_TEST(core::SimpleVector_byte64_t_O,234);
+      ADD_RANGE_TYPEQ_TEST(llvmo::TargetMachine_O,llvmo::LLVMTargetMachine_O,114,115);
+      ADD_RANGE_TYPEQ_TEST(llvmo::Value_O,llvmo::BasicBlock_O,76,113);
+      ADD_SINGLE_TYPEQ_TEST(core::SimpleBaseString_O,241);
+      ADD_SINGLE_TYPEQ_TEST(clbind::ClassRegistry_O,393);
+      ADD_RANGE_TYPEQ_TEST(core::Integer_O,core::Fixnum_dummy_O,350,352);
+      ADD_SINGLE_TYPEQ_TEST(core::SimpleMDArray_int32_t_O,311);
+      ADD_RANGE_TYPEQ_TEST(llvmo::Metadata_O,llvmo::DISubroutineType_O,59,75);
+      ADD_SINGLE_TYPEQ_TEST(asttooling::AstVisitor_O,399);
+      ADD_SINGLE_TYPEQ_TEST(mp::Process_O,223);
+      ADD_SINGLE_TYPEQ_TEST(core::Record_O,392);
+      ADD_RANGE_TYPEQ_TEST(core::MDArray_O,core::MDArrayBaseChar_O,263,332);
+      ADD_RANGE_TYPEQ_TEST(core::LightUserData_O,core::UserData_O,390,391);
+      ADD_SINGLE_TYPEQ_TEST(clcenv::FunctionIgnore_O,222);
+      ADD_SINGLE_TYPEQ_TEST(core::MDArrayT_O,285);
+      ADD_SINGLE_TYPEQ_TEST(clbind::ClassRep_O,12);
+      ADD_SINGLE_TYPEQ_TEST(core::DirectoryEntry_O,389);
+      ADD_SINGLE_TYPEQ_TEST(clcenv::GlobalFunctionInfo_O,191);
+      ADD_SINGLE_TYPEQ_TEST(llvmo::ConstantInt_O,111);
+      ADD_SINGLE_TYPEQ_TEST(llvmo::Linker_O,58);
+      ADD_SINGLE_TYPEQ_TEST(core::SourceFileInfo_O,388);
+      ADD_SINGLE_TYPEQ_TEST(core::IntArray_O,387);
+      ADD_SINGLE_TYPEQ_TEST(core::SimpleMDArray_int16_t_O,320);
+      ADD_RANGE_TYPEQ_TEST(llvmo::CompositeType_O,llvmo::StructType_O,43,48);
+      ADD_SINGLE_TYPEQ_TEST(core::SimpleMDArrayT_O,309);
+      ADD_SINGLE_TYPEQ_TEST(llvmo::BranchInst_O,92);
+      ADD_SINGLE_TYPEQ_TEST(core::SourcePosInfo_O,386);
+      ADD_RANGE_TYPEQ_TEST(clcenv::Entry_O,clcenv::FunctionIgnore_O,204,222);
+      ADD_RANGE_TYPEQ_TEST(core::ActivationFrame_O,core::TagbodyFrame_O,134,137);
+      ADD_SINGLE_TYPEQ_TEST(llvmo::AllocaInst_O,82);
+      ADD_RANGE_TYPEQ_TEST(llvmo::PassManagerBase_O,llvmo::PassManager_O,55,57);
+      ADD_SINGLE_TYPEQ_TEST(llvmo::LoadInst_O,81);
+      ADD_SINGLE_TYPEQ_TEST(core::StandardClassCreator_O,149);
+      ADD_RANGE_TYPEQ_TEST(core::Exposer_O,asttooling::AsttoolingExposer_O,383,385);
+      ADD_SINGLE_TYPEQ_TEST(llvmo::ConstantStruct_O,110);
+      ADD_SINGLE_TYPEQ_TEST(core::SingleDispatchCxxEffectiveMethodFunction_O,167);
+      ADD_SINGLE_TYPEQ_TEST(core::DirectoryIterator_O,227);
+      ADD_SINGLE_TYPEQ_TEST(clcenv::Macro_O,221);
+      ADD_SINGLE_TYPEQ_TEST(llvmo::DISubroutineType_O,75);
+      ADD_RANGE_TYPEQ_TEST(core::LexicalEnvironment_O,core::FunctionContainerEnvironment_O,122,133);
+      ADD_RANGE_TYPEQ_TEST(core::HashTable_O,core::HashTableEql_O,378,382);
+      ADD_SINGLE_TYPEQ_TEST(clcenv::LambdaNameInfo_O,190);
+      ADD_SINGLE_TYPEQ_TEST(core::PosixTime_O,377);
+      ADD_SINGLE_TYPEQ_TEST(core::SimpleBitVector_O,256);
+      ADD_SINGLE_TYPEQ_TEST(core::FunctionContainerEnvironment_O,133);
+      ADD_SINGLE_TYPEQ_TEST(clcenv::SpecialVariable_O,220);
+      ADD_SINGLE_TYPEQ_TEST(core::SimpleVector_int8_t_O,249);
+      ADD_RANGE_TYPEQ_TEST(clcenv::VariableInfo_O,clcenv::ConstantVariableInfo_O,192,196);
+      ADD_SINGLE_TYPEQ_TEST(llvmo::ResumeInst_O,91);
+      ADD_SINGLE_TYPEQ_TEST(llvmo::Function_O,101);
+      ADD_RANGE_TYPEQ_TEST(llvmo::DIType_O,llvmo::DISubroutineType_O,71,75);
+      ADD_SINGLE_TYPEQ_TEST(core::InvocationHistoryFrameIterator_O,376);
+      ADD_SINGLE_TYPEQ_TEST(core::SimpleVector_size_t_O,260);
+      ADD_SINGLE_TYPEQ_TEST(core::SimpleMDArrayFloat_O,328);
+      ADD_RANGE_TYPEQ_TEST(llvmo::DIScope_O,llvmo::DISubroutineType_O,64,75);
+      ADD_SINGLE_TYPEQ_TEST(core::FileStatus_O,375);
+      ADD_SINGLE_TYPEQ_TEST(llvmo::IndirectBrInst_O,90);
+      ADD_SINGLE_TYPEQ_TEST(clcenv::LexicalVariable_O,219);
+      ADD_SINGLE_TYPEQ_TEST(clcenv::VariableDynamicExtent_O,218);
+      ADD_SINGLE_TYPEQ_TEST(llvmo::PHINode_O,97);
+      ADD_SINGLE_TYPEQ_TEST(llvmo::ConstantArray_O,109);
+      ADD_SINGLE_TYPEQ_TEST(llvmo::IRBuilder_O,50);
+      ADD_SINGLE_TYPEQ_TEST(llvmo::ClaspJIT_O,374);
+      ADD_RANGE_TYPEQ_TEST(core::NamedFunction_O,core::SpecialForm_O,150,168);
+      ADD_SINGLE_TYPEQ_TEST(core::SimpleMDArrayBaseChar_O,315);
+      ADD_SINGLE_TYPEQ_TEST(core::Package_O,373);
+      ADD_RANGE_TYPEQ_TEST(core::FunctionClosure_O,core::SingleDispatchCxxEffectiveMethodFunction_O,154,167);
+      ADD_SINGLE_TYPEQ_TEST(clcenv::GlobalEnvironment_O,217);
+      ADD_SINGLE_TYPEQ_TEST(core::SimpleVector_byte8_t_O,253);
+      ADD_RANGE_TYPEQ_TEST(llvmo::DILexicalBlockBase_O,llvmo::DILexicalBlock_O,67,68);
+      ADD_RANGE_TYPEQ_TEST(core::SimpleMDArray_O,core::SimpleMDArrayFloat_O,297,328);
+      ADD_RANGE_TYPEQ_TEST(llvmo::MDNode_O,llvmo::DISubroutineType_O,62,75);
+      ADD_RANGE_TYPEQ_TEST(core::Stream_O,core::EchoStream_O,360,372);
+      ADD_SINGLE_TYPEQ_TEST(core::CandoException_O,359);
+      ADD_SINGLE_TYPEQ_TEST(mp::RecursiveMutex_O,199);
+      ADD_SINGLE_TYPEQ_TEST(clcenv::FunctionType_O,216);
+      ADD_SINGLE_TYPEQ_TEST(clcenv::Block_O,215);
+      ADD_SINGLE_TYPEQ_TEST(llvmo::VAArgInst_O,80);
+      ADD_SINGLE_TYPEQ_TEST(llvmo::MDString_O,61);
+      ADD_SINGLE_TYPEQ_TEST(core::ShortFloat_O,357);
+      ADD_RANGE_TYPEQ_TEST(core::Number_O,core::Complex_O,346,358);
+      ADD_SINGLE_TYPEQ_TEST(core::MDArray_fixnum_O,330);
+      ADD_RANGE_TYPEQ_TEST(core::T_O,core::Cons_O,1,395);
+      ADD_SINGLE_TYPEQ_TEST(llvmo::DICompileUnit_O,70);
+      ADD_SINGLE_TYPEQ_TEST(core::SharpEqualWrapper_O,345);
+      ADD_SINGLE_TYPEQ_TEST(clcenv::Tag_O,214);
+      ADD_SINGLE_TYPEQ_TEST(core::SimpleMDArrayDouble_O,313);
+      ADD_SINGLE_TYPEQ_TEST(clcenv::ConstantVariableInfo_O,196);
+      ADD_SINGLE_TYPEQ_TEST(core::LoadTimeValues_O,344);
+      ADD_SINGLE_TYPEQ_TEST(core::Cache_O,343);
+      ADD_SINGLE_TYPEQ_TEST(llvmo::DIFile_O,69);
+      ADD_SINGLE_TYPEQ_TEST(core::InterpretedClosure_O,157);
+      ADD_RANGE_TYPEQ_TEST(core::AbstractSimpleVector_O,core::SimpleVectorDouble_O,230,262);
+      ADD_SINGLE_TYPEQ_TEST(core::SimpleMDArray_byte16_t_O,307);
+      ADD_RANGE_TYPEQ_TEST(core::Pathname_O,core::LogicalPathname_O,341,342);
+      ADD_SINGLE_TYPEQ_TEST(llvmo::FunctionPass_O,31);
+      ADD_SINGLE_TYPEQ_TEST(llvmo::DataLayout_O,340);
+      ADD_SINGLE_TYPEQ_TEST(core::Str8Ns_O,281);
+      ADD_SINGLE_TYPEQ_TEST(llvmo::BasicBlock_O,113);
+      ADD_SINGLE_TYPEQ_TEST(core::SourceManager_O,339);
+      ADD_SINGLE_TYPEQ_TEST(core::SimpleMDArray_int8_t_O,299);
+      ADD_SINGLE_TYPEQ_TEST(llvmo::UndefValue_O,108);
+      ADD_SINGLE_TYPEQ_TEST(llvmo::EngineBuilder_O,54);
+      ADD_SINGLE_TYPEQ_TEST(core::MDArray_byte32_t_O,296);
+      ADD_SINGLE_TYPEQ_TEST(core::Character_dummy_O,338);
+      ADD_SINGLE_TYPEQ_TEST(core::TagbodyEnvironment_O,126);
+      ADD_SINGLE_TYPEQ_TEST(core::ConsStepper_O,171);
+      ADD_RANGE_TYPEQ_TEST(core::CompileTimeEnvironment_O,core::FunctionContainerEnvironment_O,127,133);
+      ADD_RANGE_TYPEQ_TEST(llvmo::Constant_O,llvmo::ConstantInt_O,98,111);
+      ADD_SINGLE_TYPEQ_TEST(core::SpecialForm_O,168);
+      ADD_SINGLE_TYPEQ_TEST(core::Path_O,337);
+      ADD_SINGLE_TYPEQ_TEST(mp::BlockingConcurrentQueue_O,336);
+      ADD_SINGLE_TYPEQ_TEST(mp::SharedMutex_O,203);
+      ADD_SINGLE_TYPEQ_TEST(clcenv::SpecialOperatorInfo_O,189);
+      ADD_SINGLE_TYPEQ_TEST(core::SexpSaveArchive_O,17);
+      ADD_SINGLE_TYPEQ_TEST(clcenv::SymbolMacroInfo_O,195);
+      ADD_SINGLE_TYPEQ_TEST(core::NativeVector_int_O,202);
+      ADD_SINGLE_TYPEQ_TEST(llvmo::DIBasicType_O,74);
+      ADD_SINGLE_TYPEQ_TEST(llvmo::DIBuilder_O,53);
+      ADD_SINGLE_TYPEQ_TEST(core::InstanceCreator_O,148);
+      ADD_SINGLE_TYPEQ_TEST(core::StandardObject_O,335);
+      ADD_SINGLE_TYPEQ_TEST(llvmo::APInt_O,52);
+      ADD_RANGE_TYPEQ_TEST(core::Symbol_O,core::Null_O,333,334);
+      ADD_SINGLE_TYPEQ_TEST(llvmo::APFloat_O,51);
+      ADD_RANGE_TYPEQ_TEST(clcenv::FunctionInfo_O,clcenv::GlobalFunctionInfo_O,185,191);
+      ADD_SINGLE_TYPEQ_TEST(core::IOStreamStream_O,371);
+      ADD_SINGLE_TYPEQ_TEST(core::SimpleMDArrayCharacter_O,301);
+      ADD_SINGLE_TYPEQ_TEST(core::SimpleCharacterString_O,239);
+      ADD_SINGLE_TYPEQ_TEST(clcenv::LambdaName_O,213);
+      ADD_SINGLE_TYPEQ_TEST(clcenv::LocalFunctionInfo_O,188);
+      ADD_RANGE_TYPEQ_TEST(core::Array_O,core::MDArrayBaseChar_O,229,332);
+      ADD_SINGLE_TYPEQ_TEST(llvmo::InsertPoint_O,228);
+      ADD_SINGLE_TYPEQ_TEST(llvmo::Argument_O,112);
+      ADD_SINGLE_TYPEQ_TEST(clcenv::Optimize_O,212);
+      ADD_SINGLE_TYPEQ_TEST(core::StrWNs_O,279);
+      ADD_RANGE_TYPEQ_TEST(core::Iterator_O,core::DirectoryIterator_O,225,227);
+      ADD_RANGE_TYPEQ_TEST(llvmo::IRBuilderBase_O,llvmo::IRBuilder_O,49,50);
+      ADD_SINGLE_TYPEQ_TEST(core::EchoStream_O,372);
+      ADD_SINGLE_TYPEQ_TEST(core::Null_O,334);
+      ADD_SINGLE_TYPEQ_TEST(core::SimpleMDArrayBit_O,318);
+      ADD_SINGLE_TYPEQ_TEST(core::MDArrayBit_O,290);
+      ADD_SINGLE_TYPEQ_TEST(core::SingleDispatchMethod_O,224);
+      ADD_SINGLE_TYPEQ_TEST(clcenv::Closure_O,211);
+      ADD_SINGLE_TYPEQ_TEST(clcenv::Inline_O,210);
+      ADD_SINGLE_TYPEQ_TEST(clcenv::LexicalVariableInfo_O,194);
+      ADD_SINGLE_TYPEQ_TEST(core::TagbodyFrame_O,137);
+      ADD_SINGLE_TYPEQ_TEST(core::NativeVector_double_O,201);
+      ADD_SINGLE_TYPEQ_TEST(core::GlueEnvironment_O,121);
+      ADD_RANGE_TYPEQ_TEST(llvmo::DILocalScope_O,llvmo::DILexicalBlock_O,65,68);
+      ADD_RANGE_TYPEQ_TEST(core::CxxObject_O,mp::Process_O,179,223);
+      ADD_SINGLE_TYPEQ_TEST(llvmo::ReturnInst_O,89);
+      ADD_SINGLE_TYPEQ_TEST(llvmo::FunctionType_O,42);
+      ADD_SINGLE_TYPEQ_TEST(clbind::DummyCreator_O,147);
+      ADD_SINGLE_TYPEQ_TEST(core::ClassCreator_O,146);
+      ADD_SINGLE_TYPEQ_TEST(core::MDArray_byte16_t_O,294);
+      ADD_SINGLE_TYPEQ_TEST(llvmo::DITypeRefArray_O,200);
+      ADD_SINGLE_TYPEQ_TEST(llvmo::DILexicalBlock_O,68);
+      ADD_SINGLE_TYPEQ_TEST(core::Pointer_O,178);
+      ADD_RANGE_TYPEQ_TEST(llvmo::Type_O,llvmo::StructType_O,40,48);
+      ADD_SINGLE_TYPEQ_TEST(core::SimpleVectorFloat_O,232);
+      ADD_RANGE_TYPEQ_TEST(mp::Mutex_O,mp::RecursiveMutex_O,198,199);
+      ADD_SINGLE_TYPEQ_TEST(llvmo::ModuleHandle_O,177);
+      ADD_SINGLE_TYPEQ_TEST(clcenv::BlockInfo_O,184);
+      ADD_SINGLE_TYPEQ_TEST(core::RecursiveDirectoryIterator_O,226);
+      ADD_SINGLE_TYPEQ_TEST(llvmo::UnreachableInst_O,88);
+      ADD_SINGLE_TYPEQ_TEST(core::MacroClosure_O,164);
+      ADD_RANGE_TYPEQ_TEST(core::SNode_O,core::LeafSNode_O,174,176);
+      ADD_SINGLE_TYPEQ_TEST(core::VectorStepper_O,170);
+      ADD_SINGLE_TYPEQ_TEST(core::StringInputStream_O,368);
+      ADD_RANGE_TYPEQ_TEST(core::LoadArchive_O,core::SexpLoadArchive_O,18,19);
+      ADD_RANGE_TYPEQ_TEST(core::Float_O,core::ShortFloat_O,353,357);
+      ADD_RANGE_TYPEQ_TEST(llvmo::ModulePass_O,llvmo::TargetLibraryInfoWrapperPass_O,28,30);
+      ADD_SINGLE_TYPEQ_TEST(llvmo::DIDerivedType_O,73);
+      ADD_SINGLE_TYPEQ_TEST(clbind::ConstructorCreator_O,145);
+      ADD_SINGLE_TYPEQ_TEST(core::FunctionFrame_O,136);
+      ADD_SINGLE_TYPEQ_TEST(core::LongFloat_O,356);
+      ADD_SINGLE_TYPEQ_TEST(core::SimpleVector_int64_t_O,236);
+      ADD_SINGLE_TYPEQ_TEST(core::TranslationFunctor_O,163);
+      ADD_RANGE_TYPEQ_TEST(llvmo::ConstantDataSequential_O,llvmo::ConstantDataArray_O,106,107);
+      ADD_SINGLE_TYPEQ_TEST(llvmo::TargetLibraryInfoWrapperPass_O,30);
+      ADD_SINGLE_TYPEQ_TEST(llvmo::StoreInst_O,96);
+      ADD_SINGLE_TYPEQ_TEST(llvmo::DebugLoc_O,173);
+      ADD_RANGE_TYPEQ_TEST(llvmo::User_O,llvmo::ConstantInt_O,77,111);
+      ADD_SINGLE_TYPEQ_TEST(core::WeakPointer_O,172);
+      ADD_SINGLE_TYPEQ_TEST(core::LeafSNode_O,176);
+      ADD_SINGLE_TYPEQ_TEST(core::MDArray_int16_t_O,268);
+      ADD_SINGLE_TYPEQ_TEST(clcenv::OptimizeInfo_O,183);
+      ADD_SINGLE_TYPEQ_TEST(core::IOFileStream_O,370);
+      ADD_SINGLE_TYPEQ_TEST(llvmo::FenceInst_O,95);
+      ADD_RANGE_TYPEQ_TEST(core::RuntimeVisibleEnvironment_O,core::TagbodyEnvironment_O,123,126);
+      ADD_SINGLE_TYPEQ_TEST(core::ValueFrame_O,135);
+      ADD_SINGLE_TYPEQ_TEST(llvmo::AtomicCmpXchgInst_O,94);
+      ADD_SINGLE_TYPEQ_TEST(core::SimpleMDArray_byte8_t_O,322);
+      ADD_RANGE_TYPEQ_TEST(core::SequenceStepper_O,core::ConsStepper_O,169,171);
+      ADD_SINGLE_TYPEQ_TEST(core::SimpleVector_int32_t_O,255);
+      ADD_RANGE_TYPEQ_TEST(core::SaveArchive_O,core::SexpSaveArchive_O,16,17);
+      ADD_SINGLE_TYPEQ_TEST(core::Complex_O,358);
+      ADD_SINGLE_TYPEQ_TEST(llvmo::ConstantPointerNull_O,105);
+      ADD_RANGE_TYPEQ_TEST(llvmo::Instruction_O,llvmo::PHINode_O,78,97);
+      ADD_SINGLE_TYPEQ_TEST(llvmo::VectorType_O,47);
+      ADD_RANGE_TYPEQ_TEST(core::FileStream_O,core::IOStreamStream_O,369,371);
+      ADD_SINGLE_TYPEQ_TEST(llvmo::ValueAsMetadata_O,60);
+      ADD_RANGE_TYPEQ_TEST(core::Rational_O,core::Fixnum_dummy_O,348,352);
+      ADD_SINGLE_TYPEQ_TEST(llvmo::ConstantExpr_O,104);
+      ADD_SINGLE_TYPEQ_TEST(llvmo::LandingPadInst_O,93);
+      ADD_SINGLE_TYPEQ_TEST(core::MDArrayCharacter_O,272);
+      ADD_SINGLE_TYPEQ_TEST(core::SingleDispatchEffectiveMethodFunction_O,166);
+      ADD_RANGE_TYPEQ_TEST(core::Function_O,core::SpecialForm_O,139,168);
+      ADD_SINGLE_TYPEQ_TEST(llvmo::StructType_O,48);
+      ADD_SINGLE_TYPEQ_TEST(clcenv::FunctionDynamicExtent_O,209);
+      ADD_SINGLE_TYPEQ_TEST(core::RandomState_O,138);
+      ADD_SINGLE_TYPEQ_TEST(core::MDArrayFloat_O,276);
+      ADD_SINGLE_TYPEQ_TEST(core::HashTableEql_O,382);
+      ADD_SINGLE_TYPEQ_TEST(llvmo::Target_O,39);
+      ADD_SINGLE_TYPEQ_TEST(core::MDArray_byte64_t_O,266);
+      ADD_SINGLE_TYPEQ_TEST(mp::ConditionVariable_O,197);
+      ADD_RANGE_TYPEQ_TEST(core::Real_O,core::ShortFloat_O,347,357);
+      ADD_SINGLE_TYPEQ_TEST(core::SimpleVector_fixnum_O,247);
+      ADD_SINGLE_TYPEQ_TEST(core::FuncallableInstanceCreator_O,144);
+      ADD_SINGLE_TYPEQ_TEST(core::SimpleVector_byte32_t_O,258);
+      ADD_SINGLE_TYPEQ_TEST(core::MDArray_byte8_t_O,289);
+      ADD_SINGLE_TYPEQ_TEST(core::SexpLoadArchive_O,19);
+      ADD_SINGLE_TYPEQ_TEST(core::SingleDispatchGenericFunctionClosure_O,165);
+      ADD_SINGLE_TYPEQ_TEST(core::StringOutputStream_O,367);
+      ADD_RANGE_TYPEQ_TEST(core::AnsiStream_O,core::EchoStream_O,361,372);
+      ADD_SINGLE_TYPEQ_TEST(core::BranchSNode_O,175);
+      ADD_RANGE_TYPEQ_TEST(llvmo::TerminatorInst_O,llvmo::BranchInst_O,85,92);
+      ADD_SINGLE_TYPEQ_TEST(llvmo::Module_O,38);
+      ADD_RANGE_TYPEQ_TEST(core::BuiltinClosure_O,core::MacroClosure_O,161,164);
+      ADD_SINGLE_TYPEQ_TEST(core::SingleFloat_dummy_O,355);
+      ADD_SINGLE_TYPEQ_TEST(core::ValueEnvironment_O,125);
+      ADD_SINGLE_TYPEQ_TEST(core::CxxMethodFunction_O,160);
+      ADD_SINGLE_TYPEQ_TEST(llvmo::InvokeInst_O,87);
+      ADD_RANGE_TYPEQ_TEST(core::Environment_O,core::TagbodyFrame_O,120,137);
+      ADD_SINGLE_TYPEQ_TEST(clcenv::SymbolMacro_O,208);
+      ADD_SINGLE_TYPEQ_TEST(llvmo::AttributeSet_O,119);
+      ADD_SINGLE_TYPEQ_TEST(clcenv::LocalMacroInfo_O,187);
+      ADD_SINGLE_TYPEQ_TEST(llvmo::AtomicRMWInst_O,84);
+      ADD_SINGLE_TYPEQ_TEST(llvmo::PassManager_O,57);
+      ADD_RANGE_TYPEQ_TEST(core::StrNs_O,core::Str8Ns_O,277,281);
+      ADD_SINGLE_TYPEQ_TEST(clasp_ffi::ForeignData_O,37);
+      ADD_SINGLE_TYPEQ_TEST(core::SimpleVector_O,251);
+      ADD_SINGLE_TYPEQ_TEST(core::UnwindProtectEnvironment_O,132);
+      ADD_SINGLE_TYPEQ_TEST(clcenv::GlobalMacroInfo_O,186);
+      ADD_SINGLE_TYPEQ_TEST(llvmo::CallInst_O,83);
+      ADD_SINGLE_TYPEQ_TEST(llvmo::DISubprogram_O,66);
+      ADD_SINGLE_TYPEQ_TEST(llvmo::FunctionPassManager_O,56);
+      ADD_SINGLE_TYPEQ_TEST(core::DoubleFloat_O,354);
+      ADD_RANGE_TYPEQ_TEST(clcenv::Info_O,clcenv::ConstantVariableInfo_O,182,196);
+      ADD_RANGE_TYPEQ_TEST(core::Creator_O,core::StandardClassCreator_O,141,149);
+      ADD_SINGLE_TYPEQ_TEST(llvmo::ArrayType_O,46);
+      ADD_SINGLE_TYPEQ_TEST(core::SimpleMDArray_int64_t_O,326);
+      ADD_RANGE_TYPEQ_TEST(core::SimpleString_O,core::SimpleBaseString_O,237,241);
+      ADD_RANGE_TYPEQ_TEST(llvmo::MCSubtargetInfo_O,llvmo::TargetSubtargetInfo_O,35,36);
+      ADD_SINGLE_TYPEQ_TEST(llvmo::BlockAddress_O,103);
+      ADD_SINGLE_TYPEQ_TEST(llvmo::DICompositeType_O,72);
+      ADD_SINGLE_TYPEQ_TEST(core::FunctionValueEnvironment_O,124);
+      ADD_SINGLE_TYPEQ_TEST(core::DerivableCxxClassCreator_O,143);
+      ADD_SINGLE_TYPEQ_TEST(core::TemplatedFunctionBase_O,162);
+      ADD_RANGE_TYPEQ_TEST(core::StringStream_O,core::StringInputStream_O,366,368);
+      ADD_SINGLE_TYPEQ_TEST(core::HashTableEq_O,381);
+      ADD_SINGLE_TYPEQ_TEST(core::MDArray_int32_t_O,274);
+      ADD_SINGLE_TYPEQ_TEST(llvmo::IntegerType_O,41);
+      ADD_SINGLE_TYPEQ_TEST(asttooling::AsttoolingExposer_O,385);
+      ADD_SINGLE_TYPEQ_TEST(core::HashTableEqualp_O,380);
+      ADD_SINGLE_TYPEQ_TEST(core::LambdaListHandler_O,118);
+      ADD_SINGLE_TYPEQ_TEST(core::MDArray_int64_t_O,292);
+      ADD_SINGLE_TYPEQ_TEST(core::SimpleMDArray_size_t_O,324);
+      ADD_SINGLE_TYPEQ_TEST(core::StructureClassCreator_O,142);
+      ADD_SINGLE_TYPEQ_TEST(core::ConcatenatedStream_O,365);
+      ADD_SINGLE_TYPEQ_TEST(core::SmallMultimap_O,117);
+      ADD_SINGLE_TYPEQ_TEST(llvmo::PassManagerBuilder_O,34);
+      ADD_SINGLE_TYPEQ_TEST(core::SymbolMacroletEnvironment_O,131);
+      ADD_SINGLE_TYPEQ_TEST(core::Fixnum_dummy_O,352);
+      ADD_SINGLE_TYPEQ_TEST(core::MDArray_int8_t_O,270);
+      ADD_SINGLE_TYPEQ_TEST(llvmo::ConstantFP_O,102);
+      ADD_RANGE_TYPEQ_TEST(core::SingleDispatchMethodFunction_O,core::CxxMethodFunction_O,159,160);
+      ADD_SINGLE_TYPEQ_TEST(core::MacroletEnvironment_O,130);
+      ADD_SINGLE_TYPEQ_TEST(core::Cons_O,395);
+      ADD_SINGLE_TYPEQ_TEST(core::CompiledFunction_O,153);
+      ADD_RANGE_TYPEQ_TEST(llvmo::ImmutablePass_O,llvmo::TargetLibraryInfoWrapperPass_O,29,30);
+      ADD_SINGLE_TYPEQ_TEST(core::FuncallableInstance_O,140);
+      ADD_SINGLE_TYPEQ_TEST(llvmo::LLVMContext_O,33);
+      ADD_SINGLE_TYPEQ_TEST(core::MDArrayDouble_O,283);
+      ADD_SINGLE_TYPEQ_TEST(core::SynonymStream_O,364);
       ADD_SINGLE_TYPEQ_TEST(core::WeakKeyHashTable_O,6);
-      ADD_SINGLE_TYPEQ_TEST(core::CompiledDispatchFunction_O,160);
-      ADD_SINGLE_TYPEQ_TEST(core::Ratio_O,357);
-      ADD_SINGLE_TYPEQ_TEST(core::MDArrayBaseChar_O,340);
-      ADD_SINGLE_TYPEQ_TEST(core::UserData_O,399);
-      ADD_SINGLE_TYPEQ_TEST(llvmo::GlobalVariable_O,108);
-      ADD_SINGLE_TYPEQ_TEST(core::ClosureWithSlots_O,166);
-      ADD_RANGE_TYPEQ_TEST(llvmo::DINode_O,llvmo::DISubroutineType_O,71,83);
-      ADD_RANGE_TYPEQ_TEST(core::ExternalObject_O,llvmo::NamedMDNode_O,32,124);
-      ADD_SINGLE_TYPEQ_TEST(core::BroadcastStream_O,371);
-      ADD_SINGLE_TYPEQ_TEST(llvmo::ExecutionEngine_O,40);
-      ADD_SINGLE_TYPEQ_TEST(core::SimpleVector_int16_t_O,251);
-      ADD_RANGE_TYPEQ_TEST(core::General_O,mp::ConcurrentQueue_O,3,402);
-      ADD_SINGLE_TYPEQ_TEST(clcenv::Function_O,215);
-      ADD_RANGE_TYPEQ_TEST(core::DerivableCxxObject_O,asttooling::DerivableASTFrontendAction,11,19);
-      ADD_SINGLE_TYPEQ_TEST(llvmo::Attribute_O,31);
-      ADD_SINGLE_TYPEQ_TEST(core::WeakKeyMapping_O,30);
-      ADD_RANGE_TYPEQ_TEST(core::Closure_O,core::SingleDispatchCxxEffectiveMethodFunction_O,159,175);
-      ADD_SINGLE_TYPEQ_TEST(core::Reader_O,29);
-      ADD_SINGLE_TYPEQ_TEST(core::SymbolToEnumConverter_O,28);
-      ADD_SINGLE_TYPEQ_TEST(llvmo::SwitchInst_O,94);
-      ADD_SINGLE_TYPEQ_TEST(clcenv::VariableIgnore_O,214);
-      ADD_SINGLE_TYPEQ_TEST(clcenv::SpecialVariableInfo_O,201);
-      ADD_SINGLE_TYPEQ_TEST(core::NativeVector_float_O,189);
-      ADD_SINGLE_TYPEQ_TEST(core::SimpleVectorDouble_O,270);
-      ADD_RANGE_TYPEQ_TEST(llvmo::Pass_O,llvmo::FunctionPass_O,35,39);
+      ADD_SINGLE_TYPEQ_TEST(core::CompiledDispatchFunction_O,152);
+      ADD_SINGLE_TYPEQ_TEST(core::Ratio_O,349);
+      ADD_SINGLE_TYPEQ_TEST(core::MDArrayBaseChar_O,332);
+      ADD_SINGLE_TYPEQ_TEST(core::UserData_O,391);
+      ADD_SINGLE_TYPEQ_TEST(llvmo::GlobalVariable_O,100);
+      ADD_SINGLE_TYPEQ_TEST(core::ClosureWithSlots_O,158);
+      ADD_RANGE_TYPEQ_TEST(llvmo::DINode_O,llvmo::DISubroutineType_O,63,75);
+      ADD_RANGE_TYPEQ_TEST(core::ExternalObject_O,llvmo::NamedMDNode_O,24,116);
+      ADD_SINGLE_TYPEQ_TEST(core::BroadcastStream_O,363);
+      ADD_SINGLE_TYPEQ_TEST(llvmo::ExecutionEngine_O,32);
+      ADD_SINGLE_TYPEQ_TEST(core::SimpleVector_int16_t_O,243);
+      ADD_RANGE_TYPEQ_TEST(core::General_O,mp::ConcurrentQueue_O,3,394);
+      ADD_SINGLE_TYPEQ_TEST(clcenv::Function_O,207);
+      ADD_SINGLE_TYPEQ_TEST(core::DerivableCxxObject_O,11);
+      ADD_SINGLE_TYPEQ_TEST(llvmo::Attribute_O,23);
+      ADD_SINGLE_TYPEQ_TEST(core::WeakKeyMapping_O,22);
+      ADD_RANGE_TYPEQ_TEST(core::Closure_O,core::SingleDispatchCxxEffectiveMethodFunction_O,151,167);
+      ADD_SINGLE_TYPEQ_TEST(core::Reader_O,21);
+      ADD_SINGLE_TYPEQ_TEST(core::SymbolToEnumConverter_O,20);
+      ADD_SINGLE_TYPEQ_TEST(llvmo::SwitchInst_O,86);
+      ADD_SINGLE_TYPEQ_TEST(clcenv::VariableIgnore_O,206);
+      ADD_SINGLE_TYPEQ_TEST(clcenv::SpecialVariableInfo_O,193);
+      ADD_SINGLE_TYPEQ_TEST(core::NativeVector_float_O,181);
+      ADD_SINGLE_TYPEQ_TEST(core::SimpleVectorDouble_O,262);
+      ADD_RANGE_TYPEQ_TEST(llvmo::Pass_O,llvmo::FunctionPass_O,27,31);
       ADD_SINGLE_TYPEQ_TEST(core::VaList_dummy_O,2);
-      ADD_SINGLE_TYPEQ_TEST(core::BlockEnvironment_O,137);
-      ADD_RANGE_TYPEQ_TEST(core::ClosureWithFrame_O,core::InterpretedClosure_O,163,165);
-      ADD_SINGLE_TYPEQ_TEST(core::CatchEnvironment_O,136);
-      ADD_SINGLE_TYPEQ_TEST(llvmo::DINodeArray_O,188);
-      ADD_SINGLE_TYPEQ_TEST(core::LogicalPathname_O,350);
-      ADD_SINGLE_TYPEQ_TEST(core::CompiledClosure_O,164);
-      ADD_RANGE_TYPEQ_TEST(core::Archive_O,core::SexpLoadArchive_O,23,27);
-      ADD_SINGLE_TYPEQ_TEST(llvmo::TargetSubtargetInfo_O,44);
-      ADD_SINGLE_TYPEQ_TEST(llvmo::ConstantDataArray_O,115);
-      ADD_SINGLE_TYPEQ_TEST(llvmo::TargetOptions_O,34);
-      ADD_SINGLE_TYPEQ_TEST(core::WrappedPointer_O,22);
-      ADD_SINGLE_TYPEQ_TEST(core::SmallMap_O,21);
-      ADD_RANGE_TYPEQ_TEST_INSTANCE(core::Instance_O,clbind::ClassRep_O,10,20);
+      ADD_SINGLE_TYPEQ_TEST(core::BlockEnvironment_O,129);
+      ADD_RANGE_TYPEQ_TEST(core::ClosureWithFrame_O,core::InterpretedClosure_O,155,157);
+      ADD_SINGLE_TYPEQ_TEST(core::CatchEnvironment_O,128);
+      ADD_SINGLE_TYPEQ_TEST(llvmo::DINodeArray_O,180);
+      ADD_SINGLE_TYPEQ_TEST(core::LogicalPathname_O,342);
+      ADD_SINGLE_TYPEQ_TEST(core::CompiledClosure_O,156);
+      ADD_RANGE_TYPEQ_TEST(core::Archive_O,core::SexpLoadArchive_O,15,19);
+      ADD_SINGLE_TYPEQ_TEST(llvmo::TargetSubtargetInfo_O,36);
+      ADD_SINGLE_TYPEQ_TEST(llvmo::ConstantDataArray_O,107);
+      ADD_SINGLE_TYPEQ_TEST(llvmo::TargetOptions_O,26);
+      ADD_SINGLE_TYPEQ_TEST(core::WrappedPointer_O,14);
+      ADD_SINGLE_TYPEQ_TEST(core::SmallMap_O,13);
+      ADD_RANGE_TYPEQ_TEST_INSTANCE(core::Instance_O,clbind::ClassRep_O,10,12);
       ADD_SINGLE_TYPEQ_TEST(clasp_ffi::ForeignTypeSpec_O,9);
-      ADD_SINGLE_TYPEQ_TEST(core::SimpleMDArray_byte32_t_O,313);
-      ADD_SINGLE_TYPEQ_TEST(core::Bignum_O,359);
-      ADD_SINGLE_TYPEQ_TEST(llvmo::LLVMTargetMachine_O,123);
+      ADD_SINGLE_TYPEQ_TEST(core::SimpleMDArray_byte32_t_O,305);
+      ADD_SINGLE_TYPEQ_TEST(core::Bignum_O,351);
+      ADD_SINGLE_TYPEQ_TEST(llvmo::LLVMTargetMachine_O,115);
       ADD_SINGLE_TYPEQ_TEST(core::PosixTimeDuration_O,8);
       ADD_SINGLE_TYPEQ_TEST(core::ReadTable_O,7);
-      ADD_SINGLE_TYPEQ_TEST(core::HashTableEqual_O,387);
-      ADD_RANGE_TYPEQ_TEST(llvmo::SequentialType_O,llvmo::VectorType_O,52,55);
-      ADD_SINGLE_TYPEQ_TEST(clcenv::VariableType_O,213);
-      ADD_SINGLE_TYPEQ_TEST(llvmo::Triple_O,33);
-      ADD_SINGLE_TYPEQ_TEST(core::BitVectorNs_O,272);
-      ADD_SINGLE_TYPEQ_TEST(core::SimpleMDArray_byte64_t_O,325);
-      ADD_RANGE_TYPEQ_TEST(llvmo::UnaryInstruction_O,llvmo::AllocaInst_O,87,90);
-      ADD_SINGLE_TYPEQ_TEST(core::CoreExposer_O,392);
-      ADD_RANGE_TYPEQ_TEST(llvmo::GlobalValue_O,llvmo::Function_O,107,109);
-      ADD_SINGLE_TYPEQ_TEST(llvmo::PointerType_O,53);
+      ADD_SINGLE_TYPEQ_TEST(core::HashTableEqual_O,379);
+      ADD_RANGE_TYPEQ_TEST(llvmo::SequentialType_O,llvmo::VectorType_O,44,47);
+      ADD_SINGLE_TYPEQ_TEST(clcenv::VariableType_O,205);
+      ADD_SINGLE_TYPEQ_TEST(llvmo::Triple_O,25);
+      ADD_SINGLE_TYPEQ_TEST(core::BitVectorNs_O,264);
+      ADD_SINGLE_TYPEQ_TEST(core::SimpleMDArray_byte64_t_O,317);
+      ADD_RANGE_TYPEQ_TEST(llvmo::UnaryInstruction_O,llvmo::AllocaInst_O,79,82);
+      ADD_SINGLE_TYPEQ_TEST(core::CoreExposer_O,384);
+      ADD_RANGE_TYPEQ_TEST(llvmo::GlobalValue_O,llvmo::Function_O,99,101);
+      ADD_SINGLE_TYPEQ_TEST(llvmo::PointerType_O,45);
       ADD_RANGE_TYPEQ_TEST(core::WeakHashTable_O,core::WeakKeyHashTable_O,5,6);
       ADD_SINGLE_TYPEQ_TEST(core::MultiStringBuffer_O,4);
-      ADD_SINGLE_TYPEQ_TEST(core::TwoWayStream_O,370);
+      ADD_SINGLE_TYPEQ_TEST(core::TwoWayStream_O,362);
 #endif // defined(GC_TYPEQ)
 #if defined(GC_STAMP_SELECTORS)
 template <> class gctools::GCStamp<llvmo::NamedMDNode_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__NamedMDNode_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::MDArray_size_t_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__MDArray_size_t_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::SimpleVector_byte16_t_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__SimpleVector_byte16_t_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<mp::ConcurrentQueue_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_mp__ConcurrentQueue_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<float>> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_gctools__GCVector_moveable_float_ ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<gctools::GCArray_moveable<unsigned short>> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_gctools__GCArray_moveable_unsigned_short_ ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::SimpleMDArray_fixnum_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__SimpleMDArray_fixnum_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::SimpleVector_byte64_t_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__SimpleVector_byte64_t_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::TargetMachine_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__TargetMachine_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::Value_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__Value_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::SimpleBaseString_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__SimpleBaseString_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<clbind::ClassRegistry_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_clbind__ClassRegistry_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::Integer_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__Integer_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::SimpleMDArray_int32_t_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__SimpleMDArray_int32_t_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::Metadata_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__Metadata_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<asttooling::AstVisitor_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_asttooling__AstVisitor_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_CALLBACK ;
 };
 template <> class gctools::GCStamp<mp::Process_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_mp__Process_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::Record_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__Record_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::MDArray_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__MDArray_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<core::OptionalArgument>> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_gctools__GCVector_moveable_core__OptionalArgument_ ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::LightUserData_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__LightUserData_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<core::T_O *>> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_gctools__GCVector_moveable_core__T_O___ ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<clcenv::FunctionIgnore_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_clcenv__FunctionIgnore_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::MDArrayT_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__MDArrayT_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<clbind::ClassRep_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_clbind__ClassRep_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_RACK ;
 };
 template <> class gctools::GCStamp<core::DirectoryEntry_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__DirectoryEntry_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<clcenv::GlobalFunctionInfo_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_clcenv__GlobalFunctionInfo_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::ConstantInt_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__ConstantInt_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::Linker_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__Linker_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::SourceFileInfo_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__SourceFileInfo_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::IntArray_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__IntArray_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<gctools::GCArray_moveable<double>> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_gctools__GCArray_moveable_double_ ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::SimpleMDArray_int16_t_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__SimpleMDArray_int16_t_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::CompositeType_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__CompositeType_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::SimpleMDArrayT_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__SimpleMDArrayT_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::BranchInst_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__BranchInst_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::SourcePosInfo_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__SourcePosInfo_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<clcenv::Entry_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_clcenv__Entry_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::ActivationFrame_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__ActivationFrame_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::AllocaInst_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__AllocaInst_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::PassManagerBase_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__PassManagerBase_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::LoadInst_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__LoadInst_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::StandardClassCreator_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__StandardClassCreator_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::Exposer_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__Exposer_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::ConstantStruct_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__ConstantStruct_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::SingleDispatchCxxEffectiveMethodFunction_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__SingleDispatchCxxEffectiveMethodFunction_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::DirectoryIterator_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__DirectoryIterator_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<clcenv::Macro_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_clcenv__Macro_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<clbind::detail::class_map> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_clbind__detail__class_map ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<gctools::smart_ptr<core::SourceFileInfo_O>>> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__SourceFileInfo_O__ ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::DISubroutineType_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__DISubroutineType_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::LexicalEnvironment_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__LexicalEnvironment_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::HashTable_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__HashTable_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<clcenv::LambdaNameInfo_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_clcenv__LambdaNameInfo_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::PosixTime_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__PosixTime_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<gctools::GCArray_moveable<float>> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_gctools__GCArray_moveable_float_ ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<gctools::smart_ptr<core::Package_O>>> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__Package_O__ ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::SimpleBitVector_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__SimpleBitVector_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::FunctionContainerEnvironment_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__FunctionContainerEnvironment_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<clcenv::SpecialVariable_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_clcenv__SpecialVariable_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::SimpleVector_int8_t_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__SimpleVector_int8_t_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<clcenv::VariableInfo_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_clcenv__VariableInfo_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::ResumeInst_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__ResumeInst_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::Function_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__Function_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::DIType_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__DIType_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::InvocationHistoryFrameIterator_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__InvocationHistoryFrameIterator_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<gctools::smart_ptr<core::SingleDispatchMethod_O>>> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__SingleDispatchMethod_O__ ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::SimpleVector_size_t_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__SimpleVector_size_t_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::SimpleMDArrayFloat_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__SimpleMDArrayFloat_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::DIScope_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__DIScope_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::FileStatus_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__FileStatus_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<core::SymbolClassPair>> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_gctools__GCVector_moveable_core__SymbolClassPair_ ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::IndirectBrInst_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__IndirectBrInst_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<gctools::smart_ptr<core::T_O>>> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__T_O__ ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<clcenv::LexicalVariable_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_clcenv__LexicalVariable_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<clcenv::VariableDynamicExtent_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_clcenv__VariableDynamicExtent_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::PHINode_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__PHINode_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::ConstantArray_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__ConstantArray_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::IRBuilder_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__IRBuilder_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<gctools::smart_ptr<core::Symbol_O>>> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__Symbol_O__ ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::ClaspJIT_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__ClaspJIT_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::NamedFunction_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__NamedFunction_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::SimpleMDArrayBaseChar_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__SimpleMDArrayBaseChar_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::Package_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__Package_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::FunctionClosure_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__FunctionClosure_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<clcenv::GlobalEnvironment_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_clcenv__GlobalEnvironment_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::SimpleVector_byte8_t_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__SimpleVector_byte8_t_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::DILexicalBlockBase_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__DILexicalBlockBase_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::SimpleMDArray_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__SimpleMDArray_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::MDNode_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__MDNode_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::Stream_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__Stream_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::CandoException_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__CandoException_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<int>> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_gctools__GCVector_moveable_int_ ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<mp::RecursiveMutex_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_mp__RecursiveMutex_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<gctools::GCArray_moveable<long>> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_gctools__GCArray_moveable_long_ ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<clcenv::FunctionType_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_clcenv__FunctionType_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<clcenv::Block_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_clcenv__Block_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::VAArgInst_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__VAArgInst_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::MDString_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__MDString_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::ShortFloat_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__ShortFloat_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::Number_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__Number_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::MDArray_fixnum_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__MDArray_fixnum_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::T_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__T_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::DICompileUnit_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__DICompileUnit_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::SharpEqualWrapper_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__SharpEqualWrapper_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<clcenv::Tag_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_clcenv__Tag_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::SimpleMDArrayDouble_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__SimpleMDArrayDouble_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<clcenv::ConstantVariableInfo_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_clcenv__ConstantVariableInfo_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::LoadTimeValues_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__LoadTimeValues_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
-};
-template <> class gctools::GCStamp<asttooling::DerivableMatchCallback> {
-public:
-  static gctools::GCStampEnum const Stamp = gctools::STAMP_asttooling__DerivableMatchCallback ;
-  static const size_t Flags = FLAGS_STAMP_IN_RACK ;
 };
 template <> class gctools::GCStamp<core::Cache_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__Cache_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::DIFile_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__DIFile_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::InterpretedClosure_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__InterpretedClosure_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::AbstractSimpleVector_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__AbstractSimpleVector_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::SimpleMDArray_byte16_t_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__SimpleMDArray_byte16_t_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::Pathname_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__Pathname_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::FunctionPass_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__FunctionPass_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::DataLayout_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__DataLayout_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::Str8Ns_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__Str8Ns_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::BasicBlock_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__BasicBlock_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::SourceManager_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__SourceManager_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::SimpleMDArray_int8_t_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__SimpleMDArray_int8_t_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::UndefValue_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__UndefValue_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<core::AuxArgument>> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_gctools__GCVector_moveable_core__AuxArgument_ ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::EngineBuilder_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__EngineBuilder_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<gctools::GCArray_moveable<gctools::smart_ptr<core::T_O>>> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_gctools__GCArray_moveable_gctools__smart_ptr_core__T_O__ ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::MDArray_byte32_t_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__MDArray_byte32_t_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::Character_dummy_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__Character_dummy_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::TagbodyEnvironment_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__TagbodyEnvironment_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::ConsStepper_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__ConsStepper_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::CompileTimeEnvironment_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__CompileTimeEnvironment_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::Constant_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__Constant_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::SpecialForm_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__SpecialForm_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::Path_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__Path_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<mp::BlockingConcurrentQueue_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_mp__BlockingConcurrentQueue_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<mp::SharedMutex_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_mp__SharedMutex_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<clcenv::SpecialOperatorInfo_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_clcenv__SpecialOperatorInfo_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::SexpSaveArchive_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__SexpSaveArchive_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<clcenv::SymbolMacroInfo_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_clcenv__SymbolMacroInfo_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<gctools::GCArray_moveable<unsigned char>> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_gctools__GCArray_moveable_unsigned_char_ ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<gctools::GCArray_moveable<int>> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_gctools__GCArray_moveable_int_ ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::NativeVector_int_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__NativeVector_int_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::DIBasicType_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__DIBasicType_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
-};
-template <> class gctools::GCStamp<asttooling::DerivableASTFrontendAction> {
-public:
-  static gctools::GCStampEnum const Stamp = gctools::STAMP_asttooling__DerivableASTFrontendAction ;
-  static const size_t Flags = FLAGS_STAMP_IN_RACK ;
 };
 template <> class gctools::GCStamp<llvmo::DIBuilder_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__DIBuilder_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::InstanceCreator_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__InstanceCreator_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::StandardObject_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__StandardObject_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::APInt_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__APInt_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::Symbol_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__Symbol_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::APFloat_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__APFloat_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<clcenv::FunctionInfo_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_clcenv__FunctionInfo_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::IOStreamStream_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__IOStreamStream_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>>> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__T_O__gctools__smart_ptr_core__T_O___ ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::SimpleMDArrayCharacter_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__SimpleMDArrayCharacter_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::SimpleCharacterString_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__SimpleCharacterString_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<clcenv::LambdaName_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_clcenv__LambdaName_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<gctools::smart_ptr<core::List_V>>> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__List_V__ ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<clcenv::LocalFunctionInfo_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_clcenv__LocalFunctionInfo_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::Array_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__Array_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::InsertPoint_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__InsertPoint_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::Argument_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__Argument_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<clcenv::Optimize_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_clcenv__Optimize_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::StrWNs_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__StrWNs_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::Iterator_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__Iterator_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::IRBuilderBase_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__IRBuilderBase_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<core::ExceptionEntry>> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_gctools__GCVector_moveable_core__ExceptionEntry_ ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::EchoStream_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__EchoStream_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::Null_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__Null_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::SimpleMDArrayBit_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__SimpleMDArrayBit_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::MDArrayBit_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__MDArrayBit_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<gctools::GCArray_moveable<signed char>> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_gctools__GCArray_moveable_signed_char_ ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::SingleDispatchMethod_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__SingleDispatchMethod_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<clcenv::Closure_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_clcenv__Closure_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<clcenv::Inline_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_clcenv__Inline_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<clcenv::LexicalVariableInfo_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_clcenv__LexicalVariableInfo_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::TagbodyFrame_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__TagbodyFrame_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::NativeVector_double_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__NativeVector_double_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::GlueEnvironment_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__GlueEnvironment_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::DILocalScope_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__DILocalScope_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::CxxObject_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__CxxObject_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::ReturnInst_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__ReturnInst_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
-};
-template <> class gctools::GCStamp<asttooling::DerivableFrontendActionFactory> {
-public:
-  static gctools::GCStampEnum const Stamp = gctools::STAMP_asttooling__DerivableFrontendActionFactory ;
-  static const size_t Flags = FLAGS_STAMP_IN_RACK ;
 };
 template <> class gctools::GCStamp<llvmo::FunctionType_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__FunctionType_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<clbind::DummyCreator_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_clbind__DummyCreator_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::ClassCreator_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__ClassCreator_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::MDArray_byte16_t_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__MDArray_byte16_t_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>>> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__T_O___ ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::DITypeRefArray_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__DITypeRefArray_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::DILexicalBlock_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__DILexicalBlock_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::Pointer_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__Pointer_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::Type_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__Type_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::SimpleVectorFloat_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__SimpleVectorFloat_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<mp::Mutex_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_mp__Mutex_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::ModuleHandle_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__ModuleHandle_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<clcenv::BlockInfo_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_clcenv__BlockInfo_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::RecursiveDirectoryIterator_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__RecursiveDirectoryIterator_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::UnreachableInst_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__UnreachableInst_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::MacroClosure_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__MacroClosure_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::SNode_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__SNode_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::VectorStepper_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__VectorStepper_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::StringInputStream_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__StringInputStream_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::LoadArchive_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__LoadArchive_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::Float_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__Float_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::ModulePass_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__ModulePass_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::DIDerivedType_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__DIDerivedType_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<clbind::ConstructorCreator_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_clbind__ConstructorCreator_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::FunctionFrame_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__FunctionFrame_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::LongFloat_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__LongFloat_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::SimpleVector_int64_t_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__SimpleVector_int64_t_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::TranslationFunctor_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__TranslationFunctor_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::ConstantDataSequential_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__ConstantDataSequential_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<gctools::GCBitUnitArray_moveable<1,unsigned int,int>> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_gctools__GCBitUnitArray_moveable_1_unsigned_int_int_ ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::TargetLibraryInfoWrapperPass_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__TargetLibraryInfoWrapperPass_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::StoreInst_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__StoreInst_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::DebugLoc_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__DebugLoc_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
-};
-template <> class gctools::GCStamp<asttooling::DerivableSyntaxOnlyAction> {
-public:
-  static gctools::GCStampEnum const Stamp = gctools::STAMP_asttooling__DerivableSyntaxOnlyAction ;
-  static const size_t Flags = FLAGS_STAMP_IN_RACK ;
 };
 template <> class gctools::GCStamp<llvmo::User_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__User_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::WeakPointer_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__WeakPointer_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::LeafSNode_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__LeafSNode_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::MDArray_int16_t_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__MDArray_int16_t_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<clcenv::OptimizeInfo_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_clcenv__OptimizeInfo_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::IOFileStream_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__IOFileStream_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::FenceInst_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__FenceInst_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::RuntimeVisibleEnvironment_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__RuntimeVisibleEnvironment_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::ValueFrame_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__ValueFrame_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::AtomicCmpXchgInst_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__AtomicCmpXchgInst_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<gctools::GCArray_moveable<unsigned long>> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_gctools__GCArray_moveable_unsigned_long_ ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::SimpleMDArray_byte8_t_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__SimpleMDArray_byte8_t_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::SequenceStepper_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__SequenceStepper_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::SimpleVector_int32_t_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__SimpleVector_int32_t_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::SaveArchive_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__SaveArchive_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::Complex_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__Complex_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::ConstantPointerNull_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__ConstantPointerNull_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::Instruction_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__Instruction_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::VectorType_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__VectorType_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::FileStream_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__FileStream_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::ValueAsMetadata_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__ValueAsMetadata_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::Rational_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__Rational_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::ConstantExpr_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__ConstantExpr_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::LandingPadInst_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__LandingPadInst_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::MDArrayCharacter_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__MDArrayCharacter_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::SingleDispatchEffectiveMethodFunction_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__SingleDispatchEffectiveMethodFunction_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::Function_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__Function_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<gctools::smart_ptr<clbind::ClassRep_O>>> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_gctools__GCVector_moveable_gctools__smart_ptr_clbind__ClassRep_O__ ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::StructType_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__StructType_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<clcenv::FunctionDynamicExtent_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_clcenv__FunctionDynamicExtent_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::RandomState_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__RandomState_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::MDArrayFloat_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__MDArrayFloat_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::HashTableEql_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__HashTableEql_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::Target_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__Target_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::MDArray_byte64_t_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__MDArray_byte64_t_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<mp::ConditionVariable_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_mp__ConditionVariable_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::Real_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__Real_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<core::DynamicBinding>> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_gctools__GCVector_moveable_core__DynamicBinding_ ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::SimpleVector_fixnum_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__SimpleVector_fixnum_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::FuncallableInstanceCreator_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__FuncallableInstanceCreator_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::SimpleVector_byte32_t_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__SimpleVector_byte32_t_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::MDArray_byte8_t_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__MDArray_byte8_t_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::SexpLoadArchive_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__SexpLoadArchive_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::SingleDispatchGenericFunctionClosure_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__SingleDispatchGenericFunctionClosure_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::StringOutputStream_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__StringOutputStream_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::AnsiStream_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__AnsiStream_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::BranchSNode_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__BranchSNode_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::TerminatorInst_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__TerminatorInst_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::Module_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__Module_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::BuiltinClosure_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__BuiltinClosure_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::SingleFloat_dummy_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__SingleFloat_dummy_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::ValueEnvironment_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__ValueEnvironment_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::CxxMethodFunction_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__CxxMethodFunction_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::InvokeInst_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__InvokeInst_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::Environment_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__Environment_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<clcenv::SymbolMacro_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_clcenv__SymbolMacro_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::AttributeSet_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__AttributeSet_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<clcenv::LocalMacroInfo_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_clcenv__LocalMacroInfo_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::AtomicRMWInst_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__AtomicRMWInst_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::PassManager_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__PassManager_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::StrNs_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__StrNs_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<clasp_ffi::ForeignData_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_clasp_ffi__ForeignData_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::SimpleVector_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__SimpleVector_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::UnwindProtectEnvironment_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__UnwindProtectEnvironment_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<clcenv::GlobalMacroInfo_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_clcenv__GlobalMacroInfo_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::CallInst_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__CallInst_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::DISubprogram_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__DISubprogram_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::FunctionPassManager_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__FunctionPassManager_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::DoubleFloat_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__DoubleFloat_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<clcenv::Info_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_clcenv__Info_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::Creator_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__Creator_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::ArrayType_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__ArrayType_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::SimpleMDArray_int64_t_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__SimpleMDArray_int64_t_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::SimpleString_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__SimpleString_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::MCSubtargetInfo_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__MCSubtargetInfo_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::BlockAddress_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__BlockAddress_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<gctools::GCArray_moveable<short>> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_gctools__GCArray_moveable_short_ ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::DICompositeType_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__DICompositeType_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::FunctionValueEnvironment_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__FunctionValueEnvironment_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::DerivableCxxClassCreator_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__DerivableCxxClassCreator_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::TemplatedFunctionBase_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__TemplatedFunctionBase_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::StringStream_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__StringStream_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::HashTableEq_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__HashTableEq_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<core::SymbolStorage>> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_gctools__GCVector_moveable_core__SymbolStorage_ ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::MDArray_int32_t_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__MDArray_int32_t_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::IntegerType_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__IntegerType_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<asttooling::AsttoolingExposer_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_asttooling__AsttoolingExposer_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::HashTableEqualp_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__HashTableEqualp_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::LambdaListHandler_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__LambdaListHandler_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::MDArray_int64_t_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__MDArray_int64_t_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::SimpleMDArray_size_t_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__SimpleMDArray_size_t_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::StructureClassCreator_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__StructureClassCreator_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<double>> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_gctools__GCVector_moveable_double_ ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::ConcatenatedStream_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__ConcatenatedStream_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::SmallMultimap_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__SmallMultimap_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::PassManagerBuilder_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__PassManagerBuilder_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::SymbolMacroletEnvironment_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__SymbolMacroletEnvironment_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::Fixnum_dummy_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__Fixnum_dummy_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::MDArray_int8_t_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__MDArray_int8_t_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::ConstantFP_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__ConstantFP_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::SingleDispatchMethodFunction_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__SingleDispatchMethodFunction_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::MacroletEnvironment_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__MacroletEnvironment_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::Cons_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__Cons_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::CompiledFunction_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__CompiledFunction_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::ImmutablePass_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__ImmutablePass_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::FuncallableInstance_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__FuncallableInstance_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_RACK ;
 };
 template <> class gctools::GCStamp<llvmo::LLVMContext_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__LLVMContext_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::MDArrayDouble_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__MDArrayDouble_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::SynonymStream_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__SynonymStream_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::WeakKeyHashTable_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__WeakKeyHashTable_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::CompiledDispatchFunction_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__CompiledDispatchFunction_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::Ratio_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__Ratio_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<gctools::smart_ptr<core::SequenceStepper_O>>> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__SequenceStepper_O__ ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::MDArrayBaseChar_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__MDArrayBaseChar_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::UserData_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__UserData_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::GlobalVariable_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__GlobalVariable_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::ClosureWithSlots_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__ClosureWithSlots_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::DINode_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__DINode_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::ExternalObject_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__ExternalObject_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::BroadcastStream_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__BroadcastStream_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::ExecutionEngine_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__ExecutionEngine_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<gctools::smart_ptr<core::Cons_O>>> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__Cons_O__ ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::SimpleVector_int16_t_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__SimpleVector_int16_t_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::General_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__General_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<clcenv::Function_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_clcenv__Function_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::DerivableCxxObject_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__DerivableCxxObject_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_RACK ;
 };
 template <> class gctools::GCStamp<llvmo::Attribute_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__Attribute_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::WeakKeyMapping_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__WeakKeyMapping_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::Closure_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__Closure_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::Reader_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__Reader_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::SymbolToEnumConverter_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__SymbolToEnumConverter_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::SwitchInst_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__SwitchInst_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<clcenv::VariableIgnore_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_clcenv__VariableIgnore_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<clcenv::SpecialVariableInfo_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_clcenv__SpecialVariableInfo_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::NativeVector_float_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__NativeVector_float_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::SimpleVectorDouble_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__SimpleVectorDouble_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<core::RequiredArgument>> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_gctools__GCVector_moveable_core__RequiredArgument_ ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::Pass_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__Pass_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::Lisp_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__Lisp_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::VaList_dummy_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__VaList_dummy_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::BlockEnvironment_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__BlockEnvironment_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::ClosureWithFrame_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__ClosureWithFrame_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<core::CacheRecord>> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_gctools__GCVector_moveable_core__CacheRecord_ ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::CatchEnvironment_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__CatchEnvironment_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::DINodeArray_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__DINodeArray_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::LogicalPathname_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__LogicalPathname_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::CompiledClosure_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__CompiledClosure_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::Archive_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__Archive_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::TargetSubtargetInfo_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__TargetSubtargetInfo_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::ConstantDataArray_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__ConstantDataArray_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::TargetOptions_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__TargetOptions_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::WrappedPointer_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__WrappedPointer_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_WRAPPER ;
 };
 template <> class gctools::GCStamp<core::SmallMap_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__SmallMap_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::Instance_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__Instance_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_RACK ;
 };
 template <> class gctools::GCStamp<clasp_ffi::ForeignTypeSpec_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_clasp_ffi__ForeignTypeSpec_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::SimpleMDArray_byte32_t_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__SimpleMDArray_byte32_t_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::Bignum_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__Bignum_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::LLVMTargetMachine_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__LLVMTargetMachine_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::PosixTimeDuration_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__PosixTimeDuration_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::ReadTable_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__ReadTable_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::HashTableEqual_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__HashTableEqual_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::SequentialType_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__SequentialType_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<clcenv::VariableType_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_clcenv__VariableType_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::Triple_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__Triple_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::BitVectorNs_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__BitVectorNs_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::SimpleMDArray_byte64_t_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__SimpleMDArray_byte64_t_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::UnaryInstruction_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__UnaryInstruction_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::CoreExposer_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__CoreExposer_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::GlobalValue_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__GlobalValue_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<llvmo::PointerType_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__PointerType_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<gctools::GCArray_moveable<unsigned int>> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_gctools__GCArray_moveable_unsigned_int_ ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::WeakHashTable_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__WeakHashTable_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<core::KeywordArgument>> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_gctools__GCVector_moveable_core__KeywordArgument_ ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::MultiStringBuffer_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__MultiStringBuffer_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 template <> class gctools::GCStamp<core::TwoWayStream_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__TwoWayStream_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER ;
 };
 #endif // defined(GC_STAMP_SELECTORS)
 #if defined(GC_OBJ_SCAN)
@@ -6722,42 +6270,6 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::SimpleVector_O>), offsetof(SAFE_TYPE_MACRO(core::DerivableCxxObject_O),_Rack), "_Rack" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::DerivableCxxObject_O),_allocation_counter), "_allocation_counter" }, // public: (T) fixable: NIL good-name: T
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::DerivableCxxObject_O),_allocation_total_size), "_allocation_total_size" }, // public: (T) fixable: NIL good-name: T
-{ class_kind, STAMP_asttooling__DerivableFrontendActionFactory, sizeof(asttooling::DerivableFrontendActionFactory), 0, "asttooling::DerivableFrontendActionFactory" },
- {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(asttooling::DerivableFrontendActionFactory),_Sig), "_Sig" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), offsetof(SAFE_TYPE_MACRO(asttooling::DerivableFrontendActionFactory),_Class), "_Class" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::SimpleVector_O>), offsetof(SAFE_TYPE_MACRO(asttooling::DerivableFrontendActionFactory),_Rack), "_Rack" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(asttooling::DerivableFrontendActionFactory),_allocation_counter), "_allocation_counter" }, // public: (T) fixable: NIL good-name: T
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(asttooling::DerivableFrontendActionFactory),_allocation_total_size), "_allocation_total_size" }, // public: (T) fixable: NIL good-name: T
-{ class_kind, STAMP_asttooling__DerivableMatchCallback, sizeof(asttooling::DerivableMatchCallback), 0, "asttooling::DerivableMatchCallback" },
- {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(asttooling::DerivableMatchCallback),_Sig), "_Sig" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), offsetof(SAFE_TYPE_MACRO(asttooling::DerivableMatchCallback),_Class), "_Class" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::SimpleVector_O>), offsetof(SAFE_TYPE_MACRO(asttooling::DerivableMatchCallback),_Rack), "_Rack" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(asttooling::DerivableMatchCallback),_allocation_counter), "_allocation_counter" }, // public: (T) fixable: NIL good-name: T
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(asttooling::DerivableMatchCallback),_allocation_total_size), "_allocation_total_size" }, // public: (T) fixable: NIL good-name: T
-{ class_kind, STAMP_asttooling__DerivableSyntaxOnlyAction, sizeof(asttooling::DerivableSyntaxOnlyAction), 0, "asttooling::DerivableSyntaxOnlyAction" },
- {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(asttooling::DerivableSyntaxOnlyAction),_Sig), "_Sig" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), offsetof(SAFE_TYPE_MACRO(asttooling::DerivableSyntaxOnlyAction),_Class), "_Class" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::SimpleVector_O>), offsetof(SAFE_TYPE_MACRO(asttooling::DerivableSyntaxOnlyAction),_Rack), "_Rack" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(asttooling::DerivableSyntaxOnlyAction),_allocation_counter), "_allocation_counter" }, // public: (T) fixable: NIL good-name: T
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(asttooling::DerivableSyntaxOnlyAction),_allocation_total_size), "_allocation_total_size" }, // public: (T) fixable: NIL good-name: T
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(asttooling::DerivableSyntaxOnlyAction),CurrentInput.File._M_string_length), "CurrentInput.File._M_string_length" }, // public: (NIL NIL NIL) fixable: NIL good-name: T
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(asttooling::DerivableSyntaxOnlyAction),CurrentInput.File.NO-NAME._M_allocated_capacity), "CurrentInput.File.NO-NAME._M_allocated_capacity" }, // public: (NIL NIL NIL T) fixable: NIL good-name: T
-// not-exposing {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(asttooling::DerivableSyntaxOnlyAction),CurrentInput.Kind.Lang), "CurrentInput.Kind.Lang" }, // public: (NIL NIL NIL) fixable: NIL good-name: T
-// not-exposing {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(asttooling::DerivableSyntaxOnlyAction),CurrentInput.Kind.Fmt), "CurrentInput.Kind.Fmt" }, // public: (NIL NIL NIL) fixable: NIL good-name: T
-// not-exposing {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(asttooling::DerivableSyntaxOnlyAction),CurrentInput.Kind.Preprocessed), "CurrentInput.Kind.Preprocessed" }, // public: (NIL NIL NIL) fixable: NIL good-name: T
-// not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(asttooling::DerivableSyntaxOnlyAction),CurrentInput.IsSystem), "CurrentInput.IsSystem" }, // public: (NIL NIL) fixable: NIL good-name: T
-{ class_kind, STAMP_asttooling__DerivableASTFrontendAction, sizeof(asttooling::DerivableASTFrontendAction), 0, "asttooling::DerivableASTFrontendAction" },
- {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(asttooling::DerivableASTFrontendAction),_Sig), "_Sig" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), offsetof(SAFE_TYPE_MACRO(asttooling::DerivableASTFrontendAction),_Class), "_Class" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::SimpleVector_O>), offsetof(SAFE_TYPE_MACRO(asttooling::DerivableASTFrontendAction),_Rack), "_Rack" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(asttooling::DerivableASTFrontendAction),_allocation_counter), "_allocation_counter" }, // public: (T) fixable: NIL good-name: T
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(asttooling::DerivableASTFrontendAction),_allocation_total_size), "_allocation_total_size" }, // public: (T) fixable: NIL good-name: T
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(asttooling::DerivableASTFrontendAction),CurrentInput.File._M_string_length), "CurrentInput.File._M_string_length" }, // public: (NIL NIL NIL) fixable: NIL good-name: T
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(asttooling::DerivableASTFrontendAction),CurrentInput.File.NO-NAME._M_allocated_capacity), "CurrentInput.File.NO-NAME._M_allocated_capacity" }, // public: (NIL NIL NIL T) fixable: NIL good-name: T
-// not-exposing {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(asttooling::DerivableASTFrontendAction),CurrentInput.Kind.Lang), "CurrentInput.Kind.Lang" }, // public: (NIL NIL NIL) fixable: NIL good-name: T
-// not-exposing {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(asttooling::DerivableASTFrontendAction),CurrentInput.Kind.Fmt), "CurrentInput.Kind.Fmt" }, // public: (NIL NIL NIL) fixable: NIL good-name: T
-// not-exposing {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(asttooling::DerivableASTFrontendAction),CurrentInput.Kind.Preprocessed), "CurrentInput.Kind.Preprocessed" }, // public: (NIL NIL NIL) fixable: NIL good-name: T
-// not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(asttooling::DerivableASTFrontendAction),CurrentInput.IsSystem), "CurrentInput.IsSystem" }, // public: (NIL NIL) fixable: NIL good-name: T
 { class_kind, STAMP_clbind__ClassRep_O, sizeof(clbind::ClassRep_O), 0, "clbind::ClassRep_O" },
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(clbind::ClassRep_O),_Sig), "_Sig" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), offsetof(SAFE_TYPE_MACRO(clbind::ClassRep_O),_Class), "_Class" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
@@ -8829,30 +8341,6 @@ obj_finalize_STAMP_core__DerivableCxxObject_O:
 {
     core::DerivableCxxObject_O* obj_gc_safe = reinterpret_cast<core::DerivableCxxObject_O*>(client);
     obj_gc_safe->~DerivableCxxObject_O();
-    goto finalize_done;
-}
-obj_finalize_STAMP_asttooling__DerivableFrontendActionFactory:
-{
-    asttooling::DerivableFrontendActionFactory* obj_gc_safe = reinterpret_cast<asttooling::DerivableFrontendActionFactory*>(client);
-    obj_gc_safe->~DerivableFrontendActionFactory();
-    goto finalize_done;
-}
-obj_finalize_STAMP_asttooling__DerivableMatchCallback:
-{
-    asttooling::DerivableMatchCallback* obj_gc_safe = reinterpret_cast<asttooling::DerivableMatchCallback*>(client);
-    obj_gc_safe->~DerivableMatchCallback();
-    goto finalize_done;
-}
-obj_finalize_STAMP_asttooling__DerivableSyntaxOnlyAction:
-{
-    asttooling::DerivableSyntaxOnlyAction* obj_gc_safe = reinterpret_cast<asttooling::DerivableSyntaxOnlyAction*>(client);
-    obj_gc_safe->~DerivableSyntaxOnlyAction();
-    goto finalize_done;
-}
-obj_finalize_STAMP_asttooling__DerivableASTFrontendAction:
-{
-    asttooling::DerivableASTFrontendAction* obj_gc_safe = reinterpret_cast<asttooling::DerivableASTFrontendAction*>(client);
-    obj_gc_safe->~DerivableASTFrontendAction();
     goto finalize_done;
 }
 obj_finalize_STAMP_clbind__ClassRep_O:
@@ -11017,386 +10505,382 @@ static void* OBJ_FINALIZE_table[] = {
   /* 9 */ &&obj_finalize_STAMP_clasp_ffi__ForeignTypeSpec_O,
   /* 10 */ &&obj_finalize_STAMP_core__Instance_O,
   /* 11 */ &&obj_finalize_STAMP_core__DerivableCxxObject_O,
-  /* 13 */ &&obj_finalize_STAMP_asttooling__DerivableFrontendActionFactory,
-  /* 15 */ &&obj_finalize_STAMP_asttooling__DerivableMatchCallback,
-  /* 17 */ &&obj_finalize_STAMP_asttooling__DerivableSyntaxOnlyAction,
-  /* 19 */ &&obj_finalize_STAMP_asttooling__DerivableASTFrontendAction,
-  /* 20 */ &&obj_finalize_STAMP_clbind__ClassRep_O,
-  /* 21 */ &&obj_finalize_STAMP_core__SmallMap_O,
-  /* 22 */ &&obj_finalize_STAMP_core__WrappedPointer_O,
-  /* 23 */ &&obj_finalize_STAMP_core__Archive_O,
-  /* 24 */ &&obj_finalize_STAMP_core__SaveArchive_O,
-  /* 25 */ &&obj_finalize_STAMP_core__SexpSaveArchive_O,
-  /* 26 */ &&obj_finalize_STAMP_core__LoadArchive_O,
-  /* 27 */ &&obj_finalize_STAMP_core__SexpLoadArchive_O,
-  /* 28 */ &&obj_finalize_STAMP_core__SymbolToEnumConverter_O,
-  /* 29 */ &&obj_finalize_STAMP_core__Reader_O,
-  /* 30 */ &&obj_finalize_STAMP_core__WeakKeyMapping_O,
-  /* 31 */ &&obj_finalize_STAMP_llvmo__Attribute_O,
-  /* 32 */ &&obj_finalize_STAMP_core__ExternalObject_O,
-  /* 33 */ &&obj_finalize_STAMP_llvmo__Triple_O,
-  /* 34 */ &&obj_finalize_STAMP_llvmo__TargetOptions_O,
-  /* 35 */ &&obj_finalize_STAMP_llvmo__Pass_O,
-  /* 36 */ &&obj_finalize_STAMP_llvmo__ModulePass_O,
-  /* 37 */ &&obj_finalize_STAMP_llvmo__ImmutablePass_O,
-  /* 38 */ &&obj_finalize_STAMP_llvmo__TargetLibraryInfoWrapperPass_O,
-  /* 39 */ &&obj_finalize_STAMP_llvmo__FunctionPass_O,
-  /* 40 */ &&obj_finalize_STAMP_llvmo__ExecutionEngine_O,
-  /* 41 */ &&obj_finalize_STAMP_llvmo__LLVMContext_O,
-  /* 42 */ &&obj_finalize_STAMP_llvmo__PassManagerBuilder_O,
-  /* 43 */ &&obj_finalize_STAMP_llvmo__MCSubtargetInfo_O,
-  /* 44 */ &&obj_finalize_STAMP_llvmo__TargetSubtargetInfo_O,
-  /* 45 */ &&obj_finalize_STAMP_clasp_ffi__ForeignData_O,
-  /* 46 */ &&obj_finalize_STAMP_llvmo__Module_O,
-  /* 47 */ &&obj_finalize_STAMP_llvmo__Target_O,
-  /* 48 */ &&obj_finalize_STAMP_llvmo__Type_O,
-  /* 49 */ &&obj_finalize_STAMP_llvmo__IntegerType_O,
-  /* 50 */ &&obj_finalize_STAMP_llvmo__FunctionType_O,
-  /* 51 */ &&obj_finalize_STAMP_llvmo__CompositeType_O,
-  /* 52 */ &&obj_finalize_STAMP_llvmo__SequentialType_O,
-  /* 53 */ &&obj_finalize_STAMP_llvmo__PointerType_O,
-  /* 54 */ &&obj_finalize_STAMP_llvmo__ArrayType_O,
-  /* 55 */ &&obj_finalize_STAMP_llvmo__VectorType_O,
-  /* 56 */ &&obj_finalize_STAMP_llvmo__StructType_O,
-  /* 57 */ &&obj_finalize_STAMP_llvmo__IRBuilderBase_O,
-  /* 58 */ &&obj_finalize_STAMP_llvmo__IRBuilder_O,
-  /* 59 */ &&obj_finalize_STAMP_llvmo__APFloat_O,
-  /* 60 */ &&obj_finalize_STAMP_llvmo__APInt_O,
-  /* 61 */ &&obj_finalize_STAMP_llvmo__DIBuilder_O,
-  /* 62 */ &&obj_finalize_STAMP_llvmo__EngineBuilder_O,
-  /* 63 */ &&obj_finalize_STAMP_llvmo__PassManagerBase_O,
-  /* 64 */ &&obj_finalize_STAMP_llvmo__FunctionPassManager_O,
-  /* 65 */ &&obj_finalize_STAMP_llvmo__PassManager_O,
-  /* 66 */ &&obj_finalize_STAMP_llvmo__Linker_O,
-  /* 67 */ &&obj_finalize_STAMP_llvmo__Metadata_O,
-  /* 68 */ &&obj_finalize_STAMP_llvmo__ValueAsMetadata_O,
-  /* 69 */ &&obj_finalize_STAMP_llvmo__MDString_O,
-  /* 70 */ &&obj_finalize_STAMP_llvmo__MDNode_O,
-  /* 71 */ &&obj_finalize_STAMP_llvmo__DINode_O,
-  /* 72 */ &&obj_finalize_STAMP_llvmo__DIScope_O,
-  /* 73 */ &&obj_finalize_STAMP_llvmo__DILocalScope_O,
-  /* 74 */ &&obj_finalize_STAMP_llvmo__DISubprogram_O,
-  /* 75 */ &&obj_finalize_STAMP_llvmo__DILexicalBlockBase_O,
-  /* 76 */ &&obj_finalize_STAMP_llvmo__DILexicalBlock_O,
-  /* 77 */ &&obj_finalize_STAMP_llvmo__DIFile_O,
-  /* 78 */ &&obj_finalize_STAMP_llvmo__DICompileUnit_O,
-  /* 79 */ &&obj_finalize_STAMP_llvmo__DIType_O,
-  /* 80 */ &&obj_finalize_STAMP_llvmo__DICompositeType_O,
-  /* 81 */ &&obj_finalize_STAMP_llvmo__DIDerivedType_O,
-  /* 82 */ &&obj_finalize_STAMP_llvmo__DIBasicType_O,
-  /* 83 */ &&obj_finalize_STAMP_llvmo__DISubroutineType_O,
-  /* 84 */ &&obj_finalize_STAMP_llvmo__Value_O,
-  /* 85 */ &&obj_finalize_STAMP_llvmo__User_O,
-  /* 86 */ &&obj_finalize_STAMP_llvmo__Instruction_O,
-  /* 87 */ &&obj_finalize_STAMP_llvmo__UnaryInstruction_O,
-  /* 88 */ &&obj_finalize_STAMP_llvmo__VAArgInst_O,
-  /* 89 */ &&obj_finalize_STAMP_llvmo__LoadInst_O,
-  /* 90 */ &&obj_finalize_STAMP_llvmo__AllocaInst_O,
-  /* 91 */ &&obj_finalize_STAMP_llvmo__CallInst_O,
-  /* 92 */ &&obj_finalize_STAMP_llvmo__AtomicRMWInst_O,
-  /* 93 */ &&obj_finalize_STAMP_llvmo__TerminatorInst_O,
-  /* 94 */ &&obj_finalize_STAMP_llvmo__SwitchInst_O,
-  /* 95 */ &&obj_finalize_STAMP_llvmo__InvokeInst_O,
-  /* 96 */ &&obj_finalize_STAMP_llvmo__UnreachableInst_O,
-  /* 97 */ &&obj_finalize_STAMP_llvmo__ReturnInst_O,
-  /* 98 */ &&obj_finalize_STAMP_llvmo__IndirectBrInst_O,
-  /* 99 */ &&obj_finalize_STAMP_llvmo__ResumeInst_O,
-  /* 100 */ &&obj_finalize_STAMP_llvmo__BranchInst_O,
-  /* 101 */ &&obj_finalize_STAMP_llvmo__LandingPadInst_O,
-  /* 102 */ &&obj_finalize_STAMP_llvmo__AtomicCmpXchgInst_O,
-  /* 103 */ &&obj_finalize_STAMP_llvmo__FenceInst_O,
-  /* 104 */ &&obj_finalize_STAMP_llvmo__StoreInst_O,
-  /* 105 */ &&obj_finalize_STAMP_llvmo__PHINode_O,
-  /* 106 */ &&obj_finalize_STAMP_llvmo__Constant_O,
-  /* 107 */ &&obj_finalize_STAMP_llvmo__GlobalValue_O,
-  /* 108 */ &&obj_finalize_STAMP_llvmo__GlobalVariable_O,
-  /* 109 */ &&obj_finalize_STAMP_llvmo__Function_O,
-  /* 110 */ &&obj_finalize_STAMP_llvmo__ConstantFP_O,
-  /* 111 */ &&obj_finalize_STAMP_llvmo__BlockAddress_O,
-  /* 112 */ &&obj_finalize_STAMP_llvmo__ConstantExpr_O,
-  /* 113 */ &&obj_finalize_STAMP_llvmo__ConstantPointerNull_O,
-  /* 114 */ &&obj_finalize_STAMP_llvmo__ConstantDataSequential_O,
-  /* 115 */ &&obj_finalize_STAMP_llvmo__ConstantDataArray_O,
-  /* 116 */ &&obj_finalize_STAMP_llvmo__UndefValue_O,
-  /* 117 */ &&obj_finalize_STAMP_llvmo__ConstantArray_O,
-  /* 118 */ &&obj_finalize_STAMP_llvmo__ConstantStruct_O,
-  /* 119 */ &&obj_finalize_STAMP_llvmo__ConstantInt_O,
-  /* 120 */ &&obj_finalize_STAMP_llvmo__Argument_O,
-  /* 121 */ &&obj_finalize_STAMP_llvmo__BasicBlock_O,
-  /* 122 */ &&obj_finalize_STAMP_llvmo__TargetMachine_O,
-  /* 123 */ &&obj_finalize_STAMP_llvmo__LLVMTargetMachine_O,
-  /* 124 */ &&obj_finalize_STAMP_llvmo__NamedMDNode_O,
-  /* 125 */ &&obj_finalize_STAMP_core__SmallMultimap_O,
-  /* 126 */ &&obj_finalize_STAMP_core__LambdaListHandler_O,
-  /* 127 */ &&obj_finalize_STAMP_llvmo__AttributeSet_O,
-  /* 128 */ &&obj_finalize_STAMP_core__Environment_O,
-  /* 129 */ &&obj_finalize_STAMP_core__GlueEnvironment_O,
-  /* 130 */ &&obj_finalize_STAMP_core__LexicalEnvironment_O,
-  /* 131 */ &&obj_finalize_STAMP_core__RuntimeVisibleEnvironment_O,
-  /* 132 */ &&obj_finalize_STAMP_core__FunctionValueEnvironment_O,
-  /* 133 */ &&obj_finalize_STAMP_core__ValueEnvironment_O,
-  /* 134 */ &&obj_finalize_STAMP_core__TagbodyEnvironment_O,
-  /* 135 */ &&obj_finalize_STAMP_core__CompileTimeEnvironment_O,
-  /* 136 */ &&obj_finalize_STAMP_core__CatchEnvironment_O,
-  /* 137 */ &&obj_finalize_STAMP_core__BlockEnvironment_O,
-  /* 138 */ &&obj_finalize_STAMP_core__MacroletEnvironment_O,
-  /* 139 */ &&obj_finalize_STAMP_core__SymbolMacroletEnvironment_O,
-  /* 140 */ &&obj_finalize_STAMP_core__UnwindProtectEnvironment_O,
-  /* 141 */ &&obj_finalize_STAMP_core__FunctionContainerEnvironment_O,
-  /* 142 */ &&obj_finalize_STAMP_core__ActivationFrame_O,
-  /* 143 */ &&obj_finalize_STAMP_core__ValueFrame_O,
-  /* 144 */ &&obj_finalize_STAMP_core__FunctionFrame_O,
-  /* 145 */ &&obj_finalize_STAMP_core__TagbodyFrame_O,
-  /* 146 */ &&obj_finalize_STAMP_core__RandomState_O,
-  /* 147 */ &&obj_finalize_STAMP_core__Function_O,
-  /* 148 */ &&obj_finalize_STAMP_core__FuncallableInstance_O,
-  /* 149 */ &&obj_finalize_STAMP_core__Creator_O,
-  /* 150 */ &&obj_finalize_STAMP_core__StructureClassCreator_O,
-  /* 151 */ &&obj_finalize_STAMP_core__DerivableCxxClassCreator_O,
-  /* 152 */ &&obj_finalize_STAMP_core__FuncallableInstanceCreator_O,
-  /* 153 */ &&obj_finalize_STAMP_clbind__ConstructorCreator_O,
-  /* 154 */ &&obj_finalize_STAMP_core__ClassCreator_O,
-  /* 155 */ &&obj_finalize_STAMP_clbind__DummyCreator_O,
-  /* 156 */ &&obj_finalize_STAMP_core__InstanceCreator_O,
-  /* 157 */ &&obj_finalize_STAMP_core__StandardClassCreator_O,
-  /* 158 */ &&obj_finalize_STAMP_core__NamedFunction_O,
-  /* 159 */ &&obj_finalize_STAMP_core__Closure_O,
-  /* 160 */ &&obj_finalize_STAMP_core__CompiledDispatchFunction_O,
-  /* 161 */ &&obj_finalize_STAMP_core__CompiledFunction_O,
-  /* 162 */ &&obj_finalize_STAMP_core__FunctionClosure_O,
-  /* 163 */ &&obj_finalize_STAMP_core__ClosureWithFrame_O,
-  /* 164 */ &&obj_finalize_STAMP_core__CompiledClosure_O,
-  /* 165 */ &&obj_finalize_STAMP_core__InterpretedClosure_O,
-  /* 166 */ &&obj_finalize_STAMP_core__ClosureWithSlots_O,
-  /* 167 */ &&obj_finalize_STAMP_core__SingleDispatchMethodFunction_O,
-  /* 168 */ &&obj_finalize_STAMP_core__CxxMethodFunction_O,
-  /* 169 */ &&obj_finalize_STAMP_core__BuiltinClosure_O,
-  /* 170 */ &&obj_finalize_STAMP_core__TemplatedFunctionBase_O,
-  /* 171 */ &&obj_finalize_STAMP_core__TranslationFunctor_O,
-  /* 172 */ &&obj_finalize_STAMP_core__MacroClosure_O,
-  /* 173 */ &&obj_finalize_STAMP_core__SingleDispatchGenericFunctionClosure_O,
-  /* 174 */ &&obj_finalize_STAMP_core__SingleDispatchEffectiveMethodFunction_O,
-  /* 175 */ &&obj_finalize_STAMP_core__SingleDispatchCxxEffectiveMethodFunction_O,
-  /* 176 */ &&obj_finalize_STAMP_core__SpecialForm_O,
-  /* 177 */ &&obj_finalize_STAMP_core__SequenceStepper_O,
-  /* 178 */ &&obj_finalize_STAMP_core__VectorStepper_O,
-  /* 179 */ &&obj_finalize_STAMP_core__ConsStepper_O,
-  /* 180 */ &&obj_finalize_STAMP_core__WeakPointer_O,
-  /* 181 */ &&obj_finalize_STAMP_llvmo__DebugLoc_O,
-  /* 182 */ &&obj_finalize_STAMP_core__SNode_O,
-  /* 183 */ &&obj_finalize_STAMP_core__BranchSNode_O,
-  /* 184 */ &&obj_finalize_STAMP_core__LeafSNode_O,
-  /* 185 */ &&obj_finalize_STAMP_llvmo__ModuleHandle_O,
-  /* 186 */ &&obj_finalize_STAMP_core__Pointer_O,
-  /* 187 */ &&obj_finalize_STAMP_core__CxxObject_O,
-  /* 188 */ &&obj_finalize_STAMP_llvmo__DINodeArray_O,
-  /* 189 */ &&obj_finalize_STAMP_core__NativeVector_float_O,
-  /* 190 */ &&obj_finalize_STAMP_clcenv__Info_O,
-  /* 191 */ &&obj_finalize_STAMP_clcenv__OptimizeInfo_O,
-  /* 192 */ &&obj_finalize_STAMP_clcenv__BlockInfo_O,
-  /* 193 */ &&obj_finalize_STAMP_clcenv__FunctionInfo_O,
-  /* 194 */ &&obj_finalize_STAMP_clcenv__GlobalMacroInfo_O,
-  /* 195 */ &&obj_finalize_STAMP_clcenv__LocalMacroInfo_O,
-  /* 196 */ &&obj_finalize_STAMP_clcenv__LocalFunctionInfo_O,
-  /* 197 */ &&obj_finalize_STAMP_clcenv__SpecialOperatorInfo_O,
-  /* 198 */ &&obj_finalize_STAMP_clcenv__LambdaNameInfo_O,
-  /* 199 */ &&obj_finalize_STAMP_clcenv__GlobalFunctionInfo_O,
-  /* 200 */ &&obj_finalize_STAMP_clcenv__VariableInfo_O,
-  /* 201 */ &&obj_finalize_STAMP_clcenv__SpecialVariableInfo_O,
-  /* 202 */ &&obj_finalize_STAMP_clcenv__LexicalVariableInfo_O,
-  /* 203 */ &&obj_finalize_STAMP_clcenv__SymbolMacroInfo_O,
-  /* 204 */ &&obj_finalize_STAMP_clcenv__ConstantVariableInfo_O,
-  /* 205 */ &&obj_finalize_STAMP_mp__ConditionVariable_O,
-  /* 206 */ &&obj_finalize_STAMP_mp__Mutex_O,
-  /* 207 */ &&obj_finalize_STAMP_mp__RecursiveMutex_O,
-  /* 208 */ &&obj_finalize_STAMP_llvmo__DITypeRefArray_O,
-  /* 209 */ &&obj_finalize_STAMP_core__NativeVector_double_O,
-  /* 210 */ &&obj_finalize_STAMP_core__NativeVector_int_O,
-  /* 211 */ &&obj_finalize_STAMP_mp__SharedMutex_O,
-  /* 212 */ &&obj_finalize_STAMP_clcenv__Entry_O,
-  /* 213 */ &&obj_finalize_STAMP_clcenv__VariableType_O,
-  /* 214 */ &&obj_finalize_STAMP_clcenv__VariableIgnore_O,
-  /* 215 */ &&obj_finalize_STAMP_clcenv__Function_O,
-  /* 216 */ &&obj_finalize_STAMP_clcenv__SymbolMacro_O,
-  /* 217 */ &&obj_finalize_STAMP_clcenv__FunctionDynamicExtent_O,
-  /* 218 */ &&obj_finalize_STAMP_clcenv__Inline_O,
-  /* 219 */ &&obj_finalize_STAMP_clcenv__Closure_O,
-  /* 220 */ &&obj_finalize_STAMP_clcenv__Optimize_O,
-  /* 221 */ &&obj_finalize_STAMP_clcenv__LambdaName_O,
-  /* 222 */ &&obj_finalize_STAMP_clcenv__Tag_O,
-  /* 223 */ &&obj_finalize_STAMP_clcenv__Block_O,
-  /* 224 */ &&obj_finalize_STAMP_clcenv__FunctionType_O,
-  /* 225 */ &&obj_finalize_STAMP_clcenv__GlobalEnvironment_O,
-  /* 226 */ &&obj_finalize_STAMP_clcenv__VariableDynamicExtent_O,
-  /* 227 */ &&obj_finalize_STAMP_clcenv__LexicalVariable_O,
-  /* 228 */ &&obj_finalize_STAMP_clcenv__SpecialVariable_O,
-  /* 229 */ &&obj_finalize_STAMP_clcenv__Macro_O,
-  /* 230 */ &&obj_finalize_STAMP_clcenv__FunctionIgnore_O,
-  /* 231 */ &&obj_finalize_STAMP_mp__Process_O,
-  /* 232 */ &&obj_finalize_STAMP_core__SingleDispatchMethod_O,
-  /* 233 */ &&obj_finalize_STAMP_core__Iterator_O,
-  /* 234 */ &&obj_finalize_STAMP_core__RecursiveDirectoryIterator_O,
-  /* 235 */ &&obj_finalize_STAMP_core__DirectoryIterator_O,
-  /* 236 */ &&obj_finalize_STAMP_llvmo__InsertPoint_O,
-  /* 237 */ &&obj_finalize_STAMP_core__Array_O,
-  /* 238 */ &&obj_finalize_STAMP_core__AbstractSimpleVector_O,
-  /* 240 */ &&obj_finalize_STAMP_core__SimpleVectorFloat_O,
-  /* 242 */ &&obj_finalize_STAMP_core__SimpleVector_byte64_t_O,
-  /* 244 */ &&obj_finalize_STAMP_core__SimpleVector_int64_t_O,
-  /* 245 */ &&obj_finalize_STAMP_core__SimpleString_O,
-  /* 247 */ &&obj_finalize_STAMP_core__SimpleCharacterString_O,
-  /* 249 */ &&obj_finalize_STAMP_core__SimpleBaseString_O,
-  /* 251 */ &&obj_finalize_STAMP_core__SimpleVector_int16_t_O,
-  /* 253 */ &&obj_finalize_STAMP_core__SimpleVector_byte16_t_O,
-  /* 255 */ &&obj_finalize_STAMP_core__SimpleVector_fixnum_O,
-  /* 257 */ &&obj_finalize_STAMP_core__SimpleVector_int8_t_O,
-  /* 259 */ &&obj_finalize_STAMP_core__SimpleVector_O,
-  /* 261 */ &&obj_finalize_STAMP_core__SimpleVector_byte8_t_O,
-  /* 263 */ &&obj_finalize_STAMP_core__SimpleVector_int32_t_O,
-  /* 264 */ &&obj_finalize_STAMP_core__SimpleBitVector_O,
-  /* 266 */ &&obj_finalize_STAMP_core__SimpleVector_byte32_t_O,
-  /* 268 */ &&obj_finalize_STAMP_core__SimpleVector_size_t_O,
-  /* 270 */ &&obj_finalize_STAMP_core__SimpleVectorDouble_O,
-  /* 271 */ &&obj_finalize_STAMP_core__MDArray_O,
-  /* 272 */ &&obj_finalize_STAMP_core__BitVectorNs_O,
-  /* 274 */ &&obj_finalize_STAMP_core__MDArray_byte64_t_O,
-  /* 276 */ &&obj_finalize_STAMP_core__MDArray_int16_t_O,
-  /* 278 */ &&obj_finalize_STAMP_core__MDArray_int8_t_O,
-  /* 280 */ &&obj_finalize_STAMP_core__MDArrayCharacter_O,
-  /* 282 */ &&obj_finalize_STAMP_core__MDArray_int32_t_O,
-  /* 284 */ &&obj_finalize_STAMP_core__MDArrayFloat_O,
-  /* 285 */ &&obj_finalize_STAMP_core__StrNs_O,
-  /* 287 */ &&obj_finalize_STAMP_core__StrWNs_O,
-  /* 289 */ &&obj_finalize_STAMP_core__Str8Ns_O,
-  /* 291 */ &&obj_finalize_STAMP_core__MDArrayDouble_O,
-  /* 293 */ &&obj_finalize_STAMP_core__MDArrayT_O,
-  /* 295 */ &&obj_finalize_STAMP_core__MDArray_size_t_O,
-  /* 297 */ &&obj_finalize_STAMP_core__MDArray_byte8_t_O,
-  /* 298 */ &&obj_finalize_STAMP_core__MDArrayBit_O,
-  /* 300 */ &&obj_finalize_STAMP_core__MDArray_int64_t_O,
-  /* 302 */ &&obj_finalize_STAMP_core__MDArray_byte16_t_O,
-  /* 304 */ &&obj_finalize_STAMP_core__MDArray_byte32_t_O,
-  /* 305 */ &&obj_finalize_STAMP_core__SimpleMDArray_O,
-  /* 307 */ &&obj_finalize_STAMP_core__SimpleMDArray_int8_t_O,
-  /* 309 */ &&obj_finalize_STAMP_core__SimpleMDArrayCharacter_O,
-  /* 311 */ &&obj_finalize_STAMP_core__SimpleMDArray_fixnum_O,
-  /* 313 */ &&obj_finalize_STAMP_core__SimpleMDArray_byte32_t_O,
-  /* 315 */ &&obj_finalize_STAMP_core__SimpleMDArray_byte16_t_O,
-  /* 317 */ &&obj_finalize_STAMP_core__SimpleMDArrayT_O,
-  /* 319 */ &&obj_finalize_STAMP_core__SimpleMDArray_int32_t_O,
-  /* 321 */ &&obj_finalize_STAMP_core__SimpleMDArrayDouble_O,
-  /* 323 */ &&obj_finalize_STAMP_core__SimpleMDArrayBaseChar_O,
-  /* 325 */ &&obj_finalize_STAMP_core__SimpleMDArray_byte64_t_O,
-  /* 326 */ &&obj_finalize_STAMP_core__SimpleMDArrayBit_O,
-  /* 328 */ &&obj_finalize_STAMP_core__SimpleMDArray_int16_t_O,
-  /* 330 */ &&obj_finalize_STAMP_core__SimpleMDArray_byte8_t_O,
-  /* 332 */ &&obj_finalize_STAMP_core__SimpleMDArray_size_t_O,
-  /* 334 */ &&obj_finalize_STAMP_core__SimpleMDArray_int64_t_O,
-  /* 336 */ &&obj_finalize_STAMP_core__SimpleMDArrayFloat_O,
-  /* 338 */ &&obj_finalize_STAMP_core__MDArray_fixnum_O,
-  /* 340 */ &&obj_finalize_STAMP_core__MDArrayBaseChar_O,
-  /* 341 */ &&obj_finalize_STAMP_core__Symbol_O,
-  /* 342 */ &&obj_finalize_STAMP_core__Null_O,
-  /* 343 */ &&obj_finalize_STAMP_core__StandardObject_O,
-  /* 344 */ &&obj_finalize_STAMP_mp__BlockingConcurrentQueue_O,
-  /* 345 */ &&obj_finalize_STAMP_core__Path_O,
-  /* 346 */ &&obj_finalize_STAMP_core__Character_dummy_O,
-  /* 347 */ &&obj_finalize_STAMP_core__SourceManager_O,
-  /* 348 */ &&obj_finalize_STAMP_llvmo__DataLayout_O,
-  /* 349 */ &&obj_finalize_STAMP_core__Pathname_O,
-  /* 350 */ &&obj_finalize_STAMP_core__LogicalPathname_O,
-  /* 351 */ &&obj_finalize_STAMP_core__Cache_O,
-  /* 352 */ &&obj_finalize_STAMP_core__LoadTimeValues_O,
-  /* 353 */ &&obj_finalize_STAMP_core__SharpEqualWrapper_O,
-  /* 354 */ &&obj_finalize_STAMP_core__Number_O,
-  /* 355 */ &&obj_finalize_STAMP_core__Real_O,
-  /* 356 */ &&obj_finalize_STAMP_core__Rational_O,
-  /* 357 */ &&obj_finalize_STAMP_core__Ratio_O,
-  /* 358 */ &&obj_finalize_STAMP_core__Integer_O,
-  /* 359 */ &&obj_finalize_STAMP_core__Bignum_O,
-  /* 360 */ &&obj_finalize_STAMP_core__Fixnum_dummy_O,
-  /* 361 */ &&obj_finalize_STAMP_core__Float_O,
-  /* 362 */ &&obj_finalize_STAMP_core__DoubleFloat_O,
-  /* 363 */ &&obj_finalize_STAMP_core__SingleFloat_dummy_O,
-  /* 364 */ &&obj_finalize_STAMP_core__LongFloat_O,
-  /* 365 */ &&obj_finalize_STAMP_core__ShortFloat_O,
-  /* 366 */ &&obj_finalize_STAMP_core__Complex_O,
-  /* 367 */ &&obj_finalize_STAMP_core__CandoException_O,
-  /* 368 */ &&obj_finalize_STAMP_core__Stream_O,
-  /* 369 */ &&obj_finalize_STAMP_core__AnsiStream_O,
-  /* 370 */ &&obj_finalize_STAMP_core__TwoWayStream_O,
-  /* 371 */ &&obj_finalize_STAMP_core__BroadcastStream_O,
-  /* 372 */ &&obj_finalize_STAMP_core__SynonymStream_O,
-  /* 373 */ &&obj_finalize_STAMP_core__ConcatenatedStream_O,
-  /* 374 */ &&obj_finalize_STAMP_core__StringStream_O,
-  /* 375 */ &&obj_finalize_STAMP_core__StringOutputStream_O,
-  /* 376 */ &&obj_finalize_STAMP_core__StringInputStream_O,
-  /* 377 */ &&obj_finalize_STAMP_core__FileStream_O,
-  /* 378 */ &&obj_finalize_STAMP_core__IOFileStream_O,
-  /* 379 */ &&obj_finalize_STAMP_core__IOStreamStream_O,
-  /* 380 */ &&obj_finalize_STAMP_core__EchoStream_O,
-  /* 381 */ &&obj_finalize_STAMP_core__Package_O,
-  /* 382 */ &&obj_finalize_STAMP_llvmo__ClaspJIT_O,
-  /* 383 */ &&obj_finalize_STAMP_core__FileStatus_O,
-  /* 384 */ &&obj_finalize_STAMP_core__InvocationHistoryFrameIterator_O,
-  /* 385 */ &&obj_finalize_STAMP_core__PosixTime_O,
-  /* 386 */ &&obj_finalize_STAMP_core__HashTable_O,
-  /* 387 */ &&obj_finalize_STAMP_core__HashTableEqual_O,
-  /* 388 */ &&obj_finalize_STAMP_core__HashTableEqualp_O,
-  /* 389 */ &&obj_finalize_STAMP_core__HashTableEq_O,
-  /* 390 */ &&obj_finalize_STAMP_core__HashTableEql_O,
-  /* 391 */ &&obj_finalize_STAMP_core__Exposer_O,
-  /* 392 */ &&obj_finalize_STAMP_core__CoreExposer_O,
-  /* 393 */ &&obj_finalize_STAMP_asttooling__AsttoolingExposer_O,
-  /* 394 */ &&obj_finalize_STAMP_core__SourcePosInfo_O,
-  /* 395 */ &&obj_finalize_STAMP_core__IntArray_O,
-  /* 396 */ &&obj_finalize_STAMP_core__SourceFileInfo_O,
-  /* 397 */ &&obj_finalize_STAMP_core__DirectoryEntry_O,
-  /* 398 */ &&obj_finalize_STAMP_core__LightUserData_O,
-  /* 399 */ &&obj_finalize_STAMP_core__UserData_O,
-  /* 400 */ &&obj_finalize_STAMP_core__Record_O,
-  /* 401 */ &&obj_finalize_STAMP_clbind__ClassRegistry_O,
-  /* 402 */ &&obj_finalize_STAMP_mp__ConcurrentQueue_O,
-  /* 403 */ &&obj_finalize_STAMP_core__Cons_O,
-  /* 405 */ &&obj_finalize_STAMP_core__Lisp_O,
-  /* 407 */ &&obj_finalize_STAMP_asttooling__AstVisitor_O,
-  /* 409 */ &&obj_finalize_STAMP_gctools__GCVector_moveable_core__KeywordArgument_,
-  /* 410 */ &&obj_finalize_STAMP_gctools__GCArray_moveable_unsigned_int_,
-  /* 411 */ &&obj_finalize_STAMP_gctools__GCVector_moveable_core__CacheRecord_,
-  /* 412 */ &&obj_finalize_STAMP_gctools__GCVector_moveable_core__RequiredArgument_,
-  /* 413 */ &&obj_finalize_STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__Cons_O__,
-  /* 414 */ &&obj_finalize_STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__SequenceStepper_O__,
-  /* 415 */ &&obj_finalize_STAMP_gctools__GCVector_moveable_double_,
-  /* 416 */ &&obj_finalize_STAMP_gctools__GCVector_moveable_core__SymbolStorage_,
-  /* 417 */ &&obj_finalize_STAMP_gctools__GCArray_moveable_short_,
-  /* 418 */ &&obj_finalize_STAMP_gctools__GCVector_moveable_core__DynamicBinding_,
-  /* 419 */ &&obj_finalize_STAMP_gctools__GCVector_moveable_gctools__smart_ptr_clbind__ClassRep_O__,
-  /* 420 */ &&obj_finalize_STAMP_gctools__GCArray_moveable_unsigned_long_,
-  /* 421 */ &&obj_finalize_STAMP_gctools__GCBitUnitArray_moveable_1_unsigned_int_int_,
-  /* 422 */ &&obj_finalize_STAMP_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__T_O___,
-  /* 423 */ &&obj_finalize_STAMP_gctools__GCArray_moveable_signed_char_,
-  /* 424 */ &&obj_finalize_STAMP_gctools__GCVector_moveable_core__ExceptionEntry_,
-  /* 425 */ &&obj_finalize_STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__List_V__,
-  /* 426 */ &&obj_finalize_STAMP_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__T_O__gctools__smart_ptr_core__T_O___,
-  /* 427 */ &&obj_finalize_STAMP_gctools__GCArray_moveable_int_,
-  /* 428 */ &&obj_finalize_STAMP_gctools__GCArray_moveable_unsigned_char_,
-  /* 429 */ &&obj_finalize_STAMP_gctools__GCArray_moveable_gctools__smart_ptr_core__T_O__,
-  /* 430 */ &&obj_finalize_STAMP_gctools__GCVector_moveable_core__AuxArgument_,
-  /* 431 */ &&obj_finalize_STAMP_gctools__GCArray_moveable_long_,
-  /* 432 */ &&obj_finalize_STAMP_gctools__GCVector_moveable_int_,
-  /* 433 */ &&obj_finalize_STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__Symbol_O__,
-  /* 434 */ &&obj_finalize_STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__T_O__,
-  /* 435 */ &&obj_finalize_STAMP_gctools__GCVector_moveable_core__SymbolClassPair_,
-  /* 436 */ &&obj_finalize_STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__SingleDispatchMethod_O__,
-  /* 437 */ &&obj_finalize_STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__Package_O__,
-  /* 438 */ &&obj_finalize_STAMP_gctools__GCArray_moveable_float_,
-  /* 439 */ &&obj_finalize_STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__SourceFileInfo_O__,
-  /* 440 */ &&obj_finalize_STAMP_gctools__GCArray_moveable_double_,
-  /* 441 */ &&obj_finalize_STAMP_gctools__GCVector_moveable_core__T_O___,
-  /* 442 */ &&obj_finalize_STAMP_gctools__GCVector_moveable_core__OptionalArgument_,
-  /* 443 */ &&obj_finalize_STAMP_gctools__GCArray_moveable_unsigned_short_,
-  /* 444 */ &&obj_finalize_STAMP_gctools__GCVector_moveable_float_,
-  /* 450 */ &&obj_finalize_STAMP_clbind__detail__class_map,
+  /* 12 */ &&obj_finalize_STAMP_clbind__ClassRep_O,
+  /* 13 */ &&obj_finalize_STAMP_core__SmallMap_O,
+  /* 14 */ &&obj_finalize_STAMP_core__WrappedPointer_O,
+  /* 15 */ &&obj_finalize_STAMP_core__Archive_O,
+  /* 16 */ &&obj_finalize_STAMP_core__SaveArchive_O,
+  /* 17 */ &&obj_finalize_STAMP_core__SexpSaveArchive_O,
+  /* 18 */ &&obj_finalize_STAMP_core__LoadArchive_O,
+  /* 19 */ &&obj_finalize_STAMP_core__SexpLoadArchive_O,
+  /* 20 */ &&obj_finalize_STAMP_core__SymbolToEnumConverter_O,
+  /* 21 */ &&obj_finalize_STAMP_core__Reader_O,
+  /* 22 */ &&obj_finalize_STAMP_core__WeakKeyMapping_O,
+  /* 23 */ &&obj_finalize_STAMP_llvmo__Attribute_O,
+  /* 24 */ &&obj_finalize_STAMP_core__ExternalObject_O,
+  /* 25 */ &&obj_finalize_STAMP_llvmo__Triple_O,
+  /* 26 */ &&obj_finalize_STAMP_llvmo__TargetOptions_O,
+  /* 27 */ &&obj_finalize_STAMP_llvmo__Pass_O,
+  /* 28 */ &&obj_finalize_STAMP_llvmo__ModulePass_O,
+  /* 29 */ &&obj_finalize_STAMP_llvmo__ImmutablePass_O,
+  /* 30 */ &&obj_finalize_STAMP_llvmo__TargetLibraryInfoWrapperPass_O,
+  /* 31 */ &&obj_finalize_STAMP_llvmo__FunctionPass_O,
+  /* 32 */ &&obj_finalize_STAMP_llvmo__ExecutionEngine_O,
+  /* 33 */ &&obj_finalize_STAMP_llvmo__LLVMContext_O,
+  /* 34 */ &&obj_finalize_STAMP_llvmo__PassManagerBuilder_O,
+  /* 35 */ &&obj_finalize_STAMP_llvmo__MCSubtargetInfo_O,
+  /* 36 */ &&obj_finalize_STAMP_llvmo__TargetSubtargetInfo_O,
+  /* 37 */ &&obj_finalize_STAMP_clasp_ffi__ForeignData_O,
+  /* 38 */ &&obj_finalize_STAMP_llvmo__Module_O,
+  /* 39 */ &&obj_finalize_STAMP_llvmo__Target_O,
+  /* 40 */ &&obj_finalize_STAMP_llvmo__Type_O,
+  /* 41 */ &&obj_finalize_STAMP_llvmo__IntegerType_O,
+  /* 42 */ &&obj_finalize_STAMP_llvmo__FunctionType_O,
+  /* 43 */ &&obj_finalize_STAMP_llvmo__CompositeType_O,
+  /* 44 */ &&obj_finalize_STAMP_llvmo__SequentialType_O,
+  /* 45 */ &&obj_finalize_STAMP_llvmo__PointerType_O,
+  /* 46 */ &&obj_finalize_STAMP_llvmo__ArrayType_O,
+  /* 47 */ &&obj_finalize_STAMP_llvmo__VectorType_O,
+  /* 48 */ &&obj_finalize_STAMP_llvmo__StructType_O,
+  /* 49 */ &&obj_finalize_STAMP_llvmo__IRBuilderBase_O,
+  /* 50 */ &&obj_finalize_STAMP_llvmo__IRBuilder_O,
+  /* 51 */ &&obj_finalize_STAMP_llvmo__APFloat_O,
+  /* 52 */ &&obj_finalize_STAMP_llvmo__APInt_O,
+  /* 53 */ &&obj_finalize_STAMP_llvmo__DIBuilder_O,
+  /* 54 */ &&obj_finalize_STAMP_llvmo__EngineBuilder_O,
+  /* 55 */ &&obj_finalize_STAMP_llvmo__PassManagerBase_O,
+  /* 56 */ &&obj_finalize_STAMP_llvmo__FunctionPassManager_O,
+  /* 57 */ &&obj_finalize_STAMP_llvmo__PassManager_O,
+  /* 58 */ &&obj_finalize_STAMP_llvmo__Linker_O,
+  /* 59 */ &&obj_finalize_STAMP_llvmo__Metadata_O,
+  /* 60 */ &&obj_finalize_STAMP_llvmo__ValueAsMetadata_O,
+  /* 61 */ &&obj_finalize_STAMP_llvmo__MDString_O,
+  /* 62 */ &&obj_finalize_STAMP_llvmo__MDNode_O,
+  /* 63 */ &&obj_finalize_STAMP_llvmo__DINode_O,
+  /* 64 */ &&obj_finalize_STAMP_llvmo__DIScope_O,
+  /* 65 */ &&obj_finalize_STAMP_llvmo__DILocalScope_O,
+  /* 66 */ &&obj_finalize_STAMP_llvmo__DISubprogram_O,
+  /* 67 */ &&obj_finalize_STAMP_llvmo__DILexicalBlockBase_O,
+  /* 68 */ &&obj_finalize_STAMP_llvmo__DILexicalBlock_O,
+  /* 69 */ &&obj_finalize_STAMP_llvmo__DIFile_O,
+  /* 70 */ &&obj_finalize_STAMP_llvmo__DICompileUnit_O,
+  /* 71 */ &&obj_finalize_STAMP_llvmo__DIType_O,
+  /* 72 */ &&obj_finalize_STAMP_llvmo__DICompositeType_O,
+  /* 73 */ &&obj_finalize_STAMP_llvmo__DIDerivedType_O,
+  /* 74 */ &&obj_finalize_STAMP_llvmo__DIBasicType_O,
+  /* 75 */ &&obj_finalize_STAMP_llvmo__DISubroutineType_O,
+  /* 76 */ &&obj_finalize_STAMP_llvmo__Value_O,
+  /* 77 */ &&obj_finalize_STAMP_llvmo__User_O,
+  /* 78 */ &&obj_finalize_STAMP_llvmo__Instruction_O,
+  /* 79 */ &&obj_finalize_STAMP_llvmo__UnaryInstruction_O,
+  /* 80 */ &&obj_finalize_STAMP_llvmo__VAArgInst_O,
+  /* 81 */ &&obj_finalize_STAMP_llvmo__LoadInst_O,
+  /* 82 */ &&obj_finalize_STAMP_llvmo__AllocaInst_O,
+  /* 83 */ &&obj_finalize_STAMP_llvmo__CallInst_O,
+  /* 84 */ &&obj_finalize_STAMP_llvmo__AtomicRMWInst_O,
+  /* 85 */ &&obj_finalize_STAMP_llvmo__TerminatorInst_O,
+  /* 86 */ &&obj_finalize_STAMP_llvmo__SwitchInst_O,
+  /* 87 */ &&obj_finalize_STAMP_llvmo__InvokeInst_O,
+  /* 88 */ &&obj_finalize_STAMP_llvmo__UnreachableInst_O,
+  /* 89 */ &&obj_finalize_STAMP_llvmo__ReturnInst_O,
+  /* 90 */ &&obj_finalize_STAMP_llvmo__IndirectBrInst_O,
+  /* 91 */ &&obj_finalize_STAMP_llvmo__ResumeInst_O,
+  /* 92 */ &&obj_finalize_STAMP_llvmo__BranchInst_O,
+  /* 93 */ &&obj_finalize_STAMP_llvmo__LandingPadInst_O,
+  /* 94 */ &&obj_finalize_STAMP_llvmo__AtomicCmpXchgInst_O,
+  /* 95 */ &&obj_finalize_STAMP_llvmo__FenceInst_O,
+  /* 96 */ &&obj_finalize_STAMP_llvmo__StoreInst_O,
+  /* 97 */ &&obj_finalize_STAMP_llvmo__PHINode_O,
+  /* 98 */ &&obj_finalize_STAMP_llvmo__Constant_O,
+  /* 99 */ &&obj_finalize_STAMP_llvmo__GlobalValue_O,
+  /* 100 */ &&obj_finalize_STAMP_llvmo__GlobalVariable_O,
+  /* 101 */ &&obj_finalize_STAMP_llvmo__Function_O,
+  /* 102 */ &&obj_finalize_STAMP_llvmo__ConstantFP_O,
+  /* 103 */ &&obj_finalize_STAMP_llvmo__BlockAddress_O,
+  /* 104 */ &&obj_finalize_STAMP_llvmo__ConstantExpr_O,
+  /* 105 */ &&obj_finalize_STAMP_llvmo__ConstantPointerNull_O,
+  /* 106 */ &&obj_finalize_STAMP_llvmo__ConstantDataSequential_O,
+  /* 107 */ &&obj_finalize_STAMP_llvmo__ConstantDataArray_O,
+  /* 108 */ &&obj_finalize_STAMP_llvmo__UndefValue_O,
+  /* 109 */ &&obj_finalize_STAMP_llvmo__ConstantArray_O,
+  /* 110 */ &&obj_finalize_STAMP_llvmo__ConstantStruct_O,
+  /* 111 */ &&obj_finalize_STAMP_llvmo__ConstantInt_O,
+  /* 112 */ &&obj_finalize_STAMP_llvmo__Argument_O,
+  /* 113 */ &&obj_finalize_STAMP_llvmo__BasicBlock_O,
+  /* 114 */ &&obj_finalize_STAMP_llvmo__TargetMachine_O,
+  /* 115 */ &&obj_finalize_STAMP_llvmo__LLVMTargetMachine_O,
+  /* 116 */ &&obj_finalize_STAMP_llvmo__NamedMDNode_O,
+  /* 117 */ &&obj_finalize_STAMP_core__SmallMultimap_O,
+  /* 118 */ &&obj_finalize_STAMP_core__LambdaListHandler_O,
+  /* 119 */ &&obj_finalize_STAMP_llvmo__AttributeSet_O,
+  /* 120 */ &&obj_finalize_STAMP_core__Environment_O,
+  /* 121 */ &&obj_finalize_STAMP_core__GlueEnvironment_O,
+  /* 122 */ &&obj_finalize_STAMP_core__LexicalEnvironment_O,
+  /* 123 */ &&obj_finalize_STAMP_core__RuntimeVisibleEnvironment_O,
+  /* 124 */ &&obj_finalize_STAMP_core__FunctionValueEnvironment_O,
+  /* 125 */ &&obj_finalize_STAMP_core__ValueEnvironment_O,
+  /* 126 */ &&obj_finalize_STAMP_core__TagbodyEnvironment_O,
+  /* 127 */ &&obj_finalize_STAMP_core__CompileTimeEnvironment_O,
+  /* 128 */ &&obj_finalize_STAMP_core__CatchEnvironment_O,
+  /* 129 */ &&obj_finalize_STAMP_core__BlockEnvironment_O,
+  /* 130 */ &&obj_finalize_STAMP_core__MacroletEnvironment_O,
+  /* 131 */ &&obj_finalize_STAMP_core__SymbolMacroletEnvironment_O,
+  /* 132 */ &&obj_finalize_STAMP_core__UnwindProtectEnvironment_O,
+  /* 133 */ &&obj_finalize_STAMP_core__FunctionContainerEnvironment_O,
+  /* 134 */ &&obj_finalize_STAMP_core__ActivationFrame_O,
+  /* 135 */ &&obj_finalize_STAMP_core__ValueFrame_O,
+  /* 136 */ &&obj_finalize_STAMP_core__FunctionFrame_O,
+  /* 137 */ &&obj_finalize_STAMP_core__TagbodyFrame_O,
+  /* 138 */ &&obj_finalize_STAMP_core__RandomState_O,
+  /* 139 */ &&obj_finalize_STAMP_core__Function_O,
+  /* 140 */ &&obj_finalize_STAMP_core__FuncallableInstance_O,
+  /* 141 */ &&obj_finalize_STAMP_core__Creator_O,
+  /* 142 */ &&obj_finalize_STAMP_core__StructureClassCreator_O,
+  /* 143 */ &&obj_finalize_STAMP_core__DerivableCxxClassCreator_O,
+  /* 144 */ &&obj_finalize_STAMP_core__FuncallableInstanceCreator_O,
+  /* 145 */ &&obj_finalize_STAMP_clbind__ConstructorCreator_O,
+  /* 146 */ &&obj_finalize_STAMP_core__ClassCreator_O,
+  /* 147 */ &&obj_finalize_STAMP_clbind__DummyCreator_O,
+  /* 148 */ &&obj_finalize_STAMP_core__InstanceCreator_O,
+  /* 149 */ &&obj_finalize_STAMP_core__StandardClassCreator_O,
+  /* 150 */ &&obj_finalize_STAMP_core__NamedFunction_O,
+  /* 151 */ &&obj_finalize_STAMP_core__Closure_O,
+  /* 152 */ &&obj_finalize_STAMP_core__CompiledDispatchFunction_O,
+  /* 153 */ &&obj_finalize_STAMP_core__CompiledFunction_O,
+  /* 154 */ &&obj_finalize_STAMP_core__FunctionClosure_O,
+  /* 155 */ &&obj_finalize_STAMP_core__ClosureWithFrame_O,
+  /* 156 */ &&obj_finalize_STAMP_core__CompiledClosure_O,
+  /* 157 */ &&obj_finalize_STAMP_core__InterpretedClosure_O,
+  /* 158 */ &&obj_finalize_STAMP_core__ClosureWithSlots_O,
+  /* 159 */ &&obj_finalize_STAMP_core__SingleDispatchMethodFunction_O,
+  /* 160 */ &&obj_finalize_STAMP_core__CxxMethodFunction_O,
+  /* 161 */ &&obj_finalize_STAMP_core__BuiltinClosure_O,
+  /* 162 */ &&obj_finalize_STAMP_core__TemplatedFunctionBase_O,
+  /* 163 */ &&obj_finalize_STAMP_core__TranslationFunctor_O,
+  /* 164 */ &&obj_finalize_STAMP_core__MacroClosure_O,
+  /* 165 */ &&obj_finalize_STAMP_core__SingleDispatchGenericFunctionClosure_O,
+  /* 166 */ &&obj_finalize_STAMP_core__SingleDispatchEffectiveMethodFunction_O,
+  /* 167 */ &&obj_finalize_STAMP_core__SingleDispatchCxxEffectiveMethodFunction_O,
+  /* 168 */ &&obj_finalize_STAMP_core__SpecialForm_O,
+  /* 169 */ &&obj_finalize_STAMP_core__SequenceStepper_O,
+  /* 170 */ &&obj_finalize_STAMP_core__VectorStepper_O,
+  /* 171 */ &&obj_finalize_STAMP_core__ConsStepper_O,
+  /* 172 */ &&obj_finalize_STAMP_core__WeakPointer_O,
+  /* 173 */ &&obj_finalize_STAMP_llvmo__DebugLoc_O,
+  /* 174 */ &&obj_finalize_STAMP_core__SNode_O,
+  /* 175 */ &&obj_finalize_STAMP_core__BranchSNode_O,
+  /* 176 */ &&obj_finalize_STAMP_core__LeafSNode_O,
+  /* 177 */ &&obj_finalize_STAMP_llvmo__ModuleHandle_O,
+  /* 178 */ &&obj_finalize_STAMP_core__Pointer_O,
+  /* 179 */ &&obj_finalize_STAMP_core__CxxObject_O,
+  /* 180 */ &&obj_finalize_STAMP_llvmo__DINodeArray_O,
+  /* 181 */ &&obj_finalize_STAMP_core__NativeVector_float_O,
+  /* 182 */ &&obj_finalize_STAMP_clcenv__Info_O,
+  /* 183 */ &&obj_finalize_STAMP_clcenv__OptimizeInfo_O,
+  /* 184 */ &&obj_finalize_STAMP_clcenv__BlockInfo_O,
+  /* 185 */ &&obj_finalize_STAMP_clcenv__FunctionInfo_O,
+  /* 186 */ &&obj_finalize_STAMP_clcenv__GlobalMacroInfo_O,
+  /* 187 */ &&obj_finalize_STAMP_clcenv__LocalMacroInfo_O,
+  /* 188 */ &&obj_finalize_STAMP_clcenv__LocalFunctionInfo_O,
+  /* 189 */ &&obj_finalize_STAMP_clcenv__SpecialOperatorInfo_O,
+  /* 190 */ &&obj_finalize_STAMP_clcenv__LambdaNameInfo_O,
+  /* 191 */ &&obj_finalize_STAMP_clcenv__GlobalFunctionInfo_O,
+  /* 192 */ &&obj_finalize_STAMP_clcenv__VariableInfo_O,
+  /* 193 */ &&obj_finalize_STAMP_clcenv__SpecialVariableInfo_O,
+  /* 194 */ &&obj_finalize_STAMP_clcenv__LexicalVariableInfo_O,
+  /* 195 */ &&obj_finalize_STAMP_clcenv__SymbolMacroInfo_O,
+  /* 196 */ &&obj_finalize_STAMP_clcenv__ConstantVariableInfo_O,
+  /* 197 */ &&obj_finalize_STAMP_mp__ConditionVariable_O,
+  /* 198 */ &&obj_finalize_STAMP_mp__Mutex_O,
+  /* 199 */ &&obj_finalize_STAMP_mp__RecursiveMutex_O,
+  /* 200 */ &&obj_finalize_STAMP_llvmo__DITypeRefArray_O,
+  /* 201 */ &&obj_finalize_STAMP_core__NativeVector_double_O,
+  /* 202 */ &&obj_finalize_STAMP_core__NativeVector_int_O,
+  /* 203 */ &&obj_finalize_STAMP_mp__SharedMutex_O,
+  /* 204 */ &&obj_finalize_STAMP_clcenv__Entry_O,
+  /* 205 */ &&obj_finalize_STAMP_clcenv__VariableType_O,
+  /* 206 */ &&obj_finalize_STAMP_clcenv__VariableIgnore_O,
+  /* 207 */ &&obj_finalize_STAMP_clcenv__Function_O,
+  /* 208 */ &&obj_finalize_STAMP_clcenv__SymbolMacro_O,
+  /* 209 */ &&obj_finalize_STAMP_clcenv__FunctionDynamicExtent_O,
+  /* 210 */ &&obj_finalize_STAMP_clcenv__Inline_O,
+  /* 211 */ &&obj_finalize_STAMP_clcenv__Closure_O,
+  /* 212 */ &&obj_finalize_STAMP_clcenv__Optimize_O,
+  /* 213 */ &&obj_finalize_STAMP_clcenv__LambdaName_O,
+  /* 214 */ &&obj_finalize_STAMP_clcenv__Tag_O,
+  /* 215 */ &&obj_finalize_STAMP_clcenv__Block_O,
+  /* 216 */ &&obj_finalize_STAMP_clcenv__FunctionType_O,
+  /* 217 */ &&obj_finalize_STAMP_clcenv__GlobalEnvironment_O,
+  /* 218 */ &&obj_finalize_STAMP_clcenv__VariableDynamicExtent_O,
+  /* 219 */ &&obj_finalize_STAMP_clcenv__LexicalVariable_O,
+  /* 220 */ &&obj_finalize_STAMP_clcenv__SpecialVariable_O,
+  /* 221 */ &&obj_finalize_STAMP_clcenv__Macro_O,
+  /* 222 */ &&obj_finalize_STAMP_clcenv__FunctionIgnore_O,
+  /* 223 */ &&obj_finalize_STAMP_mp__Process_O,
+  /* 224 */ &&obj_finalize_STAMP_core__SingleDispatchMethod_O,
+  /* 225 */ &&obj_finalize_STAMP_core__Iterator_O,
+  /* 226 */ &&obj_finalize_STAMP_core__RecursiveDirectoryIterator_O,
+  /* 227 */ &&obj_finalize_STAMP_core__DirectoryIterator_O,
+  /* 228 */ &&obj_finalize_STAMP_llvmo__InsertPoint_O,
+  /* 229 */ &&obj_finalize_STAMP_core__Array_O,
+  /* 230 */ &&obj_finalize_STAMP_core__AbstractSimpleVector_O,
+  /* 232 */ &&obj_finalize_STAMP_core__SimpleVectorFloat_O,
+  /* 234 */ &&obj_finalize_STAMP_core__SimpleVector_byte64_t_O,
+  /* 236 */ &&obj_finalize_STAMP_core__SimpleVector_int64_t_O,
+  /* 237 */ &&obj_finalize_STAMP_core__SimpleString_O,
+  /* 239 */ &&obj_finalize_STAMP_core__SimpleCharacterString_O,
+  /* 241 */ &&obj_finalize_STAMP_core__SimpleBaseString_O,
+  /* 243 */ &&obj_finalize_STAMP_core__SimpleVector_int16_t_O,
+  /* 245 */ &&obj_finalize_STAMP_core__SimpleVector_byte16_t_O,
+  /* 247 */ &&obj_finalize_STAMP_core__SimpleVector_fixnum_O,
+  /* 249 */ &&obj_finalize_STAMP_core__SimpleVector_int8_t_O,
+  /* 251 */ &&obj_finalize_STAMP_core__SimpleVector_O,
+  /* 253 */ &&obj_finalize_STAMP_core__SimpleVector_byte8_t_O,
+  /* 255 */ &&obj_finalize_STAMP_core__SimpleVector_int32_t_O,
+  /* 256 */ &&obj_finalize_STAMP_core__SimpleBitVector_O,
+  /* 258 */ &&obj_finalize_STAMP_core__SimpleVector_byte32_t_O,
+  /* 260 */ &&obj_finalize_STAMP_core__SimpleVector_size_t_O,
+  /* 262 */ &&obj_finalize_STAMP_core__SimpleVectorDouble_O,
+  /* 263 */ &&obj_finalize_STAMP_core__MDArray_O,
+  /* 264 */ &&obj_finalize_STAMP_core__BitVectorNs_O,
+  /* 266 */ &&obj_finalize_STAMP_core__MDArray_byte64_t_O,
+  /* 268 */ &&obj_finalize_STAMP_core__MDArray_int16_t_O,
+  /* 270 */ &&obj_finalize_STAMP_core__MDArray_int8_t_O,
+  /* 272 */ &&obj_finalize_STAMP_core__MDArrayCharacter_O,
+  /* 274 */ &&obj_finalize_STAMP_core__MDArray_int32_t_O,
+  /* 276 */ &&obj_finalize_STAMP_core__MDArrayFloat_O,
+  /* 277 */ &&obj_finalize_STAMP_core__StrNs_O,
+  /* 279 */ &&obj_finalize_STAMP_core__StrWNs_O,
+  /* 281 */ &&obj_finalize_STAMP_core__Str8Ns_O,
+  /* 283 */ &&obj_finalize_STAMP_core__MDArrayDouble_O,
+  /* 285 */ &&obj_finalize_STAMP_core__MDArrayT_O,
+  /* 287 */ &&obj_finalize_STAMP_core__MDArray_size_t_O,
+  /* 289 */ &&obj_finalize_STAMP_core__MDArray_byte8_t_O,
+  /* 290 */ &&obj_finalize_STAMP_core__MDArrayBit_O,
+  /* 292 */ &&obj_finalize_STAMP_core__MDArray_int64_t_O,
+  /* 294 */ &&obj_finalize_STAMP_core__MDArray_byte16_t_O,
+  /* 296 */ &&obj_finalize_STAMP_core__MDArray_byte32_t_O,
+  /* 297 */ &&obj_finalize_STAMP_core__SimpleMDArray_O,
+  /* 299 */ &&obj_finalize_STAMP_core__SimpleMDArray_int8_t_O,
+  /* 301 */ &&obj_finalize_STAMP_core__SimpleMDArrayCharacter_O,
+  /* 303 */ &&obj_finalize_STAMP_core__SimpleMDArray_fixnum_O,
+  /* 305 */ &&obj_finalize_STAMP_core__SimpleMDArray_byte32_t_O,
+  /* 307 */ &&obj_finalize_STAMP_core__SimpleMDArray_byte16_t_O,
+  /* 309 */ &&obj_finalize_STAMP_core__SimpleMDArrayT_O,
+  /* 311 */ &&obj_finalize_STAMP_core__SimpleMDArray_int32_t_O,
+  /* 313 */ &&obj_finalize_STAMP_core__SimpleMDArrayDouble_O,
+  /* 315 */ &&obj_finalize_STAMP_core__SimpleMDArrayBaseChar_O,
+  /* 317 */ &&obj_finalize_STAMP_core__SimpleMDArray_byte64_t_O,
+  /* 318 */ &&obj_finalize_STAMP_core__SimpleMDArrayBit_O,
+  /* 320 */ &&obj_finalize_STAMP_core__SimpleMDArray_int16_t_O,
+  /* 322 */ &&obj_finalize_STAMP_core__SimpleMDArray_byte8_t_O,
+  /* 324 */ &&obj_finalize_STAMP_core__SimpleMDArray_size_t_O,
+  /* 326 */ &&obj_finalize_STAMP_core__SimpleMDArray_int64_t_O,
+  /* 328 */ &&obj_finalize_STAMP_core__SimpleMDArrayFloat_O,
+  /* 330 */ &&obj_finalize_STAMP_core__MDArray_fixnum_O,
+  /* 332 */ &&obj_finalize_STAMP_core__MDArrayBaseChar_O,
+  /* 333 */ &&obj_finalize_STAMP_core__Symbol_O,
+  /* 334 */ &&obj_finalize_STAMP_core__Null_O,
+  /* 335 */ &&obj_finalize_STAMP_core__StandardObject_O,
+  /* 336 */ &&obj_finalize_STAMP_mp__BlockingConcurrentQueue_O,
+  /* 337 */ &&obj_finalize_STAMP_core__Path_O,
+  /* 338 */ &&obj_finalize_STAMP_core__Character_dummy_O,
+  /* 339 */ &&obj_finalize_STAMP_core__SourceManager_O,
+  /* 340 */ &&obj_finalize_STAMP_llvmo__DataLayout_O,
+  /* 341 */ &&obj_finalize_STAMP_core__Pathname_O,
+  /* 342 */ &&obj_finalize_STAMP_core__LogicalPathname_O,
+  /* 343 */ &&obj_finalize_STAMP_core__Cache_O,
+  /* 344 */ &&obj_finalize_STAMP_core__LoadTimeValues_O,
+  /* 345 */ &&obj_finalize_STAMP_core__SharpEqualWrapper_O,
+  /* 346 */ &&obj_finalize_STAMP_core__Number_O,
+  /* 347 */ &&obj_finalize_STAMP_core__Real_O,
+  /* 348 */ &&obj_finalize_STAMP_core__Rational_O,
+  /* 349 */ &&obj_finalize_STAMP_core__Ratio_O,
+  /* 350 */ &&obj_finalize_STAMP_core__Integer_O,
+  /* 351 */ &&obj_finalize_STAMP_core__Bignum_O,
+  /* 352 */ &&obj_finalize_STAMP_core__Fixnum_dummy_O,
+  /* 353 */ &&obj_finalize_STAMP_core__Float_O,
+  /* 354 */ &&obj_finalize_STAMP_core__DoubleFloat_O,
+  /* 355 */ &&obj_finalize_STAMP_core__SingleFloat_dummy_O,
+  /* 356 */ &&obj_finalize_STAMP_core__LongFloat_O,
+  /* 357 */ &&obj_finalize_STAMP_core__ShortFloat_O,
+  /* 358 */ &&obj_finalize_STAMP_core__Complex_O,
+  /* 359 */ &&obj_finalize_STAMP_core__CandoException_O,
+  /* 360 */ &&obj_finalize_STAMP_core__Stream_O,
+  /* 361 */ &&obj_finalize_STAMP_core__AnsiStream_O,
+  /* 362 */ &&obj_finalize_STAMP_core__TwoWayStream_O,
+  /* 363 */ &&obj_finalize_STAMP_core__BroadcastStream_O,
+  /* 364 */ &&obj_finalize_STAMP_core__SynonymStream_O,
+  /* 365 */ &&obj_finalize_STAMP_core__ConcatenatedStream_O,
+  /* 366 */ &&obj_finalize_STAMP_core__StringStream_O,
+  /* 367 */ &&obj_finalize_STAMP_core__StringOutputStream_O,
+  /* 368 */ &&obj_finalize_STAMP_core__StringInputStream_O,
+  /* 369 */ &&obj_finalize_STAMP_core__FileStream_O,
+  /* 370 */ &&obj_finalize_STAMP_core__IOFileStream_O,
+  /* 371 */ &&obj_finalize_STAMP_core__IOStreamStream_O,
+  /* 372 */ &&obj_finalize_STAMP_core__EchoStream_O,
+  /* 373 */ &&obj_finalize_STAMP_core__Package_O,
+  /* 374 */ &&obj_finalize_STAMP_llvmo__ClaspJIT_O,
+  /* 375 */ &&obj_finalize_STAMP_core__FileStatus_O,
+  /* 376 */ &&obj_finalize_STAMP_core__InvocationHistoryFrameIterator_O,
+  /* 377 */ &&obj_finalize_STAMP_core__PosixTime_O,
+  /* 378 */ &&obj_finalize_STAMP_core__HashTable_O,
+  /* 379 */ &&obj_finalize_STAMP_core__HashTableEqual_O,
+  /* 380 */ &&obj_finalize_STAMP_core__HashTableEqualp_O,
+  /* 381 */ &&obj_finalize_STAMP_core__HashTableEq_O,
+  /* 382 */ &&obj_finalize_STAMP_core__HashTableEql_O,
+  /* 383 */ &&obj_finalize_STAMP_core__Exposer_O,
+  /* 384 */ &&obj_finalize_STAMP_core__CoreExposer_O,
+  /* 385 */ &&obj_finalize_STAMP_asttooling__AsttoolingExposer_O,
+  /* 386 */ &&obj_finalize_STAMP_core__SourcePosInfo_O,
+  /* 387 */ &&obj_finalize_STAMP_core__IntArray_O,
+  /* 388 */ &&obj_finalize_STAMP_core__SourceFileInfo_O,
+  /* 389 */ &&obj_finalize_STAMP_core__DirectoryEntry_O,
+  /* 390 */ &&obj_finalize_STAMP_core__LightUserData_O,
+  /* 391 */ &&obj_finalize_STAMP_core__UserData_O,
+  /* 392 */ &&obj_finalize_STAMP_core__Record_O,
+  /* 393 */ &&obj_finalize_STAMP_clbind__ClassRegistry_O,
+  /* 394 */ &&obj_finalize_STAMP_mp__ConcurrentQueue_O,
+  /* 395 */ &&obj_finalize_STAMP_core__Cons_O,
+  /* 397 */ &&obj_finalize_STAMP_core__Lisp_O,
+  /* 399 */ &&obj_finalize_STAMP_asttooling__AstVisitor_O,
+  /* 401 */ &&obj_finalize_STAMP_gctools__GCVector_moveable_core__KeywordArgument_,
+  /* 402 */ &&obj_finalize_STAMP_gctools__GCArray_moveable_unsigned_int_,
+  /* 403 */ &&obj_finalize_STAMP_gctools__GCVector_moveable_core__CacheRecord_,
+  /* 404 */ &&obj_finalize_STAMP_gctools__GCVector_moveable_core__RequiredArgument_,
+  /* 405 */ &&obj_finalize_STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__Cons_O__,
+  /* 406 */ &&obj_finalize_STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__SequenceStepper_O__,
+  /* 407 */ &&obj_finalize_STAMP_gctools__GCVector_moveable_double_,
+  /* 408 */ &&obj_finalize_STAMP_gctools__GCVector_moveable_core__SymbolStorage_,
+  /* 409 */ &&obj_finalize_STAMP_gctools__GCArray_moveable_short_,
+  /* 410 */ &&obj_finalize_STAMP_gctools__GCVector_moveable_core__DynamicBinding_,
+  /* 411 */ &&obj_finalize_STAMP_gctools__GCVector_moveable_gctools__smart_ptr_clbind__ClassRep_O__,
+  /* 412 */ &&obj_finalize_STAMP_gctools__GCArray_moveable_unsigned_long_,
+  /* 413 */ &&obj_finalize_STAMP_gctools__GCBitUnitArray_moveable_1_unsigned_int_int_,
+  /* 414 */ &&obj_finalize_STAMP_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__T_O___,
+  /* 415 */ &&obj_finalize_STAMP_gctools__GCArray_moveable_signed_char_,
+  /* 416 */ &&obj_finalize_STAMP_gctools__GCVector_moveable_core__ExceptionEntry_,
+  /* 417 */ &&obj_finalize_STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__List_V__,
+  /* 418 */ &&obj_finalize_STAMP_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__T_O__gctools__smart_ptr_core__T_O___,
+  /* 419 */ &&obj_finalize_STAMP_gctools__GCArray_moveable_int_,
+  /* 420 */ &&obj_finalize_STAMP_gctools__GCArray_moveable_unsigned_char_,
+  /* 421 */ &&obj_finalize_STAMP_gctools__GCArray_moveable_gctools__smart_ptr_core__T_O__,
+  /* 422 */ &&obj_finalize_STAMP_gctools__GCVector_moveable_core__AuxArgument_,
+  /* 423 */ &&obj_finalize_STAMP_gctools__GCArray_moveable_long_,
+  /* 424 */ &&obj_finalize_STAMP_gctools__GCVector_moveable_int_,
+  /* 425 */ &&obj_finalize_STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__Symbol_O__,
+  /* 426 */ &&obj_finalize_STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__T_O__,
+  /* 427 */ &&obj_finalize_STAMP_gctools__GCVector_moveable_core__SymbolClassPair_,
+  /* 428 */ &&obj_finalize_STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__SingleDispatchMethod_O__,
+  /* 429 */ &&obj_finalize_STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__Package_O__,
+  /* 430 */ &&obj_finalize_STAMP_gctools__GCArray_moveable_float_,
+  /* 431 */ &&obj_finalize_STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__SourceFileInfo_O__,
+  /* 432 */ &&obj_finalize_STAMP_gctools__GCArray_moveable_double_,
+  /* 433 */ &&obj_finalize_STAMP_gctools__GCVector_moveable_core__T_O___,
+  /* 434 */ &&obj_finalize_STAMP_gctools__GCVector_moveable_core__OptionalArgument_,
+  /* 435 */ &&obj_finalize_STAMP_gctools__GCArray_moveable_unsigned_short_,
+  /* 436 */ &&obj_finalize_STAMP_gctools__GCVector_moveable_float_,
+  /* 442 */ &&obj_finalize_STAMP_clbind__detail__class_map,
    NULL
 };
 #endif // defined(GC_OBJ_FINALIZE_TABLE)
@@ -11465,30 +10949,6 @@ obj_deallocate_unmanaged_instance_STAMP_core__DerivableCxxObject_O:
 {
     core::DerivableCxxObject_O* obj_gc_safe = reinterpret_cast<core::DerivableCxxObject_O*>(client);
     GC<core::DerivableCxxObject_O>::deallocate_unmanaged_instance(obj_gc_safe);
-    return;
-}
-obj_deallocate_unmanaged_instance_STAMP_asttooling__DerivableFrontendActionFactory:
-{
-    asttooling::DerivableFrontendActionFactory* obj_gc_safe = reinterpret_cast<asttooling::DerivableFrontendActionFactory*>(client);
-    GC<asttooling::DerivableFrontendActionFactory>::deallocate_unmanaged_instance(obj_gc_safe);
-    return;
-}
-obj_deallocate_unmanaged_instance_STAMP_asttooling__DerivableMatchCallback:
-{
-    asttooling::DerivableMatchCallback* obj_gc_safe = reinterpret_cast<asttooling::DerivableMatchCallback*>(client);
-    GC<asttooling::DerivableMatchCallback>::deallocate_unmanaged_instance(obj_gc_safe);
-    return;
-}
-obj_deallocate_unmanaged_instance_STAMP_asttooling__DerivableSyntaxOnlyAction:
-{
-    asttooling::DerivableSyntaxOnlyAction* obj_gc_safe = reinterpret_cast<asttooling::DerivableSyntaxOnlyAction*>(client);
-    GC<asttooling::DerivableSyntaxOnlyAction>::deallocate_unmanaged_instance(obj_gc_safe);
-    return;
-}
-obj_deallocate_unmanaged_instance_STAMP_asttooling__DerivableASTFrontendAction:
-{
-    asttooling::DerivableASTFrontendAction* obj_gc_safe = reinterpret_cast<asttooling::DerivableASTFrontendAction*>(client);
-    GC<asttooling::DerivableASTFrontendAction>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_clbind__ClassRep_O:
@@ -13652,386 +13112,1441 @@ static void* OBJ_DEALLOCATOR_table[] = {
   /* 9 */ &&obj_deallocate_unmanaged_instance_STAMP_clasp_ffi__ForeignTypeSpec_O,
   /* 10 */ &&obj_deallocate_unmanaged_instance_STAMP_core__Instance_O,
   /* 11 */ &&obj_deallocate_unmanaged_instance_STAMP_core__DerivableCxxObject_O,
-  /* 13 */ &&obj_deallocate_unmanaged_instance_STAMP_asttooling__DerivableFrontendActionFactory,
-  /* 15 */ &&obj_deallocate_unmanaged_instance_STAMP_asttooling__DerivableMatchCallback,
-  /* 17 */ &&obj_deallocate_unmanaged_instance_STAMP_asttooling__DerivableSyntaxOnlyAction,
-  /* 19 */ &&obj_deallocate_unmanaged_instance_STAMP_asttooling__DerivableASTFrontendAction,
-  /* 20 */ &&obj_deallocate_unmanaged_instance_STAMP_clbind__ClassRep_O,
-  /* 21 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SmallMap_O,
-  /* 22 */ &&obj_deallocate_unmanaged_instance_STAMP_core__WrappedPointer_O,
-  /* 23 */ &&obj_deallocate_unmanaged_instance_STAMP_core__Archive_O,
-  /* 24 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SaveArchive_O,
-  /* 25 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SexpSaveArchive_O,
-  /* 26 */ &&obj_deallocate_unmanaged_instance_STAMP_core__LoadArchive_O,
-  /* 27 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SexpLoadArchive_O,
-  /* 28 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SymbolToEnumConverter_O,
-  /* 29 */ &&obj_deallocate_unmanaged_instance_STAMP_core__Reader_O,
-  /* 30 */ &&obj_deallocate_unmanaged_instance_STAMP_core__WeakKeyMapping_O,
-  /* 31 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__Attribute_O,
-  /* 32 */ &&obj_deallocate_unmanaged_instance_STAMP_core__ExternalObject_O,
-  /* 33 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__Triple_O,
-  /* 34 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__TargetOptions_O,
-  /* 35 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__Pass_O,
-  /* 36 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__ModulePass_O,
-  /* 37 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__ImmutablePass_O,
-  /* 38 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__TargetLibraryInfoWrapperPass_O,
-  /* 39 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__FunctionPass_O,
-  /* 40 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__ExecutionEngine_O,
-  /* 41 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__LLVMContext_O,
-  /* 42 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__PassManagerBuilder_O,
-  /* 43 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__MCSubtargetInfo_O,
-  /* 44 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__TargetSubtargetInfo_O,
-  /* 45 */ &&obj_deallocate_unmanaged_instance_STAMP_clasp_ffi__ForeignData_O,
-  /* 46 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__Module_O,
-  /* 47 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__Target_O,
-  /* 48 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__Type_O,
-  /* 49 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__IntegerType_O,
-  /* 50 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__FunctionType_O,
-  /* 51 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__CompositeType_O,
-  /* 52 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__SequentialType_O,
-  /* 53 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__PointerType_O,
-  /* 54 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__ArrayType_O,
-  /* 55 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__VectorType_O,
-  /* 56 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__StructType_O,
-  /* 57 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__IRBuilderBase_O,
-  /* 58 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__IRBuilder_O,
-  /* 59 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__APFloat_O,
-  /* 60 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__APInt_O,
-  /* 61 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__DIBuilder_O,
-  /* 62 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__EngineBuilder_O,
-  /* 63 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__PassManagerBase_O,
-  /* 64 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__FunctionPassManager_O,
-  /* 65 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__PassManager_O,
-  /* 66 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__Linker_O,
-  /* 67 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__Metadata_O,
-  /* 68 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__ValueAsMetadata_O,
-  /* 69 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__MDString_O,
-  /* 70 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__MDNode_O,
-  /* 71 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__DINode_O,
-  /* 72 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__DIScope_O,
-  /* 73 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__DILocalScope_O,
-  /* 74 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__DISubprogram_O,
-  /* 75 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__DILexicalBlockBase_O,
-  /* 76 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__DILexicalBlock_O,
-  /* 77 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__DIFile_O,
-  /* 78 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__DICompileUnit_O,
-  /* 79 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__DIType_O,
-  /* 80 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__DICompositeType_O,
-  /* 81 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__DIDerivedType_O,
-  /* 82 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__DIBasicType_O,
-  /* 83 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__DISubroutineType_O,
-  /* 84 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__Value_O,
-  /* 85 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__User_O,
-  /* 86 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__Instruction_O,
-  /* 87 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__UnaryInstruction_O,
-  /* 88 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__VAArgInst_O,
-  /* 89 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__LoadInst_O,
-  /* 90 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__AllocaInst_O,
-  /* 91 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__CallInst_O,
-  /* 92 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__AtomicRMWInst_O,
-  /* 93 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__TerminatorInst_O,
-  /* 94 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__SwitchInst_O,
-  /* 95 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__InvokeInst_O,
-  /* 96 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__UnreachableInst_O,
-  /* 97 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__ReturnInst_O,
-  /* 98 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__IndirectBrInst_O,
-  /* 99 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__ResumeInst_O,
-  /* 100 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__BranchInst_O,
-  /* 101 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__LandingPadInst_O,
-  /* 102 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__AtomicCmpXchgInst_O,
-  /* 103 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__FenceInst_O,
-  /* 104 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__StoreInst_O,
-  /* 105 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__PHINode_O,
-  /* 106 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__Constant_O,
-  /* 107 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__GlobalValue_O,
-  /* 108 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__GlobalVariable_O,
-  /* 109 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__Function_O,
-  /* 110 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__ConstantFP_O,
-  /* 111 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__BlockAddress_O,
-  /* 112 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__ConstantExpr_O,
-  /* 113 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__ConstantPointerNull_O,
-  /* 114 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__ConstantDataSequential_O,
-  /* 115 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__ConstantDataArray_O,
-  /* 116 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__UndefValue_O,
-  /* 117 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__ConstantArray_O,
-  /* 118 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__ConstantStruct_O,
-  /* 119 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__ConstantInt_O,
-  /* 120 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__Argument_O,
-  /* 121 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__BasicBlock_O,
-  /* 122 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__TargetMachine_O,
-  /* 123 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__LLVMTargetMachine_O,
-  /* 124 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__NamedMDNode_O,
-  /* 125 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SmallMultimap_O,
-  /* 126 */ &&obj_deallocate_unmanaged_instance_STAMP_core__LambdaListHandler_O,
-  /* 127 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__AttributeSet_O,
-  /* 128 */ &&obj_deallocate_unmanaged_instance_STAMP_core__Environment_O,
-  /* 129 */ &&obj_deallocate_unmanaged_instance_STAMP_core__GlueEnvironment_O,
-  /* 130 */ &&obj_deallocate_unmanaged_instance_STAMP_core__LexicalEnvironment_O,
-  /* 131 */ &&obj_deallocate_unmanaged_instance_STAMP_core__RuntimeVisibleEnvironment_O,
-  /* 132 */ &&obj_deallocate_unmanaged_instance_STAMP_core__FunctionValueEnvironment_O,
-  /* 133 */ &&obj_deallocate_unmanaged_instance_STAMP_core__ValueEnvironment_O,
-  /* 134 */ &&obj_deallocate_unmanaged_instance_STAMP_core__TagbodyEnvironment_O,
-  /* 135 */ &&obj_deallocate_unmanaged_instance_STAMP_core__CompileTimeEnvironment_O,
-  /* 136 */ &&obj_deallocate_unmanaged_instance_STAMP_core__CatchEnvironment_O,
-  /* 137 */ &&obj_deallocate_unmanaged_instance_STAMP_core__BlockEnvironment_O,
-  /* 138 */ &&obj_deallocate_unmanaged_instance_STAMP_core__MacroletEnvironment_O,
-  /* 139 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SymbolMacroletEnvironment_O,
-  /* 140 */ &&obj_deallocate_unmanaged_instance_STAMP_core__UnwindProtectEnvironment_O,
-  /* 141 */ &&obj_deallocate_unmanaged_instance_STAMP_core__FunctionContainerEnvironment_O,
-  /* 142 */ &&obj_deallocate_unmanaged_instance_STAMP_core__ActivationFrame_O,
-  /* 143 */ &&obj_deallocate_unmanaged_instance_STAMP_core__ValueFrame_O,
-  /* 144 */ &&obj_deallocate_unmanaged_instance_STAMP_core__FunctionFrame_O,
-  /* 145 */ &&obj_deallocate_unmanaged_instance_STAMP_core__TagbodyFrame_O,
-  /* 146 */ &&obj_deallocate_unmanaged_instance_STAMP_core__RandomState_O,
-  /* 147 */ &&obj_deallocate_unmanaged_instance_STAMP_core__Function_O,
-  /* 148 */ &&obj_deallocate_unmanaged_instance_STAMP_core__FuncallableInstance_O,
-  /* 149 */ &&obj_deallocate_unmanaged_instance_STAMP_core__Creator_O,
-  /* 150 */ &&obj_deallocate_unmanaged_instance_STAMP_core__StructureClassCreator_O,
-  /* 151 */ &&obj_deallocate_unmanaged_instance_STAMP_core__DerivableCxxClassCreator_O,
-  /* 152 */ &&obj_deallocate_unmanaged_instance_STAMP_core__FuncallableInstanceCreator_O,
-  /* 153 */ &&obj_deallocate_unmanaged_instance_STAMP_clbind__ConstructorCreator_O,
-  /* 154 */ &&obj_deallocate_unmanaged_instance_STAMP_core__ClassCreator_O,
-  /* 155 */ &&obj_deallocate_unmanaged_instance_STAMP_clbind__DummyCreator_O,
-  /* 156 */ &&obj_deallocate_unmanaged_instance_STAMP_core__InstanceCreator_O,
-  /* 157 */ &&obj_deallocate_unmanaged_instance_STAMP_core__StandardClassCreator_O,
-  /* 158 */ &&obj_deallocate_unmanaged_instance_STAMP_core__NamedFunction_O,
-  /* 159 */ &&obj_deallocate_unmanaged_instance_STAMP_core__Closure_O,
-  /* 160 */ &&obj_deallocate_unmanaged_instance_STAMP_core__CompiledDispatchFunction_O,
-  /* 161 */ &&obj_deallocate_unmanaged_instance_STAMP_core__CompiledFunction_O,
-  /* 162 */ &&obj_deallocate_unmanaged_instance_STAMP_core__FunctionClosure_O,
-  /* 163 */ &&obj_deallocate_unmanaged_instance_STAMP_core__ClosureWithFrame_O,
-  /* 164 */ &&obj_deallocate_unmanaged_instance_STAMP_core__CompiledClosure_O,
-  /* 165 */ &&obj_deallocate_unmanaged_instance_STAMP_core__InterpretedClosure_O,
-  /* 166 */ &&obj_deallocate_unmanaged_instance_STAMP_core__ClosureWithSlots_O,
-  /* 167 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SingleDispatchMethodFunction_O,
-  /* 168 */ &&obj_deallocate_unmanaged_instance_STAMP_core__CxxMethodFunction_O,
-  /* 169 */ &&obj_deallocate_unmanaged_instance_STAMP_core__BuiltinClosure_O,
-  /* 170 */ &&obj_deallocate_unmanaged_instance_STAMP_core__TemplatedFunctionBase_O,
-  /* 171 */ &&obj_deallocate_unmanaged_instance_STAMP_core__TranslationFunctor_O,
-  /* 172 */ &&obj_deallocate_unmanaged_instance_STAMP_core__MacroClosure_O,
-  /* 173 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SingleDispatchGenericFunctionClosure_O,
-  /* 174 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SingleDispatchEffectiveMethodFunction_O,
-  /* 175 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SingleDispatchCxxEffectiveMethodFunction_O,
-  /* 176 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SpecialForm_O,
-  /* 177 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SequenceStepper_O,
-  /* 178 */ &&obj_deallocate_unmanaged_instance_STAMP_core__VectorStepper_O,
-  /* 179 */ &&obj_deallocate_unmanaged_instance_STAMP_core__ConsStepper_O,
-  /* 180 */ &&obj_deallocate_unmanaged_instance_STAMP_core__WeakPointer_O,
-  /* 181 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__DebugLoc_O,
-  /* 182 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SNode_O,
-  /* 183 */ &&obj_deallocate_unmanaged_instance_STAMP_core__BranchSNode_O,
-  /* 184 */ &&obj_deallocate_unmanaged_instance_STAMP_core__LeafSNode_O,
-  /* 185 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__ModuleHandle_O,
-  /* 186 */ &&obj_deallocate_unmanaged_instance_STAMP_core__Pointer_O,
-  /* 187 */ &&obj_deallocate_unmanaged_instance_STAMP_core__CxxObject_O,
-  /* 188 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__DINodeArray_O,
-  /* 189 */ &&obj_deallocate_unmanaged_instance_STAMP_core__NativeVector_float_O,
-  /* 190 */ &&obj_deallocate_unmanaged_instance_STAMP_clcenv__Info_O,
-  /* 191 */ &&obj_deallocate_unmanaged_instance_STAMP_clcenv__OptimizeInfo_O,
-  /* 192 */ &&obj_deallocate_unmanaged_instance_STAMP_clcenv__BlockInfo_O,
-  /* 193 */ &&obj_deallocate_unmanaged_instance_STAMP_clcenv__FunctionInfo_O,
-  /* 194 */ &&obj_deallocate_unmanaged_instance_STAMP_clcenv__GlobalMacroInfo_O,
-  /* 195 */ &&obj_deallocate_unmanaged_instance_STAMP_clcenv__LocalMacroInfo_O,
-  /* 196 */ &&obj_deallocate_unmanaged_instance_STAMP_clcenv__LocalFunctionInfo_O,
-  /* 197 */ &&obj_deallocate_unmanaged_instance_STAMP_clcenv__SpecialOperatorInfo_O,
-  /* 198 */ &&obj_deallocate_unmanaged_instance_STAMP_clcenv__LambdaNameInfo_O,
-  /* 199 */ &&obj_deallocate_unmanaged_instance_STAMP_clcenv__GlobalFunctionInfo_O,
-  /* 200 */ &&obj_deallocate_unmanaged_instance_STAMP_clcenv__VariableInfo_O,
-  /* 201 */ &&obj_deallocate_unmanaged_instance_STAMP_clcenv__SpecialVariableInfo_O,
-  /* 202 */ &&obj_deallocate_unmanaged_instance_STAMP_clcenv__LexicalVariableInfo_O,
-  /* 203 */ &&obj_deallocate_unmanaged_instance_STAMP_clcenv__SymbolMacroInfo_O,
-  /* 204 */ &&obj_deallocate_unmanaged_instance_STAMP_clcenv__ConstantVariableInfo_O,
-  /* 205 */ &&obj_deallocate_unmanaged_instance_STAMP_mp__ConditionVariable_O,
-  /* 206 */ &&obj_deallocate_unmanaged_instance_STAMP_mp__Mutex_O,
-  /* 207 */ &&obj_deallocate_unmanaged_instance_STAMP_mp__RecursiveMutex_O,
-  /* 208 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__DITypeRefArray_O,
-  /* 209 */ &&obj_deallocate_unmanaged_instance_STAMP_core__NativeVector_double_O,
-  /* 210 */ &&obj_deallocate_unmanaged_instance_STAMP_core__NativeVector_int_O,
-  /* 211 */ &&obj_deallocate_unmanaged_instance_STAMP_mp__SharedMutex_O,
-  /* 212 */ &&obj_deallocate_unmanaged_instance_STAMP_clcenv__Entry_O,
-  /* 213 */ &&obj_deallocate_unmanaged_instance_STAMP_clcenv__VariableType_O,
-  /* 214 */ &&obj_deallocate_unmanaged_instance_STAMP_clcenv__VariableIgnore_O,
-  /* 215 */ &&obj_deallocate_unmanaged_instance_STAMP_clcenv__Function_O,
-  /* 216 */ &&obj_deallocate_unmanaged_instance_STAMP_clcenv__SymbolMacro_O,
-  /* 217 */ &&obj_deallocate_unmanaged_instance_STAMP_clcenv__FunctionDynamicExtent_O,
-  /* 218 */ &&obj_deallocate_unmanaged_instance_STAMP_clcenv__Inline_O,
-  /* 219 */ &&obj_deallocate_unmanaged_instance_STAMP_clcenv__Closure_O,
-  /* 220 */ &&obj_deallocate_unmanaged_instance_STAMP_clcenv__Optimize_O,
-  /* 221 */ &&obj_deallocate_unmanaged_instance_STAMP_clcenv__LambdaName_O,
-  /* 222 */ &&obj_deallocate_unmanaged_instance_STAMP_clcenv__Tag_O,
-  /* 223 */ &&obj_deallocate_unmanaged_instance_STAMP_clcenv__Block_O,
-  /* 224 */ &&obj_deallocate_unmanaged_instance_STAMP_clcenv__FunctionType_O,
-  /* 225 */ &&obj_deallocate_unmanaged_instance_STAMP_clcenv__GlobalEnvironment_O,
-  /* 226 */ &&obj_deallocate_unmanaged_instance_STAMP_clcenv__VariableDynamicExtent_O,
-  /* 227 */ &&obj_deallocate_unmanaged_instance_STAMP_clcenv__LexicalVariable_O,
-  /* 228 */ &&obj_deallocate_unmanaged_instance_STAMP_clcenv__SpecialVariable_O,
-  /* 229 */ &&obj_deallocate_unmanaged_instance_STAMP_clcenv__Macro_O,
-  /* 230 */ &&obj_deallocate_unmanaged_instance_STAMP_clcenv__FunctionIgnore_O,
-  /* 231 */ &&obj_deallocate_unmanaged_instance_STAMP_mp__Process_O,
-  /* 232 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SingleDispatchMethod_O,
-  /* 233 */ &&obj_deallocate_unmanaged_instance_STAMP_core__Iterator_O,
-  /* 234 */ &&obj_deallocate_unmanaged_instance_STAMP_core__RecursiveDirectoryIterator_O,
-  /* 235 */ &&obj_deallocate_unmanaged_instance_STAMP_core__DirectoryIterator_O,
-  /* 236 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__InsertPoint_O,
-  /* 237 */ &&obj_deallocate_unmanaged_instance_STAMP_core__Array_O,
-  /* 238 */ &&obj_deallocate_unmanaged_instance_STAMP_core__AbstractSimpleVector_O,
-  /* 240 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleVectorFloat_O,
-  /* 242 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleVector_byte64_t_O,
-  /* 244 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleVector_int64_t_O,
-  /* 245 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleString_O,
-  /* 247 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleCharacterString_O,
-  /* 249 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleBaseString_O,
-  /* 251 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleVector_int16_t_O,
-  /* 253 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleVector_byte16_t_O,
-  /* 255 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleVector_fixnum_O,
-  /* 257 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleVector_int8_t_O,
-  /* 259 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleVector_O,
-  /* 261 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleVector_byte8_t_O,
-  /* 263 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleVector_int32_t_O,
-  /* 264 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleBitVector_O,
-  /* 266 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleVector_byte32_t_O,
-  /* 268 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleVector_size_t_O,
-  /* 270 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleVectorDouble_O,
-  /* 271 */ &&obj_deallocate_unmanaged_instance_STAMP_core__MDArray_O,
-  /* 272 */ &&obj_deallocate_unmanaged_instance_STAMP_core__BitVectorNs_O,
-  /* 274 */ &&obj_deallocate_unmanaged_instance_STAMP_core__MDArray_byte64_t_O,
-  /* 276 */ &&obj_deallocate_unmanaged_instance_STAMP_core__MDArray_int16_t_O,
-  /* 278 */ &&obj_deallocate_unmanaged_instance_STAMP_core__MDArray_int8_t_O,
-  /* 280 */ &&obj_deallocate_unmanaged_instance_STAMP_core__MDArrayCharacter_O,
-  /* 282 */ &&obj_deallocate_unmanaged_instance_STAMP_core__MDArray_int32_t_O,
-  /* 284 */ &&obj_deallocate_unmanaged_instance_STAMP_core__MDArrayFloat_O,
-  /* 285 */ &&obj_deallocate_unmanaged_instance_STAMP_core__StrNs_O,
-  /* 287 */ &&obj_deallocate_unmanaged_instance_STAMP_core__StrWNs_O,
-  /* 289 */ &&obj_deallocate_unmanaged_instance_STAMP_core__Str8Ns_O,
-  /* 291 */ &&obj_deallocate_unmanaged_instance_STAMP_core__MDArrayDouble_O,
-  /* 293 */ &&obj_deallocate_unmanaged_instance_STAMP_core__MDArrayT_O,
-  /* 295 */ &&obj_deallocate_unmanaged_instance_STAMP_core__MDArray_size_t_O,
-  /* 297 */ &&obj_deallocate_unmanaged_instance_STAMP_core__MDArray_byte8_t_O,
-  /* 298 */ &&obj_deallocate_unmanaged_instance_STAMP_core__MDArrayBit_O,
-  /* 300 */ &&obj_deallocate_unmanaged_instance_STAMP_core__MDArray_int64_t_O,
-  /* 302 */ &&obj_deallocate_unmanaged_instance_STAMP_core__MDArray_byte16_t_O,
-  /* 304 */ &&obj_deallocate_unmanaged_instance_STAMP_core__MDArray_byte32_t_O,
-  /* 305 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleMDArray_O,
-  /* 307 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleMDArray_int8_t_O,
-  /* 309 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleMDArrayCharacter_O,
-  /* 311 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleMDArray_fixnum_O,
-  /* 313 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleMDArray_byte32_t_O,
-  /* 315 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleMDArray_byte16_t_O,
-  /* 317 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleMDArrayT_O,
-  /* 319 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleMDArray_int32_t_O,
-  /* 321 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleMDArrayDouble_O,
-  /* 323 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleMDArrayBaseChar_O,
-  /* 325 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleMDArray_byte64_t_O,
-  /* 326 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleMDArrayBit_O,
-  /* 328 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleMDArray_int16_t_O,
-  /* 330 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleMDArray_byte8_t_O,
-  /* 332 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleMDArray_size_t_O,
-  /* 334 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleMDArray_int64_t_O,
-  /* 336 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleMDArrayFloat_O,
-  /* 338 */ &&obj_deallocate_unmanaged_instance_STAMP_core__MDArray_fixnum_O,
-  /* 340 */ &&obj_deallocate_unmanaged_instance_STAMP_core__MDArrayBaseChar_O,
-  /* 341 */ &&obj_deallocate_unmanaged_instance_STAMP_core__Symbol_O,
-  /* 342 */ &&obj_deallocate_unmanaged_instance_STAMP_core__Null_O,
-  /* 343 */ &&obj_deallocate_unmanaged_instance_STAMP_core__StandardObject_O,
-  /* 344 */ &&obj_deallocate_unmanaged_instance_STAMP_mp__BlockingConcurrentQueue_O,
-  /* 345 */ &&obj_deallocate_unmanaged_instance_STAMP_core__Path_O,
-  /* 346 */ &&obj_deallocate_unmanaged_instance_STAMP_core__Character_dummy_O,
-  /* 347 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SourceManager_O,
-  /* 348 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__DataLayout_O,
-  /* 349 */ &&obj_deallocate_unmanaged_instance_STAMP_core__Pathname_O,
-  /* 350 */ &&obj_deallocate_unmanaged_instance_STAMP_core__LogicalPathname_O,
-  /* 351 */ &&obj_deallocate_unmanaged_instance_STAMP_core__Cache_O,
-  /* 352 */ &&obj_deallocate_unmanaged_instance_STAMP_core__LoadTimeValues_O,
-  /* 353 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SharpEqualWrapper_O,
-  /* 354 */ &&obj_deallocate_unmanaged_instance_STAMP_core__Number_O,
-  /* 355 */ &&obj_deallocate_unmanaged_instance_STAMP_core__Real_O,
-  /* 356 */ &&obj_deallocate_unmanaged_instance_STAMP_core__Rational_O,
-  /* 357 */ &&obj_deallocate_unmanaged_instance_STAMP_core__Ratio_O,
-  /* 358 */ &&obj_deallocate_unmanaged_instance_STAMP_core__Integer_O,
-  /* 359 */ &&obj_deallocate_unmanaged_instance_STAMP_core__Bignum_O,
-  /* 360 */ &&obj_deallocate_unmanaged_instance_STAMP_core__Fixnum_dummy_O,
-  /* 361 */ &&obj_deallocate_unmanaged_instance_STAMP_core__Float_O,
-  /* 362 */ &&obj_deallocate_unmanaged_instance_STAMP_core__DoubleFloat_O,
-  /* 363 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SingleFloat_dummy_O,
-  /* 364 */ &&obj_deallocate_unmanaged_instance_STAMP_core__LongFloat_O,
-  /* 365 */ &&obj_deallocate_unmanaged_instance_STAMP_core__ShortFloat_O,
-  /* 366 */ &&obj_deallocate_unmanaged_instance_STAMP_core__Complex_O,
-  /* 367 */ &&obj_deallocate_unmanaged_instance_STAMP_core__CandoException_O,
-  /* 368 */ &&obj_deallocate_unmanaged_instance_STAMP_core__Stream_O,
-  /* 369 */ &&obj_deallocate_unmanaged_instance_STAMP_core__AnsiStream_O,
-  /* 370 */ &&obj_deallocate_unmanaged_instance_STAMP_core__TwoWayStream_O,
-  /* 371 */ &&obj_deallocate_unmanaged_instance_STAMP_core__BroadcastStream_O,
-  /* 372 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SynonymStream_O,
-  /* 373 */ &&obj_deallocate_unmanaged_instance_STAMP_core__ConcatenatedStream_O,
-  /* 374 */ &&obj_deallocate_unmanaged_instance_STAMP_core__StringStream_O,
-  /* 375 */ &&obj_deallocate_unmanaged_instance_STAMP_core__StringOutputStream_O,
-  /* 376 */ &&obj_deallocate_unmanaged_instance_STAMP_core__StringInputStream_O,
-  /* 377 */ &&obj_deallocate_unmanaged_instance_STAMP_core__FileStream_O,
-  /* 378 */ &&obj_deallocate_unmanaged_instance_STAMP_core__IOFileStream_O,
-  /* 379 */ &&obj_deallocate_unmanaged_instance_STAMP_core__IOStreamStream_O,
-  /* 380 */ &&obj_deallocate_unmanaged_instance_STAMP_core__EchoStream_O,
-  /* 381 */ &&obj_deallocate_unmanaged_instance_STAMP_core__Package_O,
-  /* 382 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__ClaspJIT_O,
-  /* 383 */ &&obj_deallocate_unmanaged_instance_STAMP_core__FileStatus_O,
-  /* 384 */ &&obj_deallocate_unmanaged_instance_STAMP_core__InvocationHistoryFrameIterator_O,
-  /* 385 */ &&obj_deallocate_unmanaged_instance_STAMP_core__PosixTime_O,
-  /* 386 */ &&obj_deallocate_unmanaged_instance_STAMP_core__HashTable_O,
-  /* 387 */ &&obj_deallocate_unmanaged_instance_STAMP_core__HashTableEqual_O,
-  /* 388 */ &&obj_deallocate_unmanaged_instance_STAMP_core__HashTableEqualp_O,
-  /* 389 */ &&obj_deallocate_unmanaged_instance_STAMP_core__HashTableEq_O,
-  /* 390 */ &&obj_deallocate_unmanaged_instance_STAMP_core__HashTableEql_O,
-  /* 391 */ &&obj_deallocate_unmanaged_instance_STAMP_core__Exposer_O,
-  /* 392 */ &&obj_deallocate_unmanaged_instance_STAMP_core__CoreExposer_O,
-  /* 393 */ &&obj_deallocate_unmanaged_instance_STAMP_asttooling__AsttoolingExposer_O,
-  /* 394 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SourcePosInfo_O,
-  /* 395 */ &&obj_deallocate_unmanaged_instance_STAMP_core__IntArray_O,
-  /* 396 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SourceFileInfo_O,
-  /* 397 */ &&obj_deallocate_unmanaged_instance_STAMP_core__DirectoryEntry_O,
-  /* 398 */ &&obj_deallocate_unmanaged_instance_STAMP_core__LightUserData_O,
-  /* 399 */ &&obj_deallocate_unmanaged_instance_STAMP_core__UserData_O,
-  /* 400 */ &&obj_deallocate_unmanaged_instance_STAMP_core__Record_O,
-  /* 401 */ &&obj_deallocate_unmanaged_instance_STAMP_clbind__ClassRegistry_O,
-  /* 402 */ &&obj_deallocate_unmanaged_instance_STAMP_mp__ConcurrentQueue_O,
-  /* 403 */ &&obj_deallocate_unmanaged_instance_STAMP_core__Cons_O,
-  /* 405 */ &&obj_deallocate_unmanaged_instance_STAMP_core__Lisp_O,
-  /* 407 */ &&obj_deallocate_unmanaged_instance_STAMP_asttooling__AstVisitor_O,
-  /* 409 */ &&obj_deallocate_unmanaged_instance_STAMP_gctools__GCVector_moveable_core__KeywordArgument_,
-  /* 410 */ &&obj_deallocate_unmanaged_instance_STAMP_gctools__GCArray_moveable_unsigned_int_,
-  /* 411 */ &&obj_deallocate_unmanaged_instance_STAMP_gctools__GCVector_moveable_core__CacheRecord_,
-  /* 412 */ &&obj_deallocate_unmanaged_instance_STAMP_gctools__GCVector_moveable_core__RequiredArgument_,
-  /* 413 */ &&obj_deallocate_unmanaged_instance_STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__Cons_O__,
-  /* 414 */ &&obj_deallocate_unmanaged_instance_STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__SequenceStepper_O__,
-  /* 415 */ &&obj_deallocate_unmanaged_instance_STAMP_gctools__GCVector_moveable_double_,
-  /* 416 */ &&obj_deallocate_unmanaged_instance_STAMP_gctools__GCVector_moveable_core__SymbolStorage_,
-  /* 417 */ &&obj_deallocate_unmanaged_instance_STAMP_gctools__GCArray_moveable_short_,
-  /* 418 */ &&obj_deallocate_unmanaged_instance_STAMP_gctools__GCVector_moveable_core__DynamicBinding_,
-  /* 419 */ &&obj_deallocate_unmanaged_instance_STAMP_gctools__GCVector_moveable_gctools__smart_ptr_clbind__ClassRep_O__,
-  /* 420 */ &&obj_deallocate_unmanaged_instance_STAMP_gctools__GCArray_moveable_unsigned_long_,
-  /* 421 */ &&obj_deallocate_unmanaged_instance_STAMP_gctools__GCBitUnitArray_moveable_1_unsigned_int_int_,
-  /* 422 */ &&obj_deallocate_unmanaged_instance_STAMP_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__T_O___,
-  /* 423 */ &&obj_deallocate_unmanaged_instance_STAMP_gctools__GCArray_moveable_signed_char_,
-  /* 424 */ &&obj_deallocate_unmanaged_instance_STAMP_gctools__GCVector_moveable_core__ExceptionEntry_,
-  /* 425 */ &&obj_deallocate_unmanaged_instance_STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__List_V__,
-  /* 426 */ &&obj_deallocate_unmanaged_instance_STAMP_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__T_O__gctools__smart_ptr_core__T_O___,
-  /* 427 */ &&obj_deallocate_unmanaged_instance_STAMP_gctools__GCArray_moveable_int_,
-  /* 428 */ &&obj_deallocate_unmanaged_instance_STAMP_gctools__GCArray_moveable_unsigned_char_,
-  /* 429 */ &&obj_deallocate_unmanaged_instance_STAMP_gctools__GCArray_moveable_gctools__smart_ptr_core__T_O__,
-  /* 430 */ &&obj_deallocate_unmanaged_instance_STAMP_gctools__GCVector_moveable_core__AuxArgument_,
-  /* 431 */ &&obj_deallocate_unmanaged_instance_STAMP_gctools__GCArray_moveable_long_,
-  /* 432 */ &&obj_deallocate_unmanaged_instance_STAMP_gctools__GCVector_moveable_int_,
-  /* 433 */ &&obj_deallocate_unmanaged_instance_STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__Symbol_O__,
-  /* 434 */ &&obj_deallocate_unmanaged_instance_STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__T_O__,
-  /* 435 */ &&obj_deallocate_unmanaged_instance_STAMP_gctools__GCVector_moveable_core__SymbolClassPair_,
-  /* 436 */ &&obj_deallocate_unmanaged_instance_STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__SingleDispatchMethod_O__,
-  /* 437 */ &&obj_deallocate_unmanaged_instance_STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__Package_O__,
-  /* 438 */ &&obj_deallocate_unmanaged_instance_STAMP_gctools__GCArray_moveable_float_,
-  /* 439 */ &&obj_deallocate_unmanaged_instance_STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__SourceFileInfo_O__,
-  /* 440 */ &&obj_deallocate_unmanaged_instance_STAMP_gctools__GCArray_moveable_double_,
-  /* 441 */ &&obj_deallocate_unmanaged_instance_STAMP_gctools__GCVector_moveable_core__T_O___,
-  /* 442 */ &&obj_deallocate_unmanaged_instance_STAMP_gctools__GCVector_moveable_core__OptionalArgument_,
-  /* 443 */ &&obj_deallocate_unmanaged_instance_STAMP_gctools__GCArray_moveable_unsigned_short_,
-  /* 444 */ &&obj_deallocate_unmanaged_instance_STAMP_gctools__GCVector_moveable_float_,
-  /* 450 */ &&obj_deallocate_unmanaged_instance_STAMP_clbind__detail__class_map,
+  /* 12 */ &&obj_deallocate_unmanaged_instance_STAMP_clbind__ClassRep_O,
+  /* 13 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SmallMap_O,
+  /* 14 */ &&obj_deallocate_unmanaged_instance_STAMP_core__WrappedPointer_O,
+  /* 15 */ &&obj_deallocate_unmanaged_instance_STAMP_core__Archive_O,
+  /* 16 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SaveArchive_O,
+  /* 17 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SexpSaveArchive_O,
+  /* 18 */ &&obj_deallocate_unmanaged_instance_STAMP_core__LoadArchive_O,
+  /* 19 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SexpLoadArchive_O,
+  /* 20 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SymbolToEnumConverter_O,
+  /* 21 */ &&obj_deallocate_unmanaged_instance_STAMP_core__Reader_O,
+  /* 22 */ &&obj_deallocate_unmanaged_instance_STAMP_core__WeakKeyMapping_O,
+  /* 23 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__Attribute_O,
+  /* 24 */ &&obj_deallocate_unmanaged_instance_STAMP_core__ExternalObject_O,
+  /* 25 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__Triple_O,
+  /* 26 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__TargetOptions_O,
+  /* 27 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__Pass_O,
+  /* 28 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__ModulePass_O,
+  /* 29 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__ImmutablePass_O,
+  /* 30 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__TargetLibraryInfoWrapperPass_O,
+  /* 31 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__FunctionPass_O,
+  /* 32 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__ExecutionEngine_O,
+  /* 33 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__LLVMContext_O,
+  /* 34 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__PassManagerBuilder_O,
+  /* 35 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__MCSubtargetInfo_O,
+  /* 36 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__TargetSubtargetInfo_O,
+  /* 37 */ &&obj_deallocate_unmanaged_instance_STAMP_clasp_ffi__ForeignData_O,
+  /* 38 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__Module_O,
+  /* 39 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__Target_O,
+  /* 40 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__Type_O,
+  /* 41 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__IntegerType_O,
+  /* 42 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__FunctionType_O,
+  /* 43 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__CompositeType_O,
+  /* 44 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__SequentialType_O,
+  /* 45 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__PointerType_O,
+  /* 46 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__ArrayType_O,
+  /* 47 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__VectorType_O,
+  /* 48 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__StructType_O,
+  /* 49 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__IRBuilderBase_O,
+  /* 50 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__IRBuilder_O,
+  /* 51 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__APFloat_O,
+  /* 52 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__APInt_O,
+  /* 53 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__DIBuilder_O,
+  /* 54 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__EngineBuilder_O,
+  /* 55 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__PassManagerBase_O,
+  /* 56 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__FunctionPassManager_O,
+  /* 57 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__PassManager_O,
+  /* 58 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__Linker_O,
+  /* 59 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__Metadata_O,
+  /* 60 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__ValueAsMetadata_O,
+  /* 61 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__MDString_O,
+  /* 62 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__MDNode_O,
+  /* 63 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__DINode_O,
+  /* 64 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__DIScope_O,
+  /* 65 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__DILocalScope_O,
+  /* 66 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__DISubprogram_O,
+  /* 67 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__DILexicalBlockBase_O,
+  /* 68 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__DILexicalBlock_O,
+  /* 69 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__DIFile_O,
+  /* 70 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__DICompileUnit_O,
+  /* 71 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__DIType_O,
+  /* 72 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__DICompositeType_O,
+  /* 73 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__DIDerivedType_O,
+  /* 74 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__DIBasicType_O,
+  /* 75 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__DISubroutineType_O,
+  /* 76 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__Value_O,
+  /* 77 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__User_O,
+  /* 78 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__Instruction_O,
+  /* 79 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__UnaryInstruction_O,
+  /* 80 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__VAArgInst_O,
+  /* 81 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__LoadInst_O,
+  /* 82 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__AllocaInst_O,
+  /* 83 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__CallInst_O,
+  /* 84 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__AtomicRMWInst_O,
+  /* 85 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__TerminatorInst_O,
+  /* 86 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__SwitchInst_O,
+  /* 87 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__InvokeInst_O,
+  /* 88 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__UnreachableInst_O,
+  /* 89 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__ReturnInst_O,
+  /* 90 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__IndirectBrInst_O,
+  /* 91 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__ResumeInst_O,
+  /* 92 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__BranchInst_O,
+  /* 93 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__LandingPadInst_O,
+  /* 94 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__AtomicCmpXchgInst_O,
+  /* 95 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__FenceInst_O,
+  /* 96 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__StoreInst_O,
+  /* 97 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__PHINode_O,
+  /* 98 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__Constant_O,
+  /* 99 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__GlobalValue_O,
+  /* 100 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__GlobalVariable_O,
+  /* 101 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__Function_O,
+  /* 102 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__ConstantFP_O,
+  /* 103 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__BlockAddress_O,
+  /* 104 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__ConstantExpr_O,
+  /* 105 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__ConstantPointerNull_O,
+  /* 106 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__ConstantDataSequential_O,
+  /* 107 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__ConstantDataArray_O,
+  /* 108 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__UndefValue_O,
+  /* 109 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__ConstantArray_O,
+  /* 110 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__ConstantStruct_O,
+  /* 111 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__ConstantInt_O,
+  /* 112 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__Argument_O,
+  /* 113 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__BasicBlock_O,
+  /* 114 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__TargetMachine_O,
+  /* 115 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__LLVMTargetMachine_O,
+  /* 116 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__NamedMDNode_O,
+  /* 117 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SmallMultimap_O,
+  /* 118 */ &&obj_deallocate_unmanaged_instance_STAMP_core__LambdaListHandler_O,
+  /* 119 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__AttributeSet_O,
+  /* 120 */ &&obj_deallocate_unmanaged_instance_STAMP_core__Environment_O,
+  /* 121 */ &&obj_deallocate_unmanaged_instance_STAMP_core__GlueEnvironment_O,
+  /* 122 */ &&obj_deallocate_unmanaged_instance_STAMP_core__LexicalEnvironment_O,
+  /* 123 */ &&obj_deallocate_unmanaged_instance_STAMP_core__RuntimeVisibleEnvironment_O,
+  /* 124 */ &&obj_deallocate_unmanaged_instance_STAMP_core__FunctionValueEnvironment_O,
+  /* 125 */ &&obj_deallocate_unmanaged_instance_STAMP_core__ValueEnvironment_O,
+  /* 126 */ &&obj_deallocate_unmanaged_instance_STAMP_core__TagbodyEnvironment_O,
+  /* 127 */ &&obj_deallocate_unmanaged_instance_STAMP_core__CompileTimeEnvironment_O,
+  /* 128 */ &&obj_deallocate_unmanaged_instance_STAMP_core__CatchEnvironment_O,
+  /* 129 */ &&obj_deallocate_unmanaged_instance_STAMP_core__BlockEnvironment_O,
+  /* 130 */ &&obj_deallocate_unmanaged_instance_STAMP_core__MacroletEnvironment_O,
+  /* 131 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SymbolMacroletEnvironment_O,
+  /* 132 */ &&obj_deallocate_unmanaged_instance_STAMP_core__UnwindProtectEnvironment_O,
+  /* 133 */ &&obj_deallocate_unmanaged_instance_STAMP_core__FunctionContainerEnvironment_O,
+  /* 134 */ &&obj_deallocate_unmanaged_instance_STAMP_core__ActivationFrame_O,
+  /* 135 */ &&obj_deallocate_unmanaged_instance_STAMP_core__ValueFrame_O,
+  /* 136 */ &&obj_deallocate_unmanaged_instance_STAMP_core__FunctionFrame_O,
+  /* 137 */ &&obj_deallocate_unmanaged_instance_STAMP_core__TagbodyFrame_O,
+  /* 138 */ &&obj_deallocate_unmanaged_instance_STAMP_core__RandomState_O,
+  /* 139 */ &&obj_deallocate_unmanaged_instance_STAMP_core__Function_O,
+  /* 140 */ &&obj_deallocate_unmanaged_instance_STAMP_core__FuncallableInstance_O,
+  /* 141 */ &&obj_deallocate_unmanaged_instance_STAMP_core__Creator_O,
+  /* 142 */ &&obj_deallocate_unmanaged_instance_STAMP_core__StructureClassCreator_O,
+  /* 143 */ &&obj_deallocate_unmanaged_instance_STAMP_core__DerivableCxxClassCreator_O,
+  /* 144 */ &&obj_deallocate_unmanaged_instance_STAMP_core__FuncallableInstanceCreator_O,
+  /* 145 */ &&obj_deallocate_unmanaged_instance_STAMP_clbind__ConstructorCreator_O,
+  /* 146 */ &&obj_deallocate_unmanaged_instance_STAMP_core__ClassCreator_O,
+  /* 147 */ &&obj_deallocate_unmanaged_instance_STAMP_clbind__DummyCreator_O,
+  /* 148 */ &&obj_deallocate_unmanaged_instance_STAMP_core__InstanceCreator_O,
+  /* 149 */ &&obj_deallocate_unmanaged_instance_STAMP_core__StandardClassCreator_O,
+  /* 150 */ &&obj_deallocate_unmanaged_instance_STAMP_core__NamedFunction_O,
+  /* 151 */ &&obj_deallocate_unmanaged_instance_STAMP_core__Closure_O,
+  /* 152 */ &&obj_deallocate_unmanaged_instance_STAMP_core__CompiledDispatchFunction_O,
+  /* 153 */ &&obj_deallocate_unmanaged_instance_STAMP_core__CompiledFunction_O,
+  /* 154 */ &&obj_deallocate_unmanaged_instance_STAMP_core__FunctionClosure_O,
+  /* 155 */ &&obj_deallocate_unmanaged_instance_STAMP_core__ClosureWithFrame_O,
+  /* 156 */ &&obj_deallocate_unmanaged_instance_STAMP_core__CompiledClosure_O,
+  /* 157 */ &&obj_deallocate_unmanaged_instance_STAMP_core__InterpretedClosure_O,
+  /* 158 */ &&obj_deallocate_unmanaged_instance_STAMP_core__ClosureWithSlots_O,
+  /* 159 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SingleDispatchMethodFunction_O,
+  /* 160 */ &&obj_deallocate_unmanaged_instance_STAMP_core__CxxMethodFunction_O,
+  /* 161 */ &&obj_deallocate_unmanaged_instance_STAMP_core__BuiltinClosure_O,
+  /* 162 */ &&obj_deallocate_unmanaged_instance_STAMP_core__TemplatedFunctionBase_O,
+  /* 163 */ &&obj_deallocate_unmanaged_instance_STAMP_core__TranslationFunctor_O,
+  /* 164 */ &&obj_deallocate_unmanaged_instance_STAMP_core__MacroClosure_O,
+  /* 165 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SingleDispatchGenericFunctionClosure_O,
+  /* 166 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SingleDispatchEffectiveMethodFunction_O,
+  /* 167 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SingleDispatchCxxEffectiveMethodFunction_O,
+  /* 168 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SpecialForm_O,
+  /* 169 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SequenceStepper_O,
+  /* 170 */ &&obj_deallocate_unmanaged_instance_STAMP_core__VectorStepper_O,
+  /* 171 */ &&obj_deallocate_unmanaged_instance_STAMP_core__ConsStepper_O,
+  /* 172 */ &&obj_deallocate_unmanaged_instance_STAMP_core__WeakPointer_O,
+  /* 173 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__DebugLoc_O,
+  /* 174 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SNode_O,
+  /* 175 */ &&obj_deallocate_unmanaged_instance_STAMP_core__BranchSNode_O,
+  /* 176 */ &&obj_deallocate_unmanaged_instance_STAMP_core__LeafSNode_O,
+  /* 177 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__ModuleHandle_O,
+  /* 178 */ &&obj_deallocate_unmanaged_instance_STAMP_core__Pointer_O,
+  /* 179 */ &&obj_deallocate_unmanaged_instance_STAMP_core__CxxObject_O,
+  /* 180 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__DINodeArray_O,
+  /* 181 */ &&obj_deallocate_unmanaged_instance_STAMP_core__NativeVector_float_O,
+  /* 182 */ &&obj_deallocate_unmanaged_instance_STAMP_clcenv__Info_O,
+  /* 183 */ &&obj_deallocate_unmanaged_instance_STAMP_clcenv__OptimizeInfo_O,
+  /* 184 */ &&obj_deallocate_unmanaged_instance_STAMP_clcenv__BlockInfo_O,
+  /* 185 */ &&obj_deallocate_unmanaged_instance_STAMP_clcenv__FunctionInfo_O,
+  /* 186 */ &&obj_deallocate_unmanaged_instance_STAMP_clcenv__GlobalMacroInfo_O,
+  /* 187 */ &&obj_deallocate_unmanaged_instance_STAMP_clcenv__LocalMacroInfo_O,
+  /* 188 */ &&obj_deallocate_unmanaged_instance_STAMP_clcenv__LocalFunctionInfo_O,
+  /* 189 */ &&obj_deallocate_unmanaged_instance_STAMP_clcenv__SpecialOperatorInfo_O,
+  /* 190 */ &&obj_deallocate_unmanaged_instance_STAMP_clcenv__LambdaNameInfo_O,
+  /* 191 */ &&obj_deallocate_unmanaged_instance_STAMP_clcenv__GlobalFunctionInfo_O,
+  /* 192 */ &&obj_deallocate_unmanaged_instance_STAMP_clcenv__VariableInfo_O,
+  /* 193 */ &&obj_deallocate_unmanaged_instance_STAMP_clcenv__SpecialVariableInfo_O,
+  /* 194 */ &&obj_deallocate_unmanaged_instance_STAMP_clcenv__LexicalVariableInfo_O,
+  /* 195 */ &&obj_deallocate_unmanaged_instance_STAMP_clcenv__SymbolMacroInfo_O,
+  /* 196 */ &&obj_deallocate_unmanaged_instance_STAMP_clcenv__ConstantVariableInfo_O,
+  /* 197 */ &&obj_deallocate_unmanaged_instance_STAMP_mp__ConditionVariable_O,
+  /* 198 */ &&obj_deallocate_unmanaged_instance_STAMP_mp__Mutex_O,
+  /* 199 */ &&obj_deallocate_unmanaged_instance_STAMP_mp__RecursiveMutex_O,
+  /* 200 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__DITypeRefArray_O,
+  /* 201 */ &&obj_deallocate_unmanaged_instance_STAMP_core__NativeVector_double_O,
+  /* 202 */ &&obj_deallocate_unmanaged_instance_STAMP_core__NativeVector_int_O,
+  /* 203 */ &&obj_deallocate_unmanaged_instance_STAMP_mp__SharedMutex_O,
+  /* 204 */ &&obj_deallocate_unmanaged_instance_STAMP_clcenv__Entry_O,
+  /* 205 */ &&obj_deallocate_unmanaged_instance_STAMP_clcenv__VariableType_O,
+  /* 206 */ &&obj_deallocate_unmanaged_instance_STAMP_clcenv__VariableIgnore_O,
+  /* 207 */ &&obj_deallocate_unmanaged_instance_STAMP_clcenv__Function_O,
+  /* 208 */ &&obj_deallocate_unmanaged_instance_STAMP_clcenv__SymbolMacro_O,
+  /* 209 */ &&obj_deallocate_unmanaged_instance_STAMP_clcenv__FunctionDynamicExtent_O,
+  /* 210 */ &&obj_deallocate_unmanaged_instance_STAMP_clcenv__Inline_O,
+  /* 211 */ &&obj_deallocate_unmanaged_instance_STAMP_clcenv__Closure_O,
+  /* 212 */ &&obj_deallocate_unmanaged_instance_STAMP_clcenv__Optimize_O,
+  /* 213 */ &&obj_deallocate_unmanaged_instance_STAMP_clcenv__LambdaName_O,
+  /* 214 */ &&obj_deallocate_unmanaged_instance_STAMP_clcenv__Tag_O,
+  /* 215 */ &&obj_deallocate_unmanaged_instance_STAMP_clcenv__Block_O,
+  /* 216 */ &&obj_deallocate_unmanaged_instance_STAMP_clcenv__FunctionType_O,
+  /* 217 */ &&obj_deallocate_unmanaged_instance_STAMP_clcenv__GlobalEnvironment_O,
+  /* 218 */ &&obj_deallocate_unmanaged_instance_STAMP_clcenv__VariableDynamicExtent_O,
+  /* 219 */ &&obj_deallocate_unmanaged_instance_STAMP_clcenv__LexicalVariable_O,
+  /* 220 */ &&obj_deallocate_unmanaged_instance_STAMP_clcenv__SpecialVariable_O,
+  /* 221 */ &&obj_deallocate_unmanaged_instance_STAMP_clcenv__Macro_O,
+  /* 222 */ &&obj_deallocate_unmanaged_instance_STAMP_clcenv__FunctionIgnore_O,
+  /* 223 */ &&obj_deallocate_unmanaged_instance_STAMP_mp__Process_O,
+  /* 224 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SingleDispatchMethod_O,
+  /* 225 */ &&obj_deallocate_unmanaged_instance_STAMP_core__Iterator_O,
+  /* 226 */ &&obj_deallocate_unmanaged_instance_STAMP_core__RecursiveDirectoryIterator_O,
+  /* 227 */ &&obj_deallocate_unmanaged_instance_STAMP_core__DirectoryIterator_O,
+  /* 228 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__InsertPoint_O,
+  /* 229 */ &&obj_deallocate_unmanaged_instance_STAMP_core__Array_O,
+  /* 230 */ &&obj_deallocate_unmanaged_instance_STAMP_core__AbstractSimpleVector_O,
+  /* 232 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleVectorFloat_O,
+  /* 234 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleVector_byte64_t_O,
+  /* 236 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleVector_int64_t_O,
+  /* 237 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleString_O,
+  /* 239 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleCharacterString_O,
+  /* 241 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleBaseString_O,
+  /* 243 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleVector_int16_t_O,
+  /* 245 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleVector_byte16_t_O,
+  /* 247 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleVector_fixnum_O,
+  /* 249 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleVector_int8_t_O,
+  /* 251 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleVector_O,
+  /* 253 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleVector_byte8_t_O,
+  /* 255 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleVector_int32_t_O,
+  /* 256 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleBitVector_O,
+  /* 258 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleVector_byte32_t_O,
+  /* 260 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleVector_size_t_O,
+  /* 262 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleVectorDouble_O,
+  /* 263 */ &&obj_deallocate_unmanaged_instance_STAMP_core__MDArray_O,
+  /* 264 */ &&obj_deallocate_unmanaged_instance_STAMP_core__BitVectorNs_O,
+  /* 266 */ &&obj_deallocate_unmanaged_instance_STAMP_core__MDArray_byte64_t_O,
+  /* 268 */ &&obj_deallocate_unmanaged_instance_STAMP_core__MDArray_int16_t_O,
+  /* 270 */ &&obj_deallocate_unmanaged_instance_STAMP_core__MDArray_int8_t_O,
+  /* 272 */ &&obj_deallocate_unmanaged_instance_STAMP_core__MDArrayCharacter_O,
+  /* 274 */ &&obj_deallocate_unmanaged_instance_STAMP_core__MDArray_int32_t_O,
+  /* 276 */ &&obj_deallocate_unmanaged_instance_STAMP_core__MDArrayFloat_O,
+  /* 277 */ &&obj_deallocate_unmanaged_instance_STAMP_core__StrNs_O,
+  /* 279 */ &&obj_deallocate_unmanaged_instance_STAMP_core__StrWNs_O,
+  /* 281 */ &&obj_deallocate_unmanaged_instance_STAMP_core__Str8Ns_O,
+  /* 283 */ &&obj_deallocate_unmanaged_instance_STAMP_core__MDArrayDouble_O,
+  /* 285 */ &&obj_deallocate_unmanaged_instance_STAMP_core__MDArrayT_O,
+  /* 287 */ &&obj_deallocate_unmanaged_instance_STAMP_core__MDArray_size_t_O,
+  /* 289 */ &&obj_deallocate_unmanaged_instance_STAMP_core__MDArray_byte8_t_O,
+  /* 290 */ &&obj_deallocate_unmanaged_instance_STAMP_core__MDArrayBit_O,
+  /* 292 */ &&obj_deallocate_unmanaged_instance_STAMP_core__MDArray_int64_t_O,
+  /* 294 */ &&obj_deallocate_unmanaged_instance_STAMP_core__MDArray_byte16_t_O,
+  /* 296 */ &&obj_deallocate_unmanaged_instance_STAMP_core__MDArray_byte32_t_O,
+  /* 297 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleMDArray_O,
+  /* 299 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleMDArray_int8_t_O,
+  /* 301 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleMDArrayCharacter_O,
+  /* 303 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleMDArray_fixnum_O,
+  /* 305 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleMDArray_byte32_t_O,
+  /* 307 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleMDArray_byte16_t_O,
+  /* 309 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleMDArrayT_O,
+  /* 311 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleMDArray_int32_t_O,
+  /* 313 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleMDArrayDouble_O,
+  /* 315 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleMDArrayBaseChar_O,
+  /* 317 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleMDArray_byte64_t_O,
+  /* 318 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleMDArrayBit_O,
+  /* 320 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleMDArray_int16_t_O,
+  /* 322 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleMDArray_byte8_t_O,
+  /* 324 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleMDArray_size_t_O,
+  /* 326 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleMDArray_int64_t_O,
+  /* 328 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleMDArrayFloat_O,
+  /* 330 */ &&obj_deallocate_unmanaged_instance_STAMP_core__MDArray_fixnum_O,
+  /* 332 */ &&obj_deallocate_unmanaged_instance_STAMP_core__MDArrayBaseChar_O,
+  /* 333 */ &&obj_deallocate_unmanaged_instance_STAMP_core__Symbol_O,
+  /* 334 */ &&obj_deallocate_unmanaged_instance_STAMP_core__Null_O,
+  /* 335 */ &&obj_deallocate_unmanaged_instance_STAMP_core__StandardObject_O,
+  /* 336 */ &&obj_deallocate_unmanaged_instance_STAMP_mp__BlockingConcurrentQueue_O,
+  /* 337 */ &&obj_deallocate_unmanaged_instance_STAMP_core__Path_O,
+  /* 338 */ &&obj_deallocate_unmanaged_instance_STAMP_core__Character_dummy_O,
+  /* 339 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SourceManager_O,
+  /* 340 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__DataLayout_O,
+  /* 341 */ &&obj_deallocate_unmanaged_instance_STAMP_core__Pathname_O,
+  /* 342 */ &&obj_deallocate_unmanaged_instance_STAMP_core__LogicalPathname_O,
+  /* 343 */ &&obj_deallocate_unmanaged_instance_STAMP_core__Cache_O,
+  /* 344 */ &&obj_deallocate_unmanaged_instance_STAMP_core__LoadTimeValues_O,
+  /* 345 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SharpEqualWrapper_O,
+  /* 346 */ &&obj_deallocate_unmanaged_instance_STAMP_core__Number_O,
+  /* 347 */ &&obj_deallocate_unmanaged_instance_STAMP_core__Real_O,
+  /* 348 */ &&obj_deallocate_unmanaged_instance_STAMP_core__Rational_O,
+  /* 349 */ &&obj_deallocate_unmanaged_instance_STAMP_core__Ratio_O,
+  /* 350 */ &&obj_deallocate_unmanaged_instance_STAMP_core__Integer_O,
+  /* 351 */ &&obj_deallocate_unmanaged_instance_STAMP_core__Bignum_O,
+  /* 352 */ &&obj_deallocate_unmanaged_instance_STAMP_core__Fixnum_dummy_O,
+  /* 353 */ &&obj_deallocate_unmanaged_instance_STAMP_core__Float_O,
+  /* 354 */ &&obj_deallocate_unmanaged_instance_STAMP_core__DoubleFloat_O,
+  /* 355 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SingleFloat_dummy_O,
+  /* 356 */ &&obj_deallocate_unmanaged_instance_STAMP_core__LongFloat_O,
+  /* 357 */ &&obj_deallocate_unmanaged_instance_STAMP_core__ShortFloat_O,
+  /* 358 */ &&obj_deallocate_unmanaged_instance_STAMP_core__Complex_O,
+  /* 359 */ &&obj_deallocate_unmanaged_instance_STAMP_core__CandoException_O,
+  /* 360 */ &&obj_deallocate_unmanaged_instance_STAMP_core__Stream_O,
+  /* 361 */ &&obj_deallocate_unmanaged_instance_STAMP_core__AnsiStream_O,
+  /* 362 */ &&obj_deallocate_unmanaged_instance_STAMP_core__TwoWayStream_O,
+  /* 363 */ &&obj_deallocate_unmanaged_instance_STAMP_core__BroadcastStream_O,
+  /* 364 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SynonymStream_O,
+  /* 365 */ &&obj_deallocate_unmanaged_instance_STAMP_core__ConcatenatedStream_O,
+  /* 366 */ &&obj_deallocate_unmanaged_instance_STAMP_core__StringStream_O,
+  /* 367 */ &&obj_deallocate_unmanaged_instance_STAMP_core__StringOutputStream_O,
+  /* 368 */ &&obj_deallocate_unmanaged_instance_STAMP_core__StringInputStream_O,
+  /* 369 */ &&obj_deallocate_unmanaged_instance_STAMP_core__FileStream_O,
+  /* 370 */ &&obj_deallocate_unmanaged_instance_STAMP_core__IOFileStream_O,
+  /* 371 */ &&obj_deallocate_unmanaged_instance_STAMP_core__IOStreamStream_O,
+  /* 372 */ &&obj_deallocate_unmanaged_instance_STAMP_core__EchoStream_O,
+  /* 373 */ &&obj_deallocate_unmanaged_instance_STAMP_core__Package_O,
+  /* 374 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__ClaspJIT_O,
+  /* 375 */ &&obj_deallocate_unmanaged_instance_STAMP_core__FileStatus_O,
+  /* 376 */ &&obj_deallocate_unmanaged_instance_STAMP_core__InvocationHistoryFrameIterator_O,
+  /* 377 */ &&obj_deallocate_unmanaged_instance_STAMP_core__PosixTime_O,
+  /* 378 */ &&obj_deallocate_unmanaged_instance_STAMP_core__HashTable_O,
+  /* 379 */ &&obj_deallocate_unmanaged_instance_STAMP_core__HashTableEqual_O,
+  /* 380 */ &&obj_deallocate_unmanaged_instance_STAMP_core__HashTableEqualp_O,
+  /* 381 */ &&obj_deallocate_unmanaged_instance_STAMP_core__HashTableEq_O,
+  /* 382 */ &&obj_deallocate_unmanaged_instance_STAMP_core__HashTableEql_O,
+  /* 383 */ &&obj_deallocate_unmanaged_instance_STAMP_core__Exposer_O,
+  /* 384 */ &&obj_deallocate_unmanaged_instance_STAMP_core__CoreExposer_O,
+  /* 385 */ &&obj_deallocate_unmanaged_instance_STAMP_asttooling__AsttoolingExposer_O,
+  /* 386 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SourcePosInfo_O,
+  /* 387 */ &&obj_deallocate_unmanaged_instance_STAMP_core__IntArray_O,
+  /* 388 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SourceFileInfo_O,
+  /* 389 */ &&obj_deallocate_unmanaged_instance_STAMP_core__DirectoryEntry_O,
+  /* 390 */ &&obj_deallocate_unmanaged_instance_STAMP_core__LightUserData_O,
+  /* 391 */ &&obj_deallocate_unmanaged_instance_STAMP_core__UserData_O,
+  /* 392 */ &&obj_deallocate_unmanaged_instance_STAMP_core__Record_O,
+  /* 393 */ &&obj_deallocate_unmanaged_instance_STAMP_clbind__ClassRegistry_O,
+  /* 394 */ &&obj_deallocate_unmanaged_instance_STAMP_mp__ConcurrentQueue_O,
+  /* 395 */ &&obj_deallocate_unmanaged_instance_STAMP_core__Cons_O,
+  /* 397 */ &&obj_deallocate_unmanaged_instance_STAMP_core__Lisp_O,
+  /* 399 */ &&obj_deallocate_unmanaged_instance_STAMP_asttooling__AstVisitor_O,
+  /* 401 */ &&obj_deallocate_unmanaged_instance_STAMP_gctools__GCVector_moveable_core__KeywordArgument_,
+  /* 402 */ &&obj_deallocate_unmanaged_instance_STAMP_gctools__GCArray_moveable_unsigned_int_,
+  /* 403 */ &&obj_deallocate_unmanaged_instance_STAMP_gctools__GCVector_moveable_core__CacheRecord_,
+  /* 404 */ &&obj_deallocate_unmanaged_instance_STAMP_gctools__GCVector_moveable_core__RequiredArgument_,
+  /* 405 */ &&obj_deallocate_unmanaged_instance_STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__Cons_O__,
+  /* 406 */ &&obj_deallocate_unmanaged_instance_STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__SequenceStepper_O__,
+  /* 407 */ &&obj_deallocate_unmanaged_instance_STAMP_gctools__GCVector_moveable_double_,
+  /* 408 */ &&obj_deallocate_unmanaged_instance_STAMP_gctools__GCVector_moveable_core__SymbolStorage_,
+  /* 409 */ &&obj_deallocate_unmanaged_instance_STAMP_gctools__GCArray_moveable_short_,
+  /* 410 */ &&obj_deallocate_unmanaged_instance_STAMP_gctools__GCVector_moveable_core__DynamicBinding_,
+  /* 411 */ &&obj_deallocate_unmanaged_instance_STAMP_gctools__GCVector_moveable_gctools__smart_ptr_clbind__ClassRep_O__,
+  /* 412 */ &&obj_deallocate_unmanaged_instance_STAMP_gctools__GCArray_moveable_unsigned_long_,
+  /* 413 */ &&obj_deallocate_unmanaged_instance_STAMP_gctools__GCBitUnitArray_moveable_1_unsigned_int_int_,
+  /* 414 */ &&obj_deallocate_unmanaged_instance_STAMP_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__T_O___,
+  /* 415 */ &&obj_deallocate_unmanaged_instance_STAMP_gctools__GCArray_moveable_signed_char_,
+  /* 416 */ &&obj_deallocate_unmanaged_instance_STAMP_gctools__GCVector_moveable_core__ExceptionEntry_,
+  /* 417 */ &&obj_deallocate_unmanaged_instance_STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__List_V__,
+  /* 418 */ &&obj_deallocate_unmanaged_instance_STAMP_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__T_O__gctools__smart_ptr_core__T_O___,
+  /* 419 */ &&obj_deallocate_unmanaged_instance_STAMP_gctools__GCArray_moveable_int_,
+  /* 420 */ &&obj_deallocate_unmanaged_instance_STAMP_gctools__GCArray_moveable_unsigned_char_,
+  /* 421 */ &&obj_deallocate_unmanaged_instance_STAMP_gctools__GCArray_moveable_gctools__smart_ptr_core__T_O__,
+  /* 422 */ &&obj_deallocate_unmanaged_instance_STAMP_gctools__GCVector_moveable_core__AuxArgument_,
+  /* 423 */ &&obj_deallocate_unmanaged_instance_STAMP_gctools__GCArray_moveable_long_,
+  /* 424 */ &&obj_deallocate_unmanaged_instance_STAMP_gctools__GCVector_moveable_int_,
+  /* 425 */ &&obj_deallocate_unmanaged_instance_STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__Symbol_O__,
+  /* 426 */ &&obj_deallocate_unmanaged_instance_STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__T_O__,
+  /* 427 */ &&obj_deallocate_unmanaged_instance_STAMP_gctools__GCVector_moveable_core__SymbolClassPair_,
+  /* 428 */ &&obj_deallocate_unmanaged_instance_STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__SingleDispatchMethod_O__,
+  /* 429 */ &&obj_deallocate_unmanaged_instance_STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__Package_O__,
+  /* 430 */ &&obj_deallocate_unmanaged_instance_STAMP_gctools__GCArray_moveable_float_,
+  /* 431 */ &&obj_deallocate_unmanaged_instance_STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__SourceFileInfo_O__,
+  /* 432 */ &&obj_deallocate_unmanaged_instance_STAMP_gctools__GCArray_moveable_double_,
+  /* 433 */ &&obj_deallocate_unmanaged_instance_STAMP_gctools__GCVector_moveable_core__T_O___,
+  /* 434 */ &&obj_deallocate_unmanaged_instance_STAMP_gctools__GCVector_moveable_core__OptionalArgument_,
+  /* 435 */ &&obj_deallocate_unmanaged_instance_STAMP_gctools__GCArray_moveable_unsigned_short_,
+  /* 436 */ &&obj_deallocate_unmanaged_instance_STAMP_gctools__GCVector_moveable_float_,
+  /* 442 */ &&obj_deallocate_unmanaged_instance_STAMP_clbind__detail__class_map,
    NULL
 };
 #endif // defined(GC_OBJ_DEALLOCATOR_TABLE)
+#if defined(GC_GLOBAL_SYMBOLS)
+#endif // defined(GC_GLOBAL_SYMBOLS)
+#if defined(GC_GLOBALS)
+ SMART_PTR_FIX(core::Real_O::static_class_symbol);
+ SMART_PTR_FIX(core::BranchSNode_O::static_creator);
+ SMART_PTR_FIX(core::FunctionContainerEnvironment_O::static_class);
+ SMART_PTR_FIX(core::BroadcastStream_O::static_class_symbol);
+ SMART_PTR_FIX(core::General_O::static_creator);
+ SMART_PTR_FIX(llvmo::APFloat_O::static_class);
+ SMART_PTR_FIX(core::SimpleMDArrayT_O::static_creator);
+ SMART_PTR_FIX(clcenv::Inline_O::static_class_symbol);
+ SMART_PTR_FIX(clcenv::Optimize_O::static_class);
+ SMART_PTR_FIX(llvmo::ExecutionEngine_O::static_creator);
+ SMART_PTR_FIX(core::SimpleMDArray_int32_t_O::static_class);
+ SMART_PTR_FIX(llvmo::BasicBlock_O::static_class_symbol);
+ SMART_PTR_FIX(clcenv::Info_O::static_class);
+ SMART_PTR_FIX(core::CandoException_O::static_class_symbol);
+ SMART_PTR_FIX(core::SimpleMDArray_int8_t_O::static_class);
+ SMART_PTR_FIX(llvmo::Target_O::static_class);
+ SMART_PTR_FIX(llvmo::User_O::static_class_symbol);
+ SMART_PTR_FIX(core::SingleDispatchMethodFunction_O::static_creator);
+ SMART_PTR_FIX(core::LoadArchive_O::static_creator);
+ SMART_PTR_FIX(clcenv::GlobalEnvironment_O::static_creator);
+ SMART_PTR_FIX(clcenv::LexicalVariableInfo_O::static_creator);
+ SMART_PTR_FIX(core::FunctionContainerEnvironment_O::static_class_symbol);
+ SMART_PTR_FIX(core::SimpleVectorFloat_O::static_creator);
+ SMART_PTR_FIX(llvmo::ConstantPointerNull_O::static_class_symbol);
+ SMART_PTR_FIX(clcenv::SpecialOperatorInfo_O::static_creator);
+ SMART_PTR_FIX(llvmo::TargetOptions_O::static_creator);
+ SMART_PTR_FIX(mp::ConditionVariable_O::static_class_symbol);
+ SMART_PTR_FIX(core::SmallMap_O::static_class_symbol);
+ SMART_PTR_FIX(core::BitVectorNs_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::Module_O::static_class);
+ SMART_PTR_FIX(llvmo::ReturnInst_O::static_class_symbol);
+ SMART_PTR_FIX(core::AbstractSimpleVector_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::AllocaInst_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::SequentialType_O::static_creator);
+ SMART_PTR_FIX(clcenv::GlobalFunctionInfo_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::ModulePass_O::static_class);
+ SMART_PTR_FIX(core::HashTable_O::static_creator);
+ SMART_PTR_FIX(core::SingleFloat_dummy_O::static_class_symbol);
+ SMART_PTR_FIX(core::SimpleMDArrayCharacter_O::static_creator);
+ SMART_PTR_FIX(clbind::DummyCreator_O::static_class);
+ SMART_PTR_FIX(core::MacroletEnvironment_O::static_class);
+ SMART_PTR_FIX(llvmo::DINodeArray_O::static_creator);
+ SMART_PTR_FIX(llvmo::FunctionType_O::static_creator);
+ SMART_PTR_FIX(clbind::ClassRep_O::static_creator);
+ SMART_PTR_FIX(llvmo::Constant_O::static_creator);
+ SMART_PTR_FIX(llvmo::Type_O::static_class_symbol);
+ SMART_PTR_FIX(clcenv::LocalFunctionInfo_O::static_creator);
+ SMART_PTR_FIX(llvmo::Target_O::static_class_symbol);
+ SMART_PTR_FIX(clcenv::GlobalMacroInfo_O::static_class_symbol);
+ SMART_PTR_FIX(core::FileStream_O::static_creator);
+ SMART_PTR_FIX(core::ClosureWithFrame_O::static_creator);
+ SMART_PTR_FIX(core::MDArrayBit_O::static_class);
+ SMART_PTR_FIX(clcenv::ConstantVariableInfo_O::static_class);
+ SMART_PTR_FIX(core::SimpleVector_fixnum_O::static_class);
+ SMART_PTR_FIX(llvmo::IndirectBrInst_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::TerminatorInst_O::static_creator);
+ SMART_PTR_FIX(llvmo::CallInst_O::static_class_symbol);
+ SMART_PTR_FIX(core::CompiledDispatchFunction_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::DICompileUnit_O::static_class);
+ SMART_PTR_FIX(core::InterpretedClosure_O::static_creator);
+ SMART_PTR_FIX(core::Path_O::static_class);
+ SMART_PTR_FIX(llvmo::AtomicRMWInst_O::static_class);
+ SMART_PTR_FIX(core::ReadTable_O::static_class);
+ SMART_PTR_FIX(core::Fixnum_dummy_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::DISubprogram_O::static_class_symbol);
+ SMART_PTR_FIX(core::ActivationFrame_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::Module_O::static_class_symbol);
+ SMART_PTR_FIX(core::SimpleVector_int32_t_O::static_class);
+ SMART_PTR_FIX(core::SaveArchive_O::static_class);
+ SMART_PTR_FIX(core::Cons_O::static_creator);
+ SMART_PTR_FIX(asttooling::AstVisitor_O::static_creator);
+ SMART_PTR_FIX(core::HashTableEq_O::static_class_symbol);
+ SMART_PTR_FIX(core::StrWNs_O::static_class);
+ SMART_PTR_FIX(llvmo::Pass_O::static_creator);
+ SMART_PTR_FIX(llvmo::DIFile_O::static_creator);
+ SMART_PTR_FIX(mp::ConcurrentQueue_O::static_class_symbol);
+ SMART_PTR_FIX(core::CxxMethodFunction_O::static_creator);
+ SMART_PTR_FIX(llvmo::VectorType_O::static_class_symbol);
+ SMART_PTR_FIX(core::MDArrayCharacter_O::static_creator);
+ SMART_PTR_FIX(core::Creator_O::static_creator);
+ SMART_PTR_FIX(llvmo::ModulePass_O::static_class_symbol);
+ SMART_PTR_FIX(core::BlockEnvironment_O::static_creator);
+ SMART_PTR_FIX(clcenv::VariableInfo_O::static_class);
+ SMART_PTR_FIX(llvmo::TerminatorInst_O::static_class);
+ SMART_PTR_FIX(clcenv::Inline_O::static_class);
+ SMART_PTR_FIX(core::Instance_O::static_creator);
+ SMART_PTR_FIX(core::DirectoryEntry_O::static_class);
+ SMART_PTR_FIX(core::CoreExposer_O::static_creator);
+ SMART_PTR_FIX(core::Iterator_O::static_class);
+ SMART_PTR_FIX(core::Package_O::static_creator);
+ SMART_PTR_FIX(core::ClosureWithFrame_O::static_class);
+ SMART_PTR_FIX(asttooling::AsttoolingExposer_O::static_class_symbol);
+ SMART_PTR_FIX(core::MDArray_int32_t_O::static_creator);
+ SMART_PTR_FIX(clcenv::FunctionIgnore_O::static_class);
+ SMART_PTR_FIX(core::SourceFileInfo_O::static_class);
+ SMART_PTR_FIX(core::GlueEnvironment_O::static_class_symbol);
+ SMART_PTR_FIX(core::UserData_O::static_class_symbol);
+ SMART_PTR_FIX(core::SymbolToEnumConverter_O::static_class_symbol);
+ SMART_PTR_FIX(core::DoubleFloat_O::static_creator);
+ SMART_PTR_FIX(llvmo::Instruction_O::static_creator);
+ SMART_PTR_FIX(core::SourceFileInfo_O::static_class_symbol);
+ SMART_PTR_FIX(core::T_O::static_creator);
+ SMART_PTR_FIX(llvmo::Target_O::static_creator);
+ SMART_PTR_FIX(mp::Mutex_O::static_class);
+ SMART_PTR_FIX(core::Function_O::static_class);
+ SMART_PTR_FIX(core::Pointer_O::static_class_symbol);
+ SMART_PTR_FIX(core::Path_O::static_class_symbol);
+ SMART_PTR_FIX(core::VectorStepper_O::static_class);
+ SMART_PTR_FIX(core::MDArray_byte64_t_O::static_class);
+ SMART_PTR_FIX(core::SexpLoadArchive_O::static_class);
+ SMART_PTR_FIX(llvmo::Module_O::static_creator);
+ SMART_PTR_FIX(core::TwoWayStream_O::static_class);
+ SMART_PTR_FIX(core::Character_dummy_O::static_class_symbol);
+ SMART_PTR_FIX(core::HashTableEqual_O::static_class_symbol);
+ SMART_PTR_FIX(core::AbstractSimpleVector_O::static_creator);
+ SMART_PTR_FIX(llvmo::DINode_O::static_creator);
+ SMART_PTR_FIX(clcenv::VariableDynamicExtent_O::static_class);
+ SMART_PTR_FIX(llvmo::DICompositeType_O::static_creator);
+ SMART_PTR_FIX(llvmo::Linker_O::static_class);
+ SMART_PTR_FIX(core::Integer_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::EngineBuilder_O::static_class);
+ SMART_PTR_FIX(core::IOFileStream_O::static_class_symbol);
+ SMART_PTR_FIX(core::EchoStream_O::static_creator);
+ SMART_PTR_FIX(core::TwoWayStream_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::DataLayout_O::static_class);
+ SMART_PTR_FIX(core::BitVectorNs_O::static_class);
+ SMART_PTR_FIX(llvmo::Argument_O::static_class);
+ SMART_PTR_FIX(llvmo::DINode_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::ArrayType_O::static_class);
+ SMART_PTR_FIX(core::SimpleMDArray_int8_t_O::static_class_symbol);
+ SMART_PTR_FIX(core::Integer_O::static_creator);
+ SMART_PTR_FIX(core::MDArray_int32_t_O::static_class_symbol);
+ SMART_PTR_FIX(core::SimpleMDArrayBit_O::static_class_symbol);
+ SMART_PTR_FIX(core::SimpleMDArray_int16_t_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::User_O::static_class);
+ SMART_PTR_FIX(clcenv::LambdaNameInfo_O::static_class);
+ SMART_PTR_FIX(core::SmallMultimap_O::static_creator);
+ SMART_PTR_FIX(llvmo::DIType_O::static_creator);
+ SMART_PTR_FIX(core::SimpleMDArray_int8_t_O::static_creator);
+ SMART_PTR_FIX(core::SimpleVector_int16_t_O::static_creator);
+ SMART_PTR_FIX(core::DerivableCxxClassCreator_O::static_class);
+ SMART_PTR_FIX(core::InstanceCreator_O::static_creator);
+ SMART_PTR_FIX(clcenv::Block_O::static_class);
+ SMART_PTR_FIX(core::SingleDispatchEffectiveMethodFunction_O::static_class);
+ SMART_PTR_FIX(core::UnwindProtectEnvironment_O::static_creator);
+ SMART_PTR_FIX(core::CxxMethodFunction_O::static_class);
+ SMART_PTR_FIX(llvmo::DataLayout_O::static_creator);
+ SMART_PTR_FIX(llvmo::Triple_O::static_class);
+ SMART_PTR_FIX(core::FunctionValueEnvironment_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::MDNode_O::static_class);
+ SMART_PTR_FIX(core::VaList_dummy_O::static_class);
+ SMART_PTR_FIX(llvmo::CallInst_O::static_class);
+ SMART_PTR_FIX(core::WrappedPointer_O::static_creator);
+ SMART_PTR_FIX(core::SimpleString_O::static_class_symbol);
+ SMART_PTR_FIX(core::Null_O::static_class_symbol);
+ SMART_PTR_FIX(core::LogicalPathname_O::static_class);
+ SMART_PTR_FIX(llvmo::ConstantFP_O::static_class);
+ SMART_PTR_FIX(core::SimpleVector_int64_t_O::static_class);
+ SMART_PTR_FIX(core::SNode_O::static_creator);
+ SMART_PTR_FIX(llvmo::MDNode_O::static_class_symbol);
+ SMART_PTR_FIX(core::ExternalObject_O::static_class);
+ SMART_PTR_FIX(core::MDArray_int16_t_O::static_class_symbol);
+ SMART_PTR_FIX(core::FunctionClosure_O::static_creator);
+ SMART_PTR_FIX(llvmo::DIBasicType_O::static_class_symbol);
+ SMART_PTR_FIX(core::IOFileStream_O::static_creator);
+ SMART_PTR_FIX(core::LightUserData_O::static_class);
+ SMART_PTR_FIX(llvmo::VectorType_O::static_class);
+ SMART_PTR_FIX(clbind::ConstructorCreator_O::static_creator);
+ SMART_PTR_FIX(core::ActivationFrame_O::static_creator);
+ SMART_PTR_FIX(core::MultiStringBuffer_O::static_creator);
+ SMART_PTR_FIX(llvmo::ConstantInt_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::ConstantDataArray_O::static_creator);
+ SMART_PTR_FIX(clcenv::SymbolMacro_O::static_creator);
+ SMART_PTR_FIX(core::SmallMultimap_O::static_class);
+ SMART_PTR_FIX(llvmo::PassManager_O::static_class_symbol);
+ SMART_PTR_FIX(core::MDArray_int16_t_O::static_creator);
+ SMART_PTR_FIX(core::Str8Ns_O::static_class_symbol);
+ SMART_PTR_FIX(core::LightUserData_O::static_creator);
+ SMART_PTR_FIX(clcenv::SpecialOperatorInfo_O::static_class);
+ SMART_PTR_FIX(core::MDArray_O::static_class);
+ SMART_PTR_FIX(core::UnwindProtectEnvironment_O::static_class);
+ SMART_PTR_FIX(llvmo::ConstantStruct_O::static_creator);
+ SMART_PTR_FIX(core::StrNs_O::static_class);
+ SMART_PTR_FIX(llvmo::UnaryInstruction_O::static_creator);
+ SMART_PTR_FIX(core::RecursiveDirectoryIterator_O::static_class);
+ SMART_PTR_FIX(llvmo::DICompileUnit_O::static_creator);
+ SMART_PTR_FIX(core::SharpEqualWrapper_O::static_creator);
+ SMART_PTR_FIX(core::MDArray_int32_t_O::static_class);
+ SMART_PTR_FIX(core::SymbolMacroletEnvironment_O::static_class_symbol);
+ SMART_PTR_FIX(core::DerivableCxxObject_O::static_class);
+ SMART_PTR_FIX(core::Path_O::static_creator);
+ SMART_PTR_FIX(core::HashTable_O::static_class_symbol);
+ SMART_PTR_FIX(core::Closure_O::static_class_symbol);
+ SMART_PTR_FIX(core::FileStatus_O::static_class);
+ SMART_PTR_FIX(core::DerivableCxxClassCreator_O::static_class_symbol);
+ SMART_PTR_FIX(core::WeakKeyHashTable_O::static_class_symbol);
+ SMART_PTR_FIX(core::DoubleFloat_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::PHINode_O::static_creator);
+ SMART_PTR_FIX(core::T_O::static_class);
+ SMART_PTR_FIX(core::TemplatedFunctionBase_O::static_class_symbol);
+ SMART_PTR_FIX(core::SingleDispatchEffectiveMethodFunction_O::static_class_symbol);
+ SMART_PTR_FIX(core::StandardObject_O::static_class);
+ SMART_PTR_FIX(llvmo::TargetLibraryInfoWrapperPass_O::static_class_symbol);
+ SMART_PTR_FIX(core::MDArray_int8_t_O::static_creator);
+ SMART_PTR_FIX(core::MDArray_fixnum_O::static_creator);
+ SMART_PTR_FIX(llvmo::ConstantArray_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::ConstantInt_O::static_creator);
+ SMART_PTR_FIX(llvmo::ConstantPointerNull_O::static_creator);
+ SMART_PTR_FIX(core::Str8Ns_O::static_creator);
+ SMART_PTR_FIX(core::UserData_O::static_class);
+ SMART_PTR_FIX(mp::RecursiveMutex_O::static_creator);
+ SMART_PTR_FIX(core::SimpleMDArrayT_O::static_class);
+ SMART_PTR_FIX(clcenv::LexicalVariable_O::static_class);
+ SMART_PTR_FIX(llvmo::ResumeInst_O::static_creator);
+ SMART_PTR_FIX(llvmo::MDNode_O::static_creator);
+ SMART_PTR_FIX(core::CoreExposer_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::FunctionPass_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::StoreInst_O::static_class);
+ SMART_PTR_FIX(core::CompileTimeEnvironment_O::static_class_symbol);
+ SMART_PTR_FIX(core::SimpleMDArray_size_t_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::DISubroutineType_O::static_creator);
+ SMART_PTR_FIX(llvmo::AttributeSet_O::static_creator);
+ SMART_PTR_FIX(clbind::DummyCreator_O::static_creator);
+ SMART_PTR_FIX(core::SharpEqualWrapper_O::static_class_symbol);
+ SMART_PTR_FIX(core::NativeVector_double_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::DILocalScope_O::static_class_symbol);
+ SMART_PTR_FIX(core::SimpleMDArrayBit_O::static_class);
+ SMART_PTR_FIX(clcenv::Macro_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::ConstantFP_O::static_class_symbol);
+ SMART_PTR_FIX(core::ConsStepper_O::static_class_symbol);
+ SMART_PTR_FIX(clcenv::VariableType_O::static_class);
+ SMART_PTR_FIX(core::SimpleMDArray_byte16_t_O::static_class_symbol);
+ SMART_PTR_FIX(core::VectorStepper_O::static_class_symbol);
+ SMART_PTR_FIX(core::TagbodyFrame_O::static_class_symbol);
+ SMART_PTR_FIX(core::CatchEnvironment_O::static_class);
+ SMART_PTR_FIX(llvmo::AttributeSet_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::AtomicRMWInst_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::DILexicalBlockBase_O::static_creator);
+ SMART_PTR_FIX(core::DirectoryIterator_O::static_class);
+ SMART_PTR_FIX(clcenv::Optimize_O::static_class_symbol);
+ SMART_PTR_FIX(core::RandomState_O::static_creator);
+ SMART_PTR_FIX(llvmo::Type_O::static_class);
+ SMART_PTR_FIX(core::Reader_O::static_class_symbol);
+ SMART_PTR_FIX(core::MDArray_byte32_t_O::static_class_symbol);
+ SMART_PTR_FIX(core::SimpleBitVector_O::static_class);
+ SMART_PTR_FIX(clcenv::LambdaNameInfo_O::static_class_symbol);
+ SMART_PTR_FIX(core::UnwindProtectEnvironment_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::GlobalValue_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::LLVMTargetMachine_O::static_creator);
+ SMART_PTR_FIX(llvmo::BlockAddress_O::static_creator);
+ SMART_PTR_FIX(llvmo::GlobalVariable_O::static_creator);
+ SMART_PTR_FIX(core::CompiledClosure_O::static_class);
+ SMART_PTR_FIX(core::PosixTimeDuration_O::static_class);
+ SMART_PTR_FIX(clcenv::Optimize_O::static_creator);
+ SMART_PTR_FIX(core::ShortFloat_O::static_class);
+ SMART_PTR_FIX(core::FileStream_O::static_class);
+ SMART_PTR_FIX(core::WeakPointer_O::static_class_symbol);
+ SMART_PTR_FIX(clcenv::LexicalVariable_O::static_creator);
+ SMART_PTR_FIX(llvmo::SequentialType_O::static_class);
+ SMART_PTR_FIX(core::Package_O::static_class);
+ SMART_PTR_FIX(core::CandoException_O::static_creator);
+ SMART_PTR_FIX(llvmo::TargetSubtargetInfo_O::static_class);
+ SMART_PTR_FIX(clcenv::ConstantVariableInfo_O::static_class_symbol);
+ SMART_PTR_FIX(core::WeakKeyHashTable_O::static_creator);
+ SMART_PTR_FIX(core::MDArrayDouble_O::static_class);
+ SMART_PTR_FIX(core::StringStream_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::GlobalVariable_O::static_class_symbol);
+ SMART_PTR_FIX(clcenv::FunctionType_O::static_class);
+ SMART_PTR_FIX(core::LoadTimeValues_O::static_class_symbol);
+ SMART_PTR_FIX(core::SingleDispatchMethodFunction_O::static_class_symbol);
+ SMART_PTR_FIX(core::Exposer_O::static_class_symbol);
+ SMART_PTR_FIX(core::MDArrayCharacter_O::static_class);
+ SMART_PTR_FIX(llvmo::ConstantArray_O::static_creator);
+ SMART_PTR_FIX(core::LongFloat_O::static_creator);
+ SMART_PTR_FIX(llvmo::VAArgInst_O::static_class);
+ SMART_PTR_FIX(llvmo::SwitchInst_O::static_class_symbol);
+ SMART_PTR_FIX(core::Number_O::static_class);
+ SMART_PTR_FIX(core::DirectoryEntry_O::static_creator);
+ SMART_PTR_FIX(llvmo::DISubprogram_O::static_creator);
+ SMART_PTR_FIX(clcenv::SpecialVariableInfo_O::static_class_symbol);
+ SMART_PTR_FIX(clcenv::FunctionInfo_O::static_creator);
+ SMART_PTR_FIX(llvmo::Attribute_O::static_class);
+ SMART_PTR_FIX(core::MultiStringBuffer_O::static_class);
+ SMART_PTR_FIX(core::SimpleVector_int16_t_O::static_class);
+ SMART_PTR_FIX(core::StringOutputStream_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::DICompositeType_O::static_class_symbol);
+ SMART_PTR_FIX(core::IntArray_O::static_creator);
+ SMART_PTR_FIX(core::SynonymStream_O::static_class);
+ SMART_PTR_FIX(core::RuntimeVisibleEnvironment_O::static_class);
+ SMART_PTR_FIX(llvmo::PassManagerBuilder_O::static_class);
+ SMART_PTR_FIX(llvmo::DILocalScope_O::static_class);
+ SMART_PTR_FIX(core::WeakKeyHashTable_O::static_class);
+ SMART_PTR_FIX(llvmo::IRBuilderBase_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::TargetSubtargetInfo_O::static_class_symbol);
+ SMART_PTR_FIX(core::ValueEnvironment_O::static_creator);
+ SMART_PTR_FIX(core::BroadcastStream_O::static_creator);
+ SMART_PTR_FIX(llvmo::BasicBlock_O::static_creator);
+ SMART_PTR_FIX(llvmo::ConstantExpr_O::static_class);
+ SMART_PTR_FIX(llvmo::BasicBlock_O::static_class);
+ SMART_PTR_FIX(core::SingleDispatchGenericFunctionClosure_O::static_creator);
+ SMART_PTR_FIX(core::ClassCreator_O::static_class_symbol);
+ SMART_PTR_FIX(core::MacroClosure_O::static_class);
+ SMART_PTR_FIX(clbind::DummyCreator_O::static_class_symbol);
+ SMART_PTR_FIX(core::SingleFloat_dummy_O::static_class);
+ SMART_PTR_FIX(core::ConsStepper_O::static_creator);
+ SMART_PTR_FIX(llvmo::IRBuilderBase_O::static_creator);
+ SMART_PTR_FIX(core::StructureClassCreator_O::static_class_symbol);
+ SMART_PTR_FIX(core::HashTableEqual_O::static_class);
+ SMART_PTR_FIX(core::SimpleBitVector_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::PointerType_O::static_class_symbol);
+ SMART_PTR_FIX(core::MDArray_byte8_t_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::ModuleHandle_O::static_class);
+ SMART_PTR_FIX(core::MDArray_fixnum_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::InsertPoint_O::static_class_symbol);
+ SMART_PTR_FIX(core::SourceManager_O::static_class_symbol);
+ SMART_PTR_FIX(mp::ConditionVariable_O::static_creator);
+ SMART_PTR_FIX(core::VaList_dummy_O::static_class_symbol);
+ SMART_PTR_FIX(core::CxxObject_O::static_class_symbol);
+ SMART_PTR_FIX(core::RandomState_O::static_class_symbol);
+ SMART_PTR_FIX(core::SimpleVectorDouble_O::static_class);
+ SMART_PTR_FIX(clcenv::SpecialVariable_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::DIType_O::static_class_symbol);
+ SMART_PTR_FIX(core::IntArray_O::static_class);
+ SMART_PTR_FIX(core::Real_O::static_creator);
+ SMART_PTR_FIX(core::SimpleMDArray_O::static_creator);
+ SMART_PTR_FIX(clcenv::VariableDynamicExtent_O::static_creator);
+ SMART_PTR_FIX(asttooling::AsttoolingExposer_O::static_class);
+ SMART_PTR_FIX(core::SingleDispatchMethod_O::static_creator);
+ SMART_PTR_FIX(core::DirectoryIterator_O::static_class_symbol);
+ SMART_PTR_FIX(clcenv::LexicalVariable_O::static_class_symbol);
+ SMART_PTR_FIX(core::SimpleMDArray_byte8_t_O::static_class_symbol);
+ SMART_PTR_FIX(core::TagbodyEnvironment_O::static_class_symbol);
+ SMART_PTR_FIX(core::NativeVector_int_O::static_creator);
+ SMART_PTR_FIX(clbind::ConstructorCreator_O::static_class);
+ SMART_PTR_FIX(llvmo::ImmutablePass_O::static_class);
+ SMART_PTR_FIX(core::LoadTimeValues_O::static_creator);
+ SMART_PTR_FIX(llvmo::DILexicalBlock_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::Value_O::static_creator);
+ SMART_PTR_FIX(core::BitVectorNs_O::static_creator);
+ SMART_PTR_FIX(llvmo::PHINode_O::static_class);
+ SMART_PTR_FIX(core::SimpleVector_O::static_class);
+ SMART_PTR_FIX(core::SingleDispatchCxxEffectiveMethodFunction_O::static_creator);
+ SMART_PTR_FIX(llvmo::LoadInst_O::static_class_symbol);
+ SMART_PTR_FIX(core::Symbol_O::static_creator);
+ SMART_PTR_FIX(llvmo::IRBuilder_O::static_class);
+ SMART_PTR_FIX(clcenv::LocalMacroInfo_O::static_creator);
+ TAGGED_POINTER_FIX(clbind::globalClassMap);
+ SMART_PTR_FIX(core::StringInputStream_O::static_class_symbol);
+ SMART_PTR_FIX(core::BuiltinClosure_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::Metadata_O::static_class);
+ SMART_PTR_FIX(core::CompiledDispatchFunction_O::static_creator);
+ SMART_PTR_FIX(llvmo::UnreachableInst_O::static_class);
+ SMART_PTR_FIX(core::SymbolMacroletEnvironment_O::static_class);
+ SMART_PTR_FIX(core::AnsiStream_O::static_class_symbol);
+ SMART_PTR_FIX(clcenv::LambdaNameInfo_O::static_creator);
+ SMART_PTR_FIX(core::SimpleVector_size_t_O::static_class);
+ SMART_PTR_FIX(llvmo::Instruction_O::static_class);
+ SMART_PTR_FIX(clcenv::Info_O::static_creator);
+ SMART_PTR_FIX(clcenv::SymbolMacroInfo_O::static_class);
+ SMART_PTR_FIX(core::TagbodyFrame_O::static_creator);
+ SMART_PTR_FIX(core::WeakHashTable_O::static_class);
+ SMART_PTR_FIX(core::Instance_O::static_class);
+ SMART_PTR_FIX(clcenv::BlockInfo_O::static_creator);
+ SMART_PTR_FIX(clcenv::VariableInfo_O::static_creator);
+ SMART_PTR_FIX(core::StructureClassCreator_O::static_class);
+ SMART_PTR_FIX(core::Creator_O::static_class_symbol);
+ SMART_PTR_FIX(core::NativeVector_float_O::static_creator);
+ SMART_PTR_FIX(core::HashTable_O::static_class);
+ SMART_PTR_FIX(clcenv::Entry_O::static_class);
+ SMART_PTR_FIX(clcenv::GlobalEnvironment_O::static_class_symbol);
+ SMART_PTR_FIX(mp::RecursiveMutex_O::static_class);
+ SMART_PTR_FIX(core::StandardObject_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::LoadInst_O::static_creator);
+ SMART_PTR_FIX(clcenv::SpecialVariableInfo_O::static_class);
+ SMART_PTR_FIX(core::CompiledFunction_O::static_class_symbol);
+ SMART_PTR_FIX(clcenv::OptimizeInfo_O::static_creator);
+ SMART_PTR_FIX(llvmo::PassManagerBase_O::static_class);
+ SMART_PTR_FIX(llvmo::BranchInst_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::APInt_O::static_class);
+ SMART_PTR_FIX(clcenv::Inline_O::static_creator);
+ SMART_PTR_FIX(llvmo::DIBuilder_O::static_class_symbol);
+ SMART_PTR_FIX(clcenv::Closure_O::static_class_symbol);
+ SMART_PTR_FIX(core::Instance_O::static_class_symbol);
+ SIMPLE_POINTER_FIX(gctools::global_tagged_Symbol_OP_unbound);
+ SMART_PTR_FIX(core::LongFloat_O::static_class_symbol);
+ SMART_PTR_FIX(core::StandardClassCreator_O::static_class);
+ SMART_PTR_FIX(llvmo::ConstantExpr_O::static_class_symbol);
+ SMART_PTR_FIX(clasp_ffi::ForeignData_O::static_class);
+ SMART_PTR_FIX(llvmo::StructType_O::static_creator);
+ SMART_PTR_FIX(llvmo::ValueAsMetadata_O::static_class);
+ SMART_PTR_FIX(llvmo::UnreachableInst_O::static_class_symbol);
+ SMART_PTR_FIX(clcenv::Closure_O::static_creator);
+ SMART_PTR_FIX(llvmo::MDString_O::static_class);
+ SMART_PTR_FIX(core::SimpleVector_byte64_t_O::static_class);
+ SMART_PTR_FIX(core::Archive_O::static_class);
+ SMART_PTR_FIX(core::Bignum_O::static_class_symbol);
+ SMART_PTR_FIX(core::ValueEnvironment_O::static_class);
+ SMART_PTR_FIX(core::Iterator_O::static_creator);
+ SMART_PTR_FIX(core::WeakKeyMapping_O::static_class_symbol);
+ SMART_PTR_FIX(mp::ConcurrentQueue_O::static_class);
+ SMART_PTR_FIX(clcenv::GlobalEnvironment_O::static_class);
+ SMART_PTR_FIX(core::WeakPointer_O::static_class);
+ SMART_PTR_FIX(core::Real_O::static_class);
+ SMART_PTR_FIX(core::FunctionClosure_O::static_class);
+ SMART_PTR_FIX(core::SimpleVector_byte16_t_O::static_creator);
+ SMART_PTR_FIX(core::SimpleVector_int8_t_O::static_creator);
+ SMART_PTR_FIX(llvmo::ReturnInst_O::static_creator);
+ SMART_PTR_FIX(clcenv::Info_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::PHINode_O::static_class_symbol);
+ SMART_PTR_FIX(core::SexpLoadArchive_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::DIBasicType_O::static_creator);
+ SMART_PTR_FIX(clbind::ConstructorCreator_O::static_class_symbol);
+ SMART_PTR_FIX(core::General_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::DILocalScope_O::static_creator);
+ SMART_PTR_FIX(clcenv::LexicalVariableInfo_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::PassManager_O::static_class);
+ SMART_PTR_FIX(core::MDArray_size_t_O::static_class);
+ SMART_PTR_FIX(llvmo::StructType_O::static_class);
+ SMART_PTR_FIX(clcenv::SpecialVariable_O::static_creator);
+ SMART_PTR_FIX(llvmo::Instruction_O::static_class_symbol);
+ SMART_PTR_FIX(core::StandardObject_O::static_creator);
+ SMART_PTR_FIX(core::SimpleMDArray_int16_t_O::static_creator);
+ SMART_PTR_FIX(core::SimpleString_O::static_class);
+ SMART_PTR_FIX(llvmo::ConstantArray_O::static_class);
+ SMART_PTR_FIX(core::StringInputStream_O::static_class);
+ SMART_PTR_FIX(core::SequenceStepper_O::static_class);
+ SMART_PTR_FIX(core::MDArray_size_t_O::static_class_symbol);
+ SMART_PTR_FIX(core::Float_O::static_class);
+ SMART_PTR_FIX(llvmo::TerminatorInst_O::static_class_symbol);
+ SMART_PTR_FIX(core::MDArray_byte16_t_O::static_class_symbol);
+ SMART_PTR_FIX(clcenv::VariableInfo_O::static_class_symbol);
+ SMART_PTR_FIX(asttooling::AsttoolingExposer_O::static_creator);
+ SMART_PTR_FIX(core::MDArray_O::static_creator);
+ SMART_PTR_FIX(core::SaveArchive_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::Constant_O::static_class_symbol);
+ SMART_PTR_FIX(core::FileStream_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::Pass_O::static_class);
+ SMART_PTR_FIX(core::TranslationFunctor_O::static_class);
+ SMART_PTR_FIX(clcenv::FunctionDynamicExtent_O::static_creator);
+ SMART_PTR_FIX(llvmo::DebugLoc_O::static_class_symbol);
+ SMART_PTR_FIX(core::SimpleVector_fixnum_O::static_class_symbol);
+ SMART_PTR_FIX(core::SimpleMDArray_byte32_t_O::static_creator);
+ SMART_PTR_FIX(llvmo::UndefValue_O::static_class_symbol);
+ SMART_PTR_FIX(core::ValueFrame_O::static_class);
+ SMART_PTR_FIX(core::FunctionValueEnvironment_O::static_class);
+ SMART_PTR_FIX(llvmo::UndefValue_O::static_class);
+ SMART_PTR_FIX(clcenv::Tag_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::DINodeArray_O::static_class_symbol);
+ SMART_PTR_FIX(core::SimpleMDArray_int16_t_O::static_class);
+ SMART_PTR_FIX(clcenv::SymbolMacroInfo_O::static_class_symbol);
+ SMART_PTR_FIX(core::MDArray_byte8_t_O::static_class);
+ SMART_PTR_FIX(llvmo::IntegerType_O::static_creator);
+ SMART_PTR_FIX(core::SpecialForm_O::static_creator);
+ SMART_PTR_FIX(llvmo::Attribute_O::static_class_symbol);
+ SMART_PTR_FIX(core::FuncallableInstanceCreator_O::static_class);
+ SMART_PTR_FIX(clbind::ClassRep_O::static_class);
+ SMART_PTR_FIX(core::MacroClosure_O::static_class_symbol);
+ SMART_PTR_FIX(core::SimpleMDArrayDouble_O::static_class_symbol);
+ SMART_PTR_FIX(core::MDArrayT_O::static_class);
+ SMART_PTR_FIX(clcenv::BlockInfo_O::static_class_symbol);
+ SMART_PTR_FIX(clcenv::Macro_O::static_class);
+ SMART_PTR_FIX(core::SimpleVector_byte64_t_O::static_creator);
+ SMART_PTR_FIX(llvmo::ConstantStruct_O::static_class_symbol);
+ SMART_PTR_FIX(core::ConcatenatedStream_O::static_class);
+ SMART_PTR_FIX(llvmo::Function_O::static_creator);
+ SMART_PTR_FIX(llvmo::PassManagerBuilder_O::static_creator);
+ SMART_PTR_FIX(clcenv::SpecialVariable_O::static_class);
+ SMART_PTR_FIX(core::ActivationFrame_O::static_class);
+ SMART_PTR_FIX(core::SourcePosInfo_O::static_class);
+ SMART_PTR_FIX(core::Number_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::DebugLoc_O::static_class);
+ SMART_PTR_FIX(core::SequenceStepper_O::static_creator);
+ SMART_PTR_FIX(core::TranslationFunctor_O::static_class_symbol);
+ SMART_PTR_FIX(mp::SharedMutex_O::static_class);
+ SMART_PTR_FIX(mp::RecursiveMutex_O::static_class_symbol);
+ SMART_PTR_FIX(mp::Mutex_O::static_creator);
+ SMART_PTR_FIX(core::SimpleVector_byte16_t_O::static_class);
+ SMART_PTR_FIX(core::SpecialForm_O::static_class);
+ SMART_PTR_FIX(clcenv::SymbolMacro_O::static_class_symbol);
+ SMART_PTR_FIX(core::MDArray_byte32_t_O::static_creator);
+ SMART_PTR_FIX(core::FunctionClosure_O::static_class_symbol);
+ SMART_PTR_FIX(core::SimpleMDArrayFloat_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::ArrayType_O::static_creator);
+ SMART_PTR_FIX(core::SimpleMDArray_byte16_t_O::static_class);
+ SMART_PTR_FIX(core::Integer_O::static_class);
+ SMART_PTR_FIX(core::RandomState_O::static_class);
+ SMART_PTR_FIX(core::SimpleMDArray_fixnum_O::static_class_symbol);
+ SMART_PTR_FIX(core::AnsiStream_O::static_class);
+ SMART_PTR_FIX(core::SexpSaveArchive_O::static_creator);
+ SMART_PTR_FIX(core::MDArrayT_O::static_class_symbol);
+ SMART_PTR_FIX(core::SimpleMDArray_size_t_O::static_creator);
+ SIMPLE_POINTER_FIX(gctools::global_tagged_Symbol_OP_no_thread_local_binding);
+ SMART_PTR_FIX(llvmo::PassManagerBuilder_O::static_class_symbol);
+ SMART_PTR_FIX(core::DirectoryIterator_O::static_creator);
+ SMART_PTR_FIX(llvmo::SwitchInst_O::static_class);
+ SMART_PTR_FIX(core::SingleDispatchMethodFunction_O::static_class);
+ SMART_PTR_FIX(core::IOFileStream_O::static_class);
+ SMART_PTR_FIX(llvmo::IntegerType_O::static_class);
+ SMART_PTR_FIX(core::SimpleMDArray_byte16_t_O::static_creator);
+ SMART_PTR_FIX(core::ConcatenatedStream_O::static_class_symbol);
+ SMART_PTR_FIX(core::HashTableEql_O::static_class);
+ SMART_PTR_FIX(core::StrNs_O::static_creator);
+ SMART_PTR_FIX(core::Rational_O::static_creator);
+ SMART_PTR_FIX(core::SimpleVector_int64_t_O::static_creator);
+ SMART_PTR_FIX(clasp_ffi::ForeignData_O::static_class_symbol);
+ SMART_PTR_FIX(core::PosixTime_O::static_creator);
+ SMART_PTR_FIX(core::SimpleVectorFloat_O::static_class_symbol);
+ SMART_PTR_FIX(core::SNode_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::DIScope_O::static_class);
+ SMART_PTR_FIX(core::VaList_dummy_O::static_creator);
+ SMART_PTR_FIX(llvmo::IntegerType_O::static_class_symbol);
+ SMART_PTR_FIX(core::HashTableEq_O::static_class);
+ SMART_PTR_FIX(core::Cache_O::static_class_symbol);
+ SMART_PTR_FIX(core::MacroletEnvironment_O::static_class_symbol);
+ SMART_PTR_FIX(clcenv::GlobalFunctionInfo_O::static_class);
+ SMART_PTR_FIX(core::SmallMultimap_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::PointerType_O::static_class);
+ SMART_PTR_FIX(core::LambdaListHandler_O::static_class);
+ SMART_PTR_FIX(core::SimpleCharacterString_O::static_class);
+ SMART_PTR_FIX(llvmo::DICompositeType_O::static_class);
+ SMART_PTR_FIX(core::UserData_O::static_creator);
+ SMART_PTR_FIX(core::Stream_O::static_creator);
+ SMART_PTR_FIX(core::SimpleMDArray_int64_t_O::static_creator);
+ SMART_PTR_FIX(core::DirectoryEntry_O::static_class_symbol);
+ SMART_PTR_FIX(mp::Process_O::static_creator);
+ SMART_PTR_FIX(core::General_O::static_class);
+ SMART_PTR_FIX(core::FunctionContainerEnvironment_O::static_creator);
+ SMART_PTR_FIX(core::TwoWayStream_O::static_creator);
+ SMART_PTR_FIX(llvmo::IndirectBrInst_O::static_creator);
+ SMART_PTR_FIX(llvmo::DIDerivedType_O::static_creator);
+ SMART_PTR_FIX(llvmo::DIDerivedType_O::static_class_symbol);
+ SMART_PTR_FIX(core::SimpleMDArray_byte8_t_O::static_class);
+ SMART_PTR_FIX(core::Ratio_O::static_creator);
+ SMART_PTR_FIX(core::Function_O::static_creator);
+ SMART_PTR_FIX(core::LeafSNode_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::Type_O::static_creator);
+ SMART_PTR_FIX(core::Function_O::static_class_symbol);
+ SMART_PTR_FIX(clcenv::Function_O::static_creator);
+ SMART_PTR_FIX(llvmo::Function_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::DISubprogram_O::static_class);
+ SMART_PTR_FIX(core::MDArray_byte32_t_O::static_class);
+ SMART_PTR_FIX(core::MDArrayBit_O::static_class_symbol);
+ SMART_PTR_FIX(core::SimpleMDArray_fixnum_O::static_class);
+ SIMPLE_POINTER_FIX(gctools::global_tagged_Symbol_OP_deleted);
+ SMART_PTR_FIX(clcenv::FunctionInfo_O::static_class);
+ SMART_PTR_FIX(llvmo::AtomicCmpXchgInst_O::static_creator);
+ SMART_PTR_FIX(core::MDArray_size_t_O::static_creator);
+ SMART_PTR_FIX(core::SimpleMDArrayT_O::static_class_symbol);
+ SMART_PTR_FIX(core::HashTableEql_O::static_creator);
+ SMART_PTR_FIX(core::MultiStringBuffer_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::ExecutionEngine_O::static_class_symbol);
+ SMART_PTR_FIX(core::Array_O::static_class);
+ SMART_PTR_FIX(core::SaveArchive_O::static_creator);
+ SMART_PTR_FIX(core::SourceFileInfo_O::static_creator);
+ SMART_PTR_FIX(core::SimpleVector_byte64_t_O::static_class_symbol);
+ SMART_PTR_FIX(core::Exposer_O::static_creator);
+ SMART_PTR_FIX(core::SingleDispatchGenericFunctionClosure_O::static_class);
+ SMART_PTR_FIX(llvmo::DIType_O::static_class);
+ SMART_PTR_FIX(llvmo::ConstantDataSequential_O::static_class);
+ SMART_PTR_FIX(clcenv::Entry_O::static_creator);
+ SMART_PTR_FIX(llvmo::ImmutablePass_O::static_creator);
+ SMART_PTR_FIX(llvmo::CallInst_O::static_creator);
+ SMART_PTR_FIX(core::MDArray_byte16_t_O::static_class);
+ SMART_PTR_FIX(core::SourcePosInfo_O::static_creator);
+ SMART_PTR_FIX(llvmo::IRBuilderBase_O::static_class);
+ SMART_PTR_FIX(mp::BlockingConcurrentQueue_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::NamedMDNode_O::static_class);
+ SMART_PTR_FIX(core::SimpleMDArray_O::static_class);
+ SMART_PTR_FIX(core::CompiledDispatchFunction_O::static_class);
+ SMART_PTR_FIX(core::IOStreamStream_O::static_class_symbol);
+ SMART_PTR_FIX(core::CompileTimeEnvironment_O::static_class);
+ SMART_PTR_FIX(core::Float_O::static_class_symbol);
+ SMART_PTR_FIX(core::TranslationFunctor_O::static_creator);
+ SMART_PTR_FIX(core::NamedFunction_O::static_class_symbol);
+ SMART_PTR_FIX(core::CxxMethodFunction_O::static_class_symbol);
+ SMART_PTR_FIX(core::Environment_O::static_class);
+ SMART_PTR_FIX(core::RuntimeVisibleEnvironment_O::static_creator);
+ SMART_PTR_FIX(core::SymbolMacroletEnvironment_O::static_creator);
+ SMART_PTR_FIX(clcenv::Entry_O::static_class_symbol);
+ SMART_PTR_FIX(mp::BlockingConcurrentQueue_O::static_creator);
+ SMART_PTR_FIX(core::HashTableEqualp_O::static_creator);
+ SMART_PTR_FIX(llvmo::MCSubtargetInfo_O::static_class_symbol);
+ SMART_PTR_FIX(core::SimpleMDArray_O::static_class_symbol);
+ SMART_PTR_FIX(core::LightUserData_O::static_class_symbol);
+ SMART_PTR_FIX(core::SimpleVector_int64_t_O::static_class_symbol);
+ SMART_PTR_FIX(core::SimpleVector_byte32_t_O::static_creator);
+ SMART_PTR_FIX(core::TagbodyFrame_O::static_class);
+ SMART_PTR_FIX(core::PosixTime_O::static_class);
+ SMART_PTR_FIX(core::SynonymStream_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::Argument_O::static_class_symbol);
+ SMART_PTR_FIX(core::Symbol_O::static_class);
+ SMART_PTR_FIX(core::FunctionFrame_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::AllocaInst_O::static_creator);
+ SMART_PTR_FIX(llvmo::DIFile_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::UnaryInstruction_O::static_class_symbol);
+ SMART_PTR_FIX(core::MDArray_int8_t_O::static_class);
+ SMART_PTR_FIX(llvmo::ValueAsMetadata_O::static_creator);
+ SMART_PTR_FIX(core::Archive_O::static_class_symbol);
+ SMART_PTR_FIX(core::Creator_O::static_class);
+ SMART_PTR_FIX(core::FuncallableInstance_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::Metadata_O::static_creator);
+ SMART_PTR_FIX(core::Bignum_O::static_class);
+ SMART_PTR_FIX(llvmo::MCSubtargetInfo_O::static_creator);
+ SMART_PTR_FIX(clcenv::LambdaName_O::static_creator);
+ SMART_PTR_FIX(core::MDArrayFloat_O::static_class_symbol);
+ SMART_PTR_FIX(clcenv::VariableType_O::static_creator);
+ SMART_PTR_FIX(llvmo::Triple_O::static_class_symbol);
+ SMART_PTR_FIX(core::MDArray_int8_t_O::static_class_symbol);
+ SMART_PTR_FIX(core::SimpleVector_int8_t_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::FenceInst_O::static_creator);
+ SMART_PTR_FIX(core::Stream_O::static_class_symbol);
+ SMART_PTR_FIX(clcenv::SymbolMacroInfo_O::static_creator);
+ SMART_PTR_FIX(core::Str8Ns_O::static_class);
+ SMART_PTR_FIX(core::Symbol_O::static_class_symbol);
+ SMART_PTR_FIX(core::FunctionValueEnvironment_O::static_creator);
+ SMART_PTR_FIX(core::FuncallableInstanceCreator_O::static_class_symbol);
+ SMART_PTR_FIX(core::StrNs_O::static_class_symbol);
+ SMART_PTR_FIX(core::Rational_O::static_class);
+ SMART_PTR_FIX(core::NamedFunction_O::static_creator);
+ SMART_PTR_FIX(core::SequenceStepper_O::static_class_symbol);
+ SMART_PTR_FIX(core::CatchEnvironment_O::static_creator);
+ SMART_PTR_FIX(llvmo::APFloat_O::static_creator);
+ SMART_PTR_FIX(core::LoadTimeValues_O::static_class);
+ SMART_PTR_FIX(core::CatchEnvironment_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::DITypeRefArray_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::DISubroutineType_O::static_class);
+ SMART_PTR_FIX(core::Stream_O::static_class);
+ SMART_PTR_FIX(llvmo::FenceInst_O::static_class);
+ SMART_PTR_FIX(core::IOStreamStream_O::static_creator);
+ SMART_PTR_FIX(core::SourceManager_O::static_creator);
+ SMART_PTR_FIX(core::StrWNs_O::static_class_symbol);
+ SMART_PTR_FIX(core::Character_dummy_O::static_class);
+ SMART_PTR_FIX(llvmo::TargetLibraryInfoWrapperPass_O::static_class);
+ SMART_PTR_FIX(llvmo::DITypeRefArray_O::static_class);
+ SMART_PTR_FIX(core::SimpleMDArrayBaseChar_O::static_creator);
+ SMART_PTR_FIX(core::TemplatedFunctionBase_O::static_class);
+ SMART_PTR_FIX(core::SimpleMDArray_byte64_t_O::static_class_symbol);
+ SMART_PTR_FIX(core::LogicalPathname_O::static_class_symbol);
+ SMART_PTR_FIX(core::IntArray_O::static_class_symbol);
+ SMART_PTR_FIX(core::Cache_O::static_creator);
+ SMART_PTR_FIX(core::MDArrayDouble_O::static_creator);
+ SMART_PTR_FIX(core::StringInputStream_O::static_creator);
+ SMART_PTR_FIX(llvmo::FunctionPass_O::static_class);
+ SMART_PTR_FIX(llvmo::EngineBuilder_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::ReturnInst_O::static_class);
+ SMART_PTR_FIX(llvmo::LLVMContext_O::static_creator);
+ SMART_PTR_FIX(core::SimpleVector_byte8_t_O::static_creator);
+ SMART_PTR_FIX(core::SimpleVector_size_t_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::Argument_O::static_creator);
+ SMART_PTR_FIX(core::WeakHashTable_O::static_creator);
+ SMART_PTR_FIX(mp::Mutex_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::ConstantExpr_O::static_creator);
+ SMART_PTR_FIX(clcenv::Tag_O::static_class);
+ SMART_PTR_FIX(clcenv::LocalFunctionInfo_O::static_class);
+ SMART_PTR_FIX(core::MDArrayFloat_O::static_creator);
+ SMART_PTR_FIX(llvmo::PassManager_O::static_creator);
+ SMART_PTR_FIX(llvmo::Function_O::static_class);
+ SMART_PTR_FIX(llvmo::AtomicCmpXchgInst_O::static_class);
+ SMART_PTR_FIX(core::SimpleBaseString_O::static_creator);
+ SMART_PTR_FIX(core::DerivableCxxObject_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::BranchInst_O::static_class);
+ SMART_PTR_FIX(clcenv::ConstantVariableInfo_O::static_creator);
+ SMART_PTR_FIX(core::MDArrayFloat_O::static_class);
+ SMART_PTR_FIX(clcenv::FunctionType_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::StructType_O::static_class_symbol);
+ SMART_PTR_FIX(clcenv::LexicalVariableInfo_O::static_class);
+ SMART_PTR_FIX(llvmo::BlockAddress_O::static_class_symbol);
+ SMART_PTR_FIX(core::SimpleVector_byte16_t_O::static_class_symbol);
+ SMART_PTR_FIX(core::SingleDispatchGenericFunctionClosure_O::static_class_symbol);
+ SMART_PTR_FIX(core::MDArray_fixnum_O::static_class);
+ SMART_PTR_FIX(llvmo::ModuleHandle_O::static_class_symbol);
+ SMART_PTR_FIX(core::SmallMap_O::static_class);
+ SMART_PTR_FIX(core::NativeVector_float_O::static_class_symbol);
+ SMART_PTR_FIX(core::PosixTime_O::static_class_symbol);
+ SMART_PTR_FIX(core::SmallMap_O::static_creator);
+ SMART_PTR_FIX(core::FunctionFrame_O::static_class);
+ SMART_PTR_FIX(core::ValueFrame_O::static_class_symbol);
+ SMART_PTR_FIX(core::Environment_O::static_class_symbol);
+ SMART_PTR_FIX(core::SimpleVector_size_t_O::static_creator);
+ SMART_PTR_FIX(core::StandardClassCreator_O::static_creator);
+ SMART_PTR_FIX(core::SimpleBaseString_O::static_class_symbol);
+ SMART_PTR_FIX(core::FileStatus_O::static_creator);
+ SMART_PTR_FIX(core::Pointer_O::static_class);
+ SMART_PTR_FIX(llvmo::StoreInst_O::static_class_symbol);
+ SMART_PTR_FIX(core::ShortFloat_O::static_class_symbol);
+ SMART_PTR_FIX(core::MDArrayBit_O::static_creator);
+ SMART_PTR_FIX(mp::ConditionVariable_O::static_class);
+ SMART_PTR_FIX(clcenv::Macro_O::static_creator);
+ SMART_PTR_FIX(core::TagbodyEnvironment_O::static_class);
+ SMART_PTR_FIX(core::SimpleMDArrayBaseChar_O::static_class);
+ SMART_PTR_FIX(llvmo::InvokeInst_O::static_class_symbol);
+ SMART_PTR_FIX(core::Cons_O::static_class_symbol);
+ SMART_PTR_FIX(core::LeafSNode_O::static_creator);
+ SMART_PTR_FIX(core::Iterator_O::static_class_symbol);
+ SMART_PTR_FIX(clasp_ffi::ForeignTypeSpec_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::UnaryInstruction_O::static_class);
+ SMART_PTR_FIX(core::MDArrayCharacter_O::static_class_symbol);
+ SMART_PTR_FIX(core::CompiledFunction_O::static_creator);
+ SMART_PTR_FIX(core::SimpleVectorDouble_O::static_class_symbol);
+ SMART_PTR_FIX(core::SimpleMDArrayFloat_O::static_class);
+ SMART_PTR_FIX(core::SynonymStream_O::static_creator);
+ SMART_PTR_FIX(llvmo::GlobalValue_O::static_creator);
+ SMART_PTR_FIX(llvmo::AtomicRMWInst_O::static_creator);
+ SMART_PTR_FIX(core::SimpleMDArray_byte32_t_O::static_class);
+ SMART_PTR_FIX(core::SimpleVector_O::static_class_symbol);
+ SMART_PTR_FIX(core::InterpretedClosure_O::static_class_symbol);
+ SMART_PTR_FIX(core::SimpleString_O::static_creator);
+ SMART_PTR_FIX(core::Fixnum_dummy_O::static_creator);
+ SMART_PTR_FIX(core::Pathname_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::DITypeRefArray_O::static_creator);
+ SMART_PTR_FIX(core::CxxObject_O::static_creator);
+ SMART_PTR_FIX(llvmo::ClaspJIT_O::static_class_symbol);
+ SMART_PTR_FIX(core::SimpleMDArrayCharacter_O::static_class_symbol);
+ SMART_PTR_FIX(core::HashTableEq_O::static_creator);
+ SMART_PTR_FIX(core::SimpleVector_byte8_t_O::static_class_symbol);
+ SMART_PTR_FIX(core::MDArray_byte8_t_O::static_creator);
+ SMART_PTR_FIX(llvmo::DIDerivedType_O::static_class);
+ SMART_PTR_FIX(core::EchoStream_O::static_class);
+ SMART_PTR_FIX(core::SimpleCharacterString_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::CompositeType_O::static_creator);
+ SMART_PTR_FIX(llvmo::AttributeSet_O::static_class);
+ SMART_PTR_FIX(core::BroadcastStream_O::static_class);
+ SMART_PTR_FIX(llvmo::ValueAsMetadata_O::static_class_symbol);
+ SMART_PTR_FIX(clbind::ClassRep_O::static_class_symbol);
+ SMART_PTR_FIX(core::InterpretedClosure_O::static_class);
+ SMART_PTR_FIX(asttooling::AstVisitor_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::DILexicalBlockBase_O::static_class);
+ SMART_PTR_FIX(core::ConcatenatedStream_O::static_creator);
+ SMART_PTR_FIX(core::LogicalPathname_O::static_creator);
+ SMART_PTR_FIX(llvmo::LandingPadInst_O::static_class);
+ SMART_PTR_FIX(core::LeafSNode_O::static_class);
+ SMART_PTR_FIX(clbind::ClassRegistry_O::static_class_symbol);
+ SMART_PTR_FIX(core::LoadArchive_O::static_class_symbol);
+ SMART_PTR_FIX(core::Pointer_O::static_creator);
+ SMART_PTR_FIX(core::SingleDispatchEffectiveMethodFunction_O::static_creator);
+ SMART_PTR_FIX(clcenv::Block_O::static_creator);
+ SMART_PTR_FIX(core::MDArrayT_O::static_creator);
+ SMART_PTR_FIX(core::BuiltinClosure_O::static_class);
+ SMART_PTR_FIX(core::Array_O::static_creator);
+ SMART_PTR_FIX(llvmo::FunctionPassManager_O::static_creator);
+ SMART_PTR_FIX(clcenv::SymbolMacro_O::static_class);
+ SMART_PTR_FIX(llvmo::TargetMachine_O::static_class);
+ SMART_PTR_FIX(clcenv::LocalMacroInfo_O::static_class_symbol);
+ SMART_PTR_FIX(core::SimpleMDArrayFloat_O::static_creator);
+ SMART_PTR_FIX(core::StructureClassCreator_O::static_creator);
+ SMART_PTR_FIX(llvmo::IndirectBrInst_O::static_class);
+ SMART_PTR_FIX(clcenv::FunctionIgnore_O::static_creator);
+ SMART_PTR_FIX(llvmo::ResumeInst_O::static_class);
+ SMART_PTR_FIX(llvmo::APInt_O::static_creator);
+ SMART_PTR_FIX(core::MDArray_int64_t_O::static_class_symbol);
+ SMART_PTR_FIX(core::Complex_O::static_class);
+ SMART_PTR_FIX(core::WrappedPointer_O::static_class);
+ SMART_PTR_FIX(llvmo::Value_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::DataLayout_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::APInt_O::static_class_symbol);
+ SMART_PTR_FIX(core::MDArray_int64_t_O::static_creator);
+ SMART_PTR_FIX(llvmo::ResumeInst_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::VAArgInst_O::static_creator);
+ SMART_PTR_FIX(core::Ratio_O::static_class);
+ SMART_PTR_FIX(clcenv::FunctionInfo_O::static_class_symbol);
+ SMART_PTR_FIX(clcenv::OptimizeInfo_O::static_class_symbol);
+ SMART_PTR_FIX(core::SimpleVector_byte32_t_O::static_class);
+ SMART_PTR_FIX(core::Number_O::static_creator);
+ SMART_PTR_FIX(clcenv::VariableIgnore_O::static_class);
+ SMART_PTR_FIX(llvmo::ConstantDataArray_O::static_class_symbol);
+ SMART_PTR_FIX(core::HashTableEql_O::static_class_symbol);
+ SMART_PTR_FIX(clcenv::LocalFunctionInfo_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::Metadata_O::static_class_symbol);
+ SMART_PTR_FIX(core::HashTableEqualp_O::static_class_symbol);
+ SMART_PTR_FIX(core::CoreExposer_O::static_class);
+ SMART_PTR_FIX(llvmo::AtomicCmpXchgInst_O::static_class_symbol);
+ SMART_PTR_FIX(core::NativeVector_int_O::static_class_symbol);
+ SIMPLE_POINTER_FIX(run_time_values_table);
+ SMART_PTR_FIX(core::SimpleVector_fixnum_O::static_creator);
+ SMART_PTR_FIX(clcenv::LambdaName_O::static_class_symbol);
+ SMART_PTR_FIX(core::MDArrayDouble_O::static_class_symbol);
+ SMART_PTR_FIX(core::Array_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::LLVMTargetMachine_O::static_class_symbol);
+ SMART_PTR_FIX(core::SimpleBaseString_O::static_class);
+ SMART_PTR_FIX(llvmo::InsertPoint_O::static_class);
+ SMART_PTR_FIX(core::Environment_O::static_creator);
+ SMART_PTR_FIX(core::Null_O::static_creator);
+ SMART_PTR_FIX(core::ClosureWithSlots_O::static_creator);
+ SMART_PTR_FIX(core::LexicalEnvironment_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::ArrayType_O::static_class_symbol);
+ SMART_PTR_FIX(core::SimpleVector_byte32_t_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::ConstantStruct_O::static_class);
+ SMART_PTR_FIX(llvmo::CompositeType_O::static_class_symbol);
+ SMART_PTR_FIX(core::Bignum_O::static_creator);
+ SMART_PTR_FIX(clcenv::LocalMacroInfo_O::static_class);
+ SIMPLE_POINTER_FIX(gctools::global_tagged_Symbol_OP_nil);
+ SMART_PTR_FIX(clbind::ClassRegistry_O::static_creator);
+ SMART_PTR_FIX(core::Float_O::static_creator);
+ SMART_PTR_FIX(core::LongFloat_O::static_class);
+ SMART_PTR_FIX(llvmo::ConstantPointerNull_O::static_class);
+ SMART_PTR_FIX(clcenv::VariableDynamicExtent_O::static_class_symbol);
+ SMART_PTR_FIX(clbind::ClassRegistry_O::static_class);
+ SMART_PTR_FIX(clcenv::GlobalFunctionInfo_O::static_creator);
+ SMART_PTR_FIX(llvmo::DIBasicType_O::static_class);
+ SMART_PTR_FIX(llvmo::DIFile_O::static_class);
+ SMART_PTR_FIX(core::InvocationHistoryFrameIterator_O::static_creator);
+ SMART_PTR_FIX(llvmo::DINode_O::static_class);
+ SMART_PTR_FIX(core::MDArrayBaseChar_O::static_class_symbol);
+ SMART_PTR_FIX(core::Cache_O::static_class);
+ SMART_PTR_FIX(core::Complex_O::static_class_symbol);
+ SMART_PTR_FIX(core::LambdaListHandler_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::UnreachableInst_O::static_creator);
+ SMART_PTR_FIX(core::Record_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::DebugLoc_O::static_creator);
+ SMART_PTR_FIX(core::StringStream_O::static_class);
+ SMART_PTR_FIX(clcenv::SpecialOperatorInfo_O::static_class_symbol);
+ SMART_PTR_FIX(core::ExternalObject_O::static_creator);
+ SMART_PTR_FIX(core::InvocationHistoryFrameIterator_O::static_class_symbol);
+ SMART_PTR_FIX(core::BlockEnvironment_O::static_class);
+ SMART_PTR_FIX(core::NamedFunction_O::static_class);
+ SMART_PTR_FIX(core::Record_O::static_creator);
+ SMART_PTR_FIX(core::BranchSNode_O::static_class);
+ SMART_PTR_FIX(core::NativeVector_float_O::static_class);
+ SIMPLE_POINTER_FIX(gctools::global_tagged_Symbol_OP_sameAsKey);
+ SMART_PTR_FIX(mp::SharedMutex_O::static_creator);
+ SMART_PTR_FIX(core::GlueEnvironment_O::static_class);
+ SMART_PTR_FIX(core::SharpEqualWrapper_O::static_class);
+ SMART_PTR_FIX(core::Fixnum_dummy_O::static_class);
+ SMART_PTR_FIX(core::GlueEnvironment_O::static_creator);
+ SMART_PTR_FIX(core::LoadArchive_O::static_class);
+ SMART_PTR_FIX(core::Pathname_O::static_creator);
+ SMART_PTR_FIX(llvmo::GlobalValue_O::static_class);
+ SMART_PTR_FIX(core::LambdaListHandler_O::static_creator);
+ SMART_PTR_FIX(llvmo::TargetOptions_O::static_class);
+ SMART_PTR_FIX(core::WeakKeyMapping_O::static_creator);
+ SMART_PTR_FIX(llvmo::PassManagerBase_O::static_creator);
+ SMART_PTR_FIX(llvmo::ModulePass_O::static_creator);
+ SMART_PTR_FIX(core::StringOutputStream_O::static_class);
+ SMART_PTR_FIX(llvmo::DIScope_O::static_creator);
+ SMART_PTR_FIX(clcenv::FunctionDynamicExtent_O::static_class);
+ SMART_PTR_FIX(core::ShortFloat_O::static_creator);
+ SMART_PTR_FIX(core::Complex_O::static_creator);
+ SMART_PTR_FIX(core::Record_O::static_class);
+ SMART_PTR_FIX(llvmo::TargetSubtargetInfo_O::static_creator);
+ SMART_PTR_FIX(llvmo::Linker_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::NamedMDNode_O::static_class_symbol);
+ SMART_PTR_FIX(core::SourceManager_O::static_class);
+ SMART_PTR_FIX(core::AbstractSimpleVector_O::static_class);
+ SMART_PTR_FIX(core::RuntimeVisibleEnvironment_O::static_class_symbol);
+ SMART_PTR_FIX(core::NativeVector_double_O::static_creator);
+ SMART_PTR_FIX(core::ClassCreator_O::static_creator);
+ SMART_PTR_FIX(clcenv::FunctionIgnore_O::static_class_symbol);
+ SMART_PTR_FIX(core::MDArrayBaseChar_O::static_creator);
+ SMART_PTR_FIX(asttooling::AstVisitor_O::static_class);
+ SMART_PTR_FIX(core::CompileTimeEnvironment_O::static_creator);
+ SMART_PTR_FIX(core::Exposer_O::static_class);
+ SMART_PTR_FIX(core::SimpleMDArray_int64_t_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::ImmutablePass_O::static_class_symbol);
+ SMART_PTR_FIX(mp::SharedMutex_O::static_class_symbol);
+ SMART_PTR_FIX(core::CompiledFunction_O::static_class);
+ SMART_PTR_FIX(llvmo::IRBuilder_O::static_class_symbol);
+ SMART_PTR_FIX(clcenv::Function_O::static_class_symbol);
+ SMART_PTR_FIX(core::InvocationHistoryFrameIterator_O::static_class);
+ SMART_PTR_FIX(llvmo::DIBuilder_O::static_class);
+ SMART_PTR_FIX(llvmo::SequentialType_O::static_class_symbol);
+ SMART_PTR_FIX(core::ConsStepper_O::static_class);
+ SMART_PTR_FIX(core::SimpleMDArrayDouble_O::static_creator);
+ SMART_PTR_FIX(llvmo::MDString_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::TargetMachine_O::static_creator);
+ SMART_PTR_FIX(llvmo::ModuleHandle_O::static_creator);
+ SMART_PTR_FIX(core::SingleDispatchCxxEffectiveMethodFunction_O::static_class);
+ SMART_PTR_FIX(llvmo::InvokeInst_O::static_creator);
+ SMART_PTR_FIX(llvmo::ClaspJIT_O::static_creator);
+ SMART_PTR_FIX(core::SexpSaveArchive_O::static_class_symbol);
+ SMART_PTR_FIX(core::SimpleMDArray_byte32_t_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::AllocaInst_O::static_class);
+ SMART_PTR_FIX(llvmo::BranchInst_O::static_creator);
+ SMART_PTR_FIX(core::FunctionFrame_O::static_creator);
+ SMART_PTR_FIX(mp::Process_O::static_class_symbol);
+ SMART_PTR_FIX(core::Package_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::PassManagerBase_O::static_class_symbol);
+ SMART_PTR_FIX(core::SNode_O::static_class);
+ SMART_PTR_FIX(core::Closure_O::static_class);
+ SMART_PTR_FIX(llvmo::InsertPoint_O::static_creator);
+ SMART_PTR_FIX(core::FuncallableInstanceCreator_O::static_creator);
+ SMART_PTR_FIX(core::Closure_O::static_creator);
+ SMART_PTR_FIX(llvmo::FenceInst_O::static_class_symbol);
+ SMART_PTR_FIX(core::MDArray_int64_t_O::static_class);
+ SMART_PTR_FIX(clasp_ffi::ForeignData_O::static_creator);
+ SMART_PTR_FIX(llvmo::IRBuilder_O::static_creator);
+ SMART_PTR_FIX(core::SimpleMDArray_byte64_t_O::static_creator);
+ SMART_PTR_FIX(core::SimpleVector_int32_t_O::static_class_symbol);
+ SMART_PTR_FIX(core::ReadTable_O::static_creator);
+ SMART_PTR_FIX(core::SimpleBitVector_O::static_creator);
+ SMART_PTR_FIX(core::SimpleCharacterString_O::static_creator);
+ SMART_PTR_FIX(llvmo::TargetMachine_O::static_class_symbol);
+ SMART_PTR_FIX(clcenv::LambdaName_O::static_class);
+ SMART_PTR_FIX(core::WeakPointer_O::static_creator);
+ SMART_PTR_FIX(core::InstanceCreator_O::static_class);
+ SMART_PTR_FIX(core::Ratio_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::FunctionPassManager_O::static_class_symbol);
+ SMART_PTR_FIX(core::CandoException_O::static_class);
+ SMART_PTR_FIX(core::Reader_O::static_class);
+ SMART_PTR_FIX(core::SimpleVector_int32_t_O::static_creator);
+ SMART_PTR_FIX(core::CompiledClosure_O::static_creator);
+ SMART_PTR_FIX(llvmo::VAArgInst_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::DINodeArray_O::static_class);
+ SMART_PTR_FIX(core::SexpLoadArchive_O::static_creator);
+ SMART_PTR_FIX(core::SimpleMDArray_size_t_O::static_class);
+ SMART_PTR_FIX(core::ClosureWithSlots_O::static_class_symbol);
+ SMART_PTR_FIX(core::BranchSNode_O::static_class_symbol);
+ SMART_PTR_FIX(core::SimpleMDArray_int32_t_O::static_class_symbol);
+ SMART_PTR_FIX(core::SymbolToEnumConverter_O::static_class);
+ SMART_PTR_FIX(llvmo::Pass_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::GlobalVariable_O::static_class);
+ SMART_PTR_FIX(core::StrWNs_O::static_creator);
+ SMART_PTR_FIX(core::ClosureWithFrame_O::static_class_symbol);
+ SMART_PTR_FIX(clcenv::OptimizeInfo_O::static_class);
+ SMART_PTR_FIX(core::ClosureWithSlots_O::static_class);
+ SMART_PTR_FIX(core::SingleFloat_dummy_O::static_creator);
+ SMART_PTR_FIX(clcenv::GlobalMacroInfo_O::static_class);
+ SMART_PTR_FIX(core::MDArray_byte16_t_O::static_creator);
+ SMART_PTR_FIX(core::IOStreamStream_O::static_class);
+ SMART_PTR_FIX(llvmo::ExecutionEngine_O::static_class);
+ SMART_PTR_FIX(core::WeakKeyMapping_O::static_class);
+ SMART_PTR_FIX(core::MacroletEnvironment_O::static_creator);
+ SMART_PTR_FIX(llvmo::Linker_O::static_creator);
+ SMART_PTR_FIX(core::FileStatus_O::static_class_symbol);
+ SMART_PTR_FIX(core::StringOutputStream_O::static_creator);
+ SMART_PTR_FIX(mp::ConcurrentQueue_O::static_creator);
+ SMART_PTR_FIX(core::ExternalObject_O::static_class_symbol);
+ SMART_PTR_FIX(core::SimpleMDArrayCharacter_O::static_class);
+ SMART_PTR_FIX(core::MDArray_byte64_t_O::static_creator);
+ SMART_PTR_FIX(llvmo::LandingPadInst_O::static_class_symbol);
+ SMART_PTR_FIX(core::SimpleVectorFloat_O::static_class);
+ SMART_PTR_FIX(core::LexicalEnvironment_O::static_class);
+ SMART_PTR_FIX(core::SimpleMDArray_int32_t_O::static_creator);
+ SMART_PTR_FIX(llvmo::InvokeInst_O::static_class);
+ SMART_PTR_FIX(core::SimpleMDArrayBit_O::static_creator);
+ SMART_PTR_FIX(llvmo::FunctionPassManager_O::static_class);
+ SMART_PTR_FIX(core::Pathname_O::static_class);
+ SMART_PTR_FIX(llvmo::TargetLibraryInfoWrapperPass_O::static_creator);
+ SMART_PTR_FIX(core::EchoStream_O::static_class_symbol);
+ SMART_PTR_FIX(core::MDArrayBaseChar_O::static_class);
+ SMART_PTR_FIX(clcenv::GlobalMacroInfo_O::static_creator);
+ SMART_PTR_FIX(core::SpecialForm_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::APFloat_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::LoadInst_O::static_class);
+ SMART_PTR_FIX(core::SingleDispatchCxxEffectiveMethodFunction_O::static_class_symbol);
+ SMART_PTR_FIX(core::MDArray_byte64_t_O::static_class_symbol);
+ TAGGED_POINTER_FIX(_lisp);
+ SMART_PTR_FIX(core::ClassCreator_O::static_class);
+ SMART_PTR_FIX(llvmo::UndefValue_O::static_creator);
+ SMART_PTR_FIX(llvmo::StoreInst_O::static_creator);
+ SMART_PTR_FIX(mp::Process_O::static_class);
+ SMART_PTR_FIX(llvmo::Triple_O::static_creator);
+ SMART_PTR_FIX(llvmo::FunctionType_O::static_class);
+ SMART_PTR_FIX(core::SimpleVector_int8_t_O::static_class);
+ SMART_PTR_FIX(core::SimpleMDArray_byte8_t_O::static_creator);
+ SMART_PTR_FIX(llvmo::NamedMDNode_O::static_creator);
+ SMART_PTR_FIX(core::SimpleMDArrayDouble_O::static_class);
+ SMART_PTR_FIX(core::SingleDispatchMethod_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::ConstantDataSequential_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::LLVMContext_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::DIScope_O::static_class_symbol);
+ SMART_PTR_FIX(core::SymbolToEnumConverter_O::static_creator);
+ SMART_PTR_FIX(core::PosixTimeDuration_O::static_class_symbol);
+ SMART_PTR_FIX(core::SimpleVector_int16_t_O::static_class_symbol);
+ SMART_PTR_FIX(core::BuiltinClosure_O::static_creator);
+ SMART_PTR_FIX(core::NativeVector_int_O::static_class);
+ SMART_PTR_FIX(clcenv::SpecialVariableInfo_O::static_creator);
+ SMART_PTR_FIX(llvmo::DILexicalBlockBase_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::ClaspJIT_O::static_class);
+ SMART_PTR_FIX(core::SourcePosInfo_O::static_class_symbol);
+ SMART_PTR_FIX(core::AnsiStream_O::static_creator);
+ SMART_PTR_FIX(core::SimpleMDArray_byte64_t_O::static_class);
+ SMART_PTR_FIX(llvmo::MCSubtargetInfo_O::static_class);
+ SMART_PTR_FIX(core::SimpleVectorDouble_O::static_creator);
+ SMART_PTR_FIX(llvmo::ConstantDataSequential_O::static_creator);
+ SMART_PTR_FIX(core::DoubleFloat_O::static_class);
+ SMART_PTR_FIX(llvmo::PointerType_O::static_creator);
+ SMART_PTR_FIX(core::SimpleVector_O::static_creator);
+ SMART_PTR_FIX(llvmo::CompositeType_O::static_class);
+ SMART_PTR_FIX(core::T_O::static_class_symbol);
+ SMART_PTR_FIX(core::WrappedPointer_O::static_class_symbol);
+ SMART_PTR_FIX(core::MDArray_int16_t_O::static_class);
+ SMART_PTR_FIX(core::WeakHashTable_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::VectorType_O::static_creator);
+ SMART_PTR_FIX(core::VectorStepper_O::static_creator);
+ SMART_PTR_FIX(core::NativeVector_double_O::static_class);
+ SMART_PTR_FIX(llvmo::ConstantInt_O::static_class);
+ SMART_PTR_FIX(llvmo::MDString_O::static_creator);
+ SMART_PTR_FIX(clasp_ffi::ForeignTypeSpec_O::static_class);
+ SMART_PTR_FIX(core::RecursiveDirectoryIterator_O::static_creator);
+ SMART_PTR_FIX(core::SimpleMDArrayBaseChar_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::Value_O::static_class);
+ SMART_PTR_FIX(core::LexicalEnvironment_O::static_creator);
+ SMART_PTR_FIX(core::ValueFrame_O::static_creator);
+ SMART_PTR_FIX(llvmo::ConstantFP_O::static_creator);
+ SMART_PTR_FIX(core::ReadTable_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::TargetOptions_O::static_class_symbol);
+ SMART_PTR_FIX(core::Archive_O::static_creator);
+ SMART_PTR_FIX(llvmo::DILexicalBlock_O::static_creator);
+ SMART_PTR_FIX(clcenv::VariableType_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::Attribute_O::static_creator);
+ SMART_PTR_FIX(core::TemplatedFunctionBase_O::static_creator);
+ SMART_PTR_FIX(core::DerivableCxxClassCreator_O::static_creator);
+ SMART_PTR_FIX(clcenv::Closure_O::static_class);
+ SMART_PTR_FIX(core::HashTableEqual_O::static_creator);
+ SMART_PTR_FIX(core::BlockEnvironment_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::Constant_O::static_class);
+ SMART_PTR_FIX(core::Cons_O::static_class);
+ SMART_PTR_FIX(core::Null_O::static_class);
+ SMART_PTR_FIX(core::MDArray_O::static_class_symbol);
+ SMART_PTR_FIX(core::ValueEnvironment_O::static_class_symbol);
+ SMART_PTR_FIX(core::DerivableCxxObject_O::static_creator);
+ SMART_PTR_FIX(core::SimpleVector_byte8_t_O::static_class);
+ SMART_PTR_FIX(clcenv::FunctionType_O::static_creator);
+ SMART_PTR_FIX(core::Character_dummy_O::static_creator);
+ SMART_PTR_FIX(llvmo::SwitchInst_O::static_creator);
+ SMART_PTR_FIX(clcenv::Block_O::static_class_symbol);
+ SMART_PTR_FIX(core::StandardClassCreator_O::static_class_symbol);
+ SMART_PTR_FIX(core::CxxObject_O::static_class);
+ SMART_PTR_FIX(core::PosixTimeDuration_O::static_creator);
+ SMART_PTR_FIX(llvmo::LandingPadInst_O::static_creator);
+ SMART_PTR_FIX(core::SingleDispatchMethod_O::static_class);
+ SMART_PTR_FIX(core::FuncallableInstance_O::static_class);
+ SMART_PTR_FIX(core::RecursiveDirectoryIterator_O::static_class_symbol);
+ SMART_PTR_FIX(clcenv::Function_O::static_class);
+ SMART_PTR_FIX(clcenv::BlockInfo_O::static_class);
+ SMART_PTR_FIX(core::CompiledClosure_O::static_class_symbol);
+ SMART_PTR_FIX(core::StringStream_O::static_creator);
+ SMART_PTR_FIX(mp::BlockingConcurrentQueue_O::static_class);
+ SMART_PTR_FIX(llvmo::FunctionType_O::static_class_symbol);
+ SMART_PTR_FIX(core::MacroClosure_O::static_creator);
+ SMART_PTR_FIX(clcenv::VariableIgnore_O::static_class_symbol);
+ SMART_PTR_FIX(core::HashTableEqualp_O::static_class);
+ SMART_PTR_FIX(llvmo::LLVMTargetMachine_O::static_class);
+ SMART_PTR_FIX(llvmo::ConstantDataArray_O::static_class);
+ SMART_PTR_FIX(clasp_ffi::ForeignTypeSpec_O::static_creator);
+ SMART_PTR_FIX(llvmo::FunctionPass_O::static_creator);
+ SMART_PTR_FIX(core::Rational_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::DIBuilder_O::static_creator);
+ SMART_PTR_FIX(core::InstanceCreator_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::DILexicalBlock_O::static_class);
+ SMART_PTR_FIX(core::SimpleMDArray_int64_t_O::static_class);
+ SMART_PTR_FIX(llvmo::DICompileUnit_O::static_class_symbol);
+ SMART_PTR_FIX(clcenv::FunctionDynamicExtent_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::User_O::static_creator);
+ SMART_PTR_FIX(core::TagbodyEnvironment_O::static_creator);
+ SMART_PTR_FIX(core::SexpSaveArchive_O::static_class);
+ SMART_PTR_FIX(core::SimpleMDArray_fixnum_O::static_creator);
+ SMART_PTR_FIX(llvmo::BlockAddress_O::static_class);
+ SMART_PTR_FIX(llvmo::EngineBuilder_O::static_creator);
+ SMART_PTR_FIX(core::Reader_O::static_creator);
+ SMART_PTR_FIX(clcenv::VariableIgnore_O::static_creator);
+ SMART_PTR_FIX(clcenv::Tag_O::static_creator);
+ SMART_PTR_FIX(llvmo::LLVMContext_O::static_class);
+ SMART_PTR_FIX(llvmo::DISubroutineType_O::static_class_symbol);
+ SMART_PTR_FIX(core::FuncallableInstance_O::static_creator);
+#endif // defined(GC_GLOBALS)

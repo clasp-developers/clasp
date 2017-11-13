@@ -233,7 +233,7 @@ namespace gctools {
       #B00 == This is an illegal value for the two lsbs,
               it indictates that this is not a valid header.
       #B01 == This is the 'stamp_tag' and indicates that the other bits in the header
-              represent a stamp value and flags that indicate 
+              represent a stamp value that indicate 
               whether there is an extended-stamp and where to find the extended-stamp.
       #B10 == This tag indicates that the remaining data bits in the header contains a forwarding
               pointer.  The uintptr_clasp_t in additional_data[0] contains the length of
@@ -242,31 +242,17 @@ namespace gctools {
               bit at #B100 to see if the pad is a pad1 (==0) or a pad (==1)
 
       If the tag is a 'stamp_tag' then the data bits have this meaning...
-                              stamp    flags      tag
-      64 bits total -> |    60 bits | 2 bits | 2 bits |
+                              stamp      tag
+      64 bits total -> |    62 bits | 2 bits |
       
-      The flags...
-      #B00    The value in the rest of the header is the stamp of the object.
-      #B01    This object is an instance of Instance_O or a subclass and the Rack contains 
-              the extended-stamp (64-bits).
-      #B10    The stamp is in a WrappedPointer_O object
-              FIXME:   OLD-> This shouldn't happen - 
-                             but asttooling::AstVisitor_O was given this value of flags
-                             by the static analyzer.
-      #B11    This object inherits from Instance_O the virtual function get_stamp() needs to be
-              called to get the extended-stamp because the Rack won't be at 
-              a specific offset in the object.
-              The virtual function get_Instance_O_offset() must also be provided to
-              calculate the offset of the Instance_O object from the client pointer
-              so that MPS knows where to find pointers.
-
-      The 'stamp' is a 64 bit value (zero extended, 0==illegal) that tells
+      The 'stamp' is a 62 bit value (zero extended, 0==illegal) that tells
       the MPS GC what the layout of the object is and is used to determine
       IsA relationships between classes.
 
       The STAMP is also used by the fastgf generic function dispatch method.
       Exposed C++ classes that inherit from Instance_O store an extended-stamp in the rack.
-      The flags are used to inform the system when it needs to look in the rack for the extended-stamp.
+      The header stamp is used to tell the system when it needs to look elsewhere for the extended-stamp.
+      See cc_read_stamp in fastgf.cc for details
       If an object has an extended-stamp then the extended-stamp is used for fastgf generic function
       dispatch and stamp is used by MPS to determine the object layout and C++ IsA relationships.
       Each time a standard-class is redefined a new STAMP is generated and that 
@@ -290,65 +276,44 @@ namespace gctools {
     static const tagged_stamp_t pad_tag    = BOOST_BINARY(011);
     static const tagged_stamp_t pad1_tag   = BOOST_BINARY(111);
     static const tagged_stamp_t fwd_ptr_mask = ~tag_mask;
-    // The kind mask stores 12 bits of info - up to 4096 different KINDs
-    //    These are C++ classes managed by the GC.
-    static const int stamp_shift = 4;
-    static const int flags_shift = 2;
-    static const tagged_stamp_t flags_mask    = (0x3<<flags_shift);
-    static const tagged_stamp_t stamp_mask    = ~0xF; // BOOST_BINARY(11...11111111110000);
-#if 0
-    static const tagged_stamp_t stamp_in_rack_mask     = 0x4;
-    static const tagged_stamp_t stamp_needs_call_mask  = 0x8;
-    static const tagged_stamp_t stamp_type_mask        = (stamp_in_rack_mask|stamp_needs_call_mask);
-    static const tagged_stamp_t stamp_in_header_value  = 0;
-    static const tagged_stamp_t stamp_in_rack_value    = stamp_in_rack_mask;
-#endif
+    static const tagged_stamp_t stamp_mask    = ~tag_mask; // BOOST_BINARY(11...11111111111100);
+    static const int stamp_shift = 2;
     static const tagged_stamp_t largest_possible_stamp = stamp_mask>>stamp_shift;
   public:
     struct Value {
       tagged_stamp_t _value;
     Value() : _value(0) {};
-    Value(GCStampEnum stamp, size_t flags) : _value((stamp << stamp_shift) | (flags << flags_shift) | stamp_tag) {};
+    Value(GCStampEnum stamp) : _value((stamp << stamp_shift) | stamp_tag) {};
       template <typename T>
       static Value make()
       {
-        Value v(GCStamp<T>::Stamp,GCStamp<T>::Flags);
+        Value v(GCStamp<T>::Stamp);
         return v;
       }
       static Value make_instance()
       {
-        Value v(STAMP_INSTANCE,FLAGS_INSTANCE /*Flags*/);
+        Value v(STAMP_INSTANCE);
         return v;
       }
       static Value make_funcallable_instance()
       {
-        Value v(STAMP_FUNCALLABLE_INSTANCE,FLAGS_FUNCALLABLE_INSTANCE /*Flags*/);
+        Value v(STAMP_FUNCALLABLE_INSTANCE);
         return v;
       }
       static Value make_unknown(GCStampEnum the_stamp)
       {
-//        printf("%s:%d Making an unknown Header kind stamp  What flag???? ->%u\n", __FILE__, __LINE__, the_stamp );
-        Value v(the_stamp,FLAGS_STAMP_IN_HEADER);
+        Value v(the_stamp);
         return v;
       }
     public:
       template <typename T>
-      static size_t GenerateHeaderValue() { return (GCStamp<T>::Stamp<<stamp_shift)|(GCStamp<T>::Flags<<flags_shift)|stamp_tag; };
+      static size_t GenerateHeaderValue() { return (GCStamp<T>::Stamp<<stamp_shift)|stamp_tag; };
     public: // header readers
+      inline size_t tag() const { return (size_t)(this->_value & tag_mask);};
+      inline bool pad1P() const { return (this->_value & pad_mask) == pad1_tag; };
       inline GCStampEnum stamp() const {
         return static_cast<GCStampEnum>( this->_value >> stamp_shift );
       }
-      inline Fixnum flags() const {
-        return static_cast<Fixnum>( (this->_value&flags_mask) >> flags_shift );
-      }
-#if 0
-      inline bool stamp_in_rack_p() const {
-        return (bool)(this->_value & stamp_in_rack_mask);
-      }
-      inline bool stamp_needs_call_p() const {
-        return (bool)(this->_value & stamp_needs_call_mask);
-      }
-#endif
     };
   public:
     static void signal_invalid_object(const Header_s* header, const char* msg);
@@ -356,10 +321,10 @@ namespace gctools {
     void validate() const;
     void quick_validate() const {
 #ifdef DEBUG_QUICK_VALIDATE
-      if ( this->kindP() ) {
+      if ( this->stampP() ) {
 #ifdef DEBUG_GUARD    
         if (this->guard != 0xFEEAFEEBDEADBEEF) signal_invalid_object(this,"bad head guard");
-        const unsigned char* tail = (const unsigned char*)this+this->tail_start;
+        const unsigned char* tail = (const unsigned char*)this+this->_tail_start;
         if ((*tail) != 0xcc) signal_invalid_object(this,"bad tail not 0xcc");
 #endif
         if ( this->stamp() > global_NextStamp ) signal_invalid_object(this,"bad kind");
@@ -373,8 +338,8 @@ namespace gctools {
     // The additional_data[0] must fall right after the header or pads might try to write into the wrong place
     tagged_stamp_t additional_data[0]; // The 0th element intrudes into the client data unless DEBUG_GUARD is on
 #ifdef DEBUG_GUARD
-    int tail_start;
-    int tail_size;
+    int _tail_start;
+    int _tail_size;
     tagged_stamp_t guard;
 #endif
   public:
@@ -382,94 +347,78 @@ namespace gctools {
   Header_s(const Value& k) : header(k) {}
 #endif
 #if defined(DEBUG_GUARD)
-    inline void fill_tail() { memset((void*)(((char*)this)+this->tail_start),0xcc,this->tail_size);};
+    inline void fill_tail() { memset((void*)(((char*)this)+this->_tail_start),0xcc,this->_tail_size);};
   Header_s(const Value& k,size_t tstart, size_t tsize, size_t total_size) 
     : header(k),
-      tail_start(tstart),
-        tail_size(tsize),
-        guard(0xFEEAFEEBDEADBEEF)
-        {
-          this->fill_tail();
-        };
+      _tail_start(tstart),
+      _tail_size(tsize),
+      guard(0xFEEAFEEBDEADBEEF)
+      {
+        this->fill_tail();
+      };
 #endif
     static GCStampEnum value_to_stamp(Fixnum value) { return (GCStampEnum)((value&stamp_mask) >> stamp_shift); };
   public:
-      bool invalidP() const { return (this->header._value & tag_mask) == invalid_tag; };
-      bool stampP() const { return (this->header._value & tag_mask) == stamp_tag; };
-      bool fwdP() const { return (this->header._value & tag_mask) == fwd_tag; };
-      bool anyPadP() const { return (this->header._value & pad_test) == pad_tag; };
-      bool padP() const { return (this->header._value & pad_mask) == pad_tag; };
-      bool pad1P() const { return (this->header._value & pad_mask) == pad1_tag; };
+    size_t tag() const { return (size_t)(this->header._value & tag_mask);};
+#ifdef DEBUG_GUARD
+    size_t tail_size() const { return this->_tail_size; };
+#else
+    constexpr size_t tail_size() const { return 0; };
+#endif
+    bool invalidP() const { return (this->header._value & tag_mask) == invalid_tag; };
+    bool stampP() const { return (this->header._value & tag_mask) == stamp_tag; };
+    bool fwdP() const { return (this->header._value & tag_mask) == fwd_tag; };
+    bool anyPadP() const { return (this->header._value & pad_test) == pad_tag; };
+    bool padP() const { return (this->header._value & pad_mask) == pad_tag; };
+    bool pad1P() const { return (this->header._value & pad_mask) == pad1_tag; };
   /*! No sanity checking done - this function assumes kindP == true */
-      GCStampEnum stamp() const { return (GCStampEnum)(value_to_stamp(this->header._value)); };
+    GCStampEnum stamp() const { return (GCStampEnum)(value_to_stamp(this->header._value)); };
   /*! setKind wipes out the stamp */
 //      void setKind(GCStampEnum k) { this->header._value = (k << stamp_shift) | stamp_tag; };
   /*! No sanity checking done - this function assumes fwdP == true */
-      void *fwdPointer() const { return reinterpret_cast<void *>(this->header._value & fwd_ptr_mask); };
+    void *fwdPointer() const { return reinterpret_cast<void *>(this->header._value & fwd_ptr_mask); };
   /*! Return the size of the fwd block - without the header. This reaches into the client area to get the size */
-      void setFwdPointer(void *ptr) { this->header._value = reinterpret_cast<tagged_stamp_t>(ptr) | fwd_tag; };
-      tagged_stamp_t fwdSize() const { return this->additional_data[0]; };
+    void setFwdPointer(void *ptr) { this->header._value = reinterpret_cast<tagged_stamp_t>(ptr) | fwd_tag; };
+    tagged_stamp_t fwdSize() const { return this->additional_data[0]; };
   /*! This writes into the first tagged_stamp_t sized word of the client data. */
-      void setFwdSize(size_t sz) { this->additional_data[0] = sz; };
+    void setFwdSize(size_t sz) { this->additional_data[0] = sz; };
   /*! Define the header as a pad, pass pad_tag or pad1_tag */
-      void setPad(tagged_stamp_t p) { this->header._value = p; };
+    void setPad(tagged_stamp_t p) { this->header._value = p; };
   /*! Return the pad1 size */
-      tagged_stamp_t pad1Size() const { return alignof(Header_s); };
+    tagged_stamp_t pad1Size() const { return alignof(Header_s); };
   /*! Return the size of the pad block - without the header */
-      tagged_stamp_t padSize() const { return (this->additional_data[0]); };
+    tagged_stamp_t padSize() const { return (this->additional_data[0]); };
   /*! This writes into the first tagged_stamp_t sized word of the client data. */
-      void setPadSize(size_t sz) { this->additional_data[0] = sz; };
+    void setPadSize(size_t sz) { this->additional_data[0] = sz; };
   /*! Write the stamp to the stamp bits */
-      string description() const {
-        if (this->stampP()) {
-          std::stringstream ss;
-          ss << "Header=" << (void *)(this->header._value);
-          ss << "/";
-          ss << obj_name(this->stamp());
-          return ss.str();
-        } else if (this->fwdP()) {
-          std::stringstream ss;
-          ss << "Fwd/ptr=" << this->fwdPointer() << "/sz=" << this->fwdSize();
-          return ss.str();
-        } else if (this->pad1P()) {
-          return "Pad1";
-        } else if (this->padP()) {
-          stringstream ss;
-          ss << "Pad/sz=" << this->padSize();
-          return ss.str();
-        }
-        stringstream ss;
-        ss << "IllegalHeader=";
-        ss << (void *)(this->header._value);
-        printf("%s:%d Header->description() found an illegal header = %s\n", __FILE__, __LINE__, ss.str().c_str());
+    string description() const {
+      if (this->stampP()) {
+        std::stringstream ss;
+        ss << "Header=" << (void *)(this->header._value);
+        ss << "/";
+        ss << obj_name(this->stamp());
         return ss.str();
-        ;
+      } else if (this->fwdP()) {
+        std::stringstream ss;
+        ss << "Fwd/ptr=" << this->fwdPointer() << "/sz=" << this->fwdSize();
+        return ss.str();
+      } else if (this->pad1P()) {
+        return "Pad1";
+      } else if (this->padP()) {
+        stringstream ss;
+        ss << "Pad/sz=" << this->padSize();
+        return ss.str();
       }
+      stringstream ss;
+      ss << "IllegalHeader=";
+      ss << (void *)(this->header._value);
+      printf("%s:%d Header->description() found an illegal header = %s\n", __FILE__, __LINE__, ss.str().c_str());
+      return ss.str();
+      ;
+    }
   };
 };
 
-/*! GCStampEnum has one integer value for each type allocated by the GC.
-This value is written into the Header_s of every allocated object.
-Immediate (FIXNUM, SINGLE-FLOAT, CHARACTER)  and CONS have reserved STAMP values.
-If USE_CXX_DYNAMIC_CAST is not defined then the GCStampEnum values calculated by
-the clasp-analyzer static analyzer they are used along with template functions that
-calculate IsA relationships using simple GCStampEnum range comparisons.
-
-
-FIXME:  What happens when USE_CXX_DYNAMIC_CAST is defined??????
-What stamp values are used?
-
-OLD!!!!! ->
-If USE_CXX_DYNAMIC_CAST is defined then GCStampEnum has only one value 
-and every header contains that KIND value (STAMP_null)
-and C++ dynamic_cast<...> is used to determine IsA relationships.
-
-*/
-#if 0
-#define FLAGS_INSTANCE 1
-#define FLAGS_FUNCALLABLE_INSTANCE 1
-#define FLAGS_DERIVABLE 3
-#endif
 // ------------------------------------------------------------
 //
 // Stamp
@@ -683,19 +632,16 @@ namespace gctools {
 #ifdef USE_MPS
 #ifdef RUNNING_GC_BUILDER
       static GCStampEnum const Stamp = STAMP_null;
-      static const size_t Flags = FLAGS_STAMP_IN_HEADER;
 #else
   // We need a default Kind when running the gc-builder.lsp static analyzer
   // but we don't want a default Kind when compiling the mps version of the code
   // to force compiler errors when the Kind for an object hasn't been declared
       static GCStampEnum const Stamp = STAMP_null; // provide default for weak dependents
-      static const size_t Flags = FLAGS_STAMP_IN_HEADER;
 #endif // RUNNING_GC_BUILDER
 #endif // USE_MPS
 #ifdef USE_BOEHM
 #ifdef USE_CXX_DYNAMIC_CAST
       static GCStampEnum const Stamp = STAMP_null; // minimally define STAMP_null
-      static const size_t Flags = FLAGS_STAMP_IN_HEADER;
 #else
                                             // We don't want a default Kind when compiling the boehm version of the code
                                             // to force compiler errors when the Kind for an object hasn't been declared
@@ -720,55 +666,8 @@ namespace core {
   class FuncallableInstance_O;
   typedef Instance_O Class_O;
 }
-#if 0 // commented out Nov 2017
-#if defined(USE_CXX_DYNAMIC_CAST) || defined(RUNNING_GC_BUILDER)
-template <> class gctools::GCStamp<core::Fixnum_dummy_O> {
-public:
-  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__Fixnum_dummy_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER;
-};
-template <> class gctools::GCStamp<core::SingleFloat_dummy_O> {
-public:
-  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__SingleFloat_dummy_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER;
-};
-template <> class gctools::GCStamp<core::Character_dummy_O> {
-public:
-  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__Character_dummy_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER;
-};
-template <> class gctools::GCStamp<core::CPointer_dummy_O> {
-public:
-  static gctools::GCStampEnum const Stamp = gctools::STAMP_CPOINTER ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER;
-};
-template <> class gctools::GCStamp<core::Cons_O> {
-public:
-  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__Cons_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER;
-};
-template <> class gctools::GCStamp<core::VaList_dummy_O> {
-public:
-  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__VaList_dummy_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER;
-};
-template <> class gctools::GCStamp<core::Instance_O> {
-public:
-  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__Instance_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_RACK;
-};
-template <> class gctools::GCStamp<core::FuncallableInstance_O> {
-public:
-  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__FuncallableInstance_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_RACK;
-};
-template <> class gctools::GCStamp<core::WrappedPointer_O> {
-public:
-  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__WrappedPointer_O ;
-  static const size_t Flags = FLAGS_STAMP_IN_WRAPPER;
-};
-#endif
-#endif
+
+
 namespace gctools {
 
 /*

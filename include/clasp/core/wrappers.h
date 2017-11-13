@@ -65,8 +65,7 @@ namespace core {
 template <typename T>
 class gctools::GCStamp<core::VariadicFunctor<T>> {
 public:
-  static gctools::GCStampEnum const Stamp = gctools::GCStamp<typename core::VariadicFunctor<T>::TemplatedBase>::Kind;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER;
+  static gctools::GCStampEnum const Stamp = gctools::GCStamp<typename core::VariadicFunctor<T>::TemplatedBase>::Stamp;
 };
 
 
@@ -112,8 +111,7 @@ void wrap_function(const string &packageName, const string &name, RT (*fp)(ARGS.
 template <int DispatchOn, typename T>
 class gctools::GCStamp<core::VariadicMethoid<DispatchOn, T>> {
 public:
-  static gctools::GCStampEnum const Stamp = gctools::GCStamp<typename core::VariadicMethoid<DispatchOn, T>::TemplatedBase>::Kind;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER;
+  static gctools::GCStampEnum const Stamp = gctools::GCStamp<typename core::VariadicMethoid<DispatchOn, T>::TemplatedBase>::Stamp;
 };
 
 namespace core {

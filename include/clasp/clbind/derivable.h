@@ -73,6 +73,9 @@ redirect its virtual functions to the Derivable<T> functions. */
         This will be used by translators. */
     virtual void *pointerToAlienWithin() { return reinterpret_cast<void*>(static_cast<Alien*>(this)); };
     bool cxxAdapterClassP() const { return true; };
+    virtual Fixnum get_stamp_() const { return this->stamp(); };
+    virtual Instance_O* get_Instance_O_address_() { Instance_O* inst = this; return inst; };
+    virtual size_t get_size_() const { return sizeof(*this); };
     void describe() {
       printf("#<Derivable>@%p\n", this);
       printf("typeid(this) --> %p\n", &typeid(this));

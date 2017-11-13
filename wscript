@@ -738,9 +738,6 @@ def configure(cfg):
 #    cfg.define("DEBUG_VALUES",1)   # turn on printing (values x y z) values when core:*debug-values* is not nil
 #    cfg.define("DEBUG_IHS",1)
 #    cfg.define("DEBUG_NO_UNWIND",1)
-#    cfg.define("DEBUG_ENSURE_VALID_OBJECT",1)
-#    cfg.define("DEBUG_THREADS",1)
-#    cfg.define("DEBUG_QUICK_VALIDATE",1)    # quick/cheap validate if on and comprehensive validate if not
 #    cfg.define("DEBUG_STARTUP",1)
 #    cfg.define("DEBUG_ACCESSORS",1)
 #    cfg.define("DEBUG_GFDISPATCH",1)
@@ -753,6 +750,10 @@ def configure(cfg):
 #    cfg.define("DEBUG_BOUNDS_ASSERT",1)
 #    cfg.define("DEBUG_SLOT_ACCESSORS",1)
 #    cfg.define("DISABLE_TYPE_INFERENCE",1)
+#    cfg.define("DEBUG_THREADS",1)
+    cfg.define("DEBUG_ENSURE_VALID_OBJECT",1)
+    cfg.define("DEBUG_QUICK_VALIDATE",1)    # quick/cheap validate if on and comprehensive validate if not
+    cfg.define("DEBUG_MPS_SIZE",1)   # check that the size of the MPS object will be calculated properly by obj_skip
 # -----------------
 # defines that slow down program execution
 #  There are more defined in clasp/include/gctools/configure_memory.h

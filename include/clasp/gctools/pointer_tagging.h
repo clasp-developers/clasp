@@ -182,7 +182,6 @@ namespace gctools {
 Robert Strandh suggested a separate tag for CONS cells so that there would be a quick CONSP test
 for a CONS cell*/
   static const uintptr_clasp_t ptr_mask    = ~ZERO_TAG_MASK;
-  static const uintptr_clasp_t cptr_tag    =  CPTR_TAG;  // means an aligned C-pointer
   static const uintptr_clasp_t general_tag =  GENERAL_TAG;  // means a GENERAL pointer
   static const uintptr_clasp_t cons_tag    =  CONS_TAG;     // means a CONS cell pointer
   /*! A test for pointers has the form (potential_ptr&POINTER_TAG_MASK)==POINTER_TAG_EQ) */

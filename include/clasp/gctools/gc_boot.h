@@ -50,7 +50,7 @@ namespace gctools {
       ctype_char,
       ctype__Bool,
       ctype_enum_core__StreamMode,
-      ctype_core__FrameKind,
+      ctype_core__FrameStamp,
       last_data_type };
   
   enum Layout_cmd {
@@ -93,15 +93,15 @@ namespace gctools {
   };
 
   enum Layout_operation { class_container_op, bitunit_container_op, templated_op };
-  struct Kind_info {
+  struct Stamp_info {
     Layout_operation    layout_op;
     const char*   name;
     Field_info*   field_info_ptr; // Only applies to classes
     Container_info* container_info_ptr; // 
   };
 
-  struct Kind_layout {
-    Layout_operation    layout_op; // One of class_kind, templated_class_kind, container_kind
+  struct Stamp_layout {
+    Layout_operation    layout_op; // One of class_container_op, bitunit_container_op, templated_op
     Field_layout*  field_layout_start; // Points into global_field_layout_table
     size_t            number_of_fields;
     size_t            bits_per_bitunit;
@@ -109,18 +109,18 @@ namespace gctools {
     Container_layout* container_layout;
   };
 
-  extern Layout_code* get_kind_layout_codes();
-  extern size_t           global_kind_max;
-  extern Kind_info*       global_kind_info;
-  extern Kind_layout*     global_kind_layout;
+  extern Layout_code* get_stamp_layout_codes();
+  extern size_t           global_stamp_max;
+  extern Stamp_info*       global_stamp_info;
+  extern Stamp_layout*     global_stamp_layout;
   extern Field_info*      global_field_info;
   extern Field_layout*    global_field_layout;
 
 
-  void build_kind_field_layout_tables();
+  void build_stamp_field_layout_tables();
 
 
-#define FRIEND_GC_INTERFACE() friend gctools::Layout_code* gctools::get_kind_layout_codes()
+#define FRIEND_GC_INTERFACE() friend gctools::Layout_code* gctools::get_stamp_layout_codes()
 
 };
 

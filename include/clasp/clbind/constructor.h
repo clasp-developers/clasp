@@ -96,8 +96,7 @@ public:
 template <typename T, typename Pointer>
 class gctools::GCStamp<clbind::DefaultConstructorCreator_O<T, Pointer>> {
 public:
-  static gctools::GCStampEnum const Stamp = gctools::GCStamp<typename clbind::DefaultConstructorCreator_O<T, Pointer>::TemplatedBase>::Kind;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER;
+  static gctools::GCStampEnum const Stamp = gctools::GCStamp<typename clbind::DefaultConstructorCreator_O<T, Pointer>::TemplatedBase>::Stamp;
 };
 
 namespace clbind {
@@ -137,8 +136,7 @@ public:
 template <typename T>
 class gctools::GCStamp<clbind::DerivableDefaultConstructorCreator_O<T>> {
 public:
-  static gctools::GCStampEnum const Stamp = gctools::GCStamp<typename clbind::DerivableDefaultConstructorCreator_O<T>::TemplatedBase>::Kind;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER;
+  static gctools::GCStampEnum const Stamp = gctools::GCStamp<typename clbind::DerivableDefaultConstructorCreator_O<T>::TemplatedBase>::Stamp;
 };
 
 namespace clbind {
@@ -161,8 +159,7 @@ public:
 template <typename Policies, typename T>
 class gctools::GCStamp<clbind::DerivableDefaultConstructorFunctor<Policies, T>> {
 public:
-  static gctools::GCStampEnum const Stamp = gctools::GCStamp<typename clbind::DerivableDefaultConstructorFunctor<Policies, T>::TemplatedBase>::Kind;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER;
+  static gctools::GCStampEnum const Stamp = gctools::GCStamp<typename clbind::DerivableDefaultConstructorFunctor<Policies, T>::TemplatedBase>::Stamp;
 };
 
 namespace clbind {
@@ -180,8 +177,7 @@ public:
 template <typename Pols, typename Pointer, typename T, typename Sig>
 class gctools::GCStamp<clbind::VariadicConstructorFunction_O<Pols, Pointer, T, Sig>> {
 public:
-  static gctools::GCStampEnum const Stamp = gctools::GCStamp<typename clbind::VariadicConstructorFunction_O<Pols, Pointer, T, Sig>::TemplatedBase>::Kind;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER;
+  static gctools::GCStampEnum const Stamp = gctools::GCStamp<typename clbind::VariadicConstructorFunction_O<Pols, Pointer, T, Sig>::TemplatedBase>::Stamp;
 };
 
 #endif

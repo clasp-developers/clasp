@@ -232,7 +232,6 @@ template <typename T>
 class gctools::GCStamp<clbind::Wrapper<T, T *>> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::GCStamp<typename clbind::Wrapper<T, T *>::TemplatedBase>::Stamp;
-  static const size_t Flags = FLAGS_STAMP_IN_WRAPPER;
 };
 template <typename T>
 struct gctools::GCInfo<clbind::Wrapper<T, T *>> {
@@ -246,7 +245,6 @@ template <typename T>
 class gctools::GCStamp<clbind::Wrapper<T, std::unique_ptr<T>>> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::GCStamp<typename clbind::Wrapper<T, std::unique_ptr<T>>::TemplatedBase>::Stamp;
-  static const size_t Flags = FLAGS_STAMP_IN_WRAPPER;
 };
 template <typename T>
 struct gctools::GCInfo<clbind::Wrapper<T, std::unique_ptr<T>>> {

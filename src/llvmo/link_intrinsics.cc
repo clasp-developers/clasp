@@ -1390,8 +1390,7 @@ core::T_O *cc_enclose(core::T_O *lambdaName,
 {
   core::T_sp tlambdaName = gctools::smart_ptr<core::T_O>((gc::Tagged)lambdaName);
   gctools::smart_ptr<core::ClosureWithSlots_O> functoid =
-    gctools::GC<core::ClosureWithSlots_O>::allocate_container(numCells
-                                                              , numCells
+    gctools::GC<core::ClosureWithSlots_O>::allocate_container( numCells
                                                               , llvm_func
                                                               , tlambdaName
                                                               , kw::_sym_function

@@ -205,18 +205,11 @@ inline mps_res_t taggedPtrFix(mps_ss_t _ss, mps_word_t _mps_zs, mps_word_t _mps_
   if (gctools::tagged_objectp(*taggedP)) {
     gctools::Tagged tagged_obj = *taggedP;
     if (MPS_FIX1(_ss, tagged_obj)) {
-      //	    Type* obj(NULL);
       gctools::Tagged obj = gctools::untag_object<gctools::Tagged>(tagged_obj);
       gctools::Tagged tag = gctools::tag<gctools::Tagged>(tagged_obj);
       mps_res_t res = MPS_FIX2(_ss, reinterpret_cast<mps_addr_t *>(&obj));
-      if (res != MPS_RES_OK)
-        return res;
+      if (res != MPS_RES_OK) return res;
       obj = obj | tag;
-#ifdef DEBUG_TELEMETRY
-      // Telemetry only on pointer fixes that change
-      if (tagged_obj != obj) {
-      }
-#endif
       *taggedP = obj;
     }
   };
@@ -232,14 +225,8 @@ inline mps_res_t ptrFix(mps_ss_t _ss, mps_word_t _mps_zs, mps_word_t _mps_w, mps
       gctools::Tagged obj = gctools::untag_object<gctools::Tagged>(tagged_obj);
       gctools::Tagged tag = gctools::tag<gctools::Tagged>(tagged_obj);
       mps_res_t res = MPS_FIX2(_ss, reinterpret_cast<mps_addr_t *>(&obj));
-      if (res != MPS_RES_OK)
-        return res;
+      if (res != MPS_RES_OK) return res;
       obj = obj | tag;
-#ifdef DEBUG_TELEMETRY
-      // Telemetry only on pointer fixes that change
-      if (tagged_obj != obj) {
-      }
-#endif
       *taggedP = obj;
     };
   };

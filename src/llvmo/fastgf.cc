@@ -7,6 +7,7 @@
 #include <clasp/core/instance.h>
 #include <clasp/core/wrappedPointer.h>
 #include <clasp/core/funcallableInstance.h>
+#include <clasp/core/derivableCxxObject.h>
 #include <clasp/llvmo/intrinsics.h>
 
 #if 0 // DEBUGGING
@@ -26,11 +27,8 @@
 
 extern "C" {
 
-#if !( (FIXNUM0_TAG<CPTR_TAG) && (CPTR_TAG<CHARACTER_TAG) && (CHARACTER_TAG<CONS_TAG) && (CONS_TAG<FIXNUM1_TAG) && (FIXNUM1_TAG<VASLIST_TAG) && (VASLIST_TAG<SINGLE_FLOAT_TAG) && (SINGLE_FLOAT_TAG<GENERAL_TAG))
+#if !( (FIXNUM0_TAG<GENERAL_TAG) && (GENERAL_TAG<CHARACTER_TAG) && (CHARACTER_TAG<CONS_TAG) && (CONS_TAG<FIXNUM1_TAG) && (FIXNUM1_TAG<VASLIST_TAG) && (VASLIST_TAG<SINGLE_FLOAT_TAG) && (SINGLE_FLOAT_TAG<ZERO_TAG_MASK))
 #error "The tag values do not match the order needed by cc_read_stamp"
-#endif
-#if !( (FLAGS_STAMP_IN_HEADER < FLAGS_STAMP_IN_RACK) && (FLAGS_STAMP_IN_RACK < FLAGS_STAMP_IN_WRAPPER) && (FLAGS_STAMP_IN_WRAPPER < FLAGS_STAMP_IN_CALLBACK))
-#error "The FLAGS_STAMP_IN_xxx values do not match the order needed by cc_read_stamp"
 #endif
  
 BUILTIN_ATTRIBUTES int64_t cc_read_stamp(void* tagged_pointer)
@@ -40,8 +38,27 @@ BUILTIN_ATTRIBUTES int64_t cc_read_stamp(void* tagged_pointer)
   switch (tag) {
   case FIXNUM0_TAG:
       return gctools::STAMP_FIXNUM;
-  case CPTR_TAG:
-      return gctools::STAMP_CPOINTER;
+  case GENERAL_TAG: {
+  // do more stuff to get the stamp
+    core::General_O* client_ptr = reinterpret_cast<core::General_O*>(gctools::untag_general<core::T_O*>(reinterpret_cast<core::T_O*>(tagged_pointer)));
+    const gctools::Header_s& header = *reinterpret_cast<const gctools::Header_s *>(ClientPtrToBasePtr(client_ptr));
+    uint64_t stamp = header.stamp();
+    if (stamp == gctools::STAMP_core__Instance_O ||
+        stamp == gctools::STAMP_core__FuncallableInstance_O ||
+        stamp == gctools::STAMP_clbind__ClassRep_O ) {
+      core::Instance_O* instance_ptr = reinterpret_cast<core::Instance_O*>(client_ptr);
+      core::SimpleVector_O* rack = reinterpret_cast<core::SimpleVector_O*>(gctools::untag_general<core::T_O*>(instance_ptr->_Rack.raw_()));
+      return (*rack)[0].unsafe_fixnum();
+    } else if ( stamp == gctools::STAMP_core__WrappedPointer_O ) {
+      core::WrappedPointer_O* wrapped_ptr = reinterpret_cast<core::WrappedPointer_O*>(client_ptr);
+      return wrapped_ptr->Stamp_;
+    } else if ( stamp == gctools::STAMP_core__DerivableCxxObject_O ) {
+      core::DerivableCxxObject_O* derivable_cxx_object_ptr = reinterpret_cast<core::DerivableCxxObject_O*>(client_ptr);
+      return derivable_cxx_object_ptr->get_stamp_();
+    } else {
+      return stamp;
+    }
+  }
   case CHARACTER_TAG:
       return gctools::STAMP_CHARACTER;
   case CONS_TAG:
@@ -52,28 +69,6 @@ BUILTIN_ATTRIBUTES int64_t cc_read_stamp(void* tagged_pointer)
       return gctools::STAMP_VA_LIST_S;
   case SINGLE_FLOAT_TAG:
       return gctools::STAMP_SINGLE_FLOAT;
-  case GENERAL_TAG: {
-  // do more stuff to get the stamp
-    core::General_O* client_ptr = reinterpret_cast<core::General_O*>(gctools::untag_general<core::T_O*>(reinterpret_cast<core::T_O*>(tagged_pointer)));
-    uint64_t* header_ptr = reinterpret_cast<uint64_t*>(ClientPtrToBasePtr(client_ptr));
-    uint64_t header = *header_ptr;
-    uint64_t header_flags = (header&gctools::Header_s::flags_mask)>>gctools::Header_s::flags_shift;
-    switch (header_flags) {
-    case FLAGS_STAMP_IN_HEADER: 
-        return header>>gctools::Header_s::stamp_shift;
-    case FLAGS_STAMP_IN_RACK: {
-      core::Instance_O* instance_ptr = reinterpret_cast<core::Instance_O*>(gctools::untag_general<core::T_O*>(reinterpret_cast<core::T_O*>(tagged_pointer)));
-      core::SimpleVector_O* rack = reinterpret_cast<core::SimpleVector_O*>(gctools::untag_general<core::T_O*>(instance_ptr->_Rack.raw_()));
-      return (*rack)[0].unsafe_fixnum();
-    }
-    case FLAGS_STAMP_IN_WRAPPER: {
-      core::WrappedPointer_O* wrapped_ptr = reinterpret_cast<core::WrappedPointer_O*>(client_ptr);
-      return wrapped_ptr->Stamp_;
-    }
-    case FLAGS_STAMP_IN_CALLBACK:
-        return client_ptr->get_stamp_();
-    }
-  }
   }
   return 123456;
 }

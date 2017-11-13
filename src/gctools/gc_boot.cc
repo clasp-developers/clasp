@@ -10,9 +10,9 @@ namespace gctools {
 
 
 
-size_t           global_kind_max;
-Kind_info*       global_kind_info;
-Kind_layout*     global_kind_layout;
+size_t           global_stamp_max;
+Stamp_info*       global_stamp_info;
+Stamp_layout*     global_stamp_layout;
 Field_info*      global_field_info;
 Field_layout*    global_field_layout;
 Container_layout* global_container_layout;
@@ -24,15 +24,15 @@ Container_info*  global_container_info;
 It uses global_class_layout_codes to malloc space for and
 build the global_class_info_table and the global_field_layout_table.
 */
-void build_kind_field_layout_tables()
+void build_stamp_field_layout_tables()
 {
-  // First pass through the global_kind_layout_codes_table
-  // to count the number of kinds and the number of fields
-  Layout_code* codes = get_kind_layout_codes();
+  // First pass through the global_stamp_layout_codes_table
+  // to count the number of stamps and the number of fields
+  Layout_code* codes = get_stamp_layout_codes();
   int idx = 0;
   size_t number_of_fixable_fields = 0;
   size_t number_of_containers = 0;
-  global_kind_max = 0;
+  global_stamp_max = 0;
   size_t num_codes = 0;
   while (1) {
     if ( codes[idx].cmd == layout_end ) break;
@@ -45,8 +45,8 @@ void build_kind_field_layout_tables()
          codes[idx].cmd == container_kind ||
          codes[idx].cmd == bitunit_container_kind ||
          codes[idx].cmd == templated_kind ) {
-      if ( global_kind_max < codes[idx].data0 ) {
-        global_kind_max = codes[idx].data0;
+      if ( global_stamp_max < codes[idx].data0 ) {
+        global_stamp_max = codes[idx].data0;
       } else {
       }
     } else if ( (codes[idx].cmd == fixed_field
@@ -68,8 +68,8 @@ void build_kind_field_layout_tables()
   }
   // Now malloc memory for the tables
   // now that we know the size of everything
-  global_kind_info = (Kind_info*)malloc(sizeof(Kind_info)*(global_kind_max+1));
-  global_kind_layout = (Kind_layout*)malloc(sizeof(Kind_layout)*(global_kind_max+1));
+  global_stamp_info = (Stamp_info*)malloc(sizeof(Stamp_info)*(global_stamp_max+1));
+  global_stamp_layout = (Stamp_layout*)malloc(sizeof(Stamp_layout)*(global_stamp_max+1));
   global_field_layout = (Field_layout*)malloc(sizeof(Field_layout)*number_of_fixable_fields);
   Field_layout* cur_field_layout= global_field_layout;
   Field_layout* max_field_layout = (Field_layout*)((char*)global_field_layout + sizeof(Field_layout)*number_of_fixable_fields);
@@ -78,80 +78,80 @@ void build_kind_field_layout_tables()
   Field_info* max_field_info = (Field_info*)((char*)global_field_info + sizeof(Field_info)*number_of_fixable_fields);
   global_container_layout = (Container_layout*)malloc(sizeof(Container_layout)*(number_of_containers+1));
   global_container_info = (Container_info*)malloc(sizeof(Container_info)*(number_of_containers+1));
-  // Fill in the immediate kinds
-  // Traverse the global_kind_layout_codes again and fill the tables
-  codes = get_kind_layout_codes();
+  // Fill in the immediate stamps
+  // Traverse the global_stamp_layout_codes again and fill the tables
+  codes = get_stamp_layout_codes();
   size_t cur_container_layout_idx = 0;
   size_t cur_container_info_idx = 0;
-  int cur_kind=0;
+  int cur_stamp=0;
   idx = 0;
   for ( idx=0; idx<num_codes; ++idx ) {
 //    printf("%s:%d idx = %d\n", __FILE__, __LINE__, idx);
     switch (codes[idx].cmd) {
     case class_kind:
-        cur_kind = codes[idx].data0;
-//        printf("%s:%d  cur_kind = %d\n", __FILE__, __LINE__, cur_kind);
-        global_kind_layout[cur_kind].layout_op = class_container_op;
-        global_kind_layout[cur_kind].field_layout_start = NULL;
-        global_kind_layout[cur_kind].container_layout = NULL;
-        global_kind_layout[cur_kind].number_of_fields = 0;
-        global_kind_layout[cur_kind].bits_per_bitunit = 0;
-        global_kind_layout[cur_kind].size = codes[idx].data1;
-        global_kind_info[cur_kind].name = codes[idx].description;
-        global_kind_info[cur_kind].field_info_ptr = NULL;
-        global_kind_info[cur_kind].container_info_ptr = NULL;
+        cur_stamp = codes[idx].data0;
+//        printf("%s:%d  cur_stamp = %d\n", __FILE__, __LINE__, cur_stamp);
+        global_stamp_layout[cur_stamp].layout_op = class_container_op;
+        global_stamp_layout[cur_stamp].field_layout_start = NULL;
+        global_stamp_layout[cur_stamp].container_layout = NULL;
+        global_stamp_layout[cur_stamp].number_of_fields = 0;
+        global_stamp_layout[cur_stamp].bits_per_bitunit = 0;
+        global_stamp_layout[cur_stamp].size = codes[idx].data1;
+        global_stamp_info[cur_stamp].name = codes[idx].description;
+        global_stamp_info[cur_stamp].field_info_ptr = NULL;
+        global_stamp_info[cur_stamp].container_info_ptr = NULL;
         break;
     case fixed_field:
         if ( !(codes[idx].data0 == SMART_PTR_OFFSET
                || codes[idx].data0 == TAGGED_POINTER_OFFSET
                || codes[idx].data0 == POINTER_OFFSET )) continue;
         GCTOOLS_ASSERT(cur_field_layout<max_field_layout);
-        if ( global_kind_layout[cur_kind].field_layout_start == NULL )
-          global_kind_layout[cur_kind].field_layout_start = cur_field_layout;
-        ++global_kind_layout[cur_kind].number_of_fields;
+        if ( global_stamp_layout[cur_stamp].field_layout_start == NULL )
+          global_stamp_layout[cur_stamp].field_layout_start = cur_field_layout;
+        ++global_stamp_layout[cur_stamp].number_of_fields;
         cur_field_layout->field_offset = codes[idx].data2;
         ++cur_field_layout;
         GCTOOLS_ASSERT(cur_field_info<max_field_info);
-        if ( global_kind_info[cur_kind].field_info_ptr == NULL )
-          global_kind_info[cur_kind].field_info_ptr = cur_field_info;
+        if ( global_stamp_info[cur_stamp].field_info_ptr == NULL )
+          global_stamp_info[cur_stamp].field_info_ptr = cur_field_info;
         cur_field_info->field_name = codes[idx].description;
         ++cur_field_info;
         break;
     case container_kind:
-        cur_kind = codes[idx].data0;
-        global_kind_layout[cur_kind].layout_op = class_container_op;
-        global_kind_layout[cur_kind].number_of_fields = 0;
-        global_kind_layout[cur_kind].size = codes[idx].data1;
-        global_kind_layout[cur_kind].bits_per_bitunit = 0;
-        global_kind_layout[cur_kind].field_layout_start = NULL;
-        global_kind_layout[cur_kind].container_layout = NULL;
-        global_kind_info[cur_kind].name = codes[idx].description;
-        global_kind_info[cur_kind].field_info_ptr = NULL;
-        global_kind_info[cur_kind].container_info_ptr = NULL;
+        cur_stamp = codes[idx].data0;
+        global_stamp_layout[cur_stamp].layout_op = class_container_op;
+        global_stamp_layout[cur_stamp].number_of_fields = 0;
+        global_stamp_layout[cur_stamp].size = codes[idx].data1;
+        global_stamp_layout[cur_stamp].bits_per_bitunit = 0;
+        global_stamp_layout[cur_stamp].field_layout_start = NULL;
+        global_stamp_layout[cur_stamp].container_layout = NULL;
+        global_stamp_info[cur_stamp].name = codes[idx].description;
+        global_stamp_info[cur_stamp].field_info_ptr = NULL;
+        global_stamp_info[cur_stamp].container_info_ptr = NULL;
         break;
     case bitunit_container_kind:
-        cur_kind = codes[idx].data0;
-        global_kind_layout[cur_kind].layout_op = bitunit_container_op;
-        global_kind_layout[cur_kind].number_of_fields = 0;
-        global_kind_layout[cur_kind].size = codes[idx].data1;
-        global_kind_layout[cur_kind].bits_per_bitunit = codes[idx].data2;
-        global_kind_layout[cur_kind].field_layout_start = NULL;
-        global_kind_layout[cur_kind].container_layout = NULL;
-        global_kind_info[cur_kind].name = codes[idx].description;
-        global_kind_info[cur_kind].field_info_ptr = NULL;
-        global_kind_info[cur_kind].container_info_ptr = NULL;
+        cur_stamp = codes[idx].data0;
+        global_stamp_layout[cur_stamp].layout_op = bitunit_container_op;
+        global_stamp_layout[cur_stamp].number_of_fields = 0;
+        global_stamp_layout[cur_stamp].size = codes[idx].data1;
+        global_stamp_layout[cur_stamp].bits_per_bitunit = codes[idx].data2;
+        global_stamp_layout[cur_stamp].field_layout_start = NULL;
+        global_stamp_layout[cur_stamp].container_layout = NULL;
+        global_stamp_info[cur_stamp].name = codes[idx].description;
+        global_stamp_info[cur_stamp].field_info_ptr = NULL;
+        global_stamp_info[cur_stamp].container_info_ptr = NULL;
         break;
     case variable_array0:
-        global_kind_layout[cur_kind].container_layout = &global_container_layout[cur_container_layout_idx++];
+        global_stamp_layout[cur_stamp].container_layout = &global_container_layout[cur_container_layout_idx++];
         GCTOOLS_ASSERT(cur_container_layout_idx<=number_of_containers);
-        global_kind_layout[cur_kind].container_layout->data_offset = codes[idx].data2;
+        global_stamp_layout[cur_stamp].container_layout->data_offset = codes[idx].data2;
         break;
     case variable_capacity:
-        global_kind_layout[cur_kind].container_layout->field_layout_start = cur_field_layout;
-        global_kind_layout[cur_kind].container_layout->element_size = codes[idx].data0;
-        global_kind_layout[cur_kind].container_layout->number_of_fields = 0;
-        global_kind_layout[cur_kind].container_layout->end_offset = codes[idx].data1;
-        global_kind_layout[cur_kind].container_layout->capacity_offset = codes[idx].data2;
+        global_stamp_layout[cur_stamp].container_layout->field_layout_start = cur_field_layout;
+        global_stamp_layout[cur_stamp].container_layout->element_size = codes[idx].data0;
+        global_stamp_layout[cur_stamp].container_layout->number_of_fields = 0;
+        global_stamp_layout[cur_stamp].container_layout->end_offset = codes[idx].data1;
+        global_stamp_layout[cur_stamp].container_layout->capacity_offset = codes[idx].data2;
         break;
     case variable_field:
         if ( !(codes[idx].data0 == SMART_PTR_OFFSET
@@ -160,22 +160,22 @@ void build_kind_field_layout_tables()
         GCTOOLS_ASSERT(cur_field_layout<max_field_layout);
         cur_field_layout->field_offset = codes[idx].data2;
         ++cur_field_layout;
-        ++global_kind_layout[cur_kind].container_layout->number_of_fields;
-        if ( global_kind_info[cur_kind].container_info_ptr == NULL )
-          global_kind_info[cur_kind].container_info_ptr = &global_container_info[cur_container_info_idx++];
+        ++global_stamp_layout[cur_stamp].container_layout->number_of_fields;
+        if ( global_stamp_info[cur_stamp].container_info_ptr == NULL )
+          global_stamp_info[cur_stamp].container_info_ptr = &global_container_info[cur_container_info_idx++];
         GCTOOLS_ASSERT(cur_container_info_idx<=number_of_containers);
-        global_kind_info[cur_kind].container_info_ptr->field_name = codes[idx].description;
+        global_stamp_info[cur_stamp].container_info_ptr->field_name = codes[idx].description;
         break;
     case templated_kind:
-        cur_kind = codes[idx].data0;
-        global_kind_layout[cur_kind].layout_op = templated_op;
-        global_kind_layout[cur_kind].field_layout_start = NULL;
-        global_kind_layout[cur_kind].container_layout = NULL;
-        global_kind_layout[cur_kind].number_of_fields = 0;
-        global_kind_layout[cur_kind].size = codes[idx].data1;
-        global_kind_info[cur_kind].name = codes[idx].description;
-        global_kind_info[cur_kind].field_info_ptr = NULL;
-        global_kind_info[cur_kind].container_info_ptr = NULL;
+        cur_stamp = codes[idx].data0;
+        global_stamp_layout[cur_stamp].layout_op = templated_op;
+        global_stamp_layout[cur_stamp].field_layout_start = NULL;
+        global_stamp_layout[cur_stamp].container_layout = NULL;
+        global_stamp_layout[cur_stamp].number_of_fields = 0;
+        global_stamp_layout[cur_stamp].size = codes[idx].data1;
+        global_stamp_info[cur_stamp].name = codes[idx].description;
+        global_stamp_info[cur_stamp].field_info_ptr = NULL;
+        global_stamp_info[cur_stamp].container_info_ptr = NULL;
         break;
     case templated_class_jump_table_index:
         break;
@@ -189,11 +189,11 @@ void build_kind_field_layout_tables()
 }
 
 
-CL_DEFUN Fixnum gctools__size_of_kind_field_layout_table()
+CL_DEFUN Fixnum gctools__size_of_stamp_field_layout_table()
 {
-  // First pass through the global_kind_layout_codes_table
-  // to count the number of kinds and the number of fields
-  Layout_code* codes = get_kind_layout_codes();
+  // First pass through the global_stamp_layout_codes_table
+  // to count the number of stamps and the number of fields
+  Layout_code* codes = get_stamp_layout_codes();
   int idx = 0;
   while (1) {
     if ( codes[idx].cmd == layout_end ) return idx;
@@ -201,12 +201,12 @@ CL_DEFUN Fixnum gctools__size_of_kind_field_layout_table()
   }
 }
 
-CL_DEFUN core::T_mv gctools__kind_field_layout_entry(size_t idx)
+CL_DEFUN core::T_mv gctools__stamp_field_layout_entry(size_t idx)
 {
-  core::SymbolToEnumConverter_sp conv = gctools::As<core::SymbolToEnumConverter_sp>(_sym_STARkind_field_layout_table_cmdsSTAR->symbolValue());
-  // First pass through the global_kind_layout_codes_table
-  // to count the number of kinds and the number of fields
-  Layout_code* codes = get_kind_layout_codes();
+  core::SymbolToEnumConverter_sp conv = gctools::As<core::SymbolToEnumConverter_sp>(_sym_STARstamp_field_layout_table_cmdsSTAR->symbolValue());
+  // First pass through the global_stamp_layout_codes_table
+  // to count the number of stamps and the number of fields
+  Layout_code* codes = get_stamp_layout_codes();
   Layout_code& code = codes[idx];
   core::Symbol_sp cmd = conv->symbolForEnumIndex(code.cmd);
   core::Fixnum_sp data0 = core::clasp_make_fixnum(code.data0);

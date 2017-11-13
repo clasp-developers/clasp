@@ -68,7 +68,7 @@ void GcToolsExposer_O::expose(core::Lisp_sp lisp, core::Exposer_O::WhatToExpose 
     SYMBOL_EXPORT_SC_(GcToolsPkg, maxBootstrapKinds);
     SYMBOL_EXPORT_SC_(GcToolsPkg, bootstrapKindsP);
     SYMBOL_EXPORT_SC_(GcToolsPkg, bootstrapKindSymbols);
-    SYMBOL_EXPORT_SC_(GcToolsPkg, STARkind_field_layout_table_cmdsSTAR );
+    SYMBOL_EXPORT_SC_(GcToolsPkg, STARstamp_field_layout_table_cmdsSTAR );
 
     SYMBOL_EXPORT_SC_(GcToolsPkg,class_kind);
     SYMBOL_EXPORT_SC_(GcToolsPkg,container_kind);
@@ -86,8 +86,8 @@ void GcToolsExposer_O::expose(core::Lisp_sp lisp, core::Exposer_O::WhatToExpose 
   };
       break;
   case candoGlobals: {
-    core::SymbolToEnumConverter_sp conv = core::SymbolToEnumConverter_O::create("kind field layout cmds");
-    _sym_STARkind_field_layout_table_cmdsSTAR->defparameter(conv);
+    core::SymbolToEnumConverter_sp conv = core::SymbolToEnumConverter_O::create("stamp field layout cmds");
+    _sym_STARstamp_field_layout_table_cmdsSTAR->defparameter(conv);
     conv->addSymbolEnumPair(_sym_class_kind,_sym_class_kind,class_kind);
     conv->addSymbolEnumPair(_sym_container_kind,_sym_container_kind,container_kind);
     conv->addSymbolEnumPair(_sym_templated_kind,_sym_templated_kind,templated_kind);

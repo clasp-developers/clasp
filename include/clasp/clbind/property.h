@@ -97,8 +97,7 @@ public:
 template <typename GetterPolicies, typename OT, typename VariablePtrType>
 class gctools::GCStamp<clbind::GetterMethoid<GetterPolicies, OT, VariablePtrType>> {
 public:
-  static gctools::GCStampEnum const Stamp = gctools::GCStamp<typename clbind::GetterMethoid<GetterPolicies, OT, VariablePtrType>::TemplatedBase>::Kind;
-  static const size_t Flags = FLAGS_STAMP_IN_HEADER;
+  static gctools::GCStampEnum const Stamp = gctools::GCStamp<typename clbind::GetterMethoid<GetterPolicies, OT, VariablePtrType>::TemplatedBase>::Stamp;
 };
 
 #endif

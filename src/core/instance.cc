@@ -633,11 +633,12 @@ bool Instance_O::isSubClassOf(Class_sp ancestor) const {
     printf("%s:%d   Instance_O::isSubClassOf  find_theClass(%p) and _lisp->_Root._TheClass(%p) don't match anymore\n", __FILE__, __LINE__, find_theClass.raw_(), _lisp->_Roots._TheClass.raw_() );
   }
 #endif
-  if (this->_Class==_lisp->_Roots._TheClass
-      || this->_Class==_lisp->_Roots._TheBuiltInClass
-      || this->_Class==_lisp->_Roots._TheStandardClass
-      || this->_Class==_lisp->_Roots._TheStructureClass
-      || this->_Class->isSubClassOf(_lisp->_Roots._TheClass)) {
+  Instance_sp this_class = ENSURE_VALID_OBJECT(this->_Class);
+  if (this_class==_lisp->_Roots._TheClass
+      || this_class==_lisp->_Roots._TheBuiltInClass
+      || this_class==_lisp->_Roots._TheStandardClass
+      || this_class==_lisp->_Roots._TheStructureClass
+      || this_class->isSubClassOf(_lisp->_Roots._TheClass)) {
     if (this == &*ancestor) return true;
   // TODO: I need to memoize this somehow so that I'm not constantly searching a list in
   // linear time
@@ -648,7 +649,7 @@ bool Instance_O::isSubClassOf(Class_sp ancestor) const {
     }
     return false;
   }
-  printf("%s:%d FAILED   this->_Class->isSubClassOf(_lisp->_Roots._TheClass) ->%d\n", __FILE__, __LINE__, this->_Class->isSubClassOf(_lisp->_Roots._TheClass));
+  printf("%s:%d FAILED   this_class->isSubClassOf(_lisp->_Roots._TheClass) ->%d\n", __FILE__, __LINE__, this_class->isSubClassOf(_lisp->_Roots._TheClass));
   {
     printf("%s:%d   this->className() -> %s  checking if subclass of %s\n", __FILE__, __LINE__, _rep_(this->_className()).c_str(), _rep_(ancestor->_className()).c_str());
     List_sp cpl = this->instanceRef(Class_O::REF_CLASS_CLASS_PRECEDENCE_LIST);
@@ -658,7 +659,7 @@ bool Instance_O::isSubClassOf(Class_sp ancestor) const {
   }
   {
     printf("%s:%d   this->_Class->className() -> %s  its cpl ->>>\n", __FILE__, __LINE__, _rep_(this->_Class->_className()).c_str());
-    List_sp cpl = this->_Class->instanceRef(Class_O::REF_CLASS_CLASS_PRECEDENCE_LIST);
+    List_sp cpl = this_class->instanceRef(Class_O::REF_CLASS_CLASS_PRECEDENCE_LIST);
     for ( auto cur: cpl ) {
       Class_sp cc = gc::As<Instance_sp>(CONS_CAR(cur));
       printf("%s:%d  cpl -> %s == _lisp->_Roots._TheClass -> %d\n", __FILE__, __LINE__, _rep_(cc->_className()).c_str(), cc == _lisp->_Roots._TheClass);

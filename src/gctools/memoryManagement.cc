@@ -306,10 +306,10 @@ void Header_s::validate() const {
 #endif
     if ( this->stamp() > global_NextStamp ) signal_invalid_object(this,"normal object bad header stamp");
 #ifdef DEBUG_GUARD
-    if ( this->tail_start & 0xffffffffff000000 ) signal_invalid_object(this,"bad tail_start");
-    if ( this->tail_size & 0xffffffffff000000 ) signal_invalid_object(this,"bad tail_size");
-    for ( unsigned char *cp=((unsigned char*)(this)+this->tail_start), 
-            *cpEnd((unsigned char*)(this)+this->tail_start+this->tail_size); cp < cpEnd; ++cp ) {
+    if ( this->_tail_start & 0xffffffffff000000 ) signal_invalid_object(this,"bad tail_start");
+    if ( this->_tail_size & 0xffffffffff000000 ) signal_invalid_object(this,"bad tail_size");
+    for ( unsigned char *cp=((unsigned char*)(this)+this->_tail_start), 
+            *cpEnd((unsigned char*)(this)+this->_tail_start+this->_tail_size); cp < cpEnd; ++cp ) {
       if (*cp!=0xcc) signal_invalid_object(this,"bad tail content");
     }
 #endif
@@ -318,8 +318,8 @@ void Header_s::validate() const {
 #ifdef DEBUG_GUARD
   if ( this->fwdP() ) {
     if ( this->guard != 0xFEEAFEEBDEADBEEF) signal_invalid_object(this,"bad fwdP guard");
-    for ( unsigned char *cp=((unsigned char*)(this)+this->tail_start), 
-            *cpEnd((unsigned char*)(this)+this->tail_start+this->tail_size); cp < cpEnd; ++cp ) {
+    for ( unsigned char *cp=((unsigned char*)(this)+this->_tail_start), 
+            *cpEnd((unsigned char*)(this)+this->_tail_start+this->_tail_size); cp < cpEnd; ++cp ) {
       if (*cp!=0xcc) signal_invalid_object(this,"bad tail content");
     }
   }
@@ -528,7 +528,7 @@ int startupGarbageCollectorAndSystem(MainFunctionType startupFn, int argc, char 
     printf("%s:%d global_alignup_sizeof_header = %" PRu "\n", __FILE__, __LINE__, global_alignup_sizeof_header );
 #endif
   }
-  build_kind_field_layout_tables();
+  build_stamp_field_layout_tables();
 #ifdef SIGRTMIN
 # define DEFAULT_THREAD_INTERRUPT_SIGNAL SIGRTMIN + 2
 #else

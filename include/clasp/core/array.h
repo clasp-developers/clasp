@@ -640,7 +640,7 @@ namespace core {
   SimpleBaseString_O(size_t length, value_type initialElement=value_type(), bool initialElementSupplied=false, size_t initialContentsSize=0, const value_type* initialContents=NULL) : TemplatedBase(length,initialElement,initialElementSupplied,initialContentsSize,initialContents) {};
     static SimpleBaseString_sp make(size_t length, value_type initialElement='\0', bool initialElementSupplied=false, size_t initialContentsSize=0, const value_type* initialContents=NULL) {
       // For C/C++ interop make SimpleBaseString 1 character longer and append a \0
-      auto bs = gctools::GC<SimpleBaseString_O>::allocate_container( length+1,length,initialElement,initialElementSupplied,initialContentsSize,initialContents);
+      auto bs = gctools::GC<SimpleBaseString_O>::allocate_container_null_terminated_string( length,initialElement,initialElementSupplied,initialContentsSize,initialContents);
       bs->c_style_null_terminate(); // (*bs)[length] = '\0';
       return bs;
     }
@@ -714,7 +714,7 @@ namespace core {
     // Always leave space for \0 at end
   SimpleCharacterString_O(size_t length, value_type initialElement=value_type(), bool initialElementSupplied=false, size_t initialContentsSize=0, const value_type* initialContents=NULL) : TemplatedBase(length,initialElement,initialElementSupplied,initialContentsSize,initialContents) {};
     static SimpleCharacterString_sp make(size_t length, value_type initialElement='\0', bool initialElementSupplied=false, size_t initialContentsSize=0, const value_type* initialContents=NULL) {
-      auto bs = gctools::GC<SimpleCharacterString_O>::allocate_container(length,length,initialElement,initialElementSupplied,initialContentsSize,initialContents);
+      auto bs = gctools::GC<SimpleCharacterString_O>::allocate_container(length,initialElement,initialElementSupplied,initialContentsSize,initialContents);
       return bs;
     }
     static SimpleCharacterString_sp make(const std::string& str) {
@@ -787,7 +787,7 @@ namespace core {
   public:
   SimpleVector_O(size_t length, value_type initialElement=value_type(), bool initialElementSupplied=false, size_t initialContentsSize=0, const value_type* initialContents=NULL) : TemplatedBase(length,initialElement,initialElementSupplied,initialContentsSize,initialContents) {};
     static SimpleVector_sp make(size_t length, T_sp initialElement=_Nil<T_O>(), bool initialElementSupplied=false, size_t initialContentsSize=0, const T_sp* initialContents=NULL) {
-      auto bs = gctools::GC<SimpleVector_O>::allocate_container(length,length,initialElement,initialElementSupplied,initialContentsSize,initialContents);
+      auto bs = gctools::GC<SimpleVector_O>::allocate_container(length,initialElement,initialElementSupplied,initialContentsSize,initialContents);
       return bs;
     }
   public:
@@ -1285,7 +1285,7 @@ namespace core {
       LIKELY_if (dataOrDisplacedTo.nilp()) {
         dataOrDisplacedTo = SimpleBaseString_O::make(dimension,initElement,initialElementSuppliedP);
       }
-      auto s = gctools::GC<Str8Ns_O>::allocate_container(1,1,dimension,fillPointer,gc::As<Array_sp>(dataOrDisplacedTo),displacedToP,displacedIndexOffset);
+      auto s = gctools::GC<Str8Ns_O>::allocate_container(1,dimension,fillPointer,gc::As<Array_sp>(dataOrDisplacedTo),displacedToP,displacedIndexOffset);
       return s;
     }
     static Str8Ns_sp make(size_t dimension, claspChar initElement/*='\0'*/, bool initialElementSuppliedP/*=false*/, T_sp fillPointer/*=_Nil<T_O>()*/) {
@@ -1352,7 +1352,7 @@ namespace core {
       LIKELY_if (dataOrDisplacedTo.nilp()) {
         dataOrDisplacedTo = SimpleCharacterString_O::make(dimension,initElement,initialElementSuppliedP);
       }
-      auto s = gctools::GC<StrWNs_O>::allocate_container(1,1,dimension,fillPointer,gc::As<Array_sp>(dataOrDisplacedTo),displacedToP,displacedIndexOffset);
+      auto s = gctools::GC<StrWNs_O>::allocate_container(1,dimension,fillPointer,gc::As<Array_sp>(dataOrDisplacedTo),displacedToP,displacedIndexOffset);
       return s;
     }
     static StrWNs_sp make(size_t dimension, claspCharacter initElement/*='\0'*/, bool initialElementSuppliedP/*=false*/, T_sp fillPointer/*=_Nil<T_O>()*/) {
@@ -1410,7 +1410,7 @@ namespace core {
       LIKELY_if (dataOrDisplacedTo.nilp()) {
         dataOrDisplacedTo = SimpleBitVector_O::make(length,initialElement,initialElementSuppliedP);
       }
-      auto bv = gctools::GC<BitVectorNs_O>::allocate_container(1,1,length,fillPointer,gc::As<Array_sp>(dataOrDisplacedTo),displacedToP,displacedIndexOffset);
+      auto bv = gctools::GC<BitVectorNs_O>::allocate_container(1,length,fillPointer,gc::As<Array_sp>(dataOrDisplacedTo),displacedToP,displacedIndexOffset);
       return bv;
     }
   public:
@@ -1504,7 +1504,7 @@ namespace core
       {
         dataOrDisplacedTo = SimpleVector_O::make(dimension,initialElement,true);
       }
-      MDArrayT_sp array = gctools::GC<MDArrayT_O>::allocate_container(1,1,dimension,fillPointer,gc::As_unsafe<Array_sp>(dataOrDisplacedTo),displacedToP,displacedIndexOffset);
+      MDArrayT_sp array = gctools::GC<MDArrayT_O>::allocate_container(1,dimension,fillPointer,gc::As_unsafe<Array_sp>(dataOrDisplacedTo),displacedToP,displacedIndexOffset);
       return array;
     }
     static MDArrayT_sp make(size_t dimension, T_sp initialElement) {
@@ -1527,7 +1527,7 @@ namespace core
       LIKELY_if (dataOrDisplacedTo.nilp()) {
         dataOrDisplacedTo = SimpleVector_O::make(arrayTotalSize,initialElement,true);
       }
-      MDArrayT_sp array = gctools::GC<MDArrayT_O>::allocate_container(rank,rank,dim_desig,gc::As<Array_sp>(dataOrDisplacedTo),displacedToP,displacedIndexOffset);
+      MDArrayT_sp array = gctools::GC<MDArrayT_O>::allocate_container(rank,dim_desig,gc::As<Array_sp>(dataOrDisplacedTo),displacedToP,displacedIndexOffset);
       return array;
     }
   public: // specific to MDArrayT_O
@@ -1551,7 +1551,7 @@ namespace core {
       LIKELY_if (data.nilp()) {
         data = SimpleVector_O::make(dimension,initialElement,true);
       }
-      SimpleMDArrayT_sp array = gctools::GC<SimpleMDArrayT_O>::allocate_container(1,1,dimension,gc::As_unsafe<Array_sp>(data));
+      SimpleMDArrayT_sp array = gctools::GC<SimpleMDArrayT_O>::allocate_container(1,dimension,gc::As_unsafe<Array_sp>(data));
       return array;
     }
     static SimpleMDArrayT_sp make(size_t dimension, T_sp initialElement) {
@@ -1568,7 +1568,7 @@ namespace core {
       LIKELY_if (data.nilp()) {
         data = SimpleVector_O::make(arrayTotalSize,initialElement,true);
       }
-      SimpleMDArrayT_sp array = gctools::GC<SimpleMDArrayT_O>::allocate_container(rank,rank,dim_desig,gc::As<Array_sp>(data));
+      SimpleMDArrayT_sp array = gctools::GC<SimpleMDArrayT_O>::allocate_container(rank,dim_desig,gc::As<Array_sp>(data));
       return array;
     }
   public:
@@ -1605,7 +1605,7 @@ namespace core {
       LIKELY_if (dataOrDisplacedTo.nilp()) {
         dataOrDisplacedTo = simple_type::make(arrayTotalSize,initialElement,true);
       }
-      MDArrayBit_sp array = gctools::GC<MDArrayBit_O>::allocate_container(rank,rank,dim_desig,gc::As<Array_sp>(dataOrDisplacedTo),displacedToP,displacedIndexOffset);
+      MDArrayBit_sp array = gctools::GC<MDArrayBit_O>::allocate_container(rank,dim_desig,gc::As<Array_sp>(dataOrDisplacedTo),displacedToP,displacedIndexOffset);
       return array;
     }
   public:
@@ -1662,7 +1662,7 @@ namespace core {
       LIKELY_if (data.nilp()) {
         data = SimpleBitVector_O::make(arrayTotalSize,initialElement,true);
       }
-      SimpleMDArrayBit_sp array = gctools::GC<SimpleMDArrayBit_O>::allocate_container(rank,rank,dim_desig,gc::As<Array_sp>(data));
+      SimpleMDArrayBit_sp array = gctools::GC<SimpleMDArrayBit_O>::allocate_container(rank,dim_desig,gc::As<Array_sp>(data));
       return array;
     }
   public:
@@ -1723,7 +1723,7 @@ namespace core {
       LIKELY_if (dataOrDisplacedTo.nilp()) {
         dataOrDisplacedTo = simple_type::make(arrayTotalSize,initialElement,true);
       }
-      MDArrayBaseChar_sp array = gctools::GC<MDArrayBaseChar_O>::allocate_container(rank,rank,dim_desig,gc::As<Array_sp>(dataOrDisplacedTo),displacedToP,displacedIndexOffset);
+      MDArrayBaseChar_sp array = gctools::GC<MDArrayBaseChar_O>::allocate_container(rank,dim_desig,gc::As<Array_sp>(dataOrDisplacedTo),displacedToP,displacedIndexOffset);
       return array;
     }
   public:
@@ -1750,7 +1750,7 @@ namespace core {
       LIKELY_if (data.nilp()) {
         data = SimpleBaseString_O::make(arrayTotalSize,initialElement,true);
       }
-      SimpleMDArrayBaseChar_sp array = gctools::GC<SimpleMDArrayBaseChar_O>::allocate_container(rank,rank,dim_desig,gc::As<Array_sp>(data));
+      SimpleMDArrayBaseChar_sp array = gctools::GC<SimpleMDArrayBaseChar_O>::allocate_container(rank,dim_desig,gc::As<Array_sp>(data));
       return array;
     }
   };
@@ -1784,7 +1784,7 @@ namespace core {
       LIKELY_if (dataOrDisplacedTo.nilp()) {
         dataOrDisplacedTo = simple_type::make(arrayTotalSize,initialElement,true);
       }
-      MDArrayCharacter_sp array = gctools::GC<MDArrayCharacter_O>::allocate_container(rank,rank,dim_desig,gc::As<Array_sp>(dataOrDisplacedTo),displacedToP,displacedIndexOffset);
+      MDArrayCharacter_sp array = gctools::GC<MDArrayCharacter_O>::allocate_container(rank,dim_desig,gc::As<Array_sp>(dataOrDisplacedTo),displacedToP,displacedIndexOffset);
       return array;
     }
   public:
@@ -1811,7 +1811,7 @@ namespace core {
       LIKELY_if (data.nilp()) {
         data = SimpleCharacterString_O::make(arrayTotalSize,initialElement,true);
       }
-      SimpleMDArrayCharacter_sp array = gctools::GC<SimpleMDArrayCharacter_O>::allocate_container(rank,rank,dim_desig,gc::As<Array_sp>(data));
+      SimpleMDArrayCharacter_sp array = gctools::GC<SimpleMDArrayCharacter_O>::allocate_container(rank,dim_desig,gc::As<Array_sp>(data));
       return array;
     }
   };

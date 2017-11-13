@@ -209,7 +209,7 @@ namespace gctools {
       // "template <typename T>\n"\
            // "class gctools::GCStamp<clbind::Wrapper<T, T *>> {\n"\
     // "public:\n"\
-         // "  static gctools::GCStampEnum const Kind = gctools::GCStamp<typename clbind::Wrapper<T, T *>::TemplatedBase>::Kind;\n"\
+         // "  static gctools::GCStampEnum const Kind = gctools::GCStamp<typename clbind::Wrapper<T, T *>::TemplatedBase>::Stamp;\n"\
               // "};") % the_header % stamp_first_general );
     PTR_TYPE tagged_obj;
     T* obj;
@@ -243,6 +243,22 @@ namespace gctools {
     DEBUG_MPS_UNDERSCANNING_TESTS();
     lisp_check_pending_interrupts(my_thread);
     globalMpsMetrics.totalMemoryAllocated += true_size;
+#ifdef DEBUG_MPS_SIZE
+    {
+      mps_addr_t nextClient = obj_skip((mps_addr_t)obj);
+      int skip_size = (int)((char*)nextClient-(char*)obj);
+      if (skip_size != true_size) {
+        printf("%s:%d Bad size calc obj_skip(stamp %u) - true_size -> %lu  obj_skip -> %d delta -> %d\n",
+               __FILE__, __LINE__, header->stamp(), true_size, skip_size, ((int)true_size-(int)skip_size) );
+        mps_addr_t againNextClient = obj_skip((mps_addr_t)obj);
+#ifdef DEBUG_GUARD
+        printf("      header-size= %lu size= %zu tail_size=%lu \n", sizeof(HeadT), size, tail_size );
+#else        
+        printf("      header-size= %lu size= %zu\n", sizeof(HeadT), size );
+#endif
+      }
+    }
+#endif
     ++globalMpsMetrics_countAllocations;
     return tagged_obj;
   };
@@ -572,7 +588,7 @@ namespace gctools {
   public:
     template <typename... ARGS>
       static smart_pointer_type root_allocate(ARGS &&... args) {
-      return root_allocate_kind(GCStamp<OT>::Kind,sizeof_with_header<OT>(),std::forward<ARGS>(args)...);
+      return root_allocate_kind(GCStamp<OT>::Stamp,sizeof_with_header<OT>(),std::forward<ARGS>(args)...);
     }
     template <typename... ARGS>
       static smart_pointer_type root_allocate_kind( const Header_s::Value& the_header, size_t size, ARGS &&... args) {
@@ -682,7 +698,7 @@ namespace gctools {
 
     template <typename... ARGS>
       static smart_pointer_type never_invoke_allocator( ARGS &&... args) {
-      auto kind = GCStamp<OT>::Kind;
+      auto kind = GCStamp<OT>::Stamp;
       return GCObjectAllocator<OT>::allocate_kind(kind,0, std::forward<ARGS>(args)...);
     }
 
@@ -733,8 +749,10 @@ namespace gctools {
     }
 
     /*! Allocate enough space for capacity elements, but set the length to length */
+
     template <typename... ARGS>
-      static smart_pointer_type allocate_container( size_t capacity, size_t length, /*const typename OT::value_type& initial_element,*/ ARGS &&... args) {
+      static smart_pointer_type allocate_container( size_t length, /*const typename OT::value_type& initial_element,*/ ARGS &&... args) {
+      size_t capacity = length;
       size_t size = sizeof_container_with_header<OT>(capacity);
 #ifdef METER_ALLOCATIONS
       if (OT::static_class) {
@@ -745,6 +763,21 @@ namespace gctools {
       return GCObjectAllocator<OT>::allocate_kind(OT::static_HeaderValue,size,length,/*initial_element,*/std::forward<ARGS>(args)...);
     }
 
+        template <typename... ARGS>
+      static smart_pointer_type allocate_container_null_terminated_string( size_t length, /*const typename OT::value_type& initial_element,*/ ARGS &&... args) {
+      size_t capacity = length+1;
+      size_t size = sizeof_container_with_header<OT>(capacity);
+#ifdef METER_ALLOCATIONS
+      if (OT::static_class) {
+        ++OT::static_class->_allocation_counter;
+        OT::static_class->_allocation_total_size += size;
+      }
+#endif
+      return GCObjectAllocator<OT>::allocate_kind(OT::static_HeaderValue,size,length,/*initial_element,*/std::forward<ARGS>(args)...);
+    }
+
+
+    
     template <typename... ARGS>
       static smart_pointer_type allocate_bitunit_container( size_t length, ARGS &&... args) {
       size_t size = sizeof_bitunit_container_with_header<OT>(length);

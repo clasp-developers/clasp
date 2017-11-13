@@ -203,7 +203,7 @@ struct ThreadInfo {
 
 class Lisp_O {
   friend T_mv core__source_file_info(T_sp sourceFile, String_sp truename, size_t offset, bool useLineno);
-  friend gctools::Layout_code* gctools::get_kind_layout_codes();
+  friend gctools::Layout_code* gctools::get_stamp_layout_codes();
   struct GCRoots //: public gctools::HeapRoot
   {
     T_sp _TerminalIO;

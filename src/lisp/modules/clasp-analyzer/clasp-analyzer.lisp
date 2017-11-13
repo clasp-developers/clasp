@@ -137,9 +137,7 @@
 
 (defstruct stamp
   key
-  value-source
   value
-  flags
   root-cclass
   cclass
   species ;; can be nil
@@ -305,29 +303,19 @@
                (notify-parents node-name analysis))
            (analysis-stamps analysis)))
 
-(defun calculate-flags (name)
-  (cond
-    ((derived-from-cclass name "core::WrappedPointer_O")
-     "FLAGS_STAMP_IN_WRAPPER")
-    ((or (derived-from-cclass name "core::Instance_O")
-         (derived-from-cclass name "core::FuncallableInstance_O"))
-     "FLAGS_STAMP_IN_RACK")
-    ((inherits-from-multiple-classes name)
-     "FLAGS_STAMP_IN_CALLBACK")
-    (t
-     "FLAGS_STAMP_IN_HEADER")))
 
-(defun traverse-inheritance-tree (name analysis operation root-cclass)
-  (let* ((stamp (gethash name (analysis-stamps analysis))))
-    (multiple-value-bind (stamp-value stamp-value-source)
-        (assign-stamp-value analysis stamp operation)
-      (setf (stamp-value stamp) stamp-value)
-      (setf (stamp-value-source stamp) stamp-value-source)
-      (setf (stamp-flags stamp) (calculate-flags name))
-      (setf (stamp-root-cclass stamp) root-cclass)
-      (setf (stamp-in-hierarchy stamp) t)
-      (dolist (child (gethash stamp (analysis-stamp-children analysis)))
-        (traverse-inheritance-tree child analysis operation root-cclass)))))
+(defun no-stamp-value (analysis stamp operation)
+  "Some classes don't get a stamp because they inherit it from their base."
+  :no-stamp-value)
+
+(defun traverse-inheritance-tree (name analysis operation root-cclass assign-stamp-value-function)
+  (let* ((stamp (gethash name (analysis-stamps analysis)))
+         (stamp-value (funcall assign-stamp-value-function analysis stamp operation)))
+    (setf (stamp-value stamp) stamp-value)
+    (setf (stamp-root-cclass stamp) root-cclass)
+    (setf (stamp-in-hierarchy stamp) t)
+    (dolist (child (gethash stamp (analysis-stamp-children analysis)))
+      (traverse-inheritance-tree child analysis operation root-cclass assign-stamp-value-function))))
 
 (defun children-of-class-named (name analysis)
   (let ((stamp (gethash name (analysis-stamps analysis))))
@@ -342,17 +330,26 @@
 
 (defun assign-stamp-values-to-hierarchy (analysis)
   (initialize-stamp-values analysis)
-  (traverse-inheritance-tree "core::T_O" analysis "inherit from core::T_O" "core::T_O")
+  ;; classes that inherit from core::DerivableCxxObject_O will not get their own stamp value - they will get
+  ;;   the stamp value of core::DerivableCxxObject_O and virtual functions will be invoked to get the extended stamp
+  ;;   the Instance_O offset and the size of the object
+
+  (let ((derivable-cxx-object-stamp (gethash "core::DerivableCxxObject_O" (analysis-stamps analysis))))
+    (unless derivable-cxx-object-stamp
+      (error "There must be a class named core::DerivableCxxObject_O - why is it missing!!!!!"))
+    (let ((children (gethash derivable-cxx-object-stamp (analysis-stamp-children analysis))))
+      (dolist (child children)
+        (traverse-inheritance-tree child analysis "inherit from core::DerivableCxxObject_O" "core::DerivableCxxObject_O"
+                                   'no-stamp-value))))
+  (traverse-inheritance-tree "core::T_O" analysis "inherit from core::T_O" "core::T_O" 'assign-stamp-value)
   (dolist (root (remove "core::T_O" (analysis-stamp-roots analysis) :test #'string=))
-    (traverse-inheritance-tree root analysis (format nil "inherit from ~a" root) root)))
+    (traverse-inheritance-tree root analysis (format nil "inherit from ~a" root) root 'assign-stamp-value)))
 
 (defun assign-stamp-values-to-those-without (analysis operation)
   (maphash (lambda (name stamp)
              (when (eq (stamp-value stamp) :unassigned)
-               (multiple-value-bind (stamp-value stamp-value-source)
-                   (assign-stamp-value analysis stamp)
+               (let ((stamp-value (assign-stamp-value analysis stamp)))
                  (setf (stamp-value stamp) stamp-value
-                       (stamp-value-source stamp) stamp-value-source
                        (stamp-in-hierarchy stamp) nil))))
            (analysis-stamps analysis)))
 
@@ -369,7 +366,8 @@
   (let ((child-stamps (gethash stamp (analysis-stamp-children analysis))))
     (loop for child-stamp-name in child-stamps
           for child-stamp = (gethash child-stamp-name (analysis-stamps analysis))
-          do (accumulate-stamp-values child-stamp analysis))))
+          when (not (eq (stamp-value child-stamp) :no-stamp-value))
+            do (accumulate-stamp-values child-stamp analysis))))
 
 (defun verify-stamp-values-are-contiguous-return-range (stamp-values)
   "Verify that the stamps are a contiguous range - if not return NIL as the first return value.
@@ -398,17 +396,12 @@
   (maphash (lambda (key stamp) 
              (declare (core:lambda-name generate-dynamic-cast-code.lambda))
              (when (and (not (abstract-species-stamp-p stamp analysis))
-                        (stamp-in-hierarchy stamp))
+                        (stamp-in-hierarchy stamp)
+                        (not (eq (stamp-value stamp) :no-stamp-value)))
                (format fout "// ~a~%" (get-stamp-name stamp))
                (format fout "template <typename FP> struct Cast<~a*,FP> {~%" key )
                (format fout "  inline static bool isA(FP client) {~%" key)
                (format fout "      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));~%")
-               (when (string= key "core::Instance_O")
-                 (format fout "// FIXME!!!  There is a HUGE problem here - derivable_class_'s inherit from Instance_O  but the STAMP test won't show that!!!!~%")
-                 (format fout "//           Something needs to be done to allow derivable_classes to be defined without screwing up the class hierarchy!!!~%")
-                 (format fout "//           The problem is that isA relationships defined by Clasp can only work with single inheritance~%")
-                 (format fout "//           but derivable_classes inherit from Instance_O and whatever else they are defined to inherit from.~%")
-                 (format fout "//           For now I'll special case core::Instance_O and fall back to dynamic_cast~%"))
                (format fout "      int kindVal = header->stamp();~%")
                (multiple-value-bind (contig stamp-value-low stamp-value-high)
                    (hierarchy-class-stamp-range key analysis)
@@ -436,6 +429,7 @@
   (maphash (lambda (key stamp)
              (declare (core:lambda-name generate-typeq-code.lambda))
              (when (and (not (abstract-species-stamp-p stamp analysis))
+                        (not (eq (stamp-value stamp) :no-stamp-value))
                         (stamp-in-hierarchy stamp)
                         (derived-from-cclass key "core::T_O" (analysis-project analysis)))
                (multiple-value-bind (contig low high high-stamp)
@@ -2636,8 +2630,9 @@ so that they don't have to be constantly recalculated"
 
 (defun sort-stamps-by-value (analysis)
   (let (names)
-    (maphash #'(lambda (k e)
-                 (push (cons (stamp-value e) e) names))
+    (maphash #'(lambda (k stamp)
+                 (when (not (eq (stamp-value stamp) :no-stamp-value))
+                   (push (cons (stamp-value stamp) stamp) names)))
              (analysis-stamps analysis))
     (setf (analysis-sorted-stamps analysis)
           (mapcar #'(lambda (val-stamp)
@@ -2751,7 +2746,6 @@ so that they don't have to be constantly recalculated"
        (format stream "template <> class gctools::GCStamp<~A> {~%" (stamp-key stamp))))
     (format stream "public:~%")
     (format stream "  static gctools::GCStampEnum const Stamp = gctools::~a ;~%" stamp-name)
-    (format stream "  static const size_t Flags = ~a ;~%" (stamp-flags stamp))
     (format stream "};~%")))
 
 (defun abstract-species-stamp-p (stamp analysis)
@@ -2762,7 +2756,8 @@ so that they don't have to be constantly recalculated"
 
 (defun generate-gckind-for-stamps (fout anal)
   (maphash (lambda (key stamp)
-             (when (not (abstract-species-stamp-p stamp anal))
+             (when (and (not (eq (stamp-value stamp) :no-stamp-value))
+                        (not (abstract-species-stamp-p stamp anal)))
                (generate-one-gckind-for-stamp fout stamp)))
            (analysis-stamps anal)))
 
@@ -3173,7 +3168,7 @@ Recursively analyze x and return T if x contains fixable pointers."
             (mapc (lambda (kv) (format fout "STAMP_~a = ~a, ~%" (car kv) (cdr kv))) hardwired-kinds))
     (mapc (lambda (stamp)
             (format fout "~A = ~A,~%" (get-stamp-name stamp) (stamp-value stamp))
-            (when (and (eq (stamp-value-source stamp) :from-static-analyzer)
+            #+(or)(when (and (eq (stamp-value-source stamp) :from-static-analyzer)
                        (null (cclass-template-specializer (stamp-cclass stamp)))
                        (not (inherits-from-multiple-classes (stamp-cclass stamp)))
                        (derived-from-cclass (cclass-key (stamp-cclass stamp)) "core::General_O" (analysis-project analysis)))
@@ -3348,14 +3343,14 @@ Pointers to these objects are fixed in obj_scan or they must be roots."
                   :generator (lambda (dest anal)
                                (dolist (stamp (analysis-sorted-stamps anal))
                                  (funcall (species-deallocator (stamp-species stamp)) dest stamp anal))))
-    #+(or)(progn
-            (format stream "#if defined(GC_GLOBALS)~%")
-            (generate-code-for-global-non-symbol-variables stream analysis)
-            (format stream "#endif // defined(GC_GLOBALS)~%"))
-    #+(or)(progn
+    (progn
             (format stream "#if defined(GC_GLOBAL_SYMBOLS)~%")
             (generate-code-for-global-symbols stream analysis)
             (format stream "#endif // defined(GC_GLOBAL_SYMBOLS)~%"))
+    (progn
+            (format stream "#if defined(GC_GLOBALS)~%")
+            (generate-code-for-global-non-symbol-variables stream analysis)
+            (format stream "#endif // defined(GC_GLOBALS)~%"))
     )
   (format t "Done generate-code~%"))
 

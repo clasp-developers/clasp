@@ -158,7 +158,6 @@ CL_DEFUN core::T_mv core__instance_stamp(core::T_sp obj)
   if (obj.generalp()) {
     Header_s* header = reinterpret_cast<Header_s*>(ClientPtrToBasePtr(obj.unsafe_general()));
     return Values(core::make_fixnum(stamp),
-                  core::make_fixnum(static_cast<Fixnum>(header->header.flags())),
                   core::make_fixnum(static_cast<Fixnum>(header->header._value)>>gctools::Header_s::stamp_shift));
   }
   return Values(core::make_fixnum(stamp),_Nil<core::T_O>());
@@ -1002,7 +1001,16 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
   if (setFeatures) features = core::Cons_O::create(_lisp->internKeyword("DEBUG-MONITOR"),features);
 #endif
   if (buildReport) ss << (BF("DEBUG_MONITOR = %s\n") % (debug_monitor ? "defined" : "undefined") ).str();
+
+  bool debug_mps_size = false;
+#ifdef DEBUG_MPS_SIZE
+  debug_mps_size = true;
+  debugging = true;
+  if (setFeatures) features = core::Cons_O::create(_lisp->internKeyword("DEBUG-MPS_SIZE"),features);
+#endif
+  if (buildReport) ss << (BF("DEBUG_MPS_SIZE = %s\n") % (debug_mps_size ? "defined" : "undefined") ).str();
   
+
   bool debug_bclasp_lisp = false;
 #ifdef DEBUG_BCLASP_LISP
   debug_bclasp_lisp = true;

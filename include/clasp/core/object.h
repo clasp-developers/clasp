@@ -414,7 +414,7 @@ namespace core {
     virtual void sxhash_equal(HashGenerator &hg,LocationDependencyPtrT ptr) const;
     virtual void sxhash_equalp(HashGenerator &hg,LocationDependencyPtrT ptr) const {return this->sxhash_equal(hg,ptr);};
     
-    virtual size_t templatedSizeof() const { SUBIMP(); };
+    virtual size_t templatedSizeof() const { return 0; };
 
       //! Initialize member variables and those that depend on sharedThis
     virtual void initialize();
