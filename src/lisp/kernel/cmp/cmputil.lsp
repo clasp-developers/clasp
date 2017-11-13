@@ -240,24 +240,6 @@
 ;;;    (core:bformat t "variable-info: %s   @ %s\n" info (describe-source-location (ext:current-source-location)))
       info)))
 
-(defun analyze-top-level-form (form)
-  (cond
-    ((atom form) nil)
-    ((eq (car form) 'core:fset)
-     (let ((type (if (eq (fourth form) t)
-                     'defmacro
-                     'defun))
-           (name (second form)))
-       (register-global-function-def type name)))
-    ((and (consp form)
-          (eq (first form) 'cl:let)
-          (and (let ((x (third form)))
-                 (and (consp x) (eq 'cl:quote (first x))
-                      (eq core::*special-defun-symbol* (second x))))))
-     (let ((name (second (fourth form))))
-       (register-global-function-def 'defun name)))
-    #+(or)(t (core:bformat t "Unknown: %s\n" form))))
-
 (defun compilation-unit-finished (messages)
   (when messages
     (bformat t "Compilation-unit finished \n\n")
