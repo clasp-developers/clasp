@@ -105,14 +105,14 @@ VARIABLE doc and can be retrieved by (DOCUMENTATION 'SYMBOL 'VARIABLE)."
            ;; this function won't be ready for a while, but it's okay as there's no
            ;; compiler to run :compile-toplevel forms anyway.
            (cmp::register-global-function-def 'defun ',name))
-         ,@(and *defun-inline-hook*
-                (list `(eval-when (:compile-toplevel :load-toplevel :execute)
-                         ,(funcall *defun-inline-hook* name global-function env))))
          (let ((,fn ,global-function))
            ;;(bformat t "Performing DEFUN   core:*current-source-pos-info* -> %s\n" core:*current-source-pos-info*)
            ,(ext:register-with-pde whole `(si::fset ',name ,fn nil t ',vl))
            (core:set-source-info ,fn ',(list 'core:current-source-file filepos lineno column))
            ,@(si::expand-set-documentation name 'function doc-string)
+           ;; This can't be at toplevel.
+           ,@(and *defun-inline-hook*
+                  (list (funcall *defun-inline-hook* name global-function env)))
            (setq cmp::*current-form-lineno* ,lineno)
            ',name)))))
 
