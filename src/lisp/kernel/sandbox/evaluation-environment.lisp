@@ -33,7 +33,7 @@
     (value symbol (environment evaluation-environment) initialize-p)
   (declare (ignore initialize-p value))
   (when (transferringp environment)
-    (setf (sicl-genv:special-variable symbol (load-environment environment) nil) nil)))
+    (setf (sicl-genv:special-variable symbol (compilation-environment environment) nil) nil)))
 
 ;;; since i'm doing this for building, inevitably a lot of CL macros and stuff will be defined.
 ;;; in this case we want to not replace the perfectly good definitions in the compiler environment.
@@ -62,7 +62,8 @@
   (reject-setf sicl-genv:type-expander (symbol))
   (reject-setf sicl-genv:declaration (name))
   (reject-setf sicl-genv:optimize-quality-values ()))
-(defmethod (setf sicl-genv:special-variable) (value symbol (environment evaluation-environment) initialize-p)
+(defmethod (setf sicl-genv:special-variable)
+    (value symbol (environment evaluation-environment) initialize-p)
   (declare (ignore value))
   (if (sicl-genv:special-variable symbol environment)
       (progn

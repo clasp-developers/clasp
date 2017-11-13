@@ -1,5 +1,3 @@
-#+(or) ; defined in fill
-(progn
 (defun coerce:function-designator (fdesignator)
   (etypecase fdesignator
     (symbol (symbol-function fdesignator))
@@ -16,7 +14,6 @@
              fdesignator)
             (t whole))
       whole))
-)
 
 (defun coerce:string-designator (sdesignator)
   (etypecase sdesignator
