@@ -235,6 +235,12 @@ class Hash1Generator {
       return true;
     }
 
+    bool addPart0(Fixnum part) {
+      this->_Parts[0] = part;
+      this->_NextPartIndex=1;
+      return true;
+    }
+
   /*Add the bignum across multiple parts, return true if everything was added */
     bool addPart(const mpz_class &bignum);
 
