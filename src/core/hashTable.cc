@@ -292,6 +292,14 @@ void HashTable_O::sxhash_eq(HashGenerator &hg, T_sp obj, LocationDependencyPtrT 
   hg.addPart((Fixnum)(((uintptr_clasp_t)address)>>gctools::tag_shift));
 }
 
+void HashTable_O::sxhash_eq(Hash1Generator &hg, T_sp obj, LocationDependencyPtrT ld) {
+  volatile void* address = (void*)obj.raw_();
+#ifdef USE_MPS
+  if (ld) mps_ld_add(ld, global_arena, (mps_addr_t)address );
+#endif
+  hg.addPart((Fixnum)(((uintptr_clasp_t)address)>>gctools::tag_shift));
+}
+
 void HashTable_O::sxhash_eql(HashGenerator &hg, T_sp obj, LocationDependencyPtrT ld) {
   uintptr_t tag = (uintptr_t)gctools::tag<core::T_O*>(obj.raw_());
   switch (tag) {
@@ -326,6 +334,33 @@ void HashTable_O::sxhash_eql(HashGenerator &hg, T_sp obj, LocationDependencyPtrT
   if (ld) mps_ld_add(ld, global_arena, (mps_addr_t)address );
 #endif
   hg.addPart0((Fixnum)(((uintptr_clasp_t)address)>>gctools::tag_shift));
+  return;
+}
+
+void HashTable_O::sxhash_eql(Hash1Generator &hg, T_sp obj, LocationDependencyPtrT ld) {
+  if (obj.fixnump()) {
+    if (hg.isFilling())
+      hg.addPart(obj.unsafe_fixnum());
+    return;
+  } else if (obj.single_floatp()) {
+    if (hg.isFilling())
+      hg.addPart(std::abs(::floor(obj.unsafe_single_float())));
+    return;
+  } else if (obj.characterp()) {
+    if (hg.isFilling())
+      hg.addPart(obj.unsafe_character());
+    return;
+  } else if (obj.generalp()) {
+    if ( gc::IsA<Number_sp>(obj)) {
+      hg.hashObject(obj);
+      return;
+    }
+  }
+  volatile void* address = &(*obj);
+#ifdef USE_MPS
+  if (ld) mps_ld_add(ld, global_arena, (mps_addr_t)address );
+#endif
+  hg.addPart((Fixnum)(((uintptr_clasp_t)address)>>gctools::tag_shift));
   return;
 }
 
