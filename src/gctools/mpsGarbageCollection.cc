@@ -551,7 +551,6 @@ size_t processMpsMessages(size_t& finalizations) {
         printf("%s:%d   MPS could not figure out what pool the pointer %p belongs to - treating it like a dead object and no finalizer will be invoked\n", __FILE__, __LINE__, ref_o);
         dead_object = true;
       }
-      printf("%s:%d finalization message for %p reconstituted tagged ptr = %p stamp->%u  dead_object -> %d\n", __FILE__, __LINE__, (void*)ref_o, (void*)obj.tagged_(), gctools::header_pointer(ref_o)->stamp(), dead_object );
 #if 1
       if (!dead_object) {
         bool invoked_finalizer = false;
@@ -570,7 +569,10 @@ size_t processMpsMessages(size_t& finalizations) {
         }
 #endif
         if (!invoked_finalizer && obj.generalp()) obj_finalize(ref_o);
+      } else {
+        printf("%s:%d No finalization message for %p reconstituted tagged ptr = %p stamp->%u  - it's a dead_object - I can't figure out what pool it belonged to (unknown if it is a General_O object or a Cons_O)\n", __FILE__, __LINE__, (void*)ref_o, (void*)obj.tagged_(), gctools::header_pointer(ref_o)->stamp());
       }
+        
     } else {
       printf("Message: UNKNOWN!!!!!\n");
     }
