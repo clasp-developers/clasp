@@ -324,7 +324,7 @@ namespace gctools {
       if ( this->stampP() ) {
 #ifdef DEBUG_GUARD    
         if (this->guard != 0xFEEAFEEBDEADBEEF) signal_invalid_object(this,"bad head guard");
-        if (this->_tail_start>0) {
+        if (this->_tail_size>0) {
           const unsigned char* tail = (const unsigned char*)this+this->_tail_start;
           if ((*tail) != 0xcc) signal_invalid_object(this,"bad tail not 0xcc");
         }
