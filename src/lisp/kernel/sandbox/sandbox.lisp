@@ -4,49 +4,59 @@
 
 ;;; Hooking it up with us
 
-(defmethod clasp-cleavir::cclasp-eval-with-env (form (environment sandbox-environment))
-  (labels ((mexpand-1 (form env)
-             (typecase form
-               (symbol (multiple-value-bind (expander expansion)
-                           (sicl-genv:symbol-macro form env)
-                         (if expander
-                             (values expansion t)
-                             (values form nil))))
-               (cons (if (symbolp (first form))
-                         (let ((mf (sicl-genv:macro-function (first form) env)))
-                           (if mf
-                               (values (funcall *macroexpand-hook* mf form env) t)
-                               (values form nil)))
-                         (values form nil)))
-               (t (values form nil))))
-           (mexpand (form env)
-             (loop with ever-expanded = nil
-                   do (multiple-value-bind (expansion expanded)
-                          (mexpand-1 form env)
-                        (if expanded
-                            (setf ever-expanded t form expansion)
-                            (return-from mexpand (values form ever-expanded))))))
-           (subeval (form)
-             (clasp-cleavir::cclasp-eval-with-env form environment))
-           (evalcompile (form env)
-             (funcall (cmp:compile-in-env nil `(lambda () (progn ,form))
-                                          environment cmp:*cleavir-compile-hook*
-                                          'llvm-sys:external-linkage))))
-    (let ((form (mexpand form environment)))
-      (typecase form
-        (symbol
-         (core:symbol-value-from-cell
-          form
-          (sicl-genv:variable-cell form environment)
-          (sicl-genv:variable-unbound form environment)))
-        (cons
-         (if (symbolp (first form))
-             (if (sicl-genv:special-operator (first form) environment)
-                 (evalcompile form environment)
-                 (apply (car (sicl-genv:function-cell (first form) environment))
-                        (mapcar #'subeval (rest form))))
-             (evalcompile form environment)))
-        (t form)))))
+;;; Like cclasp-eval-with-env but pays more attention to the environment.
+;;; Used to be cclasp-eval-with-env, but then when you passed a cleavir-env:entry
+;;; it would use the clasp top when it shouldn't.
+(defun eval-with-genv (form environment)
+  ;; This is supposed to work with genvs as well as entries.
+  ;; With entries, we get macros from them, but skip to the global for variable/function bindings.
+  ;; Entries can't have any actual _bindings_, after all, just descriptions.
+  ;; And this function should only be called with entries with no lexical bindings etc.,
+  ;; toplevel forms, as it were.
+  (let ((global (cleavir-env:global-environment environment)))
+    (labels ((mexpand-1 (form env)
+               (typecase form
+                 (symbol (multiple-value-bind (expander expansion)
+                             (sicl-genv:symbol-macro form env)
+                           (if expander
+                               (values expansion t)
+                               (values form nil))))
+                 (cons (if (symbolp (first form))
+                           (let ((mf (cleavir-env:macro-function (first form) env)))
+                             (if mf
+                                 ;; FIXME: should be genv's mehook, probably.
+                                 (values (funcall *macroexpand-hook* mf form env) t)
+                                 (values form nil)))
+                           (values form nil)))
+                 (t (values form nil))))
+             (mexpand (form env)
+               (loop with ever-expanded = nil
+                     do (multiple-value-bind (expansion expanded)
+                            (mexpand-1 form env)
+                          (if expanded
+                              (setf ever-expanded t form expansion)
+                              (return-from mexpand (values form ever-expanded))))))
+             (subeval (form)
+               (eval-with-genv form environment))
+             (evalcompile (form env)
+               (funcall (cmp:compile-in-env nil `(lambda () (progn ,form))
+                                            environment cmp:*cleavir-compile-hook*
+                                            'llvm-sys:external-linkage))))
+      (let ((form (mexpand form environment)))
+        (typecase form
+          (symbol
+           (core:symbol-value-from-cell
+            form
+            (sicl-genv:variable-cell form global)
+            (sicl-genv:variable-unbound form global)))
+          (cons
+           (if (symbolp (first form))
+               (if (sicl-genv:special-operator (first form) global)
+                   (evalcompile form environment)
+                   (apply (car (sicl-genv:function-cell (first form) global))
+                          (mapcar #'subeval (rest form))))
+               (evalcompile form environment)))
+          (t form))))))
 
 ;;; FIXME: move this probably
 ;;; Define in the compiler environment.

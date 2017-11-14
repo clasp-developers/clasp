@@ -107,7 +107,11 @@
   (let ((entry (operator-entry env name)))
     (when entry
       ;; FIXME: style warning? not sure if UB
-      (warn "Redefining ~a as macro" name))
+      (warn "Redefining ~a as macro (was ~a)" name
+            (etypecase entry
+              (special-operator-entry "special operator")
+              (macro-entry "macro")
+              (function-entry "function"))))
     (if value
         (setf (operator-entry env name)
               (make-instance 'macro-entry :name name :expander value))
@@ -305,6 +309,10 @@
     (cleavir-env:eval form (clasp-sandbox:retarget env e) e)))
 
 (defmethod cleavir-env:variable-info ((environment compilation-environment) symbol)
+  (when (eq (symbol-package symbol) (load-time-value (find-package "KEYWORD")))
+    (return-from cleavir-env:variable-info
+      (make-instance 'cleavir-env:constant-variable-info
+                     :name symbol :value symbol)))
   (let ((entry (variable-entry environment symbol)))
     (etypecase entry
       (special-entry
@@ -358,7 +366,7 @@
   (let ((entry (variable-entry environment symbol)))
     (if (typep entry 'symbol-macro-entry)
         (expansion entry)
-        nil)))
+        symbol)))
 
 (defun type-expand-1 (compilation-environment type-specifier)
   (etypecase type-specifier

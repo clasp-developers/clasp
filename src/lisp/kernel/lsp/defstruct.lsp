@@ -65,7 +65,7 @@
   (do-defsetf access-function
     (cond ((or (eq type 'list) (eq type 'vector))
 	   #'(lambda (newvalue struct)
-	       `(sys:elt-set ,struct ,index ,newvalue)))
+	       `(sys:setf-elt ,struct ,index ,newvalue)))
 	  ((consp type)
 	   #'(lambda (newvalue struct)
 	       `(si:row-major-aset (the ,type ,struct) ,index ,newvalue)))

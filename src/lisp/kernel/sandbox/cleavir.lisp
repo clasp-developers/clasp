@@ -82,4 +82,4 @@
 	  nil))))
 
 (defmethod cleavir-env:eval (form environment (dispatch sandbox-environment))
-  (clasp-cleavir::cclasp-eval-with-env form environment))
+  (eval-with-genv form environment))

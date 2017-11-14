@@ -977,7 +977,7 @@
                                                 (let ((vaslist* (argument-holder-vaslist* arguments)))
                                                   (irc-intrinsic-call-or-invoke "llvm.va_start" (list (irc-bit-cast (argument-holder-dispatch-va-list* arguments))))
                                                   (maybe-spill-to-register-save-area (argument-holder-register-arguments arguments)
-                                                                                     (argument-holder-register-save-area arguments))
+                                                                                     (argument-holder-register-save-area* arguments))
                                                   (prog1 (irc-intrinsic "cc_rewind_vaslist"
                                                                         vaslist*
                                                                         (argument-holder-dispatch-va-list* arguments)

@@ -389,16 +389,16 @@
                               :start (- l end) :end (- l start)
                               :key key :test test :test-not test-not
                               :count count))
-                (do-vector (elt sequence start end :setter elt-set
+                (do-vector (elt sequence start end :setter setf-elt
                                 :from-end t :output sequence)
                   (when (compare old (key elt))
-                    (elt-set new)
+                    (setf-elt new)
                     (when (zerop (decf %count))
                       (return sequence)))))
-            (do-sequence (elt sequence start end :setter elt-set
+            (do-sequence (elt sequence start end :setter setf-elt
                               :output sequence :specialize t)
               (when (compare old (key elt))
-                (elt-set new)
+                (setf-elt new)
                 (when (zerop (decf %count))
                   (return sequence)))))))))
 

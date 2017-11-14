@@ -59,7 +59,55 @@
     (def (setf cl:find-class) (new-class symbol &optional errorp (env environment))
       (setf (sicl-genv:find-class symbol env) new-class))
 
-    ;;; TODO: proclaim, constantp?
+    #+(or)
+    (def ext:symbol-macro (symbol &optional env)
+      (let ((env (if (null env) environment env)))
+        (sicl-genv:symbol-macro symbol env)))
+    #+(or)
+    (def (setf ext:symbol-macro) (expansion symbol &optional env)
+      (let ((env (if (null env) environment env)))
+        (setf (sicl-genv:symbol-macro symbol env) expansion)))
+
+    (def cl:proclaim (declaration-specifier)
+      (check-type declaration-specifier cons "a declaration specifier")
+      (case (car declaration-specifier)
+        ((declaration)
+         (destructuring-bind (name) (cdr declaration-specifier)
+           (setf (sicl-genv:declaration name environment) t)))
+        ((ftype)
+         (destructuring-bind (type &rest function-names)
+             (cdr declaration-specifier)
+           (loop for name in function-names
+                 do (setf (sicl-genv:function-type name environment) type))))
+        ((inline)
+         (loop for name in (cdr declaration-specifier)
+               do (setf (sicl-genv:function-inline name environment) 'inline)))
+        ((notinline)
+         (loop for name in (cdr declaration-specifier)
+               do (setf (sicl-genv:function-inline name environment) 'notinline)))
+        ((optimize)
+         (setf (sicl-genv:optimize-quality-values environment)
+               (cleavir-compilation-policy:normalize-optimize
+                (cdr declaration-specifier) environment)))
+        ((special)
+         (loop for var in (cdr declaration-specifier)
+               do (setf (sicl-genv:special-variable var environment nil) nil)))
+        ((type)
+         (destructuring-bind (type &rest variable-names)
+             (cdr declaration-specifier)
+           (loop for name in variable-names
+                 do (setf (sicl-genv:variable-type name environment) type))))
+        (otherwise
+         (unless (member (car declaration-specifier) (sicl-genv:declarations environment))
+           (error "Unknown proclamation ~a" declaration-specifier)))))
+
+    (def cl:constantp (form &optional env)
+      ;; expand?
+      (unless env (setf env environment))
+      (typecase form
+        ((cons (eql quote) (cons t null)) t)
+        (symbol (nth-value 1 (sicl-genv:constant-variable form env)))
+        (t t)))
     ;;; TODO: packages?
     ))
 
@@ -81,26 +129,28 @@
     (copyf core:symbol-value-from-cell)
     (copyf core:setf-symbol-value-from-cell)
     (copyf core:multiple-value-funcall)
-    ;; remf
-    (copyf core:rem-f)
-    ;; used in defmacro/destructuring-bind
-    (copyf core::expand-defmacro) ; macro time
-    (copyf core::dm-too-few-arguments) (copyf core::dm-too-many-arguments) ; runtime
-    ;; backquote
-    (copym core:backquote)
-    (copyf core:backquote-append)
-    (copyf core:backquote-append-list)
-    ;; loop
-    (copym core::with-loop-list-collection-head)
-    (copym core::loop-collect-rplacd)
-    (copym core::loop-collect-answer)
-    (copym core::loop-copylist*)
-    (copym core::loop-body)
-    (copym core::loop-really-desetq)
-    (copym core:cons-car) (copym core:cons-cdr)
-    ;; do et al.
-    (copym core::until) (copym core::while)
-    )
+    #+(or)
+    (progn
+      ;; remf
+      (copyf core:rem-f)
+      ;; used in defmacro/destructuring-bind
+      (copyf core::expand-defmacro) ; macro time
+      (copyf core::dm-too-few-arguments) (copyf core::dm-too-many-arguments) ; runtime
+      ;; backquote
+      (copym core:backquote)
+      (copyf core:backquote-append)
+      (copyf core:backquote-append-list)
+      ;; loop
+      (copym core::with-loop-list-collection-head)
+      (copym core::loop-collect-rplacd)
+      (copym core::loop-collect-answer)
+      (copym core::loop-copylist*)
+      (copym core::loop-body)
+      (copym core::loop-really-desetq)
+      (copym core:cons-car) (copym core:cons-cdr)
+      ;; do et al.
+      (copym core::until) (copym core::while)
+      ))
   (values))
 
 (defun install-default-setf-expander (environment)
@@ -110,12 +160,14 @@
         (lambda (form env)
           (declare (ignore env))
           (let ((store (gensym "STORE")))
-            (if (symbolp form)
-                (values nil nil (list store) `(setq ,form ,store) form)
-                (let ((temps (loop for arg in (rest form) collect (gensym))))
-                  (values temps (rest form) (list store)
-                          `(funcall #'(setf ,(first form)) ,store ,@temps)
-                          `(,(first form) ,@temps))))))))
+            (etypecase form
+              (symbol
+               (values nil nil (list store) `(setq ,form ,store) form))
+              (cons
+               (let ((temps (loop for arg in (rest form) collect (gensym))))
+                 (values temps (rest form) (list store)
+                         `(funcall #'(setf ,(first form)) ,store ,@temps)
+                         `(,(first form) ,@temps)))))))))
 
 (defun install-cl-special-operators (environment)
   (dolist (s '(block let* return-from
@@ -204,17 +256,6 @@
         (when (fboundp s)
           (setf (sicl-genv:fdefinition s environment) (fdefinition s)))))))
 
-(defun install-defmacro (environment)
-  (setf (sicl-genv:macro-function 'defmacro environment)
-        ;; This doesn't actually close over ENVIRONMENT.
-        (macro-lambda defmacro (name lambda-list &body body)
-          (multiple-value-bind (function pprint docstring)
-              (sys::expand-defmacro name lambda-list body)
-            `(eval-when (:compile-toplevel :load-toplevel :execute)
-               (setf (macro-function ',name)
-                     #',function)
-               ',name)))))
-
 ;;; which macros are "safe" depends on their (implementation-defined) expansions.
 ;;; These are quite possibly "safe" in general though.
 ;;; but expansions may require implementation functions to run!
@@ -223,7 +264,7 @@
     with-standard-io-syntax with-accessors when prog1 call-method do do* and with-compilation-unit
     print-unreadable-object multiple-value-setq unless destructuring-bind with-slots cond
     multiple-value-bind dolist multiple-value-list loop-finish lambda time return with-output-to-string
-    or ecase))
+    or ecase lambda))
 
 (defparameter *setf-macros*
   '(setf psetf shiftf rotatef
@@ -471,6 +512,16 @@ in readtables. Coercing ~a to function." 'set-macro-character new-function)
           egfuc))
   (values))
 
+(defun load-source (filespec &key verbose print if-does-not-exist external-format environment)
+  (let* ((*readtable* *readtable*) (*package* *package*)
+         (*load-pathname* (pathname (merge-pathnames filespec)))
+         (*load-truename* (truename *load-pathname*))
+         (sentinel (cons nil nil)))
+    (with-open-file (s *load-truename* :external-format external-format :if-does-not-exist if-does-not-exist)
+      (loop for form = (read s t sentinel) ; FIXME: make environment-sensitive
+            until (eq form sentinel)
+            do (eval-in-env form environment)))))
+
 (defun import-classes (environment)
   (flet ((maybe-import (symbol)
            (let ((class (find-class symbol nil)))
@@ -478,6 +529,25 @@ in readtables. Coercing ~a to function." 'set-macro-character new-function)
                (setf (sicl-genv:find-class symbol environment) class)))))
     (do-external-symbols (s "CL")   (maybe-import s))
     (do-external-symbols (s "CLOS") (maybe-import s)))
+  (values))
+
+(defun install-primitive-setfs (environment)
+  (setf (sicl-genv:setf-expander 'macro-function environment)
+        (macro-lambda (setf macro-function) (name)
+          (let ((var (gensym)) (store (gensym)))
+            (values (list var)
+                    (list name)
+                    (list store)
+                    `(si:fset ,var ,store t)
+                    `(macro-function ,var)))))
+    (setf (sicl-genv:setf-expander 'fdefinition environment)
+        (macro-lambda (setf fdefinition) (name)
+          (let ((var (gensym)) (store (gensym)))
+            (values (list var)
+                    (list name)
+                    (list store)
+                    `(si:fset ,var ,store)
+                    `(fdefinition ,var)))))
   (values))
 
 ;;; Intended as a one-shot function to get the most I've got working.
