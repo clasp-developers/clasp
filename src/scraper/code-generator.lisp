@@ -429,7 +429,6 @@ Convert colons to underscores"
                  (format sout "template <> class gctools::GCStamp<~a> {~%" type)
                  (format sout "public:~%")
                  (format sout "  static gctools::GCStampEnum const Stamp = gctools::STAMP_~a;~%" mangled-key)
-                 (format sout "  static const size_t Flags = ~a;~%" flags)
                  (format sout "};~%")))
           (format sout "#ifdef GC_STAMP_SELECTORS~%")
           (generate-mps-poison sout)
