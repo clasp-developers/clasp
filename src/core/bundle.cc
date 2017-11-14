@@ -190,9 +190,17 @@ Bundle::Bundle(const string &raw_argv0, const string &appDirName) {
     abort();
   }
 #if defined(USE_BOEHM)
-  std::string target = "boehm";
+  #if defined(_DEBUG_BUILD)
+     std::string target = "boehm_d";
+  #else
+     std::string target = "boehm";
+  #endif
 #elif defined(USE_MPS)
-  std::string target = "mps";
+  #if defined(_DEBUG_BUILD)
+    std::string target = "mps_d";
+  #else
+    std::string target = "mps";
+  #endif
 #else
 #error "There must be a target - only boehm and mps are supported"
 #endif

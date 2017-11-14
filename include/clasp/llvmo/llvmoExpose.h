@@ -4366,7 +4366,19 @@ namespace llvmo {
   using namespace llvm::orc;
 
   void save_symbol_info(const llvm::object::ObjectFile& object_file, const llvm::RuntimeDyld::LoadedObjectInfo& loaded_object_info);
+};
 
+// Don't allow the object to move, but maybe I'll need to collect it
+// if we create a ClaspJIT_O for each thread and need to collect it when
+// the thread is killed
+template <>
+struct gctools::GCInfo<llvmo::ClaspJIT_O> {
+  static bool constexpr NeedsInitialization = false;
+  static bool constexpr NeedsFinalization = false;
+  static GCInfo_policy constexpr Policy = collectable_immobile;
+};
+
+namespace llvmo {
   class ClaspJIT_O : public core::General_O {
     LISP_CLASS(llvmo, LlvmoPkg, ClaspJIT_O, "clasp-jit", core::General_O);
   private:

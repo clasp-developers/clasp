@@ -1121,7 +1121,7 @@ class compile_aclasp(Task.Task):
         cmd = cmd + [ "--norc",
                       "--ignore-image",
                       "--feature", "clasp-min",
-                      "--feature", "jit-log-symbols",
+#                      "--feature", "jit-log-symbols",
 #                      "--feature", "debug-run-clang",
                       "--eval", '(load "sys:kernel;clasp-builder.lsp")' ]
 #                      "--eval", '(setq cmp:*compile-file-debug-dump-module* t)',

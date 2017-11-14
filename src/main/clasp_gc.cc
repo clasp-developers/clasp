@@ -8273,2217 +8273,2880 @@ public:
 #endif // defined(GC_OBJ_SCAN_HELPERS)
 #if defined(GC_OBJ_SCAN_TABLE)
 static void* OBJ_SCAN_table[] = { 
+  /* 0 */ NULL,
    NULL
 };
 #endif // defined(GC_OBJ_SCAN_TABLE)
 #if defined(GC_OBJ_FINALIZE)
 obj_finalize_STAMP_core__T_O:
 {
+     // stamp value 1
     core::T_O* obj_gc_safe = reinterpret_cast<core::T_O*>(client);
     obj_gc_safe->~T_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__VaList_dummy_O:
 {
+     // stamp value 2
     core::VaList_dummy_O* obj_gc_safe = reinterpret_cast<core::VaList_dummy_O*>(client);
     obj_gc_safe->~VaList_dummy_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__General_O:
 {
+     // stamp value 3
     core::General_O* obj_gc_safe = reinterpret_cast<core::General_O*>(client);
     obj_gc_safe->~General_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__MultiStringBuffer_O:
 {
+     // stamp value 4
     core::MultiStringBuffer_O* obj_gc_safe = reinterpret_cast<core::MultiStringBuffer_O*>(client);
     obj_gc_safe->~MultiStringBuffer_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__WeakHashTable_O:
 {
+     // stamp value 5
     core::WeakHashTable_O* obj_gc_safe = reinterpret_cast<core::WeakHashTable_O*>(client);
     obj_gc_safe->~WeakHashTable_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__WeakKeyHashTable_O:
 {
+     // stamp value 6
     core::WeakKeyHashTable_O* obj_gc_safe = reinterpret_cast<core::WeakKeyHashTable_O*>(client);
     obj_gc_safe->~WeakKeyHashTable_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__ReadTable_O:
 {
+     // stamp value 7
     core::ReadTable_O* obj_gc_safe = reinterpret_cast<core::ReadTable_O*>(client);
     obj_gc_safe->~ReadTable_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__PosixTimeDuration_O:
 {
+     // stamp value 8
     core::PosixTimeDuration_O* obj_gc_safe = reinterpret_cast<core::PosixTimeDuration_O*>(client);
     obj_gc_safe->~PosixTimeDuration_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_clasp_ffi__ForeignTypeSpec_O:
 {
+     // stamp value 9
     clasp_ffi::ForeignTypeSpec_O* obj_gc_safe = reinterpret_cast<clasp_ffi::ForeignTypeSpec_O*>(client);
     obj_gc_safe->~ForeignTypeSpec_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__Instance_O:
 {
+     // stamp value 10
     core::Instance_O* obj_gc_safe = reinterpret_cast<core::Instance_O*>(client);
     obj_gc_safe->~Instance_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__DerivableCxxObject_O:
 {
+     // stamp value 11
     core::DerivableCxxObject_O* obj_gc_safe = reinterpret_cast<core::DerivableCxxObject_O*>(client);
     obj_gc_safe->~DerivableCxxObject_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_clbind__ClassRep_O:
 {
+     // stamp value 12
     clbind::ClassRep_O* obj_gc_safe = reinterpret_cast<clbind::ClassRep_O*>(client);
     obj_gc_safe->~ClassRep_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__SmallMap_O:
 {
+     // stamp value 13
     core::SmallMap_O* obj_gc_safe = reinterpret_cast<core::SmallMap_O*>(client);
     obj_gc_safe->~SmallMap_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__WrappedPointer_O:
 {
+     // stamp value 14
     core::WrappedPointer_O* obj_gc_safe = reinterpret_cast<core::WrappedPointer_O*>(client);
     obj_gc_safe->~WrappedPointer_O();
 }
 obj_finalize_STAMP_core__Archive_O:
 {
+     // stamp value 15
     core::Archive_O* obj_gc_safe = reinterpret_cast<core::Archive_O*>(client);
     obj_gc_safe->~Archive_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__SaveArchive_O:
 {
+     // stamp value 16
     core::SaveArchive_O* obj_gc_safe = reinterpret_cast<core::SaveArchive_O*>(client);
     obj_gc_safe->~SaveArchive_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__SexpSaveArchive_O:
 {
+     // stamp value 17
     core::SexpSaveArchive_O* obj_gc_safe = reinterpret_cast<core::SexpSaveArchive_O*>(client);
     obj_gc_safe->~SexpSaveArchive_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__LoadArchive_O:
 {
+     // stamp value 18
     core::LoadArchive_O* obj_gc_safe = reinterpret_cast<core::LoadArchive_O*>(client);
     obj_gc_safe->~LoadArchive_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__SexpLoadArchive_O:
 {
+     // stamp value 19
     core::SexpLoadArchive_O* obj_gc_safe = reinterpret_cast<core::SexpLoadArchive_O*>(client);
     obj_gc_safe->~SexpLoadArchive_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__SymbolToEnumConverter_O:
 {
+     // stamp value 20
     core::SymbolToEnumConverter_O* obj_gc_safe = reinterpret_cast<core::SymbolToEnumConverter_O*>(client);
     obj_gc_safe->~SymbolToEnumConverter_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__Reader_O:
 {
+     // stamp value 21
     core::Reader_O* obj_gc_safe = reinterpret_cast<core::Reader_O*>(client);
     obj_gc_safe->~Reader_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__WeakKeyMapping_O:
 {
+     // stamp value 22
     core::WeakKeyMapping_O* obj_gc_safe = reinterpret_cast<core::WeakKeyMapping_O*>(client);
     obj_gc_safe->~WeakKeyMapping_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_llvmo__Attribute_O:
 {
+     // stamp value 23
     llvmo::Attribute_O* obj_gc_safe = reinterpret_cast<llvmo::Attribute_O*>(client);
     obj_gc_safe->~Attribute_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__ExternalObject_O:
 {
+     // stamp value 24
     core::ExternalObject_O* obj_gc_safe = reinterpret_cast<core::ExternalObject_O*>(client);
     obj_gc_safe->~ExternalObject_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_llvmo__Triple_O:
 {
+     // stamp value 25
     llvmo::Triple_O* obj_gc_safe = reinterpret_cast<llvmo::Triple_O*>(client);
     obj_gc_safe->~Triple_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_llvmo__TargetOptions_O:
 {
+     // stamp value 26
     llvmo::TargetOptions_O* obj_gc_safe = reinterpret_cast<llvmo::TargetOptions_O*>(client);
     obj_gc_safe->~TargetOptions_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_llvmo__Pass_O:
 {
+     // stamp value 27
     llvmo::Pass_O* obj_gc_safe = reinterpret_cast<llvmo::Pass_O*>(client);
     obj_gc_safe->~Pass_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_llvmo__ModulePass_O:
 {
+     // stamp value 28
     llvmo::ModulePass_O* obj_gc_safe = reinterpret_cast<llvmo::ModulePass_O*>(client);
     obj_gc_safe->~ModulePass_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_llvmo__ImmutablePass_O:
 {
+     // stamp value 29
     llvmo::ImmutablePass_O* obj_gc_safe = reinterpret_cast<llvmo::ImmutablePass_O*>(client);
     obj_gc_safe->~ImmutablePass_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_llvmo__TargetLibraryInfoWrapperPass_O:
 {
+     // stamp value 30
     llvmo::TargetLibraryInfoWrapperPass_O* obj_gc_safe = reinterpret_cast<llvmo::TargetLibraryInfoWrapperPass_O*>(client);
     obj_gc_safe->~TargetLibraryInfoWrapperPass_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_llvmo__FunctionPass_O:
 {
+     // stamp value 31
     llvmo::FunctionPass_O* obj_gc_safe = reinterpret_cast<llvmo::FunctionPass_O*>(client);
     obj_gc_safe->~FunctionPass_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_llvmo__ExecutionEngine_O:
 {
+     // stamp value 32
     llvmo::ExecutionEngine_O* obj_gc_safe = reinterpret_cast<llvmo::ExecutionEngine_O*>(client);
     obj_gc_safe->~ExecutionEngine_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_llvmo__LLVMContext_O:
 {
+     // stamp value 33
     llvmo::LLVMContext_O* obj_gc_safe = reinterpret_cast<llvmo::LLVMContext_O*>(client);
     obj_gc_safe->~LLVMContext_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_llvmo__PassManagerBuilder_O:
 {
+     // stamp value 34
     llvmo::PassManagerBuilder_O* obj_gc_safe = reinterpret_cast<llvmo::PassManagerBuilder_O*>(client);
     obj_gc_safe->~PassManagerBuilder_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_llvmo__MCSubtargetInfo_O:
 {
+     // stamp value 35
     llvmo::MCSubtargetInfo_O* obj_gc_safe = reinterpret_cast<llvmo::MCSubtargetInfo_O*>(client);
     obj_gc_safe->~MCSubtargetInfo_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_llvmo__TargetSubtargetInfo_O:
 {
+     // stamp value 36
     llvmo::TargetSubtargetInfo_O* obj_gc_safe = reinterpret_cast<llvmo::TargetSubtargetInfo_O*>(client);
     obj_gc_safe->~TargetSubtargetInfo_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_clasp_ffi__ForeignData_O:
 {
+     // stamp value 37
     clasp_ffi::ForeignData_O* obj_gc_safe = reinterpret_cast<clasp_ffi::ForeignData_O*>(client);
     obj_gc_safe->~ForeignData_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_llvmo__Module_O:
 {
+     // stamp value 38
     llvmo::Module_O* obj_gc_safe = reinterpret_cast<llvmo::Module_O*>(client);
     obj_gc_safe->~Module_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_llvmo__Target_O:
 {
+     // stamp value 39
     llvmo::Target_O* obj_gc_safe = reinterpret_cast<llvmo::Target_O*>(client);
     obj_gc_safe->~Target_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_llvmo__Type_O:
 {
+     // stamp value 40
     llvmo::Type_O* obj_gc_safe = reinterpret_cast<llvmo::Type_O*>(client);
     obj_gc_safe->~Type_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_llvmo__IntegerType_O:
 {
+     // stamp value 41
     llvmo::IntegerType_O* obj_gc_safe = reinterpret_cast<llvmo::IntegerType_O*>(client);
     obj_gc_safe->~IntegerType_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_llvmo__FunctionType_O:
 {
+     // stamp value 42
     llvmo::FunctionType_O* obj_gc_safe = reinterpret_cast<llvmo::FunctionType_O*>(client);
     obj_gc_safe->~FunctionType_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_llvmo__CompositeType_O:
 {
+     // stamp value 43
     llvmo::CompositeType_O* obj_gc_safe = reinterpret_cast<llvmo::CompositeType_O*>(client);
     obj_gc_safe->~CompositeType_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_llvmo__SequentialType_O:
 {
+     // stamp value 44
     llvmo::SequentialType_O* obj_gc_safe = reinterpret_cast<llvmo::SequentialType_O*>(client);
     obj_gc_safe->~SequentialType_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_llvmo__PointerType_O:
 {
+     // stamp value 45
     llvmo::PointerType_O* obj_gc_safe = reinterpret_cast<llvmo::PointerType_O*>(client);
     obj_gc_safe->~PointerType_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_llvmo__ArrayType_O:
 {
+     // stamp value 46
     llvmo::ArrayType_O* obj_gc_safe = reinterpret_cast<llvmo::ArrayType_O*>(client);
     obj_gc_safe->~ArrayType_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_llvmo__VectorType_O:
 {
+     // stamp value 47
     llvmo::VectorType_O* obj_gc_safe = reinterpret_cast<llvmo::VectorType_O*>(client);
     obj_gc_safe->~VectorType_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_llvmo__StructType_O:
 {
+     // stamp value 48
     llvmo::StructType_O* obj_gc_safe = reinterpret_cast<llvmo::StructType_O*>(client);
     obj_gc_safe->~StructType_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_llvmo__IRBuilderBase_O:
 {
+     // stamp value 49
     llvmo::IRBuilderBase_O* obj_gc_safe = reinterpret_cast<llvmo::IRBuilderBase_O*>(client);
     obj_gc_safe->~IRBuilderBase_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_llvmo__IRBuilder_O:
 {
+     // stamp value 50
     llvmo::IRBuilder_O* obj_gc_safe = reinterpret_cast<llvmo::IRBuilder_O*>(client);
     obj_gc_safe->~IRBuilder_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_llvmo__APFloat_O:
 {
+     // stamp value 51
     llvmo::APFloat_O* obj_gc_safe = reinterpret_cast<llvmo::APFloat_O*>(client);
     obj_gc_safe->~APFloat_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_llvmo__APInt_O:
 {
+     // stamp value 52
     llvmo::APInt_O* obj_gc_safe = reinterpret_cast<llvmo::APInt_O*>(client);
     obj_gc_safe->~APInt_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_llvmo__DIBuilder_O:
 {
+     // stamp value 53
     llvmo::DIBuilder_O* obj_gc_safe = reinterpret_cast<llvmo::DIBuilder_O*>(client);
     obj_gc_safe->~DIBuilder_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_llvmo__EngineBuilder_O:
 {
+     // stamp value 54
     llvmo::EngineBuilder_O* obj_gc_safe = reinterpret_cast<llvmo::EngineBuilder_O*>(client);
     obj_gc_safe->~EngineBuilder_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_llvmo__PassManagerBase_O:
 {
+     // stamp value 55
     llvmo::PassManagerBase_O* obj_gc_safe = reinterpret_cast<llvmo::PassManagerBase_O*>(client);
     obj_gc_safe->~PassManagerBase_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_llvmo__FunctionPassManager_O:
 {
+     // stamp value 56
     llvmo::FunctionPassManager_O* obj_gc_safe = reinterpret_cast<llvmo::FunctionPassManager_O*>(client);
     obj_gc_safe->~FunctionPassManager_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_llvmo__PassManager_O:
 {
+     // stamp value 57
     llvmo::PassManager_O* obj_gc_safe = reinterpret_cast<llvmo::PassManager_O*>(client);
     obj_gc_safe->~PassManager_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_llvmo__Linker_O:
 {
+     // stamp value 58
     llvmo::Linker_O* obj_gc_safe = reinterpret_cast<llvmo::Linker_O*>(client);
     obj_gc_safe->~Linker_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_llvmo__Metadata_O:
 {
+     // stamp value 59
     llvmo::Metadata_O* obj_gc_safe = reinterpret_cast<llvmo::Metadata_O*>(client);
     obj_gc_safe->~Metadata_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_llvmo__ValueAsMetadata_O:
 {
+     // stamp value 60
     llvmo::ValueAsMetadata_O* obj_gc_safe = reinterpret_cast<llvmo::ValueAsMetadata_O*>(client);
     obj_gc_safe->~ValueAsMetadata_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_llvmo__MDString_O:
 {
+     // stamp value 61
     llvmo::MDString_O* obj_gc_safe = reinterpret_cast<llvmo::MDString_O*>(client);
     obj_gc_safe->~MDString_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_llvmo__MDNode_O:
 {
+     // stamp value 62
     llvmo::MDNode_O* obj_gc_safe = reinterpret_cast<llvmo::MDNode_O*>(client);
     obj_gc_safe->~MDNode_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_llvmo__DINode_O:
 {
+     // stamp value 63
     llvmo::DINode_O* obj_gc_safe = reinterpret_cast<llvmo::DINode_O*>(client);
     obj_gc_safe->~DINode_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_llvmo__DIScope_O:
 {
+     // stamp value 64
     llvmo::DIScope_O* obj_gc_safe = reinterpret_cast<llvmo::DIScope_O*>(client);
     obj_gc_safe->~DIScope_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_llvmo__DILocalScope_O:
 {
+     // stamp value 65
     llvmo::DILocalScope_O* obj_gc_safe = reinterpret_cast<llvmo::DILocalScope_O*>(client);
     obj_gc_safe->~DILocalScope_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_llvmo__DISubprogram_O:
 {
+     // stamp value 66
     llvmo::DISubprogram_O* obj_gc_safe = reinterpret_cast<llvmo::DISubprogram_O*>(client);
     obj_gc_safe->~DISubprogram_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_llvmo__DILexicalBlockBase_O:
 {
+     // stamp value 67
     llvmo::DILexicalBlockBase_O* obj_gc_safe = reinterpret_cast<llvmo::DILexicalBlockBase_O*>(client);
     obj_gc_safe->~DILexicalBlockBase_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_llvmo__DILexicalBlock_O:
 {
+     // stamp value 68
     llvmo::DILexicalBlock_O* obj_gc_safe = reinterpret_cast<llvmo::DILexicalBlock_O*>(client);
     obj_gc_safe->~DILexicalBlock_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_llvmo__DIFile_O:
 {
+     // stamp value 69
     llvmo::DIFile_O* obj_gc_safe = reinterpret_cast<llvmo::DIFile_O*>(client);
     obj_gc_safe->~DIFile_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_llvmo__DICompileUnit_O:
 {
+     // stamp value 70
     llvmo::DICompileUnit_O* obj_gc_safe = reinterpret_cast<llvmo::DICompileUnit_O*>(client);
     obj_gc_safe->~DICompileUnit_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_llvmo__DIType_O:
 {
+     // stamp value 71
     llvmo::DIType_O* obj_gc_safe = reinterpret_cast<llvmo::DIType_O*>(client);
     obj_gc_safe->~DIType_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_llvmo__DICompositeType_O:
 {
+     // stamp value 72
     llvmo::DICompositeType_O* obj_gc_safe = reinterpret_cast<llvmo::DICompositeType_O*>(client);
     obj_gc_safe->~DICompositeType_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_llvmo__DIDerivedType_O:
 {
+     // stamp value 73
     llvmo::DIDerivedType_O* obj_gc_safe = reinterpret_cast<llvmo::DIDerivedType_O*>(client);
     obj_gc_safe->~DIDerivedType_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_llvmo__DIBasicType_O:
 {
+     // stamp value 74
     llvmo::DIBasicType_O* obj_gc_safe = reinterpret_cast<llvmo::DIBasicType_O*>(client);
     obj_gc_safe->~DIBasicType_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_llvmo__DISubroutineType_O:
 {
+     // stamp value 75
     llvmo::DISubroutineType_O* obj_gc_safe = reinterpret_cast<llvmo::DISubroutineType_O*>(client);
     obj_gc_safe->~DISubroutineType_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_llvmo__Value_O:
 {
+     // stamp value 76
     llvmo::Value_O* obj_gc_safe = reinterpret_cast<llvmo::Value_O*>(client);
     obj_gc_safe->~Value_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_llvmo__User_O:
 {
+     // stamp value 77
     llvmo::User_O* obj_gc_safe = reinterpret_cast<llvmo::User_O*>(client);
     obj_gc_safe->~User_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_llvmo__Instruction_O:
 {
+     // stamp value 78
     llvmo::Instruction_O* obj_gc_safe = reinterpret_cast<llvmo::Instruction_O*>(client);
     obj_gc_safe->~Instruction_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_llvmo__UnaryInstruction_O:
 {
+     // stamp value 79
     llvmo::UnaryInstruction_O* obj_gc_safe = reinterpret_cast<llvmo::UnaryInstruction_O*>(client);
     obj_gc_safe->~UnaryInstruction_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_llvmo__VAArgInst_O:
 {
+     // stamp value 80
     llvmo::VAArgInst_O* obj_gc_safe = reinterpret_cast<llvmo::VAArgInst_O*>(client);
     obj_gc_safe->~VAArgInst_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_llvmo__LoadInst_O:
 {
+     // stamp value 81
     llvmo::LoadInst_O* obj_gc_safe = reinterpret_cast<llvmo::LoadInst_O*>(client);
     obj_gc_safe->~LoadInst_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_llvmo__AllocaInst_O:
 {
+     // stamp value 82
     llvmo::AllocaInst_O* obj_gc_safe = reinterpret_cast<llvmo::AllocaInst_O*>(client);
     obj_gc_safe->~AllocaInst_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_llvmo__CallInst_O:
 {
+     // stamp value 83
     llvmo::CallInst_O* obj_gc_safe = reinterpret_cast<llvmo::CallInst_O*>(client);
     obj_gc_safe->~CallInst_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_llvmo__AtomicRMWInst_O:
 {
+     // stamp value 84
     llvmo::AtomicRMWInst_O* obj_gc_safe = reinterpret_cast<llvmo::AtomicRMWInst_O*>(client);
     obj_gc_safe->~AtomicRMWInst_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_llvmo__TerminatorInst_O:
 {
+     // stamp value 85
     llvmo::TerminatorInst_O* obj_gc_safe = reinterpret_cast<llvmo::TerminatorInst_O*>(client);
     obj_gc_safe->~TerminatorInst_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_llvmo__SwitchInst_O:
 {
+     // stamp value 86
     llvmo::SwitchInst_O* obj_gc_safe = reinterpret_cast<llvmo::SwitchInst_O*>(client);
     obj_gc_safe->~SwitchInst_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_llvmo__InvokeInst_O:
 {
+     // stamp value 87
     llvmo::InvokeInst_O* obj_gc_safe = reinterpret_cast<llvmo::InvokeInst_O*>(client);
     obj_gc_safe->~InvokeInst_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_llvmo__UnreachableInst_O:
 {
+     // stamp value 88
     llvmo::UnreachableInst_O* obj_gc_safe = reinterpret_cast<llvmo::UnreachableInst_O*>(client);
     obj_gc_safe->~UnreachableInst_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_llvmo__ReturnInst_O:
 {
+     // stamp value 89
     llvmo::ReturnInst_O* obj_gc_safe = reinterpret_cast<llvmo::ReturnInst_O*>(client);
     obj_gc_safe->~ReturnInst_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_llvmo__IndirectBrInst_O:
 {
+     // stamp value 90
     llvmo::IndirectBrInst_O* obj_gc_safe = reinterpret_cast<llvmo::IndirectBrInst_O*>(client);
     obj_gc_safe->~IndirectBrInst_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_llvmo__ResumeInst_O:
 {
+     // stamp value 91
     llvmo::ResumeInst_O* obj_gc_safe = reinterpret_cast<llvmo::ResumeInst_O*>(client);
     obj_gc_safe->~ResumeInst_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_llvmo__BranchInst_O:
 {
+     // stamp value 92
     llvmo::BranchInst_O* obj_gc_safe = reinterpret_cast<llvmo::BranchInst_O*>(client);
     obj_gc_safe->~BranchInst_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_llvmo__LandingPadInst_O:
 {
+     // stamp value 93
     llvmo::LandingPadInst_O* obj_gc_safe = reinterpret_cast<llvmo::LandingPadInst_O*>(client);
     obj_gc_safe->~LandingPadInst_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_llvmo__AtomicCmpXchgInst_O:
 {
+     // stamp value 94
     llvmo::AtomicCmpXchgInst_O* obj_gc_safe = reinterpret_cast<llvmo::AtomicCmpXchgInst_O*>(client);
     obj_gc_safe->~AtomicCmpXchgInst_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_llvmo__FenceInst_O:
 {
+     // stamp value 95
     llvmo::FenceInst_O* obj_gc_safe = reinterpret_cast<llvmo::FenceInst_O*>(client);
     obj_gc_safe->~FenceInst_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_llvmo__StoreInst_O:
 {
+     // stamp value 96
     llvmo::StoreInst_O* obj_gc_safe = reinterpret_cast<llvmo::StoreInst_O*>(client);
     obj_gc_safe->~StoreInst_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_llvmo__PHINode_O:
 {
+     // stamp value 97
     llvmo::PHINode_O* obj_gc_safe = reinterpret_cast<llvmo::PHINode_O*>(client);
     obj_gc_safe->~PHINode_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_llvmo__Constant_O:
 {
+     // stamp value 98
     llvmo::Constant_O* obj_gc_safe = reinterpret_cast<llvmo::Constant_O*>(client);
     obj_gc_safe->~Constant_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_llvmo__GlobalValue_O:
 {
+     // stamp value 99
     llvmo::GlobalValue_O* obj_gc_safe = reinterpret_cast<llvmo::GlobalValue_O*>(client);
     obj_gc_safe->~GlobalValue_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_llvmo__GlobalVariable_O:
 {
+     // stamp value 100
     llvmo::GlobalVariable_O* obj_gc_safe = reinterpret_cast<llvmo::GlobalVariable_O*>(client);
     obj_gc_safe->~GlobalVariable_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_llvmo__Function_O:
 {
+     // stamp value 101
     llvmo::Function_O* obj_gc_safe = reinterpret_cast<llvmo::Function_O*>(client);
     obj_gc_safe->~Function_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_llvmo__ConstantFP_O:
 {
+     // stamp value 102
     llvmo::ConstantFP_O* obj_gc_safe = reinterpret_cast<llvmo::ConstantFP_O*>(client);
     obj_gc_safe->~ConstantFP_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_llvmo__BlockAddress_O:
 {
+     // stamp value 103
     llvmo::BlockAddress_O* obj_gc_safe = reinterpret_cast<llvmo::BlockAddress_O*>(client);
     obj_gc_safe->~BlockAddress_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_llvmo__ConstantExpr_O:
 {
+     // stamp value 104
     llvmo::ConstantExpr_O* obj_gc_safe = reinterpret_cast<llvmo::ConstantExpr_O*>(client);
     obj_gc_safe->~ConstantExpr_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_llvmo__ConstantPointerNull_O:
 {
+     // stamp value 105
     llvmo::ConstantPointerNull_O* obj_gc_safe = reinterpret_cast<llvmo::ConstantPointerNull_O*>(client);
     obj_gc_safe->~ConstantPointerNull_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_llvmo__ConstantDataSequential_O:
 {
+     // stamp value 106
     llvmo::ConstantDataSequential_O* obj_gc_safe = reinterpret_cast<llvmo::ConstantDataSequential_O*>(client);
     obj_gc_safe->~ConstantDataSequential_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_llvmo__ConstantDataArray_O:
 {
+     // stamp value 107
     llvmo::ConstantDataArray_O* obj_gc_safe = reinterpret_cast<llvmo::ConstantDataArray_O*>(client);
     obj_gc_safe->~ConstantDataArray_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_llvmo__UndefValue_O:
 {
+     // stamp value 108
     llvmo::UndefValue_O* obj_gc_safe = reinterpret_cast<llvmo::UndefValue_O*>(client);
     obj_gc_safe->~UndefValue_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_llvmo__ConstantArray_O:
 {
+     // stamp value 109
     llvmo::ConstantArray_O* obj_gc_safe = reinterpret_cast<llvmo::ConstantArray_O*>(client);
     obj_gc_safe->~ConstantArray_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_llvmo__ConstantStruct_O:
 {
+     // stamp value 110
     llvmo::ConstantStruct_O* obj_gc_safe = reinterpret_cast<llvmo::ConstantStruct_O*>(client);
     obj_gc_safe->~ConstantStruct_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_llvmo__ConstantInt_O:
 {
+     // stamp value 111
     llvmo::ConstantInt_O* obj_gc_safe = reinterpret_cast<llvmo::ConstantInt_O*>(client);
     obj_gc_safe->~ConstantInt_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_llvmo__Argument_O:
 {
+     // stamp value 112
     llvmo::Argument_O* obj_gc_safe = reinterpret_cast<llvmo::Argument_O*>(client);
     obj_gc_safe->~Argument_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_llvmo__BasicBlock_O:
 {
+     // stamp value 113
     llvmo::BasicBlock_O* obj_gc_safe = reinterpret_cast<llvmo::BasicBlock_O*>(client);
     obj_gc_safe->~BasicBlock_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_llvmo__TargetMachine_O:
 {
+     // stamp value 114
     llvmo::TargetMachine_O* obj_gc_safe = reinterpret_cast<llvmo::TargetMachine_O*>(client);
     obj_gc_safe->~TargetMachine_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_llvmo__LLVMTargetMachine_O:
 {
+     // stamp value 115
     llvmo::LLVMTargetMachine_O* obj_gc_safe = reinterpret_cast<llvmo::LLVMTargetMachine_O*>(client);
     obj_gc_safe->~LLVMTargetMachine_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_llvmo__NamedMDNode_O:
 {
+     // stamp value 116
     llvmo::NamedMDNode_O* obj_gc_safe = reinterpret_cast<llvmo::NamedMDNode_O*>(client);
     obj_gc_safe->~NamedMDNode_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__SmallMultimap_O:
 {
+     // stamp value 117
     core::SmallMultimap_O* obj_gc_safe = reinterpret_cast<core::SmallMultimap_O*>(client);
     obj_gc_safe->~SmallMultimap_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__LambdaListHandler_O:
 {
+     // stamp value 118
     core::LambdaListHandler_O* obj_gc_safe = reinterpret_cast<core::LambdaListHandler_O*>(client);
     obj_gc_safe->~LambdaListHandler_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_llvmo__AttributeSet_O:
 {
+     // stamp value 119
     llvmo::AttributeSet_O* obj_gc_safe = reinterpret_cast<llvmo::AttributeSet_O*>(client);
     obj_gc_safe->~AttributeSet_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__Environment_O:
 {
+     // stamp value 120
     core::Environment_O* obj_gc_safe = reinterpret_cast<core::Environment_O*>(client);
     obj_gc_safe->~Environment_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__GlueEnvironment_O:
 {
+     // stamp value 121
     core::GlueEnvironment_O* obj_gc_safe = reinterpret_cast<core::GlueEnvironment_O*>(client);
     obj_gc_safe->~GlueEnvironment_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__LexicalEnvironment_O:
 {
+     // stamp value 122
     core::LexicalEnvironment_O* obj_gc_safe = reinterpret_cast<core::LexicalEnvironment_O*>(client);
     obj_gc_safe->~LexicalEnvironment_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__RuntimeVisibleEnvironment_O:
 {
+     // stamp value 123
     core::RuntimeVisibleEnvironment_O* obj_gc_safe = reinterpret_cast<core::RuntimeVisibleEnvironment_O*>(client);
     obj_gc_safe->~RuntimeVisibleEnvironment_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__FunctionValueEnvironment_O:
 {
+     // stamp value 124
     core::FunctionValueEnvironment_O* obj_gc_safe = reinterpret_cast<core::FunctionValueEnvironment_O*>(client);
     obj_gc_safe->~FunctionValueEnvironment_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__ValueEnvironment_O:
 {
+     // stamp value 125
     core::ValueEnvironment_O* obj_gc_safe = reinterpret_cast<core::ValueEnvironment_O*>(client);
     obj_gc_safe->~ValueEnvironment_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__TagbodyEnvironment_O:
 {
+     // stamp value 126
     core::TagbodyEnvironment_O* obj_gc_safe = reinterpret_cast<core::TagbodyEnvironment_O*>(client);
     obj_gc_safe->~TagbodyEnvironment_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__CompileTimeEnvironment_O:
 {
+     // stamp value 127
     core::CompileTimeEnvironment_O* obj_gc_safe = reinterpret_cast<core::CompileTimeEnvironment_O*>(client);
     obj_gc_safe->~CompileTimeEnvironment_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__CatchEnvironment_O:
 {
+     // stamp value 128
     core::CatchEnvironment_O* obj_gc_safe = reinterpret_cast<core::CatchEnvironment_O*>(client);
     obj_gc_safe->~CatchEnvironment_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__BlockEnvironment_O:
 {
+     // stamp value 129
     core::BlockEnvironment_O* obj_gc_safe = reinterpret_cast<core::BlockEnvironment_O*>(client);
     obj_gc_safe->~BlockEnvironment_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__MacroletEnvironment_O:
 {
+     // stamp value 130
     core::MacroletEnvironment_O* obj_gc_safe = reinterpret_cast<core::MacroletEnvironment_O*>(client);
     obj_gc_safe->~MacroletEnvironment_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__SymbolMacroletEnvironment_O:
 {
+     // stamp value 131
     core::SymbolMacroletEnvironment_O* obj_gc_safe = reinterpret_cast<core::SymbolMacroletEnvironment_O*>(client);
     obj_gc_safe->~SymbolMacroletEnvironment_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__UnwindProtectEnvironment_O:
 {
+     // stamp value 132
     core::UnwindProtectEnvironment_O* obj_gc_safe = reinterpret_cast<core::UnwindProtectEnvironment_O*>(client);
     obj_gc_safe->~UnwindProtectEnvironment_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__FunctionContainerEnvironment_O:
 {
+     // stamp value 133
     core::FunctionContainerEnvironment_O* obj_gc_safe = reinterpret_cast<core::FunctionContainerEnvironment_O*>(client);
     obj_gc_safe->~FunctionContainerEnvironment_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__ActivationFrame_O:
 {
+     // stamp value 134
     core::ActivationFrame_O* obj_gc_safe = reinterpret_cast<core::ActivationFrame_O*>(client);
     obj_gc_safe->~ActivationFrame_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__ValueFrame_O:
 {
+     // stamp value 135
     core::ValueFrame_O* obj_gc_safe = reinterpret_cast<core::ValueFrame_O*>(client);
     obj_gc_safe->~ValueFrame_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__FunctionFrame_O:
 {
+     // stamp value 136
     core::FunctionFrame_O* obj_gc_safe = reinterpret_cast<core::FunctionFrame_O*>(client);
     obj_gc_safe->~FunctionFrame_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__TagbodyFrame_O:
 {
+     // stamp value 137
     core::TagbodyFrame_O* obj_gc_safe = reinterpret_cast<core::TagbodyFrame_O*>(client);
     obj_gc_safe->~TagbodyFrame_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__RandomState_O:
 {
+     // stamp value 138
     core::RandomState_O* obj_gc_safe = reinterpret_cast<core::RandomState_O*>(client);
     obj_gc_safe->~RandomState_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__Function_O:
 {
+     // stamp value 139
     core::Function_O* obj_gc_safe = reinterpret_cast<core::Function_O*>(client);
     obj_gc_safe->~Function_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__FuncallableInstance_O:
 {
+     // stamp value 140
     core::FuncallableInstance_O* obj_gc_safe = reinterpret_cast<core::FuncallableInstance_O*>(client);
     obj_gc_safe->~FuncallableInstance_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__Creator_O:
 {
+     // stamp value 141
     core::Creator_O* obj_gc_safe = reinterpret_cast<core::Creator_O*>(client);
     obj_gc_safe->~Creator_O();
 }
 obj_finalize_STAMP_core__StructureClassCreator_O:
 {
+     // stamp value 142
     core::StructureClassCreator_O* obj_gc_safe = reinterpret_cast<core::StructureClassCreator_O*>(client);
     obj_gc_safe->~StructureClassCreator_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__DerivableCxxClassCreator_O:
 {
+     // stamp value 143
     core::DerivableCxxClassCreator_O* obj_gc_safe = reinterpret_cast<core::DerivableCxxClassCreator_O*>(client);
     obj_gc_safe->~DerivableCxxClassCreator_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__FuncallableInstanceCreator_O:
 {
+     // stamp value 144
     core::FuncallableInstanceCreator_O* obj_gc_safe = reinterpret_cast<core::FuncallableInstanceCreator_O*>(client);
     obj_gc_safe->~FuncallableInstanceCreator_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_clbind__ConstructorCreator_O:
 {
+     // stamp value 145
     clbind::ConstructorCreator_O* obj_gc_safe = reinterpret_cast<clbind::ConstructorCreator_O*>(client);
     obj_gc_safe->~ConstructorCreator_O();
 }
 obj_finalize_STAMP_core__ClassCreator_O:
 {
+     // stamp value 146
     core::ClassCreator_O* obj_gc_safe = reinterpret_cast<core::ClassCreator_O*>(client);
     obj_gc_safe->~ClassCreator_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_clbind__DummyCreator_O:
 {
+     // stamp value 147
     clbind::DummyCreator_O* obj_gc_safe = reinterpret_cast<clbind::DummyCreator_O*>(client);
     obj_gc_safe->~DummyCreator_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__InstanceCreator_O:
 {
+     // stamp value 148
     core::InstanceCreator_O* obj_gc_safe = reinterpret_cast<core::InstanceCreator_O*>(client);
     obj_gc_safe->~InstanceCreator_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__StandardClassCreator_O:
 {
+     // stamp value 149
     core::StandardClassCreator_O* obj_gc_safe = reinterpret_cast<core::StandardClassCreator_O*>(client);
     obj_gc_safe->~StandardClassCreator_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__NamedFunction_O:
 {
+     // stamp value 150
     core::NamedFunction_O* obj_gc_safe = reinterpret_cast<core::NamedFunction_O*>(client);
     obj_gc_safe->~NamedFunction_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__Closure_O:
 {
+     // stamp value 151
     core::Closure_O* obj_gc_safe = reinterpret_cast<core::Closure_O*>(client);
     obj_gc_safe->~Closure_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__CompiledDispatchFunction_O:
 {
+     // stamp value 152
     core::CompiledDispatchFunction_O* obj_gc_safe = reinterpret_cast<core::CompiledDispatchFunction_O*>(client);
     obj_gc_safe->~CompiledDispatchFunction_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__CompiledFunction_O:
 {
+     // stamp value 153
     core::CompiledFunction_O* obj_gc_safe = reinterpret_cast<core::CompiledFunction_O*>(client);
     obj_gc_safe->~CompiledFunction_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__FunctionClosure_O:
 {
+     // stamp value 154
     core::FunctionClosure_O* obj_gc_safe = reinterpret_cast<core::FunctionClosure_O*>(client);
     obj_gc_safe->~FunctionClosure_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__ClosureWithFrame_O:
 {
+     // stamp value 155
     core::ClosureWithFrame_O* obj_gc_safe = reinterpret_cast<core::ClosureWithFrame_O*>(client);
     obj_gc_safe->~ClosureWithFrame_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__CompiledClosure_O:
 {
+     // stamp value 156
     core::CompiledClosure_O* obj_gc_safe = reinterpret_cast<core::CompiledClosure_O*>(client);
     obj_gc_safe->~CompiledClosure_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__InterpretedClosure_O:
 {
+     // stamp value 157
     core::InterpretedClosure_O* obj_gc_safe = reinterpret_cast<core::InterpretedClosure_O*>(client);
     obj_gc_safe->~InterpretedClosure_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__ClosureWithSlots_O:
 {
+     // stamp value 158
     core::ClosureWithSlots_O* obj_gc_safe = reinterpret_cast<core::ClosureWithSlots_O*>(client);
     obj_gc_safe->~ClosureWithSlots_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__SingleDispatchMethodFunction_O:
 {
+     // stamp value 159
     core::SingleDispatchMethodFunction_O* obj_gc_safe = reinterpret_cast<core::SingleDispatchMethodFunction_O*>(client);
     obj_gc_safe->~SingleDispatchMethodFunction_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__CxxMethodFunction_O:
 {
+     // stamp value 160
     core::CxxMethodFunction_O* obj_gc_safe = reinterpret_cast<core::CxxMethodFunction_O*>(client);
     obj_gc_safe->~CxxMethodFunction_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__BuiltinClosure_O:
 {
+     // stamp value 161
     core::BuiltinClosure_O* obj_gc_safe = reinterpret_cast<core::BuiltinClosure_O*>(client);
     obj_gc_safe->~BuiltinClosure_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__TemplatedFunctionBase_O:
 {
+     // stamp value 162
     core::TemplatedFunctionBase_O* obj_gc_safe = reinterpret_cast<core::TemplatedFunctionBase_O*>(client);
     obj_gc_safe->~TemplatedFunctionBase_O();
 }
 obj_finalize_STAMP_core__TranslationFunctor_O:
 {
+     // stamp value 163
     core::TranslationFunctor_O* obj_gc_safe = reinterpret_cast<core::TranslationFunctor_O*>(client);
     obj_gc_safe->~TranslationFunctor_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__MacroClosure_O:
 {
+     // stamp value 164
     core::MacroClosure_O* obj_gc_safe = reinterpret_cast<core::MacroClosure_O*>(client);
     obj_gc_safe->~MacroClosure_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__SingleDispatchGenericFunctionClosure_O:
 {
+     // stamp value 165
     core::SingleDispatchGenericFunctionClosure_O* obj_gc_safe = reinterpret_cast<core::SingleDispatchGenericFunctionClosure_O*>(client);
     obj_gc_safe->~SingleDispatchGenericFunctionClosure_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__SingleDispatchEffectiveMethodFunction_O:
 {
+     // stamp value 166
     core::SingleDispatchEffectiveMethodFunction_O* obj_gc_safe = reinterpret_cast<core::SingleDispatchEffectiveMethodFunction_O*>(client);
     obj_gc_safe->~SingleDispatchEffectiveMethodFunction_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__SingleDispatchCxxEffectiveMethodFunction_O:
 {
+     // stamp value 167
     core::SingleDispatchCxxEffectiveMethodFunction_O* obj_gc_safe = reinterpret_cast<core::SingleDispatchCxxEffectiveMethodFunction_O*>(client);
     obj_gc_safe->~SingleDispatchCxxEffectiveMethodFunction_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__SpecialForm_O:
 {
+     // stamp value 168
     core::SpecialForm_O* obj_gc_safe = reinterpret_cast<core::SpecialForm_O*>(client);
     obj_gc_safe->~SpecialForm_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__SequenceStepper_O:
 {
+     // stamp value 169
     core::SequenceStepper_O* obj_gc_safe = reinterpret_cast<core::SequenceStepper_O*>(client);
     obj_gc_safe->~SequenceStepper_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__VectorStepper_O:
 {
+     // stamp value 170
     core::VectorStepper_O* obj_gc_safe = reinterpret_cast<core::VectorStepper_O*>(client);
     obj_gc_safe->~VectorStepper_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__ConsStepper_O:
 {
+     // stamp value 171
     core::ConsStepper_O* obj_gc_safe = reinterpret_cast<core::ConsStepper_O*>(client);
     obj_gc_safe->~ConsStepper_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__WeakPointer_O:
 {
+     // stamp value 172
     core::WeakPointer_O* obj_gc_safe = reinterpret_cast<core::WeakPointer_O*>(client);
     obj_gc_safe->~WeakPointer_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_llvmo__DebugLoc_O:
 {
+     // stamp value 173
     llvmo::DebugLoc_O* obj_gc_safe = reinterpret_cast<llvmo::DebugLoc_O*>(client);
     obj_gc_safe->~DebugLoc_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__SNode_O:
 {
+     // stamp value 174
     core::SNode_O* obj_gc_safe = reinterpret_cast<core::SNode_O*>(client);
     obj_gc_safe->~SNode_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__BranchSNode_O:
 {
+     // stamp value 175
     core::BranchSNode_O* obj_gc_safe = reinterpret_cast<core::BranchSNode_O*>(client);
     obj_gc_safe->~BranchSNode_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__LeafSNode_O:
 {
+     // stamp value 176
     core::LeafSNode_O* obj_gc_safe = reinterpret_cast<core::LeafSNode_O*>(client);
     obj_gc_safe->~LeafSNode_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_llvmo__ModuleHandle_O:
 {
+     // stamp value 177
     llvmo::ModuleHandle_O* obj_gc_safe = reinterpret_cast<llvmo::ModuleHandle_O*>(client);
     obj_gc_safe->~ModuleHandle_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__Pointer_O:
 {
+     // stamp value 178
     core::Pointer_O* obj_gc_safe = reinterpret_cast<core::Pointer_O*>(client);
     obj_gc_safe->~Pointer_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__CxxObject_O:
 {
+     // stamp value 179
     core::CxxObject_O* obj_gc_safe = reinterpret_cast<core::CxxObject_O*>(client);
     obj_gc_safe->~CxxObject_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_llvmo__DINodeArray_O:
 {
+     // stamp value 180
     llvmo::DINodeArray_O* obj_gc_safe = reinterpret_cast<llvmo::DINodeArray_O*>(client);
     obj_gc_safe->~DINodeArray_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__NativeVector_float_O:
 {
+     // stamp value 181
     core::NativeVector_float_O* obj_gc_safe = reinterpret_cast<core::NativeVector_float_O*>(client);
     obj_gc_safe->~NativeVector_float_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_clcenv__Info_O:
 {
+     // stamp value 182
     clcenv::Info_O* obj_gc_safe = reinterpret_cast<clcenv::Info_O*>(client);
     obj_gc_safe->~Info_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_clcenv__OptimizeInfo_O:
 {
+     // stamp value 183
     clcenv::OptimizeInfo_O* obj_gc_safe = reinterpret_cast<clcenv::OptimizeInfo_O*>(client);
     obj_gc_safe->~OptimizeInfo_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_clcenv__BlockInfo_O:
 {
+     // stamp value 184
     clcenv::BlockInfo_O* obj_gc_safe = reinterpret_cast<clcenv::BlockInfo_O*>(client);
     obj_gc_safe->~BlockInfo_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_clcenv__FunctionInfo_O:
 {
+     // stamp value 185
     clcenv::FunctionInfo_O* obj_gc_safe = reinterpret_cast<clcenv::FunctionInfo_O*>(client);
     obj_gc_safe->~FunctionInfo_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_clcenv__GlobalMacroInfo_O:
 {
+     // stamp value 186
     clcenv::GlobalMacroInfo_O* obj_gc_safe = reinterpret_cast<clcenv::GlobalMacroInfo_O*>(client);
     obj_gc_safe->~GlobalMacroInfo_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_clcenv__LocalMacroInfo_O:
 {
+     // stamp value 187
     clcenv::LocalMacroInfo_O* obj_gc_safe = reinterpret_cast<clcenv::LocalMacroInfo_O*>(client);
     obj_gc_safe->~LocalMacroInfo_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_clcenv__LocalFunctionInfo_O:
 {
+     // stamp value 188
     clcenv::LocalFunctionInfo_O* obj_gc_safe = reinterpret_cast<clcenv::LocalFunctionInfo_O*>(client);
     obj_gc_safe->~LocalFunctionInfo_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_clcenv__SpecialOperatorInfo_O:
 {
+     // stamp value 189
     clcenv::SpecialOperatorInfo_O* obj_gc_safe = reinterpret_cast<clcenv::SpecialOperatorInfo_O*>(client);
     obj_gc_safe->~SpecialOperatorInfo_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_clcenv__LambdaNameInfo_O:
 {
+     // stamp value 190
     clcenv::LambdaNameInfo_O* obj_gc_safe = reinterpret_cast<clcenv::LambdaNameInfo_O*>(client);
     obj_gc_safe->~LambdaNameInfo_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_clcenv__GlobalFunctionInfo_O:
 {
+     // stamp value 191
     clcenv::GlobalFunctionInfo_O* obj_gc_safe = reinterpret_cast<clcenv::GlobalFunctionInfo_O*>(client);
     obj_gc_safe->~GlobalFunctionInfo_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_clcenv__VariableInfo_O:
 {
+     // stamp value 192
     clcenv::VariableInfo_O* obj_gc_safe = reinterpret_cast<clcenv::VariableInfo_O*>(client);
     obj_gc_safe->~VariableInfo_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_clcenv__SpecialVariableInfo_O:
 {
+     // stamp value 193
     clcenv::SpecialVariableInfo_O* obj_gc_safe = reinterpret_cast<clcenv::SpecialVariableInfo_O*>(client);
     obj_gc_safe->~SpecialVariableInfo_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_clcenv__LexicalVariableInfo_O:
 {
+     // stamp value 194
     clcenv::LexicalVariableInfo_O* obj_gc_safe = reinterpret_cast<clcenv::LexicalVariableInfo_O*>(client);
     obj_gc_safe->~LexicalVariableInfo_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_clcenv__SymbolMacroInfo_O:
 {
+     // stamp value 195
     clcenv::SymbolMacroInfo_O* obj_gc_safe = reinterpret_cast<clcenv::SymbolMacroInfo_O*>(client);
     obj_gc_safe->~SymbolMacroInfo_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_clcenv__ConstantVariableInfo_O:
 {
+     // stamp value 196
     clcenv::ConstantVariableInfo_O* obj_gc_safe = reinterpret_cast<clcenv::ConstantVariableInfo_O*>(client);
     obj_gc_safe->~ConstantVariableInfo_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_mp__ConditionVariable_O:
 {
+     // stamp value 197
     mp::ConditionVariable_O* obj_gc_safe = reinterpret_cast<mp::ConditionVariable_O*>(client);
     obj_gc_safe->~ConditionVariable_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_mp__Mutex_O:
 {
+     // stamp value 198
     mp::Mutex_O* obj_gc_safe = reinterpret_cast<mp::Mutex_O*>(client);
     obj_gc_safe->~Mutex_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_mp__RecursiveMutex_O:
 {
+     // stamp value 199
     mp::RecursiveMutex_O* obj_gc_safe = reinterpret_cast<mp::RecursiveMutex_O*>(client);
     obj_gc_safe->~RecursiveMutex_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_llvmo__DITypeRefArray_O:
 {
+     // stamp value 200
     llvmo::DITypeRefArray_O* obj_gc_safe = reinterpret_cast<llvmo::DITypeRefArray_O*>(client);
     obj_gc_safe->~DITypeRefArray_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__NativeVector_double_O:
 {
+     // stamp value 201
     core::NativeVector_double_O* obj_gc_safe = reinterpret_cast<core::NativeVector_double_O*>(client);
     obj_gc_safe->~NativeVector_double_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__NativeVector_int_O:
 {
+     // stamp value 202
     core::NativeVector_int_O* obj_gc_safe = reinterpret_cast<core::NativeVector_int_O*>(client);
     obj_gc_safe->~NativeVector_int_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_mp__SharedMutex_O:
 {
+     // stamp value 203
     mp::SharedMutex_O* obj_gc_safe = reinterpret_cast<mp::SharedMutex_O*>(client);
     obj_gc_safe->~SharedMutex_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_clcenv__Entry_O:
 {
+     // stamp value 204
     clcenv::Entry_O* obj_gc_safe = reinterpret_cast<clcenv::Entry_O*>(client);
     obj_gc_safe->~Entry_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_clcenv__VariableType_O:
 {
+     // stamp value 205
     clcenv::VariableType_O* obj_gc_safe = reinterpret_cast<clcenv::VariableType_O*>(client);
     obj_gc_safe->~VariableType_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_clcenv__VariableIgnore_O:
 {
+     // stamp value 206
     clcenv::VariableIgnore_O* obj_gc_safe = reinterpret_cast<clcenv::VariableIgnore_O*>(client);
     obj_gc_safe->~VariableIgnore_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_clcenv__Function_O:
 {
+     // stamp value 207
     clcenv::Function_O* obj_gc_safe = reinterpret_cast<clcenv::Function_O*>(client);
     obj_gc_safe->~Function_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_clcenv__SymbolMacro_O:
 {
+     // stamp value 208
     clcenv::SymbolMacro_O* obj_gc_safe = reinterpret_cast<clcenv::SymbolMacro_O*>(client);
     obj_gc_safe->~SymbolMacro_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_clcenv__FunctionDynamicExtent_O:
 {
+     // stamp value 209
     clcenv::FunctionDynamicExtent_O* obj_gc_safe = reinterpret_cast<clcenv::FunctionDynamicExtent_O*>(client);
     obj_gc_safe->~FunctionDynamicExtent_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_clcenv__Inline_O:
 {
+     // stamp value 210
     clcenv::Inline_O* obj_gc_safe = reinterpret_cast<clcenv::Inline_O*>(client);
     obj_gc_safe->~Inline_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_clcenv__Closure_O:
 {
+     // stamp value 211
     clcenv::Closure_O* obj_gc_safe = reinterpret_cast<clcenv::Closure_O*>(client);
     obj_gc_safe->~Closure_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_clcenv__Optimize_O:
 {
+     // stamp value 212
     clcenv::Optimize_O* obj_gc_safe = reinterpret_cast<clcenv::Optimize_O*>(client);
     obj_gc_safe->~Optimize_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_clcenv__LambdaName_O:
 {
+     // stamp value 213
     clcenv::LambdaName_O* obj_gc_safe = reinterpret_cast<clcenv::LambdaName_O*>(client);
     obj_gc_safe->~LambdaName_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_clcenv__Tag_O:
 {
+     // stamp value 214
     clcenv::Tag_O* obj_gc_safe = reinterpret_cast<clcenv::Tag_O*>(client);
     obj_gc_safe->~Tag_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_clcenv__Block_O:
 {
+     // stamp value 215
     clcenv::Block_O* obj_gc_safe = reinterpret_cast<clcenv::Block_O*>(client);
     obj_gc_safe->~Block_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_clcenv__FunctionType_O:
 {
+     // stamp value 216
     clcenv::FunctionType_O* obj_gc_safe = reinterpret_cast<clcenv::FunctionType_O*>(client);
     obj_gc_safe->~FunctionType_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_clcenv__GlobalEnvironment_O:
 {
+     // stamp value 217
     clcenv::GlobalEnvironment_O* obj_gc_safe = reinterpret_cast<clcenv::GlobalEnvironment_O*>(client);
     obj_gc_safe->~GlobalEnvironment_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_clcenv__VariableDynamicExtent_O:
 {
+     // stamp value 218
     clcenv::VariableDynamicExtent_O* obj_gc_safe = reinterpret_cast<clcenv::VariableDynamicExtent_O*>(client);
     obj_gc_safe->~VariableDynamicExtent_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_clcenv__LexicalVariable_O:
 {
+     // stamp value 219
     clcenv::LexicalVariable_O* obj_gc_safe = reinterpret_cast<clcenv::LexicalVariable_O*>(client);
     obj_gc_safe->~LexicalVariable_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_clcenv__SpecialVariable_O:
 {
+     // stamp value 220
     clcenv::SpecialVariable_O* obj_gc_safe = reinterpret_cast<clcenv::SpecialVariable_O*>(client);
     obj_gc_safe->~SpecialVariable_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_clcenv__Macro_O:
 {
+     // stamp value 221
     clcenv::Macro_O* obj_gc_safe = reinterpret_cast<clcenv::Macro_O*>(client);
     obj_gc_safe->~Macro_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_clcenv__FunctionIgnore_O:
 {
+     // stamp value 222
     clcenv::FunctionIgnore_O* obj_gc_safe = reinterpret_cast<clcenv::FunctionIgnore_O*>(client);
     obj_gc_safe->~FunctionIgnore_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_mp__Process_O:
 {
+     // stamp value 223
     mp::Process_O* obj_gc_safe = reinterpret_cast<mp::Process_O*>(client);
     obj_gc_safe->~Process_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__SingleDispatchMethod_O:
 {
+     // stamp value 224
     core::SingleDispatchMethod_O* obj_gc_safe = reinterpret_cast<core::SingleDispatchMethod_O*>(client);
     obj_gc_safe->~SingleDispatchMethod_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__Iterator_O:
 {
+     // stamp value 225
     core::Iterator_O* obj_gc_safe = reinterpret_cast<core::Iterator_O*>(client);
     obj_gc_safe->~Iterator_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__RecursiveDirectoryIterator_O:
 {
+     // stamp value 226
     core::RecursiveDirectoryIterator_O* obj_gc_safe = reinterpret_cast<core::RecursiveDirectoryIterator_O*>(client);
     obj_gc_safe->~RecursiveDirectoryIterator_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__DirectoryIterator_O:
 {
+     // stamp value 227
     core::DirectoryIterator_O* obj_gc_safe = reinterpret_cast<core::DirectoryIterator_O*>(client);
     obj_gc_safe->~DirectoryIterator_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_llvmo__InsertPoint_O:
 {
+     // stamp value 228
     llvmo::InsertPoint_O* obj_gc_safe = reinterpret_cast<llvmo::InsertPoint_O*>(client);
     obj_gc_safe->~InsertPoint_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__Array_O:
 {
+     // stamp value 229
     core::Array_O* obj_gc_safe = reinterpret_cast<core::Array_O*>(client);
     obj_gc_safe->~Array_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__AbstractSimpleVector_O:
 {
+     // stamp value 230
     core::AbstractSimpleVector_O* obj_gc_safe = reinterpret_cast<core::AbstractSimpleVector_O*>(client);
     obj_gc_safe->~AbstractSimpleVector_O();
     goto finalize_done;
 }
+obj_finalize_STAMP_core__template_SimpleVector_core__SimpleVectorFloat_O_float_core__AbstractSimpleVector_O_:
+{
+     // do nothing stamp value 231
+    THROW_HARD_ERROR(BF("Should never finalize object core::template_SimpleVector<core::SimpleVectorFloat_O,float,core::AbstractSimpleVector_O>"));
+}
 obj_finalize_STAMP_core__SimpleVectorFloat_O:
 {
+     // stamp value 232
     core::SimpleVectorFloat_O* obj_gc_safe = reinterpret_cast<core::SimpleVectorFloat_O*>(client);
     obj_gc_safe->~SimpleVectorFloat_O();
     goto finalize_done;
 }
+obj_finalize_STAMP_core__template_SimpleVector_core__SimpleVector_byte64_t_O_unsigned_long_core__AbstractSimpleVector_O_:
+{
+     // do nothing stamp value 233
+    THROW_HARD_ERROR(BF("Should never finalize object core::template_SimpleVector<core::SimpleVector_byte64_t_O,unsigned long,core::AbstractSimpleVector_O>"));
+}
 obj_finalize_STAMP_core__SimpleVector_byte64_t_O:
 {
+     // stamp value 234
     core::SimpleVector_byte64_t_O* obj_gc_safe = reinterpret_cast<core::SimpleVector_byte64_t_O*>(client);
     obj_gc_safe->~SimpleVector_byte64_t_O();
     goto finalize_done;
 }
+obj_finalize_STAMP_core__template_SimpleVector_core__SimpleVector_int64_t_O_long_core__AbstractSimpleVector_O_:
+{
+     // do nothing stamp value 235
+    THROW_HARD_ERROR(BF("Should never finalize object core::template_SimpleVector<core::SimpleVector_int64_t_O,long,core::AbstractSimpleVector_O>"));
+}
 obj_finalize_STAMP_core__SimpleVector_int64_t_O:
 {
+     // stamp value 236
     core::SimpleVector_int64_t_O* obj_gc_safe = reinterpret_cast<core::SimpleVector_int64_t_O*>(client);
     obj_gc_safe->~SimpleVector_int64_t_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__SimpleString_O:
 {
+     // stamp value 237
     core::SimpleString_O* obj_gc_safe = reinterpret_cast<core::SimpleString_O*>(client);
     obj_gc_safe->~SimpleString_O();
     goto finalize_done;
 }
+obj_finalize_STAMP_core__template_SimpleVector_core__SimpleCharacterString_O_int_core__SimpleString_O_:
+{
+     // do nothing stamp value 238
+    THROW_HARD_ERROR(BF("Should never finalize object core::template_SimpleVector<core::SimpleCharacterString_O,int,core::SimpleString_O>"));
+}
 obj_finalize_STAMP_core__SimpleCharacterString_O:
 {
+     // stamp value 239
     core::SimpleCharacterString_O* obj_gc_safe = reinterpret_cast<core::SimpleCharacterString_O*>(client);
     obj_gc_safe->~SimpleCharacterString_O();
     goto finalize_done;
 }
+obj_finalize_STAMP_core__template_SimpleVector_core__SimpleBaseString_O_unsigned_char_core__SimpleString_O_:
+{
+     // do nothing stamp value 240
+    THROW_HARD_ERROR(BF("Should never finalize object core::template_SimpleVector<core::SimpleBaseString_O,unsigned char,core::SimpleString_O>"));
+}
 obj_finalize_STAMP_core__SimpleBaseString_O:
 {
+     // stamp value 241
     core::SimpleBaseString_O* obj_gc_safe = reinterpret_cast<core::SimpleBaseString_O*>(client);
     obj_gc_safe->~SimpleBaseString_O();
     goto finalize_done;
 }
+obj_finalize_STAMP_core__template_SimpleVector_core__SimpleVector_int16_t_O_short_core__AbstractSimpleVector_O_:
+{
+     // do nothing stamp value 242
+    THROW_HARD_ERROR(BF("Should never finalize object core::template_SimpleVector<core::SimpleVector_int16_t_O,short,core::AbstractSimpleVector_O>"));
+}
 obj_finalize_STAMP_core__SimpleVector_int16_t_O:
 {
+     // stamp value 243
     core::SimpleVector_int16_t_O* obj_gc_safe = reinterpret_cast<core::SimpleVector_int16_t_O*>(client);
     obj_gc_safe->~SimpleVector_int16_t_O();
     goto finalize_done;
 }
+obj_finalize_STAMP_core__template_SimpleVector_core__SimpleVector_byte16_t_O_unsigned_short_core__AbstractSimpleVector_O_:
+{
+     // do nothing stamp value 244
+    THROW_HARD_ERROR(BF("Should never finalize object core::template_SimpleVector<core::SimpleVector_byte16_t_O,unsigned short,core::AbstractSimpleVector_O>"));
+}
 obj_finalize_STAMP_core__SimpleVector_byte16_t_O:
 {
+     // stamp value 245
     core::SimpleVector_byte16_t_O* obj_gc_safe = reinterpret_cast<core::SimpleVector_byte16_t_O*>(client);
     obj_gc_safe->~SimpleVector_byte16_t_O();
     goto finalize_done;
 }
+obj_finalize_STAMP_core__template_SimpleVector_core__SimpleVector_fixnum_O_long_core__AbstractSimpleVector_O_:
+{
+     // do nothing stamp value 246
+    THROW_HARD_ERROR(BF("Should never finalize object core::template_SimpleVector<core::SimpleVector_fixnum_O,long,core::AbstractSimpleVector_O>"));
+}
 obj_finalize_STAMP_core__SimpleVector_fixnum_O:
 {
+     // stamp value 247
     core::SimpleVector_fixnum_O* obj_gc_safe = reinterpret_cast<core::SimpleVector_fixnum_O*>(client);
     obj_gc_safe->~SimpleVector_fixnum_O();
     goto finalize_done;
 }
+obj_finalize_STAMP_core__template_SimpleVector_core__SimpleVector_int8_t_O_signed_char_core__AbstractSimpleVector_O_:
+{
+     // do nothing stamp value 248
+    THROW_HARD_ERROR(BF("Should never finalize object core::template_SimpleVector<core::SimpleVector_int8_t_O,signed char,core::AbstractSimpleVector_O>"));
+}
 obj_finalize_STAMP_core__SimpleVector_int8_t_O:
 {
+     // stamp value 249
     core::SimpleVector_int8_t_O* obj_gc_safe = reinterpret_cast<core::SimpleVector_int8_t_O*>(client);
     obj_gc_safe->~SimpleVector_int8_t_O();
     goto finalize_done;
 }
+obj_finalize_STAMP_core__template_SimpleVector_core__SimpleVector_O_gctools__smart_ptr_core__T_O__core__AbstractSimpleVector_O_:
+{
+     // do nothing stamp value 250
+    THROW_HARD_ERROR(BF("Should never finalize object core::template_SimpleVector<core::SimpleVector_O,gctools::smart_ptr<core::T_O>,core::AbstractSimpleVector_O>"));
+}
 obj_finalize_STAMP_core__SimpleVector_O:
 {
+     // stamp value 251
     core::SimpleVector_O* obj_gc_safe = reinterpret_cast<core::SimpleVector_O*>(client);
     obj_gc_safe->~SimpleVector_O();
     goto finalize_done;
 }
+obj_finalize_STAMP_core__template_SimpleVector_core__SimpleVector_byte8_t_O_unsigned_char_core__AbstractSimpleVector_O_:
+{
+     // do nothing stamp value 252
+    THROW_HARD_ERROR(BF("Should never finalize object core::template_SimpleVector<core::SimpleVector_byte8_t_O,unsigned char,core::AbstractSimpleVector_O>"));
+}
 obj_finalize_STAMP_core__SimpleVector_byte8_t_O:
 {
+     // stamp value 253
     core::SimpleVector_byte8_t_O* obj_gc_safe = reinterpret_cast<core::SimpleVector_byte8_t_O*>(client);
     obj_gc_safe->~SimpleVector_byte8_t_O();
     goto finalize_done;
 }
+obj_finalize_STAMP_core__template_SimpleVector_core__SimpleVector_int32_t_O_int_core__AbstractSimpleVector_O_:
+{
+     // do nothing stamp value 254
+    THROW_HARD_ERROR(BF("Should never finalize object core::template_SimpleVector<core::SimpleVector_int32_t_O,int,core::AbstractSimpleVector_O>"));
+}
 obj_finalize_STAMP_core__SimpleVector_int32_t_O:
 {
+     // stamp value 255
     core::SimpleVector_int32_t_O* obj_gc_safe = reinterpret_cast<core::SimpleVector_int32_t_O*>(client);
     obj_gc_safe->~SimpleVector_int32_t_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__SimpleBitVector_O:
 {
+     // stamp value 256
     core::SimpleBitVector_O* obj_gc_safe = reinterpret_cast<core::SimpleBitVector_O*>(client);
     obj_gc_safe->~SimpleBitVector_O();
     goto finalize_done;
 }
+obj_finalize_STAMP_core__template_SimpleVector_core__SimpleVector_byte32_t_O_unsigned_int_core__AbstractSimpleVector_O_:
+{
+     // do nothing stamp value 257
+    THROW_HARD_ERROR(BF("Should never finalize object core::template_SimpleVector<core::SimpleVector_byte32_t_O,unsigned int,core::AbstractSimpleVector_O>"));
+}
 obj_finalize_STAMP_core__SimpleVector_byte32_t_O:
 {
+     // stamp value 258
     core::SimpleVector_byte32_t_O* obj_gc_safe = reinterpret_cast<core::SimpleVector_byte32_t_O*>(client);
     obj_gc_safe->~SimpleVector_byte32_t_O();
     goto finalize_done;
 }
+obj_finalize_STAMP_core__template_SimpleVector_core__SimpleVector_size_t_O_unsigned_long_core__AbstractSimpleVector_O_:
+{
+     // do nothing stamp value 259
+    THROW_HARD_ERROR(BF("Should never finalize object core::template_SimpleVector<core::SimpleVector_size_t_O,unsigned long,core::AbstractSimpleVector_O>"));
+}
 obj_finalize_STAMP_core__SimpleVector_size_t_O:
 {
+     // stamp value 260
     core::SimpleVector_size_t_O* obj_gc_safe = reinterpret_cast<core::SimpleVector_size_t_O*>(client);
     obj_gc_safe->~SimpleVector_size_t_O();
     goto finalize_done;
 }
+obj_finalize_STAMP_core__template_SimpleVector_core__SimpleVectorDouble_O_double_core__AbstractSimpleVector_O_:
+{
+     // do nothing stamp value 261
+    THROW_HARD_ERROR(BF("Should never finalize object core::template_SimpleVector<core::SimpleVectorDouble_O,double,core::AbstractSimpleVector_O>"));
+}
 obj_finalize_STAMP_core__SimpleVectorDouble_O:
 {
+     // stamp value 262
     core::SimpleVectorDouble_O* obj_gc_safe = reinterpret_cast<core::SimpleVectorDouble_O*>(client);
     obj_gc_safe->~SimpleVectorDouble_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__MDArray_O:
 {
+     // stamp value 263
     core::MDArray_O* obj_gc_safe = reinterpret_cast<core::MDArray_O*>(client);
     obj_gc_safe->~MDArray_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__BitVectorNs_O:
 {
+     // stamp value 264
     core::BitVectorNs_O* obj_gc_safe = reinterpret_cast<core::BitVectorNs_O*>(client);
     obj_gc_safe->~BitVectorNs_O();
     goto finalize_done;
 }
+obj_finalize_STAMP_core__template_Array_core__MDArray_byte64_t_O_core__SimpleMDArray_byte64_t_O_core__SimpleVector_byte64_t_O_core__MDArray_O_:
+{
+     // do nothing stamp value 265
+    THROW_HARD_ERROR(BF("Should never finalize object core::template_Array<core::MDArray_byte64_t_O,core::SimpleMDArray_byte64_t_O,core::SimpleVector_byte64_t_O,core::MDArray_O>"));
+}
 obj_finalize_STAMP_core__MDArray_byte64_t_O:
 {
+     // stamp value 266
     core::MDArray_byte64_t_O* obj_gc_safe = reinterpret_cast<core::MDArray_byte64_t_O*>(client);
     obj_gc_safe->~MDArray_byte64_t_O();
     goto finalize_done;
 }
+obj_finalize_STAMP_core__template_Array_core__MDArray_int16_t_O_core__SimpleMDArray_int16_t_O_core__SimpleVector_int16_t_O_core__MDArray_O_:
+{
+     // do nothing stamp value 267
+    THROW_HARD_ERROR(BF("Should never finalize object core::template_Array<core::MDArray_int16_t_O,core::SimpleMDArray_int16_t_O,core::SimpleVector_int16_t_O,core::MDArray_O>"));
+}
 obj_finalize_STAMP_core__MDArray_int16_t_O:
 {
+     // stamp value 268
     core::MDArray_int16_t_O* obj_gc_safe = reinterpret_cast<core::MDArray_int16_t_O*>(client);
     obj_gc_safe->~MDArray_int16_t_O();
     goto finalize_done;
 }
+obj_finalize_STAMP_core__template_Array_core__MDArray_int8_t_O_core__SimpleMDArray_int8_t_O_core__SimpleVector_int8_t_O_core__MDArray_O_:
+{
+     // do nothing stamp value 269
+    THROW_HARD_ERROR(BF("Should never finalize object core::template_Array<core::MDArray_int8_t_O,core::SimpleMDArray_int8_t_O,core::SimpleVector_int8_t_O,core::MDArray_O>"));
+}
 obj_finalize_STAMP_core__MDArray_int8_t_O:
 {
+     // stamp value 270
     core::MDArray_int8_t_O* obj_gc_safe = reinterpret_cast<core::MDArray_int8_t_O*>(client);
     obj_gc_safe->~MDArray_int8_t_O();
     goto finalize_done;
 }
+obj_finalize_STAMP_core__template_Array_core__MDArrayCharacter_O_core__SimpleMDArrayCharacter_O_core__SimpleCharacterString_O_core__MDArray_O_:
+{
+     // do nothing stamp value 271
+    THROW_HARD_ERROR(BF("Should never finalize object core::template_Array<core::MDArrayCharacter_O,core::SimpleMDArrayCharacter_O,core::SimpleCharacterString_O,core::MDArray_O>"));
+}
 obj_finalize_STAMP_core__MDArrayCharacter_O:
 {
+     // stamp value 272
     core::MDArrayCharacter_O* obj_gc_safe = reinterpret_cast<core::MDArrayCharacter_O*>(client);
     obj_gc_safe->~MDArrayCharacter_O();
     goto finalize_done;
 }
+obj_finalize_STAMP_core__template_Array_core__MDArray_int32_t_O_core__SimpleMDArray_int32_t_O_core__SimpleVector_int32_t_O_core__MDArray_O_:
+{
+     // do nothing stamp value 273
+    THROW_HARD_ERROR(BF("Should never finalize object core::template_Array<core::MDArray_int32_t_O,core::SimpleMDArray_int32_t_O,core::SimpleVector_int32_t_O,core::MDArray_O>"));
+}
 obj_finalize_STAMP_core__MDArray_int32_t_O:
 {
+     // stamp value 274
     core::MDArray_int32_t_O* obj_gc_safe = reinterpret_cast<core::MDArray_int32_t_O*>(client);
     obj_gc_safe->~MDArray_int32_t_O();
     goto finalize_done;
 }
+obj_finalize_STAMP_core__template_Array_core__MDArrayFloat_O_core__SimpleMDArrayFloat_O_core__SimpleVectorFloat_O_core__MDArray_O_:
+{
+     // do nothing stamp value 275
+    THROW_HARD_ERROR(BF("Should never finalize object core::template_Array<core::MDArrayFloat_O,core::SimpleMDArrayFloat_O,core::SimpleVectorFloat_O,core::MDArray_O>"));
+}
 obj_finalize_STAMP_core__MDArrayFloat_O:
 {
+     // stamp value 276
     core::MDArrayFloat_O* obj_gc_safe = reinterpret_cast<core::MDArrayFloat_O*>(client);
     obj_gc_safe->~MDArrayFloat_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__StrNs_O:
 {
+     // stamp value 277
     core::StrNs_O* obj_gc_safe = reinterpret_cast<core::StrNs_O*>(client);
     obj_gc_safe->~StrNs_O();
     goto finalize_done;
 }
+obj_finalize_STAMP_core__template_Vector_core__StrWNs_O_core__SimpleCharacterString_O_core__StrNs_O_:
+{
+     // do nothing stamp value 278
+    THROW_HARD_ERROR(BF("Should never finalize object core::template_Vector<core::StrWNs_O,core::SimpleCharacterString_O,core::StrNs_O>"));
+}
 obj_finalize_STAMP_core__StrWNs_O:
 {
+     // stamp value 279
     core::StrWNs_O* obj_gc_safe = reinterpret_cast<core::StrWNs_O*>(client);
     obj_gc_safe->~StrWNs_O();
     goto finalize_done;
 }
+obj_finalize_STAMP_core__template_Vector_core__Str8Ns_O_core__SimpleBaseString_O_core__StrNs_O_:
+{
+     // do nothing stamp value 280
+    THROW_HARD_ERROR(BF("Should never finalize object core::template_Vector<core::Str8Ns_O,core::SimpleBaseString_O,core::StrNs_O>"));
+}
 obj_finalize_STAMP_core__Str8Ns_O:
 {
+     // stamp value 281
     core::Str8Ns_O* obj_gc_safe = reinterpret_cast<core::Str8Ns_O*>(client);
     obj_gc_safe->~Str8Ns_O();
     goto finalize_done;
 }
+obj_finalize_STAMP_core__template_Array_core__MDArrayDouble_O_core__SimpleMDArrayDouble_O_core__SimpleVectorDouble_O_core__MDArray_O_:
+{
+     // do nothing stamp value 282
+    THROW_HARD_ERROR(BF("Should never finalize object core::template_Array<core::MDArrayDouble_O,core::SimpleMDArrayDouble_O,core::SimpleVectorDouble_O,core::MDArray_O>"));
+}
 obj_finalize_STAMP_core__MDArrayDouble_O:
 {
+     // stamp value 283
     core::MDArrayDouble_O* obj_gc_safe = reinterpret_cast<core::MDArrayDouble_O*>(client);
     obj_gc_safe->~MDArrayDouble_O();
     goto finalize_done;
 }
+obj_finalize_STAMP_core__template_Array_core__MDArrayT_O_core__SimpleMDArrayT_O_core__SimpleVector_O_core__MDArray_O_:
+{
+     // do nothing stamp value 284
+    THROW_HARD_ERROR(BF("Should never finalize object core::template_Array<core::MDArrayT_O,core::SimpleMDArrayT_O,core::SimpleVector_O,core::MDArray_O>"));
+}
 obj_finalize_STAMP_core__MDArrayT_O:
 {
+     // stamp value 285
     core::MDArrayT_O* obj_gc_safe = reinterpret_cast<core::MDArrayT_O*>(client);
     obj_gc_safe->~MDArrayT_O();
     goto finalize_done;
 }
+obj_finalize_STAMP_core__template_Array_core__MDArray_size_t_O_core__SimpleMDArray_size_t_O_core__SimpleVector_size_t_O_core__MDArray_O_:
+{
+     // do nothing stamp value 286
+    THROW_HARD_ERROR(BF("Should never finalize object core::template_Array<core::MDArray_size_t_O,core::SimpleMDArray_size_t_O,core::SimpleVector_size_t_O,core::MDArray_O>"));
+}
 obj_finalize_STAMP_core__MDArray_size_t_O:
 {
+     // stamp value 287
     core::MDArray_size_t_O* obj_gc_safe = reinterpret_cast<core::MDArray_size_t_O*>(client);
     obj_gc_safe->~MDArray_size_t_O();
     goto finalize_done;
 }
+obj_finalize_STAMP_core__template_Array_core__MDArray_byte8_t_O_core__SimpleMDArray_byte8_t_O_core__SimpleVector_byte8_t_O_core__MDArray_O_:
+{
+     // do nothing stamp value 288
+    THROW_HARD_ERROR(BF("Should never finalize object core::template_Array<core::MDArray_byte8_t_O,core::SimpleMDArray_byte8_t_O,core::SimpleVector_byte8_t_O,core::MDArray_O>"));
+}
 obj_finalize_STAMP_core__MDArray_byte8_t_O:
 {
+     // stamp value 289
     core::MDArray_byte8_t_O* obj_gc_safe = reinterpret_cast<core::MDArray_byte8_t_O*>(client);
     obj_gc_safe->~MDArray_byte8_t_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__MDArrayBit_O:
 {
+     // stamp value 290
     core::MDArrayBit_O* obj_gc_safe = reinterpret_cast<core::MDArrayBit_O*>(client);
     obj_gc_safe->~MDArrayBit_O();
     goto finalize_done;
 }
+obj_finalize_STAMP_core__template_Array_core__MDArray_int64_t_O_core__SimpleMDArray_int64_t_O_core__SimpleVector_int64_t_O_core__MDArray_O_:
+{
+     // do nothing stamp value 291
+    THROW_HARD_ERROR(BF("Should never finalize object core::template_Array<core::MDArray_int64_t_O,core::SimpleMDArray_int64_t_O,core::SimpleVector_int64_t_O,core::MDArray_O>"));
+}
 obj_finalize_STAMP_core__MDArray_int64_t_O:
 {
+     // stamp value 292
     core::MDArray_int64_t_O* obj_gc_safe = reinterpret_cast<core::MDArray_int64_t_O*>(client);
     obj_gc_safe->~MDArray_int64_t_O();
     goto finalize_done;
 }
+obj_finalize_STAMP_core__template_Array_core__MDArray_byte16_t_O_core__SimpleMDArray_byte16_t_O_core__SimpleVector_byte16_t_O_core__MDArray_O_:
+{
+     // do nothing stamp value 293
+    THROW_HARD_ERROR(BF("Should never finalize object core::template_Array<core::MDArray_byte16_t_O,core::SimpleMDArray_byte16_t_O,core::SimpleVector_byte16_t_O,core::MDArray_O>"));
+}
 obj_finalize_STAMP_core__MDArray_byte16_t_O:
 {
+     // stamp value 294
     core::MDArray_byte16_t_O* obj_gc_safe = reinterpret_cast<core::MDArray_byte16_t_O*>(client);
     obj_gc_safe->~MDArray_byte16_t_O();
     goto finalize_done;
 }
+obj_finalize_STAMP_core__template_Array_core__MDArray_byte32_t_O_core__SimpleMDArray_byte32_t_O_core__SimpleVector_byte32_t_O_core__MDArray_O_:
+{
+     // do nothing stamp value 295
+    THROW_HARD_ERROR(BF("Should never finalize object core::template_Array<core::MDArray_byte32_t_O,core::SimpleMDArray_byte32_t_O,core::SimpleVector_byte32_t_O,core::MDArray_O>"));
+}
 obj_finalize_STAMP_core__MDArray_byte32_t_O:
 {
+     // stamp value 296
     core::MDArray_byte32_t_O* obj_gc_safe = reinterpret_cast<core::MDArray_byte32_t_O*>(client);
     obj_gc_safe->~MDArray_byte32_t_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__SimpleMDArray_O:
 {
+     // stamp value 297
     core::SimpleMDArray_O* obj_gc_safe = reinterpret_cast<core::SimpleMDArray_O*>(client);
     obj_gc_safe->~SimpleMDArray_O();
     goto finalize_done;
 }
+obj_finalize_STAMP_core__template_SimpleArray_core__SimpleMDArray_int8_t_O_core__SimpleVector_int8_t_O_core__SimpleMDArray_O_:
+{
+     // do nothing stamp value 298
+    THROW_HARD_ERROR(BF("Should never finalize object core::template_SimpleArray<core::SimpleMDArray_int8_t_O,core::SimpleVector_int8_t_O,core::SimpleMDArray_O>"));
+}
 obj_finalize_STAMP_core__SimpleMDArray_int8_t_O:
 {
+     // stamp value 299
     core::SimpleMDArray_int8_t_O* obj_gc_safe = reinterpret_cast<core::SimpleMDArray_int8_t_O*>(client);
     obj_gc_safe->~SimpleMDArray_int8_t_O();
     goto finalize_done;
 }
+obj_finalize_STAMP_core__template_SimpleArray_core__SimpleMDArrayCharacter_O_core__SimpleCharacterString_O_core__SimpleMDArray_O_:
+{
+     // do nothing stamp value 300
+    THROW_HARD_ERROR(BF("Should never finalize object core::template_SimpleArray<core::SimpleMDArrayCharacter_O,core::SimpleCharacterString_O,core::SimpleMDArray_O>"));
+}
 obj_finalize_STAMP_core__SimpleMDArrayCharacter_O:
 {
+     // stamp value 301
     core::SimpleMDArrayCharacter_O* obj_gc_safe = reinterpret_cast<core::SimpleMDArrayCharacter_O*>(client);
     obj_gc_safe->~SimpleMDArrayCharacter_O();
     goto finalize_done;
 }
+obj_finalize_STAMP_core__template_SimpleArray_core__SimpleMDArray_fixnum_O_core__SimpleVector_fixnum_O_core__SimpleMDArray_O_:
+{
+     // do nothing stamp value 302
+    THROW_HARD_ERROR(BF("Should never finalize object core::template_SimpleArray<core::SimpleMDArray_fixnum_O,core::SimpleVector_fixnum_O,core::SimpleMDArray_O>"));
+}
 obj_finalize_STAMP_core__SimpleMDArray_fixnum_O:
 {
+     // stamp value 303
     core::SimpleMDArray_fixnum_O* obj_gc_safe = reinterpret_cast<core::SimpleMDArray_fixnum_O*>(client);
     obj_gc_safe->~SimpleMDArray_fixnum_O();
     goto finalize_done;
 }
+obj_finalize_STAMP_core__template_SimpleArray_core__SimpleMDArray_byte32_t_O_core__SimpleVector_byte32_t_O_core__SimpleMDArray_O_:
+{
+     // do nothing stamp value 304
+    THROW_HARD_ERROR(BF("Should never finalize object core::template_SimpleArray<core::SimpleMDArray_byte32_t_O,core::SimpleVector_byte32_t_O,core::SimpleMDArray_O>"));
+}
 obj_finalize_STAMP_core__SimpleMDArray_byte32_t_O:
 {
+     // stamp value 305
     core::SimpleMDArray_byte32_t_O* obj_gc_safe = reinterpret_cast<core::SimpleMDArray_byte32_t_O*>(client);
     obj_gc_safe->~SimpleMDArray_byte32_t_O();
     goto finalize_done;
 }
+obj_finalize_STAMP_core__template_SimpleArray_core__SimpleMDArray_byte16_t_O_core__SimpleVector_byte16_t_O_core__SimpleMDArray_O_:
+{
+     // do nothing stamp value 306
+    THROW_HARD_ERROR(BF("Should never finalize object core::template_SimpleArray<core::SimpleMDArray_byte16_t_O,core::SimpleVector_byte16_t_O,core::SimpleMDArray_O>"));
+}
 obj_finalize_STAMP_core__SimpleMDArray_byte16_t_O:
 {
+     // stamp value 307
     core::SimpleMDArray_byte16_t_O* obj_gc_safe = reinterpret_cast<core::SimpleMDArray_byte16_t_O*>(client);
     obj_gc_safe->~SimpleMDArray_byte16_t_O();
     goto finalize_done;
 }
+obj_finalize_STAMP_core__template_SimpleArray_core__SimpleMDArrayT_O_core__SimpleVector_O_core__SimpleMDArray_O_:
+{
+     // do nothing stamp value 308
+    THROW_HARD_ERROR(BF("Should never finalize object core::template_SimpleArray<core::SimpleMDArrayT_O,core::SimpleVector_O,core::SimpleMDArray_O>"));
+}
 obj_finalize_STAMP_core__SimpleMDArrayT_O:
 {
+     // stamp value 309
     core::SimpleMDArrayT_O* obj_gc_safe = reinterpret_cast<core::SimpleMDArrayT_O*>(client);
     obj_gc_safe->~SimpleMDArrayT_O();
     goto finalize_done;
 }
+obj_finalize_STAMP_core__template_SimpleArray_core__SimpleMDArray_int32_t_O_core__SimpleVector_int32_t_O_core__SimpleMDArray_O_:
+{
+     // do nothing stamp value 310
+    THROW_HARD_ERROR(BF("Should never finalize object core::template_SimpleArray<core::SimpleMDArray_int32_t_O,core::SimpleVector_int32_t_O,core::SimpleMDArray_O>"));
+}
 obj_finalize_STAMP_core__SimpleMDArray_int32_t_O:
 {
+     // stamp value 311
     core::SimpleMDArray_int32_t_O* obj_gc_safe = reinterpret_cast<core::SimpleMDArray_int32_t_O*>(client);
     obj_gc_safe->~SimpleMDArray_int32_t_O();
     goto finalize_done;
 }
+obj_finalize_STAMP_core__template_SimpleArray_core__SimpleMDArrayDouble_O_core__SimpleVectorDouble_O_core__SimpleMDArray_O_:
+{
+     // do nothing stamp value 312
+    THROW_HARD_ERROR(BF("Should never finalize object core::template_SimpleArray<core::SimpleMDArrayDouble_O,core::SimpleVectorDouble_O,core::SimpleMDArray_O>"));
+}
 obj_finalize_STAMP_core__SimpleMDArrayDouble_O:
 {
+     // stamp value 313
     core::SimpleMDArrayDouble_O* obj_gc_safe = reinterpret_cast<core::SimpleMDArrayDouble_O*>(client);
     obj_gc_safe->~SimpleMDArrayDouble_O();
     goto finalize_done;
 }
+obj_finalize_STAMP_core__template_SimpleArray_core__SimpleMDArrayBaseChar_O_core__SimpleBaseString_O_core__SimpleMDArray_O_:
+{
+     // do nothing stamp value 314
+    THROW_HARD_ERROR(BF("Should never finalize object core::template_SimpleArray<core::SimpleMDArrayBaseChar_O,core::SimpleBaseString_O,core::SimpleMDArray_O>"));
+}
 obj_finalize_STAMP_core__SimpleMDArrayBaseChar_O:
 {
+     // stamp value 315
     core::SimpleMDArrayBaseChar_O* obj_gc_safe = reinterpret_cast<core::SimpleMDArrayBaseChar_O*>(client);
     obj_gc_safe->~SimpleMDArrayBaseChar_O();
     goto finalize_done;
 }
+obj_finalize_STAMP_core__template_SimpleArray_core__SimpleMDArray_byte64_t_O_core__SimpleVector_byte64_t_O_core__SimpleMDArray_O_:
+{
+     // do nothing stamp value 316
+    THROW_HARD_ERROR(BF("Should never finalize object core::template_SimpleArray<core::SimpleMDArray_byte64_t_O,core::SimpleVector_byte64_t_O,core::SimpleMDArray_O>"));
+}
 obj_finalize_STAMP_core__SimpleMDArray_byte64_t_O:
 {
+     // stamp value 317
     core::SimpleMDArray_byte64_t_O* obj_gc_safe = reinterpret_cast<core::SimpleMDArray_byte64_t_O*>(client);
     obj_gc_safe->~SimpleMDArray_byte64_t_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__SimpleMDArrayBit_O:
 {
+     // stamp value 318
     core::SimpleMDArrayBit_O* obj_gc_safe = reinterpret_cast<core::SimpleMDArrayBit_O*>(client);
     obj_gc_safe->~SimpleMDArrayBit_O();
     goto finalize_done;
 }
+obj_finalize_STAMP_core__template_SimpleArray_core__SimpleMDArray_int16_t_O_core__SimpleVector_int16_t_O_core__SimpleMDArray_O_:
+{
+     // do nothing stamp value 319
+    THROW_HARD_ERROR(BF("Should never finalize object core::template_SimpleArray<core::SimpleMDArray_int16_t_O,core::SimpleVector_int16_t_O,core::SimpleMDArray_O>"));
+}
 obj_finalize_STAMP_core__SimpleMDArray_int16_t_O:
 {
+     // stamp value 320
     core::SimpleMDArray_int16_t_O* obj_gc_safe = reinterpret_cast<core::SimpleMDArray_int16_t_O*>(client);
     obj_gc_safe->~SimpleMDArray_int16_t_O();
     goto finalize_done;
 }
+obj_finalize_STAMP_core__template_SimpleArray_core__SimpleMDArray_byte8_t_O_core__SimpleVector_byte8_t_O_core__SimpleMDArray_O_:
+{
+     // do nothing stamp value 321
+    THROW_HARD_ERROR(BF("Should never finalize object core::template_SimpleArray<core::SimpleMDArray_byte8_t_O,core::SimpleVector_byte8_t_O,core::SimpleMDArray_O>"));
+}
 obj_finalize_STAMP_core__SimpleMDArray_byte8_t_O:
 {
+     // stamp value 322
     core::SimpleMDArray_byte8_t_O* obj_gc_safe = reinterpret_cast<core::SimpleMDArray_byte8_t_O*>(client);
     obj_gc_safe->~SimpleMDArray_byte8_t_O();
     goto finalize_done;
 }
+obj_finalize_STAMP_core__template_SimpleArray_core__SimpleMDArray_size_t_O_core__SimpleVector_size_t_O_core__SimpleMDArray_O_:
+{
+     // do nothing stamp value 323
+    THROW_HARD_ERROR(BF("Should never finalize object core::template_SimpleArray<core::SimpleMDArray_size_t_O,core::SimpleVector_size_t_O,core::SimpleMDArray_O>"));
+}
 obj_finalize_STAMP_core__SimpleMDArray_size_t_O:
 {
+     // stamp value 324
     core::SimpleMDArray_size_t_O* obj_gc_safe = reinterpret_cast<core::SimpleMDArray_size_t_O*>(client);
     obj_gc_safe->~SimpleMDArray_size_t_O();
     goto finalize_done;
 }
+obj_finalize_STAMP_core__template_SimpleArray_core__SimpleMDArray_int64_t_O_core__SimpleVector_int64_t_O_core__SimpleMDArray_O_:
+{
+     // do nothing stamp value 325
+    THROW_HARD_ERROR(BF("Should never finalize object core::template_SimpleArray<core::SimpleMDArray_int64_t_O,core::SimpleVector_int64_t_O,core::SimpleMDArray_O>"));
+}
 obj_finalize_STAMP_core__SimpleMDArray_int64_t_O:
 {
+     // stamp value 326
     core::SimpleMDArray_int64_t_O* obj_gc_safe = reinterpret_cast<core::SimpleMDArray_int64_t_O*>(client);
     obj_gc_safe->~SimpleMDArray_int64_t_O();
     goto finalize_done;
 }
+obj_finalize_STAMP_core__template_SimpleArray_core__SimpleMDArrayFloat_O_core__SimpleVectorFloat_O_core__SimpleMDArray_O_:
+{
+     // do nothing stamp value 327
+    THROW_HARD_ERROR(BF("Should never finalize object core::template_SimpleArray<core::SimpleMDArrayFloat_O,core::SimpleVectorFloat_O,core::SimpleMDArray_O>"));
+}
 obj_finalize_STAMP_core__SimpleMDArrayFloat_O:
 {
+     // stamp value 328
     core::SimpleMDArrayFloat_O* obj_gc_safe = reinterpret_cast<core::SimpleMDArrayFloat_O*>(client);
     obj_gc_safe->~SimpleMDArrayFloat_O();
     goto finalize_done;
 }
+obj_finalize_STAMP_core__template_Array_core__MDArray_fixnum_O_core__SimpleMDArray_fixnum_O_core__SimpleVector_fixnum_O_core__MDArray_O_:
+{
+     // do nothing stamp value 329
+    THROW_HARD_ERROR(BF("Should never finalize object core::template_Array<core::MDArray_fixnum_O,core::SimpleMDArray_fixnum_O,core::SimpleVector_fixnum_O,core::MDArray_O>"));
+}
 obj_finalize_STAMP_core__MDArray_fixnum_O:
 {
+     // stamp value 330
     core::MDArray_fixnum_O* obj_gc_safe = reinterpret_cast<core::MDArray_fixnum_O*>(client);
     obj_gc_safe->~MDArray_fixnum_O();
     goto finalize_done;
 }
+obj_finalize_STAMP_core__template_Array_core__MDArrayBaseChar_O_core__SimpleMDArrayBaseChar_O_core__SimpleBaseString_O_core__MDArray_O_:
+{
+     // do nothing stamp value 331
+    THROW_HARD_ERROR(BF("Should never finalize object core::template_Array<core::MDArrayBaseChar_O,core::SimpleMDArrayBaseChar_O,core::SimpleBaseString_O,core::MDArray_O>"));
+}
 obj_finalize_STAMP_core__MDArrayBaseChar_O:
 {
+     // stamp value 332
     core::MDArrayBaseChar_O* obj_gc_safe = reinterpret_cast<core::MDArrayBaseChar_O*>(client);
     obj_gc_safe->~MDArrayBaseChar_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__Symbol_O:
 {
+     // stamp value 333
     core::Symbol_O* obj_gc_safe = reinterpret_cast<core::Symbol_O*>(client);
     obj_gc_safe->~Symbol_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__Null_O:
 {
+     // stamp value 334
     core::Null_O* obj_gc_safe = reinterpret_cast<core::Null_O*>(client);
     obj_gc_safe->~Null_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__StandardObject_O:
 {
+     // stamp value 335
     core::StandardObject_O* obj_gc_safe = reinterpret_cast<core::StandardObject_O*>(client);
     obj_gc_safe->~StandardObject_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_mp__BlockingConcurrentQueue_O:
 {
+     // stamp value 336
     mp::BlockingConcurrentQueue_O* obj_gc_safe = reinterpret_cast<mp::BlockingConcurrentQueue_O*>(client);
     obj_gc_safe->~BlockingConcurrentQueue_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__Path_O:
 {
+     // stamp value 337
     core::Path_O* obj_gc_safe = reinterpret_cast<core::Path_O*>(client);
     obj_gc_safe->~Path_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__Character_dummy_O:
 {
+     // stamp value 338
     core::Character_dummy_O* obj_gc_safe = reinterpret_cast<core::Character_dummy_O*>(client);
     obj_gc_safe->~Character_dummy_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__SourceManager_O:
 {
+     // stamp value 339
     core::SourceManager_O* obj_gc_safe = reinterpret_cast<core::SourceManager_O*>(client);
     obj_gc_safe->~SourceManager_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_llvmo__DataLayout_O:
 {
+     // stamp value 340
     llvmo::DataLayout_O* obj_gc_safe = reinterpret_cast<llvmo::DataLayout_O*>(client);
     obj_gc_safe->~DataLayout_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__Pathname_O:
 {
+     // stamp value 341
     core::Pathname_O* obj_gc_safe = reinterpret_cast<core::Pathname_O*>(client);
     obj_gc_safe->~Pathname_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__LogicalPathname_O:
 {
+     // stamp value 342
     core::LogicalPathname_O* obj_gc_safe = reinterpret_cast<core::LogicalPathname_O*>(client);
     obj_gc_safe->~LogicalPathname_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__Cache_O:
 {
+     // stamp value 343
     core::Cache_O* obj_gc_safe = reinterpret_cast<core::Cache_O*>(client);
     obj_gc_safe->~Cache_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__LoadTimeValues_O:
 {
+     // stamp value 344
     core::LoadTimeValues_O* obj_gc_safe = reinterpret_cast<core::LoadTimeValues_O*>(client);
     obj_gc_safe->~LoadTimeValues_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__SharpEqualWrapper_O:
 {
+     // stamp value 345
     core::SharpEqualWrapper_O* obj_gc_safe = reinterpret_cast<core::SharpEqualWrapper_O*>(client);
     obj_gc_safe->~SharpEqualWrapper_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__Number_O:
 {
+     // stamp value 346
     core::Number_O* obj_gc_safe = reinterpret_cast<core::Number_O*>(client);
     obj_gc_safe->~Number_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__Real_O:
 {
+     // stamp value 347
     core::Real_O* obj_gc_safe = reinterpret_cast<core::Real_O*>(client);
     obj_gc_safe->~Real_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__Rational_O:
 {
+     // stamp value 348
     core::Rational_O* obj_gc_safe = reinterpret_cast<core::Rational_O*>(client);
     obj_gc_safe->~Rational_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__Ratio_O:
 {
+     // stamp value 349
     core::Ratio_O* obj_gc_safe = reinterpret_cast<core::Ratio_O*>(client);
     obj_gc_safe->~Ratio_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__Integer_O:
 {
+     // stamp value 350
     core::Integer_O* obj_gc_safe = reinterpret_cast<core::Integer_O*>(client);
     obj_gc_safe->~Integer_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__Bignum_O:
 {
+     // stamp value 351
     core::Bignum_O* obj_gc_safe = reinterpret_cast<core::Bignum_O*>(client);
     obj_gc_safe->~Bignum_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__Fixnum_dummy_O:
 {
+     // stamp value 352
     core::Fixnum_dummy_O* obj_gc_safe = reinterpret_cast<core::Fixnum_dummy_O*>(client);
     obj_gc_safe->~Fixnum_dummy_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__Float_O:
 {
+     // stamp value 353
     core::Float_O* obj_gc_safe = reinterpret_cast<core::Float_O*>(client);
     obj_gc_safe->~Float_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__DoubleFloat_O:
 {
+     // stamp value 354
     core::DoubleFloat_O* obj_gc_safe = reinterpret_cast<core::DoubleFloat_O*>(client);
     obj_gc_safe->~DoubleFloat_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__SingleFloat_dummy_O:
 {
+     // stamp value 355
     core::SingleFloat_dummy_O* obj_gc_safe = reinterpret_cast<core::SingleFloat_dummy_O*>(client);
     obj_gc_safe->~SingleFloat_dummy_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__LongFloat_O:
 {
+     // stamp value 356
     core::LongFloat_O* obj_gc_safe = reinterpret_cast<core::LongFloat_O*>(client);
     obj_gc_safe->~LongFloat_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__ShortFloat_O:
 {
+     // stamp value 357
     core::ShortFloat_O* obj_gc_safe = reinterpret_cast<core::ShortFloat_O*>(client);
     obj_gc_safe->~ShortFloat_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__Complex_O:
 {
+     // stamp value 358
     core::Complex_O* obj_gc_safe = reinterpret_cast<core::Complex_O*>(client);
     obj_gc_safe->~Complex_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__CandoException_O:
 {
+     // stamp value 359
     core::CandoException_O* obj_gc_safe = reinterpret_cast<core::CandoException_O*>(client);
     obj_gc_safe->~CandoException_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__Stream_O:
 {
+     // stamp value 360
     core::Stream_O* obj_gc_safe = reinterpret_cast<core::Stream_O*>(client);
     obj_gc_safe->~Stream_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__AnsiStream_O:
 {
+     // stamp value 361
     core::AnsiStream_O* obj_gc_safe = reinterpret_cast<core::AnsiStream_O*>(client);
     obj_gc_safe->~AnsiStream_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__TwoWayStream_O:
 {
+     // stamp value 362
     core::TwoWayStream_O* obj_gc_safe = reinterpret_cast<core::TwoWayStream_O*>(client);
     obj_gc_safe->~TwoWayStream_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__BroadcastStream_O:
 {
+     // stamp value 363
     core::BroadcastStream_O* obj_gc_safe = reinterpret_cast<core::BroadcastStream_O*>(client);
     obj_gc_safe->~BroadcastStream_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__SynonymStream_O:
 {
+     // stamp value 364
     core::SynonymStream_O* obj_gc_safe = reinterpret_cast<core::SynonymStream_O*>(client);
     obj_gc_safe->~SynonymStream_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__ConcatenatedStream_O:
 {
+     // stamp value 365
     core::ConcatenatedStream_O* obj_gc_safe = reinterpret_cast<core::ConcatenatedStream_O*>(client);
     obj_gc_safe->~ConcatenatedStream_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__StringStream_O:
 {
+     // stamp value 366
     core::StringStream_O* obj_gc_safe = reinterpret_cast<core::StringStream_O*>(client);
     obj_gc_safe->~StringStream_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__StringOutputStream_O:
 {
+     // stamp value 367
     core::StringOutputStream_O* obj_gc_safe = reinterpret_cast<core::StringOutputStream_O*>(client);
     obj_gc_safe->~StringOutputStream_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__StringInputStream_O:
 {
+     // stamp value 368
     core::StringInputStream_O* obj_gc_safe = reinterpret_cast<core::StringInputStream_O*>(client);
     obj_gc_safe->~StringInputStream_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__FileStream_O:
 {
+     // stamp value 369
     core::FileStream_O* obj_gc_safe = reinterpret_cast<core::FileStream_O*>(client);
     obj_gc_safe->~FileStream_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__IOFileStream_O:
 {
+     // stamp value 370
     core::IOFileStream_O* obj_gc_safe = reinterpret_cast<core::IOFileStream_O*>(client);
     obj_gc_safe->~IOFileStream_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__IOStreamStream_O:
 {
+     // stamp value 371
     core::IOStreamStream_O* obj_gc_safe = reinterpret_cast<core::IOStreamStream_O*>(client);
     obj_gc_safe->~IOStreamStream_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__EchoStream_O:
 {
+     // stamp value 372
     core::EchoStream_O* obj_gc_safe = reinterpret_cast<core::EchoStream_O*>(client);
     obj_gc_safe->~EchoStream_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__Package_O:
 {
+     // stamp value 373
     core::Package_O* obj_gc_safe = reinterpret_cast<core::Package_O*>(client);
     obj_gc_safe->~Package_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_llvmo__ClaspJIT_O:
 {
+     // stamp value 374
     llvmo::ClaspJIT_O* obj_gc_safe = reinterpret_cast<llvmo::ClaspJIT_O*>(client);
     obj_gc_safe->~ClaspJIT_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__FileStatus_O:
 {
+     // stamp value 375
     core::FileStatus_O* obj_gc_safe = reinterpret_cast<core::FileStatus_O*>(client);
     obj_gc_safe->~FileStatus_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__InvocationHistoryFrameIterator_O:
 {
+     // stamp value 376
     core::InvocationHistoryFrameIterator_O* obj_gc_safe = reinterpret_cast<core::InvocationHistoryFrameIterator_O*>(client);
     obj_gc_safe->~InvocationHistoryFrameIterator_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__PosixTime_O:
 {
+     // stamp value 377
     core::PosixTime_O* obj_gc_safe = reinterpret_cast<core::PosixTime_O*>(client);
     obj_gc_safe->~PosixTime_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__HashTable_O:
 {
+     // stamp value 378
     core::HashTable_O* obj_gc_safe = reinterpret_cast<core::HashTable_O*>(client);
     obj_gc_safe->~HashTable_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__HashTableEqual_O:
 {
+     // stamp value 379
     core::HashTableEqual_O* obj_gc_safe = reinterpret_cast<core::HashTableEqual_O*>(client);
     obj_gc_safe->~HashTableEqual_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__HashTableEqualp_O:
 {
+     // stamp value 380
     core::HashTableEqualp_O* obj_gc_safe = reinterpret_cast<core::HashTableEqualp_O*>(client);
     obj_gc_safe->~HashTableEqualp_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__HashTableEq_O:
 {
+     // stamp value 381
     core::HashTableEq_O* obj_gc_safe = reinterpret_cast<core::HashTableEq_O*>(client);
     obj_gc_safe->~HashTableEq_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__HashTableEql_O:
 {
+     // stamp value 382
     core::HashTableEql_O* obj_gc_safe = reinterpret_cast<core::HashTableEql_O*>(client);
     obj_gc_safe->~HashTableEql_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__Exposer_O:
 {
+     // stamp value 383
     core::Exposer_O* obj_gc_safe = reinterpret_cast<core::Exposer_O*>(client);
     obj_gc_safe->~Exposer_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__CoreExposer_O:
 {
+     // stamp value 384
     core::CoreExposer_O* obj_gc_safe = reinterpret_cast<core::CoreExposer_O*>(client);
     obj_gc_safe->~CoreExposer_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_asttooling__AsttoolingExposer_O:
 {
+     // stamp value 385
     asttooling::AsttoolingExposer_O* obj_gc_safe = reinterpret_cast<asttooling::AsttoolingExposer_O*>(client);
     obj_gc_safe->~AsttoolingExposer_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__SourcePosInfo_O:
 {
+     // stamp value 386
     core::SourcePosInfo_O* obj_gc_safe = reinterpret_cast<core::SourcePosInfo_O*>(client);
     obj_gc_safe->~SourcePosInfo_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__IntArray_O:
 {
+     // stamp value 387
     core::IntArray_O* obj_gc_safe = reinterpret_cast<core::IntArray_O*>(client);
     obj_gc_safe->~IntArray_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__SourceFileInfo_O:
 {
+     // stamp value 388
     core::SourceFileInfo_O* obj_gc_safe = reinterpret_cast<core::SourceFileInfo_O*>(client);
     obj_gc_safe->~SourceFileInfo_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__DirectoryEntry_O:
 {
+     // stamp value 389
     core::DirectoryEntry_O* obj_gc_safe = reinterpret_cast<core::DirectoryEntry_O*>(client);
     obj_gc_safe->~DirectoryEntry_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__LightUserData_O:
 {
+     // stamp value 390
     core::LightUserData_O* obj_gc_safe = reinterpret_cast<core::LightUserData_O*>(client);
     obj_gc_safe->~LightUserData_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__UserData_O:
 {
+     // stamp value 391
     core::UserData_O* obj_gc_safe = reinterpret_cast<core::UserData_O*>(client);
     obj_gc_safe->~UserData_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__Record_O:
 {
+     // stamp value 392
     core::Record_O* obj_gc_safe = reinterpret_cast<core::Record_O*>(client);
     obj_gc_safe->~Record_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_clbind__ClassRegistry_O:
 {
+     // stamp value 393
     clbind::ClassRegistry_O* obj_gc_safe = reinterpret_cast<clbind::ClassRegistry_O*>(client);
     obj_gc_safe->~ClassRegistry_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_mp__ConcurrentQueue_O:
 {
+     // stamp value 394
     mp::ConcurrentQueue_O* obj_gc_safe = reinterpret_cast<mp::ConcurrentQueue_O*>(client);
     obj_gc_safe->~ConcurrentQueue_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__Cons_O:
 {
+     // stamp value 395
     core::Cons_O* obj_gc_safe = reinterpret_cast<core::Cons_O*>(client);
     obj_gc_safe->~Cons_O();
     goto finalize_done;
 }
+obj_finalize_STAMP_clang__ast_matchers__MatchFinder__MatchCallback:
+{
+     // do nothing stamp value 396
+    THROW_HARD_ERROR(BF("Should never finalize object clang::ast_matchers::MatchFinder::MatchCallback"));
+}
 obj_finalize_STAMP_core__Lisp_O:
 {
+     // stamp value 397
     core::Lisp_O* obj_gc_safe = reinterpret_cast<core::Lisp_O*>(client);
     obj_gc_safe->~Lisp_O();
     goto finalize_done;
 }
+obj_finalize_STAMP_clang__RecursiveASTVisitor_asttooling__AstVisitor_O_:
+{
+     // do nothing stamp value 398
+    THROW_HARD_ERROR(BF("Should never finalize object clang::RecursiveASTVisitor<asttooling::AstVisitor_O>"));
+}
 obj_finalize_STAMP_asttooling__AstVisitor_O:
 {
+     // stamp value 399
     asttooling::AstVisitor_O* obj_gc_safe = reinterpret_cast<asttooling::AstVisitor_O*>(client);
     obj_gc_safe->~AstVisitor_O();
     goto finalize_done;
 }
+obj_finalize_STAMP_gctools__GCContainer:
+{
+     // do nothing stamp value 400
+    THROW_HARD_ERROR(BF("Should never finalize object gctools::GCContainer"));
+}
 obj_finalize_STAMP_gctools__GCVector_moveable_core__KeywordArgument_:
 {
+     // stamp value 401
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<core::KeywordArgument>"));}
 obj_finalize_STAMP_gctools__GCArray_moveable_unsigned_int_:
 {
+     // stamp value 402
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCArray_moveable<unsigned int>"));}
 obj_finalize_STAMP_gctools__GCVector_moveable_core__CacheRecord_:
 {
+     // stamp value 403
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<core::CacheRecord>"));}
 obj_finalize_STAMP_gctools__GCVector_moveable_core__RequiredArgument_:
 {
+     // stamp value 404
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<core::RequiredArgument>"));}
 obj_finalize_STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__Cons_O__:
 {
+     // stamp value 405
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<core::Cons_O>>"));}
 obj_finalize_STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__SequenceStepper_O__:
 {
+     // stamp value 406
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<core::SequenceStepper_O>>"));}
 obj_finalize_STAMP_gctools__GCVector_moveable_double_:
 {
+     // stamp value 407
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<double>"));}
 obj_finalize_STAMP_gctools__GCVector_moveable_core__SymbolStorage_:
 {
+     // stamp value 408
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<core::SymbolStorage>"));}
 obj_finalize_STAMP_gctools__GCArray_moveable_short_:
 {
+     // stamp value 409
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCArray_moveable<short>"));}
 obj_finalize_STAMP_gctools__GCVector_moveable_core__DynamicBinding_:
 {
+     // stamp value 410
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<core::DynamicBinding>"));}
 obj_finalize_STAMP_gctools__GCVector_moveable_gctools__smart_ptr_clbind__ClassRep_O__:
 {
+     // stamp value 411
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<clbind::ClassRep_O>>"));}
 obj_finalize_STAMP_gctools__GCArray_moveable_unsigned_long_:
 {
+     // stamp value 412
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCArray_moveable<unsigned long>"));}
 obj_finalize_STAMP_gctools__GCBitUnitArray_moveable_1_unsigned_int_int_:
 {
+     // stamp value 413
     THROW_HARD_ERROR(BF("Should never finalize gctools::GCBitUnitArray_moveable<1,unsigned int,int>"));
 }
 obj_finalize_STAMP_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__T_O___:
 {
+     // stamp value 414
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>>"));}
 obj_finalize_STAMP_gctools__GCArray_moveable_signed_char_:
 {
+     // stamp value 415
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCArray_moveable<signed char>"));}
 obj_finalize_STAMP_gctools__GCVector_moveable_core__ExceptionEntry_:
 {
+     // stamp value 416
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<core::ExceptionEntry>"));}
 obj_finalize_STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__List_V__:
 {
+     // stamp value 417
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<core::List_V>>"));}
 obj_finalize_STAMP_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__T_O__gctools__smart_ptr_core__T_O___:
 {
+     // stamp value 418
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>>"));}
 obj_finalize_STAMP_gctools__GCArray_moveable_int_:
 {
+     // stamp value 419
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCArray_moveable<int>"));}
 obj_finalize_STAMP_gctools__GCArray_moveable_unsigned_char_:
 {
+     // stamp value 420
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCArray_moveable<unsigned char>"));}
 obj_finalize_STAMP_gctools__GCArray_moveable_gctools__smart_ptr_core__T_O__:
 {
+     // stamp value 421
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCArray_moveable<gctools::smart_ptr<core::T_O>>"));}
 obj_finalize_STAMP_gctools__GCVector_moveable_core__AuxArgument_:
 {
+     // stamp value 422
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<core::AuxArgument>"));}
 obj_finalize_STAMP_gctools__GCArray_moveable_long_:
 {
+     // stamp value 423
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCArray_moveable<long>"));}
 obj_finalize_STAMP_gctools__GCVector_moveable_int_:
 {
+     // stamp value 424
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<int>"));}
 obj_finalize_STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__Symbol_O__:
 {
+     // stamp value 425
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<core::Symbol_O>>"));}
 obj_finalize_STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__T_O__:
 {
+     // stamp value 426
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<core::T_O>>"));}
 obj_finalize_STAMP_gctools__GCVector_moveable_core__SymbolClassPair_:
 {
+     // stamp value 427
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<core::SymbolClassPair>"));}
 obj_finalize_STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__SingleDispatchMethod_O__:
 {
+     // stamp value 428
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<core::SingleDispatchMethod_O>>"));}
 obj_finalize_STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__Package_O__:
 {
+     // stamp value 429
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<core::Package_O>>"));}
 obj_finalize_STAMP_gctools__GCArray_moveable_float_:
 {
+     // stamp value 430
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCArray_moveable<float>"));}
 obj_finalize_STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__SourceFileInfo_O__:
 {
+     // stamp value 431
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<core::SourceFileInfo_O>>"));}
 obj_finalize_STAMP_gctools__GCArray_moveable_double_:
 {
+     // stamp value 432
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCArray_moveable<double>"));}
 obj_finalize_STAMP_gctools__GCVector_moveable_core__T_O___:
 {
+     // stamp value 433
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<core::T_O *>"));}
 obj_finalize_STAMP_gctools__GCVector_moveable_core__OptionalArgument_:
 {
+     // stamp value 434
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<core::OptionalArgument>"));}
 obj_finalize_STAMP_gctools__GCArray_moveable_unsigned_short_:
 {
+     // stamp value 435
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCArray_moveable<unsigned short>"));}
 obj_finalize_STAMP_gctools__GCVector_moveable_float_:
 {
+     // stamp value 436
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<float>"));}
+obj_finalize_STAMP_clang__FrontendAction:
+{
+     // do nothing stamp value 437
+    THROW_HARD_ERROR(BF("Should never finalize object clang::FrontendAction"));
+}
+obj_finalize_STAMP_clang__ASTFrontendAction:
+{
+     // do nothing stamp value 438
+    THROW_HARD_ERROR(BF("Should never finalize object clang::ASTFrontendAction"));
+}
+obj_finalize_STAMP_clang__SyntaxOnlyAction:
+{
+     // do nothing stamp value 439
+    THROW_HARD_ERROR(BF("Should never finalize object clang::SyntaxOnlyAction"));
+}
+obj_finalize_STAMP_clang__tooling__ToolAction:
+{
+     // do nothing stamp value 440
+    THROW_HARD_ERROR(BF("Should never finalize object clang::tooling::ToolAction"));
+}
+obj_finalize_STAMP_clang__tooling__FrontendActionFactory:
+{
+     // do nothing stamp value 441
+    THROW_HARD_ERROR(BF("Should never finalize object clang::tooling::FrontendActionFactory"));
+}
 obj_finalize_STAMP_clbind__detail__class_map:
 {
+     // stamp value 442
     clbind::detail::class_map* obj_gc_safe = reinterpret_cast<clbind::detail::class_map*>(client);
     obj_gc_safe->~class_map();
     goto finalize_done;
@@ -10494,6 +11157,7 @@ obj_finalize_STAMP_clbind__detail__class_map:
 #endif // defined(GC_OBJ_FINALIZE_HELPERS)
 #if defined(GC_OBJ_FINALIZE_TABLE)
 static void* OBJ_FINALIZE_table[] = { 
+  /* 0 */ NULL,
   /* 1 */ &&obj_finalize_STAMP_core__T_O,
   /* 2 */ &&obj_finalize_STAMP_core__VaList_dummy_O,
   /* 3 */ &&obj_finalize_STAMP_core__General_O,
@@ -10724,60 +11388,107 @@ static void* OBJ_FINALIZE_table[] = {
   /* 228 */ &&obj_finalize_STAMP_llvmo__InsertPoint_O,
   /* 229 */ &&obj_finalize_STAMP_core__Array_O,
   /* 230 */ &&obj_finalize_STAMP_core__AbstractSimpleVector_O,
+  /* 231 */ &&obj_finalize_STAMP_core__template_SimpleVector_core__SimpleVectorFloat_O_float_core__AbstractSimpleVector_O_,
   /* 232 */ &&obj_finalize_STAMP_core__SimpleVectorFloat_O,
+  /* 233 */ &&obj_finalize_STAMP_core__template_SimpleVector_core__SimpleVector_byte64_t_O_unsigned_long_core__AbstractSimpleVector_O_,
   /* 234 */ &&obj_finalize_STAMP_core__SimpleVector_byte64_t_O,
+  /* 235 */ &&obj_finalize_STAMP_core__template_SimpleVector_core__SimpleVector_int64_t_O_long_core__AbstractSimpleVector_O_,
   /* 236 */ &&obj_finalize_STAMP_core__SimpleVector_int64_t_O,
   /* 237 */ &&obj_finalize_STAMP_core__SimpleString_O,
+  /* 238 */ &&obj_finalize_STAMP_core__template_SimpleVector_core__SimpleCharacterString_O_int_core__SimpleString_O_,
   /* 239 */ &&obj_finalize_STAMP_core__SimpleCharacterString_O,
+  /* 240 */ &&obj_finalize_STAMP_core__template_SimpleVector_core__SimpleBaseString_O_unsigned_char_core__SimpleString_O_,
   /* 241 */ &&obj_finalize_STAMP_core__SimpleBaseString_O,
+  /* 242 */ &&obj_finalize_STAMP_core__template_SimpleVector_core__SimpleVector_int16_t_O_short_core__AbstractSimpleVector_O_,
   /* 243 */ &&obj_finalize_STAMP_core__SimpleVector_int16_t_O,
+  /* 244 */ &&obj_finalize_STAMP_core__template_SimpleVector_core__SimpleVector_byte16_t_O_unsigned_short_core__AbstractSimpleVector_O_,
   /* 245 */ &&obj_finalize_STAMP_core__SimpleVector_byte16_t_O,
+  /* 246 */ &&obj_finalize_STAMP_core__template_SimpleVector_core__SimpleVector_fixnum_O_long_core__AbstractSimpleVector_O_,
   /* 247 */ &&obj_finalize_STAMP_core__SimpleVector_fixnum_O,
+  /* 248 */ &&obj_finalize_STAMP_core__template_SimpleVector_core__SimpleVector_int8_t_O_signed_char_core__AbstractSimpleVector_O_,
   /* 249 */ &&obj_finalize_STAMP_core__SimpleVector_int8_t_O,
+  /* 250 */ &&obj_finalize_STAMP_core__template_SimpleVector_core__SimpleVector_O_gctools__smart_ptr_core__T_O__core__AbstractSimpleVector_O_,
   /* 251 */ &&obj_finalize_STAMP_core__SimpleVector_O,
+  /* 252 */ &&obj_finalize_STAMP_core__template_SimpleVector_core__SimpleVector_byte8_t_O_unsigned_char_core__AbstractSimpleVector_O_,
   /* 253 */ &&obj_finalize_STAMP_core__SimpleVector_byte8_t_O,
+  /* 254 */ &&obj_finalize_STAMP_core__template_SimpleVector_core__SimpleVector_int32_t_O_int_core__AbstractSimpleVector_O_,
   /* 255 */ &&obj_finalize_STAMP_core__SimpleVector_int32_t_O,
   /* 256 */ &&obj_finalize_STAMP_core__SimpleBitVector_O,
+  /* 257 */ &&obj_finalize_STAMP_core__template_SimpleVector_core__SimpleVector_byte32_t_O_unsigned_int_core__AbstractSimpleVector_O_,
   /* 258 */ &&obj_finalize_STAMP_core__SimpleVector_byte32_t_O,
+  /* 259 */ &&obj_finalize_STAMP_core__template_SimpleVector_core__SimpleVector_size_t_O_unsigned_long_core__AbstractSimpleVector_O_,
   /* 260 */ &&obj_finalize_STAMP_core__SimpleVector_size_t_O,
+  /* 261 */ &&obj_finalize_STAMP_core__template_SimpleVector_core__SimpleVectorDouble_O_double_core__AbstractSimpleVector_O_,
   /* 262 */ &&obj_finalize_STAMP_core__SimpleVectorDouble_O,
   /* 263 */ &&obj_finalize_STAMP_core__MDArray_O,
   /* 264 */ &&obj_finalize_STAMP_core__BitVectorNs_O,
+  /* 265 */ &&obj_finalize_STAMP_core__template_Array_core__MDArray_byte64_t_O_core__SimpleMDArray_byte64_t_O_core__SimpleVector_byte64_t_O_core__MDArray_O_,
   /* 266 */ &&obj_finalize_STAMP_core__MDArray_byte64_t_O,
+  /* 267 */ &&obj_finalize_STAMP_core__template_Array_core__MDArray_int16_t_O_core__SimpleMDArray_int16_t_O_core__SimpleVector_int16_t_O_core__MDArray_O_,
   /* 268 */ &&obj_finalize_STAMP_core__MDArray_int16_t_O,
+  /* 269 */ &&obj_finalize_STAMP_core__template_Array_core__MDArray_int8_t_O_core__SimpleMDArray_int8_t_O_core__SimpleVector_int8_t_O_core__MDArray_O_,
   /* 270 */ &&obj_finalize_STAMP_core__MDArray_int8_t_O,
+  /* 271 */ &&obj_finalize_STAMP_core__template_Array_core__MDArrayCharacter_O_core__SimpleMDArrayCharacter_O_core__SimpleCharacterString_O_core__MDArray_O_,
   /* 272 */ &&obj_finalize_STAMP_core__MDArrayCharacter_O,
+  /* 273 */ &&obj_finalize_STAMP_core__template_Array_core__MDArray_int32_t_O_core__SimpleMDArray_int32_t_O_core__SimpleVector_int32_t_O_core__MDArray_O_,
   /* 274 */ &&obj_finalize_STAMP_core__MDArray_int32_t_O,
+  /* 275 */ &&obj_finalize_STAMP_core__template_Array_core__MDArrayFloat_O_core__SimpleMDArrayFloat_O_core__SimpleVectorFloat_O_core__MDArray_O_,
   /* 276 */ &&obj_finalize_STAMP_core__MDArrayFloat_O,
   /* 277 */ &&obj_finalize_STAMP_core__StrNs_O,
+  /* 278 */ &&obj_finalize_STAMP_core__template_Vector_core__StrWNs_O_core__SimpleCharacterString_O_core__StrNs_O_,
   /* 279 */ &&obj_finalize_STAMP_core__StrWNs_O,
+  /* 280 */ &&obj_finalize_STAMP_core__template_Vector_core__Str8Ns_O_core__SimpleBaseString_O_core__StrNs_O_,
   /* 281 */ &&obj_finalize_STAMP_core__Str8Ns_O,
+  /* 282 */ &&obj_finalize_STAMP_core__template_Array_core__MDArrayDouble_O_core__SimpleMDArrayDouble_O_core__SimpleVectorDouble_O_core__MDArray_O_,
   /* 283 */ &&obj_finalize_STAMP_core__MDArrayDouble_O,
+  /* 284 */ &&obj_finalize_STAMP_core__template_Array_core__MDArrayT_O_core__SimpleMDArrayT_O_core__SimpleVector_O_core__MDArray_O_,
   /* 285 */ &&obj_finalize_STAMP_core__MDArrayT_O,
+  /* 286 */ &&obj_finalize_STAMP_core__template_Array_core__MDArray_size_t_O_core__SimpleMDArray_size_t_O_core__SimpleVector_size_t_O_core__MDArray_O_,
   /* 287 */ &&obj_finalize_STAMP_core__MDArray_size_t_O,
+  /* 288 */ &&obj_finalize_STAMP_core__template_Array_core__MDArray_byte8_t_O_core__SimpleMDArray_byte8_t_O_core__SimpleVector_byte8_t_O_core__MDArray_O_,
   /* 289 */ &&obj_finalize_STAMP_core__MDArray_byte8_t_O,
   /* 290 */ &&obj_finalize_STAMP_core__MDArrayBit_O,
+  /* 291 */ &&obj_finalize_STAMP_core__template_Array_core__MDArray_int64_t_O_core__SimpleMDArray_int64_t_O_core__SimpleVector_int64_t_O_core__MDArray_O_,
   /* 292 */ &&obj_finalize_STAMP_core__MDArray_int64_t_O,
+  /* 293 */ &&obj_finalize_STAMP_core__template_Array_core__MDArray_byte16_t_O_core__SimpleMDArray_byte16_t_O_core__SimpleVector_byte16_t_O_core__MDArray_O_,
   /* 294 */ &&obj_finalize_STAMP_core__MDArray_byte16_t_O,
+  /* 295 */ &&obj_finalize_STAMP_core__template_Array_core__MDArray_byte32_t_O_core__SimpleMDArray_byte32_t_O_core__SimpleVector_byte32_t_O_core__MDArray_O_,
   /* 296 */ &&obj_finalize_STAMP_core__MDArray_byte32_t_O,
   /* 297 */ &&obj_finalize_STAMP_core__SimpleMDArray_O,
+  /* 298 */ &&obj_finalize_STAMP_core__template_SimpleArray_core__SimpleMDArray_int8_t_O_core__SimpleVector_int8_t_O_core__SimpleMDArray_O_,
   /* 299 */ &&obj_finalize_STAMP_core__SimpleMDArray_int8_t_O,
+  /* 300 */ &&obj_finalize_STAMP_core__template_SimpleArray_core__SimpleMDArrayCharacter_O_core__SimpleCharacterString_O_core__SimpleMDArray_O_,
   /* 301 */ &&obj_finalize_STAMP_core__SimpleMDArrayCharacter_O,
+  /* 302 */ &&obj_finalize_STAMP_core__template_SimpleArray_core__SimpleMDArray_fixnum_O_core__SimpleVector_fixnum_O_core__SimpleMDArray_O_,
   /* 303 */ &&obj_finalize_STAMP_core__SimpleMDArray_fixnum_O,
+  /* 304 */ &&obj_finalize_STAMP_core__template_SimpleArray_core__SimpleMDArray_byte32_t_O_core__SimpleVector_byte32_t_O_core__SimpleMDArray_O_,
   /* 305 */ &&obj_finalize_STAMP_core__SimpleMDArray_byte32_t_O,
+  /* 306 */ &&obj_finalize_STAMP_core__template_SimpleArray_core__SimpleMDArray_byte16_t_O_core__SimpleVector_byte16_t_O_core__SimpleMDArray_O_,
   /* 307 */ &&obj_finalize_STAMP_core__SimpleMDArray_byte16_t_O,
+  /* 308 */ &&obj_finalize_STAMP_core__template_SimpleArray_core__SimpleMDArrayT_O_core__SimpleVector_O_core__SimpleMDArray_O_,
   /* 309 */ &&obj_finalize_STAMP_core__SimpleMDArrayT_O,
+  /* 310 */ &&obj_finalize_STAMP_core__template_SimpleArray_core__SimpleMDArray_int32_t_O_core__SimpleVector_int32_t_O_core__SimpleMDArray_O_,
   /* 311 */ &&obj_finalize_STAMP_core__SimpleMDArray_int32_t_O,
+  /* 312 */ &&obj_finalize_STAMP_core__template_SimpleArray_core__SimpleMDArrayDouble_O_core__SimpleVectorDouble_O_core__SimpleMDArray_O_,
   /* 313 */ &&obj_finalize_STAMP_core__SimpleMDArrayDouble_O,
+  /* 314 */ &&obj_finalize_STAMP_core__template_SimpleArray_core__SimpleMDArrayBaseChar_O_core__SimpleBaseString_O_core__SimpleMDArray_O_,
   /* 315 */ &&obj_finalize_STAMP_core__SimpleMDArrayBaseChar_O,
+  /* 316 */ &&obj_finalize_STAMP_core__template_SimpleArray_core__SimpleMDArray_byte64_t_O_core__SimpleVector_byte64_t_O_core__SimpleMDArray_O_,
   /* 317 */ &&obj_finalize_STAMP_core__SimpleMDArray_byte64_t_O,
   /* 318 */ &&obj_finalize_STAMP_core__SimpleMDArrayBit_O,
+  /* 319 */ &&obj_finalize_STAMP_core__template_SimpleArray_core__SimpleMDArray_int16_t_O_core__SimpleVector_int16_t_O_core__SimpleMDArray_O_,
   /* 320 */ &&obj_finalize_STAMP_core__SimpleMDArray_int16_t_O,
+  /* 321 */ &&obj_finalize_STAMP_core__template_SimpleArray_core__SimpleMDArray_byte8_t_O_core__SimpleVector_byte8_t_O_core__SimpleMDArray_O_,
   /* 322 */ &&obj_finalize_STAMP_core__SimpleMDArray_byte8_t_O,
+  /* 323 */ &&obj_finalize_STAMP_core__template_SimpleArray_core__SimpleMDArray_size_t_O_core__SimpleVector_size_t_O_core__SimpleMDArray_O_,
   /* 324 */ &&obj_finalize_STAMP_core__SimpleMDArray_size_t_O,
+  /* 325 */ &&obj_finalize_STAMP_core__template_SimpleArray_core__SimpleMDArray_int64_t_O_core__SimpleVector_int64_t_O_core__SimpleMDArray_O_,
   /* 326 */ &&obj_finalize_STAMP_core__SimpleMDArray_int64_t_O,
+  /* 327 */ &&obj_finalize_STAMP_core__template_SimpleArray_core__SimpleMDArrayFloat_O_core__SimpleVectorFloat_O_core__SimpleMDArray_O_,
   /* 328 */ &&obj_finalize_STAMP_core__SimpleMDArrayFloat_O,
+  /* 329 */ &&obj_finalize_STAMP_core__template_Array_core__MDArray_fixnum_O_core__SimpleMDArray_fixnum_O_core__SimpleVector_fixnum_O_core__MDArray_O_,
   /* 330 */ &&obj_finalize_STAMP_core__MDArray_fixnum_O,
+  /* 331 */ &&obj_finalize_STAMP_core__template_Array_core__MDArrayBaseChar_O_core__SimpleMDArrayBaseChar_O_core__SimpleBaseString_O_core__MDArray_O_,
   /* 332 */ &&obj_finalize_STAMP_core__MDArrayBaseChar_O,
   /* 333 */ &&obj_finalize_STAMP_core__Symbol_O,
   /* 334 */ &&obj_finalize_STAMP_core__Null_O,
@@ -10842,8 +11553,11 @@ static void* OBJ_FINALIZE_table[] = {
   /* 393 */ &&obj_finalize_STAMP_clbind__ClassRegistry_O,
   /* 394 */ &&obj_finalize_STAMP_mp__ConcurrentQueue_O,
   /* 395 */ &&obj_finalize_STAMP_core__Cons_O,
+  /* 396 */ &&obj_finalize_STAMP_clang__ast_matchers__MatchFinder__MatchCallback,
   /* 397 */ &&obj_finalize_STAMP_core__Lisp_O,
+  /* 398 */ &&obj_finalize_STAMP_clang__RecursiveASTVisitor_asttooling__AstVisitor_O_,
   /* 399 */ &&obj_finalize_STAMP_asttooling__AstVisitor_O,
+  /* 400 */ &&obj_finalize_STAMP_gctools__GCContainer,
   /* 401 */ &&obj_finalize_STAMP_gctools__GCVector_moveable_core__KeywordArgument_,
   /* 402 */ &&obj_finalize_STAMP_gctools__GCArray_moveable_unsigned_int_,
   /* 403 */ &&obj_finalize_STAMP_gctools__GCVector_moveable_core__CacheRecord_,
@@ -10880,6 +11594,11 @@ static void* OBJ_FINALIZE_table[] = {
   /* 434 */ &&obj_finalize_STAMP_gctools__GCVector_moveable_core__OptionalArgument_,
   /* 435 */ &&obj_finalize_STAMP_gctools__GCArray_moveable_unsigned_short_,
   /* 436 */ &&obj_finalize_STAMP_gctools__GCVector_moveable_float_,
+  /* 437 */ &&obj_finalize_STAMP_clang__FrontendAction,
+  /* 438 */ &&obj_finalize_STAMP_clang__ASTFrontendAction,
+  /* 439 */ &&obj_finalize_STAMP_clang__SyntaxOnlyAction,
+  /* 440 */ &&obj_finalize_STAMP_clang__tooling__ToolAction,
+  /* 441 */ &&obj_finalize_STAMP_clang__tooling__FrontendActionFactory,
   /* 442 */ &&obj_finalize_STAMP_clbind__detail__class_map,
    NULL
 };
@@ -10887,2210 +11606,2872 @@ static void* OBJ_FINALIZE_table[] = {
 #if defined(GC_OBJ_DEALLOCATOR)
 obj_deallocate_unmanaged_instance_STAMP_core__T_O:
 {
+     // stamp value 1
     core::T_O* obj_gc_safe = reinterpret_cast<core::T_O*>(client);
     GC<core::T_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__VaList_dummy_O:
 {
+     // stamp value 2
     core::VaList_dummy_O* obj_gc_safe = reinterpret_cast<core::VaList_dummy_O*>(client);
     GC<core::VaList_dummy_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__General_O:
 {
+     // stamp value 3
     core::General_O* obj_gc_safe = reinterpret_cast<core::General_O*>(client);
     GC<core::General_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__MultiStringBuffer_O:
 {
+     // stamp value 4
     core::MultiStringBuffer_O* obj_gc_safe = reinterpret_cast<core::MultiStringBuffer_O*>(client);
     GC<core::MultiStringBuffer_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__WeakHashTable_O:
 {
+     // stamp value 5
     core::WeakHashTable_O* obj_gc_safe = reinterpret_cast<core::WeakHashTable_O*>(client);
     GC<core::WeakHashTable_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__WeakKeyHashTable_O:
 {
+     // stamp value 6
     core::WeakKeyHashTable_O* obj_gc_safe = reinterpret_cast<core::WeakKeyHashTable_O*>(client);
     GC<core::WeakKeyHashTable_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__ReadTable_O:
 {
+     // stamp value 7
     core::ReadTable_O* obj_gc_safe = reinterpret_cast<core::ReadTable_O*>(client);
     GC<core::ReadTable_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__PosixTimeDuration_O:
 {
+     // stamp value 8
     core::PosixTimeDuration_O* obj_gc_safe = reinterpret_cast<core::PosixTimeDuration_O*>(client);
     GC<core::PosixTimeDuration_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_clasp_ffi__ForeignTypeSpec_O:
 {
+     // stamp value 9
     clasp_ffi::ForeignTypeSpec_O* obj_gc_safe = reinterpret_cast<clasp_ffi::ForeignTypeSpec_O*>(client);
     GC<clasp_ffi::ForeignTypeSpec_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__Instance_O:
 {
+     // stamp value 10
     core::Instance_O* obj_gc_safe = reinterpret_cast<core::Instance_O*>(client);
     GC<core::Instance_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__DerivableCxxObject_O:
 {
+     // stamp value 11
     core::DerivableCxxObject_O* obj_gc_safe = reinterpret_cast<core::DerivableCxxObject_O*>(client);
     GC<core::DerivableCxxObject_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_clbind__ClassRep_O:
 {
+     // stamp value 12
     clbind::ClassRep_O* obj_gc_safe = reinterpret_cast<clbind::ClassRep_O*>(client);
     GC<clbind::ClassRep_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__SmallMap_O:
 {
+     // stamp value 13
     core::SmallMap_O* obj_gc_safe = reinterpret_cast<core::SmallMap_O*>(client);
     GC<core::SmallMap_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__WrappedPointer_O:
 {
+     // stamp value 14
     core::WrappedPointer_O* obj_gc_safe = reinterpret_cast<core::WrappedPointer_O*>(client);
     GC<core::WrappedPointer_O>::deallocate_unmanaged_instance(obj_gc_safe);
 }
 obj_deallocate_unmanaged_instance_STAMP_core__Archive_O:
 {
+     // stamp value 15
     core::Archive_O* obj_gc_safe = reinterpret_cast<core::Archive_O*>(client);
     GC<core::Archive_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__SaveArchive_O:
 {
+     // stamp value 16
     core::SaveArchive_O* obj_gc_safe = reinterpret_cast<core::SaveArchive_O*>(client);
     GC<core::SaveArchive_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__SexpSaveArchive_O:
 {
+     // stamp value 17
     core::SexpSaveArchive_O* obj_gc_safe = reinterpret_cast<core::SexpSaveArchive_O*>(client);
     GC<core::SexpSaveArchive_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__LoadArchive_O:
 {
+     // stamp value 18
     core::LoadArchive_O* obj_gc_safe = reinterpret_cast<core::LoadArchive_O*>(client);
     GC<core::LoadArchive_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__SexpLoadArchive_O:
 {
+     // stamp value 19
     core::SexpLoadArchive_O* obj_gc_safe = reinterpret_cast<core::SexpLoadArchive_O*>(client);
     GC<core::SexpLoadArchive_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__SymbolToEnumConverter_O:
 {
+     // stamp value 20
     core::SymbolToEnumConverter_O* obj_gc_safe = reinterpret_cast<core::SymbolToEnumConverter_O*>(client);
     GC<core::SymbolToEnumConverter_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__Reader_O:
 {
+     // stamp value 21
     core::Reader_O* obj_gc_safe = reinterpret_cast<core::Reader_O*>(client);
     GC<core::Reader_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__WeakKeyMapping_O:
 {
+     // stamp value 22
     core::WeakKeyMapping_O* obj_gc_safe = reinterpret_cast<core::WeakKeyMapping_O*>(client);
     GC<core::WeakKeyMapping_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__Attribute_O:
 {
+     // stamp value 23
     llvmo::Attribute_O* obj_gc_safe = reinterpret_cast<llvmo::Attribute_O*>(client);
     GC<llvmo::Attribute_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__ExternalObject_O:
 {
+     // stamp value 24
     core::ExternalObject_O* obj_gc_safe = reinterpret_cast<core::ExternalObject_O*>(client);
     GC<core::ExternalObject_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__Triple_O:
 {
+     // stamp value 25
     llvmo::Triple_O* obj_gc_safe = reinterpret_cast<llvmo::Triple_O*>(client);
     GC<llvmo::Triple_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__TargetOptions_O:
 {
+     // stamp value 26
     llvmo::TargetOptions_O* obj_gc_safe = reinterpret_cast<llvmo::TargetOptions_O*>(client);
     GC<llvmo::TargetOptions_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__Pass_O:
 {
+     // stamp value 27
     llvmo::Pass_O* obj_gc_safe = reinterpret_cast<llvmo::Pass_O*>(client);
     GC<llvmo::Pass_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__ModulePass_O:
 {
+     // stamp value 28
     llvmo::ModulePass_O* obj_gc_safe = reinterpret_cast<llvmo::ModulePass_O*>(client);
     GC<llvmo::ModulePass_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__ImmutablePass_O:
 {
+     // stamp value 29
     llvmo::ImmutablePass_O* obj_gc_safe = reinterpret_cast<llvmo::ImmutablePass_O*>(client);
     GC<llvmo::ImmutablePass_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__TargetLibraryInfoWrapperPass_O:
 {
+     // stamp value 30
     llvmo::TargetLibraryInfoWrapperPass_O* obj_gc_safe = reinterpret_cast<llvmo::TargetLibraryInfoWrapperPass_O*>(client);
     GC<llvmo::TargetLibraryInfoWrapperPass_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__FunctionPass_O:
 {
+     // stamp value 31
     llvmo::FunctionPass_O* obj_gc_safe = reinterpret_cast<llvmo::FunctionPass_O*>(client);
     GC<llvmo::FunctionPass_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__ExecutionEngine_O:
 {
+     // stamp value 32
     llvmo::ExecutionEngine_O* obj_gc_safe = reinterpret_cast<llvmo::ExecutionEngine_O*>(client);
     GC<llvmo::ExecutionEngine_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__LLVMContext_O:
 {
+     // stamp value 33
     llvmo::LLVMContext_O* obj_gc_safe = reinterpret_cast<llvmo::LLVMContext_O*>(client);
     GC<llvmo::LLVMContext_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__PassManagerBuilder_O:
 {
+     // stamp value 34
     llvmo::PassManagerBuilder_O* obj_gc_safe = reinterpret_cast<llvmo::PassManagerBuilder_O*>(client);
     GC<llvmo::PassManagerBuilder_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__MCSubtargetInfo_O:
 {
+     // stamp value 35
     llvmo::MCSubtargetInfo_O* obj_gc_safe = reinterpret_cast<llvmo::MCSubtargetInfo_O*>(client);
     GC<llvmo::MCSubtargetInfo_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__TargetSubtargetInfo_O:
 {
+     // stamp value 36
     llvmo::TargetSubtargetInfo_O* obj_gc_safe = reinterpret_cast<llvmo::TargetSubtargetInfo_O*>(client);
     GC<llvmo::TargetSubtargetInfo_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_clasp_ffi__ForeignData_O:
 {
+     // stamp value 37
     clasp_ffi::ForeignData_O* obj_gc_safe = reinterpret_cast<clasp_ffi::ForeignData_O*>(client);
     GC<clasp_ffi::ForeignData_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__Module_O:
 {
+     // stamp value 38
     llvmo::Module_O* obj_gc_safe = reinterpret_cast<llvmo::Module_O*>(client);
     GC<llvmo::Module_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__Target_O:
 {
+     // stamp value 39
     llvmo::Target_O* obj_gc_safe = reinterpret_cast<llvmo::Target_O*>(client);
     GC<llvmo::Target_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__Type_O:
 {
+     // stamp value 40
     llvmo::Type_O* obj_gc_safe = reinterpret_cast<llvmo::Type_O*>(client);
     GC<llvmo::Type_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__IntegerType_O:
 {
+     // stamp value 41
     llvmo::IntegerType_O* obj_gc_safe = reinterpret_cast<llvmo::IntegerType_O*>(client);
     GC<llvmo::IntegerType_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__FunctionType_O:
 {
+     // stamp value 42
     llvmo::FunctionType_O* obj_gc_safe = reinterpret_cast<llvmo::FunctionType_O*>(client);
     GC<llvmo::FunctionType_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__CompositeType_O:
 {
+     // stamp value 43
     llvmo::CompositeType_O* obj_gc_safe = reinterpret_cast<llvmo::CompositeType_O*>(client);
     GC<llvmo::CompositeType_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__SequentialType_O:
 {
+     // stamp value 44
     llvmo::SequentialType_O* obj_gc_safe = reinterpret_cast<llvmo::SequentialType_O*>(client);
     GC<llvmo::SequentialType_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__PointerType_O:
 {
+     // stamp value 45
     llvmo::PointerType_O* obj_gc_safe = reinterpret_cast<llvmo::PointerType_O*>(client);
     GC<llvmo::PointerType_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__ArrayType_O:
 {
+     // stamp value 46
     llvmo::ArrayType_O* obj_gc_safe = reinterpret_cast<llvmo::ArrayType_O*>(client);
     GC<llvmo::ArrayType_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__VectorType_O:
 {
+     // stamp value 47
     llvmo::VectorType_O* obj_gc_safe = reinterpret_cast<llvmo::VectorType_O*>(client);
     GC<llvmo::VectorType_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__StructType_O:
 {
+     // stamp value 48
     llvmo::StructType_O* obj_gc_safe = reinterpret_cast<llvmo::StructType_O*>(client);
     GC<llvmo::StructType_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__IRBuilderBase_O:
 {
+     // stamp value 49
     llvmo::IRBuilderBase_O* obj_gc_safe = reinterpret_cast<llvmo::IRBuilderBase_O*>(client);
     GC<llvmo::IRBuilderBase_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__IRBuilder_O:
 {
+     // stamp value 50
     llvmo::IRBuilder_O* obj_gc_safe = reinterpret_cast<llvmo::IRBuilder_O*>(client);
     GC<llvmo::IRBuilder_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__APFloat_O:
 {
+     // stamp value 51
     llvmo::APFloat_O* obj_gc_safe = reinterpret_cast<llvmo::APFloat_O*>(client);
     GC<llvmo::APFloat_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__APInt_O:
 {
+     // stamp value 52
     llvmo::APInt_O* obj_gc_safe = reinterpret_cast<llvmo::APInt_O*>(client);
     GC<llvmo::APInt_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__DIBuilder_O:
 {
+     // stamp value 53
     llvmo::DIBuilder_O* obj_gc_safe = reinterpret_cast<llvmo::DIBuilder_O*>(client);
     GC<llvmo::DIBuilder_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__EngineBuilder_O:
 {
+     // stamp value 54
     llvmo::EngineBuilder_O* obj_gc_safe = reinterpret_cast<llvmo::EngineBuilder_O*>(client);
     GC<llvmo::EngineBuilder_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__PassManagerBase_O:
 {
+     // stamp value 55
     llvmo::PassManagerBase_O* obj_gc_safe = reinterpret_cast<llvmo::PassManagerBase_O*>(client);
     GC<llvmo::PassManagerBase_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__FunctionPassManager_O:
 {
+     // stamp value 56
     llvmo::FunctionPassManager_O* obj_gc_safe = reinterpret_cast<llvmo::FunctionPassManager_O*>(client);
     GC<llvmo::FunctionPassManager_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__PassManager_O:
 {
+     // stamp value 57
     llvmo::PassManager_O* obj_gc_safe = reinterpret_cast<llvmo::PassManager_O*>(client);
     GC<llvmo::PassManager_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__Linker_O:
 {
+     // stamp value 58
     llvmo::Linker_O* obj_gc_safe = reinterpret_cast<llvmo::Linker_O*>(client);
     GC<llvmo::Linker_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__Metadata_O:
 {
+     // stamp value 59
     llvmo::Metadata_O* obj_gc_safe = reinterpret_cast<llvmo::Metadata_O*>(client);
     GC<llvmo::Metadata_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__ValueAsMetadata_O:
 {
+     // stamp value 60
     llvmo::ValueAsMetadata_O* obj_gc_safe = reinterpret_cast<llvmo::ValueAsMetadata_O*>(client);
     GC<llvmo::ValueAsMetadata_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__MDString_O:
 {
+     // stamp value 61
     llvmo::MDString_O* obj_gc_safe = reinterpret_cast<llvmo::MDString_O*>(client);
     GC<llvmo::MDString_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__MDNode_O:
 {
+     // stamp value 62
     llvmo::MDNode_O* obj_gc_safe = reinterpret_cast<llvmo::MDNode_O*>(client);
     GC<llvmo::MDNode_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__DINode_O:
 {
+     // stamp value 63
     llvmo::DINode_O* obj_gc_safe = reinterpret_cast<llvmo::DINode_O*>(client);
     GC<llvmo::DINode_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__DIScope_O:
 {
+     // stamp value 64
     llvmo::DIScope_O* obj_gc_safe = reinterpret_cast<llvmo::DIScope_O*>(client);
     GC<llvmo::DIScope_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__DILocalScope_O:
 {
+     // stamp value 65
     llvmo::DILocalScope_O* obj_gc_safe = reinterpret_cast<llvmo::DILocalScope_O*>(client);
     GC<llvmo::DILocalScope_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__DISubprogram_O:
 {
+     // stamp value 66
     llvmo::DISubprogram_O* obj_gc_safe = reinterpret_cast<llvmo::DISubprogram_O*>(client);
     GC<llvmo::DISubprogram_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__DILexicalBlockBase_O:
 {
+     // stamp value 67
     llvmo::DILexicalBlockBase_O* obj_gc_safe = reinterpret_cast<llvmo::DILexicalBlockBase_O*>(client);
     GC<llvmo::DILexicalBlockBase_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__DILexicalBlock_O:
 {
+     // stamp value 68
     llvmo::DILexicalBlock_O* obj_gc_safe = reinterpret_cast<llvmo::DILexicalBlock_O*>(client);
     GC<llvmo::DILexicalBlock_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__DIFile_O:
 {
+     // stamp value 69
     llvmo::DIFile_O* obj_gc_safe = reinterpret_cast<llvmo::DIFile_O*>(client);
     GC<llvmo::DIFile_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__DICompileUnit_O:
 {
+     // stamp value 70
     llvmo::DICompileUnit_O* obj_gc_safe = reinterpret_cast<llvmo::DICompileUnit_O*>(client);
     GC<llvmo::DICompileUnit_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__DIType_O:
 {
+     // stamp value 71
     llvmo::DIType_O* obj_gc_safe = reinterpret_cast<llvmo::DIType_O*>(client);
     GC<llvmo::DIType_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__DICompositeType_O:
 {
+     // stamp value 72
     llvmo::DICompositeType_O* obj_gc_safe = reinterpret_cast<llvmo::DICompositeType_O*>(client);
     GC<llvmo::DICompositeType_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__DIDerivedType_O:
 {
+     // stamp value 73
     llvmo::DIDerivedType_O* obj_gc_safe = reinterpret_cast<llvmo::DIDerivedType_O*>(client);
     GC<llvmo::DIDerivedType_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__DIBasicType_O:
 {
+     // stamp value 74
     llvmo::DIBasicType_O* obj_gc_safe = reinterpret_cast<llvmo::DIBasicType_O*>(client);
     GC<llvmo::DIBasicType_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__DISubroutineType_O:
 {
+     // stamp value 75
     llvmo::DISubroutineType_O* obj_gc_safe = reinterpret_cast<llvmo::DISubroutineType_O*>(client);
     GC<llvmo::DISubroutineType_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__Value_O:
 {
+     // stamp value 76
     llvmo::Value_O* obj_gc_safe = reinterpret_cast<llvmo::Value_O*>(client);
     GC<llvmo::Value_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__User_O:
 {
+     // stamp value 77
     llvmo::User_O* obj_gc_safe = reinterpret_cast<llvmo::User_O*>(client);
     GC<llvmo::User_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__Instruction_O:
 {
+     // stamp value 78
     llvmo::Instruction_O* obj_gc_safe = reinterpret_cast<llvmo::Instruction_O*>(client);
     GC<llvmo::Instruction_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__UnaryInstruction_O:
 {
+     // stamp value 79
     llvmo::UnaryInstruction_O* obj_gc_safe = reinterpret_cast<llvmo::UnaryInstruction_O*>(client);
     GC<llvmo::UnaryInstruction_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__VAArgInst_O:
 {
+     // stamp value 80
     llvmo::VAArgInst_O* obj_gc_safe = reinterpret_cast<llvmo::VAArgInst_O*>(client);
     GC<llvmo::VAArgInst_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__LoadInst_O:
 {
+     // stamp value 81
     llvmo::LoadInst_O* obj_gc_safe = reinterpret_cast<llvmo::LoadInst_O*>(client);
     GC<llvmo::LoadInst_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__AllocaInst_O:
 {
+     // stamp value 82
     llvmo::AllocaInst_O* obj_gc_safe = reinterpret_cast<llvmo::AllocaInst_O*>(client);
     GC<llvmo::AllocaInst_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__CallInst_O:
 {
+     // stamp value 83
     llvmo::CallInst_O* obj_gc_safe = reinterpret_cast<llvmo::CallInst_O*>(client);
     GC<llvmo::CallInst_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__AtomicRMWInst_O:
 {
+     // stamp value 84
     llvmo::AtomicRMWInst_O* obj_gc_safe = reinterpret_cast<llvmo::AtomicRMWInst_O*>(client);
     GC<llvmo::AtomicRMWInst_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__TerminatorInst_O:
 {
+     // stamp value 85
     llvmo::TerminatorInst_O* obj_gc_safe = reinterpret_cast<llvmo::TerminatorInst_O*>(client);
     GC<llvmo::TerminatorInst_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__SwitchInst_O:
 {
+     // stamp value 86
     llvmo::SwitchInst_O* obj_gc_safe = reinterpret_cast<llvmo::SwitchInst_O*>(client);
     GC<llvmo::SwitchInst_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__InvokeInst_O:
 {
+     // stamp value 87
     llvmo::InvokeInst_O* obj_gc_safe = reinterpret_cast<llvmo::InvokeInst_O*>(client);
     GC<llvmo::InvokeInst_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__UnreachableInst_O:
 {
+     // stamp value 88
     llvmo::UnreachableInst_O* obj_gc_safe = reinterpret_cast<llvmo::UnreachableInst_O*>(client);
     GC<llvmo::UnreachableInst_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__ReturnInst_O:
 {
+     // stamp value 89
     llvmo::ReturnInst_O* obj_gc_safe = reinterpret_cast<llvmo::ReturnInst_O*>(client);
     GC<llvmo::ReturnInst_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__IndirectBrInst_O:
 {
+     // stamp value 90
     llvmo::IndirectBrInst_O* obj_gc_safe = reinterpret_cast<llvmo::IndirectBrInst_O*>(client);
     GC<llvmo::IndirectBrInst_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__ResumeInst_O:
 {
+     // stamp value 91
     llvmo::ResumeInst_O* obj_gc_safe = reinterpret_cast<llvmo::ResumeInst_O*>(client);
     GC<llvmo::ResumeInst_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__BranchInst_O:
 {
+     // stamp value 92
     llvmo::BranchInst_O* obj_gc_safe = reinterpret_cast<llvmo::BranchInst_O*>(client);
     GC<llvmo::BranchInst_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__LandingPadInst_O:
 {
+     // stamp value 93
     llvmo::LandingPadInst_O* obj_gc_safe = reinterpret_cast<llvmo::LandingPadInst_O*>(client);
     GC<llvmo::LandingPadInst_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__AtomicCmpXchgInst_O:
 {
+     // stamp value 94
     llvmo::AtomicCmpXchgInst_O* obj_gc_safe = reinterpret_cast<llvmo::AtomicCmpXchgInst_O*>(client);
     GC<llvmo::AtomicCmpXchgInst_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__FenceInst_O:
 {
+     // stamp value 95
     llvmo::FenceInst_O* obj_gc_safe = reinterpret_cast<llvmo::FenceInst_O*>(client);
     GC<llvmo::FenceInst_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__StoreInst_O:
 {
+     // stamp value 96
     llvmo::StoreInst_O* obj_gc_safe = reinterpret_cast<llvmo::StoreInst_O*>(client);
     GC<llvmo::StoreInst_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__PHINode_O:
 {
+     // stamp value 97
     llvmo::PHINode_O* obj_gc_safe = reinterpret_cast<llvmo::PHINode_O*>(client);
     GC<llvmo::PHINode_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__Constant_O:
 {
+     // stamp value 98
     llvmo::Constant_O* obj_gc_safe = reinterpret_cast<llvmo::Constant_O*>(client);
     GC<llvmo::Constant_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__GlobalValue_O:
 {
+     // stamp value 99
     llvmo::GlobalValue_O* obj_gc_safe = reinterpret_cast<llvmo::GlobalValue_O*>(client);
     GC<llvmo::GlobalValue_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__GlobalVariable_O:
 {
+     // stamp value 100
     llvmo::GlobalVariable_O* obj_gc_safe = reinterpret_cast<llvmo::GlobalVariable_O*>(client);
     GC<llvmo::GlobalVariable_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__Function_O:
 {
+     // stamp value 101
     llvmo::Function_O* obj_gc_safe = reinterpret_cast<llvmo::Function_O*>(client);
     GC<llvmo::Function_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__ConstantFP_O:
 {
+     // stamp value 102
     llvmo::ConstantFP_O* obj_gc_safe = reinterpret_cast<llvmo::ConstantFP_O*>(client);
     GC<llvmo::ConstantFP_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__BlockAddress_O:
 {
+     // stamp value 103
     llvmo::BlockAddress_O* obj_gc_safe = reinterpret_cast<llvmo::BlockAddress_O*>(client);
     GC<llvmo::BlockAddress_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__ConstantExpr_O:
 {
+     // stamp value 104
     llvmo::ConstantExpr_O* obj_gc_safe = reinterpret_cast<llvmo::ConstantExpr_O*>(client);
     GC<llvmo::ConstantExpr_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__ConstantPointerNull_O:
 {
+     // stamp value 105
     llvmo::ConstantPointerNull_O* obj_gc_safe = reinterpret_cast<llvmo::ConstantPointerNull_O*>(client);
     GC<llvmo::ConstantPointerNull_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__ConstantDataSequential_O:
 {
+     // stamp value 106
     llvmo::ConstantDataSequential_O* obj_gc_safe = reinterpret_cast<llvmo::ConstantDataSequential_O*>(client);
     GC<llvmo::ConstantDataSequential_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__ConstantDataArray_O:
 {
+     // stamp value 107
     llvmo::ConstantDataArray_O* obj_gc_safe = reinterpret_cast<llvmo::ConstantDataArray_O*>(client);
     GC<llvmo::ConstantDataArray_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__UndefValue_O:
 {
+     // stamp value 108
     llvmo::UndefValue_O* obj_gc_safe = reinterpret_cast<llvmo::UndefValue_O*>(client);
     GC<llvmo::UndefValue_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__ConstantArray_O:
 {
+     // stamp value 109
     llvmo::ConstantArray_O* obj_gc_safe = reinterpret_cast<llvmo::ConstantArray_O*>(client);
     GC<llvmo::ConstantArray_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__ConstantStruct_O:
 {
+     // stamp value 110
     llvmo::ConstantStruct_O* obj_gc_safe = reinterpret_cast<llvmo::ConstantStruct_O*>(client);
     GC<llvmo::ConstantStruct_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__ConstantInt_O:
 {
+     // stamp value 111
     llvmo::ConstantInt_O* obj_gc_safe = reinterpret_cast<llvmo::ConstantInt_O*>(client);
     GC<llvmo::ConstantInt_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__Argument_O:
 {
+     // stamp value 112
     llvmo::Argument_O* obj_gc_safe = reinterpret_cast<llvmo::Argument_O*>(client);
     GC<llvmo::Argument_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__BasicBlock_O:
 {
+     // stamp value 113
     llvmo::BasicBlock_O* obj_gc_safe = reinterpret_cast<llvmo::BasicBlock_O*>(client);
     GC<llvmo::BasicBlock_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__TargetMachine_O:
 {
+     // stamp value 114
     llvmo::TargetMachine_O* obj_gc_safe = reinterpret_cast<llvmo::TargetMachine_O*>(client);
     GC<llvmo::TargetMachine_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__LLVMTargetMachine_O:
 {
+     // stamp value 115
     llvmo::LLVMTargetMachine_O* obj_gc_safe = reinterpret_cast<llvmo::LLVMTargetMachine_O*>(client);
     GC<llvmo::LLVMTargetMachine_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__NamedMDNode_O:
 {
+     // stamp value 116
     llvmo::NamedMDNode_O* obj_gc_safe = reinterpret_cast<llvmo::NamedMDNode_O*>(client);
     GC<llvmo::NamedMDNode_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__SmallMultimap_O:
 {
+     // stamp value 117
     core::SmallMultimap_O* obj_gc_safe = reinterpret_cast<core::SmallMultimap_O*>(client);
     GC<core::SmallMultimap_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__LambdaListHandler_O:
 {
+     // stamp value 118
     core::LambdaListHandler_O* obj_gc_safe = reinterpret_cast<core::LambdaListHandler_O*>(client);
     GC<core::LambdaListHandler_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__AttributeSet_O:
 {
+     // stamp value 119
     llvmo::AttributeSet_O* obj_gc_safe = reinterpret_cast<llvmo::AttributeSet_O*>(client);
     GC<llvmo::AttributeSet_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__Environment_O:
 {
+     // stamp value 120
     core::Environment_O* obj_gc_safe = reinterpret_cast<core::Environment_O*>(client);
     GC<core::Environment_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__GlueEnvironment_O:
 {
+     // stamp value 121
     core::GlueEnvironment_O* obj_gc_safe = reinterpret_cast<core::GlueEnvironment_O*>(client);
     GC<core::GlueEnvironment_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__LexicalEnvironment_O:
 {
+     // stamp value 122
     core::LexicalEnvironment_O* obj_gc_safe = reinterpret_cast<core::LexicalEnvironment_O*>(client);
     GC<core::LexicalEnvironment_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__RuntimeVisibleEnvironment_O:
 {
+     // stamp value 123
     core::RuntimeVisibleEnvironment_O* obj_gc_safe = reinterpret_cast<core::RuntimeVisibleEnvironment_O*>(client);
     GC<core::RuntimeVisibleEnvironment_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__FunctionValueEnvironment_O:
 {
+     // stamp value 124
     core::FunctionValueEnvironment_O* obj_gc_safe = reinterpret_cast<core::FunctionValueEnvironment_O*>(client);
     GC<core::FunctionValueEnvironment_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__ValueEnvironment_O:
 {
+     // stamp value 125
     core::ValueEnvironment_O* obj_gc_safe = reinterpret_cast<core::ValueEnvironment_O*>(client);
     GC<core::ValueEnvironment_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__TagbodyEnvironment_O:
 {
+     // stamp value 126
     core::TagbodyEnvironment_O* obj_gc_safe = reinterpret_cast<core::TagbodyEnvironment_O*>(client);
     GC<core::TagbodyEnvironment_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__CompileTimeEnvironment_O:
 {
+     // stamp value 127
     core::CompileTimeEnvironment_O* obj_gc_safe = reinterpret_cast<core::CompileTimeEnvironment_O*>(client);
     GC<core::CompileTimeEnvironment_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__CatchEnvironment_O:
 {
+     // stamp value 128
     core::CatchEnvironment_O* obj_gc_safe = reinterpret_cast<core::CatchEnvironment_O*>(client);
     GC<core::CatchEnvironment_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__BlockEnvironment_O:
 {
+     // stamp value 129
     core::BlockEnvironment_O* obj_gc_safe = reinterpret_cast<core::BlockEnvironment_O*>(client);
     GC<core::BlockEnvironment_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__MacroletEnvironment_O:
 {
+     // stamp value 130
     core::MacroletEnvironment_O* obj_gc_safe = reinterpret_cast<core::MacroletEnvironment_O*>(client);
     GC<core::MacroletEnvironment_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__SymbolMacroletEnvironment_O:
 {
+     // stamp value 131
     core::SymbolMacroletEnvironment_O* obj_gc_safe = reinterpret_cast<core::SymbolMacroletEnvironment_O*>(client);
     GC<core::SymbolMacroletEnvironment_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__UnwindProtectEnvironment_O:
 {
+     // stamp value 132
     core::UnwindProtectEnvironment_O* obj_gc_safe = reinterpret_cast<core::UnwindProtectEnvironment_O*>(client);
     GC<core::UnwindProtectEnvironment_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__FunctionContainerEnvironment_O:
 {
+     // stamp value 133
     core::FunctionContainerEnvironment_O* obj_gc_safe = reinterpret_cast<core::FunctionContainerEnvironment_O*>(client);
     GC<core::FunctionContainerEnvironment_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__ActivationFrame_O:
 {
+     // stamp value 134
     core::ActivationFrame_O* obj_gc_safe = reinterpret_cast<core::ActivationFrame_O*>(client);
     GC<core::ActivationFrame_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__ValueFrame_O:
 {
+     // stamp value 135
     core::ValueFrame_O* obj_gc_safe = reinterpret_cast<core::ValueFrame_O*>(client);
     GC<core::ValueFrame_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__FunctionFrame_O:
 {
+     // stamp value 136
     core::FunctionFrame_O* obj_gc_safe = reinterpret_cast<core::FunctionFrame_O*>(client);
     GC<core::FunctionFrame_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__TagbodyFrame_O:
 {
+     // stamp value 137
     core::TagbodyFrame_O* obj_gc_safe = reinterpret_cast<core::TagbodyFrame_O*>(client);
     GC<core::TagbodyFrame_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__RandomState_O:
 {
+     // stamp value 138
     core::RandomState_O* obj_gc_safe = reinterpret_cast<core::RandomState_O*>(client);
     GC<core::RandomState_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__Function_O:
 {
+     // stamp value 139
     core::Function_O* obj_gc_safe = reinterpret_cast<core::Function_O*>(client);
     GC<core::Function_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__FuncallableInstance_O:
 {
+     // stamp value 140
     core::FuncallableInstance_O* obj_gc_safe = reinterpret_cast<core::FuncallableInstance_O*>(client);
     GC<core::FuncallableInstance_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__Creator_O:
 {
+     // stamp value 141
     core::Creator_O* obj_gc_safe = reinterpret_cast<core::Creator_O*>(client);
     GC<core::Creator_O>::deallocate_unmanaged_instance(obj_gc_safe);
 }
 obj_deallocate_unmanaged_instance_STAMP_core__StructureClassCreator_O:
 {
+     // stamp value 142
     core::StructureClassCreator_O* obj_gc_safe = reinterpret_cast<core::StructureClassCreator_O*>(client);
     GC<core::StructureClassCreator_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__DerivableCxxClassCreator_O:
 {
+     // stamp value 143
     core::DerivableCxxClassCreator_O* obj_gc_safe = reinterpret_cast<core::DerivableCxxClassCreator_O*>(client);
     GC<core::DerivableCxxClassCreator_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__FuncallableInstanceCreator_O:
 {
+     // stamp value 144
     core::FuncallableInstanceCreator_O* obj_gc_safe = reinterpret_cast<core::FuncallableInstanceCreator_O*>(client);
     GC<core::FuncallableInstanceCreator_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_clbind__ConstructorCreator_O:
 {
+     // stamp value 145
     clbind::ConstructorCreator_O* obj_gc_safe = reinterpret_cast<clbind::ConstructorCreator_O*>(client);
     GC<clbind::ConstructorCreator_O>::deallocate_unmanaged_instance(obj_gc_safe);
 }
 obj_deallocate_unmanaged_instance_STAMP_core__ClassCreator_O:
 {
+     // stamp value 146
     core::ClassCreator_O* obj_gc_safe = reinterpret_cast<core::ClassCreator_O*>(client);
     GC<core::ClassCreator_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_clbind__DummyCreator_O:
 {
+     // stamp value 147
     clbind::DummyCreator_O* obj_gc_safe = reinterpret_cast<clbind::DummyCreator_O*>(client);
     GC<clbind::DummyCreator_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__InstanceCreator_O:
 {
+     // stamp value 148
     core::InstanceCreator_O* obj_gc_safe = reinterpret_cast<core::InstanceCreator_O*>(client);
     GC<core::InstanceCreator_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__StandardClassCreator_O:
 {
+     // stamp value 149
     core::StandardClassCreator_O* obj_gc_safe = reinterpret_cast<core::StandardClassCreator_O*>(client);
     GC<core::StandardClassCreator_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__NamedFunction_O:
 {
+     // stamp value 150
     core::NamedFunction_O* obj_gc_safe = reinterpret_cast<core::NamedFunction_O*>(client);
     GC<core::NamedFunction_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__Closure_O:
 {
+     // stamp value 151
     core::Closure_O* obj_gc_safe = reinterpret_cast<core::Closure_O*>(client);
     GC<core::Closure_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__CompiledDispatchFunction_O:
 {
+     // stamp value 152
     core::CompiledDispatchFunction_O* obj_gc_safe = reinterpret_cast<core::CompiledDispatchFunction_O*>(client);
     GC<core::CompiledDispatchFunction_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__CompiledFunction_O:
 {
+     // stamp value 153
     core::CompiledFunction_O* obj_gc_safe = reinterpret_cast<core::CompiledFunction_O*>(client);
     GC<core::CompiledFunction_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__FunctionClosure_O:
 {
+     // stamp value 154
     core::FunctionClosure_O* obj_gc_safe = reinterpret_cast<core::FunctionClosure_O*>(client);
     GC<core::FunctionClosure_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__ClosureWithFrame_O:
 {
+     // stamp value 155
     core::ClosureWithFrame_O* obj_gc_safe = reinterpret_cast<core::ClosureWithFrame_O*>(client);
     GC<core::ClosureWithFrame_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__CompiledClosure_O:
 {
+     // stamp value 156
     core::CompiledClosure_O* obj_gc_safe = reinterpret_cast<core::CompiledClosure_O*>(client);
     GC<core::CompiledClosure_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__InterpretedClosure_O:
 {
+     // stamp value 157
     core::InterpretedClosure_O* obj_gc_safe = reinterpret_cast<core::InterpretedClosure_O*>(client);
     GC<core::InterpretedClosure_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__ClosureWithSlots_O:
 {
+     // stamp value 158
     core::ClosureWithSlots_O* obj_gc_safe = reinterpret_cast<core::ClosureWithSlots_O*>(client);
     GC<core::ClosureWithSlots_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__SingleDispatchMethodFunction_O:
 {
+     // stamp value 159
     core::SingleDispatchMethodFunction_O* obj_gc_safe = reinterpret_cast<core::SingleDispatchMethodFunction_O*>(client);
     GC<core::SingleDispatchMethodFunction_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__CxxMethodFunction_O:
 {
+     // stamp value 160
     core::CxxMethodFunction_O* obj_gc_safe = reinterpret_cast<core::CxxMethodFunction_O*>(client);
     GC<core::CxxMethodFunction_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__BuiltinClosure_O:
 {
+     // stamp value 161
     core::BuiltinClosure_O* obj_gc_safe = reinterpret_cast<core::BuiltinClosure_O*>(client);
     GC<core::BuiltinClosure_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__TemplatedFunctionBase_O:
 {
+     // stamp value 162
     core::TemplatedFunctionBase_O* obj_gc_safe = reinterpret_cast<core::TemplatedFunctionBase_O*>(client);
     GC<core::TemplatedFunctionBase_O>::deallocate_unmanaged_instance(obj_gc_safe);
 }
 obj_deallocate_unmanaged_instance_STAMP_core__TranslationFunctor_O:
 {
+     // stamp value 163
     core::TranslationFunctor_O* obj_gc_safe = reinterpret_cast<core::TranslationFunctor_O*>(client);
     GC<core::TranslationFunctor_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__MacroClosure_O:
 {
+     // stamp value 164
     core::MacroClosure_O* obj_gc_safe = reinterpret_cast<core::MacroClosure_O*>(client);
     GC<core::MacroClosure_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__SingleDispatchGenericFunctionClosure_O:
 {
+     // stamp value 165
     core::SingleDispatchGenericFunctionClosure_O* obj_gc_safe = reinterpret_cast<core::SingleDispatchGenericFunctionClosure_O*>(client);
     GC<core::SingleDispatchGenericFunctionClosure_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__SingleDispatchEffectiveMethodFunction_O:
 {
+     // stamp value 166
     core::SingleDispatchEffectiveMethodFunction_O* obj_gc_safe = reinterpret_cast<core::SingleDispatchEffectiveMethodFunction_O*>(client);
     GC<core::SingleDispatchEffectiveMethodFunction_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__SingleDispatchCxxEffectiveMethodFunction_O:
 {
+     // stamp value 167
     core::SingleDispatchCxxEffectiveMethodFunction_O* obj_gc_safe = reinterpret_cast<core::SingleDispatchCxxEffectiveMethodFunction_O*>(client);
     GC<core::SingleDispatchCxxEffectiveMethodFunction_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__SpecialForm_O:
 {
+     // stamp value 168
     core::SpecialForm_O* obj_gc_safe = reinterpret_cast<core::SpecialForm_O*>(client);
     GC<core::SpecialForm_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__SequenceStepper_O:
 {
+     // stamp value 169
     core::SequenceStepper_O* obj_gc_safe = reinterpret_cast<core::SequenceStepper_O*>(client);
     GC<core::SequenceStepper_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__VectorStepper_O:
 {
+     // stamp value 170
     core::VectorStepper_O* obj_gc_safe = reinterpret_cast<core::VectorStepper_O*>(client);
     GC<core::VectorStepper_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__ConsStepper_O:
 {
+     // stamp value 171
     core::ConsStepper_O* obj_gc_safe = reinterpret_cast<core::ConsStepper_O*>(client);
     GC<core::ConsStepper_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__WeakPointer_O:
 {
+     // stamp value 172
     core::WeakPointer_O* obj_gc_safe = reinterpret_cast<core::WeakPointer_O*>(client);
     GC<core::WeakPointer_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__DebugLoc_O:
 {
+     // stamp value 173
     llvmo::DebugLoc_O* obj_gc_safe = reinterpret_cast<llvmo::DebugLoc_O*>(client);
     GC<llvmo::DebugLoc_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__SNode_O:
 {
+     // stamp value 174
     core::SNode_O* obj_gc_safe = reinterpret_cast<core::SNode_O*>(client);
     GC<core::SNode_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__BranchSNode_O:
 {
+     // stamp value 175
     core::BranchSNode_O* obj_gc_safe = reinterpret_cast<core::BranchSNode_O*>(client);
     GC<core::BranchSNode_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__LeafSNode_O:
 {
+     // stamp value 176
     core::LeafSNode_O* obj_gc_safe = reinterpret_cast<core::LeafSNode_O*>(client);
     GC<core::LeafSNode_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__ModuleHandle_O:
 {
+     // stamp value 177
     llvmo::ModuleHandle_O* obj_gc_safe = reinterpret_cast<llvmo::ModuleHandle_O*>(client);
     GC<llvmo::ModuleHandle_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__Pointer_O:
 {
+     // stamp value 178
     core::Pointer_O* obj_gc_safe = reinterpret_cast<core::Pointer_O*>(client);
     GC<core::Pointer_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__CxxObject_O:
 {
+     // stamp value 179
     core::CxxObject_O* obj_gc_safe = reinterpret_cast<core::CxxObject_O*>(client);
     GC<core::CxxObject_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__DINodeArray_O:
 {
+     // stamp value 180
     llvmo::DINodeArray_O* obj_gc_safe = reinterpret_cast<llvmo::DINodeArray_O*>(client);
     GC<llvmo::DINodeArray_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__NativeVector_float_O:
 {
+     // stamp value 181
     core::NativeVector_float_O* obj_gc_safe = reinterpret_cast<core::NativeVector_float_O*>(client);
     GC<core::NativeVector_float_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_clcenv__Info_O:
 {
+     // stamp value 182
     clcenv::Info_O* obj_gc_safe = reinterpret_cast<clcenv::Info_O*>(client);
     GC<clcenv::Info_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_clcenv__OptimizeInfo_O:
 {
+     // stamp value 183
     clcenv::OptimizeInfo_O* obj_gc_safe = reinterpret_cast<clcenv::OptimizeInfo_O*>(client);
     GC<clcenv::OptimizeInfo_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_clcenv__BlockInfo_O:
 {
+     // stamp value 184
     clcenv::BlockInfo_O* obj_gc_safe = reinterpret_cast<clcenv::BlockInfo_O*>(client);
     GC<clcenv::BlockInfo_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_clcenv__FunctionInfo_O:
 {
+     // stamp value 185
     clcenv::FunctionInfo_O* obj_gc_safe = reinterpret_cast<clcenv::FunctionInfo_O*>(client);
     GC<clcenv::FunctionInfo_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_clcenv__GlobalMacroInfo_O:
 {
+     // stamp value 186
     clcenv::GlobalMacroInfo_O* obj_gc_safe = reinterpret_cast<clcenv::GlobalMacroInfo_O*>(client);
     GC<clcenv::GlobalMacroInfo_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_clcenv__LocalMacroInfo_O:
 {
+     // stamp value 187
     clcenv::LocalMacroInfo_O* obj_gc_safe = reinterpret_cast<clcenv::LocalMacroInfo_O*>(client);
     GC<clcenv::LocalMacroInfo_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_clcenv__LocalFunctionInfo_O:
 {
+     // stamp value 188
     clcenv::LocalFunctionInfo_O* obj_gc_safe = reinterpret_cast<clcenv::LocalFunctionInfo_O*>(client);
     GC<clcenv::LocalFunctionInfo_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_clcenv__SpecialOperatorInfo_O:
 {
+     // stamp value 189
     clcenv::SpecialOperatorInfo_O* obj_gc_safe = reinterpret_cast<clcenv::SpecialOperatorInfo_O*>(client);
     GC<clcenv::SpecialOperatorInfo_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_clcenv__LambdaNameInfo_O:
 {
+     // stamp value 190
     clcenv::LambdaNameInfo_O* obj_gc_safe = reinterpret_cast<clcenv::LambdaNameInfo_O*>(client);
     GC<clcenv::LambdaNameInfo_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_clcenv__GlobalFunctionInfo_O:
 {
+     // stamp value 191
     clcenv::GlobalFunctionInfo_O* obj_gc_safe = reinterpret_cast<clcenv::GlobalFunctionInfo_O*>(client);
     GC<clcenv::GlobalFunctionInfo_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_clcenv__VariableInfo_O:
 {
+     // stamp value 192
     clcenv::VariableInfo_O* obj_gc_safe = reinterpret_cast<clcenv::VariableInfo_O*>(client);
     GC<clcenv::VariableInfo_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_clcenv__SpecialVariableInfo_O:
 {
+     // stamp value 193
     clcenv::SpecialVariableInfo_O* obj_gc_safe = reinterpret_cast<clcenv::SpecialVariableInfo_O*>(client);
     GC<clcenv::SpecialVariableInfo_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_clcenv__LexicalVariableInfo_O:
 {
+     // stamp value 194
     clcenv::LexicalVariableInfo_O* obj_gc_safe = reinterpret_cast<clcenv::LexicalVariableInfo_O*>(client);
     GC<clcenv::LexicalVariableInfo_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_clcenv__SymbolMacroInfo_O:
 {
+     // stamp value 195
     clcenv::SymbolMacroInfo_O* obj_gc_safe = reinterpret_cast<clcenv::SymbolMacroInfo_O*>(client);
     GC<clcenv::SymbolMacroInfo_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_clcenv__ConstantVariableInfo_O:
 {
+     // stamp value 196
     clcenv::ConstantVariableInfo_O* obj_gc_safe = reinterpret_cast<clcenv::ConstantVariableInfo_O*>(client);
     GC<clcenv::ConstantVariableInfo_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_mp__ConditionVariable_O:
 {
+     // stamp value 197
     mp::ConditionVariable_O* obj_gc_safe = reinterpret_cast<mp::ConditionVariable_O*>(client);
     GC<mp::ConditionVariable_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_mp__Mutex_O:
 {
+     // stamp value 198
     mp::Mutex_O* obj_gc_safe = reinterpret_cast<mp::Mutex_O*>(client);
     GC<mp::Mutex_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_mp__RecursiveMutex_O:
 {
+     // stamp value 199
     mp::RecursiveMutex_O* obj_gc_safe = reinterpret_cast<mp::RecursiveMutex_O*>(client);
     GC<mp::RecursiveMutex_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__DITypeRefArray_O:
 {
+     // stamp value 200
     llvmo::DITypeRefArray_O* obj_gc_safe = reinterpret_cast<llvmo::DITypeRefArray_O*>(client);
     GC<llvmo::DITypeRefArray_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__NativeVector_double_O:
 {
+     // stamp value 201
     core::NativeVector_double_O* obj_gc_safe = reinterpret_cast<core::NativeVector_double_O*>(client);
     GC<core::NativeVector_double_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__NativeVector_int_O:
 {
+     // stamp value 202
     core::NativeVector_int_O* obj_gc_safe = reinterpret_cast<core::NativeVector_int_O*>(client);
     GC<core::NativeVector_int_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_mp__SharedMutex_O:
 {
+     // stamp value 203
     mp::SharedMutex_O* obj_gc_safe = reinterpret_cast<mp::SharedMutex_O*>(client);
     GC<mp::SharedMutex_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_clcenv__Entry_O:
 {
+     // stamp value 204
     clcenv::Entry_O* obj_gc_safe = reinterpret_cast<clcenv::Entry_O*>(client);
     GC<clcenv::Entry_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_clcenv__VariableType_O:
 {
+     // stamp value 205
     clcenv::VariableType_O* obj_gc_safe = reinterpret_cast<clcenv::VariableType_O*>(client);
     GC<clcenv::VariableType_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_clcenv__VariableIgnore_O:
 {
+     // stamp value 206
     clcenv::VariableIgnore_O* obj_gc_safe = reinterpret_cast<clcenv::VariableIgnore_O*>(client);
     GC<clcenv::VariableIgnore_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_clcenv__Function_O:
 {
+     // stamp value 207
     clcenv::Function_O* obj_gc_safe = reinterpret_cast<clcenv::Function_O*>(client);
     GC<clcenv::Function_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_clcenv__SymbolMacro_O:
 {
+     // stamp value 208
     clcenv::SymbolMacro_O* obj_gc_safe = reinterpret_cast<clcenv::SymbolMacro_O*>(client);
     GC<clcenv::SymbolMacro_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_clcenv__FunctionDynamicExtent_O:
 {
+     // stamp value 209
     clcenv::FunctionDynamicExtent_O* obj_gc_safe = reinterpret_cast<clcenv::FunctionDynamicExtent_O*>(client);
     GC<clcenv::FunctionDynamicExtent_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_clcenv__Inline_O:
 {
+     // stamp value 210
     clcenv::Inline_O* obj_gc_safe = reinterpret_cast<clcenv::Inline_O*>(client);
     GC<clcenv::Inline_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_clcenv__Closure_O:
 {
+     // stamp value 211
     clcenv::Closure_O* obj_gc_safe = reinterpret_cast<clcenv::Closure_O*>(client);
     GC<clcenv::Closure_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_clcenv__Optimize_O:
 {
+     // stamp value 212
     clcenv::Optimize_O* obj_gc_safe = reinterpret_cast<clcenv::Optimize_O*>(client);
     GC<clcenv::Optimize_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_clcenv__LambdaName_O:
 {
+     // stamp value 213
     clcenv::LambdaName_O* obj_gc_safe = reinterpret_cast<clcenv::LambdaName_O*>(client);
     GC<clcenv::LambdaName_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_clcenv__Tag_O:
 {
+     // stamp value 214
     clcenv::Tag_O* obj_gc_safe = reinterpret_cast<clcenv::Tag_O*>(client);
     GC<clcenv::Tag_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_clcenv__Block_O:
 {
+     // stamp value 215
     clcenv::Block_O* obj_gc_safe = reinterpret_cast<clcenv::Block_O*>(client);
     GC<clcenv::Block_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_clcenv__FunctionType_O:
 {
+     // stamp value 216
     clcenv::FunctionType_O* obj_gc_safe = reinterpret_cast<clcenv::FunctionType_O*>(client);
     GC<clcenv::FunctionType_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_clcenv__GlobalEnvironment_O:
 {
+     // stamp value 217
     clcenv::GlobalEnvironment_O* obj_gc_safe = reinterpret_cast<clcenv::GlobalEnvironment_O*>(client);
     GC<clcenv::GlobalEnvironment_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_clcenv__VariableDynamicExtent_O:
 {
+     // stamp value 218
     clcenv::VariableDynamicExtent_O* obj_gc_safe = reinterpret_cast<clcenv::VariableDynamicExtent_O*>(client);
     GC<clcenv::VariableDynamicExtent_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_clcenv__LexicalVariable_O:
 {
+     // stamp value 219
     clcenv::LexicalVariable_O* obj_gc_safe = reinterpret_cast<clcenv::LexicalVariable_O*>(client);
     GC<clcenv::LexicalVariable_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_clcenv__SpecialVariable_O:
 {
+     // stamp value 220
     clcenv::SpecialVariable_O* obj_gc_safe = reinterpret_cast<clcenv::SpecialVariable_O*>(client);
     GC<clcenv::SpecialVariable_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_clcenv__Macro_O:
 {
+     // stamp value 221
     clcenv::Macro_O* obj_gc_safe = reinterpret_cast<clcenv::Macro_O*>(client);
     GC<clcenv::Macro_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_clcenv__FunctionIgnore_O:
 {
+     // stamp value 222
     clcenv::FunctionIgnore_O* obj_gc_safe = reinterpret_cast<clcenv::FunctionIgnore_O*>(client);
     GC<clcenv::FunctionIgnore_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_mp__Process_O:
 {
+     // stamp value 223
     mp::Process_O* obj_gc_safe = reinterpret_cast<mp::Process_O*>(client);
     GC<mp::Process_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__SingleDispatchMethod_O:
 {
+     // stamp value 224
     core::SingleDispatchMethod_O* obj_gc_safe = reinterpret_cast<core::SingleDispatchMethod_O*>(client);
     GC<core::SingleDispatchMethod_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__Iterator_O:
 {
+     // stamp value 225
     core::Iterator_O* obj_gc_safe = reinterpret_cast<core::Iterator_O*>(client);
     GC<core::Iterator_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__RecursiveDirectoryIterator_O:
 {
+     // stamp value 226
     core::RecursiveDirectoryIterator_O* obj_gc_safe = reinterpret_cast<core::RecursiveDirectoryIterator_O*>(client);
     GC<core::RecursiveDirectoryIterator_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__DirectoryIterator_O:
 {
+     // stamp value 227
     core::DirectoryIterator_O* obj_gc_safe = reinterpret_cast<core::DirectoryIterator_O*>(client);
     GC<core::DirectoryIterator_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__InsertPoint_O:
 {
+     // stamp value 228
     llvmo::InsertPoint_O* obj_gc_safe = reinterpret_cast<llvmo::InsertPoint_O*>(client);
     GC<llvmo::InsertPoint_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__Array_O:
 {
+     // stamp value 229
     core::Array_O* obj_gc_safe = reinterpret_cast<core::Array_O*>(client);
     GC<core::Array_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__AbstractSimpleVector_O:
 {
+     // stamp value 230
     core::AbstractSimpleVector_O* obj_gc_safe = reinterpret_cast<core::AbstractSimpleVector_O*>(client);
     GC<core::AbstractSimpleVector_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
+obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleVector_core__SimpleVectorFloat_O_float_core__AbstractSimpleVector_O_:
+{
+     // do nothing stamp value 231
+    THROW_HARD_ERROR(BF("Should never deallocate object core::template_SimpleVector<core::SimpleVectorFloat_O,float,core::AbstractSimpleVector_O>"));
+}
 obj_deallocate_unmanaged_instance_STAMP_core__SimpleVectorFloat_O:
 {
+     // stamp value 232
     core::SimpleVectorFloat_O* obj_gc_safe = reinterpret_cast<core::SimpleVectorFloat_O*>(client);
     GC<core::SimpleVectorFloat_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
+obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleVector_core__SimpleVector_byte64_t_O_unsigned_long_core__AbstractSimpleVector_O_:
+{
+     // do nothing stamp value 233
+    THROW_HARD_ERROR(BF("Should never deallocate object core::template_SimpleVector<core::SimpleVector_byte64_t_O,unsigned long,core::AbstractSimpleVector_O>"));
+}
 obj_deallocate_unmanaged_instance_STAMP_core__SimpleVector_byte64_t_O:
 {
+     // stamp value 234
     core::SimpleVector_byte64_t_O* obj_gc_safe = reinterpret_cast<core::SimpleVector_byte64_t_O*>(client);
     GC<core::SimpleVector_byte64_t_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
+obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleVector_core__SimpleVector_int64_t_O_long_core__AbstractSimpleVector_O_:
+{
+     // do nothing stamp value 235
+    THROW_HARD_ERROR(BF("Should never deallocate object core::template_SimpleVector<core::SimpleVector_int64_t_O,long,core::AbstractSimpleVector_O>"));
+}
 obj_deallocate_unmanaged_instance_STAMP_core__SimpleVector_int64_t_O:
 {
+     // stamp value 236
     core::SimpleVector_int64_t_O* obj_gc_safe = reinterpret_cast<core::SimpleVector_int64_t_O*>(client);
     GC<core::SimpleVector_int64_t_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__SimpleString_O:
 {
+     // stamp value 237
     core::SimpleString_O* obj_gc_safe = reinterpret_cast<core::SimpleString_O*>(client);
     GC<core::SimpleString_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
+obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleVector_core__SimpleCharacterString_O_int_core__SimpleString_O_:
+{
+     // do nothing stamp value 238
+    THROW_HARD_ERROR(BF("Should never deallocate object core::template_SimpleVector<core::SimpleCharacterString_O,int,core::SimpleString_O>"));
+}
 obj_deallocate_unmanaged_instance_STAMP_core__SimpleCharacterString_O:
 {
+     // stamp value 239
     core::SimpleCharacterString_O* obj_gc_safe = reinterpret_cast<core::SimpleCharacterString_O*>(client);
     GC<core::SimpleCharacterString_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
+obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleVector_core__SimpleBaseString_O_unsigned_char_core__SimpleString_O_:
+{
+     // do nothing stamp value 240
+    THROW_HARD_ERROR(BF("Should never deallocate object core::template_SimpleVector<core::SimpleBaseString_O,unsigned char,core::SimpleString_O>"));
+}
 obj_deallocate_unmanaged_instance_STAMP_core__SimpleBaseString_O:
 {
+     // stamp value 241
     core::SimpleBaseString_O* obj_gc_safe = reinterpret_cast<core::SimpleBaseString_O*>(client);
     GC<core::SimpleBaseString_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
+obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleVector_core__SimpleVector_int16_t_O_short_core__AbstractSimpleVector_O_:
+{
+     // do nothing stamp value 242
+    THROW_HARD_ERROR(BF("Should never deallocate object core::template_SimpleVector<core::SimpleVector_int16_t_O,short,core::AbstractSimpleVector_O>"));
+}
 obj_deallocate_unmanaged_instance_STAMP_core__SimpleVector_int16_t_O:
 {
+     // stamp value 243
     core::SimpleVector_int16_t_O* obj_gc_safe = reinterpret_cast<core::SimpleVector_int16_t_O*>(client);
     GC<core::SimpleVector_int16_t_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
+obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleVector_core__SimpleVector_byte16_t_O_unsigned_short_core__AbstractSimpleVector_O_:
+{
+     // do nothing stamp value 244
+    THROW_HARD_ERROR(BF("Should never deallocate object core::template_SimpleVector<core::SimpleVector_byte16_t_O,unsigned short,core::AbstractSimpleVector_O>"));
+}
 obj_deallocate_unmanaged_instance_STAMP_core__SimpleVector_byte16_t_O:
 {
+     // stamp value 245
     core::SimpleVector_byte16_t_O* obj_gc_safe = reinterpret_cast<core::SimpleVector_byte16_t_O*>(client);
     GC<core::SimpleVector_byte16_t_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
+obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleVector_core__SimpleVector_fixnum_O_long_core__AbstractSimpleVector_O_:
+{
+     // do nothing stamp value 246
+    THROW_HARD_ERROR(BF("Should never deallocate object core::template_SimpleVector<core::SimpleVector_fixnum_O,long,core::AbstractSimpleVector_O>"));
+}
 obj_deallocate_unmanaged_instance_STAMP_core__SimpleVector_fixnum_O:
 {
+     // stamp value 247
     core::SimpleVector_fixnum_O* obj_gc_safe = reinterpret_cast<core::SimpleVector_fixnum_O*>(client);
     GC<core::SimpleVector_fixnum_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
+obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleVector_core__SimpleVector_int8_t_O_signed_char_core__AbstractSimpleVector_O_:
+{
+     // do nothing stamp value 248
+    THROW_HARD_ERROR(BF("Should never deallocate object core::template_SimpleVector<core::SimpleVector_int8_t_O,signed char,core::AbstractSimpleVector_O>"));
+}
 obj_deallocate_unmanaged_instance_STAMP_core__SimpleVector_int8_t_O:
 {
+     // stamp value 249
     core::SimpleVector_int8_t_O* obj_gc_safe = reinterpret_cast<core::SimpleVector_int8_t_O*>(client);
     GC<core::SimpleVector_int8_t_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
+obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleVector_core__SimpleVector_O_gctools__smart_ptr_core__T_O__core__AbstractSimpleVector_O_:
+{
+     // do nothing stamp value 250
+    THROW_HARD_ERROR(BF("Should never deallocate object core::template_SimpleVector<core::SimpleVector_O,gctools::smart_ptr<core::T_O>,core::AbstractSimpleVector_O>"));
+}
 obj_deallocate_unmanaged_instance_STAMP_core__SimpleVector_O:
 {
+     // stamp value 251
     core::SimpleVector_O* obj_gc_safe = reinterpret_cast<core::SimpleVector_O*>(client);
     GC<core::SimpleVector_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
+obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleVector_core__SimpleVector_byte8_t_O_unsigned_char_core__AbstractSimpleVector_O_:
+{
+     // do nothing stamp value 252
+    THROW_HARD_ERROR(BF("Should never deallocate object core::template_SimpleVector<core::SimpleVector_byte8_t_O,unsigned char,core::AbstractSimpleVector_O>"));
+}
 obj_deallocate_unmanaged_instance_STAMP_core__SimpleVector_byte8_t_O:
 {
+     // stamp value 253
     core::SimpleVector_byte8_t_O* obj_gc_safe = reinterpret_cast<core::SimpleVector_byte8_t_O*>(client);
     GC<core::SimpleVector_byte8_t_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
+obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleVector_core__SimpleVector_int32_t_O_int_core__AbstractSimpleVector_O_:
+{
+     // do nothing stamp value 254
+    THROW_HARD_ERROR(BF("Should never deallocate object core::template_SimpleVector<core::SimpleVector_int32_t_O,int,core::AbstractSimpleVector_O>"));
+}
 obj_deallocate_unmanaged_instance_STAMP_core__SimpleVector_int32_t_O:
 {
+     // stamp value 255
     core::SimpleVector_int32_t_O* obj_gc_safe = reinterpret_cast<core::SimpleVector_int32_t_O*>(client);
     GC<core::SimpleVector_int32_t_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__SimpleBitVector_O:
 {
+     // stamp value 256
     core::SimpleBitVector_O* obj_gc_safe = reinterpret_cast<core::SimpleBitVector_O*>(client);
     GC<core::SimpleBitVector_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
+obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleVector_core__SimpleVector_byte32_t_O_unsigned_int_core__AbstractSimpleVector_O_:
+{
+     // do nothing stamp value 257
+    THROW_HARD_ERROR(BF("Should never deallocate object core::template_SimpleVector<core::SimpleVector_byte32_t_O,unsigned int,core::AbstractSimpleVector_O>"));
+}
 obj_deallocate_unmanaged_instance_STAMP_core__SimpleVector_byte32_t_O:
 {
+     // stamp value 258
     core::SimpleVector_byte32_t_O* obj_gc_safe = reinterpret_cast<core::SimpleVector_byte32_t_O*>(client);
     GC<core::SimpleVector_byte32_t_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
+obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleVector_core__SimpleVector_size_t_O_unsigned_long_core__AbstractSimpleVector_O_:
+{
+     // do nothing stamp value 259
+    THROW_HARD_ERROR(BF("Should never deallocate object core::template_SimpleVector<core::SimpleVector_size_t_O,unsigned long,core::AbstractSimpleVector_O>"));
+}
 obj_deallocate_unmanaged_instance_STAMP_core__SimpleVector_size_t_O:
 {
+     // stamp value 260
     core::SimpleVector_size_t_O* obj_gc_safe = reinterpret_cast<core::SimpleVector_size_t_O*>(client);
     GC<core::SimpleVector_size_t_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
+obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleVector_core__SimpleVectorDouble_O_double_core__AbstractSimpleVector_O_:
+{
+     // do nothing stamp value 261
+    THROW_HARD_ERROR(BF("Should never deallocate object core::template_SimpleVector<core::SimpleVectorDouble_O,double,core::AbstractSimpleVector_O>"));
+}
 obj_deallocate_unmanaged_instance_STAMP_core__SimpleVectorDouble_O:
 {
+     // stamp value 262
     core::SimpleVectorDouble_O* obj_gc_safe = reinterpret_cast<core::SimpleVectorDouble_O*>(client);
     GC<core::SimpleVectorDouble_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__MDArray_O:
 {
+     // stamp value 263
     core::MDArray_O* obj_gc_safe = reinterpret_cast<core::MDArray_O*>(client);
     GC<core::MDArray_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__BitVectorNs_O:
 {
+     // stamp value 264
     core::BitVectorNs_O* obj_gc_safe = reinterpret_cast<core::BitVectorNs_O*>(client);
     GC<core::BitVectorNs_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
+obj_deallocate_unmanaged_instance_STAMP_core__template_Array_core__MDArray_byte64_t_O_core__SimpleMDArray_byte64_t_O_core__SimpleVector_byte64_t_O_core__MDArray_O_:
+{
+     // do nothing stamp value 265
+    THROW_HARD_ERROR(BF("Should never deallocate object core::template_Array<core::MDArray_byte64_t_O,core::SimpleMDArray_byte64_t_O,core::SimpleVector_byte64_t_O,core::MDArray_O>"));
+}
 obj_deallocate_unmanaged_instance_STAMP_core__MDArray_byte64_t_O:
 {
+     // stamp value 266
     core::MDArray_byte64_t_O* obj_gc_safe = reinterpret_cast<core::MDArray_byte64_t_O*>(client);
     GC<core::MDArray_byte64_t_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
+obj_deallocate_unmanaged_instance_STAMP_core__template_Array_core__MDArray_int16_t_O_core__SimpleMDArray_int16_t_O_core__SimpleVector_int16_t_O_core__MDArray_O_:
+{
+     // do nothing stamp value 267
+    THROW_HARD_ERROR(BF("Should never deallocate object core::template_Array<core::MDArray_int16_t_O,core::SimpleMDArray_int16_t_O,core::SimpleVector_int16_t_O,core::MDArray_O>"));
+}
 obj_deallocate_unmanaged_instance_STAMP_core__MDArray_int16_t_O:
 {
+     // stamp value 268
     core::MDArray_int16_t_O* obj_gc_safe = reinterpret_cast<core::MDArray_int16_t_O*>(client);
     GC<core::MDArray_int16_t_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
+obj_deallocate_unmanaged_instance_STAMP_core__template_Array_core__MDArray_int8_t_O_core__SimpleMDArray_int8_t_O_core__SimpleVector_int8_t_O_core__MDArray_O_:
+{
+     // do nothing stamp value 269
+    THROW_HARD_ERROR(BF("Should never deallocate object core::template_Array<core::MDArray_int8_t_O,core::SimpleMDArray_int8_t_O,core::SimpleVector_int8_t_O,core::MDArray_O>"));
+}
 obj_deallocate_unmanaged_instance_STAMP_core__MDArray_int8_t_O:
 {
+     // stamp value 270
     core::MDArray_int8_t_O* obj_gc_safe = reinterpret_cast<core::MDArray_int8_t_O*>(client);
     GC<core::MDArray_int8_t_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
+obj_deallocate_unmanaged_instance_STAMP_core__template_Array_core__MDArrayCharacter_O_core__SimpleMDArrayCharacter_O_core__SimpleCharacterString_O_core__MDArray_O_:
+{
+     // do nothing stamp value 271
+    THROW_HARD_ERROR(BF("Should never deallocate object core::template_Array<core::MDArrayCharacter_O,core::SimpleMDArrayCharacter_O,core::SimpleCharacterString_O,core::MDArray_O>"));
+}
 obj_deallocate_unmanaged_instance_STAMP_core__MDArrayCharacter_O:
 {
+     // stamp value 272
     core::MDArrayCharacter_O* obj_gc_safe = reinterpret_cast<core::MDArrayCharacter_O*>(client);
     GC<core::MDArrayCharacter_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
+obj_deallocate_unmanaged_instance_STAMP_core__template_Array_core__MDArray_int32_t_O_core__SimpleMDArray_int32_t_O_core__SimpleVector_int32_t_O_core__MDArray_O_:
+{
+     // do nothing stamp value 273
+    THROW_HARD_ERROR(BF("Should never deallocate object core::template_Array<core::MDArray_int32_t_O,core::SimpleMDArray_int32_t_O,core::SimpleVector_int32_t_O,core::MDArray_O>"));
+}
 obj_deallocate_unmanaged_instance_STAMP_core__MDArray_int32_t_O:
 {
+     // stamp value 274
     core::MDArray_int32_t_O* obj_gc_safe = reinterpret_cast<core::MDArray_int32_t_O*>(client);
     GC<core::MDArray_int32_t_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
+obj_deallocate_unmanaged_instance_STAMP_core__template_Array_core__MDArrayFloat_O_core__SimpleMDArrayFloat_O_core__SimpleVectorFloat_O_core__MDArray_O_:
+{
+     // do nothing stamp value 275
+    THROW_HARD_ERROR(BF("Should never deallocate object core::template_Array<core::MDArrayFloat_O,core::SimpleMDArrayFloat_O,core::SimpleVectorFloat_O,core::MDArray_O>"));
+}
 obj_deallocate_unmanaged_instance_STAMP_core__MDArrayFloat_O:
 {
+     // stamp value 276
     core::MDArrayFloat_O* obj_gc_safe = reinterpret_cast<core::MDArrayFloat_O*>(client);
     GC<core::MDArrayFloat_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__StrNs_O:
 {
+     // stamp value 277
     core::StrNs_O* obj_gc_safe = reinterpret_cast<core::StrNs_O*>(client);
     GC<core::StrNs_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
+obj_deallocate_unmanaged_instance_STAMP_core__template_Vector_core__StrWNs_O_core__SimpleCharacterString_O_core__StrNs_O_:
+{
+     // do nothing stamp value 278
+    THROW_HARD_ERROR(BF("Should never deallocate object core::template_Vector<core::StrWNs_O,core::SimpleCharacterString_O,core::StrNs_O>"));
+}
 obj_deallocate_unmanaged_instance_STAMP_core__StrWNs_O:
 {
+     // stamp value 279
     core::StrWNs_O* obj_gc_safe = reinterpret_cast<core::StrWNs_O*>(client);
     GC<core::StrWNs_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
+obj_deallocate_unmanaged_instance_STAMP_core__template_Vector_core__Str8Ns_O_core__SimpleBaseString_O_core__StrNs_O_:
+{
+     // do nothing stamp value 280
+    THROW_HARD_ERROR(BF("Should never deallocate object core::template_Vector<core::Str8Ns_O,core::SimpleBaseString_O,core::StrNs_O>"));
+}
 obj_deallocate_unmanaged_instance_STAMP_core__Str8Ns_O:
 {
+     // stamp value 281
     core::Str8Ns_O* obj_gc_safe = reinterpret_cast<core::Str8Ns_O*>(client);
     GC<core::Str8Ns_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
+obj_deallocate_unmanaged_instance_STAMP_core__template_Array_core__MDArrayDouble_O_core__SimpleMDArrayDouble_O_core__SimpleVectorDouble_O_core__MDArray_O_:
+{
+     // do nothing stamp value 282
+    THROW_HARD_ERROR(BF("Should never deallocate object core::template_Array<core::MDArrayDouble_O,core::SimpleMDArrayDouble_O,core::SimpleVectorDouble_O,core::MDArray_O>"));
+}
 obj_deallocate_unmanaged_instance_STAMP_core__MDArrayDouble_O:
 {
+     // stamp value 283
     core::MDArrayDouble_O* obj_gc_safe = reinterpret_cast<core::MDArrayDouble_O*>(client);
     GC<core::MDArrayDouble_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
+obj_deallocate_unmanaged_instance_STAMP_core__template_Array_core__MDArrayT_O_core__SimpleMDArrayT_O_core__SimpleVector_O_core__MDArray_O_:
+{
+     // do nothing stamp value 284
+    THROW_HARD_ERROR(BF("Should never deallocate object core::template_Array<core::MDArrayT_O,core::SimpleMDArrayT_O,core::SimpleVector_O,core::MDArray_O>"));
+}
 obj_deallocate_unmanaged_instance_STAMP_core__MDArrayT_O:
 {
+     // stamp value 285
     core::MDArrayT_O* obj_gc_safe = reinterpret_cast<core::MDArrayT_O*>(client);
     GC<core::MDArrayT_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
+obj_deallocate_unmanaged_instance_STAMP_core__template_Array_core__MDArray_size_t_O_core__SimpleMDArray_size_t_O_core__SimpleVector_size_t_O_core__MDArray_O_:
+{
+     // do nothing stamp value 286
+    THROW_HARD_ERROR(BF("Should never deallocate object core::template_Array<core::MDArray_size_t_O,core::SimpleMDArray_size_t_O,core::SimpleVector_size_t_O,core::MDArray_O>"));
+}
 obj_deallocate_unmanaged_instance_STAMP_core__MDArray_size_t_O:
 {
+     // stamp value 287
     core::MDArray_size_t_O* obj_gc_safe = reinterpret_cast<core::MDArray_size_t_O*>(client);
     GC<core::MDArray_size_t_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
+obj_deallocate_unmanaged_instance_STAMP_core__template_Array_core__MDArray_byte8_t_O_core__SimpleMDArray_byte8_t_O_core__SimpleVector_byte8_t_O_core__MDArray_O_:
+{
+     // do nothing stamp value 288
+    THROW_HARD_ERROR(BF("Should never deallocate object core::template_Array<core::MDArray_byte8_t_O,core::SimpleMDArray_byte8_t_O,core::SimpleVector_byte8_t_O,core::MDArray_O>"));
+}
 obj_deallocate_unmanaged_instance_STAMP_core__MDArray_byte8_t_O:
 {
+     // stamp value 289
     core::MDArray_byte8_t_O* obj_gc_safe = reinterpret_cast<core::MDArray_byte8_t_O*>(client);
     GC<core::MDArray_byte8_t_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__MDArrayBit_O:
 {
+     // stamp value 290
     core::MDArrayBit_O* obj_gc_safe = reinterpret_cast<core::MDArrayBit_O*>(client);
     GC<core::MDArrayBit_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
+obj_deallocate_unmanaged_instance_STAMP_core__template_Array_core__MDArray_int64_t_O_core__SimpleMDArray_int64_t_O_core__SimpleVector_int64_t_O_core__MDArray_O_:
+{
+     // do nothing stamp value 291
+    THROW_HARD_ERROR(BF("Should never deallocate object core::template_Array<core::MDArray_int64_t_O,core::SimpleMDArray_int64_t_O,core::SimpleVector_int64_t_O,core::MDArray_O>"));
+}
 obj_deallocate_unmanaged_instance_STAMP_core__MDArray_int64_t_O:
 {
+     // stamp value 292
     core::MDArray_int64_t_O* obj_gc_safe = reinterpret_cast<core::MDArray_int64_t_O*>(client);
     GC<core::MDArray_int64_t_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
+obj_deallocate_unmanaged_instance_STAMP_core__template_Array_core__MDArray_byte16_t_O_core__SimpleMDArray_byte16_t_O_core__SimpleVector_byte16_t_O_core__MDArray_O_:
+{
+     // do nothing stamp value 293
+    THROW_HARD_ERROR(BF("Should never deallocate object core::template_Array<core::MDArray_byte16_t_O,core::SimpleMDArray_byte16_t_O,core::SimpleVector_byte16_t_O,core::MDArray_O>"));
+}
 obj_deallocate_unmanaged_instance_STAMP_core__MDArray_byte16_t_O:
 {
+     // stamp value 294
     core::MDArray_byte16_t_O* obj_gc_safe = reinterpret_cast<core::MDArray_byte16_t_O*>(client);
     GC<core::MDArray_byte16_t_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
+obj_deallocate_unmanaged_instance_STAMP_core__template_Array_core__MDArray_byte32_t_O_core__SimpleMDArray_byte32_t_O_core__SimpleVector_byte32_t_O_core__MDArray_O_:
+{
+     // do nothing stamp value 295
+    THROW_HARD_ERROR(BF("Should never deallocate object core::template_Array<core::MDArray_byte32_t_O,core::SimpleMDArray_byte32_t_O,core::SimpleVector_byte32_t_O,core::MDArray_O>"));
+}
 obj_deallocate_unmanaged_instance_STAMP_core__MDArray_byte32_t_O:
 {
+     // stamp value 296
     core::MDArray_byte32_t_O* obj_gc_safe = reinterpret_cast<core::MDArray_byte32_t_O*>(client);
     GC<core::MDArray_byte32_t_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__SimpleMDArray_O:
 {
+     // stamp value 297
     core::SimpleMDArray_O* obj_gc_safe = reinterpret_cast<core::SimpleMDArray_O*>(client);
     GC<core::SimpleMDArray_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
+obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleArray_core__SimpleMDArray_int8_t_O_core__SimpleVector_int8_t_O_core__SimpleMDArray_O_:
+{
+     // do nothing stamp value 298
+    THROW_HARD_ERROR(BF("Should never deallocate object core::template_SimpleArray<core::SimpleMDArray_int8_t_O,core::SimpleVector_int8_t_O,core::SimpleMDArray_O>"));
+}
 obj_deallocate_unmanaged_instance_STAMP_core__SimpleMDArray_int8_t_O:
 {
+     // stamp value 299
     core::SimpleMDArray_int8_t_O* obj_gc_safe = reinterpret_cast<core::SimpleMDArray_int8_t_O*>(client);
     GC<core::SimpleMDArray_int8_t_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
+obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleArray_core__SimpleMDArrayCharacter_O_core__SimpleCharacterString_O_core__SimpleMDArray_O_:
+{
+     // do nothing stamp value 300
+    THROW_HARD_ERROR(BF("Should never deallocate object core::template_SimpleArray<core::SimpleMDArrayCharacter_O,core::SimpleCharacterString_O,core::SimpleMDArray_O>"));
+}
 obj_deallocate_unmanaged_instance_STAMP_core__SimpleMDArrayCharacter_O:
 {
+     // stamp value 301
     core::SimpleMDArrayCharacter_O* obj_gc_safe = reinterpret_cast<core::SimpleMDArrayCharacter_O*>(client);
     GC<core::SimpleMDArrayCharacter_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
+obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleArray_core__SimpleMDArray_fixnum_O_core__SimpleVector_fixnum_O_core__SimpleMDArray_O_:
+{
+     // do nothing stamp value 302
+    THROW_HARD_ERROR(BF("Should never deallocate object core::template_SimpleArray<core::SimpleMDArray_fixnum_O,core::SimpleVector_fixnum_O,core::SimpleMDArray_O>"));
+}
 obj_deallocate_unmanaged_instance_STAMP_core__SimpleMDArray_fixnum_O:
 {
+     // stamp value 303
     core::SimpleMDArray_fixnum_O* obj_gc_safe = reinterpret_cast<core::SimpleMDArray_fixnum_O*>(client);
     GC<core::SimpleMDArray_fixnum_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
+obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleArray_core__SimpleMDArray_byte32_t_O_core__SimpleVector_byte32_t_O_core__SimpleMDArray_O_:
+{
+     // do nothing stamp value 304
+    THROW_HARD_ERROR(BF("Should never deallocate object core::template_SimpleArray<core::SimpleMDArray_byte32_t_O,core::SimpleVector_byte32_t_O,core::SimpleMDArray_O>"));
+}
 obj_deallocate_unmanaged_instance_STAMP_core__SimpleMDArray_byte32_t_O:
 {
+     // stamp value 305
     core::SimpleMDArray_byte32_t_O* obj_gc_safe = reinterpret_cast<core::SimpleMDArray_byte32_t_O*>(client);
     GC<core::SimpleMDArray_byte32_t_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
+obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleArray_core__SimpleMDArray_byte16_t_O_core__SimpleVector_byte16_t_O_core__SimpleMDArray_O_:
+{
+     // do nothing stamp value 306
+    THROW_HARD_ERROR(BF("Should never deallocate object core::template_SimpleArray<core::SimpleMDArray_byte16_t_O,core::SimpleVector_byte16_t_O,core::SimpleMDArray_O>"));
+}
 obj_deallocate_unmanaged_instance_STAMP_core__SimpleMDArray_byte16_t_O:
 {
+     // stamp value 307
     core::SimpleMDArray_byte16_t_O* obj_gc_safe = reinterpret_cast<core::SimpleMDArray_byte16_t_O*>(client);
     GC<core::SimpleMDArray_byte16_t_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
+obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleArray_core__SimpleMDArrayT_O_core__SimpleVector_O_core__SimpleMDArray_O_:
+{
+     // do nothing stamp value 308
+    THROW_HARD_ERROR(BF("Should never deallocate object core::template_SimpleArray<core::SimpleMDArrayT_O,core::SimpleVector_O,core::SimpleMDArray_O>"));
+}
 obj_deallocate_unmanaged_instance_STAMP_core__SimpleMDArrayT_O:
 {
+     // stamp value 309
     core::SimpleMDArrayT_O* obj_gc_safe = reinterpret_cast<core::SimpleMDArrayT_O*>(client);
     GC<core::SimpleMDArrayT_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
+obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleArray_core__SimpleMDArray_int32_t_O_core__SimpleVector_int32_t_O_core__SimpleMDArray_O_:
+{
+     // do nothing stamp value 310
+    THROW_HARD_ERROR(BF("Should never deallocate object core::template_SimpleArray<core::SimpleMDArray_int32_t_O,core::SimpleVector_int32_t_O,core::SimpleMDArray_O>"));
+}
 obj_deallocate_unmanaged_instance_STAMP_core__SimpleMDArray_int32_t_O:
 {
+     // stamp value 311
     core::SimpleMDArray_int32_t_O* obj_gc_safe = reinterpret_cast<core::SimpleMDArray_int32_t_O*>(client);
     GC<core::SimpleMDArray_int32_t_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
+obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleArray_core__SimpleMDArrayDouble_O_core__SimpleVectorDouble_O_core__SimpleMDArray_O_:
+{
+     // do nothing stamp value 312
+    THROW_HARD_ERROR(BF("Should never deallocate object core::template_SimpleArray<core::SimpleMDArrayDouble_O,core::SimpleVectorDouble_O,core::SimpleMDArray_O>"));
+}
 obj_deallocate_unmanaged_instance_STAMP_core__SimpleMDArrayDouble_O:
 {
+     // stamp value 313
     core::SimpleMDArrayDouble_O* obj_gc_safe = reinterpret_cast<core::SimpleMDArrayDouble_O*>(client);
     GC<core::SimpleMDArrayDouble_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
+obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleArray_core__SimpleMDArrayBaseChar_O_core__SimpleBaseString_O_core__SimpleMDArray_O_:
+{
+     // do nothing stamp value 314
+    THROW_HARD_ERROR(BF("Should never deallocate object core::template_SimpleArray<core::SimpleMDArrayBaseChar_O,core::SimpleBaseString_O,core::SimpleMDArray_O>"));
+}
 obj_deallocate_unmanaged_instance_STAMP_core__SimpleMDArrayBaseChar_O:
 {
+     // stamp value 315
     core::SimpleMDArrayBaseChar_O* obj_gc_safe = reinterpret_cast<core::SimpleMDArrayBaseChar_O*>(client);
     GC<core::SimpleMDArrayBaseChar_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
+obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleArray_core__SimpleMDArray_byte64_t_O_core__SimpleVector_byte64_t_O_core__SimpleMDArray_O_:
+{
+     // do nothing stamp value 316
+    THROW_HARD_ERROR(BF("Should never deallocate object core::template_SimpleArray<core::SimpleMDArray_byte64_t_O,core::SimpleVector_byte64_t_O,core::SimpleMDArray_O>"));
+}
 obj_deallocate_unmanaged_instance_STAMP_core__SimpleMDArray_byte64_t_O:
 {
+     // stamp value 317
     core::SimpleMDArray_byte64_t_O* obj_gc_safe = reinterpret_cast<core::SimpleMDArray_byte64_t_O*>(client);
     GC<core::SimpleMDArray_byte64_t_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__SimpleMDArrayBit_O:
 {
+     // stamp value 318
     core::SimpleMDArrayBit_O* obj_gc_safe = reinterpret_cast<core::SimpleMDArrayBit_O*>(client);
     GC<core::SimpleMDArrayBit_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
+obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleArray_core__SimpleMDArray_int16_t_O_core__SimpleVector_int16_t_O_core__SimpleMDArray_O_:
+{
+     // do nothing stamp value 319
+    THROW_HARD_ERROR(BF("Should never deallocate object core::template_SimpleArray<core::SimpleMDArray_int16_t_O,core::SimpleVector_int16_t_O,core::SimpleMDArray_O>"));
+}
 obj_deallocate_unmanaged_instance_STAMP_core__SimpleMDArray_int16_t_O:
 {
+     // stamp value 320
     core::SimpleMDArray_int16_t_O* obj_gc_safe = reinterpret_cast<core::SimpleMDArray_int16_t_O*>(client);
     GC<core::SimpleMDArray_int16_t_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
+obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleArray_core__SimpleMDArray_byte8_t_O_core__SimpleVector_byte8_t_O_core__SimpleMDArray_O_:
+{
+     // do nothing stamp value 321
+    THROW_HARD_ERROR(BF("Should never deallocate object core::template_SimpleArray<core::SimpleMDArray_byte8_t_O,core::SimpleVector_byte8_t_O,core::SimpleMDArray_O>"));
+}
 obj_deallocate_unmanaged_instance_STAMP_core__SimpleMDArray_byte8_t_O:
 {
+     // stamp value 322
     core::SimpleMDArray_byte8_t_O* obj_gc_safe = reinterpret_cast<core::SimpleMDArray_byte8_t_O*>(client);
     GC<core::SimpleMDArray_byte8_t_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
+obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleArray_core__SimpleMDArray_size_t_O_core__SimpleVector_size_t_O_core__SimpleMDArray_O_:
+{
+     // do nothing stamp value 323
+    THROW_HARD_ERROR(BF("Should never deallocate object core::template_SimpleArray<core::SimpleMDArray_size_t_O,core::SimpleVector_size_t_O,core::SimpleMDArray_O>"));
+}
 obj_deallocate_unmanaged_instance_STAMP_core__SimpleMDArray_size_t_O:
 {
+     // stamp value 324
     core::SimpleMDArray_size_t_O* obj_gc_safe = reinterpret_cast<core::SimpleMDArray_size_t_O*>(client);
     GC<core::SimpleMDArray_size_t_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
+obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleArray_core__SimpleMDArray_int64_t_O_core__SimpleVector_int64_t_O_core__SimpleMDArray_O_:
+{
+     // do nothing stamp value 325
+    THROW_HARD_ERROR(BF("Should never deallocate object core::template_SimpleArray<core::SimpleMDArray_int64_t_O,core::SimpleVector_int64_t_O,core::SimpleMDArray_O>"));
+}
 obj_deallocate_unmanaged_instance_STAMP_core__SimpleMDArray_int64_t_O:
 {
+     // stamp value 326
     core::SimpleMDArray_int64_t_O* obj_gc_safe = reinterpret_cast<core::SimpleMDArray_int64_t_O*>(client);
     GC<core::SimpleMDArray_int64_t_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
+obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleArray_core__SimpleMDArrayFloat_O_core__SimpleVectorFloat_O_core__SimpleMDArray_O_:
+{
+     // do nothing stamp value 327
+    THROW_HARD_ERROR(BF("Should never deallocate object core::template_SimpleArray<core::SimpleMDArrayFloat_O,core::SimpleVectorFloat_O,core::SimpleMDArray_O>"));
+}
 obj_deallocate_unmanaged_instance_STAMP_core__SimpleMDArrayFloat_O:
 {
+     // stamp value 328
     core::SimpleMDArrayFloat_O* obj_gc_safe = reinterpret_cast<core::SimpleMDArrayFloat_O*>(client);
     GC<core::SimpleMDArrayFloat_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
+obj_deallocate_unmanaged_instance_STAMP_core__template_Array_core__MDArray_fixnum_O_core__SimpleMDArray_fixnum_O_core__SimpleVector_fixnum_O_core__MDArray_O_:
+{
+     // do nothing stamp value 329
+    THROW_HARD_ERROR(BF("Should never deallocate object core::template_Array<core::MDArray_fixnum_O,core::SimpleMDArray_fixnum_O,core::SimpleVector_fixnum_O,core::MDArray_O>"));
+}
 obj_deallocate_unmanaged_instance_STAMP_core__MDArray_fixnum_O:
 {
+     // stamp value 330
     core::MDArray_fixnum_O* obj_gc_safe = reinterpret_cast<core::MDArray_fixnum_O*>(client);
     GC<core::MDArray_fixnum_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
+obj_deallocate_unmanaged_instance_STAMP_core__template_Array_core__MDArrayBaseChar_O_core__SimpleMDArrayBaseChar_O_core__SimpleBaseString_O_core__MDArray_O_:
+{
+     // do nothing stamp value 331
+    THROW_HARD_ERROR(BF("Should never deallocate object core::template_Array<core::MDArrayBaseChar_O,core::SimpleMDArrayBaseChar_O,core::SimpleBaseString_O,core::MDArray_O>"));
+}
 obj_deallocate_unmanaged_instance_STAMP_core__MDArrayBaseChar_O:
 {
+     // stamp value 332
     core::MDArrayBaseChar_O* obj_gc_safe = reinterpret_cast<core::MDArrayBaseChar_O*>(client);
     GC<core::MDArrayBaseChar_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__Symbol_O:
 {
+     // stamp value 333
     core::Symbol_O* obj_gc_safe = reinterpret_cast<core::Symbol_O*>(client);
     GC<core::Symbol_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__Null_O:
 {
+     // stamp value 334
     core::Null_O* obj_gc_safe = reinterpret_cast<core::Null_O*>(client);
     GC<core::Null_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__StandardObject_O:
 {
+     // stamp value 335
     core::StandardObject_O* obj_gc_safe = reinterpret_cast<core::StandardObject_O*>(client);
     GC<core::StandardObject_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_mp__BlockingConcurrentQueue_O:
 {
+     // stamp value 336
     mp::BlockingConcurrentQueue_O* obj_gc_safe = reinterpret_cast<mp::BlockingConcurrentQueue_O*>(client);
     GC<mp::BlockingConcurrentQueue_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__Path_O:
 {
+     // stamp value 337
     core::Path_O* obj_gc_safe = reinterpret_cast<core::Path_O*>(client);
     GC<core::Path_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__Character_dummy_O:
 {
+     // stamp value 338
     core::Character_dummy_O* obj_gc_safe = reinterpret_cast<core::Character_dummy_O*>(client);
     GC<core::Character_dummy_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__SourceManager_O:
 {
+     // stamp value 339
     core::SourceManager_O* obj_gc_safe = reinterpret_cast<core::SourceManager_O*>(client);
     GC<core::SourceManager_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__DataLayout_O:
 {
+     // stamp value 340
     llvmo::DataLayout_O* obj_gc_safe = reinterpret_cast<llvmo::DataLayout_O*>(client);
     GC<llvmo::DataLayout_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__Pathname_O:
 {
+     // stamp value 341
     core::Pathname_O* obj_gc_safe = reinterpret_cast<core::Pathname_O*>(client);
     GC<core::Pathname_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__LogicalPathname_O:
 {
+     // stamp value 342
     core::LogicalPathname_O* obj_gc_safe = reinterpret_cast<core::LogicalPathname_O*>(client);
     GC<core::LogicalPathname_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__Cache_O:
 {
+     // stamp value 343
     core::Cache_O* obj_gc_safe = reinterpret_cast<core::Cache_O*>(client);
     GC<core::Cache_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__LoadTimeValues_O:
 {
+     // stamp value 344
     core::LoadTimeValues_O* obj_gc_safe = reinterpret_cast<core::LoadTimeValues_O*>(client);
     GC<core::LoadTimeValues_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__SharpEqualWrapper_O:
 {
+     // stamp value 345
     core::SharpEqualWrapper_O* obj_gc_safe = reinterpret_cast<core::SharpEqualWrapper_O*>(client);
     GC<core::SharpEqualWrapper_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__Number_O:
 {
+     // stamp value 346
     core::Number_O* obj_gc_safe = reinterpret_cast<core::Number_O*>(client);
     GC<core::Number_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__Real_O:
 {
+     // stamp value 347
     core::Real_O* obj_gc_safe = reinterpret_cast<core::Real_O*>(client);
     GC<core::Real_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__Rational_O:
 {
+     // stamp value 348
     core::Rational_O* obj_gc_safe = reinterpret_cast<core::Rational_O*>(client);
     GC<core::Rational_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__Ratio_O:
 {
+     // stamp value 349
     core::Ratio_O* obj_gc_safe = reinterpret_cast<core::Ratio_O*>(client);
     GC<core::Ratio_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__Integer_O:
 {
+     // stamp value 350
     core::Integer_O* obj_gc_safe = reinterpret_cast<core::Integer_O*>(client);
     GC<core::Integer_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__Bignum_O:
 {
+     // stamp value 351
     core::Bignum_O* obj_gc_safe = reinterpret_cast<core::Bignum_O*>(client);
     GC<core::Bignum_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__Fixnum_dummy_O:
 {
+     // stamp value 352
     core::Fixnum_dummy_O* obj_gc_safe = reinterpret_cast<core::Fixnum_dummy_O*>(client);
     GC<core::Fixnum_dummy_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__Float_O:
 {
+     // stamp value 353
     core::Float_O* obj_gc_safe = reinterpret_cast<core::Float_O*>(client);
     GC<core::Float_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__DoubleFloat_O:
 {
+     // stamp value 354
     core::DoubleFloat_O* obj_gc_safe = reinterpret_cast<core::DoubleFloat_O*>(client);
     GC<core::DoubleFloat_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__SingleFloat_dummy_O:
 {
+     // stamp value 355
     core::SingleFloat_dummy_O* obj_gc_safe = reinterpret_cast<core::SingleFloat_dummy_O*>(client);
     GC<core::SingleFloat_dummy_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__LongFloat_O:
 {
+     // stamp value 356
     core::LongFloat_O* obj_gc_safe = reinterpret_cast<core::LongFloat_O*>(client);
     GC<core::LongFloat_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__ShortFloat_O:
 {
+     // stamp value 357
     core::ShortFloat_O* obj_gc_safe = reinterpret_cast<core::ShortFloat_O*>(client);
     GC<core::ShortFloat_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__Complex_O:
 {
+     // stamp value 358
     core::Complex_O* obj_gc_safe = reinterpret_cast<core::Complex_O*>(client);
     GC<core::Complex_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__CandoException_O:
 {
+     // stamp value 359
     core::CandoException_O* obj_gc_safe = reinterpret_cast<core::CandoException_O*>(client);
     GC<core::CandoException_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__Stream_O:
 {
+     // stamp value 360
     core::Stream_O* obj_gc_safe = reinterpret_cast<core::Stream_O*>(client);
     GC<core::Stream_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__AnsiStream_O:
 {
+     // stamp value 361
     core::AnsiStream_O* obj_gc_safe = reinterpret_cast<core::AnsiStream_O*>(client);
     GC<core::AnsiStream_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__TwoWayStream_O:
 {
+     // stamp value 362
     core::TwoWayStream_O* obj_gc_safe = reinterpret_cast<core::TwoWayStream_O*>(client);
     GC<core::TwoWayStream_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__BroadcastStream_O:
 {
+     // stamp value 363
     core::BroadcastStream_O* obj_gc_safe = reinterpret_cast<core::BroadcastStream_O*>(client);
     GC<core::BroadcastStream_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__SynonymStream_O:
 {
+     // stamp value 364
     core::SynonymStream_O* obj_gc_safe = reinterpret_cast<core::SynonymStream_O*>(client);
     GC<core::SynonymStream_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__ConcatenatedStream_O:
 {
+     // stamp value 365
     core::ConcatenatedStream_O* obj_gc_safe = reinterpret_cast<core::ConcatenatedStream_O*>(client);
     GC<core::ConcatenatedStream_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__StringStream_O:
 {
+     // stamp value 366
     core::StringStream_O* obj_gc_safe = reinterpret_cast<core::StringStream_O*>(client);
     GC<core::StringStream_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__StringOutputStream_O:
 {
+     // stamp value 367
     core::StringOutputStream_O* obj_gc_safe = reinterpret_cast<core::StringOutputStream_O*>(client);
     GC<core::StringOutputStream_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__StringInputStream_O:
 {
+     // stamp value 368
     core::StringInputStream_O* obj_gc_safe = reinterpret_cast<core::StringInputStream_O*>(client);
     GC<core::StringInputStream_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__FileStream_O:
 {
+     // stamp value 369
     core::FileStream_O* obj_gc_safe = reinterpret_cast<core::FileStream_O*>(client);
     GC<core::FileStream_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__IOFileStream_O:
 {
+     // stamp value 370
     core::IOFileStream_O* obj_gc_safe = reinterpret_cast<core::IOFileStream_O*>(client);
     GC<core::IOFileStream_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__IOStreamStream_O:
 {
+     // stamp value 371
     core::IOStreamStream_O* obj_gc_safe = reinterpret_cast<core::IOStreamStream_O*>(client);
     GC<core::IOStreamStream_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__EchoStream_O:
 {
+     // stamp value 372
     core::EchoStream_O* obj_gc_safe = reinterpret_cast<core::EchoStream_O*>(client);
     GC<core::EchoStream_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__Package_O:
 {
+     // stamp value 373
     core::Package_O* obj_gc_safe = reinterpret_cast<core::Package_O*>(client);
     GC<core::Package_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__ClaspJIT_O:
 {
+     // stamp value 374
     llvmo::ClaspJIT_O* obj_gc_safe = reinterpret_cast<llvmo::ClaspJIT_O*>(client);
     GC<llvmo::ClaspJIT_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__FileStatus_O:
 {
+     // stamp value 375
     core::FileStatus_O* obj_gc_safe = reinterpret_cast<core::FileStatus_O*>(client);
     GC<core::FileStatus_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__InvocationHistoryFrameIterator_O:
 {
+     // stamp value 376
     core::InvocationHistoryFrameIterator_O* obj_gc_safe = reinterpret_cast<core::InvocationHistoryFrameIterator_O*>(client);
     GC<core::InvocationHistoryFrameIterator_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__PosixTime_O:
 {
+     // stamp value 377
     core::PosixTime_O* obj_gc_safe = reinterpret_cast<core::PosixTime_O*>(client);
     GC<core::PosixTime_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__HashTable_O:
 {
+     // stamp value 378
     core::HashTable_O* obj_gc_safe = reinterpret_cast<core::HashTable_O*>(client);
     GC<core::HashTable_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__HashTableEqual_O:
 {
+     // stamp value 379
     core::HashTableEqual_O* obj_gc_safe = reinterpret_cast<core::HashTableEqual_O*>(client);
     GC<core::HashTableEqual_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__HashTableEqualp_O:
 {
+     // stamp value 380
     core::HashTableEqualp_O* obj_gc_safe = reinterpret_cast<core::HashTableEqualp_O*>(client);
     GC<core::HashTableEqualp_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__HashTableEq_O:
 {
+     // stamp value 381
     core::HashTableEq_O* obj_gc_safe = reinterpret_cast<core::HashTableEq_O*>(client);
     GC<core::HashTableEq_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__HashTableEql_O:
 {
+     // stamp value 382
     core::HashTableEql_O* obj_gc_safe = reinterpret_cast<core::HashTableEql_O*>(client);
     GC<core::HashTableEql_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__Exposer_O:
 {
+     // stamp value 383
     core::Exposer_O* obj_gc_safe = reinterpret_cast<core::Exposer_O*>(client);
     GC<core::Exposer_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__CoreExposer_O:
 {
+     // stamp value 384
     core::CoreExposer_O* obj_gc_safe = reinterpret_cast<core::CoreExposer_O*>(client);
     GC<core::CoreExposer_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_asttooling__AsttoolingExposer_O:
 {
+     // stamp value 385
     asttooling::AsttoolingExposer_O* obj_gc_safe = reinterpret_cast<asttooling::AsttoolingExposer_O*>(client);
     GC<asttooling::AsttoolingExposer_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__SourcePosInfo_O:
 {
+     // stamp value 386
     core::SourcePosInfo_O* obj_gc_safe = reinterpret_cast<core::SourcePosInfo_O*>(client);
     GC<core::SourcePosInfo_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__IntArray_O:
 {
+     // stamp value 387
     core::IntArray_O* obj_gc_safe = reinterpret_cast<core::IntArray_O*>(client);
     GC<core::IntArray_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__SourceFileInfo_O:
 {
+     // stamp value 388
     core::SourceFileInfo_O* obj_gc_safe = reinterpret_cast<core::SourceFileInfo_O*>(client);
     GC<core::SourceFileInfo_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__DirectoryEntry_O:
 {
+     // stamp value 389
     core::DirectoryEntry_O* obj_gc_safe = reinterpret_cast<core::DirectoryEntry_O*>(client);
     GC<core::DirectoryEntry_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__LightUserData_O:
 {
+     // stamp value 390
     core::LightUserData_O* obj_gc_safe = reinterpret_cast<core::LightUserData_O*>(client);
     GC<core::LightUserData_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__UserData_O:
 {
+     // stamp value 391
     core::UserData_O* obj_gc_safe = reinterpret_cast<core::UserData_O*>(client);
     GC<core::UserData_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__Record_O:
 {
+     // stamp value 392
     core::Record_O* obj_gc_safe = reinterpret_cast<core::Record_O*>(client);
     GC<core::Record_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_clbind__ClassRegistry_O:
 {
+     // stamp value 393
     clbind::ClassRegistry_O* obj_gc_safe = reinterpret_cast<clbind::ClassRegistry_O*>(client);
     GC<clbind::ClassRegistry_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_mp__ConcurrentQueue_O:
 {
+     // stamp value 394
     mp::ConcurrentQueue_O* obj_gc_safe = reinterpret_cast<mp::ConcurrentQueue_O*>(client);
     GC<mp::ConcurrentQueue_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__Cons_O:
 {
+     // stamp value 395
     core::Cons_O* obj_gc_safe = reinterpret_cast<core::Cons_O*>(client);
     GC<core::Cons_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
+obj_deallocate_unmanaged_instance_STAMP_clang__ast_matchers__MatchFinder__MatchCallback:
+{
+     // do nothing stamp value 396
+    THROW_HARD_ERROR(BF("Should never deallocate object clang::ast_matchers::MatchFinder::MatchCallback"));
+}
 obj_deallocate_unmanaged_instance_STAMP_core__Lisp_O:
 {
+     // stamp value 397
     core::Lisp_O* obj_gc_safe = reinterpret_cast<core::Lisp_O*>(client);
     GC<core::Lisp_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
+obj_deallocate_unmanaged_instance_STAMP_clang__RecursiveASTVisitor_asttooling__AstVisitor_O_:
+{
+     // do nothing stamp value 398
+    THROW_HARD_ERROR(BF("Should never deallocate object clang::RecursiveASTVisitor<asttooling::AstVisitor_O>"));
+}
 obj_deallocate_unmanaged_instance_STAMP_asttooling__AstVisitor_O:
 {
+     // stamp value 399
     asttooling::AstVisitor_O* obj_gc_safe = reinterpret_cast<asttooling::AstVisitor_O*>(client);
     GC<asttooling::AstVisitor_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
+obj_deallocate_unmanaged_instance_STAMP_gctools__GCContainer:
+{
+     // do nothing stamp value 400
+    THROW_HARD_ERROR(BF("Should never deallocate object gctools::GCContainer"));
+}
 obj_deallocate_unmanaged_instance_STAMP_gctools__GCVector_moveable_core__KeywordArgument_:
 {
+     // stamp value 401
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<core::KeywordArgument>"));}
 obj_deallocate_unmanaged_instance_STAMP_gctools__GCArray_moveable_unsigned_int_:
 {
+     // stamp value 402
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCArray_moveable<unsigned int>"));}
 obj_deallocate_unmanaged_instance_STAMP_gctools__GCVector_moveable_core__CacheRecord_:
 {
+     // stamp value 403
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<core::CacheRecord>"));}
 obj_deallocate_unmanaged_instance_STAMP_gctools__GCVector_moveable_core__RequiredArgument_:
 {
+     // stamp value 404
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<core::RequiredArgument>"));}
 obj_deallocate_unmanaged_instance_STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__Cons_O__:
 {
+     // stamp value 405
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<core::Cons_O>>"));}
 obj_deallocate_unmanaged_instance_STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__SequenceStepper_O__:
 {
+     // stamp value 406
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<core::SequenceStepper_O>>"));}
 obj_deallocate_unmanaged_instance_STAMP_gctools__GCVector_moveable_double_:
 {
+     // stamp value 407
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<double>"));}
 obj_deallocate_unmanaged_instance_STAMP_gctools__GCVector_moveable_core__SymbolStorage_:
 {
+     // stamp value 408
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<core::SymbolStorage>"));}
 obj_deallocate_unmanaged_instance_STAMP_gctools__GCArray_moveable_short_:
 {
+     // stamp value 409
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCArray_moveable<short>"));}
 obj_deallocate_unmanaged_instance_STAMP_gctools__GCVector_moveable_core__DynamicBinding_:
 {
+     // stamp value 410
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<core::DynamicBinding>"));}
 obj_deallocate_unmanaged_instance_STAMP_gctools__GCVector_moveable_gctools__smart_ptr_clbind__ClassRep_O__:
 {
+     // stamp value 411
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<clbind::ClassRep_O>>"));}
 obj_deallocate_unmanaged_instance_STAMP_gctools__GCArray_moveable_unsigned_long_:
 {
+     // stamp value 412
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCArray_moveable<unsigned long>"));}
 obj_deallocate_unmanaged_instance_STAMP_gctools__GCBitUnitArray_moveable_1_unsigned_int_int_:
 {
+     // stamp value 413
     THROW_HARD_ERROR(BF("Should never deallocate gcbitunits gctools::GCBitUnitArray_moveable<1,unsigned int,int>"));}
 obj_deallocate_unmanaged_instance_STAMP_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__T_O___:
 {
+     // stamp value 414
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>>"));}
 obj_deallocate_unmanaged_instance_STAMP_gctools__GCArray_moveable_signed_char_:
 {
+     // stamp value 415
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCArray_moveable<signed char>"));}
 obj_deallocate_unmanaged_instance_STAMP_gctools__GCVector_moveable_core__ExceptionEntry_:
 {
+     // stamp value 416
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<core::ExceptionEntry>"));}
 obj_deallocate_unmanaged_instance_STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__List_V__:
 {
+     // stamp value 417
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<core::List_V>>"));}
 obj_deallocate_unmanaged_instance_STAMP_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__T_O__gctools__smart_ptr_core__T_O___:
 {
+     // stamp value 418
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>>"));}
 obj_deallocate_unmanaged_instance_STAMP_gctools__GCArray_moveable_int_:
 {
+     // stamp value 419
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCArray_moveable<int>"));}
 obj_deallocate_unmanaged_instance_STAMP_gctools__GCArray_moveable_unsigned_char_:
 {
+     // stamp value 420
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCArray_moveable<unsigned char>"));}
 obj_deallocate_unmanaged_instance_STAMP_gctools__GCArray_moveable_gctools__smart_ptr_core__T_O__:
 {
+     // stamp value 421
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCArray_moveable<gctools::smart_ptr<core::T_O>>"));}
 obj_deallocate_unmanaged_instance_STAMP_gctools__GCVector_moveable_core__AuxArgument_:
 {
+     // stamp value 422
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<core::AuxArgument>"));}
 obj_deallocate_unmanaged_instance_STAMP_gctools__GCArray_moveable_long_:
 {
+     // stamp value 423
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCArray_moveable<long>"));}
 obj_deallocate_unmanaged_instance_STAMP_gctools__GCVector_moveable_int_:
 {
+     // stamp value 424
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<int>"));}
 obj_deallocate_unmanaged_instance_STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__Symbol_O__:
 {
+     // stamp value 425
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<core::Symbol_O>>"));}
 obj_deallocate_unmanaged_instance_STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__T_O__:
 {
+     // stamp value 426
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<core::T_O>>"));}
 obj_deallocate_unmanaged_instance_STAMP_gctools__GCVector_moveable_core__SymbolClassPair_:
 {
+     // stamp value 427
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<core::SymbolClassPair>"));}
 obj_deallocate_unmanaged_instance_STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__SingleDispatchMethod_O__:
 {
+     // stamp value 428
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<core::SingleDispatchMethod_O>>"));}
 obj_deallocate_unmanaged_instance_STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__Package_O__:
 {
+     // stamp value 429
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<core::Package_O>>"));}
 obj_deallocate_unmanaged_instance_STAMP_gctools__GCArray_moveable_float_:
 {
+     // stamp value 430
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCArray_moveable<float>"));}
 obj_deallocate_unmanaged_instance_STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__SourceFileInfo_O__:
 {
+     // stamp value 431
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<core::SourceFileInfo_O>>"));}
 obj_deallocate_unmanaged_instance_STAMP_gctools__GCArray_moveable_double_:
 {
+     // stamp value 432
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCArray_moveable<double>"));}
 obj_deallocate_unmanaged_instance_STAMP_gctools__GCVector_moveable_core__T_O___:
 {
+     // stamp value 433
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<core::T_O *>"));}
 obj_deallocate_unmanaged_instance_STAMP_gctools__GCVector_moveable_core__OptionalArgument_:
 {
+     // stamp value 434
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<core::OptionalArgument>"));}
 obj_deallocate_unmanaged_instance_STAMP_gctools__GCArray_moveable_unsigned_short_:
 {
+     // stamp value 435
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCArray_moveable<unsigned short>"));}
 obj_deallocate_unmanaged_instance_STAMP_gctools__GCVector_moveable_float_:
 {
+     // stamp value 436
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<float>"));}
+obj_deallocate_unmanaged_instance_STAMP_clang__FrontendAction:
+{
+     // do nothing stamp value 437
+    THROW_HARD_ERROR(BF("Should never deallocate object clang::FrontendAction"));
+}
+obj_deallocate_unmanaged_instance_STAMP_clang__ASTFrontendAction:
+{
+     // do nothing stamp value 438
+    THROW_HARD_ERROR(BF("Should never deallocate object clang::ASTFrontendAction"));
+}
+obj_deallocate_unmanaged_instance_STAMP_clang__SyntaxOnlyAction:
+{
+     // do nothing stamp value 439
+    THROW_HARD_ERROR(BF("Should never deallocate object clang::SyntaxOnlyAction"));
+}
+obj_deallocate_unmanaged_instance_STAMP_clang__tooling__ToolAction:
+{
+     // do nothing stamp value 440
+    THROW_HARD_ERROR(BF("Should never deallocate object clang::tooling::ToolAction"));
+}
+obj_deallocate_unmanaged_instance_STAMP_clang__tooling__FrontendActionFactory:
+{
+     // do nothing stamp value 441
+    THROW_HARD_ERROR(BF("Should never deallocate object clang::tooling::FrontendActionFactory"));
+}
 obj_deallocate_unmanaged_instance_STAMP_clbind__detail__class_map:
 {
+     // stamp value 442
     clbind::detail::class_map* obj_gc_safe = reinterpret_cast<clbind::detail::class_map*>(client);
     GC<clbind::detail::class_map>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
@@ -13101,6 +14482,7 @@ obj_deallocate_unmanaged_instance_STAMP_clbind__detail__class_map:
 #endif // defined(GC_OBJ_DEALLOCATOR_HELPERS)
 #if defined(GC_OBJ_DEALLOCATOR_TABLE)
 static void* OBJ_DEALLOCATOR_table[] = { 
+  /* 0 */ NULL,
   /* 1 */ &&obj_deallocate_unmanaged_instance_STAMP_core__T_O,
   /* 2 */ &&obj_deallocate_unmanaged_instance_STAMP_core__VaList_dummy_O,
   /* 3 */ &&obj_deallocate_unmanaged_instance_STAMP_core__General_O,
@@ -13331,60 +14713,107 @@ static void* OBJ_DEALLOCATOR_table[] = {
   /* 228 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__InsertPoint_O,
   /* 229 */ &&obj_deallocate_unmanaged_instance_STAMP_core__Array_O,
   /* 230 */ &&obj_deallocate_unmanaged_instance_STAMP_core__AbstractSimpleVector_O,
+  /* 231 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleVector_core__SimpleVectorFloat_O_float_core__AbstractSimpleVector_O_,
   /* 232 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleVectorFloat_O,
+  /* 233 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleVector_core__SimpleVector_byte64_t_O_unsigned_long_core__AbstractSimpleVector_O_,
   /* 234 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleVector_byte64_t_O,
+  /* 235 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleVector_core__SimpleVector_int64_t_O_long_core__AbstractSimpleVector_O_,
   /* 236 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleVector_int64_t_O,
   /* 237 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleString_O,
+  /* 238 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleVector_core__SimpleCharacterString_O_int_core__SimpleString_O_,
   /* 239 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleCharacterString_O,
+  /* 240 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleVector_core__SimpleBaseString_O_unsigned_char_core__SimpleString_O_,
   /* 241 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleBaseString_O,
+  /* 242 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleVector_core__SimpleVector_int16_t_O_short_core__AbstractSimpleVector_O_,
   /* 243 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleVector_int16_t_O,
+  /* 244 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleVector_core__SimpleVector_byte16_t_O_unsigned_short_core__AbstractSimpleVector_O_,
   /* 245 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleVector_byte16_t_O,
+  /* 246 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleVector_core__SimpleVector_fixnum_O_long_core__AbstractSimpleVector_O_,
   /* 247 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleVector_fixnum_O,
+  /* 248 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleVector_core__SimpleVector_int8_t_O_signed_char_core__AbstractSimpleVector_O_,
   /* 249 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleVector_int8_t_O,
+  /* 250 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleVector_core__SimpleVector_O_gctools__smart_ptr_core__T_O__core__AbstractSimpleVector_O_,
   /* 251 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleVector_O,
+  /* 252 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleVector_core__SimpleVector_byte8_t_O_unsigned_char_core__AbstractSimpleVector_O_,
   /* 253 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleVector_byte8_t_O,
+  /* 254 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleVector_core__SimpleVector_int32_t_O_int_core__AbstractSimpleVector_O_,
   /* 255 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleVector_int32_t_O,
   /* 256 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleBitVector_O,
+  /* 257 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleVector_core__SimpleVector_byte32_t_O_unsigned_int_core__AbstractSimpleVector_O_,
   /* 258 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleVector_byte32_t_O,
+  /* 259 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleVector_core__SimpleVector_size_t_O_unsigned_long_core__AbstractSimpleVector_O_,
   /* 260 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleVector_size_t_O,
+  /* 261 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleVector_core__SimpleVectorDouble_O_double_core__AbstractSimpleVector_O_,
   /* 262 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleVectorDouble_O,
   /* 263 */ &&obj_deallocate_unmanaged_instance_STAMP_core__MDArray_O,
   /* 264 */ &&obj_deallocate_unmanaged_instance_STAMP_core__BitVectorNs_O,
+  /* 265 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_Array_core__MDArray_byte64_t_O_core__SimpleMDArray_byte64_t_O_core__SimpleVector_byte64_t_O_core__MDArray_O_,
   /* 266 */ &&obj_deallocate_unmanaged_instance_STAMP_core__MDArray_byte64_t_O,
+  /* 267 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_Array_core__MDArray_int16_t_O_core__SimpleMDArray_int16_t_O_core__SimpleVector_int16_t_O_core__MDArray_O_,
   /* 268 */ &&obj_deallocate_unmanaged_instance_STAMP_core__MDArray_int16_t_O,
+  /* 269 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_Array_core__MDArray_int8_t_O_core__SimpleMDArray_int8_t_O_core__SimpleVector_int8_t_O_core__MDArray_O_,
   /* 270 */ &&obj_deallocate_unmanaged_instance_STAMP_core__MDArray_int8_t_O,
+  /* 271 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_Array_core__MDArrayCharacter_O_core__SimpleMDArrayCharacter_O_core__SimpleCharacterString_O_core__MDArray_O_,
   /* 272 */ &&obj_deallocate_unmanaged_instance_STAMP_core__MDArrayCharacter_O,
+  /* 273 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_Array_core__MDArray_int32_t_O_core__SimpleMDArray_int32_t_O_core__SimpleVector_int32_t_O_core__MDArray_O_,
   /* 274 */ &&obj_deallocate_unmanaged_instance_STAMP_core__MDArray_int32_t_O,
+  /* 275 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_Array_core__MDArrayFloat_O_core__SimpleMDArrayFloat_O_core__SimpleVectorFloat_O_core__MDArray_O_,
   /* 276 */ &&obj_deallocate_unmanaged_instance_STAMP_core__MDArrayFloat_O,
   /* 277 */ &&obj_deallocate_unmanaged_instance_STAMP_core__StrNs_O,
+  /* 278 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_Vector_core__StrWNs_O_core__SimpleCharacterString_O_core__StrNs_O_,
   /* 279 */ &&obj_deallocate_unmanaged_instance_STAMP_core__StrWNs_O,
+  /* 280 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_Vector_core__Str8Ns_O_core__SimpleBaseString_O_core__StrNs_O_,
   /* 281 */ &&obj_deallocate_unmanaged_instance_STAMP_core__Str8Ns_O,
+  /* 282 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_Array_core__MDArrayDouble_O_core__SimpleMDArrayDouble_O_core__SimpleVectorDouble_O_core__MDArray_O_,
   /* 283 */ &&obj_deallocate_unmanaged_instance_STAMP_core__MDArrayDouble_O,
+  /* 284 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_Array_core__MDArrayT_O_core__SimpleMDArrayT_O_core__SimpleVector_O_core__MDArray_O_,
   /* 285 */ &&obj_deallocate_unmanaged_instance_STAMP_core__MDArrayT_O,
+  /* 286 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_Array_core__MDArray_size_t_O_core__SimpleMDArray_size_t_O_core__SimpleVector_size_t_O_core__MDArray_O_,
   /* 287 */ &&obj_deallocate_unmanaged_instance_STAMP_core__MDArray_size_t_O,
+  /* 288 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_Array_core__MDArray_byte8_t_O_core__SimpleMDArray_byte8_t_O_core__SimpleVector_byte8_t_O_core__MDArray_O_,
   /* 289 */ &&obj_deallocate_unmanaged_instance_STAMP_core__MDArray_byte8_t_O,
   /* 290 */ &&obj_deallocate_unmanaged_instance_STAMP_core__MDArrayBit_O,
+  /* 291 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_Array_core__MDArray_int64_t_O_core__SimpleMDArray_int64_t_O_core__SimpleVector_int64_t_O_core__MDArray_O_,
   /* 292 */ &&obj_deallocate_unmanaged_instance_STAMP_core__MDArray_int64_t_O,
+  /* 293 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_Array_core__MDArray_byte16_t_O_core__SimpleMDArray_byte16_t_O_core__SimpleVector_byte16_t_O_core__MDArray_O_,
   /* 294 */ &&obj_deallocate_unmanaged_instance_STAMP_core__MDArray_byte16_t_O,
+  /* 295 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_Array_core__MDArray_byte32_t_O_core__SimpleMDArray_byte32_t_O_core__SimpleVector_byte32_t_O_core__MDArray_O_,
   /* 296 */ &&obj_deallocate_unmanaged_instance_STAMP_core__MDArray_byte32_t_O,
   /* 297 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleMDArray_O,
+  /* 298 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleArray_core__SimpleMDArray_int8_t_O_core__SimpleVector_int8_t_O_core__SimpleMDArray_O_,
   /* 299 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleMDArray_int8_t_O,
+  /* 300 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleArray_core__SimpleMDArrayCharacter_O_core__SimpleCharacterString_O_core__SimpleMDArray_O_,
   /* 301 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleMDArrayCharacter_O,
+  /* 302 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleArray_core__SimpleMDArray_fixnum_O_core__SimpleVector_fixnum_O_core__SimpleMDArray_O_,
   /* 303 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleMDArray_fixnum_O,
+  /* 304 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleArray_core__SimpleMDArray_byte32_t_O_core__SimpleVector_byte32_t_O_core__SimpleMDArray_O_,
   /* 305 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleMDArray_byte32_t_O,
+  /* 306 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleArray_core__SimpleMDArray_byte16_t_O_core__SimpleVector_byte16_t_O_core__SimpleMDArray_O_,
   /* 307 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleMDArray_byte16_t_O,
+  /* 308 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleArray_core__SimpleMDArrayT_O_core__SimpleVector_O_core__SimpleMDArray_O_,
   /* 309 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleMDArrayT_O,
+  /* 310 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleArray_core__SimpleMDArray_int32_t_O_core__SimpleVector_int32_t_O_core__SimpleMDArray_O_,
   /* 311 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleMDArray_int32_t_O,
+  /* 312 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleArray_core__SimpleMDArrayDouble_O_core__SimpleVectorDouble_O_core__SimpleMDArray_O_,
   /* 313 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleMDArrayDouble_O,
+  /* 314 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleArray_core__SimpleMDArrayBaseChar_O_core__SimpleBaseString_O_core__SimpleMDArray_O_,
   /* 315 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleMDArrayBaseChar_O,
+  /* 316 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleArray_core__SimpleMDArray_byte64_t_O_core__SimpleVector_byte64_t_O_core__SimpleMDArray_O_,
   /* 317 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleMDArray_byte64_t_O,
   /* 318 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleMDArrayBit_O,
+  /* 319 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleArray_core__SimpleMDArray_int16_t_O_core__SimpleVector_int16_t_O_core__SimpleMDArray_O_,
   /* 320 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleMDArray_int16_t_O,
+  /* 321 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleArray_core__SimpleMDArray_byte8_t_O_core__SimpleVector_byte8_t_O_core__SimpleMDArray_O_,
   /* 322 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleMDArray_byte8_t_O,
+  /* 323 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleArray_core__SimpleMDArray_size_t_O_core__SimpleVector_size_t_O_core__SimpleMDArray_O_,
   /* 324 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleMDArray_size_t_O,
+  /* 325 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleArray_core__SimpleMDArray_int64_t_O_core__SimpleVector_int64_t_O_core__SimpleMDArray_O_,
   /* 326 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleMDArray_int64_t_O,
+  /* 327 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleArray_core__SimpleMDArrayFloat_O_core__SimpleVectorFloat_O_core__SimpleMDArray_O_,
   /* 328 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleMDArrayFloat_O,
+  /* 329 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_Array_core__MDArray_fixnum_O_core__SimpleMDArray_fixnum_O_core__SimpleVector_fixnum_O_core__MDArray_O_,
   /* 330 */ &&obj_deallocate_unmanaged_instance_STAMP_core__MDArray_fixnum_O,
+  /* 331 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_Array_core__MDArrayBaseChar_O_core__SimpleMDArrayBaseChar_O_core__SimpleBaseString_O_core__MDArray_O_,
   /* 332 */ &&obj_deallocate_unmanaged_instance_STAMP_core__MDArrayBaseChar_O,
   /* 333 */ &&obj_deallocate_unmanaged_instance_STAMP_core__Symbol_O,
   /* 334 */ &&obj_deallocate_unmanaged_instance_STAMP_core__Null_O,
@@ -13449,8 +14878,11 @@ static void* OBJ_DEALLOCATOR_table[] = {
   /* 393 */ &&obj_deallocate_unmanaged_instance_STAMP_clbind__ClassRegistry_O,
   /* 394 */ &&obj_deallocate_unmanaged_instance_STAMP_mp__ConcurrentQueue_O,
   /* 395 */ &&obj_deallocate_unmanaged_instance_STAMP_core__Cons_O,
+  /* 396 */ &&obj_deallocate_unmanaged_instance_STAMP_clang__ast_matchers__MatchFinder__MatchCallback,
   /* 397 */ &&obj_deallocate_unmanaged_instance_STAMP_core__Lisp_O,
+  /* 398 */ &&obj_deallocate_unmanaged_instance_STAMP_clang__RecursiveASTVisitor_asttooling__AstVisitor_O_,
   /* 399 */ &&obj_deallocate_unmanaged_instance_STAMP_asttooling__AstVisitor_O,
+  /* 400 */ &&obj_deallocate_unmanaged_instance_STAMP_gctools__GCContainer,
   /* 401 */ &&obj_deallocate_unmanaged_instance_STAMP_gctools__GCVector_moveable_core__KeywordArgument_,
   /* 402 */ &&obj_deallocate_unmanaged_instance_STAMP_gctools__GCArray_moveable_unsigned_int_,
   /* 403 */ &&obj_deallocate_unmanaged_instance_STAMP_gctools__GCVector_moveable_core__CacheRecord_,
@@ -13487,6 +14919,11 @@ static void* OBJ_DEALLOCATOR_table[] = {
   /* 434 */ &&obj_deallocate_unmanaged_instance_STAMP_gctools__GCVector_moveable_core__OptionalArgument_,
   /* 435 */ &&obj_deallocate_unmanaged_instance_STAMP_gctools__GCArray_moveable_unsigned_short_,
   /* 436 */ &&obj_deallocate_unmanaged_instance_STAMP_gctools__GCVector_moveable_float_,
+  /* 437 */ &&obj_deallocate_unmanaged_instance_STAMP_clang__FrontendAction,
+  /* 438 */ &&obj_deallocate_unmanaged_instance_STAMP_clang__ASTFrontendAction,
+  /* 439 */ &&obj_deallocate_unmanaged_instance_STAMP_clang__SyntaxOnlyAction,
+  /* 440 */ &&obj_deallocate_unmanaged_instance_STAMP_clang__tooling__ToolAction,
+  /* 441 */ &&obj_deallocate_unmanaged_instance_STAMP_clang__tooling__FrontendActionFactory,
   /* 442 */ &&obj_deallocate_unmanaged_instance_STAMP_clbind__detail__class_map,
    NULL
 };

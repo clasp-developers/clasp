@@ -125,7 +125,11 @@ CL_DEFUN core::T_sp core__header_value_to_stamp(core::T_sp value) {
   TYPE_ERROR(value,cl::_sym_fixnum);
 }
 
-
+CL_DEFUN core::T_mv gctools__tagged_pointer_mps_test()
+{
+  // Return the values used to identify tagged pointers (PTR&POINTER_TAG_MASK)==POINTER_TAG_EQ
+  return Values(core::make_fixnum(POINTER_TAG_MASK),core::make_fixnum(POINTER_TAG_EQ));
+}
 
 
 CL_DOCSTRING("Return the header kind for the object");

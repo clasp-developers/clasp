@@ -547,7 +547,7 @@ void obj_finalize(mps_addr_t client) {
   ASSERTF(header->stampP(), BF("obj_finalized called without a valid object"));
   gctools::GCStampEnum stamp = (GCStampEnum)(header->stamp());
   #ifndef RUNNING_GC_BUILDER
-  size_t table_index = (size_t)stamp - stamp_first_general;
+  size_t table_index = (size_t)stamp;
   goto *(OBJ_FINALIZE_table[table_index]);
     #define GC_OBJ_FINALIZE
     #include CLASP_GC_FILENAME

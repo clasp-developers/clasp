@@ -129,6 +129,7 @@ void* start_thread(void* claspProcess) {
 #endif
 #ifdef USE_MPS
   printf("%s:%d Handle threads for MPS\n", __FILE__, __LINE__ );
+  printf("%s:%d You need to register the thread stack and the thread\n", __FILE__, __LINE__ );
   abort();
 #endif
 //  gctools::register_thread(process,stack_base);

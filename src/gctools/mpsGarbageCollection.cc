@@ -541,17 +541,17 @@ size_t processMpsMessages(size_t& finalizations) {
       bool dead_object = false;
       if (pool) {
         if (pool == gctools::global_amc_cons_pool) {
-          obj = gctools::smart_ptr<core::Cons_O>((core::Cons_O*)ref_o);
+          obj = gctools::smart_ptr<core::Cons_O>((gctools::Tagged)gctools::tag_cons<core::T_O*>(reinterpret_cast<core::T_O*>(ref_o)));
         } else {
           gctools::Header_s* header = (gctools::Header_s*)((char*)ref_o - sizeof(gctools::Header_s));
           dead_object = !(header->stampP());
-          obj = gctools::smart_ptr<core::T_O>((core::T_O*)ref_o);
+          obj = gctools::smart_ptr<core::T_O>((gctools::Tagged)gctools::tag_general<core::T_O*>(reinterpret_cast<core::T_O*>(ref_o)));
         }
       } else {
         printf("%s:%d   MPS could not figure out what pool the pointer %p belongs to - treating it like a dead object and no finalizer will be invoked\n", __FILE__, __LINE__, ref_o);
         dead_object = true;
       }
-      printf("%s:%d finalization message for %p reconstituted tagged ptr = %p  dead_object -> %d\n", __FILE__, __LINE__, (void*)ref_o, (void*)obj.tagged_(), dead_object );
+      printf("%s:%d finalization message for %p reconstituted tagged ptr = %p stamp->%u  dead_object -> %d\n", __FILE__, __LINE__, (void*)ref_o, (void*)obj.tagged_(), gctools::header_pointer(ref_o)->stamp(), dead_object );
 #if 1
       if (!dead_object) {
         bool invoked_finalizer = false;
