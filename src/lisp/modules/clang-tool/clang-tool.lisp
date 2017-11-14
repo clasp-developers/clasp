@@ -501,10 +501,10 @@ It converts relative -I../... arguments to absolute paths"
           ((string= arg "-I.." :start1 0 :end1 4)
            (let* ((fixed-path (fix-path root-directory (ensure-directory (subseq arg 2))))
                   (new-arg (concatenate 'string "-I" fixed-path)))
-             (elt-set new-args i new-arg)))
+             (setf (elt new-args i) new-arg)))
           ((string= arg "../" :start1 0 :end1 3)
            (let ((fixed-path (fix-path root-directory arg)))
-             (elt-set new-args i fixed-path)))
+             (setf (elt new-args i) fixed-path)))
           (t #| do nothing |# ))))
     new-args))
 

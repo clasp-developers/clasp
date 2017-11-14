@@ -172,13 +172,6 @@ CL_DEFUN T_sp core__setf_elt(T_sp sequence, size_t index, T_sp value) {
   TYPE_ERROR(sequence, cl::_sym_sequence);
 };
 
-CL_LAMBDA(seq index val);
-CL_DECLARE();
-CL_DOCSTRING("eltSet");
-CL_DEFUN T_sp core__elt_set(T_sp sequence, int index, T_sp val) {
-  return core__setf_elt(sequence, index, val);
-};
-
 CL_LAMBDA(sequence start end subseq);
 CL_DECLARE();
 CL_DOCSTRING("setfSubseq");
