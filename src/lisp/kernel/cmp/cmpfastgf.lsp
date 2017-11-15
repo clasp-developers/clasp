@@ -35,25 +35,18 @@
 (defvar *message-counter* nil)
 #+debug-cmpfastgf
 (progn
-  (defun insert-message ()
-    (when *debug-cmpfastgf-trace*
-      (irc-intrinsic-call-or-invoke "cc_dispatch_debug" (list (jit-constant-i32 0) (jit-constant-i64 (incf *message-counter*))))))
   (defun debug-argument (arg arg-tag)
     (when *debug-cmpfastgf-trace*
-      (insert-message)
       (irc-intrinsic-call-or-invoke "cc_dispatch_debug" (list (jit-constant-i32 1) arg))
       (irc-intrinsic-call-or-invoke "cc_dispatch_debug" (list (jit-constant-i32 2) arg-tag))))
   (defun debug-pointer (ptr)
     (when *debug-cmpfastgf-trace*
-      (insert-message)
       (irc-intrinsic-call-or-invoke "cc_dispatch_debug" (list (jit-constant-i32 4) ptr))))
   (defun debug-arglist (ptr)
     (when *debug-cmpfastgf-trace*
-      (insert-message)
       (irc-intrinsic-call-or-invoke "cc_dispatch_debug" (list (jit-constant-i32 3) ptr))))
   (defun debug-va_list (ptr)
     (when *debug-cmpfastgf-trace*
-      (insert-message)
       (irc-intrinsic-call-or-invoke "cc_dispatch_debug" (list (jit-constant-i32 5) ptr))))
   (defun debug-stamp (ptr)
     (when *debug-cmpfastgf-trace*
@@ -63,20 +56,17 @@
       (irc-intrinsic-call-or-invoke "cc_dispatch_debug" (list (jit-constant-i32 7) ptr))))
   (defun debug-call (fn args)
     (when *debug-cmpfastgf-trace*
-      (irc-intrinsic-call-or-invoke fn args)))
-  (defmacro insert-message ()))
+      (irc-intrinsic-call-or-invoke fn args))))
 
 #-debug-cmpgf
 (progn
-  (defun insert-message())
   (defun debug-argument (arg arg-tag))
   (defun debug-pointer (ptr))
   (defun debug-arglist (ptr))
   (defun debug-va_list (ptr))
   (defun debug-stamp (ptr))
   (defun debug-dispatch (ptr))
-  (defun debug-call (fn args))
-  (defmacro insert-message ()))
+  (defun debug-call (fn args)))
 
 
 (defmacro cf-log (fmt &body args)
@@ -638,7 +628,6 @@
 
 (defun codegen-class-binary-search (arguments cur-arg matches stamp-var)
   (cf-log "codegen-class-binary-search\n")
-  (insert-message)
   (cond
     ((null matches)
      (irc-br (argument-holder-miss-basic-block arguments)))
@@ -706,7 +695,6 @@
   (cf-log "entered codegen-node\n")
   (let ((cur-arg (1+ cur-arg)))
     (debug-call "debugPointer" (list (irc-bit-cast (argument-get arguments cur-arg) %i8*%)))
-    (insert-message)
     (if (skip-node-p node)
         (codegen-skip-node arguments cur-arg node)
         (progn
@@ -715,7 +703,6 @@
 
 (defun codegen-node-or-outcome (arguments cur-arg node-or-outcome)
   (cf-log "entered codegen-node-or-outcome\n")
-  (insert-message)
   (if (outcome-p node-or-outcome)
       (codegen-outcome arguments cur-arg node-or-outcome)
       (codegen-node arguments cur-arg node-or-outcome)))
