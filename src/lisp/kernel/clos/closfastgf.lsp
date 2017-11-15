@@ -261,7 +261,6 @@
       (when (core:cxx-instance-p x)
         (let* ((i x)
                (s (si::instance-sig i)))
-          (declare (:read-only i s))
           (clos::with-early-accessors (clos::+standard-class-slots+)
             (when (si::sl-boundp s)
               (unless (= (core:instance-stamp i) (core:class-stamp-for-instances (core:instance-class i)))

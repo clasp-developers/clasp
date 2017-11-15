@@ -87,7 +87,7 @@
   (declare (ignore initargs))
   (error "The structure-class (~A) cannot be instantiated" class))
 
-#+clasp(export 'make-instance)
+(export 'make-instance)
 
 (defmethod finalize-inheritance ((class structure-class))
   (call-next-method)
@@ -98,7 +98,6 @@
 (defmethod print-object ((obj structure-object) stream)
   (let* ((class (si:instance-class obj))
 	 (slotds (class-slots class)))
-    (declare (:read-only class))
     (when (and slotds
                ;; *p-readably* effectively disables *p-level*
 	       (not *print-readably*)

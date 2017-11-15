@@ -28,8 +28,7 @@
                  which is not of expected type ~A"
 		:format-arguments (list function place object type)
 		:datum object
-		:expected-type type
-		)
+		:expected-type type)
        (use-value (value)
 	 :report (lambda (stream)
 		   (format stream "Supply a new value of type ~A." type))
@@ -48,7 +47,6 @@ of the specified type.  STRING-FORM, if given, is evaluated only once and the
 value is used to indicate the expected type in the error message."
   (let ((aux (gensym)))
     `(let ((,aux ,place))
-       #-clasp(declare (:read-only ,aux))
        (unless (typep ,aux ',type)
 	 (setf ,place (do-check-type ,aux ',type ',type-string ',place)))
        nil)))

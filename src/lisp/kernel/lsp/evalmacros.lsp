@@ -223,7 +223,6 @@ TESTs evaluates to non-NIL."
 	    (setq form 't)
 	    (let ((sym (gensym)))
 	      (setq form `(LET ((,sym ,(car l)))
-;			   (DECLARE (:READ-ONLY ,sym)) ; Beppe
 			   (IF ,sym ,sym ,form)))))
 	(if (eq (car l) 't)
 	    (setq form (if (endp (cddr l))
@@ -261,7 +260,6 @@ to NIL) sequentially, and executes STATEMENTs.  Returns NIL."
 Evaluates FIRST-FORM and FORMs in order.  Returns the value of FIRST-FORM."
   (if (null body) first
   `(LET ((,sym ,first))
-;    (DECLARE (:READ-ONLY ,sym)) ; Beppe
     ,@body ,sym)))
 
 
@@ -271,7 +269,6 @@ Evaluates FIRST-FORM and FORMs in order.  Returns the value of FIRST-FORM."
 Evaluates FIRST-FORM, SECOND-FORM, and FORMs in order.  Returns the value of
 SECOND-FORM."
   `(PROGN ,first (LET ((,sym ,second))
-;		       (DECLARE (:READ-ONLY ,sym)) ; Beppe
 		       ,@body ,sym)))
 
 ; multiple values
@@ -331,7 +328,6 @@ values of the last FORM.  If no FORM is given, returns NIL."
 	 (key (gensym)))
     (dolist (clause (reverse clauses)
 	     `(LET ((,key ,keyform))
-		;;(DECLARE (:READ-ONLY ,key)) ; Beppe
 		,form))
       (let ((selector (car clause)))
 	(cond ((or (eq selector T) (eq selector 'OTHERWISE))

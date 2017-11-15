@@ -24,7 +24,6 @@
   ;; "instances" but keep ECL_UNBOUND instead of the list.
   `(let* ((i ,instance)
           (s (si::instance-sig i)))
-     (declare (:read-only i s))
      (when (si:sl-boundp s)
        (unless (eq s (class-slots (si::instance-class i)))
          (update-instance i)))))
