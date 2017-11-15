@@ -443,50 +443,6 @@ and is not adjustable."
 	      ((atom pat)
 	       (error "~S does not describe array dimensions." pat))))))
 
-(define-compiler-macro typep (&whole whole object type &optional environment
-                                     &environment macro-env)
-  (unless (constantp type macro-env)
-    (return-from typep whole))
-  (let ((type (ext:constant-form-value type macro-env)))
-    (cond (environment whole)
-          ((eq type t)
-           `(progn
-              ,object
-              t))
-          ((null type)
-           `(progn
-              ,object
-              nil))
-          ((eq type 'sequence)
-           `(let ((object ,object))
-              (or (listp object) (vectorp object))))
-          ((eq type 'simple-base-string)
-           `(let ((object ,object))
-              (and (base-string-p object)
-                   (simple-string-p object))))
-          ((and (symbolp type)
-                (let ((predicate (cdr (assoc type +known-typep-predicates+))))
-                  (and predicate
-                       `(,predicate ,object)))))
-          ((and (proper-list-p type)
-                (eq (car type) 'member))
-           `(let ((object ,object))
-              (or ,@(mapcar
-                     (lambda (x)
-                       `(eq object ',x))
-                     (cdr type)))))
-          ((and (consp type)
-                (eq (car type) 'eql)
-                (cdr type)
-                (not (cddr type)))
-           `(eql ,object ',(cadr type)))
-          ((and (symbolp type)
-                (find-class type nil))
-           `(subclassp (class-of ,object)
-                       (find-class ',type nil)))
-          (t
-           whole))))
-
 (defun typep (object type &optional env &aux tp i c)
   "Args: (object type)
 Returns T if X belongs to TYPE; NIL otherwise."
@@ -613,6 +569,50 @@ Returns T if X belongs to TYPE; NIL otherwise."
 		  (return nil)))))
 	   (t
 	    (error-type-specifier type))))))
+
+(define-compiler-macro typep (&whole whole object type &optional environment
+                                     &environment macro-env)
+  (unless (constantp type macro-env)
+    (return-from typep whole))
+  (let ((type (ext:constant-form-value type macro-env)))
+    (cond (environment whole)
+          ((eq type t)
+           `(progn
+              ,object
+              t))
+          ((null type)
+           `(progn
+              ,object
+              nil))
+          ((eq type 'sequence)
+           `(let ((object ,object))
+              (or (listp object) (vectorp object))))
+          ((eq type 'simple-base-string)
+           `(let ((object ,object))
+              (and (base-string-p object)
+                   (simple-string-p object))))
+          ((and (symbolp type)
+                (let ((predicate (cdr (assoc type +known-typep-predicates+))))
+                  (and predicate
+                       `(,predicate ,object)))))
+          ((and (proper-list-p type)
+                (eq (car type) 'member))
+           `(let ((object ,object))
+              (or ,@(mapcar
+                     (lambda (x)
+                       `(eq object ',x))
+                     (cdr type)))))
+          ((and (consp type)
+                (eq (car type) 'eql)
+                (cdr type)
+                (not (cddr type)))
+           `(eql ,object ',(cadr type)))
+          ((and (symbolp type)
+                (find-class type nil))
+           `(subclassp (class-of ,object)
+                       (find-class ',type nil)))
+          (t
+           whole))))
 
 #+(and clos (not clasp))
 (defun subclassp (low high)
@@ -765,8 +765,8 @@ if not possible."
 ;;; the compiletime/runtime restrictions, any type defined at compile time
 ;;; has to be the same at runtime.
 (define-compiler-macro coerce (&whole form object type &environment env)
-  (if (constantp type)
-      (let ((type (eval type)) ; constant-form-value
+  (if (constantp type env)
+      (let ((type (ext:constant-form-value type env))
             (obj (gensym "OBJECT")))
         `(let ((,obj ,object))
            ;; this check is required by the definition of coerce.
@@ -775,7 +775,7 @@ if not possible."
                ,obj
                ,(flet ((da (form) `(the (values ,type &rest nil) ,form)))
                   (multiple-value-bind (head tail)
-                      (core::normalize-type type)
+                      (normalize-type type)
                     (case head
                       ((t) (da obj))
                       ((character base-char) (da `(character ,obj)))
