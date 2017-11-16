@@ -513,6 +513,7 @@
 (defstruct (container (:include class-template-specialization-ctype)))
 (defstruct (gcvector-moveable-ctype (:include container)))
 (defstruct (gcarray-moveable-ctype (:include container)))
+(defstruct (gcbitunitarray-moveable-ctype (:include container)))
 (defstruct (gcstring-moveable-ctype (:include container)))
 
 
@@ -1079,6 +1080,10 @@ can be saved and reloaded within the project for later analysis"
                    (qtarg (cast:get-as-type arg)))
               (gclog "          Found a smart_ptr~%")
               (make-gcvector-moveable-ctype :key decl-key :name name :arguments (classify-template-args decl))))
+           ((string= name "GCBitUnitArray_moveable")
+            (let* ((arg (cast:template-argument-list-get args 0))
+                   (qtarg (cast:get-as-type arg)))
+              (make-gcbitunitarray-moveable-ctype :key decl-key :name name :arguments (classify-template-args decl))))
            ((string= name "GCArray_moveable")
             (let* ((arg (cast:template-argument-list-get args 0))
                    (qtarg (cast:get-as-type arg)))

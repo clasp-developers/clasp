@@ -12,8 +12,6 @@
 
 (in-package :clasp-analyzer)
 
-
-
 ;;; ------------------------------------------------------------
 ;;;
 ;;; To load and analyze the project
@@ -22,7 +20,6 @@
   (defparameter *compile-commands* (probe-file "~/aws/static-analyze-clasp/results/compile_commands.json"))
   (defvar *db* (clasp-analyzer:setup-clasp-analyzer-compilation-tool-database
                 (pathname *compile-commands*)))
-
   (time
    (progn
      (format t "Loading project~%")
@@ -35,6 +32,11 @@
   (format t "Done analyze and generate-code for project~%")))
 
 (defparameter *analysis* (analyze-project *p1*))
+
+
+(defparameter *bv* (gethash "core::SimpleBitVector_O" (project-classes *project*)))
+
+(maphash (lambda (k v) (if (search "SimpleBitVector" k) (print k))) (project-classes *project*))
 
 
 (gethash (gethash "core::DerivableCxxObject_O" (analysis-stamps *analysis*)) (analysis-stamp-children *analysis*))
