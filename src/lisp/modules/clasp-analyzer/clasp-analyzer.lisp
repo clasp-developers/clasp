@@ -591,6 +591,7 @@
    (elements :initarg :elements :accessor elements)))
 
 (defclass gcarray-offset (container-offset) ())
+(defclass gcbitunitarray-offset (container-offset) ())
 (defclass gcvector-offset (container-offset) ())
 (defclass gcstring-offset (container-offset) ())
 
@@ -789,6 +790,24 @@ to expose to C++.
                            :offset-type arg0-ctype
                            :elements-base arg0-ctype
                            :elements (ensure-list (linearize-class-layout-impl arg0-ctype arg0-ctype analysis)))))))
+
+(defmethod linearize-class-layout-impl ((x gcbitunitarray-moveable-ctype) base analysis)
+  (let ((nodes (call-next-method)))
+    (format t "linearize-class-layout-impl for gcbitunitarray-moveable-ctype  nodes -> ~a~%" nodes)
+    (let* ((arguments (gcbitunitarray-moveable-ctype-arguments x))
+           (arg0 (loop :for arg :in arguments
+                    :when (eq (gc-template-argument-index arg) 0)
+                    :return arg))
+           (arg0-ctype (gc-template-argument-ctype arg0)))
+      #+(or)(fixed (linearize-code-for-field (gethash (gcarray-moveable-ctype-key x) (project-classes (analysis-project analysis))) base analysis))
+      (format t "    arguments -> ~s~%" arguments)
+      (format t "    arg0      -> ~s~%" arg0)
+      (list (make-instance 'gcbitunitarray-offset
+                           :base base
+                           :fixed-fields nodes
+                           :offset-type arg0-ctype
+                           :elements-base arg0-ctype
+                           :elements :bit)))))
 
 (defmethod linearize-class-layout-impl ((x cclass) base analysis)
   (let* ((project (analysis-project analysis))
