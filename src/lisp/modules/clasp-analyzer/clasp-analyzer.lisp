@@ -335,12 +335,12 @@
   ;;   the Instance_O offset and the size of the object
 
   (let ((derivable-cxx-object-stamp (gethash "core::DerivableCxxObject_O" (analysis-stamps analysis))))
-    (unless derivable-cxx-object-stamp
-      (error "There must be a class named core::DerivableCxxObject_O - why is it missing!!!!!"))
-    (let ((children (gethash derivable-cxx-object-stamp (analysis-stamp-children analysis))))
-      (dolist (child children)
-        (traverse-inheritance-tree child analysis "inherit from core::DerivableCxxObject_O" "core::DerivableCxxObject_O"
-                                   'no-stamp-value))))
+    (if derivable-cxx-object-stamp
+        (let ((children (gethash derivable-cxx-object-stamp (analysis-stamp-children analysis))))
+          (dolist (child children)
+            (traverse-inheritance-tree child analysis "inherit from core::DerivableCxxObject_O" "core::DerivableCxxObject_O"
+                                       'no-stamp-value)))
+        (warn "For a full run - there must be a class named core::DerivableCxxObject_O - why is it missing!!!!!")))
   (traverse-inheritance-tree "core::T_O" analysis "inherit from core::T_O" "core::T_O" 'assign-stamp-value)
   (dolist (root (remove "core::T_O" (analysis-stamp-roots analysis) :test #'string=))
     (traverse-inheritance-tree root analysis (format nil "inherit from ~a" root) root 'assign-stamp-value)))

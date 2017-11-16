@@ -8,7 +8,8 @@
 
 (progn
   (load #P"sys:modules;clang-tool;clang-tool.fasl")
-  (load #P"sys:modules;clasp-analyzer;clasp-analyzer.fasl"))
+  (load #P"sys:modules;clasp-analyzer;clasp-analyzer.fasl")
+  (format t "Done Loading clasp-analyzer~%"))
 
 (in-package :clasp-analyzer)
 
@@ -34,14 +35,36 @@
 (defparameter *analysis* (analyze-project *p1*))
 
 
+(probe-file "~/slime/")
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Run a small test search on AWS 
+;;;
+(progn
+  (defparameter *compile-commands* (probe-file "/Development/clasp/build/mpsprep/compile_commands.json"))
+  (defvar *db* (clasp-analyzer:setup-clasp-analyzer-compilation-tool-database
+                (pathname *compile-commands*)
+                :selection-pattern "/array.cc"))
+  (format t "Done setting ctd~%"))
+
+(progn
+  (defvar *p* (clasp-analyzer::serial-search/generate-code *db* :output-file #P"/tmp/data.dat"))
+  (format t "Done search!~%"))
+
+(defparameter *analysis* (analyze-project *p*))
+
 (defparameter *bv* (gethash "core::SimpleBitVector_O" (project-classes *project*)))
 
+(trace linearize-class-layout-impl)
+(class-layout *bv* *analysis*)
+
+*bv*
 (maphash (lambda (k v) (if (search "SimpleBitVector" k) (print k))) (project-classes *project*))
 
 
 (gethash (gethash "core::DerivableCxxObject_O" (analysis-stamps *analysis*)) (analysis-stamp-children *analysis*))
 
-(
 (analysis-stamp-roots *analysis*)
 ("clang::ast_matchers::MatchFinder::MatchCallback"
  "core::Lisp_O"
