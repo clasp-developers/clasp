@@ -23,6 +23,7 @@
     (error "The argument ~a must be a list" x))
   x)
 
+
 (defparameter *errors* nil
   "Keep track of errors discovered during analysis")
 
@@ -462,6 +463,7 @@
 
 ;; A ctype is holds the name of a C++ type
 (defstruct ctype key)
+(defstruct (bitunit-ctype (:include ctype)) bitunit-width unsigned-type signed-type)
 (defstruct (simple-ctype (:include ctype)))
 (defstruct (function-proto-ctype (:include ctype)))
 (defstruct (lvalue-reference-ctype (:include ctype)))
@@ -779,11 +781,8 @@ to expose to C++.
 (defmethod linearize-class-layout-impl ((x gcarray-moveable-ctype) base analysis)
   (let ((nodes (call-next-method)))
     (let* ((arguments (gcarray-moveable-ctype-arguments x))
-           (arg0 (loop :for arg :in arguments
-                    :when (eq (gc-template-argument-index arg) 0)
-                    :return arg))
+           (arg0 (find 0 arguments :test #'eql :key #'gc-template-argument-index))
            (arg0-ctype (gc-template-argument-ctype arg0)))
-      #+(or)(fixed (linearize-code-for-field (gethash (gcarray-moveable-ctype-key x) (project-classes (analysis-project analysis))) base analysis))
       (list (make-instance 'gcarray-offset
                            :base base
                            :fixed-fields nodes
@@ -795,19 +794,22 @@ to expose to C++.
   (let ((nodes (call-next-method)))
     (format t "linearize-class-layout-impl for gcbitunitarray-moveable-ctype  nodes -> ~a~%" nodes)
     (let* ((arguments (gcbitunitarray-moveable-ctype-arguments x))
-           (arg0 (loop :for arg :in arguments
-                    :when (eq (gc-template-argument-index arg) 0)
-                    :return arg))
-           (arg0-ctype (gc-template-argument-ctype arg0)))
-      #+(or)(fixed (linearize-code-for-field (gethash (gcarray-moveable-ctype-key x) (project-classes (analysis-project analysis))) base analysis))
-      (format t "    arguments -> ~s~%" arguments)
-      (format t "    arg0      -> ~s~%" arg0)
+           (arg0 (find 0 arguments :test #'eql :key #'gc-template-argument-index))
+           (arg0-integral-value (gc-template-argument-integral-value arg0))
+           (arg1 (find 1 arguments :test #'eql :key #'gc-template-argument-index))
+           (arg1-ctype (gc-template-argument-ctype arg1))
+           (arg2 (find 2 arguments :test #'eql :key #'gc-template-argument-index))
+           (arg2-ctype (gc-template-argument-ctype arg2)))
+      (unless (member arg0-integral-value '("1" "2" "4") :test #'string=)
+        (error "The argument ~s, which describes the bit width of a bitunit, must be a positive integer 1,2, or 4 - it is not" arg0-integral-value))
       (list (make-instance 'gcbitunitarray-offset
                            :base base
                            :fixed-fields nodes
-                           :offset-type arg0-ctype
-                           :elements-base arg0-ctype
-                           :elements :bit)))))
+                           :offset-type nil
+                           :elements-base nil
+                           :elements (make-bitunit-ctype :bitunit-width (parse-integer arg0-integral-value)
+                                                         :unsigned-type arg1-ctype
+                                                         :signed-type arg2-ctype))))))
 
 (defmethod linearize-class-layout-impl ((x cclass) base analysis)
   (let* ((project (analysis-project analysis))
