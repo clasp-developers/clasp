@@ -367,6 +367,9 @@ mps_addr_t obj_skip(mps_addr_t client) {
       }
       size = container_layout.element_size*capacity + container_layout.data_offset;
     } else {
+      if (stamp_layout.bits_per_bitunit!=0) {
+        printf("%s:%d A bitvector was encountered with stamp_layout.bits_per_bitunit = %" PRsize_t "\n", __FILE__, __LINE__, stamp_layout.bits_per_bitunit );
+      }
       if (stamp_layout.layout_op == bitunit_container_op ) {
         printf("%s:%d Handle bitunit_container_op\n", __FILE__, __LINE__ );
       }
