@@ -456,7 +456,8 @@
 
 (defstruct gc-template-argument 
   index
-  ctype)
+  ctype
+  integral-value)
 
 
 ;; A ctype is holds the name of a C++ type
@@ -1034,19 +1035,25 @@ This avoids the prefixing of 'class ' and 'struct ' to the names of classes and 
          ((< i 0))
       (let* ((arg (cast:template-argument-list-get template-args i))
              (template-arg-kind (cast:get-kind arg))
-             classified)
+             classified integral-value)
         (case template-arg-kind
           (ast-tooling:argkind-type
            (let* ((qtarg (cast:get-as-type arg))
                   (tsty-new (cast:get-type-ptr-or-null qtarg)))
-             (gclog "classify-template-arg: ~a~%" (cast:get-as-string qtarg))
-             (setq classified (classify-ctype tsty-new))))
+             (if (and qtarg tsty-new)
+                 (progn
+                   (gclog "classify-template-arg: ~a~%" (cast:get-as-string qtarg))
+                   (setq classified (classify-ctype tsty-new)))
+                 (format t "!!classify-template-args - could not classify arg: ~s  qtarg: ~s  (cast:get-as-string qtarg): ~s~%" arg qtarg (cast:get-as-string qtarg))
+                 )))
+          (ast-tooling:argkind-integral
+           (setf integral-value (template-arg-as-string arg)
+                 classified nil))
           (otherwise
            #+use-breaks(break "Handle template-arg-kind: ~a" template-arg-kind)))
         (gclog "classified2 = ~a~%" classified)
-        (push (make-gc-template-argument :index i :ctype classified) args)))
+        (push (make-gc-template-argument :index i :ctype classified :integral-value integral-value) args)))
     args))
-
 
 
 
@@ -1082,8 +1089,10 @@ can be saved and reloaded within the project for later analysis"
               (make-gcvector-moveable-ctype :key decl-key :name name :arguments (classify-template-args decl))))
            ((string= name "GCBitUnitArray_moveable")
             (let* ((arg (cast:template-argument-list-get args 0))
-                   (qtarg (cast:get-as-type arg)))
-              (make-gcbitunitarray-moveable-ctype :key decl-key :name name :arguments (classify-template-args decl))))
+                   (qtarg (cast:get-as-type arg))
+                   (classified-args (classify-template-args decl)))
+              (format t "Recognized GCBitUnitArray_moveable  decl: ~s classified-args: ~s~%" decl classified-args)
+              (make-gcbitunitarray-moveable-ctype :key decl-key :name name :arguments classified-args)))
            ((string= name "GCArray_moveable")
             (let* ((arg (cast:template-argument-list-get args 0))
                    (qtarg (cast:get-as-type arg)))
@@ -1102,9 +1111,9 @@ can be saved and reloaded within the project for later analysis"
       (cast:cxxrecord-decl
        (make-cxxrecord-ctype :key decl-key :name name))
       (otherwise
-       (warn "Add support for classify-ctype ~a" decl-key)
-       (make-unknown-ctype :key decl-key)
-       ))))
+       (warn "Add support for classify-ctype ~s name: ~s" decl-key name)
+       (make-unknown-ctype :key decl-key)))))
+
 (defgeneric classify-ctype (type))
 
 (defmethod classify-ctype ((x cast:record-type))

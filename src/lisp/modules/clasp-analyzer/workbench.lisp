@@ -41,6 +41,8 @@
 ;;;
 ;;; Run a small test search on AWS 
 ;;;
+
+(trace classify-ctype)
 (progn
   (defparameter *compile-commands* (probe-file "/Development/clasp/build/mpsprep/compile_commands.json"))
   (defvar *db* (clasp-analyzer:setup-clasp-analyzer-compilation-tool-database
