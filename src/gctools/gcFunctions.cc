@@ -1031,6 +1031,10 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
 #endif
   if (buildReport) ss << (BF("DISABLE_TYPE_INFERENCE = %s\n") % (disable_type_inference ? "defined" : "undefined") ).str();
 
+  // -------------------------------------------------------------
+  //
+  // The cl:*features* environment variable is set below - so all changes to (features) must be above
+  //
   if (setFeatures) cl::_sym_STARfeaturesSTAR->setf_symbolValue(features);
   
   // ---- return with the debugging flag
