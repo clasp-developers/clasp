@@ -751,9 +751,11 @@ def configure(cfg):
 #    cfg.define("DEBUG_SLOT_ACCESSORS",1)
 #    cfg.define("DISABLE_TYPE_INFERENCE",1)
 #    cfg.define("DEBUG_THREADS",1)
-#    cfg.define("DEBUG_ENSURE_VALID_OBJECT",1)
-#    cfg.define("DEBUG_QUICK_VALIDATE",1)    # quick/cheap validate if on and comprehensive validate if not
-#    cfg.define("DEBUG_MPS_SIZE",1)   # check that the size of the MPS object will be calculated properly by obj_skip
+###  cfg.define("DEBUG_GUARD",1) #<<< this is set in wscript.config
+    cfg.define("CONFIG_VAR_COOL",1)
+    cfg.define("DEBUG_ENSURE_VALID_OBJECT",1)  #Defines ENSURE_VALID_OBJECT(x)->x macro - sprinkle these around to run checks on objects
+    cfg.define("DEBUG_QUICK_VALIDATE",1)    # quick/cheap validate if on and comprehensive validate if not
+    cfg.define("DEBUG_MPS_SIZE",1)   # check that the size of the MPS object will be calculated properly by obj_skip
 # -----------------
 # defines that slow down program execution
 #  There are more defined in clasp/include/gctools/configure_memory.h
