@@ -13,6 +13,7 @@
                (:file "compilation-environment" :depends-on ("retarget-entry" "packages"))
                (:file "evaluation-environment" :depends-on ("compilation-environment" "packages"))
                (:file "interpreter" :depends-on ("sandbox" "packages"))
+               (:file "read-interpreter-info" :depends-on ("packages"))
                (:file "compiler" :depends-on ("interpreter" "clone" "packages"))
                (:file "build-convenience"
                 :depends-on ("compiler" "compilation-environment" "evaluation-environment" "packages"))))

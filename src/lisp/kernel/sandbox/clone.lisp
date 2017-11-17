@@ -56,13 +56,13 @@
 ;;; No compile-only-p since it's in the compiler (about macroexpansions)
 (defun import-setf-info (env name)
   ;; the reader is defined in setf.lisp.
-  (let ((s (sicl-genv:setf-expander name env)))
+  (let ((s (sicl-genv:setf-expander name nil)))
     (when s
       (setf (sicl-genv:setf-expander name env) s))))
 
 (defun import-from-toplevel (env &optional compile-only-p)
   ;; TODO: packages
-  (let ((declarations (cleavir-env:declarations env)))
+  (let ((declarations (cleavir-env:declarations nil)))
     (loop for decl in declarations
           do (setf (sicl-genv:declaration decl env) t)))
   ;; do-all-symbols is allowed to process symbols more than once due to

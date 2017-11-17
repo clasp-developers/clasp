@@ -1,5 +1,16 @@
 (in-package #:clasp-sandbox)
 
+;;; DEFMETHOD tries to do various things with functions as actual generic functions,
+;;; meaning putting just functions there results in errors. Therefore... This shit.
+;;; I don't think either will be actually called, so let's go methodless.
+;;; At compile time they're only needed for make-method-lambda, etc.
+(defpackage #:sandbox-defs ; avoid shadowing crap
+  (:export #:ensure-generic-function-using-class #:ensure-class-using-class))
+(defgeneric sandbox-defs:ensure-generic-function-using-class
+    (generic-function-or-nil function-name &rest keys))
+(defgeneric sandbox-defs:ensure-class-using-class
+    (class name &rest keys))
+
 (defun initialize-evaluation-environment (cenv)
   ;; do this first so that later things can override definitions.
   ;; this is the eval environment, so we need everything, including actual definitions.
@@ -18,6 +29,15 @@
       (if macrop
           (setf (sicl-genv:macro-function name cenv) function)
           (setf (sicl-genv:fdefinition name cenv) function)))
+    ;;; the compile time "hey, we defined a function" gizmo.
+    (def cmp:register-global-function-def (context name)
+      (when (eq context 'defun)
+        (unless (cleavir-env:function-info (compilation-environment cenv) name) ; already known
+          ;; this is how sicl makes functions known to the compiler.
+          (setf (sicl-genv:function-type name (compilation-environment cenv))
+                '(function * *))))
+      ;; the actual one is just in place for warnings etc
+      (cmp:register-global-function-def context name))
     (def core:*make-special (symbol)
       #+(or)
       (let ((*package* (find-package "KEYWORD")))
@@ -34,6 +54,7 @@
       (declare (ignore conc-name type named slots slot-descriptions copier
                        incude print-function constructors offset name-offset
                        documentation predicate))
+      #-(or)
       (warn "ignoring struct definition ~a" name))
     (def core:setf-compiler-macro-function (name function &optional env)
       ;; We don't seem to actually call this with an environment anywhere
@@ -41,23 +62,35 @@
       (setf (sicl-genv:compiler-macro-function name cenv) function))
     (def clos::install-method-combination (name function)
       ;; let's cross these bridges when we come to them
+      #-(or)
       (warn "ignoring install-method-combination"))
+    (def core::do-setf-method-expansion (name lambda args &optional stores-no)
+      #-(or)
+      (warn "ignoring do-setf-method-expansion"))
     (def core:put-sysprop (key area value)
+      #-(or)
       (warn "Ignoring (put-sysprop ~a ~a ~a)" key area value))
     (def core:set-symbol-plist (sym list)
+      #-(or)
       (warn "ignoring set-symbol-plist"))
     (def clos:ensure-generic-function (name &rest arguments)
-      (warn "ignoring ensure-generic-function"))
-    (def clos:ensure-generic-function-using-class (&rest arguments)
-      (warn "ignoring ensure-generic-function-using-class"))
+      (let ((gf (sicl-genv:fdefinition name cenv)))
+        (if (null gf) ; not typep generic-function, since e.g. this function is not a generic :(
+            (error "ensure-generic-function for unknown gf ~a" name)
+            gf)))
     (def clos::install-method (&rest arguments)
+      #-(or)
       (warn "ignoring install-method"))
     (def clos::load-defclass (&rest arguments)
+      #-(or)
       (warn "ignoring load-defclass"))
     (def clos:ensure-class (&rest arguments)
-      (warn "ignoring ensure-class"))
-    (def clos:ensure-class-using-class (&rest arguments)
-      (warn "ignoring ensure-class-using-class")))
+      #-(or)
+      (warn "ignoring ensure-class")))
+  (setf (sicl-genv:fdefinition 'clos:ensure-generic-function-using-class cenv)
+        #'sandbox-defs:ensure-generic-function-using-class)
+  (setf (sicl-genv:fdefinition 'clos:ensure-class-using-class cenv)
+        #'sandbox-defs:ensure-class-using-class)
   (install-coerce-fdesignator cenv)
   (install-multiple-value-call cenv)
   ;; FIXME: move to a function

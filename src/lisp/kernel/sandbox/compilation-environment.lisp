@@ -150,9 +150,13 @@
         (error "~a's inline value is unknown as it is an unknown operator" name))))
 (defmethod (setf sicl-genv:function-inline) (new name (env compilation-environment))
   (let ((entry (operator-entry env name)))
-    (if (typep entry 'function-entry)
-        (setf (function-inline entry) new)
-        (error "~a cannot have its inline value set as it is not known as a function" name))))
+    (etypecase entry
+      (function-entry (setf (function-inline entry) new))
+      ;; another departure from SICL, which says this should err.
+      ;; probably incorrectly, since you seem to be able to declare inline on macros.
+      (null (setf (operator-entry env name)
+                  (make-instance 'function-entry :name name :inline new)))
+      (operator-entry))))
 ;; lambda-list?
 (defmethod sicl-genv:function-ast (name (env compilation-environment))
   (let ((entry (operator-entry env name)))
@@ -271,7 +275,7 @@
       (cons
        (let ((temps (loop for arg in (rest place) collect (gensym)))
              (store (gensym)))
-         (values (rest place) temps (list store)
+         (values temps (rest place) (list store)
                  `(funcall #'(setf ,(first place)) ,store ,@temps)
                  `(,(first place) ,@temps)))))))
 (defmethod sicl-genv:type-expander (name (env compilation-environment))

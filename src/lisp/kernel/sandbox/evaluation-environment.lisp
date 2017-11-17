@@ -47,6 +47,7 @@
                 (declare (ignore new))
                 (if (and (transferringp env) (,accessor ,@more-parameters env))
                     (progn
+                      #+(or)
                       (warn "Ignoring compiler redefinition: ~a" (list ',accessor ,@more-parameters env)))
                     (call-next-method)))))
   (reject-setf sicl-genv:macro-function (symbol))
@@ -67,6 +68,7 @@
   (declare (ignore value))
   (if (sicl-genv:special-variable symbol environment)
       (progn
+        #+(or)
         (warn "Ignoring compiler redefinition: ~a"
               `(sicl-genv:special-variable ,symbol ,environment ,initialize-p)))
       (call-next-method)))

@@ -58,6 +58,18 @@
                (evalcompile form environment)))
           (t form))))))
 
+;;; Might want to move this, or have cleavir define it or something...?
+(defmethod sicl-genv:symbol-macro (symbol (env cleavir-env::entry))
+  (sicl-genv:symbol-macro symbol (cleavir-env::next env)))
+(defmethod sicl-genv:symbol-macro (symbol (env cleavir-env:special-variable))
+  (if (eq (cleavir-env:name env) symbol)
+      (values nil nil) ; shadowed
+      (call-next-method)))
+
+;;; constants can't be rebound, so just go straight to the top.
+(defmethod sicl-genv:constant-variable (symbol (env cleavir-env::entry))
+  (sicl-genv:constant-variable symbol (cleavir-env::next env)))
+
 ;;; FIXME: move this probably
 ;;; Define in the compiler environment.
 ;;; has the compile-time side effect of defun, i.e., makes the compiler know it exists

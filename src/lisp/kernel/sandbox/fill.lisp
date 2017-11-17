@@ -53,9 +53,12 @@
     ;;; TODO: makunbound
 
     ;;; only really a closure for the optional default.
-    (def cl:find-class (symbol &optional (errorp t) (env environment))
+    (def cl:find-class (symbol &optional (errorp t) env)
+      (when (null env) (setf env environment))
       (let ((class (sicl-genv:find-class symbol env)))
-        (or class (error "Could not find class ~a" symbol))))
+        (cond (class class)
+              (errorp (error "Could not find class ~a" symbol))
+              (t nil))))
     (def (setf cl:find-class) (new-class symbol &optional errorp (env environment))
       (setf (sicl-genv:find-class symbol env) new-class))
 
