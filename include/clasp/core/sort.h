@@ -61,6 +61,7 @@ public:
     void quickSort(_RandomAccessIterator m, _RandomAccessIterator en, Ocomp comparer) {
     _RandomAccessIterator k;
     _RandomAccessIterator n = en - 1;
+    if ((en-m) <= 1) return;
   //  typedef typename std::iterator_traits<_RandomAccessIterator>::value_type _ValueType;
     typedef typename _RandomAccessIterator::value_type _ValueType;
     if (m < n) {
@@ -122,6 +123,7 @@ public:
     _G();
     _RandomAccessIterator k;
     _RandomAccessIterator n = en - 1;
+    if ((en-m)<=1) return;
     typedef typename std::iterator_traits<_RandomAccessIterator>::value_type _ValueType;
     if (m < n) {
       ssize_t half = (n - m);
@@ -162,6 +164,7 @@ public:
     void quickSortVec0(gctools::Vec0<ValueType>& array,ssize_t m, ssize_t en, Ocomp comparer) {
     ssize_t k;
     ssize_t n = en - 1;
+    if ((en-m)<=1) return;
   //  typedef typename std::iterator_traits<_RandomAccessIterator>::value_type _ValueType;
     if (m < n) {
 #if 0
@@ -197,6 +200,7 @@ public:
  // The default sorter, increasing order
   template <typename ValueType>
     void quickSortVec0(gctools::Vec0<ValueType>& array,ssize_t m, ssize_t en) {
+    if ((en-m)<=1) return;
     ssize_t k;
     ssize_t n = en - 1;
   //  typedef typename std::iterator_traits<_RandomAccessIterator>::value_type _ValueType;
@@ -222,6 +226,7 @@ public:
    // The default sorter, increasing order
   template <typename ValueType>
     void quickSortMemory(ValueType* array,ssize_t m, ssize_t en) {
+    if ((en-m) <= 1) return;
     ssize_t k;
     ssize_t n = en - 1;
   //  typedef typename std::iterator_traits<_RandomAccessIterator>::value_type _ValueType;
