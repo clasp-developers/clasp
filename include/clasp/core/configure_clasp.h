@@ -84,6 +84,8 @@ typedef int64_t    Fixnum; // Signed Fixnum immediate value
 #define PRF "lld"
 #define PRFoctal "llo"
 #define PRFhex "llX"
+#define Puint "u"
+#define PXuintptr_t "llX"
 #define PRsize_t "lu"
 #endif
 #if defined( _TARGET_OS_LINUX )
@@ -95,6 +97,8 @@ typedef int64_t    Fixnum; // Signed Fixnum immediate value
 #define PRi "lld"
 #define PRF "lld"
 #define PRFoctal "llo"
+#define Puint "u"
+#define PXuintptr_t "llX"
 #define PRFhex "llX"
 #define PRsize_t "lu"
 #endif
