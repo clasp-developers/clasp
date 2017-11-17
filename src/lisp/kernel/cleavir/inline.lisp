@@ -644,6 +644,7 @@
          ;; Now we know we're good, do the actual computation
          ,(row-major-index-computer sarray dimsyms ssubscripts)))))
 
+#+(or)
 (define-compiler-macro %aref (array &rest subscripts)
   (case (length subscripts)
     ((1) `(%row-major-aref ,array ,(first subscripts)))
@@ -743,7 +744,6 @@
     (mapfoo-macro 'on 'nconc function (cons list more-lists)))
   )
 
-#-use-boehmdc
 (define-compiler-macro funcall (&whole form function &rest arguments &environment env)
   ;; If we have (funcall #'foo ...), we might be able to apply the FOO compiler macro.
   (when (and (consp function) (eq (first function) 'function)
