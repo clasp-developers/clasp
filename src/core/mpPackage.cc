@@ -105,21 +105,24 @@ struct SafeRegisterDeregisterProcessWithLisp {
 
 void* start_thread(void* claspProcess) {
   Process_O* my_claspProcess = (Process_O*)claspProcess;
-  Process_sp p(my_claspProcess);
-  void* stack_base;
+  Process_sp process(my_claspProcess);
+  void* stack_base = &stack_base;
   core::ThreadLocalState my_thread_local_state(&stack_base);
 //  printf("%s:%d entering start_thread  &my_thread -> %p \n", __FILE__, __LINE__, (void*)&my_thread);
   my_thread = &my_thread_local_state;
-  my_thread->initialize_thread(p);
-  p->_ThreadInfo = my_thread;
+  my_thread->initialize_thread(process);
+  process->_ThreadInfo = my_thread;
   // Set the mp:*current-process* variable to the current process
-  core::DynamicScopeManager scope(_sym_STARcurrent_processSTAR,p);
-  core::List_sp reversed_bindings = core::cl__reverse(p->_InitialSpecialBindings);
+  core::DynamicScopeManager scope(_sym_STARcurrent_processSTAR,process);
+  core::List_sp reversed_bindings = core::cl__reverse(process->_InitialSpecialBindings);
   for ( auto cur : reversed_bindings ) {
     core::Cons_sp pair = gc::As<core::Cons_sp>(oCar(cur));
 //    printf("%s:%d  start_thread   setting special variable/(eval value) -> %s\n", __FILE__, __LINE__, _rep_(pair).c_str());
     scope.pushSpecialVariableAndSet(pair->_Car,core::eval::evaluate(pair->_Cdr,_Nil<core::T_O>()));
   }
+//  gctools::register_thread(process,stack_base);
+  core::List_sp args = my_claspProcess->_Arguments;
+  
 #if 0
 #ifdef USE_BOEHM
   GC_stack_base gc_stack_base;
@@ -127,17 +130,32 @@ void* start_thread(void* claspProcess) {
   GC_register_my_thread(&gc_stack_base);
 #endif
 #endif
+  
 #ifdef USE_MPS
-  printf("%s:%d Handle threads for MPS\n", __FILE__, __LINE__ );
-  printf("%s:%d You need to register the thread stack and the thread\n", __FILE__, __LINE__ );
-  abort();
+  // use mask
+  mps_res_t res = mps_thread_reg(&process->thr_o,global_arena);
+  if (res != MPS_RES_OK) {
+    printf("%s:%d Could not register thread\n", __FILE__, __LINE__ );
+    abort();
+  }
+  res = mps_root_create_thread_tagged(&process->root,
+                                      global_arena,
+                                      mps_rank_ambig(),
+                                      0,
+                                      process->thr_o,
+                                      mps_scan_area_tagged_or_zero,
+                                      gctools::pointer_tag_mask,
+                                      gctools::pointer_tag_eq,
+                                      reinterpret_cast<mps_addr_t>(const_cast<void*>(stack_base)));
+  if (res != MPS_RES_OK) {
+    printf("%s:%d Could not create thread stack roots\n", __FILE__, __LINE__ );
+    abort();
+  };
 #endif
-//  gctools::register_thread(process,stack_base);
-  core::List_sp args = my_claspProcess->_Arguments;
-  p->_Phase = Active;
+  process->_Phase = Active;
   core::T_mv result_mv;
   {
-    SafeRegisterDeregisterProcessWithLisp reg(p);
+    SafeRegisterDeregisterProcessWithLisp reg(process);
 //    RAIIMutexLock exitBarrier(p->_ExitBarrier);
 //    printf("%s:%d:%s  process locking the ExitBarrier\n", __FILE__, __LINE__, __FUNCTION__);
     try {
@@ -147,7 +165,7 @@ void* start_thread(void* claspProcess) {
     }
 //    printf("%s:%d:%s  process releasing the ExitBarrier\n", __FILE__, __LINE__, __FUNCTION__);
   }
-  p->_Phase = Exiting;
+  process->_Phase = Exiting;
   core::T_sp result0 = result_mv;
   core::List_sp result_list = _Nil<core::T_O>();
   for ( int i=result_mv.number_of_values(); i>0; --i ) {
@@ -163,8 +181,8 @@ void* start_thread(void* claspProcess) {
 #endif
 #endif
 #ifdef USE_MPS
-  printf("%s:%d Handle threads for MPS\n", __FILE__, __LINE__ );
-  abort();
+  mps_root_destroy(process->root);
+  mps_thread_dereg(process->thr_o);
 #endif
 //  printf("%s:%d  really leaving start_thread\n", __FILE__, __LINE__ );
   return NULL;
@@ -257,9 +275,9 @@ CL_DEFUN Process_sp mp__process_run_function(core::T_sp name, core::T_sp functio
   special_bindings = core::Cons_O::create(fastgf,special_bindings);
 #endif
   if (cl__functionp(function)) {
-    Process_sp p = Process_O::make_process(name,function,_Nil<core::T_O>(),special_bindings,DEFAULT_THREAD_STACK_SIZE);
-    p->enable();
-    return p;
+    Process_sp process = Process_O::make_process(name,function,_Nil<core::T_O>(),special_bindings,DEFAULT_THREAD_STACK_SIZE);
+    process->enable();
+    return process;
   }
   SIMPLE_ERROR(BF("%s is not a function - you must provide a function to run in a separate process") % _rep_(function));
 };

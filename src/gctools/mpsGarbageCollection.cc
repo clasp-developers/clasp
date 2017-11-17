@@ -121,16 +121,9 @@ mps_pool_t _global_amc_pool;
 mps_pool_t global_amc_cons_pool;
 mps_pool_t _global_amcz_pool;
 mps_pool_t _global_awl_pool;
-mps_ap_t _global_weak_link_allocation_point;
-mps_ap_t _global_strong_link_allocation_point;
-//    mps_ap_t _global_mvff_allocation_point;
-mps_ap_t _global_automatic_mostly_copying_zero_rank_allocation_point;
-mps_ap_t _global_automatic_mostly_copying_allocation_point;
-mps_ap_t global_amc_cons_allocation_point;
 
 mps_pool_t global_non_moving_pool;
 mps_pool_t global_unmanaged_pool;
-mps_ap_t global_non_moving_ap;
 size_t global_sizeof_fwd;
 
 };
@@ -836,11 +829,11 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
     GC_RESULT_ERROR(res, "Could not create awl pool");
   MPS_ARGS_BEGIN(args) {
     MPS_ARGS_ADD(args, MPS_KEY_RANK, mps_rank_exact());
-    res = mps_ap_create_k(&global_non_moving_ap, global_non_moving_pool, args);
+    res = mps_ap_create_k(&my_thread->_non_moving_allocation_point, global_non_moving_pool, args);
   }
   MPS_ARGS_END(args);
   if (res != MPS_RES_OK)
-    GC_RESULT_ERROR(res, "Couldn't create global_non_moving_ap");
+    GC_RESULT_ERROR(res, "Couldn't create global_non_moving_allocation_point");
 
 
 /* ------------------------------------------------------------------------
@@ -858,11 +851,11 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
     GC_RESULT_ERROR(res, "Could not create ams pool");
   MPS_ARGS_BEGIN(args) {
     MPS_ARGS_ADD(args, MPS_KEY_RANK, mps_rank_exact());
-    res = mps_ap_create_k(&global_non_moving_ap, global_non_moving_pool, args);
+    res = mps_ap_create_k(&my_thread->_non_moving_allocation_point, global_non_moving_pool, args);
   }
   MPS_ARGS_END(args);
   if (res != MPS_RES_OK)
-    GC_RESULT_ERROR(res, "Couldn't create global_non_moving_ap");
+    GC_RESULT_ERROR(res, "Couldn't create global_non_moving_allocation_point");
 #endif
 
   mps_fmt_t obj_fmt_zero;
@@ -1032,7 +1025,7 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
   mps_ap_destroy(_global_automatic_mostly_copying_allocation_point);
   mps_ap_destroy(_global_weak_link_allocation_point);
   mps_ap_destroy(_global_strong_link_allocation_point);
-  mps_ap_destroy(global_non_moving_ap);
+  mps_ap_destroy(global_non_moving_allocation_point);
   mps_pool_destroy(_global_awl_pool);
   mps_pool_destroy(_global_amcz_pool);
   mps_fmt_destroy(obj_fmt_zero);
