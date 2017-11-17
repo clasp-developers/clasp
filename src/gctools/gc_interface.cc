@@ -351,34 +351,31 @@ mps_addr_t obj_skip(mps_addr_t client) {
         // to determine the Instance_O offset and the total size of the object.
       printf("%s:%d Handle STAMP_core__DerivableCxxObject_O\n", __FILE__, __LINE__ );
     }
-    if (stamp>STAMP_max) {
-      BAD_HEADER("obj_scan",header);
-      abort();
-    }
     const Stamp_layout& stamp_layout = global_stamp_layout[stamp];
+    if ( stamp == STAMP_core__SimpleBitVector_O ) {
+      size_t capacity = *(size_t*)((const char*)client + stamp_layout.capacity_offset);
+      size = core::SimpleBitVector_O::bitunit_array_type::sizeof_for_length(capacity) + stamp_layout.data_offset;
+      goto STAMP_CONTINUE;
+        // Do other bitunit vectors here
+    } else if (stamp == gctools::STAMP_core__SimpleBaseString_O) {
+          // Account for the SimpleBaseString additional byte for \0
+      size_t capacity = *(size_t*)((const char*)client + stamp_layout.capacity_offset) + 1;
+      size = stamp_layout.element_size*capacity + stamp_layout.data_offset;
+      goto STAMP_CONTINUE;
+    }
     if ( stamp_layout.container_layout ) {
+      // special cases
       Container_layout& container_layout = *stamp_layout.container_layout;
-      if (stamp_layout.bits_per_bitunit!=0) {
-        printf("%s:%d A bitvector was encountered with stamp_layout.bits_per_bitunit = %" PRsize_t "\n", __FILE__, __LINE__, stamp_layout.bits_per_bitunit );
-      }
-      size_t capacity = *(size_t*)((const char*)client + container_layout.capacity_offset);
-      if (stamp == gctools::STAMP_core__SimpleBaseString_O) {
-        capacity += 1; // SimpleBaseString_O has one extra character added to it for the \0 terminator
-      }
-      size = container_layout.element_size*capacity + container_layout.data_offset;
+      size_t capacity = *(size_t*)((const char*)client + stamp_layout.capacity_offset);
+      size = stamp_layout.element_size*capacity + stamp_layout.data_offset;
     } else {
-      if (stamp_layout.bits_per_bitunit!=0) {
-        printf("%s:%d A bitvector was encountered with stamp_layout.bits_per_bitunit = %" PRsize_t "\n", __FILE__, __LINE__, stamp_layout.bits_per_bitunit );
-      }
-      if (stamp_layout.layout_op == bitunit_container_op ) {
-        printf("%s:%d Handle bitunit_container_op\n", __FILE__, __LINE__ );
-      }
       if (stamp_layout.layout_op == templated_op) {
         size = ((core::General_O*)client)->templatedSizeof();
       } else {
         size = stamp_layout.size;
       }
     }
+    STAMP_CONTINUE:
     client = (mps_addr_t)((char*)client + AlignUp(size + sizeof(Header_s)) + header.tail_size());
     break;
   }
@@ -423,29 +420,33 @@ GC_RESULT obj_scan(mps_ss_t ss, mps_addr_t client, mps_addr_t limit) {
         header->validate();
 #endif
         stamp = header_value.stamp();
+        const Stamp_layout& stamp_layout = global_stamp_layout[stamp];
         if ( stamp == STAMP_core__DerivableCxxObject_O ) {
         // If this is true then I think we need to call virtual functions on the client
         // to determine the Instance_O offset and the total size of the object.
           printf("%s:%d Handle STAMP_core__DerivableCxxObject_O\n", __FILE__, __LINE__ );
         }
-        if (stamp>STAMP_max) {
-          BAD_HEADER("obj_scan",header);
-          abort();
+        if ( stamp == STAMP_core__SimpleBitVector_O ) {
+          size_t capacity = *(size_t*)((const char*)client + stamp_layout.capacity_offset);
+          size = core::SimpleBitVector_O::bitunit_array_type::sizeof_for_length(capacity) + stamp_layout.data_offset;
+          goto STAMP_CONTINUE;
+        // Do other bitunit vectors here
+        } else if (stamp == gctools::STAMP_core__SimpleBaseString_O) {
+          // Account for the SimpleBaseString additional byte for \0
+          size_t capacity = *(size_t*)((const char*)client + stamp_layout.capacity_offset) + 1;
+          size = stamp_layout.element_size*capacity + stamp_layout.data_offset;
+          goto STAMP_CONTINUE;
         }
-        const Stamp_layout& stamp_layout = global_stamp_layout[stamp];
         if (stamp_layout.layout_op == templated_op ) {
           size = ((core::General_O*)client)->templatedSizeof();
         } else {
           size = stamp_layout.size;
         }
-        if (stamp_layout.layout_op == bitunit_container_op ) {
-          printf("%s:%d Handle bitunit_container_op\n", __FILE__, __LINE__ );
-        }
         if ( stamp_layout.field_layout_start ) {
           int num_fields = stamp_layout.number_of_fields;
           const Field_layout* field_layout_cur = stamp_layout.field_layout_start;
           if (stamp_layout.bits_per_bitunit!=0) {
-            printf("%s:%d A bitvector was encountered while processing fields with stamp_layout.bits_per_bitunit = %" PRu "\n", __FILE__, __LINE__, stamp_layout.bits_per_bitunit );
+            printf("%s:%d A bitvector was encountered while processing fields with stamp_layout.bits_per_bitunit = %" Puint "\n", __FILE__, __LINE__, stamp_layout.bits_per_bitunit );
           }
           for ( int i=0; i<num_fields; ++i ) {
             core::T_O** field = (core::T_O**)((const char*)client + field_layout_cur->field_offset);
@@ -455,29 +456,21 @@ GC_RESULT obj_scan(mps_ss_t ss, mps_addr_t client, mps_addr_t limit) {
         }
         if ( stamp_layout.container_layout ) {
           const Container_layout& container_layout = *stamp_layout.container_layout;
-          size_t capacity = *(size_t*)((const char*)client + container_layout.capacity_offset);
-          if (stamp == gctools::STAMP_core__SimpleBaseString_O) {
-            capacity += 1; // SimpleBaseString_O has one extra character added to it for the \0 terminator
-          }
-          if (stamp_layout.bits_per_bitunit!=0) {
-            printf("%s:%d A bitvector was encountered while processing a container with stamp_layout.bits_per_bitunit = %" PRu "\n", __FILE__, __LINE__, stamp_layout.bits_per_bitunit );
-          }
-          size = container_layout.element_size*capacity + container_layout.data_offset;
-          size_t end = *(size_t*)((const char*)client + container_layout.end_offset);
+          size_t capacity = *(size_t*)((const char*)client + stamp_layout.capacity_offset);
+          size = stamp_layout.element_size*capacity + stamp_layout.data_offset;
+          size_t end = *(size_t*)((const char*)client + stamp_layout.end_offset);
           for ( int i=0; i<end; ++i ) {
             Field_layout* field_layout_cur = container_layout.field_layout_start;
             ASSERT(field_layout_cur);
-            const char* element = ((const char*)client + container_layout.data_offset + container_layout.element_size*i);
+            const char* element = ((const char*)client + stamp_layout.data_offset + stamp_layout.element_size*i);
             for ( int j=0; j<container_layout.number_of_fields; ++j ) {
               core::T_O** field = (core::T_O**)((const char*)element + field_layout_cur->field_offset);
               POINTER_FIX(field);
               ++field_layout_cur;
             }
           }
-          if (stamp_layout.layout_op != class_container_op) {
-            printf("%s:%d  The stamp_layout.layout_op != class_container_op - I don't think this means anything anymore\n", __FILE__, __LINE__ );
-          }
         }
+      STAMP_CONTINUE:
         client = (mps_addr_t)((char*)client + AlignUp(size + sizeof(Header_s)) + header.tail_size());
 #ifdef DEBUG_MPS_SIZE
         {
