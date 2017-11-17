@@ -174,7 +174,6 @@ the sublist of LIST that begins with the element.  If not found, returns NIL."
 			(cons car cdr)))))))
     (sub tree)))
 
-
 (defun subst-if (new test tree &key key)
   "Substitutes NEW for subtrees of TREE that satisfy TEST and returns the result.
 The original TREE is not destroyed."
