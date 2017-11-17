@@ -367,19 +367,6 @@
 ;;; COMPUTE-EFFECTIVE-METHOD
 ;;;
 
-;; The following chokes in clasp because I don't have the method-combination class defined
-;; during compilation of the full clasp source code.
-;; I don't use compiler macros anyway so I'll feature this out
-
-;; TODO: Turn this back on
-;;#-clasp
-(eval-when (compile :load-toplevel :execute)
-  (let* ((class (find-class 'method-combination)))
-    (define-compiler-macro method-combination-compiler (o)
-      `(si::instance-ref ,o ,(slot-definition-location (gethash 'compiler (slot-table class)))))
-    (define-compiler-macro method-combination-options (o)
-      `(si::instance-ref ,o ,(slot-definition-location (gethash 'options (slot-table class)))))))
-
 (defun std-compute-effective-method (gf method-combination applicable-methods)
   (declare (type method-combination method-combination)
 	   (type generic-function gf)
