@@ -107,7 +107,7 @@
                                  ,@body
                                  (setq ,var (1+ ,var)))
                       ,@exit)))))))
-  (si::fset 'dotimes f t) '((var count-form &optional result-form) &body body))
+  (si::fset 'dotimes f t nil '((var count-form &optional result-form) &body body)))
 
 (let ((f #'(lambda (whole env)
              (declare (ignore env) (core:lambda-name do/do*-expand))
