@@ -559,7 +559,7 @@
    (base :initarg :base :accessor base)))
 
 (defmethod print-object ((x offset) stream)
-  (format stream "#<~a :fields ~a>" (class-name (class-of x)) (fields x)))
+  (format stream "#<~a :fields ~a :offset-type ~a :base ~a>" (class-name (class-of x)) (fields x) (offset-type x) (base x)))
 
 (defclass copyable-offset (offset) ())
 (defclass smart-ptr-offset (copyable-offset) ())
@@ -671,19 +671,33 @@ to expose."
     ((find "NO-NAME" name-list :test #'string=) t)
     ((find "_LocationDependency" name-list :test #'string=) t)
     (t nil)))
-  
+
+(defun find-gcbitunit-array-moveable-ctype (offset)
+  (loop for field in (fields offset)
+        for field-ctype = (instance-variable-ctype field)
+        when (typep field-ctype 'gcbitunitarray-moveable-ctype)
+          return field-ctype))
+
 (defun codegen-variable-part (stream variable-fields analysis)
-    (let* ((array (offset-field-with-name variable-fields "_Data"))
-           (length (or (offset-field-with-name variable-fields "_Length")
-                       (offset-field-with-name variable-fields "_Capacity")))
-           (end (or (offset-field-with-name variable-fields "_End") length)))
-      (unless length
-        (error "Could not find _Length in the variable-fields: ~a with names: ~a of ~a" variable-fields (variable-part-offset-field-names variable-fields) (mapcar (lambda (x) (offset-type-c++-identifier x)) variable-fields)))
-      (format stream "{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(~a),~{~a~}), \"~{~a~}\" },~%"
+  (let* ((array (offset-field-with-name variable-fields "_Data"))
+         (length (or (offset-field-with-name variable-fields "_Length")
+                     (offset-field-with-name variable-fields "_Capacity")))
+         (end (or (offset-field-with-name variable-fields "_End") length))
+         (gcbitunit-ctype (find-gcbitunit-array-moveable-ctype array)))
+    (unless length
+      (error "Could not find _Length in the variable-fields: ~a with names: ~a of ~a" variable-fields (variable-part-offset-field-names variable-fields) (mapcar (lambda (x) (offset-type-c++-identifier x)) variable-fields)))
+    (let ((*print-pretty* nil))
+      (if gcbitunit-ctype
+          (format stream " {  variable_bit_array0, ~a, 0, offsetof(SAFE_TYPE_MACRO(~a),~{~a~}), \"~{~a~}\" },~%"
+                  (gc-template-argument-integral-value (find 0 (class-template-specialization-ctype-arguments gcbitunit-ctype) :test #'eql :key #'gc-template-argument-index))
+                  (offset-base-ctype array)
+                  (layout-offset-field-names array)
+                  (layout-offset-field-names array))          
+          (format stream " {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(~a),~{~a~}), \"~{~a~}\" },~%"
               (offset-base-ctype array)
               (layout-offset-field-names array)
-              (layout-offset-field-names array))
-      (format stream "{  variable_capacity, sizeof(~a), offsetof(SAFE_TYPE_MACRO(~a),~{~a~}), offsetof(SAFE_TYPE_MACRO(~a),~{~a~}), NULL },~%"
+              (layout-offset-field-names array)))
+      (format stream " {  variable_capacity, sizeof(~a), offsetof(SAFE_TYPE_MACRO(~a),~{~a~}), offsetof(SAFE_TYPE_MACRO(~a),~{~a~}), NULL },~%"
               (maybe-fixup-type (ctype-key (element-type array)) (offset-base-ctype array))
               (offset-base-ctype array)
               (layout-offset-field-names end)
@@ -691,28 +705,31 @@ to expose."
               (layout-offset-field-names length))
       (dolist (one (elements array))
         (let ((field-names (layout-offset-field-names one)))
-            (if field-names
-                (let* ((fixable (fixable-instance-variables (car (last (fields one))) analysis))
-                       (public (mapcar (lambda (iv) (eq (instance-field-access iv) 'ast-tooling:as-public)) (fields one)))
-                       (all-public (every #'identity public))
-                       (good-name (not (is-bad-special-case-variable-name (layout-offset-field-names one))))
-                       (expose-it (and (or all-public fixable) good-name))
-                       (*print-pretty* nil))
-                  (format stream "~a {    variable_field, ~a, sizeof(~a), offsetof(SAFE_TYPE_MACRO(~a),~{~a~}), \"~{~a~}\" }, // public: ~a fixable: ~a good-name: ~a~%"
-                          (if expose-it "" "// not-exposed-yet ")
-                          (offset-type-c++-identifier one)
-                          (maybe-fixup-type (ctype-key (offset-type one)) (ctype-key (base one)))
-                          (ctype-key (base one))
-                          (layout-offset-field-names one)
-                          (layout-offset-field-names one)
-                          public
-                          fixable
-                          good-name))
-                  (format stream "{    variable_field, ~a, sizeof(~a), 0, \"only\" },~%"
-                          (offset-type-c++-identifier one)
-                          (maybe-fixup-type (ctype-key (element-type array)) (offset-base-ctype array))
-                          ;;                      (maybe-fixup-type (ctype-key (offset-type one)) (ctype-key (base one)))
-                          (ctype-key (base one))))))))
+          (if field-names
+              (let* ((fixable (fixable-instance-variables (car (last (fields one))) analysis))
+                     (public (mapcar (lambda (iv) (eq (instance-field-access iv) 'ast-tooling:as-public)) (fields one)))
+                     (all-public (every #'identity public))
+                     (good-name (not (is-bad-special-case-variable-name (layout-offset-field-names one))))
+                     (expose-it (and (or all-public fixable) good-name))
+                     (*print-pretty* nil))
+                (format stream "~a    {    variable_field, ~a, sizeof(~a), offsetof(SAFE_TYPE_MACRO(~a),~{~a~}), \"~{~a~}\" }, // public: ~a fixable: ~a good-name: ~a~%"
+                        (if expose-it "" "// not-exposed-yet ")
+                        (offset-type-c++-identifier one)
+                        (maybe-fixup-type (ctype-key (offset-type one)) (ctype-key (base one)))
+                        (ctype-key (base one))
+                        (layout-offset-field-names one)
+                        (layout-offset-field-names one)
+                        public
+                        fixable
+                        good-name))
+              (progn
+                (let ((*print-pretty* nil))
+                  (format stream "// one -> ~s~%" one))
+                (format stream "{    variable_field, ~a, sizeof(~a), 0, \"only\" },~%"
+                        (offset-type-c++-identifier one)
+                        (maybe-fixup-type (ctype-key (element-type array)) (offset-base-ctype array))
+                        ;;                      (maybe-fixup-type (ctype-key (offset-type one)) (ctype-key (base one)))
+                        (ctype-key (base one))))))))))
 
 
 (defun expose-fixed-field-type (type-name)

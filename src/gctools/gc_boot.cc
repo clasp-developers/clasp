@@ -61,7 +61,8 @@ void build_stamp_field_layout_tables()
       if (strcmp(codes[idx].description,"_Length")!=0) {
 //        printf("%s:%d There is an unknown CONSTANT_ARRAY named %s that the static analyzer identified - deal with it\n", __FILE__, __LINE__, codes[idx].description );
       }
-    } else if ( codes[idx].cmd == variable_array0 ) {
+    } else if ( codes[idx].cmd == variable_array0
+                || codes[idx].cmd == variable_bit_array0 ) {
       ++number_of_containers;
     }
     ++idx;
@@ -95,7 +96,6 @@ void build_stamp_field_layout_tables()
         global_stamp_layout[cur_stamp].field_layout_start = NULL;
         global_stamp_layout[cur_stamp].container_layout = NULL;
         global_stamp_layout[cur_stamp].number_of_fields = 0;
-        global_stamp_layout[cur_stamp].bits_per_bitunit = 0;
         global_stamp_layout[cur_stamp].size = codes[idx].data1;
         global_stamp_info[cur_stamp].name = codes[idx].description;
         global_stamp_info[cur_stamp].field_info_ptr = NULL;
@@ -122,7 +122,6 @@ void build_stamp_field_layout_tables()
         global_stamp_layout[cur_stamp].layout_op = class_container_op;
         global_stamp_layout[cur_stamp].number_of_fields = 0;
         global_stamp_layout[cur_stamp].size = codes[idx].data1;
-        global_stamp_layout[cur_stamp].bits_per_bitunit = 0;
         global_stamp_layout[cur_stamp].field_layout_start = NULL;
         global_stamp_layout[cur_stamp].container_layout = NULL;
         global_stamp_info[cur_stamp].name = codes[idx].description;
@@ -144,14 +143,20 @@ void build_stamp_field_layout_tables()
     case variable_array0:
         global_stamp_layout[cur_stamp].container_layout = &global_container_layout[cur_container_layout_idx++];
         GCTOOLS_ASSERT(cur_container_layout_idx<=number_of_containers);
-        global_stamp_layout[cur_stamp].container_layout->data_offset = codes[idx].data2;
+        global_stamp_layout[cur_stamp].data_offset = codes[idx].data2;
+        break;
+    case variable_bit_array0:
+        global_stamp_layout[cur_stamp].container_layout = &global_container_layout[cur_container_layout_idx++];
+        GCTOOLS_ASSERT(cur_container_layout_idx<=number_of_containers);
+        global_stamp_layout[cur_stamp].data_offset = codes[idx].data2;
+        global_stamp_layout[cur_stamp].bits_per_bitunit = codes[idx].data0;
         break;
     case variable_capacity:
         global_stamp_layout[cur_stamp].container_layout->field_layout_start = cur_field_layout;
-        global_stamp_layout[cur_stamp].container_layout->element_size = codes[idx].data0;
+        global_stamp_layout[cur_stamp].element_size = codes[idx].data0;
         global_stamp_layout[cur_stamp].container_layout->number_of_fields = 0;
-        global_stamp_layout[cur_stamp].container_layout->end_offset = codes[idx].data1;
-        global_stamp_layout[cur_stamp].container_layout->capacity_offset = codes[idx].data2;
+        global_stamp_layout[cur_stamp].end_offset = codes[idx].data1;
+        global_stamp_layout[cur_stamp].capacity_offset = codes[idx].data2;
         break;
     case variable_field:
         if ( !(codes[idx].data0 == SMART_PTR_OFFSET

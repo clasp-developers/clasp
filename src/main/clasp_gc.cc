@@ -336,8 +336,8 @@
     class MDNode_O;
     class DILexicalBlockBase_O;
     class ClaspJIT_O;
-    class PHINode_O;
     class ConstantArray_O;
+    class PHINode_O;
     class IRBuilder_O;
     class IndirectBrInst_O;
     class DIScope_O;
@@ -1155,15 +1155,6 @@ template <typename FP> struct Cast<core::SimpleMDArrayT_O*,FP> {
       return (kindVal == 309);
   };
 };
-// STAMP_llvmo__BranchInst_O
-template <typename FP> struct Cast<llvmo::BranchInst_O*,FP> {
-  inline static bool isA(FP client) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->stamp();
-    // IsA-stamp-range llvmo::BranchInst_O val -> 92
-      return (kindVal == 92);
-  };
-};
 // STAMP_core__SourcePosInfo_O
 template <typename FP> struct Cast<core::SourcePosInfo_O*,FP> {
   inline static bool isA(FP client) {
@@ -1171,6 +1162,15 @@ template <typename FP> struct Cast<core::SourcePosInfo_O*,FP> {
       int kindVal = header->stamp();
     // IsA-stamp-range core::SourcePosInfo_O val -> 386
       return (kindVal == 386);
+  };
+};
+// STAMP_llvmo__BranchInst_O
+template <typename FP> struct Cast<llvmo::BranchInst_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
+      int kindVal = header->stamp();
+    // IsA-stamp-range llvmo::BranchInst_O val -> 92
+      return (kindVal == 92);
   };
 };
 // STAMP_clcenv__Entry_O
@@ -1524,15 +1524,6 @@ template <typename FP> struct Cast<clcenv::VariableDynamicExtent_O*,FP> {
       return (kindVal == 218);
   };
 };
-// STAMP_llvmo__PHINode_O
-template <typename FP> struct Cast<llvmo::PHINode_O*,FP> {
-  inline static bool isA(FP client) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->stamp();
-    // IsA-stamp-range llvmo::PHINode_O val -> 97
-      return (kindVal == 97);
-  };
-};
 // STAMP_llvmo__ConstantArray_O
 template <typename FP> struct Cast<llvmo::ConstantArray_O*,FP> {
   inline static bool isA(FP client) {
@@ -1540,6 +1531,15 @@ template <typename FP> struct Cast<llvmo::ConstantArray_O*,FP> {
       int kindVal = header->stamp();
     // IsA-stamp-range llvmo::ConstantArray_O val -> 109
       return (kindVal == 109);
+  };
+};
+// STAMP_llvmo__PHINode_O
+template <typename FP> struct Cast<llvmo::PHINode_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
+      int kindVal = header->stamp();
+    // IsA-stamp-range llvmo::PHINode_O val -> 97
+      return (kindVal == 97);
   };
 };
 // STAMP_llvmo__IRBuilder_O
@@ -2955,15 +2955,6 @@ template <typename FP> struct Cast<llvmo::ConstantExpr_O*,FP> {
       return (kindVal == 104);
   };
 };
-// STAMP_llvmo__LandingPadInst_O
-template <typename FP> struct Cast<llvmo::LandingPadInst_O*,FP> {
-  inline static bool isA(FP client) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->stamp();
-    // IsA-stamp-range llvmo::LandingPadInst_O val -> 93
-      return (kindVal == 93);
-  };
-};
 // STAMP_core__MDArrayCharacter_O
 template <typename FP> struct Cast<core::MDArrayCharacter_O*,FP> {
   inline static bool isA(FP client) {
@@ -2971,6 +2962,15 @@ template <typename FP> struct Cast<core::MDArrayCharacter_O*,FP> {
       int kindVal = header->stamp();
     // IsA-stamp-range core::MDArrayCharacter_O val -> 272
       return (kindVal == 272);
+  };
+};
+// STAMP_llvmo__LandingPadInst_O
+template <typename FP> struct Cast<llvmo::LandingPadInst_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
+      int kindVal = header->stamp();
+    // IsA-stamp-range llvmo::LandingPadInst_O val -> 93
+      return (kindVal == 93);
   };
 };
 // STAMP_core__SingleDispatchEffectiveMethodFunction_O
@@ -3918,15 +3918,6 @@ template <typename FP> struct Cast<core::Reader_O*,FP> {
       return (kindVal == 21);
   };
 };
-// STAMP_core__SymbolToEnumConverter_O
-template <typename FP> struct Cast<core::SymbolToEnumConverter_O*,FP> {
-  inline static bool isA(FP client) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->stamp();
-    // IsA-stamp-range core::SymbolToEnumConverter_O val -> 20
-      return (kindVal == 20);
-  };
-};
 // STAMP_llvmo__SwitchInst_O
 template <typename FP> struct Cast<llvmo::SwitchInst_O*,FP> {
   inline static bool isA(FP client) {
@@ -3934,6 +3925,15 @@ template <typename FP> struct Cast<llvmo::SwitchInst_O*,FP> {
       int kindVal = header->stamp();
     // IsA-stamp-range llvmo::SwitchInst_O val -> 86
       return (kindVal == 86);
+  };
+};
+// STAMP_core__SymbolToEnumConverter_O
+template <typename FP> struct Cast<core::SymbolToEnumConverter_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
+      int kindVal = header->stamp();
+    // IsA-stamp-range core::SymbolToEnumConverter_O val -> 20
+      return (kindVal == 20);
   };
 };
 // STAMP_clcenv__VariableIgnore_O
@@ -4356,8 +4356,8 @@ template <typename FP> struct Cast<core::TwoWayStream_O*,FP> {
       ADD_SINGLE_TYPEQ_TEST(core::SimpleMDArray_int16_t_O,320);
       ADD_RANGE_TYPEQ_TEST(llvmo::CompositeType_O,llvmo::StructType_O,43,48);
       ADD_SINGLE_TYPEQ_TEST(core::SimpleMDArrayT_O,309);
-      ADD_SINGLE_TYPEQ_TEST(llvmo::BranchInst_O,92);
       ADD_SINGLE_TYPEQ_TEST(core::SourcePosInfo_O,386);
+      ADD_SINGLE_TYPEQ_TEST(llvmo::BranchInst_O,92);
       ADD_RANGE_TYPEQ_TEST(clcenv::Entry_O,clcenv::FunctionIgnore_O,204,222);
       ADD_RANGE_TYPEQ_TEST(core::ActivationFrame_O,core::TagbodyFrame_O,134,137);
       ADD_SINGLE_TYPEQ_TEST(llvmo::AllocaInst_O,82);
@@ -4390,8 +4390,8 @@ template <typename FP> struct Cast<core::TwoWayStream_O*,FP> {
       ADD_SINGLE_TYPEQ_TEST(llvmo::IndirectBrInst_O,90);
       ADD_SINGLE_TYPEQ_TEST(clcenv::LexicalVariable_O,219);
       ADD_SINGLE_TYPEQ_TEST(clcenv::VariableDynamicExtent_O,218);
-      ADD_SINGLE_TYPEQ_TEST(llvmo::PHINode_O,97);
       ADD_SINGLE_TYPEQ_TEST(llvmo::ConstantArray_O,109);
+      ADD_SINGLE_TYPEQ_TEST(llvmo::PHINode_O,97);
       ADD_SINGLE_TYPEQ_TEST(llvmo::IRBuilder_O,50);
       ADD_SINGLE_TYPEQ_TEST(llvmo::ClaspJIT_O,374);
       ADD_RANGE_TYPEQ_TEST(core::NamedFunction_O,core::SpecialForm_O,150,168);
@@ -4535,8 +4535,8 @@ template <typename FP> struct Cast<core::TwoWayStream_O*,FP> {
       ADD_SINGLE_TYPEQ_TEST(llvmo::ValueAsMetadata_O,60);
       ADD_RANGE_TYPEQ_TEST(core::Rational_O,core::Fixnum_dummy_O,348,352);
       ADD_SINGLE_TYPEQ_TEST(llvmo::ConstantExpr_O,104);
-      ADD_SINGLE_TYPEQ_TEST(llvmo::LandingPadInst_O,93);
       ADD_SINGLE_TYPEQ_TEST(core::MDArrayCharacter_O,272);
+      ADD_SINGLE_TYPEQ_TEST(llvmo::LandingPadInst_O,93);
       ADD_SINGLE_TYPEQ_TEST(core::SingleDispatchEffectiveMethodFunction_O,166);
       ADD_RANGE_TYPEQ_TEST(core::Function_O,core::SpecialForm_O,139,168);
       ADD_SINGLE_TYPEQ_TEST(llvmo::StructType_O,48);
@@ -4635,8 +4635,8 @@ template <typename FP> struct Cast<core::TwoWayStream_O*,FP> {
       ADD_SINGLE_TYPEQ_TEST(core::WeakKeyMapping_O,22);
       ADD_RANGE_TYPEQ_TEST(core::Closure_O,core::SingleDispatchCxxEffectiveMethodFunction_O,151,167);
       ADD_SINGLE_TYPEQ_TEST(core::Reader_O,21);
-      ADD_SINGLE_TYPEQ_TEST(core::SymbolToEnumConverter_O,20);
       ADD_SINGLE_TYPEQ_TEST(llvmo::SwitchInst_O,86);
+      ADD_SINGLE_TYPEQ_TEST(core::SymbolToEnumConverter_O,20);
       ADD_SINGLE_TYPEQ_TEST(clcenv::VariableIgnore_O,206);
       ADD_SINGLE_TYPEQ_TEST(clcenv::SpecialVariableInfo_O,193);
       ADD_SINGLE_TYPEQ_TEST(core::NativeVector_float_O,181);
@@ -4817,13 +4817,13 @@ template <> class gctools::GCStamp<core::SimpleMDArrayT_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__SimpleMDArrayT_O ;
 };
-template <> class gctools::GCStamp<llvmo::BranchInst_O> {
-public:
-  static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__BranchInst_O ;
-};
 template <> class gctools::GCStamp<core::SourcePosInfo_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__SourcePosInfo_O ;
+};
+template <> class gctools::GCStamp<llvmo::BranchInst_O> {
+public:
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__BranchInst_O ;
 };
 template <> class gctools::GCStamp<clcenv::Entry_O> {
 public:
@@ -4981,13 +4981,13 @@ template <> class gctools::GCStamp<clcenv::VariableDynamicExtent_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_clcenv__VariableDynamicExtent_O ;
 };
-template <> class gctools::GCStamp<llvmo::PHINode_O> {
-public:
-  static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__PHINode_O ;
-};
 template <> class gctools::GCStamp<llvmo::ConstantArray_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__ConstantArray_O ;
+};
+template <> class gctools::GCStamp<llvmo::PHINode_O> {
+public:
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__PHINode_O ;
 };
 template <> class gctools::GCStamp<llvmo::IRBuilder_O> {
 public:
@@ -5617,13 +5617,13 @@ template <> class gctools::GCStamp<llvmo::ConstantExpr_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__ConstantExpr_O ;
 };
-template <> class gctools::GCStamp<llvmo::LandingPadInst_O> {
-public:
-  static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__LandingPadInst_O ;
-};
 template <> class gctools::GCStamp<core::MDArrayCharacter_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__MDArrayCharacter_O ;
+};
+template <> class gctools::GCStamp<llvmo::LandingPadInst_O> {
+public:
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__LandingPadInst_O ;
 };
 template <> class gctools::GCStamp<core::SingleDispatchEffectiveMethodFunction_O> {
 public:
@@ -6045,13 +6045,13 @@ template <> class gctools::GCStamp<core::Reader_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__Reader_O ;
 };
-template <> class gctools::GCStamp<core::SymbolToEnumConverter_O> {
-public:
-  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__SymbolToEnumConverter_O ;
-};
 template <> class gctools::GCStamp<llvmo::SwitchInst_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__SwitchInst_O ;
+};
+template <> class gctools::GCStamp<core::SymbolToEnumConverter_O> {
+public:
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__SymbolToEnumConverter_O ;
 };
 template <> class gctools::GCStamp<clcenv::VariableIgnore_O> {
 public:
@@ -6276,10 +6276,10 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::SimpleVector_O>), offsetof(SAFE_TYPE_MACRO(clbind::ClassRep_O),_Rack), "_Rack" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(clbind::ClassRep_O),_allocation_counter), "_allocation_counter" }, // public: (T) fixable: NIL good-name: T
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(clbind::ClassRep_O),_allocation_total_size), "_allocation_total_size" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<gctools::smart_ptr<core::Cons_O>>>), offsetof(SAFE_TYPE_MACRO(clbind::ClassRep_O),m_bases._Vector._Contents), "m_bases._Vector._Contents" }, // public: (NIL T T) fixable: TAGGED-POINTER-FIX good-name: T
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(clbind::ClassRep_O),m_name._M_string_length), "m_name._M_string_length" }, // public: (NIL NIL) fixable: NIL good-name: T
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(clbind::ClassRep_O),m_name.NO-NAME._M_allocated_capacity), "m_name.NO-NAME._M_allocated_capacity" }, // public: (NIL NIL T) fixable: NIL good-name: T
-// not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(clbind::ClassRep_O),m_derivable), "m_derivable" }, // public: (NIL) fixable: NIL good-name: T
+ {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<gctools::smart_ptr<core::Cons_O>>>), offsetof(SAFE_TYPE_MACRO(clbind::ClassRep_O),m_bases._Vector._Contents), "m_bases._Vector._Contents" }, // public: (T T T) fixable: TAGGED-POINTER-FIX good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(clbind::ClassRep_O),m_name._M_string_length), "m_name._M_string_length" }, // public: (T NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(clbind::ClassRep_O),m_name.NO-NAME._M_allocated_capacity), "m_name.NO-NAME._M_allocated_capacity" }, // public: (T NIL T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(clbind::ClassRep_O),m_derivable), "m_derivable" }, // public: (T) fixable: NIL good-name: T
 { class_kind, STAMP_core__SmallMap_O, sizeof(core::SmallMap_O), 0, "core::SmallMap_O" },
  {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>>>), offsetof(SAFE_TYPE_MACRO(core::SmallMap_O),map._Contents), "map._Contents" }, // public: (NIL T) fixable: TAGGED-POINTER-FIX good-name: T
 { templated_kind, STAMP_core__WrappedPointer_O, sizeof(core::WrappedPointer_O), 0, "core::WrappedPointer_O" },
@@ -6616,13 +6616,15 @@ public:
 { class_kind, STAMP_core__ValueFrame_O, sizeof(core::ValueFrame_O), 0, "core::ValueFrame_O" },
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::ValueFrame_O),_Parent), "_Parent" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::ValueFrame_O),_DebuggingInfo), "_DebuggingInfo" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
-{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::ValueFrame_O),_Objects._Data), "_Objects._Data" },
-{  variable_capacity, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::ValueFrame_O),_Objects._Length), offsetof(SAFE_TYPE_MACRO(core::ValueFrame_O),_Objects._Length), NULL },
+ {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::ValueFrame_O),_Objects._Data), "_Objects._Data" },
+ {  variable_capacity, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::ValueFrame_O),_Objects._Length), offsetof(SAFE_TYPE_MACRO(core::ValueFrame_O),_Objects._Length), NULL },
+// one -> #<SMART-PTR-OFFSET :fields NIL :offset-type #S(SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O") :base #S(SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")>
 {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), 0, "only" },
 { class_kind, STAMP_core__FunctionFrame_O, sizeof(core::FunctionFrame_O), 0, "core::FunctionFrame_O" },
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::FunctionFrame_O),_Parent), "_Parent" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
-{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::FunctionFrame_O),_Objects._Data), "_Objects._Data" },
-{  variable_capacity, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::FunctionFrame_O),_Objects._Length), offsetof(SAFE_TYPE_MACRO(core::FunctionFrame_O),_Objects._Length), NULL },
+ {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::FunctionFrame_O),_Objects._Data), "_Objects._Data" },
+ {  variable_capacity, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::FunctionFrame_O),_Objects._Length), offsetof(SAFE_TYPE_MACRO(core::FunctionFrame_O),_Objects._Length), NULL },
+// one -> #<SMART-PTR-OFFSET :fields NIL :offset-type #S(SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O") :base #S(SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")>
 {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), 0, "only" },
 { class_kind, STAMP_core__TagbodyFrame_O, sizeof(core::TagbodyFrame_O), 0, "core::TagbodyFrame_O" },
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::TagbodyFrame_O),_Parent), "_Parent" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
@@ -6711,8 +6713,9 @@ public:
 // not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::ClosureWithSlots_O),_lineno), "_lineno" }, // public: (T) fixable: NIL good-name: T
 // not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::ClosureWithSlots_O),_column), "_column" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::ClosureWithSlots_O),_lambdaList), "_lambdaList" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
-{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::ClosureWithSlots_O),_Slots._Data), "_Slots._Data" },
-{  variable_capacity, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::ClosureWithSlots_O),_Slots._Length), offsetof(SAFE_TYPE_MACRO(core::ClosureWithSlots_O),_Slots._Length), NULL },
+ {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::ClosureWithSlots_O),_Slots._Data), "_Slots._Data" },
+ {  variable_capacity, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::ClosureWithSlots_O),_Slots._Length), offsetof(SAFE_TYPE_MACRO(core::ClosureWithSlots_O),_Slots._Length), NULL },
+// one -> #<SMART-PTR-OFFSET :fields NIL :offset-type #S(SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O") :base #S(SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")>
 {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), 0, "only" },
 { class_kind, STAMP_core__SingleDispatchMethodFunction_O, sizeof(core::SingleDispatchMethodFunction_O), 0, "core::SingleDispatchMethodFunction_O" },
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::SingleDispatchMethodFunction_O),_name), "_name" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
@@ -7025,84 +7028,101 @@ public:
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), offsetof(SAFE_TYPE_MACRO(core::AbstractSimpleVector_O),_Length), "_Length" }, // public: (T) fixable: NIL good-name: T
 { class_kind, STAMP_core__SimpleVectorFloat_O, sizeof(core::SimpleVectorFloat_O), 0, "core::SimpleVectorFloat_O" },
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), offsetof(SAFE_TYPE_MACRO(core::SimpleVectorFloat_O),_Length), "_Length" }, // public: (T) fixable: NIL good-name: T
-{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::SimpleVectorFloat_O),_Data._Data), "_Data._Data" },
-{  variable_capacity, sizeof(float), offsetof(SAFE_TYPE_MACRO(core::SimpleVectorFloat_O),_Data._Length), offsetof(SAFE_TYPE_MACRO(core::SimpleVectorFloat_O),_Data._Length), NULL },
+ {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::SimpleVectorFloat_O),_Data._Data), "_Data._Data" },
+ {  variable_capacity, sizeof(float), offsetof(SAFE_TYPE_MACRO(core::SimpleVectorFloat_O),_Data._Length), offsetof(SAFE_TYPE_MACRO(core::SimpleVectorFloat_O),_Data._Length), NULL },
+// one -> #<POD-OFFSET :fields NIL :offset-type #S(BUILTIN-CTYPE :KEY "float") :base #S(BUILTIN-CTYPE :KEY "float")>
 {    variable_field, ctype_float, sizeof(float), 0, "only" },
 { class_kind, STAMP_core__SimpleVector_byte64_t_O, sizeof(core::SimpleVector_byte64_t_O), 0, "core::SimpleVector_byte64_t_O" },
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), offsetof(SAFE_TYPE_MACRO(core::SimpleVector_byte64_t_O),_Length), "_Length" }, // public: (T) fixable: NIL good-name: T
-{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::SimpleVector_byte64_t_O),_Data._Data), "_Data._Data" },
-{  variable_capacity, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleVector_byte64_t_O),_Data._Length), offsetof(SAFE_TYPE_MACRO(core::SimpleVector_byte64_t_O),_Data._Length), NULL },
+ {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::SimpleVector_byte64_t_O),_Data._Data), "_Data._Data" },
+ {  variable_capacity, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleVector_byte64_t_O),_Data._Length), offsetof(SAFE_TYPE_MACRO(core::SimpleVector_byte64_t_O),_Data._Length), NULL },
+// one -> #<POD-OFFSET :fields NIL :offset-type #S(BUILTIN-CTYPE :KEY "unsigned long") :base #S(BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
 { class_kind, STAMP_core__SimpleVector_int64_t_O, sizeof(core::SimpleVector_int64_t_O), 0, "core::SimpleVector_int64_t_O" },
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), offsetof(SAFE_TYPE_MACRO(core::SimpleVector_int64_t_O),_Length), "_Length" }, // public: (T) fixable: NIL good-name: T
-{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::SimpleVector_int64_t_O),_Data._Data), "_Data._Data" },
-{  variable_capacity, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::SimpleVector_int64_t_O),_Data._Length), offsetof(SAFE_TYPE_MACRO(core::SimpleVector_int64_t_O),_Data._Length), NULL },
+ {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::SimpleVector_int64_t_O),_Data._Data), "_Data._Data" },
+ {  variable_capacity, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::SimpleVector_int64_t_O),_Data._Length), offsetof(SAFE_TYPE_MACRO(core::SimpleVector_int64_t_O),_Data._Length), NULL },
+// one -> #<POD-OFFSET :fields NIL :offset-type #S(BUILTIN-CTYPE :KEY "long") :base #S(BUILTIN-CTYPE :KEY "long")>
 {    variable_field, ctype_long, sizeof(long), 0, "only" },
 { class_kind, STAMP_core__SimpleString_O, sizeof(core::SimpleString_O), 0, "core::SimpleString_O" },
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), offsetof(SAFE_TYPE_MACRO(core::SimpleString_O),_Length), "_Length" }, // public: (T) fixable: NIL good-name: T
 { class_kind, STAMP_core__SimpleCharacterString_O, sizeof(core::SimpleCharacterString_O), 0, "core::SimpleCharacterString_O" },
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), offsetof(SAFE_TYPE_MACRO(core::SimpleCharacterString_O),_Length), "_Length" }, // public: (T) fixable: NIL good-name: T
-{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::SimpleCharacterString_O),_Data._Data), "_Data._Data" },
-{  variable_capacity, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::SimpleCharacterString_O),_Data._Length), offsetof(SAFE_TYPE_MACRO(core::SimpleCharacterString_O),_Data._Length), NULL },
+ {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::SimpleCharacterString_O),_Data._Data), "_Data._Data" },
+ {  variable_capacity, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::SimpleCharacterString_O),_Data._Length), offsetof(SAFE_TYPE_MACRO(core::SimpleCharacterString_O),_Data._Length), NULL },
+// one -> #<POD-OFFSET :fields NIL :offset-type #S(BUILTIN-CTYPE :KEY "int") :base #S(BUILTIN-CTYPE :KEY "int")>
 {    variable_field, ctype_int, sizeof(int), 0, "only" },
 { class_kind, STAMP_core__SimpleBaseString_O, sizeof(core::SimpleBaseString_O), 0, "core::SimpleBaseString_O" },
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), offsetof(SAFE_TYPE_MACRO(core::SimpleBaseString_O),_Length), "_Length" }, // public: (T) fixable: NIL good-name: T
-{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::SimpleBaseString_O),_Data._Data), "_Data._Data" },
-{  variable_capacity, sizeof(unsigned char), offsetof(SAFE_TYPE_MACRO(core::SimpleBaseString_O),_Data._Length), offsetof(SAFE_TYPE_MACRO(core::SimpleBaseString_O),_Data._Length), NULL },
+ {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::SimpleBaseString_O),_Data._Data), "_Data._Data" },
+ {  variable_capacity, sizeof(unsigned char), offsetof(SAFE_TYPE_MACRO(core::SimpleBaseString_O),_Data._Length), offsetof(SAFE_TYPE_MACRO(core::SimpleBaseString_O),_Data._Length), NULL },
+// one -> #<POD-OFFSET :fields NIL :offset-type #S(BUILTIN-CTYPE :KEY "unsigned char") :base #S(BUILTIN-CTYPE :KEY "unsigned char")>
 {    variable_field, ctype_unsigned_char, sizeof(unsigned char), 0, "only" },
 { class_kind, STAMP_core__SimpleVector_int16_t_O, sizeof(core::SimpleVector_int16_t_O), 0, "core::SimpleVector_int16_t_O" },
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), offsetof(SAFE_TYPE_MACRO(core::SimpleVector_int16_t_O),_Length), "_Length" }, // public: (T) fixable: NIL good-name: T
-{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::SimpleVector_int16_t_O),_Data._Data), "_Data._Data" },
-{  variable_capacity, sizeof(short), offsetof(SAFE_TYPE_MACRO(core::SimpleVector_int16_t_O),_Data._Length), offsetof(SAFE_TYPE_MACRO(core::SimpleVector_int16_t_O),_Data._Length), NULL },
+ {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::SimpleVector_int16_t_O),_Data._Data), "_Data._Data" },
+ {  variable_capacity, sizeof(short), offsetof(SAFE_TYPE_MACRO(core::SimpleVector_int16_t_O),_Data._Length), offsetof(SAFE_TYPE_MACRO(core::SimpleVector_int16_t_O),_Data._Length), NULL },
+// one -> #<POD-OFFSET :fields NIL :offset-type #S(BUILTIN-CTYPE :KEY "short") :base #S(BUILTIN-CTYPE :KEY "short")>
 {    variable_field, ctype_short, sizeof(short), 0, "only" },
 { class_kind, STAMP_core__SimpleVector_byte16_t_O, sizeof(core::SimpleVector_byte16_t_O), 0, "core::SimpleVector_byte16_t_O" },
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), offsetof(SAFE_TYPE_MACRO(core::SimpleVector_byte16_t_O),_Length), "_Length" }, // public: (T) fixable: NIL good-name: T
-{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::SimpleVector_byte16_t_O),_Data._Data), "_Data._Data" },
-{  variable_capacity, sizeof(unsigned short), offsetof(SAFE_TYPE_MACRO(core::SimpleVector_byte16_t_O),_Data._Length), offsetof(SAFE_TYPE_MACRO(core::SimpleVector_byte16_t_O),_Data._Length), NULL },
+ {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::SimpleVector_byte16_t_O),_Data._Data), "_Data._Data" },
+ {  variable_capacity, sizeof(unsigned short), offsetof(SAFE_TYPE_MACRO(core::SimpleVector_byte16_t_O),_Data._Length), offsetof(SAFE_TYPE_MACRO(core::SimpleVector_byte16_t_O),_Data._Length), NULL },
+// one -> #<POD-OFFSET :fields NIL :offset-type #S(BUILTIN-CTYPE :KEY "unsigned short") :base #S(BUILTIN-CTYPE :KEY "unsigned short")>
 {    variable_field, ctype_unsigned_short, sizeof(unsigned short), 0, "only" },
 { class_kind, STAMP_core__SimpleVector_fixnum_O, sizeof(core::SimpleVector_fixnum_O), 0, "core::SimpleVector_fixnum_O" },
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), offsetof(SAFE_TYPE_MACRO(core::SimpleVector_fixnum_O),_Length), "_Length" }, // public: (T) fixable: NIL good-name: T
-{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::SimpleVector_fixnum_O),_Data._Data), "_Data._Data" },
-{  variable_capacity, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::SimpleVector_fixnum_O),_Data._Length), offsetof(SAFE_TYPE_MACRO(core::SimpleVector_fixnum_O),_Data._Length), NULL },
+ {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::SimpleVector_fixnum_O),_Data._Data), "_Data._Data" },
+ {  variable_capacity, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::SimpleVector_fixnum_O),_Data._Length), offsetof(SAFE_TYPE_MACRO(core::SimpleVector_fixnum_O),_Data._Length), NULL },
+// one -> #<POD-OFFSET :fields NIL :offset-type #S(BUILTIN-CTYPE :KEY "long") :base #S(BUILTIN-CTYPE :KEY "long")>
 {    variable_field, ctype_long, sizeof(long), 0, "only" },
 { class_kind, STAMP_core__SimpleVector_int8_t_O, sizeof(core::SimpleVector_int8_t_O), 0, "core::SimpleVector_int8_t_O" },
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), offsetof(SAFE_TYPE_MACRO(core::SimpleVector_int8_t_O),_Length), "_Length" }, // public: (T) fixable: NIL good-name: T
-{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::SimpleVector_int8_t_O),_Data._Data), "_Data._Data" },
-{  variable_capacity, sizeof(signed char), offsetof(SAFE_TYPE_MACRO(core::SimpleVector_int8_t_O),_Data._Length), offsetof(SAFE_TYPE_MACRO(core::SimpleVector_int8_t_O),_Data._Length), NULL },
+ {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::SimpleVector_int8_t_O),_Data._Data), "_Data._Data" },
+ {  variable_capacity, sizeof(signed char), offsetof(SAFE_TYPE_MACRO(core::SimpleVector_int8_t_O),_Data._Length), offsetof(SAFE_TYPE_MACRO(core::SimpleVector_int8_t_O),_Data._Length), NULL },
+// one -> #<POD-OFFSET :fields NIL :offset-type #S(BUILTIN-CTYPE :KEY "signed char") :base #S(BUILTIN-CTYPE :KEY "signed char")>
 {    variable_field, ctype_signed_char, sizeof(signed char), 0, "only" },
 { class_kind, STAMP_core__SimpleVector_O, sizeof(core::SimpleVector_O), 0, "core::SimpleVector_O" },
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), offsetof(SAFE_TYPE_MACRO(core::SimpleVector_O),_Length), "_Length" }, // public: (T) fixable: NIL good-name: T
-{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::SimpleVector_O),_Data._Data), "_Data._Data" },
-{  variable_capacity, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::SimpleVector_O),_Data._Length), offsetof(SAFE_TYPE_MACRO(core::SimpleVector_O),_Data._Length), NULL },
+ {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::SimpleVector_O),_Data._Data), "_Data._Data" },
+ {  variable_capacity, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::SimpleVector_O),_Data._Length), offsetof(SAFE_TYPE_MACRO(core::SimpleVector_O),_Data._Length), NULL },
+// one -> #<SMART-PTR-OFFSET :fields NIL :offset-type #S(SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O") :base #S(SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")>
 {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), 0, "only" },
 { class_kind, STAMP_core__SimpleVector_byte8_t_O, sizeof(core::SimpleVector_byte8_t_O), 0, "core::SimpleVector_byte8_t_O" },
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), offsetof(SAFE_TYPE_MACRO(core::SimpleVector_byte8_t_O),_Length), "_Length" }, // public: (T) fixable: NIL good-name: T
-{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::SimpleVector_byte8_t_O),_Data._Data), "_Data._Data" },
-{  variable_capacity, sizeof(unsigned char), offsetof(SAFE_TYPE_MACRO(core::SimpleVector_byte8_t_O),_Data._Length), offsetof(SAFE_TYPE_MACRO(core::SimpleVector_byte8_t_O),_Data._Length), NULL },
+ {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::SimpleVector_byte8_t_O),_Data._Data), "_Data._Data" },
+ {  variable_capacity, sizeof(unsigned char), offsetof(SAFE_TYPE_MACRO(core::SimpleVector_byte8_t_O),_Data._Length), offsetof(SAFE_TYPE_MACRO(core::SimpleVector_byte8_t_O),_Data._Length), NULL },
+// one -> #<POD-OFFSET :fields NIL :offset-type #S(BUILTIN-CTYPE :KEY "unsigned char") :base #S(BUILTIN-CTYPE :KEY "unsigned char")>
 {    variable_field, ctype_unsigned_char, sizeof(unsigned char), 0, "only" },
 { class_kind, STAMP_core__SimpleVector_int32_t_O, sizeof(core::SimpleVector_int32_t_O), 0, "core::SimpleVector_int32_t_O" },
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), offsetof(SAFE_TYPE_MACRO(core::SimpleVector_int32_t_O),_Length), "_Length" }, // public: (T) fixable: NIL good-name: T
-{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::SimpleVector_int32_t_O),_Data._Data), "_Data._Data" },
-{  variable_capacity, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::SimpleVector_int32_t_O),_Data._Length), offsetof(SAFE_TYPE_MACRO(core::SimpleVector_int32_t_O),_Data._Length), NULL },
+ {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::SimpleVector_int32_t_O),_Data._Data), "_Data._Data" },
+ {  variable_capacity, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::SimpleVector_int32_t_O),_Data._Length), offsetof(SAFE_TYPE_MACRO(core::SimpleVector_int32_t_O),_Data._Length), NULL },
+// one -> #<POD-OFFSET :fields NIL :offset-type #S(BUILTIN-CTYPE :KEY "int") :base #S(BUILTIN-CTYPE :KEY "int")>
 {    variable_field, ctype_int, sizeof(int), 0, "only" },
 { class_kind, STAMP_core__SimpleBitVector_O, sizeof(core::SimpleBitVector_O), 0, "core::SimpleBitVector_O" },
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), offsetof(SAFE_TYPE_MACRO(core::SimpleBitVector_O),_Length), "_Length" }, // public: (T) fixable: NIL good-name: T
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleBitVector_O),_Data._Length), "_Data._Length" }, // public: (T T) fixable: NIL good-name: T
- {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), offsetof(SAFE_TYPE_MACRO(core::SimpleBitVector_O),_Data._Data), "_Data._Data" }, // public: (T T) fixable: NIL good-name: T
+ {  variable_bit_array0, 1, 0, offsetof(SAFE_TYPE_MACRO(core::SimpleBitVector_O),_Data._Data), "_Data._Data" },
+ {  variable_capacity, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(core::SimpleBitVector_O),_Data._Length), offsetof(SAFE_TYPE_MACRO(core::SimpleBitVector_O),_Data._Length), NULL },
+// one -> #<POD-OFFSET :fields NIL :offset-type #S(BUILTIN-CTYPE :KEY "unsigned int") :base #S(BUILTIN-CTYPE :KEY "unsigned int")>
+{    variable_field, ctype_unsigned_int, sizeof(unsigned int), 0, "only" },
 { class_kind, STAMP_core__SimpleVector_byte32_t_O, sizeof(core::SimpleVector_byte32_t_O), 0, "core::SimpleVector_byte32_t_O" },
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), offsetof(SAFE_TYPE_MACRO(core::SimpleVector_byte32_t_O),_Length), "_Length" }, // public: (T) fixable: NIL good-name: T
-{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::SimpleVector_byte32_t_O),_Data._Data), "_Data._Data" },
-{  variable_capacity, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(core::SimpleVector_byte32_t_O),_Data._Length), offsetof(SAFE_TYPE_MACRO(core::SimpleVector_byte32_t_O),_Data._Length), NULL },
+ {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::SimpleVector_byte32_t_O),_Data._Data), "_Data._Data" },
+ {  variable_capacity, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(core::SimpleVector_byte32_t_O),_Data._Length), offsetof(SAFE_TYPE_MACRO(core::SimpleVector_byte32_t_O),_Data._Length), NULL },
+// one -> #<POD-OFFSET :fields NIL :offset-type #S(BUILTIN-CTYPE :KEY "unsigned int") :base #S(BUILTIN-CTYPE :KEY "unsigned int")>
 {    variable_field, ctype_unsigned_int, sizeof(unsigned int), 0, "only" },
 { class_kind, STAMP_core__SimpleVector_size_t_O, sizeof(core::SimpleVector_size_t_O), 0, "core::SimpleVector_size_t_O" },
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), offsetof(SAFE_TYPE_MACRO(core::SimpleVector_size_t_O),_Length), "_Length" }, // public: (T) fixable: NIL good-name: T
-{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::SimpleVector_size_t_O),_Data._Data), "_Data._Data" },
-{  variable_capacity, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleVector_size_t_O),_Data._Length), offsetof(SAFE_TYPE_MACRO(core::SimpleVector_size_t_O),_Data._Length), NULL },
+ {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::SimpleVector_size_t_O),_Data._Data), "_Data._Data" },
+ {  variable_capacity, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleVector_size_t_O),_Data._Length), offsetof(SAFE_TYPE_MACRO(core::SimpleVector_size_t_O),_Data._Length), NULL },
+// one -> #<POD-OFFSET :fields NIL :offset-type #S(BUILTIN-CTYPE :KEY "unsigned long") :base #S(BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
 { class_kind, STAMP_core__SimpleVectorDouble_O, sizeof(core::SimpleVectorDouble_O), 0, "core::SimpleVectorDouble_O" },
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), offsetof(SAFE_TYPE_MACRO(core::SimpleVectorDouble_O),_Length), "_Length" }, // public: (T) fixable: NIL good-name: T
-{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::SimpleVectorDouble_O),_Data._Data), "_Data._Data" },
-{  variable_capacity, sizeof(double), offsetof(SAFE_TYPE_MACRO(core::SimpleVectorDouble_O),_Data._Length), offsetof(SAFE_TYPE_MACRO(core::SimpleVectorDouble_O),_Data._Length), NULL },
+ {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::SimpleVectorDouble_O),_Data._Data), "_Data._Data" },
+ {  variable_capacity, sizeof(double), offsetof(SAFE_TYPE_MACRO(core::SimpleVectorDouble_O),_Data._Length), offsetof(SAFE_TYPE_MACRO(core::SimpleVectorDouble_O),_Data._Length), NULL },
+// one -> #<POD-OFFSET :fields NIL :offset-type #S(BUILTIN-CTYPE :KEY "double") :base #S(BUILTIN-CTYPE :KEY "double")>
 {    variable_field, ctype_double, sizeof(double), 0, "only" },
 { class_kind, STAMP_core__MDArray_O, sizeof(core::MDArray_O), 0, "core::MDArray_O" },
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), offsetof(SAFE_TYPE_MACRO(core::MDArray_O),_Length), "_Length" }, // public: (T) fixable: NIL good-name: T
@@ -7111,8 +7131,9 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Array_O>), offsetof(SAFE_TYPE_MACRO(core::MDArray_O),_Data), "_Data" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_O),_DisplacedIndexOffset), "_DisplacedIndexOffset" }, // public: (T) fixable: NIL good-name: T
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_O),_Flags._Flags), "_Flags._Flags" }, // public: (T T) fixable: NIL good-name: T
-{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::MDArray_O),_Dimensions._Data), "_Dimensions._Data" },
-{  variable_capacity, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_O),_Dimensions._Length), offsetof(SAFE_TYPE_MACRO(core::MDArray_O),_Dimensions._Length), NULL },
+ {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::MDArray_O),_Dimensions._Data), "_Dimensions._Data" },
+ {  variable_capacity, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_O),_Dimensions._Length), offsetof(SAFE_TYPE_MACRO(core::MDArray_O),_Dimensions._Length), NULL },
+// one -> #<POD-OFFSET :fields NIL :offset-type #S(BUILTIN-CTYPE :KEY "unsigned long") :base #S(BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
 { class_kind, STAMP_core__BitVectorNs_O, sizeof(core::BitVectorNs_O), 0, "core::BitVectorNs_O" },
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), offsetof(SAFE_TYPE_MACRO(core::BitVectorNs_O),_Length), "_Length" }, // public: (T) fixable: NIL good-name: T
@@ -7121,8 +7142,9 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Array_O>), offsetof(SAFE_TYPE_MACRO(core::BitVectorNs_O),_Data), "_Data" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::BitVectorNs_O),_DisplacedIndexOffset), "_DisplacedIndexOffset" }, // public: (T) fixable: NIL good-name: T
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::BitVectorNs_O),_Flags._Flags), "_Flags._Flags" }, // public: (T T) fixable: NIL good-name: T
-{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::BitVectorNs_O),_Dimensions._Data), "_Dimensions._Data" },
-{  variable_capacity, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::BitVectorNs_O),_Dimensions._Length), offsetof(SAFE_TYPE_MACRO(core::BitVectorNs_O),_Dimensions._Length), NULL },
+ {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::BitVectorNs_O),_Dimensions._Data), "_Dimensions._Data" },
+ {  variable_capacity, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::BitVectorNs_O),_Dimensions._Length), offsetof(SAFE_TYPE_MACRO(core::BitVectorNs_O),_Dimensions._Length), NULL },
+// one -> #<POD-OFFSET :fields NIL :offset-type #S(BUILTIN-CTYPE :KEY "unsigned long") :base #S(BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
 { class_kind, STAMP_core__MDArray_byte64_t_O, sizeof(core::MDArray_byte64_t_O), 0, "core::MDArray_byte64_t_O" },
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), offsetof(SAFE_TYPE_MACRO(core::MDArray_byte64_t_O),_Length), "_Length" }, // public: (T) fixable: NIL good-name: T
@@ -7131,8 +7153,9 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Array_O>), offsetof(SAFE_TYPE_MACRO(core::MDArray_byte64_t_O),_Data), "_Data" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_byte64_t_O),_DisplacedIndexOffset), "_DisplacedIndexOffset" }, // public: (T) fixable: NIL good-name: T
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_byte64_t_O),_Flags._Flags), "_Flags._Flags" }, // public: (T T) fixable: NIL good-name: T
-{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::MDArray_byte64_t_O),_Dimensions._Data), "_Dimensions._Data" },
-{  variable_capacity, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_byte64_t_O),_Dimensions._Length), offsetof(SAFE_TYPE_MACRO(core::MDArray_byte64_t_O),_Dimensions._Length), NULL },
+ {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::MDArray_byte64_t_O),_Dimensions._Data), "_Dimensions._Data" },
+ {  variable_capacity, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_byte64_t_O),_Dimensions._Length), offsetof(SAFE_TYPE_MACRO(core::MDArray_byte64_t_O),_Dimensions._Length), NULL },
+// one -> #<POD-OFFSET :fields NIL :offset-type #S(BUILTIN-CTYPE :KEY "unsigned long") :base #S(BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
 { class_kind, STAMP_core__MDArray_int16_t_O, sizeof(core::MDArray_int16_t_O), 0, "core::MDArray_int16_t_O" },
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), offsetof(SAFE_TYPE_MACRO(core::MDArray_int16_t_O),_Length), "_Length" }, // public: (T) fixable: NIL good-name: T
@@ -7141,8 +7164,9 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Array_O>), offsetof(SAFE_TYPE_MACRO(core::MDArray_int16_t_O),_Data), "_Data" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_int16_t_O),_DisplacedIndexOffset), "_DisplacedIndexOffset" }, // public: (T) fixable: NIL good-name: T
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_int16_t_O),_Flags._Flags), "_Flags._Flags" }, // public: (T T) fixable: NIL good-name: T
-{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::MDArray_int16_t_O),_Dimensions._Data), "_Dimensions._Data" },
-{  variable_capacity, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_int16_t_O),_Dimensions._Length), offsetof(SAFE_TYPE_MACRO(core::MDArray_int16_t_O),_Dimensions._Length), NULL },
+ {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::MDArray_int16_t_O),_Dimensions._Data), "_Dimensions._Data" },
+ {  variable_capacity, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_int16_t_O),_Dimensions._Length), offsetof(SAFE_TYPE_MACRO(core::MDArray_int16_t_O),_Dimensions._Length), NULL },
+// one -> #<POD-OFFSET :fields NIL :offset-type #S(BUILTIN-CTYPE :KEY "unsigned long") :base #S(BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
 { class_kind, STAMP_core__MDArray_int8_t_O, sizeof(core::MDArray_int8_t_O), 0, "core::MDArray_int8_t_O" },
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), offsetof(SAFE_TYPE_MACRO(core::MDArray_int8_t_O),_Length), "_Length" }, // public: (T) fixable: NIL good-name: T
@@ -7151,8 +7175,9 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Array_O>), offsetof(SAFE_TYPE_MACRO(core::MDArray_int8_t_O),_Data), "_Data" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_int8_t_O),_DisplacedIndexOffset), "_DisplacedIndexOffset" }, // public: (T) fixable: NIL good-name: T
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_int8_t_O),_Flags._Flags), "_Flags._Flags" }, // public: (T T) fixable: NIL good-name: T
-{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::MDArray_int8_t_O),_Dimensions._Data), "_Dimensions._Data" },
-{  variable_capacity, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_int8_t_O),_Dimensions._Length), offsetof(SAFE_TYPE_MACRO(core::MDArray_int8_t_O),_Dimensions._Length), NULL },
+ {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::MDArray_int8_t_O),_Dimensions._Data), "_Dimensions._Data" },
+ {  variable_capacity, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_int8_t_O),_Dimensions._Length), offsetof(SAFE_TYPE_MACRO(core::MDArray_int8_t_O),_Dimensions._Length), NULL },
+// one -> #<POD-OFFSET :fields NIL :offset-type #S(BUILTIN-CTYPE :KEY "unsigned long") :base #S(BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
 { class_kind, STAMP_core__MDArrayCharacter_O, sizeof(core::MDArrayCharacter_O), 0, "core::MDArrayCharacter_O" },
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), offsetof(SAFE_TYPE_MACRO(core::MDArrayCharacter_O),_Length), "_Length" }, // public: (T) fixable: NIL good-name: T
@@ -7161,8 +7186,9 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Array_O>), offsetof(SAFE_TYPE_MACRO(core::MDArrayCharacter_O),_Data), "_Data" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArrayCharacter_O),_DisplacedIndexOffset), "_DisplacedIndexOffset" }, // public: (T) fixable: NIL good-name: T
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArrayCharacter_O),_Flags._Flags), "_Flags._Flags" }, // public: (T T) fixable: NIL good-name: T
-{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::MDArrayCharacter_O),_Dimensions._Data), "_Dimensions._Data" },
-{  variable_capacity, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArrayCharacter_O),_Dimensions._Length), offsetof(SAFE_TYPE_MACRO(core::MDArrayCharacter_O),_Dimensions._Length), NULL },
+ {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::MDArrayCharacter_O),_Dimensions._Data), "_Dimensions._Data" },
+ {  variable_capacity, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArrayCharacter_O),_Dimensions._Length), offsetof(SAFE_TYPE_MACRO(core::MDArrayCharacter_O),_Dimensions._Length), NULL },
+// one -> #<POD-OFFSET :fields NIL :offset-type #S(BUILTIN-CTYPE :KEY "unsigned long") :base #S(BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
 { class_kind, STAMP_core__MDArray_int32_t_O, sizeof(core::MDArray_int32_t_O), 0, "core::MDArray_int32_t_O" },
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), offsetof(SAFE_TYPE_MACRO(core::MDArray_int32_t_O),_Length), "_Length" }, // public: (T) fixable: NIL good-name: T
@@ -7171,8 +7197,9 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Array_O>), offsetof(SAFE_TYPE_MACRO(core::MDArray_int32_t_O),_Data), "_Data" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_int32_t_O),_DisplacedIndexOffset), "_DisplacedIndexOffset" }, // public: (T) fixable: NIL good-name: T
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_int32_t_O),_Flags._Flags), "_Flags._Flags" }, // public: (T T) fixable: NIL good-name: T
-{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::MDArray_int32_t_O),_Dimensions._Data), "_Dimensions._Data" },
-{  variable_capacity, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_int32_t_O),_Dimensions._Length), offsetof(SAFE_TYPE_MACRO(core::MDArray_int32_t_O),_Dimensions._Length), NULL },
+ {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::MDArray_int32_t_O),_Dimensions._Data), "_Dimensions._Data" },
+ {  variable_capacity, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_int32_t_O),_Dimensions._Length), offsetof(SAFE_TYPE_MACRO(core::MDArray_int32_t_O),_Dimensions._Length), NULL },
+// one -> #<POD-OFFSET :fields NIL :offset-type #S(BUILTIN-CTYPE :KEY "unsigned long") :base #S(BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
 { class_kind, STAMP_core__MDArrayFloat_O, sizeof(core::MDArrayFloat_O), 0, "core::MDArrayFloat_O" },
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), offsetof(SAFE_TYPE_MACRO(core::MDArrayFloat_O),_Length), "_Length" }, // public: (T) fixable: NIL good-name: T
@@ -7181,8 +7208,9 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Array_O>), offsetof(SAFE_TYPE_MACRO(core::MDArrayFloat_O),_Data), "_Data" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArrayFloat_O),_DisplacedIndexOffset), "_DisplacedIndexOffset" }, // public: (T) fixable: NIL good-name: T
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArrayFloat_O),_Flags._Flags), "_Flags._Flags" }, // public: (T T) fixable: NIL good-name: T
-{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::MDArrayFloat_O),_Dimensions._Data), "_Dimensions._Data" },
-{  variable_capacity, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArrayFloat_O),_Dimensions._Length), offsetof(SAFE_TYPE_MACRO(core::MDArrayFloat_O),_Dimensions._Length), NULL },
+ {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::MDArrayFloat_O),_Dimensions._Data), "_Dimensions._Data" },
+ {  variable_capacity, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArrayFloat_O),_Dimensions._Length), offsetof(SAFE_TYPE_MACRO(core::MDArrayFloat_O),_Dimensions._Length), NULL },
+// one -> #<POD-OFFSET :fields NIL :offset-type #S(BUILTIN-CTYPE :KEY "unsigned long") :base #S(BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
 { class_kind, STAMP_core__StrNs_O, sizeof(core::StrNs_O), 0, "core::StrNs_O" },
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), offsetof(SAFE_TYPE_MACRO(core::StrNs_O),_Length), "_Length" }, // public: (T) fixable: NIL good-name: T
@@ -7191,8 +7219,9 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Array_O>), offsetof(SAFE_TYPE_MACRO(core::StrNs_O),_Data), "_Data" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::StrNs_O),_DisplacedIndexOffset), "_DisplacedIndexOffset" }, // public: (T) fixable: NIL good-name: T
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::StrNs_O),_Flags._Flags), "_Flags._Flags" }, // public: (T T) fixable: NIL good-name: T
-{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::StrNs_O),_Dimensions._Data), "_Dimensions._Data" },
-{  variable_capacity, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::StrNs_O),_Dimensions._Length), offsetof(SAFE_TYPE_MACRO(core::StrNs_O),_Dimensions._Length), NULL },
+ {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::StrNs_O),_Dimensions._Data), "_Dimensions._Data" },
+ {  variable_capacity, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::StrNs_O),_Dimensions._Length), offsetof(SAFE_TYPE_MACRO(core::StrNs_O),_Dimensions._Length), NULL },
+// one -> #<POD-OFFSET :fields NIL :offset-type #S(BUILTIN-CTYPE :KEY "unsigned long") :base #S(BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
 { class_kind, STAMP_core__StrWNs_O, sizeof(core::StrWNs_O), 0, "core::StrWNs_O" },
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), offsetof(SAFE_TYPE_MACRO(core::StrWNs_O),_Length), "_Length" }, // public: (T) fixable: NIL good-name: T
@@ -7201,8 +7230,9 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Array_O>), offsetof(SAFE_TYPE_MACRO(core::StrWNs_O),_Data), "_Data" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::StrWNs_O),_DisplacedIndexOffset), "_DisplacedIndexOffset" }, // public: (T) fixable: NIL good-name: T
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::StrWNs_O),_Flags._Flags), "_Flags._Flags" }, // public: (T T) fixable: NIL good-name: T
-{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::StrWNs_O),_Dimensions._Data), "_Dimensions._Data" },
-{  variable_capacity, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::StrWNs_O),_Dimensions._Length), offsetof(SAFE_TYPE_MACRO(core::StrWNs_O),_Dimensions._Length), NULL },
+ {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::StrWNs_O),_Dimensions._Data), "_Dimensions._Data" },
+ {  variable_capacity, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::StrWNs_O),_Dimensions._Length), offsetof(SAFE_TYPE_MACRO(core::StrWNs_O),_Dimensions._Length), NULL },
+// one -> #<POD-OFFSET :fields NIL :offset-type #S(BUILTIN-CTYPE :KEY "unsigned long") :base #S(BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
 { class_kind, STAMP_core__Str8Ns_O, sizeof(core::Str8Ns_O), 0, "core::Str8Ns_O" },
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), offsetof(SAFE_TYPE_MACRO(core::Str8Ns_O),_Length), "_Length" }, // public: (T) fixable: NIL good-name: T
@@ -7211,8 +7241,9 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Array_O>), offsetof(SAFE_TYPE_MACRO(core::Str8Ns_O),_Data), "_Data" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::Str8Ns_O),_DisplacedIndexOffset), "_DisplacedIndexOffset" }, // public: (T) fixable: NIL good-name: T
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::Str8Ns_O),_Flags._Flags), "_Flags._Flags" }, // public: (T T) fixable: NIL good-name: T
-{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::Str8Ns_O),_Dimensions._Data), "_Dimensions._Data" },
-{  variable_capacity, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::Str8Ns_O),_Dimensions._Length), offsetof(SAFE_TYPE_MACRO(core::Str8Ns_O),_Dimensions._Length), NULL },
+ {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::Str8Ns_O),_Dimensions._Data), "_Dimensions._Data" },
+ {  variable_capacity, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::Str8Ns_O),_Dimensions._Length), offsetof(SAFE_TYPE_MACRO(core::Str8Ns_O),_Dimensions._Length), NULL },
+// one -> #<POD-OFFSET :fields NIL :offset-type #S(BUILTIN-CTYPE :KEY "unsigned long") :base #S(BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
 { class_kind, STAMP_core__MDArrayDouble_O, sizeof(core::MDArrayDouble_O), 0, "core::MDArrayDouble_O" },
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), offsetof(SAFE_TYPE_MACRO(core::MDArrayDouble_O),_Length), "_Length" }, // public: (T) fixable: NIL good-name: T
@@ -7221,8 +7252,9 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Array_O>), offsetof(SAFE_TYPE_MACRO(core::MDArrayDouble_O),_Data), "_Data" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArrayDouble_O),_DisplacedIndexOffset), "_DisplacedIndexOffset" }, // public: (T) fixable: NIL good-name: T
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArrayDouble_O),_Flags._Flags), "_Flags._Flags" }, // public: (T T) fixable: NIL good-name: T
-{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::MDArrayDouble_O),_Dimensions._Data), "_Dimensions._Data" },
-{  variable_capacity, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArrayDouble_O),_Dimensions._Length), offsetof(SAFE_TYPE_MACRO(core::MDArrayDouble_O),_Dimensions._Length), NULL },
+ {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::MDArrayDouble_O),_Dimensions._Data), "_Dimensions._Data" },
+ {  variable_capacity, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArrayDouble_O),_Dimensions._Length), offsetof(SAFE_TYPE_MACRO(core::MDArrayDouble_O),_Dimensions._Length), NULL },
+// one -> #<POD-OFFSET :fields NIL :offset-type #S(BUILTIN-CTYPE :KEY "unsigned long") :base #S(BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
 { class_kind, STAMP_core__MDArrayT_O, sizeof(core::MDArrayT_O), 0, "core::MDArrayT_O" },
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), offsetof(SAFE_TYPE_MACRO(core::MDArrayT_O),_Length), "_Length" }, // public: (T) fixable: NIL good-name: T
@@ -7231,8 +7263,9 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Array_O>), offsetof(SAFE_TYPE_MACRO(core::MDArrayT_O),_Data), "_Data" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArrayT_O),_DisplacedIndexOffset), "_DisplacedIndexOffset" }, // public: (T) fixable: NIL good-name: T
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArrayT_O),_Flags._Flags), "_Flags._Flags" }, // public: (T T) fixable: NIL good-name: T
-{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::MDArrayT_O),_Dimensions._Data), "_Dimensions._Data" },
-{  variable_capacity, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArrayT_O),_Dimensions._Length), offsetof(SAFE_TYPE_MACRO(core::MDArrayT_O),_Dimensions._Length), NULL },
+ {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::MDArrayT_O),_Dimensions._Data), "_Dimensions._Data" },
+ {  variable_capacity, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArrayT_O),_Dimensions._Length), offsetof(SAFE_TYPE_MACRO(core::MDArrayT_O),_Dimensions._Length), NULL },
+// one -> #<POD-OFFSET :fields NIL :offset-type #S(BUILTIN-CTYPE :KEY "unsigned long") :base #S(BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
 { class_kind, STAMP_core__MDArray_size_t_O, sizeof(core::MDArray_size_t_O), 0, "core::MDArray_size_t_O" },
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), offsetof(SAFE_TYPE_MACRO(core::MDArray_size_t_O),_Length), "_Length" }, // public: (T) fixable: NIL good-name: T
@@ -7241,8 +7274,9 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Array_O>), offsetof(SAFE_TYPE_MACRO(core::MDArray_size_t_O),_Data), "_Data" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_size_t_O),_DisplacedIndexOffset), "_DisplacedIndexOffset" }, // public: (T) fixable: NIL good-name: T
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_size_t_O),_Flags._Flags), "_Flags._Flags" }, // public: (T T) fixable: NIL good-name: T
-{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::MDArray_size_t_O),_Dimensions._Data), "_Dimensions._Data" },
-{  variable_capacity, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_size_t_O),_Dimensions._Length), offsetof(SAFE_TYPE_MACRO(core::MDArray_size_t_O),_Dimensions._Length), NULL },
+ {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::MDArray_size_t_O),_Dimensions._Data), "_Dimensions._Data" },
+ {  variable_capacity, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_size_t_O),_Dimensions._Length), offsetof(SAFE_TYPE_MACRO(core::MDArray_size_t_O),_Dimensions._Length), NULL },
+// one -> #<POD-OFFSET :fields NIL :offset-type #S(BUILTIN-CTYPE :KEY "unsigned long") :base #S(BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
 { class_kind, STAMP_core__MDArray_byte8_t_O, sizeof(core::MDArray_byte8_t_O), 0, "core::MDArray_byte8_t_O" },
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), offsetof(SAFE_TYPE_MACRO(core::MDArray_byte8_t_O),_Length), "_Length" }, // public: (T) fixable: NIL good-name: T
@@ -7251,8 +7285,9 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Array_O>), offsetof(SAFE_TYPE_MACRO(core::MDArray_byte8_t_O),_Data), "_Data" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_byte8_t_O),_DisplacedIndexOffset), "_DisplacedIndexOffset" }, // public: (T) fixable: NIL good-name: T
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_byte8_t_O),_Flags._Flags), "_Flags._Flags" }, // public: (T T) fixable: NIL good-name: T
-{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::MDArray_byte8_t_O),_Dimensions._Data), "_Dimensions._Data" },
-{  variable_capacity, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_byte8_t_O),_Dimensions._Length), offsetof(SAFE_TYPE_MACRO(core::MDArray_byte8_t_O),_Dimensions._Length), NULL },
+ {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::MDArray_byte8_t_O),_Dimensions._Data), "_Dimensions._Data" },
+ {  variable_capacity, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_byte8_t_O),_Dimensions._Length), offsetof(SAFE_TYPE_MACRO(core::MDArray_byte8_t_O),_Dimensions._Length), NULL },
+// one -> #<POD-OFFSET :fields NIL :offset-type #S(BUILTIN-CTYPE :KEY "unsigned long") :base #S(BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
 { class_kind, STAMP_core__MDArrayBit_O, sizeof(core::MDArrayBit_O), 0, "core::MDArrayBit_O" },
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), offsetof(SAFE_TYPE_MACRO(core::MDArrayBit_O),_Length), "_Length" }, // public: (T) fixable: NIL good-name: T
@@ -7261,8 +7296,9 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Array_O>), offsetof(SAFE_TYPE_MACRO(core::MDArrayBit_O),_Data), "_Data" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArrayBit_O),_DisplacedIndexOffset), "_DisplacedIndexOffset" }, // public: (T) fixable: NIL good-name: T
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArrayBit_O),_Flags._Flags), "_Flags._Flags" }, // public: (T T) fixable: NIL good-name: T
-{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::MDArrayBit_O),_Dimensions._Data), "_Dimensions._Data" },
-{  variable_capacity, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArrayBit_O),_Dimensions._Length), offsetof(SAFE_TYPE_MACRO(core::MDArrayBit_O),_Dimensions._Length), NULL },
+ {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::MDArrayBit_O),_Dimensions._Data), "_Dimensions._Data" },
+ {  variable_capacity, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArrayBit_O),_Dimensions._Length), offsetof(SAFE_TYPE_MACRO(core::MDArrayBit_O),_Dimensions._Length), NULL },
+// one -> #<POD-OFFSET :fields NIL :offset-type #S(BUILTIN-CTYPE :KEY "unsigned long") :base #S(BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
 { class_kind, STAMP_core__MDArray_int64_t_O, sizeof(core::MDArray_int64_t_O), 0, "core::MDArray_int64_t_O" },
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), offsetof(SAFE_TYPE_MACRO(core::MDArray_int64_t_O),_Length), "_Length" }, // public: (T) fixable: NIL good-name: T
@@ -7271,8 +7307,9 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Array_O>), offsetof(SAFE_TYPE_MACRO(core::MDArray_int64_t_O),_Data), "_Data" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_int64_t_O),_DisplacedIndexOffset), "_DisplacedIndexOffset" }, // public: (T) fixable: NIL good-name: T
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_int64_t_O),_Flags._Flags), "_Flags._Flags" }, // public: (T T) fixable: NIL good-name: T
-{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::MDArray_int64_t_O),_Dimensions._Data), "_Dimensions._Data" },
-{  variable_capacity, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_int64_t_O),_Dimensions._Length), offsetof(SAFE_TYPE_MACRO(core::MDArray_int64_t_O),_Dimensions._Length), NULL },
+ {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::MDArray_int64_t_O),_Dimensions._Data), "_Dimensions._Data" },
+ {  variable_capacity, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_int64_t_O),_Dimensions._Length), offsetof(SAFE_TYPE_MACRO(core::MDArray_int64_t_O),_Dimensions._Length), NULL },
+// one -> #<POD-OFFSET :fields NIL :offset-type #S(BUILTIN-CTYPE :KEY "unsigned long") :base #S(BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
 { class_kind, STAMP_core__MDArray_byte16_t_O, sizeof(core::MDArray_byte16_t_O), 0, "core::MDArray_byte16_t_O" },
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), offsetof(SAFE_TYPE_MACRO(core::MDArray_byte16_t_O),_Length), "_Length" }, // public: (T) fixable: NIL good-name: T
@@ -7281,8 +7318,9 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Array_O>), offsetof(SAFE_TYPE_MACRO(core::MDArray_byte16_t_O),_Data), "_Data" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_byte16_t_O),_DisplacedIndexOffset), "_DisplacedIndexOffset" }, // public: (T) fixable: NIL good-name: T
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_byte16_t_O),_Flags._Flags), "_Flags._Flags" }, // public: (T T) fixable: NIL good-name: T
-{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::MDArray_byte16_t_O),_Dimensions._Data), "_Dimensions._Data" },
-{  variable_capacity, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_byte16_t_O),_Dimensions._Length), offsetof(SAFE_TYPE_MACRO(core::MDArray_byte16_t_O),_Dimensions._Length), NULL },
+ {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::MDArray_byte16_t_O),_Dimensions._Data), "_Dimensions._Data" },
+ {  variable_capacity, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_byte16_t_O),_Dimensions._Length), offsetof(SAFE_TYPE_MACRO(core::MDArray_byte16_t_O),_Dimensions._Length), NULL },
+// one -> #<POD-OFFSET :fields NIL :offset-type #S(BUILTIN-CTYPE :KEY "unsigned long") :base #S(BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
 { class_kind, STAMP_core__MDArray_byte32_t_O, sizeof(core::MDArray_byte32_t_O), 0, "core::MDArray_byte32_t_O" },
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), offsetof(SAFE_TYPE_MACRO(core::MDArray_byte32_t_O),_Length), "_Length" }, // public: (T) fixable: NIL good-name: T
@@ -7291,8 +7329,9 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Array_O>), offsetof(SAFE_TYPE_MACRO(core::MDArray_byte32_t_O),_Data), "_Data" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_byte32_t_O),_DisplacedIndexOffset), "_DisplacedIndexOffset" }, // public: (T) fixable: NIL good-name: T
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_byte32_t_O),_Flags._Flags), "_Flags._Flags" }, // public: (T T) fixable: NIL good-name: T
-{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::MDArray_byte32_t_O),_Dimensions._Data), "_Dimensions._Data" },
-{  variable_capacity, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_byte32_t_O),_Dimensions._Length), offsetof(SAFE_TYPE_MACRO(core::MDArray_byte32_t_O),_Dimensions._Length), NULL },
+ {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::MDArray_byte32_t_O),_Dimensions._Data), "_Dimensions._Data" },
+ {  variable_capacity, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_byte32_t_O),_Dimensions._Length), offsetof(SAFE_TYPE_MACRO(core::MDArray_byte32_t_O),_Dimensions._Length), NULL },
+// one -> #<POD-OFFSET :fields NIL :offset-type #S(BUILTIN-CTYPE :KEY "unsigned long") :base #S(BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
 { class_kind, STAMP_core__SimpleMDArray_O, sizeof(core::SimpleMDArray_O), 0, "core::SimpleMDArray_O" },
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_O),_Length), "_Length" }, // public: (T) fixable: NIL good-name: T
@@ -7301,8 +7340,9 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Array_O>), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_O),_Data), "_Data" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_O),_DisplacedIndexOffset), "_DisplacedIndexOffset" }, // public: (T) fixable: NIL good-name: T
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_O),_Flags._Flags), "_Flags._Flags" }, // public: (T T) fixable: NIL good-name: T
-{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_O),_Dimensions._Data), "_Dimensions._Data" },
-{  variable_capacity, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_O),_Dimensions._Length), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_O),_Dimensions._Length), NULL },
+ {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_O),_Dimensions._Data), "_Dimensions._Data" },
+ {  variable_capacity, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_O),_Dimensions._Length), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_O),_Dimensions._Length), NULL },
+// one -> #<POD-OFFSET :fields NIL :offset-type #S(BUILTIN-CTYPE :KEY "unsigned long") :base #S(BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
 { class_kind, STAMP_core__SimpleMDArray_int8_t_O, sizeof(core::SimpleMDArray_int8_t_O), 0, "core::SimpleMDArray_int8_t_O" },
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_int8_t_O),_Length), "_Length" }, // public: (T) fixable: NIL good-name: T
@@ -7311,8 +7351,9 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Array_O>), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_int8_t_O),_Data), "_Data" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_int8_t_O),_DisplacedIndexOffset), "_DisplacedIndexOffset" }, // public: (T) fixable: NIL good-name: T
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_int8_t_O),_Flags._Flags), "_Flags._Flags" }, // public: (T T) fixable: NIL good-name: T
-{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_int8_t_O),_Dimensions._Data), "_Dimensions._Data" },
-{  variable_capacity, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_int8_t_O),_Dimensions._Length), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_int8_t_O),_Dimensions._Length), NULL },
+ {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_int8_t_O),_Dimensions._Data), "_Dimensions._Data" },
+ {  variable_capacity, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_int8_t_O),_Dimensions._Length), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_int8_t_O),_Dimensions._Length), NULL },
+// one -> #<POD-OFFSET :fields NIL :offset-type #S(BUILTIN-CTYPE :KEY "unsigned long") :base #S(BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
 { class_kind, STAMP_core__SimpleMDArrayCharacter_O, sizeof(core::SimpleMDArrayCharacter_O), 0, "core::SimpleMDArrayCharacter_O" },
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayCharacter_O),_Length), "_Length" }, // public: (T) fixable: NIL good-name: T
@@ -7321,8 +7362,9 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Array_O>), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayCharacter_O),_Data), "_Data" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayCharacter_O),_DisplacedIndexOffset), "_DisplacedIndexOffset" }, // public: (T) fixable: NIL good-name: T
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayCharacter_O),_Flags._Flags), "_Flags._Flags" }, // public: (T T) fixable: NIL good-name: T
-{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayCharacter_O),_Dimensions._Data), "_Dimensions._Data" },
-{  variable_capacity, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayCharacter_O),_Dimensions._Length), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayCharacter_O),_Dimensions._Length), NULL },
+ {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayCharacter_O),_Dimensions._Data), "_Dimensions._Data" },
+ {  variable_capacity, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayCharacter_O),_Dimensions._Length), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayCharacter_O),_Dimensions._Length), NULL },
+// one -> #<POD-OFFSET :fields NIL :offset-type #S(BUILTIN-CTYPE :KEY "unsigned long") :base #S(BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
 { class_kind, STAMP_core__SimpleMDArray_fixnum_O, sizeof(core::SimpleMDArray_fixnum_O), 0, "core::SimpleMDArray_fixnum_O" },
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_fixnum_O),_Length), "_Length" }, // public: (T) fixable: NIL good-name: T
@@ -7331,8 +7373,9 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Array_O>), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_fixnum_O),_Data), "_Data" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_fixnum_O),_DisplacedIndexOffset), "_DisplacedIndexOffset" }, // public: (T) fixable: NIL good-name: T
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_fixnum_O),_Flags._Flags), "_Flags._Flags" }, // public: (T T) fixable: NIL good-name: T
-{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_fixnum_O),_Dimensions._Data), "_Dimensions._Data" },
-{  variable_capacity, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_fixnum_O),_Dimensions._Length), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_fixnum_O),_Dimensions._Length), NULL },
+ {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_fixnum_O),_Dimensions._Data), "_Dimensions._Data" },
+ {  variable_capacity, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_fixnum_O),_Dimensions._Length), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_fixnum_O),_Dimensions._Length), NULL },
+// one -> #<POD-OFFSET :fields NIL :offset-type #S(BUILTIN-CTYPE :KEY "unsigned long") :base #S(BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
 { class_kind, STAMP_core__SimpleMDArray_byte32_t_O, sizeof(core::SimpleMDArray_byte32_t_O), 0, "core::SimpleMDArray_byte32_t_O" },
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_byte32_t_O),_Length), "_Length" }, // public: (T) fixable: NIL good-name: T
@@ -7341,8 +7384,9 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Array_O>), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_byte32_t_O),_Data), "_Data" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_byte32_t_O),_DisplacedIndexOffset), "_DisplacedIndexOffset" }, // public: (T) fixable: NIL good-name: T
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_byte32_t_O),_Flags._Flags), "_Flags._Flags" }, // public: (T T) fixable: NIL good-name: T
-{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_byte32_t_O),_Dimensions._Data), "_Dimensions._Data" },
-{  variable_capacity, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_byte32_t_O),_Dimensions._Length), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_byte32_t_O),_Dimensions._Length), NULL },
+ {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_byte32_t_O),_Dimensions._Data), "_Dimensions._Data" },
+ {  variable_capacity, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_byte32_t_O),_Dimensions._Length), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_byte32_t_O),_Dimensions._Length), NULL },
+// one -> #<POD-OFFSET :fields NIL :offset-type #S(BUILTIN-CTYPE :KEY "unsigned long") :base #S(BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
 { class_kind, STAMP_core__SimpleMDArray_byte16_t_O, sizeof(core::SimpleMDArray_byte16_t_O), 0, "core::SimpleMDArray_byte16_t_O" },
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_byte16_t_O),_Length), "_Length" }, // public: (T) fixable: NIL good-name: T
@@ -7351,8 +7395,9 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Array_O>), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_byte16_t_O),_Data), "_Data" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_byte16_t_O),_DisplacedIndexOffset), "_DisplacedIndexOffset" }, // public: (T) fixable: NIL good-name: T
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_byte16_t_O),_Flags._Flags), "_Flags._Flags" }, // public: (T T) fixable: NIL good-name: T
-{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_byte16_t_O),_Dimensions._Data), "_Dimensions._Data" },
-{  variable_capacity, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_byte16_t_O),_Dimensions._Length), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_byte16_t_O),_Dimensions._Length), NULL },
+ {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_byte16_t_O),_Dimensions._Data), "_Dimensions._Data" },
+ {  variable_capacity, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_byte16_t_O),_Dimensions._Length), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_byte16_t_O),_Dimensions._Length), NULL },
+// one -> #<POD-OFFSET :fields NIL :offset-type #S(BUILTIN-CTYPE :KEY "unsigned long") :base #S(BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
 { class_kind, STAMP_core__SimpleMDArrayT_O, sizeof(core::SimpleMDArrayT_O), 0, "core::SimpleMDArrayT_O" },
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayT_O),_Length), "_Length" }, // public: (T) fixable: NIL good-name: T
@@ -7361,8 +7406,9 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Array_O>), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayT_O),_Data), "_Data" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayT_O),_DisplacedIndexOffset), "_DisplacedIndexOffset" }, // public: (T) fixable: NIL good-name: T
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayT_O),_Flags._Flags), "_Flags._Flags" }, // public: (T T) fixable: NIL good-name: T
-{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayT_O),_Dimensions._Data), "_Dimensions._Data" },
-{  variable_capacity, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayT_O),_Dimensions._Length), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayT_O),_Dimensions._Length), NULL },
+ {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayT_O),_Dimensions._Data), "_Dimensions._Data" },
+ {  variable_capacity, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayT_O),_Dimensions._Length), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayT_O),_Dimensions._Length), NULL },
+// one -> #<POD-OFFSET :fields NIL :offset-type #S(BUILTIN-CTYPE :KEY "unsigned long") :base #S(BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
 { class_kind, STAMP_core__SimpleMDArray_int32_t_O, sizeof(core::SimpleMDArray_int32_t_O), 0, "core::SimpleMDArray_int32_t_O" },
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_int32_t_O),_Length), "_Length" }, // public: (T) fixable: NIL good-name: T
@@ -7371,8 +7417,9 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Array_O>), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_int32_t_O),_Data), "_Data" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_int32_t_O),_DisplacedIndexOffset), "_DisplacedIndexOffset" }, // public: (T) fixable: NIL good-name: T
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_int32_t_O),_Flags._Flags), "_Flags._Flags" }, // public: (T T) fixable: NIL good-name: T
-{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_int32_t_O),_Dimensions._Data), "_Dimensions._Data" },
-{  variable_capacity, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_int32_t_O),_Dimensions._Length), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_int32_t_O),_Dimensions._Length), NULL },
+ {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_int32_t_O),_Dimensions._Data), "_Dimensions._Data" },
+ {  variable_capacity, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_int32_t_O),_Dimensions._Length), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_int32_t_O),_Dimensions._Length), NULL },
+// one -> #<POD-OFFSET :fields NIL :offset-type #S(BUILTIN-CTYPE :KEY "unsigned long") :base #S(BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
 { class_kind, STAMP_core__SimpleMDArrayDouble_O, sizeof(core::SimpleMDArrayDouble_O), 0, "core::SimpleMDArrayDouble_O" },
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayDouble_O),_Length), "_Length" }, // public: (T) fixable: NIL good-name: T
@@ -7381,8 +7428,9 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Array_O>), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayDouble_O),_Data), "_Data" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayDouble_O),_DisplacedIndexOffset), "_DisplacedIndexOffset" }, // public: (T) fixable: NIL good-name: T
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayDouble_O),_Flags._Flags), "_Flags._Flags" }, // public: (T T) fixable: NIL good-name: T
-{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayDouble_O),_Dimensions._Data), "_Dimensions._Data" },
-{  variable_capacity, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayDouble_O),_Dimensions._Length), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayDouble_O),_Dimensions._Length), NULL },
+ {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayDouble_O),_Dimensions._Data), "_Dimensions._Data" },
+ {  variable_capacity, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayDouble_O),_Dimensions._Length), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayDouble_O),_Dimensions._Length), NULL },
+// one -> #<POD-OFFSET :fields NIL :offset-type #S(BUILTIN-CTYPE :KEY "unsigned long") :base #S(BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
 { class_kind, STAMP_core__SimpleMDArrayBaseChar_O, sizeof(core::SimpleMDArrayBaseChar_O), 0, "core::SimpleMDArrayBaseChar_O" },
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayBaseChar_O),_Length), "_Length" }, // public: (T) fixable: NIL good-name: T
@@ -7391,8 +7439,9 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Array_O>), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayBaseChar_O),_Data), "_Data" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayBaseChar_O),_DisplacedIndexOffset), "_DisplacedIndexOffset" }, // public: (T) fixable: NIL good-name: T
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayBaseChar_O),_Flags._Flags), "_Flags._Flags" }, // public: (T T) fixable: NIL good-name: T
-{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayBaseChar_O),_Dimensions._Data), "_Dimensions._Data" },
-{  variable_capacity, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayBaseChar_O),_Dimensions._Length), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayBaseChar_O),_Dimensions._Length), NULL },
+ {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayBaseChar_O),_Dimensions._Data), "_Dimensions._Data" },
+ {  variable_capacity, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayBaseChar_O),_Dimensions._Length), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayBaseChar_O),_Dimensions._Length), NULL },
+// one -> #<POD-OFFSET :fields NIL :offset-type #S(BUILTIN-CTYPE :KEY "unsigned long") :base #S(BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
 { class_kind, STAMP_core__SimpleMDArray_byte64_t_O, sizeof(core::SimpleMDArray_byte64_t_O), 0, "core::SimpleMDArray_byte64_t_O" },
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_byte64_t_O),_Length), "_Length" }, // public: (T) fixable: NIL good-name: T
@@ -7401,8 +7450,9 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Array_O>), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_byte64_t_O),_Data), "_Data" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_byte64_t_O),_DisplacedIndexOffset), "_DisplacedIndexOffset" }, // public: (T) fixable: NIL good-name: T
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_byte64_t_O),_Flags._Flags), "_Flags._Flags" }, // public: (T T) fixable: NIL good-name: T
-{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_byte64_t_O),_Dimensions._Data), "_Dimensions._Data" },
-{  variable_capacity, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_byte64_t_O),_Dimensions._Length), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_byte64_t_O),_Dimensions._Length), NULL },
+ {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_byte64_t_O),_Dimensions._Data), "_Dimensions._Data" },
+ {  variable_capacity, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_byte64_t_O),_Dimensions._Length), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_byte64_t_O),_Dimensions._Length), NULL },
+// one -> #<POD-OFFSET :fields NIL :offset-type #S(BUILTIN-CTYPE :KEY "unsigned long") :base #S(BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
 { class_kind, STAMP_core__SimpleMDArrayBit_O, sizeof(core::SimpleMDArrayBit_O), 0, "core::SimpleMDArrayBit_O" },
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayBit_O),_Length), "_Length" }, // public: (T) fixable: NIL good-name: T
@@ -7411,8 +7461,9 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Array_O>), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayBit_O),_Data), "_Data" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayBit_O),_DisplacedIndexOffset), "_DisplacedIndexOffset" }, // public: (T) fixable: NIL good-name: T
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayBit_O),_Flags._Flags), "_Flags._Flags" }, // public: (T T) fixable: NIL good-name: T
-{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayBit_O),_Dimensions._Data), "_Dimensions._Data" },
-{  variable_capacity, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayBit_O),_Dimensions._Length), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayBit_O),_Dimensions._Length), NULL },
+ {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayBit_O),_Dimensions._Data), "_Dimensions._Data" },
+ {  variable_capacity, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayBit_O),_Dimensions._Length), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayBit_O),_Dimensions._Length), NULL },
+// one -> #<POD-OFFSET :fields NIL :offset-type #S(BUILTIN-CTYPE :KEY "unsigned long") :base #S(BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
 { class_kind, STAMP_core__SimpleMDArray_int16_t_O, sizeof(core::SimpleMDArray_int16_t_O), 0, "core::SimpleMDArray_int16_t_O" },
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_int16_t_O),_Length), "_Length" }, // public: (T) fixable: NIL good-name: T
@@ -7421,8 +7472,9 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Array_O>), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_int16_t_O),_Data), "_Data" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_int16_t_O),_DisplacedIndexOffset), "_DisplacedIndexOffset" }, // public: (T) fixable: NIL good-name: T
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_int16_t_O),_Flags._Flags), "_Flags._Flags" }, // public: (T T) fixable: NIL good-name: T
-{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_int16_t_O),_Dimensions._Data), "_Dimensions._Data" },
-{  variable_capacity, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_int16_t_O),_Dimensions._Length), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_int16_t_O),_Dimensions._Length), NULL },
+ {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_int16_t_O),_Dimensions._Data), "_Dimensions._Data" },
+ {  variable_capacity, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_int16_t_O),_Dimensions._Length), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_int16_t_O),_Dimensions._Length), NULL },
+// one -> #<POD-OFFSET :fields NIL :offset-type #S(BUILTIN-CTYPE :KEY "unsigned long") :base #S(BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
 { class_kind, STAMP_core__SimpleMDArray_byte8_t_O, sizeof(core::SimpleMDArray_byte8_t_O), 0, "core::SimpleMDArray_byte8_t_O" },
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_byte8_t_O),_Length), "_Length" }, // public: (T) fixable: NIL good-name: T
@@ -7431,8 +7483,9 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Array_O>), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_byte8_t_O),_Data), "_Data" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_byte8_t_O),_DisplacedIndexOffset), "_DisplacedIndexOffset" }, // public: (T) fixable: NIL good-name: T
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_byte8_t_O),_Flags._Flags), "_Flags._Flags" }, // public: (T T) fixable: NIL good-name: T
-{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_byte8_t_O),_Dimensions._Data), "_Dimensions._Data" },
-{  variable_capacity, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_byte8_t_O),_Dimensions._Length), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_byte8_t_O),_Dimensions._Length), NULL },
+ {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_byte8_t_O),_Dimensions._Data), "_Dimensions._Data" },
+ {  variable_capacity, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_byte8_t_O),_Dimensions._Length), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_byte8_t_O),_Dimensions._Length), NULL },
+// one -> #<POD-OFFSET :fields NIL :offset-type #S(BUILTIN-CTYPE :KEY "unsigned long") :base #S(BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
 { class_kind, STAMP_core__SimpleMDArray_size_t_O, sizeof(core::SimpleMDArray_size_t_O), 0, "core::SimpleMDArray_size_t_O" },
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_size_t_O),_Length), "_Length" }, // public: (T) fixable: NIL good-name: T
@@ -7441,8 +7494,9 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Array_O>), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_size_t_O),_Data), "_Data" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_size_t_O),_DisplacedIndexOffset), "_DisplacedIndexOffset" }, // public: (T) fixable: NIL good-name: T
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_size_t_O),_Flags._Flags), "_Flags._Flags" }, // public: (T T) fixable: NIL good-name: T
-{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_size_t_O),_Dimensions._Data), "_Dimensions._Data" },
-{  variable_capacity, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_size_t_O),_Dimensions._Length), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_size_t_O),_Dimensions._Length), NULL },
+ {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_size_t_O),_Dimensions._Data), "_Dimensions._Data" },
+ {  variable_capacity, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_size_t_O),_Dimensions._Length), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_size_t_O),_Dimensions._Length), NULL },
+// one -> #<POD-OFFSET :fields NIL :offset-type #S(BUILTIN-CTYPE :KEY "unsigned long") :base #S(BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
 { class_kind, STAMP_core__SimpleMDArray_int64_t_O, sizeof(core::SimpleMDArray_int64_t_O), 0, "core::SimpleMDArray_int64_t_O" },
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_int64_t_O),_Length), "_Length" }, // public: (T) fixable: NIL good-name: T
@@ -7451,8 +7505,9 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Array_O>), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_int64_t_O),_Data), "_Data" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_int64_t_O),_DisplacedIndexOffset), "_DisplacedIndexOffset" }, // public: (T) fixable: NIL good-name: T
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_int64_t_O),_Flags._Flags), "_Flags._Flags" }, // public: (T T) fixable: NIL good-name: T
-{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_int64_t_O),_Dimensions._Data), "_Dimensions._Data" },
-{  variable_capacity, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_int64_t_O),_Dimensions._Length), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_int64_t_O),_Dimensions._Length), NULL },
+ {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_int64_t_O),_Dimensions._Data), "_Dimensions._Data" },
+ {  variable_capacity, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_int64_t_O),_Dimensions._Length), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_int64_t_O),_Dimensions._Length), NULL },
+// one -> #<POD-OFFSET :fields NIL :offset-type #S(BUILTIN-CTYPE :KEY "unsigned long") :base #S(BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
 { class_kind, STAMP_core__SimpleMDArrayFloat_O, sizeof(core::SimpleMDArrayFloat_O), 0, "core::SimpleMDArrayFloat_O" },
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayFloat_O),_Length), "_Length" }, // public: (T) fixable: NIL good-name: T
@@ -7461,8 +7516,9 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Array_O>), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayFloat_O),_Data), "_Data" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayFloat_O),_DisplacedIndexOffset), "_DisplacedIndexOffset" }, // public: (T) fixable: NIL good-name: T
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayFloat_O),_Flags._Flags), "_Flags._Flags" }, // public: (T T) fixable: NIL good-name: T
-{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayFloat_O),_Dimensions._Data), "_Dimensions._Data" },
-{  variable_capacity, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayFloat_O),_Dimensions._Length), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayFloat_O),_Dimensions._Length), NULL },
+ {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayFloat_O),_Dimensions._Data), "_Dimensions._Data" },
+ {  variable_capacity, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayFloat_O),_Dimensions._Length), offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayFloat_O),_Dimensions._Length), NULL },
+// one -> #<POD-OFFSET :fields NIL :offset-type #S(BUILTIN-CTYPE :KEY "unsigned long") :base #S(BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
 { class_kind, STAMP_core__MDArray_fixnum_O, sizeof(core::MDArray_fixnum_O), 0, "core::MDArray_fixnum_O" },
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), offsetof(SAFE_TYPE_MACRO(core::MDArray_fixnum_O),_Length), "_Length" }, // public: (T) fixable: NIL good-name: T
@@ -7471,8 +7527,9 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Array_O>), offsetof(SAFE_TYPE_MACRO(core::MDArray_fixnum_O),_Data), "_Data" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_fixnum_O),_DisplacedIndexOffset), "_DisplacedIndexOffset" }, // public: (T) fixable: NIL good-name: T
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_fixnum_O),_Flags._Flags), "_Flags._Flags" }, // public: (T T) fixable: NIL good-name: T
-{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::MDArray_fixnum_O),_Dimensions._Data), "_Dimensions._Data" },
-{  variable_capacity, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_fixnum_O),_Dimensions._Length), offsetof(SAFE_TYPE_MACRO(core::MDArray_fixnum_O),_Dimensions._Length), NULL },
+ {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::MDArray_fixnum_O),_Dimensions._Data), "_Dimensions._Data" },
+ {  variable_capacity, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArray_fixnum_O),_Dimensions._Length), offsetof(SAFE_TYPE_MACRO(core::MDArray_fixnum_O),_Dimensions._Length), NULL },
+// one -> #<POD-OFFSET :fields NIL :offset-type #S(BUILTIN-CTYPE :KEY "unsigned long") :base #S(BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
 { class_kind, STAMP_core__MDArrayBaseChar_O, sizeof(core::MDArrayBaseChar_O), 0, "core::MDArrayBaseChar_O" },
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), offsetof(SAFE_TYPE_MACRO(core::MDArrayBaseChar_O),_Length), "_Length" }, // public: (T) fixable: NIL good-name: T
@@ -7481,8 +7538,9 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Array_O>), offsetof(SAFE_TYPE_MACRO(core::MDArrayBaseChar_O),_Data), "_Data" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArrayBaseChar_O),_DisplacedIndexOffset), "_DisplacedIndexOffset" }, // public: (T) fixable: NIL good-name: T
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArrayBaseChar_O),_Flags._Flags), "_Flags._Flags" }, // public: (T T) fixable: NIL good-name: T
-{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::MDArrayBaseChar_O),_Dimensions._Data), "_Dimensions._Data" },
-{  variable_capacity, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArrayBaseChar_O),_Dimensions._Length), offsetof(SAFE_TYPE_MACRO(core::MDArrayBaseChar_O),_Dimensions._Length), NULL },
+ {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::MDArrayBaseChar_O),_Dimensions._Data), "_Dimensions._Data" },
+ {  variable_capacity, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::MDArrayBaseChar_O),_Dimensions._Length), offsetof(SAFE_TYPE_MACRO(core::MDArrayBaseChar_O),_Dimensions._Length), NULL },
+// one -> #<POD-OFFSET :fields NIL :offset-type #S(BUILTIN-CTYPE :KEY "unsigned long") :base #S(BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
 { class_kind, STAMP_core__Symbol_O, sizeof(core::Symbol_O), 0, "core::Symbol_O" },
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::SimpleString_O>), offsetof(SAFE_TYPE_MACRO(core::Symbol_O),_Name), "_Name" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
@@ -8016,6 +8074,44 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Package_O>), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._CommonLispPackage), "_Roots._CommonLispPackage" }, // public: (T T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::HashTableEq_O>), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._SpecialForms), "_Roots._SpecialForms" }, // public: (T T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::HashTableEq_O>), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._SingleDispatchGenericFunctionTable), "_Roots._SingleDispatchGenericFunctionTable" }, // public: (T T) fixable: SMART-PTR-FIX good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._LogMutex._Mutex.__count), "_Roots._LogMutex._Mutex.__count" }, // public: (T T T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._LogMutex._Mutex.__value.__wch), "_Roots._LogMutex._Mutex.__value.__wch" }, // public: (T T T T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._LogMutex._Counter), "_Roots._LogMutex._Counter" }, // public: (T T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._LogMutex._Recursive), "_Roots._LogMutex._Recursive" }, // public: (T T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._LogStream._M_precision), "_Roots._LogStream._M_precision" }, // public: (T T NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._LogStream._M_width), "_Roots._LogStream._M_width" }, // public: (T T NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._LogStream._M_word_zero._M_iword), "_Roots._LogStream._M_word_zero._M_iword" }, // public: (T T NIL T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._LogStream._M_word_size), "_Roots._LogStream._M_word_size" }, // public: (T T NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_char, sizeof(char), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._LogStream._M_fill), "_Roots._LogStream._M_fill" }, // public: (T T NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._LogStream._M_fill_init), "_Roots._LogStream._M_fill_init" }, // public: (T T NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._LogStream._M_precision), "_Roots._LogStream._M_precision" }, // public: (T T NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._LogStream._M_width), "_Roots._LogStream._M_width" }, // public: (T T NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._LogStream._M_word_zero._M_iword), "_Roots._LogStream._M_word_zero._M_iword" }, // public: (T T NIL T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._LogStream._M_word_size), "_Roots._LogStream._M_word_size" }, // public: (T T NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_char, sizeof(char), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._LogStream._M_fill), "_Roots._LogStream._M_fill" }, // public: (T T NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._LogStream._M_fill_init), "_Roots._LogStream._M_fill_init" }, // public: (T T NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._LogStream._M_precision), "_Roots._LogStream._M_precision" }, // public: (T T NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._LogStream._M_width), "_Roots._LogStream._M_width" }, // public: (T T NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._LogStream._M_word_zero._M_iword), "_Roots._LogStream._M_word_zero._M_iword" }, // public: (T T NIL T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._LogStream._M_word_size), "_Roots._LogStream._M_word_size" }, // public: (T T NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_char, sizeof(char), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._LogStream._M_fill), "_Roots._LogStream._M_fill" }, // public: (T T NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._LogStream._M_fill_init), "_Roots._LogStream._M_fill_init" }, // public: (T T NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._LogStream._M_filebuf._M_lock.__count), "_Roots._LogStream._M_filebuf._M_lock.__count" }, // public: (T T NIL NIL T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._LogStream._M_filebuf._M_lock.__value.__wch), "_Roots._LogStream._M_filebuf._M_lock.__value.__wch" }, // public: (T T NIL NIL T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._LogStream._M_filebuf._M_file._M_cfile_created), "_Roots._LogStream._M_filebuf._M_file._M_cfile_created" }, // public: (T T NIL NIL NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._LogStream._M_filebuf._M_state_beg.__count), "_Roots._LogStream._M_filebuf._M_state_beg.__count" }, // public: (T T NIL NIL T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._LogStream._M_filebuf._M_state_beg.__value.__wch), "_Roots._LogStream._M_filebuf._M_state_beg.__value.__wch" }, // public: (T T NIL NIL T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._LogStream._M_filebuf._M_state_cur.__count), "_Roots._LogStream._M_filebuf._M_state_cur.__count" }, // public: (T T NIL NIL T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._LogStream._M_filebuf._M_state_cur.__value.__wch), "_Roots._LogStream._M_filebuf._M_state_cur.__value.__wch" }, // public: (T T NIL NIL T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._LogStream._M_filebuf._M_state_last.__count), "_Roots._LogStream._M_filebuf._M_state_last.__count" }, // public: (T T NIL NIL T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._LogStream._M_filebuf._M_state_last.__value.__wch), "_Roots._LogStream._M_filebuf._M_state_last.__value.__wch" }, // public: (T T NIL NIL T T) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._LogStream._M_filebuf._M_buf_size), "_Roots._LogStream._M_filebuf._M_buf_size" }, // public: (T T NIL NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._LogStream._M_filebuf._M_buf_allocated), "_Roots._LogStream._M_filebuf._M_buf_allocated" }, // public: (T T NIL NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._LogStream._M_filebuf._M_reading), "_Roots._LogStream._M_filebuf._M_reading" }, // public: (T T NIL NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._LogStream._M_filebuf._M_writing), "_Roots._LogStream._M_filebuf._M_writing" }, // public: (T T NIL NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_char, sizeof(char), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._LogStream._M_filebuf._M_pback), "_Roots._LogStream._M_filebuf._M_pback" }, // public: (T T NIL NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._LogStream._M_filebuf._M_pback_init), "_Roots._LogStream._M_filebuf._M_pback_init" }, // public: (T T NIL NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._LogStream._M_filebuf._M_ext_buf_size), "_Roots._LogStream._M_filebuf._M_ext_buf_size" }, // public: (T T NIL NIL) fixable: NIL good-name: T
 // not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._SingleDispatchGenericFunctionTableMutex._r._Mutex.__count), "_Roots._SingleDispatchGenericFunctionTableMutex._r._Mutex.__count" }, // public: (T T T T T) fixable: NIL good-name: T
 // not-exposing {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._SingleDispatchGenericFunctionTableMutex._r._Mutex.__value.__wch), "_Roots._SingleDispatchGenericFunctionTableMutex._r._Mutex.__value.__wch" }, // public: (T T T T T T) fixable: NIL good-name: T
 // not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._SingleDispatchGenericFunctionTableMutex._r._Counter), "_Roots._SingleDispatchGenericFunctionTableMutex._r._Counter" }, // public: (T T T T) fixable: NIL good-name: T
@@ -8100,172 +8196,197 @@ public:
 { class_kind, STAMP_asttooling__AstVisitor_O, sizeof(asttooling::AstVisitor_O), 0, "asttooling::AstVisitor_O" },
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(asttooling::AstVisitor_O),_Target), "_Target" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 { container_kind, STAMP_gctools__GCVector_moveable_core__KeywordArgument_, sizeof(gctools::GCVector_moveable<core::KeywordArgument>), 0, "gctools::GCVector_moveable<core::KeywordArgument>" },
-{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::KeywordArgument>),_Data), "_Data" },
-{  variable_capacity, sizeof(core::KeywordArgument), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::KeywordArgument>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::KeywordArgument>),_Capacity), NULL },
- {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::KeywordArgument),_ArgTarget), "_ArgTarget" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {    variable_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::KeywordArgument),_ArgTargetFrameIndex), "_ArgTargetFrameIndex" }, // public: (T) fixable: NIL good-name: T
- {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::KeywordArgument),_Default), "_Default" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::KeywordArgument),_Keyword), "_Keyword" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::KeywordArgument),_Sensor._ArgTarget), "_Sensor._ArgTarget" }, // public: (T T) fixable: SMART-PTR-FIX good-name: T
- {    variable_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::KeywordArgument),_Sensor._ArgTargetFrameIndex), "_Sensor._ArgTargetFrameIndex" }, // public: (T T) fixable: NIL good-name: T
+ {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::KeywordArgument>),_Data), "_Data" },
+ {  variable_capacity, sizeof(core::KeywordArgument), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::KeywordArgument>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::KeywordArgument>),_Capacity), NULL },
+    {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::KeywordArgument),_ArgTarget), "_ArgTarget" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
+    {    variable_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::KeywordArgument),_ArgTargetFrameIndex), "_ArgTargetFrameIndex" }, // public: (T) fixable: NIL good-name: T
+    {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::KeywordArgument),_Default), "_Default" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
+    {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::KeywordArgument),_Keyword), "_Keyword" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
+    {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::KeywordArgument),_Sensor._ArgTarget), "_Sensor._ArgTarget" }, // public: (T T) fixable: SMART-PTR-FIX good-name: T
+    {    variable_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::KeywordArgument),_Sensor._ArgTargetFrameIndex), "_Sensor._ArgTargetFrameIndex" }, // public: (T T) fixable: NIL good-name: T
 { container_kind, STAMP_gctools__GCArray_moveable_unsigned_int_, sizeof(gctools::GCArray_moveable<unsigned int>), 0, "gctools::GCArray_moveable<unsigned int>" },
-{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<unsigned int>),_Data), "_Data" },
-{  variable_capacity, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<unsigned int>),_Length), offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<unsigned int>),_Length), NULL },
+ {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<unsigned int>),_Data), "_Data" },
+ {  variable_capacity, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<unsigned int>),_Length), offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<unsigned int>),_Length), NULL },
+// one -> #<POD-OFFSET :fields NIL :offset-type #S(BUILTIN-CTYPE :KEY "unsigned int") :base #S(BUILTIN-CTYPE :KEY "unsigned int")>
 {    variable_field, ctype_unsigned_int, sizeof(unsigned int), 0, "only" },
 { container_kind, STAMP_gctools__GCVector_moveable_core__CacheRecord_, sizeof(gctools::GCVector_moveable<core::CacheRecord>), 0, "gctools::GCVector_moveable<core::CacheRecord>" },
-{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::CacheRecord>),_Data), "_Data" },
-{  variable_capacity, sizeof(core::CacheRecord), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::CacheRecord>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::CacheRecord>),_Capacity), NULL },
- {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::CacheRecord),_key), "_key" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::CacheRecord),_value), "_value" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {    variable_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::CacheRecord),_generation), "_generation" }, // public: (T) fixable: NIL good-name: T
+ {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::CacheRecord>),_Data), "_Data" },
+ {  variable_capacity, sizeof(core::CacheRecord), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::CacheRecord>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::CacheRecord>),_Capacity), NULL },
+    {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::CacheRecord),_key), "_key" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
+    {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::CacheRecord),_value), "_value" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
+    {    variable_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::CacheRecord),_generation), "_generation" }, // public: (T) fixable: NIL good-name: T
 { container_kind, STAMP_gctools__GCVector_moveable_core__RequiredArgument_, sizeof(gctools::GCVector_moveable<core::RequiredArgument>), 0, "gctools::GCVector_moveable<core::RequiredArgument>" },
-{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::RequiredArgument>),_Data), "_Data" },
-{  variable_capacity, sizeof(core::RequiredArgument), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::RequiredArgument>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::RequiredArgument>),_Capacity), NULL },
- {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::RequiredArgument),_ArgTarget), "_ArgTarget" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {    variable_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::RequiredArgument),_ArgTargetFrameIndex), "_ArgTargetFrameIndex" }, // public: (T) fixable: NIL good-name: T
+ {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::RequiredArgument>),_Data), "_Data" },
+ {  variable_capacity, sizeof(core::RequiredArgument), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::RequiredArgument>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::RequiredArgument>),_Capacity), NULL },
+    {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::RequiredArgument),_ArgTarget), "_ArgTarget" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
+    {    variable_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::RequiredArgument),_ArgTargetFrameIndex), "_ArgTargetFrameIndex" }, // public: (T) fixable: NIL good-name: T
 { container_kind, STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__Cons_O__, sizeof(gctools::GCVector_moveable<gctools::smart_ptr<core::Cons_O>>), 0, "gctools::GCVector_moveable<gctools::smart_ptr<core::Cons_O>>" },
-{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::Cons_O>>),_Data), "_Data" },
-{  variable_capacity, sizeof(gctools::smart_ptr<core::Cons_O>), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::Cons_O>>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::Cons_O>>),_Capacity), NULL },
+ {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::Cons_O>>),_Data), "_Data" },
+ {  variable_capacity, sizeof(gctools::smart_ptr<core::Cons_O>), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::Cons_O>>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::Cons_O>>),_Capacity), NULL },
+// one -> #<SMART-PTR-OFFSET :fields NIL :offset-type #S(SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Cons_O>" :SPECIALIZER "class core::Cons_O") :base #S(SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Cons_O>" :SPECIALIZER "class core::Cons_O")>
 {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Cons_O>), 0, "only" },
 { container_kind, STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__SequenceStepper_O__, sizeof(gctools::GCVector_moveable<gctools::smart_ptr<core::SequenceStepper_O>>), 0, "gctools::GCVector_moveable<gctools::smart_ptr<core::SequenceStepper_O>>" },
-{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::SequenceStepper_O>>),_Data), "_Data" },
-{  variable_capacity, sizeof(gctools::smart_ptr<core::SequenceStepper_O>), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::SequenceStepper_O>>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::SequenceStepper_O>>),_Capacity), NULL },
+ {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::SequenceStepper_O>>),_Data), "_Data" },
+ {  variable_capacity, sizeof(gctools::smart_ptr<core::SequenceStepper_O>), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::SequenceStepper_O>>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::SequenceStepper_O>>),_Capacity), NULL },
+// one -> #<SMART-PTR-OFFSET :fields NIL :offset-type #S(SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::SequenceStepper_O>" :SPECIALIZER "class core::SequenceStepper_O") :base #S(SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::SequenceStepper_O>" :SPECIALIZER "class core::SequenceStepper_O")>
 {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::SequenceStepper_O>), 0, "only" },
 { container_kind, STAMP_gctools__GCVector_moveable_double_, sizeof(gctools::GCVector_moveable<double>), 0, "gctools::GCVector_moveable<double>" },
-{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<double>),_Data), "_Data" },
-{  variable_capacity, sizeof(double), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<double>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<double>),_Capacity), NULL },
+ {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<double>),_Data), "_Data" },
+ {  variable_capacity, sizeof(double), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<double>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<double>),_Capacity), NULL },
+// one -> #<POD-OFFSET :fields NIL :offset-type #S(BUILTIN-CTYPE :KEY "double") :base #S(BUILTIN-CTYPE :KEY "double")>
 {    variable_field, ctype_double, sizeof(double), 0, "only" },
 { container_kind, STAMP_gctools__GCVector_moveable_core__SymbolStorage_, sizeof(gctools::GCVector_moveable<core::SymbolStorage>), 0, "gctools::GCVector_moveable<core::SymbolStorage>" },
-{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::SymbolStorage>),_Data), "_Data" },
-{  variable_capacity, sizeof(core::SymbolStorage), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::SymbolStorage>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::SymbolStorage>),_Capacity), NULL },
-// not-exposed-yet  {    variable_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SymbolStorage),_PackageName._M_string_length), "_PackageName._M_string_length" }, // public: (T NIL) fixable: NIL good-name: T
-// not-exposed-yet  {    variable_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SymbolStorage),_PackageName.NO-NAME._M_allocated_capacity), "_PackageName.NO-NAME._M_allocated_capacity" }, // public: (T NIL T) fixable: NIL good-name: T
-// not-exposed-yet  {    variable_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SymbolStorage),_SymbolName._M_string_length), "_SymbolName._M_string_length" }, // public: (T NIL) fixable: NIL good-name: T
-// not-exposed-yet  {    variable_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SymbolStorage),_SymbolName.NO-NAME._M_allocated_capacity), "_SymbolName.NO-NAME._M_allocated_capacity" }, // public: (T NIL T) fixable: NIL good-name: T
- {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), offsetof(SAFE_TYPE_MACRO(core::SymbolStorage),_Symbol), "_Symbol" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {    variable_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::SymbolStorage),_Export), "_Export" }, // public: (T) fixable: NIL good-name: T
- {    variable_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::SymbolStorage),_Shadow), "_Shadow" }, // public: (T) fixable: NIL good-name: T
+ {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::SymbolStorage>),_Data), "_Data" },
+ {  variable_capacity, sizeof(core::SymbolStorage), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::SymbolStorage>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::SymbolStorage>),_Capacity), NULL },
+// not-exposed-yet     {    variable_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SymbolStorage),_PackageName._M_string_length), "_PackageName._M_string_length" }, // public: (T NIL) fixable: NIL good-name: T
+// not-exposed-yet     {    variable_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SymbolStorage),_PackageName.NO-NAME._M_allocated_capacity), "_PackageName.NO-NAME._M_allocated_capacity" }, // public: (T NIL T) fixable: NIL good-name: T
+// not-exposed-yet     {    variable_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SymbolStorage),_SymbolName._M_string_length), "_SymbolName._M_string_length" }, // public: (T NIL) fixable: NIL good-name: T
+// not-exposed-yet     {    variable_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::SymbolStorage),_SymbolName.NO-NAME._M_allocated_capacity), "_SymbolName.NO-NAME._M_allocated_capacity" }, // public: (T NIL T) fixable: NIL good-name: T
+    {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), offsetof(SAFE_TYPE_MACRO(core::SymbolStorage),_Symbol), "_Symbol" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
+    {    variable_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::SymbolStorage),_Export), "_Export" }, // public: (T) fixable: NIL good-name: T
+    {    variable_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::SymbolStorage),_Shadow), "_Shadow" }, // public: (T) fixable: NIL good-name: T
 { container_kind, STAMP_gctools__GCArray_moveable_short_, sizeof(gctools::GCArray_moveable<short>), 0, "gctools::GCArray_moveable<short>" },
-{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<short>),_Data), "_Data" },
-{  variable_capacity, sizeof(short), offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<short>),_Length), offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<short>),_Length), NULL },
+ {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<short>),_Data), "_Data" },
+ {  variable_capacity, sizeof(short), offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<short>),_Length), offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<short>),_Length), NULL },
+// one -> #<POD-OFFSET :fields NIL :offset-type #S(BUILTIN-CTYPE :KEY "short") :base #S(BUILTIN-CTYPE :KEY "short")>
 {    variable_field, ctype_short, sizeof(short), 0, "only" },
 { container_kind, STAMP_gctools__GCVector_moveable_core__DynamicBinding_, sizeof(gctools::GCVector_moveable<core::DynamicBinding>), 0, "gctools::GCVector_moveable<core::DynamicBinding>" },
-{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::DynamicBinding>),_Data), "_Data" },
-{  variable_capacity, sizeof(core::DynamicBinding), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::DynamicBinding>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::DynamicBinding>),_Capacity), NULL },
- {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), offsetof(SAFE_TYPE_MACRO(core::DynamicBinding),_Var), "_Var" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::DynamicBinding),_Val), "_Val" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
+ {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::DynamicBinding>),_Data), "_Data" },
+ {  variable_capacity, sizeof(core::DynamicBinding), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::DynamicBinding>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::DynamicBinding>),_Capacity), NULL },
+    {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), offsetof(SAFE_TYPE_MACRO(core::DynamicBinding),_Var), "_Var" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
+    {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::DynamicBinding),_Val), "_Val" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 { container_kind, STAMP_gctools__GCVector_moveable_gctools__smart_ptr_clbind__ClassRep_O__, sizeof(gctools::GCVector_moveable<gctools::smart_ptr<clbind::ClassRep_O>>), 0, "gctools::GCVector_moveable<gctools::smart_ptr<clbind::ClassRep_O>>" },
-{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<clbind::ClassRep_O>>),_Data), "_Data" },
-{  variable_capacity, sizeof(gctools::smart_ptr<clbind::ClassRep_O>), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<clbind::ClassRep_O>>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<clbind::ClassRep_O>>),_Capacity), NULL },
+ {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<clbind::ClassRep_O>>),_Data), "_Data" },
+ {  variable_capacity, sizeof(gctools::smart_ptr<clbind::ClassRep_O>), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<clbind::ClassRep_O>>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<clbind::ClassRep_O>>),_Capacity), NULL },
+// one -> #<SMART-PTR-OFFSET :fields NIL :offset-type #S(SMART-PTR-CTYPE :KEY "gctools::smart_ptr<clbind::ClassRep_O>" :SPECIALIZER "class clbind::ClassRep_O") :base #S(SMART-PTR-CTYPE :KEY "gctools::smart_ptr<clbind::ClassRep_O>" :SPECIALIZER "class clbind::ClassRep_O")>
 {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<clbind::ClassRep_O>), 0, "only" },
 { container_kind, STAMP_gctools__GCArray_moveable_unsigned_long_, sizeof(gctools::GCArray_moveable<unsigned long>), 0, "gctools::GCArray_moveable<unsigned long>" },
-{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<unsigned long>),_Data), "_Data" },
-{  variable_capacity, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<unsigned long>),_Length), offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<unsigned long>),_Length), NULL },
+ {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<unsigned long>),_Data), "_Data" },
+ {  variable_capacity, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<unsigned long>),_Length), offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<unsigned long>),_Length), NULL },
+// one -> #<POD-OFFSET :fields NIL :offset-type #S(BUILTIN-CTYPE :KEY "unsigned long") :base #S(BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
 { bitunit_container_kind, STAMP_gctools__GCBitUnitArray_moveable_1_unsigned_int_int_, sizeof(gctools::GCBitUnitArray_moveable<1,unsigned int,int>), 1, "gctools::GCBitUnitArray_moveable<1,unsigned int,int>" },
-{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCBitUnitArray_moveable<1,unsigned int,int>),_Data), "_Data" },
-{  variable_capacity, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(gctools::GCBitUnitArray_moveable<1,unsigned int,int>),_Length), offsetof(SAFE_TYPE_MACRO(gctools::GCBitUnitArray_moveable<1,unsigned int,int>),_Length), NULL },
+ {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCBitUnitArray_moveable<1,unsigned int,int>),_Data), "_Data" },
+ {  variable_capacity, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(gctools::GCBitUnitArray_moveable<1,unsigned int,int>),_Length), offsetof(SAFE_TYPE_MACRO(gctools::GCBitUnitArray_moveable<1,unsigned int,int>),_Length), NULL },
+// one -> #<POD-OFFSET :fields NIL :offset-type #S(BUILTIN-CTYPE :KEY "unsigned int") :base #S(BUILTIN-CTYPE :KEY "unsigned int")>
 {    variable_field, ctype_unsigned_int, sizeof(unsigned int), 0, "only" },
 { container_kind, STAMP_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__T_O___, sizeof(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>>), 0, "gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>>" },
-{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>>),_Data), "_Data" },
-{  variable_capacity, sizeof(std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>>),_Capacity), NULL },
- {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), offsetof(SAFE_TYPE_MACRO(std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>),first), "first" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>),second), "second" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
+ {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>>),_Data), "_Data" },
+ {  variable_capacity, sizeof(std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>>),_Capacity), NULL },
+    {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), offsetof(SAFE_TYPE_MACRO(std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>),first), "first" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
+    {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>),second), "second" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 { container_kind, STAMP_gctools__GCArray_moveable_signed_char_, sizeof(gctools::GCArray_moveable<signed char>), 0, "gctools::GCArray_moveable<signed char>" },
-{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<signed char>),_Data), "_Data" },
-{  variable_capacity, sizeof(signed char), offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<signed char>),_Length), offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<signed char>),_Length), NULL },
+ {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<signed char>),_Data), "_Data" },
+ {  variable_capacity, sizeof(signed char), offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<signed char>),_Length), offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<signed char>),_Length), NULL },
+// one -> #<POD-OFFSET :fields NIL :offset-type #S(BUILTIN-CTYPE :KEY "signed char") :base #S(BUILTIN-CTYPE :KEY "signed char")>
 {    variable_field, ctype_signed_char, sizeof(signed char), 0, "only" },
 { container_kind, STAMP_gctools__GCVector_moveable_core__ExceptionEntry_, sizeof(gctools::GCVector_moveable<core::ExceptionEntry>), 0, "gctools::GCVector_moveable<core::ExceptionEntry>" },
-{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::ExceptionEntry>),_Data), "_Data" },
-{  variable_capacity, sizeof(core::ExceptionEntry), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::ExceptionEntry>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::ExceptionEntry>),_Capacity), NULL },
- {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::ExceptionEntry),_Key), "_Key" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
+ {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::ExceptionEntry>),_Data), "_Data" },
+ {  variable_capacity, sizeof(core::ExceptionEntry), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::ExceptionEntry>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::ExceptionEntry>),_Capacity), NULL },
+    {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::ExceptionEntry),_Key), "_Key" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 { container_kind, STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__List_V__, sizeof(gctools::GCVector_moveable<gctools::smart_ptr<core::List_V>>), 0, "gctools::GCVector_moveable<gctools::smart_ptr<core::List_V>>" },
-{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::List_V>>),_Data), "_Data" },
-{  variable_capacity, sizeof(gctools::smart_ptr<core::List_V>), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::List_V>>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::List_V>>),_Capacity), NULL },
+ {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::List_V>>),_Data), "_Data" },
+ {  variable_capacity, sizeof(gctools::smart_ptr<core::List_V>), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::List_V>>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::List_V>>),_Capacity), NULL },
+// one -> #<SMART-PTR-OFFSET :fields NIL :offset-type #S(SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::List_V>" :SPECIALIZER "class core::List_V") :base #S(SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::List_V>" :SPECIALIZER "class core::List_V")>
 {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::List_V>), 0, "only" },
 { container_kind, STAMP_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__T_O__gctools__smart_ptr_core__T_O___, sizeof(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>>), 0, "gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>>" },
-{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>>),_Data), "_Data" },
-{  variable_capacity, sizeof(std::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>>),_Capacity), NULL },
- {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(std::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>),first), "first" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(std::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>),second), "second" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
+ {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>>),_Data), "_Data" },
+ {  variable_capacity, sizeof(std::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>>),_Capacity), NULL },
+    {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(std::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>),first), "first" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
+    {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(std::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>),second), "second" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 { container_kind, STAMP_gctools__GCArray_moveable_int_, sizeof(gctools::GCArray_moveable<int>), 0, "gctools::GCArray_moveable<int>" },
-{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<int>),_Data), "_Data" },
-{  variable_capacity, sizeof(int), offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<int>),_Length), offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<int>),_Length), NULL },
+ {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<int>),_Data), "_Data" },
+ {  variable_capacity, sizeof(int), offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<int>),_Length), offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<int>),_Length), NULL },
+// one -> #<POD-OFFSET :fields NIL :offset-type #S(BUILTIN-CTYPE :KEY "int") :base #S(BUILTIN-CTYPE :KEY "int")>
 {    variable_field, ctype_int, sizeof(int), 0, "only" },
 { container_kind, STAMP_gctools__GCArray_moveable_unsigned_char_, sizeof(gctools::GCArray_moveable<unsigned char>), 0, "gctools::GCArray_moveable<unsigned char>" },
-{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<unsigned char>),_Data), "_Data" },
-{  variable_capacity, sizeof(unsigned char), offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<unsigned char>),_Length), offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<unsigned char>),_Length), NULL },
+ {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<unsigned char>),_Data), "_Data" },
+ {  variable_capacity, sizeof(unsigned char), offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<unsigned char>),_Length), offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<unsigned char>),_Length), NULL },
+// one -> #<POD-OFFSET :fields NIL :offset-type #S(BUILTIN-CTYPE :KEY "unsigned char") :base #S(BUILTIN-CTYPE :KEY "unsigned char")>
 {    variable_field, ctype_unsigned_char, sizeof(unsigned char), 0, "only" },
 { container_kind, STAMP_gctools__GCArray_moveable_gctools__smart_ptr_core__T_O__, sizeof(gctools::GCArray_moveable<gctools::smart_ptr<core::T_O>>), 0, "gctools::GCArray_moveable<gctools::smart_ptr<core::T_O>>" },
-{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<gctools::smart_ptr<core::T_O>>),_Data), "_Data" },
-{  variable_capacity, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<gctools::smart_ptr<core::T_O>>),_Length), offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<gctools::smart_ptr<core::T_O>>),_Length), NULL },
+ {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<gctools::smart_ptr<core::T_O>>),_Data), "_Data" },
+ {  variable_capacity, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<gctools::smart_ptr<core::T_O>>),_Length), offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<gctools::smart_ptr<core::T_O>>),_Length), NULL },
+// one -> #<SMART-PTR-OFFSET :fields NIL :offset-type #S(SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O") :base #S(SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")>
 {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), 0, "only" },
 { container_kind, STAMP_gctools__GCVector_moveable_core__AuxArgument_, sizeof(gctools::GCVector_moveable<core::AuxArgument>), 0, "gctools::GCVector_moveable<core::AuxArgument>" },
-{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::AuxArgument>),_Data), "_Data" },
-{  variable_capacity, sizeof(core::AuxArgument), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::AuxArgument>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::AuxArgument>),_Capacity), NULL },
- {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::AuxArgument),_ArgTarget), "_ArgTarget" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {    variable_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::AuxArgument),_ArgTargetFrameIndex), "_ArgTargetFrameIndex" }, // public: (T) fixable: NIL good-name: T
- {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::AuxArgument),_Expression), "_Expression" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
+ {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::AuxArgument>),_Data), "_Data" },
+ {  variable_capacity, sizeof(core::AuxArgument), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::AuxArgument>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::AuxArgument>),_Capacity), NULL },
+    {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::AuxArgument),_ArgTarget), "_ArgTarget" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
+    {    variable_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::AuxArgument),_ArgTargetFrameIndex), "_ArgTargetFrameIndex" }, // public: (T) fixable: NIL good-name: T
+    {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::AuxArgument),_Expression), "_Expression" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 { container_kind, STAMP_gctools__GCArray_moveable_long_, sizeof(gctools::GCArray_moveable<long>), 0, "gctools::GCArray_moveable<long>" },
-{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<long>),_Data), "_Data" },
-{  variable_capacity, sizeof(long), offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<long>),_Length), offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<long>),_Length), NULL },
+ {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<long>),_Data), "_Data" },
+ {  variable_capacity, sizeof(long), offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<long>),_Length), offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<long>),_Length), NULL },
+// one -> #<POD-OFFSET :fields NIL :offset-type #S(BUILTIN-CTYPE :KEY "long") :base #S(BUILTIN-CTYPE :KEY "long")>
 {    variable_field, ctype_long, sizeof(long), 0, "only" },
 { container_kind, STAMP_gctools__GCVector_moveable_int_, sizeof(gctools::GCVector_moveable<int>), 0, "gctools::GCVector_moveable<int>" },
-{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<int>),_Data), "_Data" },
-{  variable_capacity, sizeof(int), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<int>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<int>),_Capacity), NULL },
+ {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<int>),_Data), "_Data" },
+ {  variable_capacity, sizeof(int), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<int>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<int>),_Capacity), NULL },
+// one -> #<POD-OFFSET :fields NIL :offset-type #S(BUILTIN-CTYPE :KEY "int") :base #S(BUILTIN-CTYPE :KEY "int")>
 {    variable_field, ctype_int, sizeof(int), 0, "only" },
 { container_kind, STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__Symbol_O__, sizeof(gctools::GCVector_moveable<gctools::smart_ptr<core::Symbol_O>>), 0, "gctools::GCVector_moveable<gctools::smart_ptr<core::Symbol_O>>" },
-{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::Symbol_O>>),_Data), "_Data" },
-{  variable_capacity, sizeof(gctools::smart_ptr<core::Symbol_O>), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::Symbol_O>>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::Symbol_O>>),_Capacity), NULL },
+ {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::Symbol_O>>),_Data), "_Data" },
+ {  variable_capacity, sizeof(gctools::smart_ptr<core::Symbol_O>), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::Symbol_O>>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::Symbol_O>>),_Capacity), NULL },
+// one -> #<SMART-PTR-OFFSET :fields NIL :offset-type #S(SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Symbol_O>" :SPECIALIZER "class core::Symbol_O") :base #S(SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Symbol_O>" :SPECIALIZER "class core::Symbol_O")>
 {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), 0, "only" },
 { container_kind, STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__T_O__, sizeof(gctools::GCVector_moveable<gctools::smart_ptr<core::T_O>>), 0, "gctools::GCVector_moveable<gctools::smart_ptr<core::T_O>>" },
-{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::T_O>>),_Data), "_Data" },
-{  variable_capacity, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::T_O>>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::T_O>>),_Capacity), NULL },
+ {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::T_O>>),_Data), "_Data" },
+ {  variable_capacity, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::T_O>>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::T_O>>),_Capacity), NULL },
+// one -> #<SMART-PTR-OFFSET :fields NIL :offset-type #S(SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O") :base #S(SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")>
 {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), 0, "only" },
 { container_kind, STAMP_gctools__GCVector_moveable_core__SymbolClassPair_, sizeof(gctools::GCVector_moveable<core::SymbolClassPair>), 0, "gctools::GCVector_moveable<core::SymbolClassPair>" },
-{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::SymbolClassPair>),_Data), "_Data" },
-{  variable_capacity, sizeof(core::SymbolClassPair), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::SymbolClassPair>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::SymbolClassPair>),_Capacity), NULL },
- {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), offsetof(SAFE_TYPE_MACRO(core::SymbolClassPair),symbol), "symbol" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), offsetof(SAFE_TYPE_MACRO(core::SymbolClassPair),theClass), "theClass" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
+ {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::SymbolClassPair>),_Data), "_Data" },
+ {  variable_capacity, sizeof(core::SymbolClassPair), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::SymbolClassPair>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::SymbolClassPair>),_Capacity), NULL },
+    {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), offsetof(SAFE_TYPE_MACRO(core::SymbolClassPair),symbol), "symbol" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
+    {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), offsetof(SAFE_TYPE_MACRO(core::SymbolClassPair),theClass), "theClass" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 { container_kind, STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__SingleDispatchMethod_O__, sizeof(gctools::GCVector_moveable<gctools::smart_ptr<core::SingleDispatchMethod_O>>), 0, "gctools::GCVector_moveable<gctools::smart_ptr<core::SingleDispatchMethod_O>>" },
-{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::SingleDispatchMethod_O>>),_Data), "_Data" },
-{  variable_capacity, sizeof(gctools::smart_ptr<core::SingleDispatchMethod_O>), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::SingleDispatchMethod_O>>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::SingleDispatchMethod_O>>),_Capacity), NULL },
+ {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::SingleDispatchMethod_O>>),_Data), "_Data" },
+ {  variable_capacity, sizeof(gctools::smart_ptr<core::SingleDispatchMethod_O>), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::SingleDispatchMethod_O>>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::SingleDispatchMethod_O>>),_Capacity), NULL },
+// one -> #<SMART-PTR-OFFSET :fields NIL :offset-type #S(SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::SingleDispatchMethod_O>" :SPECIALIZER "class core::SingleDispatchMethod_O") :base #S(SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::SingleDispatchMethod_O>" :SPECIALIZER "class core::SingleDispatchMethod_O")>
 {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::SingleDispatchMethod_O>), 0, "only" },
 { container_kind, STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__Package_O__, sizeof(gctools::GCVector_moveable<gctools::smart_ptr<core::Package_O>>), 0, "gctools::GCVector_moveable<gctools::smart_ptr<core::Package_O>>" },
-{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::Package_O>>),_Data), "_Data" },
-{  variable_capacity, sizeof(gctools::smart_ptr<core::Package_O>), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::Package_O>>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::Package_O>>),_Capacity), NULL },
+ {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::Package_O>>),_Data), "_Data" },
+ {  variable_capacity, sizeof(gctools::smart_ptr<core::Package_O>), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::Package_O>>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::Package_O>>),_Capacity), NULL },
+// one -> #<SMART-PTR-OFFSET :fields NIL :offset-type #S(SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Package_O>" :SPECIALIZER "class core::Package_O") :base #S(SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Package_O>" :SPECIALIZER "class core::Package_O")>
 {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Package_O>), 0, "only" },
 { container_kind, STAMP_gctools__GCArray_moveable_float_, sizeof(gctools::GCArray_moveable<float>), 0, "gctools::GCArray_moveable<float>" },
-{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<float>),_Data), "_Data" },
-{  variable_capacity, sizeof(float), offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<float>),_Length), offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<float>),_Length), NULL },
+ {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<float>),_Data), "_Data" },
+ {  variable_capacity, sizeof(float), offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<float>),_Length), offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<float>),_Length), NULL },
+// one -> #<POD-OFFSET :fields NIL :offset-type #S(BUILTIN-CTYPE :KEY "float") :base #S(BUILTIN-CTYPE :KEY "float")>
 {    variable_field, ctype_float, sizeof(float), 0, "only" },
 { container_kind, STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__SourceFileInfo_O__, sizeof(gctools::GCVector_moveable<gctools::smart_ptr<core::SourceFileInfo_O>>), 0, "gctools::GCVector_moveable<gctools::smart_ptr<core::SourceFileInfo_O>>" },
-{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::SourceFileInfo_O>>),_Data), "_Data" },
-{  variable_capacity, sizeof(gctools::smart_ptr<core::SourceFileInfo_O>), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::SourceFileInfo_O>>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::SourceFileInfo_O>>),_Capacity), NULL },
+ {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::SourceFileInfo_O>>),_Data), "_Data" },
+ {  variable_capacity, sizeof(gctools::smart_ptr<core::SourceFileInfo_O>), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::SourceFileInfo_O>>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::SourceFileInfo_O>>),_Capacity), NULL },
+// one -> #<SMART-PTR-OFFSET :fields NIL :offset-type #S(SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::SourceFileInfo_O>" :SPECIALIZER "class core::SourceFileInfo_O") :base #S(SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::SourceFileInfo_O>" :SPECIALIZER "class core::SourceFileInfo_O")>
 {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::SourceFileInfo_O>), 0, "only" },
 { container_kind, STAMP_gctools__GCArray_moveable_double_, sizeof(gctools::GCArray_moveable<double>), 0, "gctools::GCArray_moveable<double>" },
-{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<double>),_Data), "_Data" },
-{  variable_capacity, sizeof(double), offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<double>),_Length), offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<double>),_Length), NULL },
+ {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<double>),_Data), "_Data" },
+ {  variable_capacity, sizeof(double), offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<double>),_Length), offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<double>),_Length), NULL },
+// one -> #<POD-OFFSET :fields NIL :offset-type #S(BUILTIN-CTYPE :KEY "double") :base #S(BUILTIN-CTYPE :KEY "double")>
 {    variable_field, ctype_double, sizeof(double), 0, "only" },
 { container_kind, STAMP_gctools__GCVector_moveable_core__T_O___, sizeof(gctools::GCVector_moveable<core::T_O *>), 0, "gctools::GCVector_moveable<core::T_O *>" },
-{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::T_O *>),_Data), "_Data" },
-{  variable_capacity, sizeof(core::T_O*), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::T_O *>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::T_O *>),_Capacity), NULL },
+ {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::T_O *>),_Data), "_Data" },
+ {  variable_capacity, sizeof(core::T_O*), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::T_O *>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::T_O *>),_Capacity), NULL },
+// one -> #<POINTER-OFFSET :fields NIL :offset-type #S(POINTER-CTYPE :KEY NIL :POINTEE #S(CXXRECORD-CTYPE :KEY "core::T_O" :NAME "T_O")) :base #S(POINTER-CTYPE :KEY NIL :POINTEE #S(CXXRECORD-CTYPE :KEY "core::T_O" :NAME "T_O"))>
 {    variable_field, POINTER_OFFSET, sizeof(core::T_O*), 0, "only" },
 { container_kind, STAMP_gctools__GCVector_moveable_core__OptionalArgument_, sizeof(gctools::GCVector_moveable<core::OptionalArgument>), 0, "gctools::GCVector_moveable<core::OptionalArgument>" },
-{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::OptionalArgument>),_Data), "_Data" },
-{  variable_capacity, sizeof(core::OptionalArgument), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::OptionalArgument>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::OptionalArgument>),_Capacity), NULL },
- {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::OptionalArgument),_ArgTarget), "_ArgTarget" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {    variable_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::OptionalArgument),_ArgTargetFrameIndex), "_ArgTargetFrameIndex" }, // public: (T) fixable: NIL good-name: T
- {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::OptionalArgument),_Default), "_Default" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::OptionalArgument),_Sensor._ArgTarget), "_Sensor._ArgTarget" }, // public: (T T) fixable: SMART-PTR-FIX good-name: T
- {    variable_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::OptionalArgument),_Sensor._ArgTargetFrameIndex), "_Sensor._ArgTargetFrameIndex" }, // public: (T T) fixable: NIL good-name: T
+ {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::OptionalArgument>),_Data), "_Data" },
+ {  variable_capacity, sizeof(core::OptionalArgument), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::OptionalArgument>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::OptionalArgument>),_Capacity), NULL },
+    {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::OptionalArgument),_ArgTarget), "_ArgTarget" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
+    {    variable_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::OptionalArgument),_ArgTargetFrameIndex), "_ArgTargetFrameIndex" }, // public: (T) fixable: NIL good-name: T
+    {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::OptionalArgument),_Default), "_Default" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
+    {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::OptionalArgument),_Sensor._ArgTarget), "_Sensor._ArgTarget" }, // public: (T T) fixable: SMART-PTR-FIX good-name: T
+    {    variable_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::OptionalArgument),_Sensor._ArgTargetFrameIndex), "_Sensor._ArgTargetFrameIndex" }, // public: (T T) fixable: NIL good-name: T
 { container_kind, STAMP_gctools__GCArray_moveable_unsigned_short_, sizeof(gctools::GCArray_moveable<unsigned short>), 0, "gctools::GCArray_moveable<unsigned short>" },
-{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<unsigned short>),_Data), "_Data" },
-{  variable_capacity, sizeof(unsigned short), offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<unsigned short>),_Length), offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<unsigned short>),_Length), NULL },
+ {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<unsigned short>),_Data), "_Data" },
+ {  variable_capacity, sizeof(unsigned short), offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<unsigned short>),_Length), offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<unsigned short>),_Length), NULL },
+// one -> #<POD-OFFSET :fields NIL :offset-type #S(BUILTIN-CTYPE :KEY "unsigned short") :base #S(BUILTIN-CTYPE :KEY "unsigned short")>
 {    variable_field, ctype_unsigned_short, sizeof(unsigned short), 0, "only" },
 { container_kind, STAMP_gctools__GCVector_moveable_float_, sizeof(gctools::GCVector_moveable<float>), 0, "gctools::GCVector_moveable<float>" },
-{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<float>),_Data), "_Data" },
-{  variable_capacity, sizeof(float), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<float>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<float>),_Capacity), NULL },
+ {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<float>),_Data), "_Data" },
+ {  variable_capacity, sizeof(float), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<float>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<float>),_Capacity), NULL },
+// one -> #<POD-OFFSET :fields NIL :offset-type #S(BUILTIN-CTYPE :KEY "float") :base #S(BUILTIN-CTYPE :KEY "float")>
 {    variable_field, ctype_float, sizeof(float), 0, "only" },
 { class_kind, STAMP_clbind__detail__class_map, sizeof(clbind::detail::class_map), 0, "clbind::detail::class_map" },
  {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<gctools::smart_ptr<clbind::ClassRep_O>>>), offsetof(SAFE_TYPE_MACRO(clbind::detail::class_map),m_classes._Vector._Contents), "m_classes._Vector._Contents" }, // public: (T T T) fixable: TAGGED-POINTER-FIX good-name: T
@@ -14931,1059 +15052,1059 @@ static void* OBJ_DEALLOCATOR_table[] = {
 #if defined(GC_GLOBAL_SYMBOLS)
 #endif // defined(GC_GLOBAL_SYMBOLS)
 #if defined(GC_GLOBALS)
- SMART_PTR_FIX(core::Real_O::static_class_symbol);
- SMART_PTR_FIX(core::BranchSNode_O::static_creator);
- SMART_PTR_FIX(core::FunctionContainerEnvironment_O::static_class);
- SMART_PTR_FIX(core::BroadcastStream_O::static_class_symbol);
- SMART_PTR_FIX(core::General_O::static_creator);
- SMART_PTR_FIX(llvmo::APFloat_O::static_class);
- SMART_PTR_FIX(core::SimpleMDArrayT_O::static_creator);
- SMART_PTR_FIX(clcenv::Inline_O::static_class_symbol);
- SMART_PTR_FIX(clcenv::Optimize_O::static_class);
- SMART_PTR_FIX(llvmo::ExecutionEngine_O::static_creator);
- SMART_PTR_FIX(core::SimpleMDArray_int32_t_O::static_class);
- SMART_PTR_FIX(llvmo::BasicBlock_O::static_class_symbol);
- SMART_PTR_FIX(clcenv::Info_O::static_class);
- SMART_PTR_FIX(core::CandoException_O::static_class_symbol);
- SMART_PTR_FIX(core::SimpleMDArray_int8_t_O::static_class);
- SMART_PTR_FIX(llvmo::Target_O::static_class);
- SMART_PTR_FIX(llvmo::User_O::static_class_symbol);
- SMART_PTR_FIX(core::SingleDispatchMethodFunction_O::static_creator);
- SMART_PTR_FIX(core::LoadArchive_O::static_creator);
- SMART_PTR_FIX(clcenv::GlobalEnvironment_O::static_creator);
- SMART_PTR_FIX(clcenv::LexicalVariableInfo_O::static_creator);
- SMART_PTR_FIX(core::FunctionContainerEnvironment_O::static_class_symbol);
- SMART_PTR_FIX(core::SimpleVectorFloat_O::static_creator);
- SMART_PTR_FIX(llvmo::ConstantPointerNull_O::static_class_symbol);
- SMART_PTR_FIX(clcenv::SpecialOperatorInfo_O::static_creator);
- SMART_PTR_FIX(llvmo::TargetOptions_O::static_creator);
- SMART_PTR_FIX(mp::ConditionVariable_O::static_class_symbol);
- SMART_PTR_FIX(core::SmallMap_O::static_class_symbol);
- SMART_PTR_FIX(core::BitVectorNs_O::static_class_symbol);
- SMART_PTR_FIX(llvmo::Module_O::static_class);
- SMART_PTR_FIX(llvmo::ReturnInst_O::static_class_symbol);
- SMART_PTR_FIX(core::AbstractSimpleVector_O::static_class_symbol);
- SMART_PTR_FIX(llvmo::AllocaInst_O::static_class_symbol);
- SMART_PTR_FIX(llvmo::SequentialType_O::static_creator);
- SMART_PTR_FIX(clcenv::GlobalFunctionInfo_O::static_class_symbol);
- SMART_PTR_FIX(llvmo::ModulePass_O::static_class);
- SMART_PTR_FIX(core::HashTable_O::static_creator);
- SMART_PTR_FIX(core::SingleFloat_dummy_O::static_class_symbol);
- SMART_PTR_FIX(core::SimpleMDArrayCharacter_O::static_creator);
- SMART_PTR_FIX(clbind::DummyCreator_O::static_class);
- SMART_PTR_FIX(core::MacroletEnvironment_O::static_class);
- SMART_PTR_FIX(llvmo::DINodeArray_O::static_creator);
- SMART_PTR_FIX(llvmo::FunctionType_O::static_creator);
- SMART_PTR_FIX(clbind::ClassRep_O::static_creator);
- SMART_PTR_FIX(llvmo::Constant_O::static_creator);
- SMART_PTR_FIX(llvmo::Type_O::static_class_symbol);
- SMART_PTR_FIX(clcenv::LocalFunctionInfo_O::static_creator);
- SMART_PTR_FIX(llvmo::Target_O::static_class_symbol);
- SMART_PTR_FIX(clcenv::GlobalMacroInfo_O::static_class_symbol);
- SMART_PTR_FIX(core::FileStream_O::static_creator);
- SMART_PTR_FIX(core::ClosureWithFrame_O::static_creator);
- SMART_PTR_FIX(core::MDArrayBit_O::static_class);
- SMART_PTR_FIX(clcenv::ConstantVariableInfo_O::static_class);
- SMART_PTR_FIX(core::SimpleVector_fixnum_O::static_class);
- SMART_PTR_FIX(llvmo::IndirectBrInst_O::static_class_symbol);
- SMART_PTR_FIX(llvmo::TerminatorInst_O::static_creator);
- SMART_PTR_FIX(llvmo::CallInst_O::static_class_symbol);
- SMART_PTR_FIX(core::CompiledDispatchFunction_O::static_class_symbol);
- SMART_PTR_FIX(llvmo::DICompileUnit_O::static_class);
- SMART_PTR_FIX(core::InterpretedClosure_O::static_creator);
- SMART_PTR_FIX(core::Path_O::static_class);
- SMART_PTR_FIX(llvmo::AtomicRMWInst_O::static_class);
- SMART_PTR_FIX(core::ReadTable_O::static_class);
- SMART_PTR_FIX(core::Fixnum_dummy_O::static_class_symbol);
- SMART_PTR_FIX(llvmo::DISubprogram_O::static_class_symbol);
- SMART_PTR_FIX(core::ActivationFrame_O::static_class_symbol);
- SMART_PTR_FIX(llvmo::Module_O::static_class_symbol);
- SMART_PTR_FIX(core::SimpleVector_int32_t_O::static_class);
- SMART_PTR_FIX(core::SaveArchive_O::static_class);
- SMART_PTR_FIX(core::Cons_O::static_creator);
- SMART_PTR_FIX(asttooling::AstVisitor_O::static_creator);
- SMART_PTR_FIX(core::HashTableEq_O::static_class_symbol);
- SMART_PTR_FIX(core::StrWNs_O::static_class);
- SMART_PTR_FIX(llvmo::Pass_O::static_creator);
- SMART_PTR_FIX(llvmo::DIFile_O::static_creator);
- SMART_PTR_FIX(mp::ConcurrentQueue_O::static_class_symbol);
- SMART_PTR_FIX(core::CxxMethodFunction_O::static_creator);
- SMART_PTR_FIX(llvmo::VectorType_O::static_class_symbol);
- SMART_PTR_FIX(core::MDArrayCharacter_O::static_creator);
- SMART_PTR_FIX(core::Creator_O::static_creator);
- SMART_PTR_FIX(llvmo::ModulePass_O::static_class_symbol);
- SMART_PTR_FIX(core::BlockEnvironment_O::static_creator);
- SMART_PTR_FIX(clcenv::VariableInfo_O::static_class);
- SMART_PTR_FIX(llvmo::TerminatorInst_O::static_class);
- SMART_PTR_FIX(clcenv::Inline_O::static_class);
- SMART_PTR_FIX(core::Instance_O::static_creator);
- SMART_PTR_FIX(core::DirectoryEntry_O::static_class);
- SMART_PTR_FIX(core::CoreExposer_O::static_creator);
- SMART_PTR_FIX(core::Iterator_O::static_class);
- SMART_PTR_FIX(core::Package_O::static_creator);
- SMART_PTR_FIX(core::ClosureWithFrame_O::static_class);
- SMART_PTR_FIX(asttooling::AsttoolingExposer_O::static_class_symbol);
- SMART_PTR_FIX(core::MDArray_int32_t_O::static_creator);
- SMART_PTR_FIX(clcenv::FunctionIgnore_O::static_class);
- SMART_PTR_FIX(core::SourceFileInfo_O::static_class);
- SMART_PTR_FIX(core::GlueEnvironment_O::static_class_symbol);
- SMART_PTR_FIX(core::UserData_O::static_class_symbol);
- SMART_PTR_FIX(core::SymbolToEnumConverter_O::static_class_symbol);
- SMART_PTR_FIX(core::DoubleFloat_O::static_creator);
- SMART_PTR_FIX(llvmo::Instruction_O::static_creator);
- SMART_PTR_FIX(core::SourceFileInfo_O::static_class_symbol);
- SMART_PTR_FIX(core::T_O::static_creator);
- SMART_PTR_FIX(llvmo::Target_O::static_creator);
- SMART_PTR_FIX(mp::Mutex_O::static_class);
- SMART_PTR_FIX(core::Function_O::static_class);
- SMART_PTR_FIX(core::Pointer_O::static_class_symbol);
- SMART_PTR_FIX(core::Path_O::static_class_symbol);
- SMART_PTR_FIX(core::VectorStepper_O::static_class);
- SMART_PTR_FIX(core::MDArray_byte64_t_O::static_class);
- SMART_PTR_FIX(core::SexpLoadArchive_O::static_class);
- SMART_PTR_FIX(llvmo::Module_O::static_creator);
- SMART_PTR_FIX(core::TwoWayStream_O::static_class);
- SMART_PTR_FIX(core::Character_dummy_O::static_class_symbol);
- SMART_PTR_FIX(core::HashTableEqual_O::static_class_symbol);
- SMART_PTR_FIX(core::AbstractSimpleVector_O::static_creator);
- SMART_PTR_FIX(llvmo::DINode_O::static_creator);
- SMART_PTR_FIX(clcenv::VariableDynamicExtent_O::static_class);
- SMART_PTR_FIX(llvmo::DICompositeType_O::static_creator);
- SMART_PTR_FIX(llvmo::Linker_O::static_class);
- SMART_PTR_FIX(core::Integer_O::static_class_symbol);
- SMART_PTR_FIX(llvmo::EngineBuilder_O::static_class);
- SMART_PTR_FIX(core::IOFileStream_O::static_class_symbol);
- SMART_PTR_FIX(core::EchoStream_O::static_creator);
- SMART_PTR_FIX(core::TwoWayStream_O::static_class_symbol);
- SMART_PTR_FIX(llvmo::DataLayout_O::static_class);
- SMART_PTR_FIX(core::BitVectorNs_O::static_class);
- SMART_PTR_FIX(llvmo::Argument_O::static_class);
- SMART_PTR_FIX(llvmo::DINode_O::static_class_symbol);
- SMART_PTR_FIX(llvmo::ArrayType_O::static_class);
- SMART_PTR_FIX(core::SimpleMDArray_int8_t_O::static_class_symbol);
- SMART_PTR_FIX(core::Integer_O::static_creator);
- SMART_PTR_FIX(core::MDArray_int32_t_O::static_class_symbol);
- SMART_PTR_FIX(core::SimpleMDArrayBit_O::static_class_symbol);
- SMART_PTR_FIX(core::SimpleMDArray_int16_t_O::static_class_symbol);
- SMART_PTR_FIX(llvmo::User_O::static_class);
- SMART_PTR_FIX(clcenv::LambdaNameInfo_O::static_class);
- SMART_PTR_FIX(core::SmallMultimap_O::static_creator);
- SMART_PTR_FIX(llvmo::DIType_O::static_creator);
- SMART_PTR_FIX(core::SimpleMDArray_int8_t_O::static_creator);
- SMART_PTR_FIX(core::SimpleVector_int16_t_O::static_creator);
- SMART_PTR_FIX(core::DerivableCxxClassCreator_O::static_class);
- SMART_PTR_FIX(core::InstanceCreator_O::static_creator);
- SMART_PTR_FIX(clcenv::Block_O::static_class);
- SMART_PTR_FIX(core::SingleDispatchEffectiveMethodFunction_O::static_class);
- SMART_PTR_FIX(core::UnwindProtectEnvironment_O::static_creator);
- SMART_PTR_FIX(core::CxxMethodFunction_O::static_class);
- SMART_PTR_FIX(llvmo::DataLayout_O::static_creator);
- SMART_PTR_FIX(llvmo::Triple_O::static_class);
- SMART_PTR_FIX(core::FunctionValueEnvironment_O::static_class_symbol);
- SMART_PTR_FIX(llvmo::MDNode_O::static_class);
- SMART_PTR_FIX(core::VaList_dummy_O::static_class);
- SMART_PTR_FIX(llvmo::CallInst_O::static_class);
- SMART_PTR_FIX(core::WrappedPointer_O::static_creator);
- SMART_PTR_FIX(core::SimpleString_O::static_class_symbol);
- SMART_PTR_FIX(core::Null_O::static_class_symbol);
- SMART_PTR_FIX(core::LogicalPathname_O::static_class);
- SMART_PTR_FIX(llvmo::ConstantFP_O::static_class);
- SMART_PTR_FIX(core::SimpleVector_int64_t_O::static_class);
- SMART_PTR_FIX(core::SNode_O::static_creator);
- SMART_PTR_FIX(llvmo::MDNode_O::static_class_symbol);
- SMART_PTR_FIX(core::ExternalObject_O::static_class);
- SMART_PTR_FIX(core::MDArray_int16_t_O::static_class_symbol);
- SMART_PTR_FIX(core::FunctionClosure_O::static_creator);
- SMART_PTR_FIX(llvmo::DIBasicType_O::static_class_symbol);
- SMART_PTR_FIX(core::IOFileStream_O::static_creator);
- SMART_PTR_FIX(core::LightUserData_O::static_class);
- SMART_PTR_FIX(llvmo::VectorType_O::static_class);
- SMART_PTR_FIX(clbind::ConstructorCreator_O::static_creator);
- SMART_PTR_FIX(core::ActivationFrame_O::static_creator);
- SMART_PTR_FIX(core::MultiStringBuffer_O::static_creator);
- SMART_PTR_FIX(llvmo::ConstantInt_O::static_class_symbol);
- SMART_PTR_FIX(llvmo::ConstantDataArray_O::static_creator);
- SMART_PTR_FIX(clcenv::SymbolMacro_O::static_creator);
- SMART_PTR_FIX(core::SmallMultimap_O::static_class);
- SMART_PTR_FIX(llvmo::PassManager_O::static_class_symbol);
- SMART_PTR_FIX(core::MDArray_int16_t_O::static_creator);
- SMART_PTR_FIX(core::Str8Ns_O::static_class_symbol);
- SMART_PTR_FIX(core::LightUserData_O::static_creator);
- SMART_PTR_FIX(clcenv::SpecialOperatorInfo_O::static_class);
- SMART_PTR_FIX(core::MDArray_O::static_class);
- SMART_PTR_FIX(core::UnwindProtectEnvironment_O::static_class);
- SMART_PTR_FIX(llvmo::ConstantStruct_O::static_creator);
- SMART_PTR_FIX(core::StrNs_O::static_class);
- SMART_PTR_FIX(llvmo::UnaryInstruction_O::static_creator);
- SMART_PTR_FIX(core::RecursiveDirectoryIterator_O::static_class);
- SMART_PTR_FIX(llvmo::DICompileUnit_O::static_creator);
- SMART_PTR_FIX(core::SharpEqualWrapper_O::static_creator);
- SMART_PTR_FIX(core::MDArray_int32_t_O::static_class);
- SMART_PTR_FIX(core::SymbolMacroletEnvironment_O::static_class_symbol);
- SMART_PTR_FIX(core::DerivableCxxObject_O::static_class);
- SMART_PTR_FIX(core::Path_O::static_creator);
- SMART_PTR_FIX(core::HashTable_O::static_class_symbol);
- SMART_PTR_FIX(core::Closure_O::static_class_symbol);
- SMART_PTR_FIX(core::FileStatus_O::static_class);
- SMART_PTR_FIX(core::DerivableCxxClassCreator_O::static_class_symbol);
- SMART_PTR_FIX(core::WeakKeyHashTable_O::static_class_symbol);
- SMART_PTR_FIX(core::DoubleFloat_O::static_class_symbol);
- SMART_PTR_FIX(llvmo::PHINode_O::static_creator);
- SMART_PTR_FIX(core::T_O::static_class);
- SMART_PTR_FIX(core::TemplatedFunctionBase_O::static_class_symbol);
- SMART_PTR_FIX(core::SingleDispatchEffectiveMethodFunction_O::static_class_symbol);
- SMART_PTR_FIX(core::StandardObject_O::static_class);
- SMART_PTR_FIX(llvmo::TargetLibraryInfoWrapperPass_O::static_class_symbol);
- SMART_PTR_FIX(core::MDArray_int8_t_O::static_creator);
- SMART_PTR_FIX(core::MDArray_fixnum_O::static_creator);
- SMART_PTR_FIX(llvmo::ConstantArray_O::static_class_symbol);
- SMART_PTR_FIX(llvmo::ConstantInt_O::static_creator);
- SMART_PTR_FIX(llvmo::ConstantPointerNull_O::static_creator);
- SMART_PTR_FIX(core::Str8Ns_O::static_creator);
- SMART_PTR_FIX(core::UserData_O::static_class);
- SMART_PTR_FIX(mp::RecursiveMutex_O::static_creator);
- SMART_PTR_FIX(core::SimpleMDArrayT_O::static_class);
- SMART_PTR_FIX(clcenv::LexicalVariable_O::static_class);
- SMART_PTR_FIX(llvmo::ResumeInst_O::static_creator);
- SMART_PTR_FIX(llvmo::MDNode_O::static_creator);
- SMART_PTR_FIX(core::CoreExposer_O::static_class_symbol);
- SMART_PTR_FIX(llvmo::FunctionPass_O::static_class_symbol);
- SMART_PTR_FIX(llvmo::StoreInst_O::static_class);
- SMART_PTR_FIX(core::CompileTimeEnvironment_O::static_class_symbol);
- SMART_PTR_FIX(core::SimpleMDArray_size_t_O::static_class_symbol);
- SMART_PTR_FIX(llvmo::DISubroutineType_O::static_creator);
- SMART_PTR_FIX(llvmo::AttributeSet_O::static_creator);
- SMART_PTR_FIX(clbind::DummyCreator_O::static_creator);
- SMART_PTR_FIX(core::SharpEqualWrapper_O::static_class_symbol);
- SMART_PTR_FIX(core::NativeVector_double_O::static_class_symbol);
- SMART_PTR_FIX(llvmo::DILocalScope_O::static_class_symbol);
- SMART_PTR_FIX(core::SimpleMDArrayBit_O::static_class);
- SMART_PTR_FIX(clcenv::Macro_O::static_class_symbol);
- SMART_PTR_FIX(llvmo::ConstantFP_O::static_class_symbol);
- SMART_PTR_FIX(core::ConsStepper_O::static_class_symbol);
- SMART_PTR_FIX(clcenv::VariableType_O::static_class);
- SMART_PTR_FIX(core::SimpleMDArray_byte16_t_O::static_class_symbol);
- SMART_PTR_FIX(core::VectorStepper_O::static_class_symbol);
- SMART_PTR_FIX(core::TagbodyFrame_O::static_class_symbol);
- SMART_PTR_FIX(core::CatchEnvironment_O::static_class);
- SMART_PTR_FIX(llvmo::AttributeSet_O::static_class_symbol);
- SMART_PTR_FIX(llvmo::AtomicRMWInst_O::static_class_symbol);
- SMART_PTR_FIX(llvmo::DILexicalBlockBase_O::static_creator);
- SMART_PTR_FIX(core::DirectoryIterator_O::static_class);
- SMART_PTR_FIX(clcenv::Optimize_O::static_class_symbol);
- SMART_PTR_FIX(core::RandomState_O::static_creator);
- SMART_PTR_FIX(llvmo::Type_O::static_class);
- SMART_PTR_FIX(core::Reader_O::static_class_symbol);
- SMART_PTR_FIX(core::MDArray_byte32_t_O::static_class_symbol);
- SMART_PTR_FIX(core::SimpleBitVector_O::static_class);
- SMART_PTR_FIX(clcenv::LambdaNameInfo_O::static_class_symbol);
- SMART_PTR_FIX(core::UnwindProtectEnvironment_O::static_class_symbol);
- SMART_PTR_FIX(llvmo::GlobalValue_O::static_class_symbol);
- SMART_PTR_FIX(llvmo::LLVMTargetMachine_O::static_creator);
- SMART_PTR_FIX(llvmo::BlockAddress_O::static_creator);
- SMART_PTR_FIX(llvmo::GlobalVariable_O::static_creator);
- SMART_PTR_FIX(core::CompiledClosure_O::static_class);
- SMART_PTR_FIX(core::PosixTimeDuration_O::static_class);
- SMART_PTR_FIX(clcenv::Optimize_O::static_creator);
- SMART_PTR_FIX(core::ShortFloat_O::static_class);
- SMART_PTR_FIX(core::FileStream_O::static_class);
- SMART_PTR_FIX(core::WeakPointer_O::static_class_symbol);
- SMART_PTR_FIX(clcenv::LexicalVariable_O::static_creator);
- SMART_PTR_FIX(llvmo::SequentialType_O::static_class);
- SMART_PTR_FIX(core::Package_O::static_class);
- SMART_PTR_FIX(core::CandoException_O::static_creator);
- SMART_PTR_FIX(llvmo::TargetSubtargetInfo_O::static_class);
- SMART_PTR_FIX(clcenv::ConstantVariableInfo_O::static_class_symbol);
- SMART_PTR_FIX(core::WeakKeyHashTable_O::static_creator);
- SMART_PTR_FIX(core::MDArrayDouble_O::static_class);
- SMART_PTR_FIX(core::StringStream_O::static_class_symbol);
- SMART_PTR_FIX(llvmo::GlobalVariable_O::static_class_symbol);
- SMART_PTR_FIX(clcenv::FunctionType_O::static_class);
- SMART_PTR_FIX(core::LoadTimeValues_O::static_class_symbol);
- SMART_PTR_FIX(core::SingleDispatchMethodFunction_O::static_class_symbol);
- SMART_PTR_FIX(core::Exposer_O::static_class_symbol);
- SMART_PTR_FIX(core::MDArrayCharacter_O::static_class);
- SMART_PTR_FIX(llvmo::ConstantArray_O::static_creator);
- SMART_PTR_FIX(core::LongFloat_O::static_creator);
- SMART_PTR_FIX(llvmo::VAArgInst_O::static_class);
- SMART_PTR_FIX(llvmo::SwitchInst_O::static_class_symbol);
- SMART_PTR_FIX(core::Number_O::static_class);
- SMART_PTR_FIX(core::DirectoryEntry_O::static_creator);
- SMART_PTR_FIX(llvmo::DISubprogram_O::static_creator);
- SMART_PTR_FIX(clcenv::SpecialVariableInfo_O::static_class_symbol);
- SMART_PTR_FIX(clcenv::FunctionInfo_O::static_creator);
- SMART_PTR_FIX(llvmo::Attribute_O::static_class);
- SMART_PTR_FIX(core::MultiStringBuffer_O::static_class);
- SMART_PTR_FIX(core::SimpleVector_int16_t_O::static_class);
- SMART_PTR_FIX(core::StringOutputStream_O::static_class_symbol);
- SMART_PTR_FIX(llvmo::DICompositeType_O::static_class_symbol);
- SMART_PTR_FIX(core::IntArray_O::static_creator);
- SMART_PTR_FIX(core::SynonymStream_O::static_class);
- SMART_PTR_FIX(core::RuntimeVisibleEnvironment_O::static_class);
- SMART_PTR_FIX(llvmo::PassManagerBuilder_O::static_class);
- SMART_PTR_FIX(llvmo::DILocalScope_O::static_class);
- SMART_PTR_FIX(core::WeakKeyHashTable_O::static_class);
- SMART_PTR_FIX(llvmo::IRBuilderBase_O::static_class_symbol);
- SMART_PTR_FIX(llvmo::TargetSubtargetInfo_O::static_class_symbol);
- SMART_PTR_FIX(core::ValueEnvironment_O::static_creator);
- SMART_PTR_FIX(core::BroadcastStream_O::static_creator);
- SMART_PTR_FIX(llvmo::BasicBlock_O::static_creator);
- SMART_PTR_FIX(llvmo::ConstantExpr_O::static_class);
- SMART_PTR_FIX(llvmo::BasicBlock_O::static_class);
- SMART_PTR_FIX(core::SingleDispatchGenericFunctionClosure_O::static_creator);
- SMART_PTR_FIX(core::ClassCreator_O::static_class_symbol);
- SMART_PTR_FIX(core::MacroClosure_O::static_class);
- SMART_PTR_FIX(clbind::DummyCreator_O::static_class_symbol);
- SMART_PTR_FIX(core::SingleFloat_dummy_O::static_class);
- SMART_PTR_FIX(core::ConsStepper_O::static_creator);
- SMART_PTR_FIX(llvmo::IRBuilderBase_O::static_creator);
- SMART_PTR_FIX(core::StructureClassCreator_O::static_class_symbol);
- SMART_PTR_FIX(core::HashTableEqual_O::static_class);
- SMART_PTR_FIX(core::SimpleBitVector_O::static_class_symbol);
- SMART_PTR_FIX(llvmo::PointerType_O::static_class_symbol);
- SMART_PTR_FIX(core::MDArray_byte8_t_O::static_class_symbol);
- SMART_PTR_FIX(llvmo::ModuleHandle_O::static_class);
- SMART_PTR_FIX(core::MDArray_fixnum_O::static_class_symbol);
- SMART_PTR_FIX(llvmo::InsertPoint_O::static_class_symbol);
- SMART_PTR_FIX(core::SourceManager_O::static_class_symbol);
- SMART_PTR_FIX(mp::ConditionVariable_O::static_creator);
- SMART_PTR_FIX(core::VaList_dummy_O::static_class_symbol);
- SMART_PTR_FIX(core::CxxObject_O::static_class_symbol);
- SMART_PTR_FIX(core::RandomState_O::static_class_symbol);
- SMART_PTR_FIX(core::SimpleVectorDouble_O::static_class);
- SMART_PTR_FIX(clcenv::SpecialVariable_O::static_class_symbol);
- SMART_PTR_FIX(llvmo::DIType_O::static_class_symbol);
- SMART_PTR_FIX(core::IntArray_O::static_class);
- SMART_PTR_FIX(core::Real_O::static_creator);
- SMART_PTR_FIX(core::SimpleMDArray_O::static_creator);
- SMART_PTR_FIX(clcenv::VariableDynamicExtent_O::static_creator);
- SMART_PTR_FIX(asttooling::AsttoolingExposer_O::static_class);
- SMART_PTR_FIX(core::SingleDispatchMethod_O::static_creator);
- SMART_PTR_FIX(core::DirectoryIterator_O::static_class_symbol);
- SMART_PTR_FIX(clcenv::LexicalVariable_O::static_class_symbol);
- SMART_PTR_FIX(core::SimpleMDArray_byte8_t_O::static_class_symbol);
- SMART_PTR_FIX(core::TagbodyEnvironment_O::static_class_symbol);
- SMART_PTR_FIX(core::NativeVector_int_O::static_creator);
- SMART_PTR_FIX(clbind::ConstructorCreator_O::static_class);
- SMART_PTR_FIX(llvmo::ImmutablePass_O::static_class);
- SMART_PTR_FIX(core::LoadTimeValues_O::static_creator);
- SMART_PTR_FIX(llvmo::DILexicalBlock_O::static_class_symbol);
- SMART_PTR_FIX(llvmo::Value_O::static_creator);
- SMART_PTR_FIX(core::BitVectorNs_O::static_creator);
- SMART_PTR_FIX(llvmo::PHINode_O::static_class);
- SMART_PTR_FIX(core::SimpleVector_O::static_class);
- SMART_PTR_FIX(core::SingleDispatchCxxEffectiveMethodFunction_O::static_creator);
- SMART_PTR_FIX(llvmo::LoadInst_O::static_class_symbol);
- SMART_PTR_FIX(core::Symbol_O::static_creator);
- SMART_PTR_FIX(llvmo::IRBuilder_O::static_class);
- SMART_PTR_FIX(clcenv::LocalMacroInfo_O::static_creator);
- TAGGED_POINTER_FIX(clbind::globalClassMap);
- SMART_PTR_FIX(core::StringInputStream_O::static_class_symbol);
- SMART_PTR_FIX(core::BuiltinClosure_O::static_class_symbol);
- SMART_PTR_FIX(llvmo::Metadata_O::static_class);
- SMART_PTR_FIX(core::CompiledDispatchFunction_O::static_creator);
- SMART_PTR_FIX(llvmo::UnreachableInst_O::static_class);
- SMART_PTR_FIX(core::SymbolMacroletEnvironment_O::static_class);
- SMART_PTR_FIX(core::AnsiStream_O::static_class_symbol);
- SMART_PTR_FIX(clcenv::LambdaNameInfo_O::static_creator);
- SMART_PTR_FIX(core::SimpleVector_size_t_O::static_class);
- SMART_PTR_FIX(llvmo::Instruction_O::static_class);
- SMART_PTR_FIX(clcenv::Info_O::static_creator);
- SMART_PTR_FIX(clcenv::SymbolMacroInfo_O::static_class);
- SMART_PTR_FIX(core::TagbodyFrame_O::static_creator);
- SMART_PTR_FIX(core::WeakHashTable_O::static_class);
- SMART_PTR_FIX(core::Instance_O::static_class);
- SMART_PTR_FIX(clcenv::BlockInfo_O::static_creator);
- SMART_PTR_FIX(clcenv::VariableInfo_O::static_creator);
- SMART_PTR_FIX(core::StructureClassCreator_O::static_class);
- SMART_PTR_FIX(core::Creator_O::static_class_symbol);
- SMART_PTR_FIX(core::NativeVector_float_O::static_creator);
- SMART_PTR_FIX(core::HashTable_O::static_class);
- SMART_PTR_FIX(clcenv::Entry_O::static_class);
- SMART_PTR_FIX(clcenv::GlobalEnvironment_O::static_class_symbol);
- SMART_PTR_FIX(mp::RecursiveMutex_O::static_class);
- SMART_PTR_FIX(core::StandardObject_O::static_class_symbol);
- SMART_PTR_FIX(llvmo::LoadInst_O::static_creator);
- SMART_PTR_FIX(clcenv::SpecialVariableInfo_O::static_class);
- SMART_PTR_FIX(core::CompiledFunction_O::static_class_symbol);
- SMART_PTR_FIX(clcenv::OptimizeInfo_O::static_creator);
- SMART_PTR_FIX(llvmo::PassManagerBase_O::static_class);
- SMART_PTR_FIX(llvmo::BranchInst_O::static_class_symbol);
- SMART_PTR_FIX(llvmo::APInt_O::static_class);
- SMART_PTR_FIX(clcenv::Inline_O::static_creator);
- SMART_PTR_FIX(llvmo::DIBuilder_O::static_class_symbol);
- SMART_PTR_FIX(clcenv::Closure_O::static_class_symbol);
- SMART_PTR_FIX(core::Instance_O::static_class_symbol);
- SIMPLE_POINTER_FIX(gctools::global_tagged_Symbol_OP_unbound);
- SMART_PTR_FIX(core::LongFloat_O::static_class_symbol);
- SMART_PTR_FIX(core::StandardClassCreator_O::static_class);
- SMART_PTR_FIX(llvmo::ConstantExpr_O::static_class_symbol);
- SMART_PTR_FIX(clasp_ffi::ForeignData_O::static_class);
- SMART_PTR_FIX(llvmo::StructType_O::static_creator);
- SMART_PTR_FIX(llvmo::ValueAsMetadata_O::static_class);
- SMART_PTR_FIX(llvmo::UnreachableInst_O::static_class_symbol);
- SMART_PTR_FIX(clcenv::Closure_O::static_creator);
- SMART_PTR_FIX(llvmo::MDString_O::static_class);
- SMART_PTR_FIX(core::SimpleVector_byte64_t_O::static_class);
- SMART_PTR_FIX(core::Archive_O::static_class);
- SMART_PTR_FIX(core::Bignum_O::static_class_symbol);
- SMART_PTR_FIX(core::ValueEnvironment_O::static_class);
- SMART_PTR_FIX(core::Iterator_O::static_creator);
- SMART_PTR_FIX(core::WeakKeyMapping_O::static_class_symbol);
- SMART_PTR_FIX(mp::ConcurrentQueue_O::static_class);
- SMART_PTR_FIX(clcenv::GlobalEnvironment_O::static_class);
- SMART_PTR_FIX(core::WeakPointer_O::static_class);
- SMART_PTR_FIX(core::Real_O::static_class);
- SMART_PTR_FIX(core::FunctionClosure_O::static_class);
- SMART_PTR_FIX(core::SimpleVector_byte16_t_O::static_creator);
- SMART_PTR_FIX(core::SimpleVector_int8_t_O::static_creator);
- SMART_PTR_FIX(llvmo::ReturnInst_O::static_creator);
- SMART_PTR_FIX(clcenv::Info_O::static_class_symbol);
- SMART_PTR_FIX(llvmo::PHINode_O::static_class_symbol);
- SMART_PTR_FIX(core::SexpLoadArchive_O::static_class_symbol);
- SMART_PTR_FIX(llvmo::DIBasicType_O::static_creator);
- SMART_PTR_FIX(clbind::ConstructorCreator_O::static_class_symbol);
- SMART_PTR_FIX(core::General_O::static_class_symbol);
- SMART_PTR_FIX(llvmo::DILocalScope_O::static_creator);
- SMART_PTR_FIX(clcenv::LexicalVariableInfo_O::static_class_symbol);
- SMART_PTR_FIX(llvmo::PassManager_O::static_class);
- SMART_PTR_FIX(core::MDArray_size_t_O::static_class);
- SMART_PTR_FIX(llvmo::StructType_O::static_class);
- SMART_PTR_FIX(clcenv::SpecialVariable_O::static_creator);
- SMART_PTR_FIX(llvmo::Instruction_O::static_class_symbol);
- SMART_PTR_FIX(core::StandardObject_O::static_creator);
- SMART_PTR_FIX(core::SimpleMDArray_int16_t_O::static_creator);
- SMART_PTR_FIX(core::SimpleString_O::static_class);
- SMART_PTR_FIX(llvmo::ConstantArray_O::static_class);
- SMART_PTR_FIX(core::StringInputStream_O::static_class);
- SMART_PTR_FIX(core::SequenceStepper_O::static_class);
- SMART_PTR_FIX(core::MDArray_size_t_O::static_class_symbol);
- SMART_PTR_FIX(core::Float_O::static_class);
- SMART_PTR_FIX(llvmo::TerminatorInst_O::static_class_symbol);
- SMART_PTR_FIX(core::MDArray_byte16_t_O::static_class_symbol);
- SMART_PTR_FIX(clcenv::VariableInfo_O::static_class_symbol);
- SMART_PTR_FIX(asttooling::AsttoolingExposer_O::static_creator);
- SMART_PTR_FIX(core::MDArray_O::static_creator);
- SMART_PTR_FIX(core::SaveArchive_O::static_class_symbol);
- SMART_PTR_FIX(llvmo::Constant_O::static_class_symbol);
- SMART_PTR_FIX(core::FileStream_O::static_class_symbol);
- SMART_PTR_FIX(llvmo::Pass_O::static_class);
- SMART_PTR_FIX(core::TranslationFunctor_O::static_class);
- SMART_PTR_FIX(clcenv::FunctionDynamicExtent_O::static_creator);
- SMART_PTR_FIX(llvmo::DebugLoc_O::static_class_symbol);
- SMART_PTR_FIX(core::SimpleVector_fixnum_O::static_class_symbol);
- SMART_PTR_FIX(core::SimpleMDArray_byte32_t_O::static_creator);
- SMART_PTR_FIX(llvmo::UndefValue_O::static_class_symbol);
- SMART_PTR_FIX(core::ValueFrame_O::static_class);
- SMART_PTR_FIX(core::FunctionValueEnvironment_O::static_class);
- SMART_PTR_FIX(llvmo::UndefValue_O::static_class);
- SMART_PTR_FIX(clcenv::Tag_O::static_class_symbol);
- SMART_PTR_FIX(llvmo::DINodeArray_O::static_class_symbol);
- SMART_PTR_FIX(core::SimpleMDArray_int16_t_O::static_class);
- SMART_PTR_FIX(clcenv::SymbolMacroInfo_O::static_class_symbol);
- SMART_PTR_FIX(core::MDArray_byte8_t_O::static_class);
- SMART_PTR_FIX(llvmo::IntegerType_O::static_creator);
- SMART_PTR_FIX(core::SpecialForm_O::static_creator);
- SMART_PTR_FIX(llvmo::Attribute_O::static_class_symbol);
- SMART_PTR_FIX(core::FuncallableInstanceCreator_O::static_class);
- SMART_PTR_FIX(clbind::ClassRep_O::static_class);
- SMART_PTR_FIX(core::MacroClosure_O::static_class_symbol);
- SMART_PTR_FIX(core::SimpleMDArrayDouble_O::static_class_symbol);
- SMART_PTR_FIX(core::MDArrayT_O::static_class);
- SMART_PTR_FIX(clcenv::BlockInfo_O::static_class_symbol);
- SMART_PTR_FIX(clcenv::Macro_O::static_class);
- SMART_PTR_FIX(core::SimpleVector_byte64_t_O::static_creator);
- SMART_PTR_FIX(llvmo::ConstantStruct_O::static_class_symbol);
- SMART_PTR_FIX(core::ConcatenatedStream_O::static_class);
- SMART_PTR_FIX(llvmo::Function_O::static_creator);
- SMART_PTR_FIX(llvmo::PassManagerBuilder_O::static_creator);
- SMART_PTR_FIX(clcenv::SpecialVariable_O::static_class);
- SMART_PTR_FIX(core::ActivationFrame_O::static_class);
- SMART_PTR_FIX(core::SourcePosInfo_O::static_class);
- SMART_PTR_FIX(core::Number_O::static_class_symbol);
- SMART_PTR_FIX(llvmo::DebugLoc_O::static_class);
- SMART_PTR_FIX(core::SequenceStepper_O::static_creator);
- SMART_PTR_FIX(core::TranslationFunctor_O::static_class_symbol);
- SMART_PTR_FIX(mp::SharedMutex_O::static_class);
- SMART_PTR_FIX(mp::RecursiveMutex_O::static_class_symbol);
- SMART_PTR_FIX(mp::Mutex_O::static_creator);
- SMART_PTR_FIX(core::SimpleVector_byte16_t_O::static_class);
- SMART_PTR_FIX(core::SpecialForm_O::static_class);
- SMART_PTR_FIX(clcenv::SymbolMacro_O::static_class_symbol);
- SMART_PTR_FIX(core::MDArray_byte32_t_O::static_creator);
- SMART_PTR_FIX(core::FunctionClosure_O::static_class_symbol);
- SMART_PTR_FIX(core::SimpleMDArrayFloat_O::static_class_symbol);
- SMART_PTR_FIX(llvmo::ArrayType_O::static_creator);
- SMART_PTR_FIX(core::SimpleMDArray_byte16_t_O::static_class);
- SMART_PTR_FIX(core::Integer_O::static_class);
- SMART_PTR_FIX(core::RandomState_O::static_class);
- SMART_PTR_FIX(core::SimpleMDArray_fixnum_O::static_class_symbol);
- SMART_PTR_FIX(core::AnsiStream_O::static_class);
- SMART_PTR_FIX(core::SexpSaveArchive_O::static_creator);
- SMART_PTR_FIX(core::MDArrayT_O::static_class_symbol);
- SMART_PTR_FIX(core::SimpleMDArray_size_t_O::static_creator);
- SIMPLE_POINTER_FIX(gctools::global_tagged_Symbol_OP_no_thread_local_binding);
- SMART_PTR_FIX(llvmo::PassManagerBuilder_O::static_class_symbol);
- SMART_PTR_FIX(core::DirectoryIterator_O::static_creator);
- SMART_PTR_FIX(llvmo::SwitchInst_O::static_class);
- SMART_PTR_FIX(core::SingleDispatchMethodFunction_O::static_class);
- SMART_PTR_FIX(core::IOFileStream_O::static_class);
- SMART_PTR_FIX(llvmo::IntegerType_O::static_class);
- SMART_PTR_FIX(core::SimpleMDArray_byte16_t_O::static_creator);
- SMART_PTR_FIX(core::ConcatenatedStream_O::static_class_symbol);
- SMART_PTR_FIX(core::HashTableEql_O::static_class);
- SMART_PTR_FIX(core::StrNs_O::static_creator);
- SMART_PTR_FIX(core::Rational_O::static_creator);
- SMART_PTR_FIX(core::SimpleVector_int64_t_O::static_creator);
- SMART_PTR_FIX(clasp_ffi::ForeignData_O::static_class_symbol);
- SMART_PTR_FIX(core::PosixTime_O::static_creator);
- SMART_PTR_FIX(core::SimpleVectorFloat_O::static_class_symbol);
- SMART_PTR_FIX(core::SNode_O::static_class_symbol);
- SMART_PTR_FIX(llvmo::DIScope_O::static_class);
- SMART_PTR_FIX(core::VaList_dummy_O::static_creator);
- SMART_PTR_FIX(llvmo::IntegerType_O::static_class_symbol);
- SMART_PTR_FIX(core::HashTableEq_O::static_class);
- SMART_PTR_FIX(core::Cache_O::static_class_symbol);
- SMART_PTR_FIX(core::MacroletEnvironment_O::static_class_symbol);
- SMART_PTR_FIX(clcenv::GlobalFunctionInfo_O::static_class);
- SMART_PTR_FIX(core::SmallMultimap_O::static_class_symbol);
- SMART_PTR_FIX(llvmo::PointerType_O::static_class);
- SMART_PTR_FIX(core::LambdaListHandler_O::static_class);
- SMART_PTR_FIX(core::SimpleCharacterString_O::static_class);
- SMART_PTR_FIX(llvmo::DICompositeType_O::static_class);
- SMART_PTR_FIX(core::UserData_O::static_creator);
- SMART_PTR_FIX(core::Stream_O::static_creator);
- SMART_PTR_FIX(core::SimpleMDArray_int64_t_O::static_creator);
- SMART_PTR_FIX(core::DirectoryEntry_O::static_class_symbol);
- SMART_PTR_FIX(mp::Process_O::static_creator);
- SMART_PTR_FIX(core::General_O::static_class);
- SMART_PTR_FIX(core::FunctionContainerEnvironment_O::static_creator);
- SMART_PTR_FIX(core::TwoWayStream_O::static_creator);
- SMART_PTR_FIX(llvmo::IndirectBrInst_O::static_creator);
- SMART_PTR_FIX(llvmo::DIDerivedType_O::static_creator);
- SMART_PTR_FIX(llvmo::DIDerivedType_O::static_class_symbol);
- SMART_PTR_FIX(core::SimpleMDArray_byte8_t_O::static_class);
- SMART_PTR_FIX(core::Ratio_O::static_creator);
- SMART_PTR_FIX(core::Function_O::static_creator);
- SMART_PTR_FIX(core::LeafSNode_O::static_class_symbol);
- SMART_PTR_FIX(llvmo::Type_O::static_creator);
- SMART_PTR_FIX(core::Function_O::static_class_symbol);
- SMART_PTR_FIX(clcenv::Function_O::static_creator);
- SMART_PTR_FIX(llvmo::Function_O::static_class_symbol);
- SMART_PTR_FIX(llvmo::DISubprogram_O::static_class);
- SMART_PTR_FIX(core::MDArray_byte32_t_O::static_class);
- SMART_PTR_FIX(core::MDArrayBit_O::static_class_symbol);
- SMART_PTR_FIX(core::SimpleMDArray_fixnum_O::static_class);
- SIMPLE_POINTER_FIX(gctools::global_tagged_Symbol_OP_deleted);
- SMART_PTR_FIX(clcenv::FunctionInfo_O::static_class);
- SMART_PTR_FIX(llvmo::AtomicCmpXchgInst_O::static_creator);
- SMART_PTR_FIX(core::MDArray_size_t_O::static_creator);
- SMART_PTR_FIX(core::SimpleMDArrayT_O::static_class_symbol);
- SMART_PTR_FIX(core::HashTableEql_O::static_creator);
- SMART_PTR_FIX(core::MultiStringBuffer_O::static_class_symbol);
- SMART_PTR_FIX(llvmo::ExecutionEngine_O::static_class_symbol);
- SMART_PTR_FIX(core::Array_O::static_class);
- SMART_PTR_FIX(core::SaveArchive_O::static_creator);
- SMART_PTR_FIX(core::SourceFileInfo_O::static_creator);
- SMART_PTR_FIX(core::SimpleVector_byte64_t_O::static_class_symbol);
- SMART_PTR_FIX(core::Exposer_O::static_creator);
- SMART_PTR_FIX(core::SingleDispatchGenericFunctionClosure_O::static_class);
- SMART_PTR_FIX(llvmo::DIType_O::static_class);
- SMART_PTR_FIX(llvmo::ConstantDataSequential_O::static_class);
- SMART_PTR_FIX(clcenv::Entry_O::static_creator);
- SMART_PTR_FIX(llvmo::ImmutablePass_O::static_creator);
- SMART_PTR_FIX(llvmo::CallInst_O::static_creator);
- SMART_PTR_FIX(core::MDArray_byte16_t_O::static_class);
- SMART_PTR_FIX(core::SourcePosInfo_O::static_creator);
- SMART_PTR_FIX(llvmo::IRBuilderBase_O::static_class);
- SMART_PTR_FIX(mp::BlockingConcurrentQueue_O::static_class_symbol);
- SMART_PTR_FIX(llvmo::NamedMDNode_O::static_class);
- SMART_PTR_FIX(core::SimpleMDArray_O::static_class);
- SMART_PTR_FIX(core::CompiledDispatchFunction_O::static_class);
- SMART_PTR_FIX(core::IOStreamStream_O::static_class_symbol);
- SMART_PTR_FIX(core::CompileTimeEnvironment_O::static_class);
- SMART_PTR_FIX(core::Float_O::static_class_symbol);
- SMART_PTR_FIX(core::TranslationFunctor_O::static_creator);
- SMART_PTR_FIX(core::NamedFunction_O::static_class_symbol);
- SMART_PTR_FIX(core::CxxMethodFunction_O::static_class_symbol);
- SMART_PTR_FIX(core::Environment_O::static_class);
- SMART_PTR_FIX(core::RuntimeVisibleEnvironment_O::static_creator);
- SMART_PTR_FIX(core::SymbolMacroletEnvironment_O::static_creator);
- SMART_PTR_FIX(clcenv::Entry_O::static_class_symbol);
- SMART_PTR_FIX(mp::BlockingConcurrentQueue_O::static_creator);
- SMART_PTR_FIX(core::HashTableEqualp_O::static_creator);
- SMART_PTR_FIX(llvmo::MCSubtargetInfo_O::static_class_symbol);
- SMART_PTR_FIX(core::SimpleMDArray_O::static_class_symbol);
- SMART_PTR_FIX(core::LightUserData_O::static_class_symbol);
- SMART_PTR_FIX(core::SimpleVector_int64_t_O::static_class_symbol);
- SMART_PTR_FIX(core::SimpleVector_byte32_t_O::static_creator);
- SMART_PTR_FIX(core::TagbodyFrame_O::static_class);
- SMART_PTR_FIX(core::PosixTime_O::static_class);
- SMART_PTR_FIX(core::SynonymStream_O::static_class_symbol);
- SMART_PTR_FIX(llvmo::Argument_O::static_class_symbol);
- SMART_PTR_FIX(core::Symbol_O::static_class);
- SMART_PTR_FIX(core::FunctionFrame_O::static_class_symbol);
- SMART_PTR_FIX(llvmo::AllocaInst_O::static_creator);
- SMART_PTR_FIX(llvmo::DIFile_O::static_class_symbol);
- SMART_PTR_FIX(llvmo::UnaryInstruction_O::static_class_symbol);
- SMART_PTR_FIX(core::MDArray_int8_t_O::static_class);
- SMART_PTR_FIX(llvmo::ValueAsMetadata_O::static_creator);
- SMART_PTR_FIX(core::Archive_O::static_class_symbol);
- SMART_PTR_FIX(core::Creator_O::static_class);
- SMART_PTR_FIX(core::FuncallableInstance_O::static_class_symbol);
- SMART_PTR_FIX(llvmo::Metadata_O::static_creator);
- SMART_PTR_FIX(core::Bignum_O::static_class);
- SMART_PTR_FIX(llvmo::MCSubtargetInfo_O::static_creator);
- SMART_PTR_FIX(clcenv::LambdaName_O::static_creator);
- SMART_PTR_FIX(core::MDArrayFloat_O::static_class_symbol);
- SMART_PTR_FIX(clcenv::VariableType_O::static_creator);
- SMART_PTR_FIX(llvmo::Triple_O::static_class_symbol);
- SMART_PTR_FIX(core::MDArray_int8_t_O::static_class_symbol);
- SMART_PTR_FIX(core::SimpleVector_int8_t_O::static_class_symbol);
- SMART_PTR_FIX(llvmo::FenceInst_O::static_creator);
- SMART_PTR_FIX(core::Stream_O::static_class_symbol);
- SMART_PTR_FIX(clcenv::SymbolMacroInfo_O::static_creator);
- SMART_PTR_FIX(core::Str8Ns_O::static_class);
- SMART_PTR_FIX(core::Symbol_O::static_class_symbol);
- SMART_PTR_FIX(core::FunctionValueEnvironment_O::static_creator);
- SMART_PTR_FIX(core::FuncallableInstanceCreator_O::static_class_symbol);
- SMART_PTR_FIX(core::StrNs_O::static_class_symbol);
- SMART_PTR_FIX(core::Rational_O::static_class);
- SMART_PTR_FIX(core::NamedFunction_O::static_creator);
- SMART_PTR_FIX(core::SequenceStepper_O::static_class_symbol);
- SMART_PTR_FIX(core::CatchEnvironment_O::static_creator);
- SMART_PTR_FIX(llvmo::APFloat_O::static_creator);
- SMART_PTR_FIX(core::LoadTimeValues_O::static_class);
- SMART_PTR_FIX(core::CatchEnvironment_O::static_class_symbol);
- SMART_PTR_FIX(llvmo::DITypeRefArray_O::static_class_symbol);
- SMART_PTR_FIX(llvmo::DISubroutineType_O::static_class);
- SMART_PTR_FIX(core::Stream_O::static_class);
- SMART_PTR_FIX(llvmo::FenceInst_O::static_class);
- SMART_PTR_FIX(core::IOStreamStream_O::static_creator);
- SMART_PTR_FIX(core::SourceManager_O::static_creator);
- SMART_PTR_FIX(core::StrWNs_O::static_class_symbol);
- SMART_PTR_FIX(core::Character_dummy_O::static_class);
- SMART_PTR_FIX(llvmo::TargetLibraryInfoWrapperPass_O::static_class);
- SMART_PTR_FIX(llvmo::DITypeRefArray_O::static_class);
- SMART_PTR_FIX(core::SimpleMDArrayBaseChar_O::static_creator);
- SMART_PTR_FIX(core::TemplatedFunctionBase_O::static_class);
- SMART_PTR_FIX(core::SimpleMDArray_byte64_t_O::static_class_symbol);
- SMART_PTR_FIX(core::LogicalPathname_O::static_class_symbol);
- SMART_PTR_FIX(core::IntArray_O::static_class_symbol);
- SMART_PTR_FIX(core::Cache_O::static_creator);
- SMART_PTR_FIX(core::MDArrayDouble_O::static_creator);
- SMART_PTR_FIX(core::StringInputStream_O::static_creator);
- SMART_PTR_FIX(llvmo::FunctionPass_O::static_class);
- SMART_PTR_FIX(llvmo::EngineBuilder_O::static_class_symbol);
- SMART_PTR_FIX(llvmo::ReturnInst_O::static_class);
- SMART_PTR_FIX(llvmo::LLVMContext_O::static_creator);
- SMART_PTR_FIX(core::SimpleVector_byte8_t_O::static_creator);
- SMART_PTR_FIX(core::SimpleVector_size_t_O::static_class_symbol);
- SMART_PTR_FIX(llvmo::Argument_O::static_creator);
- SMART_PTR_FIX(core::WeakHashTable_O::static_creator);
- SMART_PTR_FIX(mp::Mutex_O::static_class_symbol);
- SMART_PTR_FIX(llvmo::ConstantExpr_O::static_creator);
- SMART_PTR_FIX(clcenv::Tag_O::static_class);
- SMART_PTR_FIX(clcenv::LocalFunctionInfo_O::static_class);
- SMART_PTR_FIX(core::MDArrayFloat_O::static_creator);
- SMART_PTR_FIX(llvmo::PassManager_O::static_creator);
- SMART_PTR_FIX(llvmo::Function_O::static_class);
- SMART_PTR_FIX(llvmo::AtomicCmpXchgInst_O::static_class);
- SMART_PTR_FIX(core::SimpleBaseString_O::static_creator);
- SMART_PTR_FIX(core::DerivableCxxObject_O::static_class_symbol);
- SMART_PTR_FIX(llvmo::BranchInst_O::static_class);
- SMART_PTR_FIX(clcenv::ConstantVariableInfo_O::static_creator);
- SMART_PTR_FIX(core::MDArrayFloat_O::static_class);
- SMART_PTR_FIX(clcenv::FunctionType_O::static_class_symbol);
- SMART_PTR_FIX(llvmo::StructType_O::static_class_symbol);
- SMART_PTR_FIX(clcenv::LexicalVariableInfo_O::static_class);
- SMART_PTR_FIX(llvmo::BlockAddress_O::static_class_symbol);
- SMART_PTR_FIX(core::SimpleVector_byte16_t_O::static_class_symbol);
- SMART_PTR_FIX(core::SingleDispatchGenericFunctionClosure_O::static_class_symbol);
- SMART_PTR_FIX(core::MDArray_fixnum_O::static_class);
- SMART_PTR_FIX(llvmo::ModuleHandle_O::static_class_symbol);
- SMART_PTR_FIX(core::SmallMap_O::static_class);
- SMART_PTR_FIX(core::NativeVector_float_O::static_class_symbol);
- SMART_PTR_FIX(core::PosixTime_O::static_class_symbol);
- SMART_PTR_FIX(core::SmallMap_O::static_creator);
- SMART_PTR_FIX(core::FunctionFrame_O::static_class);
- SMART_PTR_FIX(core::ValueFrame_O::static_class_symbol);
- SMART_PTR_FIX(core::Environment_O::static_class_symbol);
- SMART_PTR_FIX(core::SimpleVector_size_t_O::static_creator);
- SMART_PTR_FIX(core::StandardClassCreator_O::static_creator);
- SMART_PTR_FIX(core::SimpleBaseString_O::static_class_symbol);
- SMART_PTR_FIX(core::FileStatus_O::static_creator);
- SMART_PTR_FIX(core::Pointer_O::static_class);
- SMART_PTR_FIX(llvmo::StoreInst_O::static_class_symbol);
- SMART_PTR_FIX(core::ShortFloat_O::static_class_symbol);
- SMART_PTR_FIX(core::MDArrayBit_O::static_creator);
- SMART_PTR_FIX(mp::ConditionVariable_O::static_class);
- SMART_PTR_FIX(clcenv::Macro_O::static_creator);
- SMART_PTR_FIX(core::TagbodyEnvironment_O::static_class);
- SMART_PTR_FIX(core::SimpleMDArrayBaseChar_O::static_class);
- SMART_PTR_FIX(llvmo::InvokeInst_O::static_class_symbol);
- SMART_PTR_FIX(core::Cons_O::static_class_symbol);
- SMART_PTR_FIX(core::LeafSNode_O::static_creator);
- SMART_PTR_FIX(core::Iterator_O::static_class_symbol);
- SMART_PTR_FIX(clasp_ffi::ForeignTypeSpec_O::static_class_symbol);
- SMART_PTR_FIX(llvmo::UnaryInstruction_O::static_class);
- SMART_PTR_FIX(core::MDArrayCharacter_O::static_class_symbol);
- SMART_PTR_FIX(core::CompiledFunction_O::static_creator);
- SMART_PTR_FIX(core::SimpleVectorDouble_O::static_class_symbol);
- SMART_PTR_FIX(core::SimpleMDArrayFloat_O::static_class);
- SMART_PTR_FIX(core::SynonymStream_O::static_creator);
- SMART_PTR_FIX(llvmo::GlobalValue_O::static_creator);
- SMART_PTR_FIX(llvmo::AtomicRMWInst_O::static_creator);
- SMART_PTR_FIX(core::SimpleMDArray_byte32_t_O::static_class);
- SMART_PTR_FIX(core::SimpleVector_O::static_class_symbol);
- SMART_PTR_FIX(core::InterpretedClosure_O::static_class_symbol);
- SMART_PTR_FIX(core::SimpleString_O::static_creator);
- SMART_PTR_FIX(core::Fixnum_dummy_O::static_creator);
- SMART_PTR_FIX(core::Pathname_O::static_class_symbol);
- SMART_PTR_FIX(llvmo::DITypeRefArray_O::static_creator);
- SMART_PTR_FIX(core::CxxObject_O::static_creator);
- SMART_PTR_FIX(llvmo::ClaspJIT_O::static_class_symbol);
- SMART_PTR_FIX(core::SimpleMDArrayCharacter_O::static_class_symbol);
- SMART_PTR_FIX(core::HashTableEq_O::static_creator);
- SMART_PTR_FIX(core::SimpleVector_byte8_t_O::static_class_symbol);
- SMART_PTR_FIX(core::MDArray_byte8_t_O::static_creator);
- SMART_PTR_FIX(llvmo::DIDerivedType_O::static_class);
- SMART_PTR_FIX(core::EchoStream_O::static_class);
- SMART_PTR_FIX(core::SimpleCharacterString_O::static_class_symbol);
- SMART_PTR_FIX(llvmo::CompositeType_O::static_creator);
- SMART_PTR_FIX(llvmo::AttributeSet_O::static_class);
- SMART_PTR_FIX(core::BroadcastStream_O::static_class);
- SMART_PTR_FIX(llvmo::ValueAsMetadata_O::static_class_symbol);
- SMART_PTR_FIX(clbind::ClassRep_O::static_class_symbol);
- SMART_PTR_FIX(core::InterpretedClosure_O::static_class);
- SMART_PTR_FIX(asttooling::AstVisitor_O::static_class_symbol);
- SMART_PTR_FIX(llvmo::DILexicalBlockBase_O::static_class);
- SMART_PTR_FIX(core::ConcatenatedStream_O::static_creator);
- SMART_PTR_FIX(core::LogicalPathname_O::static_creator);
- SMART_PTR_FIX(llvmo::LandingPadInst_O::static_class);
- SMART_PTR_FIX(core::LeafSNode_O::static_class);
- SMART_PTR_FIX(clbind::ClassRegistry_O::static_class_symbol);
- SMART_PTR_FIX(core::LoadArchive_O::static_class_symbol);
- SMART_PTR_FIX(core::Pointer_O::static_creator);
- SMART_PTR_FIX(core::SingleDispatchEffectiveMethodFunction_O::static_creator);
- SMART_PTR_FIX(clcenv::Block_O::static_creator);
- SMART_PTR_FIX(core::MDArrayT_O::static_creator);
- SMART_PTR_FIX(core::BuiltinClosure_O::static_class);
- SMART_PTR_FIX(core::Array_O::static_creator);
- SMART_PTR_FIX(llvmo::FunctionPassManager_O::static_creator);
- SMART_PTR_FIX(clcenv::SymbolMacro_O::static_class);
- SMART_PTR_FIX(llvmo::TargetMachine_O::static_class);
- SMART_PTR_FIX(clcenv::LocalMacroInfo_O::static_class_symbol);
- SMART_PTR_FIX(core::SimpleMDArrayFloat_O::static_creator);
- SMART_PTR_FIX(core::StructureClassCreator_O::static_creator);
- SMART_PTR_FIX(llvmo::IndirectBrInst_O::static_class);
- SMART_PTR_FIX(clcenv::FunctionIgnore_O::static_creator);
- SMART_PTR_FIX(llvmo::ResumeInst_O::static_class);
- SMART_PTR_FIX(llvmo::APInt_O::static_creator);
- SMART_PTR_FIX(core::MDArray_int64_t_O::static_class_symbol);
- SMART_PTR_FIX(core::Complex_O::static_class);
- SMART_PTR_FIX(core::WrappedPointer_O::static_class);
- SMART_PTR_FIX(llvmo::Value_O::static_class_symbol);
  SMART_PTR_FIX(llvmo::DataLayout_O::static_class_symbol);
- SMART_PTR_FIX(llvmo::APInt_O::static_class_symbol);
- SMART_PTR_FIX(core::MDArray_int64_t_O::static_creator);
- SMART_PTR_FIX(llvmo::ResumeInst_O::static_class_symbol);
- SMART_PTR_FIX(llvmo::VAArgInst_O::static_creator);
- SMART_PTR_FIX(core::Ratio_O::static_class);
- SMART_PTR_FIX(clcenv::FunctionInfo_O::static_class_symbol);
- SMART_PTR_FIX(clcenv::OptimizeInfo_O::static_class_symbol);
- SMART_PTR_FIX(core::SimpleVector_byte32_t_O::static_class);
- SMART_PTR_FIX(core::Number_O::static_creator);
- SMART_PTR_FIX(clcenv::VariableIgnore_O::static_class);
- SMART_PTR_FIX(llvmo::ConstantDataArray_O::static_class_symbol);
- SMART_PTR_FIX(core::HashTableEql_O::static_class_symbol);
- SMART_PTR_FIX(clcenv::LocalFunctionInfo_O::static_class_symbol);
- SMART_PTR_FIX(llvmo::Metadata_O::static_class_symbol);
- SMART_PTR_FIX(core::HashTableEqualp_O::static_class_symbol);
- SMART_PTR_FIX(core::CoreExposer_O::static_class);
- SMART_PTR_FIX(llvmo::AtomicCmpXchgInst_O::static_class_symbol);
- SMART_PTR_FIX(core::NativeVector_int_O::static_class_symbol);
- SIMPLE_POINTER_FIX(run_time_values_table);
- SMART_PTR_FIX(core::SimpleVector_fixnum_O::static_creator);
- SMART_PTR_FIX(clcenv::LambdaName_O::static_class_symbol);
- SMART_PTR_FIX(core::MDArrayDouble_O::static_class_symbol);
- SMART_PTR_FIX(core::Array_O::static_class_symbol);
- SMART_PTR_FIX(llvmo::LLVMTargetMachine_O::static_class_symbol);
- SMART_PTR_FIX(core::SimpleBaseString_O::static_class);
- SMART_PTR_FIX(llvmo::InsertPoint_O::static_class);
- SMART_PTR_FIX(core::Environment_O::static_creator);
- SMART_PTR_FIX(core::Null_O::static_creator);
- SMART_PTR_FIX(core::ClosureWithSlots_O::static_creator);
- SMART_PTR_FIX(core::LexicalEnvironment_O::static_class_symbol);
- SMART_PTR_FIX(llvmo::ArrayType_O::static_class_symbol);
- SMART_PTR_FIX(core::SimpleVector_byte32_t_O::static_class_symbol);
- SMART_PTR_FIX(llvmo::ConstantStruct_O::static_class);
- SMART_PTR_FIX(llvmo::CompositeType_O::static_class_symbol);
- SMART_PTR_FIX(core::Bignum_O::static_creator);
- SMART_PTR_FIX(clcenv::LocalMacroInfo_O::static_class);
- SIMPLE_POINTER_FIX(gctools::global_tagged_Symbol_OP_nil);
- SMART_PTR_FIX(clbind::ClassRegistry_O::static_creator);
- SMART_PTR_FIX(core::Float_O::static_creator);
- SMART_PTR_FIX(core::LongFloat_O::static_class);
- SMART_PTR_FIX(llvmo::ConstantPointerNull_O::static_class);
- SMART_PTR_FIX(clcenv::VariableDynamicExtent_O::static_class_symbol);
- SMART_PTR_FIX(clbind::ClassRegistry_O::static_class);
- SMART_PTR_FIX(clcenv::GlobalFunctionInfo_O::static_creator);
- SMART_PTR_FIX(llvmo::DIBasicType_O::static_class);
- SMART_PTR_FIX(llvmo::DIFile_O::static_class);
- SMART_PTR_FIX(core::InvocationHistoryFrameIterator_O::static_creator);
- SMART_PTR_FIX(llvmo::DINode_O::static_class);
- SMART_PTR_FIX(core::MDArrayBaseChar_O::static_class_symbol);
- SMART_PTR_FIX(core::Cache_O::static_class);
- SMART_PTR_FIX(core::Complex_O::static_class_symbol);
- SMART_PTR_FIX(core::LambdaListHandler_O::static_class_symbol);
- SMART_PTR_FIX(llvmo::UnreachableInst_O::static_creator);
- SMART_PTR_FIX(core::Record_O::static_class_symbol);
- SMART_PTR_FIX(llvmo::DebugLoc_O::static_creator);
+ SMART_PTR_FIX(core::FileStream_O::static_class_symbol);
  SMART_PTR_FIX(core::StringStream_O::static_class);
- SMART_PTR_FIX(clcenv::SpecialOperatorInfo_O::static_class_symbol);
- SMART_PTR_FIX(core::ExternalObject_O::static_creator);
- SMART_PTR_FIX(core::InvocationHistoryFrameIterator_O::static_class_symbol);
- SMART_PTR_FIX(core::BlockEnvironment_O::static_class);
- SMART_PTR_FIX(core::NamedFunction_O::static_class);
- SMART_PTR_FIX(core::Record_O::static_creator);
- SMART_PTR_FIX(core::BranchSNode_O::static_class);
- SMART_PTR_FIX(core::NativeVector_float_O::static_class);
- SIMPLE_POINTER_FIX(gctools::global_tagged_Symbol_OP_sameAsKey);
- SMART_PTR_FIX(mp::SharedMutex_O::static_creator);
- SMART_PTR_FIX(core::GlueEnvironment_O::static_class);
- SMART_PTR_FIX(core::SharpEqualWrapper_O::static_class);
- SMART_PTR_FIX(core::Fixnum_dummy_O::static_class);
- SMART_PTR_FIX(core::GlueEnvironment_O::static_creator);
- SMART_PTR_FIX(core::LoadArchive_O::static_class);
- SMART_PTR_FIX(core::Pathname_O::static_creator);
- SMART_PTR_FIX(llvmo::GlobalValue_O::static_class);
- SMART_PTR_FIX(core::LambdaListHandler_O::static_creator);
- SMART_PTR_FIX(llvmo::TargetOptions_O::static_class);
- SMART_PTR_FIX(core::WeakKeyMapping_O::static_creator);
- SMART_PTR_FIX(llvmo::PassManagerBase_O::static_creator);
- SMART_PTR_FIX(llvmo::ModulePass_O::static_creator);
- SMART_PTR_FIX(core::StringOutputStream_O::static_class);
- SMART_PTR_FIX(llvmo::DIScope_O::static_creator);
- SMART_PTR_FIX(clcenv::FunctionDynamicExtent_O::static_class);
- SMART_PTR_FIX(core::ShortFloat_O::static_creator);
- SMART_PTR_FIX(core::Complex_O::static_creator);
- SMART_PTR_FIX(core::Record_O::static_class);
- SMART_PTR_FIX(llvmo::TargetSubtargetInfo_O::static_creator);
- SMART_PTR_FIX(llvmo::Linker_O::static_class_symbol);
- SMART_PTR_FIX(llvmo::NamedMDNode_O::static_class_symbol);
- SMART_PTR_FIX(core::SourceManager_O::static_class);
- SMART_PTR_FIX(core::AbstractSimpleVector_O::static_class);
- SMART_PTR_FIX(core::RuntimeVisibleEnvironment_O::static_class_symbol);
- SMART_PTR_FIX(core::NativeVector_double_O::static_creator);
- SMART_PTR_FIX(core::ClassCreator_O::static_creator);
- SMART_PTR_FIX(clcenv::FunctionIgnore_O::static_class_symbol);
- SMART_PTR_FIX(core::MDArrayBaseChar_O::static_creator);
- SMART_PTR_FIX(asttooling::AstVisitor_O::static_class);
- SMART_PTR_FIX(core::CompileTimeEnvironment_O::static_creator);
- SMART_PTR_FIX(core::Exposer_O::static_class);
- SMART_PTR_FIX(core::SimpleMDArray_int64_t_O::static_class_symbol);
- SMART_PTR_FIX(llvmo::ImmutablePass_O::static_class_symbol);
- SMART_PTR_FIX(mp::SharedMutex_O::static_class_symbol);
- SMART_PTR_FIX(core::CompiledFunction_O::static_class);
- SMART_PTR_FIX(llvmo::IRBuilder_O::static_class_symbol);
- SMART_PTR_FIX(clcenv::Function_O::static_class_symbol);
- SMART_PTR_FIX(core::InvocationHistoryFrameIterator_O::static_class);
- SMART_PTR_FIX(llvmo::DIBuilder_O::static_class);
- SMART_PTR_FIX(llvmo::SequentialType_O::static_class_symbol);
- SMART_PTR_FIX(core::ConsStepper_O::static_class);
- SMART_PTR_FIX(core::SimpleMDArrayDouble_O::static_creator);
- SMART_PTR_FIX(llvmo::MDString_O::static_class_symbol);
- SMART_PTR_FIX(llvmo::TargetMachine_O::static_creator);
- SMART_PTR_FIX(llvmo::ModuleHandle_O::static_creator);
- SMART_PTR_FIX(core::SingleDispatchCxxEffectiveMethodFunction_O::static_class);
- SMART_PTR_FIX(llvmo::InvokeInst_O::static_creator);
- SMART_PTR_FIX(llvmo::ClaspJIT_O::static_creator);
- SMART_PTR_FIX(core::SexpSaveArchive_O::static_class_symbol);
- SMART_PTR_FIX(core::SimpleMDArray_byte32_t_O::static_class_symbol);
- SMART_PTR_FIX(llvmo::AllocaInst_O::static_class);
- SMART_PTR_FIX(llvmo::BranchInst_O::static_creator);
- SMART_PTR_FIX(core::FunctionFrame_O::static_creator);
- SMART_PTR_FIX(mp::Process_O::static_class_symbol);
- SMART_PTR_FIX(core::Package_O::static_class_symbol);
- SMART_PTR_FIX(llvmo::PassManagerBase_O::static_class_symbol);
- SMART_PTR_FIX(core::SNode_O::static_class);
- SMART_PTR_FIX(core::Closure_O::static_class);
- SMART_PTR_FIX(llvmo::InsertPoint_O::static_creator);
- SMART_PTR_FIX(core::FuncallableInstanceCreator_O::static_creator);
- SMART_PTR_FIX(core::Closure_O::static_creator);
- SMART_PTR_FIX(llvmo::FenceInst_O::static_class_symbol);
- SMART_PTR_FIX(core::MDArray_int64_t_O::static_class);
- SMART_PTR_FIX(clasp_ffi::ForeignData_O::static_creator);
- SMART_PTR_FIX(llvmo::IRBuilder_O::static_creator);
- SMART_PTR_FIX(core::SimpleMDArray_byte64_t_O::static_creator);
- SMART_PTR_FIX(core::SimpleVector_int32_t_O::static_class_symbol);
- SMART_PTR_FIX(core::ReadTable_O::static_creator);
- SMART_PTR_FIX(core::SimpleBitVector_O::static_creator);
- SMART_PTR_FIX(core::SimpleCharacterString_O::static_creator);
- SMART_PTR_FIX(llvmo::TargetMachine_O::static_class_symbol);
- SMART_PTR_FIX(clcenv::LambdaName_O::static_class);
- SMART_PTR_FIX(core::WeakPointer_O::static_creator);
- SMART_PTR_FIX(core::InstanceCreator_O::static_class);
- SMART_PTR_FIX(core::Ratio_O::static_class_symbol);
- SMART_PTR_FIX(llvmo::FunctionPassManager_O::static_class_symbol);
- SMART_PTR_FIX(core::CandoException_O::static_class);
- SMART_PTR_FIX(core::Reader_O::static_class);
- SMART_PTR_FIX(core::SimpleVector_int32_t_O::static_creator);
- SMART_PTR_FIX(core::CompiledClosure_O::static_creator);
- SMART_PTR_FIX(llvmo::VAArgInst_O::static_class_symbol);
- SMART_PTR_FIX(llvmo::DINodeArray_O::static_class);
- SMART_PTR_FIX(core::SexpLoadArchive_O::static_creator);
- SMART_PTR_FIX(core::SimpleMDArray_size_t_O::static_class);
- SMART_PTR_FIX(core::ClosureWithSlots_O::static_class_symbol);
- SMART_PTR_FIX(core::BranchSNode_O::static_class_symbol);
- SMART_PTR_FIX(core::SimpleMDArray_int32_t_O::static_class_symbol);
- SMART_PTR_FIX(core::SymbolToEnumConverter_O::static_class);
- SMART_PTR_FIX(llvmo::Pass_O::static_class_symbol);
- SMART_PTR_FIX(llvmo::GlobalVariable_O::static_class);
- SMART_PTR_FIX(core::StrWNs_O::static_creator);
- SMART_PTR_FIX(core::ClosureWithFrame_O::static_class_symbol);
- SMART_PTR_FIX(clcenv::OptimizeInfo_O::static_class);
- SMART_PTR_FIX(core::ClosureWithSlots_O::static_class);
  SMART_PTR_FIX(core::SingleFloat_dummy_O::static_creator);
- SMART_PTR_FIX(clcenv::GlobalMacroInfo_O::static_class);
- SMART_PTR_FIX(core::MDArray_byte16_t_O::static_creator);
- SMART_PTR_FIX(core::IOStreamStream_O::static_class);
- SMART_PTR_FIX(llvmo::ExecutionEngine_O::static_class);
- SMART_PTR_FIX(core::WeakKeyMapping_O::static_class);
- SMART_PTR_FIX(core::MacroletEnvironment_O::static_creator);
- SMART_PTR_FIX(llvmo::Linker_O::static_creator);
- SMART_PTR_FIX(core::FileStatus_O::static_class_symbol);
- SMART_PTR_FIX(core::StringOutputStream_O::static_creator);
- SMART_PTR_FIX(mp::ConcurrentQueue_O::static_creator);
- SMART_PTR_FIX(core::ExternalObject_O::static_class_symbol);
- SMART_PTR_FIX(core::SimpleMDArrayCharacter_O::static_class);
- SMART_PTR_FIX(core::MDArray_byte64_t_O::static_creator);
- SMART_PTR_FIX(llvmo::LandingPadInst_O::static_class_symbol);
- SMART_PTR_FIX(core::SimpleVectorFloat_O::static_class);
- SMART_PTR_FIX(core::LexicalEnvironment_O::static_class);
- SMART_PTR_FIX(core::SimpleMDArray_int32_t_O::static_creator);
- SMART_PTR_FIX(llvmo::InvokeInst_O::static_class);
- SMART_PTR_FIX(core::SimpleMDArrayBit_O::static_creator);
- SMART_PTR_FIX(llvmo::FunctionPassManager_O::static_class);
- SMART_PTR_FIX(core::Pathname_O::static_class);
- SMART_PTR_FIX(llvmo::TargetLibraryInfoWrapperPass_O::static_creator);
- SMART_PTR_FIX(core::EchoStream_O::static_class_symbol);
- SMART_PTR_FIX(core::MDArrayBaseChar_O::static_class);
- SMART_PTR_FIX(clcenv::GlobalMacroInfo_O::static_creator);
- SMART_PTR_FIX(core::SpecialForm_O::static_class_symbol);
- SMART_PTR_FIX(llvmo::APFloat_O::static_class_symbol);
- SMART_PTR_FIX(llvmo::LoadInst_O::static_class);
- SMART_PTR_FIX(core::SingleDispatchCxxEffectiveMethodFunction_O::static_class_symbol);
- SMART_PTR_FIX(core::MDArray_byte64_t_O::static_class_symbol);
- TAGGED_POINTER_FIX(_lisp);
- SMART_PTR_FIX(core::ClassCreator_O::static_class);
- SMART_PTR_FIX(llvmo::UndefValue_O::static_creator);
- SMART_PTR_FIX(llvmo::StoreInst_O::static_creator);
- SMART_PTR_FIX(mp::Process_O::static_class);
- SMART_PTR_FIX(llvmo::Triple_O::static_creator);
- SMART_PTR_FIX(llvmo::FunctionType_O::static_class);
- SMART_PTR_FIX(core::SimpleVector_int8_t_O::static_class);
- SMART_PTR_FIX(core::SimpleMDArray_byte8_t_O::static_creator);
- SMART_PTR_FIX(llvmo::NamedMDNode_O::static_creator);
- SMART_PTR_FIX(core::SimpleMDArrayDouble_O::static_class);
- SMART_PTR_FIX(core::SingleDispatchMethod_O::static_class_symbol);
- SMART_PTR_FIX(llvmo::ConstantDataSequential_O::static_class_symbol);
- SMART_PTR_FIX(llvmo::LLVMContext_O::static_class_symbol);
- SMART_PTR_FIX(llvmo::DIScope_O::static_class_symbol);
- SMART_PTR_FIX(core::SymbolToEnumConverter_O::static_creator);
- SMART_PTR_FIX(core::PosixTimeDuration_O::static_class_symbol);
- SMART_PTR_FIX(core::SimpleVector_int16_t_O::static_class_symbol);
- SMART_PTR_FIX(core::BuiltinClosure_O::static_creator);
- SMART_PTR_FIX(core::NativeVector_int_O::static_class);
- SMART_PTR_FIX(clcenv::SpecialVariableInfo_O::static_creator);
- SMART_PTR_FIX(llvmo::DILexicalBlockBase_O::static_class_symbol);
- SMART_PTR_FIX(llvmo::ClaspJIT_O::static_class);
- SMART_PTR_FIX(core::SourcePosInfo_O::static_class_symbol);
- SMART_PTR_FIX(core::AnsiStream_O::static_creator);
- SMART_PTR_FIX(core::SimpleMDArray_byte64_t_O::static_class);
- SMART_PTR_FIX(llvmo::MCSubtargetInfo_O::static_class);
- SMART_PTR_FIX(core::SimpleVectorDouble_O::static_creator);
- SMART_PTR_FIX(llvmo::ConstantDataSequential_O::static_creator);
- SMART_PTR_FIX(core::DoubleFloat_O::static_class);
- SMART_PTR_FIX(llvmo::PointerType_O::static_creator);
- SMART_PTR_FIX(core::SimpleVector_O::static_creator);
- SMART_PTR_FIX(llvmo::CompositeType_O::static_class);
- SMART_PTR_FIX(core::T_O::static_class_symbol);
- SMART_PTR_FIX(core::WrappedPointer_O::static_class_symbol);
- SMART_PTR_FIX(core::MDArray_int16_t_O::static_class);
- SMART_PTR_FIX(core::WeakHashTable_O::static_class_symbol);
- SMART_PTR_FIX(llvmo::VectorType_O::static_creator);
- SMART_PTR_FIX(core::VectorStepper_O::static_creator);
- SMART_PTR_FIX(core::NativeVector_double_O::static_class);
- SMART_PTR_FIX(llvmo::ConstantInt_O::static_class);
- SMART_PTR_FIX(llvmo::MDString_O::static_creator);
- SMART_PTR_FIX(clasp_ffi::ForeignTypeSpec_O::static_class);
- SMART_PTR_FIX(core::RecursiveDirectoryIterator_O::static_creator);
- SMART_PTR_FIX(core::SimpleMDArrayBaseChar_O::static_class_symbol);
- SMART_PTR_FIX(llvmo::Value_O::static_class);
- SMART_PTR_FIX(core::LexicalEnvironment_O::static_creator);
- SMART_PTR_FIX(core::ValueFrame_O::static_creator);
- SMART_PTR_FIX(llvmo::ConstantFP_O::static_creator);
- SMART_PTR_FIX(core::ReadTable_O::static_class_symbol);
- SMART_PTR_FIX(llvmo::TargetOptions_O::static_class_symbol);
- SMART_PTR_FIX(core::Archive_O::static_creator);
- SMART_PTR_FIX(llvmo::DILexicalBlock_O::static_creator);
- SMART_PTR_FIX(clcenv::VariableType_O::static_class_symbol);
- SMART_PTR_FIX(llvmo::Attribute_O::static_creator);
- SMART_PTR_FIX(core::TemplatedFunctionBase_O::static_creator);
- SMART_PTR_FIX(core::DerivableCxxClassCreator_O::static_creator);
- SMART_PTR_FIX(clcenv::Closure_O::static_class);
- SMART_PTR_FIX(core::HashTableEqual_O::static_creator);
- SMART_PTR_FIX(core::BlockEnvironment_O::static_class_symbol);
- SMART_PTR_FIX(llvmo::Constant_O::static_class);
- SMART_PTR_FIX(core::Cons_O::static_class);
- SMART_PTR_FIX(core::Null_O::static_class);
- SMART_PTR_FIX(core::MDArray_O::static_class_symbol);
- SMART_PTR_FIX(core::ValueEnvironment_O::static_class_symbol);
- SMART_PTR_FIX(core::DerivableCxxObject_O::static_creator);
- SMART_PTR_FIX(core::SimpleVector_byte8_t_O::static_class);
- SMART_PTR_FIX(clcenv::FunctionType_O::static_creator);
- SMART_PTR_FIX(core::Character_dummy_O::static_creator);
- SMART_PTR_FIX(llvmo::SwitchInst_O::static_creator);
- SMART_PTR_FIX(clcenv::Block_O::static_class_symbol);
- SMART_PTR_FIX(core::StandardClassCreator_O::static_class_symbol);
- SMART_PTR_FIX(core::CxxObject_O::static_class);
- SMART_PTR_FIX(core::PosixTimeDuration_O::static_creator);
- SMART_PTR_FIX(llvmo::LandingPadInst_O::static_creator);
- SMART_PTR_FIX(core::SingleDispatchMethod_O::static_class);
- SMART_PTR_FIX(core::FuncallableInstance_O::static_class);
- SMART_PTR_FIX(core::RecursiveDirectoryIterator_O::static_class_symbol);
- SMART_PTR_FIX(clcenv::Function_O::static_class);
- SMART_PTR_FIX(clcenv::BlockInfo_O::static_class);
- SMART_PTR_FIX(core::CompiledClosure_O::static_class_symbol);
- SMART_PTR_FIX(core::StringStream_O::static_creator);
- SMART_PTR_FIX(mp::BlockingConcurrentQueue_O::static_class);
- SMART_PTR_FIX(llvmo::FunctionType_O::static_class_symbol);
- SMART_PTR_FIX(core::MacroClosure_O::static_creator);
- SMART_PTR_FIX(clcenv::VariableIgnore_O::static_class_symbol);
- SMART_PTR_FIX(core::HashTableEqualp_O::static_class);
+ SMART_PTR_FIX(core::LoadTimeValues_O::static_creator);
+ SMART_PTR_FIX(core::Record_O::static_creator);
+ SMART_PTR_FIX(llvmo::ValueAsMetadata_O::static_class);
+ SMART_PTR_FIX(llvmo::ConstantPointerNull_O::static_class);
+ SMART_PTR_FIX(core::Real_O::static_creator);
  SMART_PTR_FIX(llvmo::LLVMTargetMachine_O::static_class);
- SMART_PTR_FIX(llvmo::ConstantDataArray_O::static_class);
- SMART_PTR_FIX(clasp_ffi::ForeignTypeSpec_O::static_creator);
- SMART_PTR_FIX(llvmo::FunctionPass_O::static_creator);
- SMART_PTR_FIX(core::Rational_O::static_class_symbol);
- SMART_PTR_FIX(llvmo::DIBuilder_O::static_creator);
- SMART_PTR_FIX(core::InstanceCreator_O::static_class_symbol);
- SMART_PTR_FIX(llvmo::DILexicalBlock_O::static_class);
- SMART_PTR_FIX(core::SimpleMDArray_int64_t_O::static_class);
- SMART_PTR_FIX(llvmo::DICompileUnit_O::static_class_symbol);
- SMART_PTR_FIX(clcenv::FunctionDynamicExtent_O::static_class_symbol);
- SMART_PTR_FIX(llvmo::User_O::static_creator);
- SMART_PTR_FIX(core::TagbodyEnvironment_O::static_creator);
- SMART_PTR_FIX(core::SexpSaveArchive_O::static_class);
- SMART_PTR_FIX(core::SimpleMDArray_fixnum_O::static_creator);
- SMART_PTR_FIX(llvmo::BlockAddress_O::static_class);
- SMART_PTR_FIX(llvmo::EngineBuilder_O::static_creator);
- SMART_PTR_FIX(core::Reader_O::static_creator);
- SMART_PTR_FIX(clcenv::VariableIgnore_O::static_creator);
- SMART_PTR_FIX(clcenv::Tag_O::static_creator);
- SMART_PTR_FIX(llvmo::LLVMContext_O::static_class);
- SMART_PTR_FIX(llvmo::DISubroutineType_O::static_class_symbol);
+ SMART_PTR_FIX(core::SimpleVectorDouble_O::static_class_symbol);
+ SMART_PTR_FIX(core::SimpleVector_byte16_t_O::static_creator);
+ SMART_PTR_FIX(core::Record_O::static_class);
+ SMART_PTR_FIX(core::SimpleVector_byte64_t_O::static_class);
+ SMART_PTR_FIX(mp::Mutex_O::static_creator);
+ SMART_PTR_FIX(core::LoadTimeValues_O::static_class);
+ SMART_PTR_FIX(llvmo::IRBuilder_O::static_class_symbol);
+ SMART_PTR_FIX(clbind::ClassRep_O::static_class_symbol);
+ SMART_PTR_FIX(core::FunctionClosure_O::static_class_symbol);
+ SMART_PTR_FIX(core::WeakPointer_O::static_creator);
+ SMART_PTR_FIX(llvmo::Instruction_O::static_class_symbol);
+ SMART_PTR_FIX(core::SimpleVectorDouble_O::static_creator);
+ SMART_PTR_FIX(clcenv::FunctionInfo_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::User_O::static_class);
+ SMART_PTR_FIX(core::Real_O::static_class_symbol);
+ SMART_PTR_FIX(clcenv::Block_O::static_class_symbol);
+ SMART_PTR_FIX(core::UnwindProtectEnvironment_O::static_creator);
+ SMART_PTR_FIX(clcenv::FunctionDynamicExtent_O::static_creator);
+ SMART_PTR_FIX(llvmo::FunctionPassManager_O::static_class_symbol);
+ SMART_PTR_FIX(core::SimpleBitVector_O::static_class);
+ SMART_PTR_FIX(core::MDArrayCharacter_O::static_creator);
+ SIMPLE_POINTER_FIX(gctools::global_tagged_Symbol_OP_sameAsKey);
+ SMART_PTR_FIX(llvmo::PassManagerBase_O::static_creator);
+ SMART_PTR_FIX(llvmo::APFloat_O::static_class_symbol);
+ SMART_PTR_FIX(core::SimpleVectorFloat_O::static_class_symbol);
+ SMART_PTR_FIX(core::SymbolToEnumConverter_O::static_class_symbol);
+ SMART_PTR_FIX(core::LexicalEnvironment_O::static_class);
+ SMART_PTR_FIX(llvmo::ArrayType_O::static_creator);
+ SMART_PTR_FIX(core::Creator_O::static_creator);
+ SMART_PTR_FIX(clcenv::VariableIgnore_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::FenceInst_O::static_class_symbol);
+ SMART_PTR_FIX(core::StructureClassCreator_O::static_creator);
+ SMART_PTR_FIX(core::Fixnum_dummy_O::static_class_symbol);
+ SMART_PTR_FIX(clbind::DummyCreator_O::static_creator);
+ SMART_PTR_FIX(clcenv::SymbolMacroInfo_O::static_class_symbol);
+ SMART_PTR_FIX(core::MDArray_byte32_t_O::static_creator);
+ SMART_PTR_FIX(llvmo::SequentialType_O::static_creator);
+ SMART_PTR_FIX(llvmo::DINodeArray_O::static_class);
+ SMART_PTR_FIX(core::Null_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::UnaryInstruction_O::static_class_symbol);
+ SMART_PTR_FIX(core::ConcatenatedStream_O::static_creator);
+ SMART_PTR_FIX(mp::ConcurrentQueue_O::static_creator);
+ SMART_PTR_FIX(llvmo::DILexicalBlock_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::TargetOptions_O::static_class_symbol);
+ SMART_PTR_FIX(core::StrWNs_O::static_creator);
+ SMART_PTR_FIX(core::AbstractSimpleVector_O::static_class);
+ SMART_PTR_FIX(clcenv::Closure_O::static_class);
+ SMART_PTR_FIX(llvmo::PointerType_O::static_creator);
+ SMART_PTR_FIX(llvmo::DITypeRefArray_O::static_class);
+ SMART_PTR_FIX(core::SimpleVector_byte32_t_O::static_creator);
+ SMART_PTR_FIX(core::Number_O::static_creator);
+ SMART_PTR_FIX(core::SingleDispatchCxxEffectiveMethodFunction_O::static_class_symbol);
+ SMART_PTR_FIX(core::SpecialForm_O::static_class);
+ SMART_PTR_FIX(core::LexicalEnvironment_O::static_creator);
+ SMART_PTR_FIX(llvmo::ConstantPointerNull_O::static_creator);
+ SMART_PTR_FIX(clcenv::LexicalVariable_O::static_creator);
+ SMART_PTR_FIX(core::SourceFileInfo_O::static_class_symbol);
+ SMART_PTR_FIX(asttooling::AstVisitor_O::static_class_symbol);
+ SMART_PTR_FIX(core::SynonymStream_O::static_creator);
  SMART_PTR_FIX(core::FuncallableInstance_O::static_creator);
+ SMART_PTR_FIX(core::Path_O::static_class);
+ SMART_PTR_FIX(core::TemplatedFunctionBase_O::static_creator);
+ SMART_PTR_FIX(clcenv::Optimize_O::static_class);
+ SMART_PTR_FIX(core::SimpleVector_size_t_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::SwitchInst_O::static_class);
+ SMART_PTR_FIX(clcenv::SpecialOperatorInfo_O::static_class);
+ SMART_PTR_FIX(core::FunctionContainerEnvironment_O::static_class_symbol);
+ SMART_PTR_FIX(core::SingleDispatchMethodFunction_O::static_class);
+ SMART_PTR_FIX(llvmo::PointerType_O::static_class);
+ SMART_PTR_FIX(llvmo::DINode_O::static_class);
+ SMART_PTR_FIX(core::SimpleVector_int32_t_O::static_class_symbol);
+ SMART_PTR_FIX(core::Complex_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::TargetMachine_O::static_class);
+ SMART_PTR_FIX(core::RandomState_O::static_class);
+ SMART_PTR_FIX(core::SimpleVector_int32_t_O::static_class);
+ SMART_PTR_FIX(core::Cons_O::static_class);
+ SMART_PTR_FIX(core::SimpleVector_O::static_class);
+ SMART_PTR_FIX(clcenv::Entry_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::MDString_O::static_creator);
+ SMART_PTR_FIX(clcenv::GlobalMacroInfo_O::static_class_symbol);
+ SMART_PTR_FIX(core::LexicalEnvironment_O::static_class_symbol);
+ SMART_PTR_FIX(core::MDArrayFloat_O::static_creator);
+ SMART_PTR_FIX(core::Ratio_O::static_class);
+ SMART_PTR_FIX(core::SimpleBitVector_O::static_creator);
+ SMART_PTR_FIX(core::FileStatus_O::static_creator);
+ SMART_PTR_FIX(llvmo::DIType_O::static_class_symbol);
+ SMART_PTR_FIX(core::PosixTimeDuration_O::static_creator);
+ SMART_PTR_FIX(core::MDArray_O::static_creator);
+ SMART_PTR_FIX(core::SimpleString_O::static_creator);
+ SMART_PTR_FIX(clcenv::LambdaNameInfo_O::static_creator);
+ SMART_PTR_FIX(core::PosixTime_O::static_creator);
+ SMART_PTR_FIX(clcenv::GlobalMacroInfo_O::static_class);
+ SMART_PTR_FIX(core::Fixnum_dummy_O::static_class);
+ SMART_PTR_FIX(core::SimpleVector_O::static_creator);
+ SMART_PTR_FIX(core::SNode_O::static_class);
+ SMART_PTR_FIX(core::NamedFunction_O::static_creator);
+ SMART_PTR_FIX(llvmo::DICompileUnit_O::static_class);
+ SMART_PTR_FIX(llvmo::ConstantExpr_O::static_class_symbol);
+ SMART_PTR_FIX(core::CompiledDispatchFunction_O::static_class_symbol);
+ SMART_PTR_FIX(clcenv::SpecialVariable_O::static_class);
+ SMART_PTR_FIX(clcenv::FunctionType_O::static_class_symbol);
+ SMART_PTR_FIX(core::StringInputStream_O::static_class_symbol);
+ SMART_PTR_FIX(core::SimpleMDArray_byte16_t_O::static_creator);
+ SMART_PTR_FIX(llvmo::FunctionPassManager_O::static_creator);
+ SMART_PTR_FIX(core::TranslationFunctor_O::static_class);
+ SMART_PTR_FIX(llvmo::TargetMachine_O::static_creator);
+ SMART_PTR_FIX(core::MDArray_int8_t_O::static_class);
+ SMART_PTR_FIX(core::Array_O::static_class_symbol);
+ SMART_PTR_FIX(core::DirectoryIterator_O::static_class_symbol);
+ SMART_PTR_FIX(core::BranchSNode_O::static_creator);
+ SMART_PTR_FIX(core::Integer_O::static_creator);
+ SMART_PTR_FIX(core::SimpleMDArray_byte32_t_O::static_creator);
+ SMART_PTR_FIX(core::SingleDispatchMethod_O::static_creator);
+ SMART_PTR_FIX(core::ClosureWithFrame_O::static_class_symbol);
+ SMART_PTR_FIX(core::SimpleMDArray_O::static_creator);
+ SMART_PTR_FIX(clcenv::SymbolMacro_O::static_class);
+ SMART_PTR_FIX(core::ValueFrame_O::static_class);
+ SMART_PTR_FIX(core::StandardObject_O::static_class);
+ SMART_PTR_FIX(core::SimpleMDArrayBaseChar_O::static_class_symbol);
+ SMART_PTR_FIX(core::CompiledClosure_O::static_creator);
+ SMART_PTR_FIX(core::SimpleMDArray_int64_t_O::static_creator);
+ SMART_PTR_FIX(core::Archive_O::static_class);
+ SMART_PTR_FIX(core::StructureClassCreator_O::static_class);
+ SMART_PTR_FIX(llvmo::DIScope_O::static_creator);
+ SMART_PTR_FIX(llvmo::ConstantArray_O::static_creator);
+ SMART_PTR_FIX(clcenv::Entry_O::static_class);
+ SMART_PTR_FIX(clcenv::FunctionInfo_O::static_creator);
+ SMART_PTR_FIX(mp::BlockingConcurrentQueue_O::static_class);
+ SMART_PTR_FIX(llvmo::LoadInst_O::static_class);
+ SMART_PTR_FIX(llvmo::ResumeInst_O::static_class);
+ SMART_PTR_FIX(llvmo::Target_O::static_class);
+ SMART_PTR_FIX(core::GlueEnvironment_O::static_class);
+ SMART_PTR_FIX(clcenv::Entry_O::static_creator);
+ SMART_PTR_FIX(core::SourceManager_O::static_creator);
+ SMART_PTR_FIX(mp::Mutex_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::Constant_O::static_creator);
+ SMART_PTR_FIX(llvmo::StoreInst_O::static_class);
+ SMART_PTR_FIX(core::WeakKeyMapping_O::static_creator);
+ SMART_PTR_FIX(core::Rational_O::static_creator);
+ SMART_PTR_FIX(clcenv::SymbolMacroInfo_O::static_creator);
+ SMART_PTR_FIX(llvmo::InsertPoint_O::static_creator);
+ SMART_PTR_FIX(asttooling::AstVisitor_O::static_class);
+ SMART_PTR_FIX(clcenv::FunctionType_O::static_creator);
+ SMART_PTR_FIX(core::Stream_O::static_creator);
+ SMART_PTR_FIX(llvmo::Argument_O::static_class);
+ SMART_PTR_FIX(core::SimpleMDArrayT_O::static_creator);
+ SMART_PTR_FIX(core::StandardClassCreator_O::static_creator);
+ SMART_PTR_FIX(core::Environment_O::static_class);
+ SMART_PTR_FIX(llvmo::VAArgInst_O::static_creator);
+ SMART_PTR_FIX(core::NativeVector_float_O::static_class);
+ SMART_PTR_FIX(core::IntArray_O::static_creator);
+ SMART_PTR_FIX(core::SimpleString_O::static_class_symbol);
+ SMART_PTR_FIX(core::SmallMap_O::static_class);
+ SMART_PTR_FIX(llvmo::Instruction_O::static_creator);
+ SMART_PTR_FIX(llvmo::AtomicRMWInst_O::static_class);
+ SMART_PTR_FIX(clasp_ffi::ForeignData_O::static_class_symbol);
+ SMART_PTR_FIX(core::SpecialForm_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::CallInst_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::TargetOptions_O::static_class);
+ SMART_PTR_FIX(core::StrNs_O::static_creator);
+ SMART_PTR_FIX(core::FunctionFrame_O::static_class);
+ SMART_PTR_FIX(llvmo::AttributeSet_O::static_creator);
+ SMART_PTR_FIX(clcenv::LocalMacroInfo_O::static_class_symbol);
+ SMART_PTR_FIX(core::ValueEnvironment_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::Attribute_O::static_creator);
+ SMART_PTR_FIX(llvmo::ConstantInt_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::ReturnInst_O::static_class);
+ SMART_PTR_FIX(core::Cons_O::static_class_symbol);
+ SMART_PTR_FIX(core::Instance_O::static_creator);
+ SMART_PTR_FIX(core::TagbodyEnvironment_O::static_class);
+ SMART_PTR_FIX(clcenv::VariableInfo_O::static_class_symbol);
+ SMART_PTR_FIX(mp::ConditionVariable_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::Pass_O::static_class_symbol);
+ SMART_PTR_FIX(core::CxxMethodFunction_O::static_creator);
+ SMART_PTR_FIX(llvmo::SwitchInst_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::UnaryInstruction_O::static_class);
+ SMART_PTR_FIX(llvmo::ModuleHandle_O::static_creator);
+ SMART_PTR_FIX(core::SymbolToEnumConverter_O::static_class);
+ SMART_PTR_FIX(llvmo::UnreachableInst_O::static_class);
+ SMART_PTR_FIX(mp::RecursiveMutex_O::static_class);
+ SMART_PTR_FIX(llvmo::CompositeType_O::static_class);
+ SMART_PTR_FIX(core::SimpleMDArrayCharacter_O::static_class);
+ SMART_PTR_FIX(clasp_ffi::ForeignData_O::static_class);
+ SMART_PTR_FIX(core::SimpleMDArrayBit_O::static_creator);
+ SMART_PTR_FIX(core::Instance_O::static_class);
+ SMART_PTR_FIX(mp::BlockingConcurrentQueue_O::static_creator);
+ SMART_PTR_FIX(clcenv::Tag_O::static_creator);
+ SMART_PTR_FIX(llvmo::Target_O::static_creator);
+ SMART_PTR_FIX(core::SimpleCharacterString_O::static_creator);
+ SMART_PTR_FIX(core::Stream_O::static_class);
+ SMART_PTR_FIX(core::Function_O::static_creator);
+ SMART_PTR_FIX(llvmo::EngineBuilder_O::static_class_symbol);
+ SMART_PTR_FIX(clcenv::LocalMacroInfo_O::static_class);
+ SMART_PTR_FIX(core::DirectoryEntry_O::static_class);
+ SMART_PTR_FIX(llvmo::DITypeRefArray_O::static_class_symbol);
+ SMART_PTR_FIX(core::SimpleVector_byte64_t_O::static_creator);
+ SMART_PTR_FIX(clcenv::ConstantVariableInfo_O::static_class_symbol);
+ SMART_PTR_FIX(core::RandomState_O::static_class_symbol);
+ SMART_PTR_FIX(core::InvocationHistoryFrameIterator_O::static_creator);
+ SMART_PTR_FIX(core::SimpleMDArray_size_t_O::static_class);
+ SMART_PTR_FIX(core::TagbodyEnvironment_O::static_creator);
+ SMART_PTR_FIX(core::SimpleVector_fixnum_O::static_class_symbol);
+ SMART_PTR_FIX(core::WeakPointer_O::static_class_symbol);
+ SMART_PTR_FIX(clcenv::Block_O::static_class);
+ SMART_PTR_FIX(core::LogicalPathname_O::static_class);
+ SMART_PTR_FIX(core::Array_O::static_creator);
+ SMART_PTR_FIX(core::LeafSNode_O::static_creator);
+ SMART_PTR_FIX(core::SimpleMDArray_int32_t_O::static_class);
+ SMART_PTR_FIX(llvmo::ConstantStruct_O::static_creator);
+ SMART_PTR_FIX(core::MDArray_int64_t_O::static_class_symbol);
+ SMART_PTR_FIX(core::SexpSaveArchive_O::static_creator);
+ SMART_PTR_FIX(llvmo::DebugLoc_O::static_creator);
+ SMART_PTR_FIX(clcenv::Macro_O::static_class);
+ SMART_PTR_FIX(llvmo::PassManager_O::static_class);
+ SMART_PTR_FIX(mp::Mutex_O::static_class);
+ SMART_PTR_FIX(llvmo::NamedMDNode_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::ConstantFP_O::static_class_symbol);
+ SMART_PTR_FIX(core::SimpleMDArrayCharacter_O::static_class_symbol);
+ SMART_PTR_FIX(clcenv::FunctionType_O::static_class);
+ SMART_PTR_FIX(llvmo::Linker_O::static_creator);
+ SMART_PTR_FIX(clcenv::LexicalVariable_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::GlobalValue_O::static_class);
+ SMART_PTR_FIX(mp::Process_O::static_creator);
+ SMART_PTR_FIX(core::Character_dummy_O::static_class);
+ SMART_PTR_FIX(llvmo::AtomicCmpXchgInst_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::TargetLibraryInfoWrapperPass_O::static_creator);
+ SMART_PTR_FIX(core::Complex_O::static_creator);
+ SMART_PTR_FIX(core::Package_O::static_creator);
+ SMART_PTR_FIX(llvmo::Metadata_O::static_creator);
+ SMART_PTR_FIX(core::SimpleMDArray_int64_t_O::static_class_symbol);
+ SMART_PTR_FIX(core::WrappedPointer_O::static_class);
+ SMART_PTR_FIX(core::ReadTable_O::static_class_symbol);
+ SMART_PTR_FIX(core::SingleDispatchEffectiveMethodFunction_O::static_creator);
+ SMART_PTR_FIX(core::ConcatenatedStream_O::static_class);
+ SMART_PTR_FIX(core::FileStream_O::static_creator);
+ SMART_PTR_FIX(clcenv::FunctionDynamicExtent_O::static_class);
+ SMART_PTR_FIX(core::UnwindProtectEnvironment_O::static_class_symbol);
+ SMART_PTR_FIX(core::SimpleVector_fixnum_O::static_creator);
+ SMART_PTR_FIX(core::CxxObject_O::static_class);
+ SMART_PTR_FIX(llvmo::PassManagerBuilder_O::static_creator);
+ SMART_PTR_FIX(core::Str8Ns_O::static_class_symbol);
+ SMART_PTR_FIX(core::IOFileStream_O::static_creator);
+ SMART_PTR_FIX(core::SynonymStream_O::static_class_symbol);
+ SMART_PTR_FIX(core::SimpleMDArray_fixnum_O::static_class_symbol);
+ SMART_PTR_FIX(clbind::ConstructorCreator_O::static_class);
+ SMART_PTR_FIX(core::LoadArchive_O::static_class);
+ SMART_PTR_FIX(core::HashTable_O::static_creator);
+ SMART_PTR_FIX(llvmo::BlockAddress_O::static_creator);
+ SMART_PTR_FIX(llvmo::PHINode_O::static_class_symbol);
+ SMART_PTR_FIX(core::StrWNs_O::static_class);
+ SMART_PTR_FIX(clcenv::SymbolMacroInfo_O::static_class);
+ SMART_PTR_FIX(core::SimpleMDArrayDouble_O::static_class);
+ SMART_PTR_FIX(core::SimpleVector_int64_t_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::ConstantArray_O::static_class);
+ SMART_PTR_FIX(core::SimpleMDArrayDouble_O::static_creator);
+ SMART_PTR_FIX(core::MDArray_int8_t_O::static_creator);
+ SMART_PTR_FIX(llvmo::ArrayType_O::static_class);
+ SMART_PTR_FIX(llvmo::Argument_O::static_creator);
+ SMART_PTR_FIX(llvmo::FunctionType_O::static_class);
+ SMART_PTR_FIX(core::SourceFileInfo_O::static_class);
+ SMART_PTR_FIX(core::BlockEnvironment_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::Pass_O::static_class);
+ SMART_PTR_FIX(clcenv::SpecialVariable_O::static_class_symbol);
+ SMART_PTR_FIX(core::CatchEnvironment_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::BlockAddress_O::static_class_symbol);
+ SMART_PTR_FIX(core::NativeVector_int_O::static_creator);
+ SMART_PTR_FIX(llvmo::VectorType_O::static_class);
+ SMART_PTR_FIX(core::BuiltinClosure_O::static_class_symbol);
+ SMART_PTR_FIX(core::SimpleVector_byte16_t_O::static_class);
+ SMART_PTR_FIX(core::SimpleMDArray_byte16_t_O::static_class);
+ SMART_PTR_FIX(core::SimpleMDArrayFloat_O::static_class);
+ SMART_PTR_FIX(llvmo::UnreachableInst_O::static_creator);
+ SMART_PTR_FIX(core::Function_O::static_class);
+ SMART_PTR_FIX(llvmo::ExecutionEngine_O::static_class);
+ SIMPLE_POINTER_FIX(gctools::global_tagged_Symbol_OP_unbound);
+ SMART_PTR_FIX(clcenv::LexicalVariable_O::static_class);
+ SMART_PTR_FIX(core::MDArray_byte16_t_O::static_class);
+ SMART_PTR_FIX(core::SimpleMDArray_fixnum_O::static_class);
+ SMART_PTR_FIX(core::RecursiveDirectoryIterator_O::static_class);
+ SMART_PTR_FIX(clcenv::LambdaNameInfo_O::static_class);
+ SMART_PTR_FIX(core::VaList_dummy_O::static_creator);
+ SMART_PTR_FIX(llvmo::DIScope_O::static_class_symbol);
+ SMART_PTR_FIX(clcenv::OptimizeInfo_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::Constant_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::ClaspJIT_O::static_class_symbol);
+ SMART_PTR_FIX(core::ConsStepper_O::static_class_symbol);
+ SMART_PTR_FIX(core::NativeVector_float_O::static_creator);
+ SMART_PTR_FIX(llvmo::ConstantDataArray_O::static_creator);
+ SMART_PTR_FIX(llvmo::IRBuilderBase_O::static_class_symbol);
+ SMART_PTR_FIX(core::SymbolMacroletEnvironment_O::static_class);
+ SMART_PTR_FIX(llvmo::Module_O::static_class);
+ SMART_PTR_FIX(llvmo::InsertPoint_O::static_class_symbol);
+ SMART_PTR_FIX(core::VectorStepper_O::static_class);
+ SMART_PTR_FIX(llvmo::LLVMContext_O::static_class);
+ SMART_PTR_FIX(core::LogicalPathname_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::MCSubtargetInfo_O::static_class);
+ SMART_PTR_FIX(core::SingleDispatchCxxEffectiveMethodFunction_O::static_creator);
+ SMART_PTR_FIX(core::ClassCreator_O::static_creator);
+ SMART_PTR_FIX(llvmo::MDNode_O::static_class);
+ SMART_PTR_FIX(core::BitVectorNs_O::static_class);
+ SMART_PTR_FIX(core::MDArray_byte32_t_O::static_class);
+ SMART_PTR_FIX(core::ConsStepper_O::static_class);
+ SMART_PTR_FIX(core::RuntimeVisibleEnvironment_O::static_creator);
+ SMART_PTR_FIX(llvmo::UndefValue_O::static_creator);
+ SMART_PTR_FIX(llvmo::Value_O::static_creator);
+ SMART_PTR_FIX(clcenv::FunctionIgnore_O::static_class_symbol);
+ SMART_PTR_FIX(core::SimpleMDArray_byte8_t_O::static_class_symbol);
+ SMART_PTR_FIX(core::SharpEqualWrapper_O::static_class);
+ SMART_PTR_FIX(core::SimpleVector_int16_t_O::static_creator);
+ SMART_PTR_FIX(core::IOStreamStream_O::static_creator);
+ SMART_PTR_FIX(core::ClosureWithFrame_O::static_creator);
+ SMART_PTR_FIX(mp::ConditionVariable_O::static_class);
+ SMART_PTR_FIX(core::MDArray_byte8_t_O::static_class);
+ SMART_PTR_FIX(core::SourceManager_O::static_class);
+ SMART_PTR_FIX(clcenv::FunctionDynamicExtent_O::static_class_symbol);
+ SMART_PTR_FIX(clcenv::Macro_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::ImmutablePass_O::static_class);
+ SMART_PTR_FIX(llvmo::ClaspJIT_O::static_class);
+ SMART_PTR_FIX(core::ClassCreator_O::static_class_symbol);
+ SMART_PTR_FIX(core::SimpleMDArrayDouble_O::static_class_symbol);
+ SMART_PTR_FIX(core::LightUserData_O::static_class_symbol);
+ SMART_PTR_FIX(core::Cache_O::static_class);
+ SMART_PTR_FIX(core::SimpleMDArray_fixnum_O::static_creator);
+ SMART_PTR_FIX(core::SimpleVector_byte8_t_O::static_class);
+ SMART_PTR_FIX(core::General_O::static_creator);
+ SMART_PTR_FIX(core::SimpleVector_int32_t_O::static_creator);
+ SMART_PTR_FIX(llvmo::FunctionPass_O::static_class_symbol);
+ SMART_PTR_FIX(core::StructureClassCreator_O::static_class_symbol);
+ SMART_PTR_FIX(core::MDArray_int16_t_O::static_creator);
+ SMART_PTR_FIX(core::WeakPointer_O::static_class);
+ SMART_PTR_FIX(core::EchoStream_O::static_creator);
+ SMART_PTR_FIX(core::SaveArchive_O::static_class);
+ SMART_PTR_FIX(llvmo::AtomicCmpXchgInst_O::static_class);
+ SMART_PTR_FIX(core::WeakHashTable_O::static_class);
+ SMART_PTR_FIX(core::BuiltinClosure_O::static_creator);
+ SMART_PTR_FIX(core::MDArray_O::static_class);
+ SMART_PTR_FIX(core::MacroClosure_O::static_creator);
+ SMART_PTR_FIX(core::MultiStringBuffer_O::static_class);
+ SMART_PTR_FIX(core::SimpleVector_byte32_t_O::static_class);
+ SMART_PTR_FIX(llvmo::Function_O::static_class_symbol);
+ SMART_PTR_FIX(core::CoreExposer_O::static_class);
+ SMART_PTR_FIX(core::InstanceCreator_O::static_creator);
+ SMART_PTR_FIX(llvmo::DIFile_O::static_class_symbol);
+ SMART_PTR_FIX(clcenv::GlobalFunctionInfo_O::static_creator);
+ SMART_PTR_FIX(core::SingleDispatchMethodFunction_O::static_class_symbol);
+ SMART_PTR_FIX(clcenv::GlobalFunctionInfo_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::DISubprogram_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::TargetMachine_O::static_class_symbol);
+ TAGGED_POINTER_FIX(_lisp);
+ SMART_PTR_FIX(core::SexpLoadArchive_O::static_class);
+ SMART_PTR_FIX(core::CompiledDispatchFunction_O::static_creator);
+ SMART_PTR_FIX(llvmo::DIDerivedType_O::static_class_symbol);
+ SMART_PTR_FIX(core::RandomState_O::static_creator);
+ SMART_PTR_FIX(core::ValueEnvironment_O::static_class);
+ SMART_PTR_FIX(core::ValueEnvironment_O::static_creator);
+ SMART_PTR_FIX(core::BlockEnvironment_O::static_class);
+ SMART_PTR_FIX(llvmo::FunctionType_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::DICompositeType_O::static_class_symbol);
+ SMART_PTR_FIX(core::SimpleMDArray_byte64_t_O::static_creator);
+ SMART_PTR_FIX(core::SaveArchive_O::static_class_symbol);
+ SMART_PTR_FIX(core::SimpleMDArray_byte32_t_O::static_class_symbol);
+ SMART_PTR_FIX(clcenv::VariableType_O::static_creator);
+ SMART_PTR_FIX(core::SimpleVector_int64_t_O::static_creator);
+ SMART_PTR_FIX(llvmo::BasicBlock_O::static_class);
+ SMART_PTR_FIX(core::SingleFloat_dummy_O::static_class_symbol);
+ SMART_PTR_FIX(core::FileStatus_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::IRBuilderBase_O::static_creator);
+ SMART_PTR_FIX(core::SimpleMDArray_byte16_t_O::static_class_symbol);
+ SMART_PTR_FIX(core::BroadcastStream_O::static_class_symbol);
+ SMART_PTR_FIX(core::SynonymStream_O::static_class);
+ SMART_PTR_FIX(llvmo::ConstantExpr_O::static_creator);
+ SMART_PTR_FIX(core::StringInputStream_O::static_class);
+ SMART_PTR_FIX(llvmo::APFloat_O::static_class);
+ SMART_PTR_FIX(core::CxxMethodFunction_O::static_class_symbol);
+ SMART_PTR_FIX(core::SymbolToEnumConverter_O::static_creator);
+ SMART_PTR_FIX(llvmo::DITypeRefArray_O::static_creator);
+ SMART_PTR_FIX(core::SmallMap_O::static_class_symbol);
+ SMART_PTR_FIX(core::BuiltinClosure_O::static_class);
+ SMART_PTR_FIX(core::TemplatedFunctionBase_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::IntegerType_O::static_class);
+ SMART_PTR_FIX(clbind::ConstructorCreator_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::ReturnInst_O::static_creator);
+ SMART_PTR_FIX(core::HashTableEqualp_O::static_class);
+ SMART_PTR_FIX(llvmo::AllocaInst_O::static_class_symbol);
+ SMART_PTR_FIX(core::VectorStepper_O::static_creator);
+ SMART_PTR_FIX(core::MDArrayBaseChar_O::static_creator);
+ SMART_PTR_FIX(core::MDArrayT_O::static_class);
+ SMART_PTR_FIX(clcenv::FunctionIgnore_O::static_class);
+ SMART_PTR_FIX(core::PosixTimeDuration_O::static_class);
+ SMART_PTR_FIX(core::Reader_O::static_class);
+ SMART_PTR_FIX(llvmo::DIBuilder_O::static_class_symbol);
+ SMART_PTR_FIX(core::WrappedPointer_O::static_creator);
+ SMART_PTR_FIX(llvmo::DINodeArray_O::static_creator);
+ SMART_PTR_FIX(core::DerivableCxxClassCreator_O::static_creator);
+ SMART_PTR_FIX(core::IntArray_O::static_class);
+ SMART_PTR_FIX(core::CxxMethodFunction_O::static_class);
+ SMART_PTR_FIX(core::FunctionFrame_O::static_class_symbol);
+ SMART_PTR_FIX(core::MDArray_byte64_t_O::static_creator);
+ SMART_PTR_FIX(core::WeakKeyHashTable_O::static_class_symbol);
+ SMART_PTR_FIX(core::FunctionContainerEnvironment_O::static_class);
+ SMART_PTR_FIX(llvmo::PassManagerBuilder_O::static_class_symbol);
+ SMART_PTR_FIX(clcenv::SpecialOperatorInfo_O::static_creator);
+ SMART_PTR_FIX(core::SingleDispatchEffectiveMethodFunction_O::static_class_symbol);
+ SMART_PTR_FIX(core::Reader_O::static_class_symbol);
+ SMART_PTR_FIX(core::SNode_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::StructType_O::static_class_symbol);
+ SMART_PTR_FIX(core::Real_O::static_class);
+ SMART_PTR_FIX(core::T_O::static_class_symbol);
+ SMART_PTR_FIX(core::ExternalObject_O::static_creator);
+ SMART_PTR_FIX(llvmo::Attribute_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::InvokeInst_O::static_creator);
+ SMART_PTR_FIX(core::SimpleMDArray_int16_t_O::static_creator);
+ SMART_PTR_FIX(core::Array_O::static_class);
+ SMART_PTR_FIX(core::UserData_O::static_creator);
+ SMART_PTR_FIX(clasp_ffi::ForeignTypeSpec_O::static_class);
+ SMART_PTR_FIX(core::SimpleMDArrayBit_O::static_class);
+ SMART_PTR_FIX(core::LoadArchive_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::FunctionPassManager_O::static_class);
+ SMART_PTR_FIX(core::LambdaListHandler_O::static_creator);
+ SMART_PTR_FIX(core::Environment_O::static_creator);
+ SMART_PTR_FIX(llvmo::CallInst_O::static_class);
+ SMART_PTR_FIX(llvmo::LLVMTargetMachine_O::static_class_symbol);
+ SMART_PTR_FIX(core::DoubleFloat_O::static_creator);
+ SMART_PTR_FIX(llvmo::ModulePass_O::static_class);
+ SMART_PTR_FIX(llvmo::LandingPadInst_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::DILexicalBlockBase_O::static_class);
+ SMART_PTR_FIX(core::Archive_O::static_creator);
+ SMART_PTR_FIX(llvmo::ConstantDataArray_O::static_class_symbol);
+ SMART_PTR_FIX(core::Ratio_O::static_creator);
+ SMART_PTR_FIX(core::BitVectorNs_O::static_class_symbol);
+ SMART_PTR_FIX(core::MDArray_byte64_t_O::static_class_symbol);
+ SMART_PTR_FIX(core::StandardObject_O::static_creator);
+ SMART_PTR_FIX(llvmo::TargetOptions_O::static_creator);
+ SMART_PTR_FIX(core::SimpleMDArrayT_O::static_class);
+ SMART_PTR_FIX(llvmo::IndirectBrInst_O::static_creator);
+ SMART_PTR_FIX(core::BitVectorNs_O::static_creator);
+ SMART_PTR_FIX(clcenv::VariableInfo_O::static_class);
+ SMART_PTR_FIX(core::MDArray_byte16_t_O::static_creator);
+ SMART_PTR_FIX(core::HashTableEql_O::static_class);
+ SMART_PTR_FIX(core::SimpleBaseString_O::static_class_symbol);
+ SMART_PTR_FIX(core::MDArray_fixnum_O::static_class);
+ SMART_PTR_FIX(core::SimpleMDArray_int32_t_O::static_creator);
+ SMART_PTR_FIX(mp::SharedMutex_O::static_creator);
+ SMART_PTR_FIX(core::Path_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::DataLayout_O::static_class);
+ SMART_PTR_FIX(core::MDArray_size_t_O::static_creator);
+ SMART_PTR_FIX(llvmo::DINodeArray_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::VectorType_O::static_creator);
+ SMART_PTR_FIX(llvmo::TerminatorInst_O::static_class_symbol);
+ SMART_PTR_FIX(core::NativeVector_double_O::static_creator);
+ SMART_PTR_FIX(core::ActivationFrame_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::ExecutionEngine_O::static_class_symbol);
+ SMART_PTR_FIX(core::SimpleVector_int8_t_O::static_class);
+ SMART_PTR_FIX(llvmo::TargetSubtargetInfo_O::static_creator);
+ SMART_PTR_FIX(clcenv::GlobalEnvironment_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::DICompositeType_O::static_creator);
+ SMART_PTR_FIX(llvmo::EngineBuilder_O::static_class);
+ SMART_PTR_FIX(core::Integer_O::static_class_symbol);
+ SMART_PTR_FIX(clcenv::Macro_O::static_creator);
+ SMART_PTR_FIX(core::TranslationFunctor_O::static_creator);
+ SMART_PTR_FIX(core::FileStatus_O::static_class);
+ SMART_PTR_FIX(core::Symbol_O::static_creator);
+ SMART_PTR_FIX(llvmo::LoadInst_O::static_creator);
+ SMART_PTR_FIX(llvmo::User_O::static_class_symbol);
+ SMART_PTR_FIX(core::SexpLoadArchive_O::static_class_symbol);
+ SMART_PTR_FIX(core::Cache_O::static_creator);
+ SMART_PTR_FIX(llvmo::ArrayType_O::static_class_symbol);
+ SMART_PTR_FIX(core::CxxObject_O::static_creator);
+ SMART_PTR_FIX(clasp_ffi::ForeignTypeSpec_O::static_class_symbol);
+ SMART_PTR_FIX(core::LambdaListHandler_O::static_class);
+ SMART_PTR_FIX(llvmo::ResumeInst_O::static_creator);
+ SMART_PTR_FIX(llvmo::PHINode_O::static_class);
+ SMART_PTR_FIX(clcenv::ConstantVariableInfo_O::static_class);
+ SMART_PTR_FIX(llvmo::Metadata_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::GlobalVariable_O::static_class_symbol);
+ SMART_PTR_FIX(clcenv::Function_O::static_class);
+ SMART_PTR_FIX(core::MDArrayCharacter_O::static_class);
+ SMART_PTR_FIX(core::RecursiveDirectoryIterator_O::static_creator);
+ SMART_PTR_FIX(llvmo::DISubprogram_O::static_class);
+ SMART_PTR_FIX(llvmo::PassManagerBuilder_O::static_class);
+ SMART_PTR_FIX(core::SmallMultimap_O::static_creator);
+ SMART_PTR_FIX(clcenv::LocalMacroInfo_O::static_creator);
+ SMART_PTR_FIX(clcenv::VariableType_O::static_class_symbol);
+ SMART_PTR_FIX(clcenv::ConstantVariableInfo_O::static_creator);
+ SMART_PTR_FIX(core::SimpleVector_fixnum_O::static_class);
+ SMART_PTR_FIX(llvmo::FenceInst_O::static_class);
+ SMART_PTR_FIX(core::RuntimeVisibleEnvironment_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::TargetSubtargetInfo_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::IRBuilder_O::static_class);
+ SMART_PTR_FIX(core::MacroletEnvironment_O::static_class);
+ SMART_PTR_FIX(llvmo::ModuleHandle_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::LLVMContext_O::static_class_symbol);
+ SMART_PTR_FIX(core::LoadTimeValues_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::DICompileUnit_O::static_creator);
+ SMART_PTR_FIX(llvmo::IntegerType_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::Value_O::static_class_symbol);
+ SMART_PTR_FIX(core::HashTableEql_O::static_class_symbol);
+ SMART_PTR_FIX(core::AbstractSimpleVector_O::static_class_symbol);
+ SMART_PTR_FIX(core::FunctionFrame_O::static_creator);
+ SMART_PTR_FIX(core::HashTableEql_O::static_creator);
+ SMART_PTR_FIX(clcenv::BlockInfo_O::static_creator);
+ SMART_PTR_FIX(mp::ConcurrentQueue_O::static_class_symbol);
+ SMART_PTR_FIX(core::NativeVector_float_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::MCSubtargetInfo_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::LandingPadInst_O::static_class);
+ SMART_PTR_FIX(core::Integer_O::static_class);
+ SMART_PTR_FIX(core::LambdaListHandler_O::static_class_symbol);
+ SMART_PTR_FIX(core::SexpLoadArchive_O::static_creator);
+ SMART_PTR_FIX(llvmo::PassManagerBase_O::static_class_symbol);
+ SMART_PTR_FIX(core::TranslationFunctor_O::static_class_symbol);
+ SMART_PTR_FIX(core::Closure_O::static_creator);
+ SMART_PTR_FIX(llvmo::BlockAddress_O::static_class);
+ SMART_PTR_FIX(llvmo::DIFile_O::static_creator);
+ SMART_PTR_FIX(core::Bignum_O::static_class);
+ SMART_PTR_FIX(core::SimpleMDArray_O::static_class_symbol);
+ SMART_PTR_FIX(core::Pointer_O::static_class_symbol);
+ SMART_PTR_FIX(core::SimpleMDArray_byte64_t_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::DICompileUnit_O::static_class_symbol);
+ SMART_PTR_FIX(clcenv::Inline_O::static_class_symbol);
+ SMART_PTR_FIX(core::RuntimeVisibleEnvironment_O::static_class);
+ SMART_PTR_FIX(core::FuncallableInstanceCreator_O::static_class_symbol);
+ SMART_PTR_FIX(core::SimpleVector_size_t_O::static_creator);
+ SMART_PTR_FIX(core::MDArray_int64_t_O::static_creator);
+ SMART_PTR_FIX(llvmo::TargetSubtargetInfo_O::static_class);
+ SMART_PTR_FIX(core::Path_O::static_creator);
+ SMART_PTR_FIX(llvmo::PassManagerBase_O::static_class);
+ SMART_PTR_FIX(core::MDArray_int8_t_O::static_class_symbol);
+ SMART_PTR_FIX(core::NamedFunction_O::static_class);
+ SMART_PTR_FIX(core::SimpleVector_byte8_t_O::static_class_symbol);
+ SMART_PTR_FIX(core::DoubleFloat_O::static_class);
+ SMART_PTR_FIX(llvmo::Instruction_O::static_class);
+ SMART_PTR_FIX(core::SingleDispatchMethodFunction_O::static_creator);
+ SMART_PTR_FIX(llvmo::AttributeSet_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::DIBasicType_O::static_class_symbol);
+ SMART_PTR_FIX(core::IOFileStream_O::static_class);
+ SMART_PTR_FIX(core::MDArray_fixnum_O::static_creator);
+ SMART_PTR_FIX(core::CompiledDispatchFunction_O::static_class);
+ SMART_PTR_FIX(core::Function_O::static_class_symbol);
+ SMART_PTR_FIX(clcenv::Inline_O::static_creator);
+ SMART_PTR_FIX(core::Cache_O::static_class_symbol);
+ SMART_PTR_FIX(core::SimpleMDArray_int8_t_O::static_creator);
+ SMART_PTR_FIX(mp::ConditionVariable_O::static_creator);
+ SMART_PTR_FIX(core::StrNs_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::GlobalVariable_O::static_creator);
+ SMART_PTR_FIX(llvmo::SequentialType_O::static_class);
+ SMART_PTR_FIX(mp::Process_O::static_class);
+ SMART_PTR_FIX(core::MDArrayT_O::static_class_symbol);
+ SMART_PTR_FIX(core::MDArray_int16_t_O::static_class);
+ SMART_PTR_FIX(core::SimpleMDArray_byte8_t_O::static_class);
+ SMART_PTR_FIX(core::SimpleCharacterString_O::static_class);
+ SMART_PTR_FIX(core::MDArrayBit_O::static_class_symbol);
+ SMART_PTR_FIX(core::EchoStream_O::static_class);
+ SMART_PTR_FIX(core::MDArray_byte16_t_O::static_class_symbol);
+ SMART_PTR_FIX(clcenv::Optimize_O::static_creator);
+ SMART_PTR_FIX(llvmo::MCSubtargetInfo_O::static_creator);
+ SMART_PTR_FIX(core::DirectoryEntry_O::static_creator);
+ SMART_PTR_FIX(core::MultiStringBuffer_O::static_class_symbol);
+ SMART_PTR_FIX(core::SimpleMDArrayT_O::static_class_symbol);
+ SMART_PTR_FIX(core::StandardClassCreator_O::static_class_symbol);
+ SMART_PTR_FIX(core::Symbol_O::static_class_symbol);
+ SMART_PTR_FIX(core::InterpretedClosure_O::static_class);
+ SMART_PTR_FIX(core::StringInputStream_O::static_creator);
+ SMART_PTR_FIX(core::InstanceCreator_O::static_class);
+ SMART_PTR_FIX(llvmo::DataLayout_O::static_creator);
+ SMART_PTR_FIX(core::VaList_dummy_O::static_class_symbol);
+ SMART_PTR_FIX(core::SimpleVector_byte16_t_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::Triple_O::static_class);
+ SMART_PTR_FIX(core::Rational_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::DISubroutineType_O::static_creator);
+ SMART_PTR_FIX(core::TemplatedFunctionBase_O::static_class);
+ SMART_PTR_FIX(core::UserData_O::static_class);
+ SMART_PTR_FIX(mp::SharedMutex_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::Linker_O::static_class);
+ SMART_PTR_FIX(llvmo::APFloat_O::static_creator);
+ SMART_PTR_FIX(llvmo::DILexicalBlockBase_O::static_creator);
+ SMART_PTR_FIX(llvmo::StructType_O::static_creator);
+ SMART_PTR_FIX(core::MDArray_int32_t_O::static_creator);
+ SMART_PTR_FIX(llvmo::Type_O::static_class);
+ SMART_PTR_FIX(core::FunctionValueEnvironment_O::static_creator);
+ SMART_PTR_FIX(core::SimpleVectorFloat_O::static_class);
+ SMART_PTR_FIX(core::HashTable_O::static_class_symbol);
+ SMART_PTR_FIX(clcenv::Function_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::UnreachableInst_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::LoadInst_O::static_class_symbol);
+ SMART_PTR_FIX(core::CoreExposer_O::static_class_symbol);
+ SMART_PTR_FIX(core::VaList_dummy_O::static_class);
+ SMART_PTR_FIX(core::InstanceCreator_O::static_class_symbol);
+ SMART_PTR_FIX(core::General_O::static_class);
+ SMART_PTR_FIX(core::Iterator_O::static_class_symbol);
+ SMART_PTR_FIX(core::Closure_O::static_class);
+ SMART_PTR_FIX(core::UserData_O::static_class_symbol);
+ SMART_PTR_FIX(core::DoubleFloat_O::static_class_symbol);
+ SMART_PTR_FIX(core::SimpleVectorDouble_O::static_class);
+ SMART_PTR_FIX(core::HashTableEqual_O::static_creator);
+ SMART_PTR_FIX(clasp_ffi::ForeignData_O::static_creator);
+ SMART_PTR_FIX(clcenv::Info_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::EngineBuilder_O::static_creator);
+ SMART_PTR_FIX(llvmo::MDNode_O::static_creator);
+ SMART_PTR_FIX(core::Iterator_O::static_creator);
+ SMART_PTR_FIX(core::MacroletEnvironment_O::static_class_symbol);
+ SMART_PTR_FIX(core::StrWNs_O::static_class_symbol);
+ SMART_PTR_FIX(clcenv::SymbolMacro_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::Constant_O::static_class);
+ SMART_PTR_FIX(clcenv::GlobalEnvironment_O::static_class);
+ SMART_PTR_FIX(core::Creator_O::static_class_symbol);
+ SMART_PTR_FIX(clcenv::VariableInfo_O::static_creator);
+ SMART_PTR_FIX(core::SimpleMDArray_byte8_t_O::static_creator);
+ SMART_PTR_FIX(clbind::ClassRep_O::static_class);
+ SMART_PTR_FIX(core::WeakHashTable_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::CallInst_O::static_creator);
+ SMART_PTR_FIX(llvmo::FenceInst_O::static_creator);
+ SMART_PTR_FIX(core::MDArray_int32_t_O::static_class);
+ SMART_PTR_FIX(core::SharpEqualWrapper_O::static_class_symbol);
+ SMART_PTR_FIX(core::SimpleVector_size_t_O::static_class);
+ SMART_PTR_FIX(llvmo::BranchInst_O::static_creator);
+ SMART_PTR_FIX(core::CompiledClosure_O::static_class_symbol);
+ SMART_PTR_FIX(core::TwoWayStream_O::static_class);
+ SMART_PTR_FIX(clcenv::LexicalVariableInfo_O::static_class);
+ SMART_PTR_FIX(core::GlueEnvironment_O::static_creator);
+ SMART_PTR_FIX(core::General_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::DISubprogram_O::static_creator);
+ SMART_PTR_FIX(clcenv::OptimizeInfo_O::static_class);
+ SMART_PTR_FIX(llvmo::DIBuilder_O::static_class);
+ SMART_PTR_FIX(core::SymbolMacroletEnvironment_O::static_creator);
+ SMART_PTR_FIX(core::ValueFrame_O::static_class_symbol);
+ SMART_PTR_FIX(core::SimpleBitVector_O::static_class_symbol);
+ SMART_PTR_FIX(core::DerivableCxxObject_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::DILexicalBlockBase_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::DIFile_O::static_class);
+ SMART_PTR_FIX(core::SexpSaveArchive_O::static_class);
+ SMART_PTR_FIX(core::TagbodyFrame_O::static_class_symbol);
+ SMART_PTR_FIX(core::MDArrayFloat_O::static_class_symbol);
+ SMART_PTR_FIX(core::MDArray_int16_t_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::Metadata_O::static_class);
+ SMART_PTR_FIX(clcenv::VariableIgnore_O::static_class);
+ SMART_PTR_FIX(llvmo::AtomicRMWInst_O::static_class_symbol);
+ SMART_PTR_FIX(core::Number_O::static_class_symbol);
+ SMART_PTR_FIX(clbind::DummyCreator_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::BasicBlock_O::static_class_symbol);
+ SMART_PTR_FIX(core::MDArray_byte8_t_O::static_creator);
+ SMART_PTR_FIX(llvmo::Value_O::static_class);
+ SMART_PTR_FIX(core::WeakHashTable_O::static_creator);
+ SMART_PTR_FIX(llvmo::Module_O::static_creator);
+ SMART_PTR_FIX(clcenv::FunctionIgnore_O::static_creator);
+ SMART_PTR_FIX(core::Float_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::LLVMContext_O::static_creator);
+ SMART_PTR_FIX(llvmo::ConstantStruct_O::static_class_symbol);
+ SMART_PTR_FIX(core::WeakKeyMapping_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::BranchInst_O::static_class_symbol);
+ SMART_PTR_FIX(core::Str8Ns_O::static_class);
+ SIMPLE_POINTER_FIX(gctools::global_tagged_Symbol_OP_no_thread_local_binding);
+ SMART_PTR_FIX(core::DerivableCxxObject_O::static_class);
+ SMART_PTR_FIX(llvmo::ClaspJIT_O::static_creator);
+ SMART_PTR_FIX(clcenv::SpecialOperatorInfo_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::AtomicRMWInst_O::static_creator);
+ SMART_PTR_FIX(llvmo::TargetLibraryInfoWrapperPass_O::static_class);
+ SMART_PTR_FIX(core::Fixnum_dummy_O::static_creator);
+ SMART_PTR_FIX(clcenv::GlobalFunctionInfo_O::static_class);
+ SMART_PTR_FIX(llvmo::TargetLibraryInfoWrapperPass_O::static_class_symbol);
+ SMART_PTR_FIX(core::SingleDispatchGenericFunctionClosure_O::static_class);
+ SMART_PTR_FIX(clcenv::VariableDynamicExtent_O::static_creator);
+ SMART_PTR_FIX(core::ClosureWithSlots_O::static_class);
+ SMART_PTR_FIX(llvmo::ResumeInst_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::LandingPadInst_O::static_creator);
+ SMART_PTR_FIX(llvmo::ReturnInst_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::FunctionPass_O::static_creator);
+ SMART_PTR_FIX(clcenv::LambdaName_O::static_class_symbol);
+ SMART_PTR_FIX(core::SexpSaveArchive_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::DIDerivedType_O::static_class);
+ SMART_PTR_FIX(llvmo::StructType_O::static_class);
+ SMART_PTR_FIX(core::Archive_O::static_class_symbol);
+ SMART_PTR_FIX(core::Null_O::static_creator);
+ SMART_PTR_FIX(core::SmallMultimap_O::static_class_symbol);
+ SMART_PTR_FIX(core::T_O::static_creator);
+ SMART_PTR_FIX(llvmo::BranchInst_O::static_class);
+ SMART_PTR_FIX(core::SpecialForm_O::static_creator);
+ SMART_PTR_FIX(core::StrNs_O::static_class);
+ SMART_PTR_FIX(core::HashTableEq_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::StoreInst_O::static_creator);
+ SMART_PTR_FIX(llvmo::BasicBlock_O::static_creator);
+ SMART_PTR_FIX(llvmo::DIBasicType_O::static_creator);
+ SMART_PTR_FIX(core::Instance_O::static_class_symbol);
+ SMART_PTR_FIX(core::NativeVector_int_O::static_class_symbol);
+ SMART_PTR_FIX(core::Bignum_O::static_creator);
+ SMART_PTR_FIX(core::SimpleCharacterString_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::PassManager_O::static_creator);
+ SMART_PTR_FIX(core::AnsiStream_O::static_class);
+ SMART_PTR_FIX(clcenv::GlobalEnvironment_O::static_creator);
+ SMART_PTR_FIX(clbind::ClassRegistry_O::static_class_symbol);
+ SMART_PTR_FIX(core::MDArrayCharacter_O::static_class_symbol);
+ SMART_PTR_FIX(core::MDArrayDouble_O::static_creator);
+ SMART_PTR_FIX(core::ExternalObject_O::static_class);
+ SMART_PTR_FIX(core::TagbodyFrame_O::static_class);
+ SMART_PTR_FIX(llvmo::DISubroutineType_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::PassManager_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::GlobalValue_O::static_class_symbol);
+ SMART_PTR_FIX(core::FunctionValueEnvironment_O::static_class);
+ SMART_PTR_FIX(llvmo::Type_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::InvokeInst_O::static_class);
+ SMART_PTR_FIX(llvmo::DILexicalBlock_O::static_class);
+ SMART_PTR_FIX(core::MDArrayDouble_O::static_class);
+ SMART_PTR_FIX(llvmo::NamedMDNode_O::static_class);
+ SMART_PTR_FIX(llvmo::ModulePass_O::static_class_symbol);
+ SMART_PTR_FIX(core::LongFloat_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::ImmutablePass_O::static_creator);
+ SMART_PTR_FIX(core::EchoStream_O::static_class_symbol);
+ SMART_PTR_FIX(core::StandardClassCreator_O::static_class);
+ SMART_PTR_FIX(llvmo::SwitchInst_O::static_creator);
+ SMART_PTR_FIX(llvmo::ConstantDataArray_O::static_class);
+ SMART_PTR_FIX(llvmo::Type_O::static_creator);
+ SMART_PTR_FIX(clcenv::SpecialVariableInfo_O::static_class);
+ SMART_PTR_FIX(core::ConsStepper_O::static_creator);
+ SMART_PTR_FIX(llvmo::IRBuilderBase_O::static_class);
+ SMART_PTR_FIX(core::T_O::static_class);
+ SMART_PTR_FIX(asttooling::AsttoolingExposer_O::static_class);
+ SMART_PTR_FIX(core::SequenceStepper_O::static_class_symbol);
+ SMART_PTR_FIX(core::FileStream_O::static_class);
+ SMART_PTR_FIX(llvmo::InvokeInst_O::static_class_symbol);
+ SMART_PTR_FIX(core::ClosureWithSlots_O::static_class_symbol);
+ SMART_PTR_FIX(core::NamedFunction_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::ConstantInt_O::static_class);
+ SMART_PTR_FIX(core::Bignum_O::static_class_symbol);
+ SMART_PTR_FIX(core::SNode_O::static_creator);
+ SMART_PTR_FIX(core::ShortFloat_O::static_creator);
+ SMART_PTR_FIX(core::AnsiStream_O::static_creator);
+ SMART_PTR_FIX(core::FunctionClosure_O::static_creator);
+ SMART_PTR_FIX(llvmo::ConstantFP_O::static_creator);
+ SMART_PTR_FIX(core::NativeVector_int_O::static_class);
+ SMART_PTR_FIX(core::LightUserData_O::static_class);
+ SMART_PTR_FIX(llvmo::DIType_O::static_creator);
+ SMART_PTR_FIX(clcenv::Info_O::static_creator);
+ SMART_PTR_FIX(core::MDArrayBaseChar_O::static_class_symbol);
+ SMART_PTR_FIX(core::MacroletEnvironment_O::static_creator);
+ SMART_PTR_FIX(mp::SharedMutex_O::static_class);
+ SMART_PTR_FIX(core::MDArrayBaseChar_O::static_class);
+ SMART_PTR_FIX(clcenv::Info_O::static_class);
+ SMART_PTR_FIX(core::TwoWayStream_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::Triple_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::PointerType_O::static_class_symbol);
+ SMART_PTR_FIX(core::FuncallableInstanceCreator_O::static_class);
+ SMART_PTR_FIX(core::Str8Ns_O::static_creator);
+ SMART_PTR_FIX(llvmo::IRBuilder_O::static_creator);
+ SMART_PTR_FIX(core::SharpEqualWrapper_O::static_creator);
+ SMART_PTR_FIX(core::SimpleMDArray_byte64_t_O::static_class);
+ SMART_PTR_FIX(core::Ratio_O::static_class_symbol);
+ SMART_PTR_FIX(core::InvocationHistoryFrameIterator_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::SequentialType_O::static_class_symbol);
+ SMART_PTR_FIX(core::Cons_O::static_creator);
+ SMART_PTR_FIX(core::PosixTimeDuration_O::static_class_symbol);
+ SMART_PTR_FIX(core::SourceManager_O::static_class_symbol);
+ SMART_PTR_FIX(core::BroadcastStream_O::static_class);
+ SMART_PTR_FIX(core::Complex_O::static_class);
+ SMART_PTR_FIX(core::Float_O::static_class);
+ SMART_PTR_FIX(core::WrappedPointer_O::static_class_symbol);
+ SMART_PTR_FIX(core::FunctionContainerEnvironment_O::static_creator);
+ SMART_PTR_FIX(core::SingleDispatchEffectiveMethodFunction_O::static_class);
+ SMART_PTR_FIX(core::ActivationFrame_O::static_class);
+ SMART_PTR_FIX(llvmo::VAArgInst_O::static_class_symbol);
+ SMART_PTR_FIX(core::SimpleVector_int64_t_O::static_class);
+ SMART_PTR_FIX(clbind::DummyCreator_O::static_class);
+ SMART_PTR_FIX(core::StringStream_O::static_creator);
+ SMART_PTR_FIX(core::HashTableEq_O::static_creator);
+ SMART_PTR_FIX(llvmo::ConstantDataSequential_O::static_creator);
+ SMART_PTR_FIX(clbind::ClassRep_O::static_creator);
+ SMART_PTR_FIX(core::Null_O::static_class);
+ SMART_PTR_FIX(clcenv::LexicalVariableInfo_O::static_creator);
+ SMART_PTR_FIX(llvmo::TerminatorInst_O::static_class);
+ SMART_PTR_FIX(clcenv::VariableDynamicExtent_O::static_class);
+ SMART_PTR_FIX(core::IOFileStream_O::static_class_symbol);
+ SMART_PTR_FIX(core::Number_O::static_class);
+ SMART_PTR_FIX(core::DirectoryIterator_O::static_creator);
+ SMART_PTR_FIX(core::SimpleVector_O::static_class_symbol);
+ SMART_PTR_FIX(core::SmallMap_O::static_creator);
+ SMART_PTR_FIX(core::Exposer_O::static_class);
+ SMART_PTR_FIX(llvmo::APInt_O::static_class_symbol);
+ SMART_PTR_FIX(core::SimpleVector_int16_t_O::static_class_symbol);
+ SMART_PTR_FIX(core::InterpretedClosure_O::static_creator);
+ SMART_PTR_FIX(llvmo::IndirectBrInst_O::static_class);
+ SMART_PTR_FIX(core::SimpleMDArray_size_t_O::static_creator);
+ SMART_PTR_FIX(llvmo::ConstantFP_O::static_class);
+ SMART_PTR_FIX(clasp_ffi::ForeignTypeSpec_O::static_creator);
+ SMART_PTR_FIX(core::Pathname_O::static_class);
+ SMART_PTR_FIX(core::ReadTable_O::static_class);
+ SMART_PTR_FIX(core::ShortFloat_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::FunctionPass_O::static_class);
+ SMART_PTR_FIX(clcenv::Tag_O::static_class);
+ SMART_PTR_FIX(llvmo::DINode_O::static_class_symbol);
+ SMART_PTR_FIX(core::Reader_O::static_creator);
+ SMART_PTR_FIX(mp::RecursiveMutex_O::static_class_symbol);
+ SMART_PTR_FIX(core::LeafSNode_O::static_class);
+ SMART_PTR_FIX(core::TagbodyEnvironment_O::static_class_symbol);
+ SMART_PTR_FIX(core::StandardObject_O::static_class_symbol);
+ SMART_PTR_FIX(clcenv::SpecialVariable_O::static_creator);
+ SMART_PTR_FIX(core::SingleFloat_dummy_O::static_class);
+ SMART_PTR_FIX(clcenv::Closure_O::static_class_symbol);
+ SMART_PTR_FIX(core::Iterator_O::static_class);
+ SMART_PTR_FIX(mp::RecursiveMutex_O::static_creator);
+ SMART_PTR_FIX(clcenv::Optimize_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::DILocalScope_O::static_class_symbol);
+ SMART_PTR_FIX(core::CoreExposer_O::static_creator);
+ SMART_PTR_FIX(core::Pathname_O::static_creator);
+ SMART_PTR_FIX(clcenv::LocalFunctionInfo_O::static_class_symbol);
+ SMART_PTR_FIX(core::SimpleVector_int16_t_O::static_class);
+ SMART_PTR_FIX(core::IOStreamStream_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::TerminatorInst_O::static_creator);
+ SMART_PTR_FIX(core::SmallMultimap_O::static_class);
+ SMART_PTR_FIX(core::AnsiStream_O::static_class_symbol);
+ SMART_PTR_FIX(core::MDArray_byte32_t_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::ConstantPointerNull_O::static_class_symbol);
+ SIMPLE_POINTER_FIX(gctools::global_tagged_Symbol_OP_deleted);
+ SMART_PTR_FIX(core::Exposer_O::static_creator);
+ SMART_PTR_FIX(core::MDArrayBit_O::static_class);
+ SMART_PTR_FIX(core::SaveArchive_O::static_creator);
+ SMART_PTR_FIX(llvmo::DICompositeType_O::static_class);
+ SMART_PTR_FIX(llvmo::InsertPoint_O::static_class);
+ SMART_PTR_FIX(llvmo::ModuleHandle_O::static_class);
+ SMART_PTR_FIX(llvmo::DISubroutineType_O::static_class);
+ SMART_PTR_FIX(core::FuncallableInstanceCreator_O::static_creator);
+ SMART_PTR_FIX(core::IOStreamStream_O::static_class);
+ TAGGED_POINTER_FIX(clbind::globalClassMap);
+ SMART_PTR_FIX(core::MDArray_O::static_class_symbol);
+ SMART_PTR_FIX(clcenv::Function_O::static_creator);
+ SMART_PTR_FIX(core::HashTableEqual_O::static_class);
+ SMART_PTR_FIX(llvmo::UnaryInstruction_O::static_creator);
+ SMART_PTR_FIX(core::Pointer_O::static_creator);
+ SMART_PTR_FIX(core::SimpleMDArray_int16_t_O::static_class);
+ SMART_PTR_FIX(core::RecursiveDirectoryIterator_O::static_class_symbol);
+ SMART_PTR_FIX(core::MDArray_int64_t_O::static_class);
+ SMART_PTR_FIX(core::SingleDispatchGenericFunctionClosure_O::static_class_symbol);
+ SMART_PTR_FIX(core::TwoWayStream_O::static_creator);
+ SMART_PTR_FIX(clcenv::SpecialVariableInfo_O::static_creator);
+ SMART_PTR_FIX(core::SimpleMDArrayBaseChar_O::static_class);
+ SMART_PTR_FIX(core::SimpleMDArrayBaseChar_O::static_creator);
+ SMART_PTR_FIX(core::SimpleString_O::static_class);
+ SMART_PTR_FIX(llvmo::UndefValue_O::static_class);
+ SMART_PTR_FIX(clcenv::VariableIgnore_O::static_creator);
+ SMART_PTR_FIX(core::TagbodyFrame_O::static_creator);
+ SMART_PTR_FIX(core::StringStream_O::static_class_symbol);
+ SMART_PTR_FIX(core::SimpleBaseString_O::static_class);
+ SMART_PTR_FIX(core::Creator_O::static_class);
+ SMART_PTR_FIX(core::SimpleVector_byte8_t_O::static_creator);
+ SMART_PTR_FIX(clcenv::SymbolMacro_O::static_creator);
+ SMART_PTR_FIX(core::CompiledFunction_O::static_class_symbol);
+ SMART_PTR_FIX(asttooling::AsttoolingExposer_O::static_creator);
+ SMART_PTR_FIX(core::SimpleVector_byte32_t_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::DINode_O::static_creator);
+ SMART_PTR_FIX(core::ConcatenatedStream_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::DebugLoc_O::static_class);
+ SMART_PTR_FIX(llvmo::DebugLoc_O::static_class_symbol);
+ SMART_PTR_FIX(core::Closure_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::Linker_O::static_class_symbol);
+ SMART_PTR_FIX(asttooling::AsttoolingExposer_O::static_class_symbol);
+ SMART_PTR_FIX(clbind::ClassRegistry_O::static_class);
+ SMART_PTR_FIX(llvmo::GlobalVariable_O::static_class);
+ SMART_PTR_FIX(core::BranchSNode_O::static_class_symbol);
+ SMART_PTR_FIX(core::SimpleMDArray_int16_t_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::ConstantDataSequential_O::static_class);
+ SMART_PTR_FIX(llvmo::DILexicalBlock_O::static_creator);
+ SMART_PTR_FIX(core::Package_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::FunctionType_O::static_creator);
+ SMART_PTR_FIX(core::ClassCreator_O::static_class);
+ SMART_PTR_FIX(core::GlueEnvironment_O::static_class_symbol);
+ SMART_PTR_FIX(core::SingleDispatchMethod_O::static_class_symbol);
+ SMART_PTR_FIX(core::DirectoryIterator_O::static_class);
+ SMART_PTR_FIX(llvmo::ImmutablePass_O::static_class_symbol);
+ SMART_PTR_FIX(clcenv::LocalFunctionInfo_O::static_creator);
+ SMART_PTR_FIX(llvmo::PHINode_O::static_creator);
+ SMART_PTR_FIX(core::UnwindProtectEnvironment_O::static_class);
+ SMART_PTR_FIX(clcenv::LambdaNameInfo_O::static_class_symbol);
+ SMART_PTR_FIX(core::LongFloat_O::static_class);
+ SMART_PTR_FIX(core::MDArray_size_t_O::static_class);
+ SMART_PTR_FIX(llvmo::Attribute_O::static_class);
+ SMART_PTR_FIX(llvmo::IndirectBrInst_O::static_class_symbol);
+ SMART_PTR_FIX(core::MDArrayT_O::static_creator);
+ SMART_PTR_FIX(core::SimpleVector_int8_t_O::static_class_symbol);
+ SMART_PTR_FIX(core::CompiledFunction_O::static_class);
+ SMART_PTR_FIX(core::SourcePosInfo_O::static_creator);
+ SMART_PTR_FIX(llvmo::MDString_O::static_class_symbol);
+ SMART_PTR_FIX(core::CandoException_O::static_class);
+ SMART_PTR_FIX(core::Environment_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::DIDerivedType_O::static_creator);
+ SMART_PTR_FIX(core::ShortFloat_O::static_class);
+ SMART_PTR_FIX(core::CandoException_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::MDNode_O::static_class_symbol);
+ SMART_PTR_FIX(core::SimpleMDArrayCharacter_O::static_creator);
+ SMART_PTR_FIX(llvmo::ValueAsMetadata_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::UndefValue_O::static_class_symbol);
+ SMART_PTR_FIX(core::SimpleBaseString_O::static_creator);
+ SMART_PTR_FIX(core::CatchEnvironment_O::static_class);
+ SMART_PTR_FIX(core::CandoException_O::static_creator);
+ SMART_PTR_FIX(clcenv::FunctionInfo_O::static_class);
+ SMART_PTR_FIX(core::SimpleMDArray_int8_t_O::static_class);
+ SMART_PTR_FIX(core::SingleDispatchCxxEffectiveMethodFunction_O::static_class);
+ SMART_PTR_FIX(core::ClosureWithSlots_O::static_creator);
+ SMART_PTR_FIX(llvmo::VAArgInst_O::static_class);
+ SMART_PTR_FIX(core::SequenceStepper_O::static_creator);
+ SMART_PTR_FIX(llvmo::IntegerType_O::static_creator);
+ SMART_PTR_FIX(core::FuncallableInstance_O::static_class_symbol);
+ SIMPLE_POINTER_FIX(run_time_values_table);
+ SMART_PTR_FIX(llvmo::Triple_O::static_creator);
+ SMART_PTR_FIX(llvmo::DIType_O::static_class);
+ SMART_PTR_FIX(clcenv::BlockInfo_O::static_class);
+ SMART_PTR_FIX(core::NativeVector_double_O::static_class);
+ SMART_PTR_FIX(llvmo::ValueAsMetadata_O::static_creator);
+ SMART_PTR_FIX(core::PosixTime_O::static_class_symbol);
+ SMART_PTR_FIX(core::CxxObject_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::Target_O::static_class_symbol);
+ SMART_PTR_FIX(core::CompileTimeEnvironment_O::static_creator);
+ SMART_PTR_FIX(mp::ConcurrentQueue_O::static_class);
+ SMART_PTR_FIX(clcenv::BlockInfo_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::ConstantArray_O::static_class_symbol);
+ SMART_PTR_FIX(core::WeakKeyMapping_O::static_class);
+ SMART_PTR_FIX(core::ExternalObject_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::APInt_O::static_creator);
+ SMART_PTR_FIX(llvmo::VectorType_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::DIBasicType_O::static_class);
+ SMART_PTR_FIX(core::MultiStringBuffer_O::static_creator);
+ SMART_PTR_FIX(llvmo::NamedMDNode_O::static_creator);
+ SMART_PTR_FIX(clcenv::GlobalMacroInfo_O::static_creator);
+ SMART_PTR_FIX(core::HashTableEqualp_O::static_class_symbol);
+ SMART_PTR_FIX(core::FunctionValueEnvironment_O::static_class_symbol);
+ SMART_PTR_FIX(core::AbstractSimpleVector_O::static_creator);
+ SMART_PTR_FIX(core::SimpleMDArray_int32_t_O::static_class_symbol);
+ SMART_PTR_FIX(clcenv::Closure_O::static_creator);
+ SMART_PTR_FIX(core::Float_O::static_creator);
+ SMART_PTR_FIX(core::ClosureWithFrame_O::static_class);
+ SMART_PTR_FIX(clcenv::LexicalVariableInfo_O::static_class_symbol);
+ SMART_PTR_FIX(core::BroadcastStream_O::static_creator);
+ SMART_PTR_FIX(core::SimpleMDArrayFloat_O::static_creator);
+ SMART_PTR_FIX(core::ReadTable_O::static_creator);
+ SMART_PTR_FIX(core::CompiledClosure_O::static_class);
+ SMART_PTR_FIX(clcenv::Block_O::static_creator);
+ SMART_PTR_FIX(core::WeakKeyHashTable_O::static_creator);
+ SMART_PTR_FIX(core::ActivationFrame_O::static_creator);
+ SMART_PTR_FIX(llvmo::StoreInst_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::ExecutionEngine_O::static_creator);
+ SMART_PTR_FIX(llvmo::ConstantInt_O::static_creator);
+ SMART_PTR_FIX(core::LongFloat_O::static_creator);
+ SMART_PTR_FIX(core::SimpleMDArray_int8_t_O::static_class_symbol);
+ SMART_PTR_FIX(core::SimpleVectorFloat_O::static_creator);
+ SMART_PTR_FIX(llvmo::DILocalScope_O::static_class);
+ SMART_PTR_FIX(core::SourceFileInfo_O::static_creator);
+ SMART_PTR_FIX(core::StringOutputStream_O::static_creator);
+ SMART_PTR_FIX(clbind::ClassRegistry_O::static_creator);
+ SMART_PTR_FIX(core::Record_O::static_class_symbol);
+ SMART_PTR_FIX(core::LogicalPathname_O::static_creator);
+ SMART_PTR_FIX(clcenv::Inline_O::static_class);
+ SMART_PTR_FIX(llvmo::CompositeType_O::static_class_symbol);
+ SMART_PTR_FIX(core::VectorStepper_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::ConstantExpr_O::static_class);
+ SMART_PTR_FIX(core::DerivableCxxClassCreator_O::static_class);
+ SMART_PTR_FIX(llvmo::AtomicCmpXchgInst_O::static_creator);
+ SMART_PTR_FIX(llvmo::DIScope_O::static_class);
+ SMART_PTR_FIX(llvmo::MDString_O::static_class);
+ SMART_PTR_FIX(core::SourcePosInfo_O::static_class);
+ SMART_PTR_FIX(core::Symbol_O::static_class);
+ SMART_PTR_FIX(asttooling::AstVisitor_O::static_creator);
+ SMART_PTR_FIX(llvmo::Function_O::static_creator);
+ SMART_PTR_FIX(core::DerivableCxxClassCreator_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::AllocaInst_O::static_creator);
+ SMART_PTR_FIX(mp::Process_O::static_class_symbol);
+ SMART_PTR_FIX(core::Pathname_O::static_class_symbol);
+ SMART_PTR_FIX(core::MDArray_byte8_t_O::static_class_symbol);
+ SMART_PTR_FIX(core::WeakKeyHashTable_O::static_class);
+ SMART_PTR_FIX(core::NativeVector_double_O::static_class_symbol);
+ SMART_PTR_FIX(mp::BlockingConcurrentQueue_O::static_class_symbol);
+ SMART_PTR_FIX(core::MDArray_int32_t_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::ConstantDataSequential_O::static_class_symbol);
+ SMART_PTR_FIX(core::HashTableEq_O::static_class);
+ SMART_PTR_FIX(core::Character_dummy_O::static_class_symbol);
+ SMART_PTR_FIX(core::CompileTimeEnvironment_O::static_class_symbol);
+ SMART_PTR_FIX(core::PosixTime_O::static_class);
+ SMART_PTR_FIX(core::SimpleMDArray_byte32_t_O::static_class);
+ SMART_PTR_FIX(core::SimpleMDArray_int64_t_O::static_class);
+ SMART_PTR_FIX(core::MDArray_byte64_t_O::static_class);
+ SMART_PTR_FIX(core::Pointer_O::static_class);
+ SMART_PTR_FIX(llvmo::Pass_O::static_creator);
+ SMART_PTR_FIX(core::CompileTimeEnvironment_O::static_class);
+ SMART_PTR_FIX(core::StringOutputStream_O::static_class_symbol);
+ SIMPLE_POINTER_FIX(gctools::global_tagged_Symbol_OP_nil);
+ SMART_PTR_FIX(clcenv::LambdaName_O::static_creator);
+ SMART_PTR_FIX(core::StringOutputStream_O::static_class);
+ SMART_PTR_FIX(core::MDArrayBit_O::static_creator);
+ SMART_PTR_FIX(core::SimpleMDArrayFloat_O::static_class_symbol);
+ SMART_PTR_FIX(core::SequenceStepper_O::static_class);
+ SMART_PTR_FIX(core::Rational_O::static_class);
+ SMART_PTR_FIX(core::InvocationHistoryFrameIterator_O::static_class);
+ SMART_PTR_FIX(llvmo::CompositeType_O::static_creator);
+ SMART_PTR_FIX(core::MDArray_fixnum_O::static_class_symbol);
+ SMART_PTR_FIX(core::HashTable_O::static_class);
+ SMART_PTR_FIX(core::FuncallableInstance_O::static_class);
+ SMART_PTR_FIX(core::MacroClosure_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::Function_O::static_class);
+ SMART_PTR_FIX(llvmo::ConstantStruct_O::static_class);
+ SMART_PTR_FIX(core::CompiledFunction_O::static_creator);
+ SMART_PTR_FIX(llvmo::DIBuilder_O::static_creator);
+ SMART_PTR_FIX(core::InterpretedClosure_O::static_class_symbol);
+ SMART_PTR_FIX(clcenv::VariableDynamicExtent_O::static_class_symbol);
+ SMART_PTR_FIX(clcenv::LocalFunctionInfo_O::static_class);
+ SMART_PTR_FIX(core::DerivableCxxObject_O::static_creator);
+ SMART_PTR_FIX(clcenv::Tag_O::static_class_symbol);
+ SMART_PTR_FIX(core::LightUserData_O::static_creator);
+ SMART_PTR_FIX(clcenv::OptimizeInfo_O::static_creator);
+ SMART_PTR_FIX(core::LeafSNode_O::static_class_symbol);
+ SMART_PTR_FIX(clbind::ConstructorCreator_O::static_creator);
+ SMART_PTR_FIX(core::SimpleVector_byte64_t_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::User_O::static_creator);
+ SMART_PTR_FIX(core::SimpleVector_int8_t_O::static_creator);
+ SMART_PTR_FIX(core::DirectoryEntry_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::Argument_O::static_class_symbol);
+ SMART_PTR_FIX(core::HashTableEqual_O::static_class_symbol);
+ SMART_PTR_FIX(core::Stream_O::static_class_symbol);
+ SMART_PTR_FIX(core::MDArrayFloat_O::static_class);
+ SMART_PTR_FIX(llvmo::GlobalValue_O::static_creator);
+ SMART_PTR_FIX(core::SymbolMacroletEnvironment_O::static_class_symbol);
+ SMART_PTR_FIX(core::FunctionClosure_O::static_class);
+ SMART_PTR_FIX(core::MDArray_size_t_O::static_class_symbol);
+ SMART_PTR_FIX(core::MacroClosure_O::static_class);
+ SMART_PTR_FIX(clcenv::VariableType_O::static_class);
+ SMART_PTR_FIX(core::Package_O::static_class);
+ SMART_PTR_FIX(llvmo::Module_O::static_class_symbol);
+ SMART_PTR_FIX(core::LoadArchive_O::static_creator);
+ SMART_PTR_FIX(llvmo::APInt_O::static_class);
+ SMART_PTR_FIX(core::BlockEnvironment_O::static_creator);
+ SMART_PTR_FIX(core::CatchEnvironment_O::static_creator);
+ SMART_PTR_FIX(llvmo::LLVMTargetMachine_O::static_creator);
+ SMART_PTR_FIX(clcenv::LambdaName_O::static_class);
+ SMART_PTR_FIX(core::SingleDispatchMethod_O::static_class);
+ SMART_PTR_FIX(core::Character_dummy_O::static_creator);
+ SMART_PTR_FIX(core::Exposer_O::static_class_symbol);
+ SMART_PTR_FIX(core::MDArrayDouble_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::AttributeSet_O::static_class);
+ SMART_PTR_FIX(llvmo::DILocalScope_O::static_creator);
+ SMART_PTR_FIX(core::BranchSNode_O::static_class);
+ SMART_PTR_FIX(core::SingleDispatchGenericFunctionClosure_O::static_creator);
+ SMART_PTR_FIX(llvmo::ModulePass_O::static_creator);
+ SMART_PTR_FIX(core::SimpleMDArray_O::static_class);
+ SMART_PTR_FIX(core::HashTableEqualp_O::static_creator);
+ SMART_PTR_FIX(clcenv::SpecialVariableInfo_O::static_class_symbol);
+ SMART_PTR_FIX(core::SimpleMDArray_size_t_O::static_class_symbol);
+ SMART_PTR_FIX(core::ValueFrame_O::static_creator);
+ SMART_PTR_FIX(core::IntArray_O::static_class_symbol);
+ SMART_PTR_FIX(core::SourcePosInfo_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::AllocaInst_O::static_class);
+ SMART_PTR_FIX(core::SimpleMDArrayBit_O::static_class_symbol);
 #endif // defined(GC_GLOBALS)

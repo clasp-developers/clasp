@@ -1,22 +1,14 @@
-;;
-;; Normal run
-;;
 (progn
   (compile-file #P"sys:modules;clang-tool;clang-tool.lisp" :print t)
   (compile-file #P"sys:modules;clasp-analyzer;clasp-analyzer.lisp" :print t)
   (format t "Done compile~%"))
-
 (progn
   (load #P"sys:modules;clang-tool;clang-tool.fasl")
   (load #P"sys:modules;clasp-analyzer;clasp-analyzer.fasl")
   (format t "Done Loading clasp-analyzer~%"))
-
 (in-package :clasp-analyzer)
-
 ;;; ------------------------------------------------------------
-;;;
 ;;; To load and analyze the project
-;;;
 (progn
   (defparameter *compile-commands* (probe-file "~/aws/static-analyze-clasp/results/compile_commands.json"))
   (defvar *db* (clasp-analyzer:setup-clasp-analyzer-compilation-tool-database
@@ -26,13 +18,26 @@
      (format t "Loading project~%")
      (defparameter *p1* (load-project *db* "~/aws/static-analyze-clasp/results/project.dat"))
      (format t "Done loading project~%"))))
-
 (progn
   (defparameter *analysis* (analyze-project *p1*))
   (generate-code *analysis* :output-file #P"/tmp/clasp_gc.cc")
   (format t "Done analyze and generate-code for project~%")))
 
+
+(trace codegen-variable-part)
 (defparameter *analysis* (analyze-project *p1*))
+
+
+(defparameter *bv* (gethash "core::SimpleBitVector_O" (project-classes *project*)))
+
+
+
+(trace linearize-class-layout-impl)
+(class-layout *bv* *analysis*)
+
+
+
+
 
 
 (probe-file "~/slime/")

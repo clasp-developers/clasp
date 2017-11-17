@@ -56,10 +56,12 @@ namespace gctools {
   enum Layout_cmd {
       class_kind=0, container_kind=1, templated_kind=2,
       fixed_field=3,
-      variable_array0=4, variable_capacity=5, variable_field=6,
+      variable_array0=4,
+      variable_capacity=5, variable_field=6,
       templated_class_jump_table_index=7,
       container_jump_table_index=8,
       bitunit_container_kind=9,
+      variable_bit_array0=10,
       layout_end
   };
 
@@ -84,12 +86,12 @@ namespace gctools {
   };
 
   struct Container_layout {
-    Field_layout*  field_layout_start; // Points into global_field_layout_table
-    size_t            element_size;
-    size_t            number_of_fields;
-    size_t            data_offset;
-    size_t            end_offset;
-    size_t            capacity_offset;
+    Field_layout*     field_layout_start; // Points into global_field_layout_table
+    uint              number_of_fields;
+//    uint              bits_per_bitunit;
+//    size_t            data_offset;
+//    size_t            end_offset;
+//    size_t            capacity_offset;
   };
 
   enum Layout_operation { class_container_op, bitunit_container_op, templated_op };
@@ -101,11 +103,15 @@ namespace gctools {
   };
 
   struct Stamp_layout {
-    Layout_operation    layout_op; // One of class_container_op, bitunit_container_op, templated_op
-    Field_layout*  field_layout_start; // Points into global_field_layout_table
-    size_t            number_of_fields;
-    size_t            bits_per_bitunit;
-    size_t            size;
+    Layout_operation  layout_op; // One of class_container_op, bitunit_container_op, templated_op
+    uint              number_of_fields;
+    uint              bits_per_bitunit;
+    uint              size;
+    uint              element_size;
+    uint              data_offset;
+    uint              end_offset;
+    uint              capacity_offset;
+    Field_layout*     field_layout_start; // Points into global_field_layout_table
     Container_layout* container_layout;
   };
 
