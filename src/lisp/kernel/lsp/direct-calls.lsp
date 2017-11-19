@@ -6,7 +6,7 @@
 
 ;;;If the c-name symbol is available then compile a direct call defun to that symbol
 
-(defmacro generate-direct-call-defun (raw-lisp-name declare-forms lambda-list c-name)
+(defmacro wrap-c++-function (raw-lisp-name declare-forms lambda-list c-name)
   (unless (and (consp raw-lisp-name)
                (eq (car raw-lisp-name) 'core:magic-intern))
     (error "Only magic-intern is supported"))
