@@ -34,7 +34,6 @@ PACKAGE_USE("COMMON-LISP");
 NAMESPACE_PACKAGE_ASSOCIATION(mp, MpPkg, "MP")
 
 namespace mp {
-
   class Process_O;
   typedef gctools::smart_ptr<Process_O> Process_sp;
 };
@@ -43,9 +42,7 @@ namespace core {
   extern void clasp_musleep(double dsec, bool alertable);
 }
 
-
 namespace mp {
-
   struct SpinLock {
   public:
     void lock()
@@ -62,7 +59,6 @@ namespace mp {
   private:
     std::atomic_flag lck = ATOMIC_FLAG_INIT;
   };
-
   struct SafeSpinLock {
     SpinLock& _SpinLock;
   SafeSpinLock(SpinLock& l) : _SpinLock(l) {
@@ -356,7 +352,8 @@ namespace mp {
 //    printf("%s:%d Done pthread\n", __FILE__, __LINE__ );
   }
 
-  FORWARD(SharedMutex);
+  class SharedMutex_O;
+  typedef gctools::smart_ptr<SharedMutex_O> SharedMutex_sp;
 };
 
 #endif

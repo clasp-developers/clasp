@@ -38,6 +38,7 @@ namespace gctools {
 /*! Used to signal recursive allocations */
 int global_recursive_allocation_counter = 0;
 
+#if 0
 #ifdef USE_BOEHM
 #ifdef BOEHM_ONE_BIG_STACK
 void GCStack::growStack() {
@@ -73,7 +74,9 @@ void GCStack::shrinkStack() {
 }
 #endif
 #endif
+#endif
 
+#if 0
 void *GCStack::pushFrameImpl(size_t frameSize) {
   frameSize = STACK_ALIGN_UP(frameSize);
   size_t headerAndFrameSize = FRAME_HEADER_SIZE + frameSize;
@@ -137,7 +140,7 @@ DONE:
   }
   return frameStart;
 }
-
+#endif
 
 
 void* malloc_uncollectable_and_zero(size_t size)

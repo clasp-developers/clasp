@@ -42,7 +42,6 @@ THE SOFTWARE.
 #include <clasp/core/evaluator.h>
 
 
-
 namespace mp {
 
 #ifdef DEBUG_THREADS
@@ -110,28 +109,12 @@ void* start_thread(void* claspProcess) {
   core::ThreadLocalState my_thread_local_state(&stack_base);
 //  printf("%s:%d entering start_thread  &my_thread -> %p \n", __FILE__, __LINE__, (void*)&my_thread);
   my_thread = &my_thread_local_state;
-  my_thread->initialize_thread(process);
-  process->_ThreadInfo = my_thread;
-  // Set the mp:*current-process* variable to the current process
-  core::DynamicScopeManager scope(_sym_STARcurrent_processSTAR,process);
-  core::List_sp reversed_bindings = core::cl__reverse(process->_InitialSpecialBindings);
-  for ( auto cur : reversed_bindings ) {
-    core::Cons_sp pair = gc::As<core::Cons_sp>(oCar(cur));
-//    printf("%s:%d  start_thread   setting special variable/(eval value) -> %s\n", __FILE__, __LINE__, _rep_(pair).c_str());
-    scope.pushSpecialVariableAndSet(pair->_Car,core::eval::evaluate(pair->_Cdr,_Nil<core::T_O>()));
-  }
-//  gctools::register_thread(process,stack_base);
-  core::List_sp args = my_claspProcess->_Arguments;
-  
-#if 0
-#ifdef USE_BOEHM
-  GC_stack_base gc_stack_base;
-  GC_get_stack_base(&gc_stack_base);
-  GC_register_my_thread(&gc_stack_base);
-#endif
-#endif
-  
+  ////////////////////////////////////////////////////////////
+  //
+  // MPS setup of thread
+  //
 #ifdef USE_MPS
+  gctools::my_thread_allocation_points.initializeAllocationPoints();
   // use mask
   mps_res_t res = mps_thread_reg(&process->thr_o,global_arena);
   if (res != MPS_RES_OK) {
@@ -152,6 +135,27 @@ void* start_thread(void* claspProcess) {
     abort();
   };
 #endif
+  my_thread->initialize_thread(process);
+  process->_ThreadInfo = my_thread;
+  // Set the mp:*current-process* variable to the current process
+  core::DynamicScopeManager scope(_sym_STARcurrent_processSTAR,process);
+  core::List_sp reversed_bindings = core::cl__reverse(process->_InitialSpecialBindings);
+  for ( auto cur : reversed_bindings ) {
+    core::Cons_sp pair = gc::As<core::Cons_sp>(oCar(cur));
+//    printf("%s:%d  start_thread   setting special variable/(eval value) -> %s\n", __FILE__, __LINE__, _rep_(pair).c_str());
+    scope.pushSpecialVariableAndSet(pair->_Car,core::eval::evaluate(pair->_Cdr,_Nil<core::T_O>()));
+  }
+//  gctools::register_thread(process,stack_base);
+  core::List_sp args = my_claspProcess->_Arguments;
+  
+#if 0
+#ifdef USE_BOEHM
+  GC_stack_base gc_stack_base;
+  GC_get_stack_base(&gc_stack_base);
+  GC_register_my_thread(&gc_stack_base);
+#endif
+#endif
+
   process->_Phase = Active;
   core::T_mv result_mv;
   {
@@ -181,6 +185,7 @@ void* start_thread(void* claspProcess) {
 #endif
 #endif
 #ifdef USE_MPS
+  gctools::my_thread_allocation_points.destroyAllocationPoints();
   mps_root_destroy(process->root);
   mps_thread_dereg(process->thr_o);
 #endif

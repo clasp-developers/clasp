@@ -273,7 +273,7 @@ public:
   virtual ~Symbol_O(){
 #ifdef CLASP_THREAD
     if (this->_Binding != NO_THREAD_LOCAL_BINDINGS) {
-      my_thread->_Bindings->release_binding_index(this->_Binding);
+      my_thread->_Bindings.release_binding_index(this->_Binding);
     }
 #endif
   };

@@ -165,7 +165,7 @@ namespace clasp_ffi {
 
     // MENORY MGMT
     void allocate(core::T_sp kind, core::ForeignDataFlagEnum ownership_flags, size_t size);
-    void free();
+    void free_();
 
   private:
 

@@ -144,18 +144,6 @@ extern mps_pool_t global_unmanaged_pool;
 extern mps_pool_t _global_awl_pool;
 
 
-#if 0
-template <typename T>
-struct GCAllocationPoint {
-#ifdef USE_AMC_POOL
-  static mps_ap_t get() { return my_thread->_automatic_mostly_copying_allocation_point; };
-#define DEFAULT_ALLOCATION_POINT my_thread->_automatic_mostly_copying_allocation_point
-#else
-  static mps_ap_t get() { return my_thread->_non_moving_allocation_point; };
-#define DEFAULT_ALLOCATION_POINT my_thread->_non_moving_allocation_point
-#endif
-};
-#endif
 };
 
 namespace core {
@@ -261,4 +249,25 @@ extern "C" {
 extern size_t processMpsMessages(size_t& finalizations);
 };
 
+namespace core {
+  class ThreadLocalState;
+};
+
+
+namespace gctools {
+
+struct ThreadLocalAllocationPoints {
+  void initializeAllocationPoints();
+  void destroyAllocationPoints();
+    mps_ap_t _automatic_mostly_copying_allocation_point;
+    mps_ap_t _amc_cons_allocation_point;
+    mps_ap_t _automatic_mostly_copying_zero_rank_allocation_point;
+    mps_ap_t _non_moving_allocation_point;
+    mps_ap_t _weak_link_allocation_point;
+    mps_ap_t _strong_link_allocation_point;
+};
+
+ extern THREAD_LOCAL ThreadLocalAllocationPoints my_thread_allocation_points;
+
+};
 #endif // _clasp_memoryPoolSystem_H

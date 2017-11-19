@@ -1076,7 +1076,6 @@ step1:
     LOG(BF("step4 - terminating-macro-character or non-terminating-macro-character char[%c]") % clasp_as_claspCharacter(x));
     T_sp reader_macro;
     {
-      MULTIPLE_VALUES_CONTEXT();
       reader_macro = readTable->get_macro_character(x);
     }
     ASSERT(reader_macro.notnilp());

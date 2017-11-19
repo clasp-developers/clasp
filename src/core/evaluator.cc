@@ -1919,7 +1919,6 @@ T_mv evaluate_atom(T_sp exp, T_sp environment) {
     if (core__lookup_symbol_macro(sym, environment).notnilp()) {
       T_sp texpr;
       {
-        MULTIPLE_VALUES_CONTEXT();
         texpr = cl__macroexpand(sym, environment);
       }
       result = eval::evaluate(texpr, environment);

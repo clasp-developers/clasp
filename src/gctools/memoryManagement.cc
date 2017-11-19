@@ -343,7 +343,7 @@ void OutOfStamps() {
     abort();
 }
 
-GCStack _ThreadLocalStack;
+//GCStack _ThreadLocalStack;
 const char *_global_stack_marker;
 size_t _global_stack_max_size;
 /*! Keeps track of the next available header KIND value */
@@ -379,10 +379,6 @@ void monitorAllocation(stamp_t k, size_t sz) {
   global_monitorAllocations.counter++;
 }
 
-
-gc::GCStack *threadLocalStack() {
-  return &_ThreadLocalStack;
-}
 
 int handleFatalCondition() {
   int exitCode = 0;
@@ -539,29 +535,7 @@ int startupGarbageCollectorAndSystem(MainFunctionType startupFn, int argc, char 
   int exitCode = gctools::initializeMemoryPoolSystem(startupFn, argc, argv, mpiEnabled, mpiRank, mpiSize);
 #endif
 #if defined(USE_BOEHM)
-  GC_INIT();
-  GC_allow_register_threads();
-  GC_set_java_finalization(1);
-//  GC_allow_register_threads();
-  GC_set_all_interior_pointers(1); // tagged pointers require this
-                                   //printf("%s:%d Turning on interior pointers\n",__FILE__,__LINE__);
-  GC_set_warn_proc(clasp_warn_proc);
-  //  GC_enable_incremental();
-  GC_init();
-  _ThreadLocalStack.allocateStack(gc::thread_local_cl_stack_min_size);
-  void* topOfStack;
-  // ctor sets up my_thread
-  core::ThreadLocalState thread_local_state(&topOfStack);
-#if 0
-  // I'm not sure if this needs to be done for the main thread
-  GC_stack_base gc_stack_base;
-  GC_get_stack_base(&gc_stack_base);
-  GC_register_my_thread(&gc_stack_base);
-#endif
-  int exitCode = startupFn(argc, argv, mpiEnabled, mpiRank, mpiSize);
-#if 0
-  GC_unregister_my_thread();
-#endif
+  int exitCode = gctools::initializeBoehm(startupFn, argc, argv, mpiEnabled, mpiRank, mpiSize);
 #endif
   mp::ClaspThreads_exit(); // run pthreads_exit
   return exitCode;

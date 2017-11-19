@@ -532,15 +532,20 @@ extern void clasp_mps_debug_container(const char *ctype, const char *name, int s
 
 #if 1 // from here
 
-
+/*! Should be thread_local on linux or __thread on OS X */
+#define THREAD_LOCAL thread_local
 
 #include <clasp/core/scrape.h>
 #include <clasp/gctools/memoryManagement.h>
-
+#include <clasp/gctools/gcalloc.h>
+#include <clasp/gctools/containers.h>
+#include <clasp/gctools/threadLocalStacks.h>
 #include <clasp/core/multipleValues.h>
-
-#include <clasp/gctools/threadlocal.h>
 #include <clasp/core/mpPackage.fwd.h>
+#include <clasp/gctools/threadlocal.h>
+
+#include <clasp/gctools/multiple_value_pointers.h>
+
 
 namespace gctools {
   void register_thread(mp::Process_sp process, void* stackTop);
@@ -850,7 +855,9 @@ namespace core {
  
   List_sp lisp_copy_default_special_bindings();
 /*! Write characters to the stream */
+#if 0
   gc::GCStack &lisp_threadLocalStack();
+#endif
 
   Lisp_sp lisp_fromObject(T_sp obj);
   string lisp_currentPackageName();

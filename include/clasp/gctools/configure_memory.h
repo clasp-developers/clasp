@@ -18,17 +18,6 @@
  #endif
 #endif
 
-/// Define USE_ALLOCA_FOR_FRAME to use alloca to create Lisp stack frames within the C++ stack
-/// otherwise use the garbage collector to maintain a separate stack for lisp frames
-///
-#ifdef USE_BOEHM
-#define USE_ALLOCA_FOR_FRAME
-#endif
-
-#ifdef USE_MPS
-#define USE_ALLOCA_FOR_FRAME
-#endif
-
 /// Tracking allocations with TRACK_ALLOCATIONS keeps a count of
 /// exactly how many bytes are CONSed by Clasp
 /// Compiling min-boehm-recompile with it defined 4:54 min and off 4.56 min

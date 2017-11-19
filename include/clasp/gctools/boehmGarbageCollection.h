@@ -63,5 +63,7 @@ namespace gctools {
 
   void clasp_warn_proc(char *msg, GC_word arg);
 
+  int initializeBoehm(MainFunctionType startupFn, int argc, char *argv[], bool mpiEnabled, int mpiRank, int mpiSize);
+
 };
 #endif // _clasp_boehmGarbageCollection_H

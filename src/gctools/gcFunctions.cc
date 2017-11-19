@@ -475,9 +475,9 @@ CL_DEFUN void gctools__alloc_pattern_begin(core::Symbol_sp pattern) {
     patternStack = core::Cons_O::create(pattern, patternStack);
     gctools::_sym_STARallocPatternStackSTAR->setf_symbolValue(patternStack);
     if (pattern == _sym_ramp) {
-      mps_ap_alloc_pattern_begin(_global_automatic_mostly_copying_allocation_point, mps_alloc_pattern_ramp());
+      mps_ap_alloc_pattern_begin(my_thread_allocation_points._automatic_mostly_copying_allocation_point, mps_alloc_pattern_ramp());
     } else {
-      mps_ap_alloc_pattern_begin(_global_automatic_mostly_copying_allocation_point, mps_alloc_pattern_ramp_collect_all());
+      mps_ap_alloc_pattern_begin(my_thread_allocation_points._automatic_mostly_copying_allocation_point, mps_alloc_pattern_ramp_collect_all());
     }
     return;
   }
@@ -494,9 +494,9 @@ CL_DEFUN core::Symbol_sp gctools__alloc_pattern_end() {
   pattern = gc::As<core::Symbol_sp>(oCar(patternStack));
   gctools::_sym_STARallocPatternStackSTAR->setf_symbolValue(oCdr(patternStack));
   if (pattern == _sym_ramp) {
-    mps_ap_alloc_pattern_end(_global_automatic_mostly_copying_allocation_point, mps_alloc_pattern_ramp());
+    mps_ap_alloc_pattern_end(my_thread_allocation_points._automatic_mostly_copying_allocation_point, mps_alloc_pattern_ramp());
   } else {
-    mps_ap_alloc_pattern_end(_global_automatic_mostly_copying_allocation_point, mps_alloc_pattern_ramp_collect_all());
+    mps_ap_alloc_pattern_end(my_thread_allocation_points._automatic_mostly_copying_allocation_point, mps_alloc_pattern_ramp_collect_all());
   }
 #endif
   return pattern;
@@ -559,12 +559,14 @@ CL_DEFUN core::T_mv cl__room(core::T_sp x, core::Fixnum_sp marker, core::T_sp tm
 
   delete static_ReachableClassKinds;
 #endif
+#if 0
   gc::GCStack *stack = threadLocalStack();
   size_t totalMaxSize = stack->maxSize();
 #if defined(USE_BOEHM) && defined(BOEHM_ONE_BIG_STACK)
   printf("Lisp-stack bottom %p cur %p limit %p\n", stack->_StackBottom, stack->_StackCur, stack->_StackLimit);
 #endif
   printf("High water mark (max used) side-stack size: %zu\n", totalMaxSize);
+#endif
   return Values(_Nil<core::T_O>());
 };
 };
@@ -790,68 +792,54 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
   use_boehm_memory_marker = true;
   debugging = true;
 #endif
-  if (buildReport) ss << (BF("USE_BOEHM_MEMORY_MARKER = %s\n") % (use_boehm_memory_marker ? "defined" : "undefined") ).str();
-  bool use_alloca_for_frame = false;
-#ifdef USE_ALLOCA_FOR_FRAME
-  use_alloca_for_frame = true;
-  debugging = true;
-#endif
-  if (buildReport) ss << (BF("USE_ALLOCA_FOR_FRAME = %s\n") % (use_alloca_for_frame ? "defined" : "undefined") ).str();
-
-  bool use_amc_pool = false;
-#ifdef USE_AMC_POOL
-  use_amc_pool = true;
-#else
-  debugging = true;
-#endif
-  if (buildReport) ss << (BF("USE_AMC_POOL = %s\n") % (use_amc_pool ? "defined" : "undefined") ).str();
+  if (buildReport) ss << (BF("USE_BOEHM_MEMORY_MARKER = %s\n") % (use_boehm_memory_marker ? "**DEFINED**" : "undefined") ).str();
 
   bool mps_recognize_all_tags = false;
 #ifdef MPS_RECOGNIZE_ALL_TAGS
   mps_recognize_all_tags = true;
   debugging = true;
 #endif
-  if (buildReport) ss << (BF("MPS_RECOGNIZE_ALL_TAGS = %s\n") % (mps_recognize_all_tags ? "defined" : "undefined") ).str();
+  if (buildReport) ss << (BF("MPS_RECOGNIZE_ALL_TAGS = %s\n") % (mps_recognize_all_tags ? "**DEFINED**" : "undefined") ).str();
 
   bool mps_recognize_zero_tags = false;
 #ifdef MPS_RECOGNIZE_ZERO_TAGS
   mps_recognize_zero_tags = true;
   debugging = true;
 #endif
-  if (buildReport) ss << (BF("MPS_RECOGNIZE_ZERO_TAGS = %s\n") % (mps_recognize_zero_tags ? "defined" : "undefined") ).str();
+  if (buildReport) ss << (BF("MPS_RECOGNIZE_ZERO_TAGS = %s\n") % (mps_recognize_zero_tags ? "**DEFINED**" : "undefined") ).str();
 
   bool use_symbols_in_global_array = false;
 #ifdef USE_SYMBOLS_IN_GLOBAL_ARRAY
   use_symbols_in_global_array = true;
 #endif
-  if (buildReport) ss << (BF("USE_SYMBOLS_IN_GLOBAL_ARRAY = %s\n") % (use_symbols_in_global_array ? "defined" : "undefined") ).str();
+  if (buildReport) ss << (BF("USE_SYMBOLS_IN_GLOBAL_ARRAY = %s\n") % (use_symbols_in_global_array ? "**DEFINED**" : "undefined") ).str();
 
   bool use_static_analyzer_global_symbols = false;
 #ifdef USE_STATIC_ANALYZER_GLOBAL_SYMBOLS
   use_static_analyzer_global_symbols = true;
 #endif
-  if (buildReport) ss << (BF("USE_STATIC_ANALYZER_GLOBAL_SYMBOLS = %s\n") % (use_static_analyzer_global_symbols ? "defined" : "undefined") ).str();
+  if (buildReport) ss << (BF("USE_STATIC_ANALYZER_GLOBAL_SYMBOLS = %s\n") % (use_static_analyzer_global_symbols ? "**DEFINED**" : "undefined") ).str();
 
   bool debug_throw_if_invalid_client_on = false;
 #ifdef DEBUG_THROW_IF_INVALID_CLIENT_ON
   debug_throw_if_invalid_client_on = true;
   debugging = true;
 #endif
-  if (buildReport) ss << (BF("DEBUG_THROW_IF_INVALID_CLIENT_ON = %s\n") % (debug_throw_if_invalid_client_on ? "defined" : "undefined") ).str();
+  if (buildReport) ss << (BF("DEBUG_THROW_IF_INVALID_CLIENT_ON = %s\n") % (debug_throw_if_invalid_client_on ? "**DEFINED**" : "undefined") ).str();
 
     bool debug_telemetry = false;
 #ifdef DEBUG_TELEMETRY
   debug_telemetry = true;
   debugging = true;
 #endif
-  if (buildReport) ss << (BF("DEBUG_TELEMETRY = %s\n") % (debug_telemetry ? "defined" : "undefined") ).str();
+  if (buildReport) ss << (BF("DEBUG_TELEMETRY = %s\n") % (debug_telemetry ? "**DEFINED**" : "undefined") ).str();
 
   bool debug_stack_telemetry = false;
 #ifdef DEBUG_STACK_TELEMETRY
   debug_stack_telemetry = true;
   debugging = true;
 #endif
-  if (buildReport) ss << (BF("DEBUG_STACK_TELEMETRY = %s\n") % (debug_stack_telemetry ? "defined" : "undefined") ).str();
+  if (buildReport) ss << (BF("DEBUG_STACK_TELEMETRY = %s\n") % (debug_stack_telemetry ? "**DEFINED**" : "undefined") ).str();
 
   bool debug_mps_underscanning = false;
 #ifdef DEBUG_MPS_UNDERSCANNING
@@ -861,7 +849,7 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
 #else
   bool debug_mps_underscanning_initial = false;
 #endif
-  if (buildReport) ss << (BF("DEBUG_MPS_UNDERSCANNING = %s\n") % (debug_mps_underscanning ? "defined" : "undefined") ).str();
+  if (buildReport) ss << (BF("DEBUG_MPS_UNDERSCANNING = %s\n") % (debug_mps_underscanning ? "**DEFINED**" : "undefined") ).str();
   if (buildReport) ss << (BF("DEBUG_MPS_UNDERSCANNING_INITIAL = %s\n") % (debug_mps_underscanning_initial ? "true" : "false") ).str();
 
   bool debug_recursive_allocations = false;
@@ -869,14 +857,14 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
   debug_recursive_allocations = true;
   debugging = true;
 #endif
-  if (buildReport) ss << (BF("DEBUG_RECURSIVE_ALLOCATIONS = %s\n") % (debug_recursive_allocations ? "defined" : "undefined") ).str();
+  if (buildReport) ss << (BF("DEBUG_RECURSIVE_ALLOCATIONS = %s\n") % (debug_recursive_allocations ? "**DEFINED**" : "undefined") ).str();
 
   bool config_var_cool = false;
 #ifdef CONFIG_VAR_COOL
   config_var_cool = true;
   debugging = true;
 #endif
-  if (buildReport) ss << (BF("CONFIG_VAR_COOL = %s\n") % (config_var_cool ? "defined" : "undefined") ).str();
+  if (buildReport) ss << (BF("CONFIG_VAR_COOL = %s\n") % (config_var_cool ? "**DEFINED**" : "undefined") ).str();
 
   bool debug_guard = false;
 #ifdef DEBUG_GUARD
@@ -884,21 +872,21 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
   debugging = true;
   if (setFeatures)  features = core::Cons_O::create(_lisp->internKeyword("DEBUG-GUARD"), features);
 #endif
-  if (buildReport) ss << (BF("DEBUG_GUARD = %s\n") % (debug_guard ? "defined" : "undefined") ).str();
+  if (buildReport) ss << (BF("DEBUG_GUARD = %s\n") % (debug_guard ? "**DEFINED**" : "undefined") ).str();
 
   bool debug_validate_guard = false;
 #ifdef DEBUG_VALIDATE_GUARD
   debug_validate_guard = true;
   debugging = true;
 #endif
-  if (buildReport) ss << (BF("DEBUG_VALIDATE_GUARD = %s\n") % (debug_validate_guard ? "defined" : "undefined") ).str();
+  if (buildReport) ss << (BF("DEBUG_VALIDATE_GUARD = %s\n") % (debug_validate_guard ? "**DEFINED**" : "undefined") ).str();
 
   bool debug_function_call_counter = false;
 #ifdef DEBUG_FUNCTION_CALL_COUNTER
   debug_function_call_counter = true;
   debugging = true;
 #endif
-  if (buildReport) ss << (BF("DEBUG_FUNCTION_CALL_COUNTER = %s\n") % (debug_function_call_counter ? "defined" : "undefined") ).str();
+  if (buildReport) ss << (BF("DEBUG_FUNCTION_CALL_COUNTER = %s\n") % (debug_function_call_counter ? "**DEFINED**" : "undefined") ).str();
 
   bool meter_allocations = false;
 #ifdef METER_ALLOCATIONS
@@ -906,7 +894,7 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
   debugging = true;
   if (setFeatures)  features = core::Cons_O::create(_lisp->internKeyword("METER-ALLOCATIONS"),features);
 #endif
-  if (buildReport) ss << (BF("METER_ALLOCATIONS = %s\n") % (meter_allocations ? "defined" : "undefined") ).str();
+  if (buildReport) ss << (BF("METER_ALLOCATIONS = %s\n") % (meter_allocations ? "**DEFINED**" : "undefined") ).str();
 
   bool debug_ensure_valid_object = false;
 #ifdef DEBUG_ENSURE_VALID_OBJECT
@@ -914,35 +902,35 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
   debugging = true;
   if (setFeatures)  features = core::Cons_O::create(_lisp->internKeyword("DEBUG-ENSURE-VALID-OBJECT"),features);
 #endif  
-  if (buildReport) ss << (BF("DEBUG_ENSURE_VALID_OBJECT = %s\n") % (debug_ensure_valid_object ? "defined" : "undefined") ).str();
+  if (buildReport) ss << (BF("DEBUG_ENSURE_VALID_OBJECT = %s\n") % (debug_ensure_valid_object ? "**DEFINED**" : "undefined") ).str();
   
   bool debug_cache = false;
 #ifdef DEBUG_CACHE
   debug_cache = true;
   debugging = true;
 #endif
-  if (buildReport) ss << (BF("DEBUG_CACHE = %s\n") % (debug_cache ? "defined" : "undefined") ).str();
+  if (buildReport) ss << (BF("DEBUG_CACHE = %s\n") % (debug_cache ? "**DEFINED**" : "undefined") ).str();
 
   bool debug_threads = false;
 #ifdef DEBUG_THREADS
   debug_threads = true;
   debugging = true;
 #endif
-  if (buildReport) ss << (BF("DEBUG_THREADS = %s\n") % (debug_threads ? "defined" : "undefined") ).str();
+  if (buildReport) ss << (BF("DEBUG_THREADS = %s\n") % (debug_threads ? "**DEFINED**" : "undefined") ).str();
 
   bool debug_gfdispatch = false;
 #ifdef DEBUG_GFDISPATCH
   debug_gfdispatch = true;
   debugging = true;
 #endif
-  if (buildReport) ss << (BF("DEBUG_GFDISPATCH = %s\n") % (debug_gfdispatch ? "defined" : "undefined") ).str();
+  if (buildReport) ss << (BF("DEBUG_GFDISPATCH = %s\n") % (debug_gfdispatch ? "**DEFINED**" : "undefined") ).str();
 
   bool debug_ihs = false;
 #ifdef DEBUG_IHS
   debug_ihs = true;
   debugging = true;
 #endif
-  if (buildReport) ss << (BF("DEBUG_IHS = %s\n") % (debug_ihs ? "defined" : "undefined") ).str();
+  if (buildReport) ss << (BF("DEBUG_IHS = %s\n") % (debug_ihs ? "**DEFINED**" : "undefined") ).str();
 
   bool debug_enable_profiling = false;
 #ifdef ENABLE_PROFILING
@@ -950,21 +938,21 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
   debugging = true;
   if (setFeatures)  features = core::Cons_O::create(_lisp->internKeyword("ENABLE-PROFILING"),features);
 #endif
-  if (buildReport) ss << (BF("ENABLE_PROFILING = %s\n") % (debug_enable_profiling ? "defined" : "undefined") ).str();
+  if (buildReport) ss << (BF("ENABLE_PROFILING = %s\n") % (debug_enable_profiling ? "**DEFINED**" : "undefined") ).str();
 
   bool debug_release = false;
 #ifdef DEBUG_RELEASE
   debug_release = true;
   debugging = true;
 #endif
-  if (buildReport) ss << (BF("DEBUG_RELEASE = %s\n") % (debug_release ? "defined" : "undefined") ).str();
+  if (buildReport) ss << (BF("DEBUG_RELEASE = %s\n") % (debug_release ? "**DEFINED**" : "undefined") ).str();
 
   bool debug_bounds_assert = false;
 #ifdef DEBUG_BOUNDS_ASSERT
   debug_bounds_assert = true;
   debugging = true;
 #endif
-  if (buildReport) ss << (BF("DEBUG_BOUNDS_ASSERT = %s\n") % (debug_bounds_assert ? "defined" : "undefined") ).str();
+  if (buildReport) ss << (BF("DEBUG_BOUNDS_ASSERT = %s\n") % (debug_bounds_assert ? "**DEFINED**" : "undefined") ).str();
 
   bool debug_slot_accessors = false;
 #ifdef DEBUG_SLOT_ACCESSORS
@@ -972,7 +960,7 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
   debugging = true;
   if (setFeatures)  features = core::Cons_O::create(_lisp->internKeyword("DEBUG-SLOT-ACCESSORS"),features);
 #endif
-  if (buildReport) ss << (BF("DEBUG_SLOT_ACCESSORS = %s\n") % (debug_slot_accessors ? "defined" : "undefined") ).str();
+  if (buildReport) ss << (BF("DEBUG_SLOT_ACCESSORS = %s\n") % (debug_slot_accessors ? "**DEFINED**" : "undefined") ).str();
 
   bool debug_cmpfastgf = false;
 #ifdef DEBUG_CMPFASTGF
@@ -980,7 +968,7 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
   debugging = true;
   if (setFeatures) features = core::Cons_O::create(_lisp->internKeyword("DEBUG-CMPFASTGF"),features);
 #endif
-  if (buildReport) ss << (BF("DEBUG_CMPFASTGF = %s\n") % (debug_cmpfastgf ? "defined" : "undefined") ).str();
+  if (buildReport) ss << (BF("DEBUG_CMPFASTGF = %s\n") % (debug_cmpfastgf ? "**DEFINED**" : "undefined") ).str();
   
   bool debug_fastgf = false;
 #ifdef DEBUG_FASTGF
@@ -988,7 +976,7 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
   debugging = true;
   if (setFeatures) features = core::Cons_O::create(_lisp->internKeyword("DEBUG-FASTGF"),features);
 #endif
-  if (buildReport) ss << (BF("DEBUG_FASTGF = %s\n") % (debug_fastgf ? "defined" : "undefined") ).str();
+  if (buildReport) ss << (BF("DEBUG_FASTGF = %s\n") % (debug_fastgf ? "**DEFINED**" : "undefined") ).str();
 
   bool debug_rehash_count = false;
 #ifdef DEBUG_REHASH_COUNT
@@ -996,7 +984,7 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
   debugging = true;
   if (setFeatures) features = core::Cons_O::create(_lisp->internKeyword("DEBUG-REHASH_COUNT"),features);
 #endif
-  if (buildReport) ss << (BF("DEBUG_REHASH_COUNT = %s\n") % (debug_rehash_count ? "defined" : "undefined") ).str();
+  if (buildReport) ss << (BF("DEBUG_REHASH_COUNT = %s\n") % (debug_rehash_count ? "**DEFINED**" : "undefined") ).str();
   
   bool debug_monitor = false;
 #ifdef DEBUG_MONITOR
@@ -1004,7 +992,7 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
   debugging = true;
   if (setFeatures) features = core::Cons_O::create(_lisp->internKeyword("DEBUG-MONITOR"),features);
 #endif
-  if (buildReport) ss << (BF("DEBUG_MONITOR = %s\n") % (debug_monitor ? "defined" : "undefined") ).str();
+  if (buildReport) ss << (BF("DEBUG_MONITOR = %s\n") % (debug_monitor ? "**DEFINED**" : "undefined") ).str();
 
   bool debug_mps_size = false;
 #ifdef DEBUG_MPS_SIZE
@@ -1012,7 +1000,7 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
   debugging = true;
   if (setFeatures) features = core::Cons_O::create(_lisp->internKeyword("DEBUG-MPS_SIZE"),features);
 #endif
-  if (buildReport) ss << (BF("DEBUG_MPS_SIZE = %s\n") % (debug_mps_size ? "defined" : "undefined") ).str();
+  if (buildReport) ss << (BF("DEBUG_MPS_SIZE = %s\n") % (debug_mps_size ? "**DEFINED**" : "undefined") ).str();
   
 
   bool debug_bclasp_lisp = false;
@@ -1021,7 +1009,7 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
   debugging = true;
   if (setFeatures) features = core::Cons_O::create(_lisp->internKeyword("DEBUG-BCLASP-LISP"),features);
 #endif
-  if (buildReport) ss << (BF("DEBUG_BCLASP_LISP = %s\n") % (debug_bclasp_lisp ? "defined" : "undefined") ).str();
+  if (buildReport) ss << (BF("DEBUG_BCLASP_LISP = %s\n") % (debug_bclasp_lisp ? "**DEFINED**" : "undefined") ).str();
   
   bool disable_type_inference = false;
 #ifdef DISABLE_TYPE_INFERENCE
@@ -1029,7 +1017,7 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
   debugging = true;
   if (setFeatures)  features = core::Cons_O::create(_lisp->internKeyword("DISABLE-TYPE-INFERENCE"),features);
 #endif
-  if (buildReport) ss << (BF("DISABLE_TYPE_INFERENCE = %s\n") % (disable_type_inference ? "defined" : "undefined") ).str();
+  if (buildReport) ss << (BF("DISABLE_TYPE_INFERENCE = %s\n") % (disable_type_inference ? "**DEFINED**" : "undefined") ).str();
 
   // -------------------------------------------------------------
   //

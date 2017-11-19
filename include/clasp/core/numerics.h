@@ -81,6 +81,4 @@ void exposePython_Numerics();
 #endif
 };
 
-DEFINE_RETURN_VALUE_TYPE(core::LongLongInt);
-
 #endif

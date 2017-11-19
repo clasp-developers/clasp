@@ -100,6 +100,8 @@ mps_arena_t global_arena;
 
 namespace gctools {
 
+THREAD_LOCAL ThreadLocalAllocationPoints my_thread_allocation_points;
+
 MpsMetrics globalMpsMetrics;
 
 /* --------------------------------------------------
@@ -827,36 +829,6 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
   MPS_ARGS_END(args);
   if (res != MPS_RES_OK)
     GC_RESULT_ERROR(res, "Could not create awl pool");
-  MPS_ARGS_BEGIN(args) {
-    MPS_ARGS_ADD(args, MPS_KEY_RANK, mps_rank_exact());
-    res = mps_ap_create_k(&my_thread->_non_moving_allocation_point, global_non_moving_pool, args);
-  }
-  MPS_ARGS_END(args);
-  if (res != MPS_RES_OK)
-    GC_RESULT_ERROR(res, "Couldn't create global_non_moving_allocation_point");
-
-
-/* ------------------------------------------------------------------------
-   Create a pool for objects that aren't moved and arent managed by the GC.
-*/
-#if 0
-  MPS_ARGS_BEGIN(args) {
-    MPS_ARGS_ADD(args, MPS_KEY_FORMAT, obj_fmt);
-    MPS_ARGS_ADD(args, MPS_KEY_CHAIN, general_chain);
-    MPS_ARGS_ADD(args, MPS_KEY_AWL_FIND_DEPENDENT, dummyAwlFindDependent);
-    res = mps_pool_create_k(&global_non_moving_pool, global_arena, mps_class_awl(), args);
-  }
-  MPS_ARGS_END(args);
-  if (res != MPS_RES_OK)
-    GC_RESULT_ERROR(res, "Could not create ams pool");
-  MPS_ARGS_BEGIN(args) {
-    MPS_ARGS_ADD(args, MPS_KEY_RANK, mps_rank_exact());
-    res = mps_ap_create_k(&my_thread->_non_moving_allocation_point, global_non_moving_pool, args);
-  }
-  MPS_ARGS_END(args);
-  if (res != MPS_RES_OK)
-    GC_RESULT_ERROR(res, "Couldn't create global_non_moving_allocation_point");
-#endif
 
   mps_fmt_t obj_fmt_zero;
   MPS_ARGS_BEGIN(args) {
@@ -873,13 +845,15 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
     GC_RESULT_ERROR(res, "Could not create obj_fmt_zero format");
 
   // Create the AMCZ pool
-  mps_pool_t _global_amcz_pool;
+//  mps_pool_t _global_amcz_pool;
   MPS_ARGS_BEGIN(args) {
     MPS_ARGS_ADD(args, MPS_KEY_FORMAT, obj_fmt_zero);
     MPS_ARGS_ADD(args, MPS_KEY_CHAIN, general_chain);
     res = mps_pool_create_k(&_global_amcz_pool, global_arena, mps_class_amcz(), args);
   }
   MPS_ARGS_END(args);
+  if (res != MPS_RES_OK)
+    GC_RESULT_ERROR(res, "Could not create amcz pool");
 
   mps_fmt_t weak_obj_fmt;
   MPS_ARGS_BEGIN(args) {
@@ -907,39 +881,6 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
   MPS_ARGS_END(args);
   if (res != MPS_RES_OK)
     GC_RESULT_ERROR(res, "Could not create awl pool");
-  MPS_ARGS_BEGIN(args) {
-    MPS_ARGS_ADD(args, MPS_KEY_RANK, mps_rank_exact());
-    res = mps_ap_create_k(&_global_strong_link_allocation_point, _global_awl_pool, args);
-  }
-  MPS_ARGS_END(args);
-  if (res != MPS_RES_OK)
-    GC_RESULT_ERROR(res, "Couldn't create global_strong_link_allocation_point");
-  MPS_ARGS_BEGIN(args) {
-    MPS_ARGS_ADD(args, MPS_KEY_RANK, mps_rank_weak());
-    res = mps_ap_create_k(&_global_weak_link_allocation_point, _global_awl_pool, args);
-  }
-  MPS_ARGS_END(args);
-  if (res != MPS_RES_OK)
-    GC_RESULT_ERROR(res, "Couldn't create global_weak_link_allocation_point");
-
-  // And the allocation points
-  res = mps_ap_create_k(&_global_automatic_mostly_copying_allocation_point,
-                        _global_amc_pool, mps_args_none);
-  if (res != MPS_RES_OK)
-    GC_RESULT_ERROR(res, "Couldn't create mostly_copying_allocation_point");
-
-    res = mps_ap_create_k(&global_amc_cons_allocation_point,
-                        global_amc_cons_pool, mps_args_none);
-  if (res != MPS_RES_OK)
-    GC_RESULT_ERROR(res, "Couldn't create global_amc_cons_allocation_point");
-
-  // res = mps_ap_create_k(&_global_mvff_allocation_point, _global_mvff_pool, mps_args_none );
-  // if (res != MPS_RES_OK) GC_RESULT_ERROR(res,"Couldn't create mvff_allocation_point");
-
-  res = mps_ap_create_k(&_global_automatic_mostly_copying_zero_rank_allocation_point,
-                        _global_amcz_pool, mps_args_none);
-  if (res != MPS_RES_OK)
-    GC_RESULT_ERROR(res, "Couldn't create mostly_copying_zero_rank_allocation_point");
 
   // register the current and only thread
   mps_thr_t global_thread;
@@ -989,43 +930,43 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
     GC_RESULT_ERROR(res, "Could not create scan root");
 
 //  mps_register_root(reinterpret_cast<gctools::Tagged*>(&globalTaggedRunTimeValues));
-
+#if 0
   threadLocalStack()->allocateStack(gc::thread_local_cl_stack_min_size);
+#endif
 
+  
 #ifdef RUNNING_GC_BUILDER
   printf("%s:%d mps-prep version of clasp started up\n", __FILE__, __LINE__);
   printf("%s:%d   You could run some tests here\n", __FILE__, __LINE__);
   printf("%s:%d   ... shutting down now\n", __FILE__, __LINE__);
   exit_code = 0;
 #else
-  #if 1
   void* stackTop = NULL;
   {
     core::ThreadLocalState thread_local_state(&stackTop);
     my_thread = &thread_local_state;
+  // Create the allocation points
+    my_thread_allocation_points.initializeAllocationPoints();
     run_quick_tests();
+#if 1    
     exit_code = startupFn(argc, argv, mpiEnabled, mpiRank, mpiSize);
-  }
-  #else
+#else
   printf("%s:%d Skipping startupFn\n", __FILE__, __LINE__ );
   test_mps_allocation();
   exit_code = 0;
-  #endif
+#endif
+  my_thread_allocation_points.destroyAllocationPoints();
+  }
 #endif
   size_t finalizations;
   processMpsMessages(finalizations);
-
   delete_my_roots();
+#if 0
   threadLocalStack()->deallocateStack();
+#endif
   mps_root_destroy(global_scan_root);
   mps_root_destroy(global_stack_root);
   mps_thread_dereg(global_thread);
-  mps_ap_destroy(_global_automatic_mostly_copying_zero_rank_allocation_point);
-  mps_ap_destroy(global_amc_cons_allocation_point);
-  mps_ap_destroy(_global_automatic_mostly_copying_allocation_point);
-  mps_ap_destroy(_global_weak_link_allocation_point);
-  mps_ap_destroy(_global_strong_link_allocation_point);
-  mps_ap_destroy(global_non_moving_allocation_point);
   mps_pool_destroy(_global_awl_pool);
   mps_pool_destroy(_global_amcz_pool);
   mps_fmt_destroy(obj_fmt_zero);
@@ -1079,6 +1020,58 @@ void my_mps_thread_reg(mps_thr_t* threadP) {
 void my_mps_thread_deref(mps_thr_t thread) {
    mps_thread_dereg(thread);
 }
+
+
+void ThreadLocalAllocationPoints::initializeAllocationPoints() {
+  mps_res_t res;
+  MPS_ARGS_BEGIN(args) {
+    MPS_ARGS_ADD(args, MPS_KEY_RANK, mps_rank_exact());
+    res = mps_ap_create_k(&this->_non_moving_allocation_point, global_non_moving_pool, args);
+  }
+  MPS_ARGS_END(args);
+  if (res != MPS_RES_OK)
+    GC_RESULT_ERROR(res, "Couldn't create global_non_moving_allocation_point");
+
+  MPS_ARGS_BEGIN(args) {
+    MPS_ARGS_ADD(args, MPS_KEY_RANK, mps_rank_exact());
+    res = mps_ap_create_k(&this->_strong_link_allocation_point, _global_awl_pool, args);
+  }
+  MPS_ARGS_END(args);
+  if (res != MPS_RES_OK)
+    GC_RESULT_ERROR(res, "Couldn't create global_strong_link_allocation_point");
+  MPS_ARGS_BEGIN(args) {
+    MPS_ARGS_ADD(args, MPS_KEY_RANK, mps_rank_weak());
+    res = mps_ap_create_k(&this->_weak_link_allocation_point, _global_awl_pool, args);
+  }
+  MPS_ARGS_END(args);
+  if (res != MPS_RES_OK)
+    GC_RESULT_ERROR(res, "Couldn't create global_weak_link_allocation_point");
+
+  res = mps_ap_create_k(&this->_automatic_mostly_copying_allocation_point,
+                        _global_amc_pool, mps_args_none);
+  if (res != MPS_RES_OK)
+    GC_RESULT_ERROR(res, "Couldn't create mostly_copying_allocation_point");
+
+  res = mps_ap_create_k(&this->_amc_cons_allocation_point,
+                        global_amc_cons_pool, mps_args_none);
+  if (res != MPS_RES_OK)
+    GC_RESULT_ERROR(res, "Couldn't create global_amc_cons_allocation_point");
+
+  res = mps_ap_create_k(&this->_automatic_mostly_copying_zero_rank_allocation_point,
+                        _global_amcz_pool, mps_args_none);
+  if (res != MPS_RES_OK)
+    GC_RESULT_ERROR(res, "Couldn't create mostly_copying_zero_rank_allocation_point");
+};
+
+
+void ThreadLocalAllocationPoints::destroyAllocationPoints() {
+  mps_ap_destroy(this->_automatic_mostly_copying_zero_rank_allocation_point);
+  mps_ap_destroy(this->_amc_cons_allocation_point);
+  mps_ap_destroy(this->_automatic_mostly_copying_allocation_point);
+  mps_ap_destroy(this->_weak_link_allocation_point);
+  mps_ap_destroy(this->_strong_link_allocation_point);
+  mps_ap_destroy(this->_non_moving_allocation_point);
+};
 
 };
 #endif // whole file #ifdef USE_MPS

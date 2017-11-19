@@ -1405,10 +1405,6 @@ void Lisp_O::parseCommandLineArguments(int argc, char *argv[], const CommandLine
 #ifdef USE_MPS
   // Informs CL that MPS is being used
   features = Cons_O::create(_lisp->internKeyword("USE-MPS"), features);
-#ifdef USE_AMC_POOL
-  // Informs that the Automatic-Mostly-Copying Pool is being used
-  features = Cons_O::create(_lisp->internKeyword("USE-AMC-POOL"), features);
-#endif
 #endif
 #ifdef CLASP_THREADS
   features = Cons_O::create(_lisp->internKeyword("THREADS"),features);

@@ -734,20 +734,19 @@ namespace core {
 };
 
 
-/*! Should be thread_local on linux or __thread on OS X */
-#define THREAD_LOCAL thread_local
 /*! Declare this in the top namespace */
 extern THREAD_LOCAL core::ThreadLocalState *my_thread;
 #define RAII_DISABLE_INTERRUPTS() core::RAIIDisableInterrupts disable_interrupts__(my_thread)
 
-
+#if 0
 namespace gctools {
 class GCStack;
 GCStack *threadLocalStack();
 };
+#endif
 
 #include <clasp/gctools/gcStack.h>
-#include <clasp/gctools/gcalloc.h>
+//#include <clasp/gctools/gcalloc.h>
 
 #define GC_ALLOCATE(_class_, _obj_) gctools::smart_ptr<_class_> _obj_ = gctools::GC<_class_>::allocate_with_default_constructor()
 #define GC_ALLOCATE_VARIADIC(_class_, _obj_, ...) gctools::smart_ptr<_class_> _obj_ = gctools::GC<_class_>::allocate(__VA_ARGS__)
@@ -793,7 +792,7 @@ void client_validate(core::T_sp client);
 void header_describe(gctools::Header_s* headerP);
 };
 
-#include <clasp/gctools/containers.h>
+//#include <clasp/gctools/containers.h>
 
   
 

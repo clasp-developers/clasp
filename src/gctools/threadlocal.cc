@@ -197,6 +197,9 @@ ThreadLocalState::ThreadLocalState(void* stack_top) :  _DisableInterrupts(false)
   this->_BufferStrWNsPool.reset_();
 }
 
+ThreadLocalState::~ThreadLocalState() {
+}
+  
 void ThreadLocalState::initialize_thread(mp::Process_sp process) {
 //  printf("%s:%d Initialize all ThreadLocalState things this->%p\n",__FILE__, __LINE__, (void*)this);
   this->_Bindings.reserve(1024);

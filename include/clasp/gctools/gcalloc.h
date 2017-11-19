@@ -322,7 +322,7 @@ namespace gctools {
         tagged_pointer<T> tagged_obj =
           do_mps_allocation<tagged_pointer<T>>(the_header,
                                                size,
-                                               global_non_moving_ap,
+                                               my_thread_allocation_points._non_moving_allocation_point,
                                                "NON_MOVING_POOL",
                                                globalMpsMetrics.nonMovingAllocations,
                                                std::forward<ARGS>(args)...);
@@ -373,7 +373,7 @@ namespace gctools {
 #endif
 #ifdef USE_MPS
         monitor_allocation(STAMP_CONS,sizeof(Cons));
-        mps_ap_t obj_ap = global_amc_cons_allocation_point;
+        mps_ap_t obj_ap = my_thread_allocation_points._amc_cons_allocation_point;
         smart_ptr<Cons> obj =
           cons_mps_allocation<Cons>(obj_ap,"CONS",
                               globalMpsMetrics.consAllocations,
@@ -402,7 +402,7 @@ namespace gctools {
 #endif
 #ifdef USE_MPS
         monitor_allocation(the_header.stamp(),size);
-        mps_ap_t obj_ap = _global_automatic_mostly_copying_allocation_point;
+        mps_ap_t obj_ap = my_thread_allocation_points._automatic_mostly_copying_allocation_point;
         smart_ptr<OT> sp =
           do_mps_allocation<smart_ptr<OT>>(the_header,size,obj_ap,"AMC",
                                            globalMpsMetrics.movingAllocations,
@@ -434,7 +434,7 @@ namespace gctools {
 #endif
 #ifdef USE_MPS
       monitor_allocation(the_header.stamp(),size);
-      mps_ap_t obj_ap = _global_automatic_mostly_copying_zero_rank_allocation_point;
+      mps_ap_t obj_ap = my_thread_allocation_points._automatic_mostly_copying_zero_rank_allocation_point;
       smart_pointer_type sp =
         do_mps_allocation<smart_pointer_type>(the_header,size,obj_ap,"AMCZ",
                                               globalMpsMetrics.movingZeroRankAllocations,
@@ -469,7 +469,7 @@ When would I ever want the GC to automatically collect objects but not move them
 #endif
 #ifdef USE_MPS
       monitor_allocation(the_header.stamp(),size);
-      mps_ap_t obj_ap = global_non_moving_ap;
+      mps_ap_t obj_ap = my_thread_allocation_points._non_moving_allocation_point;
       smart_pointer_type sp =
         do_mps_allocation<smart_pointer_type>(the_header,size,obj_ap,"NON_MOVING_POOL",
                                               globalMpsMetrics.nonMovingAllocations,
@@ -505,7 +505,7 @@ should not be managed by the GC */
 #endif
 #ifdef USE_MPS
       monitor_allocation(the_header.stamp(), size);
-      mps_ap_t obj_ap = global_non_moving_ap;
+      mps_ap_t obj_ap = my_thread_allocation_points._non_moving_allocation_point;
       gctools::smart_ptr<OT> sp =
         do_mps_allocation<gctools::smart_ptr<OT>>(the_header,size,obj_ap,"NON_MOVING_POOL",
                                                   globalMpsMetrics.nonMovingAllocations,
@@ -859,7 +859,7 @@ public:
 #ifdef USE_MPS
     size_t size = sizeof_container_with_header<TY>(num);
     monitor_allocation(the_header.stamp(),size);
-    mps_ap_t obj_ap = _global_automatic_mostly_copying_allocation_point;
+    mps_ap_t obj_ap = my_thread_allocation_points._automatic_mostly_copying_allocation_point;
     gc::tagged_pointer<container_type> obj =
       do_mps_allocation<gc::tagged_pointer<container_type>>(the_header,
                                                             size,obj_ap,"containerAMC",
@@ -966,7 +966,7 @@ public:
 #ifdef USE_MPS
     size_t size = sizeof_container_with_header<TY>(num);
     monitor_allocation(the_header.stamp(),size);
-    mps_ap_t obj_ap = global_non_moving_ap;
+    mps_ap_t obj_ap = my_thread_allocation_points._non_moving_allocation_point;
     gctools::tagged_pointer<container_type> obj =
       do_mps_allocation<gc::tagged_pointer<container_type>>(the_header,size,obj_ap,"container_non_moving_ap",
                                                             globalMpsMetrics.nonMovingAllocations,
@@ -1132,7 +1132,7 @@ public:
     mps_addr_t addr;
     container_pointer myAddress(NULL);
     gctools::tagged_pointer<container_type> obj =
-      do_mps_weak_allocation<gctools::tagged_pointer<container_type>>(size,_global_weak_link_allocation_point,"weak_link_Bucket",num);
+      do_mps_weak_allocation<gctools::tagged_pointer<container_type>>(size,my_thread_allocation_points._weak_link_allocation_point,"weak_link_Bucket",num);
     return obj;
 #endif
   }
@@ -1203,7 +1203,7 @@ public:
     mps_addr_t addr;
     container_pointer myAddress(NULL);
     gctools::tagged_pointer<container_type> obj =
-      do_mps_weak_allocation<gctools::tagged_pointer<container_type>>(size,_global_strong_link_allocation_point,"strong_link_Bucket",num);
+      do_mps_weak_allocation<gctools::tagged_pointer<container_type>>(size,my_thread_allocation_points._strong_link_allocation_point,"strong_link_Bucket",num);
     return obj;
 #endif
   }
@@ -1269,7 +1269,7 @@ public:
     mps_addr_t addr;
     container_pointer myAddress(NULL);
     gctools::tagged_pointer<container_type> obj =
-      do_mps_weak_allocation<gctools::tagged_pointer<container_type>>(size,_global_weak_link_allocation_point,"weak_link_Allocator",val);
+      do_mps_weak_allocation<gctools::tagged_pointer<container_type>>(size,my_thread_allocation_points._weak_link_allocation_point,"weak_link_Allocator",val);
     return obj;
 #endif
   }
@@ -1306,7 +1306,7 @@ public:
     mps_addr_t addr;
     container_pointer myAddress(NULL);
     gctools::tagged_pointer<container_type> obj =
-      do_mps_weak_allocation<gctools::tagged_pointer<container_type>>(size,_global_strong_link_allocation_point,"weak_link2_Allocator",val);
+      do_mps_weak_allocation<gctools::tagged_pointer<container_type>>(size,my_thread_allocation_points._strong_link_allocation_point,"weak_link2_Allocator",val);
     return obj;
 #endif
   }
@@ -1341,7 +1341,7 @@ public:
     mps_addr_t addr;
     value_pointer myAddress;
     gctools::tagged_pointer<value_type> obj =
-      do_mps_weak_allocation<gctools::tagged_pointer<value_type>>(size,_global_weak_link_allocation_point,"weak_link3_Allocator",val);
+      do_mps_weak_allocation<gctools::tagged_pointer<value_type>>(size,my_thread_allocation_points._weak_link_allocation_point,"weak_link3_Allocator",val);
     return obj;
 #endif
   }
@@ -1351,6 +1351,7 @@ public:
 
 namespace gctools {
 
+#if 0
 /*! Maintain a stack containing pointers that are garbage collected
 */
 class GCStack {
@@ -1409,11 +1410,6 @@ public:
 // Do nothing
 #endif
 #endif
-#ifdef USE_MPS
-    #ifndef USE_ALLOCA_FOR_FRAME
-    mpsAllocateStack(this);
-    #endif
-#endif
     return true;
   };
   void deallocateStack() {
@@ -1426,11 +1422,6 @@ public:
 #else
 // Do nothing
 #endif
-#endif
-#ifdef USE_MPS
-    #ifndef USE_ALLOCA_FOR_FRAME
-    mpsDeallocateStack(this);
-    #endif
 #endif
   };
 
@@ -1519,6 +1510,8 @@ public:
 #endif
   };
 };
+#endif
+ 
 };
 
 namespace gctools {
