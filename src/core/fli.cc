@@ -400,7 +400,7 @@ ForeignData_O::~ForeignData_O()
 {
   if ( this->m_ownership_flags & core::ForeignDataFlagEnum::DeleteOnDtor )
   {
-    this->free();
+    this->free_();
   }
 }
 
@@ -457,7 +457,7 @@ void ForeignData_O::allocate( core::T_sp kind, core::ForeignDataFlagEnum ownersh
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
-void ForeignData_O::free( void )
+void ForeignData_O::free_( void )
 {
   gctools::clasp_dealloc( (char *) this->m_orig_data_ptr );
   this->m_orig_data_ptr = nullptr;
@@ -532,7 +532,7 @@ ForeignData_sp PERCENTallocate_foreign_object( core::T_sp kind )
 // ---------------------------------------------------------------------------
 void ForeignData_O::PERCENTfree_foreign_object( void )
 {
-  this->free();
+  this->free_();
 }
 
 // ---------------------------------------------------------------------------
@@ -558,7 +558,7 @@ ForeignData_sp allocate_foreign_data( uint64_t size )
 // ---------------------------------------------------------------------------
 void ForeignData_O::PERCENTfree_foreign_data( void )
 {
-  this->free();
+  this->free_();
 }
 
 // ---------------------------------------------------------------------------
