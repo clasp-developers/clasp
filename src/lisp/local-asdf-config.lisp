@@ -12,11 +12,13 @@
       (trav dir))
     dirs))
 
-(let ((dirs (all-subdirs (translate-logical-pathname #P"sys:"))))
-  (dolist (dir dirs)
-    (push dir asdf:*central-registry*))
-  (format t "Added ~a subdirectories of ~a to ASDF:*CENTRAL-REGISTRY*~%"
-          (length dirs) (translate-logical-pathname #P"sys:")))
+(defun add-all-subdirs-to-asdf-*central-registry* (topdir)
+  (let ((dirs (all-subdirs (translate-logical-pathname topdir))))
+    (dolist (dir dirs)
+      (push dir asdf:*central-registry*))
+    (format t "Added ~a subdirectories of ~a to ASDF:*CENTRAL-REGISTRY*~%"
+            (length dirs) (translate-logical-pathname #P"sys:"))))
 
+(add-all-subdirs-to-asdf-*central-registry* #P"sys:")
 
 
