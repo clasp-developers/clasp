@@ -122,7 +122,7 @@ namespace mp {
     core::List_sp  _InitialSpecialBindings;
     core::List_sp  _ReturnValuesList;
     core::ThreadLocalState* _ThreadInfo;
-    ProcessPhase  _Phase;
+    std::atomic<ProcessPhase>  _Phase;
     size_t _StackSize;
     pthread_t _Thread;
     Mutex _ExitBarrier;
@@ -144,6 +144,7 @@ namespace mp {
       result = pthread_attr_setstacksize(&attr,this->_StackSize);
       if (result!=0) return result;
       result = pthread_create(&this->_Thread, &attr, start_thread, (void*)this );
+      while (this->_Phase != Active) {};
       pthread_attr_destroy(&attr);
       return result;
     }
