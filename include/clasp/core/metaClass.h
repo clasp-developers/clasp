@@ -116,8 +116,8 @@ class Class_O : public StandardObject_O {
 //  size_t              _NumberOfSlots;
 #ifdef METER_ALLOCATIONS
   // Keep track of allocations
-  size_t _allocation_counter;
-  size_t _allocation_total_size;
+  std::atomic<size_t> _allocation_counter;
+  std::atomic<size_t> _allocation_total_size;
 #endif
  public: // The hard-coded indexes above are defined below to be used by Class
   // These must match the +class-slots+ defined in hierarchy.lsp
