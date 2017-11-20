@@ -102,19 +102,10 @@ struct SafeRegisterDeregisterProcessWithLisp {
   }
 };
 
-void* start_thread(void* claspProcess) {
-  Process_O* my_claspProcess = (Process_O*)claspProcess;
-  Process_sp process(my_claspProcess);
-  void* stack_base = &stack_base;
-  core::ThreadLocalState my_thread_local_state(&stack_base);
-//  printf("%s:%d entering start_thread  &my_thread -> %p \n", __FILE__, __LINE__, (void*)&my_thread);
-  my_thread = &my_thread_local_state;
-  ////////////////////////////////////////////////////////////
-  //
-  // MPS setup of thread
-  //
+
+__attribute__((noinline))
+void start_thread_inner(Process_sp process, void* cold_end_of_stack) {
 #ifdef USE_MPS
-  gctools::my_thread_allocation_points.initializeAllocationPoints();
   // use mask
   mps_res_t res = mps_thread_reg(&process->thr_o,global_arena);
   if (res != MPS_RES_OK) {
@@ -129,12 +120,18 @@ void* start_thread(void* claspProcess) {
                                       mps_scan_area_tagged_or_zero,
                                       gctools::pointer_tag_mask,
                                       gctools::pointer_tag_eq,
-                                      reinterpret_cast<mps_addr_t>(const_cast<void*>(stack_base)));
+                                      reinterpret_cast<mps_addr_t>(const_cast<void*>(cold_end_of_stack)));
   if (res != MPS_RES_OK) {
     printf("%s:%d Could not create thread stack roots\n", __FILE__, __LINE__ );
     abort();
   };
 #endif
+  core::ThreadLocalState my_thread_local_state(cold_end_of_stack);
+//  printf("%s:%d entering start_thread  &my_thread -> %p \n", __FILE__, __LINE__, (void*)&my_thread);
+#ifdef USE_MPS
+  gctools::my_thread_allocation_points.initializeAllocationPoints();
+#endif
+  my_thread = &my_thread_local_state;
   my_thread->initialize_thread(process);
   process->_ThreadInfo = my_thread;
   // Set the mp:*current-process* variable to the current process
@@ -146,7 +143,7 @@ void* start_thread(void* claspProcess) {
     scope.pushSpecialVariableAndSet(pair->_Car,core::eval::evaluate(pair->_Cdr,_Nil<core::T_O>()));
   }
 //  gctools::register_thread(process,stack_base);
-  core::List_sp args = my_claspProcess->_Arguments;
+  core::List_sp args = process->_Arguments;
   
 #if 0
 #ifdef USE_BOEHM
@@ -163,7 +160,7 @@ void* start_thread(void* claspProcess) {
 //    RAIIMutexLock exitBarrier(p->_ExitBarrier);
 //    printf("%s:%d:%s  process locking the ExitBarrier\n", __FILE__, __LINE__, __FUNCTION__);
     try {
-      result_mv = core::eval::applyLastArgsPLUSFirst(my_claspProcess->_Function,args);
+      result_mv = core::eval::applyLastArgsPLUSFirst(process->_Function,args);
     } catch (ExitProcess& e) {
       // Do nothing - exiting
     }
@@ -176,9 +173,22 @@ void* start_thread(void* claspProcess) {
     result_list = core::Cons_O::create(result_mv.valueGet_(i),result_list);
   }
   result_list = core::Cons_O::create(result0,result_list);
-  my_claspProcess->_ReturnValuesList = result_list;
+  process->_ReturnValuesList = result_list;
 //  gctools::unregister_thread(process);
 //  printf("%s:%d leaving start_thread\n", __FILE__, __LINE__);
+
+};
+
+
+void* start_thread(void* claspProcess) {
+  Process_sp process((Process_O*)claspProcess);
+  void* cold_end_of_stack = &cold_end_of_stack;
+  ////////////////////////////////////////////////////////////
+  //
+  // MPS setup of thread
+  //
+  start_thread_inner(process,cold_end_of_stack);
+  
 #if 0
 #ifdef USE_BOEHM
   GC_unregister_my_thread();
