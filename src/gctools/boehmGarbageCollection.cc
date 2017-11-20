@@ -258,6 +258,7 @@ void client_describe(void *taggedClient) {
 
 
 namespace gctools {
+__attribute__((noinline))
 int initializeBoehm(MainFunctionType startupFn, int argc, char *argv[], bool mpiEnabled, int mpiRank, int mpiSize) {
   GC_INIT();
   GC_allow_register_threads();
