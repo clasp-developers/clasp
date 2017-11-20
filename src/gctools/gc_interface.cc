@@ -445,9 +445,6 @@ GC_RESULT obj_scan(mps_ss_t ss, mps_addr_t client, mps_addr_t limit) {
         if ( stamp_layout.field_layout_start ) {
           int num_fields = stamp_layout.number_of_fields;
           const Field_layout* field_layout_cur = stamp_layout.field_layout_start;
-          if (stamp_layout.bits_per_bitunit!=0) {
-            printf("%s:%d A bitvector was encountered while processing fields with stamp_layout.bits_per_bitunit = %" Puint "\n", __FILE__, __LINE__, stamp_layout.bits_per_bitunit );
-          }
           for ( int i=0; i<num_fields; ++i ) {
             core::T_O** field = (core::T_O**)((const char*)client + field_layout_cur->field_offset);
             POINTER_FIX(field);
