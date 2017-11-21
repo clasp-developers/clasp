@@ -744,7 +744,7 @@ def configure(cfg):
 #    cfg.define("DEBUG_CMPFASTGF",1)  # debug dispatch functions by inserting code into them that traces them
 #    cfg.define("DEBUG_FASTGF",1)   # generate slow gf dispatch logging and write out dispatch functions to /tmp/dispatch-history-**
 #    cfg.define("DEBUG_REHASH_COUNT",1)   # Keep track of the number of times each hash table has been rehashed
-    cfg.define("DEBUG_MONITOR",1)   # generate logging messages to a file in /tmp for non-hot code
+#    cfg.define("DEBUG_MONITOR",1)   # generate logging messages to a file in /tmp for non-hot code
 #    cfg.define("DEBUG_BCLASP_LISP",1)  # Generate debugging frames for all bclasp code - like declaim
 #    cfg.define("DEBUG_BOUNDS_ASSERT",1)
 #    cfg.define("DEBUG_SLOT_ACCESSORS",1)
