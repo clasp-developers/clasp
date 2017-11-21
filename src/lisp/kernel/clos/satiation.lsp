@@ -53,7 +53,7 @@
     ;; Methods are sorted by std-compute-applicable-methods-using-classes, so
     ;; we're just doing (call-method ,first (,@rest))
     (let* ((first (first methods)) (rest (rest methods))
-           (efm (combine-method-functions1
+           (efm (combine-method-functions
                  (method-function first)
                  ;; with-early-accessors does macrolet, hence this awkwardness.
                  (mapcar (lambda (method) (method-function method)) rest))))

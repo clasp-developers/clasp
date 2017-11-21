@@ -49,88 +49,101 @@
 ;;;	what happens with the content of MAKE-METHOD.
 ;;;
 (defvar *avoid-compiling* nil)
-(defun effective-method-function (form &optional top-level &aux first)
-  (flet ((maybe-compile (form)
-           (if *avoid-compiling*
-               (coerce form 'function)
-               (let ((*avoid-compiling* t))
-                 (compile nil form)))))
-    (cond ((functionp form)
-           form)
-          ((method-p form)
-           (method-function form))
-          ((atom form)
-           (error "Malformed effective method form:~%~A" form))
-          ((eq (setf first (first form)) 'MAKE-METHOD)
-           (mlog "effective-method-function form -> %s\n" form)
-           (maybe-compile `(lambda (.method-args. .next-methods.)
-                             (declare (core:lambda-name effective-method-function.make-method))
-                             (flet ((call-next-method (&va-rest args)
-                                      (if (not .next-methods.)
-                                          (error "No next method")
-                                          (let ((use-args (if (> (va-list-length args) 0) args .method-args.)))
-                                            (funcall (car .next-methods.)
-                                                     args ; (or args .method-args)
-                                                     (cdr .next-methods.)))))
-                                    (next-method-p ()
-                                      (and .next-methods. t)))
-                               ,(second form)))))
-          ((eq first 'CALL-METHOD)
-           (combine-method-functions1
-            (effective-method-function (second form))
-            (mapcar #'effective-method-function (third form))))
-          (top-level
-           (maybe-compile `(lambda (.method-args. .next-methods.)
-                             (declare (ignorable .next-methods.)
-                                      (core:lambda-name effective-method-function.top-level))
-                             ,form)))
-          (t
-           (error "Malformed effective method form:~%~A" form)))))
+(defun emf-maybe-compile (form)
+  (if *avoid-compiling*
+      (coerce form 'function)
+      (let ((*avoid-compiling* t))
+        (compile nil form))))
+(defun emf-fallback (form)
+  (emf-maybe-compile
+   `(lambda (.method-args. .next-methods.)
+      (declare (ignore .next-methods.))
+      ,form)))
+;; Given a form valid from compute-effective-method, return a function
+;; that implements it.
+(defun emf-closure-compile (form)
+  #+(or)
+  (fallback form)
+  ;; But instead, we avoid the compiler if we can, for bootstrap reasons.
+  ;; That is, since our compiler uses generic functions, it will be bad
+  ;; if a method definition on a compiler function results in the compiler
+  ;; being invoked (by effective-method-function) while that compiler function
+  ;; is invalidated.
+  ;; So we focus on avoiding compiling standard method combination.
+  ;; FIXME: This is not good, but alternate solutions don't seem too good either...
+  (if (consp form)
+      (case (first form)
+        ((multiple-value-prog1)
+         (let* ((all (mapcar #'effective-method-function (rest form)))
+                (first (first all))
+                (rest (rest all)))
+           (combine-method-functions-mvp1 first rest)))
+        ((progn)
+         (combine-method-functions-progn (mapcar #'effective-method-function (rest form))))
+        (t (emf-fallback form)))
+      (emf-fallback form)))
+;; The CLHS description of call-method and make-method is kind of hard to understand.
+;; But it does say rather specifically that make-method's form is evaluated in the null
+;; lexical environment plus a definition for call-method, and nothing else from CL.
+;; So no call-next-method.
+(defun emf-make-method (form)
+  (emf-closure-compile form))
+;; process a "method" argument to call-method
+(defun emf-call-method (form)
+  (cond ((method-p form) (method-function form))
+        ((and (consp form) (eq (first form) 'make-method) (consp (cdr form)))
+         (emf-make-method (second form)))
+        (t "Invalid argument to CALL-METHOD: ~a" form)))
+
+(defun effective-method-function (form)
+  (if (consp form)
+      (case (first form)
+        ((make-method)
+         (emf-make-method (second form)))
+        ((call-method)
+         (combine-method-functions
+          (emf-call-method (second form))
+          (mapcar #'emf-call-method (third form))))
+        (otherwise (emf-closure-compile form)))
+      (emf-closure-compile form)))
 
 ;;;
 ;;; This function is a combinator of effective methods. It creates a
 ;;; closure that invokes the first method while passing the information
 ;;; of the remaining methods. The resulting closure (or effective method)
 ;;; is the equivalent of (CALL-METHOD method rest-methods)
-;;;
-;;; This function is called from three different places and for debugging
-;;; I'm duplicating the function and giving the resulting lambda-function
-;;; a different name to track down problems
-(defun combine-method-functions1 (method rest-methods)
+(defun combine-method-functions (method rest-methods)
   (declare (si::c-local))
-  #'(lambda (.method-args. .next-methods.)
-      (declare (ignorable .next-methods. #|no-next-methods|#)
-               (core:lambda-name combine-method-functions1.lambda))
-      ;; TODO: Optimize this application and GF dispatch should be more efficient
-      ;; .method-args. can be a valist or a regular list
-      (funcall method .method-args. rest-methods)))
+  (lambda (.method-args. .next-methods.)
+    (declare (ignorable .next-methods. #|no-next-methods|#)
+             (core:lambda-name combine-method-functions.lambda))
+    ;; TODO: Optimize this application and GF dispatch should be more efficient
+    ;; .method-args. can be a valist or a regular list
+    (funcall method .method-args. rest-methods)))
 
-(defun combine-method-functions2 (method rest-methods)
-  (declare (si::c-local))
-  #'(lambda (.method-args. .next-methods.)
-      (declare (ignorable .next-methods. #|no-next-methods|#)
-               (core:lambda-name combine-method-functions2.lambda))
-      ;; TODO: Optimize this application and GF dispatch should be more efficient
-      ;; .method-args. can be a valist or a regular list
-      (funcall method .method-args. rest-methods)))
+(defun combine-method-functions-mvp1 (first rest)
+  (lambda (.method-args. .next-methods.)
+    (declare (ignore .next-methods.)
+             (core:lambda-name combine-method-functions-mvp1.lambda))
+    (multiple-value-prog1
+        (funcall first .method-args. nil)
+      (dolist (mf rest)
+        (funcall mf .method-args. nil)))))
 
-(defun combine-method-functions3 (gf method rest-methods)
-  (declare (si::c-local))
-  #'(lambda (.method-args. .next-methods.)
-      (declare (ignorable .next-methods. #|no-next-methods|#)
-               (core:lambda-name combine-method-functions3.lambda))
-      ;; TODO: Optimize this application and GF dispatch should be more efficient
-      ;; .method-args. can be a valist or a regular list
-      (mlog "In combine-method-functions3.lambda - About to call method %s for gf %s\n" method gf)
-      (funcall method .method-args. rest-methods)))
+(defun combine-method-functions-progn (functions)
+  (lambda (.method-args. .next-methods.)
+    (declare (ignore .next-methods.)
+             (core:lambda-name combine-method-functions-progn.lambda))
+    (dolist (mf functions)
+      (funcall mf .method-args. nil))))
 
 (defmacro call-method (method &optional rest-methods)
-  `(funcall ,(effective-method-function method)
-            ;; This is a stab in the dark - I don't know if .method-args.
-            ;; will be defined in the lexical environment
+  `(funcall ,(emf-call-method method)
+            ;; This macro is only invoked from effective-method-function, above,
+            ;; in the case of having to fall back to the compiler.
+            ;; Therefore .method-args. will always be bound in the environment.
             .method-args.
-            ',(and rest-methods (mapcar #'effective-method-function rest-methods)))
-  )
+            ',(and rest-methods (mapcar #'emf-call-method rest-methods))))
 
 (defun error-qualifier (m qualifier)
   (declare (si::c-local))
@@ -274,28 +287,18 @@
                                            (setf ,group-name (nreverse ,group-name)))
                                         group-after)))))))
       `(install-method-combination ',name
-				   #+ecl(ext::lambda-block ,name (,generic-function .methods-list. ,@lambda-list)
-							   (let (,@group-names)
-							     (dolist (.method. .methods-list.)
-							       (let ((.method-qualifiers. (method-qualifiers .method.)))
-								 (cond ,@(nreverse group-checks)
-								       (t (invalid-method-error .method.
-												"Method qualifiers ~S are not allowed in the method~
+				   (lambda (,generic-function .methods-list. ,@lambda-list)
+                                     (declare (core:lambda-name ,name))
+                                     (block ,name 
+                                       (let (,@group-names)
+                                         (dolist (.method. .methods-list.)
+                                           (let ((.method-qualifiers. (method-qualifiers .method.)))
+                                             (cond ,@(nreverse group-checks)
+                                                   (t (invalid-method-error .method.
+                                                                            "Method qualifiers ~S are not allowed in the method~
 			      combination ~S." .method-qualifiers. ',name)))))
-							     ,@group-after
-							     (effective-method-function (progn ,@body) t)))
-				   #+clasp(lambda (,generic-function .methods-list. ,@lambda-list)
-					    (declare (core:lambda-name ,name))
-					    (block ,name 
-					      (let (,@group-names)
-						(dolist (.method. .methods-list.)
-						  (let ((.method-qualifiers. (method-qualifiers .method.)))
-						    (cond ,@(nreverse group-checks)
-							  (t (invalid-method-error .method.
-										   "Method qualifiers ~S are not allowed in the method~
-			      combination ~S." .method-qualifiers. ',name)))))
-                                                ,@group-after
-                                                ,@body)))))))
+                                         ,@group-after
+                                         ,@body)))))))
 
 (defmacro define-method-combination (name &body body)
   (if (and body (listp (first body)))
@@ -320,8 +323,7 @@
 
 (defun compute-effective-method-function (gf method-combination applicable-methods)
   (effective-method-function
-   (compute-effective-method gf method-combination applicable-methods)
-   t))
+   (compute-effective-method gf method-combination applicable-methods)))
 
 ;; will be upgraded into being the standard method on compute-effective-method in fixup.
 (defun std-compute-effective-method (gf method-combination applicable-methods)
@@ -370,25 +372,12 @@
                             call-after)))
       call-around)))
 
-#+ecl(eval '(progn
-             (define-method-combination progn :identity-with-one-argument t)
-             (define-method-combination and :identity-with-one-argument t)
-             (define-method-combination max :identity-with-one-argument t)
-             (define-method-combination + :identity-with-one-argument t)
-             (define-method-combination nconc :identity-with-one-argument t)
-             (define-method-combination append :identity-with-one-argument nil)
-             (define-method-combination list :identity-with-one-argument nil)
-             (define-method-combination min :identity-with-one-argument t)
-             (define-method-combination or :identity-with-one-argument t)))
-
-#+clasp(progn
-         (define-method-combination progn :identity-with-one-argument t)
-         (define-method-combination and :identity-with-one-argument t)
-         (define-method-combination max :identity-with-one-argument t)
-         (define-method-combination + :identity-with-one-argument t)
-         (define-method-combination nconc :identity-with-one-argument t)
-         (define-method-combination append :identity-with-one-argument nil)
-         (define-method-combination list :identity-with-one-argument nil)
-         (define-method-combination min :identity-with-one-argument t)
-         (define-method-combination or :identity-with-one-argument t))
-
+(define-method-combination progn :identity-with-one-argument t)
+(define-method-combination and :identity-with-one-argument t)
+(define-method-combination max :identity-with-one-argument t)
+(define-method-combination + :identity-with-one-argument t)
+(define-method-combination nconc :identity-with-one-argument t)
+(define-method-combination append :identity-with-one-argument nil)
+(define-method-combination list :identity-with-one-argument nil)
+(define-method-combination min :identity-with-one-argument t)
+(define-method-combination or :identity-with-one-argument t)
