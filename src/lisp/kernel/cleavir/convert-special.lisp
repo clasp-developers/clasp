@@ -266,7 +266,7 @@
 ;;;
 ;;; Convert catch into a call
 (defsmacro catch (tag &body body)
-  `(core:catch-function ,tag (lambda () (declare (core:lambda-name catch-lambda)) (progn ,@forms))))
+  `(core:catch-function ,tag (lambda () (declare (core:lambda-name catch-lambda)) (progn ,@body))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
