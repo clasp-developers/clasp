@@ -477,7 +477,7 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
 	   t )
 (export '(and or))
 
-(defun build-target-dir (&optional stage)
+(defun build-target-dir (type &optional stage)
   (let* ((stage (if stage
                     stage
                     (default-target-stage)))
@@ -503,6 +503,23 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
               ((member :use-boehm *features*) "boehm")
               (t (error "Unknown clasp configuration")))))
     (bformat nil "%s-%s" (lisp-implementation-type) gc)))
+
+(defun ensure-relative-pathname (input)
+  "If the input pathname is absolute then search for src, or generated and return
+a relative path from there."
+  #+(or)(bformat t "ensure-relative-pathname input = %s   sys-pn = %s\n" input sys-pn)
+  (let ((result
+         (cond
+           ((eq :relative (car (pathname-directory input)))
+            (make-pathname :directory (pathname-directory input)
+                           :name (pathname-name input)))
+           ((eq :absolute (car (pathname-directory input)))
+            (make-pathname :directory (cons :relative (strip-root (pathname-directory input)))
+                           :name (pathname-name input)))
+           (t (error "ensure-relative-pathname could not handle ~a" input)))))
+    #+(or)(bformat t "ensure-relative-pathname result = %s\n" result)
+    result))
+
 
 (defun build-inline-bitcode-pathname (link-type &optional (filetype :intrinsics))
   (let ((name (cond
@@ -545,7 +562,7 @@ the stage, the +application-name+ and the +bitcode-name+"
             (probe-file (merge-pathnames (merge-pathnames module (make-pathname :type "lisp")) root))
             (error "Could not find a lisp source file with root: ~a module: ~a" root module))))
     (let ((target-host "lib")
-          (target-dir (build-target-dir stage))
+          (target-dir (build-target-dir type stage))
           pn)
       #+dbg-print(bformat t "DBG-PRINT build-pathname module: %s\n" module)
       #+dbg-print(bformat t "DBG-PRINT build-pathname target-host: %s\n" target-host)
@@ -553,7 +570,7 @@ the stage, the +application-name+ and the +bitcode-name+"
       (let ((result
               (cond
                 ((eq type :lisp)
-                 (let ((module partial-pathname))
+                 (let ((module (ensure-relative-pathname partial-pathname)))
                    (cond
                      ((string= "generated" (second (pathname-directory module)))
                       ;; Strip the "generated" part of the directory
@@ -565,9 +582,9 @@ the stage, the +application-name+ and the +bitcode-name+"
                       (find-lisp-source module (translate-logical-pathname "SOURCE-DIR:"))))))
                 ((and partial-pathname (or (eq type :fasl) (eq type :bitcode)))
                  (if cmp::*use-human-readable-bitcode* (setq type :ll))
-                 (merge-pathnames (merge-pathnames partial-pathname
+                 (merge-pathnames (merge-pathnames (ensure-relative-pathname partial-pathname)
                                                    (make-pathname :directory (list :relative target-dir) :type (build-extension type)))
-                                  (translate-logical-pathname "lib:")))
+                                  (translate-logical-pathname (make-pathname :host target-host))))
                 ((and (null partial-pathname) (eq type :fasl))
                  (let* ((stage-char (default-target-stage))
                         (filename (bformat nil "%s%s-%s-image" stage-char +application-name+ +bitcode-name+))
