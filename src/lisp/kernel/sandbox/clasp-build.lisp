@@ -129,17 +129,17 @@ the stage, the +application-name+ and the +bitcode-name+"
                                       :environment environment
                                       :counter counter :total-files total))))
 
+
 (defun compile-sclasp (environment system)
   "Compile the clasp source code."
-    (let ((files (append (out-of-date-bitcodes #P"src/lisp/kernel/tag/start"
-                                               #P"src/lisp/kernel/cleavir/inline-prep" :system system)
-                         (select-source-files #P"src/lisp/kernel/cleavir/auto-compile"
-                                              #P"src/lisp/kernel/tag/cclasp"
-                                              :system system)))
-          ;; required because of how load works. sadly.
-          (core:*defun-inline-hook* nil))
-      (format t "files: ~a~%" files)
-      (compile-system files environment)))
+  (let ((files (append (out-of-date-bitcodes #P"src/lisp/kernel/tag/start"
+                                             #P"src/lisp/kernel/cleavir/inline-prep" :system system)
+                       (select-source-files #P"src/lisp/kernel/cleavir/auto-compile"
+                                            #P"src/lisp/kernel/tag/cclasp"
+                                            :system system))))
+    (format t "files: ~a~%" files)
+    (compile-system files environment)
+    (values)))
 
 (defun bitcode-pathnames (start end &key system)
   (let ((sources (select-source-files start end :system system)))
