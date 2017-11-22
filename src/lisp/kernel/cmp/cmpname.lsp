@@ -1,3 +1,5 @@
+;;; Copied from ecl/src/cmp/cmpname.lsp
+
 (in-package :c)
 
 
