@@ -93,5 +93,11 @@
             *all-source-files*)))
       (nreverse source))))
 
+(defun determine-complete-set-of-asdf-source-files-absolute-path (systems)
+  (let ((*all-source-files* nil))
+    (map nil #'(lambda (system)
+		 (asdf:oos 'sticky-beak-op system :force t))
+	 systems)))
+
 
 

@@ -6,9 +6,10 @@
 (defun all-subdirs (dir)
   (let (dirs)
     (labels ((trav (d)
-		   (dolist (d (uiop:subdirectories d))
-		     (push d dirs)
-		     (trav d))))
+               (dolist (d (uiop:subdirectories d))
+                 (unless (find ".git" (pathname-directory d) :test #'string=)
+                   (push d dirs)
+                   (trav d)))))
       (trav dir))
     dirs))
 
