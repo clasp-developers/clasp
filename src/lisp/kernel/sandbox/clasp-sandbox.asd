@@ -2,7 +2,9 @@
   :description "First class global environments for Clasp"
   :version "0.0.1"
   :author "Alex Wood"
-  :depends-on (:sicl-simple-environment :sicl-global-environment :clasp-cleavir)
+  :depends-on (:sicl-simple-environment :sicl-global-environment
+               #-clasp :cleavir-compilation-policy
+               #+clasp :clasp-cleavir)
   :components ((:file "packages")
                (:file "setf" :depends-on ("packages"))
                (:file "sandbox" :depends-on ("packages"))

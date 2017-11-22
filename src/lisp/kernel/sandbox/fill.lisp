@@ -1,12 +1,32 @@
-(in-package #:clasp-sandbox)
+(in-package #:sandbox-environment)
 
 ;;;; Fill an environment with variables and operators and such.
 
 (defmacro macro-lambda (name lambda-list &body body)
-  (sys::expand-defmacro name lambda-list body))
+  #+sbcl
+  (sb-cltl2:parse-macro name lambda-list body)
+  #+clasp
+  (sys::expand-defmacro name lambda-list body)
+  #-(or sbcl clasp)
+  (error "macro-lambda unimplemented"))
 
 (defmacro compiler-macro-lambda (name lambda-list &body body)
-  (sys::expand-defmacro name lambda-list body 'define-compiler-macro))
+  #+sbcl
+  ;; bad
+  (sb-int:make-macro-lambda (sb-c::debug-name 'compiler-macro) lambda-list body
+                            'define-compiler-macro name)
+  #+clasp
+  (sys::expand-defmacro name lambda-list body 'define-compiler-macro)
+  #-(or sbcl clasp)
+  (error "compiler-macro-lambda unimplemented"))
+
+;;; FIXME move
+#-clasp
+(defun symbol-value-from-cell (name cell unbound)
+  (let ((value (car cell)))
+    (if (eq value unbound)
+        (error 'unbound-variable :name name)
+        value)))
 
 (defun install-sandbox-accessors (environment)
   (macrolet ((def (name lambda-list &body body)
@@ -41,16 +61,45 @@
         (setf (sicl-genv:compiler-macro-function function-name env) cmf)))
 
     ;;; TODO: boundp
+    (def cl:boundp (symbol)
+      #-clasp
+      (not (eq (car (sicl-genv:variable-cell symbol environment))
+               (sicl-genv:variable-unbound symbol environment)))
+      #+clasp
+      (error "boundp unimplemented. Symbol: ~a" symbol))
     (def cl:symbol-value (symbol)
       ;; this is inefficient in that it will look up the cell (a hash lookup)
       ;; every time. but since this is just the function it might be okay.
+      ;; a compiler-macro could get the cell as a load time value, for constant symbol.
+      ;; (also the unbound)
+      #-clasp
+      (symbol-value-from-cell
+       symbol (sicl-genv:variable-cell symbol environment)
+       (sicl-genv:variable-unbound symbol environment))
+      #+clasp
       (core:symbol-value-from-cell
        symbol (sicl-genv:variable-cell symbol environment)
        (sicl-genv:variable-unbound symbol environment)))
     (def (setf cl:symbol-value) (value symbol)
+      #-clasp
+      (setf (car (sicl-genv:variable-cell symbol environment)) value)
+      #+clasp
       (core:setf-symbol-value-from-cell
        symbol value (sicl-genv:variable-cell symbol environment)))
-    ;;; TODO: makunbound
+    (def cl:makunbound (symbol)
+      #-clasp
+      (setf (car (sicl-genv:variable-cell symbol environment))
+            (sicl-genv:variable-unbound symbol environment))
+      #+clasp
+      (error "makunbound unimplemented. Symbol: ~a" symbol))
+    ;; sort of an accessor.
+    (def cleavir-primop:call-with-variable-bound (variable value thunk)
+      ;; fixme: atomicity
+      (let* ((cell (sicl-genv:variable-cell variable env))
+             (old (car cell)))
+        (setf (car cell) value)
+        (unwind-protect (funcall thunk)
+          (setf (car cell) old))))
 
     ;;; only really a closure for the optional default.
     (def cl:find-class (symbol &optional (errorp t) env)
@@ -129,8 +178,11 @@
     (copyf sicl-genv:function-cell)
     (copyf sicl-genv:variable-cell)
     (copyf sicl-genv:variable-unbound)
+    #+clasp
     (copyf core:symbol-value-from-cell)
+    #+clasp
     (copyf core:setf-symbol-value-from-cell)
+    #+clasp
     (copyf core:multiple-value-funcall)
     #+(or)
     (progn

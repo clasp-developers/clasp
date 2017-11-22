@@ -247,7 +247,7 @@
       (class-entry
        (warn "Redefining class ~a" name))
       (type-entry
-       (warn "Redefining ~a from a type to a class"))
+       (warn "Redefining ~a from a type to a class" name))
       (null))
     (if new
         (setf (type-entry env name) (make-instance 'class-entry :name name :class new))
@@ -310,7 +310,7 @@
 ;;; cleavir accessors
 (defmethod cleavir-env:eval (form env (dispatch compilation-environment))
   (let ((e (evaluation-environment dispatch)))
-    (cleavir-env:eval form (clasp-sandbox:retarget env e) e)))
+    (cleavir-env:eval form (retarget env e) e)))
 
 (defmethod cleavir-env:variable-info ((environment compilation-environment) symbol)
   (when (eq (symbol-package symbol) (load-time-value (find-package "KEYWORD")))
@@ -408,6 +408,7 @@
         nil)))
 (declaim (notinline get-setf-expander))
 
+#+(or)
 (defmethod cleavir-policy:compute-policy-quality
     ((quality (eql 'cleavir-kildall-type-inference:insert-type-checks))
      optimize
@@ -415,6 +416,7 @@
   (> (cleavir-policy:optimize-value optimize 'safety)
      (cleavir-policy:optimize-value optimize 'speed)))
 
+#+(or)
 (defmethod cleavir-policy:compute-policy-quality
     ((quality (eql 'cleavir-escape:trust-dynamic-extent))
      optimize
@@ -423,11 +425,14 @@
      (cleavir-policy:optimize-value optimize 'safety)))
 
 ;;; FIXME: more controllable flags. These should reflect the target, not the host.
-(defmethod cleavir-env:has-extended-char-p ((environment compilation-environment))
-  #+unicode t #-unicode nil)
-(defmethod cleavir-env:float-types ((environment compilation-environment))
-  '(#+short-float short-float single-float double-float #+long-float long-float))
-(defmethod cleavir-env:upgraded-complex-part-types ((environment compilation-environment))
-  '(real))
-(defmethod cleavir-env:upgraded-array-element-types ((environment compilation-environment))
-  core::+upgraded-array-element-types+)
+;;; Also this condition is bad. Type inference doing this with the environment is bad.
+#+clasp
+(progn
+  (defmethod cleavir-env:has-extended-char-p ((environment compilation-environment))
+    #+unicode t #-unicode nil)
+  (defmethod cleavir-env:float-types ((environment compilation-environment))
+    '(#+short-float short-float single-float double-float #+long-float long-float))
+  (defmethod cleavir-env:upgraded-complex-part-types ((environment compilation-environment))
+    '(real))
+  (defmethod cleavir-env:upgraded-array-element-types ((environment compilation-environment))
+    core::+upgraded-array-element-types+))

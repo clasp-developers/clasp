@@ -1,4 +1,4 @@
-(in-package #:clasp-sandbox)
+(in-package #:compilation-environment)
 
 ;;; Say we have the toplevel form (locally (declare ...) (eval-when (:compile-toplevel) ...))
 ;;; The form in the eval-when will be evaluated in the load-environment, which should punt to

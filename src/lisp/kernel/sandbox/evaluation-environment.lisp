@@ -1,4 +1,9 @@
-(in-package #:clasp-sandbox)
+(defpackage #:evaluation-environment
+  (:use #:cl)
+  (:export #:evaluation-environment #:compilation-environment
+           #:transferringp))
+
+(in-package #:evaluation-environment)
 
 (defclass evaluation-environment (sandbox-environment)
   ((%compilation-environment :initarg :compilation-environment :accessor compilation-environment)
