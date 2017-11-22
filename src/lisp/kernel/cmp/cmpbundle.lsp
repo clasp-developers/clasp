@@ -265,15 +265,16 @@
 
 
 (defun builder (kind destination &rest keywords)
-  (bformat t "builder kind[%s] destination[%s] keywords: %s\n" kind destination keywords)
-  (break "Check parameters"))
+  (declare (optimize (debug 3)))
+  (apply 'build-fasl destination keywords))
 
 (export '(builder))
 
 
-(defun build-fasl (out-file &key lisp-files)
+(defun build-fasl (out-file &key lisp-files init-name)
   "Link the object files in lisp-files into a shared library in out-file.
 Return the truename of the output file"
+  (declare (ignore init-name))
 ;;  (bformat t "cmpbundle.lsp:build-fasl  building fasl for %s from files: %s\n" out-file lisp-files)
   (execute-link-fasl out-file lisp-files))
 

@@ -40,7 +40,7 @@ machine."
                            (encode-number-in-name ms))))
     tag))
 
-(defun compute-init-name (pathname &key (kind (guess-kind pathname))
+(defun compute-init-name (pathname &key kind 
                                      (prefix nil)
                                      (wrapper nil))
   "Computes initialization function name. Libraries, FASLS and
