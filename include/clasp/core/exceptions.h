@@ -651,10 +651,7 @@ extern string _stackTraceAsString();
 #define LOG_CXX_FUNCTION_INVOCATION() core::CxxFunctionInvocationLogger __cxxFunctionInvocationLogger(__FILE__, __FUNCTION__, __LINE__);
 
 #ifdef CALLSTACK_ON //[
-#define _G()                     \
-  LOG_CXX_FUNCTION_INVOCATION(); \
-  _PROFILE_FUNCTION();
-
+#define _G()
 #define _OF() _G();
 #define _lisp_BLOCK_TRACEF(__f) \
   {} // core::_StackTrace _B_stackTrace(__FILE__,"LexicalScope",__LINE__,0,DEBUG_CPP_BLOCK,__f)

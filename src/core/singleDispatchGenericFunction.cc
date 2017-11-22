@@ -157,7 +157,7 @@ void SingleDispatchGenericFunctionClosure_O::setf_lambda_list(List_sp ll) {
 void SingleDispatchGenericFunctionClosure_O::addMethod(SingleDispatchMethod_sp method) {
   _OF();
   // Look to see if the method is already defined
-  LOG(BF("defmethod for symbol[%s] called with method with receiverClass[%s]") % _rep_(this->name) % _rep_(method->receiver_class()));
+//  LOG(BF("defmethod for symbol[%s] called with method with receiverClass[%s]") % _rep_(this->name) % _rep_(method->receiver_class()));
   bool replacedMethod = false;
   {
     _BLOCK_TRACEF(BF("Checking if the receiver class already has a method"));
