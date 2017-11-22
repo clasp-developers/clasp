@@ -358,6 +358,9 @@ CL_DEFUN T_mv core__load_bundle(T_sp pathDesig, T_sp verbose, T_sp print, T_sp e
   path->_Type = SimpleBaseString_O::make("fasl");
   if (cl__probe_file(path).notnilp())
     goto LOAD;
+  path->_Type = SimpleBaseString_O::make("fasb"); // ECL uses fasb
+  if (cl__probe_file(path).notnilp())
+    goto LOAD;
   path->_Type = SimpleBaseString_O::make("dylib");
   if (cl__probe_file(path).notnilp())
     goto LOAD;
