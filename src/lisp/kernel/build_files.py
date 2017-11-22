@@ -67,6 +67,7 @@ def aclasp(wrappers):
         "src/lisp/kernel/cmp/compile-file",
         "src/lisp/kernel/cmp/disassemble",
         "src/lisp/kernel/cmp/external-clang",
+        "src/lisp/kernel/cmp/cmpname",
         "src/lisp/kernel/cmp/cmpbundle",
         "src/lisp/kernel/cmp/cmprepl",
         "src/lisp/kernel/tag/min-pre-epilogue",
