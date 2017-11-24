@@ -1112,6 +1112,7 @@ void CoreExposer_O::define_essential_globals(Lisp_sp lisp) {
   comp::_sym_STARload_time_value_holder_nameSTAR->defparameter(core::SimpleBaseString_O::make("[VALUES-TABLE]"));
   List_sp hooks = _Nil<T_O>();
   hooks = Cons_O::create(Cons_O::create(SimpleBaseString_O::make("fasl"), _sym_loadBundle), hooks);
+  hooks = Cons_O::create(Cons_O::create(SimpleBaseString_O::make("fasb"), _sym_loadBundle), hooks);
   hooks = Cons_O::create(Cons_O::create(SimpleBaseString_O::make("bundle"), _sym_loadBundle), hooks);
   hooks = Cons_O::create(Cons_O::create(SimpleBaseString_O::make("dylib"), _sym_loadBundle), hooks);
   hooks = Cons_O::create(Cons_O::create(SimpleBaseString_O::make("so"), _sym_loadBundle), hooks);
