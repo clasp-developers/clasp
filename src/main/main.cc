@@ -355,6 +355,7 @@ static int startup(int argc, char *argv[], bool &mpiEnabled, int &mpiRank, int &
   {
     exit_code = ee.getExitResult();
   }
+#if 0
   catch (...)
   {
     fprintf( stderr,
@@ -363,9 +364,9 @@ static int startup(int argc, char *argv[], bool &mpiEnabled, int &mpiRank, int &
              program_name().c_str() );
     fprintf( stderr, "*** BACKTRACE:\n" );
     print_stacktrace();
-
+    abort();
   }
-
+#endif
   if ( exit_code != 0 )
   {
     fprintf( stderr, "*** ERROR: %s is terminating with exit code %d !\n",

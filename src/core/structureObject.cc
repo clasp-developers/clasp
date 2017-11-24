@@ -278,7 +278,6 @@ void StructureObject_O::archiveBase(ArchiveP node) {
 
 T_sp StructureObject_O::copyStructure() const {
   StructureObject_sp copy = gctools::GC<StructureObject_O>::copy(*this);
-  //GC_COPY(StructureObject_O,copy,*this);
   return copy;
 }
 

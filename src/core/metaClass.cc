@@ -268,18 +268,6 @@ T_sp Class_O::instanceSet(size_t idx, T_sp val) {
 #endif
 
 
-#if 0
-Fixnum Class_O::stamp() const { return (*this->_Rack)[0].unsafe_fixnum();};
-void Class_O::stamp_set(Fixnum s) { (*this->_Rack)[0] = clasp_make_fixnum(s); };
-#endif
-
-#if 0
-T_sp Class_O::copyInstance() const {
-  GC_COPY(Class_O,c,*this);
-  return c;
-};
-#endif
-
 /*! Return true if every member of subset is in superset */
 bool subsetp(List_sp subset, List_sp superset) {
   ASSERT(subset);
