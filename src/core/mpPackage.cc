@@ -337,8 +337,8 @@ CL_DEFUN void mp__process_resume(Process_sp process) {
 };
 
 CL_DEFUN void mp__process_yield() {
-  int res = sched_yield();
-//  core::clasp_musleep(0.0,true);
+//  int res = sched_yield();
+  core::clasp_musleep(0.5,true);
 }
 
 CL_DEFUN core::T_mv mp__process_join(Process_sp process) {
