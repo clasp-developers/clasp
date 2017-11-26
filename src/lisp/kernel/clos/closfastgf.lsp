@@ -331,35 +331,38 @@
                                                  methods))
          (optimized
            (flet ()
+             ;;; FIXME - turn off all slot access optimizers - we broke nglview
+             ;;;         because slot-value-using-class and (setf slot-value-using-class) are needed
+             ;;;         and we don't account for them yet
              (cond
-               ((and (= (length methods) 1)
-                     (typep (first methods) 'standard-reader-method)
-                     #| FIXME TEST FOR slot-value-using-class |#)
-                (when log (gf-log "++++ compute-effective-method-function-maybe-optimize optimizing reader\n"))
-                (let* ((method (first methods))
-                       (specializers (method-specializers method))
-                       (class (first actual-specializers))
-                       (slot (effective-slot-from-accessor-method method class :log log :instance (first actual-arguments))))
-                  (when log (gf-log "++++ compute-effective-method-function-maybe-optimize optimizing reader data: %d\n" (slot-definition-location slot)))
-                  (cmp::make-optimized-slot-reader :index (slot-definition-location slot)
-                                                   :effective-method-function efm
-                                                   :slot-name (slot-definition-name slot)
-                                                   :method method
-                                                   :class class)))
-               ((and (= (length methods) 1)
-                     (typep (first methods) 'standard-writer-method)
-                     #| FIXME TEST FOR (setf slot-value-using-class) |#)
-                (when log (gf-log "++++ compute-effective-method-function-maybe-optimize optimizing writer\n"))
-                (let* ((method (first methods))
-                       (specializers (method-specializers method))
-                       (class (second actual-specializers))
-                       (slot (effective-slot-from-accessor-method method class :log log :instance (first actual-arguments))))
-                  (when log (gf-log "++++ compute-effective-method-function-maybe-optimize optimizing writer data: %d\n" (slot-definition-location slot)))
-                  (cmp::make-optimized-slot-writer :index (slot-definition-location slot)
-                                                   :effective-method-function efm
-                                                   :slot-name (slot-definition-name slot)
-                                                   :method method
-                                                   :class class)))
+               #+(or)((and (= (length methods) 1)
+                           (typep (first methods) 'standard-reader-method)
+                           #| FIXME TEST FOR slot-value-using-class |#)
+                      (when log (gf-log "++++ compute-effective-method-function-maybe-optimize optimizing reader\n"))
+                      (let* ((method (first methods))
+                             (specializers (method-specializers method))
+                             (class (first actual-specializers))
+                             (slot (effective-slot-from-accessor-method method class :log log :instance (first actual-arguments))))
+                        (when log (gf-log "++++ compute-effective-method-function-maybe-optimize optimizing reader data: %d\n" (slot-definition-location slot)))
+                        (cmp::make-optimized-slot-reader :index (slot-definition-location slot)
+                                                         :effective-method-function efm
+                                                         :slot-name (slot-definition-name slot)
+                                                         :method method
+                                                         :class class)))
+               #+(or)((and (= (length methods) 1)
+                           (typep (first methods) 'standard-writer-method)
+                           #| FIXME TEST FOR (setf slot-value-using-class) |#)
+                      (when log (gf-log "++++ compute-effective-method-function-maybe-optimize optimizing writer\n"))
+                      (let* ((method (first methods))
+                             (specializers (method-specializers method))
+                             (class (second actual-specializers))
+                             (slot (effective-slot-from-accessor-method method class :log log :instance (first actual-arguments))))
+                        (when log (gf-log "++++ compute-effective-method-function-maybe-optimize optimizing writer data: %d\n" (slot-definition-location slot)))
+                        (cmp::make-optimized-slot-writer :index (slot-definition-location slot)
+                                                         :effective-method-function efm
+                                                         :slot-name (slot-definition-name slot)
+                                                         :method method
+                                                         :class class)))
                (t efm)))))
     #+debug-fastgf
     (when log
