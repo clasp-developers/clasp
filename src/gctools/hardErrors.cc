@@ -36,7 +36,8 @@
 
 
 [[noreturn]] void throw_hard_error_bad_client(void* ptr) {
-  throw_hard_error((BF("Bad client pointer %p") % (void*)ptr).str());
+  printf("%s:%d Bad client pointer %p\n", __FILE__, __LINE__, ptr );
+  abort();
 }
 
 [[noreturn]] void throw_hard_error_size_stack_damaged(size_t totalSize, size_t calcSize) {
