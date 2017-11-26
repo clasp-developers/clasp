@@ -338,10 +338,9 @@ CL_DEFUN void mp__process_resume(Process_sp process) {
 
 CL_DEFUN void mp__process_yield() {
   // There doesn't appear to be any way to exit sched_yield()
-//  int res = sched_yield();
-  int err = pthread_yield(NULL);
-  if (err) {
-    SIMPLE_ERROR(BF("pthread_yield returned the error %d") % err);
+  int res = sched_yield();
+  if (!res) {
+    SIMPLE_ERROR(BF("sched_yield returned the error %d") % res);
   }
 //  core::clasp_musleep(0.5,true);
 }
