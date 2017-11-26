@@ -649,7 +649,7 @@ CL_DEFUN void gctools__function_call_count_profiler(core::T_sp func) {
 
 namespace gctools {
 SYMBOL_EXPORT_SC_(GcToolsPkg,STARfinalizersSTAR);
-
+/*! Call finalizer_callback with no arguments when object is finalized.*/
 CL_DEFUN void gctools__finalize(core::T_sp object, core::T_sp finalizer_callback) {
   //printf("%s:%d making a finalizer for %p calling %p\n", __FILE__, __LINE__, (void*)object.tagged_(), (void*)finalizer_callback.tagged_());
   core::WeakKeyHashTable_sp ht = As<core::WeakKeyHashTable_sp>(_sym_STARfinalizersSTAR->symbolValue());
