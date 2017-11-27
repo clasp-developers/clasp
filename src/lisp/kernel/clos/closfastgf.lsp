@@ -206,7 +206,7 @@
         (opt-class (cmp::optimized-slot-reader-class opt-slot-reader))
         (slot-name (cmp::optimized-slot-reader-slot-name opt-slot-reader))
         (opt-index (cmp::optimized-slot-reader-index opt-slot-reader)))
-    (let* ((slot (effective-slot-from-accessor-method opt-method opt-class :instance instance))
+    (let* ((slot (effective-slotd-from-accessor-method opt-method opt-class))
            (lookup-index (slot-definition-location slot)))
       (unless (= opt-index lookup-index)
         (error "The dispatch-slot-reader-index-debug function caught a difference between the slot opt-index ~a and the looked up slot index ~a for opt-method ~a/ opt-class ~a/ slot-name ~a" opt-index lookup-index opt-method opt-class slot-name))
@@ -243,7 +243,7 @@
         (class (cmp::optimized-slot-writer-class opt-slot-writer))
         (slot-name (cmp::optimized-slot-writer-slot-name opt-slot-writer))
         (opt-index (cmp::optimized-slot-writer-index opt-slot-writer)))
-    (let* ((slot (effective-slot-from-accessor-method opt-method class :instance instance))
+    (let* ((slot (effective-slotd-from-accessor-method opt-method class))
            (lookup-index (slot-definition-location slot)))
       (unless (= opt-index lookup-index)
         (error "The dispatch-slot-writer-index-debug function caught a difference between the optimized slot index ~a and the looked up slot index ~a for opt-method ~a/ class ~a/ slot-name ~a" opt-index lookup-index opt-method class slot-name))
@@ -308,18 +308,15 @@
                                                    s))
                                    specializers)))
 
-(defun effective-slot-from-accessor-method (method class &key log instance)
+(defun effective-slotd-from-accessor-method (method class)
   (let* ((direct-slot (accessor-method-slot-definition method))
          (direct-slot-name (slot-definition-name direct-slot))
          (effective-slot-defs (class-slots class))
          (slot (loop for effective-slot in effective-slot-defs
                      when (eq direct-slot-name (slot-definition-name effective-slot)) return effective-slot)))
-    (when (null slot)
-      (when log (gf-log "Could not find slot - starting from method %s got specializer class %s and slot-defs %s instance %s\n"
-                        method class effective-slot-defs instance))
-      (error "Could not find slot - starting from method ~s got specializer class ~s and slot-defs ~s and slot-name ~s : maybe-instance -> ~s"
-             method class effective-slot-defs direct-slot-name instance))
-    (when log (gf-log "++++ Slot value -> %s\n" slot))
+    (when (null slot) ; no idea how this could occur
+      (error "BUG: cannot find effective slot for optimized accessor! class ~s, slot name ~s"
+             class direct-slot-name))
     slot))
 
 (defun compute-effective-method-function-maybe-optimize (generic-function method-combination methods actual-specializers &key log
@@ -329,41 +326,42 @@
   (let* ((efm (compute-effective-method-function generic-function
                                                  method-combination
                                                  methods))
+         class slotd
          (optimized
-           (flet ()
-             ;;; FIXME - turn off all slot access optimizers - we broke nglview
-             ;;;         because slot-value-using-class and (setf slot-value-using-class) are needed
-             ;;;         and we don't account for them yet
-             (cond
-               #+(or)((and (= (length methods) 1)
-                           (typep (first methods) 'standard-reader-method)
-                           #| FIXME TEST FOR slot-value-using-class |#)
-                      (when log (gf-log "++++ compute-effective-method-function-maybe-optimize optimizing reader\n"))
-                      (let* ((method (first methods))
-                             (specializers (method-specializers method))
-                             (class (first actual-specializers))
-                             (slot (effective-slot-from-accessor-method method class :log log :instance (first actual-arguments))))
-                        (when log (gf-log "++++ compute-effective-method-function-maybe-optimize optimizing reader data: %d\n" (slot-definition-location slot)))
-                        (cmp::make-optimized-slot-reader :index (slot-definition-location slot)
-                                                         :effective-method-function efm
-                                                         :slot-name (slot-definition-name slot)
-                                                         :method method
-                                                         :class class)))
-               #+(or)((and (= (length methods) 1)
-                           (typep (first methods) 'standard-writer-method)
-                           #| FIXME TEST FOR (setf slot-value-using-class) |#)
-                      (when log (gf-log "++++ compute-effective-method-function-maybe-optimize optimizing writer\n"))
-                      (let* ((method (first methods))
-                             (specializers (method-specializers method))
-                             (class (second actual-specializers))
-                             (slot (effective-slot-from-accessor-method method class :log log :instance (first actual-arguments))))
-                        (when log (gf-log "++++ compute-effective-method-function-maybe-optimize optimizing writer data: %d\n" (slot-definition-location slot)))
-                        (cmp::make-optimized-slot-writer :index (slot-definition-location slot)
-                                                         :effective-method-function efm
-                                                         :slot-name (slot-definition-name slot)
-                                                         :method method
-                                                         :class class)))
-               (t efm)))))
+           ;; This will hopefully be expanded, but for now, we can at least optimize standard slot accesses.
+           ;; For that, we must determine whether there is not a custom slot-value-using-class method we have to
+           ;; call. We use an approximation: if the class is a standard-class and the slotd is a
+           ;; standard-effective-slot-definition, methods on svuc can't be defined per
+           ;; "restrictions on portable programs" in MOP. We also discount the possibility of specializing on the
+           ;; "object" argument, because it makes things harder for us with not much gain for users.
+           ;; (Just specialize accessors or something.)
+           ;; The upshot of this is that slot accesses will never be inlined for custom metaclasses or slotds.
+           ;; The less approximate way would be to check s-v-u-c itself. That's easy enough on its own,
+           ;; but also implies that methods added or removed to s-v-u-c invalidate all relevant accessors,
+           ;; which is not.
+           (cond
+             ((and (= (length methods) 1)
+                   (eq (class-of (first methods)) (find-class 'standard-reader-method)) ; FIXME load-time-value?
+                   (eq (class-of (setf class (first actual-specializers))) ; (object)
+                       (find-class 'standard-class))
+                   (eq (class-of (setf slotd (effective-slotd-from-accessor-method (first methods) class)))
+                       (find-class 'standard-effective-slot-definition)))
+              (cmp::make-optimized-slot-reader :index (slot-definition-location slotd)
+                                               :effective-method-function efm
+                                               :slot-name (slot-definition-name slotd)
+                                               :method (first methods) :class class))
+             ;; Can't specialize on new-value either.
+             ((and (= (length methods) 1)
+                   (eq (class-of (first methods)) (find-class 'standard-writer-method))
+                   (eq (class-of (setf class (second actual-specializers))) ; (new-value object)
+                       (find-class 'standard-class))
+                   (eq (class-of (setf slotd (effective-slotd-from-accessor-method (first methods) class)))
+                       (find-class 'standard-effective-slot-definition)))
+              (cmp::make-optimized-slot-writer :index (slot-definition-location slotd)
+                                               :effective-method-function efm
+                                               :slot-name (slot-definition-name slotd)
+                                               :method (first methods) :class class))
+             (t efm))))
     #+debug-fastgf
     (when log
       (gf-log "vvv************************vvv\n")
