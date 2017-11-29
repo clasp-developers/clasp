@@ -890,8 +890,8 @@
                                     (return-from ,block-name nil))
                                  `'(return-from ,block-name nil))))
                  ,@body)))))
-      `(pprint-logical-block-helper #',function ,object ,stream-symbol
-				    ,prefix ,per-line-prefix-p ,suffix)))
+    `(pprint-logical-block-helper #',function ,object ,stream-symbol
+                                  ,prefix ,per-line-prefix-p ,suffix)))
 
 (defmacro pprint-exit-if-list-exhausted ()
   "Cause the closest enclosing use of PPRINT-LOGICAL-BLOCK to return
