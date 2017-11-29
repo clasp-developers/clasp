@@ -125,7 +125,7 @@ when this is t a lot of graphs will be generated.")
     ;; Setup the landing pads
     (cmp:with-irbuilder (body-irbuilder)
       (generate-needed-landing-pads the-function function-info return-value *tags* abi)
-      (cmp:with-dbg-function ("repl-fix"
+      (cmp:with-dbg-function ("unused-with-dbg-function-name"
                               :linkage-name (llvm-sys:get-name the-function)
                               :function the-function
                               :function-type cmp:%fn-prototype%
@@ -134,22 +134,6 @@ when this is t a lot of graphs will be generated.")
           (cmp:dbg-set-current-source-pos-for-irbuilder cmp:*irbuilder-function-alloca* cmp:*current-form-lineno*)
           (cmp:dbg-set-current-source-pos-for-irbuilder body-irbuilder cmp:*current-form-lineno*)
           (cmp:irc-low-level-trace :arguments)
-          #+use-ownerships(loop for var being each hash-key of *ownerships*
-                             using (hash-value owner)
-                             when (and (typep var '(or
-                                                    cleavir-ir:lexical-location
-                                                    cleavir-ir:values-location))
-                                       (eq owner initial-instruction)
-                                       #+(or)(not (member var (cleavir-ir:outputs
-                                                               initial-instruction))))
-                             collect (translate-datum var))))
-      (cmp:with-dbg-function ("unused-with-dbg-function-name"
-                              :linkage-name (llvm-sys:get-name the-function)
-                              :function the-function
-                              :function-type cmp:%fn-prototype%
-                              :form *form*)
-        (cmp:with-dbg-lexical-block (*form*)
-          ;;          (cmp:dbg-set-current-source-pos *form*)
           (cmp:irc-set-insert-point-basic-block body-block body-irbuilder )
           (cmp:with-landing-pad (or (landing-pad-for-unwind function-info) (landing-pad-for-cleanup function-info))
             (cmp:irc-begin-block body-block)
