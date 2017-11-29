@@ -2902,6 +2902,33 @@
                 (t name))
               package))))
 
+;;; Contributed by stassats May 24, 2016
+;;; The compiler macro is broken in bclasp - it causes the control flow to go nuts
+;;;    I'm going to enable this compiler macro only in cclasp. May 12, 2017 meister
+#+cclasp
+(define-compiler-macro format (&whole whole destination control-string &rest args)
+  (if (stringp control-string)
+      (let ((fun-sym (gensym "FUN"))
+            (out-sym (gensym "OUT"))
+            (dest-sym (gensym "DEST")))
+        `(let ((,fun-sym ,(%formatter control-string))
+               (,dest-sym ,destination))
+           (cond
+             ((eq ,dest-sym t)
+              (funcall ,fun-sym *standard-output* ,@args)
+              nil)
+             ((null ,dest-sym)
+              (with-output-to-string (,out-sym)
+                (funcall ,fun-sym ,out-sym ,@args)))
+             ((stringp ,dest-sym)
+              (with-output-to-string (,out-sym ,dest-sym)
+                (funcall ,fun-sym ,out-sym ,@args))
+              nil)
+             (t
+              (funcall ,fun-sym ,dest-sym ,@args)
+              nil))))
+      whole))
+
 ;;;; Compile-time checking of format arguments and control string
 
 #-(or ecl clasp)
