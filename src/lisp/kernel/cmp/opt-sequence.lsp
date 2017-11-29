@@ -190,6 +190,8 @@
               ,@body)
             (setf ,%iterator (si::seq-iterator-next ,%sequence ,%iterator)))))))
 
+;;; TODO: Avoid iteration for constant sequence (but watch out for growth)
+
 ;;;
 ;;; MEMBER
 ;;;
