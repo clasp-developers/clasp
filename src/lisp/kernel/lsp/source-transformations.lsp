@@ -1,18 +1,3 @@
-
-(in-package :ext)
-
-;;; Must be synced with constantp in primitives.cc
-;;; TODO: Move?
-
-(defun constant-form-value (form &optional env)
-  "If (constantp form env) is true, returns the constant value of the form in the environment."
-  (declare (ignore env))
-  (cond ((symbolp form) (symbol-value form))
-        ((consp form) (second form)) ; quote
-        (t form))) ; self-evaluating
-
-(export '(constant-form-value))
-
 (in-package :core)
 
 (eval-when (:compile-toplevel :load-toplevel :execute)

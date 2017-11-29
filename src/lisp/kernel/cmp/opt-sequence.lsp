@@ -15,124 +15,6 @@
 
 (in-package "COMPILER")
 
-;; If a form refers to a function we can use as the head of a form, return something suitable
-;; as head of form. Else NIL.
-(defun constant-function-expression (form env)
-  (declare (ignore env))
-  (if (consp form)
-      (cond ((eq (car form) 'function)
-             (if (and (consp (cdr form)) (null (cddr form)))
-                 (second form)
-                 ;; invalid function form; could warn, but compiler should get it
-                 nil))
-            ;; FIXME: commented out because there could be a local binding; need to be smarter w/environment
-            #+(or)
-            ((eq (car form) 'quote)
-             (if (and (consp (cdr form)) (null (cddr form)))
-                 (second form)
-                 nil))
-            ((eq (car form) 'lambda) form)
-            (t nil))
-      nil))
-
-;; Return a function of two forms that returns a condition form for testing them, as well as required bindings.
-;; E.g. (seq-opt-test-function :test #'foo nil) => #'(lambda (v1 v2) `(foo ,v1 ,v2)), NIL
-;; (seq-opt-test-function :test (generate-test) nil) =>
-;;   #'(lambda (v1 v2) `([gensym] ,v1 ,v2)), (([gensym] (generate-test)))
-(defun seq-opt-test-function (test-flag test env)
-  (cond ((null test-flag)
-         (values (seq-opt-test-function :test '#'eql env) nil))
-        ((eq test-flag :test-not)
-         (multiple-value-bind (function init)
-             (seq-opt-test-function :test test env)
-           (values #'(lambda (v1 v2) `(not ,(funcall function v1 v2)))
-                   init)))
-        (t (let ((maybe-head (constant-function-expression test env)))
-             (if maybe-head
-                 (values #'(lambda (v1 v2) `(,maybe-head ,v1 ,v2)) nil)
-                 (si::with-unique-names (test-function)
-                   (values #'(lambda (v1 v2) `(funcall ,test-function ,v1 ,v2))
-                           (list (list test-function test)))))))))
-
-;; Like the above, but with a key.
-(defun seq-opt-key-function (key env)
-  (cond ((null key)
-         (values #'identity nil))
-        (t (let ((maybe-head (constant-function-expression key env)))
-             (if maybe-head
-                 (values #'(lambda (elt) `(,maybe-head ,elt)) nil)
-                 (si::with-unique-names (key-function)
-                   (values #'(lambda (elt) `(funcall ,key-function ,elt))
-                           (list (list key-function
-                                       `(or ,key #'identity))))))))))
-
-;; Returns (values keyf testf inits keyk testk test start end)
-;; keyf and testf are the functions returned by seq-opt-etc above. inits are from them as well.
-;; keyk and testk are the keywords for them, i.e. keyk is :key if :key was specified or else NIL,
-;;  and testk is :test or :test-not or nil.
-;; test is the form passed as a :test or :test-not, or #'eql if none was passed.
-;; test is used for dropping to memq and friends even if a full inline isn't done. (FIXME: will be used for.)
-;; start and end are the same parameters. the start-end argument controls whether they're valid.
-;; If the call is invalid - e.g. has both :test and :test-not - all values will be nil, including the
-;;  primary value keyf, which is otherwise a function.
-(defun seq-opt-parse-args (function args &key (start-end t) environment)
-  (loop with key-flag = nil
-        with key = nil
-        with init = nil
-        with test = '#'eql
-        with test-flag = nil
-        with start = 0
-        with end = nil
-        with keyword
-        while args
-        do (cond ((or (atom args)
-                      (null (rest args))
-                      (eq keyword :allow-other-keys)
-                      (not (keywordp (setf keyword (pop args)))))
-                  (return nil))
-                 ((eq keyword :key)
-                  (unless key-flag
-                    (setf key (pop args)
-                          key-flag keyword)))
-                 ((or (eq keyword :test)
-                      (eq keyword :test-not))
-                  (cond ((null test-flag)
-                         (setf test (pop args)
-                               test-flag keyword))
-                        ((not (eq test-flag keyword))
-                         (warn "Cannot specify :TEST and :TEST-NOT arguments to ~A"
-                               function)
-                         (return nil))))
-                 ((eq keyword :start)
-                  (unless start-end
-                    (warn "Unexpected keyword argument ~A in a call to function ~A"
-                          keyword function)
-                    (return nil))
-                  (setf start (pop args)))
-                 ((eq keyword :end)
-                  (unless start-end
-                    (warn "Unexpected keyword argument ~A in a call to function ~A"
-                          keyword function)
-                    (return nil))
-                  (setf end (pop args)))
-                 ((eq keyword :from-end)
-                  (unless (null (pop args))
-                    (return nil)))
-                 (t (return nil)))
-        finally
-           (multiple-value-bind (key-function key-init)
-               (seq-opt-key-function key environment)
-             (multiple-value-bind (test-function test-init)
-                 (seq-opt-test-function test-flag test environment)
-               (return (values key-function
-                               test-function
-                               (nconc key-init test-init)
-                               key-flag
-                               test-flag
-                               test
-                               start
-                               end))))))
-
 #+(or)
 (define-compiler-macro si::make-seq-iterator (seq &optional (start 0))
   (with-clean-symbols (%seq %start)
@@ -188,63 +70,43 @@
             (unless ,test (return ,output))
             (let ((,%elt (si::seq-iterator-ref ,%sequence ,%iterator)))
               ,@body)
-            (setf ,%iterator (si::seq-iterator-next ,%sequence ,%iterator)))))))
+           (setf ,%iterator (si::seq-iterator-next ,%sequence ,%iterator)))))))
+
+(defun gensym-list (list &optional x)
+  (if x
+      (loop for _ in list collect (gensym x))
+      (loop for _ in list collect (gensym))))
+
+;;; Somewhat harder to understand version of do-sequences
+;;; where the list of sequences is known at compile time.
+;;; CALLER is a symbol. It is bound to a function of one argument,
+;;; a function. CALLER calls this function with elements of the
+;;; sequences as arguments.
+;;; So, (do-static-sequences (c (list 1 2 3) (list 4 5)) (c (lambda (a b) (print (+ a b)))))
+;;; will print 5, then 7, then stop.
+(defmacro do-static-sequences ((caller &rest sequences) &body body)
+  (let ((seqs (gensym-list sequences "SEQUENCE"))
+        (iters (gensym-list sequences "ITERATOR")))
+    `(block nil
+       (let (,@(mapcar #'list seqs sequences))
+         (do (,@(mapcar (lambda (s i)
+                          `(,i (si::make-seq-iterator ,s) (si::seq-iterator-next ,s ,i)))
+                        seqs iters))
+             ((or ,@(mapcar (lambda (s i) `(si::seq-iterator-endp ,s ,i)) seqs iters)))
+           ;; We should just have a local function, but as of July 2017 we do very
+           ;; badly at eliminating unneeded closures.
+           (macrolet ((,caller (fun)
+                        (list 'funcall fun ,@(mapcar (lambda (s i) `'(si::seq-iterator-ref ,s ,i))
+                                                     seqs iters))))
+             (tagbody ,@body))
+           #+(or)
+           (flet ((,caller (fun)
+                    (funcall fun ,@(mapcar (lambda (s i) `(seq-iterator-ref ,s ,i))
+                                           seqs iters))))
+             (declare (inline ,caller))
+             (tagbody ,@body)))))))
 
 ;;; TODO: Avoid iteration for constant sequence (but watch out for growth)
-
-;;;
-;;; MEMBER
-;;;
-
-(defmacro do-in-list ((%elt %sublist list &rest output) &body body)
-  `(do* ((,%sublist ,list (cdr ,%sublist)))
-        ((null ,%sublist) ,@output)
-     (let ((,%elt (car (the cons ,%sublist))))
-       ,@body)))
-
-(defun expand-member (env value list &rest sequence-args)
-  (multiple-value-bind (key-function test-function init
-                        key-flag test-flag test)
-      (seq-opt-parse-args 'member sequence-args :start-end nil :environment env)
-    ;; When having complex arguments (:allow-other-keys, etc)
-    ;; we just give up.
-    (when (null key-function)
-      (return-from expand-member nil))
-    (si::with-unique-names (%value %sublist %elt)
-      `(let ((,%value ,value)
-             ,@init)
-         (do-in-list (,%elt ,%sublist ,list)
-           (when ,(funcall test-function %value
-                           (funcall key-function %elt))
-             (return ,%sublist)))))))
-
-(define-compiler-macro member (&whole whole value list &rest sequence-args &environment env)
-  ;; FIXME: pay attention to policy, e.g. don't inline for high SPACE.
-  (or (apply #'expand-member env (rest whole))
-      whole))
-
-;;;
-;;; ASSOC
-;;;
-
-(defun expand-assoc (env value list &rest sequence-args)
-  (multiple-value-bind (key-function test-function init
-                        key-flag test-flag test)
-      (seq-opt-parse-args 'assoc sequence-args :start-end nil :environment env)
-    (when test-function
-      (si::with-unique-names (%value %sublist %elt %car)
-        `(let ((,%value ,value)
-               ,@init)
-           (do-in-list (,%elt ,%sublist ,list)
-             (when ,%elt
-               (let ((,%car (car (the cons ,%elt))))
-                 (when ,(funcall test-function %value
-                                 (funcall key-function %car))
-                   (return ,%elt))))))))))
-
-(define-compiler-macro assoc (&whole whole value list &rest sequence-args &environment env)
-  (or (apply #'expand-assoc env (rest whole))
-      whole))
 
 ;;;
 ;;; FIND
@@ -253,7 +115,7 @@
 (defun expand-find (env value sequence &rest sequence-args)
   (multiple-value-bind (key-function test-function init
                         key-flag test-flag test start end)
-      (seq-opt-parse-args 'find sequence-args :environment env)
+      (two-arg-test-parse-args 'find sequence-args :environment env)
     (when test-function
       (si::with-unique-names (%value %elt)
         `(let ((,%value ,value)
@@ -266,3 +128,140 @@
 (define-compiler-macro find (&whole whole value sequence &rest sequence-args &environment env)
   (or (apply #'expand-find env (rest whole))
       whole))
+;;;
+;;; MAKE-SEQUENCE
+;;;
+
+(define-compiler-macro make-sequence
+    (&whole form type size &key (initial-element nil iesp) &environment env)
+  (unless (constantp type env)
+    (return-from make-sequence form))
+  (let ((type (ext:constant-form-value type env)))
+    (multiple-value-bind (element-type length success)
+        (si::closest-sequence-type type)
+      (cond ((not success) form) ; give up for runtime error or unknown; we could warn too?
+            ((eq element-type 'list)
+             (if (eq length '*)
+                 `(make-list ,size :initial-element ,initial-element)
+                 (let ((ss (gensym "SIZE")) (r (gensym "RESULT")))
+                   `(let* ((,ss ,size)
+                           (,r (make-list ,ss :initial-element :initial-element)))
+                      (if (eql ,length ,ss)
+                          ,r
+                          (si::error-sequence-length ,r ',type ,ss))))))
+            (t (let ((r (gensym "RESULT")) (ss (gensym "SIZE")))
+                 `(let* ((,ss ,size)
+                         (,r (sys:make-vector ',(if (eq element-type '*) t element-type)
+                                              ,ss nil nil nil 0)))
+                    ,@(when iesp
+                        `((si::fill-array-with-elt ,r ,initial-element 0 nil)))
+                    ,@(unless (eql length '*)
+                        `((unless (eql ,length ,ss)
+                            (si::error-sequence-length ,r ',type ,ss))))
+                    ,r)))))))
+
+;;;
+;;; MAP
+;;;
+
+(define-compiler-macro si::map-for-effect
+    (function sequence &rest more-sequences)
+  (let* ((fun (gensym "FUNCTION")))
+    `(let ((,fun (si::coerce-fdesignator ,function)))
+       (do-static-sequences (call ,sequence ,@more-sequences)
+         (call ,fun))
+       nil)))
+
+(define-compiler-macro map
+    (&whole form result-type function sequence &rest more-sequences &environment env)
+  (if (constantp result-type env)
+      (let ((result-type (ext:constant-form-value result-type env))) ; constant-form-value
+        (if result-type
+            (let* ((fun (gensym "FUNCTION"))
+                   (output (gensym "OUTPUT"))
+                   (output-iter (gensym "OUTPUT-ITER"))
+                   (sequences (cons sequence more-sequences))
+                   (seqs (gensym-list sequences "SEQUENCE")))
+              ;; We might turn this into an assertion in later stages.
+              `(the (values ,result-type &rest nil)
+                    ;; this is basically MAP-INTO, except we don't bother checking
+                    ;; for the end of output iteration.
+                    (let* ((,fun (si::coerce-fdesignator ,function))
+                           ;; Have to (redundantly) once-only these because
+                           ;; we need the lengths.
+                           ,@(mapcar #'list seqs sequences)
+                           (,output (make-sequence
+                                     ',result-type
+                                     (min ,@(mapcar (lambda (s) `(length ,s)) seqs))))
+                           (,output-iter (si::make-seq-iterator ,output)))
+                      (do-static-sequences (call ,@seqs)
+                        (si::seq-iterator-set ,output ,output-iter (call ,fun))
+                        (setq ,output-iter (si::seq-iterator-next ,output ,output-iter)))
+                      ,output)))
+            `(si::map-for-effect ,function ,sequence ,@more-sequences)))
+      form))
+
+;;;
+;;; MAP-INTO
+;;;
+
+
+;;; MAP-INTO has special behavior on vectors with fill pointers, so we specialize.
+(defmacro map-into-usual (output fun &rest seqs)
+  (let ((output-iter (gensym "OUTPUT-ITERATOR")))
+    `(let ((,output-iter (si::make-seq-iterator ,output)))
+       (do-static-sequences (call ,@seqs)
+         (when (si::seq-iterator-endp ,output ,output-iter) (return))
+         (si::seq-iterator-set ,output ,output-iter (call ,fun))
+         (setq ,output-iter (si::seq-iterator-next ,output ,output-iter))))))
+
+(defmacro map-into-fp (output fun &rest seqs)
+  (let ((output-index (gensym "OUTPUT-INDEX"))
+        (output-size (gensym "OUTPUT-SIZE")))
+    `(let ((,output-index 0)
+           (,output-size (array-dimension ,output 0)))
+       (do-static-sequences (call ,@seqs)
+         (when (= ,output-index ,output-size) (return))
+         (setf (aref ,output ,output-index) (call ,fun))
+         (incf ,output-index))
+       (setf (fill-pointer ,output) ,output-index))))
+
+(define-compiler-macro map-into (result function &rest sequences)
+  ;; handle multiple evaluation up here
+  (let ((output (gensym "OUTPUT"))
+        (fun (gensym "FUNCTION"))
+        (seqs (gensym-list sequences "SEQUENCE")))
+    `(let ((,output ,result)
+           (,fun (si::coerce-fdesignator ,function))
+           ,@(mapcar #'list seqs sequences))
+       (if (and (vectorp ,output) (array-has-fill-pointer-p ,output))
+           (map-into-fp ,output ,fun ,@seqs)
+           (map-into-usual ,output ,fun ,@seqs))
+       ,output)))
+
+;;;
+;;; EVERY, SOME, ANY, NOTANY
+;;; These are actually part of "Data and Control Flow" but they're basically sequence functions.
+;;;
+
+(flet ((body (predicate sequences whenless found unfound)
+         (let ((p (gensym "PREDICATE"))
+               (b (gensym)))
+         `(block ,b
+            (let ((,p ,predicate))
+              (do-static-sequences (call ,@sequences)
+                (let ((it (call ,p)))
+                  (,whenless it (return-from ,b ,found))))
+              ,unfound)))))
+  (macrolet ((def (name whenless found unfound)
+               `(define-compiler-macro ,name (predicate sequence &rest more-sequences)
+                  (body predicate (cons sequence more-sequences) ',whenless ',found ',unfound))))
+    (def some when it nil)
+    (def every unless nil t)
+    (def notany when nil t)
+    (def notevery unless t nil)))
+
+(define-compiler-macro si::every* (predicate &rest sequences)
+  (let ((seqs (gensym-list sequences "SEQUENCE")))
+    `(and (= ,@(mapcar (lambda (s) `(length ,s)) seqs))
+          (every ,predicate ,@seqs))))
