@@ -34,9 +34,10 @@ when this is t a lot of graphs will be generated.")
           (typecase datum
             (cleavir-ir:values-location) ; do nothing - we don't actually use them
             (cleavir-ir:immediate-input (setf var (%i64 (cleavir-ir:value datum))))
+            ;; names may be (setf foo), so use write-to-string and not just string
             (cc-mir:typed-lexical-location
-             (setf var (alloca (cc-mir:lexical-location-type datum) 1 (string (cleavir-ir:name datum)))))
-            (cleavir-ir:lexical-location (setf var (alloca-t* (string (cleavir-ir:name datum)))))
+             (setf var (alloca (cc-mir:lexical-location-type datum) 1 (write-to-string (cleavir-ir:name datum)))))
+            (cleavir-ir:lexical-location (setf var (alloca-t* (write-to-string (cleavir-ir:name datum)))))
             (t (error "add support to translate datum: ~a~%" datum)))
 	  (setf (gethash datum *vars*) var))
 	var)))
