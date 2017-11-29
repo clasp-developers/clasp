@@ -9,7 +9,7 @@
   (declare (ignore env))
   (cond ((symbolp form) (symbol-value form))
         ((consp form) (second form)) ; quote
-        (t (error "Form for CONSTANT-FORM-VALUE not constant: ~a" form))))
+        (t form))) ; self-evaluating
 
 (export '(constant-form-value))
 
