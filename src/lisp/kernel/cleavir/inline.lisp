@@ -210,10 +210,6 @@
             nil
             (error 'type-error :datum x :expected-type 'list)))))
 
-;;; FIXME: This takes a lot of itme to compile for some reason?
-#+(or)
-(progn
-
 (defmacro defcr (name &rest ops)
   `(progn
      (debug-inline ,(symbol-name name))
@@ -265,7 +261,6 @@
 (defcr eighth  car cdr cdr cdr cdr cdr cdr cdr)
 (defcr ninth   car cdr cdr cdr cdr cdr cdr cdr cdr)
 (defcr tenth   car cdr cdr cdr cdr cdr cdr cdr cdr cdr)
-)
 
 (debug-inline "rplaca")
 
