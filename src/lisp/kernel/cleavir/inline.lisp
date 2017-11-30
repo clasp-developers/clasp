@@ -1,5 +1,6 @@
 (in-package :clasp-cleavir)
 
+#+(or)
 (eval-when (:execute)
   (setq core:*echo-repl-read* t))
 

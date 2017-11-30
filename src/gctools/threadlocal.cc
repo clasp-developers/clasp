@@ -184,8 +184,11 @@ void DynamicBindingStack::pop_binding() {
 namespace core {
 
 
-
-ThreadLocalState::ThreadLocalState(void* stack_top) :  _DisableInterrupts(false), _StackTop(stack_top), _PendingInterrupts(_Nil<core::T_O>()) {
+ThreadLocalState::ThreadLocalState(void* stack_top) :  _DisableInterrupts(false), _StackTop(stack_top), _PendingInterrupts(_Nil<core::T_O>())
+#ifdef DEBUG_RECURSIVE_ALLOCATIONS
+                                                    , _RecursiveAllocationCounter(0)
+#endif
+{
   my_thread = this;
 #ifdef _TARGET_OS_DARWIN
   pthread_threadid_np(NULL, &this->_Tid);

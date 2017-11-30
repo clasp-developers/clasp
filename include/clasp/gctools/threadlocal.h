@@ -1,6 +1,7 @@
 #ifndef gctools_threadlocal_H
 #define gctools_threadlocal_H
 
+
 namespace core {
 #define IHS_BACKTRACE_SIZE 16
   struct InvocationHistoryFrame;
@@ -8,6 +9,9 @@ namespace core {
   ThreadLocalState(void* stack_top);
     void initialize_thread(mp::Process_sp process);
     int _DisableInterrupts;
+#if defined(DEBUG_RECURSIVE_ALLOCATIONS)
+    int _RecursiveAllocationCounter;
+#endif
     mp::Process_sp _Process;
     uint64_t  _Tid;
     void* _StackTop;
@@ -49,6 +53,12 @@ namespace core {
   };
 
 };
+
+
+namespace core {
+ 
+};
+
 
 
 

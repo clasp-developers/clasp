@@ -1128,7 +1128,7 @@ T_mv sp_tagbody(List_sp args, T_sp env) {
   return Values0<T_O>();
 };
 
-T_mv sp_go(List_sp args, T_sp env) {
+DONT_OPTIMIZE_WHEN_DEBUG_RELEASE T_mv sp_go(List_sp args, T_sp env) {
   ASSERT(env.generalp());
   Symbol_sp tag = gc::As<Symbol_sp>(oCar(args));
   int depth = 0;
@@ -1140,6 +1140,9 @@ T_mv sp_go(List_sp args, T_sp env) {
     SIMPLE_ERROR(BF("Could not find tag[%s] in the lexical environment: %s") % _rep_(tag) % _rep_(env));
   }
   ActivationFrame_sp af = Environment_O::clasp_getActivationFrame(env);
+  if (!gc::IsA<ActivationFrame_sp>(af)) {
+    SIMPLE_ERROR(BF("in sp_go environment does not have activation frame"));
+  }
   T_sp tagbodyId = core::tagbody_frame_lookup(af,depth,index);
   int frame = my_thread->exceptionStack().findKey(TagbodyFrame, tagbodyId);
   if (frame < 0) {

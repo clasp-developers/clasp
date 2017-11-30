@@ -1048,6 +1048,7 @@ CL_DEFUN ValueEnvironment_sp ValueEnvironment_O::createForNumberOfEntries(int nu
   env->_Invisible = invisible;
   env->setupParent(parent);
   if (!invisible) env->_ActivationFrame = ValueFrame_O::create(numberOfArguments, clasp_getActivationFrame(clasp_currentVisibleEnvironment(parent,false)));
+  else env->_ActivationFrame = clasp_getActivationFrame(clasp_currentVisibleEnvironment(parent,false));
   return env;
 }
 
@@ -1055,7 +1056,8 @@ CL_LISPIFY_NAME(makeValueEnvironmentForLocallySpecialEntries);
 CL_DEFUN ValueEnvironment_sp ValueEnvironment_O::createForLocallySpecialEntries(List_sp specials, T_sp parent) {
   ValueEnvironment_sp env(ValueEnvironment_O::create());
   env->setupParent(parent);
-  env->_Invisible = true;
+  env->_Invisible = true; // What do we do with the activation frame?
+  env->_ActivationFrame = clasp_getActivationFrame(clasp_currentVisibleEnvironment(parent,false));
   for (auto cur : specials) {
     env->defineSpecialBinding(gc::As<Symbol_sp>(oCar(cur)));
   }

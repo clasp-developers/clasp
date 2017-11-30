@@ -587,6 +587,7 @@ It takes the arguments in two forms, as a vaslist and as a list of arguments."
   (error "The funcallable-instance ~s is not funcallable" generic-function))
 
 (defun invalidated-dispatch-function (generic-function valist-args)
+  (declare (optimize (debug 3)))
   ;;; If there is a call history then compile a dispatch function
   ;;;   being extremely careful NOT to use any generic-function calls.
   ;;;   Then redo the call.

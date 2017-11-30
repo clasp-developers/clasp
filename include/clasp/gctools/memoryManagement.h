@@ -719,7 +719,10 @@ namespace gctools {
   void lisp_disable_interrupts(core::ThreadLocalState* t);
   void lisp_enable_interrupts(core::ThreadLocalState* t);
   void lisp_check_pending_interrupts(core::ThreadLocalState* thread);
+  void lisp_increment_recursive_allocation_counter(core::ThreadLocalState* thread);
+  void lisp_decrement_recursive_allocation_counter(core::ThreadLocalState* thread);
 };
+
 
 namespace core {
   struct RAIIDisableInterrupts {
@@ -738,12 +741,24 @@ namespace core {
 extern THREAD_LOCAL core::ThreadLocalState *my_thread;
 #define RAII_DISABLE_INTERRUPTS() core::RAIIDisableInterrupts disable_interrupts__(my_thread)
 
-#if 0
-namespace gctools {
-class GCStack;
-GCStack *threadLocalStack();
+namespace core {
+  #ifdef DEBUG_RECURSIVE_ALLOCATIONS
+struct RecursiveAllocationCounter {
+  RecursiveAllocationCounter() {
+    gctools::lisp_increment_recursive_allocation_counter(my_thread);
+  };
+  ~RecursiveAllocationCounter() {
+    gctools::lisp_decrement_recursive_allocation_counter(my_thread);
+  }
 };
 #endif
+#ifdef DEBUG_RECURSIVE_ALLOCATIONS
+#define DO_DEBUG_RECURSIVE_ALLOCATIONS() ::core::RecursiveAllocationCounter _rac_;
+#else
+#define DO_DEBUG_RECURSIVE_ALLOCATIONS()
+#endif
+};
+
 
 #include <clasp/gctools/gcStack.h>
 //#include <clasp/gctools/gcalloc.h>

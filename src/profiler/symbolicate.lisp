@@ -132,7 +132,7 @@ Read the contents of the filename into memory and return a buffer-stream on it."
                ((string= option "-o")
                 (setf output-stream (open value :direction :output :if-exists :supersede)))
                ((string= option "-i")
-                (setf input-stream (open value :direction :input)))
+                (setf input-stream (open value :direction :input :external-format '(:utf-8 :replacement #\?))))
                ((string= option "-s")
                 (setf symbol-table (load-symbol-table value)))
                (t (error "Unknown option ~a - only -o {output} -i {input} -s {symbol-table} are allowed" option)))))

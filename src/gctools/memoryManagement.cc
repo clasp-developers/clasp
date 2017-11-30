@@ -95,6 +95,21 @@ GC_MANAGED_TYPE(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Sy
 GC_MANAGED_TYPE(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>>);
 
 
+namespace gctools {
+void lisp_increment_recursive_allocation_counter(core::ThreadLocalState* thread)
+{
+  int x = thread->_RecursiveAllocationCounter+1;
+  thread->_RecursiveAllocationCounter = x;
+  if (x!=1) {
+    printf("%s:%d A recursive allocation took place - these are illegal!!!!\n", __FILE__, __LINE__ );
+    abort();
+  }
+}
+void lisp_decrement_recursive_allocation_counter(core::ThreadLocalState* thread)
+{
+  --thread->_RecursiveAllocationCounter+1;
+};
+};
 
 
 #if 0

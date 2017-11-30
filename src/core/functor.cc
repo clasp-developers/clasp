@@ -268,7 +268,7 @@ void InterpretedClosure_O::setf_lambda_list(List_sp lambda_list) {
   // Do nothing - setting the lambdaListHandler is all that's needed
 }
 
-LCC_RETURN interpretedClosureEntryPoint(LCC_ARGS_FUNCALL_ELLIPSIS) {
+DONT_OPTIMIZE_WHEN_DEBUG_RELEASE LCC_RETURN interpretedClosureEntryPoint(LCC_ARGS_FUNCALL_ELLIPSIS) {
   InterpretedClosure_O* closure = gctools::untag_general<InterpretedClosure_O*>((InterpretedClosure_O*)lcc_closure);
 //  printf("%s:%d    closure name -> %s\n", __FILE__, __LINE__, _rep_(closure->functionName()).c_str());
   INCREMENT_FUNCTION_CALL_COUNTER(closure);

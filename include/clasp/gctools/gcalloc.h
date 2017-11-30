@@ -173,6 +173,7 @@ namespace gctools {
                                         size_t& globalMpsMetrics_countAllocations,
                                         ARGS &&... args) {
     gc::smart_ptr<Cons> tagged_obj;
+    DO_DEBUG_RECURSIVE_ALLOCATIONS();
     { RAII_DISABLE_INTERRUPTS();
       mps_addr_t addr;
       Cons* cons;
@@ -204,6 +205,7 @@ namespace gctools {
     typedef typename PTR_TYPE::Type T;
     typedef typename GCHeader<T>::HeaderType HeadT;
 //    GCTOOLS_ASSERT(the_header.stamp()>=stamp_first_general);
+    DO_DEBUG_RECURSIVE_ALLOCATIONS();
     GCTOOLS_ASSERT(the_header.stamp()!=STAMP_core__General_O);
     // BF("The kind value[%d] must be > %d - if the type being allocated is a templated type then it should have the same kind as its TemplateBase ... eg:\n"\
       // "template <typename T>\n"\
@@ -275,6 +277,7 @@ namespace gctools {
     PTR_TYPE tagged_obj;
     mps_addr_t addr;
     T* myAddress;
+    DO_DEBUG_RECURSIVE_ALLOCATIONS();
     { RAII_DISABLE_INTERRUPTS();
       do {
         mps_res_t res = mps_reserve(&addr, allocation_point, size);

@@ -1001,7 +1001,7 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
   if (setFeatures) features = core::Cons_O::create(_lisp->internKeyword("DEBUG-MPS_SIZE"),features);
 #endif
   if (buildReport) ss << (BF("DEBUG_MPS_SIZE = %s\n") % (debug_mps_size ? "**DEFINED**" : "undefined") ).str();
-  
+
 
   bool debug_bclasp_lisp = false;
 #ifdef DEBUG_BCLASP_LISP

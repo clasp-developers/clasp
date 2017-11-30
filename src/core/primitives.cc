@@ -33,7 +33,7 @@ THE SOFTWARE.
 #include <unistd.h>
 #include <pthread.h> // TODO: PORTING - frgo, 2017-08-04
 #include <signal.h>  // TODO: PORTING - frgo, 2017-08-04
-
+#include <clasp/external/PicoSHA2/picosha2.h>
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 #include <clasp/core/cons.h>
@@ -2380,6 +2380,26 @@ CL_DEFUN T_sp core__long_long_round_trip(T_sp num) {
   T_sp result = translate::to_object<long long>::convert(x);
   return result;
 }
+
+CL_DEFUN T_sp core__hash256_hex_string(T_sp string)
+{
+  String_sp sarg = gc::As<String_sp>(string);
+  std::string raw = sarg->get_std_string();
+  std::string result;
+  picosha2::hash256_hex_string(raw.begin(),raw.end(),result);
+  return SimpleBaseString_O::make(result);
+};
+
+
+#include <clasp/external/hash-library/sha256.cpp>
+#include <clasp/external/hash-library/hmac.h>
+
+CL_DEFUN T_sp core__hmac_sha256(SimpleVector_byte8_t_sp data, SimpleVector_byte8_t_sp key)
+{
+  std::string hash = hmac<SHA256>(&(*data)[0],data->length(),&(*key)[0],key->length());
+  return SimpleBaseString_O::make(hash);
+}
+
 };
 
 extern "C" {

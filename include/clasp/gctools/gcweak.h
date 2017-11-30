@@ -509,24 +509,23 @@ public:
   /*! Return (values key value t) or (values nil nil nil) */
   core::T_mv keyValue() const {
     core::T_mv result_mv;
-    safeRun<void()>([&result_mv, this]() -> void {   
-            
-                    if (!this->unsafeValid()) {
-                        result_mv = Values(_Nil<core::T_O>(),_Nil<core::T_O>(),_Nil<core::T_O>());
-                        return;
-                    }
-                    value_type& key_ref = this->Key->bucket;
-                    value_type& value_ref = this->Value->bucket;
-                    core::T_sp key(key_ref);
-                    core::T_sp value;
-                    if ( value_ref.sameAsKeyP() ) {
-                        value = key;
-                    } else { 
-                        value = smart_ptr<core::T_O>(value_ref);
-                    }
-                    result_mv = Values(key,value,core::lisp_true());
-                    return;
-    });
+    safeRun<void()>([&result_mv, this]() -> void {
+        if (!this->unsafeValid()) {
+          result_mv = Values(_Nil<core::T_O>(),_Nil<core::T_O>(),_Nil<core::T_O>());
+          return;
+        }
+        value_type& key_ref = this->Key->bucket;
+        value_type& value_ref = this->Value->bucket;
+        core::T_sp key(key_ref);
+        core::T_sp value;
+        if ( value_ref.sameAsKeyP() ) {
+          value = key;
+        } else { 
+          value = smart_ptr<core::T_O>(value_ref);
+        }
+        result_mv = Values(key,value,core::lisp_true());
+        return;
+      });
     return result_mv;
   };
 };
@@ -551,6 +550,7 @@ struct WeakPointerManager {
     if (!val.objectp()) {
       throw_hard_error("Only objectp() objects can be added to Mapping");
     }
+#if 0
     this->pointer = AllocatorType::allocate(val);
 #ifdef USE_BOEHM
     GCTOOLS_ASSERT(this->pointer->value.objectp());
@@ -560,6 +560,7 @@ struct WeakPointerManager {
     } else {
       GCTOOLS_ASSERT(false); // ERROR("value can never contain anything but a pointer - if it does then when it gets set to NULL by the BoehmGC it will be interpreted as a Fixnum 0!!!!!");
     }
+#endif
 #endif
   }
 #pragma clang diagnostic push

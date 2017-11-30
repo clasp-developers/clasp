@@ -287,6 +287,9 @@ and cannot be added to ~A." method other-gf gf)))
 ;;; ----------------------------------------------------------------------
 ;;; Error messages
 
+(defgeneric no-applicable-method (gf &rest args)
+  (declare (optimize (debug 3))))
+
 (defmethod no-applicable-method (gf &rest args)
   (declare (optimize (debug 3)))
   (error "No applicable method for ~S with ~

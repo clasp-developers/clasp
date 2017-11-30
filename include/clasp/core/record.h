@@ -13,6 +13,18 @@ namespace core {
 
   T_sp record_circle_subst(T_sp repl_table, T_sp tree);
 
+};
+
+template <>
+struct gctools::GCInfo<core::Record_O> {
+  static bool const NeedsInitialization = true;
+  static bool const NeedsFinalization = false;
+  static GCInfo_policy constexpr Policy = normal;
+  //  static bool const InlineScan = true;
+  //  static bool const Roo
+};
+
+namespace core {
 SMART(Record);
 class Record_O : public General_O {
   LISP_ABSTRACT_CLASS(core, CorePkg, Record_O, "Record",General_O);
@@ -51,6 +63,7 @@ public:
   }
 
 public:
+  void initialize();
   List_sp data() const { return this->_alist; };
   T_sp seen() const { return this->_Seen; };
   RecordStage stage() const { return this->_stage; };

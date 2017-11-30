@@ -46,12 +46,13 @@ T_sp record_circle_subst(T_sp replacement_table, T_sp tree) {
   return eval::funcall(_sym_circle_subst, replacement_table, tree);
 }
 
-Record_O::Record_O(RecordStage stage, bool dummy, List_sp data) : _stage(stage), _alist(data), _Seen(_Nil<T_O>()) {
-  if (stage == initializing) {
+Record_O::Record_O(RecordStage stage, bool dummy, List_sp data) : _stage(stage), _alist(data), _Seen(_Nil<T_O>()) {}
+
+void Record_O::initialize() {
+  if (this->_stage == initializing) {
     this->_Seen = VectorObjects_O::make(16, _Nil<T_O>(), clasp_make_fixnum(0));
   }
 }
-
 void Record_O::flagSeen(Cons_sp pair) {
   VectorObjects_sp vvec = gc::As<VectorObjects_sp>(this->_Seen);
   vvec->vectorPushExtend(pair);
