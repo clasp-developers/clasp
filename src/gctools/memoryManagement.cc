@@ -107,7 +107,7 @@ void lisp_increment_recursive_allocation_counter(core::ThreadLocalState* thread)
 }
 void lisp_decrement_recursive_allocation_counter(core::ThreadLocalState* thread)
 {
-  --thread->_RecursiveAllocationCounter+1;
+  --thread->_RecursiveAllocationCounter;
 };
 };
 
