@@ -85,6 +85,7 @@ def bclasp(wrappers):
         "src/lisp/kernel/lsp/module",
         "src/lisp/kernel/lsp/loop2",
         "src/lisp/kernel/cmp/opt", # need loop
+        "src/lisp/kernel/cmp/opt-type",
         "src/lisp/kernel/cmp/opt-sequence",
         "src/lisp/kernel/cmp/opt-cons",
         "src/lisp/kernel/lsp/shiftf-rotatef",
