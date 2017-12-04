@@ -21,11 +21,11 @@ services:
   #    Expected time:  xxx min
   # This will start with a smaller base image, that has only the runtime
   # dependencies, and copy and unpack ./build/clasp.tgz into the directory /home/app
-  cando-deploy:
-    image: cando-deploy
+  cando-cache:
+    image: cando-cache
     build:
       context: .
-      dockerfile: tools/dockerfiles/cando-deploy/Dockerfile
+      dockerfile: tools/dockerfiles/cando-cache/Dockerfile
 
 # To build clasp only, run: docker-compose build clasp
   #    Expected time:  2 min
