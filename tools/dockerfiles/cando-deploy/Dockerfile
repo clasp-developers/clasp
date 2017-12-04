@@ -46,7 +46,7 @@ RUN mkdir $HOME/clasp
 RUN cd $HOME/clasp/ \
     && tar zxvf /tmp/clasp.tgz
 
-RUN cd $HOME \
+RUN cd / \
     && tar zxvf /tmp/cando-cache.tgz
 
 #RUN tar cvf /tmp/cando-cache.tar $HOME/quicklisp $HOME/.cache/common-lisp
