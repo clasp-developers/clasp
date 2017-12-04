@@ -57,8 +57,8 @@ RUN cd $HOME/quicklisp/local-projects \
 
 ENV PATH "$PATH:$HOME/clasp/bin"
 
-RUN clasp -f "setup-cando"\
-          -e "(ql:quickload :nglview)"
+RUN clasp -f "setup-cando" \
+          -e "(ql:quickload :nglview)" \
           -e "(core:quit)"
 
 
