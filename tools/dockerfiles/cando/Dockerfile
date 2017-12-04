@@ -10,7 +10,8 @@ ADD extensions/cando/src/lisp $HOME/clasp/Contents/Resources/source-code/extensi
 USER root
 RUN python -m pip install pip --upgrade
 RUN python -m pip install numpy
-
+# Added Dec 4, 2017
+RUN python -m pip install jupyter
 RUN python -m pip install pytraj==1.0.9
 
 ### Previous version of nglview only worked with 5.2.2
