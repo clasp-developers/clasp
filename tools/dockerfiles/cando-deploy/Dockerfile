@@ -32,7 +32,14 @@ RUN groupadd -g 9999 app && useradd -u 9999 -g 9999 -ms /bin/bash app
 ENV HOME=/home/app
 
 RUN apt-get update && apt-get -y install git-core 
+# AWS command-line utilities
+RUN pip install awscli
+
 USER app
+WORKDIR $HOME
+
+RUN aws s3 cp s3://clasp-cando/docker-cando/clasp.tgz /tmp/clasp.tgz --region us-east-2
+RUN tar zxvf /tmp/clasp.tgz
 
 # checkout quicklisp and its subprojects
 RUN git clone --depth=1 https://github.com/quicklisp/quicklisp-client.git $HOME/quicklisp
@@ -40,26 +47,6 @@ RUN mkdir $HOME/quicklisp/local-projects
 
 # checkout slime
 RUN git clone --depth=1 https://github.com/slime/slime $HOME/slime
-
-WORKDIR $HOME
-# add clasp build output
-ADD ./build/clasp.tgz ${HOME}/clasp
-ENV PATH "$PATH:$HOME/clasp/bin"
-
-RUN clasp -f "setup-cando"\
-          -e '(load "/home/app/quicklisp/setup.lisp")'\
-          -e '(setq core::*swank-home* "/home/app/slime")'\
-          -e '(load (format nil "~a/swank-loader.lisp" core::*swank-home*))'\
-          -e "(swank-loader:init :delete nil :reload nil :load-contribs nil)"\
-          -e "(core:quit)"
-
-RUN apt-get -y install python2.7 python-pip python-dev ipython ipython-notebook
-RUN pip install --upgrade pip && pip install jupyter
-# set ownership and permissions before changing to app user
-USER app
-
-
-# checkout quicklisp and its subprojects
 RUN cd $HOME/quicklisp/local-projects \
  && git clone --depth=1 https://github.com/clasp-developers/usocket.git \
  && git clone --depth=1 https://github.com/clasp-developers/cl-jupyter.git \
@@ -68,3 +55,14 @@ RUN cd $HOME/quicklisp/local-projects \
  && git clone --depth=1 https://github.com/clasp-developers/cffi.git
 
 
+ENV PATH "$PATH:$HOME/clasp/bin"
+
+RUN clasp -f "setup-cando"\
+          -e "(ql:quickload :nglview)"
+          -e "(core:quit)"
+
+
+RUN tar cvf /tmp/cando-cache.tar $HOME/quicklisp $HOME/.cache/common-lisp
+RUN gzip /tmp/cando-cache.tar
+RUN aws s3 cp /tmp/cando-cache.tgz s3://clasp-cando/docker-cando/cando-cache.tgz --region us-east-2
+RUN aws s3 cp /var/log/cloud-init-output.log s3://clasp-cando/docker-cando/cando-cache.could-init-output.log --region us-east-2
