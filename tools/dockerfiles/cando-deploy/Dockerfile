@@ -41,33 +41,15 @@ USER app
 WORKDIR $HOME
 
 RUN aws s3 cp s3://clasp-cando/docker-cando/clasp.tgz /tmp/clasp.tgz --region us-east-2
+run aws s3 cp s3://clasp-cando/docker-cando/cando-cache.tgz /tmp/cando-cache.tgz --region us-east-2
 RUN mkdir $HOME/clasp
 RUN cd $HOME/clasp/ \
     && tar zxvf /tmp/clasp.tgz
 
-# checkout quicklisp and its subprojects
-RUN git clone --depth=1 https://github.com/quicklisp/quicklisp-client.git $HOME/quicklisp
-RUN mkdir $HOME/quicklisp/local-projects
+RUN cd $HOME \
+    && tar zxvf /tmp/cando-cache.tgz
 
-# checkout slime
-RUN git clone --depth=1 https://github.com/slime/slime $HOME/slime
-RUN cd $HOME/quicklisp/local-projects \
- && git clone --depth=1 https://github.com/clasp-developers/usocket.git \
- && git clone --depth=1 https://github.com/clasp-developers/cl-jupyter.git \
- && git clone --depth=1 https://github.com/clasp-developers/ironclad.git \
- && git clone --depth=1 https://github.com/clasp-developers/bordeaux-threads.git \
- && git clone --depth=1 https://github.com/clasp-developers/cffi.git
-
-
-ENV PATH "$PATH:$HOME/clasp/bin"
-
-RUN clasp -f "setup-cando" \
-          -e "(load \"~/quicklisp/setup.lisp\")" \
-          -e "(ql:quickload :nglview)" \
-          -e "(core:quit)"
-
-
-RUN tar cvf /tmp/cando-cache.tar $HOME/quicklisp $HOME/.cache/common-lisp
-RUN gzip /tmp/cando-cache.tar
-RUN aws s3 cp /tmp/cando-cache.tar.gz s3://clasp-cando/docker-cando/cando-cache.tgz --region us-east-2
-RUN aws s3 cp /var/log/cloud-init-output.log s3://clasp-cando/docker-cando/cando-cache.could-init-output.log --region us-east-2
+#RUN tar cvf /tmp/cando-cache.tar $HOME/quicklisp $HOME/.cache/common-lisp
+#RUN gzip /tmp/cando-cache.tar
+#RUN aws s3 cp /tmp/cando-cache.tar.gz s3://clasp-cando/docker-cando/cando-cache.tgz --region us-east-2
+#RUN aws s3 cp /var/log/cloud-init-output.log s3://clasp-cando/docker-cando/cando-cache.could-init-output.log --region us-east-2
