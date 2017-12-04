@@ -127,35 +127,6 @@
     #+mlog(or x (error "allocate-raw-xxxx returned nil  (core:subclassp class *the-class-class*) -> ~a" (core:subclassp class *the-class-class*)))
     x))
 
-(eval-when (:compile-toplevel :execute)
-  (mlog "Expanding defmethod allocate-instance -> %s\n"
-        (macroexpand-1 '(defmethod allocate-instance ((class class) &rest initargs)
-                         (declare (ignore initargs))
-                         ;; FIXME! Inefficient! We should keep a list of dependent classes.
-                         (unless (class-finalized-p class)
-                           (finalize-inheritance class))
-                         #+clasp(unless *the-class-class*
-                                  (setq *the-class-class* (find-class 'class)))
-                         (dbg-standard "About to allocate-raw-instance class->~a~%" class)
-                         (let ((x #-clasp(si::allocate-raw-instance nil class (class-size class))
-                                  #+clasp(if (core:subclassp class *the-class-class*)
-                                             (ALLOCATE-RAW-CLASS nil class (class-size class))
-                                             (si::allocate-raw-instance nil class (class-size class)))
-                                  ))
-                           (dbg-standard "Done allocate-raw-instance unbound x ->~a~%" (eq (core:unbound) x))
-                           (si::instance-sig-set x)
-                           (mlog "In allocate-instance  x -> %s\n" x)
-                           #+mlog(or x (error "allocate-raw-xxxx returned nil  (core:subclassp class *the-class-class*) -> ~a" (core:subclassp class *the-class-class*)))
-                           x)))))
-
-
-
-
-
-
-
-                                                         
-
 (defmethod make-instance ((class class) &rest initargs)
   (dbg-standard "standard.lsp:128  make-instance class ->~a~%" class)
   ;; Without finalization we can not find initargs.
