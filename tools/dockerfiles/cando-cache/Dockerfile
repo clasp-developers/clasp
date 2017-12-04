@@ -33,7 +33,7 @@ ENV HOME=/home/app
 
 RUN apt-get update && apt-get -y install git-core 
 # AWS command-line utilities
-RUN apt-get install python-setuptools python-dev build-essential
+RUN apt-get -y install python-setuptools python-dev build-essential
 RUN easy_install pip
 RUN pip install awscli
 
