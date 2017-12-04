@@ -41,7 +41,9 @@ USER app
 WORKDIR $HOME
 
 RUN aws s3 cp s3://clasp-cando/docker-cando/clasp.tgz /tmp/clasp.tgz --region us-east-2
-RUN tar zxvf /tmp/clasp.tgz
+RUN mkdir $HOME/clasp
+RUN cd $HOME/clasp/ \
+    && tar zxvf /tmp/clasp.tgz
 
 # checkout quicklisp and its subprojects
 RUN git clone --depth=1 https://github.com/quicklisp/quicklisp-client.git $HOME/quicklisp
