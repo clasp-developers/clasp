@@ -38,12 +38,15 @@
 
 (eval-when (:compile-toplevel :execute #+clasp :load-toplevel)
   (defparameter +specializer-slots+
+;;; Any changes involving adding, removing, rearranging slots below need to be reflected in instance.h
     '((flag :initform nil :accessor eql-specializer-flag)
       (direct-methods :initform nil :accessor specializer-direct-methods)
       (direct-generic-functions :initform nil :accessor specializer-direct-generic-functions)
       (call-history-generic-functions :initform nil :accessor specializer-call-history-generic-functions)
       (specializer-mutex :initform (mp:make-shared-mutex 'call-history-generic-functions-mutex)
-       :accessor specializer-mutex))))
+                         :accessor specializer-mutex)
+      ;;; Any changes to the slots above need to be reflected in instance.h
+      )))
 
 (eval-when (:compile-toplevel :execute #+clasp :load-toplevel)
   (defparameter +eql-specializer-slots+
@@ -66,6 +69,7 @@
 
 (eval-when (:compile-toplevel :execute #+clasp :load-toplevel)
   (defparameter +class-slots+
+;;; Any changes involving adding, removing, rearranging slots below need to be reflected in instance.h
     `(,@+specializer-slots+
       (name :initarg :name :initform nil :accessor class-id)
       (direct-superclasses :initarg :direct-superclasses
@@ -88,6 +92,7 @@
       (location-table :initform nil :accessor class-location-table)
       (stamp-for-instances :accessor stamp-for-instances)
       (creator :accessor creator)
+      ;;; Any changes to the slots above need to be reflected in instance.h
       ))
 
   #-clasp
@@ -134,6 +139,7 @@
 
 (eval-when (:compile-toplevel :execute  #+clasp :load-toplevel)
   (defparameter +standard-generic-function-slots+
+;;; Any changes involving adding, removing, rearranging slots below need to be reflected in funcallableInstance.h
     '((name :initarg :name :initform nil
        :reader generic-function-name)
       (spec-list :initform nil :accessor generic-function-spec-list)
@@ -142,6 +148,7 @@
        :accessor generic-function-method-combination)
       (lambda-list :initarg :lambda-list
        :accessor generic-function-lambda-list)
+;;; Any changes to the slots above need to be reflected in funcallableInstance.h
       (argument-precedence-order 
        :initarg :argument-precedence-order
        :initform nil
