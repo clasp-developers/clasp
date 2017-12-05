@@ -26,7 +26,6 @@ LINUX_OS = 'linux'
 STAGE_CHARS = [ 'r', 'i', 'a', 'b', 'f', 'c' ]
 
 GCS = [ 'boehm',
-        'boehmdc',
         'mpsprep',
         'mps' ]
 # DEBUG_CHARS None == optimized
@@ -71,6 +70,9 @@ BOOST_LIBRARIES = [
             'boost_iostreams']
 
 
+def build_extension(cfg):
+    cfg.recurse("extensions")
+    
 
     
 def update_submodules(cfg):
@@ -88,7 +90,6 @@ def sync_submodules(cfg):
 
 # run this from a completely cold system with:
 # ./waf distclean configure
-# ./waf build_cboehmdc
 # ./waf build_impsprep
 # ./waf analyze_clasp
 # This is the static analyzer - formerly called 'redeye'
@@ -208,6 +209,10 @@ def debug_dir_ext(c):
         return "_%s"%c
     return ""
 
+class extension_builder:
+    def __init__(self,n):
+        self.name = name
+
 class variant(object):
     def debug_extension(self):
         return debug_ext(self.debug_char)
@@ -318,21 +323,6 @@ class boehm_d(boehm_base):
         cfg.setenv("boehm_d", env=env_copy.derive())
         super(boehm_d,self).configure_variant(cfg,env_copy)
 
-class boehmdc(boehm_base):
-    gc_name = 'boehmdc'
-    debug_char = None
-    def configure_variant(self,cfg,env_copy):
-        cfg.setenv("boehmdc", env=env_copy.derive())
-        cfg.define("USE_CXX_DYNAMIC_CAST",1)
-        super(boehmdc,self).configure_variant(cfg,env_copy)
-
-class boehmdc_d(boehm_base):
-    gc_name = 'boehmdc'
-    debug_char = 'd'
-    def configure_variant(self,cfg,env_copy):
-        cfg.setenv("boehmdc_d", env=env_copy.derive())
-        cfg.define("USE_CXX_DYNAMIC_CAST",1)
-        super(boehmdc_d,self).configure_variant(cfg,env_copy)
 
 class mps_base(variant):
     def configure_variant(self,cfg,env_copy):
@@ -395,25 +385,6 @@ class bboehm_d(boehm_d):
     stage_char = 'b'
 class cboehm_d(boehm_d):
     stage_char = 'c'
-
-class iboehmdc(boehmdc):
-    stage_char = 'i'
-class aboehmdc(boehmdc):
-    stage_char = 'a'
-class bboehmdc(boehmdc):
-    stage_char = 'b'
-class cboehmdc(boehmdc):
-    stage_char = 'c'
-
-class iboehmdc_d(boehmdc_d):
-    stage_char = 'i'
-class aboehmdc_d(boehmdc_d):
-    stage_char = 'a'
-class bboehmdc_d(boehmdc_d):
-    stage_char = 'b'
-class cboehmdc_d(boehmdc_d):
-    stage_char = 'c'
-
 
 class imps(mps):
     stage_char = 'i'
@@ -812,6 +783,7 @@ def copy_tree(bld,src,dest):
     print("          dest= %s" % dest)
 
 def build(bld):
+    print("In Main build")
 #    bld(name='myInclude', export_includes=[bld.env.MY_MYSDK, 'include'])
     if not bld.variant:
         bld.fatal("Call waf with build_variant, e.g. 'nice -n19 ./waf --jobs 2 --verbose build_cboehm'")
@@ -828,7 +800,15 @@ def build(bld):
     bld.extensions_include_files = []
     bld.extensions_source_files = []
     bld.extensions_gcinterface_include_files = []
+    bld.extensions_builders = []
     bld.recurse('extensions')
+
+    print("There are %d extensions_builders" % len(bld.extensions_builders))
+    for x in bld.extensions_builders:
+        x.run()
+
+
+    
     bld.recurse('src/main')
     source_files = bld.clasp_source_files + bld.extensions_source_files
     bld.install_files('${PREFIX}/lib/clasp/', bld.clasp_source_files, relative_trick = True, cwd = bld.path)   #source
@@ -1010,7 +990,8 @@ def build(bld):
             os.symlink(cclasp_executable.abspath(),clasp_symlink_node.abspath())
         else:
             os.symlink(iclasp_executable.abspath(),clasp_symlink_node.abspath())
-
+    print("End of Main build(bld)")
+    
 from waflib import TaskGen
 from waflib import Task
 
