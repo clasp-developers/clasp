@@ -177,6 +177,11 @@
     (shadow shadowed-symbol-names)
     (dolist (item shadowing-imported-from-symbol-names-list)
       (let ((package (find-package (first item))))
+        (unless package
+          (signal-simple-error 'package-error "Create the package"
+                               "The name ~s does not designate any package"
+                               (list (first item))
+                               :package (find-package name)))
 	(dolist (name (rest item))
 	  (shadowing-import (find-or-make-symbol name package)))))
     (use-package use)
