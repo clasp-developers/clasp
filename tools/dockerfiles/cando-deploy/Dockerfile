@@ -49,6 +49,16 @@ RUN cd $HOME/clasp/ \
 RUN cd / \
     && tar zxvf /tmp/cando-cache.tgz
 
+
+ENV PATH "$PATH:$HOME/clasp/bin"
+
+RUN clasp -e "(load \"~/quicklisp/setup.lisp\")" \
+          -e "(ql:quickload :nglview)" \
+          -e "(asdf:load-asd "/home/app//Development/cando/tools/prebuild/jupyter/cando-jupyter.asd")
+          -e "(asdf:operate 'asdf:monolithic-load-bun
+          -e "(core:quit)"
+
+
 #RUN tar cvf /tmp/cando-cache.tar $HOME/quicklisp $HOME/.cache/common-lisp
 #RUN gzip /tmp/cando-cache.tar
 #RUN aws s3 cp /tmp/cando-cache.tar.gz s3://clasp-cando/docker-cando/cando-cache.tgz --region us-east-2
