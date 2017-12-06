@@ -79,8 +79,7 @@
       (debug-boot "    Done setf class name -> ~a  class -> ~a~%" name class)
       (setf
        (class-sealedp             class) nil
-       (class-dependents          class) nil
-       (class-valid-initargs      class) nil)
+       (class-dependents          class) nil)
       (debug-boot "      About to add-slots~%")
       (add-slots class direct-slots)
       (debug-boot "      About to get superclasses~%")
