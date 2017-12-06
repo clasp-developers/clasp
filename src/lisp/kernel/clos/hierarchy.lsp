@@ -179,7 +179,9 @@
       (the-function :initarg :function :accessor method-function)
       (docstring :initarg :documentation :initform nil)
       (plist :initform nil :initarg :plist :accessor method-plist)
-      (keywords :initform nil :accessor method-keywords)))
+      ;; these are the precomputed results of cl:function-keywords.
+      (keywords :initform nil :initarg :keywords :accessor method-keywords)
+      (aok-p :initform nil :initarg :aok-p :accessor method-allows-other-keys-p)))
 
   (defparameter +standard-accessor-method-slots+
     (append +standard-method-slots+

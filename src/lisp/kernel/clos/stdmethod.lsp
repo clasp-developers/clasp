@@ -16,16 +16,8 @@
 ;;; Method
 ;;; ----------------------------------------------------------------------
 
-(defun function-keywords (method)
-  (multiple-value-bind (reqs opts rest-var key-flag keywords)
-      (si::process-lambda-list (slot-value method 'lambda-list) 'function)
-    (declare (ignore reqs opts rest-var))
-    (when key-flag
-      (do* ((output '())
-	    (l (cdr keywords) (cddddr l)))
-	   ((endp l)
-	    output)
-	(push (first l) output)))))
+(defmethod function-keywords ((method standard-method))
+  (values (method-keywords method) (method-allows-other-keys-p method)))
 
 (defmethod shared-initialize ((method standard-method) slot-names &rest initargs
 			      &key (specializers nil spec-supplied-p)
@@ -45,8 +37,10 @@
     (loop for s in specializers
        unless (typep s 'specializer)
        do (error "Object ~A is not a valid specializer" s)))
-  (setf method (call-next-method)
-	(method-keywords method) (compute-method-keywords (method-lambda-list method)))
+  (setf method
+        (call-next-method)
+	(values (method-keywords method) (method-allows-other-keys-p method))
+        (compute-method-keywords (method-lambda-list method)))
   method)
 
 #+threads

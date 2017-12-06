@@ -403,26 +403,29 @@ have disappeared."
   (multiple-value-bind (reqs opts rest key-flag keywords allow-other-keys)
       (si::process-lambda-list lambda-list t)
     (declare (ignore reqs opts rest key-flag))
-    (if allow-other-keys
-	't
-	(loop for k in (rest keywords) by #'cddddr
-	   collect k))))
+    (values
+     (loop for k in (rest keywords) by #'cddddr
+	   collect k)
+     allow-other-keys)))
 
 (defun make-method (method-class qualifiers specializers lambda-list fun options)
   (declare (ignore options))
-  (with-early-make-instance
-      ;; We choose the largest list of slots
-      +standard-accessor-method-slots+
-    (method (if #-clasp(si::instancep method-class) #+clasp(classp method-class)
-		method-class
-		(find-class method-class))
-	    :generic-function nil
-	    :lambda-list lambda-list
-	    :function fun
-	    :specializers specializers
-	    :qualifiers qualifiers
-	    :keywords (compute-method-keywords lambda-list))
-    method))
+  (multiple-value-bind (keys aok-p)
+      (compute-method-keywords lambda-list)
+    (with-early-make-instance
+        ;; We choose the largest list of slots
+        +standard-accessor-method-slots+
+      (method (if #-clasp(si::instancep method-class) #+clasp(classp method-class)
+                  method-class
+                  (find-class method-class))
+              :generic-function nil
+              :lambda-list lambda-list
+              :function fun
+              :specializers specializers
+              :qualifiers qualifiers
+              :keywords keys
+              :aok-p aok-p)
+    method)))
 
 ;;; early version used during bootstrap
 (defun method-p (x)
