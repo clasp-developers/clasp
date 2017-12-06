@@ -377,14 +377,23 @@ and cannot be added to ~A." method other-gf gf)))
 (defclass initargs-updater ()
   ())
 
-(defun recursively-update-classes (a-class)
-  (slot-makunbound a-class 'valid-initargs)
-  (mapc #'recursively-update-classes (class-direct-subclasses a-class)))
+(defun recursively-update-class-initargs-cache (a-class)
+  (precompute-valid-initarg-keywords a-class)
+  (mapc #'recursively-update-class-initargs-cache (class-direct-subclasses a-class)))
 
 (defmethod update-dependent ((object generic-function) (dep initargs-updater)
-			     &rest initargs)
-  (declare (ignore dep initargs object))
-  (recursively-update-classes +the-class+))
+			     &rest initargs
+                             &key ((add-method added-method) nil am-p)
+                               ((remove-method removed-method) nil rm-p)
+                             &allow-other-keys)
+  (declare (ignore initargs))
+  (let ((method (cond (am-p added-method) (rm-p removed-method))))
+    ;; update-dependent is also called when the gf itself is reinitialized, so make sure we actually have
+    ;; a method that's added or removed
+    (when method
+      (let ((spec (first (method-specializers method)))) ; the class being initialized or allocated
+        (when (classp spec) ; sanity check against eql specialization
+          (recursively-update-class-initargs-cache spec))))))
 
 (let ((x (make-instance 'initargs-updater)))
   (add-dependent #'shared-initialize x)
