@@ -668,6 +668,20 @@
     (vector (core::vector-length sequence))
     (null 0)))
 
+(declaim (inline elt))
+(defun elt (sequence index)
+  (etypecase sequence
+    (list (nth index sequence))
+    (vector (row-major-aref sequence index))
+    (t (error 'type-error :datum sequence :expected-type 'sequence))))
+
+(declaim (inline core:setf-elt))
+(defun core:setf-elt (sequence index new-value)
+  (etypecase sequence
+    (list (setf (nth index sequence) new-value))
+    (vector (setf (row-major-aref sequence index) new-value))
+    (t (error 'type-error :datum sequence :expected-type 'sequence))))
+
 ;;; ------------------------------------------------------------
 ;;;
 ;;;  Copied from clasp/src/lisp/kernel/lsp/assorted.lsp
