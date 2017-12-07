@@ -109,9 +109,12 @@
   (loop for spec in (method-specializers method)
         do (add-direct-method spec method)))
 
-(dolist (method-info *early-methods*)
-  (dolist (method (cdr method-info))
-    (register-method-with-specializers method)))
+(defun fixup-early-methods ()
+  (dolist (method-info *early-methods*)
+    (dolist (method (cdr method-info))
+      (register-method-with-specializers method))))
+
+(fixup-early-methods)
 
 (makunbound '*early-methods*)
 

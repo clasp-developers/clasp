@@ -337,6 +337,18 @@ No DIBuilder is defined for the default module")
       (t raw-name))))
 
 (export 'print-name-from-unescaped-split-name)
+(defun function-name-from-source-info (lname)
+  (cond
+    ((and *compile-file-pathname*
+          *current-form-lineno*)
+     (core:bformat nil "%s.%s^%d^TOP-COMPILE-FILE" (pathname-name *compile-file-pathname*) (pathname-type *compile-file-pathname*) *current-form-lineno*))
+    ((and *load-pathname*
+          *current-form-lineno*)
+     (core:bformat nil "%s.%s^%d^TOP-LOAD" (pathname-name *load-pathname*) (pathname-type *load-pathname*) *current-form-lineno*))
+    (*current-form-lineno*
+     (core:bformat nil "UNKNOWN^%d^TOP-UNKNOWN" *current-form-lineno*))
+    (t "UNKNOWN??LINE^TOP-UNKNOWN")))
+  
 (defun jit-function-name (lname)
   "Depending on the type of LNAME an actual LLVM name is generated"
   ;;  (break "Check backtrace")
@@ -347,7 +359,7 @@ No DIBuilder is defined for the default module")
        ((string= lname core:+run-all-function-name+) lname) ; this one is ok
        ((string= lname core:+clasp-ctor-function-name+) lname) ; this one is ok
        ((string= lname "IMPLICIT-REPL") lname)  ; this one is ok
-       ((string= lname "TOP-LEVEL") lname)      ; this one is ok
+       ((string= lname "TOP-LEVEL") (function-name-from-source-info lname))
        ((string= lname "UNNAMED-LAMBDA") lname) ; this one is ok
        ((string= lname "lambda") lname)         ; this one is ok
        ((string= lname "ltv-literal") lname)    ; this one is ok
@@ -355,12 +367,17 @@ No DIBuilder is defined for the default module")
        (t (bformat t "jit-function-name lname = %s\n" lname)
           (break "Always pass symbol as name") lname)))
     ((symbolp lname)
-     (let* ((sym-pkg (symbol-package lname))
-            (sym-name (symbol-name lname))
-            (pkg-name (if sym-pkg
-                          (string (package-name sym-pkg))
-                          "KEYWORD")))
-       (escape-and-join-jit-name (list sym-name pkg-name "FN"))))
+     (cond ((eq lname 'core::top-level)
+            (function-name-from-source-info lname))
+           ((eq lname 'cmp::repl)
+            (function-name-from-source-info lname))
+           (t 
+            (let* ((sym-pkg (symbol-package lname))
+                   (sym-name (symbol-name lname))
+                   (pkg-name (if sym-pkg
+                                 (string (package-name sym-pkg))
+                                 "KEYWORD")))
+              (escape-and-join-jit-name (list sym-name pkg-name "FN"))))))
     ((and (consp lname) (eq (car lname) 'setf) (symbolp (second lname)))
 ;;;     (core:bformat t "jit-function-name handling SETF: %s\n" lname)
      (let* ((sn (cadr lname))

@@ -32,6 +32,7 @@ extern "C" {
 #include <clasp/mps/code/mps.h>
 };
 #endif
+#include <dlfcn.h>
 #include <typeinfo>
 #include <clasp/core/foundation.h>
 #include <clasp/core/common.h>
@@ -444,8 +445,32 @@ LtvcReturn ltvc_set_ltv_funcall_cleavir(gctools::GCRootsInModule* holder, size_t
   LTVCRETURN holder->set(index,val.tagged_());
 }
 
+struct MaybeDebugStartup {
+  PosixTime_sp start;
+  fnLispCallingConvention fptr;
+  MaybeDebugStartup(fnLispCallingConvention fp) : fptr(fp) {
+    if (core::_sym_STARdebugStartupSTAR->symbolValue().notnilp()) {
+      this->start = PosixTime_O::createNow();
+    }
+  };
+
+  ~MaybeDebugStartup() {
+    if (core::_sym_STARdebugStartupSTAR->symbolValue().notnilp()) {
+      PosixTime_sp end = PosixTime_O::createNow();
+      PosixTimeDuration_sp diff = end->sub(this->start);
+      Dl_info di;
+      dladdr((void*)fptr,&di);
+      mpz_class ms = diff->totalMilliseconds();
+      if (ms!=0)
+        printf("%s ms - %s\n", _rep_(Integer_O::create(ms)).c_str(), di.dli_sname);
+    }
+  }
+};
 
 LtvcReturn ltvc_toplevel_funcall(fnLispCallingConvention fptr, const char* name) {
+#ifdef DEBUG_SLOW
+  MaybeDebugStartup startup(fptr);
+#endif
   core::T_O *lcc_arglist = _Nil<core::T_O>().raw_();
   Symbol_sp sname = Symbol_O::create_from_string(std::string(name));
   GC_ALLOCATE_VARIADIC(CompiledClosure_O, toplevel_closure, fptr, sname, kw::_sym_function, _Nil<T_O>(), _Nil<T_O>(), 0, 0, 0, 0 );

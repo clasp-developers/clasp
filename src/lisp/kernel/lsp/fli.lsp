@@ -454,15 +454,17 @@
 ;;; F L I   I N I T I A L I Z A T I O N
 
 (eval-when (:load-toplevel :execute :compile-toplevel)
-;;  (print (macroexpand '(generate-type-spec-accessor-functions)))
-  (generate-type-spec-accessor-functions)
-  (init-translators)
-  (generate-llvm-type-symbol-fn-accessor-functions)
-  (generate-mem-ref-accessor-functions)
-  (generate-mem-set-accessor-functions)
-  (generate-foreign-type-size-functions)
-  (generate-foreign-type-alignment-functions)
-  (values))
+  ;;  (print (macroexpand '(generate-type-spec-accessor-functions)))
+  (defun generate-fli-methods ()
+    (generate-type-spec-accessor-functions)
+    (init-translators)
+    (generate-llvm-type-symbol-fn-accessor-functions)
+    (generate-mem-ref-accessor-functions)
+    (generate-mem-set-accessor-functions)
+    (generate-foreign-type-size-functions)
+    (generate-foreign-type-alignment-functions)
+    (values))
+  (generate-fli-methods))
 
 ;;;----------------------------------------------------------------------------
 ;;;----------------------------------------------------------------------------

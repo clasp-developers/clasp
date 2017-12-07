@@ -71,10 +71,11 @@ namespace core {
     } Slots;
     
   public: // ctor/dtor for classes with shared virtual base
-  Instance_O() : _Class(_Nil<Class_O>()), _Sig(_Nil<T_O>()){};
+  Instance_O() : _Sig(_Unbound<T_O>()), _Class(_Nil<Class_O>()), _Rack(_Nil<T_O>()) {};
     explicit Instance_O(Class_sp metaClass) :
-      _Class(metaClass)
-      ,_Sig(_Unbound<T_O>())
+      _Sig(_Unbound<T_O>())
+      ,_Class(metaClass)
+        ,_Rack(_Nil<T_O>())
 #ifdef METER_ALLOCATIONS
       ,_allocation_counter(0)
       ,_allocation_total_size(0)
