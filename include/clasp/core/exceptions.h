@@ -194,6 +194,11 @@ public:
   int getExitResult() { return this->_ExitResult; };
 };
 
+struct SaveLispAndDie {
+   string _FileName;
+ SaveLispAndDie(const std::string& filename) : _FileName(filename) {};
+ };
+ 
 /*! To exit the program throw this exception
  */
 class TerminateProgramIfBatch {
@@ -258,6 +263,7 @@ public:
 
 class SlotRefFailed {
 };
+
 
 class ATTR_WEAK LexicalGo {
   virtual void keyFunctionForVtable() ATTR_WEAK;

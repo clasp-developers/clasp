@@ -450,6 +450,8 @@ CL_DEFUN core::Fixnum gctools__next_header_kind()
     return ensure_fixnum(next);
 }
 
+
+
 /*! initial_data is a gctools::Tagged pointer to a List of tagged pointers.
 */
 void initialize_gcroots_in_module(GCRootsInModule* roots, core::T_O** root_address, size_t num_roots, gctools::Tagged initial_data) {

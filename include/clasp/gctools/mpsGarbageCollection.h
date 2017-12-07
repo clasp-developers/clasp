@@ -135,13 +135,13 @@ namespace gctools {
 
 //#define NON_MOVING_POOL_ALLOCATION_POINT global_non_moving_allocation_point; //_global_mvff_allocation_point
 
-extern mps_pool_t _global_amc_pool;
+extern mps_pool_t global_amc_pool;
 extern mps_pool_t global_amc_cons_pool;
 //    extern mps_pool_t _global_mvff_pool;
-extern mps_pool_t _global_amcz_pool;
+extern mps_pool_t global_amcz_pool;
 extern mps_pool_t global_non_moving_pool;
-extern mps_pool_t global_unmanaged_pool;
-extern mps_pool_t _global_awl_pool;
+//extern mps_pool_t global_unmanaged_pool;
+extern mps_pool_t global_awl_pool;
 
 
 };

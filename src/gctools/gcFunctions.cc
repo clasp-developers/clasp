@@ -519,7 +519,7 @@ CL_DEFUN core::T_mv cl__room(core::T_sp x, core::Fixnum_sp marker, core::T_sp tm
   for (int i = 0; i < gctools::STAMP_max; ++i) {
     reachables.push_back(ReachableMPSObject(i));
   }
-  mps_amc_apply(_global_amc_pool, amc_apply_stepper, &reachables, 0);
+  mps_amc_apply(global_amc_pool, amc_apply_stepper, &reachables, 0);
   dumpMPSResults("Reachable Kinds", "AMCpool", reachables);
   printf("%12lu collections\n", numCollections);
   printf("%12lu mps_arena_committed\n", arena_committed);
@@ -571,6 +571,20 @@ CL_DEFUN core::T_mv cl__room(core::T_sp x, core::Fixnum_sp marker, core::T_sp tm
 };
 };
 
+namespace gctools {
+#ifdef USE_MPS
+CL_DEFUN void gctools__save_lisp_and_die(const std::string& filename)
+{
+  throw(core::SaveLispAndDie(filename));
+}
+CL_DEFUN void gctools__enable_underscanning(bool us)
+{
+  global_underscanning = us;
+}
+
+#endif
+};
+
 #ifdef DEBUG_FUNCTION_CALL_COUNTER
 namespace gctools {
 void common_function_call_counter(core::General_O* obj, size_t size, void* hash_table_raw) {
@@ -580,6 +594,7 @@ void common_function_call_counter(core::General_O* obj, size_t size, void* hash_
     hash_table->setf_gethash(gen,core::clasp_make_fixnum(func->_TimesCalled));
   }
 }
+
 
 #ifdef USE_MPS
 void amc_apply_function_call_counter(mps_addr_t client, void* hash_table_raw, size_t s)
@@ -602,7 +617,7 @@ CL_DEFUN void gctools__function_call_count_profiler(core::T_sp func) {
   core::HashTable_sp func_counters_start = core::HashTableEq_O::create_default();
   core::HashTable_sp func_counters_end = core::HashTableEq_O::create_default();
 #ifdef USE_MPS
-  mps_amc_apply(_global_amc_pool, amc_apply_function_call_counter, &*func_counters_start, 0);
+  mps_amc_apply(global_amc_pool, amc_apply_function_call_counter, &*func_counters_start, 0);
 #endif
 #ifdef USE_BOEHM
 #ifdef BOEHM_GC_ENUMERATE_REACHABLE_OBJECTS_INNER_AVAILABLE
@@ -611,7 +626,7 @@ CL_DEFUN void gctools__function_call_count_profiler(core::T_sp func) {
 #endif
   core::eval::funcall(func);
 #ifdef USE_MPS
-  mps_amc_apply(_global_amc_pool, amc_apply_function_call_counter, &*func_counters_end, 0);
+  mps_amc_apply(global_amc_pool, amc_apply_function_call_counter, &*func_counters_end, 0);
 #endif
 #ifdef USE_BOEHM
 #ifdef BOEHM_GC_ENUMERATE_REACHABLE_OBJECTS_INNER_AVAILABLE
