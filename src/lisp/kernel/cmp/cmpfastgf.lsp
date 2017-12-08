@@ -737,10 +737,8 @@
       (let ((sorted (sort values #'< :key #'car)))
         (mapcar #'extract-outcome sorted)))))
 
-(defun optimized-call-history (generic-function)
-  (let* ((call-history (clos:generic-function-call-history generic-function))
-         (specializer-profile (clos:generic-function-specializer-profile generic-function))
-         (specializer-length (let ((pos (position-if #'identity specializer-profile :from-end t)))
+(defun optimized-call-history (call-history specializer-profile)
+  (let* ((specializer-length (let ((pos (position-if #'identity specializer-profile :from-end t)))
                                (if pos
                                    (1+ pos)
                                    0)))
@@ -873,7 +871,8 @@
 (defun codegen-dispatcher (generic-function &key generic-function-name output-path log-gf (debug-on t debug-on-p))
   (let* ((*log-gf* log-gf)
          (raw-call-history (clos:generic-function-call-history generic-function))
-         (call-history (optimized-call-history generic-function))
+         (specializer-profile (clos:generic-function-specializer-profile generic-function))
+         (call-history (optimized-call-history raw-call-history specializer-profile))
          (debug-on (if debug-on-p
                        debug-on
                        (core:get-funcallable-instance-debug-on generic-function)))
@@ -1035,7 +1034,9 @@
       (core:bformat t "The dispatcher cannot be built because there is no call history\n")))
 
 (defun generate-dot-file (generic-function output)
-  (let* ((call-history (optimized-call-history generic-function))
+  (let* ((raw-call-history (clos:generic-function-call-history generic-function))
+         (specializer-profile (clos:generic-function-specializer-profile generic-function))
+         (call-history (optimized-call-history raw-call-history specializer-profile))
          (dispatch-tree (let ((dt (make-dtree)))
                           (dtree-add-call-history dt call-history)
                           dt)))
