@@ -74,58 +74,68 @@
      do
        (format *debug-io* "~d: ~S~&" idx spec)))
 
-(defgeneric %lisp-type->lisp-name (lisp-type-kw))
+(eval-when (:compile-toplevel :load-toplevel :execute)
 
-;;; Most of these should be macrolet, but bclasp macrolet is broken.
-(defmacro generate-type-spec-accessor-functions ()
-  `(progn
-     ;; type -> type spec
-     ,@(loop for spec across *foreign-type-spec-table*
-             for idx from 0 to (1- (length *foreign-type-spec-table*))
-             when spec
-               collect
-             `(progn
+  (defgeneric %lisp-type->lisp-name (lisp-type-kw))
+
+  (defmacro generate-type-spec-accessor-functions ()
+    `(progn
+       ;; type -> type spec
+       ,@(loop for spec across *foreign-type-spec-table*
+            for idx from 0 to (1- (length *foreign-type-spec-table*))
+            when spec
+            collect
+              `(progn
 ;;;                 (core:bformat t "Defining %lisp-type->type-spec for %s\n" ,(%lisp-symbol spec))
-                (defmethod %lisp-type->type-spec ((lisp-type-kw (eql ',(%lisp-symbol spec))))
-                  (elt *foreign-type-spec-table* ,idx))))))
+                 (defmethod %lisp-type->type-spec ((lisp-type-kw (eql ',(%lisp-symbol spec))))
+                   (elt *foreign-type-spec-table* ,idx))))
+       ))
 
-(defmethod %lisp-type->type-spec (lisp-type-kw)
-  (error "Unknown FLI lisp type ~S - cannot determine type spec." lisp-type-kw))
+  (defmethod %lisp-type->type-spec (lisp-type-kw)
+    (error "Unknown FLI lisp type ~S - cannot determine type spec." lisp-type-kw))
+  ) ;; eval-when
 
+;;; %FOREIGN-TYPE-SIZE
+(eval-when (:compile-toplevel :load-toplevel :execute)
 
-(defgeneric %foreign-type-size (lisp-type-kw))
+  (defgeneric %foreign-type-size (lisp-type-kw))
 
-(defmacro generate-foreign-type-size-functions ()
-  `(progn
-     ;; type -> type spec
-     ,@(loop for spec across *foreign-type-spec-table*
-             for idx from 0 to (1- (length *foreign-type-spec-table*))
-             when spec
-               collect
-             `(defmethod %foreign-type-size ((lisp-type-kw (eql ',(%lisp-symbol spec))))
-                (%size (elt *foreign-type-spec-table* ,idx))))))
+  (defmacro generate-foreign-type-size-functions ()
+    `(progn
+       ;; type -> type spec
+       ,@(loop for spec across *foreign-type-spec-table*
+            for idx from 0 to (1- (length *foreign-type-spec-table*))
+            when spec
+            collect
+              `(defmethod %foreign-type-size ((lisp-type-kw (eql ',(%lisp-symbol spec))))
+                 (%size (elt *foreign-type-spec-table* ,idx))))
+       ))
 
-(defmethod %foreign-type-size (lisp-type-kw)
-  (error "Unknown FLI lisp type ~S - cannot determine foreign size." lisp-type-kw))
+  (defmethod %foreign-type-size (lisp-type-kw)
+    (error "Unknown FLI lisp type ~S - cannot determine foreign size." lisp-type-kw))
+  ) ;; eval-when
 
+;;; %FOREIGN-TYPE-ALIGNMENT
+(eval-when (:compile-toplevel :load-toplevel :execute)
 
-(defgeneric %foreign-type-alignment (lisp-type-kw))
+  (defgeneric %foreign-type-alignment (lisp-type-kw))
 
-(defmacro generate-foreign-type-alignment-functions ()
-  `(progn
-     ;; type -> type spec
-     ,@(loop for spec across *foreign-type-spec-table*
-             for idx from 0 to (1- (length *foreign-type-spec-table*))
-             when spec
-               collect
-             `(defmethod %foreign-type-alignment ((lisp-type-kw (eql ',(%lisp-symbol spec))))
-                (%alignment (elt *foreign-type-spec-table* ,idx))))))
+  (defmacro generate-foreign-type-alignment-functions ()
+    `(progn
+       ;; type -> type spec
+       ,@(loop for spec across *foreign-type-spec-table*
+            for idx from 0 to (1- (length *foreign-type-spec-table*))
+            when spec
+            collect
+              `(defmethod %foreign-type-alignment ((lisp-type-kw (eql ',(%lisp-symbol spec))))
+                 (%alignment (elt *foreign-type-spec-table* ,idx))))
+       ))
 
-(defmethod %foreign-type-alignment (lisp-type-kw)
-  (error "Unknown FLI lisp type ~S - cannot determine foreign alignment." lisp-type-kw))
+  (defmethod %foreign-type-alignment (lisp-type-kw)
+    (error "Unknown FLI lisp type ~S - cannot determine foreign alignment." lisp-type-kw))
+  ) ;; eval-when
 
-
-;;; === T R A N S L A T O R    S U P P O R T ===
+;;; === T R A N S L A T O R    S U P O R T ===
 
 (defgeneric %lisp-type->llvm-type-symbol-fn (lisp-type-kw))
 
@@ -137,131 +147,136 @@
           when spec
 	  collect
 	    `(defmethod %lisp-type->llvm-type-symbol-fn ((lisp-type-kw (eql ',(%lisp-symbol spec))))
-               (%llvm-type-symbol-fn (elt *foreign-type-spec-table* ,idx))))))
+               (%llvm-type-symbol-fn (elt *foreign-type-spec-table* ,idx))))
+     ))
 
 (defmethod %lisp-type->llvm-type-symbol-fn (lisp-type-kw)
   (error "Unknown FLI lisp type ~S - cannot determine llvm type symbol function." lisp-type-kw))
 
-(defun init-translators ()
-  
-  (%set-llvm-type-symbol-fn
-   (%lisp-type->type-spec :short) (lambda () cmp::%i16%))
+(eval-when (:compile-toplevel :load-toplevel :execute)
 
-  (%set-llvm-type-symbol-fn
-   (%lisp-type->type-spec :unsigned-short) (lambda () cmp::%i16%))
+  (defun init-translators ()
 
-  (%set-llvm-type-symbol-fn
-   (%lisp-type->type-spec :ushort) (lambda () cmp::%i16%))
+    (%set-llvm-type-symbol-fn
+     (%lisp-type->type-spec :short) (lambda () cmp::%i16%))
 
-  (%set-llvm-type-symbol-fn
-   (%lisp-type->type-spec :int) (lambda () cmp::%i32%))
+    (%set-llvm-type-symbol-fn
+     (%lisp-type->type-spec :unsigned-short) (lambda () cmp::%i16%))
 
-  (%set-llvm-type-symbol-fn
-   (%lisp-type->type-spec :unsigned-int) (lambda () cmp::%i32%))
+    (%set-llvm-type-symbol-fn
+     (%lisp-type->type-spec :ushort) (lambda () cmp::%i16%))
 
-  (%set-llvm-type-symbol-fn
-   (%lisp-type->type-spec :uint) (lambda () cmp::%i32%))
+    (%set-llvm-type-symbol-fn
+     (%lisp-type->type-spec :int) (lambda () cmp::%i32%))
 
-  (%set-llvm-type-symbol-fn
-   (%lisp-type->type-spec :long) (lambda () cmp::%i64%))
+    (%set-llvm-type-symbol-fn
+     (%lisp-type->type-spec :unsigned-int) (lambda () cmp::%i32%))
 
-  (%set-llvm-type-symbol-fn
-   (%lisp-type->type-spec :unsigned-long) (lambda () cmp::%i64%))
+    (%set-llvm-type-symbol-fn
+     (%lisp-type->type-spec :uint) (lambda () cmp::%i32%))
 
-  (%set-llvm-type-symbol-fn
-   (%lisp-type->type-spec :ulong) (lambda () cmp::%i64%))
+    (%set-llvm-type-symbol-fn
+     (%lisp-type->type-spec :long) (lambda () cmp::%i64%))
 
-  (%set-llvm-type-symbol-fn
-   (%lisp-type->type-spec :long-long) (lambda () cmp::%i64%))
+    (%set-llvm-type-symbol-fn
+     (%lisp-type->type-spec :unsigned-long) (lambda () cmp::%i64%))
 
-  (%set-llvm-type-symbol-fn
-   (%lisp-type->type-spec :llong) (lambda () cmp::%i64%))
+    (%set-llvm-type-symbol-fn
+     (%lisp-type->type-spec :ulong) (lambda () cmp::%i64%))
 
-  (%set-llvm-type-symbol-fn
-   (%lisp-type->type-spec :unsigned-long-long) (lambda () cmp::%i64%))
+    (%set-llvm-type-symbol-fn
+     (%lisp-type->type-spec :long-long) (lambda () cmp::%i64%))
 
-  (%set-llvm-type-symbol-fn
-   (%lisp-type->type-spec :ullong) (lambda () cmp::%i64%))
+    (%set-llvm-type-symbol-fn
+     (%lisp-type->type-spec :llong) (lambda () cmp::%i64%))
 
-  (%set-llvm-type-symbol-fn
-   (%lisp-type->type-spec :int8) (lambda () cmp::%i8%))
+    (%set-llvm-type-symbol-fn
+     (%lisp-type->type-spec :unsigned-long-long) (lambda () cmp::%i64%))
 
-  (%set-llvm-type-symbol-fn
-   (%lisp-type->type-spec :uint8) (lambda () cmp::%i8%))
+    (%set-llvm-type-symbol-fn
+     (%lisp-type->type-spec :ullong) (lambda () cmp::%i64%))
 
-  (%set-llvm-type-symbol-fn
-   (%lisp-type->type-spec :int16) (lambda () cmp::%i16%))
+    (%set-llvm-type-symbol-fn
+     (%lisp-type->type-spec :int8) (lambda () cmp::%i8%))
 
-  (%set-llvm-type-symbol-fn
-   (%lisp-type->type-spec :uint16) (lambda () cmp::%i16%))
+    (%set-llvm-type-symbol-fn
+     (%lisp-type->type-spec :uint8) (lambda () cmp::%i8%))
 
-  (%set-llvm-type-symbol-fn
-   (%lisp-type->type-spec :int32) (lambda () cmp::%i32%))
+    (%set-llvm-type-symbol-fn
+     (%lisp-type->type-spec :int16) (lambda () cmp::%i16%))
 
-  (%set-llvm-type-symbol-fn
-   (%lisp-type->type-spec :uint32) (lambda () cmp::%i32%))
+    (%set-llvm-type-symbol-fn
+     (%lisp-type->type-spec :uint16) (lambda () cmp::%i16%))
 
-  (%set-llvm-type-symbol-fn
-   (%lisp-type->type-spec :int64) (lambda () cmp::%i64%))
+    (%set-llvm-type-symbol-fn
+     (%lisp-type->type-spec :int32) (lambda () cmp::%i32%))
 
-  (%set-llvm-type-symbol-fn
-   (%lisp-type->type-spec :uint64) (lambda () cmp::%i64%))
+    (%set-llvm-type-symbol-fn
+     (%lisp-type->type-spec :uint32) (lambda () cmp::%i32%))
 
-  #+int128 (%set-llvm-type-symbol-fn
-            (%lisp-type->type-spec :int128) (lambda () cmp::%i128%))
+    (%set-llvm-type-symbol-fn
+     (%lisp-type->type-spec :int64) (lambda () cmp::%i64%))
 
-  #+int128 (%set-llvm-type-symbol-fn
-            (%lisp-type->type-spec :uint128) (lambda () cmp::%i128%))
-  
-  (%set-llvm-type-symbol-fn
-   (%lisp-type->type-spec :size) (lambda () cmp::%size_t%))
+    (%set-llvm-type-symbol-fn
+     (%lisp-type->type-spec :uint64) (lambda () cmp::%i64%))
 
-  (%set-llvm-type-symbol-fn
-   (%lisp-type->type-spec :ssize) (lambda () cmp::%size_t%))
+    #+int128 (%set-llvm-type-symbol-fn
+              (%lisp-type->type-spec :int128) (lambda () cmp::%i128%))
 
-  (%set-llvm-type-symbol-fn
-   (%lisp-type->type-spec :single-float) (lambda () cmp::%float%))
+    #+int128 (%set-llvm-type-symbol-fn
+              (%lisp-type->type-spec :uint128) (lambda () cmp::%i128%))
 
-  (%set-llvm-type-symbol-fn
-   (%lisp-type->type-spec :float) (lambda () cmp::%float%))
+    (%set-llvm-type-symbol-fn
+     (%lisp-type->type-spec :size) (lambda () cmp::%size_t%))
 
-  (%set-llvm-type-symbol-fn
-   (%lisp-type->type-spec :double) (lambda () cmp::%double%))
+    (%set-llvm-type-symbol-fn
+     (%lisp-type->type-spec :ssize) (lambda () cmp::%size_t%))
 
-  #+long-float (%set-llvm-type-symbol-fn
-                (%lisp-type->type-spec :long-float) (lambda () cmp::%long-float%))
+    (%set-llvm-type-symbol-fn
+     (%lisp-type->type-spec :single-float) (lambda () cmp::%float%))
 
-  (%set-llvm-type-symbol-fn
-   (%lisp-type->type-spec :pointer) (lambda () cmp::%i64*%))
+    (%set-llvm-type-symbol-fn
+     (%lisp-type->type-spec :float) (lambda () cmp::%float%))
 
-  (%set-llvm-type-symbol-fn
-   (%lisp-type->type-spec :void) (lambda () cmp::%void%))
+    (%set-llvm-type-symbol-fn
+     (%lisp-type->type-spec :double) (lambda () cmp::%double%))
 
-  (%set-llvm-type-symbol-fn
-   (%lisp-type->type-spec :char) (lambda () cmp::%i8%))
+    #+long-float (%set-llvm-type-symbol-fn
+                  (%lisp-type->type-spec :long-float) (lambda () cmp::%long-float%))
 
-  (%set-llvm-type-symbol-fn
-   (%lisp-type->type-spec :unsigned-char) (lambda () cmp::%i8%))
+    (%set-llvm-type-symbol-fn
+     (%lisp-type->type-spec :pointer) (lambda () cmp::%i64*%))
 
-  (%set-llvm-type-symbol-fn
-   (%lisp-type->type-spec :uchar) (lambda () cmp::%i8%))
+    (%set-llvm-type-symbol-fn
+     (%lisp-type->type-spec :void) (lambda () cmp::%void%))
 
-  ;; TODO: CHECK & IMPLEMEMT !
-  ;; (%set-llvm-type-symbol-fn (%lisp-type->type-spec :time) (lambda () cmp::+time_t+))
-  ;; (%set-llvm-type-symbol-fn (%lisp-type->type-spec :ptrdiff) (lambda () cmp::+ptrdiff_t+))
+    (%set-llvm-type-symbol-fn
+     (%lisp-type->type-spec :char) (lambda () cmp::%i8%))
 
-  ) ; defun init-translators
+    (%set-llvm-type-symbol-fn
+     (%lisp-type->type-spec :unsigned-char) (lambda () cmp::%i8%))
 
-(defun safe-translator-type (lisp-type-kw)
-  (funcall (%lisp-type->llvm-type-symbol-fn lisp-type-kw)))
+    (%set-llvm-type-symbol-fn
+     (%lisp-type->type-spec :uchar) (lambda () cmp::%i8%))
 
-(defun safe-translator-to-object-name (lisp-type-kw)
-  (%to-object-fn-name (%lisp-type->type-spec lisp-type-kw)))
+    ;; TODO: CHECK & IMPLEMEMT !
+    ;; (%set-llvm-type-symbol-fn (%lisp-type->type-spec :time) (lambda () cmp::+time_t+))
+    ;; (%set-llvm-type-symbol-fn (%lisp-type->type-spec :ptrdiff) (lambda () cmp::+ptrdiff_t+))
 
-(defun safe-translator-from-object-name (lisp-type-kw)
-  (%from-object-fn-name (%lisp-type->type-spec lisp-type-kw)))
+    )
 
-;;; === B U I L T - I N   O P E R A T I O N S ===
+  (defun safe-translator-type (lisp-type-kw)
+    (funcall (%lisp-type->llvm-type-symbol-fn lisp-type-kw)))
+
+  (defun safe-translator-to-object-name (lisp-type-kw)
+    (%to-object-fn-name (%lisp-type->type-spec lisp-type-kw)))
+
+  (defun safe-translator-from-object-name (lisp-type-kw)
+    (%from-object-fn-name (%lisp-type->type-spec lisp-type-kw)))
+
+  ) ;; eval-when
+
+;;; === B U I LT - I N   O P E R A T I O N S ===
 
 ;;; === P O I N T E R   O P E R A T I O N S ===
 
@@ -277,8 +292,7 @@
 (declaim (inline %foreign-alloc))
 (defun %foreign-alloc (size)
   (let ((result (%allocate-foreign-data size)))
-    #+clasp-ffi.debug
-    (format *debug-io* "*** clasp-ffi::%foreign-alloc - size = ~S, allocated ptr = ~S.~%" size result)
+    #+clasp-ffi.debug (format *debug-io* "*** clasp-ffi::%foreign-alloc - size = ~S, allocated ptr = ~S.~%" size result)
     result))
 
 (declaim (inline %foreign-free))
@@ -287,7 +301,7 @@
   (%free-foreign-data ptr)
   nil)
 
-;;; These code lines were debugged with the help of drmeister, stassats and
+;;; These code lines were debugged with the help of drneister, stassats and
 ;;; Shinmera on 2016-09-22 as a joint effort on IRC channel #clasp. Thx again!!
 
 ;;; === M E M - R E F ===
@@ -329,68 +343,76 @@
 ;;; This code has been invented on-the-fly by drmeister on 2016-10-13 ...
 ;;; I still marvel at how drmeister comes up with simple code... Thx!
 
-(defun translator-name (prefix direction type)
-  (format nil "~a~a_object_~a"
-          prefix direction
-          (string-downcase (string (%lisp-name (%lisp-type->type-spec type))))))
+(eval-when (:compile-toplevel :load-toplevel :execute)
 
-(defun to-translator-name (type)
-  (translator-name "" "to" type))
+  (defun translator-name (prefix direction type)
+    (format nil "~a~a_object_~a"
+            prefix direction
+            (string-downcase (string (%lisp-name (%lisp-type->type-spec type))))))
 
-(defun from-translator-name (type)
-  (translator-name "" "from" type))
+  (defun to-translator-name (type)
+    (translator-name "" "to" type))
 
-(defun split-list (list)
-  (do ((list list (rest (rest list)))
-       (left '() (list* (first list) left))
-       (right '() (if (endp (rest list)) right (list* (second list) right))))
-      ((endp list) (list (nreverse left) (nreverse right)))))
+  (defun from-translator-name (type)
+    (translator-name "" "from" type))
 
-(defun extract-signature (arguments)
-  "Converts (:float 16.0 :int 3 :float) -> (values '(:float (:float :int)) (16.0 3))"
-  (let* ((types-args (clasp-ffi::split-list arguments))
-         (types (car types-args))
-         (args (cadr types-args))
-         (arg-types (butlast types))
-         (last (car (last types))))
-    (values (list last arg-types) args)))
+  (defun split-list (list)
+    (do ((list list (rest (rest list)))
+         (left '() (list* (first list) left))
+         (right '() (if (endp (rest list)) right (list* (second list) right))))
+        ((endp list) (list (nreverse left) (nreverse right)))))
 
-(defun split-arguments (arguments)
-  (let* ((splits (split-list arguments))
-         (types-and-maybe-return-type (car splits))
-         (args (cadr splits))
-         (explicit-return-type (> (length types-and-maybe-return-type) (length args)))
-         (return-type (if explicit-return-type
-                          (car (last types-and-maybe-return-type))
-                          :void))
-         (types (if explicit-return-type
-                    (butlast types-and-maybe-return-type 1)
-                    types-and-maybe-return-type)))
-    (values (loop for type in types
-                  for arg in args
-                  collect `(core:foreign-call
-                            ,(from-translator-name type)
-                            ,arg))
-            return-type)))
+  (defun extract-signature (arguments)
+    "Converts (:float 16.0 :int 3 :float) -> (values '(:float (:float :int)) (16.0 3))"
+    (let* ((types-args (clasp-ffi::split-list arguments))
+           (types (car types-args))
+           (args (cadr types-args))
+           (arg-types (butlast types))
+           (last (car (last types))))
+      (values (list last arg-types) args)))
 
-(defun process-arguments (arguments)
-  (cond
-    ((null arguments)
-     (values nil :void))
-    ((and (listp arguments)
-          (not (listp (car arguments)))
-          (> (length arguments) 1))
-     (split-arguments arguments))
-    ((and (listp arguments)
-          (not (listp (car arguments)))
-          (= (length arguments) 1))
-     (values nil (car arguments)))
-    ((and (listp arguments)
-          (listp (car arguments))
-          (= (length arguments) 1))
-     (split-arguments (car arguments)))
-    (t (error "%foreign-funcall/process-arguments: Malformed arguments for foreign funcall: ~S" arguments))))
+  (defun split-arguments (arguments)
+    (let* ((splits (split-list arguments))
+           (types-and-maybe-return-type (car splits))
+           (args (cadr splits))
+           (explicit-return-type (> (length types-and-maybe-return-type) (length args)))
+           (return-type (if explicit-return-type
+                            (car (last types-and-maybe-return-type))
+                            :void))
+           (types (if explicit-return-type
+                      (butlast types-and-maybe-return-type 1)
+                      types-and-maybe-return-type)))
+      (values (loop for type in types
+                 for arg in args
+                 collect `(core:foreign-call
+                           ,(from-translator-name type)
+                           ,arg))
+              return-type)))
 
+  (defun process-arguments (arguments)
+    (cond
+
+      ((null arguments)
+       (values nil :void))
+
+      ((and (listp arguments)
+            (not (listp (car arguments)))
+            (> (length arguments) 1))
+       (split-arguments arguments))
+
+      ((and (listp arguments)
+            (not (listp (car arguments)))
+            (= (length arguments) 1))
+       (values nil (car arguments)))
+
+      ((and (listp arguments)
+            (listp (car arguments))
+            (= (length arguments) 1))
+       (split-arguments (car arguments)))
+
+      (t (error "%foreign-funcall/process-arguments: Malformed arguments for foreign funcall: ~S" arguments))))
+
+  ) ;; EVAL-WHEN
 
 (defmacro %foreign-funcall (name &rest arguments)
   (multiple-value-bind (signature args)
@@ -431,13 +453,16 @@
 ;;;
 ;;; F L I   I N I T I A L I Z A T I O N
 
-(generate-type-spec-accessor-functions)
-(init-translators)
-(generate-llvm-type-symbol-fn-accessor-functions)
-(generate-mem-ref-accessor-functions)
-(generate-mem-set-accessor-functions)
-(generate-foreign-type-size-functions)
-(generate-foreign-type-alignment-functions)
+(eval-when (:load-toplevel :execute :compile-toplevel)
+;;  (print (macroexpand '(generate-type-spec-accessor-functions)))
+  (generate-type-spec-accessor-functions)
+  (init-translators)
+  (generate-llvm-type-symbol-fn-accessor-functions)
+  (generate-mem-ref-accessor-functions)
+  (generate-mem-set-accessor-functions)
+  (generate-foreign-type-size-functions)
+  (generate-foreign-type-alignment-functions)
+  (values))
 
 ;;;----------------------------------------------------------------------------
 ;;;----------------------------------------------------------------------------
@@ -446,8 +471,9 @@
 ;;; Agsin, drmeister did most of the work. This was adapted to run in the
 ;;; CLASP-FFI package.
 
-(defun mangled-callback-name (name)
-  (format nil "clasp_ffi_cb_~a" name))
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (defun mangled-callback-name (name)
+    (format nil "clasp_ffi_cb_~a" name)))
 
 (defun %expand-callback-definition (name-and-options return-type-kw argument-symbols argument-type-kws body)
 
