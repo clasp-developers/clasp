@@ -228,11 +228,11 @@
                                #'initialize-instance (list (class-prototype class)))
                               (compute-applicable-methods
                                #'shared-initialize (list (class-prototype class) t)))
-           for m in methods
-           for k = (method-keywords m)
-           when (eq k t)
-           return t
-           append k)))
+              for m in methods
+              for k = (method-keywords m)
+              for aok-p = (method-allows-other-keys-p m)
+              when aok-p return t
+                else append k)))
 
 (defun update-dependents (object initargs)
   (when *clos-booted*
