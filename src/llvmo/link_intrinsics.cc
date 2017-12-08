@@ -448,9 +448,16 @@ LtvcReturn ltvc_set_ltv_funcall_cleavir(gctools::GCRootsInModule* holder, size_t
 struct MaybeDebugStartup {
   PosixTime_sp start;
   fnLispCallingConvention fptr;
+  size_t start_dispatcher_count;
   MaybeDebugStartup(fnLispCallingConvention fp) : fptr(fp) {
     if (core::_sym_STARdebugStartupSTAR->symbolValue().notnilp()) {
       this->start = PosixTime_O::createNow();
+      if (comp::_sym_dispatcher_count->fboundp()) {
+        core::T_sp nu = core::eval::funcall(comp::_sym_dispatcher_count);
+        this->start_dispatcher_count = nu.unsafe_fixnum();
+      } else {
+        this->start_dispatcher_count = 0;
+      }
     }
   };
 
@@ -461,8 +468,14 @@ struct MaybeDebugStartup {
       Dl_info di;
       dladdr((void*)fptr,&di);
       mpz_class ms = diff->totalMilliseconds();
-      if (ms!=0)
-        printf("%s ms - %s\n", _rep_(Integer_O::create(ms)).c_str(), di.dli_sname);
+      size_t end_dispatcher_count = 0;
+      if (comp::_sym_dispatcher_count->fboundp()) {
+        core::T_sp nu = core::eval::funcall(comp::_sym_dispatcher_count);
+        end_dispatcher_count = nu.unsafe_fixnum();
+      }
+      size_t dispatcher_delta = end_dispatcher_count - this->start_dispatcher_count;
+      if (ms!=0 || dispatcher_delta!=0)
+        printf("%s ms %zu gfds : %s\n", _rep_(Integer_O::create(ms)).c_str(), dispatcher_delta, di.dli_sname);
     }
   }
 };
