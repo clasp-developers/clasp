@@ -61,12 +61,8 @@ RUN cd $HOME/quicklisp/local-projects \
 
 ENV PATH "$PATH:$HOME/clasp/bin"
 
-RUN clasp -e "(load \"~/quicklisp/setup.lisp\")" \
-          -e "(ql:quickload :nglview)" \
-          -e "(core:quit)"
+RUN ./waf build_extension
 
-
-RUN tar cvf /tmp/cando-cache.tar $HOME/quicklisp $HOME/.cache/common-lisp
+RUN tar cvf /tmp/cando-cache.tar $HOME/quicklisp $HOME/.cache/common-lisp $HOME/
 RUN gzip /tmp/cando-cache.tar
 RUN aws s3 cp /tmp/cando-cache.tar.gz s3://clasp-cando/docker-cando/cando-cache.tgz --region us-east-2
-RUN aws s3 cp /var/log/cloud-init-output.log s3://clasp-cando/docker-cando/cando-cache.could-init-output.log --region us-east-2

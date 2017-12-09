@@ -40,26 +40,26 @@ RUN pip install awscli
 USER app
 WORKDIR $HOME
 
-RUN aws s3 cp s3://clasp-cando/docker-cando/clasp.tgz /tmp/clasp.tgz --region us-east-2
-run aws s3 cp s3://clasp-cando/docker-cando/cando-cache.tgz /tmp/cando-cache.tgz --region us-east-2
-RUN mkdir $HOME/clasp
-RUN cd $HOME/clasp/ \
-    && tar zxvf /tmp/clasp.tgz
+# RUN aws s3 cp s3://clasp-cando/docker-cando/clasp.tgz /tmp/clasp.tgz --region us-east-2
+# RUN aws s3 cp s3://clasp-cando/docker-cando/cando-cache.tgz /tmp/cando-cache.tgz --region us-east-2
+# RUN mkdir $HOME/clasp
+# RUN cd $HOME/clasp/ \
+#     && tar zxvf /tmp/clasp.tgz
 
-RUN cd / \
-    && tar zxvf /tmp/cando-cache.tgz
-
-
-ENV PATH "$PATH:$HOME/clasp/bin"
-
-RUN clasp -e "(load \"~/quicklisp/setup.lisp\")" \
-          -e "(ql:quickload :nglview)" \
-          -e "(asdf:load-asd "/home/app//Development/cando/tools/prebuild/jupyter/cando-jupyter.asd")
-          -e "(asdf:operate 'asdf:monolithic-load-bun
-          -e "(core:quit)"
+# RUN cd / \
+#     && tar zxvf /tmp/cando-cache.tgz
 
 
-#RUN tar cvf /tmp/cando-cache.tar $HOME/quicklisp $HOME/.cache/common-lisp
-#RUN gzip /tmp/cando-cache.tar
-#RUN aws s3 cp /tmp/cando-cache.tar.gz s3://clasp-cando/docker-cando/cando-cache.tgz --region us-east-2
-#RUN aws s3 cp /var/log/cloud-init-output.log s3://clasp-cando/docker-cando/cando-cache.could-init-output.log --region us-east-2
+# ENV PATH "$PATH:$HOME/clasp/bin"
+
+# RUN clasp -e "(load \"~/quicklisp/setup.lisp\")" \
+#           -e "(ql:quickload :nglview)" \
+#           -e "(asdf:load-asd "/home/app//Development/cando/tools/prebuild/jupyter/cando-jupyter.asd")
+#           -e "(asdf:operate 'asdf:monolithic-load-bun
+#           -e "(core:quit)"
+
+
+# #RUN tar cvf /tmp/cando-cache.tar $HOME/quicklisp $HOME/.cache/common-lisp
+# #RUN gzip /tmp/cando-cache.tar
+# #RUN aws s3 cp /tmp/cando-cache.tar.gz s3://clasp-cando/docker-cando/cando-cache.tgz --region us-east-2
+# #RUN aws s3 cp /var/log/cloud-init-output.log s3://clasp-cando/docker-cando/cando-cache.could-init-output.log --region us-east-2
