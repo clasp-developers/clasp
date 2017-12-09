@@ -518,7 +518,7 @@ template <class Class, class Policies>
       : policies(policies), m_name(name), m_arguments(arguments), m_declares(declares), m_docstring(docstring) {}
 
   void register_() const {
-    IMPLEMENT_MEF("Do I use this code?");
+    HARD_IMPLEMENT_MEF("Do I use this code?");
 #if 0
                 string tname = m_name;
                 if (m_name == "") { tname = "default-ctor"; };

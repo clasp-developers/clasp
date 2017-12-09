@@ -63,7 +63,7 @@ struct wrapped_dispatcher {
     {
       _G();
       core::List_sp cargs = core::python_convertArgumentsToCons(args, keywords, _lisp);
-      IMPLEMENT_MEF(BF("Handle new ActivationFrame/Environment stuff"));
+      HARD_IMPLEMENT_MEF(BF("Handle new ActivationFrame/Environment stuff"));
 #if 0
 			    LOG(BF("dispatching function with arguments: %s") % cargs->__repr__() );
 			    core::ValueFrame_sp frame(core::ValueFrame_O::create(cargs));

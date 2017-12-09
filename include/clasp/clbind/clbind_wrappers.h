@@ -464,7 +464,7 @@ public:
   typedef clbind::Wrapper<T, HolderType> WrapperType;
   typedef WrapperType GivenType;
   static core::T_sp convert(const T &val) {
-    IMPLEMENT_MEF(BF("This doesn't make sense - copy but don't adopt pointer???"));
+    HARD_IMPLEMENT_MEF(BF("This doesn't make sense - copy but don't adopt pointer???"));
     T *ptr = new T(val);
     gctools::smart_ptr<WrapperType> wrapper = WrapperType::make_wrapper(ptr, reg::registered_class<T>::id);
     return wrapper;

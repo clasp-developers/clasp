@@ -89,7 +89,7 @@ namespace core
 
   template <typename FLOAT>
   inline FLOAT _log1p(FLOAT x) {
-    IMPLEMENT_ME();
+    HARD_IMPLEMENT_ME();
   }
 
   template <>

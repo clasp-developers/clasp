@@ -128,23 +128,23 @@ namespace core {
   public:
   // Add support for Function_O methods
     T_sp functionName() const { ASSERT(this->isgf()); return this->GFUN_NAME(); };
-    virtual Symbol_sp functionKind() const { IMPLEMENT_ME(); };
-    virtual T_sp closedEnvironment() const { IMPLEMENT_ME(); };
-    virtual T_sp setSourcePosInfo(T_sp sourceFile, size_t filePos, int lineno, int column) { IMPLEMENT_ME(); };
-//  virtual T_mv functionSourcePos() const { IMPLEMENT_ME();;
+    virtual Symbol_sp functionKind() const { HARD_IMPLEMENT_ME(); };
+    virtual T_sp closedEnvironment() const { HARD_IMPLEMENT_ME(); };
+    virtual T_sp setSourcePosInfo(T_sp sourceFile, size_t filePos, int lineno, int column) { HARD_IMPLEMENT_ME(); };
+//  virtual T_mv functionSourcePos() const { HARD_IMPLEMENT_ME();;
     virtual T_sp cleavir_ast() const { return _Nil<T_O>(); };
     virtual void setf_cleavir_ast(T_sp ast) { SIMPLE_ERROR_SPRINTF("Generic functions cannot be inlined");};
-    virtual List_sp declares() const { IMPLEMENT_ME(); };
-    virtual T_sp docstring() const { IMPLEMENT_ME(); };
-    virtual void *functionAddress() const { IMPLEMENT_ME(); };
+    virtual List_sp declares() const { HARD_IMPLEMENT_ME(); };
+    virtual T_sp docstring() const { HARD_IMPLEMENT_ME(); };
+    virtual void *functionAddress() const { HARD_IMPLEMENT_ME(); };
     virtual bool macroP() const { return false; };
     virtual void set_kind(Symbol_sp k);
     virtual Symbol_sp getKind() const { return kw::_sym_function; };
-    virtual int sourceFileInfoHandle() const { IMPLEMENT_ME(); };
+    virtual int sourceFileInfoHandle() const { HARD_IMPLEMENT_ME(); };
     virtual size_t filePos() const { return 0; }
     virtual int lineNumber() const { return 0; }
     virtual int column() const { return 0; };
-    virtual LambdaListHandler_sp lambdaListHandler() const { IMPLEMENT_ME(); };
+    virtual LambdaListHandler_sp lambdaListHandler() const { HARD_IMPLEMENT_ME(); };
   public: // The hard-coded indexes above are defined below to be used by Class
     void initializeSlots(gctools::Stamp is, size_t numberOfSlots);
     void initializeClassSlots(Creator_sp creator, gctools::Stamp class_stamp);

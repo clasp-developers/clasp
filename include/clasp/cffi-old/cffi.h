@@ -49,7 +49,7 @@ public: // static functions here
   static Pointer_sp create(void *p);
 
 public: // Functions here
-  bool pointerP() const { IMPLEMENT_ME(); };
+  bool pointerP() const { HARD_IMPLEMENT_ME(); };
   bool null_pointerP() const;
 
   Pointer_sp inc_pointer(core::Integer_sp offset);

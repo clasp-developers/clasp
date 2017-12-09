@@ -676,7 +676,7 @@ CL_DEFUN T_mv cl__rename_file(T_sp oldn, T_sp newn, T_sp if_exists) {
   }
   if (UNLIKELY(if_exists != kw::_sym_supersede && if_exists != _lisp->_true())) {
     /* invalid key */
-    SIMPLE_ERROR(BF("%s is an illegal IF-EXISTS option for RENAME-FILE.") % _rep_(if_exists))
+    SIMPLE_ERROR(BF("%s is an illegal IF-EXISTS option for RENAME-FILE.") % _rep_(if_exists));
   }
   {
     clasp_disable_interrupts();

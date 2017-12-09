@@ -241,7 +241,7 @@ CL_DEFMETHOD T_sp Environment_O::getParentEnvironment() const {
 }
 
 T_mv Environment_O::clasp_lookupMetadata(T_sp env, Symbol_sp key) {
-  IMPLEMENT_MEF("Checkout Environment_O::lookupMetadata - it doesn't look like we do much yet");
+  IMPLEMENT_MEF(BF("Checkout Environment_O::lookupMetadata - it doesn't look like we do much yet"));
 }
 
 T_sp Environment_O::clasp_getActivationFrame(T_sp tenv) {

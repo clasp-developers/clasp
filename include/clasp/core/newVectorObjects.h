@@ -106,7 +106,7 @@ public: // Functions here
   virtual T_sp subseq(int start, T_sp end) const;
   virtual T_sp setf_subseq(int start, T_sp end, T_sp new_subseq) {
     _G();
-    IMPLEMENT_ME();
+    HARD_IMPLEMENT_ME();
   };
 };
 

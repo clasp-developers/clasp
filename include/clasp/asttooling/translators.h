@@ -67,7 +67,7 @@ struct to_object<int &> {
     {
 	static core::T_sp convert(clang::CXXRecordDecl* ptr)
 	{
-            IMPLEMENT_MEF(BF("Handle more complex wrappers"));
+          HARD_IMPLEMENT_MEF(BF("Handle more complex wrappers"));
 //	    return (clbind::Wrapper<clang::CXXRecordDecl>::create(ptr));
 	}
     };

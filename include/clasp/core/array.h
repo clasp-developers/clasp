@@ -1640,7 +1640,7 @@ namespace core {
 //    virtual bool equalp(T_sp other) const final;
     virtual Array_sp reverse() const final {notVectorError(this->asSmartPtr());};
     virtual Array_sp nreverse() override {notVectorError(this->asSmartPtr());};
-    virtual void internalAdjustSize_(size_t size, T_sp init_element=_Nil<T_O>(), bool initElementSupplied=false ) {IMPLEMENT_ME();};
+    virtual void internalAdjustSize_(size_t size, T_sp init_element=_Nil<T_O>(), bool initElementSupplied=false ) {HARD_IMPLEMENT_ME();};
   };
 };
 
@@ -1691,7 +1691,7 @@ namespace core {
 //    virtual bool equalp(T_sp other) const final;
     virtual Array_sp reverse() const final {notVectorError(this->asSmartPtr());};
     virtual Array_sp nreverse() override {notVectorError(this->asSmartPtr());};
-    virtual void internalAdjustSize_(size_t size, T_sp init_element=_Nil<T_O>(), bool initElementSupplied=false ) {IMPLEMENT_ME();};
+    virtual void internalAdjustSize_(size_t size, T_sp init_element=_Nil<T_O>(), bool initElementSupplied=false ) {HARD_IMPLEMENT_ME();};
 
   };
 };

@@ -127,7 +127,7 @@ namespace gctools {
   
 /* This is a switch statement that copies passed arguments in registers into the MultipleValues array */
 #define LCC_SWITCH_TO_COPY_PASSED_ARGS_INTO_MULTIPLE_VALUES_ARRAY(_mv) \
-  /* Fix me */ IMPLEMENT_ME(); \
+  /* Fix me */ HARD_IMPLEMENT_ME(); \
   MultipleValues &_mv = lisp_callArgs();                               \
   _mv.setSize(lcc_nargs);                                              \
   switch (lcc_nargs) {                                                 \

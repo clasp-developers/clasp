@@ -58,8 +58,8 @@ class HardError {
 [[noreturn]] void throw_hard_error_implement_me_message(const char* funcname, const char* filename, size_t lineno, const string& msg) throw(HardError);
 [[noreturn]] void throw_hard_error_subclass_must_implement(const std::string& className, const std::string& method);
 
-#define IMPLEMENT_ME() throw_hard_error_implement_me(__FUNCTION__, __FILE__, __LINE__);
-#define IMPLEMENT_MEF(msg) throw_hard_error_implement_me_message(__FUNCTION__, __FILE__, __LINE__, msg);
+#define HARD_IMPLEMENT_ME() throw_hard_error_implement_me(__FUNCTION__, __FILE__, __LINE__);
+#define HARD_IMPLEMENT_MEF(msg) throw_hard_error_implement_me_message(__FUNCTION__, __FILE__, __LINE__, msg);
 #define SUBCLASS_MUST_IMPLEMENT() throw_hard_error_subclass_must_implement(lisp_classNameAsString(core::instance_class(this->asSmartPtr())),__FUNCTION__);
 #define SUBIMP() SUBCLASS_MUST_IMPLEMENT();
 

@@ -142,7 +142,7 @@ public:
 
   LCC_VIRTUAL LCC_RETURN LISP_CALLING_CONVENTION() {
     INCREMENT_FUNCTION_CALL_COUNTER(this);
-    IMPLEMENT_ME();
+    HARD_IMPLEMENT_ME();
 #if 0
             // The closedEnv 
             ASSERTF(closedEnv.nilp(),BF("Since I don't pass the closedEnv forward it I expect that it should always be nil - this time it wasn't - figure out what is up with that"));

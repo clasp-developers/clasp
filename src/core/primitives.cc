@@ -1165,7 +1165,7 @@ CL_DEFUN bool cl__fboundp(T_sp functionName) {
              // This is the type of function names, which may be defined as a macro somewhere.
              Cons_O::createList(cl::_sym_or, cl::_sym_symbol,
                                 Cons_O::createList(cl::_sym_cons,
-                                                   Cons_O::createList(cl::_sym_eql, cl::_sym_setf))))
+                                                   Cons_O::createList(cl::_sym_eql, cl::_sym_setf))));
 }
 
 CL_LAMBDA(function-name);

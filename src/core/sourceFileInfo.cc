@@ -167,7 +167,7 @@ uint af_lineno(T_sp obj) {
   if (obj.nilp()) {
     return 0;
   } else if (Cons_sp co = obj.asOrNull<Cons_O>()) {
-    IMPLEMENT_MEF("Handle cons "+_rep_(co)+" for af_lineno");
+    IMPLEMENT_MEF(BF("Handle cons %s for af_lineno") % _rep_(co));
   } else if (cl__streamp(obj)) {
     return clasp_input_lineno(obj);
   } else if (Closure_sp fo = obj.asOrNull<Closure_O>()) {

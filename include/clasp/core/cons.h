@@ -430,7 +430,7 @@ namespace core {
     }
     List_sp subseq(cl_index start, T_sp end) const;
     T_sp setf_subseq(cl_index start, T_sp end, T_sp new_subseq) {
-      IMPLEMENT_ME();
+      HARD_IMPLEMENT_ME();
     };
 
   /*! Return the value associated with the property of the plist - implements CL getf */

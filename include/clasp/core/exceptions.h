@@ -52,46 +52,24 @@ namespace kw {
 extern core::Symbol_sp& _sym_name;
 };
 
-struct _TRACE {
-  string _File;
-  string _Function;
-  _TRACE(const string &file, int line, const string &func) : _File(file), _Function(func) {
-    printf("%s:%d:%s Entered\n", file.c_str(), line, func.c_str());
-  }
-  virtual ~_TRACE() {
-    printf("Leaving %s\n", _Function.c_str());
-  }
-};
-
-#define TRACE() _TRACE ___trace(__FILE__, __LINE__, __FUNCTION__)
-
+/* ------------------------------------------------------------
+ * Macros for errors and diagnostics
+ */
 /*! Indicate the function does not return */
 #define NO_RETURN
-
-#define DBG_HOOK(fmt) dbg_hook((fmt).str().c_str())
 
 #define INTERNAL_ERROR(_msg_) THROW_HARD_ERROR(_msg_)
 #define TESTING() printf("%s:%d:%s Testing\n", __FILE__, __LINE__, __FUNCTION__);
 #define TESTINGF(fmt) printf("%s:%d:%s Testing: %s\n", __FILE__, __LINE__, __FUNCTION__, (fmt).str().c_str());
-
 #define NO_INITIALIZERS_ERROR(_type_)                                                     \
   {                                                                                       \
     lisp_error( _type_, _Nil<core::Cons_O>()); \
     THROW_NEVER_REACH();                                                                  \
   }
-#define SIMPLE_WARN(_boost_fmt_) \
-  core::eval::funcall(cl::_sym_warn, core::SimpleBaseString_O::make((_boost_fmt_).str()));
-#define ERROR(_type_, _initializers_)                                               \
-  {                                                                                 \
-    lisp_error( _type_, _initializers_); \
-  }
-
+#define SIMPLE_WARN(_boost_fmt_) core::eval::funcall(cl::_sym_warn, core::SimpleBaseString_O::make((_boost_fmt_).str()))
+#define ERROR(_type_, _initializers_) lisp_error( _type_, _initializers_)
 #define SIMPLE_ERROR_SPRINTF(...) ::core::lisp_error_sprintf(__FILE__, __LINE__, __FUNCTION__, __VA_ARGS__)
-
-#define SIMPLE_ERROR(_boost_fmt_)                                             \
-  {                                                                           \
-    ::core::lisp_error_simple(__FUNCTION__, __FILE__, __LINE__, _boost_fmt_); \
-  }
+#define SIMPLE_ERROR(_boost_fmt_) ::core::lisp_error_simple(__FUNCTION__, __FILE__, __LINE__, _boost_fmt_)
 #define NOT_ENVIRONMENT_ERROR(_e_)                                                                  \
   ERROR(cl::_sym_simpleTypeError,                                                                      \
         core::lisp_createList(kw::_sym_formatControl, core::lisp_createStr("~S is not a bclasp environment"), \
@@ -367,6 +345,9 @@ struct CxxFunctionInvocationLogger {
 // Make it easier to find "try" statements
 #define TRY() try
 
+#define IMPLEMENT_ME() SIMPLE_ERROR(BF("Implement function %s:%d %s") % __FILE__ % __LINE__ % __FUNCTION__)
+#define IMPLEMENT_MEF(msg) SIMPLE_ERROR(BF("Implement function %s:%s %s %s") % __FILE__ % __LINE__ % __FUNCTION__ % msg)
+ 
 #define NOT_SUPPORTED() SIMPLE_ERROR(BF("Subclass(%s) does not support the function(%s) file(%s) lineNumber(%d)") % this->className() % __FUNCTION__ % __FILE__ % __LINE__);
 
 
