@@ -463,10 +463,10 @@ def configure(cfg):
         llvm_config_binary = cfg.env.LLVM_CONFIG_BINARY
         if (llvm_config_binary == []):
             try:
-                cfg.find_program('llvm-config5.0', var='LLVM_CONFIG_BINARY')
+                cfg.find_program('llvm-config-5.0', var='LLVM_CONFIG_BINARY')
                 llvm_config_binary = cfg.env.LLVM_CONFIG_BINARY[0]
             except cfg.errors.ConfigurationError:
-                cfg.to_log('llvm-config5.0 was not found (ignoring)')
+                cfg.to_log('llvm-config-5.0 was not found (ignoring)')
             if (cfg.env.LLVM_CONFIG_BINARY==[]):
                 try:
                     cfg.find_program('llvm-config', var='LLVM_CONFIG_BINARY')
