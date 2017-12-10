@@ -29,6 +29,17 @@ RUN echo "CLASP_VERSION='clasp_docker'" >> wscript.config
 RUN ./waf update_submodules
 RUN ./waf configure
 RUN ./waf -j $(nproc) build_cboehm
+
+RUN git clone --depth=1 https://github.com/quicklisp/quicklisp-client.git $HOME/quicklisp
+RUN mkdir $HOME/quicklisp/local-projects
+RUN git clone --depth=1 https://github.com/slime/slime $HOME/slime
+RUN cd $HOME/quicklisp/local-projects \
+ && git clone --depth=1 https://github.com/clasp-developers/usocket.git \
+ && git clone --depth=1 https://github.com/clasp-developers/cl-jupyter.git \
+ && git clone --depth=1 https://github.com/clasp-developers/ironclad.git \
+ && git clone --depth=1 https://github.com/clasp-developers/bordeaux-threads.git \
+ && git clone --depth=1 https://github.com/clasp-developers/cffi.git
+
 RUN ./waf build_extension
 RUN ./waf install_cboehm
 
