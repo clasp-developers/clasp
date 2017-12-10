@@ -461,14 +461,21 @@ def run_llvm_config_for_libs(cfg, *args):
 def configure(cfg):
     def update_exe_search_path(cfg):
         llvm_config_binary = cfg.env.LLVM_CONFIG_BINARY
+        if (llvm_config_binary == []):
+            ctx.find_program('llvm-config5.0', var='LLVM_CONFIG_BINARY')
+            llvm_config_binary = cfg.env.LLVM_CONFIG_BINARY
+            if (cfg.env.LLVM_CONFIG_BINARY==[]):
+                ctx.find_program('llvm-config', var='LLVM_CONFIG_BINARY')
+                llvm_config_binary = cfg.env.LLVM_CONFIG_BINARY
+        print("LLVM_CONFIG_BINARY = %s" % cfg.env.LLVM_CONFIG_BINARY
         if (llvm_config_binary!=[]):
             print("llvm_config_binary = |%s|" % llvm_config_binary)
             path = os.getenv("PATH").split(os.pathsep)
             externals_bin_dir = run_llvm_config(cfg,"--bindir")
-            assert os.path.isdir(externals_bin_dir), "Please provide a valid LLVM_CONFIG_BINARY path instead of '%s'. See the wscript.config.template file." % llvm_config_binary
             path.insert(0, externals_bin_dir)
             cfg.environ["PATH"] = os.pathsep.join(path)
             print("PATH has been prefixed with '%s'" % externals_bin_dir)
+        assert os.path.isdir(externals_bin_dir), "Please provide a valid LLVM_CONFIG_BINARY path instead of '%s'. See the wscript.config.template file." % llvm_config_binary
         #print("Updated search path for binaries: '%s'" % cfg.environ["PATH"])
 
     def check_externals_clasp_version(cfg):
@@ -488,12 +495,12 @@ def configure(cfg):
             raise Exception("You do not have the correct version of externals-clasp installed - you need the one with the LLVM_COMMIT=%s" % externals_clasp_llvm_hash)
         
     def load_local_config(cfg):
-        if not os.path.isfile("./wscript.config"):
-            print("Please provide the required config for the build; see the wscript.config.template file.")
-            sys.exit(1)
         local_environment = {}
-        exec(open("./wscript.config").read(), globals(), local_environment)
-        cfg.env.update(local_environment)
+        if not os.path.isfile("./wscript.config"):
+            print("There is no wscript.config file - assuming configuration. See the wscript.config.template file.")
+        else:
+            exec(open("./wscript.config").read(), globals(), local_environment)
+            cfg.env.update(local_environment)
 
     # This is where configure(cfg) starts
         # KLUDGE there should be a better way than this
