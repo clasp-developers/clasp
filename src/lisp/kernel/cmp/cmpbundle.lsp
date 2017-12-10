@@ -273,9 +273,14 @@
 
 (defun build-fasl (out-file &key lisp-files init-name)
   "Link the object files in lisp-files into a shared library in out-file.
+Note: 'object-files' would be a better name than 'lisp-files' - but 'lisp-files' is what asdf provides.
 Return the truename of the output file"
   (declare (ignore init-name))
-;;  (bformat t "cmpbundle.lsp:build-fasl  building fasl for %s from files: %s\n" out-file lisp-files)
-  (execute-link-fasl out-file lisp-files))
+  ;;  (bformat t "cmpbundle.lsp:build-fasl  building fasl for %s from files: %s\n" out-file lisp-files)
+  (let ((bitcode-files (mapcar (lambda (p) (make-pathname :type "bc" :defaults p))
+                               lisp-files))
+        (temp-bitcode-file (make-pathname :type "bc" :defaults out-file)))
+    (link-bitcode-modules temp-bitcode-file bitcode-files)
+    (execute-link-fasl out-file (list temp-bitcode-file))))
 
 (export 'build-fasl)
