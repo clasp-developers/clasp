@@ -28,7 +28,8 @@ RUN echo "PREFIX='/out/clasp'" >> wscript.config
 RUN echo "CLASP_VERSION='clasp_docker'" >> wscript.config
 RUN ./waf update_submodules
 RUN ./waf configure
-RUN ./waf -j $(nproc) build_cboehm -v
+RUN ./waf -j $(nproc) build_cboehm
+RUN ./waf build_extension
 RUN ./waf install_cboehm
 
 # add app user, to set correct UID and GID on files
