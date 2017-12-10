@@ -7,8 +7,16 @@
 #include "sha1.h"
 
 // big endian architectures need #define __BYTE_ORDER __BIG_ENDIAN
+#ifdef _TARGET_OS_DARWIN
+#include <machine/endian.h>
+#endif
+#ifdef _TARGET_OS_LINUX
+#include <endian.h>
+#endif
+#if 0
 #ifndef _MSC_VER
 #include <endian.h>
+#endif
 #endif
 
 

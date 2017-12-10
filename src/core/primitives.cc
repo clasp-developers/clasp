@@ -2391,7 +2391,11 @@ CL_DEFUN T_sp core__hash256_hex_string(T_sp string)
 };
 
 
+#include <clasp/external/hash-library/sha1.cpp>
+#include <clasp/external/hash-library/md5.cpp>
 #include <clasp/external/hash-library/sha256.cpp>
+#include <clasp/external/hash-library/sha1.h>
+#include <clasp/external/hash-library/md5.h>
 #include <clasp/external/hash-library/hmac.h>
 
 CL_DEFUN T_sp core__hmac_sha256(SimpleVector_byte8_t_sp data, SimpleVector_byte8_t_sp key)
@@ -2400,6 +2404,41 @@ CL_DEFUN T_sp core__hmac_sha256(SimpleVector_byte8_t_sp data, SimpleVector_byte8
   return SimpleBaseString_O::make(hash);
 }
 
+/*! Provide a list of SimpleVector_byte8_t_sp objects */
+CL_DEFUN T_sp core__digest_sha1(List_sp data)
+{
+  SHA1 digestSha1;
+  for (auto part : data ) {
+    SimpleVector_byte8_t_sp bytes = gc::As<SimpleVector_byte8_t_sp>(CONS_CAR(part));
+    digestSha1.add(&((*bytes)[0]),bytes->length());
+  }
+  std::string result = digestSha1.getHash();
+  return SimpleBaseString_O::make(result);
+}
+
+/*! Provide a list of SimpleVector_byte8_t_sp objects */
+CL_DEFUN T_sp core__digest_md5(List_sp data)
+{
+  MD5 digest;
+  for (auto part : data ) {
+    SimpleVector_byte8_t_sp bytes = gc::As<SimpleVector_byte8_t_sp>(CONS_CAR(part));
+    digest.add(&((*bytes)[0]),bytes->length());
+  }
+  std::string result = digest.getHash();
+  return SimpleBaseString_O::make(result);
+}
+
+/*! Provide a list of SimpleVector_byte8_t_sp objects */
+CL_DEFUN T_sp core__digest_sha256(List_sp data)
+{
+  SHA256 digest;
+  for (auto part : data ) {
+    SimpleVector_byte8_t_sp bytes = gc::As<SimpleVector_byte8_t_sp>(CONS_CAR(part));
+    digest.add(&((*bytes)[0]),bytes->length());
+  }
+  std::string result = digest.getHash();
+  return SimpleBaseString_O::make(result);
+}
 };
 
 extern "C" {

@@ -2637,6 +2637,12 @@ CL_DEFUN Vector_sp core__make_simple_vector_byte8(size_t dimension, T_sp initial
   return SimpleVector_byte8_t_O::make(dimension, SimpleVector_byte8_t_O::from_object(initialElement), true);
 }
 
+CL_LAMBDA(str);
+CL_DOCSTRING("Make a (simple-array ext:byte8 (*)) from a base-char-string.");
+CL_DEFUN Vector_sp core__make_simple_vector_byte8_from_base_string(const std::string& str) {
+  return SimpleVector_byte8_t_O::make(str.size(), 0, false, str.size(), (const unsigned char*)&str[0]);
+}
+
 CL_LAMBDA(dimension initial_element);
 CL_DOCSTRING("Make a (simple-array ext:int16 (*)).");
 CL_DEFUN Vector_sp core__make_simple_vector_int16(size_t dimension, T_sp initialElement) {
