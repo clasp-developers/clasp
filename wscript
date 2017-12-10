@@ -462,12 +462,19 @@ def configure(cfg):
     def update_exe_search_path(cfg):
         llvm_config_binary = cfg.env.LLVM_CONFIG_BINARY
         if (llvm_config_binary == []):
-            ctx.find_program('llvm-config5.0', var='LLVM_CONFIG_BINARY')
-            llvm_config_binary = cfg.env.LLVM_CONFIG_BINARY
+            try:
+                cfg.find_program('llvm-config5.0', var='LLVM_CONFIG_BINARY')
+                llvm_config_binary = cfg.env.LLVM_CONFIG_BINARY[0]
+            except cfg.errors.ConfigurationError:
+                cfg.to_log('llvm-config5.0 was not found (ignoring)')
             if (cfg.env.LLVM_CONFIG_BINARY==[]):
-                ctx.find_program('llvm-config', var='LLVM_CONFIG_BINARY')
-                llvm_config_binary = cfg.env.LLVM_CONFIG_BINARY
-        print("LLVM_CONFIG_BINARY = %s" % cfg.env.LLVM_CONFIG_BINARY
+                try:
+                    cfg.find_program('llvm-config', var='LLVM_CONFIG_BINARY')
+                    llvm_config_binary = cfg.env.LLVM_CONFIG_BINARY[0]
+                except cfg.errors.ConfigurationError: 
+                    cfg.to_log('llvm-config was not found (ignoring)')
+        cfg.env["LLVM_CONFIG_BINARY"] = llvm_config_binary
+        print("Using LLVM_CONFIG_BINARY = %s" % cfg.env.LLVM_CONFIG_BINARY)
         if (llvm_config_binary!=[]):
             print("llvm_config_binary = |%s|" % llvm_config_binary)
             path = os.getenv("PATH").split(os.pathsep)
