@@ -34,23 +34,62 @@ ENV HOME=/home/app
 RUN apt-get update && apt-get -y install git-core 
 # AWS command-line utilities
 RUN apt-get -y install python-setuptools python-dev build-essential
+
+USER root
+# Install sudo
+RUN apt-get install -y sudo
+
 RUN easy_install pip
 RUN pip install awscli
+
+RUN whoami
+RUN python -m pip install numpy
+RUN python -m pip install jupyter
+RUN python -m pip install ipywidgets
+RUN git clone -b "v1.0.a1" https://github.com/arose/nglview /home/app/nglview
+RUN whoami 
+RUN cd /home/app/nglview && python setup.py install
+# probably need to activate widgetsnbextension
+RUN python -m ipykernel install --sys-prefix
+RUN python -m jupyter nbextension enable --py --sys-prefix widgetsnbextension
+RUN python -m jupyter nbextension install --py --sys-prefix nglview
+RUN python -m jupyter nbextension enable --py --sys-prefix nglview
+
+
+ADD tools/dockerfiles/jupyter/kernel.json /home/app/.local/share/jupyter/kernels/lisp/kernel.json
+ADD tools/dockerfiles/jupyter/jupyter_notebook_config.py /home/app/.jupyter/jupyter_notebook_config.py
+RUN chown -R app:app /home/app/.jupyter /home/app/.local
+# $HOME/clasp/Contents/Resources/source-code/extensions/cando/src/lisp
+#ADD tools/dockerfiles/start-demos.sh /home/app/start-demos.sh
+
+
 
 USER app
 WORKDIR $HOME
 
-# RUN aws s3 cp s3://clasp-cando/docker-cando/clasp.tgz /tmp/clasp.tgz --region us-east-2
-# RUN aws s3 cp s3://clasp-cando/docker-cando/cando-cache.tgz /tmp/cando-cache.tgz --region us-east-2
-# RUN mkdir $HOME/clasp
-# RUN cd $HOME/clasp/ \
-#     && tar zxvf /tmp/clasp.tgz
-
-# RUN cd / \
-#     && tar zxvf /tmp/cando-cache.tgz
+RUN pwd
+RUN ls /tmp
 
 
-# ENV PATH "$PATH:$HOME/clasp/bin"
+# RUN tar zxvf /build/clasp.tgz
+
+RUN aws s3 cp s3://clasp-cando/docker-cando/clasp.tgz /tmp/clasp.tgz --region us-east-2
+RUN aws s3 cp s3://clasp-cando/docker-cando/cando-cache.tgz /tmp/cando-cache.tgz --region us-east-2
+RUN mkdir $HOME/clasp
+RUN cd $HOME/clasp/ \
+    && tar zxvf /tmp/clasp.tgz
+
+RUN cd / \
+    && tar zxvf /tmp/cando-cache.tgz
+
+ENV PATH "$PATH:$HOME/clasp/bin"
+
+RUN clasp -l "/home/app/quicklisp/setup.lisp" \
+          -e "(ql:quickload :esrap)" \
+          -e "(ql:quickload \"parser.common-rules\")" \
+          -e "(ql:quickload \"architecture.builder-protocol\")" \
+          -l "source-dir:extensions;cando;src;lisp;build-cando-jupyter.lisp" \
+          -e "(asdf:make :build-cando-jupyter :print t)" -e "(core:quit)"
 
 # RUN clasp -e "(load \"~/quicklisp/setup.lisp\")" \
 #           -e "(ql:quickload :nglview)" \
