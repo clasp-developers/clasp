@@ -221,7 +221,7 @@
                     (when failure
                       (error "While linking additional module: ~a  encountered error: ~a" bc-file error-msg))
                     ))))
-            (llvm-sys:write-bitcode-to-file *the-module* (core:coerce-to-filename (pathname output-pathname)))
+            (write-bitcode *the-module* (core:coerce-to-filename (pathname output-pathname)))
             *the-module*))))))
 (export 'link-bitcode-modules)
 
@@ -277,9 +277,9 @@ Note: 'object-files' would be a better name than 'lisp-files' - but 'lisp-files'
 Return the truename of the output file"
   (declare (ignore init-name))
   ;;  (bformat t "cmpbundle.lsp:build-fasl  building fasl for %s from files: %s\n" out-file lisp-files)
-  (let ((bitcode-files (mapcar (lambda (p) (make-pathname :type "bc" :defaults p))
+  (let ((bitcode-files (mapcar (lambda (p) (make-pathname :type (core:bitcode-extension) :defaults p))
                                lisp-files))
-        (temp-bitcode-file (make-pathname :type "bc" :defaults out-file)))
+        (temp-bitcode-file (make-pathname :type (core:bitcode-extension) :defaults out-file)))
     (link-bitcode-modules temp-bitcode-file bitcode-files)
     (execute-link-fasl out-file (list temp-bitcode-file))))
 

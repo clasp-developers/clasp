@@ -543,6 +543,11 @@ a relative path from there."
 (progn
   (defconstant +image-pathname+ (make-pathname :directory '(:relative) :name "image" :type "fasl"))
   (export '(+image-pathname+ )))
+(defun bitcode-extension ()
+  (if cmp::*use-human-readable-bitcode*
+      "ll"
+      "bc"))
+(export 'bitcode-extension)
 
 (defun build-extension (type)
   (if (eq type :fasl)
