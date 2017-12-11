@@ -279,8 +279,9 @@ Return the truename of the output file"
   ;;  (bformat t "cmpbundle.lsp:build-fasl  building fasl for %s from files: %s\n" out-file lisp-files)
   (let ((bitcode-files (mapcar (lambda (p) (make-pathname :type (core:bitcode-extension) :defaults p))
                                lisp-files))
-        (temp-bitcode-file (make-pathname :type (core:bitcode-extension) :defaults out-file)))
-    (link-bitcode-modules temp-bitcode-file bitcode-files)
-    (execute-link-fasl out-file (list temp-bitcode-file))))
+        #+(or)(temp-bitcode-file (make-pathname :type (core:bitcode-extension) :defaults out-file)))
+    ;;(link-bitcode-modules temp-bitcode-file bitcode-files)
+    (let ((*features* (cons :debug-run-clang *features*)))
+      (execute-link-fasl out-file bitcode-files #+(or)(list temp-bitcode-file)))))
 
 (export 'build-fasl)
