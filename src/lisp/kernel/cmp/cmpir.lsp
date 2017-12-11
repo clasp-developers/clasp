@@ -1344,7 +1344,7 @@ Write T_O* pointers into the current multiple-values array starting at the (offs
   (or *current-unwind-landing-pad-dest* (error "irc-create-invoke-default-unwind was called when *current-unwind-landing-pad-dest* was NIL - check the outer with-landing-pad macro"))
   (irc-create-invoke function-name args *current-unwind-landing-pad-dest* label))
 
-(defun irc-call-or-invoke (function args &optional (landing-pad *current-unwind-landing-pad-dest*) (label "acall"))
+(defun irc-call-or-invoke (function args &optional (landing-pad *current-unwind-landing-pad-dest*) (label ""))
                                         ;  (bformat t "irc-call-or-invoke function: %s\n" function)
   (if landing-pad
       (progn

@@ -961,7 +961,6 @@ jump to blocks within this tagbody."
              (result-in-t*
               (if (eq :void (first foreign-types))
                   (irc-intrinsic-call (clasp-ffi::to-translator-name (first foreign-types)) nil) ; returns :void
-                  (irc-intrinsic-call (clasp-ffi::to-translator-name (first foreign-types))
-                                   (list foreign-result)))))
+                  (irc-intrinsic-call (clasp-ffi::to-translator-name (first foreign-types)) (list foreign-result)))))
         (irc-store-result-t* result result-in-t*)))
     (irc-low-level-trace :flow)))
