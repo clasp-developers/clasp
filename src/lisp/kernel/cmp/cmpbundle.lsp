@@ -274,14 +274,16 @@
 (defun build-fasl (out-file &key lisp-files init-name)
   "Link the object files in lisp-files into a shared library in out-file.
 Note: 'object-files' would be a better name than 'lisp-files' - but 'lisp-files' is what asdf provides.
-Return the truename of the output file"
+Return the truename of the output file.
+NOTE: On Linux it looks like we MUST link all of the bitcode files first into one and then convert that into a fasb.
+This is to ensure that the RUN-ALL functions are evaluated in the correct order."
   (declare (ignore init-name))
   ;;  (bformat t "cmpbundle.lsp:build-fasl  building fasl for %s from files: %s\n" out-file lisp-files)
   (let ((bitcode-files (mapcar (lambda (p) (make-pathname :type (core:bitcode-extension) :defaults p))
                                lisp-files))
-        #+(or)(temp-bitcode-file (make-pathname :type (core:bitcode-extension) :defaults out-file)))
-    ;;(link-bitcode-modules temp-bitcode-file bitcode-files)
+        (temp-bitcode-file (make-pathname :type (core:bitcode-extension) :defaults out-file)))
+    (link-bitcode-modules temp-bitcode-file bitcode-files)
     (let ((*features* (cons :debug-run-clang *features*)))
-      (execute-link-fasl out-file bitcode-files #+(or)(list temp-bitcode-file)))))
+      (execute-link-fasl out-file +(or)bitcode-files (list temp-bitcode-file)))))
 
 (export 'build-fasl)
