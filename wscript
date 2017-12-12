@@ -819,6 +819,7 @@ def build(bld):
     bld.extensions_builders = []
     variant = eval(bld.variant+"()")
     bld.cclasp_executable = bld.path.find_or_declare(variant.executable_name(stage='c'))
+    bld.asdf_fasl = bld.path.find_or_declare("%s/src/lisp/modules/asdf/asdf.fasl" % variant.fasl_dir(stage='c'))
     bld.recurse('extensions')
     print("There are %d extensions_builders" % len(bld.extensions_builders))
     for x in bld.extensions_builders:
@@ -958,12 +959,11 @@ def build(bld):
         bld.add_to_group(cmp_serve_event)
         bld.install_files('${PREFIX}/lib/clasp/', serve_event_fasl, relative_trick = True, cwd = bld.path)
         # Build ASDF
-        asdf_fasl = bld.path.find_or_declare("%s/src/lisp/modules/asdf/asdf.fasl" % variant.fasl_dir(stage='c'))
         cmp_asdf = compile_module(env=bld.env)
         cmp_asdf.set_inputs([iclasp_executable,cclasp_fasl] + fix_lisp_paths(bld.path,out,variant,["src/lisp/modules/asdf/build/asdf"]))
-        cmp_asdf.set_outputs(asdf_fasl)
+        cmp_asdf.set_outputs(bld.asdf_fasl)
         bld.add_to_group(cmp_asdf)
-        bld.install_files('${PREFIX}/lib/clasp/', asdf_fasl, relative_trick = True, cwd = bld.path)
+        bld.install_files('${PREFIX}/lib/clasp/', bld.asdf_fasl, relative_trick = True, cwd = bld.path)
         build_node = bld.path.find_dir(out)
         print("build_node = %s" % build_node)
         clasp_symlink_node = build_node.make_node("clasp")
