@@ -70,8 +70,9 @@ BOOST_LIBRARIES = [
             'boost_iostreams']
 
 
-def build_extension(cfg):
-    cfg.recurse("extensions")
+def build_extension(bld):
+    print("    In Development/cando/wscript::build_extension")
+    bld.recurse("extensions")
     
 
     
@@ -802,8 +803,9 @@ def build(bld):
     if not bld.variant:
         bld.fatal("Call waf with build_variant, e.g. 'nice -n19 ./waf --jobs 2 --verbose build_cboehm'")
     stage = bld.stage
-    stage_val = stage_value(bld,stage)
-    print("Building stage --> %s" % stage)
+    stage_val = stage_value(bld,bld.stage)
+    bld.stage_val = stage_val
+    print("Building bld.stage --> %s   bld.stage_val -> %s" % (bld.stage, bld.stage_val))
     bld.clasp_source_files = []
     bld.clasp_aclasp = []
     bld.clasp_bclasp = []
@@ -815,14 +817,12 @@ def build(bld):
     bld.extensions_source_files = []
     bld.extensions_gcinterface_include_files = []
     bld.extensions_builders = []
+    variant = eval(bld.variant+"()")
+    bld.cclasp_executable = bld.path.find_or_declare(variant.executable_name(stage='c'))
     bld.recurse('extensions')
-
     print("There are %d extensions_builders" % len(bld.extensions_builders))
     for x in bld.extensions_builders:
         x.run()
-
-
-    
     bld.recurse('src/main')
     source_files = bld.clasp_source_files + bld.extensions_source_files
     bld.install_files('${PREFIX}/lib/clasp/', bld.clasp_source_files, relative_trick = True, cwd = bld.path)   #source
@@ -831,7 +831,7 @@ def build(bld):
     print("bld.path = %s"%bld.path)
     clasp_headers = bld.path.ant_glob("include/clasp/**/*.h")
     bld.install_files('${PREFIX}/lib/clasp/', clasp_headers, relative_trick = True, cwd = bld.path)  # includes
-    variant = eval(bld.variant+"()")
+#    variant = eval(bld.variant+"()")
     bld.env = bld.all_envs[bld.variant]
     bld.variant_obj = variant
     include_dirs = ['.']
@@ -882,7 +882,7 @@ def build(bld):
 #            dsymutil_iclasp.set_outputs(iclasp_dsym_files)
 #            bld.add_to_group(dsymutil_iclasp)
 #            bld.install_files('${PREFIX}/lib/clasp/%s/%s' % (executable_dir, iclasp_dsym.name), iclasp_dsym_files, relative_trick = True, cwd = iclasp_dsym)
-    if (stage_val <= -1):
+    if (bld.stage_val <= -1):
         print("About to add run_aclasp")
         cmp_aclasp = run_aclasp(env=bld.env)
 #        print("clasp_aclasp as nodes = %s" % fix_lisp_paths(bld.path,out,variant,bld.clasp_aclasp))
@@ -890,7 +890,7 @@ def build(bld):
         aclasp_common_lisp_bitcode = bld.path.find_or_declare(variant.common_lisp_bitcode_name(stage='a'))
         cmp_aclasp.set_outputs(aclasp_common_lisp_bitcode)
         bld.add_to_group(cmp_aclasp)
-    if (stage_val >= 1):
+    if (bld.stage_val >= 1):
         print("About to add compile_aclasp")
         cmp_aclasp = compile_aclasp(env=bld.env)
 #        print("clasp_aclasp as nodes = %s" % fix_lisp_paths(bld.path,out,variant,bld.clasp_aclasp))
@@ -906,7 +906,7 @@ def build(bld):
         bld.add_to_group(lnk_aclasp)
         bld.install_files('${PREFIX}/lib/clasp/', aclasp_link_product, relative_trick = True, cwd = bld.path)
         bld.install_files('${PREFIX}/lib/clasp/', aclasp_common_lisp_bitcode, relative_trick = True, cwd = bld.path)
-    if (stage_val >= 2):
+    if (bld.stage_val >= 2):
         print("About to add compile_bclasp")
         cmp_bclasp = compile_bclasp(env=bld.env)
         cmp_bclasp.set_inputs([iclasp_executable,aclasp_link_product,intrinsics_bitcode_node,fastgf_bitcode_node,builtins_bitcode_node]+fix_lisp_paths(bld.path,out,variant,bld.clasp_cclasp)) # bld.clasp_bclasp
@@ -920,7 +920,7 @@ def build(bld):
         bld.add_to_group(lnk_bclasp)
         bld.install_files('${PREFIX}/lib/clasp/', bclasp_link_product, relative_trick = True, cwd = bld.path)
         bld.install_files('${PREFIX}/lib/clasp/', bclasp_common_lisp_bitcode, relative_trick = True, cwd = bld.path)
-    if (stage_val >= 3):
+    if (bld.stage_val >= 3):
         print("About to add compile_cclasp")
         # Build cclasp fasl
         cmp_cclasp = compile_cclasp(env=bld.env)
@@ -929,7 +929,7 @@ def build(bld):
         cclasp_common_lisp_bitcode = bld.path.find_or_declare(variant.common_lisp_bitcode_name(stage='c'))
         cmp_cclasp.set_outputs([cclasp_common_lisp_bitcode])
         bld.add_to_group(cmp_cclasp)
-    if (stage == 'rebuild' or stage == 'dangerzone'):
+    if (bld.stage == 'rebuild' or bld.stage == 'dangerzone'):
         print("!------------------------------------------------------------")
         print("!   You have entered the dangerzone!  ")
         print("!   While you wait...  https://www.youtube.com/watch?v=kyAn3fSs8_A")
@@ -940,14 +940,14 @@ def build(bld):
         cclasp_common_lisp_bitcode = bld.path.find_or_declare(variant.common_lisp_bitcode_name(stage='c'))
         recmp_cclasp.set_outputs([cclasp_common_lisp_bitcode])
         bld.add_to_group(recmp_cclasp)
-    if (stage == 'dangerzone' or stage == 'rebuild' or stage_val >= 3):
+    if (bld.stage == 'dangerzone' or bld.stage == 'rebuild' or bld.stage_val >= 3):
         cclasp_fasl = bld.path.find_or_declare(variant.fasl_name(stage='c'))
         lnk_cclasp_fasl = link_fasl(env=bld.env)
         lnk_cclasp_fasl.set_inputs([fastgf_bitcode_node,builtins_bitcode_node,intrinsics_bitcode_node,cclasp_common_lisp_bitcode])
         lnk_cclasp_fasl.set_outputs([cclasp_fasl])
         bld.add_to_group(lnk_cclasp_fasl)
         bld.install_files('${PREFIX}/lib/clasp/', cclasp_fasl, relative_trick = True, cwd = bld.path)
-    if (stage == 'rebuild' or stage_val >= 3):
+    if (bld.stage == 'rebuild' or bld.stage_val >= 3):
         cclasp_common_lisp_bitcode = bld.path.find_or_declare(variant.common_lisp_bitcode_name(stage='c'))
         bld.install_files('${PREFIX}/lib/clasp/', cclasp_common_lisp_bitcode, relative_trick = True, cwd = bld.path)
         # Build serve-event
@@ -970,22 +970,23 @@ def build(bld):
         print("clasp_symlink_node =  %s" % clasp_symlink_node)
         if (os.path.islink(clasp_symlink_node.abspath())):
             os.unlink(clasp_symlink_node.abspath())
-    if (stage == 'rebuild' or stage_val >= 4):
+    if (bld.stage == 'rebuild' or bld.stage_val >= 4):
         if (True):   # build cclasp executable
             lnk_cclasp_exec = link_executable(env=bld.env)
             cxx_all_bitcode_node = bld.path.find_or_declare(variant.cxx_all_bitcode_name())
             lnk_cclasp_exec.set_inputs([cclasp_common_lisp_bitcode,cxx_all_bitcode_node])
-            cclasp_executable = bld.path.find_or_declare(variant.executable_name(stage='c'))
+            print("About to try and recurse into extensions again")
+            bld.recurse('extensions')
             if ( bld.env['DEST_OS'] == DARWIN_OS ):
                 if (bld.env.LTO_FLAG):
                     cclasp_lto_o = bld.path.find_or_declare('%s.lto.o' % variant.executable_name(stage='c'))
-                    lnk_cclasp_exec.set_outputs([cclasp_executable,cclasp_lto_o])
+                    lnk_cclasp_exec.set_outputs([bld.cclasp_executable,cclasp_lto_o])
                 else:
                     cclasp_lto_o = None
-                    lnk_cclasp_exec.set_outputs([cclasp_executable])
+                    lnk_cclasp_exec.set_outputs([bld.cclasp_executable])
             elif (bld.env['DEST_OS'] == LINUX_OS ):
                 cclasp_lto_o = None
-                lnk_cclasp_exec.set_outputs(cclasp_executable)
+                lnk_cclasp_exec.set_outputs(bld.cclasp_executable)
             bld.add_to_group(lnk_cclasp_exec)
             if ( bld.env['DEST_OS'] == DARWIN_OS ):
                 cclasp_dsym = bld.path.find_or_declare("%s.dSYM"%variant.executable_name(stage='c'))
@@ -993,15 +994,15 @@ def build(bld):
                 print("cclasp_dsym_files = %s" % cclasp_dsym_files)
                 dsymutil_cclasp = dsymutil(env=bld.env)
                 if (cclasp_lto_o):
-                    dsymutil_cclasp.set_inputs([cclasp_executable,cclasp_lto_o])
+                    dsymutil_cclasp.set_inputs([bld.cclasp_executable,cclasp_lto_o])
                 else:
-                    dsymutil_cclasp.set_inputs([cclasp_executable])
+                    dsymutil_cclasp.set_inputs([bld.cclasp_executable])
                 dsymutil_cclasp.set_outputs(cclasp_dsym_files)
                 bld.add_to_group(dsymutil_cclasp)
                 bld.install_files('${PREFIX}/%s/%s' % (executable_dir, cclasp_dsym.name), cclasp_dsym_files, relative_trick = True, cwd = cclasp_dsym)
-            bld.install_as('${PREFIX}/%s/%s' % (executable_dir, cclasp_executable.name), cclasp_executable, chmod = Utils.O755)
-            bld.symlink_as('${PREFIX}/%s/clasp' % executable_dir, '%s' % cclasp_executable.name)
-            os.symlink(cclasp_executable.abspath(),clasp_symlink_node.abspath())
+            bld.install_as('${PREFIX}/%s/%s' % (executable_dir, bld.cclasp_executable.name), bld.cclasp_executable, chmod = Utils.O755)
+            bld.symlink_as('${PREFIX}/%s/clasp' % executable_dir, '%s' % bld.cclasp_executable.name)
+            os.symlink(bld.cclasp_executable.abspath(),clasp_symlink_node.abspath())
         else:
             os.symlink(iclasp_executable.abspath(),clasp_symlink_node.abspath())
     print("End of Main build(bld)")

@@ -10,8 +10,9 @@ def subdirectories():
     print("extensions subdirs = %s" % subdirs)
     return subdirs
 
-def build_extension(cfg):
-    cfg.recurse(" ".join(subdirectories()))
+def build_extension(bld):
+    print("    In Development/cando/extensions  build_extension")
+    bld.recurse(" ".join(subdirectories()))
 
 def configure(cfg):
     subdirs = subdirectories()
