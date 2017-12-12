@@ -62,7 +62,7 @@ ADD tools/dockerfiles/jupyter/jupyter_notebook_config.py /home/app/.jupyter/jupy
 RUN chown -R app:app /home/app/.jupyter /home/app/.local
 
 ADD tools/dockerfiles/start-demos.sh /home/app/start-demos.sh
-ADD demos.tgz /home/app/
+ADD demos.tar /home/app/
 
 USER app
 WORKDIR $HOME
