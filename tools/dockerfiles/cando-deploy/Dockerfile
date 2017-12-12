@@ -92,6 +92,7 @@ RUN clasp -l "/home/app/quicklisp/setup.lisp" \
           -e "(swank-loader:init :delete nil :reload nil :load-contribs nil)"\
           -e "(core:quit)"
 
+USER root
 RUN mkdir /home/app/work
 RUN chown -R app:app /home/app/work
 RUN chown -R app:app /home/app/.jupyter
