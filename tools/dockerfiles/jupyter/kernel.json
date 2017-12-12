@@ -6,7 +6,7 @@
         "--eval",
         "(in-package :cando-user)",
 	"--eval",
-	"(cl-jupyter:kernel-start)",
+	"(cando-user:cl-jupyter-kernel-start)",
         "--",
         "{connection_file}"
     ],

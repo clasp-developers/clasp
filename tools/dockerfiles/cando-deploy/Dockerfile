@@ -55,50 +55,49 @@ RUN python -m jupyter nbextension enable --py --sys-prefix widgetsnbextension
 RUN python -m jupyter nbextension install --py --sys-prefix nglview
 RUN python -m jupyter nbextension enable --py --sys-prefix nglview
 
+ADD build/clasp.tgz /home/app/clasp
 
 ADD tools/dockerfiles/jupyter/kernel.json /home/app/.local/share/jupyter/kernels/lisp/kernel.json
 ADD tools/dockerfiles/jupyter/jupyter_notebook_config.py /home/app/.jupyter/jupyter_notebook_config.py
 RUN chown -R app:app /home/app/.jupyter /home/app/.local
-# $HOME/clasp/Contents/Resources/source-code/extensions/cando/src/lisp
-#ADD tools/dockerfiles/start-demos.sh /home/app/start-demos.sh
 
-
+ADD tools/dockerfiles/start-demos.sh /home/app/start-demos.sh
+ADD demos.tgz /home/app/
 
 USER app
 WORKDIR $HOME
 
-RUN pwd
-RUN ls /tmp
-
-
 # RUN tar zxvf /build/clasp.tgz
-
-RUN aws s3 cp s3://clasp-cando/docker-cando/clasp.tgz /tmp/clasp.tgz --region us-east-2
-RUN aws s3 cp s3://clasp-cando/docker-cando/cando-cache.tgz /tmp/cando-cache.tgz --region us-east-2
-RUN mkdir $HOME/clasp
-RUN cd $HOME/clasp/ \
-    && tar zxvf /tmp/clasp.tgz
-
-RUN cd / \
-    && tar zxvf /tmp/cando-cache.tgz
 
 ENV PATH "$PATH:$HOME/clasp/bin"
 
+# checkout quicklisp and its subprojects
+RUN git clone --depth=1 https://github.com/quicklisp/quicklisp-client.git $HOME/quicklisp
+RUN mkdir $HOME/quicklisp/local-projects
+
+# checkout slime
+RUN git clone --depth=1 https://github.com/slime/slime $HOME/slime
+
+# Checkout quicklisp stuff - but not needed
+RUN cd $HOME/quicklisp/local-projects \
+ && git clone --depth=1 https://github.com/clasp-developers/usocket.git \
+ && git clone --depth=1 https://github.com/clasp-developers/cl-jupyter.git \
+ && git clone --depth=1 https://github.com/clasp-developers/uuid.git \
+ && git clone --depth=1 https://github.com/clasp-developers/bordeaux-threads.git \
+ && git clone --depth=1 https://github.com/clasp-developers/cffi.git
+
 RUN clasp -l "/home/app/quicklisp/setup.lisp" \
-          -e "(ql:quickload :esrap)" \
-          -e "(ql:quickload \"parser.common-rules\")" \
-          -e "(ql:quickload \"architecture.builder-protocol\")" \
-          -l "source-dir:extensions;cando;src;lisp;build-cando-jupyter.lisp" \
-          -e "(asdf:make :build-cando-jupyter :print t)" -e "(core:quit)"
+          -e '(setq core::*swank-home* "/home/app/slime")'\
+          -e '(load (format nil "~a/swank-loader.lisp" core::*swank-home*))'\
+          -e "(swank-loader:init :delete nil :reload nil :load-contribs nil)"\
+          -e "(core:quit)"
 
-# RUN clasp -e "(load \"~/quicklisp/setup.lisp\")" \
-#           -e "(ql:quickload :nglview)" \
-#           -e "(asdf:load-asd "/home/app//Development/cando/tools/prebuild/jupyter/cando-jupyter.asd")
-#           -e "(asdf:operate 'asdf:monolithic-load-bun
-#           -e "(core:quit)"
+RUN mkdir /home/app/work
+RUN chown -R app:app /home/app/work
+RUN chown -R app:app /home/app/.jupyter
+RUN chown -R app:app /home/app/nglview
+USER app
 
-
-# #RUN tar cvf /tmp/cando-cache.tar $HOME/quicklisp $HOME/.cache/common-lisp
-# #RUN gzip /tmp/cando-cache.tar
-# #RUN aws s3 cp /tmp/cando-cache.tar.gz s3://clasp-cando/docker-cando/cando-cache.tgz --region us-east-2
-# #RUN aws s3 cp /var/log/cloud-init-output.log s3://clasp-cando/docker-cando/cando-cache.could-init-output.log --region us-east-2
+ENV HOME /home/app/
+ENTRYPOINT [ "jupyter", "notebook" ]
+CMD        [ "--no-browser", "--ip=0.0.0.0", "--port=8888" ]
