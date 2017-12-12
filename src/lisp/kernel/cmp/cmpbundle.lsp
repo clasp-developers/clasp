@@ -284,6 +284,6 @@ This is to ensure that the RUN-ALL functions are evaluated in the correct order.
         (temp-bitcode-file (make-pathname :type (core:bitcode-extension) :defaults out-file)))
     (link-bitcode-modules temp-bitcode-file bitcode-files)
     (let ((*features* (cons :debug-run-clang *features*)))
-      (execute-link-fasl out-file +(or)bitcode-files (list temp-bitcode-file)))))
+      (execute-link-fasl out-file (list temp-bitcode-file)))))
 
 (export 'build-fasl)
