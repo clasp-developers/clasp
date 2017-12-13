@@ -6,14 +6,14 @@
 #    cd extensions/cando && git checkout testing && cd -
 version: '2'
 services:
-  # first, run: docker-compose run clasp-build
+  # first, run: docker-compose run cando-build
   # this will compile clasp and copy it's build output ./build/clasp.tgz
   #   Expected time: 90 min
-  clasp-build:
-    image: clasp-build
+  cando-build:
+    image: cando-build
     build:
       context: .
-      dockerfile: tools/dockerfiles/clasp-build/Dockerfile
+      dockerfile: tools/dockerfiles/cando-build/Dockerfile
     entrypoint: tar -cvzf /build/clasp.tgz -C /out/clasp .
     volumes:
       - ./build:/build
@@ -47,7 +47,7 @@ services:
       context: .
       dockerfile: tools/dockerfiles/clasp/Dockerfile
     depends_on:
-      - clasp-build
+      - cando-build
   # To compile all of the quicklisp dependencies run: docker-compose build cando-compile
   #    Expected time:  hour
   cando-compile:

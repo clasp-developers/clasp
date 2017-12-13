@@ -9,7 +9,6 @@ RUN pip install --upgrade pip && pip install jupyter
 # set ownership and permissions before changing to app user
 USER app
 
-
 # checkout quicklisp and its subprojects
 RUN cd $HOME/quicklisp/local-projects \
  && git clone --depth=1 https://github.com/clasp-developers/usocket.git \
