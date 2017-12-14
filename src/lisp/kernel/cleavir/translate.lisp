@@ -25,6 +25,14 @@ when this is t a lot of graphs will be generated.")
 (defvar *tags*)
 (defvar *vars*)
 
+(defun datum-name-as-string (datum)
+  ;; We need to write out setf names as well as symbols, in a simple way.
+  ;; "simple" means no pretty printer, for a start.
+  (write-to-string (cleavir-ir:name datum)
+                   :escape nil
+                   :readably nil
+                   :pretty nil))
+
 (defun translate-datum (datum)
   (if (typep datum 'cleavir-ir:constant-input)
       (let* ((value (cleavir-ir:value datum)))
@@ -36,8 +44,8 @@ when this is t a lot of graphs will be generated.")
             (cleavir-ir:immediate-input (setf var (%i64 (cleavir-ir:value datum))))
             ;; names may be (setf foo), so use write-to-string and not just string
             (cc-mir:typed-lexical-location
-             (setf var (alloca (cc-mir:lexical-location-type datum) 1 (write-to-string (cleavir-ir:name datum)))))
-            (cleavir-ir:lexical-location (setf var (alloca-t* (write-to-string (cleavir-ir:name datum)))))
+             (setf var (alloca (cc-mir:lexical-location-type datum) 1 (datum-name-as-string datum))))
+            (cleavir-ir:lexical-location (setf var (alloca-t* (datum-name-as-string datum))))
             (t (error "add support to translate datum: ~a~%" datum)))
 	  (setf (gethash datum *vars*) var))
 	var)))
