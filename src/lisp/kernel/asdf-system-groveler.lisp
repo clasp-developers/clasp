@@ -35,9 +35,12 @@
 ;; OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
+(require :asdf)
+
 (defpackage #:asdf-system-groveler
   (:use #:common-lisp)
-  (:export #:determine-complete-set-of-asdf-source-files))
+  (:export #:determine-complete-set-of-asdf-source-files
+           #:determine-complete-set-of-asdf-source-files-absolute-path))
 
 
 (in-package :asdf-system-groveler)
@@ -97,7 +100,10 @@
   (let ((*all-source-files* nil))
     (map nil #'(lambda (system)
 		 (asdf:oos 'sticky-beak-op system :force t))
-	 systems)))
+	 systems)
+    (mapcar (lambda (x)
+              (asdf/component:component-pathname x))
+            *all-source-files*)))
 
 
 
