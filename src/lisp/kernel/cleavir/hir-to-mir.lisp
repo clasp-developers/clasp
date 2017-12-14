@@ -96,13 +96,28 @@
         ,var
         ,form))))
 
+(defun gen-class-check (object class-name pro con)
+  (let ((low (cleavir-ir:new-temporary))
+        (high (cleavir-ir:new-temporary)))
+    (gen-sv-call 'class-of (list object) low
+                 (with-constant (cn class-name)
+                   (gen-sv-call 'find-class (list cn) high
+                                (gen-branch-call 'clos::subclassp (list low high) pro con))))))
+
 (defun gen-typep-check (object type pro con)
-  ;; We can sometimes call a predicate instead.
   (when (symbolp type)
+    ;; We can sometimes call a predicate instead.
     (let ((f (core:get-sysprop type 'core::type-predicate)))
       (when f
         (return-from gen-typep-check
-          (gen-branch-call f (list object) pro con)))))
+          (gen-branch-call f (list object) pro con))))
+    ;; Or if it's a class, we can call clos:subclassp
+    ;; (Classes, like types, have to stay at least kind of constant between compile and load,
+    ;;  according to the semantic constraints.)
+    (let ((c (find-class type nil)))
+      (when c
+        (return-from gen-typep-check
+          (gen-class-check object type pro con)))))
   (with-constant (ty type)
     (gen-branch-call 'typep (list object ty) pro con)))
 
