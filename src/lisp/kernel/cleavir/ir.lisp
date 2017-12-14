@@ -156,8 +156,6 @@
   (llvm-sys:create-icmp-ne cmp:*irbuilder* x y label))
 (defun %icmp-slt (x y &optional (label ""))
   (llvm-sys:create-icmp-slt cmp:*irbuilder* x y label))
-(defun %icmp-slt (x y &optional (label ""))
-  (llvm-sys:create-icmp-slt cmp:*irbuilder* x y label))
 (defun %icmp-sle (x y &optional (label ""))
   (llvm-sys:create-icmp-sle cmp:*irbuilder* x y label))
 (defun %icmp-sgt (x y &optional (label ""))
