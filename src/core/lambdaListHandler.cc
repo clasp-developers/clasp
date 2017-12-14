@@ -946,7 +946,7 @@ bool parse_lambda_list(List_sp original_lambda_list,
     }
     case rest: {
       if (restarg.isDefined()) {
-        SIMPLE_ERROR(BF("Only one name is allowed after &rest - you have already defined: ") % restarg.asString());
+        SIMPLE_ERROR(BF("Only one name is allowed after &rest - you have already defined: %s") % restarg.asString());
       }
       restarg.setTarget(oarg);
       restarg.VaRest = false;
@@ -954,7 +954,7 @@ bool parse_lambda_list(List_sp original_lambda_list,
     }
     case va_rest: {
       if (restarg.isDefined()) {
-        SIMPLE_ERROR(BF("Only one name is allowed after &rest - you have already defined: ") % restarg.asString());
+        SIMPLE_ERROR(BF("Only one name is allowed after &rest - you have already defined: %s") % restarg.asString());
       }
       restarg.setTarget(oarg);
       restarg.VaRest = true;
