@@ -199,7 +199,7 @@
             ;; This is where I used to link the additional-bitcode-pathnames
             (dolist (part-pn part-pathnames)
               (let* ((bc-file (make-pathname :type (if cmp::*use-human-readable-bitcode* "ll" "bc") :defaults part-pn)))
-                (bformat t "Linking %s\n" bc-file)
+;;;                (bformat t "Linking %s\n" bc-file)
                 (let* ((part-module (parse-bitcode (namestring (truename bc-file)) *llvm-context*)))
                   (incf part-index)
                   (multiple-value-bind (failure error-msg)
@@ -213,7 +213,7 @@
             ;; The following links in additional-bitcode-pathnames
             (dolist (part-pn additional-bitcode-pathnames)
               (let* ((bc-file part-pn))
-                (bformat t "Linking %s\n" bc-file)
+;;;                (bformat t "Linking %s\n" bc-file)
                 (let* ((part-module (llvm-sys:parse-bitcode-file (namestring (truename bc-file)) *llvm-context*)))
                   (remove-main-function-if-exists part-module) ;; Remove the ClaspMain FN if it exists
                   (multiple-value-bind (failure error-msg)
@@ -283,7 +283,6 @@ This is to ensure that the RUN-ALL functions are evaluated in the correct order.
                                lisp-files))
         (temp-bitcode-file (make-pathname :type (core:bitcode-extension) :defaults out-file)))
     (link-bitcode-modules temp-bitcode-file bitcode-files)
-    (let ((*features* (cons :debug-run-clang *features*)))
-      (execute-link-fasl out-file (list temp-bitcode-file)))))
+      (execute-link-fasl out-file (list temp-bitcode-file))))
 
 (export 'build-fasl)

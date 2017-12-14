@@ -147,7 +147,7 @@ printer and we should rather use MAKE-LOAD-FORM."
   (no-make-load-form object))
 
 (defun no-make-load-form (object)
-  (declare (si::c-local))
+  (declare (si::c-local) (optimize (debug 3)))
   (error "No adequate specialization of MAKE-LOAD-FORM for an object of type ~a"
 	 (type-of object)))
 
