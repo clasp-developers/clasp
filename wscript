@@ -73,7 +73,10 @@ BOOST_LIBRARIES = [
 def build_extension(bld):
     print("    In Development/cando/wscript::build_extension")
     bld.recurse("extensions")
-    
+
+
+def grovel(bld):
+    bld.recurse("extensions")
 
     
 def update_submodules(cfg):
@@ -731,7 +734,7 @@ def configure(cfg):
 #    cfg.define("DEBUG_FASTGF",1)   # generate slow gf dispatch logging and write out dispatch functions to /tmp/dispatch-history-**
 #    cfg.define("DEBUG_REHASH_COUNT",1)   # Keep track of the number of times each hash table has been rehashed
 #    cfg.define("DEBUG_MONITOR",1)   # generate logging messages to a file in /tmp for non-hot code
-#    cfg.define("DEBUG_BCLASP_LISP",1)  # Generate debugging frames for all bclasp code - like declaim
+    cfg.define("DEBUG_BCLASP_LISP",1)  # Generate debugging frames for all bclasp code - like declaim
 #    cfg.define("DEBUG_BOUNDS_ASSERT",1)
 #    cfg.define("DEBUG_SLOT_ACCESSORS",1)
 #    cfg.define("DISABLE_TYPE_INFERENCE",1)
@@ -819,7 +822,10 @@ def build(bld):
     bld.extensions_builders = []
     variant = eval(bld.variant+"()")
     bld.cclasp_executable = bld.path.find_or_declare(variant.executable_name(stage='c'))
-    bld.asdf_fasl = bld.path.find_or_declare("%s/src/lisp/modules/asdf/asdf.fasl" % variant.fasl_dir(stage='c'))
+    bld.asdf_fasl_bclasp = bld.path.find_or_declare("%s/src/lisp/modules/asdf/asdf.fasl" % variant.fasl_dir(stage='b'))
+    bld.asdf_fasl_cclasp = bld.path.find_or_declare("%s/src/lisp/modules/asdf/asdf.fasl" % variant.fasl_dir(stage='c'))
+    bld.bclasp_fasl = bld.path.find_or_declare(variant.fasl_name(stage='b'))
+    bld.cclasp_fasl = bld.path.find_or_declare(variant.fasl_name(stage='c'))
     bld.recurse('extensions')
     print("There are %d extensions_builders" % len(bld.extensions_builders))
     for x in bld.extensions_builders:
@@ -914,19 +920,24 @@ def build(bld):
         bclasp_common_lisp_bitcode = bld.path.find_or_declare(variant.common_lisp_bitcode_name(stage='b'))
         cmp_bclasp.set_outputs(bclasp_common_lisp_bitcode)
         bld.add_to_group(cmp_bclasp)
-        bclasp_link_product = bld.path.find_or_declare(variant.fasl_name(stage='b'))
         lnk_bclasp = link_fasl(env=bld.env)
         lnk_bclasp.set_inputs([fastgf_bitcode_node,builtins_bitcode_node,intrinsics_bitcode_node,bclasp_common_lisp_bitcode])
-        lnk_bclasp.set_outputs([bclasp_link_product])
+        lnk_bclasp.set_outputs([bld.bclasp_fasl])
         bld.add_to_group(lnk_bclasp)
-        bld.install_files('${PREFIX}/lib/clasp/', bclasp_link_product, relative_trick = True, cwd = bld.path)
+        bld.install_files('${PREFIX}/lib/clasp/', bld.bclasp_fasl, relative_trick = True, cwd = bld.path)
         bld.install_files('${PREFIX}/lib/clasp/', bclasp_common_lisp_bitcode, relative_trick = True, cwd = bld.path)
+        # # Build ASDF for bclasp
+        # cmp_asdf = compile_module(env=bld.env)
+        # cmp_asdf.set_inputs([iclasp_executable,bld.bclasp_fasl] + fix_lisp_paths(bld.path,out,variant,["src/lisp/modules/asdf/build/asdf"]))
+        # cmp_asdf.set_outputs(bld.asdf_fasl_bclasp)
+        # bld.add_to_group(cmp_asdf)
+        # bld.install_files('${PREFIX}/lib/clasp/', bld.asdf_fasl_bclasp, relative_trick = True, cwd = bld.path)
     if (bld.stage_val >= 3):
         print("About to add compile_cclasp")
         # Build cclasp fasl
         cmp_cclasp = compile_cclasp(env=bld.env)
         cxx_all_bitcode_node = bld.path.find_or_declare(variant.cxx_all_bitcode_name())
-        cmp_cclasp.set_inputs([iclasp_executable,bclasp_link_product,cxx_all_bitcode_node]+fix_lisp_paths(bld.path,out,variant,bld.clasp_cclasp))
+        cmp_cclasp.set_inputs([iclasp_executable,bld.bclasp_fasl,cxx_all_bitcode_node]+fix_lisp_paths(bld.path,out,variant,bld.clasp_cclasp))
         cclasp_common_lisp_bitcode = bld.path.find_or_declare(variant.common_lisp_bitcode_name(stage='c'))
         cmp_cclasp.set_outputs([cclasp_common_lisp_bitcode])
         bld.add_to_group(cmp_cclasp)
@@ -942,28 +953,27 @@ def build(bld):
         recmp_cclasp.set_outputs([cclasp_common_lisp_bitcode])
         bld.add_to_group(recmp_cclasp)
     if (bld.stage == 'dangerzone' or bld.stage == 'rebuild' or bld.stage_val >= 3):
-        cclasp_fasl = bld.path.find_or_declare(variant.fasl_name(stage='c'))
         lnk_cclasp_fasl = link_fasl(env=bld.env)
         lnk_cclasp_fasl.set_inputs([fastgf_bitcode_node,builtins_bitcode_node,intrinsics_bitcode_node,cclasp_common_lisp_bitcode])
-        lnk_cclasp_fasl.set_outputs([cclasp_fasl])
+        lnk_cclasp_fasl.set_outputs([bld.cclasp_fasl])
         bld.add_to_group(lnk_cclasp_fasl)
-        bld.install_files('${PREFIX}/lib/clasp/', cclasp_fasl, relative_trick = True, cwd = bld.path)
+        bld.install_files('${PREFIX}/lib/clasp/', bld.cclasp_fasl, relative_trick = True, cwd = bld.path)
     if (bld.stage == 'rebuild' or bld.stage_val >= 3):
         cclasp_common_lisp_bitcode = bld.path.find_or_declare(variant.common_lisp_bitcode_name(stage='c'))
         bld.install_files('${PREFIX}/lib/clasp/', cclasp_common_lisp_bitcode, relative_trick = True, cwd = bld.path)
         # Build serve-event
         serve_event_fasl = bld.path.find_or_declare("%s/src/lisp/modules/serve-event/serve-event.fasl" % variant.fasl_dir(stage='c'))
         cmp_serve_event = compile_module(env=bld.env)
-        cmp_serve_event.set_inputs([iclasp_executable,cclasp_fasl] + fix_lisp_paths(bld.path,out,variant,["src/lisp/modules/serve-event/serve-event"]))
+        cmp_serve_event.set_inputs([iclasp_executable,bld.cclasp_fasl] + fix_lisp_paths(bld.path,out,variant,["src/lisp/modules/serve-event/serve-event"]))
         cmp_serve_event.set_outputs(serve_event_fasl)
         bld.add_to_group(cmp_serve_event)
         bld.install_files('${PREFIX}/lib/clasp/', serve_event_fasl, relative_trick = True, cwd = bld.path)
         # Build ASDF
         cmp_asdf = compile_module(env=bld.env)
-        cmp_asdf.set_inputs([iclasp_executable,cclasp_fasl] + fix_lisp_paths(bld.path,out,variant,["src/lisp/modules/asdf/build/asdf"]))
-        cmp_asdf.set_outputs(bld.asdf_fasl)
+        cmp_asdf.set_inputs([iclasp_executable,bld.cclasp_fasl] + fix_lisp_paths(bld.path,out,variant,["src/lisp/modules/asdf/build/asdf"]))
+        cmp_asdf.set_outputs(bld.asdf_fasl_cclasp)
         bld.add_to_group(cmp_asdf)
-        bld.install_files('${PREFIX}/lib/clasp/', bld.asdf_fasl, relative_trick = True, cwd = bld.path)
+        bld.install_files('${PREFIX}/lib/clasp/', bld.asdf_fasl_cclasp, relative_trick = True, cwd = bld.path)
         build_node = bld.path.find_dir(out)
         print("build_node = %s" % build_node)
         clasp_symlink_node = build_node.make_node("clasp")

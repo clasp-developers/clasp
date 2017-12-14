@@ -14,6 +14,10 @@ def build_extension(bld):
     print("    In Development/cando/extensions  build_extension")
     bld.recurse(" ".join(subdirectories()))
 
+def grovel(bld):
+    print("    In Development/cando/extensions  grovel")
+    bld.recurse(" ".join(subdirectories()))
+
 def configure(cfg):
     subdirs = subdirectories()
     cfg.extensions_names = cfg.extensions_names + subdirs
