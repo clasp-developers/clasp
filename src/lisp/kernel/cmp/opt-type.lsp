@@ -39,8 +39,8 @@
            `(eql ,object ',(cadr type)))
           ((and (symbolp type)
                 (find-class type nil))
-           `(subclassp (class-of ,object)
-                       (find-class ',type nil)))
+           ;; Finding a class at compile time and not load time is disallowed by semantic constraints
+           `(subclassp (class-of ,object) (find-class ',type)))
           (t
            whole))))
 
