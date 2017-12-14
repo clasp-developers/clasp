@@ -114,9 +114,9 @@
             (total 0)
             (gc-counts 0)
             (hash-table-counts 0))
-        (loop for (count . name ) in sorted
-              do (format fout "~5d  - ~a~%" count name)
+        (loop for (count . name) in sorted
               do (incf total count)
+              do (format fout "~5d  ~5d  - ~a~%" count total name)
               do (cond
                    ((search "GC_" name)
                     (incf gc-counts count))
