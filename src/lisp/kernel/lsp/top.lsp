@@ -1339,6 +1339,13 @@ package."
           (default-debugger condition))))
   (finish-output))
 
+(defun debugger-disabled-hook (condition)
+  (format t "~a~%" condition)
+  (core:quit))
+
+(eval-when (:execute :load-toplevel)
+  (when (null (member :interactive *features*))
+    (setq *invoke-debugger-hook* 'debugger-disabled-hook)))
 
 (defun safe-eval (form env &optional (err-value nil err-value-p))
   "Args: (FORM ENV &optional ERR-VALUE)
