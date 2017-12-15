@@ -70,7 +70,7 @@ module."
 ;;; Set up a MODULES host pathname that points to the precompiled modules for this stage/gc
 (setf (logical-pathname-translations "MODULES")
       (list (list "**;*.*" (make-pathname :host "LIB"
-                                          :directory (list :absolute (default-target-backend) "src" "lisp" :wild-inferiors)
+                                          :directory (list :absolute (core:bformat nil "%s-bitcode" (default-target-backend)) "src" "lisp" :wild-inferiors)
                                           :name :wild
                                           :type :wild))))
 (setf (logical-pathname-translations "MODULES-SOURCE")

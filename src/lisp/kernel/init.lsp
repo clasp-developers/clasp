@@ -482,7 +482,7 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
                     stage
                     (default-target-stage)))
          (type-modified-host-suffix (build-configuration))
-         (bitcode-host (bformat nil "%s%s" stage type-modified-host-suffix)))
+         (bitcode-host (bformat nil "%s%s-bitcode" stage type-modified-host-suffix)))
     bitcode-host))
 
 (defun default-target-stage ()
