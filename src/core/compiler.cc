@@ -336,8 +336,8 @@ CL_DEFUN T_sp core__startup_image_pathname() {
 
 CL_LAMBDA(name &optional verbose print external-format);
 CL_DECLARE();
-CL_DOCSTRING("loadBundle");
-CL_DEFUN T_mv core__load_bundle(T_sp pathDesig, T_sp verbose, T_sp print, T_sp external_format) {
+CL_DOCSTRING("load-binary");
+CL_DEFUN T_mv core__load_binary(T_sp pathDesig, T_sp verbose, T_sp print, T_sp external_format) {
   /* Define the source file */
   SourceFileInfo_sp sfi = core__source_file_info(pathDesig);
   DynamicScopeManager scope(_sym_STARcurrentSourceFileInfoSTAR, sfi);

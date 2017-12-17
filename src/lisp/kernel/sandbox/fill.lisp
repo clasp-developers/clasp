@@ -397,7 +397,7 @@
         (lambda (input-file &rest keys &key &allow-other-keys)
           (let ((cmp:*cleavir-compile-file-hook* (sandbox-compile-file-hook environment)))
             (apply #'compile-file input-file keys))))
-  (setf (sicl-genv:fdefinition 'core:load-bundle environment) #'core:load-bundle))
+  (setf (sicl-genv:fdefinition 'core:load-binary environment) #'core:load-binary))
 
 (defun install-variables (environment)
   (macrolet ((dvar (name &optional (value nil value-p))
