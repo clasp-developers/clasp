@@ -826,6 +826,7 @@ def build(bld):
     bld.asdf_fasl_cclasp = bld.path.find_or_declare("%s/src/lisp/modules/asdf/asdf.fasl" % variant.fasl_dir(stage='c'))
     bld.bclasp_fasl = bld.path.find_or_declare(variant.fasl_name(stage='b'))
     bld.cclasp_fasl = bld.path.find_or_declare(variant.fasl_name(stage='c'))
+    bld.iclasp_executable = bld.path.find_or_declare(variant.executable_name(stage='i'))
     bld.recurse('extensions')
     print("There are %d extensions_builders" % len(bld.extensions_builders))
     for x in bld.extensions_builders:
@@ -866,7 +867,6 @@ def build(bld):
     extensions_task.set_outputs([extension_headers_node])
     bld.add_to_group(extensions_task)
     # Always build the C++ code
-    iclasp_executable = bld.path.find_or_declare(variant.executable_name(stage='i'))
     intrinsics_bitcode_node = bld.path.find_or_declare(variant.inline_bitcode_archive_name("intrinsics"))
     builtins_bitcode_node = bld.path.find_or_declare(variant.inline_bitcode_archive_name("builtins"))
     fastgf_bitcode_node = bld.path.find_or_declare(variant.inline_bitcode_archive_name("fastgf"))
@@ -876,18 +876,18 @@ def build(bld):
         executable_dir = "bin"
         bld_task = bld.program(source=source_files,
                                includes=include_dirs,
-                               target = [iclasp_executable], install_path = '${PREFIX}/bin')
+                               target = [bld.iclasp_executable], install_path = '${PREFIX}/bin')
     elif (bld.env['DEST_OS'] == DARWIN_OS ):
         executable_dir = "bin"
         bld_task = bld.program(source=source_files,
                                includes=include_dirs,
-                               target = [iclasp_executable], install_path = '${PREFIX}/bin')
+                               target = [bld.iclasp_executable], install_path = '${PREFIX}/bin')
 #        if (bld.env.LTO_FLAG):
 #            iclasp_lto_o = bld.path.find_or_declare('%s.lto.o' % variant.executable_name(stage='i'))
 #            iclasp_dsym = bld.path.find_or_declare("%s.dSYM"%variant.executable_name(stage='i'))
 #            iclasp_dsym_files = generate_dsym_files(variant.executable_name(stage='i'),iclasp_dsym)
 #            dsymutil_iclasp = dsymutil(env=bld.env)
-#            dsymutil_iclasp.set_inputs([iclasp_executable,iclasp_lto_o])
+#            dsymutil_iclasp.set_inputs([bld.iclasp_executable,iclasp_lto_o])
 #            dsymutil_iclasp.set_outputs(iclasp_dsym_files)
 #            bld.add_to_group(dsymutil_iclasp)
 #            bld.install_files('${PREFIX}/lib/clasp/%s/%s' % (executable_dir, iclasp_dsym.name), iclasp_dsym_files, relative_trick = True, cwd = iclasp_dsym)
@@ -895,7 +895,7 @@ def build(bld):
         print("About to add run_aclasp")
         cmp_aclasp = run_aclasp(env=bld.env)
 #        print("clasp_aclasp as nodes = %s" % fix_lisp_paths(bld.path,out,variant,bld.clasp_aclasp))
-        cmp_aclasp.set_inputs([iclasp_executable,intrinsics_bitcode_node,builtins_bitcode_node]+fix_lisp_paths(bld.path,out,variant,bld.clasp_aclasp))
+        cmp_aclasp.set_inputs([bld.iclasp_executable,intrinsics_bitcode_node,builtins_bitcode_node]+fix_lisp_paths(bld.path,out,variant,bld.clasp_aclasp))
         aclasp_common_lisp_bitcode = bld.path.find_or_declare(variant.common_lisp_bitcode_name(stage='a'))
         cmp_aclasp.set_outputs(aclasp_common_lisp_bitcode)
         bld.add_to_group(cmp_aclasp)
@@ -903,7 +903,7 @@ def build(bld):
         print("About to add compile_aclasp")
         cmp_aclasp = compile_aclasp(env=bld.env)
 #        print("clasp_aclasp as nodes = %s" % fix_lisp_paths(bld.path,out,variant,bld.clasp_aclasp))
-        cmp_aclasp.set_inputs([iclasp_executable,intrinsics_bitcode_node,builtins_bitcode_node,fastgf_bitcode_node]+fix_lisp_paths(bld.path,out,variant,bld.clasp_aclasp))
+        cmp_aclasp.set_inputs([bld.iclasp_executable,intrinsics_bitcode_node,builtins_bitcode_node,fastgf_bitcode_node]+fix_lisp_paths(bld.path,out,variant,bld.clasp_aclasp))
         aclasp_common_lisp_bitcode = bld.path.find_or_declare(variant.common_lisp_bitcode_name(stage='a'))
         print("find_or_declare aclasp_common_lisp_bitcode = %s" % aclasp_common_lisp_bitcode)
         cmp_aclasp.set_outputs(aclasp_common_lisp_bitcode)
@@ -918,7 +918,7 @@ def build(bld):
     if (bld.stage_val >= 2):
         print("About to add compile_bclasp")
         cmp_bclasp = compile_bclasp(env=bld.env)
-        cmp_bclasp.set_inputs([iclasp_executable,aclasp_link_product,intrinsics_bitcode_node,fastgf_bitcode_node,builtins_bitcode_node]+fix_lisp_paths(bld.path,out,variant,bld.clasp_cclasp)) # bld.clasp_bclasp
+        cmp_bclasp.set_inputs([bld.iclasp_executable,aclasp_link_product,intrinsics_bitcode_node,fastgf_bitcode_node,builtins_bitcode_node]+fix_lisp_paths(bld.path,out,variant,bld.clasp_cclasp)) # bld.clasp_bclasp
         bclasp_common_lisp_bitcode = bld.path.find_or_declare(variant.common_lisp_bitcode_name(stage='b'))
         cmp_bclasp.set_outputs(bclasp_common_lisp_bitcode)
         bld.add_to_group(cmp_bclasp)
@@ -930,7 +930,7 @@ def build(bld):
         bld.install_files('${PREFIX}/lib/clasp/', bclasp_common_lisp_bitcode, relative_trick = True, cwd = bld.path)
         # # Build ASDF for bclasp
         # cmp_asdf = compile_module(env=bld.env)
-        # cmp_asdf.set_inputs([iclasp_executable,bld.bclasp_fasl] + fix_lisp_paths(bld.path,out,variant,["src/lisp/modules/asdf/build/asdf"]))
+        # cmp_asdf.set_inputs([bld.iclasp_executable,bld.bclasp_fasl] + fix_lisp_paths(bld.path,out,variant,["src/lisp/modules/asdf/build/asdf"]))
         # cmp_asdf.set_outputs(bld.asdf_fasl_bclasp)
         # bld.add_to_group(cmp_asdf)
         # bld.install_files('${PREFIX}/lib/clasp/', bld.asdf_fasl_bclasp, relative_trick = True, cwd = bld.path)
@@ -938,7 +938,7 @@ def build(bld):
         print("About to add compile_cclasp")
         # Build cclasp fasl
         cmp_cclasp = compile_cclasp(env=bld.env)
-        cmp_cclasp.set_inputs([iclasp_executable,bld.bclasp_fasl,cxx_all_bitcode_node]+fix_lisp_paths(bld.path,out,variant,bld.clasp_cclasp))
+        cmp_cclasp.set_inputs([bld.iclasp_executable,bld.bclasp_fasl,cxx_all_bitcode_node]+fix_lisp_paths(bld.path,out,variant,bld.clasp_cclasp))
         cmp_cclasp.set_outputs([cclasp_common_lisp_bitcode])
         bld.add_to_group(cmp_cclasp)
     if (bld.stage == 'rebuild' or bld.stage == 'dangerzone'):
@@ -962,13 +962,13 @@ def build(bld):
         # Build serve-event
         serve_event_fasl = bld.path.find_or_declare("%s/src/lisp/modules/serve-event/serve-event.fasl" % variant.fasl_dir(stage='c'))
         cmp_serve_event = compile_module(env=bld.env)
-        cmp_serve_event.set_inputs([iclasp_executable,bld.cclasp_fasl] + fix_lisp_paths(bld.path,out,variant,["src/lisp/modules/serve-event/serve-event"]))
+        cmp_serve_event.set_inputs([bld.iclasp_executable,bld.cclasp_fasl] + fix_lisp_paths(bld.path,out,variant,["src/lisp/modules/serve-event/serve-event"]))
         cmp_serve_event.set_outputs(serve_event_fasl)
         bld.add_to_group(cmp_serve_event)
         bld.install_files('${PREFIX}/lib/clasp/', serve_event_fasl, relative_trick = True, cwd = bld.path)
         # Build ASDF
         cmp_asdf = compile_module(env=bld.env)
-        cmp_asdf.set_inputs([iclasp_executable,bld.cclasp_fasl] + fix_lisp_paths(bld.path,out,variant,["src/lisp/modules/asdf/build/asdf"]))
+        cmp_asdf.set_inputs([bld.iclasp_executable,bld.cclasp_fasl] + fix_lisp_paths(bld.path,out,variant,["src/lisp/modules/asdf/build/asdf"]))
         cmp_asdf.set_outputs(bld.asdf_fasl_cclasp)
         bld.add_to_group(cmp_asdf)
         bld.install_files('${PREFIX}/lib/clasp/', bld.asdf_fasl_cclasp, relative_trick = True, cwd = bld.path)
@@ -1012,7 +1012,7 @@ def build(bld):
             bld.symlink_as('${PREFIX}/%s/clasp' % executable_dir, '%s' % bld.cclasp_executable.name)
             os.symlink(bld.cclasp_executable.abspath(),clasp_symlink_node.abspath())
         else:
-            os.symlink(iclasp_executable.abspath(),clasp_symlink_node.abspath())
+            os.symlink(bld.iclasp_executable.abspath(),clasp_symlink_node.abspath())
     print("End of Main build(bld)")
     
 from waflib import TaskGen
