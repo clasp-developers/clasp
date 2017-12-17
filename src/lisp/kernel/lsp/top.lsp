@@ -1339,9 +1339,16 @@ package."
           (default-debugger condition))))
   (finish-output))
 
-(defun debugger-disabled-hook (condition)
-  (format t "~a~%" condition)
-  (core:quit))
+(defun core::debugger-disabled-hook (condition old-hook)
+  (declare (ignore old-hook))
+  (format t "~&Received error of type: ~A~%~A~%~
+               Debugger disabled - exiting.~%"
+          (type-of condition) condition)
+  (format t "~&------- Common Lisp backtrace: ~%")
+  (core:btcl)
+  (format t "~&------- C++/CL backtrace: ~%")
+  (core:bt)
+  (core:quit 1))
 
 (eval-when (:execute :load-toplevel)
   (when (null (member :interactive *features*))
