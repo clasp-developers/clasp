@@ -14,7 +14,7 @@ services:
     build:
       context: .
       dockerfile: tools/dockerfiles/cando-build/Dockerfile
-    entrypoint: tar -cvzf /build/clasp.tgz -C /out/clasp .
+    entrypoint: tar -cvzf /build/cando-build.tgz -C /out/clasp .
     volumes:
       - ./build:/build
   # To build quicklisp and the common lisp cache  run: docker-compose build cando-cache
