@@ -195,3 +195,8 @@ push-cando-to-testing:
 	(cd extensions/cando; git push origin dev)
 	(cd extensions/cando; git fetch origin dev:testing)
 	(cd extensions/cando; git push origin testing)
+
+cando-deploy:
+	aws s3 cp s3://clasp-cando/docker-cando/cando-build.tgz cando-build.tgz
+	aws s3 cp s3://clasp-cando/demos/demos.tar demos.tar
+	docker-compose build cando-deploy

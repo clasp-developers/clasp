@@ -55,19 +55,15 @@ RUN python -m jupyter nbextension enable --py --sys-prefix widgetsnbextension
 RUN python -m jupyter nbextension install --py --sys-prefix nglview
 RUN python -m jupyter nbextension enable --py --sys-prefix nglview
 
-ADD build/clasp.tgz /home/app/clasp
-
+ADD cando-build.tgz /home/app/clasp
 ADD tools/dockerfiles/jupyter/kernel.json /home/app/.local/share/jupyter/kernels/lisp/kernel.json
 ADD tools/dockerfiles/jupyter/jupyter_notebook_config.py /home/app/.jupyter/jupyter_notebook_config.py
-RUN chown -R app:app /home/app/.jupyter /home/app/.local
-
+# RUN chown -R app:app /home/app/.jupyter /home/app/.local
 ADD tools/dockerfiles/start-demos.sh /home/app/start-demos.sh
-ADD build/demos.tar /home/app/
+ADD demos.tar /home/app/
 
-USER app
+#USER app
 WORKDIR $HOME
-
-# RUN tar zxvf /build/clasp.tgz
 
 ENV PATH "$PATH:$HOME/clasp/bin"
 
@@ -93,12 +89,12 @@ RUN clasp -l "/home/app/quicklisp/setup.lisp" \
           -e "(core:quit)"
 
 USER root
-RUN mkdir /home/app/work
-RUN chown -R app:app /home/app/work
-RUN chown -R app:app /home/app/.jupyter
-RUN chown -R app:app /home/app/nglview
-USER app
+RUN mkdir /home/app/home
+#RUN chown -R app:app /home/app/work
+#RUN chown -R app:app /home/app/.jupyter
+#RUN chown -R app:app /home/app/nglview
+#USER app
 
 ENV HOME /home/app/
-ENTRYPOINT [ "jupyter", "notebook" ]
-CMD        [ "--no-browser", "--ip=0.0.0.0", "--port=8888" ]
+ENTRYPOINT [ "jupyter" "notebook" ]
+CMD [ "--allow-root", "--no-browser", "--ip=0.0.0.0", "--port=8888" ]
