@@ -23,6 +23,8 @@
 ;;; FIXME: it would be nicer if this was just an inline definition
 ;;; referring to core:eql or something.
 (progn
+  (debug-inline "eql")
+  (declaim (inline cl:eql))
   (deftype eq-incomparable () '(and number (not fixnum) (not single-float)))
   (defun eql (x y)
     (cond ((eq x y) t)
