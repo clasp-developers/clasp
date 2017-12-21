@@ -1555,10 +1555,15 @@ Integer_sp Integer_O::create( uintptr_clasp_t v )
 }
 #endif
 
+/* Why >= and <? Because most-negative-fixnum is a negative power of two,
+ * exactly representable by a float. most-positive-fixnum is slightly less than
+ * a positive power of two. So (double)mpf is a double that, cast to an integer,
+ * will be (1+ mpf). We want a bignum out of that.
+ */
 
 Integer_sp Integer_O::create(float v) {
-  if (v > (float)(std::numeric_limits<int>::min()) && v < (float)(std::numeric_limits<int>::max())) {
-    return make_fixnum((int)v);
+  if (v >= (float)gc::most_negative_fixnum && v < (float)gc::most_positive_fixnum) {
+    return make_fixnum((Fixnum)v);
   }
 
   Bignum rop;
@@ -1567,8 +1572,8 @@ Integer_sp Integer_O::create(float v) {
 }
 
 Integer_sp Integer_O::create(double v) {
-  if (v > (double)(std::numeric_limits<int>::min()) && v < (double)(std::numeric_limits<int>::max())) {
-    return make_fixnum((int)v);
+  if (v >= (double)gc::most_negative_fixnum && v < (double)gc::most_positive_fixnum) {
+    return make_fixnum((Fixnum)v);
   }
   Bignum rop;
   mpz_set_d(rop.get_mpz_t(), v);
@@ -1576,8 +1581,8 @@ Integer_sp Integer_O::create(double v) {
 }
 
 Integer_sp Integer_O::createLongFloat(LongFloat v) {
-  if (v > (LongFloat)(std::numeric_limits<int>::min()) && v < (LongFloat)(std::numeric_limits<int>::max())) {
-    return make_fixnum((int)v);
+  if (v >= (LongFloat)gc::most_negative_fixnum && v < (LongFloat)gc::most_positive_fixnum) {
+    return make_fixnum((Fixnum)v);
   }
   Bignum rop;
   mpz_set_d(rop.get_mpz_t(), v);
