@@ -59,8 +59,6 @@ ADD cando-build.tgz /home/app/clasp
 ADD tools/dockerfiles/jupyter/kernel.json /home/app/.local/share/jupyter/kernels/lisp/kernel.json
 ADD tools/dockerfiles/jupyter/jupyter_notebook_config.py /home/app/.jupyter/jupyter_notebook_config.py
 # RUN chown -R app:app /home/app/.jupyter /home/app/.local
-ADD tools/dockerfiles/start-demos.sh /home/app/start-demos.sh
-ADD demos.tar /home/app/
 
 #USER app
 WORKDIR $HOME
@@ -71,30 +69,48 @@ ENV PATH "$PATH:$HOME/clasp/bin"
 RUN git clone --depth=1 https://github.com/quicklisp/quicklisp-client.git $HOME/quicklisp
 RUN mkdir $HOME/quicklisp/local-projects
 
+# Checkout quicklisp stuff - but not needed
+RUN cd $HOME/quicklisp/local-projects \
+  && git clone --depth=1 https://github.com/clasp-developers/usocket.git \
+  && git clone --depth=1 https://github.com/clasp-developers/cl-jupyter.git \
+  && git clone --depth=1 https://github.com/clasp-developers/uuid.git \
+  && git clone --depth=1 https://github.com/clasp-developers/bordeaux-threads.git \
+  && git clone --depth=1 https://github.com/clasp-developers/cffi.git
+
 # checkout slime
 RUN git clone --depth=1 https://github.com/slime/slime $HOME/slime
 
-# Checkout quicklisp stuff - but not needed
-RUN cd $HOME/quicklisp/local-projects \
- && git clone --depth=1 https://github.com/clasp-developers/usocket.git \
- && git clone --depth=1 https://github.com/clasp-developers/cl-jupyter.git \
- && git clone --depth=1 https://github.com/clasp-developers/uuid.git \
- && git clone --depth=1 https://github.com/clasp-developers/bordeaux-threads.git \
- && git clone --depth=1 https://github.com/clasp-developers/cffi.git
-
 RUN clasp -l "/home/app/quicklisp/setup.lisp" \
-          -e '(setq core::*swank-home* "/home/app/slime")'\
-          -e '(load (format nil "~a/swank-loader.lisp" core::*swank-home*))'\
-          -e "(swank-loader:init :delete nil :reload nil :load-contribs nil)"\
-          -e "(core:quit)"
+           -e '(setq core::*swank-home* "/home/app/slime")'\
+           -e '(load (format nil "~a/swank-loader.lisp" core::*swank-home*))'\
+           -e "(swank-loader:init :delete nil :reload nil :load-contribs nil)"\
+           -e "(core:quit)"
 
-USER root
-RUN mkdir /home/app/home
-#RUN chown -R app:app /home/app/work
-#RUN chown -R app:app /home/app/.jupyter
-#RUN chown -R app:app /home/app/nglview
-#USER app
+ADD amber16.tar /home/app
+# RUN chown -R root:root /home/app/amber16
+ENV AMBERHOME=/home/app/amber16
+
+RUN cp /home/app/clasp/lib/clasp/extensions/cando/src/data/force-field/ATOMTYPE_SYBYL.DEF /home/app/clasp/lib/clasp/extensions/cando/src/data/force-field/atomtype_sybyl.def
+
+ADD tools/dockerfiles/start-demos.sh /home/app/start-demos.sh
+ADD demos.tar /home/app/
+# RUN chown -R root:root /home/app/demos
+
+# USER root
+# RUN mkdir /home/app/home
+# RUN chown -R app:app /home/app/home
+# RUN chown -R app:app /home/app/.local
+# RUN chown -R app:app /home/app/.jupyter
+# # RUN chown -R app:app /home/app/.cache
+# RUN chown -R app:app /home/app/amber16
+# RUN chown -R app:app /home/app/clasp
+# RUN chown -R app:app /home/app/demos
+# RUN chown -R app:app /home/app/home
+# RUN chown -R app:app /home/app/nglview
+# RUN chown -R app:app /home/app/quicklisp
+# RUN chown -R app:app /home/app/slime
+# USER app
 
 ENV HOME /home/app/
-ENTRYPOINT [ "jupyter" "notebook" ]
+ENTRYPOINT [ "jupyter", "notebook" ]
 CMD [ "--allow-root", "--no-browser", "--ip=0.0.0.0", "--port=8888" ]

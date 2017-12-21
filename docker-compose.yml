@@ -7,7 +7,7 @@
 version: '2'
 services:
   # first, run: docker-compose run cando-build
-  # this will compile clasp and copy it's build output ./build/clasp.tgz
+  # this will compile clasp and copy it's build output ./build/cando-build.tgz
   #   Expected time: 90 min
   cando-build:
     image: cando-build
