@@ -52,42 +52,21 @@
 (defun emf-maybe-compile (form)
   (if *avoid-compiling*
       (coerce form 'function)
-      (let ((*avoid-compiling* t))
+      (let ((*avoid-compiling* t)
+            ;; Cleavir itself uses generic functions, and we could therefore
+            ;; end up here recursively, which ends quite badly.
+            ;; So fall back to the bclasp compiler which does not use gfs.
+            (cmp:*cleavir-compile-hook* nil))
         (compile nil form))))
-(defun emf-fallback (form)
-  (emf-maybe-compile
-   `(lambda (.method-args. .next-methods.)
-      (declare (ignore .next-methods.))
-      ,form)))
-;; Given a form valid from compute-effective-method, return a function
-;; that implements it.
-(defun emf-closure-compile (form)
-  #+(or)
-  (fallback form)
-  ;; But instead, we avoid the compiler if we can, for bootstrap reasons.
-  ;; That is, since our compiler uses generic functions, it will be bad
-  ;; if a method definition on a compiler function results in the compiler
-  ;; being invoked (by effective-method-function) while that compiler function
-  ;; is invalidated.
-  ;; So we focus on avoiding compiling standard method combination.
-  ;; FIXME: This is not good, but alternate solutions don't seem too good either...
-  (if (consp form)
-      (case (first form)
-        ((multiple-value-prog1)
-         (let* ((all (mapcar #'effective-method-function (rest form)))
-                (first (first all))
-                (rest (rest all)))
-           (combine-method-functions-mvp1 first rest)))
-        ((progn)
-         (combine-method-functions-progn (mapcar #'effective-method-function (rest form))))
-        (t (emf-fallback form)))
-      (emf-fallback form)))
 ;; The CLHS description of call-method and make-method is kind of hard to understand.
 ;; But it does say rather specifically that make-method's form is evaluated in the null
 ;; lexical environment plus a definition for call-method, and nothing else from CL.
 ;; So no call-next-method.
 (defun emf-make-method (form)
-  (emf-closure-compile form))
+  (emf-maybe-compile
+   `(lambda (.method-args. .next-methods.)
+      (declare (ignore .next-methods.))
+      ,form)))
 ;; process a "method" argument to call-method
 (defun emf-call-method (form)
   (cond ((method-p form) (method-function form))
@@ -104,8 +83,8 @@
          (combine-method-functions
           (emf-call-method (second form))
           (mapcar #'emf-call-method (third form))))
-        (otherwise (emf-closure-compile form)))
-      (emf-closure-compile form)))
+        (otherwise (emf-make-method form)))
+      (emf-make-method form)))
 
 ;;;
 ;;; This function is a combinator of effective methods. It creates a
@@ -120,22 +99,6 @@
     ;; TODO: Optimize this application and GF dispatch should be more efficient
     ;; .method-args. can be a valist or a regular list
     (funcall method .method-args. rest-methods)))
-
-(defun combine-method-functions-mvp1 (first rest)
-  (lambda (.method-args. .next-methods.)
-    (declare (ignore .next-methods.)
-             (core:lambda-name combine-method-functions-mvp1.lambda))
-    (multiple-value-prog1
-        (funcall first .method-args. nil)
-      (dolist (mf rest)
-        (funcall mf .method-args. nil)))))
-
-(defun combine-method-functions-progn (functions)
-  (lambda (.method-args. .next-methods.)
-    (declare (ignore .next-methods.)
-             (core:lambda-name combine-method-functions-progn.lambda))
-    (dolist (mf functions)
-      (funcall mf .method-args. nil))))
 
 (defmacro call-method (method &optional rest-methods)
   `(funcall ,(emf-call-method method)
