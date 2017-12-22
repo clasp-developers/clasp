@@ -37,17 +37,7 @@ THE SOFTWARE.
 #include <clasp/clbind/class_rep.h>
 #include <clasp/core/wrappers.h>
 
-namespace clbind {
-#if 0
-#define EXPOSE_TO_CANDO
-#define Use_ClbindPkg
-#define EXTERN_REGISTER
-#include <clasp/core/initClasses.h>
-#undef EXTERN_REGISTER
-#undef Use_ClbindPkg
-#undef EXPOSE_TO_CANDO
-#endif
-};
+SYMBOL_EXPORT_SC_(ClbindPkg,class_rep);
 
 //
 // Load the gctools::GcInfo<core-classes>::Kind specializers

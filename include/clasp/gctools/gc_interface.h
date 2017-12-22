@@ -44,7 +44,8 @@ namespace internal {
 };
 };
 namespace clbind {
-class ConstructorCreator_O;
+  class ConstructorCreator_O;
+  class ClassRep_O;
 };
 
 
@@ -76,6 +77,12 @@ namespace asttooling {
   class DerivableMatchCallback;
   class DerivableFrontendActionFactory;
 };
+
+
+////////////////////////////////////////////////////////////
+//
+
+extern Fixnum global_TheClassRep_stamp;
 
 ////////////////////////////////////////////////////////////
 //

@@ -84,7 +84,7 @@ void class_registration::register_() const {
 #ifdef DEBUG_CLASS_INSTANCE
   printf("%s:%d   Registering clbind class\n", __FILE__, __LINE__ );
 #endif
-  crep->_Class = core::lisp_standard_class();
+  //  crep->_Class = core::lisp_standard_class();
   crep->initializeSlots(crep->_Class->CLASS_stamp_for_instances() /* BEFORE: gctools::NextStamp() */,REF_CLASS_NUMBER_OF_SLOTS_IN_STANDARD_CLASS);
   std::string classNameString(this->m_name);
   gctools::smart_ptr<core::Creator_O> creator;
@@ -104,6 +104,7 @@ void class_registration::register_() const {
 
   detail::class_map &classes = *globalClassMap;
   classes.put(m_id, crep);
+//  printf("%s:%d  step 2 with...  crep -> %s\n", __FILE__, __LINE__, _rep_(crep).c_str());
 
   bool const has_wrapper = m_wrapper_id != reg::registered_class<reg::null_type>::id;
 #if 0
@@ -145,6 +146,7 @@ void class_registration::register_() const {
       crep->add_base_class(core::make_fixnum(0), bcrep);
     }
   }
+//  printf("%s:%d  leaving with...  crep -> %s\n", __FILE__, __LINE__, _rep_(crep).c_str());
 }
 
 // -- interface ---------------------------------------------------------

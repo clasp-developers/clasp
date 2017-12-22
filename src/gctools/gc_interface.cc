@@ -891,6 +891,10 @@ void initialize_clasp_Kinds()
   #endif
 }
 
+
+
+Fixnum global_TheClassRep_stamp;
+
 void initialize_clasp()
 {
   // The bootStrapCoreSymbolMap keeps track of packages and symbols while they
@@ -910,16 +914,19 @@ void initialize_clasp()
   Fixnum TheStandardClass_stamp = gctools::NextStamp();
   Fixnum TheStructureClass_stamp = gctools::NextStamp();
   Fixnum TheDerivableCxxClass_stamp = gctools::NextStamp();
+  global_TheClassRep_stamp = gctools::NextStamp();
   _lisp->_Roots._TheClass = allocate_one_metaclass<core::StandardClassCreator_O>(TheClass_stamp,cl::_sym_class,_Unbound<core::Class_O>());
   _lisp->_Roots._TheBuiltInClass = allocate_one_metaclass<core::StandardClassCreator_O>(TheBuiltInClass_stamp,cl::_sym_built_in_class,_Unbound<core::Class_O>());
   _lisp->_Roots._TheStandardClass = allocate_one_metaclass<core::StandardClassCreator_O>(TheStandardClass_stamp,cl::_sym_standard_class,_Unbound<core::Class_O>());
   _lisp->_Roots._TheStructureClass = allocate_one_metaclass<core::StructureClassCreator_O>(TheStructureClass_stamp,cl::_sym_structure_class,_Unbound<core::Class_O>());
   _lisp->_Roots._TheDerivableCxxClass = allocate_one_metaclass<core::DerivableCxxClassCreator_O>(TheDerivableCxxClass_stamp,core::_sym_derivable_cxx_class,_Unbound<core::Class_O>());
+  _lisp->_Roots._TheClassRep = allocate_one_metaclass<core::ClassRepCreator_O>(global_TheClassRep_stamp,clbind::_sym_class_rep,_Unbound<core::Class_O>());
   _lisp->_Roots._TheClass->_Class = _lisp->_Roots._TheStandardClass;
   _lisp->_Roots._TheBuiltInClass->_Class = _lisp->_Roots._TheStandardClass;
   _lisp->_Roots._TheStandardClass->_Class = _lisp->_Roots._TheStandardClass;
   _lisp->_Roots._TheStructureClass->_Class = _lisp->_Roots._TheStandardClass;
   _lisp->_Roots._TheDerivableCxxClass->_Class = _lisp->_Roots._TheStandardClass;
+  _lisp->_Roots._TheClassRep->_Class = _lisp->_Roots._TheStandardClass;
   MPS_LOG("initialize_clasp ALLOCATE_ALL_CLASSES");
   #ifndef SCRAPING
    #define ALLOCATE_ALL_CLASSES
@@ -927,6 +934,8 @@ void initialize_clasp()
    #undef ALLOCATE_ALL_CLASSES
   #endif
   core_T_O_var->setInstanceBaseClasses(_Nil<core::T_O>());
+  // ClassRep_O is initialized like other class objects - but we need to save it in a special system-wide variable
+//  _lisp->_Roots._TheClassRep = clbind_ClassRep_O_var;
   
   create_packages();
   // have to do this before symbols are finalized so that keywords are all bound properly.
@@ -970,11 +979,16 @@ void initialize_clasp()
   _lisp->_Roots._TheDerivableCxxClass->instanceSet(core::Class_O::REF_CLASS_SLOTS,_Nil<core::T_O>());
   _lisp->_Roots._TheDerivableCxxClass->instanceSet(core::Class_O::REF_CLASS_DIRECT_SLOTS,_Nil<core::T_O>());
   _lisp->_Roots._TheDerivableCxxClass->instanceSet(core::Class_O::REF_CLASS_DEFAULT_INITARGS,_Nil<core::T_O>());
+  _lisp->_Roots._TheClassRep->stamp_set(TheStandardClass_stamp);
+  _lisp->_Roots._TheClassRep->instanceSet(core::Class_O::REF_CLASS_SLOTS,_Nil<core::T_O>());
+  _lisp->_Roots._TheClassRep->instanceSet(core::Class_O::REF_CLASS_DIRECT_SLOTS,_Nil<core::T_O>());
+  _lisp->_Roots._TheClassRep->instanceSet(core::Class_O::REF_CLASS_DEFAULT_INITARGS,_Nil<core::T_O>());
 
   _lisp->_Roots._TheBuiltInClass->setInstanceBaseClasses(core::Cons_O::createList(_lisp->_Roots._TheClass));
   _lisp->_Roots._TheStandardClass->setInstanceBaseClasses(core::Cons_O::createList(_lisp->_Roots._TheClass));
   _lisp->_Roots._TheStructureClass->setInstanceBaseClasses(core::Cons_O::createList(_lisp->_Roots._TheClass));
   _lisp->_Roots._TheDerivableCxxClass->setInstanceBaseClasses(core::Cons_O::createList(_lisp->_Roots._TheClass));
+  _lisp->_Roots._TheClassRep->setInstanceBaseClasses(core::Cons_O::createList(_lisp->_Roots._TheClass));
 
   reg::lisp_registerClassSymbol<core::Character_I>(cl::_sym_character);
   reg::lisp_registerClassSymbol<core::Fixnum_I>(cl::_sym_fixnum);

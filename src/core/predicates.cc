@@ -120,10 +120,12 @@ CL_DEFUN bool cl__packagep(T_sp obj) {
 CL_DEFUN bool clos__classp(T_sp obj) {
   if (gc::IsA<Instance_sp>(obj)) {
     Instance_sp iobj = gc::As_unsafe<Instance_sp>(obj);
-    if (iobj->_Class == _lisp->_Roots._TheStandardClass) return true;
-    if (iobj->_Class == _lisp->_Roots._TheClass) return true;
-    if (iobj->_Class == _lisp->_Roots._TheBuiltInClass) return true;
-    if (iobj->_Class == _lisp->_Roots._TheStructureClass) return true;
+    if (iobj->_Class == _lisp->_Roots._TheStandardClass
+        || iobj->_Class == _lisp->_Roots._TheClass
+        || iobj->_Class == _lisp->_Roots._TheBuiltInClass
+        || iobj->_Class == _lisp->_Roots._TheStructureClass
+        || iobj->_Class == _lisp->_Roots._TheClassRep
+        || iobj->_Class == _lisp->_Roots._TheDerivableCxxClass ) return true;
     return core__subclassp(iobj->_Class,_lisp->_Roots._TheClass);
   }
   return false;

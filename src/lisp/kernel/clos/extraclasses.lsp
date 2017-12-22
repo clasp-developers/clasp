@@ -25,7 +25,6 @@
 ;;      (bformat *debug-io* "add-cxx-class -> %s\n" class)
       (ensure-boot-class class-symbol :metaclass 'core:cxx-class ;; was 'builtin-class
                          :direct-superclasses supers-names)
-;;      (bformat *debug-io* "add-cxx-class -> %s finalize-inheritance\n" class)
       (finalize-inheritance class)))
 
 (defun add-extra-classes (additional-classes)

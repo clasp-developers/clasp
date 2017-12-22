@@ -39,6 +39,7 @@ THE SOFTWARE.
 #include <clasp/core/funcallableInstance.h>
 #include <clasp/core/sourceFileInfo.h>
 #include <clasp/core/activationFrame.h>
+#include <clasp/clbind/class_rep.h>
 #include <clasp/core/lambdaListHandler.h>
 //#i n c l u d e "environmentDependent.h"
 #include <clasp/core/environment.h>
@@ -131,6 +132,20 @@ T_sp DerivableCxxClassCreator_O::creator_allocate() {
   c->_allocation_total_size += size;
 #endif
   GC_ALLOCATE_VARIADIC(Class_O,class_,lisp_standard_class()/*,REF_CLASS_NUMBER_OF_SLOTS_IN_STRUCTURE_CLASS*/);
+  return class_;
+};
+
+};
+
+namespace core {
+T_sp ClassRepCreator_O::creator_allocate() {
+  size_t size = gctools::sizeof_with_header<Class_O>();
+#ifdef METER_ALLOCATIONS
+  Class_sp c = lisp_standard_class();
+  c->_allocation_counter += 1;
+  c->_allocation_total_size += size;
+#endif
+  GC_ALLOCATE_VARIADIC(clbind::ClassRep_O,class_,lisp_class_rep_class());
   return class_;
 };
 

@@ -8,6 +8,7 @@
 #include <clasp/core/wrappedPointer.h>
 #include <clasp/core/funcallableInstance.h>
 #include <clasp/core/derivableCxxObject.h>
+#include <clasp/gctools/gc_interface.h>
 #include <clasp/llvmo/intrinsics.h>
 
 #if 0 // DEBUGGING
@@ -45,7 +46,7 @@ BUILTIN_ATTRIBUTES int64_t cc_read_stamp(void* tagged_pointer)
     uint64_t stamp = header.stamp();
     if (stamp == gctools::STAMP_core__Instance_O ||
         stamp == gctools::STAMP_core__FuncallableInstance_O ||
-        stamp == gctools::STAMP_clbind__ClassRep_O ) {
+        stamp == global_TheClassRep_stamp ) {
       core::Instance_O* instance_ptr = reinterpret_cast<core::Instance_O*>(client_ptr);
       core::SimpleVector_O* rack = reinterpret_cast<core::SimpleVector_O*>(gctools::untag_general<core::T_O*>(instance_ptr->_Rack.raw_()));
       return (*rack)[0].unsafe_fixnum();

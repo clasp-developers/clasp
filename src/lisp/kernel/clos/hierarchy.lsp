@@ -504,7 +504,7 @@
                 :creates-classes t)
         #+clasp(derivable-cxx-object
                 :metaclass core:derivable-cxx-class
-                :direct-superclasses (t))
+                :direct-superclasses (standard-object #+(or)t))
         ))))
 
 ;;;#+cclasp

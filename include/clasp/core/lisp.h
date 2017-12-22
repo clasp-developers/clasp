@@ -260,11 +260,13 @@ class Lisp_O {
     mutable mp::SharedMutex _SetfDefinitionsMutex;
 #endif
 #endif
+    //! Any class defined here needs to be added to predicates.cc::clos__classp
     Class_sp   _TheClass;
     Class_sp   _TheBuiltInClass;
     Class_sp   _TheStandardClass;
     Class_sp   _TheStructureClass;
     Class_sp   _TheDerivableCxxClass;
+    Class_sp   _TheClassRep;
     Package_sp _CorePackage;
     Package_sp _KeywordPackage;
     Package_sp _CommonLispPackage;

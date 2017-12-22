@@ -166,5 +166,15 @@ namespace core {
   };
 };
 
+namespace core {
+  class ClassRepCreator_O : public Creator_O {
+    LISP_CLASS(core,CorePkg,ClassRepCreator_O,"ClassRepCreator",Creator_O);
+  public:
+    ClassRepCreator_O() {};
+    T_sp creator_allocate();
+    virtual size_t templatedSizeof() const { return sizeof(ClassRepCreator_O); };
+  };
+};
+
 
 #endif // ifndef creator_h

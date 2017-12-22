@@ -876,6 +876,7 @@ namespace core {
   bool lisp_BuiltInClassesInitialized();
   Class_sp lisp_built_in_class();
   Class_sp  lisp_standard_class();
+  Class_sp  lisp_class_rep_class();
   void lisp_pushClassSymbolOntoSTARallCxxClassesSTAR(Symbol_sp classSymbol);
   void lisp_defparameter(Symbol_sp sym, T_sp val);
   T_sp lisp_symbolValue(Symbol_sp sym);

@@ -47,6 +47,7 @@ THE SOFTWARE.
 #include <clasp/core/multipleValues.h>
 #include <clasp/core/lambdaListHandler.h>
 #include <clasp/core/functor.h>
+#include <clasp/clbind/class_rep.h>
 #include <clasp/core/reader.h>
 #include <clasp/core/pointer.h>
 #include <clasp/core/singleDispatchGenericFunction.h>
@@ -144,10 +145,16 @@ core::Symbol_sp lisp_classSymbolFromClassId(class_id cid) {
 namespace core {
 
 Class_sp lisp_built_in_class() {
-  return cl__find_class(cl::_sym_built_in_class,false,_Nil<T_O>());
+  return _lisp->_Roots._TheBuiltInClass;
+//  return cl__find_class(clbind::_sym_built_in_class,false,_Nil<T_O>());
+}
+Class_sp lisp_class_rep_class() {
+  return _lisp->_Roots._TheClassRep;
+  // return cl__find_class(clbind::_sym_ClassRep_O,false,_Nil<T_O>());
 }
 Class_sp lisp_standard_class() {
-  return cl__find_class(cl::_sym_standard_class,false,_Nil<T_O>());
+  return _lisp->_Roots._TheStandardClass;
+  // return cl__find_class(cl::_sym_standard_class,false,_Nil<T_O>());
 }
 
 

@@ -2575,6 +2575,7 @@ CL_DEFUN void cl__error(T_sp datum, List_sp initializers) {
   }
 
   Class_sp Lisp_O::boot_setf_findClass(Symbol_sp className, Class_sp mc) {
+//    printf("%s:%d    boot_setf_findClass for %s\n", __FILE__, __LINE__, _rep_(className).c_str());
     for (auto it = this->_Roots.bootClassTable.begin(); it != this->_Roots.bootClassTable.end(); ++it) {
       if (it->symbol == className) {
         it->theClass = mc;
