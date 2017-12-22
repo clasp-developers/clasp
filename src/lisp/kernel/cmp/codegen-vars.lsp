@@ -63,6 +63,16 @@
     instruction new-env new-renv parent-env parent-renv)
   (defvar *make-value-frame-instructions*))
 
+#+optimize-bclasp
+(progn
+  ;;; Store the block environment, the push and the pop instructions for the block
+  (defstruct (block-frame-maker (:type vector))
+    block-symbol push-frame-instruction pop-frame-instruction)
+  (defvar *block-frame-makers*)
+
+  (defstruct (throw-return-from (:type vector))
+    instruction start-env block-symbol)
+  (defvar *throw-return-from-instructions*))
 
 #+optimize-bclasp
 (progn
@@ -73,6 +83,7 @@
   (defstruct (throw-dynamic-go (:type vector))
     instruction index depth start-env start-renv tagbody-env)
   (defvar *throw-dynamic-go-instructions*))
+
 #+optimize-bclasp
 (progn
   (defstruct (lexical-function-reference (:type vector))
@@ -304,6 +315,8 @@
            (*make-value-frame-instructions* nil)
            (*throw-dynamic-go-instructions* nil)
            (*tagbody-frame-makers* nil)
+           (*throw-return-from-instructions* nil)
+           (*block-frame-makers* nil)
            (*lexical-function-references* nil)
            (*lexical-function-frame-makers* nil))
        (multiple-value-prog1 (progn ,@body)
