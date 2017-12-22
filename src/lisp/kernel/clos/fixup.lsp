@@ -76,7 +76,8 @@
 
 (function-to-method 'compute-effective-method
                     '(generic-function method-combination applicable-methods)
-                    '(standard-generic-function method-combination t))
+                    '(standard-generic-function method-combination t)
+                    #'std-compute-effective-method)
 
 (mlog "done with the first function-to-methods\n")
 
@@ -293,6 +294,8 @@ and cannot be added to ~A." method other-gf gf)))
 (defgeneric no-applicable-method (gf &rest args)
   (declare (optimize (debug 3))))
 
+;;; FIXME: use actual condition classes
+
 (defmethod no-applicable-method (gf &rest args)
   (declare (optimize (debug 3)))
   (error "No applicable method for ~S with ~
@@ -304,10 +307,11 @@ and cannot be added to ~A." method other-gf gf)))
   (declare (ignore gf))
   (error "In method ~A~%No next method given arguments ~A" method args))
 
-(defun no-primary-method (gf &rest args)
-  (error "Generic function: ~A. No primary method given arguments: ~S"
-         ;; FIXME: Is the expand needed any more?
-	 (generic-function-name gf) (core:maybe-expand-generic-function-arguments args)))
+(defun no-required-method (gf methods group-name)
+  ;; FIXME: Find a way to get the actual arguments - clearer that way
+  (error "No applicable methods in required group ~s for generic function ~s~@
+          Applicable methods:~%~s"
+         group-name gf methods))
 
 ;;; Now we protect classes from redefinition:
 (eval-when (compile load)

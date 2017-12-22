@@ -18,6 +18,68 @@
 ;;; Note that the accessors for call-history and specializer-profile are not accessors,
 ;;; they are C++ functions. So they're okay to use without early-accessors.
 
+;;; effective-slot-from-accessor-method, but without gfs
+(defun satiation-effective-slot-from-accessor-method (method class)
+  (with-early-accessors (+standard-accessor-method-slots+
+                         +slot-definition-slots+
+                         +class-slots+)
+    (let* ((direct-slot-definition (accessor-method-slot-definition method))
+           (direct-slot-name (slot-definition-name direct-slot-definition))
+           (slot (loop for effective-slot in (class-slots class)
+                       when (eq direct-slot-name (slot-definition-name effective-slot))
+                         return effective-slot)))
+      (if slot
+          slot
+          (error "Bug during satiation: Could not find effective slot definition for ~a"
+                 direct-slot-name)))))
+
+;;; Used by add-satiation-entries to compute an effective method without going through
+;;; compute-effective-method and method-combinations, which call a few gfs.
+;;; Standard method combination only. No qualifiers allowed (checks this).
+;;; It could be improved to handle them; I just don't think we need to satiate anything
+;;; that uses qualified methods.
+;;; Does handle accessor methods so that they're fast, yet.
+;;; FIXME: Duplication of other code, in this case
+;;; compute-effective-method-function-maybe-optimize, sucks.
+(defun satiation-compute-effective-method-function (methods specializers)
+  (with-early-accessors (+standard-method-slots+
+                         +slot-definition-slots+)
+    (mapc (lambda (method)
+            (when (method-qualifiers method)
+              ;; Hopefully the write won't trigger a recursive error...?
+              (error "Bug during satiation: method to be satiated ~a has qualifiers"
+                     method)))
+          methods)
+    ;; Methods are sorted by std-compute-applicable-methods-using-classes, so
+    ;; we're just doing (call-method ,first (,@rest))
+    (let* ((first (first methods)) (rest (rest methods))
+           (efm (combine-method-functions
+                 (method-function first)
+                 ;; with-early-accessors does macrolet, hence this awkwardness.
+                 (mapcar (lambda (method) (method-function method)) rest))))
+      ;; realistically, anything we satiate is going to be standard classes, but
+      ;; paranoia doesn't hurt here.
+      (cond ((eq (class-of first) (find-class 'standard-reader-method))
+             (let* ((class (first specializers))
+                    (slot (satiation-effective-slot-from-accessor-method
+                           first (first specializers))))
+               (cmp::make-optimized-slot-reader :index (slot-definition-location slot)
+                                                :effective-method-function efm
+                                                :slot-name (slot-definition-name slot)
+                                                :method first
+                                                :class class)))
+            ((eq (class-of first) (find-class 'standard-writer-method))
+             (let* ((class (second specializers))
+                    (slot (satiation-effective-slot-from-accessor-method
+                           first (first specializers))))
+               (cmp::make-optimized-slot-writer :index (slot-definition-location slot)
+                                                :effective-method-function efm
+                                                :slot-name (slot-definition-name slot)
+                                                :method first
+                                                :class class)))
+            (t efm)))))
+
+;;; Add fictitious call history entries.
 (defun add-satiation-entries (generic-function lists-of-specializers)
   (with-early-accessors (+standard-generic-function-slots+) ; for -method-combination
     (let* ((new-entries
@@ -27,10 +89,9 @@
                    ;; Everything should use standard method combination during satiation.
                    ;; FIXME: Once compute-effective-method is changed, we should do the
                    ;; reader/writer optimizations here as well.
-                   for effective-method-function = (std-compute-effective-method
-                                                    generic-function
-                                                    (generic-function-method-combination generic-function)
-                                                    methods)
+                   for effective-method-function = (satiation-compute-effective-method-function
+                                                    methods
+                                                    specific-specializers)
                    collect (cons (coerce specific-specializers 'vector) effective-method-function))))
       (loop for call-history = (generic-function-call-history generic-function)
             for new-call-history = (append new-entries call-history)
@@ -84,6 +145,9 @@
                  (standard-method)
                  (standard-reader-method) (standard-writer-method))
     (satiate-one method-specializers
+                 (standard-method)
+                 (standard-reader-method) (standard-writer-method))
+    (satiate-one method-function
                  (standard-method)
                  (standard-reader-method) (standard-writer-method))
     (satiate-one accessor-method-slot-definition
