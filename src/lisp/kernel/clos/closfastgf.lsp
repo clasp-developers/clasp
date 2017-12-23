@@ -22,7 +22,7 @@
 ;;; Debugging code
 ;;;
 ;;; Add :LOG-CMPGF to log fastgf messages during the slow path.
-;;;
+;;;    
 #+(or)
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (pushnew :debug-fastgf *features*))
@@ -148,8 +148,10 @@
            (bformat-indent " raw call-history (length -> %d):\n" (length call-history))
            (dolist (entry call-history)
              (gf-print-entry index entry)))
-         (let ((optimized-call-history (cmp::optimized-call-history generic-function))
-               (index 0))
+         (let* ((call-history (generic-function-call-history generic-function))
+                (specializer-profile (generic-function-specializer-profile generic-function))
+                (optimized-call-history (cmp::optimized-call-history call-history specializer-profile))
+                (index 0))
            (bformat-indent "    optimized call-history (length -> %d):\n" (length optimized-call-history))
            (dolist (entry optimized-call-history)
              (gf-print-entry index entry))))

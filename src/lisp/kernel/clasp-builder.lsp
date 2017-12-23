@@ -453,8 +453,9 @@ Return files."
   (compile-cclasp* output-file system))
 
 (defun load-cclasp (&key (system (command-line-arguments-as-list)))
-  (load-system (select-source-files #P"src/lisp/kernel/tag/bclasp" #P"src/lisp/kernel/cleavir/inline-prep" :system system) :compile-file-load t)
-  (load-system (select-source-files #P"src/lisp/kernel/cleavir/auto-compile" #P"src/lisp/kernel/tag/cclasp" :system system) :compile-file-load nil ))
+  (progn
+    (load-system (select-source-files #P"src/lisp/kernel/tag/bclasp" #P"src/lisp/kernel/cleavir/inline-prep" :system system) :compile-file-load t)
+    (load-system (select-source-files #P"src/lisp/kernel/cleavir/auto-compile" #P"src/lisp/kernel/tag/cclasp" :system system) :compile-file-load nil )))
 (export '(load-cclasp))
 
 (defun compile-cclasp (&key clean (output-file (build-common-lisp-bitcode-pathname)) (system (command-line-arguments-as-list)))
@@ -475,11 +476,6 @@ Return files."
                 (load-system (select-source-files #P"src/lisp/kernel/cleavir/auto-compile"
                                                   #P"src/lisp/kernel/tag/pre-epilogue-cclasp" :system system) :compile-file-load nil ))
            (pop *features*))
-         #+(or)(progn ;; Use load-cclasp?
-                 (load-system (select-source-files #P"src/lisp/kernel/tag/bclasp"
-                                                   #P"src/lisp/kernel/cleavir/inline-prep" :system system) :compile-file-load t )
-                 (load-system (select-source-files #P"src/lisp/kernel/cleavir/auto-compile"
-                                                   #P"src/lisp/kernel/tag/pre-epilogue-cclasp" :system system) :compile-file-load nil ))
          (push :cleavir *features*)
          (compile-cclasp* output-file system))))))
 
@@ -501,6 +497,16 @@ Return files."
   (cmp:llvm-link (core:build-pathname #P"src/lisp/modules/asdf/asdf" :fasl)
                  :lisp-bitcode-files (list (core:build-pathname #P"src/lisp/modules/asdf/build/asdf" :bitcode))))
 (export '(compile-addons link-addons))
+
+
+(defun bclasp-repl ()
+  (let ((cmp:*cleavir-compile-hook* nil)
+        (cmp:*cleavir-compile-file-hook* nil)
+        (core:*use-cleavir-compiler* nil)
+        (core:*eval-with-env-hook* #'core:eval-with-env-default))
+    (core:low-level-repl)))
+(export 'bclasp-repl)
+
 
 (eval-when (:execute)
   (bformat t "Loaded clasp-builder.lsp\n")

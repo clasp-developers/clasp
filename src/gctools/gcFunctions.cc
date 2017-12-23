@@ -1026,6 +1026,14 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
 #endif
   if (buildReport) ss << (BF("DEBUG_BCLASP_LISP = %s\n") % (debug_bclasp_lisp ? "**DEFINED**" : "undefined") ).str();
   
+  bool debug_cclasp_lisp = false;
+#ifdef DEBUG_CCLASP_LISP
+  debug_cclasp_lisp = true;
+  debugging = true;
+  if (setFeatures) features = core::Cons_O::create(_lisp->internKeyword("DEBUG-CCLASP-LISP"),features);
+#endif
+  if (buildReport) ss << (BF("DEBUG_CCLASP_LISP = %s\n") % (debug_cclasp_lisp ? "**DEFINED**" : "undefined") ).str();
+  
   bool disable_type_inference = false;
 #ifdef DISABLE_TYPE_INFERENCE
   disable_type_inference = true;

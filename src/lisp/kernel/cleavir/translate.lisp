@@ -172,7 +172,7 @@ when this is t a lot of graphs will be generated.")
          (current-function-info (if current-function-info-landing-pad
                                     current-function-info-landing-pad
                                     (make-instance 'function-info :unwind-target nil)))
-         (procedure-has-debug-on #+(or) t (and (null *top-level-procedure*) (policy-anywhere-p initial-instruction 'maintain-shadow-stack)))
+         (procedure-has-debug-on #+debug-cclasp-lisp t #-debug-cclasp-lisp (and (null *top-level-procedure*) (policy-anywhere-p initial-instruction 'maintain-shadow-stack)))
          (*top-level-procedure* nil)
          (needs-cleanup (or (unwind-target current-function-info) procedure-has-debug-on))
          ;; Gather the basic blocks of this procedure in basic-blocks
