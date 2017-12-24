@@ -263,6 +263,8 @@ SYMBOL_EXPORT_SC_(ClPkg, substitute);
 SYMBOL_EXPORT_SC_(ClPkg, subtypep);
 SYMBOL_EXPORT_SC_(ClPkg, subseq);
 
+SYMBOL_EXPORT_SC_(CorePkg, make_atom_cst);
+SYMBOL_EXPORT_SC_(CorePkg, make_cons_cst);
 SYMBOL_EXPORT_SC_(CorePkg, STARbits_in_bit_array_wordSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, setf_subseq);
 SYMBOL_EXPORT_SC_(CorePkg,STARextension_startup_loadsSTAR);

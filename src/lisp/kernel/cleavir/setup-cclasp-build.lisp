@@ -15,7 +15,7 @@
 (load "source-dir:src;lisp;local-asdf-config.lisp")
 
 (format t "loading source-dir:src;lisp;kernel;asdf-system-groveler.lisp~%")
-(load "source-dir:src;lisp;kernel;cleavir;asdf-system-groveler.lisp")
+(load "source-dir:src;lisp;kernel;asdf-system-groveler.lisp")
 
 (defun save-partial-system (filename system)
   "Save the list of files in *clasp-cleavir-files* to #P\"source-dir:src;lisp;kernel;cleavir-system.lsp\""
