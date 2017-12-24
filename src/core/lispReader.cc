@@ -1098,11 +1098,16 @@ step1:
     _BLOCK_TRACEF(BF("Processing macro character x[%s]") % clasp_as_claspCharacter(xxx));
     LOG(BF("step4 - terminating-macro-character or non-terminating-macro-character char[%c]") % clasp_as_claspCharacter(xxx));
     T_sp reader_macro;
-    {
-      reader_macro = readTable->get_macro_character(xxx);
-    }
+    reader_macro = readTable->get_macro_character(xxx);
     ASSERT(reader_macro.notnilp());
-    return eval::funcall(reader_macro, sin, xxx);
+    T_sp object = eval::funcall(reader_macro, sin, xxx);
+    if (object.consp()) {
+      // What does object look like?   Is it a CONS of CST's?
+      SIMPLE_ERROR(BF("I think I want to create a cons-cst with this %s - but what does it look like?") % _rep_(object));
+      // return something here.
+    } else {
+      return eval::funcall(_sym_make_atom_cst,xxxsp,result);
+    }
   }
   //    step5:
   if (xxx_syntax_type == kw::_sym_single_escape_character) {
@@ -1229,6 +1234,12 @@ step10:
     return (Values(_Nil<T_O>()));
   T_sp object = interpret_token_or_throw_reader_error(sin, token,only_dots_ok);
   TRAP_BAD_CONS(object);
+  if (generate_cst) {
+    if (object.consp()) {
+      SIMPLE_ERROR(BF("The reader wants to return a CONS - but you aren't set up to allocate a cons-ast"));
+    }
+    return eval::funcall(_sym_make_atom_cst,token.sourcePosInfo,object);
+  }
   return (Values(object));
 }
 
