@@ -6,34 +6,34 @@
     :author "Christian Schafmeister <chris.schaf@verizon.net>"
     :licence "LGPL-3.0"
     :depends-on (:cleavir-generate-ast
-		 :cleavir-ir
+                 :cleavir-ir
                  :cleavir-compilation-policy
-		 :cleavir-ast-to-hir
-		 :cleavir-ast-transformations
+                 :cleavir-ast-to-hir
+                 :cleavir-ast-transformations
                  :cleavir-kildall-type-inference
                  :cleavir-escape
-		 :cleavir-hir-transformations
+                 :cleavir-hir-transformations
                  :cleavir-remove-useless-instructions
-		 :cleavir-hir-to-mir
-		 :cleavir-basic-blocks
+                 :cleavir-hir-to-mir
+                 :cleavir-basic-blocks
                  :sicl-additional-conditions)
     :serial t
     :components ((:file "packages")
                  ;;                 (:file "compile-cclasp")
                  (:file "cleavir-fixups-and-hacks")
-		 (:file "system")
+                 (:file "system")
                  (:file "policy")
-		 (:file "ast")
-		 (:file "convert-form")
-		 (:file "convert-special")
+                 (:file "ast")
+                 (:file "convert-form")
+                 (:file "convert-special")
                  (:file "eliminate-ltvs")
-		 (:file "hir")
-		 (:file "introduce-invoke")
+                 (:file "hir")
+                 (:file "introduce-invoke")
                  (:file "toplevel")
-		 (:file "setup")
-		 (:file "ast-to-hir")
-		 (:file "mir")
-		 (:file "hir-to-mir")
+                 (:file "setup")
+                 (:file "ast-to-hir")
+                 (:file "mir")
+                 (:file "hir-to-mir")
 		 (:file "ir")
 		 (:file "gml-drawing")
 		 (:file "landing-pad")
