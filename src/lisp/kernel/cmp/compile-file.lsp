@@ -163,13 +163,28 @@ and the pathname of the source file - this will also be used as the module initi
 (defvar *compile-file-output-pathname* nil)
 
 
-(defun compile-file-form (form environment compile-file-hook)
-  (when *compile-print* (describe-form form))
+(defun bclasp-loop-read-and-compile-file-forms (source-sin environment)
+  (let ((eof-value (gensym)))
+    (loop
+      (let ((eof (peek-char t source-sin nil eof-value)))
+        (unless (eq eof eof-value)
+          (let ((pos (core:input-stream-source-pos-info source-sin)))
+            (setq *current-form-lineno* (core:source-file-pos-lineno pos)))))
+      ;; FIXME: if :environment is provided we should probably use a different read somehow
+      (let ((form (read source-sin nil eof-value)))
+        (if (eq form eof-value)
+            (return nil)
+            (progn
+              (when *compile-print* (describe-form form))
+              (when *debug-compile-file* (bformat t "compile-file: cf%d -> %s\n" (incf *debug-compile-file-counter*) form))
+              (t1expr form)))))))
+
+(defun loop-read-and-compile-file-forms (source-sin environment compile-file-hook)
   ;; If the Cleavir compiler hook is set up then use that
   ;; to generate code 
   (if compile-file-hook
-      (funcall compile-file-hook form environment)
-      (t1expr form)))
+      (funcall compile-file-hook source-sin environment)
+      (bclasp-loop-read-and-compile-file-forms source-sin environment)))
 
 (defun compile-file-to-module (given-input-pathname
                                &key
@@ -228,31 +243,17 @@ Compile a lisp source file into an LLVM module."
               (with-debug-info-generator (:module *the-module*
                                           :pathname *compile-file-truename*)
                 (or *the-module* (error "*the-module* is NIL"))
-                (let ((eof-value (gensym)))
-                  (with-make-new-run-all (run-all-function)
-                    (with-run-all-body-codegen ;;(result)
-                        (irc-intrinsic "ltvc_assign_source_file_info_handle"
-                                       (irc-constant-string-ptr *gv-source-namestring*)
-                                       (irc-constant-string-ptr *gv-source-debug-namestring*)
-                                       (jit-constant-i64 *source-debug-offset*)
-                                       (jit-constant-i32 (if *source-debug-use-lineno* 1 0))
-                                       *gv-source-file-info-handle*))
-                    (with-literal-table
-                        (loop
-                          (let ((eof (peek-char t source-sin nil eof-value)))
-                            (unless (eq eof eof-value)
-                              (let ((pos (core:input-stream-source-pos-info source-sin)))
-                                (setq *current-form-lineno* (core:source-file-pos-lineno pos)))))
-                          ;; FIXME: if :environment is provided we should probably use a different read somehow
-                          (let ((form (read source-sin nil eof-value)))
-                            (when *debug-compile-file*
-                              (bformat t "compile-file: cf%d -> %s\n" (incf *debug-compile-file-counter*) form))
-                            (if (eq form eof-value)
-                                (return nil)
-                                (if *debug-compile-file*
-                                    (time (compile-file-form form environment compile-file-hook))
-                                    (compile-file-form form environment compile-file-hook)))))
-                      (make-boot-function-global-variable *the-module* run-all-function)))))
+                (with-make-new-run-all (run-all-function)
+                  (with-run-all-body-codegen ;;(result)
+                      (irc-intrinsic "ltvc_assign_source_file_info_handle"
+                                     (irc-constant-string-ptr *gv-source-namestring*)
+                                     (irc-constant-string-ptr *gv-source-debug-namestring*)
+                                     (jit-constant-i64 *source-debug-offset*)
+                                     (jit-constant-i32 (if *source-debug-use-lineno* 1 0))
+                                     *gv-source-file-info-handle*))
+                  (with-literal-table
+                      (loop-read-and-compile-file-forms source-sin environment compile-file-hook))
+                  (make-boot-function-global-variable *the-module* run-all-function)))
               (cmp-log "About to verify the module\n")
               (cmp-log-dump-module *the-module*)
               (irc-verify-module-safe *the-module*)

@@ -68,8 +68,6 @@
   ;;; Store the block environment, the push and the pop instructions for the block
   (defstruct (block-frame-maker (:type vector))
     block-symbol push-frame-instruction pop-frame-instruction)
-  (defvar *block-frame-makers*)
-
   (defstruct (throw-return-from (:type vector))
     instruction start-env block-symbol)
   (defvar *throw-return-from-instructions*))
@@ -78,8 +76,6 @@
 (progn
   (defstruct (tagbody-frame-maker (:type vector))
     instruction )
-  (defvar *tagbody-frame-makers*)
-
   (defstruct (throw-dynamic-go (:type vector))
     instruction index depth start-env start-renv tagbody-env)
   (defvar *throw-dynamic-go-instructions*))

@@ -1273,6 +1273,22 @@ that llvm function. This works like compile-lambda-function in bclasp."
           (compiler-time (compile-form form env))
           (compile-form form env)))))
 
+(defun cclasp-loop-read-and-compile-file-forms (source-sin environment)
+  (let ((eof-value (gensym)))
+    (loop
+      (let ((eof (peek-char t source-sin nil eof-value)))
+        (unless (eq eof eof-value)
+          (let ((pos (core:input-stream-source-pos-info source-sin)))
+            (setq *current-form-lineno* (core:source-file-pos-lineno pos)))))
+      ;; FIXME: if :environment is provided we should probably use a different read somehow
+      (let ((form (read source-sin nil eof-value)))
+        (when *debug-compile-file* (bformat t "compile-file: cf%d -> %s\n" (incf *debug-compile-file-counter*) form))
+        (if (eq form eof-value)
+            (return nil)
+            (progn
+              (when *compile-print* (describe-form form))
+              (cleavir-compile-file-form form environment)))))))
+
 (defun cclasp-compile-in-env (name form &optional env)
   (let ((cleavir-generate-ast:*compiler* 'cl:compile)
         (core:*use-cleavir-compiler* t))
@@ -1282,7 +1298,6 @@ that llvm function. This works like compile-lambda-function in bclasp."
           (compiler-time (cmp:compile-in-env name form env #'cclasp-compile* 'llvm-sys:external-linkage)))
         (cmp:compile-in-env name form env #'cclasp-compile* 'llvm-sys:external-linkage))))
         
-	
 (defun cleavir-compile (name form &key (debug *debug-cleavir*))
   (let ((cmp:*compile-debug-dump-module* debug)
 	(*debug-cleavir* debug))
