@@ -57,7 +57,24 @@ THE SOFTWARE.
 
 namespace core {
 // Store characters and flags about the characters
+
 typedef Fixnum trait_chr_type;
+
+struct Token {
+  SourcePosInfo_sp sourcePosInfo;
+  vector<trait_chr_type>  chars;
+  void clear() { this->chars.clear();};
+  void recordSourcePos(SourcePosInfo_sp sp) {
+    this->sourcePosInfo = sp;
+  }
+  trait_chr_type* data() { return this->chars.data();};
+  void push_back(trait_chr_type c) { this->chars.push_back(c); };
+  size_t size() const { return this->chars.size(); };
+  
+  trait_chr_type& operator[](int i) { return this->chars[i]; };
+  const trait_chr_type& operator[](int i) const { return this->chars[i]; };
+};
+  
 #define TRAIT_DIGIT          0x000100000000
 #define TRAIT_ALPHABETIC     0x000200000000
 #define TRAIT_PACKAGEMARKER  0x000400000000
@@ -463,7 +480,7 @@ typedef enum {
 } FloatExponentType;
 
 
-UnEscapedCase token_check_case(vector<trait_chr_type>&token, size_t start, size_t end) {
+UnEscapedCase token_check_case(Token&token, size_t start, size_t end) {
   UnEscapedCase curcase = undefined;
   for ( size_t i(start); i<end; ++i ) {
     curcase = case_state(token[i],curcase);
@@ -471,19 +488,19 @@ UnEscapedCase token_check_case(vector<trait_chr_type>&token, size_t start, size_
   return curcase;
 }
 
-void token_upcase(vector<trait_chr_type>& token, size_t start, size_t end) {
+void token_upcase(Token& token, size_t start, size_t end) {
   for ( size_t i(start); i<end; ++i ) {
     if (!(token[i]&TRAIT_ESCAPED)) token[i] = (TRAIT_MASK&token[i])|toupper(CHR(token[i]));
   }
 }
-void token_downcase(vector<trait_chr_type>& token, size_t start, size_t end) {
+void token_downcase(Token& token, size_t start, size_t end) {
   for ( size_t i(start); i<end; ++i ) {
     if (!(token[i]&TRAIT_ESCAPED)) token[i] = (TRAIT_MASK&token[i])|tolower(CHR(token[i]));
   }
 }
 
 
-void apply_readtable_case(vector<trait_chr_type>& token, size_t start, size_t end) {
+void apply_readtable_case(Token& token, size_t start, size_t end) {
   ReadTable_sp readtable = gc::As<ReadTable_sp>(cl::_sym_STARreadtableSTAR->symbolValue());
   if (readtable->_Case == kw::_sym_invert) {
     UnEscapedCase strcase = token_check_case(token,start,end);
@@ -511,7 +528,7 @@ void apply_readtable_case(vector<trait_chr_type>& token, size_t start, size_t en
 }
 
 
-SimpleString_sp symbolTokenStr(T_sp stream, vector<trait_chr_type> &token, size_t start, size_t end, bool only_dots_ok=false) {
+SimpleString_sp symbolTokenStr(T_sp stream, Token &token, size_t start, size_t end, bool only_dots_ok=false) {
   bool extended = false;
   SafeBufferStrWNs buffer;
   apply_readtable_case(token,start,end);
@@ -535,7 +552,7 @@ SimpleString_sp symbolTokenStr(T_sp stream, vector<trait_chr_type> &token, size_
   return buffer.string()->asMinimalSimpleString();
 }
 
-SimpleString_sp tokenStr(T_sp stream, const vector<trait_chr_type> &token, size_t start = 0, size_t end = UNDEF_UINT, bool only_dots_ok=false) {
+SimpleString_sp tokenStr(T_sp stream, const Token &token, size_t start = 0, size_t end = UNDEF_UINT, bool only_dots_ok=false) {
   bool extended = false;
   if (end==UNDEF_UINT) end = token.size();
   SafeBufferStrWNs buffer;
@@ -559,7 +576,7 @@ SimpleString_sp tokenStr(T_sp stream, const vector<trait_chr_type> &token, size_
   return buffer.string()->asMinimalSimpleString();
 }
 
-T_sp interpret_token_or_throw_reader_error(T_sp sin, vector<trait_chr_type> &token, bool only_dots_ok) {
+T_sp interpret_token_or_throw_reader_error(T_sp sin, Token &token, bool only_dots_ok) {
   LOG(BF("About to interpret_token_or_throw_reader_error"));
   ASSERTF(token.size() > 0, BF("The token is empty!"));
   const trait_chr_type *start = token.data();
@@ -996,6 +1013,8 @@ struct increment_read_lisp_object_recursion_depth {
     return 256;
   }
 };
+
+
 T_sp read_lisp_object(T_sp sin, bool eofErrorP, T_sp eofValue, bool recursiveP) {
   T_sp result = _Nil<T_O>();
   if (recursiveP) {
@@ -1044,47 +1063,55 @@ T_mv lisp_object_query(T_sp sin, bool eofErrorP, T_sp eofValue, bool recursiveP)
   }
   ++monitorReaderStep;
 #endif
+  bool generate_cst = false;
+  if (core::_sym_STARreader_generate_cstSTAR->symbolValue().isTrue()) generate_cst = true;
   bool only_dots_ok = false;
-  vector<trait_chr_type> token;
+  Token token;
   ReadTable_sp readTable = _lisp->getCurrentReadTable();
-  Character_sp x, y, z, X, Y, Z;
+  Character_sp xxx, y, z, X, Y, Z;
 /* See the CLHS 2.2 Reader Algorithm  - continue has the effect of jumping to step 1 */
 step1:
   LOG(BF("step1"));
+  SourcePosInfo_sp xxxsp;
+  if (generate_cst) xxxsp = core__input_stream_source_pos_info(sin);
   T_sp tx = cl__read_char(sin, _Nil<T_O>(), _Nil<T_O>(), _lisp->_true());
   if (tx.nilp()) {
     if (eofErrorP)
       STREAM_ERROR(sin);
     return Values(eofValue);
   }
-  x = gc::As<Character_sp>(tx);
-  LOG(BF("Read character x[%d/%s]") % (int)clasp_as_claspCharacter(x) % clasp_as_claspCharacter(x));
-  Symbol_sp x1_syntax_type = readTable->syntax_type(x);
+  xxx = gc::As<Character_sp>(tx);
+  LOG(BF("Read character x[%d/%s]") % (int)clasp_as_claspCharacter(xxx) % clasp_as_claspCharacter(xxx));
+  Symbol_sp xxx_syntax_type = readTable->syntax_type(xxx);
   //    step2:
-  if (x1_syntax_type == kw::_sym_invalid_character) {
-    LOG(BF("step2 - invalid-character[%c]") % clasp_as_claspCharacter(x));
+  if (xxx_syntax_type == kw::_sym_invalid_character) {
+    LOG(BF("step2 - invalid-character[%c]") % clasp_as_claspCharacter(xxx));
     SIMPLE_ERROR(BF("ReaderError_O::create(sin,_lisp)"));
   }
   //    step3:
-  if (x1_syntax_type == kw::_sym_whitespace_character) {
-    LOG(BF("step3 - whitespace character[%c/%d]") % clasp_as_claspCharacter(x) % clasp_as_claspCharacter(x));
+  if (xxx_syntax_type == kw::_sym_whitespace_character) {
+    LOG(BF("step3 - whitespace character[%c/%d]") % clasp_as_claspCharacter(xxx) % clasp_as_claspCharacter(xxx));
     goto step1;
   }
   //    step4:
-  if ((x1_syntax_type == kw::_sym_terminating_macro_character) || (x1_syntax_type == kw::_sym_non_terminating_macro_character)) {
-    _BLOCK_TRACEF(BF("Processing macro character x[%s]") % clasp_as_claspCharacter(x));
-    LOG(BF("step4 - terminating-macro-character or non-terminating-macro-character char[%c]") % clasp_as_claspCharacter(x));
+  if ((xxx_syntax_type == kw::_sym_terminating_macro_character) || (xxx_syntax_type == kw::_sym_non_terminating_macro_character)) {
+    _BLOCK_TRACEF(BF("Processing macro character x[%s]") % clasp_as_claspCharacter(xxx));
+    LOG(BF("step4 - terminating-macro-character or non-terminating-macro-character char[%c]") % clasp_as_claspCharacter(xxx));
     T_sp reader_macro;
     {
-      reader_macro = readTable->get_macro_character(x);
+      reader_macro = readTable->get_macro_character(xxx);
     }
     ASSERT(reader_macro.notnilp());
-    return eval::funcall(reader_macro, sin, x);
+    return eval::funcall(reader_macro, sin, xxx);
   }
   //    step5:
-  if (x1_syntax_type == kw::_sym_single_escape_character) {
-    LOG(BF("step5 - single-escape-character char[%c]") % clasp_as_claspCharacter(x));
+  if (xxx_syntax_type == kw::_sym_single_escape_character) {
+    LOG(BF("step5 - single-escape-character char[%c]") % clasp_as_claspCharacter(xxx));
     LOG(BF("Handling single escape"));
+    if (generate_cst) {
+      SourcePosInfo_sp ysp = core__input_stream_source_pos_info(sin);
+      token.recordSourcePos(ysp);
+    }
     T_sp ty = cl__read_char(sin, _lisp->_true(), _Nil<T_O>(), _lisp->_true());
     if ( !ty.characterp() ) {
       SIMPLE_ERROR(BF("Expected character - hit end"));
@@ -1096,21 +1123,24 @@ step1:
     goto step8;
   }
   //    step6:
-  if (x1_syntax_type == kw::_sym_multiple_escape_character) {
-    LOG(BF("step6 - multiple-escape-character char[%c]") % clasp_as_claspCharacter(x));
+  if (xxx_syntax_type == kw::_sym_multiple_escape_character) {
+    LOG(BF("step6 - multiple-escape-character char[%c]") % clasp_as_claspCharacter(xxx));
     LOG(BF("Handling multiple escape - clearing token"));
     token.clear();
+    if (generate_cst) token.recordSourcePos(xxxsp);
+    token.recordSourcePos(sin);
       // |....| or ....|| or ..|.|.. is ok
     only_dots_ok = true;
     goto step9;
   }
   //    step7:
-  if (readTable->syntax_type(x) == kw::_sym_constituent_character) {
-    LOG(BF("step7 - constituent-character char[%c]") % clasp_as_claspCharacter(x));
+  if ( xxx_syntax_type /*readTable->syntax_type(xxx)*/ == kw::_sym_constituent_character) {
+    LOG(BF("step7 - constituent-character char[%c]") % clasp_as_claspCharacter(xxx));
     LOG(BF("Handling constituent character"));
     token.clear();
+    token.recordSourcePos(sin);
     // X = readTable->convert_case(x);
-    X = x; // convert case once the entire token is accumulated
+    X = xxx; // convert case once the entire token is accumulated
     LOG(BF("Converted case X[%s]") % clasp_as_claspCharacter(X));
     token.push_back(constituentChar(X));
   }
