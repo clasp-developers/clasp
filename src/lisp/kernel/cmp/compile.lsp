@@ -49,8 +49,7 @@ We could do more fancy things here - like if cleavir-clasp fails, use the clasp 
   (with-compiler-env (conditions)
     (let* ((*the-module* (create-run-time-module-for-compile)))
       ;; Link the C++ intrinsics into the module
-      (let* ((*declare-dump-module* nil)
-             (pathname (if *load-pathname*
+      (let* ((pathname (if *load-pathname*
 			   (namestring *load-pathname*)
 			   "repl-code"))
 	     (handle (multiple-value-bind (the-source-file-info the-handle)

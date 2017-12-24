@@ -34,8 +34,6 @@ lambda-list, environment.
 All code generation comes through here.   Return (llvm:function lambda-name)
 Could return more functions that provide lambda-list for swank for example"
   (setq *lambda-args-num* (1+ *lambda-args-num*))
-  (when (core:extract-dump-module-from-declares declares)
-    (setf *declare-dump-module* t))
   (multiple-value-bind (cleavir-lambda-list new-body)
       (transform-lambda-parts lambda-list declares code)
     (cmp-log "generate-llvm-function-from-code\n")
