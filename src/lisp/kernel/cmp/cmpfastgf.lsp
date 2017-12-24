@@ -744,9 +744,9 @@
                                    0)))
          (profiled (make-hash-table :test #'equalp)))
     (unless (every #'consp call-history)
-      (error "The call history for ~a is not an alist: ~a" generic-function call-history))
-    (or specializer-profile
-        (error "The specializer-profile for ~a is NIL" generic-function))
+      (error "The call history not an alist: ~a" call-history))
+    (unless specializer-profile
+      (error "The specializer-profile is NIL"))
     (dolist (entry call-history)
       (let ((key (car entry))
             (outcome (cdr entry))
