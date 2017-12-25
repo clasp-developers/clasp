@@ -1282,11 +1282,11 @@ that llvm function. This works like compile-lambda-function in bclasp."
             (setq *current-form-lineno* (core:source-file-pos-lineno pos)))))
       ;; FIXME: if :environment is provided we should probably use a different read somehow
       (let ((form (read source-sin nil eof-value)))
-        (when *debug-compile-file* (bformat t "compile-file: cf%d -> %s\n" (incf *debug-compile-file-counter*) form))
+        (when cmp:*debug-compile-file* (bformat t "compile-file: cf%d -> %s\n" (incf cmp:*debug-compile-file-counter*) form))
         (if (eq form eof-value)
             (return nil)
             (progn
-              (when *compile-print* (describe-form form))
+              (when *compile-print* (cmp::describe-form form))
               (cleavir-compile-file-form form environment)))))))
 
 (defun cclasp-compile-in-env (name form &optional env)

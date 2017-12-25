@@ -142,6 +142,7 @@ SYMBOL_EXPORT_SC_(KeywordPkg, verbose);
 SYMBOL_EXPORT_SC_(KeywordPkg, pause_pid);
 SYMBOL_EXPORT_SC_(KeywordPkg, exit_backtrace);
 SYMBOL_EXPORT_SC_(CorePkg, STARreader_generate_cstSTAR);
+SYMBOL_EXPORT_SC_(CorePkg, STARreader_cst_resultSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, arguments );
 SYMBOL_EXPORT_SC_(CorePkg, STARdebug_valuesSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARdebug_accessorsSTAR);
@@ -1169,6 +1170,7 @@ void CoreExposer_O::define_essential_globals(Lisp_sp lisp) {
   _sym_STARdebug_valuesSTAR->defparameter(_Nil<core::T_O>());
   _sym_STARbits_in_bit_array_wordSTAR->defparameter(core::clasp_make_fixnum(BIT_ARRAY_BYTE_SIZE));
   _sym_STARreader_generate_cstSTAR->defparameter(_Nil<core::T_O>());
+  _sym_STARreader_cst_resultSTAR->defparameter(_Nil<core::T_O>());
 #if defined(__x86_64__)
   SYMBOL_EXPORT_SC_(KeywordPkg, address_model_64);
   Symbol_sp address_model = kw::_sym_address_model_64;

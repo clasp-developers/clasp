@@ -1100,14 +1100,21 @@ step1:
     T_sp reader_macro;
     reader_macro = readTable->get_macro_character(xxx);
     ASSERT(reader_macro.notnilp());
-    T_sp object = eval::funcall(reader_macro, sin, xxx);
-    if (object.consp()) {
-      // What does object look like?   Is it a CONS of CST's?
-      SIMPLE_ERROR(BF("I think I want to create a cons-cst with this %s - but what does it look like?") % _rep_(object));
-      // return something here.
-    } else {
-      return eval::funcall(_sym_make_atom_cst,xxxsp,result);
+    T_mv results = eval::funcall(reader_macro, sin, xxx);
+    if (results.number_of_values() == 0) {
+      return results;
     }
+    T_sp object = results;
+    if (generate_cst) {
+      if (object.consp()) {
+        _sym_STARreader_cst_resultSTAR->setf_symbolValue(Cons_O::create(eval::funcall(_sym_make_cons_cst,xxxsp,object),
+                                                                     _sym_STARreader_cst_resultSTAR->symbolValue()));
+      } else {
+        _sym_STARreader_cst_resultSTAR->setf_symbolValue(Cons_O::create(eval::funcall(_sym_make_atom_cst,xxxsp,object),
+                                                                     _sym_STARreader_cst_resultSTAR->symbolValue()));
+      }
+    }
+    return object;
   }
   //    step5:
   if (xxx_syntax_type == kw::_sym_single_escape_character) {
@@ -1133,7 +1140,6 @@ step1:
     LOG(BF("Handling multiple escape - clearing token"));
     token.clear();
     if (generate_cst) token.recordSourcePos(xxxsp);
-    token.recordSourcePos(sin);
       // |....| or ....|| or ..|.|.. is ok
     only_dots_ok = true;
     goto step9;
@@ -1143,7 +1149,7 @@ step1:
     LOG(BF("step7 - constituent-character char[%c]") % clasp_as_claspCharacter(xxx));
     LOG(BF("Handling constituent character"));
     token.clear();
-    token.recordSourcePos(sin);
+    if (generate_cst) token.recordSourcePos(sin);
     // X = readTable->convert_case(x);
     X = xxx; // convert case once the entire token is accumulated
     LOG(BF("Converted case X[%s]") % clasp_as_claspCharacter(X));
@@ -1238,7 +1244,8 @@ step10:
     if (object.consp()) {
       SIMPLE_ERROR(BF("The reader wants to return a CONS - but you aren't set up to allocate a cons-ast"));
     }
-    return eval::funcall(_sym_make_atom_cst,token.sourcePosInfo,object);
+    _sym_STARreader_cst_resultSTAR->setf_symbolValue(Cons_O::create(eval::funcall(_sym_make_atom_cst,token.sourcePosInfo,object),
+                                                                 _sym_STARreader_cst_resultSTAR->symbolValue()));
   }
   return (Values(object));
 }

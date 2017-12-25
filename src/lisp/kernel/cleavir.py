@@ -197,6 +197,7 @@ cleavir_parts = [
     "src/lisp/kernel/cleavir/cleavir-fixups-and-hacks",
     "src/lisp/kernel/cleavir/system",
     "src/lisp/kernel/cleavir/policy",
+    "src/lisp/kernel/cleavir/reader",
     "src/lisp/kernel/cleavir/ast",
     "src/lisp/kernel/cleavir/convert-form",
     "src/lisp/kernel/cleavir/convert-special",
