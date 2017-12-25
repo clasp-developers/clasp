@@ -19,9 +19,12 @@
 (setq *dump-defun-definitions* nil)
 (export '*trace-startup*)
 
-
-(setq *echo-repl-tpl-read* (member :emacs-inferior-lisp *features*))
+;;; ------------------------------------------------------------
+;;;
+;;; Set *echo-repl-read* to t to print each repl form
+;;;
 (setq *echo-repl-read* nil)
+(setq *echo-repl-tpl-read* (member :emacs-inferior-lisp *features*))
 (setq *load-print* nil)
 
 (sys:*make-special 'core::*boot-verbose*)
