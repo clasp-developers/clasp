@@ -11,3 +11,6 @@
 [submodule "src/lisp/kernel/contrib/Acclimation"]
 	path = src/lisp/kernel/contrib/Acclimation
 	url = https://github.com/robert-strandh/Acclimation.git
+[submodule "src/lisp/kernel/contrib/Concrete-Syntax-Tree"]
+	path = src/lisp/kernel/contrib/Concrete-Syntax-Tree
+	url = https://github.com/clasp-developers/Concrete-Syntax-Tree.git

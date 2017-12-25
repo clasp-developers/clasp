@@ -101,6 +101,11 @@ Options are :tagbody :go :all :eh-landing-pads
   (defmacro cmp-log (fmt &rest args ) nil)
   (defun is-debug-compiler-on () nil))
 
+#+optimize-bclasp
+(progn
+  (defvar *tagbody-frame-makers*)
+  (defvar *block-frame-makers*))
+
 #+(or)
 (progn
   (eval-when (:compile-toplevel :load-toplevel :execute)

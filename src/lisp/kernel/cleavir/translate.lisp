@@ -293,6 +293,8 @@ when this is t a lot of graphs will be generated.")
 	    *debug-vars* *vars*)
       (cc-dbg-when *debug-log*
                    (let ((mir-pathname (make-pathname :name (format nil "mir~a" (incf *debug-log-index*)) :type "gml" :defaults (pathname *debug-log*))))
+                     (format *debug-log* "About to write mir to ~a~%" (namestring mir-pathname))
+                     (finish-output *debug-log*)
                      (multiple-value-bind (instruction-ids datum-ids)
                          (cleavir-ir-gml:draw-flowchart initial-instruction (namestring mir-pathname)))
                      (format *debug-log* "Wrote mir to: ~a~%" (namestring mir-pathname)))
@@ -1144,8 +1146,18 @@ COMPILE might call this with an environment in ENV.
 COMPILE-FILE will use the default *clasp-env*."
   (setf *ct-start* (compiler-timer-elapsed))
   (let* ((clasp-system *clasp-system*)
-	 (ast (prog1 (cleavir-generate-ast:generate-ast FORM ENV clasp-system)
-                (setf *ct-generate-ast* (compiler-timer-elapsed))))
+	 (ast (let ((ast (cleavir-generate-ast:generate-ast FORM ENV clasp-system)))
+                (cc-dbg-when
+                 *debug-log*
+                 (let ((ast-pathname (make-pathname :name (format nil "ast~a" (incf *debug-log-index*))
+                                                    :type "dot" :defaults (pathname *debug-log*))))
+                   (cleavir-ast-graphviz:draw-ast ast ast-pathname)
+                   (core:bformat *debug-io* "Just dumped the ast to %s\n" ast-pathname)
+                   #+(or)(multiple-value-bind (instruction-ids datum-ids)
+                             (cleavir-ir-gml:draw-flowchart initial-instruction (namestring ast-pathname)))
+                   (format *debug-log* "Wrote ast to: ~a~%" (namestring ast-pathname))))
+                (setf *ct-generate-ast* (compiler-timer-elapsed))
+                ast))
 	 (hoisted-ast (prog1 (clasp-cleavir-ast:hoist-load-time-value ast env)
                         (setf *ct-hoist-ast* (compiler-timer-elapsed))))
 	 (hir (prog1 (cleavir-ast-to-hir:compile-toplevel hoisted-ast)
@@ -1261,6 +1273,22 @@ that llvm function. This works like compile-lambda-function in bclasp."
           (compiler-time (compile-form form env))
           (compile-form form env)))))
 
+(defun cclasp-loop-read-and-compile-file-forms (source-sin environment)
+  (let ((eof-value (gensym)))
+    (loop
+      (let ((eof (peek-char t source-sin nil eof-value)))
+        (unless (eq eof eof-value)
+          (let ((pos (core:input-stream-source-pos-info source-sin)))
+            (setq *current-form-lineno* (core:source-file-pos-lineno pos)))))
+      ;; FIXME: if :environment is provided we should probably use a different read somehow
+      (let ((form (read source-sin nil eof-value)))
+        (when cmp:*debug-compile-file* (bformat t "compile-file: cf%d -> %s\n" (incf cmp:*debug-compile-file-counter*) form))
+        (if (eq form eof-value)
+            (return nil)
+            (progn
+              (when *compile-print* (cmp::describe-form form))
+              (cleavir-compile-file-form form environment)))))))
+
 (defun cclasp-compile-in-env (name form &optional env)
   (let ((cleavir-generate-ast:*compiler* 'cl:compile)
         (core:*use-cleavir-compiler* t))
@@ -1270,7 +1298,6 @@ that llvm function. This works like compile-lambda-function in bclasp."
           (compiler-time (cmp:compile-in-env name form env #'cclasp-compile* 'llvm-sys:external-linkage)))
         (cmp:compile-in-env name form env #'cclasp-compile* 'llvm-sys:external-linkage))))
         
-	
 (defun cleavir-compile (name form &key (debug *debug-cleavir*))
   (let ((cmp:*compile-debug-dump-module* debug)
 	(*debug-cleavir* debug))

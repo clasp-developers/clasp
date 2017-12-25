@@ -585,7 +585,12 @@ jump to blocks within this tagbody."
               (irc-store val result))
 	    (irc-br after-return-block "after-return-block-2")
 	    (irc-begin-block after-return-block)
-            (irc-intrinsic "exceptionStackUnwind" frame)))))))
+            (let ((pop-instruction (irc-intrinsic "exceptionStackUnwind" frame)))
+              #+optimize-bclasp
+              (push (make-block-frame-maker :block-symbol block-symbol
+                                            :push-frame-instruction frame
+                                            :pop-frame-instruction pop-instruction)
+                    *block-frame-makers*))))))))
 
 (defun codegen-return-from (result rest env)
   (dbg-set-current-debug-location-here)
@@ -600,7 +605,12 @@ jump to blocks within this tagbody."
 		(codegen temp-mv-result return-form env)
 		(irc-intrinsic "saveToMultipleValue0" temp-mv-result)
 		(irc-low-level-trace)
-		(irc-intrinsic "throwReturnFrom" (irc-global-symbol block-symbol env)))
+		(let ((return-from-call (irc-intrinsic "throwReturnFrom" (irc-global-symbol block-symbol env))))
+                  #+optimize-bclasp
+                  (push (make-throw-return-from :instruction return-from-call
+                                                :start-env env
+                                                :block-symbol block-symbol)
+                        *throw-return-from-instructions*)))
 	      (let* ((local-return-block (lookup-metadata block-env :local-return-block)))
 		(codegen temp-mv-result return-form env)
 		(let ((saved-values (irc-intrinsic "saveValues" temp-mv-result)))
