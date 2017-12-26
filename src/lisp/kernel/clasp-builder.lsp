@@ -498,7 +498,7 @@ Return files."
                  :lisp-bitcode-files (list (core:build-pathname #P"src/lisp/modules/asdf/build/asdf" :bitcode))))
 (export '(compile-addons link-addons))
 
-
+#+(or bclasp cclasp)
 (defun bclasp-repl ()
   (let ((cmp:*cleavir-compile-hook* nil)
         (cmp:*cleavir-compile-file-hook* nil)
