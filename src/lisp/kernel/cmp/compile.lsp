@@ -124,3 +124,13 @@ We could do more fancy things here - like if cleavir-clasp fails, use the clasp 
   (bformat t "Number of compilations %s\n" llvm-sys:*number-of-llvm-finalizations*))
 
 (export 'compiler-stats)
+
+#+(or bclasp cclasp)
+(progn
+  (defun bclasp-compile (form &optional definition)
+    (let ((cmp:*cleavir-compile-hook* nil)
+          (cmp:*cleavir-compile-file-hook* nil)
+          (core:*use-cleavir-compiler* nil)
+          (core:*eval-with-env-hook* #'core:eval-with-env-default))
+      (compile form definition)))
+  (export 'bclasp-compile))

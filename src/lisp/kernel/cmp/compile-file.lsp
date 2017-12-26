@@ -334,3 +334,14 @@ Compile a lisp source file into an LLVM module."
       (compile-file-results output-path conditions))))
 
 (export 'compile-file)
+
+
+#+(or bclasp cclasp)
+(progn
+  (defun bclasp-compile-file (input-file &rest args)
+    (let ((cmp:*cleavir-compile-hook* nil)
+          (cmp:*cleavir-compile-file-hook* nil)
+          (core:*use-cleavir-compiler* nil)
+          (core:*eval-with-env-hook* #'core:eval-with-env-default))
+      (apply 'compile-file input-file args)))
+  (export 'bclasp-compile-file))
