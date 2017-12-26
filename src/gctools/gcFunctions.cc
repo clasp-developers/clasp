@@ -835,6 +835,7 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
 #endif
   if (buildReport) ss << (BF("USE_STATIC_ANALYZER_GLOBAL_SYMBOLS = %s\n") % (use_static_analyzer_global_symbols ? "**DEFINED**" : "undefined") ).str();
 
+  
   bool debug_throw_if_invalid_client_on = false;
 #ifdef DEBUG_THROW_IF_INVALID_CLIENT_ON
   debug_throw_if_invalid_client_on = true;
@@ -1041,6 +1042,14 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
   if (setFeatures)  features = core::Cons_O::create(_lisp->internKeyword("DISABLE-TYPE-INFERENCE"),features);
 #endif
   if (buildReport) ss << (BF("DISABLE_TYPE_INFERENCE = %s\n") % (disable_type_inference ? "**DEFINED**" : "undefined") ).str();
+
+  bool use_human_readable_bitcode = false;
+#if USE_HUMAN_READABLE_BITCODE==1
+  use_human_readable_bitcode = true;
+  debugging = true;
+  if (setFeatures)  features = core::Cons_O::create(_lisp->internKeyword("USE-HUMAN-READABLE-BITCODE"),features);
+#endif
+  if (buildReport) ss << (BF("USE_HUMAN_READABLE_BITCODE = %s\n") % (use_human_readable_bitcode ? "**DEFINED**" : "undefined") ).str();
 
   // -------------------------------------------------------------
   //
