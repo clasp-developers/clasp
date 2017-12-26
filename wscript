@@ -246,14 +246,18 @@ class variant(object):
         else:
             use_stage = stage
         return 'fasl/%s%s-%s-bitcode' % (use_stage,APP_NAME,self.gc_name)
-    def common_lisp_bitcode_name(self,stage=None):
+    def common_lisp_bitcode_name(self,use_human_readable_bitcode,stage=None):
         if ( stage == None ):
             use_stage = self.stage_char
         else:
             use_stage = stage
         if (not (use_stage>='a' and use_stage <= 'z')):
             raise Exception("Bad stage: %s"% use_stage)
-        return 'fasl/%s%s-%s-common-lisp.bc' % (use_stage,APP_NAME,self.gc_name)
+        name = 'fasl/%s%s-%s-common-lisp' % (use_stage,APP_NAME,self.gc_name)
+        if (use_human_readable_bitcode):
+            return name+".ll"
+        else:
+            return name+".bc"
     def variant_dir(self):
         return "%s%s"%(self.gc_name,self.debug_dir_extension())
     def variant_name(self):
@@ -731,11 +735,11 @@ def configure(cfg):
 #    cfg.define("DEBUG_GFDISPATCH",1)
 ##  Generate per-thread logs in /tmp/dispatch-history/**  of the slow path of fastgf 
 #    cfg.define("DEBUG_CMPFASTGF",1)  # debug dispatch functions by inserting code into them that traces them
-    cfg.define("DEBUG_FASTGF",1)   # generate slow gf dispatch logging and write out dispatch functions to /tmp/dispatch-history-**
+#    cfg.define("DEBUG_FASTGF",1)   # generate slow gf dispatch logging and write out dispatch functions to /tmp/dispatch-history-**
 #    cfg.define("DEBUG_REHASH_COUNT",1)   # Keep track of the number of times each hash table has been rehashed
 #    cfg.define("DEBUG_MONITOR",1)   # generate logging messages to a file in /tmp for non-hot code
-    cfg.define("DEBUG_BCLASP_LISP",1)  # Generate debugging frames for all bclasp code - like declaim
-    cfg.define("DEBUG_CCLASP_LISP",1)  # Generate debugging frames for all cclasp code - like declaim
+#    cfg.define("DEBUG_BCLASP_LISP",1)  # Generate debugging frames for all bclasp code - like declaim
+#    cfg.define("DEBUG_CCLASP_LISP",1)  # Generate debugging frames for all cclasp code - like declaim
 #    cfg.define("DEBUG_BOUNDS_ASSERT",1)
 #    cfg.define("DEBUG_SLOT_ACCESSORS",1)
 #    cfg.define("DISABLE_TYPE_INFERENCE",1)
@@ -745,6 +749,8 @@ def configure(cfg):
 #    cfg.define("DEBUG_ENSURE_VALID_OBJECT",1)  #Defines ENSURE_VALID_OBJECT(x)->x macro - sprinkle these around to run checks on objects
 #    cfg.define("DEBUG_QUICK_VALIDATE",1)    # quick/cheap validate if on and comprehensive validate if not
 #    cfg.define("DEBUG_MPS_SIZE",1)   # check that the size of the MPS object will be calculated properly by obj_skip
+#    cfg.define("USE_HUMAN_READABLE_BITCODE",1)
+    cfg.env.USE_HUMAN_READABLE_BITCODE=False
     cfg.define("DEBUG_RECURSIVE_ALLOCATIONS",1)
 # -----------------
 # defines that slow down program execution
@@ -810,6 +816,8 @@ def build(bld):
     stage_val = stage_value(bld,bld.stage)
     bld.stage_val = stage_val
     print("Building bld.stage --> %s   bld.stage_val -> %s" % (bld.stage, bld.stage_val))
+    bld.use_human_readable_bitcode = bld.env["USE_HUMAN_READABLE_BITCODE"]
+    print("Using human readable bitcode: %s" % bld.use_human_readable_bitcode)
     bld.clasp_source_files = []
     bld.clasp_aclasp = []
     bld.clasp_bclasp = []
@@ -871,7 +879,7 @@ def build(bld):
     intrinsics_bitcode_node = bld.path.find_or_declare(variant.inline_bitcode_archive_name("intrinsics"))
     builtins_bitcode_node = bld.path.find_or_declare(variant.inline_bitcode_archive_name("builtins"))
     fastgf_bitcode_node = bld.path.find_or_declare(variant.inline_bitcode_archive_name("fastgf"))
-    cclasp_common_lisp_bitcode = bld.path.find_or_declare(variant.common_lisp_bitcode_name(stage='c'))
+    cclasp_common_lisp_bitcode = bld.path.find_or_declare(variant.common_lisp_bitcode_name(bld.use_human_readable_bitcode,stage='c'))
     cxx_all_bitcode_node = bld.path.find_or_declare(variant.cxx_all_bitcode_name())
     if (bld.env['DEST_OS'] == LINUX_OS ):
         executable_dir = "bin"
@@ -897,7 +905,7 @@ def build(bld):
         cmp_aclasp = run_aclasp(env=bld.env)
 #        print("clasp_aclasp as nodes = %s" % fix_lisp_paths(bld.path,out,variant,bld.clasp_aclasp))
         cmp_aclasp.set_inputs([bld.iclasp_executable,intrinsics_bitcode_node,builtins_bitcode_node]+fix_lisp_paths(bld.path,out,variant,bld.clasp_aclasp))
-        aclasp_common_lisp_bitcode = bld.path.find_or_declare(variant.common_lisp_bitcode_name(stage='a'))
+        aclasp_common_lisp_bitcode = bld.path.find_or_declare(variant.common_lisp_bitcode_name(bld.use_human_readable_bitcode,stage='a'))
         cmp_aclasp.set_outputs(aclasp_common_lisp_bitcode)
         bld.add_to_group(cmp_aclasp)
     if (bld.stage_val >= 1):
@@ -905,7 +913,7 @@ def build(bld):
         cmp_aclasp = compile_aclasp(env=bld.env)
 #        print("clasp_aclasp as nodes = %s" % fix_lisp_paths(bld.path,out,variant,bld.clasp_aclasp))
         cmp_aclasp.set_inputs([bld.iclasp_executable,intrinsics_bitcode_node,builtins_bitcode_node,fastgf_bitcode_node]+fix_lisp_paths(bld.path,out,variant,bld.clasp_aclasp))
-        aclasp_common_lisp_bitcode = bld.path.find_or_declare(variant.common_lisp_bitcode_name(stage='a'))
+        aclasp_common_lisp_bitcode = bld.path.find_or_declare(variant.common_lisp_bitcode_name(bld.use_human_readable_bitcode,stage='a'))
         print("find_or_declare aclasp_common_lisp_bitcode = %s" % aclasp_common_lisp_bitcode)
         cmp_aclasp.set_outputs(aclasp_common_lisp_bitcode)
         bld.add_to_group(cmp_aclasp)
@@ -920,7 +928,7 @@ def build(bld):
         print("About to add compile_bclasp")
         cmp_bclasp = compile_bclasp(env=bld.env)
         cmp_bclasp.set_inputs([bld.iclasp_executable,aclasp_link_product,intrinsics_bitcode_node,fastgf_bitcode_node,builtins_bitcode_node]+fix_lisp_paths(bld.path,out,variant,bld.clasp_cclasp)) # bld.clasp_bclasp
-        bclasp_common_lisp_bitcode = bld.path.find_or_declare(variant.common_lisp_bitcode_name(stage='b'))
+        bclasp_common_lisp_bitcode = bld.path.find_or_declare(variant.common_lisp_bitcode_name(bld.use_human_readable_bitcode,stage='b'))
         cmp_bclasp.set_outputs(bclasp_common_lisp_bitcode)
         bld.add_to_group(cmp_bclasp)
         lnk_bclasp = link_fasl(env=bld.env)
@@ -1317,17 +1325,17 @@ class build_extension_headers(Task.Task):
         else:
             print("NOT writing to %s - it is unchanged\n" % self.outputs[0].abspath())
 
-class copy_bitcode(Task.Task):
-    ext_out = ['.bc']
-    def run(self):
-        all_inputs = StringIO()
-        for f in self.inputs:
-            all_inputs.write(' %s' % f.abspath())
-        cmd = "cp %s %s" % (all_inputs.getvalue(), self.outputs[0])
-        print("copy_bitcode cmd: %s" % cmd)
-        return self.exec_command(cmd)
-    def __str__(self):
-        return "copy_bitcode - copy bitcode files."
+# class copy_bitcode(Task.Task):
+#     ext_out = ['.bc']
+#     def run(self):
+#         all_inputs = StringIO()
+#         for f in self.inputs:
+#             all_inputs.write(' %s' % f.abspath())
+#         cmd = "cp %s %s" % (all_inputs.getvalue(), self.outputs[0])
+#         print("copy_bitcode cmd: %s" % cmd)
+#         return self.exec_command(cmd)
+#     def __str__(self):
+#         return "copy_bitcode - copy bitcode files."
 
 class link_bitcode(Task.Task):
     ext_out = ['.a']
