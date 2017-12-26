@@ -38,13 +38,13 @@
       (2 (values `(,two-arg-fun ,@args) t))
       (t (simple-associate-args two-arg-fun (first args) (rest args)))))
 
-  (define-compiler-macro + (&rest numbers)
+  (core:bclasp-define-compiler-macro + (&rest numbers)
     (expand-associative '+ 'two-arg-+ numbers 0))
 
-  (define-compiler-macro * (&rest numbers)
+  (core:bclasp-define-compiler-macro * (&rest numbers)
     (expand-associative '* 'two-arg-* numbers 1))
 
-  (define-compiler-macro - (minuend &rest subtrahends)
+  (core:bclasp-define-compiler-macro - (minuend &rest subtrahends)
     (if (proper-list-p subtrahends)
         (if subtrahends
             `(core:two-arg-- ,minuend ,(expand-associative '+ 'two-arg-+ subtrahends 0))
@@ -62,28 +62,28 @@
                      nil)))
         args))
 
-  (define-compiler-macro < (&rest numbers)
+  (core:bclasp-define-compiler-macro < (&rest numbers)
     (expand-compare 'two-arg-< numbers))
 
-  (define-compiler-macro <= (&rest numbers)
+  (core:bclasp-define-compiler-macro <= (&rest numbers)
     (expand-compare 'two-arg-<= numbers))
 
-  (define-compiler-macro > (&rest numbers)
+  (core:bclasp-define-compiler-macro > (&rest numbers)
     (expand-compare 'two-arg-> numbers))
 
-  (define-compiler-macro >= (&rest numbers)
+  (core:bclasp-define-compiler-macro >= (&rest numbers)
     (expand-compare 'two-arg->= numbers))
 
-  (define-compiler-macro = (&rest numbers)
+  (core:bclasp-define-compiler-macro = (&rest numbers)
     (expand-compare 'two-arg-= numbers))
 
-  (define-compiler-macro 1+ (x)
+  (core:bclasp-define-compiler-macro 1+ (x)
     `(core:two-arg-+ ,x 1))
 
-  (define-compiler-macro 1- (x)
+  (core:bclasp-define-compiler-macro 1- (x)
     `(core:two-arg-- ,x 1))
 
-  (define-compiler-macro aref (&whole whole array &rest indeces)
+  (core:bclasp-define-compiler-macro aref (&whole whole array &rest indeces)
     (if (= (length indeces) 1)
         `(row-major-aref ,array ,(car indeces))
         whole))

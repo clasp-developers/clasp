@@ -115,7 +115,7 @@
 		 ;; In macros, eliminate the name of the macro from the list
 		 (dm-v pointer (if macro
                                    ;; Special handling if define-compiler-macro called this
-                                   (if (eq macro 'define-compiler-macro)
+                                   (if (member macro '(define-compiler-macro bclasp-define-compiler-macro))
                                        `(if (and (eq (car ,whole) 'cl:funcall)
                                                  (consp (cadr ,whole))
                                                  (eq (caadr ,whole) 'cl:function)
@@ -252,7 +252,7 @@
     (values (if decls `((declare ,@decls)) nil)
 	    body doc)))
 
-;; Optional argument context can be 'cl:define-compiler-macro or 'cl:defmacro (default)
+;; Optional argument context can be 'cl:define-compiler-macro, 'core:bclasp-define-compiler-macro or 'cl:defmacro (default)
 (defun sys::expand-defmacro (name vl body &optional (context 'cl:defmacro))
   (multiple-value-bind (decls body doc)
       (find-declarations body)

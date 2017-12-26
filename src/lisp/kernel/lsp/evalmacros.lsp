@@ -119,6 +119,52 @@ VARIABLE doc and can be retrieved by (DOCUMENTATION 'SYMBOL 'VARIABLE)."
 ;;;
 ;;; This is a no-op unless the compiler is installed
 ;;;
+(defmacro bclasp-define-compiler-macro (&whole whole name vl &rest body)
+  (multiple-value-bind (function pprint doc-string)
+      (sys::expand-defmacro name vl body 'bclasp-define-compiler-macro)
+    (declare (ignore pprint))
+    (setq function `(function ,function))
+    (when *dump-defun-definitions*
+      (print function)
+      (setq function `(si::bc-disassemble ,function)))
+    ;; CLHS doesn't actually say d-c-m has compile time effects, but it's nice to match defmacro
+    `(eval-when (:compile-toplevel :load-toplevel :execute)
+       (core:setf-bclasp-compiler-macro-function ',name ,function)
+       ,@(si::expand-set-documentation name 'function doc-string)
+       ,(ext:register-with-pde whole)
+       ',name)))
+
+(defun bclasp-compiler-macro-function (name &optional env)
+  ;;  (declare (ignorable env))
+  (core:get-bclasp-compiler-macro-function name env))
+;;  (values (get-sysprop name 'sys::compiler-macro)))
+
+(export '(bclasp-define-compiler-macro bclasp-compiler-macro-function))
+
+(defun compiler-macroexpand-1 (form &optional env)
+  (if (atom form)
+      form
+      (or
+       (and (eq (car form) 'cl:funcall)
+            (listp (cadr form))
+            (eq (car (cadr form)) 'cl:function)
+            (let ((expander (core:bclasp-compiler-macro-function (cadr (cadr form)) env)))
+              (if expander
+                  (funcall *macroexpand-hook* expander (cons (cadr (cadr form)) (cddr form)) env)
+                  form)))
+       (let ((expander (core:bclasp-compiler-macro-function (car form) env)))
+         (if expander
+             (funcall *macroexpand-hook* expander form env)
+             form)))))
+
+(defun bclasp-compiler-macroexpand (form &optional env)
+  (let ((expansion (compiler-macroexpand-1 form env)))
+    (if (eq expansion form)
+        (return-from bclasp-compiler-macroexpand form)
+        (bclasp-compiler-macroexpand expansion env))))
+
+(export '(compiler-macroexpand-1 bclasp-compiler-macroexpand))
+
 (defmacro define-compiler-macro (&whole whole name vl &rest body)
   (multiple-value-bind (function pprint doc-string)
       (sys::expand-defmacro name vl body 'cl:define-compiler-macro)
@@ -138,30 +184,6 @@ VARIABLE doc and can be retrieved by (DOCUMENTATION 'SYMBOL 'VARIABLE)."
   ;;  (declare (ignorable env))
   (core:get-compiler-macro-function name env))
 ;;  (values (get-sysprop name 'sys::compiler-macro)))
-
-(defun compiler-macroexpand-1 (form &optional env)
-  (if (atom form)
-      form
-      (or
-       (and (eq (car form) 'cl:funcall)
-            (listp (cadr form))
-            (eq (car (cadr form)) 'cl:function)
-            (let ((expander (compiler-macro-function (cadr (cadr form)) env)))
-              (if expander
-                  (funcall *macroexpand-hook* expander (cons (cadr (cadr form)) (cddr form)) env)
-                  form)))
-       (let ((expander (compiler-macro-function (car form) env)))
-         (if expander
-             (funcall *macroexpand-hook* expander form env)
-             form)))))
-
-(defun compiler-macroexpand (form &optional env)
-  (let ((expansion (compiler-macroexpand-1 form env)))
-    (if (eq expansion form)
-        (return-from compiler-macroexpand form)
-        (compiler-macroexpand expansion env))))
-
-(export '(compiler-macroexpand-1 compiler-macroexpand))
 
 
 

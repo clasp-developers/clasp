@@ -54,7 +54,7 @@
 ;;;; In Clasp source-transforms are implemented as compiler macros
 (defmacro define-source-transform (name lambda-list &body body)
   (multiple-value-bind (func pprint doc-string)
-      (sys::expand-defmacro name lambda-list body 'cl:define-compiler-macro)
+      (sys::expand-defmacro name lambda-list body 'cl:core:bclasp-define-compiler-macro)
     `(eval-when (:compile-toplevel :load-toplevel :execute)
        (setf (compiler-macro-function ',name)
              (lambda (whole env)
@@ -268,7 +268,7 @@
                           `(funcall ,test ,O-form ,Ei-form))))
       (if negate `(not ,test-form) test-form))))
 
-(define-compiler-macro assoc (item alist &key (key #'identity) (test nil test-p) (test-not nil test-not-p))
+(core:bclasp-define-compiler-macro assoc (item alist &key (key #'identity) (test nil test-p) (test-not nil test-not-p))
   (multiple-value-bind (test negate)
       (canonicalize-test test test-p test-not test-not-p '#'eql)
     (let ((S (gensym "S")) (pair (gensym "PAIR"))

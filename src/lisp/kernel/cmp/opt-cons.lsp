@@ -5,7 +5,7 @@
 
 (defconstant +nthcdr-inline-limit+ 8) ; totally arbitrary
 
-(define-compiler-macro nthcdr (&whole whole index list &environment env)
+(core:bclasp-define-compiler-macro nthcdr (&whole whole index list &environment env)
   (if (constantp index env)
       (let ((i (ext:constant-form-value index env)))
         (if (and (integerp i)
@@ -20,7 +20,7 @@
 
 ;;; This is of course basically an inline definition, but we do it at this level
 ;;; so that the nthcdr can have its compiler macro used (which it wouldn't be, with ASTs)
-(define-compiler-macro nth (index list)
+(core:bclasp-define-compiler-macro nth (index list)
   `(car (nthcdr ,index ,list)))
 
 (defmacro do-in-list ((%elt %sublist list &rest output) &body body)
@@ -51,7 +51,7 @@
                            (funcall key-function %elt))
              (return ,%sublist)))))))
 
-(define-compiler-macro member (&whole whole value list &rest sequence-args &environment env)
+(core:bclasp-define-compiler-macro member (&whole whole value list &rest sequence-args &environment env)
   ;; FIXME: pay attention to policy, e.g. don't inline for high SPACE.
   (or (apply #'expand-member env (rest whole))
       whole))
@@ -75,7 +75,7 @@
                                  (funcall key-function %car))
                    (return ,%elt))))))))))
 
-(define-compiler-macro assoc (&whole whole value list &rest sequence-args &environment env)
+(core:bclasp-define-compiler-macro assoc (&whole whole value list &rest sequence-args &environment env)
   (or (apply #'expand-assoc env (rest whole))
       whole))
 
@@ -97,6 +97,6 @@
                              (funcall key-function %elt))
                (return ,%list))))))))
 
-(define-compiler-macro adjoin (&whole whole value list &rest sequence-args &environment env)
+(core:bclasp-define-compiler-macro adjoin (&whole whole value list &rest sequence-args &environment env)
   (or (apply #'expand-adjoin env (rest whole))
       whole))

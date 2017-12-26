@@ -2906,7 +2906,7 @@
 ;;; The compiler macro is broken in bclasp - it causes the control flow to go nuts
 ;;;    I'm going to enable this compiler macro only in cclasp. May 12, 2017 meister
 #+cclasp
-(define-compiler-macro format (&whole whole destination control-string &rest args)
+(core:bclasp-define-compiler-macro format (&whole whole destination control-string &rest args)
   (if (stringp control-string)
       (let ((fun-sym (gensym "FUN"))
             (out-sym (gensym "OUT"))

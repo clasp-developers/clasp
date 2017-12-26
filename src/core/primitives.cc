@@ -856,9 +856,26 @@ CL_DEFUN T_sp core__compiler_macro_function(core::T_sp name, core::T_sp env)
 
 // ignore env
 CL_LAMBDA(name &optional env);
+CL_DEFUN T_mv core__get_bclasp_compiler_macro_function(core::T_sp name, core::T_sp env)
+{
+  return core__get_sysprop(name,core::_sym_bclasp_compiler_macro);
+}
+
+CL_LAMBDA(name function &optional env);
+CL_DEFUN void core__setf_bclasp_compiler_macro_function(core::T_sp name, core::T_sp function, core::T_sp env)
+{
+  core__put_sysprop(name,core::_sym_bclasp_compiler_macro,function);
+}
+
+// ignore env
+CL_LAMBDA(name &optional env);
 CL_DEFUN T_mv core__get_compiler_macro_function(core::T_sp name, core::T_sp env)
 {
-  return core__get_sysprop(name,cl::_sym_compiler_macro);
+  // First try to get it from the cl:compiler-macro system property and failing that
+  // try getting it from the core:bclasp-compiler-macro
+  T_mv result = core__get_sysprop(name,cl::_sym_compiler_macro);
+  if (result.valueGet_(1).notnilp()) return result;
+  return core__get_sysprop(name,core::_sym_bclasp_compiler_macro);
 }
 
 CL_LAMBDA(name function &optional env);
