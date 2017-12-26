@@ -572,13 +572,23 @@ jump to blocks within this tagbody."
 	  (irc-br block-start "block-start")
 	  (irc-begin-block block-start)
           (let* ((frame (irc-intrinsic "pushBlockFrame" (irc-global-symbol block-symbol block-env))))
+            #+optimize-bclasp
+            (setf (gethash block-env *block-frame-info*)
+                  (make-block-frame-maker :block-symbol block-symbol
+                                          :push-frame-instruction frame))
             (with-try
                 (codegen-progn result body block-env)
               ((cleanup)
                (irc-unwind-environment block-env))
               ((typeid-core-return-from exception-ptr)
-               (let ((val (irc-intrinsic "blockHandleReturnFrom" exception-ptr frame)))
-                 (irc-store val result))))
+               (let ((handle-instruction (irc-intrinsic "blockHandleReturnFrom" exception-ptr frame)))
+                 #+optimize-bclasp
+                 (let* ((frame-info (gethash block-env *block-frame-info*))
+                        (new-list (cons handle-instruction (block-frame-maker-handle-instructions frame-info)))
+                        (new-arg-list (cons exception-ptr (block-frame-maker-handle-arguments frame-info))))
+                   (setf (block-frame-maker-handle-instructions frame-info) new-list)
+                   (setf (block-frame-maker-handle-arguments frame-info) new-arg-list))
+                 (irc-store handle-instruction result))))
 	    (irc-br after-return-block "after-return-block")
 	    (irc-begin-block local-return-block)
 	    (let ((val (irc-intrinsic "restoreFromMultipleValue0")))
@@ -587,10 +597,9 @@ jump to blocks within this tagbody."
 	    (irc-begin-block after-return-block)
             (let ((pop-instruction (irc-intrinsic "exceptionStackUnwind" frame)))
               #+optimize-bclasp
-              (push (make-block-frame-maker :block-symbol block-symbol
-                                            :push-frame-instruction frame
-                                            :pop-frame-instruction pop-instruction)
-                    *block-frame-makers*))))))))
+              (let* ((frame-info (gethash block-env *block-frame-info*))
+                     (new-list (cons pop-instruction (block-frame-maker-pop-frame-instructions frame-info))))
+                (setf (block-frame-maker-pop-frame-instructions frame-info) new-list)))))))))
 
 (defun codegen-return-from (result rest env)
   (dbg-set-current-debug-location-here)
@@ -599,6 +608,10 @@ jump to blocks within this tagbody."
 	 (return-form (cadr rest)))
     (multiple-value-bind (recognizes-block-symbol inter-function block-env)
 	(classify-return-from-symbol env block-symbol)
+      #+optimize-bclasp
+      (let ((frame-info (gethash block-env *block-frame-info*)))
+        (unless frame-info (error "Could not find frame-info for block ~s" block-symbol))
+        (setf (block-frame-maker-needed frame-info) t))
       (if recognizes-block-symbol
 	  (if inter-function
 	      (progn
@@ -618,8 +631,7 @@ jump to blocks within this tagbody."
                   (irc-intrinsic "loadValues" temp-mv-result saved-values))
 		(irc-intrinsic "saveToMultipleValue0" temp-mv-result)
 		(irc-br local-return-block "local-return-block")
-		(irc-begin-block (irc-basic-block-create "after-return-from"))
-		))
+		(irc-begin-block (irc-basic-block-create "after-return-from"))))
 	  (error "Unrecognized block symbol ~a" block-symbol)))))
 
 ;;; FLET, LABELS

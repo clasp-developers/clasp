@@ -104,7 +104,7 @@ Options are :tagbody :go :all :eh-landing-pads
 #+optimize-bclasp
 (progn
   (defvar *tagbody-frame-makers*)
-  (defvar *block-frame-makers*))
+  (defvar *block-frame-info*))
 
 #+(or)
 (progn

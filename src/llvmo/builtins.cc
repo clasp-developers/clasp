@@ -226,3 +226,23 @@ BUILTIN_ATTRIBUTES core::T_O* cc_builtin_nil()
 
 
 };
+
+
+extern "C" {
+void ignore_pushBlockFrame()
+{
+// Do nothing
+}
+
+
+gctools::return_type ignore_blockHandleReturnFrom(unsigned char *exceptionP) {
+// Do nothing
+    core::ReturnFrom &returnFrom = (core::ReturnFrom &)*((core::ReturnFrom *)(exceptionP));
+    throw returnFrom;
+}
+
+void ignore_exceptionStackUnwind()
+{
+// Do nothing
+}
+};

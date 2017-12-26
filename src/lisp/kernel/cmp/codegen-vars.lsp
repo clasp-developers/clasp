@@ -67,7 +67,10 @@
 (progn
   ;;; Store the block environment, the push and the pop instructions for the block
   (defstruct (block-frame-maker (:type vector))
-    block-symbol push-frame-instruction pop-frame-instruction)
+    (needed nil) block-symbol push-frame-instruction
+    (handle-instructions nil)
+    (handle-arguments nil)
+    (pop-frame-instructions nil))
   (defstruct (throw-return-from (:type vector))
     instruction start-env block-symbol)
   (defvar *throw-return-from-instructions*))
@@ -236,6 +239,35 @@
                                          start-renv))))
         (cv-log "Done\n")))))
 
+(defparameter *rewrite-blocks* t)
+(defun rewrite-blocks-with-no-return-froms (block-info)
+  (let ((blocks-rewritten 0))
+    (when *rewrite-blocks*
+      (multiple-value-bind (the-push-function push-primitive-info)
+          (get-or-declare-function-or-error *the-module* "ignore_pushBlockFrame")
+        (multiple-value-bind (the-handle-function handle-primitive-info)
+            (get-or-declare-function-or-error *the-module* "ignore_blockHandleReturnFrom")
+          (multiple-value-bind (the-unwind-function unwind-primitive-info)
+              (get-or-declare-function-or-error *the-module* "ignore_exceptionStackUnwind")
+            (maphash (lambda (env block-info)
+                       (unless (block-frame-maker-needed block-info)
+                         (incf blocks-rewritten)
+                         (llvm-sys:replace-call (block-frame-maker-push-frame-instruction block-info)
+                                                the-push-function
+                                                nil)
+                         (mapc (lambda (handle-instr argument)
+                                 (llvm-sys:replace-call handle-instr
+                                                        the-handle-function
+                                                        (list argument)))
+                               (block-frame-maker-handle-instructions block-info)
+                               (block-frame-maker-handle-arguments block-info))
+                         (dolist (pop-instr (block-frame-maker-pop-frame-instructions block-info))
+                           (llvm-sys:replace-call pop-instr
+                                                  the-unwind-function
+                                                  nil))))
+                     block-info)
+            (cv-log "Done\n")))))))
+
 (defun rewrite-lexical-function-references-for-new-depth (lexical-function-references)
   (dolist (funcref lexical-function-references)
     (let ((index (lexical-function-reference-index funcref))
@@ -312,7 +344,7 @@
            (*throw-dynamic-go-instructions* nil)
            (*tagbody-frame-makers* nil)
            (*throw-return-from-instructions* nil)
-           (*block-frame-makers* nil)
+           (*block-frame-info* (make-hash-table))
            (*lexical-function-references* nil)
            (*lexical-function-frame-makers* nil))
        (multiple-value-prog1 (progn ,@body)
@@ -325,6 +357,9 @@
              ;; Rewrite lexical variable references to take into account the newly invisible environments
              (cv-log "rewrite-lexical-variable-references-for-new-depth \n")
              (rewrite-lexical-variable-references-for-new-depth ,variable-map *lexical-variable-references*)
+             ;; Rewrite pushBlockFrame instructions to ignore those that don't have return-froms
+             (cv-log "rewrite-blocks-with-no-return-froms \n")
+             (rewrite-blocks-with-no-return-froms *block-frame-info*)
              ;; Rewrite lexicalDynamicGo instructions to take into account the newly invisible environments
              (cv-log "rewrite-dynamic-go-for-new-depth \n")
              (rewrite-dynamic-go-for-new-depth *throw-dynamic-go-instructions*)

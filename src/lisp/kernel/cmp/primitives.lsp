@@ -152,13 +152,16 @@
     (primitive-unwinds "cc_ifBadKeywordArgumentException" %void% (list %size_t% %size_t% %t*%))
     
     (primitive         "pushBlockFrame" %size_t% (list %t*%))
+    (primitive         "ignore_pushBlockFrame" %void% nil)
     (primitive         "pushTagbodyFrame" %size_t% (list %t*%))
     
     (primitive-unwinds "throwReturnFrom" %void% (list %t*%) :does-not-return t)
     (primitive-unwinds "throwDynamicGo" %void% (list %size_t% %size_t% %t*%) :does-not-return t)
     
     (primitive         "exceptionStackUnwind" %void% (list %size_t%))
+    (primitive         "ignore_exceptionStackUnwind" %void% nil)
     (primitive-unwinds "blockHandleReturnFrom" %return_type% (list %i8*% %size_t%))
+    (primitive-unwinds "ignore_blockHandleReturnFrom" %return_type% (list %i8*%))
     (primitive-unwinds "tagbodyDynamicGoIndexElseRethrow" %size_t% (list %i8*% %size_t%))
     (primitive-unwinds "throwIllegalSwitchValue" %void% (list %size_t% %size_t%) :does-not-return t)
     
