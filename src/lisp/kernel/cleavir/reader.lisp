@@ -6,7 +6,7 @@
 
 
 (defun assemble-raw (object)
-  (cons (raw (car object)) (raw (cdr object)))
+  (cons (raw (car object)) (raw (cdr object))))
 
 (defun core:make-cons-cst (source-info object)
   (error "make-cons-cst - what should I do with object: ~s" object))
