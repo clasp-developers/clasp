@@ -181,7 +181,9 @@
       (plist :initform nil :initarg :plist :accessor method-plist)
       ;; these are the precomputed results of cl:function-keywords.
       (keywords :initform nil :initarg :keywords :accessor method-keywords)
-      (aok-p :initform nil :initarg :aok-p :accessor method-allows-other-keys-p)))
+      (aok-p :initform nil :initarg :aok-p :accessor method-allows-other-keys-p)
+      ;; leaf-method-p is T if the method form doesn't call call-next-method or next-method-p
+      (leaf-method-p :initform nil :initarg :leaf-method-p :reader leaf-method-p)))
 
   (defparameter +standard-accessor-method-slots+
     (append +standard-method-slots+

@@ -153,7 +153,8 @@
 		 (std-class-optimized-accessors name))
 		(t
 		 (std-class-accessors name)))
-	(let* ((options (list :slot-definition slotd))
+	(let* ((options (list :slot-definition slotd
+                              :leaf-method-p t))
 	       (reader-args (list* :function reader
 				   :generic-function nil
 				   :qualifiers nil

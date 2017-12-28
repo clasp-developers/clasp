@@ -209,35 +209,36 @@ in the generic function lambda-list to the generic function lambda-list"
 (defun make-method-lambda (gf method method-lambda env)
   (multiple-value-bind (call-next-method-p next-method-p-p)
       (walk-method-lambda method-lambda env)
-    (multiple-value-bind (declarations body doc)
-        (process-declarations (cddr method-lambda) t) ; We expect docstring
-      ;; source location here?
-      (let ((lambda-list (second method-lambda))
-            (lambda-name-declaration (or (find 'core::lambda-name declarations :key #'car)
-                                         '(core:lambda-name make-method-lambda.lambda))))
-        (values `(lambda (.method-args. .next-methods.)
-                   (declare ,lambda-name-declaration)
-                   ,doc
-                   (flet (,@(and call-next-method-p
-                              `((call-next-method (&va-rest args)    #|DANGER|#
-                                                  (if (not .next-methods.)
-                                                      ;; But how do I generate code that can be compiled
-                                                      ;; that will get access to the current method and
-                                                      ;; current generic function?   (apply #'no-next-method ,gf ,method ...)
-                                                      ;; won't work because the compiler will need to externalize the generic function gf
-                                                      ;; and the method method.
-                                                      (error "No next method") ;; Should be what is above -> (apply #'no-next-method ...)
-                                                      (let ((use-args (if (> (va-list-length args) 0) args .method-args.)))
-                                                        (funcall (car .next-methods.)
-                                                                 use-args ; (or args .method-args.)
-                                                                 (cdr .next-methods.)))))))
-                          ,@(and next-method-p-p
-                              `((next-method-p ()
-                                               (and .next-methods. t)))))
-                     (core::bind-va-list ,lambda-list .method-args.
-                                         (declare ,@declarations)
-                                         ,@body)))
-                nil)))))
+    (let ((leaf-method-p (null (or call-next-method-p next-method-p-p))))
+      (multiple-value-bind (declarations body doc)
+          (process-declarations (cddr method-lambda) t) ; We expect docstring
+        ;; source location here?
+        (let ((lambda-list (second method-lambda))
+              (lambda-name-declaration (or (find 'core::lambda-name declarations :key #'car)
+                                           '(core:lambda-name make-method-lambda.lambda))))
+          (values `(lambda (.method-args. .next-methods.)
+                     (declare ,lambda-name-declaration)
+                     ,doc
+                     (flet (,@(and call-next-method-p
+                                `((call-next-method (&va-rest args)    #|DANGER|#
+                                                    (if (not .next-methods.)
+                                                        ;; But how do I generate code that can be compiled
+                                                        ;; that will get access to the current method and
+                                                        ;; current generic function?   (apply #'no-next-method ,gf ,method ...)
+                                                        ;; won't work because the compiler will need to externalize the generic function gf
+                                                        ;; and the method method.
+                                                        (error "No next method") ;; Should be what is above -> (apply #'no-next-method ...)
+                                                        (let ((use-args (if (> (va-list-length args) 0) args .method-args.)))
+                                                          (funcall (car .next-methods.)
+                                                                   use-args ; (or args .method-args.)
+                                                                   (cdr .next-methods.)))))))
+                            ,@(and next-method-p-p
+                                `((next-method-p ()
+                                                 (and .next-methods. t)))))
+                       (core::bind-va-list ,lambda-list .method-args.
+                                           (declare ,@declarations)
+                                           ,@body)))
+                  (list :leaf-method-p leaf-method-p)))))))
 
 ;;; Clasp doesn't use this anymore because we pass the method-args and next-methods as
 ;;;       the first two arguments.
@@ -413,8 +414,8 @@ have disappeared."
   (multiple-value-bind (keys aok-p)
       (compute-method-keywords lambda-list)
     (with-early-make-instance
-        ;; We choose the largest list of slots
-        +standard-accessor-method-slots+
+      ;; We choose the largest list of slots
+      +standard-accessor-method-slots+
       (method (if #-clasp(si::instancep method-class) #+clasp(classp method-class)
                   method-class
                   (find-class method-class))
@@ -424,8 +425,9 @@ have disappeared."
               :specializers specializers
               :qualifiers qualifiers
               :keywords keys
-              :aok-p aok-p)
-    method)))
+              :aok-p aok-p
+              :leaf-method-p (getf options :leaf-method-p nil))
+      method)))
 
 ;;; early version used during bootstrap
 (defun method-p (x)
