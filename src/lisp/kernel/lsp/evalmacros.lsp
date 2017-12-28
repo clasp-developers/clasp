@@ -141,7 +141,7 @@ VARIABLE doc and can be retrieved by (DOCUMENTATION 'SYMBOL 'VARIABLE)."
 
 (export '(bclasp-define-compiler-macro bclasp-compiler-macro-function))
 
-(defun compiler-macroexpand-1 (form &optional env)
+(defun bclasp-compiler-macroexpand-1 (form &optional env)
   (if (atom form)
       form
       (or
@@ -158,12 +158,12 @@ VARIABLE doc and can be retrieved by (DOCUMENTATION 'SYMBOL 'VARIABLE)."
              form)))))
 
 (defun bclasp-compiler-macroexpand (form &optional env)
-  (let ((expansion (compiler-macroexpand-1 form env)))
+  (let ((expansion (bclasp-compiler-macroexpand-1 form env)))
     (if (eq expansion form)
         (return-from bclasp-compiler-macroexpand form)
         (bclasp-compiler-macroexpand expansion env))))
 
-(export '(compiler-macroexpand-1 bclasp-compiler-macroexpand))
+(export '(bclasp-compiler-macroexpand-1 bclasp-compiler-macroexpand))
 
 (defmacro define-compiler-macro (&whole whole name vl &rest body)
   (multiple-value-bind (function pprint doc-string)
