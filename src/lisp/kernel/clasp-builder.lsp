@@ -496,7 +496,11 @@ Return files."
                  :lisp-bitcode-files (list (core:build-pathname #P"src/lisp/modules/serve-event/serve-event" :bitcode)))
   (cmp:llvm-link (core:build-pathname #P"src/lisp/modules/asdf/asdf" :fasl)
                  :lisp-bitcode-files (list (core:build-pathname #P"src/lisp/modules/asdf/build/asdf" :bitcode))))
-(export '(compile-addons link-addons))
+
+(defun build-addons ()
+  (compile-addons)
+  (link-addons))
+(export '(compile-addons link-addons build-addons))
 
 #+(or bclasp cclasp)
 (defun bclasp-repl ()
