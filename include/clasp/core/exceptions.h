@@ -163,12 +163,12 @@ class DebugStream;
 
 /*! To exit the program throw this exception
  */
-class ExitProgram {
+ class ExitProgramException : public std::exception{
 private:
   int _ExitResult;
 
 public:
-  ExitProgram(int result) : _ExitResult(result){};
+  ExitProgramException(int result) : _ExitResult(result){};
   int getExitResult() { return this->_ExitResult; };
 };
 

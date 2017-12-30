@@ -2168,7 +2168,12 @@ T_mv evaluate(T_sp exp, T_sp environment) {
     }
     Vaslist valist_struct(callArgs);
     VaList_sp valist(&valist_struct); // = callArgs.setupVaList(valist_struct);
-    return funcall_consume_valist_<core::Function_O>(headFunc.tagged_(), valist);
+    try {
+      return funcall_consume_valist_<core::Function_O>(headFunc.tagged_(), valist);
+    } catch (core::ExitProgramException& ee) {
+      printf("%s:%d Caught ExitProgramException\n", __FILE__, __LINE__ );
+      throw(ee);
+    }
   }
   SIMPLE_ERROR(BF("Illegal form %s") % _rep_(exp));
 }

@@ -236,9 +236,7 @@ void ignore_pushBlockFrame()
 
 
 gctools::return_type ignore_blockHandleReturnFrom(unsigned char *exceptionP) {
-// Do nothing
-    core::ReturnFrom &returnFrom = (core::ReturnFrom &)*((core::ReturnFrom *)(exceptionP));
-    throw returnFrom;
+  throw;
 }
 
 void ignore_exceptionStackUnwind()
