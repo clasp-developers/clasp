@@ -185,8 +185,29 @@ VARIABLE doc and can be retrieved by (DOCUMENTATION 'SYMBOL 'VARIABLE)."
   (core:get-compiler-macro-function name env))
 ;;  (values (get-sysprop name 'sys::compiler-macro)))
 
+(defun compiler-macroexpand-1 (form &optional env)
+  (if (atom form)
+      form
+      (or
+       (and (eq (car form) 'cl:funcall)
+            (listp (cadr form))
+            (eq (car (cadr form)) 'cl:function)
+            (let ((expander (compiler-macro-function (cadr (cadr form)) env)))
+              (if expander
+                  (funcall *macroexpand-hook* expander (cons (cadr (cadr form)) (cddr form)) env)
+                  form)))
+       (let ((expander (compiler-macro-function (car form) env)))
+         (if expander
+             (funcall *macroexpand-hook* expander form env)
+             form)))))
 
+(defun compiler-macroexpand (form &optional env)
+  (let ((expansion (compiler-macroexpand-1 form env)))
+    (if (eq expansion form)
+        (return-from compiler-macroexpand form)
+        (compiler-macroexpand expansion env))))
 
+(export '(compiler-macroexpand-1 compiler-macroexpand))
 
 ;;; Each of the following macros is also defined as a special form,
 ;;; as required by CLtL. Some of them are used by the compiler (e.g.
