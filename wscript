@@ -82,7 +82,9 @@ def grovel(bld):
 def update_submodules(cfg):
     os.system("echo This is where I get submodules")
     sicl_commit = "3526a7992ac992922b9fd4364e9e256da5653062"
+    cst_commit = "8d052d02764efe7650c4e62f85bcd5f4b24477d2"
     os.system("./tools/fetch-revision.sh https://github.com/robert-strandh/SICL.git src/lisp/kernel/contrib/sicl %s" % sicl_commit)
+    os.system("./tools/fetch-revision.sh https://github.com/robert-strandh/Concrete-Syntax-Tree.git src/lisp/kernel/contrib/Concrete-Syntax-Tree %s" % cst_commit)
     os.system("git submodule update --init src/lisp/kernel/contrib/Acclimation")
     os.system("git submodule update --init src/mps")
     os.system("git submodule update --init src/lisp/modules/asdf")
