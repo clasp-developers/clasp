@@ -363,7 +363,15 @@
                                                :effective-method-function efm
                                                :slot-name (slot-definition-name slotd)
                                                :method (first methods) :class class))
-             (t efm))))
+             (t
+              (gf-log "Using default effective method function\n")
+              (gf-log "(compute-effective-method generic-function method-combination methods) -> \n")
+              (gf-log "%s\n" (compute-effective-method generic-function method-combination methods))
+              #+(or)(gf-log "%s\n" (let ((info (compute-effective-method generic-function method-combination methods)))
+                                     (if (and (consp info) (eq (car info) 'call-method))
+                                         (core:bformat nil "first method is leaf-method-p -> %s" (leaf-method-p (second info)))
+                                         "The first method is not leaf-method-p")))
+              efm))))
     #+debug-fastgf
     (when log
       (gf-log "vvv************************vvv\n")
