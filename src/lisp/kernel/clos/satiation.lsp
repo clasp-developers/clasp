@@ -117,12 +117,12 @@
 (defun satiate-standard-generic-functions ()
   (macrolet ((satiate-one (gf-name &body lists-of-class-names)
                `(prog2
-                  (gf-log ,(concatenate 'string "Satiating " (string gf-name) "\n"))
-                  (satiate-generic-function
-                   (fdefinition ',gf-name)
-                   (list ,@(loop for list in lists-of-class-names
-                                 collect `(list ,@(loop for name in list
-                                                        collect `(find-class ',name))))))
+                    (gf-log ,(concatenate 'string "Satiating " (string gf-name) "\n"))
+                    (satiate-generic-function
+                     (fdefinition ',gf-name)
+                     (list ,@(loop for list in lists-of-class-names
+                                   collect `(list ,@(loop for name in list
+                                                          collect `(find-class ',name))))))
                   (gf-log ,(concatenate 'string "Done satiating " (string gf-name) "\n")))))
     ;; I think what we need to satiate are just what dispatch-miss can call.
     ;; With the actual classes. Abstract classes aren't relevant.
@@ -141,7 +141,7 @@
                  (standard-generic-function method-combination null))
     ;; We should satiate the method combination accessors, but we actually
     ;; just use early accessors at the moment... which is probably wrong (FIXME?)
-    (satiate-one method-qualifiers ; called by method combinations
+    (satiate-one method-qualifiers     ; called by method combinations
                  (standard-method)
                  (standard-reader-method) (standard-writer-method))
     (satiate-one method-specializers
@@ -168,7 +168,11 @@
     ;; This one is needed for the initial specializer profile computation in fixup.
     ;; (i.e., it's called by initialize-generic-function-specializer-profile)
     (satiate-one generic-function-lambda-list
-                 (standard-generic-function))))
+                 (standard-generic-function))
+    (satiate-one leaf-method-p
+                 (standard-method)
+                 (standard-reader-method)
+                 (standard-writer-method))))
 
 ;;; This function sets up an initial specializer profile for a gf that doesn't have one.
 ;;; It can only not have one if it was defined unnaturally, i.e. during boot.

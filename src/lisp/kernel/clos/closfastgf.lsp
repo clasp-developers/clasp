@@ -377,7 +377,7 @@
               (gf-log "%s\n" (compute-effective-method generic-function method-combination methods))
               #+(or)(gf-log "%s\n" (let ((info (compute-effective-method generic-function method-combination methods)))
                                (if (and (consp info) (eq (car info) 'call-method))
-                                   (format nil "first method is leaf-method-p -> %s" (leaf-method-p (second info)))
+                                   (core:bformat nil "first method is leaf-method-p -> %s" (leaf-method-p (second info)))
                                    "The first method is not leaf-method-p")))
               efm))))
     #+debug-fastgf
