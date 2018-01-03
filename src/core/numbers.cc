@@ -1883,6 +1883,11 @@ Number_sp Ratio_O::signum_() const {
   return clasp_signum(this->_numerator);
 }
 
+Number_sp Ratio_O::sqrt_() const {
+  // (sqrt (/ x y)) = (/ (sqrt x) (sqrt y))
+  return clasp_divide(clasp_sqrt(this->_numerator), clasp_sqrt(this->_denominator));
+}
+
 void Ratio_O::setf_numerator_denominator(Integer_sp inum, Integer_sp idenom)
 {
   Integer_sp gcd = clasp_gcd(inum,idenom);
