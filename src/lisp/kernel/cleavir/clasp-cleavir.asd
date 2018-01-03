@@ -5,8 +5,7 @@
   :version "0.0.1"
   :author "Christian Schafmeister <chris.schaf@verizon.net>"
   :licence "LGPL-3.0"
-  :depends-on (:concrete-syntax-tree
-               :cleavir-generate-ast
+  :depends-on (:cleavir-generate-ast
                :cleavir-ir
                :cleavir-compilation-policy
                :cleavir-ast-to-hir
@@ -24,7 +23,7 @@
                (:file "cleavir-fixups-and-hacks")
                (:file "system")
                (:file "policy")
-               (:file "reader")
+;;;               (:file "reader")
                (:file "ast")
                (:file "convert-form")
                (:file "convert-special")

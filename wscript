@@ -930,7 +930,7 @@ def build(bld):
     if (bld.stage_val >= 2):
         print("About to add compile_bclasp")
         cmp_bclasp = compile_bclasp(env=bld.env)
-        cmp_bclasp.set_inputs([bld.iclasp_executable,aclasp_link_product,intrinsics_bitcode_node,fastgf_bitcode_node,builtins_bitcode_node]+fix_lisp_paths(bld.path,out,variant,bld.clasp_cclasp)) # bld.clasp_bclasp
+        cmp_bclasp.set_inputs([bld.iclasp_executable,aclasp_link_product,intrinsics_bitcode_node,fastgf_bitcode_node,builtins_bitcode_node]+fix_lisp_paths(bld.path,out,variant,bld.clasp_bclasp)) # bld.clasp_bclasp
         bclasp_common_lisp_bitcode = bld.path.find_or_declare(variant.common_lisp_bitcode_name(bld.use_human_readable_bitcode,stage='b'))
         cmp_bclasp.set_outputs(bclasp_common_lisp_bitcode)
         bld.add_to_group(cmp_bclasp)

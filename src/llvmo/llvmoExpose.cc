@@ -3904,7 +3904,7 @@ CL_DEFUN void llvm_sys__remove_useless_global_ctors(Module_sp module) {
     
   
 
-CL_DEFUN llvm::Module* llvm_sys_optimizeModule(llvm::Module* module)
+CL_DEFUN llvm::Module* llvm_sys__optimizeModule(llvm::Module* module)
 {
   std::shared_ptr<llvm::Module> M(module);
   return &*optimizeModule(std::move(M));

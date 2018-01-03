@@ -348,6 +348,10 @@
                        (find-class 'standard-class))
                    (eq (class-of (setf slotd (effective-slotd-from-accessor-method (first methods) class)))
                        (find-class 'standard-effective-slot-definition)))
+              (gf-log "make-optimized-slot-reader index: %s slot-name: %s class: %s\n"
+                      (slot-definition-location slotd)
+                      (slot-definition-name slotd)
+                      class)
               (cmp::make-optimized-slot-reader :index (slot-definition-location slotd)
                                                :effective-method-function efm
                                                :slot-name (slot-definition-name slotd)
@@ -359,6 +363,10 @@
                        (find-class 'standard-class))
                    (eq (class-of (setf slotd (effective-slotd-from-accessor-method (first methods) class)))
                        (find-class 'standard-effective-slot-definition)))
+              (gf-log "make-optimized-slot-writer index: %s slot-name: %s class: %s\n"
+                      (slot-definition-location slotd)
+                      (slot-definition-name slotd)
+                      class)
               (cmp::make-optimized-slot-writer :index (slot-definition-location slotd)
                                                :effective-method-function efm
                                                :slot-name (slot-definition-name slotd)
@@ -541,7 +549,7 @@ It takes the arguments in two forms, as a vaslist and as a list of arguments."
                (progn
                  (gf-log "----{---- A dispatch-miss occurred -> %s  \n" (clos::generic-function-name generic-function))
                  (dolist (arg (core:list-from-va-list valist-args))
-                   (gf-log-noindent "%s[%s/%d] " arg (class-of arg) (core:instance-stamp arg)))
+                   (gf-log "%s[%s/%d] " arg (class-of arg) (core:instance-stamp arg)))
                  (gf-log-noindent "\n")
                  (do-dispatch-miss generic-function valist-args arguments)))))
     (decf-debug-fastgf-indent)))
