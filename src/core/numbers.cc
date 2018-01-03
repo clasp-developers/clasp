@@ -2020,6 +2020,10 @@ Number_sp Bignum_O::sqrt_() const {
     return clasp_make_single_float(sqrt(z));
 }
 
+Number_sp Bignum_O::reciprocal_() const {
+  return Rational_O::create(clasp_to_mpz(clasp_make_fixnum(1)), this->_value);
+}
+
 CL_LAMBDA(arg);
 CL_DECLARE();
 CL_DOCSTRING("sqrt");
