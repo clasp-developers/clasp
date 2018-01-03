@@ -1888,6 +1888,10 @@ Number_sp Ratio_O::sqrt_() const {
   return clasp_divide(clasp_sqrt(this->_numerator), clasp_sqrt(this->_denominator));
 }
 
+Number_sp Ratio_O::reciprocal_() const {
+  return Ratio_O::create(this->_denominator, this->_numerator);
+}
+
 void Ratio_O::setf_numerator_denominator(Integer_sp inum, Integer_sp idenom)
 {
   Integer_sp gcd = clasp_gcd(inum,idenom);
