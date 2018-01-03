@@ -8,7 +8,11 @@
 ;;; Running slime from bclasp+cleavir - don't load inline.lsp or auto-compile
 ;;;  --- Testing defun-inline-hook
 (print "Starting")
-(time (compile-file "sys:modules;asdf;build;asdf.lisp" :print t))
+(progn
+  (load "sys:kernel;clasp-builder.lsp")
+  (core::compile-addons)
+  (core::link-addons))
+
 
 (progn ;; Set up everything for building cclasp from bclasp with auto-compile
   (format t "Loading ASDF system~%")
