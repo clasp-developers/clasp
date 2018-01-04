@@ -115,7 +115,7 @@ namespace core {
         }
         ss << frameChar << idx;
         if (this->_Stack[idx]._Key.notnilp()) {
-          ss << "{@" << (void *)this->_Stack[idx]._Key.raw_() << "}";
+          ss << "{" << _rep_(this->_Stack[idx]._Key) << "@" << (void *)this->_Stack[idx]._Key.raw_() << "}";
         }
         ss << " ";
       };

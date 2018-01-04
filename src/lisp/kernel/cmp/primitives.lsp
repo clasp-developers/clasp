@@ -161,7 +161,7 @@
     (primitive         "exceptionStackUnwind" %void% (list %size_t%))
     (primitive         "ignore_exceptionStackUnwind" %void% nil)
     (primitive-unwinds "blockHandleReturnFrom" %return_type% (list %i8*% %size_t%))
-    (primitive-unwinds "ignore_blockHandleReturnFrom" %return_type% (list %i8*%))
+    (primitive-unwinds "ignore_blockHandleReturnFrom" %return_type% (list %i8*% %size_t%))
     (primitive-unwinds "tagbodyDynamicGoIndexElseRethrow" %size_t% (list %i8*% %size_t%))
     (primitive-unwinds "throwIllegalSwitchValue" %void% (list %size_t% %size_t%) :does-not-return t)
     

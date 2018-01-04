@@ -585,7 +585,8 @@ jump to blocks within this tagbody."
                  #+optimize-bclasp
                  (let* ((frame-info (gethash block-env *block-frame-info*))
                         (new-list (cons handle-instruction (block-frame-maker-handle-instructions frame-info)))
-                        (new-arg-list (cons exception-ptr (block-frame-maker-handle-arguments frame-info))))
+                        (new-arg-list (cons (list exception-ptr frame)
+                                            (block-frame-maker-handle-arguments frame-info))))
                    (setf (block-frame-maker-handle-instructions frame-info) new-list)
                    (setf (block-frame-maker-handle-arguments frame-info) new-arg-list))
                  (irc-store handle-instruction result))))

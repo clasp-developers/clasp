@@ -809,6 +809,10 @@ void tprint(void* ptr)
   core::dbg_printTPtr((uintptr_clasp_t) ptr,false);
 }
 
+void c_ehs() {
+  printf("%s:%d ExceptionStack summary\n%s\n", __FILE__, __LINE__, my_thread->exceptionStack().summary().c_str());
+}
+
 void c_bt() {
   core::eval::funcall(core::_sym_bt->symbolFunction());
 };

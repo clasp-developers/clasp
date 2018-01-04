@@ -235,7 +235,14 @@ void ignore_pushBlockFrame()
 }
 
 
-gctools::return_type ignore_blockHandleReturnFrom(unsigned char *exceptionP) {
+gctools::return_type ignore_blockHandleReturnFrom(unsigned char *exceptionP, size_t frame) {
+#if 1
+  core::ReturnFrom &returnFrom = (core::ReturnFrom &)*((core::ReturnFrom *)(exceptionP));
+  if (returnFrom.getFrame() == frame) {
+    printf("%s:%d There is a serious problem - an ignore_blockHandleReturnFrom expecting frame %lu recieved a returnFrom with frame %lu - no such returnFrom should be sent - the block/return-from optimization is broken\n", __FILE__, __LINE__, frame, returnFrom.getFrame());
+    abort();
+  }
+#endif
   throw;
 }
 

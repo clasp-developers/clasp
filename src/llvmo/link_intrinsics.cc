@@ -995,10 +995,17 @@ void throwReturnFrom(core::T_O* blockSymbolP) {
   ASSERT(blockSymbolP != NULL);
   core::T_sp blockSymbol((gctools::Tagged)blockSymbolP);
   int frame = my_thread->exceptionStack().findKey(BlockFrame, blockSymbol);
+#if defined(DEBUG_FLOW_CONTROL) || defined(DEBUG_RETURN_FROM)
+  if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
+    printf("About to throw core::ReturnFrom exception frame[%d] for block symbol %s\n", frame, _rep_(blockSymbol).c_str());
+    if (core::_sym_STARdebugFlowControlSTAR->symbolValue() == kw::_sym_verbose )
+      printf("   %s\n", my_thread->exceptionStack().summary().c_str());
+  }
+#endif
   if (frame < 0) {
     CONTROL_ERROR();
   }
-#ifdef DEBUG_FLOW_CONTROL
+#if defined(DEBUG_FLOW_CONTROL) || defined(DEBUG_RETURN_FROM)
   if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
     printf("Throwing core::ReturnFrom exception frame[%d]\n", frame);
     if (core::_sym_STARdebugFlowControlSTAR->symbolValue() == kw::_sym_verbose )
@@ -1014,12 +1021,25 @@ extern "C" {
 
 gctools::return_type blockHandleReturnFrom(unsigned char *exceptionP, size_t frame) {
   core::ReturnFrom &returnFrom = (core::ReturnFrom &)*((core::ReturnFrom *)(exceptionP));
-  if (returnFrom.getFrame() == frame) {
-    core::MultipleValues &mv = core::lisp_multipleValues();
-    gctools::return_type result(mv.operator[](0),mv.getSize());
-    return result;
+  if (returnFrom.getFrame() >= frame) {
+    if (returnFrom.getFrame() == frame ) {
+#if defined(DEBUG_FLOW_CONTROL) || defined(DEBUG_RETURN_FROM)
+      if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
+        printf("Caught core::ReturnFrom exception frame[%d]\n", returnFrom.getFrame());
+        if (core::_sym_STARdebugFlowControlSTAR->symbolValue() == kw::_sym_verbose )
+          printf("   %s\n", my_thread->exceptionStack().summary().c_str());
+      }
+#endif
+      core::MultipleValues &mv = core::lisp_multipleValues();
+      gctools::return_type result(mv.operator[](0),mv.getSize());
+      return result;
+    }
+    printf("%s:%d a return-from targetting frame %d has missed its target - it reached %" PRsize_t "\n", __FILE__, __LINE__, returnFrom.getFrame(), frame );
+    printf("    %s\n", my_thread->exceptionStack().summary().c_str()) ;
+    printf("Aborting...\n");
+    abort();
   }
-#ifdef DEBUG_FLOW_CONTROL
+#if defined(DEBUG_FLOW_CONTROL) || defined(DEBUG_RETURN_FROM)
   if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
     printf("Re-throwing core::ReturnFrom exception frame[%d]\n", returnFrom.getFrame());
     if (core::_sym_STARdebugFlowControlSTAR->symbolValue() == kw::_sym_verbose )
@@ -1116,7 +1136,7 @@ void mv_ifCatchFrameMatchesStoreResultElseRethrow(core::T_mv *resultP, size_t ca
 extern "C" {
 void exceptionStackUnwind(size_t frame)
 {NO_UNWIND_BEGIN();
-#ifdef DEBUG_FLOW_CONTROL
+#if defined(DEBUG_FLOW_CONTROL)||defined(DEBUG_RETURN_FROM)
   if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
     printf("Unwinding to exception frame[%lu]\n", frame);
   }
