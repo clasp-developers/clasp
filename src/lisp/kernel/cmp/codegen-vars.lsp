@@ -255,10 +255,10 @@
                          (llvm-sys:replace-call (block-frame-maker-push-frame-instruction block-info)
                                                 the-push-function
                                                 nil)
-                         (mapc (lambda (handle-instr argument)
+                         (mapc (lambda (handle-instr arguments)
                                  (llvm-sys:replace-call handle-instr
                                                         the-handle-function
-                                                        (list argument)))
+                                                        arguments))
                                (block-frame-maker-handle-instructions block-info)
                                (block-frame-maker-handle-arguments block-info))
                          (dolist (pop-instr (block-frame-maker-pop-frame-instructions block-info))
@@ -359,7 +359,7 @@
              (rewrite-lexical-variable-references-for-new-depth ,variable-map *lexical-variable-references*)
              ;; Rewrite pushBlockFrame instructions to ignore those that don't have return-froms
              (cv-log "rewrite-blocks-with-no-return-froms \n")
-             (rewrite-blocks-with-no-return-froms *block-frame-info*)
+             #+(or)(rewrite-blocks-with-no-return-froms *block-frame-info*)
              ;; Rewrite lexicalDynamicGo instructions to take into account the newly invisible environments
              (cv-log "rewrite-dynamic-go-for-new-depth \n")
              (rewrite-dynamic-go-for-new-depth *throw-dynamic-go-instructions*)
