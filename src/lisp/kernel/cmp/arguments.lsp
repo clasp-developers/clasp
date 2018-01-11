@@ -531,7 +531,7 @@
                         (let* ((info (assoc datum output-bindings))
                                (symbol (car info))
                                (index (cdr info))
-                               (ref (codegen-lexical-var-reference symbol 0 index new-env)))
+                               (ref (codegen-lexical-var-reference symbol 0 index new-env new-env)))
 ;;;(bformat *debug-io* "translate-datum %s -> %s\n" datum ref)
                           ref)))
     new-env))

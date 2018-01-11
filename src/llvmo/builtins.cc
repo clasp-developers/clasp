@@ -89,7 +89,7 @@ BUILTIN_ATTRIBUTES core::T_sp *symbolValueReference(core::T_sp *symbolP)
 #endif
 
 
-BUILTIN_ATTRIBUTES core::T_sp *lexicalValueReference(int depth, int index, core::ActivationFrame_O *frameP)
+BUILTIN_ATTRIBUTES core::T_sp *lexicalValueReference(size_t depth, size_t index, core::ActivationFrame_O *frameP)
 {
   core::ActivationFrame_sp af((gctools::Tagged)frameP);
   return const_cast<core::T_sp *>(&core::value_frame_lookup_reference(af, depth, index));
@@ -151,6 +151,15 @@ BUILTIN_ATTRIBUTES core::T_O* invisible_makeValueFrameSetParent(core::T_O* paren
   return parent;
 }
 
+BUILTIN_ATTRIBUTES core::T_O* invisible_makeBlockFrameSetParent(core::T_O* parent) {
+  return parent;
+}
+
+BUILTIN_ATTRIBUTES core::T_O* invisible_makeTagbodyFrameSetParent(core::T_O* parent) {
+  return parent;
+}
+
+#if 0
 BUILTIN_ATTRIBUTES core::T_O* invisible_makeValueFrameSetParentFromClosure(core::T_O* closureRaw) {
   if (closureRaw!=NULL) {
     core::Closure_O* closureP = reinterpret_cast<core::Closure_O*>(gc::untag_general<core::T_O*>(closureRaw));
@@ -160,6 +169,7 @@ BUILTIN_ATTRIBUTES core::T_O* invisible_makeValueFrameSetParentFromClosure(core:
     return _Nil<core::T_O>().raw_();
   }
 }
+#endif
 
 
 /*! Return i32 1 if (valP) is != unbound 0 if it is */
@@ -229,17 +239,24 @@ BUILTIN_ATTRIBUTES core::T_O* cc_builtin_nil()
 
 
 extern "C" {
-void ignore_pushBlockFrame()
+core::T_O* ignore_initializeBlockClosure( core::T_O** dummy)
 {
-// Do nothing
+// Do nothing but return NULL which will never match a handle
+  return NULL;
+}
+
+core::T_O* ignore_initializeTagbodyClosure(core::T_O** dummy)
+{
+// Do nothing but return NULL which will never match a handle
+  return NULL;
 }
 
 
-gctools::return_type ignore_blockHandleReturnFrom(unsigned char *exceptionP, size_t frame) {
+gctools::return_type ignore_blockHandleReturnFrom(unsigned char *exceptionP, core::T_O* handle) {
 #if 1
   core::ReturnFrom &returnFrom = (core::ReturnFrom &)*((core::ReturnFrom *)(exceptionP));
-  if (returnFrom.getFrame() == frame) {
-    printf("%s:%d There is a serious problem - an ignore_blockHandleReturnFrom expecting frame %lu recieved a returnFrom with frame %lu - no such returnFrom should be sent - the block/return-from optimization is broken\n", __FILE__, __LINE__, frame, returnFrom.getFrame());
+  if (returnFrom.getHandle() == handle) {
+    printf("%s:%d There is a serious problem - an ignore_blockHandleReturnFrom expecting frame %p recieved a returnFrom with frame %p - no such returnFrom should be sent - the block/return-from optimization is broken\n", __FILE__, __LINE__, handle, returnFrom.getHandle());
     abort();
   }
 #endif

@@ -296,36 +296,6 @@ ALWAYS_INLINE gc::return_type cc_call_callback(LCC_ARGS_CC_CALL_ELLIPSIS) {
 }
 
 
-ALWAYS_INLINE T_O* makeTagbodyFrameSetParent(T_O* parentP)
-{NO_UNWIND_BEGIN();
-  core::TagbodyFrame_sp tagbodyFrame(core::TagbodyFrame_O::create(_Nil<core::T_O>()));
-  tagbodyFrame->setParentFrame(parentP);
-  return tagbodyFrame.raw_();
-  NO_UNWIND_END();
-}
-
-
-ALWAYS_INLINE core::T_O* makeValueFrame( size_t numargs)
-{NO_UNWIND_BEGIN();
-  core::ValueFrame_sp valueFrame(core::ValueFrame_O::create(numargs, _Nil<core::T_O>()));
-//  valueFrame->setEnvironmentId(id);   // I don't use id anymore
-  return valueFrame.raw_();
-  NO_UNWIND_END();
-}
-
-#if 0
-ALWAYS_INLINE core::T_sp *valueFrameReference(core::ActivationFrame_sp *frameP, int idx)
-{NO_UNWIND_BEGIN();
-  ASSERT(frameP != NULL);
-  ASSERT((*frameP));
-  ASSERTF(idx >= 0 && idx < ((*frameP)->length()), BF("Illegal value of idx[%d] must be in range [0<=idx<%d]") % idx % (*frameP)->length());
-  core::ValueFrame_sp frame = gctools::As_unsafe<core::ValueFrame_sp>(*frameP);
-  core::T_sp *pos_gc_safe = const_cast<core::T_sp *>(&frame->entryReference(idx));
-  return pos_gc_safe;
-  NO_UNWIND_END();
-}
-#endif
-
 ALWAYS_INLINE size_t cc_allowOtherKeywords(size_t saw_aok, core::T_O *kw_arg)
 {NO_UNWIND_BEGIN();
   if (saw_aok) return saw_aok;
@@ -441,7 +411,7 @@ ALWAYS_INLINE char *cc_getPointer(core::T_O *pointer_object)
 };
 
 extern "C" {
-
+#if 0
 ALWAYS_INLINE core::T_O* makeValueFrameSetParentFromClosure(size_t numargs, core::T_O* closureRaw)
 {NO_UNWIND_BEGIN();
 //  valueFrame->setEnvironmentId(id);   // I don't use id anymore
@@ -459,6 +429,7 @@ ALWAYS_INLINE core::T_O* makeValueFrameSetParentFromClosure(size_t numargs, core
   return valueFrame.raw_();
   NO_UNWIND_END();
 }
+#endif
 
 ALWAYS_INLINE void setParentOfActivationFrameFromClosure(core::T_O *resultP, core::T_O *closureRaw)
 {NO_UNWIND_BEGIN();
@@ -482,6 +453,24 @@ ALWAYS_INLINE core::T_O* makeValueFrameSetParent(size_t numargs, core::T_O *pare
 {NO_UNWIND_BEGIN();
 //  valueFrame->setEnvironmentId(id);   // I don't use id anymore
   core::ValueFrame_sp valueFrame(core::ValueFrame_O::create(numargs, _Nil<core::T_O>()));
+  valueFrame->setParentFrame(parentP);
+  return valueFrame.raw_();
+  NO_UNWIND_END();
+}
+
+ALWAYS_INLINE core::T_O* makeBlockFrameSetParent(core::T_O *parentP)
+{NO_UNWIND_BEGIN();
+//  valueFrame->setEnvironmentId(id);   // I don't use id anymore
+  core::ValueFrame_sp valueFrame(core::ValueFrame_O::create(1, _Nil<core::T_O>()));
+  valueFrame->setParentFrame(parentP);
+  return valueFrame.raw_();
+  NO_UNWIND_END();
+}
+
+ALWAYS_INLINE core::T_O* makeTagbodyFrameSetParent(core::T_O *parentP)
+{NO_UNWIND_BEGIN();
+//  valueFrame->setEnvironmentId(id);   // I don't use id anymore
+  core::ValueFrame_sp valueFrame(core::ValueFrame_O::create(1, _Nil<core::T_O>()));
   valueFrame->setParentFrame(parentP);
   return valueFrame.raw_();
   NO_UNWIND_END();

@@ -1086,7 +1086,11 @@ T_mv sp_step(List_sp args, T_sp env) {
 T_mv sp_tagbody(List_sp args, T_sp env) {
   ASSERT(env.generalp());
   TagbodyEnvironment_sp tagbodyEnv = TagbodyEnvironment_O::make(env);
-  //
+  ValueFrame_sp vframe = tagbodyEnv->getActivationFrame();
+  Cons_sp thandle = Cons_O::create(_Nil<T_O>(),_Nil<T_O>());
+  vframe->operator[](0) = thandle;
+  T_O* handle = thandle.raw_();
+ //
   // Find all the tags and tell the TagbodyEnvironment where they are in the list of forms.
   //
   for (auto cur : args) {
@@ -1098,8 +1102,6 @@ T_mv sp_tagbody(List_sp args, T_sp env) {
     }
   }
   LOG(BF("sp_tagbody has extended the environment to: %s") % tagbodyEnv->__repr__());
-  T_sp tagbodyId = gc::As<TagbodyFrame_sp>(Environment_O::clasp_getActivationFrame(tagbodyEnv));
-  int frame = my_thread->exceptionStack().push(TagbodyFrame, tagbodyId);
   // Start to evaluate the tagbody
   List_sp ip = args;
   while (ip.consp()) {
@@ -1108,13 +1110,13 @@ T_mv sp_tagbody(List_sp args, T_sp env) {
       try {
         eval::evaluate(tagOrForm, tagbodyEnv);
       } catch (LexicalGo &go) {
-        if (go.getFrame() != frame) {
+        if (go.getHandle() != handle) {
           throw go;
         }
         int index = go.index();
         ip = tagbodyEnv->codePos(index);
       } catch (DynamicGo &dgo) {
-        if (dgo.getFrame() != frame) {
+        if (dgo.getHandle() != handle) {
           throw dgo;
         }
         int index = dgo.index();
@@ -1124,7 +1126,6 @@ T_mv sp_tagbody(List_sp args, T_sp env) {
     ip = CONS_CDR(ip);
   }
   LOG(BF("Leaving sp_tagbody"));
-  my_thread->exceptionStack().unwind(frame);
   return Values0<T_O>();
 };
 
@@ -1139,16 +1140,10 @@ DONT_OPTIMIZE_WHEN_DEBUG_RELEASE T_mv sp_go(List_sp args, T_sp env) {
   if (!foundTag) {
     SIMPLE_ERROR(BF("Could not find tag[%s] in the lexical environment: %s") % _rep_(tag) % _rep_(env));
   }
-  ActivationFrame_sp af = Environment_O::clasp_getActivationFrame(env);
-  if (!gc::IsA<ActivationFrame_sp>(af)) {
-    SIMPLE_ERROR(BF("in sp_go environment does not have activation frame"));
-  }
+  ValueFrame_sp af = Environment_O::clasp_getActivationFrame(env);
+  T_sp thandle = af->operator[](0);
   T_sp tagbodyId = core::tagbody_frame_lookup(af,depth,index);
-  int frame = my_thread->exceptionStack().findKey(TagbodyFrame, tagbodyId);
-  if (frame < 0) {
-    SIMPLE_ERROR(BF("Could not find tagbody frame for tag %s") % _rep_(tag));
-  }
-  DynamicGo go(frame, index);
+  DynamicGo go(thandle.raw_(), index);
   throw go;
 }
 };
@@ -1341,43 +1336,64 @@ T_mv sp_block(List_sp args, T_sp environment) {
   ASSERT(environment.generalp());
   Symbol_sp blockSymbol = gc::As<Symbol_sp>(oCar(args));
   BlockEnvironment_sp newEnvironment = BlockEnvironment_O::make(blockSymbol, environment);
-  int frame = my_thread->exceptionStack().push(BlockFrame, blockSymbol);
+  ValueFrame_sp vframe = newEnvironment->getActivationFrame();
+  Cons_sp handle = Cons_O::create(_Nil<T_O>(),_Nil<T_O>());
+  vframe->operator[](0) = handle;
   LOG(BF("sp_block has extended the environment to: %s") % newEnvironment->__repr__());
   T_mv result;
   try {
     result = eval::sp_progn(oCdr(args), newEnvironment);
   } catch (ReturnFrom &returnFrom) {
     LOG(BF("Caught ReturnFrom with returnFrom.getBlockDepth() ==> %d") % returnFrom.getBlockDepth());
-    if (returnFrom.getFrame() != frame) // Symbol() != newEnvironment->getBlockSymbol() )
-    {
+    if (returnFrom.getHandle() != handle.raw_() ) {
       throw returnFrom;
     }
     result = gctools::multiple_values<T_O>::createFromValues(); // returnFrom.getReturnedObject();
   }
   LOG(BF("Leaving sp_block"));
-  my_thread->exceptionStack().unwind(frame);
   return result;
 }
 
 T_mv sp_returnFrom(List_sp args, T_sp environment) {
   ASSERT(environment.generalp());
   Symbol_sp blockSymbol = gc::As<Symbol_sp>(oCar(args));
-  int frame = my_thread->exceptionStack().findKey(BlockFrame, blockSymbol);
-  if (frame < 0) {
-    SIMPLE_ERROR(BF("Could not find block named %s in lexical environment: %s") % _rep_(blockSymbol) % _rep_(environment));
-  }
+  int depth = 0;
+  bool interFunction = false;
+  T_sp tblockEnv = _Nil<T_O>();
+  Environment_O::clasp_findBlock(environment,blockSymbol,depth,interFunction,tblockEnv);
+  BlockEnvironment_sp blockEnv = gc::As_unsafe<BlockEnvironment_sp>(tblockEnv);
   T_mv result = Values(_Nil<T_O>());
-  if (oCdr(args).notnilp()) {
-    result = eval::evaluate(oCadr(args), environment);
-  }
+  if (oCdr(args).notnilp()) result = eval::evaluate(oCadr(args), environment);
   result.saveToMultipleValue0();
-  ReturnFrom returnFrom(frame);
+  ReturnFrom returnFrom(gc::As_unsafe<ValueFrame_sp>(blockEnv->getActivationFrame())->operator[](0).raw_());
   throw returnFrom;
 }
 
+struct RaiiUnwindProtect {
+  T_sp cleanup_fn;
+  T_sp environment;
+  RaiiUnwindProtect(T_sp cleanup,T_sp env) : cleanup_fn(cleanup), environment(env) {};
+  ~RaiiUnwindProtect() {
+// Save any return value that may be in the multiple value return array
+    gctools::Vec0<T_sp> savemv;
+    T_mv tresult;
+    tresult.readFromMultipleValue0();
+    tresult.saveToVec0(savemv);
+    eval::sp_progn(this->cleanup_fn,this->environment);
+#if 1 // See comment above about 22a8d7b1
+    tresult.loadFromVec0(savemv);
+    tresult.saveToMultipleValue0();
+#endif
+  };
+};
+
 T_mv sp_unwindProtect(List_sp args, T_sp environment) {
   ASSERT(environment.generalp());
-  T_mv result = Values(_Nil<T_O>());
+  T_sp protected_fn = oCar(args);
+  T_sp cleanup_fn = oCdr(args);
+  RaiiUnwindProtect cleanup(cleanup_fn,environment);
+  return eval::evaluate(protected_fn, environment);
+#if 0
   gc::Vec0<core::T_sp> save;
   try {
     // Evaluate the protected form
@@ -1398,6 +1414,7 @@ T_mv sp_unwindProtect(List_sp args, T_sp environment) {
   // Restore the return values
   result.loadFromVec0(save);
   return result;
+#endif
 }
 
 T_mv sp_catch(List_sp args, T_sp environment) {
@@ -2073,7 +2090,7 @@ struct InterpreterTrace {
   };
 };
 
-T_mv evaluate(T_sp exp, T_sp environment) {
+DONT_OPTIMIZE_WHEN_DEBUG_RELEASE T_mv evaluate(T_sp exp, T_sp environment) {
   //	    Environment_sp localEnvironment = environment;
   //            printf("%s:%d evaluate %s environment@%p\n", __FILE__, __LINE__, _rep_(exp).c_str(), environment.raw_());
   //            printf("    environment: %s\n", _rep_(environment).c_str() );

@@ -106,13 +106,22 @@
     (values exn.slot ehselector.slot)))
 
 
-
+#+(or)
 (defmacro with-catch ((exn.slot exception-ptr) &rest body)
   (let ((exn-gs (gensym)))
     `(let* ((,exn-gs (llvm-sys:create-load-value-twine *irbuilder* ,exn.slot "exn"))
 	    (,exception-ptr (irc-intrinsic "__cxa_begin_catch" ,exn-gs)))
        ,@body
        (irc-intrinsic "__cxa_end_catch"))))
+
+(defmacro with-catch ((exn.slot exception-ptr) &rest body)
+  (let ((exn-gs (gensym)))
+    `(let ((,exn-gs (llvm-sys:create-load-value-twine *irbuilder* ,exn.slot "exn")))
+       (unwind-protect
+            (let ((,exception-ptr (irc-intrinsic "__cxa_begin_catch" ,exn-gs)))
+              ,@body)
+         (irc-intrinsic "__cxa_end_catch")))))
+
 
 
 #|
@@ -319,10 +328,27 @@
     new-env))
 
 
-(defun irc-new-block-environment (old-env &key name)
-  (let ((new-env (make-block-environment name old-env)))
-    new-env))
 
+(defun irc-make-block-environment-set-parent (name parent-env)
+  (let* ((block-env (make-block-environment name parent-env))
+         (new-renv (irc-alloca-af* block-env :label "block-renv"))
+         (size (jit-constant-size_t 1))
+         (visible-ancestor-environment (current-visible-environment parent-env t))
+         (parent-renv-ref (if (core:function-container-environment-p visible-ancestor-environment)
+                              (let ((closure (core:function-container-environment-closure visible-ancestor-environment)))
+                                (irc-intrinsic "activationFrameReferenceFromClosure" closure))
+                              (irc-renv visible-ancestor-environment)))
+         (parent-renv (irc-load parent-renv-ref))
+         (instr (irc-intrinsic "makeBlockFrameSetParent" parent-renv)))
+    (irc-store instr new-renv)
+    (irc-set-renv block-env new-renv)
+    (values block-env instr (list parent-renv))))
+
+(defun irc-new-block-environment (old-env &key name)
+  (let* ((block-env (make-block-environment name old-env))
+         (block-renv (irc-make-block-frame-set-parent block-env old-env)))
+    (irc-set-renv block-env block-renv)
+    block-env))
 
 (defun irc-new-catch-environment (old-env)
   (make-catch-environment old-env))
@@ -355,16 +381,22 @@
                                 (irc-intrinsic "activationFrameReferenceFromClosure" closure))
                               (irc-renv visible-ancestor-environment)))
          (parent-renv (irc-load parent-renv-ref))
-         (instr (irc-intrinsic "makeValueFrameSetParent" size parent-renv)))
+         (instr (irc-intrinsic "makeValueFrameSetParent" size parent-renv))
+         #+debug-lexical-depth(frame-unique-id (gctools:next-lexical-depth-counter))
+         #+debug-lexical-depth(set-frame-unique-id (progn 
+                                                     (irc-intrinsic "setFrameUniqueId" (jit-constant-size_t frame-unique-id) instr))))
     #+optimize-bclasp
-    (push (make-value-frame-maker-reference :instruction instr
+    (setf (gethash new-env *make-value-frame-instructions*)
+          (make-value-frame-maker-reference :instruction instr
                                             :new-env new-env
                                             :new-renv new-renv
                                             :parent-env visible-ancestor-environment
-                                            :parent-renv parent-renv)
-          *make-value-frame-instructions*)
+                                            :parent-renv parent-renv
+                                            #+debug-lexical-depth :frame-unique-id #+debug-lexical-depth frame-unique-id
+                                            #+debug-lexical-depth :set-frame-unique-id #+debug-lexical-depth (list set-frame-unique-id (list (jit-constant-size_t frame-unique-id) instr))))
     (irc-store instr new-renv)
     instr))
+
 
 (defun irc-set-parent (new-renv parent-env)
   (let ((visible-ancestor-environment (current-visible-environment parent-env t)))

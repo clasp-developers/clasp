@@ -61,7 +61,6 @@ namespace core {
 
 CL_LAMBDA(env sym);
 CL_DECLARE();
-CL_DOCSTRING("classifyReturnFromSymbol");
 CL_DEFUN T_mv core__classify_return_from_symbol(T_sp env, Symbol_sp sym) {
   bool interFunction = false;
   return Environment_O::clasp_recognizesBlockSymbol(env, sym, interFunction);
@@ -536,7 +535,7 @@ T_sp Environment_O::clasp_find_current_code_environment(T_sp env) {
   
 T_mv Environment_O::clasp_recognizesBlockSymbol(T_sp env, Symbol_sp sym, bool &interFunction) {
   if (env.nilp()) {
-    return Values(_Nil<T_O>(), _Nil<T_O>(), _Nil<T_O>());
+    return Values(_Nil<T_O>(), _Nil<T_O>(), _Nil<T_O>(), _Nil<T_O>());
   } else if (Environment_sp eenv = env.asOrNull<Environment_O>()) {
     return eenv->recognizesBlockSymbol(sym, interFunction);
   }
@@ -544,6 +543,7 @@ T_mv Environment_O::clasp_recognizesBlockSymbol(T_sp env, Symbol_sp sym, bool &i
 }
 
 int Environment_O::clasp_getBlockSymbolFrame(T_sp env, Symbol_sp sym) {
+  DEPRECATED();
   if (env.nilp()) {
     SIMPLE_ERROR(BF("Could not find block symbol frame for %s") % _rep_(sym));
   } else if (Environment_sp eenv = env.asOrNull<Environment_O>()) {
@@ -571,6 +571,7 @@ T_sp Environment_O::clasp_find_tagbody_tag_environment(T_sp env, Symbol_sp tag) 
 }
 
 T_sp Environment_O::clasp_find_block_named_environment(T_sp env, Symbol_sp blockName) {
+  DEPRECATED();
   if (env.nilp()) {
     SIMPLE_ERROR(BF("Could not find block named environment with name[%s]") % _rep_(blockName));
   } else if (Environment_sp eenv = env.asOrNull<Environment_O>()) {
@@ -639,11 +640,11 @@ CL_DEFMETHOD List_sp Environment_O::classifyVariable(T_sp sym) const {
 
 CL_LISPIFY_NAME("classifyTag");
 CL_DEFMETHOD List_sp Environment_O::classifyTag(Symbol_sp tag) {
-  int depth;
-  int index;
-  bool interFunction;
-  T_sp tagbodyEnv;
-  if (this->findTag(tag, depth, index, interFunction, tagbodyEnv)) {
+  int depth = 0;
+  int index = 0;
+  bool interFunction = false;
+  T_sp tagbodyEnv = _Nil<T_O>();
+  if (this->_findTag(tag, depth, index, interFunction, tagbodyEnv)) {
     if (interFunction) {
       return Cons_O::createList(_sym_dynamicGo, make_fixnum(depth), make_fixnum(index), tagbodyEnv);
     } else {
@@ -719,13 +720,21 @@ bool Environment_O::_findTag(Symbol_sp sym, int &depth, int &index, bool &interF
   return clasp_findTag(this->getParentEnvironment(), sym, depth, index, interFunction, tagbodyEnv);
 }
 
-bool Environment_O::findTag(Symbol_sp sym, int &depth, int &index, bool &interFunction, T_sp &tagbodyEnv) const {
-  depth = 0;
-  index = 0;
-  interFunction = false;
-  tagbodyEnv = _Nil<T_O>();
-  return this->_findTag(sym, depth, index, interFunction, tagbodyEnv);
+
+bool Environment_O::clasp_findBlock(T_sp env, Symbol_sp sym, int &depth, bool &interFunction, T_sp &blockEnv) {
+  if (env.nilp()) return false;
+  if (Environment_sp eenv = env.asOrNull<Environment_O>()) {
+    return eenv->_findBlock(sym, depth, interFunction, blockEnv);
+  }
+  NOT_ENVIRONMENT_ERROR(env);
 }
+
+bool Environment_O::_findBlock(Symbol_sp sym, int &depth, bool &interFunction, T_sp &blockEnv) const {
+  return clasp_findBlock(this->getParentEnvironment(), sym, depth, interFunction, blockEnv);
+}
+
+
+
 
 CL_LISPIFY_NAME("countFunctionContainerEnvironments");
 CL_DEFMETHOD int Environment_O::countFunctionContainerEnvironments() const {
@@ -875,6 +884,12 @@ bool RuntimeVisibleEnvironment_O::_findTag(Symbol_sp sym, int &depth, int &index
   T_sp parent = this->getParentEnvironment(); // clasp_currentVisibleEnvironment(this->getParentEnvironment());
   if (!this->_Invisible) ++depth;
   return clasp_findTag(parent, sym, depth, index, interFunction, tagbodyEnv);
+}
+
+bool RuntimeVisibleEnvironment_O::_findBlock(Symbol_sp sym, int &depth, bool &interFunction, T_sp &blockEnv) const {
+  T_sp parent = this->getParentEnvironment(); // clasp_currentVisibleEnvironment(this->getParentEnvironment());
+  if (!this->_Invisible) ++depth;
+  return clasp_findBlock(parent, sym, depth, interFunction, blockEnv);
 }
 
 bool RuntimeVisibleEnvironment_O::_findValue(T_sp sym, int &depth, int &index, bool& crossesFunction, ValueKind &valueKind, T_sp &value, T_sp& env) const {
@@ -1372,6 +1387,9 @@ CL_LISPIFY_NAME(makeBlockEnvironment);
 CL_DEFUN BlockEnvironment_sp BlockEnvironment_O::make(Symbol_sp blockSymbol, T_sp parent) {
   BlockEnvironment_sp environ = BlockEnvironment_O::create(parent);
   environ->setBlockSymbol(blockSymbol);
+  environ->_Invisible = false;
+  if (!environ->_Invisible) environ->_ActivationFrame = ValueFrame_O::create(1,clasp_getActivationFrame(clasp_currentVisibleEnvironment(parent,false)));
+  else environ->_ActivationFrame = clasp_getActivationFrame(clasp_currentVisibleEnvironment(parent,false));
   return environ;
 }
 
@@ -1403,6 +1421,26 @@ T_sp BlockEnvironment_O::find_block_named_environment(Symbol_sp blockName) const
   if (this->getBlockSymbol() == blockName)
     return this->const_sharedThis<BlockEnvironment_O>();
   return clasp_find_block_named_environment(this->getParentEnvironment(), blockName);
+}
+
+bool BlockEnvironment_O::_findBlock(Symbol_sp sym, int &depth, bool &interFunction, T_sp &blockEnv) const {
+  //	printf("%s:%d searched through BlockEnvironment_O\n", __FILE__, __LINE__ );
+  if (!this->_Invisible) {
+    if (sym == this->_BlockSymbol) {
+      blockEnv = this->asSmartPtr();
+      return true;
+    }
+    if (this->getParentEnvironment().nilp()) {
+      return false;
+    }
+    ++depth;
+  }
+  return clasp_findBlock(this->getParentEnvironment(), sym, depth, interFunction, blockEnv);
+}
+
+T_sp BlockEnvironment_O::getActivationFrame() const {
+  //	if ( this -> isNil()) return _Nil<ActivationFrame_O>();
+  return this->_ActivationFrame;
 }
 
 T_mv BlockEnvironment_O::recognizesBlockSymbol(Symbol_sp sym, bool &interFunction) const {
@@ -1508,6 +1546,16 @@ bool FunctionContainerEnvironment_O::_findTag(Symbol_sp sym, int &depth, int &in
   return clasp_findTag(this->getParentEnvironment(), sym, depth, index, interFunction, tagbodyEnv);
 }
 
+bool FunctionContainerEnvironment_O::_findBlock(Symbol_sp sym, int &depth, bool &interFunction, T_sp &blockEnv) const {
+  // We are crossing a function boundary - set interFunction to true
+  //	printf("%s:%d searched through FunctionContainerEnvironment_O\n", __FILE__, __LINE__ );
+  interFunction = true;
+  if (this->getParentEnvironment().nilp()) {
+    return false;
+  }
+  return clasp_findBlock(this->getParentEnvironment(), sym, depth, interFunction, blockEnv);
+}
+
 bool FunctionContainerEnvironment_O::_findValue(T_sp sym, int &depth, int &index, bool& crossesFunction, ValueKind &valueKind, T_sp &value, T_sp& env) const {
   // We are crossing a function boundary - set interFunction to true
   //	printf("%s:%d searched through FunctionContainerEnvironment_O\n", __FILE__, __LINE__ );
@@ -1545,19 +1593,18 @@ CL_LISPIFY_NAME(makeTagbodyEnvironment);
 CL_DEFUN TagbodyEnvironment_sp TagbodyEnvironment_O::make(T_sp parent) {
   TagbodyEnvironment_sp environ = TagbodyEnvironment_O::create();
   environ->setupParent(parent);
-  environ->_ActivationFrame = TagbodyFrame_O::create(clasp_getActivationFrame(clasp_currentVisibleEnvironment(parent,false)));
+  environ->_Invisible = false;
+  environ->_ActivationFrame = ValueFrame_O::create(1,clasp_getActivationFrame(clasp_currentVisibleEnvironment(parent,false)));
   return environ;
 }
-
-
-
 
 
 
 string TagbodyEnvironment_O::summaryOfContents() const {
   int tab = unbox_fixnum(gc::As<Fixnum_sp>(_sym_STARenvironmentPrintingTabSTAR->symbolValue()));
   stringstream ss;
-  ss << ":tagbody-id " << (void *)(gc::As<TagbodyFrame_sp>(this->getActivationFrame()).get()) << std::endl;
+  ValueFrame_sp vf = gc::As<ValueFrame_sp>(this->getActivationFrame());
+    ss << ":tagbody-id " << (void*)vf->operator[](0).raw_() << std::endl;
   this->_Tags->mapHash([tab, &ss](T_sp key, T_sp value) {
                 ss << string(tab,' ') << " :tag " << _rep_(key) << std::endl;
   });

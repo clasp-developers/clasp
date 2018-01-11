@@ -52,6 +52,9 @@ class ActivationFrame_O : public Environment_O {
   LISP_ABSTRACT_CLASS(core, CorePkg, ActivationFrame_O, "ActivationFrame",Environment_O);
  public:
   T_sp _Parent;
+#ifdef DEBUG_LEXICAL_DEPTH
+  size_t _UniqueId;
+#endif
 public:
   static string clasp_asString(T_sp af);
   T_sp &parentFrameRef_() { return this->_Parent; };
@@ -319,6 +322,7 @@ public:
 };
 };
 
+#if 0
 namespace core {
 class TagbodyFrame_O : public ActivationFrame_O {
   LISP_CLASS(core, CorePkg, TagbodyFrame_O, "TagbodyFrame",ActivationFrame_O);
@@ -346,12 +350,21 @@ struct gctools::GCInfo<core::TagbodyFrame_O> {
   static bool const NeedsFinalization = false;
   static GCInfo_policy constexpr Policy = normal;
 };
-
+#endif
 
 namespace core {
   void error_frame_range(const char* type, int index, int capacity );
   void error_end_of_frame_list(const char* message);
 
+  inline ALWAYS_INLINE ActivationFrame_sp value_frame_lookup(ActivationFrame_sp af, int depth)
+  {
+    while (true) {
+      if (depth == 0 ) return af;
+      --depth;
+      af = af->_Parent;
+    }
+  };
+  
   inline ALWAYS_INLINE T_sp& value_frame_lookup_reference(ActivationFrame_sp activationFrame, int depth, int index )
   {
     while (true) {
@@ -392,8 +405,8 @@ namespace core {
   {
     while (true) {
       if ( depth == 0 ) {
-        if (activationFrame.isA<TagbodyFrame_O>()) {
-          TagbodyFrame_sp tf = gc::reinterpret_cast_smart_ptr<TagbodyFrame_O,T_O>(activationFrame);
+        if (activationFrame.isA<ValueFrame_O>()) {
+          ValueFrame_sp tf = gc::reinterpret_cast_smart_ptr<ValueFrame_O,T_O>(activationFrame);
           return tf;
         }
         error_end_of_frame_list("TagbodyFrame");

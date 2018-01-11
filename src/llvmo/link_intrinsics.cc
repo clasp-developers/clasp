@@ -38,6 +38,7 @@ extern "C" {
 #include <clasp/core/common.h>
 #include <clasp/core/bignum.h>
 #include <clasp/core/functor.h>
+#include <clasp/gctools/gcFunctions.h>
 #include <clasp/core/character.h>
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/array.h>
@@ -639,7 +640,7 @@ extern void sp_copyTmv(core::T_sp *destP, core::T_mv *sourceP)
 extern "C" {
 
 
-core::T_O* makeCompiledFunction(fnLispCallingConvention funcPtr,
+DONT_OPTIMIZE_WHEN_DEBUG_RELEASE core::T_O* makeCompiledFunction(fnLispCallingConvention funcPtr,
                                 int *sourceFileInfoHandleP,
                                 size_t filePos,
                                 size_t lineno,
@@ -959,6 +960,40 @@ void debugSymbolValue(core::Symbol_sp sym) {
 void debugPrintI32(int i32)
 {NO_UNWIND_BEGIN();
   printf("+++DBG-I32[%d]\n", i32);
+  fflush(stdout);
+  NO_UNWIND_END();
+}
+
+void debugPrint_blockFrame(core::T_O* handle)
+{NO_UNWIND_BEGIN();
+#if defined(DEBUG_FLOW_TRACKER)
+  Cons_sp frameHandleCons((gc::Tagged)handle);
+  Fixnum frameFlowCounter = CONS_CAR(frameHandleCons).unsafe_fixnum();
+  printf("%s:%d debugPrint_blockFrame handle %p   FlowCounter %" PFixnum "\n", __FILE__, __LINE__, handle, frameFlowCounter );
+#else
+  printf("%s:%d debugPrint_blockFrame handle %p\n", __FILE__, __LINE__, handle );
+#endif
+  fflush(stdout);
+  NO_UNWIND_END();
+}
+
+void debugPrint_blockHandleReturnFrom(unsigned char *exceptionP, core::T_O* handle)
+{NO_UNWIND_BEGIN();
+  core::ReturnFrom &returnFrom = (core::ReturnFrom &)*((core::ReturnFrom *)(exceptionP));
+  printf("%s:%d debugPrint_blockHandleReturnFrom return-from handle %p    block handle %p\n", __FILE__, __LINE__, returnFrom.getHandle(), handle );
+  if (returnFrom.getHandle() == handle) {
+    printf("%s:%d debugPrint_blockHandleReturnFrom handles match!\n", __FILE__, __LINE__ );
+    fflush(stdout);
+    return;
+  }
+#if defined(DEBUG_FLOW_TRACKER)
+  Cons_sp throwHandleCons((gc::Tagged)returnFrom.getHandle());
+  Cons_sp frameHandleCons((gc::Tagged)handle);
+  Fixnum throwFlowCounter = CONS_CAR(throwHandleCons).unsafe_fixnum();
+  Fixnum frameFlowCounter = CONS_CAR(frameHandleCons).unsafe_fixnum();
+  printf("%s:%d  continued  debugPrint_blockHandleReturnFrom return-from is looking for FlowCounter %" PFixnum " and it reached FlowCounter %" PFixnum "\n", __FILE__, __LINE__, throwFlowCounter, frameFlowCounter );
+  fflush(stdout);
+#endif
   NO_UNWIND_END();
 }
 
@@ -991,60 +1026,65 @@ void throwCatchThrow(core::T_sp *tagP) {
 }
 #endif
 
-void throwReturnFrom(core::T_O* blockSymbolP) {
-  ASSERT(blockSymbolP != NULL);
-  core::T_sp blockSymbol((gctools::Tagged)blockSymbolP);
-  int frame = my_thread->exceptionStack().findKey(BlockFrame, blockSymbol);
+DONT_OPTIMIZE_WHEN_DEBUG_RELEASE void throwReturnFrom(size_t depth, core::ActivationFrame_O* frameP) {
+  core::ActivationFrame_sp af((gctools::Tagged)(frameP));
+  core::T_sp handle = *const_cast<core::T_sp *>(&core::value_frame_lookup_reference(af, depth, 0));
 #if defined(DEBUG_FLOW_CONTROL) || defined(DEBUG_RETURN_FROM)
   if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
-    printf("About to throw core::ReturnFrom exception frame[%d] for block symbol %s\n", frame, _rep_(blockSymbol).c_str());
+    printf("About to throw core::ReturnFrom exception handle[%p]\n", handle.raw_());
     if (core::_sym_STARdebugFlowControlSTAR->symbolValue() == kw::_sym_verbose )
       printf("   %s\n", my_thread->exceptionStack().summary().c_str());
   }
 #endif
-  if (frame < 0) {
-    CONTROL_ERROR();
-  }
 #if defined(DEBUG_FLOW_CONTROL) || defined(DEBUG_RETURN_FROM)
   if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
-    printf("Throwing core::ReturnFrom exception frame[%d]\n", frame);
-    if (core::_sym_STARdebugFlowControlSTAR->symbolValue() == kw::_sym_verbose )
-      printf("   %s\n", my_thread->exceptionStack().summary().c_str());
+    printf("Throwing core::ReturnFrom exception frame[%p]\n", handle.raw_());
   }
 #endif
-  core::ReturnFrom returnFrom(frame);
+  core::ReturnFrom returnFrom(handle.raw_());
+#if defined(DEBUG_FLOW_TRACKER)
+  flow_tracker_about_to_throw();
+#endif
   throw returnFrom;
 }
 };
 
 extern "C" {
 
-gctools::return_type blockHandleReturnFrom(unsigned char *exceptionP, size_t frame) {
+DONT_OPTIMIZE_WHEN_DEBUG_RELEASE gctools::return_type blockHandleReturnFrom(unsigned char *exceptionP, core::T_O* handle) {
   core::ReturnFrom &returnFrom = (core::ReturnFrom &)*((core::ReturnFrom *)(exceptionP));
-  if (returnFrom.getFrame() >= frame) {
-    if (returnFrom.getFrame() == frame ) {
+  if (returnFrom.getHandle() == handle) {
 #if defined(DEBUG_FLOW_CONTROL) || defined(DEBUG_RETURN_FROM)
-      if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
-        printf("Caught core::ReturnFrom exception frame[%d]\n", returnFrom.getFrame());
-        if (core::_sym_STARdebugFlowControlSTAR->symbolValue() == kw::_sym_verbose )
-          printf("   %s\n", my_thread->exceptionStack().summary().c_str());
-      }
-#endif
-      core::MultipleValues &mv = core::lisp_multipleValues();
-      gctools::return_type result(mv.operator[](0),mv.getSize());
-      return result;
+    if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
+      printf("Caught core::ReturnFrom exception frame[%p]\n", returnFrom.getHandle());
     }
-    printf("%s:%d a return-from targetting frame %d has missed its target - it reached %" PRsize_t "\n", __FILE__, __LINE__, returnFrom.getFrame(), frame );
-    printf("    %s\n", my_thread->exceptionStack().summary().c_str()) ;
-    printf("Aborting...\n");
-    abort();
+#endif
+    core::MultipleValues &mv = core::lisp_multipleValues();
+    gctools::return_type result(mv.operator[](0),mv.getSize());
+    return result;
   }
+#if defined(DEBUG_FLOW_TRACKER)
+  if (handle) {
+    Cons_sp throwHandleCons((gc::Tagged)returnFrom.getHandle());
+    Cons_sp frameHandleCons((gc::Tagged)handle);
+    if (!throwHandleCons.consp()) printf("%s:%d The throwHandleCons is not a CONS -> %p\n", __FILE__, __LINE__, (void*)throwHandleCons.raw_() );
+    if (!frameHandleCons.consp()) printf("%s:%d The frameHandleCons is not a CONS -> %p\n", __FILE__, __LINE__, (void*)frameHandleCons.raw_() );
+    Fixnum throwFlowCounter = CONS_CAR(throwHandleCons).unsafe_fixnum();
+    Fixnum frameFlowCounter = CONS_CAR(frameHandleCons).unsafe_fixnum();
+    if (throwFlowCounter > frameFlowCounter) {
+      printf("%s:%d A return-from has missed its target frame - the return-from is looking for FlowCounter %" PFixnum " and it reached FlowCounter %" PFixnum "\n", __FILE__, __LINE__, throwFlowCounter, frameFlowCounter );
+      flow_tracker_last_throw_backtrace_dump();
+      abort();
+    }
+  }
+#endif
 #if defined(DEBUG_FLOW_CONTROL) || defined(DEBUG_RETURN_FROM)
   if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
-    printf("Re-throwing core::ReturnFrom exception frame[%d]\n", returnFrom.getFrame());
-    if (core::_sym_STARdebugFlowControlSTAR->symbolValue() == kw::_sym_verbose )
-      printf("   %s\n", my_thread->exceptionStack().summary().c_str());
+    printf("Re-throwing core::ReturnFrom exception handle[%p]\n", returnFrom.getHandle());
   }
+#endif
+#if defined(DEBUG_FLOW_TRACKER)
+  flow_tracker_about_to_throw();
 #endif
   throw returnFrom;
 }
@@ -1074,8 +1114,16 @@ size_t pushCatchFrame(core::T_O *tagP)
 }
 #endif
 
-size_t pushBlockFrame(core::T_O* tagP)
+DONT_OPTIMIZE_WHEN_DEBUG_RELEASE core::T_O* initializeBlockClosure(core::T_O** afP)
 {NO_UNWIND_BEGIN();
+  ValueFrame_sp vf = ValueFrame_sp((gc::Tagged)*reinterpret_cast<ValueFrame_O**>(afP));
+#ifdef DEBUG_FLOW_TRACKER
+  Cons_sp unique = Cons_O::create(make_fixnum(next_flow_tracker_counter()),_Nil<T_O>());
+#else
+  Cons_sp unique = Cons_O::create(_Nil<T_O>(),_Nil<T_O>());
+#endif
+  vf->operator[](0) = unique;
+#if 0
   T_sp tag((gctools::Tagged)tagP);
   size_t result = my_thread->exceptionStack().push(BlockFrame, tag);
 #ifdef DEBUG_FLOW_CONTROL
@@ -1085,23 +1133,22 @@ size_t pushBlockFrame(core::T_O* tagP)
       printf("   %s\n", my_thread->exceptionStack().summary().c_str());
   }
 #endif
-  return result;
+#endif
+  return unique.raw_();
   NO_UNWIND_END();
 }
 
-size_t pushTagbodyFrame(core::T_O *afP)
+core::T_O* initializeTagbodyClosure(core::T_O *afP)
 {NO_UNWIND_BEGIN();
-  ASSERT(afP != NULL);
   core::T_sp tagbodyId((gctools::Tagged)afP);
-  size_t result = my_thread->exceptionStack().push(TagbodyFrame, tagbodyId);
-#ifdef DEBUG_FLOW_CONTROL
-  if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
-    printf("Pushed Tagbody frame[%zu]\n", result);
-    if (core::_sym_STARdebugFlowControlSTAR->symbolValue() == kw::_sym_verbose )
-      printf("   %s\n", my_thread->exceptionStack().summary().c_str());
-  }
+  ValueFrame_sp vf = ValueFrame_sp((gc::Tagged)*reinterpret_cast<ValueFrame_O**>(afP));
+#ifdef DEBUG_FLOW_TRACKER
+  Cons_sp unique = Cons_O::create(make_fixnum(next_flow_tracker_counter()),_Nil<T_O>());
+#else
+  Cons_sp unique = Cons_O::create(_Nil<T_O>(),_Nil<T_O>());
 #endif
-  return result;
+  vf->operator[](0) = unique;
+  return unique.raw_();
   NO_UNWIND_END();
 }
 };
@@ -1149,26 +1196,12 @@ void throwIllegalSwitchValue(size_t val, size_t max) {
   SIMPLE_ERROR(BF("Illegal switch value %d - max value is %d") % val % max);
 }
 
-void throw_LexicalGo(int depth, int index) {
-  core::LexicalGo lgo(depth, index);
-#ifdef DEBUG_FLOW_CONTROL
-  if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
-    printf("Throwing core::Go depth[%d] index[%d]\n", depth, index);
-    if (core::_sym_STARdebugFlowControlSTAR->symbolValue() == kw::_sym_verbose )
-      printf("   %s\n", my_thread->exceptionStack().summary().c_str());
-  }
-#endif
-  throw lgo;
-}
 
 void throwDynamicGo(size_t depth, size_t index, core::T_O *afP) {
   T_sp af((gctools::Tagged)afP);
-  T_sp tagbody = core::tagbody_frame_lookup(af,depth,index);
-  int frame = my_thread->exceptionStack().findKey(TagbodyFrame, tagbody);
-  if (frame < 0) {
-    CONTROL_ERROR();
-  }
-  core::DynamicGo dgo((size_t)frame, index);
+  ValueFrame_sp tagbody = core::tagbody_frame_lookup(af,depth,index);
+  T_O* handle = tagbody->operator[](0).raw_();
+  core::DynamicGo dgo(handle, index);
 #ifdef DEBUG_FLOW_CONTROL
   if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
     printf("Throwing core::DynamicGo tagbodyIdP[%zu] index[%zu]\n", dgo.getFrame(), dgo.index());
@@ -1197,33 +1230,12 @@ int tagbodyLexicalGoIndexElseRethrow(char *exceptionP) {
 #endif
 }
 
-size_t tagbodyDynamicGoIndexElseRethrow(char *exceptionP, size_t frame) {
-#ifdef DEBUG_FLOW_CONTROL
-  if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
-    printf("%s:%d tagbodyDynamicGoIndexElseRethrow  frame: %lu\n", __FILE__, __LINE__, frame);
-    if (core::_sym_STARdebugFlowControlSTAR->symbolValue() == kw::_sym_verbose )
-      printf("   %s\n", my_thread->exceptionStack().summary().c_str());
+size_t tagbodyDynamicGoIndexElseRethrow(char *exceptionP, T_O* handle) {
+  core::DynamicGo& goException = *reinterpret_cast<core::DynamicGo *>(exceptionP);
+  if (goException.getHandle() == handle) {
+    return goException.index();
   }
-#endif
-  core::DynamicGo *goExceptionP = reinterpret_cast<core::DynamicGo *>(exceptionP);
-  if (goExceptionP->getFrame() == frame) {
-#ifdef DEBUG_FLOW_CONTROL
-    if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
-      printf("%s:%d Matched DynamicGo  frame: %llu  index: %lu\n", __FILE__, __LINE__, goExceptionP->getFrame(), goExceptionP->index());
-      if (core::_sym_STARdebugFlowControlSTAR->symbolValue() == kw::_sym_verbose )
-        printf("   %s\n", my_thread->exceptionStack().summary().c_str());
-    }
-#endif
-    return goExceptionP->index();
-  }
-#ifdef DEBUG_FLOW_CONTROL
-  if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
-    printf("Re-throwing core::DynamicGo frame[%zu] index[%zu]\n", goExceptionP->getFrame(), goExceptionP->index());
-    if (core::_sym_STARdebugFlowControlSTAR->symbolValue() == kw::_sym_verbose )
-      printf("   %s\n", my_thread->exceptionStack().summary().c_str());
-  }
-#endif
-  throw * goExceptionP;
+  throw goException;
 }
 
 
@@ -1399,6 +1411,33 @@ void trace_setActivationFrameForIHSTop(core::T_sp *afP) {
   my_thread->invocationHistoryStack().setActivationFrameForTop(*afP);
 }
 #endif
+
+void setFrameUniqueId(size_t id, core::ActivationFrame_O* frameP) {
+#ifdef DEBUG_LEXICAL_DEPTH
+  ActivationFrame_sp src((gctools::Tagged)frameP);
+  src->_UniqueId = id;
+#endif
+}
+
+void ignore_setFrameUniqueId() {
+  // Do nothing
+}
+
+void ensureFrameUniqueId(size_t id, size_t depth, core::ActivationFrame_O* frameP) {
+#ifdef DEBUG_LEXICAL_DEPTH
+  ActivationFrame_sp src((gctools::Tagged)frameP);
+  ActivationFrame_sp dest = value_frame_lookup(src,depth);
+  if (dest->_UniqueId != id) {
+    printf("%s:%d Mismatch in frame UniqueId - expecting %lu - found %lu\n", __FILE__, __LINE__, id, dest->_UniqueId );
+    abort();
+  }
+#endif
+}
+
+void ignore_ensureFrameUniqueId() {
+  // Do nothing
+}
+
 
 extern size_t matchKeywordOnce(core::T_O *xP, core::T_O *yP, unsigned char *sawKeyAlreadyP)
 {NO_UNWIND_BEGIN();
