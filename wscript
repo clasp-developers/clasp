@@ -724,12 +724,14 @@ def configure(cfg):
     cfg.define("METER_ALLOCATIONS",1)
     cfg.define("DEBUG_TRACE_INTERPRETED_CLOSURES",1)
     cfg.define("DEBUG_ENVIRONMENTS",1)
-    cfg.define("DEBUG_RELEASE",1)   # Turn off optimization for a few C++ functions; undef this to optimize everything
+#    cfg.define("DEBUG_RELEASE",1)   # Turn off optimization for a few C++ functions; undef this to optimize everything
+    cfg.define("DEBUG_LEXICAL_DEPTH",1) # Generate tests for lexical closure depths
 #    cfg.define("DEBUG_CACHE",1)      # Debug the dispatch caches - see cache.cc
 #    cfg.define("DEBUG_BITUNIT_CONTAINER",1)  # prints debug info for bitunit containers
 #    cfg.define("DEBUG_ZERO_KIND",1);
-#    cfg.define("DEBUG_FLOW_CONTROL",1)
-#    cfg.define("DEBUG_RETURN_FROM",1)
+#    cfg.define("DEBUG_FLOW_CONTROL",1)  # broken - probably should be removed unless it can be 
+#    cfg.define("DEBUG_RETURN_FROM",1)   # broken
+    cfg.define("DEBUG_FLOW_TRACKER",1)  # record small backtraces to track flow
 #    cfg.define("DEBUG_DYNAMIC_BINDING_STACK",1)
 #    cfg.define("DEBUG_VALUES",1)   # turn on printing (values x y z) values when core:*debug-values* is not nil
 #    cfg.define("DEBUG_IHS",1)
@@ -739,7 +741,7 @@ def configure(cfg):
 #    cfg.define("DEBUG_GFDISPATCH",1)
 ##  Generate per-thread logs in /tmp/dispatch-history/**  of the slow path of fastgf 
 #    cfg.define("DEBUG_CMPFASTGF",1)  # debug dispatch functions by inserting code into them that traces them
-#    cfg.define("DEBUG_FASTGF",1)   # generate slow gf dispatch logging and write out dispatch functions to /tmp/dispatch-history-**
+    cfg.define("DEBUG_FASTGF",1)   # generate slow gf dispatch logging and write out dispatch functions to /tmp/dispatch-history-**
 #    cfg.define("DEBUG_REHASH_COUNT",1)   # Keep track of the number of times each hash table has been rehashed
 #    cfg.define("DEBUG_MONITOR",1)   # generate logging messages to a file in /tmp for non-hot code
     cfg.define("DEBUG_BCLASP_LISP",1)  # Generate debugging frames for all bclasp code - like declaim
@@ -945,7 +947,7 @@ def build(bld):
         bld.add_to_group(lnk_bclasp)
         bld.install_files('${PREFIX}/lib/clasp/', bld.bclasp_fasl, relative_trick = True, cwd = bld.path)
         bld.install_files('${PREFIX}/lib/clasp/', bclasp_common_lisp_bitcode, relative_trick = True, cwd = bld.path)
-        if (True):   # build bclasp executable
+        if (False):   # build bclasp executable
             lnk_bclasp_exec = link_executable(env=bld.env)
             lnk_bclasp_exec.set_inputs([bclasp_common_lisp_bitcode,cxx_all_bitcode_node])
             print("About to try and recurse into extensions again")
@@ -977,8 +979,6 @@ def build(bld):
             bld.install_as('${PREFIX}/%s/%s' % (executable_dir, bld.bclasp_executable.name), bld.bclasp_executable, chmod = Utils.O755)
             bld.symlink_as('${PREFIX}/%s/clasp' % executable_dir, '%s' % bld.bclasp_executable.name)
             os.symlink(bld.bclasp_executable.abspath(),bclasp_symlink_node.abspath())
-        else:
-            os.symlink(bld.iclasp_executable.abspath(),bclasp_symlink_node.abspath())
         # # Build ASDF for bclasp
         # cmp_asdf = compile_module(env=bld.env)
         # cmp_asdf.set_inputs([bld.iclasp_executable,bld.bclasp_fasl] + fix_lisp_paths(bld.path,out,variant,["src/lisp/modules/asdf/build/asdf"]))
