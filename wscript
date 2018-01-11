@@ -81,7 +81,8 @@ def grovel(bld):
     
 def update_submodules(cfg):
     os.system("echo This is where I get submodules")
-    os.system("git submodule update --init src/lisp/kernel/contrib/sicl")
+    sicl_commit = "a080c75b0aa17a939b09cb378514cfee7a72a4c0"
+    os.system("./tools/fetch-revision.sh https://github.com/Bike/SICL.git src/lisp/kernel/contrib/sicl %s" % sicl_commit)
     os.system("git submodule update --init src/lisp/kernel/contrib/Acclimation")
     os.system("git submodule update --init src/mps")
     os.system("git submodule update --init src/lisp/modules/asdf")
@@ -735,7 +736,7 @@ def configure(cfg):
 #    cfg.define("DEBUG_GFDISPATCH",1)
 ##  Generate per-thread logs in /tmp/dispatch-history/**  of the slow path of fastgf 
 #    cfg.define("DEBUG_CMPFASTGF",1)  # debug dispatch functions by inserting code into them that traces them
-#    cfg.define("DEBUG_FASTGF",1)   # generate slow gf dispatch logging and write out dispatch functions to /tmp/dispatch-history-**
+    cfg.define("DEBUG_FASTGF",1)   # generate slow gf dispatch logging and write out dispatch functions to /tmp/dispatch-history-**
 #    cfg.define("DEBUG_REHASH_COUNT",1)   # Keep track of the number of times each hash table has been rehashed
 #    cfg.define("DEBUG_MONITOR",1)   # generate logging messages to a file in /tmp for non-hot code
 #    cfg.define("DEBUG_BCLASP_LISP",1)  # Generate debugging frames for all bclasp code - like declaim
