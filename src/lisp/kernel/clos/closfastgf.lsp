@@ -337,6 +337,8 @@
   ;; but also implies that methods added or removed to s-v-u-c invalidate all relevant accessors,
   ;; which is not.
   (let* ((em (compute-effective-method generic-function method-combination methods))
+         ;; emf does not need to be computed for special cases. This could save some time,
+         ;; as emf computation does invoke the compiler.
          (emf (effective-method-function em))
          (method (and (consp em)
                       (eq (first em) 'call-method)
