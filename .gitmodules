@@ -1,6 +1,3 @@
-[submodule "src/lisp/kernel/contrib/sicl"]
-	path = src/lisp/kernel/contrib/sicl
-	url = https://github.com/Bike/SICL.git
 [submodule "src/lisp/modules/asdf"]
 	path = src/lisp/modules/asdf
         url = https://github.com/clasp-developers/asdf.git
@@ -14,6 +11,3 @@
 [submodule "src/lisp/kernel/contrib/Concrete-Syntax-Tree"]
 	path = src/lisp/kernel/contrib/Concrete-Syntax-Tree
 	url = https://github.com/clasp-developers/Concrete-Syntax-Tree.git
-[submodule "src/lisp/kernel/contrib/full-sicl"]
-	path = src/lisp/kernel/contrib/full-sicl
-	url = https://github.com/clasp-developers/SICL.git
