@@ -79,7 +79,7 @@
 ;;;   called a DTREE (dispatch-tree) made up of the structs below.
 
 (defvar *outcomes* nil
-  "Map effective methods and symbols to basic-blocks")
+  "Map effective methods to indices in the *gf-data* and then to basic-blocks")
 (defvar *gf-data-id* nil)
 (defvar *gf-data* nil
   "Store the global variable that will store effective methods")
@@ -468,9 +468,14 @@
       (core:bformat fout "%s -> %s;\n" (string startid) (string (draw-node fout (dtree-root dtree)))))))
 
 (defun register-runtime-data (value table)
-  (let ((index (prog1 *gf-data-id* (incf *gf-data-id*))))
-    (setf (gethash value table) index)
-    index))
+  "Register a integer index into the run time literal table for the discriminating function.
+   This table stores eql specializers and effective method functions."
+  (let ((existing-index (gethash value table)))
+    (if existing-index
+        existing-index
+        (let ((index (prog1 *gf-data-id* (incf *gf-data-id*))))
+          (setf (gethash value table) index)
+          index))))
 
 (defun lookup-eql-selector (eql-test)
   (let ((tagged-immediate (core:create-tagged-immediate-value-or-nil eql-test)))
@@ -613,18 +618,15 @@
   (cf-log "codegen-outcome\n")
   ;; The effective method will be found in a slot in the modules *gf-data* array
   ;;    the slot index will be in gf-data-id
-  (let* ((outcome (outcome-outcome node))
-         (existing-effective-method-block (gethash outcome *outcomes*)))
+  (let* ((outcome (outcome-outcome node)))
     #+(or)(when *log-gf*
             (core:bformat *log-gf* "About to codegen-outcome -> %s\n" outcome))
-    (if existing-effective-method-block
-	(irc-br existing-effective-method-block)
-        (cond
-          ((optimized-slot-reader-p outcome)
-           (codegen-slot-reader arguments cur-arg outcome))
-          ((optimized-slot-writer-p outcome)
-           (codegen-slot-writer arguments cur-arg outcome))
-          (t (codegen-effective-method-call arguments cur-arg outcome))))))
+    (cond
+      ((optimized-slot-reader-p outcome)
+       (codegen-slot-reader arguments cur-arg outcome))
+      ((optimized-slot-writer-p outcome)
+       (codegen-slot-writer arguments cur-arg outcome))
+      (t (codegen-effective-method-call arguments cur-arg outcome)))))
 
 (defun codegen-class-binary-search (arguments cur-arg matches stamp-var)
   (cf-log "codegen-class-binary-search\n")
