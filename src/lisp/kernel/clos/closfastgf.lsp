@@ -337,10 +337,13 @@
   ;; but also implies that methods added or removed to s-v-u-c invalidate all relevant accessors,
   ;; which is not.
   (let* ((em (compute-effective-method generic-function method-combination methods))
+         ;; emf does not need to be computed for special cases. This could save some time,
+         ;; as emf computation does invoke the compiler.
          (emf (effective-method-function em))
          (method (and (consp em)
                       (eq (first em) 'call-method)
                       (second em)))
+         (leafp (when method (leaf-method-p method)))
          ;; In the future, we could use load-time-value instead of find-class every time,
          ;; but the system loading architecture makes this dicey at the moment.
          (readerp (when method (eq (class-of method) (find-class 'standard-reader-method))))
@@ -353,10 +356,15 @@
          (standard-slotd-p (when slotd (eq (class-of slotd) (find-class 'standard-effective-slot-definition))))
          (optimized
            (cond ((not standard-slotd-p)
-                  (gf-log "Using default effective method function\n")
-                  (gf-log "(compute-effective-method generic-function method-combination methods) -> \n")
-                  (gf-log "%s\n" em)
-                  emf)
+                  (if leafp
+                      (progn
+                        (gf-log "Using method %s function as emf\n" method)
+                        (method-function method))
+                      (progn
+                        (gf-log "Using default effective method function\n")
+                        (gf-log "(compute-effective-method generic-function method-combination methods) -> \n")
+                        (gf-log "%s\n" em)
+                        emf)))
                  (readerp
                   (gf-log "make-optimized-slot-reader index: %s slot-name: %s class: %s\n"
                           (slot-definition-location slotd)
