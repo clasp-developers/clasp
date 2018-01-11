@@ -79,7 +79,7 @@
 ;;;   called a DTREE (dispatch-tree) made up of the structs below.
 
 (defvar *outcomes* nil
-  "Map effective methods and symbols to basic-blocks")
+  "Map effective methods to indices in the *gf-data* and then to basic-blocks")
 (defvar *gf-data-id* nil)
 (defvar *gf-data* nil
   "Store the global variable that will store effective methods")
@@ -470,7 +470,7 @@
 
 (defun register-runtime-data (value table)
   "Register a integer index into the run time literal table for the discriminating function.
-This table stores eql specializers and effective method functions/outcomes."
+   This table stores eql specializers and effective method functions."
   (let ((existing-index (gethash value table)))
     (if existing-index
         existing-index
