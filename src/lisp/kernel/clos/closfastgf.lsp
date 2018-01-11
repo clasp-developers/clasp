@@ -321,65 +321,66 @@
              class direct-slot-name))
     slot))
 
-(defun compute-effective-method-function-maybe-optimize (generic-function method-combination methods actual-specializers &key log
-                                                                                                                           actual-arguments)
+(defun compute-effective-method-function-maybe-optimize
+    (generic-function method-combination methods actual-specializers &key log actual-arguments)
   ;; Calculate the effective-method-function as well as an optimized one
   ;; so that we can apply the e-m-f to the arguments if we need to debug the optimized version.
-  (let* ((efm (compute-effective-method-function generic-function
-                                                 method-combination
-                                                 methods))
-         class slotd
+  ;; This will hopefully be expanded, but for now, we can at least optimize standard slot accesses.
+  ;; For that, we must determine whether there is not a custom slot-value-using-class method we have to
+  ;; call. We use an approximation: if the class is a standard-class and the slotd is a
+  ;; standard-effective-slot-definition, methods on svuc can't be defined per
+  ;; "restrictions on portable programs" in MOP. We also discount the possibility of specializing on the
+  ;; "object" argument, because it makes things harder for us with not much gain for users.
+  ;; (Just specialize accessors or something.)
+  ;; The upshot of this is that slot accesses will never be inlined for custom metaclasses or slotds.
+  ;; The less approximate way would be to check s-v-u-c itself. That's easy enough on its own,
+  ;; but also implies that methods added or removed to s-v-u-c invalidate all relevant accessors,
+  ;; which is not.
+  (let* ((em (compute-effective-method generic-function method-combination methods))
+         (emf (effective-method-function em))
+         (method (and (consp em)
+                      (eq (first em) 'call-method)
+                      (second em)))
+         ;; In the future, we could use load-time-value instead of find-class every time,
+         ;; but the system loading architecture makes this dicey at the moment.
+         (readerp (when method (eq (class-of method) (find-class 'standard-reader-method))))
+         (writerp (when method (eq (class-of method) (find-class 'standard-writer-method))))
+         (class (cond ((not method) nil)
+                      (readerp (first actual-specializers))
+                      (writerp (second actual-specializers))
+                      (t nil)))
+         (slotd (when class (effective-slotd-from-accessor-method method class)))
+         (standard-slotd-p (when slotd (eq (class-of slotd) (find-class 'standard-effective-slot-definition))))
          (optimized
-           ;; This will hopefully be expanded, but for now, we can at least optimize standard slot accesses.
-           ;; For that, we must determine whether there is not a custom slot-value-using-class method we have to
-           ;; call. We use an approximation: if the class is a standard-class and the slotd is a
-           ;; standard-effective-slot-definition, methods on svuc can't be defined per
-           ;; "restrictions on portable programs" in MOP. We also discount the possibility of specializing on the
-           ;; "object" argument, because it makes things harder for us with not much gain for users.
-           ;; (Just specialize accessors or something.)
-           ;; The upshot of this is that slot accesses will never be inlined for custom metaclasses or slotds.
-           ;; The less approximate way would be to check s-v-u-c itself. That's easy enough on its own,
-           ;; but also implies that methods added or removed to s-v-u-c invalidate all relevant accessors,
-           ;; which is not.
-           (cond
-             ((and (= (length methods) 1)
-                   (eq (class-of (first methods)) (find-class 'standard-reader-method)) ; FIXME load-time-value?
-                   (eq (class-of (setf class (first actual-specializers))) ; (object)
-                       (find-class 'standard-class))
-                   (eq (class-of (setf slotd (effective-slotd-from-accessor-method (first methods) class)))
-                       (find-class 'standard-effective-slot-definition)))
-              (gf-log "make-optimized-slot-reader index: %s slot-name: %s class: %s\n"
-                      (slot-definition-location slotd)
-                      (slot-definition-name slotd)
-                      class)
-              (cmp::make-optimized-slot-reader :index (slot-definition-location slotd)
-                                               :effective-method-function efm
-                                               :slot-name (slot-definition-name slotd)
-                                               :method (first methods) :class class))
-             ;; Can't specialize on new-value either.
-             ((and (= (length methods) 1)
-                   (eq (class-of (first methods)) (find-class 'standard-writer-method))
-                   (eq (class-of (setf class (second actual-specializers))) ; (new-value object)
-                       (find-class 'standard-class))
-                   (eq (class-of (setf slotd (effective-slotd-from-accessor-method (first methods) class)))
-                       (find-class 'standard-effective-slot-definition)))
-              (gf-log "make-optimized-slot-writer index: %s slot-name: %s class: %s\n"
-                      (slot-definition-location slotd)
-                      (slot-definition-name slotd)
-                      class)
-              (cmp::make-optimized-slot-writer :index (slot-definition-location slotd)
-                                               :effective-method-function efm
-                                               :slot-name (slot-definition-name slotd)
-                                               :method (first methods) :class class))
-             (t
-              (gf-log "Using default effective method function\n")
-              (gf-log "(compute-effective-method generic-function method-combination methods) -> \n")
-              (gf-log "%s\n" (compute-effective-method generic-function method-combination methods))
-              #+(or)(gf-log "%s\n" (let ((info (compute-effective-method generic-function method-combination methods)))
-                               (if (and (consp info) (eq (car info) 'call-method))
-                                   (core:bformat nil "first method is leaf-method-p -> %s" (leaf-method-p (second info)))
-                                   "The first method is not leaf-method-p")))
-              efm))))
+           (cond ((not standard-slotd-p)
+                  (gf-log "Using default effective method function\n")
+                  (gf-log "(compute-effective-method generic-function method-combination methods) -> \n")
+                  (gf-log "%s\n" em)
+                  emf)
+                 (readerp
+                  (gf-log "make-optimized-slot-reader index: %s slot-name: %s class: %s\n"
+                          (slot-definition-location slotd)
+                          (slot-definition-name slotd)
+                          class)
+                  (cmp::make-optimized-slot-reader :index (slot-definition-location slotd)
+                                                   :effective-method-function emf
+                                                   :slot-name (slot-definition-name slotd)
+                                                   :method method :class class))
+                 (writerp
+                  (gf-log "make-optimized-slot-writer index: %s slot-name: %s class: %s\n"
+                          (slot-definition-location slotd)
+                          (slot-definition-name slotd)
+                          class)
+                  (cmp::make-optimized-slot-writer :index (slot-definition-location slotd)
+                                                   :effective-method-function emf
+                                                   :slot-name (slot-definition-name slotd)
+                                                   :method method :class class))
+                 ;; I think this is unreachable, but better safe than sorry.
+                 (t
+                  (gf-log "Using !SUPPOSEDLY UNREACHABLE! default effective method function\n")
+                  (gf-log "(compute-effective-method generic-function method-combination methods) -> \n")
+                  (gf-log "%s\n" em)
+                  emf))))
     #+debug-fastgf
     (when log
       (gf-log "vvv************************vvv\n")
