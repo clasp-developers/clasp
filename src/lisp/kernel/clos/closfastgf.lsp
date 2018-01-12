@@ -503,12 +503,14 @@ FIXME!!!! This code will have problems with multithreading if a generic function
      (funcall (cmp::optimized-slot-writer-effective-method-function efm) arguments nil))
     (t (funcall efm arguments nil))))
 
+(defvar *dispatch-miss-start-time*)
 (defun do-dispatch-miss (generic-function vaslist-arguments arguments)
   "This effectively does what compute-discriminator-function does and maybe memoizes the result 
 and calls the effective-method-function that is calculated.
 It takes the arguments in two forms, as a vaslist and as a list of arguments."
-  (let ((can-memoize t))
-        ;; What if another thread adds/removes method during c-a-m-u-c???????
+  (let ((can-memoize t)
+        (*dispatch-miss-start-time* (get-internal-real-time)))
+    ;; What if another thread adds/removes method during c-a-m-u-c???????
     (multiple-value-bind (method-list ok)
         (clos::compute-applicable-methods-using-classes generic-function (mapcar #'class-of arguments))
       (declare (core:lambda-name do-dispatch-miss.multiple-value-bind.lambda))
@@ -536,6 +538,7 @@ It takes the arguments in two forms, as a vaslist and as a list of arguments."
             (gf-log "Calling effective-method-function %s\n" effective-method-function)
             #+debug-fastgf
             (let ((results (multiple-value-list (funcall-effective-method-function effective-method-function vaslist-arguments))))
+              (gf-log "+-+-+-+-+-+-+-+-+ do-dispatch-miss done real time: %f seconds\n" (/ (float (- (get-internal-real-time) *dispatch-miss-start-time*)) internal-time-units-per-second))
               (gf-log "----}---- Completed call to effective-method-function for %s results -> %s\n" (clos::generic-function-name generic-function) results)
               (values-list results))
             #-debug-fastgf

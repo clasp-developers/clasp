@@ -1476,78 +1476,63 @@ T_mv Lisp_O::readEvalPrint(T_sp stream, T_sp environ, bool printResults, bool pr
   T_mv result = Values(_Nil<T_O>());
   DynamicScopeManager scope(_sym_STARcurrentSourceFileInfoSTAR, core__source_file_info(stream));
   while (1) {
-    try {
-      if (prompt) {
-        stringstream prompts;
-        prompts << std::endl
-                << gc::As<Package_sp>(cl::_sym_STARpackageSTAR->symbolValue())->getName() << "> ";
-        clasp_write_string(prompts.str(), stream);
-      }
+    if (prompt) {
+      stringstream prompts;
+      prompts << std::endl
+              << gc::As<Package_sp>(cl::_sym_STARpackageSTAR->symbolValue())->getName() << "> ";
+      clasp_write_string(prompts.str(), stream);
+    }
 #ifdef USE_SOURCE_DATABASE
-      DynamicScopeManager innerScope(_sym_STARsourceDatabaseSTAR, SourceManager_O::create());
+    DynamicScopeManager innerScope(_sym_STARsourceDatabaseSTAR, SourceManager_O::create());
 #else
-      DynamicScopeManager innerScope(_sym_STARsourceDatabaseSTAR, _Nil<T_O>());
+    DynamicScopeManager innerScope(_sym_STARsourceDatabaseSTAR, _Nil<T_O>());
 #endif
-      T_sp expression = cl__read(stream, _Nil<T_O>(), _Unbound<T_O>(), _Nil<T_O>());
-      if (expression.unboundp())
-        break;
-      if (_sym_STARechoReplReadSTAR->symbolValue().isTrue()) {
-        string suppress;
-        if (cl::_sym_STARread_suppressSTAR->symbolValue().isTrue()) {
-          suppress = "SUPPRESSED";
-          if (expression.notnilp()) {
-            SIMPLE_ERROR(BF("*read-suppress* is true but the following expression was read: %s") % _rep_(expression));
-          }
+    T_sp expression = cl__read(stream, _Nil<T_O>(), _Unbound<T_O>(), _Nil<T_O>());
+    if (expression.unboundp())
+      break;
+    if (_sym_STARechoReplReadSTAR->symbolValue().isTrue()) {
+      string suppress;
+      if (cl::_sym_STARread_suppressSTAR->symbolValue().isTrue()) {
+        suppress = "SUPPRESSED";
+        if (expression.notnilp()) {
+          SIMPLE_ERROR(BF("*read-suppress* is true but the following expression was read: %s") % _rep_(expression));
         }
-        BFORMAT_T(BF(";;--read-%s-------------\n#|\n%s\n----------|#\n") % suppress.c_str() % _rep_(expression));
       }
-      _BLOCK_TRACEF(BF("---REPL read[%s]") % expression->__repr__());
-      if (cl__keywordp(expression)) {
-        ql::list tplCmd;
-        tplCmd << expression;
-        while (T_sp exp = cl__read(stream, _Nil<T_O>(), _Unbound<T_O>(), _Nil<T_O>())) {
-          if (exp.unboundp())
-            break;
-          tplCmd << exp;
-        }
-        if (_sym_STARtopLevelCommandHookSTAR->symbolValue().notnilp()) {
-          eval::funcall(_sym_STARtopLevelCommandHookSTAR->symbolValue(), tplCmd.cons());
-        } else {
-          core__bformat(_lisp->_true(), "Cannot interpret %s - define core::*top-level-command-hook*", Cons_O::createList(tplCmd.cons()));
-        }
-      } else if (expression.notnilp()) {
-        result = eval::funcall(core::_sym_STAReval_with_env_hookSTAR->symbolValue(), expression, environ);
-        gctools::Vec0<core::T_sp /*,gctools::RootedGCHolder*/> vresults;
-        vresults.resize(result.number_of_values());
-        if (result.number_of_values() > 0) {
-          vresults[0] = result;
-          if (result.number_of_values() > 1) {
-            for (int i(1); i < result.number_of_values(); ++i) {
-              vresults[i] = result.valueGet_(i);
-            }
+      BFORMAT_T(BF(";;--read-%s-------------\n#|\n%s\n----------|#\n") % suppress.c_str() % _rep_(expression));
+    }
+    _BLOCK_TRACEF(BF("---REPL read[%s]") % expression->__repr__());
+    if (cl__keywordp(expression)) {
+      ql::list tplCmd;
+      tplCmd << expression;
+      while (T_sp exp = cl__read(stream, _Nil<T_O>(), _Unbound<T_O>(), _Nil<T_O>())) {
+        if (exp.unboundp())
+          break;
+        tplCmd << exp;
+      }
+      if (_sym_STARtopLevelCommandHookSTAR->symbolValue().notnilp()) {
+        eval::funcall(_sym_STARtopLevelCommandHookSTAR->symbolValue(), tplCmd.cons());
+      } else {
+        core__bformat(_lisp->_true(), "Cannot interpret %s - define core::*top-level-command-hook*", Cons_O::createList(tplCmd.cons()));
+      }
+    } else if (expression.notnilp()) {
+      result = eval::funcall(core::_sym_STAReval_with_env_hookSTAR->symbolValue(), expression, environ);
+      gctools::Vec0<core::T_sp /*,gctools::RootedGCHolder*/> vresults;
+      vresults.resize(result.number_of_values());
+      if (result.number_of_values() > 0) {
+        vresults[0] = result;
+        if (result.number_of_values() > 1) {
+          for (int i(1); i < result.number_of_values(); ++i) {
+            vresults[i] = result.valueGet_(i);
           }
         }
-        if (printResults) {
-          for (int i(0); i < vresults.size(); i++) {
-            T_sp obj = vresults[i];
+      }
+      if (printResults) {
+        for (int i(0); i < vresults.size(); i++) {
+          T_sp obj = vresults[i];
             //			    this->print(BF("; --> %s\n")% _rep_(obj));
-            eval::funcall(cl::_sym_print, obj);
-          }
+          eval::funcall(cl::_sym_print, obj);
         }
       }
-    } catch (Condition &err) {
-      // Catch condition from reader means just ask for another s-exp if
-      // interactive and terminate if batch
-      this->print(BF("%s:%d Caught Condition from reader\n") % __FILE__ % __LINE__);
-      abort();
-      //		this->reportConditionAndTerminateProgramIfBatch(err.conditionObject());
-    } catch (DebuggerSaysAbortToRepl &abort) {
-      this->print(BF("%s:%d aborted to repl\n") % __FILE__ % __LINE__);
-      // Do nothing
-    } catch (HardError &err) {
-      this->print(BF("Should never happen - catch and convert to Condition below - HardError: %s") % err.message());
-      IMPLEMENT_ME();
-      //		this->enterDebugger();
     }
   }
   return result;
@@ -1678,7 +1663,7 @@ CL_DEFUN void core__exit(int exitValue) {
       core::core__clib_backtrace(999999);
     }
   }
-  throw(ExitProgram(exitValue));
+  throw(ExitProgramException(exitValue));
 };
 
 CL_LAMBDA(&optional (exit-value 0));
@@ -2865,8 +2850,9 @@ CL_DEFUN void cl__error(T_sp datum, List_sp initializers) {
 #endif
 
 
-  void Lisp_O::run() {
-    if ( initializer_functions_are_waiting() ) {
+int Lisp_O::run() {
+  int exit_code = 0;
+  if ( initializer_functions_are_waiting() ) {
       initializer_functions_invoke();
     }
 #ifndef SCRAPING
@@ -2899,42 +2885,45 @@ CL_DEFUN void cl__error(T_sp datum, List_sp initializers) {
     }
     Package_sp cluser = _lisp->findPackage("COMMON-LISP-USER");
     cl::_sym_STARpackageSTAR->defparameter(cluser);
-    if (!this->_IgnoreInitImage) {
-      if ( startup_functions_are_waiting() ) {
-        startup_functions_invoke();
-      } else {
-        Pathname_sp initPathname = gc::As<Pathname_sp>(_sym_STARcommandLineImageSTAR->symbolValue());
-        DynamicScopeManager scope(_sym_STARuseInterpreterForEvalSTAR, _lisp->_true());
+    try {
+      if (!this->_IgnoreInitImage) {
+        if ( startup_functions_are_waiting() ) {
+          startup_functions_invoke();
+        } else {
+          Pathname_sp initPathname = gc::As<Pathname_sp>(_sym_STARcommandLineImageSTAR->symbolValue());
+          DynamicScopeManager scope(_sym_STARuseInterpreterForEvalSTAR, _lisp->_true());
         //printf("%s:%d About to load: %s\n", __FILE__, __LINE__, _rep_(initPathname).c_str());
-        T_mv result = eval::funcall(cl::_sym_load, initPathname); // core__load_bundle(initPathname);
-        if (result.nilp()) {
-          T_sp err = result.second();
-          printf("Could not load bundle %s error: %s\n", _rep_(initPathname).c_str(), _rep_(err).c_str());
+          T_mv result = eval::funcall(cl::_sym_load, initPathname); // core__load_bundle(initPathname);
+          if (result.nilp()) {
+            T_sp err = result.second();
+            printf("Could not load bundle %s error: %s\n", _rep_(initPathname).c_str(), _rep_(err).c_str());
+          }
         }
-      }
-    } else if (!this->_IgnoreInitLsp) {
+      } else if (!this->_IgnoreInitLsp) {
     // Assume that if there is no program then
     // we want an interactive script
     //
-      {
-        _BLOCK_TRACEF(BF("Evaluating initialization code in(%s)") % this->_RCFileName);
-        Pathname_sp initPathname = cl__pathname(SimpleBaseString_O::make(this->_RCFileName));
-        T_mv result = core__load_no_package_set(initPathname);
-        if (result.nilp()) {
-          T_sp err = result.second();
-          printf("Could not load %s error: %s\n", _rep_(initPathname).c_str(), _rep_(err).c_str());
+        {
+          _BLOCK_TRACEF(BF("Evaluating initialization code in(%s)") % this->_RCFileName);
+          Pathname_sp initPathname = cl__pathname(SimpleBaseString_O::make(this->_RCFileName));
+          T_mv result = core__load_no_package_set(initPathname);
+          if (result.nilp()) {
+            T_sp err = result.second();
+            printf("Could not load %s error: %s\n", _rep_(initPathname).c_str(), _rep_(err).c_str());
+          }
         }
+      } else {
+        _BLOCK_TRACE("Interactive REPL");
+        this->print(BF("Clasp (copyright Christian E. Schafmeister 2014)\n"));
+        this->print(BF("Low level repl\n"));
+        this->readEvalPrintInteractive();
+        this->print(BF("\n"));
       }
-    } else {
-      _BLOCK_TRACE("Interactive REPL");
-      //
-      // Implement a Read-Eval-Print-Loop
-      //
-      this->print(BF("Clasp (copyright Christian E. Schafmeister 2014)\n"));
-      this->print(BF("Low level repl\n"));
-      this->readEvalPrintInteractive();
-      this->print(BF("\n"));
+      exit_code = 0;
+    } catch (core::ExitProgramException &ee) {
+      exit_code = ee.getExitResult();
     }
+    return exit_code;
   };
 
   SourceFileInfo_mv Lisp_O::getOrRegisterSourceFileInfo(const string &fileName, T_sp sourceDebugNamestring, size_t sourceDebugOffset, bool useLineno) {

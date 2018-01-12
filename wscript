@@ -722,11 +722,14 @@ def configure(cfg):
     cfg.define("METER_ALLOCATIONS",1)
     cfg.define("DEBUG_TRACE_INTERPRETED_CLOSURES",1)
     cfg.define("DEBUG_ENVIRONMENTS",1)
-    cfg.define("DEBUG_RELEASE",1)   # Turn off optimization for a few C++ functions; undef this to optimize everything
+#    cfg.define("DEBUG_RELEASE",1)   # Turn off optimization for a few C++ functions; undef this to optimize everything
+    cfg.define("DEBUG_LEXICAL_DEPTH",1) # Generate tests for lexical closure depths
 #    cfg.define("DEBUG_CACHE",1)      # Debug the dispatch caches - see cache.cc
 #    cfg.define("DEBUG_BITUNIT_CONTAINER",1)  # prints debug info for bitunit containers
 #    cfg.define("DEBUG_ZERO_KIND",1);
-#    cfg.define("DEBUG_FLOW_CONTROL",1)
+#    cfg.define("DEBUG_FLOW_CONTROL",1)  # broken - probably should be removed unless it can be 
+#    cfg.define("DEBUG_RETURN_FROM",1)   # broken
+    cfg.define("DEBUG_FLOW_TRACKER",1)  # record small backtraces to track flow
 #    cfg.define("DEBUG_DYNAMIC_BINDING_STACK",1)
 #    cfg.define("DEBUG_VALUES",1)   # turn on printing (values x y z) values when core:*debug-values* is not nil
 #    cfg.define("DEBUG_IHS",1)
@@ -739,8 +742,9 @@ def configure(cfg):
     cfg.define("DEBUG_FASTGF",1)   # generate slow gf dispatch logging and write out dispatch functions to /tmp/dispatch-history-**
 #    cfg.define("DEBUG_REHASH_COUNT",1)   # Keep track of the number of times each hash table has been rehashed
 #    cfg.define("DEBUG_MONITOR",1)   # generate logging messages to a file in /tmp for non-hot code
-#    cfg.define("DEBUG_BCLASP_LISP",1)  # Generate debugging frames for all bclasp code - like declaim
+    cfg.define("DEBUG_BCLASP_LISP",1)  # Generate debugging frames for all bclasp code - like declaim
 #    cfg.define("DEBUG_CCLASP_LISP",1)  # Generate debugging frames for all cclasp code - like declaim
+#    cfg.define("DONT_OPTIMIZE_BCLASP",1)  # Optimize bclasp by editing llvm-ir
 #    cfg.define("DEBUG_BOUNDS_ASSERT",1)
 #    cfg.define("DEBUG_SLOT_ACCESSORS",1)
 #    cfg.define("DISABLE_TYPE_INFERENCE",1)
@@ -831,6 +835,7 @@ def build(bld):
     bld.extensions_gcinterface_include_files = []
     bld.extensions_builders = []
     variant = eval(bld.variant+"()")
+    bld.bclasp_executable = bld.path.find_or_declare(variant.executable_name(stage='b'))
     bld.cclasp_executable = bld.path.find_or_declare(variant.executable_name(stage='c'))
     bld.asdf_fasl_bclasp = bld.path.find_or_declare("%s/src/lisp/modules/asdf/asdf.fasl" % variant.fasl_dir(stage='b'))
     bld.asdf_fasl_cclasp = bld.path.find_or_declare("%s/src/lisp/modules/asdf/asdf.fasl" % variant.fasl_dir(stage='c'))
@@ -882,6 +887,8 @@ def build(bld):
     fastgf_bitcode_node = bld.path.find_or_declare(variant.inline_bitcode_archive_name("fastgf"))
     cclasp_common_lisp_bitcode = bld.path.find_or_declare(variant.common_lisp_bitcode_name(bld.use_human_readable_bitcode,stage='c'))
     cxx_all_bitcode_node = bld.path.find_or_declare(variant.cxx_all_bitcode_name())
+    build_node = bld.path.find_dir(out)
+    bclasp_symlink_node = build_node.make_node("bclasp")
     if (bld.env['DEST_OS'] == LINUX_OS ):
         executable_dir = "bin"
         bld_task = bld.program(source=source_files,
@@ -938,6 +945,38 @@ def build(bld):
         bld.add_to_group(lnk_bclasp)
         bld.install_files('${PREFIX}/lib/clasp/', bld.bclasp_fasl, relative_trick = True, cwd = bld.path)
         bld.install_files('${PREFIX}/lib/clasp/', bclasp_common_lisp_bitcode, relative_trick = True, cwd = bld.path)
+        if (False):   # build bclasp executable
+            lnk_bclasp_exec = link_executable(env=bld.env)
+            lnk_bclasp_exec.set_inputs([bclasp_common_lisp_bitcode,cxx_all_bitcode_node])
+            print("About to try and recurse into extensions again")
+            bld.recurse('extensions')
+            if ( bld.env['DEST_OS'] == DARWIN_OS ):
+                if (bld.env.LTO_FLAG):
+                    bclasp_lto_o = bld.path.find_or_declare('%s_exec.lto.o' % variant.executable_name(stage='b'))
+                    lnk_bclasp_exec.set_outputs([bld.bclasp_executable,bclasp_lto_o])
+                else:
+                    bclasp_lto_o = None
+                    lnk_bclasp_exec.set_outputs([bld.bclasp_executable])
+            else: 
+                bclasp_lto_o = None
+                lnk_bclasp_exec.set_outputs(bld.bclasp_executable)
+            print("lnk_executable for bclasp -> %s" % (lnk_bclasp_exec.inputs+lnk_bclasp_exec.outputs))
+            bld.add_to_group(lnk_bclasp_exec)
+            if ( bld.env['DEST_OS'] == DARWIN_OS ):
+                bclasp_dsym = bld.path.find_or_declare("%s.dSYM"%variant.executable_name(stage='b'))
+                bclasp_dsym_files = generate_dsym_files(variant.executable_name(stage='b'),bclasp_dsym)
+                print("bclasp_dsym_files = %s" % bclasp_dsym_files)
+                dsymutil_bclasp = dsymutil(env=bld.env)
+                if (bclasp_lto_o):
+                    dsymutil_bclasp.set_inputs([bld.bclasp_executable,bclasp_lto_o])
+                else:
+                    dsymutil_bclasp.set_inputs([bld.bclasp_executable])
+                dsymutil_bclasp.set_outputs(bclasp_dsym_files)
+                bld.add_to_group(dsymutil_bclasp)
+                bld.install_files('${PREFIX}/%s/%s' % (executable_dir, bclasp_dsym.name), bclasp_dsym_files, relative_trick = True, cwd = bclasp_dsym)
+            bld.install_as('${PREFIX}/%s/%s' % (executable_dir, bld.bclasp_executable.name), bld.bclasp_executable, chmod = Utils.O755)
+            bld.symlink_as('${PREFIX}/%s/clasp' % executable_dir, '%s' % bld.bclasp_executable.name)
+            os.symlink(bld.bclasp_executable.abspath(),bclasp_symlink_node.abspath())
         # # Build ASDF for bclasp
         # cmp_asdf = compile_module(env=bld.env)
         # cmp_asdf.set_inputs([bld.iclasp_executable,bld.bclasp_fasl] + fix_lisp_paths(bld.path,out,variant,["src/lisp/modules/asdf/build/asdf"]))
@@ -982,7 +1021,6 @@ def build(bld):
         cmp_asdf.set_outputs(bld.asdf_fasl_cclasp)
         bld.add_to_group(cmp_asdf)
         bld.install_files('${PREFIX}/lib/clasp/', bld.asdf_fasl_cclasp, relative_trick = True, cwd = bld.path)
-        build_node = bld.path.find_dir(out)
         print("build_node = %s" % build_node)
         clasp_symlink_node = build_node.make_node("clasp")
         print("clasp_symlink_node =  %s" % clasp_symlink_node)

@@ -399,7 +399,7 @@ int handleFatalCondition() {
   int exitCode = 0;
   try {
     throw;
-  } catch (core::ExitProgram &ee) {
+  } catch (core::ExitProgramException &ee) {
     // Do nothing
     //            printf("Caught ExitProgram in %s:%d\n", __FILE__, __LINE__);
     exitCode = ee.getExitResult();

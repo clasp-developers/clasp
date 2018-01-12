@@ -21,9 +21,22 @@
 
 ;;; ------------------------------------------------------------
 ;;;
+;;;   Turn on flow tracker
+;;;
+
+#+debug-flow-tracker
+(if (member :flow-tracker *features*)
+    (progn
+      (core:bformat t "Turning flow-tracker on\n")
+      (gctools:flow-tracker-on)))
+
+
+;;; ------------------------------------------------------------
+;;;
 ;;; Set *echo-repl-read* to t to print each repl form
 ;;;
 (setq *echo-repl-read* nil)
+
 (setq *echo-repl-tpl-read* (member :emacs-inferior-lisp *features*))
 (setq *load-print* nil)
 
@@ -65,7 +78,7 @@
 ;;; Turn on aclasp/bclasp activation-frame optimization
 (sys:*make-special '*activation-frame-optimize*)
 (setq *activation-frame-optimize* t)
-(setq *features* (cons :optimize-bclasp *features*))
+#-dont-optimize-bclasp (setq *features* (cons :optimize-bclasp *features*))
 (sys:*make-special '*use-human-readable-bitcode*)
 (setq *use-human-readable-bitcode* (member :use-human-readable-bitcode *features*))
 (sys:*make-special '*compile-file-debug-dump-module*)
