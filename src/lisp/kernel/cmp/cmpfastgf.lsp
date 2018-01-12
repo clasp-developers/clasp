@@ -618,7 +618,7 @@
   (cf-log "codegen-outcome\n")
   ;; The effective method will be found in a slot in the modules *gf-data* array
   ;;    the slot index will be in gf-data-id
-  (let* ((outcome (outcome-outcome node)))
+  (let ((outcome (outcome-outcome node)))
     #+(or)(when *log-gf*
             (core:bformat *log-gf* "About to codegen-outcome -> %s\n" outcome))
     (cond
