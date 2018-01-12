@@ -13,6 +13,12 @@
 (progn ;; Set up everything for building cclasp from bclasp with auto-compile
   (format t "Loading ASDF system~%")
   (finish-output)
+  (time (compile-file "sys:modules;asdf;build;asdf.lisp"))
+  (load "sys:local-asdf-config.lisp"))
+
+(progn ;; Set up everything for building cclasp from bclasp with auto-compile
+  (format t "Loading ASDF system~%")
+  (finish-output)
   (time (load "sys:modules;asdf;build;asdf.fasl"))
   (load "sys:local-asdf-config.lisp"))
 
