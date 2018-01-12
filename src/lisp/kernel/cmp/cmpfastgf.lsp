@@ -100,12 +100,17 @@
 (defstruct (klass (:type vector) :named) stamp name)
 (defstruct (outcome (:type vector) :named) outcome)
 (defstruct (match (:type vector) :named) outcome)
-(defstruct (single (:include match) (:type vector) :named) stamp class)
 (defstruct (range (:include match) (:type vector) :named) first-stamp last-stamp reversed-classes)
 (defstruct (skip (:include match) (:type vector) :named))
 (defstruct (node (:type vector) :named) (eql-specializers (make-hash-table :test #'eql) :type hash-table)
            (class-specializers nil :type list))
 
+;; Degenerate range node with only one stamp are useful to create/note.
+(defun make-single (&key stamp class outcome)
+  (make-range :reversed-classes (list class) :outcome outcome :first-stamp stamp :last-stamp stamp))
+(defun single-p (match)
+  (and (range-p match)
+       (= (range-first-stamp match) (range-last-stamp match))))
 
 (defstruct (argument-holder (:type vector) :named)
   ;; Slots to store the arguments
@@ -171,7 +176,7 @@
       (node-eql-add node spec argument-index specializers goal)
       (node-class-add node spec argument-index specializers goal)))
 
-(defun insert-sorted (item lst &optional (test #'<) (key #'single-stamp))
+(defun insert-sorted (item lst &optional (test #'<) (key #'range-first-stamp))
   (if (null lst)
       (list item)
       (if (funcall test (funcall key item) (funcall key (car lst)))
@@ -201,7 +206,7 @@
                       ((symbolp spec) (core:class-stamp-for-instances (find-class spec)))
                       ((klass-p spec) (klass-stamp spec))
                       (t (error "Illegal specializer ~a" spec))))
-             (match (find stamp (node-class-specializers node) :test #'eql :key #'single-stamp)))
+             (match (find stamp (node-class-specializers node) :test #'eql :key #'range-first-stamp)))
         (if match
             (if (outcome-p (match-outcome match))
                 (warn "The dispatch function has two selectors with different outcomes~%---- argument-index: ~a~%---- specializers: ~a~%---- goal: ~a~%---- current node: ~a~%---- stamp: ~a~%---- match: ~a" argument-index specializers goal node stamp match)
@@ -228,48 +233,35 @@
         (let ((outcome (ensure-outcome argument-index specializers goal)))
           (setf (gethash eql-value eql-ht) outcome)))))
 
-(defun extends-range-p (prev-last-stamp prev-outcome next)
-  (and (= (1+ prev-last-stamp) (single-stamp next))
-       (equalp prev-outcome (single-outcome next))))
+(defun outcome= (outcome1 outcome2)
+  ;; FIXME: Put some thought into this.
+  (equalp outcome1 outcome2))
 
+;; Given a node that isn't a skip node (i.e. all "specializers" are ranges),
+;; modify its specializers so that adjacent ranges are merged together.
 (defun optimize-node-with-class-specializers (node)
-  (let ((class-specializers (node-class-specializers node))
-        merged merged-specializers)
-    (dolist (head class-specializers)
-      (let ((prev (car merged-specializers)))
-        (cond
-          ((null prev)
-           ;; There is no prev head or range
-           (push head merged-specializers))
-          ((and (range-p prev)
-                (extends-range-p (range-last-stamp prev)
-                                 (range-outcome prev)
-                                 head))
-           ;; The new head extends the previous range
-           (incf (range-last-stamp prev))
-           (push (single-class head) (range-reversed-classes prev))
-           (setf merged t))
-          ((range-p prev)
-           ;; The new head doesn't extend the prev range
-           (push head merged-specializers))
-          ((extends-range-p (single-stamp prev)
-                            (single-outcome prev)
-                            head)
-           ;; prev was a single match but with the new head
-           ;; they make a range.  Pop prev from merged-specializers
-           ;; and push a range-match
-           (pop merged-specializers)
-           (push (make-range :first-stamp (single-stamp prev)
-                             :last-stamp (single-stamp head)
-                             :reversed-classes (list (single-class head)
-                                                     (single-class prev))
-                             :outcome (single-outcome head))
-                 merged-specializers)
-           (setf merged t))
-          (t (push head merged-specializers)))))
-    (when merged
-      (setf (node-class-specializers node) (nreverse merged-specializers))))
-  node)
+  (when (null (node-class-specializers node))
+    (return-from optimize-node-with-class-specializers))
+  (let* ((class-specializers (node-class-specializers node))
+         ;; FIXME: copy is due to an abundance of paranoia, and may not be necessary.
+         (sorted (sort (copy-list class-specializers) #'< :key #'range-first-stamp))
+         (working (first sorted))
+         merged)
+    ;; Now we proceed through the list trying to merge the first with the rest.
+    ;; Once we find one we can't merge with, throw it on the complete list.
+    (dolist (match (rest sorted))
+      (if (and (= (1+ (range-last-stamp working)) (range-first-stamp match))
+               (outcome= (range-outcome working) (range-outcome match)))
+          ;; ranges touch: merge by increasing working's last stamp.
+          (setf (range-last-stamp working) (range-last-stamp match)
+                ;; note: i think this reversed-classes field is only used for debugging,
+                ;; and perhaps could be removed or simplified.
+                (range-reversed-classes working)
+                (append (range-reversed-classes match) (range-reversed-classes working)))
+          ;; range is distinct: throw working on the pile and continue anew.
+          (setf merged (cons working merged) working match)))
+    (push working merged)
+    (setf (node-class-specializers node) (nreverse merged))))
 
 (defun skip-node-p (node)
   (let ((class-specializers (node-class-specializers node)))
@@ -326,8 +318,8 @@
     ((= (length matches) 1)
      (let ((match (car matches)))
        (if (single-p match)
-	   `(if (= ,stamp-var ,(single-stamp match))
-		,(compile-node-or-outcome (single-outcome match) args orig-args)
+	   `(if (= ,stamp-var ,(range-first-stamp match))
+		,(compile-node-or-outcome (match-outcome match) args orig-args)
 		(go miss))
 	   `(if (and (>= ,stamp-var ,(range-first-stamp match)) (<= ,stamp-var ,(range-last-stamp match)))
 		,(compile-node-or-outcome (match-outcome match) args orig-args)
@@ -337,9 +329,7 @@
 	    (left-matches (subseq matches 0 len-div-2))
 	    (right-matches (subseq matches len-div-2))
 	    (right-head (car right-matches))
-	    (right-stamp (if (single-p right-head)
-			     (single-stamp right-head)
-			     (range-first-stamp right-head))))
+	    (right-stamp (range-first-stamp right-head)))
        `(if (< ,stamp-var ,right-stamp)
 	    ,(compile-class-binary-search left-matches stamp-var args orig-args)
 	    ,(compile-class-binary-search right-matches stamp-var args orig-args))))))
@@ -420,9 +410,12 @@
                  (push (list (prog1 idx (incf idx))
                              (cond
                                ((single-p x)
-                                (core:bformat nil "%s;%s" (single-stamp x) (safe-class-name (single-class x))))
+                                (core:bformat nil "%s;%s" (range-first-stamp x)
+                                              (safe-class-name (first (range-reversed-classes x)))))
                                ((range-p x)
-                                (core:bformat nil "%s-%s;%s" (range-first-stamp x) (range-last-stamp x) (mapcar #'safe-class-name (reverse (range-reversed-classes x)))))
+                                (core:bformat nil "%s-%s;%s"
+                                              (range-first-stamp x) (range-last-stamp x)
+                                              (mapcar #'safe-class-name (reverse (range-reversed-classes x)))))
                                ((skip-p x)
                                 (core:bformat nil "SKIP"))
                                (t (error "Unknown class-specializer type ~a" x)))
@@ -637,12 +630,12 @@
     ((= (length matches) 1)
      (let ((match (car matches)))
        (if (single-p match)
-	   (let ((cmpeq (irc-icmp-eq stamp-var (jit-constant-i64 (single-stamp match)) "eq"))
+	   (let ((cmpeq (irc-icmp-eq stamp-var (jit-constant-i64 (range-first-stamp match)) "eq"))
 		 (true-branch (irc-basic-block-create "match"))
 		 (false-branch (irc-basic-block-create "cont")))
 	     (irc-cond-br cmpeq true-branch false-branch)
 	     (irc-begin-block true-branch)
-	     (codegen-node-or-outcome arguments cur-arg (single-outcome match))
+	     (codegen-node-or-outcome arguments cur-arg (range-outcome match))
 	     (irc-begin-block false-branch)
 	     (irc-br (argument-holder-miss-basic-block arguments)))
 	   (let ((ge-first-branch (irc-basic-block-create "gefirst"))
@@ -660,9 +653,7 @@
 	    (left-matches (subseq matches 0 len-div-2))
 	    (right-matches (subseq matches len-div-2))
 	    (right-head (car right-matches))
-	    (right-stamp (if (single-p right-head)
-			     (single-stamp right-head)
-			     (range-first-stamp right-head))))
+	    (right-stamp (range-first-stamp right-head)))
        (let ((lt-branch (irc-basic-block-create "lt-branch"))
 	     (gte-branch (irc-basic-block-create "gte-branch"))
 	     (cmplt (irc-icmp-slt stamp-var (jit-constant-i64 right-stamp) "lt")))
