@@ -613,18 +613,15 @@
   (cf-log "codegen-outcome\n")
   ;; The effective method will be found in a slot in the modules *gf-data* array
   ;;    the slot index will be in gf-data-id
-  (let* ((outcome (outcome-outcome node))
-         (existing-effective-method-block (gethash outcome *outcomes*)))
+  (let ((outcome (outcome-outcome node)))
     #+(or)(when *log-gf*
             (core:bformat *log-gf* "About to codegen-outcome -> %s\n" outcome))
-    (if existing-effective-method-block
-	(irc-br existing-effective-method-block)
-        (cond
-          ((optimized-slot-reader-p outcome)
-           (codegen-slot-reader arguments cur-arg outcome))
-          ((optimized-slot-writer-p outcome)
-           (codegen-slot-writer arguments cur-arg outcome))
-          (t (codegen-effective-method-call arguments cur-arg outcome))))))
+    (cond
+      ((optimized-slot-reader-p outcome)
+       (codegen-slot-reader arguments cur-arg outcome))
+      ((optimized-slot-writer-p outcome)
+       (codegen-slot-writer arguments cur-arg outcome))
+      (t (codegen-effective-method-call arguments cur-arg outcome)))))
 
 (defun codegen-class-binary-search (arguments cur-arg matches stamp-var)
   (cf-log "codegen-class-binary-search\n")
