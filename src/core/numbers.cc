@@ -1883,6 +1883,15 @@ Number_sp Ratio_O::signum_() const {
   return clasp_signum(this->_numerator);
 }
 
+Number_sp Ratio_O::sqrt_() const {
+  // (sqrt (/ x y)) = (/ (sqrt x) (sqrt y))
+  return clasp_divide(clasp_sqrt(this->_numerator), clasp_sqrt(this->_denominator));
+}
+
+Number_sp Ratio_O::reciprocal_() const {
+  return Ratio_O::create(this->_denominator, this->_numerator);
+}
+
 void Ratio_O::setf_numerator_denominator(Integer_sp inum, Integer_sp idenom)
 {
   Integer_sp gcd = clasp_gcd(inum,idenom);
@@ -2018,6 +2027,10 @@ Number_sp Bignum_O::sqrt_() const {
     return Complex_O::create(clasp_make_single_float(0.0), clasp_make_single_float(sqrt(-z)));
   else
     return clasp_make_single_float(sqrt(z));
+}
+
+Number_sp Bignum_O::reciprocal_() const {
+  return Rational_O::create(clasp_to_mpz(clasp_make_fixnum(1)), this->_value);
 }
 
 CL_LAMBDA(arg);

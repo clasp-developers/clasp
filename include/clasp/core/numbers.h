@@ -691,6 +691,8 @@ namespace core {
     string __repr__() const;
     Number_sp signum_() const;
     Number_sp abs_() const;
+    Number_sp sqrt_() const;
+    Number_sp reciprocal_() const;
     Number_sp rational_() const final { return this->asSmartPtr(); };
     bool isnan_() const;
 
