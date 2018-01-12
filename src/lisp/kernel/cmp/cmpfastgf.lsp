@@ -268,7 +268,8 @@
            (setf merged t))
           (t (push head merged-specializers)))))
     (when merged
-      (setf (node-class-specializers node) (nreverse merged-specializers)))))
+      (setf (node-class-specializers node) (nreverse merged-specializers))))
+  node)
 
 (defun skip-node-p (node)
   (let ((class-specializers (node-class-specializers node)))
@@ -870,27 +871,21 @@
                   *dispatcher-count*)
              (mp:unlock *dispatcher-count-lock*)))
 
-(defun codegen-dispatcher (generic-function &key generic-function-name output-path log-gf (debug-on t debug-on-p))
-  (let* ((*log-gf* log-gf)
-         (raw-call-history (clos:generic-function-call-history generic-function))
-         (specializer-profile (clos:generic-function-specializer-profile generic-function))
-         (call-history (optimized-call-history raw-call-history specializer-profile))
-         (debug-on (if debug-on-p
+(defun calculate-dtree (raw-call-history specializer-profile)
+  (let ((call-history (optimized-call-history raw-call-history specializer-profile)))
+    (let ((dt (make-dtree)))
+      (cond
+        (call-history (dtree-add-call-history dt call-history))
+        (raw-call-history
+         (dtree-add-call-history dt (list (cons #() (cdr (car raw-call-history))))))
+        (t (error "codegen-dispatcher was called with an empty call-history - no dispatcher can be generated")))
+      dt)))
+    
+(defun codegen-dispatcher-from-dtree (generic-function dtree &key (generic-function-name "discriminator") output-path log-gf (debug-on t debug-on-p))
+  (let ((debug-on (if debug-on-p
                        debug-on
                        (core:get-funcallable-instance-debug-on generic-function)))
-         (dtree (let ((dt (make-dtree)))
-                  (cond
-                    (call-history
-                     (dtree-add-call-history dt call-history))
-                    ;; If there is no call-history but there is a raw-call-history then
-                    ;; the outcome of every entry should be the same because there are no
-                    ;; specializers - so build a dispatch function that calls ignores
-                    ;; all arguments and immediately calls the first effective method.
-                    (raw-call-history
-                     (dtree-add-call-history dt (list (cons #() (cdr (car raw-call-history))))))
-                    (t (error "codegen-dispatcher was called with an empty call-history - no dispatcher can be generated")))
-                  dt))
-         (*the-module* (create-run-time-module-for-compile)))
+        (*the-module* (create-run-time-module-for-compile)))
     #+(or)(unless call-history
             (core:bformat t "codegen-dispatcher %s  optimized-call-history -> %s\n" generic-function-name call-history)
             (core:bformat t "  raw-call-history -> %s\n" raw-call-history)
@@ -1016,6 +1011,13 @@
                   (debug-save-dispatcher generic-function *the-module* disp-fn startup-fn shutdown-fn sorted-roots output-path))
                 (let* ((compiled-dispatcher (jit-add-module-return-dispatch-function *the-module* disp-fn startup-fn shutdown-fn sorted-roots)))
                   compiled-dispatcher)))))))))
+
+(defun codegen-dispatcher (generic-function &rest args &key generic-function-name output-path log-gf (debug-on t debug-on-p))
+  (let* ((raw-call-history (clos:generic-function-call-history generic-function))
+         (specializer-profile (clos:generic-function-specializer-profile generic-function))
+         (*log-gf* log-gf)
+         (dtree (calculate-dtree raw-call-history specializer-profile)))
+    (apply 'codegen-dispatcher-from-dtree generic-function dtree args)))
 
 (export '(make-dtree
 	  dtree-add-call-history
