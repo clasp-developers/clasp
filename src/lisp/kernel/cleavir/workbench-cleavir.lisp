@@ -14,7 +14,6 @@
   (core::link-addons)
   (format t "Done building addons~%"))
 
-
 (progn ;; Set up everything for building cclasp from bclasp with auto-compile
   (format t "Loading ASDF system~%")
   (finish-output)
