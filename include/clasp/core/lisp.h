@@ -972,8 +972,8 @@ public:
 	 */
   //	T_sp parseCodeString(const string& str);
 
-  /*! Run the program, if _ExitStatus != 0 there was an error */
-  void run();
+  /*! Run the program, if returns _ExitStatus != 0 there was an error */
+  int run();
 
   string errorMessage();
 

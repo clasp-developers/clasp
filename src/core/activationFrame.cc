@@ -165,6 +165,7 @@ string ValueFrame_O::summaryOfContents() const {
         ss << "-->" << _rep_(this->operator[](i)) << "  ";
       }
     }
+    ss << "Parent@" << (void*)this->_Parent.raw_();
     ss << std::endl;
   }
   return ((ss.str()));
@@ -320,7 +321,6 @@ T_sp TagbodyFrame_O::_lookupTagbodyId(int depth, int index) const {
   --depth;
   return Environment_O::clasp_lookupTagbodyId(this->parentFrame(), depth, index);
 }
-#endif
 
 
 string TagbodyFrame_O::summaryOfContents() const {
@@ -334,5 +334,6 @@ string TagbodyFrame_O::asString() const {
   return this->summaryOfContents();
 }
 
+#endif
 
 };

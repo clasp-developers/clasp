@@ -497,7 +497,7 @@ namespace core {
     virtual bool operator>(T_sp obj) const { return !this->operator<=(obj); };
     virtual bool operator>=(T_sp obj) const { return !this->operator<(obj); };
 
-    virtual void validate() const {};
+//    virtual void validate() const {};
 
     //! This is to support Derivable<T> classes in clbind
     virtual void* pointerToAlienWithin() { SUBIMP(); };

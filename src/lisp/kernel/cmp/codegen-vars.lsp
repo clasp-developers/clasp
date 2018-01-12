@@ -51,7 +51,7 @@
 #+optimize-bclasp
 (progn
   (defstruct (lexical-variable-reference (:type vector))
-    symbol start-env start-renv depth index instruction ref-env)
+    symbol start-env start-renv depth index instruction #+debug-lexical-depth ensure-frame-unique-id ref-env)
   (defvar *lexical-variable-references*))
 
 
@@ -60,25 +60,34 @@
 #+optimize-bclasp
 (progn
   (defstruct (value-frame-maker-reference (:type vector))
-    instruction new-env new-renv parent-env parent-renv)
+    instruction #+debug-lexical-depth frame-unique-id #+debug-lexical-depth set-frame-unique-id new-env new-renv parent-env parent-renv)
   (defvar *make-value-frame-instructions*))
 
 #+optimize-bclasp
 (progn
   ;;; Store the block environment, the push and the pop instructions for the block
-  (defstruct (block-frame-maker (:type vector))
-    (needed nil) block-symbol push-frame-instruction
-    (handle-instructions nil)
-    (handle-arguments nil)
-    (pop-frame-instructions nil))
+  (defstruct (block-frame-info (:type vector))
+    (needed nil)
+    block-environment
+    block-symbol
+    make-block-frame-instruction
+    #+debug-lexical-depth frame-unique-id
+    #+debug-lexical-depth set-frame-unique-id
+    initialize-block-closure-instruction)
   (defstruct (throw-return-from (:type vector))
-    instruction start-env block-symbol)
+    instruction
+    #+debug-lexical-depth ensure-frame-unique-id
+    depth start-env start-renv block-env block-symbol)
   (defvar *throw-return-from-instructions*))
 
 #+optimize-bclasp
 (progn
-  (defstruct (tagbody-frame-maker (:type vector))
-    instruction )
+  (defstruct (tagbody-frame-info (:type vector))
+    (needed nil)
+    tagbody-environment
+    make-tagbody-frame-instruction
+    #+debug-lexical-depth setFrameUniqueId
+    initialize-tagbody-closure)
   (defstruct (throw-dynamic-go (:type vector))
     instruction index depth start-env start-renv tagbody-env)
   (defvar *throw-dynamic-go-instructions*))
@@ -144,14 +153,20 @@
     variable-map))
 
 (defun convert-to-register-access (register var-ref)
-  (let* ((symbol (lexical-variable-reference-symbol var-ref)))
+  (let* ((symbol (lexical-variable-reference-symbol var-ref))
+         #+debug-lexical-depth(ensure-frame-unique-id (lexical-variable-reference-ensure-frame-unique-id var-ref)))
     (cv-log "Converting %s to a register register -> %s\n" symbol register)
     (multiple-value-bind (the-function primitive-info)
         (get-or-declare-function-or-error *the-module* "registerReference")
-      (let ((orig-instr (lexical-variable-reference-instruction var-ref)))
-        (llvm-sys:replace-call orig-instr
-                               the-function
+      (let ((the-function (get-or-declare-function-or-error *the-module* "registerReference"))
+            (ignore-ensure-frame-unique-id (get-or-declare-function-or-error *the-module* "ignore_ensureFrameUniqueId"))
+            (orig-instr (lexical-variable-reference-instruction var-ref)))
+        (llvm-sys:replace-call the-function
+                               orig-instr
                                (list register))
+        #+debug-lexical-depth(llvm-sys:replace-call ignore-ensure-frame-unique-id
+                                                    (first ensure-frame-unique-id)
+                                                    nil)
         (cv-log "Finished replace call\n")))))
 
 (defun convert-instructions-to-use-registers (refs variable-map)
@@ -168,31 +183,39 @@
 
 (defun resize-closures-and-make-non-closures-invisible (new-value-environment-instructions
                                                         closure-environments)
-  (dolist (env-maker new-value-environment-instructions)
-    (let* ((new-env (value-frame-maker-reference-new-env env-maker))
-           (new-renv (value-frame-maker-reference-new-renv env-maker))
-           (instr (value-frame-maker-reference-instruction env-maker))
-           (closure-size (gethash new-env closure-environments)))
-      (if closure-size
-          ;;rewrite the allocation to be the optimized size
-          (multiple-value-bind (the-function primitive-info)
-              (get-or-declare-function-or-error *the-module* "makeValueFrameSetParent")
-            (let* ((args (llvm-sys:call-or-invoke-get-argument-list instr))
-                   (parent-renv (car (last args))))
-              (llvm-sys:replace-call instr the-function
-                                     (list (jit-constant-i64 closure-size) parent-renv))))
-          ;;(bformat *debug-io* "function-name -> %s\n" function-name)
-          (multiple-value-bind (the-function primitive-info)
-              (get-or-declare-function-or-error *the-module* "invisible_makeValueFrameSetParent")
-            (core:set-invisible new-env t)
-            (let* ((args (llvm-sys:call-or-invoke-get-argument-list instr))
-                   (parent-renv (car (last args))))
-              (llvm-sys:replace-call instr the-function (list parent-renv))))))))
+  (maphash (lambda (environment env-maker)
+             (let* ((new-env (value-frame-maker-reference-new-env env-maker))
+                    (new-renv (value-frame-maker-reference-new-renv env-maker))
+                    (instr (value-frame-maker-reference-instruction env-maker))
+                    #+debug-lexical-depth (set-frame-unique-id (value-frame-maker-reference-set-frame-unique-id env-maker))
+                    (closure-size (gethash new-env closure-environments)))
+               (if closure-size
+                   ;;rewrite the allocation to be the optimized size
+                   (multiple-value-bind (the-function primitive-info)
+                       (get-or-declare-function-or-error *the-module* "makeValueFrameSetParent")
+                     (let* ((args (llvm-sys:call-or-invoke-get-argument-list instr))
+                            (parent-renv (car (last args))))
+                       (llvm-sys:replace-call the-function
+                                              instr                                      
+                                              (list (jit-constant-i64 closure-size) parent-renv))))
+                   ;;(bformat *debug-io* "function-name -> %s\n" function-name)
+                   (let ((the-function (get-or-declare-function-or-error *the-module* "invisible_makeValueFrameSetParent"))
+                         #+debug-lexical-depth(ignore-set-frame-unique-id (get-or-declare-function-or-error *the-module* "ignore_setFrameUniqueId")))
+                     (core:set-invisible new-env t)
+                     (let* ((args (llvm-sys:call-or-invoke-get-argument-list instr))
+                            (parent-renv (car (last args))))
+                       (llvm-sys:replace-call the-function instr (list parent-renv))
+                       #+debug-lexical-depth (funcall 'llvm-sys:replace-call
+                                                      ignore-set-frame-unique-id
+                                                      (car set-frame-unique-id)
+                                                      nil))))))
+           new-value-environment-instructions))
 
 (defun rewrite-lexical-variable-references-for-new-depth (variable-map instructions)
   (dolist (ref instructions)
     (let* ((ref-env (lexical-variable-reference-ref-env ref))
            (index (lexical-variable-reference-index ref))
+           #+debug-lexical-depth(ensure-frame-unique-id (lexical-variable-reference-ensure-frame-unique-id ref))
            (symbol (lexical-variable-reference-symbol ref))
            (key (binding-key ref-env index symbol))
            (var-info (gethash key variable-map)))
@@ -201,23 +224,57 @@
                (depth (lexical-variable-reference-depth ref))
                (new-depth (core:calculate-runtime-visible-environment-depth start-env ref-env))
                (instr (lexical-variable-reference-instruction ref))
-               (new-index (closure-cell-new-index var-info)))
-          (multiple-value-bind (the-function primitive-info)
-              (get-or-declare-function-or-error *the-module* "lexicalValueReference")
-            (cv-log "About to replace lexicalValueReference for %s  (old depth/index %d/%d)  (new depth/index %d/%d) to env %s  from env %s !!!!!!\n"
-                    symbol depth index new-depth new-index (core:environment-address ref-env) start-env)
-            #+(or)(progn
-                    (bformat *debug-io* "In rewrite-lexical-variable-references-for-new-depth\n")
-                    (bformat *debug-io* "         rewrite instruction before -> %s\n" instr)
-                    (bformat *debug-io* "         arguments -> %s\n" (llvm-sys:call-or-invoke-get-argument-list instr)))
-            (let* ((args (llvm-sys:call-or-invoke-get-argument-list instr))
-                   (start-renv (car (last args)))
-                   (new-instr (llvm-sys:replace-call instr
-                                                     the-function
-                                                     (list (jit-constant-i32 new-depth)
-                                                           (jit-constant-i32 new-index)
-                                                           start-renv))))
-              new-instr)))))))
+               (new-index (closure-cell-new-index var-info))
+               (the-function (get-or-declare-function-or-error *the-module* "lexicalValueReference"))
+               (ensure-frame-unique-id-function (get-or-declare-function-or-error *the-module* "ensureFrameUniqueId")))
+          (cv-log "About to replace lexicalValueReference for %s  (old depth/index %d/%d)  (new depth/index %d/%d) to env %s  from env %s !!!!!!\n"
+                  symbol depth index new-depth new-index (core:environment-address ref-env) start-env)
+          #+(or)(progn
+                  (bformat *debug-io* "In rewrite-lexical-variable-references-for-new-depth\n")
+                  (bformat *debug-io* "         rewrite instruction before -> %s\n" instr)
+                  (bformat *debug-io* "         arguments -> %s\n" (llvm-sys:call-or-invoke-get-argument-list instr)))
+          (let* ((args (llvm-sys:call-or-invoke-get-argument-list instr))
+                 (start-renv (car (last args)))
+                 (new-instr (llvm-sys:replace-call the-function
+                                                   instr
+                                                   (list (jit-constant-size_t new-depth)
+                                                         (jit-constant-size_t new-index)
+                                                         start-renv))))
+            #+debug-lexical-depth(let* ((instr (first ensure-frame-unique-id))
+                                        (args (llvm-sys:call-or-invoke-get-argument-list instr)))
+                                   (llvm-sys:replace-call ensure-frame-unique-id-function
+                                                          instr
+                                                          (list (first (second ensure-frame-unique-id))
+                                                                (jit-constant-size_t new-depth)
+                                                                (third args))))
+            new-instr))))))
+
+(defun rewrite-return-from-for-new-depth (instructions)
+  (dolist (return-from instructions)
+    (let ((instr (throw-return-from-instruction return-from))
+          (old-depth (throw-return-from-depth return-from))
+          (start-env (throw-return-from-start-env return-from))
+          (block-env (throw-return-from-block-env return-from)))
+      (let ((new-depth (core:calculate-runtime-visible-environment-depth start-env block-env)))
+        (let ((the-function (get-or-declare-function-or-error *the-module* "throwReturnFrom"))
+              #+debug-lexical-depth(ensure-frame-unique-id-function (get-or-declare-function-or-error *the-module* "ensureFrameUniqueId")))
+          (cv-log "About to replace call to %s\n" the-function)
+          (let* ((args (llvm-sys:call-or-invoke-get-argument-list instr))
+                 (start-renv (car (last args))))
+            (llvm-sys:replace-call the-function
+                                   instr
+                                   (list (jit-constant-size_t new-depth)
+                                         start-renv))
+            #+debug-lexical-depth(let* ((info (throw-return-from-ensure-frame-unique-id return-from))
+                                        (instr (first info))
+                                        (old-args (second info))
+                                        (args (llvm-sys:call-or-invoke-get-argument-list instr)))
+                                   (llvm-sys:replace-call ensure-frame-unique-id-function
+                                                          instr
+                                                          (list (first old-args)
+                                                                (jit-constant-size_t new-depth)
+                                                                (third args)))))
+          (cv-log "Done\n"))))))
 
 (defun rewrite-dynamic-go-for-new-depth (instructions)
   (dolist (go instructions)
@@ -232,41 +289,83 @@
           (cv-log "About to replace call to %s\n" the-function)
           (let* ((args (llvm-sys:call-or-invoke-get-argument-list instr))
                  (start-renv (car (last args))))
-            (llvm-sys:replace-call instr
-                                   the-function
+            (llvm-sys:replace-call the-function
+                                   instr
                                    (list (jit-constant-size_t new-depth)
                                          (jit-constant-size_t index)
                                          start-renv))))
         (cv-log "Done\n")))))
 
+(defstruct (track-rewrites (:type vector) :named)
+  (total 0)
+  (ignored 0)
+  (mutex (mp:make-lock :name 'rewrites)))
+
+(defvar *block-rewrite-counter* (make-track-rewrites)
+  "Keep track of block special operators that were seen and those that were rewritten to be ignored")
+  
 (defparameter *rewrite-blocks* t)
 (defun rewrite-blocks-with-no-return-froms (block-info)
-  (let ((blocks-rewritten 0))
-    (when *rewrite-blocks*
-      (multiple-value-bind (the-push-function push-primitive-info)
-          (get-or-declare-function-or-error *the-module* "ignore_pushBlockFrame")
-        (multiple-value-bind (the-handle-function handle-primitive-info)
-            (get-or-declare-function-or-error *the-module* "ignore_blockHandleReturnFrom")
-          (multiple-value-bind (the-unwind-function unwind-primitive-info)
-              (get-or-declare-function-or-error *the-module* "ignore_exceptionStackUnwind")
-            (maphash (lambda (env block-info)
-                       (unless (block-frame-maker-needed block-info)
-                         (incf blocks-rewritten)
-                         (llvm-sys:replace-call (block-frame-maker-push-frame-instruction block-info)
-                                                the-push-function
-                                                nil)
-                         (mapc (lambda (handle-instr argument)
-                                 (llvm-sys:replace-call handle-instr
-                                                        the-handle-function
-                                                        (list argument)))
-                               (block-frame-maker-handle-instructions block-info)
-                               (block-frame-maker-handle-arguments block-info))
-                         (dolist (pop-instr (block-frame-maker-pop-frame-instructions block-info))
-                           (llvm-sys:replace-call pop-instr
-                                                  the-unwind-function
-                                                  nil))))
-                     block-info)
-            (cv-log "Done\n")))))))
+  (when *rewrite-blocks*
+    (let ((ignore-make-block-frame-function (get-or-declare-function-or-error *the-module* "invisible_makeBlockFrameSetParent"))
+          (ignore-initialize-block-closure-function (get-or-declare-function-or-error *the-module* "ignore_initializeBlockClosure"))
+          #+debug-lexical-depth(ignore-set-frame-unique-id (get-or-declare-function-or-error *the-module* "ignore_setFrameUniqueId")))
+      (let ((total 0)
+            (ignored 0))
+        (maphash (lambda (env block-info)
+                   (incf total)
+                   (unless (block-frame-info-needed block-info)
+                     (incf ignored)
+                     (core:set-invisible (block-frame-info-block-environment block-info) t)
+                     (funcall 'llvm-sys:replace-call-keep-args ignore-make-block-frame-function
+                            (car (block-frame-info-make-block-frame-instruction block-info)))
+                     (funcall 'llvm-sys:replace-call-keep-args
+                            ignore-initialize-block-closure-function
+                            (car (block-frame-info-initialize-block-closure-instruction block-info)))
+                     #+debug-lexical-depth(funcall 'llvm-sys:replace-call
+                                                   ignore-set-frame-unique-id
+                                                   (car (block-frame-info-set-frame-unique-id block-info))
+                                                   nil)))
+                 block-info)
+        (unwind-protect
+             (progn
+               (mp:get-lock (track-rewrites-mutex *block-rewrite-counter*) nil)
+               (let ((total-sum (+ (track-rewrites-total *block-rewrite-counter*) total))
+                     (ignored-sum (+ (track-rewrites-ignored *block-rewrite-counter*) ignored)))
+                 (setf (track-rewrites-total *block-rewrite-counter*) total-sum)
+                 (setf (track-rewrites-ignored *block-rewrite-counter*) ignored-sum)))
+          (mp:giveup-lock (track-rewrites-mutex *block-rewrite-counter*)))
+        (cv-log "Done\n")))))
+
+(defvar *tagbody-rewrite-counter* (make-track-rewrites)
+  "Keep track of tagbody special operators that were seen and those that were rewritten to be ignored")
+  
+(defparameter *rewrite-tagbody* t)
+(defun rewrite-tagbody-with-no-go (tagbody-info)
+  (when *rewrite-tagbody*
+    (let ((ignore-make-tagbody-frame-function (get-or-declare-function-or-error *the-module* "invisible_makeTagbodyFrameSetParent"))
+          (ignore-initialize-tagbody-closure-function (get-or-declare-function-or-error *the-module* "ignore_initializeTagbodyClosure")))
+      (let ((total 0)
+            (ignored 0))
+        (maphash (lambda (env tagbody-info)
+                   (incf total)
+                   (unless (tagbody-frame-info-needed tagbody-info)
+                     (incf ignored)
+                     (core:set-invisible (tagbody-frame-info-tagbody-environment tagbody-info) t)
+                     (funcall 'llvm-sys:replace-call-keep-args ignore-initialize-tagbody-closure-function
+                            (car (tagbody-frame-info-initialize-tagbody-closure tagbody-info)))
+                     (funcall 'llvm-sys:replace-call-keep-args ignore-make-tagbody-frame-function
+                              (car (tagbody-frame-info-make-tagbody-frame-instruction tagbody-info)))))
+                 tagbody-info)
+        (unwind-protect
+             (progn
+               (mp:get-lock (track-rewrites-mutex *tagbody-rewrite-counter*) nil)
+(let ((total-sum (+ (track-rewrites-total *tagbody-rewrite-counter*) total))
+                     (ignored-sum (+ (track-rewrites-ignored *tagbody-rewrite-counter*) ignored)))
+                 (setf (track-rewrites-total *tagbody-rewrite-counter*) total-sum)
+                 (setf (track-rewrites-ignored *tagbody-rewrite-counter*) ignored-sum)))
+          (mp:giveup-lock (track-rewrites-mutex *tagbody-rewrite-counter*)))
+        (cv-log "Done\n")))))
 
 (defun rewrite-lexical-function-references-for-new-depth (lexical-function-references)
   (dolist (funcref lexical-function-references)
@@ -281,8 +380,8 @@
           (cv-log "About to replace call to %s\n" instr)
           (let* ((args (llvm-sys:call-or-invoke-get-argument-list instr))
                  (start-renv (car (last args))))
-            (llvm-sys:replace-call instr
-                                   the-function
+            (llvm-sys:replace-call the-function
+                                   instr
                                    (list (jit-constant-size_t new-depth)
                                          (jit-constant-size_t index)
                                          start-renv))))))))
@@ -297,6 +396,7 @@
                      (if (null new-index)
                          (setf (gethash env closure-environments) 1
                                new-index 0)
+
                          (setf (gethash env closure-environments) (+ 1 (gethash env closure-environments))))
                      (setf (gethash key variable-map)
                            (make-closure-cell :environment env
@@ -323,6 +423,8 @@
 ;;;              for activation frames that are now not necessary
 ;;;      rewrite-dynamic-go-for-new-depth - rewrites dynamic-go instructions
 ;;;              to account for the activation frames that are not necessary
+;;;      rewrite-return-from-for-new-depth - rewrites return-from instructions
+;;;              to account for the activation frames that are not necessary
 ;;;      rewrite-lexical-function-references-for-new-depth -
 ;;;              rewrites lexical function references to account for the
 ;;;              activation frames that are no longer necessary.
@@ -340,9 +442,9 @@
   #+optimize-bclasp
   (let ((variable-map (gensym)))
     `(let ((*lexical-variable-references* nil)
-           (*make-value-frame-instructions* nil)
+           (*make-value-frame-instructions* (make-hash-table))
            (*throw-dynamic-go-instructions* nil)
-           (*tagbody-frame-makers* nil)
+           (*tagbody-frame-info* (make-hash-table))
            (*throw-return-from-instructions* nil)
            (*block-frame-info* (make-hash-table))
            (*lexical-function-references* nil)
@@ -350,24 +452,33 @@
        (multiple-value-prog1 (progn ,@body)
          (when (and ,optimize *activation-frame-optimize*)
            (let ((,variable-map (optimize-value-environments *lexical-variable-references*)))
-             (cv-log "optimize-closures ,variable-map \n")
-             ;; Identify activation frame/environments that must be closures
-             ;; and optimize all other references to use alloca's in the stack frame
-             (optimize-closures ,variable-map *make-value-frame-instructions*)
-             ;; Rewrite lexical variable references to take into account the newly invisible environments
-             (cv-log "rewrite-lexical-variable-references-for-new-depth \n")
-             (rewrite-lexical-variable-references-for-new-depth ,variable-map *lexical-variable-references*)
-             ;; Rewrite pushBlockFrame instructions to ignore those that don't have return-froms
-             (cv-log "rewrite-blocks-with-no-return-froms \n")
-             (rewrite-blocks-with-no-return-froms *block-frame-info*)
-             ;; Rewrite lexicalDynamicGo instructions to take into account the newly invisible environments
-             (cv-log "rewrite-dynamic-go-for-new-depth \n")
-             (rewrite-dynamic-go-for-new-depth *throw-dynamic-go-instructions*)
-             ;; Rewrite lexicalFunction references to take into account the newly invisible environments
-             (cv-log "rewrite-lexical-function-references-for-new-depth \n")
-             (rewrite-lexical-function-references-for-new-depth *lexical-function-references*)
-             (cv-log "convert-instructions-to-use-registers \n")
-             (convert-instructions-to-use-registers *lexical-variable-references* ,variable-map)))))))
+             (progn
+               (cv-log "optimize-closures ,variable-map \n")
+               ;; Identify activation frame/environments that must be closures
+               ;; and optimize all other references to use alloca's in the stack frame
+               (optimize-closures ,variable-map *make-value-frame-instructions*)
+               (progn
+                 ;; Rewrite block instructions to ignore those that don't have return-froms
+                 (cv-log "rewrite-blocks-with-no-return-froms \n")
+                 (rewrite-blocks-with-no-return-froms *block-frame-info*)
+                 ;; Rewrite tagbody environment instructions to ignore those that don't have go's
+                 (cv-log "rewrite-tagbody-with-no-go \n")
+                 (rewrite-tagbody-with-no-go *tagbody-frame-info*)))
+             (progn
+               ;; Rewrite throwReturnFrom instructions to take into account the newly invisible environments
+               (cv-log "rewrite-return-from-for-new-depth \n")
+               (rewrite-return-from-for-new-depth *throw-return-from-instructions*)
+               ;; Rewrite lexicalDynamicGo instructions to take into account the newly invisible environments
+               (cv-log "rewrite-dynamic-go-for-new-depth \n")
+               (rewrite-dynamic-go-for-new-depth *throw-dynamic-go-instructions*)
+               ;; Rewrite lexicalFunction references to take into account the newly invisible environments
+               (cv-log "rewrite-lexical-function-references-for-new-depth \n")
+               (rewrite-lexical-function-references-for-new-depth *lexical-function-references*)
+               ;; Rewrite lexical variable references to take into account the newly invisible environments
+               (cv-log "rewrite-lexical-variable-references-for-new-depth \n")
+               (rewrite-lexical-variable-references-for-new-depth ,variable-map *lexical-variable-references*)
+               (cv-log "convert-instructions-to-use-registers \n")
+               (convert-instructions-to-use-registers *lexical-variable-references* ,variable-map))))))))
 
 ;;
 ;; variable lookups are in this file so we can compile-file it first and make 
@@ -439,41 +550,35 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; Two choices for codegen-lexical-var-reference
-(defun codegen-lexical-var-reference (symbol depth index env)
+(defun codegen-lexical-var-reference (symbol depth index start-env dest-env)
   ;;     The top one generates code to access the lexical-var references
   ;;      in activation frames as quickly as possible but cannot use registers
-  #+(or)
-  (let* ((renv (irc-renv env))
-         (frame renv))
-    (dotimes (i depth)
-      (setf frame (codegen-parent-frame-lookup frame)))
-    (let ((result    (codegen-local-lexical-var-reference index frame)))
-      ;; Check the calculated value
-      #+(or)
-      (let ((orig (irc-intrinsic "lexicalValueReference" (jit-constant-i32 depth) (jit-constant-i32 index) renv)))
-        (irc-int-to-ptr (irc-intrinsic "debug_match_two_uintptr_t" (irc-ptr-to-int result %uintptr_t%) (irc-ptr-to-int orig %uintptr_t%)) %tsp*%))
-      result))
   ;; This second option saves information that can be used later to convert local lexical variables into allocas
-  (let* ((start-renv (irc-load (irc-renv env)))
-         (instruction (irc-intrinsic "lexicalValueReference" (jit-constant-i32 depth) (jit-constant-i32 index) start-renv)))
+  (let* ((start-renv (irc-load (irc-renv start-env)))
+         #+debug-lexical-depth (info (gethash dest-env *make-value-frame-instructions*))
+         #+debug-lexical-depth (frame-unique-id (value-frame-maker-reference-frame-unique-id info))
+         #+debug-lexical-depth (ensure-frame-unique-id (irc-intrinsic "ensureFrameUniqueId"
+                                                                      (jit-constant-size_t frame-unique-id)
+                                                                      (jit-constant-size_t depth)
+                                                                      (irc-load (irc-renv start-env))))
+         (instruction (irc-intrinsic "lexicalValueReference" (jit-constant-size_t depth) (jit-constant-size_t index) start-renv)))
     #+optimize-bclasp(push (make-lexical-variable-reference :symbol symbol
-                                                            :start-env env
+                                                            :start-env start-env
                                                             :start-renv start-renv
                                                             :depth depth
                                                             :index index
-                                                            :instruction instruction)
+                                                            :instruction instruction
+                                                            #+debug-lexical-depth :ensure-frame-unique-id #+debug-lexical-depth (list ensure-frame-unique-id (list (jit-constant-size_t frame-unique-id)
+                                                                                                                                                                   (jit-constant-size_t depth)
+                                                                                                                                                                   (irc-load (irc-renv start-env))) ))
                            *lexical-variable-references*)
     instruction))
 
-(defun codegen-lexical-var-value (symbol depth index env)
-  (let ((ref (codegen-lexical-var-reference symbol depth index env)))
-    (irc-load ref "lexical-value-load")))
-
-
-(defun codegen-lexical-var-lookup (result symbol depth index env)
+(defun codegen-lexical-var-lookup (result symbol depth index src-env dest-env)
   "Generate IR for lookup of lexical value in runtime-env using depth and index"
   (dbg-set-current-debug-location-here)
-  (let ((val (codegen-lexical-var-value symbol depth index env)))
+  (let* ((ref (codegen-lexical-var-reference symbol depth index src-env dest-env))
+         (val (irc-load ref "lexical-value-load")))
     (irc-store val result))
   result)
 
@@ -482,20 +587,19 @@
   (let ((val (irc-load alloca)))
     (irc-store val result)))
 
-(defun codegen-var-lookup (result sym old-env)
+(defun codegen-var-lookup (result sym src-env)
   "Return IR code thsym returns the value of a symbol that is either lexical or special"
-  (let ((classified (variable-info old-env sym)))
-    (cmp-log "About to codegen-var-lookup for %s - classified as: %s  env->%s\n" sym classified old-env)
+  (let ((classified (variable-info src-env sym)))
+    (cmp-log "About to codegen-var-lookup for %s - classified as: %s  env->%s\n" sym classified src-env)
     (cond
       ((eq (car classified) 'ext:special-var)
-       (codegen-special-var-lookup result sym old-env))
+       (codegen-special-var-lookup result sym src-env))
       ((eq (car classified) 'ext:lexical-var)
-       (let ((depth-index (cddr classified)))
-         (codegen-lexical-var-lookup result
-                                     (second classified)
-                                     (first depth-index)
-                                     (second depth-index)
-                                     old-env)))
+       (let ((symbol (second classified))
+             (depth (third classified))
+             (index (fourth classified))
+             (dest-env (fifth classified)))
+         (codegen-lexical-var-lookup result symbol depth index src-env dest-env)))
       ((eq (car classified) 'ext:register-var)
        (cv-log "classified  register-var -> %s\n" classified)
        (codegen-register-var-lookup result (cdr classified)))
@@ -610,7 +714,7 @@ you need to also bind the target in the compile-time environment "
 	     ))
     ((eq (car target) 'ext:lexical-var)
      (cmp-log "compiling as a ext:lexical-var\n")
-     (values (codegen-lexical-var-reference (second target) 0 #|<-depth|# (cddr target) env)
+     (values (codegen-lexical-var-reference (second target) 0 #|<-depth|# (cddr target) env env)
 	     (car target)           ; target-type --> 'ext:lexical-var
 	     (cadr target)          ; target-symbol
 	     (cddr target)          ; target-lexical-index
