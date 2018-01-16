@@ -42,67 +42,63 @@
   (with-early-accessors (+standard-class-slots+)
     (values #'(lambda (.method-args. .next-methods. #| self |#) ; CHECKME
 		(declare (optimize (safety 0) (speed 3) (debug 0))
-                         (ignore .method-args. .next-methods.)
-			 (standard-object self)
+                         (ignore .next-methods.)
                          (core:lambda-name std-class-optimized-accessors.reader.lambda))
                 (core::bind-va-list (self) .method-args.
-                                    #+(or)(ensure-up-to-date-instance self)
-                                    (let* ((class (si:instance-class self))
-                                           (table (class-location-table class))
-                                           (index (gethash slot-name table))
-                                           (value (if (si::fixnump index)
-                                                      (si:instance-ref self (truly-the fixnum index))
-                                                      (car (truly-the cons index)))))
-                                      (if (si:sl-boundp value)
-                                          value
-                                          (values (slot-unbound (class-of self) self slot-name))))))
+                  #+(or)(ensure-up-to-date-instance self)
+                  (let* ((class (si:instance-class self))
+                         (table (class-location-table class))
+                         (index (gethash slot-name table))
+                         (value (if (si::fixnump index)
+                                    (si:instance-ref self (truly-the fixnum index))
+                                    (car (truly-the cons index)))))
+                    (if (si:sl-boundp value)
+                        value
+                        (values (slot-unbound (class-of self) self slot-name))))))
             #'(lambda (.method-args. .next-methods. #| value self |#) ; CHECKME
                 (declare (optimize (safety 0) (speed 3) (debug 0))
-                         (ignore .method-args. .next-methods.)
-                         (standard-object self)
+                         (ignore .next-methods.)
                          (core:lambda-name std-class-optimized-accessors.writer.lambda))
                 (core::bind-va-list (value self) .method-args.
-                                    #+(or)(ensure-up-to-date-instance self)
-                                    (let* ((class (si:instance-class self))
-                                           (table (class-location-table class))
-                                           (index (gethash slot-name table)))
-                                      (if (si::fixnump index)
-                                          (si:instance-set self (truly-the fixnum index) value)
-                                          (rplaca (truly-the cons index) value))))))))
+                  #+(or)(ensure-up-to-date-instance self)
+                  (let* ((class (si:instance-class self))
+                         (table (class-location-table class))
+                         (index (gethash slot-name table)))
+                    (if (si::fixnump index)
+                        (si:instance-set self (truly-the fixnum index) value)
+                        (rplaca (truly-the cons index) value))))))))
 
 (defun std-class-sealed-accessors (index)
   (declare (si::c-local)
 	   (fixnum index))
   (values #'(lambda (.method-args. .next-methods. #|self|#) ;; CHECKME
               (declare (optimize (safety 0) (speed 3) (debug 0))
-                       (ignore .method-args. .next-methods.)
-                       (standard-object self)
+                       (ignore .next-methods.)
                        (core:lambda-name std-class-sealed-accessors.reader.lambda))
               (core::bind-va-list (self) .method-args.
-                                  #+(or)(ensure-up-to-date-instance self)
-                                  (safe-instance-ref self index)))
+                #+(or)(ensure-up-to-date-instance self)
+                (safe-instance-ref self index)))
 	  #'(lambda (.method-args. .next-methods. #|value self|#)
               (declare (optimize (safety 0) (speed 3) (debug 0))
-                       (ignore .method-args. .next-methods.)
-                       (standard-object self)
+                       (ignore .next-methods.)
                        (core:lambda-name std-class-sealed-accessors.writer.lambda))
               (core::bind-va-list (value self) .method-args.
-                                  #+(or)(ensure-up-to-date-instance self)
-                                  (si:instance-set self index value)))))
+                #+(or)(ensure-up-to-date-instance self)
+                (si:instance-set self index value)))))
 
 (defun std-class-accessors (slot-name)
   (declare (si::c-local))
   ;; The following are very slow. We do not optimize for the slot position.
   (values #'(lambda (.method-args. .next-methods. #|self|#) ;; CHECKME
-              (declare (ignore .method-args. .next-methods.)
+              (declare (ignore .next-methods.)
                        (core:lambda-name std-class-accessors.reader.lambda))
               (core::bind-va-list (self) .method-args.
-                                  (slot-value self slot-name)))
+                (slot-value self slot-name)))
 	  #'(lambda (.method-args. .next-methods. #|value self|#) ;; CHECKME
-              (declare (ignore .method-args. .next-methods. )
+              (declare (ignore .next-methods. )
                        (core:lambda-name std-class-accessors.writer.lambda))
               (core::bind-va-list (value self) .method-args.
-                                  (setf (slot-value self slot-name) value)))))
+                (setf (slot-value self slot-name) value)))))
 
 (defun safe-add-method (name method)
   ;; Adds a method to a function which might have been previously defined
