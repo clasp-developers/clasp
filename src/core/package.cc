@@ -549,8 +549,8 @@ bool Package_O::usePackage(Package_sp usePackage) {
         findConflicts._conflicts->mapHash([&ss] (T_sp key, T_sp val) {
             ss << " " << _rep_(key);
           });
-        SIMPLE_ERROR(BF("Error: Name conflict when importing package[%s]"
-                        " into package[%s]\n - conflicting symbols: %s") %
+        SIMPLE_ERROR(BF("Error: Name conflict for USE-PACKAGE of [%s]"
+                        " by package[%s]\n - conflicting symbols: %s") %
                      usePackage->getName() % this->getName() % (ss.str()));
       }
     }

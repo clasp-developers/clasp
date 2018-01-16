@@ -165,12 +165,12 @@
 		    imported-from-symbol-names-list
 		    exported-from-package-names)
   (if (find-package name)
-    (progn ; (rename-package name name)
-      (when nicknames
-	(rename-package name name nicknames))
-      (when use
-	(unuse-package (package-use-list (find-package name)) name)))
-    (make-package name :use nil :nicknames nicknames))
+      (progn ; (rename-package name name)
+        (when nicknames
+          (rename-package name name nicknames))
+        (when use
+          (unuse-package (package-use-list (find-package name)) name)))
+      (make-package name :use nil :nicknames nicknames))
   (let ((*package* (find-package name)))
     (when documentation
       (setf (documentation *package* t) documentation))
