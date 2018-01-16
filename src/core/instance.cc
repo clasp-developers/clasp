@@ -127,6 +127,15 @@ CL_DEFUN List_sp core__all_unique_subclasses(Class_sp class_) {
   return accumulate_unique_subclasses(class_,Cons_O::create(class_,_Nil<T_O>()));
 }
 
+
+
+CL_DEFUN void core__specializer_call_history_generic_functions_push_new(T_sp tclass_, T_sp generic_function)
+{
+  Class_sp class_ = gc::As<Class_sp>(tclass_);
+  class_->CLASS_call_history_generic_functions_push_new(generic_function);
+}
+
+
 void Instance_O::CLASS_call_history_generic_functions_push_new(T_sp generic_function) {
   if (this->instanceRef(REF_SPECIALIZER_MUTEX).unboundp()) {
     this->instanceSet(REF_SPECIALIZER_MUTEX,mp::SharedMutex_O::make_shared_mutex(_Nil<T_O>()));
