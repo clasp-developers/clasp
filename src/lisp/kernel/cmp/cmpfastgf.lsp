@@ -106,7 +106,7 @@
            (class-specializers nil :type list))
 
 ;; Degenerate range node with only one stamp are useful to create/note.
-(defun make-single (&key stamp class outcome)
+(defun make-stamp-matcher (&key stamp class outcome)
   (make-range :reversed-classes (list class) :outcome outcome :first-stamp stamp :last-stamp stamp))
 (defun single-p (match)
   (and (range-p match)
@@ -160,11 +160,11 @@
       (if (> (length signature) 0)
           (progn
             (when (null (dtree-root dtree)) (setf (dtree-root dtree) (make-node)))
-            (node-add (dtree-root dtree) (svref signature 0) 1 signature outcome)
-            (optimize-nodes (dtree-root dtree)))
+            (node-add (dtree-root dtree) (svref signature 0) 1 signature outcome))
           (progn
-            (setf (dtree-root dtree) (make-outcome :outcome outcome)))))))
-
+            (setf (dtree-root dtree) (make-outcome :outcome outcome))))))
+  (optimize-nodes (dtree-root dtree))
+  dtree)
 
 (defun eql-specializer-p (spec)
   "Return t if the spec is an eql specializer - they are represented as CONS cells
@@ -179,9 +179,14 @@
 (defun insert-sorted (item lst &optional (test #'<) (key #'range-first-stamp))
   (if (null lst)
       (list item)
-      (if (funcall test (funcall key item) (funcall key (car lst)))
-          (cons item lst) 
-          (cons (car lst) (insert-sorted item (cdr lst) test key)))))
+      (let* ((firstp (funcall test (funcall key item) (funcall key (car lst))))
+             (sorted (if firstp
+                         (cons item lst) 
+                         (cons (car lst) (insert-sorted item (cdr lst) test key)))))
+        #+debug-fastgf(if (verify-node-class-specializers-sorted-p sorted)
+                          t
+                          (error "insert-sorted failed - tried to insert ~a into ~a result: ~a" item lst sorted))
+        sorted)))
 
 (defun ensure-outcome (argument-index specs goal)
   (if (>= argument-index (length specs))
@@ -212,9 +217,9 @@
                 (warn "The dispatch function has two selectors with different outcomes~%---- argument-index: ~a~%---- specializers: ~a~%---- goal: ~a~%---- current node: ~a~%---- stamp: ~a~%---- match: ~a" argument-index specializers goal node stamp match)
                 (node-add (match-outcome match) (svref specializers argument-index) (1+ argument-index) specializers goal))
             (setf (node-class-specializers node)
-                  (insert-sorted (make-single :stamp stamp
-                                              :class spec
-                                              :outcome (ensure-outcome argument-index specializers goal))
+                  (insert-sorted (make-stamp-matcher :stamp stamp
+                                                     :class spec
+                                                     :outcome (ensure-outcome argument-index specializers goal))
                                  (node-class-specializers node)))))
       (let ((match (first (node-class-specializers node))))
         (if match
@@ -237,6 +242,16 @@
   ;; FIXME: Put some thought into this.
   (equalp outcome1 outcome2))
 
+(defun verify-node-class-specializers-sorted-p (specializers)
+  (let ((working (first specializers)))
+    (dolist (next (rest specializers))
+      (unless (<= (range-first-stamp working) (range-last-stamp working))
+        (return-from verify-node-class-specializers-sorted-p nil))
+      (if (< (range-last-stamp working) (range-first-stamp next))
+          (setf working next)
+          (return-from verify-node-class-specializers-sorted-p nil))))
+  t)
+      
 ;; Given a node that isn't a skip node (i.e. all "specializers" are ranges),
 ;; modify its specializers so that adjacent ranges are merged together.
 (defun optimize-node-with-class-specializers (node)
@@ -261,7 +276,12 @@
           ;; range is distinct: throw working on the pile and continue anew.
           (setf merged (cons working merged) working match)))
     (push working merged)
-    (setf (node-class-specializers node) (nreverse merged))))
+    (let ((sorted (nreverse merged)))
+      (setf (node-class-specializers node) sorted)
+      #+debug-fastgf(if (verify-node-class-specializers-sorted-p sorted)
+                        t
+                        (error "optimize-node-with-class-specializers has a problem stamps aren't sorted --> ~a" sorted))
+      sorted)))
 
 (defun skip-node-p (node)
   (let ((class-specializers (node-class-specializers node)))
@@ -1003,10 +1023,8 @@
                 (let* ((compiled-dispatcher (jit-add-module-return-dispatch-function *the-module* disp-fn startup-fn shutdown-fn sorted-roots)))
                   compiled-dispatcher)))))))))
 
-(defun codegen-dispatcher (generic-function &rest args &key generic-function-name output-path log-gf (debug-on t debug-on-p))
-  (let* ((raw-call-history (clos:generic-function-call-history generic-function))
-         (specializer-profile (clos:generic-function-specializer-profile generic-function))
-         (*log-gf* log-gf)
+(defun codegen-dispatcher (raw-call-history specializer-profile generic-function &rest args &key generic-function-name output-path log-gf (debug-on t debug-on-p))
+  (let* ((*log-gf* log-gf)
          (dtree (calculate-dtree raw-call-history specializer-profile)))
     (apply 'codegen-dispatcher-from-dtree generic-function dtree args)))
 
@@ -1020,13 +1038,15 @@
 (defun disassemble-fastgf (generic-function)
   (if (clos:generic-function-call-history generic-function)
       (let* ((*save-module-for-disassemble* t)
-             (*saved-module-from-clasp-jit* nil))
-        (let ((dispatcher (codegen-dispatcher generic-function :generic-function-name 'disassemble))
-              (module cmp:*saved-module-from-clasp-jit*))
-          (if module
-              (llvm-sys:dump-module module)
-              (core:bformat t "Could not obtain module for disassemble of generic-function %s dispatcher -> %s\n" generic-function dispatcher))))
-      (core:bformat t "The dispatcher cannot be built because there is no call history\n")))
+             (*saved-module-from-clasp-jit* nil)
+             (call-history (generic-function-call-history generic-function))
+             (specializer-profile (generic-function-specializer-profile generic-function))
+             (dispatcher (codegen-dispatcher generic-function :generic-function-name 'disassemble))
+             (module cmp:*saved-module-from-clasp-jit*))
+        (if module
+            (llvm-sys:dump-module module)
+            (core:bformat t "Could not obtain module for disassemble of generic-function %s dispatcher -> %s\n" generic-function dispatcher))))
+  (core:bformat t "The dispatcher cannot be built because there is no call history\n"))
 
 (defun generate-dot-file (generic-function output)
   (let* ((raw-call-history (clos:generic-function-call-history generic-function))

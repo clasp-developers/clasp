@@ -119,13 +119,14 @@ gctools::Vec0<T_sp> &fill_spec_vector(FuncallableInstance_sp gf, gctools::Vec0<T
 #endif
 
 /*! Mimic ECL>>gfun.d fill_spec_vector */
-void fill_key_vector(FuncallableInstance_sp gf, SimpleVector_sp vektor, VaList_sp vargs) {
+void fill_key_vector(FuncallableInstance_sp gf, SimpleVector_sp key, VaList_sp vargs) {
   va_list cargs;
   va_copy(cargs, (*vargs)._Args);
   int narg = vargs->remaining_nargs();//LCC_VA_LIST_NUMBER_OF_ARGUMENTS(vargs);
   // cl_object *argtype = vector->vector.self.t; // ??
   int spec_no = 0;
   for (T_sp spec_how_list = gf->GFUN_SPECIALIZERS(); spec_how_list.consp(); spec_how_list = cons_cdr(spec_how_list)) {
+    if (spec_no>=key->length()) goto DONE;
     List_sp spec_how = CONS_CAR(spec_how_list);
     T_sp spec_type = CONS_CAR(spec_how);
     ASSERT(CONS_CDR(spec_how).fixnump());
@@ -134,8 +135,6 @@ void fill_key_vector(FuncallableInstance_sp gf, SimpleVector_sp vektor, VaList_s
       SIMPLE_ERROR(BF("Insufficient arguments for %s - expected specializer argument at "
                       "position %d of specializer-type %s but only %d arguments were passed") %
                    _rep_(gf) % (spec_position + 1) % _rep_(spec_type) % narg);
-    } else if (spec_no >= vektor->length()) {
-      SIMPLE_ERROR(BF("Too many arguments to fill_spec_vector()"));
     }
     // Stassats fixed a bug in ECL eql-specializer dispatch cacheing
     // https://gitlab.com/embeddable-common-lisp/ecl/commit/85165d989a563abdf0e31e14ece2e97b5d821187?view=parallel
@@ -144,17 +143,19 @@ void fill_key_vector(FuncallableInstance_sp gf, SimpleVector_sp vektor, VaList_s
     List_sp eql_spec = _Nil<core::T_O>();
     if (spec_type.consp() && (eql_spec = spec_type.unsafe_cons()->memberEql(spec_position_arg)).notnilp()) {
 // For immediate types we need to make sure that EQL will be true
-      (*vektor)[spec_no++] = eql_spec;
+      (*key)[spec_no++] = eql_spec;
     } else {
       Class_sp mc = lisp_instance_class(spec_position_arg);
-      (*vektor)[spec_no++] = mc;
+      (*key)[spec_no++] = mc;
       //      argtype[spec_no++] = _Nil<T_O>();
     }
   }
+ DONE:
+  va_end(cargs);
 }
 
-CL_DEFUN T_sp clos__memoization_key(FuncallableInstance_sp gf, VaList_sp vargs) {
-  SimpleVector_sp key = SimpleVector_O::make((*vargs).remaining_nargs(),_Nil<T_O>());
+CL_DEFUN T_sp clos__memoization_key(FuncallableInstance_sp gf, VaList_sp vargs, Fixnum len) {
+  SimpleVector_sp key = SimpleVector_O::make(len /*(*vargs).remaining_nargs()*/ ,_Nil<T_O>());
   fill_key_vector(gf,key,vargs);
   return key;
 }

@@ -840,10 +840,16 @@ CL_DEFUN bool clos__generic_function_call_history_push_new_lock(FuncallableInsta
 
 T_sp FuncallableInstance_O::GFUN_CALL_HISTORY_compare_exchange(T_sp expected, T_sp new_value) {
 #ifdef DEBUG_GFDISPATCH
-      if (_sym_STARdebug_dispatchSTAR->symbolValue().notnilp()) {
-        printf("%s:%d   GFUN_CALL_HISTORY_set gf: %s\n", __FILE__, __LINE__, this->__repr__().c_str());
-        printf("%s:%d                      history: %s\n", __FILE__, __LINE__, _rep_(h).c_str());
-      }
+  if (_sym_STARdebug_dispatchSTAR->symbolValue().notnilp()) {
+    printf("%s:%d   GFUN_CALL_HISTORY_set gf: %s\n", __FILE__, __LINE__, this->__repr__().c_str());
+    printf("%s:%d                      history: %s\n", __FILE__, __LINE__, _rep_(h).c_str());
+  }
+#endif
+#if 0
+  size_t len = cl__length(expected);
+  if (len>2048) {
+    printf("%s:%d:%s  The call history is very long - is it ok? call-history: %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(expected).c_str());
+  }
 #endif
   bool exchanged = this->_CallHistory.compare_exchange_strong(expected,new_value);
   return exchanged ? new_value : expected;
@@ -856,20 +862,32 @@ T_sp FuncallableInstance_O::GFUN_SPECIALIZER_PROFILE_compare_exchange(T_sp expec
 
 
 
-CL_DEFUN T_mv clos__generic_function_call_history_separate_entries_with_specializers(FuncallableInstance_sp gf, List_sp call_history, List_sp specializers ) {
+DONT_OPTIMIZE_WHEN_DEBUG_RELEASE CL_DEFUN T_mv clos__generic_function_call_history_separate_entries_with_specializers(FuncallableInstance_sp gf, List_sp call_history, List_sp specializers ) {
 //  printf("%s:%d Remember to remove entries with subclasses of specializer: %s\n", __FILE__, __LINE__, _rep_(specializer).c_str());
 #ifdef DEBUG_GFDISPATCH
   if (_sym_STARdebug_dispatchSTAR->symbolValue().notnilp()) {
     printf("%s:%d   generic-function_call_history_remove_entries_with_specializers   gf: %s\n        specializers: %s\n", __FILE__, __LINE__, _rep_(generic_function).c_str(), _rep_(specializers).c_str());
   }
 #endif
+#if 0
+  {
+    size_t len = cl__length(call_history);
+    printf("%s:%d:%s   call_history length: %lu\n", __FILE__, __LINE__, __FUNCTION__, len);
+    if (len>2048) {
+      printf("%s:%d  call_history for gf: %s\n", __FILE__, __LINE__, _rep_(gf).c_str());
+      printf("%s:%d  call_history: %s\n", __FILE__, __LINE__, _rep_(call_history).c_str());
+    }
+  }
+#endif
   List_sp removed(_Nil<T_O>());
   List_sp keep(_Nil<T_O>());
   for ( T_sp tcur = call_history; tcur.consp(); ) {
     Cons_sp cur = gc::As_unsafe<Cons_sp>(tcur);
+    tcur = CONS_CDR(cur);
     Cons_sp entry = gc::As<Cons_sp>(CONS_CAR(cur));
     SimpleVector_sp entry_key = gc::As<SimpleVector_sp>(CONS_CAR(entry));
     ASSERT(gc::IsA<SimpleVector_sp>(CONS_CAR(entry)));
+    bool keepIt = true;
     for ( auto cur_specializer : specializers ) {
       T_sp one_specializer = CONS_CAR(cur_specializer);
 #ifdef DEBUG_GFDISPATCH
@@ -883,17 +901,21 @@ CL_DEFUN T_mv clos__generic_function_call_history_separate_entries_with_speciali
           printf("%s:%d       IT DOES!!!\n", __FILE__, __LINE__ );
         }
 #endif
-        removed = Cons_O::create(entry,removed);
+        keepIt = false;
       } else {
 #ifdef DEBUG_GFDISPATCH
         if (_sym_STARdebug_dispatchSTAR->symbolValue().notnilp()) {
           printf("%s:%d       it does not - keeping entry!!!\n", __FILE__, __LINE__ );
         }
 #endif
-        keep = Cons_O::create(entry,keep);
+        keepIt = true;
       }
     }
-    tcur = CONS_CDR(cur);
+    if (keepIt) {
+      keep = Cons_O::create(entry,keep);
+    } else {
+      removed = Cons_O::create(entry,removed);
+    }
   }
   return Values(keep,removed);
 }
