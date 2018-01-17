@@ -163,12 +163,12 @@ class DebugStream;
 
 /*! To exit the program throw this exception
  */
-class ExitProgram {
+ class ExitProgramException : public std::exception{
 private:
   int _ExitResult;
 
 public:
-  ExitProgram(int result) : _ExitResult(result){};
+  ExitProgramException(int result) : _ExitResult(result){};
   int getExitResult() { return this->_ExitResult; };
 };
 
@@ -227,13 +227,12 @@ class ATTR_WEAK ReturnFrom //: public gctools::HeapRoot
     {
   virtual void keyFunctionForVtable() ATTR_WEAK; // MUST BE FIRST VIRTUAL FUNCTION
 private:
-  int _Frame;
-
+  T_O* _Handle;
 public:
-  ReturnFrom(int frame) {
-    this->_Frame = frame;
+  ReturnFrom(T_O* handle) {
+    this->_Handle = handle;
   }
-  int getFrame() const { return this->_Frame; };
+  T_O* getHandle() const { return this->_Handle; };
   /*ATTR_WEAK*/ virtual ~ReturnFrom(){};
 };
 
@@ -247,12 +246,12 @@ class ATTR_WEAK LexicalGo {
   virtual void keyFunctionForVtable() ATTR_WEAK;
 
 private:
-  int _Frame;
+  T_O* _Handle;
   int _Index;
 
 public:
-  ATTR_WEAK LexicalGo(int frame, int index) : _Frame(frame), _Index(index){};
-  int getFrame() const { return this->_Frame; };
+  ATTR_WEAK LexicalGo(T_O* handle, int index) : _Handle(handle), _Index(index){};
+  T_O* getHandle() const { return this->_Handle; };
   int index() const { return this->_Index; };
   /*ATTR_WEAK*/ virtual ~LexicalGo(){};
 };
@@ -262,13 +261,12 @@ class ATTR_WEAK DynamicGo //: public gctools::HeapRoot
   virtual void keyFunctionForVtable() ATTR_WEAK;
 
 private:
-  size_t _Frame;
+  T_O*   _Handle;
   size_t _Index;
-
 public:
-  ATTR_WEAK DynamicGo(size_t frame, size_t index) : _Frame(frame), _Index(index){};
+  ATTR_WEAK DynamicGo(T_O* handle, size_t index) : _Handle(handle), _Index(index){};
   /*ATTR_WEAK*/ virtual ~DynamicGo(){};
-  size_t getFrame() const { return this->_Frame; };
+  T_O* getHandle() const { return this->_Handle; };
   size_t index() const { return this->_Index; };
 };
 

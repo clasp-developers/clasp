@@ -12,7 +12,20 @@ void initialize_gc_functions();
 
  Fixnum core__header_kind(core::T_sp obj);
  Fixnum core__header_stamp(core::T_sp obj);
- 
+
+
+};
+
+extern "C" {
+#ifdef DEBUG_FLOW_TRACKER
+#define MAX_STACK_SIZE_FLOW_TRACKER 16
+extern void initialize_flow_tracker();
+extern size_t next_flow_tracker_counter();
+extern void flow_tracker_about_to_throw();
+extern void flow_tracker_last_throw_backtrace_dump();
+extern void flow_tracker_flush();
+extern void flow_tracker_close();
+#endif
 };
 
 #endif

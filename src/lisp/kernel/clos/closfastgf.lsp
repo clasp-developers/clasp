@@ -337,10 +337,13 @@
   ;; but also implies that methods added or removed to s-v-u-c invalidate all relevant accessors,
   ;; which is not.
   (let* ((em (compute-effective-method generic-function method-combination methods))
+         ;; emf does not need to be computed for special cases. This could save some time,
+         ;; as emf computation does invoke the compiler.
          (emf (effective-method-function em))
          (method (and (consp em)
                       (eq (first em) 'call-method)
                       (second em)))
+         (leafp (when method (leaf-method-p method)))
          ;; In the future, we could use load-time-value instead of find-class every time,
          ;; but the system loading architecture makes this dicey at the moment.
          (readerp (when method (eq (class-of method) (find-class 'standard-reader-method))))
@@ -353,10 +356,15 @@
          (standard-slotd-p (when slotd (eq (class-of slotd) (find-class 'standard-effective-slot-definition))))
          (optimized
            (cond ((not standard-slotd-p)
-                  (gf-log "Using default effective method function\n")
-                  (gf-log "(compute-effective-method generic-function method-combination methods) -> \n")
-                  (gf-log "%s\n" em)
-                  emf)
+                  (if leafp
+                      (progn
+                        (gf-log "Using method %s function as emf\n" method)
+                        (method-function method))
+                      (progn
+                        (gf-log "Using default effective method function\n")
+                        (gf-log "(compute-effective-method generic-function method-combination methods) -> \n")
+                        (gf-log "%s\n" em)
+                        emf)))
                  (readerp
                   (gf-log "make-optimized-slot-reader index: %s slot-name: %s class: %s\n"
                           (slot-definition-location slotd)
@@ -470,19 +478,30 @@ FIXME!!!! This code will have problems with multithreading if a generic function
   "Memoizes the call and installs a new discriminator function - returns nothing"
   (gf-log-dispatch-miss "Adding to history" generic-function vaslist-arguments)
   (gf-log "about to call clos:memoization-key vaslist-arguments-> %s\n" vaslist-arguments)
-  (loop for call-history = (clos::generic-function-call-history generic-function)
-     for memoized-key = (clos:memoization-key generic-function vaslist-arguments)
-     for found-key = (clos:call-history-find-key call-history memoized-key)
-     for new-call-history = (if found-key
-                                (progn
-                                  (gf-log "The key was already in the history - maybe put there by another thread?\n")
-                                  call-history)
-                                (progn
-                                  (gf-log "Pushing entry into call history\n")
-                                  (cons (cons memoized-key effective-method-function) call-history)))
-     for exchanged = (clos:generic-function-call-history-compare-exchange generic-function call-history new-call-history)
-     when exchanged do (gf-log "Successfully exchanged call history\n")
-     until (eq exchanged new-call-history))
+  (gf-log "The specializer-profile: %s\n" (clos:generic-function-specializer-profile generic-function))  
+  (loop for call-history = (clos:generic-function-call-history generic-function)
+        for specializer-profile = (clos:generic-function-specializer-profile generic-function)
+        for memoized-key = (clos:memoization-key generic-function vaslist-arguments (length specializer-profile))
+        for found-key = (clos:call-history-find-key call-history memoized-key)
+        for new-call-history = (if found-key
+                                   (progn
+                                     (gf-log "For generic function: %s - the key was already in the history - either bad dtree, incorrect lowering to llvm-ir or maybe (unlikely) put there by another thread.\n" (clos::generic-function-name generic-function ))
+                                     call-history)
+                                   (progn
+                                     (gf-log "Pushing entry into call history\n")
+                                     (cons (cons memoized-key effective-method-function) call-history)))
+        for exchanged = (clos:generic-function-call-history-compare-exchange generic-function call-history new-call-history)
+        do (loop for idx from 0 below (length memoized-key)
+                 for specializer = (svref memoized-key idx)
+                 when (null (consp specializer))
+                   do (core:specializer-call-history-generic-functions-push-new specializer generic-function))
+        do (progn
+             #+debug-fastgf(let ((specializer-profile (clos:generic-function-specializer-profile generic-function)))
+                             (when call-history
+                               (gf-log "The dtree calculated for the call-history/specializer-profile:\n")
+                               (gf-log "%s\n" (cmp::calculate-dtree call-history specializer-profile)))))
+        when exchanged do (gf-log "Successfully exchanged call history\n")
+          until (eq exchanged new-call-history))
   (set-funcallable-instance-function generic-function 'invalidated-dispatch-function)
   (return-from memoize-call))
 
@@ -495,12 +514,14 @@ FIXME!!!! This code will have problems with multithreading if a generic function
      (funcall (cmp::optimized-slot-writer-effective-method-function efm) arguments nil))
     (t (funcall efm arguments nil))))
 
+(defvar *dispatch-miss-start-time*)
 (defun do-dispatch-miss (generic-function vaslist-arguments arguments)
   "This effectively does what compute-discriminator-function does and maybe memoizes the result 
 and calls the effective-method-function that is calculated.
 It takes the arguments in two forms, as a vaslist and as a list of arguments."
-  (let ((can-memoize t))
-        ;; What if another thread adds/removes method during c-a-m-u-c???????
+  (let ((can-memoize t)
+        (*dispatch-miss-start-time* (get-internal-real-time)))
+    ;; What if another thread adds/removes method during c-a-m-u-c???????
     (multiple-value-bind (method-list ok)
         (clos::compute-applicable-methods-using-classes generic-function (mapcar #'class-of arguments))
       (declare (core:lambda-name do-dispatch-miss.multiple-value-bind.lambda))
@@ -528,6 +549,7 @@ It takes the arguments in two forms, as a vaslist and as a list of arguments."
             (gf-log "Calling effective-method-function %s\n" effective-method-function)
             #+debug-fastgf
             (let ((results (multiple-value-list (funcall-effective-method-function effective-method-function vaslist-arguments))))
+              (gf-log "+-+-+-+-+-+-+-+-+ do-dispatch-miss done real time: %f seconds\n" (/ (float (- (get-internal-real-time) *dispatch-miss-start-time*)) internal-time-units-per-second))
               (gf-log "----}---- Completed call to effective-method-function for %s results -> %s\n" (clos::generic-function-name generic-function) results)
               (values-list results))
             #-debug-fastgf
@@ -595,11 +617,15 @@ It takes the arguments in two forms, as a vaslist and as a list of arguments."
 
 (defun calculate-fastgf-dispatch-function (generic-function &key output-path)
   (if (generic-function-call-history generic-function)
-      (cmp:codegen-dispatcher generic-function
-                              :generic-function-name (core:function-name generic-function)
-                              :output-path output-path
-                              #+debug-fastgf :log-gf
-                              #+debug-fastgf (debug-fastgf-stream)) ;; the stream better be initialized
+      (let ((call-history (generic-function-call-history generic-function))
+            (specializer-profile (generic-function-specializer-profile generic-function)))
+        (cmp:codegen-dispatcher call-history
+                                specializer-profile
+                                generic-function
+                                :generic-function-name (core:function-name generic-function)
+                                :output-path output-path
+                                #+debug-fastgf :log-gf
+                                #+debug-fastgf (debug-fastgf-stream))) ;; the stream better be initialized
       'invalidated-dispatch-function))
 
 (defun not-funcallable-dispatch-function (generic-function valist-args)
@@ -672,16 +698,16 @@ It takes the arguments in two forms, as a vaslist and as a list of arguments."
                                   (class-direct-subclasses class))))))
 
 (defun invalidate-generic-functions-with-class-selector (top-class)
-  (gf-log "invalidate-generic-functions-with-class-selector %s\n" top-class)
+  (gf-log "invalidate-generic-functions-with-class-specializer %s\n" top-class)
   (let* ((all-subclasses (subclasses* top-class))
          (_ (gf-log "  %d subclasses*\n" (length all-subclasses)))
          (_ (gf-log "        %s\n" all-subclasses))
          (generic-functions
-          (loop for subclass in all-subclasses
-             for spec-generic-functions = (specializer-call-history-generic-functions subclass)
-             do (gf-log "   for subclass %s there are %d spec-generic-functions\n" subclass (length spec-generic-functions))
-             do (gf-log "         spec-generic-functions -> %s\n" spec-generic-functions)
-             append spec-generic-functions))
+           (loop for subclass in all-subclasses
+                 for spec-generic-functions = (specializer-call-history-generic-functions subclass)
+                 do (gf-log "   for subclass %s there are %d spec-generic-functions\n" subclass (length spec-generic-functions))
+                 do (gf-log "         spec-generic-functions -> %s\n" spec-generic-functions)
+                 append spec-generic-functions))
          (_ (gf-log "  %d generic-functions...\n" (length generic-functions)))
          (_ (gf-log "        %s\n" generic-functions))
          (unique-generic-functions (remove-duplicates generic-functions))
@@ -691,14 +717,30 @@ It takes the arguments in two forms, as a vaslist and as a list of arguments."
     (gf-log "   subclasses* -> %s\n" all-subclasses)
     ;;(when core:*debug-dispatch* (format t "    generic-functions: ~a~%" generic-functions))
     (loop for gf in unique-generic-functions
-       when (typep (clos:get-funcallable-instance-function gf) 'core:compiled-dispatch-function)
-       do (progn
-            (loop for call-history = (generic-function-call-history gf)
-               for new-call-history = (generic-function-call-history-separate-entries-with-specializers gf call-history all-subclasses)
-               for exchange = (generic-function-call-history-compare-exchange call-history new-call-history)
-               until (eq exchange new-call-history))
-            (set-funcallable-instance-function gf
-                                               'invalidated-dispatch-function
-                                               #+(or)(clos::calculate-fastgf-dispatch-function gf))))))
+          do (let (edited-call-history)
+               (gf-log "generic function: %s\n" (clos:generic-function-name gf))
+               (gf-log "    (clos:get-funcallable-instance-function gf) -> %s\n" (clos:get-funcallable-instance-function gf))
+               (gf-log "   NOT  editing call history and invalidating dispatch function due to metastability issues\n")
+               (loop for call-history = (generic-function-call-history gf)
+                     for new-call-history = (generic-function-call-history-separate-entries-with-specializers gf call-history all-subclasses)
+                     for exchange = (generic-function-call-history-compare-exchange gf call-history new-call-history)
+                     until (eq exchange new-call-history)
+                     do (setf edited-call-history exchange))
+               (gf-log "    edited call history\n")
+               (gf-log "%s\n" edited-call-history)
+               (gf-log "Generating a new discriminating function\n")
+               (let (log-output)
+                 #+debug-fastgf(progn
+                                 (if (eq (class-of gf) (find-class 'standard-generic-function))
+                                     (let ((generic-function-name (core:low-level-standard-generic-function-name gf)))
+                                       (setf log-output (log-cmpgf-filename generic-function-name "func" "ll"))
+                                       (gf-log "Writing dispatcher to %s\n" log-output))
+                                     (setf log-output (log-cmpgf-filename (generic-function-name gf) "func" "ll")))
+                                 (incf-debug-fastgf-didx))
+                 (if edited-call-history
+                     (let* ((specializer-profile (generic-function-specializer-profile gf))
+                            (discriminating-function (cmp:codegen-dispatcher edited-call-history specializer-profile gf :output-path log-output)))
+                       (set-funcallable-instance-function gf discriminating-function))
+                     (set-funcallable-instance-function gf 'invalidated-dispatch-function)))))))
 
 (export '(invalidate-generic-functions-with-class-selector))

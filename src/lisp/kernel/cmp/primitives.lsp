@@ -103,21 +103,25 @@
     
     (primitive-unwinds "symbolValueRead" %t*% (list %t*%))
     (primitive         "symbolValueReference" %t**% (list %t*%))
-    (primitive         "lexicalValueReference" %t**% (list %i32% %i32% %t*%))
+    (primitive         "lexicalValueReference" %t**% (list %size_t% %size_t% %t*%))
     (primitive         "registerReference" %t**% (list %t**%))
     (primitive         "symbolFunctionRead" %t*% (list %t*%))
     (primitive         "setfSymbolFunctionRead" %t*% (list %t*%))
     
-    (primitive         "makeTagbodyFrameSetParent" %t*% (list %t*%))
-
     (primitive         "activationFrameReferenceFromClosure" %t**% (list %t*%))
-;;    (primitive         "setParentOfActivationFrameFromClosure" %void% (list %t*% %t*%))
     (primitive         "setParentOfActivationFrame" %void% (list %t*% %t*%))
     (primitive         "makeValueFrameSetParent" %t*% (list %i64% %t*%))
-;;    (primitive         "makeValueFrameSetParentFromClosure" %t*% (list %i64% %t*%))
     (primitive         "invisible_makeValueFrameSetParent" %t*% (list %t*%))
-;;    (primitive         "invisible_makeValueFrameSetParentFromClosure" %t*% (list %t*%))
-    
+    (primitive         "makeBlockFrameSetParent" %t*% (list %t*%))
+    (primitive         "invisible_makeBlockFrameSetParent" %t*% (list %t*%))
+    (primitive         "makeTagbodyFrameSetParent" %t*% (list %t*%))
+    (primitive         "invisible_makeTagbodyFrameSetParent" %t*% (list %t*%))
+
+    (primitive         "setFrameUniqueId" %void% (list %size_t% %t*%))
+    (primitive         "ignore_setFrameUniqueId" %void% nil)
+    (primitive         "ensureFrameUniqueId" %void% (list %size_t% %size_t% %t*%))
+    (primitive         "ignore_ensureFrameUniqueId" %void% nil)
+
     (primitive-unwinds "makeFunctionFrame" %t*% (list %i32% %t*%))
     (primitive-unwinds "functionFrameReference" %t**% (list %t*% %i32%))
     
@@ -136,6 +140,8 @@
     (primitive         "debug_va_list" %void% (list %va_list*%))
     (primitive         "debugMessage" %void% (list %i8*%))
     (primitive         "debugPrintI32" %void% (list %i32%))
+    (primitive         "debugPrint_blockFrame" %void% (list %t*%))
+    (primitive         "debugPrint_blockHandleReturnFrom" %void% (list %i8*% %t*%))
     (primitive         "debugPrint_size_t" %void% (list %size_t%))
     (primitive         "debug_match_two_uintptr_t" %uintptr_t% (list %uintptr_t% %uintptr_t%))
     (primitive         "lowLevelTrace" %void% (list %i32%))
@@ -151,18 +157,20 @@
     (primitive         "cc_gatherVaRestArguments" %t*% (list %va_list*% %size_t*% %vaslist*%))
     (primitive-unwinds "cc_ifBadKeywordArgumentException" %void% (list %size_t% %size_t% %t*%))
     
-    (primitive         "pushBlockFrame" %size_t% (list %t*%))
-    (primitive         "ignore_pushBlockFrame" %void% nil)
+    (primitive         "initializeBlockClosure" %t*% (list %t**%))
+    (primitive         "ignore_initializeBlockClosure" %t*% (list %t**%))
+    (primitive         "initializeTagbodyClosure" %t*% (list %t**%))
+    (primitive         "ignore_initializeTagbodyClosure" %t*% (list %t**%))
     (primitive         "pushTagbodyFrame" %size_t% (list %t*%))
     
-    (primitive-unwinds "throwReturnFrom" %void% (list %t*%) :does-not-return t)
+    (primitive-unwinds "throwReturnFrom" %void% (list %size_t% %t*%) :does-not-return t)
     (primitive-unwinds "throwDynamicGo" %void% (list %size_t% %size_t% %t*%) :does-not-return t)
     
     (primitive         "exceptionStackUnwind" %void% (list %size_t%))
     (primitive         "ignore_exceptionStackUnwind" %void% nil)
-    (primitive-unwinds "blockHandleReturnFrom" %return_type% (list %i8*% %size_t%))
-    (primitive-unwinds "ignore_blockHandleReturnFrom" %return_type% (list %i8*%))
-    (primitive-unwinds "tagbodyDynamicGoIndexElseRethrow" %size_t% (list %i8*% %size_t%))
+    (primitive-unwinds "blockHandleReturnFrom" %return_type% (list %i8*% %t*%))
+    (primitive-unwinds "ignore_blockHandleReturnFrom" %return_type% (list %i8*% %t*%))
+    (primitive-unwinds "tagbodyDynamicGoIndexElseRethrow" %size_t% (list %i8*% %t*%))
     (primitive-unwinds "throwIllegalSwitchValue" %void% (list %size_t% %size_t%) :does-not-return t)
     
     (primitive         "clasp_terminate" %void% nil)

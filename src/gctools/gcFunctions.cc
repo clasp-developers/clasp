@@ -16,6 +16,8 @@ extern "C" {
 int gcFunctions_after;
 
 #include <stdint.h>
+#include <execinfo.h>
+#include <unistd.h>
 
 #include <clasp/core/object.h>
 #include <clasp/core/bformat.h>
@@ -32,8 +34,71 @@ int gcFunctions_after;
 #include <clasp/core/array.h>
 #include <clasp/core/symbolTable.h>
 #include <clasp/gctools/gctoolsPackage.h>
+#include <clasp/gctools/gcFunctions.h>
 #include <clasp/llvmo/intrinsics.h>
 #include <clasp/core/wrappers.h>
+
+
+extern "C" {
+#ifdef DEBUG_FLOW_TRACKER
+FILE* global_flow_tracker_file;
+
+mp::Mutex global_flow_tracker_mutex;
+size_t global_flow_tracker_counter;
+bool global_flow_tracker_on = false;
+#define FLOW_TRACKER_LAST_THROW_BACKTRACE_SIZE 4096
+void* global_flow_tracker_last_throw_backtrace[FLOW_TRACKER_LAST_THROW_BACKTRACE_SIZE];
+size_t global_flow_tracker_last_throw_backtrace_size;
+void initialize_flow_tracker()
+{
+  stringstream ss;
+  ss << "/tmp/flowtracker-" << getpid() << ".dat";
+  global_flow_tracker_file = fopen(ss.str().c_str(),"w");
+  size_t stack_size = MAX_STACK_SIZE_FLOW_TRACKER;
+  fwrite(&stack_size,sizeof(size_t),1,global_flow_tracker_file);
+  global_flow_tracker_counter = 0;
+  global_flow_tracker_on = false;
+};
+
+void flow_tracker_about_to_throw() {
+  global_flow_tracker_last_throw_backtrace_size = backtrace(global_flow_tracker_last_throw_backtrace,FLOW_TRACKER_LAST_THROW_BACKTRACE_SIZE);
+}
+
+void flow_tracker_last_throw_backtrace_dump() {
+  printf("flow_tracker_last_throw_backtrace_dump %lu frames\n", global_flow_tracker_last_throw_backtrace_size);
+  for ( int i=0; i<global_flow_tracker_last_throw_backtrace_size; ++i ) {
+    printf("dis -s %p\n", global_flow_tracker_last_throw_backtrace[i]);
+  }
+  fflush(stdout);
+}
+
+
+size_t next_flow_tracker_counter() {
+  size_t result = 0;
+  if (global_flow_tracker_on) {
+    global_flow_tracker_mutex.lock();
+    result = global_flow_tracker_counter++;
+    fwrite(&result,sizeof(size_t),1,global_flow_tracker_file);
+    void* buffer[MAX_STACK_SIZE_FLOW_TRACKER];
+    backtrace(buffer,MAX_STACK_SIZE_FLOW_TRACKER);
+    fwrite(buffer,sizeof(void*),MAX_STACK_SIZE_FLOW_TRACKER,global_flow_tracker_file);
+    global_flow_tracker_mutex.unlock();
+  }
+  return result;
+}
+
+void flow_tracker_flush() {
+  fflush(global_flow_tracker_file);
+}
+
+void flow_tracker_close() {
+  fclose(global_flow_tracker_file);
+}
+#endif
+
+};
+
+
 
 namespace gctools {
 
@@ -59,6 +124,24 @@ int iBootstrapKind(const string &name) {
   SIMPLE_ERROR(BF("Illegal bootstrap-kind %s") % name);
 }
 
+std::atomic<size_t> global_lexical_depth_counter;
+
+CL_DEFUN core::T_sp gctools__next_lexical_depth_counter() {
+  core::T_sp result = core::make_fixnum(++global_lexical_depth_counter);
+  return result;
+}
+
+#ifdef DEBUG_FLOW_TRACKER
+CL_DEFUN void gctools__flow_tracker_on() {
+  initialize_flow_tracker();
+  global_flow_tracker_on = true;
+}
+
+CL_DEFUN void gctools__flow_tracker_off() {
+  global_flow_tracker_on = false;
+  flow_tracker_close();
+}
+#endif
 
 CL_DEFUN core::Cons_sp gctools__bootstrap_kind_symbols() {
   core::Cons_sp list(_Nil<core::Cons_O>());
@@ -993,8 +1076,25 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
   if (setFeatures) features = core::Cons_O::create(_lisp->internKeyword("DEBUG-FASTGF"),features);
 #endif
   if (buildReport) ss << (BF("DEBUG_FASTGF = %s\n") % (debug_fastgf ? "**DEFINED**" : "undefined") ).str();
+ 
+  bool debug_flow_control = false;
+#ifdef DEBUG_FLOW_CONTROL
+  debug_flow_control = true;
+  debugging = true;
+  if (setFeatures) features = core::Cons_O::create(_lisp->internKeyword("DEBUG-FLOW_CONTROL"),features);
+#endif
+  if (buildReport) ss << (BF("DEBUG_FLOW_CONTROL = %s\n") % (debug_flow_control ? "**DEFINED**" : "undefined") ).str();
 
-  bool debug_rehash_count = false;
+  bool debug_return_from = false;
+#ifdef DEBUG_RETURN_FROM
+  debug_return_from = true;
+  debugging = true;
+  if (setFeatures) features = core::Cons_O::create(_lisp->internKeyword("DEBUG-RETURN_FROM"),features);
+#endif
+  if (buildReport) ss << (BF("DEBUG_RETURN_FROM = %s\n") % (debug_return_from ? "**DEFINED**" : "undefined") ).str();
+
+
+ bool debug_rehash_count = false;
 #ifdef DEBUG_REHASH_COUNT
   debug_rehash_count = true;
   debugging = true;
@@ -1027,6 +1127,23 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
 #endif
   if (buildReport) ss << (BF("DEBUG_BCLASP_LISP = %s\n") % (debug_bclasp_lisp ? "**DEFINED**" : "undefined") ).str();
   
+  bool debug_flow_tracker = false;
+#ifdef DEBUG_FLOW_TRACKER
+  debug_flow_tracker = true;
+  debugging = true;
+  if (setFeatures) features = core::Cons_O::create(_lisp->internKeyword("DEBUG-FLOW-TRACKER"),features);
+#endif
+  if (buildReport) ss << (BF("DEBUG_FLOW_TRACKER = %s\n") % (debug_flow_tracker ? "**DEFINED**" : "undefined") ).str();
+
+    bool debug_lexical_depth = false;
+#ifdef DEBUG_LEXICAL_DEPTH
+  debug_lexical_depth = true;
+  debugging = true;
+  if (setFeatures) features = core::Cons_O::create(_lisp->internKeyword("DEBUG-LEXICAL-DEPTH"),features);
+#endif
+  if (buildReport) ss << (BF("DEBUG_LEXICAL_DEPTH = %s\n") % (debug_lexical_depth ? "**DEFINED**" : "undefined") ).str();
+  
+
   bool debug_cclasp_lisp = false;
 #ifdef DEBUG_CCLASP_LISP
   debug_cclasp_lisp = true;
@@ -1034,7 +1151,15 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
   if (setFeatures) features = core::Cons_O::create(_lisp->internKeyword("DEBUG-CCLASP-LISP"),features);
 #endif
   if (buildReport) ss << (BF("DEBUG_CCLASP_LISP = %s\n") % (debug_cclasp_lisp ? "**DEFINED**" : "undefined") ).str();
-  
+
+  bool dont_optimize_bclasp = false;
+#ifdef DONT_OPTIMIZE_BCLASP
+  dont_optimize_bclasp = true;
+  debugging = true;
+  if (setFeatures) features = core::Cons_O::create(_lisp->internKeyword("DONT-OPTIMIZE-BCLASP"),features);
+#endif
+  if (buildReport) ss << (BF("DONT_OPTIMIZE_BCLASP = %s\n") % (dont_optimize_bclasp ? "**DEFINED**" : "undefined") ).str();
+
   bool disable_type_inference = false;
 #ifdef DISABLE_TYPE_INFERENCE
   disable_type_inference = true;

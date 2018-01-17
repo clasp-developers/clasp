@@ -62,8 +62,9 @@ public:
   static int clasp_countFunctionContainerEnvironments(T_sp env);
   static bool clasp_findValue(T_sp env, T_sp name, int &depth, int &index, bool& crossesFunction, ValueKind &valueKind, T_sp &value, T_sp& result_env);
   static bool clasp_findFunction(T_sp env, T_sp functionName, int &depth, int &index, Function_sp &func, T_sp& functionEnv);
-  static bool clasp_findTag(T_sp env, Symbol_sp sym, int &depth, int &index, bool &interFunction, T_sp &tagbodyEnv);
-  static bool clasp_findSymbolMacro(T_sp env, Symbol_sp sym, int &depth, int &index, bool &shadowed, Function_sp &func);
+  static bool clasp_findTag(T_sp env, Symbol_sp sym, int &depth, int &index, bool &interFunction, T_sp &tagbodyEnv); 
+  static bool clasp_findBlock(T_sp env, Symbol_sp sym, int &depth, bool &interFunction, T_sp &blockEnv);
+ static bool clasp_findSymbolMacro(T_sp env, Symbol_sp sym, int &depth, int &index, bool &shadowed, Function_sp &func);
   static bool clasp_findMacro(T_sp env, Symbol_sp sym, int &depth, int &index, Function_sp &func);
   static bool clasp_lexicalSpecialP(T_sp env, Symbol_sp sym);
 //  static T_sp clasp_lookupValue(T_sp env, int depth, int index);
@@ -226,7 +227,7 @@ public: // extend the environment with forms
   virtual int getBlockSymbolFrame(Symbol_sp sym) const;
 
   virtual bool _findTag(Symbol_sp tag, int &depth, int &index, bool &interFunction, T_sp &tagbodyEnv) const;
-  bool findTag(Symbol_sp tag, int &depth, int &index, bool &interFunction, T_sp &tagbodyEnv) const;
+  virtual bool _findBlock(Symbol_sp tag, int &depth, bool &interFunction, T_sp &blockEnv) const;
 
   virtual int countFunctionContainerEnvironments() const;
 
@@ -299,6 +300,7 @@ public:
   virtual bool _findValue(T_sp sym, int &depth, int &index, bool& crossesFunction, ValueKind &valueKind, T_sp &value, T_sp& env) const;
   virtual bool _findFunction(T_sp functionName, int &depth, int &index, Function_sp &value, T_sp& functionEnv) const;
   virtual bool _findTag(Symbol_sp tag, int &depth, int &index, bool &interFunction, T_sp &tagbodyEnv) const;
+  virtual bool _findBlock(Symbol_sp tag, int &depth, bool &interFunction, T_sp &blockEnv) const;
   virtual bool calculateRuntimeVisibleEnvironmentDepth(T_sp searchEnv, int& depth) const;
   virtual bool findValueEnvironmentAtDepth(int searchDepth, int& depth, bool& crossesFunction, T_sp& found_env) const;
 
@@ -520,17 +522,14 @@ struct gctools::GCInfo<core::UnwindProtectEnvironment_O> {
 
 namespace core {
 SMART(BlockEnvironment);
-class BlockEnvironment_O : public CompileTimeEnvironment_O {
-  LISP_CLASS(core, CorePkg, BlockEnvironment_O, "BlockEnvironment",CompileTimeEnvironment_O);
+class BlockEnvironment_O : public RuntimeVisibleEnvironment_O {
+  LISP_CLASS(core, CorePkg, BlockEnvironment_O, "BlockEnvironment",RuntimeVisibleEnvironment_O);
 
 public:
   void initialize();
-#if defined(XML_ARCHIVE)
-  void archiveBase(ArchiveP node);
-#endif // defined(XML_ARCHIVE)
-GCPRIVATE:
+public:
   Symbol_sp _BlockSymbol;
-
+  ValueFrame_sp _ActivationFrame;
 public:
   //	typedef vector<HandlerHolder>::iterator	handlerIterator;
 public:
@@ -543,6 +542,9 @@ public:
 public:
   Symbol_sp getBlockSymbol() const { return this->_BlockSymbol; };
   void setBlockSymbol(Symbol_sp sym) { this->_BlockSymbol = sym; };
+
+  virtual bool _findBlock(Symbol_sp tag, int &depth, bool &interFunction, T_sp &blockEnv) const;
+  T_sp getActivationFrame() const;
 
   T_mv recognizesBlockSymbol(Symbol_sp sym, bool &interFunction) const;
   //        int getBlockSymbolFrame(Symbol_sp sym) const;
@@ -641,6 +643,7 @@ public:
   
   virtual bool _findValue(T_sp sym, int &depth, int &level, bool& crossesFunction, ValueKind &valueKind, T_sp &value, T_sp& env) const;
   virtual bool _findTag(Symbol_sp tag, int &depth, int &index, bool &interFunction, T_sp &tagbodyEnv) const;
+  virtual bool _findBlock(Symbol_sp tag, int &depth, bool &interFunction, T_sp &blockEnv) const;
   virtual T_mv recognizesBlockSymbol(Symbol_sp sym, bool &interFunction) const;
 
   DEFAULT_CTOR_DTOR(FunctionContainerEnvironment_O);
@@ -671,7 +674,6 @@ GCPRIVATE: // instance variables here
   HashTableEq_sp _Tags;
   gctools::Vec0<List_sp> _TagCode;
   ActivationFrame_sp _ActivationFrame;
-
 public: // Codes here
   static TagbodyEnvironment_sp make(T_sp env);
 

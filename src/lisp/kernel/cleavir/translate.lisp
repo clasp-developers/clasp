@@ -1091,8 +1091,6 @@ when this is t a lot of graphs will be generated.")
 ;; All enclosed functions need to be finalized
 (defvar *functions-to-finalize*)
 
-(defparameter *enable-type-inference* t)
-
 (defun my-hir-transformations (init-instr system env)
   ;; FIXME: Per Cleavir rules, we shouldn't need the environment at this point.
   ;; We do anyway because of the possibility that a load-time-value input is introduced

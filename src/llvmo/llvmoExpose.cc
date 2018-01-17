@@ -1767,7 +1767,35 @@ CL_DEFMETHOD bool Instruction_O::terminatorInstP() const {
 
 namespace llvmo {
 
-CL_DEFUN llvm::Instruction* llvm_sys__replace_call(llvm::Instruction* callOrInvoke, llvm::Function* func, llvm::ArrayRef<llvm::Value *> args) {
+CL_DEFUN llvm::Instruction* llvm_sys__replace_call_keep_args(llvm::Function* func, llvm::Instruction* callOrInvoke) {
+//  printf("%s:%d In llvm-sys::replace-call\n",__FILE__, __LINE__);
+  llvm::CallSite CS(callOrInvoke);
+  llvm::Instruction *NewCI = NULL;
+  if (llvm::isa<llvm::CallInst>(callOrInvoke)) {
+    llvm::CallInst* callInst = llvm::cast<llvm::CallInst>(callOrInvoke);
+    llvm::SmallVector<llvm::Value *, 4> svargs(callInst->arg_operands());
+    llvm::CallInst* NewCall = llvm::CallInst::Create(func,svargs);
+    NewCall->setCallingConv(func->getCallingConv());
+    NewCI = NewCall;
+  } else if (llvm::isa<llvm::InvokeInst>(callOrInvoke)) {
+    llvm::InvokeInst* invokeInst = llvm::cast<llvm::InvokeInst>(callOrInvoke);
+    llvm::SmallVector<llvm::Value*,4> args(invokeInst->arg_operands());
+    llvm::InvokeInst* invoke = llvm::cast<llvm::InvokeInst>(callOrInvoke);
+    llvm::BasicBlock* ifNormal = invoke->getNormalDest();
+    llvm::BasicBlock* ifException = invoke->getUnwindDest();
+    llvm::InvokeInst* NewInvoke = llvm::InvokeInst::Create(func,ifNormal,ifException,args);
+    NewInvoke->setCallingConv(func->getCallingConv());
+    NewCI = NewInvoke;
+  }
+  if (!callOrInvoke->use_empty()) {
+    callOrInvoke->replaceAllUsesWith(NewCI);
+  }
+  llvm::ReplaceInstWithInst(callOrInvoke,NewCI);
+  return NewCI;
+};
+
+
+CL_DEFUN llvm::Instruction* llvm_sys__replace_call(llvm::Function* func, llvm::Instruction* callOrInvoke, llvm::ArrayRef<llvm::Value *> args) {
 //  printf("%s:%d In llvm-sys::replace-call\n",__FILE__, __LINE__);
   llvm::CallSite CS(callOrInvoke);
   llvm::Instruction *NewCI = NULL;

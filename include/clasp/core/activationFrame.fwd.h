@@ -32,8 +32,8 @@ FORWARD(ActivationFrame);
 FORWARD(ValueFrame);
 FORWARD(DebuggingValueFrame);
 FORWARD(FunctionFrame);
-FORWARD(BlockFrame);
-FORWARD(TagbodyFrame);
+//FORWARD(BlockFrame);
+//FORWARD(TagbodyFrame);
 };
 
 #endif

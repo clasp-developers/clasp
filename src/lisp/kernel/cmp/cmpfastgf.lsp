@@ -79,7 +79,7 @@
 ;;;   called a DTREE (dispatch-tree) made up of the structs below.
 
 (defvar *outcomes* nil
-  "Map effective methods and symbols to basic-blocks")
+  "Map effective methods to indices in the *gf-data* and then to basic-blocks")
 (defvar *gf-data-id* nil)
 (defvar *gf-data* nil
   "Store the global variable that will store effective methods")
@@ -100,12 +100,17 @@
 (defstruct (klass (:type vector) :named) stamp name)
 (defstruct (outcome (:type vector) :named) outcome)
 (defstruct (match (:type vector) :named) outcome)
-(defstruct (single (:include match) (:type vector) :named) stamp class)
 (defstruct (range (:include match) (:type vector) :named) first-stamp last-stamp reversed-classes)
 (defstruct (skip (:include match) (:type vector) :named))
 (defstruct (node (:type vector) :named) (eql-specializers (make-hash-table :test #'eql) :type hash-table)
            (class-specializers nil :type list))
 
+;; Degenerate range node with only one stamp are useful to create/note.
+(defun make-stamp-matcher (&key stamp class outcome)
+  (make-range :reversed-classes (list class) :outcome outcome :first-stamp stamp :last-stamp stamp))
+(defun single-p (match)
+  (and (range-p match)
+       (= (range-first-stamp match) (range-last-stamp match))))
 
 (defstruct (argument-holder (:type vector) :named)
   ;; Slots to store the arguments
@@ -155,11 +160,11 @@
       (if (> (length signature) 0)
           (progn
             (when (null (dtree-root dtree)) (setf (dtree-root dtree) (make-node)))
-            (node-add (dtree-root dtree) (svref signature 0) 1 signature outcome)
-            (optimize-nodes (dtree-root dtree)))
+            (node-add (dtree-root dtree) (svref signature 0) 1 signature outcome))
           (progn
-            (setf (dtree-root dtree) (make-outcome :outcome outcome)))))))
-
+            (setf (dtree-root dtree) (make-outcome :outcome outcome))))))
+  (optimize-nodes (dtree-root dtree))
+  dtree)
 
 (defun eql-specializer-p (spec)
   "Return t if the spec is an eql specializer - they are represented as CONS cells
@@ -171,12 +176,17 @@
       (node-eql-add node spec argument-index specializers goal)
       (node-class-add node spec argument-index specializers goal)))
 
-(defun insert-sorted (item lst &optional (test #'<) (key #'single-stamp))
+(defun insert-sorted (item lst &optional (test #'<) (key #'range-first-stamp))
   (if (null lst)
       (list item)
-      (if (funcall test (funcall key item) (funcall key (car lst)))
-          (cons item lst) 
-          (cons (car lst) (insert-sorted item (cdr lst) test key)))))
+      (let* ((firstp (funcall test (funcall key item) (funcall key (car lst))))
+             (sorted (if firstp
+                         (cons item lst) 
+                         (cons (car lst) (insert-sorted item (cdr lst) test key)))))
+        #+debug-fastgf(if (verify-node-class-specializers-sorted-p sorted)
+                          t
+                          (error "insert-sorted failed - tried to insert ~a into ~a result: ~a" item lst sorted))
+        sorted)))
 
 (defun ensure-outcome (argument-index specs goal)
   (if (>= argument-index (length specs))
@@ -201,15 +211,15 @@
                       ((symbolp spec) (core:class-stamp-for-instances (find-class spec)))
                       ((klass-p spec) (klass-stamp spec))
                       (t (error "Illegal specializer ~a" spec))))
-             (match (find stamp (node-class-specializers node) :test #'eql :key #'single-stamp)))
+             (match (find stamp (node-class-specializers node) :test #'eql :key #'range-first-stamp)))
         (if match
             (if (outcome-p (match-outcome match))
                 (warn "The dispatch function has two selectors with different outcomes~%---- argument-index: ~a~%---- specializers: ~a~%---- goal: ~a~%---- current node: ~a~%---- stamp: ~a~%---- match: ~a" argument-index specializers goal node stamp match)
                 (node-add (match-outcome match) (svref specializers argument-index) (1+ argument-index) specializers goal))
             (setf (node-class-specializers node)
-                  (insert-sorted (make-single :stamp stamp
-                                              :class spec
-                                              :outcome (ensure-outcome argument-index specializers goal))
+                  (insert-sorted (make-stamp-matcher :stamp stamp
+                                                     :class spec
+                                                     :outcome (ensure-outcome argument-index specializers goal))
                                  (node-class-specializers node)))))
       (let ((match (first (node-class-specializers node))))
         (if match
@@ -228,47 +238,50 @@
         (let ((outcome (ensure-outcome argument-index specializers goal)))
           (setf (gethash eql-value eql-ht) outcome)))))
 
-(defun extends-range-p (prev-last-stamp prev-outcome next)
-  (and (= (1+ prev-last-stamp) (single-stamp next))
-       (equalp prev-outcome (single-outcome next))))
+(defun outcome= (outcome1 outcome2)
+  ;; FIXME: Put some thought into this.
+  (equalp outcome1 outcome2))
 
+(defun verify-node-class-specializers-sorted-p (specializers)
+  (let ((working (first specializers)))
+    (dolist (next (rest specializers))
+      (unless (<= (range-first-stamp working) (range-last-stamp working))
+        (return-from verify-node-class-specializers-sorted-p nil))
+      (if (< (range-last-stamp working) (range-first-stamp next))
+          (setf working next)
+          (return-from verify-node-class-specializers-sorted-p nil))))
+  t)
+      
+;; Given a node that isn't a skip node (i.e. all "specializers" are ranges),
+;; modify its specializers so that adjacent ranges are merged together.
 (defun optimize-node-with-class-specializers (node)
-  (let ((class-specializers (node-class-specializers node))
-        merged merged-specializers)
-    (dolist (head class-specializers)
-      (let ((prev (car merged-specializers)))
-        (cond
-          ((null prev)
-           ;; There is no prev head or range
-           (push head merged-specializers))
-          ((and (range-p prev)
-                (extends-range-p (range-last-stamp prev)
-                                 (range-outcome prev)
-                                 head))
-           ;; The new head extends the previous range
-           (incf (range-last-stamp prev))
-           (push (single-class head) (range-reversed-classes prev))
-           (setf merged t))
-          ((range-p prev)
-           ;; The new head doesn't extend the prev range
-           (push head merged-specializers))
-          ((extends-range-p (single-stamp prev)
-                            (single-outcome prev)
-                            head)
-           ;; prev was a single match but with the new head
-           ;; they make a range.  Pop prev from merged-specializers
-           ;; and push a range-match
-           (pop merged-specializers)
-           (push (make-range :first-stamp (single-stamp prev)
-                             :last-stamp (single-stamp head)
-                             :reversed-classes (list (single-class head)
-                                                     (single-class prev))
-                             :outcome (single-outcome head))
-                 merged-specializers)
-           (setf merged t))
-          (t (push head merged-specializers)))))
-    (when merged
-      (setf (node-class-specializers node) (nreverse merged-specializers)))))
+  (when (null (node-class-specializers node))
+    (return-from optimize-node-with-class-specializers))
+  (let* ((class-specializers (node-class-specializers node))
+         ;; FIXME: copy is due to an abundance of paranoia, and may not be necessary.
+         (sorted (sort (copy-list class-specializers) #'< :key #'range-first-stamp))
+         (working (first sorted))
+         merged)
+    ;; Now we proceed through the list trying to merge the first with the rest.
+    ;; Once we find one we can't merge with, throw it on the complete list.
+    (dolist (match (rest sorted))
+      (if (and (= (1+ (range-last-stamp working)) (range-first-stamp match))
+               (outcome= (range-outcome working) (range-outcome match)))
+          ;; ranges touch: merge by increasing working's last stamp.
+          (setf (range-last-stamp working) (range-last-stamp match)
+                ;; note: i think this reversed-classes field is only used for debugging,
+                ;; and perhaps could be removed or simplified.
+                (range-reversed-classes working)
+                (append (range-reversed-classes match) (range-reversed-classes working)))
+          ;; range is distinct: throw working on the pile and continue anew.
+          (setf merged (cons working merged) working match)))
+    (push working merged)
+    (let ((sorted (nreverse merged)))
+      (setf (node-class-specializers node) sorted)
+      #+debug-fastgf(if (verify-node-class-specializers-sorted-p sorted)
+                        t
+                        (error "optimize-node-with-class-specializers has a problem stamps aren't sorted --> ~a" sorted))
+      sorted)))
 
 (defun skip-node-p (node)
   (let ((class-specializers (node-class-specializers node)))
@@ -325,8 +338,8 @@
     ((= (length matches) 1)
      (let ((match (car matches)))
        (if (single-p match)
-	   `(if (= ,stamp-var ,(single-stamp match))
-		,(compile-node-or-outcome (single-outcome match) args orig-args)
+	   `(if (= ,stamp-var ,(range-first-stamp match))
+		,(compile-node-or-outcome (match-outcome match) args orig-args)
 		(go miss))
 	   `(if (and (>= ,stamp-var ,(range-first-stamp match)) (<= ,stamp-var ,(range-last-stamp match)))
 		,(compile-node-or-outcome (match-outcome match) args orig-args)
@@ -336,9 +349,7 @@
 	    (left-matches (subseq matches 0 len-div-2))
 	    (right-matches (subseq matches len-div-2))
 	    (right-head (car right-matches))
-	    (right-stamp (if (single-p right-head)
-			     (single-stamp right-head)
-			     (range-first-stamp right-head))))
+	    (right-stamp (range-first-stamp right-head)))
        `(if (< ,stamp-var ,right-stamp)
 	    ,(compile-class-binary-search left-matches stamp-var args orig-args)
 	    ,(compile-class-binary-search right-matches stamp-var args orig-args))))))
@@ -419,9 +430,12 @@
                  (push (list (prog1 idx (incf idx))
                              (cond
                                ((single-p x)
-                                (core:bformat nil "%s;%s" (single-stamp x) (safe-class-name (single-class x))))
+                                (core:bformat nil "%s;%s" (range-first-stamp x)
+                                              (safe-class-name (first (range-reversed-classes x)))))
                                ((range-p x)
-                                (core:bformat nil "%s-%s;%s" (range-first-stamp x) (range-last-stamp x) (mapcar #'safe-class-name (reverse (range-reversed-classes x)))))
+                                (core:bformat nil "%s-%s;%s"
+                                              (range-first-stamp x) (range-last-stamp x)
+                                              (mapcar #'safe-class-name (reverse (range-reversed-classes x)))))
                                ((skip-p x)
                                 (core:bformat nil "SKIP"))
                                (t (error "Unknown class-specializer type ~a" x)))
@@ -468,9 +482,14 @@
       (core:bformat fout "%s -> %s;\n" (string startid) (string (draw-node fout (dtree-root dtree)))))))
 
 (defun register-runtime-data (value table)
-  (let ((index (prog1 *gf-data-id* (incf *gf-data-id*))))
-    (setf (gethash value table) index)
-    index))
+  "Register a integer index into the run time literal table for the discriminating function.
+   This table stores eql specializers and effective method functions."
+  (let ((existing-index (gethash value table)))
+    (if existing-index
+        existing-index
+        (let ((index (prog1 *gf-data-id* (incf *gf-data-id*))))
+          (setf (gethash value table) index)
+          index))))
 
 (defun lookup-eql-selector (eql-test)
   (let ((tagged-immediate (core:create-tagged-immediate-value-or-nil eql-test)))
@@ -613,18 +632,15 @@
   (cf-log "codegen-outcome\n")
   ;; The effective method will be found in a slot in the modules *gf-data* array
   ;;    the slot index will be in gf-data-id
-  (let* ((outcome (outcome-outcome node))
-         (existing-effective-method-block (gethash outcome *outcomes*)))
+  (let ((outcome (outcome-outcome node)))
     #+(or)(when *log-gf*
             (core:bformat *log-gf* "About to codegen-outcome -> %s\n" outcome))
-    (if existing-effective-method-block
-	(irc-br existing-effective-method-block)
-        (cond
-          ((optimized-slot-reader-p outcome)
-           (codegen-slot-reader arguments cur-arg outcome))
-          ((optimized-slot-writer-p outcome)
-           (codegen-slot-writer arguments cur-arg outcome))
-          (t (codegen-effective-method-call arguments cur-arg outcome))))))
+    (cond
+      ((optimized-slot-reader-p outcome)
+       (codegen-slot-reader arguments cur-arg outcome))
+      ((optimized-slot-writer-p outcome)
+       (codegen-slot-writer arguments cur-arg outcome))
+      (t (codegen-effective-method-call arguments cur-arg outcome)))))
 
 (defun codegen-class-binary-search (arguments cur-arg matches stamp-var)
   (cf-log "codegen-class-binary-search\n")
@@ -634,12 +650,12 @@
     ((= (length matches) 1)
      (let ((match (car matches)))
        (if (single-p match)
-	   (let ((cmpeq (irc-icmp-eq stamp-var (jit-constant-i64 (single-stamp match)) "eq"))
+	   (let ((cmpeq (irc-icmp-eq stamp-var (jit-constant-i64 (range-first-stamp match)) "eq"))
 		 (true-branch (irc-basic-block-create "match"))
 		 (false-branch (irc-basic-block-create "cont")))
 	     (irc-cond-br cmpeq true-branch false-branch)
 	     (irc-begin-block true-branch)
-	     (codegen-node-or-outcome arguments cur-arg (single-outcome match))
+	     (codegen-node-or-outcome arguments cur-arg (range-outcome match))
 	     (irc-begin-block false-branch)
 	     (irc-br (argument-holder-miss-basic-block arguments)))
 	   (let ((ge-first-branch (irc-basic-block-create "gefirst"))
@@ -657,9 +673,7 @@
 	    (left-matches (subseq matches 0 len-div-2))
 	    (right-matches (subseq matches len-div-2))
 	    (right-head (car right-matches))
-	    (right-stamp (if (single-p right-head)
-			     (single-stamp right-head)
-			     (range-first-stamp right-head))))
+	    (right-stamp (range-first-stamp right-head)))
        (let ((lt-branch (irc-basic-block-create "lt-branch"))
 	     (gte-branch (irc-basic-block-create "gte-branch"))
 	     (cmplt (irc-icmp-slt stamp-var (jit-constant-i64 right-stamp) "lt")))
@@ -868,27 +882,21 @@
                   *dispatcher-count*)
              (mp:unlock *dispatcher-count-lock*)))
 
-(defun codegen-dispatcher (generic-function &key generic-function-name output-path log-gf (debug-on t debug-on-p))
-  (let* ((*log-gf* log-gf)
-         (raw-call-history (clos:generic-function-call-history generic-function))
-         (specializer-profile (clos:generic-function-specializer-profile generic-function))
-         (call-history (optimized-call-history raw-call-history specializer-profile))
-         (debug-on (if debug-on-p
+(defun calculate-dtree (raw-call-history specializer-profile)
+  (let ((call-history (optimized-call-history raw-call-history specializer-profile)))
+    (let ((dt (make-dtree)))
+      (cond
+        (call-history (dtree-add-call-history dt call-history))
+        (raw-call-history
+         (dtree-add-call-history dt (list (cons #() (cdr (car raw-call-history))))))
+        (t (error "codegen-dispatcher was called with an empty call-history - no dispatcher can be generated")))
+      dt)))
+    
+(defun codegen-dispatcher-from-dtree (generic-function dtree &key (generic-function-name "discriminator") output-path log-gf (debug-on t debug-on-p))
+  (let ((debug-on (if debug-on-p
                        debug-on
                        (core:get-funcallable-instance-debug-on generic-function)))
-         (dtree (let ((dt (make-dtree)))
-                  (cond
-                    (call-history
-                     (dtree-add-call-history dt call-history))
-                    ;; If there is no call-history but there is a raw-call-history then
-                    ;; the outcome of every entry should be the same because there are no
-                    ;; specializers - so build a dispatch function that calls ignores
-                    ;; all arguments and immediately calls the first effective method.
-                    (raw-call-history
-                     (dtree-add-call-history dt (list (cons #() (cdr (car raw-call-history))))))
-                    (t (error "codegen-dispatcher was called with an empty call-history - no dispatcher can be generated")))
-                  dt))
-         (*the-module* (create-run-time-module-for-compile)))
+        (*the-module* (create-run-time-module-for-compile)))
     #+(or)(unless call-history
             (core:bformat t "codegen-dispatcher %s  optimized-call-history -> %s\n" generic-function-name call-history)
             (core:bformat t "  raw-call-history -> %s\n" raw-call-history)
@@ -1015,6 +1023,11 @@
                 (let* ((compiled-dispatcher (jit-add-module-return-dispatch-function *the-module* disp-fn startup-fn shutdown-fn sorted-roots)))
                   compiled-dispatcher)))))))))
 
+(defun codegen-dispatcher (raw-call-history specializer-profile generic-function &rest args &key generic-function-name output-path log-gf (debug-on t debug-on-p))
+  (let* ((*log-gf* log-gf)
+         (dtree (calculate-dtree raw-call-history specializer-profile)))
+    (apply 'codegen-dispatcher-from-dtree generic-function dtree args)))
+
 (export '(make-dtree
 	  dtree-add-call-history
 	  draw-graph
@@ -1025,13 +1038,15 @@
 (defun disassemble-fastgf (generic-function)
   (if (clos:generic-function-call-history generic-function)
       (let* ((*save-module-for-disassemble* t)
-             (*saved-module-from-clasp-jit* nil))
-        (let ((dispatcher (codegen-dispatcher generic-function :generic-function-name 'disassemble))
-              (module cmp:*saved-module-from-clasp-jit*))
-          (if module
-              (llvm-sys:dump-module module)
-              (core:bformat t "Could not obtain module for disassemble of generic-function %s dispatcher -> %s\n" generic-function dispatcher))))
-      (core:bformat t "The dispatcher cannot be built because there is no call history\n")))
+             (*saved-module-from-clasp-jit* nil)
+             (call-history (generic-function-call-history generic-function))
+             (specializer-profile (generic-function-specializer-profile generic-function))
+             (dispatcher (codegen-dispatcher generic-function :generic-function-name 'disassemble))
+             (module cmp:*saved-module-from-clasp-jit*))
+        (if module
+            (llvm-sys:dump-module module)
+            (core:bformat t "Could not obtain module for disassemble of generic-function %s dispatcher -> %s\n" generic-function dispatcher))))
+  (core:bformat t "The dispatcher cannot be built because there is no call history\n"))
 
 (defun generate-dot-file (generic-function output)
   (let* ((raw-call-history (clos:generic-function-call-history generic-function))
