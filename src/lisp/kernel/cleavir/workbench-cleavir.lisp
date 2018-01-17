@@ -18,11 +18,13 @@
   (format t "Loading ASDF system~%")
   (finish-output)
   (time (require :asdf))
+  (load "~/quicklisp/setup.lisp")
   (load "sys:local-asdf-config.lisp"))
 
 (progn
   (format t "Loading :clasp-cleavir system~%")
   (finish-output)
+  (ql:quickload "closer-mop")
   (time (asdf:load-system "clasp-cleavir"))
   (format t "Done  pid = ~a~%"  (core:getpid)))
 

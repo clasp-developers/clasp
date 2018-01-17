@@ -170,6 +170,7 @@ cleavir_parts = [
     "src/lisp/kernel/contrib/sicl/Code/Conditions/Additional/condition-reporters-en",
     "src/lisp/kernel/cleavir/packages",
     "src/lisp/kernel/cleavir/cleavir-fixups-and-hacks",
+    "src/lisp/kernel/cleavir/reader",
     "src/lisp/kernel/cleavir/system",
     "src/lisp/kernel/cleavir/policy",
     "src/lisp/kernel/cleavir/ast",

@@ -24,7 +24,7 @@
                (:file "cleavir-fixups-and-hacks")
                (:file "system")
                (:file "policy")
-;;;               (:file "reader")
+               (:file "reader")
                (:file "ast")
                (:file "convert-form")
                (:file "convert-special")
