@@ -95,6 +95,7 @@
 (eval-when (:compile-toplevel :execute :load-toplevel)
   (unless (= +optimized-slot-index-index+ 1)
     (error "The index of the slot index must be 1")))
+;; the emf slot here is for debugging only - i.e., comparing with the optimized slot value. Usually unused.
 (defstruct (optimized-slot-reader (:type vector) :named) index #| << must be here |# effective-method-function slot-name method class)
 (defstruct (optimized-slot-writer (:type vector) :named) index #| << must be here |# effective-method-function slot-name method class)
 (defstruct (klass (:type vector) :named) stamp name)

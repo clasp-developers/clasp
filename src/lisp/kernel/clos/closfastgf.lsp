@@ -337,9 +337,6 @@
   ;; but also implies that methods added or removed to s-v-u-c invalidate all relevant accessors,
   ;; which is not.
   (let* ((em (compute-effective-method generic-function method-combination methods))
-         ;; emf does not need to be computed for special cases. This could save some time,
-         ;; as emf computation does invoke the compiler.
-         (emf (effective-method-function em))
          (method (and (consp em)
                       (eq (first em) 'call-method)
                       (second em)))
@@ -364,14 +361,13 @@
                         (gf-log "Using default effective method function\n")
                         (gf-log "(compute-effective-method generic-function method-combination methods) -> \n")
                         (gf-log "%s\n" em)
-                        emf)))
+                        (effective-method-function em))))
                  (readerp
                   (gf-log "make-optimized-slot-reader index: %s slot-name: %s class: %s\n"
                           (slot-definition-location slotd)
                           (slot-definition-name slotd)
                           class)
                   (cmp::make-optimized-slot-reader :index (slot-definition-location slotd)
-                                                   :effective-method-function emf
                                                    :slot-name (slot-definition-name slotd)
                                                    :method method :class class))
                  (writerp
@@ -380,7 +376,6 @@
                           (slot-definition-name slotd)
                           class)
                   (cmp::make-optimized-slot-writer :index (slot-definition-location slotd)
-                                                   :effective-method-function emf
                                                    :slot-name (slot-definition-name slotd)
                                                    :method method :class class))
                  ;; I think this is unreachable, but better safe than sorry.
@@ -388,7 +383,7 @@
                   (gf-log "Using !SUPPOSEDLY UNREACHABLE! default effective method function\n")
                   (gf-log "(compute-effective-method generic-function method-combination methods) -> \n")
                   (gf-log "%s\n" em)
-                  emf))))
+                  (effective-method-function em)))))
     #+debug-fastgf
     (when log
       (gf-log "vvv************************vvv\n")
@@ -505,14 +500,17 @@ FIXME!!!! This code will have problems with multithreading if a generic function
   (set-funcallable-instance-function generic-function 'invalidated-dispatch-function)
   (return-from memoize-call))
 
-
-(defun funcall-effective-method-function (efm arguments)
+(defun perform-outcome (outcome arguments vaslist-arguments)
   (cond
-    ((cmp::optimized-slot-reader-p efm)
-     (funcall (cmp::optimized-slot-reader-effective-method-function efm) arguments nil))
-    ((cmp::optimized-slot-writer-p efm)
-     (funcall (cmp::optimized-slot-writer-effective-method-function efm) arguments nil))
-    (t (funcall efm arguments nil))))
+    ((cmp::optimized-slot-reader-p outcome)
+     ;; Call is like (name instance)
+     (standard-instance-get (first arguments) (cmp::optimized-slot-reader-index outcome)))
+    ((cmp::optimized-slot-writer-p outcome)
+     ;; Call is like ((setf name) new-value instance)
+     (standard-instance-set (first arguments) (second arguments) (cmp::optimized-slot-writer-index outcome)))
+    ;; Effective method functions take the same arguments as method functions - vasargs and next-methods
+    ;; for now, at least.
+    (t (funcall outcome vaslist-arguments nil))))
 
 (defvar *dispatch-miss-start-time*)
 (defun do-dispatch-miss (generic-function vaslist-arguments arguments)
@@ -548,12 +546,13 @@ It takes the arguments in two forms, as a vaslist and as a list of arguments."
             (when can-memoize (memoize-call generic-function vaslist-arguments effective-method-function))
             (gf-log "Calling effective-method-function %s\n" effective-method-function)
             #+debug-fastgf
-            (let ((results (multiple-value-list (funcall-effective-method-function effective-method-function vaslist-arguments))))
+            (let ((results (multiple-value-list
+                            (perform-outcome effective-method-function arguments vaslist-arguments))))
               (gf-log "+-+-+-+-+-+-+-+-+ do-dispatch-miss done real time: %f seconds\n" (/ (float (- (get-internal-real-time) *dispatch-miss-start-time*)) internal-time-units-per-second))
               (gf-log "----}---- Completed call to effective-method-function for %s results -> %s\n" (clos::generic-function-name generic-function) results)
               (values-list results))
             #-debug-fastgf
-            (funcall-effective-method-function effective-method-function vaslist-arguments))
+            (perform-outcome effective-method-function arguments vaslist-arguments))
           (progn
             (gf-log-dispatch-miss "no-applicable-method" generic-function vaslist-arguments)
             (apply #'no-applicable-method generic-function arguments))))))
