@@ -183,7 +183,8 @@
       (keywords :initform nil :initarg :keywords :accessor method-keywords)
       (aok-p :initform nil :initarg :aok-p :accessor method-allows-other-keys-p)
       ;; leaf-method-p is T if the method form doesn't call call-next-method or next-method-p
-      (leaf-method-p :initform nil :initarg :leaf-method-p :reader leaf-method-p)))
+      (leaf-method-p :initform nil :initarg :leaf-method-p :reader leaf-method-p)
+      (fast-method-function :initform nil :initarg :fast-method-function :reader fast-method-function)))
 
   (defparameter +standard-accessor-method-slots+
     (append +standard-method-slots+

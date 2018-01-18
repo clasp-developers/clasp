@@ -98,6 +98,7 @@
 ;; the emf slot here is for debugging only - i.e., comparing with the optimized slot value. Usually unused.
 (defstruct (optimized-slot-reader (:type vector) :named) index #| << must be here |# effective-method-function slot-name method class)
 (defstruct (optimized-slot-writer (:type vector) :named) index #| << must be here |# effective-method-function slot-name method class)
+(defstruct (fast-method-call (:type vector) :named) function)
 (defstruct (klass (:type vector) :named) stamp name)
 (defstruct (outcome (:type vector) :named) outcome)
 (defstruct (match (:type vector) :named) outcome)
@@ -606,6 +607,29 @@
         (irc-store retval (argument-holder-return-value arguments))
         (irc-br (argument-holder-continue-after-dispatch arguments))))))
 
+(defun codegen-fast-method-call (arguments cur-arg outcome)
+  (cf-log "codegen-fast-method-call\n")
+  (let* ((fmf (fast-method-call-function outcome))
+         (gf-data-id (register-runtime-data fmf *outcomes*))
+         (effective-method-block (irc-basic-block-create "effective-method")))
+    (irc-branch-to-and-begin-block effective-method-block)
+    (let* ((fmf (irc-load (irc-gep *gf-data*
+                                   (list (jit-constant-size_t 0)
+                                         (jit-constant-size_t gf-data-id)))
+                          "load"))
+           ;; what we're doing here is duplicating irc-funcall, except passing a function the actual LLVM-level
+           ;; arguments passed to the dispatcher (the -register-arguments).
+           (entry-point (irc-calculate-entry fmf))
+           (result-in-registers (irc-call-or-invoke
+                                 entry-point
+                                 ;; We have to pass the correct closure.
+                                 ;; Remember that the arguments are closure,nargs,arg1,arg2,arg3,arg4,...
+                                 ;; This whole thing could use some major cleanup (FIXME).
+                                 (list* fmf (rest (argument-holder-register-arguments arguments)))
+                                 *current-unwind-landing-pad-dest* "fast-method-call")))
+      (irc-store-result (argument-holder-return-value arguments) result-in-registers)
+      (irc-br (argument-holder-continue-after-dispatch arguments)))))
+
 (defun codegen-effective-method-call (arguments cur-arg outcome)
   (cf-log "codegen-effective-method-call\n")
   (let ((gf-data-id (register-runtime-data outcome *outcomes*))
@@ -641,6 +665,8 @@
        (codegen-slot-reader arguments cur-arg outcome))
       ((optimized-slot-writer-p outcome)
        (codegen-slot-writer arguments cur-arg outcome))
+      ((fast-method-call-p outcome)
+       (codegen-fast-method-call arguments cur-arg outcome))
       (t (codegen-effective-method-call arguments cur-arg outcome)))))
 
 (defun codegen-class-binary-search (arguments cur-arg matches stamp-var)
@@ -1040,8 +1066,8 @@
   (if (clos:generic-function-call-history generic-function)
       (let* ((*save-module-for-disassemble* t)
              (*saved-module-from-clasp-jit* nil)
-             (call-history (generic-function-call-history generic-function))
-             (specializer-profile (generic-function-specializer-profile generic-function))
+             (call-history (clos:generic-function-call-history generic-function))
+             (specializer-profile (clos:generic-function-specializer-profile generic-function))
              (dispatcher (codegen-dispatcher generic-function :generic-function-name 'disassemble))
              (module cmp:*saved-module-from-clasp-jit*))
         (if module
