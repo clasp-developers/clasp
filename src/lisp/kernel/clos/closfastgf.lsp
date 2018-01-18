@@ -504,7 +504,11 @@ FIXME!!!! This code will have problems with multithreading if a generic function
   (cond
     ((cmp::optimized-slot-reader-p outcome)
      ;; Call is like (name instance)
-     (standard-instance-get (first arguments) (cmp::optimized-slot-reader-index outcome)))
+     (let ((value (standard-instance-get (first arguments) (cmp::optimized-slot-reader-index outcome))))
+       (if (si:sl-boundp value)
+           value
+           (values (slot-unbound (cmp::optimized-slot-reader-class outcome) (first arguments)
+                                 (cmp::optimized-slot-reader-slot-name outcome))))))
     ((cmp::optimized-slot-writer-p outcome)
      ;; Call is like ((setf name) new-value instance)
      (standard-instance-set (first arguments) (second arguments) (cmp::optimized-slot-writer-index outcome)))
