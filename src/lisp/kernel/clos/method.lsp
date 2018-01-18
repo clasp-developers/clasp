@@ -115,6 +115,12 @@ in the generic function lambda-list to the generic function lambda-list"
                                   ,(specializers-expression specializers)
                                   ',lambda-list
                                   ,(maybe-remove-block fn-form source-location)
+                                  ;; Note that we do not quote the options returned by make-method-lambda.
+                                  ;; This is essentially to make the fast method function easier.
+                                  ;; MOP is in my view ambiguous about whether they're supposed to be quoted.
+                                  ;; There's an example that sort of implies they are, but the extra flexibility
+                                  ;; is pretty convenient, and matches that the primary value is of course
+                                  ;; evaluated.
                                   ,@options)
                 (maybe-augment-generic-function-lambda-list ',name ',lambda-list)))))))))
 
@@ -227,13 +233,13 @@ in the generic function lambda-list to the generic function lambda-list"
                        (core::bind-va-list ,lambda-list .method-args.
                                            (declare ,@declarations)
                                            ,@body)))
-                  (list :leaf-method-p `',leaf-method-p
-                        ;; We only put in an FMF if we have less than or equal to four required arguments.
-                        ;; FIXME: This is kind of a messy way of doing it...
-                        ;; and 4 is a magic number. Right now it's the number of arguments passed in registers.
-                        ;; Seriously, FIXME. Fix this. This can only be a proof of concept.
-                        :fast-method-function (if (and leaf-method-p
-                                                       (<= (length lambda-list) 4)
+                  (list 'leaf-method-p `',leaf-method-p
+                        ;; We only put in an FMF if we have only required parameters, and few enough
+                        ;; that they can be passed in registers (that's what number-of-fixed-arguments is).
+                        ;; FIXME: This is kind of a messy way of doing it. But I'm not sure what would be
+                        ;; preferable.
+                        'fast-method-function (if (and leaf-method-p
+                                                       (<= (length lambda-list) core:+number-of-fixed-arguments+)
                                                        (not (find-if (lambda (sym)
                                                                        (member sym lambda-list-keywords))
                                                                      lambda-list)))
