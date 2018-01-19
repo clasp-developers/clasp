@@ -467,7 +467,7 @@ The passed module is modified as a side-effect."
 
 (defun optimize-module-for-compile-file (module &optional (optimize-level *optimization-level*) (size-level *size-level*))
   (declare (type (or null llvm-sys:module) module))
-  (when (and *optimizations-on* module)
+  #+(or)(when (and *optimizations-on* module)
     #++(let ((call-sites (call-sites-to-always-inline module)))
          (bformat t "Call-sites -> %s\n" call-sites))
     ;; Link in the builtins as part of the optimization
