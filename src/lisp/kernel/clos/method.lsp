@@ -203,6 +203,15 @@ in the generic function lambda-list to the generic function lambda-list"
                       block)))))
       (values method-lambda declarations documentation))))
 
+(defun lambda-list-fast-callable-p (lambda-list)
+  ;; We only put in an FMF if we have only required parameters, and few enough
+  ;; that they can be passed in registers (that's what number-of-fixed-arguments is).
+  (and
+   (<= (length lambda-list) core:+number-of-fixed-arguments+)
+   (not (find-if (lambda (sym)
+                   (member sym lambda-list-keywords))
+                 lambda-list))))
+
 (defun make-method-lambda (gf method method-lambda env)
   (multiple-value-bind (call-next-method-p next-method-p-p)
       (walk-method-lambda method-lambda env)
@@ -235,15 +244,10 @@ in the generic function lambda-list to the generic function lambda-list"
                                            ,@body)))
                   ;; double quotes as per evaluation, explained above in defmethod.
                   (list ''leaf-method-p `',leaf-method-p
-                        ;; We only put in an FMF if we have only required parameters, and few enough
-                        ;; that they can be passed in registers (that's what number-of-fixed-arguments is).
-                        ;; FIXME: This is kind of a messy way of doing it. But I'm not sure what would be
-                        ;; preferable.
+                        ;; FIXME: This is kind of a messy way of arranging things. Both the lambda list check
+                        ;; criterion, and the fmf initarg. But I'm not sure what would be preferable.
                         ''fast-method-function (if (and leaf-method-p
-                                                       (<= (length lambda-list) core:+number-of-fixed-arguments+)
-                                                       (not (find-if (lambda (sym)
-                                                                       (member sym lambda-list-keywords))
-                                                                     lambda-list)))
+                                                        (lambda-list-fast-callable-p lambda-list))
                                                   `(lambda ,lambda-list
                                                      (declare ,@declarations)
                                                      ,doc
@@ -382,7 +386,8 @@ have disappeared."
               :qualifiers qualifiers
               :keywords keys
               :aok-p aok-p
-              :leaf-method-p (getf options :leaf-method-p nil))
+              'leaf-method-p (getf options 'leaf-method-p nil)
+              'fast-method-function (getf options 'fast-method-function nil))
       method)))
 
 ;;; early version used during bootstrap
