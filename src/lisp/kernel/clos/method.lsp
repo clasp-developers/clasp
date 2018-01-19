@@ -233,12 +233,13 @@ in the generic function lambda-list to the generic function lambda-list"
                        (core::bind-va-list ,lambda-list .method-args.
                                            (declare ,@declarations)
                                            ,@body)))
-                  (list 'leaf-method-p `',leaf-method-p
+                  ;; double quotes as per evaluation, explained above in defmethod.
+                  (list ''leaf-method-p `',leaf-method-p
                         ;; We only put in an FMF if we have only required parameters, and few enough
                         ;; that they can be passed in registers (that's what number-of-fixed-arguments is).
                         ;; FIXME: This is kind of a messy way of doing it. But I'm not sure what would be
                         ;; preferable.
-                        'fast-method-function (if (and leaf-method-p
+                        ''fast-method-function (if (and leaf-method-p
                                                        (<= (length lambda-list) core:+number-of-fixed-arguments+)
                                                        (not (find-if (lambda (sym)
                                                                        (member sym lambda-list-keywords))
