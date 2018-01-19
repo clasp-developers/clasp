@@ -288,7 +288,9 @@
      for argspec in specializers
      always (if (eql-specializer-flag spec)
                 (and (consp argspec) (eql (car argspec) (eql-specializer-object spec)))
-                (and (not (consp argspec)) (subclassp argspec spec)))))
+                (if (consp argspec) ; eql specializer?
+                    (subclassp (class-of argspec) spec)
+                    (subclassp argspec spec)))))
 
 (defun applicable-method-list-using-specializers (gf specializers)
   (declare (optimize (speed 3))
