@@ -1051,7 +1051,7 @@ DONT_OPTIMIZE_WHEN_DEBUG_RELEASE void throwReturnFrom(size_t depth, core::Activa
 
 extern "C" {
 
-DONT_OPTIMIZE_WHEN_DEBUG_RELEASE gctools::return_type blockHandleReturnFrom(unsigned char *exceptionP, core::T_O* handle) {
+DONT_OPTIMIZE_WHEN_DEBUG_RELEASE gctools::return_type blockHandleReturnFrom_or_rethrow(unsigned char *exceptionP, core::T_O* handle) {
   core::ReturnFrom &returnFrom = (core::ReturnFrom &)*((core::ReturnFrom *)(exceptionP));
   if (returnFrom.getHandle() == handle) {
 #if defined(DEBUG_FLOW_CONTROL) || defined(DEBUG_RETURN_FROM)
@@ -1086,7 +1086,7 @@ DONT_OPTIMIZE_WHEN_DEBUG_RELEASE gctools::return_type blockHandleReturnFrom(unsi
 #if defined(DEBUG_FLOW_TRACKER)
   flow_tracker_about_to_throw();
 #endif
-  throw returnFrom;
+  throw; // throw returnFrom;
 }
 
 };
@@ -1230,12 +1230,13 @@ int tagbodyLexicalGoIndexElseRethrow(char *exceptionP) {
 #endif
 }
 
-size_t tagbodyDynamicGoIndexElseRethrow(char *exceptionP, T_O* handle) {
+size_t tagbodyHandleDynamicGoIndex_or_rethrow(char *exceptionP, T_O* handle) {
   core::DynamicGo& goException = *reinterpret_cast<core::DynamicGo *>(exceptionP);
   if (goException.getHandle() == handle) {
     return goException.index();
   }
-  throw goException;
+  throw;
+//  throw goException;
 }
 
 
@@ -1693,7 +1694,8 @@ size_t cc_landingpadUnwindMatchFrameElseRethrow(char *exceptionP, core::T_O *thi
     printf("- - - - - Rethrowing core::Unwind targetFrame[%" PRu "] index[%zu] (thisFrame is: %lu)\n", gc::untag_fixnum(unwindP->getFrame()), unwindP->index(), frameIndex);
   }
 #endif
-  throw * unwindP;
+  // throw * unwindP;
+  throw;
 }
 
 #if 0 // Bring this back online when we convert to new calling convention

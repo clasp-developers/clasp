@@ -1100,7 +1100,7 @@
              (*saved-module-from-clasp-jit* nil)
              (call-history (clos:generic-function-call-history generic-function))
              (specializer-profile (clos:generic-function-specializer-profile generic-function))
-             (dispatcher (codegen-dispatcher generic-function :generic-function-name 'disassemble))
+             (dispatcher (codegen-dispatcher call-history specializer-profile generic-function :generic-function-name 'disassemble))
              (module cmp:*saved-module-from-clasp-jit*))
         (if module
             (llvm-sys:dump-module module)

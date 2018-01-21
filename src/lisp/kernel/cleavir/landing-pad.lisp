@@ -21,7 +21,7 @@
         (cmp:irc-cond-br matches-type unwind-exception-bb not-unwind-exception-bb)
         (cmp:irc-begin-block unwind-exception-bb)
         (let (go-index)
-          (cmp:with-catch ((exn.slot function-info) exception-ptr)
+          (cmp:with-begin-end-catch ((exn.slot function-info) exception-ptr nil)
             ;; Check if frame is correct against tagbody and jump to jumpid
             (cmp:with-landing-pad cmp::*current-function-terminate-landing-pad*
               (cmp:irc-low-level-trace :cclasp-eh)
