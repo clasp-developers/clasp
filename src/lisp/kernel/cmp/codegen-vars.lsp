@@ -86,16 +86,20 @@
     (needed nil)
     tagbody-environment
     make-tagbody-frame-instruction
-    #+debug-lexical-depth setFrameUniqueId
+    #+debug-lexical-depth frame-unique-id
+    #+debug-lexical-depth set-frame-unique-id
     initialize-tagbody-closure)
   (defstruct (throw-dynamic-go (:type vector))
-    instruction index depth start-env start-renv tagbody-env)
+    instruction
+    #+debug-lexical-depth ensure-frame-unique-id
+    index depth start-env start-renv tagbody-env)
   (defvar *throw-dynamic-go-instructions*))
 
 #+optimize-bclasp
 (progn
   (defstruct (lexical-function-reference (:type vector))
-    instruction index depth start-env start-renv function-env)
+    instruction
+    index depth start-env start-renv function-env)
   (defvar *lexical-function-references*))
 
 
@@ -284,8 +288,8 @@
           (start-env (throw-dynamic-go-start-env go))
           (tagbody-env (throw-dynamic-go-tagbody-env go)))
       (let ((new-depth (core:calculate-runtime-visible-environment-depth start-env tagbody-env)))
-        (multiple-value-bind (the-function primitive-info)
-            (get-or-declare-function-or-error *the-module* "throwDynamicGo")
+        (let ((the-function (get-or-declare-function-or-error *the-module* "throwDynamicGo"))
+              #+debug-lexical-depth(ensure-frame-unique-id-function (get-or-declare-function-or-error *the-module* "ensureFrameUniqueId")))
           (cv-log "About to replace call to %s\n" the-function)
           (let* ((args (llvm-sys:call-or-invoke-get-argument-list instr))
                  (start-renv (car (last args))))
@@ -293,7 +297,16 @@
                                    instr
                                    (list (jit-constant-size_t new-depth)
                                          (jit-constant-size_t index)
-                                         start-renv))))
+                                         start-renv)))
+          #+debug-lexical-depth(let* ((info (throw-dynamic-go-ensure-frame-unique-id go))
+                                      (instr (first info))
+                                      (old-args (second info))
+                                      (args (llvm-sys:call-or-invoke-get-argument-list instr)))
+                                 (llvm-sys:replace-call ensure-frame-unique-id-function
+                                                        instr
+                                                        (list (first old-args)
+                                                              (jit-constant-size_t new-depth)
+                                                              (third args)))))
         (cv-log "Done\n")))))
 
 (defstruct (track-rewrites (:type vector) :named)
@@ -344,7 +357,8 @@
 (defun rewrite-tagbody-with-no-go (tagbody-info)
   (when *rewrite-tagbody*
     (let ((ignore-make-tagbody-frame-function (get-or-declare-function-or-error *the-module* "invisible_makeTagbodyFrameSetParent"))
-          (ignore-initialize-tagbody-closure-function (get-or-declare-function-or-error *the-module* "ignore_initializeTagbodyClosure")))
+          (ignore-initialize-tagbody-closure-function (get-or-declare-function-or-error *the-module* "ignore_initializeTagbodyClosure"))
+          #+debug-lexical-depth(ignore-set-frame-unique-id (get-or-declare-function-or-error *the-module* "ignore_setFrameUniqueId")))
       (let ((total 0)
             (ignored 0))
         (maphash (lambda (env tagbody-info)
@@ -353,9 +367,13 @@
                      (incf ignored)
                      (core:set-invisible (tagbody-frame-info-tagbody-environment tagbody-info) t)
                      (funcall 'llvm-sys:replace-call-keep-args ignore-initialize-tagbody-closure-function
-                            (car (tagbody-frame-info-initialize-tagbody-closure tagbody-info)))
+                              (car (tagbody-frame-info-initialize-tagbody-closure tagbody-info)))
                      (funcall 'llvm-sys:replace-call-keep-args ignore-make-tagbody-frame-function
-                              (car (tagbody-frame-info-make-tagbody-frame-instruction tagbody-info)))))
+                              (car (tagbody-frame-info-make-tagbody-frame-instruction tagbody-info)))
+                     #+debug-lexical-depth(funcall 'llvm-sys:replace-call
+                                                   ignore-set-frame-unique-id
+                                                   (car (tagbody-frame-info-set-frame-unique-id tagbody-info))
+                                                   nil)))
                  tagbody-info)
         (unwind-protect
              (progn

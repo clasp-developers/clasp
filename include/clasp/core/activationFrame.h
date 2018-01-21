@@ -60,7 +60,11 @@ public:
   T_sp &parentFrameRef_() { return this->_Parent; };
   T_sp parentFrame() const { return this->_Parent; };
 public:
- ActivationFrame_O() : Base(), _Parent(_Nil<T_O>()){};
+ ActivationFrame_O() : Base(), _Parent(_Nil<T_O>())
+#ifdef DEBUG_LEXICAL_DEPTH
+    , _UniqueId((size_t)-1)
+#endif
+  {};
  ActivationFrame_O(T_sp p) : Base(), _Parent(p) {};
   virtual ~ActivationFrame_O(){};
 

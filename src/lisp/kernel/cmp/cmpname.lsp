@@ -53,18 +53,18 @@ initialization from the C code which wants to use it."
        unique-name)
       ((:fasl :fas)
        (init-function-name "CODE" :kind :fas :prefix prefix))
-      ((:static-library :lib)
-       (init-function-name (if wrapper
-                               (remove-prefix +static-library-prefix+ filename)
-                               unique-name)
-                           :kind :lib
-                           :prefix prefix))
-      ((:shared-library :dll)
-       (init-function-name (if wrapper
-                               (remove-prefix +shared-library-prefix+ filename)
-                               unique-name)
-                           :kind :dll
-                           :prefix prefix))
+      #+(or)((:static-library :lib)
+             (init-function-name (if wrapper
+                                     (remove-prefix +static-library-prefix+ filename)
+                                     unique-name)
+                                 :kind :lib
+                                 :prefix prefix))
+      #+(or)((:shared-library :dll)
+             (init-function-name (if wrapper
+                                     (remove-prefix +shared-library-prefix+ filename)
+                                     unique-name)
+                                 :kind :dll
+                                 :prefix prefix))
       ((:program)
        (concatenate 'string (or prefix "init_") "CLASP_PROGRAM"))
       (otherwise

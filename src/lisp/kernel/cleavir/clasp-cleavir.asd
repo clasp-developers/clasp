@@ -5,7 +5,8 @@
   :version "0.0.1"
   :author "Christian Schafmeister <chris.schaf@verizon.net>"
   :licence "LGPL-3.0"
-  :depends-on (:sicl-reader-simple
+  :depends-on (:concrete-syntax-tree
+               :sicl-reader-simple
                :cleavir-generate-ast
                :cleavir-ir
                :cleavir-compilation-policy

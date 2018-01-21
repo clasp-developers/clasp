@@ -57,6 +57,7 @@ THE SOFTWARE.
 //  CLASP INCLUDES
 // ---------------------------------------------------------------------------
 
+#include <clasp/gctools/gcFunctions.h>
 #include <clasp/core/bundle.h>
 #include <clasp/core/object.h>
 #include <clasp/core/lisp.h>
@@ -262,7 +263,9 @@ static void clasp_terminate_handler( void )
 
   if( abort_flag() )
     abort();
-
+#if DEBUG_FLOW_TRACKER
+  flow_tracker_last_throw_backtrace_dump();
+#endif
   printf("%s:%d There was an unhandled exception - do something about it.\n", __FILE__, __LINE__ );
   abort();
 }
@@ -468,6 +471,29 @@ int main( int argc, char *argv[] )
     exit_code = gctools::startupGarbageCollectorAndSystem( &startup, argc, argv, rl.rlim_max, mpiEnabled, mpiRank, mpiSize );
     set_exit_code( exit_code );
   }
+  catch (const core::DynamicGo& go) {
+    fprintf(stderr, "%s:%d  Uncaught DynamicGo\n", __FILE__, __LINE__ );
+#if defined(DEBUG_FLOW_TRACKER)
+    core::Cons_sp throwHandleCons((gc::Tagged)go.getHandle());
+    if (!throwHandleCons.consp()) printf("%s:%d The throwHandleCons is not a CONS -> %p\n", __FILE__, __LINE__, (void*)throwHandleCons.raw_() );
+    Fixnum throwFlowCounter = CONS_CAR(throwHandleCons).unsafe_fixnum();
+    printf("%s:%d A GO has missed its target frame - the GO has the handle %p and is looking for FlowCounter %" PFixnum " and it reached main()\n", __FILE__, __LINE__, throwHandleCons.raw_(), throwFlowCounter );
+    flow_tracker_last_throw_backtrace_dump();
+#endif
+    abort();
+  }
+  catch (const core::ReturnFrom& rf) {
+    fprintf(stderr, "%s:%d  Uncaught ReturnFrom\n", __FILE__, __LINE__ );
+#if defined(DEBUG_FLOW_TRACKER)
+    core::Cons_sp throwHandleCons((gc::Tagged)rf.getHandle());
+    if (!throwHandleCons.consp()) printf("%s:%d The throwHandleCons is not a CONS -> %p\n", __FILE__, __LINE__, (void*)throwHandleCons.raw_() );
+    Fixnum throwFlowCounter = CONS_CAR(throwHandleCons).unsafe_fixnum();
+    printf("%s:%d A RETURN-FROM has missed its target frame - the RETURN-FROM has the handle %p and is looking for FlowCounter %" PFixnum " and it reached main()\n", __FILE__, __LINE__, throwHandleCons.raw_(), throwFlowCounter );
+    flow_tracker_last_throw_backtrace_dump();
+#endif
+    abort();
+  }
+
   catch ( ... )
   {
     // As we don't know what went wrong we just exit with a generic error code
