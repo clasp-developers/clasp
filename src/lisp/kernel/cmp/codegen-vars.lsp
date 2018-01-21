@@ -86,8 +86,7 @@
     (needed nil)
     tagbody-environment
     make-tagbody-frame-instruction
-    #+debug-lexical-depth frame-unique-id
-    #+debug-lexical-depth set-frame-unique-id
+    #+debug-lexical-depth setFrameUniqueId
     initialize-tagbody-closure)
   (defstruct (throw-dynamic-go (:type vector))
     instruction
@@ -357,8 +356,7 @@
 (defun rewrite-tagbody-with-no-go (tagbody-info)
   (when *rewrite-tagbody*
     (let ((ignore-make-tagbody-frame-function (get-or-declare-function-or-error *the-module* "invisible_makeTagbodyFrameSetParent"))
-          (ignore-initialize-tagbody-closure-function (get-or-declare-function-or-error *the-module* "ignore_initializeTagbodyClosure"))
-          #+debug-lexical-depth(ignore-set-frame-unique-id (get-or-declare-function-or-error *the-module* "ignore_setFrameUniqueId")))
+          (ignore-initialize-tagbody-closure-function (get-or-declare-function-or-error *the-module* "ignore_initializeTagbodyClosure")))
       (let ((total 0)
             (ignored 0))
         (maphash (lambda (env tagbody-info)
@@ -367,13 +365,9 @@
                      (incf ignored)
                      (core:set-invisible (tagbody-frame-info-tagbody-environment tagbody-info) t)
                      (funcall 'llvm-sys:replace-call-keep-args ignore-initialize-tagbody-closure-function
-                              (car (tagbody-frame-info-initialize-tagbody-closure tagbody-info)))
+                            (car (tagbody-frame-info-initialize-tagbody-closure tagbody-info)))
                      (funcall 'llvm-sys:replace-call-keep-args ignore-make-tagbody-frame-function
-                              (car (tagbody-frame-info-make-tagbody-frame-instruction tagbody-info)))
-                     #+debug-lexical-depth(funcall 'llvm-sys:replace-call
-                                                   ignore-set-frame-unique-id
-                                                   (car (tagbody-frame-info-set-frame-unique-id tagbody-info))
-                                                   nil)))
+                              (car (tagbody-frame-info-make-tagbody-frame-instruction tagbody-info)))))
                  tagbody-info)
         (unwind-protect
              (progn

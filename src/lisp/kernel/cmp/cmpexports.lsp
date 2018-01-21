@@ -165,7 +165,7 @@
           treat-as-special-operator-p
           typeid-core-unwind
           walk-form-for-source-info
-          with-catch
+          with-begin-end-catch
           preserve-exception-info
           with-new-function
           with-dbg-function

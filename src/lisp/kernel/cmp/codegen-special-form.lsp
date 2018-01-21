@@ -481,16 +481,10 @@ jump to blocks within this tagbody."
       (cmp-log "codegen-tagbody tagbody environment: %s\n" tagbody-env)
       (let ((handle (irc-intrinsic "initializeTagbodyClosure" (irc-renv tagbody-env))))
         #+optimize-bclasp
-        (let ((info (make-tagbody-frame-info :tagbody-environment tagbody-env
-                                             :make-tagbody-frame-instruction (list instruction (list (irc-load (irc-renv env))))
-                                             :initialize-tagbody-closure (list handle (list (irc-renv tagbody-env))))))
-          
-          #+debug-lexical-depth
-          (let* ((frame-unique-id (gctools:next-lexical-depth-counter))
-                 (set-frame-unique-id (irc-intrinsic "setFrameUniqueId" (jit-constant-size_t frame-unique-id) (irc-load (irc-renv tagbody-env)))))
-            (setf (tagbody-frame-info-frame-unique-id info) frame-unique-id)
-            (setf (tagbody-frame-info-set-frame-unique-id info) (list set-frame-unique-id (list (jit-constant-size_t frame-unique-id) (irc-load (irc-renv tagbody-env))))))
-          (setf (gethash tagbody-env *tagbody-frame-info*) info))
+        (setf (gethash tagbody-env *tagbody-frame-info*)
+              (make-tagbody-frame-info :tagbody-environment tagbody-env
+                                       :make-tagbody-frame-instruction (list instruction (list (irc-load (irc-renv env))))
+                                       :initialize-tagbody-closure (list handle (list (irc-renv tagbody-env)))))
         (with-try
             (progn
               (let ((go-blocks nil))
@@ -517,7 +511,7 @@ jump to blocks within this tagbody."
           ;;        ((cleanup) (codegen-literal result nil env))
           ((cleanup) (irc-unwind-environment tagbody-env))
           ((typeid-core-dynamic-go exception-ptr)
-           (let* ((go-index (irc-intrinsic "tagbodyDynamicGoIndexElseRethrow" exception-ptr handle))
+           (let* ((go-index (irc-intrinsic "tagbodyHandleDynamicGoIndex_or_rethrow" exception-ptr handle))
                   (default-block (irc-basic-block-create "switch-default"))
                   (sw (irc-switch go-index default-block (length enumerated-tag-blocks))))
              (mapc #'(lambda (one) (irc-add-case sw (jit-constant-size_t (car one)) (cadr one)))
@@ -537,30 +531,24 @@ jump to blocks within this tagbody."
 	     (index (caddr classified-tag))
              (tagbody-env (cadddr classified-tag))
              (start-renv (irc-load (irc-renv env))))
-         (let* (#+optimize-bclasp (frame-info (gethash tagbody-env *tagbody-frame-info*))
-                #+(and optimize-bclasp debug-lexical-depth) (frame-unique-id (tagbody-frame-info-frame-unique-id frame-info))
-                #+(and optimize-bclasp debug-lexical-depth) (ensure-frame-unique-id (irc-intrinsic "ensureFrameUniqueId"
-                                                                                                   (jit-constant-size_t frame-unique-id)
-                                                                                                   (jit-constant-size_t depth)
-                                                                                                   (irc-load (irc-renv env)))))
-           #+optimize-bclasp (unless frame-info (error "Could not find frame-info for tagbody-env %s" tagbody-env))
-           #+optimize-bclasp (setf (tagbody-frame-info-needed frame-info) t)
-           (irc-low-level-trace :go)
-           (let ((instruction (irc-intrinsic "throwDynamicGo"
-                                             (jit-constant-size_t depth)
-                                             (jit-constant-size_t index)
-                                             start-renv)))
-             #+optimize-bclasp
-             (push (make-throw-dynamic-go :instruction instruction
-                                          :depth depth
-                                          :index index
-                                          :start-env env
-                                          :start-renv start-renv
-                                          :tagbody-env tagbody-env
-                                          #+debug-lexical-depth :ensure-frame-unique-id
-                                          #+debug-lexical-depth (list ensure-frame-unique-id (list (jit-constant-size_t frame-unique-id) (jit-constant-size_t depth) (irc-load (irc-renv env)))))
-                   *throw-dynamic-go-instructions*)
-             instruction))))
+         #+optimize-bclasp
+         (let ((frame-info (gethash tagbody-env *tagbody-frame-info*)))
+           (unless frame-info (error "Could not find frame-info for block ~s" block-symbol))
+           (setf (tagbody-frame-info-needed frame-info) t))
+	 (irc-low-level-trace :go)
+	 (let ((instruction (irc-intrinsic "throwDynamicGo"
+                                           (jit-constant-size_t depth)
+                                           (jit-constant-size_t index)
+                                           start-renv)))
+           #+optimize-bclasp
+           (push (make-throw-dynamic-go :instruction instruction
+                                        :depth depth
+                                        :index index
+                                        :start-env env
+                                        :start-renv start-renv
+                                        :tagbody-env tagbody-env)
+                 *throw-dynamic-go-instructions*)
+           instruction)))
       ((and classified-tag (eq (car classified-tag) 'local-go))
        (let ((depth (cadr classified-tag))
 	     (index (caddr classified-tag))
@@ -607,7 +595,7 @@ jump to blocks within this tagbody."
               ((cleanup)
                (irc-unwind-environment block-env))
               ((typeid-core-return-from exception-ptr)
-               (let ((handle-instruction (irc-intrinsic "blockHandleReturnFrom" exception-ptr handle)))
+               (let ((handle-instruction (irc-intrinsic "blockHandleReturnFrom_or_rethrow" exception-ptr handle)))
                  (irc-store handle-instruction result))))
             (irc-br after-return-block "after-return-block")
             (irc-begin-block local-return-block)

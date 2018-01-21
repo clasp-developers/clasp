@@ -1051,7 +1051,7 @@ DONT_OPTIMIZE_WHEN_DEBUG_RELEASE void throwReturnFrom(size_t depth, core::Activa
 
 extern "C" {
 
-DONT_OPTIMIZE_WHEN_DEBUG_RELEASE gctools::return_type blockHandleReturnFrom(unsigned char *exceptionP, core::T_O* handle) {
+DONT_OPTIMIZE_WHEN_DEBUG_RELEASE gctools::return_type blockHandleReturnFrom_or_rethrow(unsigned char *exceptionP, core::T_O* handle) {
   core::ReturnFrom &returnFrom = (core::ReturnFrom &)*((core::ReturnFrom *)(exceptionP));
   if (returnFrom.getHandle() == handle) {
 #if defined(DEBUG_FLOW_CONTROL) || defined(DEBUG_RETURN_FROM)
@@ -1089,7 +1089,7 @@ DONT_OPTIMIZE_WHEN_DEBUG_RELEASE gctools::return_type blockHandleReturnFrom(unsi
   Fixnum throwFlowCounter = CONS_CAR(throwHandleCons).unsafe_fixnum();
   flow_tracker_about_to_throw(throwFlowCounter);
 #endif
-  throw returnFrom;
+  throw; // throw returnFrom;
 }
 
 };
@@ -1142,7 +1142,7 @@ DONT_OPTIMIZE_WHEN_DEBUG_RELEASE core::T_O* initializeBlockClosure(core::T_O** a
   NO_UNWIND_END();
 }
 
-DONT_OPTIMIZE_WHEN_DEBUG_RELEASE core::T_O* initializeTagbodyClosure(core::T_O *afP)
+core::T_O* initializeTagbodyClosure(core::T_O *afP)
 {NO_UNWIND_BEGIN();
   core::T_sp tagbodyId((gctools::Tagged)afP);
   ValueFrame_sp vf = ValueFrame_sp((gc::Tagged)*reinterpret_cast<ValueFrame_O**>(afP));
@@ -1241,33 +1241,13 @@ int tagbodyLexicalGoIndexElseRethrow(char *exceptionP) {
 #endif
 }
 
-DONT_OPTIMIZE_WHEN_DEBUG_RELEASE size_t tagbodyDynamicGoIndexElseRethrow(char *exceptionP, T_O* handle) {
+size_t tagbodyHandleDynamicGoIndex_or_rethrow(char *exceptionP, T_O* handle) {
   core::DynamicGo& goException = *reinterpret_cast<core::DynamicGo *>(exceptionP);
   if (goException.getHandle() == handle) {
     return goException.index();
   }
-#if defined(DEBUG_FLOW_TRACKER)
-  if (handle) {
-    Cons_sp throwHandleCons((gc::Tagged)goException.getHandle());
-    Cons_sp frameHandleCons((gc::Tagged)handle);
-    if (!throwHandleCons.consp()) printf("%s:%d The throwHandleCons is not a CONS -> %p\n", __FILE__, __LINE__, (void*)throwHandleCons.raw_() );
-    if (!frameHandleCons.consp()) printf("%s:%d The frameHandleCons is not a CONS -> %p\n", __FILE__, __LINE__, (void*)frameHandleCons.raw_() );
-    Fixnum throwFlowCounter = CONS_CAR(throwHandleCons).unsafe_fixnum();
-    Fixnum frameFlowCounter = CONS_CAR(frameHandleCons).unsafe_fixnum();
-    if (throwFlowCounter > frameFlowCounter) {
-      printf("%s:%d A GO has missed its target frame - the GO is looking for FlowCounter %" PFixnum " and it reached FlowCounter %" PFixnum "\n", __FILE__, __LINE__, throwFlowCounter, frameFlowCounter );
-      flow_tracker_last_throw_backtrace_dump();
-      abort();
-    }
-  }
-#endif
-#if defined(DEBUG_FLOW_TRACKER)
-  Cons_sp throwHandleCons((gc::Tagged)goException.getHandle());
-  if (!throwHandleCons.consp()) printf("%s:%d The throwHandleCons is not a CONS -> %p\n", __FILE__, __LINE__, (void*)throwHandleCons.raw_() );
-  Fixnum throwFlowCounter = CONS_CAR(throwHandleCons).unsafe_fixnum();
-  flow_tracker_about_to_throw(throwFlowCounter);
-#endif
-  throw goException;
+  throw;
+//  throw goException;
 }
 
 
@@ -1725,7 +1705,8 @@ size_t cc_landingpadUnwindMatchFrameElseRethrow(char *exceptionP, core::T_O *thi
     printf("- - - - - Rethrowing core::Unwind targetFrame[%" PRu "] index[%zu] (thisFrame is: %lu)\n", gc::untag_fixnum(unwindP->getFrame()), unwindP->index(), frameIndex);
   }
 #endif
-  throw * unwindP;
+  // throw * unwindP;
+  throw;
 }
 
 #if 0 // Bring this back online when we convert to new calling convention

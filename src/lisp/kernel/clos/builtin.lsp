@@ -59,7 +59,7 @@
   (apply #'make-instance (find-class class-name) initargs))
 
 (defmethod slot-makunbound-using-class ((class built-in-class) self slotd)
-  (declare (ignore class self slotd))
+  (declare (ignore self slotd))
   (error "SLOT-MAKUNBOUND-USING-CLASS cannot be applied on built-in object ~a of class ~a" class (class-of class)))
 
 (defmethod slot-boundp-using-class ((class built-in-class) self slotd)

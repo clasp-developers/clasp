@@ -16,5 +16,6 @@
 (load (compile-file "sys:regression-tests;sequences01.lisp"))
 (load (compile-file "sys:regression-tests;clos.lisp"))
 (load (compile-file "sys:regression-tests;numbers.lisp"))
+(load (compile-file "sys:regression-tests;ehkiller.lisp"))
 (format t "Passes: ~a~%" *passes*)
 (format t "Fails:  ~a~%" *fails*)

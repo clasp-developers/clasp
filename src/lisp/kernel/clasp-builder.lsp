@@ -467,14 +467,20 @@ Return files."
       (time
        (progn
          (unwind-protect
-              (let ((files (select-source-files #P"src/lisp/kernel/tag/bclasp"
-                                                #P"src/lisp/kernel/cleavir/inline-prep" :system system)))
-                (core:bformat t "COMPILE-FILEing %s\n" files)
+              (progn
                 (push :compiling-cleavir *features*)
-                (compile-system files :reload t :output-type :fasl)
-                (core:bformat t "!\n!\n! Switching to load\n!\n!\n")
-                (load-system (select-source-files #P"src/lisp/kernel/cleavir/auto-compile"
-                                                  #P"src/lisp/kernel/tag/pre-epilogue-cclasp" :system system) :compile-file-load nil ))
+                (load-system (select-source-files #P"src/lisp/kernel/tag/bclasp"
+                                                  #P"src/lisp/kernel/tag/pre-epilogue-cclasp"
+                                                  :system system) :compile-file-load nil)
+                #+(or)(let ((files (select-source-files #P"src/lisp/kernel/tag/bclasp"
+                                                        #P"src/lisp/kernel/cleavir/inline-prep" :system system)))
+                        (core:bformat t "COMPILE-FILEing %s\n" files)
+                        (push :compiling-cleavir *features*)
+                        (progn
+                          (compile-system files :reload t :output-type :fasl)
+                          (core:bformat t "!\n!\n! Switching to load\n!\n!\n")
+                          (load-system (select-source-files #P"src/lisp/kernel/cleavir/auto-compile"
+                                                            #P"src/lisp/kernel/tag/pre-epilogue-cclasp" :system system) :compile-file-load nil ))))
            (pop *features*))
          (push :cleavir *features*)
          (compile-cclasp* output-file system))))))

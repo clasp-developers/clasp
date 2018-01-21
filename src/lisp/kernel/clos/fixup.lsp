@@ -56,7 +56,9 @@
                             (lambda (.method-args. .next-methods.)
                               (declare (core:lambda-name function-to-method.lambda))
                               (mlog "In function-to-method.lambda  about to call %s with args %s\n" function (core:list-from-va-list .method-args.))
-                              (apply function .method-args.))))))
+                              (apply function .method-args.))
+                            'leaf-method-p t
+                            'fast-method-function (if (lambda-list-fast-callable-p lambda-list) function nil)))))
     (mlog "function-to-method: installed method\n")
     (setf (fdefinition name) f
           (generic-function-name f) name)
