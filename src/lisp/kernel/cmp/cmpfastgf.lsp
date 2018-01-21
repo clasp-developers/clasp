@@ -98,6 +98,7 @@
 ;; the emf slot here is for debugging only - i.e., comparing with the optimized slot value. Usually unused.
 (defstruct (optimized-slot-reader (:type vector) :named) index #| << must be here |# effective-method-function slot-name method class)
 (defstruct (optimized-slot-writer (:type vector) :named) index #| << must be here |# effective-method-function slot-name method class)
+(defstruct (fast-method-call (:type vector) :named) function)
 (defstruct (klass (:type vector) :named) stamp name)
 (defstruct (outcome (:type vector) :named) outcome)
 (defstruct (match (:type vector) :named) outcome)
@@ -547,6 +548,16 @@
     (codegen-remaining-eql-tests arguments cur-arg eql-tests on-to-class-specializers)
     (irc-begin-block on-to-class-specializers)))
 
+;;; FIXME: It's possible we're not always ending the vaslist properly.
+;;; We don't end it for the case of a full emf call. That might be okay if the call ends it, but
+;;; I am uncertain if that is the case.
+;;; If the call doesn't, we should only end the vaslist in the epilogue after the outcome is performed.
+(defun end-vaslist-if-extant (arguments-holder)
+  (let ((vaslist (argument-holder-methods-vaslist-t* arguments-holder)))
+    (when vaslist
+      ;; FIXME   The argument-holder-gf-args is a vaslist!!!! not a va_list - they are just coincident!!!
+      (irc-intrinsic-call-or-invoke "cc_vaslist_end" (list vaslist)))))
+
 (defun codegen-slot-reader (arguments cur-arg outcome)
   (cf-log "entered codegen-slot-reader\n")
 ;;; If the (cdr outcome) is a fixnum then we can generate code to read the slot
@@ -555,6 +566,7 @@
   (let ((gf-data-id (register-runtime-data outcome *outcomes*))
 	(effective-method-block (irc-basic-block-create "effective-method")))
     (irc-branch-to-and-begin-block effective-method-block)
+    (end-vaslist-if-extant arguments) ; we don't use the vaslist.
     (let ((slot-read-info
             (irc-load (irc-gep *gf-data*
                                (list (jit-constant-size_t 0)
@@ -562,8 +574,6 @@
       (let* ((opt-data (optimized-slot-reader-index outcome))
              (retval (cond
                        ((fixnump opt-data)
-                        ;; FIXME   The argument-holder-gf-args is a vaslist!!!! not a va_list - they are just coincident!!!
-                        (irc-intrinsic-call-or-invoke "cc_vaslist_end" (list (argument-holder-methods-vaslist-t* arguments)))
                         (let ((value (irc-intrinsic-call-or-invoke #+debug-slot-accessors "cc_dispatch_slot_reader_index_debug"
                                                          #-debug-slot-accessors "cc_dispatch_slot_reader_index"
                                                          (list (jit-constant-size_t opt-data) (first (argument-holder-dispatch-arguments arguments))))))
@@ -584,11 +594,11 @@
   (let ((gf-data-id (register-runtime-data outcome *outcomes*))
 	(effective-method-block (irc-basic-block-create "effective-method")))
     (irc-branch-to-and-begin-block effective-method-block)
+    (end-vaslist-if-extant arguments)
     (let ((slot-write-info
             (irc-load (irc-gep *gf-data*
                                (list (jit-constant-size_t 0)
                                      (jit-constant-size_t gf-data-id))) "write")))
-      (irc-intrinsic-call-or-invoke "cc_vaslist_end" (list (argument-holder-methods-vaslist-t* arguments)))
       (let* ((opt-data (optimized-slot-writer-index outcome))
              (retval (cond
                        ((fixnump opt-data)
@@ -605,6 +615,30 @@
                        (t (error "Unknown opt-data ~a" opt-data)))))
         (irc-store retval (argument-holder-return-value arguments))
         (irc-br (argument-holder-continue-after-dispatch arguments))))))
+
+(defun codegen-fast-method-call (arguments cur-arg outcome)
+  (cf-log "codegen-fast-method-call\n")
+  (let* ((fmf (fast-method-call-function outcome))
+         (gf-data-id (register-runtime-data fmf *outcomes*))
+         (effective-method-block (irc-basic-block-create "effective-method")))
+    (irc-branch-to-and-begin-block effective-method-block)
+    (end-vaslist-if-extant arguments)
+    (let* ((fmf (irc-load (irc-gep *gf-data*
+                                   (list (jit-constant-size_t 0)
+                                         (jit-constant-size_t gf-data-id)))
+                          "load"))
+           ;; what we're doing here is duplicating irc-funcall, except passing a function the actual LLVM-level
+           ;; arguments passed to the dispatcher (the -register-arguments).
+           (entry-point (irc-calculate-entry fmf))
+           (result-in-registers (irc-call-or-invoke
+                                 entry-point
+                                 ;; We have to pass the correct closure.
+                                 ;; Remember that the arguments are closure,nargs,arg1,arg2,arg3,arg4,...
+                                 ;; This whole thing could use some major cleanup (FIXME).
+                                 (list* fmf (rest (argument-holder-register-arguments arguments)))
+                                 *current-unwind-landing-pad-dest* "fast-method-call")))
+      (irc-store-result (argument-holder-return-value arguments) result-in-registers)
+      (irc-br (argument-holder-continue-after-dispatch arguments)))))
 
 (defun codegen-effective-method-call (arguments cur-arg outcome)
   (cf-log "codegen-effective-method-call\n")
@@ -641,6 +675,8 @@
        (codegen-slot-reader arguments cur-arg outcome))
       ((optimized-slot-writer-p outcome)
        (codegen-slot-writer arguments cur-arg outcome))
+      ((fast-method-call-p outcome)
+       (codegen-fast-method-call arguments cur-arg outcome))
       (t (codegen-effective-method-call arguments cur-arg outcome)))))
 
 (defun codegen-class-binary-search (arguments cur-arg matches stamp-var)
@@ -792,6 +828,14 @@
       (maphash (lambda (k v) (push (cons k v) res)) profiled)
       res)))
 
+(defun call-history-needs-vaslist-p (call-history)
+  ;; Functions, i.e. method functions or full EMFs, are the only things that need vaslists.
+  (mapc (lambda (entry)
+          (when (functionp (cdr entry))
+            (return-from call-history-needs-vaslist-p t)))
+        call-history)
+  nil)
+
 ;;; Determine if any of the effective methods need the full method arguments list
 ;;; If any of them do - then we have to allocate space for a vaslist 
 (defun analyze-generic-function-make-arguments (generic-function register-arguments debug-on miss-basic-block)
@@ -799,7 +843,7 @@
          (specializer-profile (clos:generic-function-specializer-profile generic-function))
          (last-specializer-index (position t specializer-profile :from-end t))
          (dispatch-needs-va-list-when-registers-are-exhausted (when last-specializer-index (>= last-specializer-index +args-in-registers+)))
-         (effective-methods-need-full-method-arguments t #|Do analysis of call history|#))
+         (effective-methods-need-full-method-arguments (call-history-needs-vaslist-p call-history)))
     ;; Check if there are any specialized arguments after the
     ;; register arguments will run out.
     ;; The debug frame needs the vaslist and the vaslist needs the va-list
@@ -970,15 +1014,29 @@
                          (irc-begin-block miss-bb)
                          (let* ((vaslist-t* (or (argument-holder-methods-vaslist-t* arguments)
                                                 (let ((vaslist* (argument-holder-vaslist* arguments)))
-                                                  (irc-intrinsic-call-or-invoke "llvm.va_start" (list (irc-bit-cast (argument-holder-dispatch-va-list* arguments))))
-                                                  (maybe-spill-to-register-save-area (argument-holder-register-arguments arguments)
-                                                                                     (argument-holder-register-save-area* arguments))
-                                                  (prog1 (irc-intrinsic "cc_rewind_vaslist"
-                                                                        vaslist*
-                                                                        (argument-holder-dispatch-va-list* arguments)
-                                                                        (argument-holder-register-save-area* arguments))
-                                                    (irc-intrinsic-call-or-invoke "llvm.va_end" (list (irc-bit-cast (argument-holder-dispatch-va-list* arguments)))))))))
-                           (irc-store (irc-intrinsic "cc_dispatch_miss" gf vaslist-t*) (argument-holder-return-value arguments))
+                                                  (irc-intrinsic-call-or-invoke
+                                                   "llvm.va_start"
+                                                   (list
+                                                    (irc-bit-cast
+                                                     (argument-holder-dispatch-va-list* arguments)
+                                                     %i8*%)))
+                                                  (maybe-spill-to-register-save-area
+                                                   (argument-holder-register-arguments arguments)
+                                                   (argument-holder-register-save-area* arguments))
+                                                  (prog1
+                                                      (irc-intrinsic
+                                                       "cc_rewind_vaslist"
+                                                       vaslist*
+                                                       (argument-holder-dispatch-va-list* arguments)
+                                                       (argument-holder-register-save-area* arguments))
+                                                    (irc-intrinsic-call-or-invoke
+                                                     "llvm.va_end"
+                                                     (list
+                                                      (irc-bit-cast
+                                                       (argument-holder-dispatch-va-list* arguments)
+                                                       %i8*%))))))))
+                           (irc-store (irc-intrinsic "cc_dispatch_miss" gf vaslist-t*)
+                                      (argument-holder-return-value arguments))
                            (argument-holder-return-value arguments))
                          (irc-br (argument-holder-continue-after-dispatch arguments))))
                   (if (argument-holder-invocation-history-frame* arguments)
@@ -1040,9 +1098,9 @@
   (if (clos:generic-function-call-history generic-function)
       (let* ((*save-module-for-disassemble* t)
              (*saved-module-from-clasp-jit* nil)
-             (call-history (generic-function-call-history generic-function))
-             (specializer-profile (generic-function-specializer-profile generic-function))
-             (dispatcher (codegen-dispatcher generic-function :generic-function-name 'disassemble))
+             (call-history (clos:generic-function-call-history generic-function))
+             (specializer-profile (clos:generic-function-specializer-profile generic-function))
+             (dispatcher (codegen-dispatcher call-history specializer-profile generic-function :generic-function-name 'disassemble))
              (module cmp:*saved-module-from-clasp-jit*))
         (if module
             (llvm-sys:dump-module module)

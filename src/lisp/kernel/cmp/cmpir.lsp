@@ -95,16 +95,6 @@
 (defun irc-exception-typeid* (name)
   (exception-typeid*-from-name name))
 
-(defun irc-preserve-exception-info (env lpad)
-  (error "This is now handled by preserve-exception-info in cmpeh.lsp")
-  #++(let ((exn.slot (lookup-metadata env :exn.slot))
-	(ehselector.slot (lookup-metadata env :ehselector.slot)))
-    (let ((exception-structure (llvm-sys:create-extract-value *irbuilder* lpad (list 0) "")))
-      (llvm-sys:create-store *irbuilder* exception-structure exn.slot nil))
-    (let ((exception-selector (llvm-sys:create-extract-value *irbuilder* lpad (list 1) "")))
-      (llvm-sys:create-store *irbuilder* exception-selector ehselector.slot nil))
-    (values exn.slot ehselector.slot)))
-
 
 #+(or)
 (defmacro with-catch ((exn.slot exception-ptr) &rest body)
@@ -114,6 +104,7 @@
        ,@body
        (irc-intrinsic "__cxa_end_catch"))))
 
+#+(or)
 (defmacro with-catch ((exn.slot exception-ptr) &rest body)
   (let ((exn-gs (gensym)))
     `(let ((,exn-gs (llvm-sys:create-load-value-twine *irbuilder* ,exn.slot "exn")))
@@ -188,39 +179,6 @@
   (lookup-metadata env :cleanup-landing-pad-block))
 
 
-
-
-#++
-(defun irc-setup-exception-handler-cleanup-block (env)
-  (let ((cleanup-block (irc-basic-block-create "func-ehcleanup")))
-    (setf-metadata env :exception-handler-cleanup-block cleanup-block)
-    cleanup-block)
-  )
-
-#++
-(defun irc-get-exception-handler-cleanup-block (env)
-  (lookup-metadata env :exception-handler-cleanup-block))
-
-
-#++
-(defun irc-setup-exception-handler-resume-block (env)
-  (bformat t "In irc-setup-exception-handler-resume-block\n")
-  (let ((cleanup-block (irc-basic-block-create "func-ehresume")))
-    (setf-metadata env :exception-handler-resume-block cleanup-block)))
-
-#++
-(defun irc-get-exception-handler-resume-block (env)
-  (lookup-metadata env :exception-handler-resume-block))
-
-
-#++
-(defun irc-setup-terminate-landing-pad-block (env)
-  (let ((cleanup-block (irc-basic-block-create "func-terminate-lpad")))
-    (setf-metadata env :terminate-landing-pad-block cleanup-block)))
-
-#++
-(defun irc-get-terminate-landing-pad-block (env)
-  (lookup-metadata env :terminate-landing-pad-block))
 
 
 (defun irc-new-unbound-function-value-environment (old-env &key number-of-functions (label "function-frame"))
@@ -1004,41 +962,6 @@ and then the irbuilder-alloca, irbuilder-body."
         (llvm-sys:create-ret *irbuilder* (irc-load result))))
   (irc-verify-function *current-function*))
   
-#+(or)
-(defun irc-function-cleanup-and-return (env result &key return-void)
-  (when env
-    (let ((return-block (irc-basic-block-create "return-block")))
-      (cmp-log "About to irc-br return-block\n")
-      (irc-br return-block)
-      (irc-begin-landing-pad-block (irc-get-cleanup-landing-pad-block env)
-				   (irc-get-function-for-environment env))
-      (let* ((landpad (irc-create-landing-pad 0)))
-	(llvm-sys:set-cleanup landpad t)
-	(dbg-set-current-debug-location-here)
-	(irc-low-level-trace)
-	(multiple-value-bind (exn.slot ehselector.slot)
-	    (preserve-exception-info landpad)
-          (cmp-log "About to irc-branch-to-and-begin-block (irc-get-exception-handler-cleanup-block env))\n")
-	  (irc-branch-to-and-begin-block (irc-get-exception-handler-cleanup-block env))
-          ;; I'll use this with-landing-pad for now because it looks like it directs
-          ;; to a termination landing block - which should never happen and is outside of
-          ;; the scope of with-try
-	  (with-landing-pad (irc-get-terminate-landing-pad-block env)
-	    (irc-cleanup-function-environment env #| invocation-history-frame |# ))
-	  (irc-branch-to-and-begin-block (irc-get-exception-handler-resume-block env))
-	  (irc-generate-resume-code exn.slot ehselector.slot env))
-	(irc-begin-landing-pad-block (irc-get-terminate-landing-pad-block env))
-	(irc-generate-terminate-code)
-	;; put the return-block at the end of the function to see if that fixes exception handling problem
-	(progn
-          (cmp-log "About to irc-begin-block return-block\n")
-	  (irc-begin-block return-block)
-	  (irc-cleanup-function-environment env #| invocation-history-frame |# ) ;; Why the hell was this commented out?
-          #|	  (irc-cleanup-function-environment env invocation-history-frame )  |#
-	  (if return-void
-              (llvm-sys:create-ret-void *irbuilder*)
-              (llvm-sys:create-ret *irbuilder* (irc-load result))))
-        (irc-verify-function *current-function*)))))
 
 (defun irc-cleanup-function-environment (env #||invocation-history-frame||#)
   "Generate the code to cleanup the environment"

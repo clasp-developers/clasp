@@ -288,7 +288,9 @@
      for argspec in specializers
      always (if (eql-specializer-flag spec)
                 (and (consp argspec) (eql (car argspec) (eql-specializer-object spec)))
-                (and (not (consp argspec)) (subclassp argspec spec)))))
+                (if (consp argspec) ; eql specializer?
+                    (subclassp (class-of argspec) spec)
+                    (subclassp argspec spec)))))
 
 (defun applicable-method-list-using-specializers (gf specializers)
   (declare (optimize (speed 3))
@@ -341,6 +343,7 @@
                       (eq (first em) 'call-method)
                       (second em)))
          (leafp (when method (leaf-method-p method)))
+         (fmf (when leafp (fast-method-function method)))
          ;; In the future, we could use load-time-value instead of find-class every time,
          ;; but the system loading architecture makes this dicey at the moment.
          (readerp (when method (eq (class-of method) (find-class 'standard-reader-method))))
@@ -353,15 +356,17 @@
          (standard-slotd-p (when slotd (eq (class-of slotd) (find-class 'standard-effective-slot-definition))))
          (optimized
            (cond ((not standard-slotd-p)
-                  (if leafp
-                      (progn
-                        (gf-log "Using method %s function as emf\n" method)
-                        (method-function method))
-                      (progn
-                        (gf-log "Using default effective method function\n")
-                        (gf-log "(compute-effective-method generic-function method-combination methods) -> \n")
-                        (gf-log "%s\n" em)
-                        (effective-method-function em))))
+                  (cond (fmf
+                         (gf-log "Using fast method %s function as emf\n" method)
+                         (cmp::make-fast-method-call :function fmf))
+                        (leafp
+                         (gf-log "Using method %s function as emf\n" method)
+                         (method-function method))
+                        (t
+                         (gf-log "Using default effective method function\n")
+                         (gf-log "(compute-effective-method generic-function method-combination methods) -> \n")
+                         (gf-log "%s\n" em)
+                         (effective-method-function em))))
                  (readerp
                   (gf-log "make-optimized-slot-reader index: %s slot-name: %s class: %s\n"
                           (slot-definition-location slotd)
@@ -504,10 +509,16 @@ FIXME!!!! This code will have problems with multithreading if a generic function
   (cond
     ((cmp::optimized-slot-reader-p outcome)
      ;; Call is like (name instance)
-     (standard-instance-get (first arguments) (cmp::optimized-slot-reader-index outcome)))
+     (let ((value (standard-instance-get (first arguments) (cmp::optimized-slot-reader-index outcome))))
+       (if (si:sl-boundp value)
+           value
+           (values (slot-unbound (cmp::optimized-slot-reader-class outcome) (first arguments)
+                                 (cmp::optimized-slot-reader-slot-name outcome))))))
     ((cmp::optimized-slot-writer-p outcome)
      ;; Call is like ((setf name) new-value instance)
      (standard-instance-set (first arguments) (second arguments) (cmp::optimized-slot-writer-index outcome)))
+    ((cmp::fast-method-call-p outcome)
+     (apply (cmp::fast-method-call-function outcome) arguments))
     ;; Effective method functions take the same arguments as method functions - vasargs and next-methods
     ;; for now, at least.
     (t (funcall outcome vaslist-arguments nil))))

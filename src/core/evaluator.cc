@@ -1369,6 +1369,7 @@ T_mv sp_returnFrom(List_sp args, T_sp environment) {
   throw returnFrom;
 }
 
+#if 0
 struct RaiiUnwindProtect {
   T_sp cleanup_fn;
   T_sp environment;
@@ -1386,15 +1387,19 @@ struct RaiiUnwindProtect {
 #endif
   };
 };
+#endif
+
 
 T_mv sp_unwindProtect(List_sp args, T_sp environment) {
+#if 0
   ASSERT(environment.generalp());
   T_sp protected_fn = oCar(args);
   T_sp cleanup_fn = oCdr(args);
   RaiiUnwindProtect cleanup(cleanup_fn,environment);
   return eval::evaluate(protected_fn, environment);
-#if 0
+#else
   gc::Vec0<core::T_sp> save;
+  T_mv result;
   try {
     // Evaluate the protected form
     result = eval::evaluate(oCar(args), environment);

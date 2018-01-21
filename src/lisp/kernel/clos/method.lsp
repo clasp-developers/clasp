@@ -29,7 +29,7 @@
 
 ;;; Add type declarations for the arguments of a METHOD. This implies
 ;;; copying the method arguments because the arguments may be modified.
-(eval-when (:execute #+clasp :compile-toplevel #+clasp :load-toplevel)
+(eval-when (:execute :compile-toplevel :load-toplevel)
   (defparameter *add-method-argument-declarations* nil)
 )
 
@@ -43,8 +43,6 @@
       (slot-value generic-function 'method-class)
       (find-class 'standard-method)))
 
-
-#+clasp
 (defun maybe-augment-generic-function-lambda-list (name method-lambda-list)
   "Add any &key parameters from method-lambda-list that are missing
 in the generic function lambda-list to the generic function lambda-list"
@@ -82,7 +80,7 @@ in the generic function lambda-list to the generic function lambda-list"
   (declare (notinline make-method-lambda))
   (let* ((*print-length* 3) ; FIXME: What?
 	 (*print-depth* 2)
-         #+clasp(source-location (ext:current-source-location))
+         (source-location (ext:current-source-location))
          (qualifiers (loop while (and args (not (listp (first args))))
 			collect (pop args)))
 	 (specialized-lambda-list
@@ -93,7 +91,7 @@ in the generic function lambda-list to the generic function lambda-list"
     (multiple-value-bind (lambda-list required-parameters specializers)
 	(parse-specialized-lambda-list specialized-lambda-list)
       (multiple-value-bind (lambda-form declarations documentation)
-	  (make-raw-lambda name lambda-list required-parameters specializers body env #+clasp qualifiers)
+	  (make-raw-lambda name lambda-list required-parameters specializers body env qualifiers)
         (mlog "In defmethod lambda-list %s   lambda-form %s\n" lambda-list lambda-form) 
 	(let* ((generic-function (ensure-generic-function name))
 	       (method-class (progn
@@ -116,11 +114,15 @@ in the generic function lambda-list to the generic function lambda-list"
                   (install-method ',name ',qualifiers
                                   ,(specializers-expression specializers)
                                   ',lambda-list
-                                  ,(maybe-remove-block fn-form #+clasp source-location)
-                                  ,@(mapcar #-clasp #'si::maybe-quote
-                                            #+clasp #'ext::maybe-quote
-                                            options))
-                #+clasp(maybe-augment-generic-function-lambda-list ',name ',lambda-list)))))))))
+                                  ,(maybe-remove-block fn-form source-location)
+                                  ;; Note that we do not quote the options returned by make-method-lambda.
+                                  ;; This is essentially to make the fast method function easier.
+                                  ;; MOP is in my view ambiguous about whether they're supposed to be quoted.
+                                  ;; There's an example that sort of implies they are, but the extra flexibility
+                                  ;; is pretty convenient, and matches that the primary value is of course
+                                  ;; evaluated.
+                                  ,@options)
+                (maybe-augment-generic-function-lambda-list ',name ',lambda-list)))))))))
 
 (defun specializers-expression (specializers)
   (declare (si::c-local))
@@ -133,7 +135,7 @@ in the generic function lambda-list to the generic function lambda-list"
 				       (eval value)
 				       (list 'si::unquote value))))))))
 
-(defun maybe-remove-block (method-lambda #+clasp source-location)
+(defun maybe-remove-block (method-lambda source-location)
   (when (eq (first method-lambda) 'lambda)
     (multiple-value-bind (declarations body documentation)
 	(si::find-declarations (cddr method-lambda))
@@ -141,23 +143,18 @@ in the generic function lambda-list to the generic function lambda-list"
 	(when (and (null (rest body))
 		   (listp (setf block (first body)))
 		   (eq (first block) 'block))
-	  (setf method-lambda `
-		#+ecl(ext:lambda-block ,(second block) ,(second method-lambda)
-					,@declarations
-					,@(cddr block))
-		#+clasp(lambda ,(second method-lambda)
-			 (declare (core:lambda-name ,(second block)
-                                                    ,(if source-location (source-file-pos-filepos source-location) 0)
-                                                    ,(if source-location (source-file-pos-lineno source-location) 0)
-                                                    ,(if source-location (source-file-pos-column source-location) 0)
-                                                    ))
-			 ,@declarations
-			 (block ,(if (symbolp (second block)) (second block) (error "The block name ~a is not a symbol" (second block)))
-			   ,@(cddr block))))
-	  ))))
+	  (setf method-lambda
+		`(lambda ,(second method-lambda)
+                   (declare (core:lambda-name ,(second block)
+                                              ,(if source-location (source-file-pos-filepos source-location) 0)
+                                              ,(if source-location (source-file-pos-lineno source-location) 0)
+                                              ,(if source-location (source-file-pos-column source-location) 0)))
+                   ,@declarations
+                   (block ,(if (symbolp (second block)) (second block) (error "The block name ~a is not a symbol" (second block)))
+                     ,@(cddr block))))))))
   method-lambda)
 
-(defun make-raw-lambda (name lambda-list required-parameters specializers body env #+clasp qualifiers)
+(defun make-raw-lambda (name lambda-list required-parameters specializers body env qualifiers)
   (declare (si::c-local))
   (multiple-value-bind (declarations real-body documentation)
       (sys::find-declarations body)
@@ -175,7 +172,7 @@ in the generic function lambda-list to the generic function lambda-list"
                       '(&allow-other-keys)
                       (and x (subseq lambda-list x))
                       nil))))
-    #+clasp(setf qualifiers (if qualifiers (list qualifiers)))
+    (setf qualifiers (if qualifiers (list qualifiers)))
     (let* ((copied-variables '())
            (class-declarations
             (nconc (when *add-method-argument-declarations*
@@ -199,12 +196,21 @@ in the generic function lambda-list to the generic function lambda-list"
                    (filepos (if loc (source-file-pos-filepos loc) 0))
                    (lineno (if loc (source-file-pos-lineno loc) 0)))
               `(lambda ,lambda-list
-                 #+clasp(declare (core:lambda-name (method ,name ,@qualifiers ,specializers) ,filepos ,lineno))
+                 (declare (core:lambda-name (method ,name ,@qualifiers ,specializers) ,filepos ,lineno))
                  ,@(and class-declarations `((declare ,@class-declarations)))
                  ,(if copied-variables
                       `(let* ,copied-variables ,block)
                       block)))))
       (values method-lambda declarations documentation))))
+
+(defun lambda-list-fast-callable-p (lambda-list)
+  ;; We only put in an FMF if we have only required parameters, and few enough
+  ;; that they can be passed in registers (that's what number-of-fixed-arguments is).
+  (and
+   (<= (length lambda-list) core:+number-of-fixed-arguments+)
+   (not (find-if (lambda (sym)
+                   (member sym lambda-list-keywords))
+                 lambda-list))))
 
 (defun make-method-lambda (gf method method-lambda env)
   (multiple-value-bind (call-next-method-p next-method-p-p)
@@ -221,48 +227,32 @@ in the generic function lambda-list to the generic function lambda-list"
                      ,doc
                      (flet (,@(and call-next-method-p
                                 `((call-next-method (&va-rest args)    #|DANGER|#
-                                                    (if (not .next-methods.)
-                                                        ;; But how do I generate code that can be compiled
-                                                        ;; that will get access to the current method and
-                                                        ;; current generic function?   (apply #'no-next-method ,gf ,method ...)
-                                                        ;; won't work because the compiler will need to externalize the generic function gf
-                                                        ;; and the method method.
-                                                        (error "No next method") ;; Should be what is above -> (apply #'no-next-method ...)
-                                                        (let ((use-args (if (> (va-list-length args) 0) args .method-args.)))
-                                                          (funcall (car .next-methods.)
-                                                                   use-args ; (or args .method-args.)
-                                                                   (cdr .next-methods.)))))))
+                                    (if (not .next-methods.)
+                                        ;; But how do I generate code that can be compiled
+                                        ;; that will get access to the current method and
+                                        ;; current generic function? The method does not yet exist.
+                                        (error "No next method") ;; FIXME: should call no-next-method.
+                                        (let ((use-args (if (> (va-list-length args) 0) args .method-args.)))
+                                          (funcall (car .next-methods.)
+                                                   use-args ; (or args .method-args.)
+                                                   (cdr .next-methods.)))))))
                             ,@(and next-method-p-p
                                 `((next-method-p ()
                                                  (and .next-methods. t)))))
                        (core::bind-va-list ,lambda-list .method-args.
                                            (declare ,@declarations)
                                            ,@body)))
-                  (list :leaf-method-p leaf-method-p)))))))
-
-;;; Clasp doesn't use this anymore because we pass the method-args and next-methods as
-;;;       the first two arguments.
-;;; I think all GF calls are ending up in a closure!
-#+ecl
-(defun add-call-next-method-closure (method-lambda)
-  (multiple-value-bind (declarations real-body documentation)
-      (si::find-declarations (cddr method-lambda))
-    `(lambda ,(second method-lambda)
-       (let* ((.closed-method-args.
-	       (if (listp .method-args.)
-		   .method-args.
-		   (apply #'list .method-args.)))
-	      (.closed-next-methods. .next-methods.))
-	 (flet ((call-next-method (&rest args)
-		  (unless .next-methods.
-		    (error "No next method"))
-                  (apply (car .closed-next-methods.)
-                         (or args .closed-method-args.)
-                         (rest .closed-next-methods.)
-                         (or args .closed-method-args.)))
-		(next-method-p ()
-		  .next-methods.))
-	   ,@real-body)))))
+                  ;; double quotes as per evaluation, explained above in defmethod.
+                  (list ''leaf-method-p `',leaf-method-p
+                        ;; FIXME: This is kind of a messy way of arranging things. Both the lambda list check
+                        ;; criterion, and the fmf initarg. But I'm not sure what would be preferable.
+                        ''fast-method-function (if (and leaf-method-p
+                                                        (lambda-list-fast-callable-p lambda-list))
+                                                  `(lambda ,lambda-list
+                                                     (declare ,@declarations)
+                                                     ,doc
+                                                     ,@body)
+                                                  nil))))))))
 
 (defun walk-method-lambda (method-lambda env)
   (declare (si::c-local))
@@ -283,42 +273,12 @@ in the generic function lambda-list to the generic function lambda-list"
 		    (when (eq (second form) 'NEXT-METHOD-P)
                       (setf next-method-p-p 'FUNCTION))))))
 	     form))
-      #+ecl
-      (let ((si::*code-walker* #'code-walker))
-	;; Instead of (coerce method-lambda 'function) we use
-	;; explicitely the bytecodes compiler with an environment, no
-	;; stepping, compiler-env-p = t and execute = nil, so that the
-	;; form does not get executed.
-	(si::eval-with-env method-lambda env nil t t ))
       ;; Determine how to walk the code in clasp
       ;; Either use the bclasp compiler or if clasp-cleavir is available
       ;; then use the clasp-cleavir compiler
-      #+clasp
       (unless (cmp:code-walk method-lambda env :code-walker-function #'code-walker :errorp nil)
         (setq call-next-method-p t
-              next-method-p-p t))
-      ;;; The following code is carried out by cmp:code-walk
-      #++(let ((clasp-cleavir-pkg (find-package :clasp-cleavir)))
-           (if (not core:*use-cleavir-compiler*)
-               ;; The clasp-cleavir package is not available - we are
-               ;; using the bclasp compiler to walk code
-               (cmp:code-walk-using-bclasp
-                method-lambda env
-                :code-walker-function #'code-walker)
-               ;; The clasp-cleavir package is available, if the
-               ;; clasp-cleavir:code-walk-using-cleavir symbol is fboundp
-               ;; then use it to walk the code.
-               (let ((code-walk-using-cleavir
-                      (find-symbol "CODE-WALK-USING-CLEAVIR" clasp-cleavir-pkg)))
-                 (if (fboundp code-walk-using-cleavir)
-                     (funcall (fdefinition code-walk-using-cleavir)
-                              method-lambda env
-                              :code-walker-function #'code-walker)
-                     ;; If we don't have code-walk-using-cleavier available
-                     ;; then assume the worst
-                     (setq call-next-method-p t
-                           next-method-p-p t)))))
-      )
+              next-method-p-p t)))
     (values call-next-method-p next-method-p-p)))
                                    
 
@@ -337,7 +297,7 @@ in the generic function lambda-list to the generic function lambda-list"
 
 
 ;; For some reason clasp needs this at compile time but ecl does not
-(eval-when (:execute #+clasp :compile-toplevel #+clasp :load-toplevel)
+(eval-when (:execute :compile-toplevel :load-toplevel)
   (defun parse-specialized-lambda-list (specialized-lambda-list)
     "This function takes a method lambda list and outputs the list of required
 arguments, the list of specializers and a new lambda list where the specializer
@@ -416,7 +376,7 @@ have disappeared."
     (with-early-make-instance
       ;; We choose the largest list of slots
       +standard-accessor-method-slots+
-      (method (if #-clasp(si::instancep method-class) #+clasp(classp method-class)
+      (method (if (classp method-class)
                   method-class
                   (find-class method-class))
               :generic-function nil
@@ -426,7 +386,8 @@ have disappeared."
               :qualifiers qualifiers
               :keywords keys
               :aok-p aok-p
-              :leaf-method-p (getf options :leaf-method-p nil))
+              'leaf-method-p (getf options 'leaf-method-p nil)
+              'fast-method-function (getf options 'fast-method-function nil))
       method)))
 
 ;;; early version used during bootstrap
@@ -449,8 +410,8 @@ have disappeared."
 	(setf (generic-function-argument-precedence-order gf)
 	      (rest (si::process-lambda-list (method-lambda-list method) t))))
       (compute-g-f-spec-list gf)
-;;      #+clasp (update-specializer-profile gf (method-specializers method))
-;;      #+clasp (update-call-history-for-add-method gf method)
+;;      (update-specializer-profile gf (method-specializers method))
+;;      (update-call-history-for-add-method gf method)
       (set-funcallable-instance-function gf 'invalidated-dispatch-function)
       method)))
 

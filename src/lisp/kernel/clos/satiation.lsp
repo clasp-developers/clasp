@@ -171,8 +171,10 @@
                  (standard-generic-function))
     (satiate-one leaf-method-p
                  (standard-method)
-                 (standard-reader-method)
-                 (standard-writer-method))))
+                 (standard-reader-method) (standard-writer-method))
+    (satiate-one fast-method-function
+                 (standard-method)
+                 (standard-reader-method) (standard-writer-method))))
 
 ;;; This function sets up an initial specializer profile for a gf that doesn't have one.
 ;;; It can only not have one if it was defined unnaturally, i.e. during boot.

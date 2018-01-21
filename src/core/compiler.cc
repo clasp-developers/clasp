@@ -981,7 +981,10 @@ struct RaiiUnwindProtect {
 #endif
   };
 };
-  
+
+
+#if 0
+// RAII approach DOES NOT WORK
 CL_LAMBDA(protected-fn cleanup-fn);
 CL_DECLARE();
 CL_DOCSTRING("funwind_protect");
@@ -991,8 +994,8 @@ CL_DEFUN T_mv core__funwind_protect(T_sp protected_fn, T_sp cleanup_fn) {
   T_mv result = closure->entry.load()(LCC_PASS_ARGS0_ELLIPSIS(closure.raw_()));
   return result;
 }
-
-#if 0
+#else
+// try/catch approach does work
 CL_DEFUN T_mv core__funwind_protect(T_sp protected_fn, T_sp cleanup_fn) {
   T_mv result;
   try {
@@ -1007,7 +1010,33 @@ CL_DEFUN T_mv core__funwind_protect(T_sp protected_fn, T_sp cleanup_fn) {
     Closure_sp closure = gc::As_unsafe<Closure_sp>(protected_fn);
     ASSERT(closure);
     result = closure->entry.load()(LCC_PASS_ARGS0_ELLIPSIS(closure.raw_()));
-  } catch (Unwind& unwind) {
+  }
+#if 1
+  catch (...)
+  {
+#if 0
+    void* primary_exception = __cxxabiv1::__cxa_current_primary_exception();
+    printf("%s:%d  primary_exception = %p\n", __FILE__, __LINE__, primary_exception );
+    __cxxabiv1::__cxa_decrement_exception_refcount(primary_exception);
+#endif
+    // TOOK out DEBUG_FLOW_CONTROL
+// Save any return value that may be in the multiple value return array
+    gctools::Vec0<T_sp> savemv;
+    T_mv tresult;
+    tresult.readFromMultipleValue0();
+    tresult.saveToVec0(savemv);
+    {
+      Closure_sp closure = gc::As_unsafe<Closure_sp>(cleanup_fn);
+      tresult = closure->entry.load()(LCC_PASS_ARGS0_ELLIPSIS(closure.raw_()));
+    }
+    tresult.loadFromVec0(savemv);
+    tresult.saveToMultipleValue0();
+    // TOOK out DEBUG_FLOW_CONTROL code
+    throw;  // __cxa_rethrow
+  }
+#else  
+  catch (Unwind& unwind)
+  {
 #ifdef DEBUG_FLOW_CONTROL
     if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
       printf("%s:%d In funwind_protect catch(Unwind&) just caught Unwind to frame: %" PRu "\n", __FILE__, __LINE__, gctools::untag_fixnum(unwind.getFrame()));
@@ -1041,7 +1070,6 @@ CL_DEFUN T_mv core__funwind_protect(T_sp protected_fn, T_sp cleanup_fn) {
 #endif
     throw unwind;
   }
-#if 0
   catch (const ReturnFrom& returnFrom)
   {
     // TOOK out DEBUG_FLOW_CONTROL
@@ -1092,29 +1120,6 @@ CL_DEFUN T_mv core__funwind_protect(T_sp protected_fn, T_sp cleanup_fn) {
     tresult.saveToMultipleValue0();
     // TOOK out DEBUG_FLOW_CONTROL code
     throw catchThrow;
-  }
-#else
-  catch (...)
-  {
-#if 0
-    void* primary_exception = __cxxabiv1::__cxa_current_primary_exception();
-    printf("%s:%d  primary_exception = %p\n", __FILE__, __LINE__, primary_exception );
-    __cxxabiv1::__cxa_decrement_exception_refcount(primary_exception);
-#endif
-    // TOOK out DEBUG_FLOW_CONTROL
-// Save any return value that may be in the multiple value return array
-    gctools::Vec0<T_sp> savemv;
-    T_mv tresult;
-    tresult.readFromMultipleValue0();
-    tresult.saveToVec0(savemv);
-    {
-      Closure_sp closure = gc::As_unsafe<Closure_sp>(cleanup_fn);
-      tresult = closure->entry.load()(LCC_PASS_ARGS0_ELLIPSIS(closure.raw_()));
-    }
-    tresult.loadFromVec0(savemv);
-    tresult.saveToMultipleValue0();
-    // TOOK out DEBUG_FLOW_CONTROL code
-    throw;  // __cxa_rethrow
   }
 #endif // #if 0
   

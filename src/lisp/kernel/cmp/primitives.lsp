@@ -168,15 +168,15 @@
     
     (primitive         "exceptionStackUnwind" %void% (list %size_t%))
     (primitive         "ignore_exceptionStackUnwind" %void% nil)
-    (primitive-unwinds "blockHandleReturnFrom" %return_type% (list %i8*% %t*%))
-    (primitive-unwinds "ignore_blockHandleReturnFrom" %return_type% (list %i8*% %t*%))
-    (primitive-unwinds "tagbodyDynamicGoIndexElseRethrow" %size_t% (list %i8*% %t*%))
+    (primitive-unwinds "blockHandleReturnFrom_or_rethrow" %return_type% (list %i8*% %t*%))
+    (primitive-unwinds "ignore_blockHandleReturnFrom_or_rethrow" %return_type% (list %i8*% %t*%))
+    (primitive-unwinds "tagbodyHandleDynamicGoIndex_or_rethrow" %size_t% (list %i8*% %t*%))
     (primitive-unwinds "throwIllegalSwitchValue" %void% (list %size_t% %size_t%) :does-not-return t)
     
     (primitive         "clasp_terminate" %void% nil)
     (primitive         "__gxx_personality_v0" %i32% nil :varargs t) ;; varargs
     (primitive         "__cxa_begin_catch" %i8*% (list %i8*%) )
-    (primitive         "__cxa_end_catch" %void% nil) ;; This was a PRIMITIVE
+    (primitive-unwinds "__cxa_end_catch" %void% nil) ;; This DOES UNWIND!!!!!   use primitive-unwind once you figure out how to make it work
     (primitive-unwinds "__cxa_rethrow" %void% nil)
     (primitive         "llvm.eh.typeid.for" %i32% (list %i8*%))
     
