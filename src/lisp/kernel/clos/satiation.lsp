@@ -77,6 +77,10 @@
                                                 :slot-name (slot-definition-name slot)
                                                 :method first
                                                 :class class)))
+            ((leaf-method-p first)
+             (if (fast-method-function first)
+                 (cmp::make-fast-method-call :function (fast-method-function first))
+                 (method-function first)))
             (t efm)))))
 
 ;;; Add fictitious call history entries.
