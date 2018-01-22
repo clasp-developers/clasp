@@ -386,8 +386,8 @@ have disappeared."
               :qualifiers qualifiers
               :keywords keys
               :aok-p aok-p
-              'leaf-method-p (getf options 'leaf-method-p nil)
-              'fast-method-function (getf options 'fast-method-function nil))
+              leaf-method-p (getf options 'leaf-method-p nil)
+              fast-method-function (getf options 'fast-method-function nil))
       method)))
 
 ;;; early version used during bootstrap

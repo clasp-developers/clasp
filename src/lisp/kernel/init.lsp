@@ -192,7 +192,7 @@
 				   (formp (cddr whole))
 				   (form (caddr whole))
 				   (doc-string (cadddr whole)))
-				  "Syntax: (defparameter name form [doc])
+				  "Syntax: (defvar name form [doc])
 Declares the global variable named by NAME as a special variable and assigns
 the value of FORM to the variable.  The doc-string DOC, if supplied, is saved
 as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
@@ -200,8 +200,10 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 				     (SYS:*MAKE-SPECIAL ',var)
 				     ,@(if formp
 					     `((if (boundp ',var)
-						   nil
-						   (setq ,var ,form)))))))
+						   ',var
+						   (progn
+                                                     (setq ,var ,form)
+                                                     ',var)))))))
 	  t )
 (export 'defvar)
 
@@ -215,7 +217,8 @@ the value of FORM to the variable.  The doc-string DOC, if supplied, is saved
 as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 				  `(LOCALLY (DECLARE (SPECIAL ,var))
 				     (SYS:*MAKE-SPECIAL ',var)
-				     (SETQ ,var ,form))))
+				     (SETQ ,var ,form)
+                                     ',var)))
 	  t )
 (export 'defparameter)
 

@@ -626,6 +626,38 @@ size_t obj_kind(core::T_O *ptr);
 extern void obj_dump_base(void *base);
 };
 
+extern "C" void HitAllocationSizeThreshold();
+extern "C" void HitAllocationNumberThreshold();
+
+namespace gctools {
+  struct GlobalAllocationProfiler {
+    std::atomic<int64_t> _AllocationNumberCounter;
+    std::atomic<int64_t> _AllocationSizeCounter;
+    std::atomic<int64_t> _HitAllocationNumberCounter;
+    std::atomic<int64_t> _HitAllocationSizeCounter;
+    size_t               _AllocationNumberThreshold;
+    size_t               _AllocationSizeThreshold;
+  GlobalAllocationProfiler(size_t size, size_t number) : _AllocationNumberThreshold(number), _AllocationSizeThreshold(size) {};
+    
+    inline void registerAllocation(size_t size) {
+#ifdef DEBUG_MEMORY_PROFILE
+      this->_AllocationSizeCounter += size;
+      if (this->_AllocationSizeCounter >= this->_AllocationSizeThreshold) {
+        this->_AllocationSizeCounter -= this->_AllocationSizeThreshold;
+        HitAllocationSizeThreshold();
+      }
+      this->_AllocationNumberCounter++;
+      if (this->_AllocationNumberCounter >= this->_AllocationNumberThreshold) {
+        this->_AllocationNumberCounter = 0;
+        HitAllocationNumberThreshold();
+      }
+#endif
+  };
+  };
+};
+
+extern gctools::GlobalAllocationProfiler global_AllocationProfiler;
+
 
 namespace gctools {
 /*! Specialize GcKindSelector so that it returns the appropriate GcKindEnum for OT */

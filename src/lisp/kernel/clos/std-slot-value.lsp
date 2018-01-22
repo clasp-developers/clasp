@@ -66,7 +66,7 @@
 						   (symbol-value slots)
 						   slots)
 		      for index from 0
-		      for accessor = (getf slotd :accessor)
+		      for accessor = (or (getf slotd :accessor) (getf slotd :reader))
 		      when accessor
 		      collect `(,accessor (object) `(si::instance-ref ,object ,,index))))
        ,@body)))

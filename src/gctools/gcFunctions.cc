@@ -820,6 +820,18 @@ CL_DEFUN void gctools__telemetryReset(core::Fixnum_sp flags) {
 #endif
 };
 
+CL_DEFUN core::T_mv gctools__memory_profile_status() {
+  int64_t allocationNumberCounter = global_AllocationProfiler._AllocationNumberCounter;
+  size_t allocationNumberThreshold = global_AllocationProfiler._AllocationNumberThreshold;
+  int64_t allocationSizeCounter = global_AllocationProfiler._AllocationSizeCounter;
+  size_t allocationSizeThreshold = global_AllocationProfiler._AllocationSizeThreshold;
+  return Values(core::make_fixnum(allocationNumberCounter),
+                core::make_fixnum(allocationNumberThreshold),
+                core::make_fixnum(allocationSizeCounter),
+                core::make_fixnum(allocationSizeThreshold));
+}
+
+                
 CL_DEFUN core::T_sp gctools__stack_depth() {
   int z = 0;
   void *zp = &z;
@@ -1151,6 +1163,15 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
   if (setFeatures) features = core::Cons_O::create(_lisp->internKeyword("DEBUG-CCLASP-LISP"),features);
 #endif
   if (buildReport) ss << (BF("DEBUG_CCLASP_LISP = %s\n") % (debug_cclasp_lisp ? "**DEFINED**" : "undefined") ).str();
+
+  bool debug_memory_profile = false;
+#ifdef DEBUG_MEMORY_PROFILE
+  debug_memory_profile = true;
+  debugging = true;
+  if (setFeatures) features = core::Cons_O::create(_lisp->internKeyword("DEBUG-MEMORY-PROFILE"),features);
+#endif
+  if (buildReport) ss << (BF("DEBUG_MEMORY_PROFILE = %s\n") % (debug_memory_profile ? "**DEFINED**" : "undefined") ).str();
+
 
   bool dont_optimize_bclasp = false;
 #ifdef DONT_OPTIMIZE_BCLASP
