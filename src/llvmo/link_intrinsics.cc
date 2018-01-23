@@ -1628,25 +1628,18 @@ void cc_restoreMultipleValue0(core::T_mv *result)
 
 T_O *cc_pushLandingPadFrame()
 {NO_UNWIND_BEGIN();
-  core::T_sp ptr = _Nil<core::T_O>();
-#define DEBUG_UNWIND 1
-#ifdef DEBUG_UNWIND
-  ptr = core::Pointer_O::create((void *)&typeid(core::Unwind));
+#ifdef DEBUG_FLOW_TRACKER
+  Cons_sp unique = Cons_O::create(make_fixnum(next_flow_tracker_counter()),_Nil<T_O>());
+#else
+  Cons_sp unique = Cons_O::create(_Nil<T_O>(),_Nil<T_O>());
 #endif
-  size_t index = my_thread->exceptionStack().push(LandingPadFrame, ptr);
-#ifdef DEBUG_FLOW_CONTROL
-  if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
-    printf("%s:%d pushLandingPadFrame pushed frame: %" PRu "  core::Unwind typeinfo@%p\n", __FILE__, __LINE__, index, (void *)&typeid(core::Unwind));
-    if (core::_sym_STARdebugFlowControlSTAR->symbolValue() == kw::_sym_verbose )
-      printf("   %s\n", my_thread->exceptionStack().summary().c_str());
-  }
-#endif
-  return gctools::tag_fixnum<core::T_O *>(index);
+  return unique.raw_();
   NO_UNWIND_END();
 }
 
 void cc_popLandingPadFrame(T_O *frameFixnum)
 {NO_UNWIND_BEGIN();
+#if 0
   ASSERT(gctools::tagged_fixnump(frameFixnum));
   size_t frameIndex = gctools::untag_fixnum(frameFixnum);
 #ifdef DEBUG_FLOW_CONTROL
@@ -1663,24 +1656,13 @@ void cc_popLandingPadFrame(T_O *frameFixnum)
       printf("    After unwind of exceptionStack:  %s\n", my_thread->exceptionStack().summary().c_str());
   }
 #endif
+#endif
   NO_UNWIND_END();
 }
 
 size_t cc_landingpadUnwindMatchFrameElseRethrow(char *exceptionP, core::T_O *thisFrame) {
   ASSERT(gctools::tagged_fixnump(thisFrame));
   core::Unwind *unwindP = reinterpret_cast<core::Unwind *>(exceptionP);
-#ifdef DEBUG_FLOW_CONTROL
-  size_t frameIndex = gctools::untag_fixnum(thisFrame);
-  if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
-    printf("%s:%d landingpadUnwindMatchFrameElseRethrow targetFrame: %" PRu " thisFrame: %lu  unwindP=%p\n",
-           __FILE__, __LINE__, gctools::untag_fixnum(unwindP->getFrame()), frameIndex, unwindP);
-    if (unwindP->getFrame() > thisFrame) {
-      printf("- - - - - THERE IS A SERIOUS PROBLEM - THE TARGET FRAME HAS BEEN BYPASSED\n");
-    }
-    if (core::_sym_STARdebugFlowControlSTAR->symbolValue() == kw::_sym_verbose )
-      printf("   %s\n", my_thread->exceptionStack().summary().c_str());
-  }
-#endif
   if (unwindP->getFrame() == thisFrame) {
 #ifdef DEBUG_FLOW_CONTROL
     if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
