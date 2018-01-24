@@ -300,7 +300,7 @@ No DIBuilder is defined for the default module")
     (tagbody
      top
        (let ((c (aref name i))
-             (cnext (if (< i len-1) (aref name (+ i 1)) #\nul)))
+             (cnext (if (< i len-1) (aref name (+ i 1)) #.(code-char 0))))
          (if (char= c #\\)
              (if (char= cnext #\\)
                  (progn
@@ -464,11 +464,14 @@ The passed module is modified as a side-effect."
 (defvar *optimization-level* :-O3)
 (defvar *size-level* 1)
 
+(defun foobly-file ()
+  #+(or)(when (and *optimizations-on* module)
+          #+(or) 1))
 
 (defun optimize-module-for-compile-file (module &optional (optimize-level *optimization-level*) (size-level *size-level*))
   (declare (type (or null llvm-sys:module) module))
   #+(or)(when (and *optimizations-on* module)
-    #++(let ((call-sites (call-sites-to-always-inline module)))
+    #+(or)(let ((call-sites (call-sites-to-always-inline module)))
          (bformat t "Call-sites -> %s\n" call-sites))
     ;; Link in the builtins as part of the optimization
     #+(or)(progn

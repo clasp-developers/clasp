@@ -1432,7 +1432,7 @@ T_mv sp_catch(List_sp args, T_sp environment) {
     if (catchThrow.getFrame() != frame) {
       throw catchThrow;
     }
-    result = gctools::multiple_values<gT_O>::createFromValues();
+    result = gctools::multiple_values<T_O>::createFromValues();
   }
   my_thread->exceptionStack().unwind(frame);
   return result;

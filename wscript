@@ -81,11 +81,11 @@ def grovel(bld):
     
 def update_submodules(cfg):
     os.system("echo This is where I get submodules")
-    sicl_commit = "a8063d34b542949afa555d5b46bcca32f1ff7ee4"
+    sicl_commit = "46be6f6302271b805cc65a0d4b43170565d4e4bc"
     cst_commit = "8d052d02764efe7650c4e62f85bcd5f4b24477d2"
     closer_mop_commit = "d4d1c7aa6aba9b4ac8b7bb78ff4902a52126633f"
     alexandria_commit = "e5c54bc30b0887c237bde2827036d17315f88737"
-    os.system("./tools/fetch-revision.sh https://github.com/robert-strandh/SICL.git src/lisp/kernel/contrib/sicl %s" % sicl_commit)
+    os.system("./tools/fetch-revision.sh https://github.com/drmeister/SICL.git src/lisp/kernel/contrib/sicl %s" % sicl_commit)
     os.system("./tools/fetch-revision.sh https://github.com/robert-strandh/Concrete-Syntax-Tree.git src/lisp/kernel/contrib/Concrete-Syntax-Tree %s" % cst_commit)
     os.system("./tools/fetch-revision.sh https://github.com/pcostanza/closer-mop.git src/lisp/kernel/contrib/closer-mop %s" % closer_mop_commit)
     os.system("./tools/fetch-revision.sh https://gitlab.common-lisp.net/alexandria/alexandria.git src/lisp/kernel/contrib/alexandria %s" % alexandria_commit)
