@@ -45,12 +45,16 @@
       (si::simple-program-error "Illegal defclass form: superclasses and slots should be lists"))
     (unless (and (symbolp name) (every #'symbolp superclasses))
       (si::simple-program-error "Illegal defclass form: superclasses and class name are not valid"))
-    `(eval-when (compile load eval)
-       ,(ext:register-with-pde
-	 form
-	 `(load-defclass ',name ',superclasses
-                         ,(parse-slots slots)
-			 ,(process-class-options options))))))
+    (let ((parsed-slots (parse-slots slots))
+          (processed-class-options (process-class-options options)))
+      `(progn
+         (eval-when (:compile-toplevel)
+           (unless (find-class ',name nil)
+             (load-defclass ',name ',superclasses ,parsed-slots ,processed-class-options)))
+         (eval-when (:load-toplevel :execute)
+           ,(ext:register-with-pde
+             form
+             `(load-defclass ',name ',superclasses ,parsed-slots ,processed-class-options)))))))
 
 (defun process-class-options (class-args)
   (let ((options '())
