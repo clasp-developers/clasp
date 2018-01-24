@@ -120,7 +120,7 @@
                                                    (if cleanup-block
                                                        cleanup-block
                                                        ehresume-block)
-                                                   '(cmp::typeid-core-unwind)
+                                                   nil ; '(cmp::typeid-core-unwind)
                                                    (exn.slot function-info)
                                                    (ehselector.slot function-info))))
           (setf (landing-pad-for-unwind function-info)
