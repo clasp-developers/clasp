@@ -263,7 +263,7 @@ when this is t a lot of graphs will be generated.")
                     (%store result (translate-datum (clasp-cleavir-hir:frame-holder enter-instruction))))))
           (setf (on-exit-for-unwind current-function-info)
                 (lambda (function-info)
-                  (let ((cc (calling-convention function-info))
+                  #+(or)(let ((cc (calling-convention function-info))
                         (enter-instruction (enter-instruction function-info)))
                     (%intrinsic-call "cc_popLandingPadFrame"
                                      (list (%load (translate-datum (clasp-cleavir-hir:frame-holder enter-instruction))))))))))
@@ -312,7 +312,8 @@ when this is t a lot of graphs will be generated.")
 
 (defmethod translate-simple-instruction
     ((instr cleavir-ir:enter-instruction) return-value inputs outputs (abi abi-x86-64) function-info)
-  (when (unwind-target function-info)
+  ;; We do this below
+  #+(or)(when (unwind-target function-info)
     (cmp:with-irbuilder (cmp:*irbuilder-function-alloca*)
       (funcall (on-entry-for-unwind function-info) function-info)))
   (let* ((lambda-list (cleavir-ir:lambda-list instr))
@@ -1304,7 +1305,7 @@ that llvm function. This works like compile-lambda-function in bclasp."
 (defun cleavir-compile-file (given-input-pathname &rest args)
   (let ((*debug-log-index* 0)
 	(cleavir-generate-ast:*compiler* 'cl:compile-file)
-        (cmp:*cleavir-compile-file-hook* 'cleavir-compile-file-form)
+        (cmp:*cleavir-compile-file-hook* 'cclasp-loop-read-and-compile-file-forms)
         (core:*use-cleavir-compiler* t))
     (apply #'cmp::compile-file given-input-pathname args)))
 

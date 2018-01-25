@@ -353,11 +353,11 @@ void* to_fixnum(int8_t v) {
 int main( int argc, char *argv[] )
 {
 #if 0
-    int8_t array[1] = {-3};
+  int8_t array[1] = {-3};
     //    printf("sizeof(array[1]) -> %lu\n", sizeof(array));
-    int8_t v = array[0];
+  int8_t v = array[0];
     // printf("int8_t v -> %x\n", v);
-    void* foo = to_fixnum(v);
+  void* foo = to_fixnum(v);
     ///printf("int64_t v -> %p\n", foo);
 #endif
 
@@ -463,11 +463,12 @@ int main( int argc, char *argv[] )
   // CALL LISP STARTUP
 
   int exit_code = 0;
-  try
+//  try
   {
     exit_code = gctools::startupGarbageCollectorAndSystem( &startup, argc, argv, rl.rlim_max, mpiEnabled, mpiRank, mpiSize );
     set_exit_code( exit_code );
   }
+#if 0
   catch ( ... )
   {
     // As we don't know what went wrong we just exit with a generic error code
@@ -482,7 +483,8 @@ int main( int argc, char *argv[] )
 
     set_abort_flag( true );
   }
-
+#endif
+  
 #ifdef USE_MPI
   mpip::Mpi_O::Finalize();
 #endif

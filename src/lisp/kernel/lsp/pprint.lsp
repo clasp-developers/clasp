@@ -15,6 +15,11 @@
   
 (in-package "SI")
 
+;;; FIXME: Move?
+;;; FIXME: Better error (though these are internal structures, so it being signaled is a bug)
+(defun required-argument ()
+  (error "Missing required argument in struct constructor"))
+
 ;;;; Pretty streams
 
 ;;; There are three different units for measuring character positions:

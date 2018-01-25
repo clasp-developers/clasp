@@ -173,14 +173,17 @@ eg: '(block ((exception var) code...))"
 
 (defvar *next-i32* 1000)
 
-(defun generate-rethrow-landing-pad (function previous-exception-handler-cleanup-block
-                                     previous-exception-clause-types-to-handle) ; exn.slot ehselector.slot)
+(defun generate-rethrow-landing-pad (function
+                                     previous-exception-handler-cleanup-block
+                                     previous-exception-clause-types-to-handle
+                                     exn.slot
+                                     ehselector.slot)
   (let* ((rethrow-cleanup       (irc-basic-block-create "rethrow-cleanup" function))
          (_                     (irc-begin-block rethrow-cleanup))
          (lp                    (irc-create-landing-pad (length previous-exception-clause-types-to-handle) "rethrow-cleanup"))
          (_                     (try.add-landing-pad-clauses lp previous-exception-clause-types-to-handle))
          (_                     (irc-set-cleanup lp t))
-         (_                     (preserve-exception-info lp))
+         (_                     (preserve-exception-info lp exn.slot ehselector.slot))
          #+debug-eh(_                     (irc-intrinsic "debugPrintI32" (jit-constant-i32 (incf *next-i32*))))
          (_                     (with-landing-pad *current-function-terminate-landing-pad*
                                     (irc-intrinsic "__cxa_end_catch")))
@@ -243,14 +246,11 @@ eg: '(block ((exception var) code...))"
          ,code
        ,@catch-clauses)))
 
-(defun preserve-exception-info (lpad &optional (exn.slot *current-function-exn.slot*) (ehselector.slot *current-function-ehselector.slot*))
-  (let ((exn.slot exn.slot)
-        (ehselector.slot ehselector.slot))
-    (let ((exception-structure (llvm-sys:create-extract-value *irbuilder* lpad (list 0) "")))
-      (llvm-sys:create-store *irbuilder* exception-structure exn.slot nil))
-    (let ((exception-selector (llvm-sys:create-extract-value *irbuilder* lpad (list 1) "")))
-      (llvm-sys:create-store *irbuilder* exception-selector ehselector.slot nil))
-    (values exn.slot ehselector.slot)))
+(defun preserve-exception-info (lpad exn.slot ehselector.slot)
+  (let ((exception-structure (llvm-sys:create-extract-value *irbuilder* lpad (list 0) "")))
+    (llvm-sys:create-store *irbuilder* exception-structure exn.slot nil))
+  (let ((exception-selector (llvm-sys:create-extract-value *irbuilder* lpad (list 1) "")))
+    (llvm-sys:create-store *irbuilder* exception-selector ehselector.slot nil)))
 
 (defvar *next-try-id* 0)
 #+threads (defvar *next-try-id-mutex* (mp:make-mutex 'next-try-id))
@@ -337,8 +337,9 @@ exceptions to higher levels of the code and unwinding the stack.
                    (irc-low-level-trace :eh-landing-pads)
                    ,(when cleanup-clause-body
                       `(irc-set-cleanup ,landpad-gs t))
-                   (multiple-value-bind (,exn.slot-gs ,ehselector.slot-gs)
-                       (preserve-exception-info ,landpad-gs)
+                   (let ((,exn.slot-gs *current-function-exn.slot*)
+                         (,ehselector.slot-gs *current-function-ehselector.slot*))
+                     (preserve-exception-info ,landpad-gs ,exn.slot-gs ,ehselector.slot-gs)
                      #+debug-eh(irc-intrinsic "debugPrintI32" (jit-constant-i32 (incf *next-i32*)))
                      (irc-low-level-trace :flow)
                      (irc-branch-to-and-begin-block ,dispatch-header-gs)
@@ -351,8 +352,11 @@ exceptions to higher levels of the code and unwinding the stack.
                              (irc-br ,first-dispatcher-block-gs "first-dispatcher-block-gs"))
                           `(irc-br ,parent-cleanup-block-gs "parent-cleanup-block-gs"))
                      ,(when exception-clauses
-                        `(let ((,rethrow-bb-gs (generate-rethrow-landing-pad *current-function* ,previous-exception-handler-cleanup-block-gs
-                                                                             ,previous-exception-clause-types-to-handle-gs)))
+                        `(let ((,rethrow-bb-gs (generate-rethrow-landing-pad *current-function*
+                                                                             ,previous-exception-handler-cleanup-block-gs
+                                                                             ,previous-exception-clause-types-to-handle-gs
+                                                                             *current-function-exn.slot*
+                                                                             *current-function-ehselector.slot*)))
                            ,@(maplist #'(lambda (cur-disp-block-gs cur-clause-gs)
                                           (try.one-dispatcher-and-handler (car cur-disp-block-gs)
                                                                           (if (cadr cur-disp-block-gs)

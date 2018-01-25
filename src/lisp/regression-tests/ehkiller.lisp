@@ -21,6 +21,20 @@
     (unwind-protect
         (return-from x 1)
       (block z
-        (funcall (lambda () (return-from z 2)))))))
+        (funcall (lambda () (return-from z 2)))))))'
+
+(defun eh-bab (a)
+  (block x
+    (funcall (lambda ()
+               (block y
+                 (when (eq a 'x)
+                   (return-from x a))
+                 (funcall (lambda ()
+                            (when (eq a 'y)
+                              (return-from y a))
+                            (funcall (lambda () (return-from x a))))))))))
+
+
+                              
 (test eh-baz (eql (eh-baz) 1))
 

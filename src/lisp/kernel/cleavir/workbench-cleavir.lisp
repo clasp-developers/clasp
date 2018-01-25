@@ -18,7 +18,8 @@
   (format t "Loading ASDF system~%")
   (finish-output)
   (require :asdf)
-  (load "sys:local-asdf-config.lisp"))
+  (load "sys:local-asdf-config.lisp")
+  (format t "DONE loading ASDF~%"))
 
 (progn
   (format t "Loading :clasp-cleavir system~%")
@@ -36,10 +37,8 @@
   (format t "Done loading inline2.lisp~%"))
 
 
-(load "sys:tests;tt-00001-preoptimize.ll")
-(core::foo)
-
-(clasp-cleavir:cleavir-compile-file "sys:tests;ta.lsp")
+(load (clasp-cleavir:cleavir-compile-file "sys:tests;eh.lsp"))
+(foo)
 
 
 (cleavir-generate-ast:generate-ast '(lambda () 1)  *clasp-env* *clasp-system*)

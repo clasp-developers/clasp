@@ -723,12 +723,12 @@ def configure(cfg):
     cfg.define("DEBUG_TRACE_INTERPRETED_CLOSURES",1)
     cfg.define("DEBUG_ENVIRONMENTS",1)
 #    cfg.define("DEBUG_RELEASE",1)   # Turn off optimization for a few C++ functions; undef this to optimize everything
-#    cfg.define("DEBUG_LEXICAL_DEPTH",1) # Generate tests for lexical closure depths
 #    cfg.define("DEBUG_CACHE",1)      # Debug the dispatch caches - see cache.cc
 #    cfg.define("DEBUG_BITUNIT_CONTAINER",1)  # prints debug info for bitunit containers
 #    cfg.define("DEBUG_ZERO_KIND",1);
 #    cfg.define("DEBUG_FLOW_CONTROL",1)  # broken - probably should be removed unless it can be 
 #    cfg.define("DEBUG_RETURN_FROM",1)   # broken
+#    cfg.define("DEBUG_LEXICAL_DEPTH",1) # Generate tests for lexical closure depths
 #    cfg.define("DEBUG_FLOW_TRACKER",1)  # record small backtraces to track flow
 #    cfg.define("DEBUG_DYNAMIC_BINDING_STACK",1)
 #    cfg.define("DEBUG_VALUES",1)   # turn on printing (values x y z) values when core:*debug-values* is not nil
@@ -742,7 +742,7 @@ def configure(cfg):
 #    cfg.define("DEBUG_FASTGF",1)   # generate slow gf dispatch logging and write out dispatch functions to /tmp/dispatch-history-**
 #    cfg.define("DEBUG_REHASH_COUNT",1)   # Keep track of the number of times each hash table has been rehashed
 #    cfg.define("DEBUG_MONITOR",1)   # generate logging messages to a file in /tmp for non-hot code
-    cfg.define("DEBUG_MEMORY_PROFILE",1)  # Profile memory allocations
+#    cfg.define("DEBUG_MEMORY_PROFILE",1)  # Profile memory allocations
 #    cfg.define("DEBUG_BCLASP_LISP",1)  # Generate debugging frames for all bclasp code - like declaim
 #    cfg.define("DEBUG_CCLASP_LISP",1)  # Generate debugging frames for all cclasp code - like declaim
 #    cfg.define("DONT_OPTIMIZE_BCLASP",1)  # Optimize bclasp by editing llvm-ir
