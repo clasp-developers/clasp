@@ -268,24 +268,25 @@ CL_DEFUN T_sp cl__list(T_sp objects) {
   return objects;
 };
 
-CL_LAMBDA(&rest objects);
+CL_LAMBDA(&va-rest objects);
 CL_DECLARE();
 CL_DOCSTRING("list* see CLHS");
-CL_DEFUN T_sp cl__listSTAR(T_sp tobjects) {
-  T_sp objects = tobjects;
-  if (objects.nilp()) FEargument_number_error(clasp_make_fixnum(0),clasp_make_fixnum(1),_Nil<T_O>());
-  if (oCdr(objects).nilp())
-    return (oCar(objects));
-  Cons_sp cur;
+CL_DEFUN T_sp cl__listSTAR(VaList_sp vargs) {
+  size_t nargs = vargs->remaining_nargs();
+  if (nargs == 0 ) FEargument_number_error(clasp_make_fixnum(0),clasp_make_fixnum(1),_Nil<T_O>());
   ql::list result;
-  for (; oCdr(objects).notnilp(); objects = oCdr(objects)) {
-    //	    printf("Adding %s\n", _rep_(oCar(objects)).c_str());
-    result << oCar(objects);
+  while (nargs > 1) {
+    T_O* tcsp = ENSURE_VALID_OBJECT(vargs->next_arg_raw());
+    T_sp csp((gctools::Tagged)tcsp);
+    result << csp;
+    nargs--;
   }
-  //	printf("dotting %s\n", _rep_(objects).c_str());
-  result.dot(oCar(objects));
+  T_O* tailptr = ENSURE_VALID_OBJECT(vargs->next_arg_raw());
+  T_sp tail((gctools::Tagged)tailptr);
+  result.dot(tail);
   return result.cons();
 }
+
 
 CL_LAMBDA(list &optional (on 1));
 CL_DECLARE();
