@@ -71,7 +71,9 @@
 ;;; and the multiple values returned from func1 are restored
 ;;;
 (defsmacro multiple-value-prog1 (first-form &rest forms)
-  `(core:multiple-value-prog1-function (lambda () (progn ,first-form)) (lambda () (progn ,@forms))))
+  (if (null forms) ; skip it. This can come up in generated code, e.g. method combinations
+      first-form
+      `(core:multiple-value-prog1-function (lambda () (progn ,first-form)) (lambda () (progn ,@forms)))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

@@ -460,14 +460,6 @@ FIXME!!!! This code will have problems with multithreading if a generic function
      for exchange = (generic-function-call-history-compare-exchange generic-function call-history new-call-history)
      until (eq exchange new-call-history)))
 
-(defun calculate-discriminator-function (generic-function)
-  "This is called from set-generic-function-dispatch - which is called whenever a method is added or removed "
-  (let ((output-path (log-cmpgf-filename (clos::generic-function-name generic-function) "func" "ll")))
-    (core::bformat *debug-io* "calculate-discriminator-function dumping dispatcher %s\n" output-path)
-    (calculate-fastgf-dispatch-function generic-function
-                                        #+debug-fastgf :output-path
-                                        #+debug-fastgf output-path)))
-
 (defun erase-generic-function-call-history (generic-function)
   (loop for call-history = (generic-function-call-history generic-function)
      for new-call-history = nil
@@ -509,43 +501,42 @@ FIXME!!!! This code will have problems with multithreading if a generic function
   (cond
     ((cmp::optimized-slot-reader-p outcome)
      ;; Call is like (name instance)
-     (let ((value (standard-instance-get (first arguments) (cmp::optimized-slot-reader-index outcome))))
+     (let ((value (standard-instance-access (first arguments) (cmp::optimized-slot-reader-index outcome))))
        (if (si:sl-boundp value)
            value
            (values (slot-unbound (cmp::optimized-slot-reader-class outcome) (first arguments)
                                  (cmp::optimized-slot-reader-slot-name outcome))))))
     ((cmp::optimized-slot-writer-p outcome)
      ;; Call is like ((setf name) new-value instance)
-     (standard-instance-set (first arguments) (second arguments) (cmp::optimized-slot-writer-index outcome)))
+     (setf (standard-instance-access (second arguments) (cmp::optimized-slot-writer-index outcome))
+           (first arguments)))
     ((cmp::fast-method-call-p outcome)
      (apply (cmp::fast-method-call-function outcome) arguments))
     ;; Effective method functions take the same arguments as method functions - vasargs and next-methods
     ;; for now, at least.
     (t (funcall outcome vaslist-arguments nil))))
 
+#+debug-fastgf
 (defvar *dispatch-miss-start-time*)
+
 (defun do-dispatch-miss (generic-function vaslist-arguments arguments)
   "This effectively does what compute-discriminator-function does and maybe memoizes the result 
 and calls the effective-method-function that is calculated.
 It takes the arguments in two forms, as a vaslist and as a list of arguments."
   (let ((can-memoize t)
+        #+debug-fastgf
         (*dispatch-miss-start-time* (get-internal-real-time)))
-    ;; What if another thread adds/removes method during c-a-m-u-c???????
+    ;; FIXME: What if another thread adds/removes method during c-a-m-u-c?
     (multiple-value-bind (method-list ok)
         (clos::compute-applicable-methods-using-classes generic-function (mapcar #'class-of arguments))
       (declare (core:lambda-name do-dispatch-miss.multiple-value-bind.lambda))
       ;; If ok is NIL then what do we use as the key
       (gf-log "Called compute-applicable-methods-using-classes - returned method-list: %s  ok: %s\n" method-list ok)
       (unless ok
-        ;; What if another thread adds/removes method during c-a-m???????
+        ;; FIXME: What if another thread adds/removes method during c-a-m?
         (setf method-list (clos::compute-applicable-methods generic-function arguments))
-        (gf-log "compute-applicable-methods-using-classes returned NIL for second argument\n")
-        ;; MOP says we can only memoize results if c-a-m-u-c returns T as its second return value.
-        ;;  But for standard-generic-functions we can memoize the effective-method-function
-        ;;  even if c-a-m-u-c returns NIL as its second return value
-        ;;  because it is illegal to implement new methods on c-a-m specialized
-        ;;  on standard-generic-function.
-        (setf can-memoize (eq (class-of generic-function) (find-class 'standard-generic-function))))
+        (setf can-memoize nil)
+        (gf-log "compute-applicable-methods-using-classes returned NIL for second argument\n"))
       (if method-list
           (let ((effective-method-function (compute-effective-method-function-maybe-optimize
                                             generic-function

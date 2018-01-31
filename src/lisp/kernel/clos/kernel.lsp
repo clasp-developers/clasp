@@ -121,33 +121,10 @@
       (reinitialize-instance gf :name new-name)
       (setf (slot-value gf 'name) new-name)))
 
-(defun default-dispatch (generic-function)
-  (cond ((null *clos-booted*)
-	 'standard-generic-function)
-	((eq (class-id (class-of generic-function))
-	     'standard-generic-function)
-	 'standard-generic-function)
-	(t)))
-
+;;; Will be the standard method after fixup.
 (defun compute-discriminating-function (generic-function)
-  (values #'(lambda (&rest args)
-              (declare (core:lambda-name compute-discriminating-function.lambda))
-	      (multiple-value-bind (method-list ok)
-		  (compute-applicable-methods-using-classes
-		   generic-function
-		   (mapcar #'class-of args))
-		(unless ok
-		  (setf method-list
-			(compute-applicable-methods generic-function args))
-		  (unless method-list
-		    (apply #'no-applicable-method generic-function args)))
-		(funcall (compute-effective-method-function
-			  generic-function
-			  (generic-function-method-combination generic-function)
-			  method-list)
-			 args
-			 nil)))
-	  t))
+  (declare (ignore generic-function))
+  'invalidated-dispatch-function)
 
 #+(or)(eval-when (:execute :compile-toplevel :load-toplevel)
   (setq cmp::*jit-dump-module-before-optimizations* t))

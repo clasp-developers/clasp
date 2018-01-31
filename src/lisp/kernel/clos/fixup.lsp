@@ -261,7 +261,7 @@ and cannot be added to ~A." method other-gf gf)))
   (progn
     (update-specializer-profile gf (method-specializers method))
     (update-generic-function-call-history-for-add-method gf method))
-  (set-funcallable-instance-function gf 'invalidated-dispatch-function)
+  (set-funcallable-instance-function gf (compute-discriminating-function gf))
   ;;  iv) Update dependents.
   (update-dependents gf (list 'add-method method))
   ;;  v) Register with specializers
@@ -279,7 +279,7 @@ and cannot be added to ~A." method other-gf gf)))
   (progn
     (compute-and-set-specializer-profile gf)
     (update-generic-function-call-history-for-remove-method gf method))
-  (set-funcallable-instance-function gf 'invalidated-dispatch-function)
+  (set-funcallable-instance-function gf (compute-discriminating-function gf))
   (update-dependents gf (list 'remove-method method))
   gf)
 
