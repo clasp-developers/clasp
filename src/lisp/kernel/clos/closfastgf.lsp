@@ -531,22 +531,17 @@ and calls the effective-method-function that is calculated.
 It takes the arguments in two forms, as a vaslist and as a list of arguments."
   (let ((can-memoize t)
         (*dispatch-miss-start-time* (get-internal-real-time)))
-    ;; What if another thread adds/removes method during c-a-m-u-c???????
+    ;; FIXME: What if another thread adds/removes method during c-a-m-u-c?
     (multiple-value-bind (method-list ok)
         (clos::compute-applicable-methods-using-classes generic-function (mapcar #'class-of arguments))
       (declare (core:lambda-name do-dispatch-miss.multiple-value-bind.lambda))
       ;; If ok is NIL then what do we use as the key
       (gf-log "Called compute-applicable-methods-using-classes - returned method-list: %s  ok: %s\n" method-list ok)
       (unless ok
-        ;; What if another thread adds/removes method during c-a-m???????
+        ;; FIXME: What if another thread adds/removes method during c-a-m?
         (setf method-list (clos::compute-applicable-methods generic-function arguments))
-        (gf-log "compute-applicable-methods-using-classes returned NIL for second argument\n")
-        ;; MOP says we can only memoize results if c-a-m-u-c returns T as its second return value.
-        ;;  But for standard-generic-functions we can memoize the effective-method-function
-        ;;  even if c-a-m-u-c returns NIL as its second return value
-        ;;  because it is illegal to implement new methods on c-a-m specialized
-        ;;  on standard-generic-function.
-        (setf can-memoize (eq (class-of generic-function) (find-class 'standard-generic-function))))
+        (setf can-memoize nil)
+        (gf-log "compute-applicable-methods-using-classes returned NIL for second argument\n"))
       (if method-list
           (let ((effective-method-function (compute-effective-method-function-maybe-optimize
                                             generic-function
