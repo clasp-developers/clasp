@@ -178,24 +178,12 @@
 
 ;;; --------------------------------------------------
 ;;;
-;;; Switch to CLOS package here
-;;;
 ;;; This section contains code that is called by CLOS to
 ;;;   update generic-function-call-history and to call
 ;;;   codegen-dispatcher to generate a new dispatch function when needed
 ;;;
 
-(in-package :clos)
-
-(defun specializers-as-list (arguments)
-  (loop for arg in arguments
-     for specializer = (if (consp arg) (car arg) 'T)
-     collect specializer))
-
-(defparameter *trap* nil)
-(defparameter *dispatch-log* nil)
-
-;;; Called from cc_dispatch_slot_reader_index via intrinsic_error
+;;; Called from cc_bound_or_error -> intrinsic_slot_unbound
 (defun fastgf-slot-unbound (opt-slot-reader instance)
   (slot-unbound (cmp::optimized-slot-reader-class opt-slot-reader)
                 instance
@@ -318,7 +306,7 @@
          (effective-slot-defs (class-slots class))
          (slot (loop for effective-slot in effective-slot-defs
                      when (eq direct-slot-name (slot-definition-name effective-slot)) return effective-slot)))
-    (when (null slot) ; no idea how this could occur
+    (when (null slot) ; should be impossible. one way I hit it: abnormal slots from boot.lsp
       (error "BUG: cannot find effective slot for optimized accessor! class ~s, slot name ~s"
              class direct-slot-name))
     slot))
@@ -481,9 +469,9 @@ FIXME!!!! This code will have problems with multithreading if a generic function
   (gf-log-dispatch-miss "Adding to history" generic-function vaslist-arguments)
   (gf-log "about to call clos:memoization-key vaslist-arguments-> %s\n" vaslist-arguments)
   (gf-log "The specializer-profile: %s\n" (clos:generic-function-specializer-profile generic-function))  
-  (loop for call-history = (clos:generic-function-call-history generic-function)
-        for specializer-profile = (clos:generic-function-specializer-profile generic-function)
-        for memoized-key = (clos:memoization-key generic-function vaslist-arguments (length specializer-profile))
+  (loop with specializer-profile = (clos:generic-function-specializer-profile generic-function)
+        with memoized-key = (clos:memoization-key generic-function vaslist-arguments (length specializer-profile))
+        for call-history = (clos:generic-function-call-history generic-function)
         for found-key = (clos:call-history-find-key call-history memoized-key)
         for new-call-history = (if found-key
                                    (progn
@@ -505,7 +493,7 @@ FIXME!!!! This code will have problems with multithreading if a generic function
         when exchanged do (gf-log "Successfully exchanged call history\n")
           until (eq exchanged new-call-history))
   (set-funcallable-instance-function generic-function 'invalidated-dispatch-function)
-  (return-from memoize-call))
+  (values))
 
 (defun perform-outcome (outcome arguments vaslist-arguments)
   (cond
@@ -538,19 +526,18 @@ It takes the arguments in two forms, as a vaslist and as a list of arguments."
         (*dispatch-miss-start-time* (get-internal-real-time)))
     ;; FIXME: What if another thread adds/removes method during c-a-m-u-c?
     (multiple-value-bind (method-list ok)
-        (clos::compute-applicable-methods-using-classes generic-function (mapcar #'class-of arguments))
+        (compute-applicable-methods-using-classes generic-function (mapcar #'class-of arguments))
       (declare (core:lambda-name do-dispatch-miss.multiple-value-bind.lambda))
-      ;; If ok is NIL then what do we use as the key
       (gf-log "Called compute-applicable-methods-using-classes - returned method-list: %s  ok: %s\n" method-list ok)
       (unless ok
         ;; FIXME: What if another thread adds/removes method during c-a-m?
-        (setf method-list (clos::compute-applicable-methods generic-function arguments))
+        (setf method-list (compute-applicable-methods generic-function arguments))
         (setf can-memoize nil)
         (gf-log "compute-applicable-methods-using-classes returned NIL for second argument\n"))
       (if method-list
           (let ((effective-method-function (compute-effective-method-function-maybe-optimize
                                             generic-function
-                                            (clos::generic-function-method-combination generic-function)
+                                            (generic-function-method-combination generic-function)
                                             method-list
                                             (mapcar #'core:instance-class arguments)
                                             :log t
