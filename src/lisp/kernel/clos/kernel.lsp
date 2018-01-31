@@ -121,14 +121,6 @@
       (reinitialize-instance gf :name new-name)
       (setf (slot-value gf 'name) new-name)))
 
-(defun default-dispatch (generic-function)
-  (cond ((null *clos-booted*)
-	 'standard-generic-function)
-	((eq (class-id (class-of generic-function))
-	     'standard-generic-function)
-	 'standard-generic-function)
-	(t)))
-
 (defun compute-discriminating-function (generic-function)
   (values #'(lambda (&rest args)
               (declare (core:lambda-name compute-discriminating-function.lambda))
