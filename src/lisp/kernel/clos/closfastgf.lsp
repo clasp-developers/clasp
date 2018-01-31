@@ -460,14 +460,6 @@ FIXME!!!! This code will have problems with multithreading if a generic function
      for exchange = (generic-function-call-history-compare-exchange generic-function call-history new-call-history)
      until (eq exchange new-call-history)))
 
-(defun calculate-discriminator-function (generic-function)
-  "This is called from set-generic-function-dispatch - which is called whenever a method is added or removed "
-  (let ((output-path (log-cmpgf-filename (clos::generic-function-name generic-function) "func" "ll")))
-    (core::bformat *debug-io* "calculate-discriminator-function dumping dispatcher %s\n" output-path)
-    (calculate-fastgf-dispatch-function generic-function
-                                        #+debug-fastgf :output-path
-                                        #+debug-fastgf output-path)))
-
 (defun erase-generic-function-call-history (generic-function)
   (loop for call-history = (generic-function-call-history generic-function)
      for new-call-history = nil
@@ -524,12 +516,15 @@ FIXME!!!! This code will have problems with multithreading if a generic function
     ;; for now, at least.
     (t (funcall outcome vaslist-arguments nil))))
 
+#+debug-fastgf
 (defvar *dispatch-miss-start-time*)
+
 (defun do-dispatch-miss (generic-function vaslist-arguments arguments)
   "This effectively does what compute-discriminator-function does and maybe memoizes the result 
 and calls the effective-method-function that is calculated.
 It takes the arguments in two forms, as a vaslist and as a list of arguments."
   (let ((can-memoize t)
+        #+debug-fastgf
         (*dispatch-miss-start-time* (get-internal-real-time)))
     ;; FIXME: What if another thread adds/removes method during c-a-m-u-c?
     (multiple-value-bind (method-list ok)
