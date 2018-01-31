@@ -354,6 +354,10 @@
                       (t nil)))
          (slotd (when class (effective-slotd-from-accessor-method method class)))
          (standard-slotd-p (when slotd (eq (class-of slotd) (find-class 'standard-effective-slot-definition))))
+         ;; When there is no applicable method in a required group (e.g. qualifier-less methods, for standard mc)
+         ;; the effective method will be a call to no-required-method. See combin.lsp.
+         ;; the SECOND is because the symbol is quoted.
+         (nrm-group-name (and (consp em) (eq (first em) 'no-required-method) (second (third em))))
          (optimized
            (cond ((not standard-slotd-p)
                   (cond (fmf
@@ -362,6 +366,12 @@
                         (leafp
                          (gf-log "Using method %s function as emf\n" method)
                          (method-function method))
+                        (nrm-group-name ; missing a required (probably primary) method.
+                         ;; FIXME: this is kind of ugly, to say the least. inlining would be nice.
+                         ;; This function will be treated as an emf by cmpfastgf, and called as such.
+                         (lambda (vaslist-args ignore)
+                           (declare (ignore ignore))
+                           (apply #'no-required-method generic-function nrm-group-name vaslist-args)))
                         (t
                          (gf-log "Using default effective method function\n")
                          (gf-log "(compute-effective-method generic-function method-combination methods) -> \n")

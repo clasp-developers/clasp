@@ -236,8 +236,10 @@
                      ;; is impossible. Lacking a required method is by contrast a problem that only needs to
                      ;; be signaled when the function is actually being called. So we return an error form.
                      ;; (NO-REQUIRED-METHOD is defined in fixup, but we could move it here.)
+                     ;; FIXME: This form is not actually evaluated, in favor of weird bullshit.
+                     ;; See compute-effective-function-maybe-optimize.
                      (return-from ,name
-                       '(no-required-method ,generic-function .methods-list. ',name)))
+                       '(no-required-method ,generic-function ',group-name .arguments.)))
 		  group-after))
 	  (case order
 	    (:most-specific-first
