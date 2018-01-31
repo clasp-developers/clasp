@@ -180,7 +180,7 @@
   (when (and l-l-p (not a-o-p))
     (setf (generic-function-argument-precedence-order gfun)
 	  (lambda-list-required-arguments lambda-list)))
-  (set-funcallable-instance-function gfun 'invalidated-dispatch-function)
+  (set-funcallable-instance-function gfun (compute-discriminating-function gfun))
   gfun)
 
 ;;; FIXME: break up the two ways of using this function.
