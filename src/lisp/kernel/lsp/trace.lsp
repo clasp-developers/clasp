@@ -220,6 +220,9 @@ all functions."
   (let ((record (trace-record fname)))
     (cond ((null record)
            (warn "The function ~S was not traced." fname))
+           ;;; issue #400 from github
+          ((not (fboundp fname))
+            (warn "The function ~S was traced, but fmakunbound." fname))
           ((traced-and-redefined-p record)
            (warn "The function ~S was traced, but redefined." fname))
           (t
