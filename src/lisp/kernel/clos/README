@@ -42,9 +42,7 @@ Instances and classes are all defined pretty straightforwardly. This is not the 
  * Defining generic functions as simple functions performing only their standard behavior, and then later using these functions as the standard methods.
  * Satiation (explained below).
 
-The generic dispatch uses the currently new technique we have optimistically called "fastgf". The algorithm is described in Strandh, R. (2014). Fast generic dispatch for Common Lisp. Proceedings of ILC 2014 on 8th International Lisp Conference - ILC 14. doi:10.1145/2635648.2635654
-
-To summarize, each generic function maintains a history of calls to it, containing the actual classes of all specialable arguments (or eql specializers sometimes), and a precomputed effective method for those arguments. Since multiple combinations of classes can result in the same effective method, they can be shared. The discriminating function implements a simple tree to find the correct applicable method for its given arguments, and goes to the relevant effective method. If there isn't one, it does the basic strategy laid out in MOP with call-applicable-methods-using-classes. If the arguments are memoizable, either because c-a-m-u-c returns second value T or if the generic function is a direct instance of standard-generic-instance (preventing specialization of MOP methods into this process), a call history entry is added with a newly computed effective method. It's all really pretty quick; the problem is cache invalidation, as usual. Read the paper, and the code in closfastgf.lsp.
+The generic dispatch uses the currently new technique we have optimistically called "fastgf". Fastgf has its own section below. The algorithm is more fully described in Strandh, R. (2014). Fast generic dispatch for Common Lisp. Proceedings of ILC 2014 on 8th International Lisp Conference - ILC 14. doi:10.1145/2635648.2635654
 
 To set the system up, everything is dfined with normal functions which we then convert into etc.
 
@@ -84,6 +82,55 @@ The final ENSURE-GENERIC-FUNCTION is installed next. It calls generic functions,
 Then a few things are redefined, most notably ADD-METHOD and REMOVE-METHOD, which are also immediately upgraded into methods. More stuff that should be inoffensive.
 
 At the end of this file, CLOS is "set up" in that you should be able to manipulate generic functions with impunity. However some things like detailed PRINT-OBJECT are later.
+
+Fastgf
+------
+
+Basic dispatch technique is as follows. The discriminating function has a slow path and a fast path. We start with the fast path. The fast path is a discrimination tree, or "dtree". Each required argument position goes through a binary search based on its class stamp (a natural number each class has). Each leaf of the tree is an "outcome", which is an effective method function or something fancier that does the same thing (see below). If the search fails at any time, it goes to the slow path.
+
+For example, if we have (defmethod foo ((x integer) y) outcome0), the stamp of FIXNUM is 7, and the stamp of BIGNUM is 8 (and integer = fixnum + bignum), we could validly have any of the following fast paths:
+
+(slow-path)
+
+(let ((xs (instance-class-stamp x)))
+  (if (= xs 7)
+      outcome0
+      (slow-path)))
+
+(let ((xs (instance-class-stamp x)))
+  (if (= xs 8)
+      outcome0
+      (slow-path)))
+
+(let ((xs (instance-class-stamp x)))
+  (if (>= xs 7)
+      (if (<= xs 8)
+          outcome0
+          (slow-path))
+      (slow-path)))
+
+instance-class-stamp and slow-path are not real functions, those are just for illustration. Anyway, the point is it works based on the actual class of the instance, that is the class that the instance is a direct instance of.
+
+For a new generic function, the "fast path" is always the first one, i.e. immediately goes to the slow path. The slow path does roughly what MOP suggests, that is, first it calls compute-applicable-methods-using-classes, and if that returns a second value of NIL it calls compute-applicable-methods. Then it uses the applicable methods to compute an effective method, and calls that.
+
+If c-a-m-u-c returns a second value of T, the call is additionally "memoized". The list of classes of the required arguments is stored, along with the effective method, in the generic function's "call history". The discriminating function of the generic function is set to be invalidated-dispatch-function, which is just one particular function.
+
+The next time the gf is called control is passed to invalidated-dispatch-function. invalidated-dispatch-function calls sets the discriminating function to be the result of calculate-fastgf-dispatch-function, which is basically a compute-discriminating-function method (though FIXME this is not set up!). calculate-fastgf-dispatch-function builds a fast path based on the call history. For example, for the above function FOO, it would compute the first if there was no call history, the second if the call history was one call with a fixnum, the third if the call history was one call with a bignum, and the last if the call history had both calls.
+
+In short, the discriminating function is a static tree of type tests as you'd do without CLOS, but only with actual arguments rather than all possible argument combinations (which can grow combinatorically), and with some extra stuff so that you can define new methods and redefine classes yada yada.
+
+That cache invalidation is really the tricky bit. When methods are added or removed, or the gf reinitialized, or classes redefined, or whatever, relevant call history entries are removed and the gf set to invalidated-dispatch-function. New calls with relevant arguments will hit the slow path, which will then reinstall a fixed fast path.
+
+About outcomes: effective method functions are the most general outcome. But in several situations more specific outcomes are available:
+
+* Slot readers and writers are inlined into the discriminating function, i.e. they'll normally be array reads and writes. This occurs only for instances of direct instances of standard-class and when some other similar conditions are met, so that we are sure there are no methods on setf/slot-value-using-class. Note that we have to use the direct classes of arguments for this.
+* If the effective method function is (call-method #<leaf-method> ...), the method function is used as an effective method function directly, or, if it additionally takes only required arguments and few enough to be taken in registers, a "fast" method function is used. The fast method function and leafness are computed by make-method-lambda in method.lsp. A method being "leaf" means it does not call call-next-method or next-method-p, i.e. is insensitive to its next methods.
+
+Outcomes are computed by compute-effective-method-function-maybe-optimize.
+
+The code for fastgf is mainly in clos/closfastgf.lsp and cmp/cmpfastgf.lsp. The latter is separate and uses bclasp for bootstrap reasons (that is, because cleavir itself uses CLOS).
+
+Because of how all this works, compute-discriminating-function doesn't actually do much computing. This is perfectly conformant of course. Users can define compute-discriminating-function methods and bypass fastgf entirely. Note that compute-discriminating-function is called only where it has to be, e.g. in add-method, or reinitialization of a gf - not by fastgf itself, which uses invalidated-dispatch-function more directly.
 
 Modification
 ------------
