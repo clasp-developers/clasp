@@ -188,51 +188,51 @@
 
 
 (si:fset 'core::defvar #'(lambda (whole env)
-			     (let ((var (cadr whole))
-				   (formp (cddr whole))
-				   (form (caddr whole))
-				   (doc-string (cadddr whole)))
-				  "Syntax: (defparameter name form [doc])
+                             (let ((var (cadr whole))
+                                   (formp (cddr whole))
+                                   (form (caddr whole))
+                                   (doc-string (cadddr whole)))
+                               #+(or)"Syntax: (defvar name form [doc])
 Declares the global variable named by NAME as a special variable and assigns
 the value of FORM to the variable.  The doc-string DOC, if supplied, is saved
 as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
-				  `(LOCALLY (DECLARE (SPECIAL ,var))
-				     (SYS:*MAKE-SPECIAL ',var)
-				     ,@(if formp
-					     `((if (boundp ',var)
-						   nil
-						   (setq ,var ,form)))))))
-	  t )
+                                  `(LOCALLY (DECLARE (SPECIAL ,var))
+                                     (SYS:*MAKE-SPECIAL ',var)
+                                     ,@(if formp
+                                             `((if (boundp ',var)
+                                                   nil
+                                                   (setq ,var ,form)))))))
+          t )
 (export 'defvar)
 
 (si:fset 'core::defparameter #'(lambda (whole env)
-			    (let ((var (cadr whole))
-				  (form (caddr whole))
-				  (doc-string (cadddr whole)))
-				  "Syntax: (defparameter name form [doc])
+                            (let ((var (cadr whole))
+                                  (form (caddr whole))
+                                  (doc-string (cadddr whole)))
+                                  "Syntax: (defparameter name form [doc])
 Declares the global variable named by NAME as a special variable and assigns
 the value of FORM to the variable.  The doc-string DOC, if supplied, is saved
 as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
-				  `(LOCALLY (DECLARE (SPECIAL ,var))
-				     (SYS:*MAKE-SPECIAL ',var)
-				     (SETQ ,var ,form))))
-	  t )
+                                  `(LOCALLY (DECLARE (SPECIAL ,var))
+                                     (SYS:*MAKE-SPECIAL ',var)
+                                     (SETQ ,var ,form))))
+          t )
 (export 'defparameter)
 
 
 
 (si:fset 'core::defconstant #'(lambda (whole env)
-			    (let ((var (cadr whole))
-				  (form (caddr whole))
-				  (doc-string (cadddr whole)))
-				  "Syntax: (defconstant name form [doc])
+                            (let ((var (cadr whole))
+                                  (form (caddr whole))
+                                  (doc-string (cadddr whole)))
+                                  "Syntax: (defconstant name form [doc])
 Declares the global variable named by NAME as a special variable and assigns
 the value of FORM to the variable.  The doc-string DOC, if supplied, is saved
 as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
-				  `(LOCALLY (DECLARE (SPECIAL ,var))
-				     (SYS:*MAKE-SPECIAL ',var)
-				     (SETQ ,var ,form))))
-	  t )
+                                  `(LOCALLY (DECLARE (SPECIAL ,var))
+                                     (SYS:*MAKE-SPECIAL ',var)
+                                     (SETQ ,var ,form))))
+          t )
 (export 'defconstant)
 
 
@@ -470,29 +470,29 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
 
 
 (si:fset 'and
-	   #'(lambda (whole env)
-	       (let ((forms (cdr whole)))
-		 (if (null forms)
-		     t
-		     (if (null (cdr forms))
-			 (car forms)
-			 `(if ,(car forms)
-			      (and ,@(cdr forms)))))))
-	   t)
+           #'(lambda (whole env)
+               (let ((forms (cdr whole)))
+                 (if (null forms)
+                     t
+                     (if (null (cdr forms))
+                         (car forms)
+                         `(if ,(car forms)
+                              (and ,@(cdr forms)))))))
+           t)
 
 (si:fset 'or
-	   #'(lambda (whole env)
-	       (let ((forms (cdr whole)))
-		 (if (null forms)
-		     nil
-		     (if ( null (cdr forms))
-			 (car forms)
-			 (let ((tmp (gensym)))
-			   `(let ((,tmp ,(car forms)))
-			      (if ,tmp
-				  ,tmp
-				  (or ,@(cdr forms)))))))))
-	   t )
+           #'(lambda (whole env)
+               (let ((forms (cdr whole)))
+                 (if (null forms)
+                     nil
+                     (if ( null (cdr forms))
+                         (car forms)
+                         (let ((tmp (gensym)))
+                           `(let ((,tmp ,(car forms)))
+                              (if ,tmp
+                                  ,tmp
+                                  (or ,@(cdr forms)))))))))
+           t )
 (export '(and or))
 
 (defun build-target-dir (type &optional stage)
@@ -651,35 +651,35 @@ the stage, the +application-name+ and the +bitcode-name+"
   #+dbg-print(bformat t "DBG-PRINT iload fn: %s\n" fn)
   (let* ((fn (entry-filename entry))
          (lsp-path (build-pathname fn))
-	 (bc-path (build-pathname fn :bitcode))
-	 (load-bc (if (not (probe-file lsp-path))
-		      t
-		      (if (not (probe-file bc-path))
+         (bc-path (build-pathname fn :bitcode))
+         (load-bc (if (not (probe-file lsp-path))
+                      t
+                      (if (not (probe-file bc-path))
                           nil
-			  (if load-bitcode
-			      t
-			      (let ((bc-newer (> (file-write-date bc-path) (file-write-date lsp-path))))
-				bc-newer))))))
+                          (if load-bitcode
+                              t
+                              (let ((bc-newer (> (file-write-date bc-path) (file-write-date lsp-path))))
+                                bc-newer))))))
     (if load-bc
-	(progn
-	  (bformat t "Loading bitcode file: %s\n" bc-path)
-	  (cmp:load-bitcode bc-path))
-	(if (probe-file-case lsp-path)
-	    (progn
+        (progn
+          (bformat t "Loading bitcode file: %s\n" bc-path)
+          (cmp:load-bitcode bc-path))
+        (if (probe-file-case lsp-path)
+            (progn
               (if cmp:*implicit-compile-hook*
                   (bformat t "Loading/compiling source: %s\n" lsp-path)
                   (bformat t "Loading/interpreting source: %s\n" lsp-path))
-	      (load (probe-file lsp-path)))
-	    (bformat t "No interpreted or bitcode file for %s could be found\n" lsp-path)))))
+              (load (probe-file lsp-path)))
+            (bformat t "No interpreted or bitcode file for %s could be found\n" lsp-path)))))
 
 (defun delete-init-file (entry &key (really-delete t) stage)
   (let* ((module (entry-filename entry))
          (bitcode-path (build-pathname module :bitcode stage)))
     (if (probe-file bitcode-path)
-	(if really-delete
-	    (progn
-	      (bformat t "     Deleting bitcode: %s\n" bitcode-path)
-	      (delete-file bitcode-path))))))
+        (if really-delete
+            (progn
+              (bformat t "     Deleting bitcode: %s\n" bitcode-path)
+              (delete-file bitcode-path))))))
 
 
 ;; I need to search the list rather than using features because *features* may change at runtime
@@ -867,10 +867,10 @@ the stage, the +application-name+ and the +bitcode-name+"
 
 (defun tpl-change-default-pathname-defaults-dir-command (raw-dir)
   (let* ((corrected-dir (format nil "~a/" (string-right-trim "/" (string raw-dir))))
-	 (dir (pathname-directory (parse-namestring corrected-dir)))
-	 (pn-dir (mapcar #'(lambda (x) (if (eq x :up) :back x)) dir))
-	 (new-pathname (merge-pathnames (make-pathname :directory pn-dir) *default-pathname-defaults*))
-	 )
+         (dir (pathname-directory (parse-namestring corrected-dir)))
+         (pn-dir (mapcar #'(lambda (x) (if (eq x :up) :back x)) dir))
+         (new-pathname (merge-pathnames (make-pathname :directory pn-dir) *default-pathname-defaults*))
+         )
     (setq *default-pathname-defaults* new-pathname)))
 
 
@@ -935,8 +935,8 @@ the stage, the +application-name+ and the +bitcode-name+"
 (defun run-repl ()
   (if (fboundp 'core:top-level)
       (progn
-	(maybe-load-clasprc)
-	(core:top-level))
+        (maybe-load-clasprc)
+        (core:top-level))
       (core:low-level-repl)))
 
 #-(or aclasp bclasp cclasp)
