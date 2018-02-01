@@ -42,10 +42,10 @@
     (handler-bind
         ((cleavir-env:no-variable-info
            (lambda (condition)
-             (invoke-restart 'cleavir-generate-ast:consider-special)))
+             (invoke-restart 'cleavir-cst-to-ast:consider-special)))
          (cleavir-env:no-function-info
            (lambda (condition)
-             (invoke-restart 'cleavir-generate-ast:consider-global))))
+             (invoke-restart 'cleavir-cst-to-ast:consider-global))))
       (cleavir-generate-ast:generate-ast form env *clasp-system*))))
 
 (export 'code-walk-using-cleavir)
@@ -86,13 +86,13 @@
                               env (cleavir-env:name condition))
                              ;; we could potentially leave a note.
                              (return-from defun-inline-hook nil)
-                             (invoke-restart 'cleavir-generate-ast:consider-special))))
+                             (invoke-restart 'cleavir-cst-to-ast:consider-special))))
                      (cleavir-env:no-function-info
                        (lambda (condition)
                          (if (cleavir-env:function-info
                               env (cleavir-env:name condition))
                              (return-from defun-inline-hook nil)
-                             (invoke-restart 'cleavir-generate-ast:consider-global)))))
+                             (invoke-restart 'cleavir-cst-to-ast:consider-global)))))
                   (cleavir-generate-ast:generate-ast function-form (cleavir-env:compile-time env) *clasp-system*))))
       `(eval-when (:compile-toplevel :load-toplevel :execute)
          (when (core:declared-global-inline-p ',name)
