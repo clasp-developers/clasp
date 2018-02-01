@@ -5933,7 +5933,7 @@ namespace core {
 
 string FileStream_O::__repr__() const {
   stringstream ss;
-  ss << "#<" << this->_instanceClass()->_classNameAsString() << " " << _rep_(FileStreamFilename(this->asSmartPtr())) << ">";
+  ss << "#<" << this->_instanceClass()->_classNameAsString() << " " << _rep_(FileStreamFilename(this->asSmartPtr())) <<  " file-pos " << _rep_(clasp_file_position(this->asSmartPtr())) << ">";
   return ss.str();
 }
 
