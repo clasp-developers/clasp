@@ -146,9 +146,17 @@ CL_DEFUN T_sp core__symbol_value_address(Symbol_sp arg) {
 CL_LAMBDA(name);
 CL_DECLARE();
 CL_DOCSTRING("make_symbol");
-CL_DEFUN Symbol_sp cl__make_symbol(SimpleString_sp name) {
-  Symbol_sp sym = Symbol_O::create(name);
-  return sym;
+CL_DEFUN Symbol_sp cl__make_symbol(String_sp str) {
+  if ( SimpleBaseString_sp sb = str.asOrNull<SimpleBaseString_O>() ) {
+    return Symbol_O::create(sb);
+  } else if (Str8Ns_sp s8 = str.asOrNull<Str8Ns_O>() ) {
+    return Symbol_O::create(s8->asMinimalSimpleString());
+  } else if (SimpleCharacterString_sp sc = str.asOrNull<SimpleCharacterString_O>() ) {
+    return Symbol_O::create(sc);
+  } else if (StrWNs_sp sw = str.asOrNull<StrWNs_O>() ) {
+    return Symbol_O::create(sw->asMinimalSimpleString());
+  }
+  TYPE_ERROR(str,cl::_sym_string);
 };
 };
 
