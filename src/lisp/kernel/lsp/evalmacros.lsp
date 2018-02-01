@@ -89,7 +89,7 @@ VARIABLE doc and can be retrieved by (DOCUMENTATION 'SYMBOL 'VARIABLE)."
       (process-declarations body t)
     (let* ((loc (ext:current-source-location))
            (filepos (if loc (source-file-pos-filepos loc) 0))
-           (lineno (if loc (source-file-pos-lineno loc) 0))
+           (lineno (if loc (source-file-pos-lineno loc) 1234))
            (column (if loc (source-file-pos-column loc) 0))
            (fn (gensym))
            (doclist (when doc-string (list doc-string)))
