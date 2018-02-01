@@ -21,30 +21,30 @@
 
 #||
 (si::fset 'and
-	  #'(lambda (whole env)
-	      (let ((forms (cdr whole)))
-		(if (null forms)
-		    t
-		    (if (null (cdr forms))
-			(car forms)
-			`(if ,(car forms)
-			     (and ,@(cdr forms)))))))
-	  t)
+          #'(lambda (whole env)
+              (let ((forms (cdr whole)))
+                (if (null forms)
+                    t
+                    (if (null (cdr forms))
+                        (car forms)
+                        `(if ,(car forms)
+                             (and ,@(cdr forms)))))))
+          t)
 
 
 (si::fset 'or
-	  #'(lambda (whole env)
-	      (let ((forms (cdr whole)))
-		(if (null forms)
-		    nil
-		    (if ( null (cdr forms))
-			(car forms)
-			(let ((tmp (gensym)))
-			  `(let ((,tmp ,(car forms)))
-			     (if ,tmp
-				 ,tmp
-				 (or ,@(cdr forms)))))))))
-	  t )
+          #'(lambda (whole env)
+              (let ((forms (cdr whole)))
+                (if (null forms)
+                    nil
+                    (if ( null (cdr forms))
+                        (car forms)
+                        (let ((tmp (gensym)))
+                          `(let ((,tmp ,(car forms)))
+                             (if ,tmp
+                                 ,tmp
+                                 (or ,@(cdr forms)))))))))
+          t )
 ||#
 
 
@@ -61,39 +61,39 @@
 
 
 (fset 'return #'(lambda (whole env)
-		  (let ((val (cadr whole)))
-		    `(return-from nil ,val)))
+                  (let ((val (cadr whole)))
+                    `(return-from nil ,val)))
       t)
 
 #| --- loose this - its in evalmacros where ecl had it |#
 #+clasp-min
 (si::fset 'psetq #'(lambda (whole env)
-		     "Syntax: (psetq {var form}*)
+                     "Syntax: (psetq {var form}*)
 Similar to SETQ, but evaluates all FORMs first, and then assigns each value to
 the corresponding VAR.  Returns NIL."
-		     (let ((l (cdr whole))
-			   (forms nil)
-			   (bindings nil))
-		       (block nil
-			 (tagbody
-			  top
-			    (if (endp l) (return (list* 'LET* (nreverse bindings) (nreverse (cons nil forms)))))
-			    (let ((sym (gensym)))
-			      (push (list sym (cadr l)) bindings)
-			      (push (list 'setq (car l) sym) forms))
-			    (setq l (cddr l))
-			    (go top)))))
-	  t )
+                     (let ((l (cdr whole))
+                           (forms nil)
+                           (bindings nil))
+                       (block nil
+                         (tagbody
+                          top
+                            (if (endp l) (return (list* 'LET* (nreverse bindings) (nreverse (cons nil forms)))))
+                            (let ((sym (gensym)))
+                              (push (list sym (cadr l)) bindings)
+                              (push (list 'setq (car l) sym) forms))
+                            (setq l (cddr l))
+                            (go top)))))
+          t )
 
 
 
 (fset 'when #'(lambda (def env)
-		`(if ,(cadr def) (progn ,@(cddr def))))
+                `(if ,(cadr def) (progn ,@(cddr def))))
       t)
 
 
 (fset 'unless #'(lambda (def env)
-		  `(if ,(cadr def) nil (progn ,@(cddr def))))
+                  `(if ,(cadr def) nil (progn ,@(cddr def))))
       t)
 
 
@@ -101,21 +101,21 @@ the corresponding VAR.  Returns NIL."
 (defun si::while-until (test body jmp-op)
   (declare (si::c-local))
   (let ((label (gensym))
-	(exit (gensym)))
+        (exit (gensym)))
     `(TAGBODY
         (GO ,exit)
       ,label
         ,@body
       ,exit
-	(,jmp-op ,test (GO ,label)))))
+        (,jmp-op ,test (GO ,label)))))
 
 (fset 'si::while #'(lambda (def env)
-		     (si::while-until (cadr def) (cddr def) 'when))
+                     (si::while-until (cadr def) (cddr def) 'when))
       t)
 
 
 (fset 'si::until #'(lambda (def env)
-		     (si::while-until (cadr def) (cddr def) 'unless))
+                     (si::while-until (cadr def) (cddr def) 'unless))
       t)
 
 
@@ -144,15 +144,15 @@ the corresponding VAR.  Returns NIL."
 
 
 (si::fset 'prog1 #'(lambda (whole env)
-		     (let ((sym (gensym))
-			   (first (cadr whole))
-			   (body (cddr whole)))
-		       (if body
-			   `(let ((,sym ,first))
-			      ,@body
-			      ,sym)
-			   first)))
-	  t)
+                     (let ((sym (gensym))
+                           (first (cadr whole))
+                           (body (cddr whole)))
+                       (if body
+                           `(let ((,sym ,first))
+                              ,@body
+                              ,sym)
+                           first)))
+          t)
 
 
 (defvar *bytecodes-compiler* nil)
@@ -181,21 +181,21 @@ the corresponding VAR.  Returns NIL."
   (if (null list)
       (null object)
     (do ((list list (cdr list)))
-	((atom (cdr list)) (or (eql object list) (eql object (cdr list))))
+        ((atom (cdr list)) (or (eql object list) (eql object (cdr list))))
       (if (eql object list)
-	  (return t)))))
+          (return t)))))
 ;;
 ;;   "Return a copy of LIST before the part which is the same as OBJECT."
 ;;
 (defun ldiff (list object)
   (unless (eql list object)
     (do* ((result (list (car list)))
-	  (splice result)
-	  (list (cdr list) (cdr list)))
-	((atom list) (if (eql list object) (rplacd splice nil)) result)
+          (splice result)
+          (list (cdr list) (cdr list)))
+        ((atom list) (if (eql list object) (rplacd splice nil)) result)
       (if (eql list object)
-	  (return result)
-	(setq splice (cdr (rplacd splice (list (car list)))))))))
+          (return result)
+        (setq splice (cdr (rplacd splice (list (car list)))))))))
 ;; stuff
 
 
@@ -203,10 +203,10 @@ the corresponding VAR.  Returns NIL."
 
 ;; in-package macro is re-defined in evalmacros.lsp
 (si::fset 'in-package #'(lambda (whole env)
-			  `(eval-when (:compile-toplevel :load-toplevel :execute)
-			     (si::select-package ,(string (cadr whole)))
+                          `(eval-when (:compile-toplevel :load-toplevel :execute)
+                             (si::select-package ,(string (cadr whole)))
                              *package*))
-	  t)
+          t)
 
 
 
@@ -214,11 +214,11 @@ the corresponding VAR.  Returns NIL."
 
 
 (fset 'apply-key #'(lambda (w e)
-		     (let ((key (cadr w))
-			   (element (caddr w)))
-		       `(if ,key
-			    (funcall ,key ,element)
-			    ,element)))
+                     (let ((key (cadr w))
+                           (element (caddr w)))
+                       `(if ,key
+                            (funcall ,key ,element)
+                            ,element)))
       t)
 
 ;;   "Add ITEM to LIST unless it is already a member."
@@ -241,21 +241,21 @@ the corresponding VAR.  Returns NIL."
 
 ;; Required by REGISTER-GLOBAL in cmp/cmpvar.lsp
 (si::fset 'pushnew #'(lambda (w e)
-		       (let ((item (cadr w))
-			     (place (caddr w)))
-			 `(setq ,place (adjoin ,item ,place))))
-	  t)
+                       (let ((item (cadr w))
+                             (place (caddr w)))
+                         `(setq ,place (adjoin ,item ,place))))
+          t)
 
 
 (defun hash-table-iterator (hash-table)
   (let ((number-of-buckets (hash-table-number-of-hashes hash-table))
         (buckets (core:hash-table-buckets hash-table))
-	(hash 0)
-	(cur-alist))
+        (hash 0)
+        cur-alist)
     (labels ((advance-hash-table-iterator ()
-	       (if cur-alist
-		   (progn
-		     (setq cur-alist (cdr cur-alist))
+               (if cur-alist
+                   (progn
+                     (setq cur-alist (cdr cur-alist))
                      (if cur-alist
                          (progn
                            (when (core:hash-table-entry-deleted-p (car cur-alist))
@@ -263,9 +263,9 @@ the corresponding VAR.  Returns NIL."
                          (progn
                            (setq hash (1+ hash))
                            (advance-hash-table-iterator))))
-		   (if (< hash number-of-buckets)
-		       (progn
-			 (setq cur-alist (elt buckets hash))
+                   (if (< hash number-of-buckets)
+                       (progn
+                         (setq cur-alist (elt buckets hash))
                          (if cur-alist
                              (progn
                                (when (core:hash-table-entry-deleted-p (car cur-alist))
@@ -274,41 +274,41 @@ the corresponding VAR.  Returns NIL."
                                (setq hash (1+ hash))
                                (advance-hash-table-iterator))))))))
       (function (lambda ()
-	(if (>= hash number-of-buckets)
-	    nil
-	    (progn
-	      (advance-hash-table-iterator)
-	      (when (< hash number-of-buckets)
-		(values t (caar cur-alist) (cdar cur-alist))))))))))
+        (if (>= hash number-of-buckets)
+            nil
+            (progn
+              (advance-hash-table-iterator)
+              (when (< hash number-of-buckets)
+                (values t (caar cur-alist) (cdar cur-alist))))))))))
 
 ;   "Substitute data of ALIST for subtrees matching keys of ALIST."
 (defun sublis (alist tree &key key (test #'eql) test-not)
   (when test-not
     (setq test (complement test-not)))
   (labels ((sub (subtree)
-		(let ((assoc (assoc (apply-key key subtree) alist :test test)))
-		  (cond
-		   (assoc (cdr assoc))
-		   ((atom subtree) subtree)
-		   (t (let ((car (sub (car subtree)))
-			    (cdr (sub (cdr subtree))))
-			(if (and (eq car (car subtree)) (eq cdr (cdr subtree)))
-			    subtree
-			  (cons car cdr))))))))
+                (let ((assoc (assoc (apply-key key subtree) alist :test test)))
+                  (cond
+                   (assoc (cdr assoc))
+                   ((atom subtree) subtree)
+                   (t (let ((car (sub (car subtree)))
+                            (cdr (sub (cdr subtree))))
+                        (if (and (eq car (car subtree)) (eq cdr (cdr subtree)))
+                            subtree
+                          (cons car cdr))))))))
     (sub tree)))
 ;   "Substitute data of ALIST for subtrees matching keys of ALIST destructively."
 (defun nsublis (alist tree &key key (test #'eql) test-not)
   (when test-not
     (setq test (complement test-not)))
   (labels ((sub (subtree)
-		(let ((assoc (assoc (apply-key key subtree) alist :test test)))
-		  (cond
-		   (assoc (cdr assoc))
-		   ((atom subtree) subtree)
-		   (t
-		    (rplaca subtree (sub (car subtree)))
-		    (rplacd subtree (sub (cdr subtree)))
-		    subtree)))))
+                (let ((assoc (assoc (apply-key key subtree) alist :test test)))
+                  (cond
+                   (assoc (cdr assoc))
+                   ((atom subtree) subtree)
+                   (t
+                    (rplaca subtree (sub (car subtree)))
+                    (rplacd subtree (sub (cdr subtree)))
+                    subtree)))))
     (sub tree)))
 
 
@@ -324,8 +324,8 @@ the corresponding VAR.  Returns NIL."
   (apply #'bformat t fmt args))
 
 (si::fset 'cons-car #'(lambda (w e)
-			`(car ,(cadr w)))
-	  t)
+                        `(car ,(cadr w)))
+          t)
 
 (in-package :cl)
 
