@@ -8,6 +8,7 @@
   :depends-on (:concrete-syntax-tree
                :sicl-reader-simple
                :cleavir-generate-ast
+               :cleavir-cst-to-ast
                :cleavir-ir
                :cleavir-compilation-policy
                :cleavir-ast-to-hir
