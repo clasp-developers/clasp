@@ -6100,11 +6100,19 @@ CL_DECLARE();
 CL_DOCSTRING("See clhs");
 CL_DEFUN T_mv cl__read_line(T_sp sin, T_sp eof_error_p, T_sp eof_value, T_sp recursive_p) {
   // TODO Handle encodings from sin - currently only Str8Ns is supported
+  bool eofErrorP = eof_error_p.isTrue();
   sin = coerce::inputStreamDesignator(sin);
   if (!AnsiStreamP(sin)) {
-    return eval::funcall(gray::_sym_stream_read_line, sin, eof_error_p, eof_value, recursive_p);
+    T_mv result = eval::funcall(gray::_sym_stream_read_line, sin);
+    T_sp val = result;
+    T_sp hit_eof = result.second();
+    if (result.nilp() && hit_eof.notnilp()) {
+      if (eofErrorP) {
+        ERROR_END_OF_FILE(sin);
+      }
+      return Values(val,_lisp->_true());
+    }
   }
-  bool eofErrorP = eof_error_p.isTrue();
   //    bool recursiveP = translate::from_object<bool>::convert(env->lookup(_sym_recursive_p));
   Str8Ns_sp sbuf = Str8Ns_O::createBufferString();
   while (1) {
