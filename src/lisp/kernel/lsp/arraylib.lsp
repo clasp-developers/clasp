@@ -201,23 +201,23 @@ Returns a list whose N-th element is the length of the N-th dimension of ARRAY."
 Returns T if INDEXes are valid indexes of ARRAY; NIL otherwise.  The number of
 INDEXes must be equal to the rank of ARRAY."
   (declare (type array array)
-	   (optimize (safety 0))
-           (ext:check-arguments-type))
+           (optimize (safety 0))
+           #+(or)(ext:check-arguments-type))
   (do* ((indices indices (cons-cdr indices))
-	(r (array-rank array))
-	(i 0 (1+ i)))
+        (r (array-rank array))
+        (i 0 (1+ i)))
        ((>= i r) t)
     (declare (type index r i))
     (if indices
-	(let* ((index (cons-car indices)))
-	  (when (or (not (si::fixnump index))
-		    (minusp (truly-the fixnum index))
-		    (>= (truly-the fixnum index) (array-dimension array i)))
-	    (return nil)))
-	(error "The rank of the array is ~R,~%~
+        (let* ((index (cons-car indices)))
+          (when (or (not (si::fixnump index))
+                    (minusp (truly-the fixnum index))
+                    (>= (truly-the fixnum index) (array-dimension array i)))
+            (return nil)))
+        (error "The rank of the array is ~R,~%~
                ~7@Tbut ~R ~:*~[indices are~;index is~:;indices are~] ~
                supplied."
-		 r i))))
+                 r i))))
 
 (defun row-major-index-inner (array indices)
   (declare (optimize speed)
@@ -365,7 +365,7 @@ pointer is 0 already."
   ;; FILL-POINTER asserts vector is a vector and has fill pointer
   (let* ((fp (fill-pointer vector))
          (vector (truly-the vector vector)))
-    (declare (ext:array-index fp)
+    (declare #+(or)(ext:array-index fp)
              (optimize (safety 0)))
     (when (zerop fp)
       (error "The fill pointer of the vector ~S zero." vector))
