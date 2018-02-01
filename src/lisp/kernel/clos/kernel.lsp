@@ -239,8 +239,7 @@
               (nreverse
                (push most-specific ordered-list))))
         (dolist (meth (cdr scan))
-          (when (eq (compare-methods most-specific
-                                     meth args-specializers f) 2)
+          (when (eql (compare-methods most-specific meth args-specializers f) 2)
             (setq most-specific meth)))
         (setq scan (delete most-specific scan))
         (push most-specific ordered-list)))))
