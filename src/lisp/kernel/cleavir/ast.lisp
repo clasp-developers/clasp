@@ -50,10 +50,11 @@
   ((%tag-ast :initarg :tag-ast :reader tag-ast)
    (%result-ast :initarg :result-ast :reader result-ast)))
 
-(defun make-throw-ast (tag-ast result-ast)
+(defun make-throw-ast (tag-ast result-ast &optional origin)
   (make-instance 'throw-ast
     :tag-ast tag-ast
-    :result-ast result-ast))
+    :result-ast result-ast
+    :origin origin))
 
 (cleavir-io:define-save-info throw-ast
   (:tag-ast tag-ast)
