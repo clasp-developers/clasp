@@ -528,15 +528,14 @@ FIXME!!!! This code will have problems with multithreading if a generic function
   "This effectively does what compute-discriminator-function does and maybe memoizes the result 
 and calls the effective-method-function that is calculated.
 It takes the arguments in two forms, as a vaslist and as a list of arguments."
-  (let ((can-memoize t)
-        (*dispatch-miss-start-time* (get-internal-real-time)))
+  (let ((*dispatch-miss-start-time* (get-internal-real-time)))
     ;; What if another thread adds/removes method during c-a-m-u-c???????
-    (multiple-value-bind (method-list ok)
+    (multiple-value-bind (method-list can-memoize)
         (clos::compute-applicable-methods-using-classes generic-function (mapcar #'class-of arguments))
       (declare (core:lambda-name do-dispatch-miss.multiple-value-bind.lambda))
       ;; If ok is NIL then what do we use as the key
       (gf-log "Called compute-applicable-methods-using-classes - returned method-list: %s  ok: %s\n" method-list ok)
-      (unless ok
+      (unless can-memoize
         ;; What if another thread adds/removes method during c-a-m???????
         (setf method-list (clos::compute-applicable-methods generic-function arguments))
         (gf-log "compute-applicable-methods-using-classes returned NIL for second argument\n")
@@ -545,7 +544,9 @@ It takes the arguments in two forms, as a vaslist and as a list of arguments."
         ;;  even if c-a-m-u-c returns NIL as its second return value
         ;;  because it is illegal to implement new methods on c-a-m specialized
         ;;  on standard-generic-function.
-        (setf can-memoize (eq (class-of generic-function) (find-class 'standard-generic-function))))
+        ;;   Temporarily disabling Christian Schafmeister Jan 30, 2018
+        ;;     It appears that we cannot 
+        #+(or)(setf can-memoize (eq (class-of generic-function) (find-class 'standard-generic-function))))
       (if method-list
           (let ((effective-method-function (compute-effective-method-function-maybe-optimize
                                             generic-function
