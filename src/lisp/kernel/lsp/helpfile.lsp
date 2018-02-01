@@ -1,4 +1,4 @@
-;;;;  -*- Mode: Lisp; Syntax: Common-Lisp; Package: SYSTEM -*-
+;;;  -*- Mode: Lisp; Syntax: Common-Lisp; Package: SYSTEM -*-
 ;;;;
 ;;;;  Copyright (c) 2001, Juan Jose Garcia-Ripoll.
 ;;;;
@@ -10,11 +10,7 @@
 ;;;;    See file '../Copyright' for full details.
 ;;;;
 
-(in-package "SYSTEM")
-
-
-
-
+(in-package "SYS")
 
 ;;;;----------------------------------------------------------------------
 ;;;;  Help files
@@ -28,7 +24,7 @@
          (h (make-hash-table :size 1024 :test #'eql)))
         (end h)
       (do ((c (read-char file nil)))
-          ((or (not c) (eq c #\^_))
+          ((or (not c) (eq c #\^))
            (when (not c) (setq end t)))
         )
       (when (not end)
@@ -60,7 +56,7 @@
            (let* ((*package* (find-package "CL"))
                   (file (open path :direction :output)))
              (dolist (l entries)
-               (format file "~A~S~%~S~%" #\^_ (car l) (rest l)))
+               (format file "~A~S~%~S~%" #\^ (car l) (rest l)))
              (close file)
              path)))
 
@@ -72,7 +68,7 @@
              (when (< start end)
                (setq middle (round (+ start end) 2))
                (file-position file middle)
-               (if (and (plusp (setq delta (scan-for #\^_ file)))
+               (if (and (plusp (setq delta (scan-for #\^ file)))
                         (<= delta (- end middle)))
                    (if (equal key (setq sym (read file)))
                        t
@@ -83,7 +79,7 @@
            (scan-for (char file)
              (do ((v #\space (read-char file nil nil))
                   (n 0 (1+ n)))
-                 ((or (eql v #\^_) (not v)) (if v n -1))
+                 ((or (eql v #\^) (not v)) (if v n -1))
                (declare (fixnum n)))))
     (when (not (probe-file path))
       (return-from search-help-file nil))
