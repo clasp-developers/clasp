@@ -157,9 +157,9 @@ CL_DEFUN List_sp canonicalize_declarations(List_sp decls)
       if (more_than_one.nilp()) {
         canon = Cons_O::create(d,canon);
       } else {
-        T_sp ftype = oCadr(d);
+        T_sp ttype = oCadr(d);
         for ( auto fp : static_cast<List_sp>(oCddr(d)) ) {
-          canon = Cons_O::create(Cons_O::createList(cl::_sym_ftype,ftype,oCar(fp)),canon);
+          canon = Cons_O::create(Cons_O::createList(cl::_sym_type,ttype,oCar(fp)),canon);
         }
       }
     } else if ( head == core::_sym_c_local ) {
