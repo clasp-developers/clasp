@@ -10,10 +10,12 @@
   (:use #:common-lisp #:core)
   (:nicknames #:cc)
   (:export
+   #:*use-cst*
    #:%literal-index
+   #:*clasp-ordinary-lambda-list-grammar*
    #:*use-type-inference*
    #:cleavir-compile-eval
-   #:compile-form
+   #:compile-cst-or-form
    #:clasp
    #:invoke-instruction
    #:invoke-multiple-value-call-instruction
@@ -65,7 +67,7 @@
    #:lambda-name
    #:debug-message
    #:precalc-value-reference-ast
-   #:precalc-value-reference-index
+   #:precalc-value-reference-ast-index
    #:precalc-value-reference-ast-original-object
    #:setf-fdefinition-ast
    #:throw-ast
