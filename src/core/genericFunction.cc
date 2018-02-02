@@ -50,30 +50,6 @@ SYMBOL_EXPORT_SC_(ClPkg, compute_applicable_methods);
 SYMBOL_SC_(ClosPkg, compute_applicable_methods_using_classes);
 SYMBOL_SC_(ClosPkg, compute_effective_method_function);
 
-CL_LAMBDA(args);
-CL_DECLARE();
-CL_DOCSTRING("maybeExpandGenericFunctionArguments: expands first argument into a list if it is a Frame or an ActivationFrame");
-CL_DEFUN T_sp core__maybe_expand_generic_function_arguments(T_sp args) {
-  if ((args).consp()) {
-    T_sp first = oCar(args);
-    if (first.nilp()) {
-      return args;
-    } else if (first.valistp()) {
-      VaList_sp vafirst = gc::As<VaList_sp>(first);
-      List_sp expanded = _Nil<T_O>();
-      size_t nargs = vafirst->remaining_nargs();//LCC_VA_LIST_NUMBER_OF_ARGUMENTS(vafirst);
-      for (int i(0), iEnd(nargs); i < iEnd; ++i) {
-        T_sp v = vafirst->next_arg();
-        expanded = Cons_O::create(v, expanded);
-      }
-      return cl__nreverse(expanded);
-    } else {
-      SIMPLE_ERROR(BF("Handle %s") % _rep_(first));
-    }
-  }
-  return args;
-}
-
 LCC_RETURN invalidated_dispatch(gctools::Tagged tgf, gctools::Tagged tvargs) {
   FuncallableInstance_sp gf(tgf);
   VaList_sp vargs(tvargs);
