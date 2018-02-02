@@ -500,10 +500,6 @@ FIXME!!!! This code will have problems with multithreading if a generic function
                                      (gf-log "Pushing entry into call history\n")
                                      (cons (cons memoized-key effective-method-function) call-history)))
         for exchanged = (generic-function-call-history-compare-exchange generic-function call-history new-call-history)
-        do (loop for idx from 0 below (length memoized-key)
-                 for specializer = (svref memoized-key idx)
-                 unless (consp specializer) ; eql specializer
-                   do (core:specializer-call-history-generic-functions-push-new specializer generic-function))
         do (progn
              #+debug-fastgf(let ((specializer-profile (clos:generic-function-specializer-profile generic-function)))
                              (when call-history
@@ -511,6 +507,10 @@ FIXME!!!! This code will have problems with multithreading if a generic function
                                (gf-log "%s\n" (cmp::calculate-dtree call-history specializer-profile)))))
         when exchanged do (gf-log "Successfully exchanged call history\n")
           until (eq exchanged new-call-history))
+  (loop for idx from 0 below (length memoized-key)
+                 for specializer = (svref memoized-key idx)
+                 unless (consp specializer) ; eql specializer
+                   do (core:specializer-call-history-generic-functions-push-new specializer generic-function))
   (set-funcallable-instance-function generic-function 'invalidated-dispatch-function)
   (values))
 
