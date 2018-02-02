@@ -108,7 +108,7 @@ size_t global_next_unused_kind = STAMP_max+1;
  */
 
 const char *global_HardcodedKinds[] = {
-    "", "core::T_O", "core::StandardObject_O", "core::Metaobject_O", "core::Specializer_O", "core::Class_O", "core::BuiltInClass_O", "core::StdClass_O", "core::StandardClass_O", "core::StructureClass_O", "core::Symbol_O"};
+    "", "core::T_O", "core::StandardObject_O", "core::Class_O", "core::BuiltInClass_O", "core::StandardClass_O", "core::StructureClass_O", "core::Symbol_O"};
 
 CL_DEFUN int gctools__max_bootstrap_kinds() {
   return sizeof(global_HardcodedKinds) / sizeof(global_HardcodedKinds[0]);
