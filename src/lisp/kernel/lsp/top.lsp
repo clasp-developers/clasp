@@ -1,4 +1,4 @@
-;;;;  -*- Mode: Lisp1; Syntax: Common-Lisp; Package: SYSTEM -*-
+;;;;  -*- Mode: Lisp; Syntax: Common-Lisp; Package: SYSTEM -*-
 ;;;;
 ;;;;  top.lsp -- Top-level loop, break loop, and error handlers
 ;;;;
