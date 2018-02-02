@@ -23,7 +23,7 @@
 			      &key (specializers nil spec-supplied-p)
 			      (lambda-list nil lambda-supplied-p)
 			      generic-function)
-  (declare (ignore initargs slot-names))
+  (declare (ignore initargs))
   (when slot-names
     (unless spec-supplied-p
       (error "Specializer list not supplied in method initialization"))

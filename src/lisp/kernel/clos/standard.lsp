@@ -504,7 +504,6 @@ because it contains a reference to the undefined class~%  ~A"
   (clos::gf-log "     name -> %s\n" name)
   (multiple-value-bind (metaclass direct-superclasses options)
       (apply #'help-ensure-class rest)
-    (declare (ignore #-clasp direct-superclasses))
     ;;
     ;; initialize the default allocator for the new class
     ;; It is inherited from the direct-superclasses - if they are all 
