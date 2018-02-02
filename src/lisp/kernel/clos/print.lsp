@@ -66,16 +66,6 @@ printer and we should rather use MAKE-LOAD-FORM."
 		      ((consp object)
 		       (recursive-test (car object))
 		       (setf object (rest object)))
-                      ((compiled-function-p object)
-                       (multiple-value-bind (lex code data name)
-                           (si::bc-split object)
-                         (when (or (null data)
-                                   (null code)
-                                   (recursive-test lex)
-                                   (recursive-test code)
-                                   (recursive-test name))
-                           (throw 'need-to-make-load-form t))
-                         (setf object data)))
 		      (t
 		       (throw 'need-to-make-load-form t))))))
       (catch 'need-to-make-load-form
@@ -90,15 +80,6 @@ printer and we should rather use MAKE-LOAD-FORM."
     (unless (need-to-make-load-form-p object env)
       (return-from make-load-form (maybe-quote object)))
     (typecase object
-      (compiled-function
-       (multiple-value-bind (lex code data name)
-           (si::bc-split object)
-         (unless code
-           (error "Cannot externalize object ~a" object))
-         (values `(si::bc-join ,(make-load-form lex env)
-                               ',code ; An specialized array, no load form
-                               ,(make-load-form data env)
-                               ,(make-load-form name env)))))
       (array
        (let ((init-forms '()))
 	 (values `(make-array ',(array-dimensions object)
@@ -117,23 +98,6 @@ printer and we should rather use MAKE-LOAD-FORM."
        (values `(cons ,(maybe-quote (car object)) nil)
 	       (and (rest object) `(rplacd ,(maybe-quote object)
 					   ,(maybe-quote (cdr object))))))
-      (hash-table
-       (let* ((content (ext:hash-table-content object))
-	      (make-form `(make-hash-table
-			   :size ,(hash-table-size object)
-			   :rehash-size ,(hash-table-rehash-size object)
-			   :rehash-threshold ,(hash-table-rehash-threshold object)
-			   :test ',(hash-table-test object))))
-	 (if (need-to-make-load-form-p content env)
-	     (values
-	      make-form
-	      `(dolist (i ',(loop for key being each hash-key in object
-			       using (hash-value obj)
-			       collect (cons key obj)))
-		 (setf (gethash (car i) ,object) (cdr i))))
-	     (values
-	      `(ext:hash-table-fill ,make-form ',content)
-	      nil))))
       (t
        (no-make-load-form object)))))
 
