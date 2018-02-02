@@ -17,6 +17,19 @@
 
 (defparameter *clos-booted* nil)
 
+;;; Sets a GF's discrminating function to the "invalidated" state.
+;;; In this state, the next call will compute a real discriminating function.
+(defun invalidate-discriminating-function (gf)
+  ;; It may seem weird to set the thing to a symbol. And it is.
+  ;; We special case set-funcallable-instance-function (in core/funcallableInstance.cc) so that it
+  ;; becomes a C++ method that just calls clos:invalidated-dispatch-function with the gf and vaslist.
+  ;; (clos:invalidated-dispatch-function is a normal lisp function defined in closfastgf.lisp.)
+  ;; This is basically equivalent to
+  ;; (set-funcallable-instance-function gf (lambda (core:&va-rest args) (invalidated-dispatch-function gf args)))
+  ;; but without allocating a closure.
+  ;; In the future, this special casing will probably go away.
+  (set-funcallable-instance-function gf 'invalidated-dispatch-function))
+
 ;;; ----------------------------------------------------------------------
 ;;;
 ;;; FIND-CLASS  naming classes.
@@ -111,7 +124,7 @@
 	      :declarations nil
 	      :dependents nil)
 	;; create a new gfun
-	(set-funcallable-instance-function gfun 'invalidated-dispatch-function)
+        (invalidate-discriminating-function gfun)
 	(setf (fdefinition name) gfun)
 	gfun)))
 

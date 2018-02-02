@@ -511,7 +511,7 @@ FIXME!!!! This code will have problems with multithreading if a generic function
                  for specializer = (svref memoized-key idx)
                  unless (consp specializer) ; eql specializer
                    do (core:specializer-call-history-generic-functions-push-new specializer generic-function))
-  (set-funcallable-instance-function generic-function 'invalidated-dispatch-function)
+  (invalidate-discriminating-function generic-function)
   (values))
 
 (defun perform-outcome (outcome arguments vaslist-arguments)
@@ -654,6 +654,8 @@ It takes the arguments in two forms, as a vaslist and as a list of arguments."
                                 :output-path output-path
                                 #+debug-fastgf :log-gf
                                 #+debug-fastgf (debug-fastgf-stream))) ;; the stream better be initialized
+      ;; yes, this means we set a funcallable instance function to a symbol.
+      ;; See comment on invalidate-discriminating-function (in method.lsp)
       'invalidated-dispatch-function))
 
 (defun not-funcallable-dispatch-function (generic-function valist-args)
@@ -792,6 +794,6 @@ It takes the arguments in two forms, as a vaslist and as a list of arguments."
                      (let* ((specializer-profile (generic-function-specializer-profile gf))
                             (discriminating-function (cmp:codegen-dispatcher edited-call-history specializer-profile gf :output-path log-output)))
                        (set-funcallable-instance-function gf discriminating-function))
-                     (set-funcallable-instance-function gf 'invalidated-dispatch-function)))))))
+                     (invalidate-discriminating-function gf)))))))
 
 (export '(invalidate-generic-functions-with-class-selector))

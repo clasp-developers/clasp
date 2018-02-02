@@ -410,9 +410,7 @@ have disappeared."
 	(setf (generic-function-argument-precedence-order gf)
 	      (rest (si::process-lambda-list (method-lambda-list method) t))))
       (compute-g-f-spec-list gf)
-;;      (update-specializer-profile gf (method-specializers method))
-;;      (update-call-history-for-add-method gf method)
-      (set-funcallable-instance-function gf 'invalidated-dispatch-function)
+      (invalidate-discriminating-function gf)
       method)))
 
 (defun find-method (gf qualifiers specializers &optional (errorp t))

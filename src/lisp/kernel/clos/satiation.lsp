@@ -116,7 +116,7 @@
   ;; Now when the function is called the discriminating-function will be invalidated-dispatch-function
   ;; This well set up the real discriminating function. This shouldn't involve a dispatch miss, and
   ;; no generic-function calls (other than the one for the actual call, of course).
-  (set-funcallable-instance-function generic-function 'invalidated-dispatch-function))
+  (invalidate-discriminating-function generic-function))
 
 (defun satiate-standard-generic-functions ()
   (macrolet ((satiate-one (gf-name &body lists-of-class-names)
