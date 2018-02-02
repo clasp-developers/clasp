@@ -370,7 +370,6 @@ have disappeared."
      allow-other-keys)))
 
 (defun make-method (method-class qualifiers specializers lambda-list fun options)
-  (declare (ignore options))
   (multiple-value-bind (keys aok-p)
       (compute-method-keywords lambda-list)
     (with-early-make-instance
