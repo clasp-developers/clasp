@@ -1205,7 +1205,7 @@ void throwIllegalSwitchValue(size_t val, size_t max) {
 }
 
 
-qvoid throwDynamicGo(size_t depth, size_t index, core::T_O *afP) {
+void throwDynamicGo(size_t depth, size_t index, core::T_O *afP) {
 #ifdef DEBUG_TRACK_UNWINDS
   global_DynamicGo_count++;
 #endif

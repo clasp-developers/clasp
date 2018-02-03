@@ -1260,14 +1260,18 @@ Write T_O* pointers into the current multiple-values array starting at the (offs
 
 (defun throw-if-mismatched-arguments (fn-name args)
   (let* ((info (gethash fn-name (get-primitives)))
-         (_ (unless info (error "Unknown primitive ~a" fn-name)))
+         (_ (unless info
+              (core:bformat *debug-io* "Unknown primitive %s\n" fn)
+              (error "Unknown primitive ~a" fn-name)))
          (return-ty (primitive-return-type info))
          (required-args-ty (primitive-argument-types info))
          (passed-args-ty (mapcar #'(lambda (x)
                                      (if (llvm-sys:llvm-value-p x)
                                          (if (llvm-sys:valid x)
                                              (llvm-sys:get-type x)
-                                             (error "Invalid (NULL pointer) value ~a about to be passed to intrinsic function ~a" x fn-name))
+                                             (progn
+                                               (core:bformat *debug-io* "Invalid (NULL pointer value about to be passed to intrinsic function\n")
+                                               (error "Invalid (NULL pointer) value ~a about to be passed to intrinsic function ~a" x fn-name)))
                                          (core:class-name-as-string x)))
                                  args))
          (i 0))
@@ -1278,6 +1282,7 @@ Write T_O* pointers into the current multiple-values array starting at the (offs
                fn-name (length required-args-ty) (length passed-args-ty))))
     (mapc #'(lambda (x y z)
               (unless (equal x y)
+                (core:bformat *debug-io* "Constructing call to intrinsic %s - mismatch of arg#%s value[%s], expected type %s - received type %s\n" fn-name i z x y)
                 (error "Constructing call to intrinsic ~a - mismatch of arg#~a value[~a], expected type ~a - received type ~a" fn-name i z x y))
               (setq i (1+ i)))
           required-args-ty passed-args-ty args)))

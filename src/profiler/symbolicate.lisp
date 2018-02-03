@@ -139,5 +139,7 @@ Read the contents of the filename into memory and return a buffer-stream on it."
   (or symbol-table (error "The symbol-table must be provided using -s"))
   (format *debug-io* "Starting symbolicate~%")
   (symbolicate-stream input-stream output-stream symbol-table)
+  (close output-stream)
+  (close input-stream)
   (format *debug-io* "Done~%")
   (SB-EXT:EXIT))
