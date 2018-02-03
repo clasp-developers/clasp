@@ -77,6 +77,10 @@
                                                 :slot-name (slot-definition-name slot)
                                                 :method first
                                                 :class class)))
+            ((leaf-method-p first)
+             (if (fast-method-function first)
+                 (cmp::make-fast-method-call :function (fast-method-function first))
+                 (method-function first)))
             (t efm)))))
 
 ;;; Add fictitious call history entries.
@@ -112,7 +116,7 @@
   ;; Now when the function is called the discriminating-function will be invalidated-dispatch-function
   ;; This well set up the real discriminating function. This shouldn't involve a dispatch miss, and
   ;; no generic-function calls (other than the one for the actual call, of course).
-  (set-funcallable-instance-function generic-function 'invalidated-dispatch-function))
+  (invalidate-discriminating-function generic-function))
 
 (defun satiate-standard-generic-functions ()
   (macrolet ((satiate-one (gf-name &body lists-of-class-names)

@@ -370,7 +370,6 @@ have disappeared."
      allow-other-keys)))
 
 (defun make-method (method-class qualifiers specializers lambda-list fun options)
-  (declare (ignore options))
   (multiple-value-bind (keys aok-p)
       (compute-method-keywords lambda-list)
     (with-early-make-instance
@@ -386,8 +385,8 @@ have disappeared."
               :qualifiers qualifiers
               :keywords keys
               :aok-p aok-p
-              'leaf-method-p (getf options 'leaf-method-p nil)
-              'fast-method-function (getf options 'fast-method-function nil))
+              leaf-method-p (getf options 'leaf-method-p nil)
+              fast-method-function (getf options 'fast-method-function nil))
       method)))
 
 ;;; early version used during bootstrap
@@ -410,9 +409,7 @@ have disappeared."
 	(setf (generic-function-argument-precedence-order gf)
 	      (rest (si::process-lambda-list (method-lambda-list method) t))))
       (compute-g-f-spec-list gf)
-;;      (update-specializer-profile gf (method-specializers method))
-;;      (update-call-history-for-add-method gf method)
-      (set-funcallable-instance-function gf 'invalidated-dispatch-function)
+      (invalidate-discriminating-function gf)
       method)))
 
 (defun find-method (gf qualifiers specializers &optional (errorp t))

@@ -175,8 +175,6 @@ THE SOFTWARE.
 #include <clasp/core/sourceFileInfo.h>
 #include <clasp/core/specialForm.fwd.h>
 #include <clasp/core/specialForm.h>
-#include <clasp/core/specializer.fwd.h>
-#include <clasp/core/specializer.h>
 #include <clasp/core/stacks.fwd.h>
 #include <clasp/core/stacks.h>
 #include <clasp/core/standardClass.fwd.h>

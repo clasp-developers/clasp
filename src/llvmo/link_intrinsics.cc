@@ -1027,6 +1027,9 @@ void throwCatchThrow(core::T_sp *tagP) {
 #endif
 
 DONT_OPTIMIZE_WHEN_DEBUG_RELEASE void throwReturnFrom(size_t depth, core::ActivationFrame_O* frameP) {
+#ifdef DEBUG_TRACK_UNWINDS
+  global_ReturnFrom_count++;
+#endif
   core::ActivationFrame_sp af((gctools::Tagged)(frameP));
   core::T_sp handle = *const_cast<core::T_sp *>(&core::value_frame_lookup_reference(af, depth, 0));
 #if defined(DEBUG_FLOW_CONTROL) || defined(DEBUG_RETURN_FROM)
@@ -1202,7 +1205,10 @@ void throwIllegalSwitchValue(size_t val, size_t max) {
 }
 
 
-DONT_OPTIMIZE_WHEN_DEBUG_RELEASE void throwDynamicGo(size_t depth, size_t index, core::T_O *afP) {
+qvoid throwDynamicGo(size_t depth, size_t index, core::T_O *afP) {
+#ifdef DEBUG_TRACK_UNWINDS
+  global_DynamicGo_count++;
+#endif
   T_sp af((gctools::Tagged)afP);
   ValueFrame_sp tagbody = core::tagbody_frame_lookup(af,depth,index);
   T_O* handle = tagbody->operator[](0).raw_();
@@ -1601,6 +1607,9 @@ T_O **cc_multipleValuesArrayAddress()
 }
 
 void cc_unwind(T_O *targetFrame, size_t index) {
+#ifdef DEBUG_TRACK_UNWINDS
+  global_unwind_count++;
+#endif
 #ifdef DEBUG_FLOW_CONTROL
   if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
     printf("%s:%d In cc_unwind targetFrame: %ld  index: %" PRu "\n", __FILE__, __LINE__, gc::untag_fixnum(targetFrame), index);
@@ -1639,25 +1648,18 @@ void cc_restoreMultipleValue0(core::T_mv *result)
 
 T_O *cc_pushLandingPadFrame()
 {NO_UNWIND_BEGIN();
-  core::T_sp ptr = _Nil<core::T_O>();
-#define DEBUG_UNWIND 1
-#ifdef DEBUG_UNWIND
-  ptr = core::Pointer_O::create((void *)&typeid(core::Unwind));
+#ifdef DEBUG_FLOW_TRACKER
+  Cons_sp unique = Cons_O::create(make_fixnum(next_flow_tracker_counter()),_Nil<T_O>());
+#else
+  Cons_sp unique = Cons_O::create(_Nil<T_O>(),_Nil<T_O>());
 #endif
-  size_t index = my_thread->exceptionStack().push(LandingPadFrame, ptr);
-#ifdef DEBUG_FLOW_CONTROL
-  if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
-    printf("%s:%d pushLandingPadFrame pushed frame: %" PRu "  core::Unwind typeinfo@%p\n", __FILE__, __LINE__, index, (void *)&typeid(core::Unwind));
-    if (core::_sym_STARdebugFlowControlSTAR->symbolValue() == kw::_sym_verbose )
-      printf("   %s\n", my_thread->exceptionStack().summary().c_str());
-  }
-#endif
-  return gctools::tag_fixnum<core::T_O *>(index);
+  return unique.raw_();
   NO_UNWIND_END();
 }
 
 void cc_popLandingPadFrame(T_O *frameFixnum)
 {NO_UNWIND_BEGIN();
+#if 0
   ASSERT(gctools::tagged_fixnump(frameFixnum));
   size_t frameIndex = gctools::untag_fixnum(frameFixnum);
 #ifdef DEBUG_FLOW_CONTROL
@@ -1674,24 +1676,13 @@ void cc_popLandingPadFrame(T_O *frameFixnum)
       printf("    After unwind of exceptionStack:  %s\n", my_thread->exceptionStack().summary().c_str());
   }
 #endif
+#endif
   NO_UNWIND_END();
 }
 
 size_t cc_landingpadUnwindMatchFrameElseRethrow(char *exceptionP, core::T_O *thisFrame) {
   ASSERT(gctools::tagged_fixnump(thisFrame));
   core::Unwind *unwindP = reinterpret_cast<core::Unwind *>(exceptionP);
-#ifdef DEBUG_FLOW_CONTROL
-  size_t frameIndex = gctools::untag_fixnum(thisFrame);
-  if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
-    printf("%s:%d landingpadUnwindMatchFrameElseRethrow targetFrame: %" PRu " thisFrame: %lu  unwindP=%p\n",
-           __FILE__, __LINE__, gctools::untag_fixnum(unwindP->getFrame()), frameIndex, unwindP);
-    if (unwindP->getFrame() > thisFrame) {
-      printf("- - - - - THERE IS A SERIOUS PROBLEM - THE TARGET FRAME HAS BEEN BYPASSED\n");
-    }
-    if (core::_sym_STARdebugFlowControlSTAR->symbolValue() == kw::_sym_verbose )
-      printf("   %s\n", my_thread->exceptionStack().summary().c_str());
-  }
-#endif
   if (unwindP->getFrame() == thisFrame) {
 #ifdef DEBUG_FLOW_CONTROL
     if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {

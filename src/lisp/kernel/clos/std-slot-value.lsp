@@ -66,7 +66,7 @@
 						   (symbol-value slots)
 						   slots)
 		      for index from 0
-		      for accessor = (getf slotd :accessor)
+		      for accessor = (or (getf slotd :accessor) (getf slotd :reader))
 		      when accessor
 		      collect `(,accessor (object) `(si::instance-ref ,object ,,index))))
        ,@body)))
@@ -174,32 +174,31 @@
 ;;; Specific functions for slot reading, writing, boundness checking, etc.
 ;;;
 
-(defun standard-instance-get (instance location)
-  (with-early-accessors (+standard-class-slots+
-			 +slot-definition-slots+)
-    #+(or)(ensure-up-to-date-instance instance)
-    (cond ((si:fixnump location)
-	   ;; local slot
-	   (si:instance-ref instance (truly-the fixnum location)))
-	  ((consp location)
-	   ;; shared slot
-	   (car location))
-	  (t
-	   (invalid-slot-location instance location)))))
+;;; MOP specifies that consequences are undefined if the slot is unbound when this function
+;;; is called. We presume that that means for the reader, not the writer.
+;;; If the reader is so called, in Clasp, it returns the slot-unbound marker. Users should
+;;; not deal with that, but we can.
 
-(defun standard-instance-set (val instance location)
-  (with-early-accessors (+standard-class-slots+
-			 +slot-definition-slots+)
-    #+(or)(ensure-up-to-date-instance instance)
-    (cond ((si:fixnump location)
-	   ;; local slot
-	   (si:instance-set instance (truly-the fixnum location) val))
-	  ((consp location)
-	   ;; shared slot
-	   (setf (car location) val))
-	  (t
-	   (invalid-slot-location instance location)))
-    val))
+(defun standard-instance-access (instance location)
+  (cond ((si:fixnump location)
+         ;; local slot
+         (si:instance-ref instance (truly-the fixnum location)))
+        ((consp location)
+         ;; shared slot
+         (car location))
+        (t
+         (invalid-slot-location instance location))))
+
+(defun (setf standard-instance-access) (val instance location)
+  (cond ((si:fixnump location)
+         ;; local slot
+         (si:instance-set instance (truly-the fixnum location) val))
+        ((consp location)
+         ;; shared slot
+         (setf (car location) val))
+        (t
+         (invalid-slot-location instance location)))
+  val)
 
 (defun slot-value (self slot-name)
   (with-early-accessors (+standard-class-slots+
@@ -209,7 +208,7 @@
       (if location-table
 	  (let ((location (gethash slot-name location-table nil)))
 	    (if location
-		(let ((value (standard-instance-get self location)))
+		(let ((value (standard-instance-access self location)))
 		  (if (si:sl-boundp value)
 		      value
 		      (values (slot-unbound class self slot-name))))
@@ -231,7 +230,7 @@
       (if location-table
 	  (let ((location (gethash slot-name location-table nil)))
 	    (if location
-		(si:sl-boundp (standard-instance-get self location))
+		(si:sl-boundp (standard-instance-access self location))
 		(values (slot-missing class self slot-name 'SLOT-BOUNDP))))
 	  (let ((slotd (find slot-name (class-slots class) :key #'slot-definition-name)))
 	    (if slotd
@@ -247,7 +246,7 @@
       (if location-table
 	  (let ((location (gethash slot-name location-table nil)))
 	    (if location
-		(standard-instance-set value self location)
+                (setf (standard-instance-access self location) value)
 		(slot-missing class self slot-name 'SETF value)))
 	  (let ((slotd (find slot-name (class-slots class) :key #'slot-definition-name)))
 	    (if slotd

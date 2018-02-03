@@ -38,8 +38,16 @@ int gcFunctions_after;
 #include <clasp/llvmo/intrinsics.h>
 #include <clasp/core/wrappers.h>
 
+#ifdef DEBUG_TRACK_UNWINDS
+std::atomic<size_t> global_unwind_count;
+std::atomic<size_t> global_ReturnFrom_count;
+std::atomic<size_t> global_DynamicGo_count;
+std::atomic<size_t> global_CatchThrow_count;
+#endif
+
 
 extern "C" {
+
 #ifdef DEBUG_FLOW_TRACKER
 FILE* global_flow_tracker_file;
 
@@ -114,7 +122,7 @@ size_t global_next_unused_kind = STAMP_max+1;
  */
 
 const char *global_HardcodedKinds[] = {
-    "", "core::T_O", "core::StandardObject_O", "core::Metaobject_O", "core::Specializer_O", "core::Class_O", "core::BuiltInClass_O", "core::StdClass_O", "core::StandardClass_O", "core::StructureClass_O", "core::Symbol_O"};
+    "", "core::T_O", "core::StandardObject_O", "core::Class_O", "core::BuiltInClass_O", "core::StandardClass_O", "core::StructureClass_O", "core::Symbol_O"};
 
 CL_DEFUN int gctools__max_bootstrap_kinds() {
   return sizeof(global_HardcodedKinds) / sizeof(global_HardcodedKinds[0]);
@@ -168,7 +176,20 @@ CL_DEFUN core::T_sp gctools__bootstrap_kind_p(const string &name) {
   return _Nil<core::T_O>();
 }
 
-
+#ifdef DEBUG_TRACK_UNWINDS
+CL_DEFUN size_t gctools__unwind_counter() {
+  return global_unwind_count;
+}
+CL_DEFUN size_t gctools__dynamic_go_counter() {
+  return global_DynamicGo_count;
+}
+CL_DEFUN size_t gctools__return_from_counter() {
+  return global_ReturnFrom_count;
+}
+CL_DEFUN size_t gctools__catch_throw_counter() {
+  return global_CatchThrow_count;
+}
+#endif
 
 CL_DEFUN void gctools__deallocate_unmanaged_instance(core::T_sp obj) {
   obj_deallocate_unmanaged_instance(obj);
@@ -826,6 +847,18 @@ CL_DEFUN void gctools__telemetryReset(core::Fixnum_sp flags) {
 #endif
 };
 
+CL_DEFUN core::T_mv gctools__memory_profile_status() {
+  int64_t allocationNumberCounter = global_AllocationProfiler._AllocationNumberCounter;
+  size_t allocationNumberThreshold = global_AllocationProfiler._AllocationNumberThreshold;
+  int64_t allocationSizeCounter = global_AllocationProfiler._AllocationSizeCounter;
+  size_t allocationSizeThreshold = global_AllocationProfiler._AllocationSizeThreshold;
+  return Values(core::make_fixnum(allocationNumberCounter),
+                core::make_fixnum(allocationNumberThreshold),
+                core::make_fixnum(allocationSizeCounter),
+                core::make_fixnum(allocationSizeThreshold));
+}
+
+                
 CL_DEFUN core::T_sp gctools__stack_depth() {
   int z = 0;
   void *zp = &z;
@@ -1141,6 +1174,14 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
 #endif
   if (buildReport) ss << (BF("DEBUG_FLOW_TRACKER = %s\n") % (debug_flow_tracker ? "**DEFINED**" : "undefined") ).str();
 
+    bool debug_track_unwinds = false;
+#ifdef DEBUG_TRACK_UNWINDS
+  debug_track_unwinds = true;
+  debugging = true;
+  if (setFeatures) features = core::Cons_O::create(_lisp->internKeyword("DEBUG-TRACK-UNWINDS"),features);
+#endif
+  if (buildReport) ss << (BF("DEBUG_TRACK_UNWINDS = %s\n") % (debug_track_unwinds ? "**DEFINED**" : "undefined") ).str();
+
     bool debug_lexical_depth = false;
 #ifdef DEBUG_LEXICAL_DEPTH
   debug_lexical_depth = true;
@@ -1157,6 +1198,15 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
   if (setFeatures) features = core::Cons_O::create(_lisp->internKeyword("DEBUG-CCLASP-LISP"),features);
 #endif
   if (buildReport) ss << (BF("DEBUG_CCLASP_LISP = %s\n") % (debug_cclasp_lisp ? "**DEFINED**" : "undefined") ).str();
+
+  bool debug_memory_profile = false;
+#ifdef DEBUG_MEMORY_PROFILE
+  debug_memory_profile = true;
+  debugging = true;
+  if (setFeatures) features = core::Cons_O::create(_lisp->internKeyword("DEBUG-MEMORY-PROFILE"),features);
+#endif
+  if (buildReport) ss << (BF("DEBUG_MEMORY_PROFILE = %s\n") % (debug_memory_profile ? "**DEFINED**" : "undefined") ).str();
+
 
   bool dont_optimize_bclasp = false;
 #ifdef DONT_OPTIMIZE_BCLASP

@@ -67,13 +67,13 @@ namespace gctools {
 #endif
 
 struct MpsMetrics {
-  size_t finalizationRequests = 0;
-  size_t movingAllocations = 0;
-  size_t consAllocations = 0;
-  size_t movingZeroRankAllocations = 0;
-  size_t nonMovingAllocations = 0;
-  size_t unknownAllocations = 0;
-  size_t totalMemoryAllocated = 0;
+  std::atomic<size_t> finalizationRequests = 0;
+  std::atomic<size_t> movingAllocations = 0;
+  std::atomic<size_t> consAllocations = 0;
+  std::atomic<size_t> movingZeroRankAllocations = 0;
+  std::atomic<size_t> nonMovingAllocations = 0;
+  std::atomic<size_t> unknownAllocations = 0;
+  std::atomic<size_t> totalMemoryAllocated = 0;
   void movingAllocation(size_t sz) {
     this->totalMemoryAllocated += sz;
     ++this->movingAllocations;
