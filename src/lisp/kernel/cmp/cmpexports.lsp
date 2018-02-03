@@ -122,6 +122,7 @@
           irc-intrinsic-invoke
           irc-bit-cast
           irc-pointer-cast
+          irc-maybe-cast-integer-to-t*
           irc-create-invoke
           irc-create-invoke-default-unwind
           irc-create-landing-pad
@@ -153,6 +154,7 @@
           jit-constant-i8
           jit-constant-i32
           jit-constant-i64
+          ensure-jit-constant-i64
           jit-constant-size_t
           jit-constant-unique-string-ptr
           jit-function-name

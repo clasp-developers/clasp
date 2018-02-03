@@ -13,9 +13,10 @@
 (in-package "CLOS")
 
 #+(or)(eval-when (:execute)
-  (setq core:*echo-repl-read* t))
+        (setq core:*echo-repl-read* t))
 
 (defparameter *clos-booted* nil)
+(export '*clos-booted*)
 
 ;;; ----------------------------------------------------------------------
 ;;;

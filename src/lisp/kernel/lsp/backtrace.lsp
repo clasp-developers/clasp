@@ -242,12 +242,28 @@ Set gather-all-frames to T and you can gather C++ and Common Lisp frames"
   (setq *current-btcl-index* 0)
   (let ((frames (if all
                     (common-lisp-backtrace-frames)
-                    (common-lisp-backtrace-frames
-                     :gather-start-trigger
-                     (lambda (x)
-                       (eq 'core:universal-error-handler (backtrace-frame-function-name x)))))))
+                    (let ((edited-frames (common-lisp-backtrace-frames
+                                          :gather-start-trigger
+                                          (lambda (x)
+                                            (eq 'core:universal-error-handler (backtrace-frame-function-name x))))))
+                      (if edited-frames
+                          edited-frames
+                          (common-lisp-backtrace-frames)  ; We didn't find frames when starting from core:universal-error-handler - get all
+                          )))))
     (setq *current-btcl-frames* frames)
     frames))
+
+(defun print-arguments (name arguments)
+  (princ " (")
+  (princ name)
+  (if (> (length arguments) 0)
+      (progn
+        (if arguments 
+            (dotimes (i (length arguments))
+              (princ #\space)
+              (prin1 (aref arguments i)))
+            (prin1 " -args-suppressed-"))
+        (princ ")"))))
 
 (defun btcl (&key all (args t))
   "Print backtrace of just common lisp frames.  Set args to nil if you don't want arguments printed"
@@ -259,16 +275,10 @@ Set gather-all-frames to T and you can gather C++ and Common Lisp frames"
         (if arguments
             (progn
               (prin1 (prog1 index (incf index)))
-              (princ " (")
-              (princ name)
-              (if (> (length arguments) 0)
-                  (progn
-                    (if args 
-                        (dotimes (i (length arguments))
-                          (princ #\space)
-                          (prin1 (aref arguments i)))
-                        (prin1 " -args-suppressed-"))
-                    (princ ")"))))
+              #+cclasp(handler-case
+                          (print-arguments name arguments)
+                        (error (e) (prin1 "-error-printing-arguments-")))
+              #-cclasp(print-arguments name arguments))
             (progn
               (prin1 (prog1 index (incf index)))
               (princ #\space )

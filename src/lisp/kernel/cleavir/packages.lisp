@@ -11,6 +11,9 @@
   (:nicknames #:cc)
   (:export
    #:*use-cst*
+   #:literal
+   #:immediate-literal
+   #:arrayed-literal
    #:%literal-index
    #:*clasp-ordinary-lambda-list-grammar*
    #:*use-type-inference*

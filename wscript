@@ -81,8 +81,8 @@ def grovel(bld):
     
 def update_submodules(cfg):
     os.system("echo This is where I get submodules")
-    sicl_commit = "46be6f6302271b805cc65a0d4b43170565d4e4bc"
-    cst_commit = "8d052d02764efe7650c4e62f85bcd5f4b24477d2"
+    sicl_commit = "5ca17b04c4f3a371ce9f2798be843d436aa70516"
+    cst_commit = "39a0e53b9f9109964c57382fcc8ca53d75fb6c12"
     closer_mop_commit = "d4d1c7aa6aba9b4ac8b7bb78ff4902a52126633f"
     alexandria_commit = "e5c54bc30b0887c237bde2827036d17315f88737"
     os.system("./tools/fetch-revision.sh https://github.com/drmeister/SICL.git src/lisp/kernel/contrib/sicl %s" % sicl_commit)
@@ -748,8 +748,8 @@ def configure(cfg):
 #    cfg.define("DEBUG_FASTGF",1)   # generate slow gf dispatch logging and write out dispatch functions to /tmp/dispatch-history-**
 #    cfg.define("DEBUG_REHASH_COUNT",1)   # Keep track of the number of times each hash table has been rehashed
 #    cfg.define("DEBUG_MONITOR",1)   # generate logging messages to a file in /tmp for non-hot code
-#    cfg.define("DEBUG_BCLASP_LISP",1)  # Generate debugging frames for all bclasp code - like declaim
-#    cfg.define("DEBUG_CCLASP_LISP",1)  # Generate debugging frames for all cclasp code - like declaim
+    cfg.define("DEBUG_BCLASP_LISP",1)  # Generate debugging frames for all bclasp code - like declaim
+    cfg.define("DEBUG_CCLASP_LISP",1)  # Generate debugging frames for all cclasp code - like declaim
 #    cfg.define("DONT_OPTIMIZE_BCLASP",1)  # Optimize bclasp by editing llvm-ir
 #    cfg.define("DEBUG_BOUNDS_ASSERT",1)
 #    cfg.define("DEBUG_SLOT_ACCESSORS",1)
@@ -1491,6 +1491,8 @@ def scrape_task_generator(self):
     for task in self.compiled_tasks:
         if ( task.__class__.__name__ == 'cxx' ):
             for node in task.inputs:
+                if ( node.name[:len('pathname.cc')] == 'pathname.cc' ):
+                    print(" pathname.cc compilation task: %s\n" % task.__dict__)
                 if ( node.name[:len('intrinsics.cc')] == 'intrinsics.cc' ):
                     intrinsics_cc = node
                 if ( node.name[:len('builtins.cc')] == 'builtins.cc' ):

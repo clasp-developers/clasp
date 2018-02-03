@@ -195,8 +195,8 @@
   ;; convert the slots from lists to direct slots
   (apply #'call-next-method class
          :direct-slots
-	 (loop for s in direct-slots
-	    collect (canonical-slot-to-direct-slot class s))
+         (loop for s in direct-slots
+            collect (canonical-slot-to-direct-slot class s))
          initargs)
   (finalize-unless-forward class)
   class)

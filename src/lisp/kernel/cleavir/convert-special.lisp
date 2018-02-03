@@ -253,7 +253,7 @@
 
 (defmethod cleavir-cst-to-ast::convert-special
     ((symbol (eql 'core::vector-length)) cst environment (system clasp-cleavir:clasp))
-  (destructuring-bind origin (vector) (cst:rest cst)
+  (cst:db origin (vector) (cst:rest cst)
     (make-instance 'clasp-cleavir-ast::vector-length-ast
                    :vector (cleavir-cst-to-ast:convert vector environment system)
                    :origin origin)))
@@ -438,8 +438,17 @@
 ;;; Converting CL:PROGV
 ;;;
 ;;; Convert this into a function call
-(defmacro progv (symbols values &body forms)
-  `(core:progv-function ,symbols ,values (lambda () (progn ,@forms))))
+(defmethod cleavir-cst-to-ast:convert-special ((head (eql 'cl:progv)) cst env (system clasp-cleavir:clasp))
+  (cleavir-cst-to-ast:convert
+   (destructuring-bind (symbols values &rest forms)
+       (cst:raw (cst:rest cst))
+     (cst:reconstruct
+      `(core:progv-function ',symbols ,values (lambda () (progn ,@forms)))
+      cst))
+   env system))
+#+(or)
+(defmacro cl:progv (symbols values &body forms)
+  `(core:progv-function ',symbols ,values (lambda () (progn ,@forms))))
 #+(or)(progn
   (def-ast-macro progv (symbols values &body forms)
     `(core:progv-function ,symbols ,values (lambda () (progn ,@forms))))
@@ -486,35 +495,40 @@
 
 (defmethod cleavir-cst-to-ast:convert-special
     ((symbol (eql 'core::bind-va-list)) cst environment (system clasp-cleavir:clasp))
-  (cst:db origin (op lambda-list va-list-cst . body) cst
-    (declare (ignore op origin))
-    (let* ((parsed-lambda-list
-             (cleavir-code-utilities:parse-ordinary-lambda-list lambda-list))
-           (required (cleavir-code-utilities:required parsed-lambda-list)))
-      (multiple-value-bind (declarations documentation csts)
-          (cst:separate-function-body body)
-        (declare (ignore documentation))
-        (let ((canonicalized-dspecs
-                (cleavir-code-utilities:canonicalize-declaration-specifiers
-                 (reduce #'append (mapcar #'cdr declarations))
-                 (cleavir-env:declarations environment))))
-          (multiple-value-bind (idspecs rdspecs)
-              (cleavir-cst-to-ast::itemize-declaration-specifiers
-               (cleavir-cst-to-ast::itemize-lambda-list parsed-lambda-list)
-               canonicalized-dspecs)
-            (multiple-value-bind (ast lexical-lambda-list)
-                (cleavir-cst-to-ast::process-required
-                 required
-                 parsed-lambda-list
-                 idspecs
-                 (cleavir-cst-to-ast::make-body rdspecs csts nil nil)
-                 environment
-                 system)
-              (cc-ast:make-bind-va-list-ast
-                lexical-lambda-list
-                (cleavir-cst-to-ast::convert va-list-cst environment system)
-                ast
-                :origin origin))))))))
+  (cst:db origin (op lambda-list-cst va-list-cst . body-cst) cst
+          (declare (ignore op origin))
+          (let* ((parsed-lambda-list
+                   (cst:parse-ordinary-lambda-list system lambda-list-cst :error-p nil)))
+            (when (null parsed-lambda-list)
+              (error 'cleavir-cst-to-ast::malformed-lambda-list
+                     :expr (cst:raw lambda-list-cst)
+                     :origin (cst:source lambda-list-cst)))
+            (multiple-value-bind (declaration-csts documentation form-csts)
+                (cst:separate-function-body body-cst)
+              (declare (ignore documentation))
+              (let* ((declaration-specifiers
+                       (loop for declaration-cst in declaration-csts
+                             append (cdr (cst:listify declaration-cst))))
+                     (canonicalized-dspecs
+                       (cst:canonicalize-declaration-specifiers
+                        system
+                        declaration-specifiers)))
+                (multiple-value-bind (idspecs rdspecs)
+                    (cleavir-cst-to-ast::itemize-declaration-specifiers-by-parameter-group
+                     (cleavir-cst-to-ast::itemize-lambda-list parsed-lambda-list)
+                     canonicalized-dspecs)
+                  (multiple-value-bind (ast lexical-lambda-list)
+                      (cleavir-cst-to-ast::process-parameter-groups
+                       (cst:children parsed-lambda-list)
+                       idspecs
+                       (cleavir-cst-to-ast::make-body rdspecs form-csts nil)
+                       environment
+                       system)
+                    (cc-ast:make-bind-va-list-ast
+                     lexical-lambda-list
+                     (cleavir-cst-to-ast::convert va-list-cst environment system)
+                     ast
+                     :origin origin))))))))
 
 (defmethod cleavir-generate-ast:check-special-form-syntax
     ((head (eql 'core::bind-va-list)) form)

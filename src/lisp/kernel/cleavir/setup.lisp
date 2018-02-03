@@ -4,6 +4,8 @@
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (setq *echo-repl-read* t))
 
+(defvar *use-cst* t "Use Concrete-Syntax-Tree in compile-file - if NIL use forms")
+
 (defvar *current-function-entry-basic-block*)
 
 ;;; Save top level forms for source tracking
@@ -11,17 +13,52 @@
   (let ((core:*top-level-form-stack* (cons form core:*top-level-form-stack*)))
     (call-next-method)))
 
-(defmethod cleavir-generate-ast:convert-constant-to-immediate ((n integer) environment clasp)
+;;;
+
+(defmethod cleavir-generate-ast:convert-constant-to-immediate ((n integer) environment (system clasp))
   ;; convert fixnum into immediate but bignums return nil
-  (core:create-tagged-immediate-value-or-nil n))
+  (let ((result (core:create-tagged-immediate-value-or-nil n)))
+    (if result
+        (make-instance 'immediate-literal :value n :tagged-value result)
+        nil)))
 
-(defmethod cleavir-generate-ast:convert-constant-to-immediate ((n character) environment clasp)
+(defmethod cleavir-generate-ast:convert-constant-to-immediate ((n character) environment (system clasp))
   ;; convert character to an immediate
-  (core:create-tagged-immediate-value-or-nil n))
+  (let ((result (core:create-tagged-immediate-value-or-nil n)))
+    (if result
+        (make-instance 'immediate-literal :value n :tagged-value result)
+        nil)))
 
-(defmethod cleavir-generate-ast:convert-constant-to-immediate ((n float) environment clasp)
+(defmethod cleavir-generate-ast:convert-constant-to-immediate ((n float) environment (system clasp))
   ;; single-float's can be converted to immediates, anything else will return nil
-  (core:create-tagged-immediate-value-or-nil n))
+  (let ((result (core:create-tagged-immediate-value-or-nil n)))
+    (if result
+        (make-instance 'immediate-literal :value n :tagged-value result)
+        nil)))
+
+;;; ------------------------------------------------------------
+;;;
+;;; cst-to-ast methods for convert-constant-to-immediate
+(defmethod cleavir-cst-to-ast:convert-constant-to-immediate ((n integer) environment (system clasp))
+  ;; convert fixnum into immediate but bignums return nil
+  (let ((result (core:create-tagged-immediate-value-or-nil n)))
+    (if result
+        (make-instance 'immediate-literal :value n :tagged-value result)
+        nil)))
+
+(defmethod cleavir-cst-to-ast:convert-constant-to-immediate ((n character) environment (system clasp))
+  ;; convert character to an immediate
+  (let ((result (core:create-tagged-immediate-value-or-nil n)))
+    (if result
+        (make-instance 'immediate-literal :value n :tagged-value result)
+        nil)))
+
+(defmethod cleavir-cst-to-ast:convert-constant-to-immediate ((n float) environment (system clasp))
+  ;; single-float's can be converted to immediates, anything else will return nil
+  (let ((result (core:create-tagged-immediate-value-or-nil n)))
+    (if result
+        (make-instance 'immediate-literal :value n :tagged-value result)
+        nil)))
 
 (defmethod cleavir-env:variable-info ((environment clasp-global-environment) symbol)
   (core:stack-monitor)
@@ -331,10 +368,11 @@
   (when *debug-cleavir*
     (let ((pn (make-pathname :type "dot" :defaults (cmp::quick-module-pathname file-name-modifier))))
       (with-open-file (stream pn :direction :output)
-        (cleavir-ir-graphviz:draw-flowchart hir stream)))))
+        (cleavir-ir-graphviz:draw-flowchart hir stream))
+      pn)))
     
-(defun draw-hir (&optional (hir *hir*) (filename #P"/tmp/hir.dot"))
-  (setq filename (pathname filename))
+(defun draw-hir (&optional (hir *hir*) filename)
+  (unless filename (setf filename (pathname (core:mkstemp "/tmp/hir"))))
   (with-open-file (stream filename :direction :output)
     (cleavir-ir-graphviz:draw-flowchart hir stream))
   (let* ((png-pn (make-pathname :type "png" :defaults filename)))
@@ -347,16 +385,14 @@
   (ext:system (format nil "dot -Teps -o/tmp/mir.eps ~a" filename))
   (ext:system "open -n /tmp/mir.eps"))
 
-(defun draw-ast (&optional (ast *ast*) (filename "/tmp/ast.dot"))
+(defun draw-ast (&optional (ast *ast*) filename)
+  (unless filename (setf filename (pathname (core:mkstemp "/tmp/ast"))))
   (let* ((dot-pathname (pathname filename))
 	 (png-pathname (make-pathname :type "png" :defaults dot-pathname)))
     (with-open-file (stream filename :direction :output)
       (cleavir-ast-graphviz:draw-ast ast filename))
     (ext:system (format nil "dot -Tpng -o~a ~a" (namestring png-pathname) (namestring dot-pathname)))
     (ext:system (format nil "open -n ~a" (namestring png-pathname)))))
-
-(defparameter *code1* '(let ((x 1) (y 2)) (+ x y)))
-(defparameter *code2* '(let ((x 10)) (if (> x 5) 1 2)))
 
 (defvar *hir-single-step* nil)
 (defun hir-single-step (&optional (on t))

@@ -188,6 +188,13 @@ No DIBuilder is defined for the default module")
   (let ((ap-arg (llvm-sys:make-apint-width val 64 t)))
     (llvm-sys:constant-int-get *llvm-context* ap-arg)))
 
+(defun ensure-jit-constant-i64 (val)
+  "Create an i64 constant in the current context if the val is a fixnum - otherwise it should already be a value"
+  (if (fixnump val)
+      (let ((ap-arg (llvm-sys:make-apint-width val 64 t)))
+        (llvm-sys:constant-int-get *llvm-context* ap-arg))
+      val))
+
 (defun jit-constant-ui32 (val)
   "Create an unsigned i32 constant in the current context"
   (let ((ap-arg (llvm-sys:make-apint-width val 32 nil)))

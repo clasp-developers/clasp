@@ -34,6 +34,7 @@ when this is t a lot of graphs will be generated.")
                    :pretty nil))
 
 (defun translate-datum (datum)
+  (declare (optimize (debug 3)))
   (if (typep datum 'cleavir-ir:constant-input)
       (let* ((value (cleavir-ir:value datum)))
         (%literal-ref value t))
@@ -41,7 +42,7 @@ when this is t a lot of graphs will be generated.")
 	(when (null var)
           (typecase datum
             (cleavir-ir:values-location) ; do nothing - we don't actually use them
-            (cleavir-ir:immediate-input (setf var (%i64 (cleavir-ir:value datum))))
+            (cleavir-ir:immediate-input (setf var (cmp:ensure-jit-constant-i64 (cleavir-ir:value datum))))
             ;; names may be (setf foo), so use write-to-string and not just string
             (cc-mir:typed-lexical-location
              (setf var (alloca (cc-mir:lexical-location-type datum) 1 (datum-name-as-string datum))))
@@ -375,12 +376,14 @@ when this is t a lot of graphs will be generated.")
   (let ((input (first inputs))
         (output (first outputs)))
     (cond
+      ((typep input 'immediate-literal)
+       (%store (cmp:irc-int-to-ptr (%i64 (immediate-literal-tagged-value input)) cmp:%t*%) output "immediate"))
       ((typep input 'llvm-sys:constant-int)
        (let ((val (%inttoptr input cmp:%t*%)))
-         (%store val output)))
+         (%store val output "constant-int")))
       (t
        (let ((load (%load input)))
-         (%store load output))))))
+         (%store load output "default"))))))
 
 (defun safe-llvm-name (obj)
   "Generate a name for the object that can be used as a variable label in llvm"
@@ -393,11 +396,20 @@ when this is t a lot of graphs will be generated.")
 
 (defmethod translate-simple-instruction
     ((instruction clasp-cleavir-hir:precalc-value-instruction) return-value inputs outputs abi function-info)
-  (let ((idx (first inputs)))
-    (cmp:irc-low-level-trace :flow)
-    (let* ((label (safe-llvm-name (clasp-cleavir-hir:precalc-value-instruction-original-object instruction)))
-           (value (%load (%gep-variable (cmp:ltv-global) (list (%size_t 0) idx) label))))
-      (%store value (first outputs)))))
+  (let* ((literal (first inputs))
+         (value (etypecase literal
+                  (llvm-sys:constant-int
+                   (warn "llvm-sys:constant-int ~s should not be input for precalc-value-instruction" literal)
+                   (draw-hir (enter-instruction function-info))
+                   (break "breaking")
+                   (%inttoptr literal cmp:%t*%)) ; where are these coming from
+                  (immediate-literal
+                   (immediate-literal-tagged-value literal))
+                  (arrayed-literal
+                   (let* ((idx (arrayed-literal-index literal))
+                          (label (safe-llvm-name (clasp-cleavir-hir:precalc-value-instruction-original-object instruction))))
+                     (%load (%gep-variable (cmp:ltv-global) (list (%size_t 0) (%i64 idx)) label)))))))
+    (%store value (first outputs))))
 
 (defmethod translate-simple-instruction
     ((instruction cleavir-ir:fixed-to-multiple-instruction) return-value inputs outputs (abi abi-x86-64) function-info)
@@ -1138,13 +1150,15 @@ when this is t a lot of graphs will be generated.")
   (quick-draw-hir init-instr "hir-after-eliminate-load-time-value-inputs")
   (setf *ct-eliminate-load-time-value-inputs* (compiler-timer-elapsed)))
 
-(defun compile-form-to-mir (FORM &optional (ENV *clasp-env*))
-  "Compile a form down to MIR and return it.
+(defvar *interactive-debug* nil)
+(defun compile-cst-or-form-to-mir (cst-or-form &optional (ENV *clasp-env*))
+  "Compile a cst down to MIR and return it.
 COMPILE might call this with an environment in ENV.
 COMPILE-FILE will use the default *clasp-env*."
   (setf *ct-start* (compiler-timer-elapsed))
   (let* ((clasp-system *clasp-system*)
-	 (ast (let ((ast (cleavir-generate-ast:generate-ast FORM ENV clasp-system)))
+	 (ast (let ((ast (cleavir-cst-to-ast:cst-to-ast cst-or-form ENV clasp-system)))
+                (when *interactive-debug* (draw-ast ast))
                 (cc-dbg-when
                  *debug-log*
                  (let ((ast-pathname (make-pathname :name (format nil "ast~a" (incf *debug-log-index*))
@@ -1169,6 +1183,11 @@ COMPILE-FILE will use the default *clasp-env*."
       (clasp-cleavir:finalize-unwind-and-landing-pad-instructions hir map-enter-to-function-info)
       (setf *ct-finalize-unwind-and-landing-pad-instructions* (compiler-timer-elapsed))
       (quick-draw-hir hir "mir")
+      (when *interactive-debug*
+        (draw-hir hir)
+        (format t "Press enter to continue: ")
+        (finish-output)
+        (read-line))
       (values hir map-enter-to-function-info))))
                                                 
 
@@ -1176,7 +1195,7 @@ COMPILE-FILE will use the default *clasp-env*."
   "Compile a lambda-form into an llvm-function and return
 that llvm function. This works like compile-lambda-function in bclasp."
   (multiple-value-bind (mir map-enter-to-function-info)
-      (compile-form-to-mir lambda-form)
+      (compile-cst-or-form-to-mir lambda-form)
     (let ((function-enter-instruction
            (block first-function
              (cleavir-ir:map-instructions-with-owner
@@ -1201,13 +1220,13 @@ that llvm function. This works like compile-lambda-function in bclasp."
 (defparameter *debug-final-next-id* 0)
 
 
-(defun cclasp-compile-to-module-with-run-time-table (form env pathname &key (linkage 'llvm-sys:internal-linkage))
+(defun cclasp-compile-to-module-with-run-time-table (cst-or-form env pathname &key (linkage 'llvm-sys:internal-linkage))
   (cmp:with-debug-info-generator (:module cmp:*the-module* :pathname pathname)
     (let (function lambda-name)
       (multiple-value-bind (ordered-raw-constants-list constants-table startup-fn shutdown-fn)
           (literal:with-rtv
               (multiple-value-bind (mir map-enter-to-landing-pad)
-                  (compile-form-to-mir form env)
+                  (compile-cst-or-form-to-mir cst-or-form env)
                 (multiple-value-setq (function lambda-name)
                   (translate mir map-enter-to-landing-pad *abi-x86-64* :linkage linkage))))
         (values function lambda-name ordered-raw-constants-list constants-table startup-fn shutdown-fn)))))
@@ -1227,14 +1246,14 @@ that llvm function. This works like compile-lambda-function in bclasp."
           (lambda (condition)
 ;;;	  (declare (ignore condition))
             #+verbose-compiler(warn "Condition: ~a" condition)
-            (invoke-restart 'cleavir-generate-ast::consider-special)))
+            (invoke-restart 'cleavir-cst-to-ast:consider-special)))
          (cleavir-env:no-function-info
           (lambda (condition)
 ;;;	  (declare (ignore condition))
             #+verbose-compiler(warn "Condition: ~a" condition)
-            (invoke-restart 'cleavir-generate-ast::consider-global))))
+            (invoke-restart 'cleavir-cst-to-ast:consider-global))))
       (multiple-value-bind (fn lambda-name ordered-raw-constants-list constants-table startup-fn shutdown-fn)
-          (cclasp-compile-to-module-with-run-time-table form env pathname :linkage linkage)
+          (cclasp-compile-to-module-with-run-time-table (cst:cst-from-expression form) env pathname :linkage linkage)
         (or fn (error "There was no function returned by compile-lambda-function"))
         (cmp:cmp-log "fn --> %s\n" fn)
         ;;(cmp:cmp-log-dump-module cmp:*the-module*)
@@ -1243,49 +1262,52 @@ that llvm function. This works like compile-lambda-function in bclasp."
           (let ((enclosed-function (funcall setup-function)))
             (values enclosed-function)))))))
 
-(defun compile-form (form &optional (env *clasp-env*))
+(defun compile-cst-or-form (cst-or-form &optional (env *clasp-env*))
   (handler-bind
       ((cleavir-env:no-variable-info
         (lambda (condition)
 ;;;	  (declare (ignore condition))
           #+verbose-compiler(warn "Condition: ~a" condition)
           (cmp:compiler-warning-undefined-global-variable (cleavir-environment:name condition))
-          (invoke-restart 'cleavir-generate-ast::consider-special)))
+          (invoke-restart 'cleavir-cst-to-ast:consider-special)))
        (cleavir-env:no-function-info
         (lambda (condition)
 ;;;	  (declare (ignore condition))
           #+verbose-compiler(warn "Condition: ~a" condition)
           (cmp:register-global-function-ref (cleavir-environment:name condition))
-          (invoke-restart 'cleavir-generate-ast::consider-global))))
+          (invoke-restart 'cleavir-cst-to-ast:consider-global))))
     (multiple-value-bind (mir map-enter-to-landing-pad)
-        (compile-form-to-mir form env)
+        (compile-cst-or-form-to-mir cst-or-form env)
       (multiple-value-prog1 (translate mir map-enter-to-landing-pad *abi-x86-64*)
         (setf *ct-translate* (compiler-timer-elapsed))))))
 
-(defun cleavir-compile-file-form (form &optional (env *clasp-env*))
+(defun compile-form (form &optional (env *clasp-env*))
+  (compile-cst-or-form (cst:cst-from-expression form) env))
+
+(defun cleavir-compile-file-cst-or-form (cst-or-form &optional (env *clasp-env*))
   (let ((cleavir-generate-ast:*compiler* 'cl:compile-file)
         (core:*use-cleavir-compiler* t))
     (literal:with-top-level-form
-     (cmp:dbg-set-current-source-pos form)
       (if cmp::*debug-compile-file*
-          (compiler-time (compile-form form env))
-          (compile-form form env)))))
+          (compiler-time (compile-cst-or-form cst-or-form env))
+          (compile-cst-or-form cst-or-form env)))))
 
-(defun cclasp-loop-read-and-compile-file-forms (source-sin environment)
-  (let ((eof-value (gensym)))
+(defun cclasp-loop-read-and-compile-file-forms (source-sin environment &key (use-cst *use-cst*))
+  (let ((eof-value (gensym))
+        (read-function (if use-cst 'sicl-reader:cst-read 'read)))
     (loop
       (let ((eof (peek-char t source-sin nil eof-value)))
         (unless (eq eof eof-value)
           (let ((pos (core:input-stream-source-pos-info source-sin)))
             (setq *current-form-lineno* (core:source-file-pos-lineno pos)))))
       ;; FIXME: if :environment is provided we should probably use a different read somehow
-      (let ((form (read source-sin nil eof-value)))
-        (when cmp:*debug-compile-file* (bformat t "compile-file: cf%d -> %s\n" (incf cmp:*debug-compile-file-counter*) form))
-        (if (eq form eof-value)
+      (let ((cst-form (funcall read-function source-sin nil eof-value)))
+        (when cmp:*debug-compile-file* (bformat t "compile-file: cf%d -> %s\n" (incf cmp:*debug-compile-file-counter*) cst-form))
+        (if (eq cst-form eof-value)
             (return nil)
             (progn
-              (when *compile-print* (cmp::describe-form form))
-              (cleavir-compile-file-form form environment)))))))
+              (when *compile-print* (cmp::describe-form (if use-cst (cst:raw cst-form) cst-form)))
+              (cleavir-compile-file-cst-or-form cst-form environment)))))))
 
 (defun cclasp-compile-in-env (name form &optional env)
   (let ((cleavir-generate-ast:*compiler* 'cl:compile)
@@ -1304,9 +1326,10 @@ that llvm function. This works like compile-lambda-function in bclasp."
 (defun cleavir-compile-file (given-input-pathname &rest args)
   (let ((*debug-log-index* 0)
 	(cleavir-generate-ast:*compiler* 'cl:compile-file)
-        (cmp:*cleavir-compile-file-hook* 'cleavir-compile-file-form)
+        (cmp:*cleavir-compile-file-hook* 'cclasp-loop-read-and-compile-file-forms)
         (core:*use-cleavir-compiler* t))
     (apply #'cmp::compile-file given-input-pathname args)))
+
 
 (defmacro with-debug-compile-file ((log-file &key debug-log-on) &rest body)
   `(with-open-file (clasp-cleavir::*debug-log* ,log-file :direction :output)

@@ -533,7 +533,7 @@ jump to blocks within this tagbody."
              (start-renv (irc-load (irc-renv env))))
          #+optimize-bclasp
          (let ((frame-info (gethash tagbody-env *tagbody-frame-info*)))
-           (unless frame-info (error "Could not find frame-info for block ~s" block-symbol))
+           (unless frame-info (error "Could not find frame-info for tagbody-env ~s" tagbody-env))
            (setf (tagbody-frame-info-needed frame-info) t))
 	 (irc-low-level-trace :go)
 	 (let ((instruction (irc-intrinsic "throwDynamicGo"

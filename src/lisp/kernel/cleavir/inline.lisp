@@ -7,10 +7,11 @@
 #+(or)
 (defmacro debug-inline (msg &rest msg-args)
   `(progn
-     (format t "debug-inline>> ")
-     (format t ,msg ,@msg-args)
-     (format t "~%")
+     (core:bformat t "debug-inline>> ")
+     (core:bformat t ,msg ,@msg-args)
+     (core:bformat t "\n")
      (finish-output)))
+;;;#+(or)
 (defmacro debug-inline (msg &rest msg-args)
   nil)
 
@@ -436,6 +437,7 @@
 ;;; Array functions
 ;;;
 
+(debug-inline "array-total-size")
 (declaim (inline array-total-size))
 (defun array-total-size (array)
   (etypecase array
@@ -443,12 +445,14 @@
     ;; MDArray
     (array (core::%array-total-size array))))
 
+(debug-inline "array-rank")
 (declaim (inline array-rank))
 (defun array-rank (array)
   (etypecase array
     ((simple-array * (*)) 1)
     (array (core::%array-rank array))))
 
+(debug-inline "array-dimension")
 (declaim (inline array-dimension))
 (defun array-dimension (array axis-number)
   (etypecase array
@@ -462,6 +466,7 @@
          (error "Invalid axis number ~d for array of rank ~d" axis-number (core::%array-rank array))))))
 
 ;; Unsafe version for array-row-major-index
+(debug-inline "%array-dimension")
 (declaim (inline %array-dimension))
 (defun %array-dimension (array axis-number)
   (etypecase array
@@ -469,6 +474,7 @@
      (core::vector-length array))
     (array (core::array-dimension array axis-number))))
 
+(debug-inline "svref")
 (declaim (inline svref))
 (defun svref (vector index)
   (if (typep vector 'simple-vector)
@@ -481,6 +487,8 @@
       (error 'type-error :datum vector :expected-type 'simple-vector)))
 
 ;;; (setf (svref x y) z) macroexpands into (core:setf-svref x y z)
+
+(debug-inline "core:setf-svref")
 (declaim (inline core:setf-svref))
 (defun core:setf-svref (vector index value)
   (if (typep vector 'simple-vector)
@@ -493,6 +501,7 @@
           (error 'type-error :datum index :expected-type 'fixnum))
       (error 'type-error :datum vector :expected-type 'simple-vector)))
 
+(debug-inline "%unsafe-vector-ref")
 (declaim (inline %unsafe-vector-ref))
 (defun %unsafe-vector-ref (array index)
   ;; FIXME: type inference should be able to remove the redundant
@@ -502,7 +511,9 @@
                   ,@(loop for (type boxed) in specs
                           collect `((simple-array ,type (*))
                                     (cleavir-primop:aref array index ,type t ,boxed)))
-                  (t (error "BUG: Unknown vector ~a" array)))))
+                  (t
+                   (core:bformat t "unsafe-vector-ref array-element-type: %s\n" (array-element-type array))
+                   (error "BUG: unsafe-vector-ref unknown vector ~a" array)))))
     (mycase (t t) (base-char nil) (character nil)
             (double-float nil) (single-float nil)
             (fixnum nil)
@@ -515,6 +526,8 @@
 ;;; This is "unsafe" in that it doesn't bounds check.
 ;;; It DOES check that the value is of the correct type,
 ;;; because this is the only place we know the type.
+
+(debug-inline "%unsafe-vector-set")
 (declaim (inline %unsafe-vector-set))
 (defun %unsafe-vector-set (array index value)
   (macrolet ((mycase (&rest specs)
@@ -526,7 +539,9 @@
                                     (cleavir-primop:aset array index value ,type t ,boxed)
                                     value))
                   ;; should be unreachable
-                  (t (error "BUG: Unknown vector ~a" array)))))
+                  (t
+                   (core:bformat t "unsafe-vector-set array-element-type: %s\n" (array-element-type array))
+                   (error "BUG: unsafe-vector-set unknown vector ~a" array)))))
     (mycase (t t) (base-char nil) (character nil)
             (double-float nil) (single-float nil)
             (fixnum nil)
@@ -536,6 +551,7 @@
             (ext:byte16 nil) (ext:byte8 nil)
             (bit t))))
 
+(debug-inline "row-major-array-in-bounds-p")
 (declaim (inline row-major-array-in-bounds-p))
 (defun row-major-array-in-bounds-p (array index)
   (etypecase array
@@ -562,39 +578,64 @@
           (when (typep ,arrayname '(simple-array * (*))) (return)))))
      ,@body))
 
-(declaim (inline cl:row-major-aref))
-(defun cl:row-major-aref (array index)
-  ;; First, undisplace. This can be done independently
-  ;; of the index, meaning it could potentially be
-  ;; moved out of loops, though that can invite inconsistency
-  ;; in a multithreaded environment.
-  (with-array-data (underlying-array offset array)
-    ;; Now bounds check. Use the original arguments.
-    (unless (row-major-array-in-bounds-p array index)
-      (error "~d is not a valid row-major index for ~a" index array))
-    ;; Okay, now array is a vector/simple, and index is valid.
-    ;; This function takes care of element type discrimination.
-    (%unsafe-vector-ref underlying-array (+ index offset))))
+#+(or)
+(eval-when (:compile-toplevel :execute)
+  (trace clasp-cleavir::cleavir-compile-file-cst-or-form
+         clasp-cleavir::compile-cst-or-form
+         clasp-cleavir::compile-lambda-form-to-llvm-function
+         clasp-cleavir::run-thunk
+         clasp-cleavir::cclasp-eval-with-env
+         clasp-cleavir::cclasp-compile-in-env
+         clasp-cleavir::cclasp-compile*
+         clasp-cleavir::cclasp-compile-to-module-with-run-time-table
+         clasp-cleavir::compile-cst-or-form-to-mir
+         cleavir-cst-to-ast:cst-to-ast
+         cleavir-cst-to-ast::convert
+         )
+  )
 
-(declaim (inline core:row-major-aset))
-(defun core:row-major-aset (array index value)
-  (with-array-data (underlying-array offset array)
-    (unless (row-major-array-in-bounds-p array index)
-      (error "~d is not a valid row-major index for ~a" index array))
-    (%unsafe-vector-set underlying-array (+ index offset) value)))
+(progn
+  (debug-inline "cl:row-major-aref")
+  (declaim (inline cl:row-major-aref))
+  (defun cl:row-major-aref (array index)
+    ;; First, undisplace. This can be done independently
+    ;; of the index, meaning it could potentially be
+    ;; moved out of loops, though that can invite inconsistency
+    ;; in a multithreaded environment.
+    (with-array-data (underlying-array offset array)
+      ;; Now bounds check. Use the original arguments.
+      (unless (row-major-array-in-bounds-p array index)
+        (error "~d is not a valid row-major index for ~a" index array))
+      ;; Okay, now array is a vector/simple, and index is valid.
+      ;; This function takes care of element type discrimination.
+      (%unsafe-vector-ref underlying-array (+ index offset)))))
+
+(progn
+  (debug-inline "core:row-major-aset")
+  (declaim (inline core:row-major-aset))
+  (defun core:row-major-aset (array index value)
+    (with-array-data (underlying-array offset array)
+      (unless (row-major-array-in-bounds-p array index)
+        (error "~d is not a valid row-major index for ~a" index array))
+      (%unsafe-vector-set underlying-array (+ index offset) value))))
 
 
+(debug-inline "schar")
 (declaim (inline schar core:schar-set char core:char-set))
 (defun schar (string index)
   (row-major-aref (the simple-string string) index))
+
+(debug-inline "core:schar-set")
 (defun core:schar-set (string index value)
   (core:row-major-aset (the simple-string string) index value))
 
+(debug-inline "char")
 (defun char (string index)
   (row-major-aref (the string string) index))
 (defun core:char-set (string index value)
   (core:row-major-aset (the string string) index value))
 
+(debug-inline "row-major-index-computer")
 (defun row-major-index-computer (array dimsyms subscripts)
   ;; assumes once-only is taken care of
   (let ((dimsyms (loop for sub in (rest subscripts) collect (gensym "DIM")))
@@ -655,6 +696,7 @@
 ;;; Sequence functions
 ;;;
 
+(debug-inline "length")
 (declaim (inline length))
 (defun length (sequence)
   (etypecase sequence
@@ -670,6 +712,7 @@
     (vector (core::vector-length sequence))
     (null 0)))
 
+(debug-inline "elt")
 (declaim (inline elt))
 (defun elt (sequence index)
   (etypecase sequence
@@ -677,6 +720,7 @@
     (vector (row-major-aref sequence index))
     (t (error 'type-error :datum sequence :expected-type 'sequence))))
 
+(debug-inline "core:setf-elt")
 (declaim (inline core:setf-elt))
 (defun core:setf-elt (sequence index new-value)
   (etypecase sequence

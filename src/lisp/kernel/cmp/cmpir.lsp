@@ -633,6 +633,15 @@
 (defun irc-int-to-ptr (val ptr-type &optional (label "inttoptr"))
   (llvm-sys:create-int-to-ptr *irbuilder* val ptr-type label))
 
+(defun irc-maybe-cast-integer-to-t* (val &optional (label "fixnum-to-t*"))
+  "If it's a fixnum then cast it - otherwise just return it - it should already be a t*"
+  (if (typep val '(integer #.(- (expt 2 63)) #.(- (expt 2 63) 1)))
+      (llvm-sys:create-int-to-ptr *irbuilder* (jit-constant-i64 val) %t*% label)
+      (if (equal (llvm-sys:get-type val) %t*%)
+          val
+          (error "The val ~s type ~s is not a t* or fixnum " val (type-of val)))))
+  
+
 (defun irc-ret-void ()
   (llvm-sys:create-ret-void *irbuilder*))
 

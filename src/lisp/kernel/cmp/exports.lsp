@@ -41,6 +41,7 @@ irc-basic-block-create
 irc-basic-block-create
 irc-basic-block-create
 irc-basic-block-create
+irc-maybe-cast-integer-to-t*
 irc-load
 irc-branch-to-and-begin-block
 irc-icmp-slt

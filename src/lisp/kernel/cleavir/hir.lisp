@@ -343,6 +343,7 @@
 
 (defun make-precalc-value-instruction
     (index-input output &key successor vector original-object)
+  (check-type (cleavir-ir:value index-input) clasp-cleavir::literal)
   (make-instance 'precalc-value-instruction
     :inputs (list index-input)
     :outputs (list output)

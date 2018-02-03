@@ -533,7 +533,7 @@ as a STRUCTURE doc and can be retrieved by (documentation 'NAME 'structure)."
 				constructors)))
       `(progn
          ,(ext::register-with-pde whole)
-	 (eval-when (:compile-toplevel :load-toplevel :execute)
+	 (eval-when (#+(or):compile-toplevel :load-toplevel :execute)
 	   ,core
 	   #+ecl(let (#+clos
                  ,@(and (not type)

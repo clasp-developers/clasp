@@ -318,12 +318,12 @@
 ;;;
 
 (defclass precalc-value-reference-ast (cleavir-ast:ast cleavir-ast:one-value-ast-mixin cleavir-ast:side-effect-free-ast-mixin) 
-  ((%ref-index :initarg :index :accessor precalc-value-reference-index)
+  ((%ref-index :initarg :index :accessor precalc-value-reference-ast-index)
    (%original-object :initarg :original-object :accessor precalc-value-reference-ast-original-object)))
 
 
 (cleavir-io:define-save-info precalc-value-reference-ast
-  (:index precalc-value-reference-index)
+  (:index precalc-value-reference-ast-index)
   (:original-object precalc-value-reference-ast-original-object))
 
 (defmethod cleavir-ast:children ((ast precalc-value-reference-ast))
@@ -368,7 +368,7 @@
 
 (defmethod cleavir-ast-graphviz::label ((ast precalc-value-reference-ast))
   (with-output-to-string (s)
-    (format s "precalc-val-ref(~a) ; " (precalc-value-reference-index ast))
+    (format s "precalc-val-ref(~a) ; " (precalc-value-reference-ast-index ast))
     (let ((original-object (escaped-string (format nil "~s" (precalc-value-reference-ast-original-object ast)))))
       (if (> (length original-object) 10)
 	  (format s "~a..." (subseq original-object 0 10))
@@ -384,9 +384,16 @@ If this form has already been precalculated then just return the precalculated-v
     ((and (consp form) (eq (first form) 'QUOTE))
      (let* ((constant (cadr form))
             (constant-index (clasp-cleavir:%literal-index constant read-only-p)))
+       (check-type constant-index clasp-cleavir:literal)
        constant-index))
-    ((symbolp form) (clasp-cleavir:%literal-index form read-only-p))
-    ((constantp form) (clasp-cleavir:%literal-index form read-only-p))
+    ((symbolp form)
+     (let ((result (clasp-cleavir:%literal-index form read-only-p)))
+       (check-type result clasp-cleavir:literal)
+       result))
+    ((constantp form)
+     (let ((result (clasp-cleavir:%literal-index form read-only-p)))
+       (check-type result clasp-cleavir:literal)
+       result))
     (t
      ;; Currently read-only-p is ignored from here on
      ;; OPTIMIZE - an optimization would be to coalesce
@@ -395,15 +402,20 @@ If this form has already been precalculated then just return the precalculated-v
          ;; COMPLE-FILE will generate a function for the form in the Module
          ;; and arrange for it's evaluation at load time
          ;; and to make its result available as a value
-         (literal:with-load-time-value-cleavir
-             (clasp-cleavir:compile-form form env)
-           #+(or)(literal:compile-load-time-value-thunk form))
+         (let* ((index (literal:with-load-time-value-cleavir
+                           (clasp-cleavir::compile-form form env)))
+                (result (make-instance 'clasp-cleavir:arrayed-literal :value form :index index)))
+           (check-type result clasp-cleavir:literal)
+           result)
          ;; COMPILE on the other hand evaluates the form and puts its
          ;; value in the run-time environment.
          ;; We use cleavir-env:eval rather than cclasp-eval-with-env so that it works
          ;; more correctly with alternate global environments.
-         (let ((value (cleavir-env:eval form env env)))
-           (cmp:codegen-rtv nil value))))))
+         (let* ((value (cleavir-env:eval form env env))
+                (index (cmp:codegen-rtv nil value))
+                (result (make-instance 'clasp-cleavir:arrayed-literal :value form :index index)))
+           (check-type result clasp-cleavir:literal)
+           result)))))
 
 
 (defun find-load-time-value-asts (ast)
@@ -429,9 +441,11 @@ If this form has already been precalculated then just return the precalculated-v
                           (cleavir-ast:form (first ast-parent)))
                         load-time-value-asts)))
     (loop for (ast parent) in load-time-value-asts
+          for index = (let ((index (generate-new-precalculated-value-index env (cleavir-ast:form ast) (cleavir-ast:read-only-p ast))))
+                        (check-type index clasp-cleavir:literal)
+                        index)
        do (change-class ast 'precalc-value-reference-ast ; 'cleavir-ast:t-aref-ast
-                        :index (generate-new-precalculated-value-index env
-                                (cleavir-ast:form ast) (cleavir-ast:read-only-p ast))
+                        :index index
                         :original-object (cleavir-ast:form ast)))
     (clasp-cleavir-ast:make-precalc-vector-function-ast
      ast (mapcar #'first load-time-value-asts) forms (cleavir-ast:policy ast))))

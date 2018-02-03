@@ -18,16 +18,16 @@
 ;;;;   return, an index into the load-time-values table for run-time.
 ;;;; * When the compiler runs into load-time-value, it calls REFERENCE-LOAD-TIME-VALUE,  *****WRONG????
 ;;;;   which also returns an index into the load-time-values table that will etc.
-;;;; * The compiler provides a function COMPILE-FORM that LTV can call. COMPILE-FORM
+;;;; * The compiler provides a function COMPILE-CST-OR-FORM that LTV can call. COMPILE-FORM
 ;;;;   receives a lisp form, compiles it, and arranges for it to be put into the FASL
-;;;;   just like any function compile-file runs into. COMPILE-FORM returns some kind of
+;;;;   just like any function compile-file runs into. COMPILE-CST-OR-FORM returns some kind of
 ;;;;   handle that can be used in the run-all code.
 ;;;; * Code that will be put into the LTV initialization is added by LTV via
 ;;;;   ADD-TO-RUN-ALL. This is not lisp code, but rather a restricted language:
 ;;;;
 ;;;; * (SET-LTV index form) evaluates form and sets entry number INDEX in the LTV table
 ;;;;   to the value returned.
-;;;; * (CALL handle) calls the function denoted by HANDLE (returned from COMPILE-FORM)
+;;;; * (CALL handle) calls the function denoted by HANDLE (returned from COMPILE-CST-OR-FORM)
 
 (defvar *gcroots-in-module*)
 (defvar *value-table-id* 0)
@@ -76,11 +76,11 @@
 ;;;
 
 ;;; Return NIL if the object is not immediate - or return
-;;;     a tagged pointer that represents the immediate object.
+;;;     a fixnum that can be cast directly to a tagged pointer that represents the immediate object.
 (defun immediate-object-or-nil (x)
   (let ((immediate (core:create-tagged-immediate-value-or-nil x)))
     (if immediate
-        (let ((val (irc-int-to-ptr (jit-constant-i64 immediate) %t*%)))
+        (let ((val (irc-maybe-cast-integer-to-t* immediate)))
           val)
         (progn
           nil))))
@@ -552,7 +552,7 @@ Return the orderered-raw-constants-list and the constants-table GlobalVariable"
    Otherwise return (values creator T)."
   (let ((immediate (immediate-object-or-nil object)))
     (if immediate
-        (values immediate nil)
+        (values (irc-maybe-cast-integer-to-t* immediate) nil)
         (multiple-value-bind (similarity creator)
             (object-similarity-table-and-creator object read-only-p)
           (let ((existing (if similarity (find-similar object similarity) nil)))
@@ -591,7 +591,7 @@ Return the orderered-raw-constants-list and the constants-table GlobalVariable"
    Otherwise return (values creator T)."
   (let ((immediate (immediate-object-or-nil object)))
     (if immediate
-        (values immediate NIL)
+        (values (irc-maybe-cast-integer-to-t* immediate) NIL)
         (let* ((similarity *run-time-coalesce*)
                (existing (find-similar object similarity)))
           (if existing
@@ -707,7 +707,7 @@ If it isn't NIL then copy the literal from its index in the LTV into result."
           data-or-index)
         (progn
           (when result
-            (irc-store data-or-index result))
+            (irc-store (cmp:ensure-jit-constant-i64 data-or-index) result))
           :poison-value-from-codegen-literal))))
 
 ;; Should be bclasp-compile-load-time-value-thunk

@@ -713,5 +713,5 @@
     (si::package-lock "COMMON-LISP" x)
     nil))
 
-(setf *clos-booted* t)
+#+cclasp (eval-when (:load-toplevel) (setf clos:*clos-booted* t))
 

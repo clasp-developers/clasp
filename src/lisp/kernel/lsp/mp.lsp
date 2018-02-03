@@ -36,7 +36,6 @@
 
 #+threads
 (defmacro without-interrupts (&body body)
-  #!+sb-doc
   "Executes BODY with all deferrable interrupts disabled. Deferrable
 interrupts arriving during execution of the BODY take effect after BODY has
 been executed.
