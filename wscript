@@ -733,6 +733,7 @@ def configure(cfg):
 #    cfg.define("DEBUG_DYNAMIC_BINDING_STACK",1)
 #    cfg.define("DEBUG_VALUES",1)   # turn on printing (values x y z) values when core:*debug-values* is not nil
 #    cfg.define("DEBUG_IHS",1)
+    cfg.define("DEBUG_TRACK_UNWINDS",1)  # Count cc_unwind calls and report in TIME
 #    cfg.define("DEBUG_NO_UNWIND",1)
 #    cfg.define("DEBUG_STARTUP",1)
 #    cfg.define("DEBUG_ACCESSORS",1)
