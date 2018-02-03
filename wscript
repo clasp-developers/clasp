@@ -81,8 +81,8 @@ def grovel(bld):
     
 def update_submodules(cfg):
     os.system("echo This is where I get submodules")
-    sicl_commit = "5ca17b04c4f3a371ce9f2798be843d436aa70516"
-    cst_commit = "39a0e53b9f9109964c57382fcc8ca53d75fb6c12"
+    sicl_commit = "2bb2045b9061dc78aeb5fbd2d1f6b17f9128a4c2"
+    cst_commit = "c8305d8069e67c0b3f37a2cf6a79bcba501801d8"
     closer_mop_commit = "d4d1c7aa6aba9b4ac8b7bb78ff4902a52126633f"
     alexandria_commit = "e5c54bc30b0887c237bde2827036d17315f88737"
     os.system("./tools/fetch-revision.sh https://github.com/drmeister/SICL.git src/lisp/kernel/contrib/sicl %s" % sicl_commit)
