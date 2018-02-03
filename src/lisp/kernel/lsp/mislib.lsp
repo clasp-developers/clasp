@@ -61,14 +61,14 @@ successfully, T is returned, else error."
 	 llvm-finalization-number-end
 	 (clang-link-time-start llvm-sys:*accumulated-clang-link-time*)
 	 (clang-link-number-start llvm-sys:*number-of-clang-links*)
-         #+(and cclasp debug-track-unwinds) (start-unwinds (gctools:unwind-counter))
-         #+(and cclasp debug-track-unwinds) end-unwinds
-         #+(and cclasp debug-track-unwinds) (start-return-from (gctools:return-from-counter))
-         #+(and cclasp debug-track-unwinds) end-return-from
-         #+(and cclasp debug-track-unwinds) (start-dynamic-go (gctools:dynamic-go-counter))
-         #+(and cclasp debug-track-unwinds) end-dynamic-go
-         #+(and cclasp debug-track-unwinds) (start-catch-throw (gctools:catch-throw-counter))
-         #+(and cclasp debug-track-unwinds) end-catch-throw
+         #+(and debug-track-unwinds) (start-unwinds (gctools:unwind-counter))
+         #+(and debug-track-unwinds) end-unwinds
+         #+(and debug-track-unwinds) (start-return-from (gctools:return-from-counter))
+         #+(and debug-track-unwinds) end-return-from
+         #+(and debug-track-unwinds) (start-dynamic-go (gctools:dynamic-go-counter))
+         #+(and debug-track-unwinds) end-dynamic-go
+         #+(and debug-track-unwinds) (start-catch-throw (gctools:catch-throw-counter))
+         #+(and debug-track-unwinds) end-catch-throw
 	 clang-link-time-end
 	 clang-link-number-end
 	 gc-start
@@ -94,10 +94,10 @@ successfully, T is returned, else error."
 	    clang-link-time-end llvm-sys:*accumulated-clang-link-time*
 	    clang-link-number-end llvm-sys:*number-of-clang-links*
             )
-      #+(and cclasp debug-track-unwinds) (setf end-unwinds (gctools:unwind-counter))
-      #+(and cclasp debug-track-unwinds) (setf end-return-from (gctools:return-from-counter))
-      #+(and cclasp debug-track-unwinds) (setf end-dynamic-go (gctools:dynamic-go-counter))
-      #+(and cclasp debug-track-unwinds) (setf end-catch-throw (gctools:catch-throw-counter))
+      #+(and debug-track-unwinds) (setf end-unwinds (gctools:unwind-counter))
+      #+(and debug-track-unwinds) (setf end-return-from (gctools:return-from-counter))
+      #+(and debug-track-unwinds) (setf end-dynamic-go (gctools:dynamic-go-counter))
+      #+(and debug-track-unwinds) (setf end-catch-throw (gctools:catch-throw-counter))
       (format *trace-output*
               "Real time           : ~,3F secs~%~
               Run time            : ~,3F secs~%~
@@ -115,7 +115,7 @@ successfully, T is returned, else error."
               (- clang-link-time-end clang-link-time-start)
               (- clang-link-number-end clang-link-number-start)
               (- interpreted-calls-end interpreted-calls-start))
-      #+(and cclasp debug-track-unwinds)
+      #+(and debug-track-unwinds)
       (format *trace-output*
               "Unwinds             : ~A~%~
               ReturnFrom unwinds   : ~A~%~
