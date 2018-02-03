@@ -645,7 +645,7 @@ def configure(cfg):
     print("cfg.env['DEST_OS'] == %s\n" % cfg.env['DEST_OS'])
     if (cfg.env['DEST_OS'] == DARWIN_OS ):
         cfg.define("_TARGET_OS_DARWIN",1)
-#        cfg.define("USE_LIBUNWIND",1) # use LIBUNWIND
+        cfg.define("USE_LIBUNWIND",1) # use LIBUNWIND
     elif (cfg.env['DEST_OS'] == LINUX_OS ):
         cfg.define("_TARGET_OS_LINUX",1);
 #        cfg.define("USE_LIBUNWIND",1) # dont use LIBUNWIND for now
@@ -794,7 +794,6 @@ def configure(cfg):
     if (cfg.env['DEST_OS'] == LINUX_OS ):
         cfg.env.append_value('LIB', cfg.env.LIB_DL)
         cfg.env.append_value('LIB', cfg.env.LIB_GCC_S)
-        if (cfg.env[
         cfg.env.append_value('LIB', cfg.env.LIB_UNWIND_X86_64)
         cfg.env.append_value('LIB', cfg.env.LIB_UNWIND)
         cfg.env.append_value('LIB', cfg.env.LIB_LZMA)
