@@ -1261,7 +1261,7 @@ Write T_O* pointers into the current multiple-values array starting at the (offs
 (defun throw-if-mismatched-arguments (fn-name args)
   (let* ((info (gethash fn-name (get-primitives)))
          (_ (unless info
-              (core:bformat *debug-io* "Unknown primitive %s\n" fn)
+              (core:bformat *debug-io* "Unknown primitive %s\n" fn-name)
               (error "Unknown primitive ~a" fn-name)))
          (return-ty (primitive-return-type info))
          (required-args-ty (primitive-argument-types info))
