@@ -37,56 +37,56 @@
 
 #+(or)
 (progn
-;; Really want a bit-vector-equal intrinsic here.
-;; Maybe even separate simple and not vectors.
+  ;; Really want a bit-vector-equal intrinsic here.
+  ;; Maybe even separate simple and not vectors.
 
-(defmacro type2case (x y fail &rest cases)
-  (let ((sx (gensym "X")) (sy (gensym "Y")))
-    `(let ((,sx ,x) (,sy ,y))
-       (cond ,@(loop for (type . body) in cases
-                     collect `((typep ,sx ',type)
-                               (if (typep ,sy ',type)
-                                   (progn ,@body)
-                                   ,fail))
-                     collect `((typep ,sy ',type) ,fail))
-             (t ,fail)))))
+  (defmacro type2case (x y fail &rest cases)
+    (let ((sx (gensym "X")) (sy (gensym "Y")))
+      `(let ((,sx ,x) (,sy ,y))
+         (cond ,@(loop for (type . body) in cases
+                       collect `((typep ,sx ',type)
+                                 (if (typep ,sy ',type)
+                                     (progn ,@body)
+                                     ,fail))
+                       collect `((typep ,sy ',type) ,fail))
+               (t ,fail)))))
 
-(defun equal (x y)
-  (or (eql x y)
-      (type2case x y nil
-        (cons (and (equal (car x) (car y))
-                   (equal (cdr x) (cdr y))))
-        (string (string= x y))
-        (bit-vector (bit-vector-equal x y))
-        (pathname (pathname-equal x y)))))
+  (defun equal (x y)
+    (or (eql x y)
+        (type2case x y nil
+                   (cons (and (equal (car x) (car y))
+                              (equal (cdr x) (cdr y))))
+                   (string (string= x y))
+                   (bit-vector (bit-vector-equal x y))
+                   (pathname (pathname-equal x y)))))
 
-(defun hash-table-equalp (x y)
-  (and (eq (hash-table-count x) (hash-table-count y))
-       (eq (hash-table-test x) (hash-table-test y))
-       ;; since the number of entries is the same,
-       ;; we don't need to check for extra keys in y.
-       (maphash (lambda (k v)
-                  (multiple-value-bind (otherv present)
-                      (gethash k y)
-                    (unless present
-                      (return-from hash-table-equalp nil))
-                    (unless (equalp v otherv)
-                      (return-from hash-table-equalp nil))))
-                x)
-       t))
+  (defun hash-table-equalp (x y)
+    (and (eq (hash-table-count x) (hash-table-count y))
+         (eq (hash-table-test x) (hash-table-test y))
+         ;; since the number of entries is the same,
+         ;; we don't need to check for extra keys in y.
+         (maphash (lambda (k v)
+                    (multiple-value-bind (otherv present)
+                        (gethash k y)
+                      (unless present
+                        (return-from hash-table-equalp nil))
+                      (unless (equalp v otherv)
+                        (return-from hash-table-equalp nil))))
+                  x)
+         t))
 
-(defun equalp (x y)
-  (or (eq x y)
-      (type2case x y nil
-        (character (char-equal x y))
-        (number (= x y))
-        (cons (and (equalp (car x) (car y))
-                   (equalp (cdr x) (cdr y))))
-        (array (array-equalp x y))
-        (structure-object (structure-equalp x y))
-        (hash-table (hash-table-equalp x y))
-        (pathname (pathname-equal x y)))))
-)
+  (defun equalp (x y)
+    (or (eq x y)
+        (type2case x y nil
+                   (character (char-equal x y))
+                   (number (= x y))
+                   (cons (and (equalp (car x) (car y))
+                              (equalp (cdr x) (cdr y))))
+                   (array (array-equalp x y))
+                   (structure-object (structure-equalp x y))
+                   (hash-table (hash-table-equalp x y))
+                   (pathname (pathname-equal x y)))))
+  )
 
 (progn
   (debug-inline "not")
@@ -287,7 +287,7 @@
           (cleavir-primop:rplacd p v)
           p)
         (error 'type-error :datum p :expected-type 'cons))))
-                                        
+
 
 (debug-inline "primop")
 
@@ -345,17 +345,17 @@
           generic (return-from ,inlined-name ,@generic)))))
   (define-with-contagion primop:inlined-two-arg-+ nil (x y)
     ((cleavir-primop:let-uninitialized (z)
-       (if (cleavir-primop:fixnum-add x y z)
-           z
-           (core:convert-overflow-result-to-bignum z))))
+                                       (if (cleavir-primop:fixnum-add x y z)
+                                           z
+                                           (core:convert-overflow-result-to-bignum z))))
     ((cleavir-primop:float-add single-float x y))
     ((cleavir-primop:float-add double-float x y))
     ((core:two-arg-+ x y)))
   (define-with-contagion primop:inlined-two-arg-- nil (x y)
     ((cleavir-primop:let-uninitialized (z)
-       (if (cleavir-primop:fixnum-sub x y z)
-           z
-           (core:convert-overflow-result-to-bignum z))))
+                                       (if (cleavir-primop:fixnum-sub x y z)
+                                           z
+                                           (core:convert-overflow-result-to-bignum z))))
     ((cleavir-primop:float-sub single-float x y))
     ((cleavir-primop:float-sub double-float x y))
     ((core:two-arg-- x y)))
@@ -431,335 +431,358 @@
   (defun minusp (number)
     (< number 0)))
 
+;;; Try 1
+;;; #+(or) (progn
 
 ;;; ------------------------------------------------------------
 ;;;
 ;;; Array functions
 ;;;
 
-(debug-inline "array-total-size")
-(declaim (inline array-total-size))
-(defun array-total-size (array)
-  (etypecase array
-    ((simple-array * (*)) (core::vector-length array))
-    ;; MDArray
-    (array (core::%array-total-size array))))
+        (debug-inline "array-total-size")
+        (declaim (inline array-total-size))
+        (defun array-total-size (array)
+          (etypecase array
+            ((simple-array * (*)) (core::vector-length array))
+            ;; MDArray
+            (array (core::%array-total-size array))))
 
-(debug-inline "array-rank")
-(declaim (inline array-rank))
-(defun array-rank (array)
-  (etypecase array
-    ((simple-array * (*)) 1)
-    (array (core::%array-rank array))))
+        (debug-inline "array-rank")
+        (declaim (inline array-rank))
+        (defun array-rank (array)
+          (etypecase array
+            ((simple-array * (*)) 1)
+            (array (core::%array-rank array))))
 
-(debug-inline "array-dimension")
-(declaim (inline array-dimension))
-(defun array-dimension (array axis-number)
-  (etypecase array
-    ((simple-array * (*))
-     (if (zerop axis-number)
-         (core::vector-length array)
-         (error "Invalid axis number ~d for array of rank ~d" axis-number 1)))
-    (array
-     (if (and (>= axis-number 0) (< axis-number (core::%array-rank array)))
-         (core::%array-dimension array axis-number)
-         (error "Invalid axis number ~d for array of rank ~d" axis-number (core::%array-rank array))))))
+        (debug-inline "array-dimension")
+        (declaim (inline array-dimension))
+        (defun array-dimension (array axis-number)
+          (etypecase array
+            ((simple-array * (*))
+             (if (zerop axis-number)
+                 (core::vector-length array)
+                 (error "Invalid axis number ~d for array of rank ~d" axis-number 1)))
+            (array
+             (if (and (>= axis-number 0) (< axis-number (core::%array-rank array)))
+                 (core::%array-dimension array axis-number)
+                 (error "Invalid axis number ~d for array of rank ~d" axis-number (core::%array-rank array))))))
 
-;; Unsafe version for array-row-major-index
-(debug-inline "%array-dimension")
-(declaim (inline %array-dimension))
-(defun %array-dimension (array axis-number)
-  (etypecase array
-    ((simple-array * (*))
-     (core::vector-length array))
-    (array (core::array-dimension array axis-number))))
+        ;; Unsafe version for array-row-major-index
+        (debug-inline "%array-dimension")
+        (declaim (inline %array-dimension))
+        (defun %array-dimension (array axis-number)
+          (etypecase array
+            ((simple-array * (*))
+             (core::vector-length array))
+            (array (core::array-dimension array axis-number))))
 
-(debug-inline "svref")
-(declaim (inline svref))
-(defun svref (vector index)
-  (if (typep vector 'simple-vector)
-      (if (typep index 'fixnum)
-          (let ((ats (core::vector-length vector)))
-            (if (and (<= 0 index) (< index ats))
-                (cleavir-primop:aref vector index t t t)
-                (error "Invalid index ~d for vector of length ~d" index ats)))
-          (error 'type-error :datum index :expected-type 'fixnum))
-      (error 'type-error :datum vector :expected-type 'simple-vector)))
+        (debug-inline "svref")
+        (declaim (inline svref))
+        (defun svref (vector index)
+          (if (typep vector 'simple-vector)
+              (if (typep index 'fixnum)
+                  (let ((ats (core::vector-length vector)))
+                    (if (and (<= 0 index) (< index ats))
+                        (cleavir-primop:aref vector index t t t)
+                        (error "Invalid index ~d for vector of length ~d" index ats)))
+                  (error 'type-error :datum index :expected-type 'fixnum))
+              (error 'type-error :datum vector :expected-type 'simple-vector)))
 
 ;;; (setf (svref x y) z) macroexpands into (core:setf-svref x y z)
 
-(debug-inline "core:setf-svref")
-(declaim (inline core:setf-svref))
-(defun core:setf-svref (vector index value)
-  (if (typep vector 'simple-vector)
-      (if (typep index 'fixnum)
-          (let ((ats (core::vector-length vector)))
-            (if (and (<= 0 index) (< index ats))
-                (progn (cleavir-primop:aset vector index value t t t)
-                       value)
-                (error "Invalid index ~d for vector of length ~d" index ats)))
-          (error 'type-error :datum index :expected-type 'fixnum))
-      (error 'type-error :datum vector :expected-type 'simple-vector)))
+        (debug-inline "core:setf-svref")
+        (declaim (inline core:setf-svref))
+        (defun core:setf-svref (vector index value)
+          (if (typep vector 'simple-vector)
+              (if (typep index 'fixnum)
+                  (let ((ats (core::vector-length vector)))
+                    (if (and (<= 0 index) (< index ats))
+                        (progn (cleavir-primop:aset vector index value t t t)
+                               value)
+                        (error "Invalid index ~d for vector of length ~d" index ats)))
+                  (error 'type-error :datum index :expected-type 'fixnum))
+              (error 'type-error :datum vector :expected-type 'simple-vector)))
 
-(debug-inline "%unsafe-vector-ref")
-(declaim (inline %unsafe-vector-ref))
-(defun %unsafe-vector-ref (array index)
-  ;; FIXME: type inference should be able to remove the redundant
-  ;; checking that it's an array... maybe?
-  (macrolet ((mycase (&rest specs)
-               `(typecase array
-                  ,@(loop for (type boxed) in specs
-                          collect `((simple-array ,type (*))
-                                    (cleavir-primop:aref array index ,type t ,boxed)))
-                  (t
-                   (core:bformat t "unsafe-vector-ref array-element-type: %s\n" (array-element-type array))
-                   (error "BUG: unsafe-vector-ref unknown vector ~a" array)))))
-    (mycase (t t) (base-char nil) (character nil)
-            (double-float nil) (single-float nil)
-            (fixnum nil)
-            (ext:integer64 nil) (ext:integer32 nil)
-            (ext:integer16 nil) (ext:integer8 nil)
-            (ext:byte64 nil) (ext:byte32 nil)
-            (ext:byte16 nil) (ext:byte8 nil)
-            (bit t))))
+        (debug-inline "%unsafe-vector-ref")
+        (declaim (inline %unsafe-vector-ref))
+        (defun %unsafe-vector-ref (array index)
+          ;; FIXME: type inference should be able to remove the redundant
+          ;; checking that it's an array... maybe?
+          (macrolet ((mycase (&rest specs)
+                       `(typecase array
+                          ,@(loop for (type boxed) in specs
+                                  collect `((simple-array ,type (*))
+                                            (cleavir-primop:aref array index ,type t ,boxed)))
+                          (t
+                           (core:bformat t "unsafe-vector-ref array-element-type: %s\n" (array-element-type array))
+                           (error "BUG: unsafe-vector-ref unknown vector ~a" array)))))
+            (mycase (t t) (base-char nil) (character nil)
+                    (double-float nil) (single-float nil)
+                    (fixnum nil)
+                    (ext:integer64 nil) (ext:integer32 nil)
+                    (ext:integer16 nil) (ext:integer8 nil)
+                    (ext:byte64 nil) (ext:byte32 nil)
+                    (ext:byte16 nil) (ext:byte8 nil)
+                    (bit t))))
 
 ;;; This is "unsafe" in that it doesn't bounds check.
 ;;; It DOES check that the value is of the correct type,
 ;;; because this is the only place we know the type.
 
-(debug-inline "%unsafe-vector-set")
-(declaim (inline %unsafe-vector-set))
-(defun %unsafe-vector-set (array index value)
-  (macrolet ((mycase (&rest specs)
-               `(typecase array
-                  ,@(loop for (type boxed) in specs
-                          collect `((simple-array ,type (*))
-                                    (unless (typep value ',type)
-                                      (error 'type-error :datum value :expected-type ',type))
-                                    (cleavir-primop:aset array index value ,type t ,boxed)
-                                    value))
-                  ;; should be unreachable
-                  (t
-                   (core:bformat t "unsafe-vector-set array-element-type: %s\n" (array-element-type array))
-                   (error "BUG: unsafe-vector-set unknown vector ~a" array)))))
-    (mycase (t t) (base-char nil) (character nil)
-            (double-float nil) (single-float nil)
-            (fixnum nil)
-            (ext:integer64 nil) (ext:integer32 nil)
-            (ext:integer16 nil) (ext:integer8 nil)
-            (ext:byte64 nil) (ext:byte32 nil)
-            (ext:byte16 nil) (ext:byte8 nil)
-            (bit t))))
+        (debug-inline "%unsafe-vector-set")
+        (declaim (inline %unsafe-vector-set))
+        (defun %unsafe-vector-set (array index value)
+          (macrolet ((mycase (&rest specs)
+                       `(typecase array
+                          ,@(loop for (type boxed) in specs
+                                  collect `((simple-array ,type (*))
+                                            (unless (typep value ',type)
+                                              (error 'type-error :datum value :expected-type ',type))
+                                            (cleavir-primop:aset array index value ,type t ,boxed)
+                                            value))
+                          ;; should be unreachable
+                          (t
+                           (core:bformat t "unsafe-vector-set array-element-type: %s\n" (array-element-type array))
+                           (error "BUG: unsafe-vector-set unknown vector ~a" array)))))
+            (mycase (t t) (base-char nil) (character nil)
+                    (double-float nil) (single-float nil)
+                    (fixnum nil)
+                    (ext:integer64 nil) (ext:integer32 nil)
+                    (ext:integer16 nil) (ext:integer8 nil)
+                    (ext:byte64 nil) (ext:byte32 nil)
+                    (ext:byte16 nil) (ext:byte8 nil)
+                    (bit t))))
 
-(debug-inline "row-major-array-in-bounds-p")
-(declaim (inline row-major-array-in-bounds-p))
-(defun row-major-array-in-bounds-p (array index)
-  (etypecase array
-    ((simple-array * (*))
-     (and (<= 0 index) (< index (core::vector-length array))))
-    (array
-     (and (<= 0 index) (< index (core::%array-total-size array))))))
+        (debug-inline "row-major-array-in-bounds-p")
+        (declaim (inline row-major-array-in-bounds-p))
+        (defun row-major-array-in-bounds-p (array index)
+          (etypecase array
+            ((simple-array * (*))
+             (and (<= 0 index) (< index (core::vector-length array))))
+            (array
+             (and (<= 0 index) (< index (core::%array-total-size array))))))
 
-;; FIXME: This could be a function returning two values. But that's
-;; quite inefficient at the moment.
-(defmacro with-array-data ((arrayname offsetname array) &body body)
-  `(let ((,arrayname ,array) (,offsetname 0))
-     (declare (type fixnum ,offsetname))
-     (etypecase ,arrayname
-       ((simple-array * (*))) ; already all set
-       (simple-array ; multidimensional. guaranteed to have offset zero and no recursion.
-        (setf ,arrayname (core::%displacement ,arrayname)))
-       (array
-        (loop
-          (let ((displacement (core::%displacement ,arrayname))
-                (displaced-index-offset (core::%displaced-index-offset ,arrayname)))
-            (setf underlying-array displacement
-                  ,offsetname (+ ,offsetname displaced-index-offset)))
-          (when (typep ,arrayname '(simple-array * (*))) (return)))))
-     ,@body))
+        ;; FIXME: This could be a function returning two values. But that's
+        ;; quite inefficient at the moment.
+        (defmacro with-array-data ((arrayname offsetname array) &body body)
+          `(let ((,arrayname ,array) (,offsetname 0))
+             (declare (type fixnum ,offsetname))
+             (etypecase ,arrayname
+               ((simple-array * (*)))   ; already all set
+               (simple-array ; multidimensional. guaranteed to have offset zero and no recursion.
+                (setf ,arrayname (core::%displacement ,arrayname)))
+               (array
+                (loop
+                  (let ((displacement (core::%displacement ,arrayname))
+                        (displaced-index-offset (core::%displaced-index-offset ,arrayname)))
+                    (setf underlying-array displacement
+                          ,offsetname (+ ,offsetname displaced-index-offset)))
+                  (when (typep ,arrayname '(simple-array * (*))) (return)))))
+             ,@body))
 
-#+(or)
-(eval-when (:compile-toplevel :execute)
-  (trace clasp-cleavir::cleavir-compile-file-cst-or-form
-         clasp-cleavir::compile-cst-or-form
-         clasp-cleavir::compile-lambda-form-to-llvm-function
-         clasp-cleavir::run-thunk
-         clasp-cleavir::cclasp-eval-with-env
-         clasp-cleavir::cclasp-compile-in-env
-         clasp-cleavir::cclasp-compile*
-         clasp-cleavir::cclasp-compile-to-module-with-run-time-table
-         clasp-cleavir::compile-cst-or-form-to-mir
-         cleavir-cst-to-ast:cst-to-ast
-         cleavir-cst-to-ast::convert
-         )
-  )
+        #+(or)
+        (eval-when (:compile-toplevel :execute)
+          (trace clasp-cleavir::cleavir-compile-file-cst-or-form
+                 clasp-cleavir::compile-cst-or-form
+                 clasp-cleavir::compile-lambda-form-to-llvm-function
+                 clasp-cleavir::run-thunk
+                 clasp-cleavir::cclasp-eval-with-env
+                 clasp-cleavir::cclasp-compile-in-env
+                 clasp-cleavir::cclasp-compile*
+                 clasp-cleavir::cclasp-compile-to-module-with-run-time-table
+                 clasp-cleavir::compile-cst-or-form-to-mir
+                 cleavir-cst-to-ast:cst-to-ast
+                 cleavir-cst-to-ast::convert
+                 )
+          )
+;;;; Try 2
+;;;#+(or)(progn
 
-(progn
-  (debug-inline "cl:row-major-aref")
-  (declaim (inline cl:row-major-aref))
-  (defun cl:row-major-aref (array index)
-    ;; First, undisplace. This can be done independently
-    ;; of the index, meaning it could potentially be
-    ;; moved out of loops, though that can invite inconsistency
-    ;; in a multithreaded environment.
-    (with-array-data (underlying-array offset array)
-      ;; Now bounds check. Use the original arguments.
-      (unless (row-major-array-in-bounds-p array index)
-        (error "~d is not a valid row-major index for ~a" index array))
-      ;; Okay, now array is a vector/simple, and index is valid.
-      ;; This function takes care of element type discrimination.
-      (%unsafe-vector-ref underlying-array (+ index offset)))))
+       (progn
+          (debug-inline "cl:row-major-aref")
+          (declaim (inline cl:row-major-aref))
+          (defun cl:row-major-aref (array index)
+            ;; First, undisplace. This can be done independently
+            ;; of the index, meaning it could potentially be
+            ;; moved out of loops, though that can invite inconsistency
+            ;; in a multithreaded environment.
+            (with-array-data (underlying-array offset array)
+              ;; Now bounds check. Use the original arguments.
+              (unless (row-major-array-in-bounds-p array index)
+                (error "~d is not a valid row-major index for ~a" index array))
+              ;; Okay, now array is a vector/simple, and index is valid.
+              ;; This function takes care of element type discrimination.
+              (%unsafe-vector-ref underlying-array (+ index offset)))))
 
-(progn
-  (debug-inline "core:row-major-aset")
-  (declaim (inline core:row-major-aset))
-  (defun core:row-major-aset (array index value)
-    (with-array-data (underlying-array offset array)
-      (unless (row-major-array-in-bounds-p array index)
-        (error "~d is not a valid row-major index for ~a" index array))
-      (%unsafe-vector-set underlying-array (+ index offset) value))))
+        (progn
+          (debug-inline "core:row-major-aset")
+          (declaim (inline core:row-major-aset))
+          (defun core:row-major-aset (array index value)
+            (with-array-data (underlying-array offset array)
+              (unless (row-major-array-in-bounds-p array index)
+                (error "~d is not a valid row-major index for ~a" index array))
+              (%unsafe-vector-set underlying-array (+ index offset) value))))
+
+;;;; Try 3
+;;;#+(or)(progn
+
+        (debug-inline "schar")
+        (declaim (inline schar core:schar-set char core:char-set))
+        (defun schar (string index)
+          (row-major-aref (the simple-string string) index))
+
+        (debug-inline "core:schar-set")
+        (defun core:schar-set (string index value)
+          (core:row-major-aset (the simple-string string) index value))
+
+        (debug-inline "char")
+        (defun char (string index)
+          (row-major-aref (the string string) index))
+        (defun core:char-set (string index value)
+          (core:row-major-aset (the string string) index value))
+
+        (debug-inline "row-major-index-computer")
+        (defun row-major-index-computer (array dimsyms subscripts)
+          ;; assumes once-only is taken care of
+          (let ((dimsyms (loop for sub in (rest subscripts) collect (gensym "DIM")))
+                (subsyms (loop for sub in subscripts collect (gensym "SUB"))))
+            (if subscripts
+                `(let* ((,(first subsyms) 1)
+                        ,@(loop for dimsym in (reverse dimsyms)
+                                for subsym in (cdr subsyms)
+                                for lastsym in subsyms
+                                collect `(,subsym (* ,lastsym ,dimsym))))
+                   (declare (type fixnum ,@subsyms))
+                   (the fixnum
+                        (+ ,@(loop for sub in subscripts
+                                   for subsym in (reverse subsyms)
+                                   collect `(* ,sub ,subsym)))))
+                '0)))
 
 
-(debug-inline "schar")
-(declaim (inline schar core:schar-set char core:char-set))
-(defun schar (string index)
-  (row-major-aref (the simple-string string) index))
+        (define-compiler-macro array-row-major-index (array &rest subscripts)
+          (let* ((rank (length subscripts))
+                 (sarray (gensym "ARRAY"))
+                 (ssubscripts (loop repeat rank collecting (gensym "SUBSCRIPT")))
+                 (dimsyms (loop repeat rank collecting (gensym "DIMENSION")))
+                 (rmindex (gensym "ROW-MAJOR-INDEX")))
+            ;; First up, once-only the array and subscripts.
+            `(let ((,sarray ,array)
+                   ,@(loop for ssub in ssubscripts for sub in subscripts
+                           collecting `(,ssub ,sub)))
+               (declare (type fixnum ,@ssubscripts))
+               ;; Now verify that the rank is correct
+               (unless (eq (array-rank ,sarray) ,rank)
+                 (error "Wrong number of subscripts, ~d, for an array of rank ~d."
+                        ,rank (array-rank ,sarray)))
+               ;; We need the array dimensions, so bind those
+               (let (,@(loop for dimsym in dimsyms
+                             for axis below rank
+                             collect `(dimsym (%array-dimension ,sarray ,axis))))
+                 (declare (type fixnum ,@dimsyms))
+                 ;; Check that the index is valid
+                 ,@(loop for ssub in ssubscripts
+                         for dimsym in dimsyms
+                         for axis below rank
+                         collect `(unless (and (>= ,ssub 0) (< ,ssub ,dimsym))
+                                    (error "Invalid index ~d for axis ~d of array: expected 0-~d"
+                                           ,ssub ,axis ,dimsym)))
+                 ;; Now we know we're good, do the actual computation
+                 ,(row-major-index-computer sarray dimsyms ssubscripts)))))
 
-(debug-inline "core:schar-set")
-(defun core:schar-set (string index value)
-  (core:row-major-aset (the simple-string string) index value))
+        #+(or)
+        (define-compiler-macro %aref (array &rest subscripts)
+          (case (length subscripts)
+            ((1) `(%row-major-aref ,array ,(first subscripts)))
+            (t (let ((asym (gensym "ARRAY")))
+                 `(let ((,asym ,array))
+                    (%row-major-aref ,asym (array-row-major-index ,asym ,@subscripts)))))))
 
-(debug-inline "char")
-(defun char (string index)
-  (row-major-aref (the string string) index))
-(defun core:char-set (string index value)
-  (core:row-major-aset (the string string) index value))
-
-(debug-inline "row-major-index-computer")
-(defun row-major-index-computer (array dimsyms subscripts)
-  ;; assumes once-only is taken care of
-  (let ((dimsyms (loop for sub in (rest subscripts) collect (gensym "DIM")))
-        (subsyms (loop for sub in subscripts collect (gensym "SUB"))))
-    (if subscripts
-        `(let* ((,(first subsyms) 1)
-                ,@(loop for dimsym in (reverse dimsyms)
-                        for subsym in (cdr subsyms)
-                        for lastsym in subsyms
-                        collect `(,subsym (* ,lastsym ,dimsym))))
-           (declare (type fixnum ,@subsyms))
-           (the fixnum
-                (+ ,@(loop for sub in subscripts
-                           for subsym in (reverse subsyms)
-                           collect `(* ,sub ,subsym)))))
-        '0)))
-
-(define-compiler-macro array-row-major-index (array &rest subscripts)
-  (let* ((rank (length subscripts))
-         (sarray (gensym "ARRAY"))
-         (ssubscripts (loop repeat rank collecting (gensym "SUBSCRIPT")))
-         (dimsyms (loop repeat rank collecting (gensym "DIMENSION")))
-         (rmindex (gensym "ROW-MAJOR-INDEX")))
-    ;; First up, once-only the array and subscripts.
-    `(let ((,sarray ,array)
-           ,@(loop for ssub in ssubscripts for sub in subscripts
-                   collecting `(,ssub ,sub)))
-       (declare (type fixnum ,@ssubscripts))
-       ;; Now verify that the rank is correct
-       (unless (eq (array-rank ,sarray) ,rank)
-         (error "Wrong number of subscripts, ~d, for an array of rank ~d."
-                ,rank (array-rank ,sarray)))
-       ;; We need the array dimensions, so bind those
-       (let (,@(loop for dimsym in dimsyms
-                     for axis below rank
-                     collect `(dimsym (%array-dimension ,sarray ,axis))))
-         (declare (type fixnum ,@dimsyms))
-         ;; Check that the index is valid
-         ,@(loop for ssub in ssubscripts
-                 for dimsym in dimsyms
-                 for axis below rank
-                 collect `(unless (and (>= ,ssub 0) (< ,ssub ,dimsym))
-                            (error "Invalid index ~d for axis ~d of array: expected 0-~d"
-                                   ,ssub ,axis ,dimsym)))
-         ;; Now we know we're good, do the actual computation
-         ,(row-major-index-computer sarray dimsyms ssubscripts)))))
-
-#+(or)
-(define-compiler-macro %aref (array &rest subscripts)
-  (case (length subscripts)
-    ((1) `(%row-major-aref ,array ,(first subscripts)))
-    (t (let ((asym (gensym "ARRAY")))
-         `(let ((,asym ,array))
-            (%row-major-aref ,asym (array-row-major-index ,asym ,@subscripts)))))))
+;;; Try 5
+;;;#+(or)(progn
 
 ;;; ------------------------------------------------------------
 ;;;
 ;;; Sequence functions
 ;;;
 
-(debug-inline "length")
-(declaim (inline length))
-(defun length (sequence)
-  (etypecase sequence
-    (cons
-     (locally
-         (declare ;(optimize speed)
+;;; Try 8
+#+(or)(progn
+        (debug-inline "length")
+        (declaim (inline length))
+        (defun length (sequence)
+          (etypecase sequence
+            (cons
+             (locally
+                 (declare               ;(optimize speed)
                   (type cons sequence))
-       (let ((length 1))
-         (loop (let ((next (cdr sequence)))
-                 (etypecase next
-                   (cons (setf sequence next length (1+ length)))
-                   (null (return-from length length))))))))
-    (vector (core::vector-length sequence))
-    (null 0)))
+               (let ((length 1))
+                 (loop (let ((next (cdr sequence)))
+                         (etypecase next
+                           (cons (setf sequence next length (1+ length)))
+                           (null (return-from length length))))))))
+            (vector (core::vector-length sequence))
+            (null 0)))
 
-(debug-inline "elt")
-(declaim (inline elt))
-(defun elt (sequence index)
-  (etypecase sequence
-    (list (nth index sequence))
-    (vector (row-major-aref sequence index))
-    (t (error 'type-error :datum sequence :expected-type 'sequence))))
+;;; Try 7
+;;;#+(or)(progn
 
-(debug-inline "core:setf-elt")
-(declaim (inline core:setf-elt))
-(defun core:setf-elt (sequence index new-value)
-  (etypecase sequence
-    (list (setf (nth index sequence) new-value))
-    (vector (setf (row-major-aref sequence index) new-value))
-    (t (error 'type-error :datum sequence :expected-type 'sequence))))
+        (debug-inline "elt")
+        (declaim (inline elt))
+        (defun elt (sequence index)
+          (etypecase sequence
+            (list (nth index sequence))
+            (vector (row-major-aref sequence index))
+            (t (error 'type-error :datum sequence :expected-type 'sequence))))
+
+
+        (debug-inline "core:setf-elt")
+        (declaim (inline core:setf-elt))
+        (defun core:setf-elt (sequence index new-value)
+          (etypecase sequence
+            (list (setf (nth index sequence) new-value))
+            (vector (setf (row-major-aref sequence index) new-value))
+            (t (error 'type-error :datum sequence :expected-type 'sequence))))
+
+;;; Try 6
+;;;#+(or)(progn
 
 ;;; ------------------------------------------------------------
 ;;;
 ;;;  Copied from clasp/src/lisp/kernel/lsp/assorted.lsp
 ;;;    and put here so that the inline definition is available
 ;;;
-(declaim (inline core::coerce-fdesignator)
-	 (ftype (function ((or function symbol)) function)
-                core::coerce-fdesignator))
-(defun core::coerce-fdesignator (fdesignator)
-  "Take a CL function designator and spit out a function."
-  (etypecase fdesignator
-    (function fdesignator)
-    (symbol (fdefinition fdesignator))))
+        (declaim (inline core::coerce-fdesignator)
+                 (ftype (function ((or function symbol)) function)
+                        core::coerce-fdesignator))
+        (defun core::coerce-fdesignator (fdesignator)
+          "Take a CL function designator and spit out a function."
+          (etypecase fdesignator
+            (function fdesignator)
+            (symbol (fdefinition fdesignator))))
 
+
+
+;;;; Try 4
+;;;#+(or)(progn
 
 ;;; ------------------------------------------------------------
 ;;;
 ;;;  Copied from clasp/src/lisp/kernel/lsp/pprint.lsp
 ;;;    and put here so that the inline definition is available
 ;;;
-(in-package "SI")
+        (in-package "SI")
 
-(declaim (inline index-posn posn-index posn-column))
-(defun index-posn (index stream)
-  (declare (type index index) (type pretty-stream stream))
-  (+ index (pretty-stream-buffer-offset stream)))
-(defun posn-index (posn stream)
-  (declare (type posn posn) (type pretty-stream stream))
-  (- posn (pretty-stream-buffer-offset stream)))
-(defun posn-column (posn stream)
-  (declare (type posn posn) (type pretty-stream stream))
-  (index-column (posn-index posn stream) stream))
+        (declaim (inline index-posn posn-index posn-column))
+        (defun index-posn (index stream)
+          (declare (type index index) (type pretty-stream stream))
+          (+ index (pretty-stream-buffer-offset stream)))
+        (defun posn-index (posn stream)
+          (declare (type posn posn) (type pretty-stream stream))
+          (- posn (pretty-stream-buffer-offset stream)))
+        (defun posn-column (posn stream)
+          (declare (type posn posn) (type pretty-stream stream))
+          (index-column (posn-index posn stream) stream))
 
 
 ;;; --------------------------------------------------
@@ -770,64 +793,65 @@
 ;;; should be moved to non-cleavir-specific land.
 ;;; Seems to be slower. Probably would be an improvement
 ;;; if the called function was inlined as well.
-#+(or)
-(progn
-  (defun mapfoo-macro (iter accum function lists)
-    ;; nothing cleavir-specific here
-    (let ((sfunction (gensym "MAPCAR-FUNCTION"))
-          (syms (loop repeat (length lists)
-                   collect (gensym "MAPCAR-ARGUMENT"))))
-      `(loop named ,(gensym "UNUSED-BLOCK")
-          ;; the loop needs a (gensym) name so that ,function
-          ;; can't refer to it.
-          with ,sfunction = ,function
-            ,@(loop for sym in syms
-                 for list in lists
-                 append `(for ,sym ,iter ,list))
-            ,accum (funcall ,sfunction ,@syms))))
+        #+(or)
+        (progn
+          (defun mapfoo-macro (iter accum function lists)
+            ;; nothing cleavir-specific here
+            (let ((sfunction (gensym "MAPCAR-FUNCTION"))
+                  (syms (loop repeat (length lists)
+                              collect (gensym "MAPCAR-ARGUMENT"))))
+              `(loop named ,(gensym "UNUSED-BLOCK")
+                     ;; the loop needs a (gensym) name so that ,function
+                     ;; can't refer to it.
+                     with ,sfunction = ,function
+                     ,@(loop for sym in syms
+                             for list in lists
+                             append `(for ,sym ,iter ,list))
+                     ,accum (funcall ,sfunction ,@syms))))
 
-  (define-compiler-macro mapc (function list &rest more-lists)
-    (mapfoo-macro 'in 'do function (cons list more-lists)))
-  (define-compiler-macro mapcar (function list &rest more-lists)
-    (mapfoo-macro 'in 'collect function (cons list more-lists)))
-  (define-compiler-macro mapcan (function list &rest more-lists)
-    (mapfoo-macro 'in 'nconc function (cons list more-lists)))
-  (define-compiler-macro mapl (function list &rest more-lists)
-    (mapfoo-macro 'on 'do function (cons list more-lists)))
-  (define-compiler-macro maplist (function list &rest more-lists)
-    (mapfoo-macro 'on 'collect function (cons list more-lists)))
-  (define-compiler-macro mapcon (function list &rest more-lists)
-    (mapfoo-macro 'on 'nconc function (cons list more-lists)))
-  )
+          (define-compiler-macro mapc (function list &rest more-lists)
+            (mapfoo-macro 'in 'do function (cons list more-lists)))
+          (define-compiler-macro mapcar (function list &rest more-lists)
+            (mapfoo-macro 'in 'collect function (cons list more-lists)))
+          (define-compiler-macro mapcan (function list &rest more-lists)
+            (mapfoo-macro 'in 'nconc function (cons list more-lists)))
+          (define-compiler-macro mapl (function list &rest more-lists)
+            (mapfoo-macro 'on 'do function (cons list more-lists)))
+          (define-compiler-macro maplist (function list &rest more-lists)
+            (mapfoo-macro 'on 'collect function (cons list more-lists)))
+          (define-compiler-macro mapcon (function list &rest more-lists)
+            (mapfoo-macro 'on 'nconc function (cons list more-lists)))
+          )
 
-(define-compiler-macro funcall (&whole form function &rest arguments &environment env)
-  ;; If we have (funcall #'foo ...), we might be able to apply the FOO compiler macro.
-  (when (and (consp function) (eq (first function) 'function)
-             (consp (cdr function)) (null (cddr function)))
-    (let ((cmf (compiler-macro-function (second function) env)))
-      (when cmf
-        (return-from funcall
-          ;; incidentally, this funcall should be okay given that it's compile-time.
-          (funcall cmf form env)))))
-  ;; If not, we can stil eliminate the call to FUNCALL as follows.
-  (let ((fsym (gensym "FUNCTION")))
-    `(let ((,fsym ,function))
-       (cleavir-primop:funcall
-        (cond
-          ((cleavir-primop:typeq ,fsym function)
-           ,fsym)
-          ((cleavir-primop:typeq ,fsym symbol)
-           (symbol-function ,fsym))
-          (t (error 'type-error :datum ,fsym :expected-type '(or symbol function))))
-        ,@arguments))))
+        (define-compiler-macro funcall (&whole form function &rest arguments &environment env)
+          ;; If we have (funcall #'foo ...), we might be able to apply the FOO compiler macro.
+          (when (and (consp function) (eq (first function) 'function)
+                     (consp (cdr function)) (null (cddr function)))
+            (let ((cmf (compiler-macro-function (second function) env)))
+              (when cmf
+                (return-from funcall
+                  ;; incidentally, this funcall should be okay given that it's compile-time.
+                  (funcall cmf form env)))))
+          ;; If not, we can stil eliminate the call to FUNCALL as follows.
+          (let ((fsym (gensym "FUNCTION")))
+            `(let ((,fsym ,function))
+               (cleavir-primop:funcall
+                (cond
+                  ((cleavir-primop:typeq ,fsym function)
+                   ,fsym)
+                  ((cleavir-primop:typeq ,fsym symbol)
+                   (symbol-function ,fsym))
+                  (t (error 'type-error :datum ,fsym :expected-type '(or symbol function))))
+                ,@arguments))))
 
 ;;; FIXME:  This relies on ir.lisp: return-value-elt to work properly and it
 ;;;         isn't completely implemented - it needs a GEP instruction.
-(define-compiler-macro values (&rest values)
-  `(cleavir-primop:values ,@values))
+        (define-compiler-macro values (&rest values)
+          `(cleavir-primop:values ,@values))
 
-#++
-(defun symbol-value (symbol)
-  (if (cleavir-primop:typeq symbol symbol)
-      (cleavir-primop:symbol-value symbol)
-      (error 'type-error :datum symbol :expected-type 'symbol)))
+        #++
+        (defun symbol-value (symbol)
+          (if (cleavir-primop:typeq symbol symbol)
+              (cleavir-primop:symbol-value symbol)
+              (error 'type-error :datum symbol :expected-type 'symbol)))
+        )
