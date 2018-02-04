@@ -391,11 +391,11 @@ as a STRUCTURE doc and can be retrieved by (documentation 'NAME 'structure)."
                     (setq conc-name nil)
                     (setq conc-name v)))
                (:CONSTRUCTOR
-                (if (null v)
-                    (setq no-constructor t)
-                    (if (endp (cddar os))
-                        (setq constructors (cons v constructors))
-                        (setq constructors (cons (cdar os) constructors)))))
+                   (if (null v)
+                       (setq no-constructor t)
+                       (if (endp (cddar os))
+                           (setq constructors (cons v constructors))
+                           (setq constructors (cons (cdar os) constructors)))))
                (:COPIER (setq copier v))
                (:PREDICATE
                 (setq predicate v)
@@ -403,7 +403,7 @@ as a STRUCTURE doc and can be retrieved by (documentation 'NAME 'structure)."
                (:INCLUDE
                 (setq include (cdar os))
                 (unless (get-sysprop v 'IS-A-STRUCTURE)
-                        (error "~S is an illegal included structure." v)))
+                  (error "~S is an illegal included structure." v)))
                (:PRINT-FUNCTION (setq print-function v))
 	       (:PRINT-OBJECT (setq print-object v))
                (:TYPE (setq type v))
@@ -415,8 +415,8 @@ as a STRUCTURE doc and can be retrieved by (documentation 'NAME 'structure)."
                  (setq o (car os)))
              (case o
                (:CONSTRUCTOR
-                (setq constructors
-                      (cons default-constructor constructors)))
+                   (setq constructors
+                         (cons default-constructor constructors)))
 	       (:CONC-NAME
 		(setq conc-name nil))
                ((:COPIER :PREDICATE :PRINT-FUNCTION :PRINT-OBJECT))
@@ -426,14 +426,14 @@ as a STRUCTURE doc and can be retrieved by (documentation 'NAME 'structure)."
     ;; Skip the documentation string.
     (when (and (not (endp slot-descriptions))
                (stringp (car slot-descriptions)))
-          (setq documentation (car slot-descriptions))
-          (setq slot-descriptions (cdr slot-descriptions)))
+      (setq documentation (car slot-descriptions))
+      (setq slot-descriptions (cdr slot-descriptions)))
 
     ;; Check the include option.
     (when include
-          (unless (equal type (get-sysprop (car include) 'STRUCTURE-TYPE))
-                  (error "~S is an illegal structure include."
-                         (car include))))
+      (unless (equal type (get-sysprop (car include) 'STRUCTURE-TYPE))
+        (error "~S is an illegal structure include."
+               (car include))))
 
     ;; Set OFFSET.
     (setq offset (if include
@@ -442,13 +442,13 @@ as a STRUCTURE doc and can be retrieved by (documentation 'NAME 'structure)."
 
     ;; Increment OFFSET.
     (when (and type initial-offset)
-          (setq offset (+ offset initial-offset)))
+      (setq offset (+ offset initial-offset)))
     (when (and type named)
-	  (unless (or (subtypep '(vector symbol) type)
-		      (subtypep type 'list))
-	    (error "Structure cannot have type ~S and be :NAMED." type))
-          (setq name-offset offset)
-          (setq offset (1+ offset)))
+      (unless (or (subtypep '(vector symbol) type)
+                  (subtypep type 'list))
+        (error "Structure cannot have type ~S and be :NAMED." type))
+      (setq name-offset offset)
+      (setq offset (1+ offset)))
 
     ;; Parse slot-descriptions, incrementing OFFSET for each one.
     (do ((ds slot-descriptions (cdr ds))
@@ -461,13 +461,13 @@ as a STRUCTURE doc and can be retrieved by (documentation 'NAME 'structure)."
     ;; If TYPE is non-NIL and structure is named,
     ;;  add the slot for the structure-name to the slot-descriptions.
     (when (and type named)
-          (setq slot-descriptions
-                (cons (list 'TYPED-STRUCTURE-NAME name) slot-descriptions)))
+      (setq slot-descriptions
+            (cons (list 'TYPED-STRUCTURE-NAME name) slot-descriptions)))
 
     ;; Pad the slot-descriptions with the initial-offset number of NILs.
     (when (and type initial-offset)
-          (setq slot-descriptions
-                (append (make-list initial-offset) slot-descriptions)))
+      (setq slot-descriptions
+            (append (make-list initial-offset) slot-descriptions)))
 
     ;; Append the slot-descriptions of the included structure.
     ;; The slot-descriptions in the include option are also counted.
@@ -489,7 +489,7 @@ as a STRUCTURE doc and can be retrieved by (documentation 'NAME 'structure)."
            ;; If a constructor option is NIL,
            ;;  no constructor should have been specified.
            (when constructors
-                 (error "Contradictory constructor options.")))
+             (error "Contradictory constructor options.")))
           ((null constructors)
            ;; If no constructor is specified,
            ;;  the default-constructor is made.
@@ -527,17 +527,14 @@ as a STRUCTURE doc and can be retrieved by (documentation 'NAME 'structure)."
                      ',print-function ',constructors
                      ',offset ',name-offset
                      ',documentation ',predicate)))
-	  (constructors (mapcar #'(lambda (constructor)
-				    (make-constructor name constructor type named
-						      slot-descriptions))
-				constructors)))
+          (constructors (mapcar #'(lambda (constructor)
+                                    (make-constructor name constructor type named
+                                                      slot-descriptions))
+                                constructors)))
       `(progn
          ,(ext::register-with-pde whole)
-	 (eval-when (#+(or):compile-toplevel :load-toplevel :execute)
-	   ,core
-	   #+ecl(let (#+clos
-                 ,@(and (not type)
-                        `((.structure-constructor-class. (find-class ',name)))))
-                  ,@constructors)
+         (eval-when (:compile-toplevel :load-toplevel :execute)
+           ,core)
+         (eval-when (:load-toplevel :execute)
            #+clasp (progn ,@constructors))
-	 ',name))))
+         ',name))))
