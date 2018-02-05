@@ -197,7 +197,6 @@
      for exchange = (generic-function-specializer-profile-compare-exchange gfun profile new-profile)
      until (eq exchange new-profile)))
   
-#+clasp
 (defmethod shared-initialize :after ((gfun generic-function) slot-names &rest initargs)
   "In Clasp we need to initialize the specializer-profile with an 
    array of (length (lambda-list-required-arguments lambda-list)) full of nil."
@@ -206,15 +205,13 @@
   gfun)
 
 
-(defmethod shared-initialize ((gfun standard-generic-function) slot-names
-			      &rest initargs)
+(defmethod shared-initialize :after ((gfun standard-generic-function) slot-names
+                                     &rest initargs)
   (declare (ignore slot-names)
            (core:lambda-name shared-initialize-standard-generic-function))
-  (call-next-method)
   (when (generic-function-methods gfun)
     (compute-g-f-spec-list gfun))
-  (update-dependents gfun initargs)
-  gfun)
+  (update-dependents gfun initargs))
 
 (defun associate-methods-to-gfun (name &rest methods)
   (let ((gfun (fdefinition name)))

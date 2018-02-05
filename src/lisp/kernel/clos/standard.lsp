@@ -389,8 +389,7 @@ because it contains a reference to the undefined class~%  ~A"
   )
 
 
-(defmethod finalize-inheritance ((class std-class))
-  (call-next-method)
+(defmethod finalize-inheritance :after ((class std-class))
   (std-class-generate-accessors class))
 
 (defmethod compute-class-precedence-list ((class class))

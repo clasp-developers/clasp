@@ -190,20 +190,20 @@
 (ensure-generic-function 'reinitialize-instance
 			 :lambda-list '(class &rest initargs))
 
-(defmethod reinitialize-instance ((class class) &rest initargs
-				  &key (direct-superclasses () direct-superclasses-p)
-                                    (direct-slots nil direct-slots-p))
-  #+clasp(core:reinitialize-class class)
+(defmethod reinitialize-instance :before ((class class) &rest initargs &key)
   (let ((name (class-name class)))
     (when (member name '(CLASS BUILT-IN-CLASS) :test #'eq)
       (error "The kernel CLOS class ~S cannot be changed." name)))
 
+  (core:reinitialize-class class) ; assign new stamp.
+
   ;; remove previous defined accessor methods
   (when (class-finalized-p class)
-    (remove-optional-slot-accessors class))
+    (remove-optional-slot-accessors class)))
 
-  (call-next-method)
-
+(defmethod reinitialize-instance :after ((class class) &rest initargs
+                                         &key (direct-superclasses () direct-superclasses-p)
+                                           (direct-slots nil direct-slots-p))
   ;; the list of direct slots is converted to direct-slot-definitions
   (when direct-slots-p
     (setf (class-direct-slots class)
@@ -223,9 +223,7 @@
 
   ;; if there are no forward references, we can just finalize the class here
   (setf (class-finalized-p class) nil)
-  (finalize-unless-forward class)
-
-  class)
+  (finalize-unless-forward class))
 
 (defmethod make-instances-obsolete ((class class))
   (setf (class-slots class) (copy-list (class-slots class)))
