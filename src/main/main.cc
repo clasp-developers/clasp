@@ -320,11 +320,16 @@ static int startup(int argc, char *argv[], bool &mpiEnabled, int &mpiRank, int &
     core::Symbol_sp mpi = _lisp->internKeyword("MPI-ENABLED");
     core::Cons_sp features = cl::_sym_STARfeaturesSTAR->symbolValue().as<core::Cons_O>();
     cl::_sym_STARfeaturesSTAR->defparameter(core::Cons_O::create(mpi, features));
+    core::_sym_STARmpi_rankSTAR->defparameter(core::make_fixnum(mpiRank));
+    core::_sym_STARmpi_sizeSTAR->defparameter(core::make_fixnum(mpiSize));
   } else {
     SIMPLE_ERROR(BF("USE_MPI is true but mpiEnabled is false!!!!"));
   }
+#else
+  core::_sym_STARmpi_rankSTAR->defparameter(core::make_fixnum(0));
+  core::_sym_STARmpi_sizeSTAR->defparameter(core::make_fixnum(1));
 #endif
-
+  
     // printf("%s:%d About to _lisp->run() - ExitProgram typeid %p;\n",
     // __FILE__, __LINE__, (void*)&typeid(core::ExitProgram) );
     // RUN THIS LISP IMPLEMENTATION

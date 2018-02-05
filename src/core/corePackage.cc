@@ -193,6 +193,9 @@ SYMBOL_EXPORT_SC_(KeywordPkg,process);
 SYMBOL_EXPORT_SC_(KeywordPkg,code);
 
 
+SYMBOL_EXPORT_SC_(CorePkg, STARmpi_rankSTAR);
+SYMBOL_EXPORT_SC_(CorePkg, STARmpi_sizeSTAR);
+
 SYMBOL_EXPORT_SC_(ClPkg, upgraded_array_element_type);
 SYMBOL_EXPORT_SC_(ClPkg, member);
 SYMBOL_EXPORT_SC_(ClPkg, class_name);

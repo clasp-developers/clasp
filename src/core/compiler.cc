@@ -35,6 +35,7 @@ THE SOFTWARE.
 #endif
 
 #include <clasp/core/foundation.h>
+#include <clasp/gctools/gcFunctions.h>
 #include <clasp/core/object.h>
 #include <clasp/core/cons.h>
 #include <clasp/core/cxxObject.h>
@@ -1257,6 +1258,9 @@ CL_DEFUN void core__throw_function(T_sp tag, T_sp result_form) {
   ASSERT(closure);
   result = closure->entry.load()(LCC_PASS_ARGS0_ELLIPSIS(closure.raw_()));
   result.saveToMultipleValue0();
+#ifdef DEBUG_TRACK_UNWINDS
+  global_CatchThrow_count++;
+#endif
   throw CatchThrow(frame);
 }
 
