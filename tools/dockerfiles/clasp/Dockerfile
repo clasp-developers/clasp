@@ -1,4 +1,4 @@
-FROM ubuntu:16.10
+FROM ubuntu:17.10
 MAINTAINER Christian Schafmeister <meister@temple.edu>
 
 # add LLVM repo

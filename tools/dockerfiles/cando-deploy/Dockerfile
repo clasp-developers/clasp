@@ -1,4 +1,4 @@
-FROM ubuntu:16.10
+FROM ubuntu:17.10
 MAINTAINER Christian Schafmeister <meister@temple.edu>
 
 # add LLVM repo
@@ -22,8 +22,8 @@ RUN apt-get update && apt-get upgrade -y && apt-get install -y \
 
 # install clasp runtime dependencies
 RUN apt-get -y install \
-  libboost-filesystem1.61.0 libboost-date-time1.61.0 libboost-program-options1.61.0 \
-  libboost-iostreams1.61.0 libgc1c2 llvm-5.0-runtime libgmpxx4ldbl \
+  libboost-filesystem1.62.0 libboost-date-time1.62.0 libboost-program-options1.62.0 \
+  libboost-iostreams1.62.0 libgc1c2 llvm-5.0-runtime libgmpxx4ldbl \
   clang-5.0 binutils python-clang-5.0 lld-5.0 libzmq3-dev \
   && apt-get clean
 
@@ -86,9 +86,9 @@ RUN clasp -l "/home/app/quicklisp/setup.lisp" \
            -e "(swank-loader:init :delete nil :reload nil :load-contribs nil)"\
            -e "(core:quit)"
 
-ADD amber16.tar /home/app
-# RUN chown -R root:root /home/app/amber16
-ENV AMBERHOME=/home/app/amber16
+ADD amber16-data.tar /home/app
+RUN chown -R app:app /home/app/amber16-data
+ENV AMBERHOME=/home/app/amber16-data
 
 RUN cp /home/app/clasp/lib/clasp/extensions/cando/src/data/force-field/ATOMTYPE_SYBYL.DEF /home/app/clasp/lib/clasp/extensions/cando/src/data/force-field/atomtype_sybyl.def
 
