@@ -1300,7 +1300,7 @@ that llvm function. This works like compile-lambda-function in bclasp."
       (let ((eof (peek-char t source-sin nil eof-value)))
         (unless (eq eof eof-value)
           (let ((pos (core:input-stream-source-pos-info source-sin)))
-            (setq *current-form-lineno* (core:source-file-pos-lineno pos)))))
+            (setf cmp:*current-form-lineno* (core:source-file-pos-lineno pos)))))
       ;; FIXME: if :environment is provided we should probably use a different read somehow
       (let ((cst-form (funcall read-function source-sin nil eof-value)))
         (when cmp:*debug-compile-file* (bformat t "compile-file: cf%d -> %s\n" (incf cmp:*debug-compile-file-counter*) cst-form))
