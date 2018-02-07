@@ -236,14 +236,14 @@ Set gather-all-frames to T and you can gather C++ and Common Lisp frames"
   (backtrace-frame-print-name (cbtcl-frame index)))
 
 (defun bt-arguments (index)
-  (if (and (<= 0 index) (< index (length *current-btcl-frames)))
+  (if (and (<= 0 index) (< index (length *current-btcl-frames*)))
       (let ((arguments (backtrace-frame-arguments (cbtcl-frame index))))
         arguments)
       (core:bformat t "%d is not a valid frame index - use 0 to %d\n" index (1- (length *current-btcl-frames*)))))
 
 (defun bt-argument (index &optional (argument-index 0))
   (check-type argument-index fixnum)
-  (let ((arguments (cbtcl-arguments index)))
+  (let ((arguments (bt-arguments index)))
     (if (and (<= 0 argument-index) (< argument-index (length arguments)))
         (elt arguments argument-index)
         (core:bformat t "%d is not a valid argument index - use 0 to %d\n" argument-index (1- (length arguments))))))
