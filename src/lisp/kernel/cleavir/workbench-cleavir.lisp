@@ -245,6 +245,17 @@ clasp-cleavir::*use-cst*
           until (eq cst :eof)
           do (format t "CST -> ~a~%" cst)
              do (finish-output))))
+(let ((*package* (find-package :clos)))
+  (read-one-file "sys:kernel;clos;hierarchy2.lsp"))
+
+
+
+
+(trace sicl-reader::read-common)
+(untrace sicl-reader::sharpsign-dot)
+
+(apropos "sharpsign-dot")
+(trace sicl-reader::sharpsign-dot)
 
 (defun read-multiple-files (files)
   (dolist (f files)
