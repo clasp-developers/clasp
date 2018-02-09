@@ -475,8 +475,7 @@ struct MaybeDebugStartup {
         end_dispatcher_count = nu.unsafe_fixnum();
       }
       size_t dispatcher_delta = end_dispatcher_count - this->start_dispatcher_count;
-      if (ms!=0 || dispatcher_delta!=0)
-        printf("%s ms %zu gfds : %s\n", _rep_(Integer_O::create(ms)).c_str(), dispatcher_delta, di.dli_sname);
+      printf("%s ms %zu gfds : %s\n", _rep_(Integer_O::create(ms)).c_str(), dispatcher_delta, di.dli_sname);
     }
   }
 };
