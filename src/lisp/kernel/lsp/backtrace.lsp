@@ -9,7 +9,7 @@
 
 (in-package :core)
 
-(defvar *handler-clusters nil)   ;; Define this so we can get handler-case to work during startup
+(defvar *handler-clusters* nil)   ;; Define this so we can get handler-case to work during startup
 (defstruct (backtrace-frame (:type vector) :named)
   type ; :lisp :c++ :unknown
   return-address
