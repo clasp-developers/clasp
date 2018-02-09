@@ -706,7 +706,7 @@ public:
   void setCurrentWorkingDirectory(Path_sp path);
   Path_sp getCurrentWorkingDirectory();
 
-  ReadTable_sp getCurrentReadTable();
+  T_sp getCurrentReadTable();
 
   template <class oclass>
   gctools::smart_ptr<Cons_O> cons(gctools::smart_ptr<oclass> obj, gctools::smart_ptr<Cons_O> tail) {
