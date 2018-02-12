@@ -326,6 +326,14 @@
   ;; The less approximate way would be to check s-v-u-c itself. That's easy enough on its own,
   ;; but also implies that methods added or removed to s-v-u-c invalidate all relevant accessors,
   ;; which is not.
+  (when (null methods)
+    ;; no-applicable-method is different from the no-required-method we'd get if we went below,
+    ;; so we pick that off first.
+    ;; Similarly to nrm below, we return a sort of fake emf.
+    (return-from compute-effective-method-function-maybe-optimize
+      (lambda (vaslist-args ignore)
+        (declare (ignore ignore))
+        (apply #'no-applicable-method generic-function vaslist-args))))
   (let* ((em (compute-effective-method generic-function method-combination methods))
          (method (and (consp em)
                       (eq (first em) 'call-method)
@@ -536,12 +544,25 @@ FIXME!!!! This code will have problems with multithreading if a generic function
 #+debug-fastgf
 (defvar *dispatch-miss-start-time*)
 
+(defun all-eql-specialized-p (spec-list arguments)
+  ;; Make sure that any argument in a position with eql-specializers is an eql specializer object.
+  ;; If they all are, return a memoization key. If not, NIL.
+  ;; See comment in do-dispatch-miss for rationale.
+  (loop for (spec . ignore) in spec-list
+        for arg in arguments
+        collect (if (listp spec)
+                    (if (member arg spec)
+                        (list arg) ; list means eql specializer object.
+                        (return-from all-eql-specialized-p nil))
+                    (class-of arg))
+          into key
+        finally (return (coerce key 'simple-vector))))
+
 (defun do-dispatch-miss (generic-function vaslist-arguments arguments)
   "This effectively does what compute-discriminator-function does and maybe memoizes the result 
 and calls the effective-method-function that is calculated.
 It takes the arguments in two forms, as a vaslist and as a list of arguments."
-  (let ((can-memoize t)
-        (argument-classes (mapcar #'class-of arguments))
+  (let ((argument-classes (mapcar #'class-of arguments))
         #+debug-fastgf
         (*dispatch-miss-start-time* (get-internal-real-time)))
     ;; FIXME: What if another thread adds/removes method during c-a-m-u-c?
@@ -549,42 +570,62 @@ It takes the arguments in two forms, as a vaslist and as a list of arguments."
         (compute-applicable-methods-using-classes generic-function argument-classes)
       (declare (core:lambda-name do-dispatch-miss.multiple-value-bind.lambda))
       (gf-log "Called compute-applicable-methods-using-classes - returned method-list: %s  ok: %s\n" method-list ok)
-      (unless ok
-        ;; FIXME: What if another thread adds/removes method during c-a-m?
-        (setf method-list (compute-applicable-methods generic-function arguments)
-              can-memoize nil)
-        (gf-log "compute-applicable-methods-using-classes returned NIL for second argument\n"))
-      ;; This test is necessary because "no applicable method" is a different error from
-      ;; "no required [primary] method" like we'd get from passing an empty method list to c-e-m-f-m-o.
-      (if method-list
-          (let ((effective-method-function (compute-effective-method-function-maybe-optimize
-                                            generic-function
-                                            (generic-function-method-combination generic-function)
-                                            method-list
-                                            argument-classes
-                                            :log t
-                                            :actual-arguments arguments)))
-            (if can-memoize
-                (progn
-                  (gf-log-dispatch-miss "Memoizing call" generic-function vaslist-arguments)
-                  (memoize-call generic-function
-                                (coerce argument-classes 'simple-vector) effective-method-function))
-                (gf-log-dispatch-miss "Cannot memoize call" generic-function vaslist-arguments))
-            (gf-log "Calling effective-method-function %s\n" effective-method-function)
-            #+debug-fastgf
-            (let ((results (multiple-value-list
-                            (perform-outcome effective-method-function arguments vaslist-arguments))))
-              (gf-log "+-+-+-+-+-+-+-+-+ do-dispatch-miss done real time: %f seconds\n" (/ (float (- (get-internal-real-time) *dispatch-miss-start-time*)) internal-time-units-per-second))
-              (gf-log "----}---- Completed call to effective-method-function for %s results -> %s\n" (clos::generic-function-name generic-function) results)
-              (values-list results))
-            #-debug-fastgf
-            (perform-outcome effective-method-function arguments vaslist-arguments))
-          (progn
-            ;; We could actually memoize this outcome. But it seems likely that it would just pollute
-            ;; the call history unnecessarily. Most applications don't make a habit of triggering and
-            ;; responding to no-applicable-method signals.
-            (gf-log-dispatch-miss "no-applicable-method" generic-function vaslist-arguments)
-            (apply #'no-applicable-method generic-function arguments))))))
+      (let* ((method-list (if ok
+                              method-list
+                              (compute-applicable-methods generic-function arguments)))
+             (outcome (compute-effective-method-function-maybe-optimize
+                       generic-function
+                       (generic-function-method-combination generic-function)
+                       method-list
+                       argument-classes
+                       :log t
+                       :actual-arguments arguments)))
+        ;; Can we memoize the call, i.e. add it to the call history?
+        (cond ((null method-list) ; we avoid memoizing no-applicable-methods, as it's probably just a mistake,
+               ;; and will just pollute the call history.
+               ;; This assumption would be wrong if an application frequently called a gf wrong and relied on
+               ;; the signal behavior etc, but I find that possibility unlikely.
+               (gf-log-dispatch-miss "No applicable method" generic-function vaslist-arguments))
+              (ok ; classes are fine; use normal fastgf
+               (gf-log-dispatch-miss "Memoizing normal call" generic-function vaslist-arguments)
+               (memoize-call generic-function (coerce argument-classes 'simple-vector) outcome))
+              ((eq (class-of generic-function) (find-class 'standard-generic-function))
+               ;; we have a call with eql specialized arguments.
+               ;; We can still memoize this sometimes, as long as the gf is standard.
+               ;; What we need to watch out for it the following situation-
+               ;; (defmethod foo ((x (eql 'x))) ...)
+               ;; (foo 'y)
+               ;; If we memoize this naively, we'll put in an entry for class SYMBOL,
+               ;; and then if we call (foo 'x) later, it will go to that instead of properly
+               ;; missing the cache.
+               ;; EQL specializers play merry hob hell with the assumption of fastgf that
+               ;; as long as you treat all classes distinctly there are no problems with inheritance,
+               ;; basically.
+               ;; So, we only memoize the (foo 'x) call, and leave the more general symbol specialization
+               ;; to slow path. We could fix it up further to have that fast-path as well, but I think
+               ;; it's more involved, and probably not worth it, as most functions with eql specialization
+               ;; only use that argument with eql specializer objects, or so I assume.
+               (let ((maybe-memo-key
+                       (all-eql-specialized-p (generic-function-spec-list generic-function) arguments)))
+                 (cond (maybe-memo-key
+                        (gf-log-dispatch-miss "Memoizing eql-specialized call" generic-function vaslist-arguments)
+                        (memoize-call generic-function maybe-memo-key outcome))
+                       (t
+                        (gf-log-dispatch-miss "Cannot memoize eql-specialized call"
+                                              generic-function vaslist-arguments)))))
+              (t
+               ;; No more options: we just don't memoize.
+               ;; This only occurs with eql specializers, at least with the standard c-a-m/-u-c methods.
+               (gf-log-dispatch-miss "Cannot memoize call" generic-function vaslist-arguments)))
+        (gf-log "Performing outcome %s\n" outcome)
+        #+debug-fastgf
+        (let ((results (multiple-value-list
+                        (perform-outcome outcome arguments vaslist-arguments))))
+          (gf-log "+-+-+-+-+-+-+-+-+ do-dispatch-miss done real time: %f seconds\n" (/ (float (- (get-internal-real-time) *dispatch-miss-start-time*)) internal-time-units-per-second))
+          (gf-log "----}---- Completed call to effective-method-function for %s results -> %s\n" (clos::generic-function-name generic-function) results)
+          (values-list results))
+        #-debug-fastgf
+        (perform-outcome outcome arguments vaslist-arguments)))))
 
 (defun dispatch-miss (generic-function valist-args)
   (core:stack-monitor (lambda () (format t "In clos::dispatch-miss with generic function ~a~%" (clos::generic-function-name generic-function))))
