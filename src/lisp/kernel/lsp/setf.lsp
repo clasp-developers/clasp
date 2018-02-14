@@ -350,7 +350,7 @@ Does not check if the third gang is a single-element list."
 	   (optimize (speed 3) (safety 0)))
   (when (and (consp place)
 	     (consp store-form)
-	     (= (length place) (truly-the fixnum (1- (length store-form)))))
+	     (= (length place) (the fixnum (1- (length store-form)))))
     (let ((function (pop store-form))
 	  (output '())
 	  v)
@@ -360,8 +360,8 @@ Does not check if the third gang is a single-element list."
 			(nreverse (cons newvalue output)))))
 	(unless (consp store-form)
 	  (return nil))
-	(setq v (car (truly-the cons store-form))
-	      store-form (cdr (truly-the cons store-form)))
+	(setq v (car (the cons store-form))
+	      store-form (cdr (the cons store-form)))
 	;; This checks that the argument at this position coincides with
 	;; the corresponding value in the original list. Note that the
 	;; variable list need not be in order.
@@ -594,7 +594,7 @@ Returns the car of the old value in PLACE."
                       (append vars stores)
                       (append vals (list access-form)))
          (prog1 (car ,store-var)
-           (setq ,store-var (cdr (truly-the list ,store-var)))
+           (setq ,store-var (cdr (the list ,store-var)))
            ,store-form)))))
 
 (define-setf-expander values (&rest values &environment env)

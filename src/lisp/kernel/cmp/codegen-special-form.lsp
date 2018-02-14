@@ -23,7 +23,6 @@
     (labels  codegen-labels convert-labels)
     (eval-when  codegen-eval-when convert-eval-when)
     (the  codegen-the convert-the convert-the convert-the)
-    (core:truly-the  codegen-truly-the convert-truly-the)
     (locally  codegen-locally convert-locally)
     (quote  codegen-quote convert-quote)
     (macrolet  codegen-macrolet convert-macrolet)
@@ -774,12 +773,9 @@ jump to blocks within this tagbody."
 	(codegen-progn result body env)
 	(codegen-literal result nil env))))
 
-;;; THE, TRULY-THE
+;;; THE
 
 (defun codegen-the (result rest env)
-  (codegen result (cadr rest) env))
-
-(defun codegen-truly-the (result rest env)
   (codegen result (cadr rest) env))
 
 ;;; LOCALLY

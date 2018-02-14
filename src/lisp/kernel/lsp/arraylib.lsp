@@ -211,8 +211,8 @@ INDEXes must be equal to the rank of ARRAY."
     (if indices
 	(let* ((index (cons-car indices)))
 	  (when (or (not (si::fixnump index))
-		    (minusp (truly-the fixnum index))
-		    (>= (truly-the fixnum index) (array-dimension array i)))
+		    (minusp (the fixnum index))
+		    (>= (the fixnum index) (array-dimension array i)))
 	    (return nil)))
 	(error "The rank of the array is ~R,~%~
                ~7@Tbut ~R ~:*~[indices are~;index is~:;indices are~] ~
@@ -364,7 +364,7 @@ to by the new fill-pointer.  Signals an error if the old value of the fill-
 pointer is 0 already."
   ;; FILL-POINTER asserts vector is a vector and has fill pointer
   (let* ((fp (fill-pointer vector))
-         (vector (truly-the vector vector)))
+         (vector (the vector vector)))
     (declare (ext:array-index fp)
              (optimize (safety 0)))
     (when (zerop fp)
