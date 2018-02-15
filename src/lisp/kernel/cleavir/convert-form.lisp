@@ -20,8 +20,9 @@
         (cst:separate-function-body body)
       (let* ((dspecs (loop for declaration-cst in declaration-csts
                            append (cdr (cst:listify declaration-cst))))
-             (lambda-name (cadr (find 'core:lambda-name dspecs :key #'concrete-syntax-tree:first))))
-        (unless lambda-name (setq lambda-name 'cl:lambda))
+             (found (find 'core:lambda-name dspecs :key (lambda (cst) (cst:raw (cst:first cst)))))
+             (lambda-name (when found (cadr (cst:raw found)))))
+        (unless lambda-name (setq lambda-name 'lambda-from-convert-code))
     ;; Make the change here to a named-function-ast with lambda-name
         (change-class function-ast 'clasp-cleavir-ast:named-function-ast
                       :lambda-name lambda-name)))))
