@@ -503,7 +503,6 @@ also known as unix-domain sockets."))
     stream))
 
 (defun auto-close-two-way-stream (stream)
-  (declare (si::c-local))
   (ll-auto-close-two-way-stream stream))
 
 (defun socket-make-stream-inner (fd input output buffering element-type external-format)
