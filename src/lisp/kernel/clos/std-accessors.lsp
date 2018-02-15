@@ -112,13 +112,11 @@
 		(setf (slot-value method 'slot-definition) slotd)))))))))
 
 (defun reader-closure (index)
-  (declare (si::c-local))
   (lambda (object)
     (declare (core:lambda-name reader-closure.lambda))
     (si::instance-ref object index)))
 
 (defun writer-closure (index)
-  (declare (si::c-local))
   (lambda (value object)
     (declare (core:lambda-name writer-closure.lambda))
     (si::instance-set object index value)))

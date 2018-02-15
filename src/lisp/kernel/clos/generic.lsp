@@ -39,7 +39,6 @@
 	    output))))))
 
 (defun parse-defgeneric (args)
-  (declare (si::c-local))
   ;; (values function-specifier lambda-list options)
   (let (function-specifier)
     (unless args
@@ -50,7 +49,6 @@
     (values function-specifier (first args) (rest args))))
 
 (defun parse-generic-options (options lambda-list)
-  (declare (si::c-local))
   (let* ((processed-options '())
 	 (method-list '())
 	 (declarations '())
@@ -90,7 +88,6 @@
 	    method-list)))
 
 (defun parse-lambda-list (lambda-list &optional post-keyword)
-  (declare (si::c-local))
   (let ((arg (car lambda-list)))
     (cond ((null lambda-list))
 	  ((eq arg '&AUX)
@@ -106,7 +103,6 @@
 	       (parse-lambda-list (cdr lambda-list)))))))
 
 (defun valid-declaration-p (decl)
-  ;(declare (si::c-local))
   (and (eq (first decl) 'OPTIMIZE)
        (loop for item in decl
 	  always (or (atom item)

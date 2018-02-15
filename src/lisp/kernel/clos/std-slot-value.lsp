@@ -259,6 +259,5 @@
 ;;;
 
 (defun invalid-slot-location (instance location)
-  (declare (si::c-local))
   (error "Invalid location ~A when accessing slot of class ~A"
 	 location (class-of location)))

@@ -154,7 +154,6 @@
   list)
 
 (defun add-default-initargs (class initargs)
-  (declare (si::c-local))
   ;; Here, for each slot which is not mentioned in the initialization
   ;; arguments, but which has a value associated with :DEFAULT-INITARGS,
   ;; we compute the value and add it to the list of initargs.
@@ -586,7 +585,6 @@ because it contains a reference to the undefined class~%  ~A"
   (class-compute-slots class (call-next-method)))
 
 (defun std-class-compute-slots (class slots)
-  (declare (si::c-local))
   (let* ((direct-slots (class-direct-slots class)))
     (dolist (slotd slots)
       (let* ((name (slot-definition-name slotd))
