@@ -361,7 +361,6 @@ SYMBOL_EXPORT_SC_(ExtPkg, STARinspectorHookSTAR);
 SYMBOL_EXPORT_SC_(ExtPkg, float_nan_string);
 SYMBOL_EXPORT_SC_(ExtPkg, float_infinity_string);
 SYMBOL_EXPORT_SC_(ExtPkg, STARdefault_external_formatSTAR);
-SYMBOL_EXPORT_SC_(ExtPkg, truly_the);
 SYMBOL_EXPORT_SC_(ExtPkg, specialVar);
 SYMBOL_EXPORT_SC_(ExtPkg, registerVar);
 SYMBOL_EXPORT_SC_(ExtPkg, lexicalVar);
