@@ -17,11 +17,9 @@
 
 
 (defun error-not-a-sequence (value)
-  (declare (si::c-local))
   (signal-type-error value 'sequence))
 
 (defun error-sequence-index (sequence index)
-  (declare (si::c-local))
   (error 'simple-type-error
          :datum index
          :expected-type 'unsigned-byte
@@ -29,7 +27,6 @@
          :format-arguments (list index sequence)))
 
 (defun error-sequence-type (type)
-  (declare (si::c-local))
   (error 'simple-type-error
 	 :datum (vector) ;; Any sequence object will do, because it does not belong to TYPE
 	 :expected-type type
@@ -37,7 +34,6 @@
 	 :format-arguments (list type)))
 
 (defun error-sequence-length (object type size)
-  (declare (si::c-local))
   (error 'simple-type-error
 	 :format-control
 	 "Cannot create a sequence of size ~S which matches type ~S."

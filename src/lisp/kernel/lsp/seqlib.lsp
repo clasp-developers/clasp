@@ -20,7 +20,6 @@
   (load (merge-pathnames "seqmacros.lsp" *load-truename*)))
 
 (defun seqtype (sequence)
-  (declare (si::c-local))
   (cond ((listp sequence) 'list)
 	((base-string-p sequence) 'base-string)
         ((stringp sequence) 'string)
@@ -45,7 +44,6 @@
                 :format-arguments (list count)))))
 
 (defun test-error()
-  (declare (si::c-local))
   (error "both test and test-not are supplied"))
 
 (defun unsafe-funcall1 (f x)
@@ -876,7 +874,6 @@ evaluates to NIL.  See STABLE-SORT."
 
 (defun stable-sort-merge-vectors (source target start-1
                                   end-1 end-2 pred key)
-  (declare (si::c-local))
   (let ((i start-1)
         (j end-1) ; start-2
         (target-i start-1))
@@ -910,7 +907,6 @@ evaluates to NIL.  See STABLE-SORT."
 
 
 (defun vector-merge-sort (vector pred key)
-  (declare (si::c-local))
   (let* ((vector-len (length (the vector vector)))
          (n 1)            ; bottom-up size of contiguous runs to be merged
          (direction t)    ; t vector --> temp    nil temp --> vector

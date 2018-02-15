@@ -349,7 +349,6 @@ values of the last FORM.  If no FORM is given, returns NIL."
       `(multiple-value-call #'(lambda (&optional ,@(mapcar #'list vars) &rest ,(gensym)) ,@body) ,form)))
 
 (defun while-until (test body jmp-op)
-  (declare (si::c-local))
   (let ((label (gensym))
 	(exit (gensym)))
     `(TAGBODY

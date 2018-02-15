@@ -407,7 +407,6 @@ and is not adjustable."
   'REAL)
 
 (defun in-interval-p (x interval)
-  (declare (si::c-local))
   (let* (low high)
     (if (endp interval)
         (setq low '* high '*)
@@ -425,11 +424,9 @@ and is not adjustable."
     (return-from in-interval-p t)))
 
 (defun error-type-specifier (type)
-  (declare (si::c-local))
   (error "~S is not a valid type specifier." type))
 
 (defun match-dimensions (array pat)
-  (declare (si::c-local))
   (or (eq pat '*)
       (let ((rank (array-rank array)))
 	(cond ((numberp pat) (= rank pat))
@@ -754,14 +751,12 @@ if not possible."
 (defparameter *elementary-types* '())
 
 (defun new-type-tag ()
-  (declare (si::c-local))
   (prog1 *highest-type-tag*
     (setq *highest-type-tag* (ash *highest-type-tag* 1))))
 
 ;; Find out the tag for a certain type, if it has been already registered.
 ;;
 (defun find-registered-tag (type &optional (test #'equal))
-  (declare (si::c-local))
   (let* ((pos (assoc type *elementary-types* :test test)))
     (and pos (cdr pos))))
 
@@ -769,7 +764,6 @@ if not possible."
 ;; will cause trouble.
 ;;
 (defun maybe-save-types ()
-  (declare (si::c-local))
   (when *save-types-database*
     (setq *save-types-database* nil
 	  *elementary-types* (copy-tree *elementary-types*)
@@ -857,7 +851,6 @@ if not possible."
 ;;	  (MEMBER 0.0) = (AND (float-type 0.0 0.0) (NOT (MEMBER -0.0)))
 ;;
 (defun register-member-type (object)
-  ;(declare (si::c-local))
   (let ((pos (assoc object *member-types*)))
     (cond ((and pos (cdr pos)))
 	  ((not (realp object))
@@ -942,7 +935,6 @@ if not possible."
 ;; ARRAY types.
 ;;
 (defun register-array-type (type)
-  (declare (si::c-local))
   (multiple-value-bind (array-class elt-type dimensions)
       (parse-array-type type)
     (cond ((eq elt-type '*)
@@ -959,7 +951,6 @@ if not possible."
 ;; that have been already registered.
 ;;
 (defun fast-upgraded-array-element-type (type)
-  (declare (si::c-local))
   (cond ((eql type '*) '*)
 	((member type +upgraded-array-element-types+ :test #'eq)
 	 type)
@@ -975,7 +966,6 @@ if not possible."
 ;; ELT-TYPE is the upgraded element type of the input.
 ;;
 (defun parse-array-type (input)
-  (declare (si::c-local))
   (let* ((type input)
 	 (name (pop type))
 	 (elt-type (fast-upgraded-array-element-type (if type (pop type) '*)))
@@ -1030,7 +1020,6 @@ if not possible."
 ;;  (SHORT-FLOAT (0.2) (2)) = (AND (SHORT-FLOAT (0.2) *) (NOT (SHORT-FLOAT 2 *)))
 
 (defun register-elementary-interval (type b)
-  (declare (si::c-local))
   (setq type (list type b))
   (or (find-registered-tag type #'equalp)
       (multiple-value-bind (tag-super tag-sub)
@@ -1048,7 +1037,6 @@ if not possible."
 	  (push-type type tag)))))
 
 (defun register-interval-type (interval)
-  (declare (si::c-local))
   (let* ((i interval)
 	 (type (pop i))
 	 (low (if i (pop i) '*))
@@ -1115,7 +1103,6 @@ if not possible."
 ;; complex types that can store an element of the corresponding type.
 ;;
 (defun canonical-complex-type (real-type)
-  (declare (si::c-local))
   ;; UPGRADE-COMPLEX-PART-TYPE will signal an error if REAL-TYPE
   ;; is not a subtype of REAL.
   (unless (eq real-type '*)
@@ -1408,7 +1395,6 @@ if not possible."
     (canonical-type type)))
 
 (defun fast-subtypep (t1 t2)
-  (declare (si::c-local))
   (when (eq t1 t2)
     (return-from fast-subtypep (values t t)))
   (let* ((tag1 (safe-canonical-type t1))
@@ -1445,7 +1431,6 @@ if not possible."
 	(values test confident)))))
 
 (defun fast-type= (t1 t2)
-  (declare (si::c-local))
   (when (eq t1 t2)
     (return-from fast-type= (values t t)))
   (let* ((tag1 (safe-canonical-type t1))

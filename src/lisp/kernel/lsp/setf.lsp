@@ -17,12 +17,10 @@
 (in-package "SYSTEM")
 
 (defun check-stores-number (context stores-list n)
-  (declare (si::c-local))
   (unless (= (length stores-list) n)
     (error "~d store-variables expected in setf form ~a." n context)))
 
 (defun do-setf-method-expansion (name lambda args &optional (stores-no 1))
-  (declare (si::c-local))
   (let* ((vars '())
          (inits '())
          (all '())
@@ -386,7 +384,6 @@ Does not check if the third gang is a single-element list."
 		,store-form))))))
 
 (defun setf-expand (l env)
-  (declare (si::c-local))
   (cond ((endp l) nil)
         ((endp (cdr l)) (error "~S is an illegal SETF form." l))
         (t

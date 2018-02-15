@@ -834,7 +834,6 @@ Use special code 0 to cancel this operation.")
     (nreverse output)))
 
 (defun lambda-list-from-annotations (name)
-  (declare (si::c-local))
   (let ((args (core:get-annotation name :lambda-list nil)))
     (values args (and args t))))
 

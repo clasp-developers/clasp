@@ -168,12 +168,10 @@ Evaluates FORM, outputs the realtime and runtime used for the evaluation to
   `(do-time #'(lambda () ,form)))
 
 (defun leap-year-p (y)
-  (declare (si::c-local))
   (and (zerop (mod y 4))
        (or (not (zerop (mod y 100))) (zerop (mod y 400)))))
 
 (defun number-of-days-from-1900 (y)
-  (declare (si::c-local))
   (let ((y1 (1- y)))
     (+ (* (- y 1900) 365)
        (floor y1 4) (- (floor y1 100)) (floor y1 400)
@@ -185,11 +183,9 @@ Evaluates FORM, outputs the realtime and runtime used for the evaluation to
 #-clasp-min
 (defun get-local-time-zone ()
   "Returns the number of hours West of Greenwich for the local time zone."
-  (declare (si::c-local))
   (core:unix-get-local-time-zone))
 
 (defun recode-universal-time (sec min hour day month year tz dst)
-  (declare (si::c-local))
   (let ((days (+ (if (and (leap-year-p year) (> month 2)) 1 0)
 		 (1- day)
 		 (svref month-startdays (1- month))
@@ -252,7 +248,6 @@ GET-DECODED-TIME."
 (defun daylight-saving-time-p (universal-time year)
   "Returns T if Daylight Saving Time applies to the local time zone at
 Universal Time UT, which defaults to the current time."
-  (declare (si::c-local))
   ;; Some systems cannot deal with dates before 1-1-1970 and no POSIX
   ;; system will be able to handle dates beyond 2038. We must
   ;; therefore restrict the time to the interval that can handled by

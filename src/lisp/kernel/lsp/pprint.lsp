@@ -349,7 +349,6 @@
   (amount 0 :type fixnum))
 
 (defun enqueue-indent (stream kind amount)
-  (declare (si::c-local))
   (enqueue stream indentation :kind kind :amount amount))
 
 (defstruct (block-start
@@ -396,7 +395,6 @@
   (colinc 0 :type column))
 
 (defun enqueue-tab (stream kind colnum colinc)
-  (declare (si::c-local))
   (multiple-value-bind
       (sectionp relativep)
       (ecase kind
@@ -411,7 +409,6 @@
 ;;;; Tab support.
 
 (defun compute-tab-size (tab section-start column)
-  (declare (si::c-local))
   (let ((colnum (tab-colnum tab))
 	(colinc (tab-colinc tab)))
     (when (tab-sectionp tab)
@@ -754,7 +751,6 @@
 ;;;; User interface to the pretty printer.
 
 (defun check-print-level ()
-  (declare (si::c-local))
   "Automatically handle *print-level* abbreviation.  If we are too deep, then
    a # is printed to STREAM and BODY is ignored."
   (cond ((or *print-readably* (null *print-level*))
@@ -765,7 +761,6 @@
 	 (setf *print-level* (1- *print-level*)))))
 
 (defun search-print-circle (object)
-  (declare (si::c-local))
   (let ((code (gethash object *circle-stack* -1)))
     (if (fixnump *circle-counter*)
 	(cond ((or (eql code -1) (null code))
@@ -791,7 +786,6 @@
 
 (defun do-pprint-logical-block (function object stream prefix
 				per-line-prefix-p suffix)
-  (declare (si::c-local))
   (unless (listp object)
     (write-object object stream)
     (return-from do-pprint-logical-block nil))
@@ -1100,7 +1094,6 @@
   (print-unreadable-object (table stream :type t :identity t)))
 
 (defun cons-type-specifier-p (spec)
-  (declare (si::c-local))
   (and (consp spec)
        (eq (car spec) 'cons)
        (cdr spec)
@@ -1263,12 +1256,10 @@
     (output-guts stream 0 (array-dimensions array))))
 
 (defun pprint-multi-dim-array (stream array)
-  (declare (si::c-local))
   (funcall (formatter "#~DA") stream (array-rank array))
   (pprint-array-contents stream array))
 
 (defun pprint-raw-array (stream array)
-  (declare (si::c-local))
   (write-string "#A" stream)
   (pprint-logical-block (stream nil :prefix "(" :suffix ")")
     (write-object (array-element-type array) stream)

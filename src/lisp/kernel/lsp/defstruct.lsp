@@ -74,7 +74,6 @@
 	       `(sys:structure-set ,struct ',type ,index ,newvalue))))))
 
 (defun process-boa-lambda-list (slot-names slot-descriptions boa-list assertions)
-  (declare (si::c-local))
   (let ((mentioned-slots '())
 	(aux))
     ;; With a call to PROCESS-LAMBDA-LIST we ensure that the lambda list is
@@ -201,7 +200,6 @@
 
 
 (defun make-predicate (name type named name-offset)
-  (declare (si::c-local))
   (cond ((null type)
 	 #'(lambda (x)
 	     (si::structure-subtypep (type-of x) name)))
@@ -235,7 +233,6 @@
 ;;;        (slot-name default-init slot-type read-only offset accessor-name)
 
 (defun parse-slot-description (slot-description offset &optional read-only)
-  (declare (si::c-local))
   (let* ((slot-type 'T)
 	 slot-name default-init)
     (cond ((atom slot-description)
@@ -266,7 +263,6 @@
 ;;;  :include defstruct option.
 
 (defun overwrite-slot-descriptions (new-slots old-slots)
-  (declare (si::c-local))
   (do* ((output '())
         (old-slots old-slots (rest old-slots)))
        ((null old-slots)

@@ -107,7 +107,6 @@ Destructive SET-DIFFERENCE.  Only LIST1 may be destroyed."
       (setq last x))))
 
 (defun swap-args (f)
-  (declare (si::c-local))
   (and f #'(lambda (x y) (funcall f y x))))
 
 (defun set-exclusive-or (list1 list2 &key test test-not key)

@@ -99,7 +99,6 @@ the corresponding VAR.  Returns NIL."
 
 
 (defun si::while-until (test body jmp-op)
-  (declare (si::c-local))
   (let ((label (gensym))
 	(exit (gensym)))
     `(TAGBODY
