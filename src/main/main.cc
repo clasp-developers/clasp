@@ -357,30 +357,6 @@ void* to_fixnum(int8_t v) {
 
 int main( int argc, char *argv[] )
 {
-#if 0
-  int8_t array[1] = {-3};
-    //    printf("sizeof(array[1]) -> %lu\n", sizeof(array));
-  int8_t v = array[0];
-    // printf("int8_t v -> %x\n", v);
-  void* foo = to_fixnum(v);
-    ///printf("int64_t v -> %p\n", foo);
-#endif
-
-  // ------------
-  uintptr_clasp_t x = 0;
-  uintptr_t y = 1;
-  x = y;
-  y = x;
-#if 0
-   // A few tests - delete them when not needed anymore
-  test_va_list(NULL,6
-               ,core::clasp_make_fixnum(0).raw_()
-               ,core::clasp_make_fixnum(1).raw_()
-               ,core::clasp_make_fixnum(2).raw_()
-               ,core::clasp_make_fixnum(3).raw_()
-               ,core::clasp_make_fixnum(4).raw_()
-               ,core::clasp_make_fixnum(5).raw_());
-#endif
   // Do not touch debug log until after MPI init
 
   bool mpiEnabled = false;
@@ -441,28 +417,10 @@ int main( int argc, char *argv[] )
   }
 #endif
 
-  // - THREAD SETUP - FOR CANDO -> TODO: Move this into CANDO extension
-  // frgo, 2016-11-13
-  //
-  // int maxThreads = 1;
-  // {
-  //   maxThreads = core::cando_omp_get_num_threads();
-  // }
-
-  // SAY HELLO
-
-  // fprintf( stderr, "%s (%s:%d) - started with stack size set to %llu bytes.\n", exe_name().c_str(), __FILE__, __LINE__, rl_new.rlim_max );
-
   fflush( stderr );
 
   // - COMMAND LINE OPTONS HANDLING
 
-#if 0
-  // Use this to check if smart_ptr<core::T_O> is being passed by value or reference
-  gctools::smart_ptr<core::T_O> x((gctools::Tagged)0xDEADBEEF);
-  foo(x);
-#endif
-  
   core::CommandLineOptions options(argc, argv);
 
   // CALL LISP STARTUP
