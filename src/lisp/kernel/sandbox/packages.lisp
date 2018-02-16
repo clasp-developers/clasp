@@ -4,12 +4,6 @@
   (:export #:fill-environment)
   (:export #:retarget))
 
-(defpackage #:compilation-environment
-  (:use #:cl)
-  (:shadow #:optimize #:compiler-macro)
-  (:export #:compilation-environment)
-  (:export #:evaluation-environment))
-
 (defpackage #:coerce
   (:use)
   (:export #:fdesignator))

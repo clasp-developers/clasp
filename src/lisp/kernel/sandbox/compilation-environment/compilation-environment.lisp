@@ -40,7 +40,9 @@
 (defclass operator-entry (entry)
   ;; special operators can't have compiler macros, but there's no harm in giving them the slot.
   ((%compiler-macro :initarg :compiler-macro :initform nil :accessor compiler-macro)))
-(defclass special-operator-entry (operator-entry) ())
+(defclass special-operator-entry (operator-entry)
+  ;; Used for SICL's special operator protocol.
+  ((%value :initarg :value :accessor special-operator-entry-value)))
 (defclass macro-entry (operator-entry)
   ((%expander :initarg :expander :accessor expander)))
 (defclass function-entry (operator-entry)
@@ -67,6 +69,7 @@
 ;;; Though we respond to parts of the sicl-genv protocol, some parts are unimplemented (and unimplementable)
 ;;; like function-cell. We could define methods that signal errors instead.
 (macrolet ((defreader (fname table)
+             ;; Returns an entry, or NIL if there isn't one.
              `(defun ,fname (environment name)
                 (values (gethash name (,table environment)))))
            (defwriter (fname table)
@@ -87,16 +90,16 @@
   (defremove remove-setf-entry setfs))
 
 (defmethod sicl-genv:special-operator (name (env compilation-environment))
-  ;; FIXME: sicl-genv specifies that a 'definition' can be stored and returned
-  ;; not just... this.
-  (typep (operator-entry env name) 'special-operator-entry))
+  (let ((entry (operator-entry env name)))
+    (if (typep entry 'special-operator-entry)
+        (special-operator-entry-value entry)
+        nil)))
 (defmethod (setf sicl-genv:special-operator) (value name (env compilation-environment))
   (if value
-      ;; FIXME: as above
       (if (operator-entry env name)
           (error "Tried to define ~a as a special operator when it is already defined" name)
           (setf (operator-entry env name)
-                (make-instance 'special-operator-entry :name name)))
+                (make-instance 'special-operator-entry :name name :value value)))
       (remove-operator-entry env name)))
 (defmethod sicl-genv:macro-function (name (env compilation-environment))
   (let ((entry (operator-entry env name)))
@@ -119,7 +122,7 @@
 (defmethod sicl-genv:compiler-macro-function (name (env compilation-environment))
   (let ((entry (operator-entry env name)))
     (if entry
-        (compiler-macro entry) ; might be nil
+        (compiler-macro entry) ; the c macro function, or NIL if none
         nil)))
 (defmethod (setf sicl-genv:compiler-macro-function) (new name (env compilation-environment))
   (let ((entry (operator-entry env name)))
@@ -265,7 +268,6 @@
       (warn "Redefining setf expander on ~a" name))
     (setf (setf-entry env name) (make-instance 'setf-entry :name name :expander new))))
 (defmethod sicl-genv:default-setf-expander ((env compilation-environment))
-  ;; no need to redefine this
   (lambda (place env)
     (declare (ignore env))
     (etypecase place
@@ -303,16 +305,18 @@
 (defmethod sicl-genv:declarations ((env compilation-environment)) (declarations env))
 (defmethod sicl-genv:optimize-quality-values ((env compilation-environment)) (optimize env))
 (defmethod (setf sicl-genv:optimize-quality-values) (new (env compilation-environment))
-  ;; i think normalization ought to be done b the caller.
+  ;; normalization ought to be done by the caller.
   (setf (optimize env) new))
 (defmethod sicl-genv:policy ((env compilation-environment)) (policy env))
 
-;;; cleavir accessors
+;;; cleavir methods
 (defmethod cleavir-env:eval (form env (dispatch compilation-environment))
   (let ((e (evaluation-environment dispatch)))
     (cleavir-env:eval form (retarget env e) e)))
 
 (defmethod cleavir-env:variable-info ((environment compilation-environment) symbol)
+  ;; FIXME: If the compilation environment has its own packages as well,
+  ;; this find-package needs to be altered.
   (when (eq (symbol-package symbol) (load-time-value (find-package "KEYWORD")))
     (return-from cleavir-env:variable-info
       (make-instance 'cleavir-env:constant-variable-info
@@ -407,32 +411,3 @@
         (expander entry)
         nil)))
 (declaim (notinline get-setf-expander))
-
-#+(or)
-(defmethod cleavir-policy:compute-policy-quality
-    ((quality (eql 'cleavir-kildall-type-inference:insert-type-checks))
-     optimize
-     (environment compilation-environment))
-  (> (cleavir-policy:optimize-value optimize 'safety)
-     (cleavir-policy:optimize-value optimize 'speed)))
-
-#+(or)
-(defmethod cleavir-policy:compute-policy-quality
-    ((quality (eql 'cleavir-escape:trust-dynamic-extent))
-     optimize
-     (environment compilation-environment))
-  (> (cleavir-policy:optimize-value optimize 'space)
-     (cleavir-policy:optimize-value optimize 'safety)))
-
-;;; FIXME: more controllable flags. These should reflect the target, not the host.
-;;; Also this condition is bad. Type inference doing this with the environment is bad.
-#+clasp
-(progn
-  (defmethod cleavir-env:has-extended-char-p ((environment compilation-environment))
-    #+unicode t #-unicode nil)
-  (defmethod cleavir-env:float-types ((environment compilation-environment))
-    '(#+short-float short-float single-float double-float #+long-float long-float))
-  (defmethod cleavir-env:upgraded-complex-part-types ((environment compilation-environment))
-    '(real))
-  (defmethod cleavir-env:upgraded-array-element-types ((environment compilation-environment))
-    core::+upgraded-array-element-types+))

@@ -8,7 +8,10 @@
 
 (defgeneric retarget (entry new))
 
-(defmethod retarget (entry new) (declare (ignore entry)) new)
+(defmethod retarget (entry new)
+  (declare (ignore entry))
+  ;; We're on top, so we just return the new top and we're done.
+  new)
 
 (defmethod retarget ((entry cleavir-env::entry) new)
   (error "No RETARGET method defined for class ~a" (class-of entry)))
