@@ -6,7 +6,7 @@ if [ ! -e "$2" ]; then
 else
     cd "$2" || exit $?
     if ! git cat-file -e "$3"; then
-        git pull || exit $?
+        git fetch || exit $?
     fi
 fi
 git reset --hard "$3" || exit $?
