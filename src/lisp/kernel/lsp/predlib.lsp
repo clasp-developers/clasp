@@ -775,7 +775,6 @@ if not possible."
 ;; us in recognizing these supertypes.
 ;;
 (defun update-types (type-mask new-tag)
-  (declare (ext:assume-no-errors))
   (maybe-save-types)
   (dolist (i *elementary-types*)
     (unless (zerop (logand (cdr i) type-mask))
@@ -795,8 +794,7 @@ if not possible."
 ;; T3) = T implies either (SUBTYPEP T2 T3) = T or (SUBTYPEP T3 T2) = T.
 ;;
 (defun find-type-bounds (type in-our-family-p type-<= minimize-super)
-  (declare (si::c-local)
-           (optimize (safety 0))
+  (declare (optimize (safety 0))
 	   (function in-our-family-p type-<=)) 
   (let* ((subtype-tag 0)
 	 (disjoint-tag 0)
@@ -828,8 +826,7 @@ if not possible."
 ;; procedure, TYPE-<=; the second possibility is detected by means of tags.
 ;;
 (defun register-type (type in-our-family-p type-<=)
-  (declare (si::c-local)
-           (optimize (safety 0))
+  (declare (optimize (safety 0))
 	   (function in-our-family-p type-<=))
   (or (find-registered-tag type)
       (multiple-value-bind (tag-super tag-sub)
@@ -866,8 +863,6 @@ if not possible."
 	   (number-member-type object)))))
 
 (defun simple-member-type (object)
-  (declare (si::c-local)
-	   (ext:assume-no-errors))
   (let* ((tag (new-type-tag)))
     (maybe-save-types)
     (setq *member-types* (acons object tag *member-types*))
@@ -888,8 +883,6 @@ if not possible."
 
 
 (defun push-type (type tag)
-  (declare (si::c-local)
-	   (ext:assume-no-errors))
   (dolist (i *member-types*)
     (declare (cons i))
     (when (typep (car i) type)
@@ -902,16 +895,14 @@ if not possible."
 ;; somewhere up, to denote failure of the decision procedure.
 ;;
 (defun register-satisfies-type (type)
-  (declare (si::c-local)
-	   (ignore type))
+  (declare (ignore type))
   (throw '+canonical-type-failure+ 'satisfies))
 
 ;;----------------------------------------------------------------------
 ;; CLOS classes and structures.
 ;;
 #+clos(defun register-class (class)
-  (declare (si::c-local)
-	   (notinline class-name))
+  (declare (notinline class-name))
   (or (find-registered-tag class)
       ;; We do not need to register classes which belong to the core type
       ;; system of LISP (ARRAY, NUMBER, etc).
@@ -1310,8 +1301,6 @@ if not possible."
 	     (push-type name tag))))))
 
 (defun extend-type-tag (tag minimal-supertype-tag)
-  (declare (si::c-local)
-	   (ext:assume-no-errors))
   (dolist (type *elementary-types*)
     (let ((other-tag (cdr type)))
       (when (zerop (logandc2 minimal-supertype-tag other-tag))

@@ -327,8 +327,7 @@ Does not check if the third gang is a single-element list."
 	      `(mask-field ,btemp ,access-form)))))
 
 (defun trivial-setf-form (place vars stores store-form access-form)
-  (declare (si::c-local)
-	   (optimize (speed 3) (safety 0)))
+  (declare (optimize (speed 3) (safety 0)))
   (and (atom place)
        (null vars)
        (eq access-form place)
@@ -344,8 +343,7 @@ Does not check if the third gang is a single-element list."
   ;; When the store form contains all the original arguments in order
   ;; followed by a single stored value, we can produce an expansion
   ;; without LET forms.
-  (declare (si::c-local)
-	   (optimize (speed 3) (safety 0)))
+  (declare (optimize (speed 3) (safety 0)))
   (when (and (consp place)
 	     (consp store-form)
 	     (= (length place) (the fixnum (1- (length store-form)))))
@@ -371,8 +369,7 @@ Does not check if the third gang is a single-element list."
 
 ;;; The expansion function for SETF.
 (defun setf-expand-1 (place newvalue env)
-  (declare (si::c-local)
-	   (notinline mapcar))
+  (declare (notinline mapcar))
   (multiple-value-bind (vars vals stores store-form access-form)
       (get-setf-expansion place env)
     (cond ((trivial-setf-form place vars stores store-form access-form)

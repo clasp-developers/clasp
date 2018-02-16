@@ -95,8 +95,7 @@
 (defun sys::destructure (vl macro &optional macro-name
                          &aux (basis-form (gensym))
                            (destructure-symbols (list basis-form)))
-  (declare (si::c-local)
-	   (special *dl* *arg-check*))
+  (declare (special *dl* *arg-check*))
   (labels ((tempsym ()
 	     (let ((x (gensym)))
 	       (push x destructure-symbols)

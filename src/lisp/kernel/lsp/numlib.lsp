@@ -138,8 +138,7 @@ Returns the arc sine of NUMBER."
 
 ;; Ported from CMUCL
 (defun complex-asin (z)
-  (declare (number z)
-	   (si::c-local))
+  (declare (number z))
   (let ((sqrt-1-z (sqrt (- 1 z)))
 	(sqrt-1+z (sqrt (+ 1 z))))
     (complex (atan (realpart z) (realpart (* sqrt-1-z sqrt-1+z)))
@@ -161,8 +160,7 @@ Returns the arc cosine of NUMBER."
 
 ;; Ported from CMUCL
 (defun complex-acos (z)
-  (declare (number z)
-	   (si::c-local))
+  (declare (number z))
   (let ((sqrt-1+z (sqrt (+ 1 z)))
 	(sqrt-1-z (sqrt (- 1 z))))
     (complex (* 2 (atan (realpart sqrt-1-z) (realpart sqrt-1+z)))
@@ -198,7 +196,7 @@ Returns the hyperbolic arc cosine of NUMBER."
 	    (complex-acosh x)))))
 
 (defun complex-acosh (z)
-  (declare (number z) (si::c-local))
+  (declare (number z))
   (let ((sqrt-z-1 (sqrt (- z 1)))
 	(sqrt-z+1 (sqrt (+ z 1))))
     (complex (asinh (realpart (* (conjugate sqrt-z-1)
@@ -220,7 +218,7 @@ Returns the hyperbolic arc tangent of NUMBER."
 	    (complex-atanh x)))))
 
 (defun complex-atanh (z)
-  (declare (number z) (si::c-local))
+  (declare (number z))
   (/ (- (log (1+ z)) (log (- 1 z))) 2))
 
 (defun ffloor (x &optional (y 1))

@@ -150,8 +150,7 @@ contiguous block."
 (defun fill-array-with-seq (array initial-contents)
   (declare (array array)
            (sequence initial-contents)
-           (optimize (safety 0))
-           (si::c-local))
+           (optimize (safety 0)))
   (labels ((iterate-over-contents (array contents dims written)
 	     (declare (fixnum written)
 		      (array array)
@@ -221,8 +220,7 @@ INDEXes must be equal to the rank of ARRAY."
 
 (defun row-major-index-inner (array indices)
   (declare (optimize speed)
-           (array array)
-           (si::c-local))
+           (array array))
   (flet ((indexing-error (array indices)
            (error "Not valid index or indices~%~A~%into array~%~A" indices array)))
     (do* ((r (array-rank array))
@@ -373,8 +371,7 @@ pointer is 0 already."
     (aref vector fp)))
 
 (defun copy-array-contents (dest orig)
-  (declare (si::c-local)
-           (array dest orig)
+  (declare (array dest orig)
 	   (optimize (safety 0)))
   (labels
       ((do-copy (dest orig dims1 dims2 start1 start2)

@@ -802,7 +802,6 @@ Use special code 0 to cancel this operation.")
     (values)))
 
 (defun reconstruct-bytecodes-lambda-list (data)
-  (declare (si::c-local data))
   (let ((output '()))
     (dotimes (n (pop data))	;; required values
       (declare (fixnum n))

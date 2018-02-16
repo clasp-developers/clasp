@@ -25,8 +25,7 @@
 	 :expected-type slot-type))
 
 (defun make-access-function (name conc-name type named slot-descr)
-  (declare (ignore named)
-	   (si::c-local))
+  (declare (ignore named))
   (let* ((slot-name (nth 0 slot-descr))
 	 ;; (default-init (nth 1 slot-descr))
 	 ;; (slot-type (nth 2 slot-descr))
@@ -59,8 +58,7 @@
 
 
 (defun do-setf-structure-method (access-function type index)
-  (declare (si::c-local)
-	   (optimize (speed 3) (safety 0)))
+  (declare (optimize (speed 3) (safety 0)))
   (put-sysprop access-function 'STRUCTURE-ACCESS (cons type index))
   (do-defsetf access-function
     (cond ((or (eq type 'list) (eq type 'vector))
@@ -132,8 +130,7 @@
       (values boa-list assertions))))
 
 (defun make-constructor (name constructor type named slot-descriptions)
-  (declare (ignore named)
-	   (si::c-local))
+  (declare (ignore named))
   ;; CONSTRUCTOR := constructor-name | (constructor-name boa-lambda-list)
   (let* ((boa-constructor-p (consp constructor))
 	 (keys (unless boa-constructor-p (list '&key)))

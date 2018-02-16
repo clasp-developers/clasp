@@ -105,8 +105,7 @@
       class)))
 
 (defun add-slots (class slots)
-  (declare (si::c-local)
-	   (optimize speed (safety 0)))
+  (declare (optimize speed (safety 0)))
   ;; It does not matter that we pass NIL instead of a class object,
   ;; because CANONICAL-SLOT-TO-DIRECT-SLOT will make simple slots.
   (with-early-accessors (+standard-class-slots+

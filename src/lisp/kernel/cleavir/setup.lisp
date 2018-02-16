@@ -172,11 +172,7 @@
 (defmethod cleavir-env:declarations
     ((environment clasp-global-environment))
   '(;; behavior as in convert-form.lisp
-    core:lambda-name
-    ;; unknown, common in kernel/lsp/
-    si::c-local
-    ;; unknown, in kernel/cmp/cmpgf.lsp
-    :read-only))
+    core:lambda-name))
 
 (defvar *global-optimize*
   ;; initial value, changed by de/proclaim

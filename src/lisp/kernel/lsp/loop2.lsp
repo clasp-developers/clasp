@@ -168,7 +168,7 @@
 ;;; kind of form generated for the above loop construct to step I, simplified, is
 ;;; `(SETQ I ,(HIDE-VARIABLE-REFERENCES '(I) '(1+ I))).
 (defun hide-variable-references (variable-list form)
-  (declare #-Genera (ignore variable-list) (si::c-local))
+  (declare #-Genera (ignore variable-list))
   #+Genera (if variable-list `(compiler:invisible-references ,variable-list ,form) form)
   #-Genera form)
 
@@ -192,7 +192,7 @@
 ;;; happens to be the second value of NAMED-VARIABLE, q.v.) to this function than
 ;;; for all callers to contain the conditional invisibility construction.
 (defun hide-variable-reference (really-hide variable form)
-  (declare #-Genera (ignore really-hide variable) (si::c-local))
+  (declare #-Genera (ignore really-hide variable))
   #+Genera (if (and really-hide variable (atom variable))	;Punt on destructuring patterns
 	       `(compiler:invisible-references (,variable) ,form)
 	       form)

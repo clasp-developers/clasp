@@ -281,8 +281,7 @@
                     (subclassp argspec spec)))))
 
 (defun applicable-method-list-using-specializers (gf specializers)
-  (declare (optimize (speed 3))
-	   (si::c-local))
+  (declare (optimize (speed 3)))
   (with-early-accessors (+standard-method-slots+
 			 +standard-generic-function-slots+
 			 +eql-specializer-slots+

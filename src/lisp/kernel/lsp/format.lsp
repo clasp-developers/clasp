@@ -328,8 +328,7 @@
 ;;;; TOKENIZE-CONTROL-STRING
 
 (defun tokenize-control-string (string)
-  (declare (simple-string string)
-	   (si::c-local))
+  (declare (simple-string string))
   (let ((index 0)
 	(end (length string))
 	(result nil))
@@ -345,8 +344,7 @@
     (nreverse result)))
 
 (defun parse-directive (string start)
-  (declare (simple-string string)
-	   (si::c-local))
+  (declare (simple-string string))
   (let ((posn (1+ start)) (params nil) (colonp nil) (atsignp nil)
 	(end (length string)))
     (flet ((get-char ()

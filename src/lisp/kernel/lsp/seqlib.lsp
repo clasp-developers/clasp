@@ -681,8 +681,7 @@ subsequence is found.  Returns NIL otherwise."
 
 (defun search-vector (sequence1 start1 end1 sequence2 start2 end2
                       test test-not key from-end)
-  (declare (si::c-local)
-           (optimize (speed 3) (safety 0) (debug 0) (space 0))
+  (declare (optimize (speed 3) (safety 0) (debug 0) (space 0))
            (vector sequence1 sequence2))
   (with-tests (test test-not key)
     (with-start-end (start1 end1 sequence1)
@@ -718,8 +717,7 @@ subsequence is found.  Returns NIL otherwise."
 
 (defun search-generic (sequence1 start1 end1 sequence2 start2 end2
                        test test-not key from-end)
-  (declare (si::c-local)
-           (optimize (speed 3) (safety 2) (debug 0) (space 0)))
+  (declare (optimize (speed 3) (safety 2) (debug 0) (space 0)))
   (with-tests (test test-not key)
     (with-start-end (start1 end1 sequence1)
       (with-start-end (start2 end2 sequence2)
@@ -777,8 +775,7 @@ evaluates to NIL.  See STABLE-SORT."
 
 
 (defun list-merge-sort (l predicate key)
-  (declare (si::c-local)
-	   (optimize (safety 0) (speed 3))
+  (declare (optimize (safety 0) (speed 3))
 	   (function predicate key))
   (prog ((i 0) left right l0 l1 key-left key-right)
      (declare (fixnum i))
@@ -833,8 +830,7 @@ evaluates to NIL.  See STABLE-SORT."
 (defun quick-sort (seq start end pred key)
   (declare (fixnum start end)
 	   (function pred key)
-	   (optimize (safety 0))
-	   (si::c-local))
+	   (optimize (safety 0)))
   (if (< start end)
       (let* ((j (1+ end)))
 	(declare (fixnum j))
