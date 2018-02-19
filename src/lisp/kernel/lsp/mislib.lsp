@@ -118,9 +118,9 @@ successfully, T is returned, else error."
       #+(and debug-track-unwinds)
       (format *trace-output*
               "Unwinds             : ~A~%~
-              ReturnFrom unwinds   : ~A~%~
-              DynamicGo unwinds    : ~A~%~
-              CatchThrow unwinds   : ~A~%"
+              ReturnFrom unwinds  : ~A~%~
+              DynamicGo unwinds   : ~A~%~
+              CatchThrow unwinds  : ~A~%"
               (- end-unwinds start-unwinds)
               (- end-return-from start-return-from)
               (- end-dynamic-go start-dynamic-go)
