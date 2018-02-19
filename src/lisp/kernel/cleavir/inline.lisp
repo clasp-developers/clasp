@@ -611,77 +611,59 @@
   (core:row-major-aset (the string string) index value))
 
 (defun row-major-index-computer (array dimsyms subscripts)
-  ;; assumes once-only is taken care of.
-  ;; array is a symbol bound to an array.
-  ;; dimsyms is a list of symbols bound to the array dimensions of the array.
-  ;; subscripts is a list of symbols bound to the indices we're computing for.
-  (let ((subsyms (loop for sub in subscripts collect (gensym "SUB"))))
-    (cond
-      ((null subscripts) '0)
-      ;; special case the one dimensional case to avoid multiplication.
-      ;; FIXME: That SHOULD be handled by constant propagation and all,
-      ;; allowing this special case to be axed, but we don't have that yet.
-      ((null (rest subscripts)) (first subscripts))
-      (t
-       `(let* ((,(first subsyms) 1) ;; this is the troubling constant.
-               ,@(loop for dimsym in (reverse dimsyms)
-                       for subsym in (cdr subsyms)
-                       for lastsym in subsyms
-                       collect `(,subsym (* ,lastsym ,dimsym))))
-          (declare (type fixnum ,@subsyms))
-          (the fixnum
-               (+ ,@(loop for sub in subscripts
-                          for subsym in (reverse subsyms)
-                          collect `(* ,sub ,subsym)))))))))
+  ;; assumes once-only is taken care of
+  (let ((dimsyms (loop for sub in (rest subscripts) collect (gensym "DIM")))
+        (subsyms (loop for sub in subscripts collect (gensym "SUB"))))
+    (if subscripts
+        `(let* ((,(first subsyms) 1)
+                ,@(loop for dimsym in (reverse dimsyms)
+                        for subsym in (cdr subsyms)
+                        for lastsym in subsyms
+                        collect `(,subsym (* ,lastsym ,dimsym))))
+           (declare (type fixnum ,@subsyms))
+           (the fixnum
+                (+ ,@(loop for sub in subscripts
+                           for subsym in (reverse subsyms)
+                           collect `(* ,sub ,subsym)))))
+        '0)))
 
-(define-compiler-macro array-row-major-index (&whole form array &rest subscripts)
-  ;; FIXME: Cleavir arithmetic is not yet clever enough for this to be fast in the
-  ;; >1dimensional case. We need wrapped fixnum multiplication and addition, basically,
-  ;; where overflow jumps to an error.
-  ;; As such, we don't expand (using the C++ definition) for these cases.
-  (if (> (length subscripts) 1)
-      form
-      (let* ((rank (length subscripts))
-             (sarray (gensym "ARRAY"))
-             (ssubscripts (loop repeat rank collecting (gensym "SUBSCRIPT")))
-             (dimsyms (loop repeat rank collecting (gensym "DIMENSION")))
-             (rmindex (gensym "ROW-MAJOR-INDEX")))
-        ;; First up, once-only the array and subscripts.
-        `(let ((,sarray ,array)
-               ,@(loop for ssub in ssubscripts for sub in subscripts
-                       collecting `(,ssub ,sub)))
-           (declare (type fixnum ,@ssubscripts))
-           ;; Now verify that the rank is correct
-           (unless (eq (array-rank ,sarray) ,rank)
-             (error "Wrong number of subscripts, ~d, for an array of rank ~d."
-                    ,rank (array-rank ,sarray)))
-           ;; We need the array dimensions, so bind those
-           (let (,@(loop for dimsym in dimsyms
-                         for axis below rank
-                         collect `(,dimsym (%array-dimension ,sarray ,axis))))
-             (declare (type fixnum ,@dimsyms))
-             ;; Check that the index is valid
-             ,@(loop for ssub in ssubscripts
-                     for dimsym in dimsyms
+(define-compiler-macro array-row-major-index (array &rest subscripts)
+  (let* ((rank (length subscripts))
+         (sarray (gensym "ARRAY"))
+         (ssubscripts (loop repeat rank collecting (gensym "SUBSCRIPT")))
+         (dimsyms (loop repeat rank collecting (gensym "DIMENSION")))
+         (rmindex (gensym "ROW-MAJOR-INDEX")))
+    ;; First up, once-only the array and subscripts.
+    `(let ((,sarray ,array)
+           ,@(loop for ssub in ssubscripts for sub in subscripts
+                   collecting `(,ssub ,sub)))
+       (declare (type fixnum ,@ssubscripts))
+       ;; Now verify that the rank is correct
+       (unless (eq (array-rank ,sarray) ,rank)
+         (error "Wrong number of subscripts, ~d, for an array of rank ~d."
+                ,rank (array-rank ,sarray)))
+       ;; We need the array dimensions, so bind those
+       (let (,@(loop for dimsym in dimsyms
                      for axis below rank
-                     collect `(unless (and (>= ,ssub 0) (< ,ssub ,dimsym))
-                                (error "Invalid index ~d for axis ~d of array: expected 0-~d"
-                                       ,ssub ,axis ,dimsym)))
-             ;; Now we know we're good, do the actual computation
-             ,(row-major-index-computer sarray dimsyms ssubscripts))))))
+                     collect `(dimsym (%array-dimension ,sarray ,axis))))
+         (declare (type fixnum ,@dimsyms))
+         ;; Check that the index is valid
+         ,@(loop for ssub in ssubscripts
+                 for dimsym in dimsyms
+                 for axis below rank
+                 collect `(unless (and (>= ,ssub 0) (< ,ssub ,dimsym))
+                            (error "Invalid index ~d for axis ~d of array: expected 0-~d"
+                                   ,ssub ,axis ,dimsym)))
+         ;; Now we know we're good, do the actual computation
+         ,(row-major-index-computer sarray dimsyms ssubscripts)))))
 
-(define-compiler-macro aref (&whole form array &rest subscripts)
-  ;; FIXME: See tragic comment above in array-row-major-index.
-  (if (> (length subscripts) 1)
-      form
-      (let ((sarray (gensym "ARRAY")))
-        ;; array-row-major-index does bounds checking.
-        ;; Therefore, we basically just do what row-major-aref does sans a
-        ;; here-redundant check.
-        `(let* ((,sarray ,array)
-                (rmi (array-row-major-index ,sarray ,@subscripts)))
-           (with-array-data (data offset ,sarray)
-             (%unsafe-vector-ref data (+ offset rmi)))))))
+#+(or)
+(define-compiler-macro %aref (array &rest subscripts)
+  (case (length subscripts)
+    ((1) `(%row-major-aref ,array ,(first subscripts)))
+    (t (let ((asym (gensym "ARRAY")))
+         `(let ((,asym ,array))
+            (%row-major-aref ,asym (array-row-major-index ,asym ,@subscripts)))))))
 
 ;;; ------------------------------------------------------------
 ;;;

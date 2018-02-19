@@ -868,7 +868,6 @@
     (write-string string stream)))
 
 (defun format-princ (stream arg colonp atsignp mincol colinc minpad padchar)
-  #-formatter
   (format-write-field stream
 		      (if (or arg (not colonp))
 			  (princ-to-string arg)
@@ -898,7 +897,6 @@
       (princ (if colonp (or (next-arg) "()") (next-arg)) stream)))
 
 (defun format-prin1 (stream arg colonp atsignp mincol colinc minpad padchar)
-  #-formatter
   (format-write-field stream
 		      (if (or arg (not colonp))
 			  (prin1-to-string arg)
@@ -990,8 +988,7 @@
 ;;;
 (defun format-print-integer (stream number print-commas-p print-sign-p
 			     radix mincol padchar commachar commainterval)
-  #-formatter
-  (let ((*print-base* radix)
+ (let ((*print-base* radix)
 	(*print-radix* nil))
     (if (integerp number)
 	(let* ((text (princ-to-string (abs number)))
@@ -1154,7 +1151,6 @@
 	      (write-string (svref cardinal-ones ones) stream)))))))
 
 (defun format-print-cardinal (stream n)
-  #-formatter
   (cond ((minusp n)
 	 (write-string "negative " stream)
 	 (format-print-cardinal-aux stream (- n) 0 n))
@@ -1176,7 +1172,6 @@
       (write-string (svref cardinal-periods period) stream))))
 
 (defun format-print-ordinal (stream n)
-  #-formatter
   (when (minusp n)
     (write-string "negative " stream))
   (let ((number (abs n)))
@@ -1208,7 +1203,6 @@
 ;;; Print Roman numerals
 
 (defun format-print-old-roman (stream n)
-  #-formatter
   (unless (< 0 n 5000)
     (error "Number too large to print in old Roman numerals: ~:D" n))
   (do ((char-list '(#\D #\C #\L #\X #\V #\I) (cdr char-list))
@@ -1222,7 +1216,6 @@
       ((zerop start))))
 
 (defun format-print-roman (stream n)
-  #-formatter
   (unless (< 0 n 4000)
     (error "Number too large to print in Roman numerals: ~:D" n))
   (do ((char-list '(#\D #\C #\L #\X #\V #\I) (cdr char-list))
@@ -1309,7 +1302,6 @@
                            (format-fixed stream (next-arg) w d k ovf pad atsignp)))
 
 (defun format-fixed (stream number w d k ovf pad atsign)
-  #-formatter
   (if (numberp number)
       (if (floatp number)
 	  (format-fixed-aux stream number w d k ovf pad atsign)
@@ -1397,7 +1389,6 @@
     (format-exponential stream (next-arg) w d e k ovf pad mark atsignp)))
 
 (defun format-exponential (stream number w d e k ovf pad marker atsign)
-  #-formatter
   (cond
     ((not (numberp number))
      (format-princ stream number nil nil w 1 0 pad))
@@ -1511,7 +1502,6 @@
    (format-general stream (next-arg) w d e k ovf pad mark atsignp)))
 
 (defun format-general (stream number w d e k ovf pad marker atsign)
-  #-formatter
   (if (numberp number)
       (if (floatp number)
 	  (format-general-aux stream number w d e k ovf pad marker atsign)
@@ -1565,7 +1555,6 @@
     (format-dollars stream (next-arg) d n w pad colonp atsignp)))
 
 (defun format-dollars (stream number d n w pad colon atsign)
-  #-formatter
   (if (rationalp number) (setq number (coerce number 'single-float)))
   (if (floatp number)
       (let* ((signstr (if (minusp number) "-" (if atsign "+" "")))
@@ -1770,7 +1759,6 @@
     (write-string spaces stream :end n)))
 
 (defun format-relative-tab (stream colrel colinc)
-  #-formatter
   (if (#-(or ecl clasp) pp:pretty-stream-p #+(or ecl clasp) sys::pretty-stream-p stream)
       (pprint-tab :line-relative colrel colinc stream)
       (let* ((cur (#-(or ecl clasp) sys::charpos #+(or ecl clasp) sys::file-column stream))
@@ -1780,7 +1768,6 @@
 	(output-spaces stream spaces))))
 
 (defun format-absolute-tab (stream colnum colinc)
-  #-formatter
   (if (#-(or ecl clasp) pp:pretty-stream-p #+(or ecl clasp) sys::pretty-stream-p stream)
       (pprint-tab :line colnum colinc stream)
       (let ((cur (#-(or ecl clasp) sys::charpos #+(or ecl clasp) sys:file-column stream)))
@@ -2620,7 +2607,6 @@
 
 (defun format-justification (stream newline-prefix extra-space line-len strings
 			     pad-left pad-right mincol colinc minpad padchar)
-  #-formatter
   (setf strings (reverse strings))
   (when (and (not pad-left) (not pad-right) (null (cdr strings)))
     (setf pad-left t))
@@ -2882,7 +2868,6 @@
 ;;; This is called from FORMAT deftransforms.
 ;;;
   (defun min/max-format-arguments-count (string)
-    #-formatter
     (handler-case
         (catch 'give-up
           ;; For the side effect of validating the control string.
@@ -2892,7 +2877,6 @@
         (format nil "~a" e))))
 
   (defun %min/max-format-args (directives)
-    #-formatter
     (let ((min-req 0) (max-req 0))
       (flet ((incf-both (&optional (n 1))
                (incf min-req n)
@@ -2935,7 +2919,6 @@
 ;;; always zero.
 ;;;
   (defun %min/max-conditional-args (conditional directives)
-    #-formatter
     (multiple-value-bind (sublists last-semi-with-colon-p remaining)
         (parse-conditional-directive directives)
       (declare (ignore last-semi-with-colon-p))
@@ -2955,7 +2938,6 @@
         (values min-req max-req remaining))))
   
   (defun %min/max-iteration-args (iteration directives)
-    #-formatter
     (let* ((close (find-directive directives #\} nil))
            (posn (position close directives))
            (remaining (nthcdr (1+ posn) directives)))
