@@ -139,7 +139,6 @@
 (defparameter *loop-real-data-type* 'real)
 
 (defun loop-optimization-quantities (env)
-  (declare (si::c-local))
   ;; The ANSI conditionalization here is for those lisps that implement
   ;; DECLARATION-INFORMATION (from cleanup SYNTACTIC-ENVIRONMENT-ACCESS).
   ;; It is really commentary on how this code could be written.  I don't
@@ -169,7 +168,7 @@
 ;;; kind of form generated for the above loop construct to step I, simplified, is
 ;;; `(SETQ I ,(HIDE-VARIABLE-REFERENCES '(I) '(1+ I))).
 (defun hide-variable-references (variable-list form)
-  (declare #-Genera (ignore variable-list) (si::c-local))
+  (declare #-Genera (ignore variable-list))
   #+Genera (if variable-list `(compiler:invisible-references ,variable-list ,form) form)
   #-Genera form)
 
@@ -193,7 +192,7 @@
 ;;; happens to be the second value of NAMED-VARIABLE, q.v.) to this function than
 ;;; for all callers to contain the conditional invisibility construction.
 (defun hide-variable-reference (really-hide variable form)
-  (declare #-Genera (ignore really-hide variable) (si::c-local))
+  (declare #-Genera (ignore really-hide variable))
   #+Genera (if (and really-hide variable (atom variable))	;Punt on destructuring patterns
 	       `(compiler:invisible-references (,variable) ,form)
 	       form)
@@ -349,7 +348,6 @@ constructed.
 
 
 (defun make-loop-minimax (answer-variable type)
-  (declare (si::c-local))
   (let ((infinity-data (cdr (assoc type *loop-minimax-type-infinities-alist* :test #'subtypep))))
     (make-loop-minimax-internal
       :answer-variable answer-variable
@@ -361,8 +359,7 @@ constructed.
 
 
 (defun loop-note-minimax-operation (operation minimax)
-  (declare (si::c-local))
-  (pushnew (truly-the symbol operation) (loop-minimax-operations minimax))
+  (pushnew (the symbol operation) (loop-minimax-operations minimax))
   (when (and (cdr (loop-minimax-operations minimax))
 	     (not (loop-minimax-flag-variable minimax)))
     (setf (loop-minimax-flag-variable minimax) (gensym "LOOP-MAXMIN-FLAG-")))
@@ -428,22 +425,18 @@ code to be loaded.
 ;;;Compare two "tokens".  The first is the frob out of *LOOP-SOURCE-CODE*,
 ;;; the second a symbol to check against.
 (defun loop-tequal (x1 x2)
-  (declare (si::c-local))
   (and (symbolp x1) (string= x1 x2)))
 
 
 (defun loop-tassoc (kwd alist)
-  (declare (si::c-local))
   (and (symbolp kwd) (assoc kwd alist :test #'string=)))
 
 
 (defun loop-tmember (kwd list)
-  (declare (si::c-local))
   (and (symbolp kwd) (member kwd list :test #'string=)))
 
 
 (defun loop-lookup-keyword (loop-token table)
-  (declare (si::c-local))
   (and (symbolp loop-token)
        (values (gethash (symbol-name loop-token) table))))
 
@@ -494,7 +487,6 @@ code to be loaded.
 
 (defun make-standard-loop-universe (&key keywords for-keywords iteration-keywords path-keywords
 				    type-keywords type-symbols ansi)
-  (declare (si::c-local))
 ;;  #-(and CLOE Source-Bootstrap ecl) (check-type ansi (member nil t :extended))
   (flet ((maketable (entries)
 	   (let* ((size (length entries))
@@ -526,7 +518,6 @@ a LET-like macro, and a SETQ-like macro, which perform LOOP-style destructuring.
 
 
 (defun loop-make-psetq (frobs)
-  (declare (si::c-local))
   (and frobs
        (loop-make-desetq
 	 (list (car frobs)
@@ -536,7 +527,6 @@ a LET-like macro, and a SETQ-like macro, which perform LOOP-style destructuring.
 
 
 (defun loop-make-desetq (var-val-pairs)
-  (declare (si::c-local))
   (if (null var-val-pairs)
       nil
       (cons (if *loop-destructuring-hooks*
@@ -733,7 +723,6 @@ a LET-like macro, and a SETQ-like macro, which perform LOOP-style destructuring.
 
 
 (defun loop-constant-fold-if-possible (form &optional expected-type)
-  (declare (si::c-local))
   #+Genera (declare (values new-form constantp constant-value))
   (let ((new-form form) (constantp nil) (constant-value nil))
     #+Genera (setq new-form (compiler:optimize-form form *loop-macro-environment*
@@ -772,7 +761,6 @@ a LET-like macro, and a SETQ-like macro, which perform LOOP-style destructuring.
 
 
 (defun loop-code-duplication-threshold (env)
-  (declare (si::c-local))
   (multiple-value-bind (speed space) (loop-optimization-quantities env)
     (+ 40 (* (- speed space) 10))))
 
@@ -857,7 +845,6 @@ a LET-like macro, and a SETQ-like macro, which perform LOOP-style destructuring.
 
 
 (defun duplicatable-code-p (expr env)
-  (declare (si::c-local))
   (if (null expr) 0
       (let ((ans (estimate-code-size expr env)))
 	(declare (fixnum ans))
@@ -893,19 +880,16 @@ a LET-like macro, and a SETQ-like macro, which perform LOOP-style destructuring.
 
 
 (defun destructuring-size (x)
-  (declare (si::c-local))
   (do ((x x (cdr x)) (n 0 (+ (destructuring-size (car x)) n)))
       ((atom x) (+ n (if (null x) 0 1)))))
 
 
 (defun estimate-code-size (x env)
-  (declare (si::c-local))
   (catch 'estimate-code-size
     (estimate-code-size-1 x env)))
 
 
 (defun estimate-code-size-1 (x env)
-  (declare (si::c-local))
   (flet ((list-size (l)
 	   (let ((n 0))
 	     (declare (fixnum n))
@@ -919,8 +903,8 @@ a LET-like macro, and a SETQ-like macro, which perform LOOP-style destructuring.
 	   (let ((fn (car x)) (tem nil) (n 0))
 	     (declare (symbol fn) (fixnum n))
 	     (macrolet ((f (overhead &optional (args nil args-p))
-			  `(truly-the fixnum (+ (truly-the fixnum ,overhead)
-					  (truly-the fixnum (list-size ,(if args-p args '(cdr x))))))))
+			  `(the fixnum (+ (the fixnum ,overhead)
+					  (the fixnum (list-size ,(if args-p args '(cdr x))))))))
 	       (cond ((setq tem (get-sysprop fn 'estimate-code-size))
 		      (typecase tem
 			(fixnum (f tem))
@@ -959,19 +943,16 @@ a LET-like macro, and a SETQ-like macro, which perform LOOP-style destructuring.
 
 
 (defun loop-context ()
-  (declare (si::c-local))
   (do ((l *loop-source-context* (cdr l)) (new nil (cons (car l) new)))
       ((eq l (cdr *loop-source-code*)) (nreverse new))))
 
 
 (defun loop-error (format-string &rest format-args)
-  (declare (si::c-local))
   (si::simple-program-error "~?~%Current LOOP context:~{ ~S~}."
                             format-string format-args (loop-context)))
 
 
 (defun loop-warn (format-string &rest format-args)
-  (declare (si::c-local))
   (warn 'sys::simple-style-warning
 	:format-control "~?~%Current LOOP context:~{ ~S~}."
 	:format-arguments (list format-string format-args (loop-context))))
@@ -979,7 +960,6 @@ a LET-like macro, and a SETQ-like macro, which perform LOOP-style destructuring.
 
 (defun loop-check-data-type (specified-type required-type
 			     &optional (default-type required-type))
-  (declare (si::c-local))
   (if (null specified-type)
       default-type
       (multiple-value-bind (a b) (subtypep specified-type required-type)
@@ -1022,7 +1002,6 @@ collected result will be returned as the value of the LOOP."
       forms))
 
 (defun loop-translate (*loop-source-code* *loop-macro-environment* *loop-universe*)
-  (declare (si::c-local))
   (let ((*loop-original-source-code* *loop-source-code*)
 	(*loop-source-context* nil)
 	(*loop-iteration-variables* nil)
@@ -1077,7 +1056,6 @@ collected result will be returned as the value of the LOOP."
 
 
 (defun loop-iteration-driver ()
-  (declare (si::c-local))
   (do () ((null *loop-source-code*))
     (let ((keyword (car *loop-source-code*)) (tem nil))
       (cond ((not (symbolp keyword))
@@ -1098,21 +1076,18 @@ collected result will be returned as the value of the LOOP."
 
 
 (defun loop-pop-source ()
-  (declare (si::c-local))
   (if *loop-source-code*
       (pop *loop-source-code*)
       (loop-error "LOOP source code ran out when another token was expected.")))
 
 
 (defun loop-get-compound-form ()
-  (declare (si::c-local))
   (let ((form (loop-get-form)))
     (unless (consp form)
       (loop-error "Compound form expected, but found ~A." form))
     form))
 
 (defun loop-get-progn ()
-  (declare (si::c-local))
   (do ((forms (list (loop-get-compound-form))
               (cons (loop-get-compound-form) forms))
        (nextform (car *loop-source-code*)
@@ -1122,23 +1097,19 @@ collected result will be returned as the value of the LOOP."
 
 
 (defun loop-get-form ()
-  (declare (si::c-local))
   (if *loop-source-code*
       (loop-pop-source)
       (loop-error "LOOP code ran out where a form was expected.")))
 
 
 (defun loop-construct-return (form)
-  (declare (si::c-local))
   `(return-from ,(car *loop-names*) ,form))
 
 (defun loop-emit-body (form)
-  (declare (si::c-local))
   (setq *loop-emitted-body* t)
   (push form *loop-body*))
 
 (defun loop-emit-final-value (&optional (form nil form-supplied-p))
-  (declare (si::c-local))
   (when form-supplied-p
     (push (loop-construct-return form) *loop-after-epilogue*))
   (when *loop-final-value-culprit*
@@ -1149,7 +1120,6 @@ collected result will be returned as the value of the LOOP."
 
 
 (defun loop-disallow-conditional (&optional kwd)
-  (declare (si::c-local))
   #+(or Genera CLOE) (declare (dbg:error-reporter))
   (when *loop-inside-conditional*
     (loop-error "~:[This LOOP~;The LOOP ~:*~S~] clause is not permitted inside a conditional." kwd)))
@@ -1168,7 +1138,6 @@ collected result will be returned as the value of the LOOP."
 
 
 (defun loop-typed-init (data-type)
-  (declare (si::c-local))
   (cond ((null data-type)
 	 nil)
 	((subtypep data-type 'character)
@@ -1181,7 +1150,6 @@ collected result will be returned as the value of the LOOP."
 	 0)))
 
 (defun loop-optional-type (&optional variable)
-  (declare (si::c-local))
   ;;No variable specified implies that no destructuring is permissible.
   (and *loop-source-code*			;Don't get confused by NILs...
        (let ((z (car *loop-source-code*)))
@@ -1238,7 +1206,6 @@ collected result will be returned as the value of the LOOP."
 
 
 (defun loop-bind-block ()
-  (declare (si::c-local))
   (when (or *loop-variables* *loop-declarations* *loop-wrappers*)
     (push (list (nreverse *loop-variables*) *loop-declarations* *loop-desetq-crocks* *loop-wrappers*)
 	  *loop-bind-stack*)
@@ -1255,7 +1222,6 @@ collected result will be returned as the value of the LOOP."
 	   (return t)))))
 
 (defun loop-make-variable (name initialization dtype &optional iteration-variable-p)
-  (declare (si::c-local))
   (cond ((null name)
 	 (cond ((not (null initialization))
 		(push (list (setq name (gensym "LOOP-IGNORE-"))
@@ -1297,15 +1263,13 @@ collected result will be returned as the value of the LOOP."
 
 
 (defun loop-make-iteration-variable (name initialization dtype)
-  (declare (si::c-local))
   (loop-make-variable name initialization dtype t))
 
 
 (defun loop-declare-variable (name dtype)
-  (declare (si::c-local))
   (cond ((or (null name) (null dtype) (eq dtype t)) nil)
 	((symbolp name)
-	 (unless (or (eq dtype t) (member (truly-the symbol name) *loop-nodeclare*))
+	 (unless (or (eq dtype t) (member (the symbol name) *loop-nodeclare*))
            ;; Allow redeclaration of a variable. This can be used by
            ;; the loop constructors to make the type more and more
            ;; precise as we add keywords
@@ -1328,7 +1292,6 @@ collected result will be returned as the value of the LOOP."
 
 
 (defun loop-maybe-bind-form (form data-type)
-  (declare (si::c-local))
   (if (loop-constantp form)
       form
       (loop-make-variable (gensym "LOOP-BIND-") form data-type)))
@@ -1421,7 +1384,6 @@ collected result will be returned as the value of the LOOP."
 
 
 (defun loop-get-collection-info (collector class default-type)
-  (declare (si::c-local))
   (let ((form (loop-get-form))
 	(dtype (and (not (loop-universe-ansi *loop-universe*)) (loop-optional-type)))
 	(name (when (loop-tequal (car *loop-source-code*) 'into)
@@ -1433,7 +1395,7 @@ collected result will be returned as the value of the LOOP."
       (loop-disallow-aggregate-booleans))
     (unless dtype
       (setq dtype (or (loop-optional-type) default-type)))
-    (let ((cruft (find (truly-the symbol name) *loop-collection-cruft*
+    (let ((cruft (find (the symbol name) *loop-collection-cruft*
 		       :key #'loop-collector-name)))
       (cond ((not cruft)
 	     (when (and name (loop-variable-p name))
@@ -1573,7 +1535,6 @@ collected result will be returned as the value of the LOOP."
 ;;;; The iteration driver
 
 (defun loop-hack-iteration (entry)
-  (declare (si::c-local))
   (flet ((make-endtest (list-of-forms)
 	   (cond ((null list-of-forms) nil)
 		 ((member t list-of-forms) '(go end-loop))
@@ -1667,7 +1628,6 @@ collected result will be returned as the value of the LOOP."
   )
 
 (defun loop-when-it-variable ()
-  (declare (si::c-local))
   (or *loop-when-it-variable*
       (setq *loop-when-it-variable*
 	    (loop-make-variable (gensym "LOOP-IT-") nil nil))))
@@ -1729,7 +1689,6 @@ collected result will be returned as the value of the LOOP."
 
 
 (defun loop-list-step (listvar)
-  (declare (si::c-local))
   ;;We are not equipped to analyze whether 'FOO is the same as #'FOO here in any
   ;; sensible fashion, so let's give an obnoxious warning whenever 'FOO is used
   ;; as the stepping function.
@@ -1823,7 +1782,6 @@ collected result will be returned as the value of the LOOP."
 
 
 (defun add-loop-path (names function universe &key preposition-groups inclusive-permitted user-data)
-  (declare (si::c-local))
   (unless (listp names) (setq names (list names)))
   ;; Can't do this due to CLOS bootstrapping problems.
   #-(or Genera (and CLOE Source-Bootstrap) ecl clasp) (check-type universe loop-universe)
@@ -1892,7 +1850,6 @@ collected result will be returned as the value of the LOOP."
 ;;;INTERFACE:  Lucid, exported.
 ;;; i.e., this is part of our extended ansi-loop interface.
 (defun named-variable (name)
-  (declare (si::c-local))
   (let ((tem (loop-tassoc name *loop-named-variables*)))
     (declare (list tem))
     (cond ((null tem) (values (gensym) nil))
@@ -1901,7 +1858,6 @@ collected result will be returned as the value of the LOOP."
 
 
 (defun loop-collect-prepositional-phrases (preposition-groups &optional USING-allowed initial-phrases)
-  (declare (si::c-local))
   (flet ((in-group-p (x group) (car (loop-tmember x group))))
     (do ((token nil)
 	 (prepositional-phrases initial-phrases)
@@ -1953,7 +1909,6 @@ collected result will be returned as the value of the LOOP."
 			  sequence-variable sequence-type
 			  step-hack default-top
 			  prep-phrases)
-  (declare (si::c-local))
    (let ((endform nil)				;Form (constant or variable) with limit value.
 	 (sequencep nil)			;T if sequence arg has been provided.
 	 (testfn nil)				;endtest function
@@ -2082,7 +2037,7 @@ collected result will be returned as the value of the LOOP."
 			  (symbolp sequencev)
 			  sequence-type
 			  (subtypep sequence-type 'vector)
-			  (not (member (truly-the symbol sequencev) *loop-nodeclare*)))
+			  (not (member (the symbol sequencev) *loop-nodeclare*)))
 		 (push `(sys:array-register ,sequencev) *loop-declarations*))
       (list* nil nil				; dummy bindings and prologue
 	     (loop-sequencer
@@ -2191,7 +2146,6 @@ collected result will be returned as the value of the LOOP."
 ;;;; ANSI Loop
 
 (defun make-ansi-loop-universe (extended-p)
-  (declare (si::c-local))
   (let ((w (make-standard-loop-universe
 	     :keywords `((named (loop-do-named))
 			 (initially (loop-do-initially))
@@ -2278,7 +2232,6 @@ collected result will be returned as the value of the LOOP."
 
 
 (defun loop-standard-expansion (keywords-and-forms environment universe)
-  (declare (si::c-local))
   (if (and keywords-and-forms (symbolp (car keywords-and-forms)))
       (loop-translate keywords-and-forms environment universe)
       (let ((tag (gensym)))

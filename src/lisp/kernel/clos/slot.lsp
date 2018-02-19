@@ -71,7 +71,6 @@
 ;;;
 
 (defun parse-slot (slot)
-  (declare (si::c-local))
   (if (symbolp slot)
       `(list :name ',slot)
       (do* (output

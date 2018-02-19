@@ -16,7 +16,6 @@
 ;;; DEFCLASS
 
 (defun parse-default-initargs (default-initargs)
-  (declare (si::c-local))
   (do* ((output-list nil)
 	(scan default-initargs (cddr scan))
 	(already-supplied '()))

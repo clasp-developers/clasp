@@ -530,178 +530,158 @@
 ;;; This is "unsafe" in that it doesn't bounds check.
 ;;; It DOES check that the value is of the correct type,
 ;;; because this is the only place we know the type.
+(declaim (inline %unsafe-vector-set))
+(defun %unsafe-vector-set (array index value)
+  (macrolet ((mycase (&rest specs)
+               `(typecase array
+                  ,@(loop for (type boxed) in specs
+                          collect `((simple-array ,type (*))
+                                    (unless (typep value ',type)
+                                      (error 'type-error :datum value :expected-type ',type))
+                                    (cleavir-primop:aset array index value ,type t ,boxed)
+                                    value))
+                  ;; should be unreachable
+                  (t (error "BUG: Unknown vector ~a" array)))))
+    (mycase (t t) (base-char nil) (character nil)
+            (double-float nil) (single-float nil)
+            (fixnum nil)
+            (ext:integer64 nil) (ext:integer32 nil)
+            (ext:integer16 nil) (ext:integer8 nil)
+            (ext:byte64 nil) (ext:byte32 nil)
+            (ext:byte16 nil) (ext:byte8 nil)
+            (bit t))))
 
-         (debug-inline "%unsafe-vector-set")
-         (declaim (inline %unsafe-vector-set))
-         (defun %unsafe-vector-set (array index value)
-           (macrolet ((mycase (&rest specs)
-                        `(typecase array
-                           ,@(loop for (type boxed) in specs
-                                   collect `((simple-array ,type (*))
-                                             (unless (typep value ',type)
-                                               (error 'type-error :datum value :expected-type ',type))
-                                             (cleavir-primop:aset array index value ,type t ,boxed)
-                                             value))
-                           ;; should be unreachable
-                           (t
-                            (core:bformat t "unsafe-vector-set array-element-type: %s%N" (array-element-type array))
-                            (error "BUG: unsafe-vector-set unknown vector ~a" array)))))
-             (mycase (t t) (base-char nil) (character nil)
-                     (double-float nil) (single-float nil)
-                     (fixnum nil)
-                     (ext:integer64 nil) (ext:integer32 nil)
-                     (ext:integer16 nil) (ext:integer8 nil)
-                     (ext:byte64 nil) (ext:byte32 nil)
-                     (ext:byte16 nil) (ext:byte8 nil)
-                     (bit t))))
+(declaim (inline row-major-array-in-bounds-p))
+(defun row-major-array-in-bounds-p (array index)
+  (etypecase array
+    ((simple-array * (*))
+     (and (<= 0 index) (< index (core::vector-length array))))
+    (array
+     (and (<= 0 index) (< index (core::%array-total-size array))))))
 
-         (debug-inline "row-major-array-in-bounds-p")
-         (declaim (inline row-major-array-in-bounds-p))
-         (defun row-major-array-in-bounds-p (array index)
-           (etypecase array
-             ((simple-array * (*))
-              (and (<= 0 index) (< index (core::vector-length array))))
-             (array
-              (and (<= 0 index) (< index (core::%array-total-size array))))))
+;; FIXME: This could be a function returning two values. But that's
+;; quite inefficient at the moment.
+(defmacro with-array-data ((arrayname offsetname array) &body body)
+  `(let ((,arrayname ,array) (,offsetname 0))
+     (declare (type fixnum ,offsetname))
+     (etypecase ,arrayname
+       ((simple-array * (*))) ; already all set
+       (simple-array ; multidimensional. guaranteed to have offset zero and no recursion.
+        (setf ,arrayname (core::%displacement ,arrayname)))
+       (array
+        (loop
+          (let ((displacement (core::%displacement ,arrayname))
+                (displaced-index-offset (core::%displaced-index-offset ,arrayname)))
+            (setf underlying-array displacement
+                  ,offsetname (+ ,offsetname displaced-index-offset)))
+          (when (typep ,arrayname '(simple-array * (*))) (return)))))
+     ,@body))
 
-         ;; FIXME: This could be a function returning two values. But that's
-         ;; quite inefficient at the moment.
-         (defmacro with-array-data ((arrayname offsetname array) &body body)
-           `(let ((,arrayname ,array) (,offsetname 0))
-              (declare (type fixnum ,offsetname))
-              (etypecase ,arrayname
-                ((simple-array * (*)))  ; already all set
-                (simple-array ; multidimensional. guaranteed to have offset zero and no recursion.
-                 (setf ,arrayname (core::%displacement ,arrayname)))
-                (array
-                 (loop
-                   (let ((displacement (core::%displacement ,arrayname))
-                         (displaced-index-offset (core::%displaced-index-offset ,arrayname)))
-                     (setf underlying-array displacement
-                           ,offsetname (+ ,offsetname displaced-index-offset)))
-                   (when (typep ,arrayname '(simple-array * (*))) (return)))))
-              ,@body))
+(declaim (inline cl:row-major-aref))
+(defun cl:row-major-aref (array index)
+  ;; First, undisplace. This can be done independently
+  ;; of the index, meaning it could potentially be
+  ;; moved out of loops, though that can invite inconsistency
+  ;; in a multithreaded environment.
+  (with-array-data (underlying-array offset array)
+    ;; Now bounds check. Use the original arguments.
+    (unless (row-major-array-in-bounds-p array index)
+      (error "~d is not a valid row-major index for ~a" index array))
+    ;; Okay, now array is a vector/simple, and index is valid.
+    ;; This function takes care of element type discrimination.
+    (%unsafe-vector-ref underlying-array (+ index offset))))
 
-         #+(or)
-         (eval-when (:compile-toplevel :execute)
-           (trace clasp-cleavir::cleavir-compile-file-cst-or-form
-                  clasp-cleavir::compile-cst-or-form
-                  clasp-cleavir::compile-lambda-form-to-llvm-function
-                  clasp-cleavir::run-thunk
-                  clasp-cleavir::cclasp-eval-with-env
-                  clasp-cleavir::cclasp-compile-in-env
-                  clasp-cleavir::cclasp-compile*
-                  clasp-cleavir::cclasp-compile-to-module-with-run-time-table
-                  clasp-cleavir::compile-cst-or-form-to-mir
-                  cleavir-cst-to-ast:cst-to-ast
-                  cleavir-cst-to-ast::convert
-                  )
-           )
-;;;; Try 2
-;;;#+(or)(progn
-
-         (progn
-           (debug-inline "cl:row-major-aref")
-           (declaim (inline cl:row-major-aref))
-           (defun cl:row-major-aref (array index)
-             ;; First, undisplace. This can be done independently
-             ;; of the index, meaning it could potentially be
-             ;; moved out of loops, though that can invite inconsistency
-             ;; in a multithreaded environment.
-             (with-array-data (underlying-array offset array)
-               ;; Now bounds check. Use the original arguments.
-               (unless (row-major-array-in-bounds-p array index)
-                 (error "~d is not a valid row-major index for ~a" index array))
-               ;; Okay, now array is a vector/simple, and index is valid.
-               ;; This function takes care of element type discrimination.
-               (%unsafe-vector-ref underlying-array (+ index offset)))))
-
-         (progn
-           (debug-inline "core:row-major-aset")
-           (declaim (inline core:row-major-aset))
-           (defun core:row-major-aset (array index value)
-             (with-array-data (underlying-array offset array)
-               (unless (row-major-array-in-bounds-p array index)
-                 (error "~d is not a valid row-major index for ~a" index array))
-               (%unsafe-vector-set underlying-array (+ index offset) value))))
-
-;;;; Try 3
-;;;#+(or)(progn
-
-         (debug-inline "schar")
-         (declaim (inline schar core:schar-set char core:char-set))
-         (defun schar (string index)
-           (row-major-aref (the simple-string string) index))
-
-         (debug-inline "core:schar-set")
-         (defun core:schar-set (string index value)
-           (core:row-major-aset (the simple-string string) index value))
-
-         (debug-inline "char")
-         (defun char (string index)
-           (row-major-aref (the string string) index))
-         (defun core:char-set (string index value)
-           (core:row-major-aset (the string string) index value))
-
-         (debug-inline "row-major-index-computer")
-         (defun row-major-index-computer (array dimsyms subscripts)
-           ;; assumes once-only is taken care of
-           (let ((dimsyms (loop for sub in (rest subscripts) collect (gensym "DIM")))
-                 (subsyms (loop for sub in subscripts collect (gensym "SUB"))))
-             (if subscripts
-                 `(let* ((,(first subsyms) 1)
-                         ,@(loop for dimsym in (reverse dimsyms)
-                                 for subsym in (cdr subsyms)
-                                 for lastsym in subsyms
-                                 collect `(,subsym (* ,lastsym ,dimsym))))
-                    (declare (type fixnum ,@subsyms))
-                    (the fixnum
-                         (+ ,@(loop for sub in subscripts
-                                    for subsym in (reverse subsyms)
-                                    collect `(* ,sub ,subsym)))))
-                 '0)))
+(declaim (inline core:row-major-aset))
+(defun core:row-major-aset (array index value)
+  (with-array-data (underlying-array offset array)
+    (unless (row-major-array-in-bounds-p array index)
+      (error "~d is not a valid row-major index for ~a" index array))
+    (%unsafe-vector-set underlying-array (+ index offset) value)))
 
 
-         (define-compiler-macro array-row-major-index (array &rest subscripts)
-           (let* ((rank (length subscripts))
-                  (sarray (gensym "ARRAY"))
-                  (ssubscripts (loop repeat rank collecting (gensym "SUBSCRIPT")))
-                  (dimsyms (loop repeat rank collecting (gensym "DIMENSION")))
-                  (rmindex (gensym "ROW-MAJOR-INDEX")))
-             ;; First up, once-only the array and subscripts.
-             `(let ((,sarray ,array)
-                    ,@(loop for ssub in ssubscripts for sub in subscripts
-                            collecting `(,ssub ,sub)))
-                (declare (type fixnum ,@ssubscripts))
-                ;; Now verify that the rank is correct
-                (unless (eq (array-rank ,sarray) ,rank)
-                  (error "Wrong number of subscripts, ~d, for an array of rank ~d."
-                         ,rank (array-rank ,sarray)))
-                ;; We need the array dimensions, so bind those
-                (let (,@(loop for dimsym in dimsyms
-                              for axis below rank
-                              collect `(dimsym (%array-dimension ,sarray ,axis))))
-                  (declare (type fixnum ,@dimsyms))
-                  ;; Check that the index is valid
-                  ,@(loop for ssub in ssubscripts
-                          for dimsym in dimsyms
-                          for axis below rank
-                          collect `(unless (and (>= ,ssub 0) (< ,ssub ,dimsym))
-                                     (error "Invalid index ~d for axis ~d of array: expected 0-~d"
-                                            ,ssub ,axis ,dimsym)))
-                  ;; Now we know we're good, do the actual computation
-                  ,(row-major-index-computer sarray dimsyms ssubscripts)))))
+(declaim (inline schar core:schar-set char core:char-set))
+(defun schar (string index)
+  (row-major-aref (the simple-string string) index))
+(defun core:schar-set (string index value)
+  (core:row-major-aset (the simple-string string) index value))
 
-         #+(or)
-         (define-compiler-macro %aref (array &rest subscripts)
-           (case (length subscripts)
-             ((1) `(%row-major-aref ,array ,(first subscripts)))
-             (t (let ((asym (gensym "ARRAY")))
-                  `(let ((,asym ,array))
-                     (%row-major-aref ,asym (array-row-major-index ,asym ,@subscripts)))))))
+(defun char (string index)
+  (row-major-aref (the string string) index))
+(defun core:char-set (string index value)
+  (core:row-major-aset (the string string) index value))
 
-;;; Try 5
-;;;#+(or)(progn
+(defun row-major-index-computer (array dimsyms subscripts)
+  ;; assumes once-only is taken care of.
+  ;; array is a symbol bound to an array.
+  ;; dimsyms is a list of symbols bound to the array dimensions of the array.
+  ;; subscripts is a list of symbols bound to the indices we're computing for.
+  (let ((subsyms (loop for sub in subscripts collect (gensym "SUB"))))
+    (cond
+      ((null subscripts) '0)
+      ;; special case the one dimensional case to avoid multiplication.
+      ;; FIXME: That SHOULD be handled by constant propagation and all,
+      ;; allowing this special case to be axed, but we don't have that yet.
+      ((null (rest subscripts)) (first subscripts))
+      (t
+       `(let* ((,(first subsyms) 1) ;; this is the troubling constant.
+               ,@(loop for dimsym in (reverse dimsyms)
+                       for subsym in (cdr subsyms)
+                       for lastsym in subsyms
+                       collect `(,subsym (* ,lastsym ,dimsym))))
+          (declare (type fixnum ,@subsyms))
+          (the fixnum
+               (+ ,@(loop for sub in subscripts
+                          for subsym in (reverse subsyms)
+                          collect `(* ,sub ,subsym)))))))))
+
+(define-compiler-macro array-row-major-index (&whole form array &rest subscripts)
+  ;; FIXME: Cleavir arithmetic is not yet clever enough for this to be fast in the
+  ;; >1dimensional case. We need wrapped fixnum multiplication and addition, basically,
+  ;; where overflow jumps to an error.
+  ;; As such, we don't expand (using the C++ definition) for these cases.
+  (if (> (length subscripts) 1)
+      form
+      (let* ((rank (length subscripts))
+             (sarray (gensym "ARRAY"))
+             (ssubscripts (loop repeat rank collecting (gensym "SUBSCRIPT")))
+             (dimsyms (loop repeat rank collecting (gensym "DIMENSION")))
+             (rmindex (gensym "ROW-MAJOR-INDEX")))
+        ;; First up, once-only the array and subscripts.
+        `(let ((,sarray ,array)
+               ,@(loop for ssub in ssubscripts for sub in subscripts
+                       collecting `(,ssub ,sub)))
+           (declare (type fixnum ,@ssubscripts))
+           ;; Now verify that the rank is correct
+           (unless (eq (array-rank ,sarray) ,rank)
+             (error "Wrong number of subscripts, ~d, for an array of rank ~d."
+                    ,rank (array-rank ,sarray)))
+           ;; We need the array dimensions, so bind those
+           (let (,@(loop for dimsym in dimsyms
+                         for axis below rank
+                         collect `(,dimsym (%array-dimension ,sarray ,axis))))
+             (declare (type fixnum ,@dimsyms))
+             ;; Check that the index is valid
+             ,@(loop for ssub in ssubscripts
+                     for dimsym in dimsyms
+                     for axis below rank
+                     collect `(unless (and (>= ,ssub 0) (< ,ssub ,dimsym))
+                                (error "Invalid index ~d for axis ~d of array: expected 0-~d"
+                                       ,ssub ,axis ,dimsym)))
+             ;; Now we know we're good, do the actual computation
+             ,(row-major-index-computer sarray dimsyms ssubscripts))))))
+
+(define-compiler-macro aref (&whole form array &rest subscripts)
+  ;; FIXME: See tragic comment above in array-row-major-index.
+  (if (> (length subscripts) 1)
+      form
+      (let ((sarray (gensym "ARRAY")))
+        ;; array-row-major-index does bounds checking.
+        ;; Therefore, we basically just do what row-major-aref does sans a
+        ;; here-redundant check.
+        `(let* ((,sarray ,array)
+                (rmi (array-row-major-index ,sarray ,@subscripts)))
+           (with-array-data (data offset ,sarray)
+             (%unsafe-vector-ref data (+ offset rmi)))))))
 
 ;;; ------------------------------------------------------------
 ;;;

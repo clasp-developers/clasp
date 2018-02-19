@@ -32,20 +32,20 @@
   `(integer 1 ,most-positive-fixnum))
 
 (defun negative-fixnum-p (p)
-  (and (si::fixnump p) (minusp (truly-the fixnum p))))
+  (and (si::fixnump p) (minusp (the fixnum p))))
 
 (defun positive-fixnum-p (p)
-  (and (si::fixnump p) (plusp (truly-the fixnum p))))
+  (and (si::fixnump p) (plusp (the fixnum p))))
 
 (defun non-negative-fixnum-p (p)
-  (and (si::fixnump p) (not (minusp (truly-the fixnum p)))))
+  (and (si::fixnump p) (not (minusp (the fixnum p)))))
 
 (defun non-positive-fixnum-p (p)
-  (and (si::fixnump p) (not (plusp (truly-the fixnum p)))))
+  (and (si::fixnump p) (not (plusp (the fixnum p)))))
 
 (defun array-index-p (p)
   (and (si::fixnump p)
-       (<= 0 (truly-the fixnum p) array-dimension-limit)))
+       (<= 0 (the fixnum p) array-dimension-limit)))
 
 ;;;
 ;;; Integers
@@ -64,16 +64,16 @@
   '(integer 1 *))
 
 (defun negative-integer-p (p)
-  (and (integerp p) (minusp (truly-the integer p))))
+  (and (integerp p) (minusp (the integer p))))
 
 (defun positive-integer-p (p)
-  (and (integerp p) (plusp (truly-the integer p))))
+  (and (integerp p) (plusp (the integer p))))
 
 (defun non-negative-integer-p (p)
-  (and (integerp p) (not (minusp (truly-the integer p)))))
+  (and (integerp p) (not (minusp (the integer p)))))
 
 (defun non-positive-integer-p (p)
-  (and (integerp p) (not (plusp (truly-the integer p)))))
+  (and (integerp p) (not (plusp (the integer p)))))
 
 ;;;
 ;;; Rationals
@@ -92,16 +92,16 @@
   '(rational (0) *))
 
 (defun negative-rational-p (p)
-  (and (rationalp p) (minusp (truly-the rational p))))
+  (and (rationalp p) (minusp (the rational p))))
 
 (defun positive-rational-p (p)
-  (and (rationalp p) (plusp (truly-the rational p))))
+  (and (rationalp p) (plusp (the rational p))))
 
 (defun non-negative-rational-p (p)
-  (and (rationalp p) (not (minusp (truly-the rational p)))))
+  (and (rationalp p) (not (minusp (the rational p)))))
 
 (defun non-positive-rational-p (p)
-  (and (rationalp p) (not (plusp (truly-the rational p)))))
+  (and (rationalp p) (not (plusp (the rational p)))))
 
 ;;;
 ;;; Ratios
@@ -151,16 +151,16 @@
   '(real (0) *))
 
 (defun negative-real-p (p)
-  (and (realp p) (minusp (truly-the real p))))
+  (and (realp p) (minusp (the real p))))
 
 (defun positive-real-p (p)
-  (and (realp p) (plusp (truly-the real p))))
+  (and (realp p) (plusp (the real p))))
 
 (defun non-negative-real-p (p)
-  (and (realp p) (not (minusp (truly-the real p)))))
+  (and (realp p) (not (minusp (the real p)))))
 
 (defun non-positive-real-p (p)
-  (and (realp p) (not (plusp (truly-the real p)))))
+  (and (realp p) (not (plusp (the real p)))))
 
 ;;;
 ;;; Floats
@@ -179,16 +179,16 @@
   '(float (0) *))
 
 (defun negative-float-p (p)
-  (and (floatp p) (minusp (truly-the float p))))
+  (and (floatp p) (minusp (the float p))))
 
 (defun positive-float-p (p)
-  (and (floatp p) (plusp (truly-the float p))))
+  (and (floatp p) (plusp (the float p))))
 
 (defun non-negative-float-p (p)
-  (and (floatp p) (not (minusp (truly-the float p)))))
+  (and (floatp p) (not (minusp (the float p)))))
 
 (defun non-positive-float-p (p)
-  (and (floatp p) (not (plusp (truly-the float p)))))
+  (and (floatp p) (not (plusp (the float p)))))
 
 ;;;
 ;;; SHORT-FLOAT
@@ -207,16 +207,16 @@
   '(short-float (0S0) *))
 
 (defun negative-short-float-p (p)
-  (and (core:short-float-p p) (minusp (truly-the short-float p))))
+  (and (core:short-float-p p) (minusp (the short-float p))))
 
 (defun positive-short-float-p (p)
-  (and (core:short-float-p p) (plusp (truly-the short-float p))))
+  (and (core:short-float-p p) (plusp (the short-float p))))
 
 (defun non-negative-short-float-p (p)
-  (and (core:short-float-p p) (not (minusp (truly-the short-float p)))))
+  (and (core:short-float-p p) (not (minusp (the short-float p)))))
 
 (defun non-positive-short-float-p (p)
-  (and (core:short-float-p p) (not (plusp (truly-the short-float p)))))
+  (and (core:short-float-p p) (not (plusp (the short-float p)))))
 
 ;;;
 ;;; SINGLE-FLOAT
@@ -235,16 +235,16 @@
   '(single-float (0F0) *))
 
 (defun negative-single-float-p (p)
-  (and (core:single-float-p p) (minusp (truly-the single-float p))))
+  (and (core:single-float-p p) (minusp (the single-float p))))
 
 (defun positive-single-float-p (p)
-  (and (core:single-float-p p) (plusp (truly-the single-float p))))
+  (and (core:single-float-p p) (plusp (the single-float p))))
 
 (defun non-negative-single-float-p (p)
-  (and (core:single-float-p p) (not (minusp (truly-the single-float p)))))
+  (and (core:single-float-p p) (not (minusp (the single-float p)))))
 
 (defun non-positive-single-float-p (p)
-  (and (core:single-float-p p) (not (plusp (truly-the single-float p)))))
+  (and (core:single-float-p p) (not (plusp (the single-float p)))))
 
 ;;;
 ;;; DOUBLE-FLOAT
@@ -263,16 +263,16 @@
   '(double-float (0D0) *))
 
 (defun negative-double-float-p (p)
-  (and (core:double-float-p p) (minusp (truly-the double-float p))))
+  (and (core:double-float-p p) (minusp (the double-float p))))
 
 (defun positive-double-float-p (p)
-  (and (core:double-float-p p) (plusp (truly-the double-float p))))
+  (and (core:double-float-p p) (plusp (the double-float p))))
 
 (defun non-negative-double-float-p (p)
-  (and (core:double-float-p p) (not (minusp (truly-the double-float p)))))
+  (and (core:double-float-p p) (not (minusp (the double-float p)))))
 
 (defun non-positive-double-float-p (p)
-  (and (core:double-float-p p) (not (plusp (truly-the double-float p)))))
+  (and (core:double-float-p p) (not (plusp (the double-float p)))))
 
 ;;;
 ;;; LONG-FLOAT
@@ -291,13 +291,13 @@
   '(long-float (0L0) *))
 
 (defun negative-long-float-p (p)
-  (and (core:long-float-p p) (minusp (truly-the long-float p))))
+  (and (core:long-float-p p) (minusp (the long-float p))))
 
 (defun positive-long-float-p (p)
-  (and (core:long-float-p p) (plusp (truly-the long-float p))))
+  (and (core:long-float-p p) (plusp (the long-float p))))
 
 (defun non-negative-long-float-p (p)
-  (and (core:long-float-p p) (not (minusp (truly-the long-float p)))))
+  (and (core:long-float-p p) (not (minusp (the long-float p)))))
 
 (defun non-positive-long-float-p (p)
-  (and (core:long-float-p p) (not (plusp (truly-the long-float p)))))
+  (and (core:long-float-p p) (not (plusp (the long-float p)))))

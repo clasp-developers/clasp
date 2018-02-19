@@ -108,7 +108,6 @@
 ;;; First generic function calls done here.
 
 (defun register-method-with-specializers (method)
-  (declare (si::c-local))
   (loop for spec in (method-specializers method)
         do (add-direct-method spec method)))
 
@@ -179,7 +178,6 @@
 	 options))
 
 (defun all-keywords (l)
-  (declare (si::c-local))
   (let ((all-keys '()))
     (do ((l (rest l) (cddddr l)))
 	((null l)

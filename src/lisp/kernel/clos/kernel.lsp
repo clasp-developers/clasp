@@ -168,8 +168,7 @@
 (setf (fdefinition 'compute-applicable-methods) #'std-compute-applicable-methods)
 
 (defun applicable-method-list (gf args)
-  (declare (optimize (speed 3))
-	   (si::c-local))
+  (declare (optimize (speed 3)))
   (with-early-accessors (+standard-method-slots+
 			 +standard-generic-function-slots+
 			 +eql-specializer-slots+
@@ -259,7 +258,6 @@
         (push most-specific ordered-list)))))
 
 (defun compare-methods (method-1 method-2 args-specializers f)
-  (declare (si::c-local))
   (with-early-accessors (+standard-method-slots+)
     (let* ((specializers-list-1 (method-specializers method-1))
 	   (specializers-list-2 (method-specializers method-2)))
@@ -268,7 +266,6 @@
 				  args-specializers))))
 
 (defun compare-specializers-lists (spec-list-1 spec-list-2 args-specializers)
-  (declare (si::c-local))
   (when (or spec-list-1 spec-list-2)
     (ecase (compare-specializers (first spec-list-1)
 				 (first spec-list-2)
@@ -288,7 +285,6 @@
   )
 
 (defun fast-subtypep (spec1 spec2)
-  (declare (si::c-local))
   ;; Specialized version of subtypep which uses the fact that spec1
   ;; and spec2 are either classes or of the form (EQL x)
   (with-early-accessors (+eql-specializer-slots+ +standard-class-slots+)
@@ -305,7 +301,6 @@
 	    (si::subclassp spec1 spec2)))))
 
 (defun compare-specializers (spec-1 spec-2 arg-class)
-  (declare (si::c-local))
   (with-early-accessors (+standard-class-slots+ +standard-class-slots+)
     (let* ((cpl (class-precedence-list arg-class)))
       (cond ((eq spec-1 spec-2) '=)

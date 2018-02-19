@@ -5,7 +5,6 @@
 
 (defun encode-number-in-name (number)
   ;; Encode a number in an alphanumeric identifier which is a valid C name.
-  (declare (si::c-local))
   (cond ((zerop number) "0")
         ((minusp number) (encode-number-in-name (- number)))
         (t

@@ -193,6 +193,9 @@ SYMBOL_EXPORT_SC_(KeywordPkg,process);
 SYMBOL_EXPORT_SC_(KeywordPkg,code);
 
 
+SYMBOL_EXPORT_SC_(CorePkg, STARmpi_rankSTAR);
+SYMBOL_EXPORT_SC_(CorePkg, STARmpi_sizeSTAR);
+
 SYMBOL_EXPORT_SC_(ClPkg, upgraded_array_element_type);
 SYMBOL_EXPORT_SC_(ClPkg, member);
 SYMBOL_EXPORT_SC_(ClPkg, class_name);
@@ -358,7 +361,6 @@ SYMBOL_EXPORT_SC_(ExtPkg, STARinspectorHookSTAR);
 SYMBOL_EXPORT_SC_(ExtPkg, float_nan_string);
 SYMBOL_EXPORT_SC_(ExtPkg, float_infinity_string);
 SYMBOL_EXPORT_SC_(ExtPkg, STARdefault_external_formatSTAR);
-SYMBOL_EXPORT_SC_(ExtPkg, truly_the);
 SYMBOL_EXPORT_SC_(ExtPkg, specialVar);
 SYMBOL_EXPORT_SC_(ExtPkg, registerVar);
 SYMBOL_EXPORT_SC_(ExtPkg, lexicalVar);

@@ -17,11 +17,9 @@
 
 
 (defun error-not-a-sequence (value)
-  (declare (si::c-local))
   (signal-type-error value 'sequence))
 
 (defun error-sequence-index (sequence index)
-  (declare (si::c-local))
   (error 'simple-type-error
          :datum index
          :expected-type 'unsigned-byte
@@ -29,7 +27,6 @@
          :format-arguments (list index sequence)))
 
 (defun error-sequence-type (type)
-  (declare (si::c-local))
   (error 'simple-type-error
 	 :datum (vector) ;; Any sequence object will do, because it does not belong to TYPE
 	 :expected-type type
@@ -37,7 +34,6 @@
 	 :format-arguments (list type)))
 
 (defun error-sequence-length (object type size)
-  (declare (si::c-local))
   (error 'simple-type-error
 	 :format-control
 	 "Cannot create a sequence of size ~S which matches type ~S."
@@ -53,7 +49,7 @@
     (cond ((consp type)
 	   (setq name (first type) args (cdr type)))
 	  ((clos::classp type)
-	   (setf name (class-name (truly-the class type)) args nil))
+	   (setf name (class-name (the class type)) args nil))
 	  (t
 	   (setq name type args nil)))
     (case name
@@ -148,7 +144,7 @@ default value of INITIAL-ELEMENT depends on TYPE."
                  ((listp sequence)
                   (nthcdr aux sequence))
                  ((vectorp sequence)
-                  (and (< start (length (truly-the vector sequence)))
+                  (and (< start (length (the vector sequence)))
                        start))
                  (t
                   (error-not-a-sequence sequence)))))
@@ -162,26 +158,26 @@ default value of INITIAL-ELEMENT depends on TYPE."
 (defun seq-iterator-ref (sequence iterator)
   (declare (optimize (safety 0)))
   (if (si::fixnump iterator)
-      (aref (truly-the vector sequence) iterator)
-      (car (truly-the cons iterator))))
+      (aref (the vector sequence) iterator)
+      (car (the cons iterator))))
 
 (defun seq-iterator-set (sequence iterator value)
   (declare (optimize (safety 0)))
   (if (si::fixnump iterator)
-      (setf (aref (truly-the vector sequence) iterator) value)
-      (setf (car (truly-the cons iterator)) value)))
+      (setf (aref (the vector sequence) iterator) value)
+      (setf (car (the cons iterator)) value)))
 
 (defun seq-iterator-next (sequence iterator)
   (declare (optimize (safety 0)))
   (cond ((fixnump iterator)
          (let ((aux (1+ iterator)))
            (declare (fixnum aux))
-           (and (< aux (length (truly-the vector sequence)))
+           (and (< aux (length (the vector sequence)))
                 aux)))
         ((atom iterator)
          (error-not-a-sequence iterator))
         (t
-         (setf iterator (cdr (truly-the cons iterator)))
+         (setf iterator (cdr (the cons iterator)))
          (unless (listp iterator)
            (error-not-a-sequence iterator))
          iterator)))
@@ -244,7 +240,7 @@ default value of INITIAL-ELEMENT depends on TYPE."
       (let* ((final-length (if (eq length '*) (length object) length)))
 	(setf output (make-vector elt-type final-length nil nil nil 0))
 	(do ((i (make-seq-iterator object) (seq-iterator-next output i))
-	     (j 0 (truly-the index (1+ j))))
+	     (j 0 (the index (1+ j))))
 	    ((= j final-length)
 	     (setf object output))
 	  (declare (index j))

@@ -758,6 +758,8 @@
 (defun debug-save-dispatcher (gf module disp-fn startup-fn shutdown-fn sorted-roots &optional (output-path #P"/tmp/dispatcher.ll"))
   "Save everything about the generic function so that it can be saved to a file and then edited and re-installed"
   ;;  (cmp::gf-log-sorted-roots sorted-roots)
+  (when (wild-pathname-p output-path)
+    (setf output-path (pathname (substitute #\_ #\* (namestring output-path)))))
   (let ((fout (open output-path :direction :output)))
     (unwind-protect (llvm-sys:dump-module module fout)
       (close fout))))

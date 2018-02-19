@@ -92,7 +92,6 @@
 ;;; of the remaining methods. The resulting closure (or effective method)
 ;;; is the equivalent of (CALL-METHOD method rest-methods)
 (defun combine-method-functions (method rest-methods)
-  (declare (si::c-local))
   (lambda (.method-args. .next-methods.)
     (declare (ignorable .next-methods. #|no-next-methods|#)
              (core:lambda-name combine-method-functions.lambda))
@@ -109,7 +108,6 @@
             ',(and rest-methods (mapcar #'emf-call-method rest-methods))))
 
 (defun error-qualifier (m qualifier)
-  (declare (si::c-local))
   (error "Standard method combination allows only one qualifier ~
           per method, either :BEFORE, :AFTER, or :AROUND; while ~
           a method with ~S was found."
@@ -188,7 +186,6 @@
 	     (t (second main-effective-method))))))
 
 (defun define-complex-method-combination (form)
-  (declare (si::c-local))
   (flet ((syntax-error ()
 	   (error "~S is not a valid DEFINE-METHOD-COMBINATION form"
 		  form)))

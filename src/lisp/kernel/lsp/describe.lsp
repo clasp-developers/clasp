@@ -167,7 +167,6 @@
 
 
 (defun inspect-symbol (symbol)
-  (declare (si::c-local))
   (let* ((p (symbol-package symbol)))
     (cond ((null p)
            (format t "~:@(~S~) - uninterned symbol" symbol))
@@ -212,7 +211,6 @@
   )
 
 (defun inspect-package (package)
-  (declare (si::c-local))
   (format t "~S - package" package)
   (when (package-nicknames package)
         (inspect-print "nicknames:  ~S" (package-nicknames package)))
@@ -225,7 +223,6 @@
                        (package-shadowing-symbols package))))
 
 (defun inspect-character (character)
-  (declare (si::c-local))
   (format t
           (cond ((standard-char-p character) "~S - standard character")
                 (t "~S - character"))
@@ -233,7 +230,6 @@
   (inspect-print "code:  #x~X" (char-code character)))
 
 (defun inspect-number (number)
-  (declare (si::c-local))
   (let ((type (type-of number)))
     (when (consp type) ;; Range types, as (INTEGER 0 0)
      (setf type (first type)))
@@ -254,7 +250,6 @@
 	 (inspect-print "mantissa:  ~D" signif))))))
 
 (defun inspect-cons (cons)
-  (declare (si::c-local))
   (format t "~S - cons" cons)
   (when *inspect-mode*
         (do ((i 0 (1+ i))
@@ -270,7 +265,6 @@
                                (car l) (nth i cons)))))
 
 (defun inspect-string (string)
-  (declare (si::c-local))
   (format t (if (simple-string-p string) "~S - simple string" "~S - string")
           string)
   (inspect-print  "dimension:  ~D"(array-dimension string 0))
@@ -285,7 +279,6 @@
                                       (char string i)))))
 
 (defun inspect-vector (vector)
-  (declare (si::c-local))
   (format t (if (simple-vector-p vector) "~S - simple vector" "~S - vector")
           vector)
   (inspect-print  "dimension:  ~D" (array-dimension vector 0))
@@ -300,7 +293,6 @@
                                       (aref vector i)))))
 
 (defun inspect-array (array)
-  (declare (si::c-local))
   (format t (if (adjustable-array-p array)
                 "~S - adjustable aray"
                 "~S - array")
@@ -310,7 +302,6 @@
   (inspect-print "total size:  ~D" (array-total-size array)))
 
 (defun select-ht-N (hashtable)
-  (declare (si::c-local))
   (incf *inspect-level*)
   (maphash #'(lambda (key val)
 	       (inspect-indent-1)
@@ -320,7 +311,6 @@
   (decf *inspect-level*))
 
 (defun select-ht-L (hashtable)
-  (declare (si::c-local))
   (terpri)
   (format t "The keys of the hash table are:~%")
   (maphash #'(lambda (key val)
@@ -330,7 +320,6 @@
   (terpri))
 
 (defun select-ht-J (hashtable)
-  (declare (si::c-local))
   (let* ((key (prog1
 		(read-preserving-whitespace *query-io*)
 		(inspect-read-line)))
@@ -349,7 +338,6 @@
 	      (terpri)))))
 
 (defun select-ht-? ()
-  (declare (si::c-local))
   (terpri)
   (format t
 	  "Inspect commands for hash tables:~%~
@@ -365,7 +353,6 @@ q (or Q):             quits the inspection.~%~
 	  ))
 
 (defun inspect-hashtable (hashtable)
-  (declare (si::c-local))
   (if *inspect-mode*
       (progn
 	(decf *inspect-level*)
@@ -449,7 +436,6 @@ q (or Q):             quits the inspection.~%~
   "Args: (object)
 Shows the information about OBJECT interactively.  See the ECL Report for the
 inspect commands, or type '?' to the inspector."
-  (declare (si::c-local))
   ;;(read-line)
   (let ((*inspect-mode* t)
         (*inspect-level* 0)

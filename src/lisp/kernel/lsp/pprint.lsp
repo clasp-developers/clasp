@@ -149,8 +149,7 @@
 
 (defun pretty-out (stream char)
   (declare (type pretty-stream stream)
-	   (type character char)
-	   (si::c-local))
+	   (type character char))
   (cond ((char= char #\newline)
 	 (enqueue-newline stream :literal))
 	(t
@@ -164,8 +163,7 @@
   (declare (type pretty-stream stream)
 	   (type string string)
 	   (type index start)
-	   (type (or index null) end)
-	   (si::c-local))
+	   (type (or index null) end))
   (let ((end (or end (length string))))
     (unless (= start end)
       (let ((newline (position #\newline string :start start :end end)))
@@ -216,8 +214,7 @@
   (section-start-line 0 :type index))
 
 (defun really-start-logical-block (stream column prefix suffix)
-  (declare (si::c-local)
-	   (type pretty-stream stream))
+  (declare (type pretty-stream stream))
   (let* ((blocks (pretty-stream-blocks stream))
 	 (prev-block (car blocks))
 	 (per-line-end (logical-block-per-line-prefix-end prev-block))
@@ -259,8 +256,7 @@
   nil)
 
 (defun set-indentation (stream column)
-  (declare (si::c-local)
-	   (type pretty-stream stream))
+  (declare (type pretty-stream stream))
   (let* ((prefix (pretty-stream-prefix stream))
 	 (prefix-len (length prefix))
 	 (block (car (pretty-stream-blocks stream)))
@@ -281,8 +277,7 @@
     (setf (logical-block-prefix-length block) column)))
 
 (defun really-end-logical-block (stream)
-  (declare (si::c-local)
-	   (type pretty-stream stream))
+  (declare (type pretty-stream stream))
   (let* ((old (pop (pretty-stream-blocks stream)))
 	 (old-indent (logical-block-prefix-length old))
 	 (new (car (pretty-stream-blocks stream)))
@@ -307,16 +302,16 @@
 		(entry `(,constructor :posn
 				      (index-posn
 				       (pretty-stream-buffer-fill-pointer
-					(truly-the pretty-stream ,stream))
+					(the pretty-stream ,stream))
 				       ,stream)
 				      ,@args))
 		(op `(list ,entry))
-		(head `(pretty-stream-queue-head (truly-the pretty-stream ,stream))))
+		(head `(pretty-stream-queue-head (the pretty-stream ,stream))))
       `(progn
 	 (if ,head
 	     (setf (cdr ,head) ,op)
-	     (setf (pretty-stream-queue-tail (truly-the pretty-stream ,stream)) ,op))
-	 (setf (pretty-stream-queue-head (truly-the pretty-stream ,stream)) ,op)
+	     (setf (pretty-stream-queue-tail (the pretty-stream ,stream)) ,op))
+	 (setf (pretty-stream-queue-head (the pretty-stream ,stream)) ,op)
 	 ,entry))))
 )
 
@@ -331,8 +326,7 @@
 	:type (member :linear :fill :miser :literal :mandatory)))
 
 (defun enqueue-newline (stream kind)
-  (declare (si::c-local)
-	   (type pretty-stream stream))
+  (declare (type pretty-stream stream))
   (let* ((depth (length (pretty-stream-pending-blocks stream)))
 	 (newline (enqueue stream newline :kind kind :depth depth)))
     (dolist (entry (pretty-stream-queue-tail stream))
@@ -349,7 +343,6 @@
   (amount 0 :type fixnum))
 
 (defun enqueue-indent (stream kind amount)
-  (declare (si::c-local))
   (enqueue stream indentation :kind kind :amount amount))
 
 (defstruct (block-start
@@ -359,8 +352,7 @@
   (suffix nil :type (or null string)))
 
 (defun start-logical-block (stream prefix per-line-p suffix)
-  (declare (si::c-local)
-	   (type string prefix suffix)
+  (declare (type string prefix suffix)
 	   (type pretty-stream stream)
 	   (ext:check-arguments-type))
   (let ((prefix-len (length prefix)))
@@ -379,8 +371,7 @@
   (suffix nil :type (or null string)))
 
 (defun end-logical-block (stream)
-  (declare (si::c-local)
-	   (type pretty-stream stream))
+  (declare (type pretty-stream stream))
   (let* ((start (pop (pretty-stream-pending-blocks stream)))
 	 (suffix (block-start-suffix start))
 	 (end (enqueue stream block-end :suffix suffix)))
@@ -396,7 +387,6 @@
   (colinc 0 :type column))
 
 (defun enqueue-tab (stream kind colnum colinc)
-  (declare (si::c-local))
   (multiple-value-bind
       (sectionp relativep)
       (ecase kind
@@ -411,7 +401,6 @@
 ;;;; Tab support.
 
 (defun compute-tab-size (tab section-start column)
-  (declare (si::c-local))
   (let ((colnum (tab-colnum tab))
 	(colinc (tab-colinc tab)))
     (when (tab-sectionp tab)
@@ -433,8 +422,7 @@
 	   0))))
 
 (defun index-column (index stream)
-  (declare (si::c-local)
-	   (type pretty-stream stream))
+  (declare (type pretty-stream stream))
   (let ((column (pretty-stream-buffer-start-column stream))
 	(section-start (logical-block-section-column
 			(first (pretty-stream-blocks stream))))
@@ -457,8 +445,7 @@
     (+ column index)))
 
 (defun expand-tabs (stream through)
-  (declare (si::c-local)
-	   (type pretty-stream stream))
+  (declare (type pretty-stream stream))
   (let ((insertions nil)
 	(additional 0)
 	(column (pretty-stream-buffer-start-column stream))
@@ -511,8 +498,7 @@
 
 (defun assure-space-in-buffer (stream want)
   (declare (type pretty-stream stream)
-	   (type index want)
-	   (si::c-local))
+	   (type index want))
   (let* ((buffer (pretty-stream-buffer stream))
 	 (length (length buffer))
 	 (fill-ptr (pretty-stream-buffer-fill-pointer stream))
@@ -533,8 +519,7 @@
 	     (- new-length fill-ptr))))))
 
 (defun maybe-output (stream force-newlines-p)
-  (declare (type pretty-stream stream)
-	   (si::c-local))
+  (declare (type pretty-stream stream))
   (let ((tail (pretty-stream-queue-tail stream))
 	(output-anything nil))
     (loop
@@ -598,16 +583,14 @@
     output-anything))
 
 (defun misering-p (stream)
-  (declare (type pretty-stream stream)
-	   (si::c-local))
+  (declare (type pretty-stream stream))
   (and *print-miser-width*
        (<= (- (pretty-stream-line-length stream)
 	      (logical-block-start-column (car (pretty-stream-blocks stream))))
 	   *print-miser-width*)))
 
 (defun fits-on-line-p (stream until force-newlines-p)
-  (declare (si::c-local)
-	   (type pretty-stream stream))
+  (declare (type pretty-stream stream))
   (let ((available (pretty-stream-line-length stream)))
     (when (and (not *print-readably*) *print-lines*
 	       (= *print-lines* (pretty-stream-line-number stream)))
@@ -625,8 +608,7 @@
 
 (defun output-line (stream until)
   (declare (type pretty-stream stream)
-	   (type newline until)
-	   (si::c-local))
+	   (type newline until))
   (let* ((target (pretty-stream-target stream))
 	 (buffer (pretty-stream-buffer stream))
 	 (kind (newline-kind until))
@@ -688,8 +670,7 @@
 	  (setf (logical-block-section-start-line block) line-number))))))
 
 (defun output-partial-line (stream)
-  (declare (si::c-local)
-	   (type pretty-stream stream))
+  (declare (type pretty-stream stream))
   (let* ((fill-ptr (pretty-stream-buffer-fill-pointer stream))
 	 (tail (pretty-stream-queue-tail stream))
 	 (count
@@ -708,8 +689,7 @@
     (incf (pretty-stream-buffer-offset stream) count)))
 
 (defun force-pretty-output (stream)
-  (declare (si::c-local)
-	   (type pretty-stream stream))
+  (declare (type pretty-stream stream))
   (maybe-output stream nil)
   (expand-tabs stream nil)
   (write-string (pretty-stream-buffer stream)
@@ -754,7 +734,6 @@
 ;;;; User interface to the pretty printer.
 
 (defun check-print-level ()
-  (declare (si::c-local))
   "Automatically handle *print-level* abbreviation.  If we are too deep, then
    a # is printed to STREAM and BODY is ignored."
   (cond ((or *print-readably* (null *print-level*))
@@ -765,7 +744,6 @@
 	 (setf *print-level* (1- *print-level*)))))
 
 (defun search-print-circle (object)
-  (declare (si::c-local))
   (let ((code (gethash object *circle-stack* -1)))
     (if (fixnump *circle-counter*)
 	(cond ((or (eql code -1) (null code))
@@ -791,7 +769,6 @@
 
 (defun do-pprint-logical-block (function object stream prefix
 				per-line-prefix-p suffix)
-  (declare (si::c-local))
   (unless (listp object)
     (write-object object stream)
     (return-from do-pprint-logical-block nil))
@@ -1100,7 +1077,6 @@
   (print-unreadable-object (table stream :type t :identity t)))
 
 (defun cons-type-specifier-p (spec)
-  (declare (si::c-local))
   (and (consp spec)
        (eq (car spec) 'cons)
        (cdr spec)
@@ -1114,8 +1090,7 @@
 	      (null (cddr car))))))
 
 (defun entry< (e1 e2)
-  (declare (type pprint-dispatch-entry e1 e2)
-	   (si::c-local))
+  (declare (type pprint-dispatch-entry e1 e2))
   (if (pprint-dispatch-entry-initial-p e1)
       (if (pprint-dispatch-entry-initial-p e2)
 	  (< (pprint-dispatch-entry-priority e1)
@@ -1238,8 +1213,7 @@
       (write-object (aref vector i) stream))))
 
 (defun pprint-array-contents (stream array)
-  (declare (si::c-local)
-	   (array array))
+  (declare (array array))
   (labels ((output-guts (stream index dimensions)
 	       (if (null dimensions)
 		   (write-object (row-major-aref array index) stream)
@@ -1263,12 +1237,10 @@
     (output-guts stream 0 (array-dimensions array))))
 
 (defun pprint-multi-dim-array (stream array)
-  (declare (si::c-local))
   (funcall (formatter "#~DA") stream (array-rank array))
   (pprint-array-contents stream array))
 
 (defun pprint-raw-array (stream array)
-  (declare (si::c-local))
   (write-string "#A" stream)
   (pprint-logical-block (stream nil :prefix "(" :suffix ")")
     (write-object (array-element-type array) stream)

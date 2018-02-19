@@ -183,19 +183,15 @@ all functions."
       *trace-output*)))
 
 (defun trace-record (fname)
-  (declare (si::c-local))
   (find fname *trace-list* :key #'first :test #'equal))
 
 (defun trace-record-name (record)
-  (declare (si::c-local))
   (first record))
 
 (defun trace-record-definition (record)
-  (declare (si::c-local))
   (second record))
 
 (defun trace-record-old-definition (record)
-  (declare (si::c-local))
   (third record))
 
 (defun traced-old-definition (fname)
@@ -212,7 +208,6 @@ all functions."
         *trace-list*))
 
 (defun traced-and-redefined-p (record)
-  (declare (si::c-local))
   (and record (not (eq (trace-record-definition record)
                        (fdefinition (trace-record-name record))))))
 

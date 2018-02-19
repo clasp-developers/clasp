@@ -99,7 +99,6 @@ the corresponding VAR.  Returns NIL."
 
 
 (defun si::while-until (test body jmp-op)
-  (declare (si::c-local))
   (let ((label (gensym))
         (exit (gensym)))
     `(TAGBODY
@@ -127,11 +126,6 @@ the corresponding VAR.  Returns NIL."
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (select-package :ext))
 
-(core:fset 'truly-the
-      #'(lambda (whole env)
-          `(the ,@(cdr whole)))
-      t)
-
 (core:fset 'checked-value
       #'(lambda (whole env)
           `(the ,@(cdr whole)))
@@ -139,8 +133,6 @@ the corresponding VAR.  Returns NIL."
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (core:select-package :core))
-(import 'ext:truly-the :core)
-(export 'truly-the)
 
 
 (si::fset 'prog1 #'(lambda (whole env)

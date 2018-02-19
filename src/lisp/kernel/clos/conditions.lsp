@@ -81,7 +81,6 @@
 
 
 (defun restart-report (restart stream)
-  (declare (si::c-local))
   (let ((fn (restart-report-function restart)))
     (if fn
 	(funcall fn stream)
@@ -126,7 +125,6 @@
       (return-from find-restart restart))))
 
 (defun find-restart-never-fail (restart &optional condition)
-  (declare (si::c-local))
   (or (find-restart restart condition)
       (signal-simple-error 'control-error nil
 	     "Restart ~S is not active."
@@ -162,25 +160,25 @@
 					 `#',report)
 				     keywords)))
 	     keywords)))
-    (let*((block-tag (gensym))
-	  (temp-var  (gensym))
-	  (data (mapcar #'(lambda (clause)
-			    (let (keywords (forms (cddr clause)))
-			      (do ()
-				  ((null forms))
-				(if (keywordp (car forms))
-				    (setq keywords (list* (car forms)
-							  (cadr forms)
-							  keywords)
-					  forms (cddr forms))
-				    (return)))
-			      (list (car clause) 		;Name=0
-				    (gensym) 			;Tag=1
-				    (apply #'transform-keywords ;Keywords=2
-					   keywords)
-				    (cadr clause)		;BVL=3
-				    forms))) 			;Body=4
-			clauses)))
+    (let* ((block-tag (gensym))
+           (temp-var  (gensym))
+           (data (mapcar #'(lambda (clause)
+                             (let (keywords (forms (cddr clause)))
+                               (do ()
+                                   ((null forms))
+                                 (if (keywordp (car forms))
+                                     (setq keywords (list* (car forms)
+                                                           (cadr forms)
+                                                           keywords)
+                                           forms (cddr forms))
+                                     (return)))
+                               (list (car clause) 		;Name=0
+                                     (gensym) 			;Tag=1
+                                     (apply #'transform-keywords ;Keywords=2
+                                            keywords)
+                                     (cadr clause)		;BVL=3
+                                     forms))) 			;Body=4
+                         clauses)))
       (let ((expression2 (macroexpand expression env)))
 	(when (consp expression2)
 	  (let* ((condition-form nil)
@@ -289,7 +287,6 @@
 
 (defun find-subclasses-of-type (type class)
   ;; Find all subclasses of CLASS that are subtypes of the given TYPE.
-  (declare (si::c-local))
   (if (subtypep class type)
       (list class)
       (loop for c in (clos::class-direct-subclasses class)
@@ -814,7 +811,6 @@ memory limits before executing the program again."))
     (and restart (invoke-restart restart value))))
 
 (defun assert-report (names stream)
-  (declare (si::c-local))
   (format stream "Retry assertion")
   (if names
       (format stream " with new value~P for ~{~S~^, ~}."
@@ -822,7 +818,6 @@ memory limits before executing the program again."))
       (format stream ".")))
 
 (defun assert-prompt (name value)
-  (declare (si::c-local))
   (if (y-or-n-p "The old value of ~S is ~S.~
 		~%Do you want to supply a new value? "
                 name value)

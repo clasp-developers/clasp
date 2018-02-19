@@ -2289,8 +2289,6 @@ void defineSpecialOperatorsAndMacros(Package_sp pkg) {
   _lisp->defineSpecialOperator(ClPkg, "flet", &sp_flet);
   _lisp->defineSpecialOperator(ClPkg, "function", &sp_function);
   _lisp->defineSpecialOperator(ClPkg, "the", &sp_the);
-  // SBCL defined truly-the as a special operator
-//  _lisp->defineSpecialOperator(ExtPkg, "truly-the", &sp_the);
   _lisp->defineSpecialOperator(ClPkg, "go", &sp_go);
   _lisp->defineSpecialOperator(ClPkg, "if", &sp_if);
   _lisp->defineSpecialOperator(ClPkg, "labels", &sp_labels);
