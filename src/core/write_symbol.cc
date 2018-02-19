@@ -108,9 +108,9 @@ all_dots(String_sp s) {
 }
 
 static bool
-needs_to_be_escaped(String_sp s, T_sp readtable, T_sp print_case) {
+needs_to_be_escaped(String_sp s, T_sp readtable) {
   ASSERT(cl__stringp(s));
-  int action = gc::As<ReadTable_sp>(readtable)->getReadTableCaseAsEnum();
+  Symbol_sp action = cl__readtable_case(readtable);
   if (potential_number_p(s, clasp_print_base()))
     return 1;
   /* The value of *PRINT-ESCAPE* is T. We need to check whether the
@@ -122,19 +122,12 @@ needs_to_be_escaped(String_sp s, T_sp readtable, T_sp print_case) {
   for (cl_index i = 0, iEnd(s->length()); i < iEnd; i++) {
     claspCharacter c = clasp_as_claspCharacter(cl__char(s,i));
     Character_sp cc = clasp_make_character(c);
-    //            int syntax = clasp_readtable_get(readtable, c, 0);
-    Symbol_sp syntax = gc::As<ReadTable_sp>(readtable)->syntax_type(cc);
-#if 0
-            if (syntax != cat_constituent ||
-                clasp_invalid_base_char_p(c) ||
-                (c) == ':')
-                return 1;
-#endif
-    if (syntax != kw::_sym_constituent_character ||
+    Symbol_sp syntax = core__syntax_type(readtable, cc);
+    if (syntax != kw::_sym_constituent ||
         clasp_invalid_base_char_p(c) ||
         (c) == ':')
       return 1;
-    if ((action == clasp_case_downcase) && isupper(c))
+    if ((action == kw::_sym_downcase) && isupper(c))
       return 1;
     if (islower(c))
       return 1;
@@ -145,12 +138,12 @@ needs_to_be_escaped(String_sp s, T_sp readtable, T_sp print_case) {
 #define needs_to_be_inverted(s) (clasp_string_case(s) != 0)
 
 static void
-write_symbol_string(SimpleString_sp s, int action, T_sp print_case,
+write_symbol_string(SimpleString_sp s, Symbol_sp action, T_sp print_case,
                     T_sp stream, bool escape) {
   bool capitalize;
-  if (action == clasp_case_invert) {
+  if (action == kw::_sym_invert) {
     if (!needs_to_be_inverted(s))
-      action = clasp_case_preserve;
+      action = kw::_sym_preserve;
   }
   if (escape)
     clasp_write_char('|', stream);
@@ -161,18 +154,18 @@ write_symbol_string(SimpleString_sp s, int action, T_sp print_case,
       if (c == '|' || c == '\\') {
         clasp_write_char('\\', stream);
       }
-    } else if (action != clasp_case_preserve) {
+    } else if (action != kw::_sym_preserve) {
       if (isupper(c)) {
-        if ((action == clasp_case_invert) ||
-            ((action == clasp_case_upcase) &&
+        if ((action == kw::_sym_invert) ||
+            ((action == kw::_sym_upcase) &&
              ((print_case == kw::_sym_downcase) ||
               ((print_case == kw::_sym_capitalize) && !capitalize)))) {
           c = tolower(c);
         }
         capitalize = 0;
       } else if (islower(c)) {
-        if ((action == clasp_case_invert) ||
-            ((action == clasp_case_downcase) &&
+        if ((action == kw::_sym_invert) ||
+            ((action == kw::_sym_downcase) &&
              ((print_case == kw::_sym_upcase) ||
               ((print_case == kw::_sym_capitalize) && capitalize)))) {
           c = toupper(c);
@@ -214,8 +207,7 @@ void clasp_write_symbol(Symbol_sp x, T_sp stream) {
 
   if (!print_readably && !clasp_print_escape()) {
     //            printf("%s:%d quick print of symbol print_readably=%d print_escape=%d\n",__FILE__,__LINE__, print_readably, clasp_print_escape());
-    write_symbol_string(name, gc::As<ReadTable_sp>(readtable)->getReadTableCaseAsEnum(),
-                        print_case, stream, 0);
+    write_symbol_string(name, cl__readtable_case(readtable), print_case, stream, 0);
     return;
   }
   /* From here on, print-escape is true which means that it should
@@ -240,9 +232,9 @@ void clasp_write_symbol(Symbol_sp x, T_sp stream) {
     }
     if (print_package) {
       T_sp name = SimpleBaseString_O::make(gc::As<Package_sp>(package)->packageName());
-      write_symbol_string(name, readtable->getReadTableCaseAsEnum(),
+      write_symbol_string(name, cl__readtable_case(readtable),
                           print_case, stream,
-                          needs_to_be_escaped(name, readtable, print_case));
+                          needs_to_be_escaped(name, readtable));
       if (!x.nilp()) {
         Symbol_mv sym2_mv = cl__find_symbol(x->symbolName(), package);
         Symbol_sp sym2 = sym2_mv;
@@ -274,8 +266,8 @@ void clasp_write_symbol(Symbol_sp x, T_sp stream) {
       }
     }
   }
-  write_symbol_string(name, readtable->getReadTableCaseAsEnum(), print_case, stream,
-                      needs_to_be_escaped(name, readtable, print_case) ||
+  write_symbol_string(name, cl__readtable_case(readtable), print_case, stream,
+                      needs_to_be_escaped(name, readtable) ||
                           all_dots(name));
 }
 

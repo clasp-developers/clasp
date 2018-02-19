@@ -99,6 +99,9 @@ public: // instance member functions here
   Character_sp convert_case(Character_sp c);
 };
 
+T_sp cl__readtable_case(T_sp);
+Symbol_sp core__syntax_type(T_sp, Character_sp);
+
 }; /* core */
 
 

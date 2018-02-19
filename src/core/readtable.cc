@@ -114,8 +114,12 @@ CL_DEFUN T_sp cl__copy_readtable(gc::Nilable<ReadTable_sp> fromReadTable, gc::Ni
 CL_LAMBDA(readtable);
 CL_DECLARE();
 CL_DOCSTRING("clhs: readtable-case");
-CL_DEFUN T_sp cl__readtable_case(ReadTable_sp readTable) {
-  return readTable->getReadTableCase();
+CL_DEFUN T_sp cl__readtable_case(T_sp readtable) {
+  if (gc::IsA<ReadTable_sp>(readtable))
+    return gc::As<ReadTable_sp>(readtable)->getReadTableCase();
+  else if (core::_sym_sicl_readtable_case->fboundp())
+    return eval::funcall(core::_sym_sicl_readtable_case, readtable);
+  else SIMPLE_ERROR(BF("BUG: readtable-case called too early"));
 }
 
 CL_LAMBDA(readtable mode);
@@ -146,8 +150,25 @@ CL_DEFUN T_mv cl__set_macro_character(Character_sp ch, T_sp func_desig, T_sp non
   return (Values(readtable->set_macro_character(ch, func_desig, non_terminating_p)));
 };
 
-SYMBOL_EXPORT_SC_(KeywordPkg, constituent_character);
-SYMBOL_EXPORT_SC_(KeywordPkg, whitespace_character);
+CL_LAMBDA(readtable chr);
+CL_DECLARE();
+CL_DOCSTRING("Return the syntax type of chr. Either :whitespace, :terminating-macro, :non-terminating-macro, :constituent, :single-escape, :multiple-escape, or :invalid.");
+CL_DEFUN Symbol_sp core__syntax_type(T_sp readtable, Character_sp chr) {
+  if (gc::IsA<ReadTable_sp>(readtable))
+    return gc::As<ReadTable_sp>(readtable)->syntax_type(chr);
+  else if (core::_sym_sicl_syntax_type->fboundp())
+    return gc::As<Symbol_sp>(eval::funcall(core::_sym_sicl_syntax_type, readtable, chr));
+  else SIMPLE_ERROR(BF("BUG: readtable-case called too early"));
+}
+
+SYMBOL_EXPORT_SC_(KeywordPkg, constituent);
+SYMBOL_EXPORT_SC_(KeywordPkg, whitespace);
+SYMBOL_EXPORT_SC_(KeywordPkg, single_escape);
+SYMBOL_EXPORT_SC_(KeywordPkg, multiple_escape);
+SYMBOL_EXPORT_SC_(KeywordPkg, non_terminating_macro);
+SYMBOL_EXPORT_SC_(KeywordPkg, terminating_macro);
+SYMBOL_EXPORT_SC_(KeywordPkg, invalid);
+
 SYMBOL_SC_(CorePkg, STARconsing_dot_allowedSTAR);
 SYMBOL_SC_(CorePkg, STARconsing_dotSTAR);
 SYMBOL_SC_(CorePkg, STARpreserve_whitespace_pSTAR);
@@ -436,12 +457,12 @@ CL_DEFUN T_mv core__sharp_asterisk(T_sp sin, Character_sp ch, T_sp num) {
       break;
     ch = gc::As<Character_sp>(tch);
     Symbol_sp syntaxType = rtbl->syntax_type(ch);
-    if (syntaxType == kw::_sym_terminating_macro_character || syntaxType == kw::_sym_whitespace_character) {
+    if (syntaxType == kw::_sym_terminating_macro || syntaxType == kw::_sym_whitespace) {
       unread_ch(sin, ch);
       break;
     }
-    unlikely_if(syntaxType == kw::_sym_single_escape_character ||
-                syntaxType == kw::_sym_multiple_escape_character ||
+    unlikely_if(syntaxType == kw::_sym_single_escape ||
+                syntaxType == kw::_sym_multiple_escape ||
                 (clasp_as_claspCharacter(ch) != '0' && clasp_as_claspCharacter(ch) != '1')) {
       READER_ERROR(SimpleBaseString_O::make("Character ~:C is not allowed after #*"), Cons_O::create(ch), sin);
     }
@@ -695,20 +716,17 @@ DONE:
 
 
 SYMBOL_EXPORT_SC_(KeywordPkg, syntax);
-SYMBOL_EXPORT_SC_(KeywordPkg, whitespace_character);
 HashTable_sp ReadTable_O::create_standard_syntax_table() {
   HashTableEql_sp syntax = HashTableEql_O::create_default();
-  syntax->setf_gethash(clasp_character_create_from_name("TAB"), kw::_sym_whitespace_character);
-  syntax->setf_gethash(clasp_character_create_from_name("NEWLINE"), kw::_sym_whitespace_character);
-  syntax->setf_gethash(clasp_character_create_from_name("LINEFEED"), kw::_sym_whitespace_character);
-  syntax->setf_gethash(clasp_character_create_from_name("ESCAPE"), kw::_sym_whitespace_character);
-  syntax->setf_gethash(clasp_character_create_from_name("PAGE"), kw::_sym_whitespace_character);
-  syntax->setf_gethash(clasp_character_create_from_name("RETURN"), kw::_sym_whitespace_character);
-  syntax->setf_gethash(clasp_character_create_from_name("SPACE"), kw::_sym_whitespace_character);
-  SYMBOL_EXPORT_SC_(KeywordPkg, single_escape_character);
-  SYMBOL_EXPORT_SC_(KeywordPkg, multiple_escape_character);
-  syntax->hash_table_setf_gethash(clasp_make_standard_character('\\'), kw::_sym_single_escape_character);
-  syntax->hash_table_setf_gethash(clasp_make_standard_character('|'), kw::_sym_multiple_escape_character);
+  syntax->setf_gethash(clasp_character_create_from_name("TAB"), kw::_sym_whitespace);
+  syntax->setf_gethash(clasp_character_create_from_name("NEWLINE"), kw::_sym_whitespace);
+  syntax->setf_gethash(clasp_character_create_from_name("LINEFEED"), kw::_sym_whitespace);
+  syntax->setf_gethash(clasp_character_create_from_name("ESCAPE"), kw::_sym_whitespace);
+  syntax->setf_gethash(clasp_character_create_from_name("PAGE"), kw::_sym_whitespace);
+  syntax->setf_gethash(clasp_character_create_from_name("RETURN"), kw::_sym_whitespace);
+  syntax->setf_gethash(clasp_character_create_from_name("SPACE"), kw::_sym_whitespace);
+  syntax->hash_table_setf_gethash(clasp_make_standard_character('\\'), kw::_sym_single_escape);
+  syntax->hash_table_setf_gethash(clasp_make_standard_character('|'), kw::_sym_multiple_escape);
   return syntax;
 }
 
@@ -836,15 +854,13 @@ T_sp ReadTable_O::set_syntax_type(Character_sp ch, T_sp syntaxType) {
   return _lisp->_true();
 }
 
-SYMBOL_EXPORT_SC_(KeywordPkg, non_terminating_macro_character);
-SYMBOL_EXPORT_SC_(KeywordPkg, terminating_macro_character);
 SYMBOL_EXPORT_SC_(KeywordPkg, macro_function);
 
 T_sp ReadTable_O::set_macro_character(Character_sp ch, T_sp funcDesig, T_sp non_terminating_p) {
   if (non_terminating_p.isTrue()) {
-    this->set_syntax_type(ch, kw::_sym_non_terminating_macro_character);
+    this->set_syntax_type(ch, kw::_sym_non_terminating_macro);
   } else {
-    this->set_syntax_type(ch, kw::_sym_terminating_macro_character);
+    this->set_syntax_type(ch, kw::_sym_terminating_macro);
   }
   Function_sp func = coerce::functionDesignator(funcDesig);
   this->_MacroCharacters->setf_gethash(ch, func);
@@ -861,7 +877,7 @@ string ReadTable_O::__repr__() const {
 
 Symbol_sp ReadTable_O::syntax_type(Character_sp ch) const {
   _OF();
-  Symbol_sp result = this->_SyntaxTypes->gethash(ch, kw::_sym_constituent_character);
+  Symbol_sp result = this->_SyntaxTypes->gethash(ch, kw::_sym_constituent);
   LOG(BF("character[%s] syntax_type: %s") % _rep_(ch) % _rep_(result));
   return result;
 }
@@ -870,9 +886,9 @@ T_mv ReadTable_O::get_macro_character(Character_sp ch) {
   _OF();
   T_sp dispatcher = this->_MacroCharacters->gethash(ch, _Nil<T_O>());
   Symbol_sp syntaxType = this->syntax_type(ch);
-  if (syntaxType == kw::_sym_terminating_macro_character) {
+  if (syntaxType == kw::_sym_terminating_macro) {
     return (Values(dispatcher, _Nil<T_O>()));
-  } else if (syntaxType == kw::_sym_non_terminating_macro_character) {
+  } else if (syntaxType == kw::_sym_non_terminating_macro) {
     return (Values(dispatcher, _lisp->_true()));
   }
   return (Values(_Nil<T_O>(), _Nil<T_O>()));
