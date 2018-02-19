@@ -11,6 +11,9 @@
 (defclass immediate-literal (literal)
   ((%tagged-value :initarg :tagged-value :reader immediate-literal-tagged-value)))
 
+(defmethod make-load-form ((thing clasp-cleavir::immediate-literal) &optional environment)
+  (make-load-form-saving-slots thing :environment environment))
+  
 (defmethod print-object ((object immediate-literal) stream)
   (print-unreadable-object (object stream :type t :identity t)
     (format stream ":value ~s" (literal-value object))))

@@ -1293,28 +1293,8 @@ that llvm function. This works like compile-lambda-function in bclasp."
           (compiler-time (compile-cst-or-form cst-or-form env))
           (compile-cst-or-form cst-or-form env)))))
 
-(defun cclasp-double-quote (stream char)
-  (let ((result (make-array 100
-                            :element-type 'character
-                            :adjustable t
-                            :fill-pointer 0)))
-    (loop for char2 = (read-char stream t nil t)
-          until (eql char2 char)
-          do (when (eq (sicl-readtable:syntax-type *readtable* char2) :single-escape)
-               (let ((c (read-char stream t nil t)))
-                 (if (char= c #\n) ; a hack for clasp
-                     (setf char2 #\return)
-                     (setf char2 c))))
-             (vector-push-extend char2 result))
-    (copy-seq result)))
-
-(defvar *cclasp-readtable* (let ((reader (sicl-readtable:copy-readtable sicl-reader::*standard-readtable*)))
-                             (sicl-readtable:set-macro-character reader #\" 'cclasp-double-quote nil)
-                             reader))
-                                
 (defun cclasp-loop-read-and-compile-file-forms (source-sin environment &key (use-cst *use-cst*))
   (let ((eof-value (gensym))
-        (*readtable* *cclasp-readtable*)
         (read-function (if use-cst 'sicl-reader:cst-read 'read)))
     (loop
       (let ((eof (peek-char t source-sin nil eof-value)))

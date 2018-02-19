@@ -94,7 +94,7 @@
                               env (cleavir-env:name condition))
                              (return-from defun-inline-hook nil)
                              (invoke-restart 'cleavir-cst-to-ast:consider-global)))))
-                  (cleavir-generate-ast:generate-ast function-form (cleavir-env:compile-time env) *clasp-system*))))
+                  (cleavir-cst-to-ast:cst-to-ast (cst:cst-from-expression function-form) (cleavir-env:compile-time env) *clasp-system*))))
       `(eval-when (:compile-toplevel :load-toplevel :execute)
          (when (core:declared-global-inline-p ',name)
            (when (fboundp ',name)

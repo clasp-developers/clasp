@@ -101,27 +101,6 @@
                                   for x = (cst:first remaining)
                                   collect `#'(lambda () (progn ,x)))))))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
-;;; Converting MULTIPLE-VALUE-PROG1
-;;;
-;;; This is converted into a call to core:multiple-value-prog1-function func1 func2
-;;; Func1 is evaluated and the multiple values are saved and then func2 is evaluated
-;;; and the multiple values returned from func1 are restored
-;;;
-
-(defmacro multiple-value-prog1 (first-form &rest forms)
-  (if (null forms)
-      first-form
-      `(core:multiple-value-prog1-function (lambda () (progn ,first-form)) (lambda () (progn ,@forms)))))
-
-#+(or)
-(progn
-  (def-ast-macro multiple-value-prog1 (first-form &rest forms)
-    `(core:multiple-value-prog1-function (lambda () (progn ,first-form)) (lambda () (progn ,@forms))))
-
-  (def-cst-macro multiple-value-prog1 (first-cst . csts) origin
-    (reinitialize-instance (cst:cst-from-expression `(core:multiple-value-prog1-function (lambda () (progn ,first-form)) (lambda () (progn ,@forms)))) :source origin)))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

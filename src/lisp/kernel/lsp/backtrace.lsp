@@ -265,15 +265,20 @@ Set gather-all-frames to T and you can gather C++ and Common Lisp frames"
     (setq *current-btcl-frames* frames)
     frames))
 
+(defun print-arguments-control-length (arguments &optional (length 256))
+  (let ((arg-str (with-output-to-string (sout)
+                   (dotimes (i (length arguments))
+                     (princ #\space sout)
+                     (prin1 (aref arguments i) sout)))))
+    (prin1 (subseq arg-str 0 (min (length arg-str) length)))))
+
 (defun print-arguments (name arguments)
   (princ " (")
   (princ name)
   (if (> (length arguments) 0)
       (progn
         (if arguments 
-            (dotimes (i (length arguments))
-              (princ #\space)
-              (prin1 (aref arguments i)))
+            (print-arguments-control-length arguments)
             (prin1 " -args-suppressed-"))
         (princ ")"))))
 

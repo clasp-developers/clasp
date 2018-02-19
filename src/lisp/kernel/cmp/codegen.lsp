@@ -256,17 +256,17 @@ then compile it and return (values compiled-llvm-function lambda-name)"
 ;;; Return true if the symbol should be treated as a special operator
 ;;; Special operators that are handled as macros are exempt
 (defun treat-as-special-operator-p (sym)
-  #+clc(clc-env:treat-as-special-operator-p sym)
-  #-clc(cond
-         ((eq sym 'cl:unwind-protect) nil)  ;; handled with macro
-         ((eq sym 'cl:catch) nil)           ;; handled with macro
-         ((eq sym 'cl:throw) nil)           ;; handled with macro
-         ((eq sym 'core:debug-message) t)   ;; special operator
-         ((eq sym 'core:multiple-value-foreign-call) t) ;; Call intrinsic functions
-         ((eq sym 'core:foreign-call-pointer) t) ;; Call function pointers
-         ((eq sym 'core:foreign-call) t) ;; Call foreign function
-         ((eq sym 'core:bind-va-list) t) ;; bind-va-list
-         (t (special-operator-p sym))))
+  (cond
+    ((eq sym 'cl:unwind-protect) nil)     ;; handled with macro
+    ((eq sym 'cl:multiple-value-prog1) nil)     ;; handled with macro
+    ((eq sym 'cl:catch) nil)              ;; handled with macro
+    ((eq sym 'cl:throw) nil)              ;; handled with macro
+    ((eq sym 'core:debug-message) t)      ;; special operator
+    ((eq sym 'core:multiple-value-foreign-call) t) ;; Call intrinsic functions
+    ((eq sym 'core:foreign-call-pointer) t) ;; Call function pointers
+    ((eq sym 'core:foreign-call) t)         ;; Call foreign function
+    ((eq sym 'core:bind-va-list) t)         ;; bind-va-list
+    (t (special-operator-p sym))))
 
 (export 'treat-as-special-operator-p)
 

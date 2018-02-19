@@ -18,7 +18,7 @@
     (tagbody codegen-tagbody convert-tagbody)
     (go codegen-go convert-go)
     (multiple-value-call  codegen-multiple-value-call convert-multiple-value-call)
-    (multiple-value-prog1  codegen-multiple-value-prog1 convert-multiple-value-prog1)
+    ;;;(multiple-value-prog1  codegen-multiple-value-prog1 convert-multiple-value-prog1)
     (flet  codegen-flet convert-flet)
     (labels  codegen-labels convert-labels)
     (eval-when  codegen-eval-when convert-eval-when)
@@ -218,13 +218,20 @@
 
 ;;; MULTIPLE-VALUE-PROG1
 
-(defun codegen-multiple-value-prog1 (result rest env)
-  (with-dbg-lexical-block (rest)
-    (let ((first-form (car rest))
-          (forms (cdr rest)))
-      (codegen result `(funcall 'core::multiple-value-prog1-function
-                                (lambda () ,first-form)
-                                (lambda () (progn ,@forms))) env))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Converting MULTIPLE-VALUE-PROG1
+;;;
+;;; This is converted into a call to core:multiple-value-prog1-function func1 func2
+;;; Func1 is evaluated and the multiple values are saved and then func2 is evaluated
+;;; and the multiple values returned from func1 are restored
+;;;
+
+(defmacro multiple-value-prog1 (first-form &rest forms)
+  (if (null forms)
+      first-form
+      `(core:multiple-value-prog1-function (lambda () (progn ,first-form)) (lambda () (progn ,@forms)))))
+
 
 (defun codegen-special-var-reference (var &optional env)
   (irc-intrinsic "symbolValueReference" (irc-global-symbol var env) (bformat nil "<special-var:%s>" (symbol-name var) )))
