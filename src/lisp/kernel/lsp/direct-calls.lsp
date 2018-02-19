@@ -28,4 +28,4 @@
                                                                lambda-list nil 'function))))
                (set-source-info (fdefinition ',lisp-name) ,source-info)))
           `(unless core:*silent-startup*
-             (bformat t "Will not generate wrapper for %s - the symbol is not available or set up for CL inlining\n" ',lisp-name))))))
+             (bformat t "Will not generate wrapper for %s - the symbol is not available or set up for CL inlining%N" ',lisp-name))))))

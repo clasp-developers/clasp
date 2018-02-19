@@ -39,8 +39,8 @@
   (unwind-protect
        (progn
          (when *print-implicit-compile-form* 
-           (bformat t "Compiling form: %s\n" form)
-           (bformat t "*active-protection* --> %s\n" cmp::*active-protection*))
+           (bformat t "Compiling form: %s%N" form)
+           (bformat t "*active-protection* --> %s%N" cmp::*active-protection*))
          (with-compilation-unit (:override nil)
            (multiple-value-bind (compiled-function warn fail)
                (compile-in-env 'repl
@@ -74,6 +74,6 @@
 
 #+(or)
 (eval-when (:execute)
-  (bformat t "!\n!\n!\n! cmprepl.lsp has (setq cmp:*debug-dump-module* t)\n!\n!\n!  TURN IT OFF AGAIN\n!\n")
+  (bformat t "!%N!%N!\n! cmprepl.lsp has (setq cmp:*debug-dump-module* t)\n!\n!\n!  TURN IT OFF AGAIN\n!\n")
   (setq cmp:*debug-dump-module* t)
   )

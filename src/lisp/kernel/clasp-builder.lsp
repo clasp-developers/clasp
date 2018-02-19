@@ -147,7 +147,7 @@ Return files."
           (error "Illegal type ~a for load-kernel-file ~a" type path))))
 
 (defun compile-kernel-file (entry &key (reload nil) load-bitcode (force-recompile nil) counter total-files (output-type :bitcode))
-  #+dbg-print(bformat t "DBG-PRINT compile-kernel-file: %s\n" entry)
+  #+dbg-print(bformat t "DBG-PRINT compile-kernel-file: %s%N" entry)
 ;;  (if *target-backend* nil (error "*target-backend* is undefined"))
   (let* ((filename (entry-filename entry))
          (source-path (build-pathname filename :lisp))
@@ -155,17 +155,17 @@ Return files."
 	 (load-bitcode (and (bitcode-exists-and-up-to-date filename) load-bitcode)))
     (if (and load-bitcode (not force-recompile))
 	(progn
-	  (bformat t "Skipping compilation of %s - its bitcode file %s is more recent\n" source-path output-path)
-	  ;;	  (bformat t "   Loading the compiled file: %s\n" (path-file-name output-path))
+	  (bformat t "Skipping compilation of %s - its bitcode file %s is more recent%N" source-path output-path)
+	  ;;	  (bformat t "   Loading the compiled file: %s%N" (path-file-name output-path))
 	  ;;	  (load-bitcode (as-string output-path))
 	  )
 	(progn
-	  (bformat t "\n")
+	  (bformat t "%N")
 	  (if (and counter total-files)
-              (bformat t "Compiling source [%d of %d] %s\n    to %s - will reload: %s\n" counter total-files source-path output-path reload)
-              (bformat t "Compiling source %s\n   to %s - will reload: %s\n" source-path output-path reload))
+              (bformat t "Compiling source [%d of %d] %s%N    to %s - will reload: %s%N" counter total-files source-path output-path reload)
+              (bformat t "Compiling source %s%N   to %s - will reload: %s%N" source-path output-path reload))
 	  (let ((cmp::*module-startup-prefix* "kernel"))
-            #+dbg-print(bformat t "DBG-PRINT  source-path = %s\n" source-path)
+            #+dbg-print(bformat t "DBG-PRINT  source-path = %s%N" source-path)
             (apply #'compile-file (probe-file source-path) :output-file output-path :output-type output-type
                    #| #+build-print |# :print #| #+build-print |# t
                                        :verbose nil
@@ -173,7 +173,7 @@ Return files."
                                        :type :kernel (entry-compile-file-options entry))
 	    (if reload
 		(progn
-		  (bformat t "    Loading newly compiled file: %s\n" output-path)
+		  (bformat t "    Loading newly compiled file: %s%N" output-path)
 		  (load-kernel-file output-path output-type))))))
     output-path))
 (export 'compile-kernel-file)
@@ -190,7 +190,7 @@ Return files."
   (let* ((filename (entry-filename entry))
          (pathname (probe-file (build-pathname filename :lisp)))
          (name (namestring pathname)))
-    (bformat t "Compiling/loading source: %s\n" (namestring name))
+    (bformat t "Compiling/loading source: %s%N" (namestring name))
     (let ((m (cmp::compile-file-to-module name :print nil)))
       (progn
         (cmp::jit-link-builtins-module m)
@@ -198,7 +198,7 @@ Return files."
       (llvm-sys:load-module m))))
 
 (defun load-system (files &key compile-file-load interp load-bitcode (target-backend *target-backend*) system)
-  #+dbg-print(bformat t "DBG-PRINT  load-system: %s - %s\n" first-file last-file )
+  #+dbg-print(bformat t "DBG-PRINT  load-system: %s - %s%N" first-file last-file )
   (let* ((*target-backend* target-backend)
 	 (cur files))
     (tagbody
@@ -222,7 +222,7 @@ Return files."
 
 
 (defun compile-system (files &key reload (output-type :bitcode))
-  #+dbg-print(bformat t "DBG-PRINT compile-system files: %s\n" files)
+  #+dbg-print(bformat t "DBG-PRINT compile-system files: %s%N" files)
   (with-compilation-unit ()
     (let* ((cur files)
            (counter 1)
@@ -243,8 +243,8 @@ Return files."
 (defun clean-system (after-file &key no-prompt stage system)
   (let* ((files (select-trailing-source-files after-file :system system))
 	 (cur files))
-    (bformat t "Will remove modules: %s\n" files)
-    (bformat t "cur=%s\n" cur)
+    (bformat t "Will remove modules: %s%N" files)
+    (bformat t "cur=%s%N" cur)
     (let ((proceed (or no-prompt
 		       (progn
 			 (bformat *query-io* "Delete? (Y or N) ")
@@ -257,7 +257,7 @@ Return files."
 	     (setq cur (cdr cur))
 	     (go top)
 	   done)
-	  (bformat t "Not deleting\n")))))
+	  (bformat t "Not deleting%N")))))
 
 
 (export 'select-source-files)
@@ -339,11 +339,11 @@ Return files."
 
 
 (defun build-failure (condition)
-  (bformat t "\nBuild aborted.\n")
-  (bformat t "Received condition of type: %s\n%s\n"
+  (bformat t "%NBuild aborted.%N")
+  (bformat t "Received condition of type: %s%N%s%N"
            (type-of condition)
            condition)
-  (bformat t "Entering repl\n"))
+  (bformat t "Entering repl%N"))
 
 
 
@@ -474,11 +474,11 @@ Return files."
                                                   :system system) :compile-file-load nil)
                 #+(or)(let ((files (select-source-files #P"src/lisp/kernel/tag/bclasp"
                                                         #P"src/lisp/kernel/cleavir/inline-prep" :system system)))
-                        (core:bformat t "COMPILE-FILEing %s\n" files)
+                        (core:bformat t "COMPILE-FILEing %s%N" files)
                         (push :compiling-cleavir *features*)
                         (progn
                           (compile-system files :reload t :output-type :fasl)
-                          (core:bformat t "!\n!\n! Switching to load\n!\n!\n")
+                          (core:bformat t "!%N!%N! Switching to load\n!\n!\n")
                           (load-system (select-source-files #P"src/lisp/kernel/cleavir/auto-compile"
                                                             #P"src/lisp/kernel/tag/pre-epilogue-cclasp" :system system) :compile-file-load nil ))))
            (pop *features*))
@@ -519,10 +519,10 @@ Return files."
 
 
 (eval-when (:execute)
-  (bformat t "Loaded clasp-builder.lsp\n")
+  (bformat t "Loaded clasp-builder.lsp%N")
   (if (member :clasp-builder-repl *features*)
       (progn
-        (core:bformat t "Starting low-level repl\n")
+        (core:bformat t "Starting low-level repl%N")
         (unwind-protect
              (core:low-level-repl)
-          (core:bformat t "Exiting low-level-repl\n")))))
+          (core:bformat t "Exiting low-level-repl%N")))))

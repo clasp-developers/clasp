@@ -737,7 +737,7 @@ memory limits before executing the program again."))
 
 (defun signal-simple-error (base-condition continue-message format-control format-args
 			    &rest args)
-;;  (bformat t "[[[conditions.lsp>>signal-simple-error base-condition = %s  format-control = <<%s>>  format-args = <<%s>>  args= <<%s>>]]]\n" base-condition format-control format-args args)
+;;  (bformat t "[[[conditions.lsp>>signal-simple-error base-condition = %s  format-control = <<%s>>  format-args = <<%s>>  args= <<%s>>]]]%N" base-condition format-control format-args args)
   (let ((simple-error-name (intern (concatenate 'string "SIMPLE-" (string base-condition))
 				   (find-package "SI"))))
     (unless (find-class simple-error-name nil)

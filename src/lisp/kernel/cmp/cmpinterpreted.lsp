@@ -27,7 +27,7 @@
 
 ;; Compile all interpreted functions
 (eval-when (:execute :load-toplevel)
-  (bformat t "In cmpinterpreted.lsp\n")
+  (bformat t "In cmpinterpreted.lsp%N")
   (do-all-symbols (s) (when (and s (fboundp s) (core:interpreted-function-p (fdefinition s)))
-                        (bformat t "Compiling interpreted function: %s\n" s)
+                        (bformat t "Compiling interpreted function: %s%N" s)
                         (compile s))))

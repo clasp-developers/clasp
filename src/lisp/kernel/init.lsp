@@ -27,7 +27,7 @@
 #+debug-flow-tracker
 (if (member :flow-tracker *features*)
     (progn
-      (core:bformat t "Turning flow-tracker on\n")
+      (core:bformat t "Turning flow-tracker on%N")
       (gctools:flow-tracker-on)))
 
 
@@ -387,7 +387,7 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
                        (declare (ignore rest))
                        (if decl (setq decl (list (cons 'declare decl))))
                        (let ((func `#'(lambda ,lambda-list ,@decl ,@doc (block ,name ,@body))))
-                         ;;(bformat t "PRIMITIVE DEFUN defun --> %s\n" func )
+                         ;;(bformat t "PRIMITIVE DEFUN defun --> %s%N" func )
                          (ext::register-with-pde
                           def
                           `(progn (eval-when (:compile-toplevel)
@@ -528,7 +528,7 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
 (defun ensure-relative-pathname (input)
   "If the input pathname is absolute then search for src, or generated and return
 a relative path from there."
-  #+(or)(bformat t "ensure-relative-pathname input = %s   sys-pn = %s\n" input sys-pn)
+  #+(or)(bformat t "ensure-relative-pathname input = %s   sys-pn = %s%N" input sys-pn)
   (let ((result
          (cond
            ((eq :relative (car (pathname-directory input)))
@@ -538,7 +538,7 @@ a relative path from there."
             (make-pathname :directory (cons :relative (strip-root (pathname-directory input)))
                            :name (pathname-name input)))
            (t (error "ensure-relative-pathname could not handle ~a" input)))))
-    #+(or)(bformat t "ensure-relative-pathname result = %s\n" result)
+    #+(or)(bformat t "ensure-relative-pathname result = %s%N" result)
     result))
 
 
@@ -590,9 +590,9 @@ the stage, the +application-name+ and the +bitcode-name+"
     (let ((target-host "lib")
           (target-dir (build-target-dir type stage))
           pn)
-      #+dbg-print(bformat t "DBG-PRINT build-pathname module: %s\n" module)
-      #+dbg-print(bformat t "DBG-PRINT build-pathname target-host: %s\n" target-host)
-      #+dbg-print(bformat t "DBG-PRINT build-pathname target-dir: %s\n" target-dir)
+      #+dbg-print(bformat t "DBG-PRINT build-pathname module: %s%N" module)
+      #+dbg-print(bformat t "DBG-PRINT build-pathname target-host: %s%N" target-host)
+      #+dbg-print(bformat t "DBG-PRINT build-pathname target-dir: %s%N" target-dir)
       (let ((result
               (cond
                 ((eq type :lisp)
@@ -646,12 +646,12 @@ the stage, the +application-name+ and the +bitcode-name+"
          (pathname (probe-file (build-pathname filename :lisp)))
          (name (namestring pathname)))
     (if cmp:*implicit-compile-hook*
-        (bformat t "Loading/compiling source: %s\n" (namestring name))
-        (bformat t "Loading/interpreting source: %s\n" (namestring name)))
+        (bformat t "Loading/compiling source: %s%N" (namestring name))
+        (bformat t "Loading/interpreting source: %s%N" (namestring name)))
     (load pathname)))
 
 (defun iload (entry &key load-bitcode )
-  #+dbg-print(bformat t "DBG-PRINT iload fn: %s\n" fn)
+  #+dbg-print(bformat t "DBG-PRINT iload fn: %s%N" fn)
   (let* ((fn (entry-filename entry))
          (lsp-path (build-pathname fn))
          (bc-path (build-pathname fn :bitcode))
@@ -665,15 +665,15 @@ the stage, the +application-name+ and the +bitcode-name+"
                                 bc-newer))))))
     (if load-bc
         (progn
-          (bformat t "Loading bitcode file: %s\n" bc-path)
+          (bformat t "Loading bitcode file: %s%N" bc-path)
           (cmp:load-bitcode bc-path))
         (if (probe-file-case lsp-path)
             (progn
               (if cmp:*implicit-compile-hook*
-                  (bformat t "Loading/compiling source: %s\n" lsp-path)
-                  (bformat t "Loading/interpreting source: %s\n" lsp-path))
+                  (bformat t "Loading/compiling source: %s%N" lsp-path)
+                  (bformat t "Loading/interpreting source: %s%N" lsp-path))
               (load (probe-file lsp-path)))
-            (bformat t "No interpreted or bitcode file for %s could be found\n" lsp-path)))))
+            (bformat t "No interpreted or bitcode file for %s could be found%N" lsp-path)))))
 
 (defun delete-init-file (entry &key (really-delete t) stage)
   (let* ((module (entry-filename entry))
@@ -681,7 +681,7 @@ the stage, the +application-name+ and the +bitcode-name+"
     (if (probe-file bitcode-path)
         (if really-delete
             (progn
-              (bformat t "     Deleting bitcode: %s\n" bitcode-path)
+              (bformat t "     Deleting bitcode: %s%N" bitcode-path)
               (delete-file bitcode-path))))))
 
 
@@ -830,7 +830,7 @@ the stage, the +application-name+ and the +bitcode-name+"
   `(progn
      ,@(mapcar #'(lambda (f) `(push ,f *features*)) features)
      (if (member :interactive *features*)
-         (bformat t "Starting %s ... loading image... it takes a few seconds\n" (lisp-implementation-version)))))
+         (bformat t "Starting %s ... loading image... it takes a few seconds%N" (lisp-implementation-version)))))
 
 
 (export '*extension-startup-loads*) ;; ADDED: frgo, 2016-08-10
@@ -888,7 +888,7 @@ the stage, the +application-name+ and the +bitcode-name+"
   (cond
     ((eq (car cmd) :pwd) (tpl-default-pathname-defaults-command))
     ((eq (car cmd) :cd) (tpl-change-default-pathname-defaults-dir-command (cadr cmd)))
-    (t (bformat t "Unknown command %s\n" cmd))))
+    (t (bformat t "Unknown command %s%N" cmd))))
 
 (setq *top-level-command-hook* #'tpl-hook)
 
@@ -901,7 +901,7 @@ the stage, the +application-name+ and the +bitcode-name+"
     (funcall closure)
     (setq real-end (get-internal-real-time)
           run-end (get-internal-run-time))
-    (bformat t "real time: %lf secs\nrun time : %lf secs\n"
+    (bformat t "real time: %lf secs%Nrun time : %lf secs\n"
              (float (/ (- real-end real-start) internal-time-units-per-second))
              (float (/ (- run-end run-start) internal-time-units-per-second)))))
 
@@ -945,9 +945,9 @@ the stage, the +application-name+ and the +bitcode-name+"
 #-(or aclasp bclasp cclasp)
 (eval-when (:execute)
   (process-command-line-load-eval-sequence)
-  (bformat t "Low level repl - in init.lsp\n")
+  (bformat t "Low level repl - in init.lsp%N")
   (core:low-level-repl))
 
 #-(or bclasp cclasp)
 (eval-when (:execute :load-top-level)
-  (bformat t "init.lsp  \n!\n!\n! Hello from the bottom of init.lsp - for some reason execution is passing through here\n!\n!\n"))
+  (bformat t "init.lsp  %N!\n!\n! Hello from the bottom of init.lsp - for some reason execution is passing through here\n!\n!\n"))

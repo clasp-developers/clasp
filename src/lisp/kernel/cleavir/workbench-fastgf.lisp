@@ -14,12 +14,12 @@
   (print-object #'print-object *standard-output*)
   (print-object (core::make-restart) *standard-output*)
   (print-object (list 1 2 3) *standard-output*)
-  (bformat t "*trap-recursive-dispatch-miss* -> %s\n" clos::*trap*)
+  (bformat t "*trap-recursive-dispatch-miss* -> %s%N" clos::*trap*)
   (print-address-of 'clos::*trap*)
   (defparameter *newgfs* (mapcar (lambda (gf) (cons gf (clos::calculate-strandh-dispatch-function gf))) (clos::all-generic-functions)))
   (dolist (ng *newgfs*) (clos:set-funcallable-instance-function (car ng) (cdr ng)))
   (push :strandh-dispatch *features*)
-  (bformat t "------------done-------------\n"))
+  (bformat t "------------done-------------%N"))
 
 (let ((clos::*trap-recursive-dispatch* t))
   ;; Call c-a-m-u-c once to establish a call-history.  ECL bypasses it

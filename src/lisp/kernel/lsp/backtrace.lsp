@@ -28,7 +28,7 @@
   (maphash (lambda (key value)
              (let ((func-size (first value))
                    (func-start (second value)))
-               (bformat t "%s -> %s %s\n" key func-start func-size)))
+               (bformat t "%s -> %s %s%N" key func-start func-size)))
            cmp::*jit-saved-symbol-info*)
   (values))
 
@@ -48,12 +48,12 @@
 (defun parse-frame (return-address backtrace-string base-pointer next-base-pointer verbose)
   ;; Get the name
   (let (pos)
-    (if verbose (bformat *debug-io* "backtrace-string: %s\n" backtrace-string))
+    (if verbose (bformat *debug-io* "backtrace-string: %s%N" backtrace-string))
     (cond
       ;; If there is no backtrace_symbol info - it's probably jitted
       ((string= (subseq backtrace-string 0 (min 3 (length backtrace-string))) "0x0")
        (let* ((symbol-info (llvm-sys:lookup-jit-symbol-info return-address))
-;;;              (_ (core:bformat t "symbol-info address: %s -> %s\n" return-address symbol-info))
+;;;              (_ (core:bformat t "symbol-info address: %s -> %s%N" return-address symbol-info))
               (jit-name (first symbol-info))
               (function-bytes (second symbol-info))
               (function-start-address (third symbol-info)))
@@ -63,7 +63,7 @@
                     (symbol-name (first parts))
                     (package-name (second parts))
                     (name (intern symbol-name (or package-name :keyword))))
-               (if verbose (bformat *debug-io* "-->JITted CL frame\n"))
+               (if verbose (bformat *debug-io* "-->JITted CL frame%N"))
                (make-backtrace-frame :type :lisp
                                      :return-address return-address
                                      :raw-name jit-name
@@ -74,7 +74,7 @@
                                      :base-pointer base-pointer
                                      :next-base-pointer next-base-pointer))
              (progn
-               (if verbose (bformat *debug-io* "-->JITted unknown frame\n"))
+               (if verbose (bformat *debug-io* "-->JITted unknown frame%N"))
                (make-backtrace-frame :type :unknown
                                      :return-address return-address
                                      :function-name (or jit-name (core:bformat nil "%s" return-address))
@@ -83,7 +83,7 @@
                                      :base-pointer base-pointer
                                      :next-base-pointer next-base-pointer)))))
       ((setq pos (search "^^" backtrace-string :from-end t))
-       (if verbose (bformat *debug-io* "-->CL frame\n"))
+       (if verbose (bformat *debug-io* "-->CL frame%N"))
        (let* ((parts (cmp:unescape-and-split-jit-name (subseq backtrace-string 0 pos)))
               (symbol-name (first parts))
               (package-name (second parts))
@@ -100,7 +100,7 @@
                                (subseq backtrace-string 0 first-space)
                                backtrace-string))
                 (unmangled (core::maybe-demangle just-name)))
-           (if verbose (bformat *debug-io* "-->C++ frame\n"))
+           (if verbose (bformat *debug-io* "-->C++ frame%N"))
            (make-backtrace-frame :type :c
                                  :return-address return-address
                                  :raw-name backtrace-string
@@ -132,7 +132,7 @@
               (setf (backtrace-frame-arguments frame) (frame-iterator-arguments shadow-entry))
               (setf frames frame-cur)
               (setf (backtrace-frame-shadow-frame frame) shadow-entry))
-            (bformat t "Could not find stack frame for address: %s\n" (frame-iterator-frame-address shadow-entry))))))
+            (bformat t "Could not find stack frame for address: %s%N" (frame-iterator-frame-address shadow-entry))))))
   (let ((new-frames (add-interpreter-frames orig-frames)))
     (nreverse new-frames)))
 
@@ -214,11 +214,11 @@ Set gather-all-frames to T and you can gather C++ and Common Lisp frames"
                                       :gather)
                                      (t state)))
                    (when verbose
-                     (bformat t "-----state -> %s   new-state -> %s\n" state new-state)
-                     (bformat t "     frame: %s\n" frame))
+                     (bformat t "-----state -> %s   new-state -> %s%N" state new-state)
+                     (bformat t "     frame: %s%N" frame))
                    (setq state new-state)
                    (when (and (eq state :gather) (or gather-all-frames (eq (backtrace-frame-type frame) :lisp)))
-                     (when verbose (bformat t "     PUSHED!\n"))
+                     (when verbose (bformat t "     PUSHED!%N"))
                      (push frame result))))
                (nreverse result))))
       (let ((frames (gather-frames gather-start-trigger)))
@@ -240,14 +240,14 @@ Set gather-all-frames to T and you can gather C++ and Common Lisp frames"
   (if (and (<= 0 index) (< index (length *current-btcl-frames*)))
       (let ((arguments (backtrace-frame-arguments (cbtcl-frame index))))
         arguments)
-      (core:bformat t "%d is not a valid frame index - use 0 to %d\n" index (1- (length *current-btcl-frames*)))))
+      (core:bformat t "%d is not a valid frame index - use 0 to %d%N" index (1- (length *current-btcl-frames*)))))
 
 (defun bt-argument (index &optional (argument-index 0))
   (check-type argument-index fixnum)
   (let ((arguments (bt-arguments index)))
     (if (and (<= 0 argument-index) (< argument-index (length arguments)))
         (elt arguments argument-index)
-        (core:bformat t "%d is not a valid argument index - use 0 to %d\n" argument-index (1- (length arguments))))))
+        (core:bformat t "%d is not a valid argument index - use 0 to %d%N" argument-index (1- (length arguments))))))
 (export '(bt-arguments bt-argument))
 
 (defun btcl-frames (&key all)
@@ -304,13 +304,13 @@ Set gather-all-frames to T and you can gather C++ and Common Lisp frames"
 
 (defun bt ()
   (let ((l (backtrace-as-list)))
-    (bformat t "There are %s frames\n" (length l))
+    (bformat t "There are %s frames%N" (length l))
     (dolist (e l)
-          (bformat t "%s\n" (backtrace-frame-function-name e)))))
+          (bformat t "%s%N" (backtrace-frame-function-name e)))))
 
 (defun btargs ()
   (let ((l (backtrace-with-arguments)))
-    (bformat t "There are %s frames\n" (length l))
+    (bformat t "There are %s frames%N" (length l))
     (dolist (e l)
       (let ((name (backtrace-frame-print-name e))
             (arguments (backtrace-frame-arguments e)))

@@ -51,7 +51,7 @@
 (defun safe-system (cmd-list &key output-file-name)
 
   (if *safe-system-echo*
-      (bformat t "safe-system: %s\n" cmd-list))
+      (bformat t "safe-system: %s%N" cmd-list))
 
   (multiple-value-bind (retval error-message)
       (ext:vfork-execvp cmd-list)
@@ -68,7 +68,7 @@
                 (error "The file ~a was not created by shell command: ~a" output-file-name (as-shell-command cmd-list))
                 (progn
                   (if *safe-system-echo*
-                      (bformat t "safe-system: Retry count = %d of %d\n" n *safe-system-max-retries*))
+                      (bformat t "safe-system: Retry count = %d of %d%N" n *safe-system-max-retries*))
                   (core::sleep sleep-time)
                   (setq sleep-time (* 2 sleep-time)))))))))
 
@@ -129,7 +129,7 @@
                            "-o"
                            ,bundle-file)))
          (when (member :debug-run-clang *features*)
-           (bformat t "execute-link-fasl   clang-args -> %s\n" clang-args))
+           (bformat t "execute-link-fasl   clang-args -> %s%N" clang-args))
          (ext:run-clang clang-args :output-file-name bundle-file)))
       ((member :target-os-linux *features*)
        ;; Linux needs to use clang to link
@@ -199,7 +199,7 @@
             ;; This is where I used to link the additional-bitcode-pathnames
             (dolist (part-pn part-pathnames)
               (let* ((bc-file (make-pathname :type (if cmp::*use-human-readable-bitcode* "ll" "bc") :defaults part-pn)))
-;;;                (bformat t "Linking %s\n" bc-file)
+;;;                (bformat t "Linking %s%N" bc-file)
                 (let* ((part-module (parse-bitcode (namestring (truename bc-file)) *llvm-context*)))
                   (incf part-index)
                   (multiple-value-bind (failure error-msg)
@@ -213,7 +213,7 @@
             ;; The following links in additional-bitcode-pathnames
             (dolist (part-pn additional-bitcode-pathnames)
               (let* ((bc-file part-pn))
-;;;                (bformat t "Linking %s\n" bc-file)
+;;;                (bformat t "Linking %s%N" bc-file)
                 (let* ((part-module (llvm-sys:parse-bitcode-file (namestring (truename bc-file)) *llvm-context*)))
                   (remove-main-function-if-exists part-module) ;; Remove the ClaspMain FN if it exists
                   (multiple-value-bind (failure error-msg)
@@ -256,7 +256,7 @@
        (execute-link-executable output-pathname all-bitcode))
       ((eq link-type :fasl)
        (when (member :debug-run-clang *features*)
-         (bformat t "In llvm-link -> link-type :fasl all-bitcode -> %s\n" all-bitcode))
+         (bformat t "In llvm-link -> link-type :fasl all-bitcode -> %s%N" all-bitcode))
        (execute-link-fasl output-pathname all-bitcode))
       (t (error "Cannot link format ~a" link-type)))
     output-pathname))
@@ -278,7 +278,7 @@ Return the truename of the output file.
 NOTE: On Linux it looks like we MUST link all of the bitcode files first into one and then convert that into a fasb.
 This is to ensure that the RUN-ALL functions are evaluated in the correct order."
   (declare (ignore init-name))
-  ;;  (bformat t "cmpbundle.lsp:build-fasl  building fasl for %s from files: %s\n" out-file lisp-files)
+  ;;  (bformat t "cmpbundle.lsp:build-fasl  building fasl for %s from files: %s%N" out-file lisp-files)
   (let ((bitcode-files (mapcar (lambda (p) (make-pathname :type (core:bitcode-extension) :defaults p))
                                lisp-files))
         (temp-bitcode-file (make-pathname :type (core:bitcode-extension) :defaults out-file)))

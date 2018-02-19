@@ -11,7 +11,7 @@
            `(progn
               (core:bformat t "debug-inline>> ")
               (core:bformat t ,msg ,@msg-args)
-              (core:bformat t "\n")
+              (core:bformat t "%N")
               (finish-output)))
 ;;;#+(or)
          (defmacro debug-inline (msg &rest msg-args)
@@ -516,7 +516,7 @@
                                    collect `((simple-array ,type (*))
                                              (cleavir-primop:aref array index ,type t ,boxed)))
                            (t
-                            (core:bformat t "unsafe-vector-ref array-element-type: %s\n" (array-element-type array))
+                            (core:bformat t "unsafe-vector-ref array-element-type: %s%N" (array-element-type array))
                             (error "BUG: unsafe-vector-ref unknown vector ~a" array)))))
              (mycase (t t) (base-char nil) (character nil)
                      (double-float nil) (single-float nil)
@@ -544,7 +544,7 @@
                                              value))
                            ;; should be unreachable
                            (t
-                            (core:bformat t "unsafe-vector-set array-element-type: %s\n" (array-element-type array))
+                            (core:bformat t "unsafe-vector-set array-element-type: %s%N" (array-element-type array))
                             (error "BUG: unsafe-vector-set unknown vector ~a" array)))))
              (mycase (t t) (base-char nil) (character nil)
                      (double-float nil) (single-float nil)

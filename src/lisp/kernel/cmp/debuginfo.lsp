@@ -46,17 +46,17 @@
          (source-filename (file-namestring pathname)))
     (values source-directory source-filename filepos lineno 0)))
 #|  
-  (bformat t "walk-form-for-source-info *current-source-pos-info* -> %s\n" core:*current-source-pos-info*)
+  (bformat t "walk-form-for-source-info *current-source-pos-info* -> %s%N" core:*current-source-pos-info*)
   (multiple-value-bind (source-file-info file-pos line-number column)
       (core:walk-to-find-source-info form)
     (when source-file-info
       (let* ((source-pathname (source-file-info-pathname source-file-info))
              (source-directory (directory-namestring source-pathname))
              (source-filename (file-namestring source-pathname)))
-        (bformat t "    Returning source-filename: %s line-number: %d\n" source-filename line-number)
+        (bformat t "    Returning source-filename: %s line-number: %d%N" source-filename line-number)
         (return-from walk-form-for-source-info
           (values source-directory source-filename file-pos line-number column)))))
-  (bformat t "    Returning no-file 0\n")
+  (bformat t "    Returning no-file 0%N")
   (values "no-dir" "no-file" 0 0 0))
 |#
 
@@ -132,14 +132,14 @@
                                        t ; 11 SplitDebugInlining
                                        nil ; 12 DebugInfoForProfiling
 				       )))
-	     (cmp-log "with-dbg-compile-unit *dbg-compile-unit*: %s\n" *dbg-compile-unit*)
-	     (cmp-log "with-dbg-compile-unit source-pathname: %s\n" ,source-pathname)
-	     (cmp-log "with-dbg-compile-unit file-name: [%s]\n" ,file)
-	     (cmp-log "with-dbg-compile-unit dir-name: [%s]\n" ,dir-name)
+	     (cmp-log "with-dbg-compile-unit *dbg-compile-unit*: %s%N" *dbg-compile-unit*)
+	     (cmp-log "with-dbg-compile-unit source-pathname: %s%N" ,source-pathname)
+	     (cmp-log "with-dbg-compile-unit file-name: [%s]%N" ,file)
+	     (cmp-log "with-dbg-compile-unit dir-name: [%s]%N" ,dir-name)
 	     ,@body
 	     ))
 	 (progn
-	   (cmp-log "with-dbg-compile-unit not generating *dbg-compile-unit*\n")
+	   (cmp-log "with-dbg-compile-unit not generating *dbg-compile-unit*%N")
 	   ,@body))))
 
 (defmacro with-dbg-file-descriptor ((source-pathname) &rest body)
@@ -203,10 +203,10 @@
                        nil ; 14 ThrownTypes = nullptr
                        ))
                     (*dbg-current-scope* *dbg-current-function*))
-               (cmp-log "with-dbg-function *dbg-compile-unit*: %s\n" *dbg-compile-unit*)
-               (cmp-log "with-dbg-function *dbg-current-function*: %s\n" *dbg-current-function*)
-               (cmp-log "with-dbg-function name: [%s]\n" ,name)
-               (cmp-log "with-dbg-function linkage-name: [%s]\n" ,linkage-name)
+               (cmp-log "with-dbg-function *dbg-compile-unit*: %s%N" *dbg-compile-unit*)
+               (cmp-log "with-dbg-function *dbg-current-function*: %s%N" *dbg-current-function*)
+               (cmp-log "with-dbg-function name: [%s]%N" ,name)
+               (cmp-log "with-dbg-function linkage-name: [%s]%N" ,linkage-name)
                ,@body))
            (progn
              ,@body)))))
@@ -229,7 +229,7 @@
                                                      ,lineno
                                                      ,column
                                                      #| 0  -- not used anymore TODO: Dwarf path discriminator   |# )))
-               (cmp-log "with-dbg-lexical-block\n")
+               (cmp-log "with-dbg-lexical-block%N")
                ,@body))
            (progn
              ,@body)))))
@@ -237,7 +237,7 @@
 (defun dbg-set-current-source-pos (form &optional (lineno *current-form-lineno*))
   (when *dbg-generate-dwarf*
     (setq *dbg-set-current-source-pos* t)
-    (cmp-log "dbg-set-current-source-pos on form: %s\n" form)
+    (cmp-log "dbg-set-current-source-pos on form: %s%N" form)
     #++(multiple-value-bind (source-dir source-file filepos line-number column)
         (walk-form-for-source-info form)
       #+(or)(warn "Dwarf metadata is not currently being generated - the llvm-sys:set-current-debug-location-to-line-column-scope call is disabled")
@@ -271,7 +271,7 @@
   "Store the metadata node for the current source file info")
 
 (defun dbg-set-current-line ()
-  (bformat t "DEBUG - line/column = %d/%d\n" 1 2))
+  (bformat t "DEBUG - line/column = %d/%d%N" 1 2))
 
 (defmacro dbg-set-current-debug-location-here ()
 #||

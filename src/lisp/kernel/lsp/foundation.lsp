@@ -343,7 +343,7 @@ the corresponding VAR.  Returns NIL."
            t)
 
 (defun warn (x &rest args)
-  (core:bformat t "WARN: %s %s\n" x args))
+  (core:bformat t "WARN: %s %s%N" x args))
 
 
 (defun class-name (x)

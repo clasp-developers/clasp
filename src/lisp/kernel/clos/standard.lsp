@@ -123,7 +123,7 @@
 	   ))
     (dbg-standard "Done allocate-raw-instance unbound x ->~a~%" (eq (core:unbound) x))
     (si::instance-sig-set x)
-    (mlog "In allocate-instance  x -> %s\n" x)
+    (mlog "In allocate-instance  x -> %s%N" x)
     #+mlog(or x (error "allocate-raw-xxxx returned nil  (core:subclassp class *the-class-class*) -> ~a" (core:subclassp class *the-class-class*)))
     x))
 
@@ -500,8 +500,8 @@ because it contains a reference to the undefined class~%  ~A"
 (defmethod ensure-class-using-class ((class class) name &rest rest
 				     &key direct-slots direct-default-initargs)
   (declare (ignore direct-default-initargs direct-slots))
-  (clos::gf-log "In ensure-class-using-class (class class) \n")
-  (clos::gf-log "     name -> %s\n" name)
+  (clos::gf-log "In ensure-class-using-class (class class) %N")
+  (clos::gf-log "     name -> %s%N" name)
   (multiple-value-bind (metaclass direct-superclasses options)
       (apply #'help-ensure-class rest)
     ;;
@@ -520,9 +520,9 @@ because it contains a reference to the undefined class~%  ~A"
     (when name
       (si:create-type-name name)
       (setf (find-class name) class))
-    (clos::gf-log "In ensure-class-using-class (class class)\n")
+    (clos::gf-log "In ensure-class-using-class (class class)%N")
     (clos:invalidate-generic-functions-with-class-selector class)
-    (clos::gf-log "Returning from ensure-class-using-class (class class)\n")
+    (clos::gf-log "Returning from ensure-class-using-class (class class)%N")
     class))
 
 (defun coerce-to-class (class-or-symbol &optional (fail nil))
@@ -620,7 +620,7 @@ because it contains a reference to the undefined class~%  ~A"
 ;;; (defclass standard-object (t) ())
 
 #++(eval-when (:compile-toplevel :load-toplevel :execute)
-  (bformat t "About to compile defmethod describe-object\n")
+  (bformat t "About to compile defmethod describe-object%N")
   (setq core::*debug-flow-control* t)
   (setq core::*watch-dynamic-binding-stack* t)
   (setq core:*echo-repl-read* t))

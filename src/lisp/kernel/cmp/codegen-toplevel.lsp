@@ -22,16 +22,16 @@
   (let ((situations (car rest))
 	(body (cdr rest)))
     (when (or (member 'cl:compile situations) (member :compile-toplevel situations))
-      (cmp-log "Performing eval-when :compile-toplevel side-effects\n")
-      (cmp-log "Evaluating: %s\n" body)
+      (cmp-log "Performing eval-when :compile-toplevel side-effects%N")
+      (cmp-log "Evaluating: %s%N" body)
       (funcall core:*eval-with-env-hook* `(progn ,@body) env)
-      (cmp-log "Done eval-when compile-toplevel side-effects\n"))
+      (cmp-log "Done eval-when compile-toplevel side-effects%N"))
     (when (or (member 'cl:load situations) (member :load-toplevel situations))
-      (cmp-log "Compiling body due to :load-toplevel --> %s\n" body)
+      (cmp-log "Compiling body due to :load-toplevel --> %s%N" body)
       ;; Each subform is a top-level form
       (dolist (subform body)
 	(t1expr subform env))
-      (cmp-log "Done compiling body due to :load-toplevel\n"))))
+      (cmp-log "Done compiling body due to :load-toplevel%N"))))
 
 (defun t1locally (rest env)
   (multiple-value-bind (declares code docstring specials)
@@ -84,7 +84,7 @@
 
 
 (defun t1expr (form &optional env)
-  (cmp-log "t1expr-> %s\n" form)
+  (cmp-log "t1expr-> %s%N" form)
   (push form core:*top-level-form-stack*)
   (unwind-protect
        (let ((head (if (atom form) form (car form))))

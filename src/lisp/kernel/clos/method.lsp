@@ -92,7 +92,7 @@ in the generic function lambda-list to the generic function lambda-list"
 	(parse-specialized-lambda-list specialized-lambda-list)
       (multiple-value-bind (lambda-form declarations documentation)
 	  (make-raw-lambda name lambda-list required-parameters specializers body env qualifiers)
-        (mlog "In defmethod lambda-list %s   lambda-form %s\n" lambda-list lambda-form) 
+        (mlog "In defmethod lambda-list %s   lambda-form %s%N" lambda-list lambda-form) 
 	(let* ((generic-function (ensure-generic-function name))
 	       (method-class (progn
 			       (generic-function-method-class generic-function)))

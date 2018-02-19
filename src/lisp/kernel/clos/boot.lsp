@@ -156,7 +156,7 @@
   `(progn
      ,@(loop for (class . options) in +class-hierarchy+
           for direct-slots = (getf options :direct-slots)
-;;;          do (core:bformat t "boot-hierarchy  class->%s\n" class)
+;;;          do (core:bformat t "boot-hierarchy  class->%s%N" class)
           collect
             (if direct-slots
                 `(apply #'ensure-boot-class ',class
@@ -177,7 +177,7 @@
     (find-class 'funcallable-standard-class nil)))
 #+clasp
 (progn
-  (dbg-boot "About to setq stuff\n")
+  (dbg-boot "About to setq stuff%N")
   (setq +the-t-class+ (find-class 't nil))
   (setq +the-class+ (find-class 'class nil))
   (setq +the-std-class+ (find-class 'std-class nil))
@@ -194,7 +194,7 @@
 ;;
 ;; This is needed for further optimization
 ;;
-(dbg-boot "About to set slot-value for method-combination\n")
+(dbg-boot "About to set slot-value for method-combination%N")
 (setf (slot-value (find-class 'method-combination) 'sealedp) t)
 ;; This is needed so that slot-definition objects are not marked
 ;; obsolete and need to be updated

@@ -235,7 +235,7 @@
 					 calling-conv
                                          &key translate-datum)
   (let ((*translate-datum* (lambda (datum) (funcall translate-datum datum))))
-    (cmp-log "Entered compile-general-lambda-list-code\n")
+    (cmp-log "Entered compile-general-lambda-list-code%N")
     (let* ((arg-idx-alloca (irc-alloca-size_t :label "arg-idx-alloca"))
            true-val)
       (irc-store (irc-size_t 0) arg-idx-alloca)
@@ -339,7 +339,7 @@
   ;; 2) optional arguments are (<lexical location> <lexical location>)
   ;; 3) keyword arguments are (<symbol> <lexical location> <lexical location>)
   ;; This lets us cheap out on parsing, except &rest and &allow-other-keys.
-  (cmp-log "process-cleavir-lambda-list lambda-list -> %s\n" lambda-list)
+  (cmp-log "process-cleavir-lambda-list lambda-list -> %s%N" lambda-list)
   (let (required optional rest-type rest key aok-p key-flag
         (required-count 0) (optional-count 0) (key-count 0))
     (dolist (item lambda-list)
@@ -391,14 +391,14 @@
 ;;;   translate-datum (datum) that translates a datum into an alloca in the current function
 (defun compile-lambda-list-code (lambda-list outputs calling-conv
                                  &key translate-datum)
-  (cmp-log "About to process-cleavir-lambda-list\n")
+  (cmp-log "About to process-cleavir-lambda-list%N")
   (multiple-value-bind (reqargs optargs rest-var key-flag keyargs allow-other-keys unused-auxs varest-p)
       (process-cleavir-lambda-list lambda-list)
-    (cmp-log "About to calling-convention-use-only-registers\n")
-    (cmp-log "    reqargs -> %s\n" reqargs)
-    (cmp-log "    optargs -> %s\n" optargs)
-    (cmp-log "    keyargs -> %s\n" keyargs)
-    (cmp-log "    outputs -> %s\n" outputs)
+    (cmp-log "About to calling-convention-use-only-registers%N")
+    (cmp-log "    reqargs -> %s%N" reqargs)
+    (cmp-log "    optargs -> %s%N" optargs)
+    (cmp-log "    keyargs -> %s%N" keyargs)
+    (cmp-log "    outputs -> %s%N" outputs)
     (if (calling-convention-use-only-registers calling-conv)
         ;; Special cases (foo) (foo x) (foo x y) (foo x y z)  - passed in registers
         (progn
@@ -485,22 +485,22 @@
     ;; Create the register lexicals using allocas
     (let (bindings
           (index -1))
-      (cmp-log "Processing reqs -> %s\n" reqs)
+      (cmp-log "Processing reqs -> %s%N" reqs)
       (dolist (req (cdr reqs))
-        (cmp-log "Add req %s\n" req)
+        (cmp-log "Add req %s%N" req)
         (push (cons req (incf index)) bindings))
-      (cmp-log "Processing opts -> %s\n" opts)
+      (cmp-log "Processing opts -> %s%N" opts)
       (do* ((cur (cdr opts) (cdddr cur))
             (opt (car cur) (car cur))
             (optp (cadr cur) (cadr cur)))
            ((null cur))
-        (cmp-log "Add opt %s %s\n" opt optp)
+        (cmp-log "Add opt %s %s%N" opt optp)
         (push (cons opt (incf index)) bindings)
         (push (cons optp (incf index)) bindings))
-      (cmp-log "Processing rest -> %s\n" rest)
+      (cmp-log "Processing rest -> %s%N" rest)
       (when rest
         (push (cons rest (incf index)) bindings))
-      (cmp-log "Processing keys -> %s\n" keys)
+      (cmp-log "Processing keys -> %s%N" keys)
       (do* ((cur (cdr keys) (cddddr cur))
             (key (third cur) (third cur))
             (keyp (fourth cur) (fourth cur)))
@@ -510,19 +510,19 @@
       (nreverse bindings))))
 
 (defun bclasp-compile-lambda-list-code (cleavir-lambda-list fn-env callconv)
-  (cmp-log "Entered bclasp-compile-lambda-list-code\n")
+  (cmp-log "Entered bclasp-compile-lambda-list-code%N")
   (let* ((output-bindings (bclasp-map-lambda-list-symbols-to-indices cleavir-lambda-list))
          (new-env (irc-new-unbound-value-environment-of-size
                    fn-env
                    :number-of-arguments (length output-bindings)
                    :label "arguments-env")))
     (irc-make-value-frame-set-parent new-env (length output-bindings) fn-env)
-    (cmp-log "output-bindings: %s\n" output-bindings)
+    (cmp-log "output-bindings: %s%N" output-bindings)
     (mapc (lambda (ob)
-            (cmp-log "Adding to environment: %s\n" ob)
+            (cmp-log "Adding to environment: %s%N" ob)
             (core:value-environment-define-lexical-binding new-env (car ob) (cdr ob)))
           output-bindings)
-    (cmp-log "register-environment contents -> %s\n" new-env)
+    (cmp-log "register-environment contents -> %s%N" new-env)
     (compile-lambda-list-code
      cleavir-lambda-list
      (mapcar #'car output-bindings)
@@ -532,7 +532,7 @@
                                (symbol (car info))
                                (index (cdr info))
                                (ref (codegen-lexical-var-reference symbol 0 index new-env new-env)))
-;;;(bformat *debug-io* "translate-datum %s -> %s\n" datum ref)
+;;;(bformat *debug-io* "translate-datum %s -> %s%N" datum ref)
                           ref)))
     new-env))
 

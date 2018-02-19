@@ -320,10 +320,10 @@
   (let ((renv (runtime-environment (current-visible-environment env))))
     (if renv
 	(progn
-	  (cmp-log "Returning non-nil renv\n")
+	  (cmp-log "Returning non-nil renv%N")
 	  renv)
 	(let ((nil-renv (compile-reference-to-literal nil))) ;; (irc-intrinsic "activationFrameNil")))
-	  (cmp-log "Returning nil renv: %s\n" nil-renv)
+	  (cmp-log "Returning nil renv: %s%N" nil-renv)
 	  nil-renv))))
 
 (defun irc-make-value-frame (result-af size)
@@ -358,18 +358,18 @@
 
 (defun irc-set-parent (new-renv parent-env)
   (let ((visible-ancestor-environment (current-visible-environment parent-env t)))
-    ;;    (core:bformat *debug-io* "irc-set-parent-of-activation-frame parent-> %s\n" visible-ancestor-environment)
-    ;;    (core:bformat *debug-io* "irc-set-parent-of-activation-frame parent is f-c-e-p -> %s\n" (core:function-container-environment-p visible-ancestor-environment))
+    ;;    (core:bformat *debug-io* "irc-set-parent-of-activation-frame parent-> %s%N" visible-ancestor-environment)
+    ;;    (core:bformat *debug-io* "irc-set-parent-of-activation-frame parent is f-c-e-p -> %s%N" (core:function-container-environment-p visible-ancestor-environment))
     (if (core:function-container-environment-p visible-ancestor-environment)
         (progn
           (error "Only value-frames should directly access the function-container-environment")
           #+(or)(let ((closure (core:function-container-environment-closure visible-ancestor-environment)))
-                  ;;          (core:bformat *debug-io* "setParentOfActivationFrameFromClosure to %s\n" visible-ancestor-environment)
+                  ;;          (core:bformat *debug-io* "setParentOfActivationFrameFromClosure to %s%N" visible-ancestor-environment)
                   (irc-intrinsic "setParentOfActivationFrameFromClosure"
                                  new-renv
                                  closure)))
         (let ((parent-renv2 (irc-renv visible-ancestor-environment)))
-          ;;          (core:bformat *debug-io* "setParentOfActivationFrame to %s\n" visible-ancestor-environment)
+          ;;          (core:bformat *debug-io* "setParentOfActivationFrame to %s%N" visible-ancestor-environment)
           (irc-intrinsic "setParentOfActivationFrame"
                          new-renv
                          (irc-load parent-renv2))))))
@@ -378,10 +378,10 @@
   (let ((renv (runtime-environment (current-visible-environment (get-parent-environment env)))))
     (if renv
 	(progn
-	  (cmp-log "Returning non-nil renv\n")
+	  (cmp-log "Returning non-nil renv%N")
 	  renv)
 	(let ((nil-renv (compile-reference-to-literal nil))) ;; (irc-intrinsic "activationFrameNil")))
-	  (cmp-log "Returning nil renv: %s\n" nil-renv)
+	  (cmp-log "Returning nil renv: %s%N" nil-renv)
 	  nil-renv))))
 
 (defun irc-size_t (num)
@@ -464,20 +464,20 @@
 
 
 (defun irc-do-unwind-environment (env)
-  (cmp-log "irc-do-unwind-environment for: %s\n" env)
+  (cmp-log "irc-do-unwind-environment for: %s%N" env)
   (let ((unwind (local-metadata env :unwind)))
     (dolist (cc unwind)
       (let ((head (car cc)))
 	(cond
 	  ((eq head 'symbolValueRestore)
-	   (cmp-log "popDynamicBinding of %s\n" (cadr cc))
+	   (cmp-log "popDynamicBinding of %s%N" (cadr cc))
 	   (irc-intrinsic "popDynamicBinding" (irc-global-symbol (cadr cc) env)))
 	  (t (error (bformat nil "Unknown cleanup code: %s" cc))))
 	)))
   )
 
 (defun irc-unwind-environment (env)
-  (cmp-log "in irc-unwind-environment with: %s u-p-e?: %s\n" (type-of env) (unwind-protect-environment-p env))
+  (cmp-log "in irc-unwind-environment with: %s u-p-e?: %s%N" (type-of env) (unwind-protect-environment-p env))
   (when (unwind-protect-environment-p env)
     (irc-unwind-unwind-protect-environment env))
   (irc-do-unwind-environment env)
@@ -520,7 +520,7 @@
 (defun irc-basic-block-create (name &optional (function *current-function*))
   "Create a llvm::BasicBlock with (name) in the (function)"
   (let ((bb (llvm-sys:basic-block-create *llvm-context* (bformat nil "%s%s" *block-name-prefix* name) function)))
-    (cmp-log "Created basic block  <*block-name-prefix* = %s>  <name=%s>: bb-> %s\n" *block-name-prefix* name bb)
+    (cmp-log "Created basic block  <*block-name-prefix* = %s>  <name=%s>: bb-> %s%N" *block-name-prefix* name bb)
     bb))
 
 (defun irc-get-insert-block ()
@@ -653,8 +653,8 @@
 
 (defun irc-prev-inst-terminator-inst-p ()
   (let ((cur-block (irc-get-insert-block)))
-    (cmp-log "irc-prev-inst-terminator-inst-p dumping current block:\n")
-    (cmp-log "    cur-block -> %s\n" cur-block)
+    (cmp-log "irc-prev-inst-terminator-inst-p dumping current block:%N")
+    (cmp-log "    cur-block -> %s%N" cur-block)
     (if cur-block
 	(if (= (llvm-sys:basic-block-size cur-block) 0)
 	    nil
@@ -773,7 +773,7 @@
                   (tmv1 (llvm-sys:create-insert-value *irbuilder* tmv0 (jit-constant-uintptr_t 1) '(1) "tmv1")))
              (llvm-sys:create-store *irbuilder* tmv1 destination nil)))
           (t (if (equal (llvm-sys:get-context val-type) (llvm-sys:get-context dest-contained-type))
-                 (error "!!! Mismatch in irc-store between val type ~a and destination contained type ~a\n" val-type dest-contained-type)
+                 (error "!!! Mismatch in irc-store between val type ~a and destination contained type ~a%N" val-type dest-contained-type)
                  (error "!!! Mismatch in irc-store involving the val type ~a and desintation contained type ~a - the type LLVMContexts don't match - so they were defined in different threads!" val-type dest-contained-type)))))))
 
 (defun irc-phi (return-type num-reserved-values &optional (label "phi"))
@@ -842,7 +842,7 @@
       )
      &rest body)
   "Create a new function with {function-name} and {parent-env} - return the function"
-  (cmp-log "Expanding with-new-function name: %s\n" function-name)
+  (cmp-log "Expanding with-new-function name: %s%N" function-name)
   (let ((cleanup-block-gs (gensym "cleanup-block"))
 	(traceid-gs (gensym "traceid"))
 	(irbuilder-alloca (gensym))
@@ -872,7 +872,7 @@
                      (dbg-set-current-source-pos-for-irbuilder ,irbuilder-body *current-form-lineno*)
                      (with-irbuilder (*irbuilder-function-body*)
                        (or *the-module* (error "with-new-function *the-module* is NIL"))
-                       (cmp-log "with-landing-pad around body\n")
+                       (cmp-log "with-landing-pad around body%N")
                        ;; I don't think the with-landing-pad is necessary because with-try provides it
                        #+(or)
                        (with-landing-pad (irc-get-cleanup-landing-pad-block ,fn-env)
@@ -961,7 +961,7 @@ and then the irbuilder-alloca, irbuilder-body."
 #+(or)
 (defun irc-function-cleanup-and-return (env result &key return-void)
   (let ((return-block (irc-basic-block-create "return-block")))
-    (cmp-log "About to irc-br return-block\n")
+    (cmp-log "About to irc-br return-block%N")
     (irc-br return-block)
     (irc-begin-block return-block)
     (irc-cleanup-function-environment env #| invocation-history-frame |# ) ;; Why the hell was this commented out?
@@ -979,13 +979,13 @@ and then the irbuilder-alloca, irbuilder-body."
 ;;	(dbg-pop-invocation-history-stack)
 	(irc-do-unwind-environment env)
 	(let ((cleanup (local-metadata env :cleanup)))
-	  ;;      (cmp-log "Cleaning up env: %s\n" env)
-	  (cmp-log "About to cleanup local-metadata :cleanup --> %s\n" cleanup)
+	  ;;      (cmp-log "Cleaning up env: %s%N" env)
+	  (cmp-log "About to cleanup local-metadata :cleanup --> %s%N" cleanup)
 	  (dolist (cc cleanup)
 	    (let ((h (car cc)))
 	      (cond
 		((functionp h) (funcall h (cadr cc)))
-		((null h) (bformat t "Cleanup code of NIL!!!!!\n"))
+		((null h) (bformat t "Cleanup code of NIL!!!!!%N"))
 		((eq h 'destructTsp) (irc-dtor "destructTsp" (cadr cc)))
 		((eq h 'destructTmv) (irc-dtor "destructTmv" (cadr cc)))
 		((eq h 'destructAFsp) (irc-dtor "destructAFsp" (cadr cc)))
@@ -1001,7 +1001,7 @@ and then the irbuilder-alloca, irbuilder-body."
   (llvm-sys:create-bit-cast *irbuilder* from totype label))
 
 (defun irc-irbuilder-status (&optional (irbuilder *irbuilder*) (label "current *irbuilder*"))
-    (bformat t "%s -> %s\n" label irbuilder))
+    (bformat t "%s -> %s%N" label irbuilder))
 
 (defun irc-constant-string-ptr (global-string-var)
   (let ((ptr (llvm-sys:create-geparray *irbuilder* global-string-var (list (cmp:jit-constant-i32 0) (cmp:jit-constant-i32 0)) "ptr")))
@@ -1057,9 +1057,9 @@ Within the _irbuilder_ dynamic environment...
 (defmacro with-irbuilder ((irbuilder) &rest code)
   "Set *irbuilder* to the given IRBuilder"
   `(let ((*irbuilder* ,irbuilder))
-     (cmp-log "Switching to irbuilder --> %s\n" (bformat nil "%s" ,irbuilder))
+     (cmp-log "Switching to irbuilder --> %s%N" (bformat nil "%s" ,irbuilder))
      (multiple-value-prog1 (progn ,@code)
-       (cmp-log "Leaving irbuilder --> %s\n" (bformat nil "%s" ,irbuilder)))))
+       (cmp-log "Leaving irbuilder --> %s%N" (bformat nil "%s" ,irbuilder)))))
 
 
 (defun irc-alloca-tmv (env &key (irbuilder *irbuilder-function-alloca*) (label ""))
@@ -1079,14 +1079,14 @@ Within the _irbuilder_ dynamic environment...
     :alloca (llvm-sys:create-alloca *irbuilder* %t*% (jit-constant-i32 1) label)))
 
 (defun irc-alloca-af* (env &key (irbuilder *irbuilder-function-alloca*) (label ""))
-  (cmp-log "irc-alloca-af* label: %s for %s\n" label irbuilder)
+  (cmp-log "irc-alloca-af* label: %s for %s%N" label irbuilder)
   (with-alloca-insert-point env irbuilder
     :alloca (llvm-sys::create-alloca *irbuilder* %af*% (jit-constant-i32 1) label)
     :init (lambda (a) );;(irc-intrinsic "newAFsp" a))
     :cleanup (lambda (a)))); (irc-dtor "destructAFsp" a))))
 
 (defun irc-alloca-af*-value-frame-of-size (env size &key (irbuilder *irbuilder-function-alloca*) (label ""))
-  (cmp-log "irc-alloca-af*-value-frame-of-size label: %s for %s\n" label irbuilder)
+  (cmp-log "irc-alloca-af*-value-frame-of-size label: %s for %s%N" label irbuilder)
   (with-alloca-insert-point env irbuilder
     :alloca (llvm-sys::create-alloca *irbuilder* %af*% (jit-constant-i32 1) label)
     :init (lambda (a) ); (irc-intrinsic "newAFsp" a))
@@ -1261,7 +1261,7 @@ Write T_O* pointers into the current multiple-values array starting at the (offs
 (defun throw-if-mismatched-arguments (fn-name args)
   (let* ((info (gethash fn-name (get-primitives)))
          (_ (unless info
-              (core:bformat *debug-io* "Unknown primitive %s\n" fn-name)
+              (core:bformat *debug-io* "Unknown primitive %s%N" fn-name)
               (error "Unknown primitive ~a" fn-name)))
          (return-ty (primitive-return-type info))
          (required-args-ty (primitive-argument-types info))
@@ -1270,7 +1270,7 @@ Write T_O* pointers into the current multiple-values array starting at the (offs
                                          (if (llvm-sys:valid x)
                                              (llvm-sys:get-type x)
                                              (progn
-                                               (core:bformat *debug-io* "Invalid (NULL pointer value about to be passed to intrinsic function\n")
+                                               (core:bformat *debug-io* "Invalid (NULL pointer value about to be passed to intrinsic function%N")
                                                (error "Invalid (NULL pointer) value ~a about to be passed to intrinsic function ~a" x fn-name)))
                                          (core:class-name-as-string x)))
                                  args))
@@ -1282,7 +1282,7 @@ Write T_O* pointers into the current multiple-values array starting at the (offs
                fn-name (length required-args-ty) (length passed-args-ty))))
     (mapc #'(lambda (x y z)
               (unless (equal x y)
-                (core:bformat *debug-io* "Constructing call to intrinsic %s - mismatch of arg#%s value[%s], expected type %s - received type %s\n" fn-name i z x y)
+                (core:bformat *debug-io* "Constructing call to intrinsic %s - mismatch of arg#%s value[%s], expected type %s - received type %s%N" fn-name i z x y)
                 (error "Constructing call to intrinsic ~a - mismatch of arg#~a value[~a], expected type ~a - received type ~a" fn-name i z x y))
               (setq i (1+ i)))
           required-args-ty passed-args-ty args)))
@@ -1314,7 +1314,7 @@ Write T_O* pointers into the current multiple-values array starting at the (offs
   (irc-create-invoke function-name args *current-unwind-landing-pad-dest* label))
 
 (defun irc-call-or-invoke (function args &optional (landing-pad *current-unwind-landing-pad-dest*) (label ""))
-                                        ;  (bformat t "irc-call-or-invoke function: %s\n" function)
+                                        ;  (bformat t "irc-call-or-invoke function: %s%N" function)
   (if landing-pad
       (progn
         (irc-create-invoke function args landing-pad label))
@@ -1369,9 +1369,9 @@ Write T_O* pointers into the current multiple-values array starting at the (offs
 (defun irc-verify-module-safe (module)
   (multiple-value-bind (found-errors error-message)
       (progn
-        (cmp-log "About to verify module prior to writing bitcode\n")
+        (cmp-log "About to verify module prior to writing bitcode%N")
         (irc-verify-module *the-module* 'llvm-sys::return-status-action))
-    (cmp-log "Done verify module\n")
+    (cmp-log "Done verify module%N")
     (if found-errors
         (progn
           (format t "Module error: ~a~%" error-message)
@@ -1379,20 +1379,20 @@ Write T_O* pointers into the current multiple-values array starting at the (offs
 
 (defun irc-verify-function (fn &optional (continue t))
   (when *verify-llvm-functions*
-    (cmp-log "At top of irc-verify-function  ---- about to verify-function - if there is a problem it will not return\n")
+    (cmp-log "At top of irc-verify-function  ---- about to verify-function - if there is a problem it will not return%N")
     (multiple-value-bind (failed-verify error-msg)
         (llvm-sys:verify-function fn)
       (if failed-verify
           (progn
-            (bformat t "!!!!!!!!!!! Function in module failed to verify !!!!!!!!!!!!!!!!!!!\n")
-            (bformat t "---------------- dumping function to assist in debugging\n")
+            (bformat t "!!!!!!!!!!! Function in module failed to verify !!!!!!!!!!!!!!!!!!!%N")
+            (bformat t "---------------- dumping function to assist in debugging%N")
             (cmp:dump-function fn)
-            (bformat t "!!!!!!!!!!! ------- see above ------- !!!!!!!!!!!!!!!!!!!\n")
-            (bformat t "llvm::verifyFunction error[%s]\n" error-msg)
+            (bformat t "!!!!!!!!!!! ------- see above ------- !!!!!!!!!!!!!!!!!!!%N")
+            (bformat t "llvm::verifyFunction error[%s]%N" error-msg)
             (if continue
                 (break "Error when trying to verify-function")
                 (error "Failed function verify")))
-          (cmp-log "--------------  Function verified OK!!!!!!!\n")))))
+          (cmp-log "--------------  Function verified OK!!!!!!!%N")))))
 
 (defun declare-function-in-module (module dispatch-name primitive-info)
   (let ((return-ty (primitive-return-type primitive-info))
@@ -1412,7 +1412,7 @@ Write T_O* pointers into the current multiple-values array starting at the (offs
                                              dispatch-name
                                              module
                                              :function-attributes fnattrs)))
-      #+(or)(bformat t "Created function: %s arg-ty: %s\n" function argument-types)
+      #+(or)(bformat t "Created function: %s arg-ty: %s%N" function argument-types)
       (when return-attributes
         (dolist (attribute return-attributes)
           (llvm-sys:add-return-attr function attribute)))
@@ -1425,13 +1425,13 @@ Write T_O* pointers into the current multiple-values array starting at the (offs
 
 (defun get-or-declare-function-or-error (module name)
   (let ((info (gethash name (get-primitives))))
-    #++(bformat t "   --> %s\n" info)
+    #++(bformat t "   --> %s%N" info)
     (unless info (error "Could not find function ~a in *primitives*" name))
     (let ((dispatch-name name))
       (let ((func (llvm-sys:get-function module dispatch-name)))
         (unless func
           (setf func (declare-function-in-module module dispatch-name info)))
-        #++(bformat t "     FUNCTION -> %s\n" func)
+        #++(bformat t "     FUNCTION -> %s%N" func)
         (values func info)))))
 
 (defun irc-global-symbol (sym env)

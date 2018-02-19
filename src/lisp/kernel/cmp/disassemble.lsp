@@ -30,10 +30,10 @@
 (defun disassemble-assembly-for-llvm-functions (llvm-function-list)
   "Given a list of llvm::Functions that were JITted - generate disassembly for them.
 Return T if disassembly was achieved - otherwise NIL"
-  (bformat t "There are %d associated functions - disassembling them.\n" (length llvm-function-list))
+  (bformat t "There are %d associated functions - disassembling them.%N" (length llvm-function-list))
   (let ((success nil))
     (dolist (llvm-func llvm-function-list)
-      (bformat t "\n%s-----\n" (llvm-sys:get-name llvm-func))
+      (bformat t "%N%s-----%N" (llvm-sys:get-name llvm-func))
       (let* ((llvm-function-name (bformat nil "_%s" (llvm-sys:get-name llvm-func)))
              (symbol-info (gethash llvm-function-name *jit-saved-symbol-info*)))
         (if symbol-info
@@ -45,7 +45,7 @@ Return T if disassembly was achieved - otherwise NIL"
                                                  :end-byte-offset bytes)
               (setf success t))
             (progn
-              (bformat t "Could not disassemble associated function\n")))))
+              (bformat t "Could not disassemble associated function%N")))))
     success))
 
 (defun disassemble-assembly (module-or-func &optional (start-instruction-index 0) (num-instructions 16))
@@ -100,7 +100,7 @@ Return T if disassembly was achieved - otherwise NIL"
          (return-from disassemble nil))
 	(t (error "Unknown argument ~a passed to disassemble" desig)))
     (setq name (if name name 'lambda))
-    (bformat t "Disassembling function: %s\n" (repr func-or-lambda))
+    (bformat t "Disassembling function: %s%N" (repr func-or-lambda))
     (cond
       ((functionp func-or-lambda)
        (let ((fn func-or-lambda))
@@ -109,7 +109,7 @@ Return T if disassembly was achieved - otherwise NIL"
             (if (eq type :asm)
                 (progn
                   (disassemble-assembly fn start-instruction-index num-instructions)
-                  (bformat t "Done\n"))
+                  (bformat t "Done%N"))
                 (llvm-sys:disassemble* fn)))
 	   ((interpreted-function-p fn)
 	    (format t "This is a interpreted function - compile it first~%"))

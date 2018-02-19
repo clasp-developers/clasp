@@ -353,11 +353,11 @@ Boehm and MPS use a single pointer"
       (progn
         (let* ((vaslist                    (calling-convention-configuration-vaslist* setup))
                #++(_dbg                        (progn
-                                                 (llvm-print "vaslist\n")
+                                                 (llvm-print "vaslist%N")
                                                  (irc-intrinsic "debugPointer" (irc-bit-cast vaslist %i8*%))))
                (register-save-area*         (calling-convention-configuration-register-save-area* setup))
                #++(_dbg                        (progn
-                                                 (llvm-print "register-save-area\n")
+                                                 (llvm-print "register-save-area%N")
                                                  (irc-intrinsic "debugPointer" (irc-bit-cast register-save-area* %i8*%))))
                (vaslist-addr-uint           (irc-ptr-to-int vaslist %uintptr_t% "vaslist-tagged-uint"))
                (va-list-addr                (irc-add vaslist-addr-uint (jit-constant-uintptr_t +vaslist-valist-offset+) "va-list-addr"))
@@ -377,7 +377,7 @@ Boehm and MPS use a single pointer"
                ;; va-start is done in caller
                #+(or)(_                           (calling-convention-args.va-start cc))
                #++(_dbg                        (progn
-                                                 (llvm-print "After calling-convention-args.va-start\n")
+                                                 (llvm-print "After calling-convention-args.va-start%N")
                                                  (irc-intrinsic "debug_va_list" va-list*))))
           cc))))
 
@@ -637,7 +637,7 @@ and initialize it with an array consisting of one function pointer."
     (typeid-core-unwind      "_ZTIN4core6UnwindE")
     ))
 
-;;#+debug-mps (bformat t "cmp::*exceptions* --> %s\n" *exceptions*)
+;;#+debug-mps (bformat t "cmp::*exceptions* --> %s%N" *exceptions*)
 
 
 (defvar *exception-types-hash-table* (make-hash-table :test #'eq)
@@ -757,7 +757,7 @@ It has appending linkage.")
                               "-" name-suffix)
                        :type "ll"
                        :defaults *compile-file-output-pathname*)))
-    (cmp-log "Dumping module to %s\n" output-path)
+    (cmp-log "Dumping module to %s%N" output-path)
     (ensure-directories-exist output-path)
     output-path))
 (defun compile-file-quick-module-dump (module file-name-modifier)
@@ -803,7 +803,7 @@ they are dumped into /tmp"
   "If called under COMPILE-FILE the modules are dumped into the
 same directory as the COMPILE-FILE output.  If called under COMPILE
 they are dumped into /tmp"
-  (cmp-log "About to dump module - %s\n" name-modifier)
+  (cmp-log "About to dump module - %s%N" name-modifier)
   (if *compile-file-output-pathname*
       (compile-file-quick-module-dump module name-modifier)
       (compile-quick-module-dump module name-modifier)))

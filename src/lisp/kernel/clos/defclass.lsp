@@ -81,7 +81,7 @@
     (and options `(list ,@options))))
   
 (defun load-defclass (name superclasses slot-definitions options)
-  (clos::gf-log "In load-defclass name -> %s\n" name)
+  (clos::gf-log "In load-defclass name -> %s%N" name)
   (apply #'ensure-class name :direct-superclasses superclasses
                              :direct-slots slot-definitions options))
 

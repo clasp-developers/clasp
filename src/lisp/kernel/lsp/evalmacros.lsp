@@ -30,7 +30,7 @@ last FORM.  If not, simply returns NIL."
       (sys::expand-defmacro name vl body)
     (setq function `(function ,function))
     (when *dump-defmacro-definitions*
-      (bformat t "ADVANCED evalmacros.lsp defmacro %s --> %s\n" name function)
+      (bformat t "ADVANCED evalmacros.lsp defmacro %s --> %s%N" name function)
       #++(setq function `(si::bc-disassemble ,function)))
     `(eval-when (:compile-toplevel :load-toplevel :execute)
        ,(ext:register-with-pde whole `(si::fset ',name ,function
@@ -98,15 +98,15 @@ VARIABLE doc and can be retrieved by (DOCUMENTATION 'SYMBOL 'VARIABLE)."
                   (declare (core:lambda-name ,name core:current-source-file ,filepos ,lineno ,column) ,@decls) 
                   ,@doclist
                   (block ,(si::function-block-name name) ,@body))))
-      ;;(bformat t "macro expansion of defun current-source-location -> %s\n" current-source-location)
-      ;;(bformat t "DEFUN global-function --> %s\n" global-function )
+      ;;(bformat t "macro expansion of defun current-source-location -> %s%N" current-source-location)
+      ;;(bformat t "DEFUN global-function --> %s%N" global-function )
       `(progn
          (eval-when (:compile-toplevel)
            ;; this function won't be ready for a while, but it's okay as there's no
            ;; compiler to run :compile-toplevel forms anyway.
            (cmp::register-global-function-def 'defun ',name))
          (let ((,fn ,global-function))
-           ;;(bformat t "Performing DEFUN   core:*current-source-pos-info* -> %s\n" core:*current-source-pos-info*)
+           ;;(bformat t "Performing DEFUN   core:*current-source-pos-info* -> %s%N" core:*current-source-pos-info*)
            ,(ext:register-with-pde whole `(si::fset ',name ,fn nil t ',vl))
            (core:set-source-info ,fn ',(list 'core:current-source-file filepos lineno column))
            ,@(si::expand-set-documentation name 'function doc-string)

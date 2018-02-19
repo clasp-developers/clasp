@@ -20,7 +20,7 @@
 
 (in-package "SYS")
 
-;;(defmacro fmt-log (&rest args) `(core:bformat t "FMT-LOG: %s\n" (list ,@args)))
+;;(defmacro fmt-log (&rest args) `(core:bformat t "FMT-LOG: %s%N" (list ,@args)))
 (defmacro fmt-log (&rest args) nil)
 
 (pushnew :cdr-7 *features*)

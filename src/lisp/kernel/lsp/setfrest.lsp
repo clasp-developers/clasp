@@ -10,12 +10,12 @@
     (dolist (item (reverse values))
       (multiple-value-bind (vars vals stores storing-form get-form)
 	  (get-setf-expansion item env)
-#|	(co:log "item = %s\n" item)
-	(co:log "vars = %s\n" vars)
-	(co:log "vals = %s\n" vals)
-	(co:log "stores = %s\n" stores)
-	(co:log "storing-form = %s\n" storing-form)
-	(co:log "get-form = %s\n" get-form)
+#|	(co:log "item = %s%N" item)
+	(co:log "vars = %s%N" vars)
+	(co:log "vals = %s%N" vals)
+	(co:log "stores = %s%N" stores)
+	(co:log "storing-form = %s%N" storing-form)
+	(co:log "get-form = %s%N" get-form)
 |#
 	;; If a place has more than one store variable, the other ones
 	;; are set to nil.

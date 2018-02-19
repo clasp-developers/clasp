@@ -176,7 +176,7 @@ and the pathname of the source file - this will also be used as the module initi
             (return nil)
             (progn
               (when *compile-print* (describe-form form))
-              (when *debug-compile-file* (bformat t "compile-file: cf%d -> %s\n" (incf *debug-compile-file-counter*) form))
+              (when *debug-compile-file* (bformat t "compile-file: cf%d -> %s%N" (incf *debug-compile-file-counter*) form))
               (t1expr form)))))))
 
 (defun loop-read-and-compile-file-forms (source-sin environment compile-file-hook)
@@ -228,9 +228,9 @@ Compile a lisp source file into an LLVM module."
       (when source-debug-namestring
 	(core:source-file-info (namestring input-pathname) source-debug-namestring source-debug-offset nil))
       (when *compile-verbose*
-	(bformat t "; Compiling file: %s\n" (namestring input-pathname)))
+	(bformat t "; Compiling file: %s%N" (namestring input-pathname)))
       (with-one-source-database
-	  (cmp-log "About to start with-compilation-unit\n")
+	  (cmp-log "About to start with-compilation-unit%N")
         (with-compilation-unit ()
           (let* ((*compile-file-pathname* (pathname (merge-pathnames given-input-pathname)))
                  (*compile-file-truename* (translate-logical-pathname *compile-file-pathname*)))
@@ -254,7 +254,7 @@ Compile a lisp source file into an LLVM module."
                   (with-literal-table
                       (loop-read-and-compile-file-forms source-sin environment compile-file-hook))
                   (make-boot-function-global-variable *the-module* run-all-function)))
-              (cmp-log "About to verify the module\n")
+              (cmp-log "About to verify the module%N")
               (cmp-log-dump-module *the-module*)
               (irc-verify-module-safe *the-module*)
               (quick-module-dump *the-module* "preoptimize"))
@@ -304,7 +304,7 @@ Compile a lisp source file into an LLVM module."
                                            :optimize-level optimize-level)))
       (cond
         ((eq output-type :object)
-         (when verbose (bformat t "Writing object to %s\n" (core:coerce-to-filename output-path)))
+         (when verbose (bformat t "Writing object to %s%N" (core:coerce-to-filename output-path)))
          (ensure-directories-exist output-path)
          ;; Save the bitcode
          (write-bitcode module (core:coerce-to-filename (cfp-output-file-default output-path :bitcode)))
@@ -314,22 +314,22 @@ Compile a lisp source file into an LLVM module."
                                 (t 'llvm-sys:reloc-model-undefined))))
              (generate-obj-asm module fout :file-type 'llvm-sys:code-gen-file-type-object-file :reloc-model reloc-model))))
         ((eq output-type :bitcode)
-         (when verbose (bformat t "Writing bitcode to %s\n" (core:coerce-to-filename output-path)))
+         (when verbose (bformat t "Writing bitcode to %s%N" (core:coerce-to-filename output-path)))
          (ensure-directories-exist output-path)
          (write-bitcode module (core:coerce-to-filename output-path)))
         ((eq output-type :fasl)
          (ensure-directories-exist output-path)
          (let ((temp-bitcode-file (compile-file-pathname input-file :output-file output-file :output-type :bitcode)))
            (ensure-directories-exist temp-bitcode-file)
-           (bformat t "Writing temporary bitcode file to: %s\n" temp-bitcode-file)
+           (bformat t "Writing temporary bitcode file to: %s%N" temp-bitcode-file)
            (write-bitcode module (core:coerce-to-filename temp-bitcode-file))
-           (bformat t "Writing fasl file to: %s\n" output-file)
+           (bformat t "Writing fasl file to: %s%N" output-file)
            (llvm-link output-file
                       :lisp-bitcode-files (list temp-bitcode-file))))
         (t ;; fasl
          (error "Add support to file of type: ~a" output-type)))
       (dolist (c conditions)
-        (bformat t "conditions: %s\n" c))
+        (bformat t "conditions: %s%N" c))
       (llvm-sys:module-delete module)
       (compile-file-results output-path conditions))))
 

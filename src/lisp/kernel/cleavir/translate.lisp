@@ -354,7 +354,7 @@ when this is t a lot of graphs will be generated.")
     (cmp:with-landing-pad (landing-pad-for-cleanup function-info)
       (cmp:compile-lambda-list-code lambda-list outputs callconv
                                     :translate-datum (lambda (datum)
-;;                                                       (core:bformat *debug-io* "datum: %s\n" datum)
+;;                                                       (core:bformat *debug-io* "datum: %s%N" datum)
                                                        (if (typep datum 'cleavir-ir:lexical-location)
                                                            (translate-datum datum)
                                                            datum))))))
@@ -1165,7 +1165,7 @@ COMPILE-FILE will use the default *clasp-env*."
                  (let ((ast-pathname (make-pathname :name (format nil "ast~a" (incf *debug-log-index*))
                                                     :type "dot" :defaults (pathname *debug-log*))))
                    (cleavir-ast-graphviz:draw-ast ast ast-pathname)
-                   (core:bformat *debug-io* "Just dumped the ast to %s\n" ast-pathname)
+                   (core:bformat *debug-io* "Just dumped the ast to %s%N" ast-pathname)
                    #+(or)(multiple-value-bind (instruction-ids datum-ids)
                              (cleavir-ir-gml:draw-flowchart initial-instruction (namestring ast-pathname)))
                    (format *debug-log* "Wrote ast to: ~a~%" (namestring ast-pathname))))
@@ -1256,7 +1256,7 @@ that llvm function. This works like compile-lambda-function in bclasp."
       (multiple-value-bind (fn lambda-name ordered-raw-constants-list constants-table startup-fn shutdown-fn)
           (cclasp-compile-to-module-with-run-time-table (cst:cst-from-expression form) env pathname :linkage linkage)
         (or fn (error "There was no function returned by compile-lambda-function"))
-        (cmp:cmp-log "fn --> %s\n" fn)
+        (cmp:cmp-log "fn --> %s%N" fn)
         ;;(cmp:cmp-log-dump-module cmp:*the-module*)
         (cmp:quick-module-dump cmp:*the-module* "cclasp-compile-module-pre-optimize")
         (let* ((setup-function (cmp:jit-add-module-return-function cmp:*the-module* fn startup-fn shutdown-fn ordered-raw-constants-list)))
@@ -1303,7 +1303,7 @@ that llvm function. This works like compile-lambda-function in bclasp."
             (setf cmp:*current-form-lineno* (core:source-file-pos-lineno pos)))))
       ;; FIXME: if :environment is provided we should probably use a different read somehow
       (let ((cst-form (funcall read-function source-sin nil eof-value)))
-        (when cmp:*debug-compile-file* (bformat t "compile-file: cf%d -> %s\n" (incf cmp:*debug-compile-file-counter*) cst-form))
+        (when cmp:*debug-compile-file* (bformat t "compile-file: cf%d -> %s%N" (incf cmp:*debug-compile-file-counter*) cst-form))
         (if (eq cst-form eof-value)
             (return nil)
             (progn
@@ -1341,7 +1341,7 @@ that llvm function. This works like compile-lambda-function in bclasp."
 
 (defmacro open-debug-log (log-file &key (debug-compile-file t) debug-compile)
   `(eval-when (:compile-toplevel :execute)
-     (core:bformat t "Turning on compiler debug logging\n")
+     (core:bformat t "Turning on compiler debug logging%N")
      (setq *debug-log* (open (ensure-directories-exist ,log-file) :direction :output))
      (setq *debug-log-on* t)
      (setq cmp::*debug-compiler* t)
@@ -1353,7 +1353,7 @@ that llvm function. This works like compile-lambda-function in bclasp."
 
 (defmacro close-debug-log ()
   `(eval-when (:compile-toplevel :execute)
-     (core:bformat t "Turning off compiler debug logging\n")
+     (core:bformat t "Turning off compiler debug logging%N")
      (setq *debug-log-on* nil)
      (close *debug-log*)
      (setq cmp::*debug-compiler* nil)

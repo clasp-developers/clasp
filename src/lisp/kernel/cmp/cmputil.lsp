@@ -166,8 +166,8 @@
 
 (defun print-compiler-message (c stream)
   (let ((msg (core:bformat nil (compiler-message-format c) (compiler-message-message c))))
-    (bformat stream ";;; %s\n" msg)
-    (bformat stream ";;;     at %s \n" (describe-source-location (compiler-message-source-pos-info c)))))
+    (bformat stream ";;; %s%N" msg)
+    (bformat stream ";;;     at %s %N" (describe-source-location (compiler-message-source-pos-info c)))))
 
 (defmacro with-compiler-env ( (conditions &rest options) &rest body )
   "Initialize the environment to protect nested compilations from each other"
@@ -204,7 +204,7 @@
   (when (boundp '*global-function-defs*)
     (let ((existing (gethash name *global-function-defs*)))
       (if existing
-          (compiler-warning name "The %s %s was previously defined as a %s at %s\n"
+          (compiler-warning name "The %s %s was previously defined as a %s at %s%N"
                             type
                             name
                             (global-function-def-type existing)
@@ -225,7 +225,7 @@
 
 (defun function-info (env func)
   (let ((info (classify-function-lookup env func)))
-;;;    (core:bformat t "function-info: %s   @ %s\n" info (describe-source-location (ext:current-source-location)))
+;;;    (core:bformat t "function-info: %s   @ %s%N" info (describe-source-location (ext:current-source-location)))
     (when (eq (car info) 'core::global-function) (register-global-function-ref func))
     info))
 
@@ -237,12 +237,12 @@
         (setq info (cons 'ext:special-var var))
         (unless (core:specialp var)
           (compiler-warning-undefined-global-variable var)))
-;;;    (core:bformat t "variable-info: %s   @ %s\n" info (describe-source-location (ext:current-source-location)))
+;;;    (core:bformat t "variable-info: %s   @ %s%N" info (describe-source-location (ext:current-source-location)))
       info)))
 
 (defun compilation-unit-finished (messages)
   (when messages
-    (bformat t "Compilation-unit finished \n\n")
+    (bformat t "Compilation-unit finished %N%N")
     ;; Add messages for global function references that were never satisfied
     (maphash (lambda (name references)
                (unless (or (fboundp name)

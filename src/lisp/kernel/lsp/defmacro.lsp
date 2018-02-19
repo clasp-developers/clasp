@@ -269,7 +269,7 @@
                 env-part (second env-part))
           (setq env-part (gensym)
                 decls (list* `(declare (ignore ,env-part)) decls)))
-                                        ;(bformat t "About to call multiple-value-call\n")
+                                        ;(bformat t "About to call multiple-value-call%N")
       (multiple-value-bind (ppn whole dl arg-check ignorables)
           (destructure vl context name)
         (values 
@@ -295,7 +295,7 @@
 		  (declare (ignore doc))
 		  (setq function `(function ,function))
 		  (when *dump-defmacro-definitions*
-		    (bformat t "EARLY defmacro.lsp defmacro %s -> %s\n" name function)
+		    (bformat t "EARLY defmacro.lsp defmacro %s -> %s%N" name function)
 		    #++(setq function `(si::bc-disassemble ,function)))
 		  (ext:register-with-pde def `(si::fset ',name ,function
                                                         t ; macro

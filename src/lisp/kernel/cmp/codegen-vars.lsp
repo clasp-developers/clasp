@@ -103,7 +103,7 @@
 
 
 (defun generate-register-alloca (symbol env)
-  (cv-log "Creating a register binding\n")
+  (cv-log "Creating a register binding%N")
   (let* ((func-env (core:find-function-container-environment env))
          (entry-block (llvm-sys:get-entry-block (core:function-container-environment-function func-env)))
          (new-register (llvm-sys:insert-alloca-before-terminator %t*% (string symbol) entry-block)))
@@ -127,7 +127,7 @@
             (index     (lexical-variable-reference-index ref))
             (symbol    (lexical-variable-reference-symbol ref))
             (depth     (lexical-variable-reference-depth ref)))
-        (cv-log "Examining var %s  depth %s  index %s\n  env -> %s\n" symbol depth index start-env)
+        (cv-log "Examining var %s  depth %s  index %s%N  env -> %s%N" symbol depth index start-env)
         (multiple-value-bind (ref-env crosses-function)
             (core:find-value-environment-at-depth start-env depth)
           (setf (lexical-variable-reference-ref-env ref) ref-env)
@@ -140,7 +140,7 @@
     ;;    with the value :closure-allocate or :register-allocate
     (cv-log-do
      (maphash (lambda (k v)
-                (bformat *debug-io* "(ENV@%s %s %s) -> %s\n" (core:environment-address (car k)) (second k) (third k) v))
+                (bformat *debug-io* "(ENV@%s %s %s) -> %s%N" (core:environment-address (car k)) (second k) (third k) v))
               variable-map))
     (maphash (lambda (register-key option)
                (when (eq option :register-allocate)
@@ -151,14 +151,14 @@
              variable-map)
     (cv-log-do
      (maphash (lambda (k v)
-                (bformat *debug-io* "(ENV@%s %s %s) -> %s\n" (core:environment-address (car k)) (second k) (third k) v))
+                (bformat *debug-io* "(ENV@%s %s %s) -> %s%N" (core:environment-address (car k)) (second k) (third k) v))
               variable-map))
     variable-map))
 
 (defun convert-to-register-access (register var-ref)
   (let* ((symbol (lexical-variable-reference-symbol var-ref))
          #+debug-lexical-depth(ensure-frame-unique-id (lexical-variable-reference-ensure-frame-unique-id var-ref)))
-    (cv-log "Converting %s to a register register -> %s\n" symbol register)
+    (cv-log "Converting %s to a register register -> %s%N" symbol register)
     (multiple-value-bind (the-function primitive-info)
         (get-or-declare-function-or-error *the-module* "registerReference")
       (let ((the-function (get-or-declare-function-or-error *the-module* "registerReference"))
@@ -170,11 +170,11 @@
         #+debug-lexical-depth(llvm-sys:replace-call ignore-ensure-frame-unique-id
                                                     (first ensure-frame-unique-id)
                                                     nil)
-        (cv-log "Finished replace call\n")))))
+        (cv-log "Finished replace call%N")))))
 
 (defun convert-instructions-to-use-registers (refs variable-map)
   (dolist (var refs)
-    (cv-log "Considering register rewrite for %s\n" (lexical-variable-reference-symbol var))
+    (cv-log "Considering register rewrite for %s%N" (lexical-variable-reference-symbol var))
     (let* ((index (lexical-variable-reference-index var))
            (symbol (lexical-variable-reference-symbol var))
            (ref-env (lexical-variable-reference-ref-env var))
@@ -201,7 +201,7 @@
                        (llvm-sys:replace-call the-function
                                               instr                                      
                                               (list (jit-constant-i64 closure-size) parent-renv))))
-                   ;;(bformat *debug-io* "function-name -> %s\n" function-name)
+                   ;;(bformat *debug-io* "function-name -> %s%N" function-name)
                    (let ((the-function (get-or-declare-function-or-error *the-module* "invisible_makeValueFrameSetParent"))
                          #+debug-lexical-depth(ignore-set-frame-unique-id (get-or-declare-function-or-error *the-module* "ignore_setFrameUniqueId")))
                      (core:set-invisible new-env t)
@@ -230,12 +230,12 @@
                (new-index (closure-cell-new-index var-info))
                (the-function (get-or-declare-function-or-error *the-module* "lexicalValueReference"))
                (ensure-frame-unique-id-function (get-or-declare-function-or-error *the-module* "ensureFrameUniqueId")))
-          (cv-log "About to replace lexicalValueReference for %s  (old depth/index %d/%d)  (new depth/index %d/%d) to env %s  from env %s !!!!!!\n"
+          (cv-log "About to replace lexicalValueReference for %s  (old depth/index %d/%d)  (new depth/index %d/%d) to env %s  from env %s !!!!!!%N"
                   symbol depth index new-depth new-index (core:environment-address ref-env) start-env)
           #+(or)(progn
-                  (bformat *debug-io* "In rewrite-lexical-variable-references-for-new-depth\n")
-                  (bformat *debug-io* "         rewrite instruction before -> %s\n" instr)
-                  (bformat *debug-io* "         arguments -> %s\n" (llvm-sys:call-or-invoke-get-argument-list instr)))
+                  (bformat *debug-io* "In rewrite-lexical-variable-references-for-new-depth%N")
+                  (bformat *debug-io* "         rewrite instruction before -> %s%N" instr)
+                  (bformat *debug-io* "         arguments -> %s%N" (llvm-sys:call-or-invoke-get-argument-list instr)))
           (let* ((args (llvm-sys:call-or-invoke-get-argument-list instr))
                  (start-renv (car (last args)))
                  (new-instr (llvm-sys:replace-call the-function
@@ -261,7 +261,7 @@
       (let ((new-depth (core:calculate-runtime-visible-environment-depth start-env block-env)))
         (let ((the-function (get-or-declare-function-or-error *the-module* "throwReturnFrom"))
               #+debug-lexical-depth(ensure-frame-unique-id-function (get-or-declare-function-or-error *the-module* "ensureFrameUniqueId")))
-          (cv-log "About to replace call to %s\n" the-function)
+          (cv-log "About to replace call to %s%N" the-function)
           (let* ((args (llvm-sys:call-or-invoke-get-argument-list instr))
                  (start-renv (car (last args))))
             (llvm-sys:replace-call the-function
@@ -277,7 +277,7 @@
                                                           (list (first old-args)
                                                                 (jit-constant-size_t new-depth)
                                                                 (third args)))))
-          (cv-log "Done\n"))))))
+          (cv-log "Done%N"))))))
 
 (defun rewrite-dynamic-go-for-new-depth (instructions)
   (dolist (go instructions)
@@ -289,7 +289,7 @@
       (let ((new-depth (core:calculate-runtime-visible-environment-depth start-env tagbody-env)))
         (let ((the-function (get-or-declare-function-or-error *the-module* "throwDynamicGo"))
               #+debug-lexical-depth(ensure-frame-unique-id-function (get-or-declare-function-or-error *the-module* "ensureFrameUniqueId")))
-          (cv-log "About to replace call to %s\n" the-function)
+          (cv-log "About to replace call to %s%N" the-function)
           (let* ((args (llvm-sys:call-or-invoke-get-argument-list instr))
                  (start-renv (car (last args))))
             (llvm-sys:replace-call the-function
@@ -306,7 +306,7 @@
                                                         (list (first old-args)
                                                               (jit-constant-size_t new-depth)
                                                               (third args)))))
-        (cv-log "Done\n")))))
+        (cv-log "Done%N")))))
 
 (defstruct (track-rewrites (:type vector) :named)
   (total 0)
@@ -347,7 +347,7 @@
                  (setf (track-rewrites-total *block-rewrite-counter*) total-sum)
                  (setf (track-rewrites-ignored *block-rewrite-counter*) ignored-sum)))
           (mp:giveup-lock (track-rewrites-mutex *block-rewrite-counter*)))
-        (cv-log "Done\n")))))
+        (cv-log "Done%N")))))
 
 (defvar *tagbody-rewrite-counter* (make-track-rewrites)
   "Keep track of tagbody special operators that were seen and those that were rewritten to be ignored")
@@ -377,7 +377,7 @@
                  (setf (track-rewrites-total *tagbody-rewrite-counter*) total-sum)
                  (setf (track-rewrites-ignored *tagbody-rewrite-counter*) ignored-sum)))
           (mp:giveup-lock (track-rewrites-mutex *tagbody-rewrite-counter*)))
-        (cv-log "Done\n")))))
+        (cv-log "Done%N")))))
 
 (defun rewrite-lexical-function-references-for-new-depth (lexical-function-references)
   (dolist (funcref lexical-function-references)
@@ -389,7 +389,7 @@
       (let ((new-depth (core:calculate-runtime-visible-environment-depth start-env function-env)))
         (multiple-value-bind (the-function primitive-info)
             (get-or-declare-function-or-error *the-module* "va_lexicalFunction")
-          (cv-log "About to replace call to %s\n" instr)
+          (cv-log "About to replace call to %s%N" instr)
           (let* ((args (llvm-sys:call-or-invoke-get-argument-list instr))
                  (start-renv (car (last args))))
             (llvm-sys:replace-call the-function
@@ -465,31 +465,31 @@
          (when (and ,optimize *activation-frame-optimize*)
            (let ((,variable-map (optimize-value-environments *lexical-variable-references*)))
              (progn
-               (cv-log "optimize-closures ,variable-map \n")
+               (cv-log "optimize-closures ,variable-map %N")
                ;; Identify activation frame/environments that must be closures
                ;; and optimize all other references to use alloca's in the stack frame
                (optimize-closures ,variable-map *make-value-frame-instructions*)
                (progn
                  ;; Rewrite block instructions to ignore those that don't have return-froms
-                 (cv-log "rewrite-blocks-with-no-return-froms \n")
+                 (cv-log "rewrite-blocks-with-no-return-froms %N")
                  (rewrite-blocks-with-no-return-froms *block-frame-info*)
                  ;; Rewrite tagbody environment instructions to ignore those that don't have go's
-                 (cv-log "rewrite-tagbody-with-no-go \n")
+                 (cv-log "rewrite-tagbody-with-no-go %N")
                  (rewrite-tagbody-with-no-go *tagbody-frame-info*)))
              (progn
                ;; Rewrite throwReturnFrom instructions to take into account the newly invisible environments
-               (cv-log "rewrite-return-from-for-new-depth \n")
+               (cv-log "rewrite-return-from-for-new-depth %N")
                (rewrite-return-from-for-new-depth *throw-return-from-instructions*)
                ;; Rewrite lexicalDynamicGo instructions to take into account the newly invisible environments
-               (cv-log "rewrite-dynamic-go-for-new-depth \n")
+               (cv-log "rewrite-dynamic-go-for-new-depth %N")
                (rewrite-dynamic-go-for-new-depth *throw-dynamic-go-instructions*)
                ;; Rewrite lexicalFunction references to take into account the newly invisible environments
-               (cv-log "rewrite-lexical-function-references-for-new-depth \n")
+               (cv-log "rewrite-lexical-function-references-for-new-depth %N")
                (rewrite-lexical-function-references-for-new-depth *lexical-function-references*)
                ;; Rewrite lexical variable references to take into account the newly invisible environments
-               (cv-log "rewrite-lexical-variable-references-for-new-depth \n")
+               (cv-log "rewrite-lexical-variable-references-for-new-depth %N")
                (rewrite-lexical-variable-references-for-new-depth ,variable-map *lexical-variable-references*)
-               (cv-log "convert-instructions-to-use-registers \n")
+               (cv-log "convert-instructions-to-use-registers %N")
                (convert-instructions-to-use-registers *lexical-variable-references* ,variable-map))))))))
 
 ;;
@@ -499,7 +499,7 @@
 
 (defun codegen-special-var-lookup (result sym env)
   "Return IR code that returns the value cell of a special symbol"
-  (cmp-log "About to codegen-special-var-lookup symbol[%s]\n" sym)
+  (cmp-log "About to codegen-special-var-lookup symbol[%s]%N" sym)
   (if (eq sym 'nil)
       (codegen-literal result nil env)
       (let* ((global-symbol (irc-global-symbol sym env))
@@ -544,20 +544,20 @@
 ;;; I need to add more code to access activation frames.
 #+debug-lexical-var-reference-depth
 (eval-when (:compile-toplevel :execute)
-  (cv-log "keeping track of lexical var reference depth - remove this code for production\n")
+  (cv-log "keeping track of lexical var reference depth - remove this code for production%N")
   (defvar *lexical-var-reference-counter* (make-hash-table :test #'eql))
   (defun record-lexical-var-reference-depth (depth)
     (let ((cur (gethash depth *lexical-var-reference-counter* 0)))
       (core:hash-table-setf-gethash *lexical-var-reference-counter* depth (+ cur 1))))
   (defun report-lexical-var-reference-depth ()
-    (cv-log "Lexical-var-reference-depth references\n")
+    (cv-log "Lexical-var-reference-depth references%N")
     (let (results)
       (maphash (lambda (depth count)
                  (push (cons depth count) results))
                *lexical-var-reference-counter*)
       (let ((counts (sort results #'< :key #'car)))
         (dolist (entry counts)
-          (core:bformat t "Depth %d -> %d references\n" (car entry) (cdr entry)))))))
+          (core:bformat t "Depth %d -> %d references%N" (car entry) (cdr entry)))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -602,7 +602,7 @@
 (defun codegen-var-lookup (result sym src-env)
   "Return IR code thsym returns the value of a symbol that is either lexical or special"
   (let ((classified (variable-info src-env sym)))
-    (cmp-log "About to codegen-var-lookup for %s - classified as: %s  env->%s\n" sym classified src-env)
+    (cmp-log "About to codegen-var-lookup for %s - classified as: %s  env->%s%N" sym classified src-env)
     (cond
       ((eq (car classified) 'ext:special-var)
        (codegen-special-var-lookup result sym src-env))
@@ -613,20 +613,20 @@
              (dest-env (fifth classified)))
          (codegen-lexical-var-lookup result symbol depth index src-env dest-env)))
       ((eq (car classified) 'ext:register-var)
-       (cv-log "classified  register-var -> %s\n" classified)
+       (cv-log "classified  register-var -> %s%N" classified)
        (codegen-register-var-lookup result (cdr classified)))
       (t (error "Handle codegen-var-lookup with ~s" classified)))))
 
 (defun codegen-symbol-value (result symbol env)
-  (cmp-log "codegen-symbol-value  symbol -> %s\n" symbol)
+  (cmp-log "codegen-symbol-value  symbol -> %s%N" symbol)
   (if (keywordp symbol)
       (progn
-        (cmp-log "codegen-symbol-value - %s is a keyword\n" symbol)
+        (cmp-log "codegen-symbol-value - %s is a keyword%N" symbol)
         (irc-store (irc-intrinsic "symbolValueRead" (irc-global-symbol symbol env)) result))
       (progn
-        (cmp-log "About to macroexpand\n")
+        (cmp-log "About to macroexpand%N")
         (let ((expanded (macroexpand symbol env)))
-          (cmp-log "codegen-symbol-value - %s is not a keyword\n" symbol)
+          (cmp-log "codegen-symbol-value - %s is not a keyword%N" symbol)
           (if (eq expanded symbol)
               ;; The symbol is unchanged, look up its value
               (codegen-var-lookup result symbol env)
@@ -636,7 +636,7 @@
 	
 (defun compile-save-if-special (env target &key make-unbound)
   (when (eq (car target) 'ext:special-var)
-    (cmp-log "compile-save-if-special - the target: %s is special - so I'm saving it\n" target)
+    (cmp-log "compile-save-if-special - the target: %s is special - so I'm saving it%N" target)
     (let* ((target-symbol (cdr target))
 	   (irc-target (irc-global-symbol target-symbol env)))
       (irc-intrinsic "pushDynamicBinding" irc-target) ; was (irc-load irc-target)
@@ -716,16 +716,16 @@ It then returns (values target-ref target-type target-symbol target-lexical-inde
 If target-type=='special-var then target-lexical-index will be nil.
 You don't want to only write into the target-reference because
 you need to also bind the target in the compile-time environment "
-  (cmp-log "compile-target-reference target[%s]\n" target)
+  (cmp-log "compile-target-reference target[%s]%N" target)
   (cond
     ((eq (car target) 'ext:special-var)
-     (cmp-log "compiling as a special-var\n")
+     (cmp-log "compiling as a special-var%N")
      (values (irc-intrinsic "symbolValueReference" (irc-global-symbol (cdr target) env))
 	     (car target)		; target-type --> 'special-var
 	     (cdr target)		; target-symbol
 	     ))
     ((eq (car target) 'ext:lexical-var)
-     (cmp-log "compiling as a ext:lexical-var\n")
+     (cmp-log "compiling as a ext:lexical-var%N")
      (values (codegen-lexical-var-reference (second target) 0 #|<-depth|# (cddr target) env env)
 	     (car target)           ; target-type --> 'ext:lexical-var
 	     (cadr target)          ; target-symbol
@@ -737,7 +737,7 @@ you need to also bind the target in the compile-time environment "
   "Define the target within the ValueEnvironment in env.
 If the target is special then define-special-binding.
 If the target is lexical then define-lexical-binding."
-  (cmp-log "define-binding-in-value-environment for target: %s\n" target)
+  (cmp-log "define-binding-in-value-environment for target: %s%N" target)
   (cond
     ((eq (car target) 'ext:special-var)
      (let ((target-symbol (cdr target)))

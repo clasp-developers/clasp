@@ -11,7 +11,7 @@
 
 (defun compile-system (first-file last-file &key recompile reload (system *cleavir-system*))
 ;;  (if *target-backend* nil (error "*target-backend* is undefined"))
-  (format t "compile-system  from: ~a  to: ~a\n" first-file last-file)
+  (format t "compile-system  from: ~a  to: ~a%N" first-file last-file)
   (let* ((files (core:select-source-files first-file last-file :system system))
 	 (cur files)
          bitcode-files)
@@ -83,7 +83,7 @@ p  (core:pathname-translations "cclasp-boehm" '(("**;*.*" #P"SYS:build;system;cc
                                           (if (member :clos *features*) nil (setq *features* (cons :clos *features*)))
                                           (if (member :cclasp *features*) nil (setq *features* (cons :cclasp *features*)))
                                           (if (member :interactive *features*) 
-                                              (core:bformat t "Starting %s cclasp %s ... loading image... it takes a few seconds\n"
+                                              (core:bformat t "Starting %s cclasp %s ... loading image... it takes a few seconds%N"
                                                             (if (member :use-mps *features*) "MPS" "Boehm" ) (software-version))))
                          :epilogue-form '(progn
                                           (cl:in-package :cl-user)

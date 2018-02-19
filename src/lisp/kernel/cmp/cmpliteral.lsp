@@ -65,7 +65,7 @@
   "Find the highest index and return 1+ that"
   (let ((highest-index -1))
     (dolist (node nodes)
-      #+(or)(bformat t "generate-run-all-code  generating node: %s\n" node)
+      #+(or)(bformat t "generate-run-all-code  generating node: %s%N" node)
       (when (literal-node-creator-p node)
         (setf highest-index (max highest-index (literal-node-creator-index node)))))
     (1+ highest-index)))
@@ -114,7 +114,7 @@
   "Return the next ltv-index. If this is being invoked from COMPILE then
 the value is put into *default-load-time-value-vector* and its index is returned"
   (let ((index *table-index*))
-    #+(or)(bformat t "new-table-index depth %4d - %d\n" *with-ltv-depth* index)
+    #+(or)(bformat t "new-table-index depth %4d - %d%N" *with-ltv-depth* index)
     (incf *table-index*)
     index))
 
@@ -353,7 +353,7 @@ the value is put into *default-load-time-value-vector* and its index is returned
       (t 
        (cmp::with-make-new-run-all (foo)
          (dolist (node nodes)
-           #+(or)(bformat t "generate-run-all-code  generating node: %s\n" node)
+           #+(or)(bformat t "generate-run-all-code  generating node: %s%N" node)
            (cond
              ((literal-node-creator-p node)
               (ensure-creator-llvm-value node))
@@ -525,9 +525,9 @@ and  return the sorted values and the constant-table or (values nil nil)."
        "Put the constants in order they will appear in the table.
 Return the orderered-raw-constants-list and the constants-table GlobalVariable"
        #+(or)(progn
-               (bformat t "run-time-values: vvvvvvv\n")
+               (bformat t "run-time-values: vvvvvvv%N")
                (literal::constant-list-dump run-time-values)
-               (bformat t "Number of run-time-values: %d\n" (length run-time-values)))
+               (bformat t "Number of run-time-values: %d%N" (length run-time-values)))
        (when (> num-elements 0)
          (let* ((ordered-constant-list (sort run-time-values #'< :key #'literal-node-runtime-index))
                 (array-type (llvm-sys:array-type-get %t*% (length ordered-constant-list))))
@@ -620,7 +620,7 @@ Return the orderered-raw-constants-list and the constants-table GlobalVariable"
                                    :function-form form)
               (let* ((given-name (llvm-sys:get-name fn)))
                 ;; Map the function argument names
-                (cmp-log "Creating ltv thunk with name: %s\n" given-name)
+                (cmp-log "Creating ltv thunk with name: %s%N" given-name)
                 (dbg-set-current-debug-location-here)
                 (codegen fn-result form fn-env)
                 (dbg-set-current-debug-location-here)))))
