@@ -94,7 +94,8 @@ namespace core {
   public:
     std::atomic<claspFunction>    entry;
 #ifdef DEBUG_FUNCTION_CALL_COUNTER
-    size_t _TimesCalled;
+#error "Create an API to keep track of function calls using virtual functions"
+//    size_t _TimesCalled;  Do not use tho
 #endif
   public:
     virtual const char *describe() const { return "Function - subclass must implement describe()"; };
@@ -203,8 +204,8 @@ namespace core {
     LISP_CLASS(core,CorePkg,FunctionClosure_O,"FunctionClosure",Closure_O);
   public:
   //  T_sp _SourcePosInfo;
-    Symbol_sp kind;
     T_sp _cleavir_ast;
+    Symbol_sp kind;
     Fixnum _sourceFileInfoHandle;
     Fixnum _filePos;
     Fixnum _lineno;
