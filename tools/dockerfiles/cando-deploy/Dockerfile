@@ -88,7 +88,7 @@ RUN clasp -l "/home/app/quicklisp/setup.lisp" \
 
 ADD amber16-data.tar /home/app
 RUN chown -R app:app /home/app/amber16-data
-ENV AMBERHOME=/home/app/amber16-data
+ENV AMBERHOME=/home/app/amber16-data/
 
 RUN cp /home/app/clasp/lib/clasp/extensions/cando/src/data/force-field/ATOMTYPE_SYBYL.DEF /home/app/clasp/lib/clasp/extensions/cando/src/data/force-field/atomtype_sybyl.def
 
