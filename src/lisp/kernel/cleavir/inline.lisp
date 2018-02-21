@@ -555,10 +555,8 @@
         (setf ,arrayname (core::%displacement ,arrayname)))
        (array
         (loop
-          (let ((displacement (core::%displacement ,arrayname))
-                (displaced-index-offset (core::%displaced-index-offset ,arrayname)))
-            (setf underlying-array displacement
-                  ,offsetname (+ ,offsetname displaced-index-offset)))
+          (psetf ,arrayname (core::%displacement ,arrayname)
+                 ,offsetname (+ ,offsetname (core::%displaced-index-offset ,arrayname)))
           (when (typep ,arrayname '(simple-array * (*))) (return)))))
      ,@body))
 
