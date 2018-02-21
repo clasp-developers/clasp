@@ -80,18 +80,25 @@ def grovel(bld):
 
     
 def update_submodules(cfg):
-    os.system("echo This is where I get submodules")
-    sicl_commit = "a080c75b0aa17a939b09cb378514cfee7a72a4c0"
-    os.system("./tools/fetch-revision.sh https://github.com/Bike/SICL.git src/lisp/kernel/contrib/sicl %s" % sicl_commit)
-    os.system("git submodule update --init src/lisp/kernel/contrib/Acclimation")
-    os.system("git submodule update --init src/mps")
-    os.system("git submodule update --init src/lisp/modules/asdf")
+    def fetch_git_revision(path, url, revision):
+        ret = os.system("./tools/fetch-git-revision.sh '%s' '%s' '%s'" % (path, url, revision))
+        if ( ret != 0 ):
+            raise Exception("Failed to fetch git url %s" % url)
+
+    print("Updating git submodules")
+    fetch_git_revision("src/lisp/kernel/contrib/sicl",
+                       "https://github.com/Bike/SICL.git",
+                       "a080c75b0aa17a939b09cb378514cfee7a72a4c0")
+    fetch_git_revision("src/lisp/kernel/contrib/Acclimation",
+                       "https://github.com/robert-strandh/Acclimation.git",
+                       "dd15c86b0866fc5d8b474be0da15c58a3c04c45c")
+    fetch_git_revision("src/mps",
+                       "https://github.com/Ravenbrook/mps.git",
+                       "f3d66d06170bae706809f555dcb56acae35e9497")
+    fetch_git_revision("src/lisp/modules/asdf",
+                       "https://github.com/clasp-developers/asdf.git",
+                       "81e4f08d9c1dc95a3446c1782506342a59f70c34")
     os.system("(cd src/lisp/modules/asdf; make)")
-
-def sync_submodules(cfg):
-    os.system("echo This is where I sync submodules")
-    os.system("git submodule sync")
-
 
 # run this from a completely cold system with:
 # ./waf distclean configure
