@@ -1292,7 +1292,7 @@ that llvm function. This works like compile-lambda-function in bclasp."
 
 (defmethod sicl-reader:source-position (stream (client clasp))
   (let ((scope (if (boundp '*current-function-scope-info*)
-                   *current-function-scope-info
+                   *current-function-scope-info*
                    (make-instance 'function-scope
                                   :scope-function-name :unknown-function-name
                                   :source-pos-info (core:input-stream-source-pos-info stream)))))
