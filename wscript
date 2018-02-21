@@ -81,7 +81,7 @@ def grovel(bld):
     
 def update_submodules(cfg):
     os.system("echo This is where I get submodules")
-    sicl_commit = "102e1b0527196b1c7af5c49da817f492ac884f19"
+    sicl_commit = "2ace76606c8e1126b2005db4f4afd812904138c0"
     cst_commit = "c8305d8069e67c0b3f37a2cf6a79bcba501801d8"
     closer_mop_commit = "d4d1c7aa6aba9b4ac8b7bb78ff4902a52126633f"
     alexandria_commit = "e5c54bc30b0887c237bde2827036d17315f88737"
