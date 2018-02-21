@@ -72,32 +72,29 @@ when this is t a lot of graphs will be generated.")
 (defun layout-basic-block (basic-block return-value abi current-function-info)
   (destructuring-bind (first last owner) basic-block
     (cc-dbg-when *debug-log*
-			 (format *debug-log* "- - - -  begin layout-basic-block  owner: ~a~%" (cc-mir:describe-mir owner))
-			 (loop for instruction = first
-			    then (first (cleavir-ir:successors instruction))
-			    until (eq instruction last)
-			    do (format *debug-log* "     ~a~%" (cc-mir:describe-mir instruction))))
+                         (format *debug-log* "- - - -  begin layout-basic-block  owner: ~a~%" (cc-mir:describe-mir owner))
+                         (loop for instruction = first
+                            then (first (cleavir-ir:successors instruction))
+                            until (eq instruction last)
+                            do (format *debug-log* "     ~a~%" (cc-mir:describe-mir instruction))))
     (loop for instruction = first
-       then (first (cleavir-ir:successors instruction))
-       for inputs = (cleavir-ir:inputs instruction)
-       for input-vars = (mapcar #'translate-datum inputs)
-       for outputs = (cleavir-ir:outputs instruction)
-       for output-vars = (mapcar #'translate-datum outputs)
-       until (eq instruction last)
-#||       do (cc-dbg-when *debug-log*
-		       (format *debug-log* "     ~a~%" (cc-mir:describe-mir instruction)))
-||#
-       do (translate-simple-instruction
-           instruction return-value input-vars output-vars abi current-function-info))
+            then (first (cleavir-ir:successors instruction))
+          for inputs = (cleavir-ir:inputs instruction)
+          for input-vars = (mapcar #'translate-datum inputs)
+          for outputs = (cleavir-ir:outputs instruction)
+          for output-vars = (mapcar #'translate-datum outputs)
+          until (eq instruction last)
+          do (translate-simple-instruction
+              instruction return-value input-vars output-vars abi current-function-info))
     (let* ((inputs (cleavir-ir:inputs last))
-	   (input-vars (mapcar #'translate-datum inputs))
-	   (outputs (cleavir-ir:outputs last))
-	   (output-vars (mapcar #'translate-datum outputs))
-	   (successors (cleavir-ir:successors last))
-	   (successor-tags (loop for successor in successors
-			      collect (gethash successor *tags*))))
+           (input-vars (mapcar #'translate-datum inputs))
+           (outputs (cleavir-ir:outputs last))
+           (output-vars (mapcar #'translate-datum outputs))
+           (successors (cleavir-ir:successors last))
+           (successor-tags (loop for successor in successors
+                              collect (gethash successor *tags*))))
       (cc-dbg-when *debug-log*
-		   (format *debug-log* "     ~a~%" (cc-mir:describe-mir last)))
+                   (format *debug-log* "     ~a~%" (cc-mir:describe-mir last)))
       (cond ((= (length successors) 1)
              (translate-simple-instruction
               last return-value input-vars output-vars abi current-function-info)
@@ -109,7 +106,7 @@ when this is t a lot of graphs will be generated.")
             (t (translate-branch-instruction
                 last return-value input-vars output-vars successor-tags abi current-function-info)))
       (cc-dbg-when *debug-log*
-		   #+stealth-gids(format *debug-log* "- - - -  END layout-basic-block  owner: ~a:~a   -->  ~a~%" (cleavir-ir-gml::label owner) (clasp-cleavir:instruction-gid owner) basic-block)
+                   #+stealth-gids(format *debug-log* "- - - -  END layout-basic-block  owner: ~a:~a   -->  ~a~%" (cleavir-ir-gml::label owner) (clasp-cleavir:instruction-gid owner) basic-block)
                    #-stealth-gids(format *debug-log* "- - - -  END layout-basic-block  owner: ~a   -->  ~a~%" (cleavir-ir-gml::label owner) basic-block)))))
 
 (defun get-or-create-lambda-name (instr)
@@ -1293,8 +1290,20 @@ that llvm function. This works like compile-lambda-function in bclasp."
           (compiler-time (compile-cst-or-form cst-or-form env))
           (compile-cst-or-form cst-or-form env)))))
 
+(defmethod sicl-reader:source-position (stream (client clasp))
+  (let ((scope (if (boundp '*current-function-scope-info*)
+                   *current-function-scope-info
+                   (make-instance 'function-scope
+                                  :scope-function-name :unknown-function-name
+                                  :source-pos-info (core:input-stream-source-pos-info stream)))))
+    (make-instance 'clasp-cleavir:scoped-source-pos-info
+                   :scope scope
+                   :source-pos-info (core:input-stream-source-pos-info stream))))
+
+(defvar *current-compile-file-source-pos-info* nil)
 (defun cclasp-loop-read-and-compile-file-forms (source-sin environment &key (use-cst *use-cst*))
   (let ((eof-value (gensym))
+        (sicl-reader:*client* *clasp-system*)
         (read-function (if use-cst 'sicl-reader:cst-read 'read)))
     (loop
       (let ((eof (peek-char t source-sin nil eof-value)))
@@ -1302,7 +1311,8 @@ that llvm function. This works like compile-lambda-function in bclasp."
           (let ((pos (core:input-stream-source-pos-info source-sin)))
             (setf cmp:*current-form-lineno* (core:source-file-pos-lineno pos)))))
       ;; FIXME: if :environment is provided we should probably use a different read somehow
-      (let ((cst-form (funcall read-function source-sin nil eof-value)))
+      (let* ((*current-compile-file-source-pos-info* (core:input-stream-source-pos-info source-sin))
+             (cst-form (funcall read-function source-sin nil eof-value)))
         (when cmp:*debug-compile-file* (bformat t "compile-file: cf%d -> %s%N" (incf cmp:*debug-compile-file-counter*) cst-form))
         (if (eq cst-form eof-value)
             (return nil)

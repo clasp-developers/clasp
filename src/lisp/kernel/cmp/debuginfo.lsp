@@ -35,6 +35,10 @@
 (defvar *dbg-current-scope* nil
   "Stores the current enclosing lexical scope for debugging info")
 
+(defvar *llvm-metadata*
+  nil
+  "Stores map of integers to metadata scopes")
+
 
 (defun walk-form-for-source-info (form)
   (let* ((cspi (ext:current-source-location))
@@ -80,30 +84,29 @@
 (defmacro with-dibuilder ((module) &rest body)
   `(if *dbg-generate-dwarf*
        (let ((*the-module-dibuilder* (llvm-sys:make-dibuilder ,module))
-	     (*dibuilder-type-hash-table* (make-hash-table :test #'eq)))
-	 (unwind-protect
-	      (progn ,@body)
-	   (progn
-	     (llvm-sys:finalize *the-module-dibuilder*)
-	     ;; add the flag that defines the Dwarf Version
-	     (llvm-sys:add-module-flag *the-module*
-				       (llvm-sys:mdnode-get *llvm-context*
-							    (list
-							     (llvm-sys:value-as-metadata-get (jit-constant-i32 2))
-							     (llvm-sys:mdstring-get *llvm-context* "Dwarf Version")
-							     (llvm-sys:value-as-metadata-get (jit-constant-i32 +debug-dwarf-version+)))))
-	     (llvm-sys:add-module-flag *the-module*
-				       (llvm-sys:mdnode-get *llvm-context*
-							    (list
-							     (llvm-sys:value-as-metadata-get (jit-constant-i32 2))
-							     (llvm-sys:mdstring-get *llvm-context* "Debug Info Version")
-							     (llvm-sys:value-as-metadata-get (jit-constant-i32 llvm-sys:+debug-metadata-version+))))) ;; Debug Info Version
-	     "This should not be the return value - it should be what is returned in the unwind-protect body"
-	     )))
+             (*llvm-metadata* (make-hash-table :test #'eql))
+             (*dibuilder-type-hash-table* (make-hash-table :test #'eq)))
+         (unwind-protect
+              (progn ,@body)
+           (progn
+             (llvm-sys:finalize *the-module-dibuilder*)
+             ;; add the flag that defines the Dwarf Version
+             (llvm-sys:add-module-flag *the-module*
+                                       (llvm-sys:mdnode-get *llvm-context*
+                                                            (list
+                                                             (llvm-sys:value-as-metadata-get (jit-constant-i32 2))
+                                                             (llvm-sys:mdstring-get *llvm-context* "Dwarf Version")
+                                                             (llvm-sys:value-as-metadata-get (jit-constant-i32 +debug-dwarf-version+)))))
+             (llvm-sys:add-module-flag *the-module*
+                                       (llvm-sys:mdnode-get *llvm-context*
+                                                            (list
+                                                             (llvm-sys:value-as-metadata-get (jit-constant-i32 2))
+                                                             (llvm-sys:mdstring-get *llvm-context* "Debug Info Version")
+                                                             (llvm-sys:value-as-metadata-get (jit-constant-i32 llvm-sys:+debug-metadata-version+))))) ;; Debug Info Version
+             "This should not be the return value - it should be what is returned in the unwind-protect body"
+             )))
        (let ((*the-module-dibuilder* nil))
-	 ,@body))
-  )
-
+         ,@body))) 
 
 
 (defun dbg-filename* (pn)
@@ -254,7 +257,16 @@
     (format t "Check the module~%")
     (break "The debug-info is not set for the current irbuilder")))
 
-(defparameter *llvm-metadata* (make-hash-table))
+(defun dbg-set-source-pos (source-pos)
+  (multiple-value-bind (file-handle file-pos lineno column)
+      (core:source-pos-info-unpack source-pos)
+    (when file-handle
+      (let ((scope (gethash file-handle *llvm-metadata*)))
+        #+(or)(unless scope
+          (setq scope (mdnode-file-descriptor filename pathname))
+          (setf (gethash file-handle *llvm-metadata*) scope))
+        (llvm-sys:set-current-debug-location-to-line-column-scope *irbuilder* lineno column scope)))))
+
 (defun dbg-set-current-debug-location (filename pathname lineno column)
   (let* ((scope-name (bformat nil "%s>>%s" pathname filename))
 	 (scope (gethash scope-name *llvm-metadata*)))

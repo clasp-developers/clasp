@@ -127,7 +127,7 @@ size_t clasp_sourcePosInfo_filepos(SourcePosInfo_sp info) {
 
 CL_LAMBDA(source-pos-info);
 CL_DEFUN Integer_mv core__source_pos_info_unpack(T_sp source_pos_info) {
-  if (source_pos_info.nilp() ) return Values();
+  if (source_pos_info.nilp() ) return Values0<T_O>();
   SourcePosInfo_sp info = gc::As<SourcePosInfo_sp>(source_pos_info);
   return Values(Integer_O::create((gc::Fixnum)info->_FileId),
                 Integer_O::create((gc::Fixnum)info->_Filepos),

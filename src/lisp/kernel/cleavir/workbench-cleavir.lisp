@@ -248,6 +248,27 @@ clasp-cleavir::*use-cst*
 (let ((*package* (find-package :clos)))
   (read-one-file "sys:kernel;clos;hierarchy2.lsp"))
 
+(defun read-one-cst (pn)
+  (with-open-file (fin pn)
+    (sicl-reader:cst-read fin nil :eof)))
+
+(defparameter *cst* (read-one-cst "sys:tests;ta.lsp"))
+(defun describe-source (cst)
+  (let ((*print-pretty* nil))
+    (describe-source-impl cst)))
+
+(defun describe-source-impl (cst &optional (indent 0))
+  (cond
+    ((typep cst 'cst:cons-cst)
+     (when (cst:source cst)
+       (format t "~a -> ~a~%" cst (cst:source cst)))
+     (describe-source-impl (cst:first cst) (+ 2 indent))
+     (describe-source-impl (cst:rest cst) (+ 2 indent)))
+    (t
+     (when (cst:source cst)
+       (format t "~a -> ~a~%" cst (cst:source cst))))))
+
+(describe-source *cst*)
 
 
 

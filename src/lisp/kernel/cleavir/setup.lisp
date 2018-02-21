@@ -8,6 +8,16 @@
 
 (defvar *current-function-entry-basic-block*)
 
+(defvar *current-function-scope-info*)
+(defclass function-scope ()
+  ((scope-function-name :initarg :scope-function-name :accessor scope-function-name)
+   (source-pos-info :initarg :source-pos-info :accessor source-pos-info)))
+
+(defclass scoped-source-pos-info ()
+  ((source-pos-info :initarg :source-pos-info :accessor source-pos-info)
+   (scope :initarg :scope :accessor scope)))
+
+
 ;;; Save top level forms for source tracking
 (defmethod cleavir-generate-ast::convert-form :around (form info env system)
   (let ((core:*top-level-form-stack* (cons form core:*top-level-form-stack*)))
