@@ -7,7 +7,7 @@ revision=$3
 #set -x
 
 gitCloneIt () {
-   git clone --depth 1 "$url" "$path" || exit $?
+   git clone "$url" "$path" || exit $?
 }
 
 waitForYes () {
@@ -36,7 +36,7 @@ fi
 cd "$path" || exit $?
 
 if ! git cat-file -e "$revision"; then
-    git fetch origin $revision: || exit $?
+    git fetch origin || exit $?
 fi
 
 git reset --hard "$revision" || exit $?
