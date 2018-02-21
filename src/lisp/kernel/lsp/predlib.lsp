@@ -551,19 +551,9 @@ Returns T if X belongs to TYPE; NIL otherwise."
             (typep object (apply (get-sysprop tp 'DEFTYPE-DEFINITION) i)))
 	   ((consp i)
 	    (error-type-specifier type))
-           #+clos
 	   ((setq c (find-class type nil))
 	    ;; Follow the inheritance chain
 	    (si::subclassp (class-of object) c))
-	   #-clos
-	   ((get-sysprop tp 'IS-A-STRUCTURE)
-            (when (sys:structurep object)
-	      ;; Follow the chain of structure-include.
-	      (do ((stp (sys:structure-name object)
-			(get-sysprop stp 'STRUCTURE-INCLUDE)))
-		  ((eq tp stp) t)
-		(when (null (get-sysprop stp 'STRUCTURE-INCLUDE))
-		  (return nil)))))
 	   (t
 	    (error-type-specifier type))))))
 
@@ -597,11 +587,6 @@ Returns T if X belongs to TYPE; NIL otherwise."
 		  (declare (class c))
 		  (when (eq (class-name c) class)
 		    (return t)))))))))
-
-#+(and clos ecl-min)
-(defun clos::classp (foo)
-  (declare (ignore foo))
-  nil)
 
 ;;************************************************************
 ;;			NORMALIZE-TYPE

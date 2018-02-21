@@ -59,7 +59,6 @@
 
 (defun do-setf-structure-method (access-function type index)
   (declare (optimize (speed 3) (safety 0)))
-  (put-sysprop access-function 'STRUCTURE-ACCESS (cons type index))
   (do-defsetf access-function
     (cond ((or (eq type 'list) (eq type 'vector))
 	   #'(lambda (newvalue struct)
@@ -324,9 +323,7 @@
   (put-sysprop name 'IS-A-STRUCTURE t)
   (put-sysprop name 'STRUCTURE-SLOT-DESCRIPTIONS slot-descriptions)
   (put-sysprop name 'STRUCTURE-INCLUDE include)
-  (put-sysprop name 'STRUCTURE-PRINT-FUNCTION print-function)
   (put-sysprop name 'STRUCTURE-TYPE type)
-  (put-sysprop name 'STRUCTURE-NAMED named)
   (put-sysprop name 'STRUCTURE-OFFSET offset)
   (put-sysprop name 'STRUCTURE-CONSTRUCTORS constructors)
   #+clos
