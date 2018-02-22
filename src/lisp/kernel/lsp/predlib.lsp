@@ -45,15 +45,16 @@ Builds a new function which accepts any number of arguments but always outputs N
     (error "Symbol ~s is a declaration specifier and cannot be used to name a new type" name)))
 (export 'create-type-name)
 
-(defun do-deftype (name form function)
+(defun type-expander (name)
+  (get-sysprop name 'deftype-definition))
+
+(defun (setf type-expander) (function name)
   (unless (symbolp name)
     (error "~s is not a valid type specifier" name))
   (create-type-name name)
-  (put-sysprop name 'DEFTYPE-FORM form)
-  (put-sysprop name 'DEFTYPE-DEFINITION
-               (if (functionp function) function (constantly function)))
+  (put-sysprop name 'DEFTYPE-DEFINITION function)
   (subtypep-clear-cache)
-  name)
+  function)
 
 
 
@@ -81,25 +82,20 @@ by (documentation 'NAME 'type)."
 	(let ((variable (first l)))
 	  (when (and (symbolp variable)
 		     (not (member variable lambda-list-keywords)))
-	    (cons-setf-car l `(,variable '*))))))
+            (rplaca l `(,variable '*))))))
     (multiple-value-bind (decls lambda-body doc)
 	(process-declarations body t)
+      ;; FIXME: Use FORMAT to produce a default docstring. Maybe.
       (if doc (setq doc (list doc)))
-      (let ((function `(function 
-			#+ecl(LAMBDA-BLOCK ,name ,lambda-list ,@body)
-			#+clasp(lambda ,lambda-list 
-			 (declare (core:lambda-name ,name) ,@decls) 
-			 ,@doc 
-			 (block ,name ,@lambda-body))
-			)))
-	(when (and (null lambda-list) (consp body) (null (rest body)))
-	  (let ((form (first body)))
-	    (when (constantp form env)
-	      (setq function form))))
-	`(eval-when (:compile-toplevel :load-toplevel :execute)
-	   ,@(si::expand-set-documentation name 'type doc)
-	   (do-deftype ',name '(DEFTYPE ,name ,lambda-list ,@body)
-		       ,function))))))
+      `(eval-when (:compile-toplevel :load-toplevel :execute)
+         ,@(si::expand-set-documentation name 'type doc)
+         (funcall #'(setf type-expander)
+                  #'(lambda ,lambda-list
+                      (declare (core:lambda-name ,name) ,@decls)
+                      ,@doc
+                      (block ,name ,@lambda-body))
+                  ',name)
+         ',name))))
 
 
 ;;; Some DEFTYPE definitions.
@@ -319,52 +315,53 @@ and is not adjustable."
 	   (array-has-fill-pointer-p x)
 	   (array-displacement x))))
 
-(eval-when (:execute :load-toplevel :compile-toplevel)
-  (defconstant +known-typep-predicates+
-    '((ARRAY . ARRAYP)
-      (ATOM . ATOM)
-      #-unicode
-      (EXTENDED-CHAR . CONSTANTLY-NIL)
-      (BASE-CHAR . BASE-CHAR-P)
-      (BASE-STRING . BASE-STRING-P)
-      (BIT-VECTOR . BIT-VECTOR-P)
-      (CHARACTER . CHARACTERP)
-      (COMPILED-FUNCTION . COMPILED-FUNCTION-P)
-      (COMPLEX . COMPLEXP)
-      (COMPLEX-ARRAY . COMPLEX-ARRAY-P)
-      (CONS . CONSP)
-      (DOUBLE-FLOAT . CORE:DOUBLE-FLOAT-P)
-      (FLOAT . FLOATP)
-      (FUNCTION . FUNCTIONP)
-      (HASH-TABLE . HASH-TABLE-P)
-      (INTEGER . INTEGERP)
-      (FIXNUM . SI::FIXNUMP)
-      (KEYWORD . KEYWORDP)
-      (LIST . LISTP)
-      (LOGICAL-PATHNAME . LOGICAL-PATHNAME-P)
-      (NIL . CONSTANTLY-NIL)
-      (NULL . NULL)
-      (NUMBER . NUMBERP)
-      (PACKAGE . PACKAGEP)
-      (RANDOM-STATE . RANDOM-STATE-P)
-      (RATIONAL . RATIONALP)
-      (PATHNAME . PATHNAMEP)
-      (READTABLE . READTABLEP)
-      (REAL . REALP)
-      (SIMPLE-ARRAY . SIMPLE-ARRAY-P)
-      (SIMPLE-BIT-VECTOR . SIMPLE-BIT-VECTOR-P)
-      (SIMPLE-STRING . SIMPLE-STRING-P)
-      (SIMPLE-VECTOR . SIMPLE-VECTOR-P)
-      (SINGLE-FLOAT . CORE:SINGLE-FLOAT-P)
-      (STREAM . STREAMP)
-      (STRING . STRINGP)
-      (STRUCTURE . SYS:STRUCTUREP)
-      (SYMBOL . SYMBOLP)
-      (T . CONSTANTLY-T)
-      (VECTOR . VECTORP))))
-
-(dolist (l +known-typep-predicates+)
-  (put-sysprop (car l) 'TYPE-PREDICATE (cdr l)))
+(defun simple-type-predicate (name)
+  ;; For some built in types, returns the name of an indicator function.
+  ;; That is, (typep object name) = (funcall (simple-type-predicate name) object)
+  ;; Otherwise NIL.
+  (case name
+    (ARRAY 'ARRAYP)
+    (ATOM 'ATOM)
+    #-unicode
+    (EXTENDED-CHAR 'CONSTANTLY-NIL)
+    (BASE-CHAR 'BASE-CHAR-P)
+    (BASE-STRING 'BASE-STRING-P)
+    (BIT-VECTOR 'BIT-VECTOR-P)
+    (CHARACTER 'CHARACTERP)
+    (COMPILED-FUNCTION 'COMPILED-FUNCTION-P)
+    (COMPLEX 'COMPLEXP)
+    (COMPLEX-ARRAY 'COMPLEX-ARRAY-P)
+    (CONS 'CONSP)
+    (DOUBLE-FLOAT 'CORE:DOUBLE-FLOAT-P)
+    (FLOAT 'FLOATP)
+    (FUNCTION 'FUNCTIONP)
+    (HASH-TABLE 'HASH-TABLE-P)
+    (INTEGER 'INTEGERP)
+    (FIXNUM 'SI::FIXNUMP)
+    (KEYWORD 'KEYWORDP)
+    (LIST 'LISTP)
+    (LOGICAL-PATHNAME 'LOGICAL-PATHNAME-P)
+    (NIL 'CONSTANTLY-NIL)
+    (NULL 'NULL)
+    (NUMBER 'NUMBERP)
+    (PACKAGE 'PACKAGEP)
+    (RANDOM-STATE 'RANDOM-STATE-P)
+    (RATIONAL 'RATIONALP)
+    (PATHNAME 'PATHNAMEP)
+    (READTABLE 'READTABLEP)
+    (REAL 'REALP)
+    (SIMPLE-ARRAY 'SIMPLE-ARRAY-P)
+    (SIMPLE-BIT-VECTOR 'SIMPLE-BIT-VECTOR-P)
+    (SIMPLE-STRING 'SIMPLE-STRING-P)
+    (SIMPLE-VECTOR 'SIMPLE-VECTOR-P)
+    (SINGLE-FLOAT 'CORE:SINGLE-FLOAT-P)
+    (STREAM 'STREAMP)
+    (STRING 'STRINGP)
+    (STRUCTURE 'SYS:STRUCTUREP)
+    (SYMBOL 'SYMBOLP)
+    ((T) 'CONSTANTLY-T)
+    (VECTOR 'VECTORP)
+    (t nil)))
 
 (defconstant +upgraded-array-element-types+
   '#.(append '(NIL BASE-CHAR #+unicode CHARACTER BIT EXT:BYTE8 EXT:INTEGER8)
@@ -445,14 +442,14 @@ and is not adjustable."
 Returns T if X belongs to TYPE; NIL otherwise."
   (declare (ignore env))
   (cond ((symbolp type)
-	 (let ((f (get-sysprop type 'TYPE-PREDICATE)))
+	 (let ((f (simple-type-predicate type)))
 	   (cond (f (return-from typep (funcall f object)))
 		 ((eq (type-of object) type) (return-from typep t))
 		 (t (setq tp type i nil)))))
 	((consp type)
 	 (setq tp (car type) i (cdr type)))
 	#+clos
-	(#-clasp(sys:instancep type) #+clasp(clos::classp type)
+	((clos::classp type)
 	 (return-from typep (si::subclassp (class-of object) type)))
 	(t
 	 (error-type-specifier type)))
@@ -547,8 +544,8 @@ Returns T if X belongs to TYPE; NIL otherwise."
           (or (endp (cdr i)) (match-dimensions object (second i)))))
     (t
      (cond
-           ((get-sysprop tp 'DEFTYPE-DEFINITION)
-            (typep object (apply (get-sysprop tp 'DEFTYPE-DEFINITION) i)))
+           ((type-expander tp)
+            (typep object (apply (type-expander tp) i)))
 	   ((consp i)
 	    (error-type-specifier type))
 	   ((setq c (find-class type nil))
@@ -569,13 +566,9 @@ Returns T if X belongs to TYPE; NIL otherwise."
            (special clos::*class-precedence-list-ndx*
                     clos::*class-name-ndx*))
   (macrolet ((clos::class-precedence-list (x)
-	       `(si::instance-ref ,x
-                                  #+ecl clos::+class-precedence-list-ndx+
-                                  #+clasp clos::*class-precedence-list-ndx*))
+	       `(si::instance-ref ,x clos::*class-precedence-list-ndx*))
 	     (class-name (x)
-	       `(si::instance-ref ,x
-                                  #+ecl clos::+class-name-ndx+
-                                  #+clasp clos::*class-name-ndx*)))
+	       `(si::instance-ref ,x clos::*class-name-ndx*)))
     (let* ((x-class (class-of object)))
       (declare (class x-class))
       (if (eq x-class class)
@@ -598,16 +591,16 @@ Returns T if X belongs to TYPE; NIL otherwise."
 (defun normalize-type (type &aux tp i fd)
   ;; Loops until the car of type has no DEFTYPE definition.
   (cond ((symbolp type)
-	 (if (setq fd (get-sysprop type 'DEFTYPE-DEFINITION))
-	   (normalize-type (funcall fd))
-	   (values type nil)))
+	 (if (setq fd (type-expander type))
+             (normalize-type (funcall fd))
+             (values type nil)))
 	#+clos
 	((clos::classp type) (values type nil))
 	((atom type)
 	 (error-type-specifier type))
 	((progn
 	   (setq tp (car type) i (cdr type))
-	   (setq fd (get-sysprop tp 'DEFTYPE-DEFINITION)))
+	   (setq fd (type-expander tp)))
 	 (normalize-type (apply fd i)))
 	((and (eq tp 'INTEGER) (consp (cadr i)))
 	 (values tp (list (car i) (1- (caadr i)))))
@@ -615,18 +608,17 @@ Returns T if X belongs to TYPE; NIL otherwise."
 
 (defun expand-deftype (type)
   (cond ((symbolp type)
-	 (let ((fd (get-sysprop type 'DEFTYPE-DEFINITION)))
+	 (let ((fd (type-expander type)))
 	   (if fd
 	       (expand-deftype (funcall fd))
 	       type)))
 	((and (consp type)
 	      (symbolp (first type)))
-	 (let ((fd (get-sysprop (first type) 'DEFTYPE-DEFINITION)))
+	 (let ((fd (type-expander (first type))))
 	   (if fd
 	       (expand-deftype (funcall fd (rest type)))
 	       type)))
-	(t
-	 type)))
+	(t type)))
 
 ;;************************************************************
 ;;			COERCE
@@ -1305,7 +1297,7 @@ if not possible."
 	((eq type 'T) -1)
 	((eq type 'NIL) 0)
         ((symbolp type)
-	 (let ((expander (get-sysprop type 'DEFTYPE-DEFINITION)))
+	 (let ((expander (type-expander type)))
 	   (cond (expander
 		  (canonical-type (funcall expander)))
 		 ((find-built-in-tag type))
@@ -1350,7 +1342,7 @@ if not possible."
 	   ;;(FUNCTION (register-function-type type))
 	   ;;(VALUES (register-values-type type))
 	   (FUNCTION (canonical-type 'FUNCTION))
-	   (t (let ((expander (get-sysprop (first type) 'DEFTYPE-DEFINITION)))
+	   (t (let ((expander (type-expander (first type))))
 		(if expander
 		    (canonical-type (apply expander (rest type)))
 		    (unless (assoc (first type) *elementary-types*)
