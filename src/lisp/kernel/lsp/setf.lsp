@@ -50,14 +50,16 @@
         #'(lambda (store &rest args)
             `(,function ,@args ,store))
         stores-no)
-      (do-define-setf-method access-fn
-        #'(lambda (env &rest args)
-            (declare (ignore env))
-            (do-setf-method-expansion access-fn function args stores-no)))))
+      (funcall #'(setf setf-expander)
+               #'(lambda (env &rest args)
+                   (declare (ignore env))
+                   (do-setf-method-expansion access-fn function args stores-no))
+               access-fn)))
 
-(defun do-define-setf-method (access-fn function)
-  (declare (type-assertions nil))
-  (put-sysprop access-fn 'SETF-METHOD function))
+(defun setf-expander (symbol)
+  (get-sysprop symbol 'setf-method))
+(defun (setf setf-expander) (expander symbol)
+  (put-sysprop symbol 'setf-method expander))
 
 ;;; DEFSETF macro.
 (defmacro defsetf (&whole whole access-fn &rest rest)
@@ -129,12 +131,13 @@ by (DOCUMENTATION 'SYMBOL 'SETF)."
     (multiple-value-bind (decls body doc)
 	(si::process-declarations lambda-body t)
       (let ((listdoc (when doc (list doc))))
-	`(eval-when (compile load eval)
-	   (do-define-setf-method ',access-fn 
-	      #'(lambda ,args ,@listdoc
-                  (declare (core:lambda-name ,access-fn)
-                           ,@decls)
-                  (block ,access-fn ,@body)))
+	`(eval-when (:compile-toplevel :load-toplevel :execute)
+           (funcall #'(setf setf-expander)
+                    #'(lambda ,args ,@listdoc
+                        (declare (core:lambda-name ,access-fn)
+                                 ,@decls)
+                        (block ,access-fn ,@body))
+                    ',access-fn)
 	   ,@(si::expand-set-documentation access-fn 'setf doc)
 	   ',access-fn)))))
 
@@ -155,7 +158,7 @@ Does not check if the third gang is a single-element list."
                (values nil nil (list store) `(setq ,form ,store) form))))
         ((or (not (consp form)) (not (symbolp (car form))))
          (error "Cannot get the setf-method of ~S." form))
-        ((setq f (get-sysprop (car form) 'SETF-METHOD))
+        ((setq f (setf-expander (car form)))
          (apply f env (cdr form)))
         ((and (setq f (macroexpand-1 form env)) (not (equal f form)))
          (get-setf-expansion f env))
