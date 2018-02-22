@@ -282,13 +282,6 @@ namespace core {
       this->_Car = o;
     };
 
-    CL_LISPIFY_NAME("core:cons-setf-car");
-    CL_DEFMETHOD   T_sp setf_car(T_sp o) {
-      ANN(o);
-      this->_Car = o;
-      return o;
-    };
-
   /*! Get the data for the first element */
     template <class o_class>
       gctools::smart_ptr<o_class> car() {
