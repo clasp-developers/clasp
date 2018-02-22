@@ -85,13 +85,13 @@ namespace core {
     // _Rack    (matches offset of Instance_O)
     Class_sp _Class;
     SimpleVector_sp _Rack;
-    int    _isgf;
-    bool   _DebugOn;
     T_sp   _Sig;
     gc::atomic_wrapper<T_sp>   _CallHistory;
     gc::atomic_wrapper<T_sp>   _SpecializerProfile;
 //    T_sp   _Lock;
     gc::atomic_wrapper<T_sp>   _CompiledDispatchFunction;
+    int    _isgf;
+    bool   _DebugOn;
   public:
 //    static FuncallableInstance_sp createClassUncollectable(gctools::Stamp is,Class_sp metaClass, size_t number_of_slots, Creator_sp creator);
     static Class_sp create(Symbol_sp symbol,Class_sp metaClass,Creator_sp creator);
