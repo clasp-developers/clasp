@@ -389,19 +389,19 @@
          )
 Defines a structure named by NAME.  The doc-string DOC, if supplied, is saved
 as a STRUCTURE doc and can be retrieved by (documentation 'NAME 'structure)."
-  (let* ((slot-descriptions slots)
-         (name (if (consp name&opts) (first name&opts) name&opts))
-         (options (when (consp name&opts) (rest name&opts)))
-         (conc-name (base-string-concatenate name "-"))
-         (default-constructor (intern (base-string-concatenate "MAKE-" name)))
-         (copier (intern (base-string-concatenate "COPY-" name)))
-         (predicate (intern (base-string-concatenate name "-P")))
-         constructors no-constructor standard-constructor
-         predicate-specified
-         include
-         print-function print-object type named initial-offset
-         offset name-offset
-         documentation)
+  (let*((slot-descriptions slots)
+	(name (if (consp name&opts) (first name&opts) name&opts))
+        (options (when (consp name&opts) (rest name&opts)))
+        (conc-name (base-string-concatenate name "-"))
+	(default-constructor (intern (base-string-concatenate "MAKE-" name)))
+	(copier (intern (base-string-concatenate "COPY-" name)))
+	(predicate (intern (base-string-concatenate name "-P")))
+        constructors no-constructor standard-constructor
+        predicate-specified
+        include
+        print-function print-object type named initial-offset
+        offset name-offset
+        documentation)
 
     ;; Parse the defstruct options.
     (do ((os options (cdr os)) (o) (v))
@@ -548,16 +548,22 @@ as a STRUCTURE doc and can be retrieved by (documentation 'NAME 'structure)."
     ;; toplevel forms in the file - so we can't depend on ANY toplevel forms
     ;; to define values required by LOAD-TIME-VALUEs
     ;;
-    `(eval-when (:compile-toplevel :load-toplevel :execute)
-       #+clos
-       ,(define-structure-class name type include
-          slot-descriptions print-function print-object)
-       (define-structure ',name ',conc-name ',type ',named ',slots
-         ',slot-descriptions ',copier ',include
-         ',print-function ',standard-constructor
-         ',offset ',name-offset
-         ',documentation ',predicate)
-       ,@(mapcar #'(lambda (constructor)
-                     (make-constructor name constructor type named slot-descriptions))
-                 constructors)
-       ',name)))
+    (let ((core `(progn
+                   #+clos
+                   ,(define-structure-class name type include
+                      slot-descriptions print-function print-object)
+                   (define-structure ',name ',conc-name ',type ',named ',slots
+                     ',slot-descriptions ',copier ',include
+                     ',print-function ',standard-constructor
+                     ',offset ',name-offset
+                     ',documentation ',predicate)))
+	  (constructors (mapcar #'(lambda (constructor)
+				    (make-constructor name constructor type named
+						      slot-descriptions))
+				constructors)))
+      `(progn
+         ,(ext::register-with-pde whole)
+	 (eval-when (:compile-toplevel :load-toplevel :execute)
+	   ,core
+           ,@constructors)
+	 ',name))))
