@@ -7,8 +7,7 @@ all:
 	./waf build_cboehm
 
 configure:
-	make submodules
-	make asdf
+	./waf update_submodules
 	./waf configure --prefix=$(PREFIX)
 
 build_cboehm:
@@ -35,28 +34,6 @@ redeye:
 	make redeye-prep
 	make redeye-run
 	./waf build_cboehm
-
-
-pump:
-	(cd src/core; make pump)
-	(cd src/clbind; make pump)
-
-submodules:
-	$(MAKE) submodules-other
-	$(MAKE) submodules-mps
-
-submodules-other:
-	-git submodule update --init src/lisp/kernel/contrib/sicl
-	-git submodule update --init src/lisp/modules/asdf
-	-git submodule update --init src/lisp/kernel/contrib/Acclimation
-#	-(cd src/lisp/modules/asdf; git checkout master; git pull origin master)
-
-submodules-mps:
-	-git submodule update --init src/mps
-
-asdf:
-	(cd src/lisp/modules/asdf; make)
-
 
 #
 # Tell ASDF where to find the SICL/Code/Cleavir systems - the final // means search subdirs
@@ -100,19 +77,11 @@ cloc-files:
 	find include/ -name '*.h' -print >>/tmp/files.cloc
 
 clean:
-	git submodule sync
 	./waf distclean
 
 pull-sicl-master:
 	(cd src/lisp/kernel/contrib/sicl; git pull origin master)
 	make setup-cleavir
-
-mps-submodule:
-	git submodule add -b dev/2014-08-18/non-incremental  https://github.com/Ravenbrook/mps-temporary ./src/mps
-
-
-asdf-submodule:
-	git submodule add --name updatedAsdf https://github.com/drmeister/asdf.git ./src/lisp/kernel/asdf
 
 dump-local-config:
 	cat $(CLASP_HOME)/local.config
