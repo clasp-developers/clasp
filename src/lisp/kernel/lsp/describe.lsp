@@ -520,9 +520,14 @@ Prints information about OBJECT to STREAM."
 
     (cond ((setq x (si::get-documentation symbol 'STRUCTURE))
            (doc1 x "[Structure]"))
-          ((setq x (get-sysprop symbol 'DEFSTRUCT-FORM))
-           (doc1 (format nil "~%Defined as: ~S~%See the doc of DEFSTRUCT." x)
-                 "[Structure]")))
+          ((names-structure-p symbol)
+           ;; FIXME: not sure of a good way to handle :named.
+           (let ((type (structure-type symbol))
+                 (slots (structure-slot-descriptions symbol)))
+             (doc1 (format nil "~%Defined like: ~s~%See the doc of DEFSTRUCT."
+                           `(defstruct ,(if type `(,symbol (:type ,type)) symbol)
+                              ,@(mapcar #'unparse-slot-description slots)))
+                   "[Structure]"))))
 
     (cond ((setq x (si::get-documentation symbol 'SETF))
            (doc1 x "[Setf]"))

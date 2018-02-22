@@ -24,6 +24,28 @@
 	 :datum value
 	 :expected-type slot-type))
 
+;;; FIXME: these should take environments
+(defun structure-type (name)
+  (get-sysprop name 'structure-type))
+(defun (setf structure-type) (type name)
+  (put-sysprop name 'structure-type type))
+(defun structure-size (name)
+  (get-sysprop name 'structure-offset))
+(defun (setf structure-size) (size name)
+  (put-sysprop name 'structure-offset size))
+(defun structure-slot-descriptions (name)
+  (get-sysprop name 'structure-slot-descriptions))
+(defun (setf structure-slot-descriptions) (descriptions name)
+  (put-sysprop name 'structure-slot-descriptions descriptions))
+(defun structure-constructor (name)
+  (get-sysprop name 'structure-constructor))
+(defun (setf structure-constructor) (constructor name)
+  (put-sysprop name 'structure-constructor constructor))
+(defun names-structure-p (name)
+  (or (structure-type name)
+      (let ((class (find-class name nil)))
+        (and class (typep class 'structure-class)))))
+
 (defun make-access-function (name conc-name type named slot-descr)
   (declare (ignore named))
   (let* ((slot-name (nth 0 slot-descr))
@@ -253,6 +275,20 @@
                          os))))))
     (list slot-name default-init slot-type read-only offset nil)))
 
+;;; UNPARSE-SLOT-DESCRIPTION does the opposite, turning one of the above into
+;;;  something that would work in DEFSTRUCT.
+;;; This is for documentation purposes only (describe uses it) at the moment,
+;;;  and it should probably remain this way.
+;;; Note that we have no way of distinguishing "initform NIL" and "no initform",
+;;;  (though Clasp does currently treat these the same)
+;;;  one of several reasons this is not exact.
+
+(defun unparse-slot-description (list)
+  (let ((name (first list)) (initform (second list))
+        (type (third list)) (read-only (fourth list)))
+    `(,name ,initform
+            ,@(when read-only `(:read-only ,read-only))
+            ,@(unless (eq type t) `(:type ,type)))))
 
 ;;; OVERWRITE-SLOT-DESCRIPTIONS overwrites the old slot-descriptions
 ;;;  with the new descriptions which are specified in the
@@ -311,7 +347,7 @@
              obj)))))
 
 (defun define-structure (name conc-name type named slots slot-descriptions
-			 copier include print-function constructors
+			 copier include print-function standard-constructor
 			 offset name-offset documentation predicate)
   (create-type-name name)
   ;; We are going to modify this list!!!
@@ -319,13 +355,10 @@
 
   (when predicate
     (fset predicate (make-predicate name type named name-offset)))
-  (put-sysprop name 'DEFSTRUCT-FORM `(defstruct ,name ,@slots))
-  (put-sysprop name 'IS-A-STRUCTURE t)
-  (put-sysprop name 'STRUCTURE-SLOT-DESCRIPTIONS slot-descriptions)
-  (put-sysprop name 'STRUCTURE-INCLUDE include)
-  (put-sysprop name 'STRUCTURE-TYPE type)
-  (put-sysprop name 'STRUCTURE-OFFSET offset)
-  (put-sysprop name 'STRUCTURE-CONSTRUCTORS constructors)
+  (setf (structure-slot-descriptions name) slot-descriptions)
+  (setf (structure-type name) type)
+  (setf (structure-size name) offset)
+  (setf (structure-constructor name) standard-constructor)
   #+clos
   (when *keep-documentation*
     (set-documentation name 'STRUCTURE documentation))
@@ -363,7 +396,7 @@ as a STRUCTURE doc and can be retrieved by (documentation 'NAME 'structure)."
 	(default-constructor (intern (base-string-concatenate "MAKE-" name)))
 	(copier (intern (base-string-concatenate "COPY-" name)))
 	(predicate (intern (base-string-concatenate name "-P")))
-        constructors no-constructor
+        constructors no-constructor standard-constructor
         predicate-specified
         include
         print-function print-object type named initial-offset
@@ -392,7 +425,7 @@ as a STRUCTURE doc and can be retrieved by (documentation 'NAME 'structure)."
                 (setq predicate-specified t))
                (:INCLUDE
                 (setq include (cdar os))
-                (unless (get-sysprop v 'IS-A-STRUCTURE)
+                (unless (names-structure-p v)
                         (error "~S is an illegal included structure." v)))
                (:PRINT-FUNCTION (setq print-function v))
 	       (:PRINT-OBJECT (setq print-object v))
@@ -421,14 +454,12 @@ as a STRUCTURE doc and can be retrieved by (documentation 'NAME 'structure)."
 
     ;; Check the include option.
     (when include
-          (unless (equal type (get-sysprop (car include) 'STRUCTURE-TYPE))
+          (unless (equal type (structure-type (car include)))
                   (error "~S is an illegal structure include."
                          (car include))))
 
     ;; Set OFFSET.
-    (setq offset (if include
-		     (get-sysprop (car include) 'STRUCTURE-OFFSET)
-		     0))
+    (setq offset (if include (structure-size (car include)) 0))
 
     ;; Increment OFFSET.
     (when (and type initial-offset)
@@ -464,7 +495,7 @@ as a STRUCTURE doc and can be retrieved by (documentation 'NAME 'structure)."
     (cond ((null include))
           ((endp (cdr include))
            (setq slot-descriptions
-                 (append (get-sysprop (car include) 'STRUCTURE-SLOT-DESCRIPTIONS)
+                 (append (structure-slot-descriptions (car include))
                          slot-descriptions)))
           (t
            (setq slot-descriptions
@@ -472,7 +503,7 @@ as a STRUCTURE doc and can be retrieved by (documentation 'NAME 'structure)."
                           (mapcar #'(lambda (sd)
                                       (parse-slot-description sd 0 :unknown))
                                   (cdr include))
-                          (get-sysprop (car include) 'STRUCTURE-SLOT-DESCRIPTIONS))
+                          (structure-slot-descriptions (car include)))
                          slot-descriptions))))
 
     (cond (no-constructor
@@ -484,6 +515,15 @@ as a STRUCTURE doc and can be retrieved by (documentation 'NAME 'structure)."
            ;; If no constructor is specified,
            ;;  the default-constructor is made.
            (setq constructors (list default-constructor))))
+
+    (dolist (constructor constructors)
+      ;; a "standard constructor" is one with no specified lambda list, taking &key instead.
+      ;; (In this macroexpander, constructors is a list of things, and each thing is either a
+      ;;  symbol or a list; the former means a standard constructor, the latter has a lambda
+      ;;  list as its second element.)
+      ;; Standard constructors are used by #s and so must be stored specially.
+      (when (symbolp constructor)
+        (setq standard-constructor constructor)))
 
     ;; Check the named option and set the predicate.
     (when (and type (not named))
@@ -514,7 +554,7 @@ as a STRUCTURE doc and can be retrieved by (documentation 'NAME 'structure)."
                       slot-descriptions print-function print-object)
                    (define-structure ',name ',conc-name ',type ',named ',slots
                      ',slot-descriptions ',copier ',include
-                     ',print-function ',constructors
+                     ',print-function ',standard-constructor
                      ',offset ',name-offset
                      ',documentation ',predicate)))
 	  (constructors (mapcar #'(lambda (constructor)
@@ -525,9 +565,5 @@ as a STRUCTURE doc and can be retrieved by (documentation 'NAME 'structure)."
          ,(ext::register-with-pde whole)
 	 (eval-when (:compile-toplevel :load-toplevel :execute)
 	   ,core
-	   #+ecl(let (#+clos
-                 ,@(and (not type)
-                        `((.structure-constructor-class. (find-class ',name)))))
-                  ,@constructors)
-           #+clasp (progn ,@constructors))
+           ,@constructors)
 	 ',name))))
