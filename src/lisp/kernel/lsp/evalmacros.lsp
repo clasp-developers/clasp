@@ -216,8 +216,7 @@ VARIABLE doc and can be retrieved by (DOCUMENTATION 'SYMBOL 'VARIABLE)."
   "Syntax: (loop {form}*)
 Establishes a NIL block and executes FORMs repeatedly.  The loop is normally
 terminated by a non-local exit."
-  `(BLOCK NIL (TAGBODY ,tag (PROGN ,@body) (GO ,tag))))
-)
+  `(BLOCK NIL (TAGBODY ,tag (PROGN ,@body) (GO ,tag)))))
 
 (defmacro lambda (&rest body) `(function (lambda ,@body)))
 
@@ -266,8 +265,7 @@ TESTs evaluates to non-NIL."
 			   `(PROGN ,@(cdr l))))
 	    (setq form (if (endp (cddr l))
 			   `(IF ,(car l) ,(cadr l) ,form)
-			   `(IF ,(car l) (PROGN ,@(cdr l)) ,form))))))
-  )
+			   `(IF ,(car l) (PROGN ,@(cdr l)) ,form)))))))
 
 ; program feature
 
@@ -277,8 +275,7 @@ Establishes a NIL block, binds each VAR to the value of INIT (which defaults
 to NIL) in parallel, and executes STATEMENTs.  Returns NIL."
   (multiple-value-setq (decl body)
     (find-declarations body))
-  `(BLOCK NIL (LET ,vl ,@decl (TAGBODY ,@body)))
-  )
+  `(BLOCK NIL (LET ,vl ,@decl (TAGBODY ,@body))))
 
 (defmacro prog* (vl &rest body &aux (decl nil))
   "Syntax: (prog* ({var | (var [init])}*) {decl}* {tag | statement}*)
@@ -286,17 +283,17 @@ Establishes a NIL block, binds each VAR to the value of INIT (which defaults
 to NIL) sequentially, and executes STATEMENTs.  Returns NIL."
   (multiple-value-setq (decl body)
     (find-declarations body))
-  `(BLOCK NIL (LET* ,vl ,@decl (TAGBODY ,@body)))
-  )
+  `(BLOCK NIL (LET* ,vl ,@decl (TAGBODY ,@body))))
 
 ; sequencing
 
 (defmacro prog1 (first &rest body &aux (sym (gensym)))
   "Syntax: (prog1 first-form {form}*)
 Evaluates FIRST-FORM and FORMs in order.  Returns the value of FIRST-FORM."
-  (if (null body) first
-  `(LET ((,sym ,first))
-    ,@body ,sym)))
+  (if (null body)
+      first
+      `(LET ((,sym ,first))
+         ,@body ,sym)))
 
 
 
@@ -304,8 +301,9 @@ Evaluates FIRST-FORM and FORMs in order.  Returns the value of FIRST-FORM."
   "Syntax: (prog2 first-form second-form {forms}*)
 Evaluates FIRST-FORM, SECOND-FORM, and FORMs in order.  Returns the value of
 SECOND-FORM."
-  `(PROGN ,first (LET ((,sym ,second))
-		       ,@body ,sym)))
+  `(PROGN ,first
+          (LET ((,sym ,second))
+            ,@body ,sym)))
 
 ; multiple values
 
@@ -385,29 +383,22 @@ values of the last FORM.  If no FORM is given, returns NIL."
 (defmacro return (&optional (val nil)) `(RETURN-FROM NIL ,val))
 
 ;; Declarations
-(let ()
 (defmacro declaim (&rest decl-specs)
-  (if (cdr decl-specs)
-    `(eval-when (:compile-toplevel :load-toplevel :execute)
-       (mapcar #'proclaim ',decl-specs))
-    `(eval-when (:compile-toplevel :load-toplevel :execute)
-       (proclaim ',(car decl-specs)))))
-)
-
-(let ()
-  (defmacro c-declaim (&rest decl-specs)
-    (if (cdr decl-specs)
-	`(eval-when (:compile-toplevel)
-	   (mapcar #'proclaim ',decl-specs))
-	`(eval-when (:compile-toplevel)
-	   (proclaim ',(car decl-specs)))))
-  )
-
+  `(eval-when (:compile-toplevel :load-toplevel :execute)
+     ,@(mapcar #'(lambda (decl-spec)
+                   `(proclaim ',decl-spec))
+               decl-specs)))
 
 (defmacro in-package (name)
   `(eval-when (:compile-toplevel :load-toplevel :execute)
      (si::select-package ,(string name))
      *package*))
+
+(defun (setf symbol-macro) (expansion name)
+  (put-sysprop name 'core:symbol-macro
+               (lambda (form env)
+                 (declare (ignore form env))
+                 expansion)))
 
 (defmacro define-symbol-macro (&whole whole symbol expansion)
   (cond ((not (symbolp symbol))
@@ -418,10 +409,7 @@ values of the last FORM.  If no FORM is given, returns NIL."
 		symbol))
 	(t
 	 `(eval-when (:compile-toplevel :load-toplevel :execute)
-	   (put-sysprop ',symbol 'si::symbol-macro 
-                        (lambda (form env) 
-                          (declare (ignore form env))
-                          ',expansion))
+            (funcall #'(setf symbol-macro) ',expansion ',symbol)
 	   ',symbol))))
 
 (defmacro nth-value (n expr)

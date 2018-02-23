@@ -488,8 +488,8 @@ CL_DEFUN T_sp core__extract_lambda_name(List_sp lambdaExpression, T_sp defaultVa
 }
 CL_LAMBDA(symbol &optional env);
 CL_DECLARE();
-CL_DOCSTRING("environment_lookup_symbol_macro_definition");
-CL_DEFUN T_sp core__lookup_symbol_macro(Symbol_sp sym, T_sp env) {
+CL_DOCSTRING("Returns the macro expansion function for a symbol if it exists, or else NIL.");
+CL_DEFUN T_sp core__symbol_macro(Symbol_sp sym, T_sp env) {
   if (sym.nilp())
     return _Nil<T_O>();
   if (env.notnilp()) {
@@ -1941,7 +1941,7 @@ T_mv evaluate_atom(T_sp exp, T_sp environment) {
     _BLOCK_TRACEF(BF("Evaluating symbol: %s") % exp->__repr__());
     if (sym->isKeywordSymbol())
       return Values(sym);
-    if (core__lookup_symbol_macro(sym, environment).notnilp()) {
+    if (core__symbol_macro(sym, environment).notnilp()) {
       T_sp texpr;
       {
         texpr = cl__macroexpand(sym, environment);
