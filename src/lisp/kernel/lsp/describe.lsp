@@ -481,9 +481,10 @@ Prints information about OBJECT to STREAM."
                          &aux (f nil) x)
   (flet ((doc1 (doc ind)
            (setq f t)
-           (format t
-                   "~&-----------------------------------------------------------------------------~%~53S~24@A~%~A"
-                   symbol ind doc))
+           (format
+            t
+            "~&-----------------------------------------------------------------------------~%~53S~24@A~%~%~A"
+            symbol ind doc))
          (good-package ()
            (if (eq (symbol-package symbol) (find-package "CL"))
                (find-package "SYSTEM")
@@ -513,9 +514,10 @@ Prints information about OBJECT to STREAM."
 
     (cond ((setq x (si::get-documentation symbol 'TYPE))
            (doc1 x "[Type]"))
+          #+(or) ; commented out to avoid sysprop.
           ((setq x (get-sysprop symbol 'DEFTYPE-FORM))
            (let ((*package* (good-package)))
-             (doc1 (format nil "~%Defined as: ~S~%See the doc of DEFTYPE." x)
+             (doc1 (format nil "Defined as: ~S~%See the doc of DEFTYPE." x)
                    "[Type]"))))
 
     (cond ((setq x (si::get-documentation symbol 'STRUCTURE))
@@ -524,25 +526,13 @@ Prints information about OBJECT to STREAM."
            ;; FIXME: not sure of a good way to handle :named.
            (let ((type (structure-type symbol))
                  (slots (structure-slot-descriptions symbol)))
-             (doc1 (format nil "~%Defined like: ~s~%See the doc of DEFSTRUCT."
+             (doc1 (format nil "Defined like: ~s~%See the doc of DEFSTRUCT."
                            `(defstruct ,(if type `(,symbol (:type ,type)) symbol)
                               ,@(mapcar #'unparse-slot-description slots)))
                    "[Structure]"))))
 
     (cond ((setq x (si::get-documentation symbol 'SETF))
-           (doc1 x "[Setf]"))
-          ((setq x (get-sysprop symbol 'SETF-METHOD))
-           (let ((*package* (good-package)))
-             (doc1
-              (format nil
-                "~@[~%Defined as: ~S~%See the doc of DEFINE-SETF-EXPANDER.~]"
-                (if (consp x)
-                    (case (car x)
-                          (LAMBDA `(define-setf-expander ,@(cdr x)))
-                          (EXT::LAMBDA-BLOCK `(define-setf-expander ,@(cddr x)))
-                          (t nil))
-                    nil))
-            "[Setf]"))))
+           (doc1 x "[Setf]")))
     )
   (if called-from-apropos-doc-p
       f
