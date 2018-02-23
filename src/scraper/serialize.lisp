@@ -9,8 +9,6 @@
                                     (class-of object)))
   #+cmu
   (mapcar #'pcl:slot-definition-name (pcl:class-slots (class-of object)))
-  #+sbcl
-  (mapcar #'sb-pcl:slot-definition-name (sb-pcl:class-slots (class-of object)))
   #+lispworks
   (mapcar #'hcl:slot-definition-name (hcl:class-slots (class-of object)))
   #+allegro
@@ -22,21 +20,7 @@
   #-(or openmcl cmu lispworks allegro sbcl clisp)
   (error "not yet implemented"))
 
-(set-macro-character 
-     #\{
-     #'(lambda (str char)
-     (declare (ignore char))
-     (let ((list (read-delimited-list #\} str t)))
-       (let ((type (first list))
-         (list (second list)))
-         (let ((class (allocate-instance (find-class type))))
-           (loop for i in list do
-            (setf (slot-value class (car i)) (cdr i)))
-           class)))))
-
-
-(defmethod print-object ((object tags:tag) stream) ; was standard-object
+(defmethod print-object ((object tags:tag) stream)
   (format stream "{ ~s ~s}~%" (type-of object)
-      (loop for i in (get-slots object)
-         collect (cons i (slot-value object i)))))
-
+          (loop for name in (get-slots object)
+                collect (cons name (slot-value object name)))))

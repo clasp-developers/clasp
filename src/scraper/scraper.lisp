@@ -37,60 +37,38 @@
       (format t "Done scraping code~%"))))
 (export 'process-all-sif-files)
 
-(defun report-clang-errors (file command error-string)
-  (format *error-output* "Error >>>>>>>> ~a~%" error-string)
-  #+(or)(with-input-from-string (sin error-string)
-    (loop for line in (read-line sin)
-       when (search "error" line)
-       do (progn
-            (format *error-output* "error line: ~a~%" line)
-            (sb-sys:os-exit 1)))))
+(defun run-clang (command output-file-path)
+  (multiple-value-bind
+        (stdout stderr exit-code)
+      (uiop:run-program command
+                        :output :string
+                        :error-output :string
+                        :ignore-error-status t
+                        :external-format :latin1)
+    #+(or)
+    (when (> (length stderr) 5)
+      (with-input-from-string (sin stderr)
+        (loop for line in (read-line sin)
+              when (search "error" line)
+              do (progn
+                   (format *error-output* "error line: ~a~%" line)
+                   (sb-sys:os-exit 1)))))
+    (unless (eql exit-code 0)
+      (error "Clang returned with exit code: ~A~%the command was: ~S~%stdout: ~S~%stderr: ~S~%"
+             exit-code (format nil "~{~A~^ ~}" command) stdout stderr))
+    (make-instance 'buffer-stream
+                   :buffer stdout
+                   :buffer-pathname output-file-path
+                   :buffer-stream (make-string-input-stream stdout))))
 
-(defun slurp-clang-output (file command)
-  (handler-case
-      (let* ((exit-code nil)
-             (output
-              (with-output-to-string (str)
-                (let ((strerror (with-output-to-string (strerror)
-                                  (let* ((process (sb-ext:run-program "sh" (list "-c" command)
-                                                                      :search t
-                                                                      :output str
-                                                                      :error strerror
-                                                                      :external-format :latin1))
-                                         (status (sb-ext:process-status process)))
-                                    (setf exit-code (when (member status '(:exited :signaled))
-                                                      (sb-ext:process-exit-code process)))))))
-                  (when (> (length strerror) 5) (report-clang-errors file command strerror))))))
-        (when (and exit-code
-                   (/= exit-code 0))
-          (error "Clang returned with exit code: ~A, error message: ~S, the command was: ~S"
-                 exit-code output command))
-        (make-instance 'buffer-stream
-                       :buffer output
-                       :buffer-pathname file
-                       :buffer-stream (make-string-input-stream output)))
-    (error (msg) (format *error-output* "An error occurred~%"))))
-
-(defun generate-one-sif (clang-command output)
-  (let ((*debug-io* (make-two-way-stream *standard-input* *standard-output*)))
-    (let* ((bufs (slurp-clang-output output clang-command)))
-      (when bufs
-        (let ((tags (process-all-recognition-elements bufs))
-              (sif-pathname output))
-          (with-open-file (fout sif-pathname :direction :output :if-exists :supersede)
-            (let ((*print-readably* t)
-                  (*print-pretty* nil))
-              (prin1 tags fout))))))))
-
-(defun directory-pathname-p (pathname)
-  (and pathname
-       (let ((pathname (pathname pathname)))
-         (flet ((check-one (x)
-                  (member x '(nil :unspecific) :test 'equal)))
-           (and (not (wild-pathname-p pathname))
-                (check-one (pathname-name pathname))
-                (check-one (pathname-type pathname))
-                t)))))
+(defun generate-one-sif (clang-command sif-pathname)
+  (let* ((*debug-io* (make-two-way-stream *standard-input* *standard-output*))
+         (clang-output (run-clang clang-command sif-pathname))
+         (tags (process-all-recognition-elements clang-output)))
+    (with-open-file (fout sif-pathname :direction :output :if-exists :supersede)
+      (let ((*print-readably* t)
+            (*print-pretty* nil))
+        (prin1 tags fout)))))
 
 (defun generate-headers-from-all-sifs ()
   (let* ((minus-minus-pos (position "--" sb-ext:*posix-argv* :test #'string=))
@@ -102,7 +80,7 @@
         (format t "clasp-home-path             -> ~a~%" clasp-home-path)
         (format t "build-path                  -> ~a~%" build-path)
         (format t "*default-pathname-defaults* -> ~a~%" *default-pathname-defaults*)
-        (assert (every 'directory-pathname-p (list clasp-home-path build-path)))
+        (assert (every 'uiop:directory-pathname-p (list clasp-home-path build-path)))
         (assert sif-files)
         (process-all-sif-files clasp-home-path build-path sif-files)))))
 

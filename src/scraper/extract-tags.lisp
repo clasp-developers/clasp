@@ -5,8 +5,7 @@
 ;;; (1) Read preprocessed files into memory and search for tags
 ;;; (2) Generate .sif files containing the tags
 
-(require :sb-posix)
-
+;; NOTE: it has nothing to do with CL:STREAM
 (defclass buffer-stream ()
   ((buffer :initarg :buffer :accessor buffer)
    (buffer-pathname :initarg :buffer-pathname :accessor buffer-pathname)

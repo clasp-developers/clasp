@@ -1,4 +1,8 @@
 #-*- mode: python; coding: utf-8-unix -*-
+#
+# In your emacs you may want to: (add-to-list 'auto-mode-alist '("wscript\\'" . python-mode))
+#
+
 import subprocess
 from waflib.Tools import c_preproc
 from waflib.Tools.compiler_cxx import cxx_compiler
@@ -877,6 +881,7 @@ def build(bld):
     extension_headers_node = variant.extension_headers_node(bld)
     print("extension_headers_node = %s" % extension_headers_node.abspath())
 
+    # Without this the parallel ASDF load-op's later on step on each other's feet
     precomp = precompile_scraper(env=bld.env)
     precomp.set_outputs([bld.path.find_or_declare("generated/scraper-precompile-done")])
     bld.add_to_group(precomp)
@@ -1437,12 +1442,14 @@ class generate_one_sif(scraper_task):
     shell = True
     def run(self):
         env = self.env
-        preproc_args = [] + env.CXX + ["-E -DSCRAPING"] + self.colon("ARCH_ST", "ARCH") + env.CXXFLAGS + env.CPPFLAGS + \
+        preproc_args = [] + env.CXX + ["-E", "-DSCRAPING"] + self.colon("ARCH_ST", "ARCH") + env.CXXFLAGS + env.CPPFLAGS + \
                        self.colon("FRAMEWORKPATH_ST", "FRAMEWORKPATH") + \
                        self.colon("CPPPATH_ST", "INCPATHS") + \
-                       self.colon("DEFINES_ST", "DEFINES")
-        preproc_args = ' '.join(preproc_args) + " " + self.inputs[0].abspath()
-        cmd = self.build_scraper_cmd(["--eval", "(cscrape:generate-one-sif \"%s\" #P\"%s\")" % (preproc_args, self.outputs[0].abspath())])
+                       self.colon("DEFINES_ST", "DEFINES") + \
+                       [self.inputs[0].abspath()]
+        cmd = self.build_scraper_cmd(["--eval", "(cscrape:generate-one-sif '(%s) #P\"%s\")" %
+                                      ((' '.join('"' + item + '"' for item in preproc_args)),
+                                       self.outputs[0].abspath())])
 #        print("scrape = %s" % cmd)
         return self.exec_command(cmd, shell = True)
 
