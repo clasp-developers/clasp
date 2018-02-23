@@ -532,18 +532,7 @@ Prints information about OBJECT to STREAM."
                    "[Structure]"))))
 
     (cond ((setq x (si::get-documentation symbol 'SETF))
-           (doc1 x "[Setf]"))
-          ((setq x (get-sysprop symbol 'SETF-METHOD))
-           (let ((*package* (good-package)))
-             (doc1
-              (format nil
-                "~@[Defined as: ~S~%See the doc of DEFINE-SETF-EXPANDER.~]"
-                (if (consp x)
-                    (case (car x)
-                      (LAMBDA `(define-setf-expander ,@(cdr x)))
-                      (t nil))
-                    nil))
-            "[Setf]"))))
+           (doc1 x "[Setf]")))
     )
   (if called-from-apropos-doc-p
       f
