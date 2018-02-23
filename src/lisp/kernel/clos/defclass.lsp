@@ -51,9 +51,7 @@
            (unless (find-class ',name nil)
              (load-defclass ',name ',superclasses ,parsed-slots ,processed-class-options)))
          (eval-when (:load-toplevel :execute)
-           ,(ext:register-with-pde
-             form
-             `(load-defclass ',name ',superclasses ,parsed-slots ,processed-class-options)))))))
+           (load-defclass ',name ',superclasses ,parsed-slots ,processed-class-options))))))
 
 (defun process-class-options (class-args)
   (let ((options '())

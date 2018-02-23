@@ -294,13 +294,12 @@
 		  (declare (ignore doc))
 		  (setq function `(function ,function))
 		  (when *dump-defmacro-definitions*
-		    (bformat t "EARLY defmacro.lsp defmacro %s -> %s\n" name function)
-		    #++(setq function `(si::bc-disassemble ,function)))
-		  (ext:register-with-pde def `(si::fset ',name ,function
-                                                        t ; macro
-                                                        ,pprint ; ecl pprint
-                                                        ',vl ; lambda-list
-                                                        )))))
+		    (bformat t "EARLY defmacro.lsp defmacro %s -> %s\n" name function))
+		  `(si::fset ',name ,function
+                             t ; macro
+                             ,pprint ; ecl pprint
+                             ',vl ; lambda-list
+                             ))))
 	  t)
 
 ;;; valid lambda-list to DESTRUCTURING-BIND is:

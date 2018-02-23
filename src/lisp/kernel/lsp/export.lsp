@@ -18,18 +18,6 @@
 
 ;; This is needed only when bootstrapping CLASP using CLASP-MIN
 (eval-when (eval)
-  (si::fset 'ext:register-with-pde
-	     #'(lambda (whole env)
-                 (declare (core:lambda-name ext:register-with-pde))
-                 (let* ((definition (second whole))
-                        (output-form (third whole)))
-                   `(if ext:*register-with-pde-hook*
-                        (funcall ext:*register-with-pde-hook*
-                                 (copy-tree *source-location*)
-                                 ,definition
-                                 ,output-form)
-                        ,output-form)))
-	    t)
   (si::fset 'in-package
             #'(lambda (def env)
                 (declare (core:lambda-name in-package))

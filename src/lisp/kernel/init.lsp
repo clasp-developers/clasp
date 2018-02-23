@@ -146,9 +146,7 @@
           load-encoding
           make-encoding
           assume-right-type))
-(core:*make-special '*register-with-pde-hook*)
 (core:*make-special '*module-provider-functions*)
-(setq *register-with-pde-hook* ())
 (core:*make-special '*source-location*)
 (setq *source-location* nil)
 (export 'current-source-location)
@@ -168,20 +166,6 @@
                   (if location (return-from cur-src-loc location)))
                 (setq cur (cdr cur))
                 (go top)))))))
-
-(export '*register-with-pde-hook*)
-(core:fset 'register-with-pde
-             #'(lambda (whole env)
-                 (let* ((definition (second whole))
-                        (output-form (third whole)))
-                   `(if ext:*register-with-pde-hook*
-                        (funcall ext:*register-with-pde-hook*
-                                 (copy-tree *source-location*)
-                                 ,definition
-                                 ,output-form)
-                        ,output-form)))
-             t)
-(export 'register-with-pde)
 
 (eval-when (:execute :compile-toplevel :load-toplevel)
   (core:select-package :core))
@@ -388,11 +372,9 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
                        (if decl (setq decl (list (cons 'declare decl))))
                        (let ((func `#'(lambda ,lambda-list ,@decl ,@doc (block ,name ,@body))))
                          ;;(bformat t "PRIMITIVE DEFUN defun --> %s\n" func )
-                         (ext::register-with-pde
-                          def
                           `(progn (eval-when (:compile-toplevel)
                                     (cmp::register-global-function-def 'defun ',name))
-                                  (si:fset ',name ,func nil nil ',lambda-list))))))
+                                  (si:fset ',name ,func nil nil ',lambda-list)))))
                    (si::process-declarations lambda-body nil #| No documentation until the real DEFUN is defined |#))))
            t))
 

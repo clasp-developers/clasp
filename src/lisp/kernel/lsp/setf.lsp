@@ -94,7 +94,7 @@ SETF doc and can be retrieved by (documentation 'SYMBOL 'setf)."
                                 (block ,access-fn
                                   ,@body))))))
     `(eval-when (:compile-toplevel :load-toplevel :execute)
-       ,(ext:register-with-pde whole `(do-defsetf ',access-fn ,function ,(length stores)))
+       (do-defsetf ',access-fn ,function ,(length stores))
        ,@(si::expand-set-documentation access-fn 'setf documentation)
        ',access-fn)))
 

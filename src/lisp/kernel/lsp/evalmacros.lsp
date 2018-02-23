@@ -30,14 +30,13 @@ last FORM.  If not, simply returns NIL."
       (sys::expand-defmacro name vl body)
     (setq function `(function ,function))
     (when *dump-defmacro-definitions*
-      (bformat t "ADVANCED evalmacros.lsp defmacro %s --> %s\n" name function)
-      #++(setq function `(si::bc-disassemble ,function)))
+      (bformat t "ADVANCED evalmacros.lsp defmacro %s --> %s\n" name function))
     `(eval-when (:compile-toplevel :load-toplevel :execute)
-       ,(ext:register-with-pde whole `(si::fset ',name ,function
-                                                t  ; macro
-                                                ,pprint ; ecl pprint
-                                                ',vl ; lambda-list lambda-list-p
-                                                ))
+       (si::fset ',name ,function
+                 t  ; macro
+                 ,pprint ; ecl pprint
+                 ',vl ; lambda-list lambda-list-p
+                 )
        ,@(si::expand-set-documentation name 'function doc-string)
        ',name)))
 
@@ -54,7 +53,6 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 	  `((UNLESS (BOUNDP ',var)
 	      (SETQ ,var ,form))))
     ,@(si::expand-set-documentation var 'variable doc-string)
-    ,(ext:register-with-pde whole)
     ',var))
 
 (defmacro defparameter (&whole whole var form &optional doc-string)
@@ -67,7 +65,6 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
        (SYS:*MAKE-SPECIAL ',var))
      (SETQ ,var ,form)
      ,@(si::expand-set-documentation var 'variable doc-string)
-     ,(ext:register-with-pde whole)
      ',var))
 
 (defmacro defconstant (&whole whole var form &optional doc-string)
@@ -80,7 +77,6 @@ VARIABLE doc and can be retrieved by (DOCUMENTATION 'SYMBOL 'VARIABLE)."
      (eval-when (:compile-toplevel :load-toplevel :execute)
        (SYS:*MAKE-CONSTANT ',var ,form))
     ,@(si::expand-set-documentation var 'variable doc-string)
-    ,(ext:register-with-pde whole)
     ',var))
 
 (defmacro defun (&whole whole name vl &body body &environment env)
@@ -107,7 +103,7 @@ VARIABLE doc and can be retrieved by (DOCUMENTATION 'SYMBOL 'VARIABLE)."
            (cmp::register-global-function-def 'defun ',name))
          (let ((,fn ,global-function))
            ;;(bformat t "Performing DEFUN   core:*current-source-pos-info* -> %s\n" core:*current-source-pos-info*)
-           ,(ext:register-with-pde whole `(si::fset ',name ,fn nil t ',vl))
+           (si::fset ',name ,fn nil t ',vl)
            (core:set-source-info ,fn ',(list 'core:current-source-file filepos lineno column))
            ,@(si::expand-set-documentation name 'function doc-string)
            ;; This can't be at toplevel.
@@ -131,7 +127,6 @@ VARIABLE doc and can be retrieved by (DOCUMENTATION 'SYMBOL 'VARIABLE)."
     `(eval-when (:compile-toplevel :load-toplevel :execute)
        (core:setf-bclasp-compiler-macro-function ',name ,function)
        ,@(si::expand-set-documentation name 'function doc-string)
-       ,(ext:register-with-pde whole)
        ',name)))
 
 (defun bclasp-compiler-macro-function (name &optional env)
@@ -177,7 +172,6 @@ VARIABLE doc and can be retrieved by (DOCUMENTATION 'SYMBOL 'VARIABLE)."
     `(eval-when (:compile-toplevel :load-toplevel :execute)
        (core:setf-compiler-macro-function ',name ,function)
        ,@(si::expand-set-documentation name 'function doc-string)
-       ,(ext:register-with-pde whole)
        ',name)))
 
 (defun compiler-macro-function (name &optional env)
@@ -429,7 +423,6 @@ values of the last FORM.  If no FORM is given, returns NIL."
                         (lambda (form env) 
                           (declare (ignore form env))
                           ',expansion))
-	   ,(ext:register-with-pde whole)
 	   ',symbol))))
 
 (defmacro nth-value (n expr)
