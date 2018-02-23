@@ -78,14 +78,12 @@ def build_extension(bld):
     print("    In Development/cando/wscript::build_extension")
     bld.recurse("extensions")
 
-
 def grovel(bld):
     bld.recurse("extensions")
 
-    
 def update_submodules(cfg):
-    def fetch_git_revision(path, url, revision):
-        ret = os.system("./tools/fetch-git-revision.sh '%s' '%s' '%s'" % (path, url, revision))
+    def fetch_git_revision(path, url, revision="", label="master"):
+        ret = os.system("./tools/fetch-git-revision.sh '%s' '%s' '%s' '%s'" % (path, url, revision, label))
         if ( ret != 0 ):
             raise Exception("Failed to fetch git url %s" % url)
 
@@ -820,6 +818,7 @@ def configure(cfg):
             variant_instance = eval("i"+variant+"()")
             print("Setting up variant: %s" % variant_instance.variant_dir())
             variant_instance.configure_variant(cfg,env_copy)
+    update_submodules(cfg)
 
 def copy_tree(bld,src,dest):
     print("Copy tree src = %s" % src)
