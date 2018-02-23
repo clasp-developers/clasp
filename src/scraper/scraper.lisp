@@ -71,17 +71,16 @@
         (prin1 tags fout)))))
 
 (defun generate-headers-from-all-sifs ()
-  (let* ((minus-minus-pos (position "--" sb-ext:*posix-argv* :test #'string=))
-         (args (subseq sb-ext:*posix-argv* (1+ minus-minus-pos))))
-    (destructuring-bind
-          (build-path clasp-home-path &rest sif-files)
-        args
-      (let ((*default-pathname-defaults* (pathname build-path)))
-        (format t "clasp-home-path             -> ~a~%" clasp-home-path)
-        (format t "build-path                  -> ~a~%" build-path)
-        (format t "*default-pathname-defaults* -> ~a~%" *default-pathname-defaults*)
-        (assert (every 'uiop:directory-pathname-p (list clasp-home-path build-path)))
-        (assert sif-files)
-        (process-all-sif-files clasp-home-path build-path sif-files)))))
+  (destructuring-bind
+        (build-path clasp-home-path &rest sif-files)
+      (uiop:command-line-arguments)
+    (declare (ignore lisp-binary))
+    (let ((*default-pathname-defaults* (pathname build-path)))
+      (format t "clasp-home-path             -> ~a~%" clasp-home-path)
+      (format t "build-path                  -> ~a~%" build-path)
+      (format t "*default-pathname-defaults* -> ~a~%" *default-pathname-defaults*)
+      (assert (every 'uiop:directory-pathname-p (list clasp-home-path build-path)))
+      (assert sif-files)
+      (process-all-sif-files clasp-home-path build-path sif-files))))
 
 (export '(generate-one-sif generate-headers-from-all-sifs))

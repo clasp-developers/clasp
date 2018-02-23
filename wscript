@@ -573,7 +573,7 @@ def configure(cfg):
     # find a lisp for the scraper
     if not cfg.env.SCRAPER_LISP:
         cfg.env["SBCL"] = cfg.find_program("sbcl", var = "SBCL")[0]
-        cfg.env["SCRAPER_LISP"] = [cfg.env.SBCL] + "--noinform --dynamic-space-size 4096 --lose-on-corruption --disable-ldb --no-userinit --disable-debugger".split()
+        cfg.env["SCRAPER_LISP"] = [cfg.env.SBCL] + "--noinform --dynamic-space-size 4096 --lose-on-corruption --disable-ldb --end-runtime-options --disable-debugger  --no-userinit --no-sysinit".split()
     global cxx_compiler, c_compiler
     cxx_compiler['linux'] = ["clang++"]
     c_compiler['linux'] = ["clang"]
@@ -1424,7 +1424,7 @@ class scraper_task(Task.Task):
             "--load", os.path.join(env.BUILD_ROOT, "src/scraper/dependencies/bundle.lisp"),
             "--eval", "(let ((uiop:*uninteresting-conditions* (list* 'style-warning uiop:*usual-uninteresting-conditions*)) (*compile-print* nil) (*compile-verbose* nil)) (asdf:load-system :clasp-scraper))",
             ] + extraCommands + [
-            "--eval", "(quit)", "--"] + scraperArgs
+            "--eval", "(quit)", "--end-toplevel-options"] + scraperArgs
         return cmd
 
 class precompile_scraper(scraper_task):
@@ -1436,10 +1436,8 @@ class precompile_scraper(scraper_task):
         return "Compiling the scraper"
 
 class generate_one_sif(scraper_task):
-    # This is kept for reference, it got converted into a run(self) method below.
-    #run_str = '../../src/common/preprocess-to-sif ${TGT[0].abspath()} ${CXX} -E -DSCRAPING ${ARCH_ST:ARCH} ${CXXFLAGS} ${CPPFLAGS} ${FRAMEWORKPATH_ST:FRAMEWORKPATH} ${CPPPATH_ST:INCPATHS} ${DEFINES_ST:DEFINES} ${CXX_SRC_F}${SRC}'
     ext_out = ['.sif']
-    shell = True
+    shell = False
     def run(self):
         env = self.env
         preproc_args = [] + env.CXX + ["-E", "-DSCRAPING"] + self.colon("ARCH_ST", "ARCH") + env.CXXFLAGS + env.CPPFLAGS + \
@@ -1450,8 +1448,7 @@ class generate_one_sif(scraper_task):
         cmd = self.build_scraper_cmd(["--eval", "(cscrape:generate-one-sif '(%s) #P\"%s\")" %
                                       ((' '.join('"' + item + '"' for item in preproc_args)),
                                        self.outputs[0].abspath())])
-#        print("scrape = %s" % cmd)
-        return self.exec_command(cmd, shell = True)
+        return self.exec_command(cmd)
 
     def keyword(ctx):
         return "Scraping, generate-one-sif"
