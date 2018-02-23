@@ -14,7 +14,7 @@
           cons-car
           cons-cdr))
 (sys:*make-special 'core::*dump-defmacro-definitions*)
-(setq *dump-defmacro-definitions* NIL)
+(setq *dump-defmacro-definitions* nil)
 (sys:*make-special 'core::*dump-defun-definitions*)
 (setq *dump-defun-definitions* nil)
 (export '*trace-startup*)
@@ -374,7 +374,7 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
                          ;;(bformat t "PRIMITIVE DEFUN defun --> %s\n" func )
                           `(progn (eval-when (:compile-toplevel)
                                     (cmp::register-global-function-def 'defun ',name))
-                                  (si:fset ',name ,func nil nil ',lambda-list)))))
+                                  (si:fset ',name ,func nil ',lambda-list)))))
                    (si::process-declarations lambda-body nil #| No documentation until the real DEFUN is defined |#))))
            t))
 
