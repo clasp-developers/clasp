@@ -28,15 +28,13 @@
 	(parse-generic-options options lambda-list)
       (let* ((output `(ensure-generic-function ',function-specifier
 		       :delete-methods t ,@option-list)))
-	(ext:register-with-pde
-	 whole
-	 (if method-list
-	     `(progn
-		,output
-		(associate-methods-to-gfun
-		 ',function-specifier
-		 ,@(loop for m in method-list collect `(defmethod ,function-specifier ,@m))))
-	    output))))))
+        (if method-list
+            `(progn
+               ,output
+               (associate-methods-to-gfun
+                ',function-specifier
+                ,@(loop for m in method-list collect `(defmethod ,function-specifier ,@m))))
+	    output)))))
 
 (defun parse-defgeneric (args)
   ;; (values function-specifier lambda-list options)
