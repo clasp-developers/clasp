@@ -52,7 +52,13 @@
 
 ;;;; LOOP Iteration Macro
 
-(in-package "SYSTEM")
+#+(or ecl clasp) (in-package "SYSTEM")
+
+
+#-(or ecl clasp)(provide :loop)
+
+#+Cloe-Runtime					;Don't ask.
+(car (push "%Z% %M% %I% %E% %U%" system::*module-identifications*))
 
 ;;; Technology.
 ;;;
@@ -107,6 +113,30 @@
 
 (defmacro loop-unsafe (&rest x)
   `(locally (declare (ext:assume-right-type)) ,@x))
+
+;;;The LOOP-Prefer-POP feature makes LOOP generate code which "prefers" to use POP or
+;;; its obvious expansion (prog1 (car x) (setq x (cdr x))).  Usually this involves
+;;; shifting fenceposts in an iteration or series of carcdr operations.  This is
+;;; primarily recognized in the list iterators (FOR .. {IN,ON}), and LOOP's
+;;; destructuring setq code.
+(eval-when (compile load eval)
+  #+(or Genera Minima) (pushnew :LOOP-Prefer-POP *features*)
+  )
+
+
+;;; The uses of this macro are retained in the CL version of loop, in
+;;; case they are needed in a particular implementation.  Originally
+;;; dating from the use of the Zetalisp COPYLIST* function, this is used
+;;; in situations where, were cdr-coding in use, having cdr-NIL at the
+;;; end of the list might be suboptimal because the end of the list will
+;;; probably be RPLACDed and so cdr-normal should be used instead.
+(defmacro loop-copylist* (l)
+  #+Genera `(lisp:copy-list ,l nil t)		; arglist = (list &optional area force-dotted)
+  ;;Explorer??
+  #-Genera `(copy-list ,l)
+  )
+
+(defparameter *loop-real-data-type* 'real)
 
 (defun loop-optimization-quantities (env)
   ;; The ANSI conditionalization here is for those lisps that implement
@@ -174,13 +204,28 @@
 
 (defmacro with-loop-list-collection-head ((head-var tail-var &optional user-head-var)
 					  &body body)
-  (let ((l (and user-head-var (list (list user-head-var nil)))))
-    `(let* ((,head-var (list nil)) (,tail-var ,head-var) ,@l)
-       ,@body)))
+  ;; TI? Exploder?
+  #+LISPM (let ((head-place (or user-head-var head-var)))
+	    `(let* ((,head-place nil)
+		    (,tail-var
+		      ,(hide-variable-reference
+			 user-head-var user-head-var
+			 `(progn #+Genera (scl:locf ,head-place)
+				 #-Genera (system:variable-location ,head-place)))))
+	       ,@body))
+  #-LISPM (let ((l (and user-head-var (list (list user-head-var nil)))))
+	    #+CLOE `(sys::with-stack-list* (,head-var nil nil)
+		      (let ((,tail-var ,head-var) ,@l)
+			,@body))
+	    #-CLOE `(let* ((,head-var (list nil)) (,tail-var ,head-var) ,@l)
+		      ,@body)))
 
 
 (defmacro loop-collect-rplacd (&environment env
 			       (head-var tail-var &optional user-head-var) form)
+  (declare
+    #+LISPM (ignore head-var user-head-var)	;use locatives, unconditionally update through the tail.
+    )
   (setq form (macroexpand form env))
   (flet ((cdr-wrap (form n)
 	   (declare (fixnum n))
@@ -195,7 +240,12 @@
       ;;Determine if the form being constructed is a list of known length.
       (when (consp form)
 	(cond ((eq (car form) 'list)
-	       (setq ncdrs (1- (length (cdr form)))))
+	       (setq ncdrs (1- (length (cdr form))))
+	       ;; Because the last element is going to be RPLACDed,
+	       ;; we don't want the cdr-coded implementations to use
+	       ;; cdr-nil at the end (which would just force copying
+	       ;; the whole list again).
+	       #+LISPM (setq tail-form `(list* ,@(cdr form) nil)))
 	      ((member (car form) '(list* cons))
 	       (when (and (cddr form) (member (car (last form)) '(nil 'nil)))
 		 (setq ncdrs (- (length (cdr form)) 2))))))
@@ -215,14 +265,19 @@
 	;;If not using locatives or something similar to update the user's
 	;; head variable, we've got to set it...  It's harmless to repeatedly set it
 	;; unconditionally, and probably faster than checking.
-        (when user-head-var
-          (setq answer `(progn ,answer (setq ,user-head-var (cdr ,head-var)))))
+	#-LISPM (when user-head-var
+		  (setq answer `(progn ,answer (setq ,user-head-var (cdr ,head-var)))))
 	answer))))
 
 
 (defmacro loop-collect-answer (head-var &optional user-head-var)
   (or user-head-var
-      `(cdr ,head-var)))
+      (progn
+	;;If we use locatives to get tail-updating to update the head var,
+	;; then the head var itself contains the answer.  Otherwise we
+	;; have to cdr it.
+	#+LISPM head-var
+	#-LISPM `(cdr ,head-var))))
 
 
 ;;;; Maximization Technology
@@ -245,7 +300,9 @@ constructed.
 
 (defstruct (loop-minimax
 	     #+(or ecl clasp) (:type vector)
-	     (:constructor make-loop-minimax-internal))
+	     (:constructor make-loop-minimax-internal)
+	     #+nil (:copier nil)
+	     #+nil (:predicate nil))
   answer-variable
   type
   temp-variable
@@ -255,24 +312,39 @@ constructed.
 
 
 (defparameter *loop-minimax-type-infinities-alist*
-  ;; This is the sort of value this should take on for a Lisp that has
-  ;; "eminently usable" infinities.  n.b. there are neither constants nor
-  ;; printed representations for infinities defined by CL.
-  ;; conditionalized out.
-  ;;This is how the alist should look for a lisp that has no infinities.  In
-  ;; that case, MOST-POSITIVE-x-FLOAT really IS the most positive.
-  '((fixnum   		most-positive-fixnum		most-negative-fixnum)
-    (short-float	most-positive-short-float	most-negative-short-float)
-    (single-float	most-positive-single-float	most-negative-single-float)
-    (double-float	most-positive-double-float	most-negative-double-float)
-    (long-float		most-positive-long-float	most-negative-long-float))
-  ;; FIXME: When? we do have float infinities:
-  #+CMU
-  '((fixnum		most-positive-fixnum			most-negative-fixnum)
-    (short-float	ext:single-float-positive-infinity	ext:single-float-negative-infinity)
-    (single-float	ext:single-float-positive-infinity	ext:single-float-negative-infinity)
-    (double-float	ext:double-float-positive-infinity	ext:double-float-negative-infinity)
-    (long-float		ext:long-float-positive-infinity	ext:long-float-negative-infinity)))
+	;; This is the sort of value this should take on for a Lisp that has
+	;; "eminently usable" infinities.  n.b. there are neither constants nor
+	;; printed representations for infinities defined by CL.
+	;; This grotesque read-from-string below is to help implementations
+	;; which croak on the infinity character when it appears in a token, even
+	;; conditionalized out.
+; 	#+Genera
+; 	  '#.(read-from-string
+; 	      "((fixnum 	most-positive-fixnum	 most-negative-fixnum)
+; 		(short-float 	+1s			 -1s)
+; 		(single-float	+1f			 -1f)
+; 		(double-float	+1d			 -1d)
+; 		(long-float	+1l			 -1l))")
+	;;This is how the alist should look for a lisp that has no infinities.  In
+	;; that case, MOST-POSITIVE-x-FLOAT really IS the most positive.
+	#+(or CLOE-Runtime Minima)
+	  '((fixnum   		most-positive-fixnum		most-negative-fixnum)
+	    (short-float	most-positive-short-float	most-negative-short-float)
+	    (single-float	most-positive-single-float	most-negative-single-float)
+	    (double-float	most-positive-double-float	most-negative-double-float)
+	    (long-float		most-positive-long-float	most-negative-long-float))
+	;; CMUCL has infinities so let's use them.
+	#+CMU
+	  '((fixnum		most-positive-fixnum			most-negative-fixnum)
+	    (short-float	ext:single-float-positive-infinity	ext:single-float-negative-infinity)
+	    (single-float	ext:single-float-positive-infinity	ext:single-float-negative-infinity)
+	    (double-float	ext:double-float-positive-infinity	ext:double-float-negative-infinity)
+	    (long-float		ext:long-float-positive-infinity	ext:long-float-negative-infinity))
+	;; If we don't know, then we cannot provide "infinite" initial values for any of the
+	;; types but FIXNUM:
+	#-(or Genera CLOE-Runtime Minima CMU)
+	  '((fixnum   		most-positive-fixnum		most-negative-fixnum))
+	  )
 
 
 (defun make-loop-minimax (answer-variable type)
@@ -375,7 +447,9 @@ code to be loaded.
 
 (defstruct (loop-universe
 	     #+(or ecl clasp) (:type vector)
-	     #-(or ecl clasp)(:print-function print-loop-universe))
+	     #-(or ecl clasp)(:print-function print-loop-universe)
+	     #+nil (:copier nil)
+	     #+nil (:predicate nil))
   keywords					;hash table, value = (fn-name . extra-data).
   iteration-keywords				;hash table, value = (fn-name . extra-data).
   for-keywords					;hash table, value = (fn-name . extra-data).
@@ -413,6 +487,7 @@ code to be loaded.
 
 (defun make-standard-loop-universe (&key keywords for-keywords iteration-keywords path-keywords
 				    type-keywords type-symbols ansi)
+;;  #-(and CLOE Source-Bootstrap ecl) (check-type ansi (member nil t :extended))
   (flet ((maketable (entries)
 	   (let* ((size (length entries))
 		  (ht (make-hash-table :size (if (< size 10) 10 size) :test #'equal)))
@@ -461,7 +536,7 @@ a LET-like macro, and a SETQ-like macro, which perform LOOP-style destructuring.
 
 
 (defparameter *loop-desetq-temporary*
-  (make-symbol "LOOP-DESETQ-TEMP"))
+	(make-symbol "LOOP-DESETQ-TEMP"))
 
 
 (defmacro loop-really-desetq (&environment env &rest var-val-pairs)
@@ -505,9 +580,14 @@ a LET-like macro, and a SETQ-like macro, which perform LOOP-style destructuring.
 		     (if cdr-non-null
 			 (let* ((temp-p temp)
 				(temp (or temp *loop-desetq-temporary*))
-				(body `(,@(loop-desetq-internal car `(car ,temp))
-                                        (setq ,temp (cdr ,temp))
-                                        ,@(loop-desetq-internal cdr temp temp))))
+				(body #+LOOP-Prefer-POP `(,@(loop-desetq-internal
+							      car
+							      `(prog1 (car ,temp)
+								      (setq ,temp (cdr ,temp))))
+							  ,@(loop-desetq-internal cdr temp temp))
+				      #-LOOP-Prefer-POP `(,@(loop-desetq-internal car `(car ,temp))
+							  (setq ,temp (cdr ,temp))
+							  ,@(loop-desetq-internal cdr temp temp))))
 			   (if temp-p
 			       `(,@(unless (eq temp val)
 				     `((setq ,temp ,val)))
@@ -643,26 +723,41 @@ a LET-like macro, and a SETQ-like macro, which perform LOOP-style destructuring.
 
 
 (defun loop-constant-fold-if-possible (form &optional expected-type)
-  ;; FIXME: Get the environment down here so we can do constantp right.
+  #+Genera (declare (values new-form constantp constant-value))
   (let ((new-form form) (constantp nil) (constant-value nil))
-    (when (setq constantp (constantp new-form))
-      (setq constant-value (eval new-form)))
+    #+Genera (setq new-form (compiler:optimize-form form *loop-macro-environment*
+						    :repeat t
+						    :do-macro-expansion t
+						    :do-named-constants t
+						    :do-inline-forms t
+						    :do-optimizers t
+						    :do-constant-folding t
+						    :do-function-args t)
+		   constantp (constantp new-form *loop-macro-environment*)
+		   constant-value (and constantp (lt:evaluate-constant new-form *loop-macro-environment*)))
+    #-Genera (when (setq constantp (constantp new-form))
+	       (setq constant-value (eval new-form)))
     (when (and constantp expected-type)
       (unless (typep constant-value expected-type)
 	(loop-warn "The form ~S evaluated to ~S, which was not of the anticipated type ~S."
 		   form constant-value expected-type)
 	(setq constantp nil constant-value nil)))
     (values new-form constantp constant-value)))
+
+
+(defun loop-constantp (form)
+  #+Genera (constantp form *loop-macro-environment*)
+  #-Genera (constantp form))
 
 
 ;;;; LOOP Iteration Optimization
 
 (defparameter *loop-duplicate-code*
-  nil)
+	nil)
 
 
 (defparameter *loop-iteration-flag-variable*
-  (make-symbol "LOOP-NOT-FIRST-TIME"))
+	(make-symbol "LOOP-NOT-FIRST-TIME"))
 
 
 (defun loop-code-duplication-threshold (env)
@@ -799,21 +894,20 @@ a LET-like macro, and a SETQ-like macro, which perform LOOP-style destructuring.
 	   (let ((n 0))
 	     (declare (fixnum n))
 	     (dolist (x l n) (incf n (estimate-code-size-1 x env))))))
-    (cond ((constantp x env) 1)
+    ;; ???? (declare (function list-size (list) fixnum))
+    (cond ((constantp x #+Genera env) 1)
 	  ((symbolp x) (multiple-value-bind (new-form expanded-p) (macroexpand-1 x env)
 			 (if expanded-p (estimate-code-size-1 new-form env) 1)))
-          ;; Used to be an atom check here, but any atom that isn't a symbol is a constant.
+	  ((atom x) 1)				;??? self-evaluating???
 	  ((symbolp (car x))
 	   (let ((fn (car x)) (tem nil) (n 0))
 	     (declare (symbol fn) (fixnum n))
 	     (macrolet ((f (overhead &optional (args nil args-p))
 			  `(the fixnum (+ (the fixnum ,overhead)
 					  (the fixnum (list-size ,(if args-p args '(cdr x))))))))
-	       (cond ((setq tem (get-sysprop fn 'estimate-code-size))
-		      (typecase tem
-			(fixnum (f tem))
-			(t (funcall tem x env))))
-		     ((setq tem (assoc fn *special-code-sizes*)) (f (second tem)))
+	       (cond ((setq tem (assoc fn *special-code-sizes*)) (f (second tem)))
+		     #+Genera
+		     ((eq fn 'compiler:invisible-references) (list-size (cddr x)))
 		     ((eq fn 'cond)
 		      (dolist (clause (cdr x) n) (incf n (list-size clause)) (incf n)))
 		     ((eq fn 'desetq)
@@ -1153,7 +1247,9 @@ collected result will be returned as the value of the LOOP."
 		    (push (list newvar initialization) *loop-variables*)
 		    ;; *LOOP-DESETQ-CROCKS* gathered in reverse order.
 		    (setq *loop-desetq-crocks*
-		      (list* name newvar *loop-desetq-crocks*))))))
+		      (list* name newvar *loop-desetq-crocks*))
+		    #+ignore
+		    (loop-make-variable name nil dtype iteration-variable-p)))))
 	(t (let ((tcar nil) (tcdr nil))
 	     (if (atom dtype) (setq tcar (setq tcdr dtype))
 		 (setq tcar (car dtype) tcdr (cdr dtype)))
@@ -1189,6 +1285,12 @@ collected result will be returned as the value of the LOOP."
 	       (t (loop-declare-variable (car name) dtype)
 		  (loop-declare-variable (cdr name) dtype))))
 	(t (error "Invalid LOOP variable passed in: ~S." name))))
+
+
+(defun loop-maybe-bind-form (form data-type)
+  (if (loop-constantp form)
+      form
+      (loop-make-variable (gensym "LOOP-BIND-") form data-type)))
 
 
 
@@ -1266,7 +1368,9 @@ collected result will be returned as the value of the LOOP."
 
 
 (defstruct (loop-collector
-	     #+(or ecl clasp) (:type vector))
+	     #+(or ecl clasp) (:type vector)
+	     #+nil (:copier nil)
+	     #+nil (:predicate nil))
   name
   class
   (history nil)
@@ -1328,7 +1432,7 @@ collected result will be returned as the value of the LOOP."
 	(list (setq form `(list ,form)))
 	(nconc nil)
 	(append (unless (and (consp form) (eq (car form) 'list))
-		  (setq form `(copy-list ,form)))))
+		  (setq form `(loop-copylist* ,form)))))
       (loop-emit-body `(loop-collect-rplacd ,tempvars ,form)))))
 
 
@@ -1362,8 +1466,8 @@ collected result will be returned as the value of the LOOP."
 
 (defun loop-maxmin-collection (specifically)
   (multiple-value-bind (lc form)
-      (loop-get-collection-info specifically 'maxmin 'real)
-    (loop-check-data-type (loop-collector-dtype lc) 'real)
+      (loop-get-collection-info specifically 'maxmin *loop-real-data-type*)
+    (loop-check-data-type (loop-collector-dtype lc) *loop-real-data-type*)
     (let ((data (loop-collector-data lc)))
       (unless data
 	(setf (loop-collector-data lc)
@@ -1448,17 +1552,17 @@ collected result will be returned as the value of the LOOP."
       ;; order.  MAKE-ENDTEST does the nreverse for us.
       (setq tem (setq data (apply (symbol-function (first entry)) (rest entry))))
       (and (car tem) (push (car tem) pre-step-tests))
-      (setq steps (nconc steps (copy-list (car (setq tem (cdr tem))))))
+      (setq steps (nconc steps (loop-copylist* (car (setq tem (cdr tem))))))
       (and (car (setq tem (cdr tem))) (push (car tem) post-step-tests))
-      (setq pseudo-steps (nconc pseudo-steps (copy-list (car (setq tem (cdr tem))))))
+      (setq pseudo-steps (nconc pseudo-steps (loop-copylist* (car (setq tem (cdr tem))))))
       (setq tem (cdr tem))
       (when *loop-emitted-body*
 	(loop-warn "Iteration in LOOP follows body code."))
       (unless tem (setq tem data))
       (when (car tem) (push (car tem) pre-loop-pre-step-tests))
-      (setq pre-loop-steps (nconc pre-loop-steps (copy-list (car (setq tem (cdr tem))))))
+      (setq pre-loop-steps (nconc pre-loop-steps (loop-copylist* (car (setq tem (cdr tem))))))
       (when (car (setq tem (cdr tem))) (push (car tem) pre-loop-post-step-tests))
-      (setq pre-loop-pseudo-steps (nconc pre-loop-pseudo-steps (copy-list (cadr tem))))
+      (setq pre-loop-pseudo-steps (nconc pre-loop-pseudo-steps (loop-copylist* (cadr tem))))
       (unless (loop-tequal (car *loop-source-code*) :and)
 	(setq *loop-before-loop* (list* (loop-make-desetq pre-loop-pseudo-steps)
 					(make-endtest pre-loop-post-step-tests)
@@ -1555,6 +1659,7 @@ collected result will be returned as the value of the LOOP."
 	(if (and (consp vector-form) (eq (car vector-form) 'the))
 	    (cadr vector-form)
 	    'vector))
+      #+Genera (push `(system:array-register ,vector-var) *loop-declarations*)
       (loop-make-variable index-var 0 'fixnum)
       (let* ((length 0)
 	     (length-form (cond ((not constantp)
@@ -1622,6 +1727,15 @@ collected result will be returned as the value of the LOOP."
 		 ;;Contour of the loop is different because we use the user's variable...
 		 `(() (,listvar ,(hide-variable-reference t listvar list-step)) ,other-endtest
 		   () () () ,first-endtest ()))
+		#+LOOP-Prefer-POP
+		((and step-function
+		      (let ((n (cdr (assoc step-function '((cdr . 1) (cddr . 2)
+							   (cdddr . 3) (cddddr . 4))))))
+			(and n (do ((l var (cdr l)) (i 0 (1+ i)))
+				   ((atom l) (and (null l) (= i n)))
+				 (declare (fixnum i))))))
+		 (let ((step (mapcan #'(lambda (x) (list x `(pop ,listvar))) var)))
+		   `(,other-endtest () () ,step ,first-endtest () () ,step)))
 		(t (let ((step `(,var ,listvar)) (pseudo `(,listvar ,list-step)))
 		     `(,other-endtest ,step () ,pseudo
 		       ,@(and (not (eq first-endtest other-endtest))
@@ -1641,6 +1755,9 @@ collected result will be returned as the value of the LOOP."
 	       (pseudo-step `(,listvar ,list-step)))
 	  (when (and constantp (listp list-value))
 	    (setq first-endtest (null list-value)))
+	  #+LOOP-Prefer-POP
+          (when (eq step-function 'cons-cdr)
+            (setq step `(,var (pop ,listvar)) pseudo-step nil))
 	  `(,other-endtest ,step () ,pseudo-step
 	    ,@(and (not (eq first-endtest other-endtest))
 		   `(,first-endtest ,step () ,pseudo-step))))))))
@@ -1650,9 +1767,9 @@ collected result will be returned as the value of the LOOP."
 
 
 (defstruct (loop-path
-            #+(or ecl clasp) (:type vector)
-            (:copier nil)
-            (:predicate nil))
+	     #+(or ecl clasp) (:type vector)
+	     #+nil (:copier nil)
+	     #+nil (:predicate nil))
   names
   preposition-groups
   inclusive-permitted
@@ -1744,7 +1861,7 @@ collected result will be returned as the value of the LOOP."
 	 (this-prep nil nil)
 	 (disallowed-prepositions
 	   (mapcan #'(lambda (x)
-		       (copy-list
+		       (loop-copylist*
 			 (find (car x) preposition-groups :test #'in-group-p)))
 		   initial-phrases))
 	 (used-prepositions (mapcar #'car initial-phrases)))
@@ -1901,13 +2018,13 @@ collected result will be returned as the value of the LOOP."
   (unless var
     (setf var (gensym)))
   (loop-sequencer
-    var (loop-check-data-type data-type 'real) t
+    var (loop-check-data-type data-type *loop-real-data-type*) t
     nil nil nil nil nil nil
     (loop-collect-prepositional-phrases
       '((:from :upfrom :downfrom) (:to :upto :downto :above :below) (:by))
       nil (list (list kwd val)))))
 
-#+nil ; may be adaptable into crhodes' SEQUENCES extension?
+#+nil
 (defun loop-sequence-elements-path (variable data-type prep-phrases
 				    &key fetch-function size-function sequence-type element-type)
   (multiple-value-bind (indexv indexv-user-specified-p) (named-variable 'index)
@@ -2016,9 +2133,6 @@ collected result will be returned as the value of the LOOP."
       (not (multiple-value-setq (,(progn
 				    ;;@@@@ If an implementation can get away without actually
 				    ;; using a variable here, so much the better.
-                                    ;; (I.e., we need the first two values- T if a symbol was
-                                    ;;  returned, and the symbol- but only use the first
-                                    ;;  for this conditional.)
 				    #+Genera NIL
 				    #-Genera (loop-when-it-variable))
 				 ,variable)
@@ -2041,8 +2155,8 @@ collected result will be returned as the value of the LOOP."
 			 (appending (loop-list-collection append))
 			 (nconc (loop-list-collection nconc))
 			 (nconcing (loop-list-collection nconc))
-			 (count (loop-sum-collection count real fixnum))
-			 (counting (loop-sum-collection count real fixnum))
+			 (count (loop-sum-collection count ,*loop-real-data-type* fixnum))
+			 (counting (loop-sum-collection count ,*loop-real-data-type* fixnum))
 			 (sum (loop-sum-collection sum number number))
 			 (summing (loop-sum-collection sum number number))
 			 (maximize (loop-maxmin-collection max))
@@ -2119,6 +2233,14 @@ collected result will be returned as the value of the LOOP."
       (let ((tag (gensym)))
 	`(block nil (tagbody ,tag (progn ,@keywords-and-forms) (go ,tag))))))
 
+
 ;;;INTERFACE: ANSI
 (defmacro loop (&environment env &rest keywords-and-forms)
+  #+Genera (declare (compiler:do-not-record-macroexpansions)
+		    (zwei:indentation . zwei:indent-loop))
   (loop-standard-expansion keywords-and-forms env *loop-ansi-universe*))
+
+#+allegro
+(defun excl::complex-loop-expander (body env)
+  (loop-standard-expansion body env *loop-ansi-universe*))
+
