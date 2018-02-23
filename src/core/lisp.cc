@@ -1958,9 +1958,9 @@ CL_DEFUN List_sp cl__member(T_sp item, T_sp tlist, T_sp key, T_sp test, T_sp tes
       return (Values(form, _Nil<T_O>()));
     } else if (Symbol_sp sform = form.asOrNull<Symbol_O>()) {
       if (env.nilp()) {
-        expansionFunction = core__lookup_symbol_macro(sform, env);
+        expansionFunction = core__symbol_macro(sform, env);
       } else if (Environment_sp eenv = env.asOrNull<Environment_O>()) {
-        expansionFunction = core__lookup_symbol_macro(sform, eenv);
+        expansionFunction = core__symbol_macro(sform, eenv);
       } else if (clcenv::Entry_sp cenv = env.asOrNull<clcenv::Entry_O>() ) {
         clcenv::Info_sp info = clcenv::variable_info(cenv,sform);
         if (clcenv::SymbolMacroInfo_sp smi = info.asOrNull<clcenv::SymbolMacroInfo_O>() ) {
