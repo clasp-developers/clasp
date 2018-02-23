@@ -1,37 +1,8 @@
-(declaim #+sbcl(sb-ext:muffle-conditions style-warning))
-;; This *is* in fact needed to avoid breaking extended characters.
-;; Might mean that non-SBCL implementations should not be used for fear of breaking UTF8...
-;; Source: Quickdocs server.
-#+sbcl
-(setf sb-impl::*default-external-format* :utf-8
-      sb-alien::*default-c-string-external-format* :utf-8)
-
-(let ((lt (or *compile-file-truename* *load-truename*)))
-  (setf *default-pathname-defaults* (make-pathname :name nil :type nil :defaults lt)))
-
-;(ql:quickload "esrap")
-(load "sbcl/libraries/bundle.lisp")
-(asdf:load-system :alexandria)
-(asdf:load-system :esrap)
-(load "packages.lisp")
 (in-package :cscrape)
+
 (defvar *generated-headers-path*)
 (defparameter *clang-path* nil)
 (defparameter *tags* nil)
-
-(load "foundation.lisp")
-(load "parse.lisp")
-(load "tags.lisp")
-(load "serialize.lisp")
-(load "extract-tags.lisp")
-(load "sif-file.lisp")
-(load "conditions.lisp")
-(load "sourcepos.lisp")
-(load "interpret-tags.lisp")
-(load "format.lisp")
-(load "csubst.lisp")
-(load "code-generator.lisp")
-
 (defparameter *classes* nil)
 (defparameter *gc-managed-types* nil)
 (defparameter *symbols* nil)
