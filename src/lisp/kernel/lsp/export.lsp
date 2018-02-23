@@ -66,7 +66,7 @@
                                  (setq %dolist-var (cons-cdr %dolist-var)))
                       ,(when exit `(setq ,var nil))
                       ,@exit)))))))
-  (si::fset 'dolist f t nil '((var list-form &optional result-form) &body body)))
+  (si::fset 'dolist f t '((var list-form &optional result-form) &body body)))
 
 (let ((f #'(lambda (whole env)
              (declare (ignore env) (core:lambda-name dotimes))
@@ -94,7 +94,7 @@
                                  ,@body
                                  (setq ,var (1+ ,var)))
                       ,@exit)))))))
-  (si::fset 'dotimes f t nil '((var count-form &optional result-form) &body body)))
+  (si::fset 'dotimes f t '((var count-form &optional result-form) &body body)))
 
 (let ((f #'(lambda (whole env)
              (declare (ignore env) (core:lambda-name do/do*-expand))
@@ -131,5 +131,5 @@
                                   ,@real-body
                                   ,@(when step (list (cons psetq (nreverse step)))))
                       ,@(or result '(nil)))))))))
-  (si::fset 'do f t t '(vars test &body body))
-  (si::fset 'do* f t t '(vars test &body body)))
+  (si::fset 'do f t '(vars test &body body))
+  (si::fset 'do* f t '(vars test &body body)))

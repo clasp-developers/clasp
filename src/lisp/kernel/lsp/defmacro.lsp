@@ -109,7 +109,6 @@
 		      (unsafe-cdr `(cdr ,cons-pointer))
 		      (unsafe-pop `(setq ,pointer ,unsafe-cdr))
 		      (no-check nil)
-		      (ppn (+ (length reqs) (first opts)))
 		      all-keywords)
 		 ;; In macros, eliminate the name of the macro from the list
 		 (dm-v pointer (if macro
@@ -166,9 +165,7 @@
 			      *arg-check*))
 		       ((not no-check)
 			(push `(if ,pointer (dm-too-many-arguments ,basis-form))
-			      *arg-check*)))
-                 ppn)))
-
+			      *arg-check*))))))
 	   (dm-v (v init)
 	     (cond ((and v (symbolp v))
                     (let ((push-val (if init (list v init) v)))
@@ -203,10 +200,8 @@
 	    ((symbolp vl)
 	     (setq vl (list '&rest vl)))
 	    (t (error "The destructuring-lambda-list ~s is not a list." vl)))
-      (values (dm-vl vl whole macro) whole
-	      (nreverse *dl*)
-              *arg-check*
-	      destructure-symbols))))
+      (dm-vl vl whole macro)
+      (values whole (nreverse *dl*) *arg-check* destructure-symbols))))
 
 ;;; valid lambda-list to DEFMACRO is:
 ;;;
@@ -268,8 +263,7 @@
                 env-part (second env-part))
           (setq env-part (gensym)
                 decls (list* `(declare (ignore ,env-part)) decls)))
-                                        ;(bformat t "About to call multiple-value-call\n")
-      (multiple-value-bind (ppn whole dl arg-check ignorables)
+      (multiple-value-bind (whole dl arg-check ignorables)
           (destructure vl context name)
         (values 
          `(lambda (,whole ,env-part &aux ,@dl)
@@ -278,7 +272,6 @@
             (block ,(si::function-block-name name)
               ,@arg-check
               ,@body))
-         ppn
          doc)))))
 
 #+clasp-min
@@ -289,7 +282,7 @@
 		     (vl (third def))
 		     (body (cdddr def))
 		     (function))
-		(multiple-value-bind (function pprint doc)
+		(multiple-value-bind (function doc)
 		    (sys::expand-defmacro name vl body)
 		  (declare (ignore doc))
 		  (setq function `(function ,function))
@@ -297,7 +290,6 @@
 		    (bformat t "EARLY defmacro.lsp defmacro %s -> %s\n" name function))
 		  `(si::fset ',name ,function
                              t ; macro
-                             ,pprint ; ecl pprint
                              ',vl ; lambda-list
                              ))))
 	  t)
@@ -333,9 +325,8 @@
 (defmacro destructuring-bind (vl list &body body)
   (multiple-value-bind (decls body)
       (find-declarations body)
-    (multiple-value-bind (ppn whole dl arg-check ignorables)
+    (multiple-value-bind (whole dl arg-check ignorables)
         (destructure vl nil)
-      (declare (ignore ppn))
       `(let* ((,whole ,list) ,@dl)
 	 (declare (ignorable ,@ignorables))
          ,@decls

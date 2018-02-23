@@ -1093,22 +1093,20 @@ CL_DEFUN Class_sp cl__class_of(T_sp obj) {
 }
 
 SYMBOL_EXPORT_SC_(CorePkg,STARdebug_fsetSTAR);
-CL_LAMBDA(function-name fn &optional is-macro pretty-print (lambda-list nil lambda-list-p));
+CL_LAMBDA(function-name fn &optional is-macro (lambda-list nil lambda-list-p));
 CL_DECLARE();
 CL_DOCSTRING(R"doc(* Arguments
 - function-name :: The name of the function to bind.
 - fn :: The function object.
 - is-macro :: A boolean.
-- pretty-print : A boolean.
 - lambda-list : A lambda-list or nil.
 - lambda-list-p : T if lambda-list is passed
 * Description
 Bind a function to the function slot of a symbol
 - handles symbol function-name and (SETF XXXX) names.
 IS-MACRO defines if the function is a macro or not.
-PRETTY-PRINT was inherited from ecl - I don't know what its for.
 LAMBDA-LIST passes the lambda-list.)doc");
-CL_DEFUN T_sp core__fset(T_sp functionName, Function_sp functor, T_sp is_macro, T_sp pretty_print, T_sp lambda_list, T_sp lambda_list_p) {
+CL_DEFUN T_sp core__fset(T_sp functionName, Function_sp functor, T_sp is_macro, T_sp lambda_list, T_sp lambda_list_p) {
   if ( NamedFunction_sp functionObject = functor.asOrNull<NamedFunction_O>() ) {
     if (is_macro.isTrue()) {
       functionObject->set_kind(kw::_sym_macro);

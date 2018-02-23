@@ -26,7 +26,7 @@ last FORM.  If not, simply returns NIL."
   ;; Documentation in help.lsp
   (unless (symbolp name)
     (error "Macro name ~s is not a symbol." name))
-  (multiple-value-bind (function pprint doc-string)
+  (multiple-value-bind (function doc-string)
       (sys::expand-defmacro name vl body)
     (setq function `(function ,function))
     (when *dump-defmacro-definitions*
@@ -34,7 +34,6 @@ last FORM.  If not, simply returns NIL."
     `(eval-when (:compile-toplevel :load-toplevel :execute)
        (si::fset ',name ,function
                  t  ; macro
-                 ,pprint ; ecl pprint
                  ',vl ; lambda-list lambda-list-p
                  )
        ,@(si::expand-set-documentation name 'function doc-string)
@@ -103,7 +102,7 @@ VARIABLE doc and can be retrieved by (DOCUMENTATION 'SYMBOL 'VARIABLE)."
            (cmp::register-global-function-def 'defun ',name))
          (let ((,fn ,global-function))
            ;;(bformat t "Performing DEFUN   core:*current-source-pos-info* -> %s\n" core:*current-source-pos-info*)
-           (si::fset ',name ,fn nil t ',vl)
+           (si::fset ',name ,fn nil ',vl)
            (core:set-source-info ,fn ',(list 'core:current-source-file filepos lineno column))
            ,@(si::expand-set-documentation name 'function doc-string)
            ;; This can't be at toplevel.

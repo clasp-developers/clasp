@@ -65,7 +65,7 @@ We could do more fancy things here - like if cleavir-clasp fails, use the clasp 
               (compile-with-hook compile-hook bind-to-name definition env pathname :linkage linkage)
             (when bind-to-name
               (let ((lambda-list (cadr definition)))
-                (core:fset bind-to-name compiled-function nil t lambda-list)))
+                (core:fset bind-to-name compiled-function nil lambda-list)))
             (values compiled-function warnp failp)))))))
 
 (defun compile (name &optional definition)
