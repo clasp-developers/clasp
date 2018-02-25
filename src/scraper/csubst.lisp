@@ -14,6 +14,8 @@
            type)))
     (t type)))
 
+(eval-when (:compile-toplevel :load-toplevel)
+
 ;;; Modified from stassats: https://github.com/stassats/inline-js
 (defun parse-c++ (stream arg char)
   (declare (optimize (speed 3)))
@@ -56,7 +58,7 @@
 
 (set-dispatch-macro-character #\# #\l
                               #'parse-c++)
-
+) ; eval-when
 
 (defun generate-return-value (namespace function-name return-type arg-indexes)
   (cond

@@ -1,4 +1,8 @@
 #-*- mode: python; coding: utf-8-unix -*-
+#
+# In your emacs you may want to: (add-to-list 'auto-mode-alist '("wscript\\'" . python-mode))
+#
+
 import subprocess
 from waflib.Tools import c_preproc
 from waflib.Tools.compiler_cxx import cxx_compiler
@@ -74,30 +78,29 @@ def build_extension(bld):
     print("    In Development/cando/wscript::build_extension")
     bld.recurse("extensions")
 
-
 def grovel(bld):
     bld.recurse("extensions")
 
-    
 def update_submodules(cfg):
-    os.system("echo This is where I get submodules")
-    sicl_commit = "2ace76606c8e1126b2005db4f4afd812904138c0"
-    cst_commit = "c8305d8069e67c0b3f37a2cf6a79bcba501801d8"
-    closer_mop_commit = "d4d1c7aa6aba9b4ac8b7bb78ff4902a52126633f"
-    alexandria_commit = "e5c54bc30b0887c237bde2827036d17315f88737"
-    os.system("./tools/fetch-revision.sh https://github.com/drmeister/SICL.git src/lisp/kernel/contrib/sicl %s" % sicl_commit)
-    os.system("./tools/fetch-revision.sh https://github.com/robert-strandh/Concrete-Syntax-Tree.git src/lisp/kernel/contrib/Concrete-Syntax-Tree %s" % cst_commit)
-    os.system("./tools/fetch-revision.sh https://github.com/pcostanza/closer-mop.git src/lisp/kernel/contrib/closer-mop %s" % closer_mop_commit)
-    os.system("./tools/fetch-revision.sh https://gitlab.common-lisp.net/alexandria/alexandria.git src/lisp/kernel/contrib/alexandria %s" % alexandria_commit)
-    os.system("git submodule update --init src/lisp/kernel/contrib/Acclimation")
-    os.system("git submodule update --init src/mps")
-    os.system("git submodule update --init src/lisp/modules/asdf")
+    def fetch_git_revision(path, url, revision="", label="master"):
+        ret = os.system("./tools/fetch-git-revision.sh '%s' '%s' '%s' '%s'" % (path, url, revision, label))
+        if ( ret != 0 ):
+            raise Exception("Failed to fetch git url %s" % url)
+
+    print("Updating git submodules")
+    fetch_git_revision("src/lisp/kernel/contrib/sicl",
+                       "https://github.com/Bike/SICL.git",
+                       "a080c75b0aa17a939b09cb378514cfee7a72a4c0")
+    fetch_git_revision("src/lisp/kernel/contrib/Acclimation",
+                       "https://github.com/robert-strandh/Acclimation.git",
+                       "dd15c86b0866fc5d8b474be0da15c58a3c04c45c")
+    fetch_git_revision("src/mps",
+                       "https://github.com/Ravenbrook/mps.git",
+                       "f3d66d06170bae706809f555dcb56acae35e9497")
+    fetch_git_revision("src/lisp/modules/asdf",
+                       "https://github.com/clasp-developers/asdf.git",
+                       "81e4f08d9c1dc95a3446c1782506342a59f70c34")
     os.system("(cd src/lisp/modules/asdf; make)")
-
-def sync_submodules(cfg):
-    os.system("echo This is where I sync submodules")
-    os.system("git submodule sync")
-
 
 # run this from a completely cold system with:
 # ./waf distclean configure
@@ -568,7 +571,7 @@ def configure(cfg):
     # find a lisp for the scraper
     if not cfg.env.SCRAPER_LISP:
         cfg.env["SBCL"] = cfg.find_program("sbcl", var = "SBCL")[0]
-        cfg.env["SCRAPER_LISP"] = [cfg.env.SBCL] + "--noinform --dynamic-space-size 4096 --lose-on-corruption --disable-ldb --no-userinit --disable-debugger".split()
+        cfg.env["SCRAPER_LISP"] = [cfg.env.SBCL] + "--noinform --dynamic-space-size 4096 --lose-on-corruption --disable-ldb --end-runtime-options --disable-debugger  --no-userinit --no-sysinit".split()
     global cxx_compiler, c_compiler
     cxx_compiler['linux'] = ["clang++"]
     c_compiler['linux'] = ["clang"]
@@ -815,6 +818,7 @@ def configure(cfg):
             variant_instance = eval("i"+variant+"()")
             print("Setting up variant: %s" % variant_instance.variant_dir())
             variant_instance.configure_variant(cfg,env_copy)
+    update_submodules(cfg)
 
 def copy_tree(bld,src,dest):
     print("Copy tree src = %s" % src)
@@ -876,13 +880,10 @@ def build(bld):
     extension_headers_node = variant.extension_headers_node(bld)
     print("extension_headers_node = %s" % extension_headers_node.abspath())
 
-    setup_sbcl_task = setup_sbcl(env=bld.env)
-    #    setup_sbcl_task.set_inputs([os.path.join(self.env.BUILD_ROOT, "src/scraper/setup_sbcl.lisp")])
-    setup_path = bld.path.find_or_declare("src/scraper/setup_sbcl.lisp")
-    #    setup_sbcl_task.set_inputs([os.path.join(self.env.BUILD_ROOT, "src/scraper/setup_sbcl.lisp")])
-    setup_sbcl_task.set_inputs([setup_path])
-    setup_sbcl_task.set_outputs([bld.path.find_or_declare("generated/setup_sbcl.h")])
-    bld.add_to_group(setup_sbcl_task)
+    # Without this the parallel ASDF load-op's later on step on each other's feet
+    precomp = precompile_scraper(env=bld.env)
+    precomp.set_outputs([bld.path.find_or_declare("generated/scraper-precompile-done")])
+    bld.add_to_group(precomp)
 
     extensions_task = build_extension_headers(env=bld.env)
     inputs = [wscript_node] + bld.extensions_gcinterface_include_files
@@ -1337,18 +1338,6 @@ class compile_module(Task.Task):
 #            all_inputs.write(' %s' % x)
 #        return self.exec_command('llvm-ar a %s %s' % ( self.outputs[0], all_inputs.getvalue()) )
 
-class setup_sbcl(Task.Task):
-    def run(self):
-        cmd = [] + self.env.SCRAPER_LISP + [
-            "--load", self.inputs[0].abspath(), 
-            "--eval", "(setup-sbcl #P\"%s\" #P\"%s\")" % (self.inputs[0].abspath(),self.outputs[0].abspath()),
-            "--eval", "(quit)" ]
-        print( "setup_sbcl  cmd -> %s" % cmd)
-        return self.exec_command(cmd,shell=True)
-
-    def keyword(ctx):
-        return "Setting up to scrape"
-    
 class build_extension_headers(Task.Task):
 #    print("DEBUG build_extension_headers directory = %s\n" % root )
 #    print("DEBUG build_extension_headers headers_list=%s\n"% headers_list)
@@ -1421,59 +1410,61 @@ class build_bitcode(Task.Task):
         print("build_intrinsics bitcode cmd = %s" % cmd)
         return self.exec_command(cmd, shell = True)
 
-class scrape_with_preproc_scan(Task.Task):
-    # This is kept for reference, it got converted into a run(self) method below.
-    #run_str = '../../src/common/preprocess-to-sif ${TGT[0].abspath()} ${CXX} -E -DSCRAPING ${ARCH_ST:ARCH} ${CXXFLAGS} ${CPPFLAGS} ${FRAMEWORKPATH_ST:FRAMEWORKPATH} ${CPPPATH_ST:INCPATHS} ${DEFINES_ST:DEFINES} ${CXX_SRC_F}${SRC}'
-    ext_out = ['.sif']
-    shell = True
-    def run(self):
+class scraper_task(Task.Task):
+    def build_scraper_cmd(self, extraCommands = [], scraperArgs = []):
         env = self.env
-        preproc_args = [] + env.CXX + ["-E -DSCRAPING"] + self.colon("ARCH_ST", "ARCH") + env.CXXFLAGS + env.CPPFLAGS + \
-                       self.colon("FRAMEWORKPATH_ST", "FRAMEWORKPATH") + \
-                       self.colon("CPPPATH_ST", "INCPATHS") + \
-                       self.colon("DEFINES_ST", "DEFINES")
-        preproc_args = ' '.join(preproc_args) + " " + self.inputs[0].abspath()
+        bld = self.generator.bld
+        scraper_home = os.path.join(env.BUILD_ROOT, "src/scraper/")
+        fasl_dir = os.path.join(bld.path.abspath(), out, "host-fasl/")
         cmd = [] + env.SCRAPER_LISP + [
-            "--load", os.path.join(env.BUILD_ROOT, "src/scraper/scraper.lisp"),
-            "--eval", "(cscrape:generate-one-sif \"%s\" #P\"%s\")" % (preproc_args, self.outputs[0].abspath()),
-            "--eval", "(quit)"]
-#        print("scrape = %s" % cmd)
-        return self.exec_command(cmd, shell = True)
+            "--eval", "(require :asdf)",
+            "--eval", "(asdf:initialize-source-registry '(:source-registry (:directory \"%s\") :ignore-inherited-configuration))" % scraper_home,
+            "--eval", "(asdf:initialize-output-translations '(:output-translations (t (\"%s\" :implementation)) :inherit-configuration))" % fasl_dir,
+            "--load", os.path.join(env.BUILD_ROOT, "src/scraper/dependencies/bundle.lisp"),
+            "--eval", "(let ((uiop:*uninteresting-conditions* (list* 'style-warning uiop:*usual-uninteresting-conditions*)) (*compile-print* nil) (*compile-verbose* nil)) (asdf:load-system :clasp-scraper))",
+            ] + extraCommands + [
+            "--eval", "(quit)", "--end-toplevel-options"] + scraperArgs
+        return cmd
 
-    def scan(self):
-        saved_env = self.env
-        self.env = self.env.derive()
-        self.env.DEFINES = list(self.env.DEFINES)+["SCRAPING=1"]
-        scan_result = c_preproc.scan(self)
-        self.env = saved_env
-        return scan_result
+class precompile_scraper(scraper_task):
+    def run(self):
+        cmd = self.build_scraper_cmd(["--eval", '(with-open-file (stream "%s" :direction :output :if-exists :supersede) (terpri stream))' % self.outputs[0].abspath()])
+        return self.exec_command(cmd,shell=True)
 
     def keyword(ctx):
-        return "Scraping with preproc.scan"
+        return "Compiling the scraper"
 
-class generated_headers(Task.Task):
-#    ext_out = ['.h']
+class generate_one_sif(scraper_task):
+    ext_out = ['.sif']
+    shell = False
+    def run(self):
+        env = self.env
+        preproc_args = [] + env.CXX + ["-E", "-DSCRAPING"] + self.colon("ARCH_ST", "ARCH") + env.CXXFLAGS + env.CPPFLAGS + \
+                       self.colon("FRAMEWORKPATH_ST", "FRAMEWORKPATH") + \
+                       self.colon("CPPPATH_ST", "INCPATHS") + \
+                       self.colon("DEFINES_ST", "DEFINES") + \
+                       [self.inputs[0].abspath()]
+        cmd = self.build_scraper_cmd(["--eval", "(cscrape:generate-one-sif '(%s) #P\"%s\")" %
+                                      ((' '.join('"' + item + '"' for item in preproc_args)),
+                                       self.outputs[0].abspath())])
+        return self.exec_command(cmd)
+
+    def keyword(ctx):
+        return "Scraping, generate-one-sif"
+
+class generate_headers_from_all_sifs(scraper_task):
     def run(self):
         env = self.env
         bld = self.generator.bld
-        cmd = [] + env.SCRAPER_LISP + [
-            "--load", os.path.join(env.BUILD_ROOT, "src/scraper/scraper.lisp"),
-            "--eval", "(cscrape:generate-headers-from-all-sifs)",
-            "--eval", "(quit)",
-            "--",
-            # there should be a simpler way...
-            os.path.join(bld.path.abspath(), out, bld.variant_obj.variant_dir() + "/"),
-            env.BUILD_ROOT + "/"]
+        cmd = self.build_scraper_cmd(["--eval", "(cscrape:generate-headers-from-all-sifs)"],
+                                     [os.path.join(bld.path.abspath(), out, bld.variant_obj.variant_dir() + "/"),
+                                     env.BUILD_ROOT + "/"])
         for f in self.inputs:
             cmd.append(f.abspath())
         return self.exec_command(cmd)
 
-    def __str__(self):
-        return "generating headers from all sif files."
-
-#    def display(self):
-#        master = self.generator.bld.producer
-#        return "[%d/%d] Generating headers from all sif files\n" % (master.processed-1,master.total)
+    def keyword(ctx):
+        return "Scraping, generate-headers-from-all-sifs"
 
 # Have all 'cxx' targets have 'include' in their include paths.
 @TaskGen.feature('cxx')
@@ -1502,7 +1493,7 @@ def scrape_task_generator(self):
                 if ( node.name[:len('fastgf.cc')] == 'fastgf.cc' ):
                     fastgf_cc = node
                 sif_node = node.change_ext('.sif')
-                self.create_task('scrape_with_preproc_scan',node,[sif_node])
+                self.create_task('generate_one_sif',node,[sif_node])
                 all_sif_files.append(sif_node)
             for node in task.outputs:
 #                print("node = %s" % node.get_src())
@@ -1528,7 +1519,7 @@ def scrape_task_generator(self):
     output_nodes = []
     for x in generated_headers:
         output_nodes.append(self.path.find_or_declare(x))
-    self.create_task('generated_headers', all_sif_files, output_nodes)
+    self.create_task('generate_headers_from_all_sifs', all_sif_files, output_nodes)
     self.bld.install_files('${PREFIX}/lib/clasp/', output_nodes, relative_trick = True, cwd = self.bld.path)  # includes
     variant = self.bld.variant_obj
 # intrinsics    

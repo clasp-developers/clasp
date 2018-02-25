@@ -207,6 +207,8 @@ all functions."
   (push (list fname (fdefinition fname) old-definition)
         *trace-list*))
 
+
+;;; will only work if trace-record-name is still fbound
 (defun traced-and-redefined-p (record)
   (and record (not (eq (trace-record-definition record)
                        (fdefinition (trace-record-name record))))))
@@ -215,6 +217,9 @@ all functions."
   (let ((record (trace-record fname)))
     (cond ((null record)
            (warn "The function ~S was not traced." fname))
+           ;;; issue #400
+           ((not (fboundp fname))
+            (warn "The function ~S was traced, but fmakunbound." fname))
           ((traced-and-redefined-p record)
            (warn "The function ~S was traced, but redefined." fname))
           (t
