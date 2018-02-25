@@ -22,7 +22,8 @@
                            append (cdr (cst:listify declaration-cst))))
              (lambda-name-info (find 'core:lambda-name dspecs :key (lambda (cst) (cst:raw (cst:first cst)))))
              (lambda-name (if lambda-name-info
-                              (cdr (cst:raw lambda-name-info)))))
+                              (car (cdr (cst:raw lambda-name-info))))))
+        #+(or)(format *debug-io* "lambda-name -> ~a~%" lambda-name)
         (unless lambda-name (setq lambda-name 'lambda))
         ;; Define the function-scope-info object and bind it to
         ;; the *current-function-scope-info* object
