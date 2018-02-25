@@ -33,7 +33,6 @@
   (clos::gf-log "     class -> %s\n" name)
   (multiple-value-bind (metaclass direct-superclasses options)
       (apply #'help-ensure-class rest)
-    (declare (ignore #-clasp direct-superclasses))
     ;;; In Clasp make-instance of a class requires that a new stamp is chosen
     (setf class (apply #'make-instance metaclass :name name options))
     ;;

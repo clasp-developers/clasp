@@ -182,7 +182,7 @@
 (defun standard-instance-access (instance location)
   (cond ((si:fixnump location)
          ;; local slot
-         (si:instance-ref instance (truly-the fixnum location)))
+         (si:instance-ref instance (the fixnum location)))
         ((consp location)
          ;; shared slot
          (car location))
@@ -192,7 +192,7 @@
 (defun (setf standard-instance-access) (val instance location)
   (cond ((si:fixnump location)
          ;; local slot
-         (si:instance-set instance (truly-the fixnum location) val))
+         (si:instance-set instance (the fixnum location) val))
         ((consp location)
          ;; shared slot
          (setf (car location) val))
@@ -259,6 +259,5 @@
 ;;;
 
 (defun invalid-slot-location (instance location)
-  (declare (si::c-local))
   (error "Invalid location ~A when accessing slot of class ~A"
 	 location (class-of location)))

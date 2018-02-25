@@ -201,7 +201,6 @@
   (find-package name))
 
 (defun find-or-make-symbol (name package)
-  (declare (si::c-local))
   (multiple-value-bind (symbol found)
       (find-symbol name package)
     (unless found
@@ -213,7 +212,6 @@
     symbol))
 
 (defun find-duplicates (&rest lists)
-  (declare (si::c-local))
   (let (results)
     (loop for list in lists
 	  for more on (cdr lists)

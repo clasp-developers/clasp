@@ -111,14 +111,12 @@ THE SOFTWARE.
 #include <clasp/core/hashTableEqualp.h>
 #include <clasp/core/instance.h>
 #include <clasp/core/funcallableInstance.h>
-#include <clasp/core/metaobject.h>
 #include <clasp/core/null.h>
 //#include <clasp/core/singleDispatchEffectiveMethodFunction.h>
 #include <clasp/core/singleDispatchGenericFunction.h>
 #include <clasp/core/specialForm.h>
 #include <clasp/core/sexpLoadArchive.h>
 #include <clasp/core/sexpSaveArchive.h>
-#include <clasp/core/specializer.h>
 #include <clasp/core/metaClass.h>
 #include <clasp/core/bignum.h>
 #include <clasp/core/builtInClass.h>
@@ -194,6 +192,9 @@ SYMBOL_EXPORT_SC_(ExtPkg,unix_signal_received);
 SYMBOL_EXPORT_SC_(KeywordPkg,process);
 SYMBOL_EXPORT_SC_(KeywordPkg,code);
 
+
+SYMBOL_EXPORT_SC_(CorePkg, STARmpi_rankSTAR);
+SYMBOL_EXPORT_SC_(CorePkg, STARmpi_sizeSTAR);
 
 SYMBOL_EXPORT_SC_(ClPkg, upgraded_array_element_type);
 SYMBOL_EXPORT_SC_(ClPkg, member);
@@ -360,7 +361,6 @@ SYMBOL_EXPORT_SC_(ExtPkg, STARinspectorHookSTAR);
 SYMBOL_EXPORT_SC_(ExtPkg, float_nan_string);
 SYMBOL_EXPORT_SC_(ExtPkg, float_infinity_string);
 SYMBOL_EXPORT_SC_(ExtPkg, STARdefault_external_formatSTAR);
-SYMBOL_EXPORT_SC_(ExtPkg, truly_the);
 SYMBOL_EXPORT_SC_(ExtPkg, specialVar);
 SYMBOL_EXPORT_SC_(ExtPkg, registerVar);
 SYMBOL_EXPORT_SC_(ExtPkg, lexicalVar);

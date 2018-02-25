@@ -87,7 +87,6 @@ for the error message and ARGs are arguments to the format string."
      ,repl)))
 
 (defun accumulate-cases (cases list-is-atom-p)
-  (declare (si::c-local))
   (do ((c cases (cdr c))
        (l '()))
       ((null c) (nreverse l))
@@ -128,7 +127,6 @@ signals an error."
       (return-from ccase-error value))))
 
 (defun remove-otherwise-from-clauses (clauses)
-  (declare (si::c-local))
   (mapcar #'(lambda (clause)
 	      (let ((options (first clause)))
 		(if (member options '(t otherwise))

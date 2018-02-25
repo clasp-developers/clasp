@@ -1027,6 +1027,9 @@ void throwCatchThrow(core::T_sp *tagP) {
 #endif
 
 DONT_OPTIMIZE_WHEN_DEBUG_RELEASE void throwReturnFrom(size_t depth, core::ActivationFrame_O* frameP) {
+#ifdef DEBUG_TRACK_UNWINDS
+  global_ReturnFrom_count++;
+#endif
   core::ActivationFrame_sp af((gctools::Tagged)(frameP));
   core::T_sp handle = *const_cast<core::T_sp *>(&core::value_frame_lookup_reference(af, depth, 0));
 #if defined(DEBUG_FLOW_CONTROL) || defined(DEBUG_RETURN_FROM)
@@ -1198,6 +1201,9 @@ void throwIllegalSwitchValue(size_t val, size_t max) {
 
 
 void throwDynamicGo(size_t depth, size_t index, core::T_O *afP) {
+#ifdef DEBUG_TRACK_UNWINDS
+  global_DynamicGo_count++;
+#endif
   T_sp af((gctools::Tagged)afP);
   ValueFrame_sp tagbody = core::tagbody_frame_lookup(af,depth,index);
   T_O* handle = tagbody->operator[](0).raw_();
@@ -1590,6 +1596,9 @@ T_O **cc_multipleValuesArrayAddress()
 }
 
 void cc_unwind(T_O *targetFrame, size_t index) {
+#ifdef DEBUG_TRACK_UNWINDS
+  global_unwind_count++;
+#endif
 #ifdef DEBUG_FLOW_CONTROL
   if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
     printf("%s:%d In cc_unwind targetFrame: %ld  index: %" PRu "\n", __FILE__, __LINE__, gc::untag_fixnum(targetFrame), index);

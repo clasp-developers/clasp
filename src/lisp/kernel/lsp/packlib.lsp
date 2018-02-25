@@ -92,7 +92,6 @@ is used."
       ,@body)))
 
 (defun expand-do-symbols (var package result-form body options)
-  (declare (si::c-local))
   (let* ((i (gensym))
 	 (found (gensym))
 	 declaration doc)
@@ -168,7 +167,6 @@ If PACKAGE is non-NIL, then only the specified PACKAGE is searched."
         collect (setf previous x)))
 
 (defun apropos-list-inner (string package &optional seen-packages)
-  (declare (si::c-local))
   (when (member package seen-packages) (return-from apropos-list-inner nil))
   (setf seen-packages (cons package seen-packages))
   (let* ((list '())

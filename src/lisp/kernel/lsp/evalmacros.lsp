@@ -329,7 +329,7 @@ FORM returns no value, NIL."
   (do ((vl vars (cdr vl))
        (sym (gensym))
        (forms nil)
-       (n 0 (ext:truly-the fixnum (1+ n))))
+       (n 0 (the fixnum (1+ n))))
       ((endp vl) `(LET ((,sym (MULTIPLE-VALUE-LIST ,form))) ,@forms))
     (declare (fixnum n))
     (push `(SETQ ,(car vl) (NTH ,n ,sym)) forms)))
@@ -349,7 +349,6 @@ values of the last FORM.  If no FORM is given, returns NIL."
       `(multiple-value-call #'(lambda (&optional ,@(mapcar #'list vars) &rest ,(gensym)) ,@body) ,form)))
 
 (defun while-until (test body jmp-op)
-  (declare (si::c-local))
   (let ((label (gensym))
 	(exit (gensym)))
     `(TAGBODY

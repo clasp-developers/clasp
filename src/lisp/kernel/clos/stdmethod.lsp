@@ -23,7 +23,7 @@
 			      &key (specializers nil spec-supplied-p)
 			      (lambda-list nil lambda-supplied-p)
 			      generic-function)
-  (declare (ignore initargs slot-names))
+  (declare (ignore initargs))
   (when slot-names
     (unless spec-supplied-p
       (error "Specializer list not supplied in method initialization"))
@@ -45,14 +45,10 @@
 
 #+threads
 (defparameter *eql-specializer-lock* (mp:make-lock :name 'eql-specializer))
-#-clasp
-(defparameter *eql-specializer-hash*
-  (make-hash-table :size 128 :test #'eql))
-#+clasp ;; I don't want this hash-table erased when I reload during bootstrap
+;; We don't want this hash-table erased when we reload during bootstrap, so defvar instead of parameter.
 (defvar *eql-specializer-hash*
   (make-hash-table :size 128 :test #'eql))
 
-;;#-clasp
 #+threads
 (defun intern-eql-specializer (object)
   (let ((table *eql-specializer-hash*))
@@ -61,7 +57,6 @@
 	  (setf (gethash object table)
 		(make-instance 'eql-specializer :object object))))))
 
-;;#+clasp
 #-threads
 (defun intern-eql-specializer (object)
   (let ((table *eql-specializer-hash*))
@@ -84,7 +79,6 @@
 	    (delete gf (specializer-direct-generic-functions spec))))
     (values)))
 
-;;#-clasp
 #+threads
 (defmethod remove-direct-method ((spec eql-specializer) (method method))
   (mp:with-lock (*eql-specializer-lock*)
@@ -93,7 +87,6 @@
       (remhash spec *eql-specializer-hash*)))
   (values))
 
-;;#+clasp
 #-threads
 (defmethod remove-direct-method ((spec eql-specializer) (method method))
     (call-next-method)

@@ -125,7 +125,6 @@ in the generic function lambda-list to the generic function lambda-list"
                 (maybe-augment-generic-function-lambda-list ',name ',lambda-list)))))))))
 
 (defun specializers-expression (specializers)
-  (declare (si::c-local))
   (list 'si::quasiquote
 	(loop for spec in specializers
 	   collect (if (atom spec)
@@ -155,7 +154,6 @@ in the generic function lambda-list to the generic function lambda-list"
   method-lambda)
 
 (defun make-raw-lambda (name lambda-list required-parameters specializers body env qualifiers)
-  (declare (si::c-local))
   (multiple-value-bind (declarations real-body documentation)
       (sys::find-declarations body)
     ;; FIXME!! This deactivates the checking of keyword arguments
@@ -255,7 +253,6 @@ in the generic function lambda-list to the generic function lambda-list"
                                                   nil))))))))
 
 (defun walk-method-lambda (method-lambda env)
-  (declare (si::c-local))
   (let ((call-next-method-p nil)
         (next-method-p-p nil))
     (flet ((code-walker (form env)
@@ -302,7 +299,6 @@ in the generic function lambda-list to the generic function lambda-list"
     "This function takes a method lambda list and outputs the list of required
 arguments, the list of specializers and a new lambda list where the specializer
 have disappeared."
-    (declare (si::c-local))
     ;; SI:PROCESS-LAMBDA-LIST will ensure that the lambda list is
     ;; syntactically correct and will output as a first argument the
     ;; list of required arguments. We use this list to extract the
@@ -346,7 +342,6 @@ have disappeared."
   )
 
 (defun declaration-specializers (arglist declarations)
-  (declare (si::c-local))
   (do ((argscan arglist (cdr argscan))
        (declist (when declarations (cdr declarations))))
       ((or
@@ -370,7 +365,6 @@ have disappeared."
      allow-other-keys)))
 
 (defun make-method (method-class qualifiers specializers lambda-list fun options)
-  (declare (ignore options))
   (multiple-value-bind (keys aok-p)
       (compute-method-keywords lambda-list)
     (with-early-make-instance
@@ -410,9 +404,7 @@ have disappeared."
 	(setf (generic-function-argument-precedence-order gf)
 	      (rest (si::process-lambda-list (method-lambda-list method) t))))
       (compute-g-f-spec-list gf)
-;;      (update-specializer-profile gf (method-specializers method))
-;;      (update-call-history-for-add-method gf method)
-      (set-funcallable-instance-function gf 'invalidated-dispatch-function)
+      (invalidate-discriminating-function gf)
       method)))
 
 (defun find-method (gf qualifiers specializers &optional (errorp t))

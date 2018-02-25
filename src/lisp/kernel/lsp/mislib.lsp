@@ -61,6 +61,14 @@ successfully, T is returned, else error."
 	 llvm-finalization-number-end
 	 (clang-link-time-start llvm-sys:*accumulated-clang-link-time*)
 	 (clang-link-number-start llvm-sys:*number-of-clang-links*)
+         #+(and debug-track-unwinds) (start-unwinds (gctools:unwind-counter))
+         #+(and debug-track-unwinds) end-unwinds
+         #+(and debug-track-unwinds) (start-return-from (gctools:return-from-counter))
+         #+(and debug-track-unwinds) end-return-from
+         #+(and debug-track-unwinds) (start-dynamic-go (gctools:dynamic-go-counter))
+         #+(and debug-track-unwinds) end-dynamic-go
+         #+(and debug-track-unwinds) (start-catch-throw (gctools:catch-throw-counter))
+         #+(and debug-track-unwinds) end-catch-throw
 	 clang-link-time-end
 	 clang-link-number-end
 	 gc-start
@@ -86,20 +94,12 @@ successfully, T is returned, else error."
 	    clang-link-time-end llvm-sys:*accumulated-clang-link-time*
 	    clang-link-number-end llvm-sys:*number-of-clang-links*
             )
-      #-clasp(format *trace-output*
-		     "real time     : ~,3F secs~%~
-              run time      : ~,3F secs~%~
-              GC time       : ~,3F secs~%~
-              LLVM time     : ~,3F secs~%~
-              LLVM compiles : ~A~%"
-		     (/ (- real-end real-start) internal-time-units-per-second)
-		     (/ (- run-end run-start) internal-time-units-per-second)
-		     (/ (- gc-end gc-start) internal-time-units-per-second)
-		     (- llvm-finalization-time-end llvm-finalization-time-start)
-		     (- llvm-finalization-number-end llvm-finalization-number-start)
-		     )
-      #+clasp(format *trace-output*
-                     "Real time           : ~,3F secs~%~
+      #+(and debug-track-unwinds) (setf end-unwinds (gctools:unwind-counter))
+      #+(and debug-track-unwinds) (setf end-return-from (gctools:return-from-counter))
+      #+(and debug-track-unwinds) (setf end-dynamic-go (gctools:dynamic-go-counter))
+      #+(and debug-track-unwinds) (setf end-catch-throw (gctools:catch-throw-counter))
+      (format *trace-output*
+              "Real time           : ~,3F secs~%~
               Run time            : ~,3F secs~%~
               Bytes consed        : ~a bytes~%~
               LLVM time           : ~,3F secs~%~
@@ -107,14 +107,24 @@ successfully, T is returned, else error."
               clang link time     : ~,3F secs~%~
               clang links         : ~A~%~
               Interpreted closures: ~A~%"
-		     (float (/ (- real-end real-start) internal-time-units-per-second))
-		     (float (/ (- run-end run-start) internal-time-units-per-second))
-                     (- clasp-bytes-end clasp-bytes-start)
-		     (- llvm-finalization-time-end llvm-finalization-time-start)
-		     (- llvm-finalization-number-end llvm-finalization-number-start)
-		     (- clang-link-time-end clang-link-time-start)
-		     (- clang-link-number-end clang-link-number-start)
-                     (- interpreted-calls-end interpreted-calls-start))))
+              (float (/ (- real-end real-start) internal-time-units-per-second))
+              (float (/ (- run-end run-start) internal-time-units-per-second))
+              (- clasp-bytes-end clasp-bytes-start)
+              (- llvm-finalization-time-end llvm-finalization-time-start)
+              (- llvm-finalization-number-end llvm-finalization-number-start)
+              (- clang-link-time-end clang-link-time-start)
+              (- clang-link-number-end clang-link-number-start)
+              (- interpreted-calls-end interpreted-calls-start))
+      #+(and debug-track-unwinds)
+      (format *trace-output*
+              "Unwinds             : ~A~%~
+              ReturnFrom unwinds  : ~A~%~
+              DynamicGo unwinds   : ~A~%~
+              CatchThrow unwinds  : ~A~%"
+              (- end-unwinds start-unwinds)
+              (- end-return-from start-return-from)
+              (- end-dynamic-go start-dynamic-go)
+              (- end-catch-throw start-catch-throw))))
   #+boehm-gc
   (let* ((*do-time-level* (1+ *do-time-level*))
          real-start
@@ -158,12 +168,10 @@ Evaluates FORM, outputs the realtime and runtime used for the evaluation to
   `(do-time #'(lambda () ,form)))
 
 (defun leap-year-p (y)
-  (declare (si::c-local))
   (and (zerop (mod y 4))
        (or (not (zerop (mod y 100))) (zerop (mod y 400)))))
 
 (defun number-of-days-from-1900 (y)
-  (declare (si::c-local))
   (let ((y1 (1- y)))
     (+ (* (- y 1900) 365)
        (floor y1 4) (- (floor y1 100)) (floor y1 400)
@@ -175,11 +183,9 @@ Evaluates FORM, outputs the realtime and runtime used for the evaluation to
 #-clasp-min
 (defun get-local-time-zone ()
   "Returns the number of hours West of Greenwich for the local time zone."
-  (declare (si::c-local))
   (core:unix-get-local-time-zone))
 
 (defun recode-universal-time (sec min hour day month year tz dst)
-  (declare (si::c-local))
   (let ((days (+ (if (and (leap-year-p year) (> month 2)) 1 0)
 		 (1- day)
 		 (svref month-startdays (1- month))
@@ -242,7 +248,6 @@ GET-DECODED-TIME."
 (defun daylight-saving-time-p (universal-time year)
   "Returns T if Daylight Saving Time applies to the local time zone at
 Universal Time UT, which defaults to the current time."
-  (declare (si::c-local))
   ;; Some systems cannot deal with dates before 1-1-1970 and no POSIX
   ;; system will be able to handle dates beyond 2038. We must
   ;; therefore restrict the time to the interval that can handled by

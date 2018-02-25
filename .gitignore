@@ -1,3 +1,6 @@
+src/lisp/kernel/contrib/
+src/lisp/modules/asdf/
+src/mps/
 GPATH
 GRTAGS
 GTAGS

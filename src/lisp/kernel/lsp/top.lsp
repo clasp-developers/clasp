@@ -1,4 +1,4 @@
-;;;;  -*- Mode: Lisp1; Syntax: Common-Lisp; Package: SYSTEM -*-
+;;;;  -*- Mode: Lisp; Syntax: Common-Lisp; Package: SYSTEM -*-
 ;;;;
 ;;;;  top.lsp -- Top-level loop, break loop, and error handlers
 ;;;;
@@ -802,7 +802,6 @@ Use special code 0 to cancel this operation.")
     (values)))
 
 (defun reconstruct-bytecodes-lambda-list (data)
-  (declare (si::c-local data))
   (let ((output '()))
     (dotimes (n (pop data))	;; required values
       (declare (fixnum n))
@@ -834,7 +833,6 @@ Use special code 0 to cancel this operation.")
     (nreverse output)))
 
 (defun lambda-list-from-annotations (name)
-  (declare (si::c-local))
   (let ((args (core:get-annotation name :lambda-list nil)))
     (values args (and args t))))
 

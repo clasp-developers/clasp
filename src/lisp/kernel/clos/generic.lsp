@@ -39,7 +39,6 @@
 	    output))))))
 
 (defun parse-defgeneric (args)
-  (declare (si::c-local))
   ;; (values function-specifier lambda-list options)
   (let (function-specifier)
     (unless args
@@ -50,7 +49,6 @@
     (values function-specifier (first args) (rest args))))
 
 (defun parse-generic-options (options lambda-list)
-  (declare (si::c-local))
   (let* ((processed-options '())
 	 (method-list '())
 	 (declarations '())
@@ -90,7 +88,6 @@
 	    method-list)))
 
 (defun parse-lambda-list (lambda-list &optional post-keyword)
-  (declare (si::c-local))
   (let ((arg (car lambda-list)))
     (cond ((null lambda-list))
 	  ((eq arg '&AUX)
@@ -106,7 +103,6 @@
 	       (parse-lambda-list (cdr lambda-list)))))))
 
 (defun valid-declaration-p (decl)
-  ;(declare (si::c-local))
   (and (eq (first decl) 'OPTIMIZE)
        (loop for item in decl
 	  always (or (atom item)
@@ -197,7 +193,6 @@
      for exchange = (generic-function-specializer-profile-compare-exchange gfun profile new-profile)
      until (eq exchange new-profile)))
   
-#+clasp
 (defmethod shared-initialize :after ((gfun generic-function) slot-names &rest initargs)
   "In Clasp we need to initialize the specializer-profile with an 
    array of (length (lambda-list-required-arguments lambda-list)) full of nil."
@@ -206,15 +201,13 @@
   gfun)
 
 
-(defmethod shared-initialize ((gfun standard-generic-function) slot-names
-			      &rest initargs)
+(defmethod shared-initialize :after ((gfun standard-generic-function) slot-names
+                                     &rest initargs)
   (declare (ignore slot-names)
            (core:lambda-name shared-initialize-standard-generic-function))
-  (call-next-method)
   (when (generic-function-methods gfun)
     (compute-g-f-spec-list gfun))
-  (update-dependents gfun initargs)
-  gfun)
+  (update-dependents gfun initargs))
 
 (defun associate-methods-to-gfun (name &rest methods)
   (let ((gfun (fdefinition name)))

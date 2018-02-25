@@ -2227,6 +2227,11 @@ CL_DEFUN T_sp core__va_arg(VaList_sp v)
   return v->next_arg();
 }
 
+CL_DEFUN bool core__vaslistp(T_sp o)
+{
+  return o.valistp();
+}
+
 CL_DEFUN List_sp core__list_from_va_list(VaList_sp vorig)
 {
   Vaslist valist_copy(*vorig);

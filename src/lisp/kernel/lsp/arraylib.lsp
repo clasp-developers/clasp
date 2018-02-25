@@ -150,8 +150,7 @@ contiguous block."
 (defun fill-array-with-seq (array initial-contents)
   (declare (array array)
            (sequence initial-contents)
-           (optimize (safety 0))
-           (si::c-local))
+           (optimize (safety 0)))
   (labels ((iterate-over-contents (array contents dims written)
 	     (declare (fixnum written)
 		      (array array)
@@ -211,8 +210,8 @@ INDEXes must be equal to the rank of ARRAY."
     (if indices
 	(let* ((index (cons-car indices)))
 	  (when (or (not (si::fixnump index))
-		    (minusp (truly-the fixnum index))
-		    (>= (truly-the fixnum index) (array-dimension array i)))
+		    (minusp (the fixnum index))
+		    (>= (the fixnum index) (array-dimension array i)))
 	    (return nil)))
 	(error "The rank of the array is ~R,~%~
                ~7@Tbut ~R ~:*~[indices are~;index is~:;indices are~] ~
@@ -221,8 +220,7 @@ INDEXes must be equal to the rank of ARRAY."
 
 (defun row-major-index-inner (array indices)
   (declare (optimize speed)
-           (array array)
-           (si::c-local))
+           (array array))
   (flet ((indexing-error (array indices)
            (error "Not valid index or indices~%~A~%into array~%~A" indices array)))
     (do* ((r (array-rank array))
@@ -364,7 +362,7 @@ to by the new fill-pointer.  Signals an error if the old value of the fill-
 pointer is 0 already."
   ;; FILL-POINTER asserts vector is a vector and has fill pointer
   (let* ((fp (fill-pointer vector))
-         (vector (truly-the vector vector)))
+         (vector (the vector vector)))
     (declare (ext:array-index fp)
              (optimize (safety 0)))
     (when (zerop fp)
@@ -373,8 +371,7 @@ pointer is 0 already."
     (aref vector fp)))
 
 (defun copy-array-contents (dest orig)
-  (declare (si::c-local)
-           (array dest orig)
+  (declare (array dest orig)
 	   (optimize (safety 0)))
   (labels
       ((do-copy (dest orig dims1 dims2 start1 start2)

@@ -17,6 +17,19 @@
 
 (defparameter *clos-booted* nil)
 
+;;; Sets a GF's discrminating function to the "invalidated" state.
+;;; In this state, the next call will compute a real discriminating function.
+(defun invalidate-discriminating-function (gf)
+  ;; It may seem weird to set the thing to a symbol. And it is.
+  ;; We special case set-funcallable-instance-function (in core/funcallableInstance.cc) so that it
+  ;; becomes a C++ method that just calls clos:invalidated-dispatch-function with the gf and vaslist.
+  ;; (clos:invalidated-dispatch-function is a normal lisp function defined in closfastgf.lisp.)
+  ;; This is basically equivalent to
+  ;; (set-funcallable-instance-function gf (lambda (core:&va-rest args) (invalidated-dispatch-function gf args)))
+  ;; but without allocating a closure.
+  ;; In the future, this special casing will probably go away.
+  (set-funcallable-instance-function gf 'invalidated-dispatch-function))
+
 ;;; ----------------------------------------------------------------------
 ;;;
 ;;; FIND-CLASS  naming classes.
@@ -111,7 +124,7 @@
 	      :declarations nil
 	      :dependents nil)
 	;; create a new gfun
-	(set-funcallable-instance-function gfun 'invalidated-dispatch-function)
+        (invalidate-discriminating-function gfun)
 	(setf (fdefinition name) gfun)
 	gfun)))
 
@@ -154,8 +167,7 @@
 (setf (fdefinition 'compute-applicable-methods) #'std-compute-applicable-methods)
 
 (defun applicable-method-list (gf args)
-  (declare (optimize (speed 3))
-	   (si::c-local))
+  (declare (optimize (speed 3)))
   (with-early-accessors (+standard-method-slots+
 			 +standard-generic-function-slots+
 			 +eql-specializer-slots+
@@ -239,14 +251,12 @@
               (nreverse
                (push most-specific ordered-list))))
         (dolist (meth (cdr scan))
-          (when (eq (compare-methods most-specific
-                                     meth args-specializers f) 2)
+          (when (eql (compare-methods most-specific meth args-specializers f) 2)
             (setq most-specific meth)))
         (setq scan (delete most-specific scan))
         (push most-specific ordered-list)))))
 
 (defun compare-methods (method-1 method-2 args-specializers f)
-  (declare (si::c-local))
   (with-early-accessors (+standard-method-slots+)
     (let* ((specializers-list-1 (method-specializers method-1))
 	   (specializers-list-2 (method-specializers method-2)))
@@ -255,7 +265,6 @@
 				  args-specializers))))
 
 (defun compare-specializers-lists (spec-list-1 spec-list-2 args-specializers)
-  (declare (si::c-local))
   (when (or spec-list-1 spec-list-2)
     (ecase (compare-specializers (first spec-list-1)
 				 (first spec-list-2)
@@ -275,7 +284,6 @@
   )
 
 (defun fast-subtypep (spec1 spec2)
-  (declare (si::c-local))
   ;; Specialized version of subtypep which uses the fact that spec1
   ;; and spec2 are either classes or of the form (EQL x)
   (with-early-accessors (+eql-specializer-slots+ +standard-class-slots+)
@@ -292,7 +300,6 @@
 	    (si::subclassp spec1 spec2)))))
 
 (defun compare-specializers (spec-1 spec-2 arg-class)
-  (declare (si::c-local))
   (with-early-accessors (+standard-class-slots+ +standard-class-slots+)
     (let* ((cpl (class-precedence-list arg-class)))
       (cond ((eq spec-1 spec-2) '=)

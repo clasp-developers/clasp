@@ -108,7 +108,6 @@
 ;;; First generic function calls done here.
 
 (defun register-method-with-specializers (method)
-  (declare (si::c-local))
   (loop for spec in (method-specializers method)
         do (add-direct-method spec method)))
 
@@ -179,7 +178,6 @@
 	 options))
 
 (defun all-keywords (l)
-  (declare (si::c-local))
   (let ((all-keys '()))
     (do ((l (rest l) (cddddr l)))
 	((null l)
@@ -309,14 +307,13 @@ and cannot be added to ~A." method other-gf gf)))
   (declare (ignore gf))
   (error "In method ~A~%No next method given arguments ~A" method args))
 
-(defun no-required-method (gf methods group-name)
-  ;; FIXME: Find a way to get the actual arguments - clearer that way
-  (error "No applicable methods in required group ~s for generic function ~s~@
-          Applicable methods:~%~s"
-         group-name gf methods))
+(defun no-required-method (gf group-name &rest args)
+  (error "No applicable methods in required group ~a for generic function ~a~@
+          Given arguments: ~a"
+         group-name gf args))
 
 ;;; Now we protect classes from redefinition:
-(eval-when (compile load)
+(eval-when (:compile-toplevel :load-toplevel)
 (defun setf-find-class (new-value name &optional errorp env)
   (declare (ignore errorp))
   (let ((old-class (find-class name nil env)))
@@ -326,15 +323,11 @@ and cannot be added to ~A." method other-gf gf)))
 	      name))
       ((member name '(CLASS BUILT-IN-CLASS) :test #'eq)
        (error "The kernel CLOS class ~S cannot be changed." name))
-      ((classp new-value)
-       #+clasp(core:set-class new-value name)
-       #+ecl(setf (gethash name si:*class-name-hash-table*) new-value))
-      ((null new-value)
-       #+clasp(core:set-class nil name) ; removes class
-       #+ecl(remhash name si:*class-name-hash-table*))
+      ((classp new-value) (core:set-class new-value name))
+      ((null new-value) (core:set-class nil name))
       (t (error "~A is not a class." new-value))))
   new-value)
-)
+) ; eval-when
 
 ;;; ----------------------------------------------------------------------
 ;;;                                                             miscellany

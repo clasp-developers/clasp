@@ -44,7 +44,6 @@
 ;;
 
 (defun filter-dolist-declarations (declarations)
-  (declare (si::c-local))
   (let ((a nil))
     (mapc #'(lambda (clause)
               (when (not (and (consp clause)

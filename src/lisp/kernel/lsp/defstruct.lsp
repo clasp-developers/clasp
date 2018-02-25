@@ -25,8 +25,7 @@
 	 :expected-type slot-type))
 
 (defun make-access-function (name conc-name type named slot-descr)
-  (declare (ignore named)
-	   (si::c-local))
+  (declare (ignore named))
   (let* ((slot-name (nth 0 slot-descr))
 	 ;; (default-init (nth 1 slot-descr))
 	 ;; (slot-type (nth 2 slot-descr))
@@ -59,8 +58,7 @@
 
 
 (defun do-setf-structure-method (access-function type index)
-  (declare (si::c-local)
-	   (optimize (speed 3) (safety 0)))
+  (declare (optimize (speed 3) (safety 0)))
   (put-sysprop access-function 'STRUCTURE-ACCESS (cons type index))
   (do-defsetf access-function
     (cond ((or (eq type 'list) (eq type 'vector))
@@ -74,7 +72,6 @@
 	       `(sys:structure-set ,struct ',type ,index ,newvalue))))))
 
 (defun process-boa-lambda-list (slot-names slot-descriptions boa-list assertions)
-  (declare (si::c-local))
   (let ((mentioned-slots '())
 	(aux))
     ;; With a call to PROCESS-LAMBDA-LIST we ensure that the lambda list is
@@ -133,8 +130,7 @@
       (values boa-list assertions))))
 
 (defun make-constructor (name constructor type named slot-descriptions)
-  (declare (ignore named)
-	   (si::c-local))
+  (declare (ignore named))
   ;; CONSTRUCTOR := constructor-name | (constructor-name boa-lambda-list)
   (let* ((boa-constructor-p (consp constructor))
 	 (keys (unless boa-constructor-p (list '&key)))
@@ -201,7 +197,6 @@
 
 
 (defun make-predicate (name type named name-offset)
-  (declare (si::c-local))
   (cond ((null type)
 	 #'(lambda (x)
 	     (si::structure-subtypep (type-of x) name)))
@@ -235,7 +230,6 @@
 ;;;        (slot-name default-init slot-type read-only offset accessor-name)
 
 (defun parse-slot-description (slot-description offset &optional read-only)
-  (declare (si::c-local))
   (let* ((slot-type 'T)
 	 slot-name default-init)
     (cond ((atom slot-description)
@@ -266,7 +260,6 @@
 ;;;  :include defstruct option.
 
 (defun overwrite-slot-descriptions (new-slots old-slots)
-  (declare (si::c-local))
   (do* ((output '())
         (old-slots old-slots (rest old-slots)))
        ((null old-slots)

@@ -17,12 +17,10 @@
 (in-package "SYSTEM")
 
 (defun check-stores-number (context stores-list n)
-  (declare (si::c-local))
   (unless (= (length stores-list) n)
     (error "~d store-variables expected in setf form ~a." n context)))
 
 (defun do-setf-method-expansion (name lambda args &optional (stores-no 1))
-  (declare (si::c-local))
   (let* ((vars '())
          (inits '())
          (all '())
@@ -329,8 +327,7 @@ Does not check if the third gang is a single-element list."
 	      `(mask-field ,btemp ,access-form)))))
 
 (defun trivial-setf-form (place vars stores store-form access-form)
-  (declare (si::c-local)
-	   (optimize (speed 3) (safety 0)))
+  (declare (optimize (speed 3) (safety 0)))
   (and (atom place)
        (null vars)
        (eq access-form place)
@@ -346,11 +343,10 @@ Does not check if the third gang is a single-element list."
   ;; When the store form contains all the original arguments in order
   ;; followed by a single stored value, we can produce an expansion
   ;; without LET forms.
-  (declare (si::c-local)
-	   (optimize (speed 3) (safety 0)))
+  (declare (optimize (speed 3) (safety 0)))
   (when (and (consp place)
 	     (consp store-form)
-	     (= (length place) (truly-the fixnum (1- (length store-form)))))
+	     (= (length place) (the fixnum (1- (length store-form)))))
     (let ((function (pop store-form))
 	  (output '())
 	  v)
@@ -360,8 +356,8 @@ Does not check if the third gang is a single-element list."
 			(nreverse (cons newvalue output)))))
 	(unless (consp store-form)
 	  (return nil))
-	(setq v (car (truly-the cons store-form))
-	      store-form (cdr (truly-the cons store-form)))
+	(setq v (car (the cons store-form))
+	      store-form (cdr (the cons store-form)))
 	;; This checks that the argument at this position coincides with
 	;; the corresponding value in the original list. Note that the
 	;; variable list need not be in order.
@@ -373,8 +369,7 @@ Does not check if the third gang is a single-element list."
 
 ;;; The expansion function for SETF.
 (defun setf-expand-1 (place newvalue env)
-  (declare (si::c-local)
-	   (notinline mapcar))
+  (declare (notinline mapcar))
   (multiple-value-bind (vars vals stores store-form access-form)
       (get-setf-expansion place env)
     (cond ((trivial-setf-form place vars stores store-form access-form)
@@ -386,7 +381,6 @@ Does not check if the third gang is a single-element list."
 		,store-form))))))
 
 (defun setf-expand (l env)
-  (declare (si::c-local))
   (cond ((endp l) nil)
         ((endp (cdr l)) (error "~S is an illegal SETF form." l))
         (t
@@ -594,7 +588,7 @@ Returns the car of the old value in PLACE."
                       (append vars stores)
                       (append vals (list access-form)))
          (prog1 (car ,store-var)
-           (setq ,store-var (cdr (truly-the list ,store-var)))
+           (setq ,store-var (cdr (the list ,store-var)))
            ,store-form)))))
 
 (define-setf-expander values (&rest values &environment env)

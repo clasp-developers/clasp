@@ -1,4 +1,4 @@
-FROM ubuntu:16.10
+FROM ubuntu:17.10
 MAINTAINER Christian Schafmeister <meister@temple.edu>
 
 # add LLVM repo
@@ -22,8 +22,8 @@ RUN apt-get update && apt-get upgrade -y && apt-get install -y \
 
 # install clasp runtime dependencies
 RUN apt-get -y install \
-  libboost-filesystem1.61.0 libboost-date-time1.61.0 libboost-program-options1.61.0 \
-  libboost-iostreams1.61.0 libgc1c2 llvm-5.0-runtime libgmpxx4ldbl \
+  libboost-filesystem1.62.0 libboost-date-time1.62.0 libboost-program-options1.62.0 \
+  libboost-iostreams1.62.0 libgc1c2 llvm-5.0-runtime libgmpxx4ldbl \
   clang-5.0 binutils python-clang-5.0 lld-5.0 libzmq3-dev \
   && apt-get clean
 
