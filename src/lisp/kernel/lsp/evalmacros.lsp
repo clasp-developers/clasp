@@ -22,22 +22,24 @@ If TEST evaluates to NIL, then evaluates FORMs and returns all values of the
 last FORM.  If not, simply returns NIL."
   `(IF (NOT ,pred) (PROGN ,@body)))
 
-(defmacro defmacro (&whole whole name vl &body body &aux doc-string)
-  ;; Documentation in help.lsp
-  (unless (symbolp name)
-    (error "Macro name ~s is not a symbol." name))
-  (multiple-value-bind (function doc-string)
-      (sys::expand-defmacro name vl body)
-    (setq function `(function ,function))
-    (when *dump-defmacro-definitions*
-      (bformat t "ADVANCED evalmacros.lsp defmacro %s --> %s\n" name function))
-    `(eval-when (:compile-toplevel :load-toplevel :execute)
-       (si::fset ',name ,function
-                 t  ; macro
-                 ',vl ; lambda-list lambda-list-p
-                 )
-       ,@(si::expand-set-documentation name 'function doc-string)
-       ',name)))
+(defmacro defmacro (name lambda-list &body body &environment env)
+  `(eval-when (:compile-toplevel :load-toplevel :execute)
+     (funcall #'(setf macro-function)
+              ;; explicit #' because lambda is not installed yet. FIXME.
+              #',(ext:parse-macro name lambda-list body env)
+              ',name)
+     ',name))
+
+(defmacro destructuring-bind (vl list &body body)
+  (multiple-value-bind (decls body)
+      (find-declarations body)
+    (multiple-value-bind (whole dl arg-check ignorables)
+        (destructure vl nil)
+      `(let* ((,whole ,list) ,@dl)
+	 (declare (ignorable ,@ignorables))
+         ,@decls
+         ,@arg-check
+         ,@body))))
 
 (defmacro defvar (&whole whole var &optional (form nil form-sp) doc-string)
   "Syntax: (defvar name [form [doc]])
@@ -114,19 +116,13 @@ VARIABLE doc and can be retrieved by (DOCUMENTATION 'SYMBOL 'VARIABLE)."
 ;;;
 ;;; This is a no-op unless the compiler is installed
 ;;;
-(defmacro bclasp-define-compiler-macro (&whole whole name vl &rest body)
-  (multiple-value-bind (function pprint doc-string)
-      (sys::expand-defmacro name vl body 'bclasp-define-compiler-macro)
-    (declare (ignore pprint))
-    (setq function `(function ,function))
-    (when *dump-defun-definitions*
-      (print function)
-      (setq function `(si::bc-disassemble ,function)))
-    ;; CLHS doesn't actually say d-c-m has compile time effects, but it's nice to match defmacro
-    `(eval-when (:compile-toplevel :load-toplevel :execute)
-       (core:setf-bclasp-compiler-macro-function ',name ,function)
-       ,@(si::expand-set-documentation name 'function doc-string)
-       ',name)))
+(defmacro bclasp-define-compiler-macro (&whole whole name vl &rest body &environment env)
+  ;; CLHS doesn't actually say d-c-m has compile time effects, but it's nice to match defmacro
+  `(eval-when (:compile-toplevel :load-toplevel :execute)
+     (core:setf-bclasp-compiler-macro-function
+      ',name
+      (function ,(ext:parse-compiler-macro name vl body env)))
+     ',name))
 
 (defun bclasp-compiler-macro-function (name &optional env)
   ;;  (declare (ignorable env))
@@ -159,24 +155,21 @@ VARIABLE doc and can be retrieved by (DOCUMENTATION 'SYMBOL 'VARIABLE)."
 
 (export '(bclasp-compiler-macroexpand-1 bclasp-compiler-macroexpand))
 
-(defmacro define-compiler-macro (&whole whole name vl &rest body)
-  (multiple-value-bind (function pprint doc-string)
-      (sys::expand-defmacro name vl body 'cl:define-compiler-macro)
-    (declare (ignore pprint))
-    (setq function `(function ,function))
-    (when *dump-defun-definitions*
-      (print function)
-      (setq function `(si::bc-disassemble ,function)))
-    ;; CLHS doesn't actually say d-c-m has compile time effects, but it's nice to match defmacro
-    `(eval-when (:compile-toplevel :load-toplevel :execute)
-       (core:setf-compiler-macro-function ',name ,function)
-       ,@(si::expand-set-documentation name 'function doc-string)
-       ',name)))
-
 (defun compiler-macro-function (name &optional env)
   ;;  (declare (ignorable env))
   (core:get-compiler-macro-function name env))
-;;  (values (get-sysprop name 'sys::compiler-macro)))
+
+(defun (setf compiler-macro-function) (function name &optional env)
+  (core:setf-compiler-macro-function name function env)
+  function)
+
+(defmacro define-compiler-macro (&whole whole name vl &rest body &environment env)
+  ;; CLHS doesn't actually say d-c-m has compile time effects, but it's nice to match defmacro
+  `(eval-when (:compile-toplevel :load-toplevel :execute)
+     (funcall #'(setf compiler-macro-function)
+              (function ,(ext:parse-compiler-macro name vl body env))
+              ',name)
+     ',name))
 
 (defun compiler-macroexpand-1 (form &optional env)
   (if (atom form)

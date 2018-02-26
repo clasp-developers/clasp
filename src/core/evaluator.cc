@@ -884,22 +884,6 @@ void extract_declares_docstring_code_specials(List_sp inputBody, List_sp &declar
   declares = cl__nreverse(declares);
 }
 
-#if 0
-#define ARGS_af_extractDeclaresDocstringCode "(body &key (expect-docstring t))"
-#define DECL_af_extractDeclaresDocstringCode ""
-#define DOCS_af_extractDeclaresDocstringCode "extractDeclaresDocstringCode"
-T_mv af_extractDeclaresDocstringCode(List_sp body, T_sp expectDocStr)
-{
-  IMPLEMENT_MEF("Switch to process-declarations");
-  List_sp declares;
-  String_sp docstr;
-  List_sp code;
-  List_sp specials;
-  extract_declares_docstring_code_specials(body,declares,expectDocStr.isTrue(),docstr,code,specials);
-  return Values(declares,docstr,code,specials);
-};
-#endif
-
 void extract_declares_code(List_sp args, List_sp &declares, List_sp &code) {
   gc::Nilable<String_sp> dummy_docstring;
   List_sp specials;
@@ -1784,7 +1768,7 @@ T_mv doMacrolet(List_sp args, T_sp env, bool toplevel) {
     // printf("   inner_declares = %s\n", _rep_(inner_declares).c_str());
     // printf("   inner_docstring = %s\n", _rep_(inner_docstring).c_str());
     // printf("   inner_code = %s\n", _rep_(inner_code).c_str());
-    List_sp outer_func_cons = eval::funcall(core::_sym_parse_macro, name, olambdaList, inner_body);
+    List_sp outer_func_cons = eval::funcall(ext::_sym_parse_macro, name, olambdaList, inner_body);
     //		printf("%s:%d sp_macrolet outer_func_cons = %s\n", __FILE__, __LINE__, _rep_(outer_func_cons).c_str());
     Function_sp outer_func;
     List_sp outer_ll = oCadr(outer_func_cons);

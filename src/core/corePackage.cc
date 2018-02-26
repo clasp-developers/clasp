@@ -610,7 +610,6 @@ SYMBOL_SC_(CorePkg, STARenvironmentPrintingTabIncrementSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARenvironment_debugSTAR);
 SYMBOL_SC_(CorePkg, _PLUS_activationFrameNil_PLUS_);
 SYMBOL_EXPORT_SC_(ClPkg, cond);
-SYMBOL_SC_(CorePkg, parse_macro);
 SYMBOL_SC_(CorePkg, globalFunction);
 SYMBOL_SC_(CorePkg, globalSetfFunction);
 SYMBOL_SC_(CorePkg, lexicalFunction);

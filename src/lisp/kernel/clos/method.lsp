@@ -77,10 +77,7 @@ in the generic function lambda-list to the generic function lambda-list"
                       (core:function-lambda-list-set gf new-ll)))))))))))
 
 (defmacro defmethod (&whole whole name &rest args &environment env)
-  (declare (notinline make-method-lambda))
-  (let* ((*print-length* 3) ; FIXME: What?
-	 (*print-depth* 2)
-         (source-location (ext:current-source-location))
+  (let* ((source-location (ext:current-source-location))
          (qualifiers (loop while (and args (not (listp (first args))))
 			collect (pop args)))
 	 (specialized-lambda-list
@@ -94,8 +91,7 @@ in the generic function lambda-list to the generic function lambda-list"
 	  (make-raw-lambda name lambda-list required-parameters specializers body env qualifiers)
         (mlog "In defmethod lambda-list %s   lambda-form %s\n" lambda-list lambda-form) 
 	(let* ((generic-function (ensure-generic-function name))
-	       (method-class (progn
-			       (generic-function-method-class generic-function)))
+	       (method-class (generic-function-method-class generic-function))
 	       method)
 	  (when *clos-booted*
 	    (when (symbolp method-class)

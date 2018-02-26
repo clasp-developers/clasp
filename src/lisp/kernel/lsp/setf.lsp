@@ -238,8 +238,6 @@ Does not check if the third gang is a single-element list."
 (defsetf documentation sys::set-documentation)
 #+clos
 (defsetf instance-ref instance-set)
-(defsetf compiler-macro-function (fname) (function)
-  `(sys::put-sysprop ,fname 'sys::compiler-macro ,function))
 (defsetf readtable-case sys:readtable-case-set)
 (defsetf stream-external-format sys::stream-external-format-set)
 

@@ -43,6 +43,9 @@ SYMBOL_SC_(ExtPkg, aSingleExtSymbol);
 SYMBOL_EXPORT_SC_(ExtPkg, compiledFunctionName);
 SYMBOL_EXPORT_SC_(ExtPkg, ansi_stream);
 
+SYMBOL_EXPORT_SC_(ExtPkg, constant_form_value);
+SYMBOL_EXPORT_SC_(ExtPkg, parse_macro);
+
 #define ARGS_af_maybeQuote "(form)"
 #define DECL_af_maybeQuote ""
 #define DOCS_af_maybeQuote "Quotes a form only if strictly required. This happens when FORM is either a symbol and not a keyword"

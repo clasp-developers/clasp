@@ -73,20 +73,7 @@
 (defmacro progv (symbols values &rest forms)
   `(core:progv-function ,symbols ,values #'(lambda () ,@forms)))
 
-
-
 (in-package :core)
-#+clasp
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
-;;; PARSE-MACRO is needed by sp_macrolet and the compiler
-;;;
-(defun parse-macro (name vl body &optional env)
-  (multiple-value-bind (lblock ppn doc)
-      (si::expand-defmacro name vl body)
-    lblock))
-
-(export 'parse-macro)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -95,9 +82,6 @@
 (defmacro debug-message (msg) nil)
 (export 'debug-message)
 
-
-
-(in-package :core)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; Set the fdefinition for all special operators to something more reasonable than T

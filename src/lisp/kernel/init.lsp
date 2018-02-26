@@ -358,6 +358,13 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 
 (defvar *special-init-defun-symbol* (gensym "special-init-defun-symbol"))
 
+;; Simple, so not temporary
+;; Ideally should be defined in C++ or such
+(si:fset '(setf macro-function)
+         #'(lambda (function name &optional env)
+             (declare (ignore env))
+             (si:fset name function t)))
+
 ;;; A temporary definition of defun - the real one is in evalmacros
 #+clasp-min
 (eval-when (:execute)
@@ -370,7 +377,7 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
                      (function (lambda (&optional (decl) (body) (doc) &rest rest)
                        (declare (ignore rest))
                        (if decl (setq decl (list (cons 'declare decl))))
-                       (let ((func `#'(lambda ,lambda-list ,@decl ,@doc (block ,name ,@body))))
+                       (let ((func `#'(lambda ,lambda-list ,@decl ,@doc (block ,(si::function-block-name name) ,@body))))
                          ;;(bformat t "PRIMITIVE DEFUN defun --> %s\n" func )
                           `(progn (eval-when (:compile-toplevel)
                                     (cmp::register-global-function-def 'defun ',name))
