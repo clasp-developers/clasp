@@ -89,11 +89,20 @@ def update_submodules(cfg):
 
     print("Updating git submodules")
     fetch_git_revision("src/lisp/kernel/contrib/sicl",
-                       "https://github.com/Bike/SICL.git",
-                       "a080c75b0aa17a939b09cb378514cfee7a72a4c0")
+                       "https://github.com/drmeister/SICL.git",
+                       "2ace76606c8e1126b2005db4f4afd812904138c0")
+    fetch_git_revision("src/lisp/kernel/contrib/Concrete-Syntax-Tree",
+                       "https://github.com/robert-strandh/Concrete-Syntax-Tree.git",
+                       "c8305d8069e67c0b3f37a2cf6a79bcba501801d8")
+    fetch_git_revision("src/lisp/kernel/contrib/closer-mop",
+                       "https://github.com/pcostanza/closer-mop.git",
+                       "d4d1c7aa6aba9b4ac8b7bb78ff4902a52126633f")
     fetch_git_revision("src/lisp/kernel/contrib/Acclimation",
                        "https://github.com/robert-strandh/Acclimation.git",
                        "dd15c86b0866fc5d8b474be0da15c58a3c04c45c")
+    fetch_git_revision("src/mps",
+                       "https://github.com/Ravenbrook/mps.git",
+                       "f3d66d06170bae706809f555dcb56acae35e9497")
     fetch_git_revision("src/mps",
                        "https://github.com/Ravenbrook/mps.git",
                        "f3d66d06170bae706809f555dcb56acae35e9497")
