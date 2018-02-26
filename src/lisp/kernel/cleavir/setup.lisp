@@ -9,14 +9,34 @@
 (defvar *current-function-entry-basic-block*)
 
 (defvar *current-function-scope-info*)
+
 (defclass function-scope ()
   ((scope-function-name :initarg :scope-function-name :accessor scope-function-name)
    (source-pos-info :initarg :source-pos-info :accessor source-pos-info)))
+
+(defmethod make-load-form ((object function-scope) &optional environment)
+  `(make-instance 'function-scope
+                  :scope-function-name ',(clasp-cleavir::scope-function-name object)
+                  :source-pos-info (core:make-cxx-object 'core:source-pos-info
+                                                         :sfi (core:decode (core:make-cxx-object 'core:source-file-info)
+                                                                           ',(core:encode (core:source-file-info (core:source-pos-info-file-handle (source-pos-info object)))))
+                                                         :fp ,(core:source-pos-info-filepos (source-pos-info object))
+                                                         :l ,(core:source-pos-info-lineno (source-pos-info object))
+                                                         :c ,(core:source-pos-info-column (source-pos-info object)))))
 
 (defclass scoped-source-pos-info ()
   ((source-pos-info :initarg :source-pos-info :accessor source-pos-info)
    (scope :initarg :scope :accessor scope)))
 
+(defmethod make-load-form ((object scoped-source-pos-info) &optional environment)
+  `(make-instance 'scoped-source-pos-info
+                  :source-pos-info (core:make-cxx-object 'core:source-pos-info
+                                                         :sfi (core:decode (core:make-cxx-object 'core:source-file-info)
+                                                                           ',(core:encode (core:source-file-info (core:source-pos-info-file-handle (source-pos-info object)))))
+                                                         :fp ,(core:source-pos-info-filepos (source-pos-info object))
+                                                         :l ,(core:source-pos-info-lineno (source-pos-info object))
+                                                         :c ,(core:source-pos-info-column (source-pos-info object)))
+                  :scope ,(make-load-form (scope object))))
 
 ;;; Save top level forms for source tracking
 (defmethod cleavir-generate-ast::convert-form :around (form info env system)

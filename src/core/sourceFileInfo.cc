@@ -328,6 +328,24 @@ SourceFileInfo_sp SourceFileInfo_O::create(Pathname_sp path, int handle, T_sp so
   return sfi;
 }
 
+void SourceFileInfo_O::fields(Record_sp node) {
+  node->field(INTERN_(kw,pathname),this->_pathname);
+  switch (node->stage()) {
+  case Record_O::initializing:
+  case Record_O::loading: {
+    SourceFileInfo_mv sfi = _lisp->getOrRegisterSourceFileInfo(gc::As<String_sp>(cl__namestring(this->_pathname))->get());
+    *this = *sfi;
+  } break;
+  case Record_O::patching: {
+    IMPLEMENT_MEF("Add support to patch SourceFileInfo_O");
+  } break;
+  default: {
+    // nothing
+  }
+  }
+}
+      
+  
 SourceFileInfo_sp SourceFileInfo_O::create(const string &str, int handle, T_sp truename, size_t offset, bool useLineno) {
   Pathname_sp pn = cl__pathname(SimpleBaseString_O::make(str));
   return SourceFileInfo_O::create(pn, handle, truename, offset, useLineno);
@@ -400,6 +418,28 @@ SourcePosInfo_sp SourcePosInfo_O::make(const string& filename, size_t filepos, s
   return SourcePosInfo_O::create(sfi_handle,filepos,lineno,column);
 }
 
+
+void SourcePosInfo_O::fields(Record_sp node)
+{
+  node->field(INTERN_(kw,fp),this->_Filepos);
+  node->field(INTERN_(kw,l),this->_Lineno);
+  node->field(INTERN_(kw,c),this->_Column);
+  switch (node->stage()) {
+  case Record_O::initializing:
+  case Record_O::loading: {
+    SourceFileInfo_sp sfi;
+    node->field(INTERN_(kw,sfi),sfi);
+    this->_FileId = sfi->_FileHandle;
+  } break;
+  case Record_O::saving: {
+    SourceFileInfo_sp sfi = core__source_file_info(make_fixnum(this->_FileId));
+    node->field(INTERN_(kw,sfi),sfi);
+  } break;
+  case Record_O::patching: {
+    IMPLEMENT_MEF("Handle patching of SourcePosInfo_O");
+  } break;
+  }
+}
 
 string SourcePosInfo_O::__repr__() const {
   stringstream ss;
