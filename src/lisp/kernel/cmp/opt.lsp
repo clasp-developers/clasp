@@ -12,8 +12,6 @@
         ;; self-evaluating
         (t form)))
 
-(export '(constant-form-value)) ; FIXME MOVE
-
 (in-package #:cmp)
 
 ;; If a form refers to a function we can use as the head of a form, return something suitable
