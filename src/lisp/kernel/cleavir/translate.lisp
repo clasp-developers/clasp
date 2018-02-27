@@ -1290,7 +1290,7 @@ that llvm function. This works like compile-lambda-function in bclasp."
           (compiler-time (compile-cst-or-form cst-or-form env))
           (compile-cst-or-form cst-or-form env)))))
 
-(defmethod sicl-reader:source-position (stream (client clasp))
+(defmethod eclector.concrete-syntax-tree:source-position (stream (client clasp))
   (let ((scope (if (boundp '*current-function-scope-info*)
                    *current-function-scope-info*
                    (make-instance 'function-scope
@@ -1303,8 +1303,8 @@ that llvm function. This works like compile-lambda-function in bclasp."
 (defvar *current-compile-file-source-pos-info* nil)
 (defun cclasp-loop-read-and-compile-file-forms (source-sin environment &key (use-cst *use-cst*))
   (let ((eof-value (gensym))
-        (sicl-reader:*client* *clasp-system*)
-        (read-function (if use-cst 'sicl-reader:cst-read 'read)))
+        (eclector.reader:*client* *clasp-system*)
+        (read-function (if use-cst 'eclector.concrete-syntax-tree:cst-read 'read)))
     (loop
       (let ((eof (peek-char t source-sin nil eof-value)))
         (unless (eq eof eof-value)

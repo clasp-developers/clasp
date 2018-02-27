@@ -241,7 +241,7 @@ clasp-cleavir::*use-cst*
 
 (defun read-one-file (pn)
   (with-open-file (fin pn)
-    (loop for cst = (sicl-reader:cst-read fin nil :eof)
+    (loop for cst = (eclector.concrete-syntax-tree:cst-read fin nil :eof)
           until (eq cst :eof)
           do (format t "CST -> ~a~%" cst)
              do (finish-output))))
@@ -250,7 +250,7 @@ clasp-cleavir::*use-cst*
 
 (defun read-one-cst (pn)
   (with-open-file (fin pn)
-    (sicl-reader:cst-read fin nil :eof)))
+    (eclector.concrete-syntax-tree:cst-read fin nil :eof)))
 
 (defparameter *cst* (read-one-cst "sys:tests;ta.lsp"))
 (defun describe-source (cst)
@@ -271,12 +271,6 @@ clasp-cleavir::*use-cst*
 (describe-source *cst*)
 
 
-
-(trace sicl-reader::read-common)
-(untrace sicl-reader::sharpsign-dot)
-
-(apropos "sharpsign-dot")
-(trace sicl-reader::sharpsign-dot)
 
 (defun read-multiple-files (files)
   (dolist (f files)
@@ -395,10 +389,6 @@ clasp-cleavir::*use-cst*
                              "~/Development/cst-clasp/src/lisp/kernel/tag/pre-epilogue-bclasp.lsp"
                              "~/Development/cst-clasp/src/lisp/kernel/lsp/epilogue-bclasp.lsp"
                              "~/Development/cst-clasp/src/lisp/kernel/tag/bclasp.lsp")))
-
-(with-input-from-string (sin "`(1 2 3 4)")
-  (sicl-reader:cst-read sin nil nil))
-
 
 
 

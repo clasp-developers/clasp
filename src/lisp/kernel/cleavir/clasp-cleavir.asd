@@ -6,7 +6,8 @@
   :author "Christian Schafmeister <chris.schaf@verizon.net>"
   :licence "LGPL-3.0"
   :depends-on (:concrete-syntax-tree
-               :sicl-reader-simple
+               :eclector-concrete-syntax-tree
+               :eclector
                :cleavir-generate-ast
                :cleavir-cst-to-ast
                :cleavir-ir
