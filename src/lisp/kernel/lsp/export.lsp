@@ -95,7 +95,7 @@
                    (simple-program-error "Syntax error in ~A:~%~A" 'DOTIMES whole))
                (multiple-value-bind (declarations body)
                    (process-declarations body nil)
-                 (when (integerp expr)
+                 (when (and (integerp expr) (>= expr 0))
                    (setq declarations
                          (cons `(type (integer 0 ,expr) ,var) declarations)))
                  `(block nil
