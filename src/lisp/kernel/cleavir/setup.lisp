@@ -104,32 +104,17 @@
 
 (defmethod cleavir-env:function-info ((environment clasp-global-environment) function-name)
   (cond
-    ( ;; If it is not the name of a macro, it might be the name of
-     ;; a special operator.  This can be checked by calling
-     ;; special-operator-p.
-     (and (symbolp function-name) (treat-as-special-operator-p function-name))
+    ((and (symbolp function-name) (treat-as-special-operator-p function-name))
      (make-instance 'cleavir-env:special-operator-info
 		    :name function-name))
-    ( ;; If the function name is the name of a macro, then
-     ;; MACRO-FUNCTION returns something other than NIL.
-     (and (symbolp function-name) (not (null (macro-function function-name))))
-     ;; If so, we know it is a global macro.  It is also safe to
-     ;; call COMPILER-MACRO-FUNCTION, because it returns NIL if
-     ;; there is no compiler macro associated with this function
-     ;; name.
-     (make-instance 'cleavir-env:global-macro-info
+    ;; If the function name is the name of a macro, then
+    ;; MACRO-FUNCTION returns something other than NIL.
+    ((and (symbolp function-name) (not (null (macro-function function-name))))
+     (make-instance 'cleavir-env:global-macro-info ; we're global, so the macro must be global.
 		    :name function-name
 		    :expander (macro-function function-name)
 		    :compiler-macro (compiler-macro-function function-name)))
-    ( ;; If it is neither the name of a macro nor the name of a
-     ;; special operator, it might be the name of a global
-     ;; function.  We can check this by calling FBOUNDP.  Now,
-     ;; FBOUNDP returns true if it is the name of a macro or a
-     ;; special operator as well, but we have already checked for
-     ;; those cases.
-     (fboundp function-name)
-     ;; In that case, we return the relevant info
-     ;; Check if we should inline the function
+    ((fboundp function-name)
      (let* ((cleavir-ast (core:cleavir-ast (fdefinition function-name)))
             (inline-status (core:global-inline-status function-name)))
        (make-instance 'cleavir-env:global-function-info
@@ -137,6 +122,16 @@
                       :compiler-macro (compiler-macro-function function-name)
                       :inline inline-status
                       :ast cleavir-ast)))
+    ;; A top-level defun for the function has been seen.
+    ;; The expansion calls cmp::register-global-function-def at compile time,
+    ;; which is hooked up so that among other things this works.
+    ((cmp:known-function-p function-name)
+     ;; Note that since the function doesn't actually exist, it has no AST.
+     ;; FIXME: Store ASTs in the environment.
+     (make-instance 'cleavir-env:global-function-info
+                    :name function-name
+                    :compiler-macro (compiler-macro-function function-name)
+                    :inline (core:global-inline-status function-name)))
     ( ;; If it is neither of the cases above, then this name does
      ;; not have any function-info associated with it.
      t

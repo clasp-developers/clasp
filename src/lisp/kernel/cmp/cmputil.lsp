@@ -200,6 +200,12 @@
   name
   source-pos-info)
 
+(defun known-function-p (name)
+  (and (boundp '*global-function-defs*)
+       (gethash name *global-function-defs*)))
+
+(export '(known-function-p)) ; FIXME MOVE
+
 (defun register-global-function-def (type name)
   (when (boundp '*global-function-defs*)
     (let ((existing (gethash name *global-function-defs*)))
