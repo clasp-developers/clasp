@@ -77,11 +77,6 @@ object's representation."
         (values (read stream eof-error-p eof-value)
                 (file-position stream)))))
 
-(defun si::string-to-object (string &optional (err-value nil err-value-p))
-  (if err-value-p
-      (si::safe-eval `(read-from-string ,string) nil err-value)
-      (si::safe-eval `(read-from-string ,string) nil)))
-
 (defun write-to-string (object &rest rest
                         &aux (stream (make-string-output-stream)))
   "Args: (object &key (escape *print-escape*) (radix *print-radix*)
@@ -260,11 +255,6 @@ the one used internally by ECL compiled files."
        (progv (si:cons-car %progv-list)
 	   (si:cons-cdr %progv-list)
 	 ,@body))))
-
-#-formatter
-(defmacro formatter (control-string)
-  `#'(lambda (*standard-output* &rest args)
-       (si::formatter-aux *standard-output* ,control-string args)))
 
 (defmacro print-unreadable-object
 	  ((object stream &key type identity) &body body)
