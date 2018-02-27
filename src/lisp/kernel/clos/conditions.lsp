@@ -708,23 +708,21 @@ memory limits before executing the program again."))
    (format-arguments :initarg :arguments)
    (control-string :reader format-error-control-string
 		   :initarg :control-string
-		   #+cmu-format :initform
-		   #+cmu-format *default-format-error-control-string*) 
+		   :initform *default-format-error-control-string*) 
    (offset :reader format-error-offset :initarg :offset
-	   #+cmu-format :initform
-	   #+cmu-format *default-format-error-offset*)
+	   :initform *default-format-error-offset*)
    (print-banner :reader format-error-print-banner :initarg :print-banner
 		 :initform t))
   (:report (lambda (condition stream)
-	     (#-clasp cl:format #+clasp format
-		      stream
-			"~:[~;Error in format: ~]~
+	     (format
+              stream
+              "~:[~;Error in format: ~]~
 			 ~?~@[~%  ~A~%  ~V@T^~]"
-			(format-error-print-banner condition)
-			(simple-condition-format-control condition)
-			(simple-condition-format-arguments condition)
-			(format-error-control-string condition)
-			(format-error-offset condition)))))
+              (format-error-print-banner condition)
+              (simple-condition-format-control condition)
+              (simple-condition-format-arguments condition)
+              (format-error-control-string condition)
+              (format-error-offset condition)))))
 
 (define-condition ext:interactive-interrupt (serious-condition)
   ()
