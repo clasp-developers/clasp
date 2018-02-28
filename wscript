@@ -102,7 +102,7 @@ def update_submodules(cfg):
                        "dd15c86b0866fc5d8b474be0da15c58a3c04c45c")
     fetch_git_revision("src/lisp/kernel/contrib/Eclector",
                        "https://github.com/clasp-developers/Eclector.git",
-                       "d34b88d3d5581105fc1ddd4552397727a0811430")
+                       "c90e89e3e54810a2b73e30378f6aedd863800f55")
     fetch_git_revision("src/mps",
                        "https://github.com/Ravenbrook/mps.git",
                        "f3d66d06170bae706809f555dcb56acae35e9497")

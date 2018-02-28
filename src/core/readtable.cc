@@ -419,7 +419,7 @@ CL_DEFUN T_mv core__sharp_backslash(T_sp sin, Character_sp ch, T_sp num) {
 CL_LAMBDA(stream ch num);
 CL_DECLARE();
 CL_DOCSTRING("sharp_dot");
-CL_DEFUN T_sp core__sharp_dot(T_sp sin, Character_sp ch, T_sp num) {
+CL_DEFUN T_mv core__sharp_dot(T_sp sin, Character_sp ch, T_sp num) {
 #ifdef SOURCE_TRACKING
   SourcePosInfo_sp spi = core__input_stream_source_pos_info(sin);
 #endif
@@ -430,7 +430,7 @@ CL_DEFUN T_sp core__sharp_dot(T_sp sin, Character_sp ch, T_sp num) {
                    Cons_O::create(object),
                    sin);
     }
-    T_sp result = eval::funcall(core::_sym_STAReval_with_env_hookSTAR->symbolValue(), object, _Nil<T_O>());
+    T_mv result = eval::funcall(core::_sym_STAReval_with_env_hookSTAR->symbolValue(), object, _Nil<T_O>());
 #ifdef SOURCE_TRACKING
     if ((result).consp()) {
       lisp_registerSourcePosInfo(result, spi);
@@ -438,7 +438,7 @@ CL_DEFUN T_sp core__sharp_dot(T_sp sin, Character_sp ch, T_sp num) {
 #endif
     return result;
   }
-  return (Values0<T_O>());
+  return _Nil<T_O>();
 }
 
 CL_LAMBDA(stream ch num);
