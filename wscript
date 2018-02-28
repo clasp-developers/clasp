@@ -111,7 +111,7 @@ def update_submodules(cfg):
                        "f3d66d06170bae706809f555dcb56acae35e9497")
     fetch_git_revision("src/lisp/modules/asdf",
                        "https://github.com/clasp-developers/asdf.git",
-                       "81e4f08d9c1dc95a3446c1782506342a59f70c34")
+                       "53f72684bbab75ae375673634e24305e0d276943")
     os.system("(cd src/lisp/modules/asdf; make)")
 
 # run this from a completely cold system with:
