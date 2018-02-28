@@ -270,7 +270,7 @@ Set gather-all-frames to T and you can gather C++ and Common Lisp frames"
                    (dotimes (i (length arguments))
                      (princ #\space sout)
                      (prin1 (aref arguments i) sout)))))
-    (prin1 (subseq arg-str 0 (min (length arg-str) length)))))
+    (princ (subseq arg-str 0 (min (length arg-str) length)))))
 
 (defun print-arguments (name arguments)
   (princ " (")
@@ -279,7 +279,7 @@ Set gather-all-frames to T and you can gather C++ and Common Lisp frames"
       (progn
         (if arguments 
             (print-arguments-control-length arguments)
-            (prin1 " -args-suppressed-"))
+            (princ " -args-suppressed-"))
         (princ ")"))))
 
 (defun btcl (&key all (args t))
@@ -291,13 +291,13 @@ Set gather-all-frames to T and you can gather C++ and Common Lisp frames"
             (arguments (backtrace-frame-arguments e)))
         (if arguments
             (progn
-              (prin1 (prog1 index (incf index)))
+              (princ (prog1 index (incf index)))
               #+cclasp(handler-case
                           (print-arguments name arguments)
-                        (error (e) (prin1 "-error-printing-arguments-")))
+                        (error (e) (princ "-error-printing-arguments-")))
               #-cclasp(print-arguments name arguments))
             (progn
-              (prin1 (prog1 index (incf index)))
+              (princ (prog1 index (incf index)))
               (princ #\space )
               (princ name)))
         (terpri)))))
