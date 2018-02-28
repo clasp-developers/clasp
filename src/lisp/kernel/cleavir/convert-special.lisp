@@ -422,7 +422,7 @@
    (destructuring-bind (symbols values &rest forms)
        (cst:raw (cst:rest cst))
      (cst:reconstruct
-      `(core:progv-function ',symbols ,values (lambda () (progn ,@forms)))
+      `(core:progv-function ,symbols ,values (lambda () (progn ,@forms)))
       cst))
    env system))
 #+(or)
