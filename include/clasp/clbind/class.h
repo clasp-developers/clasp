@@ -477,7 +477,7 @@ struct constructor_registration_base : public registration {
     //                printf("%s:%d    constructor_registration_base::register_ called for %s\n", __FILE__, __LINE__, m_name.c_str());
     core::Symbol_sp sym = core::lispify_intern(tname, core::lisp_currentPackageName());
     core::BuiltinClosure_sp f = gc::GC<VariadicConstructorFunction_O<Policies, Pointer, Class, Signature>>::allocate(sym);
-    lisp_defun(sym, core::lisp_currentPackageName(), f, m_arguments, m_declares, m_docstring, "=external=", 0, true, CountConstructorArguments<Signature>::value);
+    lisp_defun(sym, core::lisp_currentPackageName(), f, m_arguments, m_declares, m_docstring, "=external=", 0, CountConstructorArguments<Signature>::value);
   }
 
   Policies policies;
@@ -519,13 +519,6 @@ template <class Class, class Policies>
 
   void register_() const {
     HARD_IMPLEMENT_MEF("Do I use this code?");
-#if 0
-                string tname = m_name;
-                if (m_name == "") { tname = "default-ctor"; };
-                printf("%s:%d    constructor_registration_base::register_ called for derivable default constructor %s\n", __FILE__, __LINE__, m_name.c_str());
-                core::Functoid* f = gctools::ClassAllocator<DerivableDefaultConstructorFunctoid<Policies,Class>>::allocateClass(tname);
-                lisp_defun_lispify_name(core::lisp_currentPackageName(),m_name,f,m_arguments,m_declares,m_docstring,true,true,0);
-#endif
   }
 
   Policies policies;
@@ -547,28 +540,6 @@ template <class Class, class Policies>
     return gctools::GC<DefaultConstructorCreator_O<Class,Class*>>::allocate();
   }
 };
-
-#if 0 // begin_meister_disabled
-
-        template <class T>
-        struct reference_result
-            : mpl::if_<
-            mpl::or_<boost::is_pointer<T>, is_primitive<T> >
-            , T
-            , typename boost::add_reference<T>::type
-            >
-        {};
-
-        template <class T, class Policies>
-        struct inject_dependency_policy
-            : mpl::if_<
-            is_primitive<T>
-            , Policies
-            , policy_cons<dependency_policy<0, 1>, Policies>
-            >
-        {};
-
-#endif
 
 template <
     class Class, class Get, class GetPolicies, class Set = reg::null_type, class SetPolicies = reg::null_type>
@@ -595,73 +566,6 @@ struct property_registration : registration {
     //                printf("%s:%d - allocated a getter@%p for %s\n", __FILE__, __LINE__, getter, name);
     // register the getter here
   }
-#if 0
-                object context(from_stack(L, -1));
-                register_aux(
-                    L
-                    , context
-                    , make_get(L, get, boost::is_member_object_pointer<Get>())
-                    , set
-                    );
-            }
-
-            template <class F>
-            object make_get(cl_State* L, F const& f, mpl::false_) const
-            {
-                return make_function(
-                    L, f, deduce_signature(f, (Class*)0), get_policies);
-            }
-
-            template <class T, class D>
-            object make_get(cl_State* L, D T::* mem_ptr, mpl::true_) const
-            {
-                typedef typename reference_result<D>::type result_type;
-                typedef typename inject_dependency_policy<
-                    D, GetPolicies>::type policies;
-
-                return make_function(
-                    L
-                    , access_member_ptr<T, D, result_type>(mem_ptr)
-                    , mpl::vector2<result_type, Class const&>()
-                    , policies()
-                    );
-            }
-
-            template <class F>
-            object make_set(cl_State* L, F const& f, mpl::false_) const
-            {
-                return make_function(
-                    f, deduce_signature(f, (Class*)0), set_policies);
-            }
-
-            template <class T, class D>
-            object make_set(cl_State* L, D T::* mem_ptr, mpl::true_) const
-            {
-                return make_function(
-                    access_member_ptr<T, D>(mem_ptr)
-                    , mpl::vector3<void, Class&, D const&>()
-                    , set_policies
-                    );
-            }
-
-            template <class S>
-            void register_aux(
-                object const& context
-                , object const& get_, S const&) const
-            {
-                context[name] = property(
-                    get_
-                    , make_set(L, set, boost::is_member_object_pointer<Set>())
-                    );
-            }
-
-            void register_aux(
-                cl_State*, object const& context
-                , object const& get_, null_type) const
-            {
-                context[name] = property(get_);
-            }
-#endif
   std::string name;
   Get get;
   GetPolicies get_policies;
@@ -818,44 +722,6 @@ public:
     return *this;
   }
 
-#if 0
-        template <class Getter, class MaybeSetter>
-        class_& property(const char* name, Getter g, MaybeSetter s)
-        {
-            return property_impl(
-                name, g, s
-                , boost::mpl::bool_<detail::is_policy_cons<MaybeSetter>::value>()
-                );
-        }
-
-        template<class Getter, class Setter, class GetPolicies>
-        class_& property(const char* name, Getter g, Setter s, const GetPolicies& get_policies)
-        {
-            typedef detail::property_registration<
-                T, Getter, GetPolicies, Setter, null_type
-                > registration_type;
-
-            this->add_member(
-                new registration_type(name, g, get_policies, s));
-            return *this;
-        }
-
-        template<class Getter, class Setter, class GetPolicies, class SetPolicies>
-        class_& property(
-            const char* name
-            , Getter g, Setter s
-            , GetPolicies const& get_policies
-            , SetPolicies const& set_policies)
-        {
-            typedef detail::property_registration<
-                T, Getter, GetPolicies, Setter, SetPolicies
-                > registration_type;
-
-            this->add_member(
-                new registration_type(name, g, get_policies, s, set_policies));
-            return *this;
-        }
-#endif // meister disabled
   template <class C, class D>
   class_ &def_readonly(const string &name, D C::*mem_ptr) {
     typedef detail::property_registration<T, D C::*, detail::null_type>
@@ -1046,12 +912,6 @@ private:
         construct_type, HeldType, signature, Policies,detail::construct_non_derivable_class>(
             Policies(), name, arguments, declares, docstring));
 
-#if 0
-            this->add_default_member(
-                new detail::constructor_registration<
-                construct_type, HeldType, signature, Policies>(
-                    Policies(),name,arguments,declares,docstring));
-#endif
     return *this;
   }
 };
