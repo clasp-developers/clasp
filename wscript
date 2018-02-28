@@ -92,8 +92,8 @@ def update_submodules(cfg):
                        "https://github.com/drmeister/SICL.git",
                        "2ace76606c8e1126b2005db4f4afd812904138c0")
     fetch_git_revision("src/lisp/kernel/contrib/Concrete-Syntax-Tree",
-                       "https://github.com/robert-strandh/Concrete-Syntax-Tree.git",
-                       "f754465a89a7686e55a5cfdbf7c7935b248f5621" )
+                       "https://github.com/clasp-developers/Concrete-Syntax-Tree.git",
+                       "8bcfd7492b68747c575b764dd7c425c8d29fc7c8")
     fetch_git_revision("src/lisp/kernel/contrib/closer-mop",
                        "https://github.com/pcostanza/closer-mop.git",
                        "d4d1c7aa6aba9b4ac8b7bb78ff4902a52126633f")
@@ -102,7 +102,7 @@ def update_submodules(cfg):
                        "dd15c86b0866fc5d8b474be0da15c58a3c04c45c")
     fetch_git_revision("src/lisp/kernel/contrib/Eclector",
                        "https://github.com/clasp-developers/Eclector.git",
-                       "60963ecf7c0b8b19c0b35b3112b49db109dd0528" )
+                       "53ae7d160e424bfc6adcc4c7377e0bf564614f9e")
     fetch_git_revision("src/mps",
                        "https://github.com/Ravenbrook/mps.git",
                        "f3d66d06170bae706809f555dcb56acae35e9497")
