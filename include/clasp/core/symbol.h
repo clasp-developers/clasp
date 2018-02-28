@@ -63,7 +63,6 @@ public:
   mutable size_t _Binding;
   bool _IsSpecial;
   bool _IsConstant;
-  bool _ReadOnlyFunction;
   List_sp _PropertyList;
 
 private:
@@ -137,9 +136,6 @@ public:
 
   void setReadOnly(bool b) { this->_IsConstant = true; };
   bool getReadOnly() const { return this->_IsConstant; };
-
-  void setReadOnlyFunction(bool b) { this->_ReadOnlyFunction = true; };
-  bool getReadOnlyFunction() const { return this->_ReadOnlyFunction; };
 
   /*! Return true if the symbol is dynamic/special */
 CL_LISPIFY_NAME("core:specialp");

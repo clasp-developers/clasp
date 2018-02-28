@@ -162,14 +162,12 @@ Symbol_O::Symbol_O(bool dummy) : _HomePackage(_Nil<T_O>()),
                                  _Binding(NO_THREAD_LOCAL_BINDINGS),
                                  _IsSpecial(false),
                                  _IsConstant(false),
-                                 _ReadOnlyFunction(false),
                                  _PropertyList(_Nil<List_V>()) {};
 
 Symbol_O::Symbol_O() : Base(),
                        _Binding(NO_THREAD_LOCAL_BINDINGS),
                        _IsSpecial(false),
                        _IsConstant(false),
-                       _ReadOnlyFunction(false),
                        _PropertyList(_Nil<List_V>()) {};
 
 void Symbol_O::finish_setup(Package_sp pkg, bool exportp, bool shadowp) {
@@ -253,7 +251,6 @@ CL_DEFMETHOD Symbol_sp Symbol_O::copy_symbol(T_sp copy_properties) const {
     if (this->fboundp())
       new_symbol->_Function = this->_Function;
     new_symbol->_IsConstant = this->_IsConstant;
-    new_symbol->_ReadOnlyFunction = this->_ReadOnlyFunction;
     new_symbol->_PropertyList = cl__copy_list(this->_PropertyList);
   }
   return new_symbol;
@@ -484,7 +481,6 @@ void Symbol_O::dump() {
     }
     ss << "IsSpecial: " << this->_IsSpecial << std::endl;
     ss << "IsConstant: " << this->_IsConstant << std::endl;
-    ss << "ReadOnlyFunction: " << this->_ReadOnlyFunction << std::endl;
     ss << "PropertyList: ";
     if (this->_PropertyList) {
       ss << _rep_(this->_PropertyList) << std::endl;

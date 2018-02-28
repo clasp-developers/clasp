@@ -919,10 +919,10 @@ namespace core {
   LambdaListHandler_sp lisp_function_lambda_list_handler(List_sp lambda_list, List_sp declares, std::set<int> pureOutValues = std::set<int>());
   void lisp_defmacro(Symbol_sp name, const string &packageName,
                      BuiltinClosure_sp, const string &arguments = "", const string &declarestring = "",
-                     const string &docstring = "", bool autoExport = true);
+                     const string &docstring = "");
   void lisp_defun(Symbol_sp name, const string &packageName,
                   BuiltinClosure_sp, const string &arguments = "", const string &declarestring = "",
-                  const string &docstring = "", const string &sourceFile = "", int sourceLine = 0, bool autoExport = true, int number_of_required_arguments = 0, const std::set<int> &skipIndices = std::set<int>());
+                  const string &docstring = "", const string &sourceFile = "", int sourceLine = 0, int number_of_required_arguments = 0, const std::set<int> &skipIndices = std::set<int>());
   void lisp_defgeneric(const string &packageName, const string &name,
                        Function_sp, const string &arguments = "", const string &docstring = "", bool autoExport = true);
   void lisp_defmethod(Symbol_sp gfSymbol, Function_sp, const string &arguments, const string &docstring);

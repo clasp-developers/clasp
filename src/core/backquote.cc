@@ -438,7 +438,7 @@ CL_DEFUN T_sp core__backquote_remove_tokens(T_sp x) {
   SYMBOL_SC_(CorePkg, STARbq_simplifySTAR);
 
 void initialize_backquote() {
-  defmacro(CorePkg, "quasiquote", macro_core__quasiquote, ARGS_macro_core__quasiquote, DECL_macro_core__quasiquote, DOCS_macro_core__quasiquote, __FILE__, __LINE__, false);
+  defmacro(CorePkg, "quasiquote", macro_core__quasiquote, ARGS_macro_core__quasiquote, DECL_macro_core__quasiquote, DOCS_macro_core__quasiquote, __FILE__, __LINE__);
   defmacro(CorePkg, "backquote", &macro_backquote, ARGS_macro_backquote, DECL_macro_backquote, DOCS_macro_backquote, __FILE__, __LINE__);
 
   _sym_STARbq_simplifySTAR->setf_symbolValue(_lisp->_true());
