@@ -1020,7 +1020,35 @@ void lisp_defun(Symbol_sp sym,
   sym->exportYourself();
   core::ext__annotate(sym,cl::_sym_documentation,cl::_sym_function, core::SimpleBaseString_O::make(docstring));
   core::ext__annotate(func,cl::_sym_documentation,cl::_sym_function, core::SimpleBaseString_O::make(docstring));
+}
 
+// identical to above except for using setSetfFdefinition.
+void lisp_defun_setf(Symbol_sp sym,
+                     const string &packageName,
+                     BuiltinClosure_sp fc,
+                     const string &arguments,
+                     const string &declarestring,
+                     const string &docstring,
+                     const string &sourceFile,
+                     int lineNumber,
+                     int number_of_required_arguments,
+                     const std::set<int> &skipIndices) {
+  List_sp ldeclares = lisp_parse_declares(packageName, declarestring); // get the declares but ignore them for now
+  (void)ldeclares;                                                     // suppress warning
+  LambdaListHandler_sp llh;
+  if ((arguments == "" || arguments == "()") && number_of_required_arguments >= 0) {
+    llh = LambdaListHandler_O::create(number_of_required_arguments, skipIndices);
+  } else {
+    List_sp ll = lisp_parse_arguments(packageName, arguments);
+    llh = lisp_function_lambda_list_handler(ll, _Nil<T_O>(), skipIndices);
+  }
+  fc->finishSetup(llh, kw::_sym_function);
+  fc->setSourcePosInfo(SimpleBaseString_O::make(sourceFile), 0, lineNumber, 0);
+  Function_sp func = fc;
+  sym->setSetfFdefinition(func);
+  sym->exportYourself();
+  core::ext__annotate(sym,cl::_sym_documentation,cl::_sym_function, core::SimpleBaseString_O::make(docstring));
+  core::ext__annotate(func,cl::_sym_documentation,cl::_sym_function, core::SimpleBaseString_O::make(docstring));
 }
 
 void lisp_defmacro(Symbol_sp sym,
