@@ -24,10 +24,7 @@ last FORM.  If not, simply returns NIL."
 
 (defmacro defmacro (name lambda-list &body body &environment env)
   `(eval-when (:compile-toplevel :load-toplevel :execute)
-     (funcall #'(setf macro-function)
-              ;; explicit #' because lambda is not installed yet. FIXME.
-              #',(ext:parse-macro name lambda-list body env)
-              ',name)
+     (fset ',name #',(ext:parse-macro name lambda-list body env) t)
      ',name))
 
 (defmacro destructuring-bind (vl list &body body)
