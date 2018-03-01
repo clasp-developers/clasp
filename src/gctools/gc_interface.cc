@@ -220,9 +220,8 @@ Layout_code* get_stamp_layout_codes() {
 
 template <typename RT, typename...ARGS>
 NOINLINE void expose_function(const std::string& pkg_sym,
-                     bool exported,
-                     RT (*fp)(ARGS...),
-                     const std::string& lambdaList)
+                              RT (*fp)(ARGS...),
+                              const std::string& lambdaList)
 {
   std::string pkgName;
   std::string symbolName;
@@ -230,6 +229,18 @@ NOINLINE void expose_function(const std::string& pkg_sym,
 //  printf("%s:%d  expose_function   pkgName=%s  symbolName=%s\n", __FILE__, __LINE__, pkgName.c_str(), symbolName.c_str() );
   core::wrap_function(pkgName,symbolName,fp,lambdaList);
 }
+
+template <typename RT, typename...ARGS>
+NOINLINE void expose_function_setf(const std::string& pkg_sym,
+                                   RT (*fp)(ARGS...),
+                                   const std::string& lambdaList)
+{
+  std::string pkgName;
+  std::string symbolName;
+  core::colon_split(pkg_sym,pkgName,symbolName);
+  core::wrap_function_setf(pkgName,symbolName,fp,lambdaList);
+}
+
 
 #ifndef SCRAPING
   #define EXPOSE_FUNCTION_SIGNATURES

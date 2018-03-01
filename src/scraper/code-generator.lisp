@@ -56,16 +56,14 @@
              (format sout "NOINLINE void ~a() {~%" name)
              (etypecase f
                (expose-defun
-                (format sout "  /* expose-defun */ expose_function(~a,~a,&~a::~a,~s);~%"
+                (format sout "  /* expose-defun */ expose_function(~a,&~a::~a,~s);~%"
                         (lisp-name% f)
-                        "true"
                         ns
                         (function-name% f)
                         (maybe-wrap-lambda-list (lambda-list% f))))
                (expose-extern-defun
-                (format sout "  /* expose-extern-defun */ expose_function(~a,~a,~a,~s);~%"
+                (format sout "  /* expose-extern-defun */ expose_function(~a,~a,~s);~%"
                         (lisp-name% f)
-                        "true"
                         (pointer% f)
                         (if (lambda-list% f)
                             (maybe-wrap-lambda-list (lambda-list% f))
@@ -575,7 +573,7 @@ Convert colons to underscores"
                          (method-name (method-name% class-method))
                          (lambda-list (lambda-list% class-method))
                          (declare-form (declare% class-method)))
-                    (format sout " expose_function(~a,true,&~a::~a,R\"lambda(~a)lambda\");~%"
+                    (format sout " expose_function(~a,&~a::~a,R\"lambda(~a)lambda\");~%"
                             lisp-name
                             class-name
                             method-name
