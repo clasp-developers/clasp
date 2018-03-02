@@ -40,7 +40,6 @@ def aclasp(wrappers):
         "src/lisp/kernel/lsp/seqmacros",
         "src/lisp/kernel/lsp/seqlib",
         "src/lisp/kernel/lsp/iolib",
-        "src/lisp/kernel/lsp/logging",
         "src/lisp/kernel/lsp/sharpmacros",
         "src/lisp/kernel/lsp/trace",
         "src/lisp/kernel/lsp/backtrace",
