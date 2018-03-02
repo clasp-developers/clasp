@@ -90,18 +90,18 @@
 (defun isqrt (i)
   "Args: (integer)
 Returns the integer square root of INTEGER."
-       (unless (and (integerp i) (>= i 0))
-               (error 'type-error :datum i :expected-type 'unsigned-byte))
-       (if (zerop i)
-           0
-           (let ((n (integer-length i)))
-                (do ((x (ash 1 (ceiling n 2)))
-                     (y))
-                    (nil)
-                    (setq y (floor i x))
-                    (when (<= x y)
-                          (return x))
-                    (setq x (floor (+ x y) 2))))))
+  (unless (and (integerp i) (>= i 0))
+    (error 'type-error :datum i :expected-type 'unsigned-byte))
+  (if (zerop i)
+      0
+      (let ((n (integer-length i)))
+        (do ((x (ash 1 (ceiling n 2)))
+             (y))
+            (nil)
+          (setq y (floor i x))
+          (when (<= x y)
+            (return x))
+          (setq x (floor (+ x y) 2))))))
 
 (defun phase (x)
   "Args: (number)
@@ -260,12 +260,12 @@ byte specifier is represented by a dotted pair (SIZE . POSITION)."
 
 (defun byte-size (bytespec)
   "Args: (byte)
-Returns the size part (in ECL, the car part) of the byte specifier BYTE."
+Returns the size part (in Clasp, the car part) of the byte specifier BYTE."
   (car bytespec))
 
 (defun byte-position (bytespec)
   "Args: (byte)
-Returns the position part (in ECL, the cdr part) of the byte specifier BYTE."
+Returns the position part (in Clasp, the cdr part) of the byte specifier BYTE."
   (cdr bytespec))
 
 (declaim (inline %ldb))
