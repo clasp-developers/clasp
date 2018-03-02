@@ -104,6 +104,8 @@
 
 (defclass tags:cl-defun-tag (internal-code-tag) ())
 
+(defclass tags:cl-defun-setf-tag (internal-code-tag) ())
+
 (defclass tags:cl-extern-defun-tag (external-code-tag) ())
 
 (defclass tags:cl-defmethod-tag (internal-code-tag) ())
@@ -208,6 +210,8 @@
   (define-tag-handler cl-declare-tag "CL_DECLARE_TAG" tags:cl-declare-tag
     :declare-form% (getf plist :declare))
   (define-tag-handler cl-defun-tag "CL_DEFUN_TAG" tags:cl-defun-tag
+    :signature-text% (cscrape:read-string-to-character bufs #\) t))
+  (define-tag-handler cl-defun-setf-tag "CL_DEFUN_SETF_TAG" tags:cl-defun-setf-tag
     :signature-text% (cscrape:read-string-to-character bufs #\) t))
   (define-tag-handler cl-defmethod-tag "CL_DEFMETHOD_TAG" tags:cl-defmethod-tag
     :signature-text% (cscrape:read-string-to-character bufs #\) t))

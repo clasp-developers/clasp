@@ -600,11 +600,11 @@ void core__copy_subarray(Array_sp dest, Fixnum_sp destStart, Array_sp orig, Fixn
   }
 }
 
-
-CL_LAMBDA(array value &va-rest indices);
+CL_LISPIFY_NAME("cl:aref");
+CL_LAMBDA(value array &va-rest indices);
 CL_DECLARE();
 CL_DOCSTRING("aset");
-CL_DEFUN T_sp core__aset(Array_sp array, T_sp value, VaList_sp indices) {
+CL_DEFUN_SETF T_sp core__aset(T_sp value, Array_sp array, VaList_sp indices) {
   cl_index rowMajorIndex = array->arrayRowMajorIndex(indices);
   array->rowMajorAset(rowMajorIndex,value);
   return value;
