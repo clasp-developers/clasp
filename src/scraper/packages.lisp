@@ -84,6 +84,7 @@
    #:line%
    #:character-offset%
    #:cl-defun-tag
+   #:cl-defun-setf-tag
    #:cl-defmethod-tag
    #:cl-def-class-method-tag
    #:cl-extern-defun-tag

@@ -12,7 +12,6 @@
     (dolist (func functions)
       (let* ((namespace (namespace% func))
              (ns-ht (gethash namespace ns-hashes (make-hash-table :test #'equal))))
-        ;;(format t "function -> ~s  namespace -> ~s~%" func namespace)
         (setf (gethash (lisp-name% func) ns-ht) func)
         (setf (gethash namespace ns-hashes) ns-ht)))
     ns-hashes))
@@ -24,7 +23,7 @@
                     (output (with-output-to-string (sdec)
                               (maphash (lambda (name f)
                                          (declare (ignore name))
-                                         (when (and (typep f 'expose-defun)
+                                         (when (and (typep f '(or expose-defun expose-defun-setf))
                                                     (provide-declaration% f))
                                            (format sdec "    ~a;~%" (signature% f))
                                            (incf decl-count)))
@@ -57,6 +56,12 @@
              (etypecase f
                (expose-defun
                 (format sout "  /* expose-defun */ expose_function(~a,&~a::~a,~s);~%"
+                        (lisp-name% f)
+                        ns
+                        (function-name% f)
+                        (maybe-wrap-lambda-list (lambda-list% f))))
+               (expose-defun-setf
+                (format sout "  /* expose-defun-setf */ expose_function_setf(~a,&~a::~a,~s);~%"
                         (lisp-name% f)
                         ns
                         (function-name% f)
@@ -231,6 +236,26 @@ Convert colons to underscores"
       (let* ((raw-lisp-name (lisp-name% func))
              (maybe-fixed-magic-name (maybe-fix-magic-name raw-lisp-name)))
         (format cl-code "(wrap-c++-function ~a (~a) (~a) ~s )~%" maybe-fixed-magic-name (declare% func) (lambda-list% func) wrapped-name )))))
+
+(defmethod direct-call-function (c-code cl-code (func expose-defun-setf) c-code-info cl-code-info)
+  (multiple-value-bind (return-type arg-types)
+      (parse-types-from-signature (signature% func))
+    (let* ((wrapped-name (mangle-and-wrap-name (function-name% func) arg-types))
+           (one-func-code
+            (generate-wrapped-function wrapped-name
+                                       (namespace% func)
+                                       (function-name% func)
+                                       return-type arg-types)))
+      (format c-code "// Generating code for ~a::~a~%" (namespace% func) (function-name% func))
+      (format c-code-info "// Generating code for ~a::~a~%" (namespace% func) (function-name% func))
+      (format c-code-info "//            Found at ~a:~a~%-----------~%" (file% func) (line% func))
+      (format c-code "~a~%" one-func-code)
+      (format cl-code ";;; Generating code for ~a::~a~%" (namespace% func) (function-name% func))
+      (format cl-code-info ";;; Generating code for ~a::~a~%" (namespace% func) (function-name% func))
+      (format cl-code-info ";;;            Found at ~a:~a~%----------~%" (file% func) (line% func))
+      (let* ((raw-lisp-name (lisp-name% func))
+             (maybe-fixed-magic-name (maybe-fix-magic-name raw-lisp-name)))
+        (format cl-code "(wrap-c++-function-setf ~a (~a) (~a) ~s )~%" maybe-fixed-magic-name (declare% func) (lambda-list% func) wrapped-name )))))
                                
 (defun generate-code-for-direct-call-functions (functions classes)
   (let ((c-code (make-string-output-stream))
