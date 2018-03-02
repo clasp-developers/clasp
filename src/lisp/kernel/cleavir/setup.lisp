@@ -6,6 +6,11 @@
 
 (defvar *current-function-entry-basic-block*)
 
+(defvar *form* nil)
+(defvar *ast* nil)
+(defvar *hir* nil)
+(defvar *mir* nil)
+
 ;;; Save top level forms for source tracking
 (defmethod cleavir-generate-ast::convert-form :around (form info env system)
   (let ((core:*top-level-form-stack* (cons form core:*top-level-form-stack*)))
@@ -422,13 +427,6 @@
 	  *hir* hir)
     (draw-hir hir)
     hir))
-
-
-(defvar *form* nil)
-(defvar *ast* nil)
-(defvar *hir* nil)
-(defvar *mir* nil)
-
 
 (defmacro with-ir-function ((lisp-function-name
 			     &key (function-type cmp:%fn-prototype% function-type-p)
