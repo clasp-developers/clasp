@@ -4,21 +4,24 @@
 #
 
 import subprocess
-from waflib.Tools import c_preproc
-from waflib.Tools.compiler_cxx import cxx_compiler
-from waflib.Tools.compiler_c import c_compiler
-#cxx_compiler['linux'] = ['clang++']
-#c_compiler['linux'] = ['clang']
-
 import sys
 import os
+
 try:
     from StringIO import StringIO
 except ImportError:
     from io import StringIO
-#from waflib.extras import clang_compilation_database
-from waflib.Errors import ConfigurationError
+
 from waflib import Utils
+from waflib.Tools import c_preproc
+from waflib.Tools.compiler_cxx import cxx_compiler
+from waflib.Tools.compiler_c import c_compiler
+from waflib.Errors import ConfigurationError
+
+sys.path.append('tools-for-build/')
+sys.dont_write_bytecode = True   # avoid littering the dirs with .pyc files
+
+from build_file_lists import collect_clasp_c_source_files
 
 # Let's not depend on the locale setting of the host, set it explicitly.
 os.environ['LC_ALL'] = os.environ['LANG'] = "C"
@@ -841,7 +844,7 @@ def build(bld):
     print("Building bld.stage --> %s   bld.stage_val -> %s" % (bld.stage, bld.stage_val))
     bld.use_human_readable_bitcode = bld.env["USE_HUMAN_READABLE_BITCODE"]
     print("Using human readable bitcode: %s" % bld.use_human_readable_bitcode)
-    bld.clasp_source_files = []
+    bld.clasp_source_files = collect_clasp_c_source_files(bld)
     bld.clasp_aclasp = []
     bld.clasp_bclasp = []
     bld.clasp_cclasp = []
