@@ -1193,6 +1193,14 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
 #endif
   if (buildReport) ss << (BF("DEBUG_CCLASP_LISP = %s\n") % (debug_cclasp_lisp ? "**DEFINED**" : "undefined") ).str();
 
+    bool debug_long_call_history = false;
+#ifdef DEBUG_LONG_CALL_HISTORY
+  debug_long_call_history = true;
+  debugging = true;
+  if (setFeatures) features = core::Cons_O::create(_lisp->internKeyword("DEBUG-LONG-CALL-HISTORY"),features);
+#endif
+  if (buildReport) ss << (BF("DEBUG_LONG_CALL_HISTORY = %s\n") % (debug_long_call_history ? "**DEFINED**" : "undefined") ).str();
+
   bool debug_memory_profile = false;
 #ifdef DEBUG_MEMORY_PROFILE
   debug_memory_profile = true;
