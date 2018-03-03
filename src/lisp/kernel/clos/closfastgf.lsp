@@ -494,32 +494,37 @@ FIXME!!!! This code will have problems with multithreading if a generic function
 (defun memoize-call (generic-function memoized-key effective-method-function)
   "Memoizes the call and installs a new discriminator function - returns nothing"
   (gf-log "Specializers key: %s%N" memoized-key)
-  (gf-log "The specializer-profile: %s%N" (generic-function-specializer-profile generic-function))  
-  (loop with specializer-profile = (generic-function-specializer-profile generic-function)
-        for call-history = (generic-function-call-history generic-function)
-        for found-key = (call-history-find-key call-history memoized-key)
-        for new-call-history = (if found-key
-                                   (progn
-                                     (gf-log "For generic function: %s - the key was already in the history - either bad dtree, incorrect lowering to llvm-ir or maybe (unlikely) put there by another thread.%N"
-                                             (generic-function-name generic-function))
-                                     call-history)
-                                   (progn
-                                     (gf-log "Pushing entry into call history%N")
-                                     (cons (cons memoized-key effective-method-function) call-history)))
-        for exchanged = (generic-function-call-history-compare-exchange generic-function call-history new-call-history)
-        do (progn
-             #+debug-fastgf(let ((specializer-profile (clos:generic-function-specializer-profile generic-function)))
-                             (when call-history
-                               (gf-log "The dtree calculated for the call-history/specializer-profile:%N")
-                               (gf-log "%s%N" (cmp::calculate-dtree call-history specializer-profile)))))
-        when exchanged do (gf-log "Successfully exchanged call history%N")
-          until (eq exchanged new-call-history))
-  (loop for idx from 0 below (length memoized-key)
-                 for specializer = (svref memoized-key idx)
-                 unless (consp specializer) ; eql specializer
-                   do (core:specializer-call-history-generic-functions-push-new specializer generic-function))
-  (invalidate-discriminating-function generic-function)
-  (values))
+  (gf-log "The specializer-profile: %s%N" (generic-function-specializer-profile generic-function))
+  (let ((specializer-profile (generic-function-specializer-profile generic-function)))
+    (unless (= (length memoized-key) (length specializer-profile))
+      (error "The memoized-key ~a is not the same length as the specializer-profile ~a for ~a" memoized-key specializer-profile generic-function))
+    (loop for call-history = (generic-function-call-history generic-function)
+          for found-key = (call-history-find-key call-history memoized-key)
+          for new-call-history = (if found-key
+                                     (progn
+                                       (gf-log "For generic function: %s - the key was already in the history - either bad dtree, incorrect lowering to llvm-ir or maybe (unlikely) put there by another thread.%N"
+                                               (generic-function-name generic-function))
+                                       call-history)
+                                     (progn
+                                       (gf-log "Pushing entry into call history%N")
+                                       (cons (cons memoized-key effective-method-function) call-history)))
+          for exchanged = (generic-function-call-history-compare-exchange generic-function call-history new-call-history)
+          do (progn
+               #+debug-fastgf(let ((specializer-profile (clos:generic-function-specializer-profile generic-function)))
+                               (when call-history
+                                 (gf-log "The dtree calculated for the call-history/specializer-profile:%N")
+                                 (gf-log "%s%N" (cmp::calculate-dtree call-history specializer-profile)))))
+          when exchanged do (gf-log "Successfully exchanged call history%N")
+            until (eq exchanged new-call-history))
+    (loop for idx from 0 below (length memoized-key)
+          for specializer = (svref memoized-key idx)
+          unless (consp specializer)    ; eql specializer
+            do (core:specializer-call-history-generic-functions-push-new specializer generic-function))
+    #+debug-long-call-history
+    (when (> (length (generic-function-call-history generic-function)) 16384)
+      (error "DEBUG-LONG-CALL-HISTORY is triggered - The call history for ~a is longer (~a entries) than 16384" generic-function (length (generic-function-call-history generic-function))))
+    (invalidate-discriminating-function generic-function)
+    (values)))
 
 (defun perform-outcome (outcome arguments vaslist-arguments)
   (cond
@@ -587,7 +592,10 @@ It takes the arguments in two forms, as a vaslist and as a list of arguments."
                (gf-log-dispatch-miss "No applicable method" generic-function vaslist-arguments))
               (ok ; classes are fine; use normal fastgf
                (gf-log-dispatch-miss "Memoizing normal call" generic-function vaslist-arguments)
-               (memoize-call generic-function (coerce argument-classes 'simple-vector) outcome))
+               (let ((key-length (length (generic-function-specializer-profile generic-function))))
+                 (memoize-call generic-function
+                               (coerce (subseq argument-classes 0 key-length) 'simple-vector)
+                               outcome)))
               ((eq (class-of generic-function) (find-class 'standard-generic-function))
                ;; we have a call with eql specialized arguments.
                ;; We can still memoize this sometimes, as long as the gf is standard.
@@ -608,6 +616,8 @@ It takes the arguments in two forms, as a vaslist and as a list of arguments."
                        (all-eql-specialized-p (generic-function-spec-list generic-function) arguments)))
                  (cond (maybe-memo-key
                         (gf-log-dispatch-miss "Memoizing eql-specialized call" generic-function vaslist-arguments)
+                        (unless (= (length maybe-memo-key) (length (generic-function-specializer-profile generic-function)))
+                          (error "In do-dispatch-miss mismatch between (length maybe-memo-key) -> ~a and (length (generic-function-specializer-profile generic-function)) -> ~a for ~a" (length maybe-memo-key) (length (generic-function-specializer-profile generic-function)) generic-function))
                         (memoize-call generic-function maybe-memo-key outcome))
                        (t
                         (gf-log-dispatch-miss "Cannot memoize eql-specialized call"
@@ -767,27 +777,40 @@ It takes the arguments in two forms, as a vaslist and as a list of arguments."
          (reduce #'append (mapcar #'subclasses*
                                   (class-direct-subclasses class))))))
 
-(defun call-history-entry-key-contains-specializer (key specializer)
-  (if (consp specializer)
-      (loop with object = (car specializer)
-            for s in key
-            when (consp s) ; eql specializer
-              do (when (eql (car s) object) (return-from call-history-entry-key-contains-specializer t)))
-      (find specializer key :test #'eq)))
+(defun call-history-entry-key-contains-specializers (key specializers)
+  (loop for specializer in specializers
+        do (if (consp specializer)
+               (loop with object = (car specializer)
+                     for s in key
+                     when (consp s)     ; eql specializer
+                       do (when (eql (car s) object) (return-from call-history-entry-key-contains-specializers t)))
+               (when (find specializer key :test #'eq)
+                 (return-from call-history-entry-key-contains-specializers t)))))
 
 (defun generic-function-call-history-separate-entries-with-specializers (gf call-history specializers)
-  (gf-log "generic-function-call-history-remove-entries-with-specializers  gf: %s%N    specializers: %s%N"
-          gf specializers)
+  (gf-log "generic-function-call-history-remove-entries-with-specializers  gf: %s%N    specializers: %s%N" gf specializers)
+  #+debug-long-call-history
+  (when (> (length call-history) 16384)
+    (error "DEBUG-LONG-CALL-HISTORY is triggered - The call history for ~a is longer (~a entries) than 16384" gf (length call-history)))
   (let ((removed nil) (keep nil))
-    (dolist (specializer specializers)
-      (loop for entry in call-history
-            for key = (car entry)
-            do (gf-log "         check if entry key: %s   contains specializer: %s%N" key specializer)
-            if (call-history-entry-key-contains-specializer key specializer)
-              do (gf-log "       It does - removing entry%N")
-                 (push entry removed)
-            else do (gf-log "       It does not - keeping entry%N")
+    (loop for entry in call-history
+          for key = (car entry)
+          do (gf-log "         check if entry key: %s   contains specializer: %s%N" key specializers)
+          if (call-history-entry-key-contains-specializers key specializers)
+            do (progn
+                 (gf-log "       It does - removing entry%N")
+                 (push entry removed))
+          else do (progn
+                    (gf-log "       It does not - keeping entry%N")
                     (push entry keep)))
+    #+debug-long-call-history
+    (progn
+      (unless (<= (length keep ) (length call-history))
+        (error "The number of call history entries to keep (~a) MUST be less than the number of call-history entries ~a~%" (length keep) (length call-history)))
+      (unless (<= (length removed ) (length call-history))
+        (error "The number of call history entries removed (~a) MUST be less than the number of call-history entries ~a~%" (length removed) (length call-history)))
+      (unless (= (+ (length removed) (length keep)) (length call-history))
+        (error "The sum of removed and kept entries (+ ~a ~a) -> ~a does not equal the number of call-history entries ~a~%" (length removed) (length keep) (+ (length removed) (length keep)) (length call-history))))
     (values keep removed)))
 
 (defun invalidate-generic-functions-with-class-selector (top-class)
