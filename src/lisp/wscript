@@ -1,5 +1,0 @@
-
-def build(bld):
-    lisp_source = bld.path.ant_glob("**/*.l* **/*.asd")
-    bld.recurse("kernel")
-    bld.install_files('${PREFIX}/lib/clasp/src/lisp/',lisp_source,relative_trick=True,cwd=bld.path)

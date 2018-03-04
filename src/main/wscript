@@ -1,7 +1,0 @@
-def build(bld):
-    full_name = 'main.cc'
-    node = bld.path.find_node(full_name)
-    assert node != None, "Could not find %s/%s" % ( bld.path.abspath(), full_name )
-    bld.clasp_source_files.append(node)
-    bld.clasp_test_linking_source_file = bld.path.find_node('test_linking.cc')
-        

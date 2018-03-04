@@ -1,4 +1,7 @@
-cleavir_parts = [
+#
+# This is a generated file, editing it is unwise
+#
+cleavir_file_list = [
     "src/lisp/kernel/contrib/sicl/Code/Cleavir/Input-output/packages",
     "src/lisp/kernel/contrib/sicl/Code/Cleavir/Input-output/io",
     "src/lisp/kernel/contrib/sicl/Code/Cleavir/Meter/packages",

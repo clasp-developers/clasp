@@ -1,9 +1,10 @@
 (require :asdf)
 
-(progn
-  (load "source-dir:src;lisp;local-asdf-config.lisp")
-  (add-all-subdirs-to-asdf-*central-registry* #P"/Users/meister/quicklisp/"))
-
+(asdf:initialize-source-registry
+ `(:source-registry
+   (:tree ,(translate-logical-pathname #P"sys:"))
+   (:tree ,(translate-logical-pathname #P"/Users/meister/quicklisp/"))
+   :ignore-inherited-configuration))
 
 (time
  (progn

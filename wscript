@@ -12,7 +12,7 @@ try:
 except ImportError:
     from io import StringIO
 
-from waflib import Utils
+from waflib import Utils, Logs
 from waflib.Tools import c_preproc
 from waflib.Tools.compiler_cxx import cxx_compiler
 from waflib.Tools.compiler_c import c_compiler
@@ -21,7 +21,7 @@ from waflib.Errors import ConfigurationError
 sys.path.append('tools-for-build/')
 sys.dont_write_bytecode = True   # avoid littering the dirs with .pyc files
 
-from build_file_lists import collect_clasp_c_source_files
+from build_file_lists import collect_clasp_c_source_files, collect_aclasp_lisp_files, collect_bclasp_lisp_files, collect_cclasp_lisp_files
 
 # Let's not depend on the locale setting of the host, set it explicitly.
 os.environ['LC_ALL'] = os.environ['LANG'] = "C"
@@ -834,28 +834,37 @@ def copy_tree(bld,src,dest):
     print("          dest= %s" % dest)
 
 def build(bld):
-    print("In Main build")
-#    bld(name='myInclude', export_includes=[bld.env.MY_MYSDK, 'include'])
+    def install_files(dest, files, cwd = bld.path):
+        dest = '${PREFIX}/' + dest
+        bld.install_files(dest, files, relative_trick = True, cwd = cwd)
+
+    Logs.debug("In Main build, bld.path = %s" % bld.path)
+
     if not bld.variant:
         bld.fatal("Call waf with build_variant, e.g. 'nice -n19 ./waf --jobs 2 --verbose build_cboehm'")
+    variant = eval(bld.variant + "()")
+    bld.variant_obj = variant
+    Logs.info("Variant = %s" % variant)
+
     stage = bld.stage
     stage_val = stage_value(bld,bld.stage)
     bld.stage_val = stage_val
-    print("Building bld.stage --> %s   bld.stage_val -> %s" % (bld.stage, bld.stage_val))
+    Logs.info("Building bld.stage --> %s   bld.stage_val -> %s" % (bld.stage, bld.stage_val))
     bld.use_human_readable_bitcode = bld.env["USE_HUMAN_READABLE_BITCODE"]
-    print("Using human readable bitcode: %s" % bld.use_human_readable_bitcode)
+    Logs.debug("Using human readable bitcode: %s" % bld.use_human_readable_bitcode)
     bld.clasp_source_files = collect_clasp_c_source_files(bld)
-    bld.clasp_aclasp = []
-    bld.clasp_bclasp = []
-    bld.clasp_cclasp = []
-    bld.clasp_cclasp_no_wrappers = []
-    bld.recurse('src')
+
+    bld.clasp_aclasp = collect_aclasp_lisp_files()
+    bld.clasp_bclasp = collect_bclasp_lisp_files()
+    bld.clasp_cclasp = collect_cclasp_lisp_files()
+    bld.clasp_cclasp_no_wrappers = collect_cclasp_lisp_files(wrappers = False)
+
     bld.extensions_include_dirs = []
     bld.extensions_include_files = []
     bld.extensions_source_files = []
     bld.extensions_gcinterface_include_files = []
     bld.extensions_builders = []
-    variant = eval(bld.variant+"()")
+
     bld.bclasp_executable = bld.path.find_or_declare(variant.executable_name(stage='b'))
     bld.cclasp_executable = bld.path.find_or_declare(variant.executable_name(stage='c'))
     bld.asdf_fasl_bclasp = bld.path.find_or_declare("%s/src/lisp/modules/asdf/asdf.fasl" % variant.fasl_dir(stage='b'))
@@ -863,29 +872,35 @@ def build(bld):
     bld.bclasp_fasl = bld.path.find_or_declare(variant.fasl_name(stage='b'))
     bld.cclasp_fasl = bld.path.find_or_declare(variant.fasl_name(stage='c'))
     bld.iclasp_executable = bld.path.find_or_declare(variant.executable_name(stage='i'))
+
     bld.recurse('extensions')
-    print("There are %d extensions_builders" % len(bld.extensions_builders))
+
+    Logs.info("There are %d extensions_builders" % len(bld.extensions_builders))
     for x in bld.extensions_builders:
         x.run()
-    bld.recurse('src/main')
-    source_files = bld.clasp_source_files + bld.extensions_source_files
-    bld.install_files('${PREFIX}/lib/clasp/', bld.clasp_source_files, relative_trick = True, cwd = bld.path)   #source
-    bld.install_files('${PREFIX}/lib/clasp/', bld.extensions_source_files, relative_trick = True, cwd = bld.path)   #source
-#    bld.install_files('${PREFIX}/lib/clasp/', source_files, relative_trick = True, cwd = bld.path)   #source
-    print("bld.path = %s"%bld.path)
+
+    c_source_files = bld.clasp_source_files + bld.extensions_source_files
+
+    #
+    # Installing the sources
+    #
+    install_files('lib/clasp/', bld.clasp_source_files)
+    install_files('lib/clasp/', bld.extensions_source_files)
+    install_files('lib/clasp/src/lisp/', bld.path.ant_glob("src/lisp/**/*.l* **/*.asd"))
+    # TODO why was it a comment, what's wrong with it?
+#   install_files('lib/clasp/', c_source_files)
+
     clasp_headers = bld.path.ant_glob("include/clasp/**/*.h")
-    bld.install_files('${PREFIX}/lib/clasp/', clasp_headers, relative_trick = True, cwd = bld.path)  # includes
-#    variant = eval(bld.variant+"()")
+    install_files('lib/clasp/', clasp_headers)
+
     bld.env = bld.all_envs[bld.variant]
-    bld.variant_obj = variant
     include_dirs = ['.']
     include_dirs.append("%s/src/main/" % bld.path.abspath())
     include_dirs.append("%s/include/" % (bld.path.abspath()))
     include_dirs.append("%s/%s/%s/generated/" % (bld.path.abspath(),out,variant.variant_dir()))
     include_dirs = include_dirs + bld.extensions_include_dirs
-    print("include_dirs = %s" % include_dirs)
-    print("Building with variant = %s" % variant)
-    wscript_node = bld.path.find_resource("wscript")
+    Logs.debug("include_dirs = %s" % include_dirs)
+
     extension_headers_node = variant.extension_headers_node(bld)
     print("extension_headers_node = %s" % extension_headers_node.abspath())
 
@@ -895,7 +910,7 @@ def build(bld):
     bld.add_to_group(precomp)
 
     extensions_task = build_extension_headers(env=bld.env)
-    inputs = [wscript_node] + bld.extensions_gcinterface_include_files
+    inputs = [bld.path.find_resource("wscript")] + bld.extensions_gcinterface_include_files
     extensions_task.set_inputs(inputs)
     extensions_task.set_outputs([extension_headers_node])
     bld.add_to_group(extensions_task)
@@ -909,12 +924,12 @@ def build(bld):
     bclasp_symlink_node = build_node.make_node("bclasp")
     if (bld.env['DEST_OS'] == LINUX_OS ):
         executable_dir = "bin"
-        bld_task = bld.program(source=source_files,
+        bld_task = bld.program(source = c_source_files,
                                includes=include_dirs,
                                target = [bld.iclasp_executable], install_path = '${PREFIX}/bin')
     elif (bld.env['DEST_OS'] == DARWIN_OS ):
         executable_dir = "bin"
-        bld_task = bld.program(source=source_files,
+        bld_task = bld.program(source = c_source_files,
                                includes=include_dirs,
                                target = [bld.iclasp_executable], install_path = '${PREFIX}/bin')
 #        if (bld.env.LTO_FLAG):
@@ -925,7 +940,7 @@ def build(bld):
 #            dsymutil_iclasp.set_inputs([bld.iclasp_executable,iclasp_lto_o])
 #            dsymutil_iclasp.set_outputs(iclasp_dsym_files)
 #            bld.add_to_group(dsymutil_iclasp)
-#            bld.install_files('${PREFIX}/lib/clasp/%s/%s' % (executable_dir, iclasp_dsym.name), iclasp_dsym_files, relative_trick = True, cwd = iclasp_dsym)
+#            install_files('lib/clasp/%s/%s' % (executable_dir, iclasp_dsym.name), iclasp_dsym_files, cwd = iclasp_dsym)
     if (bld.stage_val <= -1):
         print("About to add run_aclasp")
         cmp_aclasp = run_aclasp(env=bld.env)
@@ -948,8 +963,8 @@ def build(bld):
         aclasp_link_product = bld.path.find_or_declare(variant.fasl_name(stage='a'))
         lnk_aclasp.set_outputs([aclasp_link_product])
         bld.add_to_group(lnk_aclasp)
-        bld.install_files('${PREFIX}/lib/clasp/', aclasp_link_product, relative_trick = True, cwd = bld.path)
-        bld.install_files('${PREFIX}/lib/clasp/', aclasp_common_lisp_bitcode, relative_trick = True, cwd = bld.path)
+        install_files('lib/clasp/', aclasp_link_product)
+        install_files('lib/clasp/', aclasp_common_lisp_bitcode)
     if (bld.stage_val >= 2):
         print("About to add compile_bclasp")
         cmp_bclasp = compile_bclasp(env=bld.env)
@@ -961,8 +976,8 @@ def build(bld):
         lnk_bclasp.set_inputs([fastgf_bitcode_node,builtins_bitcode_node,intrinsics_bitcode_node,bclasp_common_lisp_bitcode])
         lnk_bclasp.set_outputs([bld.bclasp_fasl])
         bld.add_to_group(lnk_bclasp)
-        bld.install_files('${PREFIX}/lib/clasp/', bld.bclasp_fasl, relative_trick = True, cwd = bld.path)
-        bld.install_files('${PREFIX}/lib/clasp/', bclasp_common_lisp_bitcode, relative_trick = True, cwd = bld.path)
+        install_files('lib/clasp/', bld.bclasp_fasl)
+        install_files('lib/clasp/', bclasp_common_lisp_bitcode)
         if (False):   # build bclasp executable
             lnk_bclasp_exec = link_executable(env=bld.env)
             lnk_bclasp_exec.set_inputs([bclasp_common_lisp_bitcode,cxx_all_bitcode_node])
@@ -991,7 +1006,7 @@ def build(bld):
                     dsymutil_bclasp.set_inputs([bld.bclasp_executable])
                 dsymutil_bclasp.set_outputs(bclasp_dsym_files)
                 bld.add_to_group(dsymutil_bclasp)
-                bld.install_files('${PREFIX}/%s/%s' % (executable_dir, bclasp_dsym.name), bclasp_dsym_files, relative_trick = True, cwd = bclasp_dsym)
+                install_files('%s/%s' % (executable_dir, bclasp_dsym.name), bclasp_dsym_files, cwd = bclasp_dsym)
             bld.install_as('${PREFIX}/%s/%s' % (executable_dir, bld.bclasp_executable.name), bld.bclasp_executable, chmod = Utils.O755)
             bld.symlink_as('${PREFIX}/%s/clasp' % executable_dir, '%s' % bld.bclasp_executable.name)
             os.symlink(bld.bclasp_executable.abspath(),bclasp_symlink_node.abspath())
@@ -1000,7 +1015,7 @@ def build(bld):
         # cmp_asdf.set_inputs([bld.iclasp_executable,bld.bclasp_fasl] + fix_lisp_paths(bld.path,out,variant,["src/lisp/modules/asdf/build/asdf"]))
         # cmp_asdf.set_outputs(bld.asdf_fasl_bclasp)
         # bld.add_to_group(cmp_asdf)
-        # bld.install_files('${PREFIX}/lib/clasp/', bld.asdf_fasl_bclasp, relative_trick = True, cwd = bld.path)
+        # install_files('lib/clasp/', bld.asdf_fasl_bclasp)
     if (bld.stage_val >= 3):
         print("About to add compile_cclasp")
         # Build cclasp fasl
@@ -1023,22 +1038,22 @@ def build(bld):
         lnk_cclasp_fasl.set_inputs([fastgf_bitcode_node,builtins_bitcode_node,intrinsics_bitcode_node,cclasp_common_lisp_bitcode])
         lnk_cclasp_fasl.set_outputs([bld.cclasp_fasl])
         bld.add_to_group(lnk_cclasp_fasl)
-        bld.install_files('${PREFIX}/lib/clasp/', bld.cclasp_fasl, relative_trick = True, cwd = bld.path)
+        install_files('lib/clasp/', bld.cclasp_fasl)
     if (bld.stage == 'rebuild' or bld.stage_val >= 3):
-        bld.install_files('${PREFIX}/lib/clasp/', cclasp_common_lisp_bitcode, relative_trick = True, cwd = bld.path)
+        install_files('lib/clasp/', cclasp_common_lisp_bitcode)
         # Build serve-event
         serve_event_fasl = bld.path.find_or_declare("%s/src/lisp/modules/serve-event/serve-event.fasl" % variant.fasl_dir(stage='c'))
         cmp_serve_event = compile_module(env=bld.env)
         cmp_serve_event.set_inputs([bld.iclasp_executable,bld.cclasp_fasl] + fix_lisp_paths(bld.path,out,variant,["src/lisp/modules/serve-event/serve-event"]))
         cmp_serve_event.set_outputs(serve_event_fasl)
         bld.add_to_group(cmp_serve_event)
-        bld.install_files('${PREFIX}/lib/clasp/', serve_event_fasl, relative_trick = True, cwd = bld.path)
+        install_files('lib/clasp/', serve_event_fasl)
         # Build ASDF
         cmp_asdf = compile_module(env=bld.env)
         cmp_asdf.set_inputs([bld.iclasp_executable,bld.cclasp_fasl] + fix_lisp_paths(bld.path,out,variant,["src/lisp/modules/asdf/build/asdf"]))
         cmp_asdf.set_outputs(bld.asdf_fasl_cclasp)
         bld.add_to_group(cmp_asdf)
-        bld.install_files('${PREFIX}/lib/clasp/', bld.asdf_fasl_cclasp, relative_trick = True, cwd = bld.path)
+        install_files('lib/clasp/', bld.asdf_fasl_cclasp)
         print("build_node = %s" % build_node)
         clasp_symlink_node = build_node.make_node("clasp")
         print("clasp_symlink_node =  %s" % clasp_symlink_node)
@@ -1073,7 +1088,7 @@ def build(bld):
                     dsymutil_cclasp.set_inputs([bld.cclasp_executable])
                 dsymutil_cclasp.set_outputs(cclasp_dsym_files)
                 bld.add_to_group(dsymutil_cclasp)
-                bld.install_files('${PREFIX}/%s/%s' % (executable_dir, cclasp_dsym.name), cclasp_dsym_files, relative_trick = True, cwd = cclasp_dsym)
+                install_files('%s/%s' % (executable_dir, cclasp_dsym.name), cclasp_dsym_files, cwd = cclasp_dsym)
             bld.install_as('${PREFIX}/%s/%s' % (executable_dir, bld.cclasp_executable.name), bld.cclasp_executable, chmod = Utils.O755)
             bld.symlink_as('${PREFIX}/%s/clasp' % executable_dir, '%s' % bld.cclasp_executable.name)
             os.symlink(bld.cclasp_executable.abspath(),clasp_symlink_node.abspath())
