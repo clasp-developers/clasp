@@ -54,33 +54,32 @@ CL_DEFUN List_sp cl__symbol_plist(Symbol_sp sym) {
   return sym->plist();
 }
 
-CL_LAMBDA(sym indicator &optional default);
-CL_DECLARE();
-CL_DOCSTRING("Return the symbol plist");
-CL_DEFUN T_sp cl__get(Symbol_sp sym, T_sp indicator, T_sp defval) {
-#if 0
-  if (sym.nilp()) {
-    return cl__getf(coerce_to_list(cl::_sym_nil), indicator, defval);
-  }
-#endif
-  return cl__getf(sym->_PropertyList, indicator, defval);
-}
-
-CL_LAMBDA(sym plist);
+CL_LISPIFY_NAME("cl:symbol-plist");
+CL_LAMBDA(plist sym);
 CL_DECLARE();
 CL_DOCSTRING("Set the symbol plist");
-CL_DEFUN T_sp core__set_symbol_plist(Symbol_sp sym, List_sp plist) {
+CL_DEFUN_SETF List_sp core__set_symbol_plist(List_sp plist, Symbol_sp sym) {
+  // FIXME: necessary?
   if (sym.nilp()) {
     SIMPLE_ERROR(BF("You cannot set the plist of nil"));
-  };
+  }
   sym->setf_plist(plist);
   return plist;
 }
 
-CL_LAMBDA(sym val indicator);
+CL_LAMBDA(sym indicator &optional default);
 CL_DECLARE();
-CL_DOCSTRING("Set the symbol plist");
-CL_DEFUN T_sp core__putprop(Symbol_sp sym, T_sp val, T_sp indicator) {
+CL_DOCSTRING("Return the value of a plist property");
+CL_DEFUN T_sp cl__get(Symbol_sp sym, T_sp indicator, T_sp defval) {
+  return cl__getf(sym->_PropertyList, indicator, defval);
+}
+
+CL_LISPIFY_NAME("cl:get")
+CL_LAMBDA(val sym indicator &optional default);
+CL_DECLARE();
+CL_DOCSTRING("Set the value of a plist property");
+CL_DEFUN_SETF T_sp core__putprop(T_sp val, Symbol_sp sym, T_sp indicator, T_sp defval) {
+  (void)(defval); // unused
   if (sym.nilp()) {
     SIMPLE_ERROR(BF("You cannot set the plist of nil"));
   };
