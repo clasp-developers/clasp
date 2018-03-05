@@ -97,7 +97,7 @@
              (format t "x -> ~a   file -> ~a~%" x file)
              (push file source))))
        *all-source-files*)
-      (nreverse source))))
+      source)))
 
 (defun determine-complete-set-of-asdf-source-files-absolute-path (systems)
   (let ((*all-source-files* nil))
