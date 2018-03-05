@@ -490,7 +490,7 @@ as a STRUCTURE doc and can be retrieved by (documentation 'NAME 'structure)."
 
     ;; Check the named option and set the predicate.
     (when (and type (not named))
-      (when predicate-specified
+      (when (and predicate-specified (not (null predicate)))
 	(error "~S is an illegal structure predicate."
 	       predicate))
       (setq predicate nil))
