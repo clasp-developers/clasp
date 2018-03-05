@@ -82,18 +82,21 @@
     (map nil #'(lambda (system)
 		 (asdf:oos 'sticky-beak-op system :force t))
 	 systems)
-    (let ((source
-           (mapcar
-            (lambda (x)
-              (let* ((part-name
-                      (enough-namestring
-                       (asdf/component:component-pathname x)
-                       (translate-logical-pathname #P"SOURCE-DIR:")))
-                     (no-type
-                      (make-pathname :directory (pathname-directory part-name)
-                                     :name (pathname-name part-name))))
-                (enough-namestring (pathname (namestring no-type)) (translate-logical-pathname "source-dir:"))))
-            *all-source-files*)))
+    (let (source)
+      (mapc
+       (lambda (x)
+         (when (typep x 'asdf/lisp-action:cl-source-file)
+           (let ((file (let* ((part-name
+                                (enough-namestring
+                                 (asdf/component:component-pathname x)
+                                 (translate-logical-pathname #P"SOURCE-DIR:")))
+                              (no-type
+                                (make-pathname :directory (pathname-directory part-name)
+                                               :name (pathname-name part-name))))
+                         (enough-namestring (pathname (namestring no-type)) (translate-logical-pathname "source-dir:")))))
+             (format t "x -> ~a   file -> ~a~%" x file)
+             (push file source))))
+       *all-source-files*)
       (nreverse source))))
 
 (defun determine-complete-set-of-asdf-source-files-absolute-path (systems)

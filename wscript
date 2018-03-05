@@ -90,10 +90,10 @@ def update_submodules(cfg):
     print("Updating git submodules")
     fetch_git_revision("src/lisp/kernel/contrib/sicl",
                        "https://github.com/drmeister/SICL.git",
-                       "8380a155818d0da9d778fe689fe972984cf85e15")
+                       "2b30f641cb72a48fab4d46b0af3e1aca0add3434")
     fetch_git_revision("src/lisp/kernel/contrib/Concrete-Syntax-Tree",
                        "https://github.com/clasp-developers/Concrete-Syntax-Tree.git",
-                       "8bcfd7492b68747c575b764dd7c425c8d29fc7c8")
+                       "e5ab78ca27084d3c809e00886a1088d5ce28a864")
     fetch_git_revision("src/lisp/kernel/contrib/closer-mop",
                        "https://github.com/pcostanza/closer-mop.git",
                        "d4d1c7aa6aba9b4ac8b7bb78ff4902a52126633f")
@@ -831,7 +831,9 @@ def configure(cfg):
             variant_instance = eval("i"+variant+"()")
             print("Setting up variant: %s" % variant_instance.variant_dir())
             variant_instance.configure_variant(cfg,env_copy)
-    update_submodules(cfg)
+# We can't update_submodules here - if we do then ./waf configure will
+# wipe out any changes to submodules that we had been making
+#    update_submodules(cfg)
 
 def copy_tree(bld,src,dest):
     print("Copy tree src = %s" % src)
