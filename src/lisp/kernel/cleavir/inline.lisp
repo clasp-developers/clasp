@@ -480,9 +480,8 @@
           (error 'type-error :datum index :expected-type 'fixnum))
       (error 'type-error :datum vector :expected-type 'simple-vector)))
 
-;;; (setf (svref x y) z) macroexpands into (core:setf-svref x y z)
-(declaim (inline core:setf-svref))
-(defun core:setf-svref (vector index value)
+(declaim (inline (setf svref)))
+(defun (setf svref) (value vector index)
   (if (typep vector 'simple-vector)
       (if (typep index 'fixnum)
           (let ((ats (core::vector-length vector)))
@@ -582,15 +581,15 @@
     (%unsafe-vector-set underlying-array (+ index offset) value)))
 
 
-(declaim (inline schar core:schar-set char core:char-set))
+(declaim (inline schar (setf schar) char (setf char)))
 (defun schar (string index)
   (row-major-aref (the simple-string string) index))
-(defun core:schar-set (string index value)
+(defun (setf schar) (value string index)
   (core:row-major-aset (the simple-string string) index value))
 
 (defun char (string index)
   (row-major-aref (the string string) index))
-(defun core:char-set (string index value)
+(defun (setf char) (value string index)
   (core:row-major-aset (the string string) index value))
 
 (defun row-major-index-computer (array dimsyms subscripts)
