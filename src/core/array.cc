@@ -600,7 +600,7 @@ void core__copy_subarray(Array_sp dest, Fixnum_sp destStart, Array_sp orig, Fixn
   }
 }
 
-CL_LISPIFY_NAME("cl:aref");
+CL_LISPIFY_NAME("CL:aref");
 CL_LAMBDA(value array &va-rest indices);
 CL_DECLARE();
 CL_DOCSTRING("aset");
