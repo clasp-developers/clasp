@@ -16,11 +16,10 @@
   `(core:make-cxx-object 'core:source-pos-info
                          :sfi (core:decode (core:make-cxx-object 'core:source-file-info)
                                            ',(core:encode (core:source-file-info
-                                                           (core:source-pos-info-file-handle
-                                                            (source-pos-info object)))))
-                         :fp ,(core:source-pos-info-filepos (source-pos-info object))
-                         :l ,(core:source-pos-info-lineno (source-pos-info object))
-                         :c ,(core:source-pos-info-column (source-pos-info object))))
+                                                           (core:source-pos-info-file-handle object))))
+                         :fp ,(core:source-pos-info-filepos object)
+                         :l ,(core:source-pos-info-lineno object)
+                         :c ,(core:source-pos-info-column object)))
 
 ;;; Save top level forms for source tracking
 (defmethod cleavir-generate-ast::convert-form :around (form info env system)
