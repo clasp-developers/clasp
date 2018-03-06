@@ -902,7 +902,7 @@ CL_DEFUN void core__setf_global_inline_status(core::T_sp name, bool status, core
 
 CL_LAMBDA(symbol &optional env);
 CL_DECLARE();
-CL_DOCSTRING("See CLHS: macroFunction");
+CL_DOCSTRING("See CLHS: macro-function");
 CL_DEFUN T_sp cl__macro_function(Symbol_sp symbol, T_sp env) {
   T_sp func = _Nil<T_O>();
   if (env.nilp()) {
@@ -925,6 +925,20 @@ CL_DEFUN T_sp cl__macro_function(Symbol_sp symbol, T_sp env) {
     }
   }
   return func;
+}
+
+CL_LISPIFY_NAME("cl:macro-function");
+CL_LAMBDA(function symbol &optional env);
+CL_DECLARE();
+CL_DOCSTRING("(setf macro-function)");
+CL_DEFUN_SETF T_sp setf_macro_function(Function_sp function, Symbol_sp symbol, T_sp env) {
+  NamedFunction_sp namedFunction;
+  (void)env; // ignore
+  
+  if ((namedFunction = function.asOrNull<NamedFunction_O>()))
+    namedFunction->set_kind(kw::_sym_macro);
+  symbol->setf_symbolFunction(function);
+  return function;
 }
 
 CL_LAMBDA(symbol);
@@ -1156,6 +1170,48 @@ CL_DEFUN T_sp cl__fdefinition(T_sp functionName) {
     return sym->symbolFunction();
   }
   TYPE_ERROR(functionName,cl::_sym_function);
+}
+
+CL_LISPIFY_NAME("cl:fdefinition")
+CL_LAMBDA(function name);
+CL_DECLARE();
+CL_DOCSTRING("(setf fdefinition)");
+CL_DEFUN_SETF T_sp setf_fdefinition(Function_sp function, T_sp name) {
+  Symbol_sp symbol;
+  NamedFunction_sp functionObject;
+  
+  if ((functionObject = function.asOrNull<NamedFunction_O>())) {
+    functionObject->set_kind(kw::_sym_function);
+  }
+  if ((symbol = name.asOrNull<Symbol_O>())) {
+    symbol->setf_symbolFunction(function);
+    return function;
+  } else if (name.consp()) {
+    List_sp cur = name;
+    if (oCar(cur) == cl::_sym_setf) {
+      symbol = gc::As<Symbol_sp>(oCadr(cur));
+      symbol->setSetfFdefinition(function);
+      return function;
+    }
+  }
+  TYPE_ERROR(name, // type of function names
+             Cons_O::createList(cl::_sym_or, cl::_sym_symbol,
+                                Cons_O::createList(cl::_sym_cons,
+                                                   Cons_O::createList(cl::_sym_eql, cl::_sym_setf))));
+}
+
+// reader in symbol.cc; this additionally involves function properties, so it's here
+CL_LISPIFY_NAME("cl:symbol-function")
+CL_LAMBDA(function symbol);
+CL_DECLARE();
+CL_DOCSTRING("(setf symbol-function)");
+CL_DEFUN_SETF T_sp setf_symbol_function(Function_sp function, Symbol_sp name) {
+  NamedFunction_sp functionObject;
+  if ((functionObject = function.asOrNull<NamedFunction_O>())) {
+    functionObject->set_kind(kw::_sym_function);
+  }
+  name->setf_symbolFunction(function);
+  return function;
 }
 
 CL_LAMBDA(function-name);
