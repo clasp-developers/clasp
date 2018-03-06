@@ -533,10 +533,12 @@ def configure(cfg):
     run_llvm_config(cfg, "--version") # make sure we fail early
     check_externals_clasp_version(cfg)
 
-    cfg.env["LLVM_CONFIG_BINARY_FOR_LIBS"] = cfg.env.LLVM_CONFIG_BINARY
-    if (cfg.env.LLVM_CONFIG_DEBUG_PATH):
-        Logs.warn("LLVM_CONFIG_DEBUG_PATH is defined: %s", cfg.env.LLVM_CONFIG_DEBUG_PATH)
-        cfg.env["LLVM_CONFIG_BINARY_FOR_LIBS"] = cfg.env.LLVM_CONFIG_DEBUG_PATH
+    if (cfg.env.LLVM_CONFIG_BINARY_FOR_LIBS):
+        Logs.warn("Using a separate llvm-config binary for linking with the LLVM libs: %s", cfg.env.LLVM_CONFIG_BINARY_FOR_LIBS)
+    else:
+        Logs.debug("Using the same llvm-config binary for linking with the LLVM libs: %s", cfg.env.LLVM_CONFIG_BINARY)
+        cfg.env["LLVM_CONFIG_BINARY_FOR_LIBS"] = cfg.env.LLVM_CONFIG_BINARY
+
     if (cfg.env.LLVM5_ORC_NOTIFIER_PATCH):
         cfg.define("LLVM5_ORC_NOTIFIER_PATCH",1)
     cfg.env["LLVM_BIN_DIR"] = run_llvm_config(cfg, "--bindir")
