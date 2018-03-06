@@ -51,9 +51,9 @@ if ([ -n "$revision" ] && ! (git cat-file -e "$revision")) ||
 fi
 
 if [ -n "$label" ]; then
-    git checkout --quiet "$label" || exit $?
+    git checkout "$label" || exit $?
 fi
 
 if [ -n "$revision" ]; then
-    git reset --hard "$revision" || exit $?
+    git reset --mixed "$revision" || exit $?
 fi
