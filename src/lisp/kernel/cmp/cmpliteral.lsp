@@ -286,8 +286,7 @@ the value is put into *default-load-time-value-vector* and its index is returned
     ((complexp object) (values *complex-coalesce* #'ltv/complex))
     ((random-state-p object) (values *identity-coalesce* #'ltv/random-state))
     ((core:built-in-class-p object) (values *built-in-class-coalesce* #'ltv/built-in-class))
-    ((typep object '(or standard-object structure-object condition class)) (values *identity-coalesce* #'ltv/mlf))
-    (t (error "Handle object ~a" object))))
+    (t (values *identity-coalesce* #'ltv/mlf))))
 
 (defun make-similarity-table (test)
   (make-hash-table :test test))
