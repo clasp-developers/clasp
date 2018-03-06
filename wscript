@@ -29,7 +29,6 @@ os.environ['LC_ALL'] = os.environ['LANG'] = "C"
 top = '.'
 out = 'build'
 APP_NAME = 'clasp'
-VERSION = '0.0'
 DARWIN_OS = 'darwin'
 LINUX_OS = 'linux'
 
@@ -170,9 +169,6 @@ def stage_value(ctx,s):
         ctx.fatal("Illegal stage: %s" % s)
     return sval
 
-def yadda(cfg):
-    print("In Yadda")
-
 # Called for each variant, at the end of the configure phase
 def configure_common(cfg,variant):
 #    include_path = "%s/%s/%s/src/include/clasp/main/" % (cfg.path.abspath(),out,variant.variant_dir()) #__class__.__name__)
@@ -188,8 +184,8 @@ def configure_common(cfg,variant):
     cfg.define("VARIANT_NAME",variant.variant_name())
     cfg.define("BUILD_STLIB", libraries_as_link_flags_as_string(cfg.env.STLIB_ST,cfg.env.STLIB))
     cfg.define("BUILD_LIB", libraries_as_link_flags_as_string(cfg.env.LIB_ST,cfg.env.LIB))
-    print("cfg.env.LINKFLAGS=%s" % cfg.env.LINKFLAGS)
-    print("cfg.env.LDFLAGS=%s" % cfg.env.LDFLAGS)
+    Logs.debug("cfg.env.LINKFLAGS = %s", cfg.env.LINKFLAGS)
+    Logs.debug("cfg.env.LDFLAGS = %s", cfg.env.LDFLAGS)
     cfg.define("BUILD_LINKFLAGS", ' '.join(cfg.env.LINKFLAGS) + ' ' + ' '.join(cfg.env.LDFLAGS))
 
 def strip_libs(libs):
@@ -471,13 +467,13 @@ def get_clasp_version(cfg):
     return run_program(cfg.env.GIT_BINARY, "describe", "--always").strip()
 
 def run_llvm_config(cfg, *args):
-    print( "LLVM_CONFIG_BINARY = %s" % cfg.env.LLVM_CONFIG_BINARY)
+    Logs.debug("run_llvm_config LLVM_CONFIG_BINARY = %s", cfg.env.LLVM_CONFIG_BINARY)
     result = run_program(cfg.env.LLVM_CONFIG_BINARY, *args)
     assert len(result) > 0
     return result.strip()
 
 def run_llvm_config_for_libs(cfg, *args):
-    print("run_llvm_config_for_libs LLVM_CONFIG_BINARY_FOR_LIBS = %s" % cfg.env.LLVM_CONFIG_BINARY_FOR_LIBS)
+    Logs.debug("run_llvm_config_for_libs LLVM_CONFIG_BINARY_FOR_LIBS = %s", cfg.env.LLVM_CONFIG_BINARY_FOR_LIBS)
     result = run_program(cfg.env.LLVM_CONFIG_BINARY_FOR_LIBS, *args)
     assert len(result) > 0
     return result.strip()
@@ -485,37 +481,30 @@ def run_llvm_config_for_libs(cfg, *args):
 def configure(cfg):
     def update_exe_search_path(cfg):
         llvm_config_binary = cfg.env.LLVM_CONFIG_BINARY
-        if (llvm_config_binary == []):
+        if (len(llvm_config_binary) == 0):
             try:
-                cfg.find_program('llvm-config-5.0', var='LLVM_CONFIG_BINARY')
-                llvm_config_binary = cfg.env.LLVM_CONFIG_BINARY[0]
+                llvm_config_binary = cfg.find_program('llvm-config-5.0')
             except cfg.errors.ConfigurationError:
                 cfg.to_log('llvm-config-5.0 was not found (ignoring)')
-            if (cfg.env.LLVM_CONFIG_BINARY==[]):
-                try:
-                    cfg.find_program('llvm-config', var='LLVM_CONFIG_BINARY')
-                    llvm_config_binary = cfg.env.LLVM_CONFIG_BINARY[0]
-                except cfg.errors.ConfigurationError: 
-                    cfg.to_log('llvm-config was not found (ignoring)')
-        cfg.env["LLVM_CONFIG_BINARY"] = llvm_config_binary
-        print("Using LLVM_CONFIG_BINARY = %s" % cfg.env.LLVM_CONFIG_BINARY)
-        if (llvm_config_binary!=[]):
-            print("llvm_config_binary = |%s|" % llvm_config_binary)
-            path = os.getenv("PATH").split(os.pathsep)
-            externals_bin_dir = run_llvm_config(cfg,"--bindir")
-            path.insert(0, externals_bin_dir)
-            cfg.environ["PATH"] = os.pathsep.join(path)
-            print("PATH has been prefixed with '%s'" % externals_bin_dir)
-        assert os.path.isdir(externals_bin_dir), "Please provide a valid LLVM_CONFIG_BINARY path instead of '%s'. See the wscript.config.template file." % llvm_config_binary
-        #print("Updated search path for binaries: '%s'" % cfg.environ["PATH"])
+                # Let's fail if no llvm-config binary has been found
+                llvm_config_binary = cfg.find_program('llvm-config')
+            llvm_config_binary = llvm_config_binary[0]
+            cfg.env["LLVM_CONFIG_BINARY"] = llvm_config_binary
+        Logs.debug("Using llvm-config binary: %s", cfg.env.LLVM_CONFIG_BINARY)
+        # Let's prefix the OS's binary search PATH with the configured LLVM bin dir.
+        # TODO Maybe it would be better to handle full binary paths explicitly -- if possible at all.
+        path = os.getenv("PATH").split(os.pathsep)
+        externals_bin_dir = run_llvm_config(cfg, "--bindir")
+        path.insert(0, externals_bin_dir)
+        cfg.environ["PATH"] = os.pathsep.join(path)
+        Logs.info("PATH has been prefixed with '%s'", externals_bin_dir)
+        assert os.path.isdir(externals_bin_dir), "Please provide a valid LLVM_CONFIG_BINARY. See the 'wscript.config.template' file."
 
     def check_externals_clasp_version(cfg):
-        print("Hello there - check externals-clasp from here")
-        llvm_config_binary = cfg.env['LLVM_CONFIG_BINARY']
-        if (not "externals-clasp" in llvm_config_binary):
-            print("Not checking externals-clasp because LLVM_CONFIG_BINARY does not include externals-clasp")
+        Logs.debug("check_externals_clasp_version begins, cfg.env.LLVM_CONFIG_BINARY = %s", cfg.env.LLVM_CONFIG_BINARY)
+        if (not "externals-clasp" in cfg.env.LLVM_CONFIG_BINARY):
             return
-        fin = open(run_llvm_config(cfg,"--prefix")+"/../../makefile","r")
+        fin = open(run_llvm_config(cfg, "--prefix") + "/../../makefile", "r")
         externals_clasp_llvm_hash = "0bc70c306ccbf483a029a25a6fd851bc332accff"   # update this when externals-clasp is updated
         correct_version = False
         for x in fin:
@@ -524,41 +513,37 @@ def configure(cfg):
         fin.close()
         if (not correct_version):
             raise Exception("You do not have the correct version of externals-clasp installed - you need the one with the LLVM_COMMIT=%s" % externals_clasp_llvm_hash)
-        
+
     def load_local_config(cfg):
-        local_environment = {}
-        if not os.path.isfile("./wscript.config"):
-            print("There is no wscript.config file - assuming configuration. See the wscript.config.template file.")
-        else:
+        if os.path.isfile("./wscript.config"):
+            local_environment = {}
             exec(open("./wscript.config").read(), globals(), local_environment)
             cfg.env.update(local_environment)
+        else:
+            Logs.warn("There is no 'wscript.config' file - assuming default configuration. See 'wscript.config.template' for further details.")
 
+    #
     # This is where configure(cfg) starts
-        # KLUDGE there should be a better way than this
-    cfg.env["BUILD_ROOT"] = os.path.abspath(top)
+    #
+    cfg.env["BUILD_ROOT"] = os.path.abspath(top) # KLUDGE there should be a better way than this
     load_local_config(cfg)
     cfg.load("why")
     cfg.check_waf_version(mini = '1.7.5')
     update_exe_search_path(cfg)
+    run_llvm_config(cfg, "--version") # make sure we fail early
     check_externals_clasp_version(cfg)
-    if (cfg.env.LLVM_CONFIG_BINARY):
-        pass
-    else:
-        cfg.env["LLVM_CONFIG_BINARY"] = cfg.find_program("llvm-config", var = "LLVM_CONFIG")[0]
+
+    cfg.env["LLVM_CONFIG_BINARY_FOR_LIBS"] = cfg.env.LLVM_CONFIG_BINARY
     if (cfg.env.LLVM_CONFIG_DEBUG_PATH):
-        print("LLVM_CONFIG_DEBUG_PATH is defined: %s" % cfg.env.LLVM_CONFIG_DEBUG_PATH)
+        Logs.warn("LLVM_CONFIG_DEBUG_PATH is defined: %s", cfg.env.LLVM_CONFIG_DEBUG_PATH)
         cfg.env["LLVM_CONFIG_BINARY_FOR_LIBS"] = cfg.env.LLVM_CONFIG_DEBUG_PATH
-    else:
-        print("LLVM_CONFIG_DEBUG_PATH is not defined")
-        cfg.env["LLVM_CONFIG_BINARY_FOR_LIBS"] = cfg.env.LLVM_CONFIG_BINARY
     if (cfg.env.LLVM5_ORC_NOTIFIER_PATCH):
         cfg.define("LLVM5_ORC_NOTIFIER_PATCH",1)
-    print("cfg.env.LINKFLAGS=%s" % cfg.env.LINKFLAGS)
     cfg.env["LLVM_BIN_DIR"] = run_llvm_config(cfg, "--bindir")
     cfg.env["LLVM_AR_BINARY"] = "%s/llvm-ar" % cfg.env.LLVM_BIN_DIR
 #    cfg.env["LLVM_AR_BINARY"] = cfg.find_program("llvm-ar", var = "LLVM_AR")[0]
     cfg.env["GIT_BINARY"] = cfg.find_program("git", var = "GIT")[0]
-    print("cfg.env['LTO_OPTION'] = %s" % cfg.env['LTO_OPTION'])
+    Logs.debug("cfg.env['LTO_OPTION'] = %s", cfg.env['LTO_OPTION'])
     if (cfg.env['LTO_OPTION']==[] or cfg.env['LTO_OPTION']=='thinlto'):
         cfg.env.LTO_FLAG = '-flto=thin'
         if (cfg.env['DEST_OS'] == LINUX_OS ):
@@ -571,9 +556,8 @@ def configure(cfg):
         cfg.env.LTO_FLAG = []
     else:
         raise Exception("LTO_OPTION can only be 'thinlto'(default), 'lto', or 'obj' - you provided %s" % cfg.env['LTO_OPTION'])
-    print("default cfg.env.LTO_OPTION = %s" % cfg.env.LTO_OPTION)
-    print("default cfg.env.LTO_FLAG = %s" % cfg.env.LTO_FLAG)
-    run_llvm_config(cfg, "--version") # make sure we fail early
+    Logs.info("default cfg.env.LTO_OPTION = %s, final cfg.env.LTO_FLAG = '%s'", cfg.env.LTO_OPTION, cfg.env.LTO_FLAG)
+
     # find a lisp for the scraper
     if not cfg.env.SCRAPER_LISP:
         cfg.env["SBCL"] = cfg.find_program("sbcl", var = "SBCL")[0]
@@ -838,20 +822,20 @@ def build(bld):
         dest = '${PREFIX}/' + dest
         bld.install_files(dest, files, relative_trick = True, cwd = cwd)
 
-    Logs.debug("In Main build, bld.path = %s" % bld.path)
+    Logs.debug("In Main build, bld.path = %s", bld.path)
 
     if not bld.variant:
         bld.fatal("Call waf with build_variant, e.g. 'nice -n19 ./waf --jobs 2 --verbose build_cboehm'")
     variant = eval(bld.variant + "()")
     bld.variant_obj = variant
-    Logs.info("Variant = %s" % variant)
+    Logs.info("Variant = %s", variant)
 
     stage = bld.stage
     stage_val = stage_value(bld,bld.stage)
     bld.stage_val = stage_val
-    Logs.info("Building bld.stage --> %s   bld.stage_val -> %s" % (bld.stage, bld.stage_val))
+    Logs.info("Building bld.stage --> %s   bld.stage_val -> %s", bld.stage, bld.stage_val)
     bld.use_human_readable_bitcode = bld.env["USE_HUMAN_READABLE_BITCODE"]
-    Logs.debug("Using human readable bitcode: %s" % bld.use_human_readable_bitcode)
+    Logs.debug("Using human readable bitcode: %s", bld.use_human_readable_bitcode)
     bld.clasp_source_files = collect_clasp_c_source_files(bld)
 
     bld.clasp_aclasp = collect_aclasp_lisp_files()
@@ -875,23 +859,17 @@ def build(bld):
 
     bld.recurse('extensions')
 
-    Logs.info("There are %d extensions_builders" % len(bld.extensions_builders))
+    Logs.info("There are %d extensions_builders", len(bld.extensions_builders))
     for x in bld.extensions_builders:
         x.run()
-
-    c_source_files = bld.clasp_source_files + bld.extensions_source_files
 
     #
     # Installing the sources
     #
-    install_files('lib/clasp/', bld.clasp_source_files)
-    install_files('lib/clasp/', bld.extensions_source_files)
+    clasp_c_source_files = bld.clasp_source_files + bld.extensions_source_files
+    install_files('lib/clasp/', clasp_c_source_files)
+    install_files('lib/clasp/', bld.path.ant_glob("include/clasp/**/*.h"))
     install_files('lib/clasp/src/lisp/', bld.path.ant_glob("src/lisp/**/*.l* **/*.asd"))
-    # TODO why was it a comment, what's wrong with it?
-#   install_files('lib/clasp/', c_source_files)
-
-    clasp_headers = bld.path.ant_glob("include/clasp/**/*.h")
-    install_files('lib/clasp/', clasp_headers)
 
     bld.env = bld.all_envs[bld.variant]
     include_dirs = ['.']
@@ -899,7 +877,7 @@ def build(bld):
     include_dirs.append("%s/include/" % (bld.path.abspath()))
     include_dirs.append("%s/%s/%s/generated/" % (bld.path.abspath(),out,variant.variant_dir()))
     include_dirs = include_dirs + bld.extensions_include_dirs
-    Logs.debug("include_dirs = %s" % include_dirs)
+    Logs.debug("include_dirs = %s", include_dirs)
 
     extension_headers_node = variant.extension_headers_node(bld)
     print("extension_headers_node = %s" % extension_headers_node.abspath())
@@ -924,12 +902,12 @@ def build(bld):
     bclasp_symlink_node = build_node.make_node("bclasp")
     if (bld.env['DEST_OS'] == LINUX_OS ):
         executable_dir = "bin"
-        bld_task = bld.program(source = c_source_files,
+        bld_task = bld.program(source = clasp_c_source_files,
                                includes=include_dirs,
                                target = [bld.iclasp_executable], install_path = '${PREFIX}/bin')
     elif (bld.env['DEST_OS'] == DARWIN_OS ):
         executable_dir = "bin"
-        bld_task = bld.program(source = c_source_files,
+        bld_task = bld.program(source = clasp_c_source_files,
                                includes=include_dirs,
                                target = [bld.iclasp_executable], install_path = '${PREFIX}/bin')
 #        if (bld.env.LTO_FLAG):
