@@ -25,21 +25,34 @@ when this is t a lot of graphs will be generated.")
 (defun setup-function-scope-metadata (name function-info &key function llvm-function-name llvm-function llvm-function-type)
   (let* ((instruction (enter-instruction function-info))
          (origin (cleavir-ir:origin instruction)))
-    (if origin
-        (let* ((start-pos (if (consp origin)
-                              (car origin)
-                              origin))
-               (source-pos-info start-pos)
-               (fileid (core:source-pos-info-file-handle source-pos-info))
-               (lineno (core:source-pos-info-lineno source-pos-info))
-               (file-metadata (get-or-register-file-metadata fileid))
-               (function-metadata (cmp:make-function-metadata :file-metadata file-metadata
-                                                              :linkage-name llvm-function-name
-                                                              :function-type llvm-function-type
-                                                              :lineno lineno)))
-          (llvm-sys:set-subprogram function function-metadata)
-          (setf (metadata function-info) function-metadata))
-        (warn "There is no origin instruction -> ~a~% llvm-function-name -> ~a~%" instruction llvm-function-name))))
+    (cond
+      (origin
+       (let* ((start-pos (if (consp origin)
+                             (car origin)
+                             origin))
+              (source-pos-info start-pos)
+              (fileid (core:source-pos-info-file-handle source-pos-info))
+              (lineno (core:source-pos-info-lineno source-pos-info))
+              (file-metadata (get-or-register-file-metadata fileid))
+              (function-metadata (cmp:make-function-metadata :file-metadata file-metadata
+                                                             :linkage-name llvm-function-name
+                                                             :function-type llvm-function-type
+                                                             :lineno lineno)))
+         (llvm-sys:set-subprogram function function-metadata)
+         (setf (metadata function-info) function-metadata)))
+      (*current-compile-file-source-pos-info*
+       (let* ((source-pos-info *current-compile-file-source-pos-info*)
+              (fileid (core:source-pos-info-file-handle source-pos-info))
+              (lineno (core:source-pos-info-lineno source-pos-info))
+              (file-metadata (get-or-register-file-metadata fileid))
+              (function-metadata (cmp:make-function-metadata :file-metadata file-metadata
+                                                             :linkage-name llvm-function-name
+                                                             :function-type llvm-function-type
+                                                             :lineno lineno)))
+         (llvm-sys:set-subprogram function function-metadata)
+         (setf (metadata function-info) function-metadata)))
+      (t
+       (error "No source info is available")))))
 
 (defun set-instruction-source-position (origin function-info)
   (if origin
