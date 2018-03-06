@@ -259,8 +259,7 @@ namespace core {
   T_sp core__create_tagged_immediate_value_or_nil(T_sp object);
   bool cl__constantp(T_sp obj, T_sp env = _Nil<T_O>());
   T_mv cl__values_list(List_sp list);
-  T_mv core__get_compiler_macro_function(core::T_sp name, core::T_sp env);
-  void core__setf_compiler_macro_function(core::T_sp name, core::T_sp function, core::T_sp env);
+  T_mv cl__compiler_macro_function(core::T_sp name, core::T_sp env);
   bool cl__fboundp(T_sp functionName);
   T_sp core__get_global_inline_status(core::T_sp name, core::T_sp env);
   void core__setf_global_inline_statis(core::T_sp name, bool status, core::T_sp env);

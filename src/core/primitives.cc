@@ -849,12 +849,6 @@ CL_DEFUN Pointer_mv core__c_function(Symbol_sp sym) {
 #endif
 
 // ignore env
-CL_DEFUN T_sp core__compiler_macro_function(core::T_sp name, core::T_sp env)
-{
-  return core__get_sysprop(name,cl::_sym_compiler_macro);
-}
-
-// ignore env
 CL_LAMBDA(name &optional env);
 CL_DEFUN T_mv core__get_bclasp_compiler_macro_function(core::T_sp name, core::T_sp env)
 {
@@ -869,7 +863,7 @@ CL_DEFUN void core__setf_bclasp_compiler_macro_function(core::T_sp name, core::T
 
 // ignore env
 CL_LAMBDA(name &optional env);
-CL_DEFUN T_mv core__get_compiler_macro_function(core::T_sp name, core::T_sp env)
+CL_DEFUN T_mv cl__compiler_macro_function(core::T_sp name, core::T_sp env)
 {
   // First try to get it from the cl:compiler-macro system property and failing that
   // try getting it from the core:bclasp-compiler-macro
@@ -878,8 +872,9 @@ CL_DEFUN T_mv core__get_compiler_macro_function(core::T_sp name, core::T_sp env)
   return core__get_sysprop(name,core::_sym_bclasp_compiler_macro);
 }
 
-CL_LAMBDA(name function &optional env);
-CL_DEFUN void core__setf_compiler_macro_function(core::T_sp name, core::T_sp function, core::T_sp env)
+CL_LISPIFY_NAME("CL:compiler-macro-function");
+CL_LAMBDA(function name &optional env);
+CL_DEFUN_SETF void setf_compiler_macro_function(core::T_sp function, core::T_sp name, core::T_sp env)
 {
   core__put_sysprop(name,cl::_sym_compiler_macro,function);
 }
