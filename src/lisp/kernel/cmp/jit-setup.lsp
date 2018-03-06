@@ -119,6 +119,7 @@ using features defined in corePackage.cc"
         (get-builtin-target-triple-and-data-layout)
       (llvm-sys:set-target-triple m target-triple)
       (llvm-sys:set-data-layout.string m data-layout)
+      (llvm-sys:emit-version-ident-metadata m)
       m)))
 
 (defvar *run-time-module-counter* 1)

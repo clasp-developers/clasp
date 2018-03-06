@@ -295,13 +295,14 @@
 (defclass precalc-vector-function-ast (cleavir-ast:top-level-function-ast)
   ((%precalc-asts :initarg :precalc-asts :reader precalc-asts)))
 
-(defun make-precalc-vector-function-ast (body-ast precalc-asts forms policy)
+(defun make-precalc-vector-function-ast (body-ast precalc-asts forms policy &key origin)
   (make-instance 'precalc-vector-function-ast
-		 :body-ast body-ast
-		 :lambda-list nil
-		 :precalc-asts precalc-asts
-		 :forms forms
-                 :policy policy))
+                 :body-ast body-ast
+                 :lambda-list nil
+                 :precalc-asts precalc-asts
+                 :forms forms
+                 :policy policy
+                 :origin origin))
 
 (cleavir-io:define-save-info precalc-vector-function-ast
     (:precalc-asts precalc-asts))
@@ -368,7 +369,7 @@
 
 (defmethod cleavir-ast-graphviz::label ((ast precalc-value-reference-ast))
   (with-output-to-string (s)
-    (format s "precalc-val-ref(~a) ; " (precalc-value-reference-ast-index ast))
+    (format s "precalc-val-ref(~a) ; " (clasp-cleavir:literal-label (precalc-value-reference-ast-index ast)))
     (let ((original-object (escaped-string (format nil "~s" (precalc-value-reference-ast-original-object ast)))))
       (if (> (length original-object) 10)
 	  (format s "~a..." (subseq original-object 0 10))
@@ -437,7 +438,7 @@ If this form has already been precalculated then just return the precalculated-v
 
 (defun hoist-load-time-value (ast env)
   (let* ((load-time-value-asts (find-load-time-value-asts ast))
-	 (forms (mapcar (lambda (ast-parent)
+         (forms (mapcar (lambda (ast-parent)
                           (cleavir-ast:form (first ast-parent)))
                         load-time-value-asts)))
     (loop for (ast parent) in load-time-value-asts
@@ -448,7 +449,8 @@ If this form has already been precalculated then just return the precalculated-v
                         :index index
                         :original-object (cleavir-ast:form ast)))
     (clasp-cleavir-ast:make-precalc-vector-function-ast
-     ast (mapcar #'first load-time-value-asts) forms (cleavir-ast:policy ast))))
+     ast (mapcar #'first load-time-value-asts) forms (cleavir-ast:policy ast)
+     :origin (cleavir-ast:origin ast))))
 
 
 

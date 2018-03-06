@@ -1743,6 +1743,8 @@ public:
   /*! Wrap the Module::getFunction function */
   llvm::Function *getFunction(core::String_sp dispatchName);
 
+  void emit_version_ident_metadata();
+  
   /*! Get or create a string GlobalVariable with the given name.
 	  Make sure that the string passed is the same as the string
 	  in the GlobalVariable.
@@ -2299,6 +2301,8 @@ public:
 public:
   void restoreIP(InsertPoint_sp insertPoint);
   InsertPoint_sp saveIP();
+
+  void ClearCurrentDebugLocation();
 
   /*! Set the current debug location for generated code */
   void SetCurrentDebugLocation(DebugLoc_sp loc);

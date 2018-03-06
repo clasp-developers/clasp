@@ -4,46 +4,33 @@
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (setq *echo-repl-read* t))
 
-(defvar *use-cst* t "Use Concrete-Syntax-Tree in compile-file - if NIL use forms")
+(defvar *save-compile-file-info* nil
+  "When T causes AST's and HIR to be saved in *saved-compile-file-info* during compile-file")
+(defvar *saved-compile-file-info* nil)
+(defvar *llvm-metadata*)
+(defvar *current-compile-file-source-pos-info* nil)
 
 (defvar *current-function-entry-basic-block*)
 
-(defvar *current-function-scope-info*)
-
-(defclass function-scope ()
-  ((scope-function-name :initarg :scope-function-name :accessor scope-function-name)
-   (source-pos-info :initarg :source-pos-info :accessor source-pos-info)))
-
-(defmethod make-load-form ((object function-scope) &optional environment)
-  `(make-instance 'function-scope
-                  :scope-function-name ',(clasp-cleavir::scope-function-name object)
-                  :source-pos-info (core:make-cxx-object 'core:source-pos-info
-                                                         :sfi (core:decode (core:make-cxx-object 'core:source-file-info)
-                                                                           ',(core:encode (core:source-file-info (core:source-pos-info-file-handle (source-pos-info object)))))
-                                                         :fp ,(core:source-pos-info-filepos (source-pos-info object))
-                                                         :l ,(core:source-pos-info-lineno (source-pos-info object))
-                                                         :c ,(core:source-pos-info-column (source-pos-info object)))))
-
-(defclass scoped-source-pos-info ()
-  ((source-pos-info :initarg :source-pos-info :accessor source-pos-info)
-   (scope :initarg :scope :accessor scope)))
-
-(defmethod make-load-form ((object scoped-source-pos-info) &optional environment)
-  `(make-instance 'scoped-source-pos-info
-                  :source-pos-info (core:make-cxx-object 'core:source-pos-info
-                                                         :sfi (core:decode (core:make-cxx-object 'core:source-file-info)
-                                                                           ',(core:encode (core:source-file-info (core:source-pos-info-file-handle (source-pos-info object)))))
-                                                         :fp ,(core:source-pos-info-filepos (source-pos-info object))
-                                                         :l ,(core:source-pos-info-lineno (source-pos-info object))
-                                                         :c ,(core:source-pos-info-column (source-pos-info object)))
-                  :scope ,(make-load-form (scope object))))
+(defmethod make-load-form ((object core:source-pos-info) &optional environment)
+  `(core:make-cxx-object 'core:source-pos-info
+                         :sfi (core:decode (core:make-cxx-object 'core:source-file-info)
+                                           ',(core:encode (core:source-file-info
+                                                           (core:source-pos-info-file-handle
+                                                            (source-pos-info object)))))
+                         :fp ,(core:source-pos-info-filepos (source-pos-info object))
+                         :l ,(core:source-pos-info-lineno (source-pos-info object))
+                         :c ,(core:source-pos-info-column (source-pos-info object))))
 
 ;;; Save top level forms for source tracking
 (defmethod cleavir-generate-ast::convert-form :around (form info env system)
   (let ((core:*top-level-form-stack* (cons form core:*top-level-form-stack*)))
     (call-next-method)))
 
-;;;
+(defmethod cst:reconstruct :around (expression cst (client clasp) &key (default-source nil default-source-p))
+  (call-next-method expression cst client :default-source (if default-source-p
+                                                              default-source
+                                                              (cst:source cst))))
 
 (defmethod cleavir-generate-ast:convert-constant-to-immediate ((n integer) environment (system clasp))
   ;; convert fixnum into immediate but bignums return nil
@@ -375,13 +362,13 @@
   `(lambda ,lambda-list (block ,(if (listp name) (second name) name) ,@body)))
 
 
-(defun build-and-draw-ast (filename code)
-  (let ((ast (cleavir-generate-ast:generate-ast code *clasp-env* *clasp-system*)))
+(defun build-and-draw-ast (filename cst)
+  (let ((ast (cleavir-cst-to-ast:cst-to-ast cst *clasp-env* *clasp-system*)))
     (cleavir-ast-graphviz:draw-ast ast filename)
     ast))
 
-(defun build-and-draw-hir (filename code)
-  (let* ((ast (cleavir-generate-ast:generate-ast code *clasp-env*))
+(defun build-and-draw-hir (filename cst)
+  (let* ((ast (cleavir-cst-to-ast:cst-to-ast cst *clasp-env*))
 	 (hir (cleavir-ast-to-hir:compile-toplevel ast)))
     (with-open-file (stream filename :direction :output)
       (cleavir-ir-graphviz:draw-flowchart hir stream))))
@@ -438,61 +425,7 @@
       ":c(ontinue) Continue processing forms"
       "Stuff"))))
 
-(defun ast-form (form)
-  (let ((ast (cleavir-generate-ast:generate-ast form *clasp-env* *clasp-system*)))
-    (setf *form* form
-	  *ast* ast)
-    (draw-ast ast)
-    ast))
 
-(defun hoisted-ast-form (form)
-  (let* ((ast (cleavir-generate-ast:generate-ast form *clasp-env* *clasp-system*))
-	 (hoisted (clasp-cleavir-ast:hoist-load-time-value ast)))
-    (setf *form* form
-	  *ast* hoisted)
-    (draw-ast hoisted "/tmp/hoisted.dot")))
-
-
-(defun hir-form (form)
-  (let* ((ast (cleavir-generate-ast:generate-ast form *clasp-env* *clasp-system*))
-         (hoisted-ast (clasp-cleavir-ast:hoist-load-time-value ast))
-         (hir (cleavir-ast-to-hir:compile-toplevel hoisted-ast))
-         (clasp-inst *clasp-system*))
-;;    (cleavir-hir-transformations:hir-transformations hir clasp-inst nil nil)
-    ;;    (cleavir-ir:hir-to-mir hir clasp-inst nil nil)
-    (setf *form* form
-          *ast* hoisted-ast
-          *hir* hir)
-    (draw-hir hir)
-    hir))
-
-#+(or)
-(defun my-hir-transformations (initial-instruction implementation processor os)
-  (cleavir-hir-transformations:eliminate-typeq initial-instruction)
-  (cleavir-hir-transformations:eliminate-superfluous-temporaries initial-instruction)
-  (cleavir-hir-transformations:process-captured-variables initial-instruction))
-
-(defun mir-form (form)
-  (let ((hir (hir-form form))
-	(clasp-inst *clasp-system*))
-    (my-hir-transformations hir clasp-inst nil nil)
-    (cleavir-ir:hir-to-mir hir clasp-inst nil nil)
-    (draw-mir hir)
-    (setq *mir* hir)))
-
-
-(defun hoisted-mir-form (form)
-  (let* ((ast (cleavir-generate-ast:generate-ast form *clasp-env*))
-	 (hoisted-ast (cleavir-ast-transformations:hoist-load-time-value ast))
-	 (hir (cleavir-ast-to-hir:compile-toplevel hoisted-ast))
-	 (clasp-inst *clasp-system*))
-    (cleavir-hir-transformations:hir-transformations hir clasp-inst nil nil)
-    (cleavir-ir:hir-to-mir hir clasp-inst nil nil)
-    (setf *form* form
-	  *ast* hoisted-ast
-	  *hir* hir)
-    (draw-hir hir)
-    hir))
 
 
 (defvar *form* nil)

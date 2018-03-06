@@ -12,7 +12,6 @@
         (change-class function-ast 'clasp-cleavir-ast:named-function-ast
                       :lambda-name lambda-name)))))
 
-(defparameter *body* nil)
 (defmethod cleavir-cst-to-ast:convert-code (lambda-list body
                                             env (system clasp-cleavir:clasp) &key block-name-cst origin)
   (let ((cst:*ordinary-lambda-list-grammar* clasp-cleavir:*clasp-ordinary-lambda-list-grammar*))
@@ -30,18 +29,11 @@
         #+(or)(progn
                 (format t "About to get source for ~a~%" body)
                 (format t "*current-compile-file-source-pos-info* -> ~a~%" clasp-cleavir::*current-compile-file-source-pos-info*))
-        (let* ((spi (or (when (cst:source body)
-                          (clasp-cleavir:source-pos-info (cst:source body)))
-                        clasp-cleavir::*current-compile-file-source-pos-info*
-                        (core:make-source-pos-info "-nowhere-" 0 0 0)))
-               #+(or)(_ (format t "About to make instance spi -> ~a~%" spi))
-               (scope (make-instance 'clasp-cleavir:function-scope
-                                     :scope-function-name lambda-name
-                                     :source-pos-info spi))
-               (clasp-cleavir:*current-function-scope-info* scope)
-               (origin (make-instance 'clasp-cleavir:scoped-source-pos-info
-                                      :source-pos-info spi
-                                      :scope scope)))
+        (let ((origin (or (and (cst:source body)
+                               (let ((source (cst:source body)))
+                                 (if (consp source) (car source) source)))
+                          clasp-cleavir::*current-compile-file-source-pos-info*
+                          (core:make-source-pos-info "-nowhere-" 0 0 0))))
           (let ((function-ast (call-next-method)))
             (setf (cleavir-ast:origin function-ast) origin)
             ;; Make the change here to a named-function-ast with lambda-name

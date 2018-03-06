@@ -88,7 +88,8 @@
           `(core:multiple-value-funcall
             (core::coerce-fdesignator ,function-form)
             ,@(mapcar (lambda (x) `#'(lambda () (progn ,x))) forms)))
-      cst))
+      cst
+      system))
    env system))
 
 
@@ -423,7 +424,8 @@
        (cst:raw (cst:rest cst))
      (cst:reconstruct
       `(core:progv-function ,symbols ,values (lambda () (progn ,@forms)))
-      cst))
+      cst
+      system))
    env system))
 #+(or)
 (defmacro cl:progv (symbols values &body forms)

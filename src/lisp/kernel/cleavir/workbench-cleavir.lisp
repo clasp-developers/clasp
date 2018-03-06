@@ -39,7 +39,130 @@
   (format t "Done loading inline.lisp~%"))
 
 
-(clasp-cleavir:cleavir-compile-file "sys:kernel;clos;builtin.lsp" :print t)
+(trace cleavir-cst-to-ast:convert-code)
+(trace cleavir-cst-to-ast::convert-local-function)
+(trace cleavir-cst-to-ast::convert-lambda-call)
+(trace cleavir-cst-to-ast::convert-lambda-function)
+(trace cleavir-cst-to-ast::convert-special)
+
+(progn
+  (trace cleavir-ast-to-hir::compile-toplevel)
+  (trace cleavir-ir:make-enter-instruction)
+  (trace cleavir-ir:make-top-level-enter-instruction)
+  (trace clasp-cleavir-hir::make-named-enter-instruction)
+  (trace clasp-cleavir::compile-cst-or-form-to-mir)
+  )
+
+
+(progn
+  (trace clasp-cleavir::set-instruction-source-position)
+  (trace llvm-sys:clear-current-debug-location)
+  (trace clasp-cleavir::translate-simple-instruction)
+  (trace clasp-cleavir::layout-procedure)
+  (trace clasp-cleavir::layout-procedure*)
+  (trace clasp-cleavir::%intrinsic-call)
+  (trace clasp-cleavir::do-debug-info-source-position))
+
+
+(let ((clasp-cleavir::*save-compile-file-info* t))
+;;;  (setq (clasp-cleavir::*saved-compile-file-info* nil))
+  (clasp-cleavir:cleavir-compile-file "sys:tests;ta.lsp" :print t))
+
+clasp-cleavir::*saved-compile-file-info*
+
+
+(defmethod cleavir-ast-graphviz::label :around (ast)
+  (let* ((label (call-next-method))
+         (origin (cleavir-ast:origin ast)))
+    (if origin
+      (let* ((source (if (consp origin)
+                         (car origin)
+                         origin))
+             (source-pos-info (source-pos-info source))
+        (setf label (format nil "~a~%(~a/~a:~a)" label
+                            (core:source-pos-info-file-handle source-pos-info)
+                            (core:source-pos-info-lineno source-pos-info)
+                            (core:source-pos-info-column source-pos-info))))
+      (setf label (format nil "~a~%NO-SOURCE-INFO" label)))
+    label))
+(cleavir-ast-graphviz:draw-ast (second (car clasp-cleavir::*saved-compile-file-info*)) "/tmp/before.dot")
+
+(defmethod cleavir-ir-graphviz::label :around (ast)
+  (let* ((label (call-next-method))
+         (origin (cleavir-ir:origin ast)))
+    (if origin
+      (let* ((source (if (consp origin)
+                         (car origin)
+                         origin))
+             (source-pos-info (source-pos-info source)))
+        (setf label (format nil "~a~%@(~a/~a:~a)" label
+                            (core:source-pos-info-file-handle source-pos-info)
+                            (core:source-pos-info-lineno source-pos-info)
+                            (core:source-pos-info-column source-pos-info))))
+      (setf label (format nil "~a~%NO-SOURCE-INFO" label)))
+    label))
+(cleavir-ir-graphviz:draw-flowchart (third (car clasp-cleavir::*saved-compile-file-info*)) "/tmp/hir.dot")
+
+
+
+
+
+
+
+
+
+
+(let ((clasp-cleavir::*save-compile-file-info* t)
+      (cst::*recursively-set-source* t))
+;;;  (setq (clasp-cleavir::*saved-compile-file-info* nil))
+  (clasp-cleavir:cleavir-compile-file "sys:tests;ta.lsp" :print t))
+
+(cleavir-ast-graphviz:draw-ast (second (car clasp-cleavir::*saved-compile-file-info*)) "/tmp/after.dot")
+
+
+(defparameter *cst* (car (car clasp-cleavir::*saved-compile-file-info*)))
+(cst:reconstruct (macroexpand (cst:raw *cst*)) *cst*)
+
+(macroexpand (cst:raw *cst*))
+*cst*
+
+(progn
+  (defgeneric traverse-cst (cst))
+  (defmethod traverse-cst ((cst cst:atom-cst))
+    (format t "atom-cst:  ~a ~a~%" (cst:source cst) (cst:raw cst)))
+  (defmethod traverse-cst ((cst cst:cons-cst))
+    (format t "cons-cst:  ~a ~a~%" (cst:source cst) (cst:raw cst))
+    (traverse-cst (cst:first cst))
+    (traverse-cst (cst:rest cst))))
+
+(let ((*print-pretty* nil))
+  (traverse-cst *cst*))
+
+(defparameter *ecst* (cst:reconstruct (macroexpand (cst:raw *cst*)) *cst*))
+
+(let ((*print-pretty* nil))
+  (traverse-cst *ecst*))
+
+(clos::generic-function-specializer-profile #'set-toplevel-source)
+(set-toplevel-source *ecst* (cst:source *cst*))
+
+(defgeneric set-toplevel-source (cst source))
+
+(defmethod set-toplevel-source ((cst cst:atom-cst) source)
+  (format t "atom-cst set-toplevel-source ~a~%" cst)
+  (unless (cst:source cst)
+    (setf (cst:source cst) source)))
+
+(defmethod set-toplevel-source ((cst cst:cons-cst) source)
+  (unless (cst:source cst)
+    (setf (cst:source cst) source)
+    (set-toplevel-source (cst:first cst) source)
+    (set-toplevel-source (cst:rest cst) source)))
+
+(cst:source *cst*)
+
+
+
 
 
 ;;; ------   Compile using forms
@@ -66,6 +189,40 @@
   (with-input-from-string (sin "(defun simple-program-error (e1 &rest args)
   (eval `(error ,e1 ,@args)))")
                            (clasp-cleavir:cleavir-compile-file sin :output-file "/tmp/out.fasl")))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Read source file and generate cst
+;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+(defun read-one-file-return-list-of-csts (pn)
+  (let ((eclector.reader:*client* clasp-cleavir:*clasp-system*))
+    (with-open-file (fin pn)
+      (loop for cst = (eclector.concrete-syntax-tree:cst-read fin nil :eof)
+            until (eq cst :eof)
+            collect cst))))
+
+(trace eclector.concrete-syntax-tree:source-position)
+(trace eclector.reader:source-position)
+(trace cleavir-cst-to-ast:convert-code)
+(trace cleavir-cst-to-ast:convert)
+(trace cleavir-ast:make-load-time-value-ast)
+(defparameter *csts* (read-one-file-return-list-of-csts #P"sys:tests;ta.lsp"))
+
+*csts*
+(length *csts*)
+(defparameter *ast* (let ((cleavir-generate-ast:*compiler* 'cl:compile-file))
+                      (cleavir-cst-to-ast:cst-to-ast (car *csts*) nil clasp-cleavir:*clasp-system*)))
+(defparameter *hast* (clasp-cleavir-ast:hoist-load-time-value *ast* clasp-cleavir:*clasp-system*))
+(defparameter *hir* (cleavir-ast-to-hir:compile-toplevel *ast*))
+*ast*
+(cleavir-ast-graphviz:draw-ast *ast* "/tmp/ast.dot")
+*csts*
 
 
 
@@ -243,8 +400,10 @@ clasp-cleavir::*use-cst*
   (with-open-file (fin pn)
     (loop for cst = (eclector.concrete-syntax-tree:cst-read fin nil :eof)
           until (eq cst :eof)
-          do (format t "CST -> ~a~%" cst)
-             do (finish-output))))
+          collect cst)))
+
+
+
 (let ((*package* (find-package :clos)))
   (read-one-file "sys:kernel;clos;hierarchy2.lsp"))
 

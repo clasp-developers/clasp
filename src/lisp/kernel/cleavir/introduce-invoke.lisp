@@ -60,7 +60,8 @@
    (%unwinds :initarg :unwinds :initform nil :accessor unwinds)
    (%landing-pad-for-unwind :initform nil :accessor landing-pad-for-unwind)
    (%on-entry-for-unwind :initform nil :accessor on-entry-for-unwind)
-   (%on-exit-for-unwind :initform nil :accessor on-exit-for-unwind)))
+   (%on-exit-for-unwind :initform nil :accessor on-exit-for-unwind)
+   (%metadata :initarg :metadata :accessor metadata)))
 
 
 ;;; Given a list of all the UNWIND-INSTRUCTIONs in a program, create an

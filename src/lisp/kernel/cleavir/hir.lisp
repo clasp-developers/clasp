@@ -240,10 +240,10 @@
   ((%lambda-name :initarg :lambda-name :initform "lambda" :accessor lambda-name)))
 
 (defun make-named-enter-instruction
-    (lambda-list lambda-name &optional (successor nil successor-p))
+    (lambda-list lambda-name &key (successor nil successor-p) origin)
   (let ((oe (if successor-p
-		(cleavir-ir:make-enter-instruction lambda-list successor)
-		(cleavir-ir:make-enter-instruction lambda-list))))
+		(cleavir-ir:make-enter-instruction lambda-list :successor successor :origin origin)
+		(cleavir-ir:make-enter-instruction lambda-list :origin origin))))
     (change-class oe 'named-enter-instruction :lambda-name lambda-name)))
 
 
@@ -454,12 +454,14 @@
     (format stream "indexed-unwind[~a]" (jump-id instr))))
 
 (defmethod cleavir-ir-graphviz:draw-instruction ((instruction indexed-unwind-instruction) stream)
-  (format stream "   ~a [label = \"indexed-unwind[~a]\"];~%"
-	  (cleavir-ir-graphviz::instruction-id instruction) (jump-id instruction))
+  (format stream "   ~a [label = \"~a\"];~%"
+	  (cleavir-ir-graphviz::instruction-id instruction) (label instruction))
   (format stream "  ~a -> ~a [color = pink, style = dashed];~%"
 	  (cleavir-ir-graphviz::instruction-id instruction)
 	  (gethash (cleavir-ir:invocation instruction) cleavir-ir-graphviz::*instruction-table*)))
 
+(defmethod cleavir-ir-graphviz:label ((instruction indexed-unwind-instruction))
+  (format nil "indexed-unwind[~a]" (jump-id instruction)))
 
 (defmethod cl:print-object ((instr indexed-unwind-instruction) stream)
   (format stream "#<indexed-unwind[~a]>" (jump-id instr)))

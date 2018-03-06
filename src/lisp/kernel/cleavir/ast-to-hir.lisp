@@ -49,7 +49,7 @@
 ;;; their final values.
 (defmethod cleavir-ast-to-hir::compile-ast ((ast clasp-cleavir-ast:named-function-ast) context)
   (let* ((ll (cleavir-ast-to-hir::translate-lambda-list (cleavir-ast:lambda-list ast)))
-	 (enter (clasp-cleavir-hir:make-named-enter-instruction ll (clasp-cleavir-ast:lambda-name ast)))
+	 (enter (clasp-cleavir-hir:make-named-enter-instruction ll (clasp-cleavir-ast:lambda-name ast) :origin (cleavir-ast:origin ast)))
 	 (values (cleavir-ir:make-values-location))
 	 (return (cleavir-ir:make-return-instruction (list values)))
 	 (body-context (cleavir-ast-to-hir::context values (list return) enter))

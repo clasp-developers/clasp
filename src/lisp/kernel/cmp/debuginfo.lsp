@@ -106,11 +106,7 @@
              "This should not be the return value - it should be what is returned in the unwind-protect body"
              )))
        (let ((*the-module-dibuilder* nil))
-         ,@body))) 
-
-
-(defun dbg-filename* (pn)
-  (bformat nil "%s.%s" (pathname-name pn) (pathname-type pn)))
+         ,@body)))
 
 (defmacro with-dbg-compile-unit ((source-pathname) &rest body)
   (let ((path (gensym))
@@ -123,14 +119,14 @@
 		  (,dir-name (directory-namestring ,path))
 		  (*dbg-compile-unit* (llvm-sys:create-compile-unit
 				       *the-module-dibuilder* ; dibuilder
-				       llvm-sys:dw-lang-c ; 1 llvm-sys:dw-lang-common-lisp
+				       llvm-sys:dw-lang-c-plus-plus ; 1 llvm-sys:dw-lang-common-lisp
 				       ,file   ; 2 file
 				       "clasp Common Lisp compiler" ; 4 producer
 				       nil  ; 5 isOptimized
 				       "-v" ; 6 compiler flags
 				       1    ; 7 RV run-time version
 				       "the-split-name.log" ; 8 splitname
-                                       :line-tables-only ; 9 DebugEmissionKind (:full-debug :line-tables-only)
+                                       :full-debug ; 9 DebugEmissionKind (:full-debug :line-tables-only)
                                        0 ; 10 DWOld
                                        t ; 11 SplitDebugInlining
                                        nil ; 12 DebugInfoForProfiling
@@ -145,24 +141,33 @@
 	   (cmp-log "with-dbg-compile-unit not generating *dbg-compile-unit*%N")
 	   ,@body))))
 
+
+(namestring (make-pathname :directory (pathname-directory #P"a/b/c/d.txt")))
+
+(defun make-file-metadata (pathname)
+  (let* ((dir-name-slash (directory-namestring pathname))
+         (dir-name (if (> (length dir-name-slash) 0)
+                       (if (char= (char dir-name-slash (1- (length dir-name-slash))) #\/)
+                           (subseq dir-name-slash 0 (1- (length dir-name-slash)))
+                           dir-name-slash)
+                       dir-name-slash))
+         (file-name (file-namestring pathname)))
+    (llvm-sys:create-file *the-module-dibuilder*
+                          (namestring file-name)
+                          (namestring dir-name)
+                          :csk-none
+                          "")))
+
 (defmacro with-dbg-file-descriptor ((source-pathname) &rest body)
   (let ((path (gensym))
-	(file-name (gensym))
-	(dir-name (gensym)))
+        (file-name (gensym))
+        (dir-name (gensym)))
     `(if (and *dbg-generate-dwarf* *the-module-dibuilder*)
-	 (let* ((,path (pathname ,source-pathname))
-		(,file-name (dbg-filename* ,path))
-		(,dir-name (directory-namestring ,path))
-		(*dbg-current-file* (llvm-sys:create-file
-				     *the-module-dibuilder*
-				     ,file-name
-				     ,dir-name
-                                     :csk-none
-                                     "")))
-;;		(*dbg-current-scope* *dbg-current-file*))
-	   ,@body)
-	 (progn
-	   ,@body))))
+         (let* ((,path (pathname ,source-pathname))
+                (*dbg-current-file* (make-file-metadata ,path)))
+           ,@body)
+         (progn
+           ,@body))))
 
 (defvar *with-debug-info-generator* nil)
 (defmacro with-debug-info-generator ((&key module pathname) &rest body)
@@ -172,6 +177,27 @@
        (with-dbg-file-descriptor (,pathname)
          (with-dbg-compile-unit (,pathname)
 	   ,@body)))))
+
+
+
+(defun make-function-metadata (&key file-metadata linkage-name function-type lineno)
+  (llvm-sys:create-function
+                       *the-module-dibuilder*   ; 0 DIBuilder
+                       file-metadata ; 1 function scope
+                       linkage-name            ; 2 function name
+                       linkage-name    ; 3 mangled function name
+                       file-metadata ; 4 file where function is defined
+                       lineno            ; 5 lineno
+                       (dbg-create-function-type file-metadata function-type) ; 6 function-type
+                       nil ; 7 isLocalToUnit - true if this function is not externally visible
+                       t ; 8 isDefinition - true if this is a function definition
+                       lineno ; 9 scopeLine - set to the beginning of the scope this starts
+                       (core:enum-logical-or llvm-sys:diflags-enum '(llvm-sys:diflags-zero)) ; 10 flags
+                       nil ; 11 isOptimized - true if optimization is on
+                       nil ; 12 TParam = nullptr
+                       nil ; 13 Decl = nullptr
+                       nil ; 14 ThrownTypes = nullptr
+                       ))
 
 (defvar *with-dbg-function* nil)
 ;; Set to NIL in with-dbg-function and T in dbg-set-current-source-pos
@@ -188,24 +214,29 @@
            (multiple-value-bind (,source-dir ,source-name ,filepos ,lineno ,column)
                (walk-form-for-source-info ,form)
              (let* ((*dbg-current-function*
-                      (llvm-sys:create-function
-                       *the-module-dibuilder*   ; 0 DIBuilder
-                       *dbg-current-file*       ; 1 function scope
-                       ,linkage-name            ; 2 function name
-                       ,linkage-name    ; 3 mangled function name
-                       *dbg-current-file* ; 4 file where function is defined
-                       ,lineno            ; 5 lineno
-                       (dbg-create-function-type *dbg-current-file* ,function-type) ; 6 function-type
-                       nil ; 7 isLocalToUnit - true if this function is not externally visible
-                       t ; 8 isDefinition - true if this is a function definition
-                       ,lineno ; 9 scopeLine - set to the beginning of the scope this starts
-                       (core:enum-logical-or llvm-sys:diflags-enum '(llvm-sys:diflags-zero)) ; 10 flags
-                       nil ; 11 isOptimized - true if optimization is on
-                       nil ; 12 TParam = nullptr
-                       nil ; 13 Decl = nullptr
-                       nil ; 14 ThrownTypes = nullptr
-                       ))
+                      (make-function-metadata :file-metadata *dbg-current-file*
+                                              :linkage-name ,linkage-name
+                                              :function-type ,function-type
+                                              :lineno ,lineno)
+                      #+(or)(llvm-sys:create-function
+                             *the-module-dibuilder* ; 0 DIBuilder
+                             *dbg-current-file*     ; 1 function scope
+                             ,linkage-name          ; 2 function name
+                             ,linkage-name ; 3 mangled function name
+                             *dbg-current-file* ; 4 file where function is defined
+                             ,lineno            ; 5 lineno
+                             (dbg-create-function-type *dbg-current-file* ,function-type) ; 6 function-type
+                             nil ; 7 isLocalToUnit - true if this function is not externally visible
+                             t ; 8 isDefinition - true if this is a function definition
+                             ,lineno ; 9 scopeLine - set to the beginning of the scope this starts
+                             (core:enum-logical-or llvm-sys:diflags-enum '(llvm-sys:diflags-zero)) ; 10 flags
+                             nil ; 11 isOptimized - true if optimization is on
+                             nil ; 12 TParam = nullptr
+                             nil ; 13 Decl = nullptr
+                             nil ; 14 ThrownTypes = nullptr
+                             ))
                     (*dbg-current-scope* *dbg-current-function*))
+               (llvm-sys:set-subprogram ,function *dbg-current-function*)
                (cmp-log "with-dbg-function *dbg-compile-unit*: %s%N" *dbg-compile-unit*)
                (cmp-log "with-dbg-function *dbg-current-function*: %s%N" *dbg-current-function*)
                (cmp-log "with-dbg-function name: [%s]%N" ,name)

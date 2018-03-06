@@ -12,12 +12,8 @@
   (:export
    #:*use-cst*
    #:literal
+   #:literal-label
    #:immediate-literal
-   #:*current-function-scope-info*
-   #:function-scope
-   #:source-pos-info
-   #:scope-function-name
-   #:scoped-source-pos-info
    #:arrayed-literal
    #:%literal-index
    #:*clasp-ordinary-lambda-list-grammar*

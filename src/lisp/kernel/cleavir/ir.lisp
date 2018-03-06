@@ -5,11 +5,16 @@
 
 (in-package :clasp-cleavir)
 
+(defgeneric literal-label (literal))
+
 (defclass literal ()
   ((%value :initarg :value :reader literal-value)))
 
 (defclass immediate-literal (literal)
   ((%tagged-value :initarg :tagged-value :reader immediate-literal-tagged-value)))
+
+(defmethod literal-label ((literal immediate-literal))
+  (format nil "~a" (immediate-literal-tagged-value literal)))
 
 (defmethod make-load-form ((thing clasp-cleavir::immediate-literal) &optional environment)
   (make-load-form-saving-slots thing :environment environment))
@@ -20,6 +25,9 @@
 
 (defclass arrayed-literal (literal)
   ((%index :initarg :index :reader arrayed-literal-index)))
+
+(defmethod literal-label ((literal arrayed-literal))
+  (format nil "~a" (arrayed-literal-index literal)))
 
 (defmethod print-object ((object arrayed-literal) stream)
   (print-unreadable-object (object stream :type t :identity t)
