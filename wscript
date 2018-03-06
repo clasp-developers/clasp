@@ -92,7 +92,7 @@ def update_submodules(cfg):
         if ( ret != 0 ):
             raise Exception("Failed to fetch git url %s" % url)
 
-    print("Updating git submodules")
+    Logs.pprint('BLUE', 'Updating git submodules')
     fetch_git_revision("src/lisp/kernel/contrib/sicl",
                        "https://github.com/Bike/SICL.git",
                        "a080c75b0aa17a939b09cb378514cfee7a72a4c0")
@@ -105,7 +105,7 @@ def update_submodules(cfg):
     fetch_git_revision("src/lisp/modules/asdf",
                        "https://github.com/clasp-developers/asdf.git",
                        "81e4f08d9c1dc95a3446c1782506342a59f70c34")
-    os.system("(cd src/lisp/modules/asdf; make)")
+    os.system("(cd src/lisp/modules/asdf; make --quiet)")
 
 # run this from a completely cold system with:
 # ./waf distclean configure

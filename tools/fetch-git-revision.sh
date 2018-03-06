@@ -7,6 +7,8 @@ label=$4
 
 #set -x
 
+echo Updating git repo at \'$path\'
+
 gitCloneIt () {
    git clone "$url" "$path" || exit $?
 }
