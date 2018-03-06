@@ -24,7 +24,9 @@ last FORM.  If not, simply returns NIL."
 
 (defmacro defmacro (name lambda-list &body body &environment env)
   `(eval-when (:compile-toplevel :load-toplevel :execute)
-     (fset ',name #',(ext:parse-macro name lambda-list body env) t)
+     (funcall #'(setf macro-function)
+              #',(ext:parse-macro name lambda-list body env)
+              ',name)
      ',name))
 
 (defmacro destructuring-bind (vl list &body body)
@@ -100,8 +102,7 @@ VARIABLE doc and can be retrieved by (DOCUMENTATION 'SYMBOL 'VARIABLE)."
            ;; compiler to run :compile-toplevel forms anyway.
            (cmp::register-global-function-def 'defun ',name))
          (let ((,fn ,global-function))
-           ;;(bformat t "Performing DEFUN   core:*current-source-pos-info* -> %s\n" core:*current-source-pos-info*)
-           (si::fset ',name ,fn nil ',vl)
+           (funcall #'(setf fdefinition) ,fn ',name)
            (core:set-source-info ,fn ',(list 'core:current-source-file filepos lineno column))
            ,@(si::expand-set-documentation name 'function doc-string)
            ;; This can't be at toplevel.
@@ -151,14 +152,6 @@ VARIABLE doc and can be retrieved by (DOCUMENTATION 'SYMBOL 'VARIABLE)."
         (bclasp-compiler-macroexpand expansion env))))
 
 (export '(bclasp-compiler-macroexpand-1 bclasp-compiler-macroexpand))
-
-(defun compiler-macro-function (name &optional env)
-  ;;  (declare (ignorable env))
-  (core:get-compiler-macro-function name env))
-
-(defun (setf compiler-macro-function) (function name &optional env)
-  (core:setf-compiler-macro-function name function env)
-  function)
 
 (defmacro define-compiler-macro (&whole whole name vl &rest body &environment env)
   ;; CLHS doesn't actually say d-c-m has compile time effects, but it's nice to match defmacro
