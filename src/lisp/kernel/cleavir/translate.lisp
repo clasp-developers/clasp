@@ -52,7 +52,16 @@ when this is t a lot of graphs will be generated.")
          (llvm-sys:set-subprogram function function-metadata)
          (setf (metadata function-info) function-metadata)))
       (t
-       (error "No source info is available")))))
+       (let* ((source-pos-info (core:make-source-pos-info "no-source-info-available" 0 0 0))
+              (fileid (core:source-pos-info-file-handle source-pos-info))
+              (lineno (core:source-pos-info-lineno source-pos-info))
+              (file-metadata (get-or-register-file-metadata fileid))
+              (function-metadata (cmp:make-function-metadata :file-metadata file-metadata
+                                                             :linkage-name llvm-function-name
+                                                             :function-type llvm-function-type
+                                                             :lineno lineno)))
+         (llvm-sys:set-subprogram function function-metadata)
+         (setf (metadata function-info) function-metadata))))))
 
 (defun set-instruction-source-position (origin function-info)
   (if origin
