@@ -61,7 +61,9 @@
   (trace clasp-cleavir::layout-procedure)
   (trace clasp-cleavir::layout-procedure*)
   (trace clasp-cleavir::%intrinsic-call)
-  (trace clasp-cleavir::do-debug-info-source-position))
+  (trace clasp-cleavir::do-debug-info-source-position)
+  (trace clasp-cleavir::alloca)
+  (trace llvm-sys:create-alloca))
 
 
 (let ((clasp-cleavir::*save-compile-file-info* t))
