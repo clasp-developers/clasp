@@ -226,8 +226,6 @@ when this is t a lot of graphs will be generated.")
 ;;;                              :function-type cmp:%fn-prototype%
 ;;;                              :form *form*)
           (cmp:with-dbg-lexical-block (*form*)
-            (cmp:dbg-set-current-source-pos-for-irbuilder cmp:*irbuilder-function-alloca* cmp:*current-form-lineno*)
-            (cmp:dbg-set-current-source-pos-for-irbuilder body-irbuilder cmp:*current-form-lineno*)
             (cmp:irc-low-level-trace :arguments)
             (cmp:irc-set-insert-point-basic-block body-block body-irbuilder )
             (cmp:with-landing-pad (or (landing-pad-for-unwind function-info) (landing-pad-for-cleanup function-info))
