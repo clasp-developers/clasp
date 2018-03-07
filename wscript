@@ -13,6 +13,7 @@ except ImportError:
     from io import StringIO
 
 from waflib import Utils, Logs
+import waflib.Options
 from waflib.Tools import c_preproc
 from waflib.Tools.compiler_cxx import cxx_compiler
 from waflib.Tools.compiler_c import c_compiler
@@ -34,9 +35,9 @@ LINUX_OS = 'linux'
 
 STAGE_CHARS = [ 'r', 'i', 'a', 'b', 'f', 'c' ]
 
-GCS = [ 'boehm',
-        'mpsprep',
-        'mps' ]
+GCS_NAMES = [ 'boehm',
+              'mpsprep',
+              'mps' ]
 
 # DEBUG_CHARS None == optimized
 DEBUG_CHARS = [ None, 'd' ]
@@ -120,12 +121,21 @@ def analyze_clasp(cfg):
     print("\n\n\n----------------- proceeding with static analysis --------------------")
 
 
-def dump_command(cmd):
+def maybe_dump_command(cmd, kind = ''):
+    # print a copy-paste'able command line
     cmdstr = StringIO()
-    for x in cmd[:-1]:
-        cmdstr.write("%s \\\n" % repr(x))
-    cmdstr.write("%s\n" % cmd[-1])
-    print("command ========\n%s\n" % cmdstr.getvalue())
+    first = True
+    for x in cmd:
+        if first:
+            first = False
+        else:
+            cmdstr.write(" \\\n")
+        cmdstr.write(x)
+    if waflib.Options.options.PRINT_EXTERNAL_COMMANDS:
+        Logs.pprint('RED', 'command line for %s:' % kind)
+        Logs.pprint('YELLOW', cmdstr.getvalue())
+    else:
+        Logs.debug("command line for %s:\n%s", kind, cmdstr.getvalue())
 
 def libraries_as_link_flags(fmt,libs):
     all_libs = []
@@ -443,9 +453,17 @@ class cmpsprep_d(mpsprep_d):
     stage_char = 'c'
 
 # This function enables extra command line options for ./waf --help
-def options(cfg):
-    cfg.load('compiler_cxx')
-    cfg.load('compiler_c')
+def options(ctx):
+    ctx.load('compiler_cxx')
+    ctx.load('compiler_c')
+    ctx.add_option('-d', '--debug', default = False, action = 'store_true', dest = 'DEBUG_WHILE_BUILDING',
+                   help = 'Enable debugging during the build itself.')
+    ctx.add_option('--commands', '--print-commands', '--dump-commands', action = 'store_true', dest = 'PRINT_EXTERNAL_COMMANDS',
+                   help = 'Print the copy-paste ready command line of the external programs that the build process spawns.')
+    ctx.add_option('--noscrape', '--no-scrape', default = True, action = 'store_false', dest = 'RUN_THE_SCRAPER',
+                   help = 'Skip the running of the scraper.')
+    ctx.add_option('--load-cclasp', action = 'store_true', dest = 'LOAD_CCLASP',
+                   help = '? Probably some debugging helper to start a REPL with cclasp loaded...')
 
 def run_program(binary, *args):
     # print("run_program for %s" % binary)
@@ -806,7 +824,7 @@ def configure(cfg):
     Logs.debug("cfg.env.STLIB = %s", cfg.env.STLIB)
     Logs.debug("cfg.env.LIB = %s", cfg.env.LIB)
     env_copy = cfg.env.derive()
-    for gc in GCS:
+    for gc in GCS_NAMES:
         for debug_char in DEBUG_CHARS:
             if (debug_char==None):
                 variant = gc
@@ -826,13 +844,15 @@ def build(bld):
         dest = '${PREFIX}/' + dest
         bld.install_files(dest, files, relative_trick = True, cwd = cwd)
 
-    Logs.pprint('BLUE', 'build(), bld.path = %s' % bld.path)
-
     if not bld.variant:
         bld.fatal("Call waf with build_variant, e.g. 'nice -n19 ./waf --jobs 2 --verbose build_cboehm'")
+
     variant = eval(bld.variant + "()")
+
+    Logs.pprint('BLUE', 'build(), %s%s' % (variant.variant_name(),
+                                           ", DEBUG_WHILE_BUILDING" if bld.options.DEBUG_WHILE_BUILDING else ''))
+
     bld.variant_obj = variant
-    Logs.info("Variant = %s", variant)
 
     stage = bld.stage
     stage_val = stage_value(bld,bld.stage)
@@ -887,9 +907,10 @@ def build(bld):
     Logs.debug("extension_headers_node = %s", extension_headers_node.abspath())
 
     # Without this the parallel ASDF load-op's later on step on each other's feet
-    precomp = precompile_scraper(env=bld.env)
-    precomp.set_outputs([bld.path.find_or_declare("generated/scraper-precompile-done")])
-    bld.add_to_group(precomp)
+    if (bld.options.RUN_THE_SCRAPER):
+        precomp = precompile_scraper(env=bld.env)
+        precomp.set_outputs([bld.path.find_or_declare("generated/scraper-precompile-done")])
+        bld.add_to_group(precomp)
 
     extensions_task = build_extension_headers(env=bld.env)
     inputs = [bld.path.find_resource("wscript")] + bld.extensions_gcinterface_include_files
@@ -1085,7 +1106,7 @@ class dsymutil(Task.Task):
     color = 'BLUE';
     def run(self):
         cmd = 'dsymutil %s' % self.inputs[0]
-        print("  cmd: %s" % cmd)
+        maybe_dump_command(cmd)
         return self.exec_command(cmd)
 
 class link_fasl(Task.Task):
@@ -1105,7 +1126,7 @@ class link_fasl(Task.Task):
               [ lto_option, lto_optimize_flag ] + \
               link_options + \
               [ "-o", self.outputs[0].abspath() ]
-        print(" link_fasl cmd: %s\n" % cmd)
+        maybe_dump_command(cmd, 'link_fasl')
         return self.exec_command(cmd)
     def exec_command(self, cmd, **kw):
         kw['stdout'] = sys.stdout
@@ -1138,7 +1159,7 @@ class link_executable(Task.Task):
               link_options + \
               lto_object_path_lto + \
               [ "-o", self.outputs[0].abspath()]
-        print("link_executable cmd = %s" % cmd)
+        maybe_dump_command(cmd, 'link_executable')
         return self.exec_command(cmd)
     def exec_command(self, cmd, **kw):
         kw['stdout'] = sys.stdout
@@ -1159,7 +1180,7 @@ class run_aclasp(Task.Task):
     def run(self):
         print("In run_aclasp %s -> %s" % (self.inputs[0],self.outputs[0]))
         cmd = [ self.inputs[0].abspath() ]
-        if (self.bld.debug_on ):
+        if (self.bld.options.DEBUG_WHILE_BUILDING):
             cmd = cmd + [ '--feature', 'exit-backtrace',
                           '--feature', 'pause-pid' ]
         cmd = cmd + [
@@ -1171,7 +1192,7 @@ class run_aclasp(Task.Task):
                 "--eval", '(load "sys:kernel;clasp-builder.lsp")',
                 "--eval", "(load-aclasp)",
                 "--"] +  self.bld.clasp_aclasp
-        print("  run_aclasp cmd: %s" % cmd)
+        link_executable(cmd, 'run_aclasp')
         return self.exec_command(cmd)
     def exec_command(self, cmd, **kw):
         kw['stdout'] = sys.stdout
@@ -1185,7 +1206,7 @@ class compile_aclasp(Task.Task):
     def run(self):
         print("In compile_aclasp %s -> %s" % (self.inputs[0],self.outputs[0]))
         cmd = [ self.inputs[0].abspath()]
-        if (self.bld.debug_on ):
+        if (self.bld.options.DEBUG_WHILE_BUILDING):
             cmd = cmd + [ '--feature', 'exit-backtrace',
                           '--feature', 'pause-pid' ]
         cmd = cmd + [ "--norc",
@@ -1199,9 +1220,7 @@ class compile_aclasp(Task.Task):
         cmd = cmd + ["--eval", "(core:compile-aclasp :output-file #P\"%s\")" % self.outputs[0],
                      "--eval", "(core:quit)" ]
         cmd = cmd + [ "--" ] + self.bld.clasp_aclasp
-        if (self.bld.command ):
-            dump_command(cmd)
-        print("compile_aclasp cmd = %s" % cmd)
+        maybe_dump_command(cmd, 'compile_aclasp')
         return self.exec_command(cmd)
     def exec_command(self, cmd, **kw):
         kw['stdout'] = sys.stdout
@@ -1217,7 +1236,7 @@ class compile_bclasp(Task.Task):
     def run(self):
         print("In compile_bclasp %s %s -> %s" % (self.inputs[0],self.inputs[1],self.outputs[0]))
         cmd = [self.inputs[0].abspath()]
-        if (self.bld.debug_on ):
+        if (self.bld.options.DEBUG_WHILE_BUILDING):
             cmd = cmd + [ '--feature', 'exit-backtrace',
                           '--feature', 'pause-pid' ]
         cmd = cmd + [ "--norc",
@@ -1228,8 +1247,7 @@ class compile_bclasp(Task.Task):
         cmd = cmd + ["--eval", "(core:compile-bclasp :output-file #P\"%s\")" % self.outputs[0] ,
                      "--eval", "(core:quit)" ]
         cmd = cmd + [ "--" ] + self.bld.clasp_cclasp    # was self.bld.clasp_bclasp
-        if (self.bld.command ):
-            dump_command(cmd)
+        maybe_dump_command(cmd, 'compile_bclasp')
         return self.exec_command(cmd)
     def exec_command(self, cmd, **kw):
         kw['stdout'] = sys.stdout
@@ -1243,7 +1261,7 @@ class compile_cclasp(Task.Task):
     def run(self):
         print("In compile_cclasp %s %s -> %s" % (self.inputs[0].abspath(),self.inputs[1].abspath(),self.outputs[0].abspath()))
         cmd = [self.inputs[0].abspath()]
-        if (self.bld.debug_on ):
+        if (self.bld.options.DEBUG_WHILE_BUILDING):
             cmd = cmd + [ '--feature', 'exit-backtrace',
                           '--feature', 'pause-pid' ]
         cmd = cmd + [ "--norc",
@@ -1251,14 +1269,13 @@ class compile_cclasp(Task.Task):
 #                      "--feature", "debug-run-clang",
                       "--feature", "jit-log-symbols",
                       "--eval", "(load \"sys:kernel;clasp-builder.lsp\")" ]
-        if (self.bld.command ):
+        if (self.bld.options.LOAD_CCLASP):
             cmd = cmd + [ "--eval", "(load-cclasp)" ]
         else:
             cmd = cmd + ["--eval", "(core:compile-cclasp :output-file #P\"%s\")" % self.outputs[0],
                          "--eval", "(core:quit)" ]
         cmd = cmd + [ "--" ] + self.bld.clasp_cclasp
-        if (self.bld.command ):
-            dump_command(cmd)
+        maybe_dump_command(cmd, 'compile_cclasp')
         return self.exec_command(cmd)
     def exec_command(self, cmd, **kw):
         kw['stdout'] = sys.stdout
@@ -1283,7 +1300,7 @@ class recompile_cclasp(Task.Task):
                       "--eval", "(core:recompile-cclasp :output-file #P\"%s\")" % self.outputs[0],
                       "--eval", "(core:quit)",
                       "--" ] + self.bld.clasp_cclasp_no_wrappers
-        print(" recompile_clasp cmd: %s" % cmd)
+        maybe_dump_command(cmd, 'recompile_clasp')
         return self.exec_command(cmd)
     def exec_command(self, cmd, **kw):
         kw['stdout'] = sys.stdout
@@ -1295,7 +1312,7 @@ class compile_addons(Task.Task):
     def run(self):
         print("In compile_addons %s -> %s" % (self.inputs[0].abspath(),self.outputs[0].abspath()))
         cmd = [self.inputs[0].abspath()]
-        if (self.bld.debug_on ):
+        if (self.bld.options.DEBUG_WHILE_BUILDING):
             cmd = cmd + [ '--feature', 'exit-backtrace',
                           '--feature', 'pause-pid' ]
         cmd = cmd + [ "--norc",
@@ -1306,6 +1323,7 @@ class compile_addons(Task.Task):
                       "--eval", "(core:compile-addons)",
                       "--eval", "(core:link-addons)",
                       "--eval", "(core:quit)" ]
+        maybe_dump_command(cmd, 'compile_addons')
         return self.exec_command(cmd)
     def exec_command(self, cmd, **kw):
         kw['stdout'] = sys.stdout
@@ -1320,7 +1338,7 @@ class compile_module(Task.Task):
     def run(self):
         print("In compile_module %s -i %s -> %s" % (self.inputs[0].abspath(),self.inputs[1].abspath(),self.outputs[0].abspath()))
         cmd = [self.inputs[0].abspath(), "-i", self.inputs[1].abspath() ]
-        if (self.bld.debug_on ):
+        if (self.bld.options.DEBUG_WHILE_BUILDING):
             cmd = cmd + [ '--feature', 'exit-backtrace',
                           '--feature', 'pause-pid' ]
         cmd = cmd + [ "--norc",
@@ -1329,7 +1347,7 @@ class compile_module(Task.Task):
 #                      "--feature", "debug-run-clang",
                       "--eval", "(compile-file #P\"%s\" :output-file #P\"%s\" :output-type :fasl)" % (self.inputs[2], self.outputs[0]),
                       "--eval", "(core:quit)" ]
-        print("  cmd: %s" % cmd)
+        maybe_dump_command(cmd, 'recompile_module')
         return self.exec_command(cmd)
     def exec_command(self, cmd, **kw):
         kw['stdout'] = sys.stdout
@@ -1374,7 +1392,7 @@ class build_extension_headers(Task.Task):
 #         for f in self.inputs:
 #             all_inputs.write(' %s' % f.abspath())
 #         cmd = "cp %s %s" % (all_inputs.getvalue(), self.outputs[0])
-#         print("copy_bitcode cmd: %s" % cmd)
+#         maybe_dump_command(cmd, 'copy_bitcode')
 #         return self.exec_command(cmd)
 #     def __str__(self):
 #         return "copy_bitcode - copy bitcode files."
@@ -1386,7 +1404,7 @@ class link_bitcode(Task.Task):
         for f in self.inputs:
             all_inputs.write(' %s' % f.abspath())
         cmd = "" + self.env.LLVM_AR_BINARY + " ru %s %s" % (self.outputs[0], all_inputs.getvalue())
-#        print("link_bitcode cmd = %s" % cmd)
+        maybe_dump_command(cmd, 'link_bitcode')
         return self.exec_command(cmd)
     def __str__(self):
         return "link_bitcode - linking all object(bitcode) files."
@@ -1413,7 +1431,7 @@ class build_bitcode(Task.Task):
 #        build_args = ' '.join(preproc_args) + " " + self.inputs[0].abspath()
         cmd = build_args
         cmd.remove("-g")
-        print("build_intrinsics bitcode cmd = %s" % cmd)
+        maybe_dump_command(cmd, 'build_bitcode')
         return self.exec_command(cmd, shell = True)
 
 class scraper_task(Task.Task):
@@ -1435,6 +1453,7 @@ class scraper_task(Task.Task):
 class precompile_scraper(scraper_task):
     def run(self):
         cmd = self.build_scraper_cmd(["--eval", '(with-open-file (stream "%s" :direction :output :if-exists :supersede) (terpri stream))' % self.outputs[0].abspath()])
+        maybe_dump_command(cmd, 'precompile_scraper')
         return self.exec_command(cmd,shell=True)
 
     def keyword(ctx):
@@ -1453,6 +1472,7 @@ class generate_one_sif(scraper_task):
         cmd = self.build_scraper_cmd(["--eval", "(cscrape:generate-one-sif '(%s) #P\"%s\")" %
                                       ((' '.join('"' + item + '"' for item in preproc_args)),
                                        self.outputs[0].abspath())])
+        maybe_dump_command(cmd, 'generate_one_sif')
         return self.exec_command(cmd)
 
     def keyword(ctx):
@@ -1467,6 +1487,7 @@ class generate_headers_from_all_sifs(scraper_task):
                                      env.BUILD_ROOT + "/"])
         for f in self.inputs:
             cmd.append(f.abspath())
+        maybe_dump_command(cmd, 'generate_headers_from_all_sifs')
         return self.exec_command(cmd)
 
     def keyword(ctx):
@@ -1478,8 +1499,8 @@ class generate_headers_from_all_sifs(scraper_task):
 def scrape_task_generator(self):
     if ( not 'variant_obj' in self.bld.__dict__ ):
         return
-    if (self.bld.scrape == False):
-        print("Skipping scrape jobs")
+    if (not self.bld.options.RUN_THE_SCRAPER):
+        Logs.warn("Skipping scrape jobs as requested on the command line")
         return
     compiled_tasks = self.compiled_tasks
     all_sif_files = []
@@ -1563,77 +1584,34 @@ def scrape_task_generator(self):
 
 def init(ctx):
     Logs.pprint('BLUE', "init()")
-    from waflib.Build import BuildContext, CleanContext, InstallContext, UninstallContext, ListContext,StepContext,EnvContext
-    for gc in GCS:
+    from waflib.Build import BuildContext, CleanContext, InstallContext, UninstallContext, ListContext, StepContext, EnvContext
+    for gc in GCS_NAMES:
         for debug_char in DEBUG_CHARS:
-            for y in (BuildContext, CleanContext, InstallContext, UninstallContext,ListContext,StepContext,EnvContext):
-                name = y.__name__.replace('Context','').lower()
-                for s in STAGE_CHARS:
-                    class tmp(y):
-                        if (debug_char==None):
-                            variant = gc
-                        else:
-                            variant = gc+'_'+debug_char
-                        cmd = name + '_' + s + variant
-                        stage = s
-                        debug_on = False
-                        command = False
-                        scrape = True
-                    class tmp(y):
-                        if (debug_char==None):
-                            variant = gc
-                        else:
-                            variant = gc+'_'+debug_char
-                        cmd = "debug_" + name + '_' + s + variant
-                        stage = s
-                        debug_on = True
-                        command = False
-                        scrape = True
-                    class tmp(y):
-                        if (debug_char==None):
-                            variant = gc
-                        else:
-                            variant = gc+'_'+debug_char
-                        cmd = "noscrape_" + name + '_' + s + variant
-                        stage = s
-                        debug_on = True
-                        command = False
-                        scrape = False
-                    class tmp(y):
-                        if (debug_char==None):
-                            variant = gc
-                        else:
-                            variant = gc+'_'+debug_char
-                        cmd = "command_" + name + '_' + s + variant
-                        stage = s
-                        debug_on = False
-                        command = True
-                        scrape = True
+            variant_name = gc if not debug_char else gc + '_' + debug_char
+
+            for ctx in (BuildContext, CleanContext, InstallContext, UninstallContext, ListContext, StepContext, EnvContext):
+                name = ctx.__name__.replace('Context','').lower()
+                for stage_char in STAGE_CHARS:
+
+                    class tmp(ctx):
+                        variant = variant_name
+                        cmd = name + '_' + stage_char + variant_name
+                        stage = stage_char
+
+            # NOTE: these are kinda bitrotten, but left here for now as a reference
             class tmp(BuildContext):
-                if (debug_char==None):
-                    variant = gc
-                else:
-                    variant = gc+'_'+debug_char
-                cmd = 'rebuild_c'+variant
+                variant = variant_name
+                cmd = 'rebuild_c' + variant
                 stage = 'rebuild'
-                debug_on = True
-                command = False
-                scrape = True
             class tmp(BuildContext):
-                if (debug_char==None):
-                    variant = gc
-                else:
-                    variant = gc+'_'+debug_char
-                cmd = 'dangerzone_c'+variant
+                variant = variant_name
+                cmd = 'dangerzone_c' + variant
                 stage = 'dangerzone'
-                debug_on = True
-                command = False
-                scrape = True
 
 #def buildall(ctx):
 #    import waflib.Options
 #    for s in STAGE_CHARS:
-#        for gc in GCS:
+#        for gc in GCS_NAMES:
 #            for debug_char in DEBUG_CHARS:
 #                var = 'build_'+s+x+'_'+debug_char
 #                waflib.Options.commands.insert(0, var)
