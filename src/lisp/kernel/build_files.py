@@ -27,7 +27,6 @@ def aclasp(wrappers):
         "src/lisp/kernel/lsp/evalmacros",
         "src/lisp/kernel/lsp/claspmacros",
         "src/lisp/kernel/lsp/source-transformations",
-        "src/lisp/kernel/lsp/testing",
         "src/lisp/kernel/lsp/arraylib",
         "src/lisp/kernel/lsp/setf",
         "src/lisp/kernel/lsp/listlib",

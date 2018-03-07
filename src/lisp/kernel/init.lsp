@@ -708,124 +708,6 @@ the stage, the +application-name+ and the +bitcode-name+"
            (file-write-date source-path))
         nil)))
 
-
-(defun read-cleavir-system ()
-  (let* ((fin (open (build-pathname #P"src/lisp/kernel/cleavir-system" :lisp))))
-    (unwind-protect (read fin) (close fin))))
-
-(defun add-cleavir-build-files ()
-  (compile-execute-time-value (read-cleavir-system)))
-
-#+(or)(defvar *build-files*
-        (list
-         #P"src/lisp/kernel/tag/start"
-         #P"src/lisp/kernel/lsp/prologue"
-         #P"src/lisp/kernel/lsp/direct-calls"
-         #P"generated/cl-wrappers"
-         #P"src/lisp/kernel/tag/min-start"
-         #P"src/lisp/kernel/init"
-         #P"src/lisp/kernel/tag/after-init"
-         #P"src/lisp/kernel/cmp/jit-setup"
-         #P"src/lisp/kernel/clsymbols"
-         #P"src/lisp/kernel/lsp/packages"
-         #P"src/lisp/kernel/lsp/foundation"
-         #P"src/lisp/kernel/lsp/export"
-         #P"src/lisp/kernel/lsp/defmacro"
-         #P"src/lisp/kernel/lsp/helpfile"
-         #P"src/lisp/kernel/lsp/source-location"
-         #P"src/lisp/kernel/lsp/evalmacros"
-         #P"src/lisp/kernel/lsp/claspmacros"
-         #P"src/lisp/kernel/lsp/source-transformations"
-         #P"src/lisp/kernel/lsp/testing"
-         #P"src/lisp/kernel/lsp/arraylib"
-         #P"src/lisp/kernel/lsp/setf"
-         #P"src/lisp/kernel/lsp/listlib"
-         #P"src/lisp/kernel/lsp/mislib"
-         #P"src/lisp/kernel/lsp/defstruct"
-         #P"src/lisp/kernel/lsp/predlib"
-         #P"src/lisp/kernel/lsp/seq"
-         #P"src/lisp/kernel/lsp/cmuutil"
-         #P"src/lisp/kernel/lsp/seqmacros"
-         #P"src/lisp/kernel/lsp/seqlib"
-         #P"src/lisp/kernel/lsp/iolib"
-         #P"src/lisp/kernel/lsp/logging"
-         #P"src/lisp/kernel/lsp/trace"
-         #P"src/lisp/kernel/cmp/packages"
-         #P"src/lisp/kernel/cmp/cmpsetup"
-         #P"src/lisp/kernel/cmp/cmpglobals"
-         #P"src/lisp/kernel/cmp/cmptables"
-         #P"src/lisp/kernel/cmp/cmpvar"
-         #P"src/lisp/kernel/cmp/cmputil"
-         #P"src/lisp/kernel/cmp/cmpintrinsics"
-         #P"src/lisp/kernel/cmp/cmpir"
-         #P"src/lisp/kernel/cmp/cmpeh"
-         #P"src/lisp/kernel/cmp/debuginfo"
-         #P"src/lisp/kernel/cmp/lambdalistva"
-         #P"src/lisp/kernel/cmp/cmpvars"
-         #P"src/lisp/kernel/cmp/cmpquote"
-         #P"src/lisp/kernel/cmp/cmpobj"
-         #P"src/lisp/kernel/cmp/compiler"
-         #P"src/lisp/kernel/cmp/compilefile"
-         #P"src/lisp/kernel/cmp/external-clang"
-         #P"src/lisp/kernel/cmp/cmpbundle"
-         #P"src/lisp/kernel/cmp/cmprepl"
-         #P"src/lisp/kernel/tag/min-pre-epilogue"
-         #P"src/lisp/kernel/lsp/epilogue-aclasp"
-         #P"src/lisp/kernel/tag/min-end"
-         #P"src/lisp/kernel/cmp/cmpwalk"
-         #P"src/lisp/kernel/lsp/sharpmacros"
-         #P"src/lisp/kernel/lsp/assert"
-         #P"src/lisp/kernel/lsp/numlib"
-         #P"src/lisp/kernel/lsp/describe"
-         #P"src/lisp/kernel/lsp/module"
-         #P"src/lisp/kernel/lsp/loop2"
-         #P"src/lisp/kernel/lsp/shiftf-rotatef"
-         #P"src/lisp/kernel/lsp/assorted"
-         #P"src/lisp/kernel/lsp/packlib"
-         #P"src/lisp/kernel/lsp/defpackage"
-         #P"src/lisp/kernel/lsp/format"
-         #P"src/lisp/kernel/clos/package"
-         #P"src/lisp/kernel/clos/hierarchy"
-         #P"src/lisp/kernel/clos/cpl"
-         #P"src/lisp/kernel/clos/std-slot-value"
-         #P"src/lisp/kernel/clos/slot"
-         #P"src/lisp/kernel/clos/boot"
-         #P"src/lisp/kernel/clos/kernel"
-         #P"src/lisp/kernel/clos/method"
-         #P"src/lisp/kernel/clos/combin"
-         #P"src/lisp/kernel/clos/std-accessors"
-         #P"src/lisp/kernel/clos/defclass"
-         #P"src/lisp/kernel/clos/slotvalue"
-         #P"src/lisp/kernel/clos/standard"
-         #P"src/lisp/kernel/clos/builtin"
-         #P"src/lisp/kernel/clos/change"
-         #P"src/lisp/kernel/clos/stdmethod"
-         #P"src/lisp/kernel/clos/generic"
-         #P"src/lisp/kernel/clos/fixup"
-         #P"src/lisp/kernel/clos/extraclasses"
-         #P"src/lisp/kernel/lsp/defvirtual"
-         #P"src/lisp/kernel/clos/conditions"
-         #P"src/lisp/kernel/clos/print"
-         #P"src/lisp/kernel/clos/streams"
-         #P"src/lisp/kernel/lsp/pprint"
-         #P"src/lisp/kernel/clos/inspect"
-         #P"src/lisp/kernel/lsp/ffi"
-         #P"src/lisp/modules/sockets/sockets"
-         #P"src/lisp/kernel/lsp/top"
-         #P"src/lisp/kernel/lsp/epilogue-bclasp"
-         #P"src/lisp/kernel/tag/bclasp"
-         #'add-cleavir-build-files
-         #P"src/lisp/kernel/lsp/epilogue-cclasp"
-         #P"src/lisp/kernel/tag/cclasp"
-         ))
-
-
-#+(or)(defvar *system-files* (expand-build-file-list *build-files*))
-#+(or)(export '(*system-files*))
-
-
-
-
 (defun default-prologue-form (&optional features)
   `(progn
      ,@(mapcar #'(lambda (f) `(push ,f *features*)) features)
@@ -892,29 +774,6 @@ the stage, the +application-name+ and the +bitcode-name+"
 
 (setq *top-level-command-hook* #'tpl-hook)
 
-
-(defun my-do-time (closure)
-  (let* ((real-start (get-internal-real-time))
-         (run-start (get-internal-run-time))
-         real-end
-         run-end)
-    (funcall closure)
-    (setq real-end (get-internal-real-time)
-          run-end (get-internal-run-time))
-    (bformat t "real time: %lf secs\nrun time : %lf secs\n"
-             (float (/ (- real-end real-start) internal-time-units-per-second))
-             (float (/ (- run-end run-start) internal-time-units-per-second)))))
-
-(core:*make-special 'my-time)
-(si:fset 'my-time
-           #'(lambda (def env)
-               (let ((form (cadr def)))
-                 `(my-do-time #'(lambda () ,form))))
-           t)
-(export 'my-time)
-
-
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;;  Setup the build system for SICL
@@ -924,10 +783,6 @@ the stage, the +application-name+ and the +bitcode-name+"
   (load "src;lisp;cleavir;ccmp-all.lsp"))
 
 (export 'setup-sicl)
-
-(defun load-cleavir-system ()
-  (let* ((fin (open "src;lisp;kernel;cleavir-system.lsp")))
-    (read fin)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
