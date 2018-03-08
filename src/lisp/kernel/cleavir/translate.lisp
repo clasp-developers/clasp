@@ -1346,7 +1346,8 @@ that llvm function. This works like compile-lambda-function in bclasp."
   (when *cleavir-compile-verbose*
     (format *trace-output* "Cleavir compiling t1expr: ~s~%" form)
     (format *trace-output* "          in environment: ~s~%" env ))
-  (let ((cleavir-generate-ast:*compiler* 'cl:compile))
+  (let ((cleavir-generate-ast:*compiler* 'cl:compile)
+        (*llvm-metadata* (make-hash-table :test 'eql)))
     (handler-bind
         ((cleavir-env:no-variable-info
           (lambda (condition)
@@ -1398,12 +1399,12 @@ that llvm function. This works like compile-lambda-function in bclasp."
           (compiler-time (compile-cst-or-form cst-or-form env))
           (compile-cst-or-form cst-or-form env)))))
 
-(defmethod eclector.concrete-syntax-tree:source-position (stream (client clasp))
+(defmethod eclector.concrete-syntax-tree:source-position (stream (client eclector.concrete-syntax-tree::cst-client))
   (core:input-stream-source-pos-info stream))
 
 (defun cclasp-loop-read-and-compile-file-forms (source-sin environment)
   (let ((eof-value (gensym))
-        (eclector.reader:*client* *clasp-system*)
+        (eclector.reader:*client* eclector.concrete-syntax-tree::*cst-client*)
         (read-function 'eclector.concrete-syntax-tree:cst-read)
         (*llvm-metadata* (make-hash-table :test 'eql)))
     (loop
@@ -1413,7 +1414,7 @@ that llvm function. This works like compile-lambda-function in bclasp."
             (setf cmp:*current-form-lineno* (core:source-file-pos-lineno pos)))))
       ;; FIXME: if :environment is provided we should probably use a different read somehow
       (let* ((*current-compile-file-source-pos-info* (core:input-stream-source-pos-info source-sin))
-             (cst-form (funcall read-function source-sin nil eof-value)))
+             (cst-form (eclector.concrete-syntax-tree:cst-read source-sin nil eof-value)))
         (when cmp:*debug-compile-file* (bformat t "compile-file: cf%d -> %s%N" (incf cmp:*debug-compile-file-counter*) cst-form))
         (if (eq cst-form eof-value)
             (return nil)

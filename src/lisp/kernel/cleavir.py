@@ -62,6 +62,7 @@ cleavir_parts = [
     "src/lisp/kernel/contrib/Eclector/code/readtable/simple/readtable",
     "src/lisp/kernel/contrib/Eclector/code/readtable/simple/methods",
     "src/lisp/kernel/contrib/Eclector/code/reader/packages",
+    "src/lisp/kernel/contrib/Eclector/code/reader/generic-functions",
     "src/lisp/kernel/contrib/Eclector/code/reader/more-variables",
     "src/lisp/kernel/contrib/Eclector/code/reader/additional-conditions",
     "src/lisp/kernel/contrib/Eclector/code/reader/utilities",

@@ -65,10 +65,12 @@
   (trace clasp-cleavir::alloca)
   (trace llvm-sys:create-alloca))
 
+(trace clasp-cleavir::setup-function-scope-metadata)
+
 
 (let ((clasp-cleavir::*save-compile-file-info* t))
 ;;;  (setq (clasp-cleavir::*saved-compile-file-info* nil))
-  (clasp-cleavir:cleavir-compile-file "sys:tests;ta.lsp" :print t))
+  (clasp-cleavir:cleavir-compile-file "sys:tests;ta.lsp" :print nil))
 
 clasp-cleavir::*saved-compile-file-info*
 
