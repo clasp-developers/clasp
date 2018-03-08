@@ -24,6 +24,9 @@
   shadow-frame
   )
 
+(defstruct (shadow-frame (:type vector) :named) frame-address function-name arguments)
+
+
 (defun dump-jit-symbol-info ()
   (maphash (lambda (key value)
              (let ((func-size (first value))
@@ -112,7 +115,7 @@
 
 (defun search-for-matching-frame (frames entry)
   (let ((saved-frames frames)
-        (frame-address (frame-iterator-frame-address entry)))
+        (frame-address (shadow-frame-frame-address entry)))
     (do* ((cur frames (cdr cur))
           (frame (car cur) (car cur)))
          ((null cur) (values (or cur saved-frames) nil))
@@ -129,10 +132,10 @@
           (search-for-matching-frame frames shadow-entry)
         (if found
             (let ((frame (car frame-cur)))
-              (setf (backtrace-frame-arguments frame) (frame-iterator-arguments shadow-entry))
+              (setf (backtrace-frame-arguments frame) (shadow-frame-arguments shadow-entry))
               (setf frames frame-cur)
               (setf (backtrace-frame-shadow-frame frame) shadow-entry))
-            (bformat t "Could not find stack frame for address: %s%N" (frame-iterator-frame-address shadow-entry))))))
+            (bformat t "Could not find stack frame for address: %s%N" (shadow-frame-frame-address shadow-entry))))))
   (let ((new-frames (add-interpreter-frames orig-frames)))
     (nreverse new-frames)))
 
@@ -147,10 +150,10 @@
           (let* ((shadow-frame (backtrace-frame-shadow-frame frame))
                  (interpreted-frame (make-backtrace-frame :type :lisp
                                                           :return-address nil 
-                                                          :raw-name (core:frame-iterator-function-name shadow-frame)
-                                                          :function-name (core:frame-iterator-function-name shadow-frame)
-                                                          :print-name (core:frame-iterator-function-name shadow-frame)
-                                                          :arguments (core:frame-iterator-arguments shadow-frame))))
+                                                          :raw-name (shadow-frame-function-name shadow-frame)
+                                                          :function-name (shadow-frame-function-name shadow-frame)
+                                                          :print-name (shadow-frame-function-name shadow-frame)
+                                                          :arguments (shadow-frame-arguments shadow-frame))))
             (push interpreted-frame new-frames))))
       (push frame new-frames))
     new-frames))

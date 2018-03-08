@@ -275,7 +275,10 @@ CL_DEFUN void core__test_backtrace() {
 }
 #endif
 
-
+SYMBOL_EXPORT_SC_(CorePkg,make_shadow_frame);
+SYMBOL_EXPORT_SC_(KeywordPkg,frame_address);
+SYMBOL_EXPORT_SC_(KeywordPkg,function_name);
+SYMBOL_EXPORT_SC_(KeywordPkg,arguments);
 CL_DEFUN List_sp core__shadow_backtrace_as_list() {
   const InvocationHistoryFrame *top = my_thread->_InvocationHistoryStackTop;
   if (top == NULL) {
@@ -286,7 +289,7 @@ CL_DEFUN List_sp core__shadow_backtrace_as_list() {
   for (const InvocationHistoryFrame *cur = top; cur != NULL; cur = cur->_Previous) {
     if (cur->_Previous) {
       InvocationHistoryFrameIterator_sp it = InvocationHistoryFrameIterator_O::create(cur,index);
-      result << it;
+      result << core::eval::funcall(_sym_make_shadow_frame,kw::_sym_frame_address, it->frame_address(), kw::_sym_function_name, it->functionName(), kw::_sym_arguments, it->arguments());
       ++index;
     }
   }

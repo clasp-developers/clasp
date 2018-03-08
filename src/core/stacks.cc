@@ -193,24 +193,7 @@ void* InvocationHistoryFrame::register_save_area() const
     return (this->_args->reg_save_area);
   }
 
-SimpleVector_sp InvocationHistoryFrame::arguments() const {
-#if 0
-  VaList_sp orig_args = this->valist_sp();
-  Vaslist copy_args_s(*orig_args);
-  VaList_sp copy_args(&copy_args_s);
-  LCC_RESET_VA_LIST_TO_START(copy_args_s);
-  size_t numberOfArguments = LCC_VA_LIST_NUMBER_OF_ARGUMENTS(copy_args);
-  VectorObjects_sp vargs = VectorObjects_O::create(_Nil<T_O>(), numberOfArguments, cl::_sym_T_O->symbolValue());
-  T_O* objRaw;
-#if 0
-  for (size_t i(0); i < numberOfArguments; ++i) {
-    //objRaw = this->valist_sp().indexed_arg(i);
-    LCC_VA_LIST_INDEXED_ARG(objRaw,copy_args,i);
-    vargs->rowMajorAset(i, T_sp((gc::Tagged)objRaw));
-  }
-#endif
-  return vargs;
-#else
+DONT_OPTIMIZE_WHEN_DEBUG_RELEASE SimpleVector_sp InvocationHistoryFrame::arguments() const {
   size_t numberOfArguments = this->_remaining_nargs;
   va_list cargs;
   va_copy(cargs,this->_args);
@@ -227,7 +210,6 @@ SimpleVector_sp InvocationHistoryFrame::arguments() const {
   }
   va_end(cargs);
   return vargs;
-#endif
 }
 
 string InvocationHistoryFrame::argumentsAsString(int maxWidth) const {

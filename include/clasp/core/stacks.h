@@ -55,11 +55,10 @@ class InvocationHistoryFrame //: public gctools::StackRoot
 //  size_t _Bds;
  public:
  inline InvocationHistoryFrame(va_list rawArgList, size_t remaining_nargs)
-   : _Previous(NULL)
+   : _Previous(NULL), _remaining_nargs(remaining_nargs)
 //    , _Bds(my_thread->bindings().size())
     {
       va_copy(this->_args,rawArgList);
-      this->_remaining_nargs = remaining_nargs;
 #ifdef DEBUG_IHS
       this->validate();
 #endif
