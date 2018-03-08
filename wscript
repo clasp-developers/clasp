@@ -90,7 +90,7 @@ def update_submodules(cfg):
     print("Updating git submodules")
     fetch_git_revision("src/lisp/kernel/contrib/sicl",
                        "https://github.com/drmeister/SICL.git",
-                       "0b5303319372297bddecbed396cd1de92d9791eb")
+                       "52e836bf78ee9f6183b18b9deeb9315515fd3dd9")
     fetch_git_revision("src/lisp/kernel/contrib/Concrete-Syntax-Tree",
                        "https://github.com/clasp-developers/Concrete-Syntax-Tree.git",
                        "e5ab78ca27084d3c809e00886a1088d5ce28a864")
