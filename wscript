@@ -95,8 +95,8 @@ def update_submodules(cfg):
                        "https://github.com/robert-strandh/Acclimation.git",
                        "dd15c86b0866fc5d8b474be0da15c58a3c04c45c")
     fetch_git_revision("src/mps",
-                       "https://github.com/Ravenbrook/mps.git",
-                       "f3d66d06170bae706809f555dcb56acae35e9497")
+                       "https://github.com/clasp-developers/mps.git",
+                       "60ee147060759f2f17b483fc32beedf11ad1ef5c")
     fetch_git_revision("src/lisp/modules/asdf",
                        "https://github.com/clasp-developers/asdf.git",
                        "81e4f08d9c1dc95a3446c1782506342a59f70c34")
