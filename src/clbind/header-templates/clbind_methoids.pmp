@@ -48,7 +48,7 @@ $for isConst [[
               {
                 MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
                 INCREMENT_FUNCTION_CALL_COUNTER(closure);
-                INITIALIZE_VA_LIST();
+                COPY_VA_LIST();
                 INVOCATION_HISTORY_FRAME();
                 $if numArgs>0 [[
                   MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),$numArgs);

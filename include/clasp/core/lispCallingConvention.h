@@ -200,7 +200,7 @@ namespace gctools {
   va_start(passed_args,LCC_VA_START_ARG); \
   core::T_O* lcc_passed_valist = va_arg(passed_args,core::T_O*); \
   va_end(passed_args); \
-  ::core::Vaslist lcc_arglist_s(*(Vaslist*)gctools::untag_vaslist(lcc_passed_valist));\
+  ::core::Vaslist lcc_arglist_s(*(core::Vaslist*)gctools::untag_vaslist(lcc_passed_valist));\
   core::VaList_sp lcc_vargs(&lcc_arglist_s); 
 
 #define private_LCC_VA_LIST_TOTAL_NUMBER_OF_ARGUMENTS(_args) (size_t)(((uintptr_clasp_t *)(_args[0].reg_save_area))[LCC_NARGS_REGISTER])
