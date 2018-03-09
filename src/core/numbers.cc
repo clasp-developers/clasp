@@ -712,7 +712,7 @@ CL_DEFUN Number_sp contagen_mul(Number_sp na, Number_sp nb) {
       Real_sp y = ca->imaginary();
       Real_sp u = cb->real();
       Real_sp v = cb->imaginary();
-    // (x + yi)(u + vi) = (xu – yv) + (xv + yu)i.
+      // (x + yi)(u + vi) = (xu - yv) + (xv + yu)i.
       return Complex_O::create(gc::As<Real_sp>(contagen_sub(contagen_mul(x, u), contagen_mul(y, v))),
                                gc::As<Real_sp>(contagen_add(contagen_mul(x, v), contagen_mul(y, u))));
     } break;
