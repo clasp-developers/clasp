@@ -216,20 +216,18 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 Declares the global variable named by NAME as a special variable and assigns
 the value of FORM to the variable.  The doc-string DOC, if supplied, is saved
 as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
-				  `(LOCALLY (DECLARE (SPECIAL ,var))
-				     (SYS:*MAKE-SPECIAL ',var)
-				     (SETQ ,var ,form))))
+                              `(if (core:symbol-constantp ',var)
+                                   nil
+                                   (progn
+                                     (set ',var ,form)
+                                     (funcall #'(setf core:symbol-constantp) t ',var)))))
 	  t )
 (export 'defconstant)
 
-
-(defconstant +ecl-optimization-settings+
-  '((optimize (safety 2) (speed 1) (debug 1) (space 1))
-    (ext::check-arguments-type nil)))
-(defconstant +ecl-unsafe-declarations+
-  '(optimize (safety 0) (speed 3) (debug 0) (space 0)))
-(defconstant +ecl-safe-declarations+
-  '(optimize (safety 2) (speed 1) (debug 1) (space 1)))
+(if (boundp '+ecl-safe-declarations+)
+    nil ; don't redefine constant
+    (defconstant +ecl-safe-declarations+
+      '(optimize (safety 2) (speed 1) (debug 1) (space 1))))
 
 
 

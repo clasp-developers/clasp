@@ -333,13 +333,6 @@
   (format t "Continuing processing forms~%")
   (signal 'continue-hir))
 
-
-(defconstant *hir-commands*
-  '(("HIR commands"
-     ((:c :continue) do-continue-hir nil
-      ":c(ontinue) Continue processing forms"
-      "Stuff"))))
-
 (defun ast-form (form)
   (let ((ast (cleavir-generate-ast:generate-ast form *clasp-env* *clasp-system*)))
     (setf *form* form
@@ -367,12 +360,6 @@
           *hir* hir)
     (draw-hir hir)
     hir))
-
-#+(or)
-(defun my-hir-transformations (initial-instruction implementation processor os)
-  (cleavir-hir-transformations:eliminate-typeq initial-instruction)
-  (cleavir-hir-transformations:eliminate-superfluous-temporaries initial-instruction)
-  (cleavir-hir-transformations:process-captured-variables initial-instruction))
 
 (defun mir-form (form)
   (let ((hir (hir-form form))

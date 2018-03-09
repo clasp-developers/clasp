@@ -177,7 +177,7 @@ Evaluates FORM, outputs the realtime and runtime used for the evaluation to
        (floor y1 4) (- (floor y1 100)) (floor y1 400)
        -460)))
 
-(defconstant month-startdays #(0 31 59 90 120 151 181 212 243 273 304 334 365))
+(defconstant-eqx month-startdays #(0 31 59 90 120 151 181 212 243 273 304 334 365) equalp)
 
 
 #-clasp-min

@@ -214,7 +214,7 @@ Symbol_sp Symbol_O::create_from_string(const string &nm) {
 
 CL_LISPIFY_NAME("makunbound");
 CL_DEFMETHOD Symbol_sp Symbol_O::makunbound() {
-  if (this->isConstant())
+  if (this->getReadOnly())
     SIMPLE_ERROR(BF("Cannot make constant %s unbound") % this->__repr__());
   *my_thread->_Bindings.reference_raw(this,&this->_GlobalValue) = _Unbound<T_O>();
   return this->asSmartPtr();
@@ -302,13 +302,6 @@ CL_DEFMETHOD Symbol_sp Symbol_O::asKeywordSymbol() {
 CL_LISPIFY_NAME("core:STARmakeSpecial");
 CL_DEFMETHOD void Symbol_O::makeSpecial() {
   this->_IsSpecial = true;
-}
-
-CL_LISPIFY_NAME("core:STARmakeConstant");
-CL_DEFMETHOD void Symbol_O::makeConstant(T_sp val) {
-  this->setf_symbolValue(val);
-  this->_IsSpecial = true;
-  this->_IsConstant = true;
 }
 
 T_sp Symbol_O::defconstant(T_sp val) {

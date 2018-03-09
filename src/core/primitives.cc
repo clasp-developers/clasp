@@ -307,7 +307,7 @@ CL_LAMBDA(sym value);
 CL_DECLARE();
 CL_DOCSTRING("set");
 CL_DEFUN T_sp cl__set(Symbol_sp sym, T_sp val) {
-  if (sym->isConstant())
+  if (sym->getReadOnly())
     SIMPLE_ERROR(BF("Cannot modify value of constant %s") % _rep_(sym));
   sym->setf_symbolValue(val);
   return val;
@@ -839,15 +839,6 @@ CL_DEFUN T_mv core__separate_pair_list(List_sp listOfPairs) {
   return (Values(tfirsts, seconds.cons()));
 }
 
-#if DEPRECATED_C_FUNCTION
-CL_LAMBDA(sym);
-CL_DECLARE();
-CL_DOCSTRING("c_function");
-CL_DEFUN Pointer_mv core__c_function(Symbol_sp sym) {
-  return (Values(_lisp->lookup_c_function_ptr(sym)));
-};
-#endif
-
 // ignore env
 CL_LAMBDA(name &optional env);
 CL_DEFUN T_mv core__get_bclasp_compiler_macro_function(core::T_sp name, core::T_sp env)
@@ -1057,6 +1048,22 @@ CL_DEFUN void core__gdb_inspect(String_sp msg, T_sp o) {
   core__invoke_internal_debugger(_Nil<core::T_O>());
 };
 
+CL_LAMBDA(symbol);
+CL_DECLARE();
+CL_DOCSTRING("Returns whether SYMBOL is known to be a constant (i.e. from DEFCONSTANT).");
+CL_DEFUN bool core__symbol_constantp(Symbol_sp symbol) {
+  return symbol->getReadOnly();
+}
+
+CL_LISPIFY_NAME("core:symbol-constantp");
+CL_LAMBDA(value symbol);
+CL_DECLARE();
+CL_DOCSTRING("Set whether SYMBOL is known to be a constant. Use cautiously.");
+CL_DEFUN_SETF T_sp setf_symboL_constantp(T_sp value, Symbol_sp symbol) {
+  symbol->setReadOnly(value.notnilp());
+  return value;
+}
+
 // Must be synced with constant-form-value in source-transformations.lsp
 CL_LAMBDA(obj &optional env);
 CL_DECLARE();
@@ -1066,7 +1073,7 @@ CL_DEFUN bool cl__constantp(T_sp obj, T_sp env) {
   if (obj.nilp()) return true;
   if (cl__symbolp(obj)) {
     if (cl__keywordp(obj)) return true;
-    return gc::As<Symbol_sp>(obj)->isConstant();
+    return gc::As<Symbol_sp>(obj)->getReadOnly();
   }
   if ((obj).consp()) {
     if (oCar(obj) == cl::_sym_quote)

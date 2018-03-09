@@ -4,7 +4,7 @@
 
 (export 'llvm-inline)
 
-(defconstant +special-operator-dispatch+
+(core:defconstant-equal +special-operator-dispatch+
   '(
     (progn codegen-progn convert-progn)
     (core:bind-va-list codegen-bind-va-list nil)

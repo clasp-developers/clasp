@@ -93,14 +93,7 @@
       (stamp-for-instances :accessor stamp-for-instances)
       (creator :accessor creator)
       ;;; Any changes to the slots above need to be reflected in instance.h
-      ))
-
-  #-clasp
-  (defconstant +class-name-ndx+
-    (position 'name +class-slots+ :key #'first))
-  #-clasp
-  (defconstant +class-precedence-list-ndx+
-    (position 'precedence-list +class-slots+ :key #'first)))
+      )))
 
 #+clasp
 (eval-when (:compile-toplevel :execute :load-toplevel)
@@ -199,7 +192,7 @@
 ;;;
 
 (eval-when (:compile-toplevel :execute  #+clasp :load-toplevel)
-  (defconstant +slot-definition-slots+
+  (core:defconstant-equal +slot-definition-slots+
     '((name :initarg :name :initform nil :accessor slot-definition-name)
       (initform :initarg :initform :initform +initform-unsupplied+ :accessor slot-definition-initform)
       (initfunction :initarg :initfunction :initform nil :accessor slot-definition-initfunction)
@@ -218,7 +211,7 @@
   ;; All changes to this are connected to the changes in 
   ;; the code of cl_class_of() in src/instance.d
   ;;
-  (defconstant +builtin-classes-list+
+  (core:defconstant-equal +builtin-classes-list+
 	 '(;(t object)
 	    (sequence)
 	      (list sequence)
@@ -365,7 +358,7 @@
 
 (eval-when (eval #+clasp :compile-toplevel #+clasp :load-toplevel  )
   (locally (declare (optimize (debug 0)))
-    (defconstant +class-hierarchy+
+    (core:defconstant-equal +class-hierarchy+
       `((standard-class
          #+clasp :creates-classes #+clasp t)
         #+clasp
@@ -511,11 +504,6 @@
                 :direct-superclasses (standard-object #+(or)t))
         ))))
 
-;;;#+cclasp
-#+(or)(eval-when (:compile-toplevel :execute :load-toplevel)
-  (setq clasp-cleavir:*use-type-inference* t))
-
-#+clasp
 (eval-when (:compile-toplevel :execute)
   (let ((sanity (core:class-slot-sanity-check)))
     (dolist (name-slot (core:class-slot-sanity-check))

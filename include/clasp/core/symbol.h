@@ -134,7 +134,7 @@ public:
   List_sp plist() const { return this->_PropertyList; };
   void setf_plist(List_sp plist);
 
-  void setReadOnly(bool b) { this->_IsConstant = true; };
+  void setReadOnly(bool b) { this->_IsConstant = b; };
   bool getReadOnly() const { return this->_IsConstant; };
 
   /*! Return true if the symbol is dynamic/special */
@@ -169,8 +169,6 @@ CL_DEFMETHOD   bool specialP() const { return this->_IsSpecial; };
 
   void makeSpecial();
 
-  void makeConstant(T_sp val);
-
   inline bool boundP() const { return !(*this->valueReference(&this->_GlobalValue)).unboundp(); };
 
   inline bool boundPFomCell(Cons_sp cell) {
@@ -193,14 +191,10 @@ CL_DEFMETHOD   bool specialP() const { return this->_IsSpecial; };
     return val;
   }
 
-  void setf_symbolValueReadOnlyOverRide(T_sp obj);
-
   void setSetfFdefinition(T_sp fn) { this->_SetfFunction = fn; };
   inline T_sp getSetfFdefinition() { return this->_SetfFunction; };
   inline bool setf_fboundp() const { return !this->_SetfFunction.unboundp(); };
   void resetSetfFdefinition() { this->_SetfFunction = _Unbound<Function_O>(); };
-
-  bool isConstant() const { return this->_IsConstant; };
 
   /*! Set the global function value of this symbol */
   void setf_symbolFunction(T_sp exec);
@@ -210,8 +204,6 @@ CL_DEFMETHOD   bool specialP() const { return this->_IsSpecial; };
 
   /*! Return true if the symbol has a function bound*/
   bool fboundp() const { return !this->_Function.unboundp(); };
-
-  const char *permanentName() const;
 
   string symbolNameAsString() const;
 

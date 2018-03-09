@@ -30,11 +30,11 @@
 (defvar *global-function-refs*)
 (defvar *compilation-messages*)
 
-(defconstant +note-format+        "Note:          %s")
-(defconstant +style-warn-format+  "Style warning: %s")
-(defconstant +warn-format+        "Warning:       %s")
-(defconstant +error-format+       "Error:         %s")
-(defconstant +fatal-format+       "Fatal-error:   %s")
+(core:defconstant-equal +note-format+        "Note:          %s")
+(core:defconstant-equal +style-warn-format+  "Style warning: %s")
+(core:defconstant-equal +warn-format+        "Warning:       %s")
+(core:defconstant-equal +error-format+       "Error:         %s")
+(core:defconstant-equal +fatal-format+       "Fatal-error:   %s")
 
 (defstruct (compiler-message (:type vector))
   (prefix "Note")
@@ -231,7 +231,6 @@
 
 (defun function-info (env func)
   (let ((info (classify-function-lookup env func)))
-;;;    (core:bformat t "function-info: %s   @ %s\n" info (describe-source-location (ext:current-source-location)))
     (when (eq (car info) 'core::global-function) (register-global-function-ref func))
     info))
 
@@ -240,10 +239,11 @@
   (let (#+(or)(core:*environment-debug* (null (symbol-package var))))
     (let ((info (classify-variable env var)))
       (unless info
+        ;; We treat constants pretty much identically to specials in bclasp.
+        ;; It's not the best way to compile constants.
         (setq info (cons 'ext:special-var var))
-        (unless (core:specialp var)
+        (unless (or (core:specialp var) (core:symbol-constantp var))
           (compiler-warning-undefined-global-variable var)))
-;;;    (core:bformat t "variable-info: %s   @ %s\n" info (describe-source-location (ext:current-source-location)))
       info)))
 
 (defun compilation-unit-finished (messages)
