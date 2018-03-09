@@ -1113,32 +1113,38 @@
 	       (format-print-ordinal stream (next-arg))
 	       (format-print-cardinal stream (next-arg)))))))
 
-(defconstant cardinal-ones
-  #(nil "one" "two" "three" "four" "five" "six" "seven" "eight" "nine"))
+(defconstant-eqx cardinal-ones
+    #(nil "one" "two" "three" "four" "five" "six" "seven" "eight" "nine")
+  equalp)
 
-(defconstant cardinal-tens
-  #(nil nil "twenty" "thirty" "forty"
-	"fifty" "sixty" "seventy" "eighty" "ninety"))
+(defconstant-eqx cardinal-tens
+    #(nil nil "twenty" "thirty" "forty"
+      "fifty" "sixty" "seventy" "eighty" "ninety")
+  equalp)
 
-(defconstant cardinal-teens
-  #("ten" "eleven" "twelve" "thirteen" "fourteen"  ;;; RAD
-    "fifteen" "sixteen" "seventeen" "eighteen" "nineteen"))
+(defconstant-eqx cardinal-teens
+    #("ten" "eleven" "twelve" "thirteen" "fourteen"  ;;; RAD
+      "fifteen" "sixteen" "seventeen" "eighteen" "nineteen")
+  equalp)
 
-(defconstant cardinal-periods
-  #("" " thousand" " million" " billion" " trillion" " quadrillion"
-    " quintillion" " sextillion" " septillion" " octillion" " nonillion"
-    " decillion" " undecillion" " duodecillion" " tredecillion"
-    " quattuordecillion" " quindecillion" " sexdecillion" " septendecillion"
-    " octodecillion" " novemdecillion" " vigintillion"))
+(defconstant-eqx cardinal-periods
+    #("" " thousand" " million" " billion" " trillion" " quadrillion"
+      " quintillion" " sextillion" " septillion" " octillion" " nonillion"
+      " decillion" " undecillion" " duodecillion" " tredecillion"
+      " quattuordecillion" " quindecillion" " sexdecillion" " septendecillion"
+      " octodecillion" " novemdecillion" " vigintillion")
+  equalp)
 
-(defconstant ordinal-ones
-  #(nil "first" "second" "third" "fourth"
-	"fifth" "sixth" "seventh" "eighth" "ninth")
+(defconstant-eqx ordinal-ones
+    #(nil "first" "second" "third" "fourth"
+      "fifth" "sixth" "seventh" "eighth" "ninth")
+  equalp
   "Table of ordinal ones-place digits in English")
 
-(defconstant ordinal-tens 
-  #(nil "tenth" "twentieth" "thirtieth" "fortieth"
-	"fiftieth" "sixtieth" "seventieth" "eightieth" "ninetieth")
+(defconstant-eqx ordinal-tens 
+    #(nil "tenth" "twentieth" "thirtieth" "fortieth"
+      "fiftieth" "sixtieth" "seventieth" "eightieth" "ninetieth")
+  equalp
   "Table of ordinal tens-place digits in English")
 
 (defun format-print-small-cardinal (stream n)

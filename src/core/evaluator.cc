@@ -756,7 +756,7 @@ T_mv interpreter_case(List_sp args, T_sp environment) {
 
 void setq_symbol_value(Symbol_sp symbol, T_sp value, T_sp environment) {
   if (symbol->specialP() || Environment_O::clasp_lexicalSpecialP(environment, symbol)) {
-    if (symbol->isConstant())
+    if (symbol->getReadOnly())
       SIMPLE_ERROR(BF("Cannot modify value of constant %s") % _rep_(symbol));
     symbol->setf_symbolValue(value);
     return;

@@ -363,7 +363,7 @@ and is not adjustable."
     (VECTOR 'VECTORP)
     (t nil)))
 
-(defconstant +upgraded-array-element-types+
+(defconstant-equal +upgraded-array-element-types+
   '#.(append '(NIL BASE-CHAR #+unicode CHARACTER BIT EXT:BYTE8 EXT:INTEGER8)
              '(EXT:BYTE16 EXT:INTEGER16)
              '(EXT:BYTE32 EXT:INTEGER32)
@@ -1112,139 +1112,139 @@ if not possible."
 ;;
 ;; Note 2: All built in types listed here have to be symbols.
 ;;
-(defconstant +built-in-type-list+
-	     '((SYMBOL)
-	       (KEYWORD NIL SYMBOL)
-	       (PACKAGE)
-	       (COMPILED-FUNCTION)
-	       (FUNCTION (OR COMPILED-FUNCTION GENERIC-FUNCTION))
+(defconstant-equal +built-in-type-list+
+    '((SYMBOL)
+      (KEYWORD NIL SYMBOL)
+      (PACKAGE)
+      (COMPILED-FUNCTION)
+      (FUNCTION (OR COMPILED-FUNCTION GENERIC-FUNCTION))
+      
+      (INTEGER (INTEGER * *))
+      (SINGLE-FLOAT (SINGLE-FLOAT * *))
+      (DOUBLE-FLOAT (DOUBLE-FLOAT * *))
+      #+long-float
+      (LONG-FLOAT (LONG-FLOAT * *))
+      (RATIO (RATIO * *))
+      
+      (RATIONAL (OR INTEGER RATIO))
+      (FLOAT (OR SINGLE-FLOAT DOUBLE-FLOAT
+              #+long-float LONG-FLOAT))
+      (REAL (OR INTEGER
+             #+short-float SHORT-FLOAT
+             SINGLE-FLOAT
+             DOUBLE-FLOAT
+             #+long-float LONG-FLOAT
+             RATIO))
+      (COMPLEX (COMPLEX REAL))
 
-	       (INTEGER (INTEGER * *))
-	       (SINGLE-FLOAT (SINGLE-FLOAT * *))
-	       (DOUBLE-FLOAT (DOUBLE-FLOAT * *))
-	       #+long-float
-	       (LONG-FLOAT (LONG-FLOAT * *))
-	       (RATIO (RATIO * *))
+      (NUMBER (OR REAL COMPLEX))
 
-	       (RATIONAL (OR INTEGER RATIO))
-	       (FLOAT (OR SINGLE-FLOAT DOUBLE-FLOAT
-                       #+long-float LONG-FLOAT))
-               (REAL (OR INTEGER
-                      #+short-float SHORT-FLOAT
-                      SINGLE-FLOAT
-                      DOUBLE-FLOAT
-                      #+long-float LONG-FLOAT
-                      RATIO))
-               (COMPLEX (COMPLEX REAL))
+      (CHARACTER)
+      #-unicode
+      (BASE-CHAR CHARACTER)
+      #+unicode
+      (BASE-CHAR NIL CHARACTER)
+      (STANDARD-CHAR NIL BASE-CHAR)
 
-	       (NUMBER (OR REAL COMPLEX))
+      (CONS)
+      (NULL (MEMBER NIL))
+      (LIST (OR CONS (MEMBER NIL)))
 
-	       (CHARACTER)
-               #-unicode
-	       (BASE-CHAR CHARACTER)
-               #+unicode
-	       (BASE-CHAR NIL CHARACTER)
-	       (STANDARD-CHAR NIL BASE-CHAR)
+      (ARRAY (ARRAY * *))
+      (SIMPLE-ARRAY (SIMPLE-ARRAY * *))
+      (SIMPLE-VECTOR (SIMPLE-ARRAY T (*)))
+      (SIMPLE-BIT-VECTOR (SIMPLE-ARRAY BIT (*)))
+      (VECTOR (ARRAY * (*)))
 
-	       (CONS)
-	       (NULL (MEMBER NIL))
-	       (LIST (OR CONS (MEMBER NIL)))
+      #+clasp(core:simple-vector-byte8-t (simple-array ext::byte8 (*)))
+      #+clasp(core:simple-vector-byte16-t (simple-array ext::byte16 (*)))
+      #+clasp(core:simple-vector-byte32-t (simple-array ext::byte32 (*)))
+      #+clasp(core:simple-vector-byte64-t (simple-array ext::byte64 (*)))
+      #+clasp(core:simple-vector-int8-t (simple-array ext::integer8 (*)))
+      #+clasp(core:simple-vector-int16-t (simple-array ext::integer16 (*)))
+      #+clasp(core:simple-vector-int32-t (simple-array ext::integer32 (*)))
+      #+clasp(core:simple-vector-int64-t (simple-array ext::integer64 (*)))
+      #+clasp(core:simple-vector-size-t (simple-array ext::cl-index (*)))
+      #+clasp(core:simple-vector-fixnum (simple-array ext::cl-fixnum (*)))
+      #+clasp(core:simple-vector-double (simple-array double-float (*)))
+      #+clasp(core:simple-vector-float (simple-array single-float (*)))
+      #+clasp(core:MDARRAY-BASE-CHAR (array base-char (*)))
+      #+clasp(core:MDARRAY-BIT (array bit (*)))
+      #+clasp(core:MDARRAY-BYTE16-T (array ext::BYTE16 (*)))
+      #+clasp(core:MDARRAY-BYTE32-T (array ext::BYTE32 (*)))
+      #+clasp(core:MDARRAY-BYTE64-T (array ext::BYTE64 (*)))
+      #+clasp(core:MDARRAY-BYTE8-T (array ext::BYTE8 (*)))
+      #+clasp(core:MDARRAY-CHARACTER (array character (*)))
+      #+clasp(core:MDARRAY-DOUBLE (array double-float (*)))
+      #+clasp(core:MDARRAY-FIXNUM (array ext::cl-fixnum (*)))
+      #+clasp(core:MDARRAY-FLOAT (array single-float (*)))
+      #+clasp(core:MDARRAY-INT16-T (array ext::integer16 (*)))
+      #+clasp(core:MDARRAY-INT32-T (array ext::integer32 (*)))
+      #+clasp(core:MDARRAY-INT64-T (array ext::integer64 (*)))
+      #+clasp(core:MDARRAY-INT8-T (array ext::integer8 (*)))
+      #+clasp(core:MDARRAY-SIZE-T (array ext::cl-index (*)))
+      #+clasp(core:MDARRAY-T (array T (*)))
+      #+clasp(core:SIMPLE-MDARRAY-BASE-CHAR (simple-array base-char (*)))
+      #+clasp(core:SIMPLE-MDARRAY-BIT (simple-array bit (*)))
+      #+clasp(core:SIMPLE-MDARRAY-BYTE16-T (simple-array ext::byte16 (*)))
+      #+clasp(core:SIMPLE-MDARRAY-BYTE32-T (simple-array ext::BYTE32 (*)))
+      #+clasp(core:SIMPLE-MDARRAY-BYTE64-T (simple-array ext::BYTE64 (*)))
+      #+clasp(core:SIMPLE-MDARRAY-BYTE8-T (simple-array ext::BYTE8 (*)))
+      #+clasp(core:SIMPLE-MDARRAY-CHARACTER (simple-array CHARACTER (*)))
+      #+clasp(core:SIMPLE-MDARRAY-DOUBLE (simple-array DOUBLE-FLOAT (*)))
+      #+clasp(core:SIMPLE-MDARRAY-FIXNUM (simple-array ext::cl-fixnum (*)))
+      #+clasp(core:SIMPLE-MDARRAY-FLOAT (simple-array SINGLE-FLOAT (*)))
+      #+clasp(core:SIMPLE-MDARRAY-INT16-T (simple-array ext::INTEGER16 (*)))
+      #+clasp(core:SIMPLE-MDARRAY-INT32-T (simple-array ext::INTEGER32 (*)))
+      #+clasp(core:SIMPLE-MDARRAY-INT64-T (simple-array ext::INTEGER64 (*)))
+      #+clasp(core:SIMPLE-MDARRAY-INT8-T (simple-array  ext::INTEGER8 (*)))
+      #+clasp(core:SIMPLE-MDARRAY-SIZE-T (simple-array ext::cl-index (*)))
+      #+clasp(core:SIMPLE-MDARRAY-T (simple-array T (*)))
+      (STRING (ARRAY CHARACTER (*)))
+      #+unicode
+      (BASE-STRING (ARRAY BASE-CHAR (*)))
+      (SIMPLE-STRING (SIMPLE-ARRAY CHARACTER (*)))
+      #+unicode
+      (SIMPLE-BASE-STRING (SIMPLE-ARRAY BASE-CHAR (*)))
+      (BIT-VECTOR (ARRAY BIT (*)))
 
-	       (ARRAY (ARRAY * *))
- 	       (SIMPLE-ARRAY (SIMPLE-ARRAY * *))
-	       (SIMPLE-VECTOR (SIMPLE-ARRAY T (*)))
-	       (SIMPLE-BIT-VECTOR (SIMPLE-ARRAY BIT (*)))
-	       (VECTOR (ARRAY * (*)))
+      (SEQUENCE (OR CONS (MEMBER NIL) (ARRAY * (*))))
 
-               #+clasp(core:simple-vector-byte8-t (simple-array ext::byte8 (*)))
-               #+clasp(core:simple-vector-byte16-t (simple-array ext::byte16 (*)))
-               #+clasp(core:simple-vector-byte32-t (simple-array ext::byte32 (*)))
-               #+clasp(core:simple-vector-byte64-t (simple-array ext::byte64 (*)))
-               #+clasp(core:simple-vector-int8-t (simple-array ext::integer8 (*)))
-               #+clasp(core:simple-vector-int16-t (simple-array ext::integer16 (*)))
-               #+clasp(core:simple-vector-int32-t (simple-array ext::integer32 (*)))
-               #+clasp(core:simple-vector-int64-t (simple-array ext::integer64 (*)))
-               #+clasp(core:simple-vector-size-t (simple-array ext::cl-index (*)))
-               #+clasp(core:simple-vector-fixnum (simple-array ext::cl-fixnum (*)))
-               #+clasp(core:simple-vector-double (simple-array double-float (*)))
-               #+clasp(core:simple-vector-float (simple-array single-float (*)))
-               #+clasp(core:MDARRAY-BASE-CHAR (array base-char (*)))
-               #+clasp(core:MDARRAY-BIT (array bit (*)))
-               #+clasp(core:MDARRAY-BYTE16-T (array ext::BYTE16 (*)))
-               #+clasp(core:MDARRAY-BYTE32-T (array ext::BYTE32 (*)))
-               #+clasp(core:MDARRAY-BYTE64-T (array ext::BYTE64 (*)))
-               #+clasp(core:MDARRAY-BYTE8-T (array ext::BYTE8 (*)))
-               #+clasp(core:MDARRAY-CHARACTER (array character (*)))
-               #+clasp(core:MDARRAY-DOUBLE (array double-float (*)))
-               #+clasp(core:MDARRAY-FIXNUM (array ext::cl-fixnum (*)))
-               #+clasp(core:MDARRAY-FLOAT (array single-float (*)))
-               #+clasp(core:MDARRAY-INT16-T (array ext::integer16 (*)))
-               #+clasp(core:MDARRAY-INT32-T (array ext::integer32 (*)))
-               #+clasp(core:MDARRAY-INT64-T (array ext::integer64 (*)))
-               #+clasp(core:MDARRAY-INT8-T (array ext::integer8 (*)))
-               #+clasp(core:MDARRAY-SIZE-T (array ext::cl-index (*)))
-               #+clasp(core:MDARRAY-T (array T (*)))
-               #+clasp(core:SIMPLE-MDARRAY-BASE-CHAR (simple-array base-char (*)))
-               #+clasp(core:SIMPLE-MDARRAY-BIT (simple-array bit (*)))
-               #+clasp(core:SIMPLE-MDARRAY-BYTE16-T (simple-array ext::byte16 (*)))
-               #+clasp(core:SIMPLE-MDARRAY-BYTE32-T (simple-array ext::BYTE32 (*)))
-               #+clasp(core:SIMPLE-MDARRAY-BYTE64-T (simple-array ext::BYTE64 (*)))
-               #+clasp(core:SIMPLE-MDARRAY-BYTE8-T (simple-array ext::BYTE8 (*)))
-               #+clasp(core:SIMPLE-MDARRAY-CHARACTER (simple-array CHARACTER (*)))
-               #+clasp(core:SIMPLE-MDARRAY-DOUBLE (simple-array DOUBLE-FLOAT (*)))
-               #+clasp(core:SIMPLE-MDARRAY-FIXNUM (simple-array ext::cl-fixnum (*)))
-               #+clasp(core:SIMPLE-MDARRAY-FLOAT (simple-array SINGLE-FLOAT (*)))
-               #+clasp(core:SIMPLE-MDARRAY-INT16-T (simple-array ext::INTEGER16 (*)))
-               #+clasp(core:SIMPLE-MDARRAY-INT32-T (simple-array ext::INTEGER32 (*)))
-               #+clasp(core:SIMPLE-MDARRAY-INT64-T (simple-array ext::INTEGER64 (*)))
-               #+clasp(core:SIMPLE-MDARRAY-INT8-T (simple-array  ext::INTEGER8 (*)))
-               #+clasp(core:SIMPLE-MDARRAY-SIZE-T (simple-array ext::cl-index (*)))
-               #+clasp(core:SIMPLE-MDARRAY-T (simple-array T (*)))
-	       (STRING (ARRAY CHARACTER (*)))
-               #+unicode
-	       (BASE-STRING (ARRAY BASE-CHAR (*)))
-	       (SIMPLE-STRING (SIMPLE-ARRAY CHARACTER (*)))
-               #+unicode
-	       (SIMPLE-BASE-STRING (SIMPLE-ARRAY BASE-CHAR (*)))
-	       (BIT-VECTOR (ARRAY BIT (*)))
+      (HASH-TABLE)
+      (PATHNAME)
+      (LOGICAL-PATHNAME NIL PATHNAME)
 
-	       (SEQUENCE (OR CONS (MEMBER NIL) (ARRAY * (*))))
+      (BROADCAST-STREAM)
+      (CONCATENATED-STREAM)
+      (ECHO-STREAM)
+      (FILE-STREAM)
+      (STRING-STREAM)
+      (SYNONYM-STREAM)
+      (TWO-WAY-STREAM)
+      (EXT:SEQUENCE-STREAM)
+      (EXT:ANSI-STREAM (OR BROADCAST-STREAM CONCATENATED-STREAM ECHO-STREAM
+                        FILE-STREAM STRING-STREAM SYNONYM-STREAM TWO-WAY-STREAM
+                        EXT:SEQUENCE-STREAM
+                        #+clos-streams GRAY:FUNDAMENTAL-STREAM))
+      (STREAM EXT:ANSI-STREAM)
 
-	       (HASH-TABLE)
-	       (PATHNAME)
-	       (LOGICAL-PATHNAME NIL PATHNAME)
-
-	       (BROADCAST-STREAM)
-	       (CONCATENATED-STREAM)
-	       (ECHO-STREAM)
-	       (FILE-STREAM)
-	       (STRING-STREAM)
-	       (SYNONYM-STREAM)
- 	       (TWO-WAY-STREAM)
-	       (EXT:SEQUENCE-STREAM)
-	       (EXT:ANSI-STREAM (OR BROADCAST-STREAM CONCATENATED-STREAM ECHO-STREAM
-                                 FILE-STREAM STRING-STREAM SYNONYM-STREAM TWO-WAY-STREAM
-                                 EXT:SEQUENCE-STREAM
-                                 #+clos-streams GRAY:FUNDAMENTAL-STREAM))
-               (STREAM EXT:ANSI-STREAM)
-
-	       (READTABLE)
-	       #+threads (MP::PROCESS)
-	       #+threads (MP::LOCK)
-	       #+threads (MP::RWLOCK)
-	       #+threads (MP::CONDITION-VARIABLE)
-	       #+threads (MP::SEMAPHORE)
-	       #+threads (MP::BARRIER)
-	       #+threads (MP::MAILBOX)
-	       #+ffi (FOREIGN-DATA)
-	       #+sse2 (EXT:SSE-PACK (OR EXT:INT-SSE-PACK
-				     EXT:FLOAT-SSE-PACK
-				     EXT:DOUBLE-SSE-PACK))
-	       #+sse2 (EXT:INT-SSE-PACK)
-	       #+sse2 (EXT:FLOAT-SSE-PACK)
-	       #+sse2 (EXT:DOUBLE-SSE-PACK)
-               (CODE-BLOCK)
-	       ))
+      (READTABLE)
+      #+threads (MP::PROCESS)
+      #+threads (MP::LOCK)
+      #+threads (MP::RWLOCK)
+      #+threads (MP::CONDITION-VARIABLE)
+      #+threads (MP::SEMAPHORE)
+      #+threads (MP::BARRIER)
+      #+threads (MP::MAILBOX)
+      #+ffi (FOREIGN-DATA)
+      #+sse2 (EXT:SSE-PACK (OR EXT:INT-SSE-PACK
+                            EXT:FLOAT-SSE-PACK
+                            EXT:DOUBLE-SSE-PACK))
+      #+sse2 (EXT:INT-SSE-PACK)
+      #+sse2 (EXT:FLOAT-SSE-PACK)
+      #+sse2 (EXT:DOUBLE-SSE-PACK)
+      (CODE-BLOCK)
+      ))
 
 (defun hash-table-fill (ht values)
   (dolist (pair values)
@@ -1253,10 +1253,11 @@ if not possible."
       (core::hash-table-setf-gethash ht key value)))
   ht)
 
-(defconstant +built-in-types+
+(defconstant-eqx +built-in-types+
   (hash-table-fill
-     (make-hash-table :test 'eq :size 128)
-     '#.sys::+built-in-type-list+)) ;; Clasp change
+   (make-hash-table :test 'eq :size 128)
+   '#.sys::+built-in-type-list+)
+  equalp)
 
 (defun find-built-in-tag (name)
   (let (record)

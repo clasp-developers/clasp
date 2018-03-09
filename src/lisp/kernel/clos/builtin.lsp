@@ -22,12 +22,6 @@
   (declare (ignore initargs))
   (error "The built-in class (~A) cannot be instantiated" class))
 
-;;;
-;;; At this point we can activate the vector of builtin classes, which
-;;; is used by class-of and other functions.
-;;;
-(si::*make-constant '+builtin-classes+ +builtin-classes-pre-array+)
-
 (defmethod ensure-class-using-class ((class null) name &rest rest)
   (clos::gf-log "In ensure-class-using-class (class null)\n")
   (clos::gf-log "     class -> %s\n" name)

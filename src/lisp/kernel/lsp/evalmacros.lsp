@@ -40,7 +40,7 @@ last FORM.  If not, simply returns NIL."
          ,@arg-check
          ,@body))))
 
-(defmacro defvar (&whole whole var &optional (form nil form-sp) doc-string)
+(defmacro defvar (var &optional (form nil form-sp) doc-string)
   "Syntax: (defvar name [form [doc]])
 Declares the variable named by NAME as a special variable.  If the variable
 does not have a value, then evaluates FORM and assigns the value to the
@@ -55,7 +55,7 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
     ,@(si::expand-set-documentation var 'variable doc-string)
     ',var))
 
-(defmacro defparameter (&whole whole var form &optional doc-string)
+(defmacro defparameter (var form &optional doc-string)
   "Syntax: (defparameter name form [doc])
 Declares the global variable named by NAME as a special variable and assigns
 the value of FORM to the variable.  The doc-string DOC, if supplied, is saved
@@ -67,17 +67,37 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
      ,@(si::expand-set-documentation var 'variable doc-string)
      ',var))
 
-(defmacro defconstant (&whole whole var form &optional doc-string)
+;; export as extension?
+(defmacro defconstant-eqx (var form test &optional doc-string)
+  "Like DEFCONSTANT, but doesn't fire if the form is equal under TEST to an
+existing value."
+  (let ((value (gensym)))
+    `(PROGN
+       (eval-when (:compile-toplevel :load-toplevel :execute)
+         (let ((,value ,form))
+           (cond ((core:symbol-constantp ',var)
+                  (unless (,test ,value (symbol-value ',var))
+                    ;; This will just trigger the error in SET.
+                    (set ',var ,value)))
+                 ((core:specialp ',var)
+                  (error "Cannot redefine special variable ~a as constant" ',var))
+                 (t (set ',var ,value)
+                    (funcall #'(setf core:symbol-constantp) t ',var)))))
+       ,@(si::expand-set-documentation var 'variable doc-string)
+       ',var)))
+
+(defmacro defconstant (var form &optional doc-string)
   "Syntax: (defconstant symbol form [doc])
 
 Declares that the global variable named by SYMBOL is a constant with the value
 of FORM as its constant value.  The doc-string DOC, if supplied, is saved as a
 VARIABLE doc and can be retrieved by (DOCUMENTATION 'SYMBOL 'VARIABLE)."
-  `(PROGN
-     (eval-when (:compile-toplevel :load-toplevel :execute)
-       (SYS:*MAKE-CONSTANT ',var ,form))
-    ,@(si::expand-set-documentation var 'variable doc-string)
-    ',var))
+  `(defconstant-eqx ,var ,form eql ,doc-string))
+
+(defmacro defconstant-equal (var form &optional doc-string)
+  `(defconstant-eqx ,var ,form equal ,doc-string))
+
+(export '(defconstant-equal))
 
 (defmacro defun (&whole whole name vl &body body &environment env)
   ;; Documentation in help.lsp

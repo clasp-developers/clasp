@@ -227,7 +227,7 @@ all functions."
 (defparameter *step-form* nil)
 (defparameter *step-tag* (cons nil nil))
 (defparameter *step-functions* nil)
-(defconstant step-commands
+(defconstant-equal step-commands
   `("Stepper commands"
      ((:newline) (step-next) :constant
       "newline		Advance to the next form"
