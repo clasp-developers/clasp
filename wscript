@@ -92,8 +92,8 @@ def update_submodules(cfg):
                        "https://github.com/Bike/SICL.git",
                        "a080c75b0aa17a939b09cb378514cfee7a72a4c0")
     fetch_git_revision("src/lisp/kernel/contrib/Acclimation",
-                       "https://github.com/robert-strandh/Acclimation.git",
-                       "dd15c86b0866fc5d8b474be0da15c58a3c04c45c")
+                       "https://github.com/clasp-developers/Acclimation.git",
+                       "5e0add45b7c6140e4ab07a2cbfd28964e36e6e48")
     fetch_git_revision("src/mps",
                        "https://github.com/clasp-developers/mps.git",
                        "60ee147060759f2f17b483fc32beedf11ad1ef5c")
