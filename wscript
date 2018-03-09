@@ -20,6 +20,9 @@ except ImportError:
 from waflib.Errors import ConfigurationError
 from waflib import Utils
 
+# Let's not depend on the locale setting of the host, set it explicitly.
+os.environ['LC_ALL'] = os.environ['LANG'] = "C"
+
 top = '.'
 out = 'build'
 APP_NAME = 'clasp'
@@ -571,7 +574,9 @@ def configure(cfg):
     # find a lisp for the scraper
     if not cfg.env.SCRAPER_LISP:
         cfg.env["SBCL"] = cfg.find_program("sbcl", var = "SBCL")[0]
-        cfg.env["SCRAPER_LISP"] = [cfg.env.SBCL] + "--noinform --dynamic-space-size 4096 --lose-on-corruption --disable-ldb --end-runtime-options --disable-debugger  --no-userinit --no-sysinit".split()
+        cfg.env["SCRAPER_LISP"] = [cfg.env.SBCL,
+                                   '--noinform', '--dynamic-space-size', '2048', '--lose-on-corruption', '--disable-ldb', '--end-runtime-options',
+                                   '--disable-debugger', '--no-userinit', '--no-sysinit', '--eval', '(setf sb-impl::*default-external-format* :utf-8)' ]
     global cxx_compiler, c_compiler
     cxx_compiler['linux'] = ["clang++"]
     c_compiler['linux'] = ["clang"]
@@ -1412,11 +1417,6 @@ class build_bitcode(Task.Task):
         return self.exec_command(cmd, shell = True)
 
 class scraper_task(Task.Task):
-    # TODO instead of this, LANG shoud be set globally, but I don't know how - attila
-    def exec_command(self, cmd, **kw):
-        kw['env'] = dict(os.environ, LANG = "en_US.utf8")
-        return super(scraper_task, self).exec_command(cmd, **kw)
-
     def build_scraper_cmd(self, extraCommands = [], scraperArgs = []):
         env = self.env
         bld = self.generator.bld
