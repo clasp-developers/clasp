@@ -43,7 +43,6 @@ CL_DEFUN WeakPointer_sp WeakPointer_O::make(T_sp obj) {
 #ifdef USE_BOEHM
   GCTOOLS_ASSERT(me->_WeakObject.pointer->value.objectp());
   if (!unboundOrDeletedOrSplatted(me->_WeakObject.pointer->value)) {
-    GCTOOLS_ASSERT(val.objectp());
     GC_general_register_disappearing_link(reinterpret_cast<void **>(&me->_WeakObject.pointer->value.rawRef_()), reinterpret_cast<void *>(me->_WeakObject.pointer->value.rawRef_()));
   } else {
     GCTOOLS_ASSERT(false); // ERROR("value can never contain anything but a pointer - if it does then when it gets set to NULL by the BoehmGC it will be interpreted as a Fixnum 0!!!!!");
