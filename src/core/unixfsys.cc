@@ -517,7 +517,7 @@ file_truename(T_sp pathname, T_sp filename, int flags) {
   } else if (kind == kw::_sym_link && (flags & FOLLOW_SYMLINKS)) {
     /* The link might be a relative pathname. In that case
                  * we have to merge with the original pathname.  On
-                 * the other hand, if the link is broken – return file
+                 * the other hand, if the link is broken - return file
                  * truename "as is". */
     struct stat filestatus;
     if (safe_stat(gc::As<String_sp>(filename)->get_std_string().c_str(), &filestatus) < 0)

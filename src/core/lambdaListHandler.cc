@@ -862,14 +862,14 @@ bool contextSupportsEnvironment(T_sp context) {
  * Values(7) = whole-var			; whole-variable, if any
  * Values(8) = environment-var			; environment-variable, if any
  *
- * 1°) The prefix "N" is an integer value denoting the number of
+ * 1) The prefix "N" is an integer value denoting the number of
  * variables which are declared within this section of the lambda
  * list.
  *
- * 2°) The INIT* arguments are lisp forms which are evaluated when
+ * 2) The INIT* arguments are lisp forms which are evaluated when
  * no value is provided.
  *
- * 3°) The FLAG* arguments is the name of a variable which holds a
+ * 3) The FLAG* arguments is the name of a variable which holds a
  * boolean value in case an optional or keyword argument was
  * provided. If it is NIL, no such variable exists.
  *
