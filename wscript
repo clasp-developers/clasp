@@ -89,7 +89,7 @@ def grovel(bld):
 
 def update_submodules(cfg):
     def fetch_git_revision(path, url, revision="", label="master"):
-        ret = os.system("./tools/fetch-git-revision.sh '%s' '%s' '%s' '%s'" % (path, url, revision, label))
+        ret = os.system("./tools-for-build/fetch-git-revision.sh '%s' '%s' '%s' '%s'" % (path, url, revision, label))
         if ( ret != 0 ):
             raise Exception("Failed to fetch git url %s" % url)
 
