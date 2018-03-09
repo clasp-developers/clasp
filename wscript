@@ -1411,6 +1411,11 @@ class build_bitcode(Task.Task):
         return self.exec_command(cmd, shell = True)
 
 class scraper_task(Task.Task):
+    # TODO instead of this, LANG shoud be set globally, but I don't know how - attila
+    def exec_command(self, cmd, **kw):
+        kw['env'] = dict(os.environ, LANG = "en_US.utf8")
+        return super(Task.Task, self).exec_command(cmd, **kw)
+
     def build_scraper_cmd(self, extraCommands = [], scraperArgs = []):
         env = self.env
         bld = self.generator.bld

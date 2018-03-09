@@ -12,6 +12,11 @@
 (defparameter *application-config* #P"include/clasp/main/application.config")
 (export '*application-config*)
 
+#+sbcl
+(unless (eq (sb-impl::default-external-format) :utf-8)
+  (error "The default external format must be :utf-8, but it's ~S instead! Check your $LANG env variable, it is ~S, set it to \"en_US.utf8\"."
+         (sb-impl::default-external-format) (uiop:getenv "LANG")))
+
 (defun process-all-sif-files (clasp-home-path build-path sif-files)
   (declare (optimize debug))
   (let* ((tags (loop for sif-file in sif-files
