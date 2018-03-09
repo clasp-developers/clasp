@@ -96,7 +96,7 @@ T_mv macro_backquote(List_sp form, T_sp env) {
   them together into one list and then points the cdr of the last element of this new list
   to c.
 */
-CL_LAMBDA(&core:va-rest lists);
+CL_LAMBDA(core:&va-rest lists);
 CL_DECLARE();
 CL_DOCSTRING("append as in clhs");
 CL_DEFUN T_sp core__backquote_append(VaList_sp lists) {
