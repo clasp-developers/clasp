@@ -51,9 +51,12 @@ if ([ -n "$revision" ] && ! (git cat-file -e "$revision")) ||
 fi
 
 if [ -n "$label" ]; then
-    git checkout "$label" || exit $?
+    git checkout --quiet "$label" || exit $?
 fi
 
 if [ -n "$revision" ]; then
-    git reset --mixed "$revision" || exit $?
+    git reset --quiet --merge "$revision" || exit $?
 fi
+
+# Print the locally modified files as a reminder
+git status --short
