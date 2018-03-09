@@ -910,11 +910,18 @@ def build(bld):
         task.set_outputs([bld.path.find_or_declare("scraper-precompile-done")])
         bld.add_to_group(task)
 
+    make_pump_tasks(bld, 'src/core/header-templates/', 'clasp/core/')
+    make_pump_tasks(bld, 'src/clbind/header-templates/', 'clasp/clbind/')
+
     extensions_task = build_extension_headers(env=bld.env)
     inputs = [bld.path.find_resource("wscript")] + bld.extensions_gcinterface_include_files
     extensions_task.set_inputs(inputs)
     extensions_task.set_outputs([extension_headers_node])
     bld.add_to_group(extensions_task)
+
+    # Tell waf that all the tasks prior to this needs to be finished to continue with the rest of the tasks.
+    bld.add_group()
+
     # Always build the C++ code
     intrinsics_bitcode_node = bld.path.find_or_declare(variant.inline_bitcode_archive_name("intrinsics"))
     builtins_bitcode_node = bld.path.find_or_declare(variant.inline_bitcode_archive_name("builtins"))
@@ -1485,6 +1492,8 @@ class scraper_task(Task.Task):
         return cmd
 
 class precompile_scraper(scraper_task):
+    weight = 5    # Tell waf to run this early among the equal tasks because it will take long
+
     def run(self):
         cmd = self.build_scraper_cmd(["--eval", '(with-open-file (stream "%s" :direction :output :if-exists :supersede) (terpri stream))' % self.outputs[0].abspath()])
         maybe_dump_command(cmd, 'precompile_scraper')
@@ -1527,7 +1536,38 @@ class generate_headers_from_all_sifs(scraper_task):
     def keyword(ctx):
         return "Scraping, generate-headers-from-all-sifs"
 
-# Have all 'cxx' targets have 'include' in their include paths.
+def make_pump_tasks(bld, template_dir, output_dir):
+    pmp_suffix = '.pmp'
+    templates = bld.path.ant_glob(template_dir + "**/*" + pmp_suffix)
+    assert len(templates) > 0
+    Logs.debug("Building pump tasks for the following templates: %s", templates)
+    for template_node in templates:
+        template_name = template_node.name
+        assert template_name[ - len(pmp_suffix) :] == pmp_suffix
+        output_path = os.path.join("generated/", output_dir, template_name.replace(".pmp", ".h"))
+        output_node = bld.path.find_or_declare(output_path)
+        Logs.debug("Creating expand_pump_template: %s -> %s", template_node.abspath(), output_node.abspath())
+        assert output_node
+        task = expand_pump_template(env = bld.env)
+        task.set_inputs([template_node])
+        task.set_outputs([output_node])
+        bld.add_to_group(task)
+    Logs.info("Created %s pump template task for dir: %s", len(templates), template_dir)
+
+class expand_pump_template(Task.Task):
+    ext_out  = ['.h']      # this affects the task execution order
+    def run(self):
+        assert len(self.inputs) == len(self.outputs) == 1
+        cmd = ["python2",
+               os.path.join(self.bld.path.abspath(), "tools-for-build/pump.py"),
+               self.inputs[0].abspath(),
+               self.outputs[0].abspath()]
+        maybe_dump_command(cmd, 'expand_pump_template')
+        return self.exec_command(cmd)
+
+    def keyword(ctx):
+        return "Expanding .pmp template"
+
 @TaskGen.feature('cxx')
 @TaskGen.after('process_source')
 def scrape_task_generator(self):

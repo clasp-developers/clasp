@@ -72,7 +72,7 @@ public:
 #include <clasp/core/arguments.h>
 #include <clasp/core/lambdaListHandler.fwd.h>
 namespace core {
-#include <clasp/core/generated/wrappers_functoids.h>
+#include <clasp/core/wrappers_functoids.h>
 };
 
 namespace core {
@@ -83,7 +83,7 @@ public:
   size_t templatedSizeof() const { return sizeof(VariadicMethoid<DispatchOn, FN>); };
 };
 
-#include <clasp/core/generated/wrappers_methoids.h>
+#include <clasp/core/wrappers_methoids.h>
 };
 
 namespace core {

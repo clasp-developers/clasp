@@ -171,7 +171,7 @@ public:
   virtual size_t templatedSizeof() const { return sizeof(*this); };
 };
 
-#include <clasp/clbind/generated/clbind_constructor_functoids.h>
+#include <clasp/clbind/clbind_constructor_functoids.h>
 };
 
 template <typename Pols, typename Pointer, typename T, typename Sig>

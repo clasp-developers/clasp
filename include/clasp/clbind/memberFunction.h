@@ -40,9 +40,9 @@ public:
   virtual size_t templatedSizeof() const { return sizeof(*this); };
 };
 
-#include <clasp/clbind/generated/clbind_methoids.h>
+#include <clasp/clbind/clbind_methoids.h>
 
-#include <clasp/clbind/generated/clbind_static_members.h>
+#include <clasp/clbind/clbind_static_members.h>
 };
 
 template <typename Pols, typename OT, typename MethodPtrType>

@@ -44,15 +44,15 @@ class VariadicMethoid : public Functoid {};
 #else
 #ifdef USE_CLASP_DEBUG
 #ifdef USE_CLASP_BOEHM
-#include <clasp/core/generated/debug/boehm/wrappers_methoids.h>
+#include <clasp/core/debug/boehm/wrappers_methoids.h>
 #else
-#include <clasp/core/generated/debug/mps/wrappers_methoids.h>
+#include <clasp/core/debug/mps/wrappers_methoids.h>
 #endif
 #else
 #ifdef USE_CLASP_BOEHM
-#include <clasp/core/generated/release/boehm/wrappers_methoids.h>
+#include <clasp/core/release/boehm/wrappers_methoids.h>
 #else
-#include <clasp/core/generated/release/mps/wrappers_methoids.h>
+#include <clasp/core/release/mps/wrappers_methoids.h>
 #endif
 #endif
 #endif

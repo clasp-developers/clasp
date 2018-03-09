@@ -46,7 +46,7 @@ class IndirectVariadicMethoid : public TemplatedFunctionBase_O {
   virtual const char *describe() const { return "IndirectVariadicMethoid"; };
 };
 
-#include <clasp/core/generated/external_wrappers_indirect_methoids.h>
+#include <clasp/core/external_wrappers_indirect_methoids.h>
 };
 
 namespace core {
