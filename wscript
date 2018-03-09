@@ -756,7 +756,6 @@ def configure(cfg):
 #    cfg.define("DEBUG_BCLASP_LISP",1)  # Generate debugging frames for all bclasp code - like declaim
 #    cfg.define("DEBUG_CCLASP_LISP",1)  # Generate debugging frames for all cclasp code - like declaim
 #    cfg.define("DEBUG_LONG_CALL_HISTORY",1)
->>>>>>> 335b66435... Fixed fastgf code
 #    cfg.define("DONT_OPTIMIZE_BCLASP",1)  # Optimize bclasp by editing llvm-ir
 #    cfg.define("DEBUG_BOUNDS_ASSERT",1)
 #    cfg.define("DEBUG_SLOT_ACCESSORS",1)
