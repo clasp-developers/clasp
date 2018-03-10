@@ -95,13 +95,13 @@ def build_extension(bld):
 def grovel(bld):
     bld.recurse("extensions")
 
-def update_submodules(cfg):
+def update_dependencies(cfg):
     def fetch_git_revision(path, url, revision="", label="master"):
         ret = os.system("./tools-for-build/fetch-git-revision.sh '%s' '%s' '%s' '%s'" % (path, url, revision, label))
         if ( ret != 0 ):
             raise Exception("Failed to fetch git url %s" % url)
 
-    log.pprint('BLUE', 'update_submodules()')
+    log.pprint('BLUE', 'update_dependencies()')
     fetch_git_revision("src/lisp/kernel/contrib/sicl",
                        "https://github.com/Bike/SICL.git",
                        "a080c75b0aa17a939b09cb378514cfee7a72a4c0")
@@ -223,13 +223,13 @@ def fix_lisp_paths(bld_path,out,variant,paths):
                 lsp_name = "%s.lisp"%file_name
                 lsp_res = bld_path.find_resource(lsp_name)
             #log.debug("Looking for file_name with .lsp or .lisp: %s --> %s", file_name, lsp_res)
-            assert lsp_res!=None, "lsp_res could not be resolved for file %s - did you run ./waf update_submodules" % lsp_name
+            assert lsp_res!=None, "lsp_res could not be resolved for file %s - did you run './waf update_dependencies'?" % lsp_name
         else: # generated files
             #lsp_name = "%s/%s/%s.lisp"%(out,variant.variant_dir(),p)
             lsp_name = "%s.lisp" % (p)
             lsp_res = bld_path.find_or_declare(lsp_name)
             #log.debug("Looking for generated file with .lisp: %s --> %s", lsp_name, lsp_res)
-            assert lsp_res!=None, "lsp_res could not be resolved for file %s - did you run ./wfa update_submodules" % lsp_name
+            assert lsp_res!=None, "lsp_res could not be resolved for file %s - did you run './waf update_dependencies'?" % lsp_name
         nodes.append(lsp_res)
     return nodes
 
@@ -833,7 +833,7 @@ def configure(cfg):
             variant_instance = eval("i"+variant+"()")
             log.info("Setting up variant: %s", variant_instance.variant_dir())
             variant_instance.configure_variant(cfg,env_copy)
-    update_submodules(cfg)
+    update_dependencies(cfg)
 
 def pre_build_hook(bld):
     bld.build_start_time = time.time()
