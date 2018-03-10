@@ -412,7 +412,7 @@ pointer is 0 already."
        &key (element-type (array-element-type array))
             initial-element (initial-contents nil) (fill-pointer nil)
             (displaced-to nil) (displaced-index-offset 0))
-Adjusts the dimensions of ARRAY to the given DIMENSIONS.  ARRAY must be an
+Adjusts the dimensions of ARRAY to the given DIMENSIONS.  ARRAY -- kpoeck -- may be an
 adjustable array."
   (declare (ignore initial-element
                    displaced-index-offset))
@@ -432,7 +432,10 @@ adjustable array."
     (declare (array x))
     (unless (or displaced-to initial-contents)
       (copy-array-contents x array))
-    (sys:replace-array array x)
+    ;Kpoeck
+    (if (adjustable-array-p array)
+        (sys:replace-array array x)
+        x)
     ))
 
 
