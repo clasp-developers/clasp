@@ -251,8 +251,10 @@ Returns the bit of BIT-ARRAY specified by INDEXes."
   (declare #+ecl (array bit-array) ;; FIXME! Should be (simple-array bit)
            #+clasp (type (simple-array bit) bit-array)
            (ext:check-arguments-type))
+  ;;; kpoeck it is not necessary that the bit-array is simple, only for sbit
+  ;;; (check-type bit-array (array bit))
   #+(and clasp (not clasp-min))
-  (check-type bit-array (simple-array bit))
+  (check-type bit-array (array bit))
   (row-major-aref bit-array (row-major-index-inner bit-array indices)))
 
 
