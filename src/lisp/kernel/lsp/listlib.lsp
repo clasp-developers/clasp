@@ -189,4 +189,51 @@ result.  The original TREE is not destroyed."
   "Destructive SUBST-IF-NOT. TREE may be modified."
   (nsubst new test tree :test-not #'funcall :key key))
 
+;;;
+;;; Copyright 1994-2009 Clozure Associates
+;;;
+;;; Licensed under the Apache License, Version 2.0 (the "License");
+;;; you may not use this file except in compliance with the License.
+;;; You may obtain a copy of the License at
+;;;
+;;;     http://www.apache.org/licenses/LICENSE-2.0
+;;;
+;;; Unless required by applicable law or agreed to in writing, software
+;;; distributed under the License is distributed on an "AS IS" BASIS,
+;;; WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+;;; See the License for the specific language governing permissions and
+;;; limitations under the License.
+
+;;; kpoeck slightly modified (set-car, set-cdr -> rplaca, rplacd) to working with clasp
+;;; Borrowed with permission
+
+(defun nsubst (new old tree &key key
+                   (test #'eql testp) (test-not nil notp))
+  "Substitute NEW for subtrees matching OLD."
+  (if (and testp notp)
+    (test-not-error test test-not))
+  (nsubst-aux new old tree (or key #'identity) test test-not))
+
+(defun nsubst-aux (new old subtree key test test-not)
+  (flet ((satisfies-the-test (item elt)
+           (let* ((val (if key (funcall key elt) elt)))
+             (if test-not
+               (not (funcall test-not item val))
+               (funcall test item val)))))
+    (declare (inline satisfies-the-test))
+    (cond ((satisfies-the-test old subtree) new)
+          ((atom subtree) subtree)
+          (t (do* ((last nil subtree)
+                   (subtree subtree (cdr subtree)))
+                  ((atom subtree)
+                   (if (satisfies-the-test old subtree)
+                     (rplacd last new)))
+               (if (satisfies-the-test old subtree)
+                 (return (set-cdr last new))
+                 (rplaca subtree 
+                          (nsubst-aux new old (car subtree)
+                                      key test test-not))))
+             subtree))))
+
+
 
