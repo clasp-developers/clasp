@@ -374,6 +374,9 @@ No DIBuilder is defined for the default module")
                    (sym-name (symbol-name lname))
                    (pkg-name (if sym-pkg
                                  (string (package-name sym-pkg))
+                                 ;;; KNPK I don't undestand why "KEYWORD" is used here
+                                 ;;; (package-name (symbol-package :test)) -> "KEYWORD", so how can sym-pkg be empty for this case
+                                 ;;; More likely it is an uninterned symbol
                                  "KEYWORD")))
               (escape-and-join-jit-name (list sym-name pkg-name "FN"))))))
     ((and (consp lname) (eq (car lname) 'setf) (symbolp (second lname)))
@@ -397,8 +400,12 @@ No DIBuilder is defined for the default module")
                           "KEYWORD")))
        (escape-and-join-jit-name (list sym-name pkg-name "SETFCONS"))))
     ((and (consp lname) (eq (car lname) 'method) (symbolp (second lname)))
-     (let ((pkg-name (string (package-name (symbol-package (second lname)))))
-           (name (symbol-name (second lname)))
+     (let* ((symbol (second lname))
+            (sym-pkg (symbol-package symbol))
+            (pkg-name (if sym-pkg
+                      (string (package-name sym-pkg))
+                      "UNINTERNED"))
+           (name (symbol-name symbol))
            (specializers (core:bformat nil "%s" (cddr lname))))
        (escape-and-join-jit-name (list name pkg-name specializers "METHOD"))))
     ((and (consp lname) (eq (car lname) 'method) (consp (second lname)) (eq (car (second lname)) 'setf))
