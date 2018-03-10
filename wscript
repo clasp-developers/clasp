@@ -835,6 +835,14 @@ def configure(cfg):
             variant_instance.configure_variant(cfg,env_copy)
     update_submodules(cfg)
 
+def pre_build_hook(bld):
+    bld.build_start_time = time.time()
+    log.info('Compilation started at %s', datetime.datetime.now())
+
+def post_build_hook(bld):
+    duration = round(time.time() - bld.build_start_time)
+    log.info('Compilation finished in %s, at %s', str(datetime.timedelta(seconds = duration)), datetime.datetime.now())
+
 def build(bld):
     def install(dest, files, cwd = bld.path, chmod = None):
         dest = '${PREFIX}/' + dest
@@ -856,6 +864,9 @@ def build(bld):
     log = clasp_logger(log_file)
 
     log.debug('build() starts, options: %s', bld.options)
+
+    bld.add_pre_fun(pre_build_hook);
+    bld.add_post_fun(post_build_hook);
 
     stage = bld.stage
     stage_val = stage_value(bld,bld.stage)
