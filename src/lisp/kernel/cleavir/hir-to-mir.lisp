@@ -202,7 +202,9 @@
                    (t
                     (maybe-gen-primitive-type-check
                      object simple-mdarray-type
-                     (gen-rank-check object rank pro con)))))
+                     (gen-rank-check object rank pro con)
+                     ;;;kpoeck
+                     con))))
             (t
              (cond ((eql rank 1)
                     (maybe-gen-primitive-type-check
