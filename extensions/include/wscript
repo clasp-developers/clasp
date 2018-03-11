@@ -1,0 +1,30 @@
+import os
+
+def subdirectories():
+    dir = os.listdir("." + os.path.sep + "extensions" + os.path.sep + "include")
+    print("subdirectories dir = %s" % dir)
+    subdirs = []
+    for x in dir:
+        if os.path.isdir("." + os.path.sep + "extensions" + os.path.sep + "include" + os.path.sep + "%s"%x):
+            subdirs.append(x)
+    print("extensions subdirs = %s" % subdirs)
+    return subdirs
+
+def build_extension(bld):
+    bld.recurse(" ".join(subdirectories()))
+
+def grovel(bld):
+    bld.recurse(" ".join(subdirectories()))
+
+def configure(cfg):
+    subdirs = subdirectories()
+    cfg.extensions_names = cfg.extensions_names + subdirs
+    print("cfg.extensions_names = %s" % cfg.extensions_names)
+    subdirs_str = " ".join(subdirs)
+    print("About to recurse into %s" % subdirs_str)
+    cfg.recurse(subdirs_str)
+    print("After recurse cfg.extensions_names = %s" % cfg.extensions_names)
+
+def build(bld):
+    bld.recurse(" ".join(subdirectories()))
+

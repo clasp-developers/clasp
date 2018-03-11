@@ -61,7 +61,7 @@ namespace core {
   try {                                                                                             \
     __fmt_str = __fmt.str();                                                                        \
   } catch (const std::exception &exc) {                                                             \
-    lisp_throwLispError(BF("Error - could not get string from boost::format --> %s") % exc.what()); \
+    core::lisp_throwLispError(BF("Error - could not get string from boost::format --> %s") % exc.what()); \
   }
 
 
