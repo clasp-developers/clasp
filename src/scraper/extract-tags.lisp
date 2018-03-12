@@ -57,7 +57,7 @@ Peek into the buffer and return the next char at the file-position"
 - filename : A pathname
 * Description
 Read the contents of the filename into memory and return a buffer-stream on it."
-  (with-open-file (stream (pathname filename))
+  (with-open-file (stream (pathname filename) :external-format :utf-8)
     (let ((data (make-string (file-length stream))))
       (read-sequence data stream)
       (make-instance 'buffer-stream
