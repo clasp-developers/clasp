@@ -958,7 +958,11 @@ T_sp ReadTable_O::set_dispatch_macro_character(Character_sp disp_char, Character
     SIMPLE_ERROR(BF("%c is not a dispatch character") % _rep_(disp_char));
   }
 #endif
-  HashTable_sp dispatch_table = this->_DispatchMacroCharacters->gethash(disp_char);
+  T_sp tdispatch_table = this->_DispatchMacroCharacters->gethash(disp_char);
+  if (!gc::IsA<HashTable_sp>(tdispatch_table)) {
+    SIMPLE_ERROR(BF("%s is not a dispatching macro character") % _rep_(disp_char));
+  }
+  HashTable_sp dispatch_table = gc::As_unsafe<HashTable_sp>(tdispatch_table);
   ASSERTF(dispatch_table.notnilp(), BF("The dispatch table for the character[%s] is nil! - this shouldn't happen") % _rep_(disp_char));
   Character_sp upcase_sub_char = clasp_make_character(claspCharacter_upcase(sub_char.unsafe_character()));
   Function_sp new_func = coerce::functionDesignator(new_func_desig);
@@ -982,14 +986,11 @@ T_sp ReadTable_O::set_dispatch_macro_character(Character_sp disp_char, Character
 }
 
 T_sp ReadTable_O::get_dispatch_macro_character(Character_sp disp_char, Character_sp sub_char) {
-  _OF();
-#if 0
-  if (this->get_macro_character(disp_char) != _sym_dispatch_macro_character->symbolFunction()) {
-    SIMPLE_ERROR(BF("%c is not a dispatch character - there is a mismatch between this->get_macro_character(disp_char)-> %s and _sym_dispatch_macro_character->symbolFunction()->%s") % _rep_(disp_char) % _rep_(this->get_macro_character(disp_char)) % _rep_(_sym_dispatch_macro_character->symbolFunction()));
+  T_sp tdispatch_table = this->_DispatchMacroCharacters->gethash(disp_char);
+  if (!gc::IsA<HashTable_sp>(tdispatch_table)) {
+    SIMPLE_ERROR(BF("%s is not a dispatching macro character") % _rep_(disp_char));
   }
-#endif
-  HashTable_sp dispatch_table = this->_DispatchMacroCharacters->gethash(disp_char);
-  ASSERTF(dispatch_table.notnilp(), BF("The dispatch table for the character[%s] is nil! - this shouldn't happen") % _rep_(disp_char));
+  HashTable_sp dispatch_table = gc::As_unsafe<HashTable_sp>(tdispatch_table);
   Character_sp upcase_sub_char = clasp_make_character(claspCharacter_upcase(sub_char.unsafe_character()));
   T_sp func = dispatch_table->gethash(upcase_sub_char, _Nil<T_O>());
   return func;
