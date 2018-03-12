@@ -118,10 +118,11 @@ CL_DEFUN T_sp cl__readtable_case(ReadTable_sp readTable) {
   return readTable->getReadTableCase();
 }
 
-CL_LAMBDA(readtable mode);
+CL_LISPIFY_NAME("cl:readtable-case")
+CL_LAMBDA(mode readtable);
 CL_DECLARE();
 CL_DOCSTRING("clhs: (setf readtable-case)");
-CL_DEFUN void core__readtable_case_set(ReadTable_sp readTable, T_sp mode) {
+CL_DEFUN_SETF void core__readtable_case_set(T_sp mode, ReadTable_sp readTable) {
   readTable->setf_readtable_case(gc::As<Symbol_sp>(mode));
 }
 

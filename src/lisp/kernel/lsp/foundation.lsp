@@ -2,11 +2,14 @@
 (eval-when (eval compile load) (core:select-package :core))
 
 
-(defconstant lambda-list-keywords '( &ALLOW-OTHER-KEYS
-				    &AUX &BODY &ENVIRONMENT &KEY
-				    &OPTIONAL &REST
-                                    &VA-REST
-				    &WHOLE) )
+(if (boundp 'lambda-list-keywords)
+    nil ; don't redefine
+    (defconstant lambda-list-keywords
+      '(&ALLOW-OTHER-KEYS
+        &AUX &BODY &ENVIRONMENT &KEY
+        &OPTIONAL &REST
+        &VA-REST
+        &WHOLE) ))
 
 
 ;; Temporary check-type - everything is true

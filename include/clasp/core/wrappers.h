@@ -92,7 +92,7 @@ namespace core {
   Symbol_sp symbol = lispify_intern(name, packageName);
   SourcePosInfo_sp spi = lisp_createSourcePosInfo(sourceFile, 0, sourceLine);
   BuiltinClosure_sp f = gctools::GC<TranslationFunctor_O>::allocate(symbol, kw::_sym_function, fp, SOURCE_POS_INFO_FIELDS(spi));
-  lisp_defun(symbol, packageName, f, arguments, declares, docstring, sourceFile, sourceLine, true, 1);
+  lisp_defun(symbol, packageName, f, arguments, declares, docstring, sourceFile, sourceLine, 1);
 }
 
 
@@ -103,8 +103,19 @@ void wrap_function(const string &packageName, const string &name, RT (*fp)(ARGS.
   Symbol_sp symbol = _lisp->intern(name, packageName);
   SourcePosInfo_sp spi = lisp_createSourcePosInfo(sourceFile, 0, sourceLine);
   BuiltinClosure_sp f = gctools::GC<VariadicFunctor<RT(ARGS...)>>::allocate(symbol, kw::_sym_function, fp, SOURCE_POS_INFO_FIELDS(spi));
-  lisp_defun(symbol, packageName, f, arguments, declares, docstring, sourceFile, sourceLine, true, sizeof...(ARGS));
+  lisp_defun(symbol, packageName, f, arguments, declares, docstring, sourceFile, sourceLine, sizeof...(ARGS));
 }
+
+// this is used in gc_interface.cc expose_function_setf
+  template <typename RT, typename... ARGS>
+void wrap_function_setf(const string &packageName, const string &name, RT (*fp)(ARGS...), const string &arguments = "", const string &declares = "", const string &docstring = "", const string &sourceFile = "", int sourceLine = 0) {
+  Symbol_sp symbol = _lisp->intern(name, packageName);
+  SourcePosInfo_sp spi = lisp_createSourcePosInfo(sourceFile, 0, sourceLine);
+  BuiltinClosure_sp f = gctools::GC<VariadicFunctor<RT(ARGS...)>>::allocate(symbol, kw::_sym_function, fp, SOURCE_POS_INFO_FIELDS(spi));
+  lisp_defun_setf(symbol, packageName, f, arguments, declares, docstring, sourceFile, sourceLine, sizeof...(ARGS));
+}
+
+
 
 };
 
@@ -129,12 +140,12 @@ class Function_O;
 // Wrapper for ActivationFrameMacroPtr
    
 
-inline void defmacro(const string &packageName, const string &name, T_mv (*mp)(List_sp, T_sp env), const string &arguments, const string &declares, const string &docstring, const string &sourceFileName, int lineno, bool autoExport = true) {
+inline void defmacro(const string &packageName, const string &name, T_mv (*mp)(List_sp, T_sp env), const string &arguments, const string &declares, const string &docstring, const string &sourceFileName, int lineno) {
   _G();
   Symbol_sp symbol = lispify_intern(name, packageName);
   SourcePosInfo_sp spi = lisp_createSourcePosInfo(sourceFileName, 0, lineno);
   BuiltinClosure_sp f = gc::GC<MacroClosure_O>::allocate(symbol, mp, SOURCE_POS_INFO_FIELDS(spi));
-  lisp_defmacro(symbol, packageName, f, arguments, declares, docstring, autoExport);
+  lisp_defmacro(symbol, packageName, f, arguments, declares, docstring);
 }
 
  
@@ -148,14 +159,6 @@ struct DispatchOn {
 // ----------------------------------------
 // ----------------------------------------
 
-#if 0
- struct MethodDefinition {
-  string _Name;
-  int _ClassSymbol;
-  Function_sp _Methoid;
-};
-#endif
-//    typedef	enum { no_init,class_name_init, make_class_name_init } maker_enum;
 
 extern Symbol_sp& _sym_STARallCxxClassesSTAR;
 
@@ -177,13 +180,6 @@ public:
 
     this->_ClassSymbol = OT::static_classSymbol();
 
-#if 0
-            OT dummy;
-            size_t offsetT = (size_t)((char*)(dynamic_cast<T_O*>(&dummy)) - (char*)(&dummy));
-            size_t offsetGCO = (size_t)((char*)(dynamic_cast<gctools::GCObject*>(&dummy)) - (char*)(&dummy));
-            printf("%s:%d %50s offsetof(T_O) = %3lu  offsetof(gctools::GCObject) = %3lu\n", __FILE__, __LINE__, typeid(OT).name(),offsetT, offsetGCO);
-#endif
-
     reg::lisp_registerClassSymbol<OT>(this->_ClassSymbol);
 
     /*! Accumulate all of the classes in reverse order of how they were initialized
@@ -193,19 +189,6 @@ public:
 //
 // If the class isn't in the class table then add it
 //
-#if 0
-	    if ( lisp_boot_findClassBySymbolOrNil(OT::static_classSymbol()).nilp())
-	    {
-                DEPRECATED();
-		LOG(BF("Adding class(%s) to environment")% OT::static_className() );
-		lisp_addClass(/*_lisp,OT::static_packageName(),
-				OT::static_className(), */
-		    OT::static_classSymbol(),
-		    OT::static_creator,
-		    OT::Bases::baseClass1Id(),
-		    OT::Bases::baseClass2Id() );
-	    }
-#endif
     if (makerName != "") {
       // use make-<className>
       std::string magic_maker_name = core::magic_name(makerName,OT::static_packageName());

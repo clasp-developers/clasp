@@ -22,26 +22,25 @@ If TEST evaluates to NIL, then evaluates FORMs and returns all values of the
 last FORM.  If not, simply returns NIL."
   `(IF (NOT ,pred) (PROGN ,@body)))
 
-(defmacro defmacro (&whole whole name vl &body body &aux doc-string)
-  ;; Documentation in help.lsp
-  (unless (symbolp name)
-    (error "Macro name ~s is not a symbol." name))
-  (multiple-value-bind (function pprint doc-string)
-      (sys::expand-defmacro name vl body)
-    (setq function `(function ,function))
-    (when *dump-defmacro-definitions*
-      (bformat t "ADVANCED evalmacros.lsp defmacro %s --> %s\n" name function)
-      #++(setq function `(si::bc-disassemble ,function)))
-    `(eval-when (:compile-toplevel :load-toplevel :execute)
-       ,(ext:register-with-pde whole `(si::fset ',name ,function
-                                                t  ; macro
-                                                ,pprint ; ecl pprint
-                                                ',vl ; lambda-list lambda-list-p
-                                                ))
-       ,@(si::expand-set-documentation name 'function doc-string)
-       ',name)))
+(defmacro defmacro (name lambda-list &body body &environment env)
+  `(eval-when (:compile-toplevel :load-toplevel :execute)
+     (funcall #'(setf macro-function)
+              #',(ext:parse-macro name lambda-list body env)
+              ',name)
+     ',name))
 
-(defmacro defvar (&whole whole var &optional (form nil form-sp) doc-string)
+(defmacro destructuring-bind (vl list &body body)
+  (multiple-value-bind (decls body)
+      (find-declarations body)
+    (multiple-value-bind (whole dl arg-check ignorables)
+        (destructure vl nil)
+      `(let* ((,whole ,list) ,@dl)
+	 (declare (ignorable ,@ignorables))
+         ,@decls
+         ,@arg-check
+         ,@body))))
+
+(defmacro defvar (var &optional (form nil form-sp) doc-string)
   "Syntax: (defvar name [form [doc]])
 Declares the variable named by NAME as a special variable.  If the variable
 does not have a value, then evaluates FORM and assigns the value to the
@@ -54,10 +53,9 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 	  `((UNLESS (BOUNDP ',var)
 	      (SETQ ,var ,form))))
     ,@(si::expand-set-documentation var 'variable doc-string)
-    ,(ext:register-with-pde whole)
     ',var))
 
-(defmacro defparameter (&whole whole var form &optional doc-string)
+(defmacro defparameter (var form &optional doc-string)
   "Syntax: (defparameter name form [doc])
 Declares the global variable named by NAME as a special variable and assigns
 the value of FORM to the variable.  The doc-string DOC, if supplied, is saved
@@ -67,21 +65,39 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
        (SYS:*MAKE-SPECIAL ',var))
      (SETQ ,var ,form)
      ,@(si::expand-set-documentation var 'variable doc-string)
-     ,(ext:register-with-pde whole)
      ',var))
 
-(defmacro defconstant (&whole whole var form &optional doc-string)
+;; export as extension?
+(defmacro defconstant-eqx (var form test &optional doc-string)
+  "Like DEFCONSTANT, but doesn't fire if the form is equal under TEST to an
+existing value."
+  (let ((value (gensym)))
+    `(PROGN
+       (eval-when (:compile-toplevel :load-toplevel :execute)
+         (let ((,value ,form))
+           (cond ((core:symbol-constantp ',var)
+                  (unless (,test ,value (symbol-value ',var))
+                    ;; This will just trigger the error in SET.
+                    (set ',var ,value)))
+                 ((core:specialp ',var)
+                  (error "Cannot redefine special variable ~a as constant" ',var))
+                 (t (set ',var ,value)
+                    (funcall #'(setf core:symbol-constantp) t ',var)))))
+       ,@(si::expand-set-documentation var 'variable doc-string)
+       ',var)))
+
+(defmacro defconstant (var form &optional doc-string)
   "Syntax: (defconstant symbol form [doc])
 
 Declares that the global variable named by SYMBOL is a constant with the value
 of FORM as its constant value.  The doc-string DOC, if supplied, is saved as a
 VARIABLE doc and can be retrieved by (DOCUMENTATION 'SYMBOL 'VARIABLE)."
-  `(PROGN
-     (eval-when (:compile-toplevel :load-toplevel :execute)
-       (SYS:*MAKE-CONSTANT ',var ,form))
-    ,@(si::expand-set-documentation var 'variable doc-string)
-    ,(ext:register-with-pde whole)
-    ',var))
+  `(defconstant-eqx ,var ,form eql ,doc-string))
+
+(defmacro defconstant-equal (var form &optional doc-string)
+  `(defconstant-eqx ,var ,form equal ,doc-string))
+
+(export '(defconstant-equal))
 
 (defmacro defun (&whole whole name vl &body body &environment env)
   ;; Documentation in help.lsp
@@ -106,8 +122,7 @@ VARIABLE doc and can be retrieved by (DOCUMENTATION 'SYMBOL 'VARIABLE)."
            ;; compiler to run :compile-toplevel forms anyway.
            (cmp::register-global-function-def 'defun ',name))
          (let ((,fn ,global-function))
-           ;;(bformat t "Performing DEFUN   core:*current-source-pos-info* -> %s\n" core:*current-source-pos-info*)
-           ,(ext:register-with-pde whole `(si::fset ',name ,fn nil t ',vl))
+           (funcall #'(setf fdefinition) ,fn ',name)
            (core:set-source-info ,fn ',(list 'core:current-source-file filepos lineno column))
            ,@(si::expand-set-documentation name 'function doc-string)
            ;; This can't be at toplevel.
@@ -119,20 +134,13 @@ VARIABLE doc and can be retrieved by (DOCUMENTATION 'SYMBOL 'VARIABLE)."
 ;;;
 ;;; This is a no-op unless the compiler is installed
 ;;;
-(defmacro bclasp-define-compiler-macro (&whole whole name vl &rest body)
-  (multiple-value-bind (function pprint doc-string)
-      (sys::expand-defmacro name vl body 'bclasp-define-compiler-macro)
-    (declare (ignore pprint))
-    (setq function `(function ,function))
-    (when *dump-defun-definitions*
-      (print function)
-      (setq function `(si::bc-disassemble ,function)))
-    ;; CLHS doesn't actually say d-c-m has compile time effects, but it's nice to match defmacro
-    `(eval-when (:compile-toplevel :load-toplevel :execute)
-       (core:setf-bclasp-compiler-macro-function ',name ,function)
-       ,@(si::expand-set-documentation name 'function doc-string)
-       ,(ext:register-with-pde whole)
-       ',name)))
+(defmacro bclasp-define-compiler-macro (&whole whole name vl &rest body &environment env)
+  ;; CLHS doesn't actually say d-c-m has compile time effects, but it's nice to match defmacro
+  `(eval-when (:compile-toplevel :load-toplevel :execute)
+     (core:setf-bclasp-compiler-macro-function
+      ',name
+      (function ,(ext:parse-compiler-macro name vl body env)))
+     ',name))
 
 (defun bclasp-compiler-macro-function (name &optional env)
   ;;  (declare (ignorable env))
@@ -165,25 +173,13 @@ VARIABLE doc and can be retrieved by (DOCUMENTATION 'SYMBOL 'VARIABLE)."
 
 (export '(bclasp-compiler-macroexpand-1 bclasp-compiler-macroexpand))
 
-(defmacro define-compiler-macro (&whole whole name vl &rest body)
-  (multiple-value-bind (function pprint doc-string)
-      (sys::expand-defmacro name vl body 'cl:define-compiler-macro)
-    (declare (ignore pprint))
-    (setq function `(function ,function))
-    (when *dump-defun-definitions*
-      (print function)
-      (setq function `(si::bc-disassemble ,function)))
-    ;; CLHS doesn't actually say d-c-m has compile time effects, but it's nice to match defmacro
-    `(eval-when (:compile-toplevel :load-toplevel :execute)
-       (core:setf-compiler-macro-function ',name ,function)
-       ,@(si::expand-set-documentation name 'function doc-string)
-       ,(ext:register-with-pde whole)
-       ',name)))
-
-(defun compiler-macro-function (name &optional env)
-  ;;  (declare (ignorable env))
-  (core:get-compiler-macro-function name env))
-;;  (values (get-sysprop name 'sys::compiler-macro)))
+(defmacro define-compiler-macro (&whole whole name vl &rest body &environment env)
+  ;; CLHS doesn't actually say d-c-m has compile time effects, but it's nice to match defmacro
+  `(eval-when (:compile-toplevel :load-toplevel :execute)
+     (funcall #'(setf compiler-macro-function)
+              (function ,(ext:parse-compiler-macro name vl body env))
+              ',name)
+     ',name))
 
 (defun compiler-macroexpand-1 (form &optional env)
   (if (atom form)
@@ -223,8 +219,7 @@ VARIABLE doc and can be retrieved by (DOCUMENTATION 'SYMBOL 'VARIABLE)."
   "Syntax: (loop {form}*)
 Establishes a NIL block and executes FORMs repeatedly.  The loop is normally
 terminated by a non-local exit."
-  `(BLOCK NIL (TAGBODY ,tag (PROGN ,@body) (GO ,tag))))
-)
+  `(BLOCK NIL (TAGBODY ,tag (PROGN ,@body) (GO ,tag)))))
 
 (defmacro lambda (&rest body) `(function (lambda ,@body)))
 
@@ -273,8 +268,7 @@ TESTs evaluates to non-NIL."
 			   `(PROGN ,@(cdr l))))
 	    (setq form (if (endp (cddr l))
 			   `(IF ,(car l) ,(cadr l) ,form)
-			   `(IF ,(car l) (PROGN ,@(cdr l)) ,form))))))
-  )
+			   `(IF ,(car l) (PROGN ,@(cdr l)) ,form)))))))
 
 ; program feature
 
@@ -284,8 +278,7 @@ Establishes a NIL block, binds each VAR to the value of INIT (which defaults
 to NIL) in parallel, and executes STATEMENTs.  Returns NIL."
   (multiple-value-setq (decl body)
     (find-declarations body))
-  `(BLOCK NIL (LET ,vl ,@decl (TAGBODY ,@body)))
-  )
+  `(BLOCK NIL (LET ,vl ,@decl (TAGBODY ,@body))))
 
 (defmacro prog* (vl &rest body &aux (decl nil))
   "Syntax: (prog* ({var | (var [init])}*) {decl}* {tag | statement}*)
@@ -293,17 +286,17 @@ Establishes a NIL block, binds each VAR to the value of INIT (which defaults
 to NIL) sequentially, and executes STATEMENTs.  Returns NIL."
   (multiple-value-setq (decl body)
     (find-declarations body))
-  `(BLOCK NIL (LET* ,vl ,@decl (TAGBODY ,@body)))
-  )
+  `(BLOCK NIL (LET* ,vl ,@decl (TAGBODY ,@body))))
 
 ; sequencing
 
 (defmacro prog1 (first &rest body &aux (sym (gensym)))
   "Syntax: (prog1 first-form {form}*)
 Evaluates FIRST-FORM and FORMs in order.  Returns the value of FIRST-FORM."
-  (if (null body) first
-  `(LET ((,sym ,first))
-    ,@body ,sym)))
+  (if (null body)
+      first
+      `(LET ((,sym ,first))
+         ,@body ,sym)))
 
 
 
@@ -311,8 +304,9 @@ Evaluates FIRST-FORM and FORMs in order.  Returns the value of FIRST-FORM."
   "Syntax: (prog2 first-form second-form {forms}*)
 Evaluates FIRST-FORM, SECOND-FORM, and FORMs in order.  Returns the value of
 SECOND-FORM."
-  `(PROGN ,first (LET ((,sym ,second))
-		       ,@body ,sym)))
+  `(PROGN ,first
+          (LET ((,sym ,second))
+            ,@body ,sym)))
 
 ; multiple values
 
@@ -392,29 +386,22 @@ values of the last FORM.  If no FORM is given, returns NIL."
 (defmacro return (&optional (val nil)) `(RETURN-FROM NIL ,val))
 
 ;; Declarations
-(let ()
 (defmacro declaim (&rest decl-specs)
-  (if (cdr decl-specs)
-    `(eval-when (:compile-toplevel :load-toplevel :execute)
-       (mapcar #'proclaim ',decl-specs))
-    `(eval-when (:compile-toplevel :load-toplevel :execute)
-       (proclaim ',(car decl-specs)))))
-)
-
-(let ()
-  (defmacro c-declaim (&rest decl-specs)
-    (if (cdr decl-specs)
-	`(eval-when (:compile-toplevel)
-	   (mapcar #'proclaim ',decl-specs))
-	`(eval-when (:compile-toplevel)
-	   (proclaim ',(car decl-specs)))))
-  )
-
+  `(eval-when (:compile-toplevel :load-toplevel :execute)
+     ,@(mapcar #'(lambda (decl-spec)
+                   `(proclaim ',decl-spec))
+               decl-specs)))
 
 (defmacro in-package (name)
   `(eval-when (:compile-toplevel :load-toplevel :execute)
      (si::select-package ,(string name))
      *package*))
+
+(defun (setf symbol-macro) (expansion name)
+  (put-sysprop name 'core:symbol-macro
+               (lambda (form env)
+                 (declare (ignore form env))
+                 expansion)))
 
 (defmacro define-symbol-macro (&whole whole symbol expansion)
   (cond ((not (symbolp symbol))
@@ -425,11 +412,7 @@ values of the last FORM.  If no FORM is given, returns NIL."
 		symbol))
 	(t
 	 `(eval-when (:compile-toplevel :load-toplevel :execute)
-	   (put-sysprop ',symbol 'si::symbol-macro 
-                        (lambda (form env) 
-                          (declare (ignore form env))
-                          ',expansion))
-	   ,(ext:register-with-pde whole)
+            (funcall #'(setf symbol-macro) ',expansion ',symbol)
 	   ',symbol))))
 
 (defmacro nth-value (n expr)

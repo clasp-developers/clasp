@@ -135,7 +135,7 @@
   (let ((new-frames (add-interpreter-frames orig-frames)))
     (nreverse new-frames)))
 
-(defconstant +interpreted-closure-entry-point+ "core::interpretedClosureEntryPoint")
+(defconstant-equal +interpreted-closure-entry-point+ "core::interpretedClosureEntryPoint")
 (defconstant +interpreted-closure-entry-point-length+ (length +interpreted-closure-entry-point+))
 (defun add-interpreter-frames (frames)
   (let (new-frames)

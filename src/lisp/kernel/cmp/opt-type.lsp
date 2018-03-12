@@ -22,9 +22,8 @@
               (and (base-string-p object)
                    (simple-string-p object))))
           ((and (symbolp type)
-                (let ((predicate (cdr (assoc type +known-typep-predicates+))))
-                  (and predicate
-                       `(,predicate ,object)))))
+                (let ((predicate (simple-type-predicate type)))
+                  (and predicate `(,predicate ,object)))))
           ((and (proper-list-p type)
                 (eq (car type) 'member))
            `(let ((object ,object))

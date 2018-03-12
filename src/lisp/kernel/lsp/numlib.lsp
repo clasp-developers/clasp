@@ -85,8 +85,6 @@
              (defconstant long-float-negative-infinity (- a))))
       (si::trap-fpe bits t))))
 
-(defconstant imag-one #C(0.0 1.0))
-
 (defun isqrt (i)
   "Args: (integer)
 Returns the integer square root of INTEGER."
@@ -121,7 +119,7 @@ zero.  Otherwise, returns the value of (/ NUMBER (ABS NUMBER))"
   "Args: (radians)
 Returns a complex number whose realpart and imagpart are the values of (COS
 RADIANS) and (SIN RADIANS) respectively."
-  (exp (* imag-one x)))
+  (exp (* #c(0.0 1.0) x)))
 
 (defun asin (x)
   "Args: (number)

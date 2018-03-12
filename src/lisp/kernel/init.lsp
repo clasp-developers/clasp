@@ -14,7 +14,7 @@
           cons-car
           cons-cdr))
 (sys:*make-special 'core::*dump-defmacro-definitions*)
-(setq *dump-defmacro-definitions* NIL)
+(setq *dump-defmacro-definitions* nil)
 (sys:*make-special 'core::*dump-defun-definitions*)
 (setq *dump-defun-definitions* nil)
 (export '*trace-startup*)
@@ -146,9 +146,7 @@
           load-encoding
           make-encoding
           assume-right-type))
-(core:*make-special '*register-with-pde-hook*)
 (core:*make-special '*module-provider-functions*)
-(setq *register-with-pde-hook* ())
 (core:*make-special '*source-location*)
 (setq *source-location* nil)
 (export 'current-source-location)
@@ -168,20 +166,6 @@
                   (if location (return-from cur-src-loc location)))
                 (setq cur (cdr cur))
                 (go top)))))))
-
-(export '*register-with-pde-hook*)
-(core:fset 'register-with-pde
-             #'(lambda (whole env)
-                 (let* ((definition (second whole))
-                        (output-form (third whole)))
-                   `(if ext:*register-with-pde-hook*
-                        (funcall ext:*register-with-pde-hook*
-                                 (copy-tree *source-location*)
-                                 ,definition
-                                 ,output-form)
-                        ,output-form)))
-             t)
-(export 'register-with-pde)
 
 (eval-when (:execute :compile-toplevel :load-toplevel)
   (core:select-package :core))
@@ -232,20 +216,18 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 Declares the global variable named by NAME as a special variable and assigns
 the value of FORM to the variable.  The doc-string DOC, if supplied, is saved
 as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
-				  `(LOCALLY (DECLARE (SPECIAL ,var))
-				     (SYS:*MAKE-SPECIAL ',var)
-				     (SETQ ,var ,form))))
+                              `(if (core:symbol-constantp ',var)
+                                   nil
+                                   (progn
+                                     (set ',var ,form)
+                                     (funcall #'(setf core:symbol-constantp) t ',var)))))
 	  t )
 (export 'defconstant)
 
-
-(defconstant +ecl-optimization-settings+
-  '((optimize (safety 2) (speed 1) (debug 1) (space 1))
-    (ext::check-arguments-type nil)))
-(defconstant +ecl-unsafe-declarations+
-  '(optimize (safety 0) (speed 3) (debug 0) (space 0)))
-(defconstant +ecl-safe-declarations+
-  '(optimize (safety 2) (speed 1) (debug 1) (space 1)))
+(if (boundp '+ecl-safe-declarations+)
+    nil ; don't redefine constant
+    (defconstant +ecl-safe-declarations+
+      '(optimize (safety 2) (speed 1) (debug 1) (space 1))))
 
 
 
@@ -386,13 +368,11 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
                      (function (lambda (&optional (decl) (body) (doc) &rest rest)
                        (declare (ignore rest))
                        (if decl (setq decl (list (cons 'declare decl))))
-                       (let ((func `#'(lambda ,lambda-list ,@decl ,@doc (block ,name ,@body))))
+                       (let ((func `#'(lambda ,lambda-list ,@decl ,@doc (block ,(si::function-block-name name) ,@body))))
                          ;;(bformat t "PRIMITIVE DEFUN defun --> %s\n" func )
-                         (ext::register-with-pde
-                          def
                           `(progn (eval-when (:compile-toplevel)
                                     (cmp::register-global-function-def 'defun ',name))
-                                  (si:fset ',name ,func nil nil ',lambda-list))))))
+                                  (si:fset ',name ,func nil ',lambda-list)))))
                    (si::process-declarations lambda-body nil #| No documentation until the real DEFUN is defined |#))))
            t))
 

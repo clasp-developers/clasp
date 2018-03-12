@@ -45,15 +45,16 @@ Builds a new function which accepts any number of arguments but always outputs N
     (error "Symbol ~s is a declaration specifier and cannot be used to name a new type" name)))
 (export 'create-type-name)
 
-(defun do-deftype (name form function)
+(defun type-expander (name)
+  (get-sysprop name 'deftype-definition))
+
+(defun (setf type-expander) (function name)
   (unless (symbolp name)
     (error "~s is not a valid type specifier" name))
   (create-type-name name)
-  (put-sysprop name 'DEFTYPE-FORM form)
-  (put-sysprop name 'DEFTYPE-DEFINITION
-               (if (functionp function) function (constantly function)))
+  (put-sysprop name 'DEFTYPE-DEFINITION function)
   (subtypep-clear-cache)
-  name)
+  function)
 
 
 
@@ -81,25 +82,20 @@ by (documentation 'NAME 'type)."
 	(let ((variable (first l)))
 	  (when (and (symbolp variable)
 		     (not (member variable lambda-list-keywords)))
-	    (cons-setf-car l `(,variable '*))))))
+            (rplaca l `(,variable '*))))))
     (multiple-value-bind (decls lambda-body doc)
 	(process-declarations body t)
+      ;; FIXME: Use FORMAT to produce a default docstring. Maybe.
       (if doc (setq doc (list doc)))
-      (let ((function `(function 
-			#+ecl(LAMBDA-BLOCK ,name ,lambda-list ,@body)
-			#+clasp(lambda ,lambda-list 
-			 (declare (core:lambda-name ,name) ,@decls) 
-			 ,@doc 
-			 (block ,name ,@lambda-body))
-			)))
-	(when (and (null lambda-list) (consp body) (null (rest body)))
-	  (let ((form (first body)))
-	    (when (constantp form env)
-	      (setq function form))))
-	`(eval-when (:compile-toplevel :load-toplevel :execute)
-	   ,@(si::expand-set-documentation name 'type doc)
-	   (do-deftype ',name '(DEFTYPE ,name ,lambda-list ,@body)
-		       ,function))))))
+      `(eval-when (:compile-toplevel :load-toplevel :execute)
+         ,@(si::expand-set-documentation name 'type doc)
+         (funcall #'(setf type-expander)
+                  #'(lambda ,lambda-list
+                      (declare (core:lambda-name ,name) ,@decls)
+                      ,@doc
+                      (block ,name ,@lambda-body))
+                  ',name)
+         ',name))))
 
 
 ;;; Some DEFTYPE definitions.
@@ -319,54 +315,55 @@ and is not adjustable."
 	   (array-has-fill-pointer-p x)
 	   (array-displacement x))))
 
-(eval-when (:execute :load-toplevel :compile-toplevel)
-  (defconstant +known-typep-predicates+
-    '((ARRAY . ARRAYP)
-      (ATOM . ATOM)
-      #-unicode
-      (EXTENDED-CHAR . CONSTANTLY-NIL)
-      (BASE-CHAR . BASE-CHAR-P)
-      (BASE-STRING . BASE-STRING-P)
-      (BIT-VECTOR . BIT-VECTOR-P)
-      (CHARACTER . CHARACTERP)
-      (COMPILED-FUNCTION . COMPILED-FUNCTION-P)
-      (COMPLEX . COMPLEXP)
-      (COMPLEX-ARRAY . COMPLEX-ARRAY-P)
-      (CONS . CONSP)
-      (DOUBLE-FLOAT . CORE:DOUBLE-FLOAT-P)
-      (FLOAT . FLOATP)
-      (FUNCTION . FUNCTIONP)
-      (HASH-TABLE . HASH-TABLE-P)
-      (INTEGER . INTEGERP)
-      (FIXNUM . SI::FIXNUMP)
-      (KEYWORD . KEYWORDP)
-      (LIST . LISTP)
-      (LOGICAL-PATHNAME . LOGICAL-PATHNAME-P)
-      (NIL . CONSTANTLY-NIL)
-      (NULL . NULL)
-      (NUMBER . NUMBERP)
-      (PACKAGE . PACKAGEP)
-      (RANDOM-STATE . RANDOM-STATE-P)
-      (RATIONAL . RATIONALP)
-      (PATHNAME . PATHNAMEP)
-      (READTABLE . READTABLEP)
-      (REAL . REALP)
-      (SIMPLE-ARRAY . SIMPLE-ARRAY-P)
-      (SIMPLE-BIT-VECTOR . SIMPLE-BIT-VECTOR-P)
-      (SIMPLE-STRING . SIMPLE-STRING-P)
-      (SIMPLE-VECTOR . SIMPLE-VECTOR-P)
-      (SINGLE-FLOAT . CORE:SINGLE-FLOAT-P)
-      (STREAM . STREAMP)
-      (STRING . STRINGP)
-      (STRUCTURE . SYS:STRUCTUREP)
-      (SYMBOL . SYMBOLP)
-      (T . CONSTANTLY-T)
-      (VECTOR . VECTORP))))
+(defun simple-type-predicate (name)
+  ;; For some built in types, returns the name of an indicator function.
+  ;; That is, (typep object name) = (funcall (simple-type-predicate name) object)
+  ;; Otherwise NIL.
+  (case name
+    (ARRAY 'ARRAYP)
+    (ATOM 'ATOM)
+    #-unicode
+    (EXTENDED-CHAR 'CONSTANTLY-NIL)
+    (BASE-CHAR 'BASE-CHAR-P)
+    (BASE-STRING 'BASE-STRING-P)
+    (BIT-VECTOR 'BIT-VECTOR-P)
+    (CHARACTER 'CHARACTERP)
+    (COMPILED-FUNCTION 'COMPILED-FUNCTION-P)
+    (COMPLEX 'COMPLEXP)
+    (COMPLEX-ARRAY 'COMPLEX-ARRAY-P)
+    (CONS 'CONSP)
+    (DOUBLE-FLOAT 'CORE:DOUBLE-FLOAT-P)
+    (FLOAT 'FLOATP)
+    (FUNCTION 'FUNCTIONP)
+    (HASH-TABLE 'HASH-TABLE-P)
+    (INTEGER 'INTEGERP)
+    (FIXNUM 'SI::FIXNUMP)
+    (KEYWORD 'KEYWORDP)
+    (LIST 'LISTP)
+    (LOGICAL-PATHNAME 'LOGICAL-PATHNAME-P)
+    (NIL 'CONSTANTLY-NIL)
+    (NULL 'NULL)
+    (NUMBER 'NUMBERP)
+    (PACKAGE 'PACKAGEP)
+    (RANDOM-STATE 'RANDOM-STATE-P)
+    (RATIONAL 'RATIONALP)
+    (PATHNAME 'PATHNAMEP)
+    (READTABLE 'READTABLEP)
+    (REAL 'REALP)
+    (SIMPLE-ARRAY 'SIMPLE-ARRAY-P)
+    (SIMPLE-BIT-VECTOR 'SIMPLE-BIT-VECTOR-P)
+    (SIMPLE-STRING 'SIMPLE-STRING-P)
+    (SIMPLE-VECTOR 'SIMPLE-VECTOR-P)
+    (SINGLE-FLOAT 'CORE:SINGLE-FLOAT-P)
+    (STREAM 'STREAMP)
+    (STRING 'STRINGP)
+    (STRUCTURE 'SYS:STRUCTUREP)
+    (SYMBOL 'SYMBOLP)
+    ((T) 'CONSTANTLY-T)
+    (VECTOR 'VECTORP)
+    (t nil)))
 
-(dolist (l +known-typep-predicates+)
-  (put-sysprop (car l) 'TYPE-PREDICATE (cdr l)))
-
-(defconstant +upgraded-array-element-types+
+(defconstant-equal +upgraded-array-element-types+
   '#.(append '(NIL BASE-CHAR #+unicode CHARACTER BIT EXT:BYTE8 EXT:INTEGER8)
              '(EXT:BYTE16 EXT:INTEGER16)
              '(EXT:BYTE32 EXT:INTEGER32)
@@ -445,14 +442,14 @@ and is not adjustable."
 Returns T if X belongs to TYPE; NIL otherwise."
   (declare (ignore env))
   (cond ((symbolp type)
-	 (let ((f (get-sysprop type 'TYPE-PREDICATE)))
+	 (let ((f (simple-type-predicate type)))
 	   (cond (f (return-from typep (funcall f object)))
 		 ((eq (type-of object) type) (return-from typep t))
 		 (t (setq tp type i nil)))))
 	((consp type)
 	 (setq tp (car type) i (cdr type)))
 	#+clos
-	(#-clasp(sys:instancep type) #+clasp(clos::classp type)
+	((clos::classp type)
 	 (return-from typep (si::subclassp (class-of object) type)))
 	(t
 	 (error-type-specifier type)))
@@ -547,23 +544,13 @@ Returns T if X belongs to TYPE; NIL otherwise."
           (or (endp (cdr i)) (match-dimensions object (second i)))))
     (t
      (cond
-           ((get-sysprop tp 'DEFTYPE-DEFINITION)
-            (typep object (apply (get-sysprop tp 'DEFTYPE-DEFINITION) i)))
+           ((type-expander tp)
+            (typep object (apply (type-expander tp) i)))
 	   ((consp i)
 	    (error-type-specifier type))
-           #+clos
 	   ((setq c (find-class type nil))
 	    ;; Follow the inheritance chain
 	    (si::subclassp (class-of object) c))
-	   #-clos
-	   ((get-sysprop tp 'IS-A-STRUCTURE)
-            (when (sys:structurep object)
-	      ;; Follow the chain of structure-include.
-	      (do ((stp (sys:structure-name object)
-			(get-sysprop stp 'STRUCTURE-INCLUDE)))
-		  ((eq tp stp) t)
-		(when (null (get-sysprop stp 'STRUCTURE-INCLUDE))
-		  (return nil)))))
 	   (t
 	    (error-type-specifier type))))))
 
@@ -579,13 +566,9 @@ Returns T if X belongs to TYPE; NIL otherwise."
            (special clos::*class-precedence-list-ndx*
                     clos::*class-name-ndx*))
   (macrolet ((clos::class-precedence-list (x)
-	       `(si::instance-ref ,x
-                                  #+ecl clos::+class-precedence-list-ndx+
-                                  #+clasp clos::*class-precedence-list-ndx*))
+	       `(si::instance-ref ,x clos::*class-precedence-list-ndx*))
 	     (class-name (x)
-	       `(si::instance-ref ,x
-                                  #+ecl clos::+class-name-ndx+
-                                  #+clasp clos::*class-name-ndx*)))
+	       `(si::instance-ref ,x clos::*class-name-ndx*)))
     (let* ((x-class (class-of object)))
       (declare (class x-class))
       (if (eq x-class class)
@@ -598,11 +581,6 @@ Returns T if X belongs to TYPE; NIL otherwise."
 		  (when (eq (class-name c) class)
 		    (return t)))))))))
 
-#+(and clos ecl-min)
-(defun clos::classp (foo)
-  (declare (ignore foo))
-  nil)
-
 ;;************************************************************
 ;;			NORMALIZE-TYPE
 ;;************************************************************
@@ -613,16 +591,16 @@ Returns T if X belongs to TYPE; NIL otherwise."
 (defun normalize-type (type &aux tp i fd)
   ;; Loops until the car of type has no DEFTYPE definition.
   (cond ((symbolp type)
-	 (if (setq fd (get-sysprop type 'DEFTYPE-DEFINITION))
-	   (normalize-type (funcall fd))
-	   (values type nil)))
+	 (if (setq fd (type-expander type))
+             (normalize-type (funcall fd))
+             (values type nil)))
 	#+clos
 	((clos::classp type) (values type nil))
 	((atom type)
 	 (error-type-specifier type))
 	((progn
 	   (setq tp (car type) i (cdr type))
-	   (setq fd (get-sysprop tp 'DEFTYPE-DEFINITION)))
+	   (setq fd (type-expander tp)))
 	 (normalize-type (apply fd i)))
 	((and (eq tp 'INTEGER) (consp (cadr i)))
 	 (values tp (list (car i) (1- (caadr i)))))
@@ -630,18 +608,17 @@ Returns T if X belongs to TYPE; NIL otherwise."
 
 (defun expand-deftype (type)
   (cond ((symbolp type)
-	 (let ((fd (get-sysprop type 'DEFTYPE-DEFINITION)))
+	 (let ((fd (type-expander type)))
 	   (if fd
 	       (expand-deftype (funcall fd))
 	       type)))
 	((and (consp type)
 	      (symbolp (first type)))
-	 (let ((fd (get-sysprop (first type) 'DEFTYPE-DEFINITION)))
+	 (let ((fd (type-expander (first type))))
 	   (if fd
 	       (expand-deftype (funcall fd (rest type)))
 	       type)))
-	(t
-	 type)))
+	(t type)))
 
 ;;************************************************************
 ;;			COERCE
@@ -1135,139 +1112,139 @@ if not possible."
 ;;
 ;; Note 2: All built in types listed here have to be symbols.
 ;;
-(defconstant +built-in-type-list+
-	     '((SYMBOL)
-	       (KEYWORD NIL SYMBOL)
-	       (PACKAGE)
-	       (COMPILED-FUNCTION)
-	       (FUNCTION (OR COMPILED-FUNCTION GENERIC-FUNCTION))
+(defconstant-equal +built-in-type-list+
+    '((SYMBOL)
+      (KEYWORD NIL SYMBOL)
+      (PACKAGE)
+      (COMPILED-FUNCTION)
+      (FUNCTION (OR COMPILED-FUNCTION GENERIC-FUNCTION))
+      
+      (INTEGER (INTEGER * *))
+      (SINGLE-FLOAT (SINGLE-FLOAT * *))
+      (DOUBLE-FLOAT (DOUBLE-FLOAT * *))
+      #+long-float
+      (LONG-FLOAT (LONG-FLOAT * *))
+      (RATIO (RATIO * *))
+      
+      (RATIONAL (OR INTEGER RATIO))
+      (FLOAT (OR SINGLE-FLOAT DOUBLE-FLOAT
+              #+long-float LONG-FLOAT))
+      (REAL (OR INTEGER
+             #+short-float SHORT-FLOAT
+             SINGLE-FLOAT
+             DOUBLE-FLOAT
+             #+long-float LONG-FLOAT
+             RATIO))
+      (COMPLEX (COMPLEX REAL))
 
-	       (INTEGER (INTEGER * *))
-	       (SINGLE-FLOAT (SINGLE-FLOAT * *))
-	       (DOUBLE-FLOAT (DOUBLE-FLOAT * *))
-	       #+long-float
-	       (LONG-FLOAT (LONG-FLOAT * *))
-	       (RATIO (RATIO * *))
+      (NUMBER (OR REAL COMPLEX))
 
-	       (RATIONAL (OR INTEGER RATIO))
-	       (FLOAT (OR SINGLE-FLOAT DOUBLE-FLOAT
-                       #+long-float LONG-FLOAT))
-               (REAL (OR INTEGER
-                      #+short-float SHORT-FLOAT
-                      SINGLE-FLOAT
-                      DOUBLE-FLOAT
-                      #+long-float LONG-FLOAT
-                      RATIO))
-               (COMPLEX (COMPLEX REAL))
+      (CHARACTER)
+      #-unicode
+      (BASE-CHAR CHARACTER)
+      #+unicode
+      (BASE-CHAR NIL CHARACTER)
+      (STANDARD-CHAR NIL BASE-CHAR)
 
-	       (NUMBER (OR REAL COMPLEX))
+      (CONS)
+      (NULL (MEMBER NIL))
+      (LIST (OR CONS (MEMBER NIL)))
 
-	       (CHARACTER)
-               #-unicode
-	       (BASE-CHAR CHARACTER)
-               #+unicode
-	       (BASE-CHAR NIL CHARACTER)
-	       (STANDARD-CHAR NIL BASE-CHAR)
+      (ARRAY (ARRAY * *))
+      (SIMPLE-ARRAY (SIMPLE-ARRAY * *))
+      (SIMPLE-VECTOR (SIMPLE-ARRAY T (*)))
+      (SIMPLE-BIT-VECTOR (SIMPLE-ARRAY BIT (*)))
+      (VECTOR (ARRAY * (*)))
 
-	       (CONS)
-	       (NULL (MEMBER NIL))
-	       (LIST (OR CONS (MEMBER NIL)))
+      #+clasp(core:simple-vector-byte8-t (simple-array ext::byte8 (*)))
+      #+clasp(core:simple-vector-byte16-t (simple-array ext::byte16 (*)))
+      #+clasp(core:simple-vector-byte32-t (simple-array ext::byte32 (*)))
+      #+clasp(core:simple-vector-byte64-t (simple-array ext::byte64 (*)))
+      #+clasp(core:simple-vector-int8-t (simple-array ext::integer8 (*)))
+      #+clasp(core:simple-vector-int16-t (simple-array ext::integer16 (*)))
+      #+clasp(core:simple-vector-int32-t (simple-array ext::integer32 (*)))
+      #+clasp(core:simple-vector-int64-t (simple-array ext::integer64 (*)))
+      #+clasp(core:simple-vector-size-t (simple-array ext::cl-index (*)))
+      #+clasp(core:simple-vector-fixnum (simple-array ext::cl-fixnum (*)))
+      #+clasp(core:simple-vector-double (simple-array double-float (*)))
+      #+clasp(core:simple-vector-float (simple-array single-float (*)))
+      #+clasp(core:MDARRAY-BASE-CHAR (array base-char (*)))
+      #+clasp(core:MDARRAY-BIT (array bit (*)))
+      #+clasp(core:MDARRAY-BYTE16-T (array ext::BYTE16 (*)))
+      #+clasp(core:MDARRAY-BYTE32-T (array ext::BYTE32 (*)))
+      #+clasp(core:MDARRAY-BYTE64-T (array ext::BYTE64 (*)))
+      #+clasp(core:MDARRAY-BYTE8-T (array ext::BYTE8 (*)))
+      #+clasp(core:MDARRAY-CHARACTER (array character (*)))
+      #+clasp(core:MDARRAY-DOUBLE (array double-float (*)))
+      #+clasp(core:MDARRAY-FIXNUM (array ext::cl-fixnum (*)))
+      #+clasp(core:MDARRAY-FLOAT (array single-float (*)))
+      #+clasp(core:MDARRAY-INT16-T (array ext::integer16 (*)))
+      #+clasp(core:MDARRAY-INT32-T (array ext::integer32 (*)))
+      #+clasp(core:MDARRAY-INT64-T (array ext::integer64 (*)))
+      #+clasp(core:MDARRAY-INT8-T (array ext::integer8 (*)))
+      #+clasp(core:MDARRAY-SIZE-T (array ext::cl-index (*)))
+      #+clasp(core:MDARRAY-T (array T (*)))
+      #+clasp(core:SIMPLE-MDARRAY-BASE-CHAR (simple-array base-char (*)))
+      #+clasp(core:SIMPLE-MDARRAY-BIT (simple-array bit (*)))
+      #+clasp(core:SIMPLE-MDARRAY-BYTE16-T (simple-array ext::byte16 (*)))
+      #+clasp(core:SIMPLE-MDARRAY-BYTE32-T (simple-array ext::BYTE32 (*)))
+      #+clasp(core:SIMPLE-MDARRAY-BYTE64-T (simple-array ext::BYTE64 (*)))
+      #+clasp(core:SIMPLE-MDARRAY-BYTE8-T (simple-array ext::BYTE8 (*)))
+      #+clasp(core:SIMPLE-MDARRAY-CHARACTER (simple-array CHARACTER (*)))
+      #+clasp(core:SIMPLE-MDARRAY-DOUBLE (simple-array DOUBLE-FLOAT (*)))
+      #+clasp(core:SIMPLE-MDARRAY-FIXNUM (simple-array ext::cl-fixnum (*)))
+      #+clasp(core:SIMPLE-MDARRAY-FLOAT (simple-array SINGLE-FLOAT (*)))
+      #+clasp(core:SIMPLE-MDARRAY-INT16-T (simple-array ext::INTEGER16 (*)))
+      #+clasp(core:SIMPLE-MDARRAY-INT32-T (simple-array ext::INTEGER32 (*)))
+      #+clasp(core:SIMPLE-MDARRAY-INT64-T (simple-array ext::INTEGER64 (*)))
+      #+clasp(core:SIMPLE-MDARRAY-INT8-T (simple-array  ext::INTEGER8 (*)))
+      #+clasp(core:SIMPLE-MDARRAY-SIZE-T (simple-array ext::cl-index (*)))
+      #+clasp(core:SIMPLE-MDARRAY-T (simple-array T (*)))
+      (STRING (ARRAY CHARACTER (*)))
+      #+unicode
+      (BASE-STRING (ARRAY BASE-CHAR (*)))
+      (SIMPLE-STRING (SIMPLE-ARRAY CHARACTER (*)))
+      #+unicode
+      (SIMPLE-BASE-STRING (SIMPLE-ARRAY BASE-CHAR (*)))
+      (BIT-VECTOR (ARRAY BIT (*)))
 
-	       (ARRAY (ARRAY * *))
- 	       (SIMPLE-ARRAY (SIMPLE-ARRAY * *))
-	       (SIMPLE-VECTOR (SIMPLE-ARRAY T (*)))
-	       (SIMPLE-BIT-VECTOR (SIMPLE-ARRAY BIT (*)))
-	       (VECTOR (ARRAY * (*)))
+      (SEQUENCE (OR CONS (MEMBER NIL) (ARRAY * (*))))
 
-               #+clasp(core:simple-vector-byte8-t (simple-array ext::byte8 (*)))
-               #+clasp(core:simple-vector-byte16-t (simple-array ext::byte16 (*)))
-               #+clasp(core:simple-vector-byte32-t (simple-array ext::byte32 (*)))
-               #+clasp(core:simple-vector-byte64-t (simple-array ext::byte64 (*)))
-               #+clasp(core:simple-vector-int8-t (simple-array ext::integer8 (*)))
-               #+clasp(core:simple-vector-int16-t (simple-array ext::integer16 (*)))
-               #+clasp(core:simple-vector-int32-t (simple-array ext::integer32 (*)))
-               #+clasp(core:simple-vector-int64-t (simple-array ext::integer64 (*)))
-               #+clasp(core:simple-vector-size-t (simple-array ext::cl-index (*)))
-               #+clasp(core:simple-vector-fixnum (simple-array ext::cl-fixnum (*)))
-               #+clasp(core:simple-vector-double (simple-array double-float (*)))
-               #+clasp(core:simple-vector-float (simple-array single-float (*)))
-               #+clasp(core:MDARRAY-BASE-CHAR (array base-char (*)))
-               #+clasp(core:MDARRAY-BIT (array bit (*)))
-               #+clasp(core:MDARRAY-BYTE16-T (array ext::BYTE16 (*)))
-               #+clasp(core:MDARRAY-BYTE32-T (array ext::BYTE32 (*)))
-               #+clasp(core:MDARRAY-BYTE64-T (array ext::BYTE64 (*)))
-               #+clasp(core:MDARRAY-BYTE8-T (array ext::BYTE8 (*)))
-               #+clasp(core:MDARRAY-CHARACTER (array character (*)))
-               #+clasp(core:MDARRAY-DOUBLE (array double-float (*)))
-               #+clasp(core:MDARRAY-FIXNUM (array ext::cl-fixnum (*)))
-               #+clasp(core:MDARRAY-FLOAT (array single-float (*)))
-               #+clasp(core:MDARRAY-INT16-T (array ext::integer16 (*)))
-               #+clasp(core:MDARRAY-INT32-T (array ext::integer32 (*)))
-               #+clasp(core:MDARRAY-INT64-T (array ext::integer64 (*)))
-               #+clasp(core:MDARRAY-INT8-T (array ext::integer8 (*)))
-               #+clasp(core:MDARRAY-SIZE-T (array ext::cl-index (*)))
-               #+clasp(core:MDARRAY-T (array T (*)))
-               #+clasp(core:SIMPLE-MDARRAY-BASE-CHAR (simple-array base-char (*)))
-               #+clasp(core:SIMPLE-MDARRAY-BIT (simple-array bit (*)))
-               #+clasp(core:SIMPLE-MDARRAY-BYTE16-T (simple-array ext::byte16 (*)))
-               #+clasp(core:SIMPLE-MDARRAY-BYTE32-T (simple-array ext::BYTE32 (*)))
-               #+clasp(core:SIMPLE-MDARRAY-BYTE64-T (simple-array ext::BYTE64 (*)))
-               #+clasp(core:SIMPLE-MDARRAY-BYTE8-T (simple-array ext::BYTE8 (*)))
-               #+clasp(core:SIMPLE-MDARRAY-CHARACTER (simple-array CHARACTER (*)))
-               #+clasp(core:SIMPLE-MDARRAY-DOUBLE (simple-array DOUBLE-FLOAT (*)))
-               #+clasp(core:SIMPLE-MDARRAY-FIXNUM (simple-array ext::cl-fixnum (*)))
-               #+clasp(core:SIMPLE-MDARRAY-FLOAT (simple-array SINGLE-FLOAT (*)))
-               #+clasp(core:SIMPLE-MDARRAY-INT16-T (simple-array ext::INTEGER16 (*)))
-               #+clasp(core:SIMPLE-MDARRAY-INT32-T (simple-array ext::INTEGER32 (*)))
-               #+clasp(core:SIMPLE-MDARRAY-INT64-T (simple-array ext::INTEGER64 (*)))
-               #+clasp(core:SIMPLE-MDARRAY-INT8-T (simple-array  ext::INTEGER8 (*)))
-               #+clasp(core:SIMPLE-MDARRAY-SIZE-T (simple-array ext::cl-index (*)))
-               #+clasp(core:SIMPLE-MDARRAY-T (simple-array T (*)))
-	       (STRING (ARRAY CHARACTER (*)))
-               #+unicode
-	       (BASE-STRING (ARRAY BASE-CHAR (*)))
-	       (SIMPLE-STRING (SIMPLE-ARRAY CHARACTER (*)))
-               #+unicode
-	       (SIMPLE-BASE-STRING (SIMPLE-ARRAY BASE-CHAR (*)))
-	       (BIT-VECTOR (ARRAY BIT (*)))
+      (HASH-TABLE)
+      (PATHNAME)
+      (LOGICAL-PATHNAME NIL PATHNAME)
 
-	       (SEQUENCE (OR CONS (MEMBER NIL) (ARRAY * (*))))
+      (BROADCAST-STREAM)
+      (CONCATENATED-STREAM)
+      (ECHO-STREAM)
+      (FILE-STREAM)
+      (STRING-STREAM)
+      (SYNONYM-STREAM)
+      (TWO-WAY-STREAM)
+      (EXT:SEQUENCE-STREAM)
+      (EXT:ANSI-STREAM (OR BROADCAST-STREAM CONCATENATED-STREAM ECHO-STREAM
+                        FILE-STREAM STRING-STREAM SYNONYM-STREAM TWO-WAY-STREAM
+                        EXT:SEQUENCE-STREAM
+                        #+clos-streams GRAY:FUNDAMENTAL-STREAM))
+      (STREAM EXT:ANSI-STREAM)
 
-	       (HASH-TABLE)
-	       (PATHNAME)
-	       (LOGICAL-PATHNAME NIL PATHNAME)
-
-	       (BROADCAST-STREAM)
-	       (CONCATENATED-STREAM)
-	       (ECHO-STREAM)
-	       (FILE-STREAM)
-	       (STRING-STREAM)
-	       (SYNONYM-STREAM)
- 	       (TWO-WAY-STREAM)
-	       (EXT:SEQUENCE-STREAM)
-	       (EXT:ANSI-STREAM (OR BROADCAST-STREAM CONCATENATED-STREAM ECHO-STREAM
-                                 FILE-STREAM STRING-STREAM SYNONYM-STREAM TWO-WAY-STREAM
-                                 EXT:SEQUENCE-STREAM
-                                 #+clos-streams GRAY:FUNDAMENTAL-STREAM))
-               (STREAM EXT:ANSI-STREAM)
-
-	       (READTABLE)
-	       #+threads (MP::PROCESS)
-	       #+threads (MP::LOCK)
-	       #+threads (MP::RWLOCK)
-	       #+threads (MP::CONDITION-VARIABLE)
-	       #+threads (MP::SEMAPHORE)
-	       #+threads (MP::BARRIER)
-	       #+threads (MP::MAILBOX)
-	       #+ffi (FOREIGN-DATA)
-	       #+sse2 (EXT:SSE-PACK (OR EXT:INT-SSE-PACK
-				     EXT:FLOAT-SSE-PACK
-				     EXT:DOUBLE-SSE-PACK))
-	       #+sse2 (EXT:INT-SSE-PACK)
-	       #+sse2 (EXT:FLOAT-SSE-PACK)
-	       #+sse2 (EXT:DOUBLE-SSE-PACK)
-               (CODE-BLOCK)
-	       ))
+      (READTABLE)
+      #+threads (MP::PROCESS)
+      #+threads (MP::LOCK)
+      #+threads (MP::RWLOCK)
+      #+threads (MP::CONDITION-VARIABLE)
+      #+threads (MP::SEMAPHORE)
+      #+threads (MP::BARRIER)
+      #+threads (MP::MAILBOX)
+      #+ffi (FOREIGN-DATA)
+      #+sse2 (EXT:SSE-PACK (OR EXT:INT-SSE-PACK
+                            EXT:FLOAT-SSE-PACK
+                            EXT:DOUBLE-SSE-PACK))
+      #+sse2 (EXT:INT-SSE-PACK)
+      #+sse2 (EXT:FLOAT-SSE-PACK)
+      #+sse2 (EXT:DOUBLE-SSE-PACK)
+      (CODE-BLOCK)
+      ))
 
 (defun hash-table-fill (ht values)
   (dolist (pair values)
@@ -1276,10 +1253,11 @@ if not possible."
       (core::hash-table-setf-gethash ht key value)))
   ht)
 
-(defconstant +built-in-types+
+(defconstant-eqx +built-in-types+
   (hash-table-fill
-     (make-hash-table :test 'eq :size 128)
-     '#.sys::+built-in-type-list+)) ;; Clasp change
+   (make-hash-table :test 'eq :size 128)
+   '#.sys::+built-in-type-list+)
+  equalp)
 
 (defun find-built-in-tag (name)
   (let (record)
@@ -1320,7 +1298,7 @@ if not possible."
 	((eq type 'T) -1)
 	((eq type 'NIL) 0)
         ((symbolp type)
-	 (let ((expander (get-sysprop type 'DEFTYPE-DEFINITION)))
+	 (let ((expander (type-expander type)))
 	   (cond (expander
 		  (canonical-type (funcall expander)))
 		 ((find-built-in-tag type))
@@ -1365,7 +1343,7 @@ if not possible."
 	   ;;(FUNCTION (register-function-type type))
 	   ;;(VALUES (register-values-type type))
 	   (FUNCTION (canonical-type 'FUNCTION))
-	   (t (let ((expander (get-sysprop (first type) 'DEFTYPE-DEFINITION)))
+	   (t (let ((expander (type-expander (first type))))
 		(if expander
 		    (canonical-type (apply expander (rest type)))
 		    (unless (assoc (first type) *elementary-types*)

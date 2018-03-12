@@ -16,7 +16,7 @@
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (setq *echo-repl-read* t))
 
-(defconstant +builtin-classes-pre-array+
+(defvar +builtin-classes-pre-array+
   (make-array (1+ #.(length +builtin-classes-list+))))
 
 ;;; ----------------------------------------------------------------------
@@ -59,9 +59,6 @@
                    (not (zerop (length existing-slots))))
           (error "~S was called on the already instantiated class ~S, but with ~S slots while it already has ~S slots."
                  'ensure-boot-class name (length direct-slots) (length existing-slots))))
-      #+ecl(when (eq name 'standard-class)
-             (defconstant +the-standard-class+ class)
-             (si:instance-class-set class class))
       ;;      (debug-boot "  (get-setf-expansion '(class-id class) ENV) -> ~a~%" (macrolet ((hack (form &environment e) `',(multiple-value-list (get-setf-expansion form e)))) (hack '(class-id class))))
       (setf (class-id                  class) name)
       (debug-boot "    (class-id class) -> ~a    name -> ~a~%" (class-id class) name)
@@ -167,14 +164,6 @@
 
 (boot-hierarchy)
 
-#+ecl
-(progn
-  (defconstant +the-t-class+ (find-class 't nil))
-  (defconstant +the-class+ (find-class 'class nil))
-  (defconstant +the-std-class+ (find-class 'std-class nil))
-  (defconstant +the-funcallable-standard-class+
-    (find-class 'funcallable-standard-class nil)))
-#+clasp
 (progn
   (dbg-boot "About to setq stuff\n")
   (setq +the-t-class+ (find-class 't nil))

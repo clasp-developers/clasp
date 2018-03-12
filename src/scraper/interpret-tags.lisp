@@ -50,6 +50,10 @@
   ((signature% :initform nil :initarg :signature% :accessor signature%)
    (provide-declaration% :initform t :initarg :provide-declaration% :accessor provide-declaration%)))
 
+(defclass expose-defun-setf (expose-code function-mixin)
+  ((signature% :initform nil :initarg :signature% :accessor signature%)
+   (provide-declaration% :initform t :initarg :provide-declaration% :accessor provide-declaration%)))
+
 (defclass expose-extern-defun (expose-code function-mixin)
   ((pointer% :initform nil :initarg :pointer% :accessor pointer%)
    (function-ptr% :initform nil :initarg :function-ptr% :accessor function-ptr%)))
@@ -347,7 +351,47 @@ This interprets the tags and generates objects that are used to generate code."
                                            :signature% signature)
                             functions
                             :test #'string=
-                            :key #'lisp-name% ))
+                            :key #'lisp-name%))
+                 (setf cur-lambda nil
+                       cur-declare nil
+                       cur-docstring nil
+                       cur-name nil))))
+            (tags:cl-defun-setf-tag ; identical to previous case, except for...
+             (error-if-bad-expose-info-setup tag
+                                             cur-name
+                                             cur-lambda
+                                             cur-declare
+                                             cur-docstring)
+             (let* ((packaged-function-name
+                     (maybe-override-name cur-namespace-tag
+                                          cur-name
+                                          (packaged-name cur-namespace-tag tag packages)
+                                          packages)))
+               (let* ((namespace (tags:namespace% cur-namespace-tag))
+                      (signature (tags:signature-text% tag))
+                      (signature-text (tags:signature-text% tag))
+                      (lambda-list (or (tags:maybe-lambda-list cur-lambda)
+                                       (parse-lambda-list-from-signature signature-text)))
+                      (declare-form (tags:maybe-declare cur-declare))
+                      (docstring (tags:maybe-docstring cur-docstring)))
+                 (multiple-value-bind (function-name full-function-name simple-function)
+                     (extract-function-name-from-signature signature-text tag)
+                   (declare (ignore function-name))
+                   (pushnew (make-instance 'expose-defun-setf ; here.
+                                           :namespace% namespace
+                                           :lisp-name% packaged-function-name
+                                           :function-name% full-function-name
+                                           :file% (tags:file% tag)
+                                           :line% (tags:line% tag)
+                                           :character-offset% (tags:character-offset% tag)
+                                           :lambda-list% lambda-list
+                                           :declare% declare-form
+                                           :docstring% docstring
+                                           :provide-declaration% simple-function
+                                           :signature% signature)
+                            functions
+                            :test #'string=
+                            :key #'lisp-name%))
                  (setf cur-lambda nil
                        cur-declare nil
                        cur-docstring nil
@@ -384,7 +428,7 @@ This interprets the tags and generates objects that are used to generate code."
                                        :function-ptr% function-ptr)
                         functions
                         :test #'string=
-                        :key #'lisp-name% )
+                        :key #'lisp-name%)
                (setf cur-lambda nil
                      cur-declare nil
                      cur-docstring nil

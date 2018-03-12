@@ -46,7 +46,7 @@ T_mv cl__apply(T_sp head, VaList_sp args);
 T_sp af_interpreter_lookup_variable(Symbol_sp sym, T_sp env);
 T_sp af_interpreter_lookup_function(Symbol_sp sym, T_sp env);
 T_sp af_interpreter_lookup_macro(Symbol_sp sym, T_sp env);
-T_sp core__lookup_symbol_macro(Symbol_sp sym, T_sp env);
+T_sp core__symbol_macro(Symbol_sp sym, T_sp env);
 
   extern bool cl__functionp(T_sp fn);
 

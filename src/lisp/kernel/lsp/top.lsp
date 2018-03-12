@@ -51,100 +51,100 @@
 (defparameter *break-hidden-functions* '(error cerror apply funcall invoke-debugger))
 (defparameter *break-hidden-packages* (list #-clasp-min (find-package 'system)))
 
-(defconstant tpl-commands
-   '(("Top level commands"
-      ((:cf :compile-file) tpl-compile-command :string
-       ":cf		Compile file"
-       ":compile-file &string &rest files		[Top level command]~@
+(defconstant-equal tpl-commands
+  '(("Top level commands"
+     ((:cf :compile-file) tpl-compile-command :string
+      ":cf		Compile file"
+      ":compile-file &string &rest files		[Top level command]~@
 	:cf &string &rest files				[Abbreviation]~@
 	~@
 	Compile files.  With no arguments, uses values from latest :cf~@
 	command.  File extensions are optional.~%")
-      ((:exit :eof) quit :eval
-       ":exit or ^D	Exit Lisp"
-       ":exit &eval &optional (status 0)		[Top level command]~@
+     ((:exit :eof) quit :eval
+      ":exit or ^D	Exit Lisp"
+      ":exit &eval &optional (status 0)		[Top level command]~@
 	~@
 	Exit Lisp without further confirmation.~%")
-      ((:ld :load) tpl-load-command :string
-       ":ld		Load file"
-       ":load &string &rest files			[Top level command]~@
+     ((:ld :load) tpl-load-command :string
+      ":ld		Load file"
+      ":load &string &rest files			[Top level command]~@
 	:ld &string &rest files				[Abbreviation]~@
 	~@
 	Load files.  With no arguments, uses values from latest :ld~@
 	or :cf command. File extensions are optional.~%")
-      ((:step) tpl-step-command nil
-       ":step		Single step form"
-       ":step form					[Top level command]~@
+     ((:step) tpl-step-command nil
+      ":step		Single step form"
+      ":step form					[Top level command]~@
 	~@
 	Evaluate form in single step mode.  While stepping, a new break~@
 	level is invoked before every evaluation.  Extra commands are~@
 	available at this time to control stepping and form evaluation.~%")
-      ((:tr :trace) tpl-trace-command nil
-       ":tr(ace)	Trace function"
-       ":trace &rest functions				[Top level command]~@
+     ((:tr :trace) tpl-trace-command nil
+      ":tr(ace)	Trace function"
+      ":trace &rest functions				[Top level command]~@
 	:tr &rest functions				[Abbreviation]~@
 	~@
 	Trace specified functions.  With no arguments, show currently~@
 	traced functions.~@
 	~@
 	See also: :untrace.~%")
-      ((:untr :untrace) tpl-untrace-command nil
-       ":untr(ace)	Untrace function"
-       ":untrace &rest functions			[Top level command]~@
+     ((:untr :untrace) tpl-untrace-command nil
+      ":untr(ace)	Untrace function"
+      ":untrace &rest functions			[Top level command]~@
 	:untr &rest functions				[Abbreviation]~@
 	~@
 	Untrace specified functions.  With no arguments, untrace~@
 	all functions.~@
 	~@
 	See also: :trace.~%")
-      ((:pwd :print-working-directory) tpl-default-pathname-defaults-command nil
-       ":pwd	Print the current value of *default-pathname-defaults*"
-       "See also: :cd.~%")
-      ((:cd :change-default-pathname-defaults) tpl-change-default-pathname-defaults-dir-command :string
-       ":cd	Change the current value of *default-pathname-defaults*"
-       "See also: :dpd.~%")
-      #+threads
-      ((:s :switch) tpl-switch-command nil
-       ":s(witch)       Switch to next process to debug"
-       ":switch process                                 [Break command]~@
+     ((:pwd :print-working-directory) tpl-default-pathname-defaults-command nil
+      ":pwd	Print the current value of *default-pathname-defaults*"
+      "See also: :cd.~%")
+     ((:cd :change-default-pathname-defaults) tpl-change-default-pathname-defaults-dir-command :string
+      ":cd	Change the current value of *default-pathname-defaults*"
+      "See also: :dpd.~%")
+     #+threads
+     ((:s :switch) tpl-switch-command nil
+      ":s(witch)       Switch to next process to debug"
+      ":switch process                                 [Break command]~@
         :s processs                                     [Abbreviation]~@
         ~@
         Switch to next process in need to debugger attention. Argument~@
         process, when provided, must be an integer indicating the rank~@
         of the process in the debugger waiting list.~%")
-      #+threads
-      ((:br :break) tpl-interrupt-command nil
-       ":br(eak)        Stop a given process"
-       ":break process                                  [Break command]~@
+     #+threads
+     ((:br :break) tpl-interrupt-command nil
+      ":br(eak)        Stop a given process"
+      ":break process                                  [Break command]~@
         :br processs                                    [Abbreviation]~@
         ~@
         Interrupt a given process. Argument process, must be provided and
         it must be an integer indicating the rank~@
         of the process in the debugger waiting list (:waiting).~%")
-      #+threads
-      ((:w :waiting) tpl-waiting-command nil
-       ":w(aiting)      Display list of active toplevels"
-       ":waiting                                        [Break command]~@
+     #+threads
+     ((:w :waiting) tpl-waiting-command nil
+      ":w(aiting)      Display list of active toplevels"
+      ":waiting                                        [Break command]~@
         :w                                              [Abbreviation]~@
         ~@
         Display list of active toplevels, including open debug sessions.~%")
-      )
-     ("Help commands"
-      ((:apropos) tpl-apropos-command nil
-       ":apropos	Apropos"
-       ":apropos string &optional package		[Top level command]~@
+     )
+    ("Help commands"
+     ((:apropos) tpl-apropos-command nil
+      ":apropos	Apropos"
+      ":apropos string &optional package		[Top level command]~@
 	~@
 	Finds all available symbols whose print names contain string.~@
 	If a non NIL package is specified, only symbols in that package are considered.~@
 	~%")
-      ((:doc document) tpl-document-command nil
-       ":doc(ument)	Document"
-       ":document symbol				[Top level command]~@
+     ((:doc document) tpl-document-command nil
+      ":doc(ument)	Document"
+      ":document symbol				[Top level command]~@
 	~@
 	Displays documentation about function, print names contain string.~%")
-      ((? :h :help) tpl-help-command nil
-       ":h(elp) or ?    Help.  Type \":help help\" for more information"
-       ":help &optional topic                           [Top level command]~@
+     ((? :h :help) tpl-help-command nil
+      ":h(elp) or ?    Help.  Type \":help help\" for more information"
+      ":help &optional topic                           [Top level command]~@
         :h &optional topic                              [Abbreviation]~@
         ~@
         Print information on specified topic.  With no arguments, print~@
@@ -166,11 +166,11 @@
         whereas :exit, which requires an optional evaluated argument, is~@
         ~@
         :exit &eval &optional status                    [Top level Command]~%")
-      )))
+     )))
 
 (defparameter *tpl-commands* tpl-commands)
 
-(defconstant break-commands
+(defconstant-equal break-commands
   '("Break commands"
      ((:q :quit) tpl-quit-command nil
        ":q(uit)		Return to some previous break level"

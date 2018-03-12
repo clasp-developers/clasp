@@ -38,50 +38,18 @@
 	 (make-instance 'cleavir-env:constant-variable-info
 	   :name symbol
 	   :value (symbol-value symbol)))
-	(;; If it is not a constant variable, we can check whether
-	 ;; macroexpanding it alters it.
-	 (not (eq symbol (macroexpand-1 symbol)))
-	 ;; Clearly, the symbol is defined as a symbol macro.
-	 (make-instance 'cleavir-env:symbol-macro-info
-	   :name symbol
-	   :expansion (macroexpand-1 symbol)))
-        (;; If it is not bound, it could still be special.
-         ;; Use Clasp's core:specialp test to determine if it is special.
-         ;; If so, assume that it is of type T
+        (;; Use Clasp's core:specialp test to determine if it is special.
+         ;; Note that in Clasp constants are also special (FIXME?) so we
+         ;; have to do this test after checking for constantness.
          (core:specialp symbol)
-	 ;; It is a special variable.  However, we don't know its
-	 ;; type, so we assume it is T, which is the default.
 	 (make-instance 'cleavir-env:special-variable-info
             :name symbol
             :global-p t))
-        #+(or)( ;; If it is not bound, it could still be special.  If so, it
-               ;; might have a restricted type on it.  It will then likely
-               ;; fail to bind it to an object of some type that we
-               ;; introduced, say our bogus environment.  It is not fool
-               ;; proof because it could have the type STANDARD-OBJECT.  But
-               ;; in the worst case, we will just fail to recognize it as a
-               ;; special variable.
-               (null (ignore-errors
-                       (eval `(let ((,symbol (make-instance 'clasp-global-environment)))
-                                t))))
-               ;; It is a special variable.  However, we don't know its
-               ;; type, so we assume it is T, which is the default.
-               (make-instance 'cleavir-env:special-variable-info
-                              :name symbol))
-	#+(or)( ;; If the previous test fails, it could still be special
-               ;; without any type restriction on it.  We can try to
-               ;; determine whether this is the case by checking whether the
-               ;; ordinary binding (using LET) of it is the same as the
-               ;; dynamic binding of it.  This method might fail because the
-               ;; type of the variable may be restricted to something we
-               ;; don't know and that we didn't catch before, 
-               (ignore-errors
-                 (eval `(let ((,symbol 'a))
-                          (progv '(,symbol) '(b) (eq ,symbol (symbol-value ',symbol))))))
-               ;; It is a special variable.  However, we don't know its
-               ;; type, so we assume it is T, which is the default.
-               (make-instance 'cleavir-env:special-variable-info
-                              :name symbol))
+	(;; Maybe it's a symbol macro.
+	 (core:symbol-macro symbol)
+	 (make-instance 'cleavir-env:symbol-macro-info
+	   :name symbol
+	   :expansion (macroexpand-1 symbol)))
 	(;; Otherwise, this symbol does not have any variable
 	 ;; information associated with it.
 	 t
@@ -232,7 +200,7 @@
       (class (return-from type-expand-1 (values type-specifier nil)))
       (symbol (setf head type-specifier tail nil))
       (cons (setf head (first type-specifier) tail (rest type-specifier))))
-    (let ((def (get-sysprop head 'core::deftype-definition)))
+    (let ((def (core::type-expander head)))
       (if def
           (values (apply def tail) t)
           (values type-specifier nil)))))
@@ -365,13 +333,6 @@
   (format t "Continuing processing forms~%")
   (signal 'continue-hir))
 
-
-(defconstant *hir-commands*
-  '(("HIR commands"
-     ((:c :continue) do-continue-hir nil
-      ":c(ontinue) Continue processing forms"
-      "Stuff"))))
-
 (defun ast-form (form)
   (let ((ast (cleavir-generate-ast:generate-ast form *clasp-env* *clasp-system*)))
     (setf *form* form
@@ -399,12 +360,6 @@
           *hir* hir)
     (draw-hir hir)
     hir))
-
-#+(or)
-(defun my-hir-transformations (initial-instruction implementation processor os)
-  (cleavir-hir-transformations:eliminate-typeq initial-instruction)
-  (cleavir-hir-transformations:eliminate-superfluous-temporaries initial-instruction)
-  (cleavir-hir-transformations:process-captured-variables initial-instruction))
 
 (defun mir-form (form)
   (let ((hir (hir-form form))

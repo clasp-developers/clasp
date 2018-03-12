@@ -339,7 +339,7 @@ q (or Q):             quits the inspection.~%~
 ;;; Documentation
 ;;;
 
-(defconstant +valid-documentation-types+
+(core:defconstant-equal +valid-documentation-types+
     '(compiler-macro function method-combination setf structure
       t type variable))
 

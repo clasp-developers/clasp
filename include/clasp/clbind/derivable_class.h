@@ -220,39 +220,6 @@ namespace detail {
     derivable_class_registration *m_registration;
   };
 
-#if 0
-
-  template <class Class, class Pointer, class Signature, class Policies>
-    struct constructor_registration_base : public registration
-  {
-  constructor_registration_base(Policies const& policies, string const& name, string const& arguments, string const& declares, string const& docstring)
-    : policies(policies), m_name(name), m_arguments(arguments), m_declares(declares), m_docstring(docstring)
-    {}
-
-
-    core::Functoid* makeConstructorFunctoid() const
-    {
-      string tname = m_name;
-      if (m_name == "") { tname = "default-ctor"; };
-      core::Functoid* f = gctools::ClassAllocator<VariadicConstructorFunctoid<Policies,Pointer,Class,Signature>>::allocate_class(tname);
-      return f;
-    }
-
-    void register_() const
-    {
-      core::Functoid* f = this->makeConstructorFunctoid();
-      lisp_defun_lispify_name(core::lisp_currentPackageName(),m_name,f,m_arguments,m_declares,m_docstring,true,true,CountConstructorArguments<Signature>::value);
-    }
-
-
-    Policies policies;
-    string m_name;
-    string m_arguments;
-    string m_declares;
-    string m_docstring;
-  };
-#endif
-
 /*! This is the constructor registration for default constructors of non derivable classes,
          Specialized by making second template parameter reg::null_type
         */

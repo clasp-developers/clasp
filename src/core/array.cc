@@ -600,11 +600,11 @@ void core__copy_subarray(Array_sp dest, Fixnum_sp destStart, Array_sp orig, Fixn
   }
 }
 
-
-CL_LAMBDA(array value &va-rest indices);
+CL_LISPIFY_NAME("CL:aref");
+CL_LAMBDA(value array &va-rest indices);
 CL_DECLARE();
 CL_DOCSTRING("aset");
-CL_DEFUN T_sp core__aset(Array_sp array, T_sp value, VaList_sp indices) {
+CL_DEFUN_SETF T_sp core__aset(T_sp value, Array_sp array, VaList_sp indices) {
   cl_index rowMajorIndex = array->arrayRowMajorIndex(indices);
   array->rowMajorAset(rowMajorIndex,value);
   return value;
@@ -631,8 +631,8 @@ CL_DEFUN T_sp cl__svref(SimpleVector_sp simple_vector, size_t idx)
   return simple_vector->rowMajorAref(idx);
 }
 
-CL_LISPIFY_NAME("core:setf-svref");
-CL_DEFUN T_sp core__setf_svref(SimpleVector_sp simple_vector, cl_index idx, T_sp val)
+CL_LISPIFY_NAME("CL:svref");
+CL_DEFUN_SETF T_sp core__setf_svref(T_sp val, SimpleVector_sp simple_vector, cl_index idx)
 {
   simple_vector->rowMajorAset(idx,val);
   return val;
@@ -1631,18 +1631,14 @@ CL_DEFUN Character_sp cl__char(String_sp str, size_t idx) {
   } else if (StrWNs_sp sw = str.asOrNull<StrWNs_O>() ) {
     return clasp_make_character((*sw)[idx]);
   }
-#if 0
-  printf("%s:%d type of str -> %s\n", __FILE__, __LINE__, _rep_(instance_class(str)).c_str());
-  printf("%s:%d   str.asOrNull<SimpleBaseString_O>() -> %p\n", __FILE__, __LINE__, str.asOrNull<SimpleBaseString_O>().raw_());
-  printf("%s:%d    gc::IsA<SimpleBaseString_sp>(str) -> %d\n", __FILE__, __LINE__, gc::IsA<SimpleBaseString_sp>(str));
-#endif
   TYPE_ERROR(str,cl::_sym_string);
 };
 
-CL_LAMBDA(str index c);
+CL_LISPIFY_NAME("cl:char")
+CL_LAMBDA(c str index);
 CL_DECLARE();
 CL_DOCSTRING("CLHS (setf char)");
-CL_DEFUN Character_sp core__char_set(String_sp str, size_t idx, Character_sp c) {
+CL_DEFUN_SETF Character_sp core__char_set(Character_sp c, String_sp str, size_t idx) {
   if ( SimpleBaseString_sp sb = str.asOrNull<SimpleBaseString_O>() ) {
     (*sb)[idx] = c.unsafe_character();
   } else if (Str8Ns_sp s8 = str.asOrNull<Str8Ns_O>() ) {
@@ -1657,10 +1653,11 @@ CL_DEFUN Character_sp core__char_set(String_sp str, size_t idx, Character_sp c) 
   return c;
 };
 
+CL_LISPIFY_NAME("cl:schar");
 CL_LAMBDA(str index c);
 CL_DECLARE();
-CL_DOCSTRING("CLHS schar");
-CL_DEFUN Character_sp core__schar_set(String_sp str, size_t idx, Character_sp c) {
+CL_DOCSTRING("CLHS (setf schar)");
+CL_DEFUN_SETF Character_sp core__schar_set(Character_sp c, String_sp str, size_t idx) {
   str->rowMajorAset(idx,c);
   return c;
 };

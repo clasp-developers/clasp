@@ -77,10 +77,7 @@ in the generic function lambda-list to the generic function lambda-list"
                       (core:function-lambda-list-set gf new-ll)))))))))))
 
 (defmacro defmethod (&whole whole name &rest args &environment env)
-  (declare (notinline make-method-lambda))
-  (let* ((*print-length* 3) ; FIXME: What?
-	 (*print-depth* 2)
-         (source-location (ext:current-source-location))
+  (let* ((source-location (ext:current-source-location))
          (qualifiers (loop while (and args (not (listp (first args))))
 			collect (pop args)))
 	 (specialized-lambda-list
@@ -94,8 +91,7 @@ in the generic function lambda-list to the generic function lambda-list"
 	  (make-raw-lambda name lambda-list required-parameters specializers body env qualifiers)
         (mlog "In defmethod lambda-list %s   lambda-form %s\n" lambda-list lambda-form) 
 	(let* ((generic-function (ensure-generic-function name))
-	       (method-class (progn
-			       (generic-function-method-class generic-function)))
+	       (method-class (generic-function-method-class generic-function))
 	       method)
 	  (when *clos-booted*
 	    (when (symbolp method-class)
@@ -108,21 +104,19 @@ in the generic function lambda-list to the generic function lambda-list"
 	      (make-method-lambda generic-function method lambda-form env)
 	    (when documentation
 	      (setf options (list* :documentation documentation options)))
-            (ext:register-with-pde
-             whole
-             `(prog1
-                  (install-method ',name ',qualifiers
-                                  ,(specializers-expression specializers)
-                                  ',lambda-list
-                                  ,(maybe-remove-block fn-form source-location)
-                                  ;; Note that we do not quote the options returned by make-method-lambda.
-                                  ;; This is essentially to make the fast method function easier.
-                                  ;; MOP is in my view ambiguous about whether they're supposed to be quoted.
-                                  ;; There's an example that sort of implies they are, but the extra flexibility
-                                  ;; is pretty convenient, and matches that the primary value is of course
-                                  ;; evaluated.
-                                  ,@options)
-                (maybe-augment-generic-function-lambda-list ',name ',lambda-list)))))))))
+            `(prog1
+                 (install-method ',name ',qualifiers
+                                 ,(specializers-expression specializers)
+                                 ',lambda-list
+                                 ,(maybe-remove-block fn-form source-location)
+                                 ;; Note that we do not quote the options returned by make-method-lambda.
+                                 ;; This is essentially to make the fast method function easier.
+                                 ;; MOP is in my view ambiguous about whether they're supposed to be quoted.
+                                 ;; There's an example that sort of implies they are, but the extra flexibility
+                                 ;; is pretty convenient, and matches that the primary value is of course
+                                 ;; evaluated.
+                                 ,@options)
+               (maybe-augment-generic-function-lambda-list ',name ',lambda-list))))))))
 
 (defun specializers-expression (specializers)
   (list 'si::quasiquote

@@ -109,12 +109,11 @@
 		      (unsafe-cdr `(cdr ,cons-pointer))
 		      (unsafe-pop `(setq ,pointer ,unsafe-cdr))
 		      (no-check nil)
-		      (ppn (+ (length reqs) (first opts)))
 		      all-keywords)
 		 ;; In macros, eliminate the name of the macro from the list
 		 (dm-v pointer (if macro
                                    ;; Special handling if define-compiler-macro called this
-                                   (if (member macro '(define-compiler-macro bclasp-define-compiler-macro))
+                                   (if (eq macro 'define-compiler-macro)
                                        `(if (and (eq (car ,whole) 'cl:funcall)
                                                  (consp (cadr ,whole))
                                                  (eq (caadr ,whole) 'cl:function)
@@ -166,9 +165,7 @@
 			      *arg-check*))
 		       ((not no-check)
 			(push `(if ,pointer (dm-too-many-arguments ,basis-form))
-			      *arg-check*)))
-                 ppn)))
-
+			      *arg-check*))))))
 	   (dm-v (v init)
 	     (cond ((and v (symbolp v))
                     (let ((push-val (if init (list v init) v)))
@@ -203,10 +200,8 @@
 	    ((symbolp vl)
 	     (setq vl (list '&rest vl)))
 	    (t (error "The destructuring-lambda-list ~s is not a list." vl)))
-      (values (dm-vl vl whole macro) whole
-	      (nreverse *dl*)
-              *arg-check*
-	      destructure-symbols))))
+      (dm-vl vl whole macro)
+      (values whole (nreverse *dl*) *arg-check* destructure-symbols))))
 
 ;;; valid lambda-list to DEFMACRO is:
 ;;;
@@ -251,7 +246,7 @@
     (values (if decls `((declare ,@decls)) nil)
 	    body doc)))
 
-;; Optional argument context can be 'cl:define-compiler-macro, 'core:bclasp-define-compiler-macro or 'cl:defmacro (default)
+;; Optional argument context can be 'cl:define-compiler-macro or 'cl:defmacro (default)
 (defun sys::expand-defmacro (name vl body &optional (context 'cl:defmacro))
   (multiple-value-bind (decls body doc)
       (find-declarations body)
@@ -268,17 +263,16 @@
                 env-part (second env-part))
           (setq env-part (gensym)
                 decls (list* `(declare (ignore ,env-part)) decls)))
-                                        ;(bformat t "About to call multiple-value-call\n")
-      (multiple-value-bind (ppn whole dl arg-check ignorables)
+      (multiple-value-bind (whole dl arg-check ignorables)
           (destructure vl context name)
         (values 
          `(lambda (,whole ,env-part &aux ,@dl)
             (declare (ignorable ,@ignorables) (core:lambda-name ,name))
             ,@decls
+            ,@(when doc (list doc))
             (block ,(si::function-block-name name)
               ,@arg-check
               ,@body))
-         ppn
          doc)))))
 
 #+clasp-min
@@ -289,56 +283,27 @@
 		     (vl (third def))
 		     (body (cdddr def))
 		     (function))
-		(multiple-value-bind (function pprint doc)
+		(multiple-value-bind (function doc)
 		    (sys::expand-defmacro name vl body)
 		  (declare (ignore doc))
 		  (setq function `(function ,function))
 		  (when *dump-defmacro-definitions*
-		    (bformat t "EARLY defmacro.lsp defmacro %s -> %s\n" name function)
-		    #++(setq function `(si::bc-disassemble ,function)))
-		  (ext:register-with-pde def `(si::fset ',name ,function
-                                                        t ; macro
-                                                        ,pprint ; ecl pprint
-                                                        ',vl ; lambda-list
-                                                        )))))
+		    (bformat t "EARLY defmacro.lsp defmacro %s -> %s\n" name function))
+		  `(si::fset ',name ,function
+                             t ; macro
+                             ',vl ; lambda-list
+                             ))))
 	  t)
 
-;;; valid lambda-list to DESTRUCTURING-BIND is:
-;;;
-;;;	( [ &whole sym ]
-;;;	  { v }*
-;;;	  [ &optional { sym | ( v [ init [ v ] ] ) }* ]
-;;;	  {  [ { &rest | &body } v ]
-;;;	     [ &key { sym | ( { sym | ( key v ) } [ init [ v ]] ) }*
-;;;		    [ &allow-other-keys ]]
-;;;	     [ &aux { sym | ( v [ init ] ) }* ]
-;;;	  |  . sym }
-;;;	 )
-;;;
-;;; where v is short for { destructuring-bind-lambda-list | sym }.
-;;; A symbol may be accepted as a DESTRUCTURING-BIND lambda-list, in which case
-;;; (DESTRUCTURING-BIND <name> <symbol> ... ) is equivalent to
-;;; (DESTRUCTURING-BIND <name> (&REST <symbol>) ...).
-;;; Destructuring-bind-lambda-list is defined as:
-;;;
-;;;	( [ &whole sym ]
-;;;	  { v }*
-;;;	  [ &optional { sym | ( v [ init [ v ] ] ) }* ]
-;;;	  {  [ { &rest | &body } v ]
-;;;	     [ &key { sym | ( { sym | ( key v ) } [ init [ v ]] ) }*
-;;;		    [ &allow-other-keys ]]
-;;;	     [ &aux { sym | ( v [ init ] ) }* ]
-;;;	  |  . sym }
-;;;	 )
+;; This is what the final macros actually use, for cleanliness.
+(in-package "EXT")
 
-(defmacro destructuring-bind (vl list &body body)
-  (multiple-value-bind (decls body)
-      (find-declarations body)
-    (multiple-value-bind (ppn whole dl arg-check ignorables)
-        (destructure vl nil)
-      (declare (ignore ppn))
-      `(let* ((,whole ,list) ,@dl)
-	 (declare (ignorable ,@ignorables))
-         ,@decls
-         ,@arg-check
-         ,@body))))
+(defun parse-macro (name lambda-list body &optional env)
+  (declare (ignore env)) ; for now.
+  (sys::expand-defmacro name lambda-list body 'cl:defmacro))
+
+(defun parse-compiler-macro (name lambda-list body &optional env)
+  (declare (ignore env)) ; also for now
+  (sys::expand-defmacro name lambda-list body 'cl:define-compiler-macro))
+
+(export '(parse-macro parse-compiler-macro)) ; FIXME MOVE

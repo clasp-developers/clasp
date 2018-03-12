@@ -88,14 +88,14 @@ CL_DEFUN core::T_sp defining_function_info_global(core::T_sp function_name)
       auto info = GlobalMacroInfo_O::create();
       info->_Name = function_name;
       info->_Expander = core::cl__macro_function(function_name,_Nil<core::T_O>());
-      info->_CompilerMacro = core::core__get_compiler_macro_function(function_name,_Nil<core::T_O>());
+      info->_CompilerMacro = core::cl__compiler_macro_function(function_name,_Nil<core::T_O>());
       return info;
     }
   }
   if ( core::cl__fboundp(function_name) ) {
     auto info = GlobalFunctionInfo_O::create();
     info->_Name = function_name;
-    info->_CompilerMacro = core::core__get_compiler_macro_function(function_name,_Nil<core::T_O>());
+    info->_CompilerMacro = core::cl__compiler_macro_function(function_name,_Nil<core::T_O>());
     info->_Inline = core::core__get_global_inline_status(function_name,_Nil<core::T_O>());
     core::T_sp fdef = core::cl__fdefinition(function_name);
     if ( fdef.notnilp() ) {

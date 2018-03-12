@@ -809,11 +809,9 @@ a LET-like macro, and a SETQ-like macro, which perform LOOP-style destructuring.
 	     (macrolet ((f (overhead &optional (args nil args-p))
 			  `(the fixnum (+ (the fixnum ,overhead)
 					  (the fixnum (list-size ,(if args-p args '(cdr x))))))))
-	       (cond ((setq tem (get-sysprop fn 'estimate-code-size))
-		      (typecase tem
-			(fixnum (f tem))
-			(t (funcall tem x env))))
-		     ((setq tem (assoc fn *special-code-sizes*)) (f (second tem)))
+	       (cond ((setq tem (assoc fn *special-code-sizes*)) (f (second tem)))
+		     #+Genera
+		     ((eq fn 'compiler:invisible-references) (list-size (cddr x)))
 		     ((eq fn 'cond)
 		      (dolist (clause (cdr x) n) (incf n (list-size clause)) (incf n)))
 		     ((eq fn 'desetq)
