@@ -231,7 +231,11 @@
 ;;;	  |  . sym }
 ;;;	 )
 (defun find-documentation (body)
-  (nth-value 3 (process-declarations body t)))
+  ;; nth-value is not available early
+  (multiple-value-bind (declarations body documentation specials)
+      (process-declarations body t)
+    (declare (ignore declarations body specials))
+    documentation))
 
 (defun remove-documentation (body)
   (multiple-value-bind (decls body doc)
