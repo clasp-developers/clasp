@@ -24,10 +24,11 @@ last FORM.  If not, simply returns NIL."
 
 (defmacro defmacro (name lambda-list &body body &environment env)
   `(eval-when (:compile-toplevel :load-toplevel :execute)
-     (funcall #'(setf macro-function)
-              #',(ext:parse-macro name lambda-list body env)
-              ',name)
-     ',name))
+     (let ((fn #',(ext:parse-macro name lambda-list body env)))
+       (funcall #'(setf macro-function) fn ',name)
+       (setf-lambda-list fn ',lambda-list)
+       ,@(expand-set-documentation name 'function (find-documentation body))
+       ',name)))
 
 (defmacro destructuring-bind (vl list &body body)
   (multiple-value-bind (decls body)
@@ -123,6 +124,7 @@ VARIABLE doc and can be retrieved by (DOCUMENTATION 'SYMBOL 'VARIABLE)."
            (cmp::register-global-function-def 'defun ',name))
          (let ((,fn ,global-function))
            (funcall #'(setf fdefinition) ,fn ',name)
+           (setf-lambda-list ,fn ',vl)
            (core:set-source-info ,fn ',(list 'core:current-source-file filepos lineno column))
            ,@(si::expand-set-documentation name 'function doc-string)
            ;; This can't be at toplevel.
