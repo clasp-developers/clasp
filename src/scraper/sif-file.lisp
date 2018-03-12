@@ -9,7 +9,7 @@ Read the input .i file and extract the tags from it and write out a .sif file"
   (let* ((bufs (read-entire-file input))
          (tags (process-all-recognition-elements bufs))
          (sif-pathname output))
-    (with-open-file (fout sif-pathname :direction :output :if-exists :supersede)
+    (with-open-file (fout sif-pathname :direction :output :if-exists :supersede :external-format :utf-8)
       (let ((*print-readably* t)
             (*print-pretty* nil))
         (prin1 tags fout)))))
@@ -32,5 +32,5 @@ Read a list of tags from the sif file."
              (loop for i in list do
                    (setf (slot-value class (car i)) (cdr i)))
              class)))))
-    (with-open-file (fin sif-pathname :direction :input)
+    (with-open-file (fin sif-pathname :direction :input :external-format :utf-8)
       (read fin))))

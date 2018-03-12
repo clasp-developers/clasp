@@ -791,7 +791,7 @@ Convert colons to underscores"
              (pathname main-path))))
     (ensure-directories-exist pn)
     (let ((data-in-file (when (probe-file pn)
-                          (with-open-file (stream pn :direction :input)
+                          (with-open-file (stream pn :direction :input :external-format :utf-8)
                             (let ((data (make-string (file-length stream))))
                               (read-sequence data stream)
                               data)))))
@@ -799,7 +799,7 @@ Convert colons to underscores"
           (format t   "| -------- | There are no changes to ~a.~%" pn)
           (progn
             (format t "| UPDATING | There are changes to ~a.~%" pn)
-            (with-open-file (stream pn :direction :output :if-exists :supersede)
+            (with-open-file (stream pn :direction :output :if-exists :supersede :external-format :utf-8)
               (write-sequence code stream)))))))
 
 (defun safe-app-config (key app-config)

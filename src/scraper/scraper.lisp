@@ -12,11 +12,6 @@
 (defparameter *application-config* #P"include/clasp/main/application.config")
 (export '*application-config*)
 
-#+sbcl
-(unless (eq (sb-impl::default-external-format) :utf-8)
-  (error "The default external is expected to be :UTF-8, but it's ~S instead! It's a bug of the build system."
-         (sb-impl::default-external-format)))
-
 (defun process-all-sif-files (clasp-home-path build-path sif-files)
   (declare (optimize debug))
   (let* ((tags (loop for sif-file in sif-files
@@ -70,7 +65,7 @@
   (let* ((*debug-io* (make-two-way-stream *standard-input* *standard-output*))
          (clang-output (run-clang clang-command sif-pathname))
          (tags (process-all-recognition-elements clang-output)))
-    (with-open-file (fout sif-pathname :direction :output :if-exists :supersede)
+    (with-open-file (fout sif-pathname :direction :output :if-exists :supersede :external-format :utf-8)
       (let ((*print-readably* t)
             (*print-pretty* nil))
         (prin1 tags fout)))))

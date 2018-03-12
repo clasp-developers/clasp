@@ -576,7 +576,7 @@ def configure(cfg):
         cfg.env["SBCL"] = cfg.find_program("sbcl", var = "SBCL")[0]
         cfg.env["SCRAPER_LISP"] = [cfg.env.SBCL,
                                    '--noinform', '--dynamic-space-size', '2048', '--lose-on-corruption', '--disable-ldb', '--end-runtime-options',
-                                   '--disable-debugger', '--no-userinit', '--no-sysinit', '--eval', '(setf sb-impl::*default-external-format* :utf-8)' ]
+                                   '--disable-debugger', '--no-userinit', '--no-sysinit']
     global cxx_compiler, c_compiler
     cxx_compiler['linux'] = ["clang++"]
     c_compiler['linux'] = ["clang"]

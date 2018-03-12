@@ -14,7 +14,7 @@
 
 (defun read-application-config (filename)
   (let ((config (make-hash-table :test #'equal)))
-    (with-open-file (fin filename :direction :input)
+    (with-open-file (fin filename :direction :input :external-format :utf-8)
       (loop for l = (read-line fin nil 'eof)
          until (eq l 'eof)
          for tl = (string-trim '(#\space #\tab) l)
