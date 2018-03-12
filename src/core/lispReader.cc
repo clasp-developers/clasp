@@ -1063,8 +1063,6 @@ T_mv lisp_object_query(T_sp sin, bool eofErrorP, T_sp eofValue, bool recursiveP)
   }
   ++monitorReaderStep;
 #endif
-  bool generate_cst = false;
-  if (core::_sym_STARreader_generate_cstSTAR->symbolValue().isTrue()) generate_cst = true;
   bool only_dots_ok = false;
   Token token;
   ReadTable_sp readTable = _lisp->getCurrentReadTable();
@@ -1073,7 +1071,6 @@ T_mv lisp_object_query(T_sp sin, bool eofErrorP, T_sp eofValue, bool recursiveP)
 step1:
   LOG(BF("step1"));
   SourcePosInfo_sp xxxsp;
-  if (generate_cst) xxxsp = core__input_stream_source_pos_info(sin);
   T_sp tx = cl__read_char(sin, _Nil<T_O>(), _Nil<T_O>(), _lisp->_true());
   if (tx.nilp()) {
     if (eofErrorP)
@@ -1105,25 +1102,12 @@ step1:
       return results;
     }
     T_sp object = results;
-    if (generate_cst) {
-      if (object.consp()) {
-        _sym_STARreader_cst_resultSTAR->setf_symbolValue(Cons_O::create(eval::funcall(_sym_make_cons_cst,xxxsp,object),
-                                                                     _sym_STARreader_cst_resultSTAR->symbolValue()));
-      } else {
-        _sym_STARreader_cst_resultSTAR->setf_symbolValue(Cons_O::create(eval::funcall(_sym_make_atom_cst,xxxsp,object),
-                                                                     _sym_STARreader_cst_resultSTAR->symbolValue()));
-      }
-    }
     return object;
   }
   //    step5:
   if (xxx_syntax_type == kw::_sym_single_escape_character) {
     LOG(BF("step5 - single-escape-character char[%c]") % clasp_as_claspCharacter(xxx));
     LOG(BF("Handling single escape"));
-    if (generate_cst) {
-      SourcePosInfo_sp ysp = core__input_stream_source_pos_info(sin);
-      token.recordSourcePos(ysp);
-    }
     T_sp ty = cl__read_char(sin, _lisp->_true(), _Nil<T_O>(), _lisp->_true());
     if ( !ty.characterp() ) {
       SIMPLE_ERROR(BF("Expected character - hit end"));
@@ -1139,7 +1123,6 @@ step1:
     LOG(BF("step6 - multiple-escape-character char[%c]") % clasp_as_claspCharacter(xxx));
     LOG(BF("Handling multiple escape - clearing token"));
     token.clear();
-    if (generate_cst) token.recordSourcePos(xxxsp);
       // |....| or ....|| or ..|.|.. is ok
     only_dots_ok = true;
     goto step9;
@@ -1149,7 +1132,6 @@ step1:
     LOG(BF("step7 - constituent-character char[%c]") % clasp_as_claspCharacter(xxx));
     LOG(BF("Handling constituent character"));
     token.clear();
-    if (generate_cst) token.recordSourcePos(sin);
     // X = readTable->convert_case(x);
     X = xxx; // convert case once the entire token is accumulated
     LOG(BF("Converted case X[%s]") % clasp_as_claspCharacter(X));
@@ -1240,13 +1222,6 @@ step10:
     return (Values(_Nil<T_O>()));
   T_sp object = interpret_token_or_throw_reader_error(sin, token,only_dots_ok);
   TRAP_BAD_CONS(object);
-  if (generate_cst) {
-    if (object.consp()) {
-      SIMPLE_ERROR(BF("The reader wants to return a CONS - but you aren't set up to allocate a cons-ast"));
-    }
-    _sym_STARreader_cst_resultSTAR->setf_symbolValue(Cons_O::create(eval::funcall(_sym_make_atom_cst,token.sourcePosInfo,object),
-                                                                 _sym_STARreader_cst_resultSTAR->symbolValue()));
-  }
   return (Values(object));
 }
 
