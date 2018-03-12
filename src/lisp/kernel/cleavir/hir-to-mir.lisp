@@ -183,7 +183,7 @@
            (if (eq element-type '*)
                'core:mdarray
                (complex-mdarray-type element-type))))
-    (let ((pro (if (eq dimensions '*)
+    (let ((pro (if (or (eq dimensions '*) (null dimensions))
                    pro
                    (loop for dim in dimensions
                          for i from 0
