@@ -6,17 +6,12 @@
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (core:select-package "CORE"))
 
-
 #+(or)(setq *features* (cons :dbg-print *features*))
 (SYS:*MAKE-SPECIAL '*echo-repl-tpl-read*)
 (export '(*echo-repl-tpl-read*
           run-repl
           cons-car
           cons-cdr))
-(sys:*make-special 'core::*dump-defmacro-definitions*)
-(setq *dump-defmacro-definitions* nil)
-(sys:*make-special 'core::*dump-defun-definitions*)
-(setq *dump-defun-definitions* nil)
 (export '*trace-startup*)
 
 ;;; ------------------------------------------------------------
@@ -40,8 +35,6 @@
 (setq *echo-repl-tpl-read* (member :emacs-inferior-lisp *features*))
 (setq *load-print* nil)
 
-(sys:*make-special 'core::*boot-verbose*)
-(setq core::*boot-verbose* nil)
 (setq cl:*print-circle* nil)
 
 (sys:*make-special 'core::*clang-bin*)
@@ -100,15 +93,6 @@
 (if (find-package "C")
     nil
     (make-package "C" :use '(:cl :core)))
-
-;; Compiling with Cleavir injects some symbols that
-;; need to be interned in this package
-(if (find-package "CLASP-CLEAVIR-GENERATE-AST")
-    nil
-    (make-package "CLASP-CLEAVIR-GENERATE-AST"))
-
-(eval-when (:execute :compile-toplevel :load-toplevel)
-  (select-package :core))
 
 (if (find-package "CLASP-CLEAVIR")
     nil
@@ -753,16 +737,6 @@ the stage, the +application-name+ and the +bitcode-name+"
     (t (bformat t "Unknown command %s\n" cmd))))
 
 (setq *top-level-command-hook* #'tpl-hook)
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;
-;;  Setup the build system for SICL
-;;
-(defun setup-cleavir ()
-  (load "src;lisp;kernel;asdf;build;asdf.fasl")
-  (load "src;lisp;cleavir;ccmp-all.lsp"))
-
-(export 'setup-sicl)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;

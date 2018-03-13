@@ -291,8 +291,6 @@
 		    (sys::expand-defmacro name vl body)
 		  (declare (ignore doc))
 		  (setq function `(function ,function))
-		  (when *dump-defmacro-definitions*
-		    (bformat t "EARLY defmacro.lsp defmacro %s -> %s\n" name function))
 		  `(si::fset ',name ,function
                              t ; macro
                              ',vl ; lambda-list
