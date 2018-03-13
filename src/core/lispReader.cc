@@ -1044,6 +1044,11 @@ T_sp read_lisp_object(T_sp sin, bool eofErrorP, T_sp eofValue, bool recursiveP) 
     increment_read_lisp_object_recursion_depth::reset();
     DynamicScopeManager scope(_sym_STARsharp_equal_final_tableSTAR, _Nil<T_O>());
     result = read_lisp_object(sin, eofErrorP, eofValue, true);
+    ReadTable_sp readtable = gc::As<ReadTable_sp>(cl::_sym_STARreadtableSTAR->symbolValue());
+    Character_sp charc = cl__peek_char(_Nil<T_O>(),sin,_lisp->_boolean(eofErrorP),eofValue,_Nil<T_O>());
+    if (readtable->syntax_type(charc) == kw::_sym_whitespace_character) {
+      cl__read_char(sin,_lisp->_boolean(eofErrorP),eofValue,_lisp->_true());
+    }
   }
   if (result.nilp())
     return (Values(_Nil<T_O>()));
@@ -1176,7 +1181,7 @@ step8:
     }
     if (y8_syntax_type == kw::_sym_whitespace_character) {
       LOG(BF("y is whitespace"));
-      if (_sym_STARpreserve_whitespace_pSTAR->symbolValue().isTrue()) {
+      if (_sym_STARpreserve_whitespace_pSTAR->symbolValue().isTrue()) { // Can this be recursiveP?
         LOG(BF("unreading y[%s]") % clasp_as_claspCharacter(y));
         clasp_unread_char(clasp_as_claspCharacter(y), sin);
       }
