@@ -715,20 +715,24 @@ bool Package_O::shadow(List_sp symbolNames) {
 }
 
 void Package_O::unexport(Symbol_sp sym) {
-  WITH_PACKAGE_READ_WRITE_LOCK(this);
-  SimpleString_sp nameKey = sym->_Name;
-  T_mv values = this->findSymbol_SimpleString_no_lock(nameKey);
-  Symbol_sp foundSym = gc::As<Symbol_sp>(values);
-  Symbol_sp status = gc::As<Symbol_sp>(values.second());
   Export_errors error = no_problem;
-  if (status.nilp()) {
-    error = not_accessible_in_this_package;
-  } else if (status == kw::_sym_external) {
-    this->_ExternalSymbols->remhash(nameKey);
-    this->_InternalSymbols->setf_gethash(nameKey,sym);
+  // Make sure we don't signal an error without releasing the lock first.
+  // (The printer will try to access the package name or something, and hang.)
+  {
+    WITH_PACKAGE_READ_WRITE_LOCK(this);
+    SimpleString_sp nameKey = sym->_Name;
+    T_mv values = this->findSymbol_SimpleString_no_lock(nameKey);
+    Symbol_sp foundSym = gc::As<Symbol_sp>(values);
+    Symbol_sp status = gc::As<Symbol_sp>(values.second());
+    if (status.nilp()) {
+      error = not_accessible_in_this_package;
+    } else if (status == kw::_sym_external) {
+      this->_ExternalSymbols->remhash(nameKey);
+      this->_InternalSymbols->setf_gethash(nameKey,sym);
+    }
   }
   if (error == not_accessible_in_this_package) {
-    // I'm not totally familiar, but asSmartPtr.raw_ smells.
+    // asSmartPtr.raw_ looks strange, but it fixes the tag.
     FEpackage_error("The symbol ~S is not accessible from ~S "
                     "and cannot be unexported.",
                     this->asSmartPtr(), 2, sym.raw_(), this->asSmartPtr().raw_());
