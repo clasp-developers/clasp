@@ -405,35 +405,40 @@ Each PLACE may be any one of the following:
 
 ;;; PSETF macro.
 
-(defmacro psetf (&environment env &rest rest)
+(defmacro psetf (&environment env &whole whole &rest rest)
   "Syntax: (psetf {place form}*)
 Similar to SETF, but evaluates all FORMs first, and then assigns each value to
 the corresponding PLACE.  Returns NIL."
-  (declare (notinline mapcar))
-  (cond ((endp rest) nil)
-        ((endp (cdr rest)) (error "~S is an illegal PSETF form." rest))
-        ((endp (cddr rest))
-         `(progn ,(setf-expand-1 (car rest) (cadr rest) env)
-                 nil))
-        (t
-	 (do ((r rest (cddr r))
-	      (pairs nil)
-	      (store-forms nil))
-	     ((endp r)
-	      `(let* ,pairs
-		 ,@(nreverse store-forms)
-		 nil))
-	   (when (endp (cdr r)) (error "~S is an illegal PSETF form." rest))
-	   (multiple-value-bind (vars vals stores store-form access-form)
-	       (get-setf-expansion (car r) env)
-             (declare (ignore access-form))
-	     (setq store-forms (cons store-form store-forms))
-	     (setq pairs
-		   (nconc pairs
-			  (mapcar #'list
-				  (append vars stores)
-				  (append vals (list (cadr r)))))))))))
-
+  (do ((r rest (cddr r))
+       (temp-groups nil) ; a list of lists of let* bindings.
+       (value-groups nil) ; a list of (list-of-store-variables . subform)
+       (store-forms nil))
+      ((endp r)
+       (labels ((build (temp-groups value-groups store-forms)
+                  ;; temp-groups and value-groups have the same length by construction.
+                  (if (null temp-groups)
+                      `(progn ,@store-forms nil)
+                      (let ((temp-bindings (car temp-groups))
+                            (next-temp-groups (cdr temp-groups))
+                            (stores (caar value-groups))
+                            (subform (cdar value-groups))
+                            (next-value-groups (cdr value-groups)))
+                        `(let* ,temp-bindings
+                           (multiple-value-bind ,stores ,subform
+                             ,(build next-temp-groups next-value-groups store-forms)))))))
+         ;; we pushed these things left to right, so we have to reverse them to get the
+         ;; proper left-to-right evaluation order of subforms.
+         (build (nreverse temp-groups) (nreverse value-groups) store-forms)))
+    (when (endp (cdr r)) (error "~S is an illegal PSETF form" whole))
+    (let ((place (car r)) (subform (cadr r)))
+      (multiple-value-bind (temps values stores store-form access-form)
+          (get-setf-expansion place env)
+        (declare (ignore access-form))
+        ;; FIXME?: We should maybe signal an error if temps and values
+        ;; have different lengths (i.e. setf expander is broken)
+        (setq temp-groups (cons (mapcar #'list temps values) temp-groups))
+        (setq value-groups (cons (cons stores subform) value-groups))
+        (setq store-forms (cons store-form store-forms))))))
 
 ;;; DEFINE-MODIFY-MACRO macro, by Bruno Haible.
 (defmacro define-modify-macro (name lambdalist function &optional docstring)
