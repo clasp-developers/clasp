@@ -2313,6 +2313,18 @@ CL_DEFUN T_sp cl__export(T_sp symDes, T_sp packageDes) {
   return _lisp->_true();
 }
 
+CL_LAMBDA(symbols &optional package);
+CL_DECLARE();
+CL_DOCSTRING("Unexport the symbols from the package. See CLHS.");
+CL_DEFUN T_sp cl__unexport(T_sp symbolsDes, T_sp packageDes) {
+  List_sp symbols = coerce::listOfSymbols(symbolsDes);
+  Package_sp package = coerce::packageDesignator(packageDes);
+  for (auto sym : symbols) {
+    package->unexport(gc::As<Symbol_sp>(oCar(sym)));
+  }
+  return _lisp->_true();
+}
+
 CL_LAMBDA(symbolsDesig);
 CL_DECLARE();
 CL_DOCSTRING("exportToPython");

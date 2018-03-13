@@ -47,7 +47,6 @@ namespace core {
 SMART(Package);
 class Package_O : public General_O {
   LISP_CLASS(core, ClPkg, Package_O, "Package",General_O);
-  friend T_sp cl__unexport(Symbol_sp sym, Package_sp package);
   friend T_sp cl__delete_package(T_sp pobj);
  public: // virtual functions inherited from Object
   void initialize();
@@ -108,7 +107,8 @@ class Package_O : public General_O {
   /*! support for CLHS::shadow */
   bool shadow(String_sp sym);
 
-  //	bool areThereNameCollisions(Package_sp otherPackage);
+  /*! support for CLHS::unexport */
+  void unexport(Symbol_sp sym);
 
   string getName() const;
   void setName(const string &n);

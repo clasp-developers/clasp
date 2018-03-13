@@ -387,15 +387,6 @@ string Package_O::__repr__() const {
 #if defined(XML_ARCHIVE)
 void Package_O::archiveBase(ArchiveP node) {
   IMPLEMENT_MEF("Handle archiving the package hash-tables");
-#if 0
-  WITH_PACKAGE_READ_WRITE_LOCK(this);
-	this->Base::archiveBase(node);
-	node->attribute("name",this->_Name);
-	node->archiveMap("internalSymbols",this->_InternalSymbols);
-	node->archiveMap("externalSymbols",this->_ExternalSymbols);
-	node->archiveSetIfDefined("usingPackages",this->_UsingPackages);
-	node->archiveMapIfDefined("shadowingSymbols",this->_ShadowingSymbols);
-#endif
 }
 #endif // defined(XML_ARCHIVE)
 
@@ -723,45 +714,28 @@ bool Package_O::shadow(List_sp symbolNames) {
   return true;
 }
 
-CL_LAMBDA("sym &optional (package *package*)");
-CL_DEFUN T_sp cl__unexport(Symbol_sp sym, Package_sp package) {
-  WITH_PACKAGE_READ_WRITE_LOCK(package);
+void Package_O::unexport(Symbol_sp sym) {
+  WITH_PACKAGE_READ_WRITE_LOCK(this);
   SimpleString_sp nameKey = sym->_Name;
-  T_mv values = package->findSymbol_SimpleString_no_lock(nameKey);
+  T_mv values = this->findSymbol_SimpleString_no_lock(nameKey);
   Symbol_sp foundSym = gc::As<Symbol_sp>(values);
   Symbol_sp status = gc::As<Symbol_sp>(values.second());
   Export_errors error = no_problem;
   if (status.nilp()) {
     error = not_accessible_in_this_package;
   } else if (status == kw::_sym_external) {
-    package->_ExternalSymbols->remhash(nameKey);
-    package->_InternalSymbols->setf_gethash(nameKey,sym);
+    this->_ExternalSymbols->remhash(nameKey);
+    this->_InternalSymbols->setf_gethash(nameKey,sym);
   }
   if (error == not_accessible_in_this_package) {
+    // I'm not totally familiar, but asSmartPtr.raw_ smells.
     FEpackage_error("The symbol ~S is not accessible from ~S "
                     "and cannot be unexported.",
-                    package, 2, sym.raw_(), package.raw_());
+                    this->asSmartPtr(), 2, sym.raw_(), this->asSmartPtr().raw_());
   }
-  return _lisp->_true();
 }
 
 void Package_O::add_symbol_to_package_no_lock(SimpleString_sp nameKey, Symbol_sp sym, bool exportp) {
-  //trapSymbol(this,sym,symName);
-//  printf("%s:%d add_symbol_to_package  symbol: %s package: %s\n", __FILE__, __LINE__, nameKey->c_str(), this->_Name.c_str());
-#if 0
-  if (_lisp->_TrapIntern) {
-    if (strcmp(this->_Name->get_std_string().c_str(), _lisp->_TrapInternPackage.c_str()) == 0) {
-      if (strcmp(nameKey->get_std_string().c_str(), _lisp->_TrapInternName.c_str()) == 0) {
-        printf("%s:%d TRAPPED INTERN of symbol %s@%p in package %s\n", __FILE__, __LINE__, nameKey->get_std_string().c_str(), sym.raw_(), this->_Name.c_str() );
-      }
-    }
-  }
-#endif
-#if 0
-  if ( strcmp(symName,"CLEAR-GFUN-CACHE") == 0 ) {
-    printf("%s:%d Interning POINTER@%p in %s exportp: %d\n", __FILE__, __LINE__, sym.raw_(), this->_Name.c_str(), exportp );
-  }
-#endif
   if (this->isKeywordPackage() || this->actsLikeKeywordPackage() || exportp) {
     this->_ExternalSymbols->hash_table_setf_gethash(nameKey, sym);
   } else {
