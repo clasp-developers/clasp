@@ -1045,8 +1045,8 @@ T_sp read_lisp_object(T_sp sin, bool eofErrorP, T_sp eofValue, bool recursiveP) 
     DynamicScopeManager scope(_sym_STARsharp_equal_final_tableSTAR, _Nil<T_O>());
     result = read_lisp_object(sin, eofErrorP, eofValue, true);
     ReadTable_sp readtable = gc::As<ReadTable_sp>(cl::_sym_STARreadtableSTAR->symbolValue());
-    Character_sp charc = cl__peek_char(_Nil<T_O>(),sin,_lisp->_boolean(eofErrorP),eofValue,_Nil<T_O>());
-    if (readtable->syntax_type(charc) == kw::_sym_whitespace_character) {
+    T_sp tcharc = cl__peek_char(_Nil<T_O>(),sin,_Nil<T_O>(),_Nil<T_O>(),_Nil<T_O>());
+    if (tcharc.notnilp() && readtable->syntax_type(gc::As_unsafe<Character_sp>(tcharc)) == kw::_sym_whitespace_character) {
       cl__read_char(sin,_lisp->_boolean(eofErrorP),eofValue,_lisp->_true());
     }
   }
