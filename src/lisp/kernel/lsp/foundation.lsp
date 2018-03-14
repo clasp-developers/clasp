@@ -311,8 +311,8 @@ the corresponding VAR.  Returns NIL."
   (gdb "invoking unix debugger"))
 
 
-(defun signal-type-error (type expected-type)
-  (error 'type-error "type error"))
+(defun signal-type-error (datum expected-type)
+  (error 'type-error :datum datum :expected-type expected-type))
 
 
 (defun inform (fmt &rest args)
