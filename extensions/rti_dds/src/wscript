@@ -1,0 +1,471 @@
+''' ======================================================================= '''
+''' WSCRIPT FILE for EXTENSION   R T I - D D S                              '''
+''' ======================================================================= '''
+
+# -----------------------------------------------------------------------------
+#  SYSTEM IMPORTS
+# -----------------------------------------------------------------------------
+
+import os
+import platform
+import glob
+import inspect
+
+# -----------------------------------------------------------------------------
+#  APPLICATION IMPORTS
+# -----------------------------------------------------------------------------
+
+# None
+
+# -----------------------------------------------------------------------------
+#  SPECIAL VARS
+# -----------------------------------------------------------------------------
+
+# Note: These OS definitions must match the ones in the toplevel wscript file!
+DARWIN_OS = 'darwin'
+LINUX_OS = 'linux'
+WIN_OS = 'win'
+
+DEST_OS_BY_PLATFORM_NAME = { 'Darwin': DARWIN_OS,
+                             'Linux' : LINUX_OS,
+                             'Windows' : WIN_OS }
+
+DEST_OS = None
+
+# -----------------------------------------------------------------------------
+#  C O N F I G   S E C T I O N  - Please adapt as required
+# -----------------------------------------------------------------------------
+
+RTI_DDS_USE_STATIC_LIBS = 1 # Set to 0 for using dynamic libs
+
+# RTI DDS DEFAULT VALUES
+CLASP_DEFAULT_RTI_DDS_INSTALLROOTDIR = "/opt/dds/rti/connext_dds"
+CLASP_DEFAULT_RTI_DDS_VERSION = "5.3.0"
+
+# ENV VARS
+CLASP_ENVVAR_EXT_RTI_DDS_INSTALLROOTDIR = "RTI_DDS_INSTALLROOTDIR"
+CLASP_ENVVAR_EXT_RTI_DDS_LIBOSSUBDIR = "RTI_DDS_LIBOSSUBDIR"
+CLASP_ENVVAR_EXT_RTI_DDS_LIBDIR = "RTI_DDS_LIBDIR"
+CLASP_ENVVAR_EXT_RTI_DDS_INCDIR = "RTI_DDS_INCDIR"
+CLASP_ENVVAR_EXT_RTI_DDS_HOME = "RTI_DDS_HOME"
+CLASP_ENVVAR_EXT_RTI_DDS_VERSION = "RTI_DDS_VERSION"
+CLASP_ENVVAR_EXT_RTI_DDS_BINDIR = "RTI_DDS_BINDIR"
+CLASP_ENVVAR_EXT_RTI_DDS_DEBUG_FLAG = "RTI_DDS_DEBUG"
+CLASP_ENVVAR_EXT_RTI_DDS_USE_DEBUG_SHLIBS = "RTI_DDS_USE_DEBUG_SHLIBS"
+
+# MISC STUFF
+SOURCE_PATTERN = "*.cc"
+DEBUG = 1
+
+# -----------------------------------------------------------------------------
+#  UTILITY FUNCTIONS
+# -----------------------------------------------------------------------------
+
+def curr_line_nr():
+    return inspect.currentframe().f_back.f_lineno
+
+def curr_file_name():
+    return inspect.getfile(inspect.currentframe())
+
+def dest_os( ctx = None ):
+
+    global DEST_OS
+    result = None
+    result_type = 0
+
+    if DEST_OS == None:
+
+        if ctx == None:
+            result = DEST_OS_BY_PLATFORM_NAME[ platform.uname()[0] ]
+            result_type = 1
+        else:
+            result = ctx.env[ 'DEST_OS' ]
+            result_type = 2
+
+        if result_type == 0:
+            raise ValueError( "Could not determine DEST_OS !" )
+        elif result_type == 1:
+            dbgmsg( THIS_FILE, curr_line_nr(), "DEST_OS = {}, taken from platform()", result )
+        elif result_type == 2:
+            dbgmsg( THIS_FILE, curr_line_nr(), "DEST_OS = {}, taken from ctx.", result )
+        else:
+            raise ValueError( "Could not determine DEST_OS !" )
+
+        DEST_OS = result
+
+    else:
+        result = DEST_OS
+
+    return result
+
+def dbgmsg( filename, linenr, fmt, *args ):
+    msg = ""
+    if DEBUG:
+        try:
+            msg = fmt.format(*args)
+        except:
+            msg = fmt
+        print( "*** DEBUG INFO {}:{} - {}".format( os.path.basename( filename ), linenr, msg ) )
+
+def source_files( path = '.', pattern = None ):
+    result = []
+    if pattern == None:
+        raise ValueError( "Value Error ({}:{}): PATTERN parameter must define file name pattern (is None)!".format( curr_file_name(), curr_line_nr() ) )
+    result = glob.glob( "{}/{}".format( path, pattern ) )
+    return result
+
+def lib_list_w_link_flags( fmt, lib_list ):
+    result = []
+    for lib in lib_list:
+        result.append( fmt%"" )
+        result.append( lib )
+    return result
+
+def lib_list_w_link_flags_as_string( fmt, lib_list ):
+    result_str = StringIO()
+    for lib in lib_list:
+        result_str.write( " " )
+        result_str.write( fmt % lib )
+    return result_str.getvalue()
+
+def check_ctx( ctx ):
+    global THIS_FILE
+    dest_os_check = None
+    try:
+        dest_os_check = ctx.env[ 'DEST_OS' ]
+    except:
+        raise ValueError( "WAF Context Error ({}:{}): Passed in WAF context does not contain DEST_OS - invalid WAF context passed in !".format( THIS_FILE, curr_line_nr() ) )
+    if not dest_os_check:
+        raise ValueError( "WAF Context Error ({}:{}): Passed in WAF context does not contain valid value for DEST_OS...".format( THIS_FILE, curr_line_nr(), dest_os_check ) )
+
+def ctx_add_define_flag( ctx, key, value ):
+    global THIS_FILE
+    if not key:
+        raise ValueError( "Define Flag Error ({}:{}): invalid value for key {} !".format( THIS_FILE, curr_line_nr(), key ) )
+    dbgmsg( THIS_FILE, curr_line_nr(), "Define Flag: -D{}=\"{}\"", key, value )
+    ctx.define( key, value )
+
+def ctx_add_define_flag_to_cxxflags( ctx, key, value ):
+    global THIS_FILE
+    if not key or not value:
+        raise ValueError( "Define Flag Error ({}:{}): invalid values for either key {} or value {} !".format( THIS_FILE, curr_line_nr(), key, value ) )
+    dbgmsg( THIS_FILE, curr_line_nr(), "Add Define Flag to CXXFLAGS: -D{}=\"{}\"", key, value )
+    ctx.env.append_value( 'CXXFLAGS', [ '-D{}="{}"'.format( key, value ) ] )
+
+def ctx_add_define_flag_key_only_to_cxxflags( ctx, key ):
+    global THIS_FILE
+    if not key:
+        raise ValueError( "Define Flag Error ({}:{}): invalid key {} !".format( THIS_FILE, curr_line_nr(), key ) )
+    dbgmsg( THIS_FILE, curr_line_nr(), "Add Define Flag Key Only to CXXFLAGS: -D{}", key )
+    ctx.env.append_value( 'CXXFLAGS', [ '-D{}'.format( key ) ] )
+
+def ctx_add_define_flag_to_cflags( ctx, key, value ):
+    global THIS_FILE
+    if not key or not value:
+        raise ValueError( "Define Flag Error ({}:{}): invalid values for either key {} or value {} !".format( THIS_FILE, curr_line_nr(), key, value ) )
+    dbgmsg( THIS_FILE, curr_line_nr(), "Add Define Flag to CFLAGS: -D{}=\"{}\"", key, value )
+    ctx.env.append_value( 'CFLAGS', [ '-D{}="{}"'.format( key, value ) ] )
+
+def ctx_add_incdir( ctx, value ):
+    global THIS_FILE
+    if not value:
+        raise ValueError( "Add Include Directory Error ({}:{}): invalid value {} !".format( THIS_FILE, curr_line_nr(), value ) )
+    dbgmsg( THIS_FILE, curr_line_nr(), "Adding Include Directory: {}", value )
+    ctx.env.append_value( 'CXXFLAGS', [ '-I{}'.format( value ) ] )
+    ctx.env.append_value( 'CFLAGS', [ '-I{}'.format( value ) ] )
+
+def ctx_add_libdir( ctx, value ):
+    global THIS_FILE
+    if not value:
+        raise ValueError( "Add Library Directory Error ({}:{}): invalid value {} !".format( THIS_FILE, curr_line_nr(), value ) )
+    dbgmsg( THIS_FILE, curr_line_nr(), "Adding Library Directory: {}", value )
+    ctx.env.append_value( 'LINKFLAGS', '-L{}'.format( value ) )
+    ctx.env.append_value( 'LDFLAGS', '-L{}'.format( value ) )
+
+def ctx_add_ldflag( ctx, value ):
+    global THIS_FILE
+    if not value:
+        raise ValueError( "LDFLAGS Error ({}:{}): invalid value {} !".format( THIS_FILE, curr_line_nr(), value ) )
+    dbgmsg( THIS_FILE, curr_line_nr(), "Adding to LDFLAGS: {}", value )
+    ctx.env.append_value( 'LDFLAGS', value )
+
+def ctx_add_linkflag( ctx, value ):
+    global THIS_FILE
+    if not value:
+        raise ValueError( "LINKFLAGS Error ({}:{}): invalid values for value {} !".format( THIS_FILE, curr_line_nr(), value ) )
+    dbgmsg( THIS_FILE, curr_line_nr(), "Adding to LINKFLAGS: {}", value )
+    ctx.env.append_value( 'LINKFLAGS', value )
+
+# -----------------------------------------------------------------------------
+#  SPECIAL VARS (Continued)
+# -----------------------------------------------------------------------------
+
+THIS_FILE = curr_file_name()
+THIS_EXTENSION = "RTI-DDS"
+
+RTI_DDS_VERSION = None
+RTI_DDS_INSTALLROOTDIR = None
+RTI_DDS_LIBOSSUBDIR = None
+RTI_DDS_LIBDIR = None
+RTI_DDS_INCDIR = None
+RTI_DDS_HOME = None
+RTI_DDS_BINDIR = None
+
+RTI_DDS_INSTALLSUBDIR = { DARWIN_OS: 'macosx',
+                          LINUX_OS: 'linux',
+                          WIN_OS: 'win' }
+
+RTI_DDS_LIBSUBDIR = { DARWIN_OS: 'x64Darwin16clang8.0',
+                      LINUX_OS: 'UNDEFINED', # TODO: Configure the lib subdir
+                      WIN_OS: 'UNDEFINED' }  # TODO: Configure the lib subdir
+
+RTI_DDS_STATIC_LIBS = { DARWIN_OS: [
+# 'nddscorez',
+'nddscorezd',
+# 'nddscpp2z',
+'nddscpp2zd',
+# 'nddscppz',
+'nddscppzd',
+# 'nddscz',
+'nddsczd',
+# 'nddssecurityz',
+'nddssecurityzd',
+# 'nddstransporttcpz',
+'nddstransporttcpzd',
+# 'rticonnextmsgcpp2z',
+'rticonnextmsgcpp2zd',
+# 'rticonnextmsgcppz',
+'rticonnextmsgcppzd',
+# 'rticonnextmsgcz',
+'rticonnextmsgczd',
+# 'rtidlcppz',
+'rtidlcppzd',
+# 'rtidlcz',
+'rtidlczd',
+# 'rtimonitoringz',
+'rtimonitoringzd',
+# 'rtiroutingservicez',
+'rtiroutingservicezd',
+# 'rtirsinfrastructurez',
+'rtirsinfrastructurezd'
+ ],
+                      LINUX_OS: [ ],
+                      WIN_OS: [ ] }
+
+RTI_DDS_DYNAMIC_LIBS = { DARWIN_OS: [
+# 'nddsc',
+# 'nddscd',
+# 'nddscore',
+# 'nddscored',
+# 'nddscpp',
+# 'nddscpp2',
+# 'nddscpp2d',
+# 'nddscppd',
+# 'nddssecurity',
+# 'nddssecurityd',
+# 'nddstransporttcp',
+# 'nddstransporttcpd',
+# 'rticonnextmsgc',
+# 'rticonnextmsgcd',
+# 'rticonnextmsgcpp',
+# 'rticonnextmsgcpp2',
+# 'rticonnextmsgcpp2d',
+# 'rticonnextmsgcppd',
+# 'rtidlc',
+# 'rtidlcd',
+# 'rtidlcpp',
+# 'rtidlcppd',
+# 'rtimonitoring',
+# 'rtimonitoringd',
+# 'rtiroutingservice',
+# 'rtiroutingserviced',
+# 'rtirsassigntransf',
+# 'rtirsassigntransfd',
+# 'rtirsinfrastructure',
+# 'rtirsinfrastructured',
+],
+                          LINUX_OS: [ ], # TODO: Insert list of libs
+                          WIN_OS: [ ] }  # TODO: Insert list of libs
+
+RTI_DDS_DEFINES_PER_PLATFORM = { DARWIN_OS: [ "RTI_DARWIN", "RTI_UNIX" , "RTI_DARWIN16", "RTI_64BIT"],
+                                 LINUX_OS: [ "RTI_LIUNX" ],
+                                 WIN_OS: [ ] }
+
+# -----------------------------------------------------------------------------
+#  RTI DDS VARS SETUP
+# -----------------------------------------------------------------------------
+
+def rti_dds_version( ctx ):
+    global RTI_DDS_VERSION
+    if not RTI_DDS_VERSION:
+        default = CLASP_DEFAULT_RTI_DDS_VERSION
+        RTI_DDS_VERSION = os.getenv( CLASP_ENVVAR_EXT_RTI_DDS_VERSION, default )
+    return RTI_DDS_VERSION
+
+def rti_dds_installrootdir( ctx ):
+    global RTI_DDS_INSTALLROOTDIR
+    if not RTI_DDS_INSTALLROOTDIR:
+        default = CLASP_DEFAULT_RTI_DDS_INSTALLROOTDIR
+        RTI_DDS_INSTALLROOTDIR = os.getenv( CLASP_ENVVAR_EXT_RTI_DDS_INSTALLROOTDIR, default )
+    return RTI_DDS_INSTALLROOTDIR
+
+def rti_dds_home( ctx ):
+    global RTI_DDS_HOME
+    if not RTI_DDS_HOME:
+        default = rti_dds_installrootdir( ctx ) + os.path.sep + RTI_DDS_INSTALLSUBDIR[ dest_os( ctx ) ] + os.path.sep + "rti_connext_dds-" + rti_dds_version( ctx )
+        RTI_DDS_HOME = os.getenv( CLASP_ENVVAR_EXT_RTI_DDS_HOME, default )
+    return RTI_DDS_HOME
+
+def rti_dds_libdir( ctx ):
+    global RTI_DDS_LIBDIR
+    if not RTI_DDS_LIBDIR:
+        default = rti_dds_home( ctx ) + os.path.sep + "lib" + os.path.sep + RTI_DDS_LIBSUBDIR[ dest_os( ctx ) ]
+        RTI_DDS_LIBDIR = os.getenv( CLASP_ENVVAR_EXT_RTI_DDS_LIBDIR, default )
+    return RTI_DDS_LIBDIR
+
+def rti_dds_incdir( ctx ):
+    global RTI_DDS_INCDIR
+    if not RTI_DDS_INCDIR:
+        default = rti_dds_home( ctx ) + os.path.sep + "include"
+        RTI_DDS_INCDIR = os.getenv( CLASP_ENVVAR_EXT_RTI_DDS_INCDIR, default )
+    return RTI_DDS_INCDIR
+
+def rti_dds_bindir( ctx ):
+    global RTI_DDS_BINDIR
+    if not RTI_DDS_BINDIR:
+        default = rti_dds_home( ctx ) + os.path.sep + "bin"
+        RTI_DDS_BINDIR = os.getenv( CLASP_ENVVAR_EXT_RTI_DDS_BINDIR, default )
+    return RTI_DDS_BINDIR
+
+# -----------------------------------------------------------------------------
+#  WAF BUILD INSTRUCTIONS
+# -----------------------------------------------------------------------------
+
+# -----------------------------------------------------------------------------
+#  C O N F I G U R E
+# -----------------------------------------------------------------------------
+def configure( ctx ):
+
+    global THIS_FILE, THIS_EXTENSION
+
+    RTI_DDS_HOME   = rti_dds_home( ctx )
+    RTI_DDS_LIBDIR = rti_dds_libdir( ctx )
+    RTI_DDS_INCDIR = rti_dds_incdir( ctx )
+    RTI_DDS_BINDIR = rti_dds_bindir( ctx )
+
+    # Say Hello
+    dbgmsg( THIS_FILE, curr_line_nr(), "Configuring extension {} in {}: DDS Version {} installed in {}.", THIS_EXTENSION, ctx.path.abspath(), RTI_DDS_VERSION, RTI_DDS_HOME )
+
+    # Check passed in context
+    check_ctx( ctx )
+
+    # Check configuration
+
+    # - RTI DDS stuff
+    if not RTI_DDS_HOME or not os.path.isdir( RTI_DDS_HOME ):
+        raise ValueError( "DDS Install Directory (RTI_DDS_HOME) Error ({}:{}): Directory {} is not accessible!".format( THIS_FILE, curr_line_nr(), RTI_DDS_HOME ) )
+    if not RTI_DDS_LIBDIR or not os.path.isdir( RTI_DDS_LIBDIR ):
+        raise ValueError( "DDS Library Directory (RTI_DDS_LIBDIR) Error ({}:{}): Directory {} is not accessible!".format( THIS_FILE, curr_line_nr(), RTI_DDS_LIBDIR ) )
+    if not RTI_DDS_INCDIR or not os.path.isdir( RTI_DDS_INCDIR ):
+        raise ValueError( "DDS Include  Directory (RTI_DDS_INCDIR) Error ({}:{}): Directory {} is not accessible!".format( THIS_FILE, curr_line_nr(), RTI_DDS_INCDIR ) )
+
+    # - WAF-based lib check
+
+    dbgmsg( THIS_FILE, curr_line_nr(), "RTI DDS Static Libraries for OS {}: []", dest_os( ctx ), RTI_DDS_STATIC_LIBS[ dest_os( ctx ) ] )
+    dbgmsg( THIS_FILE, curr_line_nr(), "RTI DDS Dynamic Libraries for OS {}: []", dest_os( ctx ), RTI_DDS_DYNAMIC_LIBS[ dest_os( ctx ) ] )
+
+    if RTI_DDS_USE_STATIC_LIBS == 1:
+        ctx.check_cxx( stlib = RTI_DDS_STATIC_LIBS[ dest_os( ctx ) ],
+                       cflags = '-Wall',
+                       uselib_store = 'RTIDDS',
+                       stlibpath = RTI_DDS_LIBDIR )
+        if ( not ctx.env.STLIB_RTIDDS ) or ( ctx.env.STLIB_RTIDDS == [] ):
+            ctx.env.STLIB_RTIDDS = RTI_DDS_STATIC_LIBS[ dest_os( ctx ) ]
+    else:
+        ctx.check_cxx( lib = RTI_DDS_DYNAMIC_LIBS[ dest_os( ctx ) ],
+                       cflags = '-Wall',
+                       uselib_store = 'RTIDDS',
+                       libpath = RTI_DDS_LIBDIR )
+        if ( not ctx.env.LIB_RTIDDS ) or ( ctx.env.LIB_RTIDDS == [] ):
+            ctx.env.LIB_RTIDDS = RTI_DDS_DYNAMIC_LIBS[ dest_os( ctx ) ]
+
+    ctx.extensions_stlib += ctx.env.STLIB_RTIDDS
+    ctx.extensions_lib += ctx.env.LIB_RTIDDS
+
+    # Do configure
+
+    # - Set -D flags
+    ctx_add_define_flag( ctx, "RTI_DDS_VERSION", '{}'.format( RTI_DDS_VERSION ) )
+    ctx_add_define_flag( ctx, "RTI_DDS_HOME",    '{}'.format( RTI_DDS_HOME ) )
+    ctx_add_define_flag( ctx, "RTI_DDS_LIBDIR",  '{}'.format( RTI_DDS_LIBDIR ) )
+    ctx_add_define_flag( ctx, "RTI_DDS_INCDIR",  '{}'.format( RTI_DDS_INCDIR ) )
+    ctx_add_define_flag( ctx, "RTI_DDS_BINDIR",  '{}'.format( RTI_DDS_BINDIR ) )
+
+    ctx_add_define_flag( ctx, "RTI_DDS_VERSION_ENVVAR",
+                         '{}'.format( CLASP_ENVVAR_EXT_RTI_DDS_VERSION ) )
+    ctx_add_define_flag( ctx, "RTI_DDS_HOME_ENVVAR",
+                         '{}'.format( CLASP_ENVVAR_EXT_RTI_DDS_HOME ) )
+    ctx_add_define_flag( ctx, "RTI_DDS_LIBDIR_ENVVAR",
+                         '{}'.format( CLASP_ENVVAR_EXT_RTI_DDS_HOME ) )
+    ctx_add_define_flag( ctx, "RTI_DDS_INCDIR_ENVVAR",
+                         '{}'.format( CLASP_ENVVAR_EXT_RTI_DDS_INCDIR ) )
+    ctx_add_define_flag( ctx, "RTI_DDS_BINDIR_ENVVAR",
+                         '{}'.format( CLASP_ENVVAR_EXT_RTI_DDS_BINDIR ) )
+    ctx_add_define_flag( ctx, "RTI_DDS_DEBUG_ENVVAR",
+                         '{}'.format( CLASP_ENVVAR_EXT_RTI_DDS_DEBUG_FLAG ) )
+    # For Shared Libs usage please see note in rtidds.cc!
+    # ctx_add_define_flag( ctx, "RTI_DDS_USE_DEBUG_SHLIBS_ENVVAR",
+    #                     '{}'.format( CLASP_ENVVAR_EXT_RTI_DDS_USE_DEBUG_SHLIBS ) )
+
+    for define_flag in RTI_DDS_DEFINES_PER_PLATFORM[ dest_os( ctx ) ]:
+        key = "{}".format( define_flag )
+        ctx_add_define_flag_key_only_to_cxxflags( ctx, key )
+
+    ctx_add_define_flag( ctx, "CLASP_EXT_RTI_DDS_USE_MODERN_CXX_API",
+                         ctx.env.CLASP_EXT_RTI_DDS_USE_MODERN_CXX_API )
+
+    ctx_add_define_flag( ctx, "BUILD_EXTENSION", 1 )
+    ctx_add_define_flag_key_only_to_cxxflags( ctx, "CLASP_USE_EXT_RTI_DDS" )
+
+    # - Add Lib Dirs
+    ctx_add_libdir( ctx, RTI_DDS_LIBDIR )
+
+    # - Add Include Dirs
+    ctx_add_incdir( ctx, RTI_DDS_INCDIR )
+    ctx_add_incdir( ctx, RTI_DDS_INCDIR + os.path.sep + "ndds" )
+    ctx_add_incdir( ctx, RTI_DDS_INCDIR + os.path.sep + "ndds" + os.path.sep + "hpp" )
+    ctx_add_incdir( ctx, ctx.path.abspath() + os.path.sep + ".." + os.path.sep + "include" )
+
+    # Done
+    return
+
+# -----------------------------------------------------------------------------
+#  B U I L D
+# -----------------------------------------------------------------------------
+def build( ctx ):
+
+    global SOURCE_PATTERN, THIS_FILE, RTI_DDS_LIBDIR, RTI_DDS_INCDIR
+
+    RTI_DDS_INCDIR = rti_dds_incdir( ctx )
+    RTI_DDS_LIBDIR = rti_dds_libdir( ctx )
+
+    dbgmsg( THIS_FILE, curr_line_nr(), "Building in {}.", ctx.path.abspath() )
+
+    # - Add Include and Lib Dirs
+
+    # ctx.extensions_include_dirs.append( RTI_DDS_INCDIR )
+    # ctx.extensions_stlib.append( ctx.env.STLIB_RTIDDS )
+    # ctx.extensions_lib.append( ctx.env.LIB_RTIDDS )
+
+    # Add this extension's  source files for building
+    for name in source_files( ctx.path.abspath(), SOURCE_PATTERN ):
+        dbgmsg( THIS_FILE, curr_line_nr(), "Looking at file {}.", name )
+        node = ctx.path.find_node( os.path.basename( name ) )
+        if node == None:
+            raise ValueError( "Source File Not Valid Error ({}:{}): Could not create WAF node for {}/{}!".format( THIS_FILE, curr_line_nr(), ctx.path.abspath(), name ) )
+        ctx.extensions_source_files.append( node )
+    return
+
+# -----------------------------------------------------------------------------
+#  EOF
+# -----------------------------------------------------------------------------
