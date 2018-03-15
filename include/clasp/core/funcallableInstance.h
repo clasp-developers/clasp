@@ -152,8 +152,6 @@ namespace core {
     virtual T_sp lambda_list() const { return this->GFUN_LAMBDA_LIST(); };
   public:
     static size_t rack_stamp_offset();
-  private:
-    void reshapeInstance(int delta);
   public:
     virtual void LISP_INVOKE();
 

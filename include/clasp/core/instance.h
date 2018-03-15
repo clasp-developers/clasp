@@ -180,8 +180,6 @@ namespace core {
     void initializeClassSlots(Creator_sp creator, gctools::Stamp class_stamp);
   public:
     static size_t rack_stamp_offset();
-  protected:
-    void reshapeInstance(int delta);
   public: // Functions here
     Fixnum stamp() const;
     void stamp_set(Fixnum s);

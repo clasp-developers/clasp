@@ -84,53 +84,11 @@ void Instance_O::initializeSlots(gctools::Stamp stamp, size_t numberOfSlots) {
 //  printf("%s:%d  Make sure you initialize slots for classes this->_Class -> %s\n", __FILE__, __LINE__, _rep_(this->_Class).c_str());
 }
 
-CL_DEFUN void core__calculate_all_direct_subclasses() {
-  List_sp classNames = gc::As<List_sp>(_sym_STARallCxxClassesSTAR->symbolValue());
-  for ( auto cur : classNames ) {
-    Symbol_sp name = gc::As<Symbol_sp>(CONS_CAR(cur));
-    Class_sp class_ = cl__find_class(name,true,_Nil<T_O>());
-    class_->instanceSet(Instance_O::REF_CLASS_DIRECT_SUBCLASSES,_Nil<T_O>());
-  }
-  for ( auto cur : classNames ) {
-    Symbol_sp name = gc::As<Symbol_sp>(CONS_CAR(cur));
-    Class_sp class_ = cl__find_class(name,true,_Nil<T_O>());
-    List_sp directSuperClasses = gc::As<List_sp>(class_->instanceRef(Instance_O::REF_CLASS_DIRECT_SUPERCLASSES));
-    for ( auto supcur : directSuperClasses ) {
-      Class_sp supclass = gc::As<Class_sp>(CONS_CAR(supcur));
-      T_sp subs = supclass->instanceRef(Instance_O::REF_CLASS_DIRECT_SUBCLASSES);
-      subs = Cons_O::create(class_,subs);
-      supclass->instanceSet(Instance_O::REF_CLASS_DIRECT_SUBCLASSES,subs);
-    }
-  }
-}
-
-List_sp accumulate_unique_subclasses(Class_sp class_, List_sp subclasses) {
-//  printf("%s:%d Accumulating from  %s\n", __FILE__, __LINE__, _rep_(class_).c_str());
-  List_sp directSubs = class_->instanceRef(Instance_O::REF_CLASS_DIRECT_SUBCLASSES);
-  for ( auto cur : directSubs ) {
-    Class_sp onesub = gc::As<Class_sp>(CONS_CAR(cur));
-//    printf("%s:%d Checking %s\n", __FILE__, __LINE__, _rep_(onesub).c_str());
-    if (subclasses.unsafe_cons()->memberEq(onesub).nilp()) {
-//      printf("%s:%d Adding %s\n", __FILE__, __LINE__, _rep_(onesub).c_str());
-      subclasses = Cons_O::create(onesub,subclasses);
-    }
-    subclasses = accumulate_unique_subclasses(onesub,subclasses);
-  }
-  return subclasses;
-}
-      
-CL_DEFUN List_sp core__all_unique_subclasses(Class_sp class_) {
-  return accumulate_unique_subclasses(class_,Cons_O::create(class_,_Nil<T_O>()));
-}
-
-
-
 CL_DEFUN void core__specializer_call_history_generic_functions_push_new(T_sp tclass_, T_sp generic_function)
 {
   Class_sp class_ = gc::As<Class_sp>(tclass_);
   class_->CLASS_call_history_generic_functions_push_new(generic_function);
 }
-
 
 void Instance_O::CLASS_call_history_generic_functions_push_new(T_sp generic_function) {
   if (this->instanceRef(REF_SPECIALIZER_MUTEX).unboundp()) {
@@ -192,7 +150,7 @@ T_sp Instance_O::oinstancep() const {
 }
 
 T_sp Instance_O::oinstancepSTAR() const {
-    return make_fixnum((gctools::Fixnum)(this->numberOfSlots()));
+  return make_fixnum((gctools::Fixnum)(this->numberOfSlots()));
 }
 
 CL_LAMBDA(class slot-count);
@@ -352,22 +310,10 @@ T_sp Instance_O::copyInstance() const {
   return copy;
 }
 
-void Instance_O::reshapeInstance(int delta) {
-  size_t copySize = this->_Rack->length();
-  if (delta<0) copySize += delta;
-  SimpleVector_sp newRack = SimpleVector_O::make(this->_Rack->length()+delta,_Unbound<T_O>(),true,copySize,&(*this->_Rack)[0]);
-  this->_Rack = newRack;
-}
-/*
-  memcpy(aux->instance.slots, x->instance.slots,
-  (delta < 0 ? aux->instance.length : x->instance.length) *
-  sizeof(cl_object));
-  x->instance = aux->instance;
-*/
-
 SYMBOL_SC_(ClosPkg, standardOptimizedReaderMethod);
 SYMBOL_SC_(ClosPkg, standardOptimizedWriterMethod);
 
+// equalp method for structure-objects, which are instances too.
 bool Instance_O::equalp(T_sp obj) const {
   if (!obj.generalp()) return false;
   if (this->_Class->_Class != _lisp->_Roots._TheStructureClass ) {
@@ -385,7 +331,7 @@ bool Instance_O::equalp(T_sp obj) const {
   return false;
 }
 
-
+// also only for structure-objects.
 void Instance_O::sxhash_equalp(HashGenerator &hg, LocationDependencyPtrT ld) const {
   if (this->_Class->_Class != _lisp->_Roots._TheStructureClass ) {
     HashTable_O::sxhash_eq(hg,this->asSmartPtr(),ld);
@@ -410,17 +356,6 @@ void Instance_O::describe(T_sp stream) {
 }
 
 
-    
-    
-
-
-};
-
-
-
-
-
-namespace core {
 Class_sp Instance_O::create(Symbol_sp symbol, Class_sp metaClass, Creator_sp creator ) {
   DEPRECATED();
 };
@@ -617,12 +552,6 @@ void Instance_O::__setupStage3NameAndCalculateClassPrecedenceList(Symbol_sp clas
   this->lowLevel_calculateClassPrecedenceList();
 }
 
-
-};
-
-
-
-namespace core {
 
 string Instance_O::dumpInfo() {
   stringstream ss;

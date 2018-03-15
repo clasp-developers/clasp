@@ -193,14 +193,6 @@ string FuncallableInstance_O::__repr__() const {
   return ss.str();
 }
 
-
-void FuncallableInstance_O::reshapeInstance(int delta) {
-  size_t copySize = this->_Rack->length();
-  if (delta<0) copySize += delta;
-  SimpleVector_sp newRack = SimpleVector_O::make(this->_Rack->length()+delta,_Unbound<T_O>(),true,copySize,&(*this->_Rack)[0]);
-  this->_Rack = newRack;
-}
-
 void FuncallableInstance_O::LISP_INVOKE() {
   IMPLEMENT_ME();
 }
