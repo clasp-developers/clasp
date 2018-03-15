@@ -30,8 +30,8 @@
 (defmacro mlog (fmt &rest fmtargs) nil)
 
 
-#+clasp(defvar *optimize-slot-access* t
-	 "In ECL this is in ecl/src/c/symbol_table.h")
+(defvar *optimize-slot-access* t
+  "In ECL this is in ecl/src/c/symbol_table.h")
 
 ;;; ----------------------------------------------------------------------
 ;;; Class SPECIALIZER
@@ -72,7 +72,7 @@
 ;;; Any changes involving adding, removing, rearranging slots below need to be reflected in instance.h
     `(,@+specializer-slots+
       (name :initarg :name :initform nil :accessor class-id)
-      (direct-superclasses :initarg :direct-superclasses
+      (direct-superclasses :initarg :direct-superclasses :initform nil
 			   :accessor class-direct-superclasses)
       (direct-subclasses :initform nil :accessor class-direct-subclasses)
       (slots :accessor class-slots)
@@ -359,37 +359,25 @@
 (eval-when (eval #+clasp :compile-toplevel #+clasp :load-toplevel  )
   (locally (declare (optimize (debug 0)))
     (core:defconstant-equal +class-hierarchy+
-      `((standard-class
-         #+clasp :creates-classes #+clasp t)
-        #+clasp
-        (built-in-class
-         #+clasp :creates-classes #+clasp t)
+      `((standard-class)
+        (built-in-class)
         (standard-effective-slot-definition)
         (standard-direct-slot-definition)
         (standard-class
          :metaclass nil                 ; Special-cased in boot.lsp
-         :direct-slots #.+standard-class-slots+
-         #+clasp :creates-classes #+clasp t
-         )
-        #+clasp
+         :direct-slots #.+standard-class-slots+)
         (built-in-class
          :metaclass nil                 ; Special-cased in boot.lsp
-         :direct-slots #.+standard-class-slots+
-         #+clasp :creates-classes #+clasp t
-         )
+         :direct-slots #.+standard-class-slots+)
         (standard-direct-slot-definition
          :direct-slots #3=#.+slot-definition-slots+)
         (standard-effective-slot-definition
          :direct-slots #3#)
         (t
          :index 0)
-        #+clasp(class
-                :direct-slots #.+class-slots+
-                #+clasp :creates-classes #+clasp t
-                )
+        (class :direct-slots #.+class-slots+)
         (standard-object
          :direct-superclasses (t))
-        #+clasp
         (core:cxx-object
          :direct-superclasses (t))
         (metaobject
@@ -423,44 +411,29 @@
          :direct-slots #.+eql-specializer-slots+)
         (class
          :direct-superclasses (specializer)
-         :direct-slots #.+class-slots+
-         #+clasp :creates-classes #+clasp t
-         )
+         :direct-slots #.+class-slots+)
         (forward-referenced-class
          :direct-superclasses (class)
-         :direct-slots #.+class-slots+
-         #+clasp :creates-classes #+clasp t
-         )
+         :direct-slots #.+class-slots+)
         (built-in-class
          :direct-superclasses (class)
-         :direct-slots #1=#.+standard-class-slots+
-         #+clasp :creates-classes #+clasp t)
-        #+clasp(core:cxx-class
-                :direct-superclasses (class)
-                :direct-slots #1#
-                #+clasp :creates-classes #+clasp t
-                )
-        #+clasp(clbind:class-rep
-                :direct-superclasses (class)
-                :direct-slots #1#
-                #+clasp :creates-classes #+clasp t
-                )
+         :direct-slots #1=#.+standard-class-slots+)
+        (core:cxx-class
+         :direct-superclasses (class)
+         :direct-slots #1#)
+        (clbind:class-rep
+         :direct-superclasses (class)
+         :direct-slots #1#)
         (std-class
          :direct-superclasses (class)
-         :direct-slots #1#
-         #+clasp :creates-classes #+clasp t
-         )
+         :direct-slots #1#)
         (standard-class
          :direct-superclasses (std-class)
          :direct-slots #1#
-         :metaclass standard-class
-         #+clasp :creates-classes #+clasp t
-         )
+         :metaclass standard-class)
         (funcallable-standard-class
          :direct-superclasses (std-class)
-         :direct-slots #1#
-         #+clasp :creates-classes #+clasp t
-         )
+         :direct-slots #1#)
         ,@(loop for (name . rest) in +builtin-classes-list+
              for index from 1
              collect (list name :metaclass 'built-in-class
@@ -495,13 +468,12 @@
         (structure-object
          :metaclass structure-class
          :direct-superclasses (t))
-        #+clasp(core:derivable-cxx-class
-                :direct-superclasses (class)
-                :direct-slots #.+standard-class-slots+
-                :creates-classes t)
-        #+clasp(derivable-cxx-object
-                :metaclass core:derivable-cxx-class
-                :direct-superclasses (standard-object #+(or)t))
+        (core:derivable-cxx-class
+         :direct-superclasses (class)
+         :direct-slots #.+standard-class-slots+)
+        (derivable-cxx-object
+         :metaclass core:derivable-cxx-class
+         :direct-superclasses (standard-object #+(or)t))
         ))))
 
 (eval-when (:compile-toplevel :execute)

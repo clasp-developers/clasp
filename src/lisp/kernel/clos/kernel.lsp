@@ -109,7 +109,7 @@
   (if (and (fboundp name) (si::instancep (fdefinition name)))
       (fdefinition name)
       ;; create a fake standard-generic-function object:
-      (with-early-make-instance +standard-generic-function-slots+
+      (with-early-make-funcallable-instance +standard-generic-function-slots+
 	(gfun (find-class 'standard-generic-function)
 	      :name name
 	      :spec-list nil

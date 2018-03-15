@@ -71,10 +71,6 @@ CL_DEFUN T_sp core__copy_instance(T_sp obj) {
     Instance_sp iobj = gc::As_unsafe<Instance_sp>(obj);
     Instance_sp cp = iobj->copyInstance();
     return cp;
-  } else if (gc::IsA<FuncallableInstance_sp>(obj)) {
-    FuncallableInstance_sp cobj = gc::As_unsafe<FuncallableInstance_sp>(obj);
-    FuncallableInstance_sp cp = cobj->copyInstance();
-    return cp;
   }
   SIMPLE_ERROR(BF("copy-instance doesn't support copying %s") % _rep_(obj));
 };
@@ -148,31 +144,16 @@ void Instance_O::CLASS_call_history_generic_functions_push_new(T_sp generic_func
   this->instanceSet(REF_SPECIALIZER_CALL_HISTORY_GENERIC_FUNCTIONS,Cons_O::create(generic_function,gflist));
 }
 
-
-
-
-
 void Instance_O::CLASS_set_stamp_for_instances(Fixnum s) {
-#if 0
-  if (s == gctools::GCStamp<Instance_O>::Stamp) {
-    printf("%s:%d  A Class is having its CLASS_stamp_for_instances set to Instance_O stamp\n", __FILE__, __LINE__ );
-  }
-#endif
   this->instanceSet(REF_CLASS_STAMP_FOR_INSTANCES_,clasp_make_fixnum(s));
 };
 
+// NOT called by regular CL allocate instance. FIXME, find a way to remove this if possible.
 void Instance_O::initializeClassSlots(Creator_sp creator, gctools::Stamp stamp) {
-  // Initialize slots they way they are in +class-slots+ in: https://github.com/drmeister/clasp/blob/dev-class/src/lisp/kernel/clos/hierarchy.lsp#L55
-#if 0
-  if (creator.unboundp()) {
-    printf("%s:%d:%s     creator for %s is unbound\n", __FILE__, __LINE__, __FUNCTION__, this->_classNameAsString().c_str() );
-    fflush(stdout);
-  }
-#endif
+  // Should match clos/hierarchy.lsp
   this->instanceSet(REF_SPECIALIZER_CALL_HISTORY_GENERIC_FUNCTIONS, _Nil<T_O>());
-//  this->instanceSet(REF_SPECIALIZER_MUTEX, mp::SharedMutex_O::make_shared_mutex(_Nil<T_O>()));
-  this->instanceSet(REF_CLASS_DIRECT_SUPERCLASSES, _Nil<T_O>());
   this->instanceSet(REF_CLASS_DIRECT_SUBCLASSES, _Nil<T_O>());
+  this->instanceSet(REF_CLASS_DIRECT_SUPERCLASSES, _Nil<T_O>());
   this->instanceSet(REF_CLASS_DIRECT_DEFAULT_INITARGS, _Nil<T_O>());
   this->instanceSet(REF_CLASS_FINALIZED, _Nil<T_O>());
   this->instanceSet(REF_CLASS_SEALEDP, _Nil<T_O>());
@@ -212,90 +193,37 @@ T_sp Instance_O::oinstancep() const {
 
 T_sp Instance_O::oinstancepSTAR() const {
     return make_fixnum((gctools::Fixnum)(this->numberOfSlots()));
-  }
-
-/*! See ECL>>instance.d>>si_allocate_instance */
-T_sp allocate_instance(Class_sp cl, size_t numberOfSlots) {
-  ASSERT(cl->CLASS_has_creator());
-  Creator_sp creator = gctools::As<Creator_sp>(cl->CLASS_get_creator());
-  T_sp obj = creator->creator_allocate();
-  if (gc::IsA<Instance_sp>(obj)) {
-    Instance_sp iobj = gc::As_unsafe<Instance_sp>(obj);
-    iobj->_Class = cl;
-    iobj->initializeSlots(cl->CLASS_stamp_for_instances(),numberOfSlots);
-    return iobj;
-  }
-  ASSERT(gc::IsA<FuncallableInstance_sp>(obj));
-  FuncallableInstance_sp fiobj = gc::As_unsafe<FuncallableInstance_sp>(obj);
-  fiobj->_Class = cl;
-  fiobj->initializeSlots(cl->CLASS_stamp_for_instances(),numberOfSlots);
-  return fiobj;
-}
-
-/*! See ECL>>instance.d>>si_allocate_raw_instance */
-CL_LISPIFY_NAME(allocate_raw_instance);
-CL_DEFUN T_sp core__allocate_raw_instance(T_sp orig, Class_sp class_, size_t numberOfSlots) {
-  if (class_->CLASS_get_creator()->creates_classes()) {
-    return core__allocate_raw_class(orig,class_,numberOfSlots);
-  }
-  T_sp output = allocate_instance(class_, numberOfSlots);
-  if (orig.nilp()) return output;
-  if (gc::IsA<Instance_sp>(orig)) {
-    ASSERT(gc::IsA<Instance_sp>(output));
-    Instance_sp iorig = gc::As_unsafe<Instance_sp>(orig);
-    iorig->_Class = class_;
-    iorig->_Rack = gc::As_unsafe<Instance_sp>(output)->_Rack; // orig->adoptSlots(output);
-#ifdef DEBUG_CACHE
-    if (iorig.nilp()) printf("%s:%d  allocate_raw_instance is returning NIL!\n", __FILE__, __LINE__ );
-#endif
-    return iorig;
-  }
-  {
-    ASSERT(gc::IsA<FuncallableInstance_sp>(orig));
-    FuncallableInstance_sp iorig = gc::As_unsafe<FuncallableInstance_sp>(orig);
-    iorig->_Class = class_;
-    iorig->_Rack = gc::As_unsafe<Instance_sp>(output)->_Rack; // orig->adoptSlots(output);
-#ifdef DEBUG_CACHE
-    if (iorig.nilp()) printf("%s:%d  allocate_raw_instance is returning NIL!\n", __FILE__, __LINE__ );
-#endif
-    return iorig;
-  }
 }
 
 T_sp Instance_O::allocate_class(Class_sp metaClass, int slots) {
-  // Classes are only ever regular instances of Instance_O
   Instance_sp newClass = this->CLASS_get_creator()->creator_allocate();
-  newClass->initializeSlots(metaClass->CLASS_stamp_for_instances(),slots);
   newClass->_Class = metaClass;
+  newClass->initializeSlots(metaClass->CLASS_stamp_for_instances(), slots);
+  newClass->_Sig = metaClass->slots();
   return newClass;
 }
 
-CL_LAMBDA(original meta-class slots &optional creates-classes);
-CL_DECLARE();
-CL_DOCSTRING(R"doc(allocate-raw-class - behaves like ECL instance::allocate_raw_instance)doc");
-CL_DEFUN T_sp core__allocate_raw_class(T_sp orig, Class_sp cMetaClass, int slots, bool creates_classes) {
-  // Classes are only ever regular instances of Instance_O
-  Instance_sp newClass = cMetaClass->allocate_class(cMetaClass,slots);
-  Creator_sp cb = _Unbound<Creator_O>();
-  if (creates_classes) {
-    cb = gctools::GC<core::BuiltInObjectCreator<Class_O>>::allocate();
-  };
-  newClass->initializeClassSlots(cb,gctools::NextStamp());
-  if (orig.nilp()) {
-#ifdef DEBUG_CACHE
-    if (newClass.nilp()) printf("%s:%d  allocate_raw_class is returning NIL!\n", __FILE__, __LINE__ );
-#endif
-    return newClass;
-  }
-  ASSERT(gc::IsA<Class_sp>(orig));
-  Instance_sp iorig = gc::As_unsafe<Instance_sp>(orig);
-  iorig->_Class = cMetaClass;
-  iorig->_Rack = newClass->_Rack;
-#ifdef DEBUG_CACHE
-  if (iorig.nilp()) printf("%s:%d  allocate_raw_class is returning NIL!\n", __FILE__, __LINE__ );
-#endif
-  return iorig;
-};
+CL_LAMBDA(class slot-count);
+CL_DEFUN T_sp core__allocate_new_instance(Class_sp cl, size_t slot_count) {
+  // cl is known to be a standard-class.
+  ASSERT(cl->CLASS_has_creator());
+  Creator_sp creator = gctools::As<Creator_sp>(cl->CLASS_get_creator());
+  Instance_sp obj = creator->creator_allocate();
+  obj->_Class = cl;
+  /* Unlike other slots, the stamp must be initialized in the allocator,
+   * as it's required for dispatch. */
+  obj->initializeSlots(cl->CLASS_stamp_for_instances(), slot_count);
+  obj->_Sig = cl->slots();
+  return obj;
+}
+
+// Give an instance a new class and rack. Used by change-class.
+CL_DEFUN Instance_sp core__reallocate_instance(Instance_sp instance, Class_sp new_class, size_t new_size) {
+  instance->_Class = new_class;
+  instance->initializeSlots(new_class->CLASS_stamp_for_instances(), new_size); // set the rack
+  instance->_Sig = new_class->slots();
+  return instance;
+}
 
 size_t Instance_O::rack_stamp_offset() {
   SimpleVector_O dummy_rack(0);
@@ -362,15 +290,6 @@ T_sp Instance_O::instanceRef(size_t idx) const {
 //  return ((*this->_Rack)[idx+RACK_SLOT_START]);
 }
 T_sp Instance_O::instanceSet(size_t idx, T_sp val) {
-#if 0
-  if (idx == REF_CLASS_INSTANCE_STAMP) {
-    string className = "UNBOUND-CLASS";
-    if (this->_Class == _lisp->_Roots._TheStandardClass ) {
-      className = _rep_(this->_className());
-    }
-//    printf("%s:%d Setting REF_CLASS_INSTANCE_STAMP of instance with  className -> %s  to val->%s\n", __FILE__, __LINE__, className.c_str(), _rep_(val).c_str());
-  }
-#endif
 #if DEBUG_CLOS >= 2
   printf("\nMLOG SI-INSTANCE-SET[%d] of Instance %p to val: %s\n", idx, (void *)(this), val->__repr__().c_str());
 #endif
@@ -433,10 +352,12 @@ string Instance_O::__repr__() const {
 }
 
 T_sp Instance_O::copyInstance() const {
-  Instance_sp iobj = gc::As<Instance_sp>(allocate_instance(this->_Class,1));
-  iobj->_Rack = this->_Rack;
-  iobj->_Sig = this->_Sig;
-  return iobj;
+  Class_sp cl = this->_Class;
+  Instance_sp copy = cl->CLASS_get_creator()->creator_allocate();
+  copy->_Class = cl;
+  copy->_Rack = this->_Rack;
+  copy->_Sig = this->_Sig;
+  return copy;
 }
 
 void Instance_O::reshapeInstance(int delta) {
@@ -763,12 +684,9 @@ CL_DEFUN List_sp clos__direct_superclasses(Class_sp c) {
   TYPE_ERROR(c,cl::_sym_class);
 }
 
-CL_DEFUN void core__reinitialize_class(Class_sp c) {
-  if (c->_Class->isSubClassOf(_lisp->_Roots._TheClass)) {
-    c->CLASS_set_stamp_for_instances(gctools::NextStamp());
-    return;
-  }
-  TYPE_ERROR(c,cl::_sym_class);
+// FIXME: Perhaps gctools::NextStamp could be exported and used as the stamp slot's initform.
+CL_DEFUN void core__class_new_stamp(Class_sp c) {
+  c->CLASS_set_stamp_for_instances(gctools::NextStamp());
 }
 
 CL_DEFUN Fixnum core__class_stamp_for_instances(Class_sp c) {

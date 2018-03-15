@@ -55,7 +55,7 @@ CL_DEFUN T_sp core__make_structure(T_sp type, List_sp slot_values) {
     ASSERTF(!type.nilp(), BF("Tried to make-structure with type = nil"));
     //	printf("%s:%d  core__make_structure of %s  slot_values: %s\n",
     //	       __FILE__, __LINE__, _rep_(type).c_str(), _rep_(slot_values).c_str());
-    Instance_sp so = gc::As<Instance_sp>(allocate_instance(ctype, cl__length(slot_values)));
+    Instance_sp so = core__allocate_new_instance(ctype, cl__length(slot_values));
     int idx = 0;
     for (auto slot : slot_values) {
       so->instanceSet(idx, oCar(slot));

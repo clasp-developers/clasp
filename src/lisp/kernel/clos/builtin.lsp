@@ -27,15 +27,7 @@
   (clos::gf-log "     class -> %s\n" name)
   (multiple-value-bind (metaclass direct-superclasses options)
       (apply #'help-ensure-class rest)
-    ;;; In Clasp make-instance of a class requires that a new stamp is chosen
     (setf class (apply #'make-instance metaclass :name name options))
-    ;;
-    ;; initialize the default allocator for the new class
-    ;; It is inherited from the direct-superclasses - if they are all 
-    ;; regular classes then it will get an Instance allocator
-    ;; If one of them is a ClbindClass then this will inherit a
-    ;; duplicate of its allocator
-    (setf (creator class) (sys:compute-instance-creator class metaclass direct-superclasses))
     (invalidate-generic-functions-with-class-selector class)
     (when name
       (si:create-type-name name)

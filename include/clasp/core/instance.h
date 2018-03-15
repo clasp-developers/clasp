@@ -260,10 +260,7 @@ namespace gctools {
 };
 
 namespace core {
-  T_sp allocate_instance(Class_sp theClass, size_t numberOfSlots);
-
-  T_sp core__allocate_raw_class(T_sp orig, Class_sp tMetaClass, int slots, bool creates_classes=true);
-
+  T_sp core__allocate_new_instance(Class_sp theClass, size_t numberOfSlots);
 };
 
 namespace core {

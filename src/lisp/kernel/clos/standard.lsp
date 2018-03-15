@@ -107,24 +107,26 @@
 	    (setf last-location new-loc)))
      finally (return (max num-slots (1+ last-location)))))
 
-(defvar *the-class-class* nil)
-(defmethod allocate-instance ((class class) &rest initargs)
+(defmethod allocate-instance ((class standard-class) &rest initargs)
   (declare (ignore initargs))
   ;; FIXME! Inefficient! We should keep a list of dependent classes.
   (unless (class-finalized-p class)
     (finalize-inheritance class))
-  #+clasp(unless *the-class-class*
-	   (setq *the-class-class* (find-class 'class)))
-  (dbg-standard "About to allocate-raw-instance class->~a~%" class)
-  (let ((x #-clasp(si::allocate-raw-instance nil class (class-size class))
-	   #+clasp(if (core:subclassp class *the-class-class*)
-		      (ALLOCATE-RAW-CLASS nil class (class-size class))
-		      (si::allocate-raw-instance nil class (class-size class)))
-	   ))
-    (dbg-standard "Done allocate-raw-instance unbound x ->~a~%" (eq (core:unbound) x))
-    (si::instance-sig-set x)
+  (dbg-standard "About to allocate-new-instance class->~a~%" class)
+  (let ((x (core:allocate-new-instance class (class-size class))))
+    (dbg-standard "Done allocate-new-instance unbound x ->~a~%" (eq (core:unbound) x))
     (mlog "In allocate-instance  x -> %s\n" x)
-    #+mlog(or x (error "allocate-raw-xxxx returned nil  (core:subclassp class *the-class-class*) -> ~a" (core:subclassp class *the-class-class*)))
+    x))
+
+(defmethod allocate-instance ((class funcallable-standard-class) &rest initargs)
+  (declare (ignore initargs))
+  ;; FIXME! Inefficient! We should keep a list of dependent classes.
+  (unless (class-finalized-p class)
+    (finalize-inheritance class))
+  (dbg-standard "About to allocate-new-funcallable-instance class->~a~%" class)
+  (let ((x (core:allocate-new-funcallable-instance class (class-size class))))
+    (dbg-standard "Done allocate-new-funcallable-instance unbound x ->~a~%" (eq (core:unbound) x))
+    (mlog "In allocate-instance  x -> %s\n" x)
     x))
 
 (defmethod make-instance ((class class) &rest initargs)
@@ -211,11 +213,20 @@
 		       initargs))
 	 (direct-superclasses (check-direct-superclasses class direct-superclasses)))
     (loop for c in (class-direct-superclasses class)
-       unless (member c direct-superclasses :test #'eq)
-       do (remove-direct-subclass c class))
+          unless (member c direct-superclasses :test #'eq)
+            do (remove-direct-subclass c class))
     (setf (class-direct-superclasses class) direct-superclasses)
     (loop for c in direct-superclasses
-       do (add-direct-subclass c class))
+          do (add-direct-subclass c class))
+
+    ;; Get a new stamp
+    (core:class-new-stamp class)
+    ;; initialize the default allocator for the new class
+    ;; It is inherited from the direct-superclasses - if they are all 
+    ;; regular classes then it will get an Instance allocator
+    ;; If one of them is a ClbindClass then this will inherit a
+    ;; duplicate of its allocator
+    (setf (creator class) (sys:compute-instance-creator class (class-of class) direct-superclasses))
     class))
 
 (defun precompute-valid-initarg-keywords (class)
@@ -502,18 +513,10 @@ because it contains a reference to the undefined class~%  ~A"
   (clos::gf-log "     name -> %s\n" name)
   (multiple-value-bind (metaclass direct-superclasses options)
       (apply #'help-ensure-class rest)
-    ;;
-    ;; initialize the default allocator for the new class
-    ;; It is inherited from the direct-superclasses - if they are all 
-    ;; regular classes then it will get an Instance allocator
-    ;; If one of them is a ClbindClass then this will inherit a
-    ;; duplicate of its allocator
-    (setf (creator class) (sys:compute-instance-creator class metaclass direct-superclasses))
     (cond ((forward-referenced-class-p class)
 	   (change-class class metaclass))
 	  ((not (eq (class-of class) metaclass))
 	   (error "When redefining a class, the metaclass can not change.")))
-;;; In Clasp reinitialize-instance of a class requires that a new stamp is chosen
     (setf class (apply #'reinitialize-instance class :name name options))
     (when name
       (si:create-type-name name)
