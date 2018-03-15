@@ -63,11 +63,10 @@ namespace core {
         REF_CLASS_DIRECT_DEFAULT_INITARGS = (6+CLASS_SLOT_OFFSET),
         REF_CLASS_DEFAULT_INITARGS = (7+CLASS_SLOT_OFFSET),
         REF_CLASS_FINALIZED = (8+CLASS_SLOT_OFFSET),
-        REF_CLASS_SEALEDP = (11+CLASS_SLOT_OFFSET),
-        REF_CLASS_DEPENDENTS = (13+CLASS_SLOT_OFFSET),
-        REF_CLASS_LOCATION_TABLE = (16+CLASS_SLOT_OFFSET),
-        REF_CLASS_STAMP_FOR_INSTANCES_ = (17+CLASS_SLOT_OFFSET),
-        REF_CLASS_CREATOR = (18+CLASS_SLOT_OFFSET)
+        REF_CLASS_DEPENDENTS = (12+CLASS_SLOT_OFFSET),
+        REF_CLASS_LOCATION_TABLE = (15+CLASS_SLOT_OFFSET),
+        REF_CLASS_STAMP_FOR_INSTANCES_ = (16+CLASS_SLOT_OFFSET),
+        REF_CLASS_CREATOR = (17+CLASS_SLOT_OFFSET)
     } Slots;
     
   public: // ctor/dtor for classes with shared virtual base
@@ -126,8 +125,6 @@ namespace core {
     
     string dumpInfo();
 
-    virtual T_sp allocate_class(Class_sp metaClass, int slots);
-
   /*! Return the direct superclasses */
     List_sp directSuperclasses() const;
 
@@ -182,8 +179,6 @@ namespace core {
     void initializeClassSlots(Creator_sp creator, gctools::Stamp class_stamp);
   public:
     static size_t rack_stamp_offset();
-  protected:
-    void reshapeInstance(int delta);
   public: // Functions here
     Fixnum stamp() const;
     void stamp_set(Fixnum s);
@@ -260,10 +255,7 @@ namespace gctools {
 };
 
 namespace core {
-  T_sp allocate_instance(Class_sp theClass, size_t numberOfSlots);
-
-  T_sp core__allocate_raw_class(T_sp orig, Class_sp tMetaClass, int slots, bool creates_classes=true);
-
+  T_sp core__allocate_new_instance(Class_sp theClass, size_t numberOfSlots);
 };
 
 namespace core {

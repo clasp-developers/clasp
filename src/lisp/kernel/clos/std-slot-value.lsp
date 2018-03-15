@@ -72,7 +72,7 @@
        ,@body)))
 
 ;;;
-;;; The following macro is also used at bootstap for instantiating
+;;; The following macro are also used at bootstrap for instantiating
 ;;; a class based only on the s-form description.
 ;;;
 (eval-when (:compile-toplevel :execute #+clasp-boot :load-toplevel)
@@ -81,8 +81,7 @@
     (when (symbolp slots)
       (setf slots (symbol-value slots)))
     `(let* ((%class ,class)
-	    (,object (si::allocate-raw-instance nil %class
-						,(length slots))))
+	    (,object (core:allocate-new-instance %class ,(length slots))))
        (declare (type standard-object ,object))
        ,@(flet ((initializerp (name list)
 		  (not (eq (getf list name 'wrong) 'wrong))))
@@ -97,8 +96,30 @@
 			    (setf initform (getf key-value-pairs name))))
 		  when (si:sl-boundp initform)
 		  collect `(si::instance-set ,object ,index ,initform)))
-       (when %class
-	 (si::instance-sig-set ,object))
+       (with-early-accessors (,slots)
+	 ,@body)))
+  
+  (defmacro with-early-make-funcallable-instance (slots (object class &rest key-value-pairs)
+                                                  &rest body)
+    (when (symbolp slots)
+      (setf slots (symbol-value slots)))
+    `(let* ((%class ,class)
+            ;; Identical to above macro except here. (FIXME: rewrite more nicely.)
+	    (,object (core:allocate-new-funcallable-instance %class ,(length slots))))
+       (declare (type standard-object ,object))
+       ,@(flet ((initializerp (name list)
+		  (not (eq (getf list name 'wrong) 'wrong))))
+	       (loop for (name . slotd) in slots
+		  for initarg = (getf slotd :initarg)
+		  for initform = (getf slotd :initform (si::unbound))
+		  for initvalue = (getf key-value-pairs initarg)
+		  for index from 0
+		  do (cond ((and initarg (initializerp initarg key-value-pairs))
+			    (setf initform (getf key-value-pairs initarg)))
+			   ((initializerp name key-value-pairs)
+			    (setf initform (getf key-value-pairs name))))
+		  when (si:sl-boundp initform)
+		  collect `(si::instance-set ,object ,index ,initform)))
        (with-early-accessors (,slots)
 	 ,@body))))
 
@@ -143,30 +164,6 @@
                 #+ecl +the-funcallable-standard-class+))
 	(gethash slot-name slot-table nil)
 	(find slot-name slots :key #'slot-definition-name))))
-
-;;;
-;;; INSTANCE UPDATE PREVIOUS
-;;;
-(eval-when (:compile-toplevel :execute #+clasp-boot :load-toplevel)
-  #+(or)(defmacro ensure-up-to-date-instance (instance)
-    ;; The up-to-date status of a class is determined by
-    ;; instance.sig. This slot of the C structure contains a list of
-    ;; slot definitions that was used to create the instance. When the
-    ;; class is updated, the list is newly created. Structures are also
-    ;; "instances" but keep ECL_UNBOUND instead of the list.
-    `(let* ((i ,instance)
-	    (s (si::instance-sig i)))
-       (with-early-accessors (+standard-class-slots+)
-	 (when (si:sl-boundp s)
-	   (unless (eq s (class-slots (si::instance-class i)))
-	     (update-instance i)))))))
-
-(defun update-instance (x)
-  ;; Update the stamp of the class
-  #+clasp(core:instance-stamp-set x (stamp-for-instances (class-of x)))
-  (si::instance-sig-set x))
-
-(declaim (notinline update-instance))
 
 ;;;
 ;;; STANDARD-CLASS INTERFACE

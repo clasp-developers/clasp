@@ -104,7 +104,6 @@
   ;; Block-start queue entries in effect at the queue head.
   (pending-blocks :initform nil :type list :accessor pretty-stream-pending-blocks)
   )
-  (:sealedp t)
 )
 
 (defun pretty-stream-p (stream)

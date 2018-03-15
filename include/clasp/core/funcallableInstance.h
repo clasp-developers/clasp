@@ -152,8 +152,6 @@ namespace core {
     virtual T_sp lambda_list() const { return this->GFUN_LAMBDA_LIST(); };
   public:
     static size_t rack_stamp_offset();
-  private:
-    void reshapeInstance(int delta);
   public:
     virtual void LISP_INVOKE();
 
@@ -172,15 +170,8 @@ namespace core {
 
     T_sp instanceClassSet(Class_sp mc);
 
-    virtual T_sp instanceSigSet();
     virtual T_sp instanceSig() const;
 
-#if 0
-    virtual bool equalp(T_sp obj) const;
-    virtual void sxhash_(HashGenerator &hg) const;
-    virtual void sxhash_equalp(HashGenerator &hg,LocationDependencyPtrT ptr) const;
-#endif
-    
   /*! Return the value of a slot */
     T_sp instanceRef(size_t idx) const;
   /*! Set the value of a slot and return the new value */
@@ -202,32 +193,6 @@ namespace core {
     static LCC_RETURN not_funcallable_entry_point(LCC_ARGS_ELLIPSIS);
   }; // FuncallableInstance class
 
-#if 0
-  struct GFReadLock {
-    FuncallableInstance_sp _GF;
-  GFReadLock(FuncallableInstance_sp gf) : _GF(gf) {
-    printf("%s:%d GFSharedLock lock -> %s\n", __FILE__, __LINE__, _rep_(this->_GF).c_str() );
-    this->_GF->GFUN_LOCK()->shared_lock();
-  }
-    ~GFReadLock() {
-    printf("%s:%d GFSharedLock unlock -> %s\n", __FILE__, __LINE__, _rep_(this->_GF).c_str() );
-    this->_GF->GFUN_LOCK()->shared_unlock();
-    }
-  };
-
-  struct GFWriteLock {
-    FuncallableInstance_sp _GF;
-    GFWriteLock(FuncallableInstance_sp gf) : _GF(gf) {
-      printf("%s:%d GFWriteLock lock -> %s\n", __FILE__, __LINE__, _rep_(this->_GF).c_str() );
-      this->_GF->GFUN_LOCK()->write_lock();
-  }
-    ~GFWriteLock() {
-      printf("%s:%d GFWriteLock unlock -> %s\n", __FILE__, __LINE__, _rep_(this->_GF).c_str() );
-      this->_GF->GFUN_LOCK()->write_unlock();
-    }
-  };
-#endif
-  
 }; // core namespace
 
 

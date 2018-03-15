@@ -29,10 +29,6 @@
 ;;#+(or)
 (defmacro mlog (fmt &rest fmtargs) nil)
 
-
-#+clasp(defvar *optimize-slot-access* t
-	 "In ECL this is in ecl/src/c/symbol_table.h")
-
 ;;; ----------------------------------------------------------------------
 ;;; Class SPECIALIZER
 
@@ -72,7 +68,7 @@
 ;;; Any changes involving adding, removing, rearranging slots below need to be reflected in instance.h
     `(,@+specializer-slots+
       (name :initarg :name :initform nil :accessor class-id)
-      (direct-superclasses :initarg :direct-superclasses
+      (direct-superclasses :initarg :direct-superclasses :initform nil
 			   :accessor class-direct-superclasses)
       (direct-subclasses :initform nil :accessor class-direct-subclasses)
       (slots :accessor class-slots)
@@ -84,7 +80,6 @@
       (finalized :initform nil :accessor class-finalized-p)
       (docstring :initarg :documentation :initform nil)
       (size :accessor class-size)
-      (sealedp :initarg :sealedp :initform nil :accessor class-sealedp)
       (prototype)
       (dependents :initform nil :accessor class-dependents)
       (valid-initargs :accessor class-valid-initargs)
@@ -108,9 +103,7 @@
 (eval-when (:compile-toplevel :execute #+clasp :load-toplevel)
   (defparameter +standard-class-slots+
     (append +class-slots+
-	    '((optimize-slot-access)
-	      (forward)
-              (source-position :initform nil :initarg :source-position :accessor class-source-position)))))
+	    '((source-position :initform nil :initarg :source-position :accessor class-source-position)))))
 
 ;;; ----------------------------------------------------------------------
 ;;; STRUCTURE-CLASS
@@ -218,63 +211,63 @@
 	        (cons list)
 	    (array)
            (vector array sequence)
-           #+clasp(simple-vector vector)
-           #+clasp(core:simple-vector-byte8-t vector)
-           #+clasp(core:simple-vector-byte16-t vector)
-           #+clasp(core:simple-vector-byte32-t vector)
-           #+clasp(core:simple-vector-byte64-t vector)
-           #+clasp(core:simple-vector-int8-t vector)
-           #+clasp(core:simple-vector-int16-t vector)
-           #+clasp(core:simple-vector-int32-t vector)
-           #+clasp(core:simple-vector-int64-t vector)
-           #+clasp(core:simple-vector-size-t vector)
-           #+clasp(core:simple-vector-fixnum vector)
-           #+clasp(core:simple-vector-double vector)
-           #+clasp(core:simple-vector-float vector)
-           #+clasp(core:MDARRAY-BASE-CHAR array)
-           #+clasp(core:MDARRAY-BIT array)
-           #+clasp(core:MDARRAY-BYTE16-T array)
-           #+clasp(core:MDARRAY-BYTE32-T array)
-           #+clasp(core:MDARRAY-BYTE64-T array)
-           #+clasp(core:MDARRAY-BYTE8-T array)
-           #+clasp(core:MDARRAY-CHARACTER array)
-           #+clasp(core:MDARRAY-DOUBLE array)
-           #+clasp(core:MDARRAY-DUMP  Function array)
-           #+clasp(core:MDARRAY-FIXNUM array)
-           #+clasp(core:MDARRAY-FLOAT array)
-           #+clasp(core:MDARRAY-INT16-T array)
-           #+clasp(core:MDARRAY-INT32-T array)
-           #+clasp(core:MDARRAY-INT64-T array)
-           #+clasp(core:MDARRAY-INT8-T array)
-           #+clasp(core:MDARRAY-SIZE-T array)
-           #+clasp(core:MDARRAY-T array)
-           #+clasp(core:SIMPLE-MDARRAY-BASE-CHAR array)
-           #+clasp(core:SIMPLE-MDARRAY-BIT array)
-           #+clasp(core:SIMPLE-MDARRAY-BYTE16-T array)
-           #+clasp(core:SIMPLE-MDARRAY-BYTE32-T array)
-           #+clasp(core:SIMPLE-MDARRAY-BYTE64-T array)
-           #+clasp(core:SIMPLE-MDARRAY-BYTE8-T array)
-           #+clasp(core:SIMPLE-MDARRAY-CHARACTER array)
-           #+clasp(core:SIMPLE-MDARRAY-DOUBLE array)
-           #+clasp(core:SIMPLE-MDARRAY-FIXNUM array)
-           #+clasp(core:SIMPLE-MDARRAY-FLOAT array)
-           #+clasp(core:SIMPLE-MDARRAY-INT16-T array)
-           #+clasp(core:SIMPLE-MDARRAY-INT32-T array)
-           #+clasp(core:SIMPLE-MDARRAY-INT64-T array)
-           #+clasp(core:SIMPLE-MDARRAY-INT8-T array)
-           #+clasp(core:SIMPLE-MDARRAY-SIZE-T array)
-           #+clasp(core:SIMPLE-MDARRAY-T array)
+           (simple-vector vector)
+           (core:simple-vector-byte8-t vector)
+           (core:simple-vector-byte16-t vector)
+           (core:simple-vector-byte32-t vector)
+           (core:simple-vector-byte64-t vector)
+           (core:simple-vector-int8-t vector)
+           (core:simple-vector-int16-t vector)
+           (core:simple-vector-int32-t vector)
+           (core:simple-vector-int64-t vector)
+           (core:simple-vector-size-t vector)
+           (core:simple-vector-fixnum vector)
+           (core:simple-vector-double vector)
+           (core:simple-vector-float vector)
+           (core:MDARRAY-BASE-CHAR array)
+           (core:MDARRAY-BIT array)
+           (core:MDARRAY-BYTE16-T array)
+           (core:MDARRAY-BYTE32-T array)
+           (core:MDARRAY-BYTE64-T array)
+           (core:MDARRAY-BYTE8-T array)
+           (core:MDARRAY-CHARACTER array)
+           (core:MDARRAY-DOUBLE array)
+           (core:MDARRAY-DUMP  Function array)
+           (core:MDARRAY-FIXNUM array)
+           (core:MDARRAY-FLOAT array)
+           (core:MDARRAY-INT16-T array)
+           (core:MDARRAY-INT32-T array)
+           (core:MDARRAY-INT64-T array)
+           (core:MDARRAY-INT8-T array)
+           (core:MDARRAY-SIZE-T array)
+           (core:MDARRAY-T array)
+           (core:SIMPLE-MDARRAY-BASE-CHAR array)
+           (core:SIMPLE-MDARRAY-BIT array)
+           (core:SIMPLE-MDARRAY-BYTE16-T array)
+           (core:SIMPLE-MDARRAY-BYTE32-T array)
+           (core:SIMPLE-MDARRAY-BYTE64-T array)
+           (core:SIMPLE-MDARRAY-BYTE8-T array)
+           (core:SIMPLE-MDARRAY-CHARACTER array)
+           (core:SIMPLE-MDARRAY-DOUBLE array)
+           (core:SIMPLE-MDARRAY-FIXNUM array)
+           (core:SIMPLE-MDARRAY-FLOAT array)
+           (core:SIMPLE-MDARRAY-INT16-T array)
+           (core:SIMPLE-MDARRAY-INT32-T array)
+           (core:SIMPLE-MDARRAY-INT64-T array)
+           (core:SIMPLE-MDARRAY-INT8-T array)
+           (core:SIMPLE-MDARRAY-SIZE-T array)
+           (core:SIMPLE-MDARRAY-T array)
 	        (string vector)
                 #+(or unicode clasp)
 	   (base-string string vector)
-           #+clasp(simple-base-string base-string)
-           #+clasp(core:str8ns base-string)
-           #+clasp(string vector)
-           #+clasp(core:simple-character-string string)
-           #+clasp(core:str-wns string)
+           (simple-base-string base-string)
+           (core:str8ns base-string)
+           (string vector)
+           (core:simple-character-string string)
+           (core:str-wns string)
            (bit-vector vector)
-           #+clasp(cl:simple-bit-vector bit-vector)
-           #+clasp(core:bit-vector-ns bit-vector)
+           (cl:simple-bit-vector bit-vector)
+           (core:bit-vector-ns bit-vector)
 	    (stream)
 	   (ext:ansi-stream stream)
 	   (file-stream ext:ansi-stream)
@@ -309,17 +302,14 @@
 	    (si::foreign-data)
 	    (si::frame)
 	    (si::weak-pointer)
-	   #+clasp(si::external-object)
-	   #+clasp(si::iterator)
-	     #+clasp(si::directory-iterator si::iterator)
-	     #+clasp(si::recursive-directory-iterator si::iterator)
+	   (si::external-object)
+	   (si::iterator)
+	     (si::directory-iterator si::iterator)
+	     (si::recursive-directory-iterator si::iterator)
 	    #+threads (mp::process)
 	    #+threads (mp::lock)
 	    #+threads (mp::rwlock)
 	    #+threads (mp::condition-variable)
-	    #+(and ecl threads) (mp::semaphore)
-	    #+(and ecl threads) (mp::barrier)
-	    #+(and ecl threads) (mp::mailbox)
 	    #+sse2 (ext::sse-pack))))
 
 ;;; FROM AMOP:
@@ -359,37 +349,25 @@
 (eval-when (eval #+clasp :compile-toplevel #+clasp :load-toplevel  )
   (locally (declare (optimize (debug 0)))
     (core:defconstant-equal +class-hierarchy+
-      `((standard-class
-         #+clasp :creates-classes #+clasp t)
-        #+clasp
-        (built-in-class
-         #+clasp :creates-classes #+clasp t)
+      `((standard-class)
+        (built-in-class)
         (standard-effective-slot-definition)
         (standard-direct-slot-definition)
         (standard-class
          :metaclass nil                 ; Special-cased in boot.lsp
-         :direct-slots #.+standard-class-slots+
-         #+clasp :creates-classes #+clasp t
-         )
-        #+clasp
+         :direct-slots #.+standard-class-slots+)
         (built-in-class
          :metaclass nil                 ; Special-cased in boot.lsp
-         :direct-slots #.+standard-class-slots+
-         #+clasp :creates-classes #+clasp t
-         )
+         :direct-slots #.+standard-class-slots+)
         (standard-direct-slot-definition
          :direct-slots #3=#.+slot-definition-slots+)
         (standard-effective-slot-definition
          :direct-slots #3#)
         (t
          :index 0)
-        #+clasp(class
-                :direct-slots #.+class-slots+
-                #+clasp :creates-classes #+clasp t
-                )
+        (class :direct-slots #.+class-slots+)
         (standard-object
          :direct-superclasses (t))
-        #+clasp
         (core:cxx-object
          :direct-superclasses (t))
         (metaobject
@@ -423,44 +401,29 @@
          :direct-slots #.+eql-specializer-slots+)
         (class
          :direct-superclasses (specializer)
-         :direct-slots #.+class-slots+
-         #+clasp :creates-classes #+clasp t
-         )
+         :direct-slots #.+class-slots+)
         (forward-referenced-class
          :direct-superclasses (class)
-         :direct-slots #.+class-slots+
-         #+clasp :creates-classes #+clasp t
-         )
+         :direct-slots #.+class-slots+)
         (built-in-class
          :direct-superclasses (class)
-         :direct-slots #1=#.+standard-class-slots+
-         #+clasp :creates-classes #+clasp t)
-        #+clasp(core:cxx-class
-                :direct-superclasses (class)
-                :direct-slots #1#
-                #+clasp :creates-classes #+clasp t
-                )
-        #+clasp(clbind:class-rep
-                :direct-superclasses (class)
-                :direct-slots #1#
-                #+clasp :creates-classes #+clasp t
-                )
+         :direct-slots #1=#.+standard-class-slots+)
+        (core:cxx-class
+         :direct-superclasses (class)
+         :direct-slots #1#)
+        (clbind:class-rep
+         :direct-superclasses (class)
+         :direct-slots #1#)
         (std-class
          :direct-superclasses (class)
-         :direct-slots #1#
-         #+clasp :creates-classes #+clasp t
-         )
+         :direct-slots #1#)
         (standard-class
          :direct-superclasses (std-class)
          :direct-slots #1#
-         :metaclass standard-class
-         #+clasp :creates-classes #+clasp t
-         )
+         :metaclass standard-class)
         (funcallable-standard-class
          :direct-superclasses (std-class)
-         :direct-slots #1#
-         #+clasp :creates-classes #+clasp t
-         )
+         :direct-slots #1#)
         ,@(loop for (name . rest) in +builtin-classes-list+
              for index from 1
              collect (list name :metaclass 'built-in-class
@@ -495,13 +458,12 @@
         (structure-object
          :metaclass structure-class
          :direct-superclasses (t))
-        #+clasp(core:derivable-cxx-class
-                :direct-superclasses (class)
-                :direct-slots #.+standard-class-slots+
-                :creates-classes t)
-        #+clasp(derivable-cxx-object
-                :metaclass core:derivable-cxx-class
-                :direct-superclasses (standard-object #+(or)t))
+        (core:derivable-cxx-class
+         :direct-superclasses (class)
+         :direct-slots #.+standard-class-slots+)
+        (derivable-cxx-object
+         :metaclass core:derivable-cxx-class
+         :direct-superclasses (standard-object #+(or)t))
         ))))
 
 (eval-when (:compile-toplevel :execute)

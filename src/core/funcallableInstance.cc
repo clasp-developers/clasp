@@ -73,6 +73,26 @@ T_sp FuncallableInstance_O::oinstancepSTAR() const {
     return make_fixnum((gctools::Fixnum)(this->numberOfSlots()));
   }
 
+// Identical to allocate_new_instance in instance.cc, except for the type.
+CL_DEFUN T_sp core__allocate_new_funcallable_instance(Class_sp cl, size_t numberOfSlots) {
+  // cl is known to be a funcallable-standard-class.
+  ASSERT(cl->CLASS_has_creator());
+  Creator_sp creator = gctools::As<Creator_sp>(cl->CLASS_get_creator());
+  FuncallableInstance_sp obj = creator->creator_allocate();
+  obj->_Class = cl;
+  obj->initializeSlots(cl->CLASS_stamp_for_instances(), numberOfSlots);
+  obj->_Sig = cl->slots();
+  return obj;
+}
+
+CL_DEFUN FuncallableInstance_sp core__reallocate_funcallable_instance(FuncallableInstance_sp instance,
+                                                                      Class_sp new_class,
+                                                                      size_t new_size) {
+  instance->_Class = new_class;
+  instance->initializeSlots(new_class->CLASS_stamp_for_instances(), new_size);
+  instance->_Sig = new_class->slots();
+  return instance;
+}
 
 size_t FuncallableInstance_O::rack_stamp_offset() {
   SimpleVector_O dummy_rack(0);
@@ -90,15 +110,6 @@ void FuncallableInstance_O::stamp_set(Fixnum s) {
 size_t FuncallableInstance_O::numberOfSlots() const {
   return this->_Rack->length()-1;
 };
-
-
-T_sp FuncallableInstance_O::instanceSigSet() {
-  T_sp classSlots(_Nil<T_O>());
-  Class_sp mc = this->_instanceClass();
-  classSlots = mc->slots();
-  this->_Sig = classSlots;
-  return ((classSlots));
-}
 
 T_sp FuncallableInstance_O::instanceSig() const {
 #if DEBUG_CLOS >= 2
@@ -182,14 +193,6 @@ string FuncallableInstance_O::__repr__() const {
   return ss.str();
 }
 
-
-void FuncallableInstance_O::reshapeInstance(int delta) {
-  size_t copySize = this->_Rack->length();
-  if (delta<0) copySize += delta;
-  SimpleVector_sp newRack = SimpleVector_O::make(this->_Rack->length()+delta,_Unbound<T_O>(),true,copySize,&(*this->_Rack)[0]);
-  this->_Rack = newRack;
-}
-
 void FuncallableInstance_O::LISP_INVOKE() {
   IMPLEMENT_ME();
 }
@@ -220,12 +223,13 @@ void FuncallableInstance_O::set_kind(Symbol_sp k) {
 
 T_sp FuncallableInstance_O::copyInstance() const {
   DEPRECATED();
-  FuncallableInstance_sp iobj = gc::As<FuncallableInstance_sp>(allocate_instance(this->_Class,1));
-  iobj->_Rack = this->_Rack;
-  iobj->_Sig = this->_Sig;
-//  iobj->_entryPoint.store(this->_entryPoint.load());
-  iobj->_isgf = this->_isgf;
-  return iobj;
+  Class_sp cl = this->_Class;
+  FuncallableInstance_sp copy = cl->CLASS_get_creator()->creator_allocate();
+  copy->_Class = cl;
+  copy->_Rack = this->_Rack;
+  copy->_Sig = this->_Sig;
+  copy->_isgf = this->_isgf;
+  return copy;
 }
 
 T_sp FuncallableInstance_O::setFuncallableInstanceFunction(T_sp functionOrT) {

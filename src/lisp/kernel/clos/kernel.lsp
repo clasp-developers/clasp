@@ -68,18 +68,6 @@
 (defsetf find-class (&rest x) (v) `(setf-find-class ,v ,@x))
 
 
-;; In clasp classp is a builtin predicate
-#-clasp
-(defun classp (obj)
-  (and (si:instancep obj)
-       (let ((topmost (find-class 'CLASS nil)))
-	 ;; All instances can be classes until the class CLASS has
-	 ;; been installed. Otherwise, we check the parents.
-	 ;(print (list (class-id (class-of obj))topmost (and topmost (class-precedence-list topmost))))
-	 (or (null topmost)
-	     (si::subclassp (si::instance-class obj) topmost)))
-       t))
-
 ;;; ----------------------------------------------------------------------
 ;;; Methods
 
@@ -109,7 +97,7 @@
   (if (and (fboundp name) (si::instancep (fdefinition name)))
       (fdefinition name)
       ;; create a fake standard-generic-function object:
-      (with-early-make-instance +standard-generic-function-slots+
+      (with-early-make-funcallable-instance +standard-generic-function-slots+
 	(gfun (find-class 'standard-generic-function)
 	      :name name
 	      :spec-list nil
@@ -138,9 +126,6 @@
 (defun compute-discriminating-function (generic-function)
   (declare (ignore generic-function))
   'invalidated-dispatch-function)
-
-#+(or)(eval-when (:execute :compile-toplevel :load-toplevel)
-  (setq cmp::*jit-dump-module-before-optimizations* t))
 
 ;;; ----------------------------------------------------------------------
 ;;; COMPUTE-APPLICABLE-METHODS

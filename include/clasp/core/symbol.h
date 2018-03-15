@@ -141,6 +141,8 @@ public:
 CL_LISPIFY_NAME("core:specialp");
 CL_DEFMETHOD   bool specialP() const { return this->_IsSpecial; };
 
+  void setf_specialP(bool specialp) { this->_IsSpecial = specialp; };
+
   Symbol_sp copy_symbol(T_sp copy_properties) const;
   bool isExported();
 
