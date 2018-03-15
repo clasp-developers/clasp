@@ -17,6 +17,7 @@
                :cleavir-kildall-type-inference
                :cleavir-escape
                :cleavir-hir-transformations
+               :cleavir-partial-inlining
                :cleavir-remove-useless-instructions
                :cleavir-hir-to-mir
                :cleavir-basic-blocks

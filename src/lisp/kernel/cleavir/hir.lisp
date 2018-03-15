@@ -18,6 +18,10 @@
   (with-output-to-string (s)
     (format s "debug-message(~a)" (debug-message instr))))
 
+(defmethod cleavir-ir:clone-instruction :around ((instruction debug-message-instruction))
+  (let ((result (call-next-method)))
+    (setf (debug-message result) (debug-message instruction))
+    result))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -34,6 +38,11 @@
 (defmethod cleavir-ir-graphviz:label ((instr multiple-value-foreign-call-instruction))
   (with-output-to-string (s)
     (format s "multiple-value-foreign-call(~a)" (function-name instr))))
+
+(defmethod cleavir-ir:clone-instruction :around ((instruction multiple-value-foreign-call-instruction))
+  (let ((result (call-next-method)))
+    (setf (function-name result) (function-name instruction))
+    result))
 
 (defmethod make-multiple-value-foreign-call-instruction
     (function-name inputs outputs &optional (successor nil successor-p))
@@ -59,6 +68,12 @@
   (with-output-to-string (s)
     (format s "foreign-call(~a)" (function-name instr))))
 
+(defmethod cleavir-ir:clone-instruction :around ((instruction foreign-call-instruction))
+  (let ((result (call-next-method)))
+    (setf (foreign-types result) (foreign-types instruction)
+          (function-name result) (function-name instruction))
+    result))
+
 (defmethod make-foreign-call-instruction
     (foreign-types function-name inputs outputs &optional (successor nil successor-p))
   (make-instance 'foreign-call-instruction
@@ -82,6 +97,11 @@
 (defmethod cleavir-ir-graphviz:label ((instr foreign-call-pointer-instruction))
   (with-output-to-string (s)
     (format s "foreign-call-pointer")))
+
+(defmethod cleavir-ir:clone-instruction :around ((instruction foreign-call-pointer-instruction))
+  (let ((result (call-next-method)))
+    (setf (foreign-types result) (foreign-types instruction))
+    result))
 
 (defmethod make-foreign-call-pointer-instruction
     (foreign-types inputs outputs &optional (successor nil successor-p))
@@ -214,6 +234,10 @@
 (defmethod cleavir-ir-graphviz:label ((instr bind-va-list-instruction))
   )
 
+(defmethod cleavir-ir:clone-instruction :around ((instruction bind-va-list-instruction))
+  (let ((result (call-next-method)))
+    (setf (cleavir-ir:lambda-list result) (cleavir-ir:lambda-list instruction))))
+
 (defun make-bind-va-list-instruction (lambda-list va-list &optional (successor nil successor-p))
   (make-instance 'bind-va-list-instruction
                  :lambda-list lambda-list
@@ -251,6 +275,11 @@
   (with-output-to-string (s)
     (format s "named-enter(~a)" (lambda-name instr))))
 
+(defmethod cleavir-ir:clone-instruction :around ((instruction named-enter-instruction))
+  (let ((result (call-next-method)))
+    (setf (lambda-name result) (lambda-name instruction))
+    result))
+
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -270,6 +299,10 @@
   (with-output-to-string (s)
     (format s "landing-pad-return")))
 
+(defmethod cleavir-ir:clone-instruction :around ((instruction landing-pad-return-instruction))
+  (let ((result (call-next-method)))
+    (setf (landing-pad result) (landing-pad instruction))
+    result))
 
 
 (defun frame-holder (enter)
@@ -278,49 +311,6 @@
 
 (defun (setf frame-holder) (frame-holder enter)
   (setf (cleavir-ir:outputs enter) (append (cleavir-ir:outputs enter) (list frame-holder))))
-
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
-;;; Instruction PUSH-SPECIAL-BINDING-INSTRUCTION
-;;;
-;;; This instruction is used to push the value of a special
-;;; variable and then bind it to a new value
-
-(defclass push-special-binding-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin)
-  ())
-
-(defun make-push-special-binding-instruction
-    (symbol value &key successor)
-  (make-instance 'push-special-binding-instruction
-    :inputs (list symbol value)
-    :outputs nil
-    :successors (if (null successor) nil (list successor))))
-
-(defmethod cleavir-ir-graphviz:label ((instr push-special-binding-instruction))
-  "push-special-binding")
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
-;;; Instruction POP-SPECIAL-BINDING-INSTRUCTION
-;;;
-;;; This instruction is used to pop the value of a special variable
-
-(defclass pop-special-binding-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin)
-  ())
-
-(defun make-pop-special-binding-instruction
-    (symbol &key successor)
-  (make-instance 'pop-special-binding-instruction
-    :inputs (list symbol)
-    :outputs nil
-    :successors (if (null successor) nil (list successor))))
-
-(defmethod cleavir-ir-graphviz:label ((instr pop-special-binding-instruction))
-  "pop-special-binding")
-
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -362,6 +352,12 @@
       (if (> (length original-object) 30)
 	  (format s "~a..." (subseq original-object 0 30))
 	  (princ original-object s)))))
+
+(defmethod cleavir-ir:clone-instruction :around ((instruction precalc-value-instruction))
+  (let ((result (call-next-method)))
+    (setf (precalc-value-instruction-original-object result)
+          (precalc-value-instruction-original-object instruction))
+    result))
 
 
 
@@ -405,38 +401,6 @@
 (defmethod cleavir-ir-graphviz:label ((instruction setf-fdefinition-instruction)) "setf-fdefinition")
 
 
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
-;;; Instruction LANDING-PAD-INSTRUCTION.
-;;;
-#||
-(defclass landing-pad-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin)
-  ((%unwinds :initform nil :initarg :unwinds :accessor unwinds)
-   (%basic-block :initarg :basic-block :accessor basic-block)
-   (%frame :initarg :frame :accessor :frame)))
-
-(defun make-landing-pad-instruction
-    (output &key successor unwinds)
-  (make-instance 'landing-pad-instruction
-    :inputs nil
-    :outputs (list output)
-    :successors (if (null successor) nil (list successor))
-    :unwinds unwinds))
-
-
-(defmethod cleavir-ir-graphviz:label ((instr landing-pad-instruction))
-  (with-output-to-string (str)
-    (format str "landing-pad[")
-    (dolist (unwind (unwinds instr))
-      (format str "{~a-->~a};" (cc-mir:describe-mir unwind) (cc-mir:describe-mir (first (cleavir-ir:successors unwind)))))
-    (format str "]")))
-||#
-
-
-
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; INDEXED-UNWIND-INSTRUCTION
@@ -446,12 +410,6 @@
 ;;; landing-pad
 (defclass indexed-unwind-instruction (cleavir-ir:unwind-instruction)
   ((%jump-id :initform nil :initarg :jump-id :accessor jump-id)))
-
-
-#+(or)(defmethod cleavir-ir-graphviz:label ((instr indexed-unwind-instruction))
-  (format t "Label for indexed-unwind-instruction~%")
-  (with-output-to-string (stream)
-    (format stream "indexed-unwind[~a]" (jump-id instr))))
 
 (defmethod cleavir-ir-graphviz:draw-instruction ((instruction indexed-unwind-instruction) stream)
   (format stream "   ~a [label = \"~a\"];~%"
@@ -463,9 +421,13 @@
 (defmethod cleavir-ir-graphviz:label ((instruction indexed-unwind-instruction))
   (format nil "indexed-unwind[~a]" (jump-id instruction)))
 
+(defmethod cleavir-ir:clone-instruction :around ((instruction indexed-unwind-instruction))
+  (let ((result (call-next-method)))
+    (setf (jump-id result) (jump-id instruction))
+    result))
+
 (defmethod cl:print-object ((instr indexed-unwind-instruction) stream)
   (format stream "#<indexed-unwind[~a]>" (jump-id instr)))
-
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -488,18 +450,20 @@
   (with-output-to-string (stream)
     (format stream "throw")))
 
+(defmethod cleavir-ir:clone-instruction :around ((instruction throw-instruction))
+  (let ((result (call-next-method)))
+    (setf (throw-tag result) (throw-tag instruction))
+    result))
+
 
 (defmethod cl:print-object ((instr throw-instruction) stream)
   (format stream "#<throw>"))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defmethod cleavir-remove-useless-instructions:instruction-may-be-removed-p ((instruction debug-message-instruction)) nil)
 
 ;;(defmethod cleavir-remove-useless-instructions:instruction-may-be-removed-p ((instruction landing-pad-return-instruction)) nil)
-
-(defmethod cleavir-remove-useless-instructions:instruction-may-be-removed-p ((instruction push-special-binding-instruction)) nil)
-
-(defmethod cleavir-remove-useless-instructions:instruction-may-be-removed-p ((instruction pop-special-binding-instruction)) nil)
 
 ;(defmethod cleavir-remove-useless-instructions:instruction-may-be-removed-p ((instruction precalc-value-instruction)) t)
 

@@ -1213,6 +1213,8 @@ when this is t a lot of graphs will be generated.")
   ;; or an object needing a make-load-form.
   ;; That shouldn't actually happen, but it's a little ambiguous in Cleavir right now.
   (quick-draw-hir init-instr "hir-before-transformations")
+  #+(or)
+  (cleavir-partial-inlining:do-inlining init-instr)
   ;; required by most of the below
   (cleavir-hir-transformations:process-captured-variables init-instr)
   (setf *ct-process-captured-variables* (compiler-timer-elapsed))
@@ -1251,7 +1253,11 @@ when this is t a lot of graphs will be generated.")
   (quick-draw-hir init-instr "hir-after-eliminate-typeq")
   (clasp-cleavir::eliminate-load-time-value-inputs init-instr system env)
   (quick-draw-hir init-instr "hir-after-eliminate-load-time-value-inputs")
-  (setf *ct-eliminate-load-time-value-inputs* (compiler-timer-elapsed)))
+  (setf *ct-eliminate-load-time-value-inputs* (compiler-timer-elapsed))
+  #+(or)
+  (cleavir-remove-useless-instructions:remove-useless-instructions init-instr)
+  #+(or)
+  (quick-draw-hir init-instr "hir-after-remove-useless-instructions"))
 
 (defvar *interactive-debug* nil)
 (defun compile-cst-or-form-to-mir (cst-or-form &optional (ENV *clasp-env*))
