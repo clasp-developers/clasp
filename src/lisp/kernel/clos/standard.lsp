@@ -97,15 +97,10 @@
 ;;;
 
 (defun compute-instance-size (slots)
+  ;; could just use cl:count, but type inference is bad atm
   (loop for slotd in slots
-     with last-location = 0
-     with num-slots = 0
-     when (eq (slot-definition-allocation slotd) :instance)
-     do (let ((new-loc (safe-slot-definition-location slotd)))
-	  (incf num-slots)
-	  (when (and new-loc (> new-loc last-location))
-	    (setf last-location new-loc)))
-     finally (return (max num-slots (1+ last-location)))))
+        when (eq (slot-definition-allocation slotd) :instance)
+          sum 1))
 
 (defmethod allocate-instance ((class standard-class) &rest initargs)
   (declare (ignore initargs))
