@@ -253,15 +253,6 @@
 (defmethod reinitialize-instance :after ((class class) &rest initargs)
   (update-dependents class initargs))
 
-(defmethod shared-initialize :before
-    ((class std-class) slot-names &rest initargs
-     &key
-       (optimize-slot-access (list *optimize-slot-access*))
-       sealedp)
-  (declare (ignore slot-names))
-  (setf (slot-value class 'optimize-slot-access) (first optimize-slot-access)
-	(slot-value class 'sealedp) (and sealedp t)))
-
 (defmethod add-direct-subclass ((parent class) child)
   (pushnew child (class-direct-subclasses parent)))
 
@@ -339,54 +330,12 @@ because it contains a reference to the undefined class~%  ~A"
       (setf (class-slots class) slots
 	    (class-size class) (compute-instance-size slots)
 	    (class-default-initargs class) (compute-default-initargs class)
-	    (class-finalized-p class) t))
-    ;;
-    ;; When a class is sealed we rewrite the list of direct slots to fix
-    ;; their locations. This may imply adding _new_ direct slots.
-    ;;
-    (when (class-sealedp class)
-      (let* ((free-slots (delete-duplicates (mapcar #'slot-definition-name (class-slots class))))
-	     (all-slots (class-slots class)))
-	;;
-	;; We first search all slots that belonged to unsealed classes and which
-	;; therefore have no fixed position.
-	;;
-	(loop for c in cpl
-	   do (loop for slotd in (class-direct-slots c)
-		 when (safe-slot-definition-location slotd)
-		 do (setf free-slots (delete (slot-definition-name slotd) free-slots))))
-	;;
-	;; We now copy the locations of the effective slots in this class to
-	;; the class direct slots.
-	;;
-	(loop for slotd in (class-direct-slots class)
-	   do (let* ((name (slot-definition-name slotd))
-		     (other-slotd (find name all-slots :key #'slot-definition-name)))
-		(setf (slot-definition-location slotd)
-		      (slot-definition-location other-slotd)
-		      free-slots (delete name free-slots))))
-	;;
-	;; And finally we add one direct slot for each inherited slot that did
-	;; not have a fixed location.
-	;;
-	(loop for name in free-slots
-	   with direct-slots = (class-direct-slots class)
-	   do (let* ((effective-slotd (find name all-slots :key #'slot-definition-name))
-		     (def (direct-slot-to-canonical-slot effective-slotd)))
-		(push (apply #'make-instance (direct-slot-definition-class class def)
-			     def)
-		      direct-slots))
-	   finally (setf (class-direct-slots class) direct-slots))))
-    ;;
-    ;; This is not really needed, because when we modify the list of slots
-    ;; all instances automatically become obsolete (See change.lsp)
-                                        ;(make-instances-obsolete class)
-    ;;
-    ;; But this is really needed: we have to clear the different type caches
-    ;; for type comparisons and so on.
-    ;;
-    (si::subtypep-clear-cache)
-    )
+	    (class-finalized-p class) t)))
+  ;;
+  ;; We have to clear the different type caches
+  ;; for type comparisons and so on.
+  ;;
+  (si::subtypep-clear-cache)
   ;; As mentioned above, when a parent is finalized, it is responsible for
   ;; invoking FINALIZE-INHERITANCE on all of its children. Obviously,
   ;; this only makes sense when the class has been defined.
@@ -394,9 +343,8 @@ because it contains a reference to the undefined class~%  ~A"
     (finalize-unless-forward subclass))
   ;;
   ;; We create various caches to more rapidly find the slot locations and
-  ;; slot definitions.
-  (std-create-slots-table class)
-  )
+  ;; slot definitions from slot-value.
+  (std-create-slots-table class))
 
 
 (defmethod finalize-inheritance :after ((class std-class))

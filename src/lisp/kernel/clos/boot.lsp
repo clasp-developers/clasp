@@ -49,7 +49,7 @@
                           (debug-boot "    About to do the~%")
                           (the class (find-class metaclass nil))))
          (class (progn
-                  (debug-boot "    About to allocate-new-instance~%")
+                  (debug-boot "    About to allocate-boot-class~%")
                   (or (find-class name nil)
                       (allocate-boot-class the-metaclass #.(length +standard-class-slots+))))))
     ;;    (debug-boot "About to with-early-accessors -> macroexpand = ~a~%" (macroexpand '(with-early-accessors (+standard-class-slots+) (setf (class-id                  class) name))))
@@ -84,7 +84,6 @@
       (core:set-class class name)
       (debug-boot "    Done setf class name -> ~a  class -> ~a~%" name class)
       (setf
-       (class-sealedp             class) nil
        (class-dependents          class) nil)
       (debug-boot "      About to add-slots~%")
       (add-slots class direct-slots)
@@ -104,6 +103,7 @@
         (setf (creator class) (sys:compute-instance-creator class the-metaclass superclasses))
         (debug-boot "      compute-clos-class-precedence-list  class->~a   superclasses->~a~%" class superclasses)
         (let ((cpl (compute-clos-class-precedence-list class superclasses)))
+          (debug-boot "      computed")
           (setf (class-precedence-list class) cpl)))
       (debug-boot "      maybe add index~%")
       (when index
@@ -139,10 +139,6 @@
 
 ;; Create the classes
 ;;
-;; Notice that, due to circularity in the definition, STANDARD-CLASS has
-;; itself as metaclass. ENSURE-BOOT-CLASS takes care of that.
-;;
-#+clasp
 (progn
     (defvar +the-t-class+)
     (defvar +the-class+)
@@ -183,14 +179,8 @@
 ;;
 ;; Finalize
 ;;
-;;
-;; This is needed for further optimization
-;; (Probably not really. FIXME: Remove sealedp entirely, with fastgf is doesn't help)
-;;
-(dbg-boot "About to set slot-value for method-combination\n")
-(setf (slot-value (find-class 'method-combination) 'sealedp) t)
-
 ;; This is needed so that the early slotds we made are not marked obsolete.
+;;
 (let ()
   (with-early-accessors (+standard-class-slots+)
     (loop for (class-name) in +class-hierarchy+
