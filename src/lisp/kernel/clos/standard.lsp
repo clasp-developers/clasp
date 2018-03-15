@@ -104,9 +104,14 @@
 
 (defmethod allocate-instance ((class standard-class) &rest initargs)
   (declare (ignore initargs))
-  ;; FIXME! Inefficient! We should keep a list of dependent classes.
-  (unless (class-finalized-p class)
-    (finalize-inheritance class))
+  ;; CLHS says allocate-instance finalizes the class first, but we don't.
+  ;; Dr. Strandh argues that this is impossible since the initargs should be the
+  ;; defaulted initargs, which cannot be computed without the class being finalized.
+  ;; More fundamentally but less legalistically, allocate-instance is not usually
+  ;; called except from make-instance, which checks finalization itself.
+  ;; If allocate-instance is nonetheless somehow called on an unfinalized class,
+  ;; class-size (also computed during finalization) will be unbound and error
+  ;; before anything terrible can happen.
   (dbg-standard "About to allocate-new-instance class->~a~%" class)
   (let ((x (core:allocate-new-instance class (class-size class))))
     (dbg-standard "Done allocate-new-instance unbound x ->~a~%" (eq (core:unbound) x))
@@ -115,9 +120,6 @@
 
 (defmethod allocate-instance ((class funcallable-standard-class) &rest initargs)
   (declare (ignore initargs))
-  ;; FIXME! Inefficient! We should keep a list of dependent classes.
-  (unless (class-finalized-p class)
-    (finalize-inheritance class))
   (dbg-standard "About to allocate-new-funcallable-instance class->~a~%" class)
   (let ((x (core:allocate-new-funcallable-instance class (class-size class))))
     (dbg-standard "Done allocate-new-funcallable-instance unbound x ->~a~%" (eq (core:unbound) x))
@@ -470,10 +472,7 @@ because it contains a reference to the undefined class~%  ~A"
     class))
 
 (defun coerce-to-class (class-or-symbol &optional (fail nil))
-  (cond #-clasp
-	((si:instancep class-or-symbol) class-or-symbol)
-	#+clasp
-	((classp class-or-symbol) class-or-symbol)
+  (cond ((classp class-or-symbol) class-or-symbol)
 	((not (symbolp class-or-symbol))
 	 (error "~a is not a valid class specifier." class-or-symbol))
 	((find-class class-or-symbol fail))
@@ -561,12 +560,6 @@ because it contains a reference to the undefined class~%  ~A"
 ;;;
 ;;; Standard-object has no slots and inherits only from t:
 ;;; (defclass standard-object (t) ())
-
-#++(eval-when (:compile-toplevel :load-toplevel :execute)
-  (bformat t "About to compile defmethod describe-object\n")
-  (setq core::*debug-flow-control* t)
-  (setq core::*watch-dynamic-binding-stack* t)
-  (setq core:*echo-repl-read* t))
 
 (defmethod describe-object ((obj standard-object) (stream t))
   (let* ((class (si:instance-class obj))

@@ -33,8 +33,8 @@
 
 (defmethod update-instance-for-different-class
     ((old-data standard-object) (new-data standard-object) &rest initargs)
-  (let ((old-local-slotds (si::instance-sig old-data))
-	(new-local-slotds (remove :instance (si::instance-sig new-data)
+  (let ((old-local-slotds (si:instance-sig old-data))
+	(new-local-slotds (remove :instance (si:instance-sig new-data)
 				  :test-not #'eq :key #'slot-definition-allocation))
 	added-slots)
     (setf added-slots (set-difference (mapcar #'slot-definition-name new-local-slotds)
@@ -50,7 +50,7 @@
 
 (defmethod change-class ((instance standard-object) (new-class std-class)
 			 &rest initargs)
-  (let ((old-instance (si::copy-instance instance))
+  (let ((old-instance (si:copy-instance instance))
         (instance (core:reallocate-instance instance new-class (class-size new-class))))
     ;; "The values of local slots specified by both the class Cto and
     ;; Cfrom are retained.  If such a local slot was unbound, it remains
@@ -79,11 +79,11 @@
 ;;;
 ;;; PART 2: UPDATING AN INSTANCE THAT BECAME OBSOLETE
 ;;;
-;;; Each instance has a hidden field (readable with SI::INSTANCE-SIG), which
-;;; contains the list of slots of its class. This field is updated every time
-;;; the class is initialized or reinitialized. Generally
-;;;	(EQ (SI::INSTANCE-SIG x) (CLASS-SLOTS (CLASS-OF x)))
-;;; returns NIL whenever the class became obsolete.
+;;; Each instance has a hidden field (readable with SI:INSTANCE-SIG), which
+;;; contains the list of slots of its class. This field must be updated every
+;;; time the class is initialized or reinitialized. Generally
+;;;	(EQ (SI:INSTANCE-SIG x) (CLASS-SLOTS (CLASS-OF x)))
+;;; returns NIL whenever the instance x is obsolete.
 ;;;
 ;;; There are two circumstances under which a instance may become obsolete:
 ;;; either the class has been modified using REDEFINE-INSTANCE (and thus the
@@ -101,9 +101,7 @@
 ;;;	   with enough information to perform any extra initialization,
 ;;;	   for instance of new slots.
 ;;;
-;;; It is not clear when the function UPDATE-INSTANCE is invoked. At least
-;;; this will happen whenever the functions SLOT-VALUE, (SETF SLOT-VALUE),
-;;; SLOT-BOUNDP or SLOT-EXISTS-P are used.
+;;; UPDATE-INSTANCE is invoked whenever a generic function dispatch misses.
 ;;;
 
 (defmethod update-instance-for-redefined-class
@@ -121,7 +119,7 @@
 
 (defun update-instance (instance)
   (let* ((class (class-of instance))
-	 (old-slotds (si::instance-sig instance))
+	 (old-slotds (si:instance-sig instance))
 	 (new-slotds (class-slots class))
 	 (old-instance (si::copy-instance instance))
 	 (discarded-slots '())

@@ -14,19 +14,3 @@
 
 (defmacro mapappend (fun &rest args)
   `(reduce #'append (mapcar ,fun ,@args)))
-
-#+(or)
-(defmacro ensure-up-to-date-instance (instance)
-  ;; The up-to-date status of a class is determined by
-  ;; instance.sig. This slot of the C structure contains a list of
-  ;; slot definitions that was used to create the instance. When the
-  ;; class is updated, the list is newly created. Structures are also
-  ;; "instances" but keep ECL_UNBOUND instead of the list.
-  `(let* ((i ,instance)
-          (s (si::instance-sig i)))
-     (when (si:sl-boundp s)
-       (unless (eq s (class-slots (si::instance-class i)))
-         (update-instance i)))))
-
-
-
