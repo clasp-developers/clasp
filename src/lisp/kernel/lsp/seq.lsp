@@ -92,7 +92,9 @@
                         (not (eq et 'list))) ; (a . #(...)) is not a sequence
                     (values nil nil nil))
                    ((eq len '*) (values 'list '* t))
-                   (t (values 'list (1+ len) t))))))
+                   (t (values 'list (1+ len) t))))
+           ;;;Kpoeck, this seems to be missing
+           (values 'list '* t)))
       (t
        ;; We arrive here when the sequence type is not easy to parse.
        ;; We give up trying to guess the length of the sequence.
