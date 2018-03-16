@@ -62,8 +62,12 @@
     (cond ((null type)
            ;; If TYPE is NIL,
            ;;  the slot is at the offset in the structure-body.
-	   (fset access-function #'(lambda (x)
-				     (sys:structure-ref x name offset))))
+	   (fset access-function
+                 #'(lambda (x)
+                     ;; FIXME: load-time-value or something
+                     (unless (core:subclassp (class-of x) (find-class name))
+                       (signal-type-error x name))
+                     (si:instance-ref x offset))))
           ((subtypep type '(OR LIST VECTOR))
 	   ;; If TYPE is VECTOR, (VECTOR ... ) or LIST, ELT is used.
            (fset access-function
@@ -78,7 +82,6 @@
 	   (do-setf-structure-method access-function (or type name)
 				     offset)))))
 
-
 (defun do-setf-structure-method (access-function type index)
   (declare (optimize (speed 3) (safety 0)))
   (do-defsetf access-function
@@ -90,7 +93,10 @@
 	       `(si:row-major-aset (the ,type ,struct) ,index ,newvalue)))
 	  (t
 	   #'(lambda (newvalue struct)
-	       `(sys:structure-set ,struct ',type ,index ,newvalue))))))
+               `(progn
+                  (unless (core:subclassp (class-of ,struct) (find-class ',type))
+                    (signal-type-error ,struct ',type))
+                  (si:instance-set ,struct ,index ,newvalue)))))))
 
 (defun process-boa-lambda-list (slot-names slot-descriptions boa-list assertions)
   (let ((mentioned-slots '())
@@ -220,7 +226,8 @@
 (defun make-predicate (name type named name-offset)
   (cond ((null type)
 	 #'(lambda (x)
-	     (si::structure-subtypep (type-of x) name)))
+             ;; fixme: find-class ahead of time
+             (si:subclassp (class-of x) (find-class name))))
         ((or (eq type 'VECTOR)
              (and (consp type) (eq (car type) 'VECTOR)))
          ;; The name is at the NAME-OFFSET in the vector.
