@@ -58,7 +58,6 @@ void FuncallableInstance_O::initializeSlots(gctools::Stamp stamp, size_t numberO
 #ifdef DEBUG_GUARD_VALIDATE
   client_validate(this->_Rack);
 #endif
-//  printf("%s:%d  Make sure you initialize slots for classes this->_Class -> %s\n", __FILE__, __LINE__, _rep_(this->_Class).c_str());
 }
 
 void FuncallableInstance_O::initializeClassSlots(Creator_sp creator, gctools::Stamp stamp) {
@@ -68,10 +67,6 @@ void FuncallableInstance_O::initializeClassSlots(Creator_sp creator, gctools::St
 T_sp FuncallableInstance_O::oinstancep() const {
   return make_fixnum((gctools::Fixnum)(this->numberOfSlots()));
 }
-
-T_sp FuncallableInstance_O::oinstancepSTAR() const {
-    return make_fixnum((gctools::Fixnum)(this->numberOfSlots()));
-  }
 
 // Identical to allocate_new_instance in instance.cc, except for the type.
 CL_DEFUN T_sp core__allocate_new_funcallable_instance(Class_sp cl, size_t numberOfSlots) {

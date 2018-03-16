@@ -147,10 +147,6 @@ T_sp Instance_O::oinstancep() const {
   return make_fixnum((gctools::Fixnum)(this->numberOfSlots()));
 }
 
-T_sp Instance_O::oinstancepSTAR() const {
-  return make_fixnum((gctools::Fixnum)(this->numberOfSlots()));
-}
-
 CL_LAMBDA(class slot-count);
 CL_DEFUN T_sp core__allocate_new_instance(Class_sp cl, size_t slot_count) {
   // cl is known to be a standard-class.
