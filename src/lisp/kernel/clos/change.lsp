@@ -153,9 +153,6 @@
 ;;; ----------------------------------------------------------------------
 ;;; CLASS REDEFINITION PROTOCOL
 
-(ensure-generic-function 'reinitialize-instance
-			 :lambda-list '(class &rest initargs))
-
 (defmethod reinitialize-instance :before ((class class) &rest initargs &key)
   (let ((name (class-name class)))
     (when (member name '(CLASS BUILT-IN-CLASS) :test #'eq)
@@ -189,6 +186,8 @@
   (setf (class-finalized-p class) nil)
   (finalize-unless-forward class)
 
+  (make-instances-obsolete class)
+
   (update-dependents class initargs))
 
 (defmethod make-instances-obsolete ((class class))
@@ -200,7 +199,7 @@
 	   (optimize (safety 0)))
   (let ((class-name (class-name class)))
     (dolist (slotd (class-slots class))
-      ;; remove previous defined reader methods
+      ;; remove previously defined reader methods
       (dolist (reader (slot-definition-readers slotd))
 	(let* ((gf-object (fdefinition reader))
 	       found)
@@ -217,10 +216,12 @@
             (when (setq found (find-method gf-object ':after (list class-name) nil))
               (remove-method gf-object found))
             ;; This is unnecessary but kind of nice?
-            ;; Other implementations have different behavior. I think it's fine though.
+            ;; Other implementations have different behavior.
+            ;; The user could have defined the generic function specially, so whether this is
+            ;; the right thing to do is ambiguous.
             (when (null (generic-function-methods gf-object))
               (fmakunbound reader)))))
-      ;; remove previous defined writer methods
+      ;; remove previously defined writer methods
       (dolist (writer (slot-definition-writers slotd))
 	(let* ((gf-object (fdefinition writer))
 	       found)
