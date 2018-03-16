@@ -374,7 +374,13 @@
 	 (not (eql (car x) 'TYPED-STRUCTURE-NAME))
 	 (make-access-function name conc-name type named x)))
   (when copier
-    (fset copier #'copy-structure)))
+    ;;;; knpk
+    (cond ((eq type 'list) (fset copier #'copy-list))
+          ((eq type 'vector)(fset copier #'copy-seq))
+          ((and (listp type)(eq 'vector (first type))) (fset copier #'copy-seq))
+          ((null type) (fset copier #'copy-structure))
+          ;;; doesn't seem possible that this happens
+          (t (error "Can't handle type ~A to defstruct" type)))))
 
 ;;; The DEFSTRUCT macro.
 
