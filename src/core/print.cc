@@ -162,26 +162,9 @@ CL_DEFUN T_sp cl__write(T_sp x, T_sp strm, T_sp array, T_sp base,
   return Values(x);
 };
 
-#if 0
-#define ARGS_af_writeAddr "(arg stream)"
-#define DECL_af_writeAddr ""
-#define DOCS_af_writeAddr "writeAddr"
-    void af_writeAddr(T_sp arg, T_sp stream)
-    {
-	cl_intptr_t i = arg.intptr();
-	for ( int j=sizeof(i)*8-4; j>= 0; j-=4 ) {
-	    int k = (i>>j) &0xf;
-	    if ( k < 10 )
-                clasp_write_char('0'+k,stream);
-	    else
-                clasp_write_char('a'+k-10,stream);
-	}
-    }
-#endif
-
 CL_LAMBDA(o stream type id function);
 CL_DECLARE();
-CL_DOCSTRING("printUnreadableObjectFunction - see ecl::print_unreadable.d");
+CL_DOCSTRING("print-unreadable-object-function: What CL:PRINT-UNREADABLE-OBJECT expands into.");
 CL_DEFUN void core__print_unreadable_object_function(T_sp object, T_sp ostream, T_sp type, T_sp id, T_sp function) {
   if (clasp_print_readably()) {
     PRINT_NOT_READABLE_ERROR(object);
@@ -204,10 +187,10 @@ CL_DEFUN void core__print_unreadable_object_function(T_sp object, T_sp ostream, 
       eval::funcall(function);
     }
     stringstream stail;
-#if 0
-    stail << " @";
-    stail << object.raw_();
-#endif
+    if (id.notnilp()) {
+      stail << " @";
+      stail << object.raw_();
+    }
     stail << ">";
     clasp_write_string(stail.str(), ostream);
   }
