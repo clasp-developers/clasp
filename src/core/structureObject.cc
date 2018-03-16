@@ -84,6 +84,5 @@ CL_DEFUN T_sp cl__copy_structure(T_sp arg) {
 
 SYMBOL_EXPORT_SC_(CorePkg, makeStructure);
 SYMBOL_EXPORT_SC_(ClPkg, copyStructure);
-SYMBOL_EXPORT_SC_(CorePkg, structurep);
 SYMBOL_EXPORT_SC_(ClPkg,structure_object);
 };
