@@ -310,6 +310,24 @@
              class direct-slot-name))
     slot))
 
+;; We try to reuse effective method functions when possible.
+;; This has two advantages: One, we avoid recompiling the same effective method multiple times.
+;; Two, the code generator can understand the outcomes as identical and merge tests together.
+;; Note that this being correct relies on an important property: that compute-effective-method
+;; can in fact be memoized. This would not be the case if for example a method on it returns
+;; different things for the same (by EQUAL) applicable method lists randomly or by time, or if
+;; a relevant compute-effective-method method is added after a generic function already has
+;; computed some. Or if a method combination does something similarly weird.
+;; I'm not really worried about this because nobody defines methods on c-e-m anyway.
+;; Also, this is a max O(mn) search, where m is the number of methods and n the length of call
+;; history. It could be more efficient, but that makes it more involved to remove old entries
+;; (with this scheme they're just removed with the call history entries).
+(defun find-existing-emf (call-history methods)
+  (loop for (ignore . outcome) in call-history
+        when (and (cmp::effective-method-outcome-p outcome)
+                  (equal methods (cmp::effective-method-outcome-applicable-methods outcome)))
+          return outcome))
+
 (defun compute-effective-method-function-maybe-optimize
     (generic-function method-combination methods actual-specializers &key log actual-arguments)
   ;; Calculate the effective-method-function as well as an optimized one
@@ -353,6 +371,7 @@
          ;; the effective method will be a call to no-required-method. See combin.lsp.
          ;; the SECOND is because the symbol is quoted.
          (nrm-group-name (and (consp em) (eq (first em) 'no-required-method) (second (third em))))
+         existing-emf
          (optimized
            (cond ((not standard-slotd-p)
                   (cond (fmf
@@ -367,11 +386,17 @@
                          (lambda (vaslist-args ignore)
                            (declare (ignore ignore))
                            (apply #'no-required-method generic-function nrm-group-name vaslist-args)))
+                        ((setf existing-emf (find-existing-emf (generic-function-call-history generic-function)
+                                                               methods))
+                         (gf-log "Using existing effective method function\n")
+                         existing-emf)
                         (t
                          (gf-log "Using default effective method function\n")
                          (gf-log "(compute-effective-method generic-function method-combination methods) -> \n")
                          (gf-log "%s\n" em)
-                         (effective-method-function em))))
+                         (cmp::make-effective-method-outcome
+                          :applicable-methods methods
+                          :function (effective-method-function em)))))
                  (readerp
                   (gf-log "make-optimized-slot-reader index: %s slot-name: %s class: %s\n"
                           (slot-definition-location slotd)
@@ -388,12 +413,18 @@
                   (cmp::make-optimized-slot-writer :index (slot-definition-location slotd)
                                                    :slot-name (slot-definition-name slotd)
                                                    :method method :class class))
-                 ;; I think this is unreachable, but better safe than sorry.
+                 ;; I think these are unreachable, but better safe than sorry.
+                 ((setf existing-emf (find-existing-emf (generic-function-call-history generic-function)
+                                                        methods))
+                  (gf-log "Using !SUPPOSEDLY UNREACHABLE! existing effective method function\n")
+                  existing-emf)
                  (t
                   (gf-log "Using !SUPPOSEDLY UNREACHABLE! default effective method function\n")
                   (gf-log "(compute-effective-method generic-function method-combination methods) -> \n")
                   (gf-log "%s\n" em)
-                  (effective-method-function em)))))
+                  (cmp::make-effective-method-outcome
+                   :applicable-methods methods
+                   :function (effective-method-function em))))))
     #+debug-fastgf
     (when log
       (gf-log "vvv************************vvv\n")
@@ -542,8 +573,12 @@ FIXME!!!! This code will have problems with multithreading if a generic function
     ((cmp::fast-method-call-p outcome)
      (apply (cmp::fast-method-call-function outcome) arguments))
     ;; Effective method functions take the same arguments as method functions - vasargs and next-methods
-    ;; for now, at least.
-    (t (funcall outcome vaslist-arguments nil))))
+    ;; for now, at least. Obviously they don't actually need the next-methods.
+    ((cmp::effective-method-outcome-p outcome)
+     (funcall (cmp::effective-method-outcome-function outcome) vaslist-arguments nil))
+    ((functionp outcome)
+     (funcall outcome vaslist-arguments nil))
+    (t (error "BUG: Bad thing to be an outcome: ~a" outcome))))
 
 #+debug-fastgf
 (defvar *dispatch-miss-start-time*)

@@ -94,6 +94,8 @@
 (defstruct (optimized-slot-reader (:type vector) :named) index #| << must be here |# effective-method-function slot-name method class)
 (defstruct (optimized-slot-writer (:type vector) :named) index #| << must be here |# effective-method-function slot-name method class)
 (defstruct (fast-method-call (:type vector) :named) function)
+;; applicable-methods slot is for clos; see closfastgf.lsp's find-existing-emf
+(defstruct (effective-method-outcome (:type vector) :named) applicable-methods function)
 (defstruct (klass (:type vector) :named) stamp name)
 (defstruct (outcome (:type vector) :named) outcome)
 (defstruct (match (:type vector) :named) outcome)
@@ -634,7 +636,7 @@
       (irc-br (argument-holder-continue-after-dispatch arguments)))))
 
 (defun codegen-effective-method-call (arguments cur-arg outcome)
-  (cf-log "codegen-effective-method-call\n")
+  (cf-log "codegen-effective-method-call %s\n" outcome)
   (let ((gf-data-id (register-runtime-data outcome *outcomes*))
 	(effective-method-block (irc-basic-block-create "effective-method")))
     (irc-branch-to-and-begin-block effective-method-block)
@@ -670,7 +672,11 @@
        (codegen-slot-writer arguments cur-arg outcome))
       ((fast-method-call-p outcome)
        (codegen-fast-method-call arguments cur-arg outcome))
-      (t (codegen-effective-method-call arguments cur-arg outcome)))))
+      ((effective-method-outcome-p outcome)
+       (codegen-effective-method-call arguments cur-arg (effective-method-outcome-function outcome)))
+      ((functionp outcome) ; method-function and no-required-method. maybe change to be cleaner?
+       (codegen-effective-method-call arguments cur-arg outcome))
+      (t (error "BUG: Bad thing to be an outcome: ~a~s" outcome)))))
 
 (defun codegen-class-binary-search (arguments cur-arg matches stamp-var)
   (cf-log "codegen-class-binary-search\n")
@@ -807,8 +813,11 @@
 
 (defun call-history-needs-vaslist-p (call-history)
   ;; Functions, i.e. method functions or full EMFs, are the only things that need vaslists.
+  ;; Debugging note: If this is not computed correctly, you'll get an error like
+  ;; type-error: datum NIL, expected type LLVM-SYS:VALUE
+  ;; in code generation - because the vaslist holder will be nil instead of an llvm value.
   (mapc (lambda (entry)
-          (when (functionp (cdr entry))
+          (when (or (effective-method-outcome-p (cdr entry)) (functionp (cdr entry)))
             (return-from call-history-needs-vaslist-p t)))
         call-history)
   nil)

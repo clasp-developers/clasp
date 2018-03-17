@@ -8,13 +8,13 @@
 (defparameter *fails* 0)
 
 (defmacro test (name form &key description )
-  `(if ,form
+  `(if (ignore-errors ,form)
        (progn
          (format t "Passed ~s~%" ',name)
          (incf *passes*))
        (progn
          (incf *fails*)
-         (format t "The test ~s failed~%" ',name)
+         (format t "Failed ~s~%" ',name)
          (when ,description (format t "~s~%" ,description)))))
 
 (defmacro test-type= (t1 t2)

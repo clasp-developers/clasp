@@ -341,6 +341,11 @@
 			      'function))))))
 	(setf (generic-function-a-p-o-function gf) function)))))
 
+;;; Will be upgraded to a method in fixup.
 (defun print-object (object stream)
-  (print-unreadable-object (object stream)))
-
+  (print-unreadable-object (object stream)
+    ;; We don't just use :type, because that outputs an extra space.
+    (let ((*package* (find-package "CL")))
+      (format stream "~S"
+              (class-name (si:instance-class object)))))
+  object)

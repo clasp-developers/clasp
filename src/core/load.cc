@@ -204,7 +204,8 @@ NOT_A_FILENAME:
   if (!function.nilp()) {
     ok = eval::funcall(function, filename, verbose, print, external_format);
   } else {
-    SIMPLE_ERROR(BF("LOAD could not identify type of file for loading %s") % _rep_(filename));
+//    SIMPLE_ERROR(BF("LOAD could not identify type of file for loading %s") % _rep_(filename));
+    ok = core__load_source(filename, verbose.isTrue(), print.isTrue(), external_format );
   }
   if (ok.nilp()) {
     SIMPLE_ERROR(BF("LOAD: Could not load file %s") % _rep_(filename));

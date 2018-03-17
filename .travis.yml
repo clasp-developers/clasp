@@ -1,0 +1,29 @@
+# documentation is available at: https://docs.travis-ci.com/user/docker/
+
+os: linux
+# dist: trusty
+# language: lisp
+
+services:
+  - docker
+
+git:
+  submodules: false
+
+notifications:
+  email:
+    on_success: change
+    on_failure: always
+  irc:
+    channels:
+      - "chat.freenode.net#clasp"
+    on_success: change
+    on_failure: always
+    use_notice: true
+    skip_join: true
+
+install:
+  - docker build --tag clasp --file tools/dockerfiles/clasp/Dockerfile.travis .
+
+script:
+  - docker run clasp /bin/sh -c "cd /home/app/clasp; /out/clasp/bin/cclasp-boehm --eval '(format t \"Hello from ~S~%\" (lisp-implementation-version))' --eval '(load "src/lisp/regression-tests/run-all.lisp")';"

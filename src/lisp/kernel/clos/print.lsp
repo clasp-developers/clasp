@@ -182,6 +182,38 @@ printer and we should rather use MAKE-LOAD-FORM."
     (write (eql-specializer-object es) :stream stream))
   es)
 
+(defmethod print-object ((obj structure-object) stream)
+  (let* ((class (si:instance-class obj))
+	 (slotds (class-slots class)))
+    (when (and slotds
+               ;; *p-readably* effectively disables *p-level*
+	       (not *print-readably*)
+	       *print-level*
+	       (zerop *print-level*))
+      (write-string "#" stream)
+      (return-from print-object obj))
+    (write-string "#S(" stream)
+    (prin1 (class-name class) stream)
+    (do ((scan slotds (cdr scan))
+	 (i 0 (1+ i))
+	 (limit (or *print-length* most-positive-fixnum))
+	 (sv))
+	((null scan))
+      (declare (fixnum i))
+      (when (>= i limit)
+	(write-string " ..." stream)
+	(return))
+      (setq sv (si:instance-ref obj i))
+      ;; fix bug where symbols like :FOO::BAR are printed
+      (write-string " " stream)
+      (let ((kw (intern (symbol-name (slot-definition-name (car scan)))
+                        (load-time-value (find-package "KEYWORD")))))
+        (prin1 kw stream))
+      (write-string " " stream)
+      (prin1 sv stream))
+    (write-string ")" stream)
+    obj))
+
 (defun ext::float-nan-string (x)
   (when *print-readably*
     (error 'print-not-readable :object x))

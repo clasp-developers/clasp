@@ -417,15 +417,6 @@ and cannot be added to ~A." method other-gf gf)))
                     '(gf method-combination-type-name method-combination-options)
                     '(standard-generic-function t t))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
-;;; Define a print-object method on T so that we can print
-;;;
-;;; This was moved from print.lsp
-
-(defmethod print-object ((instance t) stream)
-  (print-unreadable-object (instance stream)
-    (let ((*package* (find-package "CL")))
-      (format stream "~S"
-	      (class-name (si:instance-class instance)))))
-  instance)
+(function-to-method 'print-object
+                    '(object stream)
+                    '(t t))

@@ -1843,10 +1843,6 @@ T_sp type_of(T_sp x) {
     return ax->type_of();
   } else if (WrappedPointer_sp pp = x.asOrNull<WrappedPointer_O>()) {
     return pp->_instanceClass()->_className();
-#if 0
-  } else if (core__structurep(x)) {
-    return gc::As<StructureObject_sp>(x)->structureType();
-#endif
   } else if (Stream_sp stx = x.asOrNull<Stream_O>()) {
     if (gc::IsA<SynonymStream_sp>(stx))
       return cl::_sym_SynonymStream_O;

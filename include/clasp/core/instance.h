@@ -184,8 +184,6 @@ namespace core {
     void stamp_set(Fixnum s);
     size_t numberOfSlots() const;
   /*! Return number of slots if not nil otherwise nil */
-    T_sp oinstancepSTAR() const;
-  /*! Return number of slots if not nil otherwise nil */
     T_sp oinstancep() const;
 
     Class_sp _instanceClass() const { return this->_Class; };

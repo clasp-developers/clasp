@@ -92,10 +92,6 @@
     )
   instance)
 
-;;; ----------------------------------------------------------------------
-;;; CLASSES INITIALIZATION AND REINITIALIZATION
-;;;
-
 (defun compute-instance-size (slots)
   ;; could just use cl:count, but type inference is bad atm
   (loop for slotd in slots
@@ -117,6 +113,11 @@
     (dbg-standard "Done allocate-new-instance unbound x ->~a~%" (eq (core:unbound) x))
     (mlog "In allocate-instance  x -> %s\n" x)
     x))
+
+(defmethod allocate-instance ((class derivable-cxx-class) &rest initargs)
+  ;; derivable cxx objects are Instance_O's, so this is _probably_ okay.
+  ;; (And allocate-new-instance uses the creator, so it'll do any C++ junk.)
+  (core:allocate-new-instance class (class-size class)))
 
 (defmethod allocate-instance ((class funcallable-standard-class) &rest initargs)
   (declare (ignore initargs))
@@ -170,6 +171,10 @@
         (append initargs (nreverse output))
         initargs)))
 
+;;; ----------------------------------------------------------------------
+;;; CLASSES INITIALIZATION AND REINITIALIZATION
+;;;
+
 (defmethod direct-slot-definition-class ((class T) &rest canonicalized-slot)
   (declare (ignore class canonicalized-slot))
   (find-class 'standard-direct-slot-definition nil))
@@ -188,6 +193,10 @@
   (unless (find-if #'has-forward-referenced-parents (class-direct-superclasses class))
     (finalize-inheritance class)))
 
+(defmethod make-instances-obsolete ((class class))
+  (core:class-new-stamp class)
+  class)
+
 (defmethod initialize-instance ((class class) &rest initargs &key direct-slots)
   (dbg-standard "standard.lsp:196  initialize-instance class->~a~%" class)
   ;; convert the slots from lists to direct slots
@@ -197,6 +206,9 @@
 	    collect (canonical-slot-to-direct-slot class s))
          initargs)
   (finalize-unless-forward class)
+  ;; Obviously, the same as make-instances-obsolete, except we don't want to call
+  ;; any methods a programmer has installed on that function.
+  (core:class-new-stamp class)
   class)
 
 (defmethod shared-initialize ((class class) slot-names &rest initargs &key direct-superclasses)
@@ -216,8 +228,6 @@
     (loop for c in direct-superclasses
           do (add-direct-subclass c class))
 
-    ;; Get a new stamp
-    (core:class-new-stamp class)
     ;; initialize the default allocator for the new class
     ;; It is inherited from the direct-superclasses - if they are all 
     ;; regular classes then it will get an Instance allocator

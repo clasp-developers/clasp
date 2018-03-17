@@ -160,8 +160,6 @@ namespace core {
     void stamp_set(Fixnum s);
     size_t numberOfSlots() const;
   /*! Return number of slots if not nil otherwise nil */
-    T_sp oinstancepSTAR() const;
-  /*! Return number of slots if not nil otherwise nil */
     T_sp oinstancep() const;
 
     CL_DEFMETHOD int isgf() const { return this->_isgf; };
