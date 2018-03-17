@@ -147,6 +147,69 @@
 (defun string-capitalize (string &key (start 0) end)
   (nstring-capitalize (copy-seq (string string)) :start start :end end))
 
+;;; Begin from knpk 2018-03-17 Fix string-upcase, nstring-upcase, string-downcase, nstring-downcase
+(defun %real-string (string-designator)
+  (etypecase string-designator
+    (string (copy-seq string-designator))
+    (symbol
+     (copy-seq (symbol-name string-designator)))
+    (character
+     (make-string 1 :initial-element string-designator))))
+
+(defun %verify-string-args (start end real-string)
+  (when (null end)
+    (setq end (length real-string)))
+  (unless (and (numberp start)
+               (numberp end)
+               (<= start end)
+               (>= start 0)
+               (<= end (length real-string)))
+    (error "Bad parameters Start ~s End ~s for ~s" start end real-string))
+  (values start end))
+
+(defun %transform-string (real-string new-start new-end predicate transformation)
+  (dotimes (x (- new-end new-start))
+    (let* ((index (+ new-start x))
+           (char (char real-string index)))
+      (when (funcall predicate char)
+        (setf (char real-string index)
+              (funcall transformation char)))))
+  real-string)
+
+(defun string-upcase (string-designator &key (start 0) end)
+  ;;;string-designator to string
+  (let ((real-string (%real-string string-designator)))
+    (multiple-value-bind
+          (new-start new-end)
+        (%verify-string-args start end real-string)
+      (%transform-string real-string new-start new-end #'lower-case-p #'char-upcase))))
+
+(defun string-downcase (string-designator &key (start 0) end)
+  ;;;string-designator to string
+  (let ((real-string (%real-string string-designator)))
+    (multiple-value-bind
+          (new-start new-end)
+        (%verify-string-args start end real-string)
+      (%transform-string real-string new-start new-end #'upper-case-p #'char-downcase))))
+
+(defun nstring-upcase (real-string &key (start 0) end)
+  (unless (stringp real-string)
+    (error "Incorrect arguments in nstring-upcase ~s Start ~s End ~s" real-string start end))
+  (multiple-value-bind
+        (new-start new-end)
+      (%verify-string-args start end real-string)
+    (%transform-string real-string new-start new-end #'lower-case-p #'char-upcase)))
+
+(defun nstring-downcase (real-string &key (start 0) end)
+  (unless (stringp real-string)
+    (error "Incorrect arguments in nstring-downcase ~s Start ~s End ~s" real-string start end))
+  (multiple-value-bind
+        (new-start new-end)
+      (%verify-string-args start end real-string)
+    (%transform-string real-string new-start new-end #'upper-case-p #'char-downcase)))
+    
+;;; End from knpk 2018-03-17 Fix string-upcase, nstring-upcase, string-downcase, nstring-downcase
+
 (defun float-radix (arg)
   ;; Unless you are internally representing
   ;; floats in anything but base-2 this will do
