@@ -22,6 +22,7 @@ RUN mkdir /home/app
 RUN mkdir /out
 RUN mkdir /out/clasp
 WORKDIR /home/app
+
 # add app user, to set correct UID and GID on files
 RUN groupadd -g 9999 app && useradd -u 9999 -g 9999 -ms /bin/bash app
 ADD . clasp
