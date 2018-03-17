@@ -114,21 +114,23 @@
     #+(or)(warn "Linking fasl with -fvisibility=default - use an exported symbol list in the future")
     (cond
       ((member :target-os-darwin *features*)
-       (ext:run-clang `(,@options
-                        ,@all-object-files
+       (let ((clang-args `(,@options
+                           ,@all-object-files
 ;;;                                 "-macosx_version_min" "10.10"
-                        "-flto=thin"
-                        "-flat_namespace"
-                        #+(or)"-fvisibility=default"
-                        "-undefined" "suppress"
-                        ,@*debug-link-options*
-                        #+(or)"-Wl,-save-temps"
-                        "-bundle"
+                           "-flto=thin"
+                           "-flat_namespace"
+                           #+(or)"-fvisibility=default"
+                           "-undefined" "suppress"
+                           ,@*debug-link-options*
+                           #+(or)"-Wl,-save-temps"
+                           "-bundle"
 ;;;                        ,@link-flags
 ;;;                        ,(bformat nil "-Wl,-object_path_lto,%s.lto.o" exec-file)
-                        "-o"
-                        ,bundle-file)
-                      :output-file-name bundle-file))
+                           "-o"
+                           ,bundle-file)))
+         (when (member :debug-run-clang *features*)
+           (bformat t "execute-link-fasl   clang-args -> %s\n" clang-args))
+         (ext:run-clang clang-args :output-file-name bundle-file)))
       ((member :target-os-linux *features*)
        ;; Linux needs to use clang to link
        (ext:run-clang `(#+(or)"-v"
@@ -183,45 +185,44 @@
                              &aux conditions)
   "Link a bunch of modules together, return the linked module"
   (with-compiler-env (conditions)
-    (multiple-value-bind (module function-pass-manager)
-        (create-llvm-module-for-compile-file (pathname-name output-pathname))
-      (let* ((*compile-file-pathname* (pathname (merge-pathnames output-pathname)))
-	     (*compile-file-truename* (translate-logical-pathname *compile-file-pathname*))
-	     (bcnum 0))
-	(with-module ( :module module
-                               :optimize nil
-                               :source-namestring (namestring output-pathname))
-          (with-debug-info-generator (:module module :pathname output-pathname)
-            (let* ((linker (llvm-sys:make-linker *the-module*))
-                   (part-index 1))
-              ;; Don't enforce .bc extension for additional-bitcode-pathnames
-              ;; This is where I used to link the additional-bitcode-pathnames
-              (dolist (part-pn part-pathnames)
-                (let* ((bc-file (make-pathname :type "bc" :defaults part-pn)))
-                  (bformat t "Linking %s\n" bc-file)
-                  (let* ((part-module (llvm-sys:parse-bitcode-file (namestring (truename bc-file)) *llvm-context*)))
-                    (incf part-index)
-                    (multiple-value-bind (failure error-msg)
-                        (let ((global-ctor (find-global-ctor-function part-module))
-                              (priority part-index))
-                          (remove-llvm.global_ctors-if-exists part-module)
-                          (add-llvm.global_ctors part-module priority global-ctor)
-                          (llvm-sys:link-in-module linker part-module))
-                      (when failure
-                        (error "While linking part module: ~a  encountered error: ~a" part-pn error-msg))))))
-              ;; The following links in additional-bitcode-pathnames
-              (dolist (part-pn additional-bitcode-pathnames)
-                (let* ((bc-file part-pn))
-                  (bformat t "Linking %s\n" bc-file)
-                  (let* ((part-module (llvm-sys:parse-bitcode-file (namestring (truename bc-file)) *llvm-context*)))
-                    (remove-main-function-if-exists part-module) ;; Remove the ClaspMain FN if it exists
-                    (multiple-value-bind (failure error-msg)
-                        (llvm-sys:link-in-module linker part-module)
-                      (when failure
-                        (error "While linking additional module: ~a  encountered error: ~a" bc-file error-msg))
-                      ))))
-              (llvm-sys:write-bitcode-to-file *the-module* (core:coerce-to-filename (pathname output-pathname)))
-              *the-module*)))))))
+    (let* ((module (llvm-create-module (pathname-name output-pathname)))
+           (*compile-file-pathname* (pathname (merge-pathnames output-pathname)))
+           (*compile-file-truename* (translate-logical-pathname *compile-file-pathname*))
+           (bcnum 0))
+      (with-module ( :module module
+                             :optimize nil
+                             :source-namestring (namestring output-pathname))
+        (with-debug-info-generator (:module module :pathname output-pathname)
+          (let* ((linker (llvm-sys:make-linker *the-module*))
+                 (part-index 1))
+            ;; Don't enforce .bc extension for additional-bitcode-pathnames
+            ;; This is where I used to link the additional-bitcode-pathnames
+            (dolist (part-pn part-pathnames)
+              (let* ((bc-file (make-pathname :type (if cmp::*use-human-readable-bitcode* "ll" "bc") :defaults part-pn)))
+;;;                (bformat t "Linking %s\n" bc-file)
+                (let* ((part-module (parse-bitcode (namestring (truename bc-file)) *llvm-context*)))
+                  (incf part-index)
+                  (multiple-value-bind (failure error-msg)
+                      (let ((global-ctor (find-global-ctor-function part-module))
+                            (priority part-index))
+                        (remove-llvm.global_ctors-if-exists part-module)
+                        (add-llvm.global_ctors part-module priority global-ctor)
+                        (llvm-sys:link-in-module linker part-module))
+                    (when failure
+                      (error "While linking part module: ~a  encountered error: ~a" part-pn error-msg))))))
+            ;; The following links in additional-bitcode-pathnames
+            (dolist (part-pn additional-bitcode-pathnames)
+              (let* ((bc-file part-pn))
+;;;                (bformat t "Linking %s\n" bc-file)
+                (let* ((part-module (llvm-sys:parse-bitcode-file (namestring (truename bc-file)) *llvm-context*)))
+                  (remove-main-function-if-exists part-module) ;; Remove the ClaspMain FN if it exists
+                  (multiple-value-bind (failure error-msg)
+                      (llvm-sys:link-in-module linker part-module)
+                    (when failure
+                      (error "While linking additional module: ~a  encountered error: ~a" bc-file error-msg))
+                    ))))
+            (write-bitcode *the-module* (core:coerce-to-filename (pathname output-pathname)))
+            *the-module*))))))
 (export 'link-bitcode-modules)
 
 
@@ -246,13 +247,16 @@
                     lisp-bitcode-files
                     (target-backend (default-target-backend)))
   (let* ((*target-backend* target-backend)
-         (intrinsics-bitcode-path (core:build-intrinsics-bitcode-pathname link-type))
-         (all-bitcode (list* intrinsics-bitcode-path lisp-bitcode-files))
+         (intrinsics-bitcode-path (core:build-inline-bitcode-pathname link-type :intrinsics))
+         (builtins-bitcode-path (core:build-inline-bitcode-pathname link-type :builtins))
+         (all-bitcode (list* builtins-bitcode-path intrinsics-bitcode-path lisp-bitcode-files))
          (output-pathname (pathname output-pathname)))
     (cond
       ((eq link-type :executable)
        (execute-link-executable output-pathname all-bitcode))
       ((eq link-type :fasl)
+       (when (member :debug-run-clang *features*)
+         (bformat t "In llvm-link -> link-type :fasl all-bitcode -> %s\n" all-bitcode))
        (execute-link-fasl output-pathname all-bitcode))
       (t (error "Cannot link format ~a" link-type)))
     output-pathname))
@@ -261,16 +265,24 @@
 
 
 (defun builder (kind destination &rest keywords)
-  (bformat t "builder kind[%s] destination[%s] keywords: %s\n" kind destination keywords)
-  (break "Check parameters"))
+  (declare (optimize (debug 3)))
+  (apply 'build-fasl destination keywords))
 
 (export '(builder))
 
 
-(defun build-fasl (out-file &key lisp-files)
+(defun build-fasl (out-file &key lisp-files init-name)
   "Link the object files in lisp-files into a shared library in out-file.
-Return the truename of the output file"
-;;  (bformat t "cmpbundle.lsp:build-fasl  building fasl for %s from files: %s\n" out-file lisp-files)
-  (execute-link-fasl out-file lisp-files))
+Note: 'object-files' would be a better name than 'lisp-files' - but 'lisp-files' is what asdf provides.
+Return the truename of the output file.
+NOTE: On Linux it looks like we MUST link all of the bitcode files first into one and then convert that into a fasb.
+This is to ensure that the RUN-ALL functions are evaluated in the correct order."
+  (declare (ignore init-name))
+  ;;  (bformat t "cmpbundle.lsp:build-fasl  building fasl for %s from files: %s\n" out-file lisp-files)
+  (let ((bitcode-files (mapcar (lambda (p) (make-pathname :type (core:bitcode-extension) :defaults p))
+                               lisp-files))
+        (temp-bitcode-file (make-pathname :type (core:bitcode-extension) :defaults out-file)))
+    (link-bitcode-modules temp-bitcode-file bitcode-files)
+      (execute-link-fasl out-file (list temp-bitcode-file))))
 
 (export 'build-fasl)

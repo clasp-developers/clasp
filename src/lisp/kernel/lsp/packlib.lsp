@@ -92,7 +92,6 @@ is used."
       ,@body)))
 
 (defun expand-do-symbols (var package result-form body options)
-  (declare (si::c-local))
   (let* ((i (gensym))
 	 (found (gensym))
 	 declaration doc)
@@ -167,28 +166,14 @@ If PACKAGE is non-NIL, then only the specified PACKAGE is searched."
         if (not (eq previous x))
         collect (setf previous x)))
 
-;; Original apropos-list from ECL
-#+(or)(defun apropos-list (string &optional package)
-  "Args: (string &optional (package nil))
-Returns a list of all symbols whose print-names contain STRING as substring.
-If PACKAGE is non-NIL, then only the specified PACKAGE is searched."
-  (sort (delete-duplicates (apropos-list-inner string package))
-	#'(lambda (s1 s2)
-	    (string-lessp (prin1-to-string s1)
-			  (prin1-to-string s2)))))
-
-;;; Clasp fix for infinite recursion that happens when packages use each other
-;;; uses an extra optional argument SEEN-PACKAGES that keeps track of which packages
-;;; apropos-list-inner has been run on
-(defun apropos-list-inner (string package #+clasp &optional #+clasp seen-packages)
-  (declare (si::c-local))
-  #+clasp(when (member package seen-packages) (return-from apropos-list-inner nil))
-  #+clasp(setf seen-packages (cons package seen-packages))
+(defun apropos-list-inner (string package &optional seen-packages)
+  (when (member package seen-packages) (return-from apropos-list-inner nil))
+  (setf seen-packages (cons package seen-packages))
   (let* ((list '())
 	 (string (string string)))
     (cond (package
 	   (dolist (p (package-use-list package))
-	     (setf list (nconc (apropos-list-inner string p #+clasp seen-packages) list)))
+	     (setf list (nconc (apropos-list-inner string p seen-packages) list)))
 	   (do-symbols (symbol package)
 	     (when (search string (string symbol) :test #'char-equal)
 	       (setq list (cons symbol list)))))
@@ -197,105 +182,3 @@ If PACKAGE is non-NIL, then only the specified PACKAGE is searched."
 	     (when (search string (string symbol) :test #'char-equal)
 	       (setq list (cons symbol list))))))
     list))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;
-;; HIERARCHICAL PACKAGE NAMES
-;;
-;; Code provided by Franz Inc. to the public domain and adapted for ECL.
-;;
-
-(defun find-relative-package (name)
-  ;; Given a package name, a string, do a relative package name lookup.
-  ;;
-  (declare (optimize (speed 3)))
-  (flet ((relative-to (package name)
-	   (if (zerop (length name))
-	       package
-	       (find-package (concatenate 'simple-string (package-name package) "." name))))
-	 (find-non-dot (name)
-	   (do* ((len (length name))
-		 (i 0 (1+ i)))
-	       ((= i len) nil)
-	     (declare (fixnum len i))
-	     (when (char/= #\. (char name i)) (return i)))))
-    (when (and (stringp name)
-               (plusp (length name))
-               (char= #\. (char name 0)))
-      (let* ((last-dot-position (or (find-non-dot name) (length name)))
-	     (n-dots (truly-the fixnum last-dot-position))
-	     (name (subseq name last-dot-position)))
-	;; relative to our (- n-dots 1)'th parent
-	(let ((p *package*))
-	  (dotimes (i (1- n-dots))
-	    (declare (fixnum i))
-	    (let ((tmp (package-parent p)))
-	      (unless tmp
-		(error "The parent of ~a does not exist." p))
-	      (setq p tmp)))
-	  (relative-to p name))))))
-
-(defun package-parent (package-specifier)
-  ;; Given package-specifier, a package, symbol or string, return the
-  ;; parent package.  If there is not a parent, signal an error.
-  ;;
-  ;; Because this function is called via the reader, we want it to be as
-  ;; fast as possible.
-  (declare (optimize (speed 3)))
-  (flet ((find-last-dot (name)
-	   (do* ((len (1- (length name)))
-		 (i len (1- i)))
-	       ((= i -1) nil)
-	     (declare (fixnum len i))
-	     (when (char= #\. (char name i)) (return i)))))
-    (let* ((child (cond ((packagep package-specifier)
-			 (package-name package-specifier))
-			((symbolp package-specifier)
-			 (symbol-name package-specifier))
-			((stringp package-specifier) package-specifier)
-			(t (error "Illegal package specifier: ~s."
-				  package-specifier))))
-	   (dot-position (find-last-dot child)))
-      (if dot-position
-	  (let ((parent (subseq child 0 dot-position)))
-	    (or (find-package parent)
-		(error "The parent of ~a does not exist." child))))
-	  (error "There is no parent of ~a." child))))
-
-(defun package-children (package-specifier &key (recurse t))
-  ;; Given package-specifier, a package, symbol or string, return all the
-  ;; packages which are in the hierarchy "under" the given package.  If
-  ;; :recurse is nil, then only return the immediate children of the
-  ;; package.
-  ;;
-  ;; While this function is not called via the reader, we do want it to be
-  ;; fast.
-  (declare (optimize (speed 3)))
-  (let* ((res ())
-         (parent (cond ((packagep package-specifier)
-                        (package-name package-specifier))
-		       ((symbolp package-specifier)
-			(symbol-name package-specifier))
-		       ((stringp package-specifier) package-specifier)
-		       (t (error "Illegal package specifier: ~s." package-specifier))))
-	 (parent-prefix (concatenate 'simple-string parent ".")))
-    (labels
-	((string-prefix-p (prefix string)
-	   ;; Return length of `prefix' if `string' starts with `prefix'.
-	   ;; We don't use `search' because it does much more than we need
-	   ;; and this version is about 10x faster than calling `search'.
-	   (let ((prefix-len (length prefix))
-		 (seq-len (length string)))
-	     (declare (fixnum prefix-len seq-len))
-	     (when (>= prefix-len seq-len)
-	       (return-from string-prefix-p nil))
-	     (do* ((i 0 (1+ i)))
-		 ((= i prefix-len) prefix-len)
-	       (declare (fixnum i))
-	       (when (not (char= (char prefix i) (char string i)))
-		 (return nil))))))
-      (dolist (package (list-all-packages))
-	(let* ((package-name (package-name package))
-	       (prefix (string-prefix-p parent-prefix package-name)))
-	  (when (and prefix (or recurse (not (find #\. package-name :start prefix))))
-	    (pushnew package res)))))))

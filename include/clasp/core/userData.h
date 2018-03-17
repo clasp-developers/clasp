@@ -27,7 +27,6 @@ THE SOFTWARE.
 #ifndef core_userData_H
 #define core_userData_H
 
-#include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 #include <clasp/core/lisp.h>
 

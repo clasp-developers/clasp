@@ -57,10 +57,6 @@ THE SOFTWARE.
 
 #define MAX_DEBUG_CALL_DEPTH 200
 
-#ifdef SOURCE_DEBUG
-#error "SOURCE_DEBUG is ON"
-#endif
-
 namespace core {
 
 void assert_failure(const char* file, size_t line, const char* func, const char* msg)
@@ -170,19 +166,6 @@ CL_DEFUN T_sp core__signal_simple_error(T_sp baseCondition, T_sp continueMessage
 
 void _trapThrow(const string &fileName, uint line, const string &msg) {
   /* do nothing */
-}
-
-HardError::HardError(const char *sourceFile, const char *functionName, uint lineNumber, const boost::format &fmt) {
-  TRY_BOOST_FORMAT_STRING(fmt, fmt_str);
-  this->_Message = (BF("File: %s Function:%s LineNumber:%d\n%s") % sourceFile % functionName % lineNumber % fmt_str).str();
-}
-
-HardError::HardError(const char *sourceFile, const char *functionName, uint lineNumber, const string &msg) {
-  this->_Message = (BF("File: %s Function:%s LineNumber:%d\n%s") % sourceFile % functionName % lineNumber % msg).str();
-}
-
-string HardError::message() {
-  return this->_Message;
 }
 
 string debugFlagsAsNodeName(uint flags) {

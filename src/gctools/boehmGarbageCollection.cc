@@ -33,9 +33,18 @@ THE SOFTWARE.
 #include <clasp/gctools/gctoolsPackage.h>
 #ifdef USE_BOEHM // whole file #ifdef USE_BOEHM
 #include <clasp/gctools/boehmGarbageCollection.h>
-
+#include <clasp/core/debugger.h>
 
 namespace gctools {
+
+
+
+void clasp_warn_proc(char *msg, GC_word arg) {
+  printf("%s:%d clasp trapped Boehm-gc warning...\n", __FILE__, __LINE__);
+  printf(msg, arg);
+}
+
+
 
 void run_finalizers(core::T_sp obj, void* data)
 {
@@ -223,7 +232,7 @@ extern "C" {
 void client_describe(void *taggedClient) {
   if (gctools::tagged_generalp(taggedClient)
       || gctools::tagged_consp(taggedClient)
-      || gctools::tagged_valistp(taggedClient)) {
+      || gctools::tagged_vaslistp(taggedClient)) {
     printf("%s:%d  GC managed object - describing header\n", __FILE__, __LINE__);
     // Currently this assumes that Conses and General objects share the same header
     // this may not be true in the future
@@ -234,7 +243,7 @@ void client_describe(void *taggedClient) {
       gctools::rawHeaderDescribe(headerP);
     } else if (gctools::tagged_consp(taggedClient)) {
       printf("%s:%d A cons pointer\n", __FILE__, __LINE__ );
-    } else if (gctools::tagged_valistp(taggedClient)) {
+    } else if (gctools::tagged_vaslistp(taggedClient)) {
       printf("%s:%d A valist pointer\n", __FILE__, __LINE__ );
     }
   } else {
@@ -244,6 +253,40 @@ void client_describe(void *taggedClient) {
 #endif
 
   
+
+};
+
+
+namespace gctools {
+__attribute__((noinline))
+int initializeBoehm(MainFunctionType startupFn, int argc, char *argv[], bool mpiEnabled, int mpiRank, int mpiSize) {
+  GC_INIT();
+  GC_allow_register_threads();
+  GC_set_java_finalization(1);
+//  GC_allow_register_threads();
+  GC_set_all_interior_pointers(1); // tagged pointers require this
+                                   //printf("%s:%d Turning on interior pointers\n",__FILE__,__LINE__);
+  GC_set_warn_proc(clasp_warn_proc);
+  //  GC_enable_incremental();
+  GC_init();
+  void* topOfStack;
+  // ctor sets up my_thread
+  core::ThreadLocalState thread_local_state(&topOfStack);
+  my_thread = &thread_local_state;
+#if 0
+  // I'm not sure if this needs to be done for the main thread
+  GC_stack_base gc_stack_base;
+  GC_get_stack_base(&gc_stack_base);
+  GC_register_my_thread(&gc_stack_base);
+#endif
+  int exitCode = startupFn(argc, argv, mpiEnabled, mpiRank, mpiSize);
+#if 0
+  GC_unregister_my_thread();
+#endif
+  return exitCode;
+}
+
+
 
 };
 #endif // whole file #ifdef USE_BOEHM

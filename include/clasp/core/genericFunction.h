@@ -27,7 +27,6 @@ THE SOFTWARE.
 #ifndef _core_genericFunction_H_
 #define _core_genericFunction_H_
 
-#include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 
 namespace core {
@@ -40,17 +39,7 @@ namespace core {
 
   LCC_RETURN invalidated_dispatch(gctools::Tagged tgf, gctools::Tagged tvargs);
 
- // See accessor.h for optimized_slot_reader_dispatch and optimized_slot_writer_dispatch
- 
-#if 0
-  LCC_RETURN slot_reader_dispatch(gctools::Tagged tgf, gctools::Tagged tvargs);
-
-  LCC_RETURN slot_writer_dispatch(gctools::Tagged tgf, gctools::Tagged tvargs);
-#endif
-
   LCC_RETURN user_function_dispatch(gctools::Tagged tgf, gctools::Tagged tvargs);
-
-  extern "C" LCC_RETURN apply_method0(T_O* func_tagged, T_O* arg0_tagged, T_O* arg1_tagged, T_O* rest_args_tagged);
 
 };
 #endif /* _core_genericFunction_H_ */

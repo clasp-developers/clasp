@@ -93,15 +93,23 @@ Options are :tagbody :go :all :eh-landing-pads
   (bformat t "!\n!\n!\n!  Turning on compiler debugging\n!\n!\n!\n"))
 
 
-#+(or)
+;;#+(or)
 (progn
   (defmacro debug-print-i32 (num) nil)
-  (defmacro cmp-log-dump (fn) nil)
+  (defmacro cmp-log-dump-function (fn) nil)
+  (defmacro cmp-log-dump-module (fn) nil)
   (defmacro cmp-log (fmt &rest args ) nil)
   (defun is-debug-compiler-on () nil))
 
-;;#+(or)
+#+optimize-bclasp
 (progn
+  (defvar *tagbody-frame-info*)
+  (defvar *block-frame-info*))
+
+#+(or)
+(progn
+  (eval-when (:compile-toplevel :load-toplevel :execute)
+    (core:bformat *debug-io* "!\n!\n!   WARNING - cmp-log (bclasp compiler debugging) is on - Disable the macros in cmpsetup.lsp\n!\n!\n!\n"))
   (defun is-debug-compiler-on ()
     *debug-compiler*)
   (defmacro debug-print-i32 (num)
@@ -114,9 +122,16 @@ Options are :tagbody :go :all :eh-landing-pads
              (bformat t "CMP-LOG ")
              (bformat t ,fmt ,@args))
            nil)))
-(defmacro cmp-log-dump (fn-or-module)
+
+(defmacro cmp-log-compile-file-dump-module (module &optional (name-modifier ""))
+  `(when *debug-compiler*
+     (compile-file-quick-module-dump ,module ,name-modifier)))
+
+(defmacro cmp-log-dump-function (fn) nil)
+
+(defmacro cmp-log-dump-module (module)
   `(if (is-debug-compiler-on)
-       (llvm-sys:dump ,fn-or-module)
+       (llvm-sys:dump-module ,module)
        nil))
 
 

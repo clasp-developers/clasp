@@ -27,26 +27,33 @@ THE SOFTWARE.
 #ifndef _core_HashTable_H
 #define _core_HashTable_H
 
-#include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 #include <clasp/core/record.h>
 #include <clasp/core/array.h>
+#include <clasp/core/mpPackage.fwd.h>
 #include <clasp/core/corePackage.fwd.h>
 
 namespace core {
-  T_sp cl__make_hash_table(T_sp test, Fixnum_sp size, Number_sp rehash_size, Real_sp orehash_threshold, Symbol_sp weakness = _Nil<T_O>(), T_sp debug = _Nil<T_O>());
+  T_sp cl__make_hash_table(T_sp test, Fixnum_sp size, Number_sp rehash_size, Real_sp orehash_threshold, Symbol_sp weakness = _Nil<T_O>(), T_sp debug = _Nil<T_O>(), T_sp thread_safe = _Nil<T_O>());
 
 
 
   FORWARD(HashTable);
   class HashTable_O : public General_O {
     struct metadata_bootstrap_class {};
+    friend T_sp cl__make_hash_table(T_sp test, Fixnum_sp size, Number_sp rehash_size, Real_sp orehash_threshold, Symbol_sp weakness, T_sp debug, T_sp thread_safe);
+    friend class HashTableReadLock;
+    friend class HashTableWriteLock;
     LISP_CLASS(core, ClPkg, HashTable_O, "HashTable",core::General_O);
     bool fieldsp() const { return true; };
     void fields(Record_sp node);
 
     friend T_mv cl__maphash(T_sp function_desig, T_sp hash_table);
-  HashTable_O() : _InitialSize(4), _RehashSize(_Nil<Number_O>()), _RehashThreshold(1.2), _HashTable(_Nil<VectorObjects_O>()), _HashTableCount(0)
+  HashTable_O() :
+#ifdef DEBUG_REHASH_COUNT
+    _RehashCount(0),
+#endif
+      _RehashSize(_Nil<Number_O>()), _RehashThreshold(1.2), _HashTable(_Nil<VectorObjects_O>()), _HashTableCount(0)
     {};
     virtual ~HashTable_O(){};
   //	DEFAULT_CTOR_DTOR(HashTable_O);
@@ -57,12 +64,17 @@ namespace core {
     friend T_mv cl__maphash(T_sp function_desig, HashTable_sp hash_table);
     friend T_sp cl__clrhash(HashTable_sp hash_table);
 
-  protected: // instance variables here
-    uint _InitialSize;
+  public: // instance variables here
+#ifdef DEBUG_REHASH_COUNT
+    size_t    _RehashCount;
+#endif
     Number_sp _RehashSize;
     double _RehashThreshold;
     VectorObjects_sp _HashTable;
     uint _HashTableCount;
+#ifdef CLASP_THREADS
+    mutable mp::SharedMutex_sp _Mutex;
+#endif
 #ifdef USE_MPS
     mps_ld_s _LocationDependency;
 #else
@@ -72,6 +84,8 @@ namespace core {
     static HashTable_sp create(T_sp test); // set everything up with defaults
 
   public:
+    static void sxhash_eq(Hash1Generator &running_hash, T_sp obj, LocationDependencyPtrT);
+    static void sxhash_eql(Hash1Generator &running_hash, T_sp obj, LocationDependencyPtrT);
     static void sxhash_eq(HashGenerator &running_hash, T_sp obj, LocationDependencyPtrT);
     static void sxhash_eql(HashGenerator &running_hash, T_sp obj, LocationDependencyPtrT);
     static void sxhash_equal(HashGenerator &running_hash, T_sp obj, LocationDependencyPtrT);
@@ -79,14 +93,18 @@ namespace core {
 
   private:
     void setup(uint sz, Number_sp rehashSize, double rehashThreshold);
-    uint resizeEmptyTable(uint sz);
+    uint resizeEmptyTable_no_lock(size_t sz);
     uint calculateHashTableCount() const;
 
   public:
   /*! If findKey is defined then search it as you rehash and return resulting keyValuePair CONS */
+    List_sp rehash_no_lock(bool expandTable, T_sp findKey);
     List_sp rehash(bool expandTable, T_sp findKey);
     CL_LISPIFY_NAME("hash-table-buckets");
     CL_DEFMETHOD VectorObjects_sp hash_table_buckets() const { return this->_HashTable; };
+    CL_LISPIFY_NAME("hash-table-shared-mutex");
+    CL_DEFMETHOD T_sp hash_table_shared_mutex() const { if (this->_Mutex) return this->_Mutex; else return _Nil<T_O>(); };
+    void set_thread_safe(bool thread_safe);
   public: // Functions here
     virtual bool equalp(T_sp other) const;
 
@@ -98,11 +116,9 @@ namespace core {
     uint hashTableCount() const;
     size_t size() { return this->hashTableCount(); };
 
-    CL_LISPIFY_NAME("hash-table-rehash-size");
-    CL_DEFMETHOD   virtual Number_sp hashTableRehashSize() const { return this->_RehashSize; };
+    virtual Number_sp hashTableRehashSize() const;
 
-    CL_LISPIFY_NAME("hash-table-rehash-threshold");
-    CL_DEFMETHOD   double hashTableRehashThreshold() const { return this->_RehashThreshold; };
+    double hashTableRehashThreshold() const;
 
     uint hashTableSize() const;
 
@@ -113,10 +129,10 @@ namespace core {
     virtual bool keyTest(T_sp entryKey, T_sp searchKey) const;
 
   /*! I'm not sure I need this and tableRef */
-    List_sp bucketsFind(T_sp key) const;
+    List_sp bucketsFind_no_lock(T_sp key) const;
   /*! I'm not sure I need this and bucketsFind */
-    List_sp tableRef(T_sp key);
-    List_sp findAssoc(gc::Fixnum index, T_sp searchKey) const;
+    virtual List_sp tableRef_no_lock(T_sp key);
+    List_sp findAssoc_no_lock(gc::Fixnum index, T_sp searchKey) const;
 
   /*! Return true if the key is within the hash table */
     bool contains(T_sp key);
@@ -162,8 +178,11 @@ namespace core {
 //HashTable_mv af_make_hash_table(T_sp test, Fixnum_sp size, Number_sp rehash_size, DoubleFloat_sp orehash_threshold);
 
 
+
   T_mv clasp_gethash_safe(T_sp key, T_sp hashTable, T_sp default_);
 
+
+  
 }; /* core */
 
 

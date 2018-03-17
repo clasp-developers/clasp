@@ -65,12 +65,8 @@ using namespace clbind::detail;
 
 namespace clbind {
 
-
-
-
-
 ClassRep_O::ClassRep_O(type_id const &type, const std::string &name, bool derivable)
-  : Class_O(gctools::NextStamp(),core::lisp_StandardClass(),REF_CLASS_NUMBER_OF_SLOTS_IN_STANDARD_CLASS ),
+  : Instance_O(core::lisp_class_rep_class()/*,REF_CLASS_NUMBER_OF_SLOTS_IN_STANDARD_CLASS*/ ),
     m_type(type),
     m_name(name)
       //	, m_class_type(cpp_class)
@@ -112,7 +108,7 @@ ClassRep_O::ClassRep_O(type_id const &type, const std::string &name, bool deriva
 }
 
 ClassRep_O::ClassRep_O(const std::string &name, bool derivable)
-  : Class_O(gctools::NextStamp(),core::lisp_StandardClass(),REF_CLASS_NUMBER_OF_SLOTS_IN_STANDARD_CLASS),
+  : Instance_O(core::lisp_class_rep_class()/*,REF_CLASS_NUMBER_OF_SLOTS_IN_STANDARD_CLASS*/),
       m_type(typeid(reg::null_type)), m_name(name)
       //	, m_class_type(cl_class)
       //	, m_operator_cache(0)
@@ -122,6 +118,7 @@ ClassRep_O::ClassRep_O(const std::string &name, bool derivable)
       m_classes(globalClassIdMap) // Meister - luabind did this
       ,
       m_derivable(derivable) {
+  printf("%s:%d:%s    create_class\n", __FILE__, __LINE__, __FUNCTION__ );
 #if 0
 	cl_newtable(L);
 	handle(L, -1).swap(m_table);

@@ -26,6 +26,7 @@ THE SOFTWARE.
 /* -^- */
 //#define DEBUG_LEVEL_FULL
 
+#include <clasp/core/foundation.h>
 #include <clasp/core/common.h>
 #include <clasp/core/environment.h>
 #include <clasp/core/hashTableEq.h>
@@ -77,34 +78,42 @@ HashTableEq_sp HashTableEq_O::createFromPList(List_sp plist, Symbol_sp nilTermin
   return ht;
 }
 
-#if 0
-    void HashTableEq_O::serialize(::serialize::SNodeP node)
-    {
-        this->Bases::serialize(node);
-	// Archive other instance variables here
+List_sp HashTableEq_O::tableRef_no_lock(T_sp key) {
+    ASSERT(gc::IsA<Array_sp>(this->_HashTable));
+    cl_index length = ENSURE_VALID_OBJECT(this->_HashTable)->length();
+    cl_index index = this->safe_sxhashKey(key, length, false);
+    List_sp pair = _Nil<T_O>();
+    for (auto cur : gc::As_unsafe<List_sp>((*ENSURE_VALID_OBJECT(this->_HashTable))[index])) {
+      pair = CONS_CAR(cur);
+      ASSERT(pair.consp());
+      if (CONS_CAR(pair) == key) return pair;
+    }
+#if defined(USE_MPS)
+  // Location dependency test if key is stale
+    if (key.objectp()) {
+      void *blockAddr = &(*key);
+      if (mps_ld_isstale(const_cast<mps_ld_t>(&(this->_LocationDependency)), global_arena, blockAddr)) {
+        return this->rehash_no_lock(false, key);
+      }
     }
 #endif
+    return _Nil<T_O>();
+  }
 
-#if defined(XML_ARCHIVE)
-void HashTableEq_O::archiveBase(::core::ArchiveP node) {
-  this->Base::archiveBase(node);
-  // Archive other instance variables here
-}
-#endif // defined(XML_ARCHIVE)
 
 bool HashTableEq_O::keyTest(T_sp entryKey, T_sp searchKey) const {
   return cl__eq(entryKey, searchKey);
 }
 
 gc::Fixnum HashTableEq_O::sxhashKey(T_sp obj, gc::Fixnum bound, bool willAddKey) const {
-  HashGenerator hg;
+  Hash1Generator hg;
 #ifdef USE_MPS
   HashTable_O::sxhash_eq(hg, obj, willAddKey ? const_cast<mps_ld_t>(&(this->_LocationDependency)) : NULL);
 #endif
 #ifdef USE_BOEHM
   HashTable_O::sxhash_eq(hg, obj, NULL);
 #endif
-  return hg.hash(bound);
+  return hg.hashBound(bound);
 }
 
 }; /* core */

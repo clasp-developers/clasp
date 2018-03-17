@@ -26,6 +26,7 @@ THE SOFTWARE.
 /* -^- */
 //#define DEBUG_LEVEL_FULL
 
+#include <clasp/core/foundation.h>
 #include <clasp/core/common.h>
 #include <clasp/core/environment.h>
 #include <clasp/core/ql.h>
@@ -63,7 +64,7 @@ static bool
 test_compare(struct cl_test *t, T_sp x) {
   x = KEY(t, x);
   //t->env->function = t->test_function;
-  T_sp res = (*t->test_fn).entry(LCC_PASS_ARGS2_ELLIPSIS(t->test_fn.raw_(),t->item_compared.raw_(), x.raw_()));
+  T_sp res = (*t->test_fn).entry.load()(LCC_PASS_ARGS2_ELLIPSIS(t->test_fn.raw_(),t->item_compared.raw_(), x.raw_()));
   return res.notnilp();
 }
 
@@ -71,7 +72,7 @@ static bool
 test_compare_not(struct cl_test *t, T_sp x) {
   x = KEY(t, x);
   //t->env->function = t->test_function;
-  T_sp res = (*t->test_fn).entry(LCC_PASS_ARGS2_ELLIPSIS(t->test_fn.raw_(),t->item_compared.raw_(), x.raw_()));
+  T_sp res = (*t->test_fn).entry.load()(LCC_PASS_ARGS2_ELLIPSIS(t->test_fn.raw_(),t->item_compared.raw_(), x.raw_()));
   return res.nilp();
 }
 
@@ -99,7 +100,7 @@ static T_sp
 key_function(struct cl_test *t, T_sp x) {
   //t->env->function = t->key_function;
   T_mv result;
-  return (*t->key_fn).entry(LCC_PASS_ARGS1_ELLIPSIS(t->key_fn.raw_(),x.raw_()));
+  return (*t->key_fn).entry.load()(LCC_PASS_ARGS1_ELLIPSIS(t->key_fn.raw_(),x.raw_()));
 }
 
 static T_sp
@@ -164,28 +165,28 @@ CL_DEFUN T_sp cl__rassoc(T_sp item, List_sp a_list, T_sp test, T_sp test_not, T_
     key = coerce::functionDesignator(key);
   setup_test(&t, item, test, test_not, key);
   for (auto calist : a_list) {
-    T_sp pair = oCar(calist);
-    if (pair.notnilp()) {
-      if (!pair.consp())
-        TYPE_ERROR_LIST(pair);
-      if (TEST(&t, oCdr(pair))) {
-        a_list = pair;
-        break;
+    T_sp pair = CONS_CAR(calist);
+    LIKELY_if (pair.consp()) {
+      if (TEST(&t,CONS_CDR(pair))) {
+        close_test(&t);
+        return pair;
       }
+    } else if (pair.notnilp()) {
+      TYPE_ERROR_LIST(pair);
     }
   } //end_loop_for_in;
   close_test(&t);
-  return a_list;
+  return _Nil<T_O>();
 }
 
 CL_LAMBDA(idx arg);
 CL_DECLARE();
 CL_DOCSTRING("See CLHS nth");
 CL_DEFUN T_sp cl__nth(int idx, T_sp arg) {
-  if (arg.nilp())
-    return _Nil<T_O>();
-  if (Cons_sp list = arg.asOrNull<Cons_O>()) {
-    return list->onth(idx);
+  LIKELY_if (arg.consp()) {
+    return arg.unsafe_cons()->onth(idx);
+  } else if (arg.nilp()) {
+    return arg;
   }
   TYPE_ERROR(arg, cl::_sym_list);
 };
@@ -194,10 +195,10 @@ CL_LAMBDA(idx arg);
 CL_DECLARE();
 CL_DOCSTRING("See CLHS nth");
 CL_DEFUN T_sp cl__nthcdr(int idx, T_sp arg) {
-  if (arg.nilp())
+  LIKELY_if (arg.consp()) {
+    return arg.unsafe_cons()->onthcdr(idx);
+  } else if (arg.nilp()) {
     return arg;
-  if (Cons_sp list = arg.asOrNull<Cons_O>()) {
-    return list->onthcdr(idx);
   }
   TYPE_ERROR(arg, cl::_sym_list);
 };
@@ -267,24 +268,25 @@ CL_DEFUN T_sp cl__list(T_sp objects) {
   return objects;
 };
 
-CL_LAMBDA(&rest objects);
+CL_LAMBDA(&va-rest objects);
 CL_DECLARE();
 CL_DOCSTRING("list* see CLHS");
-CL_DEFUN T_sp cl__listSTAR(T_sp tobjects) {
-  T_sp objects = tobjects;
-  if (objects.nilp()) FEargument_number_error(clasp_make_fixnum(0),clasp_make_fixnum(1),_Nil<T_O>());
-  if (oCdr(objects).nilp())
-    return (oCar(objects));
-  Cons_sp cur;
+CL_DEFUN T_sp cl__listSTAR(VaList_sp vargs) {
+  size_t nargs = vargs->remaining_nargs();
+  if (nargs == 0 ) FEargument_number_error(clasp_make_fixnum(0),clasp_make_fixnum(1),_Nil<T_O>());
   ql::list result;
-  for (; oCdr(objects).notnilp(); objects = oCdr(objects)) {
-    //	    printf("Adding %s\n", _rep_(oCar(objects)).c_str());
-    result << oCar(objects);
+  while (nargs > 1) {
+    T_O* tcsp = ENSURE_VALID_OBJECT(vargs->next_arg_raw());
+    T_sp csp((gctools::Tagged)tcsp);
+    result << csp;
+    nargs--;
   }
-  //	printf("dotting %s\n", _rep_(objects).c_str());
-  result.dot(oCar(objects));
+  T_O* tailptr = ENSURE_VALID_OBJECT(vargs->next_arg_raw());
+  T_sp tail((gctools::Tagged)tailptr);
+  result.dot(tail);
   return result.cons();
 }
+
 
 CL_LAMBDA(list &optional (on 1));
 CL_DECLARE();

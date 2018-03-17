@@ -14,7 +14,7 @@
 (in-package "SYSTEM")
 
 (defparameter *trace-level* 0)
-#+clasp (defparameter *trace-list* nil) ; In all_symbols.d !
+(defparameter *trace-list* nil) ; In all_symbols.d !
 (defparameter *trace-max-indent* 20)
 
 (defmacro trace (&rest r)
@@ -66,8 +66,8 @@ all functions."
   (let* (break exitbreak (entrycond t) (exitcond t) entry exit
 	       step (barfp t) fname oldf)
     (cond ((si::valid-function-name-p spec)
-	   (setq fname spec))
-          ((not (si::proper-list-p spec)) ;; Schafmeister 2013 Aug changed from: ((si::proper-list-p spec)...)
+           (setq fname spec))
+          ((not (si::proper-list-p spec))
            (error "Not a valid argument to TRACE: ~S" spec))
 	  ((si::valid-function-name-p (first spec))
 	   (setq fname (first spec))
@@ -107,7 +107,7 @@ all functions."
         (cond ((traced-and-redefined-p record)
                (delete-from-trace-list fname))
               (t
-               (warn "The function ~S is already traced." fname)
+               (warn "The function ~S is already traced. Statement has no effect." fname)
                (return-from trace-one nil)))))
     (setq oldf (fdefinition fname))
     (eval
@@ -148,73 +148,50 @@ all functions."
 
 (defun trace-print (direction fname vals &rest extras)
   (let ((indent (min (* (1- *trace-level*) 2) *trace-max-indent*))
-	(*print-circle* t))
-    (fresh-line *trace-output*)
-    (case direction
-      (ENTER
-       (multiple-value-bind (bars rem)
-	   (floor indent 4)
-	 (dotimes (i bars) (princ (if (< i 10) "|   " "|    ") *trace-output*))
-	 (when (plusp rem) (format *trace-output* "~V,,,' A" rem "|")))
-       #-debug-format(progn
-		       #+formatter(format *trace-output*
-					  "~D> (~S~{ ~S~})~%"
-					  *trace-level* fname vals)
-		       #-formatter(bformat *trace-output*
-					   "%s> %s %s\n"
-					   *trace-level* fname vals))
-       #+debug-format(bformat *trace-output*
-			      "debug-format| %s> %s %s\n"
-			      *trace-level* fname vals)
-       )
-      (EXIT
-       (multiple-value-bind (bars rem)
-	   (floor indent 4)
-	 (dotimes (i bars) (princ "|   " *trace-output*))
-	 (when (plusp rem) (format *trace-output* "~V,,,' A" rem "|")))
-       #-debug-format(progn
-		       #+formatter(format *trace-output*
-					  "<~D (~S~{ ~S~})~%"
-					  *trace-level*
-					  fname vals)
-		       #-formatter(bformat *trace-output*
-					   "<%s %s %s\n"
-					   *trace-level* fname vals))
-       #+debug-format(bformat *trace-output*
-			      "debug-format| <%s %s %s\n"
-			      *trace-level* fname vals)
-       ))
-    (when extras
-      (multiple-value-bind (bars rem)
-	  (floor indent 4)
-	(dotimes (i bars) (princ "|   " *trace-output*))
-	(when (plusp rem) (format *trace-output* "~V,,,' A" rem "|")))
-      #-debug-format (progn
-		       #+formatter (format *trace-output*
-					   "~0,4@T\\\\ ~{ ~S~}~%"
-					   extras)
-		       #-formatter (bformat *trace-output*
-					    "      %s\n" extras)
-		       )
-      #+debug-format(bformat *trace-output*
-			     "debug-format|       %s\n" extras)
-      )
-    ))
+        (*print-circle* t))
+    (princ
+      (with-output-to-string (*trace-output*)
+        (fresh-line *trace-output*)
+        (case direction
+          (ENTER
+            (multiple-value-bind (bars rem)
+              (floor indent 4)
+              (dotimes (i bars) (princ (if (< i 10) "|   " "|    ") *trace-output*))
+              (when (plusp rem) (format *trace-output* "~V,,,' A" rem "|")))
+            (format *trace-output*
+                    "~D> (~S~{ ~S~})~%"
+                    *trace-level* fname vals))
+          (EXIT
+            (multiple-value-bind (bars rem)
+              (floor indent 4)
+              (dotimes (i bars) (princ "|   " *trace-output*))
+              (when (plusp rem) (format *trace-output* "~V,,,' A" rem "|")))
+            (format *trace-output*
+                    "<~D (~S~{ ~S~})~%"
+                    *trace-level*
+                    fname vals)
+            ))
+        (when extras
+          (multiple-value-bind (bars rem)
+            (floor indent 4)
+            (dotimes (i bars) (princ "|   " *trace-output*))
+            (when (plusp rem) (format *trace-output* "~V,,,' A" rem "|")))
+          (format *trace-output*
+                  "~0,4@T\\\\ ~{ ~S~}~%"
+                  extras))
+        *trace-output*)
+      *trace-output*)))
 
 (defun trace-record (fname)
-  (declare (si::c-local))
   (find fname *trace-list* :key #'first :test #'equal))
 
 (defun trace-record-name (record)
-  (declare (si::c-local))
   (first record))
 
 (defun trace-record-definition (record)
-  (declare (si::c-local))
   (second record))
 
 (defun trace-record-old-definition (record)
-  (declare (si::c-local))
   (third record))
 
 (defun traced-old-definition (fname)
@@ -230,8 +207,9 @@ all functions."
   (push (list fname (fdefinition fname) old-definition)
         *trace-list*))
 
+
+;;; will only work if trace-record-name is still fbound
 (defun traced-and-redefined-p (record)
-  (declare (si::c-local))
   (and record (not (eq (trace-record-definition record)
                        (fdefinition (trace-record-name record))))))
 
@@ -239,6 +217,9 @@ all functions."
   (let ((record (trace-record fname)))
     (cond ((null record)
            (warn "The function ~S was not traced." fname))
+           ;;; issue #400
+           ((not (fboundp fname))
+            (warn "The function ~S was traced, but fmakunbound." fname))
           ((traced-and-redefined-p record)
            (warn "The function ~S was traced, but redefined." fname))
           (t
@@ -251,7 +232,7 @@ all functions."
 (defparameter *step-form* nil)
 (defparameter *step-tag* (cons nil nil))
 (defparameter *step-functions* nil)
-(defconstant step-commands
+(defconstant-equal step-commands
   `("Stepper commands"
      ((:newline) (step-next) :constant
       "newline		Advance to the next form"
@@ -259,20 +240,20 @@ all functions."
 	~@
 	Step to next form.~%")
      ((:s :skip) step-skip nil
-      ":s(kip)		Skip current form or until function"
-      ":skip &optional arg				[Stepper command]~@
-	:s &optional arg				[Abbreviation]~@
-	~@
-	Continue evaluation without stepping.  Without argument, resume
-	stepping after the current form.  With numeric argument (n),
-	resume stepping at the n-th level above.  With function name, resume
-	when given function is called.~%")
+      ":s(kip)         Skip current form or until function"
+      ":skip &optional arg                             [Stepper command]~@
+       :s &optional arg                                [Abbreviation]~@
+       ~@
+       Continue evaluation without stepping.  Without argument, resume~@
+       stepping after the current form.  With numeric argument (n),~@
+       resume stepping at the n-th level above.  With function name, resume~@
+       when given function is called.~%")
      ((:pr :print) (step-print) :constant
-      ":pr(int)	Pretty print current form"
-      ":print						[Stepper command]~@
-	:p						[Abbreviation]~@
-	~@
-	Pretty print current form.~%")
+      ":pr(int)        Pretty print current form"
+      ":print                                          [Stepper command]~@
+       :pr                                             [Abbreviation]~@
+       ~@
+       Pretty print current form.~%")
      ((:form) *step-form* :constant
       ":form		Current form"
       ":form						[Stepper command]~@
@@ -301,9 +282,7 @@ for Stepper mode commands."
 	 (*step-level* 0)
 	 (*step-functions* (make-hash-table :size 128 :test 'eq)))
     (catch *step-tag*
-      #+ecl(core:eval-with-env form nil t)
-      #+clasp(funcall core:*eval-with-env-hook* form nil)
-      )))
+      (funcall core:*eval-with-env-hook* form nil))))
 
 (defun steppable-function (form)
   (let ((*step-action* nil))
@@ -312,9 +291,7 @@ for Stepper mode commands."
 	    (function-lambda-expression form)
 	  (if (and (not (trace-record name)) f)
 	      (setf (gethash form *step-functions*)
-		    #+ecl(eval-with-env `(function ,f) env t)
-                    #+clasp(funcall core:*eval-with-env-hook* `(function ,f) env)
-                    )
+                    (funcall core:*eval-with-env-hook* `(function ,f) env))
 	      form)))))
 
 (defun stepper (form)
@@ -355,19 +332,15 @@ for Stepper mode commands."
 (defun step-quit ()
   (throw *step-tag* t))
 
+(defparameter core:*watch-dynamic-binding-stack* nil)
+(defun ensure-trace-dynamic (symbol &optional func)
+  (let ((as (assoc symbol core:*watch-dynamic-binding-stack*)))
+    (if as
+        (setf (cdr as) func)
+        (setf core:*watch-dynamic-binding-stack*
+              (acons symbol func core:*watch-dynamic-binding-stack*)))))
+(export 'ensure-trace-dynamic)
 
-#+clasp
-(progn
-  (defparameter core:*watch-dynamic-binding-stack* nil)
-  (defun ensure-trace-dynamic (symbol &optional func)
-    (let ((as (assoc symbol core:*watch-dynamic-binding-stack*)))
-      (if as
-          (setf (cdr as) func)
-          (setf core:*watch-dynamic-binding-stack* (acons symbol func core:*watch-dynamic-binding-stack*)))
-      ))
-  (export 'ensure-trace-dynamic)
-
-  (defmacro watch (var &optional fn)
-    `(ensure-trace-dynamic ',var ,fn))
-  (export 'watch)
-  )
+(defmacro watch (var &optional fn)
+  `(ensure-trace-dynamic ',var ,fn))
+(export 'watch)

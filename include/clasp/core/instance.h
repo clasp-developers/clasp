@@ -27,103 +27,164 @@ THE SOFTWARE.
 #ifndef _core_instance_H_
 #define _core_instance_H_
 
-#include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
+#include <clasp/core/array.h>
+#include <clasp/core/hashTable.fwd.h>
+#include <clasp/core/mpPackage.fwd.h>
 #include <clasp/core/instance.fwd.h>
 // may need more later
 #include <clasp/gctools/gc_interface.h>
 
-/*! Different values for Instance_O.isgf */
-#define CLASP_NOT_FUNCALLABLE 0
-#define CLASP_STANDARD_DISPATCH 1
-#define CLASP_RESTRICTED_DISPATCH 2
-#define CLASP_READER_DISPATCH 3
-#define CLASP_WRITER_DISPATCH 4
-#define CLASP_USER_DISPATCH 5
-#define CLASP_STRANDH_DISPATCH 6
-#define CLASP_INVALIDATED_DISPATCH 7
+template <>
+struct gctools::GCInfo<core::Instance_O> {
+  static bool constexpr NeedsInitialization = false;
+  static bool constexpr NeedsFinalization = false;
+  static GCInfo_policy constexpr Policy = normal;
+};
 
 namespace core {
 
-  class Instance_O : public Function_O {
-    LISP_CLASS(core, CorePkg, Instance_O, "Instance",Function_O);
-    friend class Class_O;
-    void archiveBase(ArchiveP node);
+  class Instance_O : public General_O {
+    LISP_CLASS(core, CorePkg, Instance_O, "Instance",General_O);
+    // Store the stamp in slot 0 - so offset all the other slots
+#define RACK_SLOT_START 1
+  // These must be exposed in core__class_slot_sanity_check()
+#define NUMBER_OF_SPECIALIZER_SLOTS 5
+#define CLASS_SLOT_OFFSET NUMBER_OF_SPECIALIZER_SLOTS
+    typedef enum {
+        REF_SPECIALIZER_CALL_HISTORY_GENERIC_FUNCTIONS = 3,
+        REF_SPECIALIZER_MUTEX = 4,
+        REF_CLASS_CLASS_NAME = (0 + CLASS_SLOT_OFFSET),
+        REF_CLASS_DIRECT_SUPERCLASSES = (1+CLASS_SLOT_OFFSET),
+        REF_CLASS_DIRECT_SUBCLASSES = (2+CLASS_SLOT_OFFSET),
+        REF_CLASS_SLOTS = (3+CLASS_SLOT_OFFSET),
+        REF_CLASS_CLASS_PRECEDENCE_LIST = (4+CLASS_SLOT_OFFSET),
+        REF_CLASS_DIRECT_SLOTS = (5+CLASS_SLOT_OFFSET),
+        REF_CLASS_DIRECT_DEFAULT_INITARGS = (6+CLASS_SLOT_OFFSET),
+        REF_CLASS_DEFAULT_INITARGS = (7+CLASS_SLOT_OFFSET),
+        REF_CLASS_FINALIZED = (8+CLASS_SLOT_OFFSET),
+        REF_CLASS_DEPENDENTS = (12+CLASS_SLOT_OFFSET),
+        REF_CLASS_LOCATION_TABLE = (15+CLASS_SLOT_OFFSET),
+        REF_CLASS_STAMP_FOR_INSTANCES_ = (16+CLASS_SLOT_OFFSET),
+        REF_CLASS_CREATOR = (17+CLASS_SLOT_OFFSET)
+    } Slots;
+    
   public: // ctor/dtor for classes with shared virtual base
-  Instance_O() : Base(entry_point), _isgf(CLASP_NOT_FUNCALLABLE), _entryPoint(NULL), _Class(_Nil<Class_O>()), _Sig(_Nil<T_O>()){};
+  Instance_O() : _Sig(_Unbound<T_O>()), _Class(_Nil<Class_O>()), _Rack(_Nil<T_O>()) {};
+    explicit Instance_O(Class_sp metaClass) :
+      _Sig(_Unbound<T_O>())
+      ,_Class(metaClass)
+        ,_Rack(_Nil<T_O>())
+#ifdef METER_ALLOCATIONS
+      ,_allocation_counter(0)
+      ,_allocation_total_size(0)
+#endif
+      
+//    ,_NumberOfSlots(slots)
+    {};
     virtual ~Instance_O(){};
   public:
+    // The order MUST be:
+    // _Sig
+    // _Class (matches offset of FuncallableInstance_O)
+    // _Rack  (matches offset of FuncallableInstance_O)
+    T_sp _Sig;
     Class_sp _Class;
-  public: // generic function specific instance variables here
-    int _isgf;
-    DispatchFunction_fptr_type _entryPoint;
-  public: // Slots
     SimpleVector_sp _Rack;
   /*! Mimicking ECL instance->sig generation signature
         This is pointed to the class slots in case they change 
         - then the instances can be updated*/
-    T_sp _Sig;
+#ifdef METER_ALLOCATIONS
+  // Keep track of allocations
+    size_t _allocation_counter;
+    size_t _allocation_total_size;
+#endif
   public:
-    bool isCallable() const { return (bool)(this->_entryPoint); };
-  public: // These indices MUST match the order in +standard-generic-function-slots+
-    T_sp GFUN_NAME() const { return this->instanceRef(0); };
-    T_sp GFUN_SPECIALIZERS() const { return this->instanceRef(1); };
-    T_sp GFUN_COMB() const { return this->instanceRef(2); };
-    T_sp GFUN_DISPATCHER() const { return this->instanceRef(3);};
-    void GFUN_DISPATCHER_set(T_sp f)  { this->instanceSet(3,f);};
-    T_sp GFUN_CALL_HISTORY() const { return this->instanceRef(4);};
-    void GFUN_CALL_HISTORY_set(T_sp h);
-    T_sp GFUN_LAMBDA_LIST() const { return this->instanceRef(5);};
-    void GFUN_LAMBDA_LIST_set(T_sp lambda_list) {
-      if (this->instanceRef(5).unboundp() && lambda_list.nilp()) {
-        printf("%s:%d Ignoring GFUN_LAMBDA_LIST_SET - returning\n", __FILE__, __LINE__ );
-        return;
-      }
-      this->instanceSet(5,lambda_list);
-    };
+    static Instance_sp createClassUncollectable(gctools::Stamp is,Class_sp metaClass, size_t number_of_slots, Creator_sp creator);
+    static Class_sp create(Symbol_sp symbol,Class_sp metaClass,Creator_sp creator);
+  
+  /*! Setup the instance nil value */
+  //	void setupInstanceNil();
+
   public:
-  // Add support for Function_O methods
-    T_sp name() const { ASSERT(this->isgf()); return this->GFUN_NAME(); };
-    virtual Symbol_sp functionKind() const { IMPLEMENT_ME(); };
-    virtual T_sp closedEnvironment() const { IMPLEMENT_ME(); };
-    virtual T_sp setSourcePosInfo(T_sp sourceFile, size_t filePos, int lineno, int column) { IMPLEMENT_ME(); };
-//  virtual T_mv functionSourcePos() const { IMPLEMENT_ME();;
-    virtual T_sp cleavir_ast() const { return _Nil<T_O>(); };
-    virtual void setf_cleavir_ast(T_sp ast) { SIMPLE_ERROR(BF("Generic functions cannot be inlined"));};
-    virtual List_sp declares() const { IMPLEMENT_ME(); };
-    virtual T_sp docstring() const { IMPLEMENT_ME(); };
-    virtual void *functionAddress() const { IMPLEMENT_ME(); };
-    virtual bool macroP() const { return false; };
-    virtual void set_kind(Symbol_sp k);
-    virtual Symbol_sp getKind() const { return kw::_sym_function; };
-    virtual int sourceFileInfoHandle() const { IMPLEMENT_ME(); };
-    virtual size_t filePos() const { return 0; }
-    virtual int lineNumber() const { return 0; }
-    virtual int column() const { return 0; };
-    virtual LambdaListHandler_sp lambdaListHandler() const { IMPLEMENT_ME(); };
-    virtual void setAssociatedFunctions(List_sp funcs) { NOT_APPLICABLE(); };
+    virtual bool isCallable() const { return false; };
+  public:
+    // Functions from Class_O
+    string _classNameAsString() const;
+    void _setClassName(Symbol_sp id) { this->instanceSet(REF_CLASS_CLASS_NAME, id); };
+    Symbol_sp _className() const { return gc::As<Symbol_sp>(this->instanceRef(REF_CLASS_CLASS_NAME)); }
+
+    void CLASS_set_creator(Creator_sp cb);
+    Creator_sp CLASS_get_creator() const { return gc::As_unsafe<Creator_sp>(this->instanceRef(REF_CLASS_CREATOR)); };
+    bool CLASS_has_creator() const { return (bool)(!this->instanceRef(REF_CLASS_CREATOR).unboundp()); };
+    Fixnum CLASS_stamp_for_instances() const { return this->instanceRef(REF_CLASS_STAMP_FOR_INSTANCES_).unsafe_fixnum(); };
+    void CLASS_set_stamp_for_instances(Fixnum s);
+
+    void CLASS_call_history_generic_functions_push_new(T_sp generic_function);
+    void CLASS_call_history_generic_functions_remove(T_sp list_ofgeneric_functions);
+    
+    string dumpInfo();
+
+  /*! Return the direct superclasses */
+    List_sp directSuperclasses() const;
+
+    void addInstanceBaseClass(Symbol_sp cl);
+
+    T_sp slots() const { return this->instanceRef(REF_CLASS_SLOTS); };
+
+    template <typename oclass>
+      bool isSubClassOf() const {
+    return this->isSubClassOf(lisp_classFromClassSymbol(oclass::static_classSymbol()));
+  }
+
+    void accumulateSuperClasses(HashTableEq_sp supers, VectorObjects_sp arrayedSupers, Class_sp mc);
+    void lowLevel_calculateClassPrecedenceList();
+
+    virtual bool isSubClassOf(Class_sp mc) const;
+
+    string getPackagedName() const;
+    string instanceClassName() { return this->getPackagedName(); };
+    string instanceClassName() const { return this->getPackagedName(); };
+
+    T_sp make_instance();
+  /*! predicate if this is a BuiltInClass class */
+    virtual bool builtInClassP() const { return this == &*core::lisp_built_in_class(); };
+
+  /*! predicate if this is a raw C++ class that is wrapped with clbind
+          - it can only be used to derive other classes if cxxDerivableClassP is true */
+    virtual bool cxxClassP() const { return false; };
+
+  /*! cxxDerivableClass is a class that inherits from a raw C++ class and
+          the clbind::Adapter class - this allows it to be derived from */
+    virtual bool cxxDerivableClassP() const { return false; };
+
+  /*! primaryCxxDerivableClassP is a predicate that returns true if
+          this class is the primary derivable C++ class */
+    virtual bool primaryCxxDerivableClassP() const { return false; };
+
+    void setInstanceBaseClasses(List_sp classes);
+    void __setup_stage1_with_sharedPtr_lisp_sid(T_sp theThis, Symbol_sp instanceClassSymbol) {
+    this->instanceSet(REF_CLASS_CLASS_NAME, instanceClassSymbol);
+  }
+
+    void __setup_stage2_with_classSymbol(Symbol_sp csid) {
+    _OF();
+  }
+
+    void __setupStage3NameAndCalculateClassPrecedenceList(Symbol_sp isid);
+
+    void addInstanceBaseClassDoNotCalculateClassPrecedenceList(Symbol_sp cl);
   public: // The hard-coded indexes above are defined below to be used by Class
-    void initializeSlots(Fixnum stamp, size_t numberOfSlots);
-    void ensureClosure(DispatchFunction_fptr_type entryPoint);
-    virtual void setf_lambda_list(List_sp lambda_list) { if (!this->_isgf) {SIMPLE_ERROR(BF("Cannot set lambda list of non gf function ll->%s") % _rep_(lambda_list));} this->GFUN_LAMBDA_LIST_set(lambda_list); }; //{ this->_lambda_list = lambda_list; };
-    virtual T_sp lambda_list() const { return this->GFUN_LAMBDA_LIST(); };
+    void initializeSlots(gctools::Stamp is, size_t numberOfSlots);
+    void initializeClassSlots(Creator_sp creator, gctools::Stamp class_stamp);
   public:
     static size_t rack_stamp_offset();
-  private:
-    void reshapeInstance(int delta);
-  public:
-    virtual void LISP_INVOKE();
-
   public: // Functions here
-    Fixnum stamp() const { return (*this->_Rack)[0].unsafe_fixnum();};
-    void stamp_set(Fixnum s) { (*this->_Rack)[0] = clasp_make_fixnum(s); };
-    size_t numberOfSlots() const { return this->_Rack->length()-1; };
-  /*! Return number of slots if not nil otherwise nil */
-    T_sp oinstancepSTAR() const;
+    Fixnum stamp() const;
+    void stamp_set(Fixnum s);
+    size_t numberOfSlots() const;
   /*! Return number of slots if not nil otherwise nil */
     T_sp oinstancep() const;
-
-    CL_DEFMETHOD int isgf() const { return this->_isgf; };
 
     Class_sp _instanceClass() const { return this->_Class; };
 
@@ -134,7 +195,7 @@ namespace core {
 
 
     virtual bool equalp(T_sp obj) const;
-    virtual void sxhash_(HashGenerator &hg) const;
+    virtual void sxhash_equalp(HashGenerator &hg,LocationDependencyPtrT ptr) const;
 
   /*! Return the value of a slot */
     T_sp instanceRef(size_t idx) const;
@@ -143,70 +204,71 @@ namespace core {
 
     string __repr__() const;
 
-    T_sp copyInstance() const;
+    virtual T_sp copyInstance() const;
 
-    T_sp setFuncallableInstanceFunction(T_sp functionOrT);
-
-    T_sp userFuncallableInstanceFunction() const;
-
-    bool genericFunctionP() const;
-
-    void describe(T_sp stream);
+    virtual void describe(T_sp stream);
 
     void __write__(T_sp sout) const; // Look in write_ugly.cc
 
-    static  LCC_RETURN LISP_CALLING_CONVENTION();
+
 
   }; // Instance class
 
+  #define OPTIMIZED_SLOT_INDEX_INDEX 1
+
+    template <class RackType_sp>
+    inline T_sp low_level_instanceRef(RackType_sp rack, size_t index) { return (*rack)[index+RACK_SLOT_START]; }
+  template <class RackType_sp>
+    inline void low_level_instanceSet(RackType_sp rack, size_t index, T_sp value) { (*rack)[index+RACK_SLOT_START] = value; }
+
 }; // core namespace
-template <>
-struct gctools::GCInfo<core::Instance_O> {
-  static bool constexpr NeedsInitialization = false;
-  static bool constexpr NeedsFinalization = false;
-  static GCInfo_policy constexpr Policy = normal;
-};
 
 
 namespace gctools {
  /*! Specialize TaggedCast for Instance_O - always use dynamic_cast */
- template <typename FROM>
-struct TaggedCast<core::Instance_O *, FROM> {
-   typedef core::Instance_O *ToType;
-   typedef FROM FromType;
-   inline static bool isA(FromType ptr) {
-     if (tagged_generalp(ptr)) {
+  template <typename FROM>
+    struct TaggedCast<core::Instance_O *, FROM> {
+    typedef core::Instance_O *ToType;
+    typedef FROM FromType;
+    inline static bool isA(FromType ptr) {
+      if (tagged_generalp(ptr)) {
       // Maybe
-       core::General_O* raw_client = (core::General_O*)untag_general<FromType>(ptr);
-       core::Instance_O* iptr = dynamic_cast<core::Instance_O*>(raw_client);
-       return iptr!=NULL;
-     }
-     return false;
-   }
-   inline static core::Instance_O* castOrNULL(FromType client) {
-     if ( tagged_generalp(client) ) {
+        core::General_O* raw_client = (core::General_O*)untag_general<FromType>(ptr);
+        core::Instance_O* iptr = dynamic_cast<core::Instance_O*>(raw_client);
+        return iptr!=NULL;
+      }
+      return false;
+    }
+    inline static core::Instance_O* castOrNULL(FromType client) {
+      if ( tagged_generalp(client) ) {
       // maybe
-       core::General_O* raw_client = (core::General_O*)untag_general<FromType>(client);
-       core::Instance_O* iclient = dynamic_cast<core::Instance_O*>(raw_client);
-       if ( iclient ) return tag_general<ToType>(iclient);
-       return NULL;
-     }
-     return NULL;
-   }
- };
+        core::General_O* raw_client = (core::General_O*)untag_general<FromType>(client);
+        core::Instance_O* iclient = dynamic_cast<core::Instance_O*>(raw_client);
+        if ( iclient ) return tag_general<ToType>(iclient);
+        return NULL;
+      }
+      return NULL;
+    }
+  };
 };
-
 
 namespace core {
-
-  List_sp core__call_history_find_key(List_sp generic_function_call_history, SimpleVector_sp key);
-
-  bool core__generic_function_call_history_push_new(Instance_sp generic_function, SimpleVector_sp key, T_sp effective_method);
-
-  void core__generic_function_call_history_remove_entries_with_specializer(Instance_sp generic_function, T_sp specializer);
-
-  T_sp core__allocateInstance(T_sp theClass, size_t numberOfSlots);
+  T_sp core__allocate_new_instance(Class_sp theClass, size_t numberOfSlots);
 };
 
+namespace core {
+  struct ClassReadLock {
+    mp::SharedMutex_sp _Lock;
+    ClassReadLock(mp::SharedMutex_sp lock);
+    ~ClassReadLock();
+  };
+
+  struct ClassWriteLock {
+    mp::SharedMutex_sp _Lock;
+    ClassWriteLock(mp::SharedMutex_sp lock);
+    ~ClassWriteLock();
+  };
+
+};
 
 #endif /* _core_instance_H_ */

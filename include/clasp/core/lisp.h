@@ -31,9 +31,8 @@ THE SOFTWARE.
 #include <string>
 #include <vector>
 #include <set>
-#include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
-#include <clasp/core/holder.h>
+//#include <clasp/core/holder.h>
 #include <clasp/core/lispStream.fwd.h>
 #include <clasp/core/character.fwd.h>
 #include <clasp/core/cons.h>
@@ -64,8 +63,6 @@ SMART(Intrinsic);
 SMART(NamedFunction);
 SMART(Reader);
 SMART(FunctionValueEnvironment);
-SMART(Class);
-SMART(BuiltInClass);
 SMART(Package);
 SMART(Path);
 SMART(Binder);
@@ -78,7 +75,7 @@ void af_stackSizeWarning(size_t size);
  T_sp cl__sort(List_sp sequence, T_sp predicate, T_sp key=_Nil<core::T_O>() );
  
 List_sp cl__member(T_sp item, T_sp list, T_sp key = _Nil<T_O>(), T_sp test = cl::_sym_eq, T_sp test_not = _Nil<T_O>());
-void core__invoke_internal_debugger(T_sp condition);
+[[noreturn]]void core__invoke_internal_debugger(T_sp condition);
 
 class SymbolClassPair {
 public:
@@ -114,7 +111,7 @@ public:
       this->_MostSignificantWordFirst = true;
       this->_mpz_import_word_order = 1;
     } else {
-      THROW_HARD_ERROR(BF("What the heck? - the Endian test failed when starting up Lisp environment"));
+throw_hard_error("What the heck? - the Endian test failed when starting up Lisp environment");
     }
   }
 };
@@ -206,7 +203,7 @@ struct ThreadInfo {
 
 class Lisp_O {
   friend T_mv core__source_file_info(T_sp sourceFile, String_sp truename, size_t offset, bool useLineno);
-  friend gctools::Layout_code* gctools::get_kind_layout_codes();
+  friend gctools::Layout_code* gctools::get_stamp_layout_codes();
   struct GCRoots //: public gctools::HeapRoot
   {
     T_sp _TerminalIO;
@@ -217,6 +214,8 @@ class Lisp_O {
     List_sp _DefaultSpecialBindings;
     mutable mp::SharedMutex _DefaultSpecialBindingsMutex;
 #endif
+    // FIXME: Remove this mutex - I've switched to thread-safe hash tables
+    //        and its not needed
 #ifdef CLASP_THREADS
     mutable mp::SharedMutex _SyspropMutex;
 #endif
@@ -261,10 +260,13 @@ class Lisp_O {
     mutable mp::SharedMutex _SetfDefinitionsMutex;
 #endif
 #endif
-    Class_sp   _Class;
-    Class_sp   _BuiltInClass;
-    Class_sp   _StandardClass;
-    Class_sp   _StructureClass;
+    //! Any class defined here needs to be added to predicates.cc::clos__classp
+    Class_sp   _TheClass;
+    Class_sp   _TheBuiltInClass;
+    Class_sp   _TheStandardClass;
+    Class_sp   _TheStructureClass;
+    Class_sp   _TheDerivableCxxClass;
+    Class_sp   _TheClassRep;
     Package_sp _CorePackage;
     Package_sp _KeywordPackage;
     Package_sp _CommonLispPackage;
@@ -272,6 +274,14 @@ class Lisp_O {
     /*! Store a table of generic functions - should this be a HashTable?  What about (setf XXX) generic functions? Aug2013 */
     /*SymbolMap<SingleDispatchGenericFunction_O> 	_SingleDispatchGenericFunctionTable;*/
     HashTableEq_sp _SingleDispatchGenericFunctionTable;
+
+#ifdef DEBUG_MONITOR
+#ifdef CLASP_THREADS
+    mutable mp::Mutex _LogMutex;
+#endif
+    std::ofstream _LogStream;
+#endif
+    
 #ifdef CLASP_THREADS
     mutable mp::SharedMutex _SingleDispatchGenericFunctionTableMutex;
 #endif
@@ -302,6 +312,11 @@ class Lisp_O {
 #endif // ifdef CLASP_LONG_FLOAT
     bool _Booted;
     HashTableEq_sp _KnownSignals;
+#if 0
+    // One set of caches for the entire system doesn't work with multi-threading
+        /*! SingleDispatchGenericFunction cache */
+    Cache_sp _SingleDispatchMethodCachePtr;
+#endif
     GCRoots();
   };
 
@@ -316,7 +331,6 @@ class Lisp_O {
   template <class oclass>
   friend void define_base_class(Class_sp co, Class_sp cob, uint &classesUpdated);
   template <class oclass>
-  friend BuiltInClass_sp hand_initialize_allocatable_class(uint &classesHandInitialized, Lisp_sp lisp, BuiltInClass_sp _class);
   friend T_sp core__put_sysprop(T_sp key, T_sp area, T_sp value);
   friend T_mv core__get_sysprop(T_sp key, T_sp area);
 
@@ -325,9 +339,11 @@ class Lisp_O {
 public:
   static void initializeGlobals(Lisp_sp lisp);
 
+#if 0
   template <class oclass>
-  friend BuiltInClass_sp hand_initialize_class(uint &classesHandInitialized, Lisp_sp prog, BuiltInClass_sp c);
-
+  friend Class_sp hand_initialize_class(uint &classesHandInitialized, Lisp_sp prog, BuiltInClass_sp c);
+#endif
+  
 public:
   static void lisp_initSymbols(Lisp_sp lisp);
 
@@ -445,7 +461,6 @@ public:
 
 public:
   DebugStream &debugLog() {
-    HARD_ASSERT(this->_DebugStream != NULL);
     return *(this->_DebugStream);
   };
   //	vector<string>& printfPrefixStack() { return this->_printfPrefixStack;};
@@ -539,11 +554,7 @@ public: // numerical constants
   LongFloat_sp longFloatOne() const { return this->_Roots._LongFloatOne; };
 #endif // ifdef CLASP_LONG_FLOAT
 public:
-#if 0
-  Cache_sp singleDispatchMethodCachePtr() const { return this->_Roots._SingleDispatchMethodCachePtr; };
-  Cache_sp methodCachePtr() const { return this->_Roots._MethodCachePtr; };
-  Cache_sp slotCachePtr() const { return this->_Roots._SlotCachePtr; };
-#endif
+  Cache_sp singleDispatchMethodCachePtr() const { return my_thread->_SingleDispatchMethodCachePtr; };
 public:
   /*! Setup makePackage and exportSymbol callbacks */
   void setMakePackageAndExportSymbolCallbacks(MakePackageCallback mpc, ExportSymbolCallback esc);
@@ -961,8 +972,8 @@ public:
 	 */
   //	T_sp parseCodeString(const string& str);
 
-  /*! Run the program, if _ExitStatus != 0 there was an error */
-  void run();
+  /*! Run the program, if returns _ExitStatus != 0 there was an error */
+  int run();
 
   string errorMessage();
 
@@ -971,8 +982,8 @@ public:
   void initializeEnvironment();
 
   void addClassNameToPackageAsDynamic(const string &package, const string &name, Class_sp cl);
-  void addClass(Symbol_sp classSymbol, Creator_sp creator, Symbol_sp base1ClassSymbol ); //, Symbol_sp base2ClassSymbol = UNDEFINED_SYMBOL, Symbol_sp base3ClassSymbol = UNDEFINED_SYMBOL);
-  void addClass(Symbol_sp classSymbol, Class_sp theClass, Creator_sp creator);
+  void addClassSymbol(Symbol_sp classSymbol, Creator_sp creator, Symbol_sp base1ClassSymbol ); //, Symbol_sp base2ClassSymbol = UNDEFINED_SYMBOL, Symbol_sp base3ClassSymbol = UNDEFINED_SYMBOL);
+//  void addClass(Symbol_sp classSymbol, Class_sp theClass);
   //	void addClass( Symbol_sp classSymbol);
 
   string __repr__() const;
@@ -1076,6 +1087,12 @@ namespace core {
 
 namespace core {
   void initialize_Lisp_O();
+#ifdef DEBUG_MONITOR
+  void monitor_message(const std::string& msg);
+#define MONITOR(x) monitor_message((x).str());
+#else
+#define MONITOR(x)
+#endif
 };
 
 

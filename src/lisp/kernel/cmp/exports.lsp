@@ -224,8 +224,6 @@ jit-function-name
 with-debug-info-generator
 *the-module*
 *run-time-literal-holder*
-set-associated-funcs
-*all-functions-for-one-compile*
 *low-level-trace*
 *low-level-trace*
 *low-level-trace-print*
@@ -249,7 +247,6 @@ irc-basic-block-create
 *llvm-context*
 *llvm-context*
 irc-basic-block-create
-*all-functions-for-one-compile*
 +fn-prototype-argument-names+
 irc-basic-block-create
 with-irbuilder
@@ -344,7 +341,8 @@ compile-lambda-function
 with-debug-info-generator
 *the-module*
 cmp-log
-cmp-log-dump
+cmp-log-dump-module
+cmp-log-dump-function
 *the-module*
 *the-module*
 cmp-log
@@ -354,14 +352,11 @@ cmp-log
 cmp-log
 *run-time-values-table-name*
 *run-time-literal-holder*
-set-associated-funcs
-*all-functions-for-one-compile*
 irc-intrinsic
 irc-renv
 jit-constant-unique-string-ptr
 *gv-source-file-info-handle*
 *load-time-value-holder-global-var*
 *cleavir-compile-hook*
-*all-functions-for-one-compile*
 *cleavir-compile-file-hook*
 *run-time-literal-holder*

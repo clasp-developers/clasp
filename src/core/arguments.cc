@@ -164,7 +164,7 @@ void DynamicScopeManager::dump() const {
 
 #if 0
 void DynamicScopeManager::pushSpecialVariableAndSet(Symbol_sp sym, T_sp val) {
-  thread->bindings().push(sym);
+  thread->bindings()->push(sym);
   this->_endTop = my_thread->bindings().top();
   //	SymbolSaveValue sv(sym,sym->symbolValueUnsafe());
   //	this->_SavedValues.push_back(sv);

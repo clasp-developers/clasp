@@ -54,7 +54,7 @@
 ;;;; In Clasp source-transforms are implemented as compiler macros
 (defmacro define-source-transform (name lambda-list &body body)
   (multiple-value-bind (func pprint doc-string)
-      (sys::expand-defmacro name lambda-list body 'cl:define-compiler-macro)
+      (sys::expand-defmacro name lambda-list body 'cl:core:bclasp-define-compiler-macro)
     `(eval-when (:compile-toplevel :load-toplevel :execute)
        (setf (compiler-macro-function ',name)
              (lambda (whole env)
@@ -220,4 +220,65 @@
 (define-source-transform >= (&rest args) (multi-compare '>= args nil 'real))
 
 
+(declaim (inline canonicalize-test))
+(defun canonicalize-test (test test-p test-not test-not-p default)
+  (if test-p
+      (if test-not-p
+          (values nil nil)
+          (values test nil))
+      (if test-not-p
+          (values test-not t)
+          (values default nil))))
 
+(defun name-from-function-form (function-form &optional env)
+  (declare (ignore env))
+  (if (constantp function-form)
+      (let ((fun (eval function-form))) ; constant-form-value
+        (cond ((symbolp fun) fun)
+              ((and (consp fun)
+                    (eq (car fun) 'function)
+                    (consp (cdr fun))
+                    (null (cddr fun)))
+               ;; (function x)
+               (second fun))
+              (t nil)))
+      nil))
+
+(declaim (inline satisfies-two-arg-test-p))
+(defun satisfies-two-arg-test-p (O Ei key test negate)
+  (let* ((Zi (funcall key Ei))
+         (test-result (funcall test O Zi)))
+    (if negate (not test-result) test-result)))
+
+(defun two-arg-test-form (O-form Ei-form key key-p test test-p test-not test-not-p)
+  (multiple-value-bind (test negate)
+      (canonicalize-test test test-p test-not test-not-p)
+    (let* ((Zi-form
+             (if key-p
+                 (let ((maybe-key (name-from-function-form key)))
+                   (if maybe-key
+                       `(,maybe-key ,Ei-form)
+                       ;; multiple evaluation possibility!
+                       `(funcall ,key ,Ei-form)))
+                 Ei-form))
+           (maybe-test (name-from-function-form test))
+           ;; multiple evaluation possibiliy!
+           (test-form (if maybe-test
+                          `(,maybe-test ,O-form ,Ei-form)
+                          `(funcall ,test ,O-form ,Ei-form))))
+      (if negate `(not ,test-form) test-form))))
+
+(core:bclasp-define-compiler-macro assoc (item alist &key (key #'identity) (test nil test-p) (test-not nil test-not-p))
+  (multiple-value-bind (test negate)
+      (canonicalize-test test test-p test-not test-not-p '#'eql)
+    (let ((S (gensym "S")) (pair (gensym "PAIR"))
+          (stest (gensym "TEST")) (skey (gensym "KEY")) (sitem (gensym "ITEM")))
+      `(do ((,S ,alist ,(cdr S))
+            (,skey ,key)
+            (,stest ,test))
+            ((endp ,S) nil)
+         (let ((,pair (car ,S)))
+           (when ,(if negate
+                      `(not (funcall ,stest ,sitem (funcall ,skey (car ,pair))))
+                      `(funcall ,stest ,sitem (funcall ,skey (car ,pair))))
+             (return ,pair)))))))

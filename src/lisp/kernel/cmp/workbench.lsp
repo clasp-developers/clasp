@@ -1,4 +1,130 @@
 
+;;; Test core:bind-va-list special operator
+
+(in-package :cmp)
+
+(setq cmp:*compile-debug-dump-module* t)
+(defun foo (core:&va-rest r) (core:bind-va-list (x y) r (list x y)))
+(defun foo (core:&va-rest r) (core::bind-va-list (x &optional (y :testing)) r (list x y)))
+(defun foo (core:&va-rest r) (core:bind-va-list (x &rest y) r (list* x y)))
+(defun foo (x core:&va-rest r) (core:bind-va-list (x &rest y) r (unless (eq x 0) (setq x 0)) (let ((z (list* x y))) (print z) z)))
+
+
+(clasp-cleavir:cleavir-compile 'foo '(lambda (core:&va-rest r) (core::bind-va-list (x y z &rest a) r (list* z y x a))))
+(defparameter *f* '(lambda (core:&va-rest r) (core::bind-va-list (x &rest y) r (list* x y))))
+(defparameter *a* (cleavir-generate-ast:generate-ast *f* clasp-cleavir::*clasp-env* clasp-cleavir::*clasp-system*))
+(cleavir-ast-to-hir:compile-toplevel-unhoisted *a*)
+
+(clasp-cleavir:cleavir-compile 'foo *f*)
+
+
+
+(trace treat-as-special-operator)
+
+(apropos "&va-rest")
+
+
+
+
+;;;  Fastgf stuff
+
+
+
+
+
+(in-package :cl-user)
+
+(progn
+  (defgeneric foo (x))
+  (defmethod foo ((x integer)) :integer)
+  (defmethod foo ((x float)) :float)
+  (defmethod foo ((x string)) :string)
+  (foo 1)
+  (foo 1.2)
+  (foo "asdf"))
+
+
+(clos::calculate-fastgf-dispatch-function #'foo)
+
+(clos:switch-to-fastgf #'foo)
+
+(clos:get-funcallable-instance-function #'foo)
+
+(foo 1.2)
+(foo 1)
+(foo "asdfasdf")
+
+
+(progn
+  (defgeneric bar (x))
+  (defmethod bar ((x integer)) :integer)
+  (defmethod bar ((x float)) :float)
+  (defmethod bar ((x string)) :string)
+  (bar 1)
+  (bar 1.2)
+  (bar "asdf"))
+
+(print "Hello")
+(time (progn (print "foo") (dotimes (i 1000000) (foo 1))))
+
+(print  "Hello")
+
+(trace compile-file)
+(trace cmp::compile-file-to-module)
+(trace clasp-cleavir::cleavir-compile-file-form)
+(trace clasp-cleavir::compile-form)
+(trace clasp-cleavir::translate)
+(trace clasp-cleavir::compile-form-to-mir)
+(trace cleavir-generate-ast:generate-ast)
+(trace clasp-cleavir-ast:hoist-load-time-value)
+(trace cleavir-ast-to-hir:compile-toplevel)
+(trace clasp-cleavir:convert-funcalls)
+(trace clasp-cleavir::my-hir-transformations)
+(trace clasp-cleavir::quick-draw-hir)
+(trace cleavir-ir:hir-to-mir)
+(trace cc-mir:assign-mir-instruction-datum-ids)
+(trace clasp-cleavir:finalize-unwind-and-landing-pad-instructions)
+(trace cmp::jit-add-module-return-function)
+
+(trace cleavir-generate-ast::convert)
+(trace cleavir-generate-ast::convert-special)
+
+(print "hello")
+(time (progn (print "bar") (dotimes (i 1000000) (bar 1))))
+
+;;; --------------------------------------------------
+;;;
+;;; Work with metering literal compilation
+;;;
+
+
+(mon:with-monitoring (literal::ltv/cons
+                      literal::reference-literal
+                      literal::compile-reference-to-literal
+                      clasp-cleavir::%literal-index
+                      clasp-cleavir::%literal-ref
+                      clasp-cleavir::%literal-value
+                      clasp-cleavir::%literal
+                      compile-file
+                      ) ()
+  (compile-file "sys:tests;biglists.lsp" :output-type :bitcode))
+
+(time
+ (let ((cmp::*link-options* (list "-O0")))
+   (compile-file "sys:tests;biglists.lsp")))
+
+(time
+ (let ((cmp::*link-options* (list "-O2")))
+   (compile-file "sys:tests;biglists.lsp")))
+
+(time
+ (let ((*features* (cons :debug-run-clang *features*))
+       (cmp::*link-options* (list "-O2" "--time-passes")))
+   (compile-file "sys:tests;biglists20000.lsp")))
+
+;;; --------------------------------------------------
+;;; Work with generic function dispatch
+;;;
 (dolist (x (clos::all-generic-functions))
 ;;;  (core:bformat t "%s\n" x)
   (if (member x (list
@@ -170,7 +296,7 @@
 
 (print (clos::generic-function-call-history #'foo))
 (print (clos::valid-call-history-after-class-change #'foo (find-class 'bar)))
-(core:call-history-entry-key-contains-specializer (car (car (clos::generic-function-call-history #'foo))) 
+(clos:call-history-entry-key-contains-specializer (car (car (clos::generic-function-call-history #'foo))) 
 
 (clos::calculate-strandh-dispatch-function #'foo)
 

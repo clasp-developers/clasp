@@ -28,18 +28,15 @@
 	(parse-generic-options options lambda-list)
       (let* ((output `(ensure-generic-function ',function-specifier
 		       :delete-methods t ,@option-list)))
-	(ext:register-with-pde
-	 whole
-	 (if method-list
-	     `(progn
-		,output
-		(associate-methods-to-gfun
-		 ',function-specifier
-		 ,@(loop for m in method-list collect `(defmethod ,function-specifier ,@m))))
-	    output))))))
+        (if method-list
+            `(progn
+               ,output
+               (associate-methods-to-gfun
+                ',function-specifier
+                ,@(loop for m in method-list collect `(defmethod ,function-specifier ,@m))))
+	    output)))))
 
 (defun parse-defgeneric (args)
-  (declare (si::c-local))
   ;; (values function-specifier lambda-list options)
   (let (function-specifier)
     (unless args
@@ -50,7 +47,6 @@
     (values function-specifier (first args) (rest args))))
 
 (defun parse-generic-options (options lambda-list)
-  (declare (si::c-local))
   (let* ((processed-options '())
 	 (method-list '())
 	 (declarations '())
@@ -90,7 +86,6 @@
 	    method-list)))
 
 (defun parse-lambda-list (lambda-list &optional post-keyword)
-  (declare (si::c-local))
   (let ((arg (car lambda-list)))
     (cond ((null lambda-list))
 	  ((eq arg '&AUX)
@@ -106,7 +101,6 @@
 	       (parse-lambda-list (cdr lambda-list)))))))
 
 (defun valid-declaration-p (decl)
-  ;(declare (si::c-local))
   (and (eq (first decl) 'OPTIMIZE)
        (loop for item in decl
 	  always (or (atom item)
@@ -167,6 +161,7 @@
   ;;
   (when (and l-l-p (slot-boundp gfun 'methods))
     (unless (every #'(lambda (x)
+                       (declare (core:lambda-name shared-initialize.lambda))
 		       (congruent-lambda-p lambda-list x))
 		 (mapcar #'method-lambda-list (generic-function-methods gfun)))
       (simple-program-error "Cannot replace the lambda list of ~A with ~A because it is incongruent with some of the methods"
@@ -179,18 +174,38 @@
   (when (and l-l-p (not a-o-p))
     (setf (generic-function-argument-precedence-order gfun)
 	  (lambda-list-required-arguments lambda-list)))
-  (set-generic-function-dispatch gfun)
+  (set-funcallable-instance-function gfun (compute-discriminating-function gfun))
   gfun)
 
-(defmethod shared-initialize ((gfun standard-generic-function) slot-names
-			      &rest initargs)
-  (declare (ignore initargs slot-names)
+;;; FIXME: break up the two ways of using this function.
+(defun initialize-generic-function-specializer-profile (gfun &key initial-vec errorp)
+  (loop for profile = (generic-function-specializer-profile gfun)
+     for new-profile = (or initial-vec
+                           (if (slot-boundp gfun 'lambda-list)
+                               (let ((lambda-list (generic-function-lambda-list gfun)))
+                                 (make-array (length (lambda-list-required-arguments lambda-list))
+                                             :initial-element nil))
+                               (if errorp
+                                   (error "The specializer-profile could not be initialized - lambda list of ~a was unbound" gfun)
+                                   nil)))
+     for exchange = (generic-function-specializer-profile-compare-exchange gfun profile new-profile)
+     until (eq exchange new-profile)))
+  
+(defmethod shared-initialize :after ((gfun generic-function) slot-names &rest initargs)
+  "In Clasp we need to initialize the specializer-profile with an 
+   array of (length (lambda-list-required-arguments lambda-list)) full of nil."
+  (unless (generic-function-specializer-profile gfun)
+    (initialize-generic-function-specializer-profile gfun))
+  gfun)
+
+
+(defmethod shared-initialize :after ((gfun standard-generic-function) slot-names
+                                     &rest initargs)
+  (declare (ignore slot-names)
            (core:lambda-name shared-initialize-standard-generic-function))
-  (call-next-method)
   (when (generic-function-methods gfun)
     (compute-g-f-spec-list gfun))
-  (update-dependents gfun initargs)
-  gfun)
+  (update-dependents gfun initargs))
 
 (defun associate-methods-to-gfun (name &rest methods)
   (let ((gfun (fdefinition name)))
@@ -205,6 +220,7 @@
        (method-class 'STANDARD-METHOD method-class-p)
        (generic-function-class (class-of gfun))
        (delete-methods nil))
+  (mlog "In ensure-generic-function-using-class (gfun generic-function) gfun -> %s  name -> %s args -> %s\n" gfun name args)
   ;; modify the existing object
   (setf args (copy-list args))
   (remf args :generic-function-class)
@@ -237,6 +253,7 @@
                                    (generic-function-class 'STANDARD-GENERIC-FUNCTION)
                                    (delete-methods nil))
   (declare (ignore delete-methods gfun))
+  (mlog "In ensure-generic-function-using-class (gfun generic-function) gfun -> %s  name -> %s args -> %s\n" gfun name args)
   ;; else create a new generic function object
   (setf args (copy-list args))
   (remf args :generic-function-class)
@@ -246,25 +263,3 @@
   (when (and method-class-p (symbolp generic-function-class))
     (setf args (list* :method-class (find-class method-class) args)))
   (apply #'make-instance generic-function-class :name name args))
-
-(defun ensure-generic-function (name &rest args &key &allow-other-keys)
-  (let ((gfun (si::traced-old-definition name)))
-    (cond ((not (legal-generic-function-name-p name))
-	   (simple-program-error "~A is not a valid generic function name" name))
-          ((not (fboundp name))
-           ;;           (break "About to setf (fdefinition name)")
-	   (setf (fdefinition name)
-		 (apply #'ensure-generic-function-using-class gfun name args)))
-          ((si::instancep (or gfun (setf gfun (fdefinition name))))
-	   (let ((new-gf (apply #'ensure-generic-function-using-class gfun name args)))
-	     new-gf))
-	  ((special-operator-p name)
-	   (simple-program-error "The special operator ~A is not a valid name for a generic function" name))
-	  ((macro-function name)
-	   (simple-program-error "The symbol ~A is bound to a macro and is not a valid name for a generic function" name))
-          ((not *clos-booted*)
-           (setf (fdefinition name)
-		 (apply #'ensure-generic-function-using-class nil name args))
-           (fdefinition name))
-	  (t
-	   (simple-program-error "The symbol ~A is bound to an ordinary function and is not a valid name for a generic function" name)))))

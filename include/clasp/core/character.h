@@ -27,7 +27,6 @@ THE SOFTWARE.
 #ifndef _core_character_H
 #define _core_character_H
 
-#include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 #include <clasp/core/array.fwd.h>
 #include <clasp/core/character.fwd.h>
@@ -52,6 +51,12 @@ bool cl__standard_char_p(Character_sp ch);
 class Character_dummy_O : public General_O {
   LISP_ABSTRACT_CLASS(core, ClPkg, Character_dummy_O, "character",core::General_O);
 };
+
+#if 0
+ class CPointer_dummy_O : public T_O {
+  LISP_ABSTRACT_CLASS(core, ClPkg, CPointer_dummy_O, "cpointer",core::T_O);
+};
+#endif
 };
 
 

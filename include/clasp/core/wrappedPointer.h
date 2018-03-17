@@ -27,10 +27,8 @@ THE SOFTWARE.
 #ifndef core_wrappedPointer_H
 #define core_wrappedPointer_H
 
-#include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 #include <clasp/core/instance.h>
-#include <clasp/core/lisp.h>
 
 namespace core {
 
@@ -40,14 +38,13 @@ class WrappedPointer_O : public core::General_O {
   FRIEND_GC_SCANNER(core::WrappedPointer_O);
   LISP_CLASS(core, CorePkg, WrappedPointer_O, "WrappedPointer",core::General_O);
 GCPROTECTED:
-  core::Class_sp _Class;
+  gctools::Fixnum Stamp_;
+  core::Class_sp Class_;
 
 public:
-  virtual core::Class_sp _instanceClass() const { return this->_Class; };
-  virtual T_sp instanceClassSet(Class_sp mc);
-
-  void setInstanceClassUsingSymbol(core::Symbol_sp classSymbol);
-
+  virtual core::Class_sp _instanceClass() const { return this->Class_; };
+  virtual T_sp _instanceClassSet(Class_sp mc);
+  void _setInstanceClassUsingSymbol(core::Symbol_sp classSymbol);
 public:
 CL_LISPIFY_NAME("validp");
 CL_DEFMETHOD   virtual bool validp() const { SUBIMP(); };
@@ -68,7 +65,7 @@ CL_DEFMETHOD   virtual bool validp() const { SUBIMP(); };
   T *cast() const {
     T *result = this->castOrNull<T>();
     if (!result) {
-      SIMPLE_ERROR(BF("Is inheritance defined correctly? Could not cast WrappedPointer of class %s to %s class_id/from=%d/%s class_id/to=%d/%s") % _rep_(this->_instanceClass()) % _rep_(reg::lisp_classSymbol<T>()) % this->classId() % _rep_(reg::lisp_classSymbolFromClassId(this->classId())) % reg::registered_class<T>::id % _rep_(reg::lisp_classSymbolFromClassId(reg::registered_class<T>::id)));
+      SIMPLE_ERROR_SPRINTF("Is inheritance defined correctly? Could not cast WrappedPointer of class %s to %s class_id/from=%d/%s class_id/to=%d/%s", _rep_(this->_instanceClass()).c_str(), _rep_(reg::lisp_classSymbol<T>()).c_str(), this->classId(), _rep_(reg::lisp_classSymbolFromClassId(this->classId())).c_str(), reg::registered_class<T>::id, _rep_(reg::lisp_classSymbolFromClassId(reg::registered_class<T>::id)).c_str());
     }
     return result;
   }
@@ -76,7 +73,7 @@ CL_DEFMETHOD   virtual bool validp() const { SUBIMP(); };
   virtual void pointerDelete() { SUBIMP(); };
 
 public:
-  explicit WrappedPointer_O() : Base(), _Class(_Nil<core::Class_O>()){};
+  explicit WrappedPointer_O() : Base(), Class_(_Nil<core::Class_O>()){};
   virtual ~WrappedPointer_O(){};
 };
 };

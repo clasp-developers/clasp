@@ -1,5 +1,17 @@
 (in-package #:cc-mir)
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; TYPED-LEXICAL-LOCATION
+;;;
+;;; Lexical locations for unboxed values. Know their LLVM type.
+;;; Hypothetically, all lexical locations could be turned into
+;;; these, with the vast majority having an LLVM type of t*.
+
+(defclass typed-lexical-location (cleavir-ir:lexical-location)
+  ((%type :initarg :type :accessor lexical-location-type)))
+
+;;; Convenience
 (defun insert-after (new old)
   (cleavir-ir:insert-instruction-after new old)
   new)
@@ -16,7 +28,7 @@
 (defun make-characterp-instruction (input successors)
   (make-instance 'characterp-instruction
                  :inputs (list input)
-                 :successors (list successor)))
+                 :successors successors))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -30,8 +42,23 @@
 (defun make-single-float-p-instruction (input successors)
   (make-instance 'single-float-p-instruction
                  :inputs (list input)
-                 :successors (list successor)))
+                 :successors successors))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; HEADERQ-INSTRUCTION
+;;;
+;;; Branch based on the type header of an object.
+;;;
+
+(defclass headerq-instruction (cleavir-ir:instruction cleavir-ir:two-successors-mixin)
+  ((%header-value-min-max :initarg :hvmm :accessor header-value-min-max)))
+
+(defun make-headerq-instruction (header-value-min-max input successors)
+  (make-instance 'headerq-instruction
+                 :hvmm header-value-min-max
+                 :inputs (list input)
+                 :successors successors))
  
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -39,12 +66,13 @@
 ;;; using the stealth mixin - see system.lisp
 ;;;
 
+#+stealth-gids
 (defun assign-mir-instruction-datum-ids (top)
   (let ((id 1)
 	(datums (make-hash-table)))
     (cleavir-ir:map-instructions 
      (lambda (instr)
-       (setf (clasp-cleavir:instruction-gid instr) (incf id))
+       #+stealth-gids (setf (clasp-cleavir:instruction-gid instr) (incf id))
        (loop for datum in (append (cleavir-ir:inputs instr) (cleavir-ir:outputs instr))
 	    do (unless (gethash datum datums)
 		 (setf (gethash datum datums) t)

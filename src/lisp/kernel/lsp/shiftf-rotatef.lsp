@@ -121,7 +121,7 @@
 	 (result
 	   ;; We start by creating the body of the result, which
 	   ;; contains all the STORE-FORMs, storing the
-	   ;; STORE-VARIABLEs in the respecctive place.
+	   ;; STORE-VARIABLEs in the respective place.
 	   `(progn ,@(loop for setf-expansion in setf-expansions
 			   for store-form = (fourth setf-expansion)
 			   collect store-form)
@@ -130,8 +130,8 @@
 		   ;; result.
 		   nil)))
     (loop for right-hand-side
-	    in (reverse (append (rest setf-expansions)
-				(list (first setf-expansions))))
+	    in (reverse (append (last setf-expansions)
+                                (butlast setf-expansions)))
 	  for store-variables = (third right-hand-side)
 	  for (temporary-variables
 	       value-forms

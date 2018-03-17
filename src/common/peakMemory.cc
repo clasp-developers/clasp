@@ -8,6 +8,7 @@
 // DYLD_INSERT_LIBRARIES=path/to/dylib <cmd>`
 //
 
+#include <atomic>
 #include <stdio.h>
 #include <stdlib.h>
 #include <malloc/malloc.h>
@@ -86,4 +87,7 @@ void __attribute__ ((destructor)) finalizer(void) {
   const char *progname = getprogname();
   fprintf(stderr, "### Memory stats for '%s' ###\n", progname);
   fprintf(stderr, "Peak '%s': %llu\n", progname, (uint64_t)PeakMemoryUsage);
+  fprintf(stderr, "CurrentMemoryUsage : %llu\n", (uint64_t)CurrentMemoryUsage);
+  fprintf(stderr, "NumAllocCalls : %llu\n", (uint64_t)NumAllocCalls);
+  fprintf(stderr, "NumFreeCalls  : %llu\n", (uint64_t)NumFreeCalls);
 }

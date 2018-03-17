@@ -32,7 +32,7 @@ THE SOFTWARE.
 //        getting and freeing foreign memory and calling foreign
 //        functions.
 //
-//  Augiust 2016 by Frank Goenninger, Gönninger B&T UG, Germany
+//  Augiust 2016 by Frank Goenninger, Gonninger B&T UG, Germany
 //
 // ===========================================================================
 
@@ -400,7 +400,7 @@ ForeignData_O::~ForeignData_O()
 {
   if ( this->m_ownership_flags & core::ForeignDataFlagEnum::DeleteOnDtor )
   {
-    this->free();
+    this->free_();
   }
 }
 
@@ -411,7 +411,7 @@ inline string ForeignData_O::__repr__() const
   stringstream ss;
 
   ss << "#<"
-     << this->_instanceClass()->classNameAsString()
+     << this->_instanceClass()->_classNameAsString()
      << " @ " << (BF("%p") % this)
      << " :kind " << this->m_kind
      << " :size " << this->m_size
@@ -457,7 +457,7 @@ void ForeignData_O::allocate( core::T_sp kind, core::ForeignDataFlagEnum ownersh
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
-void ForeignData_O::free( void )
+void ForeignData_O::free_( void )
 {
   gctools::clasp_dealloc( (char *) this->m_orig_data_ptr );
   this->m_orig_data_ptr = nullptr;
@@ -532,7 +532,7 @@ ForeignData_sp PERCENTallocate_foreign_object( core::T_sp kind )
 // ---------------------------------------------------------------------------
 void ForeignData_O::PERCENTfree_foreign_object( void )
 {
-  this->free();
+  this->free_();
 }
 
 // ---------------------------------------------------------------------------
@@ -558,7 +558,7 @@ ForeignData_sp allocate_foreign_data( uint64_t size )
 // ---------------------------------------------------------------------------
 void ForeignData_O::PERCENTfree_foreign_data( void )
 {
-  this->free();
+  this->free_();
 }
 
 // ---------------------------------------------------------------------------
@@ -805,7 +805,7 @@ inline string ForeignTypeSpec_O::__repr__() const
   stringstream ss;
 
   ss << "#<"
-     << this->_instanceClass()->classNameAsString()
+     << this->_instanceClass()->_classNameAsString()
      << " @ " << (BF("%p") % this)
      << " :lisp-symbol " << this->m_lisp_symbol
      << " :lisp-name "   << this->m_lisp_name

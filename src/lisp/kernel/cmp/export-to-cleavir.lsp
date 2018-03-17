@@ -1,7 +1,6 @@
 (in-package :cmp)
 
 (export '(
-          *all-functions-for-one-compile*
           *cleavir-compile-file-hook*
           *cleavir-compile-hook*
           *current-form-lineno*
@@ -27,7 +26,7 @@
           *the-module*
           +cons-tag+
           +fixnum-tag+
-          +Valist_S-tag+
+          +vaslist-tag+
           +single-float-tag+
           +character-tag+
           +general-tag+
@@ -50,13 +49,17 @@
           calling-convention-register-args
           calling-convention-write-registers-to-multiple-values
           cmp-log
-          cmp-log-dump
+          cmp-log-dump-module
+          cmp-log-dump-function
           codegen-literal
           reference-literal
           codegen-rtv
           compile-error-if-not-enough-arguments
           compile-in-env
           compile-lambda-function
+          compile-lambda-list-code
+          cclasp-maybe-alloc-cc-setup
+          cclasp-setup-calling-convention
           bclasp-compile-form
           compile-form
           compiler-error
@@ -105,10 +108,9 @@
           jit-function-name
           module-make-global-string
           llvm-link
-          link-intrinsics-module
+          jit-link-builtins-module
           load-bitcode
           initialize-calling-convention
-          set-associated-funcs
           treat-as-special-operator-p
           typeid-core-unwind
           walk-form-for-source-info
@@ -119,18 +121,26 @@
           with-dbg-lexical-block
           dbg-set-current-source-pos
           dbg-set-current-source-pos-for-irbuilder
+          *irbuilder-function-alloca*
           with-debug-info-generator
           with-irbuilder
           with-landing-pad
+          irc-alloca-vaslist
+          irc-alloca-va_list
+          irc-alloca-register-save-area
+          irc-alloca-invocation-history-frame
+          irc-alloca-size_t
           compile-reference-to-literal
           ltv-global
           bclasp-compile
           make-uintptr_t
+          make-calling-convention-impl
           +cons-car-offset+
           +cons-cdr-offset+
+          +simple-vector._length-offset+
           %uintptr_t%
           %return_type%
-          %VaList_S%
+          %vaslist%
           null-t-ptr
           compile-error-if-wrong-number-of-arguments
           compile-error-if-too-many-arguments

@@ -46,6 +46,7 @@ THE SOFTWARE.
 //#define DEBUG_LEVEL_FULL
 #include <stdio.h>
 #include <fcntl.h>
+#include <clasp/core/foundation.h>
 #include <clasp/core/common.h>
 #include <clasp/core/fileSystem.h>
 #include <clasp/core/lispStream.h>
@@ -280,7 +281,7 @@ void StreamCursor::advanceLineNumber(T_sp strm, claspCharacter c, int num) {
   this->_LineNumber += num;
   this->_Column = 0;
 #ifdef DEBUG_CURSOR
-  if (core::_sym_STARdebugMonitorSTAR.notnilp()) {
+  if (core::_sym_STARdebugMonitorSTAR->symbolValue().notnilp()) {
     printf("%s:%d stream=%s advanceLineNumber=%c/%d  ln/col=%lld/%d\n", __FILE__, __LINE__, clasp_filename(strm, false)->get().c_str(), c, c, this->_LineNumber, this->_Column);
   }
 #endif
@@ -290,7 +291,7 @@ void StreamCursor::advanceColumn(T_sp strm, claspCharacter c, int num) {
   this->_PrevColumn = this->_Column;
   this->_Column++;
 #ifdef DEBUG_CURSOR
-  if (core::_sym_STARdebugMonitorSTAR.notnilp()) {
+  if (core::_sym_STARdebugMonitorSTAR->symbolValue().notnilp()) {
     printf("%s:%d stream=%s advanceColumn=%c/%d  ln/col=%lld/%d\n", __FILE__, __LINE__, clasp_filename(strm, false)->get().c_str(), c, c, this->_LineNumber, this->_Column);
   }
 #endif
@@ -299,7 +300,7 @@ void StreamCursor::backup(T_sp strm, claspCharacter c) {
   this->_LineNumber = this->_PrevLineNumber;
   this->_Column = this->_PrevColumn;
 #ifdef DEBUG_CURSOR
-  if (core::_sym_STARdebugMonitorSTAR.notnilp()) {
+  if (core::_sym_STARdebugMonitorSTAR->symbolValue().notnilp()) {
     printf("%s:%d stream=%s backup=%c/%d ln/col=%lld/%d\n", __FILE__, __LINE__, clasp_filename(strm, false)->get().c_str(), c, c, this->_LineNumber, this->_Column);
   }
 #endif
@@ -2190,7 +2191,11 @@ CL_DEFUN T_sp cl__make_broadcast_stream(List_sp ap) {
   return x;
 }
 
-T_sp cl_broadcast_stream_streams(T_sp strm) {
+CL_LAMBDA(strm);
+CL_DECLARE();
+CL_DOCSTRING("broadcast-stream-streams");
+CL_DEFUN
+T_sp cl__broadcast_stream_streams(T_sp strm) {
   unlikely_if(!AnsiStreamTypeP(strm, clasp_smm_broadcast))
       ERROR_WRONG_TYPE_ONLY_ARG(cl::_sym_broadcast_stream_streams,
                                 strm, cl::_sym_BroadcastStream_O);
@@ -2356,13 +2361,19 @@ CL_DEFUN T_sp cl__make_echo_stream(T_sp strm1, T_sp strm2) {
   return strm;
 }
 
-T_sp cl_echo_stream_input_stream(T_sp strm) {
+CL_LAMBDA(strm);
+CL_DECLARE();
+CL_DOCSTRING("echo-stream-input-stream");
+CL_DEFUN T_sp cl__echo_stream_input_stream(T_sp strm) {
   unlikely_if(!AnsiStreamTypeP(strm, clasp_smm_echo))
       ERROR_WRONG_TYPE_ONLY_ARG(cl::_sym_echo_stream_input_stream, strm, cl::_sym_EchoStream_O);
   return EchoStreamInput(strm);
 }
 
-T_sp cl_echo_stream_output_stream(T_sp strm) {
+CL_LAMBDA(strm);
+CL_DECLARE();
+CL_DOCSTRING("echo-stream-output-stream");
+CL_DEFUN T_sp cl__echo_stream_output_stream(T_sp strm) {
   unlikely_if(!AnsiStreamTypeP(strm, clasp_smm_echo))
       ERROR_WRONG_TYPE_ONLY_ARG(cl::_sym_echo_stream_output_stream, strm, cl::_sym_EchoStream_O);
   return EchoStreamOutput(strm);
@@ -2493,7 +2504,10 @@ CL_DEFUN T_sp cl__make_concatenated_stream(List_sp ap) {
   return x;
 }
 
-T_sp cl_concatenated_stream_streams(T_sp strm) {
+CL_LAMBDA(strm);
+CL_DECLARE();
+CL_DOCSTRING("concatenated-stream-streams");
+CL_DEFUN T_sp cl__concatenated_stream_streams(T_sp strm) {
   unlikely_if(!AnsiStreamTypeP(strm, clasp_smm_concatenated))
       ERROR_WRONG_TYPE_ONLY_ARG(cl::_sym_concatenated_stream_streams, strm, cl::_sym_ConcatenatedStream_O);
   return cl__copy_list(ConcatenatedStreamList(strm));
@@ -5439,7 +5453,7 @@ T_sp clasp_off_t_to_integer(clasp_off_t offset) {
   } else if (offset <= MOST_POSITIVE_FIXNUM) {
     output = make_fixnum((gctools::Fixnum)offset);
   } else {
-    IMPLEMENT_MEF(BF("Handle breaking converting clasp_off_t to Bignum"));
+    IMPLEMENT_MEF("Handle breaking converting clasp_off_t to Bignum");
 #if 0
             T_sp y = _clasp_big_register0();
             if (sizeof(ECL_BIGNUM_LIMBS(y)[0]) == sizeof(cl_index)) {
@@ -5465,7 +5479,7 @@ clasp_integer_to_off_t(T_sp offset) {
   } else if (core__fixnump(offset)) {
     output = fixint(offset);
   } else if (core__bignump(offset)) {
-    IMPLEMENT_MEF(BF("Implement convert Bignum to clasp_off_t"));
+    IMPLEMENT_MEF("Implement convert Bignum to clasp_off_t");
 #if 0
             if (sizeof(ECL_BIGNUM_LIMBS(offset)[0]) == sizeof(cl_index)) {
                 if (ECL_BIGNUM_SIZE(offset) > 2) {
@@ -5932,7 +5946,7 @@ namespace core {
 
 string FileStream_O::__repr__() const {
   stringstream ss;
-  ss << "#<" << this->_instanceClass()->classNameAsString() << " " << _rep_(FileStreamFilename(this->asSmartPtr())) << ">";
+  ss << "#<" << this->_instanceClass()->_classNameAsString() << " " << _rep_(FileStreamFilename(this->asSmartPtr())) << ">";
   return ss.str();
 }
 

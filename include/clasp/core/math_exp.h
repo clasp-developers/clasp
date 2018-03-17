@@ -27,7 +27,6 @@ THE SOFTWARE.
 #ifndef core_math_exp_H
 #define core_math_exp_H
 
-#include <clasp/core/foundation.h>
 
 namespace core {
 

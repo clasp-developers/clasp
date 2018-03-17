@@ -56,8 +56,10 @@ void BuiltInClass_O::archive(ArchiveP node) {
 #endif // defined(XML_ARCHIVE)
 
 void BuiltInClass_O::initialize() {
+  DEPRECATED();
   this->Base::initialize();
   this->initializeSlots(REF_NUMBER_OF_SLOTS_IN_CLASSES);
+  this->initializeClassSlots();
   //    LOG(BF("For class(%s)@%p handler@%p") % this->static_className() % ((void*)(this)) % this->_InitializationArguments.get() );
 }
 
@@ -67,7 +69,7 @@ void BuiltInClass_O::describe(T_sp stream) {
   stringstream ss;
   ss << (BF("-------------  Class name: %s") % _rep_(this->name())).str();
   for (auto cur : this->directSuperclasses()) {
-    ss << (BF("Base class: %s") % _rep_((gc::As<Class_sp>(oCar(cur)))->className())).str();
+    ss << (BF("Base class: %s") % _rep_((gc::As<Class_sp>(oCar(cur)))->_className())).str();
   }
   ss << (BF("%s") % this->dumpInfo()).str();
   clasp_write_string(ss.str(), stream);

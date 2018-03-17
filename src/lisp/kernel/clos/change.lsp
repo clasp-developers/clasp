@@ -33,8 +33,8 @@
 
 (defmethod update-instance-for-different-class
     ((old-data standard-object) (new-data standard-object) &rest initargs)
-  (let ((old-local-slotds (si::instance-sig old-data))
-	(new-local-slotds (remove :instance (si::instance-sig new-data)
+  (let ((old-local-slotds (si:instance-sig old-data))
+	(new-local-slotds (remove :instance (si:instance-sig new-data)
 				  :test-not #'eq :key #'slot-definition-allocation))
 	added-slots)
     (setf added-slots (set-difference (mapcar #'slot-definition-name new-local-slotds)
@@ -48,41 +48,10 @@
                       #'shared-initialize (list new-data added-slots))))
     (apply #'shared-initialize new-data added-slots initargs)))
 
-(defmethod change-class ((instance forward-referenced-class) (new-class std-class)
-			 &rest initargs)
-  #+(or)
-  (progn
-    (format t "This is where you would change a forward-referenced-class to something else~%")
-    (format t "instance -->   ~a~%" instance)
-    (format t "new-class ->   ~a~%" new-class))
-  (let* ((old-instance (si::copy-instance instance))
-	 (new-size (class-size new-class))
-	 (instance (si::allocate-raw-class instance new-class new-size t)))
-    (si::instance-sig-set instance)
-    ;; "The values of local slots specified by both the class Cto and
-    ;; Cfrom are retained.  If such a local slot was unbound, it remains
-    ;; unbound."
-    ;; "The values of slots specified as shared in the class Cfrom and
-    ;; as local in the class Cto are retained."
-    (let* ((new-local-slotds (class-slots (class-of instance))))
-      (dolist (new-slot new-local-slotds)
-	;; CHANGE-CLASS can only operate on the value of local slots.
-	(when (eq (slot-definition-allocation new-slot) :INSTANCE)
-	  (let ((name (slot-definition-name new-slot)))
-	    (if (and (slot-exists-p old-instance name)
-		     (slot-boundp old-instance name))
-		(setf (slot-value instance name) (slot-value old-instance name))
-		(slot-makunbound instance name))))))
-    (apply #'update-instance-for-different-class old-instance instance
-	   initargs)
-    instance))
-
 (defmethod change-class ((instance standard-object) (new-class std-class)
 			 &rest initargs)
-  (let* ((old-instance (si::copy-instance instance))
-	 (new-size (class-size new-class))
-	 (instance (si::allocate-raw-instance instance new-class new-size)))
-    (si::instance-sig-set instance)
+  (let ((old-instance (si:copy-instance instance))
+        (instance (core:reallocate-instance instance new-class (class-size new-class))))
     ;; "The values of local slots specified by both the class Cto and
     ;; Cfrom are retained.  If such a local slot was unbound, it remains
     ;; unbound."
@@ -110,11 +79,11 @@
 ;;;
 ;;; PART 2: UPDATING AN INSTANCE THAT BECAME OBSOLETE
 ;;;
-;;; Each instance has a hidden field (readable with SI::INSTANCE-SIG), which
-;;; contains the list of slots of its class. This field is updated every time
-;;; the class is initialized or reinitialized. Generally
-;;;	(EQ (SI::INSTANCE-SIG x) (CLASS-SLOTS (CLASS-OF x)))
-;;; returns NIL whenever the class became obsolete.
+;;; Each instance has a hidden field (readable with SI:INSTANCE-SIG), which
+;;; contains the list of slots of its class. This field must be updated every
+;;; time the class is initialized or reinitialized. Generally
+;;;	(EQ (SI:INSTANCE-SIG x) (CLASS-SLOTS (CLASS-OF x)))
+;;; returns NIL whenever the instance x is obsolete.
 ;;;
 ;;; There are two circumstances under which a instance may become obsolete:
 ;;; either the class has been modified using REDEFINE-INSTANCE (and thus the
@@ -132,9 +101,7 @@
 ;;;	   with enough information to perform any extra initialization,
 ;;;	   for instance of new slots.
 ;;;
-;;; It is not clear when the function UPDATE-INSTANCE is invoked. At least
-;;; this will happen whenever the functions SLOT-VALUE, (SETF SLOT-VALUE),
-;;; SLOT-BOUNDP or SLOT-EXISTS-P are used.
+;;; UPDATE-INSTANCE is invoked whenever a generic function dispatch misses.
 ;;;
 
 (defmethod update-instance-for-redefined-class
@@ -152,14 +119,13 @@
 
 (defun update-instance (instance)
   (let* ((class (class-of instance))
-	 (old-slotds (si::instance-sig instance))
+	 (old-slotds (si:instance-sig instance))
 	 (new-slotds (class-slots class))
 	 (old-instance (si::copy-instance instance))
 	 (discarded-slots '())
 	 (added-slots '())
 	 (property-list '()))
-    (setf instance (si::allocate-raw-instance instance class (class-size class)))
-    (si::instance-sig-set instance)
+    (setf instance (core:reallocate-instance instance class (class-size class)))
     (let* ((new-i 0)
            (old-local-slotds (remove :instance old-slotds :test-not #'eq
                                      :key #'slot-definition-allocation))
@@ -187,23 +153,18 @@
 ;;; ----------------------------------------------------------------------
 ;;; CLASS REDEFINITION PROTOCOL
 
-(ensure-generic-function 'reinitialize-instance
-			 :lambda-list '(class &rest initargs))
-
-(defmethod reinitialize-instance ((class class) &rest initargs
-				  &key (direct-superclasses () direct-superclasses-p)
-                                    (direct-slots nil direct-slots-p))
-  #+clasp(core:reinitialize-class class)
+(defmethod reinitialize-instance :before ((class class) &rest initargs &key)
   (let ((name (class-name class)))
     (when (member name '(CLASS BUILT-IN-CLASS) :test #'eq)
       (error "The kernel CLOS class ~S cannot be changed." name)))
 
   ;; remove previous defined accessor methods
   (when (class-finalized-p class)
-    (remove-optional-slot-accessors class))
+    (remove-optional-slot-accessors class)))
 
-  (call-next-method)
-
+(defmethod reinitialize-instance :after ((class class) &rest initargs
+                                         &key (direct-superclasses () direct-superclasses-p)
+                                           (direct-slots nil direct-slots-p))
   ;; the list of direct slots is converted to direct-slot-definitions
   (when direct-slots-p
     (setf (class-direct-slots class)
@@ -225,7 +186,9 @@
   (setf (class-finalized-p class) nil)
   (finalize-unless-forward class)
 
-  class)
+  (make-instances-obsolete class)
+
+  (update-dependents class initargs))
 
 (defmethod make-instances-obsolete ((class class))
   (setf (class-slots class) (copy-list (class-slots class)))
@@ -233,45 +196,44 @@
 
 (defun remove-optional-slot-accessors (class)
   (declare (class class)
-	   (optimize (safety 0))
-	   (si::c-local))
+	   (optimize (safety 0)))
   (let ((class-name (class-name class)))
     (dolist (slotd (class-slots class))
-      ;; remove previous defined reader methods
+      ;; remove previously defined reader methods
       (dolist (reader (slot-definition-readers slotd))
 	(let* ((gf-object (fdefinition reader))
 	       found)
-	  ;; primary method
-	  (when (setq found
-		      (find-method gf-object nil (list class-name) nil))
-	    (remove-method gf-object found))
-	  ;; before method
-	  (when (setq found
-		      (find-method gf-object ':before (list class-name) nil))
-	    (remove-method gf-object found))
-	  ;; after method
-	  (when (setq found
-		      (find-method gf-object ':after (list class-name) nil))
-	    (remove-method gf-object found))
-	(when (null (generic-function-methods gf-object))
-	  (fmakunbound reader))))
-
-      ;; remove previous defined writer methods
+          (when gf-object ; fmakunbound or otherwise could have removed
+            ;; primary method
+            (when (setq found (find-method gf-object nil (list class-name) nil))
+              (remove-method gf-object found))
+            ;; before method
+            ;; not sure whether removing these is a good idea. Couldn't a user have defined them?
+            ;; And e.g. have a subclass that retains the accessor.
+            (when (setq found (find-method gf-object ':before (list class-name) nil))
+              (remove-method gf-object found))
+            ;; after method
+            (when (setq found (find-method gf-object ':after (list class-name) nil))
+              (remove-method gf-object found))
+            ;; This is unnecessary but kind of nice?
+            ;; Other implementations have different behavior.
+            ;; The user could have defined the generic function specially, so whether this is
+            ;; the right thing to do is ambiguous.
+            (when (null (generic-function-methods gf-object))
+              (fmakunbound reader)))))
+      ;; remove previously defined writer methods
       (dolist (writer (slot-definition-writers slotd))
 	(let* ((gf-object (fdefinition writer))
 	       found)
-	  ;; primary method
-	  (when (setq found
-		      (find-method gf-object nil (list 'T class-name) nil))
-	    (remove-method gf-object found))
-	  ;; before method
-	  (when (setq found
-		      (find-method gf-object ':before (list 'T class-name) nil))
-	    (remove-method gf-object found))
-	  ;; after method
-	  (when (setq found
-		      (find-method gf-object ':after (list 'T class-name) nil))
-	    (remove-method gf-object found))
-	(when (null (generic-function-methods gf-object))
-	  (fmakunbound writer)))))))
-
+          (when gf-object
+            ;; primary method
+            (when (setq found (find-method gf-object nil (list 'T class-name) nil))
+              (remove-method gf-object found))
+            ;; before method
+            (when (setq found (find-method gf-object ':before (list 'T class-name) nil))
+              (remove-method gf-object found))
+            ;; after method
+            (when (setq found (find-method gf-object ':after (list 'T class-name) nil))
+              (remove-method gf-object found))
+            (when (null (generic-function-methods gf-object))
+              (fmakunbound writer))))))))

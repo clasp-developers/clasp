@@ -66,16 +66,6 @@ printer and we should rather use MAKE-LOAD-FORM."
 		      ((consp object)
 		       (recursive-test (car object))
 		       (setf object (rest object)))
-                      ((compiled-function-p object)
-                       (multiple-value-bind (lex code data name)
-                           (si::bc-split object)
-                         (when (or (null data)
-                                   (null code)
-                                   (recursive-test lex)
-                                   (recursive-test code)
-                                   (recursive-test name))
-                           (throw 'need-to-make-load-form t))
-                         (setf object data)))
 		      (t
 		       (throw 'need-to-make-load-form t))))))
       (catch 'need-to-make-load-form
@@ -90,15 +80,6 @@ printer and we should rather use MAKE-LOAD-FORM."
     (unless (need-to-make-load-form-p object env)
       (return-from make-load-form (maybe-quote object)))
     (typecase object
-      (compiled-function
-       (multiple-value-bind (lex code data name)
-           (si::bc-split object)
-         (unless code
-           (error "Cannot externalize object ~a" object))
-         (values `(si::bc-join ,(make-load-form lex env)
-                               ',code ; An specialized array, no load form
-                               ,(make-load-form data env)
-                               ,(make-load-form name env)))))
       (array
        (let ((init-forms '()))
 	 (values `(make-array ',(array-dimensions object)
@@ -117,23 +98,6 @@ printer and we should rather use MAKE-LOAD-FORM."
        (values `(cons ,(maybe-quote (car object)) nil)
 	       (and (rest object) `(rplacd ,(maybe-quote object)
 					   ,(maybe-quote (cdr object))))))
-      (hash-table
-       (let* ((content (ext:hash-table-content object))
-	      (make-form `(make-hash-table
-			   :size ,(hash-table-size object)
-			   :rehash-size ,(hash-table-rehash-size object)
-			   :rehash-threshold ,(hash-table-rehash-threshold object)
-			   :test ',(hash-table-test object))))
-	 (if (need-to-make-load-form-p content env)
-	     (values
-	      make-form
-	      `(dolist (i ',(loop for key being each hash-key in object
-			       using (hash-value obj)
-			       collect (cons key obj)))
-		 (setf (gethash (car i) ,object) (cdr i))))
-	     (values
-	      `(ext:hash-table-fill ,make-form ',content)
-	      nil))))
       (t
        (no-make-load-form object)))))
 
@@ -147,7 +111,7 @@ printer and we should rather use MAKE-LOAD-FORM."
   (no-make-load-form object))
 
 (defun no-make-load-form (object)
-  (declare (si::c-local))
+  (declare (optimize (debug 3)))
   (error "No adequate specialization of MAKE-LOAD-FORM for an object of type ~a"
 	 (type-of object)))
 
@@ -166,6 +130,8 @@ printer and we should rather use MAKE-LOAD-FORM."
 ;;; Printing
 ;;; ----------------------------------------------------------------------
 
+;;; General method was moved up to fixup.lsp 
+#+(or)
 (defmethod print-object ((instance t) stream)
   (print-unreadable-object (instance stream)
     (let ((*package* (find-package "CL")))
@@ -200,6 +166,53 @@ printer and we should rather use MAKE-LOAD-FORM."
                                  `(eql ,(eql-specializer-object spec)))
                                 (t spec)))))
   m)
+
+(defmethod print-object ((s slot-definition) stream)
+  (print-unreadable-object (s stream :type t)
+    (write (slot-definition-name s) :stream stream))
+  s)
+
+(defmethod print-object ((mc method-combination) stream)
+  (print-unreadable-object (mc stream :type t)
+    (write (method-combination-name mc) :stream stream))
+  mc)
+
+(defmethod print-object ((es eql-specializer) stream)
+  (print-unreadable-object (es stream :type t)
+    (write (eql-specializer-object es) :stream stream))
+  es)
+
+(defmethod print-object ((obj structure-object) stream)
+  (let* ((class (si:instance-class obj))
+	 (slotds (class-slots class)))
+    (when (and slotds
+               ;; *p-readably* effectively disables *p-level*
+	       (not *print-readably*)
+	       *print-level*
+	       (zerop *print-level*))
+      (write-string "#" stream)
+      (return-from print-object obj))
+    (write-string "#S(" stream)
+    (prin1 (class-name class) stream)
+    (do ((scan slotds (cdr scan))
+	 (i 0 (1+ i))
+	 (limit (or *print-length* most-positive-fixnum))
+	 (sv))
+	((null scan))
+      (declare (fixnum i))
+      (when (>= i limit)
+	(write-string " ..." stream)
+	(return))
+      (setq sv (si:instance-ref obj i))
+      ;; fix bug where symbols like :FOO::BAR are printed
+      (write-string " " stream)
+      (let ((kw (intern (symbol-name (slot-definition-name (car scan)))
+                        (load-time-value (find-package "KEYWORD")))))
+        (prin1 kw stream))
+      (write-string " " stream)
+      (prin1 sv stream))
+    (write-string ")" stream)
+    obj))
 
 (defun ext::float-nan-string (x)
   (when *print-readably*

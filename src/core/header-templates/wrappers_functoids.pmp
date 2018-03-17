@@ -1,0 +1,72 @@
+$$ Three kinds of return values for the wrapped functions    single-value, multiple-value and void
+$$ I'm screwing everything up for variadic arguments
+$var ReturnTypeCount = 3 
+$var RetSV = 0
+$var RetVoid = 1
+$var RetMV = 2
+$var NumArgs = 18
+$var InnerCount = NumArgs+1
+$var Templates = InnerCount*ReturnTypeCount-1
+$range template_ 0..Templates
+
+
+$for template_ [[
+        $var numVoids = template_ % InnerCount
+        $var numArgs = NumArgs - numVoids
+        $var ret = template_ // InnerCount
+        $range Args_ 0..numArgs-1
+        // ret = $ret  $if ret==RetVoid [[RetVoid
+        ]] $elif ret==RetSV [[RetSV
+        ]] $else [[RetMV
+        ]]
+        // numArgs = $numArgs 
+        // numVoids = $numVoids    
+    /* Specialization */
+    template <$if ret==RetVoid [[]] $else [[typename RT $if numArgs [[,]] ]] $for Args_ ,[[typename ARG$Args_]] >
+        class VariadicFunctor
+    <$if ret==RetVoid [[void]] $elif ret==RetSV [[RT ]] $else [[gctools::multiple_values<RT>]]($for Args_ , [[ARG$Args_]]) >
+        : public TemplatedFunctionBase_O {
+        public:
+            typedef VariadicFunctor <$if ret==RetVoid [[void]] $elif ret==RetSV [[RT ]] $else [[gctools::multiple_values<RT>]]($for Args_ , [[ARG$Args_]]) > MyType;
+            typedef TemplatedFunctionBase_O TemplatedBase;
+        public:
+	virtual const char* describe() const {return "VariadicFunctor";};
+
+        typedef $if ret==RetVoid [[void]] $elif ret==RetSV [[RT]] $else [[gctools::multiple_values<RT>]](*Type) ($for Args_ , [[ARG$Args_]]);
+        Type fptr;
+        public:
+        enum { NumParams = $numArgs };
+        VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : TemplatedFunctionBase_O(&MyType::entry_point,name,funcType,SOURCE_INFO_PASS), fptr(ptr) {};
+        virtual size_t templatedSizeof() const { return sizeof(*this); };
+	virtual void* functionAddress() const { return (void*)this->fptr; };
+        static inline LCC_RETURN entry_point(LCC_ARGS_ELLIPSIS)
+        {
+            MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
+            INCREMENT_FUNCTION_CALL_COUNTER(closure);
+            INITIALIZE_VA_LIST();
+            INVOCATION_HISTORY_FRAME();
+            $if numArgs>0 [[
+              MAKE_STACK_FRAME(fargs,closure->asSmartPtr().raw_(),$numArgs);
+	      core::StackFrameDynamicScopeManager scope(fargs);
+              lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
+            ]]
+            $if numArgs>0 [[
+              $for Args_ [[translate::from_object<ARG$Args_> a$Args_(core::T_sp((gc::Tagged)(*fargs)[$Args_]));
+              ]]
+            ]]
+            $$ Do the call ------
+            $if ret==RetVoid [[]] $elif ret==RetSV [[ RT retval = ]] $else [[ gctools::multiple_values<RT> retval = ]] closure->fptr($for Args_ ,[[a$Args_._v]]);
+            $if ret==RetVoid [[
+              return Values0<core::T_O>();
+            ]] $elif ret==RetMV [[
+              return retval.as_return_type();
+            ]] $else [[
+              return Values(translate::to_object<RT>::convert(retval));
+            ]]
+        }
+
+        };
+        ]]
+
+
+

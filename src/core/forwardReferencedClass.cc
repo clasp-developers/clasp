@@ -26,10 +26,10 @@ THE SOFTWARE.
 /* -^- */
 //#define DEBUG_LEVEL_FULL
 
+#include <clasp/core/foundation.h>
 #include <clasp/core/common.h>
 #include <clasp/core/environment.h>
 #include <clasp/core/forwardReferencedClass.h>
-#include <clasp/core/standardClass.h>
 #include <clasp/core/builtInClass.h>
 #include <clasp/core/wrappers.h>
 namespace core {
@@ -61,8 +61,8 @@ CL_DEFUN void core__change_to_standard_class(ForwardReferencedClass_sp orig) {
   printf("%s:%d core__change_to_standard_class\n", __FILE__, __LINE__);
   printf("        ForwardReferencedClass_O size -> %" PRu "\n", sizeof(ForwardReferencedClass_O));
   printf("        StandardClass_O size -> %" PRu "\n", sizeof(StandardClass_O));
-  printf("        Kind(ForwardReferencedClass_O -> %u\n", gctools::GCKind<ForwardReferencedClass_O>::Kind);
-  printf("        Kind(StandardClass_O -> %u\n", gctools::GCKind<StandardClass_O>::Kind);
+  printf("        Kind(ForwardReferencedClass_O -> %u\n", gctools::GCStamp<ForwardReferencedClass_O>::Kind);
+  printf("        Kind(StandardClass_O -> %u\n", gctools::GCStamp<StandardClass_O>::Kind);
   printf("        vtable(ForwardReferencedClass_O -> %p\n", *(void**)&x);
   printf("        vtable(StandardClass_O -> %p\n", *(void**)&sc);
 #endif
@@ -70,7 +70,7 @@ CL_DEFUN void core__change_to_standard_class(ForwardReferencedClass_sp orig) {
   gctools::Header_s* header = const_cast<gctools::Header_s*>(gctools::header_pointer((void*)o));
   printf("        header -> %p\n", *(void**)header);
   *(void**)&o = *(void**)&sc;
-  header->setKind(gctools::GCKind<StandardClass_O>::Kind);
+  header->setKind(gctools::GCStamp<StandardClass_O>::Kind);
 #if 0
   printf("%s:%d After transform\n",__FILE__,__LINE__);
   printf("        vtable(ForwardReferencedClass_O -> %p\n", *(void**)&o);

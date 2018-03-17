@@ -94,6 +94,142 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
+;;; Instruction VECTOR-LENGTH-INSTRUCTION
+;;;
+;;; This instruction gets the length of a vector, as CL:LENGTH.
+
+(defclass vector-length-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin)
+  ())
+
+(defmethod cleavir-ir-graphviz:label ((instr vector-length-instruction))
+  "vlength")
+
+(defun make-vector-length-instruction (input output &optional (successor nil successor-p))
+  (make-instance 'vector-length-instruction
+                 :inputs (list input)
+                 :outputs (list output)
+                 :successors (if successor-p (list successor) nil)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Instruction DISPLACEMENT-INSTRUCTION
+;;;
+;;; Get the actual _Data of an mdarray.
+
+(defclass displacement-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin)
+  ())
+
+(defmethod cleavir-ir-graphviz:label ((instr displacement-instruction))
+  "displacement")
+
+(defun make-displacement-instruction (input output &optional (successor nil successor-p))
+  (make-instance 'displacement-instruction
+                 :inputs (list input)
+                 :outputs (list output)
+                 :successors (if successor-p (list successor) nil)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Instruction DISPLACED-INDEX-OFFSET-INSTRUCTION
+;;;
+;;; Get the actual _DisplacedIndexOffset of an mdarray.
+
+(defclass displaced-index-offset-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin)
+  ())
+
+(defmethod cleavir-ir-graphviz:label ((instr displaced-index-offset-instruction))
+  "d-offset")
+
+(defun make-displaced-index-offset-instruction (input output &optional (successor nil successor-p))
+  (make-instance 'displaced-index-offset-instruction
+                 :inputs (list input)
+                 :outputs (list output)
+                 :successors (if successor-p (list successor) nil)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Instruction ARRAY-TOTAL-SIZE-INSTRUCTION
+;;;
+;;; Get the _ArrayTotalSize of an mdarray.
+
+(defclass array-total-size-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin)
+  ())
+
+(defmethod cleavir-ir-graphviz:label ((instr array-total-size-instruction))
+  "ATS")
+
+(defun make-array-total-size-instruction (input output &optional (successor nil successor-p))
+  (make-instance 'array-total-size-instruction
+                 :inputs (list input)
+                 :outputs (list output)
+                 :successors (if successor-p (list successor) nil)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Instruction ARRAY-RANK-INSTRUCTION
+;;;
+;;; Get the rank of an mdarray.
+
+(defclass array-rank-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin)
+  ())
+
+(defmethod cleavir-ir-graphviz:label ((instr array-rank-instruction))
+  "rank")
+
+(defun make-array-rank-instruction (input output &optional (successor nil successor-p))
+  (make-instance 'array-rank-instruction
+                 :inputs (list input)
+                 :outputs (list output)
+                 :successors (if successor-p (list successor) nil)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Instruction ARRAY-DIMENSION-INSTRUCTION
+;;;
+;;; Get a dimension of an mdarray.
+
+(defclass array-dimension-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin)
+  ())
+
+(defmethod cleavir-ir-graphviz:label ((instr array-dimension-instruction))
+  "AD")
+
+(defun make-array-dimension-instruction (mdarray axis output &optional (successor nil successor-p))
+  (make-instance 'array-dimension-instruction
+                 :inputs (list mdarray axis)
+                 :outputs (list output)
+                 :successors (if successor-p (list successor) nil)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Instruction BIND-VA-LIST-INSTRUCTION
+;;;
+;;; Sort of like destructuring-bind, but with a va-list
+;;; instead of a list (thus why it's a special operator),
+;;; and only allowing ordinary lambda lists.
+
+(defclass bind-va-list-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin)
+  ((%lambda-list :initarg :lambda-list :accessor cleavir-ir:lambda-list)))
+
+(defmethod cleavir-ir-graphviz:label ((instr bind-va-list-instruction))
+  )
+
+(defun make-bind-va-list-instruction (lambda-list va-list &optional (successor nil successor-p))
+  (make-instance 'bind-va-list-instruction
+                 :lambda-list lambda-list
+                 :inputs (list va-list)
+                 ;; copied from cleavir-ir:make-enter-instruction
+                 :outputs (loop for item in lambda-list
+                                append (cond ((member item lambda-list-keywords) nil)
+                                             ((consp item)
+                                              (if (= (length item) 3)
+                                                  (rest item)
+                                                  item))
+                                             (t (list item))))
+                 :successors (if successor-p (list successor) nil)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
 ;;; Instruction NAMED-ENTER-INSTRUCTION
 ;;;
 ;;; This instruction is an ENTER-INSTRUCTION that keeps

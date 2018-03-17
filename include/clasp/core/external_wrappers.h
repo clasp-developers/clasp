@@ -40,8 +40,8 @@ namespace core {
 using namespace policies;
 
 template <typename Policies, typename OT, typename Method>
-class IndirectVariadicMethoid : public BuiltinClosure_O {
-  typedef BuiltinClosure_O TemplatedBase;
+class IndirectVariadicMethoid : public TemplatedFunctionBase_O {
+  typedef TemplatedFunctionBase_O TemplatedBase;
   virtual size_t templatedSizeof() const { return sizeof(*this); };
   virtual const char *describe() const { return "IndirectVariadicMethoid"; };
 };
@@ -51,27 +51,26 @@ class IndirectVariadicMethoid : public BuiltinClosure_O {
 
 namespace core {
 template <class D, class C>
-class GetterMethoid : public BuiltinClosure_O {
+class GetterMethoid : public TemplatedFunctionBase_O {
 public:
-  typedef BuiltinClosure_O TemplatedBase;
+  typedef TemplatedFunctionBase_O TemplatedBase;
 
 public:
   //        typedef std::function<void (OT& ,)> Type;
   typedef D(C::*MemPtr);
   MemPtr mptr;
- GetterMethoid(core::T_sp name, MemPtr ptr) : BuiltinClosure_O(entry_point,name), mptr(ptr){};
-  DISABLE_NEW();
+ GetterMethoid(core::T_sp name, MemPtr ptr) : TemplatedFunctionBase_O(entry_point,name), mptr(ptr){};
   virtual size_t templatedSizeof() const { return sizeof(*this); };
   static inline LCC_RETURN LISP_CALLING_CONVENTION() {
-    SIMPLE_ERROR(BF("What do I do here"));
+    SIMPLE_ERROR_SPRINTF("What do I do here");
   }
 };
 };
 
 template <typename Policies, typename OT, typename Method>
-class gctools::GCKind<core::IndirectVariadicMethoid<Policies, OT, Method>> {
+class gctools::GCStamp<core::IndirectVariadicMethoid<Policies, OT, Method>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::GCKind<typename core::IndirectVariadicMethoid<Policies, OT, Method>::TemplatedBase>::Kind;
+  static gctools::GCStampEnum const Stamp = gctools::GCStamp<typename core::IndirectVariadicMethoid<Policies, OT, Method>::TemplatedBase>::Stamp;
 };
 
 namespace core {
@@ -91,10 +90,8 @@ public:
   void setup_class(const string &makerName) {
     _G();
     if (IS_SYMBOL_UNDEFINED(OT::static_classSymbol())) {
-      SIMPLE_ERROR(BF("Attempting to add methods for "
-                      "class that isn't defined yet"));
+      SIMPLE_ERROR_SPRINTF("Attempting to add methods for class that isn't defined yet");
     }
-
     this->_ClassSymbol = OT::static_classSymbol();
     reg::lisp_registerClassSymbol<OT>(this->_ClassSymbol);
     /*! Accumulate all of the classes in reverse order of how they were initialized
@@ -109,9 +106,9 @@ public:
     T_sp theClass = lisp_boot_findClassBySymbolOrNil(OT::static_classSymbol());
     if (theClass.nilp()) {
       LOG(BF("Adding class(%s) to environment") % OT::static_className());
-      lisp_addClass(OT::static_classSymbol(),
-                    OT::static_creator,
-                    OT::Bases::baseClass1Id() );
+      lisp_addClassSymbol(OT::static_classSymbol(),
+                          OT::static_creator,
+                          OT::Bases::baseClass1Id() );
     }
   }
 

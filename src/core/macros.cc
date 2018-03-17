@@ -47,7 +47,7 @@ T_sp push(Symbol_sp accessor, T_sp target, T_sp val, Lisp_sp lisp) {
 }
 
 T_sp pushnew(Symbol_sp accessor, T_sp target, T_sp val, T_sp test_funcDesig, T_sp key_funcDesig, Lisp_sp lisp) {
-  IMPLEMENT_MEF(BF("implement macros::pushnew"));
+  IMPLEMENT_MEF("implement macros::pushnew");
 #if 0
 	SetfExpander_sp expander = _lisp->lookupSetfExpander(accessor);
 	Cons_sp tlist = target->slot_value(accessor);

@@ -11,8 +11,9 @@ namespace cast {
   // Very few Cast's should default back to this one.
   // Maybe keep a count of how often it gets called?
       inline static bool isA(FromType client) {
-        printf("%s:%d Add support for Cast::isA for type %s\n", __FILE__, __LINE__, typeid(FromType).name());
-        return false;
+        return (dynamic_cast<ToType>(client) != NULL);
+//        printf("%s:%d Add support for Cast::isA to type %s from type %s\n", __FILE__, __LINE__, typeid(ToType).name(), typeid(FromType).name());
+//        return false;
     //return (dynamic_cast<ToType>(client) != NULL);
       }
     };
@@ -46,16 +47,16 @@ namespace clbind {
 
 #ifdef USE_BOEHM
 //----------------------------------------------------------------------
-#ifndef USE_CXX_DYNAMIC_CAST
-#define DECLARE_FORWARDS
-#include CLASP_GC_FILENAME
-#undef DECLARE_FORWARDS
+#ifndef SCRAPING
+ #define DECLARE_FORWARDS
+  #include INIT_CLASSES_INC_H // REPLACED CLASP_GC_FILENAME // "main/clasp_gc.cc"
+ #undef DECLARE_FORWARDS
 #endif
 namespace cast {
-#ifndef USE_CXX_DYNAMIC_CAST
-#define GC_DYNAMIC_CAST
-#include CLASP_GC_FILENAME // "main/clasp_gc.cc"
-#undef GC_DYNAMIC_CAST
+#ifndef SCRAPING
+ #define GC_DYNAMIC_CAST
+  #include INIT_CLASSES_INC_H // REPLACED CLASP_GC_FILENAME // "main/clasp_gc.cc"
+ #undef GC_DYNAMIC_CAST
 #endif
 };
 //----------------------------------------------------------------------
@@ -64,17 +65,17 @@ namespace cast {
 
 #ifdef USE_MPS
 //----------------------------------------------------------------------
-#ifndef RUNNING_GC_BUILDER
-#define DECLARE_FORWARDS
-#include CLASP_GC_FILENAME
-#undef DECLARE_FORWARDS
-#endif
+ #if !defined(RUNNING_GC_BUILDER) && !defined(SCRAPING)
+  #define GC_DECLARE_FORWARDS
+   #include CLASP_GC_FILENAME
+  #undef GC_DECLARE_FORWARDS
+ #endif
 namespace cast {
-#if !defined(RUNNING_GC_BUILDER)
-#define GC_DYNAMIC_CAST
-#include CLASP_GC_FILENAME // "main/clasp_gc.cc"
-#undef GC_DYNAMIC_CAST
-#endif
+ #if !defined(RUNNING_GC_BUILDER) && !defined(SCRAPING)
+  #define GC_DYNAMIC_CAST
+   #include CLASP_GC_FILENAME
+  #undef GC_DYNAMIC_CAST
+ #endif
 };
 #endif // #ifdef USE_MPS
 

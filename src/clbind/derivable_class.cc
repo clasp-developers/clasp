@@ -69,6 +69,22 @@ THE SOFTWARE.
 #include <iostream>
 
 namespace clbind {
+
+void validateRackOffset(size_t wrapped_type_offset) {
+    /*
+     * printf("%s:%d The Derivable class _Rack offset (%lu) must be at the same offset as Instance_O::_Rack (%lu)\n",
+             __FILE__, __LINE__, wrapped_type_offset, offsetof(core::Instance_O,_Rack));
+     */
+    if (wrapped_type_offset != offsetof(core::Instance_O,_Rack)) {
+      printf("The Derivable class _Rack offset (%lu) must be at the same offset as Instance_O::_Rack (%lu) - but it is not\n",
+             wrapped_type_offset, offsetof(core::Instance_O,_Rack));
+      abort();
+    };
+  };
+
+};
+
+namespace clbind {
 namespace detail {
 
 derivable_class_registration::derivable_class_registration(char const *name) : m_default_constructor(NULL) {
@@ -78,22 +94,25 @@ derivable_class_registration::derivable_class_registration(char const *name) : m
 void derivable_class_registration::register_() const {
   ClassRegistry_sp registry = ClassRegistry_O::get_registry();
   clbind::ClassRep_sp crep = clbind::ClassRep_O::create(this->m_type, this->m_name, this->m_derivable);
+#ifdef DEBUG_CLASS_INSTANCE
+  printf("%s:%d:%s   Registering clbind class\n", __FILE__, __LINE__, __FUNCTION__ );
+#endif
+  crep->_Class = _lisp->_Roots._TheDerivableCxxClass; // core::lisp_standard_class();
+  crep->initializeSlots(crep->_Class->CLASS_stamp_for_instances(),REF_CLASS_NUMBER_OF_SLOTS_IN_DERIVABLE_CXX_CLASS);
   std::string classNameString(this->m_name);
+  gctools::smart_ptr<core::Creator_O> creator;
+  if (m_default_constructor != NULL) {
+    creator = m_default_constructor->registerDefaultConstructor_();
+  } else {
+    creator = gctools::GC<DummyCreator_O>::allocate(classNameString);
+  }
+  crep->initializeClassSlots(creator,gctools::NextStamp());
   core::Symbol_sp className = core::lispify_intern(classNameString, _lisp->getCurrentPackage()->packageName());
   className->exportYourself();
-  crep->setName(className);
+  crep->_setClassName(className);
   reg::lisp_associateClassIdWithClassSymbol(m_id, className); // TODO: Or do I want m_wrapper_id????
-  if (core::_sym_STARallCxxClassesSTAR->symbolValueUnsafe()) {
-    core::_sym_STARallCxxClassesSTAR->setf_symbolValue(
-        core::Cons_O::create(className, core::_sym_STARallCxxClassesSTAR->symbolValue()));
-  }
-  gctools::smart_ptr<core::Creator_O> allocator;
-  if (m_default_constructor != NULL) {
-    allocator = m_default_constructor->registerDefaultConstructor_();
-  } else {
-    allocator = gctools::GC<DummyCreator_O>::allocate(classNameString);
-  }
-  _lisp->addClass(className, crep, allocator);
+  lisp_pushClassSymbolOntoSTARallCxxClassesSTAR(className);
+  core__setf_find_class(crep, className);
   registry->add_class(m_type, crep);
 
   detail::class_map &classes = *globalClassMap;
@@ -122,10 +141,12 @@ void derivable_class_registration::register_() const {
     casts->insert(e.src, e.target, e.cast);
   }
 
+//  printf("%s:%d Registering Derivable class %s\n", __FILE__, __LINE__, _rep_(className).c_str());
   if (m_bases.size() == 0) {
     // If no base classes are specified then make T a base class from Common Lisp's point of view
     //
-    crep->addInstanceBaseClass(cl::_sym_T_O);
+    printf("%s:%d           %s inherits from T\n", __FILE__, __LINE__, _rep_(className).c_str());
+    crep->addInstanceBaseClass(core::_sym_derivable_cxx_object);
   } else {
     for (std::vector<base_desc>::iterator i = m_bases.begin();
          i != m_bases.end(); ++i) {
@@ -133,11 +154,13 @@ void derivable_class_registration::register_() const {
 
       // the baseclass' class_rep structure
       ClassRep_sp bcrep = registry->find_class(i->first);
+//      printf("%s:%d         %s inherits from %s\n", __FILE__, __LINE__, _rep_(className).c_str(), _rep_(bcrep).c_str());
       ASSERTF(bcrep.notnilp(), BF("Could not find base class %s") % i->first.name());
       // Add it to the DirectSuperClass list
-      crep->addInstanceBaseClass(bcrep->className());
+      crep->addInstanceBaseClass(bcrep->_className());
       crep->add_base_class(core::make_fixnum(0), bcrep);
     }
+    crep->addInstanceBaseClass(core::_sym_derivable_cxx_object);
   }
 }
 

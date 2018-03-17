@@ -62,9 +62,9 @@ public:
 };
 
 template <typename FunctionPtrType, typename Policies>
-class gctools::GCKind<clbind::VariadicFunctor<FunctionPtrType, Policies>> {
+class gctools::GCStamp<clbind::VariadicFunctor<FunctionPtrType, Policies>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::GCKind<typename clbind::VariadicFunctor<FunctionPtrType, Policies>::TemplatedBase>::Kind;
+  static gctools::GCStampEnum const Stamp = gctools::GCStamp<typename clbind::VariadicFunctor<FunctionPtrType, Policies>::TemplatedBase>::Stamp;
 };
 
 namespace clbind {
@@ -89,16 +89,7 @@ struct function_registration : registration {
   void register_() const {
     core::Symbol_sp symbol = core::lispify_intern(name, core::lisp_currentPackageName());
     core::BuiltinClosure_sp functoid = gc::GC<VariadicFunctor<FunctionPointerType, Policies>>::allocate(symbol, functionPtr);
-    core::lisp_defun(symbol, core::lisp_currentPackageName(), functoid, m_lambdalist, m_declares, m_docstring, "=external=", 0, true, (CountFunctionArguments<FunctionPointerType>::value), GatherPureOutValues<Policies, -1>::gather());
-#if 0
-                object fn = make_function(L, f, deduce_signature(f), policies);
-
-                add_overload(
-                    object(from_stack(L, -1))
-                    , name
-                    , fn
-                    );
-#endif
+    core::lisp_defun(symbol, core::lisp_currentPackageName(), functoid, m_lambdalist, m_declares, m_docstring, "=external=", 0, (CountFunctionArguments<FunctionPointerType>::value), GatherPureOutValues<Policies, -1>::gather());
   }
 
   char const *name;

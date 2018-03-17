@@ -81,26 +81,30 @@ class_registration::class_registration(const std::string &name) : m_default_cons
 void class_registration::register_() const {
   ClassRegistry_sp registry = ClassRegistry_O::get_registry();
   clbind::ClassRep_sp crep = clbind::ClassRep_O::create(this->m_type, this->m_name, this->m_derivable);
+#ifdef DEBUG_CLASS_INSTANCE
+  printf("%s:%d   Registering clbind class\n", __FILE__, __LINE__ );
+#endif
+  //  crep->_Class = core::lisp_standard_class();
+  crep->initializeSlots(crep->_Class->CLASS_stamp_for_instances() /* BEFORE: gctools::NextStamp() */,REF_CLASS_NUMBER_OF_SLOTS_IN_STANDARD_CLASS);
   std::string classNameString(this->m_name);
+  gctools::smart_ptr<core::Creator_O> creator;
+  if (m_default_constructor != NULL) {
+    creator = m_default_constructor->registerDefaultConstructor_();
+  } else {
+    creator = gctools::GC<DummyCreator_O>::allocate(classNameString);
+  }
+  crep->initializeClassSlots(creator,gctools::NextStamp());
   core::Symbol_sp className = core::lispify_intern(classNameString, _lisp->getCurrentPackage()->packageName());
   className->exportYourself();
-  crep->setName(className);
+  crep->_setClassName(className);
   reg::lisp_associateClassIdWithClassSymbol(m_id, className); // TODO: Or do I want m_wrapper_id????
-  if (core::_sym_STARallCxxClassesSTAR->symbolValueUnsafe()) {
-    core::_sym_STARallCxxClassesSTAR->setf_symbolValue(
-        core::Cons_O::create(className, core::_sym_STARallCxxClassesSTAR->symbolValue()));
-  }
-  gctools::smart_ptr<core::Creator_O> allocator;
-  if (m_default_constructor != NULL) {
-    allocator = m_default_constructor->registerDefaultConstructor_();
-  } else {
-    allocator = gctools::GC<DummyCreator_O>::allocate(classNameString);
-  }
-  _lisp->addClass(className, crep, allocator);
+  lisp_pushClassSymbolOntoSTARallCxxClassesSTAR(className);
+  core__setf_find_class(crep, className );
   registry->add_class(m_type, crep);
 
   detail::class_map &classes = *globalClassMap;
   classes.put(m_id, crep);
+//  printf("%s:%d  step 2 with...  crep -> %s\n", __FILE__, __LINE__, _rep_(crep).c_str());
 
   bool const has_wrapper = m_wrapper_id != reg::registered_class<reg::null_type>::id;
 #if 0
@@ -138,10 +142,11 @@ void class_registration::register_() const {
       ClassRep_sp bcrep = registry->find_class(i->first);
       ASSERTF(bcrep.notnilp(), BF("Could not find base class %s") % i->first.name());
       // Add it to the DirectSuperClass list
-      crep->addInstanceBaseClass(bcrep->className());
+      crep->addInstanceBaseClass(bcrep->_className());
       crep->add_base_class(core::make_fixnum(0), bcrep);
     }
   }
+//  printf("%s:%d  leaving with...  crep -> %s\n", __FILE__, __LINE__, _rep_(crep).c_str());
 }
 
 // -- interface ---------------------------------------------------------
@@ -204,7 +209,7 @@ void add_custom_name(type_id const &i, std::string &s) {
 }
 
 std::string get_class_name(core::Lisp_sp L, type_id const &i) {
-  IMPLEMENT_MEF(BF("get_class_name"));
+  IMPLEMENT_MEF("get_class_name");
 #if 0  // start_meister_disabled
             std::string ret;
 

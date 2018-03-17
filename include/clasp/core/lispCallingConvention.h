@@ -114,8 +114,8 @@ namespace gctools {
 #define MULTIPLE_VALUES_ARRAY core::lisp_multipleValues()
 
 /* ASSERT that the first argument is a VaList_sp */
-#define ASSERT_FIRST_ARG_IS_VALIST() ASSERT(gctools::tagged_valistp(lcc_fixed_arg0))
-#define LCC_ARG0_VALIST() gctools::smart_ptr<core::VaList_S>((gc::Tagged)lcc_fixed_arg0)
+#define ASSERT_FIRST_ARG_IS_VALIST() ASSERT(gctools::tagged_vaslistp(lcc_fixed_arg0))
+#define LCC_ARG0_VALIST() gctools::smart_ptr<core::Vaslist>((gc::Tagged)lcc_fixed_arg0)
 #define LCC_ARG0() gctools::smart_ptr<core::T_O>((gc::Tagged)lcc_fixed_arg0)
 #define LCC_ARG1() gctools::smart_ptr<core::T_O>((gc::Tagged)lcc_fixed_arg1)
 #define LCC_ARG2() gctools::smart_ptr<core::T_O>((gc::Tagged)lcc_fixed_arg2)
@@ -127,7 +127,7 @@ namespace gctools {
   
 /* This is a switch statement that copies passed arguments in registers into the MultipleValues array */
 #define LCC_SWITCH_TO_COPY_PASSED_ARGS_INTO_MULTIPLE_VALUES_ARRAY(_mv) \
-  /* Fix me */ IMPLEMENT_ME(); \
+  /* Fix me */ HARD_IMPLEMENT_ME(); \
   MultipleValues &_mv = lisp_callArgs();                               \
   _mv.setSize(lcc_nargs);                                              \
   switch (lcc_nargs) {                                                 \
@@ -190,7 +190,7 @@ namespace gctools {
     (_valist_s_)._Args->gp_offset = sizeof(core::T_O*) * (LCC_ABI_ARGS_IN_REGISTERS - LCC_ARGS_IN_REGISTERS);                           \
   }
 
-#define INITIALIZE_VA_LIST() ::core::VaList_S lcc_arglist_s(lcc_nargs);\
+#define INITIALIZE_VA_LIST() ::core::Vaslist lcc_arglist_s(lcc_nargs);\
   va_start(lcc_arglist_s._Args, LCC_VA_START_ARG); \
   core::VaList_sp lcc_vargs(&lcc_arglist_s); \
   LCC_SPILL_REGISTER_ARGUMENTS_TO_VA_LIST(lcc_arglist_s); \
@@ -200,7 +200,7 @@ namespace gctools {
   va_start(passed_args,LCC_VA_START_ARG); \
   core::T_O* lcc_passed_valist = va_arg(passed_args,core::T_O*); \
   va_end(passed_args); \
-  ::core::VaList_S lcc_arglist_s(*(VaList_S*)gctools::untag_valist(lcc_passed_valist));\
+  ::core::Vaslist lcc_arglist_s(*(core::Vaslist*)gctools::untag_vaslist(lcc_passed_valist));\
   core::VaList_sp lcc_vargs(&lcc_arglist_s); 
 
 #define private_LCC_VA_LIST_TOTAL_NUMBER_OF_ARGUMENTS(_args) (size_t)(((uintptr_clasp_t *)(_args[0].reg_save_area))[LCC_NARGS_REGISTER])
@@ -272,7 +272,7 @@ namespace gctools {
 
 
 #define LCC_CALL_WITH_ARGS_IN_FRAME(_result, _closure, _frame)          \
-  core::VaList_S valist_s(_frame);                                      \
+  core::Vaslist valist_s(_frame);                                      \
   printf("%s:%d  This needs to be reimplemented to handle the new calling convention\n", __FILE__, __LINE__ ); \
   LCC_SPILL_CLOSURE_TO_VA_LIST(valist_s,_closure.raw_());                \
   size_t lcc_nargs = (_frame).number_of_arguments();                    \
@@ -300,11 +300,11 @@ namespace gctools {
 
 
 #define LCC_DECLARE_VA_LIST()                           \
-  VaList_S lcc_arglist_struct(lcc_nargs);               \
+  Vaslist lcc_arglist_struct(lcc_nargs);               \
   va_start(lcc_arglist_struct._Args, LCC_VA_START_ARG); \
   VaList_sp lcc_arglist(&lcc_arglist_struct);
 
-/*! Initialize a VaList_S struct from a Frame object */
+/*! Initialize a Vaslist struct from a Frame object */
 #define LCC_SETUP_VA_LIST_FROM_FRAME(_va_list_, _frame_) { \
     (_va_list_)[0].reg_save_area = (_frame_).reg_save_area_ptr(); \
     (_va_list_)[0].overflow_arg_area = (_frame_).overflow_arg_area_ptr(); \
@@ -312,7 +312,12 @@ namespace gctools {
     (_va_list_)[0].fp_offset = 304; \
   }
 
-/*! Initialize a VaList_S struct from a Frame object */
+/*! Rewind the general pointer area for a va_list to the first required argument */
+#define LCC_REWIND_VA_LIST_KEEP_REGISTER_SAVE_AREA(_va_list_) { \
+    (_va_list_)[0].gp_offset = 16; \
+  }
+
+/*! Rewind the general pointer area for a va_list to the first required argument */
 #define LCC_REWIND_VA_LIST(_va_list_, _register_save_areaP_) { \
     (_va_list_)[0].reg_save_area = (void*)_register_save_areaP_; \
     (_va_list_)[0].gp_offset = 16; \
@@ -328,7 +333,7 @@ namespace gctools {
 #ifdef _DEBUG_BUILD
 #define SETUP_CLOSURE(Type,var) \
   if (!gc::TaggedCast<Type*,core::T_O*>::isA(lcc_closure)) { \
-    SIMPLE_ERROR(BF("Bad cast of closure %p to type: %s") % (void*)lcc_closure % #Type ); \
+    SIMPLE_ERROR_SPRINTF("Bad cast of closure %p to type: %s", (void*)lcc_closure, #Type ); \
   } \
   SETUP_CLOSURE_(Type,var);
 #else
@@ -346,25 +351,33 @@ typedef LCC_RETURN (*ShutdownFunction_fptr_type)();
 
 #ifdef LCC_FUNCALL
 extern "C" {
-// Return true if the VaList_S is at the head of the list and false if it is used up
-inline bool dump_VaList_S_ptr(VaList_S* args_orig) {
-  VaList_S args(*args_orig);
+
+// Return true if the Vaslist is at the head of the list and false if it is used up
+inline void dump_va_list(va_list val) {
+  const char* atpos = "";
+  if (val[0].gp_offset==0x10) atpos = "atStartReg";
+  else if (val[0].gp_offset==0x30) atpos = "pastEnd";
+  printf("           gp_offset = %p (%s)\n", reinterpret_cast<void*>(val[0].gp_offset),  atpos );
+  printf("           fp_offset = %p\n", reinterpret_cast<void*>(val[0].fp_offset) );
+  printf("   overflow_arg_area = %p\n", reinterpret_cast<void*>(val[0].overflow_arg_area) );
+  printf("       reg_save_area = %p\n", reinterpret_cast<void*>(val[0].reg_save_area) );
+  printf("---Register save area@%p (NOTE: Often in other stack frame)\n", val[0].reg_save_area);
+  printf("       CLOSURE_REGISTER@%p = %p\n", reinterpret_cast<void*>(LCC_CLOSURE_REGISTER*8), ((core::T_O* *)val[0].reg_save_area)[LCC_CLOSURE_REGISTER] );
+  printf("         NARGS_REGISTER@%p = %zu\n", reinterpret_cast<void*>(LCC_NARGS_REGISTER*8),reinterpret_cast<size_t>(((core::T_O* *)val[0].reg_save_area)[LCC_NARGS_REGISTER]) );
+  printf("          ARG0_REGISTER@%p = %p\n", reinterpret_cast<void*>(LCC_ARG0_REGISTER*8), ((core::T_O* *)val[0].reg_save_area)[LCC_ARG0_REGISTER] );
+  printf("          ARG1_REGISTER@%p = %p\n", reinterpret_cast<void*>(LCC_ARG1_REGISTER*8), ((core::T_O* *)val[0].reg_save_area)[LCC_ARG1_REGISTER] );
+  printf("          ARG2_REGISTER@%p = %p\n", reinterpret_cast<void*>(LCC_ARG2_REGISTER*8), ((core::T_O* *)val[0].reg_save_area)[LCC_ARG2_REGISTER] );
+  printf("          ARG3_REGISTER@%p = %p\n", reinterpret_cast<void*>(LCC_ARG3_REGISTER*8), ((core::T_O* *)val[0].reg_save_area)[LCC_ARG3_REGISTER] );
+};
+
+
+// Return true if the Vaslist is at the head of the list and false if it is used up
+inline bool dump_Vaslist_ptr(Vaslist* args_orig) {
+  Vaslist args(*args_orig);
   printf("va_list dump @%p\n", (void*)args_orig);
   printf("va_list remaining_args = %lu\n", args.remaining_nargs());
   bool atHead = (args.remaining_nargs() != args.total_nargs());
-  printf("---Register save area@%p (NOTE: Often in other stack frame)\n", args._Args[0].reg_save_area);
-  printf("       CLOSURE_REGISTER@%p = %p\n", reinterpret_cast<void*>(LCC_CLOSURE_REGISTER*8), ((core::T_O* *)(args)._Args->reg_save_area)[LCC_CLOSURE_REGISTER] );
-  printf("         NARGS_REGISTER@%p = %zu\n", reinterpret_cast<void*>(LCC_NARGS_REGISTER*8),reinterpret_cast<size_t>(((core::T_O* *)(args)._Args->reg_save_area)[LCC_NARGS_REGISTER]) );
-  printf("          ARG0_REGISTER@%p = %p\n", reinterpret_cast<void*>(LCC_ARG0_REGISTER*8), ((core::T_O* *)(args)._Args->reg_save_area)[LCC_ARG0_REGISTER] );
-  printf("          ARG1_REGISTER@%p = %p\n", reinterpret_cast<void*>(LCC_ARG1_REGISTER*8), ((core::T_O* *)(args)._Args->reg_save_area)[LCC_ARG1_REGISTER] );
-  printf("          ARG2_REGISTER@%p = %p\n", reinterpret_cast<void*>(LCC_ARG2_REGISTER*8), ((core::T_O* *)(args)._Args->reg_save_area)[LCC_ARG2_REGISTER] );
-  printf("          ARG3_REGISTER@%p = %p\n", reinterpret_cast<void*>(LCC_ARG3_REGISTER*8), ((core::T_O* *)(args)._Args->reg_save_area)[LCC_ARG3_REGISTER] );
-  const char* atpos = "";
-  if ((args)._Args[0].gp_offset==0x18) atpos = "atStartReg";
-  else if ((args)._Args[0].gp_offset==0x30) atpos = "pastEnd";
-  printf("           gp_offset = %p (%s)\n", reinterpret_cast<void*>((args)._Args[0].gp_offset),  atpos );
-  printf("           fp_offset = %p\n", reinterpret_cast<void*>((args)._Args[0].fp_offset) );
-  printf("       reg_save_area = %p (this points to the Register save area above ^^^)\n", reinterpret_cast<void*>((args)._Args[0].reg_save_area) );
+  dump_va_list((args)._Args);
   int iEnd = args.remaining_nargs();
   if (iEnd>CALL_ARGUMENTS_LIMIT) {
     iEnd = 0;
@@ -395,23 +408,20 @@ type as a template argument.  Call it like this...
 funcall_consume_valist_<core::Function_O>(tagged_func_ptr,valist_args)
 */
 template <typename Func_O_Type>
-inline gctools::return_type funcall_consume_valist_(gc::Tagged func_tagged,
-                                                    VaList_sp args) {
-  if (!gc::tagged_generalp(func_tagged)){
-    printf("%s:%d Bad function - it is missing a tag %p\n", __FILE__, __LINE__, (void*)func_tagged);
-  }
-  gc::smart_ptr<Func_O_Type> func((gc::Tagged)func_tagged);
+inline gctools::return_type funcall_consume_valist_(gc::Tagged func_tagged, VaList_sp args) {
+  ASSERT(gc::tagged_generalp(func_tagged));
+  gc::smart_ptr<Function_O> func((gc::Tagged)func_tagged);
   size_t nargs = args->remaining_nargs();
   switch (nargs) {
 #define APPLY_TO_VA_LIST_CASE 1
-    #include <clasp/core/generated/applyToFrame.h>
+#include <clasp/core/generated/applyToFrame.h>
 #undef APPLY_TO_VA_LIST_CASE
   default:
       printf("%s:%d Handle functions with arity %lu for funcall or reduce the number of args in this call\n", __FILE__, __LINE__, nargs);
-      SIMPLE_ERROR(BF("Illegal arity %lu for funcall") % nargs);
+      SIMPLE_ERROR_SPRINTF("Illegal arity %lu for funcall",  nargs);
       break;
   }
-  SIMPLE_ERROR(BF("Unsupported arity %lu must be less than %lu") % nargs % CALL_ARGUMENTS_LIMIT );
+  SIMPLE_ERROR_SPRINTF("Unsupported arity %lu must be less than %lu",  nargs, CALL_ARGUMENTS_LIMIT );
 }
 
 

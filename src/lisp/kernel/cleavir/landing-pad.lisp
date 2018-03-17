@@ -1,7 +1,7 @@
 (in-package :clasp-cleavir)
 
 (export 'create-unwind-landing-pad)
-(defun generate-landing-pad-for-unwind (function-info enter-instruction return-value tags abi maybe-unwind-landing-pad not-unwind-exception-bb &key is-cleanup)
+(defun generate-landing-pad-for-unwind (function-info enter-instruction return-value tags abi maybe-unwind-landing-pad landing-pad-for-unwind-rethrow not-unwind-exception-bb &key is-cleanup)
   (let ( ;;;(entry-cont-block (cmp:irc-basic-block-create "entry-cont"))
 	(landing-pad-block (cmp:irc-basic-block-create "landing-pad")))
 ;;;    (cmp:irc-br entry-cont-block)
@@ -21,9 +21,9 @@
         (cmp:irc-cond-br matches-type unwind-exception-bb not-unwind-exception-bb)
         (cmp:irc-begin-block unwind-exception-bb)
         (let (go-index)
-          (cmp:with-catch ((exn.slot function-info) exception-ptr)
+          (cmp:with-begin-end-catch ((exn.slot function-info) exception-ptr nil)
             ;; Check if frame is correct against tagbody and jump to jumpid
-            (cmp:with-landing-pad cmp::*current-function-terminate-landing-pad*
+            (cmp:with-landing-pad landing-pad-for-unwind-rethrow ;; cmp::*current-function-terminate-landing-pad*
               (cmp:irc-low-level-trace :cclasp-eh)
               (setq go-index
                     (%intrinsic-invoke-if-landing-pad-or-call
@@ -32,7 +32,7 @@
                            (cmp:irc-load (clasp-cleavir::translate-datum
                                           (clasp-cleavir-hir:frame-holder enter-instruction))))
                      "go-index"
-                     maybe-unwind-landing-pad))
+                     #+(or)maybe-unwind-landing-pad))
               (with-return-values (return-vals return-value abi)
                 (%intrinsic-call "cc_restoreMultipleValue0" (list return-value)))))
           (let* ((default-block (cmp:irc-basic-block-create "switch-default"))
@@ -115,12 +115,24 @@
       ;; if it isn't NIL then the rethrown exception will be caught, cleanup will be performed and then
       ;; it will be rethrown
       (when (unwind-target function-info)
-        (setf (landing-pad-for-unwind function-info)
-              (generate-landing-pad-for-unwind function-info (enter-instruction function-info)
-                                               return-value tags abi
-                                               (landing-pad-for-cleanup function-info)
-                                               cleanup-block
-                                               :is-cleanup t))))))
+        (let ((landing-pad-for-unwind-rethrow
+                (cmp::generate-rethrow-landing-pad cmp::*current-function*
+                                                   (if cleanup-block
+                                                       cleanup-block
+                                                       ehresume-block)
+                                                   nil ; '(cmp::typeid-core-unwind)
+                                                   (exn.slot function-info)
+                                                   (ehselector.slot function-info))))
+          (setf (landing-pad-for-unwind function-info)
+                (generate-landing-pad-for-unwind function-info (enter-instruction function-info)
+                                                 return-value tags abi
+                                                 (landing-pad-for-cleanup function-info)
+                                                 landing-pad-for-unwind-rethrow
+                                                 (if cleanup-block
+                                                     cleanup-block
+                                                     ehresume-block)
+                                                 :is-cleanup (not (null cleanup-block)))))))))
+                                                                                           
 
 (defun evaluate-cleanup-code (function-info)
   (and (on-exit-for-unwind function-info) (funcall (on-exit-for-unwind function-info) function-info))

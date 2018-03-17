@@ -1,6 +1,10 @@
+src/lisp/kernel/contrib/
+src/lisp/modules/asdf/
+src/mps/
 GPATH
 GRTAGS
 GTAGS
+.lock-waf_darwin_build
 .waf*/
 .svn/
 .git/

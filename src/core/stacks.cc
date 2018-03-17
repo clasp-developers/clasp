@@ -24,6 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
+#include <execinfo.h>
 #include <clasp/core/foundation.h>
 #include <clasp/core/stacks.h>
 #include <clasp/core/object.h>
@@ -41,8 +42,23 @@ THE SOFTWARE.
 #include <clasp/core/symbol.h>
 #include <clasp/core/wrappers.h>
 
+int global_debug_ihs = 0;
+
+extern "C" {
+extern void dump_backtrace_n_frames(size_t n);
+};
+
 namespace core {
 
+
+#ifdef DEBUG_IHS
+// Maintain a shadow stack of function pointers when DEBUG_IHS is turned on
+// This will slow the system down, but will provide function names of functions
+// on the stack when an IHS problem is 
+std::vector<void*>     global_debug_ihs_shadow_stack;
+#endif
+
+// TODO Get rid of this definition of global_debug_ihs
 int global_debug_ihs = 0;
 
 void validate_InvocationHistoryStack(int pushPop, const InvocationHistoryFrame* frame, const InvocationHistoryFrame* stackTop) {
@@ -51,8 +67,12 @@ void validate_InvocationHistoryStack(int pushPop, const InvocationHistoryFrame* 
   } else {
     printf(" IHS POP ");
   }
+  if (global_debug_ihs==1) {
+    printf("%s:%d      Dumping %d frames\n", __FILE__, __LINE__, 10);
+    dump_backtrace_n_frames(10);
+  }
   printf("  stack@%p  frame@%p frame->_Previous@%p\n", stackTop, frame, frame->_Previous);
-  if (global_debug_ihs==1) invocation_history_stack_dump(frame,"Validating stack");
+  if (global_debug_ihs==2) invocation_history_stack_dump(frame,"Validating stack",0);
   fflush(stdout);
 }
   
@@ -60,18 +80,39 @@ void validate_InvocationHistoryStack(int pushPop, const InvocationHistoryFrame* 
 
 void error_InvocationHistoryStack(const InvocationHistoryFrame* frame, const InvocationHistoryFrame* stackTop) {
 //  printf("%s:%d  Error in closure @%p\n", __FILE__, __LINE__, (void*)tagged_closure);
-  printf("       ------------- the InvocationHistoryStackTop pointer @%p\n", my_thread->_InvocationHistoryStackTop );
-  printf("          does not match the current frame being popped @%p\n", frame );
+  printf("\n%s:%d ------- the my_thread->_InvocationHistoryStackTop pointer @%p\n", __FILE__, __LINE__, my_thread->_InvocationHistoryStackTop );
+  printf("          does not match the current frame being popped @%p  closure@%p  func_ptr@%p\n", frame, frame->function().raw_(), gc::As<Function_sp>(frame->function())->entry.load() );
+  if (my_thread->_InvocationHistoryStackTop < frame ) {
+    printf("     It appears that a function did not clean up after itself\n");
+    printf("     and at least one frame was left on the stack when it should have been popped\n");
+    printf("     since my_thread->_InvocationHistoryStackTop < frame (stack grows down)\n");
+  } else {
+    printf("     my_thread->_InvocationHistoryStackTop > frame   !!!!\n");
+    printf("     This will happen if a function calls cc_pop_InvocationHistoryStack TWICE before it exits - that means bad code generation\n");
+  }
 #ifdef DEBUG_IHS
-  printf("                     the InvocationHistoryStackTopClosure @%p (the closure that may not have cleaned itself up)\n", my_thread->_InvocationHistoryStackClosure );
+  void* fn_ptr = NULL;
+  printf("   To debug this do the following:\n");
+  printf("     (1) Recompile EVERYTHING (including CL code) with DEBUG_IHS turned on - this is to ensure that old code in the image is recompiled\n");
+  printf("     (2) Run under the debugger and reproduce the error\n");
+  printf("     (3) Set a break point on one (TO BE DETERMINED) of the backtrace return addresses below\n");
+  backtrace_symbols_fd((void* const *)&my_thread->_IHSBacktrace[0],IHS_BACKTRACE_SIZE,1);
+  printf("              (Note: This may not be true if the function above is a commonly called one\n");
+  printf("                - in that event you need to find some other function to break on when the bad function is on the stack\n");
+  printf("     (4) Reproduce the error, breaking in the function above\n");
+  printf("     (5) Type:   expr global_debug_ihs = 1    (this turns on additional debugging)\n");
+  printf("     (6) continue running,  every push_InvocationHistoryFrame & pop_InvocationHistoryFrame call will cause some of the stack frames to be dumped\n");
+  printf("     (7) when the error is hit and the debugger is reentered - look at the last push/pop partial stack dump - the bad function should be the top one.\n");
+  printf("   Also, look at the list of function symbols below - from the bottom up are the functions whose frames should have been popped off the stack but were not\n");
+  printf("        One of them should contain the bad code\n");
+  backtrace_symbols_fd(&global_debug_ihs_shadow_stack[0],global_debug_ihs_shadow_stack.size(),1);
 #else
-  printf("         Consider turning on DEBUG_IHS to assist in debugging this problem - it will give you the last closure that may not have cleaned itself up\n");
+  printf("         Turn on DEBUG_IHS and rebuild everything to assist in debugging this problem - when you rerun you will get more advice on how to fix this\n");
 #endif
   printf("       - It is very likely that a cleanup form what would have invoked cc_pop_InvocationHistoryFrame was not evaluated\n");
   printf("         this is usually due to a CALL being used to call a function that throws an exception and unwinds the stack rather than an INVOKE\n");
   printf("         or a function was returned from or unwound through and cc_pop_InvocationHistoryFrame was not called\n");
-  invocation_history_stack_dump(frame,"Stack from frame\n");
-  invocation_history_stack_dump(my_thread->_InvocationHistoryStackTop,"Stack from my_thread->_InvocationHistoryStackTop");
+  invocation_history_stack_dump(frame,"Stack from frame\n",0);
   abort();
 };
 
@@ -123,6 +164,7 @@ Vector_sp ExceptionStack::backtrace() {
 
 
 void InvocationHistoryFrame::validate() const {
+#if 0
   T_sp res((gctools::Tagged)(((core::T_O**)(this->_args->reg_save_area))[LCC_CLOSURE_REGISTER]));
   if (res) {
     if (gc::IsA<Function_sp>(res)) {
@@ -134,12 +176,15 @@ void InvocationHistoryFrame::validate() const {
   }
   printf("%s:%d  There is a problem in the creation of an InvocationHistoryFrame - bad function: %p\n:", __FILE__, __LINE__, res.raw_());
   abort();
+#endif
 }
 
 T_sp InvocationHistoryFrame::function() const
   {
     Function_sp res((gctools::Tagged)(((core::T_O**)(this->_args->reg_save_area))[LCC_CLOSURE_REGISTER]));
-    if ( !res ) return _Nil<T_O>();
+    if ( !res ) {
+      return _Nil<T_O>();
+    }
     return res;
   }
 
@@ -151,7 +196,7 @@ void* InvocationHistoryFrame::register_save_area() const
 SimpleVector_sp InvocationHistoryFrame::arguments() const {
 #if 0
   VaList_sp orig_args = this->valist_sp();
-  VaList_S copy_args_s(*orig_args);
+  Vaslist copy_args_s(*orig_args);
   VaList_sp copy_args(&copy_args_s);
   LCC_RESET_VA_LIST_TO_START(copy_args_s);
   size_t numberOfArguments = LCC_VA_LIST_NUMBER_OF_ARGUMENTS(copy_args);
@@ -169,8 +214,12 @@ SimpleVector_sp InvocationHistoryFrame::arguments() const {
   size_t numberOfArguments = this->_remaining_nargs;
   va_list cargs;
   va_copy(cargs,this->_args);
-  SimpleVector_sp vargs = SimpleVector_O::make(numberOfArguments);
   T_O* objRaw;
+  if (numberOfArguments > CALL_ARGUMENTS_LIMIT) {
+    va_end(cargs);
+    return SimpleVector_O::make(0);
+  }
+  SimpleVector_sp vargs = SimpleVector_O::make(numberOfArguments);
   for (size_t i(0); i < numberOfArguments; ++i) {
     //objRaw = this->valist_sp().indexed_arg(i);
     objRaw = va_arg(cargs,core::T_O*);
@@ -243,23 +292,29 @@ void InvocationHistoryFrame::dump(int index) const {
   printf("%s\n", dump.c_str());
 }
 
-void invocation_history_stack_dump(const InvocationHistoryFrame* frame, const char* msg)
+void invocation_history_stack_dump(const InvocationHistoryFrame* frame, const char* msg, size_t frames)
 {
   printf("%s\n", msg);
   const InvocationHistoryFrame* cur = frame;
+  if (frames == 0) {
+    frames = 9999999999;
+  }
   size_t count=0;
   printf("   my_thread->_InvocationHistoryStackTop -> %p\n", my_thread->_InvocationHistoryStackTop);
   while (cur) {
+    if (frames==0) break;
+    --frames;
     T_sp tfn = cur->function();
     if (gc::IsA<Function_sp>(tfn)) {
       Function_sp fn = gc::As_unsafe<Function_sp>(tfn);
-      printf("    frame[%lu] @%p (previous %p)  function@%p: %s\n", count, cur, cur->_Previous, tfn.raw_(), _rep_(fn->name()).c_str());
+      printf("    frame[%4lu] @%p (previous %p)  this->_args@%p this->_args->reg_save_area@%p closure@%p  fptr@%p: %s\n", count, cur, cur->_Previous, &cur->_args, cur->_args->reg_save_area, tfn.raw_(), (void*)fn->entry.load(), _rep_(fn->functionName()).c_str());
     } else {
-      printf("    frame[%lu] @%p  function @%p : %s\n", count, cur, tfn.raw_(), _rep_(tfn).c_str());
+      printf("    frame[%4lu] @%p (previous %p)  this->_args@%p this->_args->reg_save_area@%p  BAD-CLOSURE-INFO closure@%p\n", count, cur, cur->_Previous, &cur->_args, cur->_args->reg_save_area, tfn.raw_() );
     }
     cur = cur->_Previous;
     ++count;
   }
+  printf("     DONE -----\n");
 }
 
 size_t invocation_history_stack_depth(const InvocationHistoryFrame* frame)
@@ -311,149 +366,28 @@ string backtrace_as_string() {
 };
 
 extern "C" {
-void dump_backtrace(core::InvocationHistoryFrame* frame) {
-  std::cout << "--------STACK TRACE--------" << std::endl;
-  const core::InvocationHistoryFrame* cur = frame;
-  int i = 0;
-  while (cur) {
-    if (cur == my_thread->_InvocationHistoryStackTop) {
-      std::cout << "-->";
-    } else {
-      std::cout << "   ";
-    }
-    std::cout << "frame@" << (void*)cur << ": ";
-    std::cout << cur->asString(i) << std::endl;
-    cur = cur->_Previous;
-    ++i;
-  }
+void dump_backtrace() {
+  const core::InvocationHistoryFrame* frame = my_thread->_InvocationHistoryStackTop;
+  invocation_history_stack_dump(frame,"STACK TRACE",0);
+}
+void dump_backtrace_n_frames(size_t n) {
+  const core::InvocationHistoryFrame* frame = my_thread->_InvocationHistoryStackTop;
+  invocation_history_stack_dump(frame,"STACK TRACE",n);
 }
 };
 
 namespace core {
 
-size_t DynamicBindingStack::new_binding_index()
-{
-#ifdef CLASP_THREADS
-  RAIILock<mp::GlobalMutex> mutex(mp::global_BindingIndexPoolMutex);
-  if ( mp::global_BindingIndexPool.size() != 0 ) {
-    size_t index = mp::global_BindingIndexPool.back();
-    mp::global_BindingIndexPool.pop_back();
-    return index;
-  }
-  return mp::global_LastBindingIndex.fetch_add(1);
-#else
-  return 0;
-#endif
-};
-
-void DynamicBindingStack::release_binding_index(size_t index)
-{
-#ifdef CLASP_THREADS
-  RAIILock<mp::GlobalMutex> mutex(mp::global_BindingIndexPoolMutex);
-  mp::global_BindingIndexPool.push_back(index);
-#endif
-};
-
-T_sp* DynamicBindingStack::reference_raw_(Symbol_O* var) const{
-#ifdef CLASP_THREADS
-  if ( var->_Binding == NO_THREAD_LOCAL_BINDINGS ) {
-    return &var->_GlobalValue;
-  }
-  uintptr_clasp_t index = var->_Binding;
-  // If it has a _Binding value but our table is not big enough, then expand the table.
-  unlikely_if (index >= this->_ThreadLocalBindings.size()) {
-    this->_ThreadLocalBindings.resize(index+1,_NoThreadLocalBinding<T_O>());
-  }
-  if (gctools::tagged_no_thread_local_bindingp(this->_ThreadLocalBindings[index].raw_())) {
-    return &var->_GlobalValue;
-  }
-  return &this->_ThreadLocalBindings[index];
-#else
-  return &var->_GlobalValue;
-#endif
-}
-
-SYMBOL_EXPORT_SC_(CorePkg,STARwatchDynamicBindingStackSTAR);
-void DynamicBindingStack::push_with_value_coming(Symbol_sp var) {
-  T_sp* current_value_ptr = this->reference(var);
-#ifdef CLASP_THREADS
-  if ( var->_Binding == NO_THREAD_LOCAL_BINDINGS )
-    var->_Binding = this->new_binding_index();
-  uintptr_clasp_t index = var->_Binding;
-  // If it has a _Binding value but our table is not big enough, then expand the table.
-  unlikely_if (index >= this->_ThreadLocalBindings.size()) {
-    this->_ThreadLocalBindings.resize(index+1,_NoThreadLocalBinding<T_O>());
-  }
-#ifdef DEBUG_DYNAMIC_BINDING_STACK // debugging
-  if (  _sym_STARwatchDynamicBindingStackSTAR &&
-       _sym_STARwatchDynamicBindingStackSTAR->boundP() &&
-       _sym_STARwatchDynamicBindingStackSTAR->symbolValue().notnilp() ) {
-    printf("%s:%d  DynamicBindingStack::push_with_value_coming[%zu] of %s\n", __FILE__, __LINE__, this->_Bindings.size(), var->formattedName(true).c_str());
-  }
-#endif
-  this->_Bindings.emplace_back(var,this->_ThreadLocalBindings[index]);
-  this->_ThreadLocalBindings[index] = *current_value_ptr;
-#else
-  this->_Bindings.emplace_back(var,var->symbolValueUnsafe());
+CL_DEFUN void core__dump_debug_ihs_shadow_stack() {
+#ifdef DEBUG_IHS
+  printf("global_debug_ihs_shadow_stack\n");
+  backtrace_symbols_fd(&global_debug_ihs_shadow_stack[0],global_debug_ihs_shadow_stack.size(),1);
+  printf("my_thread->_IHSBacktrace\n");
+  backtrace_symbols_fd((void* const *)&my_thread->_IHSBacktrace[0],IHS_BACKTRACE_SIZE,1);
 #endif
 }
 
 
-void DynamicBindingStack::push_binding(Symbol_sp var, T_sp value) {
-#ifdef CLASP_THREADS
-  if ( var->_Binding == NO_THREAD_LOCAL_BINDINGS )
-    var->_Binding = this->new_binding_index();
-  uintptr_clasp_t index = var->_Binding;
-  // If it has a _Binding value but our table is not big enough, then expand the table.
-  unlikely_if (index >= this->_ThreadLocalBindings.size()) {
-    this->_ThreadLocalBindings.resize(index+1,_NoThreadLocalBinding<T_O>());
-  }
-#ifdef DEBUG_DYNAMIC_BINDING_STACK // debugging
-  if (  _sym_STARwatchDynamicBindingStackSTAR &&
-       _sym_STARwatchDynamicBindingStackSTAR->boundP() &&
-       _sym_STARwatchDynamicBindingStackSTAR->symbolValue().notnilp() ) {
-    printf("%s:%d  DynamicBindingStack::push_binding[%zu] of %s\n", __FILE__, __LINE__, this->_Bindings.size(), var->formattedName(true).c_str());
-  }
-#endif
-  this->_Bindings.emplace_back(var,this->_ThreadLocalBindings[index]);
-  this->_ThreadLocalBindings[index] = value;
-#else
-  this->_Bindings.emplace_back(var,var->symbolValueUnsafe());
-  this->_GlobalValue = value;
-#endif
-}
-
-
-
-void DynamicBindingStack::pop_binding() {
-  DynamicBinding &bind = this->_Bindings.back();
-#ifdef DEBUG_DYNAMIC_BINDING_STACK // debugging
-  if (  _sym_STARwatchDynamicBindingStackSTAR &&
-       _sym_STARwatchDynamicBindingStackSTAR->boundP() &&
-       _sym_STARwatchDynamicBindingStackSTAR->symbolValue().notnilp() ) {
-#if 0
-    List_sp assoc = cl__assoc(bind._Var,_sym_STARwatchDynamicBindingStackSTAR->symbolValue(),_Nil<T_O>());
-    if ( assoc.notnilp() ) {
-      T_sp funcDesig = oCdr(assoc);
-      if ( funcDesig.notnilp() ) {
-        eval::funcall(funcDesig,bind._Var,_Nil<T_O>());
-      } else {
-        printf("%s:%d  *watch-dynamic-binding-stack* caught pop[%zu] of %s  overwriting value = %s\n", __FILE__, __LINE__, this->_Bindings.size()-1, _rep_(bind._Var).c_str(), _rep_(bind._Var->symbolValue()).c_str() );
-      }
-    }
-#endif
-    printf("%s:%d  DynamicBindingStack::pop_binding[%lu]  %s\n", __FILE__, __LINE__, this->_Bindings.size(),bind._Var->formattedName(true).c_str());
-  }
-#endif
-#ifdef CLASP_THREADS
-  ASSERT(this->_ThreadLocalBindings.size()>bind._Var->_Binding); 
-  this->_ThreadLocalBindings[bind._Var->_Binding] = bind._Val;
-  this->_Bindings.pop_back();
-#else
-  bind._Var->setf_symbolValue(bind._Val);
-  this->_Bindings.pop_back();
-#endif
-}
 
 
 }

@@ -154,7 +154,6 @@ struct dynamic_cast_ {
   }
 };
 
-#if 0 // moved to core/foundation.h
 
 // Thread safe class_id allocation.
         class_id allocate_class_id(type_id const& cls);
@@ -172,7 +171,6 @@ struct dynamic_cast_ {
         struct registered_class<T const>
             : registered_class<T>
         {};
-#endif
 }
 } // namespace clbind::detail
 

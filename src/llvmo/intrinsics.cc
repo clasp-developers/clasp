@@ -47,9 +47,10 @@ extern "C" {
 #include <clasp/core/designators.h>
 #include <clasp/core/compPackage.h>
 #include <clasp/core/package.h>
-#include <clasp/core/accessor.h>
 #include <clasp/core/fli.h>
 #include <clasp/core/instance.h>
+#include <clasp/core/funcallableInstance.h>
+#include <clasp/core/wrappedPointer.h>
 #include <clasp/core/hashTable.h>
 #include <clasp/core/evaluator.h>
 #include <clasp/core/genericFunction.h>
@@ -70,6 +71,7 @@ using namespace core;
 
 #pragma GCC visibility push(default)
 
+
 namespace core {
 extern const char* debug_InvocationHistoryFrame_name;
 };
@@ -77,161 +79,114 @@ extern "C" {
 
 extern void dump_backtrace(core::InvocationHistoryFrame* frame);
 
-ALWAYS_INLINE core::T_sp *symbolValueReference(core::T_sp *symbolP) {
-  core::Symbol_sp sym((gctools::Tagged)ENSURE_VALID_OBJECT(symbolP->raw_()));
-  return sym->valueReference();
-}
-
-ALWAYS_INLINE core::T_sp *lexicalValueReference(int depth, int index, core::ActivationFrame_sp *frameP) {
-  core::ActivationFrame_sp af = gctools::reinterpret_cast_smart_ptr<core::ActivationFrame_O>(*frameP);
-  return const_cast<core::T_sp *>(&core::value_frame_lookup_reference(af, depth, index));
-}
-
-ALWAYS_INLINE void sp_lexicalValueRead(core::T_sp *resultP, int depth, int index, core::ActivationFrame_sp *renvP) {
-  (*resultP) = core::value_frame_lookup_reference(*renvP,depth,index);
-}
-ALWAYS_INLINE void mv_lexicalValueRead(core::T_mv *resultP, int depth, int index, core::ActivationFrame_sp *renvP) {
-  (*resultP) = core::value_frame_lookup_reference(*renvP,depth,index);
-}
 
 
-ALWAYS_INLINE void makeFunctionFrame(core::ActivationFrame_sp *resultP, int numargs, core::ActivationFrame_sp *parentP)
+ALWAYS_INLINE core::T_O* makeFunctionFrame( int numargs, core::T_O *parentP)
 // was ActivationFrame_sp
 {
-  ASSERT(resultP != NULL);
-  ASSERT(parentP != NULL);
-  (*resultP) = core::FunctionFrame_sp(core::FunctionFrame_O::create(numargs, (*parentP)));
-  ASSERTNOTNULL(*resultP);
+  core::T_sp parent((gctools::Tagged)parentP);
+  core::T_sp functionFrame = core::FunctionFrame_O::create(numargs, parent);
+  return functionFrame.raw_();
 }
 
-ALWAYS_INLINE core::T_sp *functionFrameReference(core::ActivationFrame_sp *frameP, int idx) {
-  ASSERT(frameP != NULL);
-  ASSERT(frameP->objectp());
-  core::FunctionFrame_sp frame = gctools::reinterpret_cast_smart_ptr<core::FunctionFrame_O>((*frameP));
+ALWAYS_INLINE core::T_O** functionFrameReference(core::T_O* frameP, int idx) {
+  core::FunctionFrame_sp frame((gctools::Tagged)frameP);
 #ifdef DEBUG_ASSERT
   if (idx < 0 || idx >= frame->length()) {
     intrinsic_error(llvmo::invalidIndexForFunctionFrame, clasp_make_fixnum(idx), clasp_make_fixnum(frame->length()));
   }
 #endif
-  core::T_sp *pos_gc_safe = const_cast<core::T_sp *>(&frame->entryReference(idx));
-  return pos_gc_safe;
+  core::T_sp& cell = frame->entryReference(idx);
+  return &cell.rawRef_();
 }
 
 
 
 
 
-ALWAYS_INLINE void sp_lexicalFunctionRead(core::T_sp *resultP, int depth, int index, core::ActivationFrame_sp *renvP) {
+#if 0
+ALWAYS_INLINE void sp_lexicalFunctionRead(core::T_sp *resultP, int depth, int index, core::ActivationFrame_sp *renvP)
+{NO_UNWIND_BEGIN();
   (*resultP) = core::function_frame_lookup(*renvP,depth,index);
+  NO_UNWIND_END();
 }
 
-ALWAYS_INLINE void mv_lexicalFunctionRead(core::T_mv *resultP, int depth, int index, core::ActivationFrame_sp *renvP) {
+ALWAYS_INLINE void mv_lexicalFunctionRead(core::T_mv *resultP, int depth, int index, core::ActivationFrame_sp *renvP)
+{NO_UNWIND_BEGIN();
   (*resultP) = core::function_frame_lookup(*renvP,depth,index);
+  NO_UNWIND_END();
 }
+#endif
 
 
-ALWAYS_INLINE void newTsp(core::T_sp *sharedP) {
+#if 0
+ALWAYS_INLINE void newTsp(core::T_sp *sharedP)
+{NO_UNWIND_BEGIN();
   ASSERT(sharedP != NULL);
   new (sharedP) core::T_sp();
+  NO_UNWIND_END();
 }
+#endif
 
-ALWAYS_INLINE void newTmv(core::T_mv *sharedP) {
-  new (sharedP) core::T_mv();
-}
 
-ALWAYS_INLINE extern int compareTspTptr(core::T_sp *xP, core::T_O *yP) {
+ALWAYS_INLINE extern int compareTspTptr(core::T_sp *xP, core::T_O *yP)
+{NO_UNWIND_BEGIN();
   return ((*xP).raw_() == (yP)) ? 1 : 0;
+  NO_UNWIND_END();
 }
 
-ALWAYS_INLINE extern void sp_copyTsp(core::T_sp *destP, core::T_sp *sourceP) {
-  //	ASSERT(sourceP!=NULL);
-  //	ASSERT(destP!=NULL);
-  *destP = *sourceP;
+
+
+ALWAYS_INLINE core::T_O** symbolValueReference(core::T_O *symbolP)
+{
+  core::Symbol_sp sym((gctools::Tagged)symbolP);
+  return &sym->valueReference(&sym->_GlobalValue)->rawRef_();
 }
 
-ALWAYS_INLINE extern void mv_copyTsp(core::T_mv *destP, core::T_sp *sourceP) {
-  ASSERT(sourceP != NULL);
-  ASSERT(destP != NULL);
-  *destP = Values(*sourceP);
-}
-
-ALWAYS_INLINE extern void sp_copyTspTptr(core::T_sp *destP, core::T_O *source) {
-  *destP = gc::smart_ptr<core::T_O>((gc::Tagged)source);
-}
-
-ALWAYS_INLINE extern void mv_copyTspTptr(core::T_mv *destP, core::T_O *source) {
-  ASSERT(destP != NULL);
-  *destP = Values(gc::smart_ptr<core::T_O>((gc::Tagged)source));
-}
-
-/*! This copies a T_mv from source to dest */
-ALWAYS_INLINE void mv_copyTmvOrSlice(core::T_mv *destP, core::T_mv *sourceP) {
-  //	printf("intrinsics.cc mv_copyTmvOrSlice copying %d values\n", (*sourceP).number_of_values());
-  (*destP) = (*sourceP);
-}
-
-/*! This slices a T_mv in source down to a T_sp in dest */
-ALWAYS_INLINE void sp_copyTmvOrSlice(core::T_sp *destP, core::T_mv *sourceP) {
-  if ((*sourceP).number_of_values() == 0) {
-    (*destP) = _Nil<T_O>();
-  } else
-    (*destP) = (*sourceP);
-}
-
-ALWAYS_INLINE void sp_makeNil(core::T_sp *result) {
-  (*result) = _Nil<core::T_O>();
-}
-
-ALWAYS_INLINE void mv_makeNil(core::T_mv *result) {
-  (*result) = Values(_Nil<core::T_O>());
-}
-
-ALWAYS_INLINE void makeT(core::T_sp *result) {
-  (*result) = _lisp->_true();
-}
-
-ALWAYS_INLINE void makeCons(core::T_sp *resultConsP, core::T_sp *carP, core::T_sp *cdrP) {
-  (*resultConsP) = core::Cons_O::create(*carP, *cdrP);
-}
-
-ALWAYS_INLINE void sp_symbolValueRead(core::T_sp *resultP, const core::T_sp *tsymP) {
-  Symbol_sp sym((gctools::Tagged)(tsymP->raw_()));
+ALWAYS_INLINE core::T_O* symbolValueRead(const core::T_O* tsymP) {
+  Symbol_sp sym((gctools::Tagged)(tsymP));
   T_sp sv = sym->symbolValueUnsafe();
   if (sv.unboundp()) sym->symbolUnboundError();
-  *resultP = sv;
-}
-ALWAYS_INLINE void mv_symbolValueRead(core::T_mv *resultP, const core::Symbol_sp *symP) {
-  T_sp sv = (*symP)->symbolValueUnsafe();
-  if (sv.unboundp()) (*symP)->symbolUnboundError();
-  *resultP = sv;
+  return sv.raw_();
 }
 
+#if 0
 ALWAYS_INLINE T_O *va_symbolFunction(core::T_sp *symP) {
+  NO_UNWIND_BEGIN();
   core::Symbol_sp sym((gctools::Tagged)symP->raw_());
 //  printf("%s:%d:%s sym: %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(sym).c_str());
   if (!sym->fboundp()) intrinsic_error(llvmo::noFunctionBoundToSymbol, sym);
   core::Function_sp func((gc::Tagged)(sym)->_Function.theObject);
 //  printf("%s:%d:%s -> %p\n", __FILE__, __LINE__, __FUNCTION__, func.raw_());
   return func.raw_();
+  NO_UNWIND_END();
 }
+#endif
 };
 
 extern "C" {
 
-ALWAYS_INLINE T_O** cc_t_reference() {
+ALWAYS_INLINE T_O** cc_t_reference()
+{NO_UNWIND_BEGIN();
   return &_lisp->_true().rawRef_();
+  NO_UNWIND_END();
 }
 
-ALWAYS_INLINE T_O** cc_nil_reference() {
+ALWAYS_INLINE T_O** cc_nil_reference()
+{NO_UNWIND_BEGIN();
   return &_Nil<core::T_O>().rawRef_();
+  NO_UNWIND_END();
 }
 
-ALWAYS_INLINE core::T_O* cc_ensure_valid_object(core::T_O* tagged_object) {
+ALWAYS_INLINE core::T_O* cc_ensure_valid_object(core::T_O* tagged_object)
+{NO_UNWIND_BEGIN();
   return ensure_valid_object(tagged_object);
+  NO_UNWIND_END();
 }
 
 
-ALWAYS_INLINE T_O *cc_precalcSymbol(core::LoadTimeValues_O **tarray, size_t idx) {
+ALWAYS_INLINE T_O *cc_precalcSymbol(core::LoadTimeValues_O **tarray, size_t idx)
+{NO_UNWIND_BEGIN();
   core::LoadTimeValues_O *tagged_ltvP = *tarray;
   core::LoadTimeValues_O *array = gctools::untag_general<core::LoadTimeValues_O *>(tagged_ltvP);
 #ifdef DEBUG_CC
@@ -240,10 +195,12 @@ ALWAYS_INLINE T_O *cc_precalcSymbol(core::LoadTimeValues_O **tarray, size_t idx)
   T_O *res = (*array)[idx].raw_();
   ASSERT(res != NULL);
   return res;
+  NO_UNWIND_END();
 }
 
 
-ALWAYS_INLINE T_O *cc_precalcValue(core::LoadTimeValues_O **tarray, size_t idx) {
+ALWAYS_INLINE T_O *cc_precalcValue(core::LoadTimeValues_O **tarray, size_t idx)
+{NO_UNWIND_BEGIN();
   core::LoadTimeValues_O *tagged_ltvP = *tarray;
   core::LoadTimeValues_O *array = gctools::untag_general<core::LoadTimeValues_O *>(tagged_ltvP);
 #ifdef DEBUG_CC
@@ -251,19 +208,24 @@ ALWAYS_INLINE T_O *cc_precalcValue(core::LoadTimeValues_O **tarray, size_t idx) 
 #endif
   T_O *res = (*array)[idx].raw_();
   return res;
+  NO_UNWIND_END();
 }
 
-ALWAYS_INLINE void cc_copy_va_list(size_t nargs, T_O **mvPtr, VaList_S *va_args) {
-  VaList_S *vl = reinterpret_cast<VaList_S *>(gc::untag_valist((void *)va_args));
+ALWAYS_INLINE void cc_copy_va_list(size_t nargs, T_O **mvPtr, Vaslist *va_args)
+{NO_UNWIND_BEGIN();
+  Vaslist *vl = reinterpret_cast<Vaslist *>(gc::untag_vaslist((void *)va_args));
   for (int i = LCC_FIXED_ARGS; i < nargs; ++i) {
     mvPtr[i] = va_arg(vl->_Args, core::T_O *);
   }
   va_end(vl->_Args);
+  NO_UNWIND_END();
 }
 
-ALWAYS_INLINE T_O *cc_unsafe_symbol_value(core::T_O *sym) {
+ALWAYS_INLINE T_O *cc_unsafe_symbol_value(core::T_O *sym)
+{NO_UNWIND_BEGIN();
   core::Symbol_O *symP = reinterpret_cast<core::Symbol_O *>(gctools::untag_general<core::T_O *>(sym));
   return symP->symbolValueRef().raw_();
+  NO_UNWIND_END();
 }
 
 ALWAYS_INLINE T_O *cc_safe_symbol_value(core::T_O *sym) {
@@ -275,9 +237,11 @@ ALWAYS_INLINE T_O *cc_safe_symbol_value(core::T_O *sym) {
   return sv;
 }
 
-ALWAYS_INLINE T_O *cc_unsafe_fdefinition(core::T_O *sym) {
+ALWAYS_INLINE T_O *cc_unsafe_fdefinition(core::T_O *sym)
+{NO_UNWIND_BEGIN();
   core::Symbol_O *symP = reinterpret_cast<core::Symbol_O *>(gctools::untag_general<core::T_O *>(sym));
   return symP->_Function.raw_();
+  NO_UNWIND_END();
 }
 
 ALWAYS_INLINE T_O *cc_safe_fdefinition(core::T_O *sym) {
@@ -289,9 +253,11 @@ ALWAYS_INLINE T_O *cc_safe_fdefinition(core::T_O *sym) {
   return symP->_Function.raw_();
 }
 
-ALWAYS_INLINE T_O *cc_unsafe_setfdefinition(core::T_O *sym) {
+ALWAYS_INLINE T_O *cc_unsafe_setfdefinition(core::T_O *sym)
+{NO_UNWIND_BEGIN();
   core::Symbol_O *symP = reinterpret_cast<core::Symbol_O *>(gctools::untag_general<core::T_O *>(sym));
   return symP->_SetfFunction.raw_();
+  NO_UNWIND_END();
 }
 
 ALWAYS_INLINE T_O *cc_safe_setfdefinition(core::T_O *sym) {
@@ -308,19 +274,18 @@ ALWAYS_INLINE gc::return_type cc_call(LCC_ARGS_CC_CALL_ELLIPSIS) {
   core::Closure_O *tagged_closure = reinterpret_cast<core::Closure_O *>(lcc_closure);
   core::Closure_O* closure = gc::untag_general<core::Closure_O *>(tagged_closure);
 #ifdef ENABLE_BACKTRACE_ARGS
-  VaList_S lcc_arglist_s;
+  Vaslist lcc_arglist_s;
   va_start(lcc_arglist_s._Args, LCC_VA_START_ARG);
   LCC_SPILL_REGISTER_ARGUMENTS_TO_VA_LIST(lcc_arglist_s);
 #endif
   core::T_O *lcc_arglist = lcc_arglist_s.asTaggedPtr();
-  return closure->entry(LCC_PASS_ARGS);
+  return closure->entry.load()(LCC_PASS_ARGS);
 }
 
 ALWAYS_INLINE gc::return_type cc_call_callback(LCC_ARGS_CC_CALL_ELLIPSIS) {
   //	core::Function_O* func = gctools::DynamicCast<core::NamedFunction_O*,core::T_O*>::castOrNULL(tfunc);
-  IMPLEMENT_ME();
   auto closure = reinterpret_cast<CompiledClosure_fptr_type>(lcc_closure);
-  VaList_S lcc_arglist_s;
+  Vaslist lcc_arglist_s;
   va_start(lcc_arglist_s._Args, LCC_VA_START_ARG);
 #ifdef ENABLE_BACKTRACE_ARGS
   LCC_SPILL_REGISTER_ARGUMENTS_TO_VA_LIST(lcc_arglist_s);
@@ -330,51 +295,28 @@ ALWAYS_INLINE gc::return_type cc_call_callback(LCC_ARGS_CC_CALL_ELLIPSIS) {
   return closure(LCC_PASS_ARGS);
 }
 
-ALWAYS_INLINE void makeValueFrame(core::T_sp *resultActivationFrameP, size_t numargs)
-{
-  core::ValueFrame_sp valueFrame(core::ValueFrame_O::create(numargs, _Nil<core::T_O>()));
-//  valueFrame->setEnvironmentId(id);   // I don't use id anymore
-  (*resultActivationFrameP) = valueFrame;
+
+ALWAYS_INLINE size_t cc_allowOtherKeywords(size_t saw_aok, core::T_O *kw_arg)
+{NO_UNWIND_BEGIN();
+  if (saw_aok) return saw_aok;
+  bool aokTrue = !(gctools::tagged_nilp(kw_arg));
+  return aokTrue ? 2 : 1;
+  NO_UNWIND_END();
 }
 
-ALWAYS_INLINE void makeTagbodyFrame(core::ActivationFrame_sp *resultP)
-{
-  core::TagbodyFrame_sp tagbodyFrame(core::TagbodyFrame_O::create(_Nil<core::T_O>()));
-  (*resultP) = tagbodyFrame;
+size_t cc_matchKeywordOnce(core::T_O *xP, core::T_O *yP, core::T_O *sawKeyAlreadyP)
+{NO_UNWIND_BEGIN();
+  if (xP != yP)
+    return 0;
+  if (!gctools::tagged_nilp(sawKeyAlreadyP))
+    return 2;
+  return 1;
+  NO_UNWIND_END();
 }
 
-ALWAYS_INLINE core::T_sp *valueFrameReference(core::ActivationFrame_sp *frameP, int idx) {
-  ASSERT(frameP != NULL);
-  ASSERT((*frameP));
-  ASSERTF(idx >= 0 && idx < ((*frameP)->length()), BF("Illegal value of idx[%d] must be in range [0<=idx<%d]") % idx % (*frameP)->length());
-  core::ValueFrame_sp frame = gctools::As_unsafe<core::ValueFrame_sp>(*frameP);
-  core::T_sp *pos_gc_safe = const_cast<core::T_sp *>(&frame->entryReference(idx));
-  return pos_gc_safe;
-}
 
-#if 0
-ALWAYS_INLINE core::T_O *cc_va_arg(VaList_S *valist) {
-  VaList_S *vl = reinterpret_cast<VaList_S *>(gc::untag_valist((void *)valist));
-  return va_arg(vl->_Args, core::T_O *);
-}
-#endif
-#if 0
-ALWAYS_INLINE T_O* cc_va_arg(T_O* list) {
-  VaList_sp va_list_sp((gctools::Tagged)list);
-  LIKELY_if (va_list_sp->remaining_nargs()>0) {
-    return va_list_sp->next_arg_raw();
-  }
-  return _Nil<T_O>().raw_();
-}
-#endif
-
-ALWAYS_INLINE size_t cc_va_list_length(T_O* list) {
-  IMPLEMENT_MEF(BF("This should use the untagged va_list structure"));
-  VaList_sp va_list_sp((gctools::Tagged)list);
-  return va_list_sp->remaining_nargs();
-}
-
-ALWAYS_INLINE core::T_O *cc_gatherVaRestArguments(va_list vargs, std::size_t* nargs, VaList_S* untagged_vargs_rest) {
+ALWAYS_INLINE core::T_O *cc_gatherVaRestArguments(va_list vargs, std::size_t* nargs, Vaslist* untagged_vargs_rest)
+{NO_UNWIND_BEGIN();
   va_copy(untagged_vargs_rest->_Args,vargs);
 #ifdef DEBUG_ENSURE_VALID_OBJECT
   // Validate the arguments in the va_list
@@ -389,17 +331,21 @@ ALWAYS_INLINE core::T_O *cc_gatherVaRestArguments(va_list vargs, std::size_t* na
   untagged_vargs_rest->_remaining_nargs = *nargs;
   T_O* result = untagged_vargs_rest->asTaggedPtr();
   return result;
+  NO_UNWIND_END();
 }
 
-ALWAYS_INLINE core::T_O *cc_makeCell() {
+ALWAYS_INLINE core::T_O *cc_makeCell()
+{NO_UNWIND_BEGIN();
   core::Cons_sp res = core::Cons_O::create(_Nil<core::T_O>(),_Nil<core::T_O>());
 #ifdef DEBUG_CC
   printf("%s:%d makeCell res.px[%p]\n", __FILE__, __LINE__, res.px);
 #endif
   return res.raw_();
+  NO_UNWIND_END();
 }
 
-ALWAYS_INLINE void cc_writeCell(core::T_O *cell, core::T_O* val) {
+ALWAYS_INLINE void cc_writeCell(core::T_O *cell, core::T_O* val)
+{NO_UNWIND_BEGIN();
   //	core::Cons_sp c = gctools::smart_ptr<core::Cons_O>(reinterpret_cast<core::Cons_O*>(cell));
   if (!gc::tagged_consp(cell)) {
     core::T_sp arg((gc::Tagged)cell);
@@ -411,48 +357,15 @@ ALWAYS_INLINE void cc_writeCell(core::T_O *cell, core::T_O* val) {
   printf("%s:%d writeCell cell[%p]  val[%p]\n", __FILE__, __LINE__, cell, val);
 #endif
   cp->setCar(gctools::smart_ptr<core::T_O>((gc::Tagged)ENSURE_VALID_OBJECT(val)));
-}
-
-ALWAYS_INLINE core::T_O *cc_readCell(core::T_O *cell) {
-  core::Cons_O* cp = reinterpret_cast<core::Cons_O*>(gctools::untag_cons(cell));
-  core::T_sp val = cp->ocar();
-#ifdef DEBUG_ENSURE_VALID_OBJECT
-  ENSURE_VALID_OBJECT(val.raw_());
-#endif
-#ifdef DEBUG_CC
-  printf("%s:%d readCell cell[%p] --> value[%p]\n", __FILE__, __LINE__, cell, val.px);
-#endif
-  return val.raw_();
+  NO_UNWIND_END();
 }
 
 
-core::T_O *cc_fetch(core::T_O *tagged_closure, std::size_t idx) {
-  //	core::ValueFrame_sp a = gctools::smart_ptr<core::ValueFrame_O>(reinterpret_cast<core::ValueFrame_O*>(array));
-  gctools::smart_ptr<core::ClosureWithSlots_O> c = gctools::smart_ptr<core::ClosureWithSlots_O>((gc::Tagged)tagged_closure);
-#ifdef DEBUG_CC
-  printf("%s:%d fetch array@%p idx[%zu] -->cell[%p]\n", __FILE__, __LINE__, array, idx, (*c)[idx].raw_());
-#endif
-  ASSERT(c.notnilp());
-  return (*c)[idx].raw_();
-}
 
-
-ALWAYS_INLINE void cc_rewind_va_list(core::T_O* tagged_closure, va_list va_args, size_t* nargsP, void** register_save_areaP) {
-#if 0
-  if (core::debug_InvocationHistoryFrame==3) {
-    printf("%s:%d cc_rewind_va_list     va_args=%p     nargsP = %p      register_save_areaP = %p\n", __FILE__, __LINE__, va_args, nargsP, register_save_areaP );
-  }
-#endif
-  LCC_REWIND_VA_LIST(va_args,register_save_areaP);
-  *nargsP = (uintptr_t)register_save_areaP[1];
-}
-
-ALWAYS_INLINE void cc_push_InvocationHistoryFrame(core::T_O* tagged_closure, InvocationHistoryFrame* frame, va_list va_args, size_t* nargsP) {
-  new (frame) InvocationHistoryFrame(va_args, *nargsP);
+ALWAYS_INLINE void cc_push_InvocationHistoryFrame(core::T_O* tagged_closure, InvocationHistoryFrame* frame, va_list va_args, size_t nargs)
+{NO_UNWIND_BEGIN();
+  new (frame) InvocationHistoryFrame(va_args, nargs);
   core::push_InvocationHistoryStack(frame);
-#ifdef DEBUG_IHS
-  my_thread->_InvocationHistoryStackClosure = tagged_closure;
-#endif
 #if 0
   if (core::debug_InvocationHistoryFrame) {
     Closure_sp closure((gc::Tagged)tagged_closure);
@@ -478,24 +391,48 @@ ALWAYS_INLINE void cc_push_InvocationHistoryFrame(core::T_O* tagged_closure, Inv
     abort();
   }
 #endif
+  NO_UNWIND_END();
 }
 
-
-ALWAYS_INLINE void cc_pop_InvocationHistoryFrame(core::T_O* tagged_closure, InvocationHistoryFrame* frame) {
+ALWAYS_INLINE void cc_pop_InvocationHistoryFrame(core::T_O* tagged_closure, InvocationHistoryFrame* frame)
+{NO_UNWIND_BEGIN();
   core::pop_InvocationHistoryStack(frame);
+  NO_UNWIND_END();
 }
 
-ALWAYS_INLINE char *cc_getPointer(core::T_O *pointer_object) {
+ALWAYS_INLINE char *cc_getPointer(core::T_O *pointer_object)
+{NO_UNWIND_BEGIN();
   core::Pointer_O* po = reinterpret_cast<core::Pointer_O*>(gctools::untag_general(pointer_object));
   char* ptr = reinterpret_cast<char*>(po->ptr());
   return ptr;
+  NO_UNWIND_END();
 }
 
 };
 
 extern "C" {
+#if 0
+ALWAYS_INLINE core::T_O* makeValueFrameSetParentFromClosure(size_t numargs, core::T_O* closureRaw)
+{NO_UNWIND_BEGIN();
+//  valueFrame->setEnvironmentId(id);   // I don't use id anymore
+  core::T_O* parentP;
+  if (closureRaw != NULL ) {
+    Closure_sp closure = Closure_sp((gctools::Tagged)closureRaw);
+    T_sp activationFrame = closure->closedEnvironment();
+//    printf("%s:%d:%s     activationFrame = %p\n", __FILE__, __LINE__, __FUNCTION__, activationFrame.raw_());
+    parentP =  activationFrame.raw_();
+  } else {
+    parentP = _Nil<core::T_O>().raw_();
+  }
+  core::ValueFrame_sp valueFrame(core::ValueFrame_O::create(numargs, _Nil<core::T_O>()));
+  valueFrame->setParentFrame(parentP);
+  return valueFrame.raw_();
+  NO_UNWIND_END();
+}
+#endif
 
-ALWAYS_INLINE void setParentOfActivationFrameFromClosure(core::T_sp *resultP, core::T_O *closureRaw) {
+ALWAYS_INLINE void setParentOfActivationFrameFromClosure(core::T_O *resultP, core::T_O *closureRaw)
+{NO_UNWIND_BEGIN();
 //  printf("%s:%d:%s  closureRaw = %p\n", __FILE__, __LINE__, __FUNCTION__, closureRaw);
   core::T_O* parentP;
   if (closureRaw != NULL ) {
@@ -506,17 +443,45 @@ ALWAYS_INLINE void setParentOfActivationFrameFromClosure(core::T_sp *resultP, co
   } else {
     parentP = _Nil<core::T_O>().raw_();
   }
-  ASSERT((*resultP).isA<ActivationFrame_O>());
-  ActivationFrame_sp af = gc::reinterpret_cast_smart_ptr<ActivationFrame_O, T_O>((*resultP));
+  ActivationFrame_sp af((gctools::Tagged)resultP);
   af->setParentFrame(parentP);
+  NO_UNWIND_END();
 }
 
-ALWAYS_INLINE void setParentOfActivationFrame(core::T_sp *resultP, core::T_sp *parentsp) {
-  T_O *parentP = parentsp->raw_();
-  ASSERT((*resultP).isA<ActivationFrame_O>());
-  ActivationFrame_sp af = gc::reinterpret_cast_smart_ptr<ActivationFrame_O, T_O>((*resultP));
+
+ALWAYS_INLINE core::T_O* makeValueFrameSetParent(size_t numargs, core::T_O *parentP)
+{NO_UNWIND_BEGIN();
+//  valueFrame->setEnvironmentId(id);   // I don't use id anymore
+  core::ValueFrame_sp valueFrame(core::ValueFrame_O::create(numargs, _Nil<core::T_O>()));
+  valueFrame->setParentFrame(parentP);
+  return valueFrame.raw_();
+  NO_UNWIND_END();
+}
+
+ALWAYS_INLINE core::T_O* makeBlockFrameSetParent(core::T_O *parentP)
+{NO_UNWIND_BEGIN();
+//  valueFrame->setEnvironmentId(id);   // I don't use id anymore
+  core::ValueFrame_sp valueFrame(core::ValueFrame_O::create(1, _Nil<core::T_O>()));
+  valueFrame->setParentFrame(parentP);
+  return valueFrame.raw_();
+  NO_UNWIND_END();
+}
+
+ALWAYS_INLINE core::T_O* makeTagbodyFrameSetParent(core::T_O *parentP)
+{NO_UNWIND_BEGIN();
+//  valueFrame->setEnvironmentId(id);   // I don't use id anymore
+  core::ValueFrame_sp valueFrame(core::ValueFrame_O::create(1, _Nil<core::T_O>()));
+  valueFrame->setParentFrame(parentP);
+  return valueFrame.raw_();
+  NO_UNWIND_END();
+}
+
+ALWAYS_INLINE void setParentOfActivationFrame(core::T_O *resultP, core::T_O *parentP)
+{NO_UNWIND_BEGIN();
+  ActivationFrame_sp af((gctools::Tagged)resultP);
   af->setParentFrame(parentP);
   return;
+  NO_UNWIND_END();
 }
 
 
@@ -524,28 +489,27 @@ ALWAYS_INLINE core::T_O *cc_stack_enclose(void* closure_address,
                             core::T_O *lambdaName, fnLispCallingConvention llvm_func,
                             int *sourceFileInfoHandleP,
                             size_t filePos, size_t lineno, size_t column,
-                            std::size_t numCells, ...) {
+                            std::size_t numCells, ...)
+{NO_UNWIND_BEGIN();
   core::T_sp tlambdaName = gctools::smart_ptr<core::T_O>((gc::Tagged)lambdaName);
   gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(closure_address);
-  const gctools::GCKindEnum closure_kind = gctools::GCKind<core::ClosureWithSlots_O>::Kind;
+  const gctools::Header_s::Value closure_header = gctools::Header_s::Value::make<core::ClosureWithSlots_O>();
   size_t size = gctools::sizeof_container_with_header<core::ClosureWithSlots_O>(numCells);
 
 //  gctools::global_stack_closure_bytes_allocated += size;
 
 #ifdef DEBUG_GUARD
-  new (header) gctools::GCHeader<core::ClosureWithSlots_O>::HeaderType(closure_kind,size,0,size);
+  new (header) gctools::GCHeader<core::ClosureWithSlots_O>::HeaderType(closure_header,size,0,size);
 #else
-  new (header) gctools::GCHeader<core::ClosureWithSlots_O>::HeaderType(closure_kind);
+  new (header) gctools::GCHeader<core::ClosureWithSlots_O>::HeaderType(closure_header);
 #endif
   auto obj = gctools::BasePtrToMostDerivedPtr<typename gctools::smart_ptr<core::ClosureWithSlots_O>::Type>(closure_address);
   new (obj) (typename gctools::smart_ptr<core::ClosureWithSlots_O>::Type)( numCells,
                                                                            llvm_func,
                                                                            tlambdaName,
-                                                                          core::_sym_stack_closure,
-                                                                          _Nil<T_O>(),
-                                                                          _Nil<T_O>(),
-                                                                          _Nil<T_O>(),
-                                                                          *sourceFileInfoHandleP, filePos, lineno, column);
+                                                                           core::_sym_stack_closure,
+                                                                           _Nil<T_O>(),
+                                                                           *sourceFileInfoHandleP, filePos, lineno, column);
 
   gctools::smart_ptr<core::ClosureWithSlots_O> functoid = gctools::smart_ptr<core::ClosureWithSlots_O>(obj);
   core::T_O *p;
@@ -560,10 +524,12 @@ ALWAYS_INLINE core::T_O *cc_stack_enclose(void* closure_address,
   va_end(argp);
 //  printf("%s:%d  Allocating closure on stack at %p  stack_closure_p()->%d\n", __FILE__, __LINE__, functoid.raw_(), functoid->stack_closure_p());
   return functoid.raw_();
+  NO_UNWIND_END();
 }
 
 
-int cc_eql(core::T_O* x, core::T_O* y) {
+int cc_eql(core::T_O* x, core::T_O* y)
+{NO_UNWIND_BEGIN();
   // The eql part of the test only eq part was handled by caller
   T_sp tx((gctools::Tagged)x);
   T_sp ty((gctools::Tagged)y);
@@ -571,61 +537,21 @@ int cc_eql(core::T_O* x, core::T_O* y) {
     if (ty.single_floatp()) {
       if (tx.unsafe_single_float()==ty.unsafe_single_float()) return 1;
     }
-  } else if (gc::IsA<core::DoubleFloat_sp>(tx)) {
-    if (gc::IsA<core::DoubleFloat_sp>(ty)) {
-      if (gc::As_unsafe<core::DoubleFloat_sp>(tx)->get() == gc::As_unsafe<core::DoubleFloat_sp>(ty)->get()) {
-        return 1;
-      }
+  } else if (tx.generalp()) {
+    if (ty.generalp()) {
+      return cl__eql(tx,ty) ? 1 : 0;
     }
   }
   return 0;
+  NO_UNWIND_END();
 };
 
-void cc_bad_tag(core::T_O* gf, core::T_O* gf_args)
+void cc_bad_tag(core::T_O* gf)
 {
   printf("%s:%d  A bad tag was encountered - aborting\n", __FILE__, __LINE__ );
   abort();
 };
 
-gctools::return_type cc_dispatch_slot_reader(core::T_O* tindex, core::T_O* tgf, core::T_O* tvargs) {
-  VaList_sp vargs((gctools::Tagged)tvargs);
-  T_sp tinstance = vargs->next_arg();
-  Instance_sp instance = gc::As_unsafe<Instance_sp>(tinstance);
-  return do_slot_read((gctools::Tagged)tindex,(gctools::Tagged)tgf,instance.tagged_());
-}
-
-
-gctools::return_type cc_dispatch_slot_writer(core::T_O* tindex, core::T_O* tgf, core::T_O* tvargs) { 
-  VaList_sp vargs((gctools::Tagged)tvargs);
-  T_sp value = vargs->next_arg();
-  T_sp tinstance = vargs->next_arg();
-  Instance_sp instance = gc::As_unsafe<Instance_sp>(tinstance);
-  do_slot_write((gctools::Tagged)tindex,(gctools::Tagged)tgf,instance.tagged_(),value.tagged_());
-  return value.as_return_type();
-}
-
-
-
-gctools::return_type cc_dispatch_effective_method(core::T_O* teffective_method, core::T_O* tgf, core::T_O* tgf_args_valist_s) {
-#if 0
-  if (gctools::TaggedCast<CompiledClosure_O*,T_O*>::isA(teffective_method)) {
-    core::CompiledClosure_O* ptrFunc = reinterpret_cast<core::CompiledClosure_O*>(gc::untag_general(teffective_method));
-    core::T_O* tagged_closure = gctools::tag_general(ptrFunc);
-    return ptrFunc->fptr(tagged_closure,NULL,2,tgf_args_valist_s,_Nil<core::T_O>().raw_(),NULL);
-  }
-  ASSERT((gctools::TaggedCast<ClosureWithSlots_O*,T_O*>::isA(teffective_method)));
-  core::ClosureWithSlots_O* ptrFunc = reinterpret_cast<core::ClosureWithSlots_O*>(gc::untag_general(teffective_method));
-  core::T_O* tagged_closure = gctools::tag_general(ptrFunc);
-  return ptrFunc->fptr(tagged_closure,NULL,2,tgf_args_valist_s,_Nil<core::T_O>().raw_(),NULL);
-#else
-  core::T_sp effective_method((gctools::Tagged)teffective_method);
-  core::T_sp gf((gctools::Tagged)tgf);
-  core::T_sp gf_args((gctools::Tagged)tgf_args_valist_s);
-//  printf("%s:%d  Invoking effective-method %s with arguments %s\n", __FILE__, __LINE__,
-  // Arguments are .method-args. .next-methods.
-  return apply_method0(effective_method.raw_(),gf_args.raw_(),_Nil<core::T_O>().raw_(),gf_args.raw_());
-#endif
-}
 
 };
 
@@ -1098,6 +1024,7 @@ ALWAYS_INLINE core::T_O* to_object_char( char x )
   return translate::to_object< char >::convert(x).raw_();
 }
 
+
 // ----------------------------------------------------------------------------
 // UNSIGNED CHAR
 // ----------------------------------------------------------------------------
@@ -1112,6 +1039,35 @@ ALWAYS_INLINE core::T_O* to_object_unsigned_char( unsigned char x )
 {
   return translate::to_object< unsigned char >::convert(x).raw_();
 }
+
+// ----------------------------------------------------------------------------
+// claspCharacter
+// ----------------------------------------------------------------------------
+
+ALWAYS_INLINE claspCharacter from_object_claspCharacter( core::T_O* obj )
+{
+  return reinterpret_cast<claspCharacter>(gctools::untag_character<core::T_O*>(obj));
+}
+
+ALWAYS_INLINE core::T_O* to_object_claspCharacter( claspCharacter x )
+{
+  return gctools::tag_character<core::T_O*>(x);
+}
+
+// ----------------------------------------------------------------------------
+// claspChar
+// ----------------------------------------------------------------------------
+
+ALWAYS_INLINE claspChar from_object_claspChar( core::T_O* obj )
+{
+  return static_cast<claspChar>(gctools::untag_character<core::T_O*>(obj));
+}
+
+ALWAYS_INLINE core::T_O* to_object_claspChar( claspChar x )
+{
+  return gctools::tag_character<core::T_O*>(x);
+}
+
 
 // ----------------------------------------------------------------------------
 // FLOAT
@@ -1196,6 +1152,13 @@ ALWAYS_INLINE core::T_O* to_object_pointer( void * x )
 
 }; // eytern "C"
 
+
+
+
+
+
+
+
 namespace llvmo
 {
 
@@ -1209,7 +1172,12 @@ void initialize_raw_translators( void )
 
 void initialize_intrinsics( void )
 {
-  // Do nothing
+  // FuncallableInstance and Instance have the rack pointer at the same place
+  if ((offsetof(Instance_O,_Rack)!=offsetof(FuncallableInstance_O,_Rack))) {
+    printf("%s:%d  The Instance_O._Rack offset %lu and FuncallableInstance_O._Rack offset %lu are not at the same\n", __FILE__, __LINE__,
+           offsetof(Instance_O,_Rack), offsetof(FuncallableInstance_O,_Rack));
+    abort();
+  }
 
   return;
 }
@@ -1217,3 +1185,5 @@ void initialize_intrinsics( void )
 }; // namespace llvmo
 
 #pragma GCC visibility pop
+
+

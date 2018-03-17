@@ -26,7 +26,7 @@
 	  body)))
 
 (defmacro with-predicate ((predicate) &body body)
-  `(let ((,predicate (si::coerce-to-function ,predicate)))
+  `(let ((,predicate (coerce-fdesignator ,predicate)))
      (declare (function ,predicate))
      (macrolet ((,predicate (&rest args)
 		  `(locally (declare (optimize (safety 0) (speed 3)))
@@ -34,7 +34,7 @@
        ,@body)))
 
 (defmacro with-key ((akey) &body body)
-  `(let ((,akey (if ,akey (si::coerce-to-function ,akey) #'identity)))
+  `(let ((,akey (if ,akey (coerce-fdesignator ,akey) #'identity)))
      (declare (function ,akey))
      (macrolet ((,akey (value)
 		  `(locally (declare (optimize (safety 0) (speed 3)))
@@ -47,9 +47,9 @@
 	    (,%test-not ,test-not)
 	    (,%test-fn (if ,%test
 			  (progn (when ,%test-not (test-error))
-				 (si::coerce-to-function ,%test))
+				 (coerce-fdesignator ,%test))
 			  (if ,%test-not
-			      (si::coerce-to-function ,%test-not)
+			      (coerce-fdesignator ,%test-not)
 			      #'eql))))
        (declare (function ,%test-fn))
        (macrolet ((compare (v1 v2)
@@ -76,9 +76,9 @@
   (with-unique-names (%vector %count)
     (when setter
       (setf body `((macrolet ((,setter (value)
-                                `(reckless (si::aset ,',%vector
-                                                     ,',index
-                                                     ,value))))
+                                `(reckless (si:row-major-aset ,',%vector
+                                                              ,',index
+                                                              ,value))))
                      ,@body))))
     (if from-end
 	`(do* ((,%vector ,vector)
@@ -133,7 +133,7 @@
 	       (,%i (make-seq-iterator ,%sequence ,index)
 		    (seq-iterator-next ,%sequence ,%i))
 	       (,%count (- ,end ,start) (1- ,%count)))
-	      ((or (null ,%i) (not (plusp ,%count))) ,output)
+	      ((or (seq-iterator-endp ,%sequence ,%i) (not (plusp ,%count))) ,output)
 	   (let ((,elt (seq-iterator-ref ,%sequence ,%i)))
 	     ,@body)))))
 
@@ -148,3 +148,4 @@
                                               ,%iterators)))
            ,@(and output (list output)))
        ,@body)))
+

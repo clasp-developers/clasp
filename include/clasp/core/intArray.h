@@ -32,7 +32,6 @@ THE SOFTWARE.
 #include <string>
 #include <vector>
 #include <set>
-#include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 
 namespace core {

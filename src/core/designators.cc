@@ -26,6 +26,7 @@ THE SOFTWARE.
 /* -^- */
 //#define DEBUG_LEVEL_FULL
 
+#include <clasp/core/foundation.h>
 #include <clasp/core/common.h>
 #include <clasp/core/environment.h>
 #include <clasp/core/ql.h>
@@ -117,8 +118,12 @@ core::Package_sp packageDesignator(core::T_sp obj) {
   }
   TYPE_ERROR(obj, Cons_O::createList(cl::_sym_or, cl::_sym_string, cl::_sym_Symbol_O, cl::_sym_character));
  PACKAGE_NAME:
-  Package_sp pkg = gc::As<Package_sp>(_lisp->findPackage(packageName->get(), true));
-  return pkg;
+  T_sp tpkg = _lisp->findPackage(packageName->get(),false);
+  if (tpkg.notnilp()) {
+    Package_sp pkg = gc::As<Package_sp>(tpkg);
+    return pkg;
+  }
+  PACKAGE_ERROR(packageName);
 }
 };
 };

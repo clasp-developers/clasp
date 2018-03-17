@@ -5,7 +5,6 @@
 #define DEFINE_O_SMART_POINTERS(zclass)                                    \
   class zclass##_O;                                                        \
   typedef gctools::smart_ptr<zclass##_O> zclass##_sp; /* Stack pointers */ \
-  typedef gctools::smart_ptr<zclass##_O> zclass##_wp;                      \
   typedef gctools::multiple_values<zclass##_O> zclass##_mv;
 
 // This ensures that smart pointers are only declared once

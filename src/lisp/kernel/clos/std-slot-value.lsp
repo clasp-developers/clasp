@@ -66,13 +66,13 @@
 						   (symbol-value slots)
 						   slots)
 		      for index from 0
-		      for accessor = (getf slotd :accessor)
+		      for accessor = (or (getf slotd :accessor) (getf slotd :reader))
 		      when accessor
 		      collect `(,accessor (object) `(si::instance-ref ,object ,,index))))
        ,@body)))
 
 ;;;
-;;; The following macro is also used at bootstap for instantiating
+;;; The following macro are also used at bootstrap for instantiating
 ;;; a class based only on the s-form description.
 ;;;
 (eval-when (:compile-toplevel :execute #+clasp-boot :load-toplevel)
@@ -81,8 +81,7 @@
     (when (symbolp slots)
       (setf slots (symbol-value slots)))
     `(let* ((%class ,class)
-	    (,object (si::allocate-raw-instance nil %class
-						,(length slots))))
+	    (,object (core:allocate-new-instance %class ,(length slots))))
        (declare (type standard-object ,object))
        ,@(flet ((initializerp (name list)
 		  (not (eq (getf list name 'wrong) 'wrong))))
@@ -97,8 +96,30 @@
 			    (setf initform (getf key-value-pairs name))))
 		  when (si:sl-boundp initform)
 		  collect `(si::instance-set ,object ,index ,initform)))
-       (when %class
-	 (si::instance-sig-set ,object))
+       (with-early-accessors (,slots)
+	 ,@body)))
+  
+  (defmacro with-early-make-funcallable-instance (slots (object class &rest key-value-pairs)
+                                                  &rest body)
+    (when (symbolp slots)
+      (setf slots (symbol-value slots)))
+    `(let* ((%class ,class)
+            ;; Identical to above macro except here. (FIXME: rewrite more nicely.)
+	    (,object (core:allocate-new-funcallable-instance %class ,(length slots))))
+       (declare (type standard-object ,object))
+       ,@(flet ((initializerp (name list)
+		  (not (eq (getf list name 'wrong) 'wrong))))
+	       (loop for (name . slotd) in slots
+		  for initarg = (getf slotd :initarg)
+		  for initform = (getf slotd :initform (si::unbound))
+		  for initvalue = (getf key-value-pairs initarg)
+		  for index from 0
+		  do (cond ((and initarg (initializerp initarg key-value-pairs))
+			    (setf initform (getf key-value-pairs initarg)))
+			   ((initializerp name key-value-pairs)
+			    (setf initform (getf key-value-pairs name))))
+		  when (si:sl-boundp initform)
+		  collect `(si::instance-set ,object ,index ,initform)))
        (with-early-accessors (,slots)
 	 ,@body))))
 
@@ -145,62 +166,36 @@
 	(find slot-name slots :key #'slot-definition-name))))
 
 ;;;
-;;; INSTANCE UPDATE PREVIOUS
-;;;
-(eval-when (:compile-toplevel :execute #+clasp-boot :load-toplevel)
-  (defmacro ensure-up-to-date-instance (instance)
-    ;; The up-to-date status of a class is determined by
-    ;; instance.sig. This slot of the C structure contains a list of
-    ;; slot definitions that was used to create the instance. When the
-    ;; class is updated, the list is newly created. Structures are also
-    ;; "instances" but keep ECL_UNBOUND instead of the list.
-    `(let* ((i ,instance)
-	    (s (si::instance-sig i)))
-       (declare (:read-only i s))
-       (with-early-accessors (+standard-class-slots+)
-	 (when (si:sl-boundp s)
-	   (unless (eq s (class-slots (si::instance-class i)))
-	     (update-instance i)))))))
-
-(defun update-instance (x)
-  ;; Update the stamp of the class
-  #+clasp(core:header-stamp-set x (core:get-instance-stamp (class-of x)))
-  (si::instance-sig-set x))
-
-(declaim (notinline update-instance))
-
-;;;
 ;;; STANDARD-CLASS INTERFACE
 ;;;
 ;;; Specific functions for slot reading, writing, boundness checking, etc.
 ;;;
 
-(defun standard-instance-get (instance location)
-  (with-early-accessors (+standard-class-slots+
-			 +slot-definition-slots+)
-    (ensure-up-to-date-instance instance)
-    (cond ((si:fixnump location)
-	   ;; local slot
-	   (si:instance-ref instance (truly-the fixnum location)))
-	  ((consp location)
-	   ;; shared slot
-	   (car location))
-	  (t
-	   (invalid-slot-location instance location)))))
+;;; MOP specifies that consequences are undefined if the slot is unbound when this function
+;;; is called. We presume that that means for the reader, not the writer.
+;;; If the reader is so called, in Clasp, it returns the slot-unbound marker. Users should
+;;; not deal with that, but we can.
 
-(defun standard-instance-set (val instance location)
-  (with-early-accessors (+standard-class-slots+
-			 +slot-definition-slots+)
-    (ensure-up-to-date-instance instance)
-    (cond ((si:fixnump location)
-	   ;; local slot
-	   (si:instance-set instance (truly-the fixnum location) val))
-	  ((consp location)
-	   ;; shared slot
-	   (setf (car location) val))
-	  (t
-	   (invalid-slot-location instance location)))
-    val))
+(defun standard-instance-access (instance location)
+  (cond ((si:fixnump location)
+         ;; local slot
+         (si:instance-ref instance (the fixnum location)))
+        ((consp location)
+         ;; shared slot
+         (car location))
+        (t
+         (invalid-slot-location instance location))))
+
+(defun (setf standard-instance-access) (val instance location)
+  (cond ((si:fixnump location)
+         ;; local slot
+         (si:instance-set instance (the fixnum location) val))
+        ((consp location)
+         ;; shared slot
+         (setf (car location) val))
+        (t
+         (invalid-slot-location instance location)))
+  val)
 
 (defun slot-value (self slot-name)
   (with-early-accessors (+standard-class-slots+
@@ -210,7 +205,7 @@
       (if location-table
 	  (let ((location (gethash slot-name location-table nil)))
 	    (if location
-		(let ((value (standard-instance-get self location)))
+		(let ((value (standard-instance-access self location)))
 		  (if (si:sl-boundp value)
 		      value
 		      (values (slot-unbound class self slot-name))))
@@ -232,7 +227,7 @@
       (if location-table
 	  (let ((location (gethash slot-name location-table nil)))
 	    (if location
-		(si:sl-boundp (standard-instance-get self location))
+		(si:sl-boundp (standard-instance-access self location))
 		(values (slot-missing class self slot-name 'SLOT-BOUNDP))))
 	  (let ((slotd (find slot-name (class-slots class) :key #'slot-definition-name)))
 	    (if slotd
@@ -248,13 +243,12 @@
       (if location-table
 	  (let ((location (gethash slot-name location-table nil)))
 	    (if location
-		(standard-instance-set value self location)
+                (setf (standard-instance-access self location) value)
 		(slot-missing class self slot-name 'SETF value)))
 	  (let ((slotd (find slot-name (class-slots class) :key #'slot-definition-name)))
 	    (if slotd
 		(setf (slot-value-using-class class self slotd) value)
-		(slot-missing class self slot-name 'SETF value))))))
-  value)
+		(slot-missing class self slot-name 'SETF value)))))))
 
 
 ;;;
@@ -262,6 +256,5 @@
 ;;;
 
 (defun invalid-slot-location (instance location)
-  (declare (si::c-local))
   (error "Invalid location ~A when accessing slot of class ~A"
 	 location (class-of location)))

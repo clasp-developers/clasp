@@ -8,6 +8,8 @@ def build(bld):
             'debugLoc',
             'llvmoDwarf',
             'link_intrinsics',
+            'builtins',
+            'fastgf',
             'intrinsics',
             'insertPoint',
             'irtests',

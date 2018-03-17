@@ -63,7 +63,8 @@ T_sp core__every_list(T_sp predicate, List_sp sequences);
 
 T_sp cl__mapcar(T_sp func_desig, List_sp lists);
 
-List_sp cl__append(List_sp lists);
+//T_sp cl__append(List_sp lists);
+T_sp cl__append(VaList_sp lists);
 
 //    Stream_mv af_open(T_sp filespec, Symbol_sp direction, T_sp element_type, T_sp if_exists, T_sp if_does_not_exist, T_sp external_format );
 
@@ -216,9 +217,10 @@ public:
   void move_to_previous_frame() const { this->_Frame = this->_Frame->previous(); this->_Index--;};
   const InvocationHistoryFrame *frame() const { return this->_Frame; };
   int index();
+  Pointer_sp frame_address();
   T_sp functionName();
   T_sp function();
-  SimpleVector_sp arguments();
+  T_sp arguments();
   T_sp environment();
   InvocationHistoryFrameIterator_sp copy() {
     return InvocationHistoryFrameIterator_O::create(this->_Frame,this->_Index);
@@ -257,8 +259,7 @@ namespace core {
   T_sp core__create_tagged_immediate_value_or_nil(T_sp object);
   bool cl__constantp(T_sp obj, T_sp env = _Nil<T_O>());
   T_mv cl__values_list(List_sp list);
-  T_mv core__get_compiler_macro_function(core::T_sp name, core::T_sp env);
-  void core__setf_compiler_macro_function(core::T_sp name, core::T_sp function, core::T_sp env);
+  T_mv cl__compiler_macro_function(core::T_sp name, core::T_sp env);
   bool cl__fboundp(T_sp functionName);
   T_sp core__get_global_inline_status(core::T_sp name, core::T_sp env);
   void core__setf_global_inline_statis(core::T_sp name, bool status, core::T_sp env);

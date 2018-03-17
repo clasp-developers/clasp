@@ -261,9 +261,9 @@ namespace gctools {
     }
   };
   template <>
-    struct TaggedCast<core::T_O *, core::VaList_S *> {
+    struct TaggedCast<core::T_O *, core::Vaslist *> {
     typedef core::T_O *ToType;
-    typedef core::VaList_S *FromType;
+    typedef core::Vaslist *FromType;
     inline static bool isA(FromType ptr) { return true; }
     inline static ToType castOrNULL(FromType client) {
       if (TaggedCast<ToType, FromType>::isA(client))
@@ -390,11 +390,11 @@ namespace gctools {
   };
 
   template <typename FROM>
-    struct TaggedCast<core::VaList_S *, FROM> {
-    typedef core::VaList_S *ToType;
+    struct TaggedCast<core::Vaslist *, FROM> {
+    typedef core::Vaslist *ToType;
     typedef FROM FromType;
     inline static bool isA(FromType ptr) {
-      return tagged_valistp(ptr);
+      return tagged_vaslistp(ptr);
     }
     inline static ToType castOrNULL(FromType client) {
       if (TaggedCast<ToType, FromType>::isA(client))

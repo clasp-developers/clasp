@@ -31,7 +31,6 @@ THE SOFTWARE.
 #include <string>
 #include <vector>
 #include <set>
-#include <clasp/core/foundation.h>
 #include <clasp/core/numbers.fwd.h>
 #include <clasp/core/sourceFileInfo.fwd.h>
 #include <clasp/core/object.h>
@@ -137,7 +136,9 @@ public:
   virtual bool equal(T_sp obj) const;
   virtual bool equalp(T_sp obj) const { return this->equal(obj); };
   virtual void sxhash_(HashGenerator &hg) const;
-
+  virtual void sxhash_equal(HashGenerator &hg,LocationDependencyPtrT ptr) const;
+  virtual void sxhash_equalp(HashGenerator &hg,LocationDependencyPtrT ptr) const;
+  
   virtual string __repr__() const;
   //! Common Lisp __write__(T_sp strm)
   virtual void __write__(T_sp strm) const;

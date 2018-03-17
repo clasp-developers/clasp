@@ -26,11 +26,13 @@ THE SOFTWARE.
 /* -^- */
 
 #include <sched.h>
+#include <sys/types.h>
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 #include <clasp/core/lisp.h>
 #include <clasp/gctools/memoryManagement.h>
 #include <clasp/core/symbol.h>
+#include <clasp/core/pointer.h>
 #include <clasp/core/mpPackage.h>
 #include <clasp/core/multipleValues.h>
 #include <clasp/core/primitives.h>
@@ -38,7 +40,6 @@ THE SOFTWARE.
 #include <clasp/core/lispList.h>
 #include <clasp/gctools/interrupt.h>
 #include <clasp/core/evaluator.h>
-
 
 
 namespace mp {
@@ -101,22 +102,50 @@ struct SafeRegisterDeregisterProcessWithLisp {
   }
 };
 
-void* start_thread(void* claspProcess) {
-  Process_O* my_claspProcess = (Process_O*)claspProcess;
-  Process_sp p(my_claspProcess);
-  void* stack_base;
-  core::ThreadLocalState my_thread_local_state(&stack_base);
+
+__attribute__((noinline))
+void start_thread_inner(Process_sp process, void* cold_end_of_stack) {
+  process->_ExitBarrier.lock();
+#ifdef USE_MPS
+  // use mask
+  mps_res_t res = mps_thread_reg(&process->thr_o,global_arena);
+  if (res != MPS_RES_OK) {
+    printf("%s:%d Could not register thread\n", __FILE__, __LINE__ );
+    abort();
+  }
+  res = mps_root_create_thread_tagged(&process->root,
+                                      global_arena,
+                                      mps_rank_ambig(),
+                                      0,
+                                      process->thr_o,
+                                      mps_scan_area_tagged_or_zero,
+                                      gctools::pointer_tag_mask,
+                                      gctools::pointer_tag_eq,
+                                      reinterpret_cast<mps_addr_t>(const_cast<void*>(cold_end_of_stack)));
+  if (res != MPS_RES_OK) {
+    printf("%s:%d Could not create thread stack roots\n", __FILE__, __LINE__ );
+    abort();
+  };
+#endif
+  core::ThreadLocalState my_thread_local_state(cold_end_of_stack);
 //  printf("%s:%d entering start_thread  &my_thread -> %p \n", __FILE__, __LINE__, (void*)&my_thread);
+#ifdef USE_MPS
+  gctools::my_thread_allocation_points.initializeAllocationPoints();
+#endif
   my_thread = &my_thread_local_state;
-  my_thread->initialize_thread(p);
-  p->_ThreadInfo = my_thread;
+  my_thread->initialize_thread(process);
+  process->_ThreadInfo = my_thread;
   // Set the mp:*current-process* variable to the current process
-  core::DynamicScopeManager scope(_sym_STARcurrent_processSTAR,p);
-  core::List_sp reversed_bindings = core::cl__reverse(p->_InitialSpecialBindings);
+  core::DynamicScopeManager scope(_sym_STARcurrent_processSTAR,process);
+  core::List_sp reversed_bindings = core::cl__reverse(process->_InitialSpecialBindings);
   for ( auto cur : reversed_bindings ) {
     core::Cons_sp pair = gc::As<core::Cons_sp>(oCar(cur));
+//    printf("%s:%d  start_thread   setting special variable/(eval value) -> %s\n", __FILE__, __LINE__, _rep_(pair).c_str());
     scope.pushSpecialVariableAndSet(pair->_Car,core::eval::evaluate(pair->_Cdr,_Nil<core::T_O>()));
   }
+//  gctools::register_thread(process,stack_base);
+  core::List_sp args = process->_Arguments;
+  
 #if 0
 #ifdef USE_BOEHM
   GC_stack_base gc_stack_base;
@@ -124,43 +153,54 @@ void* start_thread(void* claspProcess) {
   GC_register_my_thread(&gc_stack_base);
 #endif
 #endif
-#ifdef USE_MPS
-  printf("%s:%d Handle threads for MPS\n", __FILE__, __LINE__ );
-  abort();
-#endif
-//  gctools::register_thread(process,stack_base);
-  core::List_sp args = my_claspProcess->_Arguments;
-  p->_Phase = Active;
+
+  process->_Phase = Active;
+  process->_Active.signal();
+  process->_ExitBarrier.unlock();
   core::T_mv result_mv;
   {
-    SafeRegisterDeregisterProcessWithLisp reg(p);
+    SafeRegisterDeregisterProcessWithLisp reg(process);
 //    RAIIMutexLock exitBarrier(p->_ExitBarrier);
 //    printf("%s:%d:%s  process locking the ExitBarrier\n", __FILE__, __LINE__, __FUNCTION__);
     try {
-      result_mv = core::eval::applyLastArgsPLUSFirst(my_claspProcess->_Function,args);
+      result_mv = core::eval::applyLastArgsPLUSFirst(process->_Function,args);
     } catch (ExitProcess& e) {
       // Do nothing - exiting
     }
 //    printf("%s:%d:%s  process releasing the ExitBarrier\n", __FILE__, __LINE__, __FUNCTION__);
   }
-  p->_Phase = Exiting;
+  process->_Phase = Exiting;
   core::T_sp result0 = result_mv;
   core::List_sp result_list = _Nil<core::T_O>();
   for ( int i=result_mv.number_of_values(); i>0; --i ) {
     result_list = core::Cons_O::create(result_mv.valueGet_(i),result_list);
   }
   result_list = core::Cons_O::create(result0,result_list);
-  my_claspProcess->_ReturnValuesList = result_list;
+  process->_ReturnValuesList = result_list;
 //  gctools::unregister_thread(process);
 //  printf("%s:%d leaving start_thread\n", __FILE__, __LINE__);
+
+};
+
+
+void* start_thread(void* claspProcess) {
+  Process_sp process((Process_O*)claspProcess);
+  void* cold_end_of_stack = &cold_end_of_stack;
+  ////////////////////////////////////////////////////////////
+  //
+  // MPS setup of thread
+  //
+  start_thread_inner(process,cold_end_of_stack);
+  
 #if 0
 #ifdef USE_BOEHM
   GC_unregister_my_thread();
 #endif
 #endif
 #ifdef USE_MPS
-  printf("%s:%d Handle threads for MPS\n", __FILE__, __LINE__ );
-  abort();
+  gctools::my_thread_allocation_points.destroyAllocationPoints();
+  mps_root_destroy(process->root);
+  mps_thread_dereg(process->thr_o);
 #endif
 //  printf("%s:%d  really leaving start_thread\n", __FILE__, __LINE__ );
   return NULL;
@@ -171,6 +211,51 @@ string Mutex_O::__repr__() const {
   ss << "#<MUTEX ";
   ss << _rep_(this->_Name);
   ss << " :owner " << _rep_(this->_Owner) << " :counter " << this->counter();
+#ifdef USE_BOEHM // things don't move in boehm
+  ss << " @" << (void*)(this->asSmartPtr().raw_());
+#endif
+  ss << ">";
+  return ss.str();
+}
+
+CL_LAMBDA(m &optional (upgrade nil))
+CL_DEFUN void mp__write_lock(SharedMutex_sp m, bool upgrade) {
+  m->write_lock(upgrade);
+}
+
+CL_LAMBDA(m &optional (upgrade nil))
+CL_DEFUN bool mp__write_try_lock(SharedMutex_sp m, bool upgrade) {
+  return m->write_try_lock(upgrade);
+}
+
+CL_LAMBDA(m &optional (release_read_lock nil))
+CL_DEFUN void mp__write_unlock(SharedMutex_sp m, bool release_read_lock) {
+  m->write_unlock(release_read_lock);
+}
+
+CL_DEFUN void mp__read_lock(SharedMutex_sp m) {
+  m->read_lock();
+}
+
+CL_DEFUN void mp__read_unlock(SharedMutex_sp m) {
+  m->read_unlock();
+}
+
+CL_DEFUN void mp__shared_lock(SharedMutex_sp m) {
+  m->read_lock();
+}
+
+CL_DEFUN void mp__shared_unlock(SharedMutex_sp m) {
+  m->read_unlock();
+}
+
+
+
+
+string SharedMutex_O::__repr__() const {
+  stringstream ss;
+  ss << "#<SHARED-MUTEX ";
+  ss << _rep_(this->_Name);
 #ifdef USE_BOEHM // things don't move in boehm
   ss << " @" << (void*)(this->asSmartPtr().raw_());
 #endif
@@ -203,9 +288,16 @@ CL_DEFUN int mp__process_enable(Process_sp process)
 
 CL_LAMBDA(name function &optional special_bindings);
 CL_DEFUN Process_sp mp__process_run_function(core::T_sp name, core::T_sp function, core::List_sp special_bindings) {
-  Process_sp p = Process_O::make_process(name,function,_Nil<core::T_O>(),special_bindings,DEFAULT_THREAD_STACK_SIZE);
-  p->enable();
-  return p;
+#ifdef DEBUG_FASTGF
+  core::Cons_sp fastgf = core::Cons_O::create(core::_sym_STARdebug_fastgfSTAR,_Nil<core::T_O>());
+  special_bindings = core::Cons_O::create(fastgf,special_bindings);
+#endif
+  if (cl__functionp(function)) {
+    Process_sp process = Process_O::make_process(name,function,_Nil<core::T_O>(),special_bindings,DEFAULT_THREAD_STACK_SIZE);
+    process->enable();
+    return process;
+  }
+  SIMPLE_ERROR(BF("%s is not a function - you must provide a function to run in a separate process") % _rep_(function));
 };
 
 CL_DEFUN core::List_sp mp__all_processes() {
@@ -215,6 +307,13 @@ CL_DEFUN core::List_sp mp__all_processes() {
 CL_DEFUN core::T_sp mp__process_name(Process_sp p) {
   return p->_Name;
 }
+
+CL_DEFUN core::T_sp mp__thread_id(Process_sp p) {
+  auto tid = p->_ThreadInfo->_Tid;
+  return core::Pointer_O::create((void*)tid);
+}
+
+
 
 CL_LAMBDA(&key name recursive)
 CL_DEFUN core::T_sp mp__make_lock(core::T_sp name, bool recursive) {
@@ -238,8 +337,12 @@ CL_DEFUN void mp__process_resume(Process_sp process) {
 };
 
 CL_DEFUN void mp__process_yield() {
+  // There doesn't appear to be any way to exit sched_yield()
   int res = sched_yield();
-//  core::clasp_musleep(0.0,true);
+  if (!res) {
+    SIMPLE_ERROR(BF("sched_yield returned the error %d") % res);
+  }
+//  core::clasp_musleep(0.5,true);
 }
 
 CL_DEFUN core::T_mv mp__process_join(Process_sp process) {

@@ -27,7 +27,6 @@ THE SOFTWARE.
 #ifndef keywordPackage_fwd_H
 #define keywordPackage_fwd_H
 
-PACKAGE_NICKNAME("KW");
 NAMESPACE_PACKAGE_ASSOCIATION(kw, KeywordPkg, "KEYWORD")
 
 #endif

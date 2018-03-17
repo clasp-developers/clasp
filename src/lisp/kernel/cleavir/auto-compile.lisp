@@ -36,10 +36,6 @@
 (eval-when (:compile-toplevel :execute)
   (setq cmp::*jit-dump-module* t))
 
-(eval-when (:compile-toplevel :execute :load-toplevel)
-  (setq core:*defun-inline-hook* 'defun-inline-hook)
-  (setq core:*proclaim-hook* 'proclaim-hook))
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;; Set up the cmp:*CLEAVIR-COMPILE-HOOK* so that COMPILE uses Cleavir
@@ -49,10 +45,10 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
-;; Set up the cmp:*CLEAVIR-COMPILE-HOOK* so that COMPILE-FILE uses Cleavir
+;; Set up the cmp:*CLEAVIR-COMPILE-FILE-HOOK* so that COMPILE-FILE uses Cleavir
 ;;
 (eval-when (:execute :load-toplevel)
-  (setq cmp:*cleavir-compile-file-hook* 'cleavir-compile-file-form))
+  (setq cmp:*cleavir-compile-file-hook* 'cclasp-loop-read-and-compile-file-forms))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;

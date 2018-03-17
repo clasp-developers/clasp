@@ -26,6 +26,7 @@ THE SOFTWARE.
 /* -^- */
 //#define DEBUG_LEVEL_FULL
 
+#include <clasp/core/foundation.h>
 #include <clasp/core/common.h>
 #include <clasp/core/environment.h>
 #include <clasp/core/symbolTable.h>
@@ -61,7 +62,7 @@ CL_LAMBDA(type size &key (initial-element nil iesp));
 CL_DECLARE();
 CL_DOCSTRING("make_sequence");
 CL_DEFUN T_mv cl__make_sequence(T_sp type, Fixnum_sp size, T_sp initial_element, T_sp iesp) {
-  IMPLEMENT_MEF(BF("make-sequence"));
+  IMPLEMENT_MEF("make-sequence");
 #if 0
 	Symbol_sp element_type;
 	Fixnum_sp length;
@@ -75,7 +76,7 @@ CL_DEFUN T_mv cl__make_sequence(T_sp type, Fixnum_sp size, T_sp initial_element,
 	    List_sp sequence = eval::funcall(cl::_sym_make_list,size,kw::_sym_initial_element,initial_element);
 	    return sequence;
 	}
-	IMPLEMENT_MEF(BF("Implement make_sequence"));
+	IMPLEMENT_MEF("Implement make_sequence");
 	return(Values(_Nil<T_O>()));
 #endif
 };
@@ -169,13 +170,6 @@ CL_DEFUN T_sp core__setf_elt(T_sp sequence, size_t index, T_sp value) {
     return value;
   }
   TYPE_ERROR(sequence, cl::_sym_sequence);
-};
-
-CL_LAMBDA(seq index val);
-CL_DECLARE();
-CL_DOCSTRING("eltSet");
-CL_DEFUN T_sp core__elt_set(T_sp sequence, int index, T_sp val) {
-  return core__setf_elt(sequence, index, val);
 };
 
 CL_LAMBDA(sequence start end subseq);

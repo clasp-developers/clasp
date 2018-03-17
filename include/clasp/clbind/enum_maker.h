@@ -55,7 +55,6 @@ THE SOFTWARE.
 #include <clasp/clbind/config.h>
 #include <clasp/clbind/class_rep.h>
 
-#include <clasp/core/foundation.h>
 #include <clasp/core/symbolToEnumConverter.h>
 
 namespace clbind {
@@ -151,7 +150,7 @@ private:
         this->_v = converter->enumForSymbol<_ENUM_TYPE_>(sym);                                                   \
         return;                                                                                                  \
       }                                                                                                          \
-      SIMPLE_ERROR(BF("Cannot convert object %s to " #_ENUM_TYPE_) % _rep_(object));                             \
+      SIMPLE_ERROR_SPRINTF("Cannot convert object %s to " #_ENUM_TYPE_, _rep_(object).c_str()); \
     }                                                                                                            \
   };                                                                                                             \
   template <> struct to_object<_ENUM_TYPE_> {                                                                    \

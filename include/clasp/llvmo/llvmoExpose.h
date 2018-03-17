@@ -32,6 +32,7 @@ THE SOFTWARE.
 #include <clasp/core/hashTableEqual.h>
 #include <clasp/core/array.h>
 #include <clasp/core/ql.h>
+#include <llvm/Object/SymbolSize.h>
 #include <llvm/IR/DerivedTypes.h>
 #include <llvm/IR/LLVMContext.h>
 #include <llvm/IR/Module.h>
@@ -43,6 +44,8 @@ THE SOFTWARE.
 #include <llvm/ExecutionEngine/MCJIT.h>
 //#include "llvm/ExecutionEngine/JITMemoryManager.h"
 #include <llvm/ExecutionEngine/SectionMemoryManager.h>
+#include <llvm/ExecutionEngine/JITEventListener.h>
+#include <llvm/ExecutionEngine/JITSymbol.h>
 #include <llvm/ExecutionEngine/Interpreter.h>
 #include <llvm/IR/Verifier.h>
 #include <llvm/Analysis/Passes.h>
@@ -59,14 +62,14 @@ THE SOFTWARE.
 #include <llvm/ExecutionEngine/Orc/IRCompileLayer.h>
 #include <llvm/ExecutionEngine/Orc/IRTransformLayer.h>
 #include <llvm/ExecutionEngine/Orc/LambdaResolver.h>
-#include <llvm/ExecutionEngine/Orc/ObjectLinkingLayer.h>
+#include <llvm/ExecutionEngine/Orc/RTDyldObjectLinkingLayer.h>
+//#include <llvm/ExecutionEngine/Orc/ObjectLinkingLayer.h>
 //#include "llvm/Support/IRBuilder.h"
 
 #include <stdio.h>
 #include <string>
 #include <vector>
 #include <set>
-#include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 #include <clasp/core/metaClass.fwd.h>
 #include <clasp/core/externalObject.h>
@@ -83,6 +86,8 @@ THE SOFTWARE.
 
 
 namespace llvmo {
+  FORWARD(CallInst);
+  FORWARD(InvokeInst);
 FORWARD(LLVMContext);
 class LLVMContext_O : public core::ExternalObject_O {
   LISP_EXTERNAL_CLASS(llvmo, LlvmoPkg, llvm::LLVMContext, LLVMContext_O, "llvm-context", core::ExternalObject_O);
@@ -106,6 +111,7 @@ public:
     /*        if (this->_ptr != NULL ) delete this->_ptr; */
     this->_ptr = ptr;
   }
+  bool equal(core::T_sp obj) const;
   static LLVMContext_sp create_llvm_context();
   ;
   LLVMContext_O() : Base(), _ptr(NULL){};
@@ -120,12 +126,19 @@ public:
 }; // llvmo
 
 namespace translate {
-template <>
-struct from_object<llvm::LLVMContext &, std::true_type> {
-  typedef llvm::LLVMContext &DeclareType;
-  DeclareType _v;
+  template <>
+    struct from_object<llvm::LLVMContext &, std::true_type> {
+    typedef llvm::LLVMContext &DeclareType;
+    DeclareType _v;
   from_object(T_P object) : _v(*(gc::As<llvmo::LLVMContext_sp>(object)->wrappedPtr())){};
-};
+  };
+
+  template <>
+    struct to_object<llvm::LLVMContext &> {
+    static core::T_sp convert(llvm::LLVMContext& lc) {
+      return ((core::RP_Create_wrapped<llvmo::LLVMContext_O,llvm::LLVMContext*>(&lc)));
+    };
+  };
 };
     ;
 /* to_object translators */
@@ -286,7 +299,7 @@ struct from_object<llvm::ArrayRef<llvm::Attribute::AttrKind>> {
       }
       return;
     }
-    SIMPLE_ERROR(BF("Could not convert %s to llvm::ArrayRef<llvm::Attribute::AttrKind>") % core::_rep_(o));
+    SIMPLE_ERROR_SPRINTF("Could not convert %s to llvm::ArrayRef<llvm::Attribute::AttrKind>",  core::_rep_(o).c_str());
   }
 };
 };
@@ -605,13 +618,13 @@ struct from_object<llvm::CodeGenOpt::Level, std::true_type> {
   DeclareType _v;
   from_object(T_P object) : _v(llvm::CodeGenOpt::Default) {
     if (object.nilp()) {
-      SIMPLE_ERROR(BF("You must pass a valid CodeGenOpt"));
+      SIMPLE_ERROR_SPRINTF("You must pass a valid CodeGenOpt");
     }
     if (core::Symbol_sp so = object.asOrNull<core::Symbol_O>()) {
       core::SymbolToEnumConverter_sp converter = gc::As<core::SymbolToEnumConverter_sp>(llvmo::_sym_CodeGenOpt->symbolValue());
       this->_v = converter->enumForSymbol<llvm::CodeGenOpt::Level>(so);
     } else {
-      SIMPLE_ERROR(BF("You must pass a valid CodeGenOpt"));
+      SIMPLE_ERROR_SPRINTF("You must pass a valid CodeGenOpt");
     }
   }
 };
@@ -632,7 +645,7 @@ template <>
         this->_v = converter->enumForSymbol<llvm::Reloc::Model>(so);
       }
     } else {
-      SIMPLE_ERROR(BF("You must pass a valid RelocModel or %s") % _rep_(llvmo::_sym_RelocModel_undefined));
+      SIMPLE_ERROR_SPRINTF("You must pass a valid RelocModel or %s", _rep_(llvmo::_sym_RelocModel_undefined).c_str());
     }
   }
 };
@@ -643,13 +656,13 @@ struct from_object<llvm::CodeModel::Model, std::true_type> {
   DeclareType _v;
   from_object(T_P object) : _v(llvm::CodeModel::Default) {
     if (object.nilp()) {
-      SIMPLE_ERROR(BF("You must pass a valid CodeModel"));
+      SIMPLE_ERROR_SPRINTF("You must pass a valid CodeModel");
     }
     if (core::Symbol_sp so = object.asOrNull<core::Symbol_O>()) {
       core::SymbolToEnumConverter_sp converter = gc::As<core::SymbolToEnumConverter_sp>(llvmo::_sym_CodeModel->symbolValue());
       this->_v = converter->enumForSymbol<llvm::CodeModel::Model>(so);
     } else {
-      SIMPLE_ERROR(BF("You must pass a valid CodeModel"));
+      SIMPLE_ERROR_SPRINTF("You must pass a valid CodeModel");
     }
   }
 };
@@ -665,7 +678,7 @@ struct from_object<llvm::TargetMachine::CodeGenFileType, std::true_type> {
         return;
       }
     }
-    SIMPLE_ERROR(BF("You must pass a valid "));
+    SIMPLE_ERROR_SPRINTF("You must pass a valid ");
   }
 };
 };
@@ -742,7 +755,7 @@ template <typename T, typename U>
   if (!llvm::isa<T>(p)) {
     // save the pointer in a global so we can take a look at it
     llvm_cast_error_ptr = reinterpret_cast<llvm::Value*>(p);
-    SIMPLE_ERROR(BF("llvm_cast<T> argument of incompatible type - bad pointer stored in (void*)llvm_cast_error_ptr!"));
+    SIMPLE_ERROR_SPRINTF("llvm_cast<T> argument of incompatible type - bad pointer stored in (void*)llvm_cast_error_ptr!");
   }
   return reinterpret_cast<T*>(p);
 }
@@ -1052,7 +1065,7 @@ struct from_object<llvm::ArrayRef<llvm::Value *>> {
       }
       return;
     }
-    SIMPLE_ERROR(BF("Could not convert %s to llvm::ArrayRef<llvm::Value*>") % core::_rep_(o));
+    SIMPLE_ERROR_SPRINTF("Could not convert %s to llvm::ArrayRef<llvm::Value*>", core::_rep_(o).c_str());
   }
 };
 
@@ -1136,7 +1149,7 @@ struct from_object<llvm::ArrayRef<llvm::Metadata *>> {
       }
       return;
     }
-    SIMPLE_ERROR(BF("Could not convert %s to llvm::ArrayRef<llvm::Metadata*>") % core::_rep_(o));
+    SIMPLE_ERROR_SPRINTF("Could not convert %s to llvm::ArrayRef<llvm::Metadata*>", core::_rep_(o).c_str());
   }
 };
 
@@ -1210,7 +1223,7 @@ struct from_object<llvm::Attribute::AttrKind, std::true_type> {
       this->_v = converter->enumForSymbol<llvm::Attribute::AttrKind>(sym);
       return;
     }
-    SIMPLE_ERROR(BF("Cannot convert object %s to llvm::Attribute::AttrKind") % _rep_(object));
+    SIMPLE_ERROR_SPRINTF("Cannot convert object %s to llvm::Attribute::AttrKind", _rep_(object).c_str());
   }
 };
 
@@ -1393,7 +1406,7 @@ struct from_object<llvm::ArrayRef<llvm::Constant *>> {
       }
       return;
     }
-    SIMPLE_ERROR(BF("Could not convert %s to llvm::ArrayRef<llvm::Constant*>") % core::_rep_(o));
+    SIMPLE_ERROR_SPRINTF("Could not convert %s to llvm::ArrayRef<llvm::Constant*>", core::_rep_(o).c_str());
   }
 };
 
@@ -1544,14 +1557,14 @@ public:
   PointerToExternalType wrappedPtr() const { return llvm_cast<ExternalType>(this->_ptr); };
   void set_wrapped(PointerToExternalType ptr) {
     if (this->_ptr != NULL && this->_PtrIsOwned)
-      delete this->_ptr;
+      this->_ptr->deleteValue();
     this->_ptr = ptr;
   }
   void set_ptrIsOwned(bool b) { this->_PtrIsOwned = b; };
   GlobalValue_O() : Base(), _PtrIsOwned(false){};
   virtual ~GlobalValue_O() {
     if (this->_ptr != NULL && this->_PtrIsOwned)
-      delete this->_ptr;
+      this->_ptr->deleteValue();
   }
 
 }; // GlobalValue_O
@@ -1696,7 +1709,7 @@ public:
   };
   PointerToExternalType wrappedPtr() const {
     if ( this->_ptr ) return this->_ptr;
-    SIMPLE_ERROR(BF("The Module has a NULL pointer"));
+    SIMPLE_ERROR_SPRINTF("The Module has a NULL pointer");
   }
   void reset_wrappedPtr() {
     this->_ptr = NULL;
@@ -2354,6 +2367,7 @@ public:
 
 namespace llvmo {
 FORWARD(Instruction);
+
 class Instruction_O : public User_O {
   LISP_EXTERNAL_CLASS(llvmo, LlvmoPkg, llvm::Instruction, Instruction_O, "Instruction", User_O);
   typedef llvm::Instruction ExternalType;
@@ -2368,6 +2382,8 @@ public:
   core::T_sp getNextNode(); // instruction or nil
   core::T_sp getPrevNode(); // instruction or nil
   core::T_sp getParent(); // basic block or nil
+  CL_DEFMETHOD bool CallInstP() const { return llvm::isa<llvm::CallInst>(this->wrappedPtr()); };
+  CL_DEFMETHOD bool InvokeInstP() const { return llvm::isa<llvm::InvokeInst>(this->wrappedPtr()); };
   Instruction_O() : Base(){};
   ~Instruction_O() {}
 
@@ -2392,7 +2408,12 @@ namespace translate {
 template <>
 struct to_object<llvm::Instruction *> {
   static core::T_sp convert(llvm::Instruction *ptr) {
-    _G();
+    // Wrap the Instruction* using the most derived class possible
+    if (llvm::isa<llvm::CallInst>(ptr)) {
+      return core::RP_Create_wrapped<llvmo::CallInst_O,llvm::CallInst*>(reinterpret_cast<llvm::CallInst*>(ptr));
+    } else if (llvm::isa<llvm::InvokeInst>(ptr)) {
+      return core::RP_Create_wrapped<llvmo::InvokeInst_O,llvm::InvokeInst*>(reinterpret_cast<llvm::InvokeInst*>(ptr));
+    }
     return ((core::RP_Create_wrapped<llvmo::Instruction_O, llvm::Instruction *>(ptr)));
   }
 };
@@ -2621,10 +2642,14 @@ class CallInst_O : public Instruction_O {
 
 public:
   PointerToExternalType wrappedPtr() const { return llvm_cast<ExternalType>(this->_ptr); };
+  void 	addParamAttr(unsigned ArgNo, llvm::Attribute::AttrKind Attr);
   void set_wrapped(PointerToExternalType ptr) {
     /*        if (this->_ptr != NULL ) delete this->_ptr; */
     this->_ptr = ptr;
   }
+  core::List_sp getArgumentList() const;
+  llvm::Function* getCalledFunction();
+  CL_DEFMETHOD bool CallInstP() const { return true; };
   CallInst_O() : Base(){};
   ~CallInst_O() {}
 
@@ -3000,10 +3025,14 @@ class InvokeInst_O : public TerminatorInst_O {
 
 public:
   PointerToExternalType wrappedPtr() const { return llvm_cast<ExternalType>(this->_ptr); };
+  void 	addParamAttr(unsigned ArgNo, llvm::Attribute::AttrKind Attr);
   void set_wrapped(PointerToExternalType ptr) {
     /*        if (this->_ptr != NULL ) delete this->_ptr; */
     this->_ptr = ptr;
   }
+  core::List_sp getArgumentList() const;
+  llvm::Function* getCalledFunction();
+  CL_DEFMETHOD bool InvokeInstP() const { return true; };
   InvokeInst_O() : Base(){};
   ~InvokeInst_O() {}
 
@@ -3576,9 +3605,11 @@ public:
 
   bool equal(core::T_sp obj) const;
 
+  void addReturnAttr(typename llvm::Attribute::AttrKind);
   core::List_sp getArgumentList();
   void appendBasicBlock(BasicBlock_sp basicBlock);
-
+  BasicBlock_sp getEntryBlock() const;
+  core::List_sp basic_blocks() const;
 }; // Function_O
 }; // llvmo
 /* from_object translators */
@@ -3649,6 +3680,8 @@ public:
   size_t size();
   Instruction_sp back();
 
+  core::List_sp instructions() const;
+
 }; // BasicBlock_O
 }; // llvmo
 /* from_object translators */
@@ -3716,6 +3749,7 @@ struct to_object<llvm::Argument> {
 };
 };
 
+#if 0
 namespace translate {
 template <>
 struct to_object<llvm::Function::ArgumentListType &> {
@@ -3729,6 +3763,8 @@ struct to_object<llvm::Function::ArgumentListType &> {
   }
 };
 };
+#endif
+
 
 namespace llvmo {
 FORWARD(Type);
@@ -3768,7 +3804,7 @@ public:
   PointerType_sp getPointerTo(int addressSpace = 0);
 
   bool equal(core::T_sp obj) const;
-
+  LLVMContext_sp getContext() const;
   string __repr__() const;
 
 }; // Type_O
@@ -4175,7 +4211,7 @@ struct from_object<llvm::GlobalValue::LinkageTypes, std::true_type> {
       this->_v = converter->enumForSymbol<llvm::GlobalValue::LinkageTypes>(sym);
       return;
     }
-    SIMPLE_ERROR(BF("Cannot convert object %s to llvm::GlobalValue::LinkageType") % _rep_(object));
+    SIMPLE_ERROR_SPRINTF("Cannot convert object %s to llvm::GlobalValue::LinkageType", _rep_(object).c_str());
   }
 };
 
@@ -4192,7 +4228,7 @@ struct from_object<llvm::GlobalValue::ThreadLocalMode, std::true_type> {
         return;
       }
     }
-    SIMPLE_ERROR(BF("Cannot convert object %s to llvm::GlobalValue::ThreadLocalMode") % _rep_(object));
+    SIMPLE_ERROR_SPRINTF("Cannot convert object %s to llvm::GlobalValue::ThreadLocalMode", _rep_(object).c_str());
   }
 };
 
@@ -4210,7 +4246,7 @@ struct from_object<llvm::GlobalValue::ThreadLocalMode, std::true_type> {
 		this->_v = converter->enumForSymbol<llvm::VerifierFailureAction>(sym);
 		return;
 	    }
-	    SIMPLE_ERROR(BF("Cannot convert object %s to llvm::VerifierFailureAction") % _rep_(object) );
+	    SIMPLE_ERROR_SPRINTF("Cannot convert object %s to llvm::VerifierFailureAction", _rep_(object).c_str());
 	}
     };
 #endif
@@ -4228,10 +4264,11 @@ struct from_object<llvm::AtomicOrdering, std::true_type> {
         return;
       }
     }
-    SIMPLE_ERROR(BF("Cannot convert object %s to llvm::AtomicOrdering") % _rep_(object));
+    SIMPLE_ERROR_SPRINTF("Cannot convert object %s to llvm::AtomicOrdering", _rep_(object).c_str());
   }
 };
 
+#if 0
 template <>
 struct from_object<llvm::SynchronizationScope, std::true_type> {
   typedef llvm::SynchronizationScope DeclareType;
@@ -4243,10 +4280,11 @@ struct from_object<llvm::SynchronizationScope, std::true_type> {
       this->_v = converter->enumForSymbol<llvm::SynchronizationScope>(sym);
       return;
     }
-    SIMPLE_ERROR(BF("Cannot convert object %s to llvm::SynchronizationScope") % _rep_(object));
+    SIMPLE_ERROR_SPRINTF("Cannot convert object %s to llvm::SynchronizationScope", _rep_(object).c_str());
   }
 };
-
+#endif
+ 
 template <>
 struct from_object<llvm::AtomicRMWInst::BinOp, std::true_type> {
   typedef llvm::AtomicRMWInst::BinOp DeclareType;
@@ -4258,7 +4296,7 @@ struct from_object<llvm::AtomicRMWInst::BinOp, std::true_type> {
       this->_v = converter->enumForSymbol<llvm::AtomicRMWInst::BinOp>(sym);
       return;
     }
-    SIMPLE_ERROR(BF("Cannot convert object %s to llvm::AtomicRMWInst::BinOp") % _rep_(object));
+    SIMPLE_ERROR_SPRINTF("Cannot convert object %s to llvm::AtomicRMWInst::BinOp", _rep_(object).c_str());
   }
 };
 
@@ -4273,7 +4311,7 @@ struct from_object<llvm::Instruction::CastOps, std::true_type> {
       this->_v = converter->enumForSymbol<llvm::Instruction::CastOps>(sym);
       return;
     }
-    SIMPLE_ERROR(BF("Cannot convert object %s to llvm::Instruction::CastOps") % _rep_(object));
+    SIMPLE_ERROR_SPRINTF("Cannot convert object %s to llvm::Instruction::CastOps", _rep_(object).c_str());
   }
 };
 
@@ -4288,7 +4326,7 @@ struct from_object<llvm::Instruction::BinaryOps, std::true_type> {
       this->_v = converter->enumForSymbol<llvm::Instruction::BinaryOps>(sym);
       return;
     }
-    SIMPLE_ERROR(BF("Cannot convert object %s to llvm::Instruction::BinaryOps") % _rep_(object));
+    SIMPLE_ERROR_SPRINTF("Cannot convert object %s to llvm::Instruction::BinaryOps", _rep_(object).c_str());
   }
 };
 
@@ -4303,7 +4341,7 @@ struct from_object<llvm::CmpInst::Predicate, std::true_type> {
       this->_v = converter->enumForSymbol<llvm::CmpInst::Predicate>(sym);
       return;
     }
-    SIMPLE_ERROR(BF("Cannot convert object %s to llvm::CmpInst::Predicate") % _rep_(object));
+    SIMPLE_ERROR_SPRINTF("Cannot convert object %s to llvm::CmpInst::Predicate", _rep_(object).c_str());
   }
 };
 };
@@ -4327,18 +4365,35 @@ namespace llvmo {
   using namespace llvm;
   using namespace llvm::orc;
 
+  void save_symbol_info(const llvm::object::ObjectFile& object_file, const llvm::RuntimeDyld::LoadedObjectInfo& loaded_object_info);
+};
+
+// Don't allow the object to move, but maybe I'll need to collect it
+// if we create a ClaspJIT_O for each thread and need to collect it when
+// the thread is killed
+template <>
+struct gctools::GCInfo<llvmo::ClaspJIT_O> {
+  static bool constexpr NeedsInitialization = false;
+  static bool constexpr NeedsFinalization = false;
+  static GCInfo_policy constexpr Policy = collectable_immobile;
+};
+
+namespace llvmo {
   class ClaspJIT_O : public core::General_O {
     LISP_CLASS(llvmo, LlvmoPkg, ClaspJIT_O, "clasp-jit", core::General_O);
-
   private:
     std::unique_ptr<llvm::TargetMachine> TM;
     const llvm::DataLayout DL;
-    ObjectLinkingLayer<> ObjectLayer;
-    IRCompileLayer<decltype(ObjectLayer)> CompileLayer;
-    typedef std::function<std::unique_ptr<Module>(std::unique_ptr<Module>)> OptimizeFunction;
+//    NotifyObjectLoadedT NotifyObjectLoaded;
+    RTDyldObjectLinkingLayer ObjectLayer;
+    IRCompileLayer<decltype(ObjectLayer),SimpleCompiler> CompileLayer;
+    typedef std::function<std::shared_ptr<Module>(std::shared_ptr<Module>)> OptimizeFunction;
     IRTransformLayer<decltype(CompileLayer), OptimizeFunction> OptimizeLayer;
+    JITEventListener* GDBEventListener;
+    core::List_sp ModuleHandles;
   public:
-    typedef decltype(OptimizeLayer)::ModuleSetHandleT ModuleHandle;
+//    typedef decltype(OptimizeLayer)::ModuleSetHandleT ModuleHandle;
+    typedef decltype(CompileLayer)::ModuleHandleT ModuleHandle;
 
     ClaspJIT_O();
 
@@ -4349,7 +4404,7 @@ namespace llvmo {
     core::Pointer_sp findSymbolIn(ModuleHandle_sp handle, const std::string& Name, bool exportedSymbolsOnly );
     bool removeModule(ModuleHandle_sp H);
 
-    std::unique_ptr<llvm::Module> optimizeModule(std::unique_ptr<llvm::Module> M);
+//    std::shared_ptr<llvm::Module> optimizeModule(std::shared_ptr<llvm::Module> M);
   };
 
 };
@@ -4388,8 +4443,9 @@ namespace llvmo {
     virtual ~ModuleHandle_O();
   };
 
+  core::T_sp llvm_sys__lookup_jit_symbol_info(void* ptr);
 
-
+  std::shared_ptr<llvm::Module> optimizeModule(std::shared_ptr<llvm::Module> M);
 };
 
 

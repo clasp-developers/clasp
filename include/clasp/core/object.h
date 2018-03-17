@@ -35,7 +35,6 @@ THE SOFTWARE.
 #ifndef OBJECT_H //[
 #define OBJECT_H
 
-#include <clasp/core/foundation.h>
 #include <clasp/core/newhash.h>
 #include <clasp/core/commonLispPackage.fwd.h>
 #include <clasp/core/corePackage.fwd.h>
@@ -98,10 +97,7 @@ bool clasp_charEqual2(T_sp, T_sp);
 //
 //
 namespace core {
-  FORWARD(Class);
   FORWARD(Record);
-  FORWARD(BuiltInClass);
-  FORWARD(Model);
   FORWARD(LambdaListHandler);
   FORWARD(Binder);
   FORWARD(Symbol);
@@ -143,7 +139,7 @@ struct LispBases1 {
   typedef T_Base Base1;
   static inline bool baseClassSymbolsDefined() {
     if (IS_SYMBOL_UNDEFINED(Base1::static_classSymbol())) {
-      THROW_HARD_ERROR(BF("Base class is not defined yet"));
+      throw_hard_error("Base class is not defined yet");
     }
     return true;
   }
@@ -165,18 +161,61 @@ namespace core {
     virtual bool mapKeyValue(T_sp key, T_sp value) = 0;
   };
 
+  /* A lighter weight hash generator for EQ and EQL tests. 
+     It has only a single part. */
+class Hash1Generator {
+ public:
+  Fixnum _Part;
+ public:
+  gc::Fixnum hash(gc::Fixnum bound = 0) const {
+    gc::Fixnum hash = 5381;
+    hash = (gc::Fixnum)hash_word((cl_intptr_t)5381,(cl_intptr_t)this->_Part);
+    if (bound) return ((cl_intptr_t)hash) % bound;
+#ifdef DEBUG_HASH_GENERATOR
+    if (this->_debug) {
+      printf("%s:%d  final hash = %lu\n", __FILE__, __LINE__, hash);
+    }
+#endif
+    return hash;
+  }
+  gc::Fixnum hashBound(gc::Fixnum bound) const {
+    gc::Fixnum hash = 5381;
+    hash = (gc::Fixnum)hash_word((cl_intptr_t)5381,(cl_intptr_t)this->_Part);
+#ifdef DEBUG_HASH_GENERATOR
+    if (this->_debug) {
+      printf("%s:%d  final hash = %lu\n", __FILE__, __LINE__, hash);
+    }
+#endif
+    return ((cl_intptr_t)hash) % bound;
+  }
+  bool addPart(Fixnum part) {
+    this->_Part = part;
+#ifdef DEBUG_HASH_GENERATOR
+    if (this->_debug) {
+      printf("%s:%d Added part --> %ld\n", __FILE__, __LINE__, part);
+    }
+#endif
+    return true;
+  }
+  bool isFilling() const { return true; };
+  /*Add the bignum across multiple parts, return true if everything was added */
+  bool addPart(const mpz_class &bignum);
+  void hashObject(T_sp obj);
+};
+ 
 //#define DEBUG_HASH_GENERATOR
   class HashGenerator {
     static const int MaxParts = 32;
-
+    static const int MaxDepth = 8;
   private:
+    int _Depth;
     int _NextPartIndex;
     Fixnum _Parts[MaxParts];
 #ifdef DEBUG_HASH_GENERATOR
     bool _debug;
 #endif
   public:
-  HashGenerator(bool debug = false) : _NextPartIndex(0)
+  HashGenerator(bool debug = false) : _Depth(0), _NextPartIndex(0)
 #ifdef DEBUG_HASH_GENERATOR
       ,
       _debug(debug)
@@ -196,6 +235,12 @@ namespace core {
       return true;
     }
 
+    bool addPart0(Fixnum part) {
+      this->_Parts[0] = part;
+      this->_NextPartIndex=1;
+      return true;
+    }
+
   /*Add the bignum across multiple parts, return true if everything was added */
     bool addPart(const mpz_class &bignum);
 
@@ -206,7 +251,7 @@ namespace core {
 
   /*! Return true if can still accept parts */
     bool isFilling() const {
-      return this->_NextPartIndex < MaxParts;
+      return (this->_NextPartIndex < MaxParts) || (this->_Depth>= MaxDepth);
     }
 
     gc::Fixnum hash(gc::Fixnum bound = 0) const {
@@ -265,7 +310,7 @@ namespace core {
   static core::Symbol_sp static_class_symbol;                           \
   static core::Class_sp static_class;                                   \
   static gctools::smart_ptr<core::Creator_O> static_creator;            \
-  static gctools::GCKindEnum static_Kind;                                               \
+  static gctools::Header_s::Value static_HeaderValue;                   \
  public:                                                                \
   static void set_static_class_symbol(core::Symbol_sp i)                \
   { oClass::static_class_symbol = i; };                                 \
@@ -372,7 +417,10 @@ namespace core {
 //    General_O& &operator=(const General_O &) { return *this; };
 
     virtual void sxhash_(HashGenerator &hg) const;
-    virtual size_t templatedSizeof() const { SUBIMP(); };
+    virtual void sxhash_equal(HashGenerator &hg,LocationDependencyPtrT ptr) const;
+    virtual void sxhash_equalp(HashGenerator &hg,LocationDependencyPtrT ptr) const {return this->sxhash_equal(hg,ptr);};
+    
+    virtual size_t templatedSizeof() const { return 0; };
 
       //! Initialize member variables and those that depend on sharedThis
     virtual void initialize();
@@ -380,9 +428,6 @@ namespace core {
   /*! Objects can catch signals from Models
 	 * but only Model's and subclasses can send them
 	 */
-    virtual void catchSignal(core::Symbol_sp signal, core::Model_sp sender, core::List_sp data) { _G(); /*Do nothing*/ };
-    virtual void propagateSignal(core::Symbol_sp signal){}; // Objects don't propagate signals
-
     string className() const;
 
     T_sp deepCopy() const;
@@ -452,7 +497,7 @@ namespace core {
     virtual bool operator>(T_sp obj) const { return !this->operator<=(obj); };
     virtual bool operator>=(T_sp obj) const { return !this->operator<(obj); };
 
-    virtual void validate() const {};
+//    virtual void validate() const {};
 
     //! This is to support Derivable<T> classes in clbind
     virtual void* pointerToAlienWithin() { SUBIMP(); };
@@ -476,9 +521,6 @@ namespace core {
   /*! Get the signature (metaclass slot definitions) for the instance */
     virtual T_sp instanceSig() const;
 
-  /*! Return number of slots if instance of Instance_O or StructureObject_O class
-	  otherwise return nil */
-    virtual T_sp oinstancepSTAR() const { return _Nil<T_O>(); };
   /*! Return number of slots if instance of Instance_O otherwise return nil */
     virtual T_sp oinstancep() const { return _Nil<T_O>(); }; //
     bool instancep() const { return oinstancep().isTrue(); };
@@ -487,6 +529,7 @@ namespace core {
   /*! Return number of slots if instance of Instance_O otherwise return nil */
     virtual T_sp ofuncallableInstanceP() const { return _Nil<T_O>(); }; //
     bool funcallableInstanceP() const { return ofuncallableInstanceP().isTrue(); };
+    virtual Fixnum get_stamp_() const { lisp_error_no_stamp((void*)this); };
   };
 };
 
@@ -537,7 +580,15 @@ namespace core {
       General_O* general = x.unsafe_general();
       return general->eql_(y);
     }
-    SIMPLE_ERROR(BF("Bad eql comparison"));
+    SIMPLE_ERROR_SPRINTF("Bad eql comparison");
+  };
+
+  CL_LAMBDA(x y);
+  CL_DECLARE();
+  CL_DOCSTRING("Underlying eql. Only valid on general objects (not fixnums, single floats, characters, or conses)");
+  inline CL_DEFUN bool core__eql_underlying(T_sp x, T_sp y) {
+    General_O* general = x.unsafe_general();
+    return general->eql_(y);
   };
 
   CL_LAMBDA(x y);
@@ -563,44 +614,12 @@ namespace core {
       General_O* general = x.unsafe_general();
       return general->equal(y);
     }
-    SIMPLE_ERROR(BF("Bad equal comparison"));
+    SIMPLE_ERROR_SPRINTF("Bad equal comparison");
   };
 
   extern int basic_compare(Number_sp na, Number_sp nb);
 
-  CL_LAMBDA(x y);
-  CL_DECLARE();
-  CL_DOCSTRING("equalp");
-  inline CL_DEFUN bool cl__equalp(T_sp x, T_sp y) {
-    if (x.fixnump()) {
-      if (y.fixnump()) {
-        return x.raw_() == y.raw_();
-      } else if (y.single_floatp()) {
-        return (x.unsafe_fixnum() == y.unsafe_single_float());
-      } else if (Number_sp ny = y.asOrNull<Number_O>()) {
-        return basic_compare(x, y) == 0;
-      }
-      return false;
-    } else if (x.single_floatp()) {
-      if (y.single_floatp()) {
-        return x.unsafe_single_float() == y.unsafe_single_float();
-      } else if (y.fixnump()) {
-        return x.unsafe_single_float() == y.unsafe_fixnum();
-      } else if (Number_sp ny = y.asOrNull<Number_O>()) {
-        return basic_compare(x, y);
-      }
-      return false;
-    } else if (x.characterp()) {
-      return clasp_charEqual2(x, y);
-    } else if (x.consp() ) {
-      Cons_O* cons = x.unsafe_cons();
-      return cons->equalp(y);
-    } else if ( x.generalp() ) {
-      General_O* genx = x.unsafe_general();
-      return genx->equalp(y);
-    }
-    SIMPLE_ERROR(BF("Bad equalp comparison"));
-  };
+  bool cl__equalp(T_sp x, T_sp y);
 };
 
 
@@ -624,7 +643,28 @@ namespace core {
       general->sxhash_(hg);
       return;
     }
-    SIMPLE_ERROR(BF("Handle sxhash_ for object"));
+    SIMPLE_ERROR_SPRINTF("Handle sxhash_ for object");
+  };
+  inline void clasp_sxhash(T_sp obj, Hash1Generator &hg) {
+    if (obj.fixnump()) {
+      hg.addPart(obj.unsafe_fixnum());
+      return;
+    } else if (obj.single_floatp()) {
+      hg.addPart((gc::Fixnum)::std::abs((int)::floor(obj.unsafe_single_float())));
+      return;
+    } else if (obj.characterp()) {
+      hg.addPart(obj.unsafe_character());
+      return;
+    } else if (obj.consp() ) {
+      Cons_O* cons = obj.unsafe_cons();
+      hg.addPart((gc::Fixnum)cons);
+      return;
+    } else if ( obj.generalp() ) {
+      General_O* general = obj.unsafe_general();
+      hg.addPart((gc::Fixnum)general);
+      return;
+    }
+    SIMPLE_ERROR_SPRINTF("Handle sxhash_ for object");
   };
 };
 
@@ -648,9 +688,10 @@ namespace core {
 /*! Used to indicate that methods should be inherited from sequence */
 #define INHERIT_SEQUENCE
 
+#include <clasp/core/array.h>
+#include <clasp/core/instance.h>
 #include <clasp/core/metaClass.h>
 #include <clasp/core/sourceFileInfo.h>
-#include <clasp/core/array.h>
 #include <clasp/core/tagged_cast_specializations.h>
 #include <clasp/core/cxxObject.h>
 

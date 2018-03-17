@@ -21,7 +21,7 @@
    #:*debug-final-gml*
    #:*debug-cleavir*
    #:*debug-cleavir-literals*
-   #:instruction-gid
+   #+stealth-gids :instruction-gid
    #:unsafe-multiple-value-foreign-call
    #:unsafe-foreign-call
    #:unsafe-foreign-call-pointer
@@ -41,8 +41,7 @@
    #:alloca-i8
 ))
 
-(defpackage #:clasp-cleavir-generate-ast
-  (:nicknames #:cc-generate-ast))
+(defpackage #:cc-generate-ast)
 
 
 (defpackage #:clasp-cleavir-ast
@@ -73,6 +72,13 @@
    #:result-ast
    #:tag-ast
    #:datum-id
+   #:vector-length-ast #:vl-ast-vector
+   #:displacement-ast #:displacement-ast-mdarray
+   #:displaced-index-offset-ast #:displaced-index-offset-ast-mdarray
+   #:array-total-size-ast #:array-total-size-ast-mdarray
+   #:array-rank-ast #:array-rank-ast-mdarray
+   #:array-dimension-ast #:array-dimension-ast-mdarray #:array-dimension-ast-axis
+   #:bind-va-list-ast #:make-bind-va-list-ast #:va-list-ast
    ))
 
 (defpackage #:clasp-cleavir-hir
@@ -86,6 +92,7 @@
    #:landing-pad-return-instruction
    #:landing-pad
    #:jump-id
+   #:lambda-list
    #:make-named-enter-instruction
    #:debug-message-instruction
    #:multiple-value-foreign-call-instruction
@@ -111,6 +118,13 @@
    #:make-push-special-binding-instruction
    #:pop-special-binding-instruction
    #:make-pop-special-binding-instruction
+   #:make-vector-length-instruction
+   #:make-displacement-instruction
+   #:make-displaced-index-offset-instruction
+   #:make-array-total-size-instruction
+   #:make-array-rank-instruction
+   #:make-array-dimension-instruction
+   #:bind-va-list-instruction #:make-bind-va-list-instruction
    ))
 
 (defpackage #:clasp-cleavir-ast-to-hir
@@ -125,6 +139,8 @@
 
 (defpackage #:cc-hir-to-mir
   (:use #:common-lisp)
+  (:export
+   #:reduce-typeqs)
 )
 
 (defpackage #:cc-mir
@@ -134,10 +150,14 @@
    #:make-characterp-instruction
    #:single-float-p-instruction
    #:make-single-float-p-instruction
+   #:headerq-instruction
+   #:header-value-min-max
+   #:make-headerq-instruction
    #:enter-instruction
+   #:typed-lexical-location #:lexical-location-type
    #:closure-pointer-dynamic-lexical-location
    #:describe-mir
-   #:assign-mir-instruction-datum-ids
+   #+stealth-gids #:assign-mir-instruction-datum-ids
    ))
 
 (defpackage #:cleavir-ir-gml

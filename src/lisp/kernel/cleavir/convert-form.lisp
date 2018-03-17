@@ -1,4 +1,4 @@
-(in-package :clasp-cleavir-generate-ast)
+(in-package :cc-generate-ast)
 
 
 (defmethod cleavir-generate-ast:convert-code (lambda-list body env (system clasp-cleavir:clasp) &optional block-name )

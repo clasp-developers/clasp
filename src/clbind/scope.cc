@@ -48,13 +48,12 @@ THE SOFTWARE.
 
 #define CLBIND_BUILDING
 
-#include <clasp/clbind/cl_include.h>
-
-#include <clasp/clbind/scope.h>
 //#include <clasp/clbind/detail/debug.hpp>
 //#include <clasp/clbind/detail/stack_utils.hpp>
 #include <cassert>
 #include <clasp/core/foundation.h>
+#include <clasp/clbind/scope.h>
+#include <clasp/clbind/cl_include.h>
 #include <clasp/core/arguments.h>
 #include <clasp/core/package.h>
 #include <clasp/core/symbolTable.h>

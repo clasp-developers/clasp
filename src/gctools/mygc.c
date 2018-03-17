@@ -16,12 +16,19 @@
 
 extern mps_arena_t global_arena;
 
+/* David Lovemore suggests (Oct 2017) that PoolOfAddr may not return a pool.
+    If PoolOfAddr returns TRUE then it will set pool_return
+    if it returns FALSE, we set pool_return to NULL and check it in the caller.
+ */
 mps_pool_t clasp_pool_of_addr(void* vaddr)
 {
   Pool pool_return;
   Arena arena = (Arena)global_arena;
   Addr addr = (Addr)vaddr;
-  PoolOfAddr(&pool_return,arena,addr);
+  ArenaEnter(arena);
+  int success = PoolOfAddr(&pool_return,arena,addr);
+  if (!success) pool_return = NULL;
+  ArenaLeave(arena);
   return (mps_pool_t)pool_return;
 }
 

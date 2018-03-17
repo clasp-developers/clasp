@@ -50,8 +50,13 @@
   ((signature% :initform nil :initarg :signature% :accessor signature%)
    (provide-declaration% :initform t :initarg :provide-declaration% :accessor provide-declaration%)))
 
+(defclass expose-defun-setf (expose-code function-mixin)
+  ((signature% :initform nil :initarg :signature% :accessor signature%)
+   (provide-declaration% :initform t :initarg :provide-declaration% :accessor provide-declaration%)))
+
 (defclass expose-extern-defun (expose-code function-mixin)
-  ((pointer% :initform nil :initarg :pointer% :accessor pointer%)))
+  ((pointer% :initform nil :initarg :pointer% :accessor pointer%)
+   (function-ptr% :initform nil :initarg :function-ptr% :accessor function-ptr%)))
 
 (defclass method-mixin ()
   ((class% :initform nil :initarg :class% :accessor class%)
@@ -70,6 +75,12 @@
 (defclass expose-def-class-method (expose-code class-method-mixin)
   ((signature% :initform nil :initarg :signature% :accessor signature%)))
 
+(defclass gc-managed-type ()
+  ((file% :initarg :file% :accessor file%)
+   (line% :initarg :line% :accessor line%)
+   (c++type% :initarg :c++type% :accessor c++type%)
+   (stamp% :initarg :stamp% :accessor stamp%)))
+
 (defclass exposed-class ()
   ((file% :initarg :file% :accessor file%)
    (line% :initarg :line% :accessor line%)
@@ -82,7 +93,10 @@
    (base% :initarg :base% :accessor base%)
    (lisp-name% :initarg :lisp-name% :accessor lisp-name%)
    (methods% :initform nil :initarg :methods% :accessor methods%)
-   (class-methods% :initform nil :initarg :class-methods% :accessor class-methods%)))
+   (class-methods% :initform nil :initarg :class-methods% :accessor class-methods%)
+   (direct-subclasses% :initform nil :accessor direct-subclasses%)
+   (stamp% :initform nil :accessor stamp%)
+   (flags% :initform nil :accessor flags%)   ))
 
 (defclass exposed-internal-class (exposed-class) ())
 (defclass exposed-external-class (exposed-class) ())
@@ -194,7 +208,38 @@ Compare the symbol against previous definitions of symbols - if there is a misma
             (warn "The symbol ~a in package ~a was declared twice with different shadow status - c++-names ~a ~a" (lisp-name% symbol) (package% symbol) (c++-name% symbol) (c++-name% previous))))
         (setf (gethash key previous-symbols) symbol))))
 
-
+(defun calculate-class-stamps-and-flags (classes gc-managed-types)
+  (declare (optimize (debug 3)))
+  (let ((cur-stamp 0)
+        top-classes)
+    (labels ((traverse-assign-stamps (class flags)
+               (setf (stamp% class) (incf cur-stamp))
+               (cond
+                 ((string= "core::WrappedPointer_O" (class-key% class))
+                  (setf flags :FLAGS_STAMP_IN_WRAPPER))
+                 ((or (string= "core::Instance_O" (class-key% class))
+                      (string= "core::FuncallableInstance_O" (class-key% class)))
+                  (setf flags :FLAGS_STAMP_IN_RACK))
+                 ((string= "core::DerivableCxxObject_O" (class-key% class))
+                  (setf flags :FLAGS_STAMP_IN_CALLBACK)))
+               (setf (flags% class) flags)
+               (dolist (subclass (direct-subclasses% class))
+                 (traverse-assign-stamps subclass flags))))
+      (maphash (lambda (key class)
+                 (let ((super-class-key (base% class)))
+                   (if super-class-key
+                       (let ((super-class (gethash (base% class) classes)))
+                         (if super-class
+                             (progn
+                               (push class (direct-subclasses% super-class)))
+                             (push class top-classes)))
+                       (push class top-classes))))
+               classes)
+      (dolist (top-class top-classes)
+        (traverse-assign-stamps top-class :FLAGS_STAMP_IN_HEADER)))
+    (maphash (lambda (key type)
+               (setf (stamp% type) (incf cur-stamp)))
+             gc-managed-types)))
 
 (defun interpret-tags (tags)
   "* Arguments
@@ -223,6 +268,7 @@ This interprets the tags and generates objects that are used to generate code."
         (packages (make-hash-table :test #'equal)) ; map ns/package to package string
         (packages-to-create nil)
         (classes (make-hash-table :test #'equal))
+        (gc-managed-types (make-hash-table :test #'equal))
         functions symbols
         (previous-symbols (make-hash-table :test #'equal)))
     (declare (special namespace-to-assoc package-to-assoc packages))
@@ -282,12 +328,12 @@ This interprets the tags and generates objects that are used to generate code."
                                           (packaged-name cur-namespace-tag tag packages)
                                           packages)))
                (let* ((namespace (tags:namespace% cur-namespace-tag))
-                     (signature (tags:signature-text% tag))
-                     (signature-text (tags:signature-text% tag))
-                     (lambda-list (or (tags:maybe-lambda-list cur-lambda)
-                                      (parse-lambda-list-from-signature signature-text)))
-                     (declare-form (tags:maybe-declare cur-declare))
-                     (docstring (tags:maybe-docstring cur-docstring)))
+                      (signature (tags:signature-text% tag))
+                      (signature-text (tags:signature-text% tag))
+                      (lambda-list (or (tags:maybe-lambda-list cur-lambda)
+                                       (parse-lambda-list-from-signature signature-text)))
+                      (declare-form (tags:maybe-declare cur-declare))
+                      (docstring (tags:maybe-docstring cur-docstring)))
                  (multiple-value-bind (function-name full-function-name simple-function)
                      (extract-function-name-from-signature signature-text tag)
                    (declare (ignore function-name))
@@ -305,7 +351,47 @@ This interprets the tags and generates objects that are used to generate code."
                                            :signature% signature)
                             functions
                             :test #'string=
-                            :key #'lisp-name% ))
+                            :key #'lisp-name%))
+                 (setf cur-lambda nil
+                       cur-declare nil
+                       cur-docstring nil
+                       cur-name nil))))
+            (tags:cl-defun-setf-tag ; identical to previous case, except for...
+             (error-if-bad-expose-info-setup tag
+                                             cur-name
+                                             cur-lambda
+                                             cur-declare
+                                             cur-docstring)
+             (let* ((packaged-function-name
+                     (maybe-override-name cur-namespace-tag
+                                          cur-name
+                                          (packaged-name cur-namespace-tag tag packages)
+                                          packages)))
+               (let* ((namespace (tags:namespace% cur-namespace-tag))
+                      (signature (tags:signature-text% tag))
+                      (signature-text (tags:signature-text% tag))
+                      (lambda-list (or (tags:maybe-lambda-list cur-lambda)
+                                       (parse-lambda-list-from-signature signature-text)))
+                      (declare-form (tags:maybe-declare cur-declare))
+                      (docstring (tags:maybe-docstring cur-docstring)))
+                 (multiple-value-bind (function-name full-function-name simple-function)
+                     (extract-function-name-from-signature signature-text tag)
+                   (declare (ignore function-name))
+                   (pushnew (make-instance 'expose-defun-setf ; here.
+                                           :namespace% namespace
+                                           :lisp-name% packaged-function-name
+                                           :function-name% full-function-name
+                                           :file% (tags:file% tag)
+                                           :line% (tags:line% tag)
+                                           :character-offset% (tags:character-offset% tag)
+                                           :lambda-list% lambda-list
+                                           :declare% declare-form
+                                           :docstring% docstring
+                                           :provide-declaration% simple-function
+                                           :signature% signature)
+                            functions
+                            :test #'string=
+                            :key #'lisp-name%))
                  (setf cur-lambda nil
                        cur-declare nil
                        cur-docstring nil
@@ -313,15 +399,19 @@ This interprets the tags and generates objects that are used to generate code."
             (tags:cl-extern-defun-tag
              (error-if-bad-expose-info-setup tag cur-name cur-lambda cur-declare cur-docstring)
              (let* ((packaged-function-name
-                     (maybe-override-name
-                      cur-namespace-tag
-                      cur-name
-                      (packaged-name cur-namespace-tag tag packages)
-                      packages))
+                      (maybe-override-name
+                       cur-namespace-tag
+                       cur-name
+                       (packaged-name cur-namespace-tag tag packages)
+                       packages))
                     (namespace (tags:namespace% cur-namespace-tag))
-                    (pointer (tags:pointer% tag))
+                    (pointer (string-trim " " (tags:pointer% tag)))
                     (function-name (extract-function-name-from-pointer pointer tag))
-                    (lambda-list (or (tags:maybe-lambda-list cur-lambda) ""))
+                    (function-ptr (esrap:parse 'function-ptr pointer))
+                    (namespace (function-ptr-namespace function-ptr))
+                    (lambda-list (or (tags:maybe-lambda-list cur-lambda)
+                                     (and (function-ptr-type function-ptr)
+                                          (convert-function-ptr-to-lambda-list function-ptr))))
                     (declare-form (tags:maybe-declare cur-declare))
                     (docstring (tags:maybe-docstring cur-docstring)))
                (pushnew (make-instance 'expose-extern-defun
@@ -334,10 +424,11 @@ This interprets the tags and generates objects that are used to generate code."
                                        :lambda-list% lambda-list
                                        :declare% declare-form
                                        :docstring% docstring
-                                       :pointer% pointer)
+                                       :pointer% pointer
+                                       :function-ptr% function-ptr)
                         functions
                         :test #'string=
-                        :key #'lisp-name% )
+                        :key #'lisp-name%)
                (setf cur-lambda nil
                      cur-declare nil
                      cur-docstring nil
@@ -447,6 +538,14 @@ This interprets the tags and generates objects that are used to generate code."
                      cur-declare nil
                      cur-docstring nil
                      cur-name nil)))
+            (tags:gc-managed-type-tag
+             (let ((type-key (tags:c++type% tag)))
+               (unless (gethash type-key gc-managed-types)
+                 (setf (gethash type-key gc-managed-types)
+                       (make-instance 'gc-managed-type
+                                      :file% (tags:file% tag)
+                                      :line% (tags:line% tag)
+                                      :c++type% type-key)))))
             (tags:lisp-internal-class-tag
              (when cur-docstring (error-if-bad-expose-info-setup* tag cur-docstring))
              (unless cur-namespace-tag (error 'missing-namespace :tag tag))
@@ -571,7 +670,8 @@ This interprets the tags and generates objects that are used to generate code."
                  (tags:file% tag)
                  (tags:line% tag)
                  e))))
-    (values (order-packages-by-use packages-to-create) functions symbols classes enums initializers)))
+    (calculate-class-stamps-and-flags classes gc-managed-types)
+    (values (order-packages-by-use packages-to-create) functions symbols classes gc-managed-types enums initializers)))
                                                                                          
                                                                                          
 

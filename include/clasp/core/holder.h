@@ -33,13 +33,12 @@ THE SOFTWARE.
 #include <set>
 #include <unordered_set>
 #include <stack>
-//#include "foundation.h"
 //#include "conditions.h"
 #include <clasp/core/cons.h>
 
 namespace core {
 
-template <class OType /*, class GCKind=gctools::GCHolder */>
+template <class OType /*, class GCStamp=gctools::GCHolder */>
 class DepreciatedSymbolDict :
 #if defined(USE_MPS) || defined(USE_REFCOUNT)
     public std::map<Symbol_sp, gctools::smart_ptr<OType>>

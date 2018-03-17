@@ -1,4 +1,4 @@
-(in-package :clasp-cleavir-generate-ast)
+(in-package :cc-generate-ast)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -24,8 +24,23 @@
 	    (setf (cc-ast:protected-ast ast) protected-form)
 	    ast)))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Define a "macro" for the Cleavir compiler.
+;;; This shouldn't be necessary, but I'd like to
+;;; avoid overwriting any bclasp definitions.
+;;; Don't use &environment or &whole.
 
-
+(defmacro defsmacro (name lambda-list &body body)
+  (let ((head (gensym "HEAD"))
+        (form (gensym "FORM"))
+        (environment (gensym "ENVIRONMENT"))
+        (system (gensym "SYSTEM")))
+    `(defmethod cleavir-generate-ast:convert-special
+         ((,head (eql ',name)) ,form ,environment (,system clasp-cleavir:clasp))
+       (cleavir-generate-ast:convert
+        (destructuring-bind ,lambda-list (rest ,form) ,@body)
+        ,environment ,system))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -35,19 +50,16 @@
 ;;; into a multiple-value-call-ast.  In the general case with multiple forms
 ;;; it gets converted into a function call to CORE:MULTIPLE-VALUE-FUNCALL.
 ;;;
-(defmethod cleavir-generate-ast::convert-special
-    ((symbol (eql 'multiple-value-call)) form environment (system clasp-cleavir:clasp))
-  (destructuring-bind (function-form . forms) 
-      (rest form)
-    (if (eql (length forms) 1)
-	(cleavir-ast:make-multiple-value-call-ast
-	 (cleavir-generate-ast::convert function-form environment system)
-	 (cleavir-generate-ast::convert-sequence forms environment system))
-	(cleavir-generate-ast::convert `(core:multiple-value-funcall
-                                         ,function-form
-                                         ,@(mapcar (lambda (x) `#'(lambda () (progn ,x)))
-                                                   forms))
-                                       environment system))))
+(defsmacro multiple-value-call (function-form &rest forms)
+  ;;; Technically we could convert the 0-forms case to FUNCALL, but it's
+  ;;; probably not a big deal. (In practice, almost all MULTIPLE-VALUE-CALLs
+  ;;; result from MULTIPLE-VALUE-BIND, which uses only have one argument form.)
+  (if (eql (length forms) 1)
+      `(cleavir-primop:multiple-value-call (core::coerce-fdesignator ,function-form) ,@forms)
+      `(core:multiple-value-funcall
+        (core::coerce-fdesignator ,function-form)
+        ,@(mapcar (lambda (x) `#'(lambda () (progn ,x))) forms))))
+
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -58,11 +70,10 @@
 ;;; Func1 is evaluated and the multiple values are saved and then func2 is evaluated
 ;;; and the multiple values returned from func1 are restored
 ;;;
-(defmethod cleavir-generate-ast::convert-special
-    ((symbol (eql 'cl:multiple-value-prog1)) form environment (system clasp-cleavir:clasp))
-  (destructuring-bind (first-form . forms) 
-      (rest form)
-    (cleavir-generate-ast::convert `(core:multiple-value-prog1-function #'(lambda () (progn ,first-form)) (lambda () (progn ,@forms))) environment system)))
+(defsmacro multiple-value-prog1 (first-form &rest forms)
+  (if (null forms) ; skip it. This can come up in generated code, e.g. method combinations
+      first-form
+      `(core:multiple-value-prog1-function (lambda () (progn ,first-form)) (lambda () (progn ,@forms)))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -150,17 +161,115 @@
   (cleavir-code-utilities:check-argcount form 2 nil))
 
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Converting CORE:VECTOR-LENGTH
+;;;
+;;; Gets the length of a vector like CL:LENGTH.
+;;;
+(defmethod cleavir-generate-ast::convert-special
+    ((symbol (eql 'core::vector-length)) form environment (system clasp-cleavir:clasp))
+  (destructuring-bind (vector) (rest form)
+    (make-instance 'clasp-cleavir-ast::vector-length-ast
+                   :vector (cleavir-generate-ast:convert vector environment system))))
+
+(defmethod cleavir-generate-ast:check-special-form-syntax ((head (eql 'core::vector-length)) form)
+  (cleavir-code-utilities:check-form-proper-list form)
+  (cleavir-code-utilities:check-argcount form 1 1))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Converting CORE::%DISPLACEMENT
+;;;
+;;; Gets the underlying (simple-array * (*)) for
+;;; any MDArray, including SimpleMDArrays.
+;;;
+(defmethod cleavir-generate-ast:convert-special
+    ((symbol (eql 'core::%displacement)) form environment (system clasp-cleavir:clasp))
+  (destructuring-bind (mdarray) (rest form)
+    (make-instance 'clasp-cleavir-ast::displacement-ast
+                   :mdarray (cleavir-generate-ast:convert mdarray environment system))))
+
+(defmethod cleavir-generate-ast:check-special-form-syntax ((head (eql 'core::%displacement)) form)
+  (cleavir-code-utilities:check-form-proper-list form)
+  (cleavir-code-utilities:check-argcount form 1 1))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Converting CORE::%DISPLACED-INDEX-OFFSET
+;;;
+;;; Gets the underlying DIO for
+;;; any MDArray, including SimpleMDArrays.
+;;;
+(defmethod cleavir-generate-ast:convert-special
+    ((symbol (eql 'core::%displaced-index-offset)) form environment (system clasp-cleavir:clasp))
+  (destructuring-bind (mdarray) (rest form)
+    (make-instance 'clasp-cleavir-ast::displaced-index-offset-ast
+                   :mdarray (cleavir-generate-ast:convert mdarray environment system))))
+
+(defmethod cleavir-generate-ast:check-special-form-syntax ((head (eql 'core::%displaced-index-offset)) form)
+  (cleavir-code-utilities:check-form-proper-list form)
+  (cleavir-code-utilities:check-argcount form 1 1))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Converting CORE::%ARRAY-TOTAL-SIZE
+;;;
+;;; Gets the array total size for
+;;; any MDArray, including SimpleMDArrays.
+;;;
+(defmethod cleavir-generate-ast:convert-special
+    ((symbol (eql 'core::%array-total-size)) form environment (system clasp-cleavir:clasp))
+  (destructuring-bind (mdarray) (rest form)
+    (make-instance 'clasp-cleavir-ast::array-total-size-ast
+                   :mdarray (cleavir-generate-ast:convert mdarray environment system))))
+
+(defmethod cleavir-generate-ast:check-special-form-syntax ((head (eql 'core::%array-total-size)) form)
+  (cleavir-code-utilities:check-form-proper-list form)
+  (cleavir-code-utilities:check-argcount form 1 1))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Converting CORE::%ARRAY-RANK
+;;;
+;;; ARRAY-RANK for MDArrays
+(defmethod cleavir-generate-ast:convert-special
+    ((symbol (eql 'core::%array-rank)) form environment (system clasp-cleavir:clasp))
+  (destructuring-bind (mdarray) (rest form)
+    (make-instance 'clasp-cleavir-ast::array-rank-ast
+                   :mdarray (cleavir-generate-ast:convert mdarray environment system))))
+
+(defmethod cleavir-generate-ast:check-special-form-syntax ((head (eql 'core::%array-rank)) form)
+  (cleavir-code-utilities:check-form-proper-list form)
+  (cleavir-code-utilities:check-argcount form 1 1))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Converting CORE::%ARRAY-DIMENSION
+;;;
+;;; ARRAY-DIMENSION for MDArrays
+(defmethod cleavir-generate-ast:convert-special
+    ((symbol (eql 'core::%array-dimension)) form environment (system clasp-cleavir:clasp))
+  (destructuring-bind (mdarray axis) (rest form)
+    (make-instance 'clasp-cleavir-ast::array-dimension-ast
+                   :mdarray (cleavir-generate-ast:convert mdarray environment system)
+                   :axis (cleavir-generate-ast:convert axis environment system))))
+
+(defmethod cleavir-generate-ast:check-special-form-syntax ((head (eql 'core::%array-dimension)) form)
+  (cleavir-code-utilities:check-form-proper-list form)
+  (cleavir-code-utilities:check-argcount form 2 2))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; Converting CATCH
 ;;;
 ;;; Convert catch into a call
-(defmethod cleavir-generate-ast::convert-special
-    ((symbol (eql 'cl:catch)) form environment (system clasp-cleavir:clasp))
-  (destructuring-bind (tag . forms) 
-      (rest form)
-    (cleavir-generate-ast::convert `(core:catch-function ,tag (lambda () (declare (core:lambda-name catch-lambda)) (progn ,@forms))) environment system)))
+(defsmacro catch (tag &body body)
+  `(core:catch-function ,tag (lambda () (declare (core:lambda-name catch-lambda)) (progn ,@body))))
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -186,11 +295,52 @@
 ;;; Converting CL:PROGV
 ;;;
 ;;; Convert this into a function call
-(defmethod cleavir-generate-ast::convert-special
-    ((symbol (eql 'cl:progv)) form environment (system clasp-cleavir:clasp))
-  (destructuring-bind (symbols values . forms) 
-      (rest form)
-    (cleavir-generate-ast::convert `(core:progv-function ,symbols ,values #'(lambda () (progn ,@forms))) environment system)))
+(defsmacro progv (symbols values &body forms)
+  `(core:progv-function ,symbols ,values (lambda () (progn ,@forms))))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Converting CORE::BIND-VA-LIST
+;;;
+
+(defmethod cleavir-generate-ast:convert-special
+    ((symbol (eql 'core::bind-va-list)) form environment (system clasp-cleavir:clasp))
+  (cleavir-generate-ast:db origin (op lambda-list va-list-form . body) form
+    (declare (ignore op))
+    (let* ((parsed-lambda-list
+             (cleavir-code-utilities:parse-ordinary-lambda-list lambda-list))
+           (required (cleavir-code-utilities:required parsed-lambda-list)))
+      (multiple-value-bind (declarations documentation forms)
+          (cleavir-code-utilities:separate-function-body body)
+        (declare (ignore documentation))
+        (let ((canonicalized-dspecs
+                (cleavir-code-utilities:canonicalize-declaration-specifiers
+                 (reduce #'append (mapcar #'cdr declarations))
+                 (cleavir-env:declarations environment))))
+          (multiple-value-bind (idspecs rdspecs)
+              (cleavir-generate-ast::itemize-declaration-specifiers
+               (cleavir-generate-ast::itemize-lambda-list parsed-lambda-list)
+               canonicalized-dspecs)
+            (multiple-value-bind (ast lexical-lambda-list)
+                (cleavir-generate-ast::process-required
+                 required
+                 parsed-lambda-list
+                 idspecs
+                 (cleavir-generate-ast::make-body rdspecs forms nil nil)
+                 environment
+                 system)
+              (cc-ast:make-bind-va-list-ast
+                lexical-lambda-list
+                (cleavir-generate-ast::convert va-list-form environment system)
+                ast))))))))
+
+(defmethod cleavir-generate-ast:check-special-form-syntax
+    ((head (eql 'core::bind-va-list)) form)
+  (cleavir-code-utilities:check-form-proper-list form)
+  (cleavir-code-utilities:check-argcount form 2 nil)
+  (assert (cleavir-code-utilities:proper-list-p (second form))))
+
 
 (defmethod cleavir-generate-ast:convert-global-function (info global-env (system clasp-cleavir:clasp))
   (declare (ignore global-env))
@@ -198,11 +348,9 @@
     (cond 
       ((and (consp name) (eq (car name) 'cl:setf))
        (clasp-cleavir-ast:make-setf-fdefinition-ast
-	(cleavir-ast:make-load-time-value-ast `',(cadr name) t)
-	info))
+	(cleavir-ast:make-load-time-value-ast `',(cadr name) t)))
       ((consp name)
        (error "Illegal name for function - must be (setf xxx)"))
       (t
        (cleavir-ast:make-fdefinition-ast
-	(cleavir-ast:make-load-time-value-ast `',name t)
-	info)))))
+	(cleavir-ast:make-load-time-value-ast `',name t))))))

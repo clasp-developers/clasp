@@ -111,12 +111,12 @@ class list {
     return *this;
   }
 
-  inline core::List_sp cons() const {
+  inline core::T_sp cons() const {
     return this->_Head;
   }
 
   /*! Return all of the list including the (usually) dummy first element */
-  inline core::List_sp all() const {
+  inline core::T_sp all() const {
     return this->cons();
   }
 

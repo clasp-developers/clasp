@@ -88,7 +88,7 @@ private:
   Bignum _ProgramStartTime;
 
 public:
-  void print(boost::format &fmt);
+  //void print(boost::format &fmt);
   void start();
   void end();
 
@@ -96,7 +96,7 @@ public:
   void exitFunction();
 };
 
-void profiler_print(boost::format &fmt);
+ void profiler_print(boost::format &fmt);
 
 class ProfilerGuard {
 private:

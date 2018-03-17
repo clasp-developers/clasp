@@ -31,11 +31,10 @@ THE SOFTWARE.
 #include <string>
 #include <vector>
 #include <set>
-#include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 #include <clasp/core/hashTable.fwd.h>
 #include <clasp/core/bignum.fwd.h>
-#include <clasp/core/holder.h>
+//#include <clasp/core/holder.h>
 #include <clasp/core/mpPackage.h>
 #include <clasp/core/wrappers.h>
 
@@ -48,7 +47,6 @@ namespace core {
 SMART(Package);
 class Package_O : public General_O {
   LISP_CLASS(core, ClPkg, Package_O, "Package",General_O);
-  friend T_sp cl__unexport(Symbol_sp sym, Package_sp package);
   friend T_sp cl__delete_package(T_sp pobj);
  public: // virtual functions inherited from Object
   void initialize();
@@ -109,7 +107,8 @@ class Package_O : public General_O {
   /*! support for CLHS::shadow */
   bool shadow(String_sp sym);
 
-  //	bool areThereNameCollisions(Package_sp otherPackage);
+  /*! support for CLHS::unexport */
+  void unexport(Symbol_sp sym);
 
   string getName() const;
   void setName(const string &n);
@@ -163,6 +162,8 @@ class Package_O : public General_O {
   /*! Unuse the package, the reverse of usePackage
 		 */
   bool unusePackage(Package_sp usePackage);
+  bool unusePackage_no_outer_lock(Package_sp usePackage);
+  bool unusePackage_no_inner_lock(Package_sp usePackage);
 
   bool usingPackageP_no_lock(Package_sp pkg) const;
   /*! Return true if we are using the package */

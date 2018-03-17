@@ -24,7 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#define DEBUG_LEVEL_NONE
+#define DEBUG_LEVEL_FULL
 
 #include <string.h>
 #include <clasp/core/foundation.h>
@@ -216,6 +216,7 @@ void lambdaListHandler_createBindings(Closure_sp closure, core::LambdaListHandle
     }
   }
   try {
+    LOG(BF("About to createBindingsInScopeVaList with\n llh->%s\n    VaList->%s") % _rep_(llh) % _rep_(lcc_vargs));
     llh->createBindingsInScopeVaList(lcc_nargs, lcc_vargs, scope);
   } catch (...) {
     handleArgumentHandlingExceptions(closure);
@@ -356,7 +357,7 @@ CL_DEFMETHOD void LambdaListHandler_O::add_missing_sensors() {
 
 HashTableEq_sp LambdaListHandler_O::identifySpecialSymbols(List_sp declareSpecifierList) {
   HashTableEq_sp specials(HashTableEq_O::create_default());
-  LOG(BF("Processing declareSpecifierList: %s") % declareSpecifierList->__repr__());
+  LOG(BF("Processing declareSpecifierList: %s") % _rep_(declareSpecifierList));
   if (declareSpecifierList.notnilp()) {
     ASSERTF(oCar(declareSpecifierList) != cl::_sym_declare, BF("The declareSpecifierList were not processed properly coming into this function - only declare specifiers should be passed - I got: %s") % _rep_(declareSpecifierList));
     for (auto cur : declareSpecifierList) {
@@ -626,7 +627,7 @@ void LambdaListHandler_O::createBindingsInScopeVaList(size_t nargs, VaList_sp va
                                                       DynamicScopeManager &scope) {
   if (UNLIKELY(!this->_CreatesBindings))
     return;
-  VaList_S arglist_struct(*va);
+  Vaslist arglist_struct(*va);
   VaList_sp arglist(&arglist_struct);
   int arg_idx = 0;
   arg_idx = bind_required_va_list(this->_RequiredArguments, nargs, arglist, arg_idx, scope);
@@ -638,7 +639,10 @@ void LambdaListHandler_O::createBindingsInScopeVaList(size_t nargs, VaList_sp va
     //	    TOO_MANY_ARGUMENTS_ERROR();
   }
   if (UNLIKELY(this->_RestArgument.isDefined())) {
-    bind_rest_va_list(this->_RestArgument, nargs, arglist, arg_idx, scope);
+    // Make and use a copy of the arglist so that keyword processing can parse the args as well
+    Vaslist copy_arglist(*arglist);
+    VaList_sp copy_arglist_sp(&copy_arglist);
+    bind_rest_va_list(this->_RestArgument, nargs, copy_arglist_sp, arg_idx, scope);
   }
   if (UNLIKELY(this->_KeywordArguments.size() != 0)) {
     bind_keyword_va_list(this->_KeywordArguments, this->_AllowOtherKeys, nargs, arglist, arg_idx, scope);
@@ -771,7 +775,7 @@ bool switch_add_argument_mode(T_sp context, T_sp symbol, ArgumentMode &mode, T_s
       goto BADMODE;
       break;
     case allowOtherKeys:
-      LOG(BF("Did not recognize symbol(%s)") % symbol->fullName());
+        LOG(BF("Did not recognize symbol(%s)") % _rep_(symbol));
       if (symbol == cl::_sym_AMPaux) {
         mode = aux;
         goto NEWMODE;
@@ -858,14 +862,14 @@ bool contextSupportsEnvironment(T_sp context) {
  * Values(7) = whole-var			; whole-variable, if any
  * Values(8) = environment-var			; environment-variable, if any
  *
- * 1°) The prefix "N" is an integer value denoting the number of
+ * 1) The prefix "N" is an integer value denoting the number of
  * variables which are declared within this section of the lambda
  * list.
  *
- * 2°) The INIT* arguments are lisp forms which are evaluated when
+ * 2) The INIT* arguments are lisp forms which are evaluated when
  * no value is provided.
  *
- * 3°) The FLAG* arguments is the name of a variable which holds a
+ * 3) The FLAG* arguments is the name of a variable which holds a
  * boolean value in case an optional or keyword argument was
  * provided. If it is NIL, no such variable exists.
  *
@@ -890,7 +894,7 @@ bool parse_lambda_list(List_sp original_lambda_list,
     return false;
   throw_if_invalid_context(context);
   List_sp arguments = cl__copy_list(original_lambda_list);
-  LOG(BF("Argument handling mode starts in (required) - interpreting: %s") % arguments->__repr__());
+  LOG(BF("Argument handling mode starts in (required) - interpreting: %s") % _rep_(arguments));
   ArgumentMode add_argument_mode = required;
   restarg.clear();
   List_sp cur = arguments;
@@ -922,27 +926,27 @@ bool parse_lambda_list(List_sp original_lambda_list,
       T_sp supplied = _Nil<T_O>();
       if ((oarg).consp()) {
         List_sp carg = oarg;
-        LOG(BF("Optional argument is a Cons: %s") % carg->__repr__());
+        LOG(BF("Optional argument is a Cons: %s") % _rep_(carg));
         sarg = oCar(carg);
         if (oCdr(carg).notnilp()) {
           defaultValue = oCadr(carg);
           if (oCddr(carg).notnilp())
             supplied = oCaddr(carg);
         }
-        LOG(BF("Optional argument was a Cons_O[%s] with parts - symbol[%s] default[%s] supplied[%s]") % carg->__repr__() % sarg->__repr__() % defaultValue->__repr__() % supplied->__repr__());
+        LOG(BF("Optional argument was a Cons_O[%s] with parts - symbol[%s] default[%s] supplied[%s]") % _rep_(carg) % _rep_(sarg) % _rep_(defaultValue) % _rep_(supplied));
       } else {
         sarg = oarg;
-        LOG(BF("Optional argument was a Symbol_O[%s]") % sarg->__repr__());
+        LOG(BF("Optional argument was a Symbol_O[%s]") % _rep_(sarg));
       }
 
-      LOG(BF("Saving _OptionalArgument(%s) default(%s) supplied(%s)") % sarg->__repr__() % defaultValue->__repr__() % supplied->__repr__());
+      LOG(BF("Saving _OptionalArgument(%s) default(%s) supplied(%s)") % _rep_(sarg) % _rep_(defaultValue) % _rep_(supplied));
       OptionalArgument optional(sarg, defaultValue, supplied);
       optionals.push_back(optional);
       break;
     }
     case rest: {
       if (restarg.isDefined()) {
-        SIMPLE_ERROR(BF("Only one name is allowed after &rest - you have already defined: ") % restarg.asString());
+        SIMPLE_ERROR(BF("Only one name is allowed after &rest - you have already defined: %s") % restarg.asString());
       }
       restarg.setTarget(oarg);
       restarg.VaRest = false;
@@ -950,7 +954,7 @@ bool parse_lambda_list(List_sp original_lambda_list,
     }
     case va_rest: {
       if (restarg.isDefined()) {
-        SIMPLE_ERROR(BF("Only one name is allowed after &rest - you have already defined: ") % restarg.asString());
+        SIMPLE_ERROR(BF("Only one name is allowed after &rest - you have already defined: %s") % restarg.asString());
       }
       restarg.setTarget(oarg);
       restarg.VaRest = true;
@@ -977,9 +981,6 @@ bool parse_lambda_list(List_sp original_lambda_list,
         if ((head).consp()) {
           List_sp namePart = head;
           keySymbol = gc::As<Symbol_sp>(oCar(namePart)); // This is the keyword name
-          if (!keySymbol->isKeywordSymbol()) {
-            SIMPLE_ERROR(BF("With key arguments of the form ((:x y) ...) the first argument must be a keyword symbol - you gave: %s") % _rep_(keySymbol));
-          }
           localTarget = oCadr(namePart); // this is the symbol to rename it to
         } else {
           localTarget = head;
@@ -998,7 +999,7 @@ bool parse_lambda_list(List_sp original_lambda_list,
       } else {
         SIMPLE_ERROR(BF("key arguments must be symbol or cons"));
       }
-      LOG(BF("Saving keyword(%s) local(%s) default(%s) sensor(%s)") % keySymbol->__repr__() % localTarget->__repr__() % defaultValue->__repr__() % sensorSymbol->__repr__());
+      LOG(BF("Saving keyword(%s) local(%s) default(%s) sensor(%s)") % _rep_(keySymbol) % _rep_(localTarget) % _rep_(defaultValue) % _rep_(sensorSymbol));
       KeywordArgument keyed(keySymbol, localTarget, defaultValue, sensorSymbol);
       keys.push_back(keyed);
       break;
@@ -1039,6 +1040,7 @@ bool parse_lambda_list(List_sp original_lambda_list,
     break;
   }
 DONE:
+  LOG(BF("Returning from parse_lambda_list"));
   return true;
 }
 
@@ -1046,6 +1048,7 @@ CL_LAMBDA(vl context);
 CL_DECLARE();
 CL_DOCSTRING("processLambdaList - this is like ECL::process-lambda-list except auxs are returned as nil or a list of 2*n elements of the form (sym1 init1 sym2 init2 ...) In ECL they say you need to prepend the number of auxs - that breaks the destructure macro. ECL process-lambda-list says context may be MACRO, FTYPE, FUNCTION, METHOD or DESTRUCTURING-BIND but in ECL>>clos/method.lsp they pass T!!!");
 CL_DEFUN T_mv core__process_lambda_list(List_sp lambdaList, T_sp context) {
+  _OF();
   gctools::Vec0<RequiredArgument> reqs;
   gctools::Vec0<OptionalArgument> optionals;
   gctools::Vec0<KeywordArgument> keys;
@@ -1254,7 +1257,7 @@ string LambdaListHandler_O::partsAsString() const {
 string LambdaListHandler_O::__repr__() const {
   _OF();
   stringstream ss;
-  ss << "#<" << cl__class_of(this->asSmartPtr())->classNameAsString();
+  ss << "#<" << cl__class_of(this->asSmartPtr())->_classNameAsString();
   {
     ss << this->partsAsString();
   }

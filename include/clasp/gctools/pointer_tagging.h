@@ -63,7 +63,7 @@ typedef int32_t integer32_t;
 typedef int64_t integer64_t;
 
 namespace core {
-  class VaList_S;
+  class Vaslist;
   class Code_S;
 };
 
@@ -96,7 +96,7 @@ namespace gctools {
 /*! A pointer that is already tagged can be passed to smart_ptr constructors
       by first reinterpret_casting it to Tagged */
   typedef uintptr_clasp_t Tagged;
-  typedef uintptr_clasp_t TaggedVaList; // Used in situations where only a tagged VaList_S ptr is accepted
+  typedef uintptr_clasp_t TaggedVaList; // Used in situations where only a tagged Vaslist ptr is accepted
   static const int tag_shift = 3;
   static const int fixnum_bits = 62;
   static const int fixnum_shift = 2;
@@ -175,15 +175,15 @@ namespace gctools {
 /* FIXNUM's have the lsb x00 set to zero - this allows addition and comparison to be fast */
 /* The rest of the bits are the fixnum */
   static const uintptr_clasp_t tag_mask    = ZERO_TAG_MASK; // BOOST_BINARY(111);
-  static const uintptr_clasp_t fixnum_tag  = BOOST_BINARY(00); // x00 means fixnum
-  static const uintptr_clasp_t fixnum1_tag  = BOOST_BINARY(100); // x100 means fixnum odd
-  static const uintptr_clasp_t fixnum_mask = BOOST_BINARY(11);
+  static const uintptr_clasp_t fixnum0_tag  = FIXNUM0_TAG; // x00 means fixnum
+  static const uintptr_clasp_t fixnum1_tag  = FIXNUM1_TAG; // x100 means fixnum odd
+  static const uintptr_clasp_t fixnum_mask =  FIXNUM_MASK;
 /*! The pointer tags, that point to objects that the GC manages are general_tag and cons_tag
 Robert Strandh suggested a separate tag for CONS cells so that there would be a quick CONSP test
 for a CONS cell*/
   static const uintptr_clasp_t ptr_mask    = ~ZERO_TAG_MASK;
-  static const uintptr_clasp_t general_tag =  POINTER_GENERAL_TAG;  // means a GENERAL pointer
-  static const uintptr_clasp_t cons_tag    =  POINTER_CONS_TAG;     // means a CONS cell pointer
+  static const uintptr_clasp_t general_tag =  GENERAL_TAG;  // means a GENERAL pointer
+  static const uintptr_clasp_t cons_tag    =  CONS_TAG;     // means a CONS cell pointer
   /*! A test for pointers has the form (potential_ptr&POINTER_TAG_MASK)==POINTER_TAG_EQ) */
   static const uintptr_clasp_t pointer_tag_mask = POINTER_TAG_MASK;
   static const uintptr_clasp_t pointer_tag_eq   = POINTER_TAG_EQ;
@@ -201,11 +201,11 @@ ABI dependent behavior into a single header file so that it can be implemented f
 ABI's  */
   static const uintptr_clasp_t valist_tag = BOOST_BINARY(101); // means a valist
                                                        /*! Immediate value tags */
-  static const uintptr_clasp_t immediate_mask   = BOOST_BINARY(111);
-  static const uintptr_clasp_t character_tag    = BOOST_BINARY(010); // Character
-  static const uintptr_clasp_t character_shift  = 3;
-  static const uintptr_clasp_t single_float_tag = BOOST_BINARY(110); // single-float
-  static const uintptr_clasp_t single_float_shift = 3;
+  static const uintptr_clasp_t immediate_mask   = IMMEDIATE_MASK;
+  static const uintptr_clasp_t character_tag    = CHARACTER_TAG;
+  static const uintptr_clasp_t character_shift  = CHARACTER_SHIFT;
+  static const uintptr_clasp_t single_float_tag = SINGLE_FLOAT_TAG;
+  static const uintptr_clasp_t single_float_shift = SINGLE_FLOAT_SHIFT;
   static const uintptr_clasp_t single_float_mask = 0x1FFFFFFFFF; // single-floats are in these 32+5bits
 
   struct Immediate_info {
@@ -214,7 +214,7 @@ ABI's  */
   Immediate_info(uintptr_clasp_t k, const char* n) : _kind(k), _name(n) {};
   };
 
-  std::vector<Immediate_info> get_immediate_info();
+//  std::vector<Immediate_info> get_immediate_info();
 
   /* These values define the Stamp ranges for different kinds of
      objects.  There are the following kinds of objects:
@@ -228,17 +228,12 @@ ABI's  */
        If the ranges aren't sufficiently large (general or alien)
        then move the numbers around.
        We need at least 62 bits to represent general CLOS objects.  */
-  static const uintptr_clasp_t kind_fixnum = 1;
-  static const uintptr_clasp_t kind_single_float = 2;
-  static const uintptr_clasp_t kind_character = 3;
-  static const uintptr_clasp_t kind_cons = 4;
-  static const uintptr_clasp_t kind_va_list_s = 5;
-  static const uintptr_clasp_t kind_first_general  = 6;
-  static const uintptr_clasp_t kind_last_general   = 4095;
-  static const uintptr_clasp_t kind_first_alien    = 4096;
-  static const uintptr_clasp_t kind_last_alien     = 65535;
-  static const uintptr_clasp_t kind_first_instance = 65536;
-  static const uintptr_clasp_t kind_last_instance  = ((uintptr_clasp_t)most_positive_fixnum)<<1;
+  static const uintptr_clasp_t stamp_first_general   = 1; //skip 0
+  static const uintptr_clasp_t stamp_last_general   = 4095;
+  static const uintptr_clasp_t stamp_first_alien    = 4096;
+  static const uintptr_clasp_t stamp_last_alien     = 65535;
+  static const uintptr_clasp_t stamp_first_instance = 65536;
+  static const uintptr_clasp_t stamp_last_instance  = ((uintptr_clasp_t)most_positive_fixnum)<<1;
 
   static const char * tagged_fixnum_str = "FIXNUM";
   static const char * tagged_character_str = "CHARACTER";
@@ -248,7 +243,7 @@ ABI's  */
   static const char * tagged_unbound_str = "UNBOUND";
   static const char * tagged_deleted_str = "DELETED";
   static const char * tagged_same_as_key_str = "SAME-AS -EY";
-  static const char * tagged_valist_str = "VALIST";
+  static const char * tagged_vaslist_str = "VALIST";
   static const char * tagged_nil_str = "NIL";
   static const char * tagged_general_str = "GENERAL";
 
@@ -334,21 +329,21 @@ template <class T>
     return reinterpret_cast<T>(global_tagged_Symbol_OP_sameAsKey);
   }
   template <class T>
-    inline T tag_valist(core::VaList_S *p) {
+    inline T tag_vaslist(core::Vaslist *p) {
     GCTOOLS_ASSERT((reinterpret_cast<uintptr_clasp_t>(p) & tag_mask) == 0);
     return reinterpret_cast<T>(reinterpret_cast<uintptr_clasp_t>(p) + valist_tag);
   }
 
 
   template <class T>
-    inline T untag_general(T ptr) {
+    ALWAYS_INLINE T untag_general(T ptr) {
     GCTOOLS_ASSERT((reinterpret_cast<uintptr_clasp_t>(ptr) & tag_mask) == general_tag);
     return reinterpret_cast<T>(reinterpret_cast<uintptr_clasp_t>(ptr) - general_tag);
   }
   template <class T>
-    inline void *untag_valist(T ptr) {
+    inline core::Vaslist* untag_vaslist(T ptr) {
     GCTOOLS_ASSERT((reinterpret_cast<uintptr_clasp_t>(ptr) & tag_mask) == valist_tag);
-    return reinterpret_cast<core::VaList_S*>(reinterpret_cast<uintptr_clasp_t>(ptr) - valist_tag);
+    return reinterpret_cast<core::Vaslist*>(reinterpret_cast<uintptr_clasp_t>(ptr) - valist_tag);
   }
 
 
@@ -363,7 +358,7 @@ template <class T>
   }
   template <class T>
     inline bool tagged_fixnump(T ptr) {
-    return ((reinterpret_cast<uintptr_clasp_t>(ptr) & fixnum_mask) == fixnum_tag);
+    return ((reinterpret_cast<uintptr_clasp_t>(ptr) & fixnum_mask) == fixnum0_tag);
   };
   template <class T>
     inline T tag_character(int ch) {
@@ -411,7 +406,7 @@ template <class T>
     return ((uintptr_clasp_t)(ptr) & tag_mask) == general_tag;
   }
   template <class T>
-    inline bool tagged_valistp(T ptr) {
+    inline bool tagged_vaslistp(T ptr) {
     return ((reinterpret_cast<uintptr_clasp_t>(ptr) & tag_mask) == valist_tag);
   };
 
@@ -456,9 +451,9 @@ template <class T>
       return std::string( tagged_same_as_key_str );
     }
 
-    if( tagged_valistp( tagged_obj )  )
+    if( tagged_vaslistp( tagged_obj )  )
     {
-      return std::string( tagged_valist_str );
+      return std::string( tagged_vaslist_str );
     }
 
     if( tagged_fixnump( tagged_obj )  )

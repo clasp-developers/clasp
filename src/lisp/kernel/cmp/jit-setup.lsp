@@ -40,91 +40,86 @@
 ;;;
 (defvar *current-form-lineno* 0)
 
-
-
 (defconstant +debug-dwarf-version+ 4)
 
+;; bound when a new thread is created
+(defvar *primitives*)
+(export '*primitives*)
+
+;;; Bound thread-local when the builtins module is needed
+(defvar *thread-local-builtins-module* nil)
+
+(defvar *thread-local-fastgf-module* nil)
+(defvar *thread-local-jit-engine* nil)
+
 ;;;(defvar *llvm-context* (llvm-sys:create-llvm-context))
-(mp:push-default-special-binding 'cmp:*llvm-context* '(llvm-sys:create-llvm-context))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Thread-local special variables to support the LLVM compiler
+;;;
+;;; To allow LLVM to run in different threads, certain things need to be thread local
+;;;
+(eval-when (:load-toplevel :execute)
+  (mp:push-default-special-binding 'cmp:*llvm-context* '(llvm-sys:create-llvm-context))
+  (mp:push-default-special-binding 'cmp:*primitives* nil)
+  (mp:push-default-special-binding 'cmp::*thread-local-builtins-module* nil)
+  (mp:push-default-special-binding 'cmp::*thread-local-fastgf-module* nil)
+;;;  (mp:push-default-special-binding 'cmp::*thread-local-jit-engine* nil)
+  ;;; more thread-local special variables may be added in the future
+  )
 
+(defun dump-function (func)
+  (warn "Do something with dump-function"))
+(export 'dump-function)
 
+(defun write-bitcode (module output-path)
+  ;; Write bitcode as either .bc files or .ll files
+  (if *use-human-readable-bitcode*
+      (let* ((filename (make-pathname :type "ll" :defaults (pathname output-path)))
+             (output-name (namestring filename))
+             (fout (open output-name :direction :output)))
+        (unwind-protect
+             (llvm-sys:dump-module module fout)
+          (close fout)))
+      (llvm-sys:write-bitcode-to-file module output-path)))
 
-(defun generate-target-triple ()
+(defun load-bitcode (filename)
+  (if *use-human-readable-bitcode*
+      (let* ((input-name (make-pathname :type "ll" :defaults (pathname filename))))
+        (llvm-sys:load-bitcode-ll input-name))
+      (llvm-sys:load-bitcode filename)))
+
+(defun parse-bitcode (filename context)
+  ;; Load a module from a bitcode or .ll file
+  (if *use-human-readable-bitcode*
+      (let ((input-name (make-pathname :type "ll" :defaults (pathname filename))))
+        (llvm-sys:parse-irfile input-name context))
+      (llvm-sys:parse-bitcode-file filename context)))
+
+(export '(write-bitcode load-bitcode parse-bitcode))
+
+(defun get-builtins-module ()
+  (if *thread-local-builtins-module*
+      *thread-local-builtins-module*
+    (let* ((builtins-bitcode-name (namestring (truename (build-inline-bitcode-pathname :compile :builtins))))
+           (thread-local-builtins-module (llvm-sys:parse-bitcode-file builtins-bitcode-name *llvm-context*)))
+      (llvm-sys:remove-useless-global-ctors thread-local-builtins-module)
+      (setq *thread-local-builtins-module* thread-local-builtins-module)
+      thread-local-builtins-module)))
+
+(defun get-builtin-target-triple-and-data-layout ()
   "Uses *features* to generate the target triple for the current machine
 using features defined in corePackage.cc"
-  (cond
-    ((and (member :target-os-darwin *features*)
-          (member :address-model-64 *features*))
-     (values "x86_64-apple-macosx10.10.0" "e-m:o-i64:64-f80:128-n8:16:32:64-S128"))
-    ((and (member :target-os-linux *features*)
-          (member :address-model-64 *features*))
-     (values "x86_64-pc-linux-gnu"       "e-m:e-i64:64-f80:128-n8:16:32:64-S128"))
-    (t (error "Could not identify target triple for features ~a" *features*))))
-
-(defun generate-data-layout ()
-  (let* ((triple (generate-target-triple))
-         (target (llvm-sys:target-registry-lookup-target.string triple))
-         (target-options (llvm-sys:make-target-options))
-         (target-machine (llvm-sys:create-target-machine
-                          target
-                          triple
-                          ""
-                          ""
-                          target-options
-                          'llvm-sys:reloc-model-undefined
-                          'llvm-sys:code-model-default
-                          'llvm-sys:code-gen-opt-default)))
-    (llvm-sys:create-data-layout target-machine)))
-
-(defvar *default-target-triple* (generate-target-triple)
-  "The default target-triple for this machine")
-
-(defvar *default-data-layout* (generate-data-layout))
+  (let ((builtins-module (get-builtins-module)))
+    (values (llvm-sys:get-target-triple builtins-module) (llvm-sys:get-data-layout-str builtins-module))))
 
 (defun llvm-create-module (name)
   (let ((m (llvm-sys:make-module (string name) *llvm-context*)))
-    (llvm-sys:set-target-triple m *default-target-triple*)
-    (llvm-sys:set-data-layout m *default-data-layout*)
-    m))
-
-(defun create-llvm-module-for-compile-file (module-name)
-  "Return a new module"
-  (let ((module (llvm-create-module module-name)))
-    ;; Define the primitives for the module
-    (define-primitives-in-module module)
-    module))
-
-
-
-#+(or)(defvar *use-function-pass-manager-for-compile-file* t)
-#+(or)
-(defun create-function-pass-manager-for-compile-file (module)
-  (let ((fpm (llvm-sys:make-function-pass-manager module)))
-    (warn "Look at what passes the Kaleidoscope demo is making")
-    ;;    (llvm-sys:function-pass-manager-add fpm (llvm-sys:create-basic-alias-analysis-pass))
-    (llvm-sys:function-pass-manager-add fpm (llvm-sys:create-instruction-combining-pass))
-    (llvm-sys:function-pass-manager-add fpm (llvm-sys:create-promote-memory-to-register-pass))
-    (llvm-sys:function-pass-manager-add fpm (llvm-sys:create-reassociate-pass))
-    (llvm-sys:function-pass-manager-add fpm (llvm-sys:create-gvnpass nil))
-    (llvm-sys:function-pass-manager-add fpm (llvm-sys:create-cfgsimplification-pass -1 #'(lambda (f) t)))
-    ;;    (if *debug-ir* (llvm-sys:function-pass-manager-add fpm (llvm-sys:create-debug-irpass "createDebugIR.log")))
-    (llvm-sys:do-initialization fpm)
-    fpm))
-
-
-#+(or)
-(defun create-function-pass-manager-for-compile (module)
-  (let ((fpm (llvm-sys:make-function-pass-manager module)))
-    (warn "Look at what passes the Kaleidoscope demo is making")
-    ;;    (llvm-sys:function-pass-manager-add fpm (llvm-sys:create-basic-alias-analysis-pass))
-    (llvm-sys:function-pass-manager-add fpm (llvm-sys:create-instruction-combining-pass))
-    (llvm-sys:function-pass-manager-add fpm (llvm-sys:create-promote-memory-to-register-pass))
-    (llvm-sys:function-pass-manager-add fpm (llvm-sys:create-reassociate-pass))
-    (llvm-sys:function-pass-manager-add fpm (llvm-sys:create-gvnpass nil))
-    (llvm-sys:function-pass-manager-add fpm (llvm-sys:create-cfgsimplification-pass -1 #'(lambda (f) t)))
-    (llvm-sys:do-initialization fpm)
-    fpm))
-
+    (multiple-value-bind (target-triple data-layout)
+        (get-builtin-target-triple-and-data-layout)
+      (llvm-sys:set-target-triple m target-triple)
+      (llvm-sys:set-data-layout.string m data-layout)
+      m)))
 
 (defvar *run-time-module-counter* 1)
 (defun next-run-time-module-name ()
@@ -139,20 +134,6 @@ using features defined in corePackage.cc"
 Return the module and the global variable that represents the load-time-value-holder as
 \(value module global-run-time-values function-pass-manager\)."
   (llvm-create-module (next-run-time-module-name)))
-
-
-(defun create-run-time-execution-engine (module)
-  (let ((engine-builder (llvm-sys:make-engine-builder module))
-	(target-options (llvm-sys:make-target-options)))
-    (llvm-sys:set-target-options engine-builder target-options)
-    (if (member :use-orc *features*)
-        (progn
-          (llvm-sys:set-use-orc-mcjitreplacement engine-builder t)
-          (bformat t "Using ORC\n")))
-    (llvm-sys:create engine-builder)))
-
-
-
 
 (llvm-sys:initialize-native-target)
 
@@ -219,24 +200,31 @@ No DIBuilder is defined for the default module")
 
 
 (defun jit-constant-size_t (val)
-  (let ((sizeof-size_t (cdr (assoc 'core:size-t (llvm-sys:cxx-data-structures-info)))))
+  (let ((sizeof-size_t +size_t-bits+))
     (cond
-      ((= 8 sizeof-size_t) (jit-constant-i64 val))
-      ((= 4 sizeof-size_t) (jit-constant-i32 val))
+      ((= 64 sizeof-size_t) (jit-constant-i64 val))
+      ((= 32 sizeof-size_t) (jit-constant-i32 val))
       (t (error "Add support for size_t sizeof = ~a" sizeof-size_t)))))
 
 (defun jit-constant-uintptr_t (val)
-  (let ((sizeof-size_t (cdr (assoc 'core:size-t (llvm-sys:cxx-data-structures-info)))))
+  (let ((sizeof-size_t +size_t-bits+))
     (cond
-      ((= 8 sizeof-size_t) (jit-constant-ui64 val))
-      ((= 4 sizeof-size_t) (jit-constant-ui32 val))
+      ((= 64 sizeof-size_t) (jit-constant-ui64 val))
+      ((= 32 sizeof-size_t) (jit-constant-ui32 val))
+      (t (error "Add support for size_t sizeof = ~a" sizeof-size_t)))))
+
+(defun jit-constant-intptr_t (val)
+  (let ((sizeof-size_t +size_t-bits+))
+    (cond
+      ((= 64 sizeof-size_t) (jit-constant-i64 val))
+      ((= 32 sizeof-size_t) (jit-constant-i32 val))
       (t (error "Add support for size_t sizeof = ~a" sizeof-size_t)))))
 
 (defun jit-constant-size_t (val)
-  (let ((sizeof-size_t (cdr (assoc 'core:size-t (llvm-sys:cxx-data-structures-info)))))
+  (let ((sizeof-size_t +size_t-bits+))
     (cond
-      ((= 8 sizeof-size_t) (jit-constant-ui64 val))
-      ((= 4 sizeof-size_t) (jit-constant-ui32 val))
+      ((= 64 sizeof-size_t) (jit-constant-ui64 val))
+      ((= 32 sizeof-size_t) (jit-constant-ui32 val))
       (t (error "Add support for size_t sizeof = ~a" sizeof-size_t)))))
 
 
@@ -279,45 +267,160 @@ No DIBuilder is defined for the default module")
 (defconstant +target-min-mps+ :min-mps)
 (defconstant +target-full-mps+ :full-mps)
 
+(defun escape-and-join-jit-name (names)
+  (let ((all (make-string-output-stream))
+        name)
+    (tagbody
+     outer
+       (let ((name (string (car names))))
+         (let ((i 0)
+               (len (length name)))
+           (tagbody
+            top
+              (let ((c (aref name i)))
+                (if (char= c #\\)
+                    (write-string "\\\\" all)
+                    (if (char= c #\^)
+                        (write-string "\\^" all)
+                        (write-char c all))))
+              (setq i (+ 1 i))
+              (if (< i len) (go top)))
+           (write-char #\^ all)))
+       (setq names (cdr names))
+       (if names (go outer)))
+    (write-char #\^ all)
+    (get-output-stream-string all)))
+
+(defun unescape-and-split-jit-name (name)
+  (let* (parts
+         (unescaped (make-string-output-stream))
+         (i 0)
+         (len (length name))
+         (len-1 (- len 1)))
+    (tagbody
+     top
+       (let ((c (aref name i))
+             (cnext (if (< i len-1) (aref name (+ i 1)) #\nul)))
+         (if (char= c #\\)
+             (if (char= cnext #\\)
+                 (progn
+                   (write-string "\\" unescaped)
+                   (setq i (+ 1 i)))
+                 (if (char= cnext #\^)
+                     (progn
+                       (write-char #\^ unescaped)
+                       (setq i (+ 1 i)))
+                     (error "Bad escape sequence in ~a starting at ~a" name i)))
+             (if (char= c #\^)
+                 (setq parts (cons (get-output-stream-string unescaped) parts))
+                 (write-char c unescaped))))
+       (setq i (+ 1 i))
+       (if (< i len) (go top)))
+    (setq parts (cons (get-output-stream-string unescaped) parts))
+    (nreverse parts)))
+
+
+(defun print-name-from-unescaped-split-name (raw-name parts symbol)
+  (let* ((end-part-pos (position "" parts :test #'equal))
+         (type-name (if (numberp end-part-pos)
+                        (elt parts (1- end-part-pos))
+                        (car (last parts)))))
+    (cond
+      ((string= type-name "METHOD")
+       (format nil "{~a ~a}" symbol (third parts)))
+      ((string= type-name "FN")
+       (format nil "~a" symbol))
+      ((string= type-name "SETF")
+       (format nil "(SETF ~a)" symbol))
+      (t raw-name))))
+
+(export 'print-name-from-unescaped-split-name)
+(defun function-name-from-source-info (lname)
+  (cond
+    ((and *compile-file-pathname*
+          *current-form-lineno*)
+     (core:bformat nil "%s.%s^%d^TOP-COMPILE-FILE" (pathname-name *compile-file-pathname*) (pathname-type *compile-file-pathname*) *current-form-lineno*))
+    ((and *load-pathname*
+          *current-form-lineno*)
+     (core:bformat nil "%s.%s^%d^TOP-LOAD" (pathname-name *load-pathname*) (pathname-type *load-pathname*) *current-form-lineno*))
+    (*current-form-lineno*
+     (core:bformat nil "UNKNOWN^%d^TOP-UNKNOWN" *current-form-lineno*))
+    (t "UNKNOWN??LINE^TOP-UNKNOWN")))
+  
 (defun jit-function-name (lname)
   "Depending on the type of LNAME an actual LLVM name is generated"
-;;  (break "Check backtrace")
+  ;;  (break "Check backtrace")
   (cond
     ((pathnamep lname) (bformat nil "MAIN-%s" (string-upcase (pathname-name lname))))
     ((stringp lname)
      (cond
        ((string= lname core:+run-all-function-name+) lname) ; this one is ok
        ((string= lname core:+clasp-ctor-function-name+) lname) ; this one is ok
-       ((string= lname "IMPLICIT-REPL") lname) ; this one is ok
-       ((string= lname "TOP-LEVEL") lname) ; this one is ok
+       ((string= lname "IMPLICIT-REPL") lname)  ; this one is ok
+       ((string= lname "TOP-LEVEL") (function-name-from-source-info lname))
        ((string= lname "UNNAMED-LAMBDA") lname) ; this one is ok
-       ((string= lname "lambda") lname) ; this one is ok
-       ((string= lname "ltv-literal") lname) ; this one is ok
+       ((string= lname "lambda") lname)         ; this one is ok
+       ((string= lname "ltv-literal") lname)    ; this one is ok
+       ((string= lname "disassemble") lname)    ; this one is ok
        (t (bformat t "jit-function-name lname = %s\n" lname)
           (break "Always pass symbol as name") lname)))
     ((symbolp lname)
-     (let* ((sym-pkg (symbol-package lname))
-            (sym-name (symbol-name lname))
-            (pkg-name (if sym-pkg
-                          (string (package-name sym-pkg))
-                          "NIL")))
-       (bformat nil "FN_%s::%s" pkg-name sym-name)))
-    ((and (consp lname) (eq (car lname) 'setf))
+     (cond ((eq lname 'core::top-level)
+            (function-name-from-source-info lname))
+           ((eq lname 'cmp::repl)
+            (function-name-from-source-info lname))
+           (t 
+            (let* ((sym-pkg (symbol-package lname))
+                   (sym-name (symbol-name lname))
+                   (pkg-name (if sym-pkg
+                                 (string (package-name sym-pkg))
+                                 ;;; KNPK I don't undestand why "KEYWORD" is used here
+                                 ;;; (package-name (symbol-package :test)) -> "KEYWORD", so how can sym-pkg be empty for this case
+                                 ;;; More likely it is an uninterned symbol
+                                 "KEYWORD")))
+              (escape-and-join-jit-name (list sym-name pkg-name "FN"))))))
+    ((and (consp lname) (eq (car lname) 'setf) (symbolp (second lname)))
+;;;     (core:bformat t "jit-function-name handling SETF: %s\n" lname)
      (let* ((sn (cadr lname))
             (sym-pkg (symbol-package sn))
             (sym-name (symbol-name sn))
             (pkg-name (if sym-pkg
                           (string (package-name sym-pkg))
-                          "NIL")))
-       (bformat nil "FN-SETF/%s::%s" pkg-name sym-name)))
+                          "KEYWORD")))
+       (escape-and-join-jit-name (list sym-name pkg-name "SETF"))))
+    ((and (consp lname) (eq (car lname) 'setf) (consp (second lname)))
+;;;     (core:bformat t "jit-function-name handling SETFCONS: %s\n" lname)
+     ;; (setf (something ...))
+     (let* ((sn (second lname))
+            (sn-sym (first sn))
+            (sym-pkg (symbol-package sn-sym))
+            (sym-name (symbol-name sn-sym))
+            (pkg-name (if sym-pkg
+                          (string (package-name sym-pkg))
+                          "KEYWORD")))
+       (escape-and-join-jit-name (list sym-name pkg-name "SETFCONS"))))
     ((and (consp lname) (eq (car lname) 'method) (symbolp (second lname)))
-     (let ((pkg (symbol-package (second lname)))
-           (name (symbol-name (second lname))))
-     (bformat nil "FN_(METHOD %s::%s %s)" pkg name (cddr lname))))
+     (let* ((symbol (second lname))
+            (sym-pkg (symbol-package symbol))
+            (pkg-name (if sym-pkg
+                      (string (package-name sym-pkg))
+                      "UNINTERNED"))
+           (name (symbol-name symbol))
+           (specializers (core:bformat nil "%s" (cddr lname))))
+       (escape-and-join-jit-name (list name pkg-name specializers "METHOD"))))
+    ((and (consp lname) (eq (car lname) 'method) (consp (second lname)) (eq (car (second lname)) 'setf))
+     (let* ((name-list (second lname))
+            (setf-name-symbol (second name-list))
+            (pkg-name (string (package-name (symbol-package setf-name-symbol))))
+            (specializers (core:bformat nil "%s" (cddr lname))))
+       (escape-and-join-jit-name (list (string setf-name-symbol) pkg-name specializers "SETFMETHOD"))))
     ((consp lname)
-     (bformat nil "FN_%s" lname))
+;;;     (core:bformat t "jit-function-name handling UNKNOWN: %s\n" lname)
+     ;; What is this????
+     (bformat nil "%s_CONS-LNAME?" lname))
     (t (error "Illegal lisp function name[~a]" lname))))
-(export 'jit-function-name)
+(export '(jit-function-name unescape-and-split-jit-name escape-and-join-jit-name))
+
 
 (setq core:*llvm-function-name-hook* #'jit-function-name)
 
@@ -328,101 +431,203 @@ No DIBuilder is defined for the default module")
 ;;;
 
 
+(defun jit-link-builtins-module (module)
+  "Merge the intrinsics module with the passed module.
+The passed module is modified as a side-effect."
+  (get-builtins-module)
+  ;; Clone the intrinsics module and link it in
+  (quick-module-dump module "module before linking builtins-clone")
+  (let ((linker (llvm-sys:make-linker module))
+        (builtins-clone (llvm-sys:clone-module (get-builtins-module))))
+    ;;(remove-always-inline-from-functions builtins-clone)
+    (quick-module-dump builtins-clone "builtins-clone")
+    (llvm-sys:link-in-module linker builtins-clone))
+  module)
+
+(defun jit-link-fastgf-module (module)
+  "Merge the intrinsics module with the passed module.
+The passed module is modified as a side-effect."
+  (unless *thread-local-fastgf-module*
+    (let* ((fastgf-bitcode-name (namestring (truename (build-inline-bitcode-pathname :compile :fastgf))))
+           (fastgf-module (llvm-sys:parse-bitcode-file fastgf-bitcode-name *llvm-context*)))
+      (llvm-sys:remove-useless-global-ctors fastgf-module)
+      (setf *thread-local-fastgf-module* fastgf-module)))
+  ;; Clone the intrinsics module and link it in
+  (quick-module-dump module "module before linking fastgf-clone")
+  (let ((linker (llvm-sys:make-linker module))
+        (fastgf-clone (llvm-sys:clone-module *thread-local-fastgf-module*)))
+    ;;(remove-always-inline-from-functions fastgf-clone)
+    (quick-module-dump fastgf-clone "fastgf-clone")
+    (llvm-sys:link-in-module linker fastgf-clone))
+  module)
+
+(defun jit-engine ()
+  "Lazy initialize the *thread-local-jit-engine* and return it"
+  (if *thread-local-jit-engine*
+      *thread-local-jit-engine*
+      (setf *thread-local-jit-engine* (make-cxx-object 'llvm-sys:clasp-jit))))
+
+(defvar *optimizations-on* t)
+(defvar *optimization-level* :-O3)
+(defvar *size-level* 1)
+
+
+(defun optimize-module-for-compile-file (module &optional (optimize-level *optimization-level*) (size-level *size-level*))
+  (declare (type (or null llvm-sys:module) module))
+  #+(or)(when (and *optimizations-on* module)
+    #++(let ((call-sites (call-sites-to-always-inline module)))
+         (bformat t "Call-sites -> %s\n" call-sites))
+    ;; Link in the builtins as part of the optimization
+    #+(or)(progn
+            (let ((linker (llvm-sys:make-linker module))
+                  (builtins-clone (llvm-sys:clone-module (get-builtins-module))))
+              ;;(remove-always-inline-from-functions builtins-clone)
+              (quick-module-dump builtins-clone "builtins-clone")
+              (llvm-sys:link-in-module linker builtins-clone)))
+    
+    (let* ((pass-manager-builder (llvm-sys:make-pass-manager-builder))
+           (mpm (llvm-sys:make-pass-manager))
+           (fpm (llvm-sys:make-function-pass-manager module))
+           (olevel (cond
+                     ((eq optimize-level :-O3) 3)
+                     ((eq optimize-level :-O2) 2)
+                     ((eq optimize-level :-O1) 1)
+                     ((eq optimize-level :-O0) 0)
+                     (t (error "Unsupported optimize-level ~a - only :-O3 :-O2 :-O1 :-O0 are allowed" optimize-level)))))
+      (llvm-sys:pass-manager-builder-setf-opt-level pass-manager-builder olevel)
+      (llvm-sys:pass-manager-builder-setf-size-level pass-manager-builder size-level)
+      (progn
+        (llvm-sys:pass-manager-builder-setf-inliner pass-manager-builder (llvm-sys:create-always-inliner-legacy-pass))
+        (llvm-sys:populate-function-pass-manager pass-manager-builder fpm)
+        (llvm-sys:populate-module-pass-manager pass-manager-builder mpm))
+      #+(or)(llvm-sys:populate-ltopass-manager pass-manager-builder mpm)
+      (llvm-sys:pass-manager-run mpm module))
+    #+(or)(llvm-sys:remove-always-inline-functions module))
+  module)
+
+
+(defun optimize-module-for-compile (module)
+  #+(or)(bformat *debug-io* "In optimize-module-for-compile\n")
+  #+(or)(llvm-sys:dump-module module)
+  module)
+
+#+(or)
+(defun optimize-module-for-compile (module &optional (optimize-level *optimization-level*) (size-level *size-level*))
+  (declare (type (or null llvm-sys:module) module))
+  (when (and *optimizations-on* module)
+    #++(let ((call-sites (call-sites-to-always-inline module)))
+      (bformat t "Call-sites -> %s\n" call-sites))
+    (let* ((pass-manager-builder (llvm-sys:make-pass-manager-builder))
+           (mpm (llvm-sys:make-pass-manager))
+           (fpm (llvm-sys:make-function-pass-manager module))
+           (olevel (cond
+                     ((eq optimize-level :-O3) 3)
+                     ((eq optimize-level :-O2) 2)
+                     ((eq optimize-level :-O1) 1)
+                     ((eq optimize-level :-O0) 0)
+                     (t (error "Unsupported optimize-level ~a - only :-O3 :-O2 :-O1 :-O0 are allowed" optimize-level)))))
+      (llvm-sys:pass-manager-builder-setf-opt-level pass-manager-builder olevel)
+      (llvm-sys:pass-manager-builder-setf-size-level pass-manager-builder size-level)
+      (llvm-sys:pass-manager-builder-setf-inliner pass-manager-builder (llvm-sys:create-always-inliner-legacy-pass))
+      (llvm-sys:populate-function-pass-manager pass-manager-builder fpm)
+      (llvm-sys:populate-module-pass-manager pass-manager-builder mpm)
+      ;; (llvm-sys:populate-ltopass-manager pass-manager-builder mpm)
+      (llvm-sys:do-initialization fpm)
+      (let ((funcs (llvm-sys:module-get-function-list module)))
+        (dolist (func funcs)
+          (llvm-sys:function-pass-manager-run fpm func)))
+      (llvm-sys:do-finalization fpm)
+      (llvm-sys:pass-manager-run mpm module)))
+  module)
+
+
+
+(defun remove-always-inline-from-functions (module)
+  (let ((functions (llvm-sys:module-get-function-list module))
+        inline-functions)
+    (dolist (f functions)
+      (if (llvm-sys:has-fn-attribute f 'llvm-sys:attribute-always-inline)
+          (progn
+            (llvm-sys:remove-fn-attr f 'llvm-sys:attribute-always-inline)
+            (setf inline-functions (cons f inline-functions)))))
+    inline-functions))
+
+
+(defun call-sites-to-always-inline (module)
+  (let (call-sites
+        (functions (llvm-sys:module-get-function-list module)))
+    (dolist (func functions)
+      (let ((basic-blocks (llvm-sys:basic-blocks func)))
+        (dolist (bb basic-blocks)
+          (let ((instructions (llvm-sys:instructions bb)))
+            (dolist (instr instructions)
+              (if (or (llvm-sys:call-inst-p instr)
+                      (llvm-sys:invoke-inst-p instr))
+                  (let ((call-func (llvm-sys:get-called-function instr)))
+                    (setq call-sites (cons instr call-sites))
+                    (if (llvm-sys:has-fn-attribute call-func 'llvm-sys:attribute-always-inline)
+                        (setq call-sites (cons instr call-sites))))))))))
+    call-sites))
+         
+
 ;;; ------------------------------------------------------------
 ;;;
 ;;; Using the new ORC JIT engine
 ;;;
+
+;;; jit-register-symbol is a call
+#+threads(defvar *jit-log-lock* (mp:make-lock :name 'jit-log-lock :recursive t))
+(defvar *jit-log-stream*)
+
+(defun jit-register-symbol (symbol-name-string symbol-info)
+  "This is a callback from llvmoExpose.cc::save_symbol_info for registering JITted symbols"
+  (core:hash-table-setf-gethash *jit-saved-symbol-info* symbol-name-string symbol-info)
+  (if (member :jit-log-symbols *features*)
+      (unwind-protect
+           (progn
+             #+threads(mp:lock *jit-log-lock* t)
+             (if (not (boundp '*jit-log-stream*))
+                 (let ((filename (core:bformat nil "/tmp/clasp-symbols-%s" (core:getpid))))
+                   (core:bformat *debug-io* "Writing jitted symbols to %s\n" filename)
+                   (setq *jit-log-stream* (open filename :direction :output))))
+             (write-string (core:pointer-as-string (cadr symbol-info)) *jit-log-stream*)
+             (write-char #\space *jit-log-stream*)
+             ;; car of symbol-info is a fixnum
+             (write (car symbol-info) :stream *jit-log-stream* :pretty nil)
+             (write-char #\space *jit-log-stream*)
+             (write-string symbol-name-string *jit-log-stream*)
+             (terpri *jit-log-stream*)
+             (finish-output *jit-log-stream*))
+        (progn
+          #+threads(mp:unlock *jit-log-lock*)))))
+
 (progn
-  (defvar *jit-engine* (make-cxx-object 'llvm-sys:clasp-jit))
-  #+threads(defvar *jit-engine-mutex* (mp:make-lock :name 'jit-engine-mutex :recursive t))
   (export '(jit-add-module-return-function jit-add-module-return-dispatch-function jit-remove-module))
-  (defvar *intrinsics-module* nil)
-  (defparameter *jit-dump-module* nil)
-  (defvar *declare-dump-module* nil)
-  (defvar *jit-repl-module-handles* nil)
-  (defvar *jit-fastgf-module-handles* nil)
-  (defun jit-add-module-return-function (module repl-fn startup-fn shutdown-fn literals-list)
-    (unwind-protect
-         (progn
-           #+threads(mp:get-lock *jit-engine-mutex*)
-           ;;    (bformat t "In jit-add-module-return-function dumping module\n")
-           ;;    (llvm-sys:print-module-to-stream module *standard-output*)
-           (if *jit-dump-module* (llvm-sys:dump module))
-           (if *declare-dump-module* (llvm-sys:dump module))
-           (let* ((repl-name (llvm-sys:get-name repl-fn))
-                  (startup-name (llvm-sys:get-name startup-fn))
-                  (shutdown-name (llvm-sys:get-name shutdown-fn))
-                  (handle (llvm-sys:clasp-jit-add-module *jit-engine* module)))
-             (setq *jit-repl-module-handles* (cons handle *jit-repl-module-handles*))
-;;;      (bformat t "    repl-name -> |%s|\n" repl-name)
-             (llvm-sys:jit-finalize-repl-function *jit-engine* handle repl-name startup-name shutdown-name literals-list repl-fn nil)))
-      (progn
-        #+threads(mp:giveup-lock *jit-engine-mutex*))))
+  (defparameter *jit-lock* (mp:make-lock :name 'jit-lock :recursive t))
+  (defun jit-add-module-return-function (original-module main-fn startup-fn shutdown-fn literals-list &optional dispatcher )
+    ;; Link the builtins into the module and optimize them
+    (if (null dispatcher)
+        (progn
+          (quick-module-dump original-module "before-link-builtins")
+          (jit-link-builtins-module original-module)
+          (quick-module-dump original-module "module-before-optimize"))
+        (progn
+          (jit-link-fastgf-module original-module)))
+    (let ((module original-module))
+      (let ((jit-engine (jit-engine))
+            (repl-name (llvm-sys:get-name main-fn))
+            (startup-name (llvm-sys:get-name startup-fn))
+            (shutdown-name (llvm-sys:get-name shutdown-fn)))
+        (unwind-protect
+             (progn
+               (mp:lock *jit-lock* t)
+               (let ((handle (llvm-sys:clasp-jit-add-module jit-engine module)))
+                 (llvm-sys:jit-finalize-repl-function jit-engine handle repl-name startup-name shutdown-name literals-list)))
+          (mp:unlock *jit-lock*)))))
 
-  (defun jit-add-module-return-dispatch-function (module dispatch-fn startup-fn shutdown-fn literals-list)
-    (unwind-protect
-         (progn
-           #+threads(mp:get-lock *jit-engine-mutex*)
-           (let* ((dispatch-name (llvm-sys:get-name dispatch-fn))
-                  (startup-name (llvm-sys:get-name startup-fn))
-                  (shutdown-name (llvm-sys:get-name shutdown-fn))
-                  (handle (llvm-sys:clasp-jit-add-module *jit-engine* module)))
-             (setq *jit-fastgf-module-handles* (cons handle *jit-fastgf-module-handles*))
-             (llvm-sys:jit-finalize-dispatch-function *jit-engine* handle dispatch-name startup-name shutdown-name literals-list)))
-      (progn
-        #+threads(mp:giveup-lock *jit-engine-mutex*))))
-      
+  (defun jit-add-module-return-dispatch-function (original-module dispatch-fn startup-fn shutdown-fn literals-list)
+    (jit-add-module-return-function original-module dispatch-fn startup-fn shutdown-fn literals-list :dispatch))
+     
   (defun jit-remove-module (handle)
-    (unwind-protect
-         (progn
-           #+threads(mp:get-lock *jit-engine-mutex*)
-           (llvm-sys:clasp-jit-remove-module *jit-engine* handle))
-      (progn
-        #+threads(mp:giveup-lock *jit-engine-mutex*))))
-  )
+    (llvm-sys:clasp-jit-remove-module (jit-engine) handle)))
 
-;;; Use old execution engine approach
-#+(or)
-(progn
-  (defun jit-add-module-return-function (module repl-fn startup-fn shutdown-fn literals-list)
-    "Add the module to the jit and return a handle"
-    (unwind-protect
-         (progn
-           #+threads(mp:get-lock *jit-engine-mutex*)
-           (if (not *jit-engine*)
-               (setq *jit-engine* (create-run-time-execution-engine module))
-               (llvm-sys:add-module *jit-engine* module))
-           (llvm-sys:finalize-engine-and-register-with-gc-and-get-compiled-function
-            *jit-engine*
-            "JIT"
-            repl-fn
-            (irc-environment-activation-frame nil) 0 0 0
-            startup-fn
-            shutdown-fn
-            literals-list))
-      (progn
-        #+threads(mp:giveup-lock *jit-engine-mutex*))))
-
-  (defun jit-add-module-return-dispatch-function (module repl-fn startup-fn shutdown-fn literals-list)
-    "Add the module to the jit and return a handle"
-    (irc-verify-function repl-fn)
-    (unwind-protect
-         (progn
-           #+threads(mp:get-lock *jit-engine-mutex*)
-           (if (not *jit-engine*)
-               (setq *jit-engine* (create-run-time-execution-engine module))
-               (llvm-sys:add-module *jit-engine* module))
-           (llvm-sys:finalize-engine-and-get-dispatch-function
-            *jit-engine*
-            "JIT-DISPATCH"
-            repl-fn
-            startup-fn
-            shutdown-fn
-            literals-list))
-      (progn
-        #+threads(mp:giveup-lock *jit-engine-mutex*)
-        )))
-
-  (defun jit-remove-module (handle)
-    "Maybe remove the module"
-    nil))

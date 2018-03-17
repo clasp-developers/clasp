@@ -25,7 +25,7 @@
 (export '(*break-readtable* *break-on-warnings*
 	  *tpl-evalhook* *tpl-prompt-hook*))
 
-#+clasp(defvar sys:*echo-repl-tpl-read* nil "Set to t if you want to echo what was typed at the REPL top-level")
+(defvar sys:*echo-repl-tpl-read* nil "Set to t if you want to echo what was typed at the REPL top-level")
 (defparameter *quit-tag* (cons nil nil))
 (defparameter *quit-tags* nil)
 (defparameter *break-level* 0)		; nesting level of error loops
@@ -49,130 +49,128 @@
 (defparameter *step-level* 0)			; repeated from trace.lsp
 
 (defparameter *break-hidden-functions* '(error cerror apply funcall invoke-debugger))
-(defparameter *break-hidden-packages*
-  (list
-   #-(or ecl-min clasp-min) (find-package 'system)))
+(defparameter *break-hidden-packages* (list #-clasp-min (find-package 'system)))
 
-(defconstant tpl-commands
-   '(("Top level commands"
-      ((:cf :compile-file) tpl-compile-command :string
-       ":cf		Compile file"
-       ":compile-file &string &rest files		[Top level command]~@
+(defconstant-equal tpl-commands
+  '(("Top level commands"
+     ((:cf :compile-file) tpl-compile-command :string
+      ":cf		Compile file"
+      ":compile-file &string &rest files		[Top level command]~@
 	:cf &string &rest files				[Abbreviation]~@
 	~@
 	Compile files.  With no arguments, uses values from latest :cf~@
 	command.  File extensions are optional.~%")
-      ((:exit :eof) quit :eval
-       ":exit or ^D	Exit Lisp"
-       ":exit &eval &optional (status 0)		[Top level command]~@
+     ((:exit :eof) quit :eval
+      ":exit or ^D	Exit Lisp"
+      ":exit &eval &optional (status 0)		[Top level command]~@
 	~@
 	Exit Lisp without further confirmation.~%")
-      ((:ld :load) tpl-load-command :string
-       ":ld		Load file"
-       ":load &string &rest files			[Top level command]~@
+     ((:ld :load) tpl-load-command :string
+      ":ld		Load file"
+      ":load &string &rest files			[Top level command]~@
 	:ld &string &rest files				[Abbreviation]~@
 	~@
 	Load files.  With no arguments, uses values from latest :ld~@
 	or :cf command. File extensions are optional.~%")
-      ((:step) tpl-step-command nil
-       ":step		Single step form"
-       ":step form					[Top level command]~@
+     ((:step) tpl-step-command nil
+      ":step		Single step form"
+      ":step form					[Top level command]~@
 	~@
 	Evaluate form in single step mode.  While stepping, a new break~@
 	level is invoked before every evaluation.  Extra commands are~@
 	available at this time to control stepping and form evaluation.~%")
-      ((:tr :trace) tpl-trace-command nil
-       ":tr(ace)	Trace function"
-       ":trace &rest functions				[Top level command]~@
+     ((:tr :trace) tpl-trace-command nil
+      ":tr(ace)	Trace function"
+      ":trace &rest functions				[Top level command]~@
 	:tr &rest functions				[Abbreviation]~@
 	~@
 	Trace specified functions.  With no arguments, show currently~@
 	traced functions.~@
 	~@
 	See also: :untrace.~%")
-      ((:untr :untrace) tpl-untrace-command nil
-       ":untr(ace)	Untrace function"
-       ":untrace &rest functions			[Top level command]~@
+     ((:untr :untrace) tpl-untrace-command nil
+      ":untr(ace)	Untrace function"
+      ":untrace &rest functions			[Top level command]~@
 	:untr &rest functions				[Abbreviation]~@
 	~@
 	Untrace specified functions.  With no arguments, untrace~@
 	all functions.~@
 	~@
 	See also: :trace.~%")
-      ((:pwd :print-working-directory) tpl-default-pathname-defaults-command nil
-       ":pwd	Print the current value of *default-pathname-defaults*"
-       "See also: :cd.~%")
-      ((:cd :change-default-pathname-defaults) tpl-change-default-pathname-defaults-dir-command :string
-       ":cd	Change the current value of *default-pathname-defaults*"
-       "See also: :dpd.~%")
-      #+threads
-      ((:s :switch) tpl-switch-command nil
-       ":s(witch)       Switch to next process to debug"
-       ":switch process                                 [Break command]~@
+     ((:pwd :print-working-directory) tpl-default-pathname-defaults-command nil
+      ":pwd	Print the current value of *default-pathname-defaults*"
+      "See also: :cd.~%")
+     ((:cd :change-default-pathname-defaults) tpl-change-default-pathname-defaults-dir-command :string
+      ":cd	Change the current value of *default-pathname-defaults*"
+      "See also: :dpd.~%")
+     #+threads
+     ((:s :switch) tpl-switch-command nil
+      ":s(witch)       Switch to next process to debug"
+      ":switch process                                 [Break command]~@
         :s processs                                     [Abbreviation]~@
         ~@
         Switch to next process in need to debugger attention. Argument~@
         process, when provided, must be an integer indicating the rank~@
         of the process in the debugger waiting list.~%")
-      #+threads
-      ((:br :break) tpl-interrupt-command nil
-       ":br(eak)        Stop a given process"
-       ":break process                                  [Break command]~@
+     #+threads
+     ((:br :break) tpl-interrupt-command nil
+      ":br(eak)        Stop a given process"
+      ":break process                                  [Break command]~@
         :br processs                                    [Abbreviation]~@
         ~@
         Interrupt a given process. Argument process, must be provided and
         it must be an integer indicating the rank~@
         of the process in the debugger waiting list (:waiting).~%")
-      #+threads
-      ((:w :waiting) tpl-waiting-command nil
-       ":w(aiting)      Display list of active toplevels"
-       ":waiting                                        [Break command]~@
+     #+threads
+     ((:w :waiting) tpl-waiting-command nil
+      ":w(aiting)      Display list of active toplevels"
+      ":waiting                                        [Break command]~@
         :w                                              [Abbreviation]~@
         ~@
         Display list of active toplevels, including open debug sessions.~%")
-      )
-     ("Help commands"
-      ((:apropos) tpl-apropos-command nil
-       ":apropos	Apropos"
-       ":apropos string &optional package		[Top level command]~@
+     )
+    ("Help commands"
+     ((:apropos) tpl-apropos-command nil
+      ":apropos	Apropos"
+      ":apropos string &optional package		[Top level command]~@
 	~@
 	Finds all available symbols whose print names contain string.~@
 	If a non NIL package is specified, only symbols in that package are considered.~@
 	~%")
-      ((:doc document) tpl-document-command nil
-       ":doc(ument)	Document"
-       ":document symbol				[Top level command]~@
+     ((:doc document) tpl-document-command nil
+      ":doc(ument)	Document"
+      ":document symbol				[Top level command]~@
 	~@
 	Displays documentation about function, print names contain string.~%")
-      ((? :h :help) tpl-help-command nil
-       ":h(elp) or ?	Help.  Type \":help help\" for more information"
-       ":help &optional topic				[Top level command]~@
-	:h &optional topic				[Abbrevation]~@
-      	~@
-	Print information on specified topic.  With no arguments, print~@
-	quick summery of top level commands.~@
-	~@
-	Help information for top level commands follows the documentation~@
-	style found in \"Common Lisp, the Language\"; and, in general, the~@
-	commands themselves follow the conventions of Common Lisp functions,~@
-	with the exception that arguments are normally not evaluated.~@
-	Those commands that do evaluate their arguments are indicated by the~@
-	keyword &eval in their description.  A third class of commands~@
-	treat their arguments as whitespace-separated, case-sensitive~@
-	strings, requiring double quotes only when necessary.  This style~@
-	of argument processing is indicated by the keyword &string.~@
-	For example, the :load command accepts a list of file names:
-	~@
-	:load &string &rest files			[Top level Command]~@
-	~@
-	whereas :exit, which requires an optional evaluated argument, is~@
-	~@
-	:exit &eval &optional status			[Top level Command]~%")
-      )))
+     ((? :h :help) tpl-help-command nil
+      ":h(elp) or ?    Help.  Type \":help help\" for more information"
+      ":help &optional topic                           [Top level command]~@
+        :h &optional topic                              [Abbreviation]~@
+        ~@
+        Print information on specified topic.  With no arguments, print~@
+        quick summary of top level commands.~@
+        ~@
+        Help information for top level commands follows the documentation~@
+        style found in \"Common Lisp, the Language\"; and, in general, the~@
+        commands themselves follow the conventions of Common Lisp functions,~@
+        with the exception that arguments are normally not evaluated.~@
+        Those commands that do evaluate their arguments are indicated by the~@
+        keyword &eval in their description.  A third class of commands~@
+        treat their arguments as whitespace-separated, case-sensitive~@
+        strings, requiring double quotes only when necessary.  This style~@
+        of argument processing is indicated by the keyword &string.~@
+        For example, the :load command accepts a list of file names:
+        ~@
+        :load &string &rest files                       [Top level Command]~@
+        ~@
+        whereas :exit, which requires an optional evaluated argument, is~@
+        ~@
+        :exit &eval &optional status                    [Top level Command]~%")
+     )))
 
 (defparameter *tpl-commands* tpl-commands)
 
-(defconstant break-commands
+(defconstant-equal break-commands
   '("Break commands"
      ((:q :quit) tpl-quit-command nil
        ":q(uit)		Return to some previous break level"
@@ -375,11 +373,11 @@
 	~@
 	Show current error message.~%")
       ((:hs :help-stack) tpl-help-stack-command nil
-       ":hs		Help stack"
-       ":help-stack					[Break command]~@
-	:hs						[Abbrevation]~@
-	~@
-	Lists the functions to access the LISP system stacks.~%")
+       ":hs             Help stack"
+       ":help-stack                                     [Break command]~@
+        :hs                                             [Abbreviation]~@
+        ~@
+        Lists the functions to access the LISP system stacks.~%")
       ((:i :inspect) tpl-inspect-command nil
        ":i(nspect)      Inspect value of local variable"
        ":inspect var-name                               [Break command]~@
@@ -548,23 +546,13 @@ Use special code 0 to cancel this operation.")
   #-threads
   (single-threaded-terminal-interrupt))
 
-
-#+(or)(eval-when (:compile-toplevel :execute)
-  (push :flow cmp:*low-level-trace*)
-  (setq cmp:*debug-compiler* t)
-  )
-
 (defun tpl (&key ((:commands *tpl-commands*) tpl-commands)
 	      ((:prompt-hook *tpl-prompt-hook*) *tpl-prompt-hook*)
 	      (broken-at nil)
 	      (quiet nil))
-  #-(or ecl-min clasp)
-  (declare (c::policy-debug-ihs-frame))
   (let* ((*ihs-base* *ihs-top*)
 	 (*ihs-top* (if broken-at (ihs-search t broken-at) (ihs-top)))
 	 (*ihs-current* (if broken-at (ihs-prev *ihs-top*) *ihs-top*))
-	 #-clasp (*frs-base* (or (sch-frs-base *frs-top* *ihs-base*) (1+ (frs-top))))
-	 #-clasp (*frs-top* (frs-top))
 	 (*quit-tags* (cons *quit-tag* *quit-tags*))
 	 (*quit-tag* *quit-tags*)	; any unique new value
 	 (*tpl-level* (1+ *tpl-level*))
@@ -603,36 +591,28 @@ Use special code 0 to cancel this operation.")
                      (setf quiet t))
                  (setq - (locally (declare (notinline tpl-read))
                            (tpl-prompt)
-                           #-clasp(tpl-read)
-                           #+clasp(let ((expr (tpl-read)))
-                                    (when sys:*echo-repl-tpl-read*
-                                      (format t "#|REPL echo|# ~s~%" expr))
-                                    expr)))
+                           (let ((expr (tpl-read)))
+                             (when sys:*echo-repl-tpl-read*
+                               (format t "#|REPL echo|# ~s~%" expr))
+                             expr)))
                  (setq values (multiple-value-list
-                               #+ecl(core:eval-with-env - *break-env*)
-                               #+clasp(funcall core:*eval-with-env-hook* - *break-env*)
+                               (funcall core:*eval-with-env-hook* - *break-env*)
                                )
                        /// // // / / values *** ** ** * * (car /))
                  (tpl-print values)))))
-      (loop
-	 (setq +++ ++ ++ + + -)
-	 (when
-	     (catch *quit-tag*
-	       (if (zerop break-level)
-		   (with-simple-restart
-		       (restart-toplevel "Go back to Top-Level REPL.")
-		     (rep))
-		   (with-simple-restart
-		       (restart-debugger "Go back to debugger level ~D." break-level)
-		     (rep)))
-	       nil)
-	   (setf quiet nil))))))
-
-
-#+(or)(eval-when (:compile-toplevel :execute)
-  (pop cmp:*low-level-trace*)
-  (setq cmp:*debug-compiler* nil)
-  )
+          (loop
+           (setq +++ ++ ++ + + -)
+           (when
+               (catch *quit-tag*
+                 (if (zerop break-level)
+                   (with-simple-restart 
+                    (restart-toplevel "Go back to Top-Level REPL.")
+                    (rep))
+                   (with-simple-restart
+                    (restart-debugger "Go back to debugger level ~D." break-level)
+                    (rep)))
+                 nil)
+             (setf quiet nil))))))
 
 (defun tpl-prompt ()
   (typecase *tpl-prompt-hook*
@@ -804,7 +784,7 @@ Use special code 0 to cancel this operation.")
 	(*print-escape* nil)
 	(*print-readably* nil)
 	(functions) (blocks) (variables))
-    (unless (#+(and ecl (not clasp))si::bc-disassemble #+clasp disassemble (ihs-fun *ihs-current*))
+    (unless (disassemble (ihs-fun *ihs-current*))
       (tpl-print-current)
       (format t " Function cannot be disassembled.~%"))
     (values)))
@@ -822,7 +802,6 @@ Use special code 0 to cancel this operation.")
     (values)))
 
 (defun reconstruct-bytecodes-lambda-list (data)
-  (declare (si::c-local data))
   (let ((output '()))
     (dotimes (n (pop data))	;; required values
       (declare (fixnum n))
@@ -854,115 +833,16 @@ Use special code 0 to cancel this operation.")
     (nreverse output)))
 
 (defun lambda-list-from-annotations (name)
-  (declare (si::c-local))
   (let ((args (core:get-annotation name :lambda-list nil)))
     (values args (and args t))))
 
-
-#+(or)(defun function-lambda-list (function)
-  (cond
-    ((symbolp function)
-     (cond ((or (special-operator-p function)
-		(macro-function function))
-	    (lambda-list-from-annotations function))
-	   (t
-	    (function-lambda-list (fdefinition function)))))
-    ((typep function 'generic-function)
-     (values (clos:generic-function-lambda-list function) t))
-    ;; Use the lambda list from the function definition, if available,
-    ;; but remove &aux arguments.
-    ((let ((f (function-lambda-expression function)))
-       (when f
-         (let* ((list (if (eql (first f) 'LAMBDA)
-                          (second f)
-                          (third f)))
-                (ndx (position '&aux list)))
-           (return-from function-lambda-list
-             (values (if ndx (subseq list 0 (1- ndx)) list) t))))))
-    ;; Reconstruct the lambda list from the bytecodes
-    ((multiple-value-bind (lex-env bytecodes data)
-         (si::bc-split function)
-       (declare (ignore lex-env))
-       (when bytecodes
-         (setq data (coerce data 'list))
-         (return-from function-lambda-list
-           (values (reconstruct-bytecodes-lambda-list data) t)))))
-    ;; If it's a compiled function of ECL itself, reconstruct the
-    ;; lambda-list from its documentation string.
-    (t
-     (lambda-list-from-annotations (compiled-function-name function)))))
 (export 'function-lambda-list)
-
-#-(or ecl-min clasp)
-(defun decode-env-elt (env ndx)
-  (ffi:c-inline (env ndx) (:object :fixnum) :object
-                "
-	cl_object v = #0;
-	cl_index ndx = #1;
-	typedef struct ecl_var_debug_info *pinfo;
-	pinfo d = (pinfo)(v->vector.self.t[1]) + ndx;
-	cl_object name = make_constant_base_string(d->name);
-	void *value = (void*)(v->vector.self.t[2+ndx]);
-	cl_object output;
-	switch (d->type) {
-	case _ecl_object_loc:
-		output = *((cl_object*)value);
-		break;
-	case _ecl_fixnum_loc: {
-		cl_fixnum *p = (cl_fixnum*)value;
-		output = ecl_make_integer(*p);
-		break;
-	}
-	case _ecl_float_loc: {
-		float *p = (float*)value;
-		output = ecl_make_single_float(*p);
-		break;
-	}
-	case _ecl_double_loc: {
-		double *p = (double*)value;
-		output = ecl_make_double_float(*p);
-		break;
-	}
-#ifdef ECL_SSE2
-	case _ecl_int_sse_pack_loc: {
-		__m128i *p = (__m128i*)value;
-		output = ecl_make_int_sse_pack(_mm_loadu_si128(p));
-		break;
-	}
-	case _ecl_float_sse_pack_loc: {
-		__m128 *p = (__m128*)value;
-		output = ecl_make_float_sse_pack(_mm_loadu_ps((float*)p));
-		break;
-	}
-	case _ecl_double_sse_pack_loc: {
-		__m128d *p = (__m128d*)value;
-		output = ecl_make_double_sse_pack(_mm_loadu_pd((double*)p));
-		break;
-	}
-#endif
-	default: {
-		ecl_base_char *p = (ecl_base_char*)value;
-		output = ECL_CODE_CHAR(*p);
-		break;
-	}
-	}
-	@(return) = CONS(name,output);
-" :one-liner nil))
 
 (defun decode-ihs-env (*break-env*)
   (let ((env *break-env*))
     (if (vectorp env)
-      #+(or ecl-min clasp)
-      nil
-      #-(or ecl-min clasp)
-      (let* ((next (decode-ihs-env
-                    (ffi:c-inline (env) (:object) :object
-                                  "(#0)->vector.self.t[0]" :one-liner t))))
-        (nreconc (loop with l = (- (length env) 2)
-                       for i from 0 below l
-                       do (push (decode-env-elt env i) next))
-                   next))
-      env)))
+        nil
+        env)))
 
 (defun ihs-environment (ihs-index)
   (labels ((newly-bound-special-variables (bds-min bds-max)
@@ -1046,19 +926,7 @@ Use special code 0 to cancel this operation.")
 	(*print-pretty* t)
 	(*print-escape* nil)
 	(*print-readably* nil))
-    #+clasp(core:print-current-ihs-frame-environment)
-    #+ecl
-    (multiple-value-bind (local-variables special-variables functions blocks restarts)
-               (ihs-environment *ihs-current*)
-             (format t "~:[~;Local functions: ~:*~{~s~^, ~}.~%~]" functions)
-             (format t "~:[~;Block names: ~:*~{~s~^, ~}.~%~]" blocks)
-             (when restarts
-               (format t "New restarts:")
-               (loop for r in restarts
-                  do (format t "~% ~A: ~A" (restart-name r) r)))
-             (tpl-print-variables "~%Local variables: " local-variables no-values)
-             (tpl-print-variables "~%Special variables: "
-                                  special-variables no-values))
+    (core:print-current-ihs-frame-environment)
     (terpri)
     (values)))
 
@@ -1085,7 +953,7 @@ Use special code 0 to cancel this operation.")
 	 (values))
       (when (eq (bds-var bi) var)
 	(return (let ((val (bds-val bi)))
-		  (if (eq val si::unbound) "<unbound value>" val)))))
+		  (if (eq val (core:unbound)) "<unbound value>" val)))))
     (do ((bi (1+ (frs-bds (max 0 (1- *frs-base*)))) (1+ bi))
 	 (last (frs-bds (1+ *frs-top*)))
 	 (fi *frs-base*)
@@ -1100,113 +968,17 @@ Use special code 0 to cancel this operation.")
       (format t "BDS[~d]: ~s = ~s~%"
 	      bi (bds-var bi)
 	      (let ((val (bds-val bi)))
-		(if (eq val si::unbound) "<unbound value>" val))))))
-#+(and clasp (not use-expensive-backtrace))
-(defun clasp-backtrace (&optional (n 99999999))
-  (core:clib-backtrace n))
+		(if (eq val (core:unbound)) "<unbound value>" val))))))
 
-#+(and clasp use-expensive-backtrace)
 (defun clasp-backtrace (&optional (n 99999999))
-  (unless n (setq n 99999999))
-  (let (backtrace
-        (top (or *stack-top-hint* (core::ihs-top))))
-    (do* ((icur top (core:ihs-prev icur))
-          (fun (core:ihs-fun icur) (core:ihs-fun icur))
-          (args (core::ihs-arguments icur) (core:ihs-arguments icur))
-          (i 0 (1+ i)))
-         ((or (= icur 0) (>= i n)))
-      (let* ((arg-str (with-output-to-string (sout)
-                        (dotimes (i (length args))
-                          (handler-case (let ((arg (elt args i)))
-                                          (if (symbolp arg)
-                                              (format sout "'~s " arg)
-                                              (format sout "~s " arg)))
-                            (error (c)
-                              (format sout " #<UNPRINTABLE> "))))))
-             (source-file (source-file-info-pathname (function-source-pos fun)))
-             (filename (if source-file (format nil "~a.~a" (pathname-name source-file) (pathname-type source-file))))
-             (source-pos-info (core:function-source-pos-info fun))
-             (lineno (if source-pos-info (core:source-pos-info-lineno source-pos-info))))
-        (push (if (eq (function-name fun) 'cl:lambda)
-                  (format nil "~4a ~20a ~5d LAMBDA(~a)" icur filename lineno (subseq arg-str 0 (if (> (length arg-str) 512) 512 nil)))
-                  (format nil "~4a ~20a ~5d (~s ~a)" icur filename lineno (function-name fun) (subseq arg-str 0 (if (> (length arg-str) 512) 512 nil))))
-              backtrace)))
-    (dolist (bl (nreverse backtrace))
-      (format t "~a~%" bl))
-    (format t "Backtrace done~%")))
+  (core:btcl))
 
 (defun tpl-backtrace (&optional n)
-  #+clasp
   (clasp-backtrace n)
-  #+ecl(let ((*print-pretty* nil) ;; because CLOS allows (setf foo) as function names
-             (base *ihs-base*)
-             (top *ihs-top*))
-         (format t "~&Backtrace:~%")
-         (if (null n)
-             (do ((i top (si::ihs-prev i))
-                  ;;(b nil t)
-                  )
-                 ((< i base))
-               (when (ihs-visible i)
-                 (let ((*print-case* (if (= i *ihs-current*) :UPCASE :DOWNCASE))
-                       (*print-readably* nil)
-                       (func-name (ihs-fname i)))
-                   ;;(format t "~:[~; >~] ~S" b (ihs-fname i)) ;; JCB
-                   (format t "  > ~S" func-name)
-                   (when (eq func-name 'si::bytecodes)
-                     (format t " [Evaluation of: ~S]"
-                             (function-lambda-expression (ihs-fun i))))
-                   (terpri)
-                   )))
-             (progn
-               (if (eq t n)
-                   (setq base 0)
-                   (progn
-                     (unless (integerp n)
-                       (error "Argument to command :backtrace must be an integer or t."))
-                     (setq top *ihs-current*)
-                     )
-                   )
-               (do ((i top (si::ihs-prev i))
-                    ;;(b nil t)
-                    (j 0 (1+ j))
-                    (max (if (eq t n) *ihs-top* n))
-                    )
-                   ((or (< i base) (>= j max))
-                    (when (zerop i) (format t "  > ---end-of-stack---~%"))
-                    )
-                 (when (or (ihs-visible i) (eq t n))
-                   (let ((*print-case* (if (= i *ihs-current*) :UPCASE :DOWNCASE))
-                         (*print-readably* nil)
-                         (func-name (ihs-fname i)))
-                     ;;(format t "~:[~; >~] ~S" b (ihs-fname i)) ;; JCB
-                     (format t "  > ~S" (ihs-fname i))
-                     (when (eq func-name 'si::bytecodes)
-                       (format t " [Evaluation of: ~S]"
-                               (function-lambda-expression (ihs-fun i))))
-                     (terpri)
-                     ))))
-             )
-         (terpri))
   (values))
 
 (defun tpl-frs-command (&optional n)
   (format *debug-io* "tpl-frs-command   ignored~%"))
-#||
-  (unless n (setq n *ihs-top*))
-  (unless (integerp n)
-    (error "Argument to command :frs must be an integer."))
-  (do ((i *ihs-top* (si::ihs-prev i))
-       (k n (1- k)))
-      ((= k 0) (values))
-      (let*((j (or (sch-frs-base *frs-base* i) (1+ *frs-top*)))
-	    (*print-level* 2)
-	    (*print-length* 4)
-	    (*print-pretty* t))
-	(do () ((or (> j *frs-top*) (> (frs-ihs j) i)))
-	    (print-frs j)
-	    (incf j)))))
-||#
 
 (defun print-frs (i)
   (format *debug-io* "    FRS[~d]: ---> IHS[~d],BDS[~d]~%"
@@ -1267,17 +1039,8 @@ Use special code 0 to cancel this operation.")
   (values))
 
 (defun ihs-visible (i)
-  #+(and ecl (not clasp))(let ((fname (ihs-fname i)))
-                           #+clos
-                           (when (and (consp fname) (eq 'SETF (car fname)))
-                             (setq fname (second fname)))
-                           (or (eq fname 'EVAL)
-                               (eq fname 'BYTECODES)
-                               (and (not (member (symbol-package fname) *break-hidden-packages*
-                                                 :TEST #'eq))
-                                    (not (null fname))
-                                    (not (member fname *break-hidden-functions* :TEST #'eq)))))
-  #+clasp (ihs-env i) #| every frame with an environment is visible in clasp |#)
+  ;; every frame with an environment is visible in clasp
+  (ihs-env i))
 
 (defun ihs-fname (i)
   (let ((function (ihs-fun i)))
@@ -1508,6 +1271,7 @@ package."
 	   (*print-readably* nil)
            (*print-pretty* nil)
            (*print-circle* t)
+           (*print-length* 16)
            (*readtable* (or *break-readtable* *readtable*))
 	   (*break-condition* condition)
            (*break-message* (format nil "~&Condition of type: ~A~%~A~%"
@@ -1515,21 +1279,26 @@ package."
            (*break-level* (1+ *break-level*))
            (break-level *break-level*)
            (*break-env* nil)
-	   #+clasp(cmp:*implicit-compile-hook* #'cmp:implicit-compile-hook-default))
+	   (cmp:*implicit-compile-hook* #'cmp:implicit-compile-hook-default))
       (check-default-debugger-runaway)
       #+threads
       ;; We give our process priority for grabbing the console.
       (setq *console-owner* mp:*current-process*)
       ;; As of ECL 9.4.1 making a normal function return from the debugger
       ;; seems to be a very bad idea! Basically, it dumps core...
-      (when (listen *debug-io*)
-	(clear-input *debug-io*))
+      (ignore-errors
+        (when (listen *debug-io*)
+          (clear-input *debug-io*)))
       ;; Like in SBCL, the error message is output through *error-output*
       ;; The rest of the interaction is performed through *debug-io*
-      (finish-output)
-      (fresh-line *error-output*)
-      (terpri *error-output*)
-      (princ *break-message* *error-output*)
+      (ignore-errors (finish-output))
+      ;; We wrap the following in `ignore-errors' because error may be
+      ;; caused by writing to the `*error-output*', what leads to
+      ;; infinite recursion!
+      (ignore-errors
+        (fresh-line *error-output*)
+        (terpri *error-output*)
+        (princ *break-message* *error-output*))
       (loop
 	 ;; Here we show a list of restarts and invoke the toplevel with
 	 ;; an extended set of commands which includes invoking the associated
@@ -1545,8 +1314,6 @@ package."
   ;; call *INVOKE-DEBUGGER-HOOK* first, so that *DEBUGGER-HOOK* is not
   ;; called when the debugger is disabled. We adopt this mechanism
   ;; from SBCL.
-  #-(or ecl-min clasp)
-  (declare (c::policy-debug-ihs-frame))
   (let ((old-hook ext:*invoke-debugger-hook*))
     (when old-hook
       (let ((ext:*invoke-debugger-hook* nil))
@@ -1570,6 +1337,20 @@ package."
           (default-debugger condition))))
   (finish-output))
 
+(defun core::debugger-disabled-hook (condition old-hook)
+  (declare (ignore old-hook))
+  (format t "~&Received error of type: ~A~%~A~%~
+               Debugger disabled - exiting.~%"
+          (type-of condition) condition)
+  (format t "~&------- Common Lisp backtrace: ~%")
+  (core:btcl)
+  (format t "~&------- C++/CL backtrace: ~%")
+  (core:bt)
+  (core:quit 1))
+
+(eval-when (:execute :load-toplevel)
+  (when (null (member :interactive *features*))
+    (setq *invoke-debugger-hook* 'debugger-disabled-hook)))
 
 (defun safe-eval (form env &optional (err-value nil err-value-p))
   "Args: (FORM ENV &optional ERR-VALUE)
@@ -1587,8 +1368,7 @@ value."
                                  (return-from safe-eval err-value))
                              #'invoke-debugger)))
            (setf output
-                 #+ecl(core:eval-with-env form env)
-                 #+clasp(funcall core:*eval-with-env-hook* form env)
+                 (funcall core:*eval-with-env-hook* form env)
                  ok t))
       (return-from safe-eval (if ok output err-value)))))
 

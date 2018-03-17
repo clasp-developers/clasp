@@ -1,0 +1,160 @@
+Like most CLOS implementations, Clasp's goes through some weirdness to have things work correctly with the MOP. These conceptual notes are intended to aid reading of the code, because comments can't do it all.
+
+Of course, internals notes tend to not be updated, so it's possible the information here isn't accurate. It ought to be as of October 2017 (git commit hash e9cc6ab4d9a502c9b48e5819f77cebd88a713804). Hopefully you're reading a file under version control, in which case you could try looking at the history of this directory to see if there have been any major changes since now.
+
+Instances
+---------
+
+Defined in the conventional way, basically a pointer to the class, and a "rack", the vector of slots. Plus some other crap. Defined in core/instance.h.
+
+After package.lsp, hierarchy.lsp is loaded. It defines variables containing specifications for the slot definitions of important standard classes. For example,
+
+(defparameter +method-combination-slots+
+ `((name :initarg :name :accessor method-combination-name)
+   (compiler :initarg :compiler :accessor method-combination-compiler)
+   (options :initarg :options :accessor method-combination-options)))
+
+These are used to describe slots before slot definitions exist as objects. Particularly, std-slot-value.lsp defines WITH-EARLY-ACCESSORS and WITH-EARLY-MAKE-INSTANCE. The former defines local macros with the slot names that expand into direct instance references. For example,
+
+(with-early-accessors (+method-combination-slots+) (method-combination-compiler mc))
+
+would expand to
+
+(macrolet ((method-combination-compiler (object) `(si::instance-ref ,object ,1)))
+  (method-combination-compiler mc))
+
+which is in turn equivalent to (si::instance-ref mc 1). This allows slot values to be accessed naturally without going through all the machinery of slot-value. Of course, it only works if slot locations don't change. It should probably use flet instead of macrolet, but local function inlining isn't working.
+
+WITH-EARLY-MAKE-INSTANCE similarly makes instances without calling generic functions, using si::allocate-raw-instance and si::instance-set.
+
+Some of the slot definitions are a little funny. standard-class has "class-id": this is unexported and nonstandard, but basically equivalent to class-name. I believe we don't use class-name because (setf class-name) is defined to call reinitialize-instance, which is inoperative during boot.
+
+boot.lsp actually creates the classes in hierarchy.lsp - again, directly, using core:allocate-raw-class and with-early-accessors. It does this by looking at +class-hierarchy+ in hierarchy.lsp. Some classes are in there more than once - they are redefined.
+
+After boot.lsp all standard classes are in their final states, i.e. no further bootstrap weirdness.
+
+Generic functions
+-----------------
+
+Instances and classes are all defined pretty straightforwardly. This is not the case for generic functions. We rely on a few things to get the system up:
+
+ * CLHS and MOP both have "restrictions on portable programs", basically that programs cannot redefine standard functions and methods, or extend them in certain difficult ways, without meeting undefined behavior. (Unfortunately, at present, we leave this behavior really undefined - could range from "extension is silently ignored" to "crash".)
+ * Defining generic functions as simple functions performing only their standard behavior, and then later using these functions as the standard methods.
+ * Satiation (explained below).
+
+The generic dispatch uses the currently new technique we have optimistically called "fastgf". Fastgf has its own section below. The algorithm is more fully described in Strandh, R. (2014). Fast generic dispatch for Common Lisp. Proceedings of ILC 2014 on 8th International Lisp Conference - ILC 14. doi:10.1145/2635648.2635654
+
+To set the system up, everything is dfined with normal functions which we then convert into etc.
+
+kernel.lsp defines a few important functions, some of which are used indefinitely, and some of which are redefined later.
+
+ * ENSURE-GENERIC-FUNCTION will be redefined. This version uses with-early-make-instance.
+ * The final standard method of COMPUTE-DISCRIMINATING-FUNCTION is defined here as a non-generic function. It only seems to be called as such by set-generic-function-dispatch, also in this file.
+ * (SETF GENERIC-FUNCTION-NAME) checks *clos-booted*, calls reinitialize-instance if it's so, or else (setf slot-value).
+ * The final standard method of COMPUTE-APPLICABLE-METHODS is defined here as a non-generic function.
+ * The function that will be used as the primary method of COMPUTE-APPLICABLE-METHODS-USING-CLASSES is defined here, but not bound as the function.
+ * A non-generic PRINT-OBJECT that simply uses print-unreadable-object is defined.
+
+method.lsp defines the final definition of DEFMETHOD. It also defines the final standard method of MAKE-METHOD-LAMBDA as a function, and defines early, non-generic versions of GENERIC-FUNCTION-METHOD-CLASS and ADD-METHOD. An early version of the internal function MAKE-METHOD (no relation to the local macro - it makes a method, like make-instance) is defined here. FIND-METHOD's final standard method is here defined as a function.
+
+The early add-method stores information in *early-methods* for use in fixup.lsp. An alist (function-name . list-of-methods).
+
+Note that all this adds up so that until these functions are redefined, DEFMETHOD forms don't require generic function calls at any time.
+
+combin.lsp defines various early versions of COMPUTE-EFFECTIVE-METHOD and FIND-METHOD-COMBINATION. Also it installs the DEFINE-METHOD-COMBINATION macro, and all the simple standard ones.
+
+slotvalue.lsp starts using DEFMETHOD, and thus defining generic functions as well.
+
+standard.lsp defines (final) methods for most of the instance creation and initialization protocol. change.lsp does CHANGE-CLASS and REINITIALIZE-INSTANCE. stdmethod.lsp defines a few methods and stuff for methods.
+
+generic.lsp defines DEFGENERIC and a few related things like ENSURE-GENERIC-FUNCTION-USING-CLASS.
+
+fixup.lsp is what puts the system into the final mode, redefining early functions as methods, etc. Up to this point no generic functions have been called. First, fixup converts a few critical functions into methods early - the ones needed to compute a discriminating function. Then, all existing generic functions have a "specializer profile" set up. This is part of fastgf, and is simply a sequence of Ts and NILs indicating which required arguments are currently specialized on.
+
+With that done, we "satiate" critical generic functions. This is done in satiation.lisp. Satiation means setting up a fake call history with precomputed effective methods, for a few critical paths, namely the ones enabling discriminating functions to be computed. The full list is in satiate-standard-generic-functions. Satiation is done entirely without generic functions, using early-accessors and the primitive ungeneric functions for some things (e.g. compute-effective-method).
+
+After satiation, add-direct-method is used to associate early methods with generic functions. Either it or method-specializers will be the first generic functions to actually be called, so you may run into problems here.
+
+After that *early-methods* is unbound, so don't add any more methods until the final add-method is defined in a minute.
+
+The final ENSURE-GENERIC-FUNCTION is installed next. It calls generic functions, so DEFGENERIC and DEFMETHOD after this will call generics.
+
+Then a few things are redefined, most notably ADD-METHOD and REMOVE-METHOD, which are also immediately upgraded into methods. More stuff that should be inoffensive.
+
+At the end of this file, CLOS is "set up" in that you should be able to manipulate generic functions with impunity. However some things like detailed PRINT-OBJECT are later.
+
+Fastgf
+------
+
+Basic dispatch technique is as follows. The discriminating function has a slow path and a fast path. We start with the fast path. The fast path is a discrimination tree, or "dtree". Each required argument position goes through a binary search based on its class stamp (a natural number each class has). Each leaf of the tree is an "outcome", which is an effective method function or something fancier that does the same thing (see below). If the search fails at any time, it goes to the slow path.
+
+For example, if we have (defmethod foo ((x integer) y) outcome0), the stamp of FIXNUM is 7, and the stamp of BIGNUM is 8 (and integer = fixnum + bignum), we could validly have any of the following fast paths:
+
+(slow-path)
+
+(let ((xs (instance-class-stamp x)))
+  (if (= xs 7)
+      outcome0
+      (slow-path)))
+
+(let ((xs (instance-class-stamp x)))
+  (if (= xs 8)
+      outcome0
+      (slow-path)))
+
+(let ((xs (instance-class-stamp x)))
+  (if (>= xs 7)
+      (if (<= xs 8)
+          outcome0
+          (slow-path))
+      (slow-path)))
+
+instance-class-stamp and slow-path are not real functions, those are just for illustration. Anyway, the point is it works based on the actual class of the instance, that is the class that the instance is a direct instance of.
+
+For a new generic function, the "fast path" is always the first one, i.e. immediately goes to the slow path. The slow path does roughly what MOP suggests, that is, first it calls compute-applicable-methods-using-classes, and if that returns a second value of NIL it calls compute-applicable-methods. Then it uses the applicable methods to compute an effective method, and calls that.
+
+If c-a-m-u-c returns a second value of T, the call is additionally "memoized". The list of classes of the required arguments is stored, along with the effective method, in the generic function's "call history". The discriminating function of the generic function is set to be invalidated-dispatch-function, which is just one particular function.
+
+When c-a-m-u-c returns a second value of NIL, meaning for standard dispatch that there is a relevant eql-specialize method, the call can still be memoized in certain circumstances. First, the generic function must be a direct instance of standard-generic-function; this ensures that there are no custom methods on c-a-m-u-c, c-a-m, or anything. Second, any arguments in an eql-specialized position must match an eql specializer. To understand what this means and why this restriction is in place, consider (defmethod foo ((x symbol))) (defmethod foo ((x (eql 'x)))). If foo is called with, say, 'y, the argument does not match an eql specializer. If the call was memoized, it would be on the symbol class. Then, if foo was called later with 'x, it would go to the symbol outcome inappropriately. So instead, we only memoize the latter call (which is probably more common anyway) and leave the slow path for the former.
+
+This situation could be improved by essentially memoizing multiple, mostly fictitious calls in the former case, to ensure all the eql specializers are covered. At this time I believe this is more trouble than its worth.
+
+Anyway, being invalidated, the next time the gf is called control is passed to invalidated-dispatch-function. invalidated-dispatch-function calls sets the discriminating function to be the result of calculate-fastgf-dispatch-function, which is basically a compute-discriminating-function method (though FIXME this is not set up!). calculate-fastgf-dispatch-function builds a fast path based on the call history. For example, for the above function FOO, it would compute the first if there was no call history, the second if the call history was one call with a fixnum, the third if the call history was one call with a bignum, and the last if the call history had both calls.
+
+In short, the discriminating function is a static tree of type tests as you'd do without CLOS, but only with actual arguments rather than all possible argument combinations (which can grow combinatorically), and with some extra stuff so that you can define new methods and redefine classes yada yada.
+
+That cache invalidation is really the tricky bit. When methods are added or removed, or the gf reinitialized, or classes redefined, or whatever, relevant call history entries are removed and the gf set to invalidated-dispatch-function. New calls with relevant arguments will hit the slow path, which will then reinstall a fixed fast path.
+
+About outcomes: effective method functions are the most general outcome. But in several situations more specific outcomes are available:
+
+* Slot readers and writers are inlined into the discriminating function, i.e. they'll normally be array reads and writes. This occurs only for instances of direct instances of standard-class and when some other similar conditions are met, so that we are sure there are no methods on setf/slot-value-using-class. Note that we have to use the direct classes of arguments for this.
+* If the effective method function is (call-method #<leaf-method> ...), the method function is used as an effective method function directly, or, if it additionally takes only required arguments and few enough to be taken in registers, a "fast" method function is used. The fast method function and leafness are computed by make-method-lambda in method.lsp. A method being "leaf" means it does not call call-next-method or next-method-p, i.e. is insensitive to its next methods.
+
+Outcomes are computed by compute-effective-method-function-maybe-optimize.
+
+The code for fastgf is mainly in clos/closfastgf.lsp and cmp/cmpfastgf.lsp. The latter is separate and uses bclasp for bootstrap reasons (that is, because cleavir itself uses CLOS).
+
+Because of how all this works, compute-discriminating-function doesn't actually do much computing. This is perfectly conformant of course. Users can define compute-discriminating-function methods and bypass fastgf entirely. Note that compute-discriminating-function is called only where it has to be, e.g. in add-method, or reinitialization of a gf - not by fastgf itself, which uses invalidated-dispatch-function more directly.
+
+Modification
+------------
+
+Proceed with caution.
+
+There are informational debug macros. mlog is defined in hierarchy.lsp and is good if you have a problem before generic function calls. Various places use mlog, which just expands into nothing normally. However, mlog puts out a lot of output, and once generic functions start being called this output will be too voluminous for humans to make serious use of.
+
+At the top of closfastgf is a thing putting :debug-fastgf in *features*. This is how you debug problems with generic function calls. There's a lot of output so it dumps it into a file in /tmp based on the PID. What it essentially does is log the dispatch miss "slow path" in which a generic function has to compute a new effective method etc.
+
+If a function should be satiated but isn't, this will be represented in this log as infinite recursive calls, like "Dispatch miss for <whatever> ... Dispatch miss for <whatever> ..." This indicates that the dispatch miss code is itself trying to call the function. The solution is probably to throw the function into satiation.lsp. Of course maybe you're reading this in the future when infinite recursion doesn't cause a hard crash ha ha fucking ha
+
+Problems
+--------
+
+It should basically work. There are a few conformance issues though, especially with the more obscure MOP use.
+
+ * As mentioned, we let illegal modifications to standard functionality go through with nary a peep.
+ * Methods take a va-list rather than a list. Custom methods could run into problems there.
+ * COMPUTE-EFFECTIVE-METHOD returns (basically) a function rather than a form, for any method combination. This might be technically okay but I don't like being unable to do any processing. I've fixed it but it causes build problems so that's not incorporated.
+ * Custom methods that take more or less than two arguments are probably fucked in general really.
+ * For some reason, during build there are hundreds of "Undefined function: CALL-NEXT-METHOD" warnings. This is probably more an incompetence of bclasp than anything to do with this system directly, but I feel it's worth noting. (Here's hoping you're only reading this because I forgot to remove this note after removing bclasp.)
+ * Infinitely many optimizations, including caching at make-instance call sites ("ctors"), which i have also implemented before being stymied by the build system, and "fast" methods that skip the complexities of the general protocol which guess.

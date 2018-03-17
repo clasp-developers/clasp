@@ -28,7 +28,7 @@ THE SOFTWARE.
 #include <clasp/core/foundation.h>
 
 #include <llvm/IR/Metadata.h>
-#include <llvm/Support/Dwarf.h>
+#include <llvm/BinaryFormat/Dwarf.h>
 
 #include <clasp/core/object.h>
 #include <clasp/core/lisp.h>

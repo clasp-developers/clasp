@@ -26,6 +26,7 @@ THE SOFTWARE.
 /* -^- */
 
 #define DEBUG_LEVEL_FULL
+#include <clasp/core/foundation.h>
 #include <clasp/core/common.h>
 #include <clasp/core/environment.h>
 #include <clasp/core/symbolTable.h>
@@ -117,10 +118,11 @@ CL_DEFUN T_sp cl__readtable_case(ReadTable_sp readTable) {
   return readTable->getReadTableCase();
 }
 
-CL_LAMBDA(readtable mode);
+CL_LISPIFY_NAME("cl:readtable-case")
+CL_LAMBDA(mode readtable);
 CL_DECLARE();
 CL_DOCSTRING("clhs: (setf readtable-case)");
-CL_DEFUN void core__readtable_case_set(ReadTable_sp readTable, T_sp mode) {
+CL_DEFUN_SETF void core__readtable_case_set(T_sp mode, ReadTable_sp readTable) {
   readTable->setf_readtable_case(gc::As<Symbol_sp>(mode));
 }
 
@@ -199,9 +201,36 @@ CL_DEFUN T_mv core__reader_backquoted_expression(T_sp sin, Character_sp ch) {
 
 CL_LAMBDA(sin ch);
 CL_DECLARE();
+CL_DOCSTRING("Error signaler for when a comma (or splice) is outside a backquote.");
+CL_DEFUN T_mv core__reader_error_backquote_context(T_sp sin) {
+  SourceFileInfo_sp info = core__source_file_info(sin);
+  // FIXME: Use a real condition class.
+  // SIMPLE_ERROR(BF("Comma outside of backquote in file: %s line: %s") % info->fileName() % clasp_input_lineno(sin));
+  string fn = info->fileName();
+  if (fn.compare("-no-name-") == 0) {
+      	READER_ERROR(SimpleBaseString_O::make("Comma outside of backquote in stream at line: ~a column ~a."),
+    		Cons_O::createList(
+    			Cons_O::create(make_fixnum (clasp_input_lineno(sin))),
+    			Cons_O::create(make_fixnum (clasp_input_column(sin)))),
+    		sin);
+  } else {
+  	  READER_ERROR(SimpleBaseString_O::make("Comma outside of backquote in file: ~a line: ~a column ~a."),
+    	Cons_O::createList(SimpleBaseString_O::make(fn),
+    		Cons_O::create(make_fixnum (clasp_input_lineno(sin))),
+    		Cons_O::create(make_fixnum (clasp_input_column(sin)))),
+    	sin);
+  };
+  return (Values(_Nil<T_O>()));
+};
+
+CL_LAMBDA(sin ch);
+CL_DECLARE();
 CL_DOCSTRING("reader_comma_form");
 CL_DEFUN T_sp core__reader_comma_form(T_sp sin, Character_sp ch) {
   Fixnum_sp backquote_level = gc::As<Fixnum_sp>(_sym_STARbackquote_levelSTAR->symbolValue());
+  // Note that backquote_level is a fixnum, i.e. shifted, so comparisons could be dangerous.
+  if (backquote_level == 0)
+    core__reader_error_backquote_context(sin);
   Fixnum_sp new_backquote_level = make_fixnum(unbox_fixnum(backquote_level) - 1);
   DynamicScopeManager scope(_sym_STARbackquote_levelSTAR, new_backquote_level);
   char nextc = clasp_peek_char(sin);
@@ -242,8 +271,22 @@ CL_DECLARE();
 CL_DOCSTRING("reader_error_unmatched_close_parenthesis");
 CL_DEFUN T_mv core__reader_error_unmatched_close_parenthesis(T_sp sin, Character_sp ch) {
   SourceFileInfo_sp info = core__source_file_info(sin);
-  SIMPLE_ERROR(BF("Unmatched close parenthesis in file: %s line: %s") % info->fileName() % clasp_input_lineno(sin));
-
+  //Karsten Poeck, this is not a simple-error but a reader-error
+  //SIMPLE_ERROR(BF("Unmatched close parenthesis in file: %s line: %s") % info->fileName() % clasp_input_lineno(sin));
+  string fn = info->fileName();
+  if (fn.compare("-no-name-") == 0) {
+      	READER_ERROR(SimpleBaseString_O::make("Unmatched close parenthesis in stream at line: ~a column ~a."),
+    		Cons_O::createList(
+    			Cons_O::create(make_fixnum (clasp_input_lineno(sin))),
+    			Cons_O::create(make_fixnum (clasp_input_column(sin)))),
+    		sin);
+  } else {
+  	  READER_ERROR(SimpleBaseString_O::make("Unmatched close parenthesis in file ~a line: ~a column ~a."),
+    	Cons_O::createList(SimpleBaseString_O::make(fn),
+    		Cons_O::create(make_fixnum (clasp_input_lineno(sin))),
+    		Cons_O::create(make_fixnum (clasp_input_column(sin)))),
+    	sin);
+  };	
   return (Values(_Nil<T_O>()));
 };
 
@@ -306,8 +349,30 @@ CL_DEFUN T_mv core__dispatch_macro_character(T_sp sin, Character_sp ch) {
     onumarg = make_fixnum(numarg);
   Character_sp subchar = gc::As<Character_sp>(cl__read_char(sin, _lisp->_true(), _Nil<T_O>(), _lisp->_true()));
   T_sp macro_func = gc::As<ReadTable_sp>(cl::_sym_STARreadtableSTAR->symbolValue())->get_dispatch_macro_character(ch, subchar);
-  if (macro_func.nilp())
-    SIMPLE_ERROR(BF("Undefined reader macro for %s %s") % _rep_(ch) % _rep_(subchar));
+  if (macro_func.nilp()){
+    //SIMPLE_ERROR(BF("Undefined reader macro for %s %s") % _rep_(ch) % _rep_(subchar));
+    // Need to be a reader error
+    SourceFileInfo_sp info = core__source_file_info(sin);
+    string fn = info->fileName();	
+    if (fn.compare("-no-name-") == 0) {
+      	READER_ERROR(SimpleBaseString_O::make("Undefined reader macro for char '~a' subchar '~a' in stream at line: ~a column ~a."),
+    		Cons_O::createList(
+    			ch,
+    			subchar,
+    			Cons_O::create(make_fixnum (clasp_input_lineno(sin))),
+    			Cons_O::create(make_fixnum (clasp_input_column(sin)))),
+    		sin);
+    } else {
+  	  READER_ERROR(SimpleBaseString_O::make("Undefined reader macro for char '~a' subchar '~a' in file ~a line: ~a column ~a."),
+    	Cons_O::createList(
+    		ch,
+    		subchar,
+    		SimpleBaseString_O::make(fn),
+    		Cons_O::create(make_fixnum (clasp_input_lineno(sin))),
+    		Cons_O::create(make_fixnum (clasp_input_column(sin)))),
+    	sin);
+    };
+  }
   return eval::funcall(macro_func, sin, subchar, onumarg);
 };
 
@@ -544,14 +609,14 @@ CL_LAMBDA(stream ch num);
 CL_DECLARE();
 CL_DOCSTRING("sharp_a");
 CL_DEFUN T_mv core__sharp_a(T_sp sin, Character_sp ch, T_sp num) {
-  IMPLEMENT_MEF(BF("Implement sharp_a"));
+  IMPLEMENT_MEF("Implement sharp_a");
 }; // core__sharp_a
 
 CL_LAMBDA(stream ch num);
 CL_DECLARE();
 CL_DOCSTRING("sharp_s");
 CL_DEFUN T_mv core__sharp_s(T_sp sin, Character_sp ch, T_sp num) {
-  IMPLEMENT_MEF(BF("Implement sharp_s"));
+  IMPLEMENT_MEF("Implement sharp_s");
 }; // core__sharp_s
 
 CL_LAMBDA(stream ch num);
@@ -838,7 +903,7 @@ T_sp ReadTable_O::set_macro_character(Character_sp ch, T_sp funcDesig, T_sp non_
 
 string ReadTable_O::__repr__() const {
   stringstream ss;
-  ss << "#<" << this->_instanceClass()->classNameAsString();
+  ss << "#<" << this->_instanceClass()->_classNameAsString();
   ss << " :case " << _rep_(this->_Case);
   ss << "> ";
   return ss.str();
@@ -893,7 +958,11 @@ T_sp ReadTable_O::set_dispatch_macro_character(Character_sp disp_char, Character
     SIMPLE_ERROR(BF("%c is not a dispatch character") % _rep_(disp_char));
   }
 #endif
-  HashTable_sp dispatch_table = this->_DispatchMacroCharacters->gethash(disp_char);
+  T_sp tdispatch_table = this->_DispatchMacroCharacters->gethash(disp_char);
+  if (!gc::IsA<HashTable_sp>(tdispatch_table)) {
+    SIMPLE_ERROR(BF("%s is not a dispatching macro character") % _rep_(disp_char));
+  }
+  HashTable_sp dispatch_table = gc::As_unsafe<HashTable_sp>(tdispatch_table);
   ASSERTF(dispatch_table.notnilp(), BF("The dispatch table for the character[%s] is nil! - this shouldn't happen") % _rep_(disp_char));
   Character_sp upcase_sub_char = clasp_make_character(claspCharacter_upcase(sub_char.unsafe_character()));
   Function_sp new_func = coerce::functionDesignator(new_func_desig);
@@ -917,14 +986,11 @@ T_sp ReadTable_O::set_dispatch_macro_character(Character_sp disp_char, Character
 }
 
 T_sp ReadTable_O::get_dispatch_macro_character(Character_sp disp_char, Character_sp sub_char) {
-  _OF();
-#if 0
-  if (this->get_macro_character(disp_char) != _sym_dispatch_macro_character->symbolFunction()) {
-    SIMPLE_ERROR(BF("%c is not a dispatch character - there is a mismatch between this->get_macro_character(disp_char)-> %s and _sym_dispatch_macro_character->symbolFunction()->%s") % _rep_(disp_char) % _rep_(this->get_macro_character(disp_char)) % _rep_(_sym_dispatch_macro_character->symbolFunction()));
+  T_sp tdispatch_table = this->_DispatchMacroCharacters->gethash(disp_char);
+  if (!gc::IsA<HashTable_sp>(tdispatch_table)) {
+    SIMPLE_ERROR(BF("%s is not a dispatching macro character") % _rep_(disp_char));
   }
-#endif
-  HashTable_sp dispatch_table = this->_DispatchMacroCharacters->gethash(disp_char);
-  ASSERTF(dispatch_table.notnilp(), BF("The dispatch table for the character[%s] is nil! - this shouldn't happen") % _rep_(disp_char));
+  HashTable_sp dispatch_table = gc::As_unsafe<HashTable_sp>(tdispatch_table);
   Character_sp upcase_sub_char = clasp_make_character(claspCharacter_upcase(sub_char.unsafe_character()));
   T_sp func = dispatch_table->gethash(upcase_sub_char, _Nil<T_O>());
   return func;

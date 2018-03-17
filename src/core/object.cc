@@ -126,7 +126,7 @@ CL_DEFUN T_sp core__make_cxx_object(T_sp class_or_name, T_sp args) {
     return instance;
   }
 BAD_ARG0:
-  TYPE_ERROR(class_or_name, Cons_O::createList(cl::_sym_Class_O, cl::_sym_Symbol_O));
+  TYPE_ERROR(class_or_name, Cons_O::createList(cl::_sym_class, cl::_sym_Symbol_O));
   UNREACHABLE();
 }
 
@@ -160,7 +160,7 @@ CL_DEFUN T_sp core__load_cxx_object(T_sp class_or_name, T_sp args) {
     return instance;
   }
 BAD_ARG0:
-  TYPE_ERROR(class_or_name, Cons_O::createList(cl::_sym_Class_O, cl::_sym_Symbol_O));
+  TYPE_ERROR(class_or_name, Cons_O::createList(cl::_sym_class, cl::_sym_Symbol_O));
   UNREACHABLE();
 }
 
@@ -178,7 +178,7 @@ CL_DECLARE();
 CL_DOCSTRING("encode object as an a-list");
 CL_DEFUN core::List_sp core__encode(T_sp arg) {
   if (arg.generalp()) return arg.unsafe_general()->encode();
-  IMPLEMENT_MEF(BF("Implement for non-general objects"));
+  IMPLEMENT_MEF("Implement for non-general objects");
 };
 
 CL_LAMBDA(obj arg);
@@ -187,7 +187,7 @@ CL_DOCSTRING("decode object from a-list");
 CL_DEFUN T_sp core__decode(T_sp obj, core::List_sp arg) {
   if (obj.generalp()) obj.unsafe_general()->decode(arg);
   return obj;
-  IMPLEMENT_MEF(BF("Implement for non-general objects"));
+  IMPLEMENT_MEF("Implement for non-general objects");
 };
 
 CL_LAMBDA(obj stream);
@@ -200,7 +200,7 @@ CL_DEFUN T_sp core__print_cxx_object(T_sp obj, T_sp stream) {
     clasp_write_char('(', stream);
     Class_sp myclass = lisp_instance_class(obj);
     ASSERT(myclass);
-    Symbol_sp className = myclass->name();
+    Symbol_sp className = myclass->_className();
     cl__prin1(className, stream);
     core::List_sp alist = core__encode(obj);
     for (auto cur : alist) {
@@ -271,7 +271,7 @@ CL_DECLARE();
 CL_DOCSTRING("classNameAsString");
 CL_DEFUN string core__class_name_as_string(T_sp arg) {
   Class_sp c = core__instance_class(arg);
-  return c->name()->fullName();
+  return c->_className()->fullName();
 };
 
 CL_LAMBDA(arg);
@@ -281,7 +281,7 @@ CL_DEFUN T_sp core__instance_sig(T_sp obj) {
   if ( obj.generalp() ) {
     return obj.unsafe_general()->instanceSig();
   }
-  IMPLEMENT_MEF(BF("Implement for non-general objects"));
+  IMPLEMENT_MEF("Implement for non-general objects");
 };
 
 CL_LAMBDA(arg);
@@ -291,7 +291,7 @@ CL_DEFUN T_sp core__instance_sig_set(T_sp arg) {
   if ( arg.generalp() ) {
     return arg.unsafe_general()->instanceSigSet();
   }
-  IMPLEMENT_MEF(BF("Implement for non-general objects"));
+  IMPLEMENT_MEF("Implement for non-general objects");
 };
 
 CL_LAMBDA(obj idx val);
@@ -301,7 +301,7 @@ CL_DEFUN T_sp core__instance_set(T_sp obj, int idx, T_sp val) {
   if ( obj.generalp() ) {
     return obj.unsafe_general()->instanceSet(idx, val);
   }
-  IMPLEMENT_MEF(BF("Implement for non-general objects"));
+  IMPLEMENT_MEF("Implement for non-general objects");
 };
 
 CL_LAMBDA(obj idx);
@@ -309,7 +309,7 @@ CL_DECLARE();
 CL_DOCSTRING("instanceRef - return the (idx) slot value of (obj)");
 CL_DEFUN T_sp core__instance_ref(T_sp obj, int idx) {
   if (obj.generalp())return obj.unsafe_general()->instanceRef(idx);
-  IMPLEMENT_MEF(BF("Implement for non-general objects"));
+  IMPLEMENT_MEF("Implement for non-general objects");
 };
 
 CL_LAMBDA(obj);
@@ -317,7 +317,7 @@ CL_DECLARE();
 CL_DOCSTRING("instancep");
 CL_DEFUN T_sp core__instancep(T_sp obj) {
   if (obj.generalp()) return obj.unsafe_general()->oinstancep();
-  IMPLEMENT_MEF(BF("Implement for non-general objects"));
+  else return _Nil<T_O>();
 };
 
 CL_LAMBDA(arg);
@@ -362,9 +362,9 @@ void General_O::decode(core::List_sp alist) {
 }
 
 string General_O::className() const {
-  // TODO: refactor this as ->__class()->classNameAsString
+  // TODO: refactor this as ->__class()->_classNameAsString
   // everywhere where we have obj->className()
-  return this->__class()->classNameAsString();
+  return this->__class()->_classNameAsString();
 }
 
 void General_O::sxhash_(HashGenerator &hg) const {
@@ -372,6 +372,16 @@ void General_O::sxhash_(HashGenerator &hg) const {
     Fixnum res = (Fixnum)((((uintptr_clasp_t)this) >> gctools::tag_shift));
     hg.addPart(res);
   }
+}
+
+void General_O::sxhash_equal(HashGenerator &hg,LocationDependencyPtrT ld) const {
+  if (!hg.isFilling()) return;
+  volatile void* address = (void*)this;
+#ifdef USE_MPS
+  if (ld) mps_ld_add(ld, global_arena, (mps_addr_t)address );
+#endif
+  hg.addPart((Fixnum)(((uintptr_clasp_t)address)>>gctools::tag_shift));
+  return;
 }
 
 T_sp General_O::deepCopy() const {
@@ -400,8 +410,20 @@ bool General_O::isAInstanceOf(Class_sp mc) {
 }
 #endif
 
-void HashGenerator::hashObject(T_sp obj) {
+void Hash1Generator::hashObject(T_sp obj) {
   clasp_sxhash(obj, *this);
+}
+
+/*! Recursive hashing of objects need to be prevented from 
+    infinite recursion.   So we keep track of the depth of
+    recursion.  clasp_sxhash will modify this->_Depth and
+    when we return we have to restore _Depth to its
+    value when it entered here. */
+void HashGenerator::hashObject(T_sp obj) {
+  int depth = this->_Depth;
+  ++this->_Depth;
+  LIKELY_if (this->_Depth<MaxDepth) clasp_sxhash(obj, *this);
+  this->_Depth = depth;
 }
 
 static BignumExportBuffer static_HashGenerator_addPart_buffer;
@@ -429,6 +451,14 @@ bool HashGenerator::addPart(const mpz_class &bignum) {
   } else {
     this->addPart(0);
   }
+  return this->isFilling();
+}
+
+
+bool Hash1Generator::addPart(const mpz_class &bignum) {
+  HashGenerator hg;
+  hg.addPart(bignum);
+  this->_Part = hg.hash(0);
   return this->isFilling();
 }
 
@@ -468,7 +498,7 @@ string General_O::description() const {
     ss << "t";
   } else {
     General_O *me_gc_safe = const_cast<General_O *>(this);
-    ss << "#<" << me_gc_safe->_instanceClass()->classNameAsString() << " ";
+    ss << "#<" << me_gc_safe->_instanceClass()->_classNameAsString() << " ";
     ss << this->descriptionOfContents() << ">";
   }
   return ss.str();
@@ -479,23 +509,23 @@ void General_O::initializeSlots(Fixnum stamp, size_t slots) {
 };
 
 T_sp General_O::instanceRef(size_t idx) const {
-  SIMPLE_ERROR(BF("T_O::instanceRef(%d) invoked on object class[%s] val-->%s") % idx % this->_instanceClass()->classNameAsString() % this->__repr__());
+  SIMPLE_ERROR(BF("T_O::instanceRef(%d) invoked on object class[%s] val-->%s") % idx % this->_instanceClass()->_classNameAsString() % this->__repr__());
 }
 
 T_sp General_O::instanceClassSet(Class_sp val) {
-  SIMPLE_ERROR(BF("T_O::instanceClassSet to class %s invoked on object class[%s] val-->%s - subclass must implement") % _rep_(val) % this->_instanceClass()->classNameAsString() % _rep_(this->asSmartPtr()));
+  SIMPLE_ERROR(BF("T_O::instanceClassSet to class %s invoked on object class[%s] val-->%s - subclass must implement") % _rep_(val) % this->_instanceClass()->_classNameAsString() % _rep_(this->asSmartPtr()));
 }
 
 T_sp General_O::instanceSet(size_t idx, T_sp val) {
-  SIMPLE_ERROR(BF("T_O::instanceSet(%d,%s) invoked on object class[%s] val-->%s") % idx % _rep_(val) % this->_instanceClass()->classNameAsString() % _rep_(this->asSmartPtr()));
+  SIMPLE_ERROR(BF("T_O::instanceSet(%d,%s) invoked on object class[%s] val-->%s") % idx % _rep_(val) % this->_instanceClass()->_classNameAsString() % _rep_(this->asSmartPtr()));
 }
 
 T_sp General_O::instanceSig() const {
-  SIMPLE_ERROR(BF("T_O::instanceSig() invoked on object class[%s] val-->%s") % this->_instanceClass()->classNameAsString() % this->__repr__());
+  SIMPLE_ERROR(BF("T_O::instanceSig() invoked on object class[%s] val-->%s") % this->_instanceClass()->_classNameAsString() % this->__repr__());
 }
 
 T_sp General_O::instanceSigSet() {
-  SIMPLE_ERROR(BF("T_O::instanceSigSet() invoked on object class[%s] val-->%s") % this->_instanceClass()->classNameAsString() % _rep_(this->asSmartPtr()));
+  SIMPLE_ERROR(BF("T_O::instanceSigSet() invoked on object class[%s] val-->%s") % this->_instanceClass()->_classNameAsString() % _rep_(this->asSmartPtr()));
 }
 
 CL_LAMBDA(obj);
@@ -535,4 +565,44 @@ SYMBOL_EXPORT_SC_(ClPkg, eq);
 SYMBOL_EXPORT_SC_(ClPkg, eql);
 SYMBOL_EXPORT_SC_(ClPkg, equal);
 SYMBOL_EXPORT_SC_(ClPkg, equalp);
+};
+
+
+namespace core {
+
+CL_LAMBDA(x y);
+CL_DECLARE();
+CL_DOCSTRING("equalp");
+CL_DEFUN bool cl__equalp(T_sp x, T_sp y) {
+    if (x.fixnump()) {
+      if (y.fixnump()) {
+        return x.raw_() == y.raw_();
+      } else if (y.single_floatp()) {
+        return (x.unsafe_fixnum() == y.unsafe_single_float());
+      } else if (Number_sp ny = y.asOrNull<Number_O>()) {
+        return basic_compare(x, y) == 0;
+      }
+      return false;
+    } else if (x.single_floatp()) {
+      if (y.single_floatp()) {
+        return x.unsafe_single_float() == y.unsafe_single_float();
+      } else if (y.fixnump()) {
+        return x.unsafe_single_float() == y.unsafe_fixnum();
+      } else if (Number_sp ny = y.asOrNull<Number_O>()) {
+        return basic_compare(x, y);
+      }
+      return false;
+    } else if (x.characterp()) {
+      return clasp_charEqual2(x, y);
+    } else if (x.consp() ) {
+      Cons_O* cons = x.unsafe_cons();
+      return cons->equalp(y);
+    } else if ( x.generalp() ) {
+      General_O* genx = x.unsafe_general();
+      return genx->equalp(y);
+    }
+    SIMPLE_ERROR(BF("Bad equalp comparison"));
+  };
+
+
 };

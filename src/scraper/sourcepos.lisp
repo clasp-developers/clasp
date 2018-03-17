@@ -21,7 +21,7 @@
   (let ((cur-line 0)
         (char-offset 0)
         (prev-char-offset 0))
-    (with-open-file (fin source-file :direction :input)
+    (with-open-file (fin source-file :direction :input :external-format :utf-8)
       (dolist (tag tags)
         (let ((search-line (tags:line% tag)))
           (loop

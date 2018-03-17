@@ -130,6 +130,7 @@
                                        :line-tables-only ; 9 DebugEmissionKind (:full-debug :line-tables-only)
                                        0 ; 10 DWOld
                                        t ; 11 SplitDebugInlining
+                                       nil ; 12 DebugInfoForProfiling
 				       )))
 	     (cmp-log "with-dbg-compile-unit *dbg-compile-unit*: %s\n" *dbg-compile-unit*)
 	     (cmp-log "with-dbg-compile-unit source-pathname: %s\n" ,source-pathname)
@@ -175,7 +176,7 @@
 (defmacro with-dbg-function ((name &key linkage-name form function function-type) &rest body)
   (let ((source-dir (gensym))
         (source-name (gensym))
-	(filepos (gensym))
+        (filepos (gensym))
         (lineno (gensym))
         (column (gensym)))
     `(let ((*with-dbg-function* t)
@@ -184,22 +185,23 @@
            (multiple-value-bind (,source-dir ,source-name ,filepos ,lineno ,column)
                (walk-form-for-source-info ,form)
              (let* ((*dbg-current-function*
-                     (llvm-sys:create-function
-                      *the-module-dibuilder* ; 0 DIBuilder
-                      *dbg-current-file* ; 1 function scope
-                      ,linkage-name      ; 2 function name
-                      ,linkage-name      ; 3 mangled function name
-                      *dbg-current-file* ; 4 file where function is defined
-                      ,lineno            ; 5 lineno
-                      (dbg-create-function-type *dbg-current-file* ,function-type) ; 6 function-type
-                      nil ; 7 isLocalToUnit - true if this function is not externally visible
-                      t ; 8 isDefinition - true if this is a function definition
-                      ,lineno ; 9 scopeLine - set to the beginning of the scope this starts
-                      (core:enum-logical-or llvm-sys:diflags-enum '(llvm-sys:diflags-zero))    ; 10 flags
-                      nil   ; 11 isOptimized - true if optimization is on
-                      nil               ; 12 TParam = 0
-                      nil               ; 13 Decl = 0
-                      ))
+                      (llvm-sys:create-function
+                       *the-module-dibuilder*   ; 0 DIBuilder
+                       *dbg-current-file*       ; 1 function scope
+                       ,linkage-name            ; 2 function name
+                       ,linkage-name    ; 3 mangled function name
+                       *dbg-current-file* ; 4 file where function is defined
+                       ,lineno            ; 5 lineno
+                       (dbg-create-function-type *dbg-current-file* ,function-type) ; 6 function-type
+                       nil ; 7 isLocalToUnit - true if this function is not externally visible
+                       t ; 8 isDefinition - true if this is a function definition
+                       ,lineno ; 9 scopeLine - set to the beginning of the scope this starts
+                       (core:enum-logical-or llvm-sys:diflags-enum '(llvm-sys:diflags-zero)) ; 10 flags
+                       nil ; 11 isOptimized - true if optimization is on
+                       nil ; 12 TParam = nullptr
+                       nil ; 13 Decl = nullptr
+                       nil ; 14 ThrownTypes = nullptr
+                       ))
                     (*dbg-current-scope* *dbg-current-function*))
                (cmp-log "with-dbg-function *dbg-compile-unit*: %s\n" *dbg-compile-unit*)
                (cmp-log "with-dbg-function *dbg-current-function*: %s\n" *dbg-current-function*)
@@ -213,7 +215,7 @@
 (defmacro with-dbg-lexical-block ((block-form) &body body)
   (let ((source-dir (gensym))
         (source-name (gensym))
-	(filepos (gensym))
+        (filepos (gensym))
         (lineno (gensym))
         (column (gensym)))
     `(let ((*with-dbg-lexical-block* t))
@@ -221,12 +223,12 @@
            (multiple-value-bind (,source-dir ,source-name ,filepos ,lineno ,column)
                (walk-form-for-source-info ,block-form)
              (let* ((*dbg-current-scope*
-                     (llvm-sys:create-lexical-block *the-module-dibuilder*
-                                                    *dbg-current-scope*
-                                                    *dbg-current-file*
-                                                    ,lineno
-                                                    ,column
-                                                    #| 0  -- not used anymore TODO: Dwarf path discriminator   |# )))
+                      (llvm-sys:create-lexical-block *the-module-dibuilder*
+                                                     *dbg-current-scope*
+                                                     *dbg-current-file*
+                                                     ,lineno
+                                                     ,column
+                                                     #| 0  -- not used anymore TODO: Dwarf path discriminator   |# )))
                (cmp-log "with-dbg-lexical-block\n")
                ,@body))
            (progn

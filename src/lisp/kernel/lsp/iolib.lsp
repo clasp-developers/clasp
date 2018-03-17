@@ -77,11 +77,6 @@ object's representation."
         (values (read stream eof-error-p eof-value)
                 (file-position stream)))))
 
-(defun si::string-to-object (string &optional (err-value nil err-value-p))
-  (if err-value-p
-      (si::safe-eval `(read-from-string ,string) nil err-value)
-      (si::safe-eval `(read-from-string ,string) nil)))
-
 (defun write-to-string (object &rest rest
                         &aux (stream (make-string-output-stream)))
   "Args: (object &key (escape *print-escape*) (radix *print-radix*)
@@ -177,23 +172,19 @@ printed.  If FORMAT-STRING is NIL, however, no prompt will appear."
   (declare (ignore subchar))
   (when (and arg (null *read-suppress*))
         (error "~S is an extra argument for the #s readmacro." arg))
-;;; meister 2015 - I believe the following should be (read stream t nil t) so that
-;;; things like (defstruct foo a) (read-from-string "(#1=\"Hello\" #S(FOO :A #1#))") work
-  (let ((l #+ecl(read stream) #+clasp(read stream t nil t)))
+  (let ((l (read stream t nil t)))
     (when *read-suppress*
       (return-from sharp-s-reader nil))
-    (unless (get-sysprop (car l) 'is-a-structure)
+    (unless (names-structure-p (car l))
             (error "~S is not a structure." (car l)))
     ;; Intern keywords in the keyword package.
     (do ((ll (cdr l) (cddr ll)))
         ((endp ll)
-         ;; Find an appropriate construtor.
-         (do ((cs (get-sysprop (car l) 'structure-constructors) (cdr cs)))
-             ((endp cs)
-              (error "The structure ~S has no structure constructor."
-                     (car l)))
-           (when (symbolp (car cs))
-                 (return (apply (car cs) (cdr l))))))
+         ;; Do the construction.
+         (let ((constructor (structure-constructor (car l))))
+           (if constructor
+               (apply constructor (cdr l))
+               (error "The structure ~S has no standard constructor." (car l)))))
       (rplaca ll (intern (string (car ll)) 'keyword)))))
 
 (set-dispatch-macro-character #\# #\s 'sharp-s-reader)
@@ -233,7 +224,7 @@ is not given, ends the recording."
 				   *dribble-closure* nil))))
            (multiple-value-bind (sec min hour day month year)
                (get-decoded-time)
-             (format dribble-stream "~&Starts dribbling to ~A (~d/~d/~d, ~d:~d:~d)."
+             (format dribble-stream "~&Starts dribbling to ~A (~d/~d/~d, ~2,'0d:~2,'0d:~2,'0d)."
                      namestring year month day hour min sec)
 	     (setq *standard-input* dribble-stream
 		   *standard-output* dribble-stream
@@ -262,11 +253,6 @@ the one used internally by ECL compiled files."
        (progv (si:cons-car %progv-list)
 	   (si:cons-cdr %progv-list)
 	 ,@body))))
-
-#-formatter
-(defmacro formatter (control-string)
-  `#'(lambda (*standard-output* &rest args)
-       (si::formatter-aux *standard-output* ,control-string args)))
 
 (defmacro print-unreadable-object
 	  ((object stream &key type identity) &body body)
@@ -319,7 +305,7 @@ the one used internally by ECL compiled files."
     ((symbolp mapping)
      (let ((var (intern (symbol-name mapping) (find-package "EXT"))))
        (unless (boundp var)
-	 (set var (ext::make-encoding (load-encoding mapping))))
+         (setf (symbol-value var) (ext::make-encoding (load-encoding mapping))))
        (symbol-value var)))
     ((consp mapping)
      (let ((output (make-hash-table :size 512 :test 'eq)))

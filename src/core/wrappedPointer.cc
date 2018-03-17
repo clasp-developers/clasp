@@ -24,6 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
+#include <clasp/core/foundation.h>
 #include <clasp/core/wrappedPointer.h>
 #include <clasp/core/wrappers.h>
 
@@ -58,14 +59,15 @@ CL_DEFUN void core__pointer_delete(T_sp ptr) {
 
 
 
-T_sp WrappedPointer_O::instanceClassSet(Class_sp cl) {
-  this->_Class = cl;
+T_sp WrappedPointer_O::_instanceClassSet(Class_sp cl) {
+  this->Class_ = cl;
+  this->Stamp_ = cl->CLASS_stamp_for_instances();
   return this->asSmartPtr();
 }
 
-void WrappedPointer_O::setInstanceClassUsingSymbol(Symbol_sp classSymbol) {
+void WrappedPointer_O::_setInstanceClassUsingSymbol(Symbol_sp classSymbol) {
   Class_sp cl = gc::As<Class_sp>(cl__find_class(classSymbol));
-  this->instanceClassSet(cl);
+  this->_instanceClassSet(cl);
 }
 
 bool WrappedPointer_O::eql_(T_sp obj) const {

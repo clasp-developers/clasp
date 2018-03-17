@@ -27,7 +27,6 @@ THE SOFTWARE.
 
 #ifndef GC_BOOT_H
 #define GC_BOOT_H
-#include <clasp/core/foundation.h>
 namespace gctools {
 
   enum Data_types {
@@ -51,16 +50,18 @@ namespace gctools {
       ctype_char,
       ctype__Bool,
       ctype_enum_core__StreamMode,
-      ctype_core__FrameKind,
+      ctype_core__FrameStamp,
       last_data_type };
   
   enum Layout_cmd {
       class_kind=0, container_kind=1, templated_kind=2,
       fixed_field=3,
-      variable_array0=4, variable_capacity=5, variable_field=6,
+      variable_array0=4,
+      variable_capacity=5, variable_field=6,
       templated_class_jump_table_index=7,
       container_jump_table_index=8,
       bitunit_container_kind=9,
+      variable_bit_array0=10,
       layout_end
   };
 
@@ -85,43 +86,47 @@ namespace gctools {
   };
 
   struct Container_layout {
-    Field_layout*  field_layout_start; // Points into global_field_layout_table
-    size_t            element_size;
-    size_t            number_of_fields;
-    size_t            data_offset;
-    size_t            end_offset;
-    size_t            capacity_offset;
+    Field_layout*     field_layout_start; // Points into global_field_layout_table
+    uint              number_of_fields;
+//    uint              bits_per_bitunit;
+//    size_t            data_offset;
+//    size_t            end_offset;
+//    size_t            capacity_offset;
   };
 
   enum Layout_operation { class_container_op, bitunit_container_op, templated_op };
-  struct Kind_info {
+  struct Stamp_info {
     Layout_operation    layout_op;
     const char*   name;
     Field_info*   field_info_ptr; // Only applies to classes
     Container_info* container_info_ptr; // 
   };
 
-  struct Kind_layout {
-    Layout_operation    layout_op; // One of class_kind, templated_class_kind, container_kind
-    Field_layout*  field_layout_start; // Points into global_field_layout_table
-    size_t            number_of_fields;
-    size_t            bits_per_bitunit;
-    size_t            size;
+  struct Stamp_layout {
+    Layout_operation  layout_op; // One of class_container_op, bitunit_container_op, templated_op
+    uint              number_of_fields;
+    uint              bits_per_bitunit;
+    uint              size;
+    uint              element_size;
+    uint              data_offset;
+    uint              end_offset;
+    uint              capacity_offset;
+    Field_layout*     field_layout_start; // Points into global_field_layout_table
     Container_layout* container_layout;
   };
 
-  extern Layout_code* get_kind_layout_codes();
-  extern size_t           global_kind_max;
-  extern Kind_info*       global_kind_info;
-  extern Kind_layout*     global_kind_layout;
+  extern Layout_code* get_stamp_layout_codes();
+  extern size_t           global_stamp_max;
+  extern Stamp_info*       global_stamp_info;
+  extern Stamp_layout*     global_stamp_layout;
   extern Field_info*      global_field_info;
   extern Field_layout*    global_field_layout;
 
 
-  void build_kind_field_layout_tables();
+  void build_stamp_field_layout_tables();
 
 
-#define FRIEND_GC_INTERFACE() friend gctools::Layout_code* gctools::get_kind_layout_codes()
+#define FRIEND_GC_INTERFACE() friend gctools::Layout_code* gctools::get_stamp_layout_codes()
 
 };
 

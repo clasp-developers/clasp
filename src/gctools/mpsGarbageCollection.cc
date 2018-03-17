@@ -59,11 +59,10 @@ templated_class_jump_table_index, jump_table_index, NULL
 #include <clasp/core/loadTimeValues.h>
 #include <clasp/core/posixTime.h> // was core/posixTime.cc???
 #include <clasp/core/symbolTable.h>
-#include <clasp/core/standardClass.h>
-#include <clasp/core/structureClass.h>
 #include <clasp/core/evaluator.h>
 #include <clasp/gctools/globals.h>
 #include <clasp/core/wrappers.h>
+#include <clasp/core/mpPackage.h>
 #include <clasp/gctools/gc_interface.fwd.h>
 
 #ifdef USE_MPS
@@ -97,9 +96,13 @@ extern void memory_find_ref(mps_arena_t arena, mps_addr_t ref, PointerSearcher *
 
 extern "C" {
 mps_arena_t global_arena;
+extern mps_addr_t cons_skip(mps_addr_t client);
+extern mps_addr_t weak_obj_skip(mps_addr_t client);
 };
 
 namespace gctools {
+
+THREAD_LOCAL ThreadLocalAllocationPoints my_thread_allocation_points;
 
 MpsMetrics globalMpsMetrics;
 
@@ -117,22 +120,59 @@ bool global_underscanning = DEBUG_MPS_UNDERSCANNING_INITIAL;
 bool global_underscanning = false;
 #endif
 
-//    mps_pool_t _global_mvff_pool;
-mps_pool_t _global_amc_pool;
+// The pools - if you add a pool - assign it an integer index
+// in the id_from_pool and pool_from_id functions
 mps_pool_t global_amc_cons_pool;
-mps_pool_t _global_amcz_pool;
-mps_pool_t _global_awl_pool;
-mps_ap_t _global_weak_link_allocation_point;
-mps_ap_t _global_strong_link_allocation_point;
-//    mps_ap_t _global_mvff_allocation_point;
-mps_ap_t _global_automatic_mostly_copying_zero_rank_allocation_point;
-mps_ap_t _global_automatic_mostly_copying_allocation_point;
-mps_ap_t global_amc_cons_allocation_point;
-
+mps_pool_t global_amc_pool;
+mps_pool_t global_amcz_pool;
+mps_pool_t global_awl_pool;
 mps_pool_t global_non_moving_pool;
-mps_pool_t global_unmanaged_pool;
-mps_ap_t global_non_moving_ap;
+//mps_pool_t global_unmanaged_pool;
+enum PoolEnum {amc_cons_pool=0, amc_pool=1, amcz_pool=2, awl_pool=3, non_moving_pool=4, max_pool=4 };
 size_t global_sizeof_fwd;
+
+struct PoolInfo {
+  bool HasHeader; // Do the objects have an inline header
+  PoolEnum Id;    // casts to an integer index 0.. that represents the pool
+  mps_pool_t Pool;
+  mps_fmt_skip_t SkipFunction;   // A pointer to the MPS skip function
+  PoolInfo(bool header, PoolEnum id, mps_pool_t pool, mps_fmt_skip_t skip) : HasHeader(header), Id(id), Pool(pool), SkipFunction(skip) {};
+};
+
+/*! Info about the pools.
+    PoolInfo structs. */
+PoolInfo global_pool_info[] = {
+    {false,amc_cons_pool,global_amc_cons_pool,cons_skip},
+    {true,amc_pool,global_amc_pool,obj_skip},
+    {true,amcz_pool,global_amcz_pool,obj_skip},
+    {false,awl_pool,global_awl_pool,weak_obj_skip},
+    {true,non_moving_pool,global_non_moving_pool,obj_skip}
+};
+    
+
+PoolInfo& pool_info_from_pool(mps_pool_t p) {
+  if (p == global_amc_cons_pool) return global_pool_info[(int)amc_cons_pool];
+  if (p == global_amc_pool) return global_pool_info[(int)amc_pool];
+  if (p == global_amcz_pool) return global_pool_info[(int)amcz_pool];
+  if (p == global_awl_pool) return global_pool_info[(int)awl_pool];
+  if (p == global_non_moving_pool) return global_pool_info[(int)non_moving_pool];
+  printf("%s:%d Unknown pool %p!!!  Add it to id_from_pool\n", __FILE__, __LINE__, (void*)p);
+  abort();
+};
+
+mps_pool_t pool_from_id(PoolEnum p) {
+  switch (p) {
+  case amc_cons_pool: return global_amc_cons_pool;
+  case amc_pool: return global_amc_pool;
+  case amcz_pool: return global_amcz_pool;
+  case awl_pool: return global_awl_pool;
+  case non_moving_pool: return global_non_moving_pool;
+  default:
+      printf("%s:%d Unknown pool id %d!!!  Add it to pool_from_id\n", __FILE__, __LINE__, (int)p );
+      abort();
+      break;
+  };
+};
 
 };
 
@@ -267,6 +307,10 @@ static mps_addr_t obj_isfwd(mps_addr_t client) {
   return NULL;
 }
 
+};
+
+extern "C" {
+using namespace gctools;
 static void obj_pad(mps_addr_t base, size_t size) {
   size_t alignment = Alignment();
   assert(size >= alignment);
@@ -354,7 +398,10 @@ static void cons_pad(mps_addr_t base, size_t size) {
     cons->setPad(size);
   }
 }
+};
 
+
+namespace gctools {
 // -----------------------------------------------------------
 // -----------------------------------------------------------
 //
@@ -540,14 +587,18 @@ size_t processMpsMessages(size_t& finalizations) {
       mps_pool_t pool = clasp_pool_of_addr(ref_o);
       core::T_sp obj;
       bool dead_object = false;
-      if (pool == gctools::global_amc_cons_pool) {
-        obj = gctools::smart_ptr<core::Cons_O>((core::Cons_O*)ref_o);
+      if (pool) {
+        if (pool == gctools::global_amc_cons_pool) {
+          obj = gctools::smart_ptr<core::Cons_O>((gctools::Tagged)gctools::tag_cons<core::T_O*>(reinterpret_cast<core::T_O*>(ref_o)));
+        } else {
+          gctools::Header_s* header = (gctools::Header_s*)((char*)ref_o - sizeof(gctools::Header_s));
+          dead_object = !(header->stampP());
+          obj = gctools::smart_ptr<core::T_O>((gctools::Tagged)gctools::tag_general<core::T_O*>(reinterpret_cast<core::T_O*>(ref_o)));
+        }
       } else {
-        gctools::Header_s* header = (gctools::Header_s*)((char*)ref_o - sizeof(gctools::Header_s));
-        dead_object = !(header->kindP());
-        obj = gctools::smart_ptr<core::T_O>((core::T_O*)ref_o);
+        printf("%s:%d   MPS could not figure out what pool the pointer %p belongs to - treating it like a dead object and no finalizer will be invoked\n", __FILE__, __LINE__, ref_o);
+        dead_object = true;
       }
-      printf("%s:%d finalization message for %p reconstituted tagged ptr = %p\n", __FILE__, __LINE__, (void*)ref_o, (void*)obj.tagged_() );
 #if 1
       if (!dead_object) {
         bool invoked_finalizer = false;
@@ -566,7 +617,10 @@ size_t processMpsMessages(size_t& finalizations) {
         }
 #endif
         if (!invoked_finalizer && obj.generalp()) obj_finalize(ref_o);
+      } else {
+        printf("%s:%d No finalization message for %p reconstituted tagged ptr = %p stamp->%u  - it's a dead_object - I can't figure out what pool it belonged to (unknown if it is a General_O object or a Cons_O)\n", __FILE__, __LINE__, (void*)ref_o, (void*)obj.tagged_(), gctools::header_pointer(ref_o)->stamp());
       }
+        
     } else {
       printf("Message: UNKNOWN!!!!!\n");
     }
@@ -624,7 +678,7 @@ bool maybeParseClaspMpsConfig(size_t &arenaMb, size_t &spareCommitLimitMb, size_
   size_t values[20];
   int numValues = 0;
   if (cur) {
-    printf("Default CLASP_MPS_CONFIG = %" PRu " %lu %lu %lu %lu %lu %lu\n",
+    printf("Default CLASP_MPS_CONFIG = %" PRsize_t " %lu %lu %lu %lu %lu %lu\n",
            arenaMb,
            spareCommitLimitMb,
            nurseryKb,
@@ -655,13 +709,13 @@ bool maybeParseClaspMpsConfig(size_t &arenaMb, size_t &spareCommitLimitMb, size_
     case 1:
         arenaMb = values[0];
         printf("CLASP_MPS_CONFIG...\n");
-        printf("                    arenaMb = %" PRu "\n", arenaMb);
-        printf("         spareCommitLimitMb = %" PRu "\n", spareCommitLimitMb);
-        printf("                  nurseryKb = %" PRu "\n", nurseryKb);
-        printf("    nurseryMortalityPercent = %" PRu "\n", nurseryMortalityPercent);
-        printf("              generation1Kb = %" PRu "\n", generation1Kb);
-        printf("generation1MortalityPercent = %" PRu "\n", generation1MortalityPercent);
-        printf("              keyExtendByKb = %" PRu "\n", keyExtendByKb );
+        printf("                    arenaMb = %" PRsize_t "\n", arenaMb);
+        printf("         spareCommitLimitMb = %" PRsize_t "\n", spareCommitLimitMb);
+        printf("                  nurseryKb = %" PRsize_t "\n", nurseryKb);
+        printf("    nurseryMortalityPercent = %" PRsize_t "\n", nurseryMortalityPercent);
+        printf("              generation1Kb = %" PRsize_t "\n", generation1Kb);
+        printf("generation1MortalityPercent = %" PRsize_t "\n", generation1MortalityPercent);
+        printf("              keyExtendByKb = %" PRsize_t "\n", keyExtendByKb );
         return true;
         break;
     default:
@@ -671,6 +725,40 @@ bool maybeParseClaspMpsConfig(size_t &arenaMb, size_t &spareCommitLimitMb, size_
   return false;
 }
 
+
+struct Walker {
+  std::ofstream* output;
+  size_t objects;
+  Walker(std::ofstream* out) : output(out), objects(0) {};
+};
+
+void formatted_objects_stepper(mps_addr_t addr, mps_fmt_t fmt, mps_pool_t pool, void* p, size_t s)
+{
+  Walker& walker = *(Walker*)p;
+  walker.objects++;
+  uint coffeee = 0xeeeeffc0;
+  walker.output->write((char*)&coffeee,sizeof(coffeee));
+  PoolInfo& pool_info = pool_info_from_pool(pool);
+  int pool_id = (int)pool_info.Id;
+  walker.output->write((char*)&pool_id,sizeof(pool_id));
+  walker.output->write((char*)&addr,sizeof(addr));
+  mps_addr_t next_addr = (pool_info.SkipFunction)(addr);
+  uint size = (char*)next_addr - (char*)addr;
+  walker.output->write((char*)&size,sizeof(size));
+  char* real_addr = (char*)addr - (pool_info.HasHeader ? sizeof(Header_s) : 0);
+  walker.output->write(real_addr,size);
+}
+
+void save_lisp_and_die(const std::string& filename)
+{
+  std::ofstream fout;
+  fout.open(filename,std::ios::out|std::ios::binary);
+  Walker walker(&fout);
+  mps_arena_collect(global_arena);
+  mps_arena_formatted_objects_walk(global_arena,formatted_objects_stepper,(void*)&walker,0);
+  fout.close();
+  printf("%s:%d There were %zu objects\n", __FILE__, __LINE__, walker.objects);
+}
 
 void run_quick_tests()
 {
@@ -682,6 +770,7 @@ void run_quick_tests()
 
 #define LENGTH(array) (sizeof(array) / sizeof(array[0]))
 
+__attribute__((noinline))
 int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[], bool mpiEnabled, int mpiRank, int mpiSize) {
   if (Alignment() == 16) {
     //            printf("%s:%d WARNING   Alignment is 16 - it should be 8 - check the Alignment() function\n!\n!\n!\n!\n",__FILE__,__LINE__);
@@ -769,7 +858,7 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
     MPS_ARGS_ADD(args, MPS_KEY_INTERIOR, 1);
     MPS_ARGS_ADD(args, MPS_KEY_EXTEND_BY,keyExtendByKb*1024);
     MPS_ARGS_ADD(args, MPS_KEY_LARGE_SIZE,keyExtendByKb*1024);
-    res = mps_pool_create_k(&_global_amc_pool, global_arena, mps_class_amc(), args);
+    res = mps_pool_create_k(&global_amc_pool, global_arena, mps_class_amc(), args);
   }
   MPS_ARGS_END(args);
   if (res != MPS_RES_OK)
@@ -828,46 +917,31 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
   MPS_ARGS_END(args);
   if (res != MPS_RES_OK)
     GC_RESULT_ERROR(res, "Could not create awl pool");
+
+  mps_fmt_t obj_fmt_zero;
   MPS_ARGS_BEGIN(args) {
-    MPS_ARGS_ADD(args, MPS_KEY_RANK, mps_rank_exact());
-    res = mps_ap_create_k(&global_non_moving_ap, global_non_moving_pool, args);
+    MPS_ARGS_ADD(args, MPS_KEY_FMT_HEADER_SIZE, sizeof(Header_s));
+    MPS_ARGS_ADD(args, MPS_KEY_FMT_ALIGN, Alignment());
+    MPS_ARGS_ADD(args, MPS_KEY_FMT_SKIP, obj_skip);
+    MPS_ARGS_ADD(args, MPS_KEY_FMT_FWD, obj_fwd);
+    MPS_ARGS_ADD(args, MPS_KEY_FMT_ISFWD, obj_isfwd);
+    MPS_ARGS_ADD(args, MPS_KEY_FMT_PAD, obj_pad);
+    res = mps_fmt_create_k(&obj_fmt_zero, global_arena, args);
   }
   MPS_ARGS_END(args);
   if (res != MPS_RES_OK)
-    GC_RESULT_ERROR(res, "Couldn't create global_non_moving_ap");
-
-
-/* ------------------------------------------------------------------------
-   Create a pool for objects that aren't moved and arent managed by the GC.
-*/
-#if 0
-  MPS_ARGS_BEGIN(args) {
-    MPS_ARGS_ADD(args, MPS_KEY_FORMAT, obj_fmt);
-    MPS_ARGS_ADD(args, MPS_KEY_CHAIN, general_chain);
-    MPS_ARGS_ADD(args, MPS_KEY_AWL_FIND_DEPENDENT, dummyAwlFindDependent);
-    res = mps_pool_create_k(&global_non_moving_pool, global_arena, mps_class_awl(), args);
-  }
-  MPS_ARGS_END(args);
-  if (res != MPS_RES_OK)
-    GC_RESULT_ERROR(res, "Could not create ams pool");
-  MPS_ARGS_BEGIN(args) {
-    MPS_ARGS_ADD(args, MPS_KEY_RANK, mps_rank_exact());
-    res = mps_ap_create_k(&global_non_moving_ap, global_non_moving_pool, args);
-  }
-  MPS_ARGS_END(args);
-  if (res != MPS_RES_OK)
-    GC_RESULT_ERROR(res, "Couldn't create global_non_moving_ap");
-#endif
-
+    GC_RESULT_ERROR(res, "Could not create obj_fmt_zero format");
 
   // Create the AMCZ pool
-  mps_pool_t _global_amcz_pool;
+//  mps_pool_t global_amcz_pool;
   MPS_ARGS_BEGIN(args) {
-    MPS_ARGS_ADD(args, MPS_KEY_FORMAT, obj_fmt);
+    MPS_ARGS_ADD(args, MPS_KEY_FORMAT, obj_fmt_zero);
     MPS_ARGS_ADD(args, MPS_KEY_CHAIN, general_chain);
-    res = mps_pool_create_k(&_global_amcz_pool, global_arena, mps_class_amcz(), args);
+    res = mps_pool_create_k(&global_amcz_pool, global_arena, mps_class_amcz(), args);
   }
   MPS_ARGS_END(args);
+  if (res != MPS_RES_OK)
+    GC_RESULT_ERROR(res, "Could not create amcz pool");
 
   mps_fmt_t weak_obj_fmt;
   MPS_ARGS_BEGIN(args) {
@@ -890,44 +964,11 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
     MPS_ARGS_ADD(args, MPS_KEY_FORMAT, weak_obj_fmt);
     MPS_ARGS_ADD(args, MPS_KEY_CHAIN, general_chain);
     MPS_ARGS_ADD(args, MPS_KEY_AWL_FIND_DEPENDENT, awlFindDependent);
-    res = mps_pool_create_k(&_global_awl_pool, global_arena, mps_class_awl(), args);
+    res = mps_pool_create_k(&global_awl_pool, global_arena, mps_class_awl(), args);
   }
   MPS_ARGS_END(args);
   if (res != MPS_RES_OK)
     GC_RESULT_ERROR(res, "Could not create awl pool");
-  MPS_ARGS_BEGIN(args) {
-    MPS_ARGS_ADD(args, MPS_KEY_RANK, mps_rank_exact());
-    res = mps_ap_create_k(&_global_strong_link_allocation_point, _global_awl_pool, args);
-  }
-  MPS_ARGS_END(args);
-  if (res != MPS_RES_OK)
-    GC_RESULT_ERROR(res, "Couldn't create global_strong_link_allocation_point");
-  MPS_ARGS_BEGIN(args) {
-    MPS_ARGS_ADD(args, MPS_KEY_RANK, mps_rank_weak());
-    res = mps_ap_create_k(&_global_weak_link_allocation_point, _global_awl_pool, args);
-  }
-  MPS_ARGS_END(args);
-  if (res != MPS_RES_OK)
-    GC_RESULT_ERROR(res, "Couldn't create global_weak_link_allocation_point");
-
-  // And the allocation points
-  res = mps_ap_create_k(&_global_automatic_mostly_copying_allocation_point,
-                        _global_amc_pool, mps_args_none);
-  if (res != MPS_RES_OK)
-    GC_RESULT_ERROR(res, "Couldn't create mostly_copying_allocation_point");
-
-    res = mps_ap_create_k(&global_amc_cons_allocation_point,
-                        global_amc_cons_pool, mps_args_none);
-  if (res != MPS_RES_OK)
-    GC_RESULT_ERROR(res, "Couldn't create global_amc_cons_allocation_point");
-
-  // res = mps_ap_create_k(&_global_mvff_allocation_point, _global_mvff_pool, mps_args_none );
-  // if (res != MPS_RES_OK) GC_RESULT_ERROR(res,"Couldn't create mvff_allocation_point");
-
-  res = mps_ap_create_k(&_global_automatic_mostly_copying_zero_rank_allocation_point,
-                        _global_amcz_pool, mps_args_none);
-  if (res != MPS_RES_OK)
-    GC_RESULT_ERROR(res, "Couldn't create mostly_copying_zero_rank_allocation_point");
 
   // register the current and only thread
   mps_thr_t global_thread;
@@ -977,45 +1018,50 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
     GC_RESULT_ERROR(res, "Could not create scan root");
 
 //  mps_register_root(reinterpret_cast<gctools::Tagged*>(&globalTaggedRunTimeValues));
-
-  threadLocalStack()->allocateStack(gc::thread_local_cl_stack_min_size);
-
 #ifdef RUNNING_GC_BUILDER
   printf("%s:%d mps-prep version of clasp started up\n", __FILE__, __LINE__);
   printf("%s:%d   You could run some tests here\n", __FILE__, __LINE__);
   printf("%s:%d   ... shutting down now\n", __FILE__, __LINE__);
   exit_code = 0;
 #else
-  #if 1
-  run_quick_tests();
-  core::ThreadLocalState thread_local_state;
-  my_thread = &thread_local_state;
-  exit_code = startupFn(argc, argv, mpiEnabled, mpiRank, mpiSize);
-  #else
+  void* stackTop = NULL;
+  {
+    core::ThreadLocalState thread_local_state(&stackTop);
+    my_thread = &thread_local_state;
+  // Create the allocation points
+    my_thread_allocation_points.initializeAllocationPoints();
+    run_quick_tests();
+#if 1
+    try {
+      exit_code = startupFn(argc, argv, mpiEnabled, mpiRank, mpiSize);
+    } catch (core::SaveLispAndDie& ee) {
+      printf("%s:%d    SaveLispAndDie...\n", __FILE__, __LINE__ );
+      save_lisp_and_die(ee._FileName);
+      printf("%s:%d    Dying.\n", __FILE__, __LINE__);
+    }
+#else
   printf("%s:%d Skipping startupFn\n", __FILE__, __LINE__ );
   test_mps_allocation();
   exit_code = 0;
-  #endif
+#endif
+  my_thread_allocation_points.destroyAllocationPoints();
+  }
 #endif
   size_t finalizations;
   processMpsMessages(finalizations);
-
   delete_my_roots();
+#if 0
   threadLocalStack()->deallocateStack();
+#endif
   mps_root_destroy(global_scan_root);
   mps_root_destroy(global_stack_root);
   mps_thread_dereg(global_thread);
-  mps_ap_destroy(_global_automatic_mostly_copying_zero_rank_allocation_point);
-  mps_ap_destroy(global_amc_cons_allocation_point);
-  mps_ap_destroy(_global_automatic_mostly_copying_allocation_point);
-  mps_ap_destroy(_global_weak_link_allocation_point);
-  mps_ap_destroy(_global_strong_link_allocation_point);
-  mps_ap_destroy(global_non_moving_ap);
-  mps_pool_destroy(_global_awl_pool);
-  mps_pool_destroy(_global_amcz_pool);
+  mps_pool_destroy(global_awl_pool);
+  mps_pool_destroy(global_amcz_pool);
+  mps_fmt_destroy(obj_fmt_zero);
   mps_pool_destroy(global_non_moving_pool);
   mps_pool_destroy(global_amc_cons_pool);
-  mps_pool_destroy(_global_amc_pool);
+  mps_pool_destroy(global_amc_pool);
   mps_arena_park(global_arena);
   mps_chain_destroy(cons_chain);
   mps_chain_destroy(general_chain);
@@ -1029,15 +1075,6 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
 };
 
 
-namespace gctools {
-
-CL_DEFUN void gctools__enable_underscanning(bool us)
-{
-  global_underscanning = us;
-}
-
-};
-
 extern "C" {
 
 void check_all_clients() {
@@ -1048,4 +1085,73 @@ void check_all_clients() {
 
 };
 
+
+
+namespace gctools {
+
+void my_mps_thread_reg(mps_thr_t* threadP) {
+  mps_res_t result = mps_thread_reg(threadP,global_arena);
+  if (result != MPS_RES_OK) {
+    printf("%s:%d Could not register thread\n", __FILE__, __LINE__ );
+    abort();
+  }
+}
+
+void my_mps_thread_deref(mps_thr_t thread) {
+   mps_thread_dereg(thread);
+}
+
+
+void ThreadLocalAllocationPoints::initializeAllocationPoints() {
+  mps_res_t res;
+  MPS_ARGS_BEGIN(args) {
+    MPS_ARGS_ADD(args, MPS_KEY_RANK, mps_rank_exact());
+    res = mps_ap_create_k(&this->_non_moving_allocation_point, global_non_moving_pool, args);
+  }
+  MPS_ARGS_END(args);
+  if (res != MPS_RES_OK)
+    GC_RESULT_ERROR(res, "Couldn't create global_non_moving_allocation_point");
+
+  MPS_ARGS_BEGIN(args) {
+    MPS_ARGS_ADD(args, MPS_KEY_RANK, mps_rank_exact());
+    res = mps_ap_create_k(&this->_strong_link_allocation_point, global_awl_pool, args);
+  }
+  MPS_ARGS_END(args);
+  if (res != MPS_RES_OK)
+    GC_RESULT_ERROR(res, "Couldn't create global_strong_link_allocation_point");
+  MPS_ARGS_BEGIN(args) {
+    MPS_ARGS_ADD(args, MPS_KEY_RANK, mps_rank_weak());
+    res = mps_ap_create_k(&this->_weak_link_allocation_point, global_awl_pool, args);
+  }
+  MPS_ARGS_END(args);
+  if (res != MPS_RES_OK)
+    GC_RESULT_ERROR(res, "Couldn't create global_weak_link_allocation_point");
+
+  res = mps_ap_create_k(&this->_automatic_mostly_copying_allocation_point,
+                        global_amc_pool, mps_args_none);
+  if (res != MPS_RES_OK)
+    GC_RESULT_ERROR(res, "Couldn't create mostly_copying_allocation_point");
+
+  res = mps_ap_create_k(&this->_amc_cons_allocation_point,
+                        global_amc_cons_pool, mps_args_none);
+  if (res != MPS_RES_OK)
+    GC_RESULT_ERROR(res, "Couldn't create global_amc_cons_allocation_point");
+
+  res = mps_ap_create_k(&this->_automatic_mostly_copying_zero_rank_allocation_point,
+                        global_amcz_pool, mps_args_none);
+  if (res != MPS_RES_OK)
+    GC_RESULT_ERROR(res, "Couldn't create mostly_copying_zero_rank_allocation_point");
+};
+
+
+void ThreadLocalAllocationPoints::destroyAllocationPoints() {
+  mps_ap_destroy(this->_automatic_mostly_copying_zero_rank_allocation_point);
+  mps_ap_destroy(this->_amc_cons_allocation_point);
+  mps_ap_destroy(this->_automatic_mostly_copying_allocation_point);
+  mps_ap_destroy(this->_weak_link_allocation_point);
+  mps_ap_destroy(this->_strong_link_allocation_point);
+  mps_ap_destroy(this->_non_moving_allocation_point);
+};
+
+};
 #endif // whole file #ifdef USE_MPS

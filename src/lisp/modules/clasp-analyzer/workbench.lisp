@@ -1,19 +1,160 @@
-;;
-;; Normal run
-;;
-(compile-file #P"sys:modules;clang-tool;clang-tool.lisp" :print t)
-(compile-file #P"sys:modules;clasp-analyzer;clasp-analyzer.lisp" :print t)
-
-(load #P"sys:modules;clang-tool;clang-tool.fasl")
-(load #P"sys:modules;clasp-analyzer;clasp-analyzer.fasl")
-
+(progn
+  (compile-file #P"sys:modules;clang-tool;clang-tool.lisp" :print t)
+  (compile-file #P"sys:modules;clasp-analyzer;clasp-analyzer.lisp" :print t)
+  (format t "Done compile~%"))
+(progn
+  (load #P"sys:modules;clang-tool;clang-tool.fasl")
+  (load #P"sys:modules;clasp-analyzer;clasp-analyzer.fasl")
+  (format t "Done Loading clasp-analyzer~%"))
 (in-package :clasp-analyzer)
-(defvar *compile-commands* "/Users/meister/Development/clasp/build/mpsprep/compile_commands.json")
+;;; ------------------------------------------------------------
+;;; To load and analyze the project
+(progn
+  (defparameter *compile-commands* (probe-file "~/aws/static-analyze-clasp/results/compile_commands.json"))
+  (defvar *db* (clasp-analyzer:setup-clasp-analyzer-compilation-tool-database
+                (pathname *compile-commands*)))
+  (time
+   (progn
+     (format t "Loading project~%")
+     (defparameter *p1* (load-project *db* "~/aws/static-analyze-clasp/results/project.dat"))
+     (format t "Done loading project~%"))))
+(progn
+  (defparameter *analysis* (analyze-project *p1*))
+  (generate-code *analysis* :output-file #P"/tmp/clasp_gc.cc")
+  (format t "Done analyze and generate-code for project~%")))
+
+
+(trace codegen-variable-part)
+(defparameter *analysis* (analyze-project *p1*))
+
+
+(defparameter *bv* (gethash "core::SimpleBitVector_O" (project-classes *project*)))
+
+
+
+(trace linearize-class-layout-impl)
+(class-layout *bv* *analysis*)
+
+
+
+
+
+
+(probe-file "~/slime/")
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Run a small test search on AWS 
+;;;
+
+(trace classify-ctype)
+(progn
+  (defparameter *compile-commands* (probe-file "/Development/clasp/build/mpsprep/compile_commands.json"))
+  (defvar *db* (clasp-analyzer:setup-clasp-analyzer-compilation-tool-database
+                (pathname *compile-commands*)
+                :selection-pattern "/array.cc"))
+  (format t "Done setting ctd~%"))
+
+(progn
+  (defvar *p* (clasp-analyzer::serial-search/generate-code *db* :output-file #P"/tmp/data.dat"))
+  (format t "Done search!~%"))
+
+(defparameter *analysis* (analyze-project *p*))
+
+(defparameter *bv* (gethash "core::SimpleBitVector_O" (project-classes *project*)))
+
+(trace linearize-class-layout-impl)
+(class-layout *bv* *analysis*)
+
+*bv*
+(maphash (lambda (k v) (if (search "SimpleBitVector" k) (print k))) (project-classes *project*))
+
+
+(gethash (gethash "core::DerivableCxxObject_O" (analysis-stamps *analysis*)) (analysis-stamp-children *analysis*))
+
+(analysis-stamp-roots *analysis*)
+("clang::ast_matchers::MatchFinder::MatchCallback"
+ "core::Lisp_O"
+ "clang::RecursiveASTVisitor<asttooling::AstVisitor_O>"
+ "gctools::GCContainer"
+ "clang::FrontendAction"
+ "clang::tooling::ToolAction"
+ "core::T_O"
+ "clbind::detail::class_map")
+
+(children-of-class-named  *analysis*)q
+
+(gethash "core::Array_O" (project-classes *project*))
+
+(analyze-only *db*)
+
+
+
+(defvar *compile-commands* "~/Development/clasp/build/mpsprep/compile_commands.json")
+(defvar *compile-commands* "~/Development/clasp/build/boehm/compile_commands.json")
+
 (setf *print-pretty* nil)
-(defvar *db* (clasp-analyzer:setup-clasp-analyzer-compilation-tool-database (pathname *compile-commands*)))
-(defvar *p* (search/generate-code *db*))
+(defvar *db* (clasp-analyzer:setup-clasp-analyzer-compilation-tool-database
+              (pathname *compile-commands*)
+              :selection-pattern "gc_interface.cc" ))
+(defvar *p* (serial-search/generate-code *db* :output-file #P"/tmp/data.dat"))
 
 
+;;; ------------------------------------------------------------
+;;;
+;;; Load an existing project
+;;;
+(defvar *compile-commands* "~/Development/clasp/compile_commands.json")
+(defvar *db* (clasp-analyzer:setup-clasp-analyzer-compilation-tool-database
+              (pathname *compile-commands*)))
+(progn
+  (defparameter *p1* (load-project "~/Development/clasp/project.dat"))
+  (format t "Done read project~%"))
+
+(progn
+  (defparameter *analysis* (analyze-project *p1*))
+  (generate-code *analysis* :output-file #P"/tmp/clasp_gc.cc")
+  (format t "Done analyze and generate-code for project~%"))
+
+
+(defparameter *a* (gethash "core::Array_O" (project-classes *project*)))
+
+(analysis-stamps *analysis*)
+(stamp-value (hierarchy-end-value "core::Array_O" *analysis*))
+
+
+(analysis-enum-roots *analysis*)
+*analysis*
+(analyze-only *db*)
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Test parallel stuff
+;;;
+
+(progn
+  (compile-file #P"sys:modules;clang-tool;clang-tool.lisp" :print t)
+  (compile-file #P"sys:modules;clasp-analyzer;clasp-analyzer.lisp" :print t)
+  (format t "Done compile~%"))
+
+(progn
+  (load #P"sys:modules;clang-tool;clang-tool.fasl")
+  (load #P"sys:modules;clasp-analyzer;clasp-analyzer.fasl"))
+
+(progn
+  (defparameter *compile-commands* (probe-file "~/Development/clasp/build/mpsprep/compile_commands.json"))
+  (setf *print-pretty* nil)
+  (defvar *db* (clasp-analyzer:setup-clasp-analyzer-compilation-tool-database
+                (pathname *compile-commands*))))
+
+(clasp-analyzer::parallel-search/generate-code *db* :pjobs 6)
+
+(ext:getenv "PJOBS")
+(clasp-analyzer::parallel-search-all *db* :jobs 8)
+
+(defparameter *q* (make-cxx-object 'mp:quueue
 
 ;;
 ;; Small run

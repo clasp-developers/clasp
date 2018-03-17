@@ -5,12 +5,13 @@
           *compile-debug-dump-module*  ;; Dump intermediate modules
           quick-module-dump
           quick-message-dump
+          write-bitcode
+          load-bitcode
           *irbuilder*
           %ltv*%
           irc-function-create
           irc-bclasp-function-create
           %fn-prototype%
-          *all-functions-for-one-compile*
           *cleavir-compile-file-hook*
           *cleavir-compile-hook*
           *compile-print*
@@ -19,6 +20,7 @@
           *current-function*
           *current-function-name*
           *debug-compile-file*
+          *debug-compile-file-counter*
           *generate-compile-file-load-time-values*
           *load-time-initializer-environment*
           *gv-current-function-name*
@@ -35,9 +37,10 @@
 ;;          *run-time-values-table*
           *run-time-values-table-global-var*
           *the-module*
+          +header-size+
           +cons-tag+
           +fixnum-tag+
-          +Valist_S-tag+
+          +vaslist-tag+
           +single-float-tag+
           +character-tag+
           +general-tag+
@@ -52,13 +55,13 @@
           %mv-struct%
           %size_t%
           %t*%
-          %tsp[0]%
+          %t*[0]%
           %tsp%
-          %tsp[0]*%
+          %t*[0]*%
           %tsp*%
           %t**%
-          %tsp[DUMMY]%
-          %tsp[DUMMY]*%
+          %t*[DUMMY]%
+          %t*[DUMMY]*%
           null-t-ptr
           %gcroots-in-module%
           %gcroots-in-module*%
@@ -78,12 +81,14 @@
           calling-convention-write-registers-to-multiple-values
           describe-constants-table
           cmp-log
-          cmp-log-dump
+          cmp-log-dump-module
+          cmp-log-dump-function
           irc-create-call
           irc-create-invoke
           compile-file-to-module
-          link-intrinsics-module
-          optimize-module
+          jit-link-builtins-module
+          optimize-module-for-compile
+          optimize-module-for-compile-file
           codegen-rtv
           codegen
           compile-error-if-not-enough-arguments
@@ -122,6 +127,7 @@
           irc-create-landing-pad
           irc-exception-typeid*
           irc-generate-terminate-code
+          irc-gep
           irc-smart-ptr-extract
           irc-set-insert-point-basic-block
           irc-size_t-*current-source-pos-info*-filepos
@@ -153,14 +159,13 @@
           module-make-global-string
           make-boot-function-global-variable
           llvm-link
-          link-intrinsics-module
+          jit-link-builtins-module
           load-bitcode
           initialize-calling-convention
-          set-associated-funcs
           treat-as-special-operator-p
           typeid-core-unwind
           walk-form-for-source-info
-          with-catch
+          with-begin-end-catch
           preserve-exception-info
           with-new-function
           with-dbg-function
@@ -178,9 +183,10 @@
           make-uintptr_t
           +cons-car-offset+
           +cons-cdr-offset+
+          +simple-vector._length-offset+
           %uintptr_t%
           %return_type%
-          %VaList_S%
+          %vaslist%
           %InvocationHistoryFrame%
           %register-save-area%
           null-t-ptr
@@ -218,23 +224,23 @@
 (export '(
           add-creator
           next-value-table-holder-name
-          make-constant-call
-          make-constant-creator
+          make-literal-node-call
+          make-literal-node-creator
           run-all-add-node
-          constant-runtime-p
-          constant-runtime-index
-          constant-runtime-object
-          constant-creator-p
-          constant-creator-index
-          constant-creator-name
-          constant-creator-arguments
-          constant-side-effect-p
-          constant-side-effect-name
-          constant-side-effect-arguments
-          constant-call-p
-          constant-call-function
-          constant-call-source-pos-info
-          constant-call-holder
+          literal-node-runtime-p
+          literal-node-runtime-index
+          literal-node-runtime-object
+          literal-node-creator-p
+          literal-node-creator-index
+          literal-node-creator-name
+          literal-node-creator-arguments
+          literal-node-side-effect-p
+          literal-node-side-effect-name
+          literal-node-side-effect-arguments
+          literal-node-call-p
+          literal-node-call-function
+          literal-node-call-source-pos-info
+          literal-node-call-holder
           number-of-entries
           reference-literal
           load-time-reference-literal
@@ -249,9 +255,10 @@
           constants-table-value
           with-ltv
           with-load-time-value
+          with-load-time-value-cleavir
           with-rtv
           with-top-level-form
-          with-constants-table
+          with-literal-table
           evaluate-function-into-load-time-value
           )
         )

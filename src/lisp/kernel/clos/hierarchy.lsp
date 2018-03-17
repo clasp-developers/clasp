@@ -21,17 +21,28 @@
 
 (in-package "CLOS")
 
-#+clasp(defvar *optimize-slot-access* t
-	 "In ECL this is in ecl/src/c/symbol_table.h")
+#+(or)
+(eval-when (:compile-toplevel :execute :load-toplevel)
+  (push :mlog *features*)
+  (defmacro mlog (fmt &rest fmtargs)
+    `(core:bformat *debug-io* ,fmt ,@fmtargs)))
+;;#+(or)
+(defmacro mlog (fmt &rest fmtargs) nil)
 
 ;;; ----------------------------------------------------------------------
 ;;; Class SPECIALIZER
 
 (eval-when (:compile-toplevel :execute #+clasp :load-toplevel)
   (defparameter +specializer-slots+
+;;; Any changes involving adding, removing, rearranging slots below need to be reflected in instance.h
     '((flag :initform nil :accessor eql-specializer-flag)
       (direct-methods :initform nil :accessor specializer-direct-methods)
-      (direct-generic-functions :initform nil :accessor specializer-direct-generic-functions))))
+      (direct-generic-functions :initform nil :accessor specializer-direct-generic-functions)
+      (call-history-generic-functions :initform nil :accessor specializer-call-history-generic-functions)
+      (specializer-mutex :initform (mp:make-shared-mutex 'call-history-generic-functions-mutex)
+                         :accessor specializer-mutex)
+      ;;; Any changes to the slots above need to be reflected in instance.h
+      )))
 
 (eval-when (:compile-toplevel :execute #+clasp :load-toplevel)
   (defparameter +eql-specializer-slots+
@@ -54,9 +65,10 @@
 
 (eval-when (:compile-toplevel :execute #+clasp :load-toplevel)
   (defparameter +class-slots+
+;;; Any changes involving adding, removing, rearranging slots below need to be reflected in instance.h
     `(,@+specializer-slots+
       (name :initarg :name :initform nil :accessor class-id)
-      (direct-superclasses :initarg :direct-superclasses
+      (direct-superclasses :initarg :direct-superclasses :initform nil
 			   :accessor class-direct-superclasses)
       (direct-subclasses :initform nil :accessor class-direct-subclasses)
       (slots :accessor class-slots)
@@ -68,20 +80,15 @@
       (finalized :initform nil :accessor class-finalized-p)
       (docstring :initarg :documentation :initform nil)
       (size :accessor class-size)
-      (sealedp :initarg :sealedp :initform nil :accessor class-sealedp)
       (prototype)
       (dependents :initform nil :accessor class-dependents)
       (valid-initargs :accessor class-valid-initargs)
       (slot-table :accessor slot-table)
       (location-table :initform nil :accessor class-location-table)
-      ))
-
-  #-clasp
-  (defconstant +class-name-ndx+
-    (position 'name +class-slots+ :key #'first))
-  #-clasp
-  (defconstant +class-precedence-list-ndx+
-    (position 'precedence-list +class-slots+ :key #'first)))
+      (stamp-for-instances :accessor stamp-for-instances)
+      (creator :accessor creator)
+      ;;; Any changes to the slots above need to be reflected in instance.h
+      )))
 
 #+clasp
 (eval-when (:compile-toplevel :execute :load-toplevel)
@@ -96,8 +103,7 @@
 (eval-when (:compile-toplevel :execute #+clasp :load-toplevel)
   (defparameter +standard-class-slots+
     (append +class-slots+
-	    '((optimize-slot-access)
-	      (forward)))))
+	    '((source-position :initform nil :initarg :source-position :accessor class-source-position)))))
 
 ;;; ----------------------------------------------------------------------
 ;;; STRUCTURE-CLASS
@@ -119,24 +125,16 @@
 
 (eval-when (:compile-toplevel :execute  #+clasp :load-toplevel)
   (defparameter +standard-generic-function-slots+
+;;; Any changes involving adding, removing, rearranging slots below need to be reflected in funcallableInstance.h
     '((name :initarg :name :initform nil
        :reader generic-function-name)
       (spec-list :initform nil :accessor generic-function-spec-list)
       (method-combination 
        :initarg :method-combination :initform (find-method-combination (class-prototype (find-class 'standard-generic-function)) 'standard nil)
        :accessor generic-function-method-combination)
-      #+clasp(compiled-dispatch-function
-              :initarg :compiled-dispatch-function
-              :initform nil
-              :accessor generic-function-compiled-dispatch-function)
-      #+clasp(call-history
-              :initarg :call-history
-              :initform nil
-              :accessor generic-function-call-history)
       (lambda-list :initarg :lambda-list
        :accessor generic-function-lambda-list)
-      #+clasp(specializer-profile :initarg :specializer-profile
-       :accessor generic-function-specializer-profile)
+;;; Any changes to the slots above need to be reflected in funcallableInstance.h
       (argument-precedence-order 
        :initarg :argument-precedence-order
        :initform nil
@@ -167,7 +165,13 @@
       (the-function :initarg :function :accessor method-function)
       (docstring :initarg :documentation :initform nil)
       (plist :initform nil :initarg :plist :accessor method-plist)
-      (keywords :initform nil :accessor method-keywords)))
+      ;; these are the precomputed results of cl:function-keywords.
+      (keywords :initform nil :initarg :keywords :accessor method-keywords)
+      (aok-p :initform nil :initarg :aok-p :accessor method-allows-other-keys-p)
+      ;; leaf-method-p is T if the method form doesn't call call-next-method or next-method-p
+      ;; our custom initargs are internal symbols, as per MOP "The defmethod macros"
+      (leaf-method-p :initform nil :initarg leaf-method-p :reader leaf-method-p)
+      (fast-method-function :initform nil :initarg fast-method-function :reader fast-method-function)))
 
   (defparameter +standard-accessor-method-slots+
     (append +standard-method-slots+
@@ -181,7 +185,7 @@
 ;;;
 
 (eval-when (:compile-toplevel :execute  #+clasp :load-toplevel)
-  (defconstant +slot-definition-slots+
+  (core:defconstant-equal +slot-definition-slots+
     '((name :initarg :name :initform nil :accessor slot-definition-name)
       (initform :initarg :initform :initform +initform-unsupplied+ :accessor slot-definition-initform)
       (initfunction :initarg :initfunction :initform nil :accessor slot-definition-initfunction)
@@ -200,70 +204,70 @@
   ;; All changes to this are connected to the changes in 
   ;; the code of cl_class_of() in src/instance.d
   ;;
-  (defconstant +builtin-classes-list+
+  (core:defconstant-equal +builtin-classes-list+
 	 '(;(t object)
 	    (sequence)
 	      (list sequence)
 	        (cons list)
 	    (array)
            (vector array sequence)
-           #+clasp(simple-vector vector)
-           #+clasp(core:simple-vector-byte8-t vector)
-           #+clasp(core:simple-vector-byte16-t vector)
-           #+clasp(core:simple-vector-byte32-t vector)
-           #+clasp(core:simple-vector-byte64-t vector)
-           #+clasp(core:simple-vector-int8-t vector)
-           #+clasp(core:simple-vector-int16-t vector)
-           #+clasp(core:simple-vector-int32-t vector)
-           #+clasp(core:simple-vector-int64-t vector)
-           #+clasp(core:simple-vector-size-t vector)
-           #+clasp(core:simple-vector-fixnum vector)
-           #+clasp(core:simple-vector-double vector)
-           #+clasp(core:simple-vector-float vector)
-           #+clasp(core:MDARRAY-BASE-CHAR array)
-           #+clasp(core:MDARRAY-BIT array)
-           #+clasp(core:MDARRAY-BYTE16-T array)
-           #+clasp(core:MDARRAY-BYTE32-T array)
-           #+clasp(core:MDARRAY-BYTE64-T array)
-           #+clasp(core:MDARRAY-BYTE8-T array)
-           #+clasp(core:MDARRAY-CHARACTER array)
-           #+clasp(core:MDARRAY-DOUBLE array)
-           #+clasp(core:MDARRAY-DUMP  Function array)
-           #+clasp(core:MDARRAY-FIXNUM array)
-           #+clasp(core:MDARRAY-FLOAT array)
-           #+clasp(core:MDARRAY-INT16-T array)
-           #+clasp(core:MDARRAY-INT32-T array)
-           #+clasp(core:MDARRAY-INT64-T array)
-           #+clasp(core:MDARRAY-INT8-T array)
-           #+clasp(core:MDARRAY-SIZE-T array)
-           #+clasp(core:MDARRAY-T array)
-           #+clasp(core:SIMPLE-MDARRAY-BASE-CHAR array)
-           #+clasp(core:SIMPLE-MDARRAY-BIT array)
-           #+clasp(core:SIMPLE-MDARRAY-BYTE16-T array)
-           #+clasp(core:SIMPLE-MDARRAY-BYTE32-T array)
-           #+clasp(core:SIMPLE-MDARRAY-BYTE64-T array)
-           #+clasp(core:SIMPLE-MDARRAY-BYTE8-T array)
-           #+clasp(core:SIMPLE-MDARRAY-CHARACTER array)
-           #+clasp(core:SIMPLE-MDARRAY-DOUBLE array)
-           #+clasp(core:SIMPLE-MDARRAY-FIXNUM array)
-           #+clasp(core:SIMPLE-MDARRAY-FLOAT array)
-           #+clasp(core:SIMPLE-MDARRAY-INT16-T array)
-           #+clasp(core:SIMPLE-MDARRAY-INT32-T array)
-           #+clasp(core:SIMPLE-MDARRAY-INT64-T array)
-           #+clasp(core:SIMPLE-MDARRAY-INT8-T array)
-           #+clasp(core:SIMPLE-MDARRAY-SIZE-T array)
-           #+clasp(core:SIMPLE-MDARRAY-T array)
+           (simple-vector vector)
+           (core:simple-vector-byte8-t vector)
+           (core:simple-vector-byte16-t vector)
+           (core:simple-vector-byte32-t vector)
+           (core:simple-vector-byte64-t vector)
+           (core:simple-vector-int8-t vector)
+           (core:simple-vector-int16-t vector)
+           (core:simple-vector-int32-t vector)
+           (core:simple-vector-int64-t vector)
+           (core:simple-vector-size-t vector)
+           (core:simple-vector-fixnum vector)
+           (core:simple-vector-double vector)
+           (core:simple-vector-float vector)
+           (core:MDARRAY-BASE-CHAR array)
+           (core:MDARRAY-BIT array)
+           (core:MDARRAY-BYTE16-T array)
+           (core:MDARRAY-BYTE32-T array)
+           (core:MDARRAY-BYTE64-T array)
+           (core:MDARRAY-BYTE8-T array)
+           (core:MDARRAY-CHARACTER array)
+           (core:MDARRAY-DOUBLE array)
+           (core:MDARRAY-DUMP  Function array)
+           (core:MDARRAY-FIXNUM array)
+           (core:MDARRAY-FLOAT array)
+           (core:MDARRAY-INT16-T array)
+           (core:MDARRAY-INT32-T array)
+           (core:MDARRAY-INT64-T array)
+           (core:MDARRAY-INT8-T array)
+           (core:MDARRAY-SIZE-T array)
+           (core:MDARRAY-T array)
+           (core:SIMPLE-MDARRAY-BASE-CHAR array)
+           (core:SIMPLE-MDARRAY-BIT array)
+           (core:SIMPLE-MDARRAY-BYTE16-T array)
+           (core:SIMPLE-MDARRAY-BYTE32-T array)
+           (core:SIMPLE-MDARRAY-BYTE64-T array)
+           (core:SIMPLE-MDARRAY-BYTE8-T array)
+           (core:SIMPLE-MDARRAY-CHARACTER array)
+           (core:SIMPLE-MDARRAY-DOUBLE array)
+           (core:SIMPLE-MDARRAY-FIXNUM array)
+           (core:SIMPLE-MDARRAY-FLOAT array)
+           (core:SIMPLE-MDARRAY-INT16-T array)
+           (core:SIMPLE-MDARRAY-INT32-T array)
+           (core:SIMPLE-MDARRAY-INT64-T array)
+           (core:SIMPLE-MDARRAY-INT8-T array)
+           (core:SIMPLE-MDARRAY-SIZE-T array)
+           (core:SIMPLE-MDARRAY-T array)
 	        (string vector)
                 #+(or unicode clasp)
 	   (base-string string vector)
-           #+clasp(simple-base-string base-string)
-           #+clasp(core:str8ns base-string)
-           #+clasp(string vector)
-           #+clasp(core:simple-character-string string)
-           #+clasp(core:str-wns string)
+           (simple-base-string base-string)
+           (core:str8ns base-string)
+           (string vector)
+           (core:simple-character-string string)
+           (core:str-wns string)
            (bit-vector vector)
-           #+clasp(cl:simple-bit-vector bit-vector)
-           #+clasp(core:bit-vector-ns bit-vector)
+           (cl:simple-bit-vector bit-vector)
+           (core:bit-vector-ns bit-vector)
 	    (stream)
 	   (ext:ansi-stream stream)
 	   (file-stream ext:ansi-stream)
@@ -298,17 +302,14 @@
 	    (si::foreign-data)
 	    (si::frame)
 	    (si::weak-pointer)
-	   #+clasp(si::external-object)
-	   #+clasp(si::iterator)
-	     #+clasp(si::directory-iterator si::iterator)
-	     #+clasp(si::recursive-directory-iterator si::iterator)
+	   (si::external-object)
+	   (si::iterator)
+	     (si::directory-iterator si::iterator)
+	     (si::recursive-directory-iterator si::iterator)
 	    #+threads (mp::process)
 	    #+threads (mp::lock)
 	    #+threads (mp::rwlock)
 	    #+threads (mp::condition-variable)
-	    #+(and ecl threads) (mp::semaphore)
-	    #+(and ecl threads) (mp::barrier)
-	    #+(and ecl threads) (mp::mailbox)
 	    #+sse2 (ext::sse-pack))))
 
 ;;; FROM AMOP:
@@ -341,156 +342,131 @@
 ;;;
 ;;;#+cclasp
 #+(or)(eval-when (:compile-toplevel :execute :load-toplevel)
-  (setq clasp-cleavir:*use-type-inference* nil))
+        (setq clasp-cleavir:*use-type-inference* nil))
+
+;;; Some classes are in here multiple times because they are created then recreated (in boot.lsp)
 
 (eval-when (eval #+clasp :compile-toplevel #+clasp :load-toplevel  )
-  (defconstant +class-hierarchy+
-    `((standard-class
-       #+clasp :creates-classes #+clasp t)
-#+clasp
-      (built-in-class
-       #+clasp :creates-classes #+clasp t)
-      (standard-effective-slot-definition)
-      (standard-direct-slot-definition)
-      (standard-class
-       :metaclass nil ; Special-cased in boot.lsp
-       :direct-slots #.+standard-class-slots+
-        #+clasp :creates-classes #+clasp t
-       )
-#+clasp
-      (built-in-class
-       :metaclass nil ; Special-cased in boot.lsp
-       :direct-slots #.+standard-class-slots+
-        #+clasp :creates-classes #+clasp t
-       )
-      (standard-direct-slot-definition
-       :direct-slots #3=#.+slot-definition-slots+)
-      (standard-effective-slot-definition
-       :direct-slots #3#)
-      (t
-       :index 0)
-#+clasp(class
-        :direct-slots #.+class-slots+
-        #+clasp :creates-classes #+clasp t
-        )
-      (standard-object
-       :direct-superclasses (t))
-      #+clasp
-      (core:cxx-object
-              :direct-superclasses (t))
-      (metaobject
-       :direct-superclasses (standard-object))
-      (slot-definition
-       :direct-superclasses (metaobject)
-       :direct-slots #3#)
-      (standard-slot-definition
-       :direct-superclasses (slot-definition)
-       :direct-slots #3#)
-      (direct-slot-definition
-       :direct-superclasses (slot-definition)
-       :direct-slots #3#)
-      (effective-slot-definition
-       :direct-superclasses (slot-definition)
-       :direct-slots #3#)
-      (standard-direct-slot-definition
-       :direct-superclasses (standard-slot-definition direct-slot-definition)
-       :direct-slots #3#)
-      (standard-effective-slot-definition
-       :direct-superclasses (standard-slot-definition effective-slot-definition)
-       :direct-slots #3#)
-      (method-combination
-       :direct-superclasses (metaobject)
-       :direct-slots #.+method-combination-slots+)
-      (specializer
-       :direct-superclasses (metaobject)
-       :direct-slots #.+specializer-slots+)
-      (eql-specializer
-       :direct-superclasses (specializer)
-       :direct-slots #.+eql-specializer-slots+)
-      (class
-       :direct-superclasses (specializer)
-       :direct-slots #.+class-slots+
-        #+clasp :creates-classes #+clasp t
-       )
-      (forward-referenced-class
-       :direct-superclasses (class)
-       :direct-slots #.+class-slots+
-        #+clasp :creates-classes #+clasp t
-       )
-      (built-in-class
-       :direct-superclasses (class)
-       :direct-slots #1=#.+standard-class-slots+
-       #+clasp :creates-classes #+clasp t)
-#+clasp(core:cxx-class
-        :direct-superclasses (class)
-        :direct-slots #1#
-        #+clasp :creates-classes #+clasp t
-        )
-      (std-class
-       :direct-superclasses (class)
-       :direct-slots #1#
-        #+clasp :creates-classes #+clasp t
-       )
-      (standard-class
-       :direct-superclasses (std-class)
-       :direct-slots #1#
-       :metaclass standard-class
-        #+clasp :creates-classes #+clasp t
-       )
-      (funcallable-standard-class
-       :direct-superclasses (std-class)
-       :direct-slots #1#
-        #+clasp :creates-classes #+clasp t
-       )
-      ,@(loop for (name . rest) in +builtin-classes-list+
-           for index from 1
-           collect (list name :metaclass 'built-in-class
-                         :index index
-                         :direct-superclasses (or rest '(t))))
-      (funcallable-standard-object
-       :direct-superclasses (standard-object function))
-      (generic-function
-       :metaclass funcallable-standard-class
-       :direct-superclasses (metaobject funcallable-standard-object))
-      (standard-generic-function
-       :direct-superclasses (generic-function)
-       :direct-slots #.+standard-generic-function-slots+
-       :metaclass funcallable-standard-class)
-      (method
-       :direct-superclasses (metaobject))
-      (standard-method
-       :direct-superclasses (method)
-       :direct-slots #.+standard-method-slots+)
-      (standard-accessor-method
-       :direct-superclasses (standard-method)
-       :direct-slots #2=#.+standard-accessor-method-slots+)
-      (standard-reader-method
-       :direct-superclasses (standard-accessor-method)
-       :direct-slots #2#)
-      (standard-writer-method
-       :direct-superclasses (standard-accessor-method)
-       :direct-slots #2#)
-      (standard-optimized-reader-method
-       :direct-superclasses (standard-reader-method)
-       :direct-slots #2#)
-      (standard-optimized-writer-method
-       :direct-superclasses (standard-writer-method)
-       :direct-slots #2#)
-      (structure-class
-       :direct-superclasses (class)
-       :direct-slots #.+structure-class-slots+)
-      (structure-object
-       :metaclass structure-class
-       :direct-superclasses (t))
-      )))
+  (locally (declare (optimize (debug 0)))
+    (core:defconstant-equal +class-hierarchy+
+      `((standard-class)
+        (built-in-class)
+        (standard-effective-slot-definition)
+        (standard-direct-slot-definition)
+        (standard-class
+         :metaclass nil                 ; Special-cased in boot.lsp
+         :direct-slots #.+standard-class-slots+)
+        (built-in-class
+         :metaclass nil                 ; Special-cased in boot.lsp
+         :direct-slots #.+standard-class-slots+)
+        (standard-direct-slot-definition
+         :direct-slots #3=#.+slot-definition-slots+)
+        (standard-effective-slot-definition
+         :direct-slots #3#)
+        (t
+         :index 0)
+        (class :direct-slots #.+class-slots+)
+        (standard-object
+         :direct-superclasses (t))
+        (core:cxx-object
+         :direct-superclasses (t))
+        (metaobject
+         :direct-superclasses (standard-object))
+        (slot-definition
+         :direct-superclasses (metaobject)
+         :direct-slots #3#)
+        (standard-slot-definition
+         :direct-superclasses (slot-definition)
+         :direct-slots #3#)
+        (direct-slot-definition
+         :direct-superclasses (slot-definition)
+         :direct-slots #3#)
+        (effective-slot-definition
+         :direct-superclasses (slot-definition)
+         :direct-slots #3#)
+        (standard-direct-slot-definition
+         :direct-superclasses (standard-slot-definition direct-slot-definition)
+         :direct-slots #3#)
+        (standard-effective-slot-definition
+         :direct-superclasses (standard-slot-definition effective-slot-definition)
+         :direct-slots #3#)
+        (method-combination
+         :direct-superclasses (metaobject)
+         :direct-slots #.+method-combination-slots+)
+        (specializer
+         :direct-superclasses (metaobject)
+         :direct-slots #.+specializer-slots+)
+        (eql-specializer
+         :direct-superclasses (specializer)
+         :direct-slots #.+eql-specializer-slots+)
+        (class
+         :direct-superclasses (specializer)
+         :direct-slots #.+class-slots+)
+        (forward-referenced-class
+         :direct-superclasses (class)
+         :direct-slots #.+class-slots+)
+        (built-in-class
+         :direct-superclasses (class)
+         :direct-slots #1=#.+standard-class-slots+)
+        (core:cxx-class
+         :direct-superclasses (class)
+         :direct-slots #1#)
+        (clbind:class-rep
+         :direct-superclasses (class)
+         :direct-slots #1#)
+        (std-class
+         :direct-superclasses (class)
+         :direct-slots #1#)
+        (standard-class
+         :direct-superclasses (std-class)
+         :direct-slots #1#
+         :metaclass standard-class)
+        (funcallable-standard-class
+         :direct-superclasses (std-class)
+         :direct-slots #1#)
+        ,@(loop for (name . rest) in +builtin-classes-list+
+             for index from 1
+             collect (list name :metaclass 'built-in-class
+                           :index index
+                           :direct-superclasses (or rest '(t))))
+        (funcallable-standard-object
+         :direct-superclasses (standard-object function))
+        (generic-function
+         :metaclass funcallable-standard-class
+         :direct-superclasses (metaobject funcallable-standard-object))
+        (standard-generic-function
+         :direct-superclasses (generic-function)
+         :direct-slots #.+standard-generic-function-slots+
+         :metaclass funcallable-standard-class)
+        (method
+         :direct-superclasses (metaobject))
+        (standard-method
+         :direct-superclasses (method)
+         :direct-slots #.+standard-method-slots+)
+        (standard-accessor-method
+         :direct-superclasses (standard-method)
+         :direct-slots #2=#.+standard-accessor-method-slots+)
+        (standard-reader-method
+         :direct-superclasses (standard-accessor-method)
+         :direct-slots #2#)
+        (standard-writer-method
+         :direct-superclasses (standard-accessor-method)
+         :direct-slots #2#)
+        (structure-class
+         :direct-superclasses (class)
+         :direct-slots #.+structure-class-slots+)
+        (structure-object
+         :metaclass structure-class
+         :direct-superclasses (t))
+        (core:derivable-cxx-class
+         :direct-superclasses (class)
+         :direct-slots #.+standard-class-slots+)
+        (derivable-cxx-object
+         :metaclass core:derivable-cxx-class
+         :direct-superclasses (standard-object #+(or)t))
+        ))))
 
-;;;#+cclasp
-#+(or)(eval-when (:compile-toplevel :execute :load-toplevel)
-  (setq clasp-cleavir:*use-type-inference* t))
-
-#+clasp
 (eval-when (:compile-toplevel :execute)
-  (WARN "Sanity check class slots")
   (let ((sanity (core:class-slot-sanity-check)))
     (dolist (name-slot (core:class-slot-sanity-check))
       (let* ((name (car name-slot))
@@ -503,10 +479,10 @@
             (cond
               ((eq name 'number-of-slots-in-standard-class)
                (unless (= core-slot-index (length +standard-class-slots+))
-                 (error "There is a mismatch between what clasp things should be the number of standard-class slots (~a) and what clos says it is (~a) - update metaClass.h" core-slot-index (length +standard-class-slots+))))
+                 (error "There is a mismatch between what clasp thinks should be the number of standard-class slots (~a) and what clos says it is (~a) - update metaClass.h" core-slot-index (length +standard-class-slots+))))
               ((eq name 'number-of-slots-in-structure-class)
                (unless (= core-slot-index (length +structure-class-slots+))
-                 (error "There is a mismatch between what clasp things should be the number of structure-class slots (~a) and what clos says it is (~a) - update metaClass.h" core-slot-index (length +structure-class-slots+))))
+                 (error "There is a mismatch between what clasp thinks should be the number of structure-class slots (~a) and what clos says it is (~a) - update metaClass.h" core-slot-index (length +structure-class-slots+))))
               (t (error "The class-slot-sanity-check ~a could not be verified against clos - fix the sanity check at the end of hierarchy.lsp" name-slot))))))))
         
             

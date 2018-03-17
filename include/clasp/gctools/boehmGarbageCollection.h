@@ -61,6 +61,9 @@ namespace gctools {
   void boehm_set_finalizer_list(gctools::Tagged object, gctools::Tagged finalizers );
   void boehm_clear_finalizer_list(gctools::Tagged object);
 
+  void clasp_warn_proc(char *msg, GC_word arg);
+
+  int initializeBoehm(MainFunctionType startupFn, int argc, char *argv[], bool mpiEnabled, int mpiRank, int mpiSize);
 
 };
 #endif // _clasp_boehmGarbageCollection_H

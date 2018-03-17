@@ -10,8 +10,8 @@
 (defclass setf-fdefinition-ast (cleavir-ast:fdefinition-ast)
   ())
 
-(defun make-setf-fdefinition-ast (name-ast info)
-  (make-instance 'setf-fdefinition-ast :name-ast name-ast :info info))
+(defun make-setf-fdefinition-ast (name-ast)
+  (make-instance 'setf-fdefinition-ast :name-ast name-ast))
 
 (cleavir-io:define-save-info setf-fdefinition-ast)
 
@@ -158,6 +158,120 @@
 (defmethod cleavir-ast:children ((ast foreign-call-pointer-ast))
   (argument-asts ast))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Class VECTOR-LENGTH-AST
+;;;
+;;; Represents an operation to get the length of a vector.
+;;; If the vector has a fill pointer it returns that,
+;;; as the length and fill pointer have the same offset.
+
+(defclass vector-length-ast (cleavir-ast:ast cleavir-ast:one-value-ast-mixin)
+  ((%vector :initarg :vector :accessor vl-ast-vector)))
+
+(cleavir-io:define-save-info vector-length-ast
+    (:vector vl-ast-vector))
+
+(defmethod cleavir-ast-graphviz::label ((ast vector-length-ast))
+  "vlength")
+
+(defmethod cleavir-ast:children ((ast vector-length-ast))
+  (list (vl-ast-vector ast)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Class DISPLACEMENT-AST
+;;;
+;;; Gets the actual underlying array of any mdarray.
+
+(defclass displacement-ast (cleavir-ast:ast cleavir-ast:one-value-ast-mixin)
+  ((%mdarray :initarg :mdarray :accessor displacement-ast-mdarray)))
+
+(cleavir-io:define-save-info displacement-ast
+    (:mdarray displacement-ast-mdarray))
+
+(defmethod cleavir-ast-graphviz::label ((ast displacement-ast))
+  "displacement")
+
+(defmethod cleavir-ast:children ((ast displacement-ast))
+  (list (displacement-ast-mdarray ast)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Class DISPLACED-INDEX-OFFSET-AST
+;;;
+;;; Gets the actual underlying DIO of any mdarray.
+
+(defclass displaced-index-offset-ast (cleavir-ast:ast cleavir-ast:one-value-ast-mixin)
+  ((%mdarray :initarg :mdarray :accessor displaced-index-offset-ast-mdarray)))
+
+(cleavir-io:define-save-info displaced-index-offset-ast
+    (:mdarray displaced-index-offset-ast-mdarray))
+
+(defmethod cleavir-ast-graphviz::label ((ast displaced-index-offset-ast))
+  "d-offset")
+
+(defmethod cleavir-ast:children ((ast displaced-index-offset-ast))
+  (list (displaced-index-offset-ast-mdarray ast)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Class DISPLACED-INDEX-OFFSET-AST
+;;;
+;;; Gets the actual underlying DIO of any mdarray.
+
+(defclass array-total-size-ast (cleavir-ast:ast cleavir-ast:one-value-ast-mixin)
+  ((%mdarray :initarg :mdarray :accessor array-total-size-ast-mdarray)))
+
+(cleavir-io:define-save-info array-total-size-ast
+    (:mdarray array-total-size-ast-mdarray))
+
+(defmethod cleavir-ast-graphviz::label ((ast array-total-size-ast))
+  "ATS")
+
+(defmethod cleavir-ast:children ((ast array-total-size-ast))
+  (list (array-total-size-ast-mdarray ast)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Class ARRAY-RANK-AST
+;;;
+;;; Gets the rank of any mdarray.
+
+(defclass array-rank-ast (cleavir-ast:ast cleavir-ast:one-value-ast-mixin)
+  ((%mdarray :initarg :mdarray :accessor array-rank-ast-mdarray)))
+
+(cleavir-io:define-save-info array-rank-ast
+    (:mdarray array-rank-ast-mdarray))
+
+(defmethod cleavir-ast-graphviz::label ((ast array-rank-ast))
+  "rank")
+
+(defmethod cleavir-ast:children ((ast array-rank-ast))
+  (list (array-rank-ast-mdarray ast)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Class ARRAY-DIMENSION-AST
+;;;
+;;; Gets the dimensions of any mdarray.
+
+(defclass array-dimension-ast (cleavir-ast:ast cleavir-ast:one-value-ast-mixin)
+  ((%mdarray :initarg :mdarray :accessor array-dimension-ast-mdarray)
+   (%axis :initarg :axis :accessor array-dimension-ast-axis)))
+
+(cleavir-io:define-save-info array-dimension-ast
+    (:mdarray array-dimension-ast-mdarray)
+  (:axis array-dimension-ast-axis))
+
+(defmethod cleavir-ast-graphviz::label ((ast array-dimension-ast))
+  "AD")
+
+(defmethod cleavir-ast:children ((ast array-dimension-ast))
+  (list (array-dimension-ast-mdarray ast)
+        (array-dimension-ast-axis ast)))
+
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -214,6 +328,39 @@
 (defmethod cleavir-ast:children ((ast precalc-value-reference-ast))
   nil)
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Class BIND-VA-LIST-AST
+;;;
+;;; Bind variables according to an ordinary lambda list based on a va_list.
+;;; A lot like a function-ast, but not actually one because it just binds.
+
+(defclass bind-va-list-ast (cleavir-ast:ast)
+  ((%lambda-list :initarg :lambda-list :reader cleavir-ast:lambda-list)
+   (%va-list-ast :initarg :va-list :reader va-list-ast)
+   (%body-ast :initarg :body-ast :reader cleavir-ast:body-ast)))
+
+(defun make-bind-va-list-ast (lambda-list va-list-ast body-ast &key origin (policy cleavir-ast:*policy*))
+  (make-instance 'bind-va-list-ast
+    :origin origin :policy policy
+    :va-list va-list-ast :body-ast body-ast :lambda-list lambda-list))
+
+(cleavir-io:define-save-info bind-va-list-ast
+    (:lambda-list cleavir-ast:lambda-list)
+  (:va-list va-list-ast)
+  (:body-ast cleavir-ast:body-ast))
+
+(defmethod cleavir-ast:children ((ast bind-va-list-ast))
+  (list* (va-list-ast ast)
+         (cleavir-ast:body-ast ast)
+         (loop for entry in (cleavir-ast:lambda-list ast)
+               append (cond ((symbolp entry) '())
+                            ((consp entry)
+                             (if (= (length entry) 2)
+                                 entry
+                                 (cdr entry)))
+                            (t (list entry))))))
+
 
 (defun escaped-string (str)
   (with-output-to-string (s) (loop for c across str do (when (member c '(#\\ #\")) (princ #\\ s)) (princ c s))))
@@ -229,7 +376,7 @@
 
 
 
-(defun generate-new-precalculated-value-index (form read-only-p)
+(defun generate-new-precalculated-value-index (env form read-only-p)
   "Generates code for the form that places the result into a precalculated-vector and returns the precalculated-vector index.
 If this form has already been precalculated then just return the precalculated-value index"
   (cond
@@ -247,19 +394,19 @@ If this form has already been precalculated then just return the precalculated-v
          ;; COMPLE-FILE will generate a function for the form in the Module
          ;; and arrange for it's evaluation at load time
          ;; and to make its result available as a value
-         #+(or)(let* ((index (literal:new-table-index))
-                      (value (literal:with-ltv (literal:compile-load-time-value-thunk form))))
-                 (literal:evaluate-function-into-load-time-value index ltv-func)
-                 index)
-         (literal:with-load-time-value (literal:compile-load-time-value-thunk form))
+         (literal:with-load-time-value-cleavir
+             (clasp-cleavir:compile-form form env)
+           #+(or)(literal:compile-load-time-value-thunk form))
          ;; COMPILE on the other hand evaluates the form and puts its
-         ;; value in the run-time environment
-         (let ((value (eval form)))
+         ;; value in the run-time environment.
+         ;; We use cleavir-env:eval rather than cclasp-eval-with-env so that it works
+         ;; more correctly with alternate global environments.
+         (let ((value (cleavir-env:eval form env env)))
            (cmp:codegen-rtv nil value))))))
 
 
 (defun find-load-time-value-asts (ast)
-  (let ((table (make-hash-table :test #'eq)))
+  (let ((table (make-hash-table :test #'eq :rehash-size 4.0 :rehash-threshold 1.0)))
     (labels ((traverse (ast parent)
                (declare (core:lambda-name traverse))
 	       (unless (gethash ast table)
@@ -268,18 +415,21 @@ If this form has already been precalculated then just return the precalculated-v
 		     (list (list ast parent))
 		     (let ((children (cleavir-ast:children ast)))
 		       (reduce #'append
-			       (mapcar (lambda (child) (funcall #'traverse child ast)) children)
+			       (mapcar (lambda (child)
+                                         (declare (core:lambda-name traverse.lambda))
+                                         (funcall #'traverse child ast))
+                                       children)
 			       :from-end t))))))
       (traverse ast nil))))
 
-(defun hoist-load-time-value (ast)
+(defun hoist-load-time-value (ast env)
   (let* ((load-time-value-asts (find-load-time-value-asts ast))
 	 (forms (mapcar (lambda (ast-parent)
                           (cleavir-ast:form (first ast-parent)))
                         load-time-value-asts)))
     (loop for (ast parent) in load-time-value-asts
        do (change-class ast 'precalc-value-reference-ast ; 'cleavir-ast:t-aref-ast
-                        :index (generate-new-precalculated-value-index
+                        :index (generate-new-precalculated-value-index env
                                 (cleavir-ast:form ast) (cleavir-ast:read-only-p ast))
                         :original-object (cleavir-ast:form ast)))
     (clasp-cleavir-ast:make-precalc-vector-function-ast

@@ -4,7 +4,7 @@
 
 /*
 Copyright (c) 2016, Christian E. Schafmeister
-Copyright (c) 2016, Frank Gönninger
+Copyright (c) 2016, Frank Gonninger
 
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
@@ -33,7 +33,7 @@ THE SOFTWARE.
 //        getting and freeing foreign memory and calling foreign
 //        functions.
 //
-//  Augiust 2016 by Frank Goenninger, Gönninger B&T UG, Germany
+//  Augiust 2016 by Frank Gonninger, Gonninger B&T UG, Germany
 //
 // ===========================================================================
 
@@ -63,7 +63,6 @@ THE SOFTWARE.
 //    APPLICATION INCLUDES
 // ---------------------------------------------------------------------------
 
-#include <clasp/core/foundation.h>
 #include <clasp/core/clasp_ffi_package.fwd.h>
 #include <clasp/core/array.h>
 #include <clasp/core/externalObject.h>
@@ -166,7 +165,7 @@ namespace clasp_ffi {
 
     // MENORY MGMT
     void allocate(core::T_sp kind, core::ForeignDataFlagEnum ownership_flags, size_t size);
-    void free();
+    void free_();
 
   private:
 

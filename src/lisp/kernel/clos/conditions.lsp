@@ -24,6 +24,10 @@
 ;;; proof that the condition system can be implemented.
 ;;;
 
+#+(or)
+(eval-when (:execute)
+  (setq core:*echo-repl-read* t))
+
 (in-package "SYSTEM")
 
 ;;; ----------------------------------------------------------------------
@@ -77,7 +81,6 @@
 
 
 (defun restart-report (restart stream)
-  (declare (si::c-local))
   (let ((fn (restart-report-function restart)))
     (if fn
 	(funcall fn stream)
@@ -85,7 +88,9 @@
 
 (defun bind-simple-restarts (tag names)
   (flet ((simple-restart-function (tag code)
-	   #'(lambda (&rest args) (throw tag (values code args)))))
+	   #'(lambda (&rest args)
+               (declare (core:lambda-name bind-simple-restarts.lambda))
+               (throw tag (values code args)))))
     (cons (loop for i from 1
 	     for n in (if (atom names) (list names) names)
 	     for f = (simple-restart-function tag i)
@@ -120,7 +125,6 @@
       (return-from find-restart restart))))
 
 (defun find-restart-never-fail (restart &optional condition)
-  (declare (si::c-local))
   (or (find-restart restart condition)
       (signal-simple-error 'control-error nil
 	     "Restart ~S is not active."
@@ -156,25 +160,25 @@
 					 `#',report)
 				     keywords)))
 	     keywords)))
-    (let*((block-tag (gensym))
-	  (temp-var  (gensym))
-	  (data (mapcar #'(lambda (clause)
-			    (let (keywords (forms (cddr clause)))
-			      (do ()
-				  ((null forms))
-				(if (keywordp (car forms))
-				    (setq keywords (list* (car forms)
-							  (cadr forms)
-							  keywords)
-					  forms (cddr forms))
-				    (return)))
-			      (list (car clause) 		;Name=0
-				    (gensym) 			;Tag=1
-				    (apply #'transform-keywords ;Keywords=2
-					   keywords)
-				    (cadr clause)		;BVL=3
-				    forms))) 			;Body=4
-			clauses)))
+    (let* ((block-tag (gensym))
+           (temp-var  (gensym))
+           (data (mapcar #'(lambda (clause)
+                             (let (keywords (forms (cddr clause)))
+                               (do ()
+                                   ((null forms))
+                                 (if (keywordp (car forms))
+                                     (setq keywords (list* (car forms)
+                                                           (cadr forms)
+                                                           keywords)
+                                           forms (cddr forms))
+                                     (return)))
+                               (list (car clause) 		;Name=0
+                                     (gensym) 			;Tag=1
+                                     (apply #'transform-keywords ;Keywords=2
+                                            keywords)
+                                     (cadr clause)		;BVL=3
+                                     forms))) 			;Body=4
+                         clauses)))
       (let ((expression2 (macroexpand expression env)))
 	(when (consp expression2)
 	  (let* ((condition-form nil)
@@ -182,7 +186,9 @@
 		 (name (first expression2)))
 	    (case name
 	      (SIGNAL
-	       (setq condition-form (second expression2)))
+               (setq condition-form `(coerce-to-condition ,(second expression2)
+                                                          (list ,@(cddr expression2))
+                                                          'simple-condition 'signal)))
 	      (ERROR
 	       (setq condition-form `(coerce-to-condition ,(second expression2)
 				      (list ,@(cddr expression2))
@@ -283,7 +289,6 @@
 
 (defun find-subclasses-of-type (type class)
   ;; Find all subclasses of CLASS that are subtypes of the given TYPE.
-  (declare (si::c-local))
   (if (subtypep class type)
       (list class)
       (loop for c in (clos::class-direct-subclasses class)
@@ -611,7 +616,9 @@ memory limits before executing the program again."))
 		     (file-error-pathname condition)))))
 
 (define-condition package-error (error)
-  ((package :INITARG :PACKAGE :READER package-error-package)))
+  ((package :INITARG :PACKAGE :READER package-error-package))
+  (:report (lambda (condition stream)
+             (format stream "Package error on package ~S" (package-error-package condition)))))
 
 (define-condition cell-error (error)
   ((name :INITARG :NAME :READER cell-error-name)))
@@ -703,33 +710,25 @@ memory limits before executing the program again."))
    (format-arguments :initarg :arguments)
    (control-string :reader format-error-control-string
 		   :initarg :control-string
-		   #+cmu-format :initform
-		   #+cmu-format *default-format-error-control-string*) 
+		   :initform *default-format-error-control-string*) 
    (offset :reader format-error-offset :initarg :offset
-	   #+cmu-format :initform
-	   #+cmu-format *default-format-error-offset*)
+	   :initform *default-format-error-offset*)
    (print-banner :reader format-error-print-banner :initarg :print-banner
 		 :initform t))
   (:report (lambda (condition stream)
-	     (#-clasp cl:format #+clasp format
-		      stream
-			"~:[~;Error in format: ~]~
+	     (format
+              stream
+              "~:[~;Error in format: ~]~
 			 ~?~@[~%  ~A~%  ~V@T^~]"
-			(format-error-print-banner condition)
-			(simple-condition-format-control condition)
-			(simple-condition-format-arguments condition)
-			(format-error-control-string condition)
-			(format-error-offset condition)))))
+              (format-error-print-banner condition)
+              (simple-condition-format-control condition)
+              (simple-condition-format-arguments condition)
+              (format-error-control-string condition)
+              (format-error-offset condition)))))
 
 (define-condition ext:interactive-interrupt (serious-condition)
   ()
   (:report "Console interrupt."))
-
-#+clasp(define-condition core:single-dispatch-missing-dispatch-argument-error (serious-condition)
-        (lambda-list :initarg :arguments)
-        (:REPORT (lambda (condition stream)
-                   (format stream "You must specify which argument is to be single dispatched on - arguments: ~a" (arguments condition)"Cannot print object ~A readably."
-                           (lambda-list condition)))))
 
 
 
@@ -812,7 +811,6 @@ memory limits before executing the program again."))
     (and restart (invoke-restart restart value))))
 
 (defun assert-report (names stream)
-  (declare (si::c-local))
   (format stream "Retry assertion")
   (if names
       (format stream " with new value~P for ~{~S~^, ~}."
@@ -820,7 +818,6 @@ memory limits before executing the program again."))
       (format stream ".")))
 
 (defun assert-prompt (name value)
-  (declare (si::c-local))
   (if (y-or-n-p "The old value of ~S is ~S.~
 		~%Do you want to supply a new value? "
                 name value)

@@ -31,7 +31,6 @@ THE SOFTWARE.
 #include <string>
 #include <vector>
 #include <set>
-#include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 //#include "model.h"
 #include <clasp/core/environment.h>
@@ -42,7 +41,7 @@ namespace core {
 
 SMART(StandardObject);
 class StandardObject_O : public General_O {
-  LISP_META_CLASS(::_lisp->_Roots._StandardClass);
+  LISP_META_CLASS(::_lisp->_Roots._TheStandardClass);
   LISP_CLASS(core, ClPkg, StandardObject_O, "standard-object",General_O);
 
 public:

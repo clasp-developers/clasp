@@ -17,48 +17,6 @@
 
 (in-package "SYSTEM")
 
-
-#-clasp
-(defun make-array (dimensions
-                   &key (element-type t)
-                     (initial-element nil initial-element-supplied-p)
-                     (initial-contents nil initial-contents-supplied-p)
-                     adjustable fill-pointer
-                     displaced-to (displaced-index-offset 0))
-  "Args: (dimensions &key (element-type t) initial-element (initial-contents nil)
-		    (adjustable nil) (fill-pointer nil) (displaced-to nil)
-		    (displaced-index-offset 0) (static nil))
-Creates an array of the specified DIMENSIONS.  DIMENSIONS is a list of
-non-negative integers each representing the length of the corresponding
-dimension.  It may be an integer for vectors, i.e., one-dimensional arrays.
-ELEMENT-TYPE specifies the type of array elements.  INITIAL-ELEMENT specifies
-the initial value for all elements.  Its default value depends on ELEMENT-
-TYPE.  INITIAL-CONTENTS specifies each element in terms of sequences.
-ADJUSTABLE specifies whether or not the array is adjustable (see ADJUST-
-ARRAY).  FILL-POINTER is meaningful only for vectors.  It specifies whether
-the vector has fill-pointer or not, and if it has, the initial value of the
-fill-pointer.  Possible values are NIL (no fill-pointer), T (the length of the
-vector), or an integer.  See VECTOR-PUSH and VECTOR-POP.  DISPLACED-TO, if
-non-NIL, must be an array and specifies that the new array is displaced to the
-given array.  DISPLACED-INDEX-OFFSET is meaningful only when DISPLACED-TO is
-non-NIL and specifies that the reference to the I-th element of the new array
-in raw-major indexing is actually the reference to the (I + DISPLACED-INDEX-
-OFFSET)th element of the given array.If the STATIC argument is supplied
-with a non-nil value, then the body of the array is allocated as a
-contiguous block."
-  (let ((x (sys:make-pure-array element-type dimensions adjustable
-                                fill-pointer displaced-to displaced-index-offset)))
-    (declare (array x))
-    (cond (initial-element-supplied-p
-           (when initial-contents-supplied-p
-             (error "MAKE-ARRAY: Cannot supply both :INITIAL-ELEMENT and :INITIAL-CONTENTS"))
-           (fill-array-with-elt x initial-element 0 nil))
-          (initial-contents-supplied-p
-           (fill-array-with-seq x initial-contents))
-          (t
-           x))))
-
-#+clasp
 (defun make-array (dimensions
                    &key (element-type t)
                      (initial-element nil initial-element-supplied-p)
@@ -88,7 +46,7 @@ OFFSET)th element of the given array.If the STATIC argument is supplied
 with a non-nil value, then the body of the array is allocated as a
 contiguous block."
   (let ((x (make-array-with-initial-element dimensions
-                                            element-type
+                                            (upgraded-array-element-type element-type)
                                             initial-element
                                             initial-element-supplied-p
                                             adjustable
@@ -104,9 +62,8 @@ contiguous block."
            (fill-array-with-seq x initial-contents)))
     x))
 
-#+clasp
 (defun make-array-with-initial-element (dimensions
-                                        element-type
+                                        upgraded-element-type
                                         initial-element
                                         initial-element-supplied-p
                                         adjustable
@@ -114,31 +71,28 @@ contiguous block."
                                         displaced-to
                                         &optional
                                           (displaced-index-offset 0))
-  ;;  (when element-type (inform "Add support for element-type in make-array\n"))
-  (if (and (consp element-type)
-	   (null initial-element)
-	   (eq (car element-type) 'cl:unsigned-byte))
-      (setq initial-element 0))
   (when displaced-to
     (if (let ((array-element-type (array-element-type displaced-to)))
-          (not (and (subtypep array-element-type element-type)
-                    (subtypep element-type array-element-type))))
+          (not (and (subtypep array-element-type upgraded-element-type)
+                    (subtypep upgraded-element-type array-element-type))))
         (error "Cannot displace the array, because the element types don't match")))
   (cond
     ((null dimensions)
-     (make-mdarray dimensions (upgraded-array-element-type element-type) adjustable displaced-to displaced-index-offset initial-element initial-element-supplied-p))
+     (make-mdarray dimensions upgraded-element-type adjustable displaced-to displaced-index-offset
+                   initial-element initial-element-supplied-p))
     ((or (fixnump dimensions) (and (consp dimensions) (eql 1 (length dimensions))))
      (let ((dim (if (fixnump dimensions)
 		    dimensions
 		    (car dimensions))))
-       (let ((x (make-vector (upgraded-array-element-type element-type) dim adjustable fill-pointer displaced-to displaced-index-offset initial-element initial-element-supplied-p)))
+       (let ((x (make-vector upgraded-element-type dim adjustable fill-pointer displaced-to displaced-index-offset
+                             initial-element initial-element-supplied-p)))
          (when (and displaced-to initial-element-supplied-p)
            (fill-array-with-elt x initial-element 0 nil))
          x)))
     ((listp dimensions)
      (when fill-pointer (error "Multi-dimensional arrays don't allow fill-pointer"))
      (let ((x (make-mdarray dimensions
-                            (upgraded-array-element-type element-type)
+                            upgraded-element-type
                             adjustable
                             displaced-to
                             displaced-index-offset
@@ -153,8 +107,7 @@ contiguous block."
 (defun fill-array-with-seq (array initial-contents)
   (declare (array array)
            (sequence initial-contents)
-           (optimize (safety 0))
-           (si::c-local))
+           (optimize (safety 0)))
   (labels ((iterate-over-contents (array contents dims written)
 	     (declare (fixnum written)
 		      (array array)
@@ -179,26 +132,6 @@ contiguous block."
 	  (setf (aref array) initial-contents))))
   array)
 
-
-#-clasp
-(defun vector (&rest objects)
-  "Args: (&rest objects)
-Creates and returns a simple-vector, with the N-th OBJECT being the N-th
-element."
-  (let ((a (si:make-vector t (length objects) nil nil nil 0)))
-    (fill-array-with-seq a objects)))
-
-#-clasp
-(defun array-dimensions (array)
-  "Args: (array)
-Returns a list whose N-th element is the length of the N-th dimension of ARRAY."
-  (do ((i (array-rank array))
-       (d nil))
-      ((= i 0) d)
-    (declare (fixnum i)
-	     (optimize (safety 0)))
-    (push (array-dimension array (decf i)) d)))
-
 (defun array-in-bounds-p (array &rest indices)
   "Args: (array &rest indexes)
 Returns T if INDEXes are valid indexes of ARRAY; NIL otherwise.  The number of
@@ -214,8 +147,8 @@ INDEXes must be equal to the rank of ARRAY."
     (if indices
 	(let* ((index (cons-car indices)))
 	  (when (or (not (si::fixnump index))
-		    (minusp (truly-the fixnum index))
-		    (>= (truly-the fixnum index) (array-dimension array i)))
+		    (minusp (the fixnum index))
+		    (>= (the fixnum index) (array-dimension array i)))
 	    (return nil)))
 	(error "The rank of the array is ~R,~%~
                ~7@Tbut ~R ~:*~[indices are~;index is~:;indices are~] ~
@@ -223,9 +156,8 @@ INDEXes must be equal to the rank of ARRAY."
 		 r i))))
 
 (defun row-major-index-inner (array indices)
-  (declare (optimize (safety 0))
-           (array array)
-           (si::c-local))
+  (declare (optimize speed)
+           (array array))
   (flet ((indexing-error (array indices)
            (error "Not valid index or indices~%~A~%into array~%~A" indices array)))
     (do* ((r (array-rank array))
@@ -249,15 +181,6 @@ INDEXes must be equal to the rank of ARRAY."
         (setf j (* j d)
               j (+ j ndx))))))
 
-(defun array-row-major-index (array &rest indices)
-  "Args: (array &rest indexes)
-Returns the non-negative integer that represents the location of the element
-of ARRAY specified by INDEXes, assuming all elements of ARRAY are aligned in
-row-major order."
-  (declare (array array)
-           (ext:check-arguments-type))
-  (row-major-index-inner array indices))
-
 
 (defun bit (bit-array &rest indices)
   "Args: (bit-array &rest indexes)
@@ -265,8 +188,8 @@ Returns the bit of BIT-ARRAY specified by INDEXes."
   (declare #+ecl (array bit-array) ;; FIXME! Should be (simple-array bit)
            #+clasp (type (simple-array bit) bit-array)
            (ext:check-arguments-type))
-  #+(and clasp (not clasp-min))
-  (check-type bit-array (simple-array bit))
+  #+(not clasp-min)
+  (check-type bit-array (array bit))
   (row-major-aref bit-array (row-major-index-inner bit-array indices)))
 
 
@@ -276,7 +199,7 @@ Returns the specified bit in SIMPLE-BIT-ARRAY."
   (declare #+ecl (array bit-array) ;; FIXME! Should be (simple-array bit)
            #+clasp (type (simple-array bit) bit-array)
            (ext:check-arguments-type))
-  #+(and clasp (not clasp-min))
+  #+(not clasp-min)
   (check-type bit-array (simple-array bit))
   (row-major-aref bit-array (row-major-index-inner bit-array indices)))
 
@@ -376,7 +299,7 @@ to by the new fill-pointer.  Signals an error if the old value of the fill-
 pointer is 0 already."
   ;; FILL-POINTER asserts vector is a vector and has fill pointer
   (let* ((fp (fill-pointer vector))
-         (vector (truly-the vector vector)))
+         (vector (the vector vector)))
     (declare (ext:array-index fp)
              (optimize (safety 0)))
     (when (zerop fp)
@@ -385,8 +308,7 @@ pointer is 0 already."
     (aref vector fp)))
 
 (defun copy-array-contents (dest orig)
-  (declare (si::c-local)
-           (array dest orig)
+  (declare (array dest orig)
 	   (optimize (safety 0)))
   (labels
       ((do-copy (dest orig dims1 dims2 start1 start2)
@@ -427,7 +349,7 @@ pointer is 0 already."
        &key (element-type (array-element-type array))
             initial-element (initial-contents nil) (fill-pointer nil)
             (displaced-to nil) (displaced-index-offset 0))
-Adjusts the dimensions of ARRAY to the given DIMENSIONS.  ARRAY must be an
+Adjusts the dimensions of ARRAY to the given DIMENSIONS.  ARRAY -- kpoeck -- may be an
 adjustable array."
   (declare (ignore initial-element
                    displaced-index-offset))
@@ -447,7 +369,10 @@ adjustable array."
     (declare (array x))
     (unless (or displaced-to initial-contents)
       (copy-array-contents x array))
-    (sys:replace-array array x)
+    ;Kpoeck
+    (if (adjustable-array-p array)
+        (sys:replace-array array x)
+        x)
     ))
 
 

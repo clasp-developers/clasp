@@ -337,7 +337,7 @@ Ast_sp convert_special(core::T_sp head, ARGS_form_env_rest ) {
   } else if ( head == cl::_sym_if ) {
     return convert_special_if( head, PASS_form_env_rest);
   }
-  IMPLEMENT_MEF(BF("Implement convert_special for %s") % _rep_(head).c_str());
+  IMPLEMENT_MEF("Implement convert_special for a new head");
 }
 
 };

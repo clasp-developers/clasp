@@ -30,8 +30,8 @@ THE SOFTWARE.
 #ifdef DEFINE_CL_SYMBOLS
 #include <clasp/core/allClSymbols.h>
 #endif
-#include <clasp/core/symbol.h>
 #include <clasp/core/common.h>
+#include <clasp/core/symbol.h>
 #include <clasp/core/corePackage.h>
 #include <clasp/core/package.h>
 #include <clasp/core/numberToString.h>
@@ -187,11 +187,11 @@ CL_DEFUN T_sp cl__delete_package(T_sp pobj)
   WITH_PACKAGE_READ_WRITE_LOCK(pkg);
   for (auto pi : pkg->_UsingPackages) {
     if (pi.notnilp())
-      cl__unuse_package(pi, pkg);
+      pkg->unusePackage_no_outer_lock(pi);
   }
   for (auto pi : pkg->_PackagesUsedBy) {
     if (pi.notnilp())
-      cl__unuse_package(pkg, pi);
+      pi->unusePackage_no_inner_lock(pkg);
   }
   pkg->_InternalSymbols->mapHash([pkg](T_sp key, T_sp tsym) {
       Symbol_sp sym = gc::As<Symbol_sp>(tsym);
@@ -386,16 +386,7 @@ string Package_O::__repr__() const {
 
 #if defined(XML_ARCHIVE)
 void Package_O::archiveBase(ArchiveP node) {
-  IMPLEMENT_MEF(BF("Handle archiving the package hash-tables"));
-#if 0
-  WITH_PACKAGE_READ_WRITE_LOCK(this);
-	this->Base::archiveBase(node);
-	node->attribute("name",this->_Name);
-	node->archiveMap("internalSymbols",this->_InternalSymbols);
-	node->archiveMap("externalSymbols",this->_ExternalSymbols);
-	node->archiveSetIfDefined("usingPackages",this->_UsingPackages);
-	node->archiveMapIfDefined("shadowingSymbols",this->_ShadowingSymbols);
-#endif
+  IMPLEMENT_MEF("Handle archiving the package hash-tables");
 }
 #endif // defined(XML_ARCHIVE)
 
@@ -549,8 +540,8 @@ bool Package_O::usePackage(Package_sp usePackage) {
         findConflicts._conflicts->mapHash([&ss] (T_sp key, T_sp val) {
             ss << " " << _rep_(key);
           });
-        SIMPLE_ERROR(BF("Error: Name conflict when importing package[%s]"
-                        " into package[%s]\n - conflicting symbols: %s") %
+        SIMPLE_ERROR(BF("Error: Name conflict for USE-PACKAGE of [%s]"
+                        " by package[%s]\n - conflicting symbols: %s") %
                      usePackage->getName() % this->getName() % (ss.str()));
       }
     }
@@ -567,9 +558,8 @@ bool Package_O::usePackage(Package_sp usePackage) {
   return true;
 }
 
-bool Package_O::unusePackage(Package_sp usePackage) {
+bool Package_O::unusePackage_no_outer_lock(Package_sp usePackage) {
   Package_sp me(this);
-  WITH_PACKAGE_READ_WRITE_LOCK(this);
   for (auto it = this->_UsingPackages.begin();
        it != this->_UsingPackages.end(); ++it) {
     if ((*it) == usePackage) {
@@ -586,6 +576,32 @@ bool Package_O::unusePackage(Package_sp usePackage) {
     }
   }
   return true;
+}
+
+// Used by cl__delete_package
+bool Package_O::unusePackage_no_inner_lock(Package_sp usePackage) {
+  WITH_PACKAGE_READ_WRITE_LOCK(this);
+  Package_sp me(this);
+  for (auto it = this->_UsingPackages.begin();
+       it != this->_UsingPackages.end(); ++it) {
+    if ((*it) == usePackage) {
+      this->_UsingPackages.erase(it);
+      for (auto jt = usePackage->_PackagesUsedBy.begin();
+           jt != usePackage->_PackagesUsedBy.end(); ++jt) {
+        if (*jt == me) {
+          usePackage->_PackagesUsedBy.erase(jt);
+          return true;
+        }
+      }
+      SIMPLE_ERROR(BF("The unusePackage argument %s is not used by my package %s") % usePackage->getName() % this->getName());
+    }
+  }
+  return true;
+}
+
+bool Package_O::unusePackage(Package_sp usePackage) {
+  WITH_PACKAGE_READ_WRITE_LOCK(this);
+  return this->unusePackage_no_outer_lock(usePackage);
 }
 
 bool FindConflicts::mapKeyValue(T_sp key, T_sp value) {
@@ -698,45 +714,32 @@ bool Package_O::shadow(List_sp symbolNames) {
   return true;
 }
 
-CL_LAMBDA("sym &optional (package *package*)");
-CL_DEFUN T_sp cl__unexport(Symbol_sp sym, Package_sp package) {
-  WITH_PACKAGE_READ_WRITE_LOCK(package);
-  SimpleString_sp nameKey = sym->_Name;
-  T_mv values = package->findSymbol_SimpleString_no_lock(nameKey);
-  Symbol_sp foundSym = gc::As<Symbol_sp>(values);
-  Symbol_sp status = gc::As<Symbol_sp>(values.second());
+void Package_O::unexport(Symbol_sp sym) {
   Export_errors error = no_problem;
-  if (status.nilp()) {
-    error = not_accessible_in_this_package;
-  } else if (status == kw::_sym_external) {
-    package->_ExternalSymbols->remhash(nameKey);
-    package->_InternalSymbols->setf_gethash(nameKey,sym);
+  // Make sure we don't signal an error without releasing the lock first.
+  // (The printer will try to access the package name or something, and hang.)
+  {
+    WITH_PACKAGE_READ_WRITE_LOCK(this);
+    SimpleString_sp nameKey = sym->_Name;
+    T_mv values = this->findSymbol_SimpleString_no_lock(nameKey);
+    Symbol_sp foundSym = gc::As<Symbol_sp>(values);
+    Symbol_sp status = gc::As<Symbol_sp>(values.second());
+    if (status.nilp()) {
+      error = not_accessible_in_this_package;
+    } else if (status == kw::_sym_external) {
+      this->_ExternalSymbols->remhash(nameKey);
+      this->_InternalSymbols->setf_gethash(nameKey,sym);
+    }
   }
   if (error == not_accessible_in_this_package) {
+    // asSmartPtr.raw_ looks strange, but it fixes the tag.
     FEpackage_error("The symbol ~S is not accessible from ~S "
                     "and cannot be unexported.",
-                    package, 2, sym.raw_(), package.raw_());
+                    this->asSmartPtr(), 2, sym.raw_(), this->asSmartPtr().raw_());
   }
-  return _lisp->_true();
 }
 
 void Package_O::add_symbol_to_package_no_lock(SimpleString_sp nameKey, Symbol_sp sym, bool exportp) {
-  //trapSymbol(this,sym,symName);
-//  printf("%s:%d add_symbol_to_package  symbol: %s package: %s\n", __FILE__, __LINE__, nameKey->c_str(), this->_Name.c_str());
-#if 0
-  if (_lisp->_TrapIntern) {
-    if (strcmp(this->_Name->get_std_string().c_str(), _lisp->_TrapInternPackage.c_str()) == 0) {
-      if (strcmp(nameKey->get_std_string().c_str(), _lisp->_TrapInternName.c_str()) == 0) {
-        printf("%s:%d TRAPPED INTERN of symbol %s@%p in package %s\n", __FILE__, __LINE__, nameKey->get_std_string().c_str(), sym.raw_(), this->_Name.c_str() );
-      }
-    }
-  }
-#endif
-#if 0
-  if ( strcmp(symName,"CLEAR-GFUN-CACHE") == 0 ) {
-    printf("%s:%d Interning POINTER@%p in %s exportp: %d\n", __FILE__, __LINE__, sym.raw_(), this->_Name.c_str(), exportp );
-  }
-#endif
   if (this->isKeywordPackage() || this->actsLikeKeywordPackage() || exportp) {
     this->_ExternalSymbols->hash_table_setf_gethash(nameKey, sym);
   } else {

@@ -28,7 +28,6 @@ THE SOFTWARE.
 #ifndef NUMERICS_H
 #define NUMERICS_H
 
-#include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 
 namespace core {
@@ -81,7 +80,5 @@ void exposeCando_Numerics();
 void exposePython_Numerics();
 #endif
 };
-
-DEFINE_RETURN_VALUE_TYPE(core::LongLongInt);
 
 #endif

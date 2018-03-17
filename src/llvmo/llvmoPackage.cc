@@ -46,6 +46,7 @@ THE SOFTWARE.
 #include <clasp/llvmo/intrinsics.h>
 #include <clasp/llvmo/claspLinkPass.h>
 #include <clasp/core/instance.h>
+#include <clasp/core/funcallableInstance.h>
 #include <clasp/core/pathname.h>
 #include <clasp/core/loadTimeValues.h>
 #include <clasp/core/unixfsys.h>
@@ -215,7 +216,7 @@ CL_DEFUN core::T_sp llvm_sys__cxxDataStructuresInfo() {
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("TAG-MASK"), make_fixnum((int)gctools::tag_mask)), list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("IMMEDIATE-MASK"), make_fixnum((int)gctools::immediate_mask)), list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("GENERAL-TAG"), make_fixnum((int)gctools::general_tag)), list);
-  list = Cons_O::create(Cons_O::create(lisp_internKeyword("FIXNUM-TAG"), make_fixnum((int)gctools::fixnum_tag)), list);
+  list = Cons_O::create(Cons_O::create(lisp_internKeyword("FIXNUM-TAG"), make_fixnum((int)gctools::fixnum0_tag)), list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("FIXNUM1-TAG"), make_fixnum((int)gctools::fixnum1_tag)), list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("CONS-TAG"), make_fixnum((int)gctools::cons_tag)), list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("VALIST-TAG"), make_fixnum((int)gctools::valist_tag)), list);
@@ -226,14 +227,14 @@ CL_DEFUN core::T_sp llvm_sys__cxxDataStructuresInfo() {
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("CONS-CAR-OFFSET"), make_fixnum(core::Cons_O::car_offset())), list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("CONS-CDR-OFFSET"), make_fixnum(core::Cons_O::cdr_offset())), list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("UINTPTR_T-SIZE"), make_fixnum(sizeof(uintptr_clasp_t))), list);
-  list = Cons_O::create(Cons_O::create(lisp_internKeyword("VALIST_S-SIZE"), make_fixnum(sizeof(VaList_S))), list);
-  list = Cons_O::create(Cons_O::create(lisp_internKeyword("VALIST_S-VALIST-OFFSET"), make_fixnum((int)offsetof(VaList_S,_Args))),list);
+  list = Cons_O::create(Cons_O::create(lisp_internKeyword("VASLIST-SIZE"), make_fixnum(sizeof(Vaslist))), list);
+  list = Cons_O::create(Cons_O::create(lisp_internKeyword("VASLIST-VALIST-OFFSET"), make_fixnum((int)offsetof(Vaslist,_Args))),list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("HEADER-SIZE"), make_fixnum(sizeof(gctools::Header_s))), list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("REGISTER-SAVE-AREA-SIZE"), make_fixnum(LCC_TOTAL_REGISTERS*sizeof(void*))), list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("ALIGNMENT"),make_fixnum(gctools::Alignment())),list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("VOID*-SIZE"),make_fixnum(sizeof(void*))),list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("CLOSURE-ENTRY-POINT-OFFSET"),make_fixnum(offsetof(core::Function_O,entry))),list);
-  list = Cons_O::create(Cons_O::create(lisp_internKeyword("VALIST_S-REMAINING-NARGS-OFFSET"),make_fixnum(offsetof(core::VaList_S,_remaining_nargs))),list);
+  list = Cons_O::create(Cons_O::create(lisp_internKeyword("VASLIST-REMAINING-NARGS-OFFSET"),make_fixnum(offsetof(core::Vaslist,_remaining_nargs))),list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("SIZE_T-BITS"),make_fixnum(sizeof(size_t)*8)),list);
 #define ENTRY(list, name, code) list = Cons_O::create(Cons_O::create(lisp_internKeyword(name), code), list)
   LoadTimeValues_O tempLtv;
@@ -244,16 +245,27 @@ CL_DEFUN core::T_sp llvm_sys__cxxDataStructuresInfo() {
   ENTRY(list, "GCVECTOR-CAPACITY-OFFSET", make_fixnum((char *)&tempGCVector._Capacity - (char *)&tempGCVector));
   ENTRY(list, "GCVECTOR-END-OFFSET", make_fixnum((char *)&tempGCVector._End - (char *)&tempGCVector));
   ENTRY(list, "GCVECTOR-DATA0-OFFSET", make_fixnum((char *)&tempGCVector._Data[0] - (char *)&tempGCVector));
-  ENTRY(list, "FIXNUM-STAMP", make_fixnum(gctools::KIND_FIXNUM));
+  ENTRY(list, "OPTIMIZED-SLOT-INDEX-INDEX", make_fixnum(OPTIMIZED_SLOT_INDEX_INDEX));
+  ENTRY(list, "ISGF-OFFSET", make_fixnum(offsetof(FuncallableInstance_O,_isgf)));
+  ENTRY(list, "CLASS-REP-STAMP", make_fixnum(global_TheClassRep_stamp));
+  ENTRY(list, "FIXNUM-STAMP", make_fixnum(gctools::STAMP_FIXNUM));
   ENTRY(list, "FIXNUM-SHIFT", make_fixnum(gctools::fixnum_shift));
-  ENTRY(list, "KIND-SHIFT", make_fixnum(gctools::Header_s::kind_shift));
-  ENTRY(list, "CONS-STAMP", make_fixnum(gctools::KIND_CONS));
-  ENTRY(list, "VA_LIST_S-STAMP", make_fixnum(gctools::KIND_VA_LIST_S));
-  ENTRY(list, "CHARACTER-STAMP", make_fixnum(gctools::KIND_CHARACTER));
-  ENTRY(list, "SINGLE-FLOAT-STAMP", make_fixnum(gctools::KIND_SINGLE_FLOAT)); 
+  ENTRY(list, "STAMP-SHIFT", make_fixnum(gctools::Header_s::stamp_shift));
+#if 0
+  ENTRY(list, "STAMP-IN-RACK-MASK", make_fixnum(gctools::Header_s::stamp_in_rack_mask));
+  ENTRY(list, "STAMP-NEEDS-CALL-MASK", make_fixnum(gctools::Header_s::stamp_needs_call_mask));
+#endif
+  ENTRY(list, "CONS-STAMP", make_fixnum(gctools::STAMP_CONS));
+  ENTRY(list, "VA_LIST_S-STAMP", make_fixnum(gctools::STAMP_VA_LIST_S));
+  ENTRY(list, "CHARACTER-STAMP", make_fixnum(gctools::STAMP_CHARACTER));
+  ENTRY(list, "SINGLE-FLOAT-STAMP", make_fixnum(gctools::STAMP_SINGLE_FLOAT)); 
   ENTRY(list, "INSTANCE-RACK-OFFSET", make_fixnum(offsetof(Instance_O,_Rack)));
   ENTRY(list, "INSTANCE-RACK-STAMP-OFFSET", make_fixnum(Instance_O::rack_stamp_offset()));
-  ENTRY(list, "INSTANCE-KIND", make_fixnum(static_cast<Fixnum>(gctools::KIND_INSTANCE)));
+  ENTRY(list, "INSTANCE-KIND", make_fixnum(static_cast<Fixnum>(gctools::STAMP_INSTANCE)));
+  ENTRY(list, "FUNCALLABLE-INSTANCE-KIND", make_fixnum(static_cast<Fixnum>(gctools::STAMP_FUNCALLABLE_INSTANCE)));
+//  ENTRY(list, "CLASS-KIND", make_fixnum(static_cast<Fixnum>(gctools::STAMP_CLASS)));
+  ENTRY(list, "SIMPLE-VECTOR._DATA-OFFSET",make_fixnum(offsetof(SimpleVector_O,_Data)+offsetof(SimpleVector_O::vector_type,_Data)));
+  ENTRY(list, "SIMPLE-VECTOR._LENGTH-OFFSET",make_fixnum(offsetof(SimpleVector_O,_Data)+offsetof(SimpleVector_O::vector_type,_Length)));
   return list;
 }
 
@@ -285,8 +297,8 @@ CL_DEFUN void llvm_sys__throwIfMismatchedStructureSizes(core::Fixnum_sp tspSize,
   }
   if (tvalistsize.fixnump()) {
     size_t valistsize = tvalistsize.unsafe_fixnum();
-    if (valistsize != sizeof(VaList_S)) {
-      SIMPLE_ERROR(BF("VaList_S size %d mismatch with Common Lisp code %d") % sizeof(VaList_S) % valistsize);
+    if (valistsize != sizeof(Vaslist)) {
+      SIMPLE_ERROR(BF("Vaslist size %d mismatch with Common Lisp code %d") % sizeof(Vaslist) % valistsize);
     }
   }
   if (tRegisterSaveAreaSize.fixnump()) {
@@ -349,6 +361,7 @@ CL_DEFUN llvmo::GlobalVariable_sp llvm_sys__getOrCreateExternalGlobal(llvmo::Mod
   return gv;
 }
 
+#if 0
 void dump_funcs(core::Function_sp compiledFunction) {
   core::T_sp funcs = compiledFunction->associatedFunctions();
   if (funcs.notnilp()) {
@@ -371,6 +384,7 @@ void dump_funcs(core::Function_sp compiledFunction) {
     STDOUT_BFORMAT(BF("There were no associated functions available for disassembly\n"));
   }
 }
+#endif
 
 CL_LAMBDA(module &optional (stream t))
 CL_DEFUN void dump_module(Module_sp module, core::T_sp tstream) {
@@ -390,30 +404,18 @@ CL_DEFUN void dump_function(Function_sp function, core::T_sp tstream) {
   core::clasp_write_string(outstr,stream);
 }
 
-CL_DEFUN void llvm_sys__disassembleSTAR(core::Function_sp cf) {
-  dump_funcs(cf);
-}
-
 CL_LAMBDA(fn &optional only);
-CL_DEFUN void llvm_sys__viewCFG(core::T_sp funcDes, core::T_sp only) {
-  core::Function_sp compiledFunction = core::coerce::functionDesignator(funcDes);
-  if (auto cl = compiledFunction.asOrNull<core::CompiledClosure_O>()) {
-    core::T_sp funcs = cl->associatedFunctions();
-    if ((funcs).consp()) {
-      core::List_sp cfuncs = funcs;
-      for (auto cur : cfuncs) {
-        core::T_sp func = oCar(cur);
-        if (llvmo::Function_sp f = gc::As<llvmo::Function_sp>(func)) {
-          if (only.notnilp()) {
-            f->wrappedPtr()->viewCFGOnly();
-          } else {
-            f->wrappedPtr()->viewCFG();
-          }
-        }
+CL_DEFUN void llvm_sys__viewCFG(core::T_sp funcs, core::T_sp only) {
+  core::List_sp cfuncs = funcs;
+  for (auto cur : cfuncs) {
+    core::T_sp func = oCar(cur);
+    if (llvmo::Function_sp f = gc::As<llvmo::Function_sp>(func)) {
+      if (only.notnilp()) {
+        f->wrappedPtr()->viewCFGOnly();
+      } else {
+        f->wrappedPtr()->viewCFG();
       }
     }
-  } else {
-    SIMPLE_ERROR(BF("The function is not a compiled function"));
   }
 }
 
@@ -457,6 +459,10 @@ void LlvmoExposer_O::expose(core::Lisp_sp lisp, core::Exposer_O::WhatToExpose wh
     initialize_llvmo_expose();
     initialize_clbind_llvm_expose();
     initialize_dwarf_constants();
+    llvm::InitializeAllTargetInfos();
+    llvm::InitializeAllTargetMCs();
+    llvm::InitializeAllAsmParsers();
+    llvm::InitializeAllDisassemblers();
     SYMBOL_EXPORT_SC_(LlvmoPkg, _PLUS_globalBootFunctionsName_PLUS_);
     SYMBOL_EXPORT_SC_(LlvmoPkg, _PLUS_globalEpilogueName_PLUS_);
   };

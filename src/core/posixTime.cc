@@ -33,7 +33,7 @@ THE SOFTWARE.
 #include <sys/time.h>
 #include <sys/resource.h>
 #endif
-
+#include <clasp/core/profile.h>
 #include <clasp/core/posixTime.h>
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/multipleValues.h>

@@ -27,6 +27,7 @@ THE SOFTWARE.
 //#define DEBUG_LEVEL_FULL
 
 #include <clasp/core/useBoostPython.h>
+#include <clasp/core/foundation.h>
 #include <clasp/core/common.h>
 #include <clasp/core/symbol.h>
 #include <clasp/core/array.h>
@@ -53,32 +54,32 @@ CL_DEFUN List_sp cl__symbol_plist(Symbol_sp sym) {
   return sym->plist();
 }
 
+CL_LISPIFY_NAME("cl:symbol-plist");
+CL_LAMBDA(plist sym);
+CL_DECLARE();
+CL_DOCSTRING("Set the symbol plist");
+CL_DEFUN_SETF List_sp core__set_symbol_plist(List_sp plist, Symbol_sp sym) {
+  // FIXME: necessary?
+  if (sym.nilp()) {
+    SIMPLE_ERROR(BF("You cannot set the plist of nil"));
+  }
+  sym->setf_plist(plist);
+  return plist;
+}
+
 CL_LAMBDA(sym indicator &optional default);
 CL_DECLARE();
-CL_DOCSTRING("Return the symbol plist");
+CL_DOCSTRING("Return the value of a plist property");
 CL_DEFUN T_sp cl__get(Symbol_sp sym, T_sp indicator, T_sp defval) {
-#if 0
-  if (sym.nilp()) {
-    return cl__getf(coerce_to_list(cl::_sym_nil), indicator, defval);
-  }
-#endif
   return cl__getf(sym->_PropertyList, indicator, defval);
 }
 
-CL_LAMBDA(sym plist);
+CL_LISPIFY_NAME("cl:get")
+CL_LAMBDA(val sym indicator &optional default);
 CL_DECLARE();
-CL_DOCSTRING("Set the symbol plist");
-CL_DEFUN void core__set_symbol_plist(Symbol_sp sym, List_sp plist) {
-  if (sym.nilp()) {
-    SIMPLE_ERROR(BF("You cannot set the plist of nil"));
-  };
-  sym->setf_plist(plist);
-}
-
-CL_LAMBDA(sym val indicator);
-CL_DECLARE();
-CL_DOCSTRING("Set the symbol plist");
-CL_DEFUN T_sp core__putprop(Symbol_sp sym, T_sp val, T_sp indicator) {
+CL_DOCSTRING("Set the value of a plist property");
+CL_DEFUN_SETF T_sp core__putprop(T_sp val, Symbol_sp sym, T_sp indicator, T_sp defval) {
+  (void)(defval); // unused
   if (sym.nilp()) {
     SIMPLE_ERROR(BF("You cannot set the plist of nil"));
   };
@@ -107,7 +108,7 @@ CL_DECLARE();
 CL_DOCSTRING("symbolFunction");
 CL_DEFUN Function_sp cl__symbol_function(Symbol_sp sym) {
   if (!sym->fboundp()) {
-    SIMPLE_ERROR(BF("No function bound to %s") % _rep_(sym));
+    ERROR_UNDEFINED_FUNCTION(sym);
   }
   return sym->symbolFunction();
 };
@@ -126,6 +127,13 @@ CL_DEFUN T_sp cl__symbol_value(Symbol_sp arg) {
   if (!arg->boundP()) arg->symbolUnboundError();
   return arg->symbolValue();
 };
+
+CL_LAMBDA(symbol cell unbound);
+CL_DECLARE();
+CL_DOCSTRING("Get the value of a symbol from TLS or from the given CELL");
+CL_DEFUN T_sp core__symbol_value_from_cell(Symbol_sp symbol, Cons_sp cell, T_sp unbound_marker) {
+  return symbol->symbolValueFromCell(cell, unbound_marker);
+}
 
 CL_LAMBDA(arg);
 CL_DECLARE();
@@ -153,20 +161,21 @@ Symbol_O::Symbol_O(bool dummy) : _HomePackage(_Nil<T_O>()),
                                  _Binding(NO_THREAD_LOCAL_BINDINGS),
                                  _IsSpecial(false),
                                  _IsConstant(false),
-                                 _ReadOnlyFunction(false),
                                  _PropertyList(_Nil<List_V>()) {};
 
 Symbol_O::Symbol_O() : Base(),
                        _Binding(NO_THREAD_LOCAL_BINDINGS),
                        _IsSpecial(false),
                        _IsConstant(false),
-                       _ReadOnlyFunction(false),
                        _PropertyList(_Nil<List_V>()) {};
 
 void Symbol_O::finish_setup(Package_sp pkg, bool exportp, bool shadowp) {
   ASSERTF(pkg, BF("The package is UNDEFINED"));
   this->_HomePackage = pkg;
-  this->_GlobalValue = _Unbound<T_O>();
+  if (pkg->actsLikeKeywordPackage())
+    this->_GlobalValue = this->asSmartPtr();
+  else
+    this->_GlobalValue = _Unbound<T_O>();
   this->_Function = _Unbound<T_O>();
   this->_SetfFunction = _Unbound<T_O>();
   pkg->bootstrap_add_symbol_to_package(this->symbolName()->get().c_str(), this->sharedThis<Symbol_O>(), exportp, shadowp);
@@ -205,12 +214,14 @@ Symbol_sp Symbol_O::create_from_string(const string &nm) {
 
 CL_LISPIFY_NAME("makunbound");
 CL_DEFMETHOD Symbol_sp Symbol_O::makunbound() {
-  *my_thread->_Bindings.reference_raw(this) = _Unbound<T_O>();
+  if (this->getReadOnly())
+    SIMPLE_ERROR(BF("Cannot make constant %s unbound") % this->__repr__());
+  *my_thread->_Bindings.reference_raw(this,&this->_GlobalValue) = _Unbound<T_O>();
   return this->asSmartPtr();
 }
 
-void Symbol_O::symbolUnboundError() const {
-  UNBOUND_VARIABLE_ERROR(this->_Name);
+__attribute__((optnone)) void Symbol_O::symbolUnboundError() const {
+  UNBOUND_VARIABLE_ERROR(this->asSmartPtr());
 }
 
 void Symbol_O::setf_plist(List_sp plist) {
@@ -218,8 +229,14 @@ void Symbol_O::setf_plist(List_sp plist) {
 }
 
 void Symbol_O::sxhash_(HashGenerator &hg) const {
-  if (hg.isFilling())
-    this->_Name->sxhash_(hg);
+  if (hg.isFilling()) this->_HomePackage.unsafe_general()->sxhash_(hg);
+  if (hg.isFilling()) this->_Name->sxhash_(hg);
+}
+
+void Symbol_O::sxhash_equal(HashGenerator &hg,LocationDependencyPtrT ld) const
+{
+  if (hg.isFilling()) HashTable_O::sxhash_equal(hg,this->_HomePackage,ld);
+  if (hg.isFilling()) HashTable_O::sxhash_equal(hg,this->_Name,ld);
 }
 
 CL_LISPIFY_NAME("cl:copy_symbol");
@@ -228,10 +245,11 @@ CL_DEFMETHOD Symbol_sp Symbol_O::copy_symbol(T_sp copy_properties) const {
   Symbol_sp new_symbol = Symbol_O::create(this->_Name);
   if (copy_properties.isTrue()) {
     ASSERT(this->_Function);
-    new_symbol->_GlobalValue = this->symbolValue();
-    new_symbol->_Function = this->_Function;
+    if (this->boundP())
+      new_symbol->_GlobalValue = this->symbolValue();
+    if (this->fboundp())
+      new_symbol->_Function = this->_Function;
     new_symbol->_IsConstant = this->_IsConstant;
-    new_symbol->_ReadOnlyFunction = this->_ReadOnlyFunction;
     new_symbol->_PropertyList = cl__copy_list(this->_PropertyList);
   }
   return new_symbol;
@@ -284,13 +302,6 @@ CL_DEFMETHOD Symbol_sp Symbol_O::asKeywordSymbol() {
 CL_LISPIFY_NAME("core:STARmakeSpecial");
 CL_DEFMETHOD void Symbol_O::makeSpecial() {
   this->_IsSpecial = true;
-}
-
-CL_LISPIFY_NAME("core:STARmakeConstant");
-CL_DEFMETHOD void Symbol_O::makeConstant(T_sp val) {
-  this->setf_symbolValue(val);
-  this->_IsSpecial = true;
-  this->_IsConstant = true;
 }
 
 T_sp Symbol_O::defconstant(T_sp val) {
@@ -462,7 +473,6 @@ void Symbol_O::dump() {
     }
     ss << "IsSpecial: " << this->_IsSpecial << std::endl;
     ss << "IsConstant: " << this->_IsConstant << std::endl;
-    ss << "ReadOnlyFunction: " << this->_ReadOnlyFunction << std::endl;
     ss << "PropertyList: ";
     if (this->_PropertyList) {
       ss << _rep_(this->_PropertyList) << std::endl;

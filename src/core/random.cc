@@ -27,6 +27,7 @@ THE SOFTWARE.
 //#define DEBUG_LEVEL_FULL
 
 #include <boost/format.hpp>
+#include <clasp/core/foundation.h>
 #include <clasp/core/common.h>
 #include <clasp/core/numbers.h>
 #include <clasp/core/symbol.h>
@@ -48,7 +49,8 @@ CL_DEFUN RandomState_sp RandomState_O::make(T_sp state) {
   } else if (state == _lisp->_true()) {
     return RandomState_O::create_random();
   }
-  SIMPLE_ERROR(BF("Illegal argument for make-random-state: ~a") % _rep_(state));
+  TYPE_ERROR(state, Cons_O::createList(cl::_sym_or, cl::_sym_RandomState_O, cl::_sym_null,
+                                       Cons_O::createList(cl::_sym_eql, cl::_sym_T_O)));
 }
 
 CL_LAMBDA(olimit &optional (random-state cl:*random-state*));

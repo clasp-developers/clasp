@@ -37,11 +37,9 @@ THE SOFTWARE.
 #include <clasp/core/pathname.h>
 #include <clasp/core/hashTable.h>
 #include <clasp/core/random.h>
-//#ifndef CLOS
 #include <clasp/core/structureObject.h>
-//#else
 #include <clasp/core/instance.h>
-//#endif
+#include <clasp/core/funcallableInstance.h>
 #include <clasp/core/readtable.h>
 #include <clasp/core/lambdaListHandler.h>
 #include <clasp/core/singleDispatchGenericFunction.h>
@@ -98,9 +96,6 @@ CL_LAMBDA(arg);
 CL_DECLARE();
 CL_DOCSTRING("functionP");
 CL_DEFUN bool cl__functionp(T_sp obj) {
-  if (Instance_sp inst_obj = obj.asOrNull<Instance_O>()) {
-    return inst_obj->isgf();
-  }
   return gc::IsA<Function_sp>(obj);
 };
 
@@ -123,7 +118,17 @@ CL_DEFUN bool cl__packagep(T_sp obj) {
 };
 
 CL_DEFUN bool clos__classp(T_sp obj) {
-  return gc::IsA<Class_sp>(obj);
+  if (gc::IsA<Instance_sp>(obj)) {
+    Instance_sp iobj = gc::As_unsafe<Instance_sp>(obj);
+    if (iobj->_Class == _lisp->_Roots._TheStandardClass
+        || iobj->_Class == _lisp->_Roots._TheClass
+        || iobj->_Class == _lisp->_Roots._TheBuiltInClass
+        || iobj->_Class == _lisp->_Roots._TheStructureClass
+        || iobj->_Class == _lisp->_Roots._TheClassRep
+        || iobj->_Class == _lisp->_Roots._TheDerivableCxxClass ) return true;
+    return core__subclassp(iobj->_Class,_lisp->_Roots._TheClass);
+  }
+  return false;
 };
 
 CL_LAMBDA(arg);
@@ -254,12 +259,14 @@ CL_DEFUN bool cl__readtablep(T_sp obj) {
   return gc::IsA<ReadTable_sp>(obj);
 };
 
+
 CL_LAMBDA(arg);
 CL_DECLARE();
 CL_DOCSTRING("structureObjectP");
 CL_DEFUN bool core__structure_object_p(T_sp obj) {
-  if (gc::IsA<StructureObject_sp>(obj))
-    return true;
+#if 0
+  if (gc::IsA<StructureObject_sp>(obj)) return true;
+#endif
   return gc::IsA<Instance_sp>(obj);
 };
 
@@ -309,6 +316,8 @@ CL_DEFUN bool cl__compiled_function_p(T_sp o) {
   if (Closure_sp fn = o.asOrNull<Closure_O>()) {
     (void)fn;
     return fn->compiledP();
+  } else if (gc::IsA<FuncallableInstance_sp>(o)) {
+    return true;
   }
   return false;
 };
@@ -317,8 +326,8 @@ CL_LAMBDA(arg);
 CL_DECLARE();
 CL_DOCSTRING("genericFunctionP");
 CL_DEFUN bool core__generic_function_p(T_sp o) {
-  if (gc::IsA<Instance_sp>(o)) {
-    return gc::As_unsafe<Instance_sp>(o)->isgf();
+  if (gc::IsA<FuncallableInstance_sp>(o)) {
+    return gc::As_unsafe<FuncallableInstance_sp>(o)->isgf();
   }
   return false;
 };

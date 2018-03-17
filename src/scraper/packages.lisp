@@ -57,10 +57,12 @@
    #:internal-code-tag
    #:external-code-tag
    #:package-use-tag
+   #:gc-managed-type-tag
    #:package-shadow-tag
    #:package-nickname-tag
    #:cl-pkg-name-tag
    #:name%
+   #:c++type%
    #:full-name
    #:meta-class-tag
    #:meta-class%
@@ -82,6 +84,7 @@
    #:line%
    #:character-offset%
    #:cl-defun-tag
+   #:cl-defun-setf-tag
    #:cl-defmethod-tag
    #:cl-def-class-method-tag
    #:cl-extern-defun-tag

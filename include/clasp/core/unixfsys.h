@@ -27,7 +27,6 @@ THE SOFTWARE.
 #ifndef core_unixfsys_H
 #define core_unixfsys_H
 
-#include <clasp/core/foundation.h>
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/pathname.fwd.h>
 

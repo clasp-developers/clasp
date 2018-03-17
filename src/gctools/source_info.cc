@@ -1,4 +1,6 @@
 #include <clasp/core/foundation.h>
+#include <clasp/core/object.h>
+#include <clasp/core/numbers.h>
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/designators.h>
 #include <clasp/core/documentation.h>
@@ -22,12 +24,12 @@ NOINLINE void define_source_info(source_info_kind kind,
     ext__annotate(func,cl::_sym_documentation,cl::_sym_function, docs);
   } else if ( kind == method_kind ) {
     core::List_sp info = core__get_sysprop(sym,core::_sym_cxx_method_source_location);
-    info = core::Cons_O::create(core::Cons_O::createList(sourceFile,core::clasp_make_fixnum(character_offset)),info);
+    info = core::Cons_O::create(core::Cons_O::createList(sourceFile,core::clasp_make_fixnum((Fixnum)character_offset)),info);
     core::core__put_sysprop(sym,core::_sym_cxx_method_source_location,info);
     core::SimpleBaseString_sp docs = core::SimpleBaseString_O::make(docstring);
     ext__annotate(sym,cl::_sym_documentation,cl::_sym_method, docs);
   } else if ( kind == class_kind ) {
-    core::List_sp info = core::Cons_O::createList(sourceFile,core::clasp_make_fixnum(character_offset));
+    core::List_sp info = core::Cons_O::createList(sourceFile,core::clasp_make_fixnum((Fixnum)character_offset));
     core::core__put_sysprop(sym,core::_sym_class_source_location,info);
     ext__annotate(sym,cl::_sym_documentation,cl::_sym_class, docs);
   } else if ( kind == variable_kind ) {

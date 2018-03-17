@@ -26,6 +26,7 @@ THE SOFTWARE.
 /* -^- */
 //#define DEBUG_LEVEL_FULL
 
+#include <clasp/core/foundation.h>
 #include <clasp/core/lisp.h>
 #include <clasp/core/specialForm.h>
 #include <clasp/core/lisp.h>
@@ -62,7 +63,7 @@ void SpecialForm_O::archiveBase(ArchiveP node) {
 #endif // defined(XML_ARCHIVE)
 
 string SpecialForm_O::__repr__() const {
-  return this->name().as<Symbol_O>()->fullName();
+  return this->functionName().as<Symbol_O>()->fullName();
 }
 
 

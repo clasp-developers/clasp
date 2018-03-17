@@ -49,12 +49,11 @@ int PASS_FUNCTION_REQUIRED(gctools::Vec0<RequiredArgument> const &reqs,
     throwTooFewArgumentsError(length_args, reqs_size);
     //	TOO_FEW_ARGUMENTS_ERROR();
   }
-  {
+  if (reqs.size()>0) {
     _BLOCK_TRACE("Assigning required arguments");
-    LOG(BF("There are %d required arguments") % reqs.size());
     for (gctools::Vec0<RequiredArgument>::const_iterator it = reqs.begin(); it != reqs.end(); ++it) {
       T_sp value = PASS_NEXT_ARG(arg_idx);
-      LOG(BF("Binding value[%s] to target[%s]") % value->__repr__() % it->asString());
+      LOG(BF("Binding value[%s] to target[%s]") % _rep_(value) % it->asString());
       scope.new_binding(*it, value);
       ++arg_idx;
     }
@@ -96,7 +95,7 @@ int PASS_FUNCTION_OPTIONAL(gctools::Vec0<OptionalArgument> const &optionals,
     _BLOCK_TRACE("Assigning missing optional arguments with default values");
     for (; it != optionals.end(); it++) {
       T_sp init_form = it->_Default;
-      LOG(BF("Init form: %s") % init_form->__repr__());
+      LOG(BF("Init form: %s") % _rep_(init_form));
       T_sp value = evaluate_lambda_list_form(init_form, scope.lexenv());
       LOG(BF("Binding value[%s] to target[%s]") % _rep_(value) % it->asString());
       scope.new_binding(*it, value);
@@ -113,7 +112,7 @@ void PASS_FUNCTION_REST(RestArgument const &restarg,
                         int arg_idx,
                         DynamicScopeManager &scope) {
   if (restarg.VaRest) {
-    scope.valist().set_from_other_VaList_S(&*arglist); // _change_nargs(&*arglist, n_args - arg_idx);
+    scope.valist().set_from_other_Vaslist(&*arglist); // _change_nargs(&*arglist, n_args - arg_idx);
     scope.va_rest_binding(restarg);
   } else {
     Cons_O::CdrType_sp rest = _Nil<Cons_O::CdrType_O>();
@@ -158,7 +157,7 @@ int PASS_FUNCTION_KEYWORD(gctools::Vec0<KeywordArgument> const &keyed_args,
   {
     _BLOCK_TRACEF(BF("Copy passed keyword values to environment"));
     for (int i(arg_idx), iEnd(num_args); i < iEnd; i += 2) {
-      Symbol_sp keyword = gc::As<Symbol_sp>(T_sp(PASS_NEXT_ARG(arg_idx)));
+      T_sp keyword = T_sp(PASS_NEXT_ARG(arg_idx));
       arg_idx++;
       T_sp value = PASS_NEXT_ARG(arg_idx);
       arg_idx++;
@@ -195,7 +194,7 @@ int PASS_FUNCTION_KEYWORD(gctools::Vec0<KeywordArgument> const &keyed_args,
     gctools::Vec0<KeywordArgument>::iterator fi;
     int ik(0);
     for (fi = keyed_args.begin(); fi != keyed_args.end(); fi++) {
-      LOG(BF("Checking if keyword[%s] needs default value") % fi->_Keyword->__repr__());
+      LOG(BF("Checking if keyword[%s] needs default value") % _rep_(fi->_Keyword));
       // If the value hasn't been filled in the ActivationFrame then fill it with a default value
       if (sawkeys[ik] == 0) {
         T_sp expr = fi->_Default;

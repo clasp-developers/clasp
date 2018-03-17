@@ -28,7 +28,6 @@ THE SOFTWARE.
 #define _core_bignum_H_
 
 #include <clasp/core/clasp_gmpxx.h>
-#include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 #include <clasp/core/numbers.h>
 #include <clasp/core/bignum.fwd.h>
@@ -141,6 +140,8 @@ public: // Functions here
   Bignum get() const;
   Bignum get_or_if_nil_default(Bignum default_value) const;
   Number_sp abs_() const;
+  Number_sp sqrt_() const;
+  Number_sp reciprocal_() const;
   Number_sp rational_() const final { return this->asSmartPtr(); };
   void increment(gc::Fixnum i) { this->_value += static_cast<long>(i); };
   int sign() const { return this->_value > 0 ? 1 : (this->_value < 0 ? -1 : 0); };
@@ -249,7 +250,7 @@ namespace translate {
         ;
         return;
       }
-      SIMPLE_ERROR(BF("Handle conversions of %s to Bignum") % _rep_(o));
+      SIMPLE_ERROR_SPRINTF("Handle conversions of %s to Bignum", _rep_(o).c_str());
     }
   };
 };

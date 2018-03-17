@@ -1,0 +1,23 @@
+language: lisp
+
+env: PREFIX="$(pwd)/sbcl"
+     SBCL_HOME="$(pwd)/sbcl/lib/sbcl"
+     SBCL="$(pwd)/sbcl/bin/sbcl"
+     SBCL_OPTIONS="--noinform --no-userinit"
+
+install:
+  - curl -L sbcl.tar.bz2 "${SBCL_DOWNLOAD_URL}" | tar -xj
+  - ( cd sbcl-* && INSTALL_ROOT="${PREFIX}" sh install.sh )
+
+  - curl -o cl "${CL_LAUNCH_DOWNLOAD_URL}"
+  - chmod +x cl
+
+  - curl -o quicklisp.lisp "${QUICKLISP_DOWNLOAD_URL}"
+  - ./cl -L quicklisp.lisp '(quicklisp-quickstart:install :path "quicklisp/")'
+
+script:
+  - ./cl
+      -S '(:source-registry (:directory "'$(pwd)'") :ignore-inherited-configuration)'
+      -e '(load "quicklisp/setup.lisp")'
+      -e '(ql:quickload :esrap/tests)'
+      '(or (esrap-tests:run-tests) (uiop:quit -1))'

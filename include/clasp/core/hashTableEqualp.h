@@ -27,7 +27,6 @@ THE SOFTWARE.
 #ifndef _core_HashTableEqualp_H
 #define _core_HashTableEqualp_H
 
-#include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 #include <clasp/core/hashTable.h>
 #include <clasp/core/symbolTable.h>

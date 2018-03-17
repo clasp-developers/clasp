@@ -44,21 +44,104 @@ THE SOFTWARE.
 #include <signal.h>
 #endif
 
+gctools::GlobalAllocationProfiler global_AllocationProfiler(1024*1024,1024*8);
+
+extern "C" {
+__attribute__((noinline)) void HitAllocationSizeThreshold() {
+    global_AllocationProfiler._HitAllocationSizeCounter++;
+}
+
+__attribute__((noinline)) void HitAllocationNumberThreshold() {
+    global_AllocationProfiler._HitAllocationNumberCounter++;
+}
+}
+
+
+
+
+#include <clasp/core/scrape.h>
+
+
+////////////////////////////////////////////////////////////
+//
+// GC_MANAGED_TYPE
+//
+// Objects that are managed by the GC and need a stamp
+//   but are not directly accessible to Common Lisp
+GC_MANAGED_TYPE(core::Lisp_O);
+GC_MANAGED_TYPE(clbind::detail::class_map);
+GC_MANAGED_TYPE(gctools::GCArray_moveable<double>);
+GC_MANAGED_TYPE(gctools::GCArray_moveable<float>);
+GC_MANAGED_TYPE(gctools::GCArray_moveable<gctools::smart_ptr<core::T_O>>);
+GC_MANAGED_TYPE(gctools::GCArray_moveable<int>);
+GC_MANAGED_TYPE(gctools::GCArray_moveable<long>);
+GC_MANAGED_TYPE(gctools::GCArray_moveable<short>);
+GC_MANAGED_TYPE(gctools::GCArray_moveable<signed char>);
+GC_MANAGED_TYPE(gctools::GCArray_moveable<unsigned char>);
+GC_MANAGED_TYPE(gctools::GCArray_moveable<unsigned int>);
+GC_MANAGED_TYPE(gctools::GCArray_moveable<unsigned long>);
+GC_MANAGED_TYPE(gctools::GCArray_moveable<unsigned short>);
+GC_MANAGED_TYPE(gctools::GCBitUnitArray_moveable<1,unsigned int,int>);
+GC_MANAGED_TYPE(gctools::GCVector_moveable<core::AuxArgument>);
+GC_MANAGED_TYPE(gctools::GCVector_moveable<core::CacheRecord>);
+GC_MANAGED_TYPE(gctools::GCVector_moveable<core::DynamicBinding>);
+GC_MANAGED_TYPE(gctools::GCVector_moveable<core::ExceptionEntry>);
+GC_MANAGED_TYPE(gctools::GCVector_moveable<core::KeywordArgument>);
+GC_MANAGED_TYPE(gctools::GCVector_moveable<core::OptionalArgument>);
+GC_MANAGED_TYPE(gctools::GCVector_moveable<core::RequiredArgument>);
+GC_MANAGED_TYPE(gctools::GCVector_moveable<core::SymbolClassPair>);
+GC_MANAGED_TYPE(gctools::GCVector_moveable<core::SymbolStorage>);
+GC_MANAGED_TYPE(gctools::GCVector_moveable<core::T_O *>);
+GC_MANAGED_TYPE(gctools::GCVector_moveable<double>);
+GC_MANAGED_TYPE(gctools::GCVector_moveable<float>);
+GC_MANAGED_TYPE(gctools::GCVector_moveable<gctools::smart_ptr<clbind::ClassRep_O>>);
+GC_MANAGED_TYPE(gctools::GCVector_moveable<gctools::smart_ptr<core::Cons_O>>);
+GC_MANAGED_TYPE(gctools::GCVector_moveable<gctools::smart_ptr<core::List_V>>);
+GC_MANAGED_TYPE(gctools::GCVector_moveable<gctools::smart_ptr<core::Package_O>>);
+GC_MANAGED_TYPE(gctools::GCVector_moveable<gctools::smart_ptr<core::SequenceStepper_O>>);
+GC_MANAGED_TYPE(gctools::GCVector_moveable<gctools::smart_ptr<core::SingleDispatchMethod_O>>);
+GC_MANAGED_TYPE(gctools::GCVector_moveable<gctools::smart_ptr<core::SourceFileInfo_O>>);
+GC_MANAGED_TYPE(gctools::GCVector_moveable<gctools::smart_ptr<core::Symbol_O>>);
+GC_MANAGED_TYPE(gctools::GCVector_moveable<gctools::smart_ptr<core::T_O>>);
+GC_MANAGED_TYPE(gctools::GCVector_moveable<int>);
+GC_MANAGED_TYPE(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>>);
+GC_MANAGED_TYPE(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>>);
+
+
+namespace gctools {
+void lisp_increment_recursive_allocation_counter(core::ThreadLocalState* thread)
+{
+  int x = thread->_RecursiveAllocationCounter+1;
+  thread->_RecursiveAllocationCounter = x;
+  if (x!=1) {
+    printf("%s:%d A recursive allocation took place - these are illegal!!!!\n", __FILE__, __LINE__ );
+    abort();
+  }
+}
+void lisp_decrement_recursive_allocation_counter(core::ThreadLocalState* thread)
+{
+  --thread->_RecursiveAllocationCounter;
+};
+};
+
+
+#if 0
 namespace gctools {
 std::vector<Immediate_info> get_immediate_info() {
   std::vector<Immediate_info> info;
-  info.push_back(Immediate_info(kind_fixnum,"FIXNUM"));
-  info.push_back(Immediate_info(kind_single_float,"SINGLE_FLOAT"));
-  info.push_back(Immediate_info(kind_character,"CHARACTER"));
-  info.push_back(Immediate_info(kind_cons,"CONS"));
-  info.push_back(Immediate_info(kind_va_list_s,"VA_LIST_S"));
-  if ( (info.size()+1) != kind_first_general ) {
+  info.push_back(Immediate_info(STAMP_fixnum,"FIXNUM"));
+  info.push_back(Immediate_info(stamp_single_float,"SINGLE_FLOAT"));
+  info.push_back(Immediate_info(stamp_character,"CHARACTER"));
+  info.push_back(Immediate_info(stamp_cons,"CONS"));
+  info.push_back(Immediate_info(stamp_va_list_s,"VA_LIST_S"));
+  if ( (info.size()+1) != stamp_first_general ) {
     printf("get_immediate_info does not set up all of the immediate types\n");
     abort();
   }
   return info;
 };
 };
+#endif
 
 
 namespace gctools {
@@ -89,8 +172,7 @@ void register_thread(mp::Process_sp process, void* stack_base) {
 //  GC_register_my_thread(&gc_stack_base);
 #endif
 #ifdef USE_MPS
-  printf("%s:%d  add support to add threads for MPS\n", __FILE__, __LINE__ );
-//#error "add support to add threads for MPS"
+  my_mps_thread_reg(&process->thr_o);
 #endif
 };
 
@@ -100,7 +182,8 @@ void unregister_thread(mp::Process_sp process) {
 //  GC_unregister_my_thread();
 #endif
 #ifdef USE_MPS
-  printf("%s:%d  add support to add threads for MPS\n", __FILE__, __LINE__ );
+  my_mps_thread_deref(process->thr_o);
+//  printf("%s:%d  add support to add threads for MPS\n", __FILE__, __LINE__ );
 #endif
 };
 
@@ -129,10 +212,10 @@ void rawHeaderDescribe(const uintptr_clasp_t *headerP) {
   uintptr_clasp_t headerTag = (*headerP) & Header_s::tag_mask;
   switch (headerTag) {
   case 0:
-      printf("  %p : %llu(%p) %llu(%p)\n", headerP, *headerP, (void*)*headerP, *(headerP + 1), (void*)*(headerP + 1));
+      printf("  %p : %" Puintptr_clasp_t "(%p) %" Puintptr_clasp_t "(%p)\n", headerP, *headerP, (void*)*headerP, *(headerP + 1), (void*)*(headerP + 1));
     printf(" Not an object header!\n");
     break;
-  case Header_s::kind_tag: {
+  case Header_s::stamp_tag: {
     printf("  %p : %llu (%p)\n", headerP, *headerP, (void*)*headerP);
     printf("  %p : %llu (%p)\n", (headerP+1), *(headerP+1), (void*)*(headerP+1));
 #ifdef DEBUG_GUARD
@@ -141,7 +224,7 @@ void rawHeaderDescribe(const uintptr_clasp_t *headerP) {
     printf("  %p : %p\n", (headerP+4), (void*)*(headerP+4));
     printf("  %p : %p\n", (headerP+5), (void*)*(headerP+5));
 #endif    
-    gctools::GCKindEnum kind = (gctools::GCKindEnum)((*headerP) >> 2);
+    gctools::GCStampEnum kind = (gctools::GCStampEnum)((*headerP) >> 2);
     printf(" Kind tag - kind: %d", kind);
     fflush(stdout);
     printf("     %s\n", obj_name(kind));
@@ -243,18 +326,18 @@ void Header_s::signal_invalid_object(const Header_s* header, const char* msg)
 
 
 void Header_s::validate() const {
-  if ( this->header == 0 ) signal_invalid_object(this,"header is 0");
+  if ( this->header._value == 0 ) signal_invalid_object(this,"header is 0");
   if ( this->invalidP() ) signal_invalid_object(this,"header is invalidP");
-  if ( this->kindP() ) {
+  if ( this->stampP() ) {
 #ifdef DEBUG_GUARD    
     if ( this->guard != 0xFEEAFEEBDEADBEEF) signal_invalid_object(this,"normal object bad header guard");
 #endif
-    if ( this->kind() > global_NextStamp ) signal_invalid_object(this,"normal object bad header stamp");
+    if ( this->stamp() > global_NextStamp ) signal_invalid_object(this,"normal object bad header stamp");
 #ifdef DEBUG_GUARD
-    if ( this->tail_start & 0xffffffffff000000 ) signal_invalid_object(this,"bad tail_start");
-    if ( this->tail_size & 0xffffffffff000000 ) signal_invalid_object(this,"bad tail_size");
-    for ( unsigned char *cp=((unsigned char*)(this)+this->tail_start), 
-            *cpEnd((unsigned char*)(this)+this->tail_start+this->tail_size); cp < cpEnd; ++cp ) {
+    if ( this->_tail_start & 0xffffffffff000000 ) signal_invalid_object(this,"bad tail_start");
+    if ( this->_tail_size & 0xffffffffff000000 ) signal_invalid_object(this,"bad tail_size");
+    for ( unsigned char *cp=((unsigned char*)(this)+this->_tail_start), 
+            *cpEnd((unsigned char*)(this)+this->_tail_start+this->_tail_size); cp < cpEnd; ++cp ) {
       if (*cp!=0xcc) signal_invalid_object(this,"bad tail content");
     }
 #endif
@@ -263,8 +346,8 @@ void Header_s::validate() const {
 #ifdef DEBUG_GUARD
   if ( this->fwdP() ) {
     if ( this->guard != 0xFEEAFEEBDEADBEEF) signal_invalid_object(this,"bad fwdP guard");
-    for ( unsigned char *cp=((unsigned char*)(this)+this->tail_start), 
-            *cpEnd((unsigned char*)(this)+this->tail_start+this->tail_size); cp < cpEnd; ++cp ) {
+    for ( unsigned char *cp=((unsigned char*)(this)+this->_tail_start), 
+            *cpEnd((unsigned char*)(this)+this->_tail_start+this->_tail_size); cp < cpEnd; ++cp ) {
       if (*cp!=0xcc) signal_invalid_object(this,"bad tail content");
     }
   }
@@ -278,21 +361,21 @@ void Header_s::validate() const {
 namespace gctools {
 
 /*! See NextStamp(...) definition in memoryManagement.h.
-  global_NextBuiltInStamp starts at KIND_max+1
+  global_NextBuiltInStamp starts at STAMP_max+1
   so that it doesn't use any stamps that correspond to KIND values
    assigned by the static analyzer. */
-std::atomic<Stamp>   global_NextStamp = ATOMIC_VAR_INIT(KIND_max+1);
+std::atomic<Stamp>   global_NextStamp = ATOMIC_VAR_INIT(STAMP_max+1);
 
 void OutOfStamps() {
-    printf("%s:%d Hello future entity!  Congratulations! - you have run clasp long enough to run out of STAMPs - %" PRu " are allowed - change the clasp header layout or add another word for the stamp\n", __FILE__, __LINE__, Header_s::largest_possible_kind );
+    printf("%s:%d Hello future entity!  Congratulations! - you have run clasp long enough to run out of STAMPs - %" PRu " are allowed - change the clasp header layout or add another word for the stamp\n", __FILE__, __LINE__, Header_s::largest_possible_stamp );
     abort();
 }
 
-GCStack _ThreadLocalStack;
+//GCStack _ThreadLocalStack;
 const char *_global_stack_marker;
 size_t _global_stack_max_size;
 /*! Keeps track of the next available header KIND value */
-kind_t global_next_header_kind = (kind_t)KIND_max+1;
+stamp_t global_next_header_stamp = (stamp_t)STAMP_max+1;
 
 #if 0
     HeapRoot* 	rooted_HeapRoots = NULL;
@@ -316,7 +399,7 @@ size_t global_alignup_sizeof_header;
 
 MonitorAllocations global_monitorAllocations;
 
-void monitorAllocation(kind_t k, size_t sz) {
+void monitorAllocation(stamp_t k, size_t sz) {
   printf("%s:%d monitor allocation of %s with %zu bytes\n", __FILE__, __LINE__, obj_name(k), sz);
   if (global_monitorAllocations.counter >= global_monitorAllocations.start && global_monitorAllocations.counter < global_monitorAllocations.end) {
     core::core__clib_backtrace(global_monitorAllocations.backtraceDepth);
@@ -325,23 +408,11 @@ void monitorAllocation(kind_t k, size_t sz) {
 }
 
 
-#ifdef USE_BOEHM
-void clasp_warn_proc(char *msg, GC_word arg) {
-  printf("%s:%d clasp trapped Boehm-gc warning...\n", __FILE__, __LINE__);
-  printf(msg, arg);
-}
-#endif
-
-
-gc::GCStack *threadLocalStack() {
-  return &_ThreadLocalStack;
-}
-
 int handleFatalCondition() {
   int exitCode = 0;
   try {
     throw;
-  } catch (core::ExitProgram &ee) {
+  } catch (core::ExitProgramException &ee) {
     // Do nothing
     //            printf("Caught ExitProgram in %s:%d\n", __FILE__, __LINE__);
     exitCode = ee.getExitResult();
@@ -349,14 +420,14 @@ int handleFatalCondition() {
     // Do nothing
     printf("Caught TerminateProgramIfBatch in %s:%d\n", __FILE__, __LINE__);
   } catch (core::Condition &ee) {
-    IMPLEMENT_MEF(BF("Figure out what to do if we catch a Condition"));
+    IMPLEMENT_MEF("Figure out what to do if we catch a Condition");
     //        printf("Caught Condition at %s:%d - %s\n", __FILE__, __LINE__, ee.message().c_str() );
     //        printf("Stack trace:\n%s", ee.conditionObject()->getStackTraceDump().c_str() );
   } catch (core::CatchThrow &ee) {
     _lisp->print(BF("%s:%d Uncaught THROW frame[%s] - this should NEVER happen - the stack should never be unwound unless there is a CATCH clause that matches the THROW") % __FILE__ % __LINE__ % ee.getFrame());
   } catch (core::Unwind &ee) {
     _lisp->print(BF("At %s:%d - Unwind caught frame: %d index: %d") % __FILE__ % __LINE__ % ee.getFrame() % ee.index());
-  } catch (core::HardError &ee) {
+  } catch (HardError &ee) {
     _lisp->print(BF("At %s:%d - HardError caught: %s") % __FILE__ % __LINE__ % ee.message());
   }
 #if 0
@@ -368,14 +439,14 @@ int handleFatalCondition() {
   return exitCode;
 }
 
-kind_t next_header_kind()
+stamp_t next_header_kind()
 {
-    kind_t next = global_next_header_kind;
-    ++global_next_header_kind;
+    stamp_t next = global_next_header_stamp;
+    ++global_next_header_stamp;
     return next;
 }
 
-core::Fixnum ensure_fixnum(kind_t val)
+core::Fixnum ensure_fixnum(stamp_t val)
 {
   if ( val > most_positive_fixnum || val < most_negative_fixnum ) {
     SIMPLE_ERROR(BF("The value %d cannot be converted into a FIXNUM") % val );
@@ -384,24 +455,26 @@ core::Fixnum ensure_fixnum(kind_t val)
 }
 
 CL_LAMBDA();
-CL_DOCSTRING(R"doc(Return the next available header KIND value and increment the global variable global_next_header_kind)doc");
+CL_DOCSTRING(R"doc(Return the next available header KIND value and increment the global variable global_next_header_stamp)doc");
 CL_DEFUN core::Fixnum gctools__next_header_kind()
 {
-    kind_t next = global_next_header_kind;
-    ++global_next_header_kind;
+    stamp_t next = global_next_header_stamp;
+    ++global_next_header_stamp;
     return ensure_fixnum(next);
 }
 
+
+
 /*! initial_data is a gctools::Tagged pointer to a List of tagged pointers.
 */
-void initialize_gcroots_in_module(GCRootsInModule* roots, core::T_sp* root_address, size_t num_roots, gctools::Tagged initial_data) {
-  core::T_sp* shadow_mem = NULL;
+void initialize_gcroots_in_module(GCRootsInModule* roots, core::T_O** root_address, size_t num_roots, gctools::Tagged initial_data) {
+  core::T_O** shadow_mem = NULL;
 #ifdef USE_BOEHM
-  shadow_mem = reinterpret_cast<core::T_sp*>(boehm_create_shadow_table(num_roots));
+  shadow_mem = reinterpret_cast<core::T_O**>(boehm_create_shadow_table(num_roots));
 #endif
   // Get the address of the memory space in the llvm::Module
   uintptr_clasp_t address = reinterpret_cast<uintptr_clasp_t>(root_address);
-  core::T_sp* module_mem = reinterpret_cast<core::T_sp*>(address);
+  core::T_O** module_mem = reinterpret_cast<core::T_O**>(address);
 //  printf("%s:%d:%s address=%p nargs=%" PRu "\n", __FILE__, __LINE__, __FUNCTION__, (void*)address, nargs);
 //  printf("%s:%d:%s constants-table contents: vvvvv\n", __FILE__, __LINE__, __FUNCTION__ );
   // Create a GCRootsInModule structure to write the constants with
@@ -436,14 +509,14 @@ void shutdown_gcroots_in_module(GCRootsInModule* roots) {
 
 CL_LAMBDA(address args);
 CL_DEFUN void gctools__register_roots(core::T_sp taddress, core::List_sp args) {
-  core::T_sp* shadow_mem = NULL;
+  core::T_O** shadow_mem = NULL;
   size_t nargs = core::cl__length(args);
 #ifdef USE_BOEHM
-  shadow_mem = reinterpret_cast<core::T_sp*>(boehm_create_shadow_table(nargs));
+  shadow_mem = reinterpret_cast<core::T_O**>(boehm_create_shadow_table(nargs));
 #endif
   // Get the address of the memory space in the llvm::Module
   uintptr_clasp_t address = translate::from_object<uintptr_clasp_t>(taddress)._v;
-  core::T_sp* module_mem = reinterpret_cast<core::T_sp*>(address);
+  core::T_O** module_mem = reinterpret_cast<core::T_O**>(address);
 //  printf("%s:%d:%s address=%p nargs=%" PRu "\n", __FILE__, __LINE__, __FUNCTION__, (void*)address, nargs);
 //  printf("%s:%d:%s constants-table contents: vvvvv\n", __FILE__, __LINE__, __FUNCTION__ );
   // Create a ConstantsTable structure to write the constants with
@@ -463,12 +536,32 @@ CL_DEFUN void gctools__register_roots(core::T_sp taddress, core::List_sp args) {
 
 
 int startupGarbageCollectorAndSystem(MainFunctionType startupFn, int argc, char *argv[], size_t stackMax, bool mpiEnabled, int mpiRank, int mpiSize) {
-  void* stackMarker = NULL;
+
+  // Read the memory profiling settings <size-threshold> <number-theshold>
+  // as in export CLASP_MEMORY_PROFILE="16000000 1024"
+  // This means call HitAllocationSizeThreshold every time 16000000 bytes are allocated
+  //        and call HitAllocationNumberThreshold every time 1024 allocations take place
+  char *cur = getenv("CLASP_MEMORY_PROFILE");
+  size_t values[2];
+  int numValues = 0;
+  if (cur) {
+    while (*cur && numValues < 2) {
+      values[numValues] = strtol(cur, &cur, 10);
+      ++numValues;
+    }
+    if (numValues == 2) {
+      global_AllocationProfiler._AllocationNumberThreshold = values[1];
+    }
+    if (numValues >= 1) {
+      global_AllocationProfiler._AllocationSizeThreshold = values[0];
+    }
+  }
+
+  void* stackMarker = &stackMarker;
   gctools::_global_stack_marker = (const char*)&stackMarker;
   gctools::_global_stack_max_size = stackMax;
 //  printf("%s:%d       global_stack_marker = %p\n", __FILE__, __LINE__, gctools::_global_stack_marker );
   global_alignup_sizeof_header = AlignUp(sizeof(Header_s));
-
   { // Debugging info
     size_t alignment = Alignment();
 #if 0
@@ -482,44 +575,18 @@ int startupGarbageCollectorAndSystem(MainFunctionType startupFn, int argc, char 
     printf("%s:%d global_alignup_sizeof_header = %" PRu "\n", __FILE__, __LINE__, global_alignup_sizeof_header );
 #endif
   }
-
-  build_kind_field_layout_tables();
-
+  build_stamp_field_layout_tables();
 #ifdef SIGRTMIN
 # define DEFAULT_THREAD_INTERRUPT_SIGNAL SIGRTMIN + 2
 #else
 # define DEFAULT_THREAD_INTERRUPT_SIGNAL SIGUSR1
 #endif
   gctools::initialize_signals(DEFAULT_THREAD_INTERRUPT_SIGNAL);
-
 #if defined(USE_MPS)
   int exitCode = gctools::initializeMemoryPoolSystem(startupFn, argc, argv, mpiEnabled, mpiRank, mpiSize);
 #endif
-
 #if defined(USE_BOEHM)
-  GC_INIT();
-  GC_allow_register_threads();
-  GC_set_java_finalization(1);
-//  GC_allow_register_threads();
-  GC_set_all_interior_pointers(1); // tagged pointers require this
-                                   //printf("%s:%d Turning on interior pointers\n",__FILE__,__LINE__);
-  GC_set_warn_proc(clasp_warn_proc);
-  //  GC_enable_incremental();
-  GC_init();
-  _ThreadLocalStack.allocateStack(gc::thread_local_cl_stack_min_size);
-  void* topOfStack;
-  // ctor sets up my_thread
-  core::ThreadLocalState thread_local_state(&topOfStack);
-#if 0
-  // I'm not sure if this needs to be done for the main thread
-  GC_stack_base gc_stack_base;
-  GC_get_stack_base(&gc_stack_base);
-  GC_register_my_thread(&gc_stack_base);
-#endif
-  int exitCode = startupFn(argc, argv, mpiEnabled, mpiRank, mpiSize);
-#if 0
-  GC_unregister_my_thread();
-#endif
+  int exitCode = gctools::initializeBoehm(startupFn, argc, argv, mpiEnabled, mpiRank, mpiSize);
 #endif
   mp::ClaspThreads_exit(); // run pthreads_exit
   return exitCode;
@@ -528,9 +595,9 @@ int startupGarbageCollectorAndSystem(MainFunctionType startupFn, int argc, char 
 Tagged GCRootsInModule::set(size_t index, Tagged val) {
 #ifdef USE_BOEHM
   // shadow_memory is only used by Boehm
-  reinterpret_cast<core::T_sp*>(this->_boehm_shadow_memory)[index] = core::T_sp(val);
+  reinterpret_cast<core::T_O**>(this->_boehm_shadow_memory)[index] = reinterpret_cast<core::T_O*>(val);
 #endif
-  reinterpret_cast<core::T_sp*>(this->_module_memory)[index] = core::T_sp(val);
+  reinterpret_cast<core::T_O**>(this->_module_memory)[index] = reinterpret_cast<core::T_O*>(val);
   return val;
 }
 };

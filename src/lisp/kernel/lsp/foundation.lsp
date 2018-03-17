@@ -2,11 +2,14 @@
 (eval-when (eval compile load) (core:select-package :core))
 
 
-(defconstant lambda-list-keywords '( &ALLOW-OTHER-KEYS
-				    &AUX &BODY &ENVIRONMENT &KEY
-				    &OPTIONAL &REST
-                                    &VA-REST
-				    &WHOLE) )
+(if (boundp 'lambda-list-keywords)
+    nil ; don't redefine
+    (defconstant lambda-list-keywords
+      '(&ALLOW-OTHER-KEYS
+        &AUX &BODY &ENVIRONMENT &KEY
+        &OPTIONAL &REST
+        &VA-REST
+        &WHOLE) ))
 
 
 ;; Temporary check-type - everything is true
@@ -14,9 +17,8 @@
       #'(lambda (whole env) t)
       t)
 
-
-(fset '1- #'(lambda (num) (declare (core::lambda-name 1-)) (- num 1)))
-(fset '1+ #'(lambda (num) (declare (core::lambda-name 1+)) (+ num 1)))
+(defun 1- (num) (- num 1))
+(defun 1+ (num) (+ num 1))
 
 
 
@@ -100,7 +102,6 @@ the corresponding VAR.  Returns NIL."
 
 
 (defun si::while-until (test body jmp-op)
-  (declare (si::c-local))
   (let ((label (gensym))
 	(exit (gensym)))
     `(TAGBODY
@@ -128,11 +129,6 @@ the corresponding VAR.  Returns NIL."
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (select-package :ext))
 
-(core:fset 'truly-the
-      #'(lambda (whole env)
-          `(the ,@(cdr whole)))
-      t)
-
 (core:fset 'checked-value
       #'(lambda (whole env)
           `(the ,@(cdr whole)))
@@ -140,8 +136,6 @@ the corresponding VAR.  Returns NIL."
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (core:select-package :core))
-(import 'ext:truly-the :core)
-(export 'truly-the)
 
 
 (si::fset 'prog1 #'(lambda (whole env)
@@ -205,7 +199,8 @@ the corresponding VAR.  Returns NIL."
 ;; in-package macro is re-defined in evalmacros.lsp
 (si::fset 'in-package #'(lambda (whole env)
 			  `(eval-when (:compile-toplevel :load-toplevel :execute)
-			     (si::select-package ,(string (cadr whole)))))
+			     (si::select-package ,(string (cadr whole)))
+                             *package*))
 	  t)
 
 
@@ -316,8 +311,8 @@ the corresponding VAR.  Returns NIL."
   (gdb "invoking unix debugger"))
 
 
-(defun signal-type-error (type expected-type)
-  (error 'type-error "type error"))
+(defun signal-type-error (datum expected-type)
+  (error 'type-error :datum datum :expected-type expected-type))
 
 
 (defun inform (fmt &rest args)
@@ -327,14 +322,9 @@ the corresponding VAR.  Returns NIL."
 			`(car ,(cadr w)))
 	  t)
 
-
-
-
-
-
 (in-package :cl)
 
-;; We do not use this macroexpanso, and thus we do not care whether
+;; We do not use this macroexpansion, and thus we do not care whether
 ;; it is efficiently compiled by ECL or not.
 (core:fset 'multiple-value-bind
            #'(lambda (whole env)
@@ -359,6 +349,7 @@ the corresponding VAR.  Returns NIL."
 
 (export 'class-name)
 
+(in-package :core)
 
 (defun warn-or-ignore (x &rest args)
   nil)

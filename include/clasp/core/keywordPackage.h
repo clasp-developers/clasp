@@ -27,7 +27,6 @@ THE SOFTWARE.
 #ifndef _keyword_H
 #define _keyword_H
 
-#include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 #include <clasp/core/keywordPackage.fwd.h>
 

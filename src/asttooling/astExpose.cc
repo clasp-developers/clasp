@@ -388,7 +388,7 @@ namespace asttooling {
 template <typename T>
 core::T_sp cast_decl(clang::Decl *d) {
   if (T *x = dyn_cast<T>(d)) {
-    return clbind::Wrapper<T, T *>::create(x, reg::registered_class<T>::id);
+    return clbind::Wrapper<T, T *>::make_wrapper(x, reg::registered_class<T>::id);
   }
   SIMPLE_ERROR(BF("Could not cast Decl to known Decl"));
 }
@@ -396,7 +396,7 @@ core::T_sp cast_decl(clang::Decl *d) {
 template <typename T>
 core::T_sp cast_stmt(clang::Stmt *d) {
   T *x = llvm::cast<T>(d);
-  return clbind::Wrapper<T, T *>::create(x, reg::registered_class<T>::id);
+  return clbind::Wrapper<T, T *>::make_wrapper(x, reg::registered_class<T>::id);
 }
 
 core::T_sp mostDerivedDecl(const clang::Decl *cd) {
@@ -661,7 +661,7 @@ core::T_sp mostDerivedStmt(const clang::Stmt *x) {
 template <typename T>
 core::T_sp cast_type(clang::Type *d) {
   T *x = llvm::cast<T>(d);
-  return clbind::Wrapper<T, T *>::create(x, reg::registered_class<T>::id);
+  return clbind::Wrapper<T, T *>::make_wrapper(x, reg::registered_class<T>::id);
 }
 
 core::T_sp mostDerivedType(const clang::Type *x) {
@@ -1163,7 +1163,8 @@ void initialize_astExpose() {
         .def("isTypeAlias", &clang::TemplateSpecializationType::isTypeAlias)
         .def("isCurrentInstantiation", &clang::TemplateSpecializationType::isCurrentInstantiation),
     CLASS_TYPE(Auto, Type)
-        .def("desugar", &clang::AutoType::desugar),
+    ,
+//        .def("desugar", &clang::AutoType::desugar),
     CLASS_TYPE(InjectedClassName, Type)
         .def("getDecl", &clang::InjectedClassNameType::getDecl),
     CLASS_TYPE(DependentName, Type)

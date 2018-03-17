@@ -30,8 +30,6 @@ mps_res_t mps_scan_LispRoots(mps_ss_t ss, mps_thr_t thr, void *p, size_t s, Lisp
   mps_scan_InvocationHistoryStack(ss, thr, p, s, this->_InvocationHistoryStack);
   mps_scan_MultipleValues(ss, thr, p, s, this->_MultipleValues);
   mps_scan_DynamicBindingStack(ss, thr, p, s, this->_Bindings);
-  mps_scan_Cache(ss, thr, p, s, this->_MethodCachePtr);
-  mps_scan_Cache(ss, thr, p, s, this->_SlotCachePtr);
   STLMAP_SMART_SECOND_FIX(this->_SourceFiles)
   GCHOLDER_UNORDEREDSET_FIX(this->_TraceFunctions);
   SMART_PTR_FIX(this->_SystemProperties);

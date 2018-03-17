@@ -1,0 +1,16 @@
+#! /bin/bash
+./do-dtrace $1
+#PID=$1
+#TIME=${2:-60s}
+#RATE=${3:-97}
+#FRAMES=${4:-1000}
+## in case there is no symbols file
+#sudo rm -f /tmp/out-$1.user_stacks && sudo dtrace -p $PID -x ustackframes=${FRAMES} -n  "profile-$RATE /pid == $PID && arg1 / { @[ustack()] = count(); } tick-$TIME { exit(0); }" -o /tmp/out-$1.user_stacks
+#if [ -f /tmp/clasp-symbols-$1 ]; then
+#   ./symbolicate.lisp -i /tmp/out-$1.user_stacks -o /tmp/out-symbol-$1.user_stacks -s /tmp/clasp-symbols-$1
+#else
+#   cp /tmp/out-$1.user_stacks /tmp/out-symbol-$1.user_stacks
+#fi
+$FLAME_GRAPH_HOME/stackcollapse.pl /tmp/out-symbol-$1.user_stacks >/tmp/out-symbol-$1.folded
+$FLAME_GRAPH_HOME/flamegraph.pl /tmp/out-symbol-$1.folded >/tmp/out-$1.svg
+echo /tmp/out-$1.svg

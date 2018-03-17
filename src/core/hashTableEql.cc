@@ -26,6 +26,7 @@ THE SOFTWARE.
 /* -^- */
 //#define DEBUG_LEVEL_FULL
 
+#include <clasp/core/foundation.h>
 #include <clasp/core/common.h>
 #include <clasp/core/environment.h>
 #include <clasp/core/symbolTable.h>
@@ -77,13 +78,13 @@ bool HashTableEql_O::keyTest(T_sp entryKey, T_sp searchKey) const {
 }
 
 gc::Fixnum HashTableEql_O::sxhashKey(T_sp obj, gc::Fixnum bound, bool willAddKey) const {
-  HashGenerator hg;
+  Hash1Generator hg;
 #ifdef USE_MPS
   HashTable_O::sxhash_eql(hg, obj, willAddKey ? const_cast<mps_ld_t>(&(this->_LocationDependency)) : NULL);
 #else
   HashTable_O::sxhash_eql(hg, obj, NULL);
 #endif
-  gc::Fixnum hash = hg.hash(bound);
+  gc::Fixnum hash = hg.hashBound(bound);
   LOG(BF("HashTableEql_O::sxhashKey obj[%s] raw_hash[%s] bound[%d] hash[%d]") % _rep_(obj) % hg.asString() % bound % hash);
   return hash;
 }

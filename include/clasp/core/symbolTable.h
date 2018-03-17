@@ -27,7 +27,6 @@ THE SOFTWARE.
 #ifndef _core_symbolTable_H
 #define _core_symbolTable_H
 
-#include <clasp/core/foundation.h>
 #ifndef SCRAPING
 #define EXTERN_ALL_SYMBOLS
 #include SYMBOLS_SCRAPED_INC_H

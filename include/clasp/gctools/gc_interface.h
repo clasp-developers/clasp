@@ -26,7 +26,6 @@ THE SOFTWARE.
 /* -^- */
 #ifndef GC_INTERFACE_H
 #define GC_INTERFACE_H
-#include <clasp/core/foundation.h>
 
 //
 // All class forward declarations
@@ -45,49 +44,91 @@ namespace internal {
 };
 };
 namespace clbind {
-class ConstructorCreator_O;
+  class ConstructorCreator_O;
+  class ClassRep_O;
 };
 
 
+//////////////////////////////////////////////////////////////////////
+//
+// Forward declarations
+//
+//
+namespace clbind {
+  namespace detail {
+    class class_map;
+  }
+}
+namespace core {
+  class KeywordArgument;
+  class RequiredArgument;
+  class SymbolClassPair;
+  class SymbolStorage;
+  class TranslationFunctor_O;
+  class DynamicBinding;
+  class AuxArgument;
+  class OptionalArgument;
+  class CacheRecord;
+  class ExceptionEntry;
+};
+namespace asttooling {
+  class DerivableSyntaxOnlyAction;
+  class DerivableASTFrontendAction;
+  class DerivableMatchCallback;
+  class DerivableFrontendActionFactory;
+};
 
 
-//#define GC_INTERFACE_FORWARD
-//#include <project_headers.h>
-//#undef GC_INTERFACE_FORWARD
+////////////////////////////////////////////////////////////
+//
 
-#ifdef USE_MPS
-#ifndef RUNNING_GC_BUILDER // when running the static analyzer - don't include the following
-#define DECLARE_FORWARDS
-#include CLASP_GC_FILENAME
-#undef DECLARE_FORWARDS
-#endif // ifndef RUNNING_GC_BUILDER
+extern Fixnum global_TheClassRep_stamp;
+
+////////////////////////////////////////////////////////////
+//
+// Forward definition for classes
+#ifdef BUILD_EXTENSION
+#define GC_INTERFACE_FORWARD
+#include <project_headers.h>
+#undef GC_INTERFACE_FORWARD
+
+#define GC_INTERFACE_GC_MANAGED_TYPES
+#include <project_headers.h>
+#undef GC_INTERFACE_GC_MANAGED_TYPES
 #endif
+
 #ifdef USE_BOEHM
-#ifdef USE_CXX_DYNAMIC_CAST
-// nothing
-#else
-#define DECLARE_FORWARDS
-#include CLASP_GC_FILENAME
-#undef DECLARE_FORWARDS
+#ifndef SCRAPING
+  #define DECLARE_FORWARDS
+  #include INIT_CLASSES_INC_H // REPLACED CLASP_GC_FILENAME // "main/clasp_gc.cc"
+  #undef DECLARE_FORWARDS
 #endif
 #endif
-
+#ifdef USE_MPS
+#ifndef RUNNING_GC_BUILDER
+  #define DECLARE_FORWARDS
+  #include CLASP_GC_FILENAME // "main/clasp_gc.cc"
+  #undef DECLARE_FORWARDS
+#endif
+#endif
 namespace gctools {
 
-#ifdef USE_MPS
-#ifndef RUNNING_GC_BUILDER // when running the static analyzer - don't include the following
-#define GC_KIND_SELECTORS
-#include CLASP_GC_FILENAME
-#undef GC_KIND_SELECTORS
-#endif // ifndef RUNNING_GC_BUILDER
+
+////////////////////////////////////////////////////////////
+//
+// Define the stamps  
+#ifdef USE_BOEHM  
+#ifndef SCRAPING
+ #define GC_STAMP_SELECTORS
+ #include INIT_CLASSES_INC_H // REPLACED CLASP_GC_FILENAME
+ #undef GC_STAMP_SELECTORS
 #endif
-#ifdef USE_BOEHM
-#ifdef USE_CXX_DYNAMIC_CAST
-// Nothing
-#else
-#define GC_KIND_SELECTORS
-#include CLASP_GC_FILENAME
-#undef GC_KIND_SELECTORS
+#endif
+#ifdef USE_MPS
+#ifndef RUNNING_GC_BUILDER
+ #define GC_STAMP_SELECTORS
+ #include CLASP_GC_FILENAME // "main/clasp_gc.cc"
+ #undef GC_STAMP_SELECTORS
 #endif
 #endif
 };
@@ -95,7 +136,7 @@ namespace gctools {
 #include <clasp/gctools/other_tagged_casts.h>
 
 extern "C" {
-const char *obj_name(gctools::kind_t kind);
+const char *obj_name(gctools::stamp_t kind);
 extern void obj_dump_base(void *base);
 extern void obj_deallocate_unmanaged_instance(gctools::smart_ptr<core::T_O> obj);
 
@@ -114,6 +155,10 @@ void initialize_clasp();
 void initialize_functions();
 void initialize_source_info();
 void initialize_classes_and_methods();
+void initialize_typeq_map();
 
+
+extern std::map<std::string,size_t> _global_stamp_names;
+extern size_t _global_last_stamp;
 
 #endif

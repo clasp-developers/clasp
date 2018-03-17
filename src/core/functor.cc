@@ -64,10 +64,13 @@ CL_DEFUN size_t core__function_call_counter(Function_sp f)
 }
 #endif
 
+CL_DEFMETHOD Pointer_sp Function_O::function_pointer() const {
+  return Pointer_O::create((void*)this->entry.load());
+};
 string Function_O::__repr__() const {
-  T_sp name = this->name();
+  T_sp name = this->functionName();
   stringstream ss;
-  ss << "#<" << this->_instanceClass()->classNameAsString();
+  ss << "#<" << this->_instanceClass()->_classNameAsString();
 #ifdef USE_BOEHM
   ss << "@" << (void*)this << " ";
 #endif
@@ -75,7 +78,7 @@ string Function_O::__repr__() const {
   ss << " :ftype " << _rep_(this->getKind());
   ss << " lambda-list: " << _rep_(this->lambda_list());
   if ( this->entry != NULL ) {
-    ss << " :fptr " << reinterpret_cast<void*>(this->entry);
+    ss << " :fptr " << reinterpret_cast<void*>(this->entry.load());
   }
   
   ss << ">";
@@ -248,7 +251,7 @@ void BuiltinClosure_O::setf_lambda_list(List_sp lambda_list) {
 #if 0
 LCC_RETURN BuiltinClosure_O::LISP_CALLING_CONVENTION() {
   INCREMENT_FUNCTION_CALL_COUNTER(this);
-  IMPLEMENT_MEF(BF("Handle call to BuiltinClosure"));
+  IMPLEMENT_MEF("Handle call to BuiltinClosure");
 };
 #endif
 
@@ -265,8 +268,9 @@ void InterpretedClosure_O::setf_lambda_list(List_sp lambda_list) {
   // Do nothing - setting the lambdaListHandler is all that's needed
 }
 
-LCC_RETURN interpretedClosureEntryPoint(LCC_ARGS_FUNCALL_ELLIPSIS) {
+DONT_OPTIMIZE_WHEN_DEBUG_RELEASE LCC_RETURN interpretedClosureEntryPoint(LCC_ARGS_FUNCALL_ELLIPSIS) {
   InterpretedClosure_O* closure = gctools::untag_general<InterpretedClosure_O*>((InterpretedClosure_O*)lcc_closure);
+//  printf("%s:%d    closure name -> %s\n", __FILE__, __LINE__, _rep_(closure->functionName()).c_str());
   INCREMENT_FUNCTION_CALL_COUNTER(closure);
   INITIALIZE_VA_LIST();
   ++global_interpreted_closure_calls;
@@ -274,9 +278,7 @@ LCC_RETURN interpretedClosureEntryPoint(LCC_ARGS_FUNCALL_ELLIPSIS) {
 //  printf("%s:%d ValueEnvironment_O:createForLambdaListHandler llh: %s\n", __FILE__, __LINE__, _rep_(this->_lambdaListHandler).c_str());
 //  newValueEnvironment->dump();
   ValueEnvironmentDynamicScopeManager scope(newValueEnvironment);
-#ifdef USE_EXPENSIVE_BACKTRACE
-  INVOCATION_HISTORY_FRAME(); // InvocationHistoryFrame _frame(&lcc_arglist_s._Args);
-#endif
+  ALWAYS_INVOCATION_HISTORY_FRAME(); // InvocationHistoryFrame _frame(&lcc_arglist_s._Args);
   lambdaListHandler_createBindings(closure->asSmartPtr(), closure->_lambdaListHandler, scope, LCC_PASS_ARGS_LLH);
 //  printf("%s:%d     after lambdaListHandler_createbindings\n", __FILE__, __LINE__);
 //  newValueEnvironment->dump();
@@ -308,13 +310,16 @@ void CompiledClosure_O::setf_lambda_list(core::List_sp lambda_list) {
 #endif
 
 
+void CompiledDispatchFunction_O::setf_lambda_list(core::List_sp lambda_list) 
+{ SIMPLE_ERROR(BF("You cannot set the lambda-list of a compiled-dispatch-function")); };  
+
 #if 0
 LCC_RETURN InstanceClosure_O::LISP_CALLING_CONVENTION() {
   INCREMENT_FUNCTION_CALL_COUNTER(this);
 // Copy the arguments passed in registers into the multiple_values array and those
 // will be processed by the generic function
 #ifdef _DEBUG_BUILD
-  VaList_S saved_args(*reinterpret_cast<VaList_S *>(untag_valist(lcc_arglist)));
+  Vaslist saved_args(*reinterpret_cast<Vaslist *>(untag_vaslist(lcc_arglist)));
 #endif
   VaList_sp gfargs((gc::Tagged)lcc_arglist);
   return (this->entryPoint)(this->instance, gfargs);

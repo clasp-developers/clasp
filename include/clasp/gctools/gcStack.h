@@ -76,12 +76,12 @@ struct Frame {
   }
 
   inline ElementType& operator[](size_t idx) {
-    GCTOOLS_ASSERTF(idx >= 0 && idx < this->number_of_arguments(),BF("idx = %d  number_of_arguments=%d") % idx % this->number_of_arguments());
+    GCTOOLS_ASSERTF(idx >= 0 && idx < this->number_of_arguments(),"idx out of bounds");
     // This works because the overflow area follows the register save area
     return this->_register_save_area[idx+LCC_ARG0_REGISTER];
   }
   inline const ElementType& operator[](size_t idx) const {
-    GCTOOLS_ASSERTF(idx >= 0 && idx < this->number_of_arguments(),BF("idx = %d  number_of_arguments=%d") % idx % this->number_of_arguments());
+    GCTOOLS_ASSERTF(idx >= 0 && idx < this->number_of_arguments(),"idx out of bounds");
     // This works because the overflow area follows the register save area
     return this->_register_save_area[idx+LCC_ARG0_REGISTER];
   }
@@ -99,13 +99,13 @@ struct Frame {
 namespace core {
 
 // A struct that wraps va_list and behaves like a Common Lisp LIST
-typedef gctools::smart_ptr<VaList_S> VaList_sp;
-/*! VaList_S: A class that maintains a C va_list and allows the programmer to
+typedef gctools::smart_ptr<Vaslist> VaList_sp;
+/*! Vaslist: A class that maintains a C va_list and allows the programmer to
 iterate over a list of arguments.  It uses a lot of trickery to let it iterate over
 a list of arguments passed to a function or a list of arguments in a Frame.
 It must always be allocated on the Stack.
 */
-struct VaList_S {
+struct Vaslist {
   /* WARNING WARNING WARNING WARNING
 DO NOT CHANGE THE ORDER OF THESE OBJECTS WITHOUT UPDATING THE DEFINITION OF +va_list+ in cmpintrinsics.lsp
 */
@@ -123,50 +123,50 @@ DO NOT CHANGE THE ORDER OF THESE OBJECTS WITHOUT UPDATING THE DEFINITION OF +va_
 #endif
 
   inline core::T_O *asTaggedPtr() {
-    return gctools::tag_valist<core::T_O *>(this);
+    return gctools::tag_vaslist<core::T_O *>(this);
   }
-  VaList_S(gc::Frame* frame) {
+  Vaslist(gc::Frame* frame) {
     LCC_SETUP_VA_LIST_FROM_FRAME(this->_Args, *frame);
     this->_remaining_nargs = frame->number_of_arguments();
     this->check_remaining_nargs();
   };
 
-  VaList_S(const gc::Frame& frame) {
+  Vaslist(const gc::Frame& frame) {
     LCC_SETUP_VA_LIST_FROM_FRAME(this->_Args, frame);
     this->_remaining_nargs = frame.number_of_arguments();
     this->check_remaining_nargs();
   };
 
-  VaList_S(size_t nargs, va_list vargs) {
+  Vaslist(size_t nargs, va_list vargs) {
     va_copy(this->_Args, vargs);
     this->_remaining_nargs = nargs;
     this->check_remaining_nargs();
   };
-  // The VaList_S._Args must be initialized immediately after this
+  // The Vaslist._Args must be initialized immediately after this
   //    using va_start(xxxx._Args,FIRST_ARG)
   //    See lispCallingConvention.h INITIALIZE_VA_LIST
-  VaList_S(size_t nargs) {
+  Vaslist(size_t nargs) {
     this->_remaining_nargs = nargs;
     this->check_remaining_nargs();
   };
-  VaList_S(const VaList_S &other) {
+  Vaslist(const Vaslist &other) {
     va_copy(this->_Args, other._Args);
     this->_remaining_nargs = other._remaining_nargs;
     this->check_remaining_nargs();
   }
 
-  VaList_S(){};
+  Vaslist(){};
 
-  ~VaList_S() {
+  ~Vaslist() {
     va_end(this->_Args);
   }
 
 #if 0  
-  void set_from_other_VaList_S_change_nargs(VaList_S *other, size_t nargs_remaining) {
+  void set_from_other_Vaslist_change_nargs(Vaslist *other, size_t nargs_remaining) {
     LCC_SETUP_VA_LIST_FROM_VA_LIST_CHANGE_NARGS(this->_Args, other->_Args, nargs_remaining);
   }
 #endif
-  void set_from_other_VaList_S(VaList_S *other) {
+  void set_from_other_Vaslist(Vaslist *other) {
     LCC_SETUP_VA_LIST_FROM_VA_LIST(this->_Args, other->_Args);
     this->_remaining_nargs = other->_remaining_nargs;
     this->check_remaining_nargs();
@@ -179,8 +179,10 @@ DO NOT CHANGE THE ORDER OF THESE OBJECTS WITHOUT UPDATING THE DEFINITION OF +va_
 
 
 
-  inline size_t remaining_nargs() const {
-    this->check_remaining_nargs();
+  inline const size_t& remaining_nargs() const {
+    return this->_remaining_nargs;
+  }
+  inline size_t& remaining_nargs() {
     return this->_remaining_nargs;
   }
 #if 0
@@ -193,13 +195,17 @@ DO NOT CHANGE THE ORDER OF THESE OBJECTS WITHOUT UPDATING THE DEFINITION OF +va_
 #endif
   inline core::T_O* next_arg_raw() {
     --this->_remaining_nargs;
+ #ifdef _DEBUG_BUILD
     this->check_remaining_nargs();
+ #endif
     return LCC_NEXT_ARG_RAW_AND_ADVANCE(this);
   }
 
   inline core::T_sp next_arg() {
     --this->_remaining_nargs;
+#ifdef _DEBUG_BUILD
     this->check_remaining_nargs();
+#endif
     T_O* ptr = LCC_NEXT_ARG_RAW_AND_ADVANCE(this);
     return T_sp(reinterpret_cast<gctools::Tagged>(ptr));
   }
@@ -213,17 +219,17 @@ DO NOT CHANGE THE ORDER OF THESE OBJECTS WITHOUT UPDATING THE DEFINITION OF +va_
 };
 
 namespace gctools {
-/*! Specialization of smart_ptr<T> on core::VaList_S
+/*! Specialization of smart_ptr<T> on core::Vaslist
 */
 template <>
-  class smart_ptr<core::VaList_S> { // : public tagged_ptr<core::VaList_S> {
+  class smart_ptr<core::Vaslist> { // : public tagged_ptr<core::Vaslist> {
 public:
-  typedef core::VaList_S Type;
+  typedef core::Vaslist Type;
   Type* theObject;
 public:
   //Default constructor, set theObject to NULL
  smart_ptr() : theObject((Type*)NULL){};
-  explicit inline smart_ptr(core::VaList_S *ptr) : theObject((Type*)gctools::tag_valist<Type *>(ptr)) {
+  explicit inline smart_ptr(core::Vaslist *ptr) : theObject((Type*)gctools::tag_vaslist<Type *>(ptr)) {
 //    GCTOOLS_ASSERT(this->valistp());
   };
   /*! Create a smart pointer from an existing tagged pointer */
@@ -255,7 +261,7 @@ public:
   inline bool generalp() const { return tagged_generalp(this->theObject); };
   inline bool consp() const { return tagged_consp(this->theObject); };
   inline bool objectp() const { return this->generalp() || this->consp(); };
-  inline Type* unsafe_valist() const { return reinterpret_cast<Type*>(untag_valist(this->theObject)); };
+  inline Type* unsafe_valist() const { return reinterpret_cast<Type*>(untag_vaslist(this->theObject)); };
   inline core::T_O *raw_() const { return reinterpret_cast<core::T_O *>(this->theObject); };
   inline gctools::Tagged tagged_() const { return reinterpret_cast<gctools::Tagged>(this->theObject); }
 

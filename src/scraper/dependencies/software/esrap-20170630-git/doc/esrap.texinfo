@@ -1,0 +1,360 @@
+\input texinfo   @c -*-texinfo-*-
+@c %**start of header
+@setfilename esrap.info
+@c %**end of header
+
+@settitle Esrap
+
+@c for install-info
+@dircategory Software development
+@direntry
+* Esrap:           a packrat parser for Common Lisp
+@end direntry
+
+@titlepage
+
+@title Esrap
+@subtitle a packrat parser for Common Lisp
+
+@c The following two commands start the copyright page.
+@page
+@vskip 0pt plus 1filll
+@insertcopying
+
+@end titlepage
+
+In addition to regular Packrat / Parsing Grammar / TDPL features Esrap
+supports
+@itemize
+@item
+dynamic redefinition of nonterminals
+@item
+inline grammars
+@item
+semantic predicates
+@item
+introspective facilities for development
+@item
+support for left-recursive rules
+@item
+functions as terminals
+@item
+accurate, customizable parse error reports
+@end itemize
+
+Esrap was originally written by @email{nikodemus@@random-state.net,
+Nikodemus Siivola}. It is now developed and maintained by
+@email{jmoringe@@uni-bielefeld.de, Jan Moringen}.
+
+Esrap is maintained in Git:
+@example
+git clone -b stable git://github.com/scymtym/esrap.git
+@end example
+will get you a local copy (omit @code{-b stable} to get the latest
+development version).
+@example
+@url{http://github.com/scymtym/esrap}
+@end example
+is the GitHub project page.
+
+Esrap is licenced under an MIT-style licence.
+
+For more on packrat parsing, see
+@url{http://pdos.csail.mit.edu/~baford/packrat/thesis/} for Bryan Ford's 2002
+thesis: ``Packrat Parsing: a Practical Linear Time Algorithm with Backtracking''.
+
+For left recursion support in packrat parsers, see
+@url{http://www.vpri.org/pdf/tr2007002_packrat.pdf} for A. Warth et al's
+2008 paper: ``Packrat Parsers Can Support Left Recursion''.
+
+@contents
+
+@ifnottex
+
+@include include/ifnottex.texinfo
+
+@end ifnottex
+
+@chapter Parsing Expressions
+
+Parsing proceeds by matching text against parsing expressions.
+Matching has three components: success vs failure, consumption of
+input, and associated production.
+
+Parsing expressions that fail never consume input. Parsing expressions
+that succeed may or may not consume input.
+
+A parsing expressions can be:
+
+@heading Terminal
+A terminal is a character or a string of length one, which succeeds and
+consumes a single character if that character matches the terminal.
+
+Additionally, Esrap supports some pseudoterminals.
+
+@itemize
+@item
+The wild terminal symbol @code{character} always succeeds, consuming
+and producing a single character.
+@item
+Expressions of the form @code{(character-ranges range ...)} match a
+single character from the given range(s), consuming and producing that
+character. A range can be either a list of the form @code{(#\start_char
+#\stop_char)} or a single character.
+@item
+Multicharacter strings can be used to specify sequences of terminals:
+@code{"foo"} succeeds and consumes input as if @code{(and #\f #\o
+#\o)}. Produces the consumed string.
+@item
+Expressions of the form @code{(string length)} can be used to specify
+sequences of arbitrary characters: @code{(string 2)} succeeds and
+consumes input as if @code{(and character character)}. Produces the
+consumed string.
+@end itemize
+
+@heading Nonterminal
+Nonterminals are specified using symbols. A nonterminal symbol
+succeeds if the parsing expression associated with it succeeds, and
+consumes whatever the input that expression consumes.
+
+The production of a nonterminal depends on the associated expression
+and an optional transformation rule.
+
+Nonterminals are defined using @code{defrule}.
+
+@emph{Note: Currently all rules share the same namespace, so you
+should not use symbols in the COMMON-LISP package or other shared
+packages to name your rules unless you are certain there are no other
+Esrap using components in your Lisp image. In a future version of
+Esrap grammar objects will be introduced to allow multiple definitions
+of nonterminals. Symbols in the COMMON-LISP package are specifically
+reserved for use by Esrap.}
+
+@heading Sequence
+@lisp
+(and subexpression ...)
+@end lisp
+
+A sequence succeeds if all subexpressions succeed, and consumes all
+input consumed by the subexpressions. A sequence produces the
+productions of its subexpressions as a list.
+
+@heading Ordered Choice
+@lisp
+(or subexpression ...)
+@end lisp
+
+An ordered choice succeeds if any of the subexpressions succeeds, and
+consumes all the input consumed by the successful subexpression. An
+ordered choice produces whatever the successful subexpression
+produces.
+
+Subexpressions are checked strictly in the specified order, and once
+a subexpression succeeds no further ones will be tried.
+
+@heading Negation
+@lisp
+(not subexpression)
+@end lisp
+
+A negation succeeds if the subexpression fails, and consumes one character
+of input. A negation produces the character it consumes.
+
+@heading Greedy Repetition
+@lisp
+(* subexpresssion)
+@end lisp
+
+A greedy repetition always succeeds, consuming all input consumed by
+applying subexpression repeatedly as long as it succeeds.
+
+A greedy repetition produces the productions of the subexpression as a
+list.
+
+@heading Greedy Positive Repetition
+@lisp
+(+ subexpresssion)
+@end lisp
+
+A greedy repetition succeeds if subexpression succeeds at least once,
+and consumes all input consumed by applying subexpression repeatedly
+as long as it succeeds. A greedy positive repetition produces the
+productions of the subexpression as a list.
+
+@heading Optional
+@lisp
+(? subexpression)
+@end lisp
+
+Optionals always succeed, and consume whatever input the subexpression
+consumes. An optional produces whatever the subexpression produces, or
+@code{nil} if the subexpression does not succeed.
+
+@heading Followed-By Predicate
+@lisp
+(& subexpression)
+@end lisp
+
+A followed-by predicate succeeds if the subexpression succeeds, and
+@emph{consumes no input}. A followed-by predicate produces whatever
+the subexpression produces.
+
+@heading Not-Followed-By Predicate
+@lisp
+(! subexpression)
+@end lisp
+
+A not-followed-by predicate succeeds if the subexpression does not
+succeed, and @emph{consumes no input}. A not-followed-by predicate
+produces @code{nil}.
+
+@heading Lookbehind
+@lisp
+(< amount subexpression)
+@end lisp
+
+A lookbehind succeeds if @code{subexpression} succeeds at the input
+position reached by moving backward @code{amount}, a positive integer,
+characters from the current position and @emph{consumes no input}. A
+lookbehind produces whatever @code{subexpression} produces.
+
+@heading Lookahead
+@lisp
+(> amount subexpression)
+@end lisp
+
+A lookahead succeeds if @code{subexpression} succeeds at the input
+position reached by moving forward @code{amount}, a positive integer,
+characters from the current position and @emph{consumes no input}. A
+lookahead produces whatever @code{subexpression} produces.
+
+@heading Semantic Predicates
+@lisp
+(predicate-name subexpression)
+@end lisp
+
+The @code{predicate-name} is a symbol naming a global function. A
+semantic predicate succeeds if subexpression succeeds @emph{and} the
+named function returns true for the production of the subexpression. A
+semantic predicate produces whatever the subexpression produces.
+
+@emph{Note: semantic predicates may change in the future to produce
+whatever the predicate function returns.}
+
+@heading Functions as Terminals
+@lisp
+(function function-name)
+@end lisp
+
+@code{function-name} is a symbol naming a global
+function. @code{function-name}'s lambda-list has to be compatible to
+@code{(text position end)} where @code{text} is the whole input and
+@code{position} and @code{end} indicate the maximal subsequence
+@code{function-name} should attempt to parse.
+
+A function terminal succeeds if either
+@enumerate
+@item
+@code{function-name} returns @code{T} as its third value.
+@item
+@code{function-name} returns @code{nil} as its third value (or returns
+only two values) and @code{nil} as its second value. This indicates that
+the entire remaining input has been consumed.
+@item
+@code{function-name} returns @code{nil} as its third value (or returns
+only two values) and an integer @code{> position} as its second value
+indicating the position up to which @code{text} has been consumed.
+@item
+@code{function-name} returns a value of type @code{successful-parse} as
+its first value.
+@end enumerate
+When a function terminal succeeds, the first return value is an
+arbitrary production.
+
+A function terminal fails if either
+@enumerate
+@item
+@code{function-name} returns two values: an ignored value and
+@code{position}. Returning @code{position} indicates that no progress
+has been made.
+@item
+@code{function-name} returns three values: an ignored value, @code{nil}
+or an integer @code{>= position} and a string or a condition explaining
+the failure. In this case, when the second value is not @code{nil}, it
+indicates the exact position of the failure.
+@item
+@code{function-name} returns a value of type @code{error-result} as its
+first value.
+@end enumerate
+
+Note that rules which use functions as terminals do not automatically
+pick up redefinitions of the used functions. For that to happen, the
+rules have to be redefined as well.
+
+See @file{example-function-terminals.lisp} for examples.
+
+@heading Left Recursion
+
+One aspect of designing Esrap rules is @emph{left recursion}. A
+@emph{direct left recursive} rule is of the form
+@lisp
+(defrule left-recursion (or (and left-recursion STUFF) ALTERNATIVES))
+@end lisp
+The simplest @emph{indirect left recursive} rule is of the form
+@lisp
+(defrule left-recursion.1 left-recursion.2)
+(defrule left-recursion.2 (or (and left-recursion.1 STUFF) ALTERNATIVES))
+@end lisp
+
+Esrap can handle both kinds of left recursive rules, but the linear-time
+guarantee generally no longer holds in such cases. The special variable
+@code{*on-left-recursion*} can be set to either @code{nil} or
+@code{:error} to control Esrap's behavior with respect to allowing left
+recursion.
+
+See @file{example-left-recursion.lisp} for examples.
+
+@chapter Dictionary
+
+@section Primary Interface
+
+@include include/macro-esrap-defrule.texinfo
+@include include/fun-esrap-parse.texinfo
+@include include/fun-esrap-describe-grammar.texinfo
+
+@section Utilities
+
+@include include/fun-esrap-text.texinfo
+
+@section Introspection and Intercession
+
+@include include/fun-esrap-add-rule.texinfo
+@include include/fun-esrap-change-rule.texinfo
+@include include/fun-esrap-find-rule.texinfo
+@include include/fun-esrap-remove-rule.texinfo
+@include include/fun-esrap-rule-dependencies.texinfo
+@include include/fun-esrap-rule-expression.texinfo
+@include include/fun-esrap-setf-rule-expression.texinfo
+@include include/fun-esrap-rule-symbol.texinfo
+
+@include include/fun-esrap-trace-rule.texinfo
+@include include/fun-esrap-untrace-rule.texinfo
+
+@include include/fun-esrap-expression-start-terminals.texinfo
+@include include/fun-esrap-describe-terminal.texinfo
+
+@section Error Conditions
+
+@include include/var-esrap-star-on-left-recursion-star.texinfo
+
+@include include/fun-esrap-esrap-error-position.texinfo
+@include include/fun-esrap-esrap-parse-error-result.texinfo
+@include include/fun-esrap-esrap-parse-error-context.texinfo
+
+@include include/condition-esrap-esrap-error.texinfo
+@include include/condition-esrap-left-recursion.texinfo
+@include include/condition-esrap-esrap-parse-error.texinfo
+
+@include include/condition-esrap-undefined-rule-error.texinfo
+
+@bye

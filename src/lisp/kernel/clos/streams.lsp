@@ -264,7 +264,6 @@
 ;;;
 
 (defun bug-or-error (stream fun)
-  (declare (si::c-local))
   (if (typep stream 'stream)
       (error "The stream ~S has no suitable method for ~S." stream fun)
       (error 'type-error :datum stream :expected-type 'stream)))
@@ -689,9 +688,8 @@
 
 ;;; Setup
 
-(eval-when (:compile-toplevel :execute #+clasp :load-toplevel)
-  (defconstant +conflicting-symbols+ '(cl:close cl:stream-element-type cl:input-stream-p
-				       cl:open-stream-p cl:output-stream-p cl:streamp)))
+(core:defconstant-equal +conflicting-symbols+ '(cl:close cl:stream-element-type cl:input-stream-p
+                                                cl:open-stream-p cl:output-stream-p cl:streamp))
 
 (let ((p (find-package "GRAY")))
   (export '(nil) p)

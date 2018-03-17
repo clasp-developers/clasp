@@ -2,6 +2,7 @@
 #ifdef SCRAPING
 #define BEGIN_TAG BEGIN_TAG_bfc54f90bafadf5
 #define END_TAG END_TAG_bfc54f90bafadf5
+#define GC_MANAGED_TYPE(...) BEGIN_TAG GC_MANAGED_TYPE_TAG ( :FILE __FILE__ :LINE __LINE__ :TYPE #__VA_ARGS__ )
 #define CL_BEGIN_ENUM(type,symbol,desc) BEGIN_TAG CL_BEGIN_ENUM_TAG ( :FILE __FILE__ :LINE __LINE__ :TYPE #type :SYMBOL #symbol :DESCRIPTION desc )
 #define CL_VALUE_ENUM(symbol,value) BEGIN_TAG CL_VALUE_ENUM_TAG ( :FILE __FILE__ :LINE __LINE__ :SYMBOL #symbol :VALUE #value )
 #define CL_END_ENUM(symbol) BEGIN_TAG CL_END_ENUM_TAG ( :FILE __FILE__ :LINE __LINE__ :SYMBOL #symbol )
@@ -13,6 +14,7 @@
 #define CL_DECLARE(...) BEGIN_TAG CL_DECLARE_TAG ( :FILE __FILE__ :LINE __LINE__ :DECLARE #__VA_ARGS__ )
 #define CL_INITIALIZER BEGIN_TAG CL_INITIALIZER_TAG ( :FILE __FILE__ :LINE __LINE__ )
 #define CL_DEFUN BEGIN_TAG CL_DEFUN_TAG ( :FILE __FILE__ :LINE __LINE__ )
+#define CL_DEFUN_SETF BEGIN_TAG CL_DEFUN_SETF_TAG ( :FILE __FILE__ :LINE __LINE__ )
 #define CL_DEFMETHOD BEGIN_TAG CL_DEFMETHOD_TAG ( :FILE __FILE__ :LINE __LINE__ )
 #define CL_METHOD_OVERLOAD
 // BEGIN_TAG CL_METHOD_OVERLOAD_TAG ( :FILE __FILE__ :LINE __LINE__ )
@@ -39,6 +41,7 @@
 #else
 #define CL_INITIALIZE
 #define CL_DEFUN
+#define CL_DEFUN_SETF
 #define CL_DEFMETHOD
 #define CL_METHOD_OVERLOAD 
 #define CL_DEF_CLASS_METHOD
@@ -54,6 +57,7 @@
 #define CL_TYPE(...)
 #define CL_EXTERN_DEFMETHOD(type,pointer)
 #define CL_EXTERN_DEFUN(pointer)
+#define GC_MANAGED_TYPE(...)
 #define CL_INITIALIZER
 #define SYMBOL_SC_(pkg,name)
 #define SYMBOL_EXPORT_SC_(pkg,name)

@@ -6,18 +6,38 @@
 #    cd extensions/cando && git checkout testing && cd -
 version: '2'
 services:
-  # first, run: docker-compose run clasp-build
-  # this will compile clasp and copy it's build output ./build/clasp.tgz
+  # first, run: docker-compose run cando-build
+  # this will compile clasp and copy it's build output ./build/cando-build.tgz
   #   Expected time: 90 min
-  clasp-build:
-    image: clasp-build
+  cando-build:
+    image: cando-build
     build:
       context: .
-      dockerfile: tools/dockerfiles/clasp-build/Dockerfile
-    entrypoint: tar -cvzf /build/clasp.tgz -C /out/clasp .
+      dockerfile: tools/dockerfiles/cando-build/Dockerfile
+    entrypoint: tar -cvzf /build/cando-build.tgz -C /out/clasp .
     volumes:
-      - ./build:/build
-  # To build clasp only, run: docker-compose build clasp
+      - /host-build:/build
+  # To build quicklisp and the common lisp cache  run: docker-compose build cando-cache
+  #    Expected time:  xxx min
+  # This will start with a smaller base image, that has only the runtime
+  # dependencies, and copy and unpack ./build/clasp.tgz into the directory /home/app
+  cando-cache:
+    image: cando-cache
+    build:
+      context: .
+      dockerfile: tools/dockerfiles/cando-cache/Dockerfile
+
+  # To build quicklisp and the common lisp cache  run: docker-compose build cando-deploy
+  #    Expected time:  xxx min
+  # This will start with a smaller base image, that has only the runtime
+  # dependencies, and copy and unpack ./build/cando-build.tgz into the directory /home/app
+  cando-deploy:
+    image: cando-deploy
+    build:
+      context: .
+      dockerfile: tools/dockerfiles/cando-deploy/Dockerfile
+
+# To build clasp only, run: docker-compose build clasp
   #    Expected time:  2 min
   # This will start with a smaller base image, that has only the runtime
   # dependencies, and unpack ./build/clasp.tgz into the directory /home/app
@@ -27,16 +47,55 @@ services:
       context: .
       dockerfile: tools/dockerfiles/clasp/Dockerfile
     depends_on:
-      - clasp-build
+      - cando-build
+  # To compile all of the quicklisp dependencies run: docker-compose build cando-compile
+  #    Expected time:  hour
+  cando-compile:
+    image: cando-compile
+    build:
+      context: .
+      dockerfile: tools/dockerfiles/cando-compile/Dockerfile
+    depends_on:
+      - clasp
   # To build cando, run: docker-compose run cando --help
   # this should build the clasp image as a dependency
   cando:
-    image: cando
+    image: drmeister/cando
     build:
       context: .
       dockerfile: tools/dockerfiles/cando/Dockerfile
     depends_on:
-      - clasp
+      - cando-compile
     ports:
       - "8888:8888"
       - "4005:4005"
+
+  # To build clasp for c++ analysis, run: docker-compose run clasp-cxxanalysis --help
+  # this should build the clasp image as a dependency
+  clasp-cxxanalysis:
+    image: drmeister/clasp-cxxanalysis
+    build:
+      context: .
+      dockerfile: tools/dockerfiles/clasp-cxxanalysis/Dockerfile
+    depends_on:
+      - clasp
+    ports:
+      - "4005:4005"
+
+  ci:
+    image: drmeister/cando-ci
+    build:
+      context: ./tools/dockerfiles/ci
+    ports:
+      - "8080:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+
+  # To build cando, run: docker-compose run python --help
+  python:
+    image: python
+    build:
+      context: .
+      dockerfile: tools/dockerfiles/python/Dockerfile
+    ports:
+      - "8888:8888"

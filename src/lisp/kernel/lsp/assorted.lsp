@@ -72,16 +72,6 @@
     "The common cos+i*sin operation."
     (complex (cos radians) (sin radians))))
 
-;; may already be implemented
-;; note that function designators do not include (setf ...) lists like names do
-(declaim (inline coerce-fdesignator)
-	 (ftype (function ((or function symbol)) function) fdesignator))
-(defun coerce-fdesignator (fdesignator)
-  "Take a CL function designator and spit out a function."
-  (etypecase fdesignator
-    (function fdesignator)
-    (symbol (fdefinition fdesignator))))
-
 ;; partial evaluation from sbcl
 
 (declaim (ftype (function (list list function) (or null (eql t)))

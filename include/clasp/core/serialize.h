@@ -31,7 +31,6 @@ THE SOFTWARE.
 #include <string>
 #include <vector>
 #include <set>
-#include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 #include <clasp/core/array.fwd.h>
 #include <clasp/core/symbolToEnumConverter.h>
@@ -61,7 +60,7 @@ public:
   virtual T_sp createObject(HashTable_sp ht) { return _Nil<T_O>(); }; // Only BranchSNode does anything
 
 public:
-  virtual void archiveBase(core::ArchiveP node) { SIMPLE_ERROR(BF("This should never be called - perhaps you meant to call addAttributeSNode above???")); };
+  virtual void archiveBase(core::ArchiveP node) { SIMPLE_ERROR_SPRINTF("This should never be called - perhaps you meant to call addAttributeSNode above???");} ;
 
 public: // info
   virtual bool leafSNodeP() { return false; };
@@ -84,7 +83,7 @@ public: // loading
   inline T_sp getAttributeOrError(Symbol_sp name) {
     T_sp val = this->getAttribute(name, _Unbound<T_O>());
     if (val.unboundp()) {
-      SIMPLE_ERROR(BF("Could not find attribute %s in %s") % _rep_(val) % _rep_(this->asSmartPtr()));
+      SIMPLE_ERROR_SPRINTF("Could not find attribute %s in %s", _rep_(val).c_str(), _rep_(this->asSmartPtr()).c_str());
     }
     return val;
   }
@@ -315,10 +314,10 @@ public: // bidirectional
       _BLOCK_TRACE("Loading");
       SNode_sp plainNode = this->getAttributeSNode(name, _Unbound<SNode_O>());
       if (plainNode.unboundp()) {
-        SIMPLE_ERROR(BF("Could not find node %s") % _rep_(name));
+        SIMPLE_ERROR_SPRINTF("Could not find node %s",  _rep_(name).c_str());
       }
       if (plainNode->getKind() != nodeName) {
-        SIMPLE_ERROR(BF("Expecting nodeName(%s) got(%s)") % _rep_(nodeName) % _rep_(plainNode->getKind()));
+        SIMPLE_ERROR_SPRINTF("Expecting nodeName(%s) got(%s)", _rep_(nodeName).c_str(), _rep_(plainNode->getKind()).c_str());
       }
       plainObject.archive(plainNode);
     } else {
@@ -409,7 +408,7 @@ public: // bidirectional
       _BLOCK_TRACE("Saving");
       typename map<string, pType>::iterator oi;
       for (oi = v.begin(); oi != v.end(); oi++) {
-        List_sp pair = Cons_O::create(str_create(oi->first), Integer_O::create(oi->second));
+        List_sp pair = Cons_O::create(str_create(oi->first), clasp_make_integer(oi->second));
         this->pushVector(pair);
       }
     } else {
@@ -454,7 +453,7 @@ public:
   static LeafSNode_sp create(T_sp kind);
 
 private:
-  void noAttributes(const char *fn) const { SIMPLE_ERROR(BF("lead-snode does not have attributes - cannot respond to %s") % fn); };
+  void noAttributes(const char *fn) const { SIMPLE_ERROR_SPRINTF("lead-snode does not have attributes - cannot respond to %s", fn); };
 
 public: // ctor/dtor for classes with shared virtual base
   virtual bool leafSNodeP() { return true; };
@@ -475,8 +474,8 @@ public: // ctor/dtor for classes with shared virtual base
   List_sp keys() const { return _Nil<T_O>(); };
 
   string __repr__() const;
-  void setKind(Symbol_sp kind) { SIMPLE_ERROR(BF("leaf-snode does not have kind")); };
-  void setAttributesUnsafe(List_sp plist) { SIMPLE_ERROR(BF("leaf-snode does not have attributes")); };
+  void setKind(Symbol_sp kind) { SIMPLE_ERROR_SPRINTF("leaf-snode does not have kind");} ;
+  void setAttributesUnsafe(List_sp plist) { SIMPLE_ERROR_SPRINTF("leaf-snode does not have attributes"); } ;
   explicit LeafSNode_O() : _Object(_Nil<T_O>()){};
   virtual ~LeafSNode_O(){};
 };

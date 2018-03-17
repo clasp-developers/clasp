@@ -27,6 +27,8 @@ THE SOFTWARE.
 #ifndef clbind_derivable_H
 #define clbind_derivable_H
 
+#include <clasp/core/derivableCxxObject.h>
+
 namespace clbind {
   template <class Alien>
     class Derivable;
@@ -44,12 +46,12 @@ struct gctools::GCInfo<clbind::Derivable<T>> {
 
 namespace clbind {
 /*! Derivables are template classes that inherit from 
-    core::Instance_O and wrap Alien classes.
+    core::DerivableCxxObject_O and wrap Alien classes.
 I NEED to use inheritance here - so Derivable<T> inherits from T
 so that the Derivable<T> class can modify the vtable of the Alien to
 redirect its virtual functions to the Derivable<T> functions. */
   template <class Alien>
-    class Derivable : public core::Instance_O, public Alien {
+    class Derivable : public core::DerivableCxxObject_O, public Alien  {
   public:
 // All classes derived from Derivable must be put in the non-moving pool
     struct metadata_gc_do_not_move {};
@@ -71,6 +73,9 @@ redirect its virtual functions to the Derivable<T> functions. */
         This will be used by translators. */
     virtual void *pointerToAlienWithin() { return reinterpret_cast<void*>(static_cast<Alien*>(this)); };
     bool cxxAdapterClassP() const { return true; };
+    virtual Fixnum get_stamp_() const { return this->stamp(); };
+    virtual Instance_O* get_Instance_O_address_() { Instance_O* inst = this; return inst; };
+    virtual size_t get_size_() const { return sizeof(*this); };
     void describe() {
       printf("#<Derivable>@%p\n", this);
       printf("typeid(this) --> %p\n", &typeid(this));

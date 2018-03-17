@@ -67,79 +67,60 @@ detail::class_id_map *globalClassIdMap;
 //! Take the place of __clbind_class_map
 gctools::tagged_pointer<detail::class_map> globalClassMap;
 
-namespace {
-#if 0
-  int make_property()
-  {
-      IMPLEMENT_ME();
-#if 0
-      int args = cl__gettop(L);
+class ClbindTest {
+public:
+  std::vector<int> numbers;
 
-      if (args == 0 || args > 2)
-      {
-          cl_pushstring(L, "make_property() called with wrong number of arguments.");
-          cl__error(L);
-      }
-
-      if (args == 1)
-          cl_pushnil(L);
-
-      cl_pushcclosure(L, &detail::property_tag, 2);
-      return 1;
-#endif
+  void set2(int n0, int n1) {
+    this->numbers.clear();
+    this->numbers.push_back(n0);
+    this->numbers.push_back(n1);
   }
 
-  int main_thread_tag;
-
-  int deprecated_super()
-  {
-      IMPLEMENT_ME();
-#if 0
-      cl_pushstring(L,
-          "DEPRECATION: 'super' has been deprecated in favor of "
-          "directly calling the base class __init() function. "
-          "This error can be disabled by calling 'clbind::disable_super_deprecation()'."
-      );
-      cl__error(L);
-
-      return 0;
-#endif
+  void set3(int n0, int n1, int n2) {
+    this->numbers.clear();
+    this->numbers.push_back(n0);
+    this->numbers.push_back(n1);
+    this->numbers.push_back(n2);
   }
 
-  int destroy_class_id_map()
-  {
-      IMPLEMENT_ME();
-#if 0
-      detail::class_id_map* m =
-          (detail::class_id_map*)cl_touserdata(L, 1);
-      m->~class_id_map();
-      return 0;
-#endif
+  void set4(int n0, int n1, int n2, int n3) {
+    this->numbers.clear();
+    this->numbers.push_back(n0);
+    this->numbers.push_back(n1);
+    this->numbers.push_back(n2);
+    this->numbers.push_back(n3);
   }
 
-  int destroy_cast_graph()
-  {
-      IMPLEMENT_ME();
-#if 0
-      detail::cast_graph* g =
-          (detail::cast_graph*)cl_touserdata(L, 1);
-      g->~cast_graph();
-      return 0;
-#endif
+  void set5(int n0, int n1, int n2, int n3, int n4) {
+    this->numbers.clear();
+    this->numbers.push_back(n0);
+    this->numbers.push_back(n1);
+    this->numbers.push_back(n2);
+    this->numbers.push_back(n3);
+    this->numbers.push_back(n4);
   }
 
-  int destroy_class_map()
-  {
-      IMPLEMENT_ME();
-#if 0
-      detail::class_map* m =
-          (detail::class_map*)cl_touserdata(L, 1);
-      m->~class_map();
-      return 0;
-#endif
+  void set6(int n0, int n1, int n2, int n3, int n4, int n5) {
+    this->numbers.clear();
+    this->numbers.push_back(n0);
+    this->numbers.push_back(n1);
+    this->numbers.push_back(n2);
+    this->numbers.push_back(n3);
+    this->numbers.push_back(n4);
+    this->numbers.push_back(n5);
   }
-#endif
-} // namespace unnamed
+
+  void print_numbers() {
+    int idx=0;
+    for (auto n : this->numbers) {
+      printf("%s:%d number[%d] -> %d\n", __FILE__, __LINE__, idx, n);
+      ++idx;
+    }
+  }
+};
+  
+
 
 CLBIND_API int get_main_thread() {
   IMPLEMENT_ME();
@@ -162,6 +143,18 @@ CLBIND_API void initialize_clbind() {
   globalClassIdMap = new detail::class_id_map();
   globalCastGraph = new detail::cast_graph();
   globalClassMap = gctools::RootClassAllocator<detail::class_map>::allocate();
+#if 1
+  package("CLBIND-TEST",{"CLBIND-TEST"}, {"CL"})
+    [
+     class_<ClbindTest>("ClbindTest")
+     .def("set2",&ClbindTest::set2)
+     .def("set3",&ClbindTest::set3)
+     .def("set4",&ClbindTest::set4)
+     .def("set5",&ClbindTest::set5)
+     .def("set6",&ClbindTest::set6)
+     .def("print-numbers",&ClbindTest::print_numbers)
+     ];
+#endif
 }
 
 } // namespace clbind

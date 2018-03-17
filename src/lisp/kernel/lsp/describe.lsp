@@ -137,7 +137,6 @@
                       Type ? followed by #\\Newline for help.~%")
 	 ))))
 
-#+(or ecl-min clasp)
 (defmacro inspect-recursively (label object &optional place)
   (if place
       `(multiple-value-bind (update-flag new-value)
@@ -147,8 +146,6 @@
              (princ "Not updated.")
              (terpri))))
 
-
-#+(or ecl-min clasp)
 (defmacro inspect-print (label object &optional place)
   (if place
       `(multiple-value-bind (update-flag new-value)
@@ -170,7 +167,6 @@
 
 
 (defun inspect-symbol (symbol)
-  (declare (si::c-local))
   (let* ((p (symbol-package symbol)))
     (cond ((null p)
            (format t "~:@(~S~) - uninterned symbol" symbol))
@@ -215,7 +211,6 @@
   )
 
 (defun inspect-package (package)
-  (declare (si::c-local))
   (format t "~S - package" package)
   (when (package-nicknames package)
         (inspect-print "nicknames:  ~S" (package-nicknames package)))
@@ -228,7 +223,6 @@
                        (package-shadowing-symbols package))))
 
 (defun inspect-character (character)
-  (declare (si::c-local))
   (format t
           (cond ((standard-char-p character) "~S - standard character")
                 (t "~S - character"))
@@ -236,7 +230,6 @@
   (inspect-print "code:  #x~X" (char-code character)))
 
 (defun inspect-number (number)
-  (declare (si::c-local))
   (let ((type (type-of number)))
     (when (consp type) ;; Range types, as (INTEGER 0 0)
      (setf type (first type)))
@@ -257,7 +250,6 @@
 	 (inspect-print "mantissa:  ~D" signif))))))
 
 (defun inspect-cons (cons)
-  (declare (si::c-local))
   (format t "~S - cons" cons)
   (when *inspect-mode*
         (do ((i 0 (1+ i))
@@ -273,7 +265,6 @@
                                (car l) (nth i cons)))))
 
 (defun inspect-string (string)
-  (declare (si::c-local))
   (format t (if (simple-string-p string) "~S - simple string" "~S - string")
           string)
   (inspect-print  "dimension:  ~D"(array-dimension string 0))
@@ -288,7 +279,6 @@
                                       (char string i)))))
 
 (defun inspect-vector (vector)
-  (declare (si::c-local))
   (format t (if (simple-vector-p vector) "~S - simple vector" "~S - vector")
           vector)
   (inspect-print  "dimension:  ~D" (array-dimension vector 0))
@@ -303,7 +293,6 @@
                                       (aref vector i)))))
 
 (defun inspect-array (array)
-  (declare (si::c-local))
   (format t (if (adjustable-array-p array)
                 "~S - adjustable aray"
                 "~S - array")
@@ -313,7 +302,6 @@
   (inspect-print "total size:  ~D" (array-total-size array)))
 
 (defun select-ht-N (hashtable)
-  (declare (si::c-local))
   (incf *inspect-level*)
   (maphash #'(lambda (key val)
 	       (inspect-indent-1)
@@ -323,7 +311,6 @@
   (decf *inspect-level*))
 
 (defun select-ht-L (hashtable)
-  (declare (si::c-local))
   (terpri)
   (format t "The keys of the hash table are:~%")
   (maphash #'(lambda (key val)
@@ -333,7 +320,6 @@
   (terpri))
 
 (defun select-ht-J (hashtable)
-  (declare (si::c-local))
   (let* ((key (prog1
 		(read-preserving-whitespace *query-io*)
 		(inspect-read-line)))
@@ -352,7 +338,6 @@
 	      (terpri)))))
 
 (defun select-ht-? ()
-  (declare (si::c-local))
   (terpri)
   (format t
 	  "Inspect commands for hash tables:~%~
@@ -368,7 +353,6 @@ q (or Q):             quits the inspection.~%~
 	  ))
 
 (defun inspect-hashtable (hashtable)
-  (declare (si::c-local))
   (if *inspect-mode*
       (progn
 	(decf *inspect-level*)
@@ -452,7 +436,6 @@ q (or Q):             quits the inspection.~%~
   "Args: (object)
 Shows the information about OBJECT interactively.  See the ECL Report for the
 inspect commands, or type '?' to the inspector."
-  (declare (si::c-local))
   ;;(read-line)
   (let ((*inspect-mode* t)
         (*inspect-level* 0)
@@ -498,9 +481,10 @@ Prints information about OBJECT to STREAM."
                          &aux (f nil) x)
   (flet ((doc1 (doc ind)
            (setq f t)
-           (format t
-                   "~&-----------------------------------------------------------------------------~%~53S~24@A~%~A"
-                   symbol ind doc))
+           (format
+            t
+            "~&-----------------------------------------------------------------------------~%~53S~24@A~%~%~A"
+            symbol ind doc))
          (good-package ()
            (if (eq (symbol-package symbol) (find-package "CL"))
                (find-package "SYSTEM")
@@ -530,31 +514,25 @@ Prints information about OBJECT to STREAM."
 
     (cond ((setq x (si::get-documentation symbol 'TYPE))
            (doc1 x "[Type]"))
+          #+(or) ; commented out to avoid sysprop.
           ((setq x (get-sysprop symbol 'DEFTYPE-FORM))
            (let ((*package* (good-package)))
-             (doc1 (format nil "~%Defined as: ~S~%See the doc of DEFTYPE." x)
+             (doc1 (format nil "Defined as: ~S~%See the doc of DEFTYPE." x)
                    "[Type]"))))
 
     (cond ((setq x (si::get-documentation symbol 'STRUCTURE))
            (doc1 x "[Structure]"))
-          ((setq x (get-sysprop symbol 'DEFSTRUCT-FORM))
-           (doc1 (format nil "~%Defined as: ~S~%See the doc of DEFSTRUCT." x)
-                 "[Structure]")))
+          ((names-structure-p symbol)
+           ;; FIXME: not sure of a good way to handle :named.
+           (let ((type (structure-type symbol))
+                 (slots (structure-slot-descriptions symbol)))
+             (doc1 (format nil "Defined like: ~s~%See the doc of DEFSTRUCT."
+                           `(defstruct ,(if type `(,symbol (:type ,type)) symbol)
+                              ,@(mapcar #'unparse-slot-description slots)))
+                   "[Structure]"))))
 
     (cond ((setq x (si::get-documentation symbol 'SETF))
-           (doc1 x "[Setf]"))
-          ((setq x (get-sysprop symbol 'SETF-METHOD))
-           (let ((*package* (good-package)))
-             (doc1
-              (format nil
-                "~@[~%Defined as: ~S~%See the doc of DEFINE-SETF-EXPANDER.~]"
-                (if (consp x)
-                    (case (car x)
-                          (LAMBDA `(define-setf-expander ,@(cdr x)))
-                          (EXT::LAMBDA-BLOCK `(define-setf-expander ,@(cddr x)))
-                          (t nil))
-                    nil))
-            "[Setf]"))))
+           (doc1 x "[Setf]")))
     )
   (if called-from-apropos-doc-p
       f

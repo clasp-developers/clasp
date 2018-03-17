@@ -27,7 +27,6 @@ THE SOFTWARE.
 #ifndef IntStackQueue_H
 #define IntStackQueue_H
 
-#include <clasp/core/foundation.h>
 #include <clasp/core/exceptions.h>
 
 #define INT_QUEUE_SIZE 256

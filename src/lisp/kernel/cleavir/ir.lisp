@@ -18,8 +18,7 @@
     gep))
 
 (defun %literal-value (value &optional label)
-  (let ((ref (%literal-ref value)))
-    (cmp::irc-smart-ptr-extract (cmp:irc-load ref))))
+  (cmp:irc-load (%literal-ref value)))
 
 (defun %i1 (num)
   (cmp:jit-constant-i1 num))
@@ -44,9 +43,7 @@
 (defmethod %default-int-type ((abi abi-x86-32)) cmp:%i32%)
 
 (defun %literal (lit &optional (label "literal"))
-  (llvm-sys:create-extract-value
-   cmp:*irbuilder*
-   (cmp:irc-load (literal:compile-reference-to-literal lit)) (list 0) label))
+  (cmp:irc-load (literal:compile-reference-to-literal lit)))
 
 (defun %extract (val index &optional (label "extract"))
   (llvm-sys:create-extract-value cmp:*irbuilder* val (list index) label))
@@ -55,41 +52,46 @@
   "A nil in a T*"
   (%literal nil))
 
-(defun alloca-VaList_S (&optional (label "VaList_S"))
-  (llvm-sys:create-alloca *entry-irbuilder* cmp:%VaList_S% (%i32 1) label))
+(defun alloca (type size &optional (label ""))
+  (llvm-sys:create-alloca cmp:*irbuilder-function-alloca* type (%i32 size) label))
+
+(defun alloca-vaslist (&optional (label "vaslist"))
+  (cmp:irc-alloca-vaslist :label label))
+
+(defun alloca-va_list (&optional (label "vaslist"))
+  (cmp:irc-alloca-va_list :label label))
 
 (defun alloca-invocation-history-frame (&optional (label "ihf"))
-  (llvm-sys:create-alloca *entry-irbuilder* cmp:%InvocationHistoryFrame% (%i32 1) label))
+  (cmp:irc-alloca-invocation-history-frame :label label))
 
 (defun alloca-register-save-area (&optional (label "ihf"))
-  (llvm-sys:create-alloca *entry-irbuilder* cmp:%register-save-area% (%i32 1) label))
+  (cmp:irc-alloca-register-save-area :label label))
 
 (defun alloca-size_t (&optional (label "var"))
-  (llvm-sys:create-alloca *entry-irbuilder* cmp:%size_t% (%i32 1) label))
+  (cmp:irc-alloca-size_t :label label))
 
 (defun alloca-i32 (&optional (label "var"))
-  (llvm-sys:create-alloca *entry-irbuilder* cmp:%i32% (%i32 1) label))
+  (alloca cmp:%i32% 1 label))
 
 (defun alloca-i8* (&optional (label "var"))
-  (llvm-sys:create-alloca *entry-irbuilder* cmp:%i8*% (%i32 1) label))
+  (alloca cmp:%i8*% 1 label))
 
 (defun alloca-i8 (num &optional (label "var"))
   "Allocate a block of memory in the stack frame"
-  (llvm-sys:create-alloca *entry-irbuilder* cmp:%i8% (%i32 num) label))
+  (alloca cmp:%i8% num label))
 
 (defun alloca-return_type (&optional (label "return-value"))
-  (let ((instr (llvm-sys:create-alloca *entry-irbuilder* cmp:%return_type% (%i32 1) label)))
-    instr))
+  (alloca cmp:%return_type% 1 label))
 
 (defun alloca-t* (&optional (label "var"))
-  (let ((instr (llvm-sys:create-alloca *entry-irbuilder* cmp:%t*% (%i32 1) label)))
+  (let ((instr (alloca cmp:%t*% 1 label)))
     #+(or)(cc-dbg-when *debug-log*
-		       (format *debug-log* "          alloca-t*   *entry-irbuilder* = ~a~%" *entry-irbuilder*)
+		       (format *debug-log* "          alloca-t*   cmp:*irbuilder-function-alloca* = ~a~%" cmp:*irbuilder-function-alloca*)
 		       (format *debug-log* "          Wrote ALLOCA ~a into function ~a~%" instr (llvm-sys:get-name (instruction-llvm-function instr))))
     instr))
 
 (defun alloca-mv-struct (&optional (label "V"))
-  (cmp:with-irbuilder (*entry-irbuilder*)
+  (cmp:with-irbuilder (cmp:*irbuilder-function-alloca*)
     (llvm-sys:create-alloca cmp:*irbuilder* cmp:%mv-struct% (%i32 1) label)))
 
 
@@ -106,10 +108,11 @@
   (cmp:irc-intrinsic-call function-name args label))
 
 (defun %intrinsic-invoke-if-landing-pad-or-call (function-name args &optional (label "") (maybe-landing-pad cmp::*current-unwind-landing-pad-dest*))
+  (cmp::irc-intrinsic-invoke-if-landing-pad-or-call function-name args label maybe-landing-pad)
   ;; FIXME:   If the current function has a landing pad - then use INVOKE
-  (if maybe-landing-pad
-      (cmp:irc-intrinsic-invoke function-name args maybe-landing-pad label)
-      (cmp:irc-intrinsic-call function-name args label)))
+  #+(or)(if maybe-landing-pad
+            (cmp:irc-intrinsic-invoke function-name args maybe-landing-pad label)
+            (cmp:irc-intrinsic-call function-name args label)))
 
 (defun %load (place &optional (label ""))
   (cmp:irc-load place label))
@@ -126,6 +129,9 @@
 (defun %bit-cast (val type &optional (label ""))
   (llvm-sys:create-bit-cast cmp:*irbuilder* val type label))
 
+(defun %pointer-cast (from totype &optional (label ""))
+  (cmp:irc-pointer-cast from totype label))
+
 (defun %ptrtoint (val type &optional (label ""))
   (llvm-sys:create-ptr-to-int cmp:*irbuilder* val type label))
 
@@ -134,6 +140,8 @@
 
 (defun %and (x y &optional (label ""))
   (llvm-sys:create-and-value-value cmp:*irbuilder* x y label))
+(defun %or (x y &optional (label ""))
+  (llvm-sys:create-or-value-value cmp:*irbuilder* x y label))
 
 (defun %add (x y &optional (label ""))
   (llvm-sys:create-add cmp:*irbuilder* x y label))
@@ -148,8 +156,6 @@
   (llvm-sys:create-icmp-ne cmp:*irbuilder* x y label))
 (defun %icmp-slt (x y &optional (label ""))
   (llvm-sys:create-icmp-slt cmp:*irbuilder* x y label))
-(defun %icmp-slt (x y &optional (label ""))
-  (llvm-sys:create-icmp-slt cmp:*irbuilder* x y label))
 (defun %icmp-sle (x y &optional (label ""))
   (llvm-sys:create-icmp-sle cmp:*irbuilder* x y label))
 (defun %icmp-sgt (x y &optional (label ""))
@@ -159,6 +165,12 @@
 
 (defun %cond-br (test true-branch false-branch &key likely-true likely-false)
   (llvm-sys:create-cond-br cmp:*irbuilder* test true-branch false-branch nil))
+
+(defun %ret (val)
+  (cmp:irc-ret val))
+
+(defun %sub (minuend subtrahend &key (label "") nuw nsw)
+  (llvm-sys:create-sub cmp:*irbuilder* minuend subtrahend label nuw nsw))
 
 (defgeneric %sadd.with-overflow (x y abi))
 (defmethod %sadd.with-overflow (x y (abi abi-x86-64))
@@ -172,6 +184,47 @@
 (defmethod %ssub.with-overflow (x y (abi abi-x86-32))
   (%intrinsic-call "llvm.ssub.with.overflow.i32" (list x y)))
 
+(defun %shl (value shift &key (label "") nuw nsw)
+  "If shift is an integer, generate shl with a constant uint64.
+Otherwise do a variable shift."
+  (if (integerp shift)
+      (llvm-sys:create-shl-value-uint64
+       cmp:*irbuilder* value shift label nuw nsw)
+      (llvm-sys:create-shl-value-value
+       cmp:*irbuilder* value shift label nuw nsw)))
+
+(defun %lshr (value shift &key (label "") exact)
+  "If shift is an integer, generate lshr with a constant uint64.
+Otherwise do a variable shift."
+  (if (integerp shift)
+      (llvm-sys:create-lshr-value-uint64
+       cmp:*irbuilder* value shift label exact)
+      (llvm-sys:create-lshr-value-value
+       cmp:*irbuilder* value shift label exact)))
+
+(defun %udiv (dividend divisor &key (label "") exact)
+  (llvm-sys:create-udiv cmp:*irbuilder* dividend divisor label exact))
+(defun %urem (dividend divisor &key (label ""))
+  (llvm-sys:create-urem cmp:*irbuilder* dividend divisor label))
+
+(defun %fadd (x y &optional (label "") fast-math-flags)
+  (llvm-sys:create-fadd cmp:*irbuilder* x y label fast-math-flags))
+(defun %fsub (x y &optional (label "") fast-math-flags)
+  (llvm-sys:create-fsub cmp:*irbuilder* x y label fast-math-flags))
+(defun %fmul (x y &optional (label "") fast-math-flags)
+  (llvm-sys:create-fmul cmp:*irbuilder* x y label fast-math-flags))
+(defun %fdiv (x y &optional (label "") fast-math-flags)
+  (llvm-sys:create-fdiv cmp:*irbuilder* x y label fast-math-flags))
+
+(defun %fcmp-olt (x y &optional (label "") fast-math-flags)
+  (llvm-sys:create-fcmp-olt cmp:*irbuilder* x y label fast-math-flags))
+(defun %fcmp-ole (x y &optional (label "") fast-math-flags)
+  (llvm-sys:create-fcmp-ole cmp:*irbuilder* x y label fast-math-flags))
+(defun %fcmp-oeq (x y &optional (label "") fast-math-flags)
+  (llvm-sys:create-fcmp-oeq cmp:*irbuilder* x y label fast-math-flags))
+
+(defun %fpext (value type &optional (label ""))
+  (llvm-sys:create-fpext cmp:*irbuilder* value type label))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -181,16 +234,21 @@
 ;;;
 
 (defmacro with-entry-ir-builder (&rest body)
-  `(let ((cmp:*irbuilder* *entry-irbuilder*))
+  `(let ((cmp:*irbuilder* cmp:*irbuilder-function-alloca*))
      ,@body))
 
 
+(defun %gep-variable (object indices &optional (label "gep"))
+  (llvm-sys:create-in-bounds-gep cmp:*irbuilder* object indices label))
+
 (defun %gep (type object indices &optional (label "gep"))
-  "Check the type against the object type and if they match return the GEP"
+  "Check the type against the object type and if they match return the GEP.
+And convert everything to JIT constants."
+  (unless (equal type (llvm-sys:get-type object))
+    (error "%gep expected object of type ~a but got ~a of type ~a"
+           type object (llvm-sys:get-type object)))
   (let ((converted-indices (mapcar (lambda (x) (%i32 x)) indices)))
-    (if (not (equal type (llvm-sys:get-type object)))
-        (error "%gep expected object of type ~a but got ~a of type ~a" type object (llvm-sys:get-type object))
-        (llvm-sys:create-in-bounds-gep cmp:*irbuilder* object converted-indices label))))
+    (%gep-variable object converted-indices label)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -286,11 +344,11 @@
            (func (or (llvm-sys:get-function cmp:*the-module* intrinsic-name)
                      (let ((arg-types (make-list (length args) :initial-element cmp:%t*%))
                            (varargs nil))
-                       (setq func (cmp:irc-function-create
-                                   (llvm-sys:function-type-get cmp:%return_type% arg-types varargs)
-                                   'llvm-sys::External-linkage
-                                   intrinsic-name
-                                   cmp:*the-module*)))))
+                       (cmp:irc-function-create
+                        (llvm-sys:function-type-get cmp:%return_type% arg-types varargs)
+                        'llvm-sys::External-linkage
+                        intrinsic-name
+                        cmp:*the-module*))))
            (result-in-registers
             (if cmp::*current-unwind-landing-pad-dest*
                 (cmp::irc-create-invoke func args cmp::*current-unwind-landing-pad-dest*)
@@ -311,9 +369,9 @@
     ;;; FIXME: Do these calls also need an INVOKE version if landing-pad is set????
     (if (eq :void (first foreign-types))
         (progn
-          (llvm-sys:create-call-array-ref cmp:*irbuilder* func arguments "")
+          (cmp::irc-call-or-invoke func arguments)
           (%store (%intrinsic-invoke-if-landing-pad-or-call (clasp-ffi::to-translator-name (first foreign-types)) nil) output))
-        (let ((foreign-result (llvm-sys:create-call-array-ref cmp:*irbuilder* func arguments "foreign-result")))
+        (let ((foreign-result (cmp::irc-call-or-invoke func arguments)))
           (%store (%intrinsic-invoke-if-landing-pad-or-call (clasp-ffi::to-translator-name (first foreign-types)) (list foreign-result)) output)))))
 
 (defun unsafe-foreign-call-pointer (call-or-invoke foreign-types pointer output arg-allocas abi &key (label ""))
@@ -328,7 +386,7 @@
     ;;; FIXME: Do these calls also need an INVOKE version if landing-pad is set????
     (if (eq :void (first foreign-types))
         (progn
-          (llvm-sys:create-call-function-pointer cmp:*irbuilder* function-type function-pointer arguments "")
+          (cmp::irc-call-or-invoke function-pointer arguments)
           (%store (%intrinsic-invoke-if-landing-pad-or-call (clasp-ffi::to-translator-name (first foreign-types)) nil) output))
-        (let ((result-in-t* (llvm-sys:create-call-function-pointer cmp:*irbuilder* function-type function-pointer arguments "foreign-result")))
+        (let ((result-in-t* (cmp::irc-call-or-invoke function-pointer arguments)))
           (%store (%intrinsic-invoke-if-landing-pad-or-call (clasp-ffi::to-translator-name (first foreign-types)) (list result-in-t*)) output)))))

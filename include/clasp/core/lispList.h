@@ -27,7 +27,6 @@ THE SOFTWARE.
 #ifndef _core_List_H
 #define _core_List_H
 
-#include <clasp/core/foundation.h>
 #include <clasp/core/sequence.h>
 #include <clasp/core/numbers.fwd.h>
 

@@ -27,6 +27,7 @@ THE SOFTWARE.
 #define DEBUG_LEVEL_NONE
 
 #include <string.h>
+#include <clasp/core/foundation.h>
 #include <clasp/core/common.h>
 #include <clasp/core/multiStringBuffer.h>
 #include <clasp/core/lisp.h>

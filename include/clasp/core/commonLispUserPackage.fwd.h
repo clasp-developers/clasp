@@ -28,9 +28,7 @@ THE SOFTWARE.
 #define commonLispUserPackage_fwd_H
 
 PACKAGE_NICKNAME("CL-USER");
-PACKAGE_NICKNAME("USER");
 PACKAGE_USE("COMMON-LISP");
-PACKAGE_USE("CORE");
 NAMESPACE_PACKAGE_ASSOCIATION(cluser, CommonLispUserPkg, "COMMON-LISP-USER")
 
 #define CLUserPkg CommonLispUserPkg

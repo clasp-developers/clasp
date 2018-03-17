@@ -24,6 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
+#include <clasp/core/foundation.h>
 #include <clasp/core/common.h>
 #include <clasp/core/pointer.h>
 #include <clasp/core/wrappers.h>
@@ -35,6 +36,19 @@ void Pointer_O::initialize() {
   this->_Pointer = NULL;
 }
 
+CL_DEFUN Pointer_sp core__make_pointer(T_sp address)
+{
+  if (address.fixnump()) {
+    return Pointer_O::create((void*)address.unsafe_fixnum());
+  }
+  SIMPLE_ERROR(BF("Cannot convert %s to pointer") % _rep_(address));
+}
+
+CL_DEFUN SimpleBaseString_sp core__pointer_as_string(Pointer_sp p) {
+  SimpleBaseString_sp s = SimpleBaseString_O::make((BF("%p") % p->ptr()).str());
+  return s;
+}
+  
 Pointer_sp Pointer_O::create(void *p) {
   GC_ALLOCATE(Pointer_O, ptr);
   ptr->_Pointer = p;
@@ -56,7 +70,16 @@ bool Pointer_O::eql_(T_sp obj) const {
 
 string Pointer_O::__repr__() const {
   stringstream ss;
-  ss << "#<" << this->_instanceClass()->classNameAsString() << " :ptr " << (BF("%p") % this->_Pointer).str() << ">";
+  ss << "#<" << this->_instanceClass()->_classNameAsString() << " :ptr " << (BF("%p") % this->_Pointer).str() << ">";
   return ss.str();
+}
+
+CL_DEFUN bool core__pointer_in_pointer_range(Pointer_sp test, Pointer_sp low, T_sp high_or_size) {
+  if (gc::IsA<Pointer_sp>(high_or_size)) {
+    return test->in_pointer_range(low,gc::As_unsafe<Pointer_sp>(high_or_size));
+  } else if (high_or_size.fixnump()) {
+    return test->in_pointer_range(low,(uintptr_t)high_or_size.unsafe_fixnum());
+  }
+  SIMPLE_ERROR(BF("Illegal range for pointer comparison %s - %s") % _rep_(low) % _rep_(high_or_size));
 }
 };

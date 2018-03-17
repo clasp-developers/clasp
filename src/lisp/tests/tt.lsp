@@ -1,15 +1,6 @@
 
-(defun bar ()
-;;  (error "foo")
-  (throw 'catchme 'test))
+(defclass foo () ((fooa :initarg :fooa :accessor fooa)))
 
-(defun baz ()
-  (bar))
+(defparameter *a* (make-instance 'foo :fooa 1234))
 
-(defun foo ()
-  (catch 'catchme
-    (baz)))
-
-(defun zippy ()
-  (block hello
-    (funcall (lambda () (return-from hello nil)))))
+(defun accessn (n o) (dotimes (i n) (fooa o) (fooa o) (fooa o) (fooa o) (fooa o)))

@@ -38,25 +38,37 @@ namespace clos {
 SYMBOL_SC_(ClosPkg, aSingleClosSymbol);
 SYMBOL_EXPORT_SC_(ClosPkg, class_precedence_list);
 SYMBOL_EXPORT_SC_(ClosPkg,slot_definition);
-SYMBOL_EXPORT_SC_(ClosPkg,name);
+SYMBOL_EXPORT_SC_(ClosPkg,NAME);
 SYMBOL_EXPORT_SC_(ClosPkg,subclassesSTAR);
-SYMBOL_EXPORT_SC_(ClosPkg,location_table);
+SYMBOL_EXPORT_SC_(ClosPkg,LOCATION_TABLE);
 SYMBOL_EXPORT_SC_(ClosPkg,slot_value_set);
 SYMBOL_EXPORT_SC_(ClosPkg,slot_value);
 SYMBOL_EXPORT_SC_(ClosPkg,update_instance);
 SYMBOL_EXPORT_SC_(ClosPkg,dispatch_miss);
 SYMBOL_EXPORT_SC_(ClosPkg,_PLUS_the_standard_class_PLUS_);
 SYMBOL_EXPORT_SC_(ClosPkg,not_funcallable);
+SYMBOL_EXPORT_SC_(ClosPkg,funcallable_standard_class);
 
 SYMBOL_EXPORT_SC_(ClosPkg, DIRECT_SUPERCLASSES);
+SYMBOL_EXPORT_SC_(ClosPkg, DIRECT_SUBCLASSES);
+SYMBOL_EXPORT_SC_(ClosPkg, DEPENDENTS);
 SYMBOL_EXPORT_SC_(ClosPkg, SLOTS);
 SYMBOL_EXPORT_SC_(ClosPkg, DIRECT_DEFAULT_INITARGS);
 SYMBOL_EXPORT_SC_(ClosPkg, FINALIZED);
 SYMBOL_EXPORT_SC_(ClosPkg, PRECEDENCE_LIST);
 SYMBOL_EXPORT_SC_(ClosPkg, DIRECT_SLOTS);
 SYMBOL_EXPORT_SC_(ClosPkg, DEFAULT_INITARGS);
+SYMBOL_EXPORT_SC_(ClosPkg, CALL_HISTORY_GENERIC_FUNCTIONS);
+SYMBOL_EXPORT_SC_(ClosPkg, SPECIALIZER_MUTEX);
 SYMBOL_EXPORT_SC_(ClosPkg, NUMBER_OF_SLOTS_IN_STANDARD_CLASS);
 SYMBOL_EXPORT_SC_(ClosPkg, NUMBER_OF_SLOTS_IN_STRUCTURE_CLASS);
+
+SYMBOL_EXPORT_SC_(ClosPkg, fastgf_slot_unbound);
+SYMBOL_EXPORT_SC_(ClosPkg, dispatch_slot_reader_index_debug);
+SYMBOL_EXPORT_SC_(ClosPkg, dispatch_slot_writer_index_debug);
+
+SYMBOL_EXPORT_SC_(ClosPkg, invalidated_dispatch_function);
+SYMBOL_EXPORT_SC_(ClosPkg, not_funcallable_dispatch_function);
 
 void initialize_closPackage() {
   list<string> lnicknames;

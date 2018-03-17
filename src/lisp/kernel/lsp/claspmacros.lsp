@@ -1,13 +1,3 @@
-
-(in-package :ffi)
-
-
-#+clasp
-(defmacro c-inline (fn-name (&rest values) (&rest c-types) return-type C-code &key one-liner side-effects)
-  `(,fn-name ,@values))
-(export 'c-inline)
-
-
 (in-package :ext)
 (defmacro ext::special-var (name)
   `(ext::special-var ,name))
@@ -24,18 +14,13 @@
 
 (in-package :ext)
 
-(defmacro do-c++-iterator ((i iterator) &rest body)
-  (let ((begin-gs (gensym))
-        (end-gs (gensym))
-        (cur (gensym)))
-    `(multiple-value-bind (,begin-gs ,end-gs)
-         ,iterator
-       (do* ((,cur ,begin-gs (sys:iterator-step ,cur))
-             (,i (sys:iterator-unsafe-element ,cur) (sys:iterator-unsafe-element ,cur)))
-            ((eql ,cur ,end-gs))
-         ,@body
-         )
-       )))
+(defmacro do-c++-iterator ((i iterator &optional (cur (gensym)) (begin (gensym)) (end (gensym))) &rest body)
+  `(multiple-value-bind (,begin ,end)
+                        ,iterator
+                        (do* ((,cur ,begin (core:iterator-step ,cur))
+                              (,i (core:iterator-unsafe-element ,cur) (core:iterator-unsafe-element ,cur)))
+                             ((core:iterator= ,cur ,end))
+                             ,@body)))
 
 
 (defmacro map-c++-iterator (code iterator)
@@ -46,6 +31,21 @@
 
 (export '(do-c++-iterator map-c++-iterator))
 
+
+(defmacro with-locked-hash-table (ht &body body)
+  "If the hash table is thread safe - then turn on the lock"
+  (let ((htlock (gensym)))
+  `(let ((,htlock (hash-table-shared-mutex ,ht)))
+     (if ,htlock 
+         (unwind-protect
+              (progn
+                (mp:shared-lock ,htlock)
+                ,@body)
+           (mp:shared-unlock ,htlock))
+         (progn
+           ,@body)))))
+
+(export '(with-locked-hash-table))
 
 (in-package :cl)
 
@@ -73,20 +73,7 @@
 (defmacro progv (symbols values &rest forms)
   `(core:progv-function ,symbols ,values #'(lambda () ,@forms)))
 
-
-
 (in-package :core)
-#+clasp
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
-;;; PARSE-MACRO is needed by sp_macrolet and the compiler
-;;;
-(defun parse-macro (name vl body &optional env)
-  (multiple-value-bind (lblock ppn doc)
-      (si::expand-defmacro name vl body)
-    lblock))
-
-(export 'parse-macro)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -95,9 +82,6 @@
 (defmacro debug-message (msg) nil)
 (export 'debug-message)
 
-
-
-(in-package :core)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; Set the fdefinition for all special operators to something more reasonable than T
@@ -172,7 +156,7 @@
 
 
 #|
-(define-compiler-macro new-apply (function-desig &rest args)
+(core:bclasp-define-compiler-macro new-apply (function-desig &rest args)
   (let ((fun (gensym "FUN")))
     (if (> (length args) 8)
         `(let ((,fun ,function-desig))
@@ -195,7 +179,7 @@
             ,@args)))))
 
 
-(define-compiler-macro apply-general (function-design &rest args)
+(core:bclasp-define-compiler-macro apply-general (function-design &rest args)
   `(let ((,fun ,function-desig))
      (core:multiple-value-foreign-call
       "fast_apply_general"

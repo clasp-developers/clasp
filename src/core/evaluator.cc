@@ -26,6 +26,7 @@ THE SOFTWARE.
 /* -^- */
 //#define DEBUG_LEVEL_FULL
 //#include "core/foundation.h"
+#include <clasp/core/foundation.h>
 #include <clasp/core/common.h>
 #include <clasp/core/corePackage.h>
 #include <clasp/core/evaluator.h>
@@ -42,7 +43,6 @@ THE SOFTWARE.
 #include <clasp/core/lambdaListHandler.h>
 #include <clasp/core/predicates.h>
 #include <clasp/core/debugger.h>
-#include <clasp/core/standardClass.h>
 #include <clasp/core/standardObject.h>
 #include <clasp/core/predicates.h>
 #include <clasp/core/lisp.h>
@@ -92,85 +92,105 @@ CL_DEFUN T_mv core__compile_form_and_eval_with_env(T_sp form, T_sp env, T_sp ste
 CL_LAMBDA(head &va-rest args);
 CL_DECLARE();
 CL_DOCSTRING("apply");
-CL_DEFUN T_mv cl__apply(T_sp head, VaList_sp args) {
-  Function_sp func = coerce::functionDesignator(head);
-  int lenTotalArgs = args->total_nargs();
-  if (lenTotalArgs == 0) eval::errorApplyZeroArguments();
-  int lenArgs = args->remaining_nargs(); // lenTotalArgs - args->current_index();
-  T_O* lastArgRaw = args->relative_indexed_arg(lenArgs-1); // LCC_VA_LIST_INDEXED_ARG(lastArgRaw,args,lenArgs-1);
-//  printf("%s:%d  lenTotalArgs = %d lenArgs = %d\n", __FILE__, __LINE__, lenTotalArgs, lenArgs );
-  if (gctools::tagged_nilp(lastArgRaw)) {
-//    printf("%s:%d apply with nil last arg\n", __FILE__, __LINE__ );
-    // NIL as last argument
-    int nargs = args->remaining_nargs()-1;
-//    printf("%s:%d apply with multiple arguments and the last is nil nargs=%d\n", __FILE__, __LINE__, nargs );
-    MAKE_STACK_FRAME( frame, func.raw_(), nargs);
-    T_sp obj = args;
+DONT_OPTIMIZE_WHEN_DEBUG_RELEASE
+CL_DEFUN T_mv cl__apply( T_sp head, VaList_sp args )
+{
+  Function_sp func         = coerce::functionDesignator( head );
+  int         lenArgs      = 0;
+
+  if ( args->total_nargs() == 0 )
+    eval::errorApplyZeroArguments();
+
+  lenArgs = args->remaining_nargs();
+
+  T_O* lastArgRaw = args->relative_indexed_arg( lenArgs - 1 );
+
+  if ( gctools::tagged_nilp( lastArgRaw ))
+  {
+    int nargs = args->remaining_nargs() - 1;
+
+    MAKE_STACK_FRAME( frame, func.raw_(), nargs );
+
     size_t idx = 0;
-    for (int i(0); i < nargs; ++i) {
-      (*frame)[idx] = args->next_arg_raw();
-      ++idx;
+    for ( int i(0); i < nargs; ++i )
+    {
+      (*frame)[idx++] = args->next_arg_raw();
     }
-    VaList_S valist_struct(frame);
-    VaList_sp valist(&valist_struct); // = frame.setupVaList(valist_struct);;
-    return funcall_consume_valist_<core::Function_O>(func.tagged_(), valist);
-  } else if (gctools::tagged_valistp(lastArgRaw) && lenArgs == 1) {
-//    printf("%s:%d apply with one argument and its a valist\n", __FILE__, __LINE__ );
-    VaList_sp valast((gc::Tagged)lastArgRaw);
-    VaList_S valast_copy(*valast);
-    VaList_sp valast_copy_sp(&valast_copy);
-    return funcall_consume_valist_<core::Function_O>(func.tagged_(), valast_copy_sp);
-  } else if (gctools::tagged_valistp(lastArgRaw)) {
-    // The last argument is a VaList - so we need to create a new frame
-    // to hold the contents of the two lists of arguments
-    VaList_sp valast((gc::Tagged)lastArgRaw);
-    VaList_S valist_scopy(*valast);
-    VaList_sp lastArgs(&valist_scopy); // = gc::smart_ptr<VaList_S>((gc::Tagged)last.raw_());
-    int lenFirst = args->remaining_nargs()-1;
-    int lenRest = lastArgs->remaining_nargs(); // LCC_VA_LIST_NUMBER_OF_ARGUMENTS(lastArgs);
-    int nargs = lenFirst + lenRest;
-//    printf("%s:%d apply with multiple arguments and the last is a valist: nargs=%d lenFirst=%d lenRest=%d\n", __FILE__, __LINE__, nargs, lenFirst, lenRest );
-    // Allocate a frame on the side stack that can take all arguments
-    MAKE_STACK_FRAME(frame, func.raw_(), nargs);
-    T_sp obj = args;
-    size_t idx = 0;
-    for (int i(0); i < lenFirst; ++i) {
-      (*frame)[idx] = args->next_arg_raw();
-      ++idx;
-    }
-    for (int i(0); i < lenRest; ++i) {
-      (*frame)[idx] = lastArgs->next_arg_raw();
-      ++idx;
-    }
-    VaList_S valist_struct(frame);
-    VaList_sp valist(&valist_struct); // = frame.setupVaList(valist_struct);
-    return funcall_consume_valist_<core::Function_O>(func.tagged_(), valist);
-  } else if (gctools::tagged_consp(lastArgRaw)) {
-    // Cons as last argument
-    int lenFirst = args->remaining_nargs()-1;
-    Cons_sp last((gc::Tagged)lastArgRaw);
-    int lenRest = cl__length(last);
-    int nargs = lenFirst + lenRest;
-//    printf("%s:%d apply with multiple arguments and the last is a list nargs=%d lenFirst=%d lenRest=%d\n", __FILE__, __LINE__, nargs,lenFirst,lenRest );
-    MAKE_STACK_FRAME( frame, func.raw_(), nargs);
-    T_sp obj = args;
-    size_t idx = 0;
-    for (int i(0); i < lenFirst; ++i) {
-      (*frame)[idx] = args->next_arg_raw();
-      ++idx;
-    }
-    List_sp cargs = gc::As<Cons_sp>(last);
-    for (int i(0); i < lenRest; ++i) {
-      (*frame)[idx] = oCar(cargs).raw_();
-      cargs = oCdr(cargs);
-      ++idx;
-    }
-    VaList_S valist_struct(frame);
-    VaList_sp valist(&valist_struct); // = frame.setupVaList(valist_struct);;
-    return funcall_consume_valist_<core::Function_O>(func.tagged_(), valist);
+
+    Vaslist valist_struct( frame );
+    VaList_sp valist( &valist_struct );
+    return funcall_consume_valist_<core::Function_O>( func.tagged_(), valist );
   }
-  T_sp lastArg((gc::Tagged)lastArgRaw);
-  eval::errorApplyLastArgumentNotList(lastArg);
+  else
+    if ( gctools::tagged_vaslistp( lastArgRaw ) && ( lenArgs == 1 ))
+    {
+      VaList_sp valast( (gc::Tagged) lastArgRaw );
+      Vaslist valast_copy( *valast );
+      VaList_sp valast_copy_sp( &valast_copy );
+      return funcall_consume_valist_<core::Function_O>( func.tagged_(), valast_copy_sp );
+    }
+    else
+      if ( gctools::tagged_vaslistp( lastArgRaw ))
+      {
+        VaList_sp valast( (gc::Tagged) lastArgRaw );
+        Vaslist valist_scopy( *valast );
+        VaList_sp lastArgs( &valist_scopy );
+
+        int lenFirst = args->remaining_nargs() - 1;
+        int lenRest = lastArgs->remaining_nargs();
+        int nargs = lenFirst + lenRest;
+
+        MAKE_STACK_FRAME(frame, func.raw_(), nargs);
+
+        size_t idx = 0;
+        for ( int i(0); i < lenFirst; ++i )
+        {
+          (*frame)[ idx++ ] = args->next_arg_raw();
+        }
+
+        for ( int i(0); i < lenRest; ++i )
+        {
+          (*frame)[idx++] = lastArgs->next_arg_raw();
+        }
+
+        Vaslist valist_struct( frame );
+        VaList_sp valist( &valist_struct );
+        return funcall_consume_valist_<core::Function_O>( func.tagged_(), valist );
+      }
+      else
+        if ( gctools::tagged_consp( lastArgRaw ))
+        {
+          // Cons as last argument
+          int lenFirst = args->remaining_nargs() - 1;
+
+          Cons_sp last( (gc::Tagged) lastArgRaw );
+
+          // int lenRest = last.unsafe_cons()->length();
+          int lenRest = last->length();
+          int nargs = lenFirst + lenRest;
+
+          MAKE_STACK_FRAME( frame, func.raw_(), nargs);
+
+          size_t idx = 0;
+          for ( int i(0); i < lenFirst; ++i )
+          {
+            (*frame)[idx++] = args->next_arg_raw();
+          }
+
+          List_sp cargs = gc::As<Cons_sp>( last );
+          for ( int i(0); i < lenRest; ++i )
+          {
+            (*frame)[idx++] = oCar( cargs ).raw_();
+            cargs = oCdr(cargs);
+          }
+
+          Vaslist valist_struct(frame);
+          VaList_sp valist(&valist_struct); // = frame.setupVaList(valist_struct);;
+          return funcall_consume_valist_<core::Function_O>( func.tagged_(), valist );
+        }
+
+  T_sp lastArg( (gc::Tagged) lastArgRaw );
+  eval::errorApplyLastArgumentNotList( lastArg );
   UNREACHABLE();
 }
 
@@ -197,7 +217,7 @@ gctools::return_type fast_apply_general(T_O* func_tagged, T_O* args_tagged) {
       (*frame)[j] = tail_cur->_Car.raw_();
       tail_cur = reinterpret_cast<Cons_O*>(gctools::untag_cons(tail_cur->_Cdr.raw_()));
     }
-    VaList_S valist_struct(frame);
+    Vaslist valist_struct(frame);
     VaList_sp valist(&valist_struct); // = frame.setupVaList(valist_struct);;
     return funcall_consume_valist_<core::Function_O>((gc::Tagged)func_tagged, valist);
   }
@@ -209,7 +229,7 @@ gctools::return_type fast_apply_general(T_O* func_tagged, T_O* args_tagged) {
     (*frame)[i] = front_cur->_Car.raw_();
     front_cur = reinterpret_cast<Cons_O*>(gctools::untag_cons(front_cur->_Cdr.raw_()));
   }
-  VaList_S valist_struct(frame);
+  Vaslist valist_struct(frame);
   VaList_sp valist(&valist_struct); // = frame.setupVaList(valist_struct);;
   return funcall_consume_valist_<core::Function_O>((gc::Tagged)func_tagged, valist);
 }
@@ -217,16 +237,16 @@ gctools::return_type fast_apply_general(T_O* func_tagged, T_O* args_tagged) {
 template <typename... FixedArgs>
 LCC_RETURN fast_apply_(T_O* function_tagged, T_O* rest_args_tagged, FixedArgs&&...fixedArgs) {
   int nargs;
-  LIKELY_if ( gctools::tagged_valistp(rest_args_tagged) ) {
+  LIKELY_if ( gctools::tagged_vaslistp(rest_args_tagged) ) {
     VaList_sp rest_args_as_VaList_sp((gctools::Tagged)rest_args_tagged);
-    VaList_S va_rest_copy_S(*rest_args_as_VaList_sp);
+    Vaslist va_rest_copy_S(*rest_args_as_VaList_sp);
     VaList_sp va_rest_args(&va_rest_copy_S);
     nargs = sizeof...(FixedArgs)+va_rest_args->remaining_nargs();
     MAKE_STACK_FRAME( frame, function_tagged, nargs );
     T_O* _[] = {fixedArgs...};
     for (int i=0; i<sizeof...(FixedArgs); ++i ) (*frame)[i] = _[i];
     for (int j=sizeof...(FixedArgs);j<nargs; ++j ) (*frame)[j] = va_rest_copy_S.next_arg_raw();
-    VaList_S valist_struct(frame);
+    Vaslist valist_struct(frame);
     VaList_sp valist(&valist_struct); // = frame.setupVaList(valist_struct);;
     return funcall_consume_valist_<core::Function_O>((gc::Tagged)function_tagged, valist);
   } else if (gctools::tagged_consp(rest_args_tagged)) {
@@ -240,7 +260,7 @@ LCC_RETURN fast_apply_(T_O* function_tagged, T_O* rest_args_tagged, FixedArgs&&.
       (*frame)[j] = oCar(list_rest_args).raw_();
       list_rest_args = oCdr(list_rest_args);
     }
-    VaList_S valist_struct(frame);
+    Vaslist valist_struct(frame);
     VaList_sp valist(&valist_struct); // = frame.setupVaList(valist_struct);;
     return funcall_consume_valist_<core::Function_O>((gc::Tagged)function_tagged, valist);
   }
@@ -248,7 +268,7 @@ LCC_RETURN fast_apply_(T_O* function_tagged, T_O* rest_args_tagged, FixedArgs&&.
   MAKE_STACK_FRAME( frame, function_tagged, nargs );
   T_O* _[] = {fixedArgs...};
   for (int i=0; i<sizeof...(FixedArgs); ++i ) (*frame)[i] = _[i];
-  VaList_S valist_struct(frame);
+  Vaslist valist_struct(frame);
   VaList_sp valist(&valist_struct); // = frame.setupVaList(valist_struct);;
   return funcall_consume_valist_<core::Function_O>((gc::Tagged)function_tagged, valist);
 }
@@ -300,7 +320,10 @@ CL_DEFUN T_mv cl__eval(T_sp form) {
     return form;
   }
   if (form.consp()) {
-    if (core::_sym_STARuseInterpreterForEvalSTAR->symbolValue().isTrue()) {
+    if (core::_sym_STAReval_with_env_hookSTAR.unboundp() ||
+        !core::_sym_STAReval_with_env_hookSTAR->boundP() ||
+        core::_sym_STARuseInterpreterForEvalSTAR->symbolValue().isTrue()
+        ) {
       return eval::evaluate(form, _Nil<T_O>());
     } else {
       return eval::funcall(core::_sym_STAReval_with_env_hookSTAR->symbolValue(), form, _Nil<T_O>());
@@ -310,7 +333,11 @@ CL_DEFUN T_mv cl__eval(T_sp form) {
   return form;
 };
 
-
+CL_DECLARE();
+CL_DOCSTRING("Interpret FORM in the interpreter environment ENV.");
+CL_DEFUN T_mv core__interpret(T_sp form, T_sp env) {
+  return eval::evaluate(form, env);
+}
 
 
 // fast funcall
@@ -330,7 +357,7 @@ CL_DEFUN T_mv cl__funcall(T_sp function_desig, VaList_sp args) {
   }
 
 #ifdef _DEBUG_BUILD
-  VaList_S debug_valist(*args);
+  Vaslist debug_valist(*args);
   core::T_O* debug_lcc_valist = debug_valist.asTaggedPtr();
 #endif
   T_mv res = funcall_consume_valist_<core::Function_O>(func.tagged_(), args);
@@ -356,32 +383,26 @@ CL_DEFUN Function_sp core__coerce_to_function(T_sp arg) {
       }
       return sym->getSetfFdefinition();
     } else if (head == cl::_sym_lambda) {
-      if ( false ) { //core::_sym_bclasp_compile->fboundp() ) {
-//        printf("%s:%d coerce-to-function Compiling the form: %s\n", __FILE__, __LINE__, _rep_(carg).c_str());
-        T_sp fn = gctools::As<Function_sp>(eval::funcall(core::_sym_bclasp_compile, _Nil<T_O>() , carg));
-        return fn;
-      } else {
-        T_sp olambdaList = oCadr(carg);
-        List_sp body = oCdr(oCdr(arg));
-        List_sp declares;
-        gc::Nilable<String_sp> docstring;
-        List_sp code;
-        eval::parse_lambda_body(body, declares, docstring, code);
-        T_sp name = cl::_sym_lambda;
-        for ( auto cur : declares ) {
-          T_sp declare = oCar(cur);
-          if ( declare.consp() ) {
-            T_sp head = oCar(declare);
-            if ( head == core::_sym_lambdaName ) {
-              name = oCadr(declare);
-            }
+      T_sp olambdaList = oCadr(carg);
+      List_sp body = oCdr(oCdr(arg));
+      List_sp declares;
+      gc::Nilable<String_sp> docstring;
+      List_sp code;
+      eval::parse_lambda_body(body, declares, docstring, code);
+      T_sp name = cl::_sym_lambda;
+      for ( auto cur : declares ) {
+        T_sp declare = oCar(cur);
+        if ( declare.consp() ) {
+          T_sp head = oCar(declare);
+          if ( head == core::_sym_lambdaName ) {
+            name = oCadr(declare);
           }
         }
-        LambdaListHandler_sp llh = LambdaListHandler_O::create(olambdaList, declares, cl::_sym_function);
-//        printf("%s:%d coerce-to-function generating InterpretedClosure_O: %s\n", __FILE__, __LINE__, _rep_(carg).c_str());
-        InterpretedClosure_sp ic = gc::GC<InterpretedClosure_O>::allocate(name, kw::_sym_function, llh, declares, docstring, _Nil<T_O>(), code, SOURCE_POS_INFO_FIELDS(_Nil<T_O>()));
-        return ic;
       }
+      LambdaListHandler_sp llh = LambdaListHandler_O::create(olambdaList, declares, cl::_sym_function);
+//        printf("%s:%d coerce-to-function generating InterpretedClosure_O: %s\n", __FILE__, __LINE__, _rep_(carg).c_str());
+      InterpretedClosure_sp ic = gc::GC<InterpretedClosure_O>::allocate(name, kw::_sym_function, llh, declares, docstring, _Nil<T_O>(), code, SOURCE_POS_INFO_FIELDS(_Nil<T_O>()));
+      return ic;
     }
   }
   SIMPLE_ERROR(BF("Illegal function designator %s") % _rep_(arg));
@@ -397,7 +418,7 @@ CL_DEFUN T_mv core__process_declarations(List_sp inputBody, T_sp expectDocString
   List_sp code;
   List_sp specials;
   eval::extract_declares_docstring_code_specials(inputBody, declares,
-                                           b_expect_doc, docstring, code, specials);
+                                                 b_expect_doc, docstring, code, specials);
   T_sp tdeclares = canonicalize_declarations(declares);
   return Values(tdeclares, code, (T_sp)docstring, specials);
 };
@@ -467,8 +488,8 @@ CL_DEFUN T_sp core__extract_lambda_name(List_sp lambdaExpression, T_sp defaultVa
 }
 CL_LAMBDA(symbol &optional env);
 CL_DECLARE();
-CL_DOCSTRING("environment_lookup_symbol_macro_definition");
-CL_DEFUN T_sp core__lookup_symbol_macro(Symbol_sp sym, T_sp env) {
+CL_DOCSTRING("Returns the macro expansion function for a symbol if it exists, or else NIL.");
+CL_DEFUN T_sp core__symbol_macro(Symbol_sp sym, T_sp env) {
   if (sym.nilp())
     return _Nil<T_O>();
   if (env.notnilp()) {
@@ -498,8 +519,8 @@ T_mv core__classify_let_variables_and_declares(List_sp variables, List_sp declar
     specialsSet->insert(oCar(cur)); //make(declaredSpecials);
   HashTableEq_sp specialInVariables(HashTableEq_O::create_default());
   HashTable_sp indices = cl__make_hash_table(cl::_sym_eq, make_fixnum(8),
-                                            DoubleFloat_O::create(1.5),
-                                            DoubleFloat_O::create(1.0));
+                                             DoubleFloat_O::create(1.5),
+                                             DoubleFloat_O::create(1.0));
   ql::list classified;
   size_t indicesSize = 0;
   for (auto cur : variables) {
@@ -511,10 +532,10 @@ T_mv core__classify_let_variables_and_declares(List_sp variables, List_sp declar
       classified << Cons_O::create(ext::_sym_specialVar, sym);
       specialInVariables->insert(sym);
     } else {
-      int idx;
+      Fixnum idx;
       T_sp fi = indices->gethash(sym, _Unbound<T_O>());
-      if (!fi.unboundp()) {
-        idx = unbox_fixnum(gc::As<Fixnum_sp>(fi));
+      if (fi.fixnump()) {
+        idx = fi.unsafe_fixnum();
       } else {
         idx = indicesSize;
         indices->hash_table_setf_gethash(sym, make_fixnum(idx));
@@ -525,10 +546,10 @@ T_mv core__classify_let_variables_and_declares(List_sp variables, List_sp declar
     }
   }
   specialsSet->maphash([&classified, &specialInVariables](T_sp s, T_sp val) {
-                    if ( !specialInVariables->contains(s) ) {
-                        classified << Cons_O::create(core::_sym_declaredSpecial,s);
-                    }
-  });
+      if ( !specialInVariables->contains(s) ) {
+        classified << Cons_O::create(core::_sym_declaredSpecial,s);
+      }
+    });
   T_sp tclassified = classified.cons();
   return Values(tclassified, make_fixnum((int)indicesSize));
 }
@@ -580,15 +601,17 @@ List_sp separateTopLevelForms(List_sp accumulated, T_sp possibleForms) {
 T_sp af_interpreter_lookup_variable(Symbol_sp sym, T_sp env) {
   if (env.notnilp()) {
     int depth, index;
+    bool crossesFunction;
     Environment_O::ValueKind valueKind;
     T_sp value;
+    T_sp result_env;
 #if 0
     printf("%s:%d Looking for %s\n", __FILE__, __LINE__, _rep_(sym).c_str());
     if ( Environment_sp e = env.asOrNull<Environment_O>() ) {
       e->dump();
     }
 #endif
-    bool found = Environment_O::clasp_findValue(env, sym, depth, index, valueKind, value);
+    bool found = Environment_O::clasp_findValue(env, sym, depth, index, crossesFunction, valueKind, value, result_env);
     if (found) {
       switch (valueKind) {
       case Environment_O::lexicalValue:
@@ -607,21 +630,31 @@ T_sp af_interpreter_lookup_variable(Symbol_sp sym, T_sp env) {
   SIMPLE_ERROR(BF("Could not find variable %s in lexical/global environment") % _rep_(sym));
 };
 
-#define ARGS_af_interpreter_lookup_function "(symbol env)"
-#define DECL_af_interpreter_lookup_function ""
-#define DOCS_af_interpreter_lookup_function "environment_lookup_function return the function or UNBOUND"
-T_sp af_interpreter_lookup_function(Symbol_sp name, T_sp env) {
-  if (env.notnilp()) {
+Function_sp interpreter_lookup_function_or_error(T_sp name, T_sp env) {
+  unlikely_if (env.notnilp()) {
     Function_sp fn;
     int depth;
     int index;
-    if (Environment_O::clasp_findFunction(env, name, depth, index, fn)) {
-      return fn;
+    T_sp functionEnv;
+    if (Environment_O::clasp_findFunction(env, name, depth, index, fn, functionEnv)) return fn;
+  }
+  if (name.consp()) {
+    T_sp head = CONS_CAR(name);
+    if (head == cl::_sym_setf) {
+      Symbol_sp sym = oCar(CONS_CDR(name)).template as<Symbol_O>();
+      if (sym->setf_fboundp()) {
+        return sym->getSetfFdefinition();
+      }
+      SIMPLE_ERROR(BF("SETF function value for %s is unbound") % _rep_(sym));
     }
   }
-  if (name->fboundp())
-    return name->symbolFunction();
-  return _Nil<T_O>(); // never let unbound propagate
+  if (gc::IsA<Symbol_sp>(name)) {
+    Symbol_sp sname = gc::As_unsafe<Symbol_sp>(name);
+    if (sname->fboundp()) return sname->symbolFunction();
+    SIMPLE_ERROR(BF("Could not find special-operator/macro/function(%s) in the lexical/dynamic environment") % _rep_(name) );
+  }
+  ASSERT(gc::IsA<Function_sp>(name));
+  return gc::As_unsafe<Function_sp>(name);
 };
 
 #define ARGS_af_interpreter_lookup_setf_function "(symbol env)"
@@ -633,8 +666,9 @@ T_sp af_interpreter_lookup_setf_function(List_sp setf_name, T_sp env) {
     Function_sp fn;
     int depth;
     int index;
+    T_sp functionEnv;
     // TODO: This may not work properly - it looks like it will find regular functions
-    if (Environment_O::clasp_findFunction(env, name, depth, index, fn))
+    if (Environment_O::clasp_findFunction(env, name, depth, index, fn, functionEnv))
       return fn;
   }
   if (name->setf_fboundp())
@@ -722,10 +756,15 @@ T_mv interpreter_case(List_sp args, T_sp environment) {
 
 void setq_symbol_value(Symbol_sp symbol, T_sp value, T_sp environment) {
   if (symbol->specialP() || Environment_O::clasp_lexicalSpecialP(environment, symbol)) {
+    if (symbol->getReadOnly())
+      SIMPLE_ERROR(BF("Cannot modify value of constant %s") % _rep_(symbol));
     symbol->setf_symbolValue(value);
     return;
-  } else {
-    bool updated = af_updateValue(environment, symbol, value);
+  } else  {
+    bool updated = false;
+    if (environment.notnilp()) {
+      updated = clasp_updateValue(environment, symbol, value);
+    }
     if (!updated) {
       symbol->setf_symbolValue(value);
     }
@@ -845,26 +884,10 @@ void extract_declares_docstring_code_specials(List_sp inputBody, List_sp &declar
   declares = cl__nreverse(declares);
 }
 
-#if 0
-#define ARGS_af_extractDeclaresDocstringCode "(body &key (expect-docstring t))"
-#define DECL_af_extractDeclaresDocstringCode ""
-#define DOCS_af_extractDeclaresDocstringCode "extractDeclaresDocstringCode"
-T_mv af_extractDeclaresDocstringCode(List_sp body, T_sp expectDocStr)
-{
-  IMPLEMENT_MEF(BF("Switch to process-declarations"));
-  List_sp declares;
-  String_sp docstr;
-  List_sp code;
-  List_sp specials;
-  extract_declares_docstring_code_specials(body,declares,expectDocStr.isTrue(),docstr,code,specials);
-  return Values(declares,docstr,code,specials);
-};
-#endif
-
 void extract_declares_code(List_sp args, List_sp &declares, List_sp &code) {
   gc::Nilable<String_sp> dummy_docstring;
   List_sp specials;
-  IMPLEMENT_MEF(BF("Check who is using this and why they aren't calling extract_declares_docstring_code_specials directly"));
+  IMPLEMENT_MEF("Check who is using this and why they aren't calling extract_declares_docstring_code_specials directly");
   extract_declares_docstring_code_specials(args, declares, false, dummy_docstring, code, specials);
 }
 
@@ -1047,49 +1070,50 @@ T_mv sp_step(List_sp args, T_sp env) {
 T_mv sp_tagbody(List_sp args, T_sp env) {
   ASSERT(env.generalp());
   TagbodyEnvironment_sp tagbodyEnv = TagbodyEnvironment_O::make(env);
-  //
+  ValueFrame_sp vframe = tagbodyEnv->getActivationFrame();
+  Cons_sp thandle = Cons_O::create(_Nil<T_O>(),_Nil<T_O>());
+  vframe->operator[](0) = thandle;
+  T_O* handle = thandle.raw_();
+ //
   // Find all the tags and tell the TagbodyEnvironment where they are in the list of forms.
   //
   for (auto cur : args) {
-    T_sp tagOrForm = oCar(cur);
-    if (cl__symbolp(tagOrForm)) {
+    T_sp tagOrForm = CONS_CAR(cur);
+    if (!tagOrForm.consp() && cl__symbolp(tagOrForm)) {
       Symbol_sp tag = gc::As<Symbol_sp>(tagOrForm);
       // The tag is associated with its position in list of forms
       tagbodyEnv->addTag(tag, cur);
     }
   }
   LOG(BF("sp_tagbody has extended the environment to: %s") % tagbodyEnv->__repr__());
-  T_sp tagbodyId = gc::As<TagbodyFrame_sp>(Environment_O::clasp_getActivationFrame(tagbodyEnv));
-  int frame = my_thread->exceptionStack().push(TagbodyFrame, tagbodyId);
   // Start to evaluate the tagbody
   List_sp ip = args;
-  while (ip.notnilp()) {
-    T_sp tagOrForm = oCar(ip);
+  while (ip.consp()) {
+    T_sp tagOrForm = CONS_CAR(ip);
     if ((tagOrForm).consp()) {
       try {
         eval::evaluate(tagOrForm, tagbodyEnv);
       } catch (LexicalGo &go) {
-        if (go.getFrame() != frame) {
+        if (go.getHandle() != handle) {
           throw go;
         }
         int index = go.index();
         ip = tagbodyEnv->codePos(index);
       } catch (DynamicGo &dgo) {
-        if (dgo.getFrame() != frame) {
+        if (dgo.getHandle() != handle) {
           throw dgo;
         }
         int index = dgo.index();
         ip = tagbodyEnv->codePos(index);
       }
     }
-    ip = oCdr(ip);
+    ip = CONS_CDR(ip);
   }
   LOG(BF("Leaving sp_tagbody"));
-  my_thread->exceptionStack().unwind(frame);
   return Values0<T_O>();
 };
 
-T_mv sp_go(List_sp args, T_sp env) {
+DONT_OPTIMIZE_WHEN_DEBUG_RELEASE T_mv sp_go(List_sp args, T_sp env) {
   ASSERT(env.generalp());
   Symbol_sp tag = gc::As<Symbol_sp>(oCar(args));
   int depth = 0;
@@ -1100,13 +1124,10 @@ T_mv sp_go(List_sp args, T_sp env) {
   if (!foundTag) {
     SIMPLE_ERROR(BF("Could not find tag[%s] in the lexical environment: %s") % _rep_(tag) % _rep_(env));
   }
-  ActivationFrame_sp af = Environment_O::clasp_getActivationFrame(env);
+  ValueFrame_sp af = Environment_O::clasp_getActivationFrame(env);
+  T_sp thandle = af->operator[](0);
   T_sp tagbodyId = core::tagbody_frame_lookup(af,depth,index);
-  int frame = my_thread->exceptionStack().findKey(TagbodyFrame, tagbodyId);
-  if (frame < 0) {
-    SIMPLE_ERROR(BF("Could not find tagbody frame for tag %s") % _rep_(tag));
-  }
-  DynamicGo go(frame, index);
+  DynamicGo go(thandle.raw_(), index);
   throw go;
 }
 };
@@ -1299,44 +1320,70 @@ T_mv sp_block(List_sp args, T_sp environment) {
   ASSERT(environment.generalp());
   Symbol_sp blockSymbol = gc::As<Symbol_sp>(oCar(args));
   BlockEnvironment_sp newEnvironment = BlockEnvironment_O::make(blockSymbol, environment);
-  int frame = my_thread->exceptionStack().push(BlockFrame, blockSymbol);
+  ValueFrame_sp vframe = newEnvironment->getActivationFrame();
+  Cons_sp handle = Cons_O::create(_Nil<T_O>(),_Nil<T_O>());
+  vframe->operator[](0) = handle;
   LOG(BF("sp_block has extended the environment to: %s") % newEnvironment->__repr__());
   T_mv result;
   try {
     result = eval::sp_progn(oCdr(args), newEnvironment);
   } catch (ReturnFrom &returnFrom) {
     LOG(BF("Caught ReturnFrom with returnFrom.getBlockDepth() ==> %d") % returnFrom.getBlockDepth());
-    if (returnFrom.getFrame() != frame) // Symbol() != newEnvironment->getBlockSymbol() )
-    {
+    if (returnFrom.getHandle() != handle.raw_() ) {
       throw returnFrom;
     }
     result = gctools::multiple_values<T_O>::createFromValues(); // returnFrom.getReturnedObject();
   }
   LOG(BF("Leaving sp_block"));
-  my_thread->exceptionStack().unwind(frame);
   return result;
 }
 
 T_mv sp_returnFrom(List_sp args, T_sp environment) {
   ASSERT(environment.generalp());
   Symbol_sp blockSymbol = gc::As<Symbol_sp>(oCar(args));
-  int frame = my_thread->exceptionStack().findKey(BlockFrame, blockSymbol);
-  if (frame < 0) {
-    SIMPLE_ERROR(BF("Could not find block named %s in lexical environment: %s") % _rep_(blockSymbol) % _rep_(environment));
-  }
+  int depth = 0;
+  bool interFunction = false;
+  T_sp tblockEnv = _Nil<T_O>();
+  Environment_O::clasp_findBlock(environment,blockSymbol,depth,interFunction,tblockEnv);
+  BlockEnvironment_sp blockEnv = gc::As_unsafe<BlockEnvironment_sp>(tblockEnv);
   T_mv result = Values(_Nil<T_O>());
-  if (oCdr(args).notnilp()) {
-    result = eval::evaluate(oCadr(args), environment);
-  }
+  if (oCdr(args).notnilp()) result = eval::evaluate(oCadr(args), environment);
   result.saveToMultipleValue0();
-  ReturnFrom returnFrom(frame);
+  ReturnFrom returnFrom(gc::As_unsafe<ValueFrame_sp>(blockEnv->getActivationFrame())->operator[](0).raw_());
   throw returnFrom;
 }
 
+#if 0
+struct RaiiUnwindProtect {
+  T_sp cleanup_fn;
+  T_sp environment;
+  RaiiUnwindProtect(T_sp cleanup,T_sp env) : cleanup_fn(cleanup), environment(env) {};
+  ~RaiiUnwindProtect() {
+// Save any return value that may be in the multiple value return array
+    gctools::Vec0<T_sp> savemv;
+    T_mv tresult;
+    tresult.readFromMultipleValue0();
+    tresult.saveToVec0(savemv);
+    eval::sp_progn(this->cleanup_fn,this->environment);
+#if 1 // See comment above about 22a8d7b1
+    tresult.loadFromVec0(savemv);
+    tresult.saveToMultipleValue0();
+#endif
+  };
+};
+#endif
+
+
 T_mv sp_unwindProtect(List_sp args, T_sp environment) {
+#if 0
   ASSERT(environment.generalp());
-  T_mv result = Values(_Nil<T_O>());
+  T_sp protected_fn = oCar(args);
+  T_sp cleanup_fn = oCdr(args);
+  RaiiUnwindProtect cleanup(cleanup_fn,environment);
+  return eval::evaluate(protected_fn, environment);
+#else
   gc::Vec0<core::T_sp> save;
+  T_mv result;
   try {
     // Evaluate the protected form
     result = eval::evaluate(oCar(args), environment);
@@ -1356,6 +1403,7 @@ T_mv sp_unwindProtect(List_sp args, T_sp environment) {
   // Restore the return values
   result.loadFromVec0(save);
   return result;
+#endif
 }
 
 T_mv sp_catch(List_sp args, T_sp environment) {
@@ -1456,7 +1504,7 @@ T_mv sp_multipleValueCall(List_sp args, T_sp env) {
     (*fargs)[i] = oCar(c).raw_();
     ++i;
   }
-  VaList_S valist_struct(fargs);
+  Vaslist valist_struct(fargs);
   VaList_sp valist(&valist_struct); // = valist_struct.fargs.setupVaList(valist_struct);
   return funcall_consume_valist_<core::Function_O>(func.tagged_(), valist);
 }
@@ -1530,10 +1578,7 @@ T_mv sp_function(List_sp args, T_sp environment) {
     WRONG_TYPE_ARG(arg, Cons_O::createList(cl::_sym_or, cl::_sym_Symbol_O, cl::_sym_Cons_O));
   } else if (Symbol_sp fnSymbol = arg.asOrNull<Symbol_O>()) {
     LOG(BF("In sp_function - looking up for for[%s]") % fnSymbol->__repr__());
-    T_sp fn = af_interpreter_lookup_function(fnSymbol, environment);
-    if (fn.nilp()) {
-      SIMPLE_ERROR(BF("Could not find function %s args: %s") % _rep_(fnSymbol) % _rep_(args));
-    }
+    T_sp fn = interpreter_lookup_function_or_error(fnSymbol, environment);
     LOG(BF("     Found form: %s") % fn->__repr__());
     return (Values(fn));
   } else if (Cons_sp cconsArg = arg.asOrNull<Cons_O>()) {
@@ -1723,27 +1768,21 @@ T_mv doMacrolet(List_sp args, T_sp env, bool toplevel) {
     // printf("   inner_declares = %s\n", _rep_(inner_declares).c_str());
     // printf("   inner_docstring = %s\n", _rep_(inner_docstring).c_str());
     // printf("   inner_code = %s\n", _rep_(inner_code).c_str());
-    List_sp outer_func_cons = eval::funcall(core::_sym_parse_macro, name, olambdaList, inner_body);
+    List_sp outer_func_cons = eval::funcall(ext::_sym_parse_macro, name, olambdaList, inner_body);
     //		printf("%s:%d sp_macrolet outer_func_cons = %s\n", __FILE__, __LINE__, _rep_(outer_func_cons).c_str());
     Function_sp outer_func;
-    if (comp::_sym_compileInEnv->fboundp()) {
-      // If the compiler is set up then compile the outer func
-      outer_func = gc::As<Function_sp>(eval::funcall(comp::_sym_compileInEnv, _Nil<T_O>(), outer_func_cons, newEnv,_Nil<T_O>(),llvmo::_sym_ExternalLinkage));
-      outer_func->set_kind(kw::_sym_macro);
-    } else {
-      List_sp outer_ll = oCadr(outer_func_cons);
+    List_sp outer_ll = oCadr(outer_func_cons);
       //		printf("%s:%d sp_macrolet outer_ll = %s\n", __FILE__, __LINE__, _rep_(outer_ll).c_str());
-      List_sp outer_body = oCddr(outer_func_cons);
+    List_sp outer_body = oCddr(outer_func_cons);
       //		printf("%s:%d sp_macrolet outer_body = %s\n", __FILE__, __LINE__, _rep_(outer_body).c_str());
-      List_sp declares;
-      gc::Nilable<String_sp> docstring;
-      List_sp code;
-      parse_lambda_body(outer_body, declares, docstring, code);
-      LambdaListHandler_sp outer_llh = LambdaListHandler_O::create(outer_ll, declares, cl::_sym_function);
-      printf("%s:%d Creating InterpretedClosure with no source information - fix this\n", __FILE__, __LINE__);
-      Closure_sp ic = gc::GC<InterpretedClosure_O>::allocate(name, kw::_sym_macro, outer_llh, declares, docstring, newEnv, code, SOURCE_POS_INFO_FIELDS(_Nil<T_O>()));
-      outer_func = ic;
-    }
+    List_sp declares;
+    gc::Nilable<String_sp> docstring;
+    List_sp code;
+    parse_lambda_body(outer_body, declares, docstring, code);
+    LambdaListHandler_sp outer_llh = LambdaListHandler_O::create(outer_ll, declares, cl::_sym_function);
+//    printf("%s:%d Creating InterpretedClosure with no source information - fix this\n", __FILE__, __LINE__);
+    Closure_sp ic = gc::GC<InterpretedClosure_O>::allocate(name, kw::_sym_macro, outer_llh, declares, docstring, newEnv, code, SOURCE_POS_INFO_FIELDS(_Nil<T_O>()));
+    outer_func = ic;
     LOG(BF("func = %s") % ic->__repr__());
     newEnv->addMacro(name, outer_func);
     //		newEnv->bind_function(name,outer_func);
@@ -1794,7 +1833,7 @@ T_mv do_symbolMacrolet(List_sp args, T_sp env, bool topLevelForm) {
     LambdaListHandler_sp outer_llh = LambdaListHandler_O::create(outer_ll,
                                                                  oCadr(declares),
                                                                  cl::_sym_function);
-    printf("%s:%d Creating InterpretedClosure with no source information and empty name- fix this\n", __FILE__, __LINE__);
+//    printf("%s:%d Creating InterpretedClosure with no source information and empty name- fix this\n", __FILE__, __LINE__);
     InterpretedClosure_sp ic = gc::GC<InterpretedClosure_O>::allocate(_sym_symbolMacroletLambda, kw::_sym_macro, outer_llh, declares, _Nil<T_O>(), newEnv, expansion, SOURCE_POS_INFO_FIELDS(_Nil<T_O>()));
     Function_sp outer_func = ic;
     newEnv->addSymbolMacro(name, outer_func);
@@ -1849,50 +1888,14 @@ T_mv sp_symbolMacrolet(List_sp args, T_sp env) {
 
 /*! Returns NIL if no function is found */
 T_sp lookupFunction(T_sp functionDesignator, T_sp env) {
-  ASSERTF(functionDesignator, BF("In apply, the head function designator is UNDEFINED"));
-  LIKELY_if (gc::IsA<Function_sp>(functionDesignator)) return functionDesignator;
-  Symbol_sp shead = gc::As<Symbol_sp>(functionDesignator);
-  T_sp exec = af_interpreter_lookup_function(shead, env);
-  return exec;
-}
-
-#if 0
-T_mv applyClosureToActivationFrame(Function_sp func, ActivationFrame_sp args) {
-  size_t nargs = args->length();
-  ValueFrame_sp vframe = gctools::As_unsafe<ValueFrame_sp>(args);
-#define frame (*vframe)
-//  T_sp *frame = args->argArray();
-  switch (nargs) {
-#define APPLY_TO_ACTIVATION_FRAME
-#include <clasp/core/generated/applyToActivationFrame.h>
-#undef APPLY_TO_ACTIVATION_FRAME
-#undef frame
-  default:
-      SIMPLE_ERROR(BF("Illegal number of arguments in call: %s") % nargs);
-  };
-}
-#endif
-
-#if 0
-T_mv applyToActivationFrame(T_sp head, ActivationFrame_sp targs) {
-  T_sp tfn = lookupFunction(head, targs);
-  ValueFrame_sp args = gctools::As_unsafe<ValueFrame_sp>(targs);
-  if (tfn.nilp()) {
-    if (head == cl::_sym_findClass) {
-      // When booting, cl::_sym_findClass may be apply'd but not
-      // defined yet
-      return (cl__find_class(gc::As<Symbol_sp>(args->entry(0)), true, _Nil<T_O>()));
-    }
-    SIMPLE_ERROR(BF("Could not find function %s args: %s") % _rep_(head) % _rep_(args));
+  if (gc::IsA<Symbol_sp>(functionDesignator)) {
+    Symbol_sp shead = gc::As<Symbol_sp>(functionDesignator);
+    T_sp exec = interpreter_lookup_function_or_error(shead, env);
+    return exec;
   }
-  Function_sp closure = tfn.asOrNull<Function_O>();
-  if (LIKELY(closure)) {
-    return applyClosureToActivationFrame(closure, args);
-  }
-  SIMPLE_ERROR(BF("In applyToActivationFrame the closure for %s is NULL and is being applied to arguments: %s") % _rep_(closure) % _rep_(args));
+  ASSERT(gc::IsA<Function_sp>(functionDesignator));
+  return functionDesignator;
 }
-#endif
-
 
 
 /*!
@@ -1922,10 +1925,9 @@ T_mv evaluate_atom(T_sp exp, T_sp environment) {
     _BLOCK_TRACEF(BF("Evaluating symbol: %s") % exp->__repr__());
     if (sym->isKeywordSymbol())
       return Values(sym);
-    if (core__lookup_symbol_macro(sym, environment).notnilp()) {
+    if (core__symbol_macro(sym, environment).notnilp()) {
       T_sp texpr;
       {
-        MULTIPLE_VALUES_CONTEXT();
         texpr = cl__macroexpand(sym, environment);
       }
       result = eval::evaluate(texpr, environment);
@@ -1938,15 +1940,6 @@ T_mv evaluate_atom(T_sp exp, T_sp environment) {
   return (Values(exp));
 }
 
-T_mv evaluate_lambdaHead(List_sp headCons, List_sp form, T_sp environment) {
-  T_mv result;
-  if (oCar(headCons) == cl::_sym_lambda) {
-    IMPLEMENT_MEF(BF("Handle lambda better"));
-  } else {
-    SIMPLE_ERROR(BF("Illegal form: %s") % _rep_(form));
-  }
-  return (result);
-}
 
 T_mv evaluate_specialForm(SpecialForm_sp specialForm, List_sp form, T_sp environment) {
   return specialForm->evaluate(oCdr(form), environment);
@@ -2025,125 +2018,10 @@ T_mv t1Locally(List_sp args, T_sp env) {
 
 T_mv t1Macrolet(List_sp args, T_sp env) {
   return doMacrolet(args, env, true /*toplevel*/);
-#if 0
-  if ( _sym_STARdebugEvalSTAR && _sym_STARdebugEvalSTAR->symbolValue().notnilp() ) {
-    printf("%s:%d t1Macrolet args: %s\n", __FILE__, __LINE__, _rep_(args).c_str() );
-  }
-	    // TODO: handle trace
-  List_sp macros = oCar(args);
-  MacroletEnvironment_sp newEnv(MacroletEnvironment_O::make(env));
-  List_sp body = oCdr(args);
-  List_sp cur = macros;
-  LOG(BF("macros part=%s") % macros->__repr__() );
-  gc::Nilable<String_sp> docString = _Nil<T_O>();
-  while ( cur.notnilp() )
-  {
-    List_sp oneDef = oCar(cur);
-    Symbol_sp name = oCar(oneDef).as<Symbol_O>();
-    T_sp olambdaList = oCadr(oneDef);
-    List_sp inner_body = oCdr(oCdr(oneDef));
-    List_sp outer_func_cons = eval::funcall(core::_sym_parse_macro,name,olambdaList,inner_body);
-#if 1
-//                printf("%s:%d   outer_func_cons = %s\n", __FILE__, __LINE__, _rep_(outer_func_cons).c_str());
-    Function_sp outer_func = eval::funcall(comp::_sym_compileInEnv
-                                           , _Nil<T_O>()
-                                           , outer_func_cons
-                                           ,newEnv
-                                           ,_Nil<T_O>()
-                                           ,llvmo::_sym_ExternalLinkage
-                                           ).as<Function_O>();
-    outer_func->setKind(kw::_sym_macro);
-#else
-    List_sp outer_ll = oCaddr(outer_func_cons);
-    List_sp outer_body = cCdddr(outer_func_cons);
-    List_sp declares;
-    String_sp docstring;
-    List_sp code;
-    parse_lambda_body(outer_body,declares,docstring,code);
-    LambdaListHandler_sp outer_llh = LambdaListHandler_O::create(outer_ll,declares,cl::_sym_function);
-                // TODO: Change these to compiled functions when the compiler is available
-//                printf("%s:%d Creating InterpretedClosure with no source info\n", __FILE__, __LINE__ );
-    InterpretedClosure* ic = gctools::ClassAllocator<InterpretedClosure>::allocate_class(name
-                                                                                         , _Nil<SourcePosInfo_O>()
-                                                                                         , kw::_sym_macro
-                                                                                         , outer_llh
-                                                                                         , declares
-                                                                                         , docstring
-                                                                                         , newEnv
-                                                                                         , code );
-    NamedFunction_sp outer_func = NamedFunction_O::make(ic);
-#endif
-    LOG(BF("func = %s") % outer_func_cons->__repr__() );
-//                printf("%s:%d addMacro name: %s  macro: %s\n", __FILE__, __LINE__, _rep_(name).c_str(), _rep_(outer_func).c_str());
-    newEnv->addMacro(name,outer_func);
-//		newEnv->bind_function(name,outer_func);
-    cur = cCdr(cur);
-  }
-  List_sp declares;
-  List_sp code;
-  String_sp docstring;
-  List_sp specials;
-  extract_declares_docstring_code_specials(body,declares,false,docstring,code,specials);
-//            printf("%s:%d macrolet evaluating code: %s  in env: %s\n", __FILE__, __LINE__, _rep_(code).c_str(), _rep_(newEnv).c_str());
-  return t1Progn(code,newEnv);
-#endif
 }
 
 T_mv t1SymbolMacrolet(List_sp args, T_sp env) {
   return do_symbolMacrolet(args, env, true);
-#if 0
-  List_sp macros = oCar(args);
-  SymbolMacroletEnvironment_sp newEnv(SymbolMacroletEnvironment_O::make(env));
-  List_sp body = cCdr(args);
-  List_sp cur = macros;
-  LOG(BF("macros part=%s") % macros->__repr__() );
-  gc::Nilable<String_sp> docstring = _Nil<T_O>();
-  SYMBOL_SC_(CorePkg,whole);
-  SYMBOL_SC_(CorePkg,env);
-  List_sp outer_ll = Cons_O::createList(_sym_whole, _sym_env);
-  SYMBOL_EXPORT_SC_(ClPkg,ignore);
-  List_sp declares = Cons_O::createList(cl::_sym_declare,Cons_O::createList(cl::_sym_ignore,_sym_whole,_sym_env));
-  while ( cur.notnilp() )
-  {
-    List_sp oneDef = oCar(cur);
-    Symbol_sp name = oCar(oneDef).as<Symbol_O>();
-    List_sp expansion = Cons_O::create(Cons_O::createList(cl::_sym_quote,oCadr(oneDef)),_Nil<T_O>());
-//                printf("%s:%d  symbolmacrolet name=%s expansion=%s\n", __FILE__, __LINE__, _rep_(name).c_str(), _rep_(expansion).c_str() );
-    Function_sp outer_func;
-#if 0
-    T_sp olambdaList = _Nil<T_O>();
-    List_sp inner_body = oCadr(oneDef);
-    List_sp outer_func_cons = eval::funcall(core::_sym_parse_macro,name,olambdaList,inner_body);
-    printf("%s:%d  symbolmacrolet name=%s expansion I can compile=%s\n", __FILE__, __LINE__, _rep_(name).c_str(), _rep_(outer_func_cons).c_str() );
-    printf("%s:%d   outer_func_cons = %s\n", __FILE__, __LINE__, _rep_(outer_func_cons).c_str());
-    outer_func = eval::funcall(comp::_sym_compileInEnv
-                               , _Nil<T_O>()
-                               , outer_func_cons
-                               ,newEnv
-                               ,_Nil<T_O>()
-                               ,llvmo::_sym_ExternalLinkage).as<Function_O>();
-    outer_func->setKind(kw::_sym_macro);
-#else
-    LambdaListHandler_sp outer_llh = LambdaListHandler_O::create(outer_ll,
-                                                                 oCadr(declares),
-                                                                 cl::_sym_function);
-                // TODO: Change these to compiled functions when the compiler is available
-    printf("%s:%d Creating InterpretedClosure for expansion: %s\n", __FILE__, __LINE__, _rep_(expansion).c_str());
-    InterpretedClosure* ic = gctools::ClassAllocator<InterpretedClosure>::allocate_class(_sym_symbolMacroletLambda
-                                                                                         , _Nil<SourcePosInfo_O>()
-                                                                                         , kw::_sym_macro
-                                                                                         , outer_llh
-                                                                                         , declares
-                                                                                         , docstring
-                                                                                         , newEnv
-                                                                                         , expansion );
-    outer_func = Function_O::make(ic);
-#endif
-    newEnv->addSymbolMacro(name,outer_func);
-    cur = cCdr(cur);
-  }
-  return t1Locally(body,newEnv);
-#endif
 }
 
 struct SafeTopLevelFormStack {
@@ -2201,13 +2079,12 @@ struct InterpreterTrace {
   };
 };
 
-T_mv evaluate(T_sp exp, T_sp environment) {
+DONT_OPTIMIZE_WHEN_DEBUG_RELEASE T_mv evaluate(T_sp exp, T_sp environment) {
   //	    Environment_sp localEnvironment = environment;
   //            printf("%s:%d evaluate %s environment@%p\n", __FILE__, __LINE__, _rep_(exp).c_str(), environment.raw_());
   //            printf("    environment: %s\n", _rep_(environment).c_str() );
   ASSERT(environment.generalp());
   T_mv result;
-  Cons_sp cform;
   List_sp form;
   T_sp head;
   core__stack_monitor();
@@ -2220,12 +2097,10 @@ T_mv evaluate(T_sp exp, T_sp environment) {
     if (_evaluateVerbosity > 0) {
       printf("core::eval::evaluate depth[%5d] return <- %s\n", _evaluateDepth, _rep_(exp).c_str());
     }
-    result = Values(exp);
-    goto DONE;
+    return Values(exp);
   }
-  if (cl__atom(exp)) {
-    result = evaluate_atom(exp, environment);
-    goto DONE;
+  if (!exp.consp()) {
+    return evaluate_atom(exp, environment);
   }
   //
   // If it reached here then exp is a cons
@@ -2233,29 +2108,30 @@ T_mv evaluate(T_sp exp, T_sp environment) {
   //	    LOG(BF("Evaluating cons[%s]") % exp->__repr__() );
   //	    printf("    Evaluating: %s\n", _rep_(exp).c_str() );
   //	    printf("    In env: %s\n", _rep_(environment).c_str() );
-  cform = exp.asOrNull<Cons_O>();
+  Cons_sp cform((gctools::Tagged)exp.raw_());
   form = cform;
   ASSERTNOTNULL(form);
-  head = oCar(form);
-  if (Symbol_sp headSym = head.asOrNull<Symbol_O>()) {
+  head = CONS_CAR(form);
+  if (head.consp()) {
+    Cons_sp chead((gctools::Tagged)head.raw_());
+    if (CONS_CAR(chead)==cl::_sym_lambda) {
+      return core::eval::evaluate(Cons_O::create(cl::_sym_funcall,exp),environment);
+    }
+    SIMPLE_ERROR(BF("Illegal head of form %s") % _rep_(head));
+  } else if (Symbol_sp headSym = head.asOrNull<Symbol_O>()) {
     T_sp specialForm = _lisp->specialFormOrNil(headSym);
     if (!specialForm.nilp()) {
-      result = evaluate_specialForm(specialForm, form, environment);
-      goto DONE;
+      return evaluate_specialForm(specialForm, form, environment);
     }
 
     if (headSym == cl::_sym_cond) {
-      result = evaluate_cond(form, environment);
-      goto DONE;
+      return evaluate_cond(form, environment);
     } else if (headSym == cl::_sym_case) {
-      result = evaluate_case(form, environment);
-      goto DONE;
+      return evaluate_case(form, environment);
     } else if (headSym == cl::_sym_multipleValueSetq) {
-      result = evaluate_multipleValueSetq(form, environment);
-      goto DONE;
+      return evaluate_multipleValueSetq(form, environment);
     } else if (headSym == cl::_sym_prog1) {
-      result = evaluate_prog1(form, environment);
-      goto DONE;
+      return evaluate_prog1(form, environment);
     }
 
     T_sp theadFunc = af_interpreter_lookup_macro(headSym, environment);
@@ -2280,58 +2156,32 @@ T_mv evaluate(T_sp exp, T_sp environment) {
         string es = _rep_(expanded);
         printf("core::eval::evaluate expression is macro - expanded --> %s\n", es.c_str());
       }
-      result = eval::evaluate(expanded, environment);
-      goto DONE;
+      return eval::evaluate(expanded, environment);
     }
-    theadFunc = af_interpreter_lookup_function(headSym, environment);
-    if (theadFunc.nilp()) {
-      SIMPLE_ERROR(BF("Could not find special-operator/macro/function(%s) in %s in the lexical/dynamic environment") % _rep_(headSym) % _rep_(form) );
-    }
-
+    theadFunc = interpreter_lookup_function_or_error(headSym, environment);
     //
     // It is a form and its head is a symbol,
     // evaluate the arguments and apply the function bound to the head to them
     //
     //		LOG(BF("Symbol[%s] is a normal form - evaluating arguments") % head->__repr__() );
     size_t nargs = cl__length(oCdr(form));
-    Function_sp headFunc = gc::reinterpret_cast_smart_ptr<Function_sp>(theadFunc);
+    T_sp headFunc = theadFunc;
     MAKE_STACK_FRAME(callArgs, headFunc.raw_(), nargs);
     size_t argIdx = 0;
     for (auto cur : (List_sp)oCdr(form)) {
       (*callArgs)[argIdx] = eval::evaluate(CONS_CAR(cur), environment).raw_();
       ++argIdx;
     }
-    VaList_S valist_struct(callArgs);
+    Vaslist valist_struct(callArgs);
     VaList_sp valist(&valist_struct); // = callArgs.setupVaList(valist_struct);
-    if (_sym_STARinterpreterTraceSTAR->symbolValue().notnilp()) {
-      if (gc::As<HashTable_sp>(_sym_STARinterpreterTraceSTAR->symbolValue())->gethash(headSym).notnilp()) {
-        InterpreterTrace itrace;
-        printf("eval::evaluate Trace [%d] > (%s ", global_interpreter_trace_depth, _rep_(headSym).c_str());
-        for (int i(0), iEnd(nargs); i < iEnd; ++i) {
-          printf("%s ", _rep_(T_sp((gc::Tagged)(*callArgs)[i])).c_str());
-        }
-        printf(" )\n");
-        result = funcall_consume_valist_<core::Function_O>(headFunc.tagged_(), valist);
-        printf("eval::evaluate Trace [%d] < (%s ...)\n", global_interpreter_trace_depth, _rep_(headSym).c_str());
-      } else {
-        result = funcall_consume_valist_<core::Function_O>(headFunc.tagged_(), valist);
-      }
-    } else {
-      result = funcall_consume_valist_<core::Function_O>(headFunc.tagged_(), valist);
+    try {
+      return funcall_consume_valist_<core::Function_O>(headFunc.tagged_(), valist);
+    } catch (core::ExitProgramException& ee) {
+      printf("%s:%d Caught ExitProgramException\n", __FILE__, __LINE__ );
+      throw(ee);
     }
-    goto DONE;
   }
-  {
-    List_sp headCons = head;
-    ASSERTF(headCons, BF("Illegal head %s - must be a LAMBDA expression") % _rep_(head));
-    result = evaluate_lambdaHead(headCons, form, environment);
-    goto DONE;
-  }
- DONE:
-  if (_evaluateVerbosity > 0) {
-    printf("core::eval::evaluate depth[%5d] <---- %p\n", _evaluateDepth, exp.raw_());
-  }
-  return result;
+  SIMPLE_ERROR(BF("Illegal form %s") % _rep_(exp));
 }
 
 void evaluateIntoActivationFrame(ActivationFrame_sp af,
@@ -2424,8 +2274,6 @@ void defineSpecialOperatorsAndMacros(Package_sp pkg) {
   _lisp->defineSpecialOperator(ClPkg, "flet", &sp_flet);
   _lisp->defineSpecialOperator(ClPkg, "function", &sp_function);
   _lisp->defineSpecialOperator(ClPkg, "the", &sp_the);
-  // SBCL defined truly-the as a special operator
-//  _lisp->defineSpecialOperator(ExtPkg, "truly-the", &sp_the);
   _lisp->defineSpecialOperator(ClPkg, "go", &sp_go);
   _lisp->defineSpecialOperator(ClPkg, "if", &sp_if);
   _lisp->defineSpecialOperator(ClPkg, "labels", &sp_labels);

@@ -22,27 +22,13 @@
   (declare (ignore initargs))
   (error "The built-in class (~A) cannot be instantiated" class))
 
-;;;
-;;; At this point we can activate the vector of builtin classes, which
-;;; is used by class-of and other functions.
-;;;
-(si::*make-constant '+builtin-classes+ +builtin-classes-pre-array+)
-
 (defmethod ensure-class-using-class ((class null) name &rest rest)
-  (declare (ignore class))
+  (clos::gf-log "In ensure-class-using-class (class null)\n")
+  (clos::gf-log "     class -> %s\n" name)
   (multiple-value-bind (metaclass direct-superclasses options)
       (apply #'help-ensure-class rest)
-    (declare (ignore direct-superclasses))
-    ;;; In Clasp make-instance of a class requires that a new stamp is chosen
     (setf class (apply #'make-instance metaclass :name name options))
-    ;;
-    ;; initialize the default allocator for the new class
-    ;; It is inherited from the direct-superclasses - if they are all 
-    ;; regular classes then it will get an Instance allocator
-    ;; If one of them is a ClbindClass then this will inherit a
-    ;; duplicate of its allocator
-    #+clasp(sys:inherit-default-allocator class direct-superclasses)
-    #+fast-dispatch(invalidate-generic-functions-with-class-selector class)
+    (invalidate-generic-functions-with-class-selector class)
     (when name
       (si:create-type-name name)
       (setf (find-class name) class))))
@@ -58,8 +44,8 @@
   (apply #'make-instance (find-class class-name) initargs))
 
 (defmethod slot-makunbound-using-class ((class built-in-class) self slotd)
-  (declare (ignore class self slotd))
-  (error "SLOT-MAKUNBOUND-USING-CLASS cannot be applied on built-in objects"))
+  (declare (ignore self slotd))
+  (error "SLOT-MAKUNBOUND-USING-CLASS cannot be applied on built-in object ~a of class ~a" class (class-of class)))
 
 (defmethod slot-boundp-using-class ((class built-in-class) self slotd)
   (declare (ignore class self slotd))
@@ -86,50 +72,10 @@
   (declare (ignore initargs))
   (error "The structure-class (~A) cannot be instantiated" class))
 
-#+clasp(export 'make-instance)
+(export 'make-instance)
 
 (defmethod finalize-inheritance ((class structure-class))
   (call-next-method)
   (dolist (slot (class-slots class))
     (unless (eq :INSTANCE (slot-definition-allocation slot))
       (error "The structure class ~S can't have shared slots" (class-name class)))))
-
-(defmethod make-load-form ((object structure-object) &optional environment)
-  (make-load-form-saving-slots object :key environment))
-
-(defmethod print-object ((obj structure-object) stream)
-  (let* ((class (si:instance-class obj))
-	 (slotds (class-slots class)))
-    (declare (:read-only class))
-    (when (and slotds
-               ;; *p-readably* effectively disables *p-level*
-	       (not *print-readably*)
-	       *print-level*
-	       (zerop *print-level*))
-      (write-string "#" stream)
-      (return-from print-object obj))
-    (write-string "#S(" stream)
-    (prin1 (class-name class) stream)
-    (do ((scan slotds (cdr scan))
-	 (i 0 (1+ i))
-	 (limit (or *print-length* most-positive-fixnum))
-	 (sv))
-	((null scan))
-      (declare (fixnum i))
-      (when (>= i limit)
-	(write-string " ..." stream)
-	(return))
-      (setq sv (si:instance-ref obj i))
-      #+ecl(write-string " :" stream)
-      #+ecl(prin1 (slot-definition-name (car scan)) stream)
-      ;; fix bug where symbols like :FOO::BAR are printed
-      #+clasp(write-string " " stream)
-      #+clasp(let ((kw (intern (symbol-name (slot-definition-name (car scan)))
-                               (load-time-value (find-package "KEYWORD")))))
-               (prin1 kw stream))
-      (write-string " " stream)
-      (prin1 sv stream))
-    (write-string ")" stream)
-    obj))
-
-

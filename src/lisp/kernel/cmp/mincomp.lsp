@@ -459,7 +459,7 @@ jump to blocks within this tagbody."
 	    (mincom expanded env)))))
 
 (defun mincomp (form env)
-  (declare (optimize (debug 3)))
+;;;  (declare (optimize (debug 3)))
   (let* ((*current-form* form)
          (*current-env* env))
     ;; If a *code-walker* is defined then invoke the code-walker

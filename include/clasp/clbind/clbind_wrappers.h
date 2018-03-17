@@ -27,7 +27,6 @@ THE SOFTWARE.
 #ifndef clbind_wrappers_H
 #define clbind_wrappers_H
 
-#include <clasp/core/foundation.h>
 #include <clasp/core/wrappedPointer.h>
 #include <clasp/core/instance.h>
 #include <clasp/clbind/adapter.fwd.h>
@@ -136,26 +135,26 @@ public:
     }
   }
 
-  static gctools::smart_ptr<WrapperType> create(OT *naked, class_id classId) {
+  static gctools::smart_ptr<WrapperType> make_wrapper(OT *naked, class_id classId) {
     GC_ALLOCATE_VARIADIC(WrapperType, obj, naked, classId);
     core::Symbol_sp classSymbol = reg::lisp_classSymbol<OT>();
     ASSERT(!classSymbol.unboundp());
-    obj->setInstanceClassUsingSymbol(classSymbol);
+    obj->_setInstanceClassUsingSymbol(classSymbol);
     return obj;
   }
 
-  static gctools::smart_ptr<WrapperType> create(const OT &val, class_id classId) {
+  static gctools::smart_ptr<WrapperType> make_wrapper(const OT &val, class_id classId) {
     OT *naked = new OT(val);
     GC_ALLOCATE_VARIADIC(WrapperType, obj, naked, classId);
     core::Symbol_sp classSymbol = reg::lisp_classSymbol<OT>();
-    obj->setInstanceClassUsingSymbol(classSymbol);
+    obj->_setInstanceClassUsingSymbol(classSymbol);
     return obj;
   }
 
-  static gctools::smart_ptr<WrapperType> create(std::unique_ptr<OT> val, class_id classId) {
+  static gctools::smart_ptr<WrapperType> make_wrapper(std::unique_ptr<OT> val, class_id classId) {
     GC_ALLOCATE_VARIADIC(WrapperType, obj, std::move(val), classId);
     core::Symbol_sp classSymbol = reg::lisp_classSymbol<OT>();
-    obj->setInstanceClassUsingSymbol(classSymbol);
+    obj->_setInstanceClassUsingSymbol(classSymbol);
     return obj;
   }
 
@@ -163,7 +162,7 @@ public:
   bool validp() const { return this->nakedPtr_gc_ignore != NULL; };
   void throwIfInvalid() const {
     if (!this->validp()) {
-      SIMPLE_ERROR(BF("The wrapper is invalid"));
+      SIMPLE_ERROR_SPRINTF("The wrapper is invalid");
     }
   };
 
@@ -230,9 +229,9 @@ public:
 };
 
 template <typename T>
-class gctools::GCKind<clbind::Wrapper<T, T *>> {
+class gctools::GCStamp<clbind::Wrapper<T, T *>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::GCKind<typename clbind::Wrapper<T, T *>::TemplatedBase>::Kind;
+  static gctools::GCStampEnum const Stamp = gctools::GCStamp<typename clbind::Wrapper<T, T *>::TemplatedBase>::Stamp;
 };
 template <typename T>
 struct gctools::GCInfo<clbind::Wrapper<T, T *>> {
@@ -243,9 +242,9 @@ struct gctools::GCInfo<clbind::Wrapper<T, T *>> {
 
 /*! Wrappers of unique_ptr need to be finalized */
 template <typename T>
-class gctools::GCKind<clbind::Wrapper<T, std::unique_ptr<T>>> {
+class gctools::GCStamp<clbind::Wrapper<T, std::unique_ptr<T>>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::GCKind<typename clbind::Wrapper<T, std::unique_ptr<T>>::TemplatedBase>::Kind;
+  static gctools::GCStampEnum const Stamp = gctools::GCStamp<typename clbind::Wrapper<T, std::unique_ptr<T>>::TemplatedBase>::Stamp;
 };
 template <typename T>
 struct gctools::GCInfo<clbind::Wrapper<T, std::unique_ptr<T>>> {
@@ -275,7 +274,7 @@ public:
     if (ptr == NULL) {
       return _Nil<core::T_O>();
     }
-    gctools::smart_ptr<WrapperType> wrapper = WrapperType::create(ptr, reg::registered_class<T>::id);
+    gctools::smart_ptr<WrapperType> wrapper = WrapperType::make_wrapper(ptr, reg::registered_class<T>::id);
     return wrapper;
   }
 };
@@ -291,7 +290,7 @@ public:
     if (ptr == NULL) {
       return _Nil<core::T_O>();
     }
-    return WrapperType::create(std::move(ptr), reg::registered_class<T>::id);
+    return WrapperType::make_wrapper(std::move(ptr), reg::registered_class<T>::id);
   }
 };
 
@@ -309,7 +308,7 @@ public:
     if (ptr == NULL) {
       return _Nil<core::T_O>();
     }
-    return WrapperType::create(std::move(ptr), reg::registered_class<T>::id);
+    return WrapperType::make_wrapper(std::move(ptr), reg::registered_class<T>::id);
   }
 };
 
@@ -324,7 +323,7 @@ public:
     if (ptr == NULL) {
       return _Nil<core::T_O>();
     }
-    gctools::smart_ptr<WrapperType> wrapper = WrapperType::create(ptr, reg::registered_class<T>::id);
+    gctools::smart_ptr<WrapperType> wrapper = WrapperType::make_wrapper(ptr, reg::registered_class<T>::id);
     return wrapper;
   }
 };
@@ -339,7 +338,7 @@ public:
     if (ptr == NULL) {
       return _Nil<core::T_O>();
     }
-    gctools::smart_ptr<WrapperType> wrapper = WrapperType::create(ptr, reg::registered_class<T>::id);
+    gctools::smart_ptr<WrapperType> wrapper = WrapperType::make_wrapper(ptr, reg::registered_class<T>::id);
     return wrapper;
   }
 };
@@ -355,7 +354,7 @@ public:
     if (ptr == NULL) {
       return _Nil<core::T_O>();
     }
-    gctools::smart_ptr<WrapperType> wrapper = WrapperType::create(ptr, reg::registered_class<T>::id);
+    gctools::smart_ptr<WrapperType> wrapper = WrapperType::make_wrapper(ptr, reg::registered_class<T>::id);
     return wrapper;
   }
 };
@@ -369,7 +368,7 @@ public:
     if (ptr == NULL) {
       return _Nil<core::T_O>();
     }
-    gctools::smart_ptr<WrapperType> wrapper = WrapperType::create(ptr, reg::registered_class<T>::id);
+    gctools::smart_ptr<WrapperType> wrapper = WrapperType::make_wrapper(ptr, reg::registered_class<T>::id);
     return wrapper;
   }
 };
@@ -385,7 +384,7 @@ public:
     if (ptr == NULL) {
       return _Nil<core::T_O>();
     }
-    gctools::smart_ptr<WrapperType> wrapper = WrapperType::create(ptr, reg::registered_class<T>::id);
+    gctools::smart_ptr<WrapperType> wrapper = WrapperType::make_wrapper(ptr, reg::registered_class<T>::id);
     return wrapper;
   }
 };
@@ -398,7 +397,7 @@ public:
     if (ptr == NULL) {
       return _Nil<core::T_O>();
     }
-    gctools::smart_ptr<WrapperType> wrapper = WrapperType::create(ptr, reg::registered_class<T>::id);
+    gctools::smart_ptr<WrapperType> wrapper = WrapperType::make_wrapper(ptr, reg::registered_class<T>::id);
     return wrapper;
   }
 };
@@ -408,7 +407,7 @@ class to_object<T &, translate::dont_adopt_pointer> {
 public:
   typedef clbind::Wrapper<T, T *> WrapperType;
   static core::T_sp convert(T &val) {
-    gctools::smart_ptr<WrapperType> wrapper = WrapperType::create(&val, reg::registered_class<T>::id);
+    gctools::smart_ptr<WrapperType> wrapper = WrapperType::make_wrapper(&val, reg::registered_class<T>::id);
     return wrapper;
   }
 };
@@ -422,7 +421,7 @@ public:
   typedef WrapperType GivenType;
   static core::T_sp convert(const T &val) {
     T *ptr = new T(val);
-    gctools::smart_ptr<WrapperType> wrapper = WrapperType::create(ptr, reg::registered_class<T>::id);
+    gctools::smart_ptr<WrapperType> wrapper = WrapperType::make_wrapper(ptr, reg::registered_class<T>::id);
     return wrapper;
   }
 };
@@ -437,7 +436,7 @@ public:
   typedef WrapperType GivenType;
   static core::T_sp convert(const T &val) {
     T *ptr = new T(val);
-    gctools::smart_ptr<WrapperType> wrapper = WrapperType::create(ptr, reg::registered_class<T>::id);
+    gctools::smart_ptr<WrapperType> wrapper = WrapperType::make_wrapper(ptr, reg::registered_class<T>::id);
     return wrapper;
   }
 };
@@ -451,7 +450,7 @@ public:
   typedef WrapperType GivenType;
   static core::T_sp convert(const T &val) {
     T *ptr = new T(val);
-    gctools::smart_ptr<WrapperType> wrapper = WrapperType::create(ptr, reg::registered_class<T>::id);
+    gctools::smart_ptr<WrapperType> wrapper = WrapperType::make_wrapper(ptr, reg::registered_class<T>::id);
     return wrapper;
   }
 };
@@ -465,9 +464,9 @@ public:
   typedef clbind::Wrapper<T, HolderType> WrapperType;
   typedef WrapperType GivenType;
   static core::T_sp convert(const T &val) {
-    IMPLEMENT_MEF(BF("This doesn't make sense - copy but don't adopt pointer???"));
+    HARD_IMPLEMENT_MEF(BF("This doesn't make sense - copy but don't adopt pointer???"));
     T *ptr = new T(val);
-    gctools::smart_ptr<WrapperType> wrapper = WrapperType::create(ptr, reg::registered_class<T>::id);
+    gctools::smart_ptr<WrapperType> wrapper = WrapperType::make_wrapper(ptr, reg::registered_class<T>::id);
     return wrapper;
   }
 };
@@ -504,7 +503,7 @@ struct from_object<std::unique_ptr<T>> {
       core::General_O* gp = (core::General_O*)&(*o);
       T* v_alien = reinterpret_cast<T*>(gp->pointerToAlienWithin());
       if (!v_alien) {
-        SIMPLE_ERROR(BF("Could not access the Alien object within the clbind object@%p of type: %s") % (void*)gp % typeid(T).name());
+        SIMPLE_ERROR_SPRINTF("Could not access the Alien object within the clbind object@%p of type: %s", (void*)gp, typeid(T).name());
       }
 
       ASSERT(v_alien);
@@ -521,7 +520,7 @@ struct from_object<std::unique_ptr<T>> {
       printf("o.px_ref() = %p\n", go.raw_());
       printf("typeid(T*)@%p  typeid(T*).name=%s\n", &typeid(T *), typeid(T *).name());
       printf("typeid(clbind::Derivable<T>*)@%p   typeid(clbind::Derivable<T>*).name() = %s\n", &typeid(clbind::Derivable<T> *), typeid(clbind::Derivable<T> *).name());
-      SIMPLE_ERROR(BF("Could not convert %s of RTTI type %s to %s") % _rep_(go) % typeid(o).name() % typeid(T *).name());
+      SIMPLE_ERROR_SPRINTF("Could not convert %s of RTTI type %s to %s", _rep_(go).c_str(), typeid(o).name(), typeid(T*).name());
     } else {
       printf("%s:%d Can't handle object\n", __FILE__, __LINE__ );
     }
@@ -549,7 +548,7 @@ struct from_object<std::unique_ptr<T>> {
       printf("o.px_ref() = %p\n", go.raw_());
       printf("typeid(T*)@%p  typeid(T*).name=%s\n", &typeid(T *), typeid(T *).name());
       printf("typeid(clbind::Derivable<T>*)@%p   typeid(clbind::Derivable<T>*).name() = %s\n", &typeid(clbind::Derivable<T> *), typeid(clbind::Derivable<T> *).name());
-      SIMPLE_ERROR(BF("Could not convert %s of RTTI type %s to %s\n") % _rep_(go) % typeid(go).name() % typeid(T *).name());
+      SIMPLE_ERROR_SPRINTF("Could not convert %s of RTTI type %s to %s\n", _rep_(go).c_str(), typeid(go).name(), typeid(T *).name());
     } else {
       printf("%s:%d Not a General object\n", __FILE__, __LINE__ );
     }
@@ -576,7 +575,7 @@ struct from_object<T *> {
       core::General_O* gp = o.unsafe_general();
       T* v_alien = reinterpret_cast<T*>(gp->pointerToAlienWithin());
       if (!v_alien) {
-        SIMPLE_ERROR(BF("Could not access the Alien object within the clbind object@%p of type: %s") % (void*)gp % typeid(T).name());
+        SIMPLE_ERROR_SPRINTF("Could not access the Alien object within the clbind object@%p of type: %s",  (void*)gp, typeid(T).name());
       }
       ASSERT(v_alien);
       this->_v = v_alien;
@@ -605,7 +604,7 @@ struct from_object<const T *&> {
     } else if ( core::General_sp gp = o.asOrNull<core::General_O>() ) {
       // What do I do here?
     }
-    SIMPLE_ERROR(BF("Could not convert %s of RTTI type %s to %s") % _rep_(o) % typeid(o).name() % typeid(T *&).name());
+    SIMPLE_ERROR_SPRINTF("Could not convert %s of RTTI type %s to %s",  _rep_(o).c_str(), typeid(o).name(), typeid(T *&).name());
   }
 };
 

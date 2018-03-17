@@ -3,6 +3,7 @@ def build(bld):
             'gc_interface',
             'boehmGarbageCollection',
             'mpsGarbageCollection',
+            'hardErrors',
             'source_info',
             'threadlocal',
             'gc_boot',

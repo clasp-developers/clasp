@@ -72,7 +72,7 @@
     ;; Copy argument values or evaluate init forms
     (let* ((arg-idx (cmp:irc-load arg-idx-alloca))
 	   (rest (if varest-p
-                     (let ((temp-valist (alloca-VaList_S)))
+                     (let ((temp-valist (alloca-vaslist)))
                        (%intrinsic-call "cc_gatherVaRestArguments" 
                                             (list (cmp:calling-convention-va-list* args)
                                                   (cmp:calling-convention-remaining-nargs* args)
@@ -271,9 +271,59 @@
 	#+(or)(format t "compile-all-register-required-arguments store: ~a to ~a  target: ~a~%" arg dest target)
 	(llvm-sys:create-store cmp:*irbuilder* arg dest nil)))))
 
+(defun process-cleavir-lambda-list (lambda-list)
+  ;; We assume that the lambda list is in its correct format:
+  ;; 1) required arguments are lexical locations.
+  ;; 2) optional arguments are (<lexical location> <lexical location>)
+  ;; 3) keyword arguments are (<symbol> <lexical location> <lexical location>)
+  ;; This lets us cheap out on parsing, except &rest and &allow-other-keys.
+  (let (required optional rest-type rest key aok-p key-flag
+        (required-count 0) (optional-count 0) (key-count 0))
+    (dolist (item lambda-list)
+      (case item
+        ((&optional) #|ignore|#)
+        ((&key) (setf key-flag t))
+        ((&rest core:&va-rest) (setf rest-type item))
+        ((&allow-other-keys) (setf aok-p t))
+        (t (if (listp item)
+               (cond ((= (length item) 2)
+                      ;; optional
+                      (incf optional-count)
+                      ;; above, we expect (location -p whatever)
+                      ;; though it's specified as (var init -p)
+                      ;; FIX ME
+                      (push (first item) optional)
+                      (push (second item) optional)
+                      (push nil optional))
+                     (t ;; key, assumedly
+                      (incf key-count)
+                      (push (first item) key)
+                      (push (first item) key)
+                      ;; above, we treat this as being the location,
+                      ;; even though from process-lambda-list it's
+                      ;; the initform.
+                      ;; This file needs work FIXME.
+                      (push (second item) key)
+                      (push (third item) key)))
+               ;; nonlist; we picked off lambda list keywords, so it's an argument.
+               (cond (rest-type
+                      ;; we've seen a &rest lambda list keyword, so this must be that
+                      (setf rest item))
+                     ;; haven't seen anything, it's required
+                     (t (incf required-count)
+                        (push item required)))))))
+    (values (cons required-count (nreverse required))
+            (cons optional-count (nreverse optional))
+            rest
+            key-flag
+            (cons key-count (nreverse key))
+            aok-p
+            nil ; aux-p; unused here
+            (if (eq rest-type 'core:&va-rest) t nil))))
+
 (defun compile-lambda-list-code (lambda-list outputs calling-conv)
   (multiple-value-bind (reqargs optargs rest-var key-flag keyargs allow-other-keys unused-auxs varest-p)
-      (core:process-lambda-list lambda-list 'core::function)
+      (process-cleavir-lambda-list lambda-list)
     (if (cmp::calling-convention-use-only-registers calling-conv)
         ;; Special cases (foo) (foo x) (foo x y) (foo x y z)  - passed in registers
         (compile-all-register-required-arguments reqargs outputs calling-conv)
@@ -330,7 +380,7 @@
 (defun cclasp-maybe-alloc-cc-setup (lambda-list debug-on)
   "Maybe allocate slots in the stack frame to handle the calls
    depending on what is in the lambda-list (&rest, &key etc) and debug-on.
-   Return a calling-convention-setup object that describes what was allocated.
+   Return a calling-convention-configuration object that describes what was allocated.
    See the bclasp version in lambdalistva.lsp."
   (multiple-value-bind (reqargs optargs rest-var key-flag keyargs allow-other-keys unused-auxs varest-p)
       (core:process-lambda-list lambda-list 'core::function)
@@ -359,11 +409,11 @@
            ;;     --> Use only register arguments
            (may-use-only-registers (and req-opt-only (<= num-req cmp::+args-in-registers+) (eql 0 num-opt))))
       (if (and may-use-only-registers (null debug-on))
-          (cmp::make-calling-convention-setup
+          (cmp::make-calling-convention-configuration
            :use-only-registers t)
-          (cmp::make-calling-convention-setup
+          (cmp::make-calling-convention-configuration
            :use-only-registers may-use-only-registers ; if may-use-only-registers then debug-on is T and we could use only registers
-           :VaList_S* (alloca-VaList_S "VaList_S")
+           :vaslist* (alloca-vaslist "vaslist")
            :register-save-area* (alloca-register-save-area "register-save-area")
            :invocation-history-frame* (and debug-on (alloca-invocation-history-frame "invocation-history-frame")))))))
 
@@ -371,3 +421,30 @@
 (defun cclasp-setup-calling-convention (arguments lambda-list debug-on)
   (let ((setup (cclasp-maybe-alloc-cc-setup lambda-list debug-on)))
     (cmp:initialize-calling-convention arguments setup)))
+
+
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; bclasp 
+;;;
+
+(defun bclasp-compile-lambda-list-code (cleavir-lambda-list register-env callconv)
+  (multiple-value-bind (reqs opts rest key-flag keys aok-p auxargs-dummy va-rest-p)
+      (process-cleavir-lambda-list cleavir-lambda-list)
+    ;; Create the register lexicals using allocas
+    (dolist (req (cdr reqs)) (core:register-environment-add-register req (irc-alloca-tsp)))
+    (dolist (opt (cdr opts))
+      (core:register-environment-add-register (first opt) (irc-alloca-tsp))
+      (core:register-environment-add-register (second opt) (irc-alloca-tsp)))
+    (when rest (core:register-environment-add-register rest (irc-alloca-tsp)))
+    (dolist (key (cdr keys))
+      (core:register-environment-add-register (second opt) (irc-alloca-tsp))
+      (core:register-environment-add-register (third opt) (irc-alloca-tsp)))
+    (compile-lambda-list-code cleavir-lambda-list
+                              (lambda (datum)
+                                (core:register-environment-lookup-register datum))
+                              callconv)))
+    

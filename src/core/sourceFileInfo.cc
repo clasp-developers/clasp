@@ -186,7 +186,7 @@ uint af_column(T_sp obj) {
     return 0;
   } else if (Cons_sp co = obj.asOrNull<Cons_O>()) {
     (void)co;
-    IMPLEMENT_MEF(BF("Handle cons for af_column"));
+    IMPLEMENT_MEF("Handle cons for af_column");
   } else if (cl__streamp(obj)) {
     return clasp_input_column(obj);
   } else if (Closure_sp fo = obj.asOrNull<Closure_O>()) {
@@ -319,7 +319,7 @@ SourceFileInfo_sp SourceFileInfo_O::create(const string &str, int handle, T_sp t
 
 string SourceFileInfo_O::__repr__() const {
   stringstream ss;
-  ss << "#<" << this->_instanceClass()->classNameAsString();
+  ss << "#<" << this->_instanceClass()->_classNameAsString();
   ss << " " << _rep_(this->_pathname);
   ss << " :file-handle " << this->_FileHandle;
   ss << " :source-debug-namestring " << _rep_(this->_SourceDebugNamestring);
@@ -387,7 +387,7 @@ SourcePosInfo_sp SourcePosInfo_O::make(const string& filename, size_t filepos, s
 
 string SourcePosInfo_O::__repr__() const {
   stringstream ss;
-  ss << "#<" << this->_instanceClass()->classNameAsString();
+  ss << "#<" << this->_instanceClass()->_classNameAsString();
   ss << " :fileId " << this->_FileId;
   ss << " :filepos " << this->_Filepos;
   ss << " :lineno " << this->_Lineno;

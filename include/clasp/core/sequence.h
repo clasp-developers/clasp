@@ -27,7 +27,6 @@ THE SOFTWARE.
 #ifndef _core_Sequence_H
 #define _core_Sequence_H
 
-#include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 #include <clasp/core/sequence.fwd.h>
 #include <clasp/core/corePackage.fwd.h>

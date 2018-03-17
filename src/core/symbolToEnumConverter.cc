@@ -138,7 +138,7 @@ bool SymbolToEnumConverter_O::recognizesSymbol(Symbol_sp sym) {
 
 string SymbolToEnumConverter_O::__repr__() const {
   stringstream ss;
-  ss << "#<" << this->_instanceClass()->classNameAsString() << " ";
+  ss << "#<" << this->_instanceClass()->_classNameAsString() << " ";
   ss << " :info " << this->_WhatTheEnumsRepresent->get_std_string() << " ";
   this->_EnumToSymbol->mapHash([&ss](T_sp k, T_sp v) {
                 ss << "#<entry " << _rep_(k) << " " <<_rep_(v) << "> ";

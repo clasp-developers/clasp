@@ -36,7 +36,7 @@ THE SOFTWARE.
 namespace cluser {
 
 void initialize_commonLispUserPackage() {
-  list<string> lnicknames = {"USER", "CL-USER"};
+  list<string> lnicknames = {"CL-USER"};
   list<string> luse = {"COMMON-LISP"};
   _lisp->makePackage("COMMON-LISP-USER", lnicknames, luse);
   // We don't have to create the COMMONLISPUSER symbols here - it's done in bootStrapCoreSymbolMap

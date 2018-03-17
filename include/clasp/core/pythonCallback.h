@@ -50,7 +50,6 @@ THE SOFTWARE.
 //
 //
 
-#include <clasp/core/foundation.h>
 
 #ifdef USEBOOSTPYTHON
 #include <Python.h>

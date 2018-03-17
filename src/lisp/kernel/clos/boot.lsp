@@ -16,14 +16,15 @@
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (setq *echo-repl-read* t))
 
-(defconstant +builtin-classes-pre-array+
+(defvar +builtin-classes-pre-array+
   (make-array (1+ #.(length +builtin-classes-list+))))
 
 ;;; ----------------------------------------------------------------------
-;;; Building the classes T, CLASS, STANDARD-OBJECT and STANDARD-CLASS.
-;;;
-;;; We cannot use the functions CREATE-STANDARD-CLASS and others because SLOTS,
-;;; DIRECT-SLOTS, etc are empty and therefore SLOT-VALUE does not work.
+;;; Building basic classes.
+;;; We have to work carefully because the system is obviously not yet
+;;; self-consistent.
+;;; Some classes, like standard-class, are partially defined in the
+;;; interpreter.
 
 #+(or)
 (defmacro debug-boot (msg &rest args)
@@ -31,24 +32,26 @@
 (defmacro debug-boot (msg &rest args))
 
 
+;; This ensures that each new class has its class-for-instances set
+;; properly, and furthermore that it's only done once
+;; (Because if ensure-boot-class is called again with the same name,
+;;  it'll just find-class the existing one.)
+(defun allocate-boot-class (metaclass slot-count)
+  (let ((class (core:allocate-new-instance metaclass slot-count)))
+    (core:class-new-stamp class)
+    class))
+
 (defun ensure-boot-class (name &key (metaclass 'standard-class)
-                                 direct-superclasses direct-slots index
-                                 creates-classes)
+                                 direct-superclasses direct-slots index)
   (debug-boot "!!ensure-boot-class for ~s metaclass: ~s direct-superclasses: ~s :direct-slots ~s :index ~s~%"
               name metaclass direct-superclasses direct-slots index)
   (let* ((the-metaclass (progn
                           (debug-boot "    About to do the~%")
-                          (the class
-                               #+clasp(core:lookup-class metaclass nil)
-                               #+ecl(gethash metaclass si::*class-name-hash-table*))))
+                          (the class (find-class metaclass nil))))
          (class (progn
-                  (debug-boot "    About to allocate-raw-class~%")
-                  (or #+clasp(core:lookup-class name nil)
-                      #+ecl(gethash name si::*class-name-hash-table*)
-                      #+clasp
-                      (core:allocate-raw-class nil the-metaclass #.(length +standard-class-slots+) creates-classes)
-                      #-clasp
-                      (si:allocate-raw-instance nil the-metaclass #.(length +standard-class-slots+))))))
+                  (debug-boot "    About to allocate-boot-class~%")
+                  (or (find-class name nil)
+                      (allocate-boot-class the-metaclass #.(length +standard-class-slots+))))))
     ;;    (debug-boot "About to with-early-accessors -> macroexpand = ~a~%" (macroexpand '(with-early-accessors (+standard-class-slots+) (setf (class-id                  class) name))))
     (debug-boot "    About to with-early-accessors~%")
     (with-early-accessors (+standard-class-slots+)
@@ -59,28 +62,29 @@
                    (not (zerop (length existing-slots))))
           (error "~S was called on the already instantiated class ~S, but with ~S slots while it already has ~S slots."
                  'ensure-boot-class name (length direct-slots) (length existing-slots))))
-      #+ecl(when (eq name 'standard-class)
-             (defconstant +the-standard-class+ class)
-             (si:instance-class-set class class))
       ;;      (debug-boot "  (get-setf-expansion '(class-id class) ENV) -> ~a~%" (macrolet ((hack (form &environment e) `',(multiple-value-list (get-setf-expansion form e)))) (hack '(class-id class))))
       (setf (class-id                  class) name)
       (debug-boot "    (class-id class) -> ~a    name -> ~a~%" (class-id class) name)
-      (setf (class-id                  class) name
+      ;; FIXME: This duplicates the :initform specifications in hierarchy.lsp.
+      (setf (eql-specializer-flag       class) nil
+            (specializer-direct-methods class) nil
+            (specializer-direct-generic-functions class) nil
+            (specializer-call-history-generic-functions class) nil
+            (specializer-mutex class) (mp:make-shared-mutex 'call-history-generic-functions-mutex)
+            (class-id                  class) name
+            ;; superclasses below
             (class-direct-subclasses   class) nil
+            ;; slots by add-slots below
+            ;; precedence below
+            ;; direct-slots also by add-slots
             (class-direct-default-initargs class) nil
             (class-default-initargs    class) nil
-            (class-finalized-p         class) t
-            (eql-specializer-flag      class) nil
-            (specializer-direct-methods class) nil
-            (specializer-direct-generic-functions class) nil)
+            (class-finalized-p         class) t)
       (debug-boot "    About to setf class name -> ~a  class -> ~a~%" name class)
-      #+clasp(core:set-class class name)
-      #+ecl(setf (gethash name si::*class-name-hash-table*) class)
+      (core:set-class class name)
       (debug-boot "    Done setf class name -> ~a  class -> ~a~%" name class)
       (setf
-       (class-sealedp             class) nil
-       (class-dependents          class) nil
-       (class-valid-initargs      class) nil)
+       (class-dependents          class) nil)
       (debug-boot "      About to add-slots~%")
       (add-slots class direct-slots)
       (debug-boot "      About to get superclasses~%")
@@ -96,10 +100,10 @@
         ;; then we must inherit its allocator
         ;; This means that a class can only ever
         ;; inherit from one C++ adaptor class
-        (debug-boot "      inherit-default-allocator~%")
-        #+clasp(sys:inherit-default-allocator class superclasses)
+        (setf (creator class) (sys:compute-instance-creator class the-metaclass superclasses))
         (debug-boot "      compute-clos-class-precedence-list  class->~a   superclasses->~a~%" class superclasses)
         (let ((cpl (compute-clos-class-precedence-list class superclasses)))
+          (debug-boot "      computed")
           (setf (class-precedence-list class) cpl)))
       (debug-boot "      maybe add index~%")
       (when index
@@ -107,8 +111,7 @@
       class)))
 
 (defun add-slots (class slots)
-  (declare (si::c-local)
-	   (optimize speed (safety 0)))
+  (declare (optimize speed (safety 0)))
   ;; It does not matter that we pass NIL instead of a class object,
   ;; because CANONICAL-SLOT-TO-DIRECT-SLOT will make simple slots.
   (with-early-accessors (+standard-class-slots+
@@ -136,10 +139,6 @@
 
 ;; Create the classes
 ;;
-;; Notice that, due to circularity in the definition, STANDARD-CLASS has
-;; itself as metaclass. ENSURE-BOOT-CLASS takes care of that.
-;;
-#+clasp
 (progn
     (defvar +the-t-class+)
     (defvar +the-class+)
@@ -157,26 +156,19 @@
 (defmacro boot-hierarchy ()
   `(progn
      ,@(loop for (class . options) in +class-hierarchy+
-             for direct-slots = (getf options :direct-slots)
-             collect
-             (if direct-slots
-                 `(apply #'ensure-boot-class ',class
-                         :direct-slots ,(parse-slots direct-slots)
-                         ',(let ((copy (copy-list options)))
-                             (remf copy :direct-slots)
-                             copy))
-                 `(apply #'ensure-boot-class ',class ',options)))))
+          for direct-slots = (getf options :direct-slots)
+;;;          do (core:bformat t "boot-hierarchy  class->%s\n" class)
+          collect
+            (if direct-slots
+                `(apply #'ensure-boot-class ',class
+                        :direct-slots ,(parse-slots direct-slots)
+                        ',(let ((copy (copy-list options)))
+                               (remf copy :direct-slots)
+                               copy))
+                `(apply #'ensure-boot-class ',class ',options)))))
 
 (boot-hierarchy)
 
-#+ecl
-(progn
-  (defconstant +the-t-class+ (find-class 't nil))
-  (defconstant +the-class+ (find-class 'class nil))
-  (defconstant +the-std-class+ (find-class 'std-class nil))
-  (defconstant +the-funcallable-standard-class+
-    (find-class 'funcallable-standard-class nil)))
-#+clasp
 (progn
   (dbg-boot "About to setq stuff\n")
   (setq +the-t-class+ (find-class 't nil))
@@ -185,25 +177,15 @@
   (setq +the-funcallable-standard-class+
         (find-class 'funcallable-standard-class nil)))
 ;;
-;; Class T had its metaclass wrong. Fix it.
-;;
-#-clasp
-(si:instance-class-set (find-class 't) (find-class 'built-in-class))
-;;
 ;; Finalize
 ;;
+;; This is needed so that the early slotds we made are not marked obsolete.
 ;;
-;; This is needed for further optimization
-;;
-(dbg-boot "About to set slot-value for method-combination\n")
-(setf (slot-value (find-class 'method-combination) 'sealedp) t)
-;; This is needed so that slot-definition objects are not marked
-;; obsolete and need to be updated
 (let ()
- (with-early-accessors (+standard-class-slots+)
-   (loop for (class-name) in +class-hierarchy+
-         for class = (find-class class-name)
-         do (loop for s in (class-slots class)
-                  do (si::instance-sig-set s))
-            (loop for s in (class-direct-slots class)
-                  do (si::instance-sig-set s)))))
+  (with-early-accessors (+standard-class-slots+)
+    (loop for (class-name) in +class-hierarchy+
+          for class = (find-class class-name)
+          do (loop for s in (class-slots class)
+                   do (si:instance-sig-set s))
+             (loop for s in (class-direct-slots class)
+                   do (si:instance-sig-set s)))))

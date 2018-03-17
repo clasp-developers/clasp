@@ -37,13 +37,10 @@ THE SOFTWARE.
 #include <fstream>
 #include <string.h>
 #include <set>
-#include <boost/format.hpp>
 
-#include <clasp/core/foundation.h>
 #include <clasp/core/object.fwd.h>
 #include <clasp/core/symbol.fwd.h>
 #include <clasp/core/stacks.h>
-#include <clasp/core/profile.h>
 #include <clasp/core/evaluator.fwd.h>
 #include <clasp/core/lispStream.fwd.h>
 #include <clasp/core/primitives.fwd.h>
@@ -55,45 +52,24 @@ namespace kw {
 extern core::Symbol_sp& _sym_name;
 };
 
-struct _TRACE {
-  string _File;
-  string _Function;
-  _TRACE(const string &file, int line, const string &func) : _File(file), _Function(func) {
-    printf("%s:%d:%s Entered\n", file.c_str(), line, func.c_str());
-  }
-  virtual ~_TRACE() {
-    printf("Leaving %s\n", _Function.c_str());
-  }
-};
-
-#define TRACE() _TRACE ___trace(__FILE__, __LINE__, __FUNCTION__)
-
+/* ------------------------------------------------------------
+ * Macros for errors and diagnostics
+ */
 /*! Indicate the function does not return */
 #define NO_RETURN
-
-#define DBG_HOOK(fmt) dbg_hook((fmt).str().c_str())
 
 #define INTERNAL_ERROR(_msg_) THROW_HARD_ERROR(_msg_)
 #define TESTING() printf("%s:%d:%s Testing\n", __FILE__, __LINE__, __FUNCTION__);
 #define TESTINGF(fmt) printf("%s:%d:%s Testing: %s\n", __FILE__, __LINE__, __FUNCTION__, (fmt).str().c_str());
-
 #define NO_INITIALIZERS_ERROR(_type_)                                                     \
   {                                                                                       \
     lisp_error( _type_, _Nil<core::Cons_O>()); \
     THROW_NEVER_REACH();                                                                  \
   }
-#define SIMPLE_WARN(_boost_fmt_) \
-  core::eval::funcall(cl::_sym_warn, core::SimpleBaseString_O::make((_boost_fmt_).str()));
-#define ERROR(_type_, _initializers_)                                               \
-  {                                                                                 \
-    lisp_error( _type_, _initializers_); \
-    THROW_NEVER_REACH();                                                            \
-  }
-#define SIMPLE_ERROR(_boost_fmt_)                                             \
-  {                                                                           \
-    ::core::lisp_error_simple(__FUNCTION__, __FILE__, __LINE__, _boost_fmt_); \
-    THROW_NEVER_REACH();                                                      \
-  }
+#define SIMPLE_WARN(_boost_fmt_) core::eval::funcall(cl::_sym_warn, core::SimpleBaseString_O::make((_boost_fmt_).str()))
+#define ERROR(_type_, _initializers_) lisp_error( _type_, _initializers_)
+#define SIMPLE_ERROR_SPRINTF(...) ::core::lisp_error_sprintf(__FILE__, __LINE__, __FUNCTION__, __VA_ARGS__)
+#define SIMPLE_ERROR(_boost_fmt_) ::core::lisp_error_simple(__FUNCTION__, __FILE__, __LINE__, _boost_fmt_)
 #define NOT_ENVIRONMENT_ERROR(_e_)                                                                  \
   ERROR(cl::_sym_simpleTypeError,                                                                      \
         core::lisp_createList(kw::_sym_formatControl, core::lisp_createStr("~S is not a bclasp environment"), \
@@ -106,9 +82,9 @@ struct _TRACE {
 #define OLD_TYPE_ERROR_INDEX(_seq_, _idx_) \
   ERROR(cl::_sym_simpleTypeError, \
         core::lisp_createList(kw::_sym_formatControl, core::lisp_createStr("~S is not a valid index into the object ~S"), \
-                              kw::_sym_formatArguments, core::lisp_createList(make_fixnum(_idx_), _seq_), \
-                              kw::_sym_expectedType, core::lisp_createList(cl::_sym_integer, make_fixnum(0), make_fixnum((gc::IsA<Instance_sp>(_seq_) ? gc::As<Instance_sp>(_seq_)->numberOfSlots() : (_seq_)->length()) - 1)), \
-                              kw::_sym_datum, make_fixnum(_idx_)));
+                              kw::_sym_formatArguments, core::lisp_createList(clasp_make_fixnum(_idx_), _seq_), \
+                              kw::_sym_expectedType, core::lisp_createList(cl::_sym_integer, clasp_make_fixnum(0), make_fixnum((gc::IsA<Instance_sp>(_seq_) ? gc::As<Instance_sp>(_seq_)->numberOfSlots() : (_seq_)->length()) - 1)), \
+                              kw::_sym_datum, clasp_make_fixnum(_idx_)));
 
 /*! Error for when an index is out of range - eg: beyond the end of a string */
 #define TYPE_ERROR_INDEX(_seq_, _idx_) \
@@ -187,15 +163,20 @@ class DebugStream;
 
 /*! To exit the program throw this exception
  */
-class ExitProgram {
+ class ExitProgramException : public std::exception{
 private:
   int _ExitResult;
 
 public:
-  ExitProgram(int result) : _ExitResult(result){};
+  ExitProgramException(int result) : _ExitResult(result){};
   int getExitResult() { return this->_ExitResult; };
 };
 
+struct SaveLispAndDie {
+   string _FileName;
+ SaveLispAndDie(const std::string& filename) : _FileName(filename) {};
+ };
+ 
 /*! To exit the program throw this exception
  */
 class TerminateProgramIfBatch {
@@ -246,13 +227,12 @@ class ATTR_WEAK ReturnFrom //: public gctools::HeapRoot
     {
   virtual void keyFunctionForVtable() ATTR_WEAK; // MUST BE FIRST VIRTUAL FUNCTION
 private:
-  int _Frame;
-
+  T_O* _Handle;
 public:
-  ReturnFrom(int frame) {
-    this->_Frame = frame;
+  ReturnFrom(T_O* handle) {
+    this->_Handle = handle;
   }
-  int getFrame() const { return this->_Frame; };
+  T_O* getHandle() const { return this->_Handle; };
   /*ATTR_WEAK*/ virtual ~ReturnFrom(){};
 };
 
@@ -261,16 +241,17 @@ public:
 class SlotRefFailed {
 };
 
+
 class ATTR_WEAK LexicalGo {
   virtual void keyFunctionForVtable() ATTR_WEAK;
 
 private:
-  int _Frame;
+  T_O* _Handle;
   int _Index;
 
 public:
-  ATTR_WEAK LexicalGo(int frame, int index) : _Frame(frame), _Index(index){};
-  int getFrame() const { return this->_Frame; };
+  ATTR_WEAK LexicalGo(T_O* handle, int index) : _Handle(handle), _Index(index){};
+  T_O* getHandle() const { return this->_Handle; };
   int index() const { return this->_Index; };
   /*ATTR_WEAK*/ virtual ~LexicalGo(){};
 };
@@ -280,13 +261,12 @@ class ATTR_WEAK DynamicGo //: public gctools::HeapRoot
   virtual void keyFunctionForVtable() ATTR_WEAK;
 
 private:
-  size_t _Frame;
+  T_O*   _Handle;
   size_t _Index;
-
 public:
-  ATTR_WEAK DynamicGo(size_t frame, size_t index) : _Frame(frame), _Index(index){};
+  ATTR_WEAK DynamicGo(T_O* handle, size_t index) : _Handle(handle), _Index(index){};
   /*ATTR_WEAK*/ virtual ~DynamicGo(){};
-  size_t getFrame() const { return this->_Frame; };
+  T_O* getHandle() const { return this->_Handle; };
   size_t index() const { return this->_Index; };
 };
 
@@ -351,36 +331,29 @@ struct CxxFunctionInvocationLogger {
   virtual ~CxxFunctionInvocationLogger();
 };
 
-#define lisp_THROW_base(l, x, m)                                                                                                                                                     \
-  {                                                                                                                                                                                  \
+#define lisp_THROW_base(l, x, m) { \
     core::eval::funcall(lisp_symbolFunction(core::_sym_setThrowPosition), x, core::lisp_createStr(__FILE__), core::lisp_createStr(__FUNCTION__), core::lisp_createFixnum(__LINE__)); \
-    core::lisp_logException(__FILE__, __FUNCTION__, __LINE__, m, x);                                                                                                                 \
-    core::eval::funcall(core::_sym_error, x);                                                                                                                                        \
-    THROW_HARD_ERROR(BF("Never reach here in lisp_THROW_base"));                                                                                                                     \
+    core::lisp_logException(__FILE__, __FUNCTION__, __LINE__, m, x); \
+    core::eval::funcall(core::_sym_error, x); \
+    throw_hard_error("Never reach here in lisp_THROW_base"); \
   }
 
-#define UNREACHABLE() THROW_HARD_ERROR(BF("Should never reach here"))
+#define UNREACHABLE() throw_hard_error("Should never reach here")
 
 // Make it easier to find "try" statements
 #define TRY() try
 
+#define IMPLEMENT_ME() SIMPLE_ERROR(BF("Implement function %s:%d %s") % __FILE__ % __LINE__ % __FUNCTION__)
+#define IMPLEMENT_MEF(msg) SIMPLE_ERROR(BF("Implement function %s:%s %s %s") % __FILE__ % __LINE__ % __FUNCTION__ % msg)
+ 
 #define NOT_SUPPORTED() SIMPLE_ERROR(BF("Subclass(%s) does not support the function(%s) file(%s) lineNumber(%d)") % this->className() % __FUNCTION__ % __FILE__ % __LINE__);
 
-#define SUBCLASS_MUST_IMPLEMENT() \
-  SIMPLE_ERROR(                   \
-               BF("File(%s) lineNumber(%d): Subclass[%s] must implement method[%s] ") % __FILE__ % __LINE__ % lisp_classNameAsString(core::instance_class(this->asSmartPtr())) % __FUNCTION__);
-
-#define SUBIMP() \
-  _G();          \
-  SUBCLASS_MUST_IMPLEMENT();
 
 #define HALT(bfmsg) THROW_HARD_ERROR(BF("%s:%d HALTED --- %s\n") % __FILE__ % __LINE__ % (bfmsg).str());
-#define NOT_APPLICABLE() THROW_HARD_ERROR(BF("%s:%d->%s not applicable for this class") % __FILE__ % __LINE__ % __FUNCTION__);
+#define NOT_APPLICABLE() throw_hard_error_not_applicable_method(__FUNCTION__);
 #define N_A_() NOT_APPLICABLE()
 #define INCOMPLETE(bf) SIMPLE_ERROR(BF("Finish implementing me!!!! function(%s) file(%s) lineNumber(%s): %s") % __FUNCTION__ % __FILE__ % __LINE__ % (bf).str())
 #define FIX_ME() SIMPLE_ERROR(BF("Fix me!!! function(%s) file(%s) lineNumber(%s)") % __FUNCTION__ % __FILE__ % __LINE__);
-#define IMPLEMENT_ME() SIMPLE_ERROR(BF("Implement me!!! function(%s) file(%s) lineNumber(%s)") % __FUNCTION__ % __FILE__ % __LINE__);
-#define IMPLEMENT_MEF(bfmsg) SIMPLE_ERROR(BF("Implement me!!! %s\nfunction(%s) file(%s) lineNumber(%s)") % (bfmsg).str() % __FUNCTION__ % __FILE__ % __LINE__);
 #define DEPRECATED() SIMPLE_ERROR(BF("Depreciated!!! function(%s) file(%s) lineNumber(%d)") % __FUNCTION__ % __FILE__ % __LINE__);
 #define STUB() printf("%s:%d>%s  stub\n", __FILE__, __LINE__, __FUNCTION__ )
 
@@ -393,11 +366,11 @@ FORWARD(Cons);
 #define HARD_ASSERT(t)                                                                   \
   if (!(t)) {                                                                            \
     core::errorFormatted("HARD_ASSERT failed");                                          \
-    throw(core::HardError(__FILE__, __FUNCTION__, __LINE__, "Assertion " #t " failed")); \
+    throw(HardError(__FILE__, __FUNCTION__, __LINE__, "Assertion " #t " failed")); \
   };
-#define HARD_ASSERTF(t, fmt)                                                                                    \
-  if (!(t)) {                                                                                                   \
-    core::errorFormatted(fmt);                                                                                  \
+#define HARD_ASSERTF(t, fmt) \
+  if (!(t)) { \
+    core::errorFormatted(fmt); \
     throw(core::HardError(__FILE__, __FUNCTION__, __LINE__, BF("Assertion %s failed: %s") % #t % (fmt).str())); \
   };
 #else
@@ -407,7 +380,7 @@ FORWARD(Cons);
   {}
 #endif
 
-#define THROW_NEVER_REACH() throw(::core::HardError(__FILE__, __FUNCTION__, __LINE__, BF("Should never get here")));
+#define THROW_NEVER_REACH() throw(HardError(__FILE__, __FUNCTION__, __LINE__, "Should never get here"));
 
 #define MAXSOURCEFILENAME 1024
 class DebugStream {
@@ -454,7 +427,7 @@ public:
   DebugStream &writePtr(void *);
   DebugStream &writeLn();
   DebugStream &log(const string &msg);
-  DebugStream &log(const boost::format &fmt);
+//  DebugStream &log(const boost::format &fmt);
 
   string nextPosition();
 
@@ -663,10 +636,7 @@ extern string _stackTraceAsString();
 #define LOG_CXX_FUNCTION_INVOCATION() core::CxxFunctionInvocationLogger __cxxFunctionInvocationLogger(__FILE__, __FUNCTION__, __LINE__);
 
 #ifdef CALLSTACK_ON //[
-#define _G()                     \
-  LOG_CXX_FUNCTION_INVOCATION(); \
-  _PROFILE_FUNCTION();
-
+#define _G()
 #define _OF() _G();
 #define _lisp_BLOCK_TRACEF(__f) \
   {} // core::_StackTrace _B_stackTrace(__FILE__,"LexicalScope",__LINE__,0,DEBUG_CPP_BLOCK,__f)
@@ -674,8 +644,8 @@ extern string _stackTraceAsString();
 #define _BLOCK_TRACEF(f) _lisp_BLOCK_TRACEF(f)
 #define _BLOCK_TRACE(s) _lisp_BLOCK_TRACEF(BF("%s") % (s))
 #else //][
-#define _G() /* _LINE(); */ _PROFILE_FUNCTION();
-#define _OF() _G();
+#define _G() 
+#define _OF()
 #define _lisp_BLOCK_TRACEF(__f)
 #define _lisp_BLOCK_TRACE(__s)
 #define _BLOCK_TRACE(f)

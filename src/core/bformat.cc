@@ -26,6 +26,7 @@ THE SOFTWARE.
 /* -^- */
 //#define DEBUG_LEVEL_FULL
 
+#include <clasp/core/foundation.h>
 #include <clasp/core/common.h>
 #include <clasp/core/environment.h>
 #include <clasp/core/array.h>
@@ -84,19 +85,19 @@ CL_DEFUN T_sp core__bformat(T_sp destination, const string &control, List_sp arg
     fmter_str = fmter.str();
   }
   catch (boost::io::bad_format_string &err) {
-    SIMPLE_ERROR(BF("bformat command error: bad format string"));
+    SIMPLE_ERROR(BF("bformat command error: bad format string: \"%s\"") % control);
   }
   catch (boost::io::too_few_args &err) {
-    SIMPLE_ERROR(BF("bformat command error: too few args"));
+    SIMPLE_ERROR(BF("bformat command error: too few args in format string: \"%s\"") % control);
   }
   catch (boost::io::too_many_args &err) {
-    SIMPLE_ERROR(BF("bformat command error: too many args"));
+    SIMPLE_ERROR(BF("bformat command error: too many args in format string: \"%s\"") % control);
   }
   catch (boost::io::out_of_range &err) {
-    SIMPLE_ERROR(BF("bformat command error: out of range"));
+    SIMPLE_ERROR(BF("bformat command error: out of range in format string: \"%s\"") % control);
   }
   catch (...) {
-    SIMPLE_ERROR(BF("Unknown bformat command error"));
+    SIMPLE_ERROR(BF("Unknown bformat command error in format string: \"%s\""));
   }
   if (output == _sym_printf) {
     printf("%s", fmter_str.c_str());
@@ -146,6 +147,10 @@ CL_DEFUN T_sp cl__format(T_sp destination, T_sp control, List_sp args) {
       case 'A':
         tf << "%s";
         break;
+      case 'v':
+      case 'V':
+        tf << "%s";
+        break;
       case '&':
         tf << std::endl;
         break;
@@ -154,7 +159,7 @@ CL_DEFUN T_sp cl__format(T_sp destination, T_sp control, List_sp args) {
         break;
       default: {
         success = false;
-        printf("%s:%d Could not translate FORMAT control string %s into a BFORMAT control string because of ~%c control\n",__FILE__, __LINE__, ts.c_str(), *cur);
+        return core__bformat(destination,"Could not format %s %s", Cons_O::createList(control, args));
       } break;
       }
       ++cur;

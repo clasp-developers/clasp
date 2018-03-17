@@ -114,6 +114,8 @@ THE SOFTWARE.
 #include <boost/mpl/eval_if.hpp>
 #include <boost/mpl/logical.hpp>
 
+#include <clasp/core/foundation.h>
+#include <clasp/core/instance.h>
 #include <clasp/clbind/config.h>
 #include <clasp/clbind/scope.h>
 // #include <clasp/clbind/back_reference.hpp>
@@ -218,39 +220,6 @@ namespace detail {
     derivable_class_registration *m_registration;
   };
 
-#if 0
-
-  template <class Class, class Pointer, class Signature, class Policies>
-    struct constructor_registration_base : public registration
-  {
-  constructor_registration_base(Policies const& policies, string const& name, string const& arguments, string const& declares, string const& docstring)
-    : policies(policies), m_name(name), m_arguments(arguments), m_declares(declares), m_docstring(docstring)
-    {}
-
-
-    core::Functoid* makeConstructorFunctoid() const
-    {
-      string tname = m_name;
-      if (m_name == "") { tname = "default-ctor"; };
-      core::Functoid* f = gctools::ClassAllocator<VariadicConstructorFunctoid<Policies,Pointer,Class,Signature>>::allocate_class(tname);
-      return f;
-    }
-
-    void register_() const
-    {
-      core::Functoid* f = this->makeConstructorFunctoid();
-      lisp_defun_lispify_name(core::lisp_currentPackageName(),m_name,f,m_arguments,m_declares,m_docstring,true,true,CountConstructorArguments<Signature>::value);
-    }
-
-
-    Policies policies;
-    string m_name;
-    string m_arguments;
-    string m_declares;
-    string m_docstring;
-  };
-#endif
-
 /*! This is the constructor registration for default constructors of non derivable classes,
          Specialized by making second template parameter reg::null_type
         */
@@ -322,6 +291,10 @@ template <class Class, class Policies>
 #endif
 
 } // namespace detail
+
+
+ void validateRackOffset(size_t wrapped_type_offset);
+  
 
 // registers a class in the cl environment
 template <class T, class X1, class X2, class X3>
@@ -399,6 +372,7 @@ public:
     // I have a constructor and I can test isDerivableCxxClass<T>(0)
     // I should dispatch to def_derivable_default_constructor
     this->def_default_constructor_("default_ctor", NULL, policies<>(), "", "", "");
+    validateRackOffset(offsetof(WrappedType,_Rack));
   }
 
   derivable_class_(const char *name, no_default_constructor_type) : derivable_class_base(name), scope(*this) {
@@ -406,6 +380,7 @@ public:
 //            detail::check_link_compatibility();
 #endif
     init(false /* Does not have constructor */);
+    validateRackOffset(offsetof(WrappedType,_Rack));
   }
 
   template <typename... Types>

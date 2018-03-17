@@ -30,7 +30,7 @@ THE SOFTWARE.
 namespace clbind {
 
 inline void throwSlotsNotSupported() {
-  SIMPLE_ERROR(BF("Slots are not supported by this class"));
+  SIMPLE_ERROR_SPRINTF("Slots are not supported by this class");
 }
 
 /*! Add the enable_derivable type to Adapter or Derivable

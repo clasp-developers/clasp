@@ -35,8 +35,6 @@ extern T_mv evaluate(T_sp exp, T_sp environment);
 */
 //extern T_sp apply(T_sp functionDesignator, List_sp args, Lisp_sp lisp);
 
-//	extern T_mv applyFunctionToActivationFrame(Function_sp func, ActivationFrame_sp args );
-
 extern T_mv sp_trace(List_sp args, T_sp env);
 extern T_mv sp_untrace(List_sp args, T_sp env);
 };

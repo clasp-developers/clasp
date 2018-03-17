@@ -27,7 +27,6 @@ THE SOFTWARE.
 #ifndef _cffi_H_
 #define _cffi_H_
 
-#include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 #include <clasp/cffi/cffiPackage.h>
 #include <clasp/cffi/cffi.fwd.h>
@@ -50,7 +49,7 @@ public: // static functions here
   static Pointer_sp create(void *p);
 
 public: // Functions here
-  bool pointerP() const { IMPLEMENT_ME(); };
+  bool pointerP() const { HARD_IMPLEMENT_ME(); };
   bool null_pointerP() const;
 
   Pointer_sp inc_pointer(core::Integer_sp offset);

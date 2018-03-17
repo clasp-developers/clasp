@@ -1,15 +1,15 @@
 {
     "argv": [
         "/home/app/clasp/bin/clasp",
-        "--exec",
-        "(ext:chdir #P\"/work/\" t)",
-        "--load",
-        "/home/app/quicklisp/local-projects/cl-jupyter/cl-jupyter.lisp",
+	"--load",
+	"app-fasl:cando-jupyter.fasb",
+        "--eval",
+        "(in-package :cando-user)",
+	"--eval",
+	"(cando-user:cl-jupyter-kernel-start)",
         "--",
-        "/home/app/quicklisp/local-projects/cl-jupyter/src",
-        "/home/app/quicklisp/local-projects/cl-jupyter",
         "{connection_file}"
     ],
-    "display_name": "CANDO",
+    "display_name": "Cando",
     "language": "lisp"
 }

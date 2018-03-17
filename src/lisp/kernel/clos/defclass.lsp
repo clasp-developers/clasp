@@ -16,7 +16,6 @@
 ;;; DEFCLASS
 
 (defun parse-default-initargs (default-initargs)
-  (declare (si::c-local))
   (do* ((output-list nil)
 	(scan default-initargs (cddr scan))
 	(already-supplied '()))
@@ -29,7 +28,9 @@
 	  (si::simple-program-error "~S is duplicated in :DEFAULT-INITARGS form ~S"
 				    slot-name default-initargs)
 	  (push slot-name already-supplied))
-      (push `(list ',slot-name ',initform (lambda () ,initform))
+      (push `(list ',slot-name ',initform (lambda ()
+                                            (declare (core:lambda-name parse-default-initargs.lambda))
+                                            ,initform))
 	    output-list))))
 
 (defmacro defclass (&whole form &rest args)
@@ -43,12 +44,14 @@
       (si::simple-program-error "Illegal defclass form: superclasses and slots should be lists"))
     (unless (and (symbolp name) (every #'symbolp superclasses))
       (si::simple-program-error "Illegal defclass form: superclasses and class name are not valid"))
-    `(eval-when (compile load eval)
-       ,(ext:register-with-pde
-	 form
-	 `(load-defclass ',name ',superclasses
-                         ,(parse-slots slots)
-			 ,(process-class-options options))))))
+    (let ((parsed-slots (parse-slots slots))
+          (processed-class-options (process-class-options options)))
+      `(progn
+         (eval-when (:compile-toplevel)
+           (unless (find-class ',name nil)
+             (load-defclass ',name ',superclasses ,parsed-slots ,processed-class-options)))
+         (eval-when (:load-toplevel :execute)
+           (load-defclass ',name ',superclasses ,parsed-slots ,processed-class-options))))))
 
 (defun process-class-options (class-args)
   (let ((options '())
@@ -75,6 +78,7 @@
     (and options `(list ,@options))))
   
 (defun load-defclass (name superclasses slot-definitions options)
+  (clos::gf-log "In load-defclass name -> %s\n" name)
   (apply #'ensure-class name :direct-superclasses superclasses
                              :direct-slots slot-definitions options))
 

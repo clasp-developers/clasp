@@ -57,33 +57,31 @@ Return files."
     (nreverse files)))
 
 (defun select-source-files (first-file last-file &key system)
-        (or first-file (error "You must provide first-file to select-source-files"))
-        (or system (error "You must provide system to select-source-files"))
-        (let ((cur (member first-file system :test #'equal))
-              files
-              file)
-          (or cur (error "first-file ~a was not a member of ~a" first-file system))
-          (tagbody
-           top
-             (setq file (car cur))
-             (if (endp cur) (go done))
-             (if last-file
-                 (if (equal last-file file)
-                     (progn
-                       (if (not (keywordp file))
-                           (setq files (cons file files)))
-                       (go done))))
-             (if (not (keywordp file))
-                 (setq files (cons file files)))
-             (setq cur (cdr cur))
-             (go top)
-           done)
-          (nreverse files)))
+  (or first-file (error "You must provide first-file to select-source-files"))
+  (or system (error "You must provide system to select-source-files"))
+  (let ((cur (member first-file system :test #'equal))
+        (last (if last-file
+                  (let ((llast (member last-file system :test #'equal)))
+                    (or llast (error "last-file ~a was not a member of ~a" last-file system))
+                    llast)))
+        files
+        file)
+    (or cur (error "first-file ~a was not a member of ~a" first-file system))
+    (tagbody
+     top
+       (setq file (car cur))
+       (if (endp cur) (go done))
+       (if (not (keywordp file)) (setq files (cons file files)))
+       (if (and last (eq cur last)) (go done))
+       (setq cur (cdr cur))
+       (go top)
+     done)
+    (nreverse files)))
 
 
 (defun bitcode-pathnames (start end &key system)
   (let ((sources (select-source-files start end :system system)))
-    (mapcar #'(lambda (f &aux (fn (entry-filename f))) (build-pathname fn :bc)) sources)))
+    (mapcar #'(lambda (f &aux (fn (entry-filename f))) (build-pathname fn :bitcode)) sources)))
 
 (defun print-bitcode-file-names-one-line (start end)
   (mapc #'(lambda (f) (bformat t " %s" (namestring f)))
@@ -114,7 +112,7 @@ Return files."
 
 (defun out-of-date-image (image source-files)
   (let* ((last-source (car (reverse source-files)))
-         (last-bitcode (build-pathname (entry-filename last-source) :bc))
+         (last-bitcode (build-pathname (entry-filename last-source) :bitcode))
          (image-file image))
     (format t "last-bitcode: ~a~%" last-bitcode)
     (format t "image-file: ~a~%" image-file)
@@ -125,8 +123,9 @@ Return files."
 
 (defun out-of-date-target (target source-files)
   (let* ((last-source (car (reverse source-files)))
-         (cxx-bitcode (build-intrinsics-bitcode-pathname :executable))
-         (last-bitcode (build-pathname (entry-filename last-source) :bc))
+         (intrinsics-bitcode (build-inline-bitcode-pathname :executable :intrinsics))
+         (builtins-bitcode (build-inline-bitcode-pathname :executable :builtins))
+         (last-bitcode (build-pathname (entry-filename last-source) :bitcode))
          (target-file target))
     #+(or)(progn
             (format t "last-bitcode: ~a~%" last-bitcode)
@@ -134,40 +133,49 @@ Return files."
     (if (probe-file target-file)
         (or (> (file-write-date last-bitcode)
                (file-write-date target-file))
-            (> (file-write-date cxx-bitcode)
+            (> (file-write-date intrinsics-bitcode)
+               (file-write-date target-file))
+            (> (file-write-date builtins-bitcode)
                (file-write-date target-file)))
         t)))
 
-(defun compile-kernel-file (entry &key (reload nil) load-bitcode (force-recompile nil) counter total-files)
+(defun load-kernel-file (path type)
+  (if (eq type :bitcode)
+      (cmp:load-bitcode path)
+      (if (eq type :fasl)
+          (load path)
+          (error "Illegal type ~a for load-kernel-file ~a" type path))))
+
+(defun compile-kernel-file (entry &key (reload nil) load-bitcode (force-recompile nil) counter total-files (output-type :bitcode))
   #+dbg-print(bformat t "DBG-PRINT compile-kernel-file: %s\n" entry)
 ;;  (if *target-backend* nil (error "*target-backend* is undefined"))
   (let* ((filename (entry-filename entry))
          (source-path (build-pathname filename :lisp))
-	 (bitcode-path (build-pathname filename :bc))
+	 (output-path (build-pathname filename output-type))
 	 (load-bitcode (and (bitcode-exists-and-up-to-date filename) load-bitcode)))
     (if (and load-bitcode (not force-recompile))
 	(progn
-	  (bformat t "Skipping compilation of %s - its bitcode file %s is more recent\n" source-path bitcode-path)
-	  ;;	  (bformat t "   Loading the compiled file: %s\n" (path-file-name bitcode-path))
-	  ;;	  (load-bitcode (as-string bitcode-path))
+	  (bformat t "Skipping compilation of %s - its bitcode file %s is more recent\n" source-path output-path)
+	  ;;	  (bformat t "   Loading the compiled file: %s\n" (path-file-name output-path))
+	  ;;	  (load-bitcode (as-string output-path))
 	  )
 	(progn
 	  (bformat t "\n")
 	  (if (and counter total-files)
-              (bformat t "Compiling source [%d of %d] %s\n    to %s - will reload: %s\n" counter total-files source-path bitcode-path reload)
-              (bformat t "Compiling source %s\n   to %s - will reload: %s\n" source-path bitcode-path reload))
+              (bformat t "Compiling source [%d of %d] %s\n    to %s - will reload: %s\n" counter total-files source-path output-path reload)
+              (bformat t "Compiling source %s\n   to %s - will reload: %s\n" source-path output-path reload))
 	  (let ((cmp::*module-startup-prefix* "kernel"))
             #+dbg-print(bformat t "DBG-PRINT  source-path = %s\n" source-path)
-            (apply #'compile-file (probe-file source-path) :output-file bitcode-path
+            (apply #'compile-file (probe-file source-path) :output-file output-path :output-type output-type
                    #| #+build-print |# :print #| #+build-print |# t
                                        :verbose nil
                                        :output-type :bitcode
                                        :type :kernel (entry-compile-file-options entry))
 	    (if reload
 		(progn
-		  (bformat t "    Loading newly compiled file: %s\n" bitcode-path)
-		  (llvm-sys:load-bitcode bitcode-path))))))
-    bitcode-path))
+		  (bformat t "    Loading newly compiled file: %s\n" output-path)
+		  (load-kernel-file output-path output-type))))))
+    output-path))
 (export 'compile-kernel-file)
 
 (eval-when (:compile-toplevel :execute)
@@ -184,11 +192,9 @@ Return files."
          (name (namestring pathname)))
     (bformat t "Compiling/loading source: %s\n" (namestring name))
     (let ((m (cmp::compile-file-to-module name :print nil)))
-      #+(or)
       (progn
-        ;; Linking the intrinsics module is a bad idea - it includes way too much crap
-        (cmp::link-intrinsics-module m)
-        (cmp::optimize-module m))
+        (cmp::jit-link-builtins-module m)
+        (cmp::optimize-module-for-compile m))
       (llvm-sys:load-module m))))
 
 (defun load-system (files &key compile-file-load interp load-bitcode (target-backend *target-backend*) system)
@@ -215,7 +221,7 @@ Return files."
 
 
 
-(defun compile-system (files &key reload)
+(defun compile-system (files &key reload (output-type :bitcode))
   #+dbg-print(bformat t "DBG-PRINT compile-system files: %s\n" files)
   (with-compilation-unit ()
     (let* ((cur files)
@@ -224,7 +230,7 @@ Return files."
       (tagbody
        top
          (if (endp cur) (go done))
-         (compile-kernel-file (car cur) :reload reload :counter counter :total-files total )
+         (compile-kernel-file (car cur) :reload reload :output-type output-type :counter counter :total-files total )
          (setq cur (cdr cur))
          (setq counter (+ 1 counter))
          (go top)
@@ -322,8 +328,6 @@ Return files."
 
 
 (defun load-aclasp (&key clean
-                      (output-file (build-common-lisp-bitcode-pathname))
-                      (target-backend (default-target-backend))
                       (system (command-line-arguments-as-list)))
   (aclasp-features)
   (if clean (clean-system #P"src/lisp/kernel/tag/min-start" :no-prompt t :system system))
@@ -359,8 +363,9 @@ Return files."
                (files (out-of-date-bitcodes #P"src/lisp/kernel/tag/min-start" #P"src/lisp/kernel/tag/min-pre-epilogue" :system system))
                (files-with-epilogue (out-of-date-bitcodes #P"src/lisp/kernel/tag/min-start" #P"src/lisp/kernel/tag/min-end" :system system)))
           (with-compilation-unit ()
-            (compile-system files :reload t)
-            (if files-with-epilogue (compile-system (bitcode-pathnames #P"src/lisp/kernel/tag/min-pre-epilogue" #P"src/lisp/kernel/tag/min-end" :system system) :reload nil)))
+            (let ((cmp::*activation-frame-optimize* nil))
+              (compile-system files :reload t)
+              (if files-with-epilogue (compile-system (bitcode-pathnames #P"src/lisp/kernel/tag/min-pre-epilogue" #P"src/lisp/kernel/tag/min-end" :system system) :reload nil))))
           (let ((all-bitcode (bitcode-pathnames #P"src/lisp/kernel/tag/min-start" #P"src/lisp/kernel/tag/min-end" :system system)))
             (if (out-of-date-target output-file all-bitcode)
                 (cmp:link-bitcode-modules output-file all-bitcode)))))))
@@ -368,7 +373,7 @@ Return files."
 (export '(bclasp-features with-bclasp-features))
 (defun bclasp-features()
   (remove-stage-features)
-  (setq *features* (list* :clos :bclasp *features*))
+  (setq *features* (list* :optimize-bclasp :clos :bclasp *features*))
   (setq *target-backend* (default-target-backend)))
 (core:fset 'with-bclasp-features
             #'(lambda (whole env)
@@ -410,13 +415,23 @@ Return files."
 (export '(compile-cclasp recompile-cclasp))
 
 
+(defun remove-files-for-boehmdc (system)
+  "boehmdc doesn't do inlining and type inference properly - so we remove inline.lisp from the build system"
+  #+(or)(let (keep)
+          (dolist (file system)
+            (if (string= "inline" (pathname-name file))
+                nil
+                (setq keep (cons file keep))))
+          (nreverse keep))
+  system)
+
+
 (defun link-cclasp (&key (output-file (build-common-lisp-bitcode-pathname)) (system (command-line-arguments-as-list)))
   (let ((all-bitcode (bitcode-pathnames #P"src/lisp/kernel/tag/start" #P"src/lisp/kernel/tag/cclasp" :system system)))
     (cmp:link-bitcode-modules output-file all-bitcode)))
 
 (defun compile-cclasp* (output-file system)
-  "Turn off generation of inlining code until its turned back on by the source code.
-Compile the cclasp source code."
+  "Compile the cclasp source code."
   (let ((ensure-adjacent (select-source-files #P"src/lisp/kernel/cleavir/inline-prep" #P"src/lisp/kernel/cleavir/auto-compile" :system system)))
     (or (= (length ensure-adjacent) 2) (error "src/lisp/kernel/inline-prep MUST immediately preceed src/lisp/kernel/auto-compile - currently the order is: ~a" ensure-adjacent)))
   (let ((files (append (out-of-date-bitcodes #P"src/lisp/kernel/tag/start" #P"src/lisp/kernel/cleavir/inline-prep" :system system)
@@ -424,6 +439,9 @@ Compile the cclasp source code."
                                             #P"src/lisp/kernel/tag/cclasp"
                                             :system system))))
     (format t "files: ~a~%" files)
+    ;; Inline ASTs refer to various classes etc that are not available while earlier files are loaded.
+    ;; Therefore we can't have the compiler save inline definitions for files earlier than we're able
+    ;; to load inline definitions. We wait for the source code to turn it back on.
     (setf core:*defun-inline-hook* nil)
     (compile-system files :reload nil)
     (let ((all-bitcode (bitcode-pathnames #P"src/lisp/kernel/tag/start" #P"src/lisp/kernel/tag/cclasp" :system system)))
@@ -435,8 +453,9 @@ Compile the cclasp source code."
   (compile-cclasp* output-file system))
 
 (defun load-cclasp (&key (system (command-line-arguments-as-list)))
-  (load-system (select-source-files #P"src/lisp/kernel/tag/bclasp" #P"src/lisp/kernel/cleavir/inline-prep" :system system) :compile-file-load t)
-  (load-system (select-source-files #P"src/lisp/kernel/cleavir/auto-compile" #P"src/lisp/kernel/tag/cclasp" :system system) :compile-file-load nil ))
+  (progn
+    (load-system (select-source-files #P"src/lisp/kernel/tag/bclasp" #P"src/lisp/kernel/cleavir/inline-prep" :system system) :compile-file-load t)
+    (load-system (select-source-files #P"src/lisp/kernel/cleavir/auto-compile" #P"src/lisp/kernel/tag/cclasp" :system system) :compile-file-load nil )))
 (export '(load-cclasp))
 
 (defun compile-cclasp (&key clean (output-file (build-common-lisp-bitcode-pathname)) (system (command-line-arguments-as-list)))
@@ -447,9 +466,23 @@ Compile the cclasp source code."
     (let ((*target-backend* (default-target-backend)))
       (time
        (progn
-         (progn ;; Use load-cclasp?
-           (load-system (select-source-files #P"src/lisp/kernel/tag/bclasp" #P"src/lisp/kernel/cleavir/inline-prep" :system system) :compile-file-load t )
-           (load-system (select-source-files #P"src/lisp/kernel/cleavir/auto-compile" #P"src/lisp/kernel/tag/pre-epilogue-cclasp" :system system) :compile-file-load nil ))
+         (unwind-protect
+              (progn
+                (push :compiling-cleavir *features*)
+                (load-system (select-source-files #P"src/lisp/kernel/tag/bclasp"
+                                                  #P"src/lisp/kernel/tag/pre-epilogue-cclasp"
+                                                  :system system) :compile-file-load nil)
+                #+(or)(let ((files (select-source-files #P"src/lisp/kernel/tag/bclasp"
+                                                        #P"src/lisp/kernel/cleavir/inline-prep" :system system)))
+                        (core:bformat t "COMPILE-FILEing %s\n" files)
+                        (push :compiling-cleavir *features*)
+                        (progn
+                          (compile-system files :reload t :output-type :fasl)
+                          (core:bformat t "!\n!\n! Switching to load\n!\n!\n")
+                          (load-system (select-source-files #P"src/lisp/kernel/cleavir/auto-compile"
+                                                            #P"src/lisp/kernel/tag/pre-epilogue-cclasp" :system system) :compile-file-load nil ))))
+           (pop *features*))
+         (push :cleavir *features*)
          (compile-cclasp* output-file system))))))
 
 
@@ -466,12 +499,30 @@ Compile the cclasp source code."
 
 (defun link-addons ()
   (cmp:llvm-link (core:build-pathname #P"src/lisp/modules/serve-event/serve-event" :fasl)
-                 :lisp-bitcode-files (list (core:build-pathname #P"src/lisp/modules/serve-event/serve-event" :bc)))
+                 :lisp-bitcode-files (list (core:build-pathname #P"src/lisp/modules/serve-event/serve-event" :bitcode)))
   (cmp:llvm-link (core:build-pathname #P"src/lisp/modules/asdf/asdf" :fasl)
-                 :lisp-bitcode-files (list (core:build-pathname #P"src/lisp/modules/asdf/build/asdf" :bc))))
-(export '(compile-addons link-addons))
+                 :lisp-bitcode-files (list (core:build-pathname #P"src/lisp/modules/asdf/build/asdf" :bitcode))))
+
+(defun build-addons ()
+  (compile-addons)
+  (link-addons))
+(export '(compile-addons link-addons build-addons))
+
+#+(or bclasp cclasp)
+(defun bclasp-repl ()
+  (let ((cmp:*cleavir-compile-hook* nil)
+        (cmp:*cleavir-compile-file-hook* nil)
+        (core:*use-cleavir-compiler* nil)
+        (core:*eval-with-env-hook* #'core:eval-with-env-default))
+    (core:low-level-repl)))
+(export 'bclasp-repl)
+
 
 (eval-when (:execute)
   (bformat t "Loaded clasp-builder.lsp\n")
   (if (member :clasp-builder-repl *features*)
-      (core:low-level-repl)))
+      (progn
+        (core:bformat t "Starting low-level repl\n")
+        (unwind-protect
+             (core:low-level-repl)
+          (core:bformat t "Exiting low-level-repl\n")))))

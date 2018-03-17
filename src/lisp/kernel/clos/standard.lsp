@@ -21,11 +21,11 @@
 ;;; INSTANCES INITIALIZATION AND REINITIALIZATION
 ;;;
 
-(defmethod initialize-instance ((instance T) &rest initargs)
+(defmethod initialize-instance ((instance #| #+clasp standard-object #+ecl |# T) &rest initargs)
   (dbg-standard "standard.lsp:29  initialize-instance unbound instance ->~a~%" (eq (core:unbound) instance))
   (apply #'shared-initialize instance 'T initargs))
 
-(defmethod reinitialize-instance ((instance T) &rest initargs)
+(defmethod reinitialize-instance ((instance #| #+clasp standard-object #+ecl |# T ) &rest initargs)
 ;;  (print "HUNT entered reinitialize-instance") ;
   (check-initargs (class-of instance) initargs
 		  (valid-keywords-from-methods
@@ -35,7 +35,7 @@
                     #'shared-initialize (list instance t))))
   (apply #'shared-initialize instance '() initargs))
 
-(defmethod shared-initialize ((instance T) slot-names &rest initargs)
+(defmethod shared-initialize ((instance #| #+clasp standard-object #+ecl |# T) slot-names &rest initargs)
   ;;
   ;; initialize the instance's slots is a two step process
   ;;   1 A slot for which one of the initargs in initargs can set
@@ -92,37 +92,39 @@
     )
   instance)
 
-;;; ----------------------------------------------------------------------
-;;; CLASSES INITIALIZATION AND REINITIALIZATION
-;;;
-
 (defun compute-instance-size (slots)
+  ;; could just use cl:count, but type inference is bad atm
   (loop for slotd in slots
-     with last-location = 0
-     with num-slots = 0
-     when (eq (slot-definition-allocation slotd) :instance)
-     do (let ((new-loc (safe-slot-definition-location slotd)))
-	  (incf num-slots)
-	  (when (and new-loc (> new-loc last-location))
-	    (setf last-location new-loc)))
-     finally (return (max num-slots (1+ last-location)))))
+        when (eq (slot-definition-allocation slotd) :instance)
+          sum 1))
 
-(defvar *the-class-class* nil)
-(defmethod allocate-instance ((class class) &rest initargs)
+(defmethod allocate-instance ((class standard-class) &rest initargs)
   (declare (ignore initargs))
-  ;; FIXME! Inefficient! We should keep a list of dependent classes.
-  (unless (class-finalized-p class)
-    (finalize-inheritance class))
-  #+clasp(unless *the-class-class*
-	   (setq *the-class-class* (find-class 'class)))
-  (dbg-standard "About to allocate-raw-instance class->~a~%" class)
-  (let ((x #-clasp(si::allocate-raw-instance nil class (class-size class))
-	   #+clasp(if (core:subclassp class *the-class-class*)
-		      (ALLOCATE-RAW-CLASS nil class (class-size class))
-		      (si::allocate-raw-instance nil class (class-size class)))
-	   ))
-    (dbg-standard "Done allocate-raw-instance unbound x ->~a~%" (eq (core:unbound) x))
-    (si::instance-sig-set x)
+  ;; CLHS says allocate-instance finalizes the class first, but we don't.
+  ;; Dr. Strandh argues that this is impossible since the initargs should be the
+  ;; defaulted initargs, which cannot be computed without the class being finalized.
+  ;; More fundamentally but less legalistically, allocate-instance is not usually
+  ;; called except from make-instance, which checks finalization itself.
+  ;; If allocate-instance is nonetheless somehow called on an unfinalized class,
+  ;; class-size (also computed during finalization) will be unbound and error
+  ;; before anything terrible can happen.
+  (dbg-standard "About to allocate-new-instance class->~a~%" class)
+  (let ((x (core:allocate-new-instance class (class-size class))))
+    (dbg-standard "Done allocate-new-instance unbound x ->~a~%" (eq (core:unbound) x))
+    (mlog "In allocate-instance  x -> %s\n" x)
+    x))
+
+(defmethod allocate-instance ((class derivable-cxx-class) &rest initargs)
+  ;; derivable cxx objects are Instance_O's, so this is _probably_ okay.
+  ;; (And allocate-new-instance uses the creator, so it'll do any C++ junk.)
+  (core:allocate-new-instance class (class-size class)))
+
+(defmethod allocate-instance ((class funcallable-standard-class) &rest initargs)
+  (declare (ignore initargs))
+  (dbg-standard "About to allocate-new-funcallable-instance class->~a~%" class)
+  (let ((x (core:allocate-new-funcallable-instance class (class-size class))))
+    (dbg-standard "Done allocate-new-funcallable-instance unbound x ->~a~%" (eq (core:unbound) x))
+    (mlog "In allocate-instance  x -> %s\n" x)
     x))
 
 (defmethod make-instance ((class class) &rest initargs)
@@ -141,6 +143,7 @@
 			(precompute-valid-initarg-keywords class)))))
     (check-initargs class initargs nil (class-slots class) keywords))
   (let ((instance (apply #'allocate-instance class initargs)))
+    #+mlog(or instance (error "allocate-instance returned NIL!!!!!!! class -> ~a initargs -> ~a" class initargs))
     (dbg-standard "standard.lsp:143   allocate-instance class -> ~a  instance checking if unbound -> ~a~%" class (eq instance (core:unbound)))
     (apply #'initialize-instance instance initargs)
     instance))
@@ -151,7 +154,6 @@
   list)
 
 (defun add-default-initargs (class initargs)
-  (declare (si::c-local))
   ;; Here, for each slot which is not mentioned in the initialization
   ;; arguments, but which has a value associated with :DEFAULT-INITARGS,
   ;; we compute the value and add it to the list of initargs.
@@ -168,6 +170,10 @@
     (if output
         (append initargs (nreverse output))
         initargs)))
+
+;;; ----------------------------------------------------------------------
+;;; CLASSES INITIALIZATION AND REINITIALIZATION
+;;;
 
 (defmethod direct-slot-definition-class ((class T) &rest canonicalized-slot)
   (declare (ignore class canonicalized-slot))
@@ -187,8 +193,11 @@
   (unless (find-if #'has-forward-referenced-parents (class-direct-superclasses class))
     (finalize-inheritance class)))
 
+(defmethod make-instances-obsolete ((class class))
+  (core:class-new-stamp class)
+  class)
+
 (defmethod initialize-instance ((class class) &rest initargs &key direct-slots)
-  (declare (ignore sealedp))
   (dbg-standard "standard.lsp:196  initialize-instance class->~a~%" class)
   ;; convert the slots from lists to direct slots
   (apply #'call-next-method class
@@ -197,6 +206,9 @@
 	    collect (canonical-slot-to-direct-slot class s))
          initargs)
   (finalize-unless-forward class)
+  ;; Obviously, the same as make-instances-obsolete, except we don't want to call
+  ;; any methods a programmer has installed on that function.
+  (core:class-new-stamp class)
   class)
 
 (defmethod shared-initialize ((class class) slot-names &rest initargs &key direct-superclasses)
@@ -210,11 +222,18 @@
 		       initargs))
 	 (direct-superclasses (check-direct-superclasses class direct-superclasses)))
     (loop for c in (class-direct-superclasses class)
-       unless (member c direct-superclasses :test #'eq)
-       do (remove-direct-subclass c class))
+          unless (member c direct-superclasses :test #'eq)
+            do (remove-direct-subclass c class))
     (setf (class-direct-superclasses class) direct-superclasses)
     (loop for c in direct-superclasses
-       do (add-direct-subclass c class))
+          do (add-direct-subclass c class))
+
+    ;; initialize the default allocator for the new class
+    ;; It is inherited from the direct-superclasses - if they are all 
+    ;; regular classes then it will get an Instance allocator
+    ;; If one of them is a ClbindClass then this will inherit a
+    ;; duplicate of its allocator
+    (setf (creator class) (sys:compute-instance-creator class (class-of class) direct-superclasses))
     class))
 
 (defun precompute-valid-initarg-keywords (class)
@@ -226,11 +245,11 @@
                                #'initialize-instance (list (class-prototype class)))
                               (compute-applicable-methods
                                #'shared-initialize (list (class-prototype class) t)))
-           for m in methods
-           for k = (method-keywords m)
-           when (eq k t)
-           return t
-           append k)))
+              for m in methods
+              for k = (method-keywords m)
+              for aok-p = (method-allows-other-keys-p m)
+              when aok-p return t
+                else append k)))
 
 (defun update-dependents (object initargs)
   (when *clos-booted*
@@ -238,15 +257,8 @@
      object
      #'(lambda (dep) (apply #'update-dependent object dep initargs)))))
 
-(defmethod shared-initialize ((class std-class) slot-names &rest initargs &key
-                              (optimize-slot-access (list *optimize-slot-access*))
-                              sealedp)
-  (declare (ignore initargs slot-names))
-  (setf (slot-value class 'optimize-slot-access) (first optimize-slot-access)
-	(slot-value class 'sealedp) (and sealedp t))
-  (setf class (call-next-method))
-  (update-dependents class initargs)
-  class)
+(defmethod reinitialize-instance :after ((class class) &rest initargs)
+  (update-dependents class initargs))
 
 (defmethod add-direct-subclass ((parent class) child)
   (pushnew child (class-direct-subclasses parent)))
@@ -325,54 +337,12 @@ because it contains a reference to the undefined class~%  ~A"
       (setf (class-slots class) slots
 	    (class-size class) (compute-instance-size slots)
 	    (class-default-initargs class) (compute-default-initargs class)
-	    (class-finalized-p class) t))
-    ;;
-    ;; When a class is sealed we rewrite the list of direct slots to fix
-    ;; their locations. This may imply adding _new_ direct slots.
-    ;;
-    (when (class-sealedp class)
-      (let* ((free-slots (delete-duplicates (mapcar #'slot-definition-name (class-slots class))))
-	     (all-slots (class-slots class)))
-	;;
-	;; We first search all slots that belonged to unsealed classes and which
-	;; therefore have no fixed position.
-	;;
-	(loop for c in cpl
-	   do (loop for slotd in (class-direct-slots c)
-		 when (safe-slot-definition-location slotd)
-		 do (setf free-slots (delete (slot-definition-name slotd) free-slots))))
-	;;
-	;; We now copy the locations of the effective slots in this class to
-	;; the class direct slots.
-	;;
-	(loop for slotd in (class-direct-slots class)
-	   do (let* ((name (slot-definition-name slotd))
-		     (other-slotd (find name all-slots :key #'slot-definition-name)))
-		(setf (slot-definition-location slotd)
-		      (slot-definition-location other-slotd)
-		      free-slots (delete name free-slots))))
-	;;
-	;; And finally we add one direct slot for each inherited slot that did
-	;; not have a fixed location.
-	;;
-	(loop for name in free-slots
-	   with direct-slots = (class-direct-slots class)
-	   do (let* ((effective-slotd (find name all-slots :key #'slot-definition-name))
-		     (def (direct-slot-to-canonical-slot effective-slotd)))
-		(push (apply #'make-instance (direct-slot-definition-class class def)
-			     def)
-		      direct-slots))
-	   finally (setf (class-direct-slots class) direct-slots))))
-    ;;
-    ;; This is not really needed, because when we modify the list of slots
-    ;; all instances automatically become obsolete (See change.lsp)
-                                        ;(make-instances-obsolete class)
-    ;;
-    ;; But this is really needed: we have to clear the different type caches
-    ;; for type comparisons and so on.
-    ;;
-    (si::subtypep-clear-cache)
-    )
+	    (class-finalized-p class) t)))
+  ;;
+  ;; We have to clear the different type caches
+  ;; for type comparisons and so on.
+  ;;
+  (si::subtypep-clear-cache)
   ;; As mentioned above, when a parent is finalized, it is responsible for
   ;; invoking FINALIZE-INHERITANCE on all of its children. Obviously,
   ;; this only makes sense when the class has been defined.
@@ -380,13 +350,11 @@ because it contains a reference to the undefined class~%  ~A"
     (finalize-unless-forward subclass))
   ;;
   ;; We create various caches to more rapidly find the slot locations and
-  ;; slot definitions.
-  (std-create-slots-table class)
-  )
+  ;; slot definitions from slot-value.
+  (std-create-slots-table class))
 
 
-(defmethod finalize-inheritance ((class std-class))
-  (call-next-method)
+(defmethod finalize-inheritance :after ((class std-class))
   (std-class-generate-accessors class))
 
 (defmethod compute-class-precedence-list ((class class))
@@ -496,34 +464,25 @@ because it contains a reference to the undefined class~%  ~A"
 (defmethod ensure-class-using-class ((class class) name &rest rest
 				     &key direct-slots direct-default-initargs)
   (declare (ignore direct-default-initargs direct-slots))
+  (clos::gf-log "In ensure-class-using-class (class class) \n")
+  (clos::gf-log "     name -> %s\n" name)
   (multiple-value-bind (metaclass direct-superclasses options)
       (apply #'help-ensure-class rest)
-    (declare (ignore direct-superclasses))
-    ;;
-    ;; initialize the default allocator for the new class
-    ;; It is inherited from the direct-superclasses - if they are all 
-    ;; regular classes then it will get an Instance allocator
-    ;; If one of them is a ClbindClass then this will inherit a
-    ;; duplicate of its allocator
-    #+clasp(sys:inherit-default-allocator class direct-superclasses)
     (cond ((forward-referenced-class-p class)
 	   (change-class class metaclass))
 	  ((not (eq (class-of class) metaclass))
 	   (error "When redefining a class, the metaclass can not change.")))
-    ;;; In Clasp reinitialize-instance of a class requires that a new stamp is chosen
     (setf class (apply #'reinitialize-instance class :name name options))
     (when name
       (si:create-type-name name)
       (setf (find-class name) class))
-    #+fast-dispatch
+    (clos::gf-log "In ensure-class-using-class (class class)\n")
     (clos:invalidate-generic-functions-with-class-selector class)
+    (clos::gf-log "Returning from ensure-class-using-class (class class)\n")
     class))
 
 (defun coerce-to-class (class-or-symbol &optional (fail nil))
-  (cond #-clasp
-	((si:instancep class-or-symbol) class-or-symbol)
-	#+clasp
-	((classp class-or-symbol) class-or-symbol)
+  (cond ((classp class-or-symbol) class-or-symbol)
 	((not (symbolp class-or-symbol))
 	 (error "~a is not a valid class specifier." class-or-symbol))
 	((find-class class-or-symbol fail))
@@ -581,7 +540,6 @@ because it contains a reference to the undefined class~%  ~A"
   (class-compute-slots class (call-next-method)))
 
 (defun std-class-compute-slots (class slots)
-  (declare (si::c-local))
   (let* ((direct-slots (class-direct-slots class)))
     (dolist (slotd slots)
       (let* ((name (slot-definition-name slotd))
@@ -612,12 +570,6 @@ because it contains a reference to the undefined class~%  ~A"
 ;;;
 ;;; Standard-object has no slots and inherits only from t:
 ;;; (defclass standard-object (t) ())
-
-#++(eval-when (:compile-toplevel :load-toplevel :execute)
-  (bformat t "About to compile defmethod describe-object\n")
-  (setq core::*debug-flow-control* t)
-  (setq core::*watch-dynamic-binding-stack* t)
-  (setq core:*echo-repl-read* t))
 
 (defmethod describe-object ((obj standard-object) (stream t))
   (let* ((class (si:instance-class obj))

@@ -197,7 +197,6 @@
   (select-clos-J-inner-class instance))
 
 (defun select-clos-? ()
-  (declare (si::c-local))
   (terpri)
   (format t
 	  "Inspect commands for clos instances:~%~
@@ -340,7 +339,7 @@ q (or Q):             quits the inspection.~%~
 ;;; Documentation
 ;;;
 
-(defconstant +valid-documentation-types+
+(core:defconstant-equal +valid-documentation-types+
     '(compiler-macro function method-combination setf structure
       t type variable))
 

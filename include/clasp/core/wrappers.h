@@ -36,26 +36,26 @@ THE SOFTWARE.
 
 namespace core {
 
-  class TranslationFunctor : public BuiltinClosure_O {
+  class TranslationFunctor_O : public BuiltinClosure_O {
+    LISP_CLASS(core,CorePkg,TranslationFunctor_O,"TranslationFunctor",BuiltinClosure_O);
   public:
     typedef core::T_O* (*Type)(core::T_O* arg);
     Type fptr;
   public:
-  TranslationFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : BuiltinClosure_O(TranslationFunctor::entry_point,name,funcType,SOURCE_INFO_PASS), fptr(ptr) {};
+  TranslationFunctor_O(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : BuiltinClosure_O(TranslationFunctor_O::entry_point,name,funcType,SOURCE_INFO_PASS), fptr(ptr) {};
   public:
     typedef BuiltinClosure_O TemplatedBase;
-    virtual size_t templatedSizeof() const { return sizeof(TranslationFunctor); };
+    virtual size_t templatedSizeof() const { return sizeof(TranslationFunctor_O); };
     static inline LCC_RETURN LISP_CALLING_CONVENTION() {
-      TranslationFunctor* closure = gctools::untag_general<TranslationFunctor*>((TranslationFunctor*)lcc_closure);
+      TranslationFunctor_O* closure = gctools::untag_general<TranslationFunctor_O*>((TranslationFunctor_O*)lcc_closure);
       return gctools::return_type((closure->fptr)(lcc_fixed_arg0),1);
     }
   };
 
-
   template <typename FN>
-    class VariadicFunctor : public BuiltinClosure_O {
+    class VariadicFunctor : public TemplatedFunctionBase_O {
   public:
-    typedef BuiltinClosure_O TemplatedBase;
+    typedef TemplatedFunctionBase_O TemplatedBase;
     virtual size_t templatedSizeof() const { return sizeof(VariadicFunctor<FN>); };
   };
 };
@@ -63,9 +63,9 @@ namespace core {
 
 /*! Make every templated VariadicFunctor KIND the same as the VariadicFunctor<T>::TemplatedBase */
 template <typename T>
-class gctools::GCKind<core::VariadicFunctor<T>> {
+class gctools::GCStamp<core::VariadicFunctor<T>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::GCKind<typename core::VariadicFunctor<T>::TemplatedBase>::Kind;
+  static gctools::GCStampEnum const Stamp = gctools::GCStamp<typename core::VariadicFunctor<T>::TemplatedBase>::Stamp;
 };
 
 
@@ -77,9 +77,9 @@ namespace core {
 
 namespace core {
 template <int DispatchOn, typename FN>
-class VariadicMethoid : public BuiltinClosure_O {
+class VariadicMethoid : public TemplatedFunctionBase_O {
 public:
-  typedef BuiltinClosure_O TemplatedBase;
+  typedef TemplatedFunctionBase_O TemplatedBase;
   size_t templatedSizeof() const { return sizeof(VariadicMethoid<DispatchOn, FN>); };
 };
 
@@ -91,8 +91,8 @@ namespace core {
   inline void wrap_translator(const string &packageName, const string &name, core::T_O* (*fp)(core::T_O*), const string &arguments = "", const string &declares = "", const string &docstring = "", const string &sourceFile = "", int sourceLine = 0) {
   Symbol_sp symbol = lispify_intern(name, packageName);
   SourcePosInfo_sp spi = lisp_createSourcePosInfo(sourceFile, 0, sourceLine);
-  BuiltinClosure_sp f = gctools::GC<TranslationFunctor>::allocate(symbol, kw::_sym_function, fp, SOURCE_POS_INFO_FIELDS(spi));
-  lisp_defun(symbol, packageName, f, arguments, declares, docstring, sourceFile, sourceLine, true, 1);
+  BuiltinClosure_sp f = gctools::GC<TranslationFunctor_O>::allocate(symbol, kw::_sym_function, fp, SOURCE_POS_INFO_FIELDS(spi));
+  lisp_defun(symbol, packageName, f, arguments, declares, docstring, sourceFile, sourceLine, 1);
 }
 
 
@@ -103,15 +103,26 @@ void wrap_function(const string &packageName, const string &name, RT (*fp)(ARGS.
   Symbol_sp symbol = _lisp->intern(name, packageName);
   SourcePosInfo_sp spi = lisp_createSourcePosInfo(sourceFile, 0, sourceLine);
   BuiltinClosure_sp f = gctools::GC<VariadicFunctor<RT(ARGS...)>>::allocate(symbol, kw::_sym_function, fp, SOURCE_POS_INFO_FIELDS(spi));
-  lisp_defun(symbol, packageName, f, arguments, declares, docstring, sourceFile, sourceLine, true, sizeof...(ARGS));
+  lisp_defun(symbol, packageName, f, arguments, declares, docstring, sourceFile, sourceLine, sizeof...(ARGS));
 }
+
+// this is used in gc_interface.cc expose_function_setf
+  template <typename RT, typename... ARGS>
+void wrap_function_setf(const string &packageName, const string &name, RT (*fp)(ARGS...), const string &arguments = "", const string &declares = "", const string &docstring = "", const string &sourceFile = "", int sourceLine = 0) {
+  Symbol_sp symbol = _lisp->intern(name, packageName);
+  SourcePosInfo_sp spi = lisp_createSourcePosInfo(sourceFile, 0, sourceLine);
+  BuiltinClosure_sp f = gctools::GC<VariadicFunctor<RT(ARGS...)>>::allocate(symbol, kw::_sym_function, fp, SOURCE_POS_INFO_FIELDS(spi));
+  lisp_defun_setf(symbol, packageName, f, arguments, declares, docstring, sourceFile, sourceLine, sizeof...(ARGS));
+}
+
+
 
 };
 
 template <int DispatchOn, typename T>
-class gctools::GCKind<core::VariadicMethoid<DispatchOn, T>> {
+class gctools::GCStamp<core::VariadicMethoid<DispatchOn, T>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::GCKind<typename core::VariadicMethoid<DispatchOn, T>::TemplatedBase>::Kind;
+  static gctools::GCStampEnum const Stamp = gctools::GCStamp<typename core::VariadicMethoid<DispatchOn, T>::TemplatedBase>::Stamp;
 };
 
 namespace core {
@@ -129,12 +140,12 @@ class Function_O;
 // Wrapper for ActivationFrameMacroPtr
    
 
-inline void defmacro(const string &packageName, const string &name, T_mv (*mp)(List_sp, T_sp env), const string &arguments, const string &declares, const string &docstring, const string &sourceFileName, int lineno, bool autoExport = true) {
+inline void defmacro(const string &packageName, const string &name, T_mv (*mp)(List_sp, T_sp env), const string &arguments, const string &declares, const string &docstring, const string &sourceFileName, int lineno) {
   _G();
   Symbol_sp symbol = lispify_intern(name, packageName);
   SourcePosInfo_sp spi = lisp_createSourcePosInfo(sourceFileName, 0, lineno);
   BuiltinClosure_sp f = gc::GC<MacroClosure_O>::allocate(symbol, mp, SOURCE_POS_INFO_FIELDS(spi));
-  lisp_defmacro(symbol, packageName, f, arguments, declares, docstring, autoExport);
+  lisp_defmacro(symbol, packageName, f, arguments, declares, docstring);
 }
 
  
@@ -148,14 +159,6 @@ struct DispatchOn {
 // ----------------------------------------
 // ----------------------------------------
 
-#if 0
- struct MethodDefinition {
-  string _Name;
-  int _ClassSymbol;
-  Function_sp _Methoid;
-};
-#endif
-//    typedef	enum { no_init,class_name_init, make_class_name_init } maker_enum;
 
 extern Symbol_sp& _sym_STARallCxxClassesSTAR;
 
@@ -172,18 +175,10 @@ public:
   void setup_class(const string &makerName = "") {
     _G();
     if (IS_SYMBOL_UNDEFINED(OT::static_classSymbol())) {
-      SIMPLE_ERROR(BF("Attempting to add methods for "
-                      "class that isn't defined yet"));
+      SIMPLE_ERROR_SPRINTF("Attempting to add methods for class that isn't defined yet");
     }
 
     this->_ClassSymbol = OT::static_classSymbol();
-
-#if 0
-            OT dummy;
-            size_t offsetT = (size_t)((char*)(dynamic_cast<T_O*>(&dummy)) - (char*)(&dummy));
-            size_t offsetGCO = (size_t)((char*)(dynamic_cast<gctools::GCObject*>(&dummy)) - (char*)(&dummy));
-            printf("%s:%d %50s offsetof(T_O) = %3lu  offsetof(gctools::GCObject) = %3lu\n", __FILE__, __LINE__, typeid(OT).name(),offsetT, offsetGCO);
-#endif
 
     reg::lisp_registerClassSymbol<OT>(this->_ClassSymbol);
 
@@ -194,19 +189,6 @@ public:
 //
 // If the class isn't in the class table then add it
 //
-#if 0
-	    if ( lisp_boot_findClassBySymbolOrNil(OT::static_classSymbol()).nilp())
-	    {
-                DEPRECATED();
-		LOG(BF("Adding class(%s) to environment")% OT::static_className() );
-		lisp_addClass(/*_lisp,OT::static_packageName(),
-				OT::static_className(), */
-		    OT::static_classSymbol(),
-		    OT::static_creator,
-		    OT::Bases::baseClass1Id(),
-		    OT::Bases::baseClass2Id() );
-	    }
-#endif
     if (makerName != "") {
       // use make-<className>
       std::string magic_maker_name = core::magic_name(makerName,OT::static_packageName());

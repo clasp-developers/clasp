@@ -161,8 +161,8 @@ public:
     return untag_fixnum<Type *>(this->theObject);
   };
 
-  bool valistp() const { return tagged_valistp(this->theObject); };
-  void *unsafe_valist() const { return untag_valist(this->theObject); };
+  bool valistp() const { return tagged_vaslistp(this->theObject); };
+  void *unsafe_valist() const { return untag_vaslist(this->theObject); };
   void *safe_valist() const {
     GCTOOLS_ASSERT(this->valistp());
     return this->unsafe_valist();
@@ -330,7 +330,7 @@ class smart_ptr /*: public tagged_ptr<T>*/ {
     } else if (this->consp()) {
       return untag_cons<Type *>(this->theObject);
     }
-    THROW_HARD_ERROR(BF("This should never happen"));
+    throw_hard_error("This should never happen");
 #endif
   }
 
@@ -505,10 +505,8 @@ inline To_SP As(const return_type &rhs) {
     To_SP ret((Tagged)rhs.ret0[0]);
     return ret;
   }
-  // If the cast didn't work then signal a type error
   class_id expected_typ = reg::registered_class<typename To_SP::Type>::id;
-  class_id this_typ = reg::registered_class<core::T_O *>::id;
-  lisp_errorBadCast(expected_typ, this_typ, reinterpret_cast<core::T_O *>(rhs.ret0[0]));
+  lisp_errorBadCastFromT_O(expected_typ,reinterpret_cast<core::T_O *>(rhs.ret0[0]));
   HARD_UNREACHABLE();
 }
 
@@ -639,8 +637,8 @@ public:
   inline Fixnum unsafe_fixnum() const { return untag_fixnum(this->theObject); };
   bool single_floatp() const { return tagged_single_floatp<Type *>(this->theObject); };
   float unsafe_single_float() const { return untag_single_float<Type *>(this->theObject); };
-  bool valistp() const { return tagged_valistp(this->theObject); };
-  void *unsafe_valist() const { return untag_valist(this->theObject); };
+  bool valistp() const { return tagged_vaslistp(this->theObject); };
+  void *unsafe_valist() const { return untag_vaslist(this->theObject); };
   void *safe_valist() const {
     GCTOOLS_ASSERT(this->valistp());
     return this->unsafe_valist();
@@ -735,7 +733,7 @@ public:
   smart_ptr() noexcept : theObject(NULL){};
   //    	explicit smart_ptr(uintptr_clasp_t p) : theObject(p) {}; // TODO: this converts ints to smart_ptr's - its dangerous
   //! Construct a FRAME object - I need to get rid of these
-  //smart_ptr( core::T_O** p ) : theObject(tag_valist(p)) { /*printf("%s:%d Creating Frame \n", __FILE__, __LINE__ );*/ };
+  //smart_ptr( core::T_O** p ) : theObject(tag_vaslist(p)) { /*printf("%s:%d Creating Frame \n", __FILE__, __LINE__ );*/ };
   //smart_ptr( Type* objP) : theObject(tag_object(objP)) {};
   // explicit smart_ptr( void* objP) : theObject(reinterpret_cast<Type*>(objP)) {};
 
@@ -757,7 +755,7 @@ public:
     if (LIKELY(rhs.objectp())) {
       Type *px = TaggedCast<Type *, From *>::castOrNULL(rhs.theObject);
       if (px == 0) {
-        THROW_HARD_ERROR(BF("TaggedCast<Type*,From*> failed due to an illegal cast To* = %s  From* = %s") % typeid(Type *).name() % typeid(From *).name());
+        throw_hard_error_cast_failed(typeid(Type *).name(),typeid(From *).name());
       }
       this->theObject = px;
     } else {
@@ -909,7 +907,7 @@ extern gctools::smart_ptr<core::Symbol_O>& _sym_expectedType;
 }
 namespace core {
 extern gctools::smart_ptr<core::T_O> lisp_createList(gctools::smart_ptr<core::T_O> a1, gctools::smart_ptr<core::T_O> a2, gctools::smart_ptr<core::T_O> a3, gctools::smart_ptr<core::T_O> a4);
-extern void lisp_error_condition(const char *functionName, const char *fileName, int lineNumber, gctools::smart_ptr<core::T_O> baseCondition, gctools::smart_ptr<core::T_O> initializers);
+ [[noreturn]] extern void lisp_error(gctools::smart_ptr<core::T_O> baseCondition, gctools::smart_ptr<core::T_O> initializers);
 }
 
 namespace gctools {
@@ -1032,7 +1030,7 @@ public:
     } else if (other.nilp()) {
       this->theObject = other.theObject;
     } else {
-      lisp_error_condition(__FUNCTION__, __FILE__, __LINE__, cl::_sym_typeError, core::lisp_createList(kw::_sym_datum, other, kw::_sym_expectedType, cl::_sym_list));
+      lisp_error(cl::_sym_typeError, core::lisp_createList(kw::_sym_datum, other, kw::_sym_expectedType, cl::_sym_list));
     }
   }
   inline smart_ptr(smart_ptr<core::Cons_O> other) : theObject(other.raw_()) {
@@ -1097,8 +1095,7 @@ public:
         return tag_nil<Type *>();
       }
     }
-    THROW_HARD_ERROR(BF("Figure out what to do when untag_object doesn't have "
-                        "a Cons_O or NIL"));
+    throw_hard_error("Figure out what to do when untag_object doesn't have a Cons_O or NIL");
 #endif
   }
 
@@ -1161,6 +1158,9 @@ private:
     List_sp_iterator &operator++() {
       GCTOOLS_ASSERT(this->consp());
       core::T_O *rawcdr = cons_cdr(&*ptr).raw_();
+      unlikely_if (!tagged_consp(rawcdr) && !tagged_nilp(rawcdr)) {
+        core::lisp_errorExpectedList(rawcdr);
+      }
       ptr.rawRef_() = reinterpret_cast<core::Cons_O *>(rawcdr);
       return *this;
     }
@@ -1170,6 +1170,7 @@ private:
       return *clone;
     }
     bool consp() const { return tagged_consp(ptr.raw_()); };
+    bool nilp() const { return tagged_nilp(ptr.raw_()); };
     smart_ptr<core::Cons_O> *operator->() { return &ptr; }
     const smart_ptr<core::Cons_O> *operator->() const { return &ptr; }
     const smart_ptr<core::Cons_O> &operator*() const { return ptr; }
@@ -1244,7 +1245,7 @@ public:
     } else if (tagged_nilp<From *>(other.theObject)) {
       this->theObject = other.theObject;
     } else {
-      lisp_error_condition(__FUNCTION__, __FILE__, __LINE__, cl::_sym_typeError, core::lisp_createList(kw::_sym_datum, other, kw::_sym_expectedType, cl::_sym_list));
+      lisp_error(cl::_sym_typeError, core::lisp_createList(kw::_sym_datum, other, kw::_sym_expectedType, cl::_sym_list));
     }
     return *this;
   };
@@ -1354,9 +1355,9 @@ public:
         this->thePointer = tag_general<Type *>(px);
         return;
       }
-      THROW_HARD_ERROR(BF("Cannot cast tagged_functor in constructor"));
+      throw_hard_error("Cannot cast tagged_functor in constructor");
     }
-    THROW_HARD_ERROR(BF("Bad tag on tagged_functor in constructor"));
+    throw_hard_error("Bad tag on tagged_functor in constructor");
   };
 
  explicit tagged_functor(Type *f) : thePointer(reinterpret_cast<Type *>(reinterpret_cast<char *>(f) + general_tag)){};
@@ -1391,7 +1392,7 @@ public:
       tagged_functor<o_class> ret(cast);
       return ret;
     }
-    THROW_HARD_ERROR(BF("Illegal tagged pointer for tagged_functor"));
+    throw_hard_error("Illegal tagged pointer for tagged_functor");
     // unreachable
     tagged_functor<o_class> fail;
     return fail;
@@ -1406,7 +1407,7 @@ public:
       tagged_functor<o_class> ret(cast);
       return ret;
     }
-    THROW_HARD_ERROR(BF("Illegal tagged pointer for tagged_functor"));
+    throw_hard_error("Illegal tagged pointer for tagged_functor");
     // unreachable
     tagged_functor<o_class> fail;
     return fail;
@@ -1416,7 +1417,7 @@ public:
     tagged_functor<o_class> ret = this->asOrNull<o_class>();
     if (ret)
       return ret;
-    THROW_HARD_ERROR(BF("Illegal cast of tagged_functor"));
+    throw_hard_error("Illegal cast of tagged_functor");
   }
 
   template <class o_class>
@@ -1424,7 +1425,7 @@ public:
     tagged_functor<o_class> ret = this->asOrNull<o_class>();
     if (ret)
       return ret;
-    THROW_HARD_ERROR(BF("Illegal cast of tagged_functor"));
+    throw_hard_error("Illegal cast of tagged_functor");
   }
 };
 };
@@ -1461,16 +1462,16 @@ public:
         return;
       }
 #endif
-      printf("%s:%d Cannot cast tagged_pointer from %s/%zu to some other type (check with debugger)\n", __FILE__, __LINE__, obj_kind_name(reinterpret_cast<core::T_O *>(rhs.thePointer)), obj_kind(reinterpret_cast<core::T_O *>(rhs.thePointer))); //% obj_name(gctools::GCKind<Type>::Kind) );
+      printf("%s:%d Cannot cast tagged_pointer from %s/%zu to some other type (check with debugger)\n", __FILE__, __LINE__, obj_kind_name(reinterpret_cast<core::T_O *>(rhs.thePointer)), obj_kind(reinterpret_cast<core::T_O *>(rhs.thePointer))); //% obj_name(gctools::GCStamp<Type>::Stamp) );
       Type *tpx = TaggedCast<Type *, From *>::castOrNULL(rhs.thePointer);
       printf("tpx = %p\n", tpx);
-      THROW_HARD_ERROR(BF("Cannot cast tagged_pointer from %s/%zu to some other type (check with debugger)") % obj_kind_name(reinterpret_cast<core::T_O *>(rhs.thePointer)) % obj_kind(reinterpret_cast<core::T_O *>(rhs.thePointer))); //% obj_name(gctools::GCKind<Type>::Kind) );
+      throw_hard_error_cannot_cast_tagged_pointer(obj_kind_name(reinterpret_cast<core::T_O *>(rhs.thePointer)),obj_kind(reinterpret_cast<core::T_O *>(rhs.thePointer)));
     }
-    THROW_HARD_ERROR(BF("Bad tag on tagged_pointer in constructor"));
+    throw_hard_error("Bad tag on tagged_pointer in constructor");
   };
 
   explicit tagged_pointer(Type *f) : thePointer(reinterpret_cast<Type *>(reinterpret_cast<char *>(f) + general_tag)) {
-    GCTOOLS_ASSERTF((f != NULL), BF("Don't initialize tagged_pointer with NULL - use the constructor with zero arguments"));
+    GCTOOLS_ASSERTF((f != NULL), "Don't initialize tagged_pointer with NULL - use the constructor with zero arguments");
   };
 
   inline Type *operator->() {
@@ -1518,7 +1519,7 @@ public:
       tagged_pointer<o_class> ret(cast);
       return ret;
     }
-    THROW_HARD_ERROR(BF("Illegal tagged pointer for tagged_pointer"));
+    throw_hard_error("Illegal tagged pointer for tagged_pointer");
     // unreachable
     tagged_pointer<o_class> fail;
     return fail;
@@ -1533,7 +1534,7 @@ public:
       tagged_pointer<o_class> ret(cast);
       return ret;
     }
-    THROW_HARD_ERROR(BF("Illegal tagged pointer for tagged_pointer"));
+    throw_hard_error("Illegal tagged pointer for tagged_pointer");
     // unreachable
     tagged_pointer<o_class> fail;
     return fail;
@@ -1543,7 +1544,7 @@ public:
     tagged_pointer<o_class> ret = this->asOrNull<o_class>();
     if (ret)
       return ret;
-    THROW_HARD_ERROR(BF("Illegal cast of tagged_pointer"));
+    throw_hard_error("Illegal cast of tagged_pointer");
   }
 
   template <class o_class>
@@ -1551,7 +1552,7 @@ public:
     tagged_pointer<o_class> ret = this->asOrNull<o_class>();
     if (ret)
       return ret;
-    THROW_HARD_ERROR(BF("Illegal cast of tagged_pointer"));
+    throw_hard_error("Illegal cast of tagged_pointer");
   }
 };
 };
@@ -1671,7 +1672,7 @@ public:
     }
     class_id expected_typ = reg::registered_class<Type>::id;
     lisp_errorBadCastFromT_O(expected_typ, reinterpret_cast<core::T_O *>(this->theObject));
-    THROW_HARD_ERROR(BF("Unreachable"));
+    throw_hard_error("Unreachable");
   }
 
   inline return_type as_return_type() { return return_type(this->theObject,1);};
@@ -1716,6 +1717,8 @@ public:
   }
 };
 
+
+#if 0
 template <>
 class Nilable<smart_ptr<core::Fixnum_I>> : public smart_ptr<core::Fixnum_I> {
 public:
@@ -1760,7 +1763,7 @@ public:
     }
     class_id expected_typ = reg::registered_class<Type>::id;
     lisp_errorBadCastFromT_O(expected_typ, reinterpret_cast<core::T_O *>(this->theObject));
-    THROW_HARD_ERROR(BF("Unreachable"));
+    throw_hard_error("Unreachable");
   }
 
   inline return_type as_return_type() { return return_type(this->theObject,1);};
@@ -1796,10 +1799,10 @@ public:
     return smart_ptr<core::T_O>(*this);
   }
 };
+
+#endif
 };
 
-namespace gctools {
-};
 namespace gc = gctools;
 
 namespace gctools {
@@ -1835,4 +1838,36 @@ std::ostream &operator<<(std::ostream &os, const gctools::smart_ptr<T> &obj) {
   return os;
 }
 
+
+namespace gctools {
+
+  template <typename SP>
+    struct atomic_wrapper {
+      typedef typename SP::Type Type;
+      SP _Contents;
+    atomic_wrapper(SP x) : _Contents(x) {};
+      SP load() {
+        std::atomic<Type*>& as_atomic = reinterpret_cast<std::atomic<Type*>&>(this->_Contents.theObject);
+        Type* load = as_atomic.load();
+        return SP((gctools::Tagged)load);
+      }
+
+      SP load() const {
+        const std::atomic<Type*>& as_atomic = reinterpret_cast<const std::atomic<Type*>&>(this->_Contents.theObject);
+        Type* load = as_atomic.load();
+        return SP((gctools::Tagged)load);
+      }
+
+      void store(SP val) {
+        std::atomic<Type*>& as_atomic = reinterpret_cast<std::atomic<Type*>&>(this->_Contents.theObject);
+        as_atomic.store(val.raw_());
+      }
+
+      bool compare_exchange_strong(SP expected, SP new_value) {
+        std::atomic<Type*>& as_atomic = reinterpret_cast<std::atomic<Type*>&>(this->_Contents.theObject);
+        return as_atomic.compare_exchange_strong(expected.theObject,new_value.theObject);
+      }
+    };
+  
+};
 #endif

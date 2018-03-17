@@ -27,7 +27,6 @@ THE SOFTWARE.
 #ifndef _extension_H
 #define _extension_H
 
-#include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 #include <clasp/core/extensionPackage.fwd.h>
 

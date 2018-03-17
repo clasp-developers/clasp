@@ -27,7 +27,6 @@ THE SOFTWARE.
 #ifndef _core_arguments_H
 #define _core_arguments_H
 
-#include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 #include <clasp/core/lisp.h>
 #include <clasp/core/symbol.h>
@@ -129,10 +128,10 @@ private:
 public:
   virtual void new_binding(const Argument &argument, T_sp val);
   virtual void va_rest_binding(const Argument &argument) { N_A_(); };
-  virtual VaList_S &valist() { N_A_(); };
+  virtual Vaslist &valist() { N_A_(); };
   virtual bool lexicalElementBoundP(const Argument &argument) { N_A_(); };
   inline void pushSpecialVariableAndSet(Symbol_sp sym, T_sp val) {
-    my_thread->bindings().push_binding(sym,val);
+    my_thread->bindings().push_binding(sym,&sym->_GlobalValue,val);
     this->_endTop = my_thread->bindings().top();
 // NEW_DBS    sym->setf_symbolValue(val);
   }
@@ -168,12 +167,12 @@ public:
 class ValueEnvironmentDynamicScopeManager : public DynamicScopeManager {
 private:
   ValueEnvironment_sp _Environment;
-  VaList_S _VaRest;
+  Vaslist _VaRest;
 public:
   ValueEnvironmentDynamicScopeManager(ValueEnvironment_sp env) : _Environment(env){};
 public:
   /*! This is used for creating binds for lambda lists */
-  virtual VaList_S &valist() { return this->_VaRest; };
+  virtual Vaslist &valist() { return this->_VaRest; };
   virtual void va_rest_binding(const Argument &argument);
   virtual void new_binding(const Argument &argument, T_sp val);
   void new_variable(List_sp classifiedVariable, T_sp val);
@@ -201,13 +200,13 @@ private:
   gc::Frame &frame;
 
 public:
-  VaList_S VaRest;
+  Vaslist VaRest;
 
 public:
   StackFrameDynamicScopeManager(gc::Frame* fP) : frame(*fP){};
 
 public:
-  virtual VaList_S &valist() { return this->VaRest; };
+  virtual Vaslist &valist() { return this->VaRest; };
   virtual void va_rest_binding(const Argument &argument);
   virtual void new_binding(const Argument &argument, T_sp val);
   virtual bool lexicalElementBoundP(const Argument &argument);

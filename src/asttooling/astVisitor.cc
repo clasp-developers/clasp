@@ -55,7 +55,7 @@ CL_DEFUN AstVisitor_sp ast_tooling__makeAstVisitor(core::T_sp target) {
 SYMBOL_EXPORT_SC_(AstToolingPkg, VisitStmt);
 
 template <typename T>
-gctools::smart_ptr<clbind::Wrapper<T, T *>> Wrap(T *p) { return clbind::Wrapper<T, T *>::create(p, reg::registered_class<T>::id); };
+gctools::smart_ptr<clbind::Wrapper<T, T *>> Wrap(T *p) { return clbind::Wrapper<T, T *>::make_wrapper(p, reg::registered_class<T>::id); };
 
 bool AstVisitor_O::VisitStmt(clang::Stmt *node) {
   return core::T_sp(core::eval::funcall(_sym_VisitStmt, this->_Target, Wrap(node))).isTrue();

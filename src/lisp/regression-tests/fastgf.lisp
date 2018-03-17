@@ -1,0 +1,7 @@
+(defmethod fgf-foo ((x integer)) :integer)
+(defmethod fgf-foo ((x string)) :string)
+(test dispatch-integer (eq (fgf-foo 1) :integer))
+(test dispatch-string (eq (fgf-foo "testing") :string))
+(defmethod fgf-foo ((x symbol)) :symbol)
+(test dispatch-symbol (eq (fgf-foo :yadda) :symbol))
+(test-expect-error dispatch-no-applicable-method (fgf-foo 1.2) :description "This should not dispatch")

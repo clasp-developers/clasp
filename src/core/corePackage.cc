@@ -110,24 +110,17 @@ THE SOFTWARE.
 #include <clasp/core/hashTableEqual.h>
 #include <clasp/core/hashTableEqualp.h>
 #include <clasp/core/instance.h>
-#include <clasp/core/metaobject.h>
+#include <clasp/core/funcallableInstance.h>
 #include <clasp/core/null.h>
 //#include <clasp/core/singleDispatchEffectiveMethodFunction.h>
 #include <clasp/core/singleDispatchGenericFunction.h>
 #include <clasp/core/specialForm.h>
 #include <clasp/core/sexpLoadArchive.h>
 #include <clasp/core/sexpSaveArchive.h>
-#include <clasp/core/specializer.h>
 #include <clasp/core/metaClass.h>
 #include <clasp/core/bignum.h>
 #include <clasp/core/builtInClass.h>
-#include <clasp/core/cxxClass.h>
-#include <clasp/core/forwardReferencedClass.h>
-#include <clasp/core/stdClass.h>
-#include <clasp/core/structureClass.h>
 #include <clasp/clbind/class_rep.h>
-#include <clasp/core/funcallableStandardClass.h>
-#include <clasp/core/standardClass.h>
 
 //
 // Load the gctools::GcInfo<core-classes>::Kind specializers
@@ -146,6 +139,9 @@ SYMBOL_EXPORT_SC_(KeywordPkg,linkage);
 SYMBOL_EXPORT_SC_(KeywordPkg, verbose);
 SYMBOL_EXPORT_SC_(KeywordPkg, pause_pid);
 SYMBOL_EXPORT_SC_(KeywordPkg, exit_backtrace);
+SYMBOL_EXPORT_SC_(CorePkg, bclasp_compiler_macro);
+SYMBOL_EXPORT_SC_(CorePkg, STARreader_generate_cstSTAR);
+SYMBOL_EXPORT_SC_(CorePkg, STARreader_cst_resultSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, arguments );
 SYMBOL_EXPORT_SC_(CorePkg, STARdebug_valuesSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARdebug_accessorsSTAR);
@@ -160,10 +156,11 @@ SYMBOL_EXPORT_SC_(CorePkg, signal_servicing);
 SYMBOL_EXPORT_SC_(CorePkg, handle_signal);
 SYMBOL_EXPORT_SC_(CorePkg, every_list);
 SYMBOL_EXPORT_SC_(CorePkg, some_list);
+SYMBOL_EXPORT_SC_(CorePkg, derivable_cxx_class);
+SYMBOL_EXPORT_SC_(CorePkg, derivable_cxx_object);
 SYMBOL_EXPORT_SC_(CorePkg, stack_closure);
-
+SYMBOL_EXPORT_SC_(CorePkg, STARminimum_number_generic_function_slotsSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, make_source_pos_info);
-SYMBOL_EXPORT_SC_(CorePkg, STARinvalidated_dispatch_function_stackSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARtop_level_form_stackSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARloadHooksSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARmodule_startup_function_nameSTAR);
@@ -171,11 +168,16 @@ SYMBOL_EXPORT_SC_(CorePkg, STARmodule_shutdown_function_nameSTAR);
 SYMBOL_EXPORT_SC_(ExtPkg, STARinvoke_debugger_hookSTAR);
 SYMBOL_EXPORT_SC_(CorePkg,variable_source_location)
 SYMBOL_EXPORT_SC_(CorePkg,class_source_location)
+SYMBOL_EXPORT_SC_(CorePkg,bt)
+SYMBOL_EXPORT_SC_(CorePkg,btcl)
+SYMBOL_EXPORT_SC_(CorePkg,STARdebug_fastgfSTAR);
 SYMBOL_EXPORT_SC_(CorePkg,cxx_method_source_location);
 SYMBOL_EXPORT_SC_(CompPkg, STARllvm_contextSTAR);
 SYMBOL_EXPORT_SC_(CompPkg, STARload_time_value_holder_nameSTAR);
 SYMBOL_EXPORT_SC_(CorePkg,c_local);
 SYMBOL_EXPORT_SC_(CorePkg,_PLUS_known_typep_predicates_PLUS_);
+SYMBOL_EXPORT_SC_(CorePkg,_PLUS_class_name_to_lisp_name_PLUS_);
+SYMBOL_EXPORT_SC_(CorePkg,_PLUS_type_header_value_map_PLUS_);
 SYMBOL_EXPORT_SC_(ExtPkg,check_arguments_type);
 SYMBOL_EXPORT_SC_(ExtPkg,array_index);
 SYMBOL_EXPORT_SC_(CorePkg,index);
@@ -190,6 +192,9 @@ SYMBOL_EXPORT_SC_(ExtPkg,unix_signal_received);
 SYMBOL_EXPORT_SC_(KeywordPkg,process);
 SYMBOL_EXPORT_SC_(KeywordPkg,code);
 
+
+SYMBOL_EXPORT_SC_(CorePkg, STARmpi_rankSTAR);
+SYMBOL_EXPORT_SC_(CorePkg, STARmpi_sizeSTAR);
 
 SYMBOL_EXPORT_SC_(ClPkg, upgraded_array_element_type);
 SYMBOL_EXPORT_SC_(ClPkg, member);
@@ -261,6 +266,9 @@ SYMBOL_EXPORT_SC_(ClPkg, substitute);
 SYMBOL_EXPORT_SC_(ClPkg, subtypep);
 SYMBOL_EXPORT_SC_(ClPkg, subseq);
 
+SYMBOL_EXPORT_SC_(CorePkg, make_atom_cst);
+SYMBOL_EXPORT_SC_(CorePkg, make_cons_cst);
+SYMBOL_EXPORT_SC_(CorePkg, STARbits_in_bit_array_wordSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, setf_subseq);
 SYMBOL_EXPORT_SC_(CorePkg,STARextension_startup_loadsSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, multiple_value_foreign_call);
@@ -274,8 +282,6 @@ SYMBOL_EXPORT_SC_(CorePkg, STARcxxDocumentationSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, topLevel);
 SYMBOL_EXPORT_SC_(CorePkg, scharSet);
 SYMBOL_EXPORT_SC_(CorePkg, STARuseInterpreterForEvalSTAR);
-SYMBOL_EXPORT_SC_(CorePkg, STARnotify_on_compileSTAR);
-SYMBOL_EXPORT_SC_(CorePkg, STARtrace_startupSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARllvmVersionSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARdebugInterpretedClosureSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARdebugFlowControlSTAR);
@@ -344,6 +350,7 @@ SYMBOL_EXPORT_SC_(ClPkg, synonym_stream_symbol);
 SYMBOL_EXPORT_SC_(ClPkg, broadcast_stream_streams);
 SYMBOL_EXPORT_SC_(ClPkg, getOutputStreamString);
 SYMBOL_EXPORT_SC_(CorePkg, closedStream);
+SYMBOL_EXPORT_SC_(CorePkg, creator);
 SYMBOL_EXPORT_SC_(ClPkg, elt);
 SYMBOL_EXPORT_SC_(ClPkg, null);
 SYMBOL_EXPORT_SC_(ClPkg, sequence);
@@ -354,8 +361,8 @@ SYMBOL_EXPORT_SC_(ExtPkg, STARinspectorHookSTAR);
 SYMBOL_EXPORT_SC_(ExtPkg, float_nan_string);
 SYMBOL_EXPORT_SC_(ExtPkg, float_infinity_string);
 SYMBOL_EXPORT_SC_(ExtPkg, STARdefault_external_formatSTAR);
-SYMBOL_EXPORT_SC_(ExtPkg, truly_the);
 SYMBOL_EXPORT_SC_(ExtPkg, specialVar);
+SYMBOL_EXPORT_SC_(ExtPkg, registerVar);
 SYMBOL_EXPORT_SC_(ExtPkg, lexicalVar);
 SYMBOL_EXPORT_SC_(ExtPkg, stackVar);
 SYMBOL_EXPORT_SC_(CorePkg, _PLUS_numberOfFixedArguments_PLUS_);
@@ -406,7 +413,7 @@ SYMBOL_EXPORT_SC_(CorePkg, STARloadSearchListSTAR);
 SYMBOL_EXPORT_SC_(LlvmoPkg, load_bitcode);
 SYMBOL_EXPORT_SC_(LlvmoPkg, load_bitcode_ll);
 SYMBOL_EXPORT_SC_(CorePkg, loadSource);
-SYMBOL_EXPORT_SC_(CorePkg, loadBundle);
+SYMBOL_EXPORT_SC_(CorePkg, load_binary);
 SYMBOL_EXPORT_SC_(ClPkg, STARloadPathnameSTAR);
 SYMBOL_EXPORT_SC_(ClPkg, STARloadTruenameSTAR);
 SYMBOL_EXPORT_SC_(KeywordPkg, none);
@@ -600,9 +607,9 @@ SYMBOL_EXPORT_SC_(ClPkg, method);
 SYMBOL_EXPORT_SC_(ClPkg, generic_function);
 SYMBOL_SC_(CorePkg, STARenvironmentPrintingTabSTAR);
 SYMBOL_SC_(CorePkg, STARenvironmentPrintingTabIncrementSTAR);
+SYMBOL_EXPORT_SC_(CorePkg, STARenvironment_debugSTAR);
 SYMBOL_SC_(CorePkg, _PLUS_activationFrameNil_PLUS_);
 SYMBOL_EXPORT_SC_(ClPkg, cond);
-SYMBOL_SC_(CorePkg, parse_macro);
 SYMBOL_SC_(CorePkg, globalFunction);
 SYMBOL_SC_(CorePkg, globalSetfFunction);
 SYMBOL_SC_(CorePkg, lexicalFunction);
@@ -683,8 +690,6 @@ SYMBOL_EXPORT_SC_(ClPkg, bit);
 SYMBOL_SC_(CorePkg, __init__);
 SYMBOL_EXPORT_SC_(ClPkg, STARreadtableSTAR);
 SYMBOL_SC_(CorePkg, input_stream_designator);
-/*! Set to true if you want SourceCodeCons to print line no info */
-SYMBOL_SC_(CorePkg, STARprint_source_code_consSTAR);
 /*! Set to true if you want the repl to print what was read */
 SYMBOL_SC_(CorePkg, STARechoReplReadSTAR);
 SYMBOL_EXPORT_SC_(KeywordPkg, invalid_character);
@@ -907,7 +912,7 @@ void CoreExposer_O::expose(core::Lisp_sp lisp, WhatToExpose what) const {
 
   break;
   case pythonClasses: {
-    IMPLEMENT_MEF(BF("Handle other packages"));
+    IMPLEMENT_MEF("Handle other packages");
   } break;
   case pythonFunctions:
 #ifdef USEBOOSTPYTHON
@@ -951,12 +956,12 @@ void CoreExposer_O::define_essential_globals(Lisp_sp lisp) {
   cl::_sym_STARpackageSTAR->exportYourself()->defparameter(lisp->_Roots._CorePackage);
   _sym_STARpreserve_whitespace_pSTAR->defparameter(_lisp->_false());
   _sym_STARechoReplReadSTAR->exportYourself()->defparameter(_lisp->_false());
-  _sym_STARprint_source_code_consSTAR->exportYourself()->defparameter(_lisp->_false());
   _sym_STARbackquote_levelSTAR->defparameter(make_fixnum(0));
   cl::_sym_STARmodulesSTAR->defparameter(_Nil<T_O>());
   cl::_sym_STARread_evalSTAR->defparameter(_lisp->_true());
   _sym_STARenvironmentPrintingTabSTAR->defparameter(make_fixnum(0));
   _sym_STARenvironmentPrintingTabIncrementSTAR->defparameter(make_fixnum(6));
+  _sym_STARenvironment_debugSTAR->defparameter(_Nil<T_O>());
   SYMBOL_EXPORT_SC_(ClPkg, most_negative_fixnum);
   cl::_sym_most_negative_fixnum->defconstant(make_fixnum(MOST_NEGATIVE_FIXNUM));
   SYMBOL_EXPORT_SC_(ClPkg, most_positive_fixnum);
@@ -1032,7 +1037,7 @@ void CoreExposer_O::define_essential_globals(Lisp_sp lisp) {
   _lisp->_Roots._TerminalIO = terminal;
   cl::_sym_STARterminal_ioSTAR->defparameter(terminal);
   _sym_STARsystem_defsetf_update_functionsSTAR->defparameter(_Nil<T_O>());
-  cl::_sym_STARmacroexpand_hookSTAR->defparameter(_sym_macroexpand_default);
+  cl::_sym_STARmacroexpand_hookSTAR->defparameter(cl::_sym_funcall);
   _sym_STARsharp_equal_final_tableSTAR->defparameter(_Nil<T_O>());
   _sym__PLUS_activationFrameNil_PLUS_->defconstant(_Nil<T_O>());
   _sym__PLUS_variant_name_PLUS_->defconstant(SimpleBaseString_O::make(VARIANT_NAME));
@@ -1055,7 +1060,7 @@ void CoreExposer_O::define_essential_globals(Lisp_sp lisp) {
   _sym_STARnestedErrorDepthSTAR->defparameter(make_fixnum(0));
   cl::_sym_STARbreakOnSignalsSTAR->defparameter(_Nil<T_O>());
   cl::_sym_STARdebuggerHookSTAR->defparameter(_Nil<T_O>());
-  cl::_sym_internalTimeUnitsPerSecond->defparameter(make_fixnum(CLASP_INTERNAL_TIME_UNITS_PER_SECOND));
+  cl::_sym_internalTimeUnitsPerSecond->defconstant(make_fixnum(CLASP_INTERNAL_TIME_UNITS_PER_SECOND));
   _sym_STARstartRunTimeSTAR->defparameter(PosixTime_O::createNow());
   cl::_sym_MultipleValuesLimit->defconstant(make_fixnum(MultipleValues::MultipleValuesLimit));
   _sym_STARprint_structureSTAR->defparameter(_Nil<T_O>());
@@ -1074,6 +1079,9 @@ void CoreExposer_O::define_essential_globals(Lisp_sp lisp) {
   core::_sym_STARpollTicksPerGcSTAR->defparameter(make_fixnum(POLL_TICKS_PER_GC));
   comp::_sym_STARlowLevelTraceSTAR->defparameter(_Nil<T_O>());
   comp::_sym_STARlowLevelTracePrintSTAR->defparameter(_Nil<T_O>());
+  comp::_sym_STARsave_module_for_disassembleSTAR->defparameter(_Nil<core::T_O>());
+  comp::_sym_STARsaved_module_from_clasp_jitSTAR->defparameter(_Nil<core::T_O>());
+  _sym_STARminimum_number_generic_function_slotsSTAR->defparameter(make_fixnum(FuncallableInstance_O::MIN_GFUN_SLOTS));
   _sym_STARallCxxClassesSTAR->defparameter(_Nil<T_O>());
   _sym_STARtopLevelCommandHookSTAR->defparameter(_Nil<T_O>());
   _sym_STARllvmFunctionNameHookSTAR->defparameter(_Nil<T_O>());
@@ -1086,22 +1094,32 @@ void CoreExposer_O::define_essential_globals(Lisp_sp lisp) {
   _sym_STARdebugEvalSTAR->defparameter(_Nil<T_O>());
   _sym_STARdebugStartupSTAR->defparameter(_Nil<T_O>());
   _sym_STARdebugInterpretedFunctionsSTAR->defparameter(_Nil<T_O>());
-  _sym_STARuseInterpreterForEvalSTAR->defparameter(_lisp->_true());
+  _sym_STARuseInterpreterForEvalSTAR->defparameter(_Nil<T_O>()); // _lisp->_true());
   _sym_STARcxxDocumentationSTAR->defparameter(_Nil<T_O>());
-  _sym_STARnotify_on_compileSTAR->defparameter(_Nil<T_O>());
-  _sym_STARtrace_startupSTAR->defparameter(_Nil<T_O>());
   _sym_STARinterpreterTraceSTAR->defparameter(_Nil<T_O>());
+  _sym__PLUS_class_name_to_lisp_name_PLUS_->defparameter(_Nil<T_O>());
+  _sym__PLUS_type_header_value_map_PLUS_->defparameter(_Nil<T_O>());
+  initialize_typeq_map();
   gctools::_sym_STARfinalizersSTAR->defparameter(WeakKeyHashTable_O::create());
   _sym_STARllvmVersionSTAR->defparameter(SimpleBaseString_O::make(LLVM_VERSION));
   _sym__PLUS_numberOfFixedArguments_PLUS_->defconstant(make_fixnum(LCC_ARGS_IN_REGISTERS));
   cl::_sym_STARrandom_stateSTAR->defparameter(RandomState_O::create());
+  // Set up a hash table to save JIT info
+  HashTableEqual_sp jit_save = HashTableEqual_O::create_default();
+#ifdef CLASP_THREADS
+  // When threading - make *jit-saved-symbol-info* a thread safe hash table
+  jit_save->_Mutex = mp::SharedMutex_O::make_shared_mutex(_Nil<T_O>());
+#endif
+  comp::_sym_STARjit_saved_symbol_infoSTAR->defparameter(jit_save);
+  //
   comp::_sym_STARllvm_contextSTAR->defparameter(llvmo::LLVMContext_O::create_llvm_context());
   comp::_sym_STARload_time_value_holder_nameSTAR->defparameter(core::SimpleBaseString_O::make("[VALUES-TABLE]"));
   List_sp hooks = _Nil<T_O>();
-  hooks = Cons_O::create(Cons_O::create(SimpleBaseString_O::make("fasl"), _sym_loadBundle), hooks);
-  hooks = Cons_O::create(Cons_O::create(SimpleBaseString_O::make("bundle"), _sym_loadBundle), hooks);
-  hooks = Cons_O::create(Cons_O::create(SimpleBaseString_O::make("dylib"), _sym_loadBundle), hooks);
-  hooks = Cons_O::create(Cons_O::create(SimpleBaseString_O::make("so"), _sym_loadBundle), hooks);
+  hooks = Cons_O::create(Cons_O::create(SimpleBaseString_O::make("fasl"), _sym_load_binary), hooks);
+  hooks = Cons_O::create(Cons_O::create(SimpleBaseString_O::make("fasb"), _sym_load_binary), hooks);
+  hooks = Cons_O::create(Cons_O::create(SimpleBaseString_O::make("bundle"), _sym_load_binary), hooks);
+  hooks = Cons_O::create(Cons_O::create(SimpleBaseString_O::make("dylib"), _sym_load_binary), hooks);
+  hooks = Cons_O::create(Cons_O::create(SimpleBaseString_O::make("so"), _sym_load_binary), hooks);
   hooks = Cons_O::create(Cons_O::create(SimpleBaseString_O::make("ll"), llvmo::_sym_load_bitcode_ll), hooks);
   hooks = Cons_O::create(Cons_O::create(SimpleBaseString_O::make("bc"), llvmo::_sym_load_bitcode), hooks);
   hooks = Cons_O::create(Cons_O::create(SimpleBaseString_O::make("lbc"), llvmo::_sym_load_bitcode), hooks);
@@ -1128,6 +1146,9 @@ void CoreExposer_O::define_essential_globals(Lisp_sp lisp) {
   _sym_STARfunctions_to_notinlineSTAR->defparameter(HashTableEqual_O::create_default());
   _sym_STARextension_startup_loadsSTAR->defparameter(_Nil<T_O>());
   _lisp->_Roots._Sysprop = HashTableEql_O::create_default();
+#ifdef CLASP_THREADS
+  _lisp->_Roots._Sysprop->set_thread_safe(true);
+#endif
   _sym_STARdebug_accessorsSTAR->defparameter(_Nil<T_O>());
   _sym_STARmodule_startup_function_nameSTAR->defparameter(SimpleBaseString_O::make(std::string(MODULE_STARTUP_FUNCTION_NAME)));
   _sym_STARmodule_shutdown_function_nameSTAR->defparameter(SimpleBaseString_O::make(std::string(MODULE_SHUTDOWN_FUNCTION_NAME)));
@@ -1142,11 +1163,14 @@ void CoreExposer_O::define_essential_globals(Lisp_sp lisp) {
   _sym_STARinterrupts_enabledSTAR->defparameter(_lisp->_true());
   _sym_STARallow_with_interruptsSTAR->defparameter(_lisp->_true());
   _sym_STARexit_backtraceSTAR->defparameter(_Nil<core::T_O>());
-  clos::_sym__PLUS_the_standard_class_PLUS_->defparameter(_lisp->_Roots._StandardClass);
-  _sym_STARinvalidated_dispatch_function_stackSTAR->defparameter(_Nil<core::T_O>());
+  clos::_sym__PLUS_the_standard_class_PLUS_->defparameter(_lisp->_Roots._TheStandardClass);
   _sym_STARdebug_threadsSTAR->defparameter(_Nil<core::T_O>());
+  _sym_STARdebug_fastgfSTAR->defparameter(_Nil<core::T_O>());
   _sym_STARdebug_dispatchSTAR->defparameter(_Nil<core::T_O>());
   _sym_STARdebug_valuesSTAR->defparameter(_Nil<core::T_O>());
+  _sym_STARbits_in_bit_array_wordSTAR->defparameter(core::clasp_make_fixnum(BIT_ARRAY_BYTE_SIZE));
+  _sym_STARreader_generate_cstSTAR->defparameter(_Nil<core::T_O>());
+  _sym_STARreader_cst_resultSTAR->defparameter(_Nil<core::T_O>());
 #if defined(__x86_64__)
   SYMBOL_EXPORT_SC_(KeywordPkg, address_model_64);
   Symbol_sp address_model = kw::_sym_address_model_64;

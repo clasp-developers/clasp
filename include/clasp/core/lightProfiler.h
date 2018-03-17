@@ -32,7 +32,6 @@ THE SOFTWARE.
 #include <time.h>
 #endif
 
-#include <clasp/core/foundation.h>
 
 #ifndef LightProfiler_H
 #define LightProfiler_H

@@ -27,7 +27,6 @@ THE SOFTWARE.
 #ifndef _SINGLEDISPATCHGENERICFUNCTION_H_
 #define _SINGLEDISPATCHGENERICFUNCTION_H_
 
-#include <clasp/core/foundation.h>
 #include <clasp/core/hashTable.fwd.h>
 #include <clasp/core/singleDispatchGenericFunction.fwd.h>
 #include <clasp/core/singleDispatchMethod.fwd.h>
@@ -86,7 +85,6 @@ namespace core {
   public:
       static SingleDispatchGenericFunctionClosure_sp create(T_sp functionName, LambdaListHandler_sp llhandler);
 public:
-    DISABLE_NEW();
   SingleDispatchGenericFunctionClosure_O(T_sp name, Symbol_sp k, SOURCE_INFO)
     : Base(entry_point,name, k, SOURCE_INFO_PASS), _Methods(_Nil<T_O>()), _lambdaListHandler(_Nil<LambdaListHandler_O>()){};
   SingleDispatchGenericFunctionClosure_O(T_sp name)
@@ -141,11 +139,10 @@ public:
   Lambda_emf(T_sp name,
              SingleDispatchGenericFunctionClosure_sp gf,
              SingleDispatchMethod_sp cur_method);
-  DISABLE_NEW();
 
   LCC_VIRTUAL LCC_RETURN LISP_CALLING_CONVENTION() {
     INCREMENT_FUNCTION_CALL_COUNTER(this);
-    IMPLEMENT_ME();
+    HARD_IMPLEMENT_ME();
 #if 0
             // The closedEnv 
             ASSERTF(closedEnv.nilp(),BF("Since I don't pass the closedEnv forward it I expect that it should always be nil - this time it wasn't - figure out what is up with that"));

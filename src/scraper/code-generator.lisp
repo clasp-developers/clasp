@@ -19,14 +19,19 @@
 (defun generate-expose-function-signatures (sout ns-grouped-expose-functions)
   (format sout "#ifdef EXPOSE_FUNCTION_SIGNATURES~%")
   (maphash (lambda (ns func-ht)
-             (format sout "namespace ~a {~%" ns)
-             (maphash (lambda (name f)
-                        (declare (ignore name))
-                        (when (and (typep f 'expose-defun)
-                                   (provide-declaration% f))
-                          (format sout "    ~a;~%" (signature% f))))
-                      func-ht)
-             (format sout "};~%"))
+             (let* ((decl-count 0)
+                    (output (with-output-to-string (sdec)
+                              (maphash (lambda (name f)
+                                         (declare (ignore name))
+                                         (when (and (typep f '(or expose-defun expose-defun-setf))
+                                                    (provide-declaration% f))
+                                           (format sdec "    ~a;~%" (signature% f))
+                                           (incf decl-count)))
+                                       func-ht))))
+               (when (> decl-count 0)
+                 (format sout "namespace ~a {~%" ns)
+                 (format sout "~a" output)
+                 (format sout "};~%"))))
            ns-grouped-expose-functions)
   (format sout "#endif // EXPOSE_FUNCTION_SIGNATURES~%"))
 
@@ -50,18 +55,24 @@
              (format sout "NOINLINE void ~a() {~%" name)
              (etypecase f
                (expose-defun
-                (format sout "  expose_function(~a,~a,&~a::~a,~s);~%"
+                (format sout "  /* expose-defun */ expose_function(~a,&~a::~a,~s);~%"
                         (lisp-name% f)
-                        "true"
+                        ns
+                        (function-name% f)
+                        (maybe-wrap-lambda-list (lambda-list% f))))
+               (expose-defun-setf
+                (format sout "  /* expose-defun-setf */ expose_function_setf(~a,&~a::~a,~s);~%"
+                        (lisp-name% f)
                         ns
                         (function-name% f)
                         (maybe-wrap-lambda-list (lambda-list% f))))
                (expose-extern-defun
-                (format sout "  expose_function(~a,~a,~a,~s);~%"
+                (format sout "  /* expose-extern-defun */ expose_function(~a,~a,~s);~%"
                         (lisp-name% f)
-                        "true"
                         (pointer% f)
-                        (maybe-wrap-lambda-list (lambda-list% f)))))
+                        (if (lambda-list% f)
+                            (maybe-wrap-lambda-list (lambda-list% f))
+                            ""))))
              (format sout "}~%")
              name)))
     (let (helpers (index 0))
@@ -84,7 +95,7 @@
 (defun generate-expose-one-source-info-helper (sout obj idx)
   (let* ((lisp-name (lisp-name% obj))
          (absolute-file (truename (pathname (file% obj))))
-         (file (enough-namestring absolute-file (pathname (format nil "~a/" (sb-ext:posix-getenv "CLASP_HOME")))))
+         (file (enough-namestring absolute-file (pathname (format nil "~a/" (uiop:getenv "CLASP_HOME")))))
          (line (line% obj))
          (char-offset (character-offset% obj))
          (docstring (docstring% obj))
@@ -152,6 +163,7 @@
                          (princ buffer sout))
                        tags-data-ht)))))
 
+
 (defun generate-code-for-init-functions (functions)
   (declare (optimize (speed 3)))
   (with-output-to-string (sout)
@@ -159,12 +171,18 @@
       (generate-expose-function-signatures sout ns-grouped)
       (generate-expose-function-bindings sout ns-grouped))))
 
-(defun mangle-and-wrap-name (name)
+(defun mangle-and-wrap-name (name arg-types)
   "* Arguments
 - name :: A string
 * Description
 Convert colons to underscores"
-  (format nil "wrapped_~a" (substitute #\_ #\: name)))
+  (let ((type-part (with-output-to-string (sout)
+                     (loop for type in arg-types
+                           do (loop for c across type
+                                    do (if (alphanumericp c)
+                                           (princ c sout)
+                                           (princ #\_ sout)))))))
+    (format nil "wrapped_~a_~a" (substitute #\_ #\: name) type-part)))
 
 (defgeneric direct-call-function (c-code cl-code func c-code-info cl-code-info))
 
@@ -172,10 +190,37 @@ Convert colons to underscores"
   (format c-code "// Do nothing yet for function ~a of type ~a~%" (function-name% func) (type-of func))
   (format cl-code ";;; Do nothing yet for function ~a of type ~a~%" (function-name% func) (type-of func)))
 
+(defmethod direct-call-function (c-code cl-code (func expose-extern-defun) c-code-info cl-code-info)
+  (let ((function-ptr (function-ptr% func)))
+    (if (function-ptr-type function-ptr)
+        (multiple-value-bind (return-type arg-types)
+            (convert-function-ptr-to-c++-types function-ptr)
+          (let* ((wrapped-name (mangle-and-wrap-name (function-name% func) arg-types))
+                 (one-func-code
+                   (generate-wrapped-function wrapped-name
+                                              (function-ptr-namespace function-ptr)
+                                              (function-name% func)
+                                              return-type
+                                              arg-types)))
+            (format c-code "// Generating code for ~a::~a~%" (function-ptr-namespace function-ptr) (function-name% func))
+            (format c-code "// return-type -> ~s~%" return-type)
+            (format c-code "// arg-types -> ~s~%" arg-types)
+            (format c-code "//  Found at ~a:~a-----------~%" (file% func) (line% func))
+            (format c-code-info "// Generating code for ~a::~a~%" (function-ptr-namespace function-ptr) (function-name% func))
+            (format c-code-info "//            Found at ~a:~a~%-----------~%" (file% func) (line% func))
+            (format c-code "~a~%" one-func-code)
+            (format cl-code ";;; Generating code for ~a::~a~%" (function-ptr-namespace function-ptr) (function-name% func))
+            (format cl-code-info ";;; Generating code for ~a::~a~%" (function-ptr-namespace function-ptr) (function-name% func))
+            (format cl-code-info ";;;            Found at ~a:~a~%----------~%" (file% func) (line% func))
+            (let* ((raw-lisp-name (lisp-name% func))
+                   (maybe-fixed-magic-name (maybe-fix-magic-name raw-lisp-name)))
+              (format cl-code "(wrap-c++-function ~a (~a) (~a) ~s )~%" maybe-fixed-magic-name (declare% func) (lambda-list% func) wrapped-name ))))
+        (call-next-method))))
+
 (defmethod direct-call-function (c-code cl-code (func expose-defun) c-code-info cl-code-info)
   (multiple-value-bind (return-type arg-types)
       (parse-types-from-signature (signature% func))
-    (let* ((wrapped-name (mangle-and-wrap-name (function-name% func)))
+    (let* ((wrapped-name (mangle-and-wrap-name (function-name% func) arg-types))
            (one-func-code
             (generate-wrapped-function wrapped-name
                                        (namespace% func)
@@ -190,13 +235,34 @@ Convert colons to underscores"
       (format cl-code-info ";;;            Found at ~a:~a~%----------~%" (file% func) (line% func))
       (let* ((raw-lisp-name (lisp-name% func))
              (maybe-fixed-magic-name (maybe-fix-magic-name raw-lisp-name)))
-        (format cl-code "(generate-direct-call-defun ~a (~a) ~s )~%" maybe-fixed-magic-name (lambda-list% func) wrapped-name )))))
+        (format cl-code "(wrap-c++-function ~a (~a) (~a) ~s )~%" maybe-fixed-magic-name (declare% func) (lambda-list% func) wrapped-name )))))
+
+(defmethod direct-call-function (c-code cl-code (func expose-defun-setf) c-code-info cl-code-info)
+  (multiple-value-bind (return-type arg-types)
+      (parse-types-from-signature (signature% func))
+    (let* ((wrapped-name (mangle-and-wrap-name (function-name% func) arg-types))
+           (one-func-code
+            (generate-wrapped-function wrapped-name
+                                       (namespace% func)
+                                       (function-name% func)
+                                       return-type arg-types)))
+      (format c-code "// Generating code for ~a::~a~%" (namespace% func) (function-name% func))
+      (format c-code-info "// Generating code for ~a::~a~%" (namespace% func) (function-name% func))
+      (format c-code-info "//            Found at ~a:~a~%-----------~%" (file% func) (line% func))
+      (format c-code "~a~%" one-func-code)
+      (format cl-code ";;; Generating code for ~a::~a~%" (namespace% func) (function-name% func))
+      (format cl-code-info ";;; Generating code for ~a::~a~%" (namespace% func) (function-name% func))
+      (format cl-code-info ";;;            Found at ~a:~a~%----------~%" (file% func) (line% func))
+      (let* ((raw-lisp-name (lisp-name% func))
+             (maybe-fixed-magic-name (maybe-fix-magic-name raw-lisp-name)))
+        (format cl-code "(wrap-c++-function-setf ~a (~a) (~a) ~s )~%" maybe-fixed-magic-name (declare% func) (lambda-list% func) wrapped-name )))))
                                
-(defun generate-code-for-direct-call-functions (functions)
+(defun generate-code-for-direct-call-functions (functions classes)
   (let ((c-code (make-string-output-stream))
         (c-code-info (make-string-output-stream))
         (cl-code (make-string-output-stream))
-        (cl-code-info (make-string-output-stream)))
+        (cl-code-info (make-string-output-stream))
+        (*print-pretty* nil))
     (format cl-code "(in-package :core)~%")
     (mapc (lambda (func)
             (direct-call-function c-code cl-code func c-code-info cl-code-info))
@@ -285,7 +351,7 @@ Convert colons to underscores"
         cur-package)
     (format sout "#ifdef SET_CLASS_KINDS~%")
     (dolist (exposed-class sorted-classes)
-      (format sout "set_one_static_class_Kind<~a::~a>();~%"
+      (format sout "set_one_static_class_Header<~a::~a>();~%"
               (tags:namespace% (class-tag% exposed-class))
               (tags:name% (class-tag% exposed-class))))
     (format sout "#endif // SET_CLASS_KINDS~%")))
@@ -305,11 +371,123 @@ Convert colons to underscores"
 (defun as-var-name (ns name)
   (format nil "~a_~a_var" ns name))
 
-(defun generate-code-for-init-classes-and-methods (exposed-classes)
+(defun build-enum-name (key)
+  (with-output-to-string (sout)
+    (loop for c across key
+          if (alphanumericp c) do (princ c sout)
+            else do (princ #\_ sout))))
+
+(defun highest-stamp-class (c)
+  (if (direct-subclasses% c)
+      (let ((high-stamp 0)
+            (high-class nil))
+        (dolist (cs (direct-subclasses% c))
+          (multiple-value-bind (temp-stamp temp-class)
+              (highest-stamp-class cs)
+            (if (> temp-stamp high-stamp)
+                (setf high-stamp temp-stamp
+                      high-class temp-class))))
+        (values high-stamp high-class))
+      (values (stamp% c) c)))
+
+(defun split-class-key (key)
+  (let ((pos (search "::" key)))
+    (values (subseq key 0 pos) (subseq key (+ 2 pos)))))
+
+(defun extract-forwards (classes)
+  (let ((namespaces (make-hash-table :test #'equal)))
+    (maphash (lambda (key class)
+               (multiple-value-bind (namespace class-name)
+                   (split-class-key key)
+                 (push class-name (gethash namespace namespaces nil))))
+             classes)
+    namespaces))
+
+(defun generate-mps-poison (sout)
+  "Sections that are only applicable to Boehm builds include this to prevent them from compiling in MPS builds"
+  (format sout " #ifdef USE_MPS~%")
+  (format sout "  #error \"Do not include this section when USE_MPS is defined - use the section from clasp_gc_xxx.cc\"~%")
+  (format sout " #endif // USE_MPS~%"))
+
+(defun generate-code-for-init-classes-and-methods (exposed-classes gc-managed-types)
   (declare (optimize (speed 3)))
   (with-output-to-string (sout)
     (let ((sorted-classes (sort-classes-by-inheritance exposed-classes))
           cur-package)
+      (progn
+        (format sout "#ifdef DECLARE_FORWARDS~%")
+        (generate-mps-poison sout)
+        (let ((forwards (extract-forwards exposed-classes)))
+          (maphash (lambda (namespace classes)
+                     (format sout "namespace ~a {~%" namespace)
+                     (dolist (cl classes)
+                       (format sout "  class ~a;~%" cl))
+                     (format sout "};~%"))
+                   forwards))
+        (format sout "#endif // DECLARE_FORWARDS~%")
+        (let ((stamp-max 0)
+              (sorted-classes (let (sc)
+                                (maphash (lambda (key class)
+                                           (push class sc))
+                                         exposed-classes)
+                                (sort sc #'< :key #'stamp%))))
+          (format sout "#ifdef GC_ENUM~%")
+          (dolist (c sorted-classes)
+            (format sout "STAMP_~a = ~a,~%" (build-enum-name (class-key% c)) (stamp% c))
+            (setf stamp-max (max stamp-max (stamp% c))))
+          (maphash (lambda (key type)
+                     (format sout "STAMP_~a = ~a,~%" (build-enum-name (c++type% type)) (stamp% type))
+                     (setf stamp-max (max stamp-max (stamp% type))))
+                   gc-managed-types)
+          (format sout "STAMP_max = ~a,~%" stamp-max)
+          (format sout "#endif // GC_ENUM~%")
+          (format sout "#ifdef GC_ENUM_NAMES~%")
+          (dolist (c sorted-classes)
+            (format sout "register_stamp_name(\"STAMP_~a\",~a);~%" (build-enum-name (class-key% c)) (stamp% c)))
+          (maphash (lambda (key type)
+                     (format sout "register_stamp_name(\"STAMP_~a\",~a);~%" (build-enum-name (c++type% type)) (stamp% type)))
+                   gc-managed-types)
+          (format sout "#endif // GC_ENUM_NAMES~%"))
+        (flet ((write-one-gcstamp (type mangled-key flags)
+                 (format sout "template <> class gctools::GCStamp<~a> {~%" type)
+                 (format sout "public:~%")
+                 (format sout "  static gctools::GCStampEnum const Stamp = gctools::STAMP_~a;~%" mangled-key)
+                 (format sout "};~%")))
+          (format sout "#ifdef GC_STAMP_SELECTORS~%")
+          (generate-mps-poison sout)
+          (dolist (c sorted-classes)
+            (write-one-gcstamp (class-key% c) (build-enum-name (class-key% c)) (string (flags% c))))
+          (maphash (lambda (key type)
+                     (write-one-gcstamp (c++type% type) (build-enum-name (c++type% type)) "FLAGS_STAMP_IN_HEADER"))
+                   gc-managed-types))
+        (format sout "#endif // GC_STAMP_SELECTORS~%")
+        (format sout "#ifdef GC_DYNAMIC_CAST~%")
+        (generate-mps-poison sout)
+        (dolist (c sorted-classes)
+          (format sout "template <typename FP> struct Cast<~a*,FP> {~%" (class-key% c))
+          (format sout "  inline static bool isA(FP client) {~%")
+          (format sout "    gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));~%")
+          (format sout "    size_t kindVal = header->stamp();~%")
+          (multiple-value-bind (high-stamp high-class)
+              (highest-stamp-class c)
+            (if (eq (stamp% c) high-stamp)
+                (progn
+                  (format sout "    // IsA-stamp-range ~a val -> ~a~%" (class-key% c) (stamp% c))
+                  (format sout "    return (kindVal == ~a);~%" (stamp% c)))
+                (progn
+                  (format sout "    // IsA-stamp-range ~a low high -> ~a ~a~%" (class-key% c) (stamp% c) high-stamp)
+                  (format sout "    return ((~a <= kindVal) && (kindVal <= ~a));~%" (stamp% c) high-stamp))))
+          (format sout "  };~%")
+          (format sout "};~%"))
+        (format sout "#endif // GC_DYNAMIC_CAST~%")
+        (format sout "#ifdef GC_TYPEQ~%")
+        (dolist (c sorted-classes)
+          (multiple-value-bind (high-stamp high-class)
+              (highest-stamp-class c)
+            (if (eq (stamp% c) high-stamp)
+                (format sout "    ADD_SINGLE_TYPEQ_TEST(~a,~a); ~%" (class-key% c) (stamp% c))
+                (format sout "    ADD_RANGE_TYPEQ_TEST(~a,~a,~a,~a);~%" (class-key% c) (class-key% high-class) (stamp% c) (stamp% high-class)))))
+        (format sout "#endif // GC_TYPEQ~%"))
       (generate-code-for-init-class-kinds exposed-classes sout)
       (generate-code-for-init-classes-class-symbols exposed-classes sout)
       (progn
@@ -371,7 +549,7 @@ Convert colons to underscores"
             (format sout "namespace ~a { ~%" (tags:namespace% class-tag))
             (format sout "  core::Symbol_sp ~a::static_class_symbol;~%" (tags:name% class-tag))
             (format sout "  core::Class_sp ~a::static_class;~%" (tags:name% class-tag))
-            (format sout "  gctools::GCKindEnum ~a::static_Kind;~%" (tags:name% class-tag))
+            (format sout "  gctools::Header_s::Value ~a::static_HeaderValue;~%" (tags:name% class-tag))
             (format sout "  gctools::smart_ptr<core::Creator_O> ~a::static_creator;~%" (tags:name% class-tag))
             (format sout "};~%")))
         (format sout "#endif // EXPOSE_STATIC_CLASS_VARIABLES~%"))
@@ -420,7 +598,7 @@ Convert colons to underscores"
                          (method-name (method-name% class-method))
                          (lambda-list (lambda-list% class-method))
                          (declare-form (declare% class-method)))
-                    (format sout " expose_function(~a,true,&~a::~a,R\"lambda(~a)lambda\");~%"
+                    (format sout " expose_function(~a,&~a::~a,R\"lambda(~a)lambda\");~%"
                             lisp-name
                             class-name
                             method-name
@@ -613,7 +791,7 @@ Convert colons to underscores"
              (pathname main-path))))
     (ensure-directories-exist pn)
     (let ((data-in-file (when (probe-file pn)
-                          (with-open-file (stream pn :direction :input)
+                          (with-open-file (stream pn :direction :input :external-format :utf-8)
                             (let ((data (make-string (file-length stream))))
                               (read-sequence data stream)
                               data)))))
@@ -621,7 +799,7 @@ Convert colons to underscores"
           (format t   "| -------- | There are no changes to ~a.~%" pn)
           (progn
             (format t "| UPDATING | There are changes to ~a.~%" pn)
-            (with-open-file (stream pn :direction :output :if-exists :supersede)
+            (with-open-file (stream pn :direction :output :if-exists :supersede :external-format :utf-8)
               (write-sequence code stream)))))))
 
 (defun safe-app-config (key app-config)
@@ -630,9 +808,9 @@ Convert colons to underscores"
       (error "Could not get key: ~s from app-config" key))
     value))
 
-(defun generate-code (packages-to-create functions symbols classes enums initializers build-path app-config)
+(defun generate-code (packages-to-create functions symbols classes gc-managed-types enums initializers build-path app-config)
   (let ((init-functions (generate-code-for-init-functions functions))
-        (init-classes-and-methods (generate-code-for-init-classes-and-methods classes))
+        (init-classes-and-methods (generate-code-for-init-classes-and-methods classes gc-managed-types))
         (source-info (generate-code-for-source-info functions classes))
         (symbol-info (generate-code-for-symbols packages-to-create symbols))
         (enum-info (generate-code-for-enums enums))
@@ -644,7 +822,7 @@ Convert colons to underscores"
     (write-if-changed enum-info build-path (safe-app-config :enum_inc_h app-config))
     (write-if-changed initializers-info build-path (safe-app-config :initializers_inc_h app-config))
     (multiple-value-bind (direct-call-c-code direct-call-cl-code c-code-info cl-code-info)
-        (generate-code-for-direct-call-functions functions)
+        (generate-code-for-direct-call-functions functions classes)
       (write-if-changed direct-call-c-code build-path (safe-app-config :c_wrappers app-config))
       (write-if-changed direct-call-cl-code build-path (safe-app-config :lisp_wrappers app-config))
       (write-if-changed c-code-info build-path (merge-pathnames (make-pathname :type "txt") (safe-app-config :c_wrappers app-config)))

@@ -12,11 +12,11 @@ template <typename RT , typename ARG0,typename ARG1,typename ARG2,typename ARG3,
     typename ARG15,typename ARG16,typename ARG17 >
 class VariadicFunctor
 <RT (ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13, ARG14, ARG15, ARG16, ARG17) >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicFunctor <RT (ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13, ARG14, ARG15,
     ARG16, ARG17) > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicFunctor";};
 
@@ -25,9 +25,8 @@ typedef RT(*Type) (ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, A
 Type fptr;
 public:
 enum { NumParams = 18 };
-VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : BuiltinClosure_O(&MyType::entry_point,name,funcType,
+VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : TemplatedFunctionBase_O(&MyType::entry_point,name,funcType,
     SOURCE_INFO_PASS), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
 static inline LCC_RETURN entry_point(LCC_ARGS_ELLIPSIS)
@@ -72,11 +71,11 @@ template <typename RT , typename ARG0,typename ARG1,typename ARG2,typename ARG3,
     typename ARG15,typename ARG16 >
 class VariadicFunctor
 <RT (ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13, ARG14, ARG15, ARG16) >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicFunctor <RT (ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13, ARG14, ARG15,
     ARG16) > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicFunctor";};
 
@@ -84,9 +83,8 @@ typedef RT(*Type) (ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, A
 Type fptr;
 public:
 enum { NumParams = 17 };
-VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : BuiltinClosure_O(&MyType::entry_point,name,funcType,
+VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : TemplatedFunctionBase_O(&MyType::entry_point,name,funcType,
     SOURCE_INFO_PASS), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
 static inline LCC_RETURN entry_point(LCC_ARGS_ELLIPSIS)
@@ -130,11 +128,11 @@ template <typename RT , typename ARG0,typename ARG1,typename ARG2,typename ARG3,
     typename ARG15 >
 class VariadicFunctor
 <RT (ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13, ARG14, ARG15) >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicFunctor <RT (ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13, ARG14,
     ARG15) > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicFunctor";};
 
@@ -142,9 +140,8 @@ typedef RT(*Type) (ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, A
 Type fptr;
 public:
 enum { NumParams = 16 };
-VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : BuiltinClosure_O(&MyType::entry_point,name,funcType,
+VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : TemplatedFunctionBase_O(&MyType::entry_point,name,funcType,
     SOURCE_INFO_PASS), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
 static inline LCC_RETURN entry_point(LCC_ARGS_ELLIPSIS)
@@ -185,11 +182,11 @@ template <typename RT , typename ARG0,typename ARG1,typename ARG2,typename ARG3,
     typename ARG7,typename ARG8,typename ARG9,typename ARG10,typename ARG11,typename ARG12,typename ARG13,typename ARG14 >
 class VariadicFunctor
 <RT (ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13, ARG14) >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicFunctor <RT (ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13,
     ARG14) > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicFunctor";};
 
@@ -197,9 +194,8 @@ typedef RT(*Type) (ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, A
 Type fptr;
 public:
 enum { NumParams = 15 };
-VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : BuiltinClosure_O(&MyType::entry_point,name,funcType,
+VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : TemplatedFunctionBase_O(&MyType::entry_point,name,funcType,
     SOURCE_INFO_PASS), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
 static inline LCC_RETURN entry_point(LCC_ARGS_ELLIPSIS)
@@ -239,10 +235,10 @@ template <typename RT , typename ARG0,typename ARG1,typename ARG2,typename ARG3,
     typename ARG7,typename ARG8,typename ARG9,typename ARG10,typename ARG11,typename ARG12,typename ARG13 >
 class VariadicFunctor
 <RT (ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13) >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicFunctor <RT (ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13) > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicFunctor";};
 
@@ -250,9 +246,8 @@ typedef RT(*Type) (ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, A
 Type fptr;
 public:
 enum { NumParams = 14 };
-VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : BuiltinClosure_O(&MyType::entry_point,name,funcType,
+VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : TemplatedFunctionBase_O(&MyType::entry_point,name,funcType,
     SOURCE_INFO_PASS), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
 static inline LCC_RETURN entry_point(LCC_ARGS_ELLIPSIS)
@@ -291,10 +286,10 @@ template <typename RT , typename ARG0,typename ARG1,typename ARG2,typename ARG3,
     typename ARG7,typename ARG8,typename ARG9,typename ARG10,typename ARG11,typename ARG12 >
 class VariadicFunctor
 <RT (ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12) >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicFunctor <RT (ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12) > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicFunctor";};
 
@@ -302,9 +297,8 @@ typedef RT(*Type) (ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, A
 Type fptr;
 public:
 enum { NumParams = 13 };
-VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : BuiltinClosure_O(&MyType::entry_point,name,funcType,
+VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : TemplatedFunctionBase_O(&MyType::entry_point,name,funcType,
     SOURCE_INFO_PASS), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
 static inline LCC_RETURN entry_point(LCC_ARGS_ELLIPSIS)
@@ -342,10 +336,10 @@ template <typename RT , typename ARG0,typename ARG1,typename ARG2,typename ARG3,
     typename ARG7,typename ARG8,typename ARG9,typename ARG10,typename ARG11 >
 class VariadicFunctor
 <RT (ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11) >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicFunctor <RT (ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11) > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicFunctor";};
 
@@ -353,9 +347,8 @@ typedef RT(*Type) (ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, A
 Type fptr;
 public:
 enum { NumParams = 12 };
-VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : BuiltinClosure_O(&MyType::entry_point,name,funcType,
+VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : TemplatedFunctionBase_O(&MyType::entry_point,name,funcType,
     SOURCE_INFO_PASS), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
 static inline LCC_RETURN entry_point(LCC_ARGS_ELLIPSIS)
@@ -392,10 +385,10 @@ template <typename RT , typename ARG0,typename ARG1,typename ARG2,typename ARG3,
     typename ARG7,typename ARG8,typename ARG9,typename ARG10 >
 class VariadicFunctor
 <RT (ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10) >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicFunctor <RT (ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10) > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicFunctor";};
 
@@ -403,9 +396,8 @@ typedef RT(*Type) (ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, A
 Type fptr;
 public:
 enum { NumParams = 11 };
-VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : BuiltinClosure_O(&MyType::entry_point,name,funcType,
+VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : TemplatedFunctionBase_O(&MyType::entry_point,name,funcType,
     SOURCE_INFO_PASS), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
 static inline LCC_RETURN entry_point(LCC_ARGS_ELLIPSIS)
@@ -441,10 +433,10 @@ template <typename RT , typename ARG0,typename ARG1,typename ARG2,typename ARG3,
     typename ARG7,typename ARG8,typename ARG9 >
 class VariadicFunctor
 <RT (ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9) >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicFunctor <RT (ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9) > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicFunctor";};
 
@@ -452,9 +444,8 @@ typedef RT(*Type) (ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9);
 Type fptr;
 public:
 enum { NumParams = 10 };
-VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : BuiltinClosure_O(&MyType::entry_point,name,funcType,
+VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : TemplatedFunctionBase_O(&MyType::entry_point,name,funcType,
     SOURCE_INFO_PASS), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
 static inline LCC_RETURN entry_point(LCC_ARGS_ELLIPSIS)
@@ -489,10 +480,10 @@ template <typename RT , typename ARG0,typename ARG1,typename ARG2,typename ARG3,
     typename ARG7,typename ARG8 >
 class VariadicFunctor
 <RT (ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8) >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicFunctor <RT (ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8) > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicFunctor";};
 
@@ -500,9 +491,8 @@ typedef RT(*Type) (ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8);
 Type fptr;
 public:
 enum { NumParams = 9 };
-VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : BuiltinClosure_O(&MyType::entry_point,name,funcType,
+VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : TemplatedFunctionBase_O(&MyType::entry_point,name,funcType,
     SOURCE_INFO_PASS), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
 static inline LCC_RETURN entry_point(LCC_ARGS_ELLIPSIS)
@@ -536,10 +526,10 @@ template <typename RT , typename ARG0,typename ARG1,typename ARG2,typename ARG3,
     typename ARG7 >
 class VariadicFunctor
 <RT (ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7) >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicFunctor <RT (ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7) > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicFunctor";};
 
@@ -547,9 +537,8 @@ typedef RT(*Type) (ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7);
 Type fptr;
 public:
 enum { NumParams = 8 };
-VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : BuiltinClosure_O(&MyType::entry_point,name,funcType,
+VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : TemplatedFunctionBase_O(&MyType::entry_point,name,funcType,
     SOURCE_INFO_PASS), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
 static inline LCC_RETURN entry_point(LCC_ARGS_ELLIPSIS)
@@ -581,10 +570,10 @@ return Values(translate::to_object<RT>::convert(retval));
 template <typename RT , typename ARG0,typename ARG1,typename ARG2,typename ARG3,typename ARG4,typename ARG5,typename ARG6 >
 class VariadicFunctor
 <RT (ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6) >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicFunctor <RT (ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6) > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicFunctor";};
 
@@ -592,9 +581,8 @@ typedef RT(*Type) (ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6);
 Type fptr;
 public:
 enum { NumParams = 7 };
-VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : BuiltinClosure_O(&MyType::entry_point,name,funcType,
+VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : TemplatedFunctionBase_O(&MyType::entry_point,name,funcType,
     SOURCE_INFO_PASS), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
 static inline LCC_RETURN entry_point(LCC_ARGS_ELLIPSIS)
@@ -625,10 +613,10 @@ return Values(translate::to_object<RT>::convert(retval));
 template <typename RT , typename ARG0,typename ARG1,typename ARG2,typename ARG3,typename ARG4,typename ARG5 >
 class VariadicFunctor
 <RT (ARG0, ARG1, ARG2, ARG3, ARG4, ARG5) >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicFunctor <RT (ARG0, ARG1, ARG2, ARG3, ARG4, ARG5) > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicFunctor";};
 
@@ -636,9 +624,8 @@ typedef RT(*Type) (ARG0, ARG1, ARG2, ARG3, ARG4, ARG5);
 Type fptr;
 public:
 enum { NumParams = 6 };
-VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : BuiltinClosure_O(&MyType::entry_point,name,funcType,
+VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : TemplatedFunctionBase_O(&MyType::entry_point,name,funcType,
     SOURCE_INFO_PASS), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
 static inline LCC_RETURN entry_point(LCC_ARGS_ELLIPSIS)
@@ -668,10 +655,10 @@ return Values(translate::to_object<RT>::convert(retval));
 template <typename RT , typename ARG0,typename ARG1,typename ARG2,typename ARG3,typename ARG4 >
 class VariadicFunctor
 <RT (ARG0, ARG1, ARG2, ARG3, ARG4) >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicFunctor <RT (ARG0, ARG1, ARG2, ARG3, ARG4) > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicFunctor";};
 
@@ -679,9 +666,8 @@ typedef RT(*Type) (ARG0, ARG1, ARG2, ARG3, ARG4);
 Type fptr;
 public:
 enum { NumParams = 5 };
-VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : BuiltinClosure_O(&MyType::entry_point,name,funcType,
+VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : TemplatedFunctionBase_O(&MyType::entry_point,name,funcType,
     SOURCE_INFO_PASS), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
 static inline LCC_RETURN entry_point(LCC_ARGS_ELLIPSIS)
@@ -710,10 +696,10 @@ return Values(translate::to_object<RT>::convert(retval));
 template <typename RT , typename ARG0,typename ARG1,typename ARG2,typename ARG3 >
 class VariadicFunctor
 <RT (ARG0, ARG1, ARG2, ARG3) >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicFunctor <RT (ARG0, ARG1, ARG2, ARG3) > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicFunctor";};
 
@@ -721,9 +707,8 @@ typedef RT(*Type) (ARG0, ARG1, ARG2, ARG3);
 Type fptr;
 public:
 enum { NumParams = 4 };
-VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : BuiltinClosure_O(&MyType::entry_point,name,funcType,
+VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : TemplatedFunctionBase_O(&MyType::entry_point,name,funcType,
     SOURCE_INFO_PASS), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
 static inline LCC_RETURN entry_point(LCC_ARGS_ELLIPSIS)
@@ -751,10 +736,10 @@ return Values(translate::to_object<RT>::convert(retval));
 template <typename RT , typename ARG0,typename ARG1,typename ARG2 >
 class VariadicFunctor
 <RT (ARG0, ARG1, ARG2) >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicFunctor <RT (ARG0, ARG1, ARG2) > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicFunctor";};
 
@@ -762,9 +747,8 @@ typedef RT(*Type) (ARG0, ARG1, ARG2);
 Type fptr;
 public:
 enum { NumParams = 3 };
-VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : BuiltinClosure_O(&MyType::entry_point,name,funcType,
+VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : TemplatedFunctionBase_O(&MyType::entry_point,name,funcType,
     SOURCE_INFO_PASS), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
 static inline LCC_RETURN entry_point(LCC_ARGS_ELLIPSIS)
@@ -791,10 +775,10 @@ return Values(translate::to_object<RT>::convert(retval));
 template <typename RT , typename ARG0,typename ARG1 >
 class VariadicFunctor
 <RT (ARG0, ARG1) >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicFunctor <RT (ARG0, ARG1) > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicFunctor";};
 
@@ -802,9 +786,8 @@ typedef RT(*Type) (ARG0, ARG1);
 Type fptr;
 public:
 enum { NumParams = 2 };
-VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : BuiltinClosure_O(&MyType::entry_point,name,funcType,
+VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : TemplatedFunctionBase_O(&MyType::entry_point,name,funcType,
     SOURCE_INFO_PASS), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
 static inline LCC_RETURN entry_point(LCC_ARGS_ELLIPSIS)
@@ -830,10 +813,10 @@ return Values(translate::to_object<RT>::convert(retval));
 template <typename RT , typename ARG0 >
 class VariadicFunctor
 <RT (ARG0) >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicFunctor <RT (ARG0) > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicFunctor";};
 
@@ -841,9 +824,8 @@ typedef RT(*Type) (ARG0);
 Type fptr;
 public:
 enum { NumParams = 1 };
-VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : BuiltinClosure_O(&MyType::entry_point,name,funcType,
+VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : TemplatedFunctionBase_O(&MyType::entry_point,name,funcType,
     SOURCE_INFO_PASS), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
 static inline LCC_RETURN entry_point(LCC_ARGS_ELLIPSIS)
@@ -868,10 +850,10 @@ return Values(translate::to_object<RT>::convert(retval));
 template <typename RT   >
 class VariadicFunctor
 <RT () >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicFunctor <RT () > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicFunctor";};
 
@@ -879,9 +861,8 @@ typedef RT(*Type) ();
 Type fptr;
 public:
 enum { NumParams = 0 };
-VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : BuiltinClosure_O(&MyType::entry_point,name,funcType,
+VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : TemplatedFunctionBase_O(&MyType::entry_point,name,funcType,
     SOURCE_INFO_PASS), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
 static inline LCC_RETURN entry_point(LCC_ARGS_ELLIPSIS)
@@ -904,11 +885,11 @@ template < typename ARG0,typename ARG1,typename ARG2,typename ARG3,typename ARG4
     typename ARG16,typename ARG17 >
 class VariadicFunctor
 <void(ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13, ARG14, ARG15, ARG16, ARG17) >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicFunctor <void(ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13, ARG14, ARG15,
     ARG16, ARG17) > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicFunctor";};
 
@@ -917,9 +898,8 @@ typedef void(*Type) (ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9,
 Type fptr;
 public:
 enum { NumParams = 18 };
-VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : BuiltinClosure_O(&MyType::entry_point,name,funcType,
+VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : TemplatedFunctionBase_O(&MyType::entry_point,name,funcType,
     SOURCE_INFO_PASS), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
 static inline LCC_RETURN entry_point(LCC_ARGS_ELLIPSIS)
@@ -963,11 +943,11 @@ template < typename ARG0,typename ARG1,typename ARG2,typename ARG3,typename ARG4
     typename ARG16 >
 class VariadicFunctor
 <void(ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13, ARG14, ARG15, ARG16) >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicFunctor <void(ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13, ARG14, ARG15,
     ARG16) > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicFunctor";};
 
@@ -975,9 +955,8 @@ typedef void(*Type) (ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9,
 Type fptr;
 public:
 enum { NumParams = 17 };
-VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : BuiltinClosure_O(&MyType::entry_point,name,funcType,
+VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : TemplatedFunctionBase_O(&MyType::entry_point,name,funcType,
     SOURCE_INFO_PASS), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
 static inline LCC_RETURN entry_point(LCC_ARGS_ELLIPSIS)
@@ -1019,11 +998,11 @@ template < typename ARG0,typename ARG1,typename ARG2,typename ARG3,typename ARG4
     typename ARG8,typename ARG9,typename ARG10,typename ARG11,typename ARG12,typename ARG13,typename ARG14,typename ARG15 >
 class VariadicFunctor
 <void(ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13, ARG14, ARG15) >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicFunctor <void(ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13, ARG14,
     ARG15) > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicFunctor";};
 
@@ -1031,9 +1010,8 @@ typedef void(*Type) (ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9,
 Type fptr;
 public:
 enum { NumParams = 16 };
-VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : BuiltinClosure_O(&MyType::entry_point,name,funcType,
+VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : TemplatedFunctionBase_O(&MyType::entry_point,name,funcType,
     SOURCE_INFO_PASS), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
 static inline LCC_RETURN entry_point(LCC_ARGS_ELLIPSIS)
@@ -1074,11 +1052,11 @@ template < typename ARG0,typename ARG1,typename ARG2,typename ARG3,typename ARG4
     typename ARG8,typename ARG9,typename ARG10,typename ARG11,typename ARG12,typename ARG13,typename ARG14 >
 class VariadicFunctor
 <void(ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13, ARG14) >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicFunctor <void(ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13,
     ARG14) > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicFunctor";};
 
@@ -1086,9 +1064,8 @@ typedef void(*Type) (ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9,
 Type fptr;
 public:
 enum { NumParams = 15 };
-VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : BuiltinClosure_O(&MyType::entry_point,name,funcType,
+VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : TemplatedFunctionBase_O(&MyType::entry_point,name,funcType,
     SOURCE_INFO_PASS), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
 static inline LCC_RETURN entry_point(LCC_ARGS_ELLIPSIS)
@@ -1128,10 +1105,10 @@ template < typename ARG0,typename ARG1,typename ARG2,typename ARG3,typename ARG4
     typename ARG8,typename ARG9,typename ARG10,typename ARG11,typename ARG12,typename ARG13 >
 class VariadicFunctor
 <void(ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13) >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicFunctor <void(ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13) > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicFunctor";};
 
@@ -1139,9 +1116,8 @@ typedef void(*Type) (ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9,
 Type fptr;
 public:
 enum { NumParams = 14 };
-VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : BuiltinClosure_O(&MyType::entry_point,name,funcType,
+VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : TemplatedFunctionBase_O(&MyType::entry_point,name,funcType,
     SOURCE_INFO_PASS), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
 static inline LCC_RETURN entry_point(LCC_ARGS_ELLIPSIS)
@@ -1180,10 +1156,10 @@ template < typename ARG0,typename ARG1,typename ARG2,typename ARG3,typename ARG4
     typename ARG8,typename ARG9,typename ARG10,typename ARG11,typename ARG12 >
 class VariadicFunctor
 <void(ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12) >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicFunctor <void(ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12) > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicFunctor";};
 
@@ -1191,9 +1167,8 @@ typedef void(*Type) (ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9,
 Type fptr;
 public:
 enum { NumParams = 13 };
-VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : BuiltinClosure_O(&MyType::entry_point,name,funcType,
+VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : TemplatedFunctionBase_O(&MyType::entry_point,name,funcType,
     SOURCE_INFO_PASS), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
 static inline LCC_RETURN entry_point(LCC_ARGS_ELLIPSIS)
@@ -1231,10 +1206,10 @@ template < typename ARG0,typename ARG1,typename ARG2,typename ARG3,typename ARG4
     typename ARG8,typename ARG9,typename ARG10,typename ARG11 >
 class VariadicFunctor
 <void(ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11) >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicFunctor <void(ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11) > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicFunctor";};
 
@@ -1242,9 +1217,8 @@ typedef void(*Type) (ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9,
 Type fptr;
 public:
 enum { NumParams = 12 };
-VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : BuiltinClosure_O(&MyType::entry_point,name,funcType,
+VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : TemplatedFunctionBase_O(&MyType::entry_point,name,funcType,
     SOURCE_INFO_PASS), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
 static inline LCC_RETURN entry_point(LCC_ARGS_ELLIPSIS)
@@ -1281,10 +1255,10 @@ template < typename ARG0,typename ARG1,typename ARG2,typename ARG3,typename ARG4
     typename ARG8,typename ARG9,typename ARG10 >
 class VariadicFunctor
 <void(ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10) >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicFunctor <void(ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10) > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicFunctor";};
 
@@ -1292,9 +1266,8 @@ typedef void(*Type) (ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9,
 Type fptr;
 public:
 enum { NumParams = 11 };
-VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : BuiltinClosure_O(&MyType::entry_point,name,funcType,
+VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : TemplatedFunctionBase_O(&MyType::entry_point,name,funcType,
     SOURCE_INFO_PASS), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
 static inline LCC_RETURN entry_point(LCC_ARGS_ELLIPSIS)
@@ -1330,10 +1303,10 @@ template < typename ARG0,typename ARG1,typename ARG2,typename ARG3,typename ARG4
     typename ARG8,typename ARG9 >
 class VariadicFunctor
 <void(ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9) >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicFunctor <void(ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9) > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicFunctor";};
 
@@ -1341,9 +1314,8 @@ typedef void(*Type) (ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9)
 Type fptr;
 public:
 enum { NumParams = 10 };
-VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : BuiltinClosure_O(&MyType::entry_point,name,funcType,
+VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : TemplatedFunctionBase_O(&MyType::entry_point,name,funcType,
     SOURCE_INFO_PASS), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
 static inline LCC_RETURN entry_point(LCC_ARGS_ELLIPSIS)
@@ -1378,10 +1350,10 @@ template < typename ARG0,typename ARG1,typename ARG2,typename ARG3,typename ARG4
     typename ARG8 >
 class VariadicFunctor
 <void(ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8) >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicFunctor <void(ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8) > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicFunctor";};
 
@@ -1389,9 +1361,8 @@ typedef void(*Type) (ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8);
 Type fptr;
 public:
 enum { NumParams = 9 };
-VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : BuiltinClosure_O(&MyType::entry_point,name,funcType,
+VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : TemplatedFunctionBase_O(&MyType::entry_point,name,funcType,
     SOURCE_INFO_PASS), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
 static inline LCC_RETURN entry_point(LCC_ARGS_ELLIPSIS)
@@ -1424,10 +1395,10 @@ return Values0<core::T_O>();
 template < typename ARG0,typename ARG1,typename ARG2,typename ARG3,typename ARG4,typename ARG5,typename ARG6,typename ARG7 >
 class VariadicFunctor
 <void(ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7) >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicFunctor <void(ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7) > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicFunctor";};
 
@@ -1435,9 +1406,8 @@ typedef void(*Type) (ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7);
 Type fptr;
 public:
 enum { NumParams = 8 };
-VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : BuiltinClosure_O(&MyType::entry_point,name,funcType,
+VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : TemplatedFunctionBase_O(&MyType::entry_point,name,funcType,
     SOURCE_INFO_PASS), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
 static inline LCC_RETURN entry_point(LCC_ARGS_ELLIPSIS)
@@ -1469,10 +1439,10 @@ return Values0<core::T_O>();
 template < typename ARG0,typename ARG1,typename ARG2,typename ARG3,typename ARG4,typename ARG5,typename ARG6 >
 class VariadicFunctor
 <void(ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6) >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicFunctor <void(ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6) > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicFunctor";};
 
@@ -1480,9 +1450,8 @@ typedef void(*Type) (ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6);
 Type fptr;
 public:
 enum { NumParams = 7 };
-VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : BuiltinClosure_O(&MyType::entry_point,name,funcType,
+VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : TemplatedFunctionBase_O(&MyType::entry_point,name,funcType,
     SOURCE_INFO_PASS), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
 static inline LCC_RETURN entry_point(LCC_ARGS_ELLIPSIS)
@@ -1513,10 +1482,10 @@ return Values0<core::T_O>();
 template < typename ARG0,typename ARG1,typename ARG2,typename ARG3,typename ARG4,typename ARG5 >
 class VariadicFunctor
 <void(ARG0, ARG1, ARG2, ARG3, ARG4, ARG5) >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicFunctor <void(ARG0, ARG1, ARG2, ARG3, ARG4, ARG5) > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicFunctor";};
 
@@ -1524,9 +1493,8 @@ typedef void(*Type) (ARG0, ARG1, ARG2, ARG3, ARG4, ARG5);
 Type fptr;
 public:
 enum { NumParams = 6 };
-VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : BuiltinClosure_O(&MyType::entry_point,name,funcType,
+VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : TemplatedFunctionBase_O(&MyType::entry_point,name,funcType,
     SOURCE_INFO_PASS), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
 static inline LCC_RETURN entry_point(LCC_ARGS_ELLIPSIS)
@@ -1556,10 +1524,10 @@ return Values0<core::T_O>();
 template < typename ARG0,typename ARG1,typename ARG2,typename ARG3,typename ARG4 >
 class VariadicFunctor
 <void(ARG0, ARG1, ARG2, ARG3, ARG4) >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicFunctor <void(ARG0, ARG1, ARG2, ARG3, ARG4) > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicFunctor";};
 
@@ -1567,9 +1535,8 @@ typedef void(*Type) (ARG0, ARG1, ARG2, ARG3, ARG4);
 Type fptr;
 public:
 enum { NumParams = 5 };
-VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : BuiltinClosure_O(&MyType::entry_point,name,funcType,
+VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : TemplatedFunctionBase_O(&MyType::entry_point,name,funcType,
     SOURCE_INFO_PASS), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
 static inline LCC_RETURN entry_point(LCC_ARGS_ELLIPSIS)
@@ -1598,10 +1565,10 @@ return Values0<core::T_O>();
 template < typename ARG0,typename ARG1,typename ARG2,typename ARG3 >
 class VariadicFunctor
 <void(ARG0, ARG1, ARG2, ARG3) >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicFunctor <void(ARG0, ARG1, ARG2, ARG3) > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicFunctor";};
 
@@ -1609,9 +1576,8 @@ typedef void(*Type) (ARG0, ARG1, ARG2, ARG3);
 Type fptr;
 public:
 enum { NumParams = 4 };
-VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : BuiltinClosure_O(&MyType::entry_point,name,funcType,
+VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : TemplatedFunctionBase_O(&MyType::entry_point,name,funcType,
     SOURCE_INFO_PASS), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
 static inline LCC_RETURN entry_point(LCC_ARGS_ELLIPSIS)
@@ -1639,10 +1605,10 @@ return Values0<core::T_O>();
 template < typename ARG0,typename ARG1,typename ARG2 >
 class VariadicFunctor
 <void(ARG0, ARG1, ARG2) >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicFunctor <void(ARG0, ARG1, ARG2) > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicFunctor";};
 
@@ -1650,9 +1616,8 @@ typedef void(*Type) (ARG0, ARG1, ARG2);
 Type fptr;
 public:
 enum { NumParams = 3 };
-VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : BuiltinClosure_O(&MyType::entry_point,name,funcType,
+VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : TemplatedFunctionBase_O(&MyType::entry_point,name,funcType,
     SOURCE_INFO_PASS), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
 static inline LCC_RETURN entry_point(LCC_ARGS_ELLIPSIS)
@@ -1679,10 +1644,10 @@ return Values0<core::T_O>();
 template < typename ARG0,typename ARG1 >
 class VariadicFunctor
 <void(ARG0, ARG1) >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicFunctor <void(ARG0, ARG1) > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicFunctor";};
 
@@ -1690,9 +1655,8 @@ typedef void(*Type) (ARG0, ARG1);
 Type fptr;
 public:
 enum { NumParams = 2 };
-VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : BuiltinClosure_O(&MyType::entry_point,name,funcType,
+VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : TemplatedFunctionBase_O(&MyType::entry_point,name,funcType,
     SOURCE_INFO_PASS), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
 static inline LCC_RETURN entry_point(LCC_ARGS_ELLIPSIS)
@@ -1718,10 +1682,10 @@ return Values0<core::T_O>();
 template < typename ARG0 >
 class VariadicFunctor
 <void(ARG0) >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicFunctor <void(ARG0) > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicFunctor";};
 
@@ -1729,9 +1693,8 @@ typedef void(*Type) (ARG0);
 Type fptr;
 public:
 enum { NumParams = 1 };
-VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : BuiltinClosure_O(&MyType::entry_point,name,funcType,
+VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : TemplatedFunctionBase_O(&MyType::entry_point,name,funcType,
     SOURCE_INFO_PASS), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
 static inline LCC_RETURN entry_point(LCC_ARGS_ELLIPSIS)
@@ -1756,10 +1719,10 @@ return Values0<core::T_O>();
 template <  >
 class VariadicFunctor
 <void() >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicFunctor <void() > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicFunctor";};
 
@@ -1767,9 +1730,8 @@ typedef void(*Type) ();
 Type fptr;
 public:
 enum { NumParams = 0 };
-VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : BuiltinClosure_O(&MyType::entry_point,name,funcType,
+VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : TemplatedFunctionBase_O(&MyType::entry_point,name,funcType,
     SOURCE_INFO_PASS), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
 static inline LCC_RETURN entry_point(LCC_ARGS_ELLIPSIS)
@@ -1793,11 +1755,11 @@ template <typename RT , typename ARG0,typename ARG1,typename ARG2,typename ARG3,
 class VariadicFunctor
 <gctools::multiple_values<RT>(ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13, ARG14, ARG15,
     ARG16, ARG17) >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicFunctor <gctools::multiple_values<RT>(ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11,
     ARG12, ARG13, ARG14, ARG15, ARG16, ARG17) > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicFunctor";};
 
@@ -1806,9 +1768,8 @@ typedef gctools::multiple_values<RT>(*Type) (ARG0, ARG1, ARG2, ARG3, ARG4, ARG5,
 Type fptr;
 public:
 enum { NumParams = 18 };
-VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : BuiltinClosure_O(&MyType::entry_point,name,funcType,
+VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : TemplatedFunctionBase_O(&MyType::entry_point,name,funcType,
     SOURCE_INFO_PASS), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
 static inline LCC_RETURN entry_point(LCC_ARGS_ELLIPSIS)
@@ -1854,11 +1815,11 @@ template <typename RT , typename ARG0,typename ARG1,typename ARG2,typename ARG3,
 class VariadicFunctor
 <gctools::multiple_values<RT>(ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13, ARG14, ARG15,
     ARG16) >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicFunctor <gctools::multiple_values<RT>(ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11,
     ARG12, ARG13, ARG14, ARG15, ARG16) > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicFunctor";};
 
@@ -1867,9 +1828,8 @@ typedef gctools::multiple_values<RT>(*Type) (ARG0, ARG1, ARG2, ARG3, ARG4, ARG5,
 Type fptr;
 public:
 enum { NumParams = 17 };
-VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : BuiltinClosure_O(&MyType::entry_point,name,funcType,
+VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : TemplatedFunctionBase_O(&MyType::entry_point,name,funcType,
     SOURCE_INFO_PASS), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
 static inline LCC_RETURN entry_point(LCC_ARGS_ELLIPSIS)
@@ -1914,11 +1874,11 @@ template <typename RT , typename ARG0,typename ARG1,typename ARG2,typename ARG3,
 class VariadicFunctor
 <gctools::multiple_values<RT>(ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13, ARG14,
     ARG15) >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicFunctor <gctools::multiple_values<RT>(ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11,
     ARG12, ARG13, ARG14, ARG15) > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicFunctor";};
 
@@ -1927,9 +1887,8 @@ typedef gctools::multiple_values<RT>(*Type) (ARG0, ARG1, ARG2, ARG3, ARG4, ARG5,
 Type fptr;
 public:
 enum { NumParams = 16 };
-VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : BuiltinClosure_O(&MyType::entry_point,name,funcType,
+VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : TemplatedFunctionBase_O(&MyType::entry_point,name,funcType,
     SOURCE_INFO_PASS), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
 static inline LCC_RETURN entry_point(LCC_ARGS_ELLIPSIS)
@@ -1971,11 +1930,11 @@ template <typename RT , typename ARG0,typename ARG1,typename ARG2,typename ARG3,
     typename ARG7,typename ARG8,typename ARG9,typename ARG10,typename ARG11,typename ARG12,typename ARG13,typename ARG14 >
 class VariadicFunctor
 <gctools::multiple_values<RT>(ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13, ARG14) >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicFunctor <gctools::multiple_values<RT>(ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11,
     ARG12, ARG13, ARG14) > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicFunctor";};
 
@@ -1984,9 +1943,8 @@ typedef gctools::multiple_values<RT>(*Type) (ARG0, ARG1, ARG2, ARG3, ARG4, ARG5,
 Type fptr;
 public:
 enum { NumParams = 15 };
-VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : BuiltinClosure_O(&MyType::entry_point,name,funcType,
+VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : TemplatedFunctionBase_O(&MyType::entry_point,name,funcType,
     SOURCE_INFO_PASS), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
 static inline LCC_RETURN entry_point(LCC_ARGS_ELLIPSIS)
@@ -2027,11 +1985,11 @@ template <typename RT , typename ARG0,typename ARG1,typename ARG2,typename ARG3,
     typename ARG7,typename ARG8,typename ARG9,typename ARG10,typename ARG11,typename ARG12,typename ARG13 >
 class VariadicFunctor
 <gctools::multiple_values<RT>(ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13) >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicFunctor <gctools::multiple_values<RT>(ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11,
     ARG12, ARG13) > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicFunctor";};
 
@@ -2040,9 +1998,8 @@ typedef gctools::multiple_values<RT>(*Type) (ARG0, ARG1, ARG2, ARG3, ARG4, ARG5,
 Type fptr;
 public:
 enum { NumParams = 14 };
-VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : BuiltinClosure_O(&MyType::entry_point,name,funcType,
+VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : TemplatedFunctionBase_O(&MyType::entry_point,name,funcType,
     SOURCE_INFO_PASS), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
 static inline LCC_RETURN entry_point(LCC_ARGS_ELLIPSIS)
@@ -2082,11 +2039,11 @@ template <typename RT , typename ARG0,typename ARG1,typename ARG2,typename ARG3,
     typename ARG7,typename ARG8,typename ARG9,typename ARG10,typename ARG11,typename ARG12 >
 class VariadicFunctor
 <gctools::multiple_values<RT>(ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12) >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicFunctor <gctools::multiple_values<RT>(ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11,
     ARG12) > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicFunctor";};
 
@@ -2094,9 +2051,8 @@ typedef gctools::multiple_values<RT>(*Type) (ARG0, ARG1, ARG2, ARG3, ARG4, ARG5,
 Type fptr;
 public:
 enum { NumParams = 13 };
-VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : BuiltinClosure_O(&MyType::entry_point,name,funcType,
+VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : TemplatedFunctionBase_O(&MyType::entry_point,name,funcType,
     SOURCE_INFO_PASS), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
 static inline LCC_RETURN entry_point(LCC_ARGS_ELLIPSIS)
@@ -2135,11 +2091,11 @@ template <typename RT , typename ARG0,typename ARG1,typename ARG2,typename ARG3,
     typename ARG7,typename ARG8,typename ARG9,typename ARG10,typename ARG11 >
 class VariadicFunctor
 <gctools::multiple_values<RT>(ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11) >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicFunctor <gctools::multiple_values<RT>(ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10,
     ARG11) > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicFunctor";};
 
@@ -2147,9 +2103,8 @@ typedef gctools::multiple_values<RT>(*Type) (ARG0, ARG1, ARG2, ARG3, ARG4, ARG5,
 Type fptr;
 public:
 enum { NumParams = 12 };
-VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : BuiltinClosure_O(&MyType::entry_point,name,funcType,
+VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : TemplatedFunctionBase_O(&MyType::entry_point,name,funcType,
     SOURCE_INFO_PASS), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
 static inline LCC_RETURN entry_point(LCC_ARGS_ELLIPSIS)
@@ -2186,10 +2141,10 @@ template <typename RT , typename ARG0,typename ARG1,typename ARG2,typename ARG3,
     typename ARG7,typename ARG8,typename ARG9,typename ARG10 >
 class VariadicFunctor
 <gctools::multiple_values<RT>(ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10) >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicFunctor <gctools::multiple_values<RT>(ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10) > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicFunctor";};
 
@@ -2197,9 +2152,8 @@ typedef gctools::multiple_values<RT>(*Type) (ARG0, ARG1, ARG2, ARG3, ARG4, ARG5,
 Type fptr;
 public:
 enum { NumParams = 11 };
-VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : BuiltinClosure_O(&MyType::entry_point,name,funcType,
+VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : TemplatedFunctionBase_O(&MyType::entry_point,name,funcType,
     SOURCE_INFO_PASS), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
 static inline LCC_RETURN entry_point(LCC_ARGS_ELLIPSIS)
@@ -2235,10 +2189,10 @@ template <typename RT , typename ARG0,typename ARG1,typename ARG2,typename ARG3,
     typename ARG7,typename ARG8,typename ARG9 >
 class VariadicFunctor
 <gctools::multiple_values<RT>(ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9) >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicFunctor <gctools::multiple_values<RT>(ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9) > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicFunctor";};
 
@@ -2246,9 +2200,8 @@ typedef gctools::multiple_values<RT>(*Type) (ARG0, ARG1, ARG2, ARG3, ARG4, ARG5,
 Type fptr;
 public:
 enum { NumParams = 10 };
-VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : BuiltinClosure_O(&MyType::entry_point,name,funcType,
+VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : TemplatedFunctionBase_O(&MyType::entry_point,name,funcType,
     SOURCE_INFO_PASS), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
 static inline LCC_RETURN entry_point(LCC_ARGS_ELLIPSIS)
@@ -2283,10 +2236,10 @@ template <typename RT , typename ARG0,typename ARG1,typename ARG2,typename ARG3,
     typename ARG7,typename ARG8 >
 class VariadicFunctor
 <gctools::multiple_values<RT>(ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8) >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicFunctor <gctools::multiple_values<RT>(ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8) > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicFunctor";};
 
@@ -2294,9 +2247,8 @@ typedef gctools::multiple_values<RT>(*Type) (ARG0, ARG1, ARG2, ARG3, ARG4, ARG5,
 Type fptr;
 public:
 enum { NumParams = 9 };
-VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : BuiltinClosure_O(&MyType::entry_point,name,funcType,
+VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : TemplatedFunctionBase_O(&MyType::entry_point,name,funcType,
     SOURCE_INFO_PASS), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
 static inline LCC_RETURN entry_point(LCC_ARGS_ELLIPSIS)
@@ -2330,10 +2282,10 @@ template <typename RT , typename ARG0,typename ARG1,typename ARG2,typename ARG3,
     typename ARG7 >
 class VariadicFunctor
 <gctools::multiple_values<RT>(ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7) >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicFunctor <gctools::multiple_values<RT>(ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7) > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicFunctor";};
 
@@ -2341,9 +2293,8 @@ typedef gctools::multiple_values<RT>(*Type) (ARG0, ARG1, ARG2, ARG3, ARG4, ARG5,
 Type fptr;
 public:
 enum { NumParams = 8 };
-VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : BuiltinClosure_O(&MyType::entry_point,name,funcType,
+VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : TemplatedFunctionBase_O(&MyType::entry_point,name,funcType,
     SOURCE_INFO_PASS), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
 static inline LCC_RETURN entry_point(LCC_ARGS_ELLIPSIS)
@@ -2375,10 +2326,10 @@ return retval.as_return_type();
 template <typename RT , typename ARG0,typename ARG1,typename ARG2,typename ARG3,typename ARG4,typename ARG5,typename ARG6 >
 class VariadicFunctor
 <gctools::multiple_values<RT>(ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6) >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicFunctor <gctools::multiple_values<RT>(ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6) > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicFunctor";};
 
@@ -2386,9 +2337,8 @@ typedef gctools::multiple_values<RT>(*Type) (ARG0, ARG1, ARG2, ARG3, ARG4, ARG5,
 Type fptr;
 public:
 enum { NumParams = 7 };
-VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : BuiltinClosure_O(&MyType::entry_point,name,funcType,
+VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : TemplatedFunctionBase_O(&MyType::entry_point,name,funcType,
     SOURCE_INFO_PASS), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
 static inline LCC_RETURN entry_point(LCC_ARGS_ELLIPSIS)
@@ -2419,10 +2369,10 @@ return retval.as_return_type();
 template <typename RT , typename ARG0,typename ARG1,typename ARG2,typename ARG3,typename ARG4,typename ARG5 >
 class VariadicFunctor
 <gctools::multiple_values<RT>(ARG0, ARG1, ARG2, ARG3, ARG4, ARG5) >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicFunctor <gctools::multiple_values<RT>(ARG0, ARG1, ARG2, ARG3, ARG4, ARG5) > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicFunctor";};
 
@@ -2430,9 +2380,8 @@ typedef gctools::multiple_values<RT>(*Type) (ARG0, ARG1, ARG2, ARG3, ARG4, ARG5)
 Type fptr;
 public:
 enum { NumParams = 6 };
-VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : BuiltinClosure_O(&MyType::entry_point,name,funcType,
+VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : TemplatedFunctionBase_O(&MyType::entry_point,name,funcType,
     SOURCE_INFO_PASS), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
 static inline LCC_RETURN entry_point(LCC_ARGS_ELLIPSIS)
@@ -2462,10 +2411,10 @@ return retval.as_return_type();
 template <typename RT , typename ARG0,typename ARG1,typename ARG2,typename ARG3,typename ARG4 >
 class VariadicFunctor
 <gctools::multiple_values<RT>(ARG0, ARG1, ARG2, ARG3, ARG4) >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicFunctor <gctools::multiple_values<RT>(ARG0, ARG1, ARG2, ARG3, ARG4) > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicFunctor";};
 
@@ -2473,9 +2422,8 @@ typedef gctools::multiple_values<RT>(*Type) (ARG0, ARG1, ARG2, ARG3, ARG4);
 Type fptr;
 public:
 enum { NumParams = 5 };
-VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : BuiltinClosure_O(&MyType::entry_point,name,funcType,
+VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : TemplatedFunctionBase_O(&MyType::entry_point,name,funcType,
     SOURCE_INFO_PASS), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
 static inline LCC_RETURN entry_point(LCC_ARGS_ELLIPSIS)
@@ -2504,10 +2452,10 @@ return retval.as_return_type();
 template <typename RT , typename ARG0,typename ARG1,typename ARG2,typename ARG3 >
 class VariadicFunctor
 <gctools::multiple_values<RT>(ARG0, ARG1, ARG2, ARG3) >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicFunctor <gctools::multiple_values<RT>(ARG0, ARG1, ARG2, ARG3) > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicFunctor";};
 
@@ -2515,9 +2463,8 @@ typedef gctools::multiple_values<RT>(*Type) (ARG0, ARG1, ARG2, ARG3);
 Type fptr;
 public:
 enum { NumParams = 4 };
-VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : BuiltinClosure_O(&MyType::entry_point,name,funcType,
+VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : TemplatedFunctionBase_O(&MyType::entry_point,name,funcType,
     SOURCE_INFO_PASS), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
 static inline LCC_RETURN entry_point(LCC_ARGS_ELLIPSIS)
@@ -2545,10 +2492,10 @@ return retval.as_return_type();
 template <typename RT , typename ARG0,typename ARG1,typename ARG2 >
 class VariadicFunctor
 <gctools::multiple_values<RT>(ARG0, ARG1, ARG2) >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicFunctor <gctools::multiple_values<RT>(ARG0, ARG1, ARG2) > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicFunctor";};
 
@@ -2556,9 +2503,8 @@ typedef gctools::multiple_values<RT>(*Type) (ARG0, ARG1, ARG2);
 Type fptr;
 public:
 enum { NumParams = 3 };
-VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : BuiltinClosure_O(&MyType::entry_point,name,funcType,
+VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : TemplatedFunctionBase_O(&MyType::entry_point,name,funcType,
     SOURCE_INFO_PASS), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
 static inline LCC_RETURN entry_point(LCC_ARGS_ELLIPSIS)
@@ -2585,10 +2531,10 @@ return retval.as_return_type();
 template <typename RT , typename ARG0,typename ARG1 >
 class VariadicFunctor
 <gctools::multiple_values<RT>(ARG0, ARG1) >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicFunctor <gctools::multiple_values<RT>(ARG0, ARG1) > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicFunctor";};
 
@@ -2596,9 +2542,8 @@ typedef gctools::multiple_values<RT>(*Type) (ARG0, ARG1);
 Type fptr;
 public:
 enum { NumParams = 2 };
-VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : BuiltinClosure_O(&MyType::entry_point,name,funcType,
+VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : TemplatedFunctionBase_O(&MyType::entry_point,name,funcType,
     SOURCE_INFO_PASS), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
 static inline LCC_RETURN entry_point(LCC_ARGS_ELLIPSIS)
@@ -2624,10 +2569,10 @@ return retval.as_return_type();
 template <typename RT , typename ARG0 >
 class VariadicFunctor
 <gctools::multiple_values<RT>(ARG0) >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicFunctor <gctools::multiple_values<RT>(ARG0) > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicFunctor";};
 
@@ -2635,9 +2580,8 @@ typedef gctools::multiple_values<RT>(*Type) (ARG0);
 Type fptr;
 public:
 enum { NumParams = 1 };
-VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : BuiltinClosure_O(&MyType::entry_point,name,funcType,
+VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : TemplatedFunctionBase_O(&MyType::entry_point,name,funcType,
     SOURCE_INFO_PASS), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
 static inline LCC_RETURN entry_point(LCC_ARGS_ELLIPSIS)
@@ -2662,10 +2606,10 @@ return retval.as_return_type();
 template <typename RT   >
 class VariadicFunctor
 <gctools::multiple_values<RT>() >
-: public BuiltinClosure_O {
+: public TemplatedFunctionBase_O {
 public:
 typedef VariadicFunctor <gctools::multiple_values<RT>() > MyType;
-typedef BuiltinClosure_O TemplatedBase;
+typedef TemplatedFunctionBase_O TemplatedBase;
 public:
 virtual const char* describe() const {return "VariadicFunctor";};
 
@@ -2673,9 +2617,8 @@ typedef gctools::multiple_values<RT>(*Type) ();
 Type fptr;
 public:
 enum { NumParams = 0 };
-VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : BuiltinClosure_O(&MyType::entry_point,name,funcType,
+VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : TemplatedFunctionBase_O(&MyType::entry_point,name,funcType,
     SOURCE_INFO_PASS), fptr(ptr) {};
-DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
 static inline LCC_RETURN entry_point(LCC_ARGS_ELLIPSIS)

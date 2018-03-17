@@ -1,0 +1,55 @@
+body {
+    color: #000000;
+    background-color: #ffffff;
+}
+.builtin {
+    /* font-lock-builtin-face */
+    color: #7a378b;
+}
+.comment {
+    /* font-lock-comment-face */
+    color: #b22222;
+}
+.comment-delimiter {
+    /* font-lock-comment-delimiter-face */
+    color: #b22222;
+}
+.constant {
+    /* font-lock-constant-face */
+    color: #008b8b;
+}
+.function-name {
+    /* font-lock-function-name-face */
+    color: #0000ff;
+}
+.keyword {
+    /* font-lock-keyword-face */
+    color: #7f007f;
+}
+.slime-reader-conditional {
+    /* slime-reader-conditional-face */
+    color: #b22222;
+}
+.string {
+    /* font-lock-string-face */
+    color: #996633;
+}
+.type {
+    /* font-lock-type-face */
+    color: #228b22;
+}
+.warning {
+    /* font-lock-warning-face */
+    color: #ff0000;
+    font-weight: bold;
+}
+
+a {
+    color: inherit;
+    background-color: inherit;
+    font: inherit;
+    text-decoration: inherit;
+}
+a:hover {
+    text-decoration: underline;
+}

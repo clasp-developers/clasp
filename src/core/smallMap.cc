@@ -76,7 +76,7 @@ void SmallMap_O::fields(Record_sp node) {
     node->field(INTERN_(core, data), keyValueVec);
   } break;
   case Record_O::patching: {
-    IMPLEMENT_MEF(BF("Add support to patch SmallMap"));
+    IMPLEMENT_MEF("Add support to patch SmallMap");
   } break;
   }
 }

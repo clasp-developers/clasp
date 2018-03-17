@@ -517,7 +517,7 @@ file_truename(T_sp pathname, T_sp filename, int flags) {
   } else if (kind == kw::_sym_link && (flags & FOLLOW_SYMLINKS)) {
     /* The link might be a relative pathname. In that case
                  * we have to merge with the original pathname.  On
-                 * the other hand, if the link is broken – return file
+                 * the other hand, if the link is broken - return file
                  * truename "as is". */
     struct stat filestatus;
     if (safe_stat(gc::As<String_sp>(filename)->get_std_string().c_str(), &filestatus) < 0)
@@ -676,7 +676,7 @@ CL_DEFUN T_mv cl__rename_file(T_sp oldn, T_sp newn, T_sp if_exists) {
   }
   if (UNLIKELY(if_exists != kw::_sym_supersede && if_exists != _lisp->_true())) {
     /* invalid key */
-    SIMPLE_ERROR(BF("%s is an illegal IF-EXISTS option for RENAME-FILE.") % _rep_(if_exists))
+    SIMPLE_ERROR(BF("%s is an illegal IF-EXISTS option for RENAME-FILE.") % _rep_(if_exists));
   }
   {
     clasp_disable_interrupts();

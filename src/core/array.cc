@@ -26,12 +26,14 @@ THE SOFTWARE.
 /* -^- */
 //#define DEBUG_LEVEL_FULL
 
+#include <clasp/core/foundation.h>
 #include <clasp/core/common.h>
 #include <clasp/core/corePackage.h>
 #include <clasp/core/bformat.h>
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/evaluator.h>
 #include <clasp/core/numbers.h>
+#include <clasp/core/hashTable.h>
 #include <clasp/core/primitives.h>
 #include <clasp/core/designators.h>
 #include <clasp/core/lispStream.h>
@@ -102,6 +104,9 @@ void insufficientIndexListError(List_sp indices) {
 }
 void notStringError(T_sp obj) {
   TYPE_ERROR(obj,cl::_sym_string);
+}
+void cannotAdjustSizeOfSimpleArrays(T_sp obj) {
+  SIMPLE_ERROR(BF("Cannot adjust the size of a simple array %s") % _rep_(obj));
 }
 void notSequenceError(T_sp obj) {
   TYPE_ERROR(obj,cl::_sym_string);
@@ -176,6 +181,15 @@ void ranged_bit_vector_nreverse(SimpleBitVector_sp sv, size_t start, size_t end)
 //
 //
 
+void Array_O::sxhash_equalp(HashGenerator &hg,LocationDependencyPtrT ld) const {
+  // TODO:  Write optimized versions for different array types
+  for (size_t i = 0; i < this->length(); ++i) {
+    if (!hg.isFilling()) break;
+    T_sp obj = this->rowMajorAref(i);
+    HashTable_O::sxhash_equalp(hg,obj,ld);
+  }
+}
+
 
 void Array_O::fillInitialContents(T_sp ic) {
   unlikely_if (gc::IsA<MDArray_sp>(ic)) {
@@ -207,11 +221,11 @@ void Array_O::fillInitialContents(T_sp ic) {
 }
 
 size_t Array_O::index_vector_int(const vector<int> &indices) const {
+  size_t rank = this->rank();
   size_t offset = 0;
   size_t oneIndex = 0;
-  Cons_sp cur;
   size_t idx = 0;
-  for (idx = 0; idx < this->rank(); ++idx) {
+  for (idx = 0; idx < rank; ++idx) {
     if (idx > 0)
       offset *= this->arrayDimension(idx);
     oneIndex = indices[idx];
@@ -220,11 +234,11 @@ size_t Array_O::index_vector_int(const vector<int> &indices) const {
   return offset;
 }
 
-size_t Array_O::index_val_(List_sp indices, bool last_value_is_val, T_sp &last_val) const {
+size_t Array_O::arrayRowMajorIndex(List_sp indices) const {
   size_t rank = this->rank();
   size_t offset = 0;
   size_t idx = 0;
-  List_sp cur = indices;;
+  List_sp cur = indices;
   for ( ; idx<rank; ++idx ) {
     size_t curDimension = this->arrayDimension(idx);
     LIKELY_if (cur.consp()) {
@@ -239,17 +253,10 @@ size_t Array_O::index_val_(List_sp indices, bool last_value_is_val, T_sp &last_v
         indexNotFixnumError(index);
       }
     } else {
+      // cur is nil, and so
       insufficientIndexListError(indices);
     }
     cur = oCdr(cur);
-  }
-  if (last_value_is_val) {
-    LIKELY_if (cur.consp()) {
-      last_val = oCar(cur);
-      cur = oCdr(cur);
-    } else {
-      missingValueListError(indices);
-    }
   }
   unlikely_if (cur.consp()) {
     tooManyIndicesListError(indices);
@@ -257,34 +264,33 @@ size_t Array_O::index_val_(List_sp indices, bool last_value_is_val, T_sp &last_v
   return offset;
 }
 
-size_t Array_O::index_val_(VaList_sp indices, bool last_value_is_val, T_sp &last_val) const {
-  size_t indices_passed = indices->remaining_nargs() - (last_value_is_val ? 1 : 0);
+size_t Array_O::arrayRowMajorIndex(VaList_sp indices) const {
   size_t rank = this->rank();
-  unlikely_if (indices_passed!=rank) insufficientIndexListError(core__list_from_va_list(indices));
-  if (last_value_is_val) {
-    unlikely_if (indices->remaining_nargs()!=(rank+1)) {
-      if (indices->remaining_nargs()<(rank+1)) {
-        missingValueListError(core__list_from_va_list(indices));
-      }
+  size_t indices_passed = indices->remaining_nargs();
+
+  unlikely_if (indices_passed < rank) {
+    insufficientIndexListError(core__list_from_va_list(indices));
+  } else {
+    unlikely_if (indices_passed > rank) {
       tooManyIndicesListError(core__list_from_va_list(indices));
     }
   }
+  
   size_t offset = 0;
   size_t idx = 0;
   size_t idxEnd(indices_passed);
-  for ( ; idx < idxEnd; ++idx) {
+  for ( ; idx<rank; ++idx ) {
     core::T_sp one = indices->next_arg();
     size_t curDimension = this->arrayDimension(idx);
     LIKELY_if (one.fixnump()) {
       size_t oneIndex = one.unsafe_fixnum();
       unlikely_if (oneIndex < 0 || oneIndex >= curDimension) {
-        badIndexError(oneIndex,curDimension);
+        badIndexError(oneIndex, curDimension);
       }
       offset = offset * curDimension + oneIndex;
+    } else {
+      indexNotFixnumError(one);
     }
-  }
-  if (last_value_is_val) {
-    last_val = indices->next_arg();
   }
   return offset;
 }
@@ -385,7 +391,8 @@ void MDArray_O::set_data(Array_sp a) {
 }
 
 void MDArray_O::sxhash_(HashGenerator& hg) const {
-  IMPLEMENT_ME();
+  // Just to get it working. FIXME
+  this->General_O::sxhash_(hg);
 }
 
 Array_sp MDArray_O::unsafe_subseq(size_t start, size_t iend) const
@@ -455,11 +462,7 @@ Fixnum_sp MDArray_O::vectorPushExtend(T_sp newElement, size_t extension) {
   unlikely_if (idx >= this->_ArrayTotalSize) {
     if (extension <= 0) extension = calculate_extension(this->_ArrayTotalSize);
     cl_index new_size = this->_ArrayTotalSize+extension;
-    unlikely_if (!cl::_sym_adjust_array || !cl::_sym_adjust_array->boundP()) {
-      this->internalAdjustSize_(new_size);
-    } else {
-      eval::funcall(cl::_sym_adjust_array,this->asSmartPtr(),clasp_make_fixnum(new_size),cl::_sym_fill_pointer,clasp_make_fixnum(this->_FillPointerOrLengthOrDummy));
-    }
+    this->internalAdjustSize_(new_size);
   }
   this->_Data->rowMajorAset(idx+this->_DisplacedIndexOffset,newElement);
   ++this->_FillPointerOrLengthOrDummy;
@@ -486,9 +489,10 @@ CL_DEFUN size_t cl__arrayRowMajorIndex(Array_sp array, VaList_sp indices) {
 
 
 CL_LISPIFY_NAME("core:rowMajorAset");
-CL_DEFUN void cl__rowMajorAset(Array_sp array, size_t idx, T_sp value)
+CL_DEFUN T_sp cl__rowMajorAset(Array_sp array, size_t idx, T_sp value)
 {
   array->rowMajorAset(idx,value);
+  return value;
 }
 
 CL_LISPIFY_NAME("cl:rowMajorAref");
@@ -567,10 +571,7 @@ CL_DEFUN T_mv cl__array_displacement(Array_sp array) {
   return Values(mdarray->displacedTo(),clasp_make_fixnum(mdarray->displacedIndexOffset()));
 }
 
-CL_LAMBDA(dest destStart orig origStart len);
-CL_DECLARE();
-CL_DOCSTRING("copy_subarray");
-CL_DEFUN void core__copy_subarray(Array_sp dest, Fixnum_sp destStart, Array_sp orig, Fixnum_sp origStart, Fixnum_sp len) {
+void core__copy_subarray(Array_sp dest, Fixnum_sp destStart, Array_sp orig, Fixnum_sp origStart, Fixnum_sp len) {
   // TODO: THIS NEEDS TO BE OPTIMIZED FOR DIFFERENT TYPES OF ARRAYS!!!!!!!
   //       Currently this is very inefficient
   intptr_clasp_t iLen = unbox_fixnum(len);
@@ -599,15 +600,14 @@ CL_DEFUN void core__copy_subarray(Array_sp dest, Fixnum_sp destStart, Array_sp o
   }
 }
 
-
-CL_LAMBDA(array &va-rest indices-value);
+CL_LISPIFY_NAME("CL:aref");
+CL_LAMBDA(value array &va-rest indices);
 CL_DECLARE();
 CL_DOCSTRING("aset");
-CL_DEFUN T_sp core__aset(Array_sp array, VaList_sp vargs) {
-  T_sp last_val;
-  cl_index rowMajorIndex = array->index_val_(vargs,true,last_val);
-  array->rowMajorAset(rowMajorIndex,last_val);
-  return last_val;
+CL_DEFUN_SETF T_sp core__aset(T_sp value, Array_sp array, VaList_sp indices) {
+  cl_index rowMajorIndex = array->arrayRowMajorIndex(indices);
+  array->rowMajorAset(rowMajorIndex,value);
+  return value;
 };
 
 CL_LISPIFY_NAME("cl:aref");
@@ -621,21 +621,8 @@ CL_DEFUN T_sp cl__aref(Array_sp array, VaList_sp vargs)
 CL_LAMBDA(array &va-rest indices);
 CL_LISPIFY_NAME("core:index");
 CL_DEFUN gc::Fixnum core__index(Array_sp array, VaList_sp indices) {
-  T_sp dummy;
-  return array->index_val_(indices, false, dummy);
+  return array->arrayRowMajorIndex(indices);
 }
-
-
-CL_LAMBDA(array &rest core::indices-val);
-CL_DOCSTRING("Setter for aref");
-CL_LISPIFY_NAME("core:array-setf-aref");
-CL_DEFUN T_sp core__setf_aref(Array_sp array, List_sp indices_val) {
-  T_sp last_val;
-  cl_index idx = array->index_val_(indices_val,true,last_val);
-  array->rowMajorAset(idx,last_val);
-  return last_val;
-};
-
 
 
 CL_LISPIFY_NAME("cl:svref");
@@ -644,8 +631,8 @@ CL_DEFUN T_sp cl__svref(SimpleVector_sp simple_vector, size_t idx)
   return simple_vector->rowMajorAref(idx);
 }
 
-CL_LISPIFY_NAME("core:setf-svref");
-CL_DEFUN T_sp core__setf_svref(SimpleVector_sp simple_vector, cl_index idx, T_sp val)
+CL_LISPIFY_NAME("CL:svref");
+CL_DEFUN_SETF T_sp core__setf_svref(T_sp val, SimpleVector_sp simple_vector, cl_index idx)
 {
   simple_vector->rowMajorAset(idx,val);
   return val;
@@ -1644,16 +1631,14 @@ CL_DEFUN Character_sp cl__char(String_sp str, size_t idx) {
   } else if (StrWNs_sp sw = str.asOrNull<StrWNs_O>() ) {
     return clasp_make_character((*sw)[idx]);
   }
-  printf("%s:%d type of str -> %s\n", __FILE__, __LINE__, _rep_(instance_class(str)).c_str());
-  printf("%s:%d   str.asOrNull<SimpleBaseString_O>() -> %p\n", __FILE__, __LINE__, str.asOrNull<SimpleBaseString_O>().raw_());
-  printf("%s:%d    gc::IsA<SimpleBaseString_sp>(str) -> %d\n", __FILE__, __LINE__, gc::IsA<SimpleBaseString_sp>(str));
   TYPE_ERROR(str,cl::_sym_string);
 };
 
-CL_LAMBDA(str index c);
+CL_LISPIFY_NAME("cl:char")
+CL_LAMBDA(c str index);
 CL_DECLARE();
 CL_DOCSTRING("CLHS (setf char)");
-CL_DEFUN Character_sp core__char_set(String_sp str, size_t idx, Character_sp c) {
+CL_DEFUN_SETF Character_sp core__char_set(Character_sp c, String_sp str, size_t idx) {
   if ( SimpleBaseString_sp sb = str.asOrNull<SimpleBaseString_O>() ) {
     (*sb)[idx] = c.unsafe_character();
   } else if (Str8Ns_sp s8 = str.asOrNull<Str8Ns_O>() ) {
@@ -1668,10 +1653,11 @@ CL_DEFUN Character_sp core__char_set(String_sp str, size_t idx, Character_sp c) 
   return c;
 };
 
+CL_LISPIFY_NAME("cl:schar");
 CL_LAMBDA(str index c);
 CL_DECLARE();
-CL_DOCSTRING("CLHS schar");
-CL_DEFUN Character_sp core__schar_set(String_sp str, size_t idx, Character_sp c) {
+CL_DOCSTRING("CLHS (setf schar)");
+CL_DEFUN_SETF Character_sp core__schar_set(Character_sp c, String_sp str, size_t idx) {
   str->rowMajorAset(idx,c);
   return c;
 };
@@ -2213,11 +2199,7 @@ void Str8Ns_O::vectorPushExtend_claspChar(claspChar newElement, size_t extension
   unlikely_if (idx >= this->_ArrayTotalSize) {
     if (extension <= 0) extension = calculate_extension(this->_ArrayTotalSize);
     cl_index new_size = this->_ArrayTotalSize+extension;
-    unlikely_if (!cl::_sym_adjust_array || !cl::_sym_adjust_array->boundP()) {
-      this->internalAdjustSize_(new_size);
-    } else {
-      eval::funcall(cl::_sym_adjust_array,this->asSmartPtr(),clasp_make_fixnum(new_size),cl::_sym_fill_pointer,clasp_make_fixnum(this->_FillPointerOrLengthOrDummy));
-    }
+    this->internalAdjustSize_(new_size);
   }
   (*this)[idx] = newElement;
   ++this->_FillPointerOrLengthOrDummy;
@@ -2286,11 +2268,7 @@ void StrWNs_O::vectorPushExtend_claspCharacter(claspCharacter newElement, size_t
   unlikely_if (idx >= this->_ArrayTotalSize) {
     if (extension <= 0) extension = calculate_extension(this->_ArrayTotalSize);
     cl_index new_size = this->_ArrayTotalSize+extension;
-    unlikely_if (!cl::_sym_adjust_array || !cl::_sym_adjust_array->boundP()) {
-      this->internalAdjustSize_(new_size);
-    } else {
-      eval::funcall(cl::_sym_adjust_array,this->asSmartPtr(),clasp_make_fixnum(new_size),cl::_sym_fill_pointer,clasp_make_fixnum(this->_FillPointerOrLengthOrDummy));
-    }
+    this->internalAdjustSize_(new_size);
   }
   (*this)[idx] = newElement;
   ++this->_FillPointerOrLengthOrDummy;
@@ -2314,19 +2292,58 @@ SimpleString_sp StrWNs_O::asMinimalSimpleString() const {
 //
 //
 
+SYMBOL_EXPORT_SC_(ClPkg,vectorPushExtend);
+Fixnum_sp BitVectorNs_O::vectorPushExtend(T_sp newElement, size_t extension) {
+  unlikely_if (!this->_Flags.fillPointerP()) noFillPointerError(cl::_sym_vectorPushExtend,this->asSmartPtr());
+  cl_index idx = this->_FillPointerOrLengthOrDummy;
+//  printf("%s:%d  idx = %lld  this->_ArrayTotalSize = %zu\n", __FILE__, __LINE__, idx, this->_ArrayTotalSize );
+  unlikely_if (idx >= this->_ArrayTotalSize) {
+    unlikely_if (this->displacedToP()) {
+    // The array needs to be resized because it's displaced
+      if (extension <= 0) extension = calculate_extension(this->_ArrayTotalSize);
+      cl_index new_size = this->_ArrayTotalSize+extension;
+//      printf("%s:%d About to adjust displaced BitVectorNs_O size to %lld bits\n", __FILE__, __LINE__, new_size);
+      this->internalAdjustSize_(new_size);
+    } else {
+      size_t bytes_for_ArrayTotalSizeP1 = SimpleBitVector_O::bitunit_array_type::sizeof_for_length(this->_ArrayTotalSize+1);
+      size_t bytes_for_ArrayTotalSize = SimpleBitVector_O::bitunit_array_type::sizeof_for_length(this->_ArrayTotalSize);
+//      printf("%s:%d bytes_for_ArrayTotalSizeP1 = %zu\n", __FILE__, __LINE__, bytes_for_ArrayTotalSizeP1);
+//      printf("%s:%d bytes_for_ArrayTotalSize = %zu\n", __FILE__, __LINE__, bytes_for_ArrayTotalSize);
+      if (bytes_for_ArrayTotalSizeP1 > bytes_for_ArrayTotalSize) { // or it needs more words to store the bits
+    // The array needs to be resized because there aren't enough bits to hold the next bit
+        if (extension <= 0) extension = calculate_extension(this->_ArrayTotalSize);
+        cl_index new_size = this->_ArrayTotalSize+extension;
+//        printf("%s:%d About to adjust BitVectorNs_O size to %lld bits\n", __FILE__, __LINE__, new_size);
+        this->internalAdjustSize_(new_size);
+      } else {
+    // There were enough bits to handle the extend
+        this->_ArrayTotalSize = idx+1;
+        this->_Dimensions[0] = idx+1;
+      }
+    }
+  }
+  this->_Data->rowMajorAset(idx+this->_DisplacedIndexOffset,newElement);
+  ++this->_FillPointerOrLengthOrDummy;
+  return make_fixnum(idx);
+}
+
 void BitVectorNs_O::internalAdjustSize_(size_t size, T_sp initElement, bool initElementSupplied) {
+//  printf("%s:%d:%s    size = %zu\n", __FILE__, __LINE__, __FUNCTION__, size);
   if (size == this->_ArrayTotalSize) return;
   AbstractSimpleVector_sp basesv;
   size_t start, end;
   this->asAbstractSimpleVectorRange(basesv,start,end);
   gctools::smart_ptr<simple_type> sv = gc::As_unsafe<gctools::smart_ptr<simple_type>>(basesv);
   size_t initialContentsSize = MIN(this->length(),size);
-  smart_ptr_type newData = simple_type::make(size,0);
+  gc::smart_ptr<simple_type> newData = simple_type::make(size,0);
+//  printf("%s:%d  class-of newData -> %s   newData.raw_() -> %p\n", __FILE__, __LINE__, _rep_(cl__class_of(newData)).c_str(), (void*)newData.raw_());
   for (size_t i(0),iEnd(initialContentsSize); i<iEnd; ++i ) {
-    newData->setBit(i,this->testBit(i+start));
+//    printf("%s:%d   Reading bit at i+start->%zu  value-> %u    writing to index: %zu\n", __FILE__, __LINE__, i+start, sv->testBit(i+start), i);
+    newData->setBit(i,sv->testBit(i+start));
   }
   this->set_data(newData);
   this->_ArrayTotalSize = size;
+  this->_Dimensions[0] = size;
   if (!this->_Flags.fillPointerP()) this->_FillPointerOrLengthOrDummy = size;
   this->_DisplacedIndexOffset = 0;
   this->_Flags.set_displacedToP(false);
@@ -2446,11 +2463,7 @@ void MDArray_size_t_O::vectorPushExtend_size_t(size_t newElement, size_t extensi
   unlikely_if (idx >= this->_ArrayTotalSize) {
     if (extension <= 0) extension = calculate_extension(this->_ArrayTotalSize);
     cl_index new_size = this->_ArrayTotalSize+extension;
-    unlikely_if (!cl::_sym_adjust_array || !cl::_sym_adjust_array->boundP()) {
-      this->internalAdjustSize_(new_size);
-    } else {
-      eval::funcall(cl::_sym_adjust_array,this->asSmartPtr(),clasp_make_fixnum(new_size),cl::_sym_fill_pointer,clasp_make_fixnum(this->_FillPointerOrLengthOrDummy));
-    }
+    this->internalAdjustSize_(new_size);
   }
   (*this)[idx] = newElement;
   ++this->_FillPointerOrLengthOrDummy;
@@ -2466,11 +2479,7 @@ void MDArray_uint32_t_O::vectorPushExtend_uint32_t(uint32_t newElement, size_t e
   unlikely_if (idx >= this->_ArrayTotalSize) {
     if (extension <= 0) extension = calculate_extension(this->_ArrayTotalSize);
     cl_index new_size = this->_ArrayTotalSize+extension;
-    unlikely_if (!cl::_sym_adjust_array || !cl::_sym_adjust_array->boundP()) {
-      this->internalAdjustSize_(new_size);
-    } else {
-      eval::funcall(cl::_sym_adjust_array,this->asSmartPtr(),clasp_make_fixnum(new_size),cl::_sym_fill_pointer,clasp_make_fixnum(this->_FillPointerOrLengthOrDummy));
-    }
+    this->internalAdjustSize_(new_size);
   }
   (*this)[idx] = newElement;
   ++this->_FillPointerOrLengthOrDummy;
@@ -2536,6 +2545,144 @@ CL_DEFUN Vector_sp cl__vector(List_sp args) {
 SYMBOL_EXPORT_SC_(ClPkg, subtypep);
 
 
+
+
+CL_LAMBDA(element_type);
+CL_DECLARE();
+CL_DOCSTRING("Returns the element used as an initial-element if none is supplied, for the given array element type.");
+CL_DEFUN T_sp core__default_initial_element(T_sp element_type) {
+  if (element_type == cl::_sym_bit)
+    return SimpleBitVector_O::to_object(SimpleBitVector_O::default_initial_element());
+  else if (element_type == cl::_sym_base_char)
+    return SimpleBaseString_O::to_object(SimpleBaseString_O::default_initial_element());
+  else if (element_type == cl::_sym_character)
+    return SimpleCharacterString_O::to_object(SimpleCharacterString_O::default_initial_element());
+  else if (element_type == cl::_sym_T_O)
+    return SimpleVector_O::to_object(SimpleVector_O::default_initial_element());
+  else if (element_type == cl::_sym_double_float)
+    return SimpleVectorDouble_O::to_object(SimpleVectorDouble_O::default_initial_element());
+  else if (element_type == cl::_sym_single_float)
+    return SimpleVectorFloat_O::to_object(SimpleVectorFloat_O::default_initial_element());
+  else if (element_type == ext::_sym_integer8)
+    return SimpleVector_int8_t_O::to_object(SimpleVector_int8_t_O::default_initial_element());
+  else if (element_type == ext::_sym_byte8)
+    return SimpleVector_byte8_t_O::to_object(SimpleVector_byte8_t_O::default_initial_element());
+  else if (element_type == ext::_sym_integer16)
+    return SimpleVector_int16_t_O::to_object(SimpleVector_int16_t_O::default_initial_element());
+  else if (element_type == ext::_sym_byte16)
+    return SimpleVector_byte16_t_O::to_object(SimpleVector_byte16_t_O::default_initial_element());
+  else if (element_type == ext::_sym_integer32)
+    return SimpleVector_int32_t_O::to_object(SimpleVector_int32_t_O::default_initial_element());
+  else if (element_type == ext::_sym_byte32)
+    return SimpleVector_byte32_t_O::to_object(SimpleVector_byte32_t_O::default_initial_element());
+  else if (element_type == ext::_sym_integer64)
+    return SimpleVector_int64_t_O::to_object(SimpleVector_int64_t_O::default_initial_element());
+  else if (element_type == ext::_sym_byte64)
+    return SimpleVector_byte64_t_O::to_object(SimpleVector_byte64_t_O::default_initial_element());
+  else if (element_type == _sym_size_t)
+    return SimpleVector_size_t_O::to_object(SimpleVector_size_t_O::default_initial_element());
+  else if (element_type == cl::_sym_fixnum)
+    return SimpleVector_fixnum_O::to_object(SimpleVector_fixnum_O::default_initial_element());
+  else SIMPLE_ERROR(BF("Unknown element type %s") % _rep_(element_type));
+}
+
+CL_LAMBDA(dimension initial_element);
+CL_DOCSTRING("Make a (simple-array t (*)).");
+CL_DEFUN Vector_sp core__make_simple_vector_t(size_t dimension, T_sp initialElement) {
+  return SimpleVector_O::make(dimension, SimpleVector_O::from_object(initialElement), true);
+}
+
+CL_LAMBDA(dimension initial_element);
+CL_DOCSTRING("Make a simple-bit-vector.");
+CL_DEFUN Vector_sp core__make_simple_vector_bit(size_t dimension, T_sp initialElement) {
+  return SimpleBitVector_O::make(dimension, SimpleBitVector_O::from_object(initialElement), true);
+}
+
+CL_LAMBDA(dimension initial_element);
+CL_DOCSTRING("Make a simple-base-string.");
+CL_DEFUN Vector_sp core__make_simple_vector_base_char(size_t dimension, T_sp initialElement) {
+  return SimpleBaseString_O::make(dimension, SimpleBaseString_O::from_object(initialElement), true);
+}
+
+CL_LAMBDA(dimension initial_element);
+CL_DOCSTRING("Make a (simple-array character (*)).");
+CL_DEFUN Vector_sp core__make_simple_vector_character(size_t dimension, T_sp initialElement) {
+  return SimpleCharacterString_O::make(dimension, SimpleCharacterString_O::from_object(initialElement), true);
+}
+
+CL_LAMBDA(dimension initial_element);
+CL_DOCSTRING("Make a (simple-array double-float (*)).");
+CL_DEFUN Vector_sp core__make_simple_vector_double_float(size_t dimension, T_sp initialElement) {
+  return SimpleVectorDouble_O::make(dimension, SimpleVectorDouble_O::from_object(initialElement), true);
+}
+
+CL_LAMBDA(dimension initial_element);
+CL_DOCSTRING("Make a (simple-array single-float (*)).");
+CL_DEFUN Vector_sp core__make_simple_vector_single_float(size_t dimension, T_sp initialElement) {
+  return SimpleVectorFloat_O::make(dimension, SimpleVectorFloat_O::from_object(initialElement), true);
+}
+
+CL_LAMBDA(dimension initial_element);
+CL_DOCSTRING("Make a (simple-array ext:int8 (*)).");
+CL_DEFUN Vector_sp core__make_simple_vector_int8(size_t dimension, T_sp initialElement) {
+  return SimpleVector_int8_t_O::make(dimension, SimpleVector_int8_t_O::from_object(initialElement), true);
+}
+
+CL_LAMBDA(dimension initial_element);
+CL_DOCSTRING("Make a (simple-array ext:byte8 (*)).");
+CL_DEFUN Vector_sp core__make_simple_vector_byte8(size_t dimension, T_sp initialElement) {
+  return SimpleVector_byte8_t_O::make(dimension, SimpleVector_byte8_t_O::from_object(initialElement), true);
+}
+
+CL_LAMBDA(str);
+CL_DOCSTRING("Make a (simple-array ext:byte8 (*)) from a base-char-string.");
+CL_DEFUN Vector_sp core__make_simple_vector_byte8_from_base_string(const std::string& str) {
+  return SimpleVector_byte8_t_O::make(str.size(), 0, false, str.size(), (const unsigned char*)&str[0]);
+}
+
+CL_LAMBDA(dimension initial_element);
+CL_DOCSTRING("Make a (simple-array ext:int16 (*)).");
+CL_DEFUN Vector_sp core__make_simple_vector_int16(size_t dimension, T_sp initialElement) {
+  return SimpleVector_int16_t_O::make(dimension, SimpleVector_int16_t_O::from_object(initialElement), true);
+}
+
+CL_LAMBDA(dimension initial_element);
+CL_DOCSTRING("Make a (simple-array ext:byte16 (*)).");
+CL_DEFUN Vector_sp core__make_simple_vector_byte16(size_t dimension, T_sp initialElement) {
+  return SimpleVector_byte16_t_O::make(dimension, SimpleVector_byte16_t_O::from_object(initialElement), true);
+}
+
+CL_LAMBDA(dimension initial_element);
+CL_DOCSTRING("Make a (simple-array ext:int32 (*)).");
+CL_DEFUN Vector_sp core__make_simple_vector_int32(size_t dimension, T_sp initialElement) {
+  return SimpleVector_int32_t_O::make(dimension, SimpleVector_int32_t_O::from_object(initialElement), true);
+}
+
+CL_LAMBDA(dimension initial_element);
+CL_DOCSTRING("Make a (simple-array ext:byte32 (*)).");
+CL_DEFUN Vector_sp core__make_simple_vector_byte32(size_t dimension, T_sp initialElement) {
+  return SimpleVector_byte32_t_O::make(dimension, SimpleVector_byte32_t_O::from_object(initialElement), true);
+}
+
+CL_LAMBDA(dimension initial_element);
+CL_DOCSTRING("Make a (simple-array ext:int64 (*)).");
+CL_DEFUN Vector_sp core__make_simple_vector_int64(size_t dimension, T_sp initialElement) {
+  return SimpleVector_int64_t_O::make(dimension, SimpleVector_int64_t_O::from_object(initialElement), true);
+}
+
+CL_LAMBDA(dimension initial_element);
+CL_DOCSTRING("Make a (simple-array ext:byte64 (*)).");
+CL_DEFUN Vector_sp core__make_simple_vector_byte64(size_t dimension, T_sp initialElement) {
+  return SimpleVector_byte64_t_O::make(dimension, SimpleVector_byte64_t_O::from_object(initialElement), true);
+}
+
+// TODO: size_t?
+
+CL_LAMBDA(dimension initial_element);
+CL_DOCSTRING("Make a (simple-array fixnum (*))");
+CL_DEFUN Vector_sp core__make_simple_vector_fixnum(size_t dimension, T_sp initialElement) {
+  return SimpleVector_fixnum_O::make(dimension, SimpleVector_fixnum_O::from_object(initialElement), true);
+}
 
 
 CL_LAMBDA(element_type dimension &optional adjustable fill_pointer displaced_to (displaced_index_offset 0) initial_element initial_element_supplied_p);

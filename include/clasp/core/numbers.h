@@ -42,7 +42,6 @@
 #include <boost/serialization/assume_abstract.hpp>
 #pragma GCC diagnostic pop
 
-#include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 #include <clasp/core/numerics.h>
 #include <clasp/core/bignum.fwd.h>
@@ -90,7 +89,7 @@ namespace core
 
   template <typename FLOAT>
   inline FLOAT _log1p(FLOAT x) {
-    IMPLEMENT_MEF(BF("Implement specialized log1p for basic float type"));
+    HARD_IMPLEMENT_ME();
   }
 
   template <>
@@ -164,11 +163,6 @@ namespace core {
     //	static Number_sp create(size_t val);
   public:
     virtual NumberType number_type_() const { SUBIMP(); };
-    //	int number_type_int() const { return (int)(clasp_t_of(this->asSmartPtr()));;};
-    //	virtual	string	valueAsString_() const;
-    //	virtual Number_sp copy() const { _OF(); SUBCLASS_MUST_IMPLEMENT();}
-    //	virtual T_sp deepCopy() const { return this->copy();};
-    //virtual T_sp shallowCopy() const { return this->copy();};
     virtual Number_sp signum_() const {
       _OF();
       SUBCLASS_MUST_IMPLEMENT();
@@ -647,6 +641,8 @@ namespace core {
 
     virtual Number_sp conjugate_() const;
 
+    virtual void __write__(T_sp strm) const;
+
     Complex_O(Real_sp r, Real_sp i) : _real(r), _imaginary(i) {};
     Complex_O() : _real(clasp_make_single_float(0.0)), _imaginary(clasp_make_single_float(0.0)) {};
     virtual ~Complex_O() {};
@@ -695,6 +691,8 @@ namespace core {
     string __repr__() const;
     Number_sp signum_() const;
     Number_sp abs_() const;
+    Number_sp sqrt_() const;
+    Number_sp reciprocal_() const;
     Number_sp rational_() const final { return this->asSmartPtr(); };
     bool isnan_() const;
 
@@ -1052,14 +1050,6 @@ namespace core {
   // THE NEXT TWO FUNCTIONS ARE HERE FOR BACKWARDS COMPATIBILITY
   // frgo, 2017-01-21
 
-  inline int64_t clasp_to_int64(Integer_sp x)
-  {
-    return clasp_to_int64_t( x );
-  }
-  inline uint64_t clasp_to_uint64(Integer_sp x)
-  {
-    return clasp_to_uint64_t( x );
-  }
 
   cl_intptr_t         clasp_to_cl_intptr_t( core::T_sp );
   mpz_class           clasp_to_mpz( core::T_sp );
@@ -1088,7 +1078,7 @@ namespace core {
   inline Number_sp clasp_reciprocal(Number_sp x) {
     if (x.fixnump() ) {
       if ( x.unsafe_fixnum() == 1 ) return x;
-      return Ratio_O::create(clasp_make_fixnum(1),x);
+      return Ratio_O::create(clasp_make_fixnum((Fixnum)1),x);
     } else if (x.single_floatp()) {
       float f = x.unsafe_single_float();
       return clasp_make_single_float(1.0 / f);
@@ -1181,25 +1171,26 @@ namespace core {
     return num->isnan_();
   }
 
-
+#if 0
   CL_LISPIFY_NAME(general-two-arg-_PLUS_);
-  CL_EXTERN_DEFUN(&core::contagen_add);
+  CL_ EXTERN_ DEFUN(&core::contagen_add);
   CL_LISPIFY_NAME(general-two-arg-_MINUS_);
-  CL_EXTERN_DEFUN(&core::contagen_sub);
+  CL_ EXTERN_ DEFUN(&core::contagen_sub);
   CL_LISPIFY_NAME(general-two-arg-_TIMES_);
-  CL_EXTERN_DEFUN(&core::contagen_mul);
+  CL_ EXTERN_ DEFUN(&core::contagen_mul);
   CL_LISPIFY_NAME(general-two-arg-_DIVIDE_);
-  CL_EXTERN_DEFUN(&core::contagen_div);
+  CL_ EXTERN_ DEFUN(&core::contagen_div);
   CL_LISPIFY_NAME(general-two-arg-_LT_);
-  CL_EXTERN_DEFUN(&core::two_arg__LT_);
+  CL_ EXTERN_ DEFUN(&core::two_arg__LT_);
   CL_LISPIFY_NAME(general-two-arg-_LE_);
-  CL_EXTERN_DEFUN(&core::two_arg__LE_);
+  CL_ EXTERN_ DEFUN(&core::two_arg__LE_);
   CL_LISPIFY_NAME(general-two-arg-_GT_);
-  CL_EXTERN_DEFUN(&core::two_arg__GT_);
+  CL_ EXTERN_ DEFUN(&core::two_arg__GT_);
   CL_LISPIFY_NAME(general-two-arg-_GE_);
-  CL_EXTERN_DEFUN(&core::two_arg__GE_);
+  CL_ EXTERN_ DEFUN(&core::two_arg__GE_);
   CL_LISPIFY_NAME(general-two-arg-_EQ_);
-  CL_EXTERN_DEFUN(&core::two_arg__EQ_);
+  CL_ EXTERN_ DEFUN(&core::two_arg__EQ_);
+#endif
 
 };
 

@@ -27,7 +27,6 @@ THE SOFTWARE.
 #ifndef _cleavirEnv_H
 #define _cleavirEnv_H
 
-#include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 #include <clasp/core/cleavirEnvPackage.fwd.h>
 

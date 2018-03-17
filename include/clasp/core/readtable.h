@@ -27,7 +27,6 @@ THE SOFTWARE.
 #ifndef _core_ReadTable_H
 #define _core_ReadTable_H
 
-#include <clasp/core/foundation.h>
 #include <clasp/core/character.fwd.h>
 #include <clasp/core/hashTable.fwd.h>
 

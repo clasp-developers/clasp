@@ -219,7 +219,7 @@ void LightProfiler::dump() {
 
   if (this->_Timers.size() <= 1)
     return;
-  HARD_ASSERTF(this->_Timers.size() >= 2, BF("There is no timer root"));
+  GCTOOLS_ASSERTF(this->_Timers.size() >= 2, "There is no timer root");
 
   root = 1;
   if (!root) {

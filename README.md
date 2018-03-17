@@ -6,12 +6,12 @@
 Clasp is a new [Common Lisp](https://common-lisp.net/) implementation that seamlessly interoperates with C++ libraries and programs using [LLVM](http://llvm.org/) for compilation to native code. This allows Clasp to take advantage of a vast array of preexisting libraries and programs, such as out of the scientific computing ecosystem. Embedding them in a Common Lisp environment allows you to make use of rapid prototyping, incremental development, and other capabilities that make it a powerful language.
 
 ## Latest Release
-The upcoming release is [Clasp 0.5](https://github.com/drmeister/clasp/releases/tag/0.5.0). [Changes](https://github.com/drmeister/clasp/milestone/3)
+The upcoming release is [Clasp 0.5](https://github.com/clasp-developers/clasp/releases/tag/0.5.0). [Changes](https://github.com/clasp-developers/clasp/milestone/3)
 
 See the [RELEASE-NOTES](RELEASE-NOTES)
 
 ### Getting Clasp
-At the moment, Clasp is supported on Linux and Mac OS X. On these systems, you should be able to build it from source. See the [wiki entry](https://github.com/drmeister/clasp/wiki/Clasp-0.5-Build-Instructions) for instructions. In case things go wrong, the quickest way to get help is to either [file an issue](#reporting-problems), or to [chat with us directly](#irc).
+At the moment, Clasp is supported on Linux and Mac OS X. On these systems, you should be able to build it from source. See the [wiki entry](https://github.com/clasp-developers/clasp/wiki/Clasp-0.5-Build-Instructions) for instructions. In case things go wrong, the quickest way to get help is to either [file an issue](#reporting-problems), or to [chat with us directly](#irc).
 
 Building on most systems will take around 8-12GB of memory and ~1-2 hours with a relatively modern processor, so be prepared to watch a movie or do some other useful work until Clasp is all done. You may also want to activate a large enough swap file if your system does not have enough DRAM.
 
@@ -26,16 +26,16 @@ Clasp supports the following major components:
 * [ASDF](https://common-lisp.net/project/asdf/)
 * [Quicklisp](https://www.quicklisp.org/beta/)
 * [CFFI](https://common-lisp.net/project/cffi/)
-* [Bordeaux-Threads](https://github.com/drmeister/clasp/issues/163)
-* [Unicode](https://github.com/drmeister/clasp/issues/164)
+* [Bordeaux-Threads](https://github.com/clasp-developers/clasp/issues/163)
+* [Unicode](https://github.com/clasp-developers/clasp/issues/164)
 
 Post on the issues or [contact us](#irc) if you're interested in changing that.
 
 ## Contributing to Clasp
-We very much welcome any kind of contribution to Clasp, even if it is just bug finding and testing. A lot can be done all around the project, if you want to dive into something large. See the [CONTRIBUTING](https://github.com/drmeister/clasp/blob/dev/CONTRIBUTING.md) file for the few guidelines we've set up around contributions.
+We very much welcome any kind of contribution to Clasp, even if it is just bug finding and testing. A lot can be done all around the project, if you want to dive into something large. See the [CONTRIBUTING](https://github.com/clasp-developers/clasp/blob/dev/CONTRIBUTING.md) file for the few guidelines we've set up around contributions.
 
 ## Reporting Problems
-Generally you can report problems in two fashions, either by [opening an issue ticket](https://github.com/drmeister/clasp/issues/new) or by [chatting with us directly](#irc). In both cases, though, you should have the following pieces handy in order for us to be able to help you out as quickly and painlessly as possible:
+Generally you can report problems in two fashions, either by [opening an issue ticket](https://github.com/clasp-developers/clasp/issues/new) or by [chatting with us directly](#irc). In both cases, though, you should have the following pieces handy in order for us to be able to help you out as quickly and painlessly as possible:
 
 * Your operating system name and version.
 * The branches that you're using of Clasp and Externals-Clasp.

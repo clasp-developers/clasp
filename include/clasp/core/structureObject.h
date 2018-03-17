@@ -31,71 +31,13 @@ THE SOFTWARE.
 #include <string>
 #include <vector>
 #include <set>
-#include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 #include <clasp/core/structureClass.fwd.h>
 //#include "model.h"
 #include <clasp/core/environment.h>
 
 namespace core {
-
-// Set up this class differently
-
-  SMART(StructureObject);
-  class StructureObject_O : public General_O {
-    LISP_META_CLASS(::_lisp->_Roots._StructureClass);
-    LISP_CLASS(core, ClPkg, StructureObject_O, "structure-object",General_O);
-
-  public:
-#if defined(OLD_SERIALIZE)
-    void serialize(serialize::SNode node);
-#endif
-    void archiveBase(ArchiveP node);
-    void initialize();
-  GCPRIVATE:
-    Class_sp _Type;   // Now we store the class
-    gctools::Vec0<T_sp> _Slots;
-
-  public:
-    static StructureObject_sp create(T_sp type, List_sp slotNames);
-
-  public:
-    T_sp structureRef(int index) const;
-    T_sp structureSet(int index, T_sp value);
-
-  /*! Convert this structure to a list (type {slot-name slot-value}*) */
-    T_sp structureAsList() const;
-#if 0
-    static bool static_supportsSlots() {return true;};
-    T_sp& slot_ref( Symbol_sp sym ) throw(SlotRefFailed);
-#endif
-
-    virtual Class_sp _instanceClass() const { return this->_Type;};
-    T_sp structureType() const { return this->_Type->name();};
-
-    void allocate_slot_storage(uint numberOfSlots, T_sp initialValue);
-
-    void __write__(T_sp stream) const;
-
-    string __repr__() const;
-
-  //	void setInstanceVariableValue(Symbol_sp sym, T_sp obj);
-  //	T_sp getInstanceVariableValue(Symbol_sp sym);
-
-  /*! Return number of slots if not nil otherwise nil */
-    virtual T_sp oinstancepSTAR() const;
-
-    virtual T_sp copyStructure() const;
-
-    explicit StructureObject_O() : Base(){};
-    virtual ~StructureObject_O(){};
-  };
-
   T_sp core__make_structure(T_sp type, List_sp slot_values);
   T_sp cl__copy_structure(T_sp arg);
-  T_sp core__structure_ref(T_sp obj, Symbol_sp type, int idx);
-  T_sp core__structure_set(T_sp obj, Symbol_sp type, int idx, T_sp val);
-  bool core__structurep(T_sp arg);
-  bool core__structure_subtypep(T_sp x, Symbol_sp y);
 };
 #endif //]

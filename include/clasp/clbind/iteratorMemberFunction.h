@@ -42,12 +42,12 @@ struct BeginReturnType<T, RT (T::*)()> {
 };
 
 template <typename Pols, typename OT, typename Begin, typename End>
-class IteratorMethoid : public core::BuiltinClosure_O {
+class IteratorMethoid : public core::TemplatedFunctionBase_O {
 public:
-  typedef core::BuiltinClosure_O TemplatedBase;
+  typedef core::TemplatedFunctionBase_O TemplatedBase;
 
 public:
- IteratorMethoid(core::T_sp name, Begin begin, End end) : core::BuiltinClosure_O(entry_point,name), _begin(begin), _end(end){};
+ IteratorMethoid(core::T_sp name, Begin begin, End end) : core::TemplatedFunctionBase_O(entry_point,name), _begin(begin), _end(end){};
 
 private:
   typedef typename BeginReturnType<OT, Begin>::type IteratorType;
@@ -59,7 +59,6 @@ public:
   virtual size_t templatedSizeof() const { return sizeof(*this); };
 
 public:
-  DISABLE_NEW();
   static LCC_RETURN LISP_CALLING_CONVENTION() {
     IteratorMethoid* closure = gctools::untag_general<IteratorMethoid*>((IteratorMethoid*)lcc_closure);
     INCREMENT_FUNCTION_CALL_COUNTER(closure);
@@ -76,9 +75,9 @@ public:
 };
 
 template <typename Pols, typename OT, typename Begin, typename End>
-class gctools::GCKind<clbind::IteratorMethoid<Pols, OT, Begin, End>> {
+class gctools::GCStamp<clbind::IteratorMethoid<Pols, OT, Begin, End>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::GCKind<typename clbind::IteratorMethoid<Pols, OT, Begin, End>::TemplatedBase>::Kind;
+  static gctools::GCStampEnum const Stamp = gctools::GCStamp<typename clbind::IteratorMethoid<Pols, OT, Begin, End>::TemplatedBase>::Stamp;
 };
 
 #endif

@@ -12,7 +12,23 @@
 
 (in-package "CLOS")
 
+#+(or)(eval-when (:execute)
+  (setq core:*echo-repl-read* t))
+
 (defparameter *clos-booted* nil)
+
+;;; Sets a GF's discrminating function to the "invalidated" state.
+;;; In this state, the next call will compute a real discriminating function.
+(defun invalidate-discriminating-function (gf)
+  ;; It may seem weird to set the thing to a symbol. And it is.
+  ;; We special case set-funcallable-instance-function (in core/funcallableInstance.cc) so that it
+  ;; becomes a C++ method that just calls clos:invalidated-dispatch-function with the gf and vaslist.
+  ;; (clos:invalidated-dispatch-function is a normal lisp function defined in closfastgf.lisp.)
+  ;; This is basically equivalent to
+  ;; (set-funcallable-instance-function gf (lambda (core:&va-rest args) (invalidated-dispatch-function gf args)))
+  ;; but without allocating a closure.
+  ;; In the future, this special casing will probably go away.
+  (set-funcallable-instance-function gf 'invalidated-dispatch-function))
 
 ;;; ----------------------------------------------------------------------
 ;;;
@@ -52,18 +68,6 @@
 (defsetf find-class (&rest x) (v) `(setf-find-class ,v ,@x))
 
 
-;; In clasp classp is a builtin predicate
-#-clasp
-(defun classp (obj)
-  (and (si:instancep obj)
-       (let ((topmost (find-class 'CLASS nil)))
-	 ;; All instances can be classes until the class CLASS has
-	 ;; been installed. Otherwise, we check the parents.
-	 ;(print (list (class-id (class-of obj))topmost (and topmost (class-precedence-list topmost))))
-	 (or (null topmost)
-	     (si::subclassp (si::instance-class obj) topmost)))
-       t))
-
 ;;; ----------------------------------------------------------------------
 ;;; Methods
 
@@ -72,11 +76,12 @@
 ;  (record-definition 'method `(method ,name ,@qualifiers ,specializers))
   (let* ((gf (ensure-generic-function name))
 	 (specializers (mapcar #'(lambda (x)
+                                   (declare (core:lambda-name install-method.lambda))
 				   (cond ((consp x) (intern-eql-specializer (second x)))
 					 ((typep x 'specializer) x)
 					 ((find-class x nil))
 					 (t
-					  (error "In method definition for ~A, found an invalid specializer ~A" name specializers))))
+					  (error "In method definition for ~A, found an invalid specializer ~A" name x))))
 			       specializers))
 	 (method (make-method (generic-function-method-class gf)
 			      qualifiers specializers lambda-list
@@ -92,7 +97,7 @@
   (if (and (fboundp name) (si::instancep (fdefinition name)))
       (fdefinition name)
       ;; create a fake standard-generic-function object:
-      (with-early-make-instance +standard-generic-function-slots+
+      (with-early-make-funcallable-instance +standard-generic-function-slots+
 	(gfun (find-class 'standard-generic-function)
 	      :name name
 	      :spec-list nil
@@ -107,7 +112,7 @@
 	      :declarations nil
 	      :dependents nil)
 	;; create a new gfun
-	(set-funcallable-instance-function gfun 'standard-generic-function)
+        (invalidate-discriminating-function gfun)
 	(setf (fdefinition name) gfun)
 	gfun)))
 
@@ -117,102 +122,10 @@
       (reinitialize-instance gf :name new-name)
       (setf (slot-value gf 'name) new-name)))
 
-(defun default-dispatch (generic-function)
-  (cond ((null *clos-booted*)
-	 'standard-generic-function)
-	((eq (class-id (class-of generic-function))
-	     'standard-generic-function)
-	 'standard-generic-function)
-	(t)))
-
+;;; Will be the standard method after fixup.
 (defun compute-discriminating-function (generic-function)
-  (values #'(lambda (&rest args)
-	      (multiple-value-bind (method-list ok)
-		  (compute-applicable-methods-using-classes
-		   generic-function
-		   (mapcar #'class-of args))
-		(unless ok
-		  (setf method-list
-			(compute-applicable-methods generic-function args))
-		  (unless method-list
-		    (apply #'no-applicable-method generic-function args)))
-		(apply (compute-effective-method-function
-			  generic-function
-			  (generic-function-method-combination generic-function)
-			  method-list)
-			 args
-			 nil
-                         args)))
-	  t))
-
-(defun set-generic-function-dispatch (gfun)
-  ;;
-  ;; We have to decide which discriminating function to install:
-  ;;	1* One supplied by the user
-  ;;	2* One coded in C that follows the MOP
-  ;;	3* One in C specialized for slot accessors
-  ;;	4* One in C that does not use generic versions of compute-applicable-...
-  ;; Respectively
-  ;;	1* The user supplies a discriminating function, or the number of arguments
-  ;;	   is so large that they cannot be handled by the C dispatchers with
-  ;;	   with memoization.
-  ;;	2* The generic function is not a s-g-f but takes less than 64 arguments
-  ;;	3* The generic function is a standard-generic-function and all its slots
-  ;;	   are standard-{reader,writer}-slots
-  ;;	4* The generic function is a standard-generic-function with less
-  ;;	   than 64 arguments
-  ;;
-  ;; This chain of reasoning uses the fact that the user cannot override methods
-  ;; such as COMPUTE-APPLICABLE-METHODS, or COMPUTE-EFFECTIVE-METHOD, or
-  ;; COMPUTE-DISCRIMINATING-FUNCTION acting on STANDARD-GENERIC-FUNCTION.
-  ;;
-  (declare (notinline compute-discriminating-function))
-  (multiple-value-bind (default-function optimizable)
-      ;;
-      ;; If the class is not a standard-generic-function, we must honor whatever function
-      ;; the user provides. However, we still recognize the case without user-computed
-      ;; function, where we can replace the output of COMPUTE-DISCRIMINATING-FUNCTION with
-      ;; a similar implementation in C
-      (compute-discriminating-function gfun)
-;;    (print "HUNT kernel.lsp set-generic-function-dispatch")
-    (let ((methods (slot-value gfun 'methods)))
-      (set-funcallable-instance-function
-       gfun
-       (cond
-         #+fast-dispatch
-         ((typep (get-funcallable-instance-function gfun) 'core:compiled-dispatch-function)
-          'clos::invalidated-dispatch-function)
-         #+fast-dispatch
-         ((eq (get-funcallable-instance-function gfun) 'clos::invalidated-dispatch-function)
-          'clos::invalidated-dispatch-function)
-         ;; If *enable-fastgf* is T then new generic functions use fastgf
-         #+fast-dispatch
-         ((and *enable-fastgf* (eq (get-funcallable-instance-function gfun) 'clos::not-funcallable))
-          'clos::invalidated-dispatch-function)
-	 ;; Case 1*
-	 ((or (not optimizable)
-	      (> (length (slot-value gfun 'spec-list))
-		 si::c-arguments-limit))
-	  default-function)
-	 ;; Case 2*
-	 ((and (not (eq (slot-value (class-of gfun) 'name)
-			'standard-generic-function))
-	       *clos-booted*)
-	  t)
-	 ((null methods)
-	  'standard-generic-function)
-	 ;; Cases 3*
-	 ((loop with class = (find-class 'standard-optimized-reader-method nil)
-	     for m in methods
-	     always (eq class (class-of m)))
-	  'standard-optimized-reader-method)
-	 ((loop with class = (find-class 'standard-optimized-writer-method nil)
-	     for m in methods
-	     always (eq class (class-of m)))
-	  'standard-optimized-writer-method)
-	 ;; Case 4*
-	 (t
-	  'standard-generic-function))))))
+  (declare (ignore generic-function))
+  'invalidated-dispatch-function)
 
 ;;; ----------------------------------------------------------------------
 ;;; COMPUTE-APPLICABLE-METHODS
@@ -239,8 +152,7 @@
 (setf (fdefinition 'compute-applicable-methods) #'std-compute-applicable-methods)
 
 (defun applicable-method-list (gf args)
-  (declare (optimize (speed 3))
-	   (si::c-local))
+  (declare (optimize (speed 3)))
   (with-early-accessors (+standard-method-slots+
 			 +standard-generic-function-slots+
 			 +eql-specializer-slots+
@@ -255,9 +167,37 @@
 	 when (applicable-method-p method args)
 	 collect method))))
 
+#+mlog
+(defun std-compute-applicable-methods-using-classes (gf classes)
+  (declare (optimize (speed 3)))
+  (with-early-accessors
+      (+standard-method-slots+ +eql-specializer-slots+ +standard-generic-function-slots+)
+    (flet ((applicable-method-p (method classes)
+             (loop for spec in (method-specializers method)
+                   for class in classes
+                   always (cond ((eql-specializer-flag spec)
+                                 ;; EQL specializer invalidate computation                       
+                                 ;; we return NIL                                                
+                                 (when (si::of-class-p (eql-specializer-object spec) class)
+                                   (return-from std-compute-applicable-methods-using-classes
+                                     (values nil nil)))
+                                 nil)
+                                ((si::subclassp class spec))))))
+      (mlog "std-compute-applicable-methods-using-classes gf -> %s classes -> %s\n" gf classes)
+      (let ((result (sort-applicable-methods
+                     gf
+                     (loop for method in (generic-function-methods gf)
+                           when (applicable-method-p method classes)
+                             collect method)
+                     classes)))
+        (mlog "  result -> %s\n" result)
+        (values result t)))))
+
+#-mlog
 (defun std-compute-applicable-methods-using-classes (gf classes)
   (declare (optimize (speed 3)))
   (with-early-accessors (+standard-method-slots+ +eql-specializer-slots+ +standard-generic-function-slots+)
+    (mlog "std-compute-applicable-methods-using-classes gf -> %s classes -> %s\n" gf classes)
     (flet ((applicable-method-p (method classes)
 	     (loop for spec in (method-specializers method)
 		for class in classes
@@ -296,14 +236,12 @@
               (nreverse
                (push most-specific ordered-list))))
         (dolist (meth (cdr scan))
-          (when (eq (compare-methods most-specific
-                                     meth args-specializers f) 2)
+          (when (eql (compare-methods most-specific meth args-specializers f) 2)
             (setq most-specific meth)))
         (setq scan (delete most-specific scan))
         (push most-specific ordered-list)))))
 
 (defun compare-methods (method-1 method-2 args-specializers f)
-  (declare (si::c-local))
   (with-early-accessors (+standard-method-slots+)
     (let* ((specializers-list-1 (method-specializers method-1))
 	   (specializers-list-2 (method-specializers method-2)))
@@ -312,7 +250,6 @@
 				  args-specializers))))
 
 (defun compare-specializers-lists (spec-list-1 spec-list-2 args-specializers)
-  (declare (si::c-local))
   (when (or spec-list-1 spec-list-2)
     (ecase (compare-specializers (first spec-list-1)
 				 (first spec-list-2)
@@ -332,7 +269,6 @@
   )
 
 (defun fast-subtypep (spec1 spec2)
-  (declare (si::c-local))
   ;; Specialized version of subtypep which uses the fact that spec1
   ;; and spec2 are either classes or of the form (EQL x)
   (with-early-accessors (+eql-specializer-slots+ +standard-class-slots+)
@@ -349,7 +285,6 @@
 	    (si::subclassp spec1 spec2)))))
 
 (defun compare-specializers (spec-1 spec-2 arg-class)
-  (declare (si::c-local))
   (with-early-accessors (+standard-class-slots+ +standard-class-slots+)
     (let* ((cpl (class-precedence-list arg-class)))
       (cond ((eq spec-1 spec-2) '=)
@@ -404,9 +339,13 @@
 				 (destructuring-bind ,required-arguments %list
 				   (list ,@a-p-o)))
 			      'function))))))
-	(setf (generic-function-a-p-o-function gf) function)
-	(si:clear-gfun-hash gf)))))
+	(setf (generic-function-a-p-o-function gf) function)))))
 
+;;; Will be upgraded to a method in fixup.
 (defun print-object (object stream)
-  (print-unreadable-object (object stream)))
-
+  (print-unreadable-object (object stream)
+    ;; We don't just use :type, because that outputs an extra space.
+    (let ((*package* (find-package "CL")))
+      (format stream "~S"
+              (class-name (si:instance-class object)))))
+  object)

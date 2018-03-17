@@ -27,7 +27,6 @@ THE SOFTWARE.
 #ifndef llvmo_dwarf_H
 #define llvmo_dwarf_H
 
-#include <clasp/core/foundation.h>
 
 namespace llvmo {
 

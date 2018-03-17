@@ -27,7 +27,6 @@ THE SOFTWARE.
 #ifndef _core_predicates_H
 #define _core_predicates_H
 
-#include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 
 namespace core {

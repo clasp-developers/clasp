@@ -26,12 +26,12 @@ THE SOFTWARE.
 /* -^- */
 //#define DEBUG_LEVEL_FULL
 
+#include <clasp/core/foundation.h>
 #include <clasp/core/lisp.h>
 #include <clasp/core/standardObject.h>
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/evaluator.h>
 #include <clasp/core/builtInClass.h>
-#include <clasp/core/standardClass.h>
 #include <clasp/core/wrappers.h>
 
 namespace core {
@@ -65,7 +65,7 @@ void StandardObject_O::archiveBase(ArchiveP node) {
 
 string StandardObject_O::__repr__() const {
   stringstream ss;
-  ss << this->_instanceClass()->classNameAsString() << " ";
+  ss << this->_instanceClass()->_classNameAsString() << " ";
 #if 0
 	ASSERT(this->_InstanceClass);
 	if ( this->_InstanceClass.unboundp() )

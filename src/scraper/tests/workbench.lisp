@@ -4,12 +4,24 @@
 
 
 (progn
-  (defparameter *clasp-home* #P"/Users/meister/Development/cando/")
+  (setq *default-pathname-defaults* #P"/Users/meister/Development/clasp/src/scraper/")
+  (sb-posix:chdir "/Users/meister/Development/clasp/build/boehm/")
+  (defparameter *clasp-home* #P"/Users/meister/Development/clasp/")
   (setf *default-pathname-defaults* (merge-pathnames "src/scraper/" *clasp-home*))
   (push :testing-scraper *features*)
   (load "scraper.lisp"))
 
+(load "/Users/meister/Development/clasp/src/scraper/tags.lisp" :print t)
 
+(cscrape:generate-one-sif "/Users/meister/Development/externals-clasp/build/release/bin/clang++ -E -DSCRAPING -I./ -I/Users/meister/Development/externals-clasp/build/release/include -std=c++11 -Wno-macro-redefined -Wno-deprecated-register -Wno-expansion-to-defined -Wno-return-type-c-linkage -Wno-invalid-offsetof -Wno-#pragma-messages -Wno-inconsistent-missing-override -O3 -g -I. -I../.. -I../../src/main -I../../include -Igenerated -I../../../externals-clasp/build/release/include -I/usr/include /Users/meister/Development/clasp/src/llvmo/llvmoExpose.cc" #P"/tmp/llvmoExpose.sif")
+
+(apropos "parse-lambda-list")
+
+
+(parse-lambda-list-from-signature "APFloat_sp APFloat_O::makeAPFloatFloat(core::SingleFloat_sp value)")
+
+(separate-type-pointer "&llvm::IRBuilderBase::SetInsertPoint")
+(separate-type-pointer "(void (llvm::IRBuilderBase::*)(llvm::BasicBlock *))&llvm::IRBuilderBase::SetInsertPoint")
 
 
 
@@ -19,7 +31,7 @@
 (apropos "generate-headers-from-all-sifs"
 
 (cscrape::process-all-sif-files "/Users/meister/Development/cando/"
-                                "/Users/meister/Development/cando/build/boehmdc/" 
+                                "/Users/meister/Development/cando/build/boehm/" 
                                 '("/Users/meister/Development/cando/build/boehmdc/src/gctools/gc_interface.sif" 
                                   "/Users/meister/Development/cando/build/boehmdc/src/gctools/boehmGarbageCollection.sif" 
                                   "/Users/meister/Development/cando/build/boehmdc/src/gctools/mpsGarbageCollection.sif" 

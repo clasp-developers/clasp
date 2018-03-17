@@ -27,7 +27,6 @@ THE SOFTWARE.
 #ifndef asttooling_translators_H
 #define asttooling_translators_H
 
-#include <clasp/core/foundation.h>
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/array.h>
 #include <clasp/clbind/clbind.h>
@@ -51,7 +50,7 @@ struct from_object<int &, std::true_type> {
       this->_v = (int)(o.unsafe_fixnum());
       return;
     }
-    SIMPLE_ERROR(BF("Add support to convert other types to int"));
+    SIMPLE_ERROR_SPRINTF("Add support to convert other types to int");
   }
 };
 
@@ -68,7 +67,7 @@ struct to_object<int &> {
     {
 	static core::T_sp convert(clang::CXXRecordDecl* ptr)
 	{
-            IMPLEMENT_MEF(BF("Handle more complex wrappers"));
+          HARD_IMPLEMENT_MEF(BF("Handle more complex wrappers"));
 //	    return (clbind::Wrapper<clang::CXXRecordDecl>::create(ptr));
 	}
     };
@@ -124,7 +123,7 @@ struct from_object<const vector<string> &> {
       }
       return;
     }
-    SIMPLE_ERROR(BF("Add support to convert %s to vector<string>") % _rep_(o));
+    SIMPLE_ERROR_SPRINTF("Add support to convert %s to vector<string>", _rep_(o).c_str());
   }
 };
 
@@ -146,7 +145,7 @@ struct to_object<std::vector<std::unique_ptr<clang::ASTUnit>> &> {
   static core::T_sp convert(std::vector<std::unique_ptr<clang::ASTUnit>> &vals) {
     core::VectorObjects_sp vo = core::VectorObjects_O::make( vals.size(), _Nil<core::T_O>(), core::clasp_make_fixnum(0));
     for (int i(0), iEnd(vals.size()); i < iEnd; ++i) {
-      vo->vectorPushExtend(clbind::Wrapper<clang::ASTUnit, std::unique_ptr<clang::ASTUnit>>::create(std::move(vals[i]), reg::registered_class<clang::ASTUnit>::id));
+      vo->vectorPushExtend(clbind::Wrapper<clang::ASTUnit, std::unique_ptr<clang::ASTUnit>>::make_wrapper(std::move(vals[i]), reg::registered_class<clang::ASTUnit>::id));
     }
     return vo;
   }
@@ -158,7 +157,7 @@ struct to_object<std::vector<clang::tooling::CompileCommand>> {
   static core::T_sp convert(GivenType vals) {
     core::VectorObjects_sp vo = core::VectorObjects_O::make(vals.size(), _Nil<core::T_O>(), core::clasp_make_fixnum(0));
     for (int i(0), iEnd(vals.size()); i < iEnd; ++i) {
-      vo->vectorPushExtend(clbind::Wrapper<clang::tooling::CompileCommand, std::unique_ptr<clang::tooling::CompileCommand>>::create(vals[i], reg::registered_class<clang::tooling::CompileCommand>::id));
+      vo->vectorPushExtend(clbind::Wrapper<clang::tooling::CompileCommand, std::unique_ptr<clang::tooling::CompileCommand>>::make_wrapper(vals[i], reg::registered_class<clang::tooling::CompileCommand>::id));
     }
     return vo;
   }

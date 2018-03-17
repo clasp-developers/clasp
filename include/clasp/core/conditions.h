@@ -32,7 +32,6 @@ THE SOFTWARE.
 #include <string>
 #include <vector>
 #include <set>
-#include <clasp/core/foundation.h>
 #include <clasp/core/lispStream.fwd.h>
 #include <clasp/core/conditions.fwd.h>
 #include <clasp/core/object.h>
@@ -49,7 +48,7 @@ public: // ctor/dtor for classes with shared virtual base
         //    virtual ~CandoException_O() {};
 public:
   static CandoException_sp create(const string &msg);
-  static CandoException_sp create(const boost::format &fmt);
+//  static CandoException_sp create(const boost::format &fmt);
 
 GCPRIVATE: // instance variables here
   SimpleString_sp _message;

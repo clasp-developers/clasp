@@ -14,10 +14,8 @@ command regex set-args 's/(.+)/settings set target.run-args %1/'
 #
 # Print the lisp value of the smart-ptr argument
 #
-command regex lp 's/(.+)/expr core::dbg_printTPtr((uintptr_t)%1.theObject,true)/'
-
-command regex lpr 's/(.+)/expr core::dbg_describe_tagged_T_Optr((core::T_O*)%1.theObject)/'
-command regex lpraw 's/(.+)/expr core::dbg_describe_tagged_T_Optr((core::T_O*)%1)/'
+command regex lpr 's/(.+)/expr tprint((void*)%1.theObject)/'
+command regex lpraw 's/(.+)/expr tprint((void*)%1)/'
 command regex lphead 's/(.+)/expr core::dbg_describe_tagged_T_Optr_header((core::T_O*)%1)/'
 command regex lmv 's/(.+)/expr core::dbg_mv_lowLevelDescribe(%1)/'
 
@@ -30,7 +28,7 @@ command alias lreload command source ~/.lldbinit
 # set breakpoints
 break set -n dbg_hook
 
-command alias lbt expr (void)core::core__ihs_backtrace_no_args()
+command alias lbt expr (void) tbacktrace()
 
 #
 # When we continue invoke the debugger as if control-c was hit

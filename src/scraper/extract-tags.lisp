@@ -5,8 +5,7 @@
 ;;; (1) Read preprocessed files into memory and search for tags
 ;;; (2) Generate .sif files containing the tags
 
-(require :sb-posix)
-
+;; NOTE: it has nothing to do with CL:STREAM
 (defclass buffer-stream ()
   ((buffer :initarg :buffer :accessor buffer)
    (buffer-pathname :initarg :buffer-pathname :accessor buffer-pathname)
@@ -58,7 +57,7 @@ Peek into the buffer and return the next char at the file-position"
 - filename : A pathname
 * Description
 Read the contents of the filename into memory and return a buffer-stream on it."
-  (with-open-file (stream (pathname filename))
+  (with-open-file (stream (pathname filename) :external-format :utf-8)
     (let ((data (make-string (file-length stream))))
       (read-sequence data stream)
       (make-instance 'buffer-stream

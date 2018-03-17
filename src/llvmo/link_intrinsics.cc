@@ -32,11 +32,13 @@ extern "C" {
 #include <clasp/mps/code/mps.h>
 };
 #endif
+#include <dlfcn.h>
 #include <typeinfo>
 #include <clasp/core/foundation.h>
 #include <clasp/core/common.h>
 #include <clasp/core/bignum.h>
 #include <clasp/core/functor.h>
+#include <clasp/gctools/gcFunctions.h>
 #include <clasp/core/character.h>
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/array.h>
@@ -69,13 +71,7 @@ using namespace core;
 #pragma GCC visibility push(default)
 
 namespace llvmo {
-core::T_sp  global_arg0;
-core::T_sp  global_arg1;
-core::T_sp  global_arg2;
-void intrinsic_error(ErrorCode err, core::T_sp arg0, core::T_sp arg1, core::T_sp arg2) {
-  global_arg0 = arg0;
-  global_arg1 = arg1;
-  global_arg2 = arg2;
+[[noreturn]] __attribute__((optnone))  void intrinsic_error(ErrorCode err, core::T_sp arg0, core::T_sp arg1, core::T_sp arg2) {
   switch (err) {
   case noFunctionBoundToSymbol:
     {
@@ -84,19 +80,13 @@ void intrinsic_error(ErrorCode err, core::T_sp arg0, core::T_sp arg1, core::T_sp
     }
     break;
   case badKeywordArgument:
-    SIMPLE_ERROR(BF("Bad keyword argument %s") % _rep_(arg0));
+      SIMPLE_ERROR(BF("Bad keyword argument %s") % _rep_(arg0));
   case couldNotCoerceToClosure:
-    SIMPLE_ERROR(BF(" symbol %s") % _rep_(arg0));
+      SIMPLE_ERROR(BF(" symbol %s") % _rep_(arg0));
   case destinationMustBeActivationFrame:
-    SIMPLE_ERROR(BF("Destination must be ActivationFrame"));
+      SIMPLE_ERROR(BF("Destination must be ActivationFrame"));
   case invalidIndexForFunctionFrame:
-    SIMPLE_ERROR(BF("Invalid index[%d] for FunctionFrame(size=%d)") % _rep_(arg0) % _rep_(arg1));
-  case no_applicable_reader_method:
-      core::eval::funcall(::cl::_sym_no_applicable_method,arg0,arg1);
-      UNREACHABLE();
-  case no_applicable_writer_method:
-      core::eval::funcall(::cl::_sym_no_applicable_method,arg0,arg1,arg2);
-      UNREACHABLE();
+      SIMPLE_ERROR(BF("Invalid index[%d] for FunctionFrame(size=%d)") % _rep_(arg0) % _rep_(arg1));
   case unboundSymbolValue:
     {
       core::Symbol_sp sym = gc::As<core::Symbol_sp>(arg0);
@@ -116,27 +106,44 @@ void intrinsic_error(ErrorCode err, core::T_sp arg0, core::T_sp arg1, core::T_sp
     {
       SIMPLE_ERROR(BF("The object with pointer %p is not a cell") % arg0.raw_());
     }
+  case slot_reader_problem: {
+    SIMPLE_ERROR(BF("TRAPPED SLOT READER PROBLEM!!!   The slot accessor efm returned %s and the direct slot read at %d returned %s") % _rep_(arg0) % _rep_(arg1) % _rep_(arg2));
+  }
+  case slot_writer_problem: {
+    SIMPLE_ERROR(BF("TRAPPED SLOT WRITER PROBLEM!!!   The expected slot at %d value %s was unchanged!  The value should be %s") % _rep_(arg0) % _rep_(arg1) % _rep_(arg2) );
+  }
   default:
-    SIMPLE_ERROR(BF("An intrinsicError %d was signaled and there needs to be a more descriptive error message for it in gctools::intrinsic_error arg0: %s arg1: %s arg2: %s") % err % _rep_(arg0) % _rep_(arg1) % _rep_(arg2));
+      SIMPLE_ERROR(BF("An intrinsicError %d was signaled and there needs to be a more descriptive error message for it in gctools::intrinsic_error arg0: %s arg1: %s arg2: %s") % err % _rep_(arg0) % _rep_(arg1) % _rep_(arg2));
   };
 };
+
 };
 
+namespace llvmo {
+core::T_sp intrinsic_slot_unbound(core::T_sp slot_info, core::T_sp instance ) {
+  return core::eval::funcall(clos::_sym_fastgf_slot_unbound,slot_info,instance);
+};
+};
 
 
 
 extern "C" {
 
-void cc_initialize_gcroots_in_module(gctools::GCRootsInModule* holder, core::T_sp* root_address, size_t num_roots, gctools::Tagged initial_data ) {
+void cc_initialize_gcroots_in_module(gctools::GCRootsInModule* holder, core::T_O** root_address, size_t num_roots, gctools::Tagged initial_data )
+{NO_UNWIND_BEGIN();
   initialize_gcroots_in_module(holder,root_address,num_roots,initial_data);
+  NO_UNWIND_END();
 }
 
-void cc_shutdown_gcroots_in_module(gctools::GCRootsInModule* holder) {
+void cc_shutdown_gcroots_in_module(gctools::GCRootsInModule* holder)
+{NO_UNWIND_BEGIN();
   shutdown_gcroots_in_module(holder);
+  NO_UNWIND_END();
 }
 
 
 void ltvc_assign_source_file_info_handle(const char *moduleName, const char *sourceDebugPathname, size_t sourceDebugOffset, int useLineno, int *sourceFileInfoHandleP) {
+  NO_UNWIND_BEGIN();
   //	printf("%s:%d assignSourceFileInfoHandle %s\n", __FILE__, __LINE__, moduleName );
   core::SimpleBaseString_sp mname = core::SimpleBaseString_O::make(moduleName);
   core::SimpleBaseString_sp struename = core::SimpleBaseString_O::make(sourceDebugPathname);
@@ -150,47 +157,65 @@ void ltvc_assign_source_file_info_handle(const char *moduleName, const char *sou
   }
 #endif
   *sourceFileInfoHandleP = sfindex;
+  NO_UNWIND_END();
 }
 
+// Define what ltvc_xxxx functions return - this must match what is
+//  in cmpintrinsics.lsp
+typedef void LtvcReturn;
+#define LTVCRETURN /* Nothing return for void */
 
-gctools::Tagged ltvc_make_nil(gctools::GCRootsInModule* holder, size_t index)
+LtvcReturn ltvc_make_nil(gctools::GCRootsInModule* holder, size_t index)
 {
+  NO_UNWIND_BEGIN();
   core::T_sp val = _Nil<core::T_O>();
-  return holder->set(index,val.tagged_());
+  LTVCRETURN holder->set(index,val.tagged_());
+  NO_UNWIND_END();
 }
 
-gctools::Tagged ltvc_make_t(gctools::GCRootsInModule* holder, size_t index)
+LtvcReturn ltvc_make_t(gctools::GCRootsInModule* holder, size_t index)
 {
+  NO_UNWIND_BEGIN();
   core::T_sp val = _lisp->_true();
-  return holder->set(index,val.tagged_());
+  LTVCRETURN holder->set(index,val.tagged_());
+  NO_UNWIND_END();
 }
 
 
-gctools::Tagged ltvc_make_ratio(gctools::GCRootsInModule* holder, size_t index, gctools::Tagged num, gctools::Tagged denom ) {
+LtvcReturn ltvc_make_ratio(gctools::GCRootsInModule* holder, size_t index, gctools::Tagged num, gctools::Tagged denom )
+{NO_UNWIND_BEGIN();
   core::T_sp val = core::Ratio_O::create(core::T_sp(num),core::T_sp(denom));
-  return holder->set(index,val.tagged_());
+  LTVCRETURN holder->set(index,val.tagged_());
+  NO_UNWIND_END();
 }
 
-gctools::Tagged ltvc_make_complex(gctools::GCRootsInModule* holder, size_t index, gctools::Tagged real, gctools::Tagged imag) {
+LtvcReturn ltvc_make_complex(gctools::GCRootsInModule* holder, size_t index, gctools::Tagged real, gctools::Tagged imag)
+{NO_UNWIND_BEGIN();
   core::Number_sp nreal((gctools::Tagged)real);
   core::Number_sp nimag((gctools::Tagged)imag);
   core::T_sp val = core::Complex_O::create(clasp_to_double(nreal),clasp_to_double(nimag));
-  return holder->set(index,val.tagged_());
+  LTVCRETURN holder->set(index,val.tagged_());
+  NO_UNWIND_END();
 }
 
 
-gctools::Tagged ltvc_make_cons(gctools::GCRootsInModule* holder, size_t index, gctools::Tagged car, gctools::Tagged cdr) {
+LtvcReturn ltvc_make_cons(gctools::GCRootsInModule* holder, size_t index, gctools::Tagged car, gctools::Tagged cdr)
+{NO_UNWIND_BEGIN();
   core::T_sp val = core::Cons_O::create(core::T_sp(car),core::T_sp(cdr));
-  return holder->set(index,val.tagged_());
+  LTVCRETURN holder->set(index,val.tagged_());
+  NO_UNWIND_END();
 }
 
-gctools::Tagged ltvc_nconc(gctools::GCRootsInModule* holder, size_t index,
-                               gctools::Tagged front, gctools::Tagged back) {
+LtvcReturn ltvc_nconc(gctools::GCRootsInModule* holder, size_t index,
+                               gctools::Tagged front, gctools::Tagged back)
+{NO_UNWIND_BEGIN();
   core::T_sp val = core::clasp_nconc(core::T_sp(front),core::T_sp(back));
-  return holder->set(index,val.tagged_());
+  LTVCRETURN holder->set(index,val.tagged_());
+  NO_UNWIND_END();
 }
 
-gctools::Tagged ltvc_make_list(gctools::GCRootsInModule* holder, size_t index, size_t num, ... ) {
+NOINLINE LtvcReturn ltvc_make_list(gctools::GCRootsInModule* holder, size_t index, size_t num, ... )
+{NO_UNWIND_BEGIN();
   core::T_sp first;
   core::T_sp* cur = &first;
   va_list va;
@@ -203,68 +228,80 @@ gctools::Tagged ltvc_make_list(gctools::GCRootsInModule* holder, size_t index, s
   }
   va_end(va);
   core::T_sp val = first;
-  return holder->set(index,val.tagged_());
+  LTVCRETURN holder->set(index,val.tagged_());
+  NO_UNWIND_END();
 }
 
-gctools::Tagged ltvc_make_array(gctools::GCRootsInModule* holder, size_t index,
+LtvcReturn ltvc_make_array(gctools::GCRootsInModule* holder, size_t index,
                                 gctools::Tagged telement_type,
-                                gctools::Tagged tdimensions ) {
+                                gctools::Tagged tdimensions )
+{NO_UNWIND_BEGIN();
   core::T_sp element_type(telement_type);
   core::List_sp dimensions(tdimensions);
   core::T_sp val;
-    if (element_type != cl::_sym_T_O) {
-      SIMPLE_WARN(BF("Call make-array to make the array/vector rather than defaulting to an VectorObjects/ArrayObjects"));
-    }
   if (core::cl__length(dimensions) == 1) // vector
   {
-    val = core::SimpleVector_O::make(oCar(dimensions).unsafe_fixnum(),_Nil<core::T_O>(),true);
+    val = core::core__make_vector(element_type, oCar(dimensions).unsafe_fixnum());
   } else {
-    val = core::SimpleMDArrayT_O::make_multi_dimensional(dimensions,_Nil<core::T_O>(),_Nil<core::T_O>());
+    val = core::core__make_mdarray(dimensions, element_type);
   }
-  return holder->set(index,val.tagged_());
+  LTVCRETURN holder->set(index,val.tagged_());
+  NO_UNWIND_END();
 }
 
 void ltvc_setf_row_major_aref(gctools::Tagged array_t,
                               size_t row_major_index,
                               gctools::Tagged value_t )
-{
+{NO_UNWIND_BEGIN();
   core::Array_sp array = gc::As<core::Array_sp>(core::T_sp(array_t));
   array->rowMajorAset(row_major_index,core::T_sp(value_t));
+  NO_UNWIND_END();
 }
   
-gctools::Tagged ltvc_make_hash_table(gctools::GCRootsInModule* holder, size_t index,
-                                gctools::Tagged test_t ) {
-  return holder->set(index,core::HashTable_O::create(core::T_sp(test_t)).tagged_());
+LtvcReturn ltvc_make_hash_table(gctools::GCRootsInModule* holder, size_t index,
+                                gctools::Tagged test_t )
+{NO_UNWIND_BEGIN();
+  LTVCRETURN holder->set(index,core::HashTable_O::create(core::T_sp(test_t)).tagged_());
+  NO_UNWIND_END();
 }
 
 void ltvc_setf_gethash(gctools::Tagged hash_table_t,
                        gctools::Tagged key_index_t,
-                       gctools::Tagged value_index_t ) {
+                       gctools::Tagged value_index_t )
+{NO_UNWIND_BEGIN();
   core::HashTable_sp hash_table = gctools::As<HashTable_sp>(core::T_sp(hash_table_t));
   core::T_sp key(key_index_t);
   core::T_sp value(value_index_t);
   hash_table->hash_table_setf_gethash(key, value);
+  NO_UNWIND_END();
 }
 
-gctools::Tagged ltvc_make_fixnum(gctools::GCRootsInModule* holder, size_t index, int64_t val) {
+LtvcReturn ltvc_make_fixnum(gctools::GCRootsInModule* holder, size_t index, int64_t val)
+{NO_UNWIND_BEGIN();
   core::T_sp v = clasp_make_fixnum(val);
-  return holder->set(index,v.tagged_());
+  LTVCRETURN holder->set(index,v.tagged_());
+  NO_UNWIND_END();
 }
 
-gctools::Tagged ltvc_make_bignum(gctools::GCRootsInModule* holder, size_t index, gctools::Tagged bignum_string_t) {
+LtvcReturn ltvc_make_bignum(gctools::GCRootsInModule* holder, size_t index, gctools::Tagged bignum_string_t)
+{NO_UNWIND_BEGIN();
   core::SimpleBaseString_sp bignum_string = gctools::As<core::SimpleBaseString_sp>(core::T_sp(bignum_string_t));
   core::T_sp val = core::Bignum_O::make(bignum_string->get());
-  return holder->set(index,val.tagged_());
+  LTVCRETURN holder->set(index,val.tagged_());
+  NO_UNWIND_END();
 }
 
-gctools::Tagged ltvc_make_bitvector(gctools::GCRootsInModule* holder, size_t index, gctools::Tagged bitvector_string_t) {
+LtvcReturn ltvc_make_bitvector(gctools::GCRootsInModule* holder, size_t index, gctools::Tagged bitvector_string_t)
+{NO_UNWIND_BEGIN();
   core::SimpleBaseString_sp bitvector_string = gctools::As<core::SimpleBaseString_sp>(core::T_sp(bitvector_string_t));
   core::T_sp val = core::SimpleBitVector_O::make(bitvector_string->get());
-  return holder->set(index,val.tagged_());
+  LTVCRETURN holder->set(index,val.tagged_());
+  NO_UNWIND_END();
 }
 
-gctools::Tagged ltvc_make_symbol(gctools::GCRootsInModule* holder, size_t index, gctools::Tagged name_t,
-                                 gctools::Tagged package_t ) {
+LtvcReturn ltvc_make_symbol(gctools::GCRootsInModule* holder, size_t index, gctools::Tagged name_t,
+                                 gctools::Tagged package_t )
+{NO_UNWIND_BEGIN();
   core::T_sp package(package_t);
   core::SimpleString_sp symbol_name(name_t);
   core::Symbol_sp sym;
@@ -274,25 +311,31 @@ gctools::Tagged ltvc_make_symbol(gctools::GCRootsInModule* holder, size_t index,
     sym = core::Symbol_O::create(symbol_name);
   }
   core::T_sp val = sym;
-  return holder->set(index,val.tagged_());
+  LTVCRETURN holder->set(index,val.tagged_());
+  NO_UNWIND_END();
 }
 
-gctools::Tagged ltvc_make_character(gctools::GCRootsInModule* holder, size_t index, uintptr_clasp_t val) {
+LtvcReturn ltvc_make_character(gctools::GCRootsInModule* holder, size_t index, uintptr_clasp_t val)
+{NO_UNWIND_BEGIN();
   core::T_sp v = clasp_make_character(val);
-  return holder->set(index,v.tagged_());
+  LTVCRETURN holder->set(index,v.tagged_());
+  NO_UNWIND_END();
 }
 
-gctools::Tagged ltvc_make_base_string(gctools::GCRootsInModule* holder, size_t index, const char* str) {
+LtvcReturn ltvc_make_base_string(gctools::GCRootsInModule* holder, size_t index, const char* str) \
+{NO_UNWIND_BEGIN();
   core::T_sp v = core::SimpleBaseString_O::make(str);
-  return holder->set(index,v.tagged_());
+  LTVCRETURN holder->set(index,v.tagged_());
+  NO_UNWIND_END();
 }
 
-gctools::Tagged ltvc_make_pathname(gctools::GCRootsInModule* holder, size_t index, gctools::Tagged host_t,
+LtvcReturn ltvc_make_pathname(gctools::GCRootsInModule* holder, size_t index, gctools::Tagged host_t,
                                    gctools::Tagged device_t,
                                    gctools::Tagged directory_t,
                                    gctools::Tagged name_t,
                                    gctools::Tagged type_t,
-                                   gctools::Tagged version_t ) {
+                                   gctools::Tagged version_t )
+{NO_UNWIND_BEGIN();
   core::T_sp val = core::Pathname_O::makePathname(core::T_sp(host_t),
                                         core::T_sp(device_t),
                                         core::T_sp(directory_t),
@@ -301,10 +344,13 @@ gctools::Tagged ltvc_make_pathname(gctools::GCRootsInModule* holder, size_t inde
                                         core::T_sp(version_t),
                                         kw::_sym_local,
                                               core::T_sp(host_t).notnilp());
-  return holder->set(index,val.tagged_());
+  LTVCRETURN holder->set(index,val.tagged_());
+  NO_UNWIND_END();
 }
 
-gctools::Tagged ltvc_make_package(gctools::GCRootsInModule* holder, size_t index, gctools::Tagged package_name_t ) {
+LtvcReturn ltvc_make_package(gctools::GCRootsInModule* holder, size_t index, gctools::Tagged package_name_t )
+{
+  NO_UNWIND_BEGIN();
   core::SimpleBaseString_sp package_name(package_name_t);
   core::T_sp tpkg = _lisp->findPackage(package_name->get(),false);
   if ( tpkg.nilp() ) {
@@ -313,76 +359,137 @@ gctools::Tagged ltvc_make_package(gctools::GCRootsInModule* holder, size_t index
     tpkg = _lisp->makePackage(package_name->get(),std::list<std::string>(), std::list<std::string>());
   }
   core::T_sp val = tpkg;
-  return holder->set(index,val.tagged_());
+  LTVCRETURN holder->set(index,val.tagged_());
+  NO_UNWIND_END();
 }
 
-gctools::Tagged ltvc_make_random_state(gctools::GCRootsInModule* holder, size_t index, gctools::Tagged random_state_string_t) {
+LtvcReturn ltvc_make_random_state(gctools::GCRootsInModule* holder, size_t index, gctools::Tagged random_state_string_t)
+{NO_UNWIND_BEGIN();
   core::SimpleBaseString_sp random_state_string(random_state_string_t);
   core::RandomState_sp rs = core::RandomState_O::create();
   rs->random_state_set(random_state_string->get());
   core::T_sp val = rs;
-  return holder->set(index,val.tagged_());
+  LTVCRETURN holder->set(index,val.tagged_());
+  NO_UNWIND_END();
 }
 
 
-gctools::Tagged ltvc_make_built_in_class(gctools::GCRootsInModule* holder, size_t index, gctools::Tagged class_name_t ) {
+LtvcReturn ltvc_make_built_in_class(gctools::GCRootsInModule* holder, size_t index, gctools::Tagged class_name_t )
+{NO_UNWIND_BEGIN();
   core::Symbol_sp class_name(class_name_t);
   core::T_sp cl = core::cl__find_class(class_name, true, _Nil<core::T_O>());
   if ( cl.nilp() ) {
     SIMPLE_ERROR(BF("Could not find class %s") % class_name );
   } else {
     core::T_sp val = cl;
-    return holder->set(index,val.tagged_());
+    LTVCRETURN holder->set(index,val.tagged_());
   }
+  NO_UNWIND_END();
 }
 
 
-gctools::Tagged ltvc_make_float(gctools::GCRootsInModule* holder, size_t index, float f) {
+LtvcReturn ltvc_make_float(gctools::GCRootsInModule* holder, size_t index, float f)
+{NO_UNWIND_BEGIN();
   core::T_sp val = clasp_make_single_float(f);
-  return holder->set(index,val.tagged_());
+  LTVCRETURN holder->set(index,val.tagged_());
+  NO_UNWIND_END();
 }
 
-gctools::Tagged ltvc_make_double(gctools::GCRootsInModule* holder, size_t index, double f) {
+LtvcReturn ltvc_make_double(gctools::GCRootsInModule* holder, size_t index, double f)
+{NO_UNWIND_BEGIN();
   core::T_sp val = clasp_make_double_float(f);
-  return holder->set(index,val.tagged_());
+  LTVCRETURN holder->set(index,val.tagged_());
+  NO_UNWIND_END();
 }
 
-gctools::Tagged ltvc_set_mlf_creator_funcall(gctools::GCRootsInModule* holder, size_t index, fnLispCallingConvention fptr, const char* name) {
+LtvcReturn ltvc_set_mlf_creator_funcall(gctools::GCRootsInModule* holder, size_t index, fnLispCallingConvention fptr, const char* name) {
   core::T_O *lcc_arglist = _Nil<core::T_O>().raw_();
   Symbol_sp sname = Symbol_O::create_from_string(std::string(name));
-  GC_ALLOCATE_VARIADIC(CompiledClosure_O, toplevel_closure, fptr, sname, kw::_sym_function, _Nil<T_O>(), _Nil<T_O>(), _Nil<T_O>(), _Nil<T_O>(), 0, 0, 0, 0 );
+  GC_ALLOCATE_VARIADIC(CompiledClosure_O, toplevel_closure, fptr, sname, kw::_sym_function, _Nil<T_O>(), _Nil<T_O>(), 0, 0, 0, 0 );
   LCC_RETURN ret = fptr(LCC_PASS_ARGS0_VA_LIST(toplevel_closure.raw_()));
   core::T_sp res((gctools::Tagged)ret.ret0[0]);
   core::T_sp val = res;
-  return holder->set(index,val.tagged_());
+  LTVCRETURN holder->set(index,val.tagged_());
 }
 
-gctools::Tagged ltvc_mlf_init_funcall(fnLispCallingConvention fptr, const char* name) {
+LtvcReturn ltvc_mlf_init_funcall(fnLispCallingConvention fptr, const char* name) {
   core::T_O *lcc_arglist = _Nil<core::T_O>().raw_();
   Symbol_sp sname = Symbol_O::create_from_string(std::string(name));
-  GC_ALLOCATE_VARIADIC(CompiledClosure_O, toplevel_closure, fptr, sname, kw::_sym_function, _Nil<T_O>(), _Nil<T_O>(), _Nil<T_O>(), _Nil<T_O>(), 0, 0, 0, 0 );
+  GC_ALLOCATE_VARIADIC(CompiledClosure_O, toplevel_closure, fptr, sname, kw::_sym_function, _Nil<T_O>(), _Nil<T_O>(), 0, 0, 0, 0 );
   LCC_RETURN ret = fptr(LCC_PASS_ARGS0_VA_LIST(toplevel_closure.raw_()));
-  return reinterpret_cast<gctools::Tagged>(ret.ret0[0]);
+//  LTVCRETURN reinterpret_cast<gctools::Tagged>(ret.ret0[0]);
 }
 
 // This is exactly like the one above - is it necessary?
-gctools::Tagged ltvc_set_ltv_funcall(gctools::GCRootsInModule* holder, size_t index, fnLispCallingConvention fptr, const char* name) {
+LtvcReturn ltvc_set_ltv_funcall(gctools::GCRootsInModule* holder, size_t index, fnLispCallingConvention fptr, const char* name) {
   core::T_O *lcc_arglist = _Nil<core::T_O>().raw_();
   Symbol_sp sname = Symbol_O::create_from_string(std::string(name));
-  GC_ALLOCATE_VARIADIC(CompiledClosure_O, toplevel_closure, fptr, sname, kw::_sym_function, _Nil<T_O>(), _Nil<T_O>(), _Nil<T_O>(), _Nil<T_O>(), 0, 0, 0, 0 );
+  GC_ALLOCATE_VARIADIC(CompiledClosure_O, toplevel_closure, fptr, sname, kw::_sym_function, _Nil<T_O>(), _Nil<T_O>(), 0, 0, 0, 0 );
   LCC_RETURN ret = fptr(LCC_PASS_ARGS0_VA_LIST(toplevel_closure.raw_()));
   core::T_sp res((gctools::Tagged)ret.ret0[0]);
   core::T_sp val = res;
-  return holder->set(index,val.tagged_());
+  LTVCRETURN holder->set(index,val.tagged_());
 }
 
-
-gctools::Tagged ltvc_toplevel_funcall(fnLispCallingConvention fptr, const char* name) {
+LtvcReturn ltvc_set_ltv_funcall_cleavir(gctools::GCRootsInModule* holder, size_t index, fnLispCallingConvention fptr, const char* name) {
+  // I created this function just in case cleavir returns a function that when evaluated returns a function that
+  // would return the ltv value - that appears not to be the case.
+  // FIXME: Remove this function and use the ltvc_set_ltv_funcall instead
   core::T_O *lcc_arglist = _Nil<core::T_O>().raw_();
   Symbol_sp sname = Symbol_O::create_from_string(std::string(name));
-  GC_ALLOCATE_VARIADIC(CompiledClosure_O, toplevel_closure, fptr, sname, kw::_sym_function, _Nil<T_O>(), _Nil<T_O>(), _Nil<T_O>(), _Nil<T_O>(), 0, 0, 0, 0 );
+  GC_ALLOCATE_VARIADIC(CompiledClosure_O, toplevel_closure, fptr, sname, kw::_sym_function, _Nil<T_O>(), _Nil<T_O>(), 0, 0, 0, 0 );
   LCC_RETURN ret = fptr(LCC_PASS_ARGS0_VA_LIST(toplevel_closure.raw_()));
-  return reinterpret_cast<gctools::Tagged>(ret.ret0[0]);
+  core::T_sp tret((gctools::Tagged)ret.ret0);
+//  printf("%s:%d:%s     ret -> %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(tret).c_str());
+  core::T_sp res((gctools::Tagged)ret.ret0[0]);
+  core::T_sp val = res;
+  LTVCRETURN holder->set(index,val.tagged_());
+}
+
+struct MaybeDebugStartup {
+  PosixTime_sp start;
+  fnLispCallingConvention fptr;
+  size_t start_dispatcher_count;
+  MaybeDebugStartup(fnLispCallingConvention fp) : fptr(fp) {
+    if (core::_sym_STARdebugStartupSTAR->symbolValue().notnilp()) {
+      this->start = PosixTime_O::createNow();
+      if (comp::_sym_dispatcher_count->fboundp()) {
+        core::T_sp nu = core::eval::funcall(comp::_sym_dispatcher_count);
+        this->start_dispatcher_count = nu.unsafe_fixnum();
+      } else {
+        this->start_dispatcher_count = 0;
+      }
+    }
+  };
+
+  ~MaybeDebugStartup() {
+    if (core::_sym_STARdebugStartupSTAR->symbolValue().notnilp()) {
+      PosixTime_sp end = PosixTime_O::createNow();
+      PosixTimeDuration_sp diff = end->sub(this->start);
+      Dl_info di;
+      dladdr((void*)fptr,&di);
+      mpz_class ms = diff->totalMilliseconds();
+      size_t end_dispatcher_count = 0;
+      if (comp::_sym_dispatcher_count->fboundp()) {
+        core::T_sp nu = core::eval::funcall(comp::_sym_dispatcher_count);
+        end_dispatcher_count = nu.unsafe_fixnum();
+      }
+      size_t dispatcher_delta = end_dispatcher_count - this->start_dispatcher_count;
+      if (ms!=0 || dispatcher_delta!=0)
+        printf("%s ms %zu gfds : %s\n", _rep_(Integer_O::create(ms)).c_str(), dispatcher_delta, di.dli_sname);
+    }
+  }
+};
+
+LtvcReturn ltvc_toplevel_funcall(fnLispCallingConvention fptr, const char* name) {
+#ifdef DEBUG_SLOW
+  MaybeDebugStartup startup(fptr);
+#endif
+  core::T_O *lcc_arglist = _Nil<core::T_O>().raw_();
+  Symbol_sp sname = Symbol_O::create_from_string(std::string(name));
+  GC_ALLOCATE_VARIADIC(CompiledClosure_O, toplevel_closure, fptr, sname, kw::_sym_function, _Nil<T_O>(), _Nil<T_O>(), 0, 0, 0, 0 );
+  LCC_RETURN ret = fptr(LCC_PASS_ARGS0_VA_LIST(toplevel_closure.raw_()));
+//  LTVCRETURN reinterpret_cast<gctools::Tagged>(ret.ret0[0]);
 }
 
 };
@@ -408,7 +515,8 @@ uint _LLVMLowLevelTraceQueueIn = 0;
 uint _LLVMLowLevelTraceQueueWrapped = false;
 uint _LLVMLowLevelTraceQueue[LOW_LEVEL_TRACE_QUEUE_SIZE];
 
-NOINLINE void lowLevelTrace(uint traceid) {
+NOINLINE void lowLevelTrace(uint traceid)
+{NO_UNWIND_BEGIN();
   if (comp::_sym_STARlowLevelTracePrintSTAR->symbolValue().isTrue()) {
     printf("+++ lowLevelTrace[%d]\n", traceid);
     if (traceid == 1000115396) {
@@ -421,11 +529,14 @@ NOINLINE void lowLevelTrace(uint traceid) {
     _LLVMLowLevelTraceQueueIn = 0;
     _LLVMLowLevelTraceQueueWrapped = true;
   }
+  NO_UNWIND_END();
 }
 
-void unreachableError() {
+void unreachableError()
+{NO_UNWIND_BEGIN();
   printf("%s:%d In unreachableError -  Hit an unreachable block\n",
          __FILE__, __LINE__);
+  NO_UNWIND_END();
 }
 
 
@@ -456,10 +567,10 @@ NOINLINE void va_notEnoughArgumentsException(const char *funcName, std::size_t g
   SIMPLE_ERROR(BF("Too few arguments for %s - got %d and expected %d") % funcName % givenNumberOfArguments % requiredNumberOfArguments);
 }
 
-NOINLINE extern void va_ifExcessKeywordArgumentsException(char *fnName, std::size_t nargs, VaList_S *varglist, size_t argIdx) {
+NOINLINE extern void va_ifExcessKeywordArgumentsException(char *fnName, std::size_t nargs, Vaslist *varglist, size_t argIdx) {
   if (argIdx >= nargs)
     return;
-  VaList_S *vl = reinterpret_cast<VaList_S *>(gc::untag_valist((void *)varglist));
+  Vaslist *vl = reinterpret_cast<Vaslist *>(gc::untag_vaslist((void *)varglist));
   va_list vrest;
   va_copy(vrest, vl->_Args);
   stringstream ss;
@@ -473,14 +584,17 @@ NOINLINE extern void va_ifExcessKeywordArgumentsException(char *fnName, std::siz
 
 
 
-ALWAYS_INLINE T_O *va_lexicalFunction(int depth, int index, core::T_sp *evaluateFrameP) {
-  core::ActivationFrame_sp af = gctools::reinterpret_cast_smart_ptr<core::ActivationFrame_O>(*evaluateFrameP);
+ALWAYS_INLINE T_O *va_lexicalFunction(size_t depth, size_t index, core::T_O* evaluateFrameP)
+{NO_UNWIND_BEGIN();
+  core::ActivationFrame_sp af((gctools::Tagged)evaluateFrameP);
   core::Function_sp func = core::function_frame_lookup(af, depth, index);
   return func.raw_();
+  NO_UNWIND_END();
 }
 
 
-__attribute__((visibility("default"))) core::T_O *cc_gatherRestArguments(va_list vargs, std::size_t* remainingP) {
+__attribute__((visibility("default"))) core::T_O *cc_gatherRestArguments(va_list vargs, std::size_t* remainingP)
+{NO_UNWIND_BEGIN();
   va_list rargs;
   va_copy(rargs, vargs);
   core::List_sp result = _Nil<core::T_O>();
@@ -492,16 +606,11 @@ __attribute__((visibility("default"))) core::T_O *cc_gatherRestArguments(va_list
     cur = reinterpret_cast<Cons_sp *>(&(*cur)->_Cdr);
   }
   return result.raw_();
+  NO_UNWIND_END();
 }
 
-extern size_t cc_allowOtherKeywords(size_t saw_aok, core::T_O *kw_arg) {
-  if (saw_aok)
-    return saw_aok;
-  bool aokTrue = !(gctools::tagged_nilp(kw_arg));
-  return aokTrue ? 2 : 1;
-}
-
-void cc_ifBadKeywordArgumentException(size_t allowOtherKeys, std::size_t badKwIdx, core::T_O *kw) {
+void cc_ifBadKeywordArgumentException(size_t allowOtherKeys, std::size_t badKwIdx, core::T_O *kw)
+{
   if (allowOtherKeys == 2) {
     return;
   }
@@ -509,185 +618,45 @@ void cc_ifBadKeywordArgumentException(size_t allowOtherKeys, std::size_t badKwId
     intrinsic_error(llvmo::badKeywordArgument, core::T_sp((gc::Tagged)kw));
 }
 
-void NamednewFunction_sp(core::Function_sp *sharedP) {
-  ASSERT(sharedP != NULL);
-  new (sharedP) core::Function_sp();
-}
 
-NOINLINE extern void copyArgs(core::T_sp *destP, int nargs, core::T_O *arg0, core::T_O *arg1, core::T_O *arg2, va_list args) {
-  DEPRECATED();
-  //        printf("%s:%d copyArgs destP=%p  nargs=%d\n", __FILE__, __LINE__, destP, nargs);
-  switch (nargs) {
-  case 0:
-    return;
-  case 1:
-    destP[0] = gctools::smart_ptr<core::T_O>(arg0); // Should these all be (gc::Tagged)???
-    return;
-  case 2:
-    destP[0] = gctools::smart_ptr<core::T_O>(arg0);
-    destP[1] = gctools::smart_ptr<core::T_O>(arg1);
-    return;
-  case 3:
-    destP[0] = gctools::smart_ptr<core::T_O>(arg0);
-    destP[1] = gctools::smart_ptr<core::T_O>(arg1);
-    destP[2] = gctools::smart_ptr<core::T_O>(arg2);
-    return;
-  default:
-    destP[0] = gctools::smart_ptr<core::T_O>(arg0);
-    destP[1] = gctools::smart_ptr<core::T_O>(arg1);
-    destP[2] = gctools::smart_ptr<core::T_O>(arg2);
-    int idx = 3;
-    while (idx < nargs) {
-      destP[idx] = gctools::smart_ptr<core::T_O>(va_arg(args, core::T_O *));
-      ++idx;
-    }
-    return;
-  }
-}
-
-void resetTmv(core::T_mv *sharedP) {
-  MAY_BE_DEPRECATED();
-  ASSERT(sharedP != NULL);
-  (*sharedP).reset_();
-}
-
-extern void mv_copyTmv(core::T_mv *destP, core::T_mv *sourceP) {
+extern void mv_copyTmv(core::T_mv *destP, core::T_mv *sourceP)
+{NO_UNWIND_BEGIN();
   ASSERT(sourceP != NULL);
   ASSERT(destP != NULL);
   *destP = *sourceP;
+  NO_UNWIND_END();
 }
 
 /* This function slices a T_mv down to a T_sp */
-extern void sp_copyTmv(core::T_sp *destP, core::T_mv *sourceP) {
+extern void sp_copyTmv(core::T_sp *destP, core::T_mv *sourceP)
+{NO_UNWIND_BEGIN();
   ASSERT(sourceP != NULL);
   ASSERT(destP != NULL);
   *destP = *sourceP;
+  NO_UNWIND_END();
 }
 };
 
 extern "C" {
-};
-
-extern "C" {
-
-#if 0
-NOINLINE core::T_O **getMultipleValues(int offset) {
-  return &lisp_multipleValues().callingArgsStart()[offset];
-}
-#endif
-
-/*! Return i32 1 if (valP) is != unbound 0 if it is */
-int isBound(core::T_sp *valP) {
-  ASSERT(valP != NULL);
-  return (*valP).unboundp() ? 0 : 1;
-  //return (gctools::tagged_ptr<core::T_O>::tagged_unboundp(valP)) ? 0 : 1;
-}
-
-/*! Return i32 1 if (valP) is != nil 0 if it is */
-int isTrue(core::T_sp *valP) {
-  ASSERT(valP != NULL);
-  return (*valP).nilp() ? 0 : 1;
-  //	return (gctools::tagged_ptr<core::T_O>::tagged_nilp(valP)) ? 0 : 1;
-}
 
 
-void internSymbol_tsp(core::T_sp *resultP, const char *symbolNameP, const char *packageNameP) {
-  core::Symbol_sp newSym = _lisp->internWithPackageName(packageNameP, symbolNameP);
-#ifdef DEBUG_LOAD_TIME_VALUES
-//        printf("%s:%d  internSymbol_tsp(%s::%s)  newSym.px_ref() = %p   cl::destructuring-bind.px_ref()=%p\n", __FILE__, __LINE__, packageNameP, symbolNameP, newSym.px_ref(), cl::_sym_destructuring_bind.px_ref());
-#endif
-  ASSERTNOTNULL(newSym);
-  (*resultP) = newSym;
-}
-
-void makeSymbol_tsp(core::T_sp *resultP, const char *symbolNameP) {
-  core::Symbol_sp newSym = core::Symbol_O::create_from_string(std::string(symbolNameP));
-  ASSERTNOTNULL(newSym);
-  (*resultP) = newSym;
-}
-
-void internSymbol_symsp(core::Symbol_sp *resultP, const char *symbolNameP, const char *packageNameP) {
-  core::Symbol_sp newSym = _lisp->internWithPackageName(packageNameP, symbolNameP);
-  ASSERTNOTNULL(newSym);
-  (*resultP) = newSym;
-}
-
-void makeSymbol_symsp(core::Symbol_sp *resultP, const char *symbolNameP) {
-  core::Symbol_sp newSym = core::Symbol_O::create_from_string(std::string(symbolNameP));
-  ASSERTNOTNULL(newSym);
-  (*resultP) = newSym;
-}
-
-void makeFixnum(core::T_sp *fnP, gc::Fixnum s) {
-  ASSERT(fnP != NULL);
-  (*fnP) = core::Fixnum_sp(core::make_fixnum(s));
-}
-
-void makeCharacter(core::T_sp *fnP, int s) {
-  ASSERT(fnP != NULL);
-  (*fnP) = core::clasp_make_character((char)s);
-}
-
-void makeBignum(core::T_sp *fnP, const char *cP) {
-  ASSERT(fnP != NULL);
-  string str = cP;
-  core::Bignum_sp ns = core::Bignum_O::make(str);
-  (*fnP) = ns;
-}
-
-void makeString(core::T_sp *fnP, const char *str) {
-  // placement new into memory passed into this function
-  ASSERT(fnP != NULL);
-  core::SimpleBaseString_sp ns = core::SimpleBaseString_O::make(str);
-  (*fnP) = ns;
-}
-
-void makePathname(core::T_sp *fnP, const char *cstr) {
-  // placement new into memory passed into this function
-  ASSERT(fnP != NULL);
-
-  core::SimpleBaseString_sp str = core::SimpleBaseString_O::make(cstr);
-  core::Pathname_sp ns = core::cl__pathname(str);
-  (*fnP) = ns;
-}
-
-
-void makeShortFloat(core::T_sp *fnP, double s) {
-  ASSERT(fnP != NULL);
-  (*fnP) = core::ShortFloat_sp(core::ShortFloat_O::create(s));
-}
-
-void makeSingleFloat(core::T_sp *fnP, float s) {
-  ASSERT(fnP != NULL);
-  (*fnP) = clasp_make_single_float(s);
-}
-
-void makeDoubleFloat(core::T_sp *fnP, double s) {
-  ASSERT(fnP != NULL);
-  (*fnP) = core::DoubleFloat_sp(core::DoubleFloat_O::create(s));
-}
-
-#ifdef CLASP_LONG_FLOAT
-void makeLongFloat(core::T_sp *fnP, LongFloat s) {
-  ASSERT(fnP != NULL);
-  (*fnP) = core::LongFloat_sp(core::LongFloat_O::create(s));
-}
-#endif
-};
-
-core::T_sp proto_makeCompiledFunction(fnLispCallingConvention funcPtr, int *sourceFileInfoHandleP, size_t filePos, size_t lineno, size_t column, core::T_sp *functionNameP, core::T_sp *compiledFuncsP, core::ActivationFrame_sp *frameP, core::T_sp *lambdaListP) {
+DONT_OPTIMIZE_WHEN_DEBUG_RELEASE core::T_O* makeCompiledFunction(fnLispCallingConvention funcPtr,
+                                int *sourceFileInfoHandleP,
+                                size_t filePos,
+                                size_t lineno,
+                                size_t column,
+                                core::T_O* functionNameP,
+                                core::T_O* frameP,
+                                core::T_O* lambdaListP)
+{NO_UNWIND_BEGIN();
   // TODO: If a pointer to an integer was passed here we could write the sourceName SourceFileInfo_sp index into it for source line debugging
-  core::Closure_sp closure = gctools::GC<core::CompiledClosure_O>::allocate(funcPtr, *functionNameP, kw::_sym_function, _Nil<core::T_O>(), *frameP, *compiledFuncsP, *lambdaListP, *sourceFileInfoHandleP, filePos, lineno, column);
-  return closure;
+  core::T_sp functionName((gctools::Tagged)functionNameP);
+  core::T_sp frame((gctools::Tagged)frameP);
+  core::T_sp lambdaList((gctools::Tagged)lambdaListP);
+  core::Closure_sp closure = gctools::GC<core::CompiledClosure_O>::allocate(funcPtr, functionName, kw::_sym_function, frame, lambdaList, *sourceFileInfoHandleP, filePos, lineno, column);
+  return closure.raw_();
+  NO_UNWIND_END();
 };
-extern "C" {
-void sp_makeCompiledFunction(core::T_sp *resultCompiledFunctionP, fnLispCallingConvention funcPtr, int *sourceFileInfoHandleP, size_t filePos, size_t lineno, size_t column, core::T_sp *functionNameP, core::T_sp *compiledFuncsP, core::ActivationFrame_sp *frameP, core::T_sp *lambdaListP) {
-  (*resultCompiledFunctionP) = proto_makeCompiledFunction(funcPtr, sourceFileInfoHandleP, filePos, lineno, column, functionNameP, compiledFuncsP, frameP, lambdaListP);
-}
-
-void mv_makeCompiledFunction(core::T_mv *resultCompiledFunctionP, fnLispCallingConvention funcPtr, int *sourceFileInfoHandleP, size_t filePos, size_t lineno, size_t column, core::T_sp *functionNameP, core::T_sp *compiledFuncsP, core::ActivationFrame_sp *frameP, core::T_sp *lambdaListP) {
-  (*resultCompiledFunctionP) = Values(proto_makeCompiledFunction(funcPtr, sourceFileInfoHandleP, filePos, lineno, column, functionNameP, compiledFuncsP, frameP, lambdaListP));
-}
 };
 
 extern "C" {
@@ -712,17 +681,10 @@ void invokeTopLevelFunction(core::T_mv *resultP,
   // Evaluate the function
   MAKE_STACK_FRAME( onearg, tc.raw_(), 1);
   (*onearg)[0] = *ltvPP; // Leave the tag on
-  core::VaList_S onearg_valist_s(onearg);
+  core::Vaslist onearg_valist_s(onearg);
   LCC_SPILL_CLOSURE_TO_VA_LIST(onearg_valist_s,tc.raw_());
-#ifdef USE_EXPENSIVE_BACKTRACE
-  // Why do this?
   core::InvocationHistoryFrame invFrame(onearg_valist_s._Args,onearg_valist_s.remaining_nargs());
-#endif
-#if 0
-  *resultP = fptr(LCC_PASS_ARGS1_VA_LIST(onearg[0])); // Was  (ltvP));
-#else
   *resultP = fptr(LCC_PASS_ARGS0_VA_LIST(tc.raw_()));
-#endif
 #ifdef TIME_TOP_LEVEL_FUNCTIONS
   if (core::_sym_STARdebugStartupSTAR->symbolValue().notnilp()) {
     core::Number_sp endTime = gc::As<core::Number_sp>(core::cl__get_internal_real_time());
@@ -743,19 +705,12 @@ void cc_register_startup_function(fnStartUp fptr) {
   register_startup_function(fptr);
 }
 
+void cc_invoke_sub_run_all_function(fnStartUp fptr) {
+  fptr();
+}
+
 void cc_invoke_startup_functions() {
   startup_functions_invoke();
-#if 0
-  if (core::_sym_STARtrace_startupSTAR->symbolValue().isTrue()) {
-    stringstream ss;
-    ss << "Time to run " << sourceName;
-    simple_timer timer(ss.str());
-    core::T_mv result = fptr(LCC_PASS_MAIN());
-    return;
-  } else {
-    core::T_mv result = fptr(LCC_PASS_MAIN());
-  }
-#endif
 };
 
 
@@ -870,90 +825,39 @@ void mv_prependMultipleValues(core::T_mv *resultP, core::T_mv *multipleValuesP) 
 extern "C" {
 
 /*! Invoke a symbol function with the given arguments and put the result in (*resultP) */
-void sp_symbolFunctionRead(core::T_sp *resultP, const core::T_sp *tsymP) {
-  ASSERT(resultP != NULL);
-  ASSERTF(tsymP != NULL, BF("passed symbol is NULL"));
-  const core::Symbol_sp* symP = reinterpret_cast<const core::Symbol_sp*>(tsymP);
-  ASSERTF((*symP)->fboundp(), BF("There is no function bound to symbol[%s]") % _rep_((*symP)));
-  (*resultP) = (*symP)->symbolFunction();
-  ASSERTNOTNULL(*resultP);
-}
-void mv_symbolFunctionRead(core::T_mv *resultP, const core::T_sp *tsymP) {
-  ASSERT(resultP != NULL);
-  const core::Symbol_sp* symP = reinterpret_cast<const core::Symbol_sp*>(tsymP);
-  ASSERTF(symP != NULL, BF("passed symbol is NULL"));
-  ASSERTF((*symP)->fboundp(), BF("There is no function bound to symbol[%s]") % _rep_((*symP)));
-  (*resultP) = Values((*symP)->symbolFunction());
-  ASSERTNOTNULL(*resultP);
+core::T_O* symbolFunctionRead(const core::T_O *tsymP)
+{NO_UNWIND_BEGIN();
+  const core::Symbol_sp sym((gc::Tagged)tsymP);
+  ASSERTF((sym)->fboundp(), BF("There is no function bound to symbol[%s]") % _rep_(sym));
+  return sym->symbolFunction().raw_();
+  NO_UNWIND_END();
 }
 
 /*! Invoke a symbol function with the given arguments and put the result in (*resultP) */
-extern void setfSymbolFunctionRead(core::T_sp *resultP, const core::T_sp *tsymP) {
-  ASSERT(resultP != NULL);
-  const core::Symbol_sp* symP = reinterpret_cast<const core::Symbol_sp*>(tsymP);
-  ASSERTF(symP != NULL, BF("passed symbol is NULL"));
-  core::Function_sp setfFunc = (*symP)->getSetfFdefinition(); //_lisp->get_setfDefinition(*symP);
-  ASSERTF(setfFunc, BF("There is no setf function bound to symbol[%s]") % _rep_((*symP)));
-  (*resultP) = setfFunc;
-  ASSERTNOTNULL(*resultP);
+extern core::T_O* setfSymbolFunctionRead(const core::T_O *tsymP)
+{NO_UNWIND_BEGIN();
+ const core::Symbol_sp sym((gctools::Tagged)tsymP);
+ core::Function_sp setfFunc = sym->getSetfFdefinition(); //_lisp->get_setfDefinition(*symP);
+ ASSERTF(setfFunc, BF("There is no setf function bound to symbol[%s]") % _rep_(sym));
+ return setfFunc.raw_();
+  NO_UNWIND_END();
 }
 };
 
 
 extern "C" {
-int activationFrameSize(core::ActivationFrame_sp *activationFrameP) {
-  ASSERT(activationFrameP != NULL);
-  return (*activationFrameP)->length();
-}
-
-#if 0
-/*! Return a pointer to the shared_ptr of the activation frames parent */
-    extern core::ActivationFrame_sp* activationFrameParentRef(core::T_sp* frameP)
-    {
-	ASSERT(frameP!=NULL);
-	if ( (*frameP).nilp() ) return &(*frameP); // _Nil<core::ActivationFrame_O>();
-	return &((*frameP)->parentFrameRef());
-    }
-
-/*! Return a pointer to the shared_ptr of the activation frames parent */
-    extern core::ActivationFrame_sp* activationFrameNil()
-    {
-	return &_lisp->activationFrameNil();
-    }
-#endif
-
-void throwTooManyArgumentsException(const char *funcName, core::ActivationFrame_sp *afP, int givenNumberOfArguments, int requiredNumberOfArguments) {
-  core::throwTooManyArgumentsError(givenNumberOfArguments, requiredNumberOfArguments);
-  //	SIMPLE_ERROR(BF("In %s too many arguments passed - got %d and expected %d - args: %s") % funcName % givenNumberOfArguments % requiredNumberOfArguments % _rep_((*(afP))) );
-}
-
-void throwNotEnoughArgumentsException(const char *funcName, core::ActivationFrame_sp *afP, int givenNumberOfArguments, int requiredNumberOfArguments) {
-  core::throwTooFewArgumentsError(givenNumberOfArguments, requiredNumberOfArguments);
-  SIMPLE_ERROR(BF("In %s not enough arguments passed - got %d and expected %d - args: %s") % funcName % givenNumberOfArguments % requiredNumberOfArguments % _rep_((*(afP))));
-}
 
 void gdb() {
   printf("%s:%d Set a breakpoint here to invoke gdb\n", __FILE__, __LINE__);
 }
 
-void debugInspectActivationFrame(core::ActivationFrame_sp *afP) {
-  core::ActivationFrame_sp af = (*afP);
-  printf("debugInspectActivationFrame: %s\n", _rep_(af).c_str());
-  printf("Parent T_sp : %p\n", af->parentFrame().raw_());
-  printf("%s:%d Insert breakpoint here if you want to inspect af\n", __FILE__, __LINE__);
-}
-
-void debugInspectT_sp(core::T_sp *objP) {
-  core::T_sp obj = (*objP);
-  printf("debugInspectObject@%p  obj.px_ref()=%p: %s\n", (void *)objP, (*objP).raw_(), _rep_(obj).c_str());
-  printf("%s:%d Insert breakpoint here if you want to inspect object\n", __FILE__, __LINE__);
-}
-
-void debugInspectTPtr(core::T_O *tP) {
+void debugInspectTPtr(core::T_O *tP)
+{NO_UNWIND_BEGIN();
   core::T_sp obj = gctools::smart_ptr<core::T_O>((gc::Tagged)tP);
   printf("debugInspectTPtr@%p\n", tP);
   printf("debugInspectTPtr obj.px_ref()=%p: %s\n", obj.raw_(), _rep_(obj).c_str());
   printf("%s:%d Insert breakpoint here if you want to inspect object\n", __FILE__, __LINE__);
+  NO_UNWIND_END();
 }
 
 void debugInspect_i8STAR(void *p) {
@@ -970,7 +874,8 @@ void debugInspectTPtr_detailed(core::T_O *tP) {
   }
 }
 
-void debugInspectT_mv(core::T_mv *objP) {
+void debugInspectT_mv(core::T_mv *objP)
+{NO_UNWIND_BEGIN();
   MultipleValues &mv = lisp_multipleValues();
   size_t size = mv.getSize();
   printf("debugInspect_return_type T_mv.val0@%p  T_mv.nvals=%d mvarray.size=%zu\n", (*objP).raw_(), (*objP).number_of_values(), size);
@@ -983,9 +888,11 @@ void debugInspectT_mv(core::T_mv *objP) {
   printf("debugInspectT_mv@%p  #val=%d\n", (void *)objP, objP->number_of_values());
   printf("   debugInspectT_mv  obj= %s\n", _rep_(*objP).c_str());
   printf("%s:%d Insert breakpoint here if you want to inspect object\n", __FILE__, __LINE__);
+  NO_UNWIND_END();
 }
 
-void debugInspect_return_type(gctools::return_type rt) {
+void debugInspect_return_type(gctools::return_type rt)
+{NO_UNWIND_BEGIN();
   MultipleValues &mv = lisp_multipleValues();
   size_t size = mv.getSize();
   printf("debugInspect_return_type rt.ret0@%p  rt.nvals=%zu mvarray.size=%zu\n", rt.ret0[0], rt.nvals, size);
@@ -995,40 +902,50 @@ void debugInspect_return_type(gctools::return_type rt) {
   }
   printf("\n");
   printf("%s:%d Insert breakpoint here if you want to inspect object\n", __FILE__, __LINE__);
+  NO_UNWIND_END();
 }
 
-void debugMessage(const char *msg) {
+void debugMessage(const char *msg)
+{NO_UNWIND_BEGIN();
   printf("++++++ debug-message: %s", msg);
+  NO_UNWIND_END();
 }
 
 uintptr_clasp_t debug_match_two_uintptr_t(uintptr_clasp_t x, uintptr_clasp_t y)
-{
+{NO_UNWIND_BEGIN();
   if ( x == y ) return x;
   printf("%s:%d !!!!! in debug_match_two_uintptr_clasp_t the two pointers %p and %p don't match\n", __FILE__, __LINE__, (void*)x, (void*)y);
   gdb();
   UNREACHABLE();
+  NO_UNWIND_END();
 }
 
-void debugPointer(const unsigned char *ptr) {
+void debugPointer(const unsigned char *ptr)
+{NO_UNWIND_BEGIN();
   printf("++++++ debugPointer: %p \n", ptr);
+  NO_UNWIND_END();
 }
 
-void debug_VaList_SPtr(VaList_S *vargs) {
-  VaList_S *args = reinterpret_cast<VaList_S *>(gc::untag_valist((void *)vargs));
+void debug_vaslistPtr(Vaslist *vargs)
+{NO_UNWIND_BEGIN();
+  Vaslist *args = reinterpret_cast<Vaslist *>(gc::untag_vaslist((void *)vargs));
   printf("++++++ debug_va_list: reg_save_area @%p \n", args->_Args[0].reg_save_area);
   printf("++++++ debug_va_list: gp_offset %d \n", args->_Args[0].gp_offset);
   printf("++++++      next reg arg: %p\n", (void *)(((uintptr_clasp_t *)((char *)args->_Args[0].reg_save_area + args->_Args[0].gp_offset))[0]));
   printf("++++++ debug_va_list: overflow_arg_area @%p \n", args->_Args[0].overflow_arg_area);
   printf("++++++      next overflow arg: %p\n", (void *)(((uintptr_clasp_t *)((char *)args->_Args[0].overflow_arg_area))[0]));
+  NO_UNWIND_END();
 }
 
-void debug_va_list(va_list vargs) {
+void debug_va_list(va_list vargs)
+{NO_UNWIND_BEGIN();
   printf("++++++ debug_va_list:          gp_offset@%p -> %x \n", &vargs[0].gp_offset, vargs[0].gp_offset);
   printf("++++++ debug_va_list:          fp_offset@%p -> %x \n", &vargs[0].fp_offset, vargs[0].fp_offset);
   printf("++++++ debug_va_list: overflow_arg_area @%p -> %p \n", &vargs[0].overflow_arg_area, vargs[0].overflow_arg_area);
   printf("++++++ debug_va_list:     reg_save_area @%p -> %p \n", &vargs[0].reg_save_area, vargs[0].reg_save_area);
   printf("++++++      next reg arg: %p\n", (void *)(((uintptr_clasp_t *)((char *)vargs[0].reg_save_area + vargs[0].gp_offset))[0]));
   printf("++++++      next overflow arg: %p\n", (void *)(((uintptr_clasp_t *)((char *)vargs[0].overflow_arg_area))[0]));
+  NO_UNWIND_END();
 }
 
 void debugSymbolPointer(core::Symbol_sp *ptr) {
@@ -1039,28 +956,55 @@ void debugSymbolValue(core::Symbol_sp sym) {
   printf("+++++ debugSymbolValue: %s\n", _rep_(core::cl__symbol_value(sym)).c_str());
 }
 
-void debugPrintObject(const char *msg, core::T_sp *objP) {
-  std::cout << "++++++ JIT-PRINT-OBJECT: ";
-  std::cout << msg << " --> ";
-  if (objP == NULL) {
-    std::cout << "objP is UNDEFINED";
-  } else if (!(*objP).objectp()) {
-    std::cout << "(*objP) is UNDEFINED";
-  } else {
-    std::cout << _rep_((*objP));
-  }
-  std::cout << std::endl;
-}
 
-void debugPrintI32(int i32) {
+void debugPrintI32(int i32)
+{NO_UNWIND_BEGIN();
   printf("+++DBG-I32[%d]\n", i32);
+  fflush(stdout);
+  NO_UNWIND_END();
 }
 
-void debugPrint_size_t(size_t v) {
+void debugPrint_blockFrame(core::T_O* handle)
+{NO_UNWIND_BEGIN();
+#if defined(DEBUG_FLOW_TRACKER)
+  Cons_sp frameHandleCons((gc::Tagged)handle);
+  Fixnum frameFlowCounter = CONS_CAR(frameHandleCons).unsafe_fixnum();
+  printf("%s:%d debugPrint_blockFrame handle %p   FlowCounter %" PFixnum "\n", __FILE__, __LINE__, handle, frameFlowCounter );
+#else
+  printf("%s:%d debugPrint_blockFrame handle %p\n", __FILE__, __LINE__, handle );
+#endif
+  fflush(stdout);
+  NO_UNWIND_END();
+}
+
+void debugPrint_blockHandleReturnFrom(unsigned char *exceptionP, core::T_O* handle)
+{NO_UNWIND_BEGIN();
+  core::ReturnFrom &returnFrom = (core::ReturnFrom &)*((core::ReturnFrom *)(exceptionP));
+  printf("%s:%d debugPrint_blockHandleReturnFrom return-from handle %p    block handle %p\n", __FILE__, __LINE__, returnFrom.getHandle(), handle );
+  if (returnFrom.getHandle() == handle) {
+    printf("%s:%d debugPrint_blockHandleReturnFrom handles match!\n", __FILE__, __LINE__ );
+    fflush(stdout);
+    return;
+  }
+#if defined(DEBUG_FLOW_TRACKER)
+  Cons_sp throwHandleCons((gc::Tagged)returnFrom.getHandle());
+  Cons_sp frameHandleCons((gc::Tagged)handle);
+  Fixnum throwFlowCounter = CONS_CAR(throwHandleCons).unsafe_fixnum();
+  Fixnum frameFlowCounter = CONS_CAR(frameHandleCons).unsafe_fixnum();
+  printf("%s:%d  continued  debugPrint_blockHandleReturnFrom return-from is looking for FlowCounter %" PFixnum " and it reached FlowCounter %" PFixnum "\n", __FILE__, __LINE__, throwFlowCounter, frameFlowCounter );
+  fflush(stdout);
+#endif
+  NO_UNWIND_END();
+}
+
+void debugPrint_size_t(size_t v)
+{NO_UNWIND_BEGIN();
   printf("+++DBG-size_t[%lu/%lx]\n", v, v);
+  NO_UNWIND_END();
 }
 
 
+#if 0
 void throwCatchThrow(core::T_sp *tagP) {
   ASSERT(tagP != NULL);
   core::T_sp tag = *tagP;
@@ -1080,51 +1024,74 @@ void throwCatchThrow(core::T_sp *tagP) {
   }
   SIMPLE_ERROR(BF("This should never happen"));
 }
+#endif
 
-void throwReturnFrom(core::T_sp *blockSymbolP) {
-  ASSERT(blockSymbolP != NULL);
-  core::T_sp blockSymbol = *blockSymbolP;
-  int frame = my_thread->exceptionStack().findKey(BlockFrame, blockSymbol);
-  if (frame < 0) {
-    CONTROL_ERROR();
-  }
-#ifdef DEBUG_FLOW_CONTROL
+DONT_OPTIMIZE_WHEN_DEBUG_RELEASE void throwReturnFrom(size_t depth, core::ActivationFrame_O* frameP) {
+#ifdef DEBUG_TRACK_UNWINDS
+  global_ReturnFrom_count++;
+#endif
+  core::ActivationFrame_sp af((gctools::Tagged)(frameP));
+  core::T_sp handle = *const_cast<core::T_sp *>(&core::value_frame_lookup_reference(af, depth, 0));
+#if defined(DEBUG_FLOW_CONTROL) || defined(DEBUG_RETURN_FROM)
   if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
-    printf("Throwing core::ReturnFrom exception frame[%d]\n", frame);
+    printf("About to throw core::ReturnFrom exception handle[%p]\n", handle.raw_());
     if (core::_sym_STARdebugFlowControlSTAR->symbolValue() == kw::_sym_verbose )
       printf("   %s\n", my_thread->exceptionStack().summary().c_str());
   }
 #endif
-  core::ReturnFrom returnFrom(frame);
+#if defined(DEBUG_FLOW_CONTROL) || defined(DEBUG_RETURN_FROM)
+  if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
+    printf("Throwing core::ReturnFrom exception frame[%p]\n", handle.raw_());
+  }
+#endif
+  core::ReturnFrom returnFrom(handle.raw_());
+#if defined(DEBUG_FLOW_TRACKER)
+  flow_tracker_about_to_throw();
+#endif
   throw returnFrom;
 }
 };
 
-core::T_mv proto_blockHandleReturnFrom(unsigned char *exceptionP, size_t frame) {
-  core::ReturnFrom &returnFrom = (core::ReturnFrom &)*((core::ReturnFrom *)(exceptionP));
-  if (returnFrom.getFrame() == frame) {
-    return gctools::multiple_values<T_O>::createFromValues();
-  }
-#ifdef DEBUG_FLOW_CONTROL
-  if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
-    printf("Re-throwing core::ReturnFrom exception frame[%d]\n", returnFrom.getFrame());
-    if (core::_sym_STARdebugFlowControlSTAR->symbolValue() == kw::_sym_verbose )
-      printf("   %s\n", my_thread->exceptionStack().summary().c_str());
-  }
-#endif
-  throw returnFrom;
-}
-
 extern "C" {
 
-void sp_blockHandleReturnFrom(core::T_sp *resultP, unsigned char *exceptionP, size_t frame) {
-  (*resultP) = proto_blockHandleReturnFrom(exceptionP, frame);
-  ASSERTNOTNULL(*resultP);
+DONT_OPTIMIZE_WHEN_DEBUG_RELEASE gctools::return_type blockHandleReturnFrom_or_rethrow(unsigned char *exceptionP, core::T_O* handle) {
+  core::ReturnFrom &returnFrom = (core::ReturnFrom &)*((core::ReturnFrom *)(exceptionP));
+  if (returnFrom.getHandle() == handle) {
+#if defined(DEBUG_FLOW_CONTROL) || defined(DEBUG_RETURN_FROM)
+    if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
+      printf("Caught core::ReturnFrom exception frame[%p]\n", returnFrom.getHandle());
+    }
+#endif
+    core::MultipleValues &mv = core::lisp_multipleValues();
+    gctools::return_type result(mv.operator[](0),mv.getSize());
+    return result;
+  }
+#if defined(DEBUG_FLOW_TRACKER)
+  if (handle) {
+    Cons_sp throwHandleCons((gc::Tagged)returnFrom.getHandle());
+    Cons_sp frameHandleCons((gc::Tagged)handle);
+    if (!throwHandleCons.consp()) printf("%s:%d The throwHandleCons is not a CONS -> %p\n", __FILE__, __LINE__, (void*)throwHandleCons.raw_() );
+    if (!frameHandleCons.consp()) printf("%s:%d The frameHandleCons is not a CONS -> %p\n", __FILE__, __LINE__, (void*)frameHandleCons.raw_() );
+    Fixnum throwFlowCounter = CONS_CAR(throwHandleCons).unsafe_fixnum();
+    Fixnum frameFlowCounter = CONS_CAR(frameHandleCons).unsafe_fixnum();
+    if (throwFlowCounter > frameFlowCounter) {
+      printf("%s:%d A return-from has missed its target frame - the return-from is looking for FlowCounter %" PFixnum " and it reached FlowCounter %" PFixnum "\n", __FILE__, __LINE__, throwFlowCounter, frameFlowCounter );
+      flow_tracker_last_throw_backtrace_dump();
+      abort();
+    }
+  }
+#endif
+#if defined(DEBUG_FLOW_CONTROL) || defined(DEBUG_RETURN_FROM)
+  if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
+    printf("Re-throwing core::ReturnFrom exception handle[%p]\n", returnFrom.getHandle());
+  }
+#endif
+#if defined(DEBUG_FLOW_TRACKER)
+  flow_tracker_about_to_throw();
+#endif
+  throw; // throw returnFrom;
 }
-void mv_blockHandleReturnFrom(core::T_mv *resultP, unsigned char *exceptionP, size_t frame) {
-  (*resultP) = proto_blockHandleReturnFrom(exceptionP, frame);
-  ASSERTNOTNULL(*resultP);
-}
+
 };
 
 extern "C" {
@@ -1133,9 +1100,11 @@ extern "C" {
 // Set the result from the ReturnFrom exception return value   	- blockStoreResult
 //
 
-size_t pushCatchFrame(core::T_sp *tagP) {
-  ASSERT(tagP != NULL);
-  size_t result = my_thread->exceptionStack().push(CatchFrame, *tagP);
+#if 0
+size_t pushCatchFrame(core::T_O *tagP)
+{NO_UNWIND_BEGIN();
+  T_sp tag((gctools::Tagged)tagP);
+  size_t result = my_thread->exceptionStack().push(CatchFrame, tag);
 #ifdef DEBUG_FLOW_CONTROL
   if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
     printf("Pushed CatchThrow frame[%zu]\n", result);
@@ -1144,12 +1113,22 @@ size_t pushCatchFrame(core::T_sp *tagP) {
   }
 #endif
   return result;
+  NO_UNWIND_END();
 }
+#endif
 
-size_t pushBlockFrame(core::T_sp *tagP) {
-  ASSERT(tagP != NULL);
-  core::T_sp osym = *tagP;
-  size_t result = my_thread->exceptionStack().push(BlockFrame, osym);
+DONT_OPTIMIZE_WHEN_DEBUG_RELEASE core::T_O* initializeBlockClosure(core::T_O** afP)
+{NO_UNWIND_BEGIN();
+  ValueFrame_sp vf = ValueFrame_sp((gc::Tagged)*reinterpret_cast<ValueFrame_O**>(afP));
+#ifdef DEBUG_FLOW_TRACKER
+  Cons_sp unique = Cons_O::create(make_fixnum(next_flow_tracker_counter()),_Nil<T_O>());
+#else
+  Cons_sp unique = Cons_O::create(_Nil<T_O>(),_Nil<T_O>());
+#endif
+  vf->operator[](0) = unique;
+#if 0
+  T_sp tag((gctools::Tagged)tagP);
+  size_t result = my_thread->exceptionStack().push(BlockFrame, tag);
 #ifdef DEBUG_FLOW_CONTROL
   if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
     printf("Pushed Block frame[%zu]\n", result);
@@ -1157,21 +1136,23 @@ size_t pushBlockFrame(core::T_sp *tagP) {
       printf("   %s\n", my_thread->exceptionStack().summary().c_str());
   }
 #endif
-  return result;
+#endif
+  return unique.raw_();
+  NO_UNWIND_END();
 }
 
-size_t pushTagbodyFrame(core::ActivationFrame_sp *afP) {
-  ASSERT(afP != NULL);
-  core::T_sp tagbodyId = (*afP);
-  size_t result = my_thread->exceptionStack().push(TagbodyFrame, tagbodyId);
-#ifdef DEBUG_FLOW_CONTROL
-  if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
-    printf("Pushed Tagbody frame[%zu]\n", result);
-    if (core::_sym_STARdebugFlowControlSTAR->symbolValue() == kw::_sym_verbose )
-      printf("   %s\n", my_thread->exceptionStack().summary().c_str());
-  }
+core::T_O* initializeTagbodyClosure(core::T_O *afP)
+{NO_UNWIND_BEGIN();
+  core::T_sp tagbodyId((gctools::Tagged)afP);
+  ValueFrame_sp vf = ValueFrame_sp((gc::Tagged)*reinterpret_cast<ValueFrame_O**>(afP));
+#ifdef DEBUG_FLOW_TRACKER
+  Cons_sp unique = Cons_O::create(make_fixnum(next_flow_tracker_counter()),_Nil<T_O>());
+#else
+  Cons_sp unique = Cons_O::create(_Nil<T_O>(),_Nil<T_O>());
 #endif
-  return result;
+  vf->operator[](0) = unique;
+  return unique.raw_();
+  NO_UNWIND_END();
 }
 };
 
@@ -1203,38 +1184,30 @@ void mv_ifCatchFrameMatchesStoreResultElseRethrow(core::T_mv *resultP, size_t ca
 };
 
 extern "C" {
-void exceptionStackUnwind(size_t frame) {
-#ifdef DEBUG_FLOW_CONTROL
+void exceptionStackUnwind(size_t frame)
+{NO_UNWIND_BEGIN();
+#if defined(DEBUG_FLOW_CONTROL)||defined(DEBUG_RETURN_FROM)
   if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
     printf("Unwinding to exception frame[%lu]\n", frame);
   }
 #endif
   my_thread->exceptionStack().unwind(frame);
+  NO_UNWIND_END();
 }
 
 void throwIllegalSwitchValue(size_t val, size_t max) {
   SIMPLE_ERROR(BF("Illegal switch value %d - max value is %d") % val % max);
 }
 
-void throw_LexicalGo(int depth, int index) {
-  core::LexicalGo lgo(depth, index);
-#ifdef DEBUG_FLOW_CONTROL
-  if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
-    printf("Throwing core::Go depth[%d] index[%d]\n", depth, index);
-    if (core::_sym_STARdebugFlowControlSTAR->symbolValue() == kw::_sym_verbose )
-      printf("   %s\n", my_thread->exceptionStack().summary().c_str());
-  }
-#endif
-  throw lgo;
-}
 
-void throwDynamicGo(size_t depth, size_t index, core::ActivationFrame_sp *afP) {
-  T_sp tagbody = core::tagbody_frame_lookup(*afP,depth,index);
-  int frame = my_thread->exceptionStack().findKey(TagbodyFrame, tagbody);
-  if (frame < 0) {
-    CONTROL_ERROR();
-  }
-  core::DynamicGo dgo((size_t)frame, index);
+void throwDynamicGo(size_t depth, size_t index, core::T_O *afP) {
+#ifdef DEBUG_TRACK_UNWINDS
+  global_DynamicGo_count++;
+#endif
+  T_sp af((gctools::Tagged)afP);
+  ValueFrame_sp tagbody = core::tagbody_frame_lookup(af,depth,index);
+  T_O* handle = tagbody->operator[](0).raw_();
+  core::DynamicGo dgo(handle, index);
 #ifdef DEBUG_FLOW_CONTROL
   if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
     printf("Throwing core::DynamicGo tagbodyIdP[%zu] index[%zu]\n", dgo.getFrame(), dgo.index());
@@ -1246,7 +1219,7 @@ void throwDynamicGo(size_t depth, size_t index, core::ActivationFrame_sp *afP) {
 }
 
 int tagbodyLexicalGoIndexElseRethrow(char *exceptionP) {
-  IMPLEMENT_MEF(BF("Update me"));
+  IMPLEMENT_MEF("Update me");
 #if 0
 	core::LexicalGo* goExceptionP = (core::LexicalGo*)(exceptionP);
 	if ( goExceptionP->depth() == 0 )
@@ -1263,116 +1236,52 @@ int tagbodyLexicalGoIndexElseRethrow(char *exceptionP) {
 #endif
 }
 
-size_t tagbodyDynamicGoIndexElseRethrow(char *exceptionP, size_t frame) {
-#ifdef DEBUG_FLOW_CONTROL
-  if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
-    printf("%s:%d tagbodyDynamicGoIndexElseRethrow  frame: %lu\n", __FILE__, __LINE__, frame);
-    if (core::_sym_STARdebugFlowControlSTAR->symbolValue() == kw::_sym_verbose )
-      printf("   %s\n", my_thread->exceptionStack().summary().c_str());
+size_t tagbodyHandleDynamicGoIndex_or_rethrow(char *exceptionP, T_O* handle) {
+  core::DynamicGo& goException = *reinterpret_cast<core::DynamicGo *>(exceptionP);
+  if (goException.getHandle() == handle) {
+    return goException.index();
   }
-#endif
-  core::DynamicGo *goExceptionP = reinterpret_cast<core::DynamicGo *>(exceptionP);
-  if (goExceptionP->getFrame() == frame) {
-#ifdef DEBUG_FLOW_CONTROL
-    if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
-      printf("%s:%d Matched DynamicGo  frame: %llu  index: %lu\n", __FILE__, __LINE__, goExceptionP->getFrame(), goExceptionP->index());
-      if (core::_sym_STARdebugFlowControlSTAR->symbolValue() == kw::_sym_verbose )
-        printf("   %s\n", my_thread->exceptionStack().summary().c_str());
-    }
-#endif
-    return goExceptionP->index();
-  }
-#ifdef DEBUG_FLOW_CONTROL
-  if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
-    printf("Re-throwing core::DynamicGo frame[%zu] index[%zu]\n", goExceptionP->getFrame(), goExceptionP->index());
-    if (core::_sym_STARdebugFlowControlSTAR->symbolValue() == kw::_sym_verbose )
-      printf("   %s\n", my_thread->exceptionStack().summary().c_str());
-  }
-#endif
-  throw * goExceptionP;
+  throw;
+//  throw goException;
 }
 
 
 
-void debugSourceFileInfoHandle(int *sourceFileInfoHandleP) {
+void debugSourceFileInfoHandle(int *sourceFileInfoHandleP)
+{NO_UNWIND_BEGIN();
   int sfindex = *sourceFileInfoHandleP;
   core::Fixnum_sp fn = core::make_fixnum(sfindex);
   SourceFileInfo_sp sfi = core::core__source_file_info(fn);
   printf("%s:%d debugSourceFileInfoHandle[%d] --> %s\n", __FILE__, __LINE__, sfindex, _rep_(sfi).c_str());
+  NO_UNWIND_END();
 }
 };
 
-inline core::T_sp proto_copyLoadTimeValue(core::LoadTimeValues_O **ltvPP, size_t index) {
-  core::LoadTimeValues_O *tagged_ltvP = *ltvPP;
-  core::LoadTimeValues_O *ltvP = gctools::untag_general<core::LoadTimeValues_O *>(tagged_ltvP);
-  core::LoadTimeValues_O &ltv = *ltvP;
-  return ltv.data_element(index);
-}
-extern "C" {
-void sp_copyLoadTimeValue(core::T_sp *resultP, core::LoadTimeValues_O **ltvPP, cl_index index) {
-  ASSERT(resultP != NULL);
-  ASSERT(ltvPP != NULL);
-  ASSERT((*ltvPP) != NULL);
-  core::T_sp val = proto_copyLoadTimeValue(ltvPP, index);
-#if defined(USE_MPS) && defined(DEBUG_LOAD_TIME_VALUES)
-  if (core::_sym_STARdebugLoadTimeValuesSTAR && core::_sym_STARdebugLoadTimeValuesSTAR->symbolValue().notnilp()) {
-    stringstream ss;
-    ss << (BF("%s:%d sp_copyLoadTimeValue@%p  _Objects@%p  index[%d]  result client@%p  value: %s  cl::_sym_destructuring_bind@%p") % __FILE__ % __LINE__ % *ltvPP % (*ltvPP)->_Objects._Vector._Contents % index % val.pbase() % _rep_(val).c_str() % cl::_sym_destructuring_bind.pbase()).str();
-    printf("%s\n", ss.str().c_str());
-  }
-#endif
-  (*resultP) = val;
-  ASSERTNOTNULL(*resultP);
-}
-void mv_copyLoadTimeValue(core::T_mv *resultP, core::LoadTimeValues_O **ltvPP, size_t index) {
-  ASSERT(resultP != NULL);
-  ASSERT(ltvPP != NULL);
-  ASSERT((*ltvPP) != NULL);
-  (*resultP) = Values(proto_copyLoadTimeValue(ltvPP, index));
-#ifdef DEBUG_LOAD_TIME_VALUES
-//        printf("%s:%d mv_copyTimeValue@%p  index[%d]  result client@%p  value: %s\n", __FILE__, __LINE__, *ltvPP, index, (*resultP).pbase(), _rep_(*resultP).c_str());
-#endif
-  ASSERTNOTNULL(*resultP);
-}
-};
-
-inline core::T_sp proto_getLoadTimeValue(core::LoadTimeValues_O **ltvPP, int index) {
-  core::LoadTimeValues_O *tagged_ltvP = *ltvPP;
-  core::LoadTimeValues_O *ltvP = gctools::untag_general<core::LoadTimeValues_O *>(tagged_ltvP);
-  core::LoadTimeValues_O &ltv = *ltvP;
-  return ltv.data_element(index);
-}
 
 extern "C" {
-void sp_getLoadTimeValue(core::T_sp *resultP, core::LoadTimeValues_O **ltvPP, int index) {
-  (*resultP) = proto_getLoadTimeValue(ltvPP, index);
-  ASSERTNOTNULL(*resultP);
-}
-void mv_getLoadTimeValue(core::T_mv *resultP, core::LoadTimeValues_O **ltvPP, int index) {
-  (*resultP) = Values(proto_getLoadTimeValue(ltvPP, index));
-  ASSERTNOTNULL(*resultP);
-}
-};
-
-extern "C" {
-
-
-void saveToMultipleValue0(core::T_mv *mvP) {
+void saveToMultipleValue0(core::T_mv *mvP)
+{NO_UNWIND_BEGIN();
   mvP->saveToMultipleValue0();
+  NO_UNWIND_END();
 }
 
-void sp_restoreFromMultipleValue0(core::T_sp *resultP) {
-  T_mv mvResult = gc::multiple_values<core::T_O>::createFromValues();
-  (*resultP).setRaw_((gc::Tagged)mvResult.raw_());
+gctools::return_type restoreFromMultipleValue0()
+{NO_UNWIND_BEGIN();
+  core::MultipleValues &mv = core::lisp_multipleValues();
+  gctools::return_type result(mv.operator[](0),mv.getSize());
+  return result;
+  NO_UNWIND_END();
 }
 
-void mv_restoreFromMultipleValue0(core::T_mv *resultP) {
+void mv_restoreFromMultipleValue0(core::T_mv *resultP)
+{NO_UNWIND_BEGIN();
   resultP->readFromMultipleValue0();
+  NO_UNWIND_END();
 }
 
 /*! Copy the current MultipleValues in _lisp->values() into a SimpleVector */
-extern void saveValues(core::T_sp *resultP, core::T_mv *mvP) {
-  ASSERT(resultP != NULL);
+extern core::T_O* saveValues(core::T_mv *mvP)
+{NO_UNWIND_BEGIN();
   ASSERT(mvP != NULL);
   int numValues = (*mvP).number_of_values();
   core::SimpleVector_sp vo = core::SimpleVector_O::make(numValues,_Nil<core::T_O>());
@@ -1385,22 +1294,22 @@ extern void saveValues(core::T_sp *resultP, core::T_mv *mvP) {
     core::T_sp val((gctools::Tagged)mv._Values[i]);
     vo->rowMajorAset(i, val );
   }
-  (*resultP) = vo;
-  ASSERTNOTNULL(*resultP);
+  return vo.raw_();
+  NO_UNWIND_END();
 }
 
 /*! Copy the current MultipleValues in _lisp->values() into a VectorObjects */
-extern void loadValues(core::T_mv *resultP, core::T_sp *simpleVectorP) {
+extern void loadValues(core::T_mv *resultP, core::T_O* simpleVectorP)
+{NO_UNWIND_BEGIN();
   ASSERT(resultP != NULL);
-  ASSERT(simpleVectorP != NULL);
-  if (!(*simpleVectorP)) {
+  // I'm not sure the following can ever happen
+  if (!simpleVectorP) {
     // If there was a non-local exit then *vectorObjectP will be NULL
     // check for that here and if so set the result to gctools::multiple_values<core::T_O>()
     (*resultP) = gctools::multiple_values<core::T_O>();
     return;
   }
-  ASSERTF(*simpleVectorP, BF("*simpleVectorP is UNDEFINED"));
-  core::SimpleVector_sp vo = gc::As<core::SimpleVector_sp>((*simpleVectorP));
+  SimpleVector_sp vo((gctools::Tagged)simpleVectorP);
   //	printf("intrinsics.cc loadValues vo->length() = %d\n", vo->length() );
   if (vo->length() == 0) {
     (*resultP) = gctools::multiple_values<core::T_O>();
@@ -1411,6 +1320,7 @@ extern void loadValues(core::T_mv *resultP, core::T_sp *simpleVectorP) {
   for (int i(1); i < vo->length(); ++i) {
     mv._Values[i] = vo->rowMajorAref(i).raw_();
   }
+  NO_UNWIND_END();
 }
 
 /*! If saw_aok > 0 then return that.
@@ -1428,43 +1338,52 @@ int kw_allowOtherKeywords(int saw_aok, core::ActivationFrame_sp *afP, int argIdx
 }
 #endif
 
-size_t cc_trackFirstUnexpectedKeyword(size_t badKwIdx, size_t newBadKwIdx) {
+size_t cc_trackFirstUnexpectedKeyword(size_t badKwIdx, size_t newBadKwIdx)
+{NO_UNWIND_BEGIN();
   // 65536 is the magic number for badKwIdx has not been assigned yet
   if (badKwIdx != 65536)
     return badKwIdx;
   return newBadKwIdx;
+  NO_UNWIND_END();
 }
 };
 
 extern "C" {
 
-void progvSaveSpecials(void **saveSpecialsP, core::T_sp *symbolsP, core::T_sp *valuesP) {
+void progvSaveSpecials(void **saveSpecialsP, core::T_O *symbolsP, core::T_O *valuesP)
+{NO_UNWIND_BEGIN();
   core::DynamicScopeManager *managerP = new core::DynamicScopeManager();
   (*saveSpecialsP) = (void *)managerP;
-  core::List_sp symbols = (*symbolsP);
-  core::List_sp values = (*valuesP);
+  core::List_sp symbols((gctools::Tagged)symbolsP);
+  core::List_sp values((gctools::Tagged)valuesP);
   for (; symbols.notnilp(); symbols = oCdr(symbols), values = oCdr(values)) {
     core::Symbol_sp symbol = gc::As<Symbol_sp>(oCar(symbols));
     core::T_sp value = oCar(values);
     managerP->pushSpecialVariableAndSet(symbol, value);
   }
+  NO_UNWIND_END();
 }
 
-void progvRestoreSpecials(void **saveSpecialsP) {
+void progvRestoreSpecials(void **saveSpecialsP)
+{NO_UNWIND_BEGIN();
   core::DynamicScopeManager *managerP = (core::DynamicScopeManager *)(*saveSpecialsP);
   delete (managerP);
+  NO_UNWIND_END();
 }
 };
 
 extern "C" {
 
-void pushDynamicBinding(core::T_sp *tsymbolP) {
-  core::Symbol_sp sym((gctools::Tagged)(tsymbolP->raw_()));
-  my_thread->bindings().push_with_value_coming(sym);
+void pushDynamicBinding(core::T_O *tsymbolP)
+{NO_UNWIND_BEGIN();
+  core::Symbol_sp sym((gctools::Tagged)tsymbolP);
+  my_thread->bindings().push_with_value_coming(sym,&sym->_GlobalValue);
+  NO_UNWIND_END();
 }
 
-void popDynamicBinding(core::T_sp *tsymbolP) {
-  core::Symbol_sp sym((gctools::Tagged)(tsymbolP->raw_()));
+void popDynamicBinding(core::T_O *tsymbolP)
+{NO_UNWIND_BEGIN();
+  core::Symbol_sp sym((gctools::Tagged)tsymbolP);
   core::Symbol_sp top = my_thread->bindings().topSymbol();
   if (sym != my_thread->bindings().topSymbol()) {
     stringstream ss;
@@ -1477,6 +1396,7 @@ void popDynamicBinding(core::T_sp *tsymbolP) {
     SIMPLE_ERROR(BF("Mismatch in popDynamicBinding:\n%s") % ss.str());
   }
   my_thread->bindings().pop_binding();
+  NO_UNWIND_END();
 }
 };
 
@@ -1499,12 +1419,39 @@ void trace_setActivationFrameForIHSTop(core::T_sp *afP) {
 }
 #endif
 
-extern size_t matchKeywordOnce(core::T_sp *xP, core::T_O *yP, unsigned char *sawKeyAlreadyP) {
-  if ((*xP).raw_() != (yP))
-    return 0;
-  if (*sawKeyAlreadyP)
-    return 2;
+void setFrameUniqueId(size_t id, core::ActivationFrame_O* frameP) {
+#ifdef DEBUG_LEXICAL_DEPTH
+  ActivationFrame_sp src((gctools::Tagged)frameP);
+  src->_UniqueId = id;
+#endif
+}
+
+void ignore_setFrameUniqueId() {
+  // Do nothing
+}
+
+void ensureFrameUniqueId(size_t id, size_t depth, core::ActivationFrame_O* frameP) {
+#ifdef DEBUG_LEXICAL_DEPTH
+  ActivationFrame_sp src((gctools::Tagged)frameP);
+  ActivationFrame_sp dest = value_frame_lookup(src,depth);
+  if (dest->_UniqueId != id) {
+    printf("%s:%d Mismatch in frame UniqueId - expecting %lu - found %lu\n", __FILE__, __LINE__, id, dest->_UniqueId );
+    abort();
+  }
+#endif
+}
+
+void ignore_ensureFrameUniqueId() {
+  // Do nothing
+}
+
+
+extern size_t matchKeywordOnce(core::T_O *xP, core::T_O *yP, unsigned char *sawKeyAlreadyP)
+{NO_UNWIND_BEGIN();
+  if (xP != yP) return 0;
+  if (*sawKeyAlreadyP) return 2;
   return 1;
+  NO_UNWIND_END();
 }
 };
 
@@ -1520,32 +1467,37 @@ extern "C" {
 
 //#define DEBUG_CC
 
-void cc_setTmvToNil(core::T_mv *sharedP) {
+void cc_setTmvToNil(core::T_mv *sharedP)
+{NO_UNWIND_BEGIN();
   *sharedP = Values(_Nil<core::T_O>());
+  NO_UNWIND_END();
 }
 
 
 #define PROTO_cc_setSymbolValue "void (t* t*)"
 #define CATCH_cc_setSymbolValue false
-void cc_setSymbolValue(core::T_O *sym, core::T_O *val) {
+void cc_setSymbolValue(core::T_O *sym, core::T_O *val)
+{NO_UNWIND_BEGIN();
   //	core::Symbol_sp s = gctools::smart_ptr<core::Symbol_O>(reinterpret_cast<core::Symbol_O*>(sym));
   core::Symbol_sp s = gctools::smart_ptr<core::Symbol_O>((gc::Tagged)sym);
   s->setf_symbolValue(gctools::smart_ptr<core::T_O>((gc::Tagged)val));
+  NO_UNWIND_END();
 }
 
-core::T_O *cc_enclose(core::T_O *lambdaName, fnLispCallingConvention llvm_func,
+core::T_O *cc_enclose(core::T_O *lambdaName,
+                      fnLispCallingConvention llvm_func,
                       int *sourceFileInfoHandleP,
-                      size_t filePos, size_t lineno, size_t column,
-                      std::size_t numCells, ...) {
+                      size_t filePos,
+                      size_t lineno,
+                      size_t column,
+                      std::size_t numCells, ...)
+{
   core::T_sp tlambdaName = gctools::smart_ptr<core::T_O>((gc::Tagged)lambdaName);
   gctools::smart_ptr<core::ClosureWithSlots_O> functoid =
-    gctools::GC<core::ClosureWithSlots_O>::allocate_container(numCells
-                                                              , numCells
+    gctools::GC<core::ClosureWithSlots_O>::allocate_container( numCells
                                                               , llvm_func
                                                               , tlambdaName
                                                               , kw::_sym_function
-                                                              , _Nil<core::T_O>()
-                                                              , _Nil<T_O>() // assocFuncs
                                                               , _Nil<T_O>() // lambdaList
                                                               , *sourceFileInfoHandleP, filePos, lineno, column);
   core::T_O *p;
@@ -1609,42 +1561,44 @@ LCC_RETURN cc_call_multipleValueOneFormCallWithRet0(core::Function_O *tfunc, gct
   return core::funcall_frame(func,mvargs);
 }
 
-void cc_saveThreadLocalMultipleValues(core::T_mv *result, core::MultipleValues *mv) {
+void cc_saveThreadLocalMultipleValues(core::T_mv *result, core::MultipleValues *mv)
+{NO_UNWIND_BEGIN();
   core::MultipleValues &mvThread = core::lisp_multipleValues();
   (*mv)._Size = result->number_of_values();
   (*mv)[0] = ENSURE_VALID_OBJECT((*result).raw_());
   for (size_t i = 1; i < (*mv)._Size; ++i) (*mv)[i] = ENSURE_VALID_OBJECT(mvThread[i]);
+  NO_UNWIND_END();
 }
 
-void cc_loadThreadLocalMultipleValues(core::T_mv *result, core::MultipleValues *mv) {
+void cc_loadThreadLocalMultipleValues(core::T_mv *result, core::MultipleValues *mv)
+{NO_UNWIND_BEGIN();
   core::MultipleValues &mvThread = core::lisp_multipleValues();
   *result = gctools::multiple_values<core::T_O>(gctools::smart_ptr<core::T_O>((gc::Tagged)ENSURE_VALID_OBJECT((*mv)[0])), (*mv)._Size);
   for (size_t i = 1; i < (*mv)._Size; ++i) {
     mvThread[i] = ENSURE_VALID_OBJECT((*mv)[i]);
   }
+  NO_UNWIND_END();
 }
 
 
-size_t cc_matchKeywordOnce(core::T_O *xP, core::T_O *yP, core::T_O *sawKeyAlreadyP) {
-  if (xP != yP)
-    return 0;
-  if (!gctools::tagged_nilp(sawKeyAlreadyP))
-    return 2;
-  return 1;
-}
 
 void cc_ifNotKeywordException(core::T_O *obj, size_t argIdx, va_list valist) {
   T_sp vobj((gc::Tagged)obj);
-  if (!cl__keywordp(vobj)) {
+  if (!cl__symbolp(vobj)) {
     SIMPLE_ERROR(BF("Expected keyword argument at argument %d got %s") % argIdx % _rep_(gctools::smart_ptr<core::T_O>((gc::Tagged)obj)));
   }
 }
 
-T_O **cc_multipleValuesArrayAddress() {
+T_O **cc_multipleValuesArrayAddress()
+{NO_UNWIND_BEGIN();
   return &lisp_multipleValues().callingArgsStart()[0];
+  NO_UNWIND_END();
 }
 
 void cc_unwind(T_O *targetFrame, size_t index) {
+#ifdef DEBUG_TRACK_UNWINDS
+  global_unwind_count++;
+#endif
 #ifdef DEBUG_FLOW_CONTROL
   if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
     printf("%s:%d In cc_unwind targetFrame: %ld  index: %" PRu "\n", __FILE__, __LINE__, gc::untag_fixnum(targetFrame), index);
@@ -1664,37 +1618,37 @@ void cc_unwind(T_O *targetFrame, size_t index) {
     throw unwind;
 }
 
-void cc_saveMultipleValue0(core::T_mv *result) {
+void cc_saveMultipleValue0(core::T_mv *result)
+{NO_UNWIND_BEGIN();
   (*result).saveToMultipleValue0();
+  NO_UNWIND_END();
 }
 
-void cc_restoreMultipleValue0(core::T_mv *result) {
+void cc_restoreMultipleValue0(core::T_mv *result)
+{NO_UNWIND_BEGIN();
   (*result).readFromMultipleValue0();
 #ifdef DEBUG_FLOW_CONTROL
   if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
     printf("%s:%d In cc_restoreMultipleValue0\n", __FILE__, __LINE__);
   }
 #endif
+  NO_UNWIND_END();
 }
 
-T_O *cc_pushLandingPadFrame() {
-  core::T_sp ptr = _Nil<core::T_O>();
-#define DEBUG_UNWIND 1
-#ifdef DEBUG_UNWIND
-  ptr = core::Pointer_O::create((void *)&typeid(core::Unwind));
+T_O *cc_pushLandingPadFrame()
+{NO_UNWIND_BEGIN();
+#ifdef DEBUG_FLOW_TRACKER
+  Cons_sp unique = Cons_O::create(make_fixnum(next_flow_tracker_counter()),_Nil<T_O>());
+#else
+  Cons_sp unique = Cons_O::create(_Nil<T_O>(),_Nil<T_O>());
 #endif
-  size_t index = my_thread->exceptionStack().push(LandingPadFrame, ptr);
-#ifdef DEBUG_FLOW_CONTROL
-  if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
-    printf("%s:%d pushLandingPadFrame pushed frame: %" PRu "  core::Unwind typeinfo@%p\n", __FILE__, __LINE__, index, (void *)&typeid(core::Unwind));
-    if (core::_sym_STARdebugFlowControlSTAR->symbolValue() == kw::_sym_verbose )
-      printf("   %s\n", my_thread->exceptionStack().summary().c_str());
-  }
-#endif
-  return gctools::tag_fixnum<core::T_O *>(index);
+  return unique.raw_();
+  NO_UNWIND_END();
 }
 
-void cc_popLandingPadFrame(T_O *frameFixnum) {
+void cc_popLandingPadFrame(T_O *frameFixnum)
+{NO_UNWIND_BEGIN();
+#if 0
   ASSERT(gctools::tagged_fixnump(frameFixnum));
   size_t frameIndex = gctools::untag_fixnum(frameFixnum);
 #ifdef DEBUG_FLOW_CONTROL
@@ -1711,23 +1665,13 @@ void cc_popLandingPadFrame(T_O *frameFixnum) {
       printf("    After unwind of exceptionStack:  %s\n", my_thread->exceptionStack().summary().c_str());
   }
 #endif
+#endif
+  NO_UNWIND_END();
 }
 
 size_t cc_landingpadUnwindMatchFrameElseRethrow(char *exceptionP, core::T_O *thisFrame) {
   ASSERT(gctools::tagged_fixnump(thisFrame));
   core::Unwind *unwindP = reinterpret_cast<core::Unwind *>(exceptionP);
-#ifdef DEBUG_FLOW_CONTROL
-  size_t frameIndex = gctools::untag_fixnum(thisFrame);
-  if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
-    printf("%s:%d landingpadUnwindMatchFrameElseRethrow targetFrame: %" PRu " thisFrame: %lu  unwindP=%p\n",
-           __FILE__, __LINE__, gctools::untag_fixnum(unwindP->getFrame()), frameIndex, unwindP);
-    if (unwindP->getFrame() > thisFrame) {
-      printf("- - - - - THERE IS A SERIOUS PROBLEM - THE TARGET FRAME HAS BEEN BYPASSED\n");
-    }
-    if (core::_sym_STARdebugFlowControlSTAR->symbolValue() == kw::_sym_verbose )
-      printf("   %s\n", my_thread->exceptionStack().summary().c_str());
-  }
-#endif
   if (unwindP->getFrame() == thisFrame) {
 #ifdef DEBUG_FLOW_CONTROL
     if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
@@ -1741,7 +1685,8 @@ size_t cc_landingpadUnwindMatchFrameElseRethrow(char *exceptionP, core::T_O *thi
     printf("- - - - - Rethrowing core::Unwind targetFrame[%" PRu "] index[%zu] (thisFrame is: %lu)\n", gc::untag_fixnum(unwindP->getFrame()), unwindP->index(), frameIndex);
   }
 #endif
-  throw * unwindP;
+  // throw * unwindP;
+  throw;
 }
 
 #if 0 // Bring this back online when we convert to new calling convention
@@ -1799,15 +1744,18 @@ T_mv cc_multiple_value_prog1_function(core::T_mv* result, core::T_O* tfunc1, cor
 #endif
 
 
-gctools::return_type cc_dispatch_miss(core::T_O* gf, core::T_O* gf_valist_s)
+gctools::return_type cc_dispatch_effective_method(core::T_O* teffective_method, core::T_O* tgf, core::T_O* tgf_args_vaslist) {
+  core::Function_sp effective_method((gctools::Tagged)teffective_method);
+  core::T_sp gf_vaslist((gctools::Tagged)tgf_args_vaslist);
+  return (*effective_method).entry.load()(LCC_PASS_ARGS2_ELLIPSIS(teffective_method,gf_vaslist.raw_(),_Nil<core::T_O>().raw_()));
+}
+
+
+gctools::return_type cc_dispatch_miss(core::T_O* tgf, core::T_O* tgf_vaslist)
 {
-  core::Instance_sp tgf((gctools::Tagged)gf);
-  core::VaList_sp tgf_valist((gctools::Tagged)gf_valist_s);
-  if (!gc::tagged_valistp(gf_valist_s)) {
-    printf("%s:%d The argument to cc_dispatch_miss is not a tagged_valist\n", __FILE__, __LINE__ );
-    SIMPLE_ERROR(BF("cc_dispatch_miss did not get a tagged_valist as an argument"));
-  }
-  core::T_mv result = core::eval::funcall(clos::_sym_dispatch_miss,tgf,tgf_valist);
+  core::FuncallableInstance_sp gf((gctools::Tagged)tgf);
+  core::VaList_sp gf_vaslist((gctools::Tagged)tgf_vaslist);
+  core::T_mv result = core::eval::funcall(clos::_sym_dispatch_miss,gf,gf_vaslist);
 #ifdef DEBUG_GFDISPATCH
   printf("%s:%d  Returning from cc_dispatch_miss\n", __FILE__, __LINE__ );
 #endif
@@ -1815,8 +1763,19 @@ gctools::return_type cc_dispatch_miss(core::T_O* gf, core::T_O* gf_valist_s)
 }
 
 
+
 void cc_dispatch_debug(int msg_id, uintptr_clasp_t val)
 {
+  // The msg_id switch values correspond to values passed from cmpgf.lsp
+  //   The values mean:
+  //         0 - print the argument as an integer step index
+  //         1 - Print the value as a integer
+  //         2 - print the value as a tag
+  //         3 - print the value as a tagged pointer to a Vaslist object
+  //         4 - print the value as a pointer
+  //         5 - print the contents of the va_list pointed to by the value
+  //         6 - print the value as a stamp
+  //         7 - print the value as a pointer to a dispatch function
   switch (msg_id) {
   case 0:
       BFORMAT_T(BF("Step %d\n") % val);
@@ -1831,22 +1790,39 @@ void cc_dispatch_debug(int msg_id, uintptr_clasp_t val)
 //      printf("%s:%d    cc_dispatch_debug tag [%d]\n", __FILE__, __LINE__, val );
      break;
   case 3: {
-    VaList_S vl(0,*reinterpret_cast<va_list*>(val));
-    VaList_sp vls((gc::Tagged)vl.asTaggedPtr());
+    VaList_sp vls((gc::Tagged)val);
 //    printf("%s:%d    vaList_sp.raw_() = %p\n", __FILE__, __LINE__, vls.raw_());
     BFORMAT_T(BF("Arg VaList_sp.raw_() = %p list -> %s\n") % (void*)vls.raw_() % _rep_(vls) );
-    dump_VaList_S_ptr(&vl);
+    dump_Vaslist_ptr(&*vls);
     break;
   }
-  case 4:
+  case 4: {
 //      printf("%s:%d     ptr: %p\n", __FILE__, __LINE__, (void*)val);
       BFORMAT_T(BF("Ptr: %p\n") % (void*)val );
+  }
+      break;
+  case 5: {
+//      printf("%s:%d     ptr: %p\n", __FILE__, __LINE__, (void*)val);
+      BFORMAT_T(BF("va_list: %p\n") % (void*)val );
+      void* dump_va_list_voidSTAR = (void*)&dump_va_list;
+      typedef void (*fptr)(uintptr_t);
+      fptr my_fptr = reinterpret_cast<fptr>(dump_va_list_voidSTAR);
+      my_fptr(val);
+      break;
+  }
+  case 6:
+      BFORMAT_T(BF("Argument stamp: %lu\n") % val);
+      break;
+  case 7:
+      BFORMAT_T(BF("Dispatch to: %p\n") % val);
+      break;
   }
   fflush(stdout);
 }
 
-void clasp_terminate(const char *file, size_t line, size_t column, const char *func) {
-  printf("Terminating file: %s  func: %s\n", file, func);
+void clasp_terminate()
+{
+  printf("Terminating clasp from clasp_terminate\n");
   abort();
 }
 };
@@ -1864,4 +1840,41 @@ void initialize_link_intrinsics() {
 	printf("Called testTwoReturns  foo.raw_() = %p   foo.two = %d\n", foo.raw_(), foo.number_of_values() );
 #endif
 }
+};
+
+
+extern "C" {
+
+gctools::return_type cc_dispatch_slot_reader_index_debug(core::T_O* toptimized_slot_reader, size_t index, core::T_O* tvargs) {
+  core::SimpleVector_sp optimized_slot_reader((gctools::Tagged)toptimized_slot_reader);
+  core::VaList_sp vargs((gctools::Tagged)tvargs);
+  va_list vat;
+  va_copy(vat,vargs->_Args);
+  core::Instance_sp instance((gctools::Tagged)va_arg(vat,core::T_O*));
+  va_end(vat);
+  core::T_sp result = core::eval::funcall(clos::_sym_dispatch_slot_reader_index_debug,optimized_slot_reader,instance,vargs);
+  return result.as_return_type();
+}
+
+gctools::return_type cc_dispatch_slot_writer_index_debug(core::T_O* toptimized_slot_writer, size_t index, core::T_O* tvargs) {
+  core::SimpleVector_sp optimized_slot_writer((gctools::Tagged)toptimized_slot_writer);
+  core::VaList_sp vargs((gctools::Tagged)tvargs);
+  va_list vat;
+  va_copy(vat,vargs->_Args);
+  core::T_sp value((gctools::Tagged)va_arg(vat,core::T_O*));
+  core::Instance_sp instance((gctools::Tagged)va_arg(vat,core::T_O*));
+  va_end(vat);
+  core::T_sp result = core::eval::funcall(clos::_sym_dispatch_slot_writer_index_debug,optimized_slot_writer,value,instance,vargs);
+  return result.as_return_type();
+}
+
+
+void cc_error_too_few_arguments(size_t nargs, size_t minargs) {
+  SIMPLE_ERROR(BF("Not enough arguments - you provided %lu and %lu are required") % nargs % minargs );
+}
+
+void cc_error_too_many_arguments(size_t nargs, size_t maxargs) {
+  SIMPLE_ERROR(BF("Too many arguments - you provided %lu and %lu are allowed") % nargs % maxargs );
+}
+
 };

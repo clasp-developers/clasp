@@ -31,13 +31,12 @@ THE SOFTWARE.
 
 #include <alloca.h>
 #include <utility>
-#include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 #include <clasp/core/activationFrame.fwd.h>
 #include <clasp/core/loadTimeValues.fwd.h>
 #include <clasp/core/environment.h>
 #include <clasp/core/sequence.h>
-#include <clasp/core/holder.h>
+//#include <clasp/core/holder.h>
 
 // may need more later
 //#include GC_INTERFACE_HEADER
@@ -53,6 +52,9 @@ class ActivationFrame_O : public Environment_O {
   LISP_ABSTRACT_CLASS(core, CorePkg, ActivationFrame_O, "ActivationFrame",Environment_O);
  public:
   T_sp _Parent;
+#ifdef DEBUG_LEXICAL_DEPTH
+  size_t _UniqueId;
+#endif
 public:
   static string clasp_asString(T_sp af);
   T_sp &parentFrameRef_() { return this->_Parent; };
@@ -75,8 +77,8 @@ virtual T_sp currentVisibleEnvironment() const;
 //  virtual T_sp _lookupTagbodyId(int depth, int index) const;
 
   virtual bool _findTag(Symbol_sp tag, int &depth, int &index, bool &interFunction, T_sp &tagbodyEnv) const;
-  virtual bool _findValue(T_sp sym, int &depth, int &index, ValueKind &valueKind, T_sp &value) const;
-  virtual bool _findFunction(T_sp functionName, int &depth, int &index, Function_sp &value) const;
+  virtual bool _findValue(T_sp sym, int &depth, int &index, bool& crossesFunction, ValueKind &valueKind, T_sp &value, T_sp& env) const;
+  virtual bool _findFunction(T_sp functionName, int &depth, int &index, Function_sp &value, T_sp& functionEnv) const;
 
   /*! Methods for interogating ActivationFrames as Environments */
   T_sp getParentEnvironment() const { return this->parentFrame(); };
@@ -88,7 +90,7 @@ virtual T_sp currentVisibleEnvironment() const;
 #ifdef DEBUG_ASSERT
     T_sp p((gctools::Tagged)parent);
     if (!(p.nilp() || p.asOrNull<Environment_O>()) ) {
-      SIMPLE_ERROR(BF("Activation frame is not an activation frame - it is a %s") % _rep_(p));
+      SIMPLE_ERROR_SPRINTF("Activation frame is not an activation frame - it is a %s", _rep_(p).c_str());
     }
 #endif
   }
@@ -106,7 +108,7 @@ public:
   };
 
   /*! Access a function */
-  Function_sp function(int idx) const { THROW_HARD_ERROR(BF("Subclass must implement function(idx)")); };
+  Function_sp function(int idx) const { throw_hard_error("Subclass must implement function(idx)"); };
 
 #if 0
   List_sp asCons(int start = 0) const {
@@ -145,7 +147,7 @@ public:
   template <class... ARGS>
   static ValueFrame_sp create_fill_capacity(int capacity, T_sp parent, ARGS &&... args) {
     ASSERT(sizeof...(ARGS) <= capacity);
-    ValueFrame_sp vf = gc::GC<ValueFrame_O>::allocate_container(capacity,capacity,parent,std::forward<ARGS>(args)...);
+    ValueFrame_sp vf = gc::GC<ValueFrame_O>::allocate_container(capacity,parent,std::forward<ARGS>(args)...);
     return vf;
   }
 
@@ -213,7 +215,7 @@ public:
 //  T_sp &lookupValueReference(int depth, int index);
 
   virtual bool _updateValue(Symbol_sp sym, T_sp obj);
-  virtual bool _findValue(T_sp sym, int &depth, int &index, ValueKind &valueKind, T_sp &value) const;
+  virtual bool _findValue(T_sp sym, int &depth, int &index, bool& crossesFunction, ValueKind &valueKind, T_sp &value, T_sp& env) const;
 
   inline bool boundp_entry(uint idx) const {
     return !(*this)[idx].unboundp();
@@ -257,7 +259,7 @@ GCPRIVATE:
   gctools::GCArray_moveable<value_type> _Objects;
 public:
   static FunctionFrame_sp create(int numArgs, T_sp parent) {
-    FunctionFrame_sp vf = gc::GC<FunctionFrame_O>::allocate_container(numArgs,numArgs,parent);
+    FunctionFrame_sp vf = gc::GC<FunctionFrame_O>::allocate_container(numArgs,parent);
     return vf;
   }
 
@@ -274,7 +276,7 @@ public:
 
   template <class... ARGS>
   static FunctionFrame_sp create_fill(T_sp parent, ARGS &&... args) {
-    FunctionFrame_sp vf = gc::GC<FunctionFrame_O>::allocate_container(sizeof...(ARGS),sizeof...(ARGS),parent,std::forward<ARGS>(args)...);
+    FunctionFrame_sp vf = gc::GC<FunctionFrame_O>::allocate_container(sizeof...(ARGS),parent,std::forward<ARGS>(args)...);
     return vf;
   }
  private:
@@ -309,6 +311,7 @@ public:
   }
   T_sp entry(int idx) const { return (*this)[idx];};
   const T_sp &entryReference(int idx) const { return (*this)[idx];};
+  T_sp &entryReference(int idx) { return (*this)[idx];};
 
   string asString() const;
 
@@ -319,6 +322,7 @@ public:
 };
 };
 
+#if 0
 namespace core {
 class TagbodyFrame_O : public ActivationFrame_O {
   LISP_CLASS(core, CorePkg, TagbodyFrame_O, "TagbodyFrame",ActivationFrame_O);
@@ -346,12 +350,21 @@ struct gctools::GCInfo<core::TagbodyFrame_O> {
   static bool const NeedsFinalization = false;
   static GCInfo_policy constexpr Policy = normal;
 };
-
+#endif
 
 namespace core {
   void error_frame_range(const char* type, int index, int capacity );
   void error_end_of_frame_list(const char* message);
 
+  inline ALWAYS_INLINE ActivationFrame_sp value_frame_lookup(ActivationFrame_sp af, int depth)
+  {
+    while (true) {
+      if (depth == 0 ) return af;
+      --depth;
+      af = af->_Parent;
+    }
+  };
+  
   inline ALWAYS_INLINE T_sp& value_frame_lookup_reference(ActivationFrame_sp activationFrame, int depth, int index )
   {
     while (true) {
@@ -388,12 +401,12 @@ namespace core {
     }
   };
 
-  inline ALWAYS_INLINE T_sp tagbody_frame_lookup(ActivationFrame_sp activationFrame, int depth, int index )
+  DONT_OPTIMIZE_WHEN_DEBUG_RELEASE inline /*ALWAYS_INLINE*/ T_sp tagbody_frame_lookup(ActivationFrame_sp activationFrame, int depth, int index )
   {
     while (true) {
       if ( depth == 0 ) {
-        if (activationFrame.isA<TagbodyFrame_O>()) {
-          TagbodyFrame_sp tf = gc::reinterpret_cast_smart_ptr<TagbodyFrame_O,T_O>(activationFrame);
+        if (activationFrame.isA<ValueFrame_O>()) {
+          ValueFrame_sp tf = gc::reinterpret_cast_smart_ptr<ValueFrame_O,T_O>(activationFrame);
           return tf;
         }
         error_end_of_frame_list("TagbodyFrame");

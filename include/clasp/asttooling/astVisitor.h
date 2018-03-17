@@ -29,13 +29,15 @@ THE SOFTWARE.
 
 #include <clang/AST/RecursiveASTVisitor.h>
 
-#include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 #include <clasp/core/wrappers.h>
 #include <clasp/asttooling/asttoolingPackage.h>
 
+
+
 namespace asttooling {
 
+// FIXME!!!!   AstVisitor is Deprecated!!!!!!
 FORWARD(AstVisitor);
 class AstVisitor_O : public core::General_O, public clang::RecursiveASTVisitor<AstVisitor_O> {
   LISP_CLASS(asttooling, AstToolingPkg, AstVisitor_O, "AstVisitor",core::General_O);

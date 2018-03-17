@@ -15,9 +15,6 @@
 
 (in-package "SYSTEM")
 
-#-(or ecl-min clasp)
-(ffi:clines "#include <math.h>")
-
 #.
 (flet ((binary-search (f min max)
 	 (do ((new (/ (+ min max) 2) (/ (+ min max) 2)))
@@ -34,8 +31,6 @@
 	 (/= (float 1 x) (+ (float 1 x) x)))
        (epsilon- (x)
 	 (/= (float 1 x) (- (float 1 x) x))))
-  #+(and ecl-min (not clasp))
-  (si::trap-fpe 'last nil)
   `(eval-when (compile load eval)
     (defconstant short-float-epsilon
       ,(binary-search #'epsilon+ (coerce 0 'short-float) (coerce 1 'short-float))
@@ -71,41 +66,40 @@
 	(not (= (float 1 E) (- (float 1 E) E)))")
     ))
 
-#+IEEE-FLOATING-POINT
-(locally
- (declare (notinline -))
- (let* ((bits (si::trap-fpe 'last nil)))
-   (let ((a (/ (coerce 1 'short-float) (coerce 0.0 'short-float))))
-     (defconstant short-float-positive-infinity a)
-     (defconstant short-float-negative-infinity (- a)))
-   (let ((a (/ (coerce 1 'single-float) (coerce 0.0 'single-float))))
-     (defconstant single-float-positive-infinity a)
-     (defconstant single-float-negative-infinity (- a)))
-   (let ((a (/ (coerce 1 'double-float) (coerce 0.0 'double-float))))
-     (defconstant double-float-positive-infinity a)
-     (defconstant double-float-negative-infinity (- a)))
-   (let ((a (/ (coerce 1 'long-float) (coerce 0.0 'long-float))))
-     (defconstant long-float-positive-infinity a)
-     (defconstant long-float-negative-infinity (- a)))
-   (si::trap-fpe bits t)))
-
-(defconstant imag-one #C(0.0 1.0))
+#+ieee-floating-point
+(locally (declare (notinline -))
+  (let ((bits (si::trap-fpe 'last nil)))
+    (unwind-protect
+         (progn
+           (let ((a (/ (coerce 1 'short-float) (coerce 0.0 'short-float))))
+             (defconstant short-float-positive-infinity a)
+             (defconstant short-float-negative-infinity (- a)))
+           (let ((a (/ (coerce 1 'single-float) (coerce 0.0 'single-float))))
+             (defconstant single-float-positive-infinity a)
+             (defconstant single-float-negative-infinity (- a)))
+           (let ((a (/ (coerce 1 'double-float) (coerce 0.0 'double-float))))
+             (defconstant double-float-positive-infinity a)
+             (defconstant double-float-negative-infinity (- a)))
+           (let ((a (/ (coerce 1 'long-float) (coerce 0.0 'long-float))))
+             (defconstant long-float-positive-infinity a)
+             (defconstant long-float-negative-infinity (- a))))
+      (si::trap-fpe bits t))))
 
 (defun isqrt (i)
   "Args: (integer)
 Returns the integer square root of INTEGER."
-       (unless (and (integerp i) (>= i 0))
-               (error 'type-error :datum i :expected-type 'unsigned-byte))
-       (if (zerop i)
-           0
-           (let ((n (integer-length i)))
-                (do ((x (ash 1 (ceiling n 2)))
-                     (y))
-                    (nil)
-                    (setq y (floor i x))
-                    (when (<= x y)
-                          (return x))
-                    (setq x (floor (+ x y) 2))))))
+  (unless (and (integerp i) (>= i 0))
+    (error 'type-error :datum i :expected-type 'unsigned-byte))
+  (if (zerop i)
+      0
+      (let ((n (integer-length i)))
+        (do ((x (ash 1 (ceiling n 2)))
+             (y))
+            (nil)
+          (setq y (floor i x))
+          (when (<= x y)
+            (return x))
+          (setq x (floor (+ x y) 2))))))
 
 (defun phase (x)
   "Args: (number)
@@ -125,38 +119,24 @@ zero.  Otherwise, returns the value of (/ NUMBER (ABS NUMBER))"
   "Args: (radians)
 Returns a complex number whose realpart and imagpart are the values of (COS
 RADIANS) and (SIN RADIANS) respectively."
-  (exp (* imag-one x)))
-
-#-(or ecl-min clasp)
-(eval-when (:compile-toplevel)
-  (defmacro c-num-op (name arg)
-    #+long-float
-    `(ffi::c-inline (,arg) (:long-double) :long-double
-		    ,(format nil "~al(#0)" name)
-		    :one-liner t)
-    #-long-float
-    `(ffi::c-inline (,arg) (:double) :double
-		    ,(format nil "~a(#0)" name)
-		    :one-liner t)))
+  (exp (* #c(0.0 1.0) x)))
 
 (defun asin (x)
   "Args: (number)
 Returns the arc sine of NUMBER."
-  (if #+(or ecl-min clasp-min) t
-      #-(or ecl-min clasp-min) (complexp x)
+  (if #+clasp-min t #-clasp-min (complexp x)
       (complex-asin x)
-      #-(or ecl-min clasp-min)
+      #-clasp-min
       (let* ((x (float x))
 	     (xr (float x 1l0)))
 	(declare (long-float xr))
 	(if (and (<= -1.0 xr) (<= xr 1.0))
-	    (float #+ecl(c-num-op "asin" xr) #+clasp(core:num-op-asin xr) x)
+	    (float (core:num-op-asin xr) x)
 	    (complex-asin x)))))
 
 ;; Ported from CMUCL
 (defun complex-asin (z)
-  (declare (number z)
-	   (si::c-local))
+  (declare (number z))
   (let ((sqrt-1-z (sqrt (- 1 z)))
 	(sqrt-1+z (sqrt (+ 1 z))))
     (complex (atan (realpart z) (realpart (* sqrt-1-z sqrt-1+z)))
@@ -166,74 +146,55 @@ Returns the arc sine of NUMBER."
 (defun acos (x)
   "Args: (number)
 Returns the arc cosine of NUMBER."
-  (if #+(or ecl-min clasp-min) t
-      #-(or ecl-min clasp-min) (complexp x)
+  (if #+clasp-min t #-clasp-min (complexp x)
       (complex-acos x)
-      #-(or ecl-min clasp-min)
+      #-clasp-min
       (let* ((x (float x))
 	     (xr (float x 1l0)))
 	(declare (long-float xr))
 	(if (and (<= -1.0 xr) (<= xr 1.0))
-	    (float #+ecl(c-num-op "acos" xr) #+clasp(core:num-op-acos xr) (float x))
+	    (float (core:num-op-acos xr) (float x))
 	    (complex-acos x)))))
 
 ;; Ported from CMUCL
 (defun complex-acos (z)
-  (declare (number z)
-	   (si::c-local))
+  (declare (number z))
   (let ((sqrt-1+z (sqrt (+ 1 z)))
 	(sqrt-1-z (sqrt (- 1 z))))
     (complex (* 2 (atan (realpart sqrt-1-z) (realpart sqrt-1+z)))
 	     (asinh (imagpart (* (conjugate sqrt-1+z)
 				 sqrt-1-z))))))
-#+(and (not ecl-min) win32 (not mingw32) (not clasp))
-(progn
-  (ffi:clines "double asinh(double x) { return log(x+sqrt(1.0+x*x)); }")
-  (ffi:clines "double acosh(double x) { return log(x+sqrt((x-1)*(x+1))); }")
-  (ffi:clines "double atanh(double x) { return log((1+x)/(1-x))/2; }"))
-
-#+(and long-float (not ecl-min) win32 (not mingw32) (not clasp))
-(progn
-  (ffi:clines "double asinhl(long double x) { return logl(x+sqrtl(1.0+x*x)); }")
-  (ffi:clines "double acoshl(long double x) { return logl(x+sqrtl((x-1)*(x+1))); }")
-  (ffi:clines "double atanhl(long double x) { return logl((1+x)/(1-x))/2; }"))
-
 
 ;; Ported from CMUCL
 (defun asinh (x)
   "Args: (number)
 Returns the hyperbolic arc sine of NUMBER."
   ;(log (+ x (sqrt (+ 1.0 (* x x)))))
-  (if #+(or ecl-min clasp-min) t
-      #-(or ecl-min clasp-min) (complexp x)
+  (if #+clasp-min t #-clasp-min (complexp x)
       (let* ((iz (complex (- (imagpart x)) (realpart x)))
 	     (result (complex-asin iz)))
 	(complex (imagpart result)
 		 (- (realpart result))))
-      #-(or ecl-min clasp-min)
-      (float #+ecl (c-num-op "asinh" x)
-             #+clasp (core:num-op-asinh x)
-             (float x))))
+      #-clasp-min
+      (float (core:num-op-asinh x) (float x))))
 
 ;; Ported from CMUCL
 (defun acosh (x)
   "Args: (number)
 Returns the hyperbolic arc cosine of NUMBER."
   ;(log (+ x (sqrt (* (1- x) (1+ x)))))
-  (if #+(or ecl-min clasp-min) t
-      #-(or ecl-min clasp-min) (complexp x)
+  (if #+clasp-min t #-clasp-min (complexp x)
       (complex-acosh x)
-      #-(or ecl-min clasp-min)
+      #-clasp-min
       (let* ((x (float x))
 	     (xr (float x 1d0)))
 	(declare (double-float xr))
 	(if (<= 1.0 xr)
-	    (float #+ecl (c-num-op "acosh" xr)
-                   #+clasp (core:num-op-acosh xr) (float x))
+	    (float (core:num-op-acosh xr) (float x))
 	    (complex-acosh x)))))
 
 (defun complex-acosh (z)
-  (declare (number z) (si::c-local))
+  (declare (number z))
   (let ((sqrt-z-1 (sqrt (- z 1)))
 	(sqrt-z+1 (sqrt (+ z 1))))
     (complex (asinh (realpart (* (conjugate sqrt-z-1)
@@ -244,21 +205,18 @@ Returns the hyperbolic arc cosine of NUMBER."
   "Args: (number)
 Returns the hyperbolic arc tangent of NUMBER."
   ;(/ (- (log (1+ x)) (log (- 1 x))) 2)
-  (if #+(or ecl-min clasp-min) t
-      #-(or ecl-min clasp-min) (complexp x)
+  (if #+clasp-min t #-clasp-min (complexp x)
       (complex-atanh x)
-      #-(or ecl-min clasp-min)
+      #-clasp-min
       (let* ((x (float x))
 	     (xr (float x 1d0)))
 	(declare (double-float xr))
 	(if (and (<= -1.0 xr) (<= xr 1.0))
-	    (float #+ecl (c-num-op "atanh" xr)
-                   #+clasp(core:num-op-atanh xr)
-                   (float x))
+	    (float (core:num-op-atanh xr) (float x))
 	    (complex-atanh x)))))
 
 (defun complex-atanh (z)
-  (declare (number z) (si::c-local))
+  (declare (number z))
   (/ (- (log (1+ z)) (log (- 1 z))) 2))
 
 (defun ffloor (x &optional (y 1))
@@ -300,14 +258,15 @@ byte specifier is represented by a dotted pair (SIZE . POSITION)."
 
 (defun byte-size (bytespec)
   "Args: (byte)
-Returns the size part (in ECL, the car part) of the byte specifier BYTE."
+Returns the size part (in Clasp, the car part) of the byte specifier BYTE."
   (car bytespec))
 
 (defun byte-position (bytespec)
   "Args: (byte)
-Returns the position part (in ECL, the cdr part) of the byte specifier BYTE."
+Returns the position part (in Clasp, the cdr part) of the byte specifier BYTE."
   (cdr bytespec))
 
+(declaim (inline %ldb))
 (defun %ldb (size position integer)
   (logand (ash integer (- position))
           (lognot (ash -1 size))))
@@ -326,12 +285,13 @@ the byte, and returns the result as an integer."
              (null (cdddr bytespec)))
     (values (cadr bytespec) (caddr bytespec))))
 
-(define-compiler-macro ldb (&whole whole bytespec integer)
+(core:bclasp-define-compiler-macro ldb (&whole whole bytespec integer)
   (multiple-value-bind (size position) (parse-bytespec bytespec)
     (if size
         `(%ldb ,size ,position ,integer)
         whole)))
 
+(declaim (inline %ldb-test))
 (defun %ldb-test (size position integer)
   (not (zerop (%mask-field size position integer))))
 
@@ -340,12 +300,13 @@ the byte, and returns the result as an integer."
 Returns T if at least one bit of the specified byte is 1; NIL otherwise."
   (%ldb-test (byte-size bytespec) (byte-position bytespec) integer))
 
-(define-compiler-macro ldb-test (&whole whole bytespec integer)
+(core:bclasp-define-compiler-macro ldb-test (&whole whole bytespec integer)
   (multiple-value-bind (size position) (parse-bytespec bytespec)
     (if size
         `(%ldb-test ,size ,position ,integer)
         whole)))
 
+(declaim (inline %mask-field))
 (defun %mask-field (size position integer)
   (logand (ash (lognot (ash -1 size))
 	       position)
@@ -356,12 +317,13 @@ Returns T if at least one bit of the specified byte is 1; NIL otherwise."
 Extracts the specified byte from INTEGER and returns the result as an integer."
   (%mask-field (byte-size bytespec) (byte-position bytespec) integer))
 
-(define-compiler-macro mask-field (&whole whole bytespec integer)
+(core:bclasp-define-compiler-macro mask-field (&whole whole bytespec integer)
   (multiple-value-bind (size position) (parse-bytespec bytespec)
     (if size
         `(%mask-field ,size ,position ,integer)
         whole)))
 
+(declaim (inline %dpb))
 (defun %dpb (newbyte size position integer)
   (let ((mask (ash (lognot (ash -1 size)) position)))
     (logior (logandc2 integer mask)
@@ -373,17 +335,13 @@ Replaces the specified byte of INTEGER with NEWBYTE (an integer) and returns
 the result."
   (%dpb newbyte (byte-size bytespec) (byte-position bytespec) integer))
 
-(define-compiler-macro dpb (&whole whole newbyte bytespec integer)
+(core:bclasp-define-compiler-macro dpb (&whole whole newbyte bytespec integer)
   (multiple-value-bind (size position) (parse-bytespec bytespec)
     (if size
         `(%dpb ,newbyte ,size ,position ,integer)
         whole)))
 
-(defun %deposit-field (newbyte size position integer)
-  (let ((mask (ash (lognot (ash -1 size)) position)))
-    (logior (logandc2 integer mask)
-	    (logand newbyte mask))))
-
+(declaim (inline %deposit-field))
 (defun %deposit-field (newbyte size position integer)
   (let ((mask (ash (lognot (ash -1 size)) position)))
     (logior (logandc2 integer mask)
@@ -395,7 +353,7 @@ Returns an integer represented by the bit sequence obtained by replacing the
 specified bits of INTEGER2 with the specified bits of INTEGER1."
   (%deposit-field newbyte (byte-size bytespec) (byte-position bytespec) integer))
 
-(define-compiler-macro deposit-field (&whole whole newbyte bytespec integer)
+(core:bclasp-define-compiler-macro deposit-field (&whole whole newbyte bytespec integer)
   (multiple-value-bind (size position) (parse-bytespec bytespec)
     (if size
         `(%deposit-field ,newbyte ,size ,position ,integer)

@@ -257,7 +257,7 @@ CL_DEFMETHOD string Path_O::asString() const {
 string Path_O::__repr__() const {
   _OF();
   stringstream ss;
-  ss << "#<" << this->_instanceClass()->classNameAsString() << " :string ";
+  ss << "#<" << _rep_(this->_instanceClass()->_className()) << " :string ";
   ss << this->_Path.string() << ">";
   return ss.str();
 }
@@ -337,7 +337,7 @@ DirectoryIterator_sp DirectoryIterator_O::create(Path_sp path) {
 #define DECL_af_makeDirectoryIterator ""
 #define DOCS_af_makeDirectoryIterator "make DirectoryIterator args: path"
 DirectoryIterator_mv af_makeDirectoryIterator(Path_sp path) {
-  IMPLEMENT_MEF(BF("What the heck was I doing below?"));
+  IMPLEMENT_MEF("What the heck was I doing below?");
 #if 0
 	DirectoryIterator_sp me(DirectoryIterator_O::create());
 	SYMBOL_SC_(CorePkg,path);

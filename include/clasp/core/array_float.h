@@ -28,12 +28,13 @@ namespace core {
     typedef typename TemplatedBase::const_iterator const_iterator;
     typedef value_type container_value_type;
   public:
+    static value_type default_initial_element(void) {return 0.0;}
     static value_type initial_element_from_object(T_sp obj, bool supplied) {
       if (supplied) {
         if (obj.single_floatp()) {
           return obj.unsafe_single_float();
-        } else if (gc::IsA<DoubleFloat_sp>(obj)) {
-          return gc::As_unsafe<DoubleFloat_sp>(obj)->get();
+        } else if (gc::IsA<General_sp>(obj)) {
+          return clasp_to_float(gc::As_unsafe<General_sp>(obj));
         }
         TYPE_ERROR(obj,cl::_sym_single_float);
       }
@@ -52,7 +53,7 @@ namespace core {
                                       bool initialElementSupplied=false,
                                       size_t initialContentsSize=0,
                                       const value_type* initialContents=NULL) {
-      auto bs = gctools::GC<SimpleVectorFloat_O>::allocate_container(length,length,initialElement,initialElementSupplied,initialContentsSize,initialContents);
+      auto bs = gctools::GC<SimpleVectorFloat_O>::allocate_container(length,initialElement,initialElementSupplied,initialContentsSize,initialContents);
       return bs;
     }
   public:
@@ -71,11 +72,11 @@ namespace core {
   FORWARD(MDArrayFloat);
 };
 namespace core {
-  class MDArrayFloat_O : public template_Array<MDArrayFloat_O,SimpleVectorFloat_O,MDArray_O> {
+  class MDArrayFloat_O : public template_Array<MDArrayFloat_O,SimpleMDArrayFloat_O,SimpleVectorFloat_O,MDArray_O> {
     LISP_CLASS(core, CorePkg, MDArrayFloat_O, "MDArrayFloat",MDArray_O);
     virtual ~MDArrayFloat_O() {};
   public:
-    typedef template_Array<MDArrayFloat_O,SimpleVectorFloat_O,MDArray_O> TemplatedBase;
+    typedef template_Array<MDArrayFloat_O,SimpleMDArrayFloat_O,SimpleVectorFloat_O,MDArray_O> TemplatedBase;
     typedef typename TemplatedBase::simple_element_type simple_element_type;
     typedef typename TemplatedBase::simple_type simple_type;
   public: // make vector
@@ -89,7 +90,7 @@ namespace core {
       LIKELY_if (dataOrDisplacedTo.nilp()) {
         dataOrDisplacedTo = simple_type::make(dimension,initialElement,true);
       }
-      MDArrayFloat_sp array = gctools::GC<MDArrayFloat_O>::allocate_container(1,1,dimension,fillPointer,gc::As_unsafe<Array_sp>(dataOrDisplacedTo),displacedToP,displacedIndexOffset);
+      MDArrayFloat_sp array = gctools::GC<MDArrayFloat_O>::allocate_container(1,dimension,fillPointer,gc::As_unsafe<Array_sp>(dataOrDisplacedTo),displacedToP,displacedIndexOffset);
       return array;
     }
   public: // make array
@@ -105,7 +106,7 @@ namespace core {
       LIKELY_if (dataOrDisplacedTo.nilp()) {
         dataOrDisplacedTo = simple_type::make(arrayTotalSize,initialElement,true);
       }
-      MDArrayFloat_sp array = gctools::GC<MDArrayFloat_O>::allocate_container(rank,rank,dim_desig,gc::As<Array_sp>(dataOrDisplacedTo),displacedToP,displacedIndexOffset);
+      MDArrayFloat_sp array = gctools::GC<MDArrayFloat_O>::allocate_container(rank,dim_desig,gc::As<Array_sp>(dataOrDisplacedTo),displacedToP,displacedIndexOffset);
       return array;
     }
   public:
@@ -127,7 +128,7 @@ namespace core {
       LIKELY_if (data.nilp()) {
         data = SimpleVectorFloat_O::make(dimension,initialElement,true);
       }
-      SimpleMDArrayFloat_sp array = gctools::GC<SimpleMDArrayFloat_O>::allocate_container(1,1,dimension,gc::As_unsafe<Array_sp>(data));
+      SimpleMDArrayFloat_sp array = gctools::GC<SimpleMDArrayFloat_O>::allocate_container(1,dimension,gc::As_unsafe<Array_sp>(data));
       return array;
     }
     static SimpleMDArrayFloat_sp make(size_t dimension, simple_element_type initialElement) {
@@ -144,7 +145,7 @@ namespace core {
       LIKELY_if (data.nilp()) {
         data = SimpleVectorFloat_O::make(arrayTotalSize,initialElement,true);
       }
-      SimpleMDArrayFloat_sp array = gctools::GC<SimpleMDArrayFloat_O>::allocate_container(rank,rank,dim_desig,gc::As<Array_sp>(data));
+      SimpleMDArrayFloat_sp array = gctools::GC<SimpleMDArrayFloat_O>::allocate_container(rank,dim_desig,gc::As<Array_sp>(data));
       return array;
     }
   };

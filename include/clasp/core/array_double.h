@@ -28,19 +28,20 @@ namespace core {
     typedef typename TemplatedBase::const_iterator const_iterator;
     typedef value_type container_value_type;
   public:
+    static value_type default_initial_element(void) {return 0.0;}
     static value_type initial_element_from_object(T_sp obj, bool supplied) {
       if (supplied) {
         if (obj.single_floatp()) {
           return obj.unsafe_single_float();
-        } else if (gc::IsA<DoubleFloat_sp>(obj)) {
-          return gc::As_unsafe<DoubleFloat_sp>(obj)->get();
+        } else if (gc::IsA<General_sp>(obj)) {
+          return clasp_to_double(gc::As_unsafe<General_sp>(obj));
         }
         TYPE_ERROR(obj,cl::_sym_double_float);
       }
       return 0.0;
     }
-    static value_type from_object(T_sp obj) { if (gc::IsA<DoubleFloat_sp>(obj)) return gc::As_unsafe<DoubleFloat_sp>(obj)->get(); TYPE_ERROR(obj,cl::_sym_double_float); };
-    static T_sp to_object(const value_type& v) { return DoubleFloat_O::create(v); };
+    static value_type from_object(T_sp obj) { return clasp_to_double(gc::As_unsafe<DoubleFloat_sp>(obj));};
+    static T_sp to_object(const value_type& v) { return core::clasp_make_double_float(v); };
   public:
   SimpleVectorDouble_O(size_t length, value_type initialElement=value_type(),
                        bool initialElementSupplied=false,
@@ -52,7 +53,7 @@ namespace core {
                                       bool initialElementSupplied=false,
                                       size_t initialContentsSize=0,
                                       const value_type* initialContents=NULL) {
-      auto bs = gctools::GC<SimpleVectorDouble_O>::allocate_container(length,length,initialElement,initialElementSupplied,initialContentsSize,initialContents);
+      auto bs = gctools::GC<SimpleVectorDouble_O>::allocate_container(length,initialElement,initialElementSupplied,initialContentsSize,initialContents);
       return bs;
     }
   public:
@@ -63,6 +64,16 @@ namespace core {
     virtual T_sp element_type() const override { return cl::_sym_double_float;};
     virtual T_sp arrayElementType() const override { return cl::_sym_double_float; };
     virtual clasp_elttype elttype() const { return clasp_aet_df; };
+  public: // Provide the API that I used for NVector_sp
+    static SimpleVectorDouble_sp create(size_t sz) {
+      return make(sz,0.0,false,0,NULL);
+    }
+    double& element(size_t i) { return this->operator[](i);};
+    double& getElement(size_t i) { return this->operator[](i);};
+    void setElement(size_t i, double v) { this->operator[](i) = v; };
+    void addToElement(size_t i, double v) { this->operator[](i) += v; };
+    void zero() { for(size_t i(0),iEnd(this->length()); i<iEnd;++i) this->operator[](i) = 0.0; };
+    size_t size() const { return this->length(); };
   };
 };
 
@@ -71,11 +82,11 @@ namespace core {
   FORWARD(MDArrayDouble);
 };
 namespace core {
-  class MDArrayDouble_O : public template_Array<MDArrayDouble_O,SimpleVectorDouble_O,MDArray_O> {
+  class MDArrayDouble_O : public template_Array<MDArrayDouble_O,SimpleMDArrayDouble_O,SimpleVectorDouble_O,MDArray_O> {
     LISP_CLASS(core, CorePkg, MDArrayDouble_O, "MDArrayDouble",MDArray_O);
     virtual ~MDArrayDouble_O() {};
   public:
-    typedef template_Array<MDArrayDouble_O,SimpleVectorDouble_O,MDArray_O> TemplatedBase;
+    typedef template_Array<MDArrayDouble_O,SimpleMDArrayDouble_O,SimpleVectorDouble_O,MDArray_O> TemplatedBase;
     typedef typename TemplatedBase::simple_element_type simple_element_type;
     typedef typename TemplatedBase::simple_type simple_type;
   public: // make vector
@@ -89,7 +100,7 @@ namespace core {
       LIKELY_if (dataOrDisplacedTo.nilp()) {
         dataOrDisplacedTo = simple_type::make(dimension,initialElement,true);
       }
-      MDArrayDouble_sp array = gctools::GC<MDArrayDouble_O>::allocate_container(1,1,dimension,fillPointer,gc::As_unsafe<Array_sp>(dataOrDisplacedTo),displacedToP,displacedIndexOffset);
+      MDArrayDouble_sp array = gctools::GC<MDArrayDouble_O>::allocate_container(1,dimension,fillPointer,gc::As_unsafe<Array_sp>(dataOrDisplacedTo),displacedToP,displacedIndexOffset);
       return array;
     }
   public: // make array
@@ -105,7 +116,7 @@ namespace core {
       LIKELY_if (dataOrDisplacedTo.nilp()) {
         dataOrDisplacedTo = simple_type::make(arrayTotalSize,initialElement,true);
       }
-      MDArrayDouble_sp array = gctools::GC<MDArrayDouble_O>::allocate_container(rank,rank,dim_desig,gc::As<Array_sp>(dataOrDisplacedTo),displacedToP,displacedIndexOffset);
+      MDArrayDouble_sp array = gctools::GC<MDArrayDouble_O>::allocate_container(rank,dim_desig,gc::As<Array_sp>(dataOrDisplacedTo),displacedToP,displacedIndexOffset);
       return array;
     }
   public:
@@ -127,7 +138,7 @@ namespace core {
       LIKELY_if (data.nilp()) {
         data = SimpleVectorDouble_O::make(dimension,initialElement,true);
       }
-      SimpleMDArrayDouble_sp array = gctools::GC<SimpleMDArrayDouble_O>::allocate_container(1,1,dimension,gc::As_unsafe<Array_sp>(data));
+      SimpleMDArrayDouble_sp array = gctools::GC<SimpleMDArrayDouble_O>::allocate_container(1,dimension,gc::As_unsafe<Array_sp>(data));
       return array;
     }
     static SimpleMDArrayDouble_sp make(size_t dimension, simple_element_type initialElement) {
@@ -144,7 +155,7 @@ namespace core {
       LIKELY_if (data.nilp()) {
         data = SimpleVectorDouble_O::make(arrayTotalSize,initialElement,true);
       }
-      SimpleMDArrayDouble_sp array = gctools::GC<SimpleMDArrayDouble_O>::allocate_container(rank,rank,dim_desig,gc::As<Array_sp>(data));
+      SimpleMDArrayDouble_sp array = gctools::GC<SimpleMDArrayDouble_O>::allocate_container(rank,dim_desig,gc::As<Array_sp>(data));
       return array;
     }
   };

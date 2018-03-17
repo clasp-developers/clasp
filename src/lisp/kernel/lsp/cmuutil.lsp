@@ -10,38 +10,11 @@
 
 (eval-when (:compile-toplevel  :execute   :load-toplevel)
   
-  #+(or ecl-min clasp-min)
+  #+clasp-min
   (defmacro handler-bind (bindings &body body)
     `(progn ,@body))
-  
-;;;; The Once-Only macro:
 
-;;; Once-Only  --  Interface
-;;;
-;;;    Once-Only is a utility useful in writing source transforms and macros.
-;;; It provides an easy way to wrap a let around some code to ensure that some
-;;; forms are only evaluated once.
-;;;
-(defmacro once-only (specs &body body)
-  "Once-Only ({(Var Value-Expression)}*) Form*
-  Create a Let* which evaluates each Value-Expression, binding a temporary
-  variable to the result, and wrapping the Let* around the result of the
-  evaluation of Body.  Within the body, each Var is bound to the corresponding
-  temporary variable."
-  (labels ((frob (specs body)
-	     (if (null specs)
-		 `(progn ,@body)
-		 (let ((spec (first specs)))
-		   (when (/= (length spec) 2)
-		     (error "Malformed Once-Only binding spec: ~S." spec))
-		   (let ((name (first spec))
-			 (exp-temp (gensym)))
-		     `(let ((,exp-temp ,(second spec))
-			    (,name (gensym "OO-")))
-		       `(let ((,,name ,,exp-temp))
-			 ,,(frob (rest specs) body))))))))
-    (frob specs body)))
-
+
 ;;;; The Collect macro:
 
 ;;; Collect-Normal-Expander  --  Internal
@@ -102,8 +75,10 @@
   (let ((macros ())
 	(binds ()))
     (dolist (spec collections)
-      (unless (<= 1 (length spec) 3)
-	(error "Malformed collection specifier: ~S." spec))
+      (cond ((atom spec)
+             (setf spec (list spec)))
+            ((not (<= 1 (length spec) 3))
+             (error "Malformed collection specifier: ~S." spec)))
       (let ((n-value (gensym))
 	    (name (first spec))
 	    (default (second spec))
@@ -124,6 +99,49 @@
 
 ); eval-when
 
+;;; Once-Only  --  Interface
+;;;
+;;;    Once-Only is a utility useful in writing source transforms and
+;;;    macros.  It provides an easy way to wrap a let around some code
+;;;    to ensure that some forms are only evaluated once.
+;;;
+(defmacro once-only (specs &body body)
+  "Once-Only ({(Var Value-Expression)}*) Form*
+
+Create a Let* which evaluates each Value-Expression, binding a
+temporary variable to the result, and wrapping the Let* around the
+result of the evaluation of Body.  Within the body, each Var is bound
+to the corresponding temporary variable.
+
+Bare symbols in `specs' are equivalent to:
+
+  (symbol symbol)
+
+Example:
+
+  (defmacro cons1 (x)
+    (once-only (x) `(cons ,x ,x)))
+  (let ((y 0))
+    (cons1 (incf y)))
+  ; => (1 . 1)
+"
+  (labels ((frob (specs body)
+             (if (null specs)
+                 `(progn ,@body)
+                 (let ((spec (first specs)))
+                   (cond ((atom spec)
+                          (setf spec (list spec spec)))
+                         ((/= (length spec) 2)
+                          (error "Malformed Once-Only binding spec: ~S." spec)))
+                   (let ((name (first spec))
+                         (exp-temp (gensym)))
+                     `(let ((,exp-temp ,(second spec))
+                            (,name (gensym "OO-")))
+                        `(let ((,,name ,,exp-temp))
+                           ,,(frob (rest specs) body))))))))
+    (frob specs body)))
+
+
 ;;; Automate an idiom often found in macros:
 ;;;   (LET ((FOO (GENSYM "FOO"))
 ;;;         (MAX-INDEX (GENSYM "MAX-INDEX-")))

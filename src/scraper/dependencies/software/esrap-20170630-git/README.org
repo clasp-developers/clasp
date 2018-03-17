@@ -1,0 +1,166 @@
+#+TITLE: ESRAP -- a packrat parser for Common Lisp
+
+* Introduction
+
+  In addition to regular Packrat / Parsing Grammar / TDPL features
+  ESRAP supports:
+
+  + dynamic redefinition of nonterminals
+  + inline grammars
+  + semantic predicates
+  + introspective facilities (describing grammars, tracing, setting breaks)
+  + left-recursive grammars
+  + functions as terminals
+  + accurate, customizable parse error reports
+
+  Homepage & Documentation
+
+    https://scymtym.github.io/esrap/
+
+    #+ATTR_HTML: :alt "build status image" :title Build Status :align right
+    [[https://travis-ci.org/scymtym/esrap][https://travis-ci.org/scymtym/esrap.svg]]
+
+  References
+
+    + Bryan Ford, 2002, "Packrat Parsing: a Practical Linear Time
+      Algorithm with Backtracking".
+
+      http://pdos.csail.mit.edu/~baford/packrat/thesis/
+
+    + A. Warth et al, 2008, "Packrat Parsers Can Support Left
+      Recursion".
+
+      http://www.vpri.org/pdf/tr2007002_packrat.pdf
+
+  License
+
+    #+begin_example
+    Copyright (c) 2007-2013 Nikodemus Siivola <nikodemus@random-state.net>
+    Copyright (c) 2012-2017 Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
+
+    Permission is hereby granted, free of charge, to any person
+    obtaining a copy of this software and associated documentation
+    files (the "Software"), to deal in the Software without
+    restriction, including without limitation the rights to use, copy,
+    modify, merge, publish, distribute, sublicense, and/or sell copies
+    of the Software, and to permit persons to whom the Software is
+    furnished to do so, subject to the following conditions:
+
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+    EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+    MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+    NONINFRINGEMENT.  IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+    HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+    WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+    OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+    DEALINGS IN THE SOFTWARE.
+    #+end_example
+
+* Syntax Overview
+
+  #+begin_example
+  <literal>                   -- case-sensitive terminal
+  (~ <literal>)               -- case-insensitive terminal
+  character                   -- any single character
+  (string <length>)           -- any string of length
+  (character-ranges <ranges>) -- character ranges
+  (<predicate> <expr>)        -- semantic parsing
+  (function <function>)       -- call <function> to parse some text
+
+  (not <expr>)                -- complement of expression
+  (and &rest <exprs>)         -- sequence
+  (or &rest <exprs>)          -- ordered-choices
+
+  (* <expr>)                  -- greedy-repetition
+  (+ <expr>)                  -- greedy-positive-repetition
+  (? <expr>)                  -- optional
+  (& <expr>)                  -- followed-by; does not consume
+  (! <expr>)                  -- not-followed-by; does not consume
+  (< <amount> <expr>)         -- lookbehind <amount> characters; does not consume
+  (> <amount> <expr>)         -- lookahead <amount> characters; does not consume
+  #+end_example
+
+* Trivial Examples
+
+  #+begin_src lisp :results none :exports none :session "doc"
+    (ql:quickload :esrap)
+  #+end_src
+
+  The =parse= function takes an expression:
+  #+begin_src lisp :results value code :exports both :session "doc"
+    (multiple-value-list (esrap:parse '(or "foo" "bar") "foo"))
+  #+end_src
+
+  #+RESULTS:
+  #+BEGIN_SRC lisp
+
+  ("foo" NIL T)
+  #+END_SRC
+
+  New rules can be added.
+
+  Normally you'd use the declarative =defrule= interface to define new
+  rules, but everything it does can be done directly by building
+  instances of the =rule= class and using =add-rule= to activate them.
+  #+begin_src lisp :results value code :exports both :session "doc"
+    (progn
+      (esrap:add-rule 'foo+ (make-instance 'esrap:rule :expression '(+ "foo")))
+
+      (multiple-value-list (esrap:parse 'foo+ "foofoofoo")))
+  #+end_src
+
+  #+RESULTS:
+  #+BEGIN_SRC lisp
+
+  (("foo" "foo" "foo") NIL T)
+  #+END_SRC
+
+  The equivalent =defrule= form is
+  #+begin_src lisp :results value code :exports code :session "doc"
+    (esrap:defrule foo+ '(+ "foo"))
+  #+end_src
+  Note that rules can be redefined, i.e. this =defrule= form replaces
+  the previous definition of the =foo+= rule.
+
+  Rules can transform their matches:
+  #+begin_src lisp :results silent :exports code :session "doc"
+    (esrap:add-rule
+     'decimal
+     (make-instance
+      'esrap:rule
+      :expression '(+ (or "0" "1" "2" "3" "4" "5" "6" "7" "8" "9"))
+      :transform (lambda (list start end)
+                   (declare (ignore start end))
+                   (parse-integer (format nil "~{~A~}" list)))))
+  #+end_src
+
+  or using =defrule=
+  #+begin_src lisp :results value code :exports code :session "doc"
+    (esrap:defrule decimal
+        (+ (or "0" "1" "2" "3" "4" "5" "6" "7" "8" "9"))
+      (:lambda (list)
+        (parse-integer (format nil "~{~A~}" list))))
+  #+end_src
+
+  Any lisp function can be used as a semantic predicate:
+  #+begin_src lisp :results value code :exports both :session "doc"
+    (list
+     (multiple-value-list (esrap:parse '(oddp decimal) "123"))
+     (multiple-value-list (esrap:parse '(evenp decimal) "123" :junk-allowed t)))
+  #+end_src
+
+  #+RESULTS:
+  #+BEGIN_SRC lisp
+
+  ((123 NIL T) (NIL 0))
+  #+END_SRC
+
+* Example Files
+
+  More complete examples can be found in the following self-contained
+  example files:
+
+  + [[file:examples/sexp.lisp]]: complete sample grammar and usage
+  + [[file:examples/symbol-table.lisp]]: grammar with lexical scope
+  + [[file:examples/left-recursion.lisp]]: multiple grammars with left recursion
+  + [[file:examples/function-terminals.lisp]]: grammars with functions as terminals

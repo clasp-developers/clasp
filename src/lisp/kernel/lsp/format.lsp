@@ -13,6 +13,9 @@
 ;;;
 ;;; Written by William Lott, with lots of stuff stolen from the previous
 ;;; version by David Adam and later rewritten by Bill Maddox.
+;;;
+;;; Various fixes and adaptations provided by Juan Jose Garcia-Ripoll and
+;;; Daniel Kochmański for Embeddable Common-Lisp.
 ;;; 
 
 (in-package "SYS")
@@ -20,8 +23,7 @@
 ;;(defmacro fmt-log (&rest args) `(core:bformat t "FMT-LOG: %s\n" (list ,@args)))
 (defmacro fmt-log (&rest args) nil)
 
-
-(push :formatter *features*)
+(pushnew :cdr-7 *features*)
 
 ;;;; Float printing.
 
@@ -50,10 +52,10 @@
 ;;;                unspecified or NIL, in which case as many digits as possible
 ;;;                are generated, subject to the constraint that there are no
 ;;;                trailing zeroes.
-;;;     SCALE    - If this parameter is specified or non-NIL, then the number
+;;;     SCALE    - If this parameter is specified or non-zero, then the number
 ;;;                printed is (* x (expt 10 scale)).  This scaling is exact,
 ;;;                and cannot lose precision.
-;;;     FMIN     - This parameter, if specified or non-NIL, is the minimum
+;;;     FMIN     - This parameter, if specified or non-zero, is the minimum
 ;;;                number of fraction digits which will be produced, regardless
 ;;;                of the value of WIDTH or FDIGITS.  This feature is used by
 ;;;                the ~E format directive to prevent complete loss of
@@ -96,72 +98,97 @@
 
 (defparameter *digits* "0123456789")
 
-(defun flonum-to-string (x &optional width fdigits scale fmin)
+(defun float-to-digits* (digits number position relativep)
+  "Does what float-to-digits does, but also detects if result is zero."
+  (multiple-value-bind (exp string)
+      (float-to-digits digits
+                       number
+                       position
+                       relativep)
+    (values exp
+            string
+            (and position
+                 (< exp (- (abs position)))))))
+
+(defun flonum-to-string (x &optional width fdigits (scale 0) (fmin 0))
   (declare (type float x))
-  ;; FIXME: I think only FORMAT-DOLLARS calls FLONUM-TO-STRING with
-  ;; possibly-negative X.
-  (setf x (abs x))
-  (cond ((zerop x)
-         ;; Zero is a special case which FLOAT-STRING cannot handle.
-         (if fdigits
-             (let ((s (make-string (1+ fdigits) :initial-element #\0)))
-               (setf (schar s 0) #\.)
-               (values s (length s) t (zerop fdigits) 0))
-             (values "." 1 t t 0)))
-        (t
-         (multiple-value-bind (e string)
-             (if fdigits
-                 (float-to-digits nil x
-                                  (min (- (+ fdigits (or scale 0)))
-                                       (- (or fmin 0)))
-                                  nil)
-                 (if (and width (> width 1))
-                     (let ((w (multiple-value-list
-                               (float-to-digits nil x
-                                                (max 1
-                                                     (+ (1- width)
-                                                        (if (and scale (minusp scale))
-                                                            scale 0)))
-                                                t)))
-                           (f (multiple-value-list
-                               (float-to-digits nil x
-                                                (- (+ (or fmin 0)
-                                                      (if scale scale 0)))
-                                                nil))))
-                       (cond
-                         ((>= (length (cadr w)) (length (cadr f)))
-                          (values-list w))
-                         (t (values-list f))))
-                     (float-to-digits nil x nil nil)))
-           (let ((e (+ e (or scale 0)))
-                 (stream (make-string-output-stream)))
-             (if (plusp e)
-                 (progn
-                   (write-string string stream :end (min (length string)
-                                                         e))
-                   (dotimes (i (- e (length string)))
+  (if (zerop x)
+      ;; Zero is a special case which FLOAT-STRING cannot handle.
+      (cond ((null fdigits)  (values ".0" 2 t nil 0))
+            ((zerop fdigits) (values "0." 2 nil t 1))
+            (T (let ((s (make-string (1+ fdigits) :initial-element #\0)))
+                 (setf (schar s 0) #\.)
+                 (values s (length s) t nil 0))))
+      (multiple-value-bind (e string zero?)
+          (cond (fdigits
+                 (float-to-digits* nil x
+                                   (min (- (+ fdigits scale))
+                                        (- fmin))
+                                   nil))
+                ((null width)
+                 (float-to-digits* nil x nil nil))
+                (T (let ((w (multiple-value-list
+                             (float-to-digits* nil x
+                                               (max 0
+                                                    (+ (- width 2)
+                                                       (if (minusp scale)
+                                                           scale 0)))
+                                               t)))
+                         (f (multiple-value-list
+                             (float-to-digits* nil x
+                                               (- (+ fmin scale))
+                                               nil))))
+                     (if (>= (length (cadr w))
+                             (length (cadr f)))
+                         (values-list w)
+                         (values-list f)))))
+        (let* ((exp (+ e scale))
+               (stream (make-string-output-stream))
+               (length (length string)))
+          ;; Integer part
+          (when (plusp exp)
+            (write-string string
+                          stream
+                          :end (min length exp))
+            (dotimes (i (- exp length))
+              (write-char #\0 stream)))
+          ;; Separator and fraction
+          (write-char #\. stream)
+          ;; Fraction part
+          (cond ((and zero? fdigits)
+                 (dotimes (i fdigits)
+                   (write-char #\0 stream)))
+                (fdigits
+                 (let ((characters-used 0))
+                   (dotimes (i (min (- exp) fdigits))
+                     (incf characters-used)
                      (write-char #\0 stream))
-                   (write-char #\. stream)
-                   (write-string string stream :start (min (length
-                                                            string) e))
-                   (when fdigits
-                     (dotimes (i (- fdigits
-                                    (- (length string)
-                                       (min (length string) e))))
-                       (write-char #\0 stream))))
-                 (progn
-                   (write-string "." stream)
-                   (dotimes (i (- e))
-                     (write-char #\0 stream))
-                   (write-string string stream)
-                   (when fdigits
-                     (dotimes (i (+ fdigits e (- (length string))))
+                   (let* ((start (max 0 (min length exp)))
+                          (end (max start
+                                    (min length
+                                         (+ start (- fdigits characters-used))))))
+                     (write-string string stream
+                                   :start start
+                                   :end   end)
+                     (incf characters-used (- end start))
+                     (dotimes (i (- fdigits characters-used))
                        (write-char #\0 stream)))))
-             (let ((string (get-output-stream-string stream)))
-               (values string (length string)
-                       (char= (char string 0) #\.)
-                       (char= (char string (1- (length string))) #\.)
-                       (position #\. string))))))))
+                (zero?
+                 (write-char #\0 stream))
+                (T
+                 (dotimes (i (- exp))
+                   (write-char #\0 stream))
+                 (let ((start (max 0 (min length exp))))
+                   (write-string string stream
+                                 :start start))))
+          (let* ((string (get-output-stream-string stream))
+                 (length (length string))
+                 (position (position #\. string)))
+            (values string
+                    length
+                    (= position 0)
+                    (= position (1- length))
+                    position))))))
 
 ;;; SCALE-EXPONENT  --  Internal
 ;;;
@@ -190,16 +217,30 @@
       ;; out a large factor, since there is more negative exponent range than
       ;; positive range.
       (when (and (minusp exponent)
-		 (< least-negative-normalized-long-float x
-		    least-positive-normalized-long-float))
-	#+long-float
-	(setf x (* x 1.0l18) delta -18)
-	#-long-float
-	(setf x (* x 1.0l16) delta -16))
-      ;; We find the appropriate factor that keeps the output within (0.1,1]
+                 (< least-negative-normalized-long-float x
+                    least-positive-normalized-long-float))
+        #+long-float
+        (setf x (* x 1.0l18) delta -18)
+        #-long-float
+        (setf x (* x 1.0l16) delta -16))
+      ;; We find the appropriate factor that keeps the output within [0.1,1)
       ;; Note that we have to compute the exponential _every_ _time_ in the loop
       ;; because multiplying just by 10.0l0 every time would lead to a greater
       ;; loss of precission.
+      (let ((ex (- (round (* exponent #.(log 2l0 10))) delta)))
+        (declare (fixnum ex))
+        (if (minusp ex)
+            (loop for y of-type long-float
+                 = (* x (the long-float (expt 10.0l0 (- ex))))
+               while (< y 0.1l0)
+               do (decf ex)
+               finally (return (values y (the fixnum (+ delta ex)))))
+            (loop for y of-type long-float
+                 = (/ x (the long-float (expt 10.0l0 ex)))
+               while (>= y 1.0l0)
+               do (incf ex)
+               finally (return (values y (the fixnum (+ delta ex)))))))
+      #+(or)
       (loop with ex of-type fixnum
 	   = (round (* exponent #.(log 2l0 10)))
 	 for y of-type long-float
@@ -266,7 +307,6 @@
 
 (defconstant +format-directive-limit+ (1+ (char-code #\~)))
 
-#+formatter
 (defparameter *format-directive-expanders*
   (make-array +format-directive-limit+ :initial-element nil))
 (defparameter *format-directive-interpreters*
@@ -286,8 +326,7 @@
 ;;;; TOKENIZE-CONTROL-STRING
 
 (defun tokenize-control-string (string)
-  (declare (simple-string string)
-	   (si::c-local))
+  (declare (simple-string string))
   (let ((index 0)
 	(end (length string))
 	(result nil))
@@ -303,8 +342,7 @@
     (nreverse result)))
 
 (defun parse-directive (string start)
-  (declare (simple-string string)
-	   (si::c-local))
+  (declare (simple-string string))
   (let ((posn (1+ start)) (params nil) (colonp nil) (atsignp nil)
 	(end (length string)))
     (flet ((get-char ()
@@ -315,68 +353,62 @@
 			:offset start)
 		 (schar string posn))))
       (loop
-	(let ((char (get-char)))
-	  (cond ((or (char<= #\0 char #\9) (char= char #\+) (char= char #\-))
-		 (multiple-value-bind
-		     (param new-posn)
-		     (parse-integer string :start posn :junk-allowed t)
-		   (push (cons posn param) params)
-		   (setf posn new-posn)
-		   (case (get-char)
-		     (#\,)
-		     ((#\: #\@)
-		      (decf posn))
-		     (t
-		      (return)))))
-		((or (char= char #\v) (char= char #\V))
-		 (push (cons posn :arg) params)
-		 (incf posn)
-		 (case (get-char)
-		   (#\,)
-		   ((#\: #\@)
-		    (decf posn))
-		   (t
-		    (return))))
-		((char= char #\#)
-		 (push (cons posn :remaining) params)
-		 (incf posn)
-		 (case (get-char)
-		   (#\,)
-		   ((#\: #\@)
-		    (decf posn))
-		   (t
-		    (return))))
-		((char= char #\')
-		 (incf posn)
-		 (push (cons posn (get-char)) params)
-		 (incf posn)
-		 (case (get-char)
-		   (#\,)
-		   ((#\: #\@)
-		    (decf posn))
-		   (t
-		    (return))))
-		((char= char #\,)
-		 (push (cons posn nil) params))
-		((char= char #\:)
-		 (if colonp
-		     (error 'format-error
-			    :complaint "Too many colons supplied."
-			    :control-string string
-			    :offset posn)
-		     (setf colonp t)))
-		((char= char #\@)
-		 (if atsignp
-		     (error 'format-error
-			    :complaint "Too many at-signs supplied."
-			    :control-string string
-			    :offset posn)
-		     (setf atsignp t)))
-		(t
-		 (when (char= (schar string (1- posn)) #\,)
-		   (push (cons (1- posn) nil) params))
-		 (return))))
-	(incf posn))
+         (let ((char (get-char)))
+           (cond ((or (char<= #\0 char #\9) (char= char #\+) (char= char #\-))
+                  (multiple-value-bind
+                        (param new-posn)
+                      (parse-integer string :start posn :junk-allowed t)
+                    (push (cons posn param) params)
+                    (setf posn new-posn)
+                    (case (get-char)
+                      (#\,)
+                      ((#\: #\@)
+                       (decf posn))
+                      (t
+                       (return)))))
+                 ((or (char= char #\v) (char= char #\V))
+                  (push (cons posn :arg) params)
+                  (incf posn)
+                  (case (get-char)
+                    (#\,)
+                    ((#\: #\@)
+                     (decf posn))
+                    (t
+                     (return))))
+                 ((char= char #\#)
+                  (push (cons posn :remaining) params)
+                  (incf posn)
+                  (case (get-char)
+                    (#\,)
+                    ((#\: #\@)
+                     (decf posn))
+                    (t
+                     (return))))
+                 ((char= char #\')
+                  (incf posn)
+                  (push (cons posn (get-char)) params)
+                  (incf posn)
+                  (unless (char= (get-char) #\,)
+		   (decf posn)))
+                 ((char= char #\,)
+                  (push (cons posn nil) params))
+                 ((char= char #\:)
+                  (if colonp
+                      (error 'format-error
+                             :complaint "Too many colons supplied."
+                             :control-string string
+                             :offset posn)
+                      (setf colonp t)))
+                 ((char= char #\@)
+                  (if atsignp
+                      (error 'format-error
+                             :complaint "Too many at-signs supplied."
+                             :control-string string
+                             :offset posn)
+                      (setf atsignp t)))
+                 (t
+                  (return))))
+         (incf posn))
       (let ((char (get-char)))
 	(when (char= char #\/)
 	  (let ((closing-slash (position #\/ string :start (1+ posn))))
@@ -414,7 +446,6 @@
 ;;; Used by the expander stuff.  This is bindable so that ~<...~:>
 ;;; can change it.
 ;;;
-#+formatter
 (defparameter *expander-next-arg-macro* 'expander-next-arg)
 
 ;;; *ONLY-SIMPLE-ARGS* -- internal.
@@ -502,7 +533,6 @@
 				    orig-args args)))))
 
 (defun interpret-directive-list (stream directives orig-args args)
-  (declare (si::c-local))
   (fmt-log "interpret-directive-list directives: " directives " orig-args: " orig-args " args: " args)
   (if directives
       (let ((directive (car directives)))
@@ -534,13 +564,10 @@
 
 ;;;; FORMATTER
 
-#+formatter
-(progn
 (defmacro formatter (control-string)
   `#',(%formatter control-string))
 
 (defun %formatter (control-string)
-  (declare (si::c-local))
   (block nil
     (catch 'need-orig-args
       (let* ((*simple-args* nil)
@@ -566,7 +593,6 @@
 	   args)))))
 
 (defun expand-control-string (string)
-  (declare (si::c-local))
   (let* ((string (etypecase string
 		   (simple-string
 		    string)
@@ -579,7 +605,6 @@
        ,@(expand-directive-list directives))))
 
 (defun expand-directive-list (directives)
-  (declare (si::c-local))
   (let ((results nil)
 	(remaining-directives directives))
     (loop
@@ -594,7 +619,6 @@
     (reverse results)))
 
 (defun expand-directive (directive more-directives)
-  (declare (si::c-local))
   (etypecase directive
     (simple-string
      (values `(write-string ,directive stream)
@@ -612,7 +636,6 @@
                   :complaint "Unknown directive."))))))
 
 (defun expand-next-arg (&optional offset)
-  (declare (si::c-local))
   (if (or *orig-args-available* (not *only-simple-args*))
       `(,*expander-next-arg-macro*
 	,*default-format-error-control-string*
@@ -621,11 +644,6 @@
 	(push (cons symbol (or offset *default-format-error-offset*))
 	      *simple-args*)
 	symbol)))
-
-(defun need-hairy-args ()
-  (declare (si::c-local))
-  (when *only-simple-args*
-    ))
 
 
 ;;;; Format directive definition macros and runtime support.
@@ -647,9 +665,6 @@
 	      :offset ,offset))
      (pprint-pop)
      (pop args)))
-);#+formatter
-
-(eval-when (:compile-toplevel :execute :load-toplevel)
 
 ;;; NEXT-ARG -- internal.
 ;;;
@@ -669,46 +684,29 @@
      (pop args)))
 
 (defmacro def-complex-format-directive (char lambda-list &body body)
-  #+formatter
   (let* ((name (or (char-name char) (string char)))
 	 (defun-name (intern (concatenate 'string name "-FORMAT-DIRECTIVE-EXPANDER")))
 	 (directive (gensym))
 	 (directives (if lambda-list (car (last lambda-list)) (gensym))))
     `(%set-format-directive-expander 
       ,char
-      #+ecl(ext::lambda-block ,defun-name (,directive ,directives)
-			      ,@(if lambda-list
-				    `((let ,(mapcar #'(lambda (var)
-							`(,var
-							  (,(intern (concatenate
-								     'string
-								     "FORMAT-DIRECTIVE-"
-								     (symbol-name var))
-								    (symbol-package 'foo))
-							    ,directive)))
-						    (butlast lambda-list))
-					,@body))
-				    `((declare (ignore ,directive ,directives))
-				      ,@body)))
-      #+clasp(lambda (,directive ,directives)
-	       (declare (core::lambda-name ,defun-name))
-	       ,@(if lambda-list
-		     `((let ,(mapcar #'(lambda (var)
-					 `(,var
-					   (,(intern (concatenate
-						      'string
-						      "FORMAT-DIRECTIVE-"
-						      (symbol-name var))
-						     (symbol-package 'foo))
-					     ,directive)))
-				     (butlast lambda-list))
-			 ,@body))
-		     `((declare (ignore ,directive ,directives))
-		       ,@body)))
-       )))
+      #'(lambda (,directive ,directives)
+          (declare (core::lambda-name ,defun-name))
+          ,@(if lambda-list
+                `((let ,(mapcar #'(lambda (var)
+                                    `(,var
+                                      (,(intern (concatenate
+                                                 'string
+                                                 "FORMAT-DIRECTIVE-"
+                                                 (symbol-name var))
+                                                (symbol-package 'foo))
+                                       ,directive)))
+                                (butlast lambda-list))
+                    ,@body))
+                `((declare (ignore ,directive ,directives))
+                  ,@body))))))
 
 (defmacro def-format-directive (char lambda-list &body body)
-  #+formatter
   (let ((directives (gensym))
 	(declarations nil)
 	(body-without-decls body))
@@ -813,22 +811,17 @@
 		  :offset (caar ,params)))
 	 ,@body))))
 
-); eval-when
-
-#+formatter
 (defun %set-format-directive-expander (char fn)
   (setf (aref *format-directive-expanders* (char-code (char-upcase char))) fn)
   char)
 
 (defun %set-format-directive-interpreter (char fn)
-  (declare (si::c-local))
   (setf (aref *format-directive-interpreters*
 	      (char-code (char-upcase char)))
 	fn)
   char)
 
 (defun find-directive (directives kind stop-at-semi)
-  (declare (si::c-local))
   (if directives
       (let ((next (car directives)))
 	(if (format-directive-p next)
@@ -855,7 +848,6 @@
 ;;;; Simple outputting noise.
 
 (defun format-write-field (stream string mincol colinc minpad padchar padleft)
-  (declare (si::c-local))
   (unless padleft
     (write-string string stream))
   (setf minpad (max minpad 0))
@@ -870,8 +862,6 @@
     (write-string string stream)))
 
 (defun format-princ (stream arg colonp atsignp mincol colinc minpad padchar)
-  #-formatter
-  (declare (si::c-local))
   (format-write-field stream
 		      (if (or arg (not colonp))
 			  (princ-to-string arg)
@@ -901,8 +891,6 @@
       (princ (if colonp (or (next-arg) "()") (next-arg)) stream)))
 
 (defun format-prin1 (stream arg colonp atsignp mincol colinc minpad padchar)
-  #-formatter
-  (declare (si::c-local))
   (format-write-field stream
 		      (if (or arg (not colonp))
 			  (prin1-to-string arg)
@@ -957,7 +945,6 @@
 
 ;;; "printing" as defined in the ANSI CL glossary, which is normative.
 (defun char-printing-p (char)
-  (declare (si::c-local))
   (and (not (eql char #\Space))
        (graphic-char-p char)))
 
@@ -995,9 +982,7 @@
 ;;;
 (defun format-print-integer (stream number print-commas-p print-sign-p
 			     radix mincol padchar commachar commainterval)
-  #-formatter
-  (declare (si::c-local))
-  (let ((*print-base* radix)
+ (let ((*print-base* radix)
 	(*print-radix* nil))
     (if (integerp number)
 	(let* ((text (princ-to-string (abs number)))
@@ -1014,7 +999,6 @@
 	(princ number stream))))
 
 (defun format-add-commas (string commachar commainterval)
-  (declare (si::c-local))
   (let ((length (length string)))
     (multiple-value-bind (commas extra)
 			 (truncate (1- length) commainterval)
@@ -1029,7 +1013,6 @@
 		   :start2 src :end2 (+ src commainterval)))
 	new-string))))
 
-#+formatter
 (defun expand-format-integer (base colonp atsignp params)
   (if (or colonp atsignp params)
       (expand-bind-defaults
@@ -1111,36 +1094,41 @@
 	       (format-print-ordinal stream (next-arg))
 	       (format-print-cardinal stream (next-arg)))))))
 
-(defconstant cardinal-ones
-  #(nil "one" "two" "three" "four" "five" "six" "seven" "eight" "nine"))
+(defconstant-eqx cardinal-ones
+    #(nil "one" "two" "three" "four" "five" "six" "seven" "eight" "nine")
+  equalp)
 
-(defconstant cardinal-tens
-  #(nil nil "twenty" "thirty" "forty"
-	"fifty" "sixty" "seventy" "eighty" "ninety"))
+(defconstant-eqx cardinal-tens
+    #(nil nil "twenty" "thirty" "forty"
+      "fifty" "sixty" "seventy" "eighty" "ninety")
+  equalp)
 
-(defconstant cardinal-teens
-  #("ten" "eleven" "twelve" "thirteen" "fourteen"  ;;; RAD
-    "fifteen" "sixteen" "seventeen" "eighteen" "nineteen"))
+(defconstant-eqx cardinal-teens
+    #("ten" "eleven" "twelve" "thirteen" "fourteen"  ;;; RAD
+      "fifteen" "sixteen" "seventeen" "eighteen" "nineteen")
+  equalp)
 
-(defconstant cardinal-periods
-  #("" " thousand" " million" " billion" " trillion" " quadrillion"
-    " quintillion" " sextillion" " septillion" " octillion" " nonillion"
-    " decillion" " undecillion" " duodecillion" " tredecillion"
-    " quattuordecillion" " quindecillion" " sexdecillion" " septendecillion"
-    " octodecillion" " novemdecillion" " vigintillion"))
+(defconstant-eqx cardinal-periods
+    #("" " thousand" " million" " billion" " trillion" " quadrillion"
+      " quintillion" " sextillion" " septillion" " octillion" " nonillion"
+      " decillion" " undecillion" " duodecillion" " tredecillion"
+      " quattuordecillion" " quindecillion" " sexdecillion" " septendecillion"
+      " octodecillion" " novemdecillion" " vigintillion")
+  equalp)
 
-(defconstant ordinal-ones
-  #(nil "first" "second" "third" "fourth"
-	"fifth" "sixth" "seventh" "eighth" "ninth")
+(defconstant-eqx ordinal-ones
+    #(nil "first" "second" "third" "fourth"
+      "fifth" "sixth" "seventh" "eighth" "ninth")
+  equalp
   "Table of ordinal ones-place digits in English")
 
-(defconstant ordinal-tens 
-  #(nil "tenth" "twentieth" "thirtieth" "fortieth"
-	"fiftieth" "sixtieth" "seventieth" "eightieth" "ninetieth")
+(defconstant-eqx ordinal-tens 
+    #(nil "tenth" "twentieth" "thirtieth" "fortieth"
+      "fiftieth" "sixtieth" "seventieth" "eightieth" "ninetieth")
+  equalp
   "Table of ordinal tens-place digits in English")
 
 (defun format-print-small-cardinal (stream n)
-  (declare (si::c-local))
   (multiple-value-bind 
       (hundreds rem) (truncate n 100)
     (when (plusp hundreds)
@@ -1162,8 +1150,6 @@
 	      (write-string (svref cardinal-ones ones) stream)))))))
 
 (defun format-print-cardinal (stream n)
-  #-formatter
-  (declare (si::c-local))
   (cond ((minusp n)
 	 (write-string "negative " stream)
 	 (format-print-cardinal-aux stream (- n) 0 n))
@@ -1173,7 +1159,6 @@
 	 (format-print-cardinal-aux stream n 0 n))))
 
 (defun format-print-cardinal-aux (stream n period err)
-  (declare (si::c-local))
   (multiple-value-bind (beyond here) (truncate n 1000)
     (unless (<= period 20)
       (error "Number too large to print in English: ~:D" err))
@@ -1186,8 +1171,6 @@
       (write-string (svref cardinal-periods period) stream))))
 
 (defun format-print-ordinal (stream n)
-  #-formatter
-  (declare (si::c-local))
   (when (minusp n)
     (write-string "negative " stream))
   (let ((number (abs n)))
@@ -1219,8 +1202,6 @@
 ;;; Print Roman numerals
 
 (defun format-print-old-roman (stream n)
-  #-formatter
-  (declare (si::c-local))
   (unless (< 0 n 5000)
     (error "Number too large to print in old Roman numerals: ~:D" n))
   (do ((char-list '(#\D #\C #\L #\X #\V #\I) (cdr char-list))
@@ -1234,8 +1215,6 @@
       ((zerop start))))
 
 (defun format-print-roman (stream n)
-  #-formatter
-  (declare (si::c-local))
   (unless (< 0 n 4000)
     (error "Number too large to print in Roman numerals: ~:D" n))
   (do ((char-list '(#\D #\C #\L #\X #\V #\I) (cdr char-list))
@@ -1302,29 +1281,26 @@
 ;;;; Floating point noise.
 
 (defun decimal-string (n)
-  (declare (si::c-local))
   (write-to-string n :base 10 :radix nil :escape nil))
 
 (def-format-directive #\F (colonp atsignp params)
   (when colonp
     (error 'format-error
-	   :complaint
-	   "Cannot specify the colon modifier with this directive."))
-  (expand-bind-defaults ((w nil) (d nil) (k nil) (ovf nil) (pad #\space)) params
-    `(format-fixed stream ,(expand-next-arg) ,w ,d ,k ,ovf ,pad ,atsignp)))
+           :complaint
+           "Cannot specify the colon modifier with this directive."))
+  (expand-bind-defaults ((w nil) (d nil) (k 0) (ovf nil) (pad #\space)) params
+                        `(format-fixed stream ,(expand-next-arg) ,w ,d ,k ,ovf ,pad ,atsignp)))
 
 (def-format-interpreter #\F (colonp atsignp params)
   (when colonp
     (error 'format-error
-	   :complaint
-	   "Cannot specify the colon modifier with this directive."))
-  (interpret-bind-defaults ((w nil) (d nil) (k nil) (ovf nil) (pad #\space))
-			   params
-    (format-fixed stream (next-arg) w d k ovf pad atsignp)))
+           :complaint
+           "Cannot specify the colon modifier with this directive."))
+  (interpret-bind-defaults ((w nil) (d nil) (k 0) (ovf nil) (pad #\space))
+                           params
+                           (format-fixed stream (next-arg) w d k ovf pad atsignp)))
 
 (defun format-fixed (stream number w d k ovf pad atsign)
-  #-formatter
-  (declare (si::c-local))
   (if (numberp number)
       (if (floatp number)
 	  (format-fixed-aux stream number w d k ovf pad atsign)
@@ -1342,49 +1318,53 @@
 ;;; instead of spaces.
 ;;;
 (defun format-fixed-aux (stream number w d k ovf pad atsign)
-  (declare (si::c-local))
   (cond
-   ((or (not (or w d))
-	#-(or ecl clasp)
-	(and (floatp number)
-	     (or (float-infinity-p number)
-		 (float-nan-p number))))
-    (prin1 number stream)
-    nil)
-   (t
-    (let ((spaceleft w))
-      (when (and w (or atsign (minusp number))) (decf spaceleft))
-      (multiple-value-bind 
-	  (str len lpoint tpoint)
-	  (sys::flonum-to-string (abs number) spaceleft d k)
-	;;if caller specifically requested no fraction digits, suppress the
-	;;optional trailing zero
-	(when (and d (zerop d)) (setq tpoint nil))
-	(when w 
-	  (decf spaceleft len)
-	  ;;optional leading zero
-	  (when lpoint
-	    (if (or (> spaceleft 0) tpoint) ;force at least one digit
-		(decf spaceleft)
-		(setq lpoint nil)))
-	  ;;optional trailing zero
-	  (when tpoint
-	    (if (> spaceleft 0)
-		(decf spaceleft)
-		(setq tpoint nil))))
-	(cond ((and w (< spaceleft 0) ovf)
-	       ;;field width overflow
-	       (dotimes (i w) (write-char ovf stream))
-	       t)
-	      (t
-	       (when w (dotimes (i spaceleft) (write-char pad stream)))
-	       (if (minusp number)
-		   (write-char #\- stream)
-		   (if atsign (write-char #\+ stream)))
-	       (when lpoint (write-char #\0 stream))
-	       (write-string str stream)
-	       (when tpoint (write-char #\0 stream))
-	       nil)))))))
+    ((or (not (or w d k))
+         (non-finite-float-p number))
+     (prin1 number stream)
+     nil)
+    (t
+     (let ((spaceleft w))
+       (when (and w (or atsign
+                        (minusp number)
+                        #+ieee-floating-point
+                        (and (zerop number)
+                             (minusp (atan number -1)))))
+         (decf spaceleft))
+       (multiple-value-bind (str len lpoint tpoint)
+           (sys::flonum-to-string (abs number) spaceleft d k)
+         ;; if caller specifically requested no fraction digits, suppress the
+         ;; trailing zero
+         (when (eql d 0)
+           (setq tpoint nil))
+         (when w 
+           (decf spaceleft len)
+           ;; obligatory trailing zero (unless explicitly cut with ,d)
+           (when tpoint
+             (decf spaceleft))
+           ;; optional leading zero
+           (when lpoint
+             (if (or (> spaceleft 0)
+                     (eql d 0))
+                 (decf spaceleft)
+                 (setq lpoint nil))))
+         (cond ((and w (< spaceleft 0) ovf)
+                ;;field width overflow
+                (dotimes (i w)
+                  (write-char ovf stream))
+                t)
+               (t
+                (when w (dotimes (i spaceleft) (write-char pad stream)))
+                (if (or (minusp number)
+                        #+ieee-floating-point
+                        (and (zerop number)
+                             (minusp (atan number -1))))
+                    (write-char #\- stream)
+                    (if atsign (write-char #\+ stream)))
+                (when lpoint (write-char #\0 stream))
+                (write-string str stream)
+                (when tpoint (write-char #\0 stream))
+                nil)))))))
 
 (def-format-directive #\E (colonp atsignp params)
   (when colonp
@@ -1408,23 +1388,21 @@
     (format-exponential stream (next-arg) w d e k ovf pad mark atsignp)))
 
 (defun format-exponential (stream number w d e k ovf pad marker atsign)
-  #-formatter
-  (declare (si::c-local))
-  (if (numberp number)
-      (if (floatp number)
-	  (format-exp-aux stream number w d e k ovf pad marker atsign)
-	  (if (rationalp number)
-	      (format-exp-aux stream
-			      (coerce number 'single-float)
-			      w d e k ovf pad marker atsign)
-	      (format-write-field stream
-				  (decimal-string number)
-				  w 1 0 #\space t)))
-      (format-princ stream number nil nil w 1 0 pad)))
-
+  (cond
+    ((not (numberp number))
+     (format-princ stream number nil nil w 1 0 pad))
+    ((floatp number)
+     (format-exp-aux stream number w d e k ovf pad marker atsign))
+    ((rationalp number)
+     (format-exp-aux stream
+                     (coerce number 'single-float)
+                     w d e k ovf pad marker atsign))
+    (T
+     (format-write-field stream
+                         (decimal-string number)
+                         w 1 0 #\space t))))
 
 (defun format-exponent-marker (number)
-  (declare (si::c-local))
   (if (typep number *read-default-float-format*)
       #\e
       (typecase number
@@ -1432,6 +1410,15 @@
 	(double-float #\d)
 	(short-float #\s)
 	(long-float #\l))))
+
+(defun non-finite-float-p (number)
+  ;; FIXME: Get infinityp and nanp predicates.
+  ;; numbers.h has them, but only for singles.
+  #+(or)
+  (and (floatp number)
+       (or (float-infinity-p number)
+           (float-nan-p number)))
+  #-(or) nil)
 
 ;;;Here we prevent the scale factor from shifting all significance out of
 ;;;a number to the right.  We allow insignificant zeroes to be shifted in
@@ -1446,56 +1433,52 @@
 ;;; silent here, so let's just print out infinities and NaN's instead
 ;;; of causing an error.
 (defun format-exp-aux (stream number w d e k ovf pad marker atsign)
-  (declare (si::c-local))
-  (if #-(or ecl clasp)
-      (and (floatp number)
-	   (or (float-infinity-p number)
-	       (float-nan-p number)))
-      #+(or ecl clasp) nil
+  (if (non-finite-float-p number)
       (prin1 number stream)
       (multiple-value-bind (num expt)
-			   (sys::scale-exponent (abs number))
-	(let* ((expt (- expt k))
-	       (estr (decimal-string (abs expt)))
-	       (elen (if e (max (length estr) e) (length estr)))
-	       (fdig (if d (if (plusp k) (1+ (- d k)) d) nil))
-	       (fmin (if (minusp k) (- 1 k) nil))
-	       (spaceleft (if w
-			      (- w 2 elen
-				 (if (or atsign (minusp number))
-				     1 0))
-			      nil)))
-	  (if (and w ovf e (> elen e)) ;exponent overflow
-	      (dotimes (i w) (write-char ovf stream))
-	      (multiple-value-bind
-		  (fstr flen lpoint)
-		  (sys::flonum-to-string num spaceleft fdig k fmin)
-		(when w 
-		  (decf spaceleft flen)
-		  (when lpoint
-		    (if (> spaceleft 0)
-			(decf spaceleft)
-			(setq lpoint nil))))
-		(cond ((and w (< spaceleft 0) ovf)
-		       ;;significand overflow
-		       (dotimes (i w) (write-char ovf stream)))
-		      (t (when w
-			   (dotimes (i spaceleft) (write-char pad stream)))
-			 (if (minusp number)
-			     (write-char #\- stream)
-			     (if atsign (write-char #\+ stream)))
-			 (when lpoint (write-char #\0 stream))
-			 (write-string fstr stream)
-			 (write-char (if marker
-					 marker
-					 (format-exponent-marker number))
-				     stream)
-			 (write-char (if (minusp expt) #\- #\+) stream)
-			 (when e 
-			   ;;zero-fill before exponent if necessary
-			   (dotimes (i (- e (length estr)))
-			     (write-char #\0 stream)))
-			 (write-string estr stream)))))))))
+          (sys::scale-exponent (abs number))
+        (when (< expt 0)                ; adjust scale factor
+          (decf k))
+        (let* ((expt (- expt k))
+               (estr (decimal-string (abs expt)))
+               (elen (if e (max (length estr) e) (length estr)))
+               (fdig (if d (if (plusp k) (1+ (- d k)) d) nil))
+               (fmin (if (minusp k) (- 1 k) 0))
+               (spaceleft (if w
+                              (- w 2 elen
+                                 (if (or atsign (minusp number))
+                                     1 0))
+                              nil)))
+          (if (and w ovf e (> elen e)) ;exponent overflow
+              (dotimes (i w) (write-char ovf stream))
+              (multiple-value-bind (fstr flen lpoint)
+                  (sys::flonum-to-string num spaceleft fdig k fmin)
+                (when w 
+                  (decf spaceleft flen)
+                  (when lpoint
+                    (if (> spaceleft 0)
+                        (decf spaceleft)
+                        (setq lpoint nil))))
+                (cond ((and w (< spaceleft 0) ovf)
+                       ;;significand overflow
+                       (dotimes (i w) (write-char ovf stream)))
+                      (t (when w
+                           (dotimes (i spaceleft) (write-char pad stream)))
+                         (if (minusp number)
+                             (write-char #\- stream)
+                             (if atsign (write-char #\+ stream)))
+                         (when lpoint (write-char #\0 stream))
+                         (write-string fstr stream)
+                         (write-char (if marker
+                                         marker
+                                         (format-exponent-marker number))
+                                     stream)
+                         (write-char (if (minusp expt) #\- #\+) stream)
+                         (when e 
+                           ;;zero-fill before exponent if necessary
+                           (dotimes (i (- e (length estr)))
+                             (write-char #\0 stream)))
+                         (write-string estr stream)))))))))
 
 (def-format-directive #\G (colonp atsignp params)
   (when colonp
@@ -1503,9 +1486,9 @@
 	   :complaint
 	   "Cannot specify the colon modifier with this directive."))
   (expand-bind-defaults
-      ((w nil) (d nil) (e nil) (k nil) (ovf nil) (pad #\space) (mark nil))
-      params
-    `(format-general stream ,(expand-next-arg) ,w ,d ,e ,k ,ovf ,pad ,mark ,atsignp)))
+   ((w nil) (d nil) (e nil) (k 0) (ovf nil) (pad #\space) (mark nil))
+   params
+   `(format-general stream ,(expand-next-arg) ,w ,d ,e ,k ,ovf ,pad ,mark ,atsignp)))
 
 (def-format-interpreter #\G (colonp atsignp params)
   (when colonp
@@ -1513,13 +1496,11 @@
 	   :complaint
 	   "Cannot specify the colon modifier with this directive."))
   (interpret-bind-defaults
-      ((w nil) (d nil) (e nil) (k nil) (ovf nil) (pad #\space) (mark nil))
-      params
-    (format-general stream (next-arg) w d e k ovf pad mark atsignp)))
+   ((w nil) (d nil) (e nil) (k 0) (ovf nil) (pad #\space) (mark nil))
+   params
+   (format-general stream (next-arg) w d e k ovf pad mark atsignp)))
 
 (defun format-general (stream number w d e k ovf pad marker atsign)
-  #-formatter
-  (declare (si::c-local))
   (if (numberp number)
       (if (floatp number)
 	  (format-general-aux stream number w d e k ovf pad marker atsign)
@@ -1535,38 +1516,33 @@
 
 ;;; toy@rtp.ericsson.se:  Same change as for format-exp-aux.
 (defun format-general-aux (stream number w d e k ovf pad marker atsign)
-  (declare (si::c-local))
-  (if #-(or ecl clasp)
-      (and (floatp number)
-	   (or (float-infinity-p number)
-	       (float-nan-p number)))
-      #+(or ecl clasp) nil
+  (if (non-finite-float-p number)
       (prin1 number stream)
       (multiple-value-bind (ignore n) 
-	  (sys::scale-exponent (abs number))
-	(declare (ignore ignore))
-	;;Default d if omitted.  The procedure is taken directly
-	;;from the definition given in the manual, and is not
-	;;very efficient, since we generate the digits twice.
-	;;Future maintainers are encouraged to improve on this.
-	(unless d
-	  (multiple-value-bind (str len) 
-	      (sys::flonum-to-string (abs number))
-	    (declare (ignore str))
-	    (let ((q (if (= len 1) 1 (1- len))))
-	      (setq d (max q (min n 7))))))
-	(let* ((ee (if e (+ e 2) 4))
-	       (ww (if w (- w ee) nil))
-	       (dd (- d n)))
-	  (cond ((<= 0 dd d)
-		 (let ((char (if (format-fixed-aux stream number ww dd nil
-						   ovf pad atsign)
-				 ovf
-				 #\space)))
-		   (dotimes (i ee) (write-char char stream))))
-		(t
-		 (format-exp-aux stream number w d e (or k 1)
-				 ovf pad marker atsign)))))))
+          (sys::scale-exponent (abs number))
+        (declare (ignore ignore))
+        ;;Default d if omitted.  The procedure is taken directly
+        ;;from the definition given in the manual, and is not
+        ;;very efficient, since we generate the digits twice.
+        ;;Future maintainers are encouraged to improve on this.
+        (unless d
+          (multiple-value-bind (str len) 
+              (sys::flonum-to-string (abs number))
+            (declare (ignore str))
+            (let ((q (if (= len 1) 1 (1- len))))
+              (setq d (max q (min n 7))))))
+        (let* ((ee (if e (+ e 2) 4))
+               (ww (if w (- w ee) nil))
+               (dd (- d n)))
+          (cond ((<= 0 dd d)
+                 (let ((char (if (format-fixed-aux stream number ww dd 0
+                                                   ovf pad atsign)
+                                 ovf
+                                 #\space)))
+                   (dotimes (i ee) (write-char char stream))))
+                (t
+                 (format-exp-aux stream number w d e (or k 1)
+                                 ovf pad marker atsign)))))))
 
 (def-format-directive #\$ (colonp atsignp params)
   (expand-bind-defaults ((d 2) (n 1) (w 0) (pad #\space)) params
@@ -1578,21 +1554,19 @@
     (format-dollars stream (next-arg) d n w pad colonp atsignp)))
 
 (defun format-dollars (stream number d n w pad colon atsign)
-  #-formatter
-  (declare (si::c-local))
   (if (rationalp number) (setq number (coerce number 'single-float)))
   (if (floatp number)
       (let* ((signstr (if (minusp number) "-" (if atsign "+" "")))
-	     (signlen (length signstr)))
-	(multiple-value-bind (str strlen ig2 ig3 pointplace)
-			     (sys::flonum-to-string number nil d nil)
-	  (declare (ignore ig2 ig3))
-	  (when colon (write-string signstr stream))
-	  (dotimes (i (- w signlen (max 0 (- n pointplace)) strlen))
-	    (write-char pad stream))
-	  (unless colon (write-string signstr stream))
-	  (dotimes (i (- n pointplace)) (write-char #\0 stream))
-	  (write-string str stream)))
+             (signlen (length signstr)))
+        (multiple-value-bind (str strlen ig2 ig3 pointplace)
+            (sys::flonum-to-string (abs number) nil d)
+          (declare (ignore ig2 ig3))
+          (when colon (write-string signstr stream))
+          (dotimes (i (- w signlen (max 0 (- n pointplace)) strlen))
+            (write-char pad stream))
+          (unless colon (write-string signstr stream))
+          (dotimes (i (- n pointplace)) (write-char #\0 stream))
+          (write-string str stream)))
       (format-write-field stream
 			  (decimal-string number)
 			  w 1 0 #\space t)))
@@ -1775,7 +1749,6 @@
 	    (format-absolute-tab stream colnum colinc)))))
 
 (defun output-spaces (stream n)
-  (declare (si::c-local))
   (let ((spaces #.(make-string 100 :initial-element #\space)))
     (loop
       (when (< n (length spaces))
@@ -1785,8 +1758,6 @@
     (write-string spaces stream :end n)))
 
 (defun format-relative-tab (stream colrel colinc)
-  #-formatter
-  (declare (si::c-local))
   (if (#-(or ecl clasp) pp:pretty-stream-p #+(or ecl clasp) sys::pretty-stream-p stream)
       (pprint-tab :line-relative colrel colinc stream)
       (let* ((cur (#-(or ecl clasp) sys::charpos #+(or ecl clasp) sys::file-column stream))
@@ -1796,8 +1767,6 @@
 	(output-spaces stream spaces))))
 
 (defun format-absolute-tab (stream colnum colinc)
-  #-formatter
-  (declare (si::c-local))
   (if (#-(or ecl clasp) pp:pretty-stream-p #+(or ecl clasp) sys::pretty-stream-p stream)
       (pprint-tab :line colnum colinc stream)
       (let ((cur (#-(or ecl clasp) sys::charpos #+(or ecl clasp) sys:file-column stream)))
@@ -2060,7 +2029,6 @@
 ;;;; Conditionals
 
 (defun parse-conditional-directive (directives)
-  (declare (si::c-local))
   (let ((sublists nil)
 	(last-semi-with-colon-p nil)
 	(remaining directives))
@@ -2117,9 +2085,7 @@
 		 `(case ,case ,@clauses)))))
      remaining)))
 
-#+formatter
 (defun expand-maybe-conditional (sublist)
-  (declare (si::c-local))
   (fmt-log "expand-maybe-conditional")
   (flet ((hairy ()
 	   `(let ((prev-args args)
@@ -2141,9 +2107,7 @@
 		 (hairy))))
 	(hairy))))
 
-#+formatter
 (defun expand-true-false-conditional (true false)
-  (declare (si::c-local))
   (let ((arg (expand-next-arg)))
     (flet ((hairy ()
 	     `(if ,arg
@@ -2474,7 +2438,6 @@
 	    "~:T" "~:@T")))
 
 (defun check-output-layout-mode (mode)
-  (declare (si::c-local))
   (when (and *output-layout-mode*
 	     (not (eql *output-layout-mode* mode)))
     (error 'format-error
@@ -2544,7 +2507,6 @@
     remaining))
 
 (defun parse-format-justification (directives)
-  (declare (si::c-local))
   (let ((first-semi nil)
 	(close nil)
 	(remaining directives))
@@ -2565,9 +2527,7 @@
 	    (setf first-semi close-or-semi))))
       (values (segments) first-semi close remaining))))
 
-#+formatter
 (defun expand-format-justification (segments colonp atsignp first-semi params)
-  (declare (si::c-local))
   (let ((newline-segment-p
 	 (and first-semi
 	      (format-directive-colonp first-semi))))
@@ -2605,7 +2565,6 @@
 
 (defun interpret-format-justification
        (stream orig-args args segments colonp atsignp first-semi params)
-  (declare (si::c-local))
   (interpret-bind-defaults
       ((mincol 0) (colinc 1) (minpad 0) (padchar #\space))
       params
@@ -2644,8 +2603,6 @@
 
 (defun format-justification (stream newline-prefix extra-space line-len strings
 			     pad-left pad-right mincol colinc minpad padchar)
-  #-formatter
-  (declare (si::c-local))
   (setf strings (reverse strings))
   (when (and (not pad-left) (not pad-right) (null (cdr strings)))
     (setf pad-left t))
@@ -2687,7 +2644,6 @@
 
 (defun parse-format-logical-block
        (segments colonp first-semi close params string end)
-  (declare (si::c-local))
   (check-output-layout-mode 1)
   (when params
     (error 'format-error
@@ -2731,7 +2687,6 @@
 	    suffix)))
 
 (defun add-fill-style-newlines (list string offset)
-  (declare (si::c-local))
   (if list
       (let ((directive (car list)))
 	(if (simple-string-p directive)
@@ -2746,7 +2701,6 @@
       nil))
 
 (defun add-fill-style-newlines-aux (literal string offset)
-  (declare (si::c-local))
   (let ((end (length literal))
 	(posn 0))
     (collect ((results))
@@ -2768,7 +2722,6 @@
 	    (return))))
       (results))))
 
-#+formatter
 (defun expand-format-logical-block (prefix per-line-p insides suffix atsignp)
   `(let ((arg ,(if atsignp 'args (expand-next-arg))))
      ,@(when atsignp
@@ -2790,7 +2743,6 @@
 
 (defun interpret-format-logical-block
        (stream orig-args args prefix per-line-p insides suffix atsignp)
-  (declare (si::c-local))
   (let ((arg (if atsignp args (next-arg))))
     (if per-line-p
 	(pprint-logical-block
@@ -2837,11 +2789,63 @@
       (dolist (param-and-offset params)
 	(let ((param (cdr param-and-offset)))
 	  (case param
-	    (:arg (let ((x (next-arg))) (when x (args x))))
+	    (:arg (args (next-arg)))
 	    (:remaining (args (length args)))
 	    (t (args param)))))
       (apply (fdefinition symbol) stream (next-arg) colonp atsignp (args)))))
 
+(defun extract-user-function-name (string start end)
+  (let ((slash (position #\/ string :start start :end (1- end)
+                         :from-end t)))
+    (unless slash
+      (error 'format-error
+             :complaint "Malformed ~~/ directive."))
+    (let* ((name (string-upcase (let ((foo string))
+                                  ;; Hack alert: This is to keep the compiler
+                                  ;; quit about deleting code inside the subseq
+                                  ;; expansion.
+                                  (subseq foo (1+ slash) (1- end)))))
+           (first-colon (position #\: name))
+           (second-colon (if first-colon (position #\: name :start (1+ first-colon))))
+           (package-name (if first-colon
+                             (subseq name 0 first-colon)
+                             "COMMON-LISP-USER"))
+           (package (find-package package-name)))
+      (unless package
+        (error 'format-error
+               :complaint "No package named ~S"
+               :arguments (list package-name)))
+      (intern (cond
+                ((and second-colon (= second-colon (1+ first-colon)))
+                 (subseq name (1+ second-colon)))
+                (first-colon
+                 (subseq name (1+ first-colon)))
+                (t name))
+              package))))
+
+;;; Contributed by stassats May 24, 2016
+(core:bclasp-define-compiler-macro format (&whole whole destination control-string &rest args)
+  (if (stringp control-string)
+      (let ((fun-sym (gensym "FUN"))
+            (out-sym (gensym "OUT"))
+            (dest-sym (gensym "DEST")))
+        `(let ((,fun-sym ,(%formatter control-string))
+               (,dest-sym ,destination))
+           (cond
+             ((eq ,dest-sym t)
+              (funcall ,fun-sym *standard-output* ,@args)
+              nil)
+             ((null ,dest-sym)
+              (with-output-to-string (,out-sym)
+                (funcall ,fun-sym ,out-sym ,@args)))
+             ((stringp ,dest-sym)
+              (with-output-to-string (,out-sym ,dest-sym)
+                (funcall ,fun-sym ,out-sym ,@args))
+              nil)
+             (t
+              (funcall ,fun-sym ,dest-sym ,@args)
+              nil))))
+      whole))
 
 ;;;; Compile-time checking of format arguments and control string
 
@@ -2856,8 +2860,6 @@
 ;;; This is called from FORMAT deftransforms.
 ;;;
   (defun min/max-format-arguments-count (string)
-    #-formatter
-    (declare (si::c-local))
     (handler-case
         (catch 'give-up
           ;; For the side effect of validating the control string.
@@ -2867,8 +2869,6 @@
         (format nil "~a" e))))
 
   (defun %min/max-format-args (directives)
-    #-formatter
-    (declare (si::c-local))
     (let ((min-req 0) (max-req 0))
       (flet ((incf-both (&optional (n 1))
                (incf min-req n)
@@ -2911,29 +2911,25 @@
 ;;; always zero.
 ;;;
   (defun %min/max-conditional-args (conditional directives)
-    #-formatter
-    (declare (si::c-local))
     (multiple-value-bind (sublists last-semi-with-colon-p remaining)
         (parse-conditional-directive directives)
       (declare (ignore last-semi-with-colon-p))
       (let ((sub-max (loop for s in sublists maximize
-                          (nth-value 1 (%min/max-format-args s))))
+                                             (nth-value 1 (%min/max-format-args s))))
             (min-req 1)
             max-req)
         (cond ((format-directive-atsignp conditional)
                (setq max-req (max 1 sub-max)))
               ((loop for p in (format-directive-params conditional)
-                  thereis (or (integerp (cdr p))
-                              (memq (cdr p) '(:remaining :arg))))
+                       thereis (or (integerp (cdr p))
+                                   (memq (cdr p) '(:remaining :arg))))
                (setq min-req 0)
                (setq max-req sub-max))
               (t
                (setq max-req (1+ sub-max))))
         (values min-req max-req remaining))))
-
+  
   (defun %min/max-iteration-args (iteration directives)
-    #-formatter
-    (declare (si::c-local))
     (let* ((close (find-directive directives #\} nil))
            (posn (position close directives))
            (remaining (nthcdr (1+ posn) directives)))
@@ -2942,64 +2938,3 @@
           (let ((nreq (if (zerop posn) 2 1)))
             (values nreq nreq remaining)))))
   )
-
-(defun extract-user-function-name (string start end)
-  (declare (si::c-local))
-  (let ((slash (position #\/ string :start start :end (1- end)
-			 :from-end t)))
-    (unless slash
-      (error 'format-error
-	     :complaint "Malformed ~~/ directive."))
-    (let* ((name (string-upcase (let ((foo string))
-				  ;; Hack alert: This is to keep the compiler
-				  ;; quit about deleting code inside the subseq
-				  ;; expansion.
-				  (subseq foo (1+ slash) (1- end)))))
-	   (first-colon (position #\: name))
-	   (second-colon (if first-colon (position #\: name :start (1+ first-colon))))
-	   (package-name (if first-colon
-			     (subseq name 0 first-colon)
-			     "COMMON-LISP-USER"))
-	   (package (find-package package-name)))
-      (unless package
-	(error 'format-error
-	       :complaint "No package named ~S"
-	       :arguments (list package-name)))
-      (intern (cond
-                ((and second-colon (= second-colon (1+ first-colon)))
-                 (subseq name (1+ second-colon)))
-                (first-colon
-                 (subseq name (1+ first-colon)))
-                (t name))
-              package))))
-
-
-
-;;; Contributed by stassats May 24, 2016
-;; The compiler macro is broken in bclasp - it causes the control flow to go nuts
-;;    I'm going to enable this compiler macro only in cclasp. May 12, 2017 meister
-#+cclasp
-(define-compiler-macro format (&whole whole destination control-string &rest args)
-  (if (stringp control-string)
-      (let ((fun-sym (gensym "FUN"))
-            (out-sym (gensym "OUT"))
-            (dest-sym (gensym "DEST")))
-        `(let ((,fun-sym ,(%formatter control-string))
-               (,dest-sym ,destination))
-           (cond
-             ((eq ,dest-sym t)
-              (funcall ,fun-sym *standard-output* ,@args)
-              nil)
-             ((null ,dest-sym)
-              (with-output-to-string (,out-sym)
-                (funcall ,fun-sym ,out-sym ,@args)))
-             ((stringp ,dest-sym)
-              (with-output-to-string (,out-sym ,dest-sym)
-                (funcall ,fun-sym ,out-sym ,@args))
-              nil)
-             (t
-              (funcall ,fun-sym ,dest-sym ,@args)
-              nil))))
-      whole))
-
-

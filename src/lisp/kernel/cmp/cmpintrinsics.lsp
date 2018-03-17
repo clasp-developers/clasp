@@ -72,20 +72,16 @@ Set this to other IRBuilders to make code go where you want")
 
 (define-symbol-macro %i128% (llvm-sys:type-get-int128-ty *llvm-context*)) ;; -> NOT USED !!!
 
-(define-symbol-macro %fixnum% (if (member :address-model-64 *features*) ;; -> FIXNUM
-                     %i64%
-                     (error "Add support for non 64-bit address model")))
+(define-symbol-macro %fixnum% #+address-model-64 %i64%
+                              #+address-model-32 %i32%)
+(define-symbol-macro %uint% %i32%) ; FIXME: export from C++ probably
 
 (define-symbol-macro %float% (llvm-sys:type-get-float-ty *llvm-context*))
 (define-symbol-macro %double% (llvm-sys:type-get-double-ty *llvm-context*))
 #+long-float (define-symbol-macro %long-float% (llvm-sys:type-get-long-float-ty *llvm-context*))
 
-(define-symbol-macro %size_t%
-  (let ((sizeof-size_t (cdr (assoc 'core:size-t (llvm-sys:cxx-data-structures-info)))))
-    (cond
-      ((= 8 sizeof-size_t) %i64%)
-      ((= 4 sizeof-size_t) %i32%)
-      (t (error "Add support for size_t sizeof = ~a" sizeof-size_t)))))
+(define-symbol-macro %size_t% #+address-model-64 %i64%
+                              #+address-model-32 %i32%)
 (define-symbol-macro %size_t*% (llvm-sys:type-get-pointer-to %size_t%))
 (define-symbol-macro %size_t**% (llvm-sys:type-get-pointer-to %size_t*%))
 
@@ -119,61 +115,10 @@ Set this to other IRBuilders to make code go where you want")
 (define-symbol-macro %global-ctors-struct[1]% (llvm-sys:array-type-get %global-ctors-struct% 1))
 
 
-
-(defvar +cxx-data-structures-info+ (llvm-sys:cxx-data-structures-info))
-
-(defun get-cxx-data-structure-info (name &optional (info +cxx-data-structures-info+))
-  (let ((find (assoc name info)))
-    (or find (error "Could not find ~a in cxx-data-structures-info --> ~s~%" name info))
-    (cdr find)))
-(defvar +register-save-area-size+ (get-cxx-data-structure-info :register-save-area-size))
-(defvar +void*-size+ (get-cxx-data-structure-info :void*-size))
-(defvar +value-frame-parent-offset+ (get-cxx-data-structure-info :value-frame-parent-offset))
-(defvar +closure-entry-point-offset+ (get-cxx-data-structure-info :closure-entry-point-offset))
-(defvar +valist_s-remaining-nargs-offset+ (get-cxx-data-structure-info :valist_s-remaining-nargs-offset))
-(defvar +fixnum-stamp+ (get-cxx-data-structure-info :fixnum-stamp))
-(defvar +cons-stamp+ (get-cxx-data-structure-info :cons-stamp))
-(defvar +valist_s-stamp+ (get-cxx-data-structure-info :va_list_s-stamp))
-(defvar +character-stamp+ (get-cxx-data-structure-info :character-stamp))
-(defvar +single-float-stamp+ (get-cxx-data-structure-info :single-float-stamp))
-(defvar +instance-rack-stamp-offset+ (get-cxx-data-structure-info :instance-rack-stamp-offset))
-(defvar +instance-rack-offset+ (get-cxx-data-structure-info :instance-rack-offset))
-(defvar +instance-kind+ (get-cxx-data-structure-info :instance-kind))
-
-(defvar +fixnum-mask+ (get-cxx-data-structure-info :fixnum-mask))
-(defvar +fixnum-shift+ (get-cxx-data-structure-info :fixnum-shift))
-(defvar +kind-shift+ (get-cxx-data-structure-info :kind-shift))
-(defvar +tag-mask+ (get-cxx-data-structure-info :tag-mask))
-(defvar +immediate-mask+ (get-cxx-data-structure-info :immediate-mask))
-(defvar +cons-tag+ (get-cxx-data-structure-info :cons-tag))
-(defvar +VaList_S-tag+ (get-cxx-data-structure-info :valist-tag))
-(defvar +fixnum-tag+ (get-cxx-data-structure-info :fixnum-tag))
-(defvar +fixnum1-tag+ (get-cxx-data-structure-info :fixnum1-tag))
-(defvar +character-tag+ (get-cxx-data-structure-info :character-tag))
-(defvar +single-float-tag+ (get-cxx-data-structure-info :single-float-tag))
-(defvar +general-tag+ (get-cxx-data-structure-info :general-tag))
-(defvar +VaList_S-size+ (get-cxx-data-structure-info :VaList_S-size))
-(defvar +VaList_S-valist-offset+ (get-cxx-data-structure-info :VaList_S-valist-offset))
-(defvar +VaList_S-remaining-nargs-offset+ (get-cxx-data-structure-info :VaList_S-remaining-nargs-offset))
-(defvar +void*-size+ (get-cxx-data-structure-info :void*-size))
-(defvar +alignment+ (get-cxx-data-structure-info :alignment))
-(defvar +args-in-registers+ (get-cxx-data-structure-info :lcc-args-in-registers))
-(export '(+fixnum-mask+ +tag-mask+ +immediate-mask+
-          +cons-tag+ +fixnum-tag+ +character-tag+ +single-float-tag+
-          +general-tag+ +VaList_S-size+ +void*-size+ +alignment+ ))
-(defvar +cons-car-offset+ (get-cxx-data-structure-info :cons-car-offset))
-(defvar +cons-cdr-offset+ (get-cxx-data-structure-info :cons-cdr-offset))
-(defvar +uintptr_t-size+ (get-cxx-data-structure-info :uintptr_t-size))
-(define-symbol-macro %intptr_t%
-  (cond
-    ((= 8 +uintptr_t-size+) %i64%)
-    ((= 4 +uintptr_t-size+) %i32%)
-    (t (error "Add support for size uintptr_t = ~a" +uintptr_t-size+))))
-(define-symbol-macro %uintptr_t%
-  (cond
-    ((= 8 +uintptr_t-size+) %i64%)
-    ((= 4 +uintptr_t-size+) %i32%)
-    (t (error "Add support for size uintptr_t = ~a" +uintptr_t-size+))))
+(define-symbol-macro %intptr_t% #+address-model-64 %i64%
+                                #+address-model-32 %i32%)
+(define-symbol-macro %uintptr_t% #+address-model-64 %i64%
+                                #+address-model-32 %i32%)
 (define-symbol-macro %uintptr_t*% (llvm-sys:type-get-pointer-to %uintptr_t%))
 (defun make-uintptr_t (x)
   (and (> x most-positive-fixnum) (error "make sure the integer ~s fits in a %i64%" x))
@@ -182,7 +127,7 @@ Set this to other IRBuilders to make code go where you want")
     ((= 4 +uintptr_t-size+) (jit-constant-i32 x))
     (t (error "Add support for size uintptr_t = ~a" +uintptr_t-size+))))
 
-;;; DO NOT CHANGE THE FOLLOWING STRUCT!!! IT MUST MATCH VaList_S
+;;; DO NOT CHANGE THE FOLLOWING STRUCT!!! IT MUST MATCH vaslist
 
 (defun build-list-of-pointers (size type)
   (multiple-value-bind (num-pointers remainder)
@@ -252,15 +197,9 @@ Boehm and MPS use a single pointer"
 (define-symbol-macro %t**% (llvm-sys:type-get-pointer-to %t*%))
 (define-symbol-macro %t*[0]% (llvm-sys:array-type-get %t*% 0))
 (define-symbol-macro %t*[0]*% (llvm-sys:type-get-pointer-to %t*[0]%))
+(define-symbol-macro %t*[DUMMY]% (llvm-sys:array-type-get %t*% 64))
+(define-symbol-macro %t*[DUMMY]*% (llvm-sys:type-get-pointer-to %t*[DUMMY]%))
 (define-symbol-macro %tsp% (llvm-sys:struct-type-get *llvm-context* (smart-pointer-fields %t*%) nil))  ;; "T_sp"
-(define-symbol-macro %tsp[0]% (llvm-sys:array-type-get %tsp% 0))
-(define-symbol-macro %tsp[0]*% (llvm-sys:type-get-pointer-to %tsp[0]%))
-;;;(define-symbol-macro %tsp[1]% (llvm-sys:array-type-get %tsp% 1))
-;;;(define-symbol-macro %tsp[1]*% (llvm-sys:type-get-pointer-to %tsp[1]%))
-;;;(define-symbol-macro %tsp[2]% (llvm-sys:array-type-get %tsp% 2))
-;;;(define-symbol-macro %tsp[2]*% (llvm-sys:type-get-pointer-to %tsp[2]%))
-(define-symbol-macro %tsp[DUMMY]% (llvm-sys:array-type-get %tsp% 64))
-(define-symbol-macro %tsp[DUMMY]*% (llvm-sys:type-get-pointer-to %tsp[DUMMY]%))
 (define-symbol-macro %tsp*% (llvm-sys:type-get-pointer-to %tsp%))
 (define-symbol-macro %tsp**% (llvm-sys:type-get-pointer-to %tsp*%))
 
@@ -275,8 +214,8 @@ Boehm and MPS use a single pointer"
 (define-symbol-macro %tmv**% (llvm-sys:type-get-pointer-to %tmv*%))
 
 (define-symbol-macro %gcvector-tsp% (llvm-sys:struct-type-get *llvm-context* (list %size_t% %size_t% %tsp%) nil))
-(define-symbol-macro %gcvector-symsp% (llvm-sys:struct-type-get *llvm-context*(list %size_t% %size_t% %symsp%) nil))
-(define-symbol-macro %vec0-tsp% (llvm-sys:struct-type-get *llvm-context*(list %gcvector-tsp%) nil))
+(define-symbol-macro %gcvector-symsp% (llvm-sys:struct-type-get *llvm-context* (list %size_t% %size_t% %symsp%) nil))
+(define-symbol-macro %vec0-tsp% (llvm-sys:struct-type-get *llvm-context* (list %gcvector-tsp%) nil))
 (define-symbol-macro %vec0-symsp% (llvm-sys:struct-type-get *llvm-context* (list %gcvector-symsp%) nil))
 
 ;; Define the LoadTimeValue_O struct - right now just put in a dummy i32 - later put real fields here
@@ -288,7 +227,7 @@ Boehm and MPS use a single pointer"
 #+(or)(defvar +ltvsp**+ (llvm-sys:type-get-pointer-to +ltvsp*+))
 
 
-(define-symbol-macro %mv-limit% (cdr (assoc :multiple-values-limit (llvm-sys:cxx-data-structures-info))))
+(define-symbol-macro %mv-limit% +multiple-values-limit+)
 (define-symbol-macro %mv-values-array% (llvm-sys:array-type-get %t*% %mv-limit%))
 (define-symbol-macro %mv-struct% (llvm-sys:struct-type-get *llvm-context* (list %size_t% %mv-values-array%) nil #|| is-packed ||#))
 (define-symbol-macro %mv-struct*% (llvm-sys:type-get-pointer-to %mv-struct%))
@@ -298,15 +237,51 @@ Boehm and MPS use a single pointer"
 
 #+(or)(progn
         (defvar +af+ (llvm-sys:struct-type-get *llvm-context* nil  nil)) ;; "ActivationFrame_O"
-        (defvar +af-ptr+ (llvm-sys:type-get-pointer-to +af+))
-        (define-symbol-macro %afsp% (llvm-sys:struct-type-get *llvm-context* (smart-pointer-fields +af-ptr+)  nil)) ;; "ActivationFrame_sp"
+        (defvar +af*+ (llvm-sys:type-get-pointer-to +af+))
+        (define-symbol-macro %afsp% (llvm-sys:struct-type-get *llvm-context* (smart-pointer-fields +af*+)  nil)) ;; "ActivationFrame_sp"
         (define-symbol-macro %afsp*% (llvm-sys:type-get-pointer-to %afsp%))
         )
 
 ;; Substitute afsp* with tsp
+(define-symbol-macro %af% %t%)
+(define-symbol-macro %af*% %t*%)
 (define-symbol-macro %afsp% %tsp%)
 (define-symbol-macro %afsp*% %tsp*%)
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Vector access and unboxed value stuff
+
+(defun element-type->llvm-type (element-type)
+  (case element-type
+    ((t) %t*%)
+    (ext:byte8 %i8%)
+    (ext:integer8 %i8%)
+    (ext:byte16 %i16%)
+    (ext:integer16 %i16%)
+    (ext:byte32 %i32%)
+    (ext:integer32 %i32%)
+    (ext:byte64 %i64%)
+    (ext:integer64 %i64%)
+    (fixnum %i64%) ; FIXME: should we store fixnums in arrays tagged? we do now.
+    (single-float %float%)
+    (double-float %double%)
+    ;; should be less hardcoded
+    (base-char %i8%) ; in core as C unsigned char
+    (character %i32%) ; in core as C int
+    (otherwise
+     (error "BUG: Unknown element type ~a" element-type))))
+
+(defun simple-vector-llvm-type (element-type)
+  (llvm-sys:struct-type-get
+   *llvm-context*
+   (list
+    ;; Spacer to get to the data
+    (llvm-sys:array-type-get %i8% (- +simple-vector._data-offset+ +general-tag+))
+    ;; The data, a flexible member
+    (llvm-sys:array-type-get (element-type->llvm-type element-type) 0))
+   ;; Not totally sure it should be packed.
+   t))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -321,8 +296,8 @@ Boehm and MPS use a single pointer"
   (error "I need a va_list struct definition for this system")
 
   (define-symbol-macro %va_list*% (llvm-sys:type-get-pointer-to %va_list%))
-  (define-symbol-macro %VaList_S% (llvm-sys:struct-type-get *llvm-context* (list %va_list% %size_t%) nil))
-  (define-symbol-macro %VaList_S*% (llvm-sys:type-get-pointer-to %VaList_S%))
+  (define-symbol-macro %vaslist% (llvm-sys:struct-type-get *llvm-context* (list %va_list% %size_t%) nil))
+  (define-symbol-macro %vaslist*% (llvm-sys:type-get-pointer-to %vaslist%))
 
 ;;;    "Function prototype for generic functions")
   (define-symbol-macro %fn-gf% (llvm-sys:function-type-get %tmv% (list %t*% %t*%)))
@@ -336,23 +311,25 @@ Boehm and MPS use a single pointer"
 ;; and names of the arguments passed in registers
 ;;
 
-(defstruct (calling-convention-setup (:type vector))
+(defstruct (calling-convention-configuration (:type vector))
   use-only-registers
   invocation-history-frame*
-  VaList_S*
+  vaslist*
   register-save-area*)
 
 ;; Provide the arguments passed to the function in a convenient manner.
 ;; Either the register arguments are available in register-args
 ;;   or the va-list/remaining-nargs is used to access the arguments
 ;;   one after the other with calling-convention.va-arg
-(defstruct (calling-convention-impl (:type vector))
+(defstruct (calling-convention-impl
+            (:conc-name "CALLING-CONVENTION-")
+            (:type vector))
   closure
   nargs
   use-only-registers ; If T then use only the register-args
   register-args ; The arguments that were passed in registers
-  va-list*       ; The address of VaList_S.va_list on the stack
-  remaining-nargs* ; The address of VaList_S._remaining_nargs on the stack
+  va-list*       ; The address of vaslist.va_list on the stack
+  remaining-nargs* ; The address of vaslist._remaining_nargs on the stack
   register-save-area*
   invocation-history-frame*
   )
@@ -360,9 +337,9 @@ Boehm and MPS use a single pointer"
 ;; Parse the function arguments into a calling-convention
 ;;
 ;; What if we don't want/need to spill the registers to the register-save-area?
-(defun initialize-calling-convention (arguments setup)
-  (if (null (calling-convention-setup-VaList_S* setup))
-      ;; If there is no VaList_S then only register arguments are available
+(defun initialize-calling-convention (arguments setup &optional (rewind t))
+  (if (null (calling-convention-configuration-vaslist* setup))
+      ;; If there is no vaslist then only register arguments are available
       ;;    no registers are spilled to the register-save-area and no InvocationHistoryFrame
       ;;    will be available to initialize
       (progn
@@ -371,56 +348,38 @@ Boehm and MPS use a single pointer"
                                       :use-only-registers t
                                       :register-args (nthcdr 2 arguments)))
       ;; The register arguments need to be spilled to the register-save-area
-      ;;    and the VaList_S needs to be initialized.
+      ;;    and the vaslist needs to be initialized.
       ;;    If a InvocationHistoryFrame is available, then initialize it.
       (progn
-        (let* ((VaList_S                    (calling-convention-setup-VaList_S* setup))
+        (let* ((vaslist                    (calling-convention-configuration-vaslist* setup))
                #++(_dbg                        (progn
-                                                 (llvm-print "VaList_S\n")
-                                                 (irc-intrinsic "debugPointer" (irc-bit-cast VaList_S %i8*%))))
-               (register-save-area*         (calling-convention-setup-register-save-area* setup))
+                                                 (llvm-print "vaslist\n")
+                                                 (irc-intrinsic "debugPointer" (irc-bit-cast vaslist %i8*%))))
+               (register-save-area*         (calling-convention-configuration-register-save-area* setup))
                #++(_dbg                        (progn
                                                  (llvm-print "register-save-area\n")
                                                  (irc-intrinsic "debugPointer" (irc-bit-cast register-save-area* %i8*%))))
-               (VaList_S-addr-uint          (irc-ptr-to-int VaList_S %uintptr_t% "VaList_S-tagged-uint"))
-               (va-list-addr                (irc-add VaList_S-addr-uint (jit-constant-uintptr_t +VaList_S-valist-offset+) "va-list-addr"))
+               (vaslist-addr-uint           (irc-ptr-to-int vaslist %uintptr_t% "vaslist-tagged-uint"))
+               (va-list-addr                (irc-add vaslist-addr-uint (jit-constant-uintptr_t +vaslist-valist-offset+) "va-list-addr"))
                (va-list*                    (irc-int-to-ptr va-list-addr %va_list*% "va-list*"))
-               (remaining-nargs*-uint       (irc-add VaList_S-addr-uint (jit-constant-uintptr_t +VaList_S-remaining-nargs-offset+) "remaining-nargs*-uint"))
+               (remaining-nargs*-uint       (irc-add vaslist-addr-uint (jit-constant-uintptr_t +vaslist-remaining-nargs-offset+) "remaining-nargs*-uint"))
                (remaining-nargs*            (irc-int-to-ptr remaining-nargs*-uint %size_t*% "remaining-nargs*"))
                #++(_dbg                        (irc-intrinsic "debugPointer" (irc-bit-cast remaining-nargs* %i8*%)))
-               (_                           (spill-to-register-save-area arguments register-save-area*))
+               (_                           (maybe-spill-to-register-save-area arguments register-save-area*))
                (cc                          (make-calling-convention-impl :closure (first arguments)
                                                                           :nargs (second arguments) ;; The number of arguments
                                                                           :register-args (nthcdr 2 arguments)
-                                                                          :use-only-registers (calling-convention-setup-use-only-registers setup)
+                                                                          :use-only-registers (calling-convention-configuration-use-only-registers setup)
                                                                           :va-list* va-list*
                                                                           :remaining-nargs* remaining-nargs*
-                                                                          :register-save-area* (calling-convention-setup-register-save-area* setup)
-                                                                          :invocation-history-frame* (calling-convention-setup-invocation-history-frame* setup)))
-               (_                           (calling-convention-args.va-start cc))
+                                                                          :register-save-area* (calling-convention-configuration-register-save-area* setup)
+                                                                          :invocation-history-frame* (calling-convention-configuration-invocation-history-frame* setup)))
+               ;; va-start is done in caller
+               #+(or)(_                           (calling-convention-args.va-start cc))
                #++(_dbg                        (progn
                                                  (llvm-print "After calling-convention-args.va-start\n")
                                                  (irc-intrinsic "debug_va_list" va-list*))))
           cc))))
-
-(defun calling-convention-closure (cc)
-  (calling-convention-impl-closure cc))
-
-(defun calling-convention-use-only-registers (cc)
-  (calling-convention-impl-use-only-registers cc))
-
-(defun calling-convention-nargs (cc)
-  (calling-convention-impl-nargs cc))
-
-(defun calling-convention-invocation-history-frame* (cc)
-  (calling-convention-impl-invocation-history-frame* cc))
-
-(defun calling-convention-register-args (cc)
-  (calling-convention-impl-register-args cc))
-
-(defun calling-convention-remaining-nargs* (cc)
-  (calling-convention-impl-remaining-nargs* cc))
-
 
 (defun calling-convention-maybe-push-invocation-history-frame (cc)
   (when (calling-convention-invocation-history-frame* cc)
@@ -428,7 +387,7 @@ Boehm and MPS use a single pointer"
                    (calling-convention-closure cc)
                    (calling-convention-invocation-history-frame* cc)
                    (calling-convention-va-list* cc)
-                   (calling-convention-remaining-nargs* cc))))
+                   (irc-load (calling-convention-remaining-nargs* cc)))))
 
 (defun calling-convention-maybe-pop-invocation-history-frame (cc)
   (when (calling-convention-invocation-history-frame* cc)
@@ -437,15 +396,9 @@ Boehm and MPS use a single pointer"
                    (calling-convention-invocation-history-frame* cc))))
 
 
-
-(defun calling-convention-va-list* (cc)
-  (calling-convention-impl-va-list* cc))
-
-(defun calling-convention-register-save-area* (cc)
-  (calling-convention-impl-register-save-area* cc))
-
 (defun calling-convention-args.va-end (cc)
-  (let* ((_        (irc-intrinsic "llvm.va_end" (calling-convention-va-list* cc))))))
+  (when (calling-convention-va-list* cc)
+    (irc-intrinsic "llvm.va_end" (calling-convention-va-list* cc))))
 
 ;;;
 ;;; Read the next argument from the va_list
@@ -461,17 +414,17 @@ Boehm and MPS use a single pointer"
          (result                (irc-va_arg (calling-convention-va-list* cc) %t*% )))
     result))
 
-  (defun calling-convention-args.va-start (cc)
-    "Like va-start - but it rewinds the va-list to start at the third argument. 
+(defun calling-convention-args.va-start (cc &optional (rewind t))
+  "Like va-start - but it rewinds the va-list to start at the third argument. 
 This allows all of the arguments to be accessed with successive calls to calling-convention-args.va-arg.
 eg:  (f closure-ptr nargs a b c d ...)
                           ^-----  after calling-convention-args.va-start the va-list will point here.
                                   and remaining-nargs will contain nargs."
-    (let* (
                                         ; Initialize the va_list - the only valid field will be overflow-area
-           (va-list*                      (calling-convention-va-list* cc))
-           (_                             (irc-intrinsic "llvm.va_start" (irc-bit-cast va-list* %i8*%)))
-           (_                             (calling-convention-rewind-va-list-to-start-on-third-argument cc)))))
+  (let* ((va-list*                      (calling-convention-va-list* cc)))
+    (when va-list*
+      (irc-intrinsic "llvm.va_start" (irc-bit-cast va-list* %i8*%))
+      (when rewind (calling-convention-rewind-va-list-to-start-on-third-argument cc)))))
 
 
 #+x86-64
@@ -501,48 +454,31 @@ eg:  (f closure-ptr nargs a b c d ...)
                                              %i8*%
                                              (/ +register-save-area-size+ +void*-size+)))
   (define-symbol-macro %register-save-area*% (llvm-sys:type-get-pointer-to %register-save-area%))
-  (defun spill-to-register-save-area (registers register-save-area*)
-    (labels ((spill-reg (idx reg)
-               (let* ((addr-name     (bformat nil "addr%d" idx))
-                      (addr          (irc-gep register-save-area* (list (jit-constant-size_t 0) (jit-constant-size_t idx)) addr-name))
-                      (reg-i8*       (irc-bit-cast reg %i8*% "reg-i8*"))
-                      (_             (irc-store reg-i8* addr)))
-                 addr)))
-      (let* (
-             (addr-closure  (spill-reg 0 (elt registers 0)))
-             (addr-nargs    (spill-reg 1 (irc-int-to-ptr (elt registers 1) %i8*%)))
-             (addr-farg0    (spill-reg 2 (elt registers 2))) ; this is the first fixed arg currently.
-             (addr-farg1    (spill-reg 3 (elt registers 3)))
-             (addr-farg2    (spill-reg 4 (elt registers 4)))
-             (addr-farg3    (spill-reg 5 (elt registers 5)))))))
+  (defun maybe-spill-to-register-save-area (registers register-save-area*)
+    (unless registers
+      (unless register-save-area*
+        (error "If registers is NIL then register-save-area* also must be NIL")))
+    (when registers
+      (labels ((spill-reg (idx reg)
+                 (let* ((addr-name     (bformat nil "addr%d" idx))
+                        (addr          (irc-gep register-save-area* (list (jit-constant-size_t 0) (jit-constant-size_t idx)) addr-name))
+                        (reg-i8*       (irc-bit-cast reg %i8*% "reg-i8*"))
+                        (_             (irc-store reg-i8* addr)))
+                   addr)))
+        (let* (
+               (addr-closure  (spill-reg 0 (elt registers 0)))
+               (addr-nargs    (spill-reg 1 (irc-int-to-ptr (elt registers 1) %i8*%)))
+               (addr-farg0    (spill-reg 2 (elt registers 2))) ; this is the first fixed arg currently.
+               (addr-farg1    (spill-reg 3 (elt registers 3)))
+               (addr-farg2    (spill-reg 4 (elt registers 4)))
+               (addr-farg3    (spill-reg 5 (elt registers 5))))))))
 
 
   (defun calling-convention-rewind-va-list-to-start-on-third-argument (cc)
-    ;;; Generate code to do everything
-    #+(or)
-    (let* ((va-list*                      (calling-convention-va-list* cc))
-                                        ; Get the second argument - the number of arguments
-           (nargs-addr                    (irc-gep (calling-convention-register-save-area* cc) (list (jit-constant-size_t 0) (jit-constant-size_t 1)) "nargs-addr"))
-           (nargs-addr-%size_t*%          (irc-bit-cast nargs-addr %size_t*% "nargs-addr-%size_t*%"))
-           (nargs                         (irc-load nargs-addr-%size_t*% "nargs"))
-                                        ; write the nargs into the remaining-nargs to keep track of
-                                        ; how many arguments can still be read with va_arg
-           (_                             (irc-store nargs (calling-convention-remaining-nargs* cc)))
-                                        ; write the register-save-area ptr into the va-list
-           (va-list                       (irc-load va-list* "va-list"))
-           (va-list1                      (irc-insert-value va-list (irc-bit-cast (calling-convention-register-save-area* cc) %i8*%) (list 3)))
-                                        ; set the gp_offset to point to first reg arg
-           (va-list2                      (irc-insert-value va-list1 (jit-constant-i32 (* 8 2)) (list 0)))
-           (_                             (irc-store va-list2 va-list*))
-           #++
-           (_                             (irc-intrinsic "debugPointer" (irc-bit-cast va-list* %i8*%)))))
-    ;;; Use a function
     (let* ((va-list*                      (calling-convention-va-list* cc))
            (register-save-area*           (calling-convention-register-save-area* cc))
-           (remaining-nargs*              (calling-convention-remaining-nargs* cc))
-           (closure                       (calling-convention-closure cc))
-           (_                             (irc-intrinsic "cc_rewind_va_list" closure va-list* remaining-nargs* register-save-area*)))))
-    
+           (remaining-nargs*              (calling-convention-remaining-nargs* cc)))
+      (irc-intrinsic "cc_rewind_va_list" va-list* remaining-nargs* register-save-area*)))
 ;;; end of x86-64 specific stuff
   )
 
@@ -553,7 +489,7 @@ eg:  (f closure-ptr nargs a b c d ...)
 ;;; This is the normal C-style prototype for a function
 (define-symbol-macro %fn-prototype% %fn-registers-prototype%)
 (defvar +fn-prototype-argument-names+ +fn-registers-prototype-argument-names+)
-;;; This is the C-style prototype with an extra argument that contains the VaList_S for all arguments
+;;; This is the C-style prototype with an extra argument that contains the vaslist for all arguments
 (define-symbol-macro %fn-va-prototype% %fn-reglist-prototype%)
 (defvar +fn-va-prototype-argument-names+ +fn-reglist-prototype-argument-names+)
 
@@ -574,7 +510,7 @@ eg:  (f closure-ptr nargs a b c d ...)
 ;; %"class.core::InvocationHistoryFrame" = type { i32 (...)**, i32, %"class.core::InvocationHistoryStack"*, %"class.core::InvocationHistoryFrame"*, i8, i32 }
 ;;"Make this a generic pointer"
 (define-symbol-macro %InvocationHistoryStack*% %i8*%)
-(define-symbol-macro %InvocationHistoryFrame% (llvm-sys:struct-type-get *llvm-context* (list %i8*% %va_list% %size_t% %size_t%) "InvocationHistoryFrame"))
+(define-symbol-macro %InvocationHistoryFrame% (llvm-sys:struct-type-get *llvm-context* (list %i8*% %va_list% %size_t% #| %size_t% #|Removed BDS|# |#) "InvocationHistoryFrame"))
 (define-symbol-macro %InvocationHistoryFrame*% (llvm-sys:type-get-pointer-to %InvocationHistoryFrame%))
 ;;  (llvm-sys:set-body %InvocationHistoryFrame% (list %i32**% %i32% #|%InvocationHistoryStack*% %InvocationHistoryFrame*%|# %i8*% %i8*% %i8% %i32%) nil)
 ;(define-symbol-macro %LispFunctionIHF% (llvm-sys:struct-type-create *llvm-context* :elements (list %InvocationHistoryFrame% %tsp% %tsp% %tsp% %i32% %i32%) :name "LispFunctionIHF"))
@@ -675,14 +611,14 @@ and initialize it with an array consisting of one function pointer."
          (data-layout (llvm-sys:get-data-layout execution-engine))
          (tsp-size (llvm-sys:data-layout-get-type-alloc-size data-layout %tsp%))
          (tmv-size (llvm-sys:data-layout-get-type-alloc-size data-layout %tmv%))
-         (valist_s-size (llvm-sys:data-layout-get-type-alloc-size data-layout %VaList_S%))
+         (vaslist-size (llvm-sys:data-layout-get-type-alloc-size data-layout %vaslist%))
          (register-save-area-size (llvm-sys:data-layout-get-type-alloc-size data-layout %register-save-area%))
          (invocation-history-frame-size (llvm-sys:data-layout-get-type-alloc-size data-layout %InvocationHistoryFrame%))
          (gcroots-in-module-size (llvm-sys:data-layout-get-type-alloc-size data-layout %gcroots-in-module%)))
     (llvm-sys:throw-if-mismatched-structure-sizes :tsp tsp-size
                                                   :tmv tmv-size
                                                   :contab gcroots-in-module-size
-                                                  :valist valist_s-size
+                                                  :valist vaslist-size
                                                   :ihf invocation-history-frame-size
                                                   :register-save-area register-save-area-size)))
 
@@ -716,61 +652,15 @@ and initialize it with an array consisting of one function pointer."
 	 (i8* (llvm-sys:get-or-create-external-global *the-module* cname %i8%)))
     i8*))
 
-;;
-;; Define functions within the module
-;;
-
-(defvar *primitives* (make-hash-table :test 'equal))
 
 
-(defun matching-arguments (required-type given-type arg-index)
-  (if (equal required-type +tsp*-or-tmv*+)
-      (if (eql arg-index 1)
-	  (if (or (equal given-type %tsp*%) (equal given-type %tmv*%))
-	      t
-	      nil)
-	  (error ":tsp*-or-tmv* can only be specified as the first argument of an intrinsic function"))
-      (equal required-type given-type)))
 
 (defun assert-result-isa-llvm-value (result)
   (unless (llvm-sys:llvm-value-p result)
       (error "result must be an instance of llvm-sys:Value_O but instead it has the value %s" result)))
 
-(defun throw-if-mismatched-arguments (fn-name args)
-  (let* ((info (gethash fn-name *primitives*))
-	 (return-ty (car info))
-	 (required-args-ty (cadr info))
-	 (passed-args-ty (mapcar #'(lambda (x)
-				     (if (llvm-sys:llvm-value-p x)
-					 (if (llvm-sys:valid x)
-                                             (llvm-sys:get-type x)
-                                             (error "Invalid (NULL pointer) value ~a about to be passed to intrinsic function ~a" x fn-name))
-					 (core:class-name-as-string x)))
-				 args))
-	 (i 1))
-    (mapc #'(lambda (x y z)
-	      (unless (matching-arguments x y i)
-		(error "Constructing call to intrinsic ~a - mismatch of arg#~a value[~a], expected type ~a - received type ~a" fn-name i z x y))
-	      (setq i (1+ i))
-	      ) required-args-ty passed-args-ty args)))
 
-(defconstant +tsp*-or-tmv*+ :tsp*-or-tmv*
-  "This is a stand-in for a first argument type that can either be tsp* or tmv*")
-
-(defun dispatch-function-name (name &optional required-first-argument-type)
-  (let ((name-dispatch-prefix
-	 (cond
-	   ((equal required-first-argument-type %tsp*%)
-	    "sp_")
-	   ((equal required-first-argument-type %tmv*%)
-	    "mv_")
-	   (t
-	    ""))))
-    (bformat nil "%s%s" name-dispatch-prefix name)))
-
-
-
-(defun codegen-startup-shutdown (gcroots-in-module roots-array number-of-roots)
+(defun codegen-startup-shutdown (gcroots-in-module roots-array-or-nil number-of-roots)
   (let ((startup-fn (irc-simple-function-create core:*module-startup-function-name*
                                                 (llvm-sys:function-type-get %void% (list %t*%))
                                                 'llvm-sys::External-linkage
@@ -788,9 +678,11 @@ and initialize it with an array consisting of one function pointer."
            (gf-args (second arguments)))
       (cmp:irc-set-insert-point-basic-block entry-bb irbuilder-alloca)
       (with-irbuilder (irbuilder-alloca)
-        (let ((start (irc-gep roots-array
-                              (list (jit-constant-size_t 0)
-                                    (jit-constant-size_t 0)))))
+        (let ((start (if roots-array-or-nil
+                         (irc-gep roots-array-or-nil
+                                  (list (jit-constant-size_t 0)
+                                        (jit-constant-size_t 0)))
+                         (llvm-sys:constant-pointer-null-get %t**%))))
           (irc-intrinsic-call "cc_initialize_gcroots_in_module" (list gcroots-in-module start (jit-constant-size_t number-of-roots) values))
           (irc-ret-void))))
     (let ((shutdown-fn (irc-simple-function-create core:*module-shutdown-function-name*
@@ -810,9 +702,7 @@ and initialize it with an array consisting of one function pointer."
              (gf-args (second arguments)))
         (irc-set-insert-point-basic-block entry-bb irbuilder-alloca)
         (with-irbuilder (irbuilder-alloca)
-          (let ((start (irc-gep roots-array
-                                (list (jit-constant-size_t 0)
-                                      (jit-constant-size_t 0)))))
+          (progn
             (irc-intrinsic-call "cc_shutdown_gcroots_in_module" (list gcroots-in-module))
             (irc-ret-void))))
       (values startup-fn shutdown-fn))))
@@ -822,404 +712,9 @@ and initialize it with an array consisting of one function pointer."
 
 
 
-;;;
-;;; An attempt to inline specific functions from intrinsics.cc
-;;;
+;;; Define what ltvc_xxx functions return
+(define-symbol-macro %ltvc-return% %void%)
 
-
-;;#+(or)
-(defun create-primitive-function (module name return-ty args-ty varargs does-not-throw does-not-return)
-  (let ((fnattrs nil))
-    (when does-not-throw (push 'llvm-sys:attribute-no-unwind fnattrs))
-    (when does-not-return (push 'llvm-sys:attribute-no-return fnattrs))
-    (push '("no-frame-pointer-elim" "false") fnattrs)
-    (push "no-frame-pointer-elim-non-leaf" fnattrs)
-    (cmp:irc-function-create (llvm-sys:function-type-get return-ty args-ty varargs)
-                             'llvm-sys::External-linkage
-                             name module
-                             :function-attributes fnattrs)))
-
-(defun primitive (module name return-ty args-ty &key varargs does-not-throw does-not-return )
-  (mapc #'(lambda (x)
-	    (when (equal +tsp*-or-tmv*+ x)
-	      (error "When defining primitive ~a --> :tsp*-or-tmv* is only allowed in the first argument position" name ))) (cdr args-ty))
-  (if (equal (car args-ty) +tsp*-or-tmv*+)
-      (progn ;; create two versions of the function - one prefixed with sp_ and the other with mv_
-	(create-primitive-function module
-				   (dispatch-function-name name %tsp*%)
-				   return-ty
-				   (cons %tsp*% (cdr args-ty))
-				   varargs does-not-throw does-not-return)
-	(create-primitive-function module
-				   (dispatch-function-name name %tmv*%)
-				   return-ty
-				   (cons %tmv*% (cdr args-ty))
-				   varargs does-not-throw does-not-return))
-      (create-primitive-function module
-				 name return-ty args-ty varargs does-not-throw does-not-return))
-  (core::hash-table-setf-gethash *primitives* name
-				 (list return-ty args-ty '( (:varargs . varargs)
-							   (:does-not-throw . does-not-throw)
-							   ( :does-not-return . does-not-return) ))))
-
-
-(defun primitive-nounwind (module name return-ty args-ty &key varargs does-not-return)
-  (primitive module name return-ty args-ty :varargs varargs :does-not-throw t :does-not-return does-not-return))
-
-(defun define-primitives-in-module (module)
-
-  (primitive-nounwind module "ltvc_assign_source_file_info_handle" %void% (list %i8*% %i8*% %size_t% %i32% %i32*%))
-  (primitive-nounwind module "ltvc_make_nil" %t*% (list %gcroots-in-module*% %size_t%))
-  (primitive-nounwind module "ltvc_make_t" %t*% (list %gcroots-in-module*% %size_t%))
-  (primitive-nounwind module "ltvc_make_ratio" %t*% (list %gcroots-in-module*% %size_t% %t*% %t*%))
-  (primitive-nounwind module "ltvc_make_cons" %t*% (list %gcroots-in-module*% %size_t% %t*% %t*%))
-  (primitive-nounwind module "ltvc_nconc" %t*% (list %gcroots-in-module*% %size_t% %t*% %t*%))
-  (primitive-nounwind module "ltvc_make_list" %t*% (list %gcroots-in-module*% %size_t% %size_t%) :varargs t)
-  (primitive-nounwind module "ltvc_make_array" %t*% (list %gcroots-in-module*% %size_t% %t*% %t*%))
-  (primitive-nounwind module "ltvc_setf_row_major_aref" %t*% (list %t*% %size_t% %t*%))
-  (primitive-nounwind module "ltvc_make_hash_table" %t*% (list %gcroots-in-module*% %size_t% %t*%))
-  (primitive-nounwind module "ltvc_setf_gethash" %t*% (list %t*% %t*% %t*%))
-  (primitive-nounwind module "ltvc_make_fixnum" %t*% (list %gcroots-in-module*% %size_t% %uintptr_t%))
-  (primitive-nounwind module "ltvc_make_package" %t*% (list %gcroots-in-module*% %size_t% %t*%))
-  (primitive-nounwind module "ltvc_make_bignum" %t*% (list %gcroots-in-module*% %size_t% %t*%))
-  (primitive-nounwind module "ltvc_make_bitvector" %t*% (list %gcroots-in-module*% %size_t% %t*%))
-  (primitive-nounwind module "ltvc_make_random_state" %t*% (list %gcroots-in-module*% %size_t% %t*%))
-  (primitive-nounwind module "ltvc_make_symbol" %t*% (list %gcroots-in-module*% %size_t% %t*% %t*%))
-  (primitive-nounwind module "ltvc_make_character" %t*% (list %gcroots-in-module*% %size_t% %uintptr_t%))
-  (primitive-nounwind module "ltvc_make_base_string" %t*% (list %gcroots-in-module*% %size_t% %i8*%))
-  (primitive-nounwind module "ltvc_make_pathname" %t*% (list %gcroots-in-module*% %size_t% %t*% %t*% %t*% %t*% %t*% %t*%))
-  (primitive-nounwind module "ltvc_make_package" %t*% (list %gcroots-in-module*% %size_t% %t*%))
-  (primitive-nounwind module "ltvc_make_built_in_class" %t*% (list %gcroots-in-module*% %size_t% %t*%))
-  (primitive-nounwind module "ltvc_make_float" %t*% (list %gcroots-in-module*% %size_t% %float%))
-  (primitive-nounwind module "ltvc_make_double" %t*% (list %gcroots-in-module*% %size_t% %double%))
-  (primitive-nounwind module "ltvc_make_complex" %t*% (list %gcroots-in-module*% %size_t% %t*% %t*%))
-  (primitive          module "ltvc_set_mlf_creator_funcall" %t*% (list %gcroots-in-module*% %size_t% %fn-prototype*% %i8*%))
-  (primitive          module "ltvc_mlf_init_funcall" %t*% (list %fn-prototype*% %i8*%))
-  (primitive          module "ltvc_set_ltv_funcall" %t*% (list %gcroots-in-module*% %size_t% %fn-prototype*% %i8*%))
-  (primitive          module "ltvc_toplevel_funcall" %t*% (list %fn-prototype*% %i8*%))
-
-  (primitive-nounwind module "newFunction_sp" %void% (list %Function_sp*%))
-  (primitive-nounwind module "newTsp" %void% (list %tsp*%))
-  (primitive-nounwind module "copyTsp" %void% (list +tsp*-or-tmv*+ %tsp*%))
-  (primitive-nounwind module "copyTspTptr" %void% (list +tsp*-or-tmv*+ %t*%))
-  (primitive-nounwind module "compareTspTptr" %i32% (list %tsp*% %t*%))
-
-  (primitive-nounwind module "newTmv" %void% (list %tmv*%))
-  (primitive-nounwind module "resetTmv" %void% (list %tmv*%))
-  (primitive-nounwind module "copyTmv" %void% (list %tmv*% %tmv*%))
-  (primitive-nounwind module "copyTmvOrSlice" %void% (list +tsp*-or-tmv*+ %tmv*%))
-
-  (primitive-nounwind module "isTrue" %i32% (list %tsp*%))
-  (primitive-nounwind module "isBound" %i32% (list %tsp*%))
-
-  (primitive-nounwind module "internSymbol_tsp" %void% (list %tsp*% %i8*% %i8*%))
-  (primitive-nounwind module "makeSymbol_tsp" %void% (list %tsp*% %i8*%))
-
-  (primitive-nounwind module "internSymbol_symsp" %void% (list %symsp*% %i8*% %i8*%))
-  (primitive-nounwind module "makeSymbol_symsp" %void% (list %symsp*% %i8*%))
-
-  (primitive-nounwind module "makeNil" %void% (list +tsp*-or-tmv*+))
-  (primitive-nounwind module "makeT" %void% (list %tsp*%))
-  (primitive-nounwind module "makeCons" %void% (list %tsp*% %tsp*% %tsp*%))
-  (primitive-nounwind module "makeFixnum" %void% (list %tsp*% %fixnum%))
-  (primitive-nounwind module "makeCharacter" %void% (list %tsp*% %i32%))
-  (primitive-nounwind module "makeBignum" %void% (list %tsp*% %i8*%))
-  #+short-float (primitive-nounwind module "makeShortFloat" %void% (list %tsp*% %double%))
-  (primitive-nounwind module "makeSingleFloat" %void% (list %tsp*% %float%))
-  (primitive-nounwind module "makeDoubleFloat" %void% (list %tsp*% %double%))
-
-  #+long-float (primitive-nounwind module "makeLongFloat" %void% (list %tsp*% %long-float%))
-  (primitive-nounwind module "makeString" %void% (list %tsp*% %i8*%))
-  (primitive-nounwind module "makePathname" %void% (list %tsp*% %i8*%))
-  (primitive-nounwind module "makeCompiledFunction" %void% (list +tsp*-or-tmv*+ %fn-prototype*% %i32*% %size_t% %size_t% %size_t% %tsp*% %tsp*% %afsp*% %tsp*%))
-
-  (primitive          module "symbolValueRead" %void% (list +tsp*-or-tmv*+ %tsp*%))
-  (primitive-nounwind module "symbolValueReference" %tsp*% (list %tsp*%))
-  (primitive-nounwind module "lexicalValueReference" %tsp*% (list %i32% %i32% %afsp*%))
-  (primitive-nounwind module "lexicalValueRead" %void% (list +tsp*-or-tmv*+ %i32% %i32% %afsp*%))
-  (primitive-nounwind module "symbolFunctionRead" %void% (list +tsp*-or-tmv*+ %tsp*%))
-  (primitive-nounwind module "setfSymbolFunctionRead" %void% (list %tsp*% %tsp*%))
-  (primitive-nounwind module "lexicalFunctionRead" %void% (list +tsp*-or-tmv*+ %i32% %i32% %afsp*%))
-
-
-  (primitive-nounwind module "makeTagbodyFrame" %void% (list %afsp*%))
-  (primitive-nounwind module "makeValueFrame" %void% (list %tsp*% %i64%))
-  (primitive-nounwind module "setParentOfActivationFrameFromClosure" %void% (list %tsp*% %t*%))
-  (primitive-nounwind module "setParentOfActivationFrame" %void% (list %tsp*% %tsp*%))
-
-;;  (primitive-nounwind module "attachDebuggingInfoToValueFrame" %void% (list %afsp*% %tsp*%))
-
-  (primitive-nounwind module "valueFrameReference" %tsp*% (list %afsp*% %i32%))
-
-  (primitive          module "makeFunctionFrame" %void% (list %afsp*% %i32% %afsp*%))
-  (primitive          module "functionFrameReference" %tsp*% (list %afsp*% %i32%))
-
-  (primitive          module "prependMultipleValues" %void% (list +tsp*-or-tmv*+ %tmv*%))
-
-  (primitive          module "invokeTopLevelFunction" %void% (list %tmv*% %fn-prototype*% %i8*% %i32*% %size_t% %size_t% %size_t% %ltv**%))
-  (primitive          module "cc_register_startup_function" %void% (list %fn-start-up*%))
-
-  (primitive-nounwind module "activationFrameSize" %i32% (list %afsp*%))
-
-  (primitive-nounwind module "copyArgs" %void% (list %tsp*% %i32% %t*% %t*% %t*% %i8*%))
-  (primitive          module "throwTooManyArgumentsException" %void% (list %i8*% %afsp*% %i32% %i32%))
-  (primitive          module "throwNotEnoughArgumentsException" %void% (list %i8*% %afsp*% %i32% %i32%))
-  (primitive          module "throwIfExcessKeywordArguments" %void% (list %i8*% %afsp*% %i32%))
-  (primitive-nounwind module "cc_trackFirstUnexpectedKeyword" %size_t% (list %size_t% %size_t%))
-  (primitive          module "gdb" %void% nil)
-  (primitive-nounwind module "debugInvoke" %void% nil)
-  (primitive-nounwind module "debugInspectActivationFrame" %void% (list %afsp*%))
-  (primitive-nounwind module "debugInspectT_sp" %void% (list %tsp*%))
-  (primitive-nounwind module "debugInspectTPtr" %void% (list %t*%))
-  (primitive-nounwind module "debugInspectT_mv" %void% (list %tmv*%))
-  (primitive-nounwind module "debugInspect_return_type" %void% (list %return_type%))
-  (primitive-nounwind module "debugInspect_mvarray" %void% nil)
-  (primitive-nounwind module "debugPointer" %void% (list %i8*%))
-  (primitive-nounwind module "debug_VaList_SPtr" %void% (list %VaList_S*%))
-  (primitive-nounwind module "debug_va_list" %void% (list %va_list*%))
-  (primitive-nounwind module "debugPrintObject" %void% (list %i8*% %tsp*%))
-  (primitive-nounwind module "debugMessage" %void% (list %i8*%))
-  (primitive-nounwind module "debugPrintI32" %void% (list %i32%))
-  (primitive-nounwind module "debugPrint_size_t" %void% (list %size_t%))
-  (primitive-nounwind module "debug_match_two_uintptr_t" %uintptr_t% (list %uintptr_t% %uintptr_t%))
-  (primitive-nounwind module "lowLevelTrace" %void% (list %i32%))
-  (primitive-nounwind module "unreachableError" %void% nil)
-
-  (primitive          module "va_tooManyArgumentsException" %void% (list %i8*% %size_t% %size_t%))
-  (primitive          module "va_notEnoughArgumentsException" %void% (list %i8*% %size_t% %size_t%))
-  (primitive          module "va_ifExcessKeywordArgumentsException" %void% (list %i8*% %size_t% %va_list*% %size_t%))
-  (primitive-nounwind module "va_symbolFunction" %t*% (list %tsp*%)) ;; void va_symbolFunction(core::Function_sp fn, core::Symbol_sp sym)
-  (primitive-nounwind module "va_lexicalFunction" %t*% (list %i32% %i32% %afsp*%))
-
-  (primitive-nounwind module "cc_gatherRestArguments" %t*% (list %va_list*% %size_t*%))
-  (primitive-nounwind module "cc_gatherVaRestArguments" %t*% (list %va_list*% %size_t*% %VaList_S*%))
-  (primitive          module "cc_ifBadKeywordArgumentException" %void% (list %size_t% %size_t% %t*%))
-
-  (primitive-nounwind module "pushCatchFrame" %size_t% (list %tsp*%))
-  (primitive-nounwind module "pushBlockFrame" %size_t% (list %tsp*%))
-  (primitive-nounwind module "pushTagbodyFrame" %size_t% (list %tsp*%))
-
-  (primitive          module "throwCatchThrow" %void% (list %tsp*% #| %tmv*% |#) :does-not-return t)
-  (primitive          module "throwReturnFrom" %void% (list %tsp*%) :does-not-return t)
-  (primitive          module "throwDynamicGo" %void% (list %size_t% %size_t% %afsp*%) :does-not-return t)
-
-  (primitive          module "ifCatchFrameMatchesStoreResultElseRethrow" %void% (list +tsp*-or-tmv*+ %size_t% %i8*%))
-  (primitive-nounwind module "exceptionStackUnwind" %void% (list %size_t%))
-  (primitive          module "blockHandleReturnFrom" %void% (list +tsp*-or-tmv*+ %i8*% %size_t%))
-  (primitive          module "tagbodyDynamicGoIndexElseRethrow" %size_t% (list %i8*% %size_t%))
-  (primitive          module "throwIllegalSwitchValue" %void% (list %size_t% %size_t%) :does-not-return t)
-
-  (primitive-nounwind module "clasp_terminate" %void% (list %i8*% %size_t% %size_t% %i8*%) )
-  (primitive-nounwind module "__gxx_personality_v0" %i32% nil :varargs t) ;; varargs
-  (primitive-nounwind module "__cxa_begin_catch" %i8*% (list %i8*%) )
-  (primitive-nounwind module "__cxa_end_catch" %void% nil) ;; This was a PRIMITIVE
-  (primitive          module "__cxa_rethrow" %void% nil)
-  (primitive-nounwind module "llvm.eh.typeid.for" %i32% (list %i8*%))
-
-  (primitive-nounwind module "llvm.sadd.with.overflow.i32" %{i32.i1}% (list %i32% %i32%))
-  (primitive-nounwind module "llvm.sadd.with.overflow.i64" %{i64.i1}% (list %i64% %i64%))
-  (primitive-nounwind module "llvm.ssub.with.overflow.i32" %{i32.i1}% (list %i32% %i32%))
-  (primitive-nounwind module "llvm.ssub.with.overflow.i64" %{i64.i1}% (list %i64% %i64%))
-  
-  (primitive-nounwind module "llvm.va_copy" %void% (list %i8*% %i8*%))
-  (primitive-nounwind module "llvm.va_start" %void% (list %i8*%))
-  (primitive-nounwind module "llvm.va_end" %void% (list %i8*%))
-
-  (primitive-nounwind module "copyLoadTimeValue" %void% (list +tsp*-or-tmv*+ %ltv**% %size_t%))
-  (primitive-nounwind module "getLoadTimeValue" %void% (list +tsp*-or-tmv*+ %ltv**% %i32%))
-  (primitive-nounwind module "dumpLoadTimeValues" %void% (list %ltv**%))
-
-  (primitive-nounwind module "debugSourceFileInfoHandle" %void% (list %i32*%))
-
-  (primitive-nounwind module "saveToMultipleValue0" %void% (list %tmv*%))
-  (primitive-nounwind module "restoreFromMultipleValue0" %void% (list +tsp*-or-tmv*+ ))
-  (primitive-nounwind module "saveValues" %void% (list %tsp*% %tmv*%))
-  (primitive-nounwind module "loadValues" %void% (list %tmv*% %tsp*%))
-
-  (primitive-nounwind module "setjmp_set_jump_address" %void% (list %setjmp.buf*% %i8*%) )
-
-
-  (primitive-nounwind module "progvSaveSpecials" %void% (list %i8**% %tsp*% %tsp*%))
-  (primitive-nounwind module "progvRestoreSpecials" %void% (list %i8**%))
-
-  (primitive-nounwind module "pushDynamicBinding" %void% (list %tsp*%))
-  (primitive-nounwind module "popDynamicBinding" %void% (list %tsp*%))
-
-  (primitive-nounwind module "matchKeywordOnce" %size_t% (list %tsp*% %t*% %i8*%))
-
-  ;; Primitives for Cleavir code
-
-  (primitive-nounwind module "cc_eql" %i32% (list %t*% %t*%)) ;; eql test
-  (primitive          module "cc_bad_tag" %void% (list %t*% %t*%)) ;; gf gf-args
-  (primitive          module "cc_dispatch_invalid" %return_type% (list %t*% %t*%)) ;; gf gf-args
-  (primitive          module "cc_dispatch_miss" %return_type% (list %t*% %t*%)) ;; gf gf-args
-  (primitive          module "cc_dispatch_slot_reader"   %return_type% (list %t*% %t*% %t*%)) ; effective-method gf gf-args
-  (primitive          module "cc_dispatch_slot_writer"   %return_type% (list %t*% %t*% %t*%)) ; effective-method gf gf-args
-  (primitive          module "cc_dispatch_effective_method"   %return_type% (list %t*% %t*% %t*%)) ; effective-method gf gf-args
-  (primitive          module "cc_dispatch_debug" %void% (list %i32% %uintptr_t%))
-
-  (primitive-nounwind module "cc_ensure_valid_object" %t*% (list %t*%))
-  (primitive-nounwind module "cc_getPointer" %i8*% (list %t*%))
-  (primitive-nounwind module "cc_setTmvToNil" %void% (list %tmv*%))
-  (primitive-nounwind module "cc_precalcSymbol" %t*% (list %ltv**% %size_t%))
-  (primitive-nounwind module "cc_precalcValue" %t*% (list %ltv**% %size_t%))
-  (primitive-nounwind module "cc_makeCell" %t*% nil)
-  (primitive-nounwind module "cc_writeCell" %void% (list %t*% %t*%))
-  (primitive-nounwind module "cc_readCell" %t*% (list %t*%))
-  (primitive-nounwind module "cc_t_reference" %t**% nil)
-  (primitive-nounwind module "cc_nil_reference" %t**% nil)
-  (primitive-nounwind module "cc_fetch" %t*% (list %t*% %size_t%))
-  (primitive-nounwind module "cc_va_arg" %t*% (list %VaList_S*%))
-  (primitive-nounwind module "cc_va_list_length" %size_t% (list %VaList_S*%))
-  (primitive-nounwind module "cc_copy_va_list" %void% (list %size_t% %t*[0]*% %VaList_S*%))
-  
-  (primitive-nounwind module "cc_initialize_gcroots_in_module" %void% (list %gcroots-in-module*% %tsp*% %size_t% %t*%))
-  (primitive-nounwind module "cc_shutdown_gcroots_in_module" %void% (list %gcroots-in-module*% ))
-
-  (primitive-nounwind module "cc_enclose" %t*% (list %t*% %fn-prototype*% %i32*% %size_t% %size_t% %size_t% %size_t% ) :varargs t)
-  (primitive-nounwind module "cc_stack_enclose" %t*% (list %i8*% %t*% %fn-prototype*% %i32*% %size_t% %size_t% %size_t% %size_t% ) :varargs t)
-  (primitive-nounwind module "cc_saveThreadLocalMultipleValues" %void% (list %tmv*% %mv-struct*%))
-  (primitive-nounwind module "cc_loadThreadLocalMultipleValues" %void% (list %tmv*% %mv-struct*%))
-  (primitive          module "cc_safe_fdefinition" %t*% (list %t*%))
-  (primitive-nounwind module "cc_unsafe_fdefinition" %t*% (list %t*%))
-  (primitive          module "cc_safe_setfdefinition" %t*% (list %t*%))
-  (primitive-nounwind module "cc_unsafe_setfdefinition" %t*% (list %t*%))
-  (primitive          module "cc_safe_symbol_value" %t*% (list %t*%))
-  (primitive-nounwind module "cc_unsafe_symbol_value" %t*% (list %t*%))
-  (primitive-nounwind module "cc_setSymbolValue" %void% (list %t*% %t*%))
-  
-  (primitive-nounwind module "cc_rewind_va_list" %void% (list %t*% %va_list*% %size_t*% %register-save-area*%))
-  (primitive-nounwind module "cc_push_InvocationHistoryFrame" %void% (list %t*% %InvocationHistoryFrame*% %va_list*% %size_t*%))
-  (primitive-nounwind module "cc_pop_InvocationHistoryFrame" %void% (list %t*% %InvocationHistoryFrame*%))
-  
-  (primitive          module "cc_call_multipleValueOneFormCall" %return_type% (list %t*%))
-  (primitive          module "cc_call_multipleValueOneFormCallWithRet0" %return_type% (list %t*% %return_type%))
-  (primitive          module "cc_call"   %return_type% (list* %t*% %size_t%
-                                                              (map 'list (lambda (x) x)
-                                                                   (make-array core:+number-of-fixed-arguments+ :initial-element %t*%))) :varargs t)
-  (primitive          module "cc_call_callback"   %return_type% (list* %t*% %size_t%
-                                                                         (map 'list (lambda (x) x)
-                                                                              (make-array core:+number-of-fixed-arguments+ :initial-element %t*%))) :varargs t)
-  (primitive-nounwind module "cc_allowOtherKeywords" %i64% (list %i64% %t*%))
-  (primitive-nounwind module "cc_matchKeywordOnce" %size_t% (list %t*% %t*% %t*%))
-  (primitive          module "cc_ifNotKeywordException" %void% (list %t*% %size_t% %va_list*%))
-  (primitive-nounwind module "cc_multipleValuesArrayAddress" %t*[0]*% nil)
-  (primitive          module "cc_unwind" %void% (list %t*% %size_t%))
-  (primitive          module "cc_throw" %void% (list %t*%) :does-not-return t)
-  (primitive-nounwind module "cc_saveMultipleValue0" %void% (list %tmv*%))
-  (primitive-nounwind module "cc_restoreMultipleValue0" %void% (list %tmv*%))
-  (primitive-nounwind module "cc_pushLandingPadFrame" %t*% nil)
-  (primitive-nounwind module "cc_popLandingPadFrame" %void% (list %t*%))
-  (primitive          module "cc_landingpadUnwindMatchFrameElseRethrow" %size_t% (list %i8*% %t*%))
-
-  ;; === CLASP-FFI TRANSLATORS ===
-
-  ;; !!! NOTE !!! => PORTING ISSUE/TODO !
-  ;; This implementation assumes the following associations:
-  ;;
-  ;; C++          -> LLVM         (!)
-  ;; --------------------------------
-  ;; char         -> i8
-  ;; short        -> i16
-  ;; int          -> i32
-  ;; long         -> i64
-  ;; long long    -> i64          (!)
-  ;; float        -> float
-  ;; doubls       -> double
-  ;; long double  -> long float   (!)
-  ;; size_t       -> size_t
-  ;; ssize_t      -> size_t       (!)
-  ;; void *       -> i64*         (!)
-
-  ;; SHORT & UNSIGNED SHORT
-  (primitive          module "from_object_short" %i16% (list %t*%))
-  (primitive          module "to_object_short" %t*% (list %i16%))
-  (primitive          module "from_object_unsigned_short" %i16% (list %t*%))
-  (primitive          module "to_object_unsigned_short" %t*% (list %i16%))
-
-  ;; INT & UNSIGNED INT
-  (primitive          module "from_object_int" %i32% (list %t*%))
-  (primitive          module "to_object_int" %t*% (list %i32%))
-  (primitive          module "from_object_unsigned_int" %i32% (list %t*%))
-  (primitive          module "to_object_unsigned_int" %t*% (list %i32%))
-
-  ;; LONG & UNSIGNED LONG
-  (primitive          module "from_object_long" %i64% (list %t*%))
-  (primitive          module "to_object_long" %t*% (list %i64%))
-  (primitive          module "from_object_unsigned_long" %i64% (list %t*%))
-  (primitive          module "to_object_unsigned_long" %t*% (list %i64%))
-
-  ;; LONG LONG & UNSIGNED LONG LONG
-  (primitive          module "from_object_long_long" %i64% (list %t*%))
-  (primitive          module "to_object_long_long" %t*% (list %i64%))
-  (primitive          module "from_object_unsigned_long_long" %i64% (list %t*%))
-  (primitive          module "to_object_unsigned_long_long" %t*% (list %i64%))
-
-  ;; INT8 & UINT8
-  (primitive          module "from_object_int8" %i8% (list %t*%))
-  (primitive          module "to_object_int8" %t*% (list %i8%))
-  (primitive          module "from_object_uint8" %i8% (list %t*%))
-  (primitive          module "to_object_uint8" %t*% (list %i8%))
-
-  ;; INT16 & UINT16
-  (primitive          module "from_object_int16" %i16% (list %t*%))
-  (primitive          module "to_object_int16" %t*% (list %i16%))
-  (primitive          module "from_object_uint16" %i16% (list %t*%))
-  (primitive          module "to_object_uint16" %t*% (list %i16%))
-
-  ;; INT32 & UINT32
-  (primitive          module "from_object_int32" %i32% (list %t*%))
-  (primitive          module "to_object_int32" %t*% (list %i32%))
-  (primitive          module "from_object_uint32" %i32% (list %t*%))
-  (primitive          module "to_object_uint32" %t*% (list %i32%))
-
-  ;; INT64 & UINT64
-  (primitive          module "from_object_int64" %i64% (list %t*%))
-  (primitive          module "to_object_int64" %t*% (list %i64%))
-  (primitive          module "from_object_uint64" %i64% (list %t*%))
-  (primitive          module "to_object_uint64" %t*% (list %i64%))
-
-  ;; i128 HANDLING NOT IMPLEMENTED AS IT IS NOT USED
-
-  ;; SIZE_T
-  (primitive          module "from_object_size" %size_t% (list %t*%))
-  (primitive          module "to_object_size" %t*% (list %size_t%))
-
-  ;; SSIZE_T
-  (primitive          module "from_object_ssize" %size_t% (list %t*%))
-  (primitive          module "to_object_ssize" %t*% (list %size_t%))
-
-  ;; PTRDIFF_T, TIME_T
-  ;; (primitive          module "from_object_ptrdiff" %t*% (list %t*%)) - FIXME !
-  ;; (primitive          module "to_object_ptrdiff" %t*% (list %uintptr_t%)) - FIXME !
-
-  ;; (primitive          module "from_object_time" %t*% (list %t*%)) - FIXME !
-  ;; (primitive          module "to_object_time" %t*% (list %t*%)) - FIOXME !
-
-  ;; CHAR & UNSIGNED CHAR
-  (primitive          module "from_object_char" %i8% (list %t*%))
-  (primitive          module "to_object_char" %t*% (list %i8%))
-  (primitive          module "from_object_unsigned_char" %i8% (list %t*%))
-  (primitive          module "to_object_unsigned_char" %t*% (list %i8%))
-
-  ;; FLOAT, DOUBLE & LONG FLOAT
-  (primitive          module "from_object_float" %float% (list %t*%))
-  (primitive          module "to_object_float" %t*% (list %float%))
-  (primitive          module "from_object_double" %double% (list %t*%))
-  (primitive          module "to_object_double" %t*% (list %double%))
-  #+long-float (primitive module "from_object_long_double" %long-float% (list %t*%))
-  #+long-float (primitive module "to_object_long_double" %t*% (list %long-float%))
-
-  ;; POINTER / VOID *
-
-  ;;(format *debug-io* "~%*** +VOID+ = ~S, +VOID*+ = ~S~%" %void% %void*%)
-  ;; Note: using %void*% causes an error - so we use %i64*% instead here!
-  (primitive          module "from_object_pointer" %i64*% (list %t*%))
-  (primitive          module "to_object_pointer" %t*% (list %i64*%))
-  (primitive          module "to_object_void" %t*% (list))
-  ;; === END OF TRANSLATORS ===
-
-  )
 
 ;;------------------------------------------------------------
 ;;
@@ -1289,10 +784,12 @@ It has appending linkage.")
   (if *compile-debug-dump-module*
       (let* ((output-path (compile-quick-module-pathname file-name-modifier)))
         (let* ((output-name (namestring output-path))
-               (fout (open output-name :direction :output)))
+               fout)
           (unwind-protect
-               (llvm-sys:dump-module module fout)
-            (close fout))))))
+               (progn
+                 (setf fout (open output-name :direction :output))
+                 (llvm-sys:dump-module module fout))
+            (when fout (close fout)))))))
 
 (defun quick-module-pathname (name-modifier)
   "If called under COMPILE-FILE the modules are dumped into the
@@ -1306,7 +803,7 @@ they are dumped into /tmp"
   "If called under COMPILE-FILE the modules are dumped into the
 same directory as the COMPILE-FILE output.  If called under COMPILE
 they are dumped into /tmp"
-  (cmp-log "About to dump module\n")
+  (cmp-log "About to dump module - %s\n" name-modifier)
   (if *compile-file-output-pathname*
       (compile-file-quick-module-dump module name-modifier)
       (compile-quick-module-dump module name-modifier)))

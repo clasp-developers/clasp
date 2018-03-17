@@ -37,7 +37,6 @@
   (and core:*use-cleavir-compiler* (error "The core:*use-cleavir-compiler* is set to T"))
   (let* ((module (llvm-create-module "code-walk-for-defmethod"))
 	 (*code-walker* code-walker-function))
-    (define-primitives-in-module module)
     (with-compilation-unit ()
       (with-module ( :module module
                              :optimize nil
@@ -45,8 +44,8 @@
         (with-debug-info-generator (:module module
                                             :pathname #P"/dev/null")
           (with-make-new-run-all (run-all-function)
-            (with-constants-table
-                (let ((fn (literal:with-top-level-form (compile-thunk 'walk-thunk form env))))
+            (with-literal-table
+                (let ((fn (literal:with-top-level-form (compile-thunk 'walk-thunk form env nil))))
                   ;; Do nothing (irc-intrinsic-call "ltvc_toplevel_funcall" (list fn))
                   ))))
         (llvm-sys::module-delete module)))))

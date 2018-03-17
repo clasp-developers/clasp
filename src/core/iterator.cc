@@ -26,6 +26,7 @@ THE SOFTWARE.
 /* -^- */
 //#define DEBUG_LEVEL_FULL
 
+#include <clasp/core/foundation.h>
 #include <clasp/core/common.h>
 #include <clasp/core/iterator.h>
 #include <clasp/core/lisp.h>
@@ -51,6 +52,7 @@ CL_DEFUN Iterator_sp core__iterator_step(Iterator_sp it) {
 void Iterator_O::initialize() {
   this->Base::initialize();
 }
+
 
 #if defined(XML_ARCHIVE)
 void Iterator_O::archive(ArchiveP node) {

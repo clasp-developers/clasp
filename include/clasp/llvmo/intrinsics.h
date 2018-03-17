@@ -27,6 +27,21 @@ THE SOFTWARE.
 #ifndef llvmo_intrinsics_H
 #define llvmo_intrinsics_H
 
+// If functions are defined with primitive-nounwind that means that they never unwind the stack and they can
+//   be invoked from generated code using 'call'.  If they do unwind the stack, then any function that invokes
+//   them with 'call' will fail to cleanup the stack and that will cause a failure.
+//   These 'nounwind' intrinsic functions can be diagnosed by wrapping them in NO_UNWIND_BEGIN()/NO_UNWIND_END()
+//   it wraps the body of the function in a try{...}catch(...){ERROR} block.
+//   This is zero-cost at runtime other than increasing the size of unwind tables.
+
+#ifdef DEBUG_NO_UNWIND
+  #define NO_UNWIND_BEGIN() try {
+  #define NO_UNWIND_END() } catch (...) {printf("%s:%d:%s  The stack is being unwound out of a function declared nounwind!!!\n", __FILE__, __LINE__, __FUNCTION__ );abort();}
+#else
+  #define NO_UNWIND_BEGIN()
+  #define NO_UNWIND_END()
+#endif
+
 namespace llvmo {
   extern core::T_sp  global_arg0;
   extern core::T_sp  global_arg1;
@@ -167,6 +182,13 @@ core::T_O* to_object_pointer( void * x );
 gctools::return_type cc_dispatch_effective_method(core::T_O* teffective_method, core::T_O* tgf, core::T_O* tgf_args_valist_s);
 };
 
+extern "C" {
+extern int64_t cc_read_stamp(void* tagged_pointer);
+[[noreturn]] void cc_error_too_few_arguments(size_t nargs, size_t minargs);
+[[noreturn]] void cc_error_too_many_arguments(size_t nargs, size_t maxargs);
+
+
+}
 namespace llvmo {
 
   void redirect_llvm_interface_addSymbol();
@@ -183,12 +205,17 @@ namespace llvmo {
                  unboundSymbolValue,
                  unboundSymbolFunction,
                  unboundSymbolSetfFunction,
-                 no_applicable_reader_method,
-                 no_applicable_writer_method
+                 slot_reader_problem,
+                 slot_writer_problem,
+                 dummyErrorCode
   } ErrorCode;
 
-  extern void intrinsic_error(ErrorCode err, core::T_sp arg0 = _Nil<core::T_O>(), core::T_sp arg1 = _Nil<core::T_O>(), core::T_sp arg2 = _Nil<core::T_O>());
 
+  [[noreturn]]extern void intrinsic_error(ErrorCode err, core::T_sp arg0 = _Nil<core::T_O>(), core::T_sp arg1 = _Nil<core::T_O>(), core::T_sp arg2 = _Nil<core::T_O>());
+
+
+  core::T_sp intrinsic_slot_unbound(core::T_sp info, core::T_sp instance);
+  
   void initialize_raw_translators( void );
 }
 

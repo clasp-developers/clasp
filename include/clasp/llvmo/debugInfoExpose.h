@@ -55,7 +55,6 @@ THE SOFTWARE.
 #include <string>
 #include <vector>
 #include <set>
-#include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 #include <clasp/core/metaClass.fwd.h>
 #include <clasp/core/externalObject.h>

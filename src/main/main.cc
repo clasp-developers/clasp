@@ -263,7 +263,8 @@ static void clasp_terminate_handler( void )
   if( abort_flag() )
     abort();
 
-  exit( exit_code() );
+  printf("%s:%d There was an unhandled exception - do something about it.\n", __FILE__, __LINE__ );
+  abort();
 }
 
 // EXCEPTION HANDLING
@@ -293,87 +294,52 @@ static int startup(int argc, char *argv[], bool &mpiEnabled, int &mpiRank, int &
 {
   core::LispHolder lispHolder(mpiEnabled, mpiRank, mpiSize);
   int exit_code = 0;
+  
+  printf("%s:%d Entered try block typeid(ExitProgramException) -> %lu\n", __FILE__, __LINE__, typeid(core::ExitProgramException).hash_code());
+  printf("%s:%d   again try block typeid(ExitProgramException) -> %lu\n", __FILE__, __LINE__, typeid(core::ExitProgramException).hash_code());
+  gctools::GcToolsExposer_O GcToolsPkg(_lisp);
+  clbind::ClbindExposer_O ClbindPkg(_lisp);
+  llvmo::LlvmoExposer_O llvmopkg(_lisp);
+  sockets::SocketsExposer_O SocketsPkg(_lisp);
+  serveEvent::ServeEventExposer_O ServeEventPkg(_lisp);
+  asttooling::AsttoolingExposer_O AsttoolingPkg(_lisp);
 
-  try
-  {
-    gctools::GcToolsExposer_O GcToolsPkg(_lisp);
-    clbind::ClbindExposer_O ClbindPkg(_lisp);
-    llvmo::LlvmoExposer_O llvmopkg(_lisp);
-    sockets::SocketsExposer_O SocketsPkg(_lisp);
-    serveEvent::ServeEventExposer_O ServeEventPkg(_lisp);
-    asttooling::AsttoolingExposer_O AsttoolingPkg(_lisp);
+  lispHolder.startup(argc, argv, program_name().c_str() ); // was "CANDO_APP"
 
-    lispHolder.startup(argc, argv, program_name().c_str() ); // was "CANDO_APP"
-
-    _lisp->installPackage(&GcToolsPkg);
-    _lisp->installPackage(&ClbindPkg);
-    _lisp->installPackage(&llvmopkg);
-    _lisp->installPackage(&SocketsPkg);
-    _lisp->installPackage(&ServeEventPkg);
-    _lisp->installPackage(&AsttoolingPkg);
+  _lisp->installPackage(&GcToolsPkg);
+  _lisp->installPackage(&ClbindPkg);
+  _lisp->installPackage(&llvmopkg);
+  _lisp->installPackage(&SocketsPkg);
+  _lisp->installPackage(&ServeEventPkg);
+  _lisp->installPackage(&AsttoolingPkg);
 
 #ifdef USE_MPI
-    mpip::MpiExposer TheMpiPkg(_lisp);
-    _lisp->installPackage(&TheMpiPkg);
-    if (mpiEnabled) {
-      core::Symbol_sp mpi = _lisp->internKeyword("MPI-ENABLED");
-      core::Cons_sp features = cl::_sym_STARfeaturesSTAR->symbolValue().as<core::Cons_O>();
-      cl::_sym_STARfeaturesSTAR->defparameter(core::Cons_O::create(mpi, features));
-    } else {
-      SIMPLE_ERROR(BF("USE_MPI is true but mpiEnabled is false!!!!"));
-    }
+  mpip::MpiExposer TheMpiPkg(_lisp);
+  _lisp->installPackage(&TheMpiPkg);
+  if (mpiEnabled) {
+    core::Symbol_sp mpi = _lisp->internKeyword("MPI-ENABLED");
+    core::Cons_sp features = cl::_sym_STARfeaturesSTAR->symbolValue().as<core::Cons_O>();
+    cl::_sym_STARfeaturesSTAR->defparameter(core::Cons_O::create(mpi, features));
+    core::_sym_STARmpi_rankSTAR->defparameter(core::make_fixnum(mpiRank));
+    core::_sym_STARmpi_sizeSTAR->defparameter(core::make_fixnum(mpiSize));
+  } else {
+    SIMPLE_ERROR(BF("USE_MPI is true but mpiEnabled is false!!!!"));
+  }
+#else
+  core::_sym_STARmpi_rankSTAR->defparameter(core::make_fixnum(0));
+  core::_sym_STARmpi_sizeSTAR->defparameter(core::make_fixnum(1));
 #endif
-
+  
     // printf("%s:%d About to _lisp->run() - ExitProgram typeid %p;\n",
     // __FILE__, __LINE__, (void*)&typeid(core::ExitProgram) );
-
     // RUN THIS LISP IMPLEMENTATION
-
-    _lisp->run();
-  }
-  catch (core::DynamicGo &failedGo)
-  {
-    fprintf( stderr,
-             "%s (%s:%d): A DynamicGo was thrown but not caught - frame[%lu] tag[%lu]\n",
-             exe_name().c_str(), __FILE__, __LINE__, failedGo.getFrame(), failedGo.index());
-    exit_code = EXIT_FAILURE;
-  }
-  catch (core::Unwind &failedUnwind)
-  {
-    ASSERT(gctools::tagged_fixnump(failedUnwind.getFrame()));
-
-    fprintf( stderr,
-             "%s (%s:%d): An unwind was thrown but not caught - frame[%" PRF "] tag[%lu]\n",
-             exe_name().c_str(), __FILE__, __LINE__, gctools::untag_fixnum( failedUnwind.getFrame() ), failedUnwind.index() );
-
-    fprintf( stderr, "*** BACKTRACE:\n" );
-    print_stacktrace();
-
-    exit_code = EXIT_FAILURE;
-  }
-  catch (core::ExitProgram &ee)
-  {
-    exit_code = ee.getExitResult();
-  }
-  catch (...)
-  {
-    fprintf( stderr,
-             "%s (%s:%d): The generic catch(...) caught an unhandled exception of type %p - this is a bug. Please report this to %s support !\n",
-             exe_name().c_str(), __FILE__, __LINE__, (void*)__cxxabiv1::__cxa_current_exception_type(),
-             program_name().c_str() );
-    fprintf( stderr, "*** BACKTRACE:\n" );
-    print_stacktrace();
-
-  }
-
+  exit_code = _lisp->run();
   if ( exit_code != 0 )
   {
     fprintf( stderr, "*** ERROR: %s is terminating with exit code %d !\n",
              program_name().c_str(), exit_code );
   }
-
   set_exit_code( exit_code );
-
   return exit_code;
 
 } // STARTUP
@@ -382,18 +348,15 @@ static int startup(int argc, char *argv[], bool &mpiEnabled, int &mpiRank, int &
 //     M A I N
 // -------------------------------------------------------------------------
 
+
+void* to_fixnum(int8_t v) {
+    return reinterpret_cast<void*>(((Fixnum)v) << 2);
+}
+
+
+
 int main( int argc, char *argv[] )
 {
-#if 0
-   // A few tests - delete them when not needed anymore
-  test_va_list(NULL,6
-               ,core::clasp_make_fixnum(0).raw_()
-               ,core::clasp_make_fixnum(1).raw_()
-               ,core::clasp_make_fixnum(2).raw_()
-               ,core::clasp_make_fixnum(3).raw_()
-               ,core::clasp_make_fixnum(4).raw_()
-               ,core::clasp_make_fixnum(5).raw_());
-#endif
   // Do not touch debug log until after MPI init
 
   bool mpiEnabled = false;
@@ -454,38 +417,21 @@ int main( int argc, char *argv[] )
   }
 #endif
 
-  // - THREAD SETUP - FOR CANDO -> TODO: Move this into CANDO extension
-  // frgo, 2016-11-13
-  //
-  // int maxThreads = 1;
-  // {
-  //   maxThreads = core::cando_omp_get_num_threads();
-  // }
-
-  // SAY HELLO
-
-  // fprintf( stderr, "%s (%s:%d) - started with stack size set to %llu bytes.\n", exe_name().c_str(), __FILE__, __LINE__, rl_new.rlim_max );
-
   fflush( stderr );
 
   // - COMMAND LINE OPTONS HANDLING
 
-#if 0
-  // Use this to check if smart_ptr<core::T_O> is being passed by value or reference
-  gctools::smart_ptr<core::T_O> x((gctools::Tagged)0xDEADBEEF);
-  foo(x);
-#endif
-  
   core::CommandLineOptions options(argc, argv);
 
   // CALL LISP STARTUP
 
   int exit_code = 0;
-  try
+//  try
   {
     exit_code = gctools::startupGarbageCollectorAndSystem( &startup, argc, argv, rl.rlim_max, mpiEnabled, mpiRank, mpiSize );
     set_exit_code( exit_code );
   }
+#if 0
   catch ( ... )
   {
     // As we don't know what went wrong we just exit with a generic error code
@@ -500,10 +446,11 @@ int main( int argc, char *argv[] )
 
     set_abort_flag( true );
   }
-
+#endif
+  
 #ifdef USE_MPI
   mpip::Mpi_O::Finalize();
 #endif
 
-  std::terminate(); // This calls the terminate handler and then exits or aborts!
+//  std::terminate(); // This calls the terminate handler and then exits or aborts!
 }

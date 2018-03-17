@@ -50,14 +50,14 @@ CandoClass_sp CandoClass_O::create(Lisp_sp lisp, Symbol_sp name) {
   oclass->_InstanceClassSymbol = UNDEFINED_SYMBOL;
   _lisp->createPredefinedSymbol(oclass->_InstanceClassSymbol, name);
   //    oclass->_InstanceVariableNames = _Nil<T_O>();
-  IMPLEMENT_MEF(BF("What do I do about superclasses of the CandoClass here? - I should call setInstanceBaseClasses with something or just StandardObject "));
+  IMPLEMENT_MEF("What do I do about superclasses of the CandoClass here? - I should call setInstanceBaseClasses with something or just StandardObject ");
   return oclass;
 }
 
 #if defined(XML_ARCHIVE)
 void CandoClass_O::archiveBase(ArchiveP node) {
   _OF();
-  IMPLEMENT_MEF(BF("Implement CandoClass_O::archiveBase"));
+  IMPLEMENT_MEF("Implement CandoClass_O::archiveBase");
 }
 #endif // defined(XML_ARCHIVE)
 
@@ -87,7 +87,7 @@ string CandoClass_O::dumpMethods() {
 }
 
 Cons_sp CandoClass_O::find(Symbol_sp sym) {
-  IMPLEMENT_MEF(BF("Handle find slot by name"));
+  IMPLEMENT_MEF("Handle find slot by name");
 #if 0
 	ASSERTNOTNULL(sym);
 	LOG(BF("Looking in CandoClass for slot for symbol: %s") % sym->fullName() );

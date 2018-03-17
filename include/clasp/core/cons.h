@@ -243,7 +243,7 @@ namespace core {
     };
 
     T_sp onth(cl_index idx) const;
-    List_sp onthcdr(cl_index idx) const;
+    T_sp onthcdr(cl_index idx) const;
 
     T_sp elt(cl_index index) const;
     T_sp setf_elt(cl_index index, T_sp value);
@@ -257,7 +257,6 @@ namespace core {
     inline T_sp cdr() const { return this->_Cdr; };
     inline T_sp ocar() const { return this->_Car; };
     inline T_sp ocadr() const {
-      TESTING();
       T_sp cdr = this->_Cdr;
       if (UNLIKELY(!this->_Cdr.consp()))
         return _Nil<T_O>();
@@ -281,13 +280,6 @@ namespace core {
   /*! Set the data for this element */
     inline void setCar(T_sp o) {
       this->_Car = o;
-    };
-
-    CL_LISPIFY_NAME("core:cons-setf-car");
-    CL_DEFMETHOD   T_sp setf_car(T_sp o) {
-      ANN(o);
-      this->_Car = o;
-      return o;
     };
 
   /*! Get the data for the first element */
@@ -431,7 +423,7 @@ namespace core {
     }
     List_sp subseq(cl_index start, T_sp end) const;
     T_sp setf_subseq(cl_index start, T_sp end, T_sp new_subseq) {
-      IMPLEMENT_ME();
+      HARD_IMPLEMENT_ME();
     };
 
   /*! Return the value associated with the property of the plist - implements CL getf */
@@ -591,6 +583,7 @@ void fillVec0FromCons(gctools::Vec0<T> &vec, List_sp list) {
 }; // core namespace
 
 namespace core {
+#if 0
 /* Erase the entry with _key_ from the list. Return the new list. 
      In cases where the key was in the first entry the first entry is unhooked and the CDR is returned.
     In other cases the entry is unhooked from the inside of the alist*/
@@ -599,10 +592,12 @@ List_sp core__alist_erase(List_sp alist, T_sp key);
 /*! Push the key/val onto the alist.  This will shadow other entries with the same val */
 List_sp core__alist_push(List_sp alist, T_sp key, T_sp val);
 
-/*! Lookup the key and return the Cons containing the key/val pair - or return NIL if not found */
-List_sp core__alist_get(List_sp alist, T_sp key);
 
 string core__alist_asString(List_sp alist);
+#endif
+/*! Lookup the key and return the Cons containing the key/val pair - or return NIL if not found */
+List_sp core__alist_assoc_eq(List_sp alist, T_sp key);
+ 
 };
 
 namespace core {
@@ -618,6 +613,8 @@ T_sp cl__getf(List_sp plist, T_sp indicator, T_sp default_value);
 List_sp core__put_f(List_sp plist, T_sp value, T_sp indicator);
 T_mv core__rem_f(List_sp plist, Symbol_sp indicator);
  List_sp cl__make_list(Fixnum_sp osize, T_sp initial_element);
+
+ void not_alist_error(T_sp l);
 };
 
 namespace core {

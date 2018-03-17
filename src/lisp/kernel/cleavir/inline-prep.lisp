@@ -14,7 +14,10 @@
              (cleavir-policy:compute-policy *global-optimize*
                                             *clasp-env*)))
       ;; Add other clauses here
-      (t (warn "Add support for proclaim ~s~%" decl)))))
+      (t #+(or)(warn "Add support for proclaim ~s~%" decl)))))
+
+(defparameter *simple-environment* nil)
+(defvar *code-walker* nil)
 
 (defun mark-env-as-function ()
   (push 'si::function-boundary *simple-environment*))
@@ -96,7 +99,9 @@
            (when (fboundp ',name)
              (core:setf-cleavir-ast (fdefinition ',name) ,ast)))))))
 
-  
-(defparameter *simple-environment* nil)
-(defvar *code-walker* nil)
+
 (export '(*simple-environment* *code-walker*))
+
+(eval-when (:compile-toplevel :execute :load-toplevel)
+  (setq core:*defun-inline-hook* 'defun-inline-hook)
+  (setq core:*proclaim-hook* 'proclaim-hook))

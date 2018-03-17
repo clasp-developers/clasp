@@ -58,6 +58,7 @@ THE SOFTWARE.
 #include <clasp/core/pathname.h>
 #include <clasp/core/lispStream.h>
 #include <clasp/core/instance.h>
+#include <clasp/core/funcallableInstance.h>
 #include <clasp/core/structureObject.h>
 #include <clasp/core/sysprop.h>
 #include <clasp/core/numberToString.h>
@@ -107,24 +108,6 @@ void Pathname_O::__write__(T_sp strm) const {
   write_ugly_object(namestring, strm);
 }
 
-#if 0
-    void write_character(T_sp stream, Character_sp char) const
-    {
-        int i = char->charCode();
-	if (!clasp_print_escape() && !clasp_print_readably()) {
-	    clasp_write_char(i,stream);
-	} else {
-	    clasp_write_string("#\\",stream);
-	    if (i < 32 || i >= 127) {
-		SimpleBaseString_sp name = gc::As<SimpleBaseString_sp>(eval::funcall(cl::_sym_char_name,char));
-		clasp_write_string(name->get(),stream);
-	    } else {
-		clasp_write_char(i,stream);
-	    }
-	}
-    }
-#endif
-
 void Instance_O::__write__(T_sp stream) const {
   if ( cl::_sym_printObject->fboundp() ) {
     eval::funcall(cl::_sym_printObject, this->const_sharedThis<Instance_O>(), stream);
@@ -134,26 +117,18 @@ void Instance_O::__write__(T_sp stream) const {
   }
 }
 
-void StructureObject_O::__write__(T_sp stream) const {
-  //  printf("%s:%d StructureObject_O::__write__\n", __FILE__, __LINE__);
-  if (UNLIKELY(!gc::IsA<Class_sp>(this->_Type)))
-    SIMPLE_ERROR(BF("Found a corrupt structure with an invalid type %s") % _rep_(this->_Type));
-  Symbol_sp type_name = this->_Type->className();
-  SYMBOL_EXPORT_SC_(CorePkg, structure_print_function);
-  SYMBOL_EXPORT_SC_(CorePkg, STARprint_structureSTAR);
-  T_sp print_function = core__get_sysprop(type_name, _sym_structure_print_function);
-  if (print_function.nilp() || !_sym_STARprint_structureSTAR->symbolValue().isTrue()) {
-    clasp_write_string("#S", stream);
-    /* structure_to_list conses slot names and values into
-	     * a list to be printed.  print shouldn't allocate
-	     * memory - Beppe
-	     */
-    T_sp x = this->structureAsList();
-    write_object(x, stream);
+void FuncallableInstance_O::__write__(T_sp stream) const {
+  if ( cl::_sym_printObject->fboundp() ) {
+    eval::funcall(cl::_sym_printObject, this->const_sharedThis<FuncallableInstance_O>(), stream);
   } else {
-    eval::funcall(print_function, this->asSmartPtr(), stream, make_fixnum(0));
+    std::string str = _rep_(this->asSmartPtr());
+    clasp_write_string(str,stream);
   }
 }
+
+  SYMBOL_EXPORT_SC_(CorePkg, structure_print_function);
+  SYMBOL_EXPORT_SC_(CorePkg, STARprint_structureSTAR);
+
 
 void Integer_O::__write__(T_sp stream) const {
   SafeBuffer buffer;
@@ -165,256 +140,13 @@ void Integer_O::__write__(T_sp stream) const {
   cl__write_sequence(buffer._Buffer, stream, make_fixnum(0), _Nil<T_O>());
 }
 
-#if 0 // working
-
-    void
-    _ecl__write_fixnum(gctools::Fixnum i, T_sp stream)
-    {
-        T_sp s = si_get_buffer_string();
-        si_integer_to_string(s, ecl_make_fixnum(i), ecl_make_fixnum(10), ECL_NIL, ECL_NIL);
-        si_do_write_sequence(s, stream, ecl_make_fixnum(0), ECL_NIL);
-        si_put_buffer_string(s);
-    }
-
-
-
-    static void
-    write_ratio(T_sp r, T_sp stream)
-    {
-        T_sp s = si_get_buffer_string();
-        int print_base = ecl__print_base();
-        si_integer_to_string(s, r->ratio.num, ecl_make_fixnum(print_base),
-                             ecl_symbol_value(@'*print-radix*'),
-                             ECL_NIL /* decimal syntax */);
-        ecl__string_push_extend(s, '/');
-        si_integer_to_string(s, r->ratio.den,
-                             ecl_make_fixnum(print_base),
-                             ECL_NIL, ECL_NIL);
-        si_do_write_sequence(s, stream, ecl_make_fixnum(0), ECL_NIL);
-        si_put_buffer_string(s);
-    }
-
-    static void
-    write_complex(T_sp x, T_sp stream)
-    {
-        writestr_stream("#C(", stream);
-        si_write_ugly_object(x->complex.real, stream);
-        ecl__write_char(' ', stream);
-        si_write_ugly_object(x->complex.imag, stream);
-        ecl__write_char(')', stream);
-    }
-
-
-    static void
-    write_character(T_sp x, T_sp stream)
-    {
-        int i = ECL_CHAR_CODE(x);
-	if (!ecl__print_escape() && !ecl__print_readably()) {
-	    ecl__write_char(i, stream);
-	} else {
-	    writestr_stream("#\\", stream);
-	    if (i < 32 || i >= 127) {
-		T_sp name = cl__char_name(ECL_CODE_CHAR(i));
-		writestr_stream((char*)name->base_string.self, stream);
-	    } else {
-		ecl__write_char(i, stream);
-	    }
-	}
-    }
-
-    static void
-    write_package(T_sp x, T_sp stream)
-    {
-        if (ecl__print_readably()) FEprint_not_readable(x);
-        writestr_stream("#<", stream);
-        si_write_ugly_object(x->pack.name, stream);
-        writestr_stream(" package>", stream);
-    }
-
-    static void
-    write_hashtable(T_sp x, T_sp stream)
-    {
-	if (ecl__print_readably() && !Null(ecl_symbol_value(@'*read-eval*'))) {
-	    T_sp make =
-		cl_list(9, @'make-hash-table',
-			@':size', cl_hash_table_size(x),
-			@':rehash-size', cl_hash_table_rehash_size(x),
-			@':rehash-threshold', cl_hash_table_rehash_threshold(x),
-			@':test', cl_hash_table_test(x));
-	    T_sp init =
-		Cons_O::createList( @'ext::hash-table-fill', make,
-			Cons_O::createList( @'quote', si_hash_table_content(x)));
-	    writestr_stream("#.", stream);
-	    si_write_ugly_object(init, stream);
-	} else {
-	    _ecl__write_unreadable(x, "hash-table", ECL_NIL, stream);
-	}
-    }
-
-    static void
-    write_random(T_sp x, T_sp stream)
-    {
-        if (ecl__print_readably()) {
-	    writestr_stream("#$", stream);
-	    _ecl__write_vector(x->random.value, stream);
-        } else {
-	    _ecl__write_unreadable(x->random.value, "random-state", ECL_NIL, stream);
-        }
-    }
-
-    static void
-    write_stream(T_sp x, T_sp stream)
-    {
-        const char *prefix;
-        T_sp tag;
-        union cl_lispunion str;
-#ifdef CLASP_UNICODE
-        ecl__character buffer[10];
-#else
-        ecl_base_char buffer[10];
-#endif
-        switch ((enum ecl_smmode)x->stream.mode) {
-        case ecl_smm_input_file:
-	    prefix = "closed input file";
-	    tag = IO_STREAM_FILENAME(x);
-	    break;
-        case ecl_smm_input:
-	    prefix = "closed input stream";
-	    tag = IO_STREAM_FILENAME(x);
-	    break;
-        case ecl_smm_output_file:
-	    prefix = "closed output file";
-	    tag = IO_STREAM_FILENAME(x);
-	    break;
-        case ecl_smm_output:
-	    prefix = "closed output stream";
-	    tag = IO_STREAM_FILENAME(x);
-	    break;
-#ifdef CLASP_MS_WINDOWS_HOST
-        case ecl_smm_input_wsock:
-	    prefix = "closed input win32 socket stream";
-	    tag = IO_STREAM_FILENAME(x);
-	    break;
-        case ecl_smm_output_wsock:
-	    prefix = "closed output win32 socket stream";
-	    tag = IO_STREAM_FILENAME(x);
-	    break;
-        case ecl_smm_io_wsock:
-	    prefix = "closed i/o win32 socket stream";
-	    tag = IO_STREAM_FILENAME(x);
-	    break;
-        case ecl_smm_io_wcon:
-	    prefix = "closed i/o win32 console stream";
-	    tag = IO_STREAM_FILENAME(x);
-	    break;
-#endif
-        case ecl_smm_io_file:
-	    prefix = "closed io file";
-	    tag = IO_STREAM_FILENAME(x);
-	    break;
-        case ecl_smm_io:
-	    prefix = "closed io stream";
-	    tag = IO_STREAM_FILENAME(x);
-	    break;
-        case ecl_smm_probe:
-	    prefix = "closed probe stream";
-	    tag = IO_STREAM_FILENAME(x);
-	    break;
-        case ecl_smm_synonym:
-	    prefix = "closed synonym stream to";
-	    tag = SYNONYM_STREAM_SYMBOL(x);
-	    break;
-        case ecl_smm_broadcast:
-	    prefix = "closed broadcast stream";
-	    tag = ECL_NIL;
-	    break;
-        case ecl_smm_concatenated:
-	    prefix = "closed concatenated stream";
-	    tag = ECL_NIL;
-	    break;
-        case ecl_smm_two_way:
-	    prefix = "closed two-way stream";
-	    tag = ECL_NIL;
-	    break;
-        case ecl_smm_echo:
-	    prefix = "closed echo stream";
-	    tag = ECL_NIL;
-	    break;
-        case ecl_smm_string_input: {
-	    T_sp text = x->stream.object0;
-	    cl_index ndx, l = ecl__length(text);
-	    for (ndx = 0; (ndx < 8) && (ndx < l); ndx++) {
-		buffer[ndx] = ecl__char(text, ndx);
-	    }
-	    if (l > ndx) {
-		buffer[ndx-1] = '.';
-		buffer[ndx-2] = '.';
-		buffer[ndx-3] = '.';
-	    }
-	    buffer[ndx++] = 0;
-	    prefix = "closed string-input stream from";
-	    tag = &str;
-#ifdef CLASP_UNICODE
-	    tag->string.t = t_string;
-	    tag->string.self = buffer;
-#else
-	    tag->base_string.t = t_base_string;
-	    tag->base_string.self = buffer;
-#endif
-	    tag->base_string.dim = ndx;
-	    tag->base_string.fillp = ndx-1;
-	    break;
-        }
-        case ecl_smm_string_output:
-	    prefix = "closed string-output stream";
-	    tag = ECL_NIL;
-	    break;
-        case ecl_smm_sequence_input:
-	    prefix = "closed sequence-input stream";
-	    tag = ECL_NIL;
-	    break;
-        case ecl_smm_sequence_output:
-	    prefix = "closed sequence-output stream";
-	    tag = ECL_NIL;
-	    break;
-        default:
-	    ecl__internal_error("illegal stream mode");
-        }
-        if (!x->stream.closed)
-	    prefix = prefix + 7;
-        _ecl__write_unreadable(x, prefix, tag, stream);
-    }
-
-#ifdef CLOS
-    static void
-    write_instance(T_sp x, T_sp stream)
-    {
-        _ecl__funcall3(@'print-object', x, stream);
-    }
-#endif
-    static void
-    write_structure(T_sp x, T_sp stream)
-    {
-        T_sp print_function;
-        unlikely_if (ecl_t_of(x->str.name) != t_symbol)
-	    FEerror("Found a corrupt structure with an invalid type name~%"
-		    "  ~S", x->str.name);
-        print_function = si_get_sysprop(x->str.name, @'si::structure-print-function');
-        if (Null(print_function) || !ecl__print_structure()) {
-	    writestr_stream("#S", stream);
-	    /* structure_to_list conses slot names and values into
-	     * a list to be printed.  print shouldn't allocate
-	     * memory - Beppe
-	     */
-	    x = structure_to_list(x);
-	    si_write_object(x, stream);
-        } else {
-	    _ecl__funcall4(print_function, x, stream, ecl_make_fixnum(0));
-        }
-    }
-//#endif /* !CLOS */
-
-#endif // working
+void Complex_O::__write__(T_sp stream) const {
+  clasp_write_string("#C(", stream);
+  write_ugly_object(this->_real, stream);
+  clasp_write_char(' ', stream);
+  write_ugly_object(this->_imaginary, stream);
+  clasp_write_char(')', stream);
+}
 
 void
 _clasp_write_fixnum(gctools::Fixnum i, T_sp stream) {
@@ -484,14 +216,12 @@ T_sp write_ugly_object(T_sp x, T_sp stream) {
   } else if (x.valistp()) {
     clasp_write_string("#<VA-LIST: ", stream);
     VaList_sp vl = VaList_sp((gc::Tagged)x.raw_());
-    VaList_S valist_scopy(*vl);
-    VaList_sp xa(&valist_scopy); // = gc::smart_ptr<VaList_S>((gc::Tagged)last.raw_());
+    Vaslist valist_scopy(*vl);
+    VaList_sp xa(&valist_scopy); // = gc::smart_ptr<Vaslist>((gc::Tagged)last.raw_());
     ql::list l;
     int nargs = xa->remaining_nargs();
-    for (int i(0); i < nargs; ++i) {
-      l << xa->next_arg();
-    }
-    core::write_ugly_object(l.cons(),stream);
+    for (int i(0); i < nargs; ++i) l << xa->next_arg();
+    core::write_object(l.cons(),stream);
     clasp_write_string(">",stream);
   } else {
     stringstream ss;

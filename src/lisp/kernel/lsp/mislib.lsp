@@ -13,6 +13,14 @@
 
 (in-package "SYSTEM")
 
+;;; This could be improved, e.g. getting the lambda expression of
+;;; interpreted functions, but there are better introspection designs.
+(defun function-lambda-expression (function)
+  (values nil
+          (and (typep function 'core:closure)
+               (not (zerop (core:closure-length function))))
+          (core:function-name function)))
+
 (defun   logical-pathname-translations (p)
   (or (si:pathname-translations p)
       (error 'simple-type-error
@@ -32,7 +40,7 @@ successfully, T is returned, else error."
   (let ((*autoload-translations* nil))
     (unless (or (string-equal host "sys")
                 (si::pathname-translations host))
-      (with-open-file (in-str (make-pathname :defaults #+clasp "sys:translations;" #+(and ecl (not clasp)) "sys"
+      (with-open-file (in-str (make-pathname :defaults "sys:translations;"
                                              :name (string-downcase host)
                                              :type "translations"))
         (if *load-verbose*
@@ -49,18 +57,28 @@ successfully, T is returned, else error."
 	 (run-start (get-internal-run-time))
 	 (llvm-finalization-time-start llvm-sys:*accumulated-llvm-finalization-time*)
 	 (llvm-finalization-number-start llvm-sys:*number-of-llvm-finalizations*)
+	 llvm-finalization-time-end
+	 llvm-finalization-number-end
+	 (clang-link-time-start llvm-sys:*accumulated-clang-link-time*)
+	 (clang-link-number-start llvm-sys:*number-of-clang-links*)
+         #+(and debug-track-unwinds) (start-unwinds (gctools:unwind-counter))
+         #+(and debug-track-unwinds) end-unwinds
+         #+(and debug-track-unwinds) (start-return-from (gctools:return-from-counter))
+         #+(and debug-track-unwinds) end-return-from
+         #+(and debug-track-unwinds) (start-dynamic-go (gctools:dynamic-go-counter))
+         #+(and debug-track-unwinds) end-dynamic-go
+         #+(and debug-track-unwinds) (start-catch-throw (gctools:catch-throw-counter))
+         #+(and debug-track-unwinds) end-catch-throw
+	 clang-link-time-end
+	 clang-link-number-end
 	 gc-start
          clasp-bytes-start clasp-bytes-end
 	 real-end
 	 run-end
          interpreted-calls-start interpreted-calls-end
          llh-calls-begin llh-calls-end
-	 llvm-finalization-time-end
-	 llvm-finalization-number-end
 	 gc-end)
     ;; Garbage collection forces counters to be updated
-    #-clasp(si::gc t)
-    #-clasp(setf gc-start (si::gc-time))
     (multiple-value-setq (clasp-bytes-start)
       (gctools:bytes-allocated))
     (setq interpreted-calls-start (core:interpreted-closure-calls))
@@ -72,32 +90,41 @@ successfully, T is returned, else error."
 	    real-end (get-internal-real-time)
             interpreted-calls-end (core:interpreted-closure-calls)
 	    llvm-finalization-time-end llvm-sys:*accumulated-llvm-finalization-time*
-	    llvm-finalization-number-end llvm-sys:*number-of-llvm-finalizations*)
-      #-clasp(format *trace-output*
-		     "real time     : ~,3F secs~%~
-              run time      : ~,3F secs~%~
-              GC time       : ~,3F secs~%~
-              LLVM time     : ~,3F secs~%~
-              LLVM compiles : ~A~%"
-		     (/ (- real-end real-start) internal-time-units-per-second)
-		     (/ (- run-end run-start) internal-time-units-per-second)
-		     (/ (- gc-end gc-start) internal-time-units-per-second)
-		     (- llvm-finalization-time-end llvm-finalization-time-start)
-		     (- llvm-finalization-number-end llvm-finalization-number-start)
-		     )
-      #+clasp(format *trace-output*
-                     "Real time           : ~,3F secs~%~
+	    llvm-finalization-number-end llvm-sys:*number-of-llvm-finalizations*
+	    clang-link-time-end llvm-sys:*accumulated-clang-link-time*
+	    clang-link-number-end llvm-sys:*number-of-clang-links*
+            )
+      #+(and debug-track-unwinds) (setf end-unwinds (gctools:unwind-counter))
+      #+(and debug-track-unwinds) (setf end-return-from (gctools:return-from-counter))
+      #+(and debug-track-unwinds) (setf end-dynamic-go (gctools:dynamic-go-counter))
+      #+(and debug-track-unwinds) (setf end-catch-throw (gctools:catch-throw-counter))
+      (format *trace-output*
+              "Real time           : ~,3F secs~%~
               Run time            : ~,3F secs~%~
               Bytes consed        : ~a bytes~%~
               LLVM time           : ~,3F secs~%~
               LLVM compiles       : ~A~%~
+              clang link time     : ~,3F secs~%~
+              clang links         : ~A~%~
               Interpreted closures: ~A~%"
-		     (/ (- real-end real-start) internal-time-units-per-second)
-		     (/ (- run-end run-start) internal-time-units-per-second)
-                     (- clasp-bytes-end clasp-bytes-start)
-		     (- llvm-finalization-time-end llvm-finalization-time-start)
-		     (- llvm-finalization-number-end llvm-finalization-number-start)
-                     (- interpreted-calls-end interpreted-calls-start))))
+              (float (/ (- real-end real-start) internal-time-units-per-second))
+              (float (/ (- run-end run-start) internal-time-units-per-second))
+              (- clasp-bytes-end clasp-bytes-start)
+              (- llvm-finalization-time-end llvm-finalization-time-start)
+              (- llvm-finalization-number-end llvm-finalization-number-start)
+              (- clang-link-time-end clang-link-time-start)
+              (- clang-link-number-end clang-link-number-start)
+              (- interpreted-calls-end interpreted-calls-start))
+      #+(and debug-track-unwinds)
+      (format *trace-output*
+              "Unwinds             : ~A~%~
+              ReturnFrom unwinds  : ~A~%~
+              DynamicGo unwinds   : ~A~%~
+              CatchThrow unwinds  : ~A~%"
+              (- end-unwinds start-unwinds)
+              (- end-return-from start-return-from)
+              (- end-dynamic-go start-dynamic-go)
+              (- end-catch-throw start-catch-throw))))
   #+boehm-gc
   (let* ((*do-time-level* (1+ *do-time-level*))
          real-start
@@ -141,56 +168,31 @@ Evaluates FORM, outputs the realtime and runtime used for the evaluation to
   `(do-time #'(lambda () ,form)))
 
 (defun leap-year-p (y)
-  (declare (si::c-local))
   (and (zerop (mod y 4))
        (or (not (zerop (mod y 100))) (zerop (mod y 400)))))
 
 (defun number-of-days-from-1900 (y)
-  (declare (si::c-local))
   (let ((y1 (1- y)))
     (+ (* (- y 1900) 365)
        (floor y1 4) (- (floor y1 100)) (floor y1 400)
        -460)))
 
-(defconstant month-startdays #(0 31 59 90 120 151 181 212 243 273 304 334 365))
+(defconstant-eqx month-startdays #(0 31 59 90 120 151 181 212 243 273 304 334 365) equalp)
 
 
-#-(or ecl-min clasp-min)
+#-clasp-min
 (defun get-local-time-zone ()
   "Returns the number of hours West of Greenwich for the local time zone."
-  (declare (si::c-local))
-  (ffi::c-inline core:unix-get-local-time-zone () () :object "
-{
-  cl_fixnum mw;
-#if 0 && defined(HAVE_TZSET)
-  tzset();
-  mw = timezone/60;
-#else
-  struct tm ltm, gtm;
-  time_t when = time(0) /*0L*/;
-
-  ltm = *localtime(&when);
-  gtm = *gmtime(&when);
-
-  mw = (gtm.tm_min + 60 * gtm.tm_hour) - (ltm.tm_min + 60 * ltm.tm_hour);
-
-  if ((gtm.tm_wday + 1) % 7 == ltm.tm_wday)
-    mw -= 24*60;
-  else if (gtm.tm_wday == (ltm.tm_wday + 1) % 7)
-    mw += 24*60;
-#endif
-  @(return) = ecl_make_ratio(ecl_make_fixnum(mw),ecl_make_fixnum(60));
-}"
-		 :one-liner nil))
+  (core:unix-get-local-time-zone))
 
 (defun recode-universal-time (sec min hour day month year tz dst)
-  (declare (si::c-local))
   (let ((days (+ (if (and (leap-year-p year) (> month 2)) 1 0)
 		 (1- day)
 		 (svref month-startdays (1- month))
 		 (number-of-days-from-1900 year))))
     (+ sec (* 60 (+ min (* 60 (+ tz dst hour (* 24 days))))))))
 
+#-clasp-min
 (defun decode-universal-time (orig-ut &optional (tz nil tz-p) &aux (dstp nil))
   "Args: (integer &optional (timezone (si::get-local-time-zone)))
 Returns as nine values the day-and-time represented by INTEGER.  See GET-
@@ -246,7 +248,6 @@ GET-DECODED-TIME."
 (defun daylight-saving-time-p (universal-time year)
   "Returns T if Daylight Saving Time applies to the local time zone at
 Universal Time UT, which defaults to the current time."
-  (declare (si::c-local))
   ;; Some systems cannot deal with dates before 1-1-1970 and no POSIX
   ;; system will be able to handle dates beyond 2038. We must
   ;; therefore restrict the time to the interval that can handled by
@@ -268,14 +269,8 @@ Universal Time UT, which defaults to the current time."
 			#.(encode-universal-time 0 0 0 1 1 2032 0)
 			#.(encode-universal-time 0 0 0 1 1 2033 0))
 		    (- universal-time (encode-universal-time 0 0 0 1 1 year 0) utc-1-1-1970)))))
-    #-(or ecl-min clasp-min)
-    (ffi::c-inline core:unix-daylight-saving-time (unix-time) (:unsigned-long) :bool "
-{
-	time_t when = (#0);
-	struct tm *ltm = localtime(&when);
-	@(return) = ltm->tm_isdst;
-}"
-		   :one-liner nil)))
+    #-clasp-min
+    (core:unix-daylight-saving-time unix-time)))
 
 (defun get-decoded-time ()
   "Args: ()
@@ -346,7 +341,7 @@ hash table; otherwise it signals that we have reached the end of the hash table.
 
 ;;; Keep track of what classes of instances are being created while running a block of code.
 ;;; This is useful for debugging and reducing consing.
-#+(and clasp meter-allocations)
+#+(and (not clasp-min) clasp meter-allocations)
 (progn
   (defun run-with-allocation-meters (fun)
     (let ((classes (clos:subclasses* (find-class t))))
@@ -368,15 +363,18 @@ hash table; otherwise it signals that we have reached the end of the hash table.
             (update-meters dbefore)
             ;; nothing
             (update-meters dafter)
-            (let* ((data (loop for c in classes
-                            for nums = (mapcar (lambda (a b da db) (- a b (- da db)))
-                                               (gethash c after) (gethash c before)
-                                               (gethash c dafter) (gethash c dbefore))
-                            when (> (first nums) 0)
-                            collect (list (class-name c) (first nums) (second nums))))
+            (let* (rev-result
+                   (data (let (result)
+                           (dolist (c classes)
+                             (let ((nums (mapcar (lambda (a b da db) (- a b (- da db)))
+                                                 (gethash c after) (gethash c before)
+                                                 (gethash c dafter) (gethash c dbefore))))
+                               (when (> (first nums) 0)
+                                 (push (list (class-name c) (first nums) (second nums)) result))))
+                           result))
                    (sorted (sort data #'< :key #'third)))
-              (loop for entry in sorted
-                 do (format t "~s  ~a ~a~&" (first entry) (second entry) (third entry)))))))))
+              (dolist (entry sorted)
+                (format t "~s  ~a ~a~&" (first entry) (second entry) (third entry)))))))))
 
 ;;; CORE:METER works like CL:TIME
 ;;; It prints a list of all classes and the number of instances allocated while evaluating form

@@ -27,7 +27,6 @@ THE SOFTWARE.
 #ifndef debugger_H
 #define debugger_H
 
-#include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 #include <clasp/core/lisp.h>
 #include <clasp/core/stacks.h>
@@ -91,6 +90,9 @@ void af_gotoIhsNext();
 void af_gotoIhsPrev();
 void af_printCurrentIhsFrame();
 void af_evalPrint(const string &expr);
+
+// Generate a backtrace with JIT symbols resolved 
+void c_bt();
 };
 };
 #endif

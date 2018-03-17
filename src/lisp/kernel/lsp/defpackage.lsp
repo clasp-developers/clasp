@@ -36,32 +36,6 @@
 ;;; 
 ;;; -----------------------------------------------------------------
 
-;;; -----------------------------------------------------------------
-;;;
-;;;	DEFPACKAGE - This files attempts to define a portable
-;;;	implementation for DEFPACKAGE, as defined in "Common LISP, The
-;;;	Language", by Guy L. Steele, Jr., Second Edition, 1990, Digital
-;;;	Press.
-;;;
-;;;	Send comments, suggestions, and/or questions to:
-;;;
-;;;		Stephen L Nicoud <snicoud@boeing.com>
-;;;
-;;;	An early version of this file was tested in Symbolics Common
-;;;	Lisp (Genera 7.2 & 8.0 on a Symbolics 3650 Lisp Machine),
-;;;	Franz's Allegro Common Lisp (Release 3.1.13 on a Sun 4, SunOS
-;;;	4.1), and Sun Common Lisp (Lucid Common Lisp 3.0.2 on a Sun 3,
-;;;	SunOS 4.1).
-;;;
-;;;	91/5/23 (SLN) - Since the initial testing, modifications have
-;;;	been made to reflect new understandings of what DEFPACKAGE
-;;;	should do.  These new understandings are the result of
-;;;	discussions appearing on the X3J13 and Common Lisp mailing
-;;;	lists.  Cursory testing was done on the modified version only
-;;;	in Allegro Common Lisp (Release 3.1.13 on a Sun 4, SunOS 4.1).
-;;;
-;;; -----------------------------------------------------------------
-
 (in-package "SYSTEM")
 
 (defmacro DEFPACKAGE (name &rest options)
@@ -191,18 +165,23 @@
 		    imported-from-symbol-names-list
 		    exported-from-package-names)
   (if (find-package name)
-    (progn ; (rename-package name name)
-      (when nicknames
-	(rename-package name name nicknames))
-      (when use
-	(unuse-package (package-use-list (find-package name)) name)))
-    (make-package name :use nil :nicknames nicknames))
+      (progn ; (rename-package name name)
+        (when nicknames
+          (rename-package name name nicknames))
+        (when use
+          (unuse-package (package-use-list (find-package name)) name)))
+      (make-package name :use nil :nicknames nicknames))
   (let ((*package* (find-package name)))
     (when documentation
       (setf (documentation *package* t) documentation))
     (shadow shadowed-symbol-names)
     (dolist (item shadowing-imported-from-symbol-names-list)
       (let ((package (find-package (first item))))
+        (unless package
+          (signal-simple-error 'package-error "Create the package"
+                               "The name ~s does not designate any package"
+                               (list (first item))
+                               :package (find-package name)))
 	(dolist (name (rest item))
 	  (shadowing-import (find-or-make-symbol name package)))))
     (use-package use)
@@ -222,7 +201,6 @@
   (find-package name))
 
 (defun find-or-make-symbol (name package)
-  (declare (si::c-local))
   (multiple-value-bind (symbol found)
       (find-symbol name package)
     (unless found
@@ -234,7 +212,6 @@
     symbol))
 
 (defun find-duplicates (&rest lists)
-  (declare (si::c-local))
   (let (results)
     (loop for list in lists
 	  for more on (cdr lists)

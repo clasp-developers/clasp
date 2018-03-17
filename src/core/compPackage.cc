@@ -40,11 +40,17 @@ SYMBOL_EXPORT_SC_(CompPkg, STARlowLevelTraceSTAR);
 SYMBOL_EXPORT_SC_(CompPkg, STARthe_moduleSTAR);
 SYMBOL_EXPORT_SC_(CompPkg, STARlowLevelTracePrintSTAR);
 SYMBOL_EXPORT_SC_(CompPkg, jit_remove_module);
-
+SYMBOL_EXPORT_SC_(CompPkg, jit_register_symbol);
+SYMBOL_EXPORT_SC_(CompPkg, STARjit_saved_symbol_infoSTAR);
+SYMBOL_EXPORT_SC_(CompPkg, STARsave_module_for_disassembleSTAR);
+SYMBOL_EXPORT_SC_(CompPkg, STARsaved_module_from_clasp_jitSTAR);
+SYMBOL_EXPORT_SC_(CompPkg, optimize_module_for_compile);
+SYMBOL_EXPORT_SC_(CompPkg, compile_quick_module_dump);
+SYMBOL_EXPORT_SC_(CompPkg, compile_quick_module_dump);
+SYMBOL_EXPORT_SC_(CompPkg, dispatcher_count);
 void initialize_compPackage() {
   list<string> lnicknames = {"CMP"};
   list<string> luse = {"COMMON-LISP"};
   _lisp->makePackage("COMPILER", lnicknames, luse);
-  // We don't have to create the COMPILER symbols here - it's done in bootStrapCoreSymbolMap
 }
 };
