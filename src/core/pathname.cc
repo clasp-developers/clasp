@@ -979,7 +979,9 @@ struct PathnameRecursionGuard {
 CL_DEFUN Pathname_sp cl__pathname(T_sp x) {
   PathnameRecursionGuard guard;
   if (x.nilp()) {
-    SIMPLE_ERROR(BF("The only argument for pathname is nil"));
+    // knpk also needs to be a type error
+    // SIMPLE_ERROR(BF("The only argument for pathname is nil"));
+       ERROR_WRONG_TYPE_ONLY_ARG(cl::_sym_pathname, x, Cons_O::createList(cl::_sym_or, cl::_sym_fileStream, cl::_sym_string, cl::_sym_pathname));
   }
 L:
   if (cl__stringp(x)) {
@@ -995,14 +997,25 @@ L:
   return gc::As<Pathname_sp>(x);
 }
 
-T_sp cl_logical_pathname(T_sp x) {
+// knpk, this needs to be exposed to lisp, so "cl__" instead of "cl_"
+CL_LAMBDA(x);
+CL_DECLARE();
+CL_DOCSTRING("logical-pathname converts pathspec to a logical pathname and returns the new logical pathname.");
+CL_DEFUN T_sp cl__logical_pathname(T_sp x) {
   x = cl__pathname(x);
   if (!core__logical_pathname_p(x)) {
+    /* knpk -> Could not find special-operator/macro/function(SIMPLE-TYPE-ERROR) in the lexical/dynamic environment
     eval::funcall(cl::_sym_simpleTypeError,
                   kw::_sym_formatControl, SimpleBaseString_O::make("~S cannot be coerced to a logical pathname."),
                   kw::_sym_formatArguments, lisp_createList(x),
                   kw::_sym_expectedType, cl::_sym_LogicalPathname_O,
                   kw::_sym_datum, x);
+    */
+      cl__error(cl::_sym_simpleTypeError, Cons_O::createList(kw::_sym_formatControl,
+                                                        SimpleBaseString_O::make("~S cannot be coerced to a logical pathname."),
+                                                        kw::_sym_formatArguments, Cons_O::createList(x),
+                                                        kw::_sym_expectedType, cl::_sym_LogicalPathname_O,
+                                                        kw::_sym_datum, x));
   }
   return x;
 }
