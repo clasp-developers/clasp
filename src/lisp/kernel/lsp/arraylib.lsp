@@ -189,7 +189,7 @@ Returns the bit of BIT-ARRAY specified by INDEXes."
            #+clasp (type (simple-array bit) bit-array)
            (ext:check-arguments-type))
   #+(not clasp-min)
-  (check-type bit-array (array bit))
+  (check-type bit-array (simple-array bit))
   (row-major-aref bit-array (row-major-index-inner bit-array indices)))
 
 
@@ -349,7 +349,7 @@ pointer is 0 already."
        &key (element-type (array-element-type array))
             initial-element (initial-contents nil) (fill-pointer nil)
             (displaced-to nil) (displaced-index-offset 0))
-Adjusts the dimensions of ARRAY to the given DIMENSIONS.  ARRAY -- kpoeck -- may be an
+Adjusts the dimensions of ARRAY to the given DIMENSIONS.  ARRAY must be an
 adjustable array."
   (declare (ignore initial-element
                    displaced-index-offset))
@@ -369,10 +369,7 @@ adjustable array."
     (declare (array x))
     (unless (or displaced-to initial-contents)
       (copy-array-contents x array))
-    ;Kpoeck
-    (if (adjustable-array-p array)
-        (sys:replace-array array x)
-        x)
+    (sys:replace-array array x)
     ))
 
 

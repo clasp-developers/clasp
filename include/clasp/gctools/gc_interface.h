@@ -87,16 +87,6 @@ extern Fixnum global_TheClassRep_stamp;
 ////////////////////////////////////////////////////////////
 //
 // Forward definition for classes
-#ifdef BUILD_EXTENSION
-#define GC_INTERFACE_FORWARD
-#include <project_headers.h>
-#undef GC_INTERFACE_FORWARD
-
-#define GC_INTERFACE_GC_MANAGED_TYPES
-#include <project_headers.h>
-#undef GC_INTERFACE_GC_MANAGED_TYPES
-#endif
-
 #ifdef USE_BOEHM
 #ifndef SCRAPING
   #define DECLARE_FORWARDS

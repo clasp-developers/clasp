@@ -337,21 +337,19 @@ This interprets the tags and generates objects that are used to generate code."
                  (multiple-value-bind (function-name full-function-name simple-function)
                      (extract-function-name-from-signature signature-text tag)
                    (declare (ignore function-name))
-                   (pushnew (make-instance 'expose-defun
-                                           :namespace% namespace
-                                           :lisp-name% packaged-function-name
-                                           :function-name% full-function-name
-                                           :file% (tags:file% tag)
-                                           :line% (tags:line% tag)
-                                           :character-offset% (tags:character-offset% tag)
-                                           :lambda-list% lambda-list
-                                           :declare% declare-form
-                                           :docstring% docstring
-                                           :provide-declaration% simple-function
-                                           :signature% signature)
-                            functions
-                            :test #'string=
-                            :key #'lisp-name%))
+                   (push (make-instance 'expose-defun
+                                        :namespace% namespace
+                                        :lisp-name% packaged-function-name
+                                        :function-name% full-function-name
+                                        :file% (tags:file% tag)
+                                        :line% (tags:line% tag)
+                                        :character-offset% (tags:character-offset% tag)
+                                        :lambda-list% lambda-list
+                                        :declare% declare-form
+                                        :docstring% docstring
+                                        :provide-declaration% simple-function
+                                        :signature% signature)
+                         functions))
                  (setf cur-lambda nil
                        cur-declare nil
                        cur-docstring nil
@@ -377,21 +375,19 @@ This interprets the tags and generates objects that are used to generate code."
                  (multiple-value-bind (function-name full-function-name simple-function)
                      (extract-function-name-from-signature signature-text tag)
                    (declare (ignore function-name))
-                   (pushnew (make-instance 'expose-defun-setf ; here.
-                                           :namespace% namespace
-                                           :lisp-name% packaged-function-name
-                                           :function-name% full-function-name
-                                           :file% (tags:file% tag)
-                                           :line% (tags:line% tag)
-                                           :character-offset% (tags:character-offset% tag)
-                                           :lambda-list% lambda-list
-                                           :declare% declare-form
-                                           :docstring% docstring
-                                           :provide-declaration% simple-function
-                                           :signature% signature)
-                            functions
-                            :test #'string=
-                            :key #'lisp-name%))
+                   (push (make-instance 'expose-defun-setf ; here.
+                                        :namespace% namespace
+                                        :lisp-name% packaged-function-name
+                                        :function-name% full-function-name
+                                        :file% (tags:file% tag)
+                                        :line% (tags:line% tag)
+                                        :character-offset% (tags:character-offset% tag)
+                                        :lambda-list% lambda-list
+                                        :declare% declare-form
+                                        :docstring% docstring
+                                        :provide-declaration% simple-function
+                                        :signature% signature)
+                         functions))
                  (setf cur-lambda nil
                        cur-declare nil
                        cur-docstring nil
@@ -414,21 +410,19 @@ This interprets the tags and generates objects that are used to generate code."
                                           (convert-function-ptr-to-lambda-list function-ptr))))
                     (declare-form (tags:maybe-declare cur-declare))
                     (docstring (tags:maybe-docstring cur-docstring)))
-               (pushnew (make-instance 'expose-extern-defun
-                                       :namespace% namespace
-                                       :lisp-name% packaged-function-name
-                                       :function-name% function-name
-                                       :file% (tags:file% tag)
-                                       :line% (tags:line% tag)
-                                       :character-offset% (tags:character-offset% tag)
-                                       :lambda-list% lambda-list
-                                       :declare% declare-form
-                                       :docstring% docstring
-                                       :pointer% pointer
-                                       :function-ptr% function-ptr)
-                        functions
-                        :test #'string=
-                        :key #'lisp-name%)
+               (push (make-instance 'expose-extern-defun
+                                    :namespace% namespace
+                                    :lisp-name% packaged-function-name
+                                    :function-name% function-name
+                                    :file% (tags:file% tag)
+                                    :line% (tags:line% tag)
+                                    :character-offset% (tags:character-offset% tag)
+                                    :lambda-list% lambda-list
+                                    :declare% declare-form
+                                    :docstring% docstring
+                                    :pointer% pointer
+                                    :function-ptr% function-ptr)
+                     functions)
                (setf cur-lambda nil
                      cur-declare nil
                      cur-docstring nil

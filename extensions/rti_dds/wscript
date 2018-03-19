@@ -1,0 +1,170 @@
+''' ======================================================================= '''
+''' WSCRIPT FILE for EXTENSION   R T I - D D S                              '''
+''' ======================================================================= '''
+
+# -----------------------------------------------------------------------------
+#  SYSTEM IMPORTS
+# -----------------------------------------------------------------------------
+
+import os
+import inspect
+
+# -----------------------------------------------------------------------------
+#  APPLICATION IMPORTS
+# -----------------------------------------------------------------------------
+
+# None
+
+# -----------------------------------------------------------------------------
+#  SPECIAL VARS 
+# -----------------------------------------------------------------------------
+
+# None
+
+# -----------------------------------------------------------------------------
+#  C O N F I G   S E C T I O N  - Please adapt as required
+# -----------------------------------------------------------------------------
+
+SUBDIRS = [ 'src' ]
+DEBUG=1
+
+# -----------------------------------------------------------------------------
+#  UTILITY FUNCTIONS 
+# -----------------------------------------------------------------------------
+# TODO: Some of these should into tools-for-build/clasp_build_tools.py
+
+def curr_line_nr():
+    return inspect.currentframe().f_back.f_lineno
+
+def curr_file_name():
+    return inspect.getfile(inspect.currentframe())
+
+# TODO: Replace dbgmsg() with a logging function from clasp build tools
+def dbgmsg( filename, linenr, fmt, *args ):
+    msg = ""
+    if DEBUG:
+        try:
+            msg = fmt.format(*args)
+        except:
+            msg = fmt
+        print( "*** DEBUG INFO {}:{} - {}".format( os.path.basename( filename ), linenr, msg ) )
+
+def check_ctx( ctx ):
+    global THIS_FILE
+    dest_os_check = None
+    try:
+        dest_os_check = ctx.env[ 'DEST_OS' ]
+    except:
+        raise ValueError( "WAF Context Error ({}:{}): Passed in WAF context does not contain DEST_OS - invalid WAF context passed in !".format( THIS_FILE, curr_line_nr() ) )
+    if not dest_os_check:
+        raise ValueError( "WAF Context Error ({}:{}): Passed in WAF context does not contain valid value for DEST_OS...".format( THIS_FILE, curr_line_nr(), dest_os_check ) )
+
+def load_wscript_config( ctx, filename = None ):
+    global THIS_FILE
+    local_env = {}
+    this_path = ctx.path.abspath()
+    if not filename:
+        filename = this_path + os.path.sep + "wscript.config"
+    if not os.path.isfile( filename ):
+        print( "There is no wscript.config file in {} - assuming configuration.", this_path )
+    else:
+        exec( open( filename ).read(), globals(), local_env )
+    ctx.env.update( local_env )
+
+# -----------------------------------------------------------------------------
+#  SPECIAL VARS (Continued)
+# -----------------------------------------------------------------------------
+
+THIS_FILE = curr_file_name()
+THIS_EXTENSION = "RTI-DDS"
+
+# -----------------------------------------------------------------------------
+#  RTI DDS SUBDIRS
+# -----------------------------------------------------------------------------
+
+def subdirectories( ctx ):
+    global SUBDIRS
+    return SUBDIRS
+
+# -----------------------------------------------------------------------------
+#  WAF BUILD INSTRUCTIONS
+# -----------------------------------------------------------------------------
+
+# -----------------------------------------------------------------------------
+#  C O N F I G U R E
+# -----------------------------------------------------------------------------
+def configure( ctx ):
+
+    global THIS_FILE, THIS_EXTENSION
+    load_wscript_config( ctx )
+
+    if not ctx.env.CLASP_USE_EXT_RTI_DDS == 1:
+        dbgmsg( THIS_FILE, curr_line_nr(), "NOT configuring extension {} in {} - THE EXTENSION IS NOT ENABLED..", THIS_EXTENSION, ctx.path.abspath() )
+        return 
+
+    # Say Hello
+    dbgmsg( THIS_FILE, curr_line_nr(), "Configuring extension {} in {}.", THIS_EXTENSION, ctx.path.abspath() )
+
+    # Check passed in context
+    check_ctx( ctx )
+
+    # Do configure
+    ctx.recurse( " ".join( subdirectories( ctx ) ) )
+
+    # Done
+    return
+
+# -----------------------------------------------------------------------------
+#  B U I L D
+# -----------------------------------------------------------------------------
+def build( ctx ):
+
+    global THIS_FILE
+    load_wscript_config( ctx )
+
+    if not ctx.env.CLASP_USE_EXT_RTI_DDS == 1:
+        dbgmsg( THIS_FILE, curr_line_nr(), "NOT building extension {} in {} - THE EXTENSION IS NOT ENABLED..", THIS_EXTENSION, ctx.path.abspath() )
+        return 
+
+    # Say Hello
+    dbgmsg( THIS_FILE, curr_line_nr(), "Building in {}.", ctx.path.abspath() )
+    check_ctx( ctx )
+    # Recurse into subdirs for actual build op
+    ctx.recurse(" ".join( subdirectories( ctx ) ) )
+    return
+
+def build_extension( ctx ):
+
+    global THIS_FILE
+    load_wscript_config( ctx )
+
+    if not ctx.env.CLASP_USE_EXT_RTI_DDS == 1:
+        dbgmsg( THIS_FILE, curr_line_nr(), "NOT building extension {} in {} - THE EXTENSION IS NOT ENABLED..", THIS_EXTENSION, ctx.path.abspath() )
+        return 
+    
+    # Say Hello
+    dbgmsg( THIS_FILE, curr_line_nr(), "Building Extension in {}.", ctx.path.abspath() )
+    # Check passed in context
+    check_ctx( ctx )
+    # Recurse into subdirs for actual build op
+    ctx.recurse(" ".join( subdirectories( ctx ) ) )
+
+def grovel( ctx ):
+
+    global THIS_FILE
+    load_wscript_config( ctx )
+
+    if not ctx.env.CLASP_USE_EXT_RTI_DDS == 1:
+        dbgmsg( THIS_FILE, curr_line_nr(), "NOT groveling extension {} in {} - THE EXTENSION IS NOT ENABLED..", THIS_EXTENSION, ctx.path.abspath() )
+        return 
+    
+    # Say Hello
+    dbgmsg( THIS_FILE, curr_line_nr(), "Groveling in {}.", ctx.path.abspath() )
+    # Check passed in context
+    check_ctx( ctx )
+    # Recurse into subdirs for actual groveling 
+    ctx.recurse(" ".join( subdirectories( ctx ) ) )
+
+# -----------------------------------------------------------------------------
+#  EOF
+# -----------------------------------------------------------------------------

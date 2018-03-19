@@ -164,11 +164,7 @@ typedef bool _Bool;
 //#include <clasp/asttooling/Diagnostics.h>
 //#include <clasp/asttooling/Marshallers.h>
 
-#ifdef BUILD_EXTENSION
-#define GC_INTERFACE_INCLUDES
-#include <project_headers.h>
-#undef GC_INTERFACE_INCLUDES
-#endif
+#include <clasp/extensions/extensions.h>
 
 #define NAMESPACE_gctools
 #define NAMESPACE_core
@@ -790,7 +786,7 @@ void add_single_typeq_test(const string& cname, core::HashTable_sp theMap) {
 
 template <typename TRangeFirst,typename TRangeLast>
 void add_range_typeq_test(const string& cname, core::HashTable_sp theMap) {
-  
+
   theMap->setf_gethash(TRangeFirst::static_class_symbol,
                        core::Cons_O::create(core::make_fixnum(gctools::Header_s::Value::GenerateHeaderValue<TRangeFirst>()),
                                             core::make_fixnum(gctools::Header_s::Value::GenerateHeaderValue<TRangeLast>())));
@@ -806,7 +802,7 @@ void add_range_typeq_test_instance(core::HashTable_sp theMap) {
                        core::Cons_O::create(core::make_fixnum(gctools::Header_s::Value::GenerateHeaderValue<TRangeFirst>()),
                                             core::make_fixnum(gctools::Header_s::Value::GenerateHeaderValue<TRangeLast>())));
 }
-  
+
 void initialize_typeq_map() {
   core::HashTableEqual_sp classNameToLispName = core::HashTableEqual_O::create_default();
   core::HashTableEq_sp theTypeqMap = core::HashTableEq_O::create_default();
@@ -947,11 +943,11 @@ void initialize_clasp()
   core_T_O_var->setInstanceBaseClasses(_Nil<core::T_O>());
   // ClassRep_O is initialized like other class objects - but we need to save it in a special system-wide variable
 //  _lisp->_Roots._TheClassRep = clbind_ClassRep_O_var;
-  
+
   create_packages();
   // have to do this before symbols are finalized so that keywords are all bound properly.
   gc::As<core::Package_sp>(_lisp->findPackage("KEYWORD"))->setKeywordPackage(true);
-  
+
   define_builtin_cxx_classes();
 
   bootStrapCoreSymbolMap.finish_setup_of_symbols();
