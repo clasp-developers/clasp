@@ -1771,7 +1771,9 @@ str_in_listen(T_sp strm) {
 
 static T_sp
 str_in_element_type(T_sp strm) {
-  T_sp tstring = StringOutputStreamOutputString(strm);
+  // kpoeck this is an input-string, no output
+  // T_sp tstring = StringOutputStreamOutputString(strm);
+  T_sp tstring = StringInputStreamInputString(strm);
   ASSERT(cl__stringp(tstring));
   return gc::As_unsafe<String_sp>(tstring)->arrayElementType();
 }
@@ -2410,6 +2412,15 @@ concatenated_read_byte(T_sp strm) {
   return c;
 }
 
+//kpoeck
+static T_sp
+concatenated_element_type(T_sp strm) {
+  T_sp l = ConcatenatedStreamList(strm);
+  if (l.nilp())
+    return _lisp->_true();
+  return clasp_stream_element_type(oCar(l));
+}
+
 static claspCharacter
 concatenated_read_char(T_sp strm) {
   T_sp l = ConcatenatedStreamList(strm);
@@ -2478,8 +2489,11 @@ const FileOps concatenated_ops = {
     generic_always_true,  /* input_p */
     generic_always_false, /* output_p */
     generic_always_false,
-    broadcast_element_type,
-
+    // kpoeck, this is wrong, must be specific for concatenated streams
+    // should be concatenated_element_type with a proper definition for that
+    // ccl does more or less (stream-element-type (concatenated-stream-current-input-stream s))
+    //broadcast_element_type,
+    concatenated_element_type,
     not_a_file_stream,  /* length */
     generic_always_nil, /* get_position */
     generic_set_position,
