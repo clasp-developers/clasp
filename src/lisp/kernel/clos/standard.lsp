@@ -84,12 +84,7 @@
 		    (not (slot-boundp instance slot-name)))
 	   (let ((initfun (slot-definition-initfunction slotd)))
 	     (when initfun
-	       (setf (slot-value instance slot-name) (funcall initfun)))))
-
-	 )                              ; or
-	)
-      )
-    )
+	       (setf (slot-value instance slot-name) (funcall initfun)))))))))
   instance)
 
 (defun compute-instance-size (slots)
@@ -194,7 +189,14 @@
     (finalize-inheritance class)))
 
 (defmethod make-instances-obsolete ((class class))
+  ;; This changes what stamp new instances of the class get- which also means obsolete
+  ;; instances will have a different stamp from their class, which is how the system
+  ;; determines obsolesence (in MAYBE-UPDATE-INSTANCES).
   (core:class-new-stamp class)
+  ;; Now this removes the class from all generic function fast paths. This ensures that
+  ;; if a generic function is specialized where an obsolete instance is, it will go to
+  ;; the slow path, which will call MAYBE-UPDATE-INSTANCES.
+  (clos:invalidate-generic-functions-with-class-selector class)
   class)
 
 (defmethod initialize-instance ((class class) &rest initargs &key direct-slots)
@@ -206,8 +208,7 @@
 	    collect (canonical-slot-to-direct-slot class s))
          initargs)
   (finalize-unless-forward class)
-  ;; Obviously, the same as make-instances-obsolete, except we don't want to call
-  ;; any methods a programmer has installed on that function.
+  ;; In this case we are assigning the stamp for the first time.
   (core:class-new-stamp class)
   class)
 
@@ -297,8 +298,7 @@ argument was supplied for metaclass ~S." (class-of class))))))))
 	    (and (eq c1 +the-standard-class+) (eq c2 +the-funcallable-standard-class+))
 	    (and (eq c2 +the-standard-class+) (eq c1 +the-funcallable-standard-class+))
 	    ))
-      (forward-referenced-class-p superclass)
-      ))
+      (forward-referenced-class-p superclass)))
 
 ;;; ----------------------------------------------------------------------
 ;;; FINALIZATION OF CLASS INHERITANCE
@@ -476,8 +476,6 @@ because it contains a reference to the undefined class~%  ~A"
     (when name
       (si:create-type-name name)
       (setf (find-class name) class))
-    (clos::gf-log "In ensure-class-using-class (class class)\n")
-    (clos:invalidate-generic-functions-with-class-selector class)
     (clos::gf-log "Returning from ensure-class-using-class (class class)\n")
     class))
 

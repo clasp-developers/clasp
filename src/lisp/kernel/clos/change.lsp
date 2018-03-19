@@ -190,10 +190,6 @@
 
   (update-dependents class initargs))
 
-(defmethod make-instances-obsolete ((class class))
-  (setf (class-slots class) (copy-list (class-slots class)))
-  class)
-
 (defun remove-optional-slot-accessors (class)
   (declare (class class)
 	   (optimize (safety 0)))
