@@ -312,23 +312,6 @@ and cannot be added to ~A." method other-gf gf)))
           Given arguments: ~a"
          group-name gf args))
 
-;;; Now we protect classes from redefinition:
-(eval-when (:compile-toplevel :load-toplevel)
-(defun setf-find-class (new-value name &optional errorp env)
-  (declare (ignore errorp))
-  (let ((old-class (find-class name nil env)))
-    (cond
-      ((typep old-class 'built-in-class)
-       (error "The class associated to the CL specifier ~S cannot be changed."
-	      name))
-      ((member name '(CLASS BUILT-IN-CLASS) :test #'eq)
-       (error "The kernel CLOS class ~S cannot be changed." name))
-      ((classp new-value) (core:set-class new-value name))
-      ((null new-value) (core:set-class nil name))
-      (t (error "~A is not a class." new-value))))
-  new-value)
-) ; eval-when
-
 ;;; ----------------------------------------------------------------------
 ;;;                                                             miscellany
 
