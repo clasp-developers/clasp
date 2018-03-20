@@ -220,38 +220,40 @@
           ((eq type 'LIST)
            `(defun ,constructor-name ,keys
               (list ,@slot-names)))
-          ((error "~S is an illegal structure type" type)))))
+          (t (error "~S is an illegal structure type" type)))))
 
 
-(defun make-predicate (name type named name-offset)
+(defun make-predicate (predicate name type named name-offset)
   (cond ((null type)
-	 #'(lambda (x)
-             ;; fixme: find-class ahead of time
-             (si:subclassp (class-of x) (find-class name))))
-        ((or (eq type 'VECTOR)
-             (and (consp type) (eq (car type) 'VECTOR)))
+         `(defun ,predicate (object)
+            ;; fixme: find-class ahead of time
+            (si:subclassp (class-of object) (find-class ',name))))
+        ((or (eq type 'vector)
+             (and (consp type) (eq (car type) 'vector)))
          ;; The name is at the NAME-OFFSET in the vector.
          (unless named (error "The structure should be named."))
-	 #'(lambda (x)
-	     (and (vectorp x)
-		  (> (length x) name-offset)
-		  ;; AKCL has (aref (the (vector t) x).)
-		  ;; which fails with strings
-		  (eq (elt x name-offset) name))))
+         `(defun ,predicate (object)
+            (and (vectorp object)
+                 (> (length object) ,name-offset)
+                 (eq (row-major-aref object ,name-offset) ',name))))
         ((eq type 'LIST)
          ;; The name is at the NAME-OFFSET in the list.
          (unless named (error "The structure should be named."))
-         (if (= name-offset 0)
-	     #'(lambda (x)
-		 (and (consp x) (eq (car x) name)))
-	     #'(lambda (x)
-		 (do ((i name-offset (1- i))
-		      (y x (cdr y)))
-		     ((= i 0) (and (consp y) (eq (car y) name)))
-		   (declare (fixnum i))
-		   (unless (consp y) (return nil))))))
-        ((error "~S is an illegal structure type."))))
+         `(defun ,predicate (object)
+            (eq (nth ,name-offset object) ',name)))
+        (t (error "~S is an illegal structure type." type))))
 
+(defun make-copier (copier name type)
+  (declare (ignore name))
+  (cond ((null type)
+         ;; will need the name here later, i think.
+         `(defun ,copier (object) (copy-structure object)))
+        ((or (eq type 'vector)
+             (and (consp type) (eq (car type) 'vector)))
+         `(defun ,copier (object) (copy-seq object)))
+        ((eq type 'list)
+         `(defun ,copier (object) (copy-list object)))
+        (t (error "~s is an illegal structure type." type))))
 
 ;;; PARSE-SLOT-DESCRIPTION parses the given slot-description
 ;;;  and returns a list of the form:
@@ -325,25 +327,23 @@
                   (sixth new-slot) (sixth old-slot))))
       (push new-slot output))))
 
-#+clos
-(defun define-structure-class (name type include slot-descriptions
-                               print-function print-object)
+(defmacro define-structure-class (name include slot-descriptions
+                                  print-function print-object)
   `(progn
-     ,@(unless type
-         `((defclass ,name ,(and include (list include))
-             ,(mapcar
-               #'(lambda (sd)
-                   (if sd
-                       (list* (first sd)
-                              :initform (second sd)
-                              :initarg 
-                              (intern (symbol-name (first sd))
-                                      (find-package 'KEYWORD))
-                              (when (third sd) (list :type (third sd))))
-                       nil))            ; for initial offset slots
-               slot-descriptions)
-             (:metaclass structure-class))))
-
+     (defclass ,name ,(and include (list include))
+       ,(mapcar
+         #'(lambda (sd)
+             (if sd
+                 (list* (first sd)
+                        :initform (second sd)
+                        :initarg 
+                        (intern (symbol-name (first sd))
+                                (find-package 'KEYWORD))
+                        (when (third sd) (list :type (third sd))))
+                 nil))            ; for initial offset slots
+         slot-descriptions)
+       (:metaclass structure-class))
+     
      ,@(when print-function
          `((defmethod print-object ((obj ,name) stream)
              (,print-function obj stream 0)
@@ -353,15 +353,12 @@
              (,print-object obj stream)
              obj)))))
 
-(defun define-structure (name conc-name type named slots slot-descriptions
-			 copier include print-function standard-constructor
-			 offset name-offset documentation predicate)
+(defun define-structure (name conc-name type named slot-descriptions
+                         standard-constructor offset documentation)
   (create-type-name name)
   ;; We are going to modify this list!!!
   (setf slot-descriptions (copy-tree slot-descriptions))
-
-  (when predicate
-    (fset predicate (make-predicate name type named name-offset)))
+  
   (setf (structure-slot-descriptions name) slot-descriptions)
   (setf (structure-type name) type)
   (setf (structure-size name) offset)
@@ -372,15 +369,7 @@
   (dolist (x slot-descriptions)
     (and x
 	 (not (eql (car x) 'TYPED-STRUCTURE-NAME))
-	 (make-access-function name conc-name type named x)))
-  (when copier
-    ;;;; knpk
-    (cond ((eq type 'list) (fset copier #'copy-list))
-          ((eq type 'vector)(fset copier #'copy-seq))
-          ((and (listp type)(eq 'vector (first type))) (fset copier #'copy-seq))
-          ((null type) (fset copier #'copy-structure))
-          ;;; doesn't seem possible that this happens
-          (t (error "Can't handle type ~A to defstruct" type)))))
+	 (make-access-function name conc-name type named x))))
 
 ;;; The DEFSTRUCT macro.
 
@@ -563,14 +552,17 @@ as a STRUCTURE doc and can be retrieved by (documentation 'NAME 'structure)."
     ;;
     `(eval-when (:compile-toplevel :load-toplevel :execute)
        #+clos
-       ,(define-structure-class name type include
-          slot-descriptions print-function print-object)
-       (define-structure ',name ',conc-name ',type ',named ',slots
-         ',slot-descriptions ',copier ',include
-         ',print-function ',standard-constructor
-         ',offset ',name-offset
-         ',documentation ',predicate)
+       ,@(unless type
+           (list `(define-structure-class ,name ,include
+                    ,slot-descriptions ,print-function ,print-object)))
+       (define-structure ',name ',conc-name ',type ',named
+         ',slot-descriptions ',standard-constructor
+         ',offset ',documentation)
        ,@(mapcar #'(lambda (constructor)
                      (make-constructor name constructor type named slot-descriptions))
                  constructors)
+       ,@(when predicate
+           (list (make-predicate predicate name type named name-offset)))
+       ,@(when copier
+           (list (make-copier copier name type)))
        ',name)))
