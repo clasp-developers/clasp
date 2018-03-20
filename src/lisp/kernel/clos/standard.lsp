@@ -110,6 +110,7 @@
     x))
 
 (defmethod allocate-instance ((class derivable-cxx-class) &rest initargs)
+  (declare (ignore initargs))
   ;; derivable cxx objects are Instance_O's, so this is _probably_ okay.
   ;; (And allocate-new-instance uses the creator, so it'll do any C++ junk.)
   (core:allocate-new-instance class (class-size class)))

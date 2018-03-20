@@ -11,9 +11,6 @@
 
 (in-package "CLOS")
 
-;;; ----------------------------------------------------------------------
-;;; Methods
-
 ;;; ======================================================================
 ;;; Built-in classes
 ;;; ----------------------------------------------------------------------
@@ -67,7 +64,11 @@
 ;;; STRUCTURES
 ;;;
 
-;;; structure-classes cannot be instantiated
+(defmethod allocate-instance ((class structure-class) &rest initargs)
+  (declare (ignore initargs))
+  (core:allocate-new-instance class (class-size class)))
+
+;;; structure-classes cannot be instantiated (but could be, as an extension)
 (defmethod make-instance ((class structure-class) &rest initargs)
   (declare (ignore initargs))
   (error "The structure-class (~A) cannot be instantiated" class))
