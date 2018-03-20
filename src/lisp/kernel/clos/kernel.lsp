@@ -42,11 +42,11 @@
 ;;; name to class.
 ;;; 
 ;;; This is only used during boot. The real one is in built-in.
-(eval-when (compile #+clasp-boot :load-toplevel)
-  (defun setf-find-class (new-value class &optional errorp env)
+(eval-when (:compile-toplevel #+clasp-boot :load-toplevel)
+  (defun (setf find-class) (new-value class &optional errorp env)
     (warn "Ignoring class definition for ~S" class)))
 
-(defun setf-find-class (new-value name &optional errorp env)
+(defun (setf find-class) (new-value name &optional errorp env)
   (declare (ignore errorp env))
   (let ((old-class (find-class name nil)))
     (cond
@@ -56,16 +56,11 @@
        (unless (eq new-value old-class)
 	 (error "The class associated to the CL specifier ~S cannot be changed."
 		name)))
-      ((classp new-value)
-       #+clasp(core:set-class new-value name)
-       #+ecl(setf (gethash name si:*class-name-hash-table*) new-value))
-      ((null new-value)
-       #+clasp(core:set-class nil name)
-       #+ecl(remhash name si:*class-name-hash-table*))
-      (t (error "~A is not a class." new-value))))
+      ((or (classp new-value) (null new-value)) (core:set-class new-value name))
+      (t (error 'simple-type-error :datum new-value :expected-type '(or class null)
+                                   :format-control "~A is not a valid class for (setf find-class)"
+                                   :format-arguments (list new-value)))))
   new-value)
-
-(defsetf find-class (&rest x) (v) `(setf-find-class ,v ,@x))
 
 
 ;;; ----------------------------------------------------------------------
