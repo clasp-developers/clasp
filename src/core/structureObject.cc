@@ -43,30 +43,5 @@ namespace core {
 
 #define USE_INSTANCES_FOR_STRUCTURES
 
-CL_LAMBDA(type &rest slot-values);
-CL_DECLARE();
-CL_DOCSTRING("makeStructure");
-CL_DEFUN T_sp core__make_structure(T_sp type, List_sp slot_values) {
-  if (type.nilp()) {
-    SIMPLE_ERROR(BF("You cannot makeStructure of type nil"));
-  }
-#ifdef CLOS
-  if (Class_sp ctype = type.asOrNull<Class_O>()) {
-    ASSERTF(!type.nilp(), BF("Tried to make-structure with type = nil"));
-    //	printf("%s:%d  core__make_structure of %s  slot_values: %s\n",
-    //	       __FILE__, __LINE__, _rep_(type).c_str(), _rep_(slot_values).c_str());
-    Instance_sp so = core__allocate_new_instance(ctype, cl__length(slot_values));
-    int idx = 0;
-    for (auto slot : slot_values) {
-      so->instanceSet(idx, oCar(slot));
-      ++idx;
-    }
-    return so;
-  }
-#endif // CLOS
-  SIMPLE_ERROR(BF("You are trying to make a structure of type %s before CLOS is available - this will not work") % _rep_(type));
-};
-
-SYMBOL_EXPORT_SC_(CorePkg, makeStructure);
 SYMBOL_EXPORT_SC_(ClPkg,structure_object);
 };

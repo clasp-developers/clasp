@@ -397,15 +397,21 @@
                      ;; in the lambda list.
                      (constructor-helper constructor slot-descriptions)
                    (list `(declaim (ftype ,ftype ,constructor-name)) ; useless atm
-                         `(defun ,constructor-name ,lambda-list
-                            ;; FIXME: prefer allocate-instance and instance-set, maybe?
-                            (make-structure
-                             ;; The class is not immediately available at l-t-v time-
-                             ;; because the defclass form must be evaluated first.
-                             ;; Thus, bullshit.
-                             (let ((class (load-time-value (list nil))))
-                               (or (car class) (car (rplaca class (find-class ',name)))))
-                             ,@vars)))))
+                         (let ((instance (gensym "INSTANCE"))
+                               (index 0))
+                           `(defun ,constructor-name ,lambda-list
+                              (let ((,instance
+                                      (allocate-instance
+                                       ;; The class is not immediately available at l-t-v time-
+                                       ;; because the defclass form must be evaluated first.
+                                       ;; Thus, bullshit.
+                                       (let ((class (load-time-value (list nil))))
+                                         (or (car class) (car (rplaca class (find-class ',name))))))))
+                                ,@(mapcar (lambda (var)
+                                            (prog1 `(si:instance-set ,instance ,index ,var)
+                                              (incf index)))
+                                          vars)
+                                ,instance))))))
                constructors)))
 
 (defmacro define-class-struct-accessors (name conc-name slot-descriptions)
