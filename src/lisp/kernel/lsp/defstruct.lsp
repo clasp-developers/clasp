@@ -230,23 +230,19 @@
                   (mapcar #'struct-slotd-name slot-descriptions))))
       ;; standard constructor
       ;; we use uninterned symbols as parameters as per a bunch of pedantry, check CLHS defstruct.
-      (let* ((symbols (mapcar (lambda (sd)
-                                (if (or (null sd) ; initial-offset pad
-                                        (eq (struct-slotd-name sd) 'typed-structure-name))
-                                    nil
-                                    (copy-symbol (struct-slotd-name sd))))
-                              slot-descriptions))
-             (parameters (remove nil symbols))
-             (variables (mapcar (lambda (sd symbol)
-                                  (cond ((null sd) nil)
-                                        ((eq (struct-slotd-name sd) 'typed-structure-name)
-                                         (struct-slotd-initform sd))
-                                        (t symbol)))
-                                slot-descriptions symbols)))
+      (let ((parameters nil) (variables nil))
+        (mapc (lambda (sd)
+                (cond ((null sd) (push nil variables))
+                      ((eq (struct-slotd-name sd) 'typed-structure-name)
+                       (push (struct-slotd-initform sd) variables))
+                      (t (let ((param (copy-symbol (struct-slotd-name sd))))
+                           (push (list param (struct-slotd-initform sd)) parameters)
+                           (push param variables)))))
+              slot-descriptions)
         (values constructor
-                `(&key ,@parameters)
+                `(&key ,@(nreverse parameters))
                 'function ; FIXME: also weak.
-                variables))))
+                (nreverse variables)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -311,8 +307,9 @@
                      (structure-slot-descriptions ',name) ',slotds))
                ,@(when predicate
                    `((defun ,predicate (object)
-                       ;; FIXME: be more careful. predicates shouldn't err.
-                       (eq (row-major-aref object ,name-offset) ',name))))
+                       (and (typep object '(vector ,element-type))
+                            (> (length object) ,name-offset)
+                            (eq (row-major-aref object ,name-offset) ',name)))))
                (define-vector-struct-constructors ,name ,element-type ,constructors ,slotds)
                (define-vector-struct-accessors ,name ,conc-name ,element-type ,slotds))))
        ,@(when copier
@@ -370,8 +367,12 @@
                      (structure-slot-descriptions ',name) ',slotds))
              ,@(when predicate
                  `((defun ,predicate (object)
-                     ;; FIXME: be more careful. predicates shouldn't err.
-                     (eq (nth ,name-offset object) ',name))))
+                     (and
+                      (consp object)
+                      ,@(let (forms)
+                          (dotimes (i name-offset (nreverse forms))
+                            (push '(consp (setf object (cdr object))) forms)))
+                      (eq (car object) ',name)))))
              (define-list-struct-constructors ,name ,constructors ,slotds)
              (define-list-struct-accessors ,name ,conc-name ,slotds))))
      ,@(when copier
