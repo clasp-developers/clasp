@@ -432,7 +432,7 @@
                                (the ,type (si:instance-ref ,name ,index)))
                             writer))
                  (incf index)))))
-      (mapcan #'one slot-descriptions))))
+      `(progn ,@(mapcan #'one slot-descriptions)))))
 
 (defmacro define-class-struct (name conc-name include slot-descriptions
                                overwriting-slot-descriptions print-function
@@ -456,7 +456,7 @@
      ,@(when print-object
          (let ((obj (gensym "OBJ")) (stream (gensym "STREAM")))
            `((defmethod print-object ((,obj ,name) ,stream)
-               ,(print-object obj stream)))))
+               (,print-object ,obj ,stream)))))
      ,@(when predicate
          ;; generic functions are now fast enough that this is
          ;; faster code than calling SUBCLASSP or whatnot.
@@ -473,7 +473,10 @@
 
      ,@(with-defstruct-delay (all-slots name include
                               slot-descriptions overwriting-slot-descriptions env)
-         `((define-class-struct-constructors ,name ,constructors ,all-slots)
+         `((eval-when (:compile-toplevel :load-toplevel :execute)
+               (setf (structure-size ',name) ,(length all-slots)
+                     (structure-slot-descriptions ',name) ',all-slots))
+           (define-class-struct-constructors ,name ,constructors ,all-slots)
            (define-class-struct-accessors ,name ,conc-name ,all-slots)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
