@@ -67,22 +67,6 @@ CL_DEFUN T_sp core__make_structure(T_sp type, List_sp slot_values) {
   SIMPLE_ERROR(BF("You are trying to make a structure of type %s before CLOS is available - this will not work") % _rep_(type));
 };
 
-CL_LAMBDA(arg);
-CL_DECLARE();
-CL_DOCSTRING("copyStructure");
-CL_DEFUN T_sp cl__copy_structure(T_sp arg) {
-  if (arg.nilp()) {
-    SIMPLE_ERROR(BF("You cannot copyStructure nil"));
-  }
-#ifdef CLOS
-  if (Instance_sp iarg = arg.asOrNull<Instance_O>()) {
-    return iarg->copyInstance();
-  }
-#endif
-  SIMPLE_ERROR(BF("You cannot copy-structure a %s") % _rep_(arg));
-};
-
 SYMBOL_EXPORT_SC_(CorePkg, makeStructure);
-SYMBOL_EXPORT_SC_(ClPkg, copyStructure);
 SYMBOL_EXPORT_SC_(ClPkg,structure_object);
 };
