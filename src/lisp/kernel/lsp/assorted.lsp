@@ -147,7 +147,6 @@
 (defun string-capitalize (string &key (start 0) end)
   (nstring-capitalize (copy-seq (string string)) :start start :end end))
 
-;;; Begin from knpk 2018-03-17 Fix string-upcase, nstring-upcase, string-downcase, nstring-downcase
 (defun %real-string (string-designator)
   (etypecase string-designator
     (string (copy-seq string-designator))
@@ -167,22 +166,24 @@
     (error "Bad parameters Start ~s End ~s for ~s" start end real-string))
   (values start end))
 
-(defun %transform-string (real-string new-start new-end predicate transformation)
-  (dotimes (x (- new-end new-start))
-    (let* ((index (+ new-start x))
-           (char (char real-string index)))
-      (when (funcall predicate char)
-        (setf (char real-string index)
-              (funcall transformation char)))))
-  real-string)
-
+(defmacro %transform-string (real-string new-start new-end predicate transformation)
+  (let ((index1 (gensym))
+	(index2 (gensym))
+	(char (gensym)))
+    `(dotimes (,index1 (- ,new-end ,new-start) , real-string)
+       (let* ((,index2 (+ ,new-start ,index1))
+	      (,char (char ,real-string ,index2)))
+	 (when (,predicate ,char)
+	   (setf (char ,real-string ,index2)
+		 (,transformation ,char)))))))
+  
 (defun string-upcase (string-designator &key (start 0) end)
   ;;;string-designator to string
   (let ((real-string (%real-string string-designator)))
     (multiple-value-bind
           (new-start new-end)
         (%verify-string-args start end real-string)
-      (%transform-string real-string new-start new-end #'lower-case-p #'char-upcase))))
+      (%transform-string real-string new-start new-end lower-case-p char-upcase))))
 
 (defun string-downcase (string-designator &key (start 0) end)
   ;;;string-designator to string
@@ -190,7 +191,7 @@
     (multiple-value-bind
           (new-start new-end)
         (%verify-string-args start end real-string)
-      (%transform-string real-string new-start new-end #'upper-case-p #'char-downcase))))
+      (%transform-string real-string new-start new-end upper-case-p char-downcase))))
 
 (defun nstring-upcase (real-string &key (start 0) end)
   (unless (stringp real-string)
@@ -198,7 +199,7 @@
   (multiple-value-bind
         (new-start new-end)
       (%verify-string-args start end real-string)
-    (%transform-string real-string new-start new-end #'lower-case-p #'char-upcase)))
+    (%transform-string real-string new-start new-end lower-case-p char-upcase)))
 
 (defun nstring-downcase (real-string &key (start 0) end)
   (unless (stringp real-string)
@@ -206,9 +207,7 @@
   (multiple-value-bind
         (new-start new-end)
       (%verify-string-args start end real-string)
-    (%transform-string real-string new-start new-end #'upper-case-p #'char-downcase)))
-    
-;;; End from knpk 2018-03-17 Fix string-upcase, nstring-upcase, string-downcase, nstring-downcase
+    (%transform-string real-string new-start new-end upper-case-p char-downcase)))
 
 (defun float-radix (arg)
   ;; Unless you are internally representing
