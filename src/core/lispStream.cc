@@ -1771,7 +1771,9 @@ str_in_listen(T_sp strm) {
 
 static T_sp
 str_in_element_type(T_sp strm) {
-  T_sp tstring = StringOutputStreamOutputString(strm);
+  // kpoeck this is an input-string, no output
+  // T_sp tstring = StringOutputStreamOutputString(strm);
+  T_sp tstring = StringInputStreamInputString(strm);
   ASSERT(cl__stringp(tstring));
   return gc::As_unsafe<String_sp>(tstring)->arrayElementType();
 }
@@ -2410,6 +2412,15 @@ concatenated_read_byte(T_sp strm) {
   return c;
 }
 
+//kpoeck
+static T_sp
+concatenated_element_type(T_sp strm) {
+  T_sp l = ConcatenatedStreamList(strm);
+  if (l.nilp())
+    return _lisp->_true();
+  return clasp_stream_element_type(oCar(l));
+}
+
 static claspCharacter
 concatenated_read_char(T_sp strm) {
   T_sp l = ConcatenatedStreamList(strm);
@@ -2478,8 +2489,11 @@ const FileOps concatenated_ops = {
     generic_always_true,  /* input_p */
     generic_always_false, /* output_p */
     generic_always_false,
-    broadcast_element_type,
-
+    // kpoeck, this is wrong, must be specific for concatenated streams
+    // should be concatenated_element_type with a proper definition for that
+    // ccl does more or less (stream-element-type (concatenated-stream-current-input-stream s))
+    //broadcast_element_type,
+    concatenated_element_type,
     not_a_file_stream,  /* length */
     generic_always_nil, /* get_position */
     generic_set_position,
@@ -6124,7 +6138,11 @@ CL_DEFUN T_mv cl__read_line(T_sp sin, T_sp eof_error_p, T_sp eof_value, T_sp rec
     T_sp tch = cl__read_char(sin, _Nil<T_O>(), _Nil<T_O>(), recursive_p);
     if (tch.nilp()) {
       if (eofErrorP) {
-        ERROR_END_OF_FILE(sin);
+        // If something has been read in this line, no error and it must be returned 
+        if (sbuf->length()>0) {
+            return Values(sbuf, _lisp->_true());
+          }
+        else ERROR_END_OF_FILE(sin);;
       } else {
         if (sbuf->length()>0) {
           return Values(sbuf, _Nil<T_O>());
