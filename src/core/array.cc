@@ -1003,7 +1003,7 @@ T_sp template_string_LT_(const T1& string1, const T2& string2, size_t start1, si
   if (num2 == 0)
     goto RETURN_FALSE;
  RETURN_TRUE:
-  return make_fixnum((int)(cp1.offset()));
+  return make_fixnum((int)(cp1.offset() + start1));
  END_STRING2:
  RETURN_FALSE:
   return _Nil<T_O>();
@@ -1036,7 +1036,7 @@ T_sp template_string_GT_(const T1& string1, const T2& string2, size_t start1, si
   return _Nil<T_O>();
  END_STRING2:
  RETURN_TRUE:
-  return make_fixnum((int)(cp1.offset()));
+  return make_fixnum((int)(cp1.offset() + start1));
 }
 
 /*! bounding index designator range from 0 to the end of each string */
@@ -1046,6 +1046,8 @@ T_sp template_string_LE_(const T1& string1, const T2& string2, size_t start1, si
   StringCharPointer<T2> cp2(&string2,start2);
   size_t num1 = end1 - start1;
   size_t num2 = end2 - start2;
+  // the empty string is le any other string
+  if (num1 == 0) goto RETURN_TRUE;
   while (1) {
     if (num1 == 0)
       goto END_STRING1;
@@ -1069,7 +1071,7 @@ T_sp template_string_LE_(const T1& string1, const T2& string2, size_t start1, si
  RETURN_FALSE:
   return _Nil<T_O>();
  RETURN_TRUE:
-  return make_fixnum((int)(cp1.offset()));
+  return make_fixnum((int)(cp1.offset() + start1));
 }
 
 /*! bounding index designator range from 0 to the end of each string */
@@ -1079,6 +1081,8 @@ T_sp template_string_GE_(const T1& string1, const T2& string2, size_t start1, si
   StringCharPointer<T2> cp2(&string2,start2);
   size_t num1 = end1 - start1;
   size_t num2 = end2 - start2;
+  // Any String is ge the empty string
+  if (num2 == 0) goto RETURN_TRUE;
   while (1) {
     if (num1 == 0)
       goto END_STRING1;
@@ -1099,10 +1103,12 @@ T_sp template_string_GE_(const T1& string1, const T2& string2, size_t start1, si
     goto RETURN_TRUE;
   goto RETURN_FALSE;
  END_STRING2:
+  // String1 still has chars, string2 not
+  goto RETURN_TRUE;
  RETURN_FALSE:
   return _Nil<T_O>();
  RETURN_TRUE:
-  return make_fixnum((int)(cp1.offset()));
+  return make_fixnum((int)(cp1.offset() + start1));
 }
 
 /*! bounding index designator range from 0 to the end of each string */
@@ -1193,7 +1199,7 @@ T_sp template_string_lessp(const T1& string1, const T2& string2, size_t start1, 
   if (num2 == 0)
     goto RETURN_FALSE;
  RETURN_TRUE:
-  return make_fixnum((int)(cp1.offset()));
+  return make_fixnum((int)(cp1.offset() + start1));
  END_STRING2:
  RETURN_FALSE:
   return _Nil<T_O>();
@@ -1228,7 +1234,7 @@ T_sp template_string_greaterp(const T1& string1, const T2& string2, size_t start
   return _Nil<T_O>();
  END_STRING2:
  RETURN_TRUE:
-  return make_fixnum((int)(cp1.offset()));
+  return make_fixnum((int)(cp1.offset() + start1));
 }
 
 /*! bounding index designator range from 0 to the end of each string */
@@ -1238,6 +1244,8 @@ T_sp template_string_not_greaterp(const T1& string1, const T2& string2, size_t s
   StringCharPointer<T2> cp2(&string2,start2);
   size_t num1 = end1 - start1;
   size_t num2 = end2 - start2;
+  // The empty String is not greater than any other string, even another empty string
+  if (num1 == 0) goto RETURN_TRUE;
   while (1) {
     if (num1 == 0)
       goto END_STRING1;
@@ -1263,7 +1271,7 @@ T_sp template_string_not_greaterp(const T1& string1, const T2& string2, size_t s
  RETURN_FALSE:
   return _Nil<T_O>();
  RETURN_TRUE:
-  return make_fixnum((int)(cp1.offset()));
+  return make_fixnum((int)(cp1.offset() + start1));
 }
 
 /*! bounding index designator range from 0 to the end of each string */
@@ -1273,6 +1281,9 @@ T_sp template_string_not_lessp(const T1& string1, const T2& string2, size_t star
   StringCharPointer<T2> cp2(&string2,start2);
   size_t num1 = end1 - start1;
   size_t num2 = end2 - start2;
+  // No String is lessp the empty string
+  // So every String is not-lessp the empty string
+  if (num2 == 0) goto RETURN_TRUE;
   while (1) {
     if (num1 == 0)
       goto END_STRING1;
@@ -1295,10 +1306,12 @@ T_sp template_string_not_lessp(const T1& string1, const T2& string2, size_t star
     goto RETURN_TRUE;
   goto RETURN_FALSE;
  END_STRING2:
+  //String2 is consumed, String1 not yet
+  goto RETURN_TRUE;
  RETURN_FALSE:
   return _Nil<T_O>();
  RETURN_TRUE:
-  return make_fixnum((int)(cp1.offset()));
+  return make_fixnum((int)(cp1.offset() + start1));
 }
 
 inline void setup_string_op_arguments(T_sp string1_desig, T_sp string2_desig,
@@ -1309,9 +1322,17 @@ inline void setup_string_op_arguments(T_sp string1_desig, T_sp string2_desig,
                                       size_t &istart2, size_t &iend2) {
   string1 = coerce::stringDesignator(string1_desig);
   string2 = coerce::stringDesignator(string2_desig);
+  // This silently corrects a negative start1, this is not correct
   istart1 = MAX(unbox_fixnum(start1), 0);
+  if (istart1 > cl__length(string1)) {
+    SIMPLE_ERROR(BF("start1 %d out of bounds for string %s") % istart1 % string1);
+  }
   iend1 = MIN(end1.nilp() ? cl__length(string1) : unbox_fixnum(gc::As<Fixnum_sp>(end1)), cl__length(string1));
+  // This silently corrects a negative start2, this is not correct
   istart2 = MAX(unbox_fixnum(start2), 0);
+  if (istart2 > cl__length(string2)) {
+    SIMPLE_ERROR(BF("start2 %d out of bounds for string %s") % istart2 % string2);
+  }
   iend2 = MIN(end2.nilp() ? cl__length(string2) : unbox_fixnum(gc::As<Fixnum_sp>(end2)), cl__length(string2));
 }
 
