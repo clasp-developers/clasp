@@ -76,7 +76,6 @@ THE SOFTWARE.
 #include <clasp/core/external_wrappers.h>
 #include <clasp/core/fileSystem.fwd.h>
 #include <clasp/core/fileSystem.h>
-#include <clasp/core/forwardReferencedClass.h>
 #include <clasp/core/funcallableStandardClass.fwd.h>
 #include <clasp/core/funcallableStandardClass.h>
 #include <clasp/core/gcInterface.h>
