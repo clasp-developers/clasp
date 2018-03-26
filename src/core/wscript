@@ -111,7 +111,6 @@ def build(bld):
             'singleDispatchGenericFunction',
             'singleDispatchMethod',
             'derivableCxxObject',
-#            'structureClass',
             'null',
 #            'forwardReferencedClass',
             'character',
