@@ -67,8 +67,11 @@ detail::class_id_map *globalClassIdMap;
 //! Take the place of __clbind_class_map
 gctools::tagged_pointer<detail::class_map> globalClassMap;
 
-class ClbindTest {
+class Test {
 public:
+  Test() : multiplier(1234) {};
+public:
+  int  multiplier;
   std::vector<int> numbers;
 
   void set2(int n0, int n1) {
@@ -114,7 +117,7 @@ public:
   void print_numbers() {
     int idx=0;
     for (auto n : this->numbers) {
-      printf("%s:%d number[%d] -> %d\n", __FILE__, __LINE__, idx, n);
+      printf("%s:%d number[%d] -> %d\n", __FILE__, __LINE__, idx, n*this->multiplier);
       ++idx;
     }
   }
@@ -122,20 +125,6 @@ public:
   
 
 
-CLBIND_API int get_main_thread() {
-  IMPLEMENT_ME();
-#if 0
-        cl_pushlightuserdata(L, &main_thread_tag);
-        cl_rawget(L, CL_REGISTRYINDEX);
-        cl_State* result = static_cast<cl_State*>(cl_touserdata(L, -1));
-        cl_pop(L, 1);
-
-        if (!result)
-            throw std::runtime_error("Unable to get main thread, clbind::open() not called?");
-
-        return result;
-#endif
-}
 
 CLBIND_API void initialize_clbind() {
   ClassRegistry_sp registry = ClassRegistry_O::create();
@@ -146,15 +135,17 @@ CLBIND_API void initialize_clbind() {
 #if 1
   package("CLBIND-TEST",{"CLBIND-TEST"}, {"CL"})
     [
-     class_<ClbindTest>("ClbindTest")
-     .def("set2",&ClbindTest::set2)
-     .def("set3",&ClbindTest::set3)
-     .def("set4",&ClbindTest::set4)
-     .def("set5",&ClbindTest::set5)
-     .def("set6",&ClbindTest::set6)
-     .def("print-numbers",&ClbindTest::print_numbers)
+     class_<Test>("Test")
+     .def_readwrite("multiplier",&Test::multiplier)
+     .def("set2",&Test::set2)
+     .def("set3",&Test::set3)
+     .def("set4",&Test::set4)
+     .def("set5",&Test::set5)
+     .def("set6",&Test::set6)
+     .def("print-numbers",&Test::print_numbers)
      ];
 #endif
 }
 
 } // namespace clbind
+ 

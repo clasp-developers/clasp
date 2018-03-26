@@ -46,7 +46,7 @@ namespace core {
 
 
 
-SingleDispatchMethod_sp SingleDispatchMethod_O::create(Symbol_sp name,
+SingleDispatchMethod_sp SingleDispatchMethod_O::create(T_sp name,
                                                        Class_sp receiverClass,
                                                        LambdaListHandler_sp llh,
                                                        List_sp declares,

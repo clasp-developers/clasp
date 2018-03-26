@@ -902,10 +902,11 @@ string fix_method_lambda(core::Symbol_sp class_symbol, const string& lambda)
 SYMBOL_EXPORT_SC_(KeywordPkg, body);
 SYMBOL_EXPORT_SC_(KeywordPkg, lambda_list_handler);
 SYMBOL_EXPORT_SC_(KeywordPkg, docstring);
-void lisp_defineSingleDispatchMethod(Symbol_sp sym,
+void lisp_defineSingleDispatchMethod(T_sp name,
                                      Symbol_sp classSymbol,
                                      BuiltinClosure_sp method_body,
-                                     int TemplateDispatchOn,
+                                     size_t TemplateDispatchOn,
+                                     bool useTemplateDispatchOn,
                                      const string &raw_arguments,
                                      const string &declares,
                                      const string &docstring,
@@ -919,6 +920,8 @@ void lisp_defineSingleDispatchMethod(Symbol_sp sym,
   // NOTE: We are compiling the llhandler in the package of the class - not the package of the
   // method name  -- sometimes the method name will belong to another class (ie: core:--init--)
   LambdaListHandler_sp llhandler;
+  size_t single_dispatch_argument_index;
+  if (useTemplateDispatchOn) single_dispatch_argument_index = TemplateDispatchOn;
   if (arguments == "" && number_of_required_arguments >= 0) {
     // If the arguments string is empty and number_of_required_arguments is >= 0 then create
     // a LambdaListHandler that supports that number of required arguments
@@ -933,36 +936,40 @@ void lisp_defineSingleDispatchMethod(Symbol_sp sym,
     if (specializer_symbol.notnilp() && specializer_symbol != classSymbol) {
       SIMPLE_ERROR(BF("Mismatch between hard coded class[%s] and"
                       " specializer_symbol[%s] for function %s with argument list: %s") %
-                   classSymbol->fullName() % specializer_symbol->fullName() % _rep_(sym) % _rep_(llraw));
+                   classSymbol->fullName() % specializer_symbol->fullName() % _rep_(name) % _rep_(llraw));
     }
     llhandler = lisp_function_lambda_list_handler(llproc, ldeclares, pureOutIndices);
     if (sd_symbol.notnilp()) {
-      int single_dispatch_argument_index = llhandler->single_dispatch_on_argument(sd_symbol);
-      if (single_dispatch_argument_index != 0) {
+      single_dispatch_argument_index = llhandler->single_dispatch_on_argument(sd_symbol);
+      if (useTemplateDispatchOn) {
+        if (single_dispatch_argument_index != TemplateDispatchOn) {
+          SIMPLE_ERROR(BF("There is a mismatch between the single_dispatch_argument_index %d and TemplateDispatchOn %d") % single_dispatch_argument_index % TemplateDispatchOn);
+        }
+      }
+      // if dispatching off of something other than the first argument and this isn't a (setf xxx) function - then error
+      if (single_dispatch_argument_index != 0 && !(name.consp() && CONS_CAR(name)==cl::_sym_setf)) {
         SIMPLE_ERROR(BF("There is no support for dispatching on anything but the first argument -"
                         " wrap this virtual function in a regular function and do the dispatch yourself  %s::%s") %
-                     _rep_(className) % _rep_(sym));
+                     _rep_(className) % _rep_(name));
       }
     }
   } else {
     SIMPLE_ERROR(BF("No arguments were provided and number_of_required_arguments is %d") % number_of_required_arguments);
   }
-  if (TemplateDispatchOn != 0) {
-    SIMPLE_ERROR(BF("Mismatch between single_dispatch_argument_index[0] from lambda_list and TemplateDispatchOn[%d] for class %s  method: %s  lambda_list: %s") % TemplateDispatchOn % _rep_(classSymbol) % _rep_(sym) % arguments);
+  if (TemplateDispatchOn != single_dispatch_argument_index) {
+    SIMPLE_ERROR(BF("Mismatch between single_dispatch_argument_index[%d] from lambda_list and TemplateDispatchOn[%d] for class %s  method: %s  lambda_list: %s") % single_dispatch_argument_index % TemplateDispatchOn % _rep_(classSymbol) % _rep_(name) % arguments);
   }
-  if (autoExport)
-    sym->exportYourself();
   LOG(BF("Interned method in class[%s]@%p with symbol[%s] arguments[%s] - autoexport[%d]") % receiver_class->instanceClassName() % (receiver_class.get()) % sym->fullName() % arguments % autoExport);
   SimpleBaseString_sp docStr = SimpleBaseString_O::make(docstring);
-  T_sp gfn = core__ensure_single_dispatch_generic_function(sym, llhandler); // Ensure the single dispatch generic function exists
+  T_sp gfn = core__ensure_single_dispatch_generic_function(name, llhandler,autoExport,single_dispatch_argument_index); // Ensure the single dispatch generic function exists
   (void)gfn;                                                         // silence compiler warning
   LOG(BF("Attaching single_dispatch_method symbol[%s] receiver_class[%s]  method_body@%p") % _rep_(sym) % _rep_(receiver_class) % ((void *)(method_body)));
   method_body->finishSetup(llhandler, kw::_sym_function);
   ASSERT(llhandler || llhandler.notnilp());
 #ifdef DEBUG_PROGRESS
-    printf("%s:%d lisp_defineSingleDispatchMethod sym: %s\n", __FILE__, __LINE__, _rep_(sym).c_str());
+  printf("%s:%d lisp_defineSingleDispatchMethod sym: %s\n", __FILE__, __LINE__, _rep_(sym).c_str());
 #endif
-  core__ensure_single_dispatch_method(sym, receiver_class, llhandler, ldeclares, docStr, method_body);
+  core__ensure_single_dispatch_method(gfn, name, receiver_class, llhandler, ldeclares, docStr, method_body);
 }
 
 void lisp_throwIfBuiltInClassesNotInitialized() {

@@ -272,8 +272,10 @@ class Lisp_O {
     Package_sp _CommonLispPackage;
     HashTableEq_sp _SpecialForms;
     /*! Store a table of generic functions - should this be a HashTable?  What about (setf XXX) generic functions? Aug2013 */
-    /*SymbolMap<SingleDispatchGenericFunction_O> 	_SingleDispatchGenericFunctionTable;*/
-    HashTableEq_sp _SingleDispatchGenericFunctionTable;
+    HashTableEqual_sp _SingleDispatchGenericFunctionHashTableEqual;
+#ifdef CLASP_THREADS
+    mutable mp::SharedMutex _SingleDispatchGenericFunctionHashTableEqualMutex;
+#endif
 
 #ifdef DEBUG_MONITOR
 #ifdef CLASP_THREADS
@@ -282,9 +284,6 @@ class Lisp_O {
     std::ofstream _LogStream;
 #endif
     
-#ifdef CLASP_THREADS
-    mutable mp::SharedMutex _SingleDispatchGenericFunctionTableMutex;
-#endif
     /*! True object */
     T_sp _TrueObject;
     //-----
@@ -745,15 +744,15 @@ public:
   bool isEmbeddedInPython() { return this->_EmbeddedInPython; };
   void setEmbeddedInPython(bool b);
 
-  /*! Lookup a single-dispatch-ggeneric-function in the _SingleDispatchGenericFunctionTable by name
+  /*! Lookup a single-dispatch-ggeneric-function in the _SingleDispatchGenericFunctionHashTableEqual by name
 	 If errorp == true then throw an exception if the single-dispatch-generic-function is not
 	 found otherwise return nil */
-  static T_sp find_single_dispatch_generic_function(Symbol_sp gfSym, bool errorp = true);
+  static SingleDispatchGenericFunctionClosure_sp find_single_dispatch_generic_function(T_sp gfName, bool errorp = true);
   /*! Associate a generic function with a symbol by name */
-  static T_sp setf_find_single_dispatch_generic_function(Symbol_sp gfSym, SingleDispatchGenericFunctionClosure_sp gf);
+  static SingleDispatchGenericFunctionClosure_sp setf_find_single_dispatch_generic_function(T_sp gfName, SingleDispatchGenericFunctionClosure_sp gf);
   /*! Clear all generic functions */
   static void forget_all_single_dispatch_generic_functions();
-  HashTableEq_sp singleDispatchGenericFunctionTable() const { return this->_Roots._SingleDispatchGenericFunctionTable; };
+  HashTableEqual_sp singleDispatchGenericFunctionHashTableEqual() const { return this->_Roots._SingleDispatchGenericFunctionHashTableEqual; };
 
 private:
   static void setupSpecialSymbols();

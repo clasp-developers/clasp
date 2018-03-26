@@ -268,14 +268,15 @@ template <class Class, class Policies>
 //                printf("%p\n", i);
   core::Symbol_sp classSymbol = reg::lisp_classSymbol<Class>();
   lisp_defineSingleDispatchMethod(name
-    , classSymbol
-    , getter
-    , 0
-    , m_arguments
-    , m_declares
-    , m_docstring
-    , true
-    , 1 );
+                                  , classSymbol
+                                  , getter
+                                  , 0
+                                  , true
+                                  , m_arguments
+                                  , m_declares
+                                  , m_docstring
+                                  , true
+                                  , 1 );
 //                printf("%s:%d - allocated a getter@%p for %s\n", __FILE__, __LINE__, getter, name);
                 // register the getter here
 }

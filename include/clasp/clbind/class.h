@@ -389,7 +389,7 @@ struct memfun_registration : registration {
     core::Symbol_sp classSymbol = reg::lisp_classSymbol<Class>();
     core::Symbol_sp sym = core::lispify_intern(name, symbol_packageName(classSymbol));
     core::BuiltinClosure_sp methoid = gc::GC<IndirectVariadicMethoid<Policies, Class, MethodPointerType>>::allocate(sym, methodPtr);
-    lisp_defineSingleDispatchMethod(sym, classSymbol, methoid, 0, m_arguments, m_declares, m_docstring, true, CountMethodArguments<MethodPointerType>::value + 1 // +1 for the self argument
+    lisp_defineSingleDispatchMethod(sym, classSymbol, methoid, 0, true, m_arguments, m_declares, m_docstring, true, CountMethodArguments<MethodPointerType>::value + 1 // +1 for the self argument
                                     ,
                                     GatherPureOutValues<Policies, 0>::gather());
 // I'm going to comment out the luabind way of defining member functions
@@ -427,7 +427,7 @@ struct iterator_registration : registration {
 
     //                int*** i = MethodPointerType(); printf("%p\n", i); // generate error to check type
     //                print_value_as_warning<CountMethodArguments<MethodPointerType>::value>()();
-    lisp_defineSingleDispatchMethod(sym, classSymbol, methoid, 0, m_arguments, m_declares, m_docstring, true, 1); // one argument required for iterator - the object that has the sequence
+    lisp_defineSingleDispatchMethod(sym, classSymbol, methoid, 0, true, m_arguments, m_declares, m_docstring, true, 1); // one argument required for iterator - the object that has the sequence
   }
 
   char const *name;
@@ -562,7 +562,10 @@ struct property_registration : registration {
     core::Symbol_sp classSymbol = reg::lisp_classSymbol<Class>();
     core::Symbol_sp sym = core::lispify_intern(n, symbol_packageName(classSymbol));
     core::BuiltinClosure_sp getter = gc::GC<GetterMethoid<reg::null_type, Class, Get>>::allocate(sym, get);
-    lisp_defineSingleDispatchMethod(sym, classSymbol, getter, 0, m_arguments, m_declares, m_docstring, true, 1);
+    lisp_defineSingleDispatchMethod(sym, classSymbol, getter, 0, true, m_arguments, m_declares, m_docstring, true, 1);
+    core::T_sp setf_name = core::Cons_O::createList(cl::_sym_setf,sym);
+    core::BuiltinClosure_sp setter = gc::GC<SetterMethoid<reg::null_type, Class, Set>>::allocate(setf_name, set);
+    lisp_defineSingleDispatchMethod(setf_name, classSymbol, setter, 1, true, m_arguments, m_declares, m_docstring, true, 2);
     //                printf("%s:%d - allocated a getter@%p for %s\n", __FILE__, __LINE__, getter, name);
     // register the getter here
   }
@@ -575,6 +578,46 @@ struct property_registration : registration {
   string m_declares;
   string m_docstring;
 };
+
+
+ template <
+    class Class, class Get, class GetPolicies>
+   struct property_registration<Class,Get,GetPolicies,reg::null_type,reg::null_type> : registration {
+  property_registration(
+      const string &name,
+      Get const &get,
+      GetPolicies const &get_policies,
+      reg::null_type const &set = reg::null_type(),
+      reg::null_type const &set_policies = reg::null_type(),
+      string const &arguments = "",
+      string const &declares = "",
+      string const &docstring = "")
+      : name(name), get(get), get_policies(get_policies), m_arguments(arguments), m_declares(declares), m_docstring(docstring) {}
+
+  void register_() const {
+    const string n(name);
+    //                int*** i = GetterMethoid<reg::null_type,Class,Get>(n,get);
+    //                printf("%p\n", i);
+    core::Symbol_sp classSymbol = reg::lisp_classSymbol<Class>();
+    core::Symbol_sp sym = core::lispify_intern(n, symbol_packageName(classSymbol));
+    core::BuiltinClosure_sp getter = gc::GC<GetterMethoid<reg::null_type, Class, Get>>::allocate(sym, get);
+    lisp_defineSingleDispatchMethod(sym, classSymbol, getter, 0, true, m_arguments, m_declares, m_docstring, true, 1);
+    //                printf("%s:%d - allocated a getter@%p for %s\n", __FILE__, __LINE__, getter, name);
+    // register the getter here
+  }
+  std::string name;
+  Get get;
+  GetPolicies get_policies;
+  string m_arguments;
+  string m_declares;
+  string m_docstring;
+};
+
+
+
+ 
+
+
 } // namespace detail
 
 // registers a class in the cl environment

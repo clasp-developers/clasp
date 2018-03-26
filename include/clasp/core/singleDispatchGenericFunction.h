@@ -80,15 +80,16 @@ namespace core {
   /*! Store the methods here */
     List_sp _Methods;
     LambdaListHandler_sp _lambdaListHandler;
+    size_t _SingleDispatchArgumentIndex;
   /*! Store the method functions hashed on the receiver class */
   //	HashTable_sp	classesToClosures;
   public:
-      static SingleDispatchGenericFunctionClosure_sp create(T_sp functionName, LambdaListHandler_sp llhandler);
+    static SingleDispatchGenericFunctionClosure_sp create(T_sp functionName, LambdaListHandler_sp llhandler, size_t singleDispatchArgumentIndex);
 public:
-  SingleDispatchGenericFunctionClosure_O(T_sp name, Symbol_sp k, SOURCE_INFO)
-    : Base(entry_point,name, k, SOURCE_INFO_PASS), _Methods(_Nil<T_O>()), _lambdaListHandler(_Nil<LambdaListHandler_O>()){};
-  SingleDispatchGenericFunctionClosure_O(T_sp name)
-    : Base(entry_point,name), _Methods(_Nil<T_O>()), _lambdaListHandler(_Nil<LambdaListHandler_O>()){};
+  SingleDispatchGenericFunctionClosure_O(T_sp name, Symbol_sp k, size_t sdai, SOURCE_INFO)
+    : Base(entry_point,name, k, SOURCE_INFO_PASS), _Methods(_Nil<T_O>()), _lambdaListHandler(_Nil<LambdaListHandler_O>()), _SingleDispatchArgumentIndex(sdai) {};
+  SingleDispatchGenericFunctionClosure_O(T_sp name, size_t sdai)
+    : Base(entry_point,name), _Methods(_Nil<T_O>()), _lambdaListHandler(_Nil<LambdaListHandler_O>()), _SingleDispatchArgumentIndex(sdai) {};
     void finishSetup(LambdaListHandler_sp llh, Symbol_sp k) {
       this->_lambdaListHandler = llh;
       this->kind = k;
@@ -151,7 +152,7 @@ public:
   }
 };
 
-T_sp core__ensure_single_dispatch_generic_function(Symbol_sp gfname, LambdaListHandler_sp llhandler);
+ SingleDispatchGenericFunctionClosure_sp core__ensure_single_dispatch_generic_function(T_sp gfname, LambdaListHandler_sp llhandler, bool autoExport, size_t singleDispatchArgumentIndex);
 };
 
 

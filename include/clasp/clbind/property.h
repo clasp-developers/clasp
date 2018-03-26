@@ -100,4 +100,66 @@ public:
   static gctools::GCStampEnum const Stamp = gctools::GCStamp<typename clbind::GetterMethoid<GetterPolicies, OT, VariablePtrType>::TemplatedBase>::Stamp;
 };
 
+
+namespace clbind {
+template <typename SetterPolicies, typename OT, typename VariablePtrType>
+class SetterMethoid : public core::TemplatedFunctionBase_O {
+public:
+  typedef SetterMethoid<SetterPolicies,OT,VariablePtrType> MyType;
+  typedef core::TemplatedFunctionBase_O TemplatedBase;
+
+private:
+  typedef typename memberpointertraits<VariablePtrType>::member_type MemberType;
+  typedef clbind::Wrapper<MemberType> WrapperType;
+  VariablePtrType _MemberPtr;
+
+public:
+  virtual size_t templatedSizeof() const { return sizeof(*this); };
+
+public:
+ SetterMethoid(core::T_sp name, VariablePtrType p) : core::TemplatedFunctionBase_O(entry_point,name), _MemberPtr(p){};
+  inline static LCC_RETURN LISP_CALLING_CONVENTION() {
+    MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
+    INCREMENT_FUNCTION_CALL_COUNTER(closure);
+    OT *objPtr = gc::As<core::WrappedPointer_sp>((LCC_ARG1()))->cast<OT>();
+    translate::from_object<MemberType> fvalue(LCC_ARG0());
+    (*objPtr).*(closure->_MemberPtr) = fvalue._v;
+    gctools::return_type retv(LCC_ARG0().raw_(),1);
+    return retv;
+  }
+};
+};
+
+namespace clbind {
+template <typename SetterPolicies, typename OT, typename MemberType>
+class SetterMethoid<SetterPolicies, OT, MemberType *const(OT::*)> : public core::TemplatedFunctionBase_O {
+ public:
+  typedef SetterMethoid<SetterPolicies,OT,MemberType *const(OT::*)> MyType;
+  typedef core::TemplatedFunctionBase_O TemplatedBase;
+
+private:
+  typedef clbind::Wrapper<MemberType> WrapperType;
+  string _Name;
+  typedef MemberType *const(OT::*VariablePtrType);
+  VariablePtrType _MemberPtr;
+public:
+ SetterMethoid(core::T_sp name, VariablePtrType p) : TemplatedFunctionBase_O(entry_point,name), _MemberPtr(p){};
+  static inline LCC_RETURN LISP_CALLING_CONVENTION() {
+    MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
+    INCREMENT_FUNCTION_CALL_COUNTER(closure);
+    OT *objPtr = gc::As<core::WrappedPointer_sp>((LCC_ARG1()))->cast<OT>();
+    translate::from_object<MemberType> fvalue(LCC_ARG0());
+    (*objPtr).*(closure->_MemberPtr) = fvalue._v;
+    typename gctools::return_type ret(LCC_ARG0().raw_(),1);
+    return ret;
+  }
+};
+};
+
+template <typename SetterPolicies, typename OT, typename VariablePtrType>
+class gctools::GCStamp<clbind::SetterMethoid<SetterPolicies, OT, VariablePtrType>> {
+public:
+  static gctools::GCStampEnum const Stamp = gctools::GCStamp<typename clbind::SetterMethoid<SetterPolicies, OT, VariablePtrType>::TemplatedBase>::Stamp;
+};
+
 #endif

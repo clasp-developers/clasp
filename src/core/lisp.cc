@@ -605,7 +605,7 @@ void Lisp_O::startupLispEnvironment(Bundle *bundle) {
     _BLOCK_TRACE("Create some housekeeping objects");
 //NEW_LTV    this->_Roots._LoadTimeValueArrays = HashTableEqual_O::create_default();
 //    this->_Roots._SetfDefinitions = HashTableEq_O::create_default();
-    this->_Roots._SingleDispatchGenericFunctionTable = HashTableEq_O::create_default();
+    this->_Roots._SingleDispatchGenericFunctionHashTableEqual = HashTableEqual_O::create_default();
   }
   this->_EnvironmentInitialized = true;
   this->_BuiltInClassesInitialized = true;
@@ -2377,13 +2377,6 @@ CL_DOCSTRING("invokeInternalDebugger");
 };
 
 CL_LAMBDA();
-CL_DECLARE();
-CL_DOCSTRING("singleDispatchGenericFunctionTable");
-CL_DEFUN HashTable_sp core__single_dispatch_generic_function_table() {
-  return _lisp->singleDispatchGenericFunctionTable();
-};
-
-CL_LAMBDA();
 CL_DOCSTRING("invokeInternalDebuggerFromGdb");
 CL_DEFUN void core__invoke_internal_debugger_from_gdb() {
   eval::funcall(_sym_invokeInternalDebugger);
@@ -2610,31 +2603,31 @@ void Lisp_O::switchToClassNameHashTable() {
 CL_LAMBDA(gf-symbol &optional errorp);
 CL_DOCSTRING("Lookup a single dispatch generic function. If errorp is truen and the generic function isn't found throw an exception");
 CL_LISPIFY_NAME(find_single_dispatch_generic_function);
-CL_DEFUN T_sp Lisp_O::find_single_dispatch_generic_function(Symbol_sp gfSym, bool errorp) {
-  WITH_READ_LOCK(_lisp->_Roots._SingleDispatchGenericFunctionTableMutex);
-  T_sp fn = _lisp->_Roots._SingleDispatchGenericFunctionTable->gethash(gfSym, _Nil<T_O>());
-  if (fn.nilp()) {
+CL_DEFUN SingleDispatchGenericFunctionClosure_sp Lisp_O::find_single_dispatch_generic_function(T_sp gfName, bool errorp) {
+  WITH_READ_LOCK(_lisp->_Roots._SingleDispatchGenericFunctionHashTableEqualMutex);
+  T_sp tfn = _lisp->_Roots._SingleDispatchGenericFunctionHashTableEqual->gethash(gfName, _Nil<T_O>());
+  if (tfn.nilp()) {
     if (errorp) {
-      SIMPLE_ERROR(BF("No single-dispatch-generic-function named %s") % _rep_(gfSym));
+      SIMPLE_ERROR(BF("No single-dispatch-generic-function named %s") % _rep_(gfName));
     }
     return _Nil<T_O>();
   }
-  return gc::As<SingleDispatchGenericFunctionClosure_sp>(fn);
+  return gc::As<SingleDispatchGenericFunctionClosure_sp>(tfn);
 }
 
 CL_LAMBDA(gf-symbol gf)
 CL_LISPIFY_NAME(setf_find_single_dispatch_generic_function);
 CL_DOCSTRING("Define a single dispatch generic function");
-CL_DEFUN T_sp Lisp_O::setf_find_single_dispatch_generic_function(Symbol_sp gfName, SingleDispatchGenericFunctionClosure_sp gf) {
-  WITH_READ_WRITE_LOCK(_lisp->_Roots._SingleDispatchGenericFunctionTableMutex);
-  _lisp->_Roots._SingleDispatchGenericFunctionTable->setf_gethash(gfName, gf);
+CL_DEFUN SingleDispatchGenericFunctionClosure_sp Lisp_O::setf_find_single_dispatch_generic_function(T_sp gfName, SingleDispatchGenericFunctionClosure_sp gf) {
+  WITH_READ_WRITE_LOCK(_lisp->_Roots._SingleDispatchGenericFunctionHashTableEqualMutex);
+  _lisp->_Roots._SingleDispatchGenericFunctionHashTableEqual->setf_gethash(gfName, gf);
   return gf;
 }
 
 CL_LISPIFY_NAME(forget_all_single_dispatch_generic_functions);
 CL_DEFUN void Lisp_O::forget_all_single_dispatch_generic_functions() {
-  WITH_READ_WRITE_LOCK(_lisp->_Roots._SingleDispatchGenericFunctionTableMutex);
-  _lisp->_Roots._SingleDispatchGenericFunctionTable->clrhash();
+  WITH_READ_WRITE_LOCK(_lisp->_Roots._SingleDispatchGenericFunctionHashTableEqualMutex);
+  _lisp->_Roots._SingleDispatchGenericFunctionHashTableEqual->clrhash();
 }
 
 

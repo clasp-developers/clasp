@@ -68,7 +68,7 @@ public: // Simple default ctor/dtor
   DEFAULT_CTOR_DTOR(SingleDispatchMethod_O);
 GCPRIVATE: // instance variables here
            /*! Store the generic function name */
-  Symbol_sp _name;
+  T_sp _name;
   /*! Store the receiver class for this method */
   Class_sp _receiver_class;
   /*! Store the body of the method */
@@ -82,7 +82,7 @@ GCPRIVATE: // instance variables here
 
 public: // creation function
   // The creates above are depreciated
-  static SingleDispatchMethod_sp create(Symbol_sp name,
+  static SingleDispatchMethod_sp create(T_sp name,
                                         Class_sp receiver,
                                         LambdaListHandler_sp lambda_list_handler,
                                         List_sp declares, gc::Nilable<String_sp> docstr,
@@ -94,7 +94,7 @@ public: // Functions here
   string __repr__() const;
 
 CL_LISPIFY_NAME("singleDispatchMethodName");
-CL_DEFMETHOD   Symbol_sp singleDispatchMethodName() const { return this->_name; };
+CL_DEFMETHOD   T_sp singleDispatchMethodName() const { return this->_name; };
 CL_LISPIFY_NAME("singleDispatchMethodReceiverClass");
 CL_DEFMETHOD   Class_sp singleDispatchMethodReceiverClass() const { return this->_receiver_class; };
  
@@ -136,7 +136,7 @@ namespace core {
       It creates a FunctionValueEnvironment that defines call-next-method and next-method-p 
       with the method environment as its parent and then invokes the method-function
       with (args next-emfun) */
-  void core__ensure_single_dispatch_method(Symbol_sp gfname, Class_sp receiver_class, LambdaListHandler_sp lambda_list_handler, List_sp declares, gc::Nilable<String_sp> docstring, Function_sp body);
+  void core__ensure_single_dispatch_method(SingleDispatchGenericFunctionClosure_sp gfunction, T_sp gfname, Class_sp receiver_class, LambdaListHandler_sp lambda_list_handler, List_sp declares, gc::Nilable<String_sp> docstring, Function_sp body);
 
 
 };

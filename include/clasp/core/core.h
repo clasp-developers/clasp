@@ -935,10 +935,11 @@ namespace core {
                        Function_sp, const string &arguments = "", const string &docstring = "", bool autoExport = true);
   void lisp_defmethod(Symbol_sp gfSymbol, Function_sp, const string &arguments, const string &docstring);
 
-  void lisp_defineSingleDispatchMethod(Symbol_sp name,
+  void lisp_defineSingleDispatchMethod(T_sp name,
                                        Symbol_sp classSymbol,
                                        BuiltinClosure_sp,
-                                       int TemplateDispatchOn = 0,
+                                       size_t TemplateDispatchOn = 0,
+                                       bool useTemplateDispatchOn = false,
                                        const string &lambda_list = "",
                                        const string &declares = "",
                                        const string &docstring = "",
