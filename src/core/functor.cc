@@ -29,7 +29,6 @@ THE SOFTWARE.
 #include <clasp/core/lisp.h>
 #include <clasp/core/array.h>
 #include <clasp/core/symbolTable.h>
-#include <clasp/core/standardObject.h>
 #include <clasp/core/package.h>
 //#include "debugger.h"
 #include <clasp/core/iterator.h>

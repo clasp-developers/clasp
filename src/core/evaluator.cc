@@ -42,7 +42,6 @@ THE SOFTWARE.
 #include <clasp/core/lambdaListHandler.h>
 #include <clasp/core/predicates.h>
 #include <clasp/core/debugger.h>
-#include <clasp/core/standardObject.h>
 #include <clasp/core/predicates.h>
 #include <clasp/core/lisp.h>
 #include <clasp/core/backquote.h>

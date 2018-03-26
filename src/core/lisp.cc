@@ -82,7 +82,6 @@ THE SOFTWARE.
 #include <clasp/core/load.h>
 #include <clasp/core/bignum.h>
 //#i n c l u d e "setfExpander.h"
-#include <clasp/core/standardObject.h>
 #include <clasp/core/ql.h>
 #include <clasp/core/array.h>
 #include <clasp/core/commonLispPackage.h>

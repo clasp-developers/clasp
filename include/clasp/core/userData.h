@@ -34,7 +34,7 @@ namespace core {
 
 // set this class up by hand
 SMART(LightUserData);
-class LightUserData_O : public core::General_O // StandardObject_O
+class LightUserData_O : public core::General_O
 {
   LISP_CLASS(core, CorePkg, LightUserData_O, "LightUserData",General_O);
 

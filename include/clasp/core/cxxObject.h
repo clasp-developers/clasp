@@ -33,7 +33,7 @@ namespace core {
 
 // set this class up by hand
 SMART(CxxObject);
-class CxxObject_O : public General_O // StandardObject_O
+class CxxObject_O : public General_O
 {
   LISP_CLASS(core, CorePkg, CxxObject_O, "CxxObject",General_O);
 

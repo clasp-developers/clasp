@@ -41,7 +41,6 @@ THE SOFTWARE.
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/environment.h>
 #include <clasp/core/lambdaListHandler.h>
-#include <clasp/core/standardObject.h>
 #include <clasp/core/multipleValues.h>
 #include <clasp/core/sequence.h>
 #include <clasp/core/array.h>

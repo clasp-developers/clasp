@@ -178,7 +178,6 @@ THE SOFTWARE.
 #include <clasp/core/standardClass.fwd.h>
 #include <clasp/core/standardClass.h>
 #include <clasp/core/standardObject.fwd.h>
-#include <clasp/core/standardObject.h>
 #include <clasp/core/stdClass.fwd.h>
 #include <clasp/core/stdClass.h>
 #include <clasp/core/stringList.fwd.h>

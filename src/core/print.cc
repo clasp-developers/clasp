@@ -177,7 +177,7 @@ CL_DEFUN void core__print_unreadable_object_function(T_sp object, T_sp output_st
     if (type.notnilp()) {
       type = cl__type_of(object);
       if (!gc::IsA<Symbol_sp>(type)) {
-        type = cl::_sym_StandardObject_O;
+        type = cl::_sym_standard_object;
       }
       Symbol_sp typesym = gc::As<Symbol_sp>(type);
       ss << typesym->symbolNameAsString();

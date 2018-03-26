@@ -33,7 +33,6 @@ THE SOFTWARE.
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/serialize.h>
 #include <clasp/core/lambdaListHandler.h>
-#include <clasp/core/standardObject.h>
 #include <clasp/core/multipleValues.h>
 #include <clasp/core/activationFrame.h>
 #include <clasp/core/evaluator.h>

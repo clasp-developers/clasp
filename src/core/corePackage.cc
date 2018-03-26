@@ -90,7 +90,6 @@ THE SOFTWARE.
 #include <clasp/core/smallMap.h>
 #include <clasp/core/smallMultimap.h>
 #include <clasp/core/sourceFileInfo.h>
-#include <clasp/core/standardObject.h>
 #include <clasp/core/lispStream.h>
 #include <clasp/core/symbolToEnumConverter.h>
 #include <clasp/core/symbol.h>
@@ -800,6 +799,7 @@ SYMBOL_EXPORT_SC_(KeywordPkg, changed);
 SYMBOL_EXPORT_SC_(CorePkg,STARstack_top_hintSTAR);
 
 SYMBOL_EXPORT_SC_(ClPkg, structure_object);
+SYMBOL_EXPORT_SC_(ClPkg, standard_object);
 SYMBOL_EXPORT_SC_(ClPkg, copy_structure);
 
 void testConses() {

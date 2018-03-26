@@ -98,7 +98,6 @@ def build(bld):
             'object',
             'arguments',
             'pointer',
-            'standardObject',
             'iterator',
             'sysprop',
             'bformat',
