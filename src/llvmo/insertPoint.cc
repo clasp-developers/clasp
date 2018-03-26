@@ -29,7 +29,6 @@ THE SOFTWARE.
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 #include <clasp/core/lisp.h>
-#include <clasp/core/builtInClass.h>
 
 #include <clasp/llvmo/insertPoint.h>
 #include <clasp/core/wrappers.h>

@@ -24,7 +24,6 @@ int gcFunctions_after;
 #include <clasp/core/lisp.h>
 #include <clasp/core/instance.h>
 #include <clasp/core/funcallableInstance.h>
-#include <clasp/core/builtInClass.h>
 #include <clasp/core/fileSystem.h>
 #include <clasp/core/environment.h>
 #include <clasp/core/evaluator.h>

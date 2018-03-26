@@ -30,7 +30,6 @@ THE SOFTWARE.
 #include <clasp/core/package.h>
 #include <clasp/core/object.h>
 #include <clasp/core/lisp.h>
-#include <clasp/core/builtInClass.h>
 #include <clasp/sockets/socketsPackage.h>
 #include <clasp/sockets/sockets.h>
 #include <clasp/core/array.h>

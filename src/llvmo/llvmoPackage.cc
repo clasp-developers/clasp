@@ -31,7 +31,6 @@ THE SOFTWARE.
 #include <llvm/Support/raw_ostream.h>
 #include <clasp/core/object.h>
 #include <clasp/core/lisp.h>
-#include <clasp/core/builtInClass.h>
 #include <clasp/core/fileSystem.h>
 #include <clasp/core/lispStream.fwd.h>
 #include <clasp/core/designators.h>

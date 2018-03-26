@@ -29,7 +29,6 @@ THE SOFTWARE.
 
 #include <clasp/clbind/config.h>
 #include <clasp/core/object.h>
-#include <clasp/core/builtInClass.h>
 #include <clasp/core/instance.h>
 #include <clasp/core/numbers.h>
 #include <clasp/clbind/adapter.fwd.h>

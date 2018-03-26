@@ -32,7 +32,6 @@ THE SOFTWARE.
 #include <clasp/core/object.h>
 #include <clasp/core/lisp.h>
 #include <clasp/core/conditions.h>
-#include <clasp/core/builtInClass.h>
 #include <clasp/core/evaluator.h>
 #include <clasp/core/lispStream.h>
 #include <clasp/core/symbolTable.h>

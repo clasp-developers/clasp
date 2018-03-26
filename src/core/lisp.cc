@@ -91,7 +91,6 @@ THE SOFTWARE.
 #include <clasp/core/sysprop.h>
 #include <clasp/core/hashTableEql.h>
 #include <clasp/core/debugger.h>
-#include <clasp/core/builtInClass.h>
 #include <clasp/core/numberToString.h>
 #include <clasp/core/sourceFileInfo.h>
 #include <clasp/core/lispStream.h>

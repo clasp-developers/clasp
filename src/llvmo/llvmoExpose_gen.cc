@@ -34,7 +34,6 @@ THE SOFTWARE.
 #include <clasp/core/package.h>
 #include <clasp/core/stringList.h>
 #include <clasp/core/environment.h>
-#include <clasp/core/builtInClass.h>
 #include <clasp/core/str.h>
 #include <clasp/llvmo/llvmoExpose.h>
 //#include "llvmoExpose.generated.h"

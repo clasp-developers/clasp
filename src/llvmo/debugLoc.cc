@@ -29,7 +29,6 @@ THE SOFTWARE.
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 #include <clasp/core/lisp.h>
-#include <clasp/core/builtInClass.h>
 #include <clasp/llvmo/llvmoExpose.h>
 #include <clasp/llvmo/debugLoc.h>
 #include <clasp/llvmo/debugInfoExpose.h>

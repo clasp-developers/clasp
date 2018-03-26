@@ -39,7 +39,6 @@ THE SOFTWARE.
 //#i n c l u d e "setfExpander.h"
 #include <clasp/core/environment.h>
 #include <clasp/core/designators.h>
-#include <clasp/core/builtInClass.h>
 #include <clasp/core/lambdaListHandler.h>
 #include <clasp/core/predicates.h>
 #include <clasp/core/debugger.h>

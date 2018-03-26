@@ -40,7 +40,6 @@ THE SOFTWARE.
 #include <clasp/core/binder.h>
 #include <clasp/core/bootStrapCoreSymbolMap.h>
 #include <clasp/core/builtInClass.fwd.h>
-#include <clasp/core/builtInClass.h>
 #include <clasp/core/bundle.h>
 #include <clasp/core/candoOpenMp.h>
 #include <clasp/core/character.fwd.h>

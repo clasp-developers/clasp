@@ -118,7 +118,6 @@ THE SOFTWARE.
 #include <clasp/core/sexpSaveArchive.h>
 #include <clasp/core/metaClass.h>
 #include <clasp/core/bignum.h>
-#include <clasp/core/builtInClass.h>
 #include <clasp/clbind/class_rep.h>
 
 //

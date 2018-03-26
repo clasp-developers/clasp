@@ -29,7 +29,6 @@ THE SOFTWARE.
 #include <clasp/core/object.h>
 #include <clasp/core/lisp.h>
 #include <clasp/core/package.h>
-#include <clasp/core/builtInClass.h>
 #include <clasp/asttooling/asttoolingPackage.h>
 #include <clasp/asttooling/astExpose.h>
 #include <clasp/asttooling/astVisitor.h>

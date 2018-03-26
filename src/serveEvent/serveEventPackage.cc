@@ -29,7 +29,6 @@ THE SOFTWARE.
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 #include <clasp/core/lisp.h>
-#include <clasp/core/builtInClass.h>
 #include <clasp/serveEvent/serveEventPackage.h>
 #include <clasp/serveEvent/serveEvent.h>
 #include <clasp/core/array.h>
