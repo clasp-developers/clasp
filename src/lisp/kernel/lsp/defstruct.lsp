@@ -212,7 +212,7 @@
                  (let* ((slot-name (if (consp (first name)) ; complicated :key
                                        (second (first name))
                                        (first name)))
-                        (slotd (assoc name slot-descriptions)))
+                        (slotd (assoc slot-name slot-descriptions)))
                    (unless slotd
                      (error "Unknown slot name ~a in BOA lambda list ~a"
                             slot-name original-lambda-list))
