@@ -125,7 +125,6 @@ typedef bool _Bool;
 #include <clasp/core/reader.h>
 //#include <clasp/core/singleDispatchEffectiveMethodFunction.h>
 //#include <clasp/core/regex.h>
-#include <clasp/core/structureObject.h>
 #include <clasp/core/array.h>
 #include <clasp/core/readtable.h>
 #include <clasp/core/nativeVector.h>

@@ -59,7 +59,6 @@ THE SOFTWARE.
 #include <clasp/core/lispStream.h>
 #include <clasp/core/instance.h>
 #include <clasp/core/funcallableInstance.h>
-#include <clasp/core/structureObject.h>
 #include <clasp/core/sysprop.h>
 #include <clasp/core/numberToString.h>
 #include <clasp/core/evaluator.h>

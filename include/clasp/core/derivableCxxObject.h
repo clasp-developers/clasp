@@ -1,5 +1,5 @@
 /*
-    File: structureObject.h
+    File: derivableCxxObject.h
 */
 
 /*

@@ -51,7 +51,6 @@ THE SOFTWARE.
 #include <clasp/core/funcallableInstance.h>
 #include <clasp/core/backquote.h>
 #include <clasp/core/sequence.h>
-#include <clasp/core/structureObject.h>
 #include <clasp/core/wrappedPointer.h>
 #include <clasp/core/pathname.h>
 #include <clasp/core/unixfsys.h>
@@ -78,7 +77,6 @@ THE SOFTWARE.
 #include <clasp/core/hashTableEql.h>
 #include <clasp/core/multipleValues.h>
 #include <clasp/core/lispStream.h>
-#include <clasp/core/structureObject.h>
 #include <clasp/core/lispReader.h>
 #include <clasp/core/designators.h>
 #include <clasp/core/profile.h>

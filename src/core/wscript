@@ -110,7 +110,6 @@ def build(bld):
             'lispReader',
             'singleDispatchGenericFunction',
             'singleDispatchMethod',
-            'structureObject',
             'derivableCxxObject',
 #            'structureClass',
             'null',

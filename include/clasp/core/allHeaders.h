@@ -189,7 +189,6 @@ THE SOFTWARE.
 #include <clasp/core/stringSet.h>
 #include <clasp/core/structureClass.fwd.h>
 #include <clasp/core/structureClass.h>
-#include <clasp/core/structureObject.h>
 #include <clasp/core/symbol.fwd.h>
 #include <clasp/core/symbol.h>
 #include <clasp/core/symbolList.fwd.h>
