@@ -162,10 +162,11 @@ CL_DEFUN T_sp cl__write(T_sp x, T_sp strm, T_sp array, T_sp base,
   return Values(x);
 };
 
+
 CL_LAMBDA(o stream type id function);
 CL_DECLARE();
 CL_DOCSTRING("print-unreadable-object-function: What CL:PRINT-UNREADABLE-OBJECT expands into.");
-CL_DEFUN void core__print_unreadable_object_function(T_sp object, T_sp ostream, T_sp type, T_sp id, T_sp function) {
+CL_DEFUN void core__print_unreadable_object_function(T_sp object, T_sp output_stream_desig, T_sp type, T_sp id, T_sp function) {
   if (clasp_print_readably()) {
     PRINT_NOT_READABLE_ERROR(object);
   } else if (object.unboundp()) {
@@ -182,6 +183,7 @@ CL_DEFUN void core__print_unreadable_object_function(T_sp object, T_sp ostream, 
       ss << typesym->symbolNameAsString();
       ss << " ";
     }
+    T_sp ostream = coerce::outputStreamDesignator(output_stream_desig);
     clasp_write_string(ss.str(), ostream);
     if (function.notnilp()) {
       eval::funcall(function);
