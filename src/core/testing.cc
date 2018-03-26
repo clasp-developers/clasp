@@ -36,7 +36,6 @@ THE SOFTWARE.
 #include <clasp/core/package.h>
 #include <clasp/core/readtable.h>
 #include <clasp/core/instance.h>
-//#include "core/structureObject.h"
 #include <clasp/core/genericFunction.h>
 #include <clasp/core/pointer.h>
 #include <clasp/core/lispMath.h>

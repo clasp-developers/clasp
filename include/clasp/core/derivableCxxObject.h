@@ -1,5 +1,5 @@
 /*
-    File: structureObject.h
+    File: derivableCxxObject.h
 */
 
 /*
@@ -32,7 +32,6 @@ THE SOFTWARE.
 #include <vector>
 #include <set>
 #include <clasp/core/object.h>
-#include <clasp/core/structureClass.fwd.h>
 //#include "model.h"
 #include <clasp/core/environment.h>
 

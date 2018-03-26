@@ -24,6 +24,20 @@
 	 :datum value
 	 :expected-type slot-type))
 
+(defun warn-missing-include (name include)
+  ;; FIXME: should be a style warning at most
+  (warn "Structure definition for ~a INCLUDEs ~a, unknown at compile time."
+        name include))
+
+(defun error-missing-include (name include)
+  (error "Cannot define structure ~a - it INCLUDEs ~a, which is undefined."
+         name include))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Environment access
+;;;
+
 ;;; FIXME: these should take environments
 (defun structure-type (name)
   (get-sysprop name 'structure-type))
@@ -46,229 +60,56 @@
       (let ((class (find-class name nil)))
         (and class (typep class 'structure-class)))))
 
-(defun make-access-function (name conc-name type named slot-descr)
-  (declare (ignore named))
-  (let* ((slot-name (nth 0 slot-descr))
-	 ;; (default-init (nth 1 slot-descr))
-	 ;; (slot-type (nth 2 slot-descr))
-	 (read-only (nth 3 slot-descr))
-	 (offset (nth 4 slot-descr))
-	 (access-function (if conc-name
-			      (intern (base-string-concatenate conc-name slot-name))
-			      slot-name)))
-    (if (eql access-function (sixth slot-descr))
-	(return-from make-access-function nil)
-	(setf (sixth slot-descr) access-function))
-    (cond ((null type)
-           ;; If TYPE is NIL,
-           ;;  the slot is at the offset in the structure-body.
-	   (fset access-function
-                 #'(lambda (x)
-                     ;; FIXME: load-time-value or something
-                     (unless (core:subclassp (class-of x) (find-class name))
-                       (signal-type-error x name))
-                     (si:instance-ref x offset))))
-          ((subtypep type '(OR LIST VECTOR))
-	   ;; If TYPE is VECTOR, (VECTOR ... ) or LIST, ELT is used.
-           (fset access-function
-		 #'(lambda (x) (elt x offset))))
-          (t (error "~S is an illegal structure type." type)))
-    (cond (read-only
-	   (fmakunbound `(setf ,access-function))
-	   (set-documentation access-function 'SETF nil))
-	  ;; The following is used by the compiler to expand inline
-	  ;; the accessor
-	  (t
-	   (do-setf-structure-method access-function (or type name)
-				     offset)))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Delaying definitions
+;;;
+;;; A DEFSTRUCT can :include other structures not defined at compile time
+;;; (e.g., from nontoplevel definitions). This is rare and a huge pain and silly
+;;; to do since it inhibits the efficiency points of defstruct, but allowed.
 
-(defun do-setf-structure-method (access-function type index)
-  (declare (optimize (speed 3) (safety 0)))
-  (do-defsetf access-function
-    (cond ((or (eq type 'list) (eq type 'vector))
-	   #'(lambda (newvalue struct)
-	       `(sys:setf-elt ,struct ,index ,newvalue)))
-	  ((consp type)
-	   #'(lambda (newvalue struct)
-	       `(si:row-major-aset (the ,type ,struct) ,index ,newvalue)))
-	  (t
-	   #'(lambda (newvalue struct)
-               `(progn
-                  (unless (core:subclassp (class-of ,struct) (find-class ',type))
-                    (signal-type-error ,struct ',type))
-                  (si:instance-set ,struct ,index ,newvalue)))))))
+(defmacro with-defstruct-delay ((slotds name include slots overwrites env) &body body)
+  (declare (ignore env)) ;; see FIXME in environment access
+  `(cond ((null ,include) ; no include
+          (let ((,slotds ,slots)) ,@body))
+         ((names-structure-p ,include) ; normal include case
+          (let ((,slotds (append (overwrite-slot-descriptions
+                                  ,overwrites
+                                  (structure-slot-descriptions ,include))
+                                 ,slots)))
+            ,@body))
+         (t ; bad time
+          ;; FIXME: Figure out whatever eval crap should go here
+          (error-missing-include ,name ,include))))
 
-(defun process-boa-lambda-list (slot-names slot-descriptions boa-list assertions)
-  (let ((mentioned-slots '())
-	(aux))
-    ;; With a call to PROCESS-LAMBDA-LIST we ensure that the lambda list is
-    ;; syntactically correct. This simplifies notably the code in the loop.
-    ;; meister: This just runs through the lambda list and generates a LambdaListHandler
-    ;;          that is discarded.  If there are problems with the lambda-list then
-    ;;          an error is thrown
-    (make-lambda-list-handler (setq boa-list (copy-list boa-list)) nil 'function)
-    ;; Search for &optional or &key arguments without initialization.  Also,
-    ;; record all slot names which are initialized by means of the BOA call.
-    (do* ((i boa-list (rest i))
-	  (slot (first i) (first i))
-	  (modify nil))
-	 ((endp i))
-      (cond ((or (eq slot '&optional) (eq slot '&key))
-	     (setq modify t))
-	    ((eq slot '&rest)
-	     (setq modify nil))
-	    ((eq slot '&aux)
-	     (setq aux t modify nil))
-	    ((eq slot '&allow-other-keys)
-	     )
-	    ((atom slot)
-	     (push slot mentioned-slots)
-	     (when modify
-	       (setf (first i)
-		     (list slot (second (assoc slot slot-descriptions)))))
-	     (when aux
-	       (setf assertions (delete slot assertions :key 'cadadr))))
-	    (t
-	     (let ((slot-name (first slot)))
-	       (when (consp slot-name)
-		 (setq slot-name (second slot-name)))
-	       (push slot-name mentioned-slots)
-	       (when (endp (rest slot))
-		 (when modify
-		   (setf (rest slot)
-			 (list (second (assoc slot-name slot-descriptions)))))
-		 (when aux
-		   (setf assertions (delete slot assertions :key 'cadadr))))))))
-    ;; For all slots not mentioned above, add the default values from
-    ;; the DEFSTRUCT slot description.
-    (let ((other-slots (nset-difference
-			(delete-if #'consp (copy-list slot-names))
-			mentioned-slots)))
-      (do ((l other-slots (cdr l)))
-	  ((endp l))
-	(let* ((slot (assoc (car l) slot-descriptions))
-	       (slot-init (second slot)))
-	  (when slot-init
-	    (setf (car l) (list (car l) slot-init)))))
-      (when other-slots
-	(unless aux
-	  (push '&aux other-slots))
-	(setf boa-list (nconc boa-list other-slots)))
-      (values boa-list assertions))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Slot descriptions
+;;;
 
-(defun make-constructor (name constructor type named slot-descriptions)
-  (declare (ignore named))
-  ;; CONSTRUCTOR := constructor-name | (constructor-name boa-lambda-list)
-  (let* ((boa-constructor-p (consp constructor))
-	 (keys (unless boa-constructor-p (list '&key)))
-	 (constructor-name (if boa-constructor-p (first constructor) constructor))
-	 (slot-names '())
-	 (assertions '()))
-    (dolist (slot slot-descriptions
-	     (setq slot-names (nreverse slot-names) keys (nreverse keys)))
-      (push
-       (cond ((null slot)
-	      ;; If slot-description is NIL, it is padding for initial-offset.
-	      nil)
-	     ((eql (first slot) 'TYPED-STRUCTURE-NAME)
-	      ;; This slot is the name of a typed structure with name.
-	      (list 'QUOTE (second slot)))
-	     (t
-	      (let* ((slot-name (first slot))
-		     (slot-type (third slot))
-		     (offset (fifth slot))
-		     (init-form (second slot))
-		     (var-name slot-name))
-		;; Unless BOA constructors are used, we should avoid using
-		;; slot names as lambda variables in the constructor.
-		(unless boa-constructor-p
-		  (setq var-name (copy-symbol slot-name))
-		  (push (if init-form (list var-name init-form) var-name)
-			keys))
-		;; We insert type checks for every slot and only in the
-		;; case of BOA lists we remove some of these checks for
-		;; uninitialized slots.
-		(unless (eq 'T slot-type)
-		  (push `(unless (typep ,var-name ',slot-type)
-			   (structure-type-error ,var-name ',slot-type ',name ',slot-name))
-			assertions))
-		var-name)))
-       slot-names))
-    (when boa-constructor-p
-      (setf (values keys assertions)
-	    (process-boa-lambda-list slot-names slot-descriptions
-				     (second constructor) assertions)))
-    (cond ((null type)
-           `(defun ,constructor-name ,keys
-	      ,@assertions
-	      #-CLOS
-              (sys:make-structure ',name ,@slot-names)
-	      ;; the class is defined by an enclosing LET form
-	      #+clos
-              (sys:make-structure
-               (let ((x (load-time-value (list nil))))
-                 (or (car x) (car (rplaca x (find-class ',name))))) ,@slot-names)
-              ))
-	  ((subtypep type '(VECTOR T))
-	   `(defun ,constructor-name ,keys
-	     (vector ,@slot-names)))
-          ((subtypep type 'VECTOR)
-           `(defun ,constructor-name ,keys
-              (make-array ',(list (length slot-names))
-			  :element-type ',(closest-sequence-type type)
-	       		  :initial-contents (list ,@slot-names))))
-          ((eq type 'LIST)
-           `(defun ,constructor-name ,keys
-              (list ,@slot-names)))
-          (t (error "~S is an illegal structure type" type)))))
-
-
-(defun make-predicate (predicate name type named name-offset)
-  (cond ((null type)
-         `(defun ,predicate (object)
-            ;; fixme: find-class ahead of time
-            (si:subclassp (class-of object) (find-class ',name))))
-        ((or (eq type 'vector)
-             (and (consp type) (eq (car type) 'vector)))
-         ;; The name is at the NAME-OFFSET in the vector.
-         (unless named (error "The structure should be named."))
-         `(defun ,predicate (object)
-            (and (vectorp object)
-                 (> (length object) ,name-offset)
-                 (eq (row-major-aref object ,name-offset) ',name))))
-        ((eq type 'LIST)
-         ;; The name is at the NAME-OFFSET in the list.
-         (unless named (error "The structure should be named."))
-         `(defun ,predicate (object)
-            (eq (nth ,name-offset object) ',name)))
-        (t (error "~S is an illegal structure type." type))))
-
-(defun make-copier (copier name type)
-  (declare (ignore name))
-  (cond ((null type)
-         ;; will need the name here later, i think.
-         `(defun ,copier (object) (copy-structure object)))
-        ((or (eq type 'vector)
-             (and (consp type) (eq (car type) 'vector)))
-         `(defun ,copier (object) (copy-seq object)))
-        ((eq type 'list)
-         `(defun ,copier (object) (copy-list object)))
-        (t (error "~s is an illegal structure type." type))))
-
-;;; PARSE-SLOT-DESCRIPTION parses the given slot-description
+;;; PARSE-SLOT-DESCRIPTION parses a user slot-description
 ;;;  and returns a list of the form:
-;;;        (slot-name default-init slot-type read-only offset accessor-name)
+;;;        (slot-name initform slot-type read-only)
+;;;  which we call a struct-slotd.
+;;;  the read-only parameter is a default. It can be nil, true, or :unspecified
+;;;   (used for :include overrides)
 
-(defun parse-slot-description (slot-description offset &optional read-only)
-  (let* ((slot-type 'T)
-	 slot-name default-init)
+(defun make-struct-slotd (name initform type read-only)
+  (list name initform type read-only))
+(defun struct-slotd-name (slotd) (first slotd))
+(defun struct-slotd-initform (slotd) (second slotd))
+(defun struct-slotd-type (slotd) (third slotd))
+(defun struct-slotd-read-only (slotd) (fourth slotd))
+
+(defun parse-slot-description (slot-description &optional read-only)
+  (let* ((slot-type 'T) slot-name initform)
     (cond ((atom slot-description)
            (setq slot-name slot-description))
           ((endp (cdr slot-description))
            (setq slot-name (car slot-description)))
           (t
            (setq slot-name (car slot-description))
-           (setq default-init (cadr slot-description))
+           (setq initform (cadr slot-description))
            (do ((os (cddr slot-description) (cddr os)) (o) (v))
                ((endp os))
              (setq o (car os))
@@ -282,7 +123,7 @@
                (t
                 (error "~S is an illegal structure slot option."
                          os))))))
-    (list slot-name default-init slot-type read-only offset nil)))
+    (make-struct-slotd slot-name initform slot-type read-only)))
 
 ;;; UNPARSE-SLOT-DESCRIPTION does the opposite, turning one of the above into
 ;;;  something that would work in DEFSTRUCT.
@@ -293,8 +134,8 @@
 ;;;  one of several reasons this is not exact.
 
 (defun unparse-slot-description (list)
-  (let ((name (first list)) (initform (second list))
-        (type (third list)) (read-only (fourth list)))
+  (let ((name (struct-slotd-name list)) (initform (struct-slotd-initform list))
+        (type (struct-slotd-read-only list)) (read-only (struct-slotd-read-only list)))
     `(,name ,initform
             ,@(when read-only `(:read-only ,read-only))
             ,@(unless (eq type t) `(:type ,type)))))
@@ -308,72 +149,348 @@
         (old-slots old-slots (rest old-slots)))
        ((null old-slots)
         (nreverse output))
-    (let* ((old-slot (first old-slots))
-           (slot-name (first old-slot))
+    (let* ((old-slot (struct-slotd-name old-slots))
+           (slot-name (struct-slotd-name old-slot))
            (new-slot (first (member slot-name new-slots :key #'car))))
       (if (null new-slot)
           (setf new-slot old-slot)
-          (let* ((old-read-only (fourth old-slot))
-                 (new-read-only (fourth new-slot)))
-            (cond ((and (null new-read-only)
-                        old-read-only)
-                   (error "Tried to turn a read only slot ~A into writtable."
+          (let* ((old-read-only (struct-slotd-read-only old-slot))
+                 (new-read-only (struct-slotd-read-only new-slot)))
+            (cond ((and (null new-read-only) old-read-only)
+                   (error "Tried to turn an included read only slot ~A writable."
                           slot-name))
-                  ((eq new-read-only :unknown)
+                  ((eq new-read-only :unspecified)
                    (setf new-read-only old-read-only)))
-            (setf new-slot (copy-list new-slot)
-                  (fourth new-slot) new-read-only
-                  (fifth new-slot) (fifth old-slot) ; preserve offset
-                  (sixth new-slot) (sixth old-slot))))
+            (setf new-slot (make-struct-slotd (struct-slotd-name new-slot)
+                                              (struct-slotd-initform new-slot)
+                                              (struct-slotd-type new-slot)
+                                              new-read-only))))
       (push new-slot output))))
 
-(defmacro define-structure-class (name include slot-descriptions
-                                  print-function print-object)
+(defun struct-reader-name (name conc-name)
+  (if conc-name
+      (intern (base-string-concatenate conc-name name))
+      name))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Constructor guts
+;;; (By far the messiest part of this file.)
+;;;
+
+(defun constructor-helper (constructor slot-descriptions)
+  (if (consp constructor)
+      ;; BOA constructor
+      (let* ((constructor-name (first constructor))
+             (original-lambda-list (second constructor))
+             (lambda-list (copy-list original-lambda-list))
+             (mentioned-slots nil)
+             (aux nil)) ; whether the lambda list has &aux already.
+        ;; Generate a lambda list handler and immediately discard it,
+        ;; to ensure syntactic correctness.
+        ;; FIXME: Use an actual lambda list parser for all this.
+        (make-lambda-list-handler lambda-list nil 'function)
+        (do* ((sublist lambda-list (rest sublist))
+              (name (first sublist) (first sublist))
+              (modify nil)) ; whether we should modify the lambda list here for defaulting.
+             ((endp sublist))
+          (cond ((or (eq name '&optional) (eq name '&key)) (setq modify t))
+                ((eq name '&rest) (setq modify nil))
+                ((eq name '&aux) (setq modify nil aux t))
+                ((eq name '&allow-other-keys))
+                ((atom name) ; just a variable.
+                 (let ((slotd (assoc name slot-descriptions)))
+                   (unless slotd
+                     (error "Unknown slot name ~a in BOA lambda list ~a"
+                            name original-lambda-list))
+                   ;; FIXME: check for duplicated names? or does lambda list handler catch that.
+                   (push slotd mentioned-slots)
+                   (when modify
+                     (setf (first sublist)
+                           `(,name ,(struct-slotd-initform slotd))))))
+                (t ; has an initform included.
+                 (let* ((slot-name (if (consp (first name)) ; complicated :key
+                                       (second (first name))
+                                       (first name)))
+                        (slotd (assoc name slot-descriptions)))
+                   (unless slotd
+                     (error "Unknown slot name ~a in BOA lambda list ~a"
+                            slot-name original-lambda-list))
+                   (push slotd mentioned-slots)
+                   (when (and (endp (rest name)) modify) ; like &optional (foo)
+                     (setf (rest name) (list (struct-slotd-initform slotd))))))))
+        ;; For all slots not mentioned above, add the initforms as &aux bindings.
+        (let ((other-slots (set-difference slot-descriptions mentioned-slots)))
+          (values constructor-name
+                  (nconc lambda-list (if aux nil (list '&aux))
+                         (mapcar (lambda (slotd)
+                                   `(,(struct-slotd-name slotd) ,(struct-slotd-initform slotd)))
+                                 other-slots))
+                  'function ; FIXME: weak ftype
+                  (mapcar #'struct-slotd-name slot-descriptions))))
+      ;; standard constructor
+      ;; we use uninterned symbols as parameters as per a bunch of pedantry, check CLHS defstruct.
+      (let ((parameters nil) (variables nil))
+        (mapc (lambda (sd)
+                (cond ((null sd) (push nil variables))
+                      ((eq (struct-slotd-name sd) 'typed-structure-name)
+                       (push (struct-slotd-initform sd) variables))
+                      (t (let ((param (copy-symbol (struct-slotd-name sd))))
+                           (push (list param (struct-slotd-initform sd)) parameters)
+                           (push param variables)))))
+              slot-descriptions)
+        (values constructor
+                `(&key ,@(nreverse parameters))
+                'function ; FIXME: also weak.
+                (nreverse variables)))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; DEFSTRUCT vector
+;;;
+
+(defmacro define-vector-struct-constructors (name element-type constructors slotds)
+  `(progn
+     ,@(mapcan (lambda (constructor)
+                 (multiple-value-bind (constructor-name lambda-list ftype vars)
+                     (constructor-helper constructor slotds)
+                   (list `(declaim (ftype ,ftype ,constructor-name)) ; useless atm
+                         `(defun ,constructor-name ,lambda-list
+                            (let ((result (make-array ,(length vars) :element-type ',element-type)))
+                              ,@(let ((index 0))
+                                  (mapcar (lambda (var)
+                                            (prog1 `(setf (row-major-aref result ,index) ,var)
+                                              (incf index)))
+                                          vars))
+                              result)))))
+               constructors)))
+
+(defmacro define-vector-struct-accessors (name conc-name element-type slotds)
+  (let ((index 0))
+    (flet ((one (sd)
+             (prog1
+                 (if (or (null sd) ; initial-offset padding
+                         (eq (struct-slotd-name sd) 'typed-structure-name))
+                     nil
+                     (destructuring-bind (slot-name initform type read-only) sd
+                       (declare (ignore initform))
+                       (let* ((accname (struct-reader-name slot-name conc-name))
+                              (writer
+                                (if read-only
+                                    nil
+                                    `((define-setf-expander ,accname (object &environment env)
+                                        (get-setf-expansion (list 'row-major-aref object ,index) env))))))
+                         (list* `(declaim (ftype (function ((vector ,element-type)) ,type) ,accname) ; useless
+                                          (inline ,accname))
+                                `(defun ,accname (,name)
+                                   (the ,type (row-major-aref ,name ,index)))
+                                writer))))
+               (incf index))))
+      `(progn ,@(mapcan #'one slotds)))))
+
+(defmacro define-vector-struct (name conc-name type include slot-descriptions
+                                overwriting-slot-descriptions name-offset
+                                constructors predicate copier
+                                &environment env)
+  (multiple-value-bind (element-type length success)
+      (closest-sequence-type type env)
+    (declare (ignore length))
+    (unless success (setf element-type t)) ; default
+    `(progn
+       ,@(with-defstruct-delay (slotds name include
+                                slot-descriptions overwriting-slot-descriptions env)
+           (let* ((included-size (if include (structure-size include) 0))
+                  (name-offset (when name-offset (+ included-size name-offset))))
+             `((eval-when (:compile-toplevel :load-toplevel :execute)
+               (setf (structure-type ',name) '(vector ,element-type)
+                     (structure-size ',name) ,(length slotds)
+                     (structure-slot-descriptions ',name) ',slotds))
+               ,@(when predicate
+                   `((defun ,predicate (object)
+                       (and (typep object '(vector ,element-type))
+                            (> (length object) ,name-offset)
+                            (eq (row-major-aref object ,name-offset) ',name)))))
+               (define-vector-struct-constructors ,name ,element-type ,constructors ,slotds)
+               (define-vector-struct-accessors ,name ,conc-name ,element-type ,slotds))))
+       ,@(when copier
+           `((defun ,copier (,name) (copy-seq ,name)))))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; DEFSTRUCT list
+;;;
+
+(defmacro define-list-struct-constructors (name constructors slotds)
+  `(progn
+     ,@(mapcan (lambda (constructor)
+                 (multiple-value-bind (constructor-name lambda-list ftype vars)
+                     (constructor-helper constructor slotds)
+                   (list `(declaim (ftype ,ftype ,constructor-name)) ; useless atm
+                         `(defun ,constructor-name ,lambda-list (list ,@vars)))))
+               constructors)))
+
+(defmacro define-list-struct-accessors (name conc-name slotds)
+  (let ((index 0))
+    (flet ((one (sd)
+             (prog1
+                 (if (or (null sd) ; initial-offset padding
+                         (eq (struct-slotd-name sd) 'typed-structure-name))
+                     nil
+                     (destructuring-bind (slot-name initform type read-only) sd
+                       (declare (ignore initform))
+                       (let* ((accname (struct-reader-name slot-name conc-name))
+                              (writer
+                                (if read-only
+                                    nil
+                                    `((define-setf-expander ,accname (object &environment env)
+                                        (get-setf-expansion (list 'nth ,index object) env))))))
+                         (list* `(declaim (ftype (function (,name) ,type) ,accname) ; useless
+                                          (inline ,accname))
+                                `(defun ,accname (,name)
+                                   (the ,type (nth ,index ,name)))
+                                writer))))
+               (incf index))))
+      `(progn ,@(mapcan #'one slotds)))))
+
+(defmacro define-list-struct (name conc-name include slot-descriptions
+                              overwriting-slot-descriptions name-offset
+                              constructors predicate copier
+                              &environment env)
+  `(progn
+     ,@(with-defstruct-delay (slotds name include
+                              slot-descriptions overwriting-slot-descriptions env)
+         (let* ((included-size (if include (structure-size include) 0))
+                (name-offset (when name-offset (+ included-size name-offset))))
+           `((eval-when (:compile-toplevel :load-toplevel :execute)
+               (setf (structure-type ',name) 'list
+                     (structure-size ',name) ,(length slotds)
+                     (structure-slot-descriptions ',name) ',slotds))
+             ,@(when predicate
+                 `((defun ,predicate (object)
+                     (and
+                      (consp object)
+                      ,@(let (forms)
+                          (dotimes (i name-offset (nreverse forms))
+                            (push '(consp (setf object (cdr object))) forms)))
+                      (eq (car object) ',name)))))
+             (define-list-struct-constructors ,name ,constructors ,slotds)
+             (define-list-struct-accessors ,name ,conc-name ,slotds))))
+     ,@(when copier
+         `((defun ,copier (,name) (copy-list ,name))))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; DEFSTRUCT class (no :type)
+;;;
+
+(defun defstruct-sd->defclass-sd (sd)
+  (destructuring-bind (name initform type read-only) sd
+    (declare (ignore read-only)) ; handled elsewhere.
+    `(,name :initform ,initform :type ,type
+            :initarg ,(intern (symbol-name name) "KEYWORD"))))
+
+(defmacro define-class-struct-constructors (name constructors slot-descriptions)
+  `(progn
+     ,@(mapcan (lambda (constructor)
+                 (multiple-value-bind (constructor-name lambda-list ftype vars)
+                     ;; this does most of the work. for example, initforms are set up
+                     ;; in the lambda list.
+                     (constructor-helper constructor slot-descriptions)
+                   (list `(declaim (ftype ,ftype ,constructor-name)) ; useless atm
+                         (let ((instance (gensym "INSTANCE"))
+                               (index 0))
+                           `(defun ,constructor-name ,lambda-list
+                              (let ((,instance
+                                      (allocate-instance
+                                       ;; The class is not immediately available at l-t-v time-
+                                       ;; because the defclass form must be evaluated first.
+                                       ;; Thus, bullshit.
+                                       (let ((class (load-time-value (list nil))))
+                                         (or (car class) (car (rplaca class (find-class ',name))))))))
+                                ,@(mapcar (lambda (var)
+                                            (prog1 `(si:instance-set ,instance ,index ,var)
+                                              (incf index)))
+                                          vars)
+                                ,instance))))))
+               constructors)))
+
+(defmacro define-class-struct-accessors (name conc-name slot-descriptions)
+  (let ((index 0))
+    (flet ((one (sd)
+             (destructuring-bind (slot-name initform type read-only) sd
+               (declare (ignore initform))
+               (prog1
+                   (let* ((accname (struct-reader-name slot-name conc-name))
+                          (writer
+                            (if read-only
+                                nil
+                                ;; FIXME: inlinable setf function would be nicer,
+                                ;; but i'm pretty sure we can't inline setf functions atm.
+                                `((defsetf ,accname (object) (new)
+                                    (list 'si:instance-set
+                                      (list 'the ',name object)
+                                      ,index new))))))
+                     (list* `(declaim (ftype (function (,name) ,type) ,accname) ; useless
+                                      (inline ,accname))
+                            `(defun ,accname (,name)
+                               ;; FIXME: remove decls once ftype can take care of it.
+                               (declare (type ,name ,name))
+                               (the ,type (si:instance-ref ,name ,index)))
+                            writer))
+                 (incf index)))))
+      `(progn ,@(mapcan #'one slot-descriptions)))))
+
+(defmacro define-class-struct (name conc-name include slot-descriptions
+                               overwriting-slot-descriptions print-function
+                               print-object constructors predicate
+                               copier documentation
+                               &environment env)
   `(progn
      (defclass ,name ,(and include (list include))
-       ,(mapcar
-         #'(lambda (sd)
-             (if sd
-                 (list* (first sd)
-                        :initform (second sd)
-                        :initarg 
-                        (intern (symbol-name (first sd))
-                                (find-package 'KEYWORD))
-                        (when (third sd) (list :type (third sd))))
-                 nil))            ; for initial offset slots
-         slot-descriptions)
+       ;; defclass of course does its own overwriting, so we can just leave these be
+       (,@(mapcar #'defstruct-sd->defclass-sd overwriting-slot-descriptions)
+        ,@(mapcar #'defstruct-sd->defclass-sd slot-descriptions))
+       ,@(when documentation
+           `((:documentation ,documentation)))
        (:metaclass structure-class))
-     
      ,@(when print-function
-         `((defmethod print-object ((obj ,name) stream)
-             (,print-function obj stream 0)
-             obj)))
+         ;; print-function and print-object can be lambda exprs,
+         ;; so we have to be safe about names.
+         (let ((obj (gensym "OBJ")) (stream (gensym "STREAM")))
+           `((defmethod print-object ((,obj ,name) ,stream)
+               (,print-function ,obj ,stream 0)))))
      ,@(when print-object
-         `((defmethod print-object ((obj ,name) stream)
-             (,print-object obj stream)
-             obj)))))
+         (let ((obj (gensym "OBJ")) (stream (gensym "STREAM")))
+           `((defmethod print-object ((,obj ,name) ,stream)
+               (,print-object ,obj ,stream)))))
+     ,@(when predicate
+         ;; generic functions are now fast enough that this is
+         ;; faster code than calling SUBCLASSP or whatnot.
+         `((defgeneric ,predicate (object)
+             (:method (object) nil)
+             (:method ((object ,name)) t))))
+     ,@(when copier
+         ;; It might seem like we can do better here- basically copy
+         ;; a fixed number of slots - but CLHS is clear that the copier
+         ;; must be COPY-STRUCTURE, and so it has to deal correctly with subclasses.
+         `((declaim (ftype (function (,name) ,name) ,copier) ; useless atm
+                    (inline ,copier))
+           (defun ,copier (,name) (copy-structure ,name))))
 
-(defun define-structure (name conc-name type named slot-descriptions
-                         standard-constructor offset documentation)
-  (create-type-name name)
-  ;; We are going to modify this list!!!
-  (setf slot-descriptions (copy-tree slot-descriptions))
-  
-  (setf (structure-slot-descriptions name) slot-descriptions)
-  (setf (structure-type name) type)
-  (setf (structure-size name) offset)
-  (setf (structure-constructor name) standard-constructor)
-  #+clos
-  (when *keep-documentation*
-    (set-documentation name 'STRUCTURE documentation))
-  (dolist (x slot-descriptions)
-    (and x
-	 (not (eql (car x) 'TYPED-STRUCTURE-NAME))
-	 (make-access-function name conc-name type named x))))
+     ,@(with-defstruct-delay (all-slots name include
+                              slot-descriptions overwriting-slot-descriptions env)
+         `((eval-when (:compile-toplevel :load-toplevel :execute)
+               (setf (structure-size ',name) ,(length all-slots)
+                     (structure-slot-descriptions ',name) ',all-slots))
+           (define-class-struct-constructors ,name ,constructors ,all-slots)
+           (define-class-struct-accessors ,name ,conc-name ,all-slots)))))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
 ;;; The DEFSTRUCT macro.
+;;;
 
-(defmacro defstruct (&whole whole name&opts &rest slots)
+(defmacro defstruct (name&opts &rest slots &environment env)
   "Syntax: (defstruct
          {name | (name {:conc-name | (:conc-name prefix-string) |
                         :constructor | (:constructor symbol [lambda-list]) |
@@ -391,7 +508,7 @@
          )
 Defines a structure named by NAME.  The doc-string DOC, if supplied, is saved
 as a STRUCTURE doc and can be retrieved by (documentation 'NAME 'structure)."
-  (let* ((slot-descriptions slots)
+  (let* ((slot-descriptions slots) overwriting-slot-descriptions
          (name (if (consp name&opts) (first name&opts) name&opts))
          (options (when (consp name&opts) (rest name&opts)))
          (conc-name (base-string-concatenate name "-"))
@@ -399,11 +516,9 @@ as a STRUCTURE doc and can be retrieved by (documentation 'NAME 'structure)."
          (copier (intern (base-string-concatenate "COPY-" name)))
          (predicate (intern (base-string-concatenate name "-P")))
          constructors no-constructor standard-constructor
-         predicate-specified
-         include
+         predicate-specified include
          print-function print-object type named initial-offset
-         offset name-offset
-         documentation)
+         (size 0) name-offset documentation)
 
     ;; Parse the defstruct options.
     (do ((os options (cdr os)) (o) (v))
@@ -426,9 +541,7 @@ as a STRUCTURE doc and can be retrieved by (documentation 'NAME 'structure)."
                 (setq predicate v)
                 (setq predicate-specified t))
                (:INCLUDE
-                (setq include (cdar os))
-                (unless (names-structure-p v)
-                        (error "~S is an illegal included structure." v)))
+                (setq include (cdar os)))
                (:PRINT-FUNCTION (setq print-function v))
 	       (:PRINT-OBJECT (setq print-object v))
                (:TYPE (setq type v))
@@ -454,59 +567,54 @@ as a STRUCTURE doc and can be retrieved by (documentation 'NAME 'structure)."
           (setq documentation (car slot-descriptions))
           (setq slot-descriptions (cdr slot-descriptions)))
 
-    ;; Check the include option.
-    (when include
-          (unless (equal type (structure-type (car include)))
-                  (error "~S is an illegal structure include."
-                         (car include))))
+    ;; check initial-offset and type consistency.
+    (when initial-offset
+      (unless type
+        (error "Structure definition for ~a cannot have :INITIAL-OFFSET without :TYPE."
+               name)))
 
-    ;; Set OFFSET.
-    (setq offset (if include (structure-size (car include)) 0))
+    ;; :named and type consistency.
+    (when named
+      (unless type
+        (error "Structure definition for ~a cannot have :NAMED without :TYPE."
+               name)))
 
-    ;; Increment OFFSET.
-    (when (and type initial-offset)
-          (setq offset (+ offset initial-offset)))
-    (when (and type named)
-	  (unless (or (subtypep '(vector symbol) type)
-		      (subtypep type 'list))
-	    (error "Structure cannot have type ~S and be :NAMED." type))
-          (setq name-offset offset)
-          (setq offset (1+ offset)))
+    ;; :print-object or :print-function and type consistency.
+    (when (and print-object print-function)
+      (error "Structure definition for ~a cannot specify both :PRINT-OBJECT and :PRINT-FUNCTION."
+             name))
+    (when type
+      (when print-object
+        (error "Structure definition for ~a cannot specify both :TYPE and :PRINT-OBJECT." name))
+      (when print-function
+        (error "Structure definition for ~a cannot specify both :TYPE and :PRINT-FUNCTION." name)))
+
+    (when initial-offset (setq size initial-offset))
+    (when named
+      (unless (or (subtypep '(vector symbol) type env)
+                  (subtypep type 'list env))
+        (error "Structure cannot have type ~S and be :NAMED." type))
+      (setq name-offset size)
+      (setq size (1+ size)))
 
     ;; Parse slot-descriptions, incrementing OFFSET for each one.
     (do ((ds slot-descriptions (cdr ds))
          (sds nil))
         ((endp ds)
          (setq slot-descriptions (nreverse sds)))
-      (push (parse-slot-description (car ds) offset) sds)
-      (setq offset (1+ offset)))
+      (push (parse-slot-description (car ds)) sds)
+      (setq size (1+ size)))
 
-    ;; If TYPE is non-NIL and structure is named,
+    ;; If TYPE structure is named,
     ;;  add the slot for the structure-name to the slot-descriptions.
-    (when (and type named)
-          (setq slot-descriptions
-                (cons (list 'TYPED-STRUCTURE-NAME name) slot-descriptions)))
+    (when named
+      (setq slot-descriptions
+            (cons (parse-slot-description (list 'typed-structure-name `',name)) slot-descriptions)))
 
     ;; Pad the slot-descriptions with the initial-offset number of NILs.
-    (when (and type initial-offset)
-          (setq slot-descriptions
-                (append (make-list initial-offset) slot-descriptions)))
-
-    ;; Append the slot-descriptions of the included structure.
-    ;; The slot-descriptions in the include option are also counted.
-    (cond ((null include))
-          ((endp (cdr include))
-           (setq slot-descriptions
-                 (append (structure-slot-descriptions (car include))
-                         slot-descriptions)))
-          (t
-           (setq slot-descriptions
-                 (append (overwrite-slot-descriptions
-                          (mapcar #'(lambda (sd)
-                                      (parse-slot-description sd 0 :unknown))
-                                  (cdr include))
-                          (structure-slot-descriptions (car include)))
-                         slot-descriptions))))
+    (when initial-offset
+      (setq slot-descriptions
+            (append (make-list initial-offset) slot-descriptions)))
 
     (cond (no-constructor
            ;; If a constructor option is NIL,
@@ -530,15 +638,16 @@ as a STRUCTURE doc and can be retrieved by (documentation 'NAME 'structure)."
     ;; Check the named option and set the predicate.
     (when (and type (not named))
       (when (and predicate-specified (not (null predicate)))
-	(error "~S is an illegal structure predicate."
-	       predicate))
+	(error "Cannot specify :TYPE and a PREDICATE but not :NAMED, in structure definition for ~a"
+	       name))
       (setq predicate nil))
 
-    (when include (setq include (car include)))
-
-    ;; Check the print-function.
-    (when (and print-function type)
-      (error "A print function is supplied to a typed structure."))
+    (when include
+      (setq overwriting-slot-descriptions
+            (mapcar (lambda (sd)
+                      (parse-slot-description sd :unspecified))
+                    (cdr include)))
+      (setq include (car include)))
 
     ;;
     ;; The constructors rely on knowing the structure class. For toplevel
@@ -550,19 +659,24 @@ as a STRUCTURE doc and can be retrieved by (documentation 'NAME 'structure)."
     ;; toplevel forms in the file - so we can't depend on ANY toplevel forms
     ;; to define values required by LOAD-TIME-VALUEs
     ;;
-    `(eval-when (:compile-toplevel :load-toplevel :execute)
-       #+clos
-       ,@(unless type
-           (list `(define-structure-class ,name ,include
-                    ,slot-descriptions ,print-function ,print-object)))
-       (define-structure ',name ',conc-name ',type ',named
-         ',slot-descriptions ',standard-constructor
-         ',offset ',documentation)
-       ,@(mapcar #'(lambda (constructor)
-                     (make-constructor name constructor type named slot-descriptions))
-                 constructors)
-       ,@(when predicate
-           (list (make-predicate predicate name type named name-offset)))
-       ,@(when copier
-           (list (make-copier copier name type)))
+    `(progn
+       ,(cond ((null type)
+               `(define-class-struct ,name ,conc-name ,include ,slot-descriptions
+                  ,overwriting-slot-descriptions ,print-function ,print-object
+                  ,constructors ,predicate ,copier ,documentation))
+              ((subtypep type 'list env)
+               `(define-list-struct ,name ,conc-name ,include ,slot-descriptions
+                  ,overwriting-slot-descriptions ,name-offset
+                  ,constructors ,predicate ,copier))
+              ((subtypep type 'vector env)
+               `(define-vector-struct ,name ,conc-name ,type ,include ,slot-descriptions
+                  ,overwriting-slot-descriptions ,name-offset
+                  ,constructors ,predicate ,copier))
+              (t
+               (error "~a is not a valid :TYPE in structure definition for ~a"
+                      type name)))
+       ,@(expand-set-documentation name 'structure documentation)
+       ,@(when (and documentation *keep-documentation*)
+           `((set-documentation ',name 'structure ',documentation)))
+       (setf (structure-constructor ',name) ',standard-constructor)
        ',name)))

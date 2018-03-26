@@ -57,7 +57,6 @@ THE SOFTWARE.
 #include <clasp/core/designators.h>
 #include <clasp/core/instance.h>
 #include <clasp/core/documentation.h>
-#include <clasp/core/structureObject.h>
 #include <clasp/core/array.h>
 #include <clasp/core/pointer.h>
 #include <clasp/core/wrappedPointer.h>

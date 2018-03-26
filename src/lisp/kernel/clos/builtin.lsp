@@ -80,3 +80,14 @@
   (dolist (slot (class-slots class))
     (unless (eq :INSTANCE (slot-definition-allocation slot))
       (error "The structure class ~S can't have shared slots" (class-name class)))))
+
+(defun copy-structure (structure)
+  ;; This could be done slightly faster by making copy-structure generic,
+  ;; and having defstruct define a copy-structure method that works without a loop
+  ;; or checking the size.
+  (let* ((class (class-of structure))
+         (copy (allocate-instance class))
+         (size (class-size class)))
+    (loop for i below size
+          do (si:instance-set copy i (si:instance-ref structure i)))
+    copy))
