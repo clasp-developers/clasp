@@ -380,7 +380,7 @@
   "Generates code for the form that places the result into a precalculated-vector and returns the precalculated-vector index.
 If this form has already been precalculated then just return the precalculated-value index"
   (cond
-    ((constantp form)
+    ((constantp form env)
      (clasp-cleavir:%literal-index (ext:constant-form-value form env) read-only-p))
     (t
      ;; Currently read-only-p is ignored from here on
