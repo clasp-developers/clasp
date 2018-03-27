@@ -6115,7 +6115,14 @@ CL_DEFUN T_mv cl__read_line(T_sp sin, T_sp eof_error_p, T_sp eof_value, T_sp rec
   // TODO Handle encodings from sin - currently only Str8Ns is supported
   sin = coerce::inputStreamDesignator(sin);
   if (!AnsiStreamP(sin)) {
-    return eval::funcall(gray::_sym_stream_read_line, sin, eof_error_p, eof_value, recursive_p);
+    T_mv results = eval::funcall(gray::_sym_stream_read_line, sin);
+    if (results.second().isTrue()) {
+      if (eof_error_p.notnilp()) {
+        ERROR_END_OF_FILE(sin);
+      } else {
+        return eof_value;
+      }
+    }
   }
   bool eofErrorP = eof_error_p.isTrue();
   //    bool recursiveP = translate::from_object<bool>::convert(env->lookup(_sym_recursive_p));
