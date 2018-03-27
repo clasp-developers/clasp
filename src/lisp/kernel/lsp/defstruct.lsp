@@ -180,7 +180,7 @@
 
 (defun constructor-helper (constructor slot-descriptions)
   (if (consp constructor)
-      ;; BOA constructor
+      ;; BOA constructor. See CLHS 3.4.6 for detailed explanation.
       (let* ((constructor-name (first constructor))
              (original-lambda-list (second constructor))
              (lambda-list (copy-list original-lambda-list))
@@ -200,25 +200,21 @@
                 ((eq name '&allow-other-keys))
                 ((atom name) ; just a variable.
                  (let ((slotd (assoc name slot-descriptions)))
-                   (unless slotd
-                     (error "Unknown slot name ~a in BOA lambda list ~a"
-                            name original-lambda-list))
-                   ;; FIXME: check for duplicated names? or does lambda list handler catch that.
-                   (push slotd mentioned-slots)
-                   (when modify
-                     (setf (first sublist)
-                           `(,name ,(struct-slotd-initform slotd))))))
+                   (when slotd
+                     ;; FIXME: check for duplicated names? or does lambda list handler catch that.
+                     (push slotd mentioned-slots)
+                     (when modify
+                       (setf (first sublist)
+                             `(,name ,(struct-slotd-initform slotd)))))))
                 (t ; has an initform included.
                  (let* ((slot-name (if (consp (first name)) ; complicated :key
                                        (second (first name))
                                        (first name)))
                         (slotd (assoc slot-name slot-descriptions)))
-                   (unless slotd
-                     (error "Unknown slot name ~a in BOA lambda list ~a"
-                            slot-name original-lambda-list))
-                   (push slotd mentioned-slots)
-                   (when (and (endp (rest name)) modify) ; like &optional (foo)
-                     (setf (rest name) (list (struct-slotd-initform slotd))))))))
+                   (when slotd
+                     (push slotd mentioned-slots)
+                     (when (and (endp (rest name)) modify) ; like &optional (foo)
+                       (setf (rest name) (list (struct-slotd-initform slotd)))))))))
         ;; For all slots not mentioned above, add the initforms as &aux bindings.
         (let ((other-slots (set-difference slot-descriptions mentioned-slots)))
           (values constructor-name
@@ -229,7 +225,11 @@
                   'function ; FIXME: weak ftype
                   (mapcar #'struct-slotd-name slot-descriptions))))
       ;; standard constructor
-      ;; we use uninterned symbols as parameters as per a bunch of pedantry, check CLHS defstruct.
+      ;; we use uninterned symbols as parameters per CLHS defstruct:
+      ;; "The symbols which name the slots must not be used by the implementation as the names
+      ;;  for the lambda variables in the constructor function, since one or more of those
+      ;;  symbols might have been proclaimed special or..."
+      ;; In the BOA case, the programmer digs their own hole.
       (let ((parameters nil) (variables nil))
         (mapc (lambda (sd)
                 (cond ((null sd) (push nil variables))
