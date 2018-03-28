@@ -681,7 +681,6 @@ as a STRUCTURE doc and can be retrieved by (documentation 'NAME 'structure)."
               (t
                (error "~a is not a valid :TYPE in structure definition for ~a"
                       type name)))
-       ,@(expand-set-documentation name 'structure documentation)
        ,@(when (and documentation *keep-documentation*)
            `((set-documentation ',name 'structure ',documentation)))
        (setf (structure-constructor ',name) ',standard-constructor)
