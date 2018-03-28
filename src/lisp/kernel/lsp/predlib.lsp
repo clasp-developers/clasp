@@ -436,6 +436,13 @@ and is not adjustable."
 	      ((atom pat)
 	       (error "~S does not describe array dimensions." pat))))))
 
+;; Actually used way later in CLOS.
+;; Inlining doesn't work here for bootstrap reasons, so we just use
+;; subclassp directly within this file.
+(declaim (inline of-class-p))
+(defun of-class-p (object class)
+  (si::subclassp (class-of object) class))
+
 (defun typep (object type &optional env &aux tp i c)
   "Args: (object type)
 Returns T if X belongs to TYPE; NIL otherwise."
@@ -449,7 +456,7 @@ Returns T if X belongs to TYPE; NIL otherwise."
 	 (setq tp (car type) i (cdr type)))
 	#+clos
 	((clos::classp type)
-	 (return-from typep (si::subclassp (class-of object) type)))
+	 (return-from typep (si:subclassp (class-of object) type)))
 	(t
 	 (error-type-specifier type)))
   (case tp
@@ -549,36 +556,9 @@ Returns T if X belongs to TYPE; NIL otherwise."
 	    (error-type-specifier type))
 	   ((setq c (find-class type nil))
 	    ;; Follow the inheritance chain
-	    (si::subclassp (class-of object) c))
+            (si:subclassp (class-of object) c))
 	   (t
 	    (error-type-specifier type))))))
-
-#+(and clos (not clasp))
-(defun subclassp (low high)
-  (or (eq low high)
-      (member high (sys:instance-ref low clos::+class-precedence-list-ndx+)
-	      :test #'eq))) ; (class-precedence-list low)
-
-#+clos
-(defun of-class-p (object class)
-  (declare (optimize (speed 3) (safety 0))
-           (special clos::*class-precedence-list-ndx*
-                    clos::*class-name-ndx*))
-  (macrolet ((clos::class-precedence-list (x)
-	       `(si::instance-ref ,x clos::*class-precedence-list-ndx*))
-	     (class-name (x)
-	       `(si::instance-ref ,x clos::*class-name-ndx*)))
-    (let* ((x-class (class-of object)))
-      (declare (class x-class))
-      (if (eq x-class class)
-	  t
-	  (let ((x-cpl (clos::class-precedence-list x-class)))
-	    (if (clos::classp class)
-		(member class x-cpl :test #'eq)
-		(dolist (c x-cpl)
-		  (declare (class c))
-		  (when (eq (class-name c) class)
-		    (return t)))))))))
 
 ;;************************************************************
 ;;			NORMALIZE-TYPE
