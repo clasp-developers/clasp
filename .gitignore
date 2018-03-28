@@ -31,3 +31,4 @@ projects/
 build2/
 /.lock-waf_linux*_build
 local.config
+tools-for-build/waf

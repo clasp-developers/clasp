@@ -5,17 +5,11 @@
 ### This file has to be named `wscript.config` to be
 ### recognised by the build system.
 
-# Define where the llvm/clang is that clasp needs to build.
+# Define where the llvm/clang is that will be used for building clasp.
 LLVM_CONFIG_BINARY = '/path/to/llvm-config-4.0'
 
-# It contains some external dependencies for clasp. The end
-# goal is that it won't be needed anymore and the default
-# packages of the host OS are found and utilized. Unfortunately
-# version constraints make that ideal sometimes unreachable.
-#EXTERNALS_CLASP_DIR = '/path/externals-clasp/'
-
-# To link to llvm debug libraries set a path to the llvm-config for the llvm debug build
-# LLVM_CONFIG_DEBUG_PATH = "/full/path/externals-clasp/build/debug/bin/llvm-config"
+# To link to the debug versions of the LLVM libraries, set a path here to the llvm-config binary of the LLVM debug build
+# LLVM_CONFIG_BINARY_FOR_LIBS = "/full/path/externals-clasp/build/debug/bin/llvm-config"
 
 # Use JIT notification - which is broken in llvm5.0
 # Set this to True if you have applied the patch to llvm 5.0 or the

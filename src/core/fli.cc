@@ -4,7 +4,7 @@
 
 /*
 Copyright (c) 2016, Christian E. Schafmeister
-Copyright (c) 2016 and beyond, Frank Goenninger
+Copyright (c) 2016 and beyond, Frank Gönninger
 
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
@@ -32,7 +32,7 @@ THE SOFTWARE.
 //        getting and freeing foreign memory and calling foreign
 //        functions.
 //
-//  Augiust 2016 by Frank Goenninger, Gonninger B&T UG, Germany
+//  Augiust 2016 by Frank Gönninger, Gönninger B&T UG, Germany
 //
 // ===========================================================================
 

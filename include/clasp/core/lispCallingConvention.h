@@ -394,7 +394,7 @@ inline bool dump_Vaslist_ptr(Vaslist* args_orig) {
 
 
 #define APPLY_TO_VA_LIST
-#include <clasp/core/generated/applyToFrame.h>
+#include <clasp/core/applyToFrame.h>
 #undef APPLY_TO_VA_LIST
     
                        
@@ -414,7 +414,7 @@ inline gctools::return_type funcall_consume_valist_(gc::Tagged func_tagged, VaLi
   size_t nargs = args->remaining_nargs();
   switch (nargs) {
 #define APPLY_TO_VA_LIST_CASE 1
-#include <clasp/core/generated/applyToFrame.h>
+#include <clasp/core/applyToFrame.h>
 #undef APPLY_TO_VA_LIST_CASE
   default:
       printf("%s:%d Handle functions with arity %lu for funcall or reduce the number of args in this call\n", __FILE__, __LINE__, nargs);

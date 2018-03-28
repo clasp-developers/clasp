@@ -1,7 +1,0 @@
-import build_files
-
-def build(bld):
-    bld.clasp_aclasp = build_files.aclasp(True)
-    bld.clasp_bclasp = build_files.bclasp(True)
-    bld.clasp_cclasp = build_files.cclasp(True)
-    bld.clasp_cclasp_no_wrappers = build_files.cclasp(False)

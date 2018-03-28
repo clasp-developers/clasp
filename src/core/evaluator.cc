@@ -2289,7 +2289,7 @@ gctools::return_type funcall_frame(Function_sp func, gctools::Frame* frame)
 {
   switch ((*frame).number_of_arguments()) {
 #define APPLY_TO_FRAME
-#include <clasp/core/generated/applyToFrame.h>
+#include <clasp/core/applyToFrame.h>
 #undef APPLY_TO_FRAME
   default:
       SIMPLE_ERROR(BF("Function call with %lu arguments exceeded the call-arguments-limit %lu") % (*frame).number_of_arguments() % CALL_ARGUMENTS_LIMIT);

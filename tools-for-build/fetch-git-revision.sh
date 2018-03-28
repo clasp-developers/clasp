@@ -7,6 +7,8 @@ label=$4
 
 #set -x
 
+echo Updating git repo at \'$path\'
+
 gitCloneIt () {
    git clone "$url" "$path" || exit $?
 }
@@ -31,11 +33,14 @@ if [ -f "$path/.git" ]; then
 elif [ -d "$path/.git" ]; then
     currentRemoteUrl=`git --git-dir "$path/.git" remote get-url origin`
     if [ "$currentRemoteUrl" != "$url" ]; then
-        echo "WARNING: \"$path\" seems to be holding a checkout from a different URL (current: \"$currentRemoteUrl\", requested: \"$url\"). Do you want me to *RECURSIVELY DELETE* this directory, and then check out the git repo from the new location?"
-        waitForYes
-        rm -rf "$path"
-        rm -rf ".git/modules/$path"
-        git config -f .git/config --remove-section "submodule.$path" 2> /dev/null
+        # Getting the repo can be slow and unreliable if the servers are loaded...
+        #echo "WARNING: \"$path\" seems to be holding a checkout from a different URL (current: \"$currentRemoteUrl\", requested: \"$url\"). Do you want me to *RECURSIVELY DELETE* this directory, and then check out the git repo from the new location?"
+        #waitForYes
+        #rm -rf "$path"
+
+        # Alternatively, change the url of 'origin' remote
+        echo "WARNING: \"$path\" seems to be holding a checkout from a different URL (current: \"$currentRemoteUrl\", requested: \"$url\"). I'm changing the 'origin' remote url to the new one."
+        git --git-dir "$path/.git" remote set-url origin "$url"
     fi
 fi
 

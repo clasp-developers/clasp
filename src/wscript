@@ -1,5 +1,0 @@
-import os
-
-def build(bld):
-    bld.recurse('gctools core clbind serveEvent sockets llvmo asttooling lisp')
-

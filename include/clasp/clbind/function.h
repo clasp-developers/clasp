@@ -58,7 +58,7 @@ public:
 // What was...
 // #include <clbind_functoids.h>
 // now becomes...
-#include <clasp/clbind/generated/clbind_functoids.h>
+#include <clasp/clbind/clbind_functoids.h>
 };
 
 template <typename FunctionPtrType, typename Policies>
