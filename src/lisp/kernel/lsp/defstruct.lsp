@@ -222,7 +222,7 @@
                          (mapcar (lambda (slotd)
                                    `(,(struct-slotd-name slotd) ,(struct-slotd-initform slotd)))
                                  other-slots))
-                  'function ; FIXME: weak ftype
+                  '* ; FIXME: weak ftype
                   (mapcar #'struct-slotd-name slot-descriptions))))
       ;; standard constructor
       ;; we use uninterned symbols as parameters per CLHS defstruct:
@@ -230,18 +230,21 @@
       ;;  for the lambda variables in the constructor function, since one or more of those
       ;;  symbols might have been proclaimed special or..."
       ;; In the BOA case, the programmer digs their own hole.
-      (let ((parameters nil) (variables nil))
+      (let ((parameters nil) (variables nil) (ftype-parameters nil))
         (mapc (lambda (sd)
                 (cond ((null sd) (push nil variables))
                       ((eq (struct-slotd-name sd) 'typed-structure-name)
                        (push (struct-slotd-initform sd) variables))
                       (t (let ((param (copy-symbol (struct-slotd-name sd))))
                            (push (list param (struct-slotd-initform sd)) parameters)
+                           (push (list (intern (symbol-name param) "KEYWORD")
+                                       (struct-slotd-type sd))
+                                 ftype-parameters)
                            (push param variables)))))
               slot-descriptions)
         (values constructor
                 `(&key ,@(nreverse parameters))
-                'function ; FIXME: also weak.
+                `(&key ,@ftype-parameters)
                 (nreverse variables)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -252,9 +255,10 @@
 (defmacro define-vector-struct-constructors (name element-type constructors slotds)
   `(progn
      ,@(mapcan (lambda (constructor)
-                 (multiple-value-bind (constructor-name lambda-list ftype vars)
+                 (multiple-value-bind (constructor-name lambda-list ftype-parameters vars)
                      (constructor-helper constructor slotds)
-                   (list `(declaim (ftype ,ftype ,constructor-name)) ; useless atm
+                   (list `(declaim (ftype (function ,ftype-parameters vector)
+                                          ,constructor-name)) ; useless atm
                          `(defun ,constructor-name ,lambda-list
                             (let ((result (make-array ,(length vars) :element-type ',element-type)))
                               ,@(let ((index 0))
@@ -323,9 +327,10 @@
 (defmacro define-list-struct-constructors (name constructors slotds)
   `(progn
      ,@(mapcan (lambda (constructor)
-                 (multiple-value-bind (constructor-name lambda-list ftype vars)
+                 (multiple-value-bind (constructor-name lambda-list ftype-parameters vars)
                      (constructor-helper constructor slotds)
-                   (list `(declaim (ftype ,ftype ,constructor-name)) ; useless atm
+                   (list `(declaim (ftype (function ,ftype-parameters list)
+                                          ,constructor-name)) ; useless atm
                          `(defun ,constructor-name ,lambda-list (list ,@vars)))))
                constructors)))
 
@@ -392,11 +397,12 @@
 (defmacro define-class-struct-constructors (name constructors slot-descriptions)
   `(progn
      ,@(mapcan (lambda (constructor)
-                 (multiple-value-bind (constructor-name lambda-list ftype vars)
+                 (multiple-value-bind (constructor-name lambda-list ftype-parameters vars)
                      ;; this does most of the work. for example, initforms are set up
                      ;; in the lambda list.
                      (constructor-helper constructor slot-descriptions)
-                   (list `(declaim (ftype ,ftype ,constructor-name)) ; useless atm
+                   (list `(declaim (ftype (function ,ftype-parameters ,name)
+                                          ,constructor-name)) ; useless atm
                          (let ((instance (gensym "INSTANCE"))
                                (index 0))
                            `(defun ,constructor-name ,lambda-list
