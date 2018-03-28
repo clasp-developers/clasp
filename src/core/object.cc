@@ -125,7 +125,7 @@ CL_DEFUN T_sp core__make_cxx_object(T_sp class_or_name, T_sp args) {
     return instance;
   }
 BAD_ARG0:
-  TYPE_ERROR(class_or_name, Cons_O::createList(cl::_sym_class, cl::_sym_Symbol_O));
+  TYPE_ERROR(class_or_name, Cons_O::createList(cl::_sym_or, cl::_sym_class, cl::_sym_Symbol_O));
   UNREACHABLE();
 }
 
@@ -319,14 +319,6 @@ CL_DEFUN T_sp core__instancep(T_sp obj) {
   else return _Nil<T_O>();
 };
 
-CL_LAMBDA(arg);
-CL_DECLARE();
-CL_DOCSTRING("isNil");
-CL_DEFUN bool core__is_nil(T_sp arg) {
-  return arg.nilp();
-};
-
-
 void General_O::initialize() {
   // do nothing
 }
@@ -398,16 +390,6 @@ bool General_O::equal(T_sp obj) const {
 bool General_O::equalp(T_sp obj) const {
   return this->equal(obj);
 }
-#if 0
-bool General_O::isAInstanceOf(Class_sp mc) {
-  if (this->eq(mc))
-    return true;
-  Symbol_sp classSymbol = mc->className();
-  if (this->isAssignableToByClassSymbol(classSymbol))
-    return true;
-  return false;
-}
-#endif
 
 void Hash1Generator::hashObject(T_sp obj) {
   clasp_sxhash(obj, *this);
@@ -541,7 +523,6 @@ Class_sp instance_class(T_sp obj)
 }
 
 SYMBOL_SC_(CorePkg, slBoundp);
-SYMBOL_SC_(CorePkg, isNil);
 SYMBOL_SC_(CorePkg, instanceRef);
 SYMBOL_SC_(CorePkg, instanceSet);
 SYMBOL_SC_(CorePkg, instancep);

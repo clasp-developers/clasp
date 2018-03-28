@@ -354,21 +354,6 @@ class Hash1Generator {
   COMMON_CLASS_PARTS(aNamespace, aPackage, aClass, aClassName); 
 #endif
 
-#if 0
-#define DECLARE_INIT_GLOBALS() \
-  public:                        \
-    static void lisp_initGlobals(core::Lisp_sp lisp);
-#endif
-
-#if 0
-#define __DEFAULT_INITIALIZATION() \
-public:                            \
-  inline void initialize() {       \
-    this->Base::initialize();      \
-  }
-#endif
-
-
 #define DEFAULT_CTOR(oClass) \
 public:                      \
   explicit oClass() : oClass::Base(){}; /* default ctor */
