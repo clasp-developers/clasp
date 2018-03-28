@@ -1799,6 +1799,18 @@ CL_DEFUN Symbol_mv core__type_to_symbol(T_sp x) {
 #pragma clang diagnostic pop
 }
 
+T_sp type_of_decide_class(T_sp cl) {
+  // Return the name of the class if it's a proper name, or else the class.
+  Class_sp mcl = gc::As<Class_sp>(cl);
+  T_sp type = mcl->_className();
+  Symbol_sp st = gc::As<Symbol_sp>(type);
+  // Only use the class-name as a type if it's the proper name of the class.
+  if (type.nilp() || cl != T_sp(eval::funcall(cl::_sym_findClass, st, _Nil<T_O>()))) {
+    type = cl;
+  }
+  return type;
+}
+
 T_sp type_of(T_sp x) {
   if (x.fixnump()) {
     ql::list res;
@@ -1820,29 +1832,13 @@ T_sp type_of(T_sp x) {
     return res.cons();
   }
 #ifdef CLOS
-  if (Instance_sp instance = x.asOrNull<Instance_O>()) {
-    T_sp cl = lisp_instance_class(instance);
-    T_sp t;
-    if (Class_sp mcl = cl.asOrNull<Class_O>()) {
-      t = mcl->_className();
-    } else if (Instance_sp icl = cl.asOrNull<Instance_O>()) {
-      (void)icl;
-      DEPRECATEDP("Classes of instances should always be of Class_O type, not Instance_O");
-      //	    t = icl->_CLASS_NAME();
-    } else {
-      SIMPLE_ERROR(BF("Illegal class %s for instance class of %s") % _rep_(cl) % _rep_(instance));
-    }
-    Symbol_sp st = gc::As<Symbol_sp>(t);
-    if (t.nilp() || cl != T_sp(eval::funcall(cl::_sym_findClass, st, _Nil<T_O>()))) {
-      t = cl;
-    }
-    return t;
-  } else if (Class_sp mc = x.asOrNull<Class_O>()) {
-    Class_sp mcc = lisp_static_class(mc);
-    return mcc->_className();
+  else if (Instance_sp instance = x.asOrNull<Instance_O>()) {
+    return type_of_decide_class(lisp_instance_class(instance));
+  } else if (FuncallableInstance_sp instance = x.asOrNull<FuncallableInstance_O>()) {
+    return type_of_decide_class(lisp_instance_class(instance));
   }
 #endif
-  if (Symbol_sp symx = x.asOrNull<Symbol_O>()) {
+  else if (Symbol_sp symx = x.asOrNull<Symbol_O>()) {
     if (x.nilp()) return cl::_sym_null;
     if (x == _lisp->_true())
       return cl::_sym_boolean;
@@ -2578,10 +2574,8 @@ void print_add_two_numbers(int x, int y) {
   SYMBOL_SC_(CorePkg, separatePairList);
   SYMBOL_EXPORT_SC_(ClPkg, set);
   SYMBOL_EXPORT_SC_(ClPkg, gensym);
-  SYMBOL_EXPORT_SC_(ClPkg, type_of);
   SYMBOL_SC_(CorePkg, separatePairList);
   SYMBOL_EXPORT_SC_(ClPkg, gensym);
-  SYMBOL_EXPORT_SC_(ClPkg, type_of);
   SYMBOL_SC_(CorePkg, separatePairList);
   SYMBOL_SC_(CorePkg, testMemoryError);
   SYMBOL_SC_(CorePkg, functionBlockName);
