@@ -866,7 +866,6 @@ T_mv LexicalEnvironment_O::lookupMetadata(Symbol_sp key) const {
 RuntimeVisibleEnvironment_O::RuntimeVisibleEnvironment_O() : Base(), _Invisible(false) {};
 
 T_sp RuntimeVisibleEnvironment_O::currentVisibleEnvironment(bool stopAtFunctionContainerEnvironment) const {
-  //	if ( this -> isNil() ) return _Nil<T_O>();
   if (this->_Invisible) {
     return clasp_currentVisibleEnvironment(this->getParentEnvironment(),stopAtFunctionContainerEnvironment);
   }
@@ -901,7 +900,6 @@ bool RuntimeVisibleEnvironment_O::_findValue(T_sp sym, int &depth, int &index, b
 }
 
 bool RuntimeVisibleEnvironment_O::_findFunction(T_sp functionName, int &depth, int &index, Function_sp &func, T_sp& functionEnv) const {
-  //	if (this -> isNil()) return false;
   T_sp parent = clasp_currentVisibleEnvironment(this->getParentEnvironment(),false);
   LOG(BF("Moving down a level"));
   if (!this->_Invisible) ++depth;
@@ -954,7 +952,6 @@ bool ValueEnvironment_O::lexicalSpecialP(Symbol_sp sym) const {
 }
 
 T_sp ValueEnvironment_O::getActivationFrame() const {
-  //	if ( this -> isNil()) return _Nil<ActivationFrame_O>();
   return this->_ActivationFrame;
 }
 
@@ -1224,7 +1221,6 @@ T_sp ValueEnvironment_O::new_binding(Symbol_sp sym, int idx, T_sp obj) {
 
 
 T_sp FunctionValueEnvironment_O::getActivationFrame() const {
-  //	if (this -> isNil() ) return _Nil<ActivationFrame_O>();
   return this->_FunctionFrame;
 };
 
@@ -1438,7 +1434,6 @@ bool BlockEnvironment_O::_findBlock(Symbol_sp sym, int &depth, bool &interFuncti
 }
 
 T_sp BlockEnvironment_O::getActivationFrame() const {
-  //	if ( this -> isNil()) return _Nil<ActivationFrame_O>();
   return this->_ActivationFrame;
 }
 
