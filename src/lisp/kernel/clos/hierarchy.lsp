@@ -90,13 +90,6 @@
       ;;; Any changes to the slots above need to be reflected in instance.h
       )))
 
-#+clasp
-(eval-when (:compile-toplevel :execute :load-toplevel)
-  (defparameter *class-name-ndx*
-    #.(position 'name +class-slots+ :key #'first))
-  (defparameter *class-precedence-list-ndx*
-    #.(position 'precedence-list +class-slots+ :key #'first)))
-
 ;;; ----------------------------------------------------------------------
 ;;; STANDARD-CLASS
 

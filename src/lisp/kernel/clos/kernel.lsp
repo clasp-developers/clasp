@@ -197,8 +197,7 @@
 	     (loop for spec in (method-specializers method)
 		for class in classes
 		always (cond ((eql-specializer-flag spec)
-			      ;; EQL specializer invalidate computation
-			      ;; we return NIL
+			      ;; EQL specializer can invalidate computation
 			      (when (si::of-class-p (eql-specializer-object spec) class)
 				(return-from std-compute-applicable-methods-using-classes
 				  (values nil nil)))
