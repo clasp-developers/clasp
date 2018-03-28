@@ -863,9 +863,10 @@ CL_DEFUN T_mv cl__compiler_macro_function(core::T_sp name, core::T_sp env)
 
 CL_LISPIFY_NAME("CL:compiler-macro-function");
 CL_LAMBDA(function name &optional env);
-CL_DEFUN_SETF void setf_compiler_macro_function(core::T_sp function, core::T_sp name, core::T_sp env)
+CL_DEFUN_SETF T_sp setf_compiler_macro_function(core::T_sp function, core::T_sp name, core::T_sp env)
 {
   core__put_sysprop(name,cl::_sym_compiler_macro,function);
+  return function;
 }
 
 // ignore env
@@ -882,6 +883,18 @@ CL_DEFUN void core__setf_global_inline_status(core::T_sp name, bool status, core
 }
 
 
+// ignore env
+CL_LAMBDA(name &optional env);
+CL_DEFUN T_sp core__function_type(T_sp name, T_sp env) {
+  return core__get_sysprop(name, cl::_sym_ftype);
+}
+
+CL_LISPIFY_NAME("CORE:function-type");
+CL_LAMBDA(type name &optional env);
+CL_DEFUN_SETF T_sp core__setf_function_type(T_sp type, T_sp name, T_sp env) {
+  core__put_sysprop(name, cl::_sym_ftype, type);
+  return type;
+}
 
 
 CL_LAMBDA(symbol &optional env);
