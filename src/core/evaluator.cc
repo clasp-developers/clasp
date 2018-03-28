@@ -1847,41 +1847,6 @@ T_mv do_symbolMacrolet(List_sp args, T_sp env, bool topLevelForm) {
 T_mv sp_symbolMacrolet(List_sp args, T_sp env) {
   ASSERT(env.generalp());
   return do_symbolMacrolet(args, env, false);
-#if 0
-  List_sp macros = oCar(args);
-  SymbolMacroletEnvironment_sp newEnv(SymbolMacroletEnvironment_O::make(env));
-  List_sp body = oCdr(args);
-  List_sp cur = macros;
-  LOG(BF("macros part=%s") % macros->__repr__() );
-  gc::Nilable<String_sp> docString = _Nil<T_O>();
-  SYMBOL_SC_(CorePkg,whole);
-  SYMBOL_SC_(CorePkg,env);
-  List_sp outer_ll = Cons_O::createList(_sym_whole, _sym_env);
-  SYMBOL_EXPORT_SC_(ClPkg,ignore);
-  List_sp declares = Cons_O::createList(cl::_sym_declare,Cons_O::createList(cl::_sym_ignore,_sym_whole,_sym_env));
-  while ( cur.notnilp() )
-  {
-    List_sp oneDef = oCar(cur);
-    Symbol_sp name = oCar(oneDef).as<Symbol_O>();
-    List_sp expansion = Cons_O::create(Cons_O::createList(cl::_sym_quote,oCadr(oneDef)),_Nil<T_O>());
-    LambdaListHandler_sp outer_llh = LambdaListHandler_O::create(outer_ll,
-                                                                 oCadr(declares),
-                                                                 cl::_sym_function);
-    printf("%s:%d Creating InterpretedClosure with no source information and empty name- fix this\n", __FILE__, __LINE__ );
-    InterpretedClosure* ic = gctools::ClassAllocator<InterpretedClosure>::allocate_class( _sym_symbolMacroletLambda
-                                                                                          , _Nil<SourcePosInfo_O>()
-                                                                                          , kw::_sym_macro
-                                                                                          , outer_llh
-                                                                                          , declares
-                                                                                          , _Nil<T_O>()
-                                                                                          , newEnv
-                                                                                          , expansion );
-    Function_sp outer_func = Function_O::make(ic);
-    newEnv->addSymbolMacro(name,outer_func);
-    cur = oCdr(cur);
-  }
-  return eval::sp_locally(body,newEnv);
-#endif
 }
 
 /*! Returns NIL if no function is found */

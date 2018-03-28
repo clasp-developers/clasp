@@ -232,65 +232,6 @@ template <class Class, class Policies>
   }
 };
 
-
-#if 0
-  template <
-    class Class
-    , class Get, class GetPolicies
-    , class Set = reg::null_type, class SetPolicies = reg::null_type
-    >
-    struct property_registration : registration
-    {
- property_registration(
-  char const* name
-    , Get const& get
-    , GetPolicies const& get_policies
-    , Set const& set = Set()
-    , SetPolicies const& set_policies = SetPolicies()
-    , string const& arguments =""
-    , string const& declares =""
-    , string const& docstring ="" )
-   : name(name)
-    , get(get)
-    , get_policies(get_policies)
-    , set(set)
-    , set_policies(set_policies)
-    , m_arguments(arguments)
-    , m_declares(declares)
-    , m_docstring(docstring)
-  {}
-
-  void register_() const
-  {
-  const string n(name);
-  core::Functoid* getter = gctools::ClassAllocator<GetterMethoid<reg::null_type,Class,Get>>::allocate_class(n,get);
-//                int*** i = GetterMethoid<reg::null_type,Class,Get>(n,get);
-//                printf("%p\n", i);
-  core::Symbol_sp classSymbol = reg::lisp_classSymbol<Class>();
-  lisp_defineSingleDispatchMethod(name
-                                  , classSymbol
-                                  , getter
-                                  , 0
-                                  , true
-                                  , m_arguments
-                                  , m_declares
-                                  , m_docstring
-                                  , true
-                                  , 1 );
-//                printf("%s:%d - allocated a getter@%p for %s\n", __FILE__, __LINE__, getter, name);
-                // register the getter here
-}
-  char const* name;
-  Get get;
-  GetPolicies get_policies;
-  Set set;
-  SetPolicies set_policies;
-  string m_arguments;
-  string m_declares;
-  string m_docstring;
-};
-#endif
-
 } // namespace detail
 
 
