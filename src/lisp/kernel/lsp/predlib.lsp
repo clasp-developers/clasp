@@ -1339,8 +1339,6 @@ if not possible."
 	   (ARRAY (logior (register-array-type `(COMPLEX-ARRAY ,@(rest type)))
 			  (register-array-type `(SIMPLE-ARRAY ,@(rest type)))))
 	   ((COMPLEX-ARRAY SIMPLE-ARRAY) (register-array-type type))
-	   ;;(FUNCTION (register-function-type type))
-	   ;;(VALUES (register-values-type type))
 	   (FUNCTION (canonical-type 'FUNCTION))
 	   (t (let ((expander (type-expander (first type))))
 		(if expander
@@ -1349,10 +1347,6 @@ if not possible."
 		      (throw '+canonical-type-failure+ nil)))))))
 	((clos::classp type)
 	 (register-class type))
-	((and (fboundp 'function-type-p) (function-type-p type))
-	 (register-function-type type))
-	((and (fboundp 'values-type-p) (values-type-p type))
-	 (register-values-type type))
 	(t
 	 (error-type-specifier type))))
 
