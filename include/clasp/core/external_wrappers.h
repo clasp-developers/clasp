@@ -169,20 +169,6 @@ public:
 
   template <class C, class D>
   externalClass_ &def_readonly(string const &name, D C::*mem_ptr) {
-#if 0
-    Symbol_sp symbol = lispify_intern(name, symbol_packageName(this->_ClassSymbol));
-    BuiltinClosure_sp m = gctools::ClassAllocator<GetterMethoid<D, C>>::allocate_class(symbol, mem_ptr);
-            lisp_defineSingleDispatchMethod(symbol
-                                            ,this->_ClassSymbol
-                                            ,m
-                                            ,0
-                                            ,true
-                                            ,lambda_list
-                                            ,declares
-                                            ,docstring
-                                            ,autoExport
-                                            ,sizeof...(ARGS)+1);
-#endif
     return *this;
   }
 };

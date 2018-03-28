@@ -99,15 +99,8 @@ CL_DEFUN T_sp core__compute_instance_creator(T_sp tinstance, T_sp tmetaclass, Li
 #ifdef DEBUG_CLASS_INSTANCE
   printf("%s:%d:%s   for class -> %s   superclasses -> %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(instance->name()).c_str(), _rep_(superclasses).c_str());
 #endif
-  bool derives_from_StandardClass = false;
   for (auto cur : superclasses) {
     T_sp tsuper = oCar(cur);
-    if (tsuper == _lisp->_Roots._TheStandardClass) {
-      derives_from_StandardClass = true;
-#ifdef DEBUG_CLASS_INSTANCE
-      printf("%s:%d:%s        derives from class\n", __FILE__, __LINE__, __FUNCTION__ );
-#endif
-    }
     if (Class_sp aSuperClass = tsuper.asOrNull<Class_O>() ) {
       if (aSuperClass->cxxClassP() && !aSuperClass->cxxDerivableClassP()) {
         SIMPLE_ERROR(BF("You cannot derive from the non-derivable C++ class %s\n"
@@ -139,19 +132,14 @@ CL_DEFUN T_sp core__compute_instance_creator(T_sp tinstance, T_sp tmetaclass, Li
 #endif
     Creator_sp dup = aCxxAllocator->duplicateForClassName(instance->_className());
     return dup;
-  } else if (derives_from_StandardClass) {
-#ifdef DEBUG_CLASS_INSTANCE
-    printf("%s:%d   Creating a ClassCreator for %s\n", __FILE__, __LINE__, _rep_(instance->name()).c_str());
-#endif
-    ClassCreator_sp classCreator = gc::GC<ClassCreator_O>::allocate(instance);
-    return classCreator;
-  }
+  } else {
  // I think this is the most common outcome -
 #ifdef DEBUG_CLASS_INSTANCE
-  printf("%s:%d   Creating an InstanceCreator_O for the class: %s\n", __FILE__, __LINE__, _rep_(instance->name()).c_str());
+    printf("%s:%d   Creating an InstanceCreator_O for the class: %s\n", __FILE__, __LINE__, _rep_(instance->name()).c_str());
 #endif
-  InstanceCreator_sp instanceAllocator = gc::GC<InstanceCreator_O>::allocate(instance);
-  return instanceAllocator;
+    InstanceCreator_sp instanceAllocator = gc::GC<InstanceCreator_O>::allocate(instance);
+    return instanceAllocator;
+  }
 }
 
 /*! Return true if every member of subset is in superset */

@@ -76,51 +76,20 @@ T_sp FuncallableInstanceCreator_O::creator_allocate() {
     };
 };
 
-
-namespace core {
-T_sp ClassCreator_O::creator_allocate() {
-  size_t size = gctools::sizeof_with_header<Class_O>();
-#ifdef METER_ALLOCATIONS
-  if (this->_class) {
-    this->_class->_allocation_counter += 1;
-    this->_class->_allocation_total_size += size;
-  }
-#endif
-  Class_sp class_ = gctools::GC<Class_O>::allocate_class(gctools::Header_s::Value::make_instance(), size);
-  return class_;
-};
-};
-
+// Used during early boot when STANDARD-CLASS itself is being created, and such.
 namespace core {
 T_sp StandardClassCreator_O::creator_allocate() {
   size_t size = gctools::sizeof_with_header<Class_O>();
-#ifdef METER_ALLOCATIONS
   Class_sp c = lisp_standard_class();
+#ifdef METER_ALLOCATIONS
   c->_allocation_counter += 1;
   c->_allocation_total_size += size;
 #endif
-  GC_ALLOCATE_VARIADIC(Class_O,class_,lisp_standard_class()  /*,REF_CLASS_NUMBER_OF_SLOTS_IN_STANDARD_CLASS*/);
-//  printf("%s:%d:%s   created class\n", __FILE__, __LINE__, __FUNCTION__ );
-  return class_;
-};
-};
-
-namespace core {
-T_sp StructureClassCreator_O::creator_allocate() {
-  size_t size = gctools::sizeof_with_header<Class_O>();
-#ifdef METER_ALLOCATIONS
-  Class_sp c = lisp_standard_class();
-  c->_allocation_counter += 1;
-  c->_allocation_total_size += size;
-#endif
-  GC_ALLOCATE_VARIADIC(Class_O,class_,lisp_standard_class()/*,REF_CLASS_NUMBER_OF_SLOTS_IN_STRUCTURE_CLASS*/);
+  GC_ALLOCATE_VARIADIC(Class_O,class_,c);
   return class_;
 };
 
 };
-
-
-
 
 namespace core {
 T_sp DerivableCxxClassCreator_O::creator_allocate() {
