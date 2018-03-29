@@ -871,6 +871,14 @@ def build(bld):
                  bld.stage_val,
                  ", DEBUG_WHILE_BUILDING" if bld.options.DEBUG_WHILE_BUILDING else ''))
 
+    # Waf groups are basically staging of tasks: all tasks in stage N must finish before any
+    # task in stage N+1 can begin. (Don't get fooled by the API, groups are ordered internally.)
+    # Tasks are recorded into the current stage which can be set by bld.set_group('stage-name').
+    # NOTE: group based ordering overrides the set_input based task dependencies, so be careful
+    # not to instantiate tasks into the wrong group.
+    bld.add_group('preprocessing')
+    bld.add_group('compiling/c++')
+
     bld.use_human_readable_bitcode = bld.env["USE_HUMAN_READABLE_BITCODE"]
     log.debug("Using human readable bitcode: %s", bld.use_human_readable_bitcode)
     bld.clasp_source_files = collect_clasp_c_source_files(bld)
@@ -894,11 +902,15 @@ def build(bld):
     bld.cclasp_fasl = bld.path.find_or_declare(variant.fasl_name(stage='c'))
     bld.iclasp_executable = bld.path.find_or_declare(variant.executable_name(stage='i'))
 
+    bld.set_group('compiling/c++')
+
     bld.recurse('extensions')
 
     log.info("There are %d extensions_builders", len(bld.extensions_builders))
     for x in bld.extensions_builders:
         x.run()
+
+    bld.set_group('preprocessing')
 
     #
     # Installing the sources
@@ -933,6 +945,8 @@ def build(bld):
     extensions_task.set_inputs(inputs)
     extensions_task.set_outputs([extension_headers_node])
     bld.add_to_group(extensions_task)
+
+    bld.set_group('compiling/c++')
 
     # Always build the C++ code
     intrinsics_bitcode_node = bld.path.find_or_declare(variant.inline_bitcode_archive_name("intrinsics"))
