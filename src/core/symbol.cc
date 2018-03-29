@@ -38,6 +38,7 @@ THE SOFTWARE.
 #include <clasp/core/package.h>
 #include <clasp/core/lisp.h>
 #include <clasp/core/wrappers.h>
+#include <clasp/core/designators.h>
 
 // Print more information about the symbol
 #define VERBOSE_SYMBOLS 0
@@ -145,7 +146,9 @@ CL_DEFUN T_sp core__symbol_value_address(Symbol_sp arg) {
 CL_LAMBDA(name);
 CL_DECLARE();
 CL_DOCSTRING("make_symbol");
-CL_DEFUN Symbol_sp cl__make_symbol(SimpleString_sp name) {
+CL_DEFUN Symbol_sp cl__make_symbol(String_sp tstrng) {
+  // shoud take a string, but not necessarily a simple string
+  SimpleString_sp name = coerce::simple_string(tstrng);
   Symbol_sp sym = Symbol_O::create(name);
   return sym;
 };
