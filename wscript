@@ -1570,7 +1570,7 @@ class expand_pump_template(Task.Task):
     ext_out  = ['.h']      # this affects the task execution order
     def run(self):
         assert len(self.inputs) == len(self.outputs) == 1
-        cmd = ["python2",
+        cmd = ['python',
                os.path.join(self.bld.path.abspath(), "tools-for-build/pump.py"),
                self.inputs[0].abspath(),
                self.outputs[0].abspath()]
