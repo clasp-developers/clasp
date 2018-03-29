@@ -37,3 +37,8 @@ class clasp_logger():
     def pprint(self, color, *k, **kw):
         Logs.pprint(color, *k, **kw)
         self.permanent_logger.info(*k, **kw)
+
+# log will be re-initialized in build() to append the build debug log into build/variant/build.log.
+# Until then it will only log to the console.
+global log
+log = clasp_logger(None)

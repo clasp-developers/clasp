@@ -11,7 +11,7 @@ try:
 except ImportError:
     from io import StringIO
 
-from waflib import Utils, Logs
+from waflib import Utils, Logs, Task, TaskGen
 import waflib.Options
 from waflib.Tools import c_preproc
 from waflib.Tools.compiler_cxx import cxx_compiler
@@ -22,15 +22,10 @@ sys.path.append('tools-for-build/')
 sys.dont_write_bytecode = True   # avoid littering the dirs with .pyc files
 
 from build_file_lists import collect_clasp_c_source_files, collect_aclasp_lisp_files, collect_bclasp_lisp_files, collect_cclasp_lisp_files
-from clasp_build_utils import clasp_logger
+from clasp_build_utils import clasp_logger, log
 
 # Let's not depend on the locale setting of the host, set it explicitly.
 os.environ['LC_ALL'] = os.environ['LANG'] = "C"
-
-# log will be re-initialized in build() to append the build debug log into build/variant/build.log.
-# Until then it will only log to the console.
-global log
-log = clasp_logger(None)
 
 #
 # Global variables for the build
@@ -1163,9 +1158,6 @@ def build(bld):
         else:
             os.symlink(bld.iclasp_executable.abspath(), clasp_symlink_node.abspath())
     log.pprint('BLUE', 'build() has finished')
-
-from waflib import TaskGen
-from waflib import Task
 
 class dsymutil(Task.Task):
     color = 'BLUE';
