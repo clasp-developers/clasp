@@ -229,7 +229,7 @@ result.  The original TREE is not destroyed."
                    (if (satisfies-the-test old subtree)
                      (rplacd last new)))
                (if (satisfies-the-test old subtree)
-                 (return (set-cdr last new))
+                 (return (rplacd last new))
                  (rplaca subtree 
                           (nsubst-aux new old (car subtree)
                                       key test test-not))))
