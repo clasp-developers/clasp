@@ -356,6 +356,7 @@ CL_LAMBDA(ch);
 CL_DECLARE();
 CL_DOCSTRING("See CLHS: standard_char_p");
 CL_DEFUN bool cl__standard_char_p(Character_sp ch) {
+  // Complete list is laid out in CLHS 2.1.3: Standard Characters.
   claspCharacter c = clasp_as_claspCharacter(ch);
   if (c>127) return false;
   if (c == 10)
@@ -368,7 +369,11 @@ CL_DEFUN bool cl__standard_char_p(Character_sp ch) {
     return true;
   if (c >= '0' && c <= '9')
     return true;
-  if (c == '!' || c == '%' || c == '"' || c == '\'' || c == '(' //      left parenthesis, or open parenthesis
+  if (c == '!'                                                  //      exclamation mark
+      || c == '$'                                               //      dollar sign
+      || c == '"'                                               //      quotation mark, or double quote
+      || c == '\''                                              //      apostrophe, or [single] quote
+      || c == '('                                               //      left parenthesis, or open parenthesis
       || c == ')'                                               //      right parenthesis, or close parenthesis
       || c == ','                                               //      comma
       || c == '_'                                               //      low line, or underscore
