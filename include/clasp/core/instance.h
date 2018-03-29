@@ -75,10 +75,6 @@ namespace core {
       _Sig(_Unbound<T_O>())
       ,_Class(metaClass)
         ,_Rack(_Nil<T_O>())
-#ifdef METER_ALLOCATIONS
-      ,_allocation_counter(0)
-      ,_allocation_total_size(0)
-#endif
       
 //    ,_NumberOfSlots(slots)
     {};
@@ -94,11 +90,6 @@ namespace core {
   /*! Mimicking ECL instance->sig generation signature
         This is pointed to the class slots in case they change 
         - then the instances can be updated*/
-#ifdef METER_ALLOCATIONS
-  // Keep track of allocations
-    size_t _allocation_counter;
-    size_t _allocation_total_size;
-#endif
   public:
     static Instance_sp createClassUncollectable(gctools::Stamp is,Class_sp metaClass, size_t number_of_slots, Creator_sp creator);
     static Class_sp create(Symbol_sp symbol,Class_sp metaClass,Creator_sp creator);

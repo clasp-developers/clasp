@@ -179,10 +179,6 @@ namespace core {
       return res;
     }
 
-#ifdef METER_ALLOCATIONS
-    static void IncrementConsAllocations();
-#endif
-
     static Cons_sp createFrom_va_list(va_list &va_args);
     static Cons_sp createList(T_sp o1);
     static Cons_sp createList(T_sp o1, T_sp o2);
@@ -193,9 +189,6 @@ namespace core {
     static Cons_sp createList(T_sp o1, T_sp o2, T_sp o3, T_sp o4, T_sp o5, T_sp o6, T_sp o7);
     static Cons_sp createList(T_sp o1, T_sp o2, T_sp o3, T_sp o4, T_sp o5, T_sp o6, T_sp o7, T_sp o8);
     inline static Cons_sp create(T_sp car, T_sp cdr) {
-#ifdef METER_ALLOCATIONS
-      IncrementConsAllocations();
-#endif
       gctools::smart_ptr<Cons_O> ll = gctools::ConsAllocator<Cons_O>::allocate(car,cdr);
       return ll;
     };

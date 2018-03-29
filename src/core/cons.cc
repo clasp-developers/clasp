@@ -45,16 +45,6 @@ THE SOFTWARE.
 
 namespace core {
 
-#ifdef METER_ALLOCATIONS
-void Cons_O::IncrementConsAllocations()
-{
-  if (Cons_O::static_class) {
-    Cons_O::static_class->_allocation_counter += 1;
-    Cons_O::static_class->_allocation_total_size += sizeof(Cons_O);
-  }
-}
-#endif
-
 List_sp coerce_to_list(T_sp o) {
   if (o.consp()) {
     return gctools::smart_ptr<List_V>((gctools::Tagged)(o.raw_()));

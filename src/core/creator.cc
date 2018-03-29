@@ -51,12 +51,6 @@ THE SOFTWARE.
 namespace core {
 T_sp InstanceCreator_O::creator_allocate() {
   size_t size = gctools::sizeof_with_header<Instance_O>();
-#ifdef METER_ALLOCATIONS
-  if (this->_class) {
-    this->_class->_allocation_counter += 1;
-    this->_class->_allocation_total_size += size;
-  }
-#endif
   Instance_sp instance = gctools::GC<Instance_O>::allocate_instance(gctools::Header_s::Value::make_instance(), size);
   return instance;
     };
@@ -65,12 +59,6 @@ T_sp InstanceCreator_O::creator_allocate() {
 namespace core {
 T_sp FuncallableInstanceCreator_O::creator_allocate() {
   size_t size = gctools::sizeof_with_header<FuncallableInstance_O>();
-#ifdef METER_ALLOCATIONS
-  if (this->_class) {
-    this->_class->_allocation_counter += 1;
-    this->_class->_allocation_total_size += size;
-  }
-#endif
   FuncallableInstance_sp instance = gctools::GC<FuncallableInstance_O>::allocate_instance(gctools::Header_s::Value::make_funcallable_instance(), size);
   return instance;
     };
@@ -81,10 +69,6 @@ namespace core {
 T_sp StandardClassCreator_O::creator_allocate() {
   size_t size = gctools::sizeof_with_header<Class_O>();
   Class_sp c = lisp_standard_class();
-#ifdef METER_ALLOCATIONS
-  c->_allocation_counter += 1;
-  c->_allocation_total_size += size;
-#endif
   GC_ALLOCATE_VARIADIC(Class_O,class_,c);
   return class_;
 };
@@ -94,11 +78,6 @@ T_sp StandardClassCreator_O::creator_allocate() {
 namespace core {
 T_sp DerivableCxxClassCreator_O::creator_allocate() {
   size_t size = gctools::sizeof_with_header<Class_O>();
-#ifdef METER_ALLOCATIONS
-  Class_sp c = lisp_standard_class();
-  c->_allocation_counter += 1;
-  c->_allocation_total_size += size;
-#endif
   GC_ALLOCATE_VARIADIC(Class_O,class_,lisp_standard_class()/*,REF_CLASS_NUMBER_OF_SLOTS_IN_STRUCTURE_CLASS*/);
   return class_;
 };
@@ -108,11 +87,6 @@ T_sp DerivableCxxClassCreator_O::creator_allocate() {
 namespace core {
 T_sp ClassRepCreator_O::creator_allocate() {
   size_t size = gctools::sizeof_with_header<Class_O>();
-#ifdef METER_ALLOCATIONS
-  Class_sp c = lisp_standard_class();
-  c->_allocation_counter += 1;
-  c->_allocation_total_size += size;
-#endif
   GC_ALLOCATE_VARIADIC(clbind::ClassRep_O,class_,lisp_class_rep_class());
   return class_;
 };

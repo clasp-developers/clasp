@@ -1019,14 +1019,6 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
 #endif
   if (buildReport) ss << (BF("DEBUG_FUNCTION_CALL_COUNTER = %s\n") % (debug_function_call_counter ? "**DEFINED**" : "undefined") ).str();
 
-  bool meter_allocations = false;
-#ifdef METER_ALLOCATIONS
-  meter_allocations = true;
-  debugging = true;
-  if (setFeatures)  features = core::Cons_O::create(_lisp->internKeyword("METER-ALLOCATIONS"),features);
-#endif
-  if (buildReport) ss << (BF("METER_ALLOCATIONS = %s\n") % (meter_allocations ? "**DEFINED**" : "undefined") ).str();
-
   bool debug_ensure_valid_object = false;
 #ifdef DEBUG_ENSURE_VALID_OBJECT
   debug_ensure_valid_object = true;
