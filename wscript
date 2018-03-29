@@ -921,7 +921,7 @@ def build(bld):
 
     # Without this the parallel ASDF load-op's would step on each other's feet
     if (bld.options.RUN_THE_SCRAPER):
-        task = precompile_scraper(env = bld.env)
+        task = bld.precompile_scraper_task = precompile_scraper(env = bld.env)
         task.set_outputs([bld.path.find_or_declare("scraper-precompile-done")])
         bld.add_to_group(task)
 
@@ -933,9 +933,6 @@ def build(bld):
     extensions_task.set_inputs(inputs)
     extensions_task.set_outputs([extension_headers_node])
     bld.add_to_group(extensions_task)
-
-    # Tell waf that all the tasks prior to this needs to be finished to continue with the rest of the tasks.
-    bld.add_group()
 
     # Always build the C++ code
     intrinsics_bitcode_node = bld.path.find_or_declare(variant.inline_bitcode_archive_name("intrinsics"))
@@ -1505,6 +1502,7 @@ class scraper_task(Task.Task):
 
 class precompile_scraper(scraper_task):
     weight = 5    # Tell waf to run this early among the equal tasks because it will take long
+    before = ['expand_pump_template']
 
     def run(self):
         cmd = self.build_scraper_cmd(["--eval", '(with-open-file (stream "%s" :direction :output :if-exists :supersede) (terpri stream))' % self.outputs[0].abspath()])
@@ -1516,6 +1514,7 @@ class precompile_scraper(scraper_task):
 
 class generate_one_sif(scraper_task):
     ext_out = ['.sif']
+    after = ['expand_pump_template']
     shell = False
     def run(self):
         env = self.env
@@ -1609,7 +1608,8 @@ def scrape_task_generator(self):
                 if ( node.name[:len('fastgf.cc')] == 'fastgf.cc' ):
                     fastgf_cc = node
                 sif_node = node.change_ext('.sif')
-                self.create_task('generate_one_sif', node, [sif_node])
+                sif_task = self.create_task('generate_one_sif', node, [sif_node])
+                sif_task.set_run_after(self.bld.precompile_scraper_task)
                 all_sif_files.append(sif_node)
             for node in task.outputs:
                 if ( node.name[:len('intrinsics.cc')] == 'intrinsics.cc' ):
