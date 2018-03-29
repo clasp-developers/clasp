@@ -396,6 +396,7 @@ CL_DEFUN bool cl__standard_char_p(Character_sp ch) {
       || c == '`'                                               //      grave accent, or backquote
       || c == '^'                                               //      circumflex accent
       || c == '~'                                               //      tilde
+      || c == '$'                                               //      dollar sign, see ansi-test CL-TEST::STANDARD-CHAR-P.1     
       )
     return true;
   return false;
