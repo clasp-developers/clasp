@@ -121,6 +121,7 @@ SRC_CORE = \
         'fileSystem',
         'intArray',
         'posixTime',
+        'hwinfo',
         'clasp_ffi_package',
         'fli',
     ]
