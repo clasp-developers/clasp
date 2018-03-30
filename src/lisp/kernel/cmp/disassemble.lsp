@@ -98,6 +98,9 @@ Return T if disassembly was achieved - otherwise NIL"
                    (t (error "Illegal type ~a - only :ir and :asm allowed" type )))
                  (error "Could not recover jitted module -> ~a" module))))
          (return-from disassemble nil))
+         ;; treat setf functions
+         ((and (consp desig) (eq (car desig) 'setf)(fdefinition desig))
+         (values (fdefinition desig) desig))
 	(t (error "Unknown argument ~a passed to disassemble" desig)))
     (setq name (if name name 'lambda))
     (bformat t "Disassembling function: %s\n" (repr func-or-lambda))
@@ -110,6 +113,7 @@ Return T if disassembly was achieved - otherwise NIL"
                 (progn
                   (disassemble-assembly fn start-instruction-index num-instructions)
                   (bformat t "Done\n"))
+		;;; This not not defined! See issue #459
                 (llvm-sys:disassemble* fn)))
 	   ((interpreted-function-p fn)
 	    (format t "This is a interpreted function - compile it first~%"))
