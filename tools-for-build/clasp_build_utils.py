@@ -1,44 +1,127 @@
-import sys, logging
-from waflib import Logs
+import sys, logging, os
+from waflib import Logs, Task
+import waflib.Options
 
-# A simple wrapper that can redirect all log levels into a file.
+try:
+    from StringIO import StringIO
+except ImportError:
+    from io import StringIO
+
+global log
+
+# We need a wrapper because of the way python globals and modules work.
 class clasp_logger():
-    logger_name = 'clasp-build-log'
+    logger = None
 
-    def __init__(self, log_file):
+    def __init__(self):
+        self.reinitialize()
+
+    def reinitialize(self, console_level = logging.INFO, log_file = None):
+        def make_console_log_handler():
+            handler = logging.StreamHandler()
+            handler.setLevel(console_level)
+            handler.setFormatter(logging.Formatter('%(message)s'))
+            return handler
+
+        def make_permanent_log_handler():
+            encoding = sys.stdout.encoding if sys.hexversion > 0x3000000 else None
+            handler = logging.FileHandler(log_file, 'a', encoding = encoding)
+            handler.setFormatter(logging.Formatter('%(asctime)-15s %(levelname)-5s %(message)s'))
+            handler.setLevel(logging.DEBUG)
+            return handler
+
+        logger = logging.getLogger("clasp-build-logger")
+        logger.setLevel(logging.DEBUG)
+        logger.handlers = []
+        logger.addHandler(make_console_log_handler())
         if log_file:
-            logger = logging.getLogger(self.logger_name)
-            if sys.hexversion > 0x3000000:
-                encoding = sys.stdout.encoding
-            else:
-                encoding = None
-            hdlr = logging.FileHandler(log_file, 'a', encoding = encoding)
-            formatter = logging.Formatter('%(asctime)-15s %(message)s')
-            hdlr.setFormatter(formatter)
-            logger.addHandler(hdlr)
-            logger.setLevel(logging.DEBUG)
-            self.permanent_logger = logger
-        else:
-            # An empty logger that does nothing. Will be reinitialized.
-            self.permanent_logger = logging.getLogger(self.logger_name)
+            logger.addHandler(make_permanent_log_handler())
+
+        self.logger = logger
+        self.logger.info('reinitialized logger')
 
     def debug(self, *k, **kw):
-        Logs.debug(*k, **kw)
-        self.permanent_logger.debug(*k, **kw)
+        self.logger.debug(*k, **kw)
 
     def info(self, *k, **kw):
-        Logs.info(*k, **kw)
-        self.permanent_logger.info(*k, **kw)
+        self.logger.info(*k, **kw)
 
     def warn(self, *k, **kw):
-        Logs.warn(*k, **kw)
-        self.permanent_logger.warn(*k, **kw)
+        self.logger.warn(*k, **kw)
 
     def pprint(self, color, *k, **kw):
         Logs.pprint(color, *k, **kw)
-        self.permanent_logger.info(*k, **kw)
+        self.logger.debug(*k, **kw)
 
-# log will be re-initialized in build() to append the build debug log into build/variant/build.log.
-# Until then it will only log to the console.
-global log
-log = clasp_logger(None)
+log = clasp_logger()
+
+def maybe_dump_command(cmd, kind = ''):
+    # print a copy-paste'able command line
+    if isinstance(cmd, list):
+        cmdstr = StringIO()
+        first = True
+        for x in cmd:
+            if first:
+                first = False
+            else:
+                cmdstr.write(" \\\n")
+            cmdstr.write(x)
+        cmdstr = cmdstr.getvalue()
+    else:
+        cmdstr = cmd
+    if waflib.Options.options.PRINT_EXTERNAL_COMMANDS:
+        log.pprint('RED', 'command line for %s:' % kind)
+        log.pprint('YELLOW', cmdstr)
+    else:
+        log.debug("command line for %s:\n%s", kind, cmdstr)
+
+class clasp_task(Task.Task):
+    waf_print_keyword = None
+
+    def keyword(self):
+        if self.waf_print_keyword:
+            return self.waf_print_keyword
+        else:
+            return type(self).__name__
+
+    def exec_command(self, cmd, **kw):
+        maybe_dump_command(cmd, type(self).__name__)
+        kw['stdout'] = sys.stdout        # to redirect the stdout of the spawned executable to ours
+        return super(clasp_task, self).exec_command(cmd, **kw)
+
+    def clasp_command_line(self, clasp_exe_path, *args, **kwargs):
+        assert os.path.isfile(clasp_exe_path)
+        # NOTE: these wouldn't work as defaulting **kwargs, because it's mixed with *args
+        image = kwargs.get("image")
+        features = kwargs.get("features")
+        forms = kwargs.get("forms")
+        resource_dir = kwargs.get("resource_dir")
+
+        cmd = [ clasp_exe_path,
+                "--norc",
+        ]
+
+        if resource_dir:
+            cmd = cmd + [ "--resource-dir", resource_dir ]
+
+        if image == False:
+            cmd = cmd + [ "--ignore-image" ]
+        elif image:
+            cmd = cmd + [ "--image", image ]
+
+        if (self.bld.options.DEBUG_WHILE_BUILDING):
+            features = features + [ "exit-backtrace",
+                                    "pause-pid",
+                                    "jit-log-symbols",
+                                    "debug-run-clang",
+            ]
+
+        for feature in features:
+            cmd = cmd + [ "--feature", feature ]
+
+        for form in forms:
+            cmd = cmd + [ "--eval", form ]
+
+        cmd = cmd + ["--"] + list(args)
+
+        return cmd

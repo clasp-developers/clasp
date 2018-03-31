@@ -3,7 +3,7 @@
 # In your emacs you may want to: (add-to-list 'auto-mode-alist '("wscript\\'" . python-mode))
 #
 
-import os, sys, subprocess
+import os, sys, subprocess, logging
 import time, datetime
 
 try:
@@ -22,7 +22,7 @@ sys.path.append('tools-for-build/')
 sys.dont_write_bytecode = True   # avoid littering the dirs with .pyc files
 
 from build_file_lists import collect_clasp_c_source_files, collect_aclasp_lisp_files, collect_bclasp_lisp_files, collect_cclasp_lisp_files
-from clasp_build_utils import clasp_logger, log
+from clasp_build_utils import log, clasp_task
 
 # Let's not depend on the locale setting of the host, set it explicitly.
 os.environ['LC_ALL'] = os.environ['LANG'] = "C"
@@ -123,22 +123,6 @@ def analyze_clasp(cfg):
                      "--eval",    "(core:quit)")
     print("\n\n\n----------------- proceeding with static analysis --------------------")
 
-
-def maybe_dump_command(cmd, kind = ''):
-    # print a copy-paste'able command line
-    cmdstr = StringIO()
-    first = True
-    for x in cmd:
-        if first:
-            first = False
-        else:
-            cmdstr.write(" \\\n")
-        cmdstr.write(x)
-    if waflib.Options.options.PRINT_EXTERNAL_COMMANDS:
-        log.pprint('RED', 'command line for %s:' % kind)
-        log.pprint('YELLOW', cmdstr.getvalue())
-    else:
-        log.debug("command line for %s:\n%s", kind, cmdstr.getvalue())
 
 def libraries_as_link_flags(fmt,libs):
     all_libs = []
@@ -859,8 +843,9 @@ def build(bld):
     variant = eval(bld.variant + "()")
     bld.variant_obj = variant
 
-    log_file = os.path.join(bld.path.abspath(), out, variant.variant_dir(), "build.log")
-    log = clasp_logger(log_file)
+    # Reinitialize logging system with a handler that appends to ./build/variant/build.log
+    log.reinitialize(console_level = logging.DEBUG if Logs.verbose >= 1 else logging.INFO,
+                     log_file = os.path.join(bld.path.abspath(), out, variant.variant_dir(), "build.log"))
 
     log.debug('build() starts, options: %s', bld.options)
 
@@ -890,7 +875,7 @@ def build(bld):
     bld.clasp_source_files = collect_clasp_c_source_files(bld)
 
     bld.clasp_aclasp = collect_aclasp_lisp_files()
-    bld.clasp_bclasp = collect_bclasp_lisp_files()
+    bld.clasp_bclasp = collect_cclasp_lisp_files() # NOTE: it's deliberately not collect_bclasp_lisp_files() since commit 7f8a4322ae5f62e108198ea7bccc3ffb347bf1a5
     bld.clasp_cclasp = collect_cclasp_lisp_files()
     bld.clasp_cclasp_no_wrappers = collect_cclasp_lisp_files(wrappers = False)
 
@@ -936,7 +921,7 @@ def build(bld):
 
     # Without this the parallel ASDF load-op's would step on each other's feet
     if (bld.options.RUN_THE_SCRAPER):
-        task = bld.precompile_scraper_task = precompile_scraper(env = bld.env)
+        task = precompile_scraper(env = bld.env)
         task.set_outputs([bld.path.find_or_declare("scraper-precompile-done")])
         bld.add_to_group(task)
 
@@ -1208,14 +1193,18 @@ def init(ctx):
 #                var = 'build_'+s+x+'_'+debug_char
 #                waflib.Options.commands.insert(0, var)
 
-class dsymutil(Task.Task):
+#
+#
+# Tasks
+#
+#
+class dsymutil(clasp_task):
     color = 'BLUE';
     def run(self):
         cmd = 'dsymutil %s' % self.inputs[0]
-        maybe_dump_command(cmd)
         return self.exec_command(cmd)
 
-class link_fasl(Task.Task):
+class link_fasl(clasp_task):
     def run(self):
         if (self.env.LTO_FLAG):
             lto_option = self.env.LTO_FLAG
@@ -1233,15 +1222,9 @@ class link_fasl(Task.Task):
               [ lto_option, lto_optimize_flag ] + \
               link_options + \
               [ "-o", self.outputs[0].abspath() ]
-        maybe_dump_command(cmd, 'link_fasl')
         return self.exec_command(cmd)
-    def exec_command(self, cmd, **kw):
-        kw['stdout'] = sys.stdout
-        return super(link_fasl, self).exec_command(cmd, **kw)
-    def keyword(self):
-        return 'Link fasl using... '
 
-class link_executable(Task.Task):
+class link_executable(clasp_task):
     def run(self):
         if (self.env.LTO_FLAG):
             lto_option_list = [self.env.LTO_FLAG,"-O2"]
@@ -1267,196 +1250,106 @@ class link_executable(Task.Task):
               link_options + \
               lto_object_path_lto + \
               [ "-o", self.outputs[0].abspath()]
-        maybe_dump_command(cmd, 'link_executable')
         return self.exec_command(cmd)
-    def exec_command(self, cmd, **kw):
-        kw['stdout'] = sys.stdout
-        return super(link_executable, self).exec_command(cmd, **kw)
-    def keyword(self):
-        return 'Link executable using... '
 
-class run_aclasp(Task.Task):
+class run_aclasp(clasp_task):
     def run(self):
-        log.info("In run_aclasp %s -> %s", self.inputs[0], self.outputs[0])
-        cmd = [ self.inputs[0].abspath() ]
-        if (self.bld.options.DEBUG_WHILE_BUILDING):
-            cmd = cmd + [ '--feature', 'exit-backtrace',
-                          '--feature', 'pause-pid' ]
-        cmd = cmd + [
-                "--ignore-image",
-                "--feature", "no-implicit-compilation",
-                "--feature", "jit-log-symbols",
-                "--feature", "clasp-min",
-#                "--feature", "debug-run-clang",
-                "--eval", '(load "sys:kernel;clasp-builder.lsp")',
-                "--eval", "(load-aclasp)",
-                "--"] +  self.bld.clasp_aclasp
-        link_executable(cmd, 'run_aclasp')
+        log.debug("In run_aclasp %s -> %s", self.inputs[0], self.outputs[0])
+        cmd = self.clasp_command_line(self.inputs[0].abspath(),
+                                      image = False,
+                                      features = ["no-implicit-compilation",
+                                                  "jit-log-symbols",
+                                                  "clasp-min"],
+                                      forms = ['(load "sys:kernel;clasp-builder.lsp")',
+                                               '(load-aclasp)'],
+                                      *self.bld.clasp_aclasp)
         return self.exec_command(cmd)
-    def exec_command(self, cmd, **kw):
-        kw['stdout'] = sys.stdout
-        return super(run_aclasp, self).exec_command(cmd, **kw)
-    def keyword(self):
-        return 'Run aclasp using... '
 
-class compile_aclasp(Task.Task):
-    def __str__(self):
-        return "compile_aclasp"
+class compile_aclasp(clasp_task):
     def run(self):
-        log.info("In compile_aclasp %s -> %s", self.inputs[0], self.outputs[0])
-        cmd = [ self.inputs[0].abspath()]
-        if (self.bld.options.DEBUG_WHILE_BUILDING):
-            cmd = cmd + [ '--feature', 'exit-backtrace',
-                          '--feature', 'pause-pid' ]
-        cmd = cmd + [ "--norc",
-                      "--ignore-image",
-                      "--feature", "clasp-min",
-#                      "--feature", "jit-log-symbols",
-#                      "--feature", "debug-run-clang",
-                      "--eval", '(load "sys:kernel;clasp-builder.lsp")',
-                       "--eval", '(setq core::*number-of-jobs* %d)' % self.bld.jobs
-        ]
-        cmd = cmd + ["--eval", "(core:compile-aclasp :output-file #P\"%s\")" % self.outputs[0],
-                     "--eval", "(core:quit)" ]
-        cmd = cmd + [ "--" ] + self.bld.clasp_aclasp
-        maybe_dump_command(cmd, 'compile_aclasp')
+        log.debug("In compile_aclasp %s -> %s", self.inputs[0], self.outputs[0])
+        cmd = self.clasp_command_line(self.inputs[0].abspath(),
+                                      image = False,
+                                      features = ["clasp-min"],
+                                      forms = ['(load "sys:kernel;clasp-builder.lsp")',
+                                               '(load-aclasp)',
+                                               '(setq core::*number-of-jobs* %d)' % self.bld.jobs,
+                                               '(core:compile-aclasp :output-file #P"%s")' % self.outputs[0],
+                                               '(core:quit)'],
+                                      *self.bld.clasp_aclasp)
         return self.exec_command(cmd)
-    def exec_command(self, cmd, **kw):
-        kw['stdout'] = sys.stdout
-        return super(compile_aclasp, self).exec_command(cmd, **kw)
-    def keyword(self):
-        return 'Compile aclasp using... '
 
-#
-# Use the aclasp fasl file
-class compile_bclasp(Task.Task):
-    def __str__(self):
-        return "compile_bclasp"
+class compile_bclasp(clasp_task):
     def run(self):
-        log.info("In compile_bclasp %s %s -> %s", self.inputs[0], self.inputs[1], self.outputs[0])
-        cmd = [self.inputs[0].abspath()]
-        if (self.bld.options.DEBUG_WHILE_BUILDING):
-            cmd = cmd + [ '--feature', 'exit-backtrace',
-                          '--feature', 'pause-pid' ]
-        cmd = cmd + [ "--norc",
-                      "--image", self.inputs[1].abspath(),
-#                      "--feature", "debug-run-clang",
-                      "--feature", "jit-log-symbols",
-                      "--eval", '(load "sys:kernel;clasp-builder.lsp")',
-                      "--eval", '(setq core::*number-of-jobs* %d)' % self.bld.jobs
-        ]
-        cmd = cmd + ["--eval", "(core:compile-bclasp :output-file #P\"%s\")" % self.outputs[0] ,
-                     "--eval", "(core:quit)" ]
-        cmd = cmd + [ "--" ] + self.bld.clasp_cclasp    # was self.bld.clasp_bclasp
-        maybe_dump_command(cmd, 'compile_bclasp')
+        log.debug("In compile_bclasp %s %s -> %s", self.inputs[0], self.inputs[1], self.outputs[0])
+        cmd = self.clasp_command_line(self.inputs[0].abspath(),
+                                      image = self.inputs[1].abspath(),
+                                      features = [],
+                                      forms = ['(load "sys:kernel;clasp-builder.lsp")',
+                                               '(setq core::*number-of-jobs* %d)' % self.bld.jobs,
+                                               '(core:compile-bclasp :output-file #P"%s")' % self.outputs[0],
+                                               '(core:quit)'],
+                                      *self.bld.clasp_bclasp)
+
         return self.exec_command(cmd)
-    def exec_command(self, cmd, **kw):
-        kw['stdout'] = sys.stdout
-        return super(compile_bclasp, self).exec_command(cmd, **kw)
-    def keyword(self):
-        return 'Compile bclasp using... '
 
-class compile_cclasp(Task.Task):
-    def __str__(self):
-        return "compile_cclasp"
+class compile_cclasp(clasp_task):
     def run(self):
-        log.info("In compile_cclasp %s %s -> %s", self.inputs[0].abspath(), self.inputs[1].abspath(), self.outputs[0].abspath())
-        cmd = [self.inputs[0].abspath()]
-        if (self.bld.options.DEBUG_WHILE_BUILDING):
-            cmd = cmd + [ '--feature', 'exit-backtrace',
-                          '--feature', 'pause-pid' ]
-        cmd = cmd + [ "--norc",
-                      "--image", self.inputs[1].abspath(),
-#                      "--feature", "debug-run-clang",
-                      "--feature", "jit-log-symbols",
-                      "--eval", "(load \"sys:kernel;clasp-builder.lsp\")",
-                       "--eval", '(setq core::*number-of-jobs* %d)' % self.bld.jobs
-        ]
+        log.debug("In compile_cclasp %s %s -> %s", self.inputs[0].abspath(), self.inputs[1].abspath(), self.outputs[0].abspath())
+        forms = ['(load \"sys:kernel;clasp-builder.lsp\")',
+                 '(setq core::*number-of-jobs* %d)' % self.bld.jobs]
         if (self.bld.options.LOAD_CCLASP):
-            cmd = cmd + [ "--eval", "(load-cclasp)" ]
+            forms = forms + ['(load-cclasp)']
         else:
-            cmd = cmd + ["--eval", "(core:compile-cclasp :output-file #P\"%s\")" % self.outputs[0],
-                         "--eval", "(core:quit)" ]
-        cmd = cmd + [ "--" ] + self.bld.clasp_cclasp
-        maybe_dump_command(cmd, 'compile_cclasp')
+            forms = forms + ['(core:compile-cclasp :output-file #P"%s")' % self.outputs[0],
+                             '(core:quit)']
+        cmd = self.clasp_command_line(self.inputs[0].abspath(),
+                                      image = self.inputs[1].abspath(),
+                                      features = [],
+                                      forms = forms,
+                                      *self.bld.clasp_cclasp)
         return self.exec_command(cmd)
-    def exec_command(self, cmd, **kw):
-        kw['stdout'] = sys.stdout
-        return super(compile_cclasp, self).exec_command(cmd, **kw)
-    def keyword(self):
-        return 'Compile cclasp using... '
 
-class recompile_cclasp(Task.Task):
+class recompile_cclasp(clasp_task):
     def run(self):
-        log.info("In recompile_cclasp -> %s", self.outputs[0].abspath())
         env = self.env
         other_clasp = env.CLASP or "clasp"
+        log.debug("In recompile_cclasp %s -> %s", other_clasp, self.outputs[0].abspath())
         if not os.path.isfile(other_clasp):
             raise Exception("To use the recompile targets you need to provide a working clasp executable. See wscript.config and/or set the CLASP env variable.")
-        cmd = [ other_clasp ]
-        cmd = cmd + [
-#            "--feature", "debug-run-clang",
-                      "--feature", "jit-log-symbols",
-                      "--feature", "ignore-extensions",
-                      "--resource-dir", "%s/%s/%s" % (self.bld.path.abspath(),out,self.bld.variant_obj.variant_dir()),
-                      "--eval", '(load "sys:kernel;clasp-builder.lsp")',
-                      "--eval", "(core:recompile-cclasp :output-file #P\"%s\")" % self.outputs[0],
-                      "--eval", "(core:quit)",
-                      "--" ] + self.bld.clasp_cclasp_no_wrappers
-        maybe_dump_command(cmd, 'recompile_clasp')
+        cmd = self.clasp_command_line(other_clasp,
+                                      features = ['ignore-extensions'],
+                                      resource_dir = os.path.join(self.bld.path.abspath(), out, self.bld.variant_obj.variant_dir()),
+                                      forms = ['(load "sys:kernel;clasp-builder.lsp")',
+                                               '(setq core::*number-of-jobs* %d)' % self.bld.jobs,
+                                               '(core:recompile-cclasp :output-file #P"%s")' % self.outputs[0].abspath(),
+                                               '(core:quit)'],
+                                      *self.bld.clasp_cclasp_no_wrappers)
         return self.exec_command(cmd)
-    def exec_command(self, cmd, **kw):
-        kw['stdout'] = sys.stdout
-        return super(recompile_cclasp, self).exec_command(cmd, **kw)
-    def keyword(self):
-        return 'Recompile cclasp using... '
 
-class compile_addons(Task.Task):
+class compile_addons(clasp_task):
     def run(self):
-        log.info("In compile_addons %s -> %s", self.inputs[0].abspath(), self.outputs[0].abspath())
-        cmd = [self.inputs[0].abspath()]
-        if (self.bld.options.DEBUG_WHILE_BUILDING):
-            cmd = cmd + [ '--feature', 'exit-backtrace',
-                          '--feature', 'pause-pid' ]
-        cmd = cmd + [ "--norc",
-                      "--feature", "ignore-extensions",
-                      "--feature", "jit-log-symbols",
-#                      "--feature", "debug-run-clang",
-                      "--eval", '(load "sys:kernel;clasp-builder.lsp")'
-                      "--eval", "(core:compile-addons)",
-                      "--eval", "(core:link-addons)",
-                      "--eval", "(core:quit)" ]
-        maybe_dump_command(cmd, 'compile_addons')
+        log.debug("In compile_addons %s -> %s", self.inputs[0].abspath(), self.outputs[0].abspath())
+        cmd = self.clasp_command_line(self.inputs[0].abspath(),
+                                      features = ['ignore-extensions'],
+                                      forms = ['(load "sys:kernel;clasp-builder.lsp")',
+                                               '(core:compile-addons)',
+                                               '(core:link-addons)',
+                                               '(core:quit)'])
         return self.exec_command(cmd)
-    def exec_command(self, cmd, **kw):
-        kw['stdout'] = sys.stdout
-        return super(compile_addons, self).exec_command(cmd, **kw)
-    def keyword(self):
-        return 'Compile addons using... '
 
 # Generate bitcode for module
 # inputs = [cclasp_executable,source-code]
 # outputs = [fasl_file]
-class compile_module(Task.Task):
+class compile_module(clasp_task):
     def run(self):
-        log.info("In compile_module %s -i %s -> %s", self.inputs[0].abspath(), self.inputs[1].abspath(), self.outputs[0].abspath())
-        cmd = [self.inputs[0].abspath(), "-i", self.inputs[1].abspath() ]
-        if (self.bld.options.DEBUG_WHILE_BUILDING):
-            cmd = cmd + [ '--feature', 'exit-backtrace',
-                          '--feature', 'pause-pid' ]
-        cmd = cmd + [ "--norc",
-                      "--feature", "ignore-extensions",
-                      "--feature", "jit-log-symbols",
-#                      "--feature", "debug-run-clang",
-                      "--eval", "(compile-file #P\"%s\" :output-file #P\"%s\" :output-type :fasl)" % (self.inputs[2], self.outputs[0]),
-                      "--eval", "(core:quit)" ]
-        maybe_dump_command(cmd, 'recompile_module')
+        log.debug("In compile_module %s --image %s -> %s", self.inputs[0].abspath(), self.inputs[1].abspath(), self.outputs[0].abspath())
+        cmd = self.clasp_command_line(self.inputs[0].abspath(),
+                                      image = self.inputs[1].abspath(),
+                                      features = ['ignore-extensions'],
+                                      forms = ['(compile-file #P"%s" :output-file #P"%s" :output-type :fasl)' % (self.inputs[2].abspath(), self.outputs[0].abspath()),
+                                               '(core:quit)'])
         return self.exec_command(cmd)
-    def exec_command(self, cmd, **kw):
-        kw['stdout'] = sys.stdout
-        return super(compile_module, self).exec_command(cmd, **kw)
-    def keyword(self):
-        return 'Compile module using... '
 
 #class llvm_link(Task.Task):
 #    def run(self):
@@ -1486,58 +1379,46 @@ class generate_extension_headers(clasp_task):
         else:
             log.debug("NOT writing to %s - it is unchanged", self.outputs[0].abspath())
 
-    def keyword(self):
-        return 'Generating '
-
-# class copy_bitcode(Task.Task):
-#     ext_out = ['.bc']
+# class copy_bitcode(clasp_task):
+#     ext_out = ['.bc']    # this affects the task execution order
 #     def run(self):
 #         all_inputs = StringIO()
 #         for f in self.inputs:
 #             all_inputs.write(' %s' % f.abspath())
 #         cmd = "cp %s %s" % (all_inputs.getvalue(), self.outputs[0])
-#         maybe_dump_command(cmd, 'copy_bitcode')
 #         return self.exec_command(cmd)
-#     def __str__(self):
-#         return "copy_bitcode - copy bitcode files."
 
-class link_bitcode(Task.Task):
+class link_bitcode(clasp_task):
     ext_out = ['.a']    # this affects the task execution order
+
     def run(self):
         all_inputs = StringIO()
         for f in self.inputs:
             all_inputs.write(' %s' % f.abspath())
         cmd = "" + self.env.LLVM_AR_BINARY + " ru %s %s" % (self.outputs[0], all_inputs.getvalue())
-        maybe_dump_command(cmd, 'link_bitcode')
         return self.exec_command(cmd)
-    def __str__(self):
-        return "link_bitcode - linking all object(bitcode) files."
-#        master = self.generator.bld.producer
-#        return "[%d/%d] Processing link_bitcode - all object files\n" % (master.processed-1,master.total)
 
+class build_bitcode(clasp_task):
+    ext_out = ['.sif']    # this affects the task execution order
 
-class build_bitcode(Task.Task):
-    ext_out = ['.sif']
-    shell = True
     def run(self):
         env = self.env
-        build_args = [] + env.CXX + self.colon("ARCH_ST", "ARCH") + env.CXXFLAGS + env.CPPFLAGS + \
-                     [ '-emit-llvm' ] + \
-                       self.colon("FRAMEWORKPATH_ST", "FRAMEWORKPATH") + \
-                       self.colon("CPPPATH_ST", "INCPATHS") + \
-                       self.colon("DEFINES_ST", "DEFINES") + \
-                       [ self.inputs[0].abspath() ] + \
-                       [ '-c' ] + \
-                       [ '-o', self.outputs[0].abspath() ]
-#                       [ '-Wl', '-mllvm' ] + \
-#        build_args = ' '.join(preproc_args) + " " + self.inputs[0].abspath()
-        cmd = build_args
+        cmd = [] + \
+              env.CXX + \
+              self.colon("ARCH_ST", "ARCH") + \
+              env.CXXFLAGS + env.CPPFLAGS + \
+              [ '-emit-llvm' ] + \
+              self.colon("FRAMEWORKPATH_ST", "FRAMEWORKPATH") + \
+              self.colon("CPPPATH_ST", "INCPATHS") + \
+              self.colon("DEFINES_ST", "DEFINES") + \
+              [ self.inputs[0].abspath() ] + \
+              [ '-c' ] + \
+              [ '-o', self.outputs[0].abspath() ]
         cmd.remove("-g")
-        maybe_dump_command(cmd, 'build_bitcode')
-        return self.exec_command(cmd, shell = True)
+        return self.exec_command(cmd)
 
-class scraper_task(Task.Task):
-    def build_scraper_cmd(self, extraCommands = [], scraperArgs = []):
+class scraper_task(clasp_task):
+    def scraper_command_line(self, extraCommands = [], scraperArgs = []):
         env = self.env
         bld = self.generator.bld
         scraper_home = os.path.join(env.BUILD_ROOT, "src/scraper/")
@@ -1557,17 +1438,14 @@ class precompile_scraper(scraper_task):
     before = ['expand_pump_template']
 
     def run(self):
-        cmd = self.build_scraper_cmd(["--eval", '(with-open-file (stream "%s" :direction :output :if-exists :supersede) (terpri stream))' % self.outputs[0].abspath()])
-        maybe_dump_command(cmd, 'precompile_scraper')
+        cmd = self.scraper_command_line(["--eval", '(with-open-file (stream "%s" :direction :output :if-exists :supersede) (terpri stream))' % self.outputs[0].abspath()])
         return self.exec_command(cmd)
 
-    def keyword(ctx):
-        return "Precompiling the scraper"
-
 class generate_one_sif(scraper_task):
-    ext_out = ['.sif']
+    ext_out = ['.sif']    # this affects the task execution order
     after = ['expand_pump_template']
-    shell = False
+    waf_print_keyword = "Scraping, generate-one-sif"
+
     def run(self):
         env = self.env
         preproc_args = [] + env.CXX + ["-E", "-DSCRAPING"] + self.colon("ARCH_ST", "ARCH") + env.CXXFLAGS + env.CPPFLAGS + \
@@ -1575,29 +1453,23 @@ class generate_one_sif(scraper_task):
                        self.colon("CPPPATH_ST", "INCPATHS") + \
                        self.colon("DEFINES_ST", "DEFINES") + \
                        [self.inputs[0].abspath()]
-        cmd = self.build_scraper_cmd(["--eval", "(cscrape:generate-one-sif '(%s) #P\"%s\")" %
-                                      ((' '.join('"' + item + '"' for item in preproc_args)),
-                                       self.outputs[0].abspath())])
-        maybe_dump_command(cmd, 'generate_one_sif')
+        cmd = self.scraper_command_line(["--eval", "(cscrape:generate-one-sif '(%s) #P\"%s\")" %
+                                         ((' '.join('"' + item + '"' for item in preproc_args)),
+                                          self.outputs[0].abspath())])
         return self.exec_command(cmd)
 
-    def keyword(ctx):
-        return "Scraping, generate-one-sif"
-
 class generate_headers_from_all_sifs(scraper_task):
+    waf_print_keyword = "Scraping, generate-headers-from-all-sifs"
+
     def run(self):
         env = self.env
         bld = self.generator.bld
-        cmd = self.build_scraper_cmd(["--eval", "(cscrape:generate-headers-from-all-sifs)"],
-                                     [os.path.join(bld.path.abspath(), out, bld.variant_obj.variant_dir() + "/"),
-                                     env.BUILD_ROOT + "/"])
+        cmd = self.scraper_command_line(["--eval", "(cscrape:generate-headers-from-all-sifs)"],
+                                        [os.path.join(bld.path.abspath(), out, bld.variant_obj.variant_dir() + "/"),
+                                         env.BUILD_ROOT + "/"])
         for f in self.inputs:
             cmd.append(f.abspath())
-        maybe_dump_command(cmd, 'generate_headers_from_all_sifs')
         return self.exec_command(cmd)
-
-    def keyword(ctx):
-        return "Scraping, generate-headers-from-all-sifs"
 
 def make_pump_tasks(bld, template_dir, output_dir):
     pmp_suffix = '.pmp'
@@ -1617,19 +1489,22 @@ def make_pump_tasks(bld, template_dir, output_dir):
         bld.add_to_group(task)
     log.info("Created %s pump template task for dir: %s", len(templates), template_dir)
 
-class expand_pump_template(Task.Task):
+class expand_pump_template(clasp_task):
     ext_out  = ['.h']      # this affects the task execution order
+
     def run(self):
         assert len(self.inputs) == len(self.outputs) == 1
         cmd = ['python',
                os.path.join(self.bld.path.abspath(), "tools-for-build/pump.py"),
                self.inputs[0].abspath(),
                self.outputs[0].abspath()]
-        maybe_dump_command(cmd, 'expand_pump_template')
         return self.exec_command(cmd)
 
-    def keyword(ctx):
-        return "Expanding .pmp template"
+#
+#
+# TaskGen's
+#
+#
 
 @TaskGen.feature('cxx')
 @TaskGen.after('process_source')
@@ -1659,8 +1534,7 @@ def scrape_task_generator(self):
                 if ( node.name[:len('fastgf.cc')] == 'fastgf.cc' ):
                     fastgf_cc = node
                 sif_node = node.change_ext('.sif')
-                sif_task = self.create_task('generate_one_sif', node, [sif_node])
-                sif_task.set_run_after(self.bld.precompile_scraper_task)
+                self.create_task('generate_one_sif', node, [sif_node])
                 all_sif_files.append(sif_node)
             for node in task.outputs:
                 if ( node.name[:len('intrinsics.cc')] == 'intrinsics.cc' ):
