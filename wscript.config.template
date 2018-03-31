@@ -24,8 +24,12 @@ LLVM5_ORC_NOTIFIER_PATCH = False
 #  This option requires a special build of the Boehm garbage collector
 #  built with the option --enable-handle-fork
 #
-
 USE_PARALLEL_BUILD = False
+
+# Use lld linker
+#  The llvm linker is supposed to be faster than ld
+#  Currently this option only works on linux
+USE_LLD = False
 
 # Where to install clasp. Defaults to '/usr/local/'.
 #PREFIX = '/usr/local/'
