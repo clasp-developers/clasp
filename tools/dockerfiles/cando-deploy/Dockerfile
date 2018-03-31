@@ -28,15 +28,12 @@ RUN apt-get -y install \
   && apt-get clean
 
 # build boehm
-RUN cd /tmp
-RUN wget -o /tmp/gc-7.6.4.tar.gz http://www.hboehm.info/gc/gc_source/gc-7.6.4.tar.gz
-RUN cd /home/app
+RUN http://www.hboehm.info/gc/gc_source/gc-7.6.4.tar.gz
 RUN tar zxvf /tmp/gc-7.6.4.tar.gz /home/app/
-RUN cd /home/app/gc-7.6.4
-RUN git clone git://github.com/ivmai/libatomic_ops.git
-RUN ./configure --enable-handle-fork
-RUN make
-RUN make install
+RUN cd /home/app/gc-7.6.4 \
+    && git clone git://github.com/ivmai/libatomic_ops.git \
+    && ./configure --enable-handle-fork \
+    && make install
 
 # add app user
 RUN groupadd -g 9999 app && useradd -u 9999 -g 9999 -ms /bin/bash app
