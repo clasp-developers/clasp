@@ -38,7 +38,6 @@ RUN cd /home/util/gc-7.6.4 \
     && ./configure --enable-handle-fork \
     && make install
 
-
 USER app
 WORKDIR /home/app/clasp
 RUN rm -rf build/* && mkdir -p /out/clasp
@@ -61,5 +60,6 @@ RUN cd $HOME/quicklisp/local-projects \
 
 RUN ./waf configure
 RUN ./waf -j $(nproc) build_cboehm
-RUN ./waf install_cboehm
+RUN ./waf -j $(nproc) build_dboehm
+RUN ./waf install_dboehm
 
