@@ -333,8 +333,8 @@ class boehm_base(variant):
             log.debug("boehm_base cfg.env.LTO_FLAG = %s", cfg.env.LTO_FLAG)
             if (cfg.env.LTO_FLAG):
                 cfg.env.append_value('LDFLAGS', '-Wl,-object_path_lto,%s_lib.lto.o' % self.executable_name())
-        log.debug("Setting up boehm library cfg.env.STLIB_BOEHM = %s ", cfg.env.STLIB_BOEHM)
-        log.debug("Setting up boehm library cfg.env.LIB_BOEHM = %s", cfg.env.LIB_BOEHM)
+        log.info("Setting up boehm library cfg.env.STLIB_BOEHM = %s ", cfg.env.STLIB_BOEHM)
+        log.info("Setting up boehm library cfg.env.LIB_BOEHM = %s", cfg.env.LIB_BOEHM)
         if (cfg.env.LIB_BOEHM == [] ):
             cfg.env.append_value('STLIB',cfg.env.STLIB_BOEHM)
         else:
@@ -711,6 +711,7 @@ def configure(cfg):
         cfg.env.append_value('LINKFLAGS', ['-stdlib=libstdc++'])
         cfg.env.append_value('LINKFLAGS', ['-lstdc++'])
         cfg.env.append_value('LINKFLAGS', '-pthread')
+        cfg.env.append_value('
     elif (cfg.env['DEST_OS'] == DARWIN_OS ):
         cfg.env.append_value('LINKFLAGS', ['-Wl,-export_dynamic'])
         cfg.env.append_value('LINKFLAGS', ['-Wl,-stack_size,0x1000000'])
@@ -794,7 +795,8 @@ def configure(cfg):
     cfg.env.append_value('CXXFLAGS', ['-Wno-invalid-offsetof'] )
     cfg.env.append_value('CXXFLAGS', ['-Wno-#pragma-messages'] )
     cfg.env.append_value('CXXFLAGS', ['-Wno-inconsistent-missing-override'] )
-    cfg.env.append_value('LIBPATH', ['/usr/lib'])
+    cfg.env.append_value('LIBPATH', ['/usr/lib', '/usr/local/lib'])
+    cfg.env.append_value('STLIBPATH', ['/usr/lib', '/usr/local/lib'])
     cfg.env.append_value('LINKFLAGS', ['-fvisibility=default'])
     cfg.env.append_value('LINKFLAGS', ['-rdynamic'])
     sep = " "
