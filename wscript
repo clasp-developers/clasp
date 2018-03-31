@@ -556,6 +556,8 @@ def configure(cfg):
 
     if (cfg.env.LLVM5_ORC_NOTIFIER_PATCH):
         cfg.define("LLVM5_ORC_NOTIFIER_PATCH",1)
+    if (cfg.env.USE_PARALLEL_BUILD):
+        cfg.define("USE_PARALLEL_BUILD",1)
     cfg.env["LLVM_BIN_DIR"] = run_llvm_config(cfg, "--bindir")
     cfg.env["LLVM_AR_BINARY"] = "%s/llvm-ar" % cfg.env.LLVM_BIN_DIR
 #    cfg.env["LLVM_AR_BINARY"] = cfg.find_program("llvm-ar", var = "LLVM_AR")[0]
@@ -1281,9 +1283,9 @@ class compile_aclasp(Task.Task):
                       "--feature", "clasp-min",
 #                      "--feature", "jit-log-symbols",
 #                      "--feature", "debug-run-clang",
-                      "--eval", '(load "sys:kernel;clasp-builder.lsp")' ]
-#                      "--eval", '(setq cmp:*compile-file-debug-dump-module* t)',
-#                      "--eval", '(setq cmp:*compile-debug-dump-module* t)'
+                      "--eval", '(load "sys:kernel;clasp-builder.lsp")',
+                       "--eval", '(setq core::*number-of-jobs* %d)' % self.bld.jobs
+        ]
         cmd = cmd + ["--eval", "(core:compile-aclasp :output-file #P\"%s\")" % self.outputs[0],
                      "--eval", "(core:quit)" ]
         cmd = cmd + [ "--" ] + self.bld.clasp_aclasp
@@ -1310,7 +1312,9 @@ class compile_bclasp(Task.Task):
                       "--image", self.inputs[1].abspath(),
 #                      "--feature", "debug-run-clang",
                       "--feature", "jit-log-symbols",
-                      "--eval", '(load "sys:kernel;clasp-builder.lsp")' ]
+                      "--eval", '(load "sys:kernel;clasp-builder.lsp")',
+                      "--eval", '(setq core::*number-of-jobs* %d)' % self.bld.jobs
+        ]
         cmd = cmd + ["--eval", "(core:compile-bclasp :output-file #P\"%s\")" % self.outputs[0] ,
                      "--eval", "(core:quit)" ]
         cmd = cmd + [ "--" ] + self.bld.clasp_cclasp    # was self.bld.clasp_bclasp
@@ -1335,7 +1339,9 @@ class compile_cclasp(Task.Task):
                       "--image", self.inputs[1].abspath(),
 #                      "--feature", "debug-run-clang",
                       "--feature", "jit-log-symbols",
-                      "--eval", "(load \"sys:kernel;clasp-builder.lsp\")" ]
+                      "--eval", "(load \"sys:kernel;clasp-builder.lsp\")",
+                       "--eval", '(setq core::*number-of-jobs* %d)' % self.bld.jobs
+        ]
         if (self.bld.options.LOAD_CCLASP):
             cmd = cmd + [ "--eval", "(load-cclasp)" ]
         else:

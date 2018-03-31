@@ -155,6 +155,13 @@ CL_DEFUN T_sp core__fork() {
   return pid;
 };
 
+CL_DOCSTRING("wait - see unix wait - returns (values pid status)");
+CL_DEFUN T_mv core__wait() {
+  int status;
+  pid_t p = wait(&status);
+  return Values(make_fixnum(p), make_fixnum(status));
+};
+
 CL_LAMBDA(pid options);
 CL_DECLARE();
 CL_DOCSTRING("waitpid - see unix waitpid - returns status");

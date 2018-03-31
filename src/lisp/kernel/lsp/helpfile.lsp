@@ -104,7 +104,7 @@
 
 ;; *documentation-pool* was defined in documentation.cc
 
-(defparameter *keep-documentation* t)
+(defvar *keep-documentation* t)
 
 #|
 ;; In Clasp I implemented the following functions in documentation.cc

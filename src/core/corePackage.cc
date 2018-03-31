@@ -137,6 +137,7 @@ SYMBOL_EXPORT_SC_(KeywordPkg, verbose);
 SYMBOL_EXPORT_SC_(KeywordPkg, pause_pid);
 SYMBOL_EXPORT_SC_(KeywordPkg, exit_backtrace);
 SYMBOL_EXPORT_SC_(CorePkg, bclasp_compiler_macro);
+SYMBOL_EXPORT_SC_(CorePkg, STARuseParallelBuildSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARreader_generate_cstSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARreader_cst_resultSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, arguments );
@@ -1103,6 +1104,11 @@ void CoreExposer_O::define_essential_globals(Lisp_sp lisp) {
   initialize_typeq_map();
   gctools::_sym_STARfinalizersSTAR->defparameter(WeakKeyHashTable_O::create());
   _sym_STARllvmVersionSTAR->defparameter(SimpleBaseString_O::make(LLVM_VERSION));
+#ifdef USE_PARALLEL_BUILD
+  _sym_STARuseParallelBuildSTAR->defparameter(_lisp->_true());
+#else
+  _sym_STARuseParallelBuildSTAR->defparameter(_Nil<T_O>());
+#endif
   _sym__PLUS_numberOfFixedArguments_PLUS_->defconstant(make_fixnum(LCC_ARGS_IN_REGISTERS));
   cl::_sym_STARrandom_stateSTAR->defparameter(RandomState_O::create());
   // Set up a hash table to save JIT info

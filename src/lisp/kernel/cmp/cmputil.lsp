@@ -231,7 +231,9 @@
 
 (defun function-info (env func)
   (let ((info (classify-function-lookup env func)))
-    (when (eq (car info) 'core::global-function) (register-global-function-ref func))
+    (when (eq (car info) 'core::global-function)
+      (when (not *code-walking*)
+        (register-global-function-ref func)))
     info))
 
 (defun variable-info (env var)
@@ -243,7 +245,8 @@
         ;; It's not the best way to compile constants.
         (setq info (cons 'ext:special-var var))
         (unless (or (core:specialp var) (core:symbol-constantp var))
-          (compiler-warning-undefined-global-variable var)))
+          (when (not *code-walking*)
+            (compiler-warning-undefined-global-variable var))))
       info)))
 
 (defun compilation-unit-finished (messages)

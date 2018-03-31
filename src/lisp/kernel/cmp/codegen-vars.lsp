@@ -304,7 +304,7 @@
 (defvar *block-rewrite-counter* (make-track-rewrites)
   "Keep track of block special operators that were seen and those that were rewritten to be ignored")
   
-(defparameter *rewrite-blocks* t)
+(defvar *rewrite-blocks* t)
 (defun rewrite-blocks-with-no-return-froms (block-info)
   (when *rewrite-blocks*
     (let ((ignore-make-block-frame-function (get-or-declare-function-or-error *the-module* "invisible_makeBlockFrameSetParent"))
@@ -340,7 +340,7 @@
 (defvar *tagbody-rewrite-counter* (make-track-rewrites)
   "Keep track of tagbody special operators that were seen and those that were rewritten to be ignored")
   
-(defparameter *rewrite-tagbody* t)
+(defvar *rewrite-tagbody* t)
 (defun rewrite-tagbody-with-no-go (tagbody-info)
   (when *rewrite-tagbody*
     (let ((ignore-make-tagbody-frame-function (get-or-declare-function-or-error *the-module* "invisible_makeTagbodyFrameSetParent"))
