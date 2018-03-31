@@ -42,9 +42,6 @@ GCS_NAMES = [ 'boehm',
               'mpsprep',
               'mps' ]
 
-# DEBUG_CHARS None == optimized
-DEBUG_CHARS = [ None, 'd' ]
-
 CLANG_LIBRARIES = [
             'clangASTMatchers',
             'clangDynamicASTMatchers',
@@ -212,24 +209,13 @@ def fix_lisp_paths(bld_path,out,variant,paths):
         nodes.append(lsp_res)
     return nodes
 
-def debug_ext(c):
-    if (c):
-        return "-%s"%c
-    return ""
-def debug_dir_ext(c):
-    if (c):
-        return "_%s"%c
-    return ""
-
-class extension_builder:
-    def __init__(self,n):
-        self.name = name
-
 class variant(object):
+    build_with_debug_info = False
+
     def debug_extension(self):
-        return debug_ext(self.debug_char)
+        return "-d" if self.build_with_debug_info else ""
     def debug_dir_extension(self):
-        return debug_dir_ext(self.debug_char)
+        return "_d" if self.build_with_debug_info else ""
     def executable_name(self,stage=None):
         if ( stage == None ):
             use_stage = self.stage_char
@@ -301,14 +287,16 @@ class variant(object):
         if (os.getenv("CLASP_DEBUG_LINKFLAGS") != None):
             cfg.env.append_value('LINKFLAGS', os.getenv("CLASP_DEBUG_LINKFLAGS").split())
     def common_setup(self,cfg):
-        if ( self.debug_char == None ):
-            self.configure_for_release(cfg)
-        else:
+        if self.build_with_debug_info:
             self.configure_for_debug(cfg)
+        else:
+            self.configure_for_release(cfg)
         configure_common(cfg, self)
         cfg.write_config_header("%s/config.h"%self.variant_dir(),remove=True)
 
 class boehm_base(variant):
+    gc_name = 'boehm'
+
     def configure_variant(self,cfg,env_copy):
         cfg.define("USE_BOEHM",1)
         if (cfg.env['DEST_OS'] == DARWIN_OS ):
@@ -324,19 +312,16 @@ class boehm_base(variant):
         self.common_setup(cfg)
 
 class boehm(boehm_base):
-    gc_name = 'boehm'
-    debug_char = None
     def configure_variant(self,cfg,env_copy):
         cfg.setenv(self.variant_dir(), env=env_copy.derive())
         super(boehm,self).configure_variant(cfg,env_copy)
 
 class boehm_d(boehm_base):
-    gc_name = 'boehm'
-    debug_char = 'd'
+    build_with_debug_info = True
+
     def configure_variant(self,cfg,env_copy):
         cfg.setenv("boehm_d", env=env_copy.derive())
         super(boehm_d,self).configure_variant(cfg,env_copy)
-
 
 class mps_base(variant):
     def configure_variant(self,cfg,env_copy):
@@ -348,7 +333,7 @@ class mps_base(variant):
 
 class mpsprep(mps_base):
     gc_name = 'mpsprep'
-    debug_char = None
+
     def configure_variant(self,cfg,env_copy):
         cfg.setenv("mpsprep", env=env_copy.derive())
         cfg.define("RUNNING_GC_BUILDER",1)
@@ -356,7 +341,8 @@ class mpsprep(mps_base):
 
 class mpsprep_d(mps_base):
     gc_name = 'mpsprep'
-    debug_char = 'd'
+    build_with_debug_info = True
+
     def configure_variant(self,cfg,env_copy):
         cfg.setenv("mpsprep_d", env=env_copy.derive())
         cfg.define("RUNNING_GC_BUILDER",1)
@@ -364,14 +350,14 @@ class mpsprep_d(mps_base):
 
 class mps(mps_base):
     gc_name = 'mps'
-    debug_char = None
     def configure_variant(self,cfg,env_copy):
         cfg.setenv("mps", env=env_copy.derive())
         super(mps,self).configure_variant(cfg,env_copy)
 
 class mps_d(mps_base):
     gc_name = 'mps'
-    debug_char = 'd'
+    build_with_debug_info = True
+
     def configure_variant(self,cfg,env_copy):
         cfg.setenv("mps_d", env=env_copy.derive())
         super(mps_d,self).configure_variant(cfg,env_copy)
@@ -808,14 +794,11 @@ def configure(cfg):
     log.debug("cfg.env.LIB = %s", cfg.env.LIB)
     env_copy = cfg.env.derive()
     for gc in GCS_NAMES:
-        for debug_char in DEBUG_CHARS:
-            if (debug_char==None):
-                variant = gc
-            else:
-                variant = gc+"_"+debug_char
-            variant_instance = eval("i"+variant+"()")
+        for debug_build in [True, False]:
+            variant_name = gc + '_d' if debug_build else gc
+            variant_instance = eval("i" + variant_name + "()")
             log.info("Setting up variant: %s", variant_instance.variant_dir())
-            variant_instance.configure_variant(cfg,env_copy)
+            variant_instance.configure_variant(cfg, env_copy)
     update_dependencies(cfg)
 
 def pre_build_hook(bld):
@@ -1163,8 +1146,8 @@ def init(ctx):
     log.pprint('BLUE', "init()")
 
     for gc in GCS_NAMES:
-        for debug_char in DEBUG_CHARS:
-            variant_name = gc if not debug_char else gc + '_' + debug_char
+        for debug_build in [True, False]:
+            variant_name = gc + '_d' if debug_build else gc
 
             for ctx in (BuildContext, CleanContext, InstallContext, UninstallContext, ListContext, StepContext, EnvContext):
                 name = ctx.__name__.replace('Context','').lower()
