@@ -707,7 +707,12 @@ def configure(cfg):
         cfg.env.append_value('CFLAGS', cfg.env.LTO_FLAG )
         cfg.env.append_value('LINKFLAGS', cfg.env.LTO_FLAG )
     if (cfg.env['DEST_OS'] == LINUX_OS ):
-        cfg.env.append_value('LINKFLAGS', '-fuse-ld=gold')
+        if (cfg.env['USE_LLD']):
+            cfg.env.append_value('LINKFLAGS', '-fuse-ld=lld-5.0')
+            log.info("Using the lld linker")
+        else:
+            cfg.env.append_value('LINKFLAGS', '-fuse-ld=gold')
+            log.info("Using the gold linker")
         cfg.env.append_value('LINKFLAGS', ['-stdlib=libstdc++'])
         cfg.env.append_value('LINKFLAGS', ['-lstdc++'])
         cfg.env.append_value('LINKFLAGS', '-pthread')
@@ -1187,10 +1192,11 @@ class link_fasl(Task.Task):
         else:
             lto_option = ""
             lto_optimize_flag = ""
+        link_options = self.bld.env['LINKFLAGS']
         if (self.env['DEST_OS'] == DARWIN_OS):
-            link_options = [ "-flat_namespace", "-undefined", "suppress", "-bundle" ]
+            link_options = link_options + [ "-flat_namespace", "-undefined", "suppress", "-bundle" ]
         else:
-            link_options = [ "-fuse-ld=gold", "-shared" ]
+            link_options = link_options + [ "-shared" ]
         cmd = [self.env.CXX[0]] + \
               list(map((lambda x:x.abspath()),self.inputs)) + \
               [ lto_option, lto_optimize_flag ] + \
@@ -1215,14 +1221,15 @@ class link_executable(Task.Task):
         else:
             lto_option_list = []
             lto_object_path_lto = []
+        link_options = []
         if (self.env['DEST_OS'] == DARWIN_OS ):
-            link_options = [ "-flto=thin", "-v"]
-        else:
-            link_options = [ "-fuse-ld=gold", "-v" ]
+            link_options = link_options + [ "-flto=thin", "-v"]
         cmd = [ self.env.CXX[0] ] + \
               list(map((lambda x:x.abspath()),self.inputs)) + \
               self.env['LINKFLAGS'] + \
               self.env['LDFLAGS']  + \
+              [ '-L%s' % i for i in self.env['LIBPATH']] + \
+              [ '-L%s' % i for i in self.env['STLIBPATH']] + \
               libraries_as_link_flags(self.env.STLIB_ST,self.env.STLIB) + \
               libraries_as_link_flags(self.env.LIB_ST,self.env.LIB) + \
               lto_option_list + \
