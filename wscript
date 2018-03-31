@@ -1530,15 +1530,15 @@ def scrape_task_generator(self):
         if ( task.__class__.__name__ == 'c' ):
             for node in task.outputs:
                 all_o_files.append(node)
-    output_nodes = map(lambda el: self.path.find_or_declare('generated/' + el),
-                       [ 'c-wrappers.h',
-                         'cl-wrappers.lisp',
-                         'enum_inc.h',
-                         'initClassesAndMethods_inc.h',
-                         'initFunctions_inc.h',
-                         'initializers_inc.h',
-                         'sourceInfo_inc.h',
-                         'symbols_scraped_inc.h'])
+    output_nodes = list(map(lambda el: self.path.find_or_declare('generated/' + el),
+                            [ 'c-wrappers.h',
+                              'cl-wrappers.lisp',
+                              'enum_inc.h',
+                              'initClassesAndMethods_inc.h',
+                              'initFunctions_inc.h',
+                              'initializers_inc.h',
+                              'sourceInfo_inc.h',
+                              'symbols_scraped_inc.h']))
     self.create_task('generate_headers_from_all_sifs', all_sif_files, output_nodes)
     # TODO FIXME this includes cl-wrappers.lisp
     install('lib/clasp/', output_nodes)  # includes
