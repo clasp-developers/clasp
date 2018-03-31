@@ -6120,7 +6120,7 @@ CL_DEFUN T_mv cl__read_line(T_sp sin, T_sp eof_error_p, T_sp eof_value, T_sp rec
       if (eof_error_p.notnilp()) {
         ERROR_END_OF_FILE(sin);
       } else {
-        return eof_value;
+        return Values(eof_value,_lisp->_true());
       }
     }
   }
@@ -6136,7 +6136,7 @@ CL_DEFUN T_mv cl__read_line(T_sp sin, T_sp eof_error_p, T_sp eof_value, T_sp rec
         if (sbuf->length()>0) {
           return Values(sbuf, _Nil<T_O>());
         }
-        return (Values(eof_value, _lisp->_true()));
+        return Values(eof_value, _lisp->_true());
       }
     } else {
       claspCharacter cc = (gc::As<Character_sp>(tch)).unsafe_character();

@@ -611,12 +611,6 @@
 (defun irc-icmp-sle (lhs rhs &optional (name ""))
   (llvm-sys:create-icmp-sle *irbuilder* lhs rhs name))
 
-(defun irc-icmp-uge (lhs rhs &optional (name ""))
-  (llvm-sys:create-icmp-uge *irbuilder* lhs rhs name))
-
-(defun irc-icmp-ule (lhs rhs &optional (name ""))
-  (llvm-sys:create-icmp-ule *irbuilder* lhs rhs name))
-
 (defun irc-icmp-ne (lhs rhs &optional (name ""))
   (llvm-sys:create-icmp-ne *irbuilder* lhs rhs name))
 
