@@ -9,7 +9,7 @@ RUN echo 'deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial-5.0 main'\
 
 # Copied from the original dependencies
 RUN apt-get update && apt-get upgrade -y && apt-get install -y \
-  libgc-dev libunwind-dev liblzma-dev libgmp-dev binutils-gold binutils-dev \
+  libunwind-dev liblzma-dev libgmp-dev binutils-gold binutils-dev \
   zlib1g-dev libbz2-dev libexpat-dev
 
 # Maybe need these...
@@ -26,6 +26,16 @@ RUN apt-get -y install \
   libboost-iostreams1.62.0 libgc1c2 llvm-5.0-runtime libgmpxx4ldbl \
   clang-5.0 binutils python-clang-5.0 lld-5.0 libzmq3-dev \
   && apt-get clean
+
+# build boehm
+RUN cd /tmp
+RUN wget http://www.hboehm.info/gc/gc_source/gc-7.6.4.tar.gz
+RUN tar xvf /tmp/gc-7.6.4.tar.gz /home/app/
+RUN cd /home/app/gc-7.6.4
+RUN git clone git://github.com/ivmai/libatomic_ops.git
+RUN ./configure --enable-handle-fork
+RUN make
+RUN make install
 
 # add app user
 RUN groupadd -g 9999 app && useradd -u 9999 -g 9999 -ms /bin/bash app
