@@ -36,7 +36,7 @@ APP_NAME = 'clasp'
 DARWIN_OS = 'darwin'
 LINUX_OS = 'linux'
 
-STAGE_CHARS = [ 'r', 'i', 'a', 'b', 'f', 'c' ]
+STAGE_CHARS = [ 'r', 'i', 'a', 'b', 'f', 'c', 'd' ]
 
 GCS_NAMES = [ 'boehm',
               'mpsprep',
@@ -152,6 +152,8 @@ def stage_value(ctx,s):
         sval = 2
     elif ( s == 'c' ):
         sval = 4
+    elif ( s == 'd' ):
+        sval = 5
     elif ( s == 'f' ):
         sval = 3
     elif ( s == 'rebuild' ):
