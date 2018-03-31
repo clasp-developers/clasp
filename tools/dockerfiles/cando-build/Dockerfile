@@ -30,9 +30,10 @@ RUN chown -R app:app /home/app
 RUN chown -R app:app /out/clasp
 
 # build boehm
-RUN wget http://www.hboehm.info/gc/gc_source/gc-7.6.4.tar.gz
-RUN tar zxvf gc-7.6.4.tar.gz
-RUN cd /home/app/gc-7.6.4 \
+RUN cd /tmp && wget http://www.hboehm.info/gc/gc_source/gc-7.6.4.tar.gz
+RUN mkdir /home/util
+RUN cd /home/util && tar zxvf /tmp/gc-7.6.4.tar.gz
+RUN cd /home/util/gc-7.6.4 \
     && git clone git://github.com/ivmai/libatomic_ops.git \
     && ./configure --enable-handle-fork \
     && make install
