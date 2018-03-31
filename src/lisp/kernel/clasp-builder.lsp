@@ -507,7 +507,7 @@ Return files."
     ;; Therefore we can't have the compiler save inline definitions for files earlier than we're able
     ;; to load inline definitions. We wait for the source code to turn it back on.
     (setf core:*defun-inline-hook* nil)
-    (compile-system-parallel files :reload nil)
+    (compile-system files :reload nil)
     (let ((all-bitcode (bitcode-pathnames #P"src/lisp/kernel/tag/start" #P"src/lisp/kernel/tag/cclasp" :system system)))
       (if (out-of-date-target output-file all-bitcode)
           (cmp:link-bitcode-modules output-file all-bitcode)))))
