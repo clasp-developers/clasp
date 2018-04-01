@@ -303,6 +303,8 @@ Compile a lisp source file into an LLVM module."
                                            :optimize optimize
                                            :optimize-level optimize-level)))
       (cond
+        ((null output-path)
+         (error "The output-path is nil for input filename ~a~%" input-file))
         ((eq output-type :object)
          (when verbose (bformat t "Writing object to %s\n" (core:coerce-to-filename output-path)))
          (ensure-directories-exist output-path)

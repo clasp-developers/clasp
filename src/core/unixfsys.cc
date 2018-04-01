@@ -127,6 +127,7 @@ static String_sp coerce_to_posix_filename(T_sp pathname) {
 	 * this is not supported on all POSIX platforms (most notably Windows)
 	 */
   ASSERT(pathname);
+  if (pathname.nilp()) SIMPLE_ERROR(BF("In %s the pathname is NIL") % __FUNCTION__);
   String_sp sfilename = core__coerce_to_filename(pathname);
   return cl__string_right_trim(SimpleBaseString_O::make(DIR_SEPARATOR), sfilename);
 }
@@ -657,10 +658,12 @@ CL_DEFUN T_mv cl__rename_file(T_sp oldn, T_sp newn, T_sp if_exists) {
    *    is not the truename, because we might be renaming a symbolic link.
    */
   old_truename = cl__truename(oldn);
+  if (old_truename.nilp()) SIMPLE_ERROR(BF("In %s the original name %s wasn't found") % __FUNCTION__ % _rep_(oldn));
   String_sp old_filename = coerce_to_posix_filename(old_truename);
 
   /* 2) Create the new file name. */
   Pathname_sp pnewn = clasp_mergePathnames(newn, oldn, kw::_sym_newest);
+  if (pnewn.nilp()) SIMPLE_ERROR(BF("In %s the new name is NIL") % __FUNCTION__);
   String_sp new_filename = core__coerce_to_filename(pnewn);
   while (if_exists == kw::_sym_error || if_exists.nilp()) {
     if (cl__probe_file(new_filename).nilp()) {
@@ -1063,6 +1066,7 @@ CL_DEFUN T_sp core__mkstemp(String_sp thetemplate) {
                          kw::_sym_name, _Nil<T_O>(),
                          kw::_sym_version, _Nil<T_O>(),
                          kw::_sym_defaults, phys);
+  if (dir.nilp()) SIMPLE_ERROR(BF("In %s about invoke core__coerce_to_filename(NIL)") % __FUNCTION__);
   dir = core__coerce_to_filename(dir);
   file = cl_file_namestring(phys);
 
@@ -1085,6 +1089,7 @@ CL_DEFUN T_sp core__mkstemp(String_sp thetemplate) {
     memcpy(output->c_str(), strTempFileName, l);
   }
 #else
+  if (thetemplate.nilp()) SIMPLE_ERROR(BF("In %s the template is NIL") % __FUNCTION__);
   thetemplate = core__coerce_to_filename(thetemplate);
   stringstream outss;
   outss << thetemplate->get();
@@ -1225,6 +1230,7 @@ T_sp core__mkstemp(T_sp template)
 			   kw::_sym_name, _Nil<T_O>(),
 			   kw::_sym_version, _Nil<T_O>(),
 			   kw::_sym_defaults, phys);
+    if (dir.nilp()) SIMPLE_ERROR(BF("In %s the dir is NIL") % __FUNCTION__);
     dir = core__coerce_to_filename(dir);
     file = cl_file_namestring(phys);
     l = dir->base_string.fillp;
@@ -1245,6 +1251,7 @@ T_sp core__mkstemp(T_sp template)
 	memcpy(output->c_str(), strTempFileName, l);
     }
 #else
+    if (template.nilp()) SIMPLE_ERROR(BF("In %s the template is NIL") % __FUNCTION__);
     template = core__coerce_to_filename(template);
     l = template->base_string.fillp;
     output = ecl_alloc_simple_base_string(l + 6);
@@ -1308,7 +1315,9 @@ CL_DOCSTRING("copy_file");
 CL_DEFUN T_sp core__copy_file(T_sp orig, T_sp dest) {
   FILE *in, *out;
   int ok = 0;
+  if (orig.nilp()) SIMPLE_ERROR(BF("In %s the source pathname is NIL") % __FUNCTION__);
   String_sp sorig = core__coerce_to_filename(orig);
+  if (dest.nilp()) SIMPLE_ERROR(BF("In %s the destination pathname is NIL") % __FUNCTION__);
   String_sp sdest = core__coerce_to_filename(dest);
   clasp_disable_interrupts();
   in = fopen(sorig->get_std_string().c_str(), "r");

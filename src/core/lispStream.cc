@@ -5136,6 +5136,7 @@ T_sp clasp_open_stream(T_sp fn, enum StreamMode smm, T_sp if_exists,
 #else
   clasp_mode_t mode = S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH;
 #endif
+  if (fn.nilp()) SIMPLE_ERROR(BF("In %s the filename is NIL") % __FUNCTION__);
   String_sp filename = core__coerce_to_filename(fn);
   string fname = filename->get_std_string();
   bool appending = 0;
