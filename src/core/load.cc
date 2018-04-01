@@ -139,7 +139,7 @@ CL_DEFUN T_sp core__load_no_package_set(T_sp lsource, T_sp verbose, T_sp print, 
   msource = cl__merge_pathnames(lsource);
   //        printf("%s:%d cl__load after mergePathnames source= %s\n", __FILE__, __LINE__, _rep_(source).c_str());
   if (msource.nilp()) {
-    SIMPLE_ERROR(BF("cl__merge_pathnames returned NIL for %s") % _rep_(lsource));
+    SIMPLE_ERROR(BF("About to call core__coerce_to_file_pathname with NIL which was returned from cl__merge_pathnames when passed %s") % _rep_(lsource));
   }
   pathname = core__coerce_to_file_pathname(msource);
   if (pathname.nilp()) {
@@ -168,6 +168,9 @@ CL_DEFUN T_sp core__load_no_package_set(T_sp lsource, T_sp verbose, T_sp print, 
 	       that the file exists */
     T_sp kind;
     // Test if pathname is nil is above
+    if (pathname.nilp()) {
+      SIMPLE_ERROR(BF("In %s - about to pass NIL to core__coerce_to_file_pathname from %s") % __FUNCTION__ % _rep_(lsource));
+    }
     filename = core__coerce_to_file_pathname(pathname);
     kind = core__file_kind(gc::As<Pathname_sp>(filename), true);
     if (kind != kw::_sym_file && kind != kw::_sym_special) {
