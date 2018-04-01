@@ -5255,6 +5255,9 @@ CL_DEFUN T_sp cl__open(T_sp filename,
              T_sp if_does_not_exist, bool idnesp,
              T_sp external_format,
              T_sp cstream) {
+  if (filename.nilp()) {
+    TYPE_ERROR(filename,Cons_O::createList(cl::_sym_or,cl::_sym_string,cl::_sym_Pathname_O,cl::_sym_Stream_O));
+  }
   T_sp strm;
   enum StreamMode smm;
   int flags = 0;
@@ -6389,6 +6392,9 @@ T_sp clasp_openRead(T_sp sin) {
   gctools::Fixnum byte_size = 8;
   int flags = CLASP_STREAM_DEFAULT_FORMAT;
   T_sp external_format = _Nil<T_O>();
+  if (filename.nilp()) {
+    SIMPLE_ERROR(BF("%s was called with NIL as the argument") % __FUNCTION__);
+  }
   T_sp strm = clasp_open_stream(filename, smm, if_exists, if_does_not_exist,
                                 byte_size, flags, external_format);
   return strm;

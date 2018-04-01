@@ -50,6 +50,9 @@ CL_DOCSTRING("loadSource");
 CL_DEFUN T_sp core__load_source(T_sp source, bool verbose, bool print, core::T_sp externalFormat) {
   T_sp strm;
   void *strmPointer;
+  if (source.nilp()) {
+    SIMPLE_ERROR(BF("%s was called with NIL as the source filename") % __FUNCTION__);
+  }
   if (cl__streamp(source)) {
     strm = source;
     if (!clasp_input_stream_p(strm)) {
