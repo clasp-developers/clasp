@@ -350,6 +350,7 @@ CL_DEFUN T_mv core__load_binary(T_sp pathDesig, T_sp verbose, T_sp print, T_sp e
   scope.pushSpecialVariableAndSet(_sym_STARcurrentSourcePosInfoSTAR, SourcePosInfo_O::create(0, 0, 0, 0));
   scope.pushSpecialVariableAndSet(cl::_sym_STARreadtableSTAR, cl::_sym_STARreadtableSTAR->symbolValue());
   scope.pushSpecialVariableAndSet(cl::_sym_STARpackageSTAR, cl::_sym_STARpackageSTAR->symbolValue());
+  if (pathDesig.nilp()) SIMPLE_ERROR(BF("load-binary was about to pass nil to pathname"));
   Pathname_sp path = cl__pathname(pathDesig);
   if (cl__probe_file(path).notnilp())
     goto LOAD;
@@ -507,6 +508,8 @@ CL_DOCSTRING("dlopen - Open a dynamic library and return the handle. Returns (va
 CL_DEFUN T_mv core__dlopen(T_sp pathDesig) {
 
   int mode = RTLD_NOW | RTLD_GLOBAL;
+  
+  if (pathDesig.nilp()) SIMPLE_ERROR(BF("%s was about to pass nil to pathname") % __FUNCTION__);
   Pathname_sp path = cl__pathname(pathDesig);
   string ts0 = gc::As<String_sp>(cl__namestring(path))->get_std_string();
 

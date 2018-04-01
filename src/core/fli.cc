@@ -717,7 +717,7 @@ core::T_sp PERCENTdlopen( core::T_sp path_designator )
 {
   ForeignData_sp sp_handle;
   int n_mode = RTLD_NOW | RTLD_GLOBAL;
-
+  if (path_designator.nilp()) SIMPLE_ERROR(BF("%s was about to pass nil to pathname") % __FUNCTION__);
   core::Pathname_sp path = core::cl__pathname( path_designator );
   string str_path = gc::As< core::String_sp >( core::cl__namestring( path ))->get_std_string();
 

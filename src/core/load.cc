@@ -71,6 +71,7 @@ CL_DEFUN T_sp core__load_source(T_sp source, bool verbose, bool print, core::T_s
   /* Define the source file */
   SourceFileInfo_sp sfi = core__source_file_info(source);
   DynamicScopeManager scope(_sym_STARcurrentSourceFileInfoSTAR, sfi);
+  if (source.nilp()) SIMPLE_ERROR(BF("%s was about to pass nil to pathname") % __FUNCTION__);
   Pathname_sp pathname = cl__pathname(source);
   ASSERTF(pathname.objectp(), BF("Problem getting pathname of [%s] in loadSource") % _rep_(source));
   Pathname_sp truename = cl__truename(source);

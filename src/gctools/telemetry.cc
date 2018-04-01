@@ -15,6 +15,7 @@ CL_LAMBDA(pathname);
 CL_DECLARE();
 CL_DOCSTRING("");
 CL_DEFUN void core__telemetry_open(core::T_sp tpathname) {
+  if (tpathname.nilp()) SIMPLE_ERROR(BF("%s was about to pass nil to pathname") % __FUNCTION__);
   core::Pathname_sp pathname = core::cl__pathname(tpathname);
   core::String_sp filename = core::cl__namestring(pathname);
   global_telemetry_search = new Telemetry();

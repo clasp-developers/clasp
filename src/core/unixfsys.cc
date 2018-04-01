@@ -507,6 +507,7 @@ file_truename(T_sp pathname, T_sp filename, int flags) {
       INTERNAL_ERROR(BF("file_truename:"
                         " both FILENAME and PATHNAME are null!"));
     }
+    if (filename.nilp()) SIMPLE_ERROR(BF("%s was about to pass nil to pathname") % __FUNCTION__);
     pathname = cl__pathname(filename);
   } else if (filename.nilp()) {
     filename = clasp_namestring(pathname, CLASP_NAMESTRING_FORCE_BASE_STRING);
@@ -766,6 +767,7 @@ CL_LAMBDA(file);
 CL_DECLARE();
 CL_DOCSTRING("deleteFile");
 CL_DEFUN T_sp cl__delete_file(T_sp file) {
+  if (file.nilp()) SIMPLE_ERROR(BF("%s was about to pass nil to pathname") % __FUNCTION__);
   Pathname_sp path = cl__pathname(file);
   int isdir = directory_pathname_p(path);
   String_sp filename = coerce_to_posix_filename(path);
@@ -794,6 +796,7 @@ CL_LAMBDA(filespec);
 CL_DECLARE();
 CL_DOCSTRING("probe_file");
 CL_DEFUN T_sp cl__probe_file(T_sp filespec) {
+  if (filespec.nilp()) SIMPLE_ERROR(BF("%s was about to pass nil to pathname") % __FUNCTION__);
   Pathname_sp pfile = cl__pathname(filespec);
   /* INV: Both SI:FILE-KIND and TRUENAME complain if "file" has wildcards */
   return (core__file_kind(pfile, true).notnilp() ? cl__truename(pfile) : _Nil<Pathname_O>());
@@ -804,6 +807,7 @@ CL_DECLARE();
 CL_DOCSTRING("file_write_date");
 CL_DEFUN Number_sp cl__file_write_date(T_sp pathspec) {
   Number_sp time;
+  if (pathspec.nilp()) SIMPLE_ERROR(BF("%s was about to pass nil to pathname") % __FUNCTION__);
   Pathname_sp pathname = cl__pathname(pathspec);
   String_sp filename = coerce_to_posix_filename(pathname);
   struct stat filestatus;
@@ -822,6 +826,7 @@ CL_DECLARE();
 CL_DOCSTRING("file_author");
 CL_DEFUN T_sp cl__file_author(T_sp file) {
   T_sp output;
+  if (file.nilp()) SIMPLE_ERROR(BF("%s was about to pass nil to pathname") % __FUNCTION__);
   Pathname_sp pn = cl__pathname(file);
   String_sp filename = coerce_to_posix_filename(pn);
   struct stat filestatus;
@@ -1011,6 +1016,7 @@ list_directory(T_sp base_dir, T_sp text_mask, T_sp pathname_mask, int flags) {
 #else
     component = base_string_concatenate(LCC_PASS_ARGS2_ELLIPSIS(prefix.raw_(), component.raw_()));
 #endif
+    if (component.nilp()) SIMPLE_ERROR(BF("%s was about to pass nil to pathname") % __FUNCTION__);
     component_path = cl__pathname(component);
     if (!pathname_mask.nilp()) {
       if (!cl__pathname_match_p(component, pathname_mask)) // should this not be inverted?
@@ -1400,6 +1406,7 @@ AGAIN:
       T_sp kind = oCdr(record);
       if (kind != kw::_sym_directory)
         continue;
+      if (component.nilp()) SIMPLE_ERROR(BF("%s was about to pass nil to pathname") % __FUNCTION__);
       item = dir_recursive(cl__pathname(component),
                            oCdr(directory),
                            filemask, flags);
@@ -1418,6 +1425,7 @@ AGAIN:
       T_sp kind = oCdr(record);
       if (kind != kw::_sym_directory)
         continue;
+      if (component.nilp()) SIMPLE_ERROR(BF("%s was about to pass nil to pathname") % __FUNCTION__);
       item = dir_recursive(cl__pathname(component),
                            directory, filemask, flags);
       output = clasp_nconc(item, output);
