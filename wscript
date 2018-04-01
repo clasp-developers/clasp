@@ -892,8 +892,9 @@ def build(bld):
     #
     clasp_c_source_files = bld.clasp_source_files + bld.extensions_source_files
     install('lib/clasp/', clasp_c_source_files)
-    install('lib/clasp/', bld.path.ant_glob("include/clasp/**/*.h"))
-    install('lib/clasp/src/lisp/', bld.path.ant_glob("src/lisp/**/*.l* **/*.asd"))
+    install('lib/clasp/', bld.path.find_node('include/clasp/').ant_glob('**/*.h'))
+    install('lib/clasp/src/lisp/', bld.path.find_node('src/lisp/').ant_glob('**/*.l*'))
+    install('lib/clasp/src/lisp/', bld.path.find_node('src/lisp/').ant_glob('**/*.asd'))
 
     bld.env = bld.all_envs[bld.variant]
     include_dirs = ['.']
