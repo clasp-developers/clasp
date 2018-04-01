@@ -478,6 +478,9 @@ enter_directory(Pathname_sp base_dir, T_sp subdir, bool ignore_if_failure) {
 static Pathname_sp
 make_absolute_pathname(T_sp orig_pathname) {
   Pathname_sp base_dir = getcwd(false);
+  if (orig_pathname.nilp()) {
+    SIMPLE_ERROR(BF("In make_absolute_pathname NIL is about to be passed to core__coerce_to_file_pathname"));
+  }
   Pathname_sp pathname = core__coerce_to_file_pathname(orig_pathname);
   Pathname_sp result = clasp_mergePathnames(pathname, base_dir, kw::_sym_default);
   return result;
@@ -1457,6 +1460,7 @@ CL_DOCSTRING("directory");
 CL_DEFUN T_sp cl__directory(T_sp mask, T_sp resolveSymlinks) {
   T_sp base_dir;
   T_sp output;
+  if (mask.nilp()) SIMPLE_ERROR(BF("In cl__directory NIL is about to be passed to core__coerce_to_file_pathname"));
   mask = core__coerce_to_file_pathname(mask);
   mask = make_absolute_pathname(mask); // in this file
   base_dir = make_base_pathname(mask);

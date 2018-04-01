@@ -111,7 +111,7 @@ CL_DEFUN T_sp core__load_source(T_sp source, bool verbose, bool print, core::T_s
 
 
 
-CL_DEFUN T_sp core__load_no_package_set(T_sp source, T_sp verbose, T_sp print, T_sp if_does_not_exist, T_sp external_format, T_sp search_list) {
+CL_DEFUN T_sp core__load_no_package_set(T_sp lsource, T_sp verbose, T_sp print, T_sp if_does_not_exist, T_sp external_format, T_sp search_list) {
   Pathname_sp pathname;
   T_sp pntype;
   T_sp hooks;
@@ -119,27 +119,33 @@ CL_DEFUN T_sp core__load_no_package_set(T_sp source, T_sp verbose, T_sp print, T
   T_sp function = _Nil<T_O>();
   T_sp ok;
   bool not_a_filename = false;
-
+  T_sp msource = lsource;
   //        printf("%s:%d cl__load source= %s\n", __FILE__, __LINE__, _rep_(source).c_str());
   if (verbose.notnilp()) {
     eval::funcall(cl::_sym_format, _lisp->_true(),
                   SimpleBaseString_O::make("~&;;; Loading ~s~%"),
-                  source);
+                  lsource);
   }
 
   /* If source is a stream, read conventional lisp code from it */
-  if (cl__streamp(source)) {
+  if (lsource.nilp() || cl__streamp(lsource)) {
     /* INV: if "source" is not a valid stream, file.d will complain */
-    filename = source;
+    filename = lsource;
     function = _Nil<T_O>();
     not_a_filename = true;
     goto NOT_A_FILENAME;
   }
   /* INV: coerce_to_file_pathname() creates a fresh new pathname object */
-  source = cl__merge_pathnames(source);
+  msource = cl__merge_pathnames(lsource);
   //        printf("%s:%d cl__load after mergePathnames source= %s\n", __FILE__, __LINE__, _rep_(source).c_str());
-
-  pathname = core__coerce_to_file_pathname(source);
+  if (msource.nilp()) {
+    SIMPLE_ERROR(BF("cl__merge_pathnames returned NIL for %s") % _rep_(lsource));
+  }
+  pathname = core__coerce_to_file_pathname(msource);
+  if (pathname.nilp()) {
+    SIMPLE_ERROR(BF("core__coerce_to_file_pathname returned NIL for %s") % _rep_(lsource));
+  }
+  
   pntype = pathname->_Type;
 
   filename = _Nil<T_O>();
@@ -161,6 +167,7 @@ CL_DEFUN T_sp core__load_no_package_set(T_sp source, T_sp verbose, T_sp print, T
     /* If filename already has an extension, make sure
 	       that the file exists */
     T_sp kind;
+    // Test if pathname is nil is above
     filename = core__coerce_to_file_pathname(pathname);
     kind = core__file_kind(gc::As<Pathname_sp>(filename), true);
     if (kind != kw::_sym_file && kind != kw::_sym_special) {
@@ -193,11 +200,11 @@ CL_DEFUN T_sp core__load_no_package_set(T_sp source, T_sp verbose, T_sp print, T
     if (if_does_not_exist.nilp())
       return _Nil<T_O>();
     else {
-      CANNOT_OPEN_FILE_ERROR(source);
+      CANNOT_OPEN_FILE_ERROR(lsource);
     }
   }
 NOT_A_FILENAME:
-  DynamicScopeManager scope(cl::_sym_STARloadPathnameSTAR, not_a_filename ? _Nil<T_O>() : source);
+  DynamicScopeManager scope(cl::_sym_STARloadPathnameSTAR, not_a_filename ? _Nil<T_O>() : msource);
   T_sp truename = cl__truename(filename);
   scope.pushSpecialVariableAndSet(cl::_sym_STARloadTruenameSTAR, not_a_filename ? _Nil<T_O>() : truename);
   if (!not_a_filename)
@@ -224,6 +231,9 @@ CL_LAMBDA(source &key (verbose *load-verbose*) (print *load-print*) (if-does-not
 CL_DECLARE();
 CL_DOCSTRING("CLHS: load");
 CL_DEFUN T_sp cl__load(T_sp source, T_sp verbose, T_sp print, T_sp if_does_not_exist, T_sp external_format, T_sp search_list) {
+  if (source.nilp()) {
+    TYPE_ERROR(source,Cons_O::createList(cl::_sym_stream,cl::_sym_Pathname_O,cl::_sym_string));
+  }
   DynamicScopeManager scope(cl::_sym_STARpackageSTAR, cl__symbol_value(cl::_sym_STARpackageSTAR));
   scope.pushSpecialVariableAndSet(cl::_sym_STARreadtableSTAR, cl__symbol_value(cl::_sym_STARreadtableSTAR));
   return core__load_no_package_set(source,verbose,print,if_does_not_exist,external_format,search_list);
