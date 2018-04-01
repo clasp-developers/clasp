@@ -1284,7 +1284,7 @@ if not possible."
 		 (t (let ((class (find-class type nil)))
 		      (if class
 			  (progn
-			    (register-class class))
+			    #-clos(register-class class))
 			  (progn
 			    (throw '+canonical-type-failure+ nil))
 			  ))))))
@@ -1326,7 +1326,7 @@ if not possible."
 		    (unless (assoc (first type) *elementary-types*)
 		      (throw '+canonical-type-failure+ nil)))))))
 	((clos::classp type)
-	 (register-class type))
+	 #-clos(register-class type))
 	(t
 	 (error-type-specifier type))))
 

@@ -302,6 +302,7 @@
     (irc-set-renv block-env new-renv)
     (values block-env instr (list parent-renv))))
 
+#+(or)
 (defun irc-new-block-environment (old-env &key name)
   (let* ((block-env (make-block-environment name old-env))
          (block-renv (irc-make-block-frame-set-parent block-env old-env)))
