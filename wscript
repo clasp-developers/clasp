@@ -1139,6 +1139,7 @@ def build(bld):
             os.symlink(bld.cclasp_executable.abspath(), clasp_symlink_node.abspath())
         else:
             os.symlink(bld.iclasp_executable.abspath(), clasp_symlink_node.abspath())
+    log.pprint('BLUE', 'bld.node_sigs[bld.iclasp_executable] -> %s' % bld.node_sigs.get(bld.iclasp_executable))
     log.pprint('BLUE', 'build() has finished')
 
 def init(ctx):
