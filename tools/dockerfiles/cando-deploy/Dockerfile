@@ -27,14 +27,6 @@ RUN apt-get -y install \
   clang-5.0 binutils python-clang-5.0 lld-5.0 libzmq3-dev \
   && apt-get clean
 
-# build boehm
-RUN wget http://www.hboehm.info/gc/gc_source/gc-7.6.4.tar.gz
-RUN tar zxvf gc-7.6.4.tar.gz
-RUN cd /home/app/gc-7.6.4 \
-    && git clone git://github.com/ivmai/libatomic_ops.git \
-    && ./configure --enable-handle-fork \
-    && make install
-
 # add app user
 RUN groupadd -g 9999 app && useradd -u 9999 -g 9999 -ms /bin/bash app
 ENV HOME=/home/app
