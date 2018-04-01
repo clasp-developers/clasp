@@ -45,7 +45,7 @@ THE SOFTWARE.
 namespace core {
 
 CL_DOCSTRING("num-logical-processors: returns the nr of logical processors in the system.");
-CL_DEFUN T_sp num_logical_processors() {
+CL_DEFUN T_sp core__num_logical_processors() {
 
 #if defined( _WIN32 ) || defined( _TARGET_OS_WIN )
 
