@@ -38,6 +38,7 @@ RUN cd /home/util/gc-7.6.4 \
     && ./configure --enable-handle-fork \
     && make install
 
+
 USER app
 WORKDIR /home/app/clasp
 RUN rm -rf build/* && mkdir -p /out/clasp
@@ -47,6 +48,7 @@ RUN echo "LLVM_CONFIG_BINARY='/usr/bin/llvm-config-5.0'" > wscript.config
 RUN echo "PREFIX='/out/clasp'" >> wscript.config
 RUN echo "CLASP_VERSION='clasp_docker'" >> wscript.config
 RUN echo "USE_PARALLEL_BUILD = True" >> wscript.config
+RUN echo "USE_LLD = True" >> wscript.config
 RUN git clone --depth=1 https://github.com/quicklisp/quicklisp-client.git $HOME/quicklisp
 RUN mkdir $HOME/quicklisp/local-projects
 RUN git clone --depth=1 https://github.com/slime/slime $HOME/slime
