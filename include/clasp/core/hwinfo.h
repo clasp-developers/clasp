@@ -33,7 +33,7 @@ THE SOFTWARE.
 
 namespace core {
 
-T_sp num_logical_processors();
+T_sp core__num_logical_processors();
 SYMBOL_EXPORT_SC_(CorePkg, num_logical_processors);
 
 }
