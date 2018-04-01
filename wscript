@@ -858,8 +858,8 @@ def build(bld):
     log.debug("Using human readable bitcode: %s", bld.use_human_readable_bitcode)
     bld.clasp_source_files = collect_clasp_c_source_files(bld)
 
-    bld.clasp_aclasp = collect_aclasp_lisp_files()
-    bld.clasp_bclasp = collect_cclasp_lisp_files() # NOTE: it's deliberately not collect_bclasp_lisp_files() since commit 7f8a4322ae5f62e108198ea7bccc3ffb347bf1a5
+    bld.clasp_aclasp = collect_aclasp_lisp_files(wrappers=False)
+    bld.clasp_bclasp = collect_bclasp_lisp_files()
     bld.clasp_cclasp = collect_cclasp_lisp_files()
     bld.clasp_cclasp_no_wrappers = collect_cclasp_lisp_files(wrappers = False)
 
@@ -1221,11 +1221,10 @@ class link_executable(clasp_task):
             lto_object_path_lto = []
         link_options = []
         if (self.env['DEST_OS'] == DARWIN_OS ):
-            link_options = link_options + [ "-flto=thin", "-v"]
+            link_options = link_options + [ "-flto=thin", "-v", '-Wl,-stack_size,0x1000000']
         cmd = [ self.env.CXX[0] ] + \
               list(map((lambda x:x.abspath()),self.inputs)) + \
               self.env['LINKFLAGS'] + \
-              ['-Wl,-stack_size,0x1000000'] + \
               self.env['LDFLAGS']  + \
               [ '-L%s' % i for i in self.env['LIBPATH']] + \
               [ '-L%s' % i for i in self.env['STLIBPATH']] + \
@@ -1257,7 +1256,7 @@ class compile_aclasp(clasp_task):
                                       image = False,
                                       features = ["clasp-min"],
                                       forms = ['(load "sys:kernel;clasp-builder.lsp")',
-                                               '(load-aclasp)',
+#                                               '(load-aclasp)',
                                                '(setq core::*number-of-jobs* %d)' % self.bld.jobs,
                                                '(core:compile-aclasp :output-file #P"%s")' % self.outputs[0],
                                                '(core:quit)'],

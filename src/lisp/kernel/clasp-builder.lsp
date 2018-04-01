@@ -391,6 +391,14 @@ Return files."
 
 
 
+
+(defun build-failure (condition)
+  (bformat t "\nBuild aborted.\n")
+  (bformat t "Received condition of type: %s\n%s\n"
+           (type-of condition)
+           condition)
+  (bformat t "Entering repl\n"))
+
 (defun load-aclasp (&key clean
                       (system (command-line-arguments-as-list)))
   (aclasp-features)
@@ -400,16 +408,6 @@ Return files."
         (load-system (select-source-files
                       #P"src/lisp/kernel/tag/after-init"
                       #P"src/lisp/kernel/tag/min-pre-epilogue" :system system)))))
-
-
-(defun build-failure (condition)
-  (bformat t "\nBuild aborted.\n")
-  (bformat t "Received condition of type: %s\n%s\n"
-           (type-of condition)
-           condition)
-  (bformat t "Entering repl\n"))
-
-
 
 (export '(compile-aclasp))
 (defun compile-aclasp (&key clean
@@ -421,8 +419,10 @@ Return files."
   (if (or (out-of-date-bitcodes #P"src/lisp/kernel/tag/min-start" #P"src/lisp/kernel/tag/min-end" :system system)
           (null (probe-file output-file)))
       (progn
+        (format t "Loading system: ~a~%" system)
         (load-system
          (butlast (select-source-files #P"src/lisp/kernel/tag/after-init" #P"src/lisp/kernel/tag/min-pre-epilogue" :system system)))
+        (format t "Loaded system~%")
         (let* ((*target-backend* target-backend)
                (files (out-of-date-bitcodes #P"src/lisp/kernel/tag/min-start" #P"src/lisp/kernel/tag/min-pre-epilogue" :system system))
                (files-with-epilogue (out-of-date-bitcodes #P"src/lisp/kernel/tag/min-start" #P"src/lisp/kernel/tag/min-end" :system system)))
