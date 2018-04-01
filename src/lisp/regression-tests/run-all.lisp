@@ -19,10 +19,5 @@
 (load (compile-file "sys:regression-tests;ehkiller.lisp"))
 (load (compile-file "sys:regression-tests;package.lisp"))
 (load (compile-file "sys:regression-tests;structures.lisp"))
-(load (compile-file "sys:regression-tests;symbol0.lisp"))
-(load (compile-file "sys:regression-tests;string-comparison0.lisp"))
-(load (compile-file "sys:regression-tests;bit-array0.lisp"))
-(load (compile-file "sys:regression-tests;character0.lisp"))
-
 (format t "Passes: ~a~%" *passes*)
 (format t "Fails:  ~a~%" *fails*)
