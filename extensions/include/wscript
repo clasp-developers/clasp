@@ -1,0 +1,22 @@
+import os
+
+def subdirectories():
+    dir = os.listdir("./extensions/include")
+    subdirs = []
+    for x in dir:
+        if os.path.isdir("./extensions/include/%s"%x):
+            subdirs.append(x)
+    return subdirs
+
+def build_extension(ctx):
+    ctx.recurse(" ".join(subdirectories()))
+
+def grovel(ctx):
+    ctx.recurse(" ".join(subdirectories()))
+
+def configure(ctx):
+    ctx.recurse(" ".join(subdirectories()))
+
+def build(ctx):
+    ctx.recurse(" ".join(subdirectories()))
+

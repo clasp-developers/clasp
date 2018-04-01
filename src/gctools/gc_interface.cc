@@ -165,9 +165,12 @@ typedef bool _Bool;
 
 #ifdef BUILD_EXTENSION
 #define GC_INTERFACE_INCLUDES
-#include <project_headers.h>
+// #include <project_headers.h>  // frgo, 2018-04-01: Where is project_headers supposed to be found? What if multiple extensions have to be built in one build?
+// Other way of doing this: Include file extensions.h - see there for more info 
+#include <clasp/extensions/extensions.h>
 #undef GC_INTERFACE_INCLUDES
 #endif
+
 
 #define NAMESPACE_gctools
 #define NAMESPACE_core
