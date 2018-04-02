@@ -322,36 +322,6 @@ public:
 };
 };
 
-#if 0
-namespace core {
-class TagbodyFrame_O : public ActivationFrame_O {
-  LISP_CLASS(core, CorePkg, TagbodyFrame_O, "TagbodyFrame",ActivationFrame_O);
-GCPRIVATE:
-public:
-  static TagbodyFrame_sp create(T_sp parent) {
-    TagbodyFrame_sp tf = gc::GC<TagbodyFrame_O>::allocate(parent);
-    return tf;
-  }
-  virtual string summaryOfContents() const;
-
-//  T_sp _lookupTagbodyId(int depth, int index) const;
-
-  TagbodyFrame_O() : Base(){};
- TagbodyFrame_O(T_sp parent) : Base(parent){};
-  virtual ~TagbodyFrame_O(){};
-
-public:
-  string asString() const;
-};
-};
-template <>
-struct gctools::GCInfo<core::TagbodyFrame_O> {
-  static bool const NeedsInitialization = false;
-  static bool const NeedsFinalization = false;
-  static GCInfo_policy constexpr Policy = normal;
-};
-#endif
-
 namespace core {
   void error_frame_range(const char* type, int index, int capacity );
   void error_end_of_frame_list(const char* message);

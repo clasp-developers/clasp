@@ -710,6 +710,8 @@ CL_DEFUN T_sp core__pathname_translations(T_sp host, T_sp hostp, T_sp set) {
       for (l = set, set = _Nil<T_O>(); !cl__endp(l); l = CDR(l)) {
         T_sp item = CAR(l);
         T_sp from = coerce_to_from_pathname(oCar(item), host);
+        T_sp pn = oCadr(item);
+        if (pn.nilp()) SIMPLE_ERROR(BF("%s was about to pass nil to pathname") % __FUNCTION__);
         T_sp to = cl__pathname(oCadr(item));
         set = Cons_O::create(Cons_O::create(from, Cons_O::create(to, _Nil<T_O>())), set);
       }
@@ -1002,6 +1004,7 @@ CL_LAMBDA(x);
 CL_DECLARE();
 CL_DOCSTRING("logical-pathname converts pathspec to a logical pathname and returns the new logical pathname.");
 CL_DEFUN T_sp cl__logical_pathname(T_sp x) {
+  if (x.nilp()) SIMPLE_ERROR(BF("%s was about to pass nil to pathname") % __FUNCTION__);
   x = cl__pathname(x);
   if (!core__logical_pathname_p(x)) {
     /* knpk -> Could not find special-operator/macro/function(SIMPLE-TYPE-ERROR) in the lexical/dynamic environment
@@ -1026,6 +1029,7 @@ Pathname_sp clasp_mergePathnames(T_sp tpath, T_sp tdefaults, T_sp defaultVersion
   T_sp host, device, directory, name, type, version;
   Symbol_sp tocase;
 
+  if (tdefaults.nilp()) SIMPLE_ERROR(BF("%s was about to pass nil to pathname") % __FUNCTION__);
   Pathname_sp defaults = cl__pathname(tdefaults);
   Pathname_sp path = cl__parse_namestring(tpath, _Nil<T_O>(), defaults);
   host = path->_Host;
@@ -1089,7 +1093,9 @@ CL_LAMBDA(arg &optional (default-pathname (core:safe-default-pathname-defaults))
 CL_DECLARE();
 CL_DOCSTRING("mergePathnames");
 CL_DEFUN Pathname_sp cl__merge_pathnames(T_sp path, T_sp defaults, T_sp defaultVersion) {
+  if (path.nilp()) SIMPLE_ERROR(BF("%s was about to pass nil to pathname") % __FUNCTION__);
   path = cl__pathname(path);
+  if (defaults.nilp()) SIMPLE_ERROR(BF("%s was about to pass nil to pathname") % __FUNCTION__);
   defaults = cl__pathname(defaults);
   return clasp_mergePathnames(path, defaults, defaultVersion);
 }
@@ -1101,6 +1107,7 @@ CL_DECLARE();
 CL_DOCSTRING("wildPathnameP");
 CL_DEFUN bool cl__wild_pathname_p(T_sp tpathname, T_sp component) {
   bool checked = 0;
+  if (tpathname.nilp()) SIMPLE_ERROR(BF("%s was about to pass nil to pathname") % __FUNCTION__);
   Pathname_sp pathname = cl__pathname(tpathname);
   if (component.nilp() || component == kw::_sym_host) {
     if (pathname->_Host == kw::_sym_wild)
@@ -1161,6 +1168,7 @@ CL_LAMBDA(tpathname);
 CL_DECLARE();
 CL_DOCSTRING("coerceToFilePathname");
 CL_DEFUN Pathname_sp core__coerce_to_file_pathname(T_sp tpathname) {
+  if (tpathname.nilp()) SIMPLE_ERROR(BF("%s was about to pass nil to core__coerce_to_physical_pathname") % __FUNCTION__);
   Pathname_sp pathname = core__coerce_to_physical_pathname(tpathname);
   pathname = cl__merge_pathnames(pathname);
 #if 0
@@ -1188,6 +1196,7 @@ CL_LAMBDA(x);
 CL_DECLARE();
 CL_DOCSTRING("coerceToPhysicalPathname");
 CL_DEFUN Pathname_sp core__coerce_to_physical_pathname(T_sp x) {
+  if (x.nilp()) SIMPLE_ERROR(BF("%s was about to pass nil to pathname") % __FUNCTION__);
   Pathname_sp px = cl__pathname(x);
   if (core__logical_pathname_p(px))
     return cl__translate_logical_pathname(px);
@@ -1210,6 +1219,9 @@ CL_DEFUN String_sp core__coerce_to_filename(T_sp pathname_orig) {
   /* We always go through the pathname representation and thus
 	 * cl__namestring() always outputs a fresh new string */
   ASSERT(pathname_orig);
+  if (pathname_orig.nilp()) {
+    SIMPLE_ERROR(BF("About to pass nil to core__coerce_to_file_pathname"));
+  }
   pathname = core__coerce_to_file_pathname(pathname_orig);
   if (cl__wild_pathname_p(pathname, _Nil<T_O>())) {
     ERROR(cl::_sym_fileError, Cons_O::createList(kw::_sym_pathname, pathname_orig));
@@ -1246,6 +1258,7 @@ T_sp clasp_namestring(T_sp tx, int flags) {
   T_sp host;
   bool truncate_if_unreadable = flags & CLASP_NAMESTRING_TRUNCATE_IF_ERROR;
 
+  if (tx.nilp()) SIMPLE_ERROR(BF("%s was about to pass nil to pathname") % __FUNCTION__);
   Pathname_sp x = cl__pathname(tx);
 
   /* INV: Pathnames can only be created by mergin, parsing namestrings
@@ -1402,12 +1415,14 @@ CL_LAMBDA(thing &optional host (defaults (core:safe-default-pathname-defaults)) 
 CL_DECLARE();
 CL_DOCSTRING("parseNamestring");
 CL_DEFUN T_mv cl__parse_namestring(T_sp thing, T_sp host, T_sp tdefaults, Fixnum_sp start, T_sp end, bool junkAllowed) {
+  if (tdefaults.nilp()) SIMPLE_ERROR(BF("%s was about to pass nil to pathname") % __FUNCTION__);
   Pathname_sp tempdefaults = cl__pathname(tdefaults);
   T_sp output;
   if (host.notnilp()) {
     host = cl__string(host);
   }
   if (!cl__stringp(thing)) {
+    if (thing.nilp()) SIMPLE_ERROR(BF("%s was about to pass nil to pathname") % __FUNCTION__);
     output = cl__pathname(thing);
   } else {
     T_sp default_host = host;
@@ -1453,6 +1468,7 @@ CL_DEFUN Pathname_sp cl__make_pathname(T_sp host, bool hostp, T_sp device, bool 
                                         _Nil<T_O>(), _Nil<T_O>(), _Nil<T_O>(), _Nil<T_O>(), _Nil<T_O>(),
                                         kw::_sym_local);
   } else {
+    if (odefaults.nilp()) SIMPLE_ERROR(BF("%s was about to pass nil to pathname") % __FUNCTION__);
     defaults = cl__pathname(odefaults);
   }
   if (!hostp)
@@ -1480,6 +1496,7 @@ CL_LAMBDA(pname &key ((:case scase) :local));
 CL_DECLARE();
 CL_DOCSTRING("pathnameHost");
 CL_DEFUN T_sp cl__pathname_host(T_sp tpname, Symbol_sp scase) {
+  if (tpname.nilp()) SIMPLE_ERROR(BF("%s was about to pass nil to pathname") % __FUNCTION__);
   Pathname_sp pname = cl__pathname(tpname);
   return translate_component_case(pname->_Host,
                                   normalize_case(pname, kw::_sym_local),
@@ -1490,6 +1507,7 @@ CL_LAMBDA(pname &key ((:case scase) :local));
 CL_DECLARE();
 CL_DOCSTRING("pathnameDevice");
 CL_DEFUN T_sp cl__pathname_device(T_sp tpname, Symbol_sp scase) {
+  if (tpname.nilp()) SIMPLE_ERROR(BF("%s was about to pass nil to pathname") % __FUNCTION__);
   Pathname_sp pname = cl__pathname(tpname);
   return translate_component_case(pname->_Device,
                                   normalize_case(pname, kw::_sym_local),
@@ -1500,6 +1518,7 @@ CL_LAMBDA(pname &key ((:case scase) :local));
 CL_DECLARE();
 CL_DOCSTRING("pathnameDirectory");
 CL_DEFUN T_sp cl__pathname_directory(T_sp tpname, Symbol_sp scase) {
+  if (tpname.nilp()) SIMPLE_ERROR(BF("%s was about to pass nil to pathname") % __FUNCTION__);
   Pathname_sp pname = cl__pathname(tpname);
   return translate_component_case(pname->_Directory,
                                   normalize_case(pname, kw::_sym_local),
@@ -1511,6 +1530,7 @@ CL_LAMBDA(pname &key ((:case scase) :local));
 CL_DECLARE();
 CL_DOCSTRING("pathnameName");
 CL_DEFUN T_sp cl__pathname_name(T_sp tpname, Symbol_sp scase) {
+  if (tpname.nilp()) SIMPLE_ERROR(BF("%s was about to pass nil to pathname") % __FUNCTION__);
   Pathname_sp pname = cl__pathname(tpname);
   return translate_component_case(pname->_Name,
                                   normalize_case(pname, kw::_sym_local),
@@ -1522,6 +1542,7 @@ CL_LAMBDA(pname &key ((:case scase) :local));
 CL_DECLARE();
 CL_DOCSTRING("pathnameType");
 CL_DEFUN T_sp cl__pathname_type(T_sp tpname, Symbol_sp scase) {
+  if (tpname.nilp()) SIMPLE_ERROR(BF("%s was about to pass nil to pathname") % __FUNCTION__);
   Pathname_sp pname = cl__pathname(tpname);
   return translate_component_case(pname->_Type,
                                   normalize_case(pname, kw::_sym_local),
@@ -1533,6 +1554,7 @@ CL_LAMBDA(pname);
 CL_DECLARE();
 CL_DOCSTRING("pathnameVersion");
 CL_DEFUN T_sp cl__pathname_version(T_sp tpname) {
+  if (tpname.nilp()) SIMPLE_ERROR(BF("%s was about to pass nil to pathname") % __FUNCTION__);
   Pathname_sp pname = cl__pathname(tpname);
   return pname->_Version;
 };
@@ -1541,6 +1563,7 @@ CL_LAMBDA(tpname);
 CL_DECLARE();
 CL_DOCSTRING("fileNamestring");
 CL_DEFUN T_sp cl__file_namestring(T_sp tpname) {
+  if (tpname.nilp()) SIMPLE_ERROR(BF("%s was about to pass nil to pathname") % __FUNCTION__);
   Pathname_sp pname = cl__pathname(tpname);
   return clasp_namestring(Pathname_O::makePathname(_Nil<T_O>(), _Nil<T_O>(), _Nil<T_O>(),
                                                    pname->_Name,
@@ -1554,6 +1577,7 @@ CL_LAMBDA(tpname);
 CL_DECLARE();
 CL_DOCSTRING("directoryNamestring");
 CL_DEFUN T_sp cl__directory_namestring(T_sp tpname) {
+  if (tpname.nilp()) SIMPLE_ERROR(BF("%s was about to pass nil to pathname") % __FUNCTION__);
   Pathname_sp pname = cl__pathname(tpname);
   return clasp_namestring(Pathname_O::makePathname(_Nil<T_O>(), _Nil<T_O>(),
                                                    pname->_Directory,
@@ -1566,6 +1590,7 @@ CL_LAMBDA(tpname);
 CL_DECLARE();
 CL_DOCSTRING("hostNamestring");
 CL_DEFUN T_sp cl__host_namestring(T_sp tpname) {
+  if (tpname.nilp()) SIMPLE_ERROR(BF("%s was about to pass nil to pathname") % __FUNCTION__);
   Pathname_sp pname = cl__pathname(tpname);
   T_sp host = pname->_Host;
   return host;
@@ -1578,7 +1603,9 @@ CL_DECLARE();
 CL_DOCSTRING("enough-namestring");
 CL_DEFUN T_sp cl__enough_namestring(T_sp tpath, T_sp tdefaults) {
   T_sp newpath, fname;
+  if (tdefaults.nilp()) SIMPLE_ERROR(BF("%s was about to pass nil to pathname") % __FUNCTION__);
   Pathname_sp defaults = cl__pathname(tdefaults);
+  if (tpath.nilp()) SIMPLE_ERROR(BF("%s was about to pass nil to pathname") % __FUNCTION__);
   Pathname_sp path = cl__pathname(tpath);
   T_sp pathdir = path->_Directory;
   T_sp defaultdir = defaults->_Directory;
@@ -1764,7 +1791,9 @@ CL_DECLARE();
 CL_DOCSTRING("pathnameMatchP");
 CL_DEFUN bool cl__pathname_match_p(T_sp tpath, T_sp tmask) {
   bool output = false;
+  if (tpath.nilp()) SIMPLE_ERROR(BF("%s was about to pass nil to pathname") % __FUNCTION__);
   Pathname_sp path = cl__pathname(tpath);
+  if (tmask.nilp()) SIMPLE_ERROR(BF("%s was about to pass nil to pathname") % __FUNCTION__);
   Pathname_sp mask = cl__pathname(tmask);
   if (core__logical_pathname_p(path) != core__logical_pathname_p(mask))
     goto OUTPUT;
@@ -1962,11 +1991,14 @@ CL_DEFUN Pathname_sp cl__translate_pathname(T_sp tsource, T_sp tfrom, T_sp tto, 
   T_sp host, device, directory, name, type, version;
   T_sp tocase;
   /* The pathname from which we get the data */
+  if (tsource.nilp()) SIMPLE_ERROR(BF("%s was about to pass nil to pathname") % __FUNCTION__);
   Pathname_sp source = cl__pathname(tsource);
   /* The mask applied to the source pathname */
+  if (tfrom.nilp()) SIMPLE_ERROR(BF("%s was about to pass nil to pathname") % __FUNCTION__);
   Pathname_sp from = cl__pathname(tfrom);
   T_sp fromcase = normalize_case(from, kw::_sym_local);
   /* The pattern which says what the output should look like */
+  if (tto.nilp()) SIMPLE_ERROR(BF("%s was about to pass nil to pathname") % __FUNCTION__);
   Pathname_sp to = cl__pathname(tto);
   tocase = normalize_case(to, kw::_sym_local);
 
@@ -2050,6 +2082,7 @@ CL_LAMBDA(source &key);
 CL_DECLARE();
 CL_DOCSTRING("translateLogicalPathname");
 CL_DEFUN Pathname_sp cl__translate_logical_pathname(T_sp tsource) {
+  if (tsource.nilp()) SIMPLE_ERROR(BF("%s was about to pass nil to pathname") % __FUNCTION__);
   Pathname_sp pathname = cl__pathname(tsource);
 begin:
   if (!core__logical_pathname_p(pathname)) {

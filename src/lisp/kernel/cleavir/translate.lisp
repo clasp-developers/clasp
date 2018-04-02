@@ -1,12 +1,6 @@
 (cl:in-package #:clasp-cleavir)
 
 
-(defvar *debug-cleavir* nil
-  "controls if graphs are generated as forms are being compiled.")
-(defvar *debug-cleavir-literals* nil
-  "controls if cleavir debugging is carried out on literal compilation. 
-when this is t a lot of graphs will be generated.")
-
 ;;;
 ;;; the first argument to this function is an instruction that has a
 ;;; single successor.  whether a go is required at the end of this
@@ -1278,7 +1272,7 @@ that llvm function. This works like compile-lambda-function in bclasp."
       (let ((eof (peek-char t source-sin nil eof-value)))
         (unless (eq eof eof-value)
           (let ((pos (core:input-stream-source-pos-info source-sin)))
-            (setq *current-form-lineno* (core:source-file-pos-lineno pos)))))
+            (setq cmp:*current-form-lineno* (core:source-file-pos-lineno pos)))))
       ;; FIXME: if :environment is provided we should probably use a different read somehow
       (let ((form (read source-sin nil eof-value)))
         (when cmp:*debug-compile-file* (bformat t "compile-file: cf%d -> %s\n" (incf cmp:*debug-compile-file-counter*) form))

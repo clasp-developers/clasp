@@ -50,7 +50,7 @@ successfully, T is returned, else error."
         (setf (logical-pathname-translations host) (read in-str)))
       t)))
 
-(defparameter *do-time-level* -1)
+(defvar *do-time-level* -1)
 
 (defun do-time (closure)
   (let* ((real-start (get-internal-real-time))

@@ -627,14 +627,17 @@ CL_DEFUN core::T_mv cl__room(core::T_sp x, core::Fixnum_sp marker, core::T_sp tm
   printf("%12lu collections\n", numCollections);
   printf("%12lu mps_arena_committed\n", arena_committed);
   printf("%12lu mps_arena_reserved\n", arena_reserved);
-  printf("%12lu finalization requests\n", globalMpsMetrics.finalizationRequests);
-  size_t totalAllocations = globalMpsMetrics.nonMovingAllocations + globalMpsMetrics.movingAllocations + globalMpsMetrics.movingZeroRankAllocations + globalMpsMetrics.unknownAllocations;
+  printf("%12lu finalization requests\n", globalMpsMetrics.finalizationRequests.load());
+  size_t totalAllocations = globalMpsMetrics.nonMovingAllocations.load()
+    + globalMpsMetrics.movingAllocations.load()
+    + globalMpsMetrics.movingZeroRankAllocations.load()
+    + globalMpsMetrics.unknownAllocations.load();
   printf("%12lu total allocations\n", totalAllocations);
-  printf("%12lu    non-moving(AWL) allocations\n", globalMpsMetrics.nonMovingAllocations);
-  printf("%12lu    moving(AMC) allocations\n", globalMpsMetrics.movingAllocations);
-  printf("%12lu    moving zero-rank(AMCZ) allocations\n", globalMpsMetrics.movingZeroRankAllocations);
-  printf("%12lu    unknown(configurable) allocations\n", globalMpsMetrics.unknownAllocations);
-  printf("%12lu total memory allocated\n", globalMpsMetrics.totalMemoryAllocated);
+  printf("%12lu    non-moving(AWL) allocations\n", globalMpsMetrics.nonMovingAllocations.load());
+  printf("%12lu    moving(AMC) allocations\n", globalMpsMetrics.movingAllocations.load());
+  printf("%12lu    moving zero-rank(AMCZ) allocations\n", globalMpsMetrics.movingZeroRankAllocations.load());
+  printf("%12lu    unknown(configurable) allocations\n", globalMpsMetrics.unknownAllocations.load());
+  printf("%12lu total memory allocated\n", globalMpsMetrics.totalMemoryAllocated.load());
 #endif
 #ifdef USE_BOEHM
   globalSearchMarker = core::unbox_fixnum(marker);

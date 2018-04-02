@@ -7,7 +7,7 @@ RUN apt-get update && apt-get -y upgrade && apt-get install -y \
 RUN curl http://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add -
 RUN apt-add-repository "deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial-5.0 main"
 RUN apt-get update && apt-get install -y \
-  gcc g++ llvm clang cmake libgc-dev libunwind-dev liblzma-dev libgmp-dev binutils-gold binutils-dev \
+  gcc g++ llvm clang cmake libunwind-dev liblzma-dev libgmp-dev binutils-gold binutils-dev \
   zlib1g-dev libncurses-dev libboost-filesystem-dev libboost-regex-dev \
   libboost-date-time-dev libboost-program-options-dev libboost-system-dev \
   libboost-iostreams-dev csh flex gfortran zlib1g-dev libbz2-dev patch \
@@ -16,6 +16,7 @@ RUN apt-get update && apt-get install -y \
   libllvm5.0 libllvm5.0-dbg llvm-5.0 llvm-5.0-dev llvm-5.0-doc \
   llvm-5.0-runtime clang-format-5.0 python-clang-5.0 lld-5.0
 ENV CC=/usr/bin/clang-5.0 CXX=/usr/bin/clang++-5.0
+
 
 # Copy the entire clasp directory less .dockerignore and clean the build dir
 RUN mkdir /home/app
@@ -28,6 +29,16 @@ ADD . clasp
 RUN chown -R app:app /home/app
 RUN chown -R app:app /out/clasp
 
+# build boehm
+RUN cd /tmp && wget http://www.hboehm.info/gc/gc_source/gc-7.6.4.tar.gz
+RUN mkdir /home/util
+RUN cd /home/util && tar zxvf /tmp/gc-7.6.4.tar.gz
+RUN cd /home/util/gc-7.6.4 \
+    && git clone git://github.com/ivmai/libatomic_ops.git \
+    && ./configure --enable-handle-fork \
+    && make install
+
+
 USER app
 WORKDIR /home/app/clasp
 RUN rm -rf build/* && mkdir -p /out/clasp
@@ -36,6 +47,8 @@ RUN rm -rf build/* && mkdir -p /out/clasp
 RUN echo "LLVM_CONFIG_BINARY='/usr/bin/llvm-config-5.0'" > wscript.config
 RUN echo "PREFIX='/out/clasp'" >> wscript.config
 RUN echo "CLASP_VERSION='clasp_docker'" >> wscript.config
+RUN echo "USE_PARALLEL_BUILD = True" >> wscript.config
+RUN echo "USE_LLD = True" >> wscript.config
 RUN git clone --depth=1 https://github.com/quicklisp/quicklisp-client.git $HOME/quicklisp
 RUN mkdir $HOME/quicklisp/local-projects
 RUN git clone --depth=1 https://github.com/slime/slime $HOME/slime
@@ -47,8 +60,8 @@ RUN cd $HOME/quicklisp/local-projects \
  && git clone --depth=1 https://github.com/clasp-developers/bordeaux-threads.git \
  && git clone --depth=1 https://github.com/clasp-developers/cffi.git
 
-RUN ./waf update_submodules
 RUN ./waf configure
 RUN ./waf -j $(nproc) build_cboehm
-RUN ./waf install_cboehm
+RUN ./waf -j $(nproc) build_dboehm
+RUN ./waf install_dboehm
 

@@ -1,6 +1,7 @@
 (provide :clasp-analyzer)
 
 (defpackage #:clasp-analyzer
+  (:shadow #:function-info)
   (:use #:common-lisp #:core #:ast-tooling #:clang-ast)
   (:shadow #:dump #:get-string #:size #:type)
   (:export
@@ -2243,7 +2244,7 @@ so that they don't have to be constantly recalculated"
     (format stream "    ~a(~a->~{~a~^.~});~%" fixer-macro ptr-name instance-vars)))
 
 
-(defconstant +ptr-name+ "obj_gc_safe"
+(defvar +ptr-name+ "obj_gc_safe"
   "This variable is used to temporarily hold a pointer to a Wrapper<...> object - we want the GC to ignore it")
 
 (defstruct destination
@@ -3455,7 +3456,7 @@ Setup all of the ASTMatcher tools for the clasp-analyzer."
         (push (subseq list start end) result)))
     result))
 
-#+(or)(defparameter *max-parallel-searches* (let ((pjobs (ext:getenv "PJOBS"))) (if pjobs (parse-integer pjobs) 1)))
+(defparameter *max-parallel-searches* (core:num-logical-processors))
 
 (defun split-jobs (job-list num-parallel)
   (let ((jobvec (make-array num-parallel)))
@@ -3466,7 +3467,6 @@ Setup all of the ASTMatcher tools for the clasp-analyzer."
 
 
 
-#+(or)
 (defun run-job (proc job-list compilation-tool-database)
   (let ((*results* (make-project)))
     (format t "====== Running jobs in fork #~a: ~a~%" proc job-list)
@@ -3476,8 +3476,8 @@ Setup all of the ASTMatcher tools for the clasp-analyzer."
                (merge-pathnames "project.dat" (clang-tool:main-pathname compilation-tool-database)))
     (core:exit)))
 
-#+(or)(defvar *parallel-search-pids* nil)
-#+(or)(defun parallel-search-all (&key test one-at-a-time)
+(defvar *parallel-search-pids* nil)
+(defun parallel-search-all-fork (compilation-tool-database &key test one-at-a-time)
         "Run *max-parallel-searches* processes at a time - whenever one finishes, start the next"
         (setq *parallel-search-pids* nil)
         (let ((all-jobs (split-jobs (if test
@@ -3502,9 +3502,9 @@ Setup all of the ASTMatcher tools for the clasp-analyzer."
           (dotimes (proc (1- *max-parallel-searches*))
             (core:waitpid -1 0))
           (format t "~%!~%!  Done ~%!~%")
-          (parallel-merge)))
+          (parallel-merge compilation-tool-database)))
 
-#+(or)(defun parallel-merge (compilation-tool-database &key end (start 0) restart)
+(defun parallel-merge (compilation-tool-database &key end (start 0) restart)
         "Merge the analyses generated from the parallel search"
         (let* ((all-jobs (load-data (merge-pathnames "project-all.dat" (clang-tool:main-pathname compilation-tool-database))))
                (merged (if restart
@@ -3602,7 +3602,7 @@ Run searches in *tools* on the source files in the compilation database."
                 (clang-tool:batch-run-multitool tools compilation-tool-database :source-namestrings (list (parallel-job-filename one-job)))))))
     (close log-file)))
 
-(defun parallel-search-all (compilation-tool-database
+(defun parallel-search-all-threaded (compilation-tool-database
                             &key (source-namestrings (clang-tool:source-namestrings compilation-tool-database))
                               (output-file (merge-pathnames #P"project.dat" (clang-tool:main-pathname compilation-tool-database)))
                               (save-project t)
@@ -3705,8 +3705,10 @@ If the source location of a match contains the string source-path-identifier the
                                2)))))
     (clang-tool:with-compilation-tool-database
         compilation-tool-database
-      (setf *project* (parallel-search-all compilation-tool-database :output-file output-file
-                                           :jobs pjobs))
+      (setf *project* (parallel-search-all-fork
+                       compilation-tool-database
+                       :output-file output-file
+                       :jobs pjobs))
       (let ((analysis (analyze-project *project*)))
         (setq *analysis* analysis)
         (setf (analysis-inline analysis) '("core::Cons_O"))

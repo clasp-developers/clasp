@@ -193,7 +193,7 @@ namespace gctools {
     DEBUG_MPS_UNDERSCANNING_TESTS();
     lisp_check_pending_interrupts(my_thread);
     globalMpsMetrics.totalMemoryAllocated += sizeof(Cons);
-    ++globalMpsMetrics_countAllocations;
+    ++globalMpsMetrics.consAllocations;
     return tagged_obj;
   };
 

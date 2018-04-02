@@ -1,4 +1,4 @@
-#!/usr/bin/env python2.6
+#!/usr/bin/env python
 #
 # Copyright 2008, Google Inc.
 # All rights reserved.
@@ -246,7 +246,7 @@ def ParseToken(lines, pos, regex, token_type):
   if m and not m.start():
     return MakeToken(lines, pos, pos + m.end(), token_type)
   else:
-    print 'ERROR: %s expected at %s.' % (token_type, pos)
+    print('ERROR: %s expected at %s.' % (token_type, pos))
     sys.exit(1)
 
 
@@ -453,8 +453,8 @@ def PushFront(a_list, elem):
 def PopToken(a_list, token_type=None):
   token = PopFront(a_list)
   if token_type is not None and token.token_type != token_type:
-    print 'ERROR: %s expected at %s' % (token_type, token.start)
-    print 'ERROR: %s found instead' % (token,)
+    print('ERROR: %s expected at %s' % (token_type, token.start))
+    print('ERROR: %s found instead' % (token))
     sys.exit(1)
 
   return token
@@ -621,7 +621,7 @@ class Env:
       if identifier == var:
         return value
 
-    print 'ERROR: meta variable %s is undefined.' % (identifier,)
+    print('ERROR: meta variable %s is undefined.' % (identifier))
     sys.exit(1)
 
   def EvalExp(self, exp):
@@ -629,8 +629,8 @@ class Env:
       result = eval(exp.python_exp)
       if (result == "False"):
         result = False
-    except Exception, e:
-      print 'ERROR: caught exception %s: %s' % (e.__class__.__name__, e)
+    except Exception as e:
+      print('ERROR: caught exception %s: %s' % (e.__class__.__name__, e))
       print ('ERROR: failed to evaluate meta expression %s at %s' %
              (exp.python_exp, exp.token.start))
       sys.exit(1)
@@ -641,7 +641,7 @@ class Env:
       if identifier == var:
         return (lower, upper)
 
-    print 'ERROR: range %s is undefined.' % (identifier,)
+    print('ERROR: range %s is undefined.' % (identifier))
     sys.exit(1)
 
 
@@ -701,8 +701,8 @@ def RunAtomicCode(env, node, output):
   elif isinstance(node, CodeNode):
     RunCode(env.Clone(), node, output)
   else:
-    print 'BAD'
-    print node
+    print('BAD')
+    print(node)
     sys.exit(1)
 
 
@@ -841,14 +841,14 @@ def ConvertFromPumpSource(src_text):
 
 def main(argv):
   if len(argv) != 3:
-    print __doc__
+    print(__doc__)
     sys.exit(1)
 
   file_path = argv[-2]
   output_file_path = argv[-1]
-  output_str = ConvertFromPumpSource(file(file_path, 'r').read())
+  output_str = ConvertFromPumpSource(open(file_path, mode='r').read())
   if output_file_path == '-':
-    print output_str,
+    print(output_str)
   else:
     dirpath = os.path.dirname(output_file_path)
     try:

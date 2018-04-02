@@ -302,6 +302,7 @@
     (irc-set-renv block-env new-renv)
     (values block-env instr (list parent-renv))))
 
+#+(or)
 (defun irc-new-block-environment (old-env &key name)
   (let* ((block-env (make-block-environment name old-env))
          (block-renv (irc-make-block-frame-set-parent block-env old-env)))
@@ -611,12 +612,6 @@
 (defun irc-icmp-sle (lhs rhs &optional (name ""))
   (llvm-sys:create-icmp-sle *irbuilder* lhs rhs name))
 
-(defun irc-icmp-uge (lhs rhs &optional (name ""))
-  (llvm-sys:create-icmp-uge *irbuilder* lhs rhs name))
-
-(defun irc-icmp-ule (lhs rhs &optional (name ""))
-  (llvm-sys:create-icmp-ule *irbuilder* lhs rhs name))
-
 (defun irc-icmp-ne (lhs rhs &optional (name ""))
   (llvm-sys:create-icmp-ne *irbuilder* lhs rhs name))
 
@@ -797,7 +792,7 @@
 
 
 (defparameter *default-function-attributes* '(llvm-sys:attribute-uwtable
-                                              ("no-frame-pointer-elim" "false")
+                                              ("no-frame-pointer-elim" "true")
                                               "no-frame-pointer-elim-non-leaf"))
 (defmacro with-new-function
     (( ;; FN is bound to the function being created
@@ -1391,7 +1386,7 @@ Write T_O* pointers into the current multiple-values array starting at the (offs
         fnattrs)
     (when does-not-throw (push 'llvm-sys:attribute-no-unwind fnattrs))
     (when does-not-return (push 'llvm-sys:attribute-no-return fnattrs))
-    (push '("no-frame-pointer-elim" "false") fnattrs)
+    (push '("no-frame-pointer-elim" "true") fnattrs)
     (push "no-frame-pointer-elim-non-leaf" fnattrs)
     (let ((function (cmp:irc-function-create (llvm-sys:function-type-get return-ty argument-types varargs)
                                              'llvm-sys::External-linkage

@@ -534,7 +534,7 @@ void mpsDeallocateStack(gctools::GCStack *stack) {
 
 extern "C" {
 
-size_t global_finalization_requests = 0;
+std::atomic<size_t> global_finalization_requests;
 void my_mps_finalize(void* client) {
   mps_finalize(global_arena,&client);
   ++gctools::globalMpsMetrics.finalizationRequests;

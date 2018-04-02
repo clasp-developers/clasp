@@ -835,7 +835,7 @@ void initialize_typeq_map() {
     #include INIT_CLASSES_INC_H // REPLACED CLASP_GC_FILENAME
   #undef GC_TYPEQ
  #endif
- #if defined(USE_MPS) && !defined(RUN_GC_BUILDER)
+ #if defined(USE_MPS) && !defined(RUNNING_GC_BUILDER)
   #define GC_TYPEQ
    #include CLASP_GC_FILENAME
   #undef GC_TYPEQ

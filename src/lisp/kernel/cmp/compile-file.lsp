@@ -216,8 +216,9 @@ Compile a lisp source file into an LLVM module."
            (if (pathname-match-p given-input-pathname clasp-source)
                (enough-namestring given-input-pathname clasp-source-root)
                given-input-pathname))
-         (input-pathname (probe-file given-input-pathname))
-	 (source-sin (open input-pathname :direction :input))
+         (input-pathname (or (probe-file given-input-pathname)
+                             (error "compile-file-to-module could not find the file ~a to open it" given-input-pathname)))
+         (source-sin (open input-pathname :direction :input))
          (module (llvm-create-module (namestring input-pathname)))
 	 (module-name (cf-module-name type given-input-pathname))
 	 warnings-p failure-p)
@@ -303,6 +304,8 @@ Compile a lisp source file into an LLVM module."
                                            :optimize optimize
                                            :optimize-level optimize-level)))
       (cond
+        ((null output-path)
+         (error "The output-path is nil for input filename ~a~%" input-file))
         ((eq output-type :object)
          (when verbose (bformat t "Writing object to %s\n" (core:coerce-to-filename output-path)))
          (ensure-directories-exist output-path)

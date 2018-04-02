@@ -9,7 +9,7 @@ RUN echo 'deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial-5.0 main'\
 
 # Copied from the original dependencies
 RUN apt-get update && apt-get upgrade -y && apt-get install -y \
-  libgc-dev libunwind-dev liblzma-dev libgmp-dev binutils-gold binutils-dev \
+  libunwind-dev liblzma-dev libgmp-dev binutils-gold binutils-dev \
   zlib1g-dev libbz2-dev libexpat-dev
 
 # Maybe need these...
@@ -46,7 +46,7 @@ RUN whoami
 RUN python -m pip install numpy
 RUN python -m pip install jupyter
 RUN python -m pip install ipywidgets
-RUN git clone -b "v1.0.a1" https://github.com/arose/nglview /home/app/nglview
+RUN git clone -b "v1.1.2" https://github.com/arose/nglview /home/app/nglview
 RUN whoami 
 RUN cd /home/app/nglview && python setup.py install
 # probably need to activate widgetsnbextension

@@ -758,7 +758,7 @@ subsequence is found.  Returns NIL otherwise."
                                   (key (seq-iterator-ref sequence2 it2)))
                    (return))))))))))
 
-
+#-clasp-min
 (defun sort (sequence predicate &key key)
   "Args: (sequence test &key key)
 Destructively sorts SEQUENCE and returns the result.  TEST should return non-
@@ -826,45 +826,45 @@ evaluates to NIL.  See STABLE-SORT."
      (setq key-right (funcall key (car right)))
      (go loop)))
 
-
+#-clasp-min
 (defun quick-sort (seq start end pred key)
   (declare (fixnum start end)
-	   (function pred key)
-	   (optimize (safety 0)))
+           (function pred key)
+           (optimize (safety 0)))
   (if (< start end)
       (let* ((j (1+ end)))
-	(declare (fixnum j))
-	(let* ((i start)
-	       (l (- end start))
-	       (l-half (ash l -1))
-	       (p (+ start l-half))
-	       (d (elt seq p))
-	       (kd (funcall key d)))
-	  (declare (fixnum i p l l-half))
-	  (rotatef (elt seq p) (elt seq start))
-	  (block outer-loop
-	    (loop
-	       (loop 
-		  (unless (> (decf j) i) (return-from outer-loop))
-		  (when (funcall pred 
-				 (funcall key (elt seq j)) kd)
-		    (return)))
-	       (loop 
-	      (unless (< (incf i) j) (return-from outer-loop))
-		  (unless (funcall pred
-				   (funcall key (elt seq i)) kd)
-		    (return)))
-	       (rotatef (elt seq i) (elt seq j))))
-	  (setf (elt seq start) (elt seq j)
-		(elt seq j) d))
-	(if (< (the fixnum (- j start))
-	       (the fixnum (- end j)))
-	    (progn
-	      (quick-sort seq start (1- j) pred key)
-	      (quick-sort seq (1+ j) end pred key))
-	    (progn
-	      (quick-sort seq (1+ j) end pred key)
-	      (quick-sort seq start (1- j) pred key))))
+        (declare (fixnum j))
+        (let* ((i start)
+               (l (- end start))
+               (l-half (ash l -1))
+               (p (+ start l-half))
+               (d (elt seq p))
+               (kd (funcall key d)))
+          (declare (fixnum i p l l-half))
+          (rotatef (elt seq p) (elt seq start))
+          (block outer-loop
+            (loop
+               (loop 
+                  (unless (> (decf j) i) (return-from outer-loop))
+                  (when (funcall pred 
+                                 (funcall key (elt seq j)) kd)
+                    (return)))
+               (loop 
+              (unless (< (incf i) j) (return-from outer-loop))
+                  (unless (funcall pred
+                                   (funcall key (elt seq i)) kd)
+                    (return)))
+               (rotatef (elt seq i) (elt seq j))))
+          (setf (elt seq start) (elt seq j)
+                (elt seq j) d))
+        (if (< (the fixnum (- j start))
+               (the fixnum (- end j)))
+            (progn
+              (quick-sort seq start (1- j) pred key)
+              (quick-sort seq (1+ j) end pred key))
+            (progn
+              (quick-sort seq (1+ j) end pred key)
+              (quick-sort seq start (1- j) pred key))))
       seq))
 
 
@@ -960,12 +960,12 @@ evaluates to NIL.  See STABLE-SORT."
 Destructively sorts SEQUENCE and returns the result.  TEST should return non-
 NIL if its first argument is to precede its second argument.  For two elements
 X and Y, if both
-	(FUNCALL TEST X Y)
-	(FUNCALL TEST Y X)
+        (FUNCALL TEST X Y)
+        (FUNCALL TEST Y X)
 evaluates to NIL, then the order of X and Y are the same as in the original
 SEQUENCE.  See SORT."
   (setf key (if key (coerce-fdesignator key) #'identity)
-	predicate (coerce-fdesignator predicate))
+        predicate (coerce-fdesignator predicate))
   (if (listp sequence)
       (list-merge-sort sequence predicate key)
       (if (or (stringp sequence) (bit-vector-p sequence))
@@ -974,7 +974,7 @@ SEQUENCE.  See SORT."
 
 
 (defun merge (result-type sequence1 sequence2 predicate &key key
-	      &aux (l1 (length sequence1)) (l2 (length sequence2)))
+              &aux (l1 (length sequence1)) (l2 (length sequence2)))
   "Args: (type sequence1 sequence2 test &key key)
 Merges two sequences in the way specified by TEST and returns the result as a
 sequence of TYPE.  Both SEQUENCEs may be destroyed.  If both SEQUENCE1 and
@@ -984,31 +984,31 @@ the sense of TEST."
   (with-key (key)
     (with-predicate (predicate)
       (do* ((size (the fixnum (+ l1 l2)))
-	    (j 0 (1+ j))
-	    (newseq (make-sequence result-type size))
-	    (i1 0)
-	    (i2 0))
-	   ((= j size) newseq)
-	(declare (fixnum size j i1 i2))
-	(if (>= i1 l1)
-	    (setf (elt newseq j) (elt sequence2 i2)
-		  i2 (1+ i2))
-	    (let ((v1 (elt sequence1 i1)))
-	      (if (>= i2 l2)
-		  (setf (elt newseq j) v1
-			i1 (1+ i1))
-		  (let* ((v2 (elt sequence2 i2))
-			 (k2 (key v2))
-			 (k1 (key v1)))
-		    (cond ((predicate k1 k2)
-			   (setf (elt newseq j) v1
-				 i1 (1+ i1)))
-			  ((predicate k2 k1)
-			   (setf (elt newseq j) v2
-				 i2 (1+ i2)))
-			  (t
-			   (setf (elt newseq j) v1
-				 i1 (1+ i1))))))))))))
+            (j 0 (1+ j))
+            (newseq (make-sequence result-type size))
+            (i1 0)
+            (i2 0))
+           ((= j size) newseq)
+        (declare (fixnum size j i1 i2))
+        (if (>= i1 l1)
+            (setf (elt newseq j) (elt sequence2 i2)
+                  i2 (1+ i2))
+            (let ((v1 (elt sequence1 i1)))
+              (if (>= i2 l2)
+                  (setf (elt newseq j) v1
+                        i1 (1+ i1))
+                  (let* ((v2 (elt sequence2 i2))
+                         (k2 (key v2))
+                         (k1 (key v1)))
+                    (cond ((predicate k1 k2)
+                           (setf (elt newseq j) v1
+                                 i1 (1+ i1)))
+                          ((predicate k2 k1)
+                           (setf (elt newseq j) v2
+                                 i2 (1+ i2)))
+                          (t
+                           (setf (elt newseq j) v1
+                                 i1 (1+ i1))))))))))))
 
 (defun complement (f)
   "Args: (f)

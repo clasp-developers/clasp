@@ -5136,6 +5136,7 @@ T_sp clasp_open_stream(T_sp fn, enum StreamMode smm, T_sp if_exists,
 #else
   clasp_mode_t mode = S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH;
 #endif
+  if (fn.nilp()) SIMPLE_ERROR(BF("In %s the filename is NIL") % __FUNCTION__);
   String_sp filename = core__coerce_to_filename(fn);
   string fname = filename->get_std_string();
   bool appending = 0;
@@ -5254,6 +5255,9 @@ CL_DEFUN T_sp cl__open(T_sp filename,
              T_sp if_does_not_exist, bool idnesp,
              T_sp external_format,
              T_sp cstream) {
+  if (filename.nilp()) {
+    TYPE_ERROR(filename,Cons_O::createList(cl::_sym_or,cl::_sym_string,cl::_sym_Pathname_O,cl::_sym_Stream_O));
+  }
   T_sp strm;
   enum StreamMode smm;
   int flags = 0;
@@ -6120,7 +6124,7 @@ CL_DEFUN T_mv cl__read_line(T_sp sin, T_sp eof_error_p, T_sp eof_value, T_sp rec
       if (eof_error_p.notnilp()) {
         ERROR_END_OF_FILE(sin);
       } else {
-        return eof_value;
+        return Values(eof_value,_lisp->_true());
       }
     }
   }
@@ -6136,7 +6140,7 @@ CL_DEFUN T_mv cl__read_line(T_sp sin, T_sp eof_error_p, T_sp eof_value, T_sp rec
         if (sbuf->length()>0) {
           return Values(sbuf, _Nil<T_O>());
         }
-        return (Values(eof_value, _lisp->_true()));
+        return Values(eof_value, _lisp->_true());
       }
     } else {
       claspCharacter cc = (gc::As<Character_sp>(tch)).unsafe_character();
@@ -6388,6 +6392,9 @@ T_sp clasp_openRead(T_sp sin) {
   gctools::Fixnum byte_size = 8;
   int flags = CLASP_STREAM_DEFAULT_FORMAT;
   T_sp external_format = _Nil<T_O>();
+  if (filename.nilp()) {
+    SIMPLE_ERROR(BF("%s was called with NIL as the argument") % __FUNCTION__);
+  }
   T_sp strm = clasp_open_stream(filename, smm, if_exists, if_does_not_exist,
                                 byte_size, flags, external_format);
   return strm;

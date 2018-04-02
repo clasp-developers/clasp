@@ -121,6 +121,7 @@ SRC_CORE = \
         'fileSystem',
         'intArray',
         'posixTime',
+        'hwinfo',
         'clasp_ffi_package',
         'fli',
     ]
@@ -239,7 +240,6 @@ def collect_aclasp_lisp_files(wrappers = True):
         "src/lisp/kernel/lsp/seqlib",
         "src/lisp/kernel/lsp/iolib",
         "src/lisp/kernel/lsp/sharpmacros",
-        "src/lisp/kernel/lsp/trace",
         "src/lisp/kernel/lsp/backtrace",
         "src/lisp/kernel/cmp/cmpexports",
         "src/lisp/kernel/cmp/cmpsetup",
@@ -256,7 +256,7 @@ def collect_aclasp_lisp_files(wrappers = True):
         "src/lisp/kernel/cmp/cmprunall",
         "src/lisp/kernel/cmp/cmpliteral",
         "src/lisp/kernel/cmp/typeq",
-        "src/lisp/kernel/cmp/cmpfastgf",
+#        "src/lisp/kernel/cmp/cmpfastgf",
         "src/lisp/kernel/cmp/codegen-special-form",
         "src/lisp/kernel/cmp/codegen",
         "src/lisp/kernel/cmp/compile",
@@ -276,6 +276,7 @@ def collect_bclasp_lisp_files(**kwargs):
     files = collect_aclasp_lisp_files(**kwargs) + [
         "src/lisp/kernel/tag/bclasp-start",
         "src/lisp/kernel/cmp/cmpwalk",
+        "src/lisp/kernel/lsp/trace",
         "src/lisp/kernel/lsp/assert",
         "src/lisp/kernel/lsp/numlib",
         "src/lisp/kernel/lsp/describe",
@@ -298,6 +299,7 @@ def collect_bclasp_lisp_files(**kwargs):
         "src/lisp/kernel/clos/slot",
         "src/lisp/kernel/clos/boot",
         "src/lisp/kernel/clos/kernel",
+        "src/lisp/kernel/cmp/cmpfastgf", # try moving this here
         "src/lisp/kernel/clos/closfastgf",
         "src/lisp/kernel/clos/satiation",
         "src/lisp/kernel/clos/method",

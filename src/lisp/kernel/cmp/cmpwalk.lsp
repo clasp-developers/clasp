@@ -50,13 +50,13 @@
                   ))))
         (llvm-sys::module-delete module)))))
 
-
 (defun code-walk (form env &key code-walker-function (errorp t))
   "Walk the form using whichever compiler we are currently using
    within env and call the code-walker-function on each internal form.
 code-walker-function takes two arguments (form env).
 Set errorp nil if you don't want an error to be generated if the code can't be walked.
 Returns T if walked, NIL if not (if errorp NIL)."
+  (let ((*code-walking* t))
     (if (not core:*use-cleavir-compiler*)
         (code-walk-using-bclasp form env :code-walker-function code-walker-function)
         (let* ((clasp-cleavir-pkg (find-package :clasp-cleavir))
@@ -66,7 +66,7 @@ Returns T if walked, NIL if not (if errorp NIL)."
               (if errorp
                   (error "Could not walk the code using code-walk-using-cleavir - the symbol is present - but it is not fbound")
                   nil))))
-    t)
+    t))
 
 
 (export '(code-walk code-walk-using-bclasp))

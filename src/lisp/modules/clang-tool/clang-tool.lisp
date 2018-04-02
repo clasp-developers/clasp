@@ -10,6 +10,7 @@ Find directories that look like them and replace the ones defined in the constan
 (provide :clang-tool)
 
 (defpackage #:clang-tool
+  (:shadow #:function-info)
   (:use #:common-lisp #:core #:ast-tooling #:clang-ast)
   (:shadow #:dump #:get-string #:size #:type #:source-manager)
   (:export
@@ -403,7 +404,7 @@ Find directories that look like them and replace the ones defined in the constan
   (:WHILE-STMT :HAS-CONDITION :EXPR)))
 
 
-(defconstant +isysroot+ 
+(defvar +isysroot+ 
   #+target-os-darwin "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain"
   "Define the -isystem command line option for Clang compiler runs")
 
@@ -412,13 +413,13 @@ Find directories that look like them and replace the ones defined in the constan
            #+target-os-linux (defparameter *externals-clasp-include-dir* (namestring (car (directory (pathname (format nil "~a../lib/clang/*/" *externals-clasp-pathname*))))))
            )
 
-(defconstant +resource-dir+ 
+(defvar +resource-dir+ 
   #+target-os-darwin (namestring (car (directory "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/*/")))
   #+target-os-linux *externals-clasp-include-dir*
   "Define the -resource-dir command line option for Clang compiler runs")
 
 #++
-(defconstant +additional-arguments+
+(defvar +additional-arguments+
   #+target-os-darwin (vector "GARBAGE2")
   #+(or)(vector
          "-I/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.12.sdk/usr/include"

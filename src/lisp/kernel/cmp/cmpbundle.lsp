@@ -89,6 +89,7 @@
   (cond
     ((pathnamep name) (core:coerce-to-filename name))
     ((stringp name) name)
+    ((null name) (error "The argument to ensure-string is NIL"))
     (t (string name))))
 
 (in-package :ext)
@@ -221,7 +222,9 @@
                     (when failure
                       (error "While linking additional module: ~a  encountered error: ~a" bc-file error-msg))
                     ))))
-            (write-bitcode *the-module* (core:coerce-to-filename (pathname output-pathname)))
+            (write-bitcode *the-module* (core:coerce-to-filename (pathname (if output-pathname
+                                                                               output-pathname
+                                                                               (error "The output pathname is NIL")))))
             *the-module*))))))
 (export 'link-bitcode-modules)
 

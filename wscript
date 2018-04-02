@@ -3,7 +3,7 @@
 # In your emacs you may want to: (add-to-list 'auto-mode-alist '("wscript\\'" . python-mode))
 #
 
-import os, sys, subprocess
+import os, sys, subprocess, logging
 import time, datetime
 
 try:
@@ -11,7 +11,7 @@ try:
 except ImportError:
     from io import StringIO
 
-from waflib import Utils, Logs
+from waflib import Utils, Logs, Task, TaskGen
 import waflib.Options
 from waflib.Tools import c_preproc
 from waflib.Tools.compiler_cxx import cxx_compiler
@@ -22,15 +22,10 @@ sys.path.append('tools-for-build/')
 sys.dont_write_bytecode = True   # avoid littering the dirs with .pyc files
 
 from build_file_lists import collect_clasp_c_source_files, collect_aclasp_lisp_files, collect_bclasp_lisp_files, collect_cclasp_lisp_files
-from clasp_build_utils import clasp_logger
+from clasp_build_utils import log, clasp_task
 
 # Let's not depend on the locale setting of the host, set it explicitly.
 os.environ['LC_ALL'] = os.environ['LANG'] = "C"
-
-# log will be re-initialized in build() to append the build debug log into build/variant/build.log.
-# Until then it will only log to the console.
-global log
-log = clasp_logger(None)
 
 #
 # Global variables for the build
@@ -41,14 +36,11 @@ APP_NAME = 'clasp'
 DARWIN_OS = 'darwin'
 LINUX_OS = 'linux'
 
-STAGE_CHARS = [ 'r', 'i', 'a', 'b', 'f', 'c' ]
+STAGE_CHARS = [ 'r', 'i', 'a', 'b', 'f', 'c', 'd' ]
 
 GCS_NAMES = [ 'boehm',
               'mpsprep',
               'mps' ]
-
-# DEBUG_CHARS None == optimized
-DEBUG_CHARS = [ None, 'd' ]
 
 CLANG_LIBRARIES = [
             'clangASTMatchers',
@@ -129,22 +121,6 @@ def analyze_clasp(cfg):
     print("\n\n\n----------------- proceeding with static analysis --------------------")
 
 
-def maybe_dump_command(cmd, kind = ''):
-    # print a copy-paste'able command line
-    cmdstr = StringIO()
-    first = True
-    for x in cmd:
-        if first:
-            first = False
-        else:
-            cmdstr.write(" \\\n")
-        cmdstr.write(x)
-    if waflib.Options.options.PRINT_EXTERNAL_COMMANDS:
-        log.pprint('RED', 'command line for %s:' % kind)
-        log.pprint('YELLOW', cmdstr.getvalue())
-    else:
-        log.debug("command line for %s:\n%s", kind, cmdstr.getvalue())
-
 def libraries_as_link_flags(fmt,libs):
     all_libs = []
     for x in libs:
@@ -176,6 +152,8 @@ def stage_value(ctx,s):
         sval = 2
     elif ( s == 'c' ):
         sval = 4
+    elif ( s == 'd' ):
+        sval = 5
     elif ( s == 'f' ):
         sval = 3
     elif ( s == 'rebuild' ):
@@ -233,24 +211,13 @@ def fix_lisp_paths(bld_path,out,variant,paths):
         nodes.append(lsp_res)
     return nodes
 
-def debug_ext(c):
-    if (c):
-        return "-%s"%c
-    return ""
-def debug_dir_ext(c):
-    if (c):
-        return "_%s"%c
-    return ""
-
-class extension_builder:
-    def __init__(self,n):
-        self.name = name
-
 class variant(object):
+    build_with_debug_info = False
+
     def debug_extension(self):
-        return debug_ext(self.debug_char)
+        return "-d" if self.build_with_debug_info else ""
     def debug_dir_extension(self):
-        return debug_dir_ext(self.debug_char)
+        return "_d" if self.build_with_debug_info else ""
     def executable_name(self,stage=None):
         if ( stage == None ):
             use_stage = self.stage_char
@@ -259,8 +226,6 @@ class variant(object):
         if (not (use_stage>='a' and use_stage <= 'z')):
             raise Exception("Bad stage: %s"% use_stage)
         return '%s%s-%s%s' % (use_stage,APP_NAME,self.gc_name,self.debug_extension())
-    def extension_headers_node(self,bld):
-        return bld.path.find_or_declare("generated/extension_headers.h")
     def fasl_name(self,stage=None):
         if ( stage == None ):
             use_stage = self.stage_char
@@ -324,22 +289,24 @@ class variant(object):
         if (os.getenv("CLASP_DEBUG_LINKFLAGS") != None):
             cfg.env.append_value('LINKFLAGS', os.getenv("CLASP_DEBUG_LINKFLAGS").split())
     def common_setup(self,cfg):
-        if ( self.debug_char == None ):
-            self.configure_for_release(cfg)
-        else:
+        if self.build_with_debug_info:
             self.configure_for_debug(cfg)
+        else:
+            self.configure_for_release(cfg)
         configure_common(cfg, self)
         cfg.write_config_header("%s/config.h"%self.variant_dir(),remove=True)
 
 class boehm_base(variant):
+    gc_name = 'boehm'
+
     def configure_variant(self,cfg,env_copy):
         cfg.define("USE_BOEHM",1)
         if (cfg.env['DEST_OS'] == DARWIN_OS ):
             log.debug("boehm_base cfg.env.LTO_FLAG = %s", cfg.env.LTO_FLAG)
             if (cfg.env.LTO_FLAG):
                 cfg.env.append_value('LDFLAGS', '-Wl,-object_path_lto,%s_lib.lto.o' % self.executable_name())
-        log.debug("Setting up boehm library cfg.env.STLIB_BOEHM = %s ", cfg.env.STLIB_BOEHM)
-        log.debug("Setting up boehm library cfg.env.LIB_BOEHM = %s", cfg.env.LIB_BOEHM)
+        log.info("Setting up boehm library cfg.env.STLIB_BOEHM = %s ", cfg.env.STLIB_BOEHM)
+        log.info("Setting up boehm library cfg.env.LIB_BOEHM = %s", cfg.env.LIB_BOEHM)
         if (cfg.env.LIB_BOEHM == [] ):
             cfg.env.append_value('STLIB',cfg.env.STLIB_BOEHM)
         else:
@@ -347,19 +314,16 @@ class boehm_base(variant):
         self.common_setup(cfg)
 
 class boehm(boehm_base):
-    gc_name = 'boehm'
-    debug_char = None
     def configure_variant(self,cfg,env_copy):
         cfg.setenv(self.variant_dir(), env=env_copy.derive())
         super(boehm,self).configure_variant(cfg,env_copy)
 
 class boehm_d(boehm_base):
-    gc_name = 'boehm'
-    debug_char = 'd'
+    build_with_debug_info = True
+
     def configure_variant(self,cfg,env_copy):
         cfg.setenv("boehm_d", env=env_copy.derive())
         super(boehm_d,self).configure_variant(cfg,env_copy)
-
 
 class mps_base(variant):
     def configure_variant(self,cfg,env_copy):
@@ -371,7 +335,7 @@ class mps_base(variant):
 
 class mpsprep(mps_base):
     gc_name = 'mpsprep'
-    debug_char = None
+
     def configure_variant(self,cfg,env_copy):
         cfg.setenv("mpsprep", env=env_copy.derive())
         cfg.define("RUNNING_GC_BUILDER",1)
@@ -379,7 +343,8 @@ class mpsprep(mps_base):
 
 class mpsprep_d(mps_base):
     gc_name = 'mpsprep'
-    debug_char = 'd'
+    build_with_debug_info = True
+
     def configure_variant(self,cfg,env_copy):
         cfg.setenv("mpsprep_d", env=env_copy.derive())
         cfg.define("RUNNING_GC_BUILDER",1)
@@ -387,14 +352,14 @@ class mpsprep_d(mps_base):
 
 class mps(mps_base):
     gc_name = 'mps'
-    debug_char = None
     def configure_variant(self,cfg,env_copy):
         cfg.setenv("mps", env=env_copy.derive())
         super(mps,self).configure_variant(cfg,env_copy)
 
 class mps_d(mps_base):
     gc_name = 'mps'
-    debug_char = 'd'
+    build_with_debug_info = True
+
     def configure_variant(self,cfg,env_copy):
         cfg.setenv("mps_d", env=env_copy.derive())
         super(mps_d,self).configure_variant(cfg,env_copy)
@@ -561,6 +526,8 @@ def configure(cfg):
 
     if (cfg.env.LLVM5_ORC_NOTIFIER_PATCH):
         cfg.define("LLVM5_ORC_NOTIFIER_PATCH",1)
+    if (cfg.env.USE_PARALLEL_BUILD):
+        cfg.define("USE_PARALLEL_BUILD",1)
     cfg.env["LLVM_BIN_DIR"] = run_llvm_config(cfg, "--bindir")
     cfg.env["LLVM_AR_BINARY"] = "%s/llvm-ar" % cfg.env.LLVM_BIN_DIR
 #    cfg.env["LLVM_AR_BINARY"] = cfg.find_program("llvm-ar", var = "LLVM_AR")[0]
@@ -710,13 +677,17 @@ def configure(cfg):
         cfg.env.append_value('CFLAGS', cfg.env.LTO_FLAG )
         cfg.env.append_value('LINKFLAGS', cfg.env.LTO_FLAG )
     if (cfg.env['DEST_OS'] == LINUX_OS ):
-        cfg.env.append_value('LINKFLAGS', '-fuse-ld=gold')
+        if (cfg.env['USE_LLD']):
+            cfg.env.append_value('LINKFLAGS', '-fuse-ld=lld-5.0')
+            log.info("Using the lld linker")
+        else:
+            cfg.env.append_value('LINKFLAGS', '-fuse-ld=gold')
+            log.info("Using the gold linker")
         cfg.env.append_value('LINKFLAGS', ['-stdlib=libstdc++'])
         cfg.env.append_value('LINKFLAGS', ['-lstdc++'])
         cfg.env.append_value('LINKFLAGS', '-pthread')
     elif (cfg.env['DEST_OS'] == DARWIN_OS ):
         cfg.env.append_value('LINKFLAGS', ['-Wl,-export_dynamic'])
-        cfg.env.append_value('LINKFLAGS', ['-Wl,-stack_size,0x1000000'])
         lto_library_name = cfg.env.cxxshlib_PATTERN % "LTO"  # libLTO.<os-dep-extension>
         lto_library = "%s/%s" % ( llvm_liblto_dir, lto_library_name)
         cfg.env.append_value('LINKFLAGS',["-Wl,-lto_library,%s" % lto_library])
@@ -797,7 +768,8 @@ def configure(cfg):
     cfg.env.append_value('CXXFLAGS', ['-Wno-invalid-offsetof'] )
     cfg.env.append_value('CXXFLAGS', ['-Wno-#pragma-messages'] )
     cfg.env.append_value('CXXFLAGS', ['-Wno-inconsistent-missing-override'] )
-    cfg.env.append_value('LIBPATH', ['/usr/lib'])
+    cfg.env.append_value('LIBPATH', ['/usr/lib', '/usr/local/lib'])
+    cfg.env.append_value('STLIBPATH', ['/usr/lib', '/usr/local/lib'])
     cfg.env.append_value('LINKFLAGS', ['-fvisibility=default'])
     cfg.env.append_value('LINKFLAGS', ['-rdynamic'])
     sep = " "
@@ -823,14 +795,11 @@ def configure(cfg):
     log.debug("cfg.env.LIB = %s", cfg.env.LIB)
     env_copy = cfg.env.derive()
     for gc in GCS_NAMES:
-        for debug_char in DEBUG_CHARS:
-            if (debug_char==None):
-                variant = gc
-            else:
-                variant = gc+"_"+debug_char
-            variant_instance = eval("i"+variant+"()")
+        for debug_build in [True, False]:
+            variant_name = gc + '_d' if debug_build else gc
+            variant_instance = eval("i" + variant_name + "()")
             log.info("Setting up variant: %s", variant_instance.variant_dir())
-            variant_instance.configure_variant(cfg,env_copy)
+            variant_instance.configure_variant(cfg, env_copy)
     update_dependencies(cfg)
 
 def pre_build_hook(bld):
@@ -858,8 +827,9 @@ def build(bld):
     variant = eval(bld.variant + "()")
     bld.variant_obj = variant
 
-    log_file = os.path.join(bld.path.abspath(), out, variant.variant_dir(), "build.log")
-    log = clasp_logger(log_file)
+    # Reinitialize logging system with a handler that appends to ./build/variant/build.log
+    log.reinitialize(console_level = logging.DEBUG if Logs.verbose >= 1 else logging.INFO,
+                     log_file = os.path.join(bld.path.abspath(), out, variant.variant_dir(), "build.log"))
 
     log.debug('build() starts, options: %s', bld.options)
 
@@ -876,11 +846,19 @@ def build(bld):
                  bld.stage_val,
                  ", DEBUG_WHILE_BUILDING" if bld.options.DEBUG_WHILE_BUILDING else ''))
 
+    # Waf groups are basically staging of tasks: all tasks in stage N must finish before any
+    # task in stage N+1 can begin. (Don't get fooled by the API, groups are ordered internally.)
+    # Tasks are recorded into the current stage which can be set by bld.set_group('stage-name').
+    # NOTE: group based ordering overrides the set_input based task dependencies, so be careful
+    # not to instantiate tasks into the wrong group.
+    bld.add_group('preprocessing')
+    bld.add_group('compiling/c++')
+
     bld.use_human_readable_bitcode = bld.env["USE_HUMAN_READABLE_BITCODE"]
     log.debug("Using human readable bitcode: %s", bld.use_human_readable_bitcode)
     bld.clasp_source_files = collect_clasp_c_source_files(bld)
 
-    bld.clasp_aclasp = collect_aclasp_lisp_files()
+    bld.clasp_aclasp = collect_aclasp_lisp_files(wrappers=False)
     bld.clasp_bclasp = collect_bclasp_lisp_files()
     bld.clasp_cclasp = collect_cclasp_lisp_files()
     bld.clasp_cclasp_no_wrappers = collect_cclasp_lisp_files(wrappers = False)
@@ -899,19 +877,24 @@ def build(bld):
     bld.cclasp_fasl = bld.path.find_or_declare(variant.fasl_name(stage='c'))
     bld.iclasp_executable = bld.path.find_or_declare(variant.executable_name(stage='i'))
 
+    bld.set_group('compiling/c++')
+
     bld.recurse('extensions')
 
     log.info("There are %d extensions_builders", len(bld.extensions_builders))
     for x in bld.extensions_builders:
         x.run()
 
+    bld.set_group('preprocessing')
+
     #
     # Installing the sources
     #
     clasp_c_source_files = bld.clasp_source_files + bld.extensions_source_files
     install('lib/clasp/', clasp_c_source_files)
-    install('lib/clasp/', bld.path.ant_glob("include/clasp/**/*.h"))
-    install('lib/clasp/src/lisp/', bld.path.ant_glob("src/lisp/**/*.l* **/*.asd"))
+    install('lib/clasp/', bld.path.find_node('include/clasp/').ant_glob('**/*.h'))
+    install('lib/clasp/src/lisp/', bld.path.find_node('src/lisp/').ant_glob('**/*.l*'))
+    install('lib/clasp/src/lisp/', bld.path.find_node('src/lisp/').ant_glob('**/*.asd'))
 
     bld.env = bld.all_envs[bld.variant]
     include_dirs = ['.']
@@ -921,26 +904,27 @@ def build(bld):
     include_dirs = include_dirs + bld.extensions_include_dirs
     log.debug("include_dirs = %s", include_dirs)
 
-    extension_headers_node = variant.extension_headers_node(bld)
-    log.debug("extension_headers_node = %s", extension_headers_node.abspath())
-
     # Without this the parallel ASDF load-op's would step on each other's feet
     if (bld.options.RUN_THE_SCRAPER):
         task = precompile_scraper(env = bld.env)
         task.set_outputs([bld.path.find_or_declare("scraper-precompile-done")])
         bld.add_to_group(task)
 
-    make_pump_tasks(bld, 'src/core/header-templates/', 'clasp/core/')
-    make_pump_tasks(bld, 'src/clbind/header-templates/', 'clasp/clbind/')
+    make_pump_task(bld, bld.path.find_resource("src/core/header-templates/applyToFrame.pmp"), "clasp/core/")
+    make_pump_task(bld, bld.path.find_resource("src/core/header-templates/external_wrappers_indirect_methoids.pmp"), "clasp/core/")
+    make_pump_task(bld, bld.path.find_resource("src/core/header-templates/wrappers_functoids.pmp"), "clasp/core/")
+    make_pump_task(bld, bld.path.find_resource("src/core/header-templates/wrappers_methoids.pmp"), "clasp/core/")
+    make_pump_task(bld, bld.path.find_resource("src/clbind/header-templates/clbind_constructor_functoids.pmp"), "clasp/clbind/")
+    make_pump_task(bld, bld.path.find_resource("src/clbind/header-templates/clbind_functoids.pmp"), "clasp/clbind/")
+    make_pump_task(bld, bld.path.find_resource("src/clbind/header-templates/clbind_methoids.pmp"), "clasp/clbind/")
+    make_pump_task(bld, bld.path.find_resource("src/clbind/header-templates/clbind_static_members.pmp"), "clasp/clbind/")
 
-    extensions_task = build_extension_headers(env=bld.env)
-    inputs = [bld.path.find_resource("wscript")] + bld.extensions_gcinterface_include_files
-    extensions_task.set_inputs(inputs)
-    extensions_task.set_outputs([extension_headers_node])
-    bld.add_to_group(extensions_task)
+    task = generate_extension_headers(env=bld.env)
+    task.set_inputs(bld.extensions_gcinterface_include_files)
+    task.set_outputs([bld.path.find_or_declare("generated/extension_headers.h")])
+    bld.add_to_group(task)
 
-    # Tell waf that all the tasks prior to this needs to be finished to continue with the rest of the tasks.
-    bld.add_group()
+    bld.set_group('compiling/c++')
 
     # Always build the C++ code
     intrinsics_bitcode_node = bld.path.find_or_declare(variant.inline_bitcode_archive_name("intrinsics"))
@@ -965,7 +949,7 @@ def build(bld):
 #            bld.add_to_group(dsymutil_iclasp)
 #            install('lib/clasp/%s/%s' % (executable_dir, iclasp_dsym.name), iclasp_dsym_files, cwd = iclasp_dsym)
     if (bld.stage_val <= -1):
-        log.info("About to add run_aclasp")
+        log.info("Creating run_aclasp task")
 
         task = run_aclasp(env=bld.env)
         task.set_inputs([bld.iclasp_executable,
@@ -976,7 +960,7 @@ def build(bld):
         task.set_outputs(aclasp_common_lisp_bitcode)
         bld.add_to_group(task)
     if (bld.stage_val >= 1):
-        log.info("About to add compile_aclasp")
+        log.info("Creating compile_aclasp task")
 
         task = compile_aclasp(env=bld.env)
         task.set_inputs([bld.iclasp_executable,
@@ -1001,7 +985,7 @@ def build(bld):
         install('lib/clasp/', aclasp_link_product)
         install('lib/clasp/', aclasp_common_lisp_bitcode)
     if (bld.stage_val >= 2):
-        log.info("About to add compile_bclasp")
+        log.info("Creating compile_bclasp task")
 
         task = compile_bclasp(env=bld.env)
         task.set_inputs([bld.iclasp_executable,
@@ -1067,7 +1051,7 @@ def build(bld):
         # bld.add_to_group(cmp_asdf)
         # install_files('lib/clasp/', bld.asdf_fasl_bclasp)
     if (bld.stage_val >= 3):
-        log.info("About to add compile_cclasp")
+        log.info("Creating compile_cclasp task")
         # Build cclasp fasl
         task = compile_cclasp(env=bld.env)
         task.set_inputs([bld.iclasp_executable,
@@ -1162,19 +1146,57 @@ def build(bld):
             os.symlink(bld.cclasp_executable.abspath(), clasp_symlink_node.abspath())
         else:
             os.symlink(bld.iclasp_executable.abspath(), clasp_symlink_node.abspath())
+    log.pprint('BLUE', 'bld.node_sigs[bld.iclasp_executable] -> %s' % bld.node_sigs.get(bld.iclasp_executable))
     log.pprint('BLUE', 'build() has finished')
 
-from waflib import TaskGen
-from waflib import Task
+def init(ctx):
+    from waflib.Build import BuildContext, CleanContext, InstallContext, UninstallContext, ListContext, StepContext, EnvContext
 
-class dsymutil(Task.Task):
+    log.pprint('BLUE', "init()")
+
+    for gc in GCS_NAMES:
+        for debug_build in [True, False]:
+            variant_name = gc + '_d' if debug_build else gc
+
+            for ctx in (BuildContext, CleanContext, InstallContext, UninstallContext, ListContext, StepContext, EnvContext):
+                name = ctx.__name__.replace('Context','').lower()
+                for stage_char in STAGE_CHARS:
+                    # This instantiates classes, all with the same name 'tmp'.
+                    class tmp(ctx):
+                        variant = variant_name
+                        cmd = name + '_' + stage_char + variant_name
+                        stage = stage_char
+
+            # NOTE: these are kinda bitrotten, but left here for now as a reference
+            class tmp(BuildContext):
+                variant = variant_name
+                cmd = 'rebuild_c' + variant
+                stage = 'rebuild'
+            class tmp(BuildContext):
+                variant = variant_name
+                cmd = 'dangerzone_c' + variant
+                stage = 'dangerzone'
+
+#def buildall(ctx):
+#    import waflib.Options
+#    for s in STAGE_CHARS:
+#        for gc in GCS_NAMES:
+#            for debug_char in DEBUG_CHARS:
+#                var = 'build_'+s+x+'_'+debug_char
+#                waflib.Options.commands.insert(0, var)
+
+#
+#
+# Tasks
+#
+#
+class dsymutil(clasp_task):
     color = 'BLUE';
     def run(self):
         cmd = 'dsymutil %s' % self.inputs[0]
-        maybe_dump_command(cmd)
         return self.exec_command(cmd)
 
-class link_fasl(Task.Task):
+class link_fasl(clasp_task):
     def run(self):
         if (self.env.LTO_FLAG):
             lto_option = self.env.LTO_FLAG
@@ -1182,24 +1204,19 @@ class link_fasl(Task.Task):
         else:
             lto_option = ""
             lto_optimize_flag = ""
+        link_options = self.bld.env['LINKFLAGS']
         if (self.env['DEST_OS'] == DARWIN_OS):
-            link_options = [ "-flat_namespace", "-undefined", "suppress", "-bundle" ]
+            link_options = link_options + [ "-flat_namespace", "-undefined", "suppress", "-bundle" ]
         else:
-            link_options = [ "-fuse-ld=gold", "-shared" ]
+            link_options = link_options + [ "-shared" ]
         cmd = [self.env.CXX[0]] + \
               list(map((lambda x:x.abspath()),self.inputs)) + \
               [ lto_option, lto_optimize_flag ] + \
               link_options + \
               [ "-o", self.outputs[0].abspath() ]
-        maybe_dump_command(cmd, 'link_fasl')
         return self.exec_command(cmd)
-    def exec_command(self, cmd, **kw):
-        kw['stdout'] = sys.stdout
-        return super(link_fasl, self).exec_command(cmd, **kw)
-    def keyword(self):
-        return 'Link fasl using... '
 
-class link_executable(Task.Task):
+class link_executable(clasp_task):
     def run(self):
         if (self.env.LTO_FLAG):
             lto_option_list = [self.env.LTO_FLAG,"-O2"]
@@ -1210,215 +1227,121 @@ class link_executable(Task.Task):
         else:
             lto_option_list = []
             lto_object_path_lto = []
+        link_options = []
         if (self.env['DEST_OS'] == DARWIN_OS ):
-            link_options = [ "-flto=thin", "-v"]
-        else:
-            link_options = [ "-fuse-ld=gold", "-v" ]
+            link_options = link_options + [ "-flto=thin", "-v", '-Wl,-stack_size,0x1000000']
         cmd = [ self.env.CXX[0] ] + \
               list(map((lambda x:x.abspath()),self.inputs)) + \
               self.env['LINKFLAGS'] + \
               self.env['LDFLAGS']  + \
+              [ '-L%s' % i for i in self.env['LIBPATH']] + \
+              [ '-L%s' % i for i in self.env['STLIBPATH']] + \
               libraries_as_link_flags(self.env.STLIB_ST,self.env.STLIB) + \
               libraries_as_link_flags(self.env.LIB_ST,self.env.LIB) + \
               lto_option_list + \
               link_options + \
               lto_object_path_lto + \
               [ "-o", self.outputs[0].abspath()]
-        maybe_dump_command(cmd, 'link_executable')
         return self.exec_command(cmd)
-    def exec_command(self, cmd, **kw):
-        kw['stdout'] = sys.stdout
-        return super(link_executable, self).exec_command(cmd, **kw)
-    def keyword(self):
-        return 'Link executable using... '
 
-#@TaskGen.feature('dsymutil')
-#@TaskGen.after('apply_link')
-#def add_dsymutil_task(self):
-#    try:
-#        link_task = self.link_task
-#    except AttributeError:
-#        return
-#    self.create_task('dsymutil',link_task.outputs[0])
-
-class run_aclasp(Task.Task):
+class run_aclasp(clasp_task):
     def run(self):
-        log.info("In run_aclasp %s -> %s", self.inputs[0], self.outputs[0])
-        cmd = [ self.inputs[0].abspath() ]
-        if (self.bld.options.DEBUG_WHILE_BUILDING):
-            cmd = cmd + [ '--feature', 'exit-backtrace',
-                          '--feature', 'pause-pid' ]
-        cmd = cmd + [
-                "--ignore-image",
-                "--feature", "no-implicit-compilation",
-                "--feature", "jit-log-symbols",
-                "--feature", "clasp-min",
-#                "--feature", "debug-run-clang",
-                "--eval", '(load "sys:kernel;clasp-builder.lsp")',
-                "--eval", "(load-aclasp)",
-                "--"] +  self.bld.clasp_aclasp
-        link_executable(cmd, 'run_aclasp')
+        log.debug("In run_aclasp %s -> %s", self.inputs[0], self.outputs[0])
+        cmd = self.clasp_command_line(self.inputs[0].abspath(),
+                                      image = False,
+                                      features = ["no-implicit-compilation",
+                                                  "jit-log-symbols",
+                                                  "clasp-min"],
+                                      forms = ['(load "sys:kernel;clasp-builder.lsp")',
+                                               '(load-aclasp)'],
+                                      *self.bld.clasp_aclasp)
         return self.exec_command(cmd)
-    def exec_command(self, cmd, **kw):
-        kw['stdout'] = sys.stdout
-        return super(run_aclasp, self).exec_command(cmd, **kw)
-    def keyword(self):
-        return 'Run aclasp using... '
 
-class compile_aclasp(Task.Task):
-    def __str__(self):
-        return "compile_aclasp"
+class compile_aclasp(clasp_task):
     def run(self):
-        log.info("In compile_aclasp %s -> %s", self.inputs[0], self.outputs[0])
-        cmd = [ self.inputs[0].abspath()]
-        if (self.bld.options.DEBUG_WHILE_BUILDING):
-            cmd = cmd + [ '--feature', 'exit-backtrace',
-                          '--feature', 'pause-pid' ]
-        cmd = cmd + [ "--norc",
-                      "--ignore-image",
-                      "--feature", "clasp-min",
-#                      "--feature", "jit-log-symbols",
-#                      "--feature", "debug-run-clang",
-                      "--eval", '(load "sys:kernel;clasp-builder.lsp")' ]
-#                      "--eval", '(setq cmp:*compile-file-debug-dump-module* t)',
-#                      "--eval", '(setq cmp:*compile-debug-dump-module* t)'
-        cmd = cmd + ["--eval", "(core:compile-aclasp :output-file #P\"%s\")" % self.outputs[0],
-                     "--eval", "(core:quit)" ]
-        cmd = cmd + [ "--" ] + self.bld.clasp_aclasp
-        maybe_dump_command(cmd, 'compile_aclasp')
+        log.debug("In compile_aclasp %s -> %s", self.inputs[0], self.outputs[0])
+        cmd = self.clasp_command_line(self.inputs[0].abspath(),
+                                      image = False,
+                                      features = ["clasp-min"],
+                                      forms = ['(load "sys:kernel;clasp-builder.lsp")',
+#                                               '(load-aclasp)',
+                                               '(setq core::*number-of-jobs* %d)' % self.bld.jobs,
+                                               '(core:compile-aclasp :output-file #P"%s")' % self.outputs[0],
+                                               '(core:quit)'],
+                                      *self.bld.clasp_aclasp)
         return self.exec_command(cmd)
-    def exec_command(self, cmd, **kw):
-        kw['stdout'] = sys.stdout
-        return super(compile_aclasp, self).exec_command(cmd, **kw)
-    def keyword(self):
-        return 'Compile aclasp using... '
 
-#
-# Use the aclasp fasl file
-class compile_bclasp(Task.Task):
-    def __str__(self):
-        return "compile_bclasp"
+class compile_bclasp(clasp_task):
     def run(self):
-        log.info("In compile_bclasp %s %s -> %s", self.inputs[0], self.inputs[1], self.outputs[0])
-        cmd = [self.inputs[0].abspath()]
-        if (self.bld.options.DEBUG_WHILE_BUILDING):
-            cmd = cmd + [ '--feature', 'exit-backtrace',
-                          '--feature', 'pause-pid' ]
-        cmd = cmd + [ "--norc",
-                      "--image", self.inputs[1].abspath(),
-#                      "--feature", "debug-run-clang",
-                      "--feature", "jit-log-symbols",
-                      "--eval", '(load "sys:kernel;clasp-builder.lsp")' ]
-        cmd = cmd + ["--eval", "(core:compile-bclasp :output-file #P\"%s\")" % self.outputs[0] ,
-                     "--eval", "(core:quit)" ]
-        cmd = cmd + [ "--" ] + self.bld.clasp_cclasp    # was self.bld.clasp_bclasp
-        maybe_dump_command(cmd, 'compile_bclasp')
+        log.debug("In compile_bclasp %s %s -> %s", self.inputs[0], self.inputs[1], self.outputs[0])
+        cmd = self.clasp_command_line(self.inputs[0].abspath(),
+                                      image = self.inputs[1].abspath(),
+                                      features = [],
+                                      forms = ['(load "sys:kernel;clasp-builder.lsp")',
+                                               '(setq core::*number-of-jobs* %d)' % self.bld.jobs,
+                                               '(core:compile-bclasp :output-file #P"%s")' % self.outputs[0],
+                                               '(core:quit)'],
+                                      *self.bld.clasp_bclasp)
+
         return self.exec_command(cmd)
-    def exec_command(self, cmd, **kw):
-        kw['stdout'] = sys.stdout
-        return super(compile_bclasp, self).exec_command(cmd, **kw)
-    def keyword(self):
-        return 'Compile bclasp using... '
 
-class compile_cclasp(Task.Task):
-    def __str__(self):
-        return "compile_cclasp"
+class compile_cclasp(clasp_task):
     def run(self):
-        log.info("In compile_cclasp %s %s -> %s", self.inputs[0].abspath(), self.inputs[1].abspath(), self.outputs[0].abspath())
-        cmd = [self.inputs[0].abspath()]
-        if (self.bld.options.DEBUG_WHILE_BUILDING):
-            cmd = cmd + [ '--feature', 'exit-backtrace',
-                          '--feature', 'pause-pid' ]
-        cmd = cmd + [ "--norc",
-                      "--image", self.inputs[1].abspath(),
-#                      "--feature", "debug-run-clang",
-                      "--feature", "jit-log-symbols",
-                      "--eval", "(load \"sys:kernel;clasp-builder.lsp\")" ]
+        log.debug("In compile_cclasp %s %s -> %s", self.inputs[0].abspath(), self.inputs[1].abspath(), self.outputs[0].abspath())
+        forms = ['(load \"sys:kernel;clasp-builder.lsp\")',
+                 '(setq core::*number-of-jobs* %d)' % self.bld.jobs]
         if (self.bld.options.LOAD_CCLASP):
-            cmd = cmd + [ "--eval", "(load-cclasp)" ]
+            forms = forms + ['(load-cclasp)']
         else:
-            cmd = cmd + ["--eval", "(core:compile-cclasp :output-file #P\"%s\")" % self.outputs[0],
-                         "--eval", "(core:quit)" ]
-        cmd = cmd + [ "--" ] + self.bld.clasp_cclasp
-        maybe_dump_command(cmd, 'compile_cclasp')
+            forms = forms + ['(core:compile-cclasp :output-file #P"%s")' % self.outputs[0],
+                             '(core:quit)']
+        cmd = self.clasp_command_line(self.inputs[0].abspath(),
+                                      image = self.inputs[1].abspath(),
+                                      features = [],
+                                      forms = forms,
+                                      *self.bld.clasp_cclasp)
         return self.exec_command(cmd)
-    def exec_command(self, cmd, **kw):
-        kw['stdout'] = sys.stdout
-        return super(compile_cclasp, self).exec_command(cmd, **kw)
-    def keyword(self):
-        return 'Compile cclasp using... '
 
-class recompile_cclasp(Task.Task):
+class recompile_cclasp(clasp_task):
     def run(self):
-        log.info("In recompile_cclasp -> %s", self.outputs[0].abspath())
         env = self.env
         other_clasp = env.CLASP or "clasp"
+        log.debug("In recompile_cclasp %s -> %s", other_clasp, self.outputs[0].abspath())
         if not os.path.isfile(other_clasp):
             raise Exception("To use the recompile targets you need to provide a working clasp executable. See wscript.config and/or set the CLASP env variable.")
-        cmd = [ other_clasp ]
-        cmd = cmd + [
-#            "--feature", "debug-run-clang",
-                      "--feature", "jit-log-symbols",
-                      "--feature", "ignore-extensions",
-                      "--resource-dir", "%s/%s/%s" % (self.bld.path.abspath(),out,self.bld.variant_obj.variant_dir()),
-                      "--eval", '(load "sys:kernel;clasp-builder.lsp")',
-                      "--eval", "(core:recompile-cclasp :output-file #P\"%s\")" % self.outputs[0],
-                      "--eval", "(core:quit)",
-                      "--" ] + self.bld.clasp_cclasp_no_wrappers
-        maybe_dump_command(cmd, 'recompile_clasp')
+        cmd = self.clasp_command_line(other_clasp,
+                                      features = ['ignore-extensions'],
+                                      resource_dir = os.path.join(self.bld.path.abspath(), out, self.bld.variant_obj.variant_dir()),
+                                      forms = ['(load "sys:kernel;clasp-builder.lsp")',
+                                               '(setq core::*number-of-jobs* %d)' % self.bld.jobs,
+                                               '(core:recompile-cclasp :output-file #P"%s")' % self.outputs[0].abspath(),
+                                               '(core:quit)'],
+                                      *self.bld.clasp_cclasp_no_wrappers)
         return self.exec_command(cmd)
-    def exec_command(self, cmd, **kw):
-        kw['stdout'] = sys.stdout
-        return super(recompile_cclasp, self).exec_command(cmd, **kw)
-    def keyword(self):
-        return 'Recompile cclasp using... '
 
-class compile_addons(Task.Task):
+class compile_addons(clasp_task):
     def run(self):
-        log.info("In compile_addons %s -> %s", self.inputs[0].abspath(), self.outputs[0].abspath())
-        cmd = [self.inputs[0].abspath()]
-        if (self.bld.options.DEBUG_WHILE_BUILDING):
-            cmd = cmd + [ '--feature', 'exit-backtrace',
-                          '--feature', 'pause-pid' ]
-        cmd = cmd + [ "--norc",
-                      "--feature", "ignore-extensions",
-                      "--feature", "jit-log-symbols",
-#                      "--feature", "debug-run-clang",
-                      "--eval", '(load "sys:kernel;clasp-builder.lsp")'
-                      "--eval", "(core:compile-addons)",
-                      "--eval", "(core:link-addons)",
-                      "--eval", "(core:quit)" ]
-        maybe_dump_command(cmd, 'compile_addons')
+        log.debug("In compile_addons %s -> %s", self.inputs[0].abspath(), self.outputs[0].abspath())
+        cmd = self.clasp_command_line(self.inputs[0].abspath(),
+                                      features = ['ignore-extensions'],
+                                      forms = ['(load "sys:kernel;clasp-builder.lsp")',
+                                               '(core:compile-addons)',
+                                               '(core:link-addons)',
+                                               '(core:quit)'])
         return self.exec_command(cmd)
-    def exec_command(self, cmd, **kw):
-        kw['stdout'] = sys.stdout
-        return super(compile_addons, self).exec_command(cmd, **kw)
-    def keyword(self):
-        return 'Compile addons using... '
 
 # Generate bitcode for module
 # inputs = [cclasp_executable,source-code]
 # outputs = [fasl_file]
-class compile_module(Task.Task):
+class compile_module(clasp_task):
     def run(self):
-        log.info("In compile_module %s -i %s -> %s", self.inputs[0].abspath(), self.inputs[1].abspath(), self.outputs[0].abspath())
-        cmd = [self.inputs[0].abspath(), "-i", self.inputs[1].abspath() ]
-        if (self.bld.options.DEBUG_WHILE_BUILDING):
-            cmd = cmd + [ '--feature', 'exit-backtrace',
-                          '--feature', 'pause-pid' ]
-        cmd = cmd + [ "--norc",
-                      "--feature", "ignore-extensions",
-                      "--feature", "jit-log-symbols",
-#                      "--feature", "debug-run-clang",
-                      "--eval", "(compile-file #P\"%s\" :output-file #P\"%s\" :output-type :fasl)" % (self.inputs[2], self.outputs[0]),
-                      "--eval", "(core:quit)" ]
-        maybe_dump_command(cmd, 'recompile_module')
+        log.debug("In compile_module %s --image %s -> %s", self.inputs[0].abspath(), self.inputs[1].abspath(), self.outputs[0].abspath())
+        cmd = self.clasp_command_line(self.inputs[0].abspath(),
+                                      image = self.inputs[1].abspath(),
+                                      features = ['ignore-extensions'],
+                                      forms = ['(compile-file #P"%s" :output-file #P"%s" :output-type :fasl)' % (self.inputs[2].abspath(), self.outputs[0].abspath()),
+                                               '(core:quit)'])
         return self.exec_command(cmd)
-    def exec_command(self, cmd, **kw):
-        kw['stdout'] = sys.stdout
-        return super(compile_module, self).exec_command(cmd, **kw)
-    def keyword(self):
-        return 'Compile module using... '
 
 #class llvm_link(Task.Task):
 #    def run(self):
@@ -1427,11 +1350,11 @@ class compile_module(Task.Task):
 #            all_inputs.write(' %s' % x)
 #        return self.exec_command('llvm-ar a %s %s' % ( self.outputs[0], all_inputs.getvalue()) )
 
-class build_extension_headers(Task.Task):
+class generate_extension_headers(clasp_task):
     def run(self):
-        log.info("In build_extension_headers %s", self.inputs)
+        log.debug("generate_extension_headers running, inputs: %s", self.inputs)
         save = True
-        new_contents = "// Generated by wscript build_extension_headers - Do not modify!!\n"
+        new_contents = "// Generated by the wscript generate_extension_headers task - Editing it is unwise!\n"
         for x in self.inputs[1:]:
             new_contents += ("#include \"%s\"\n" % x.abspath())
         if (os.path.isfile(self.outputs[0].abspath())):
@@ -1441,62 +1364,53 @@ class build_extension_headers(Task.Task):
                 save = False
             fin.close()
         if (save):
-            log.info("Writing to %s", self.outputs[0].abspath())
+            log.debug("Writing to %s", self.outputs[0].abspath())
             fout = open(self.outputs[0].abspath(), "w")
             fout.write(new_contents)
             fout.close()
         else:
             log.debug("NOT writing to %s - it is unchanged", self.outputs[0].abspath())
 
-# class copy_bitcode(Task.Task):
-#     ext_out = ['.bc']
+# class copy_bitcode(clasp_task):
+#     ext_out = ['.bc']    # this affects the task execution order
 #     def run(self):
 #         all_inputs = StringIO()
 #         for f in self.inputs:
 #             all_inputs.write(' %s' % f.abspath())
 #         cmd = "cp %s %s" % (all_inputs.getvalue(), self.outputs[0])
-#         maybe_dump_command(cmd, 'copy_bitcode')
 #         return self.exec_command(cmd)
-#     def __str__(self):
-#         return "copy_bitcode - copy bitcode files."
 
-class link_bitcode(Task.Task):
+class link_bitcode(clasp_task):
     ext_out = ['.a']    # this affects the task execution order
+
     def run(self):
         all_inputs = StringIO()
         for f in self.inputs:
             all_inputs.write(' %s' % f.abspath())
         cmd = "" + self.env.LLVM_AR_BINARY + " ru %s %s" % (self.outputs[0], all_inputs.getvalue())
-        maybe_dump_command(cmd, 'link_bitcode')
         return self.exec_command(cmd)
-    def __str__(self):
-        return "link_bitcode - linking all object(bitcode) files."
-#        master = self.generator.bld.producer
-#        return "[%d/%d] Processing link_bitcode - all object files\n" % (master.processed-1,master.total)
 
+class build_bitcode(clasp_task):
+    ext_out = ['.sif']    # this affects the task execution order
 
-class build_bitcode(Task.Task):
-    ext_out = ['.sif']
-    shell = True
     def run(self):
         env = self.env
-        build_args = [] + env.CXX + self.colon("ARCH_ST", "ARCH") + env.CXXFLAGS + env.CPPFLAGS + \
-                     [ '-emit-llvm' ] + \
-                       self.colon("FRAMEWORKPATH_ST", "FRAMEWORKPATH") + \
-                       self.colon("CPPPATH_ST", "INCPATHS") + \
-                       self.colon("DEFINES_ST", "DEFINES") + \
-                       [ self.inputs[0].abspath() ] + \
-                       [ '-c' ] + \
-                       [ '-o', self.outputs[0].abspath() ]
-#                       [ '-Wl', '-mllvm' ] + \
-#        build_args = ' '.join(preproc_args) + " " + self.inputs[0].abspath()
-        cmd = build_args
+        cmd = [] + \
+              env.CXX + \
+              self.colon("ARCH_ST", "ARCH") + \
+              env.CXXFLAGS + env.CPPFLAGS + \
+              [ '-emit-llvm' ] + \
+              self.colon("FRAMEWORKPATH_ST", "FRAMEWORKPATH") + \
+              self.colon("CPPPATH_ST", "INCPATHS") + \
+              self.colon("DEFINES_ST", "DEFINES") + \
+              [ self.inputs[0].abspath() ] + \
+              [ '-c' ] + \
+              [ '-o', self.outputs[0].abspath() ]
         cmd.remove("-g")
-        maybe_dump_command(cmd, 'build_bitcode')
-        return self.exec_command(cmd, shell = True)
+        return self.exec_command(cmd)
 
-class scraper_task(Task.Task):
-    def build_scraper_cmd(self, extraCommands = [], scraperArgs = []):
+class scraper_task(clasp_task):
+    def scraper_command_line(self, extraCommands = [], scraperArgs = []):
         env = self.env
         bld = self.generator.bld
         scraper_home = os.path.join(env.BUILD_ROOT, "src/scraper/")
@@ -1513,18 +1427,17 @@ class scraper_task(Task.Task):
 
 class precompile_scraper(scraper_task):
     weight = 5    # Tell waf to run this early among the equal tasks because it will take long
+    before = ['expand_pump_template']
 
     def run(self):
-        cmd = self.build_scraper_cmd(["--eval", '(with-open-file (stream "%s" :direction :output :if-exists :supersede) (terpri stream))' % self.outputs[0].abspath()])
-        maybe_dump_command(cmd, 'precompile_scraper')
+        cmd = self.scraper_command_line(["--eval", '(with-open-file (stream "%s" :direction :output :if-exists :supersede) (terpri stream))' % self.outputs[0].abspath()])
         return self.exec_command(cmd)
 
-    def keyword(ctx):
-        return "Precompiling the scraper"
-
 class generate_one_sif(scraper_task):
-    ext_out = ['.sif']
-    shell = False
+    ext_out = ['.sif']    # this affects the task execution order
+    after = ['expand_pump_template']
+    waf_print_keyword = "Scraping, generate-one-sif"
+
     def run(self):
         env = self.env
         preproc_args = [] + env.CXX + ["-E", "-DSCRAPING"] + self.colon("ARCH_ST", "ARCH") + env.CXXFLAGS + env.CPPFLAGS + \
@@ -1532,61 +1445,62 @@ class generate_one_sif(scraper_task):
                        self.colon("CPPPATH_ST", "INCPATHS") + \
                        self.colon("DEFINES_ST", "DEFINES") + \
                        [self.inputs[0].abspath()]
-        cmd = self.build_scraper_cmd(["--eval", "(cscrape:generate-one-sif '(%s) #P\"%s\")" %
-                                      ((' '.join('"' + item + '"' for item in preproc_args)),
-                                       self.outputs[0].abspath())])
-        maybe_dump_command(cmd, 'generate_one_sif')
+        cmd = self.scraper_command_line(["--eval", "(cscrape:generate-one-sif '(%s) #P\"%s\")" %
+                                         ((' '.join('"' + item + '"' for item in preproc_args)),
+                                          self.outputs[0].abspath())])
         return self.exec_command(cmd)
 
-    def keyword(ctx):
-        return "Scraping, generate-one-sif"
-
 class generate_headers_from_all_sifs(scraper_task):
+    waf_print_keyword = "Scraping, generate-headers-from-all-sifs"
+
     def run(self):
         env = self.env
         bld = self.generator.bld
-        cmd = self.build_scraper_cmd(["--eval", "(cscrape:generate-headers-from-all-sifs)"],
-                                     [os.path.join(bld.path.abspath(), out, bld.variant_obj.variant_dir() + "/"),
-                                     env.BUILD_ROOT + "/"])
+        cmd = self.scraper_command_line(["--eval", "(cscrape:generate-headers-from-all-sifs)"],
+                                        [os.path.join(bld.path.abspath(), out, bld.variant_obj.variant_dir() + "/"),
+                                         env.BUILD_ROOT + "/"])
         for f in self.inputs:
             cmd.append(f.abspath())
-        maybe_dump_command(cmd, 'generate_headers_from_all_sifs')
         return self.exec_command(cmd)
 
-    def keyword(ctx):
-        return "Scraping, generate-headers-from-all-sifs"
-
-def make_pump_tasks(bld, template_dir, output_dir):
+def make_pump_task(bld, template_node, output_dir):
     pmp_suffix = '.pmp'
-    templates = bld.path.ant_glob(template_dir + "**/*" + pmp_suffix)
-    assert len(templates) > 0
-    log.debug("Building pump tasks for the following templates: %s", templates)
-    for template_node in templates:
-        template_name = template_node.name
-        assert template_name[ - len(pmp_suffix) :] == pmp_suffix
-        output_path = os.path.join("generated/", output_dir, template_name.replace(".pmp", ".h"))
-        output_node = bld.path.find_or_declare(output_path)
-        log.debug("Creating expand_pump_template: %s -> %s", template_node.abspath(), output_node.abspath())
-        assert output_node
-        task = expand_pump_template(env = bld.env)
-        task.set_inputs([template_node])
-        task.set_outputs([output_node])
-        bld.add_to_group(task)
-    log.info("Created %s pump template task for dir: %s", len(templates), template_dir)
+#    templates = bld.path.ant_glob(template_dir + "**/*" + pmp_suffix,remove=False)
+#    templates = list(bld.path.ant_glob(template_dir + "**/*" + pmp_suffix,remove=False,generator=True))
+#    templates = list(bld.path.ant_glob(template_dir + "**/*" + pmp_suffix,quiet=True,remove=False,generator=True))
+#    templates = [bld.path.find_resource(x) for x in ["src/clbind/header-templates/clbind_constructor_functoids.pmp",
+#                                                       "src/clbind/header-templates/clbind_functoids.pmp",
+#                                                       "src/clbind/header-templates/clbind_methoids.pmp",
+#                                                       "src/clbind/header-templates/clbind_static_members.pmp"] ]
+#    log.debug("Building pump tasks for the following templates: %s", templates)
+    template_name = template_node.name
+    assert template_name[ - len(pmp_suffix) :] == pmp_suffix
+    output_path = os.path.join("generated/", output_dir, template_name.replace(".pmp", ".h"))
+    output_node = bld.path.find_or_declare(output_path)
+    log.debug("Creating expand_pump_template: %s -> %s", template_node.abspath(), output_node.abspath())
+    assert output_node
+    task = expand_pump_template(env = bld.env)
+    task.set_inputs([template_node])
+    task.set_outputs([output_node])
+    bld.add_to_group(task)
+    log.info("Created %s pump template task for file: %s", task, template_node.abspath())
 
-class expand_pump_template(Task.Task):
+class expand_pump_template(clasp_task):
     ext_out  = ['.h']      # this affects the task execution order
+
     def run(self):
         assert len(self.inputs) == len(self.outputs) == 1
-        cmd = ["python2",
+        cmd = ['python',
                os.path.join(self.bld.path.abspath(), "tools-for-build/pump.py"),
                self.inputs[0].abspath(),
                self.outputs[0].abspath()]
-        maybe_dump_command(cmd, 'expand_pump_template')
         return self.exec_command(cmd)
 
-    def keyword(ctx):
-        return "Expanding .pmp template"
+#
+#
+# TaskGen's
+#
+#
 
 @TaskGen.feature('cxx')
 @TaskGen.after('process_source')
@@ -1601,7 +1515,6 @@ def scrape_task_generator(self):
     if (not self.bld.options.RUN_THE_SCRAPER):
         log.warn("Skipping scrape jobs as requested on the command line")
         return
-    compiled_tasks = self.compiled_tasks
     all_sif_files = []
     all_o_files = []
     intrinsics_o = None
@@ -1630,18 +1543,17 @@ def scrape_task_generator(self):
         if ( task.__class__.__name__ == 'c' ):
             for node in task.outputs:
                 all_o_files.append(node)
-    generated_headers = [ 'generated/c-wrappers.h',
-                          'generated/cl-wrappers.lisp',
-                          'generated/enum_inc.h',
-                          'generated/initClassesAndMethods_inc.h',
-                          'generated/initFunctions_inc.h',
-                          'generated/initializers_inc.h',
-                          'generated/sourceInfo_inc.h',
-                          'generated/symbols_scraped_inc.h']
-    output_nodes = []
-    for x in generated_headers:
-        output_nodes.append(self.path.find_or_declare(x))
+    output_nodes = list(map(lambda el: self.path.find_or_declare('generated/' + el),
+                            [ 'c-wrappers.h',
+                              'cl-wrappers.lisp',
+                              'enum_inc.h',
+                              'initClassesAndMethods_inc.h',
+                              'initFunctions_inc.h',
+                              'initializers_inc.h',
+                              'sourceInfo_inc.h',
+                              'symbols_scraped_inc.h']))
     self.create_task('generate_headers_from_all_sifs', all_sif_files, output_nodes)
+    # TODO FIXME this includes cl-wrappers.lisp
     install('lib/clasp/', output_nodes)  # includes
     variant = self.bld.variant_obj
 # intrinsics
@@ -1687,38 +1599,11 @@ def scrape_task_generator(self):
                      cxx_all_bitcode_node)
     install('lib/clasp/', cxx_all_bitcode_node)
 
-def init(ctx):
-    from waflib.Build import BuildContext, CleanContext, InstallContext, UninstallContext, ListContext, StepContext, EnvContext
-
-    log.pprint('BLUE', "init()")
-
-    for gc in GCS_NAMES:
-        for debug_char in DEBUG_CHARS:
-            variant_name = gc if not debug_char else gc + '_' + debug_char
-
-            for ctx in (BuildContext, CleanContext, InstallContext, UninstallContext, ListContext, StepContext, EnvContext):
-                name = ctx.__name__.replace('Context','').lower()
-                for stage_char in STAGE_CHARS:
-                    # This instantiates classes, all with the same name 'tmp'.
-                    class tmp(ctx):
-                        variant = variant_name
-                        cmd = name + '_' + stage_char + variant_name
-                        stage = stage_char
-
-            # NOTE: these are kinda bitrotten, but left here for now as a reference
-            class tmp(BuildContext):
-                variant = variant_name
-                cmd = 'rebuild_c' + variant
-                stage = 'rebuild'
-            class tmp(BuildContext):
-                variant = variant_name
-                cmd = 'dangerzone_c' + variant
-                stage = 'dangerzone'
-
-#def buildall(ctx):
-#    import waflib.Options
-#    for s in STAGE_CHARS:
-#        for gc in GCS_NAMES:
-#            for debug_char in DEBUG_CHARS:
-#                var = 'build_'+s+x+'_'+debug_char
-#                waflib.Options.commands.insert(0, var)
+#@TaskGen.feature('dsymutil')
+#@TaskGen.after('apply_link')
+#def add_dsymutil_task(self):
+#    try:
+#        link_task = self.link_task
+#    except AttributeError:
+#        return
+#    self.create_task('dsymutil',link_task.outputs[0])

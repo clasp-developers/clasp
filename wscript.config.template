@@ -17,6 +17,20 @@ LLVM_CONFIG_BINARY = '/path/to/llvm-config-4.0'
 LLVM5_ORC_NOTIFIER_PATCH = False
 
 
+# Use Parallel building
+#  COMPILE-FILE during Clasp building will run in fork'd children
+#  You can specify the number of children that can run in parallel using -j #
+#
+#  This option requires a special build of the Boehm garbage collector
+#  built with the option --enable-handle-fork
+#
+USE_PARALLEL_BUILD = False
+
+# Use lld linker
+#  The llvm linker is supposed to be faster than ld
+#  Currently this option only works on linux
+USE_LLD = False
+
 # Where to install clasp. Defaults to '/usr/local/'.
 #PREFIX = '/usr/local/'
 

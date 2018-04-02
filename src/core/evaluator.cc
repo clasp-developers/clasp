@@ -2140,7 +2140,6 @@ DONT_OPTIMIZE_WHEN_DEBUG_RELEASE T_mv evaluate(T_sp exp, T_sp environment) {
     try {
       return funcall_consume_valist_<core::Function_O>(headFunc.tagged_(), valist);
     } catch (core::ExitProgramException& ee) {
-      printf("%s:%d Caught ExitProgramException\n", __FILE__, __LINE__ );
       throw(ee);
     }
   }

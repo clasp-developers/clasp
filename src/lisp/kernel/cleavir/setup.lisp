@@ -6,6 +6,12 @@
 
 (defvar *current-function-entry-basic-block*)
 
+(defvar *debug-cleavir* nil
+  "controls if graphs are generated as forms are being compiled.")
+(defvar *debug-cleavir-literals* nil
+  "controls if cleavir debugging is carried out on literal compilation. 
+when this is t a lot of graphs will be generated.")
+
 (defvar *form* nil)
 (defvar *ast* nil)
 (defvar *hir* nil)
