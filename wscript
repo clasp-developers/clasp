@@ -24,7 +24,7 @@ sys.path.append('tools-for-build/')
 sys.dont_write_bytecode = True   # avoid littering the dirs with .pyc files
 
 from build_file_lists import collect_clasp_c_source_files, collect_aclasp_lisp_files, collect_bclasp_lisp_files, collect_cclasp_lisp_files
-from clasp_build_utils import log, clasp_task, collect_files, collect_waf_nodes
+from wscript_utils import log, clasp_task, collect_files, collect_waf_nodes
 
 # Let's not depend on the locale setting of the host, set it explicitly.
 os.environ['LC_ALL'] = os.environ['LANG'] = "C"
