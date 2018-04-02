@@ -1,7 +1,9 @@
 #-*- mode: python; coding: utf-8-unix -*-
 #
-# In your emacs you may want to: (add-to-list 'auto-mode-alist '("wscript\\'" . python-mode))
+# NOTE: please observe the following best practices:
 #
+# - do *not* use waf's ant_glob (you can shoot yourself in the feet with it)
+# - in emacs, you may want to: (add-to-list 'auto-mode-alist '("wscript\\'" . python-mode))
 
 import os, sys, subprocess, logging
 import time, datetime
@@ -22,7 +24,7 @@ sys.path.append('tools-for-build/')
 sys.dont_write_bytecode = True   # avoid littering the dirs with .pyc files
 
 from build_file_lists import collect_clasp_c_source_files, collect_aclasp_lisp_files, collect_bclasp_lisp_files, collect_cclasp_lisp_files
-from clasp_build_utils import log, clasp_task
+from clasp_build_utils import log, clasp_task, collect_files, collect_waf_nodes
 
 # Let's not depend on the locale setting of the host, set it explicitly.
 os.environ['LC_ALL'] = os.environ['LANG'] = "C"
@@ -892,9 +894,8 @@ def build(bld):
     #
     clasp_c_source_files = bld.clasp_source_files + bld.extensions_source_files
     install('lib/clasp/', clasp_c_source_files)
-    install('lib/clasp/', bld.path.find_node('include/clasp/').ant_glob('**/*.h'))
-    install('lib/clasp/src/lisp/', bld.path.find_node('src/lisp/').ant_glob('**/*.l*'))
-    install('lib/clasp/src/lisp/', bld.path.find_node('src/lisp/').ant_glob('**/*.asd'))
+    install('lib/clasp/', collect_waf_nodes(bld, 'include/clasp/', suffix = ".h"))
+    install('lib/clasp/src/lisp/', collect_waf_nodes(bld, 'src/lisp/', suffix = [".lsp", ".lisp", ".asd"]))
 
     bld.env = bld.all_envs[bld.variant]
     include_dirs = ['.']
@@ -910,14 +911,8 @@ def build(bld):
         task.set_outputs([bld.path.find_or_declare("scraper-precompile-done")])
         bld.add_to_group(task)
 
-    make_pump_task(bld, bld.path.find_resource("src/core/header-templates/applyToFrame.pmp"), "clasp/core/")
-    make_pump_task(bld, bld.path.find_resource("src/core/header-templates/external_wrappers_indirect_methoids.pmp"), "clasp/core/")
-    make_pump_task(bld, bld.path.find_resource("src/core/header-templates/wrappers_functoids.pmp"), "clasp/core/")
-    make_pump_task(bld, bld.path.find_resource("src/core/header-templates/wrappers_methoids.pmp"), "clasp/core/")
-    make_pump_task(bld, bld.path.find_resource("src/clbind/header-templates/clbind_constructor_functoids.pmp"), "clasp/clbind/")
-    make_pump_task(bld, bld.path.find_resource("src/clbind/header-templates/clbind_functoids.pmp"), "clasp/clbind/")
-    make_pump_task(bld, bld.path.find_resource("src/clbind/header-templates/clbind_methoids.pmp"), "clasp/clbind/")
-    make_pump_task(bld, bld.path.find_resource("src/clbind/header-templates/clbind_static_members.pmp"), "clasp/clbind/")
+    make_pump_tasks(bld, 'src/core/header-templates/', 'clasp/core/')
+    make_pump_tasks(bld, 'src/clbind/header-templates/', 'clasp/clbind/')
 
     task = generate_extension_headers(env=bld.env)
     task.set_inputs(bld.extensions_gcinterface_include_files)
@@ -1146,7 +1141,6 @@ def build(bld):
             os.symlink(bld.cclasp_executable.abspath(), clasp_symlink_node.abspath())
         else:
             os.symlink(bld.iclasp_executable.abspath(), clasp_symlink_node.abspath())
-    log.pprint('BLUE', 'bld.node_sigs[bld.iclasp_executable] -> %s' % bld.node_sigs.get(bld.iclasp_executable))
     log.pprint('BLUE', 'build() has finished')
 
 def init(ctx):
@@ -1463,27 +1457,22 @@ class generate_headers_from_all_sifs(scraper_task):
             cmd.append(f.abspath())
         return self.exec_command(cmd)
 
-def make_pump_task(bld, template_node, output_dir):
-    pmp_suffix = '.pmp'
-#    templates = bld.path.ant_glob(template_dir + "**/*" + pmp_suffix,remove=False)
-#    templates = list(bld.path.ant_glob(template_dir + "**/*" + pmp_suffix,remove=False,generator=True))
-#    templates = list(bld.path.ant_glob(template_dir + "**/*" + pmp_suffix,quiet=True,remove=False,generator=True))
-#    templates = [bld.path.find_resource(x) for x in ["src/clbind/header-templates/clbind_constructor_functoids.pmp",
-#                                                       "src/clbind/header-templates/clbind_functoids.pmp",
-#                                                       "src/clbind/header-templates/clbind_methoids.pmp",
-#                                                       "src/clbind/header-templates/clbind_static_members.pmp"] ]
-#    log.debug("Building pump tasks for the following templates: %s", templates)
-    template_name = template_node.name
-    assert template_name[ - len(pmp_suffix) :] == pmp_suffix
-    output_path = os.path.join("generated/", output_dir, template_name.replace(".pmp", ".h"))
-    output_node = bld.path.find_or_declare(output_path)
-    log.debug("Creating expand_pump_template: %s -> %s", template_node.abspath(), output_node.abspath())
-    assert output_node
-    task = expand_pump_template(env = bld.env)
-    task.set_inputs([template_node])
-    task.set_outputs([output_node])
-    bld.add_to_group(task)
-    log.info("Created %s pump template task for file: %s", task, template_node.abspath())
+def make_pump_tasks(bld, template_dir, output_dir):
+    log.debug("Building pump tasks: %s -> %s", template_dir, output_dir)
+    templates = collect_waf_nodes(bld, template_dir, suffix = '.pmp')
+    assert len(templates) > 0
+    for template_node in templates:
+        template_name = template_node.name
+        output_path = os.path.join("generated/", output_dir, template_name.replace(".pmp", ".h"))
+        output_node = bld.path.find_or_declare(output_path)
+        log.debug("Creating expand_pump_template: %s -> %s", template_node.abspath(), output_node.abspath())
+        assert output_node
+        task = expand_pump_template(env = bld.env)
+        task.set_inputs([template_node])
+        task.set_outputs([output_node])
+        bld.add_to_group(task)
+        bld.install_files('${PREFIX}/lib/clasp/', [output_node], relative_trick = True, cwd = bld.path)
+    log.info("Created %s pump template tasks found in dir: %s", len(templates), template_dir)
 
 class expand_pump_template(clasp_task):
     ext_out  = ['.h']      # this affects the task execution order
