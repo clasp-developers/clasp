@@ -660,7 +660,7 @@ CL_DEFUN T_mv cl__rename_file(T_sp oldn, T_sp newn, T_sp if_exists) {
     if (if_exists == kw::_sym_error) {
       std::string msg = "When trying to rename ~S, ~S already exists";
       if_exists = eval::funcall(_sym_signalSimpleError,
-                                cl::_sym_fileError, /* condition */
+                                core::_sym_simpleFileError, /* condition */
                                 kw::_sym_supersede, /* continuable */
                                 /* format */
                                 SimpleBaseString_O::make(msg),
@@ -735,7 +735,7 @@ FAILURE_CLOBBER:
     T_sp c_error = clasp_strerror(errno);
     std::string msg = "Unable to rename file ~S to ~S.~%C library error: ~S";
     eval::funcall(_sym_signalSimpleError,
-                  cl::_sym_fileError,                      /* condition */
+                  core::_sym_simpleFileError,                      /* condition */
                   _Nil<T_O>(),                             /* continuable */
                   SimpleBaseString_O::make(msg),                      /* format */
                   Cons_O::createList(oldn, newn, c_error), /* format args */
@@ -773,7 +773,7 @@ CL_DEFUN T_sp cl__delete_file(T_sp file) {
         isdir ? "Cannot delete the file ~S.~%C library error: ~S" : "Cannot delete the directory ~S.~%C library error: ~S";
     T_sp c_error = clasp_strerror(errno);
     eval::funcall(_sym_signalSimpleError,
-                  cl::_sym_fileError,
+                  core::_sym_simpleFileError,
                   _lisp->_true(),                    // continuable
                   SimpleBaseString_O::make(msg),                // format
                   Cons_O::createList(file, c_error), // format args
@@ -823,7 +823,7 @@ CL_DEFUN T_sp cl__file_author(T_sp file) {
                       "~%C library error: ~S";
     T_sp c_error = clasp_strerror(errno);
     eval::funcall(_sym_signalSimpleError,
-                  cl::_sym_fileError,                /* condition */
+                  core::_sym_simpleFileError,                /* condition */
                   _lisp->_true(),                    /* continuable */
                   SimpleBaseString_O::make(msg),                /* format */
                   Cons_O::createList(file, c_error), /* format args */
@@ -1180,7 +1180,7 @@ si_get_library_pathname(void)
                 std::string msg = "Can't change the current directory to ~A."
                   "~%C library error: ~S";
 		eval::funcall(_sym_signalSimpleError,
-			      cl::_sym_fileError, /* condition */
+			      core::_sym_simpleFileError, /* condition */
 			      _lisp->_true(), /* continuable */
 			      /* format */
 			      SimpleBaseString_O::make(msg),
@@ -1276,7 +1276,7 @@ CL_DEFUN void core__chmod(T_sp file, T_sp mode) {
     std::string msg = "Unable to change mode of file ~S to value ~O"
                       "~%C library error: ~S";
     eval::funcall(_sym_signalSimpleError,
-                  cl::_sym_fileError, /* condition */
+                  core::_sym_simpleFileError, /* condition */
                   _lisp->_true(),     /* continuable */
                                       /* format */
                   SimpleBaseString_O::make(msg),
@@ -1522,7 +1522,7 @@ CL_DEFUN T_sp core__mkdir(T_sp directory, T_sp mode) {
     std::string msg = "Could not create directory ~S"
                       "~%C library error: ~S";
     eval::funcall(_sym_signalSimpleError,
-                  cl::_sym_fileError, /* condition */
+                  core::_sym_simpleFileError, /* condition */
                   _lisp->_true(),     /* continuable */
                   /* format */
                   SimpleBaseString_O::make(msg),

@@ -81,9 +81,9 @@ is used."
   (if conditions
       (let ((aux (set-difference conditions '(:external :internal :inherited))))
 	(when aux
-	  (signal-simple-error 'program-error nil "Clauses ~{~S~} are not allowed."
+	  (signal-simple-error 'simple-program-error nil "Clauses ~{~S~} are not allowed."
 			       (list aux))))
-      (signal-simple-error 'program-error
+      (signal-simple-error 'simple-program-error
 			   nil
 			   "Must supply at least one of :inherited, :external or :internal"
 			   nil))

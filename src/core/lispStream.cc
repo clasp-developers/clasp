@@ -5342,7 +5342,7 @@ file_listen(T_sp stream, int fileno) {
   FD_SET(fileno, &fds);
   retv = select(fileno + 1, &fds, NULL, NULL, &tv);
   if (UNLIKELY(retv < 0))
-    file_libc_error(cl::_sym_streamError, stream, "Error while listening to stream.", 0);
+    file_libc_error(core::_sym_simpleStreamError, stream, "Error while listening to stream.", 0);
   else if (retv > 0)
     return CLASP_LISTEN_AVAILABLE;
   else
@@ -5429,17 +5429,17 @@ flisten(T_sp stream, FILE *fp) {
     clasp_off_t old_pos = clasp_ftello(fp), end_pos;
     unlikely_if(old_pos < 0) {
       //                printf("%s:%d ftello error old_pos = %ld error = %s\n", __FILE__, __LINE__, old_pos, strerror(errno));
-      file_libc_error(cl::_sym_fileError, stream,
+      file_libc_error(core::_sym_simpleFileError, stream,
                       "Unable to check file position in SEEK_END", 0);
     }
     unlikely_if(clasp_fseeko(fp, 0, SEEK_END) != 0) {
       //                printf("%s:%d Seek error fp=%p error = %s\n", __FILE__, __LINE__, fp, strerror(errno));
-      file_libc_error(cl::_sym_fileError, stream,
+      file_libc_error(core::_sym_simpleFileError, stream,
                       "Unable to check file position in SEEK_END", 0);
     }
     end_pos = clasp_ftello(fp);
     unlikely_if(clasp_fseeko(fp, old_pos, SEEK_SET) != 0)
-        file_libc_error(cl::_sym_fileError, stream,
+        file_libc_error(core::_sym_simpleFileError, stream,
                         "Unable to check file position in SEEK_SET", 0);
     return (end_pos > old_pos ? CLASP_LISTEN_AVAILABLE : CLASP_LISTEN_EOF);
   }
@@ -5581,7 +5581,7 @@ not_a_binary_stream(T_sp s) {
 
 static void
 cannot_close(T_sp stream) {
-  file_libc_error(cl::_sym_fileError, stream, "Stream cannot be closed", 0);
+  file_libc_error(core::_sym_simpleFileError, stream, "Stream cannot be closed", 0);
 }
 
 static void
@@ -5631,7 +5631,7 @@ restartable_io_error(T_sp strm, const char *s) {
     return 1;
   } else {
     String_sp temp = SimpleBaseString_O::make(std::string(s, strlen(s)));
-    file_libc_error(cl::_sym_streamError, strm,
+    file_libc_error(core::_sym_simpleStreamError, strm,
                     "C operation (~A) signaled an error.",
                     1, temp.raw_());
     return 0;
@@ -5644,7 +5644,7 @@ io_error(T_sp strm) {
   /* clasp_disable_interrupts(); ** done by caller */
   maybe_clearerr(strm);
   clasp_enable_interrupts_env(the_env);
-  file_libc_error(cl::_sym_streamError, strm,
+  file_libc_error(core::_sym_simpleStreamError, strm,
                   "Read or write operation signaled an error", 0);
 }
 
