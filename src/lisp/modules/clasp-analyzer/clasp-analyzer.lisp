@@ -1,6 +1,7 @@
 (provide :clasp-analyzer)
 
 (defpackage #:clasp-analyzer
+  (:shadow #:function-info)
   (:use #:common-lisp #:core #:ast-tooling #:clang-ast)
   (:shadow #:dump #:get-string #:size #:type)
   (:export
@@ -2243,7 +2244,7 @@ so that they don't have to be constantly recalculated"
     (format stream "    ~a(~a->~{~a~^.~});~%" fixer-macro ptr-name instance-vars)))
 
 
-(defconstant +ptr-name+ "obj_gc_safe"
+(defvar +ptr-name+ "obj_gc_safe"
   "This variable is used to temporarily hold a pointer to a Wrapper<...> object - we want the GC to ignore it")
 
 (defstruct destination
