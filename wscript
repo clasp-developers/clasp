@@ -90,7 +90,9 @@ def grovel(bld):
     bld.recurse("extensions")
 
 def update_dependencies(cfg):
-    def fetch_git_revision(path, url, revision="", label="master"):
+    # Specifying only label = "some-tag" will check out that tag into a "detached head", but
+    # specifying both label = "master" and revision = "some-tag" will stay on master and reset to that revision.
+    def fetch_git_revision(path, url, revision = "", label = "master"):
         ret = os.system("./tools-for-build/fetch-git-revision.sh '%s' '%s' '%s' '%s'" % (path, url, revision, label))
         if ( ret != 0 ):
             raise Exception("Failed to fetch git url %s" % url)
@@ -103,11 +105,11 @@ def update_dependencies(cfg):
                        "https://github.com/clasp-developers/Acclimation.git",
                        "5e0add45b7c6140e4ab07a2cbfd28964e36e6e48")
     fetch_git_revision("src/mps",
-                       "https://github.com/clasp-developers/mps.git",
-                       "60ee147060759f2f17b483fc32beedf11ad1ef5c")
+                       "https://github.com/Ravenbrook/mps.git",
+                       label = "master", revision = "release-1.115.0")
     fetch_git_revision("src/lisp/modules/asdf",
-                       "https://github.com/clasp-developers/asdf.git",
-                       "81e4f08d9c1dc95a3446c1782506342a59f70c34")
+                       "https://gitlab.common-lisp.net/asdf/asdf.git",
+                       label = "master", revision = "3.3.1.2")
     os.system("(cd src/lisp/modules/asdf; make --quiet)")
 
 # run this from a completely cold system with:
