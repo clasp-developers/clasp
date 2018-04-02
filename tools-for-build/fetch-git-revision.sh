@@ -50,8 +50,8 @@ fi
 
 cd "$path" || exit $?
 
-if ([ -n "$revision" ] && ! (git cat-file -e "$revision")) ||
-   ([ -n "$label" ]    && ! (git cat-file -e "$label")); then
+if ([ -n "$revision" ] && ! (git cat-file -e "$revision" 2> /dev/null)) ||
+   ([ -n "$label" ]    && ! (git cat-file -e "$label" 2> /dev/null)); then
     git fetch origin || exit $?
 fi
 
