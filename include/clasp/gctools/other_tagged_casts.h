@@ -3,13 +3,8 @@
 
 namespace core {
   class Closure_O;
-  class InstanceClosure_O;
   class SingleDispatchGenericFunctionClosure_O;
   class CompiledClosure_O;
-};
-
-namespace gctools {
-
 };
 
 #endif
