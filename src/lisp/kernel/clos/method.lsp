@@ -119,6 +119,8 @@ in the generic function lambda-list to the generic function lambda-list"
                (maybe-augment-generic-function-lambda-list ',name ',lambda-list))))))))
 
 (defun specializers-expression (specializers)
+  ;; Direct use of quasiquote here is unfortunate.
+  ;; Double backquote would also be terrible, though.
   (list 'si::quasiquote
 	(loop for spec in specializers
 	   collect (if (atom spec)
