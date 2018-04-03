@@ -247,14 +247,6 @@ void BuiltinClosure_O::setf_lambda_list(List_sp lambda_list) {
   // Do nothing
 }
 
-#if 0
-LCC_RETURN BuiltinClosure_O::LISP_CALLING_CONVENTION() {
-  INCREMENT_FUNCTION_CALL_COUNTER(this);
-  IMPLEMENT_MEF("Handle call to BuiltinClosure");
-};
-#endif
-
-
 InterpretedClosure_O::InterpretedClosure_O(T_sp fn, Symbol_sp k, LambdaListHandler_sp llh, List_sp dec, T_sp doc, T_sp e, List_sp c, SOURCE_INFO)
   : Base(interpretedClosureEntryPoint,fn, k, e, SOURCE_INFO_PASS), _lambdaListHandler(llh), _declares(dec), _docstring(doc), _code(c) {
 }
@@ -311,28 +303,5 @@ void CompiledClosure_O::setf_lambda_list(core::List_sp lambda_list) {
 
 void CompiledDispatchFunction_O::setf_lambda_list(core::List_sp lambda_list) 
 { SIMPLE_ERROR(BF("You cannot set the lambda-list of a compiled-dispatch-function")); };  
-
-#if 0
-LCC_RETURN InstanceClosure_O::LISP_CALLING_CONVENTION() {
-  INCREMENT_FUNCTION_CALL_COUNTER(this);
-// Copy the arguments passed in registers into the multiple_values array and those
-// will be processed by the generic function
-#ifdef _DEBUG_BUILD
-  Vaslist saved_args(*reinterpret_cast<Vaslist *>(untag_vaslist(lcc_arglist)));
-#endif
-  VaList_sp gfargs((gc::Tagged)lcc_arglist);
-  return (this->entryPoint)(this->instance, gfargs);
-}
-#endif
-
-LCC_RETURN MacroClosure_O::entry_point(LCC_ARGS_ELLIPSIS) {
-  MacroClosure_O* closure = gctools::untag_general<MacroClosure_O*>((MacroClosure_O*)lcc_closure);
-  INCREMENT_FUNCTION_CALL_COUNTER(closure);
-    List_sp form = gc::As<Cons_sp>(LCC_ARG0());
-    T_sp env = gc::As<T_sp>(LCC_ARG1());
-//    InvocationHistoryFrame _frame(lcc_vargs); // The environment could be a Non-Clasp Environment (Cleavir)
-    return ((closure->mptr)(form, env)).as_return_type();
-  };
-
 
 };
