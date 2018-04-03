@@ -271,8 +271,6 @@ CL_DECLARE();
 CL_DOCSTRING("reader_error_unmatched_close_parenthesis");
 CL_DEFUN T_mv core__reader_error_unmatched_close_parenthesis(T_sp sin, Character_sp ch) {
   SourceFileInfo_sp info = core__source_file_info(sin);
-  //Karsten Poeck, this is not a simple-error but a reader-error
-  //SIMPLE_ERROR(BF("Unmatched close parenthesis in file: %s line: %s") % info->fileName() % clasp_input_lineno(sin));
   string fn = info->fileName();
   if (fn.compare("-no-name-") == 0) {
       	READER_ERROR(SimpleBaseString_O::make("Unmatched close parenthesis in stream at line: ~a column ~a."),
