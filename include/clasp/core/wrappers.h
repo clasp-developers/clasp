@@ -126,9 +126,6 @@ public:
 };
 
 namespace core {
-};
-
-namespace core {
 
 class Function_O;
 
@@ -138,13 +135,13 @@ class Function_O;
 //
 //
 // Wrapper for ActivationFrameMacroPtr
-   
 
+// basically like wrap_function.
 inline void defmacro(const string &packageName, const string &name, T_mv (*mp)(List_sp, T_sp env), const string &arguments, const string &declares, const string &docstring, const string &sourceFileName, int lineno) {
   _G();
   Symbol_sp symbol = lispify_intern(name, packageName);
   SourcePosInfo_sp spi = lisp_createSourcePosInfo(sourceFileName, 0, lineno);
-  BuiltinClosure_sp f = gc::GC<MacroClosure_O>::allocate(symbol, mp, SOURCE_POS_INFO_FIELDS(spi));
+  BuiltinClosure_sp f = gc::GC<VariadicFunctor<T_mv(List_sp, T_sp)>>::allocate(symbol, kw::_sym_macro, mp, SOURCE_POS_INFO_FIELDS(spi));
   lisp_defmacro(symbol, packageName, f, arguments, declares, docstring);
 }
 

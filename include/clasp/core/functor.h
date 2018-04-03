@@ -377,18 +377,6 @@ namespace core {
   public:
   CompiledFunction_O(claspFunction fptr, T_sp name) : Base(fptr, name){};
     virtual ~CompiledFunction_O(){};
-
-  public:
-#if 0
-    static CompiledFunction_sp make(Closure_sp c) {
-      GC_ALLOCATE(CompiledFunction_O, f);
-      ASSERT(c.generalp());
-      f->closure = c;
-    //            printf("%s:%d Returning CompiledFunction_sp func=%p &f=%p\n", __FILE__, __LINE__, f.px_ref(), &f);
-      return f;
-    }
-#endif
-  public:
   };
 };
 
@@ -455,27 +443,6 @@ namespace core {
     
   };
 };
-
-namespace core {
-
-class MacroClosure_O : public BuiltinClosure_O {
-    LISP_CLASS(core,CorePkg,MacroClosure_O,"MacroClosure",BuiltinClosure_O);
-private:
-  typedef T_mv (*MacroPtr)(List_sp, T_sp);
-  MacroPtr mptr;
-public:
-  virtual const char *describe() const { return "MacroClosure"; };
-  // constructor
- MacroClosure_O(Symbol_sp name, MacroPtr ptr, SOURCE_INFO) : BuiltinClosure_O(entry_point,name, kw::_sym_macro, SOURCE_INFO_PASS), mptr(ptr) {}
-  size_t templatedSizeof() const { return sizeof(MacroClosure_O); };
-  virtual Symbol_sp getKind() const { return kw::_sym_macro; };
-  static LCC_RETURN LISP_CALLING_CONVENTION();
-};
-
-
-};
-
-
 
 namespace core {
   void core__closure_slots_dump(Closure_sp func);
