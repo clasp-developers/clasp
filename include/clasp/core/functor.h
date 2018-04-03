@@ -21,7 +21,6 @@ namespace core {
   FORWARD(BuiltinClosure);
   FORWARD(FunctionClosure);
   FORWARD(Closure);
-  FORWARD(CompiledFunction);
   FORWARD(ClosureWithFrame);
   FORWARD(ClosureWithSlots);
   FORWARD(InterpretedClosure);
@@ -62,14 +61,6 @@ struct gctools::GCInfo<core::CompiledClosure_O> {
 };
 template <>
 struct gctools::GCInfo<core::CompiledDispatchFunction_O> {
-  static bool constexpr NeedsInitialization = false;
-  static bool constexpr NeedsFinalization = false;
-  static GCInfo_policy constexpr Policy = normal;
-};
-
-
-template <>
-struct gctools::GCInfo<core::CompiledFunction_O> {
   static bool constexpr NeedsInitialization = false;
   static bool constexpr NeedsFinalization = false;
   static GCInfo_policy constexpr Policy = normal;
@@ -359,21 +350,6 @@ public:
   void setf_lambda_list(List_sp lambda_list);
 };
 
-};
-
-namespace core {
-  SMART(LambdaListHandler);
-  SMART(NamedFunction);
-  class CompiledFunction_O : public Closure_O {
-    LISP_CLASS(core, ClPkg, CompiledFunction_O, "CompiledFunction",Closure_O);
-
-#if defined(XML_ARCHIVE)
-    void archiveBase(ArchiveP node);
-#endif // defined(XML_ARCHIVE)
-  public:
-  CompiledFunction_O(claspFunction fptr, T_sp name) : Base(fptr, name){};
-    virtual ~CompiledFunction_O(){};
-  };
 };
 
 #ifdef USE_COMPILED_CLOSURE
