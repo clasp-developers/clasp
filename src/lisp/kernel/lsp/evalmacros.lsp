@@ -371,7 +371,7 @@ values of the last FORM.  If no FORM is given, returns NIL."
 	(cond ((or (eq selector T) (eq selector 'OTHERWISE))
 	       (unless last
 		 (si::signal-simple-error
-		  'program-error nil
+		  'simple-program-error nil
 		  "CASE: The selector ~A can only appear at the last position."
 		  (list selector)))
 	       (setq form `(PROGN ,@(cdr clause))))

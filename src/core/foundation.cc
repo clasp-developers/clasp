@@ -1390,7 +1390,7 @@ struct ErrorSimpleDepthCounter {
   }
   SYMBOL_EXPORT_SC_(ClPkg, programError);
   eval::funcall(_sym_signalSimpleError,
-                cl::_sym_programError,    //arg0
+                core::_sym_simpleProgramError,    //arg0
                 _Nil<T_O>(),              // arg1
                 SimpleBaseString_O::make(buffer), // arg2
                 _Nil<T_O>());
@@ -1420,7 +1420,7 @@ NOINLINE void lisp_error_simple(const char *functionName, const char *fileName, 
   }
   SYMBOL_EXPORT_SC_(ClPkg, programError);
   eval::funcall(_sym_signalSimpleError,
-                cl::_sym_programError,    //arg0
+                core::_sym_simpleProgramError,    //arg0
                 _Nil<T_O>(),              // arg1
                 SimpleBaseString_O::make(fmt.str()), // arg2
                 _Nil<T_O>());

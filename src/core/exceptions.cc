@@ -576,7 +576,7 @@ void af_wrongTypeKeyArg(const string &sourceFile, int lineno,
   }
   message << "the value of the argument ~S is ~&   ~S~&which is not of the expected type ~A";
   eval::funcall(_sym_signalSimpleError,
-                cl::_sym_typeError,           //arg0
+                cl::_sym_simpleTypeError,           //arg0
                 _Nil<T_O>(),                  // arg1
                 SimpleBaseString_O::make(message.str()), // arg2
                 Cons_O::createList(function, key, value, type),
@@ -594,7 +594,7 @@ void af_wrongTypeOnlyArg(const string &sourceFile, int lineno, Symbol_sp functio
     message << "the value of the only argument is~&  ~S~&which is ";
     message << "not of the expected type ~A";
     eval::funcall(_sym_signalSimpleError,
-                  cl::_sym_typeError,           //arg0
+                  cl::_sym_simpleTypeError,           //arg0
                   _Nil<T_O>(),                  // arg1
                   SimpleBaseString_O::make(message.str()), // arg2
                   Cons_O::createList(value, type),
@@ -605,7 +605,7 @@ void af_wrongTypeOnlyArg(const string &sourceFile, int lineno, Symbol_sp functio
     message << "the value of the only argument is~&  ~S~&which is ";
     message << "not of the expected type ~A";
     eval::funcall(_sym_signalSimpleError,
-                  cl::_sym_typeError,           //arg0
+                  cl::_sym_simpleTypeError,           //arg0
                   _Nil<T_O>(),                  // arg1
                   SimpleBaseString_O::make(message.str()), // arg2
                   Cons_O::createList(function, value, type),
@@ -622,7 +622,7 @@ CL_DEFUN void core__function_wrong_type_argument(Symbol_sp function, T_sp value,
                "the value of an argument is~&  ~S~&which is "
                "not of the expected type ~A";
     eval::funcall(_sym_signalSimpleError,
-                  cl::_sym_typeError,           //arg0
+                  cl::_sym_simpleTypeError,           //arg0
                   _Nil<T_O>(),                  // arg1
                   SimpleBaseString_O::make(message.str()), // arg2
                   Cons_O::createList(value, type),
@@ -633,7 +633,7 @@ CL_DEFUN void core__function_wrong_type_argument(Symbol_sp function, T_sp value,
                "the value of an argument is~&  ~S~&which is "
                "not of the expected type ~A";
     eval::funcall(_sym_signalSimpleError,
-                  cl::_sym_typeError,           //arg0
+                  cl::_sym_simpleTypeError,           //arg0
                   _Nil<T_O>(),                  // arg1
                   SimpleBaseString_O::make(message.str()), // arg2
                   Cons_O::createList(function, value, type),
@@ -652,7 +652,7 @@ CL_DEFUN void core__wrong_type_argument(const string &sourceFile, int lineno, Sy
                "the value of an argument is~&  ~S~&which is "
                "not of the expected type ~A";
     eval::funcall(_sym_signalSimpleError,
-                  cl::_sym_typeError,           //arg0
+                  cl::_sym_simpleTypeError,           //arg0
                   _Nil<T_O>(),                  // arg1
                   SimpleBaseString_O::make(message.str()), // arg2
                   Cons_O::createList(value, type),
@@ -663,7 +663,7 @@ CL_DEFUN void core__wrong_type_argument(const string &sourceFile, int lineno, Sy
                "the value of an argument is~&  ~S~&which is "
                "not of the expected type ~A";
     eval::funcall(_sym_signalSimpleError,
-                  cl::_sym_typeError,           //arg0
+                  cl::_sym_simpleTypeError,           //arg0
                   _Nil<T_O>(),                  // arg1
                   SimpleBaseString_O::make(message.str()), // arg2
                   Cons_O::createList(function, value, type),
@@ -682,7 +682,7 @@ CL_DEFUN void core__wrong_type_nth_arg(const string &sourceFile, int lineno, Sym
                "the value of the ~:R argument is~&  ~S~&which is "
                "not of the expected type ~A";
     eval::funcall(_sym_signalSimpleError,
-                  cl::_sym_typeError,           //arg0
+                  cl::_sym_simpleTypeError,           //arg0
                   _Nil<T_O>(),                  // arg1
                   SimpleBaseString_O::make(message.str()), // arg2
                   Cons_O::createList(make_fixnum(narg), value, type),
@@ -694,7 +694,7 @@ CL_DEFUN void core__wrong_type_nth_arg(const string &sourceFile, int lineno, Sym
                "the value of the ~:R argument is~&  ~S~&which is "
                "not of the expected type ~A";
     eval::funcall(_sym_signalSimpleError,
-                  cl::_sym_typeError,           //arg0
+                  cl::_sym_simpleTypeError,           //arg0
                   _Nil<T_O>(),                  // arg1
                   SimpleBaseString_O::make(message.str()), // arg2
                   Cons_O::createList(function, make_fixnum(narg), value, type),
@@ -721,7 +721,7 @@ CL_DEFUN void core__wrong_index(const string &sourceFile, int lineno, Symbol_sp 
     const char *msg = (which < 0) ? message1 : message2;
     SimpleBaseString_sp message = SimpleBaseString_O::make(msg);
     eval::funcall(_sym_signalSimpleError,
-                  cl::_sym_typeError, //arg0
+                  cl::_sym_simpleTypeError, //arg0
                   _Nil<T_O>(),        // arg1
                   message,            // arg2
                   Cons_O::createList(make_fixnum(which + 1), array, index, type),
@@ -741,7 +741,7 @@ CL_DEFUN void core__wrong_index(const string &sourceFile, int lineno, Symbol_sp 
     const char *msg = (which < 0) ? message1 : message2;
     SimpleBaseString_sp message = SimpleBaseString_O::make(msg);
     eval::funcall(_sym_signalSimpleError,
-                  cl::_sym_typeError, //arg0
+                  cl::_sym_simpleTypeError, //arg0
                   _Nil<T_O>(),        // arg1
                   message,            // arg2
                   Cons_O::createList(function, make_fixnum(which + 1), array, index, type),
@@ -758,14 +758,14 @@ CL_DEFUN void cl__reader_error(const string &sourceFile, uint lineno,
   ASSERT(cl__stringp(fmt));
   if (stream.nilp()) {
     eval::funcall(_sym_signalSimpleError,
-                  cl::_sym_parseError,
+                  core::_sym_simpleParseError,
                   _Nil<T_O>(), // not correctable
                   fmt,         // format control
                   fmtargs      // format args
                   );
   } else {
     eval::funcall(_sym_signalSimpleError,
-                  cl::_sym_readerError,
+                  core::_sym_simpleReaderError,
                   _Nil<T_O>(), // not correctable
                   fmt,         // format control
                   fmtargs,     // format args
@@ -844,7 +844,7 @@ void CEpackage_error(const char *fmt,
   if (fmtargs.nilp())
     fmtargs = Cons_O::create(package);
   eval::funcall(core::_sym_signalSimpleError,
-                cl::_sym_package_error,
+                core::_sym_simplePackageError,
                 SimpleBaseString_O::make(continue_message),
                 SimpleBaseString_O::make(std::string(fmt)),
                 fmtargs,
@@ -862,7 +862,7 @@ void FEpackage_error(const char *fmt,
   if (fmtargs.nilp())
     fmtargs = Cons_O::create(package);
   eval::funcall(core::_sym_signalSimpleError,
-                cl::_sym_package_error,
+                core::_sym_simplePackageError,
                 _Nil<T_O>(),
                 SimpleBaseString_O::make(std::string(fmt)),
                 fmtargs,

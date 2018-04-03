@@ -126,7 +126,7 @@
 
 (defun find-restart-never-fail (restart &optional condition)
   (or (find-restart restart condition)
-      (signal-simple-error 'control-error nil
+      (signal-simple-error 'simple-control-error nil
 	     "Restart ~S is not active."
 	     (list restart))))
 
@@ -578,7 +578,8 @@ memory limits before executing the program again."))
 
 (define-condition program-error (error) ())
 
-#+clasp
+(define-condition core:simple-program-error (simple-condition program-error) ())
+
 (define-condition core:argument-number-error (program-error)
   ((supplied :initarg :supplied :reader argument-number-error-supplied)
    (min :initarg :min :reader argument-number-error-min)
@@ -594,11 +595,14 @@ memory limits before executing the program again."))
            (format stream "At least ~s argument~:p required, ~s argument~:p supplied."
                    min supplied))))))
 
-
 (define-condition control-error (error) ())
+
+(define-condition core:simple-control-error (simple-condition control-error) ())
 
 (define-condition stream-error (error)
   ((stream :initarg :stream :reader stream-error-stream)))
+
+(define-condition core:simple-stream-error (simple-condition stream-error) ())
 
 (define-condition end-of-file (stream-error)
   ()
@@ -615,10 +619,14 @@ memory limits before executing the program again."))
  3) the pathname points to a broken symbolic link."
 		     (file-error-pathname condition)))))
 
+(define-condition core:simple-file-error (simple-condition file-error) ())
+
 (define-condition package-error (error)
   ((package :INITARG :PACKAGE :READER package-error-package))
   (:report (lambda (condition stream)
              (format stream "Package error on package ~S" (package-error-package condition)))))
+
+(define-condition core:simple-package-error (simple-condition package-error) ())
 
 (define-condition cell-error (error)
   ((name :INITARG :NAME :READER cell-error-name)))
@@ -703,7 +711,11 @@ memory limits before executing the program again."))
 
 (define-condition parse-error (error) ())
 
+(define-condition core:simple-parse-error (simple-condition parse-error) ())
+
 (define-condition reader-error (parse-error stream-error) ())
+
+(define-condition core:simple-reader-error (simple-condition reader-error) ())
 
 (define-condition format-error (simple-error)
   ((format-control :initarg :complaint)
@@ -732,19 +744,14 @@ memory limits before executing the program again."))
 
 
 
-(defun signal-simple-error (base-condition continue-message format-control format-args
+(defun signal-simple-error (condition-type continue-message format-control format-args
 			    &rest args)
-;;  (bformat t "[[[conditions.lsp>>signal-simple-error base-condition = %s  format-control = <<%s>>  format-args = <<%s>>  args= <<%s>>]]]\n" base-condition format-control format-args args)
-  (let ((simple-error-name (intern (concatenate 'string "SIMPLE-" (string base-condition))
-				   (find-package "SI"))))
-    (unless (find-class simple-error-name nil)
-      (eval `(defclass ,simple-error-name (simple-error ,base-condition) ())))
-    (if continue-message
-	(apply #'cerror continue-message simple-error-name :format-control format-control
-	       :format-arguments format-args args)
-	(apply #'error simple-error-name :format-control format-control
-	       :format-arguments format-args args))))
-	   
+  (if continue-message
+      (apply #'cerror continue-message condition-type :format-control format-control
+                                                      :format-arguments format-args args)
+      (apply #'error condition-type :format-control format-control
+                                    :format-arguments format-args args)))
+
 
 
 (defmacro handler-case (form &rest cases)

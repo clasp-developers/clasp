@@ -1168,6 +1168,7 @@ CL_LAMBDA(tpathname);
 CL_DECLARE();
 CL_DOCSTRING("coerceToFilePathname");
 CL_DEFUN Pathname_sp core__coerce_to_file_pathname(T_sp tpathname) {
+  if (tpathname.nilp()) SIMPLE_ERROR(BF("%s was about to pass nil to core__coerce_to_physical_pathname") % __FUNCTION__);
   Pathname_sp pathname = core__coerce_to_physical_pathname(tpathname);
   pathname = cl__merge_pathnames(pathname);
 #if 0
@@ -1218,6 +1219,9 @@ CL_DEFUN String_sp core__coerce_to_filename(T_sp pathname_orig) {
   /* We always go through the pathname representation and thus
 	 * cl__namestring() always outputs a fresh new string */
   ASSERT(pathname_orig);
+  if (pathname_orig.nilp()) {
+    SIMPLE_ERROR(BF("About to pass nil to core__coerce_to_file_pathname"));
+  }
   pathname = core__coerce_to_file_pathname(pathname_orig);
   if (cl__wild_pathname_p(pathname, _Nil<T_O>())) {
     ERROR(cl::_sym_fileError, Cons_O::createList(kw::_sym_pathname, pathname_orig));

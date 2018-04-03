@@ -127,6 +127,7 @@ static String_sp coerce_to_posix_filename(T_sp pathname) {
 	 * this is not supported on all POSIX platforms (most notably Windows)
 	 */
   ASSERT(pathname);
+  if (pathname.nilp()) SIMPLE_ERROR(BF("In %s the pathname is NIL") % __FUNCTION__);
   String_sp sfilename = core__coerce_to_filename(pathname);
   return cl__string_right_trim(SimpleBaseString_O::make(DIR_SEPARATOR), sfilename);
 }
@@ -478,6 +479,9 @@ enter_directory(Pathname_sp base_dir, T_sp subdir, bool ignore_if_failure) {
 static Pathname_sp
 make_absolute_pathname(T_sp orig_pathname) {
   Pathname_sp base_dir = getcwd(false);
+  if (orig_pathname.nilp()) {
+    SIMPLE_ERROR(BF("In make_absolute_pathname NIL is about to be passed to core__coerce_to_file_pathname"));
+  }
   Pathname_sp pathname = core__coerce_to_file_pathname(orig_pathname);
   Pathname_sp result = clasp_mergePathnames(pathname, base_dir, kw::_sym_default);
   return result;
@@ -654,10 +658,12 @@ CL_DEFUN T_mv cl__rename_file(T_sp oldn, T_sp newn, T_sp if_exists) {
    *    is not the truename, because we might be renaming a symbolic link.
    */
   old_truename = cl__truename(oldn);
+  if (old_truename.nilp()) SIMPLE_ERROR(BF("In %s the original name %s wasn't found") % __FUNCTION__ % _rep_(oldn));
   String_sp old_filename = coerce_to_posix_filename(old_truename);
 
   /* 2) Create the new file name. */
   Pathname_sp pnewn = clasp_mergePathnames(newn, oldn, kw::_sym_newest);
+  if (pnewn.nilp()) SIMPLE_ERROR(BF("In %s the new name is NIL") % __FUNCTION__);
   String_sp new_filename = core__coerce_to_filename(pnewn);
   while (if_exists == kw::_sym_error || if_exists.nilp()) {
     if (cl__probe_file(new_filename).nilp()) {
@@ -668,7 +674,7 @@ CL_DEFUN T_mv cl__rename_file(T_sp oldn, T_sp newn, T_sp if_exists) {
     if (if_exists == kw::_sym_error) {
       std::string msg = "When trying to rename ~S, ~S already exists";
       if_exists = eval::funcall(_sym_signalSimpleError,
-                                cl::_sym_fileError, /* condition */
+                                core::_sym_simpleFileError, /* condition */
                                 kw::_sym_supersede, /* continuable */
                                 /* format */
                                 SimpleBaseString_O::make(msg),
@@ -743,7 +749,7 @@ FAILURE_CLOBBER:
     T_sp c_error = clasp_strerror(errno);
     std::string msg = "Unable to rename file ~S to ~S.~%C library error: ~S";
     eval::funcall(_sym_signalSimpleError,
-                  cl::_sym_fileError,                      /* condition */
+                  core::_sym_simpleFileError,                      /* condition */
                   _Nil<T_O>(),                             /* continuable */
                   SimpleBaseString_O::make(msg),                      /* format */
                   Cons_O::createList(oldn, newn, c_error), /* format args */
@@ -782,7 +788,7 @@ CL_DEFUN T_sp cl__delete_file(T_sp file) {
         isdir ? "Cannot delete the file ~S.~%C library error: ~S" : "Cannot delete the directory ~S.~%C library error: ~S";
     T_sp c_error = clasp_strerror(errno);
     eval::funcall(_sym_signalSimpleError,
-                  cl::_sym_fileError,
+                  core::_sym_simpleFileError,
                   _lisp->_true(),                    // continuable
                   SimpleBaseString_O::make(msg),                // format
                   Cons_O::createList(file, c_error), // format args
@@ -835,7 +841,7 @@ CL_DEFUN T_sp cl__file_author(T_sp file) {
                       "~%C library error: ~S";
     T_sp c_error = clasp_strerror(errno);
     eval::funcall(_sym_signalSimpleError,
-                  cl::_sym_fileError,                /* condition */
+                  core::_sym_simpleFileError,                /* condition */
                   _lisp->_true(),                    /* continuable */
                   SimpleBaseString_O::make(msg),                /* format */
                   Cons_O::createList(file, c_error), /* format args */
@@ -1060,6 +1066,7 @@ CL_DEFUN T_sp core__mkstemp(String_sp thetemplate) {
                          kw::_sym_name, _Nil<T_O>(),
                          kw::_sym_version, _Nil<T_O>(),
                          kw::_sym_defaults, phys);
+  if (dir.nilp()) SIMPLE_ERROR(BF("In %s about invoke core__coerce_to_filename(NIL)") % __FUNCTION__);
   dir = core__coerce_to_filename(dir);
   file = cl_file_namestring(phys);
 
@@ -1082,6 +1089,7 @@ CL_DEFUN T_sp core__mkstemp(String_sp thetemplate) {
     memcpy(output->c_str(), strTempFileName, l);
   }
 #else
+  if (thetemplate.nilp()) SIMPLE_ERROR(BF("In %s the template is NIL") % __FUNCTION__);
   thetemplate = core__coerce_to_filename(thetemplate);
   stringstream outss;
   outss << thetemplate->get();
@@ -1193,7 +1201,7 @@ si_get_library_pathname(void)
                 std::string msg = "Can't change the current directory to ~A."
                   "~%C library error: ~S";
 		eval::funcall(_sym_signalSimpleError,
-			      cl::_sym_fileError, /* condition */
+			      core::_sym_simpleFileError, /* condition */
 			      _lisp->_true(), /* continuable */
 			      /* format */
 			      SimpleBaseString_O::make(msg),
@@ -1222,6 +1230,7 @@ T_sp core__mkstemp(T_sp template)
 			   kw::_sym_name, _Nil<T_O>(),
 			   kw::_sym_version, _Nil<T_O>(),
 			   kw::_sym_defaults, phys);
+    if (dir.nilp()) SIMPLE_ERROR(BF("In %s the dir is NIL") % __FUNCTION__);
     dir = core__coerce_to_filename(dir);
     file = cl_file_namestring(phys);
     l = dir->base_string.fillp;
@@ -1242,6 +1251,7 @@ T_sp core__mkstemp(T_sp template)
 	memcpy(output->c_str(), strTempFileName, l);
     }
 #else
+    if (template.nilp()) SIMPLE_ERROR(BF("In %s the template is NIL") % __FUNCTION__);
     template = core__coerce_to_filename(template);
     l = template->base_string.fillp;
     output = ecl_alloc_simple_base_string(l + 6);
@@ -1289,7 +1299,7 @@ CL_DEFUN void core__chmod(T_sp file, T_sp mode) {
     std::string msg = "Unable to change mode of file ~S to value ~O"
                       "~%C library error: ~S";
     eval::funcall(_sym_signalSimpleError,
-                  cl::_sym_fileError, /* condition */
+                  core::_sym_simpleFileError, /* condition */
                   _lisp->_true(),     /* continuable */
                                       /* format */
                   SimpleBaseString_O::make(msg),
@@ -1305,7 +1315,9 @@ CL_DOCSTRING("copy_file");
 CL_DEFUN T_sp core__copy_file(T_sp orig, T_sp dest) {
   FILE *in, *out;
   int ok = 0;
+  if (orig.nilp()) SIMPLE_ERROR(BF("In %s the source pathname is NIL") % __FUNCTION__);
   String_sp sorig = core__coerce_to_filename(orig);
+  if (dest.nilp()) SIMPLE_ERROR(BF("In %s the destination pathname is NIL") % __FUNCTION__);
   String_sp sdest = core__coerce_to_filename(dest);
   clasp_disable_interrupts();
   in = fopen(sorig->get_std_string().c_str(), "r");
@@ -1457,6 +1469,7 @@ CL_DOCSTRING("directory");
 CL_DEFUN T_sp cl__directory(T_sp mask, T_sp resolveSymlinks) {
   T_sp base_dir;
   T_sp output;
+  if (mask.nilp()) SIMPLE_ERROR(BF("In cl__directory NIL is about to be passed to core__coerce_to_file_pathname"));
   mask = core__coerce_to_file_pathname(mask);
   mask = make_absolute_pathname(mask); // in this file
   base_dir = make_base_pathname(mask);
@@ -1537,7 +1550,7 @@ CL_DEFUN T_sp core__mkdir(T_sp directory, T_sp mode) {
     std::string msg = "Could not create directory ~S"
                       "~%C library error: ~S";
     eval::funcall(_sym_signalSimpleError,
-                  cl::_sym_fileError, /* condition */
+                  core::_sym_simpleFileError, /* condition */
                   _lisp->_true(),     /* continuable */
                   /* format */
                   SimpleBaseString_O::make(msg),

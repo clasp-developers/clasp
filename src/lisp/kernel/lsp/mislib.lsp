@@ -337,4 +337,4 @@ hash table; otherwise it signals that we have reached the end of the hash table.
 (set-dispatch-macro-character #\# #\! 'sharp-!-reader)
 
 (defun si::simple-program-error (message &rest datum)
-  (signal-simple-error 'program-error nil message datum))
+  (signal-simple-error 'simple-program-error nil message datum))

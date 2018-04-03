@@ -5136,6 +5136,7 @@ T_sp clasp_open_stream(T_sp fn, enum StreamMode smm, T_sp if_exists,
 #else
   clasp_mode_t mode = S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH;
 #endif
+  if (fn.nilp()) SIMPLE_ERROR(BF("In %s the filename is NIL") % __FUNCTION__);
   String_sp filename = core__coerce_to_filename(fn);
   string fname = filename->get_std_string();
   bool appending = 0;
@@ -5254,6 +5255,9 @@ CL_DEFUN T_sp cl__open(T_sp filename,
              T_sp if_does_not_exist, bool idnesp,
              T_sp external_format,
              T_sp cstream) {
+  if (filename.nilp()) {
+    TYPE_ERROR(filename,Cons_O::createList(cl::_sym_or,cl::_sym_string,cl::_sym_Pathname_O,cl::_sym_Stream_O));
+  }
   T_sp strm;
   enum StreamMode smm;
   int flags = 0;
@@ -5342,7 +5346,7 @@ file_listen(T_sp stream, int fileno) {
   FD_SET(fileno, &fds);
   retv = select(fileno + 1, &fds, NULL, NULL, &tv);
   if (UNLIKELY(retv < 0))
-    file_libc_error(cl::_sym_streamError, stream, "Error while listening to stream.", 0);
+    file_libc_error(core::_sym_simpleStreamError, stream, "Error while listening to stream.", 0);
   else if (retv > 0)
     return CLASP_LISTEN_AVAILABLE;
   else
@@ -5429,17 +5433,17 @@ flisten(T_sp stream, FILE *fp) {
     clasp_off_t old_pos = clasp_ftello(fp), end_pos;
     unlikely_if(old_pos < 0) {
       //                printf("%s:%d ftello error old_pos = %ld error = %s\n", __FILE__, __LINE__, old_pos, strerror(errno));
-      file_libc_error(cl::_sym_fileError, stream,
+      file_libc_error(core::_sym_simpleFileError, stream,
                       "Unable to check file position in SEEK_END", 0);
     }
     unlikely_if(clasp_fseeko(fp, 0, SEEK_END) != 0) {
       //                printf("%s:%d Seek error fp=%p error = %s\n", __FILE__, __LINE__, fp, strerror(errno));
-      file_libc_error(cl::_sym_fileError, stream,
+      file_libc_error(core::_sym_simpleFileError, stream,
                       "Unable to check file position in SEEK_END", 0);
     }
     end_pos = clasp_ftello(fp);
     unlikely_if(clasp_fseeko(fp, old_pos, SEEK_SET) != 0)
-        file_libc_error(cl::_sym_fileError, stream,
+        file_libc_error(core::_sym_simpleFileError, stream,
                         "Unable to check file position in SEEK_SET", 0);
     return (end_pos > old_pos ? CLASP_LISTEN_AVAILABLE : CLASP_LISTEN_EOF);
   }
@@ -5581,7 +5585,7 @@ not_a_binary_stream(T_sp s) {
 
 static void
 cannot_close(T_sp stream) {
-  file_libc_error(cl::_sym_fileError, stream, "Stream cannot be closed", 0);
+  file_libc_error(core::_sym_simpleFileError, stream, "Stream cannot be closed", 0);
 }
 
 static void
@@ -5631,7 +5635,7 @@ restartable_io_error(T_sp strm, const char *s) {
     return 1;
   } else {
     String_sp temp = SimpleBaseString_O::make(std::string(s, strlen(s)));
-    file_libc_error(cl::_sym_streamError, strm,
+    file_libc_error(core::_sym_simpleStreamError, strm,
                     "C operation (~A) signaled an error.",
                     1, temp.raw_());
     return 0;
@@ -5644,7 +5648,7 @@ io_error(T_sp strm) {
   /* clasp_disable_interrupts(); ** done by caller */
   maybe_clearerr(strm);
   clasp_enable_interrupts_env(the_env);
-  file_libc_error(cl::_sym_streamError, strm,
+  file_libc_error(core::_sym_simpleStreamError, strm,
                   "Read or write operation signaled an error", 0);
 }
 
@@ -6388,6 +6392,9 @@ T_sp clasp_openRead(T_sp sin) {
   gctools::Fixnum byte_size = 8;
   int flags = CLASP_STREAM_DEFAULT_FORMAT;
   T_sp external_format = _Nil<T_O>();
+  if (filename.nilp()) {
+    SIMPLE_ERROR(BF("%s was called with NIL as the argument") % __FUNCTION__);
+  }
   T_sp strm = clasp_open_stream(filename, smm, if_exists, if_does_not_exist,
                                 byte_size, flags, external_format);
   return strm;

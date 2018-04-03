@@ -46,7 +46,7 @@ RUN whoami
 RUN python -m pip install numpy
 RUN python -m pip install jupyter
 RUN python -m pip install ipywidgets
-RUN git clone -b "v1.0.a1" https://github.com/arose/nglview /home/app/nglview
+RUN git clone -b "v1.1.2" https://github.com/arose/nglview /home/app/nglview
 RUN whoami 
 RUN cd /home/app/nglview && python setup.py install
 # probably need to activate widgetsnbextension

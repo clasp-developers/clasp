@@ -178,7 +178,7 @@
     (dolist (item shadowing-imported-from-symbol-names-list)
       (let ((package (find-package (first item))))
         (unless package
-          (signal-simple-error 'package-error "Create the package"
+          (signal-simple-error 'simple-package-error "Create the package"
                                "The name ~s does not designate any package"
                                (list (first item))
                                :package (find-package name)))
@@ -204,7 +204,7 @@
   (multiple-value-bind (symbol found)
       (find-symbol name package)
     (unless found
-      (signal-simple-error 'package-error "INTERN it."
+      (signal-simple-error 'simple-package-error "INTERN it."
 			   "Cannot find symbol ~S in package ~S"
 			   (list name package)
 			   :package package)
