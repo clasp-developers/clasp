@@ -48,12 +48,6 @@ struct gctools::GCInfo<core::BuiltinClosure_O> {
   static GCInfo_policy constexpr Policy = normal;
 };
 template <>
-struct gctools::GCInfo<core::InstanceClosure_O> {
-  static bool constexpr NeedsInitialization = false;
-  static bool constexpr NeedsFinalization = false;
-  static GCInfo_policy constexpr Policy = normal;
-};
-template <>
 struct gctools::GCInfo<core::InterpretedClosure_O> {
   static bool constexpr NeedsInitialization = false;
   static bool constexpr NeedsFinalization = false;
