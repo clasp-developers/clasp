@@ -66,6 +66,7 @@ CL_DEFUN size_t core__function_call_counter(Function_sp f)
 CL_DEFMETHOD Pointer_sp Function_O::function_pointer() const {
   return Pointer_O::create((void*)this->entry.load());
 };
+
 string Function_O::__repr__() const {
   T_sp name = this->functionName();
   stringstream ss;
@@ -83,6 +84,7 @@ string Function_O::__repr__() const {
   ss << ">";
   return ss.str();
 }
+
 
 string Closure_O::nameAsString() const {
   if (this->_name.nilp()) {

@@ -147,6 +147,14 @@ void Complex_O::__write__(T_sp stream) const {
   clasp_write_char(')', stream);
 }
 
+// Function_O also has a __repr__ method, but it displays too much low level info.
+// generic functions go through the instance printer, not this.
+void NamedFunction_O::__write__(T_sp stream) const {
+  clasp_write_string("#<FUNCTION ", stream);
+  write_ugly_object(this->functionName(), stream);
+  clasp_write_char('>', stream);
+}
+
 void
 _clasp_write_fixnum(gctools::Fixnum i, T_sp stream) {
   SafeBuffer buffer;

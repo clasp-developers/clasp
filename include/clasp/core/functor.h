@@ -166,6 +166,8 @@ public:
   CL_DEFMETHOD T_sp functionName() const {
     return this->_name;
   }
+  // defined in write_ugly.cc
+  virtual void __write__(T_sp) const;
 
 };
 };
