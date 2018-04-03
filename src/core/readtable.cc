@@ -189,13 +189,7 @@ CL_DEFUN T_mv core__reader_backquoted_expression(T_sp sin, Character_sp ch) {
   // DynamicScopeManager will save the dynamic value of the symbol and restore it in dtor
   DynamicScopeManager scope(_sym_STARbackquote_levelSTAR, new_backquote_level);
   T_sp quoted_object = cl__read(sin, _lisp->_true(), _Nil<T_O>(), _lisp->_true());
-  Cons_sp result = Cons_O::createList(_sym_backquote, quoted_object);
-  //HERE_scCONS_CREATE_LIST2(_sym_backquote,quoted_object);
-#if 0
-  if (_lisp->sourceDatabase().notnilp()) {
-    gc::As<SourceManager_sp>(_lisp->sourceDatabase())->duplicateSourcePosInfo(quoted_object, result);
-  }
-#endif
+  Cons_sp result = Cons_O::createList(_sym_quasiquote, quoted_object);
   return (Values(result));
 };
 
