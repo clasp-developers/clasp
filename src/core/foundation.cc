@@ -1076,27 +1076,6 @@ void lisp_defmacro(Symbol_sp sym,
   sym->exportYourself();
 }
 
-void lisp_defgeneric(const string &packageName,
-                     const string &cname,
-                     Function_sp f,
-                     const string &arguments,
-                     const string &docstring,
-                     bool autoExport) {
-  // Remember to lock the function name
-  IMPLEMENT_MEF("implement-defgeneric");
-  string name = lispify_symbol_name(cname);
-#if 0
-	LOG(BF("Adding generic-function[%s:%s] with arguments[%s]") %packageName % name % arguments );
-	string lispName = lisp_convertCNameToLispName(name,true);
-	Symbol_sp sym = lisp->internWithPackageName(packageName,lispName);
-	lisp->createPredefinedSymbol(symSymbol,sym);
-	IMPLEMENT_MEF("Switch to CompiledBody");
-	FunctionPrimitive_sp func = FunctionPrimitive_O::create(sym,f,arguments,""/*Docstring*/,lisp);
-	sym->setf_symbolFunction(func);
-	if ( autoExport ) sym->exportYourself();
-#endif
-}
-
 Symbol_sp lisp_internKeyword(const string &name) {
   if (name == "")
     return _Nil<Symbol_O>();

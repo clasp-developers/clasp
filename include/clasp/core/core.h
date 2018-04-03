@@ -930,9 +930,6 @@ namespace core {
                        const string &docstring = "", const string &sourceFile = "",
                        int sourceLine = 0, int number_of_required_arguments = 0,
                        const std::set<int> &skipIndices = std::set<int>());
-
-  void lisp_defgeneric(const string &packageName, const string &name,
-                       Function_sp, const string &arguments = "", const string &docstring = "", bool autoExport = true);
   void lisp_defmethod(Symbol_sp gfSymbol, Function_sp, const string &arguments, const string &docstring);
 
   void lisp_defineSingleDispatchMethod(T_sp name,
