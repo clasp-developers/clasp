@@ -118,6 +118,9 @@ extern core::Symbol_sp& _sym_name;
                               kw::_sym_datum, _lst_));
 
 #define TYPE_ERROR(_datum_, _expectedType_) ERROR(cl::_sym_typeError, core::lisp_createList(kw::_sym_datum, _datum_, kw::_sym_expectedType, _expectedType_))
+#define PROGRAM_ERROR() ERROR(cl::_sym_programError, (_Nil<T_O>()))
+// (make-instance 'CORE:SIMPLE-PROGRAM-ERROR :format-control "Programm Error")
+#define SIMPLE_PROGRAM_ERROR(_datum_) ERROR(core::_sym_simpleProgramError, core::lisp_createList(kw::_sym_formatControl, _datum_))
 #define FILE_ERROR(_file_) ERROR(cl::_sym_fileError, core::lisp_createList(kw::_sym_pathname, _file_))
 #define CANNOT_OPEN_FILE_ERROR(_file_) FILE_ERROR(_file_)
 #define TOO_FEW_ARGUMENTS_ERROR() NO_INITIALIZERS_ERROR(core::_sym_tooFewArgumentsError)

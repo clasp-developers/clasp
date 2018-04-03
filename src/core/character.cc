@@ -39,6 +39,7 @@ THE SOFTWARE.
 #include <clasp/core/character.h>
 #include <clasp/core/numberToString.h>
 #include <clasp/core/wrappers.h>
+#include <clasp/core/exceptions.h>
 
 namespace core {
 
@@ -138,6 +139,8 @@ CL_LAMBDA(&rest args);
 CL_DECLARE();
 CL_DOCSTRING("Return true if characters are monotonically increasing");
 CL_DEFUN T_sp cl__char_LT_(List_sp args) {
+  if (args.nilp())
+      PROGRAM_ERROR();
   return ((monotonic(-1, 1, args)));
 };
 
@@ -145,6 +148,8 @@ CL_LAMBDA(&rest args);
 CL_DECLARE();
 CL_DOCSTRING("Return true if characters are monotonically decreasing");
 CL_DEFUN T_sp cl__char_GT_(List_sp args) {
+  if (args.nilp())
+      PROGRAM_ERROR();
   return ((monotonic(1, 1, args)));
 };
 
@@ -152,6 +157,8 @@ CL_LAMBDA(&rest args);
 CL_DECLARE();
 CL_DOCSTRING("Return true if characters are monotonically non-decreasing");
 CL_DEFUN T_sp cl__char_LE_(List_sp args) {
+  if (args.nilp())
+      PROGRAM_ERROR();
   return (Values(monotonic(-1, 0, args)));
 };
 
@@ -159,6 +166,8 @@ CL_LAMBDA(&rest args);
 CL_DECLARE();
 CL_DOCSTRING("Return true if characters are monotonically non-increasing");
 CL_DEFUN T_mv cl__char_GE_(List_sp args) {
+  if (args.nilp())
+      PROGRAM_ERROR();
   return (Values(monotonic(1, 0, args)));
 };
 
@@ -166,6 +175,8 @@ CL_LAMBDA(&rest args);
 CL_DECLARE();
 CL_DOCSTRING("Return true if characters are monotonically increasing, ignore case");
 CL_DEFUN T_mv cl__char_lessp(List_sp args) {
+  if (args.nilp())
+      PROGRAM_ERROR();
   return (Values(monotonic(-1, 1, args, false)));
 };
 
@@ -173,6 +184,8 @@ CL_LAMBDA(&rest args);
 CL_DECLARE();
 CL_DOCSTRING("Return true if characters are monotonically decreasing, ignore case");
 CL_DEFUN T_mv cl__char_greaterp(List_sp args) {
+  if (args.nilp())
+      PROGRAM_ERROR();
   return (Values(monotonic(1, 1, args, false)));
 };
 
@@ -180,6 +193,8 @@ CL_LAMBDA(&rest args);
 CL_DECLARE();
 CL_DOCSTRING("Return true if characters are monotonically non-increasing, ignore case");
 CL_DEFUN T_mv cl__char_not_greaterp(List_sp args) {
+  if (args.nilp())
+      PROGRAM_ERROR();
   return (Values(monotonic(-1, 0, args, false)));
 };
 
@@ -187,6 +202,8 @@ CL_LAMBDA(&rest args);
 CL_DECLARE();
 CL_DOCSTRING("Return true if characters are monotonically non-decreasing, ignore case");
 CL_DEFUN T_sp cl__char_not_lessp(List_sp args) {
+  if (args.nilp())
+      PROGRAM_ERROR();
   return ((monotonic(1, 0, args, false)));
 };
 
@@ -194,6 +211,8 @@ CL_LAMBDA(&rest args);
 CL_DECLARE();
 CL_DOCSTRING("NE_");
 CL_DEFUN T_sp cl__char_NE_(List_sp args) {
+  if (args.nilp())
+      PROGRAM_ERROR();
   while (args.notnilp()) {
     claspCharacter a = clasp_as_claspCharacter(gc::As<Character_sp>(oCar(args)));
     for (List_sp cur = oCdr(args); cur.notnilp(); cur = oCdr(cur)) {
@@ -211,7 +230,7 @@ CL_DECLARE();
 CL_DOCSTRING("EQ_");
 CL_DEFUN T_sp cl__char_EQ_(List_sp args) {
   if (args.nilp())
-    return ((_lisp->_true()));
+      PROGRAM_ERROR();
   claspCharacter a = clasp_as_claspCharacter(gc::As<Character_sp>(oCar(args)));
   args = oCdr(args);
   while (args.notnilp()) {
@@ -227,6 +246,8 @@ CL_LAMBDA(&rest args);
 CL_DECLARE();
 CL_DOCSTRING("Like char_NE_ but ignore case");
 CL_DEFUN T_mv cl__char_not_equal(List_sp args) {
+  if (args.nilp())
+      PROGRAM_ERROR();
   while (args.notnilp()) {
     claspCharacter a = clasp_as_claspCharacter(gc::As<Character_sp>(oCar(args)));
     a = claspCharacter_upcase(a);
@@ -254,7 +275,7 @@ CL_DECLARE();
 CL_DOCSTRING("Like char_EQ_, ignore case");
 CL_DEFUN bool cl__char_equal(List_sp args) {
   if (args.nilp())
-    return true;
+      PROGRAM_ERROR();
   claspCharacter a = clasp_as_claspCharacter(gc::As<Character_sp>(oCar(args)));
   a = claspCharacter_upcase(a);
   args = oCdr(args);
