@@ -167,7 +167,7 @@ CL_DEFUN T_sp core__backquote_process(T_sp ox) {
   }
   x = ox;
   ax = oCar(x);
-  if (ax == _sym_backquote) {
+  if (ax == _sym_quasiquote) {
     T_sp passone = core__backquote_completely_process(oCadr(x)); // eval::funcall(_sym_backquote_completely_process,oCadr(x));
     result = core__backquote_process(passone);                   // eval::funcall(_sym_backquote_process,passone);
     goto DONE;
