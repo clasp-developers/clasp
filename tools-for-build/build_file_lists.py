@@ -65,7 +65,6 @@ SRC_CORE = \
         'corePackage',
         'lisp',
         'bundle',
-        'profile',
         'write_ugly',
         'wrappedPointer',
         'serialize',
