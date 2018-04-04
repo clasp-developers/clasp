@@ -61,7 +61,6 @@ THE SOFTWARE.
 #include <clasp/core/lisp.h>
 #include <clasp/core/lispList.h>
 #include <clasp/core/loadTimeValues.h>
-#include <clasp/core/profiler.h>
 #include <clasp/core/bundle.h>
 #include <clasp/core/bformat.h>
 #include <clasp/core/hashTableEq.h>
