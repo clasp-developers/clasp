@@ -100,35 +100,6 @@ ALWAYS_INLINE core::T_O** functionFrameReference(core::T_O* frameP, int idx) {
   return &cell.rawRef_();
 }
 
-
-
-
-
-#if 0
-ALWAYS_INLINE void sp_lexicalFunctionRead(core::T_sp *resultP, int depth, int index, core::ActivationFrame_sp *renvP)
-{NO_UNWIND_BEGIN();
-  (*resultP) = core::function_frame_lookup(*renvP,depth,index);
-  NO_UNWIND_END();
-}
-
-ALWAYS_INLINE void mv_lexicalFunctionRead(core::T_mv *resultP, int depth, int index, core::ActivationFrame_sp *renvP)
-{NO_UNWIND_BEGIN();
-  (*resultP) = core::function_frame_lookup(*renvP,depth,index);
-  NO_UNWIND_END();
-}
-#endif
-
-
-#if 0
-ALWAYS_INLINE void newTsp(core::T_sp *sharedP)
-{NO_UNWIND_BEGIN();
-  ASSERT(sharedP != NULL);
-  new (sharedP) core::T_sp();
-  NO_UNWIND_END();
-}
-#endif
-
-
 ALWAYS_INLINE extern int compareTspTptr(core::T_sp *xP, core::T_O *yP)
 {NO_UNWIND_BEGIN();
   return ((*xP).raw_() == (yP)) ? 1 : 0;
@@ -149,19 +120,6 @@ ALWAYS_INLINE core::T_O* symbolValueRead(const core::T_O* tsymP) {
   if (sv.unboundp()) sym->symbolUnboundError();
   return sv.raw_();
 }
-
-#if 0
-ALWAYS_INLINE T_O *va_symbolFunction(core::T_sp *symP) {
-  NO_UNWIND_BEGIN();
-  core::Symbol_sp sym((gctools::Tagged)symP->raw_());
-//  printf("%s:%d:%s sym: %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(sym).c_str());
-  if (!sym->fboundp()) intrinsic_error(llvmo::noFunctionBoundToSymbol, sym);
-  core::Function_sp func((gc::Tagged)(sym)->_Function.theObject);
-//  printf("%s:%d:%s -> %p\n", __FILE__, __LINE__, __FUNCTION__, func.raw_());
-  return func.raw_();
-  NO_UNWIND_END();
-}
-#endif
 };
 
 extern "C" {
@@ -411,25 +369,6 @@ ALWAYS_INLINE char *cc_getPointer(core::T_O *pointer_object)
 };
 
 extern "C" {
-#if 0
-ALWAYS_INLINE core::T_O* makeValueFrameSetParentFromClosure(size_t numargs, core::T_O* closureRaw)
-{NO_UNWIND_BEGIN();
-//  valueFrame->setEnvironmentId(id);   // I don't use id anymore
-  core::T_O* parentP;
-  if (closureRaw != NULL ) {
-    Closure_sp closure = Closure_sp((gctools::Tagged)closureRaw);
-    T_sp activationFrame = closure->closedEnvironment();
-//    printf("%s:%d:%s     activationFrame = %p\n", __FILE__, __LINE__, __FUNCTION__, activationFrame.raw_());
-    parentP =  activationFrame.raw_();
-  } else {
-    parentP = _Nil<core::T_O>().raw_();
-  }
-  core::ValueFrame_sp valueFrame(core::ValueFrame_O::create(numargs, _Nil<core::T_O>()));
-  valueFrame->setParentFrame(parentP);
-  return valueFrame.raw_();
-  NO_UNWIND_END();
-}
-#endif
 
 ALWAYS_INLINE void setParentOfActivationFrameFromClosure(core::T_O *resultP, core::T_O *closureRaw)
 {NO_UNWIND_BEGIN();

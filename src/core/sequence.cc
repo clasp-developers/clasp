@@ -57,31 +57,6 @@ CL_DEFUN size_t cl__length(T_sp arg) {
   TYPE_ERROR(arg, cl::_sym_sequence);
 };
 
-#if 0
-CL_LAMBDA(type size &key (initial-element nil iesp));
-CL_DECLARE();
-CL_DOCSTRING("make_sequence");
-CL_DEFUN T_mv cl__make_sequence(T_sp type, Fixnum_sp size, T_sp initial_element, T_sp iesp) {
-  IMPLEMENT_MEF("make-sequence");
-#if 0
-	Symbol_sp element_type;
-	Fixnum_sp length;
-	{MULTIPLE_VALUES_ACCESS(_VALUES)
-		_sym_closest_sequence_type->mv_apply(type);
-	    element_type = _VALUES->get(0).as<Symbol_O>();
-	    length = gc::As<Fixnum_sp>(_VALUES.valueGet(1));
-	}
-	if ( element_type == cl::_sym_list )
-	{
-	    List_sp sequence = eval::funcall(cl::_sym_make_list,size,kw::_sym_initial_element,initial_element);
-	    return sequence;
-	}
-	IMPLEMENT_MEF("Implement make_sequence");
-	return(Values(_Nil<T_O>()));
-#endif
-};
-#endif
-
 CL_LAMBDA(seq);
 CL_DECLARE();
 CL_DOCSTRING("reverse");
@@ -274,42 +249,4 @@ size_t_pair sequenceStartEnd(Symbol_sp fn_name, size_t vector_length, size_t sta
   return p;
 }
 
-#if 0
-void inBoundsBelowEndOrError(cl_index index, cl_index start, cl_index end ) {
-  unlikely_if ( index < start ) {
-    SIMPLE_ERROR(BF("The index %d must be greator or equal to %d and less than %d") % index % start % end );
-  }
-  unlikely_if ( index >= end ) {
-    SIMPLE_ERROR(BF("Out of bounds index %d must be a value from %d and less than %d") % index % start % end );
-  }
-  return;
-}
-
-void inBoundsOrError(Symbol_sp function_name, cl_index index, cl_index start, cl_index end ) {
-  unlikely_if ( index < start ) {
-    SIMPLE_ERROR(BF("The index %d must be greator or equal to %d and less than %d") % index % start % end );
-  }
-  unlikely_if ( index > end ) {
-    SIMPLE_ERROR(BF("Out of bounds index %d must be less than or equal to %d") % index % end );
-  }
-  return;
-}
-
-
-/*! if end is a fixnum then check that its in [start,iend) and if
-    not signal an error.   Otherwise return it.
-    if end is NIL then return iend, otherwise error.
-*/
-cl_index coerceToEndInRangeOrError(T_sp end, cl_index start, cl_index iend )
-{
-  if (end.fixnump()) {
-    cl_index rend = end.unsafe_fixnum();
-    inBoundsOrError(rend,start,iend);
-    return rend;
-  }
-  if (end.nilp()) return iend;
-  SIMPLE_ERROR(BF("%s is an illegal designator for the end") % _rep_(end));
-}
-
-#endif
 }; /* core */

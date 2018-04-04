@@ -1618,25 +1618,6 @@ T_mv sp_function(List_sp args, T_sp environment) {
   SIMPLE_ERROR(BF("Illegal argument[%s] for function") % _rep_(arg));
 }
 
-#if 0
-T_mv sp_lambda_block( List_sp args, T_sp env)
-{
-  ASSERTNOTNULL(args);
-  Symbol_sp name = args->ocar().as<Symbol_O>();
-  return lambda(name,true,args->ocadr(),args->cddr(),env);
-}
-#endif
-
-#if 0
-T_mv sp_lambda_with_handler( List_sp args, T_sp env)
-{
-  ASSERTNOTNULL(args);
-  Symbol_sp name = args->ocar().as<Symbol_O>();
-  LambdaListHandler_sp llh = eval::evaluate(args->ocadr(),env).as<LambdaListHandler_O>();
-  return lambda(name,false,llh,args->cddr(),env,_lisp);
-}
-#endif
-
 /*
   __BEGIN_DOC(candoScript.specialForm.quote,quote)
   \scriptCmdRet{quote}{object}{unevaluatedObject}

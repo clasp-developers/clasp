@@ -362,53 +362,6 @@ CL_DEFMETHOD T_mv Environment_O::localMetadata(Symbol_sp key) const {
   SUBCLASS_MUST_IMPLEMENT();
 }
 
-#if 0
-T_sp Environment_O::clasp_lookupValue(T_sp env, int depth, int index) {
-  ASSERT(env.isA<Environment_O>());
-  Environment_sp eenv = gc::reinterpret_cast_smart_ptr<Environment_O>(env);
-  return eenv->_lookupValue(depth, index);
-}
-#endif
-#if 0
-ALWAYS_INLINE T_sp &Environment_O::clasp_lookupValueReference(T_sp env, int depth, int index) {
-// set this to 1 to use dynamic_cast and 0 to use what is essentially a static cast
-  ASSERT(env && env.isA<Environment_O>());
-  Environment_sp eenv = gc::reinterpret_cast_smart_ptr<Environment_O, T_O>(env);
-  return eenv->lookupValueReference(depth, index);
-}
-#endif
-#if 0
-Function_sp Environment_O::clasp_lookupFunction(T_sp env, int depth, int index) {
-  ASSERT(env.isA<Environment_O>());
-  Environment_sp eenv = gc::reinterpret_cast_smart_ptr<Environment_O, T_O>(env);
-  return eenv->_lookupFunction(depth, index);
-}
-#endif
-
-#if 0
-T_sp Environment_O::clasp_lookupTagbodyId(T_sp env, int depth, int index) {
-  ASSERT(env.isA<Environment_O>());
-  Environment_sp eenv = gc::reinterpret_cast_smart_ptr<Environment_O, T_O>(env);
-  return eenv->_lookupTagbodyId(depth, index);
-}
-#endif
-
-#if 0
-T_sp Environment_O::_lookupValue(int depth, int index) {
-  SUBIMP();
-}
-#endif
-
-#if 0
-T_sp &Environment_O::lookupValueReference(int depth, int index) {
-  SUBIMP();
-}
-
-Function_sp Environment_O::_lookupFunction(int depth, int index) const {
-  SUBIMP();
-}
-#endif
-
 string Environment_O::__repr__() const {
   stringstream ss;
   ss << "#<" << lisp_classNameAsString(cl__class_of(this->asSmartPtr())) ;
@@ -1090,11 +1043,6 @@ void ValueEnvironment_O::setupForLambdaListHandler(LambdaListHandler_sp llh, T_s
       this->defineSpecialBinding(sym);
     }
   }
-#if 0
-  if (numberOfLexicals>0 ) {
-    printf("%s:%d  Creating ValueFrame_O with numberOfLexicals: %d\n", __FILE__, __LINE__, numberOfLexicals );
-  }
-#endif
   this->_ActivationFrame = ValueFrame_O::create(numberOfLexicals, clasp_getActivationFrame(clasp_currentVisibleEnvironment(parent,false)));
 }
 
@@ -1442,18 +1390,6 @@ T_mv BlockEnvironment_O::recognizesBlockSymbol(Symbol_sp sym, bool &interFunctio
     return Values(_lisp->_true(), _lisp->_boolean(interFunction), this->asSmartPtr());
   return clasp_recognizesBlockSymbol(this->getParentEnvironment(), sym, interFunction);
 }
-#if 0
-    int BlockEnvironment_O::getBlockSymbol(Symbol_sp sym) const
-    {
-	if ( this->_BlockSymbol == sym ) return this->_Frame;
-	if ( this->getParentEnvironment().nilp() )
-	{
-	    SIMPLE_ERROR(BF("Could not find block symbol %s") % _rep_(sym) );
-	}
-	return this->getParentEnvironment()->getBlockSymbolFrame(sym);
-    }
-
-#endif
 
 CL_LISPIFY_NAME(makeCatchEnvironment);
 CL_DEFUN CatchEnvironment_sp CatchEnvironment_O::make(T_sp parent) {
@@ -1785,13 +1721,5 @@ void GlueEnvironment_O::initialize() {
   this->Base::initialize();
   this->_Map = HashTableEq_O::create_default();
 }
-
-#if 0
-    T_mv GlueEnvironment_O::variable_lookup(Symbol_sp val) const
-    {
-	Cons_sp it = this->_Map->find(val);
-	return(Values(oCdr(it),_lisp->_true()));
-    }
-#endif
 
 }; // namespace core

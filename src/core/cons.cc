@@ -176,28 +176,6 @@ Cons_sp Cons_O::createList(T_sp o1, T_sp o2, T_sp o3, T_sp o4, T_sp o5, T_sp o6,
   return ((Cons_O::create(o1, Cons_O::createList(o2, o3, o4, o5, o6, o7, o8))));
 }
 
-#if 0
-    Cons_sp	Cons_O::createFromCommandLineArguments(int argc, char* argv[] )
-    {
-	Cons_sp args = _Nil<T_O>();
-	Cons_sp curArg = _Nil<T_O>();
-	for ( int i=0;i!=argc; i++ )
-	{
-          Cons_sp carg = Cons_O::create(SimpleBaseString_O::make(argv[i]),_Nil<T_O>());
-	    if ( curArg.nilp() )
-	    {
-		args = carg;
-		curArg = carg;
-	    } else
-	    {
-		curArg->setCdr(carg);
-		curArg = carg;
-	    }
-	}
-	return((args));
-    }
-#endif
-
 bool isAllDigits(const string &s) {
   for (uint i = 0; i < s.size(); i++) {
     if (!isdigit(s[i]))
@@ -273,23 +251,6 @@ T_sp Cons_O::append(List_sp x, List_sp y) {
   *tailP = y;
   return head;
 }
-
-#if 0
-    T_sp Cons_O::append(T_sp x, T_sp y)
-    {
-	T_sp head(_Nil<List_O>());
-	T_sp* tail_gc_safe = &head;
-	if ( x.notnilp() ) {
-	    tail_gc_safe = Cons_O::appendInto(head,tail_gc_safe,x);
-	}
-	if ( (*tail_gc_safe).notnilp() ) {
-	    TYPE_ERROR_PROPER_LIST(head);
-	}
-	*tail_gc_safe = y;
-	return head.as<List_O>();
-    }
-#endif
-
 
 struct Tester {
   T_sp _item;
@@ -632,17 +593,6 @@ CL_DEFMETHOD List_sp Cons_O::filterOutNil() {
   return ((oCdr(first)));
 }
 
-#if 0
-    void	Cons_O::setOwnerOfAllEntries(T_sp obj)
-    {
-	Cons_sp cur;
-	for ( cur=this->asSmartPtr(); cur.notnilp(); cur = cCdr(cur) )
-	{
-	    cur->ocar()->setOwner(obj);
-	}
-    }
-#endif
-
 T_sp Cons_O::onth(cl_index idx) const {
   T_sp cur = this->asSmartPtr();
   for (cl_index i = 0; i < idx; i++) {
@@ -871,34 +821,6 @@ string Cons_O::__repr__() const {
 #endif
   return ((sout.str()));
 }
-
-#if 0
-CL_DEFUN List_sp core__alist_erase(List_sp alist, T_sp key) {
-  if (alist.consp()) {
-    if (oCar(CONS_CAR(alist)) == key) return CONS_CDR(alist);
-    List_sp prev_alist = alist;
-    for ( auto cur : CONS_CDR(alist) ) {
-      while (alist.consp()) {
-      if (oCar(CONS_CAR(alist)) == key) {
-        prev_alist.unsafe_cons()->rplacd(CONS_CDR(alist));
-        return alist;
-      }
-      if (cur.consp()) {
-        prev_alist = cur;
-        cur = CONS_CDR(cur);
-      }
-    }
-    return alist;
-  }
-  return alist;
-}
-
-CL_DEFUN List_sp core__alist_push(List_sp alist, T_sp key, T_sp val) {
-  Cons_sp one = Cons_O::create(key, val);
-  alist = Cons_O::create(one, alist);
-  return alist;
-}
-#endif
 
  void not_alist_error(T_sp obj) {
    SIMPLE_ERROR(BF("Not an alist -> %s") % _rep_(obj));
