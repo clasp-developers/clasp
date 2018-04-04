@@ -393,20 +393,6 @@ Symbol_sp Symbol_O::exportYourself(bool doit) {
   return this->asSmartPtr();
 }
 
-#if 0
-T_sp Symbol_O::apply() {
-  ValueFrame_sp frame = ValueFrame_O::create(0, _Nil<ActivationFrame_O>());
-  T_sp result = lisp_apply(this->sharedThis<Symbol_O>(), frame);
-  return result;
-}
-T_sp Symbol_O::funcall() {
-  _OF();
-  ValueFrame_sp frame(ValueFrame_O::create(0, _Nil<ActivationFrame_O>()));
-  T_sp result = lisp_apply(this->sharedThis<Symbol_O>(), frame);
-  return result;
-}
-#endif
-
 string Symbol_O::__repr__() const {
   unlikely_if(!this->_Name) return "UNITIALIZED-SYMBOL";
   return this->formattedName(false);
@@ -485,15 +471,6 @@ void Symbol_O::dump() {
   }
   printf("%s", ss.str().c_str());
 }
-
-#if 0
-void Symbol_O::remove_package(Package_sp pkg)
-{
-  if (this->_HomePackage == pkg) {
-    this->_HomePackage = _Nil<T_O>();
-  }
-}
-#endif
 
 void Symbol_O::remove_package(Package_sp pkg)
 {

@@ -946,7 +946,6 @@ public:
 
   List_sp getCommandLineArguments() { return this->_Roots._CommandLineArguments; };
 
-  T_sp createObjectOfClass(T_sp cl);
   Intrinsic_sp getIntrinsic(const string &name);
   string getMethodName(uint methodId);
   uint getMethodId(const string &methodName);
@@ -954,14 +953,6 @@ public:
   //	Function_sp	lookupMethod(Symbol_sp, Class_sp classSymbol, T_sp receiver );
 
 public:
-#if 0
-	/*! Special function for accessing the contents of global variable _DATABASE_
-	 */
-	bool hasCandoDatabase();
-	void setCandoDatabase(CandoDatabase_sp cdb);
-	void	loadCandoDatabase(const string& fileName, uint verbosity = 0);
-#endif
-
   void addToStarModulesStar(Symbol_sp sym);
 
   void initializeClassManager();

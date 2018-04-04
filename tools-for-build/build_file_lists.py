@@ -89,7 +89,6 @@ SRC_CORE = \
         'keywordPackage',
         'extensionPackage',
         'array',
-        'lispMath',
         'grayPackage',
         'closPackage',
         'cleavirPrimopsPackage',

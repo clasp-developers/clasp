@@ -110,7 +110,6 @@ THE SOFTWARE.
 #include <clasp/core/instance.h>
 #include <clasp/core/funcallableInstance.h>
 #include <clasp/core/null.h>
-//#include <clasp/core/singleDispatchEffectiveMethodFunction.h>
 #include <clasp/core/singleDispatchGenericFunction.h>
 #include <clasp/core/specialForm.h>
 #include <clasp/core/sexpLoadArchive.h>
