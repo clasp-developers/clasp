@@ -259,13 +259,6 @@ string LLVMContext_O::__repr__() const {
 
 namespace llvmo {
 
-
-;
-
-}; // llvmo
-
-namespace llvmo {
-
 CL_LISPIFY_NAME(make-linker);
 CL_DEFUN Linker_sp Linker_O::make(Module_sp module) {
   GC_ALLOCATE(Linker_O, self);
@@ -754,39 +747,6 @@ CL_DEFMETHOD bool LLVMTargetMachine_O::LLVMTargetMachine_addPassesToEmitFile(Pas
 
 }; // llvmo
 
-namespace llvmo {
-
-
-;
-
-}; // llvmo
-namespace llvmo {
-}
-
-namespace llvmo {
-
-
-;
-
-}; // llvmo
-namespace llvmo {
-}
-
-namespace llvmo {
-
-
-;
-
-}; // llvmo
-namespace llvmo {
-}
-
-namespace llvmo {
-
-
-;
-
-}; // llvmo
 namespace llvmo {
 Value_sp Value_O::create(llvm::Value *ptr) {
   return core::RP_Create_wrapped<Value_O, llvm::Value *>(ptr);
@@ -1412,8 +1372,6 @@ CL_EXTERN_DEFMETHOD(FunctionPassManager_O, &llvm::legacy::FunctionPassManager::a
 ;
 
 }; // llvmo
-namespace llvmo {
-}
 
 namespace llvmo {
 CL_LAMBDA();
@@ -1434,8 +1392,6 @@ CL_EXTERN_DEFMETHOD(PassManager_O, &llvm::legacy::PassManager::run);;
 ;
 
 }; // llvmo
-namespace llvmo {
-}
 
 namespace llvmo {
 CL_LAMBDA(module);
@@ -1550,23 +1506,6 @@ Constant_sp Constant_O::create(llvm::Constant *ptr) {
 }
 
 namespace llvmo {
-
-
-;
-
-}; // llvmo
-
-namespace llvmo {
-
-
-
-;
-
-}; // llvmo
-namespace llvmo {
-}
-
-namespace llvmo {
 CL_LAMBDA(type values);
 CL_LISPIFY_NAME(constant-data-array-get-uint32);
 CL_DEFUN Constant_sp ConstantDataArray_O::getUInt32(LLVMContext_sp context, core::T_sp ovalues) {
@@ -1593,8 +1532,6 @@ CL_DEFUN Constant_sp ConstantDataArray_O::getUInt32(LLVMContext_sp context, core
 ;
 
 }; // llvmo
-namespace llvmo {
-}
 
 namespace llvmo {
 CL_LAMBDA(type values);
@@ -1616,8 +1553,6 @@ CL_DEFUN Constant_sp ConstantArray_O::get(ArrayType_sp type, core::List_sp value
 ;
 
 }; // llvmo
-namespace llvmo {
-}
 
 namespace llvmo {
 CL_LAMBDA(function basic-block);
@@ -1634,8 +1569,6 @@ CL_DEFUN BlockAddress_sp BlockAddress_O::get(Function_sp func, BasicBlock_sp bb)
 ;
 
 }; // llvmo
-namespace llvmo {
-}
 
 namespace llvmo {
 
@@ -1851,17 +1784,6 @@ namespace llvmo {
 ;
 
 }; // llvmo
-namespace llvmo {
-}
-
-namespace llvmo {
-
-
-;
-
-}; // llvmo
-namespace llvmo {
-}
 
 namespace llvmo {
 
@@ -1876,17 +1798,6 @@ namespace llvmo {
 ;
 
 }; // llvmo
-namespace llvmo {
-}
-
-namespace llvmo {
-
-
-;
-
-}; // llvmo
-namespace llvmo {
-}
 
 namespace llvmo {
 
@@ -1904,44 +1815,6 @@ CL_DEFUN llvm::AllocaInst* llvm_sys__insert_alloca_before_terminator(llvm::Type*
 ;
 
 }; // llvmo
-namespace llvmo {
-}
-
-namespace llvmo {
-
-
-;
-
-}; // llvmo
-namespace llvmo {
-}
-
-namespace llvmo {
-
-
-;
-
-}; // llvmo
-namespace llvmo {
-}
-
-namespace llvmo {
-
-
-;
-
-}; // llvmo
-namespace llvmo {
-}
-
-namespace llvmo {
-
-
-;
-
-}; // llvmo
-namespace llvmo {
-}
 
 namespace llvmo {
 
@@ -1955,49 +1828,11 @@ CL_DEFMETHOD void SwitchInst_O::addCase(ConstantInt_sp onVal, BasicBlock_sp dest
 }
 
 }; // llvmo
-namespace llvmo {
-}
 
 namespace llvmo {
 
   CL_LISPIFY_NAME(addDestination);
   CL_EXTERN_DEFMETHOD(IndirectBrInst_O, &llvm::IndirectBrInst::addDestination);;
-
-;
-
-}; // llvmo
-namespace llvmo {
-}
-
-namespace llvmo {
-
-
-;
-
-}; // llvmo
-namespace llvmo {
-}
-
-namespace llvmo {
-
-
-;
-
-}; // llvmo
-namespace llvmo {
-}
-
-namespace llvmo {
-
-
-;
-
-}; // llvmo
-namespace llvmo {
-}
-
-namespace llvmo {
-
 
 ;
 
@@ -2033,8 +1868,6 @@ string ConstantFP_O::__repr__() const {
 }
 
 }; // llvmo
-namespace llvmo {
-}
 
 namespace llvmo {
 ConstantInt_sp ConstantInt_O::create(llvm::ConstantInt *ptr) {
@@ -2111,9 +1944,6 @@ string ConstantPointerNull_O::__repr__() const {
 }; // llvmo
 
 namespace llvmo {
-}
-
-namespace llvmo {
 
 CL_LAMBDA(value);
 CL_LISPIFY_NAME(make-apfloat-float);
@@ -2131,13 +1961,6 @@ CL_DEFUN APFloat_sp APFloat_O::makeAPFloatDouble(core::DoubleFloat_sp value) {
   return self;
 };
 }
-
-namespace llvmo {
-
-
-;
-
-}; // llvmo
 
 namespace llvmo {
 
@@ -2733,8 +2556,6 @@ CL_DEFUN MDNode_sp MDNode_O::get(LLVMContext_sp context, core::List_sp values) {
 ;
 
 }; // llvmo
-namespace llvmo {
-}
 
 namespace llvmo {
 
@@ -2752,8 +2573,6 @@ CL_DEFUN MDString_sp MDString_O::get(LLVMContext_sp context, core::String_sp str
 ;
 
 }; // llvmo
-namespace llvmo {
-}
 
 namespace llvmo {
 
@@ -2767,16 +2586,6 @@ CL_DEFUN ValueAsMetadata_sp ValueAsMetadata_O::get(Value_sp val) {
 
 
   SYMBOL_EXPORT_SC_(LlvmoPkg, ValueAsMetadataGet);
-
-;
-
-}; // llvmo
-namespace llvmo {
-}
-
-namespace llvmo {
-
-
 
 ;
 
@@ -3066,20 +2875,6 @@ CL_DEFUN core::T_sp FunctionType_O::get(core::T_sp result_type, core::T_sp param
 namespace llvmo {
 
 
-;
-
-};
-
-namespace llvmo {
-
-
-;
-
-};
-
-namespace llvmo {
-
-
 CL_LAMBDA(context &key elements name is-packed);
 CL_LISPIFY_NAME(struct-type-create);
 CL_DEFUN StructType_sp StructType_O::make(LLVMContext_sp context, core::T_sp elements, core::String_sp name, core::T_sp isPacked) {
@@ -3127,13 +2922,6 @@ CL_DEFMETHOD void StructType_O::setBody(core::T_sp elements, core::T_sp isPacked
 
 namespace llvmo {
 
-
-;
-
-};
-
-namespace llvmo {
-
 CL_LAMBDA(element-type num-elements);
 CL_LISPIFY_NAME(array-type-get);
 CL_DEFUN ArrayType_sp ArrayType_O::get(Type_sp elementType, uint64_t numElements) {
@@ -3160,13 +2948,6 @@ CL_DEFUN PointerType_sp PointerType_O::get(Type_sp elementType, uint addressSpac
   at->set_wrapped(llvm_at);
   return at;
 }
-
-
-;
-
-};
-
-namespace llvmo {
 
 
 ;
