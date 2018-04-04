@@ -1390,31 +1390,6 @@ CL_DEFUN TargetLibraryInfoWrapperPass_sp TargetLibraryInfoWrapperPass_O::make(ll
 
 }; // llvmo
 
-#if 0 // TargetData was depreciated
-namespace llvmo
-{
-
-
-CL_LAMBDA(module);
-CL_PKG_NAME(LlvmoPkg,"target-data-copy");
-CL_DEFUN TargetData_sp TargetData_O::copy(llvm::TargetData const & orig)
-    {
-        GC_ALLOCATE(TargetData_O,self );
-	self->_ptr = new llvm::TargetData(orig);
-	return self;
-    };
-
-
-};
-
-    void TargetData_O::exposePython(core::Lisp_sp lisp)
- llvmo
-namespace llvmo
-{
-}
-
-#endif
-
 namespace llvmo {
 CL_LAMBDA(module);
 CL_PKG_NAME(LlvmoPkg,"makeFunctionPassManager");
@@ -3245,42 +3220,6 @@ CL_DEFUN core::Function_sp finalizeEngineAndRegisterWithGcAndGetCompiledFunction
   return functoid;
 }
 
-
-//
-  CL_DEFUN core::Function_sp finalizeEngineAndGetDispatchFunction(ExecutionEngine_sp oengine, core::T_sp functionName, Function_sp fn, Function_sp startupFn, Function_sp shutdownFn, core::T_sp initial_data) {
-    DEPRECATED();
-    llvm::ExecutionEngine *engine = oengine->wrappedPtr();
-    finalizeEngineAndTime(engine);
-    ASSERTF(fn.notnilp(), BF("The Function must never be nil"));
-    void *p = engine->getPointerToFunction(fn->wrappedPtr());
-    if (!p) {
-      SIMPLE_ERROR(BF("Could not get a pointer to the function finalizeEngineAndGetDispatchFunction: %s") % _rep_(functionName));
-    }
-    core::claspFunction dispatchFunction = (core::claspFunction)(p);
-    core::ShutdownFunction_fptr_type shutdownFunction = (core::ShutdownFunction_fptr_type)(engine->getPointerToFunction(shutdownFn->wrappedPtr()));
-    gctools::smart_ptr<core::CompiledDispatchFunction_O> functoid = gctools::GC<core::CompiledDispatchFunction_O>::allocate(functionName, kw::_sym_dispatch_function, dispatchFunction, _Unbound<Module_O>() );
-    void* pstartup = engine->getPointerToFunction(startupFn->wrappedPtr());
-    if (pstartup == NULL ) {
-      printf("%s:%d Could not find function named %s\n", __FILE__, __LINE__, MODULE_STARTUP_FUNCTION_NAME);
-    }
-    core::module_startup_function_type startup = reinterpret_cast<core::module_startup_function_type>(pstartup);
-    startup(initial_data.tagged_());
-    return functoid;
-  }
-
-
-
-
-
-
-
-  struct CtorStruct {
-    int priority;
-    void (*ctor)();
-    char* obj;
-  };
-
-
   CL_DEFUN void finalizeEngineAndRegisterWithGcAndRunMainFunctions(ExecutionEngine_sp oengine) {
   // Stuff to support MCJIT
     llvm::ExecutionEngine *engine = oengine->wrappedPtr();
@@ -3313,17 +3252,6 @@ CL_DEFUN core::Function_sp finalizeEngineAndRegisterWithGcAndGetCompiledFunction
     printf("%s:%d Leaving %s\n", __FILE__, __LINE__, __FUNCTION__ );
 #endif
   }
-
-#if 0
-  CL_DEFUN void finalizeClosure(ExecutionEngine_sp oengine, core::Function_sp func) {
-    llvm::ExecutionEngine *engine = oengine->wrappedPtr();
-    auto closure = func.as<core::CompiledClosure_O>();
-    llvmo::Function_sp llvm_func = closure->llvmFunction;
-    void *p = engine->getPointerToFunction(llvm_func->wrappedPtr());
-    core::CompiledClosure_fptr_type lisp_funcPtr = (core::CompiledClosure_fptr_type)(p);
-    closure->entry = lisp_funcPtr;
-  }
-#endif
 
 /*! Return (values target nil) if successful or (values nil error-message) if not */
   CL_DEFUN core::T_mv TargetRegistryLookupTarget(const std::string &ArchName, Triple_sp triple) {
@@ -4063,25 +3991,5 @@ CL_DEFUN core::Function_sp llvm_sys__jitFinalizeReplFunction(ClaspJIT_sp jit, Mo
   startup(initialData.tagged_());
   return functoid;
 }
-
-#if 0
-CL_DEFUN core::Function_sp llvm_sys__jitFinalizeDispatchFunction(ClaspJIT_sp jit, ModuleHandle_sp handle, const string& dispatchName, const string& startupName, const string& shutdownName, core::T_sp initialData ) {
-  core::Pointer_sp dispatchPtr = jit->findSymbolIn(handle,dispatchName,false);
-  core::Pointer_sp startupPtr = jit->findSymbolIn(handle,startupName,false);
-  core::Pointer_sp shutdownPtr = jit->findSymbolIn(handle,shutdownName,false);
-  core::claspFunction dispatchFunction = (core::claspFunction)(gc::As_unsafe<core::Pointer_sp>(dispatchPtr)->ptr());
-  core::ShutdownFunction_fptr_type shutdownFunction = (core::ShutdownFunction_fptr_type)(gc::As_unsafe<core::Pointer_sp>(shutdownPtr)->ptr());
-  handle->set_shutdown_function(shutdownFunction);
-//  printf("%s:%d  jitFinalizeDispatchFunction %p\n", __FILE__, __LINE__, (void*)dispatchFunction);
-  gctools::smart_ptr<core::CompiledDispatchFunction_O> functoid = gctools::GC<core::CompiledDispatchFunction_O>::allocate(core::SimpleBaseString_O::make(dispatchName), kw::_sym_dispatch_function, dispatchFunction, handle );
-  void* pstartup = gc::As_unsafe<core::Pointer_sp>(startupPtr)->ptr();
-  if (pstartup == NULL ) {
-    printf("%s:%d Could not find function named %s\n", __FILE__, __LINE__, MODULE_STARTUP_FUNCTION_NAME);
-  }
-  core::module_startup_function_type startup = reinterpret_cast<core::module_startup_function_type>(pstartup);
-  startup(initialData.tagged_());
-  return functoid;
-}
-#endif
 };
 
