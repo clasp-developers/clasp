@@ -61,7 +61,6 @@ THE SOFTWARE.
 #include <clasp/core/documentation.h>
 #include <clasp/core/lispReader.h>
 #include <clasp/core/designators.h>
-#include <clasp/core/profile.h>
 #include <clasp/core/wrappers.h>
 namespace core {
 

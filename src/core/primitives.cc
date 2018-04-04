@@ -78,7 +78,6 @@ THE SOFTWARE.
 #include <clasp/core/lispStream.h>
 #include <clasp/core/lispReader.h>
 #include <clasp/core/designators.h>
-#include <clasp/core/profile.h>
 #include <clasp/core/wrappers.h>
 
 
