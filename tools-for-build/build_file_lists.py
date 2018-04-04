@@ -64,7 +64,6 @@ SRC_CORE = \
         'write_symbol',
         'corePackage',
         'lisp',
-        'profiler',
         'bundle',
         'profile',
         'write_ugly',
