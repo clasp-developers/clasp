@@ -41,7 +41,6 @@ THE SOFTWARE.
 #include <clasp/core/array.h>
 #include <clasp/core/object.fwd.h>
 #include <clasp/core/numbers.fwd.h>
-//#include <clasp/core/holder.h>
 #include <clasp/core/instance.h>
 
 
