@@ -285,13 +285,6 @@ DONT_OPTIMIZE_WHEN_DEBUG_RELEASE LCC_RETURN interpretedClosureEntryPoint(LCC_ARG
 
 namespace core {
 
-
-LCC_RETURN compiledDispatchFunctionDummyEntryPoint(LCC_ARGS_FUNCALL_ELLIPSIS)
-{
-  SIMPLE_ERROR(BF("Dont ever call this"));
-}
-
-
 #ifdef USE_COMPILED_CLOSURE
 core::T_sp CompiledClosure_O::lambda_list() const {
   return this->_lambdaList;
@@ -301,9 +294,5 @@ void CompiledClosure_O::setf_lambda_list(core::List_sp lambda_list) {
   this->_lambdaList = lambda_list;
 }
 #endif
-
-
-void CompiledDispatchFunction_O::setf_lambda_list(core::List_sp lambda_list) 
-{ SIMPLE_ERROR(BF("You cannot set the lambda-list of a compiled-dispatch-function")); };  
 
 };
