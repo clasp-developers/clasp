@@ -30,8 +30,6 @@ THE SOFTWARE.
 #include <clasp/core/hashTable.fwd.h>
 #include <clasp/core/singleDispatchGenericFunction.fwd.h>
 #include <clasp/core/singleDispatchMethod.fwd.h>
-//#include <clasp/core/singleDispatchEffectiveMethodFunction.fwd.h>
-
 
 
 namespace core {

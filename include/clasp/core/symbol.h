@@ -97,12 +97,6 @@ public:
 public:
   string formattedName(bool prefixAlways) const;
 public:
-  //  T_sp apply();
-  //  T_sp funcall();
-
-  // Include the apply function for symbols up to some high arity
-  //#include "symbol_apply_inc.h"
-
   void sxhash_(HashGenerator &hg) const;
   void sxhash_equal(HashGenerator &hg,LocationDependencyPtrT ptr) const;
   void sxhash_equalp(HashGenerator &hg,LocationDependencyPtrT ptr) const {this->sxhash_equal(hg,ptr);};

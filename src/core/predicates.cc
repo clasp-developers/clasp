@@ -302,7 +302,6 @@ CL_DECLARE();
 CL_DOCSTRING("compiled_function_p");
 CL_DEFUN bool cl__compiled_function_p(T_sp o) {
   if (Closure_sp fn = o.asOrNull<Closure_O>()) {
-    (void)fn;
     return fn->compiledP();
   } else if (gc::IsA<FuncallableInstance_sp>(o)) {
     return true;

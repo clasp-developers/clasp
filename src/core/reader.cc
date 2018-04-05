@@ -245,11 +245,6 @@ T_sp Reader_O::primitive_read(bool eofErrorP, T_sp eofValue, bool recursiveP) {
 #ifdef SOURCE_TRACKING
       SourcePosInfo_sp spi = core__input_stream_source_pos_info(this->_Input);
 #endif
-#if 0
-      size_t filepos = clasp_input_filePos(this->_Input);
-      uint lineno = clasp_input_lineno(this->_Input);
-      uint column = clasp_input_column(this->_Input);
-#endif
       T_sp quotedObject = this->primitive_read(true, _Nil<T_O>(), true);
       if (this->suppressRead()) {
         result = _Nil<T_O>();
@@ -349,7 +344,7 @@ T_sp Reader_O::primitive_read(bool eofErrorP, T_sp eofValue, bool recursiveP) {
         result = _Nil<T_O>();
         goto RETURN;
       }
-      result = Cons_O::createList(_sym_backquote, quotedObject);
+      result = Cons_O::createList(_sym_quasiquote, quotedObject);
 #ifdef SOURCE_TRACKING
       lisp_registerSourcePosInfo(result, spi);
 #endif

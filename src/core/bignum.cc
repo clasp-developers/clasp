@@ -337,15 +337,6 @@ Bignum Bignum_O::get() const {
   return ((this->_value));
 }
 
-#if 0
-    Number_sp Bignum_O::copy() const
-    {
-        GC_ALLOCATE(Bignum_O,cp );
-        cp->_value = this->_value;
-	return((cp));
-    };
-#endif
-
 Number_sp Bignum_O::abs_() const {
   GC_ALLOCATE(Bignum_O, cp);
   cp->_value = this->_value * ::sgn(this->_value);
@@ -360,18 +351,6 @@ bool Bignum_O::eql_(T_sp o) const {
   }
   return false;
 }
-
-#if 0
-    bool Bignum_O::eqn(T_sp o) const
-    {
-	return((this->eql(o)));
-    }
-#endif
-
-
-
-
-
 
 Integer_mv big_ceiling(Bignum_sp a, Bignum_sp b) {
   Bignum mpzq, mpzr;

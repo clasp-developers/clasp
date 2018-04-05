@@ -38,7 +38,6 @@ THE SOFTWARE.
 #include <clasp/core/instance.h>
 #include <clasp/core/genericFunction.h>
 #include <clasp/core/pointer.h>
-#include <clasp/core/lispMath.h>
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/null.h>
 //#include "debugger.h"
@@ -62,7 +61,6 @@ THE SOFTWARE.
 #include <clasp/core/documentation.h>
 #include <clasp/core/lispReader.h>
 #include <clasp/core/designators.h>
-#include <clasp/core/profile.h>
 #include <clasp/core/wrappers.h>
 namespace core {
 

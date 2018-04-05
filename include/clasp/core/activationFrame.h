@@ -36,7 +36,6 @@ THE SOFTWARE.
 #include <clasp/core/loadTimeValues.fwd.h>
 #include <clasp/core/environment.h>
 #include <clasp/core/sequence.h>
-//#include <clasp/core/holder.h>
 
 // may need more later
 //#include GC_INTERFACE_HEADER

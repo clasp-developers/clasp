@@ -259,13 +259,6 @@ string LLVMContext_O::__repr__() const {
 
 namespace llvmo {
 
-
-;
-
-}; // llvmo
-
-namespace llvmo {
-
 CL_LISPIFY_NAME(make-linker);
 CL_DEFUN Linker_sp Linker_O::make(Module_sp module) {
   GC_ALLOCATE(Linker_O, self);
@@ -754,39 +747,6 @@ CL_DEFMETHOD bool LLVMTargetMachine_O::LLVMTargetMachine_addPassesToEmitFile(Pas
 
 }; // llvmo
 
-namespace llvmo {
-
-
-;
-
-}; // llvmo
-namespace llvmo {
-}
-
-namespace llvmo {
-
-
-;
-
-}; // llvmo
-namespace llvmo {
-}
-
-namespace llvmo {
-
-
-;
-
-}; // llvmo
-namespace llvmo {
-}
-
-namespace llvmo {
-
-
-;
-
-}; // llvmo
 namespace llvmo {
 Value_sp Value_O::create(llvm::Value *ptr) {
   return core::RP_Create_wrapped<Value_O, llvm::Value *>(ptr);
@@ -1390,31 +1350,6 @@ CL_DEFUN TargetLibraryInfoWrapperPass_sp TargetLibraryInfoWrapperPass_O::make(ll
 
 }; // llvmo
 
-#if 0 // TargetData was depreciated
-namespace llvmo
-{
-
-
-CL_LAMBDA(module);
-CL_PKG_NAME(LlvmoPkg,"target-data-copy");
-CL_DEFUN TargetData_sp TargetData_O::copy(llvm::TargetData const & orig)
-    {
-        GC_ALLOCATE(TargetData_O,self );
-	self->_ptr = new llvm::TargetData(orig);
-	return self;
-    };
-
-
-};
-
-    void TargetData_O::exposePython(core::Lisp_sp lisp)
- llvmo
-namespace llvmo
-{
-}
-
-#endif
-
 namespace llvmo {
 CL_LAMBDA(module);
 CL_PKG_NAME(LlvmoPkg,"makeFunctionPassManager");
@@ -1437,8 +1372,6 @@ CL_EXTERN_DEFMETHOD(FunctionPassManager_O, &llvm::legacy::FunctionPassManager::a
 ;
 
 }; // llvmo
-namespace llvmo {
-}
 
 namespace llvmo {
 CL_LAMBDA();
@@ -1459,8 +1392,6 @@ CL_EXTERN_DEFMETHOD(PassManager_O, &llvm::legacy::PassManager::run);;
 ;
 
 }; // llvmo
-namespace llvmo {
-}
 
 namespace llvmo {
 CL_LAMBDA(module);
@@ -1575,23 +1506,6 @@ Constant_sp Constant_O::create(llvm::Constant *ptr) {
 }
 
 namespace llvmo {
-
-
-;
-
-}; // llvmo
-
-namespace llvmo {
-
-
-
-;
-
-}; // llvmo
-namespace llvmo {
-}
-
-namespace llvmo {
 CL_LAMBDA(type values);
 CL_LISPIFY_NAME(constant-data-array-get-uint32);
 CL_DEFUN Constant_sp ConstantDataArray_O::getUInt32(LLVMContext_sp context, core::T_sp ovalues) {
@@ -1618,8 +1532,6 @@ CL_DEFUN Constant_sp ConstantDataArray_O::getUInt32(LLVMContext_sp context, core
 ;
 
 }; // llvmo
-namespace llvmo {
-}
 
 namespace llvmo {
 CL_LAMBDA(type values);
@@ -1641,8 +1553,6 @@ CL_DEFUN Constant_sp ConstantArray_O::get(ArrayType_sp type, core::List_sp value
 ;
 
 }; // llvmo
-namespace llvmo {
-}
 
 namespace llvmo {
 CL_LAMBDA(function basic-block);
@@ -1659,8 +1569,6 @@ CL_DEFUN BlockAddress_sp BlockAddress_O::get(Function_sp func, BasicBlock_sp bb)
 ;
 
 }; // llvmo
-namespace llvmo {
-}
 
 namespace llvmo {
 
@@ -1876,17 +1784,6 @@ namespace llvmo {
 ;
 
 }; // llvmo
-namespace llvmo {
-}
-
-namespace llvmo {
-
-
-;
-
-}; // llvmo
-namespace llvmo {
-}
 
 namespace llvmo {
 
@@ -1901,17 +1798,6 @@ namespace llvmo {
 ;
 
 }; // llvmo
-namespace llvmo {
-}
-
-namespace llvmo {
-
-
-;
-
-}; // llvmo
-namespace llvmo {
-}
 
 namespace llvmo {
 
@@ -1929,44 +1815,6 @@ CL_DEFUN llvm::AllocaInst* llvm_sys__insert_alloca_before_terminator(llvm::Type*
 ;
 
 }; // llvmo
-namespace llvmo {
-}
-
-namespace llvmo {
-
-
-;
-
-}; // llvmo
-namespace llvmo {
-}
-
-namespace llvmo {
-
-
-;
-
-}; // llvmo
-namespace llvmo {
-}
-
-namespace llvmo {
-
-
-;
-
-}; // llvmo
-namespace llvmo {
-}
-
-namespace llvmo {
-
-
-;
-
-}; // llvmo
-namespace llvmo {
-}
 
 namespace llvmo {
 
@@ -1980,49 +1828,11 @@ CL_DEFMETHOD void SwitchInst_O::addCase(ConstantInt_sp onVal, BasicBlock_sp dest
 }
 
 }; // llvmo
-namespace llvmo {
-}
 
 namespace llvmo {
 
   CL_LISPIFY_NAME(addDestination);
   CL_EXTERN_DEFMETHOD(IndirectBrInst_O, &llvm::IndirectBrInst::addDestination);;
-
-;
-
-}; // llvmo
-namespace llvmo {
-}
-
-namespace llvmo {
-
-
-;
-
-}; // llvmo
-namespace llvmo {
-}
-
-namespace llvmo {
-
-
-;
-
-}; // llvmo
-namespace llvmo {
-}
-
-namespace llvmo {
-
-
-;
-
-}; // llvmo
-namespace llvmo {
-}
-
-namespace llvmo {
-
 
 ;
 
@@ -2058,8 +1868,6 @@ string ConstantFP_O::__repr__() const {
 }
 
 }; // llvmo
-namespace llvmo {
-}
 
 namespace llvmo {
 ConstantInt_sp ConstantInt_O::create(llvm::ConstantInt *ptr) {
@@ -2136,9 +1944,6 @@ string ConstantPointerNull_O::__repr__() const {
 }; // llvmo
 
 namespace llvmo {
-}
-
-namespace llvmo {
 
 CL_LAMBDA(value);
 CL_LISPIFY_NAME(make-apfloat-float);
@@ -2156,13 +1961,6 @@ CL_DEFUN APFloat_sp APFloat_O::makeAPFloatDouble(core::DoubleFloat_sp value) {
   return self;
 };
 }
-
-namespace llvmo {
-
-
-;
-
-}; // llvmo
 
 namespace llvmo {
 
@@ -2758,8 +2556,6 @@ CL_DEFUN MDNode_sp MDNode_O::get(LLVMContext_sp context, core::List_sp values) {
 ;
 
 }; // llvmo
-namespace llvmo {
-}
 
 namespace llvmo {
 
@@ -2777,8 +2573,6 @@ CL_DEFUN MDString_sp MDString_O::get(LLVMContext_sp context, core::String_sp str
 ;
 
 }; // llvmo
-namespace llvmo {
-}
 
 namespace llvmo {
 
@@ -2792,16 +2586,6 @@ CL_DEFUN ValueAsMetadata_sp ValueAsMetadata_O::get(Value_sp val) {
 
 
   SYMBOL_EXPORT_SC_(LlvmoPkg, ValueAsMetadataGet);
-
-;
-
-}; // llvmo
-namespace llvmo {
-}
-
-namespace llvmo {
-
-
 
 ;
 
@@ -3091,20 +2875,6 @@ CL_DEFUN core::T_sp FunctionType_O::get(core::T_sp result_type, core::T_sp param
 namespace llvmo {
 
 
-;
-
-};
-
-namespace llvmo {
-
-
-;
-
-};
-
-namespace llvmo {
-
-
 CL_LAMBDA(context &key elements name is-packed);
 CL_LISPIFY_NAME(struct-type-create);
 CL_DEFUN StructType_sp StructType_O::make(LLVMContext_sp context, core::T_sp elements, core::String_sp name, core::T_sp isPacked) {
@@ -3152,13 +2922,6 @@ CL_DEFMETHOD void StructType_O::setBody(core::T_sp elements, core::T_sp isPacked
 
 namespace llvmo {
 
-
-;
-
-};
-
-namespace llvmo {
-
 CL_LAMBDA(element-type num-elements);
 CL_LISPIFY_NAME(array-type-get);
 CL_DEFUN ArrayType_sp ArrayType_O::get(Type_sp elementType, uint64_t numElements) {
@@ -3185,13 +2948,6 @@ CL_DEFUN PointerType_sp PointerType_O::get(Type_sp elementType, uint addressSpac
   at->set_wrapped(llvm_at);
   return at;
 }
-
-
-;
-
-};
-
-namespace llvmo {
 
 
 ;
@@ -3245,42 +3001,6 @@ CL_DEFUN core::Function_sp finalizeEngineAndRegisterWithGcAndGetCompiledFunction
   return functoid;
 }
 
-
-//
-  CL_DEFUN core::Function_sp finalizeEngineAndGetDispatchFunction(ExecutionEngine_sp oengine, core::T_sp functionName, Function_sp fn, Function_sp startupFn, Function_sp shutdownFn, core::T_sp initial_data) {
-    DEPRECATED();
-    llvm::ExecutionEngine *engine = oengine->wrappedPtr();
-    finalizeEngineAndTime(engine);
-    ASSERTF(fn.notnilp(), BF("The Function must never be nil"));
-    void *p = engine->getPointerToFunction(fn->wrappedPtr());
-    if (!p) {
-      SIMPLE_ERROR(BF("Could not get a pointer to the function finalizeEngineAndGetDispatchFunction: %s") % _rep_(functionName));
-    }
-    core::claspFunction dispatchFunction = (core::claspFunction)(p);
-    core::ShutdownFunction_fptr_type shutdownFunction = (core::ShutdownFunction_fptr_type)(engine->getPointerToFunction(shutdownFn->wrappedPtr()));
-    gctools::smart_ptr<core::CompiledDispatchFunction_O> functoid = gctools::GC<core::CompiledDispatchFunction_O>::allocate(functionName, kw::_sym_dispatch_function, dispatchFunction, _Unbound<Module_O>() );
-    void* pstartup = engine->getPointerToFunction(startupFn->wrappedPtr());
-    if (pstartup == NULL ) {
-      printf("%s:%d Could not find function named %s\n", __FILE__, __LINE__, MODULE_STARTUP_FUNCTION_NAME);
-    }
-    core::module_startup_function_type startup = reinterpret_cast<core::module_startup_function_type>(pstartup);
-    startup(initial_data.tagged_());
-    return functoid;
-  }
-
-
-
-
-
-
-
-  struct CtorStruct {
-    int priority;
-    void (*ctor)();
-    char* obj;
-  };
-
-
   CL_DEFUN void finalizeEngineAndRegisterWithGcAndRunMainFunctions(ExecutionEngine_sp oengine) {
   // Stuff to support MCJIT
     llvm::ExecutionEngine *engine = oengine->wrappedPtr();
@@ -3313,17 +3033,6 @@ CL_DEFUN core::Function_sp finalizeEngineAndRegisterWithGcAndGetCompiledFunction
     printf("%s:%d Leaving %s\n", __FILE__, __LINE__, __FUNCTION__ );
 #endif
   }
-
-#if 0
-  CL_DEFUN void finalizeClosure(ExecutionEngine_sp oengine, core::Function_sp func) {
-    llvm::ExecutionEngine *engine = oengine->wrappedPtr();
-    auto closure = func.as<core::CompiledClosure_O>();
-    llvmo::Function_sp llvm_func = closure->llvmFunction;
-    void *p = engine->getPointerToFunction(llvm_func->wrappedPtr());
-    core::CompiledClosure_fptr_type lisp_funcPtr = (core::CompiledClosure_fptr_type)(p);
-    closure->entry = lisp_funcPtr;
-  }
-#endif
 
 /*! Return (values target nil) if successful or (values nil error-message) if not */
   CL_DEFUN core::T_mv TargetRegistryLookupTarget(const std::string &ArchName, Triple_sp triple) {
@@ -4063,25 +3772,5 @@ CL_DEFUN core::Function_sp llvm_sys__jitFinalizeReplFunction(ClaspJIT_sp jit, Mo
   startup(initialData.tagged_());
   return functoid;
 }
-
-#if 0
-CL_DEFUN core::Function_sp llvm_sys__jitFinalizeDispatchFunction(ClaspJIT_sp jit, ModuleHandle_sp handle, const string& dispatchName, const string& startupName, const string& shutdownName, core::T_sp initialData ) {
-  core::Pointer_sp dispatchPtr = jit->findSymbolIn(handle,dispatchName,false);
-  core::Pointer_sp startupPtr = jit->findSymbolIn(handle,startupName,false);
-  core::Pointer_sp shutdownPtr = jit->findSymbolIn(handle,shutdownName,false);
-  core::claspFunction dispatchFunction = (core::claspFunction)(gc::As_unsafe<core::Pointer_sp>(dispatchPtr)->ptr());
-  core::ShutdownFunction_fptr_type shutdownFunction = (core::ShutdownFunction_fptr_type)(gc::As_unsafe<core::Pointer_sp>(shutdownPtr)->ptr());
-  handle->set_shutdown_function(shutdownFunction);
-//  printf("%s:%d  jitFinalizeDispatchFunction %p\n", __FILE__, __LINE__, (void*)dispatchFunction);
-  gctools::smart_ptr<core::CompiledDispatchFunction_O> functoid = gctools::GC<core::CompiledDispatchFunction_O>::allocate(core::SimpleBaseString_O::make(dispatchName), kw::_sym_dispatch_function, dispatchFunction, handle );
-  void* pstartup = gc::As_unsafe<core::Pointer_sp>(startupPtr)->ptr();
-  if (pstartup == NULL ) {
-    printf("%s:%d Could not find function named %s\n", __FILE__, __LINE__, MODULE_STARTUP_FUNCTION_NAME);
-  }
-  core::module_startup_function_type startup = reinterpret_cast<core::module_startup_function_type>(pstartup);
-  startup(initialData.tagged_());
-  return functoid;
-}
-#endif
 };
 

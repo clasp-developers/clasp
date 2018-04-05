@@ -134,11 +134,6 @@ namespace core {
 		break;
 	    m += k;
 	}
-#if 0
-	if (print_level >= 0) {
-	    clasp_bds_unwind1(env);
-	}
-#endif
 	if (readably) {
 	    clasp_write_char(')', stream);
 	}

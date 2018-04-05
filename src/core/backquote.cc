@@ -77,18 +77,6 @@ T_mv macro_core__quasiquote(List_sp whole, T_sp env) {
   return core__backquote_completely_process(form);
 };
 
-
-#define ARGS_macro_backquote "(form env)"
-#define DECL_macro_backquote ""
-#define DOCS_macro_backquote "backquote"
-T_mv macro_backquote(List_sp form, T_sp env) {
-  T_sp arg = oCadr(form);
-  LOG(BF("Expanding backquote going in: %s") % _rep_(arg));
-  T_mv result = core__backquote_completely_process(arg);
-  LOG(BF("Expanded backquote result: %s") % _rep_(result));
-  return (result);
-}
-
 /*!
   Equivalent to Common Lisps append function
   (append a b c)
@@ -179,7 +167,7 @@ CL_DEFUN T_sp core__backquote_process(T_sp ox) {
   }
   x = ox;
   ax = oCar(x);
-  if (ax == _sym_backquote) {
+  if (ax == _sym_quasiquote) {
     T_sp passone = core__backquote_completely_process(oCadr(x)); // eval::funcall(_sym_backquote_completely_process,oCadr(x));
     result = core__backquote_process(passone);                   // eval::funcall(_sym_backquote_process,passone);
     goto DONE;
@@ -439,7 +427,6 @@ CL_DEFUN T_sp core__backquote_remove_tokens(T_sp x) {
 
 void initialize_backquote() {
   defmacro(CorePkg, "quasiquote", macro_core__quasiquote, ARGS_macro_core__quasiquote, DECL_macro_core__quasiquote, DOCS_macro_core__quasiquote, __FILE__, __LINE__);
-  defmacro(CorePkg, "backquote", &macro_backquote, ARGS_macro_backquote, DECL_macro_backquote, DOCS_macro_backquote, __FILE__, __LINE__);
 
   _sym_STARbq_simplifySTAR->setf_symbolValue(_lisp->_true());
   _sym_STARbq_listSTAR->defconstant(_sym_STARbq_listSTAR);

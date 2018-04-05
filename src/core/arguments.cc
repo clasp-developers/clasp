@@ -138,21 +138,6 @@ string AuxArgument::asString() const {
   return ((ss.str()));
 }
 
-#if 0 // moved to header
-DynamicScopeManager::DynamicScopeManager() {
-  int top = my_thread->bindings().top();
-  this->_beginTop = top;
-  this->_endTop = top;
-}
-
-DynamicScopeManager::DynamicScopeManager(Symbol_sp sym, T_sp val) {
-  int top = my_thread->bindings().top();
-  this->_beginTop = top;
-  this->_endTop = top;
-  this->pushSpecialVariableAndSet(sym, val);
-}
-#endif
-
 void DynamicScopeManager::dump() const {
   stringstream ss;
   ss << "DynamicScopeManager  _beginTop[" << this->_beginTop << "] _endTop[" << this->_endTop << "]" << std::endl;
@@ -162,15 +147,6 @@ void DynamicScopeManager::dump() const {
   printf("%s", ss.str().c_str());
 }
 
-#if 0
-void DynamicScopeManager::pushSpecialVariableAndSet(Symbol_sp sym, T_sp val) {
-  thread->bindings()->push(sym);
-  this->_endTop = my_thread->bindings().top();
-  //	SymbolSaveValue sv(sym,sym->symbolValueUnsafe());
-  //	this->_SavedValues.push_back(sv);
-  sym->setf_symbolValue(val);
-}
-#endif
 /*! The frame_index is not used here - it is only used by ActivationFrameDynamicLexicalScopeManager */
 void DynamicScopeManager::new_binding(const Argument &arg, T_sp val) {
   if (arg._ArgTargetFrameIndex == SPECIAL_TARGET) {
@@ -291,9 +267,4 @@ T_sp StackFrameDynamicScopeManager::lexenv() const {
   //  printf("%s:%d Returning nil as the lexical environment for a StackFrameDynamicScopeManager\n", __FILE__, __LINE__);
   return _Nil<core::T_O>();
 }
-#if 0 // Oh oh - do I need these?
-T_sp StackFrameDynamicScopeManager::activationFrame() const {
-  return this->frame;
-}
-#endif
 };

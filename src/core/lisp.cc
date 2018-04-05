@@ -61,7 +61,6 @@ THE SOFTWARE.
 #include <clasp/core/lisp.h>
 #include <clasp/core/lispList.h>
 #include <clasp/core/loadTimeValues.h>
-#include <clasp/core/profiler.h>
 #include <clasp/core/bundle.h>
 #include <clasp/core/bformat.h>
 #include <clasp/core/hashTableEq.h>
@@ -96,7 +95,6 @@ THE SOFTWARE.
 #include <clasp/core/lispReader.h>
 #include <clasp/core/write_object.h>
 #include <clasp/core/write_ugly.h>
-#include <clasp/core/lispMath.h>
 #include <clasp/core/clcenv.h>
 #include <clasp/core/pathname.h>
 #include <clasp/core/print.h>
@@ -134,7 +132,6 @@ THE SOFTWARE.
 #include <clasp/core/lispDefinitions.h>
 #include <clasp/core/externalObject.h>
 #include <clasp/core/initializeClasses.h>
-#include <clasp/core/holder.h>
 #include <clasp/core/corePackage.h>
 #include <clasp/core/stacks.h>
 #include <clasp/core/primitives.h>
@@ -925,18 +922,6 @@ LoadTimeValues_sp Lisp_O::findLoadTimeValues(const string &name) {
 }
 LoadTimeValues_sp Lisp_O::findLoadTimeValuesWithNameContaining(const string &sname, int &count) {
   DEPRECATED(); // We should get rid of LoadTimeValues
-#if 0
-  LoadTimeValues_sp result = _Nil<LoadTimeValues_O>();
-  count = 0;
-  SimpleBaseString_sp name = SimpleBaseString_O::make(name);
-  this->_Roots._LoadTimeValueArrays->mapHash([&count, &result, &name](T_sp key, T_sp val) -> void {
-      if ( StrFind(gc::As<String_sp>(key),name,0) ) {
-        result = gc::As<LoadTimeValues_sp>(val);
-        ++count;
-      }
-    });
-  return result;
-#endif
 }
 #endif
 
@@ -1066,15 +1051,6 @@ void Lisp_O::addClassSymbol(Symbol_sp classSymbol,
   ASSERTF((bool)alloc, BF("_creator for %s is NULL!!!") % _rep_(classSymbol));
   cc->CLASS_set_creator(alloc);
 }
-/*! Add the class with (className) to the current package
- */
-#if 0
-void Lisp_O::addClass(Symbol_sp classSymbol, Class_sp theClass) {
-  //	printf("%s:%d:%s  Adding class with symbol %s -- _allocator=%p unless we initialize it properly\n", __FILE__,__LINE__,__FUNCTION__,_rep_(classSymbol).c_str(), allocator );
-  LOG(BF("Lisp_O::addClass classSymbol(%s)") % _rep_(classSymbol));
-  core__setf_find_class(theClass, classSymbol);
-}
-#endif
 
 void Lisp_O::exportToPython(Symbol_sp sym) const {
   _OF();
@@ -1805,11 +1781,6 @@ CL_LAMBDA(new-value name);
 CL_DECLARE();
 CL_DOCSTRING("setf_find_class, set value to NIL to remove the class name ");
 CL_DEFUN Class_mv core__set_class(T_sp newValue, Symbol_sp name) {
-#if 0
-  if ( name== cl::_sym_class) {
-    printf("%s:%d Setting CLASS to %p\n", __FILE__, __LINE__, newValue.raw_());
-  }
-#endif
   if (!newValue.nilp() && !clos__classp(newValue)) {
     SIMPLE_ERROR(BF("Classes in cando have to be subclasses of Class or NIL unlike ECL which uses Instances to represent classes - while trying to (setf find-class) of %s you gave: %s") % _rep_(name) % _rep_(newValue));
   }
@@ -2437,17 +2408,6 @@ CL_DEFUN void cl__cerror(T_sp cformat, T_sp eformat, List_sp arguments) {
   __END_DOC
 */
 
-#if 0
-CL_LAMBDA(tag secondArgument);
-CL_DECLARE();
-CL_DOCSTRING("isAssignableTo");
-CL_DEFUN T_mv core__is_assignable_to(T_sp tag, Class_sp mc) {
-  LOG(BF("Checking if instances of class(%s) is assignable to variables of class(%s)") % cl__class_of(tag)->className() % cl__class_of(mc)->className());
-  bool io = (tag->isAssignableToByClassSymbol(mc->name()));
-  return (Values(_lisp->_boolean(io)));
-}
-#endif
-
 /*
   __BEGIN_DOC(candoScript.general.isSubClassOf,isSubClassOf)
   \scriptInfixRet{Object::object}{isSubClassOf}{Class::classObject}{Bool::}
@@ -2534,26 +2494,6 @@ Symbol_sp Lisp_O::getClassSymbolForClassName(const string &name) {
   Symbol_sp sym = mc->_className();
   ASSERTNOTNULL(sym);
   return sym;
-}
-
-
-T_sp Lisp_O::createObjectOfClass(T_sp mc) {
-  if (clos__classp(mc)) {
-    LOG(BF("createObjectOfClass(%s)") % _rep_(mc));
-    IMPLEMENT_ME();
-#if 0
-    T_sp obj = gc::As<Class_sp>(mc)->allocate_newNil();
-    if ( obj.generalp() ) {
-      obj.unsafe_general()->initialize();
-    } else if ( obj.consp() ) {
-      // Nothing
-    } else {
-      SIMPLE_ERROR(BF("Add support to initialize %s") % _rep_(cl__class_of(obj)));
-    }
-    return obj;
-#endif
-  }
-  SIMPLE_ERROR(BF("Handle createObjectOfClass when mc is not a Class"));
 }
 
 void Lisp_O::setEmbeddedInPython(bool b) {

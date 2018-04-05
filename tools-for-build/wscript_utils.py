@@ -125,3 +125,23 @@ class clasp_task(Task.Task):
         cmd = cmd + ["--"] + list(args)
 
         return cmd
+
+def ensure_list(x):
+    if isinstance(x, list):
+        return x
+    else:
+        return [x]
+
+def collect_files(root, suffix = []):
+    result = []
+    suffixes = ensure_list(suffix)
+    for root, dirs, files in os.walk(root):
+        for name in files:
+            for suffix in suffixes:
+                if name[ - len(suffix) :] == suffix:
+                    result.append(os.path.join(root, name))
+                    break
+    return result
+
+def collect_waf_nodes(bld, root, suffix = []):
+    return [bld.path.find_node(x) for x in collect_files(root, suffix = suffix)]

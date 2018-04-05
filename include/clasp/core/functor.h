@@ -21,12 +21,10 @@ namespace core {
   FORWARD(BuiltinClosure);
   FORWARD(FunctionClosure);
   FORWARD(Closure);
-  FORWARD(CompiledFunction);
   FORWARD(ClosureWithFrame);
   FORWARD(ClosureWithSlots);
   FORWARD(InterpretedClosure);
   FORWARD(CompiledClosure);
-  FORWARD(CompiledDispatchFunction);
 };
 
 template <>
@@ -48,12 +46,6 @@ struct gctools::GCInfo<core::BuiltinClosure_O> {
   static GCInfo_policy constexpr Policy = normal;
 };
 template <>
-struct gctools::GCInfo<core::InstanceClosure_O> {
-  static bool constexpr NeedsInitialization = false;
-  static bool constexpr NeedsFinalization = false;
-  static GCInfo_policy constexpr Policy = normal;
-};
-template <>
 struct gctools::GCInfo<core::InterpretedClosure_O> {
   static bool constexpr NeedsInitialization = false;
   static bool constexpr NeedsFinalization = false;
@@ -62,20 +54,6 @@ struct gctools::GCInfo<core::InterpretedClosure_O> {
 
 template <>
 struct gctools::GCInfo<core::CompiledClosure_O> {
-  static bool constexpr NeedsInitialization = false;
-  static bool constexpr NeedsFinalization = false;
-  static GCInfo_policy constexpr Policy = normal;
-};
-template <>
-struct gctools::GCInfo<core::CompiledDispatchFunction_O> {
-  static bool constexpr NeedsInitialization = false;
-  static bool constexpr NeedsFinalization = false;
-  static GCInfo_policy constexpr Policy = normal;
-};
-
-
-template <>
-struct gctools::GCInfo<core::CompiledFunction_O> {
   static bool constexpr NeedsInitialization = false;
   static bool constexpr NeedsFinalization = false;
   static GCInfo_policy constexpr Policy = normal;
@@ -172,6 +150,8 @@ public:
   CL_DEFMETHOD T_sp functionName() const {
     return this->_name;
   }
+  // defined in write_ugly.cc
+  virtual void __write__(T_sp) const;
 
 };
 };
@@ -365,33 +345,6 @@ public:
 
 };
 
-namespace core {
-  SMART(LambdaListHandler);
-  SMART(NamedFunction);
-  class CompiledFunction_O : public Closure_O {
-    LISP_CLASS(core, ClPkg, CompiledFunction_O, "CompiledFunction",Closure_O);
-
-#if defined(XML_ARCHIVE)
-    void archiveBase(ArchiveP node);
-#endif // defined(XML_ARCHIVE)
-  public:
-  CompiledFunction_O(claspFunction fptr, T_sp name) : Base(fptr, name){};
-    virtual ~CompiledFunction_O(){};
-
-  public:
-#if 0
-    static CompiledFunction_sp make(Closure_sp c) {
-      GC_ALLOCATE(CompiledFunction_O, f);
-      ASSERT(c.generalp());
-      f->closure = c;
-    //            printf("%s:%d Returning CompiledFunction_sp func=%p &f=%p\n", __FILE__, __LINE__, f.px_ref(), &f);
-      return f;
-    }
-#endif
-  public:
-  };
-};
-
 #ifdef USE_COMPILED_CLOSURE
 namespace core {
 class CompiledClosure_O : public core::ClosureWithFrame_O {
@@ -421,61 +374,6 @@ public:
 namespace llvmo {
   FORWARD(ModuleHandle);
 };
-
-namespace core {
-  LCC_RETURN compiledDispatchFunctionDummyEntryPoint(LCC_ARGS_FUNCALL_ELLIPSIS);
-  class CompiledDispatchFunction_O : public core::Closure_O {
-    LISP_CLASS(core,CorePkg,CompiledDispatchFunction_O,"CompiledDispatchFunction",core::Closure_O);
-  public:
-//    DispatchFunction_fptr_type _dispatchEntryPoint;
-    llvmo::ModuleHandle_sp  _llvmModule;
-  public:
-    virtual const char *describe() const { return "CompiledDispatchFunction"; };
-    virtual size_t templatedSizeof() const { return sizeof(*this); };
-  public:
-  CompiledDispatchFunction_O(core::T_sp functionName, core::Symbol_sp type, claspFunction ptr, llvmo::ModuleHandle_sp module ) : Base(ptr,functionName), _llvmModule(module) {};
-    bool compiledP() const { return true; };
-    core::T_sp lambda_list() const { return Cons_O::createList(cl::_sym_generic_function, core::_sym_arguments); };
-    void setf_lambda_list(core::List_sp lambda_list);
-    CL_DEFMETHOD T_sp llvm_module() const { return this->_llvmModule;};
-
-  public:
-    T_sp closedEnvironment() const { return _Nil<T_O>(); };
-    virtual T_sp setSourcePosInfo(T_sp sourceFile, size_t filePos, int lineno, int column) {NOT_APPLICABLE();};
-    virtual T_sp cleavir_ast() const {NOT_APPLICABLE();};
-    virtual void setf_cleavir_ast(T_sp ast) {NOT_APPLICABLE();};
-    T_sp docstring() const { NOT_APPLICABLE();};
-    void set_kind(Symbol_sp k) { NOT_APPLICABLE();};
-    Symbol_sp getKind() const { return kw::_sym_dispatch_function;};
-    virtual int sourceFileInfoHandle() const {return 0; };
-    virtual LambdaListHandler_sp lambdaListHandler() const {NOT_APPLICABLE();};
-    virtual List_sp declares() const {NOT_APPLICABLE();};
-    virtual bool macroP() const {NOT_APPLICABLE();};
-
-    
-  };
-};
-
-namespace core {
-
-class MacroClosure_O : public BuiltinClosure_O {
-    LISP_CLASS(core,CorePkg,MacroClosure_O,"MacroClosure",BuiltinClosure_O);
-private:
-  typedef T_mv (*MacroPtr)(List_sp, T_sp);
-  MacroPtr mptr;
-public:
-  virtual const char *describe() const { return "MacroClosure"; };
-  // constructor
- MacroClosure_O(Symbol_sp name, MacroPtr ptr, SOURCE_INFO) : BuiltinClosure_O(entry_point,name, kw::_sym_macro, SOURCE_INFO_PASS), mptr(ptr) {}
-  size_t templatedSizeof() const { return sizeof(MacroClosure_O); };
-  virtual Symbol_sp getKind() const { return kw::_sym_macro; };
-  static LCC_RETURN LISP_CALLING_CONVENTION();
-};
-
-
-};
-
-
 
 namespace core {
   void core__closure_slots_dump(Closure_sp func);

@@ -189,13 +189,7 @@ CL_DEFUN T_mv core__reader_backquoted_expression(T_sp sin, Character_sp ch) {
   // DynamicScopeManager will save the dynamic value of the symbol and restore it in dtor
   DynamicScopeManager scope(_sym_STARbackquote_levelSTAR, new_backquote_level);
   T_sp quoted_object = cl__read(sin, _lisp->_true(), _Nil<T_O>(), _lisp->_true());
-  Cons_sp result = Cons_O::createList(_sym_backquote, quoted_object);
-  //HERE_scCONS_CREATE_LIST2(_sym_backquote,quoted_object);
-#if 0
-  if (_lisp->sourceDatabase().notnilp()) {
-    gc::As<SourceManager_sp>(_lisp->sourceDatabase())->duplicateSourcePosInfo(quoted_object, result);
-  }
-#endif
+  Cons_sp result = Cons_O::createList(_sym_quasiquote, quoted_object);
   return (Values(result));
 };
 
@@ -271,8 +265,6 @@ CL_DECLARE();
 CL_DOCSTRING("reader_error_unmatched_close_parenthesis");
 CL_DEFUN T_mv core__reader_error_unmatched_close_parenthesis(T_sp sin, Character_sp ch) {
   SourceFileInfo_sp info = core__source_file_info(sin);
-  //Karsten Poeck, this is not a simple-error but a reader-error
-  //SIMPLE_ERROR(BF("Unmatched close parenthesis in file: %s line: %s") % info->fileName() % clasp_input_lineno(sin));
   string fn = info->fileName();
   if (fn.compare("-no-name-") == 0) {
       	READER_ERROR(SimpleBaseString_O::make("Unmatched close parenthesis in stream at line: ~a column ~a."),
@@ -933,31 +925,10 @@ T_sp ReadTable_O::make_dispatch_macro_character(Character_sp ch, T_sp non_termin
   this->set_macro_character(ch, _sym_dispatch_macro_character, non_terminating_p);
   this->_DispatchMacroCharacters->setf_gethash(ch, HashTableEql_O::create_default());
   return _lisp->_true();
-#if 0
-  HashTable_sp syntax = this->_Syntax;
-	List_sp plist = syntax->gethash(ch,_Nil<T_O>());
-	ql::list qplist;
-	SYMBOL_EXPORT_SC_(KeywordPkg,dispatch_table);
-	// add the :dispatch-table (make-hash-table) property
-	qplist << kw::_sym_dispatch_table
-	       << HashTableEql_O::create_default()
-	    & plist;
-	LOG(BF("Adding :dispatch-table property to plist"));
-	LOG(BF("New plist: %s") % _rep_(qplist.cons()));
-	LOG(BF("Existing plist: %s") % _rep_(syntax->gethash(ch,_Nil<T_O>())) );
-	syntax->hash_table_setf_gethash(ch,qplist.cons());
-	LOG(BF("After setf plist: %s") % _rep_(syntax->gethash(ch,_Nil<T_O>())) );
-	return _lisp->_true();
-#endif
 }
 
 T_sp ReadTable_O::set_dispatch_macro_character(Character_sp disp_char, Character_sp sub_char,
                                                T_sp new_func_desig) {
-#if 0
-  if (this->get_macro_character(disp_char) != _sym_dispatch_macro_character->symbolFunction()) {
-    SIMPLE_ERROR(BF("%c is not a dispatch character") % _rep_(disp_char));
-  }
-#endif
   T_sp tdispatch_table = this->_DispatchMacroCharacters->gethash(disp_char);
   if (!gc::IsA<HashTable_sp>(tdispatch_table)) {
     SIMPLE_ERROR(BF("%s is not a dispatching macro character") % _rep_(disp_char));
@@ -968,21 +939,6 @@ T_sp ReadTable_O::set_dispatch_macro_character(Character_sp disp_char, Character
   Function_sp new_func = coerce::functionDesignator(new_func_desig);
   dispatch_table->hash_table_setf_gethash(upcase_sub_char, new_func);
   return _lisp->_true();
-#if 0
-	if ( this->get_macro_character(disp_char)
-	     != _sym_dispatch_macro_character->symbolFunction() )
-	{
-	    SIMPLE_ERROR(BF("%c is not a dispatch character") % _rep_(disp_char) );
-	}
-	HashTable_sp syntax_table = this->_Syntax;
-	List_sp disp_char_plist = syntax_table->gethash(disp_char,_Nil<T_O>());
-	HashTable_sp dispatch_table = disp_char_plist->getf(kw::_sym_dispatch_table,_Nil<HashTable_O>() ).as<HashTable_O>();
-	ASSERTF(dispatch_table.notnilp(),BF("The dispatch table for the character[%s] is nil! - this shouldn't happen") % _rep_(disp_char) );
-	Character_sp upcase_sub_char = clasp_make_character(claspCharacter_upcase(sub_char.unsafe_character()));
-	Function_sp new_func = coerce::functionDesignator(new_func_desig);
-	dispatch_table->hash_table_setf_gethash(upcase_sub_char,new_func);
-	return _lisp->_true();
-#endif
 }
 
 T_sp ReadTable_O::get_dispatch_macro_character(Character_sp disp_char, Character_sp sub_char) {
@@ -994,15 +950,6 @@ T_sp ReadTable_O::get_dispatch_macro_character(Character_sp disp_char, Character
   Character_sp upcase_sub_char = clasp_make_character(claspCharacter_upcase(sub_char.unsafe_character()));
   T_sp func = dispatch_table->gethash(upcase_sub_char, _Nil<T_O>());
   return func;
-#if 0
-	HashTable_sp syntax_table = this->_Syntax;
-	Cons_sp disp_char_plist = syntax_table->gethash(disp_char,_Nil<T_O>());
-	HashTable_sp dispatch_table = disp_char_plist->getf(kw::_sym_dispatch_table,_Nil<HashTable_O>() ).as<HashTable_O>();
-	ASSERTF(dispatch_table.notnilp(),BF("The dispatch table for the character[%s] is nil! - this shouldn't happen") % _rep_(disp_char) );
-        Character_sp upcase_sub_char = clasp_make_character(claspCharacter_upcase(sub_char.unsafe_character()));
-	Function_sp func = dispatch_table->gethash(upcase_sub_char,_Nil<T_O>()).as<Function_O>();
-	return func;
-#endif
 }
 
 Character_sp ReadTable_O::convert_case(Character_sp cc) {

@@ -39,7 +39,6 @@ THE SOFTWARE.
 #include <clasp/core/documentation.h>
 #include <clasp/core/multipleValues.h>
 #include <clasp/core/lambdaListHandler.h>
-//#include <clasp/core/singleDispatchEffectiveMethodFunction.h>
 #include <clasp/core/singleDispatchGenericFunction.h>
 #include <clasp/core/singleDispatchMethod.h>
 #include <clasp/core/wrappers.h>
