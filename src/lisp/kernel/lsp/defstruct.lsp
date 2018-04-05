@@ -286,8 +286,8 @@
                                         (get-setf-expansion (list 'row-major-aref object ,index) env))))))
                          (list* `(declaim (ftype (function ((vector ,element-type)) ,type) ,accname) ; useless
                                           (inline ,accname))
-                                `(defun ,accname (,name)
-                                   (the ,type (row-major-aref ,name ,index)))
+                                `(defun ,accname (instance)
+                                   (the ,type (row-major-aref instance ,index)))
                                 writer))))
                (incf index))))
       `(progn ,@(mapcan #'one slotds)))))
@@ -317,7 +317,7 @@
                (define-vector-struct-constructors ,name ,element-type ,constructors ,slotds)
                (define-vector-struct-accessors ,name ,conc-name ,element-type ,slotds))))
        ,@(when copier
-           `((defun ,copier (,name) (copy-seq ,name)))))))
+             `((defun ,copier (instance) (copy-seq instance)))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -351,8 +351,8 @@
                                         (get-setf-expansion (list 'nth ,index object) env))))))
                          (list* `(declaim (ftype (function (,name) ,type) ,accname) ; useless
                                           (inline ,accname))
-                                `(defun ,accname (,name)
-                                   (the ,type (nth ,index ,name)))
+                                `(defun ,accname (instance)
+                                   (the ,type (nth ,index instance)))
                                 writer))))
                (incf index))))
       `(progn ,@(mapcan #'one slotds)))))
@@ -381,7 +381,7 @@
              (define-list-struct-constructors ,name ,constructors ,slotds)
              (define-list-struct-accessors ,name ,conc-name ,slotds))))
      ,@(when copier
-         `((defun ,copier (,name) (copy-list ,name))))))
+            `((defun ,copier (instance) (copy-list instance))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -438,10 +438,10 @@
                                       ,index new))))))
                      (list* `(declaim (ftype (function (,name) ,type) ,accname) ; useless
                                       (inline ,accname))
-                            `(defun ,accname (,name)
+                            `(defun ,accname (instance)
                                ;; FIXME: remove decls once ftype can take care of it.
-                               (declare (type ,name ,name))
-                               (the ,type (si:instance-ref ,name ,index)))
+                               (declare (type ,name instance))
+                               (the ,type (si:instance-ref instance ,index)))
                             writer))
                  (incf index)))))
       `(progn ,@(mapcan #'one slot-descriptions)))))
@@ -481,7 +481,7 @@
          ;; must be COPY-STRUCTURE, and so it has to deal correctly with subclasses.
          `((declaim (ftype (function (,name) ,name) ,copier) ; useless atm
                     (inline ,copier))
-           (defun ,copier (,name) (copy-structure ,name))))
+             (defun ,copier (instance) (copy-structure instance))))
 
      ,@(with-defstruct-delay (all-slots name include
                               slot-descriptions overwriting-slot-descriptions env)
