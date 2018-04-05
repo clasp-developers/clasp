@@ -402,6 +402,23 @@ LtvcReturn ltvc_make_double(gctools::GCRootsInModule* holder, size_t index, doub
   NO_UNWIND_END();
 }
 
+LtvcReturn ltvc_enclose(gctools::GCRootsInModule* holder, size_t index, core::T_O *lambdaName,
+                        fnLispCallingConvention llvm_func, int *sourceFileInfoHandleP,
+                        size_t filePos, size_t lineno, size_t column)
+{NO_UNWIND_BEGIN();
+  core::T_sp tlambdaName = gctools::smart_ptr<core::T_O>((gc::Tagged)lambdaName);
+  gctools::smart_ptr<core::ClosureWithSlots_O> functoid =
+    gctools::GC<core::ClosureWithSlots_O>::allocate_container(0,
+                                                              llvm_func,
+                                                              tlambdaName,
+                                                              kw::_sym_function,
+                                                              _Nil<T_O>(), // lambdaList
+                                                              *sourceFileInfoHandleP,
+                                                              filePos, lineno, column);
+  LTVCRETURN holder->set(index, functoid.tagged_());
+  NO_UNWIND_END();
+}
+
 LtvcReturn ltvc_set_mlf_creator_funcall(gctools::GCRootsInModule* holder, size_t index, fnLispCallingConvention fptr, const char* name) {
   core::T_O *lcc_arglist = _Nil<core::T_O>().raw_();
   Symbol_sp sname = Symbol_O::create_from_string(std::string(name));
