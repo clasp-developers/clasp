@@ -402,11 +402,11 @@ LtvcReturn ltvc_make_double(gctools::GCRootsInModule* holder, size_t index, doub
   NO_UNWIND_END();
 }
 
-LtvcReturn ltvc_enclose(gctools::GCRootsInModule* holder, size_t index, core::T_O *lambdaName,
+LtvcReturn ltvc_enclose(gctools::GCRootsInModule* holder, size_t index, gctools::Tagged lambdaName,
                         fnLispCallingConvention llvm_func, int *sourceFileInfoHandleP,
                         size_t filePos, size_t lineno, size_t column)
 {NO_UNWIND_BEGIN();
-  core::T_sp tlambdaName = gctools::smart_ptr<core::T_O>((gc::Tagged)lambdaName);
+  core::T_sp tlambdaName = gctools::smart_ptr<core::T_O>(lambdaName);
   gctools::smart_ptr<core::ClosureWithSlots_O> functoid =
     gctools::GC<core::ClosureWithSlots_O>::allocate_container(0,
                                                               llvm_func,
