@@ -41,6 +41,8 @@
 (defstruct (literal-node-call (:type vector) :named) function source-pos-info holder)
 (defstruct (literal-node-side-effect (:type vector) :named) name arguments)
 (defstruct (literal-node-runtime (:type vector) :named) index object)
+(defstruct (literal-node-closure (:type vector) :named)
+  index lambda-name function source-info-handle filepos lineno column)
 ;;; +max-run-all-size+ must be larger than +list-max+ so that
 ;;;   even a full list will fit into one run-all
 (defconstant +max-run-all-size+ (max 200 call-arguments-limit))
@@ -350,7 +352,7 @@ the value is put into *default-load-time-value-vector* and its index is returned
            (irc-intrinsic-call "cc_invoke_sub_run_all_function" (list front-run-all))
            (irc-intrinsic-call "cc_invoke_sub_run_all_function" (list back-run-all))
            sub-run-all)))
-      (t 
+      (t
        (cmp::with-make-new-run-all (foo)
          (dolist (node nodes)
            #+(or)(bformat t "generate-run-all-code  generating node: %s\n" node)
@@ -364,6 +366,16 @@ the value is put into *default-load-time-value-vector* and its index is returned
                 (irc-intrinsic-call fn-name fix-args)))
              ((literal-node-toplevel-funcall-p node)
               (cmp:irc-intrinsic-call "ltvc_toplevel_funcall" (literal-node-toplevel-funcall-arguments node)))
+             ((literal-node-closure-p node)
+              (irc-intrinsic-call "ltvc_enclose"
+                                  (list *gcroots-in-module*
+                                        (jit-constant-size_t (literal-node-closure-index node))
+                                        (literal-node-closure-lambda-name node)
+                                        (literal-node-closure-function node)
+                                        (literal-node-closure-source-info-handle node)
+                                        (literal-node-closure-filepos node)
+                                        (literal-node-closure-lineno node)
+                                        (literal-node-closure-column node))))
              (t (error "Unknown run-all node ~a" node))))
          foo)))))
 
@@ -666,6 +678,32 @@ Return the orderered-raw-constants-list and the constants-table GlobalVariable"
                 (values index T))
               (let ((immediate immediate?literal-node-runtime))
                 (values immediate nil)))))))
+
+;;; ------------------------------------------------------------
+;;;
+;;; reference-closure
+;;;
+;;; Returns an index for a closure.
+;;; We skip similarity testing etc. This could be improved (FIXME)
+;;; We could also add the capability to dump actual closures, though
+;;;  I'm not sure why we'd want to do so.
+
+(defun reference-closure (lambda-name enclosed-function source-info-handle
+                          filepos lineno column
+                          num-cells &rest inputs)
+  (declare (ignore num-cells))
+  (unless (null inputs)
+    (error "BUG: reference-closure called with non-closurette"))
+  (if (generate-load-time-values)
+      (let* ((index (new-table-index))
+             (creator (make-literal-node-closure
+                       :index index
+                       :lambda-name lambda-name :function enclosed-function
+                       :source-info-handle source-info-handle
+                       :filepos filepos :lineno lineno :column column)))
+        (run-all-add-node creator)
+        index)
+      (error "BUG: reference-closure doesn't work during COMPILE yet. drmeister, here")))
 
 ;;; ------------------------------------------------------------
 ;;;

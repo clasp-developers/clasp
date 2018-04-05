@@ -20,6 +20,21 @@
 (defun %literal-value (value &optional label)
   (cmp:irc-load (%literal-ref value)))
 
+(defun %closurette-index (arguments)
+  (apply #'literal::reference-closure arguments))
+
+(defun %closurette-ref (arguments)
+  (let* ((index (%closurette-index arguments))
+         (gep (llvm-sys:create-const-gep2-64 cmp:*irbuilder*
+                                             (cmp:ltv-global)
+                                             0 index
+                                             (bformat nil "values-table[%d]" index))))
+    gep))
+
+(defun %closurette-value (arguments)
+  ;; arguments is just whatever is even with cc_enclose etc.
+  (cmp:irc-load (%closurette-ref arguments)))
+
 (defun %i1 (num)
   (cmp:jit-constant-i1 num))
 
