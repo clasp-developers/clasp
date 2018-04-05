@@ -330,15 +330,16 @@ the value is put into *default-load-time-value-vector* and its index is returned
                                                      (bformat nil "CONTAB[%d]%t*" idx)))
                     (arg (irc-load entry (bformat nil "CONTAB[%d]%t*" idx))))
                arg))
+           (fix-arg (arg)
+             (cond
+               ((fixnump arg) (jit-constant-i64 arg))
+               ((stringp arg) (jit-constant-unique-string-ptr arg))
+               ((literal-node-creator-p arg) (lookup-arg arg))
+               (t arg)))
            (fix-args (args)
              "Convert the args from Lisp form into llvm::Value*'s"
-             (mapcar (lambda (x)
-                       (cond
-                         ((fixnump x) (jit-constant-i64 x))
-                         ((stringp x) (jit-constant-unique-string-ptr x))
-                         ((literal-node-creator-p x) (lookup-arg x))
-                         (t x))) ;;(error "Illegal run-all entry ~a" x))))
-                     args)))
+             (mapcar #'fix-arg args)))
+    ;; We split up a run-all that would be very big so LLVM doesn't take years to compile.
     (cond
       ((> (estimate-run-all-size nodes) +max-run-all-size+)
        (let* ((half-len (floor (length nodes) 2))
@@ -370,7 +371,7 @@ the value is put into *default-load-time-value-vector* and its index is returned
               (irc-intrinsic-call "ltvc_enclose"
                                   (list *gcroots-in-module*
                                         (jit-constant-size_t (literal-node-closure-index node))
-                                        (literal-node-closure-lambda-name node)
+                                        (fix-arg (literal-node-closure-lambda-name node))
                                         (literal-node-closure-function node)
                                         (literal-node-closure-source-info-handle node)
                                         (literal-node-closure-filepos node)
@@ -689,20 +690,21 @@ Return the orderered-raw-constants-list and the constants-table GlobalVariable"
 ;;;  I'm not sure why we'd want to do so.
 
 (defun reference-closure (lambda-name enclosed-function source-info-handle
-                          filepos lineno column
-                          num-cells &rest inputs)
-  (declare (ignore num-cells))
-  (unless (null inputs)
-    (error "BUG: reference-closure called with non-closurette"))
+                          filepos lineno column)
   (if (generate-load-time-values)
-      (let* ((index (new-table-index))
-             (creator (make-literal-node-closure
-                       :index index
-                       :lambda-name lambda-name :function enclosed-function
-                       :source-info-handle source-info-handle
-                       :filepos filepos :lineno lineno :column column)))
-        (run-all-add-node creator)
-        index)
+      (multiple-value-bind (lambda-name-index in-array)
+          (load-time-reference-literal lambda-name t)
+        (unless in-array
+          (error "BUG: Immediate lambda-name ~a- What?" lambda-name))
+        (let* ((index (new-table-index))
+               (creator (make-literal-node-closure
+                         ;; lambda-name will never be immediate. (Should we check?)
+                         :lambda-name lambda-name-index
+                         :index index :function enclosed-function
+                         :source-info-handle source-info-handle
+                         :filepos filepos :lineno lineno :column column)))
+          (run-all-add-node creator)
+          index))
       (error "BUG: reference-closure doesn't work during COMPILE yet. drmeister, here")))
 
 ;;; ------------------------------------------------------------
