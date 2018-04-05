@@ -756,8 +756,9 @@ def configure(cfg):
 #    cfg.define("DEBUG_ENSURE_VALID_OBJECT",1)  #Defines ENSURE_VALID_OBJECT(x)->x macro - sprinkle these around to run checks on objects
 #    cfg.define("DEBUG_QUICK_VALIDATE",1)    # quick/cheap validate if on and comprehensive validate if not
 #    cfg.define("DEBUG_MPS_SIZE",1)   # check that the size of the MPS object will be calculated properly by obj_skip
-#    cfg.define("USE_HUMAN_READABLE_BITCODE",1)
-    cfg.env.USE_HUMAN_READABLE_BITCODE=False
+    cfg.env.USE_HUMAN_READABLE_BITCODE=True
+    if (cfg.env.USE_HUMAN_READABLE_BITCODE):
+        cfg.define("USE_HUMAN_READABLE_BITCODE",1)
     cfg.define("DEBUG_RECURSIVE_ALLOCATIONS",1)
 # -----------------
 # defines that slow down program execution
