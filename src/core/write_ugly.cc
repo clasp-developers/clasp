@@ -191,7 +191,8 @@ write_float(T_sp f, T_sp stream) {
 
 void write_character(T_sp strm, T_sp chr) {
   ASSERT(chr.characterp());
-  claspChar i = chr.unsafe_character();
+  // could be a unicode char, don't assume a claspChar
+  claspCharacter i = clasp_as_claspCharacter(chr);
   if (!clasp_print_escape() && !clasp_print_readably()) {
     clasp_write_char(i, strm);
   } else {
