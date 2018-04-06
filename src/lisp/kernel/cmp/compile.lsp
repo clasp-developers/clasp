@@ -39,11 +39,6 @@ We could do more fancy things here - like if cleavir-clasp fails, use the clasp 
       (funcall compile-hook name definition env pathname :linkage linkage)
       (bclasp-compile* name definition env pathname :linkage linkage)))
 
-(defun bclasp-compile (name form)
-  (let ((*cleavir-compile-hook* nil)
-        (core:*use-cleavir-compiler* nil))
-    (compile name form)))
-
 (defun compile-in-env (bind-to-name &optional definition env compile-hook (linkage 'llvm-sys:internal-linkage) &aux conditions)
   "Compile in the given environment"
   (with-compiler-env (conditions)
