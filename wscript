@@ -1200,7 +1200,11 @@ class link_fasl(clasp_task):
     def run(self):
         if (self.env.LTO_FLAG):
             lto_option = self.env.LTO_FLAG
-            lto_optimize_flag = "-O2"
+            if (cfg.env.USE_PARALLEL_BUILD and self.bld.stage_val<3):
+                lto_optimize_flag = "-O0"
+                print("With USE_PARALLEL_BUILD and stage_val=%d dropping down to -O0 for link_fasl" % self.bld.stage_val)
+            else:
+                lto_optimize_flag = "-O2"
         else:
             lto_option = ""
             lto_optimize_flag = ""
