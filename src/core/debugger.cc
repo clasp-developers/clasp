@@ -498,7 +498,11 @@ CL_LAMBDA(&optional (depth 0));
 CL_DECLARE();
 CL_DOCSTRING("backtrace");
 CL_DEFUN T_sp core__clib_backtrace_as_list() {
-// Play with Unix backtrace(3)
+  // I think Linux is applying the frame-pointer-elim
+  // optimization that prevents following frame pointers
+  // down the stack (see below:  if (bp) bp = *(void**)bp).
+  // I use the function attribute "no-frame-pointer-elim = true"
+  // in cmpir.lsp so this should fix that.
   char *funcname = (char *)malloc(1024);
   size_t funcnamesize = 1024;
   void** buffer = NULL;
