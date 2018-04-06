@@ -275,6 +275,7 @@ CL_DEFUN void core__test_backtrace() {
 }
 #endif
 
+SYMBOL_EXPORT_SC_(CorePkg,make_shadow_backtrace_frame);
 
 CL_DEFUN List_sp core__shadow_backtrace_as_list() {
   const InvocationHistoryFrame *top = my_thread->_InvocationHistoryStackTop;
@@ -285,8 +286,14 @@ CL_DEFUN List_sp core__shadow_backtrace_as_list() {
   int index = 0;
   for (const InvocationHistoryFrame *cur = top; cur != NULL; cur = cur->_Previous) {
     if (cur->_Previous) {
-      InvocationHistoryFrameIterator_sp it = InvocationHistoryFrameIterator_O::create(cur,index);
-      result << it;
+      T_sp frame = eval::funcall(_sym_make_shadow_backtrace_frame,
+                                 INTERN_(kw,index), make_fixnum(index),
+                                 INTERN_(kw,frame_address), Pointer_O::create((void*)cur),
+                                 INTERN_(kw,function_name), gc::As<Closure_sp>(cur->function())->functionName(),
+                                 INTERN_(kw,function), cur->function(),
+                                 INTERN_(kw,arguments), cur->arguments(),
+                                 INTERN_(kw,environment), cur->function());
+      result << frame;
       ++index;
     }
   }
@@ -492,10 +499,10 @@ CL_DECLARE();
 CL_DOCSTRING("backtrace");
 CL_DEFUN T_sp core__clib_backtrace_as_list() {
 // Play with Unix backtrace(3)
-#ifdef _TARGET_OS_DARWIN
   char *funcname = (char *)malloc(1024);
   size_t funcnamesize = 1024;
   void** buffer = NULL;
+  uintptr_t stackTop = (uintptr_t)my_thread->_StackTop;
   int nptrs = safe_backtrace(buffer);
   char **strings = backtrace_symbols(buffer, nptrs);
   if (strings == NULL) {
@@ -508,17 +515,23 @@ CL_DEFUN T_sp core__clib_backtrace_as_list() {
       std::string str(strings[i]);
       SimpleBaseString_sp sstr = SimpleBaseString_O::make(str);
       Pointer_sp ptr = Pointer_O::create(buffer[i]);
-      Pointer_sp frame = Pointer_O::create(bp);
-      if (bp) bp = *(void**)bp;
+      printf("func: %s  bp = %p\n", str.c_str(), bp);
+      T_sp frame;
+      if (bp) {
+        frame = Pointer_O::create(bp);
+        bp = *(void**)bp;
+        // Once we hit what we consider the top (bottom) stack pointer stop looking
+        // by setting bp to NULL
+        if ((uintptr_t)bp>stackTop) bp = NULL;
+      } else {
+        frame = _Nil<T_O>();
+      }
       result << Cons_O::createList(ptr,sstr,frame);
     }
     if (buffer) free(buffer);
     if (strings) free(strings);
     return result.cons();
   }
-#else
-  return _Nil<T_O>();
-#endif
 };
 
 CL_LAMBDA(&optional (depth 0));

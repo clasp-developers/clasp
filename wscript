@@ -615,6 +615,9 @@ def configure(cfg):
     log.debug("llvm_include_dir = %s", llvm_include_dir)
     cfg.env.append_value('CXXFLAGS', ['-I./', '-I' + llvm_include_dir])
     cfg.env.append_value('CFLAGS', ['-I./'])
+    if (cfg.env['DEST_OS'] == LINUX_OS):
+        cfg.env.append_value('CXXFLAGS',['-fno-omit-frame-pointer', '-mno-omit-leaf-frame-pointer'])
+        cfg.env.append_value('CFLAGS',['-fno-omit-frame-pointer', '-mno-omit-leaf-frame-pointer'])
     if (cfg.env["PROFILING"] == True):
         cfg.env.append_value('CXXFLAGS',["-pg"])
         cfg.env.append_value('CFLAGS',["-pg"])
