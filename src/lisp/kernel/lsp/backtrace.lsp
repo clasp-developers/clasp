@@ -23,6 +23,16 @@
   shadow-frame
   )
 
+
+(defstruct (shadow-backtrace-frame (:type vector) :named)
+  index
+  frame-address
+  function-name
+  function
+  arguments
+  environment
+  )
+
 (defun dump-jit-symbol-info ()
   (maphash (lambda (key value)
              (let ((func-size (first value))
@@ -44,74 +54,83 @@
 
 
 
-(defun parse-frame (return-address backtrace-string base-pointer next-base-pointer verbose)
+(defun parse-frame (return-address backtrace-name base-pointer next-base-pointer verbose)
   ;; Get the name
   (let (pos)
-    (if verbose (bformat *debug-io* "backtrace-string: %s\n" backtrace-string))
+    (if verbose (bformat *debug-io* "backtrace-name: %s\n" backtrace-name))
     (cond
-      ;; If there is no backtrace_symbol info - it's probably jitted
-      ((string= (subseq backtrace-string 0 (min 3 (length backtrace-string))) "0x0")
-       (let* ((symbol-info (llvm-sys:lookup-jit-symbol-info return-address))
+     ;; If there is no backtrace_symbol info - it's probably jitted
+     ((eq backtrace-name :unknown-lisp-function)
+      (make-backtrace-frame :type :lisp
+                            :return-address return-address
+                            :raw-name :unknown-lisp-function
+                            :function-name :unknown-lisp-function
+                            :print-name :unknown-lisp-function
+                            :base-pointer base-pointer
+                            :next-base-pointer next-base-pointer))
+     ((string= (subseq backtrace-name 0 (min 2 (length backtrace-name))) "0x")
+      (let* ((symbol-info (llvm-sys:lookup-jit-symbol-info return-address))
 ;;;              (_ (core:bformat t "symbol-info address: %s -> %s\n" return-address symbol-info))
-              (jit-name (first symbol-info))
-              (function-bytes (second symbol-info))
-              (function-start-address (third symbol-info)))
-         ;; strip leading #\_
-         (if (and jit-name (search "^^" jit-name))
-             (let* ((parts (cmp:unescape-and-split-jit-name (subseq jit-name 1 (length jit-name))))
-                    (symbol-name (first parts))
-                    (package-name (second parts))
-                    (name (intern symbol-name (or package-name :keyword))))
-               (if verbose (bformat *debug-io* "-->JITted CL frame\n"))
-               (make-backtrace-frame :type :lisp
-                                     :return-address return-address
-                                     :raw-name jit-name
-                                     :function-name name
-                                     :print-name (cmp:print-name-from-unescaped-split-name jit-name parts name)
-                                     :function-start-address function-start-address
-                                     :function-length-bytes function-bytes
-                                     :base-pointer base-pointer
-                                     :next-base-pointer next-base-pointer))
-             (progn
-               (if verbose (bformat *debug-io* "-->JITted unknown frame\n"))
-               (make-backtrace-frame :type :unknown
-                                     :return-address return-address
-                                     :function-name (or jit-name (core:bformat nil "%s" return-address))
-                                     :print-name (or jit-name (core:bformat nil "%s" return-address))
-                                     :raw-name backtrace-string
-                                     :base-pointer base-pointer
-                                     :next-base-pointer next-base-pointer)))))
-      ((setq pos (search "^^" backtrace-string :from-end t))
-       (if verbose (bformat *debug-io* "-->CL frame\n"))
-       (let* ((parts (cmp:unescape-and-split-jit-name (subseq backtrace-string 0 pos)))
-              (symbol-name (first parts))
-              (package-name (second parts))
-              (name (intern symbol-name (or package-name :keyword))))
-         (make-backtrace-frame :type :lisp
-                               :return-address return-address
-                               :raw-name backtrace-string
-                               :print-name (cmp:print-name-from-unescaped-split-name backtrace-string parts name)
-                               :function-name name
-                               :base-pointer base-pointer
-                               :next-base-pointer next-base-pointer)))
-      (t (let* ((first-space (position-if (lambda (c) (char= c #\space)) backtrace-string))
-                (just-name (if first-space
-                               (subseq backtrace-string 0 first-space)
-                               backtrace-string))
-                (unmangled (core::maybe-demangle just-name)))
-           (if verbose (bformat *debug-io* "-->C++ frame\n"))
-           (make-backtrace-frame :type :c
-                                 :return-address return-address
-                                 :raw-name backtrace-string
-                                 :print-name (or unmangled just-name)
-                                 :function-name (or unmangled just-name)
-                                 :base-pointer base-pointer
-                                 :next-base-pointer next-base-pointer))))))
+             (jit-name (first symbol-info))
+             (function-bytes (second symbol-info))
+             (function-start-address (third symbol-info)))
+        ;; strip leading #\_
+        (if (and jit-name (search "^^" jit-name))
+            (let* ((parts (cmp:unescape-and-split-jit-name (subseq jit-name 1 (length jit-name))))
+                   (symbol-name (first parts))
+                   (package-name (second parts))
+                   (name (intern symbol-name (or package-name :keyword))))
+              (if verbose (bformat *debug-io* "-->JITted CL frame\n"))
+              (make-backtrace-frame :type :lisp
+                                    :return-address return-address
+                                    :raw-name jit-name
+                                    :function-name name
+                                    :print-name (cmp:print-name-from-unescaped-split-name jit-name parts name)
+                                    :function-start-address function-start-address
+                                    :function-length-bytes function-bytes
+                                    :base-pointer base-pointer
+                                    :next-base-pointer next-base-pointer))
+          (progn
+            (if verbose (bformat *debug-io* "-->JITted unknown frame\n"))
+            (make-backtrace-frame :type :unknown
+                                  :return-address return-address
+                                  :function-name (or jit-name (core:bformat nil "%s" return-address))
+                                  :print-name (or jit-name (core:bformat nil "%s" return-address))
+                                  :raw-name backtrace-name
+                                  :base-pointer base-pointer
+                                  :next-base-pointer next-base-pointer)))))
+     #+target-os-darwin
+     ((setq pos (search "^^" backtrace-name :from-end t))
+      (if verbose (bformat *debug-io* "-->CL frame\n"))
+      (let* ((parts (cmp:unescape-and-split-jit-name (subseq backtrace-name 0 pos)))
+             (symbol-name (first parts))
+             (package-name (second parts))
+             (name (intern symbol-name (or package-name :keyword))))
+        (make-backtrace-frame :type :lisp
+                              :return-address return-address
+                              :raw-name backtrace-name
+                              :print-name (cmp:print-name-from-unescaped-split-name backtrace-name parts name)
+                              :function-name name
+                              :base-pointer base-pointer
+                              :next-base-pointer next-base-pointer)))
+     (t (let* ((first-space (position-if (lambda (c) (char= c #\space)) backtrace-name))
+               (just-name (if first-space
+                              (subseq backtrace-name 0 first-space)
+                            backtrace-name))
+               (unmangled (core::maybe-demangle just-name)))
+          (if verbose (bformat *debug-io* "-->C++ frame\n"))
+          (make-backtrace-frame :type :c
+                                :return-address return-address
+                                :raw-name backtrace-name
+                                :print-name (or unmangled just-name)
+                                :function-name (or unmangled just-name)
+                                :base-pointer base-pointer
+                                :next-base-pointer next-base-pointer))))))
 
 
 (defun search-for-matching-frame (frames entry)
   (let ((saved-frames frames)
-        (frame-address (frame-iterator-frame-address entry)))
+        (frame-address (shadow-backtrace-frame-frame-address entry)))
     (do* ((cur frames (cdr cur))
           (frame (car cur) (car cur)))
          ((null cur) (values (or cur saved-frames) nil))
@@ -128,10 +147,14 @@
           (search-for-matching-frame frames shadow-entry)
         (if found
             (let ((frame (car frame-cur)))
-              (setf (backtrace-frame-arguments frame) (frame-iterator-arguments shadow-entry))
+              (setf (backtrace-frame-arguments frame) (shadow-backtrace-frame-arguments shadow-entry))
               (setf frames frame-cur)
-              (setf (backtrace-frame-shadow-frame frame) shadow-entry))
-            (bformat t "Could not find stack frame for address: %s\n" (frame-iterator-frame-address shadow-entry))))))
+              (setf (backtrace-frame-shadow-frame frame) shadow-entry)
+              (when (eq (backtrace-frame-raw-name frame) :unknown-lisp-function)
+                (setf (backtrace-frame-raw-name frame) (string (shadow-backtrace-frame-function-name shadow-entry)))
+                (setf (backtrace-frame-print-name frame) (string (shadow-backtrace-frame-function-name shadow-entry)))
+                (setf (backtrace-frame-function-name frame) (shadow-backtrace-frame-function-name shadow-entry))))
+            (bformat t "merge-shadow-backtrace could not find stack frame for address: %s\n" (frame-iterator-frame-address shadow-entry))))))
   (let ((new-frames (add-interpreter-frames orig-frames)))
     (nreverse new-frames)))
 
@@ -160,12 +183,29 @@
   ;; The format seems to be as follows:
   ;; "framenumber    processname        address      functionname"
   ;; with variable numbers of spaces. processname is always at character 4 so we start there.
+  #+target-os-darwin
   (let* ((pos1 (position-if (lambda (c) (char/= c #\space)) line :start 4)) ; skip whitespace
          (pos1e (position-if (lambda (c) (char= c #\space)) line :start pos1)) ; skip chars
          (pos2 (position-if (lambda (c) (char/= c #\space)) line :start pos1e))
          (pos2e (position-if (lambda (c) (char= c #\space)) line :start pos2)) ; skip chars
          (pos3 (position-if (lambda (c) (char/= c #\space)) line :start pos2e)))
-    (subseq line pos3 (length line))))
+    (subseq line pos3 (length line)))
+  #+target-os-linux
+  (let ((pos-open (position-if (lambda (c) (char= c #\()) line)))
+    (if pos-open
+        (let* ((pos-name-start (1+ pos-open))
+               (pos-close (position-if (lambda (c) (char= c #\))) line :start pos-name-start :end nil :from-end t))
+               (pos-name-end (position #\+ line :start pos-name-start :end pos-close :from-end t))
+               (name (cond
+                      ((null pos-name-end) :unknown-lisp-function)
+                      ((= pos-name-start pos-name-end) :unknown-lisp-function)
+                      (t (subseq line pos-name-start pos-name-end)))))
+          name)
+      (let* ((square-open (position #\[ line))
+             (square-close (position #\] line)))
+        (if (and square-open square-close)
+            (subseq line (1+ square-open) square-close)
+          :unknown-lisp-function)))))
 
 (defun backtrace-as-list (&optional verbose)
   (let ((clib-backtrace (core:clib-backtrace-as-list))
@@ -246,6 +286,8 @@ Set gather-all-frames to T and you can gather C++ and Common Lisp frames"
                      :gather-start-trigger
                      (lambda (x)
                        (eq 'core:universal-error-handler (backtrace-frame-function-name x)))))))
+    (unless frames
+      (setf frames (common-lisp-backtrace-frames)))
     (setq *current-btcl-frames* frames)
     frames))
 
