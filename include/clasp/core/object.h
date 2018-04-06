@@ -671,7 +671,6 @@ namespace core {
 #include <clasp/core/instance.h>
 #include <clasp/core/metaClass.h>
 #include <clasp/core/sourceFileInfo.h>
-#include <clasp/core/tagged_cast_specializations.h>
 #include <clasp/core/cxxObject.h>
 
 #endif //]
