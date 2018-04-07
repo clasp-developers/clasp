@@ -76,13 +76,9 @@
              (function-start-address (third symbol-info)))
         ;; strip leading #\_
         (if (and jit-name (search "^^" jit-name))
-<<<<<<< HEAD
             (let* ((name-with-parts #+target-os-linux jit-name
                                     #+target-os-darwin (subseq jit-name 1 (length jit-name)))
                    (parts (cmp:unescape-and-split-jit-name name-with-parts))
-=======
-            (let* ((parts (cmp:unescape-and-split-jit-name (subseq jit-name 1 (length jit-name))))
->>>>>>> working on linux backtraces
                    (symbol-name (first parts))
                    (package-name (second parts))
                    (name (intern symbol-name (or package-name :keyword))))
@@ -157,17 +153,10 @@
               (setf frames frame-cur)
               (setf (backtrace-frame-shadow-frame frame) shadow-entry)
               (when (eq (backtrace-frame-raw-name frame) :unknown-lisp-function)
-<<<<<<< HEAD
                 (setf (backtrace-frame-raw-name frame) (shadow-backtrace-frame-function-name shadow-entry))
                 (setf (backtrace-frame-print-name frame) (shadow-backtrace-frame-function-name shadow-entry))
                 (setf (backtrace-frame-function-name frame) (shadow-backtrace-frame-function-name shadow-entry))))
             (bformat t "merge-shadow-backtrace could not find stack frame for address: %s\n" (shadow-backtrace-frame-address shadow-entry))))))
-=======
-                (setf (backtrace-frame-raw-name frame) (string (shadow-backtrace-frame-function-name shadow-entry)))
-                (setf (backtrace-frame-print-name frame) (string (shadow-backtrace-frame-function-name shadow-entry)))
-                (setf (backtrace-frame-function-name frame) (shadow-backtrace-frame-function-name shadow-entry))))
-            (bformat t "merge-shadow-backtrace could not find stack frame for address: %s\n" (frame-iterator-frame-address shadow-entry))))))
->>>>>>> working on linux backtraces
   (let ((new-frames (add-interpreter-frames orig-frames)))
     (nreverse new-frames)))
 
