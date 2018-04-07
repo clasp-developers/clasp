@@ -9,6 +9,7 @@
 
 (in-package :core)
 
+
 (defstruct (backtrace-frame (:type vector) :named)
   type ; :lisp :c++ :unknown
   return-address
@@ -20,18 +21,19 @@
   base-pointer
   next-base-pointer
   arguments
-  shadow-frame
-  )
+  shadow-frame)
 
 
+;;; Common Lisp functions maintain a shadow stack of arguments
+;;; including closure arguments.  When generating a backtrace
+;;; shadow-backtrace-frame is used to represent each shadow stack frame
 (defstruct (shadow-backtrace-frame (:type vector) :named)
   index
   frame-address
   function-name
   function
   arguments
-  environment
-  )
+  environment)
 
 (defun dump-jit-symbol-info ()
   (maphash (lambda (key value)
@@ -42,6 +44,7 @@
   (values))
 
 
+;;; Use a return address to identify the JITted function that contains it
 (defun locate-jit-symbol-info (address)
   (maphash (lambda (key value)
              (let ((func-size (first value))
@@ -52,14 +55,15 @@
   (values))
 
 
-
-
 (defun parse-frame (return-address backtrace-name base-pointer next-base-pointer verbose)
   ;; Get the name
   (let (pos)
     (if verbose (bformat *debug-io* "backtrace-name: %s\n" backtrace-name))
     (cond
-     ;; If there is no backtrace_symbol info - it's probably jitted
+      ;; On linux we don't get Common Lisp function names from backtrace_symbols
+      ;; I don't know why not.  So set the name to :unknown-lisp-function and when
+      ;; we merge the backtrace with the shadow backtrace we will use the names of
+      ;; the Common Lisp functions
      ((eq backtrace-name :unknown-lisp-function)
       (make-backtrace-frame :type :lisp
                             :return-address return-address
@@ -68,6 +72,8 @@
                             :print-name :unknown-lisp-function
                             :base-pointer base-pointer
                             :next-base-pointer next-base-pointer))
+     ;; If the backtrace-name starts with 0x then it is a return address for a JITted function
+     ;; lookup the JITted function and create a backtrace frame for it.
      ((string= (subseq backtrace-name 0 (min 2 (length backtrace-name))) "0x")
       (let* ((symbol-info (llvm-sys:lookup-jit-symbol-info return-address))
 ;;;              (_ (core:bformat t "symbol-info address: %s -> %s\n" return-address symbol-info))
@@ -101,6 +107,7 @@
                                   :raw-name backtrace-name
                                   :base-pointer base-pointer
                                   :next-base-pointer next-base-pointer)))))
+     ;; For some reason only darwin backtrace_symbols gives us Common Lisp function names
      #+target-os-darwin
      ((setq pos (search "^^" backtrace-name :from-end t))
       (if verbose (bformat *debug-io* "-->CL frame\n"))
@@ -115,6 +122,7 @@
                               :function-name name
                               :base-pointer base-pointer
                               :next-base-pointer next-base-pointer)))
+     ;; It's a C++ function with a mangled name
      (t (let* ((first-space (position-if (lambda (c) (char= c #\space)) backtrace-name))
                (just-name (if first-space
                               (subseq backtrace-name 0 first-space)
@@ -129,7 +137,10 @@
                                 :base-pointer base-pointer
                                 :next-base-pointer next-base-pointer))))))
 
-
+;;; Search for a backtrace frame that matches the shadow stack frame.
+;;; The shadow stack frames are stored in the threads stack - so the
+;;; matching compares the address of the shadow stack frame to the
+;;; frame pointers of the thread stack frames and their following frames.
 (defun search-for-matching-frame (frames entry)
   (let ((saved-frames frames)
         (frame-address (shadow-backtrace-frame-frame-address entry)))
@@ -142,7 +153,8 @@
                    (pointer-in-pointer-range frame-address bp next-bp))
           (return-from search-for-matching-frame (values cur t)))))))
 
-(defun merge-shadow-backtrace (orig-frames shadow-backtrace)
+;;; Attach the shadow backtrace frames to the matching thread backtrace frames.
+(defun attach-shadow-backtrace (orig-frames shadow-backtrace)
   (let ((frames orig-frames))
     (dolist (shadow-entry shadow-backtrace)
       (multiple-value-bind (frame-cur found)
@@ -156,12 +168,13 @@
                 (setf (backtrace-frame-raw-name frame) (shadow-backtrace-frame-function-name shadow-entry))
                 (setf (backtrace-frame-print-name frame) (shadow-backtrace-frame-function-name shadow-entry))
                 (setf (backtrace-frame-function-name frame) (shadow-backtrace-frame-function-name shadow-entry))))
-            (bformat t "merge-shadow-backtrace could not find stack frame for address: %s\n" (shadow-backtrace-frame-address shadow-entry))))))
+            (bformat t "attach-shadow-backtrace could not find stack frame for address: %s\n" (shadow-backtrace-frame-address shadow-entry))))))
   (let ((new-frames (add-interpreter-frames orig-frames)))
     (nreverse new-frames)))
 
 (defconstant-equal +interpreted-closure-entry-point+ "core::interpretedClosureEntryPoint")
 (defconstant +interpreted-closure-entry-point-length+ (length +interpreted-closure-entry-point+))
+;;; Interpreted closures have their shadow stack frames merged in a different way
 (defun add-interpreter-frames (frames)
   (let (new-frames)
     (dolist (frame frames)
@@ -179,7 +192,9 @@
       (push frame new-frames))
     new-frames))
 
-    
+;;; This is messy - backtrace_symbols for macOS and Linux return different strings
+;;; Extracting the name and the return address from the strings handled differently
+;;; depending on the operating system.
 (defun extract-backtrace-frame-name (line)
   ;; On OS X this is how we get the name part
   ;; The format seems to be as follows:
@@ -209,6 +224,7 @@
             (subseq line (1+ square-open) square-close)
           :unknown-lisp-function)))))
 
+;;; Return the backtrace as a list of backtrace-frame
 (defun backtrace-as-list (&optional verbose)
   (let ((clib-backtrace (core:clib-backtrace-as-list))
         result
@@ -227,11 +243,15 @@
         (setf prev-base-pointer base-pointer)))
     (nreverse result)))
 
+;;; Get the backtrace and the shadow-backtrace and merge them
 (defun backtrace-with-arguments ()
   (let ((ordered (backtrace-as-list))
         (shadow-backtrace (core:shadow-backtrace-as-list)))
-    (merge-shadow-backtrace ordered shadow-backtrace)))
+    (attach-shadow-backtrace ordered shadow-backtrace)))
 
+
+;;; Extract just the Common Lisp backtrace frames
+;;; starting from a frame that satisfies gather-start-trigger
 (defun common-lisp-backtrace-frames (&key verbose (focus t)
                                        (gather-start-trigger nil)
                                        gather-all-frames)
