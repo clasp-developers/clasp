@@ -76,7 +76,9 @@
              (function-start-address (third symbol-info)))
         ;; strip leading #\_
         (if (and jit-name (search "^^" jit-name))
-            (let* ((parts (cmp:unescape-and-split-jit-name (subseq jit-name 1 (length jit-name))))
+            (let* ((name-with-parts #+target-os-linux jit-name
+                                    #+target-os-darwin (subseq jit-name 1 (length jit-name)))
+                   (parts (cmp:unescape-and-split-jit-name name-with-parts))
                    (symbol-name (first parts))
                    (package-name (second parts))
                    (name (intern symbol-name (or package-name :keyword))))
@@ -151,10 +153,10 @@
               (setf frames frame-cur)
               (setf (backtrace-frame-shadow-frame frame) shadow-entry)
               (when (eq (backtrace-frame-raw-name frame) :unknown-lisp-function)
-                (setf (backtrace-frame-raw-name frame) (string (shadow-backtrace-frame-function-name shadow-entry)))
-                (setf (backtrace-frame-print-name frame) (string (shadow-backtrace-frame-function-name shadow-entry)))
+                (setf (backtrace-frame-raw-name frame) (shadow-backtrace-frame-function-name shadow-entry))
+                (setf (backtrace-frame-print-name frame) (shadow-backtrace-frame-function-name shadow-entry))
                 (setf (backtrace-frame-function-name frame) (shadow-backtrace-frame-function-name shadow-entry))))
-            (bformat t "merge-shadow-backtrace could not find stack frame for address: %s\n" (frame-iterator-frame-address shadow-entry))))))
+            (bformat t "merge-shadow-backtrace could not find stack frame for address: %s\n" (shadow-backtrace-frame-address shadow-entry))))))
   (let ((new-frames (add-interpreter-frames orig-frames)))
     (nreverse new-frames)))
 
@@ -169,10 +171,10 @@
           (let* ((shadow-frame (backtrace-frame-shadow-frame frame))
                  (interpreted-frame (make-backtrace-frame :type :lisp
                                                           :return-address nil 
-                                                          :raw-name (core:frame-iterator-function-name shadow-frame)
-                                                          :function-name (core:frame-iterator-function-name shadow-frame)
-                                                          :print-name (core:frame-iterator-function-name shadow-frame)
-                                                          :arguments (core:frame-iterator-arguments shadow-frame))))
+                                                          :raw-name (shadow-backtrace-frame-function-name shadow-frame)
+                                                          :function-name (shadow-backtrace-frame-function-name shadow-frame)
+                                                          :print-name (shadow-backtrace-frame-function-name shadow-frame)
+                                                          :arguments (shadow-backtrace-frame-arguments shadow-frame))))
             (push interpreted-frame new-frames))))
       (push frame new-frames))
     new-frames))
@@ -309,12 +311,12 @@ Set gather-all-frames to T and you can gather C++ and Common Lisp frames"
                         (dotimes (i (length arguments))
                           (princ #\space)
                           (prin1 (aref arguments i)))
-                        (prin1 " -args-suppressed-"))
-                    (princ ")"))))
-            (progn
-              (prin1 (prog1 index (incf index)))
-              (princ #\space )
-              (princ name)))
+                      (prin1 " -args-suppressed-"))))
+              (princ ")"))
+          (progn
+            (prin1 (prog1 index (incf index)))
+            (princ #\space )
+            (princ name)))
         (terpri)))))
 
 (defun bt ()
