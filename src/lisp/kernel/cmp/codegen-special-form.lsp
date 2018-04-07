@@ -69,7 +69,7 @@
                                        (irc-size_t-*current-source-pos-info*-filepos)
                                        (irc-size_t-*current-source-pos-info*-lineno)
                                        (irc-size_t-*current-source-pos-info*-column)
-                                       (irc-load (compile-reference-to-literal (bformat nil "%s" lambda-name)))
+                                       (irc-load (compile-reference-to-literal lambda-name)) ; (bformat nil "%s" lambda-name)))
                                        runtime-environment
                                        lambda-list)))
             (irc-store fnptr result))
