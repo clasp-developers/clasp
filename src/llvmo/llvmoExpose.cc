@@ -3755,6 +3755,8 @@ ModuleHandle_O::~ModuleHandle_O() {
 }
 
 
+SYMBOL_EXPORT_SC_(CorePkg,repl);
+
 CL_DEFUN core::Function_sp llvm_sys__jitFinalizeReplFunction(ClaspJIT_sp jit, ModuleHandle_sp handle, const string& replName, const string& startupName, const string& shutdownName, core::T_sp initialData) {
   // Stuff to support MCJIT
   core::Pointer_sp replPtr = jit->findSymbolIn(handle,replName,false);
@@ -3763,7 +3765,7 @@ CL_DEFUN core::Function_sp llvm_sys__jitFinalizeReplFunction(ClaspJIT_sp jit, Mo
   core::CompiledClosure_fptr_type lisp_funcPtr = (core::CompiledClosure_fptr_type)(gc::As_unsafe<core::Pointer_sp>(replPtr)->ptr());
   gctools::smart_ptr<core::CompiledClosure_O> functoid =
     gctools::GC<core::CompiledClosure_O>::allocate( lisp_funcPtr,
-                                                    core::SimpleBaseString_O::make(replName),
+                                                    core::_sym_repl, // core::SimpleBaseString_O::make(replName),
                                                     kw::_sym_function,
                                                     _Nil<core::T_O>() /*activationFrameEnvironment */,
                                                     _Nil<core::T_O>() /*lambdaList*/,
