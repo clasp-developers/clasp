@@ -134,6 +134,9 @@ struct gctools::GCInfo<core::NamedFunction_O> {
 };
 
 namespace core {
+  extern bool cl__stringp(T_sp obj);
+  extern void lisp_error_sprintf(const char* file, int line, const char* fmt, ...);
+  
 SMART(LambdaListHandler);
 SMART(NamedFunction);
 /*! NamedFunction_O inherits from Function_O and
@@ -143,7 +146,12 @@ SMART(NamedFunction);
   LISP_ABSTRACT_CLASS(core, CorePkg, NamedFunction_O, "NamedFunction",Function_O);
 public:
   T_sp _name;
- NamedFunction_O(claspFunction fptr,T_sp name) : Function_O(fptr), _name(name) {};
+ NamedFunction_O(claspFunction fptr,T_sp name) : Function_O(fptr), _name(name) {
+    if (cl__stringp(name)) {
+      printf("%s:%d   function name is a string: %s\n", __FILE__, __LINE__, _rep_(name).c_str());
+      lisp_error_sprintf(__FILE__, __LINE__, "Function name is string %s", _rep_(name).c_str());
+    }
+  };
   virtual ~NamedFunction_O(){};
 public:
   CL_LISPIFY_NAME("core:functionName");
