@@ -297,9 +297,9 @@ argument was supplied for metaclass ~S." (class-of class))))))))
 	    (c2 (class-of superclass)))
 	(or (eq c1 c2)
 	    (and (eq c1 +the-standard-class+) (eq c2 +the-funcallable-standard-class+))
-	    (and (eq c2 +the-standard-class+) (eq c1 +the-funcallable-standard-class+))
-	    ))
-      (forward-referenced-class-p superclass)))
+	    (and (eq c2 +the-standard-class+) (eq c1 +the-funcallable-standard-class+))))
+      (or (forward-referenced-class-p class)
+          (forward-referenced-class-p superclass))))
 
 ;;; ----------------------------------------------------------------------
 ;;; FINALIZATION OF CLASS INHERITANCE
