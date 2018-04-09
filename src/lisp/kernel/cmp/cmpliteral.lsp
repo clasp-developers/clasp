@@ -722,14 +722,14 @@ Return the orderered-raw-constants-list and the constants-table GlobalVariable"
 (defun reference-closure (lambda-name enclosed-function source-info-handle
                           filepos lineno column)
   (if (generate-load-time-values)
-      (multiple-value-bind (lambda-name-index in-array)
+      (multiple-value-bind (lambda-name-node in-array)
           (load-time-reference-literal lambda-name t)
         (unless in-array
           (error "BUG: Immediate lambda-name ~a- What?" lambda-name))
         (let* ((index (new-table-index))
                (creator (make-literal-node-closure
                          ;; lambda-name will never be immediate. (Should we check?)
-                         :lambda-name-index lambda-name-index
+                         :lambda-name-index (literal-node-creator-index lambda-name-node)
                          :index index :function enclosed-function
                          :source-info-handle source-info-handle
                          :filepos filepos :lineno lineno :column column)))
