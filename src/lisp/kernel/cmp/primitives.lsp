@@ -81,6 +81,7 @@
     (primitive         "ltvc_make_built_in_class" %ltvc-return% (list %gcroots-in-module*% %size_t% %t*%))
     (primitive         "ltvc_make_float" %ltvc-return% (list %gcroots-in-module*% %size_t% %float%))
     (primitive         "ltvc_make_double" %ltvc-return% (list %gcroots-in-module*% %size_t% %double%))
+    (primitive         "ltvc_lookup_value" %t*% (list %gcroots-in-module*% %size_t%))
     (primitive         "ltvc_enclose" %ltvc-return% (list %gcroots-in-module*%
                                                           %size_t%
                                                           %t*%
