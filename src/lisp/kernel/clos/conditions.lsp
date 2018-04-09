@@ -104,7 +104,7 @@
 	   #'(lambda (c) (throw tag (values code c)))))
     (cons (loop for i from 1
 	     for n in (if (atom names) (list names) names)
-	     for f = (simple-restart-function tag i)
+	     for f = (simple-handler-function tag i)
 	     collect (cons n f))
 	  *handler-clusters*)))
 

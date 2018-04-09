@@ -631,12 +631,12 @@ the stage, the +application-name+ and the +bitcode-name+"
 	(progn
 	  (bformat t "Loading bitcode file: %s\n" bc-path)
 	  (cmp:load-bitcode bc-path))
-	(if (probe-file-case lsp-path)
+	(if (probe-file lsp-path)
 	    (progn
               (if cmp:*implicit-compile-hook*
                   (bformat t "Loading/compiling source: %s\n" lsp-path)
                   (bformat t "Loading/interpreting source: %s\n" lsp-path))
-	      (load (probe-file lsp-path)))
+	      (load lsp-path))
 	    (bformat t "No interpreted or bitcode file for %s could be found\n" lsp-path)))))
 
 (defun delete-init-file (entry &key (really-delete t) stage)
