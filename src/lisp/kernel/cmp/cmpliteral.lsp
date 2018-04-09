@@ -30,11 +30,20 @@
 ;;;; * (CALL handle) calls the function denoted by HANDLE (returned from COMPILE-FORM)
 
 (defvar *gcroots-in-module*)
+#+threads(defvar *value-table-id-lock* (mp:make-lock :name '*value-table-id-lock*))
 (defvar *value-table-id* 0)
+(defun incf-value-table-id-value ()
+  #+threads(unwind-protect
+                (progn
+                  (mp:lock *value-table-id-lock* t)
+                  (incf *value-table-id*))
+             (mp:unlock *value-table-id-lock*))
+  #-threads (incf *value-table-id*))
+
 (defun next-value-table-holder-name (&optional suffix)
   (if suffix
-      (bformat nil "%s-CONTAB%d" suffix *value-table-id*)
-      (bformat nil "CONTAB%d" (incf *value-table-id*))))
+      (bformat nil "%s-CONTAB%d" suffix (incf-value-table-id-value))
+      (bformat nil "CONTAB%d" (incf-value-table-id-value))))
 
 (defstruct (literal-node-toplevel-funcall (:type vector) :named) arguments)
 (defstruct (literal-node-creator (:type vector) :named) index name arguments)
@@ -557,7 +566,7 @@ Return the orderered-raw-constants-list and the constants-table GlobalVariable"
              (llvm-sys:replace-all-uses-with *load-time-value-holder-global-var* bitcast-constant-table))))
        (llvm-sys:erase-from-parent *load-time-value-holder-global-var*)
        (multiple-value-bind (startup-fn shutdown-fn)
-	   (cmp:codegen-startup-shutdown *gcroots-in-module* constant-table num-elements)
+	   (cmp:codegen-startup-shutdown *gcroots-in-module* constant-table num-elements ordered-raw-constant-list)
 	 (values ordered-raw-constant-list constant-table startup-fn shutdown-fn)))))
 
 (defun load-time-reference-literal (object read-only-p)
@@ -705,7 +714,20 @@ Return the orderered-raw-constants-list and the constants-table GlobalVariable"
                          :filepos filepos :lineno lineno :column column)))
           (run-all-add-node creator)
           index))
-      (error "BUG: reference-closure doesn't work during COMPILE yet. drmeister, here")))
+      (multiple-value-bind (lambda-name-index in-array)
+          (run-time-reference-literal lambda-name t)
+        (unless in-array
+          (error "BUG: Immediate lambda-name ~a- What?" lambda-name))
+        (let* ((index (new-table-index))
+               (creator (make-literal-node-closure
+                         ;; lambda-name will never be immediate. (Should we check?)
+                         :lambda-name lambda-name-index
+                         :index index :function enclosed-function
+                         :source-info-handle source-info-handle
+                         :filepos filepos :lineno lineno :column column)))
+          (run-all-add-node creator)
+          index))))
+
 
 ;;; ------------------------------------------------------------
 ;;;

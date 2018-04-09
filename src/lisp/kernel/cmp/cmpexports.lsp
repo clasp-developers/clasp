@@ -260,6 +260,7 @@
           with-top-level-form
           with-literal-table
           evaluate-function-into-load-time-value
+          generate-run-time-code-for-closurettes
           )
         )
 
