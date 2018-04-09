@@ -660,12 +660,14 @@ and initialize it with an array consisting of one function pointer."
       (error "result must be an instance of llvm-sys:Value_O but instead it has the value %s" result)))
 
 
-(defun codegen-startup-shutdown (gcroots-in-module roots-array-or-nil number-of-roots ordered-raw-constant-list)
+(defun codegen-startup-shutdown (gcroots-in-module roots-array-or-nil number-of-roots &optional ordered-literals array)
   (let ((startup-fn (irc-simple-function-create core:*module-startup-function-name*
                                                 (llvm-sys:function-type-get %void% (list %t*%))
                                                 'llvm-sys::External-linkage
                                                 *the-module*
-                                                :argument-names (list "values" ))))
+                                                :argument-names (list "values" )))
+
+        (ordered-raw-literals-list nil))
     (let* ((irbuilder-alloca (llvm-sys:make-irbuilder *llvm-context*))
            (irbuilder-body (llvm-sys:make-irbuilder *llvm-context*))
            (*irbuilder-function-alloca* irbuilder-alloca)
@@ -685,7 +687,16 @@ and initialize it with an array consisting of one function pointer."
                          (llvm-sys:constant-pointer-null-get %t**%))))
           (irc-intrinsic-call "cc_initialize_gcroots_in_module" (list gcroots-in-module start (jit-constant-size_t number-of-roots) values))
           ;; If the constant/literal list is provided - then we may need to generate code for closurettes
-          (when ordered-raw-constant-list (literal:generate-run-time-code-for-closurettes ordered-raw-constant-list irbuilder-alloca))
+          (when ordered-literals
+            (setf ordered-raw-literals-list (mapcar (lambda (x)
+                                                     (cond
+                                                       ((literal-node-runtime-p x)
+                                                        (literal-node-runtime-object x))
+                                                       ((literal:literal-node-closure-p x)
+                                                        (literal:generate-run-time-code-for-closurette x irbuilder-alloca array)
+                                                        nil)
+                                                       (t (error "Illegal object ~s in ordered-literals list" x))))
+                                                   ordered-literals)))
           (irc-ret-void))))
     (let ((shutdown-fn (irc-simple-function-create core:*module-shutdown-function-name*
                                                    (llvm-sys:function-type-get %void% nil)
@@ -707,7 +718,7 @@ and initialize it with an array consisting of one function pointer."
           (progn
             (irc-intrinsic-call "cc_shutdown_gcroots_in_module" (list gcroots-in-module))
             (irc-ret-void))))
-      (values startup-fn shutdown-fn))))
+      (values startup-fn shutdown-fn ordered-raw-literals-list))))
 
 
 

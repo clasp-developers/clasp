@@ -230,6 +230,7 @@
           literal-node-runtime-p
           literal-node-runtime-index
           literal-node-runtime-object
+          literal-node-closure-p
           literal-node-creator-p
           literal-node-creator-index
           literal-node-creator-name
@@ -260,7 +261,7 @@
           with-top-level-form
           with-literal-table
           evaluate-function-into-load-time-value
-          generate-run-time-code-for-closurettes
+          generate-run-time-code-for-closurette
           )
         )
 

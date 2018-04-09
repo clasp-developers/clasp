@@ -48,6 +48,9 @@
 
 (clasp-cleavir:cleavir-compile 'foo '(lambda () (let ((f (compile nil '(lambda () (lambda ()))))) (eq (funcall f) (funcall f)))))
 
+(let ((clasp-cleavir::*use-compile-closurette* t))
+  (let ((f (clasp-cleavir:cleavir-compile nil '(lambda () (lambda ())))))
+    (format t "The result is: ~a~%" (eq (funcall f) (funcall f)))))
 
 (let ((f (clasp-cleavir:cleavir-compile nil '(lambda () (lambda ())))))
   (format t "The result is: ~a~%" (eq (funcall f) (funcall f))))
@@ -57,9 +60,6 @@
   (let ((f (clasp-cleavir:cleavir-compile nil '(lambda () (lambda ())))))
     (format t "The result is: ~a~%" (eq (funcall f) (funcall f)))))
 
-(let ((clasp-cleavir::*use-compile-closurette* t))
-  (let ((f (clasp-cleavir:cleavir-compile nil '(lambda () (lambda ())))))
-    (format t "The result is: ~a~%" (eq (funcall f) (funcall f)))))
 
 
 
