@@ -1,4 +1,4 @@
-import sys, logging, os
+import sys, logging, os, subprocess
 from waflib import Logs, Task
 import waflib.Options
 
@@ -7,6 +7,62 @@ try:
 except ImportError:
     from io import StringIO
 
+#
+# run_program
+#
+def run_program(binary, *args):
+    log.debug("run_program for %s %s", binary, args)
+    proc = subprocess.Popen([binary] + list(args), stdout = subprocess.PIPE, shell = False, universal_newlines = True)
+    (stdout, err) = proc.communicate()
+    return stdout
+
+def run_program_echo(binary, *args):
+    log.debug("run_program_echo for %s %s", binary, args)
+    proc = subprocess.Popen([binary] + list(args), shell = False, universal_newlines = True)
+
+def get_git_commit(cfg):
+    return run_program(cfg.env.GIT_BINARY, "rev-parse", "--short", "HEAD").strip()
+
+def get_clasp_version(cfg):
+    if (cfg.env.CLASP_VERSION):
+        return cfg.env.CLASP_VERSION
+    return run_program(cfg.env.GIT_BINARY, "describe", "--always").strip()
+
+def run_llvm_config(cfg, *args):
+    log.debug("run_llvm_config LLVM_CONFIG_BINARY = %s", cfg.env.LLVM_CONFIG_BINARY)
+    result = run_program(cfg.env.LLVM_CONFIG_BINARY, *args)
+    assert len(result) > 0
+    return result.strip()
+
+def run_llvm_config_for_libs(cfg, *args):
+    log.debug("run_llvm_config_for_libs LLVM_CONFIG_BINARY_FOR_LIBS = %s", cfg.env.LLVM_CONFIG_BINARY_FOR_LIBS)
+    result = run_program(cfg.env.LLVM_CONFIG_BINARY_FOR_LIBS, *args)
+    assert len(result) > 0
+    return result.strip()
+
+def maybe_dump_command(cmd, kind = ''):
+    # print a copy-paste'able command line
+    if isinstance(cmd, list):
+        cmdstr = StringIO()
+        first = True
+        for x in cmd:
+            if first:
+                first = False
+            else:
+                cmdstr.write(" \\\n")
+            cmdstr.write(x)
+        cmdstr = cmdstr.getvalue()
+    else:
+        cmdstr = cmd
+    if waflib.Options.options.PRINT_EXTERNAL_COMMANDS:
+        log.pprint('RED', 'command line for %s:' % kind)
+        log.pprint('YELLOW', cmdstr)
+    else:
+        log.debug("command line for %s:\n%s", kind, cmdstr)
+
+#
+# logging
+#
 global log
 
 # We need a wrapper because of the way python globals and modules work.
@@ -55,26 +111,9 @@ class clasp_logger():
 
 log = clasp_logger()
 
-def maybe_dump_command(cmd, kind = ''):
-    # print a copy-paste'able command line
-    if isinstance(cmd, list):
-        cmdstr = StringIO()
-        first = True
-        for x in cmd:
-            if first:
-                first = False
-            else:
-                cmdstr.write(" \\\n")
-            cmdstr.write(x)
-        cmdstr = cmdstr.getvalue()
-    else:
-        cmdstr = cmd
-    if waflib.Options.options.PRINT_EXTERNAL_COMMANDS:
-        log.pprint('RED', 'command line for %s:' % kind)
-        log.pprint('YELLOW', cmdstr)
-    else:
-        log.debug("command line for %s:\n%s", kind, cmdstr)
-
+#
+# tasks
+#
 class clasp_task(Task.Task):
     waf_print_keyword = None
 
@@ -126,21 +165,33 @@ class clasp_task(Task.Task):
 
         return cmd
 
+#
+# lists and collecting files
+#
 def ensure_list(x):
     if isinstance(x, list):
         return x
     else:
         return [x]
 
+def waf_nodes_to_paths(lst):
+    return [i.abspath() for i in lst]
+
+def prefix_list_elements_with(lst, prefix):
+    return [ '' + prefix + i for i in lst]
+
 def collect_files(root, suffix = []):
     result = []
     suffixes = ensure_list(suffix)
     for root, dirs, files in os.walk(root):
         for name in files:
+            collect = len(suffix) == 0
             for suffix in suffixes:
                 if name[ - len(suffix) :] == suffix:
-                    result.append(os.path.join(root, name))
+                    collect = True
                     break
+            if collect:
+                result.append(os.path.join(root, name))
     return result
 
 def collect_waf_nodes(bld, root, suffix = []):
@@ -152,3 +203,38 @@ def collect_waf_nodes(bld, root, suffix = []):
         else:
             log.warn("waf's find_node() returned None for path: %s", path)
     return result
+
+def dsym_waf_nodes(name, path):
+    info_plist = path.find_or_declare("Contents/Info.plist")
+    dwarf_file = path.find_or_declare("Contents/Resources/DWARF/%s" % name)
+    log.debug("dsym_output_files, info_plist = %s, dwarf_file = %s", info_plist, dwarf_file)
+    return [info_plist, dwarf_file]
+
+def waf_nodes_for_lisp_files(bld, paths):
+    nodes = []
+    for path in paths:
+        if path[:4] == "src/":
+            waf_node = bld.path.find_resource("%s.lsp" % path)
+            if (waf_node == None):
+                waf_node = bld.path.find_resource("%s.lisp" % path)
+            #log.debug("Looking for lisp file with .lsp or .lisp: %s --> %s", path, waf_node)
+        else: # generated files
+            waf_node = bld.path.find_or_declare("%s.lisp" % path)
+            #log.debug("Looking for generated lisp file with .lisp: %s --> %s", path, waf_node)
+        assert waf_node != None, "Could not find waf node for lisp file %s - did you run './waf update_dependencies'?" % file_name
+        nodes.append(waf_node)
+    return nodes
+
+def libraries_as_link_flags(fmt, libs):
+    result = []
+    for x in libs:
+        result.append(fmt % "")
+        result.append(x)
+    return result
+
+def libraries_as_link_flags_as_string(fmt, libs):
+    result = StringIO()
+    for x in libs:
+        result.write(" ")
+        result.write(fmt % x)
+    return result.getvalue()
