@@ -1226,6 +1226,7 @@ CL_DEFUN String_sp core__coerce_to_filename(T_sp pathname_orig) {
   if (cl__wild_pathname_p(pathname, _Nil<T_O>())) {
     ERROR(cl::_sym_fileError, Cons_O::createList(kw::_sym_pathname, pathname_orig));
   }
+  if (pathname.nilp()) SIMPLE_ERROR(BF("%s is about to pass NIL to clasp_namestring") % __FUNCTION__);
   T_sp tnamestring = clasp_namestring(pathname,
                                       CLASP_NAMESTRING_TRUNCATE_IF_ERROR |
                                       CLASP_NAMESTRING_FORCE_BASE_STRING);
@@ -1408,6 +1409,7 @@ CL_LAMBDA(pathname);
 CL_DECLARE();
 CL_DOCSTRING("namestring");
 CL_DEFUN T_sp cl__namestring(T_sp x) {
+  if (x.nilp()) SIMPLE_ERROR(BF("%s is about to pass NIL to clasp_namestring") % __FUNCTION__);
   return clasp_namestring(x, CLASP_NAMESTRING_TRUNCATE_IF_ERROR);
 }
 
@@ -1665,6 +1667,7 @@ CL_DEFUN T_sp cl__enough_namestring(T_sp tpath, T_sp tdefaults) {
                                      kw::_sym_local);
   ASSERTF(core__logical_pathname_p(newpath) == core__logical_pathname_p(path),
           BF("Mismatch between the newpath and path - they must be the same kind and it is the responsibility of makePathname to ensure that they are the same kind"));
+  if (newpath.nilp()) SIMPLE_ERROR(BF("%s is about to pass NIL to clasp_namestring") % __FUNCTION__);
   return clasp_namestring(newpath, CLASP_NAMESTRING_TRUNCATE_IF_ERROR);
 };
 #undef EN_MATCH

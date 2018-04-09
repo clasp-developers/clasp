@@ -194,6 +194,7 @@ CL_LAMBDA(pathname &optional change_default_pathname_defaults);
 CL_DECLARE();
 CL_DOCSTRING("Change the posix current working directory to pathname.  If change-default-pathname-defaults is T then also change *default-pathname-defaults*.");
 CL_DEFUN T_sp ext__chdir(T_sp dir, T_sp change_default_pathname_defaults) {
+  if (dir.nilp()) SIMPLE_ERROR(BF("%s is about to pass NIL to clasp_namestring") % __FUNCTION__);
   T_sp tdir = clasp_namestring(dir, true);
   LIKELY_if (cl__stringp(tdir)) {
     String_sp sdir = gc::As_unsafe<String_sp>(tdir);
@@ -436,6 +437,7 @@ enter_directory(Pathname_sp base_dir, T_sp subdir, bool ignore_if_failure) {
   output = gc::As<Pathname_sp>(eval::funcall(cl::_sym_makePathname,
                                              kw::_sym_directory, ldir,
                                              kw::_sym_defaults, base_dir));
+  if (output.nilp()) SIMPLE_ERROR(BF("%s is about to pass NIL to clasp_namestring") % __FUNCTION__);
   aux = clasp_namestring(output, CLASP_NAMESTRING_FORCE_BASE_STRING);
   aux = aux->subseq(0, clasp_make_fixnum(aux->length() - 1));
   //    aux->_contents()[aux->base_string.fillp-1] = 0;
@@ -514,6 +516,7 @@ file_truename(T_sp pathname, T_sp filename, int flags) {
     if (filename.nilp()) SIMPLE_ERROR(BF("%s was about to pass nil to pathname") % __FUNCTION__);
     pathname = cl__pathname(filename);
   } else if (filename.nilp()) {
+    if (pathname.nilp()) SIMPLE_ERROR(BF("%s is about to pass NIL to clasp_namestring") % __FUNCTION__);
     filename = clasp_namestring(pathname, CLASP_NAMESTRING_FORCE_BASE_STRING);
     if (filename.nilp()) {
       SIMPLE_ERROR(BF("Unprintable pathname %s found in TRUENAME") % _rep_(pathname));
@@ -546,6 +549,7 @@ file_truename(T_sp pathname, T_sp filename, int flags) {
                                         _Nil<T_O>(),
                                         kw::_sym_local);
     pathname = clasp_mergePathnames(filename, pathname, kw::_sym_default);
+    if (pathname.nilp()) SIMPLE_ERROR(BF("%s is about to pass NIL to clasp_namestring") % __FUNCTION__);
     filename = clasp_namestring(pathname, CLASP_NAMESTRING_FORCE_BASE_STRING);
     Pathname_sp truename = cl__truename(pathname);
     return Values(truename, kind);
@@ -945,6 +949,7 @@ string_match(const char *s, T_sp pattern) {
 static T_sp
 list_directory(T_sp base_dir, T_sp text_mask, T_sp pathname_mask, int flags) {
   T_sp out = _Nil<T_O>();
+  if (base_dir.nilp()) SIMPLE_ERROR(BF("%s is about to pass NIL to clasp_namestring") % __FUNCTION__);
   T_sp prefix = clasp_namestring(base_dir, CLASP_NAMESTRING_FORCE_BASE_STRING);
   T_sp component, component_path, kind;
   char *text;
