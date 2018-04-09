@@ -570,6 +570,8 @@
     (%intrinsic-invoke-if-landing-pad-or-call "cc_setSymbolValue" (list sym val))))
 
 
+(defvar *use-compile-closurette* nil)
+
 (defmethod translate-simple-instruction
     ((instruction cleavir-ir:enclose-instruction) return-value inputs outputs abi function-info)
   (cmp:irc-low-level-trace :flow)
@@ -589,28 +591,33 @@
                       (%size_t (length inputs))
                       loaded-inputs))
              (result
-               (cond
-                 ((and (null inputs) (cmp:generate-load-time-values))
-                  ;; a "closurette" that doesn't actually close over anything and is therefore immutable.
-                  ;; As such, we can allocate it at load time.
-                  ;; FIXME: Only works for compile file at the moment!
-                  (%closurette-value lambda-name enclosed-function cmp:*gv-source-file-info-handle*
-                                     (cmp:irc-size_t-*current-source-pos-info*-filepos)
-                                     (cmp:irc-size_t-*current-source-pos-info*-lineno)
-                                     (cmp:irc-size_t-*current-source-pos-info*-column)))
-                 (dx-p
-                  ;; Closure is dynamic extent, so we can use stack storage.
-                  (%intrinsic-call
-                   "cc_stack_enclose"
-                   (list* (alloca-i8 (core:closure-with-slots-size (length inputs)) "stack-allocated-closure")
-                          enclose-args)
-                   (format nil "closure->~a" lambda-name)))
-                 (t
-                  ;; General case.
-                  (%intrinsic-call
-                   "cc_enclose"
-                   enclose-args
-                   (format nil "closure->~a" lambda-name))))))
+               (progn
+                 (when (and (null inputs)
+                            (null (cmp:generate-load-time-values))
+                            *use-compile-closurette*)
+                   (format t "Compile closurette lambda-name: ~s enclosed-function: ~s class-of function: ~s~%"
+                           lambda-name enclosed-function (class-of enclosed-function)))
+                 (cond
+                   ((and (null inputs) (or (cmp:generate-load-time-values) *use-compile-closurette*))
+                    ;; a "closurette" that doesn't actually close over anything and is therefore immutable.
+                    ;; As such, we can allocate it at load time.
+                    (%closurette-value lambda-name enclosed-function cmp:*gv-source-file-info-handle*
+                                       (cmp:irc-size_t-*current-source-pos-info*-filepos)
+                                       (cmp:irc-size_t-*current-source-pos-info*-lineno)
+                                       (cmp:irc-size_t-*current-source-pos-info*-column)))
+                   (dx-p
+                    ;; Closure is dynamic extent, so we can use stack storage.
+                    (%intrinsic-call
+                     "cc_stack_enclose"
+                     (list* (alloca-i8 (core:closure-with-slots-size (length inputs)) "stack-allocated-closure")
+                            enclose-args)
+                     (format nil "closure->~a" lambda-name)))
+                   (t
+                    ;; General case.
+                    (%intrinsic-call
+                     "cc_enclose"
+                     enclose-args
+                     (format nil "closure->~a" lambda-name)))))))
         (cc-dbg-when *debug-log*
                      (format *debug-log* "~:[cc_enclose~;cc_stack_enclose~] with ~a cells~%"
                              dx-p (length inputs))
