@@ -566,7 +566,7 @@
     ((instruction cleavir-ir:set-symbol-value-instruction) return-value inputs outputs abi function-info)
   (cmp:irc-low-level-trace :flow)
   (let ((sym (%load (first inputs) "sym-name"))
-	(val (%load (second inputs) "value")))
+        (val (%load (second inputs) "value")))
     (%intrinsic-invoke-if-landing-pad-or-call "cc_setSymbolValue" (list sym val))))
 
 
@@ -592,13 +592,8 @@
                       loaded-inputs))
              (result
                (progn
-                 (when (and (null inputs)
-                            (null (cmp:generate-load-time-values))
-                            *use-compile-closurette*)
-                   (format t "Compile closurette lambda-name: ~s enclosed-function: ~s class-of function: ~s~%"
-                           lambda-name enclosed-function (class-of enclosed-function)))
                  (cond
-                   ((and (null inputs) (or (cmp:generate-load-time-values) *use-compile-closurette*))
+                   ((null inputs)
                     ;; a "closurette" that doesn't actually close over anything and is therefore immutable.
                     ;; As such, we can allocate it at load time.
                     (%closurette-value lambda-name enclosed-function cmp:*gv-source-file-info-handle*

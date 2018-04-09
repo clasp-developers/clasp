@@ -51,7 +51,8 @@
 (defstruct (literal-node-side-effect (:type vector) :named) name arguments)
 (defstruct (literal-node-runtime (:type vector) :named) index object)
 (defstruct (literal-node-closure (:type vector) :named)
-  index lambda-name function source-info-handle filepos lineno column)
+   index lambda-name-index function source-info-handle filepos lineno column)
+
 ;;; +max-run-all-size+ must be larger than +list-max+ so that
 ;;;   even a full list will fit into one run-all
 (defconstant +max-run-all-size+ (max 200 call-arguments-limit))
@@ -318,76 +319,100 @@ the value is put into *default-load-time-value-vector* and its index is returned
             (t (incf estimate))))
     estimate))
 
+(defun ensure-creator-llvm-value (obj)
+  "Lookup or create the llvm::Value for obj"
+  (or (gethash obj *llvm-values*)
+      (setf (gethash obj *llvm-values*)
+            (irc-intrinsic-call (literal-node-creator-name obj)
+                                (list*
+                                 *gcroots-in-module*
+                                 (cmp:jit-constant-size_t (literal-node-creator-index obj))
+                                 (fix-args (literal-node-creator-arguments obj)))
+                                #+(or)(bformat nil "CONTAB[%d]" (literal-node-creator-index obj))))))
+(defun lookup-arg (creator)
+  (ensure-creator-llvm-value creator)
+  (let* ((idx (literal-node-creator-index creator))
+         (entry (llvm-sys:create-geparray cmp:*irbuilder*
+                                          cmp:*load-time-value-holder-global-var*
+                                          (list (jit-constant-i32 0)
+                                                (jit-constant-i32 idx))
+                                          (bformat nil "CONTAB[%d]%t*" idx)))
+         (arg (irc-load entry (bformat nil "CONTAB[%d]%t*" idx))))
+    arg))
+           
+(defun fix-arg (arg)
+  (cond
+    ((fixnump arg) (jit-constant-i64 arg))
+    ((stringp arg) (jit-constant-unique-string-ptr arg))
+    ((literal-node-creator-p arg) (lookup-arg arg))
+    (t arg)))
+
+(defun fix-args (args)
+  "Convert the args from Lisp form into llvm::Value*'s"
+  (mapcar #'fix-arg args))
+
 (defun generate-run-all-from-literal-nodes (nodes)
-  (labels ((ensure-creator-llvm-value (obj)
-             "Lookup or create the llvm::Value for obj"
-             (or (gethash obj *llvm-values*)
-                 (setf (gethash obj *llvm-values*)
-                       (irc-intrinsic-call (literal-node-creator-name obj)
-                                           (list*
-                                            *gcroots-in-module*
-                                            (cmp:jit-constant-size_t (literal-node-creator-index obj))
-                                            (fix-args (literal-node-creator-arguments obj)))
-                                           #+(or)(bformat nil "CONTAB[%d]" (literal-node-creator-index obj))))))
-           (lookup-arg (creator)
-             (ensure-creator-llvm-value creator)
-             (let* ((idx (literal-node-creator-index creator))
-                    (entry (llvm-sys:create-geparray cmp:*irbuilder*
-                                                     cmp:*load-time-value-holder-global-var*
-                                                     (list (jit-constant-i32 0)
-                                                           (jit-constant-i32 idx))
-                                                     (bformat nil "CONTAB[%d]%t*" idx)))
-                    (arg (irc-load entry (bformat nil "CONTAB[%d]%t*" idx))))
-               arg))
-           (fix-arg (arg)
-             (cond
-               ((fixnump arg) (jit-constant-i64 arg))
-               ((stringp arg) (jit-constant-unique-string-ptr arg))
-               ((literal-node-creator-p arg) (lookup-arg arg))
-               (t arg)))
-           (fix-args (args)
-             "Convert the args from Lisp form into llvm::Value*'s"
-             (mapcar #'fix-arg args)))
-    ;; We split up a run-all that would be very big so LLVM doesn't take years to compile.
-    (cond
-      ((> (estimate-run-all-size nodes) +max-run-all-size+)
-       (let* ((half-len (floor (length nodes) 2))
-              (middle-node (nthcdr (1- half-len) nodes))
-              (front nodes)
-              (back (cdr middle-node))
-              (_ (rplacd middle-node nil)) ; break the list in two
-              (front-run-all (generate-run-all-from-literal-nodes front))
-              (back-run-all (generate-run-all-from-literal-nodes back)))
-         (cmp::with-make-new-run-all (sub-run-all)
-           (irc-intrinsic-call "cc_invoke_sub_run_all_function" (list front-run-all))
-           (irc-intrinsic-call "cc_invoke_sub_run_all_function" (list back-run-all))
-           sub-run-all)))
-      (t
-       (cmp::with-make-new-run-all (foo)
-         (dolist (node nodes)
-           #+(or)(bformat t "generate-run-all-code  generating node: %s\n" node)
-           (cond
-             ((literal-node-creator-p node)
-              (ensure-creator-llvm-value node))
-             ((literal-node-side-effect-p node)
-              (let* ((fn-name (literal-node-side-effect-name node))
-                     (args (literal-node-side-effect-arguments node))
-                     (fix-args (fix-args args)))
-                (irc-intrinsic-call fn-name fix-args)))
-             ((literal-node-toplevel-funcall-p node)
-              (cmp:irc-intrinsic-call "ltvc_toplevel_funcall" (literal-node-toplevel-funcall-arguments node)))
-             ((literal-node-closure-p node)
+  ;; We split up a run-all that would be very big so LLVM doesn't take years to compile.
+  (cond
+    ((> (estimate-run-all-size nodes) +max-run-all-size+)
+     (let* ((half-len (floor (length nodes) 2))
+            (middle-node (nthcdr (1- half-len) nodes))
+            (front nodes)
+            (back (cdr middle-node))
+            (_ (rplacd middle-node nil)) ; break the list in two
+            (front-run-all (generate-run-all-from-literal-nodes front))
+            (back-run-all (generate-run-all-from-literal-nodes back)))
+       (cmp::with-make-new-run-all (sub-run-all)
+         (irc-intrinsic-call "cc_invoke_sub_run_all_function" (list front-run-all))
+         (irc-intrinsic-call "cc_invoke_sub_run_all_function" (list back-run-all))
+         sub-run-all)))
+    (t
+     (cmp::with-make-new-run-all (foo)
+       (dolist (node nodes)
+         #+(or)(bformat t "generate-run-all-code  generating node: %s\n" node)
+         (cond
+           ((literal-node-creator-p node)
+            (ensure-creator-llvm-value node))
+           ((literal-node-side-effect-p node)
+            (let* ((fn-name (literal-node-side-effect-name node))
+                   (args (literal-node-side-effect-arguments node))
+                   (fix-args (fix-args args)))
+              (irc-intrinsic-call fn-name fix-args)))
+           ((literal-node-toplevel-funcall-p node)
+            (cmp:irc-intrinsic-call "ltvc_toplevel_funcall" (literal-node-toplevel-funcall-arguments node)))
+           ((literal-node-closure-p node)
+            (let ((lambda-name (irc-intrinsic-call "ltvc_lookup_value"
+                                                   (list *gcroots-in-module*
+                                                         (fix-arg (literal-node-closure-lambda-name-index node))))))
               (irc-intrinsic-call "ltvc_enclose"
                                   (list *gcroots-in-module*
                                         (jit-constant-size_t (literal-node-closure-index node))
-                                        (fix-arg (literal-node-closure-lambda-name node))
+                                        lambda-name
                                         (literal-node-closure-function node)
                                         (literal-node-closure-source-info-handle node)
                                         (literal-node-closure-filepos node)
                                         (literal-node-closure-lineno node)
-                                        (literal-node-closure-column node))))
-             (t (error "Unknown run-all node ~a" node))))
-         foo)))))
+                                        (literal-node-closure-column node)))))
+           (t (error "Unknown run-all node ~a" node))))
+       foo))))
+
+
+(defun generate-run-time-code-for-closurette (node irbuilder-alloca array)
+  ;; Generate calls to ltvc_enclose for closurettes that are created at JIT startup time
+  (declare (ignore array))
+  (let ((lambda-name (irc-intrinsic-call "ltvc_lookup_value"
+                                         (list *gcroots-in-module*
+                                               (fix-arg (literal-node-closure-lambda-name-index node))))))
+    (irc-intrinsic-call "ltvc_enclose"
+                        (list *gcroots-in-module*
+                              (jit-constant-size_t (literal-node-closure-index node))
+                              lambda-name
+                              (literal-node-closure-function node)
+                              (literal-node-closure-source-info-handle node)
+                              (literal-node-closure-filepos node)
+                              (literal-node-closure-lineno node)
+                              (literal-node-closure-column node)))))
+
 
 (defun do-ltv (type body-fn)
   "Evaluate body-fn in an environment where load-time-values, literals and constants are
@@ -522,27 +547,26 @@ Then erase the global variable in *load-time-value-holder-global-var* whether or
 and  return the sorted values and the constant-table or (values nil nil)."
   `(let ((cmp:*generate-compile-file-load-time-values* nil)
          (*gcroots-in-module*
-          (llvm-sys:make-global-variable *the-module*
-                                         cmp:%gcroots-in-module% ; type
-                                         nil ; isConstant
-                                         'llvm-sys:internal-linkage
-                                         (llvm-sys:undef-value-get cmp:%gcroots-in-module%)
-					 ;; nil ; initializer
-                                         "constants-table"))
+           (llvm-sys:make-global-variable *the-module*
+                                          cmp:%gcroots-in-module% ; type
+                                          nil ; isConstant
+                                          'llvm-sys:internal-linkage
+                                          (llvm-sys:undef-value-get cmp:%gcroots-in-module%)
+                                          ;; nil ; initializer
+                                          "constants-table"))
          (*table-index* 0)
          (*load-time-value-holder-global-var*
-          (llvm-sys:make-global-variable *the-module*
-                                         %t*[0]% ; type
-                                         nil      ; isConstant
-                                         'llvm-sys:internal-linkage
-                                         nil
-                                         (next-value-table-holder-name)))
+           (llvm-sys:make-global-variable *the-module*
+                                          %t*[0]% ; type
+                                          nil     ; isConstant
+                                          'llvm-sys:internal-linkage
+                                          nil
+                                          (next-value-table-holder-name)))
          (*run-time-coalesce* (make-hash-table :test #'eq))
          (*run-all-objects* nil))
      (progn ,@body)
      (let* ((run-time-values *run-all-objects*)
             (num-elements (length run-time-values))
-            (ordered-raw-constant-list nil)
             (constant-table nil))
        "Put the constants in order they will appear in the table.
 Return the orderered-raw-constants-list and the constants-table GlobalVariable"
@@ -551,23 +575,20 @@ Return the orderered-raw-constants-list and the constants-table GlobalVariable"
                (literal::constant-list-dump run-time-values)
                (bformat t "Number of run-time-values: %d\n" (length run-time-values)))
        (when (> num-elements 0)
-         (let* ((ordered-constant-list (sort run-time-values #'< :key #'literal-node-runtime-index))
-                (array-type (llvm-sys:array-type-get %t*% (length ordered-constant-list))))
-           (setf ordered-raw-constant-list
-                 (mapcar (lambda (x) (literal-node-runtime-object x)) ordered-constant-list)
-                 constant-table (llvm-sys:make-global-variable *the-module*
+         (let* ((ordered-literals-list (sort run-time-values #'< :key #'literal-node-runtime-index))
+                (array-type (llvm-sys:array-type-get %t*% (length ordered-literals-list))))
+           (setf constant-table (llvm-sys:make-global-variable *the-module*
                                                                array-type
                                                                nil ; isConstant
                                                                'llvm-sys:internal-linkage
                                                                (llvm-sys:undef-value-get array-type)
                                                                (next-value-table-holder-name)))
-
            (let ((bitcast-constant-table (irc-bit-cast constant-table %t*[0]*% "bitcast-table")))
-             (llvm-sys:replace-all-uses-with *load-time-value-holder-global-var* bitcast-constant-table))))
-       (llvm-sys:erase-from-parent *load-time-value-holder-global-var*)
-       (multiple-value-bind (startup-fn shutdown-fn)
-	   (cmp:codegen-startup-shutdown *gcroots-in-module* constant-table num-elements ordered-raw-constant-list)
-	 (values ordered-raw-constant-list constant-table startup-fn shutdown-fn)))))
+             (llvm-sys:replace-all-uses-with *load-time-value-holder-global-var* bitcast-constant-table)
+             (llvm-sys:erase-from-parent *load-time-value-holder-global-var*)
+             (multiple-value-bind (startup-fn shutdown-fn ordered-raw-constant-list)
+                 (cmp:codegen-startup-shutdown *gcroots-in-module* constant-table num-elements ordered-literals-list bitcast-constant-table)
+               (values ordered-raw-constant-list constant-table startup-fn shutdown-fn))))))))
 
 (defun load-time-reference-literal (object read-only-p)
   "If the object is an immediate object return (values immediate nil).
@@ -609,11 +630,11 @@ Return the orderered-raw-constants-list and the constants-table GlobalVariable"
 (defvar *run-time-coalesce*)
 
 (defun run-time-reference-literal (object read-only-p)
-  "If the object is an immediate object return (values immediate nil).
-   Otherwise return (values creator T)."
+  "If the object is an immediate object return (values immediate nil nil).
+   Otherwise return (values creator T index)."
   (let ((immediate (immediate-object-or-nil object)))
     (if immediate
-        (values immediate NIL)
+        (values immediate NIL NIL)
         (let* ((similarity *run-time-coalesce*)
                (existing (find-similar object similarity)))
           (if existing
@@ -708,20 +729,20 @@ Return the orderered-raw-constants-list and the constants-table GlobalVariable"
         (let* ((index (new-table-index))
                (creator (make-literal-node-closure
                          ;; lambda-name will never be immediate. (Should we check?)
-                         :lambda-name lambda-name-index
+                         :lambda-name-index lambda-name-index
                          :index index :function enclosed-function
                          :source-info-handle source-info-handle
                          :filepos filepos :lineno lineno :column column)))
           (run-all-add-node creator)
           index))
-      (multiple-value-bind (lambda-name-index in-array)
+      (multiple-value-bind (lambda-name-node in-array)
           (run-time-reference-literal lambda-name t)
         (unless in-array
           (error "BUG: Immediate lambda-name ~a- What?" lambda-name))
         (let* ((index (new-table-index))
                (creator (make-literal-node-closure
                          ;; lambda-name will never be immediate. (Should we check?)
-                         :lambda-name lambda-name-index
+                         :lambda-name-index (literal-node-runtime-index lambda-name-node)
                          :index index :function enclosed-function
                          :source-info-handle source-info-handle
                          :filepos filepos :lineno lineno :column column)))
