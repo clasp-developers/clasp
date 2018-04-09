@@ -81,6 +81,15 @@
     (primitive         "ltvc_make_built_in_class" %ltvc-return% (list %gcroots-in-module*% %size_t% %t*%))
     (primitive         "ltvc_make_float" %ltvc-return% (list %gcroots-in-module*% %size_t% %float%))
     (primitive         "ltvc_make_double" %ltvc-return% (list %gcroots-in-module*% %size_t% %double%))
+    (primitive         "ltvc_lookup_value" %t*% (list %gcroots-in-module*% %size_t%))
+    (primitive         "ltvc_enclose" %ltvc-return% (list %gcroots-in-module*%
+                                                          %size_t%
+                                                          %t*%
+                                                          %fn-prototype*%
+                                                          %i32*%
+                                                          %size_t%
+                                                          %size_t%
+                                                          %size_t%))
     (primitive-unwinds "ltvc_set_mlf_creator_funcall" %ltvc-return% (list %gcroots-in-module*% %size_t% %fn-prototype*% %i8*%))
     (primitive-unwinds "ltvc_mlf_init_funcall" %ltvc-return% (list %fn-prototype*% %i8*%))
     (primitive-unwinds "ltvc_set_ltv_funcall" %ltvc-return% (list %gcroots-in-module*% %size_t% %fn-prototype*% %i8*%))
@@ -250,12 +259,12 @@
     (primitive         "cc_shutdown_gcroots_in_module" %void% (list %gcroots-in-module*% ))
 
     (primitive-unwinds  "cc_enclose" %t*% (list %t*%
-                                                 %fn-prototype*%
-                                                 %i32*%
-                                                 %size_t%
-                                                 %size_t%
-                                                 %size_t%
-                                                 %size_t% ) :varargs t)
+                                                %fn-prototype*%
+                                                %i32*%
+                                                %size_t%
+                                                %size_t%
+                                                %size_t%
+                                                %size_t% ) :varargs t)
     (primitive         "cc_stack_enclose" %t*% (list %i8*% %t*% %fn-prototype*% %i32*% %size_t% %size_t% %size_t% %size_t% ) :varargs t)
     (primitive         "cc_saveThreadLocalMultipleValues" %void% (list %tmv*% %mv-struct*%))
     (primitive         "cc_loadThreadLocalMultipleValues" %void% (list %tmv*% %mv-struct*%))

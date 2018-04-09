@@ -170,6 +170,7 @@ SYMBOL_EXPORT_SC_(CorePkg,btcl)
 SYMBOL_EXPORT_SC_(CorePkg,STARdebug_fastgfSTAR);
 SYMBOL_EXPORT_SC_(CorePkg,cxx_method_source_location);
 SYMBOL_EXPORT_SC_(CompPkg, STARllvm_contextSTAR);
+SYMBOL_EXPORT_SC_(CompPkg, STARdebug_jitSTAR );
 SYMBOL_EXPORT_SC_(CompPkg, STARload_time_value_holder_nameSTAR);
 SYMBOL_EXPORT_SC_(CorePkg,c_local);
 SYMBOL_EXPORT_SC_(CorePkg,_PLUS_known_typep_predicates_PLUS_);
@@ -1087,6 +1088,7 @@ void CoreExposer_O::define_essential_globals(Lisp_sp lisp) {
   comp::_sym_STARlowLevelTracePrintSTAR->defparameter(_Nil<T_O>());
   comp::_sym_STARsave_module_for_disassembleSTAR->defparameter(_Nil<core::T_O>());
   comp::_sym_STARsaved_module_from_clasp_jitSTAR->defparameter(_Nil<core::T_O>());
+  comp::_sym_STARdebug_jitSTAR->defparameter(_Nil<core::T_O>());
   _sym_STARminimum_number_generic_function_slotsSTAR->defparameter(make_fixnum(FuncallableInstance_O::MIN_GFUN_SLOTS));
   _sym_STARallCxxClassesSTAR->defparameter(_Nil<T_O>());
   _sym_STARtopLevelCommandHookSTAR->defparameter(_Nil<T_O>());

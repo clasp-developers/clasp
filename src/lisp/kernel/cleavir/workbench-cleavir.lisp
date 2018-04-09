@@ -14,18 +14,55 @@
   (core::link-addons)
   (format t "Done building addons~%"))
 
-(progn ;; Set up everything for building cclasp from bclasp with auto-compile
-  (format t "Loading ASDF system~%")
-  (finish-output)
+(progn
   (require :asdf)
-  (load "sys:local-asdf-config.lisp")
-  (format t "DONE loading ASDF~%"))
+  (format t "Loaded ASDF system~%")
+  (finish-output))
+
+(progn
+  (format t "Configuring ASDF for local directories~%")
+  (labels ((all-subdirs (dir)
+             (let (dirs)
+               (labels ((trav (d)
+                          (dolist (d (uiop:subdirectories d))
+                            (unless (find ".git" (pathname-directory d) :test #'string=)
+                              (push d dirs)
+                              (trav d)))))
+                 (trav dir))
+               dirs))
+           (add-all-subdirs-to-asdf-*central-registry* (topdir)
+             (let ((dirs (all-subdirs (translate-logical-pathname topdir))))
+               (dolist (dir dirs)
+                 (push dir asdf:*central-registry*))
+               (format t "Added ~a subdirectories of ~a to ASDF:*CENTRAL-REGISTRY*~%"
+                       (length dirs) (translate-logical-pathname #P"sys:")))))
+    (add-all-subdirs-to-asdf-*central-registry* #P"sys:")
+    (format t "DONE loading ASDF~%")))
 
 (progn
   (format t "Loading :clasp-cleavir system~%")
   (finish-output)
   (time (asdf:load-system "clasp-cleavir"))
   (format t "Done  pid = ~a~%"  (core:getpid)))
+
+
+(clasp-cleavir:cleavir-compile 'foo '(lambda () (let ((f (compile nil '(lambda () (lambda ()))))) (eq (funcall f) (funcall f)))))
+
+(let ((clasp-cleavir::*use-compile-closurette* t))
+  (let ((f (clasp-cleavir:cleavir-compile nil '(lambda () (lambda ())))))
+    (format t "The result is: ~a~%" (eq (funcall f) (funcall f)))))
+
+(let ((f (clasp-cleavir:cleavir-compile nil '(lambda () (lambda ())))))
+  (format t "The result is: ~a~%" (eq (funcall f) (funcall f))))
+
+(let ((clasp-cleavir::*use-compile-closurette* t)
+      (cmp::*debug-jit* t))
+  (let ((f (clasp-cleavir:cleavir-compile nil '(lambda () (lambda ())))))
+    (format t "The result is: ~a~%" (eq (funcall f) (funcall f)))))
+
+
+
+
 
 (let ((cmp:*cleavir-compile-hook* 'clasp-cleavir::cclasp-compile*)
       (cmp:*cleavir-compile-file-hook* 'clasp-cleavir::cleavir-compile-file-form)

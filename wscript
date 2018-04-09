@@ -756,8 +756,9 @@ def configure(cfg):
 #    cfg.define("DEBUG_ENSURE_VALID_OBJECT",1)  #Defines ENSURE_VALID_OBJECT(x)->x macro - sprinkle these around to run checks on objects
 #    cfg.define("DEBUG_QUICK_VALIDATE",1)    # quick/cheap validate if on and comprehensive validate if not
 #    cfg.define("DEBUG_MPS_SIZE",1)   # check that the size of the MPS object will be calculated properly by obj_skip
-#    cfg.define("USE_HUMAN_READABLE_BITCODE",1)
-    cfg.env.USE_HUMAN_READABLE_BITCODE=False
+    cfg.env.USE_HUMAN_READABLE_BITCODE=True
+    if (cfg.env.USE_HUMAN_READABLE_BITCODE):
+        cfg.define("USE_HUMAN_READABLE_BITCODE",1)
     cfg.define("DEBUG_RECURSIVE_ALLOCATIONS",1)
 # -----------------
 # defines that slow down program execution
@@ -1199,7 +1200,11 @@ class link_fasl(clasp_task):
     def run(self):
         if (self.env.LTO_FLAG):
             lto_option = self.env.LTO_FLAG
-            lto_optimize_flag = "-O2"
+            if (self.env.USE_PARALLEL_BUILD and self.bld.stage_val<3):
+                lto_optimize_flag = "-O0"
+                print("With USE_PARALLEL_BUILD and stage_val=%d dropping down to -O0 for link_fasl" % self.bld.stage_val)
+            else:
+                lto_optimize_flag = "-O2"
         else:
             lto_option = ""
             lto_optimize_flag = ""

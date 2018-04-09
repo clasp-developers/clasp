@@ -600,4 +600,9 @@ Tagged GCRootsInModule::set(size_t index, Tagged val) {
   reinterpret_cast<core::T_O**>(this->_module_memory)[index] = reinterpret_cast<core::T_O*>(val);
   return val;
 }
+
+Tagged GCRootsInModule::get(size_t index) {
+  return reinterpret_cast<Tagged>(reinterpret_cast<core::T_O**>(this->_module_memory)[index]);
+}
+
 };

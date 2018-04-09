@@ -440,8 +440,8 @@ CL_DEFUN core::Integer_sp sockets_internal__ll_socketSendAddress(int fd,        
 
 CL_LAMBDA(fb buffer length oob eor dontroute dontwait nosignal confirm);
 CL_DECLARE();
-CL_DOCSTRING("socketSendNoAddress");
-CL_DEFUN core::Integer_sp sockets_internal__socketSendNoAddress(int fb,            //#0
+CL_DOCSTRING("ll_socketSendNoAddress");
+CL_DEFUN core::Integer_sp sockets_internal__ll_socketSendNoAddress(int fb,            //#0
                                   core::Vector_sp vbuffer, //#1
                                   int length,        //#2
                                   bool oob,          //#3
@@ -533,8 +533,8 @@ CL_DEFUN int sockets_internal__ll_socketConnect_localSocket(int fd, int family, 
 
 CL_LAMBDA(fd);
 CL_DECLARE();
-CL_DOCSTRING("socketPeername_localSocket");
-CL_DEFUN core::T_sp sockets_internal__socketPeername_localSocket(int fd) {
+CL_DOCSTRING("ll_socketPeername_localSocket");
+CL_DEFUN core::T_sp sockets_internal__ll_socketPeername_localSocket(int fd) {
   struct sockaddr_un name;
   socklen_t len = sizeof(struct sockaddr_un);
   int ret;
@@ -919,11 +919,11 @@ void initialize_sockets_globals() {
   SYMBOL_EXPORT_SC_(SocketsPkg, ll_socketPeername_inetSocket);
   SYMBOL_EXPORT_SC_(SocketsPkg, ll_socketName);
   SYMBOL_EXPORT_SC_(SocketsPkg, ll_socketSendAddress);
-  SYMBOL_EXPORT_SC_(SocketsPkg, socketSendNoAddress);
+  SYMBOL_EXPORT_SC_(SocketsPkg, ll_socketSendNoAddress);
   SYMBOL_EXPORT_SC_(SocketsPkg, ll_socketBind_localSocket);
   SYMBOL_EXPORT_SC_(SocketsPkg, ll_socketAccept_localSocket);
   SYMBOL_EXPORT_SC_(SocketsPkg, ll_socketConnect_localSocket);
-  SYMBOL_EXPORT_SC_(SocketsPkg, socketPeername_localSocket);
+  SYMBOL_EXPORT_SC_(SocketsPkg, ll_socketPeername_localSocket);
   SYMBOL_EXPORT_SC_(SocketsPkg, ll_nonBlockingMode);
   SYMBOL_EXPORT_SC_(SocketsPkg, ll_setfNonBlockingMode);
   SYMBOL_EXPORT_SC_(SocketsPkg, ll_dup);
