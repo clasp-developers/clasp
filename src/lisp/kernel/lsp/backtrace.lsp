@@ -55,7 +55,7 @@
   (values))
 
 
-(defun parse-frame (return-address backtrace-name base-pointer next-base-pointer verbose)
+(defun parse-frame (return-address backtrace-name base-pointer next-base-pointer verbose maybe-shadow-frame)
   ;; Get the name
   (let (pos)
     (if verbose (bformat *debug-io* "backtrace-name: %s\n" backtrace-name))
@@ -64,6 +64,16 @@
       ;; I don't know why not.  So set the name to :unknown-lisp-function and when
       ;; we merge the backtrace with the shadow backtrace we will use the names of
       ;; the Common Lisp functions
+      (maybe-shadow-frame
+       (make-backtrace-frame :type :lisp
+                             :return-address return-address
+                             :function-name (format nil "~a" (shadow-backtrace-frame-function-name maybe-shadow-frame))
+                             :print-name (shadow-backtrace-frame-function-name maybe-shadow-frame)
+                             :raw-name (shadow-backtrace-frame-function-name maybe-shadow-frame)
+                             :arguments (shadow-backtrace-frame-arguments maybe-shadow-frame)
+                             :shadow-frame maybe-shadow-frame
+                             :base-pointer base-pointer
+                             :next-base-pointer next-base-pointer))
      ((eq backtrace-name :unknown-lisp-function)
       (make-backtrace-frame :type :lisp
                             :return-address return-address
@@ -153,6 +163,12 @@
                    (pointer-in-pointer-range frame-address bp next-bp))
           (return-from search-for-matching-frame (values cur t)))))))
 
+(defun search-for-matching-shadow-frame (prev-base-pointer base-pointer shadow-backtrace)
+  (when shadow-backtrace
+    (do* ((cur shadow-backtrace (cdr cur))
+          (shadow-frame (car cur) (car cur)))
+         ((or (null cur) (pointer-in-pointer-range (shadow-backtrace-frame-frame-address shadow-frame))) shadow-frame))))
+
 ;;; Attach the shadow backtrace frames to the matching thread backtrace frames.
 (defun attach-shadow-backtrace (orig-frames shadow-backtrace)
   (let ((frames orig-frames))
@@ -228,6 +244,7 @@
 ;;; Return the backtrace as a list of backtrace-frame
 (defun backtrace-as-list (&optional verbose)
   (let ((clib-backtrace (core:clib-backtrace-as-list))
+        (shadow-backtrace (core:shadow-backtrace-as-list))
         result
         prev-base-pointer)
     (do* ((cur clib-backtrace (cdr cur))
@@ -239,14 +256,16 @@
           (let* ((address (first clib-frame))
                  (line (second clib-frame))
                  (name (extract-backtrace-frame-name line))
-                 (entry (parse-frame address name prev-base-pointer base-pointer verbose)))
+                 (maybe-shadow-frame (search-for-matching-shadow-frame prev-base-pointer base-pointer shadow-backtrace))
+                 (entry (parse-frame address name prev-base-pointer base-pointer verbose maybe-shadow-frame)))
             (push entry result)))
         (setf prev-base-pointer base-pointer)))
     (nreverse result)))
 
 ;;; Get the backtrace and the shadow-backtrace and merge them
 (defun backtrace-with-arguments ()
-  (let ((ordered (backtrace-as-list))
+  (backtrace-as-list)
+  #+(or)(let ((ordered (backtrace-as-list))
         (shadow-backtrace (core:shadow-backtrace-as-list)))
     (attach-shadow-backtrace ordered shadow-backtrace)))
 
