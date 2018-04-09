@@ -167,7 +167,7 @@
   (when shadow-backtrace
     (do* ((cur shadow-backtrace (cdr cur))
           (shadow-frame (car cur) (car cur)))
-         ((or (null cur) (pointer-in-pointer-range (shadow-backtrace-frame-frame-address shadow-frame))) shadow-frame))))
+         ((or (null cur) (pointer-in-pointer-range (shadow-backtrace-frame-frame-address shadow-frame) prev-base-pointer base-pointer)) shadow-frame))))
 
 ;;; Attach the shadow backtrace frames to the matching thread backtrace frames.
 (defun attach-shadow-backtrace (orig-frames shadow-backtrace)
