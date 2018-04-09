@@ -145,10 +145,10 @@ def collect_files(root, suffix = []):
 
 def collect_waf_nodes(bld, root, suffix = []):
     result = []
-    for x in collect_files(root, suffix = suffix):
-        node = bld.path.find_node(x)
+    for path in collect_files(root, suffix = suffix):
+        node = bld.path.find_node(path)
         if (node):
             result.append(node)
         else:
-            print("Could not find node for: %s" % x)
+            log.warn("waf's find_node() returned None for path: %s", path)
     return result
