@@ -1048,7 +1048,7 @@
                                                                      (bformat nil "CONSTANTS-%d" (increment-dispatcher-count))))
                  (bitcast-correct-size-holder (irc-bit-cast correct-size-holder %t*[DUMMY]*% "bitcast-table")))
             (multiple-value-bind (startup-fn shutdown-fn)
-                (codegen-startup-shutdown *gcroots-in-module* correct-size-holder *gf-data-id*)
+                (codegen-startup-shutdown *gcroots-in-module* correct-size-holder *gf-data-id* nil)
               (llvm-sys:replace-all-uses-with *gf-data* bitcast-correct-size-holder)
               (llvm-sys:erase-from-parent *gf-data*)
               #+debug-cmpgf(progn
