@@ -10,8 +10,12 @@
 (print "Starting")
 (progn
   (load "sys:kernel;clasp-builder.lsp")
-  (core::compile-addons)
-  (core::link-addons)
+  (flet ((build-module (source-file)
+           (core:compile-kernel-file source-file :force-recompile t)
+           (cmp:llvm-link (core:build-pathname source-file :fasl)
+                          :lisp-bitcode-files (list (core:build-pathname source-file :bitcode)))))
+    (build-module #P"src/lisp/modules/serve-event/serve-event")
+    (build-module #P"src/lisp/modules/asdf/build/asdf"))
   (format t "Done building addons~%"))
 
 (progn
