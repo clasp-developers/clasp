@@ -211,8 +211,10 @@ result.  The original TREE is not destroyed."
                    (test #'eql testp) (test-not nil notp))
   "Substitute NEW for subtrees matching OLD."
   (if (and testp notp)
-    (test-not-error test test-not))
-  (nsubst-aux new old tree (or key #'identity) test test-not))
+    (error 'core:simple-program-error
+       :FORMAT-CONTROL "Cannot pass both test and test-not to nsubst"
+       :format-arguments nil) 
+  (nsubst-aux new old tree (or key #'identity) test test-not)))
 
 (defun nsubst-aux (new old subtree key test test-not)
   (flet ((satisfies-the-test (item elt)
