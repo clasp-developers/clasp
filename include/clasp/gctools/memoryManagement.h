@@ -863,7 +863,8 @@ namespace gctools {
       this->_module_memory = module_mem;
       this->_num_entries = num_entries;
     }
-    gctools::Tagged set(size_t index, gctools::Tagged val);
+    Tagged set(size_t index, Tagged val);
+    Tagged get(size_t index);
     void* address(size_t index) {
       return reinterpret_cast<void*>(&reinterpret_cast<core::T_sp*>(this->_module_memory)[index]);
     }
