@@ -871,15 +871,9 @@ def build(bld):
                            includes = include_dirs,
                            target = [bld.iclasp_executable],
                            install_path = '${PREFIX}/bin')
-#        if (bld.env.LTO_FLAG):
-#            iclasp_lto_o = bld.path.find_or_declare('%s.lto.o' % variant.executable_name(stage='i'))
-#            iclasp_dsym = bld.path.find_or_declare("%s.dSYM"%variant.executable_name(stage='i'))
-#            iclasp_dsym_files = dsym_waf_nodes(variant.executable_name(stage='i'), iclasp_dsym)
-#            dsymutil_iclasp = dsymutil(env=bld.env)
-#            dsymutil_iclasp.set_inputs([bld.iclasp_executable,iclasp_lto_o])
-#            dsymutil_iclasp.set_outputs(iclasp_dsym_files)
-#            bld.add_to_group(dsymutil_iclasp)
-#            install('lib/clasp/%s/%s' % (executable_dir, iclasp_dsym.name), iclasp_dsym_files, cwd = iclasp_dsym)
+
+    #make_run_dsymutil_task(bld, 'i', iclasp_lto_o)
+
     if (bld.stage_val <= -1):
         log.info("Creating run_aclasp task")
 
@@ -961,18 +955,8 @@ def build(bld):
             log.debug("link_executable for bclasp %s -> %s", task.inputs, task.outputs)
             bld.add_to_group(task)
 
-            if ( bld.env['DEST_OS'] == DARWIN_OS ):
-                bclasp_dsym = bld.path.find_or_declare("%s.dSYM" % variant.executable_name(stage = 'b'))
-                bclasp_dsym_files = dsym_waf_nodes(variant.executable_name(stage = 'b'), bclasp_dsym)
-                log.debug("bclasp_dsym_files = %s", bclasp_dsym_files)
-                dsymutil_bclasp = dsymutil(env = bld.env)
-                if (bclasp_lto_o):
-                    dsymutil_bclasp.set_inputs([bld.bclasp_executable, bclasp_lto_o])
-                else:
-                    dsymutil_bclasp.set_inputs([bld.bclasp_executable])
-                dsymutil_bclasp.set_outputs(bclasp_dsym_files)
-                bld.add_to_group(dsymutil_bclasp)
-                install('%s/%s' % (executable_dir, bclasp_dsym.name), bclasp_dsym_files, cwd = bclasp_dsym)
+            make_run_dsymutil_task(bld, 'b', bclasp_lto_o)
+
             install('%s/%s' % (executable_dir, bld.bclasp_executable.name), bld.bclasp_executable, chmod = Utils.O755)
             bld.symlink_as('${PREFIX}/%s/clasp' % executable_dir, bld.bclasp_executable.name)
             os.symlink(bld.bclasp_executable.abspath(), bclasp_symlink_node.abspath())
@@ -1060,19 +1044,8 @@ def build(bld):
             log.debug("link_executable for cclasp %s -> %s", task.inputs, task.outputs)
             bld.add_to_group(task)
 
-            if ( bld.env['DEST_OS'] == DARWIN_OS ):
-                cclasp_dsym = bld.path.find_or_declare("%s.dSYM" % variant.executable_name(stage = 'c'))
-                cclasp_dsym_files = dsym_waf_nodes(variant.executable_name(stage = 'c'), cclasp_dsym)
-                log.debug("cclasp_dsym_files = %s", cclasp_dsym_files)
-                dsymutil_cclasp = dsymutil(env=bld.env)
-                if (cclasp_lto_o):
-                    dsymutil_cclasp.set_inputs([bld.cclasp_executable,
-                                                cclasp_lto_o])
-                else:
-                    dsymutil_cclasp.set_inputs([bld.cclasp_executable])
-                dsymutil_cclasp.set_outputs(cclasp_dsym_files)
-                bld.add_to_group(dsymutil_cclasp)
-                install('%s/%s' % (executable_dir, cclasp_dsym.name), cclasp_dsym_files, cwd = cclasp_dsym)
+            make_run_dsymutil_task(bld, 'c', cclasp_lto_o)
+
             install('%s/%s' % (executable_dir, bld.cclasp_executable.name), bld.cclasp_executable, chmod = Utils.O755)
             bld.symlink_as('${PREFIX}/%s/clasp' % executable_dir, bld.cclasp_executable.name)
             os.symlink(bld.cclasp_executable.abspath(), clasp_symlink_node.abspath())
@@ -1121,7 +1094,22 @@ def buildall(ctx):
 # Tasks
 #
 #
-class dsymutil(clasp_task):
+def make_run_dsymutil_task(bld, stage_char, clasp_lto_o):
+    if bld.env['DEST_OS'] == DARWIN_OS:
+        variant = bld.variant_obj
+        dsym_file = bld.path.find_or_declare("%s.dSYM" % variant.executable_name(stage = stage_char))
+        dsym_nodes = dsym_waf_nodes(variant.executable_name(stage = stage_char), dsym_file)
+        log.debug(stage_char + "clasp dsym_nodes = %s", dsym_nodes)
+        task = run_dsymutil(env = bld.env)
+        inputs = [bld.path.find_or_declare(variant.executable_name(stage = stage_char))]
+        if clasp_lto_o:
+            inputs += [clasp_lto_o]
+        task.set_inputs(inputs)
+        task.set_outputs(dsym_nodes)
+        bld.add_to_group(task)
+        install('%s/%s' % (executable_dir, dsym_file.name), dsym_nodes, cwd = dsym_file)
+
+class run_dsymutil(clasp_task):
     color = 'BLUE';
     def run(self):
         cmd = 'dsymutil %s' % self.inputs[0]
