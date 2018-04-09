@@ -1183,21 +1183,29 @@ CL_DEFUN bool two_arg__EQ_(Number_sp x, Number_sp y) {
 
 CL_LAMBDA(&rest args);
 CL_DEFUN T_sp cl___LT_(List_sp args) {
+  if (args.nilp())
+      PROGRAM_ERROR();
   return numbers_monotonic(-1, 1, args);
 };
 
 CL_LAMBDA(&rest args);
 CL_DEFUN T_mv cl___GT_(List_sp args) {
+  if (args.nilp())
+      PROGRAM_ERROR();
   return (Values(numbers_monotonic(1, 1, args)));
 };
 
 CL_LAMBDA(&rest args);
 CL_DEFUN T_mv cl___LE_(List_sp args) {
+  if (args.nilp())
+      PROGRAM_ERROR();
   return (Values(numbers_monotonic(-1, 0, args)));
 };
 
 CL_LAMBDA(&rest args);
 CL_DEFUN T_mv cl___GE_(List_sp args) {
+  if (args.nilp())
+      PROGRAM_ERROR();
   return (Values(numbers_monotonic(1, 0, args)));
 };
 
