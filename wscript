@@ -1323,17 +1323,6 @@ class recompile_cclasp(clasp_task):
                                       *self.bld.clasp_cclasp_no_wrappers)
         return self.exec_command(cmd)
 
-class compile_addons(clasp_task):
-    def run(self):
-        log.debug("In compile_addons %s -> %s", self.inputs[0].abspath(), self.outputs[0].abspath())
-        cmd = self.clasp_command_line(self.inputs[0].abspath(),
-                                      features = ['ignore-extensions'],
-                                      forms = ['(load "sys:kernel;clasp-builder.lsp")',
-                                               '(core:compile-addons)',
-                                               '(core:link-addons)',
-                                               '(core:quit)'])
-        return self.exec_command(cmd)
-
 # Generate bitcode for module
 # inputs = [cclasp_executable,source-code]
 # outputs = [fasl_file]
