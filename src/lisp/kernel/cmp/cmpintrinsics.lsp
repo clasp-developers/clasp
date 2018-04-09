@@ -685,7 +685,7 @@ and initialize it with an array consisting of one function pointer."
                          (llvm-sys:constant-pointer-null-get %t**%))))
           (irc-intrinsic-call "cc_initialize_gcroots_in_module" (list gcroots-in-module start (jit-constant-size_t number-of-roots) values))
           ;; If the constant/literal list is provided - then we may need to generate code for closurettes
-          #+(or)(when ordered-raw-constant-list (literal:generate-run-time-code-for-closurettes ordered-raw-constant-list irbuilder-alloca))
+          (when ordered-raw-constant-list (literal:generate-run-time-code-for-closurettes ordered-raw-constant-list irbuilder-alloca))
           (irc-ret-void))))
     (let ((shutdown-fn (irc-simple-function-create core:*module-shutdown-function-name*
                                                    (llvm-sys:function-type-get %void% nil)
