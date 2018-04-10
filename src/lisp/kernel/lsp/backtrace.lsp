@@ -259,7 +259,6 @@
                  (line (second clib-frame))
                  (name (extract-backtrace-frame-name line))
                  (maybe-shadow-frame (search-for-matching-shadow-frame prev-base-pointer base-pointer shadow-backtrace))
-                 (_ (if maybe-shadow-frame (format *debug-io* "name: ~a  shadow-frame: ~a~%" name maybe-shadow-frame)))
                  (entry (parse-frame address name prev-base-pointer base-pointer verbose maybe-shadow-frame)))
             (push entry result)))
         (setf prev-base-pointer base-pointer)))
