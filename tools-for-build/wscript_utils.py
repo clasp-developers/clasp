@@ -144,4 +144,11 @@ def collect_files(root, suffix = []):
     return result
 
 def collect_waf_nodes(bld, root, suffix = []):
-    return [bld.path.find_node(x) for x in collect_files(root, suffix = suffix)]
+    result = []
+    for x in collect_files(root, suffix = suffix):
+        node = bld.path.find_node(x)
+        if (node):
+            result.append(node)
+        else:
+            print("Could not find node for: %s" % x)
+    return result
