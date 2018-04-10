@@ -221,9 +221,13 @@
   (with-dbg-lexical-block (rest)
     (let ((first-form (car rest))
           (forms (cdr rest)))
-      (codegen result `(funcall 'core::multiple-value-prog1-function
-                                (lambda () ,first-form)
-                                (lambda () (progn ,@forms))) env))))
+      (if (null forms)
+          ;; trivial case
+          (codegen result first-form env)
+          (codegen result `(core:multiple-value-prog1-function
+                            (lambda () ,first-form)
+                            (lambda () (progn ,@forms)))
+                   env)))))
 
 (defun codegen-special-var-reference (var &optional env)
   (irc-intrinsic "symbolValueReference" (irc-global-symbol var env) (bformat nil "<special-var:%s>" (symbol-name var) )))
