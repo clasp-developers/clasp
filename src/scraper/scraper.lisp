@@ -61,14 +61,20 @@
                    :buffer-pathname output-file-path
                    :buffer-stream (make-string-input-stream stdout))))
 
-(defun generate-one-sif (clang-command sif-pathname)
-  (let* ((*debug-io* (make-two-way-stream *standard-input* *standard-output*))
-         (clang-output (run-clang clang-command sif-pathname))
-         (tags (process-all-recognition-elements clang-output)))
-    (with-open-file (fout sif-pathname :direction :output :if-exists :supersede :external-format :utf-8)
-      (let ((*print-readably* t)
-            (*print-pretty* nil))
-        (prin1 tags fout)))))
+(defun generate-sif-files (clang-command-line &rest files)
+  (unless files
+    (setf files (uiop:command-line-arguments)))
+  (with-standard-io-syntax
+    (let ((*debug-io* (make-two-way-stream *standard-input* *standard-output*)))
+      (loop
+        ;; It expects the .cxx and .sif files interleaved as command line args
+        :for (cxx-file sif-file) :on files :by #'cddr
+        :do
+        (format t "Scraping ~A -> ~A~%" cxx-file sif-file)
+        (let* ((clang-output (run-clang (append clang-command-line (list cxx-file)) sif-file))
+               (tags (process-all-recognition-elements clang-output)))
+          (with-open-file (fout sif-file :direction :output :if-exists :supersede :external-format :utf-8)
+            (prin1 tags fout)))))))
 
 (defun generate-headers-from-all-sifs ()
   (destructuring-bind
@@ -83,4 +89,4 @@
       (assert sif-files)
       (process-all-sif-files clasp-home-path build-path sif-files))))
 
-(export '(generate-one-sif generate-headers-from-all-sifs))
+(export '(generate-sif-files generate-headers-from-all-sifs))

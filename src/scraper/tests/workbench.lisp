@@ -4,16 +4,22 @@
 
 
 (progn
-  (setq *default-pathname-defaults* #P"/Users/meister/Development/clasp/src/scraper/")
-  (sb-posix:chdir "/Users/meister/Development/clasp/build/boehm/")
   (defparameter *clasp-home* #P"/Users/meister/Development/clasp/")
-  (setf *default-pathname-defaults* (merge-pathnames "src/scraper/" *clasp-home*))
-  (push :testing-scraper *features*)
-  (load "scraper.lisp"))
+  (asdf:initialize-source-registry `(:source-registry (:directory ,(merge-pathnames "src/scraper/" *clasp-home*)) :ignore-inherited-configuration))
+  (load (merge-pathnames "src/scraper/dependencies/bundle.lisp" *clasp-home*))
+  (asdf:load-system :clasp-scraper)
+  (swank:set-default-directory (merge-pathnames "build/boehm/" *clasp-home*))
+  (in-package :cscrape))
 
-(load "/Users/meister/Development/clasp/src/scraper/tags.lisp" :print t)
-
-(cscrape:generate-one-sif "/Users/meister/Development/externals-clasp/build/release/bin/clang++ -E -DSCRAPING -I./ -I/Users/meister/Development/externals-clasp/build/release/include -std=c++11 -Wno-macro-redefined -Wno-deprecated-register -Wno-expansion-to-defined -Wno-return-type-c-linkage -Wno-invalid-offsetof -Wno-#pragma-messages -Wno-inconsistent-missing-override -O3 -g -I. -I../.. -I../../src/main -I../../include -Igenerated -I../../../externals-clasp/build/release/include -I/usr/include /Users/meister/Development/clasp/src/llvmo/llvmoExpose.cc" #P"/tmp/llvmoExpose.sif")
+(progn
+  (sb-ext:gc :full t)
+  (sb-sprof:with-profiling ()
+    (time (cscrape:generate-sif-files '("/usr/lib/llvm-5.0/bin/clang++" "-E" "-DSCRAPING" "-I./" "-I/usr/lib/llvm-5.0/include" "-fno-omit-frame-pointer"
+                                        "-mno-omit-leaf-frame-pointer" "-std=c++11" "-flto=thin" "-Wno-macro-redefined" "-Wno-deprecated-register"
+                                        "-Wno-expansion-to-defined" "-Wno-return-type-c-linkage" "-Wno-invalid-offsetof" "-Wno-#pragma-messages"
+                                        "-Wno-inconsistent-missing-override" "-O3" "-g" "-I." "-I../.." "-I../../src/main" "-I../../include"
+                                        "-Igenerated" "-I/usr/lib/llvm-5.0/include" "-I/usr/include")
+                                      "/tmp/llvmoExpose.cc" "/tmp/llvmoExpose.sif"))))
 
 (apropos "parse-lambda-list")
 
