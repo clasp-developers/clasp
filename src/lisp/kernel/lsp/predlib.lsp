@@ -73,29 +73,27 @@ type specifier.  When the symbol NAME is used as a type specifier, the
 expansion function is called with no argument.
 The doc-string DOC, if supplied, is saved as a TYPE doc and can be retrieved
 by (documentation 'NAME 'type)."
-  (multiple-value-bind (body doc)
-      (remove-documentation body)
-    (setq lambda-list (copy-list lambda-list))
-    (dolist (x '(&optional &key))
-      (do ((l (rest (member x lambda-list)) (rest l)))
-	  ((null l))
-	(let ((variable (first l)))
-	  (when (and (symbolp variable)
-		     (not (member variable lambda-list-keywords)))
-            (rplaca l `(,variable '*))))))
-    (multiple-value-bind (decls lambda-body doc)
-	(process-declarations body t)
-      ;; FIXME: Use FORMAT to produce a default docstring. Maybe.
-      (if doc (setq doc (list doc)))
-      `(eval-when (:compile-toplevel :load-toplevel :execute)
-         ,@(si::expand-set-documentation name 'type doc)
-         (funcall #'(setf type-expander)
-                  #'(lambda ,lambda-list
-                      (declare (core:lambda-name ,name) ,@decls)
-                      ,@doc
-                      (block ,name ,@lambda-body))
-                  ',name)
-         ',name))))
+  ;; First fix the optional/key defaults to be 'cl:*
+  (setq lambda-list (copy-list lambda-list))
+  (dolist (x '(&optional &key))
+    (do ((l (rest (member x lambda-list)) (rest l)))
+        ((null l))
+      (let ((variable (first l)))
+        (when (and (symbolp variable)
+                   (not (member variable lambda-list-keywords)))
+          (rplaca l `(,variable '*))))))
+  (multiple-value-bind (decls body doc)
+      (process-declarations body t)
+    ;; FIXME: Use FORMAT to produce a default docstring. Maybe.
+    `(eval-when (:compile-toplevel :load-toplevel :execute)
+       ,@(si::expand-set-documentation name 'type doc)
+       (funcall #'(setf type-expander)
+                #'(lambda ,lambda-list
+                    (declare (core:lambda-name ,name) ,@decls)
+                    ,@(when doc (list doc))
+                    (block ,name ,@body))
+                ',name)
+       ',name)))
 
 
 ;;; Some DEFTYPE definitions.
