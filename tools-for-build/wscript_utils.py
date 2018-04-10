@@ -174,6 +174,21 @@ def ensure_list(x):
     else:
         return [x]
 
+def list_chunks_of_size(lst, chunk_size):
+    '''Yield successive n-sized chunks from l.'''
+    for i in range(0, len(lst), chunk_size):
+        yield lst[i:i + chunk_size]
+
+def split_list(lst, n):
+    '''Split the list into n chunks'''
+    L = len(lst)
+    assert 0 < n <= L
+    s = L // n
+    return [lst[p : p + s] for p in range(0, L, s)]
+
+def ends_with(x, postfix):
+    return x[:len(postfix)] == postfix
+
 def waf_nodes_to_paths(lst):
     return [i.abspath() for i in lst]
 

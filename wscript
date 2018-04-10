@@ -1339,21 +1339,23 @@ class precompile_scraper(scraper_task):
         cmd = self.scraper_command_line(["--eval", '(with-open-file (stream "%s" :direction :output :if-exists :supersede) (terpri stream))' % self.outputs[0].abspath()])
         return self.exec_command(cmd)
 
-class generate_one_sif(scraper_task):
+class generate_sif_files(scraper_task):
     ext_out = ['.sif']    # this affects the task execution order
     after = ['expand_pump_template']
-    waf_print_keyword = "Scraping, generate-one-sif"
+    waf_print_keyword = "Scraping"
 
     def run(self):
         env = self.env
         preproc_args = [] + env.CXX + ["-E", "-DSCRAPING"] + self.colon("ARCH_ST", "ARCH") + env.CXXFLAGS + env.CPPFLAGS + \
                        self.colon("FRAMEWORKPATH_ST", "FRAMEWORKPATH") + \
                        self.colon("CPPPATH_ST", "INCPATHS") + \
-                       self.colon("DEFINES_ST", "DEFINES") + \
-                       [self.inputs[0].abspath()]
-        cmd = self.scraper_command_line(["--eval", "(cscrape:generate-one-sif '(%s) #P\"%s\")" %
-                                         ((' '.join('"' + item + '"' for item in preproc_args)),
-                                          self.outputs[0].abspath())])
+                       self.colon("DEFINES_ST", "DEFINES")
+        preproc_args_as_string = ' '.join('"' + item + '"' for item in preproc_args)
+        cmd = self.scraper_command_line(["--eval", "(cscrape:generate-sif-files '(%s))" % preproc_args_as_string])
+        for cxx_node, sif_node in zip(self.inputs, self.outputs):
+            cmd.append(cxx_node.abspath())
+            cmd.append(sif_node.abspath())
+
         return self.exec_command(cmd)
 
 class generate_headers_from_all_sifs(scraper_task):
@@ -1418,8 +1420,9 @@ def postprocess_all_c_tasks(self):
         log.warn("Skipping scrape and some C tasks as requested")
         return
 
-    all_sif_files = []
-    all_o_files = []
+    variant = self.bld.variant_obj
+    all_o_nodes = []
+    all_cxx_nodes = []
     intrinsics_o = None
     builtins_o = None
     fastgf_o = None
@@ -1427,78 +1430,94 @@ def postprocess_all_c_tasks(self):
         log.debug("Scrape taskgen inspecting C task %s", task)
         if ( task.__class__.__name__ == 'cxx' ):
             for node in task.inputs:
-                if ( node.name[:len('intrinsics.cc')] == 'intrinsics.cc' ):
+                all_cxx_nodes.append(node)
+                if ends_with(node.name, 'intrinsics.cc'):
                     intrinsics_cc = node
-                if ( node.name[:len('builtins.cc')] == 'builtins.cc' ):
+                if ends_with(node.name, 'builtins.cc'):
                     builtins_cc = node
-                if ( node.name[:len('fastgf.cc')] == 'fastgf.cc' ):
+                if ends_with(node.name, 'fastgf.cc'):
                     fastgf_cc = node
-                sif_node = node.change_ext('.sif')
-                self.create_task('generate_one_sif', node, [sif_node])
-                all_sif_files.append(sif_node)
             for node in task.outputs:
-                if ( node.name[:len('intrinsics.cc')] == 'intrinsics.cc' ):
+                all_o_nodes.append(node)
+                if ends_with(node.name, 'intrinsics.cc'):
                     intrinsics_o = node
-                if ( node.name[:len('builtins.cc')] == 'builtins.cc' ):
+                if ends_with(node.name, 'builtins.cc'):
                     builtins_o = node
-                if ( node.name[:len('fastgf.cc')] == 'fastgf.cc' ):
+                if ends_with(node.name, 'fastgf.cc'):
                     fastgf_o = node
-                all_o_files.append(node)
         if ( task.__class__.__name__ == 'c' ):
             for node in task.outputs:
-                all_o_files.append(node)
-    output_nodes = [self.path.find_or_declare('generated/' + i) for i in
-                    ['c-wrappers.h',
-                     'cl-wrappers.lisp',
-                     'enum_inc.h',
-                     'initClassesAndMethods_inc.h',
-                     'initFunctions_inc.h',
-                     'initializers_inc.h',
-                     'sourceInfo_inc.h',
-                     'symbols_scraped_inc.h']]
-    self.create_task('generate_headers_from_all_sifs', all_sif_files, output_nodes)
+                all_o_nodes.append(node)
+
+    all_sif_nodes = []
+
+    # Start 'jobs' number of scraper processes in parallel, each processing several files
+    #chunks = split_list(all_cxx_nodes, min(self.bld.jobs, len(all_cxx_nodes))) # this splits into the optimal chunk sizes
+    chunk_size = min(20, max(1, len(all_cxx_nodes) // self.bld.jobs)) # this splits into task chunks of at most 20 files
+    chunks = list(list_chunks_of_size(all_cxx_nodes, chunk_size))
+    log.info('Creating %s parallel scraper tasks, each processing %s files, for the total %s cxx files', len(chunks), chunk_size, len(all_cxx_nodes))
+    assert len([x for sublist in chunks for x in sublist]) == len(all_cxx_nodes)
+    for cxx_nodes in chunks:
+        sif_nodes = [x.change_ext('.sif') for x in cxx_nodes]
+        all_sif_nodes += sif_nodes
+        self.create_task('generate_sif_files', cxx_nodes, sif_nodes)
+
+    scraper_output_nodes = [self.path.find_or_declare('generated/' + i) for i in
+                            ['c-wrappers.h',
+                             'cl-wrappers.lisp',
+                             'enum_inc.h',
+                             'initClassesAndMethods_inc.h',
+                             'initFunctions_inc.h',
+                             'initializers_inc.h',
+                             'sourceInfo_inc.h',
+                             'symbols_scraped_inc.h']]
+
+    self.create_task('generate_headers_from_all_sifs', all_sif_nodes, scraper_output_nodes)
     # TODO FIXME this includes cl-wrappers.lisp
-    install('lib/clasp/', output_nodes)  # includes
-    variant = self.bld.variant_obj
+    install('lib/clasp/', scraper_output_nodes)  # includes
+
 # intrinsics
     intrinsics_bitcode_archive_node = self.path.find_or_declare(variant.inline_bitcode_archive_name("intrinsics"))
     intrinsics_bitcode_alone_node = self.path.find_or_declare(variant.inline_bitcode_name("intrinsics"))
     log.debug("intrinsics_cc = %s, intrinsics_o.name = %s, intrinsics_bitcode_alone_node = %s", intrinsics_cc, intrinsics_o.name, intrinsics_bitcode_alone_node)
     self.create_task('build_bitcode',
-                     [intrinsics_cc] + output_nodes,
+                     [intrinsics_cc] + scraper_output_nodes,
                      intrinsics_bitcode_alone_node)
     self.create_task('link_bitcode',
                      [intrinsics_o],
                      intrinsics_bitcode_archive_node)
     install('lib/clasp/', intrinsics_bitcode_archive_node)   # install bitcode
     install('lib/clasp/', intrinsics_bitcode_alone_node)     # install bitcode
+
 # builtins
     builtins_bitcode_archive_node = self.path.find_or_declare(variant.inline_bitcode_archive_name("builtins"))
     builtins_bitcode_alone_node = self.path.find_or_declare(variant.inline_bitcode_name("builtins"))
     log.debug("builtins_cc = %s, builtins_o.name = %s, builtins_bitcode_alone_node = %s", builtins_cc, builtins_o.name, builtins_bitcode_alone_node)
     self.create_task('build_bitcode',
-                     [builtins_cc] + output_nodes,
+                     [builtins_cc] + scraper_output_nodes,
                      builtins_bitcode_alone_node)
     self.create_task('link_bitcode',
                      [builtins_o],
                      builtins_bitcode_archive_node)
     install('lib/clasp/', builtins_bitcode_archive_node)
     install('lib/clasp/', builtins_bitcode_alone_node)
+
 # fastgf
     fastgf_bitcode_archive_node = self.path.find_or_declare(variant.inline_bitcode_archive_name("fastgf"))
     fastgf_bitcode_alone_node = self.path.find_or_declare(variant.inline_bitcode_name("fastgf"))
     log.debug("fastgf_cc = %s, fastgf_o.name = %s, fastgf_bitcode_alone_node = %s", fastgf_cc, fastgf_o.name, fastgf_bitcode_alone_node)
     self.create_task('build_bitcode',
-                     [fastgf_cc] + output_nodes,
+                     [fastgf_cc] + scraper_output_nodes,
                      fastgf_bitcode_alone_node)
     self.create_task('link_bitcode',
                      [fastgf_o],
                      fastgf_bitcode_archive_node)
     install('lib/clasp/', fastgf_bitcode_archive_node)
     install('lib/clasp/', fastgf_bitcode_alone_node)
-#
+
+# all of C
     cxx_all_bitcode_node = self.path.find_or_declare(variant.cxx_all_bitcode_name())
     self.create_task('link_bitcode',
-                     all_o_files,
+                     all_o_nodes,
                      cxx_all_bitcode_node)
     install('lib/clasp/', cxx_all_bitcode_node)
