@@ -163,11 +163,13 @@
                    (pointer-in-pointer-range frame-address bp next-bp))
           (return-from search-for-matching-frame (values cur t)))))))
 
-(defun search-for-matching-shadow-frame (prev-base-pointer base-pointer shadow-backtrace)
+(defun search-for-matching-shadow-frame (base-pointer next-base-pointer shadow-backtrace)
   (when shadow-backtrace
     (do* ((cur shadow-backtrace (cdr cur))
           (shadow-frame (car cur) (car cur)))
-         ((or (null cur) (pointer-in-pointer-range (shadow-backtrace-frame-frame-address shadow-frame) prev-base-pointer base-pointer)) shadow-frame))))
+         ((or (null cur) (and next-base-pointer
+                              base-pointer
+                              (pointer-in-pointer-range (shadow-backtrace-frame-frame-address shadow-frame) base-pointer next-base-pointer))) shadow-frame))))
 
 ;;; Attach the shadow backtrace frames to the matching thread backtrace frames.
 (defun attach-shadow-backtrace (orig-frames shadow-backtrace)
@@ -257,6 +259,7 @@
                  (line (second clib-frame))
                  (name (extract-backtrace-frame-name line))
                  (maybe-shadow-frame (search-for-matching-shadow-frame prev-base-pointer base-pointer shadow-backtrace))
+                 (_ (if maybe-shadow-frame (format *debug-io* "name: ~a  shadow-frame: ~a~%" name maybe-shadow-frame)))
                  (entry (parse-frame address name prev-base-pointer base-pointer verbose maybe-shadow-frame)))
             (push entry result)))
         (setf prev-base-pointer base-pointer)))
