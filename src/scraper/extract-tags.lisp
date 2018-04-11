@@ -24,7 +24,7 @@ Works like file-position for buffer-stream."
 
 #+DEPRECIATED
 (defun buffer-peek (bufs)
-  "* Arguments 
+  "* Arguments
 - bufs :: A buffer-stream.
 * Description
 Peek into the buffer and return from the file-position to the end of the current line"
@@ -32,9 +32,8 @@ Peek into the buffer and return from the file-position to the end of the current
          (epos (position #\newline (buffer bufs) :start pos :test #'char=)))
     (subseq (buffer bufs) pos (1- epos))))
 
-
 (defun buffer-peek-char (bufs)
-  "* Arguments 
+  "* Arguments
 - bufs :: A buffer-stream.
 * Description
 Peek into the buffer and return the next char at the file-position"
@@ -180,8 +179,8 @@ Read up to the character and leave file-position pointing to it if (keep-last-ch
 - ch :: character
 - keep-last-char :: boolean
 * Description
-Read up to the first white-space character and 
-leave file-position pointing to it if (keep-last-char) 
+Read up to the first white-space character and
+leave file-position pointing to it if (keep-last-char)
 otherwise advance one past it.
 Return the string that either includes it or not depending on (keep-last-char)."
   (let* ((start (buffer-stream-file-position bufs))
@@ -191,8 +190,6 @@ Return the string that either includes it or not depending on (keep-last-char)."
                       ch-pos)))
     (buffer-stream-file-position bufs keep-to)
     (subseq (buffer bufs) start keep-to)))
-
-
 
 (defun read-string-to-tag (bufs tag)
   "* Arguments
@@ -206,7 +203,6 @@ Read the string up to the tag and advance the file-position to the first charact
       (buffer-stream-file-position bufs after-tag)
       (subseq (buffer bufs) start tag-start))))
 
-
 (defun parse-tag (bufs tag tag-handlers)
   "* Arguments
 - bufs :: buffer-stream
@@ -219,7 +215,6 @@ parse the tag using the current position in bufs."
     (if handler
         (funcall (tags:handler-code handler) bufs)
         (error 'tags:unknown-tag :tag tag))))
-
 
 (defun namespace-recognizer (bufs tags)
   "* Arguments
@@ -251,7 +246,7 @@ Return the new tags list."
 - bufs :: buffer-stream
 - tags :: A list.
 * Description
-A tag was found in bufs - parse the tag, insert it into the tags list, 
+A tag was found in bufs - parse the tag, insert it into the tags list,
 advance the file-pointer. Return the new tags list."
   (declare (optimize (speed 3)))
   ;; Recognize BEGIN_TAGxxxx <tag info>
@@ -267,8 +262,7 @@ advance the file-pointer. Return the new tags list."
 (defparameter *recognition-elements*
   (list
    (cons "namespace" #'namespace-recognizer)
-   (cons *begin-tag* #'begin-tag-recognizer)))
-
+   (cons +begin-tag+ #'begin-tag-recognizer)))
 
 (defun next-recognition-element (bufs)
   "* Arguments
@@ -305,4 +299,3 @@ Extract all of the tags from bufs and return them as a list. "
            (return (nreverse tags)))
          (buffer-stream-file-position bufs nearest-after-pos)
          (setq tags (funcall (cdr rec-el) bufs tags))))))
-

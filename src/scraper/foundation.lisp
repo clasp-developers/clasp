@@ -1,8 +1,7 @@
 (in-package :cscrape)
 
-(defparameter *begin-tag* "BEGIN_TAG_bfc54f90bafadf5")
-(defparameter *end-tag* "END_TAG_bfc54f90bafadf5")
-
+(define-constant +begin-tag+ "BEGIN_TAG_bfc54f90bafadf5" :test 'equal)
+(define-constant +end-tag+ "END_TAG_bfc54f90bafadf5" :test 'equal)
 
 (defun fill-config (config line)
   (let* ((trimmed (string-trim " " line))
@@ -22,11 +21,4 @@
               ((string= (subseq tl 0 7) "#define")
                (fill-config config tl))
               (t (error "Illegal application.config line: ~a" l)))))
-    config))
-
-(defun setup-application-config (filename)
-  (let ((config (read-application-config filename)))
-    #+(or)(progn
-            (maphash (lambda (k v) (format t "key: ~s  value: ~s~%" k v)) config)
-            (finish-output))
     config))

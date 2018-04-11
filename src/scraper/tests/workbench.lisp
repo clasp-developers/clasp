@@ -672,8 +672,6 @@
          (sif-files *sif-files*))
     (process-all-sif-files clasp-home-path main-path sif-files)))
 
-(setup-application-config *application-config*)
-
 (generate-sif-file #P"~/Development/clasp/wbuild/src/core/cons.i" #P"~/Development/clasp/wbuild/src/core/cons.sif")
 (progn
   (cscrape::do-scraping
@@ -688,7 +686,7 @@
 
 
 
-(gethash :lisp-wrappers (cscrape::setup-application-config cscrape:*application-config*))
+(gethash :lisp-wrappers (cscrape::read-application-config cscrape::*application-config*))
 (cscrape::split-type-name "const string &name")
 
 

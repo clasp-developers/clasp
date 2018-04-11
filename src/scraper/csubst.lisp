@@ -56,26 +56,30 @@
                                (subseq string 0 (- (length string) 1)))
              ,@(nreverse args))))
 
+;; TODO FIXME it's not nice to install this globally
 (set-dispatch-macro-character #\# #\l
                               #'parse-c++)
 ) ; eval-when
 
+;;
+;; NOTE: some of the semicolons below are part of C, not Lisp!
+;;
 (defun generate-return-value (namespace function-name return-type arg-indexes)
   (cond
     ((string= return-type "void")
      #l
-     $namespace ::$function-name($(format nil "~{a~a._v~^,~}" arg-indexes)) ;
-     return Values(_Nil<core::T_O>())   ;
+     $namespace ::$function-name($(format nil "~{a~a._v~^,~}" arg-indexes));
+     return Values(_Nil<core::T_O>());
      l#)
     ((search "_mv" return-type) ;(or (string= return-type "T_mv") (string= return-type "core::T_mv"))
      #l
-     auto ret = $namespace ::$function-name($(format nil "~{a~a._v~^,~}" arg-indexes)) ;
-     return ret.as_return_type()                ;
+     auto ret = $namespace ::$function-name($(format nil "~{a~a._v~^,~}" arg-indexes));
+     return ret.as_return_type();
      l#)
     (t
      #l
-     $(generate-maybe-namespace-type namespace return-type) ret = $namespace ::$function-name($(format nil "~{a~a._v~^,~}" arg-indexes)) ;
-     return translate::to_object<$(generate-maybe-namespace-type namespace return-type)>::convert(ret).as_return_type() ;
+     $(generate-maybe-namespace-type namespace return-type) ret = $namespace ::$function-name($(format nil "~{a~a._v~^,~}" arg-indexes));
+     return translate::to_object<$(generate-maybe-namespace-type namespace return-type)>::convert(ret).as_return_type();
      l#)))
 
 (defun generate-wrapped-function (wrapped-name namespace function-name return-type types &key extern)
@@ -87,14 +91,14 @@
     #l
     $extern-attribute LCC_RETURN $wrapped-name ($(format nil "~{core::T_O* in~a~^,~}" arg-indexes)) {
     $(with-output-to-string (sout)
-       (loop for x in arg-indexes
-          for type in types
-          do (format sout
+       (loop
+         :for x in arg-indexes
+         :for type in types
+         :do (format sout
                      #l
-                     translate::from_object<$(generate-maybe-namespace-type namespace type)> a$x (core::T_sp((gc::Tagged)(in$x ))) ;
+                     translate::from_object<$(generate-maybe-namespace-type namespace type)> a$x (core::T_sp((gc::Tagged)(in$x)));
                      $""
                      l#)))
     $(generate-return-value namespace function-name return-type arg-indexes)
-    }                                   ;
+    }
     l#))
-

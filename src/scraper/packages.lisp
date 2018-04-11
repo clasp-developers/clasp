@@ -1,26 +1,28 @@
 (defpackage "CSCRAPE"
-    (:use :cl)
-    (:export
-     #:*begin-tag*
-     #:*end-tag*
-     #:buffer-stream
-     #:buffer
-     #:search-for-element
-     #:skip-char
-     #:search-for-character
-     #:search-for-whitespace
-     #:read-string-to-character
-     #:read-string-to-white-space
-     #:next-tag-name
-     #:read-string-to-tag
-     #:gather-source-files
-     #:extract-function-name-from-signature
-     #:maybe-remove-one-prefix-from-start
-     #:extract-class-method-name-from-signature
-     #:extract-method-name-from-signature
-     #:extract-method-name-from-pointer
-     #:packaged-class-name
-     #:extract-function-name-from-pointer))
+  (:use :cl)
+  (:import-from :alexandria
+                #:define-constant)
+  (:export
+   #:+begin-tag+
+   #:+end-tag+
+   #:buffer-stream
+   #:buffer
+   #:search-for-element
+   #:skip-char
+   #:search-for-character
+   #:search-for-whitespace
+   #:read-string-to-character
+   #:read-string-to-white-space
+   #:next-tag-name
+   #:read-string-to-tag
+   #:gather-source-files
+   #:extract-function-name-from-signature
+   #:maybe-remove-one-prefix-from-start
+   #:extract-class-method-name-from-signature
+   #:extract-method-name-from-signature
+   #:extract-method-name-from-pointer
+   #:packaged-class-name
+   #:extract-function-name-from-pointer))
 
 (defpackage "TAGS"
   (:use :cl)
@@ -110,4 +112,3 @@
    #:maybe-lambda-list
    #:maybe-docstring
    #:maybe-declare))
-           

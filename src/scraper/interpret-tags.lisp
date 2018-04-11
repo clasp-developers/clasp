@@ -6,7 +6,6 @@
 ;;;
 ;;;
 
-
 (define-condition bad-cl-defun/defmethod ()
   ((tag :initarg :tag :accessor tag)
    (other-tag :initarg :other-tag :accessor other-tag))
@@ -18,8 +17,6 @@
                      (tags:tag-code (other-tag condition))
                      (tags:source-pos (other-tag condition)))))
   (:documentation "Error when CL_DEFUN, CL_DEFMETHOD are too far away from their modifiers are too far away"))
-
-
 
 (defclass expose-code ()
   ((file% :initarg :file% :accessor file%)
@@ -133,7 +130,7 @@
 (defclass completed-enum ()
   ((begin-enum% :initarg :begin-enum% :accessor begin-enum%)
    (values% :initarg :values% :accessor values%)))
-   
+
 (defun lispify-class-name (tag packages)
   (format nil "core::magic_name(\"~a:~a\")" (gethash (tags:package% tag) packages) (tags:class-symbol% tag)))
 
@@ -155,7 +152,6 @@ If override-name-tag is not nil then return its value, otherwise return name"
          (format nil "core::magic_name(~s,~s)"
                  (tags:name% override-name-tag)
                  (gethash (tags:package% override-name-tag) packages))))))
-
 
 (defun order-packages-by-use (packages)
   "* Arguments
@@ -190,7 +186,6 @@ Sort the packages in order of how they use each other."
                                unsorted)
                       problem-packages)
                     (reverse sorted)))))))
-
 
 (defun check-symbol-against-previous (symbol previous-symbols)
   "* Arguments
@@ -672,6 +667,3 @@ This interprets the tags and generates objects that are used to generate code."
                  e))))
     (calculate-class-stamps-and-flags classes gc-managed-types)
     (values (order-packages-by-use packages-to-create) functions symbols classes gc-managed-types enums initializers)))
-                                                                                         
-                                                                                         
-
