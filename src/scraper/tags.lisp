@@ -1,6 +1,5 @@
 (in-package :tags)
 
-
 (define-condition unknown-tag ()
   ((tag :initarg :tag :accessor unknown-tag-tag))
   (:report (lambda (condition stream)
@@ -39,7 +38,6 @@
 (defclass tags:package-nickname-tag (tag)
   ((name% :initform nil :initarg :name% :accessor name%)))
 
-
 (defclass tags:lisp-class-tag (source-tag)
   ((namespace% :initform nil :initarg :namespace% :reader tags:namespace%)
    (package% :initform nil :initarg :package% :reader tags:package%)
@@ -60,7 +58,6 @@
 
 (defclass tags:cl-pkg-name-tag (name-base-tag)
   ((package% :initarg :package% :reader tags:package%)))
-
 
 (defclass tags:meta-class-tag (tag)
   ((meta-class% :initarg :meta-class% :reader tags:meta-class%)))
@@ -150,8 +147,6 @@
 (defun maybe-unquote (str)
   (string-trim '(#\") str))
 
-
-
 (defparameter *tag-handlers* (make-hash-table :test #'equal))
 (defparameter *tag-codes* (make-hash-table :test #'equal))
 
@@ -206,7 +201,7 @@
                         (read-from-string lambda-list)
                         lambda-list)))
   (define-tag-handler cl-docstring-tag "CL_DOCSTRING_TAG" tags:cl-docstring-tag
-    :docstring% (cscrape:read-string-to-tag bufs cscrape:*end-tag*))
+    :docstring% (cscrape:read-string-to-tag bufs cscrape:+end-tag+))
   (define-tag-handler cl-declare-tag "CL_DECLARE_TAG" tags:cl-declare-tag
     :declare-form% (getf plist :declare))
   (define-tag-handler cl-defun-tag "CL_DEFUN_TAG" tags:cl-defun-tag
@@ -273,7 +268,7 @@
 (defgeneric tags:identifier (tag))
 (defmethod identifier ((tag t)) "")
 (defmethod identifier ((tag lisp-class-tag))
-  "* Description 
+  "* Description
 Return the name of the class for the tag."
   (name% tag))
 

@@ -1,7 +1,5 @@
 (in-package :cscrape)
 
-(defvar *generated-headers-path*)
-(defparameter *clang-path* nil)
 (defparameter *tags* nil)
 (defparameter *classes* nil)
 (defparameter *gc-managed-types* nil)
@@ -9,19 +7,15 @@
 (defparameter *functions* nil)
 (defparameter *enums* nil)
 (defparameter *packages-to-create* nil)
-(defparameter *application-config* #P"include/clasp/main/application.config")
-(export '*application-config*)
 
 (defun process-all-sif-files (clasp-home-path build-path sif-files)
   (declare (optimize debug))
   (let* ((tags (loop for sif-file in sif-files
                   for sif-tags = (read-sif-file sif-file)
                   nconc sif-tags))
-         (app-config-path (merge-pathnames *application-config* (pathname clasp-home-path))))
+         (app-config-path (merge-pathnames #P"include/clasp/main/application.config" (pathname clasp-home-path))))
     (format t "app-config-path    -> ~a~%" app-config-path)
-    (let ((app-config (setup-application-config app-config-path)))
-      (unless app-config
-        (error "Could not get app-config"))
+    (let ((app-config (read-application-config app-config-path)))
       (format t "Interpreting tags~%")
       (setf *tags* tags)
       (multiple-value-bind (packages-to-create functions symbols classes gc-managed-types enums initializers)

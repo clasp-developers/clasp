@@ -7,7 +7,6 @@
 * Description
 Return a string in the form <package>:<name>. If the name-base-tag has that form then return it, otherwise figure out the package name from the namespace and packages."))
 
-
 (defmethod packaged-name (namespace-tag (tag tags:cl-name-tag) packages)
   (if (position #\: (tags:name% tag))
       (format nil "~s" (tags:name% tag))
@@ -45,7 +44,6 @@ Return a string in the form <package>:<name>. If the name-base-tag has that form
                 (gethash (tags:namespace% namespace-tag) packages)
                 name))))
 
-
 (defgeneric packaged-class-name (namespace-tag name-or-tag packages)
   (:documentation "* Arguments
 - namespace-tag :: A namespace-tag.
@@ -64,15 +62,13 @@ Return a string in the form <package>:<name>. Figure out the package name from t
         (let ((package (gethash (tags:namespace% namespace-tag) packages)))
           (format nil "~a:~a" package class-name)))))
 
-
-(defgeneric make-class-key (cur-namespace-tag tag))
-(defmethod make-class-key (namespace-tag (class-name string))
-  (let ((cc-pos (search "::" class-name)))
-    (if cc-pos
-        class-name
-        (let ((ns (tags:namespace% namespace-tag)))
-          (format nil "~a::~a" ns class-name)))))
-
+(defgeneric make-class-key (cur-namespace-tag tag)
+  (:method (namespace-tag (class-name string))
+    (let ((cc-pos (search "::" class-name)))
+      (if cc-pos
+          class-name
+          (let ((ns (tags:namespace% namespace-tag)))
+            (format nil "~a::~a" ns class-name))))))
 
 (defun maybe-namespace-symbol (namespace-tag symbol-name)
   (if (search "::" symbol-name)
@@ -88,4 +84,3 @@ Return a string in the form <package>:<name>. Figure out the package name from t
   (if (search "::" type-name)
       type-name
       (format nil "~a::~a" (tags:namespace% namespace-tag) type-name)))
-

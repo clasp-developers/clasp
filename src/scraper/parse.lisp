@@ -12,11 +12,9 @@
                   (return-from done (string-trim '(#\newline #\space #\tab) (subseq str (length prefix))))))))
       str)))
 
-
 (defun backwards-space (str pos)
   (let ((pos (position-if (lambda (c) (or (char= c #\space) (char= c #\tab) (char= c #\newline))) str :from-end t :end pos)))
     (or pos -1)))
-    
 
 (defun backwards-not-space (str pos)
   (let ((pos (position-if (lambda (c) (not (or (char= c #\space) (char= c #\tab) (char= c #\newline)))) str :from-end t :end pos)))
@@ -45,7 +43,7 @@ values function-name full-function-name simple-function
 * Description
 Extract the function name from the signature.  If the function name does not contain '::' then
 return the (values function-name function-name T).
-If the name has the form: class::name then it's a static class method 
+If the name has the form: class::name then it's a static class method
 and not a simple-function so return (values name class::name nil)"
   (declare (optimize (speed 3)) (ignore tag))
   (let* ((sig (maybe-remove-one-prefix-from-start raw-sig '("inline" "static")))
@@ -80,7 +78,7 @@ and not a simple-function so return (values name class::name nil)"
           (values (subseq class-method-name 0 colon-colon-pos)
                   (subseq class-method-name (+ 2 colon-colon-pos)))
           (values nil class-method-name)))))
-    
+
 (defun extract-method-name-from-signature (sig)
   (declare (optimize (debug 3)))
   (let* ((tsig (maybe-remove-one-prefix-from-start sig '("virtual" "inline")))
@@ -120,7 +118,6 @@ and not a simple-function so return (values name class::name nil)"
 (defun extract-method-name-from-pointer (pointer tag)
   (extract-function-name-from-pointer pointer tag))
 
-
 (defun split-by-one-char (string split-char)
   "* Arguments
 - string :: A string.
@@ -139,7 +136,7 @@ if there were an empty string between them."
   "* Arguments
 - type-name :: A string.
 * Description
-Split a string like \"const string &b\" into (values \"const string &\" \"b\") pair.  
+Split a string like \"const string &b\" into (values \"const string &\" \"b\") pair.
 Trim whitespace from each member of the pair."
   (declare (optimize (speed 3)))
   (let* ((name-start (position-if #'(lambda (c)
@@ -176,7 +173,7 @@ into two lists (int int string) and (a b c) and return as two values"
     (format sout "~a" lambda-list)))
 
 (defun parse-lambda-list-from-signature (signature &key class)
-  "* Arguments 
+  "* Arguments
 - signature :: A string.
 * Description
 - Extract from the C++ function arguments a lambda list."
@@ -187,7 +184,6 @@ into two lists (int int string) and (a b c) and return as two values"
     (if class
         (prepend-dispatch-variable lambda-list class)
         lambda-list)))
-
 
 (defun strip-non-type-keywords (maybe-type)
   (flet ((strip-keyword (keyword line)
@@ -200,7 +196,6 @@ into two lists (int int string) and (a b c) and return as two values"
                                (subseq line (+ pos (length keyword)) nil)))
                  line))))
     (strip-keyword "inline" (strip-keyword "static" maybe-type))))
-
 
 (defun parse-types-from-signature (rsignature)
   (declare (optimize debug))
@@ -235,7 +230,6 @@ into two lists (int int string) and (a b c) and return as two values"
          (return-type (strip-non-type-keywords maybe-return-type)))
     (values return-type arg-types)))
 
-
 (defun maybe-fix-magic-name (maybe-magic-name)
   "* Arguments
 :: maybe-magic-name - A string
@@ -252,7 +246,6 @@ CL call to (core:magic-name ...)"
               (format nil "(core:magic-intern ~a ~a)" (subseq args 0 comma-pos) (subseq args (1+ comma-pos) nil))
               (format nil "(core:magic-intern ~a)" args)))
         (format nil "(core:magic-intern ~a)" maybe-magic-name))))
-
 
 (defstruct ptr-name-struct ptr-name)
 (defstruct argument-struct type name)
@@ -311,15 +304,12 @@ CL call to (core:magic-name ...)"
          (args (function-type-struct-arguments type)))
     (values (type-as-string return)
             (mapcar (lambda (a) (type-as-string (argument-struct-type a))) args))))
-                 
-  
 
 (defun separate-type-pointer (str)
   (let* ((ptr-pos (position #\& str :from-end t))
          (pointer (subseq str (1+ ptr-pos) (length str)))
          (type (subseq str 0 ptr-pos)))
     (values (string-trim " " type) (string-trim " " pointer))))
-
 
 (defun not-integer (string)
   (when (find-if-not #'digit-char-p string)
@@ -334,7 +324,6 @@ CL call to (core:magic-name ...)"
   (:lambda (s)
     (esrap:text s)))
 
-
 (esrap:defrule ctype-exp (and (esrap:? whitespace) ctype)
   (:lambda (list)
     (second list)))
@@ -347,7 +336,7 @@ CL call to (core:magic-name ...)"
                                               (loop for cur = tail then (cdr cur)
                                                     while cur
                                                     collect (second (first cur))))))))
-                                  
+
 (esrap:defrule ctype (and (or (and "const" whitespace) (esrap:? whitespace)) cidentifier (esrap:? whitespace) (or template-list "**" #\* #\& (esrap:? whitespace)))
   (:lambda (list)
     (make-type-struct :const (first (first list))
@@ -397,8 +386,6 @@ CL call to (core:magic-name ...)"
        nil)))
 |#
 
-
-
 (esrap:defrule function-type-in-paren (and #\( (esrap:? whitespace) function-type-naked (esrap:? whitespace) #\))
   (:lambda (list)
     (third list)))
@@ -408,6 +395,7 @@ CL call to (core:magic-name ...)"
     (make-function-type-struct :return (first list)
                               :name (third list)
                               :arguments (fifth list))))
+
 (esrap:defrule function-type (or function-type-naked function-type-in-paren))
 
 (esrap:defrule function-ptr (and (or (esrap:? function-type) (esrap:? whitespace)) (esrap:? whitespace) #\& (esrap:? whitespace) cidentifier)
@@ -459,6 +447,3 @@ CL call to (core:magic-name ...)"
 (convert-function-ptr-to-c++-types (esrap:parse 'function-ptr "(llvm::Constant *(*)(llvm::StructType *T, llvm::ArrayRef<llvm::Constant *,int,int>)) &ll"))
 (convert-function-ptr-to-c++-types (esrap:parse 'function-ptr "(llvm::Constant *(*)(int, int )) &ll"))
 |#
-
-
-

@@ -15,8 +15,6 @@
            (t #|nothing|#)))
     ns-hashes))
 
-
-
 (defun generate-expose-function-code (sout ns-grouped-expose-functions)
   (format sout "#ifdef EXPOSE_FUNCTION_SIGNATURES~%")
   (maphash (lambda (ns funcs)
@@ -28,7 +26,6 @@
            ns-grouped-expose-functions)
   (format sout "#endif // EXPOSE_FUNCTION_SIGNATURES~%"))
 
-
 (defun generate-expose-function-code (sout ns-grouped-expose-functions)
   (format sout "#ifdef EXPOSE_FUNCTION_SIGNATURES~%")
   (maphash (lambda (ns funcs)
@@ -39,4 +36,3 @@
              (format sout "};~%"))
            ns-grouped-expose-functions)
   (format sout "#endif // EXPOSE_FUNCTION_SIGNATURES~%"))
-
