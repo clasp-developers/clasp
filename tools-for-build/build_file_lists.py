@@ -2,7 +2,7 @@
 
 from cleavir_file_list import cleavir_file_list
 
-SRC_CORE = \
+SRC_CORE_FILES = \
     [
         'dummy',
         'clcenv',
@@ -193,7 +193,7 @@ def collect_clasp_c_source_files(bld):
                  'asttoolingPackage',
                  'clangCompiler']) + \
              collect_c_source_files(bld, 'src/main/', ['main']) + \
-             collect_c_source_files(bld, 'src/core/', SRC_CORE)
+             collect_c_source_files(bld, 'src/core/', SRC_CORE_FILES)
 
     return result
 

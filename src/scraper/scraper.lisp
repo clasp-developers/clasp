@@ -1,7 +1,5 @@
 (in-package :cscrape)
 
-(defvar *generated-headers-path*)
-(defparameter *clang-path* nil)
 (defparameter *tags* nil)
 (defparameter *classes* nil)
 (defparameter *gc-managed-types* nil)
@@ -9,19 +7,15 @@
 (defparameter *functions* nil)
 (defparameter *enums* nil)
 (defparameter *packages-to-create* nil)
-(defparameter *application-config* #P"include/clasp/main/application.config")
-(export '*application-config*)
 
 (defun process-all-sif-files (clasp-home-path build-path sif-files)
   (declare (optimize debug))
   (let* ((tags (loop for sif-file in sif-files
                   for sif-tags = (read-sif-file sif-file)
                   nconc sif-tags))
-         (app-config-path (merge-pathnames *application-config* (pathname clasp-home-path))))
+         (app-config-path (merge-pathnames #P"include/clasp/main/application.config" (pathname clasp-home-path))))
     (format t "app-config-path    -> ~a~%" app-config-path)
-    (let ((app-config (setup-application-config app-config-path)))
-      (unless app-config
-        (error "Could not get app-config"))
+    (let ((app-config (read-application-config app-config-path)))
       (format t "Interpreting tags~%")
       (setf *tags* tags)
       (multiple-value-bind (packages-to-create functions symbols classes gc-managed-types enums initializers)
@@ -61,14 +55,20 @@
                    :buffer-pathname output-file-path
                    :buffer-stream (make-string-input-stream stdout))))
 
-(defun generate-one-sif (clang-command sif-pathname)
-  (let* ((*debug-io* (make-two-way-stream *standard-input* *standard-output*))
-         (clang-output (run-clang clang-command sif-pathname))
-         (tags (process-all-recognition-elements clang-output)))
-    (with-open-file (fout sif-pathname :direction :output :if-exists :supersede :external-format :utf-8)
-      (let ((*print-readably* t)
-            (*print-pretty* nil))
-        (prin1 tags fout)))))
+(defun generate-sif-files (clang-command-line &rest files)
+  (unless files
+    (setf files (uiop:command-line-arguments)))
+  (with-standard-io-syntax
+    (let ((*debug-io* (make-two-way-stream *standard-input* *standard-output*)))
+      (loop
+        ;; It expects the .cxx and .sif files interleaved as command line args
+        :for (cxx-file sif-file) :on files :by #'cddr
+        :do
+        (format t "Scraping ~A -> ~A~%" cxx-file sif-file)
+        (let* ((clang-output (run-clang (append clang-command-line (list cxx-file)) sif-file))
+               (tags (process-all-recognition-elements clang-output)))
+          (with-open-file (fout sif-file :direction :output :if-exists :supersede :external-format :utf-8)
+            (prin1 tags fout)))))))
 
 (defun generate-headers-from-all-sifs ()
   (destructuring-bind
@@ -83,4 +83,4 @@
       (assert sif-files)
       (process-all-sif-files clasp-home-path build-path sif-files))))
 
-(export '(generate-one-sif generate-headers-from-all-sifs))
+(export '(generate-sif-files generate-headers-from-all-sifs))

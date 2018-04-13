@@ -1,6 +1,5 @@
 (in-package :cscrape)
 
-
 (defun gather-source-files (tags)
   (let ((source-files (make-hash-table :test #'equal)))
     (loop for tag in tags
@@ -14,7 +13,6 @@
                  (setf (gethash file source-files) sorted-entries)))
              source-files)
     source-files))
-
 
 (defun calculate-character-offsets-one-file (source-file tags)
   (declare (optimize debug))

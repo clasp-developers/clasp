@@ -895,8 +895,6 @@ namespace core {
       return dims;
     }
     virtual void unsafe_fillArrayWithElt(T_sp initialElement, size_t start, size_t end) final;
-  public: 
-    T_sp deepCopy() const;
   public:
     CL_METHOD_OVERLOAD virtual void rowMajorAset(size_t idx, T_sp value) final {this->setBit(idx,value.unsafe_fixnum());};
     CL_METHOD_OVERLOAD virtual T_sp rowMajorAref(size_t idx) const final {return clasp_make_fixnum(this->testBit(idx)); };

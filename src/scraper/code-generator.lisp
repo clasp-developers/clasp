@@ -1,6 +1,7 @@
 (in-package :cscrape)
 
-(defparameter +root-dummy-class+ "::_RootDummyClass")
+(define-constant +root-dummy-class+ "::_RootDummyClass" :test 'equal)
+
 (define-condition bad-c++-name (error)
   ((name :initarg :name :accessor name))
   (:report (lambda (condition stream)
@@ -48,6 +49,7 @@
   (if (> (length ll) 0)
       (format nil "(~a)" ll)
       ll))
+
 (defun generate-expose-function-bindings (sout ns-grouped-expose-functions)
   (declare (optimize (speed 3)))
   (flet ((expose-one (f ns index)
@@ -136,7 +138,6 @@
   (with-output-to-string (sout)
     (generate-expose-source-info sout functions classes)))
 
-
 #+(or)(defun generate-tags-file (tags-file-name tags)
         (declare (optimize (speed 3)))
         (let* ((source-info-tags (extract-unique-source-info-tags tags))
@@ -162,7 +163,6 @@
                                  (length buffer))
                          (princ buffer sout))
                        tags-data-ht)))))
-
 
 (defun generate-code-for-init-functions (functions)
   (declare (optimize (speed 3)))
@@ -256,7 +256,7 @@ Convert colons to underscores"
       (let* ((raw-lisp-name (lisp-name% func))
              (maybe-fixed-magic-name (maybe-fix-magic-name raw-lisp-name)))
         (format cl-code "(wrap-c++-function-setf ~a (~a) (~a) ~s )~%" maybe-fixed-magic-name (declare% func) (lambda-list% func) wrapped-name )))))
-                               
+
 (defun generate-code-for-direct-call-functions (functions classes)
   (let ((c-code (make-string-output-stream))
         (c-code-info (make-string-output-stream))
@@ -292,7 +292,6 @@ Convert colons to underscores"
                      (possible-ancestor-class condition)
                      (class-with-missing-parent condition)))))
 
-      
 (defun inherits-from* (x-name y-name inheritance)
   (let ((depth 0)
         ancestor
@@ -606,8 +605,7 @@ Convert colons to underscores"
             (format sout "}~%")
             (format sout "};~%")))
         (format sout "#endif // EXPOSE_METHODS~%")))))
-          
-(defparameter *unique-symbols* nil)
+
 (defparameter *symbols-by-package* nil)
 (defparameter *symbols-by-namespace* nil)
 (defun generate-code-for-symbols (packages-to-create symbols)

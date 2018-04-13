@@ -375,10 +375,6 @@ void General_O::sxhash_equal(HashGenerator &hg,LocationDependencyPtrT ld) const 
   return;
 }
 
-T_sp General_O::deepCopy() const {
-  SUBCLASS_MUST_IMPLEMENT();
-}
-
 bool General_O::eql_(T_sp obj) const {
   return this->eq(obj);
 }
@@ -507,14 +503,6 @@ T_sp General_O::instanceSig() const {
 
 T_sp General_O::instanceSigSet() {
   SIMPLE_ERROR(BF("T_O::instanceSigSet() invoked on object class[%s] val-->%s") % this->_instanceClass()->_classNameAsString() % _rep_(this->asSmartPtr()));
-}
-
-CL_LAMBDA(obj);
-CL_DECLARE();
-CL_DOCSTRING("deepCopy");
-CL_DEFUN T_sp core__deep_copy(T_sp obj) {
-  if ( obj.generalp() ) return obj.unsafe_general()->deepCopy();
-  SIMPLE_ERROR(BF("Cannot do deep copy of obj"));
 }
 
 Class_sp instance_class(T_sp obj)

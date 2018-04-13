@@ -407,7 +407,3 @@ namespace gctools {
 
 
 // CastNumber here fails
-
-
-
-// more specializations in clasp/include/clasp/core/tagged_cast_specializations.h

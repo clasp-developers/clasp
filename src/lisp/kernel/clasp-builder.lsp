@@ -540,29 +540,6 @@ Return files."
          (push :cleavir *features*)
          (compile-cclasp* output-file system))))))
 
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;
-;;  Setup the build system for ASDF
-;;
-;;
-
-(defun compile-addons ()
-  ;; Build serve-event and asdf
-  (core:compile-kernel-file #P"src/lisp/modules/serve-event/serve-event" :force-recompile t)
-  (core:compile-kernel-file #P"src/lisp/modules/asdf/build/asdf" :force-recompile t))
-
-(defun link-addons ()
-  (cmp:llvm-link (core:build-pathname #P"src/lisp/modules/serve-event/serve-event" :fasl)
-                 :lisp-bitcode-files (list (core:build-pathname #P"src/lisp/modules/serve-event/serve-event" :bitcode)))
-  (cmp:llvm-link (core:build-pathname #P"src/lisp/modules/asdf/asdf" :fasl)
-                 :lisp-bitcode-files (list (core:build-pathname #P"src/lisp/modules/asdf/build/asdf" :bitcode))))
-
-(defun build-addons ()
-  (compile-addons)
-  (link-addons))
-(export '(compile-addons link-addons build-addons))
-
 #+(or bclasp cclasp)
 (defun bclasp-repl ()
   (let ((cmp:*cleavir-compile-hook* nil)

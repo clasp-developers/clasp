@@ -295,8 +295,6 @@ static int startup(int argc, char *argv[], bool &mpiEnabled, int &mpiRank, int &
   core::LispHolder lispHolder(mpiEnabled, mpiRank, mpiSize);
   int exit_code = 0;
   
-  printf("%s:%d Entered try block typeid(ExitProgramException) -> %lu\n", __FILE__, __LINE__, typeid(core::ExitProgramException).hash_code());
-  printf("%s:%d   again try block typeid(ExitProgramException) -> %lu\n", __FILE__, __LINE__, typeid(core::ExitProgramException).hash_code());
   gctools::GcToolsExposer_O GcToolsPkg(_lisp);
   clbind::ClbindExposer_O ClbindPkg(_lisp);
   llvmo::LlvmoExposer_O llvmopkg(_lisp);

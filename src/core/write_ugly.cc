@@ -89,6 +89,7 @@ void Pathname_O::__writeReadable__(T_sp strm) const {
 
 void Pathname_O::__write__(T_sp strm) const {
   Pathname_sp path = this->const_sharedThis<Pathname_O>();
+  if (path.nilp()) SIMPLE_ERROR(BF("%s is about to pass NIL to clasp_namestring") % __FUNCTION__);
   T_sp namestring = clasp_namestring(path, 0);
   bool readably = clasp_print_readably();
   if (namestring.nilp()) {
@@ -96,6 +97,7 @@ void Pathname_O::__write__(T_sp strm) const {
       path->__writeReadable__(strm);
       return;
     }
+    if (path.nilp()) SIMPLE_ERROR(BF("%s is about to pass NIL to clasp_namestring") % __FUNCTION__);
     namestring = clasp_namestring(path, 1);
     if (namestring.nilp()) {
       clasp_write_string("#<Unprintable pathname>", strm);

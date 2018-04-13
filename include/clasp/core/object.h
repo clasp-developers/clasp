@@ -415,8 +415,6 @@ namespace core {
 	 */
     string className() const;
 
-    T_sp deepCopy() const;
-
     inline bool eq(T_sp o) const {
       return (o.generalp() && this == o.unsafe_general());
     }
@@ -669,15 +667,10 @@ namespace core {
 
 #include <clasp/core/conditions.h>
 
-
-/*! Used to indicate that methods should be inherited from sequence */
-#define INHERIT_SEQUENCE
-
 #include <clasp/core/array.h>
 #include <clasp/core/instance.h>
 #include <clasp/core/metaClass.h>
 #include <clasp/core/sourceFileInfo.h>
-#include <clasp/core/tagged_cast_specializations.h>
 #include <clasp/core/cxxObject.h>
 
 #endif //]
