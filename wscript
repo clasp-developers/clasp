@@ -866,7 +866,6 @@ def build(bld):
     cxx_all_bitcode_node = bld.path.find_or_declare(variant.cxx_all_bitcode_name())
     out_dir_node = bld.path.find_dir(out)
     bclasp_symlink_node = out_dir_node.make_node("bclasp")
-    executable_dir = "bin"
     bld_task = bld.program(source = clasp_c_source_files,
                            includes = include_dirs,
                            target = [bld.iclasp_executable],
@@ -957,8 +956,8 @@ def build(bld):
 
             make_run_dsymutil_task(bld, 'b', bclasp_lto_o)
 
-            install('%s/%s' % (executable_dir, bld.bclasp_executable.name), bld.bclasp_executable, chmod = Utils.O755)
-            bld.symlink_as('${PREFIX}/%s/clasp' % executable_dir, bld.bclasp_executable.name)
+            install('bin/%s' % bld.bclasp_executable.name, bld.bclasp_executable, chmod = Utils.O755)
+            bld.symlink_as('${PREFIX}/bin/clasp', bld.bclasp_executable.name)
             os.symlink(bld.bclasp_executable.abspath(), bclasp_symlink_node.abspath())
         # # Build ASDF for bclasp
         # cmp_asdf = compile_module(env = bld.env)
@@ -1046,8 +1045,8 @@ def build(bld):
 
             make_run_dsymutil_task(bld, 'c', cclasp_lto_o)
 
-            install('%s/%s' % (executable_dir, bld.cclasp_executable.name), bld.cclasp_executable, chmod = Utils.O755)
-            bld.symlink_as('${PREFIX}/%s/clasp' % executable_dir, bld.cclasp_executable.name)
+            install('bin/%s' % bld.cclasp_executable.name, bld.cclasp_executable, chmod = Utils.O755)
+            bld.symlink_as('${PREFIX}/bin/clasp', bld.cclasp_executable.name)
             os.symlink(bld.cclasp_executable.abspath(), clasp_symlink_node.abspath())
         else:
             os.symlink(bld.iclasp_executable.abspath(), clasp_symlink_node.abspath())
@@ -1107,7 +1106,7 @@ def make_run_dsymutil_task(bld, stage_char, clasp_lto_o):
         task.set_inputs(inputs)
         task.set_outputs(dsym_nodes)
         bld.add_to_group(task)
-        install('%s/%s' % (executable_dir, dsym_file.name), dsym_nodes, cwd = dsym_file)
+        bld.install_files('${PREFIX}/bin/%s' % dsym_file.name, dsym_nodes, relative_trick = True, cwd = dsym_file)
 
 class run_dsymutil(clasp_task):
     color = 'BLUE';
