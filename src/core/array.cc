@@ -3010,4 +3010,21 @@ bool core__fits_in_base_string(T_sp tstr) {
   TEMPLATE_SINGLE_STRING_DISPATCHER(str,template_fits_in_base_string,0,str->length());
 }
 
+// Create a byte8 simple vector from any array
+CL_DEFUN Array_sp core__coerce_to_byte8_vector(Array_sp source)
+{
+  T_sp element_type = source->element_type();
+  if (element_type == cl::_sym_single_float) {
+    AbstractSimpleVector_sp asv;
+    size_t start, end;
+    source->asAbstractSimpleVectorRange(asv,start,end);
+    const unsigned char* memory_start = reinterpret_cast<const unsigned char*>(asv->rowMajorAddressOfElement_(start));
+    const unsigned char* memory_end = reinterpret_cast<const unsigned char*>(asv->rowMajorAddressOfElement_(end));
+    SimpleVector_byte8_t_sp result = SimpleVector_byte8_t_O::make((memory_end-memory_start),0,false,(memory_end-memory_start),memory_start);
+    return result;
+  }
+  SIMPLE_ERROR(BF("Add support for coercing %s to a byte8 vector") % _rep_(source));
+}
+
+
 }; /* core */
