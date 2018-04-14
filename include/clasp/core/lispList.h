@@ -43,7 +43,7 @@ namespace core {
 /*! Replace the last CONS of l with y and return l,  if l was nil return y */
   T_sp clasp_nconc(T_sp l, T_sp y);
 
-  T_sp cl__last(T_sp list, int n = 1);
+  List_sp cl__last(List_sp list, Integer_sp in);
   List_sp cl__nbutlast(List_sp list, Integer_sp n);
 
 };

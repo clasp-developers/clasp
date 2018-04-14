@@ -26,6 +26,8 @@ THE SOFTWARE.
 /* -^- */
 //#define DEBUG_LEVEL_FULL
 
+#include <iostream>
+
 #include <clasp/core/foundation.h>
 #include <clasp/core/common.h>
 #include <clasp/core/environment.h>
@@ -34,6 +36,7 @@ THE SOFTWARE.
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/designators.h>
 #include <clasp/core/wrappers.h>
+#include <clasp/core/bignum.h>
 namespace core {
 
 /*! Duplicated from ECL list.d
@@ -287,16 +290,31 @@ CL_DEFUN T_sp cl__listSTAR(VaList_sp vargs) {
   return result.cons();
 }
 
+// Should verify the type of the argument
+// Theoretically it could be a bignum
+// But there are not bignum length list (there is not enough memory)
+// so for a Fixnum we do the real test
+// and for a Bignum we test if it is positive and than return the list
 
 CL_LAMBDA(list &optional (on 1));
 CL_DECLARE();
 CL_DOCSTRING("last - see CLHS");
-CL_DEFUN T_sp cl__last(T_sp list, int n) {
+CL_DEFUN List_sp cl__last(List_sp list, Integer_sp in) {
   if (list.nilp())
     return list;
-  if (n < 0)
-    CELL_ERROR(make_fixnum(n));
-  if (Cons_sp clist = list.asOrNull<Cons_O>()) {
+  if (core__bignump(in)) {
+    if (clasp_plusp (in)) {
+      return list;
+    }
+    else {
+      TYPE_ERROR(in, cl::_sym_UnsignedByte);
+    }
+  }
+  gc::Fixnum n = clasp_to_fixnum(in);
+  if (n < 0) {
+    TYPE_ERROR(in, cl::_sym_UnsignedByte);
+  }
+  if (Cons_sp clist =  gc::As<Cons_sp>(list)) {
     return clist->last(n);
   }
   TYPE_ERROR(list, cl::_sym_list);
@@ -315,7 +333,7 @@ CL_DEFUN T_sp cl__nconc(List_sp lists) {
     if (other.nilp()) {
       new_tail = tail;
     } else if (Cons_sp cother = other.asOrNull<Cons_O>()) {
-      new_tail = cl__last(cother, 1);
+      new_tail = cl__last(cother, make_fixnum(1));
     } else {
       if (oCdr(cur).notnilp()) {
         TYPE_ERROR_LIST(other);
@@ -337,7 +355,7 @@ T_sp clasp_nconc(T_sp l, T_sp y) {
     return y;
   }
   if (Cons_sp conslist = l.asOrNull<Cons_O>()) {
-    Cons_sp last = gc::As<Cons_sp>(cl__last(conslist, 1));
+    Cons_sp last = gc::As<Cons_sp>(cl__last(conslist, make_fixnum(1)));
     last->rplacd(y);
     return conslist;
   }
