@@ -1,0 +1,15 @@
+#! /bin/bash
+# arguments:   pid [output-file [time] [stack-frames]
+
+PID=$1
+TIME=${2:-30s}
+FRAMES=${3:-1000}
+sudo rm -f /tmp/out-$1.user_stacks && sudo dtrace -p $PID -x ustackframes=${FRAMES} -n  "pid$PID::*HitAllocationNumberThreshold*:entry { @[ustack()] = count(); } tick-$TIME { exit(0); }" -o /tmp/out-$1.user_stacks
+if [ -f /tmp/clasp-symbols-$1 ]; then
+   ./symbolicate.lisp -i /tmp/out-$1.user_stacks -o /tmp/out-symbol-$1.user_stacks -s /tmp/clasp-symbols-$1
+else
+   cp /tmp/out-$1.user_stacks /tmp/out-symbol-$1.user_stacks
+fi
+# PRUNE_OUTFILE=${OUTFILE%.prune_stacks}
+# ./prune-trace.lisp $OUTFILE $PRUNE_OUTFILE
+echo /tmp/out-symbol-$1.user_stacks
