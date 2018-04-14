@@ -1,0 +1,15 @@
+{
+    "argv": [
+        "/home/app/clasp/bin/clasp",
+	"--load",
+	"app-fasl:cando-jupyter.fasb",
+        "--eval",
+        "(in-package :cando-user)",
+	"--eval",
+	"(cando-user:cl-jupyter-kernel-start)",
+        "--",
+        "{connection_file}"
+    ],
+    "display_name": "cando-fast-load",
+    "language": "lisp"
+}
