@@ -2,12 +2,12 @@
 # Cleaned up by Shinmera October 13, 2015
 
 all:
-	./waf update_submodules
+	./waf update_dependencies
 	./waf configure
 	./waf build_cboehm
 
 configure:
-	./waf update_submodules
+	./waf update_dependencies
 	./waf configure --prefix=$(PREFIX)
 
 build_cboehm:
