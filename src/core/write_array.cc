@@ -178,23 +178,6 @@ namespace core {
 #endif
 #endif
 
-    void BitVector_O::__write__(T_sp stream) const {
-	if (!clasp_print_array() && !clasp_print_readably()) {
-	    writestr_stream("#<bit-vector ", stream);
-	    clasp_write_addr(this->asSmartPtr(), stream);
-	    clasp_write_char('>', stream);
-	} else {
-	    cl_index ndx;
-	    writestr_stream("#*", stream);
-	    for (ndx = 0; ndx < this->length(); ndx++)
-		//      if (x->vector.self.bit[(ndx /*+ x->vector.offset*/) / 8] & (0200 >> (ndx /*+ x->vector.offset*/) % 8))
-		if (this->testBit(ndx))
-		    clasp_write_char('1', stream);
-		else
-		    clasp_write_char('0', stream);
-	}
-    }
-
     void SimpleBitVector_O::__write__(T_sp stream) const {
 	if (!clasp_print_array() && !clasp_print_readably()) {
 	    writestr_stream("#<simple-bit-vector ", stream);
@@ -212,6 +195,44 @@ namespace core {
 	}
     }
 
+    void BitVector_O::__write__(T_sp stream) const {
+	if (!clasp_print_array() && !clasp_print_readably()) {
+	    writestr_stream("#<bit-vector ", stream);
+	    clasp_write_addr(this->asSmartPtr(), stream);
+	    clasp_write_char('>', stream);
+	} else {
+	    cl_index ndx;
+	    writestr_stream("#*", stream);
+	    for (ndx = 0; ndx < this->length(); ndx++)
+		//      if (x->vector.self.bit[(ndx /*+ x->vector.offset*/) / 8] & (0200 >> (ndx /*+ x->vector.offset*/) % 8))
+		if (this->testBit(ndx))
+		    clasp_write_char('1', stream);
+		else
+		    clasp_write_char('0', stream);
+	}
+    }
+
+    void SimpleVector_byte8_t_O::__write__(T_sp stream) const {
+        writestr_stream("#<SIMPLE-VECTOR-BYTE8-T ");
+        SafeBuffer buffer;
+        clasp_write_string(" length(",stream);
+        stringstream slen;
+        slen << this->length();
+        clasp_write_characters(slen.str().c_str(),slen.str().size(),stream);
+        clasp_write_string(" data: ",stream);
+        int print_base = clasp_print_base();
+        for (size_t ndx=0; ndx<this->length(); ++ndx) {
+            core__integer_to_string(buffer._Buffer, clasp_make_fixnum((*this)[ndx]),
+                                    make_fixnum(print_base),
+                                    cl::_sym_STARprint_radixSTAR->symbolValue().isTrue(),
+                                    true);
+            cl__write_sequence(buffer._Buffer,stream,make_fixnum(0),_Nil<T_O>());
+            clasp_write_string(" ",stream);
+        }
+        clasp_write_string(">",stream);
+    }
+
+    
     void unsafe_write_SimpleBaseString(SimpleBaseString_sp str, size_t start, size_t end, T_sp stream) {
 	cl_index ndx;
 	if (!clasp_print_escape() && !clasp_print_readably()) {
