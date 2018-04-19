@@ -60,6 +60,7 @@
                             'leaf-method-p t
                             'fast-method-function (if (lambda-list-fast-callable-p lambda-list) function nil)))))
     (mlog "function-to-method: installed method\n")
+    (core:function-lambda-list-set f lambda-list) ; hook up the introspection
     (setf (fdefinition name) f
           (generic-function-name f) name)
     (when (boundp '*early-methods*)
