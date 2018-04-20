@@ -2,8 +2,6 @@
 # Cleaned up by Shinmera October 13, 2015
 
 all:
-	./waf update_dependencies
-	./waf configure
 	./waf build_dboehm
 
 configure:
