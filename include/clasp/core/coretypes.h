@@ -83,7 +83,6 @@ class Function_O;
  class Closure_O;
 class FunctionClosure_O;
 class BuiltinClosure_O;
-class InterpretedClosure_O;
 };
 
 namespace core {

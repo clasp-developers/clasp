@@ -466,7 +466,6 @@ namespace gctools {
 
 namespace core {
   class BuiltinClosure_O;
-  class TemplatedFunctionBase_O;
 };
 
 

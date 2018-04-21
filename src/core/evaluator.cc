@@ -399,7 +399,14 @@ CL_DEFUN Function_sp core__coerce_to_function(T_sp arg) {
       }
       LambdaListHandler_sp llh = LambdaListHandler_O::create(olambdaList, declares, cl::_sym_function);
 //        printf("%s:%d coerce-to-function generating InterpretedClosure_O: %s\n", __FILE__, __LINE__, _rep_(carg).c_str());
-      InterpretedClosure_sp ic = gc::GC<InterpretedClosure_O>::allocate(name, kw::_sym_function, llh, declares, docstring, _Nil<T_O>(), code, SOURCE_POS_INFO_FIELDS(_Nil<T_O>()));
+      ClosureWithSlots_sp ic = ClosureWithSlots_O::make_interpreted_closure(name,
+                                                                            kw::_sym_function,
+                                                                            olambdaList,
+                                                                            llh,
+                                                                            declares,
+                                                                            docstring,
+                                                                            code,
+                                                                            _Nil<T_O>(), SOURCE_POS_INFO_FIELDS(_Nil<T_O>()));
       return ic;
     }
   }
@@ -1555,7 +1562,7 @@ Function_sp lambda(T_sp name, bool wrap_block, T_sp lambda_list, List_sp body, T
       spi = _sym_STARcurrentSourcePosInfoSTAR->symbolValue();
     }
   }
-  Closure_sp ic = gc::GC<InterpretedClosure_O>::allocate(name, kw::_sym_function, llh, declares, docstring, env, code, SOURCE_POS_INFO_FIELDS(spi));
+  ClosureWithSlots_sp ic = ClosureWithSlots_O::make_interpreted_closure(name, kw::_sym_function, lambda_list, llh, declares, docstring, code, env, SOURCE_POS_INFO_FIELDS(spi));
   return ic;
 }
 
@@ -1760,7 +1767,7 @@ T_mv doMacrolet(List_sp args, T_sp env, bool toplevel) {
     parse_lambda_body(outer_body, declares, docstring, code);
     LambdaListHandler_sp outer_llh = LambdaListHandler_O::create(outer_ll, declares, cl::_sym_function);
 //    printf("%s:%d Creating InterpretedClosure with no source information - fix this\n", __FILE__, __LINE__);
-    Closure_sp ic = gc::GC<InterpretedClosure_O>::allocate(name, kw::_sym_macro, outer_llh, declares, docstring, newEnv, code, SOURCE_POS_INFO_FIELDS(_Nil<T_O>()));
+    ClosureWithSlots_sp ic = ClosureWithSlots_O::make_interpreted_closure(name, kw::_sym_macro, outer_ll, outer_llh, declares, docstring, code, newEnv, SOURCE_POS_INFO_FIELDS(_Nil<T_O>()));
     outer_func = ic;
     LOG(BF("func = %s") % ic->__repr__());
     newEnv->addMacro(name, outer_func);
@@ -1813,7 +1820,7 @@ T_mv do_symbolMacrolet(List_sp args, T_sp env, bool topLevelForm) {
                                                                  oCadr(declares),
                                                                  cl::_sym_function);
 //    printf("%s:%d Creating InterpretedClosure with no source information and empty name- fix this\n", __FILE__, __LINE__);
-    InterpretedClosure_sp ic = gc::GC<InterpretedClosure_O>::allocate(_sym_symbolMacroletLambda, kw::_sym_macro, outer_llh, declares, _Nil<T_O>(), newEnv, expansion, SOURCE_POS_INFO_FIELDS(_Nil<T_O>()));
+    ClosureWithSlots_sp ic = ClosureWithSlots_O::make_interpreted_closure(_sym_symbolMacroletLambda, kw::_sym_macro, outer_ll, outer_llh, declares, _Nil<T_O>(), expansion, newEnv, SOURCE_POS_INFO_FIELDS(_Nil<T_O>()));
     Function_sp outer_func = ic;
     newEnv->addSymbolMacro(name, outer_func);
     cur = oCdr(cur);

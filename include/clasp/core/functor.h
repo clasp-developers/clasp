@@ -21,10 +21,7 @@ namespace core {
   FORWARD(BuiltinClosure);
   FORWARD(FunctionClosure);
   FORWARD(Closure);
-  FORWARD(ClosureWithFrame);
   FORWARD(ClosureWithSlots);
-  FORWARD(InterpretedClosure);
-  FORWARD(CompiledClosure);
 };
 
 template <>
@@ -41,19 +38,6 @@ struct gctools::GCInfo<core::FunctionClosure_O> {
 };
 template <>
 struct gctools::GCInfo<core::BuiltinClosure_O> {
-  static bool constexpr NeedsInitialization = false;
-  static bool constexpr NeedsFinalization = false;
-  static GCInfo_policy constexpr Policy = normal;
-};
-template <>
-struct gctools::GCInfo<core::InterpretedClosure_O> {
-  static bool constexpr NeedsInitialization = false;
-  static bool constexpr NeedsFinalization = false;
-  static GCInfo_policy constexpr Policy = normal;
-};
-
-template <>
-struct gctools::GCInfo<core::CompiledClosure_O> {
   static bool constexpr NeedsInitialization = false;
   static bool constexpr NeedsFinalization = false;
   static GCInfo_policy constexpr Policy = normal;
@@ -261,26 +245,72 @@ namespace core {
 }
 
 namespace core {
-    class TemplatedFunctionBase_O : public BuiltinClosure_O {
-    LISP_CLASS(core,CorePkg,TemplatedFunctionBase_O,"TemplatedFunctionBase",BuiltinClosure_O);
-    TemplatedFunctionBase_O(claspFunction fptr, T_sp name, Symbol_sp k, SOURCE_INFO)
-    : BuiltinClosure_O(fptr, name, k, SOURCE_INFO_PASS){};
-    TemplatedFunctionBase_O(claspFunction fptr, T_sp name )
-    : BuiltinClosure_O(fptr,name) {}
-    };
-};
-
-namespace core {
+  extern LCC_RETURN interpretedClosureEntryPoint(LCC_ARGS_FUNCALL_ELLIPSIS);
+   
   class ClosureWithSlots_O final : public core::FunctionClosure_O {
     LISP_CLASS(core,CorePkg,ClosureWithSlots_O,"ClosureWithSlots",core::FunctionClosure_O);
-  public:
+    typedef enum { interpretedClosure, bclaspClosure, cclaspClosure } ClosureType;
+#define ENVIRONMENT_SLOT 0
+#define INTERPRETED_CLOSURE_SLOTS  3
+#define INTERPRETED_CLOSURE_ENVIRONMENT_SLOT ENVIRONMENT_SLOT
+#define INTERPRETED_CLOSURE_FORM_SLOT 1
+#define INTERPRETED_CLOSURE_LAMBDA_LIST_HANDLER_SLOT 2
+#define BCLASP_CLOSURE_SLOTS  1
+#define BCLASP_CLOSURE_ENVIRONMENT_SLOT ENVIRONMENT_SLOT
+public:
     core::T_sp _lambdaList;
+    ClosureType   closureType;
   //! Slots must be the last field
     typedef core::T_sp value_type;
     gctools::GCArray_moveable<value_type> _Slots;
   public:
     virtual const char *describe() const { return "CompiledClosure"; };
-    virtual size_t templatedSizeof() const { return sizeof(*this); };
+    virtual size_t templatedSizeof() const {
+      printf("%s:%d templatedSizeof called on closure %s\n", __FILE__, __LINE__, _rep_(this->asSmartPtr()).c_str());
+      return sizeof(*this);
+    };
+  public:
+    static ClosureWithSlots_sp make_interpreted_closure(T_sp name, T_sp type, T_sp lambda_list, LambdaListHandler_sp lambda_list_handler, T_sp declares, T_sp docstring, T_sp form, T_sp environment, SOURCE_INFO) {
+      ClosureWithSlots_sp closure =
+        gctools::GC<core::ClosureWithSlots_O>::allocate_container(INTERPRETED_CLOSURE_SLOTS,
+                                                                  &interpretedClosureEntryPoint,
+                                                                  name,
+                                                                  type,
+                                                                  lambda_list,
+                                                                  SOURCE_INFO_PASS);
+      closure->closureType = interpretedClosure;
+      (*closure)[INTERPRETED_CLOSURE_FORM_SLOT] = form;
+      (*closure)[INTERPRETED_CLOSURE_ENVIRONMENT_SLOT] = environment;
+      if (lambda_list_handler.nilp()) {
+        printf("%s:%d  A NIL lambda-list-handler was passed for %s lambdalist: %s\n", __FILE__, __LINE__, _rep_(name).c_str(), _rep_(lambda_list).c_str());
+        abort();
+      }
+      (*closure)[INTERPRETED_CLOSURE_LAMBDA_LIST_HANDLER_SLOT] = lambda_list_handler;
+      return closure;
+    }
+    static ClosureWithSlots_sp make_bclasp_closure(T_sp name, claspFunction ptr, T_sp type, T_sp lambda_list, T_sp environment, SOURCE_INFO) {
+      ClosureWithSlots_sp closure = 
+        gctools::GC<core::ClosureWithSlots_O>::allocate_container(BCLASP_CLOSURE_SLOTS,
+                                                                         ptr,
+                                                                         name,
+                                                                         type,
+                                                                         lambda_list,
+                                                                         SOURCE_INFO_PASS);
+      closure->closureType = bclaspClosure;
+      (*closure)[BCLASP_CLOSURE_ENVIRONMENT_SLOT] = environment;
+      return closure;
+    }
+    static ClosureWithSlots_sp make_cclasp_closure(T_sp name, claspFunction ptr, T_sp type, T_sp lambda_list, SOURCE_INFO) {
+      ClosureWithSlots_sp closure = 
+        gctools::GC<core::ClosureWithSlots_O>::allocate_container(0,
+                                                                  ptr,
+                                                                  name,
+                                                                  type,
+                                                                  lambda_list,
+                                                                  SOURCE_INFO_PASS);
+      closure->closureType = cclaspClosure;
+      return closure;
+    }
   public:
   ClosureWithSlots_O(size_t capacity,
                      claspFunction ptr,
@@ -291,10 +321,33 @@ namespace core {
     : Base(ptr,functionName, type, SOURCE_INFO_PASS),
       _lambdaList(ll), 
       _Slots(capacity,_Unbound<T_O>(),true) {};
-    bool compiledP() const { return true; };
     core::T_sp lambda_list() const { return this->_lambdaList; };
     void setf_lambda_list(core::List_sp lambda_list) { this->_lambdaList = lambda_list; };
-    core::LambdaListHandler_sp lambdaListHandler() const { return _Nil<core::LambdaListHandler_O>(); };
+    core::LambdaListHandler_sp lambdaListHandler() const {
+      switch (this->closureType) {
+      case interpretedClosure:
+          return (*this)[INTERPRETED_CLOSURE_LAMBDA_LIST_HANDLER_SLOT];
+      case bclaspClosure:
+          return _Nil<T_O>();
+      case cclaspClosure:
+          return _Nil<T_O>();
+      };
+    }
+    CL_DEFMETHOD T_sp closedEnvironment() const {
+      ASSERT(this->closureType!=cclaspClosure); // Never call on a cclaspClosure
+      return (*this)[ENVIRONMENT_SLOT];
+    };      
+    CL_DEFMETHOD T_O*& closedEnvironment_rawRef() {
+      ASSERT(this->closureType!=cclaspClosure); // Never call on a cclaspClosure
+      return (*this)[ENVIRONMENT_SLOT].rawRef_();
+    };      
+    bool compiledP() const {
+      return (this->closureType!=interpretedClosure);
+    }
+    bool interpretedP() const {
+      return (this->closureType==interpretedClosure);
+    }
+      
     inline T_sp &operator[](size_t idx) {
       BOUNDS_ASSERT(idx<this->_Slots._Length);
       return this->_Slots[idx];
@@ -304,83 +357,6 @@ namespace core {
       return this->_Slots[idx];
     };
   };
-};
-
-// This class may be deprecated
-namespace core {
-class ClosureWithFrame_O : public FunctionClosure_O {
-  LISP_CLASS(core,CorePkg,ClosureWithFrame_O,"ClosureWithFrame",FunctionClosure_O);
-public:
-  T_sp _closedEnvironment;
-public:
-  CL_DEFMETHOD T_sp closedEnvironment() const { ASSERT(this->_closedEnvironment.generalp()); return this->_closedEnvironment;};
- ClosureWithFrame_O(claspFunction fptr, T_sp fn, Symbol_sp k, T_sp env, SOURCE_INFO) : Base(fptr,fn,k,SOURCE_INFO_PASS), _closedEnvironment(env) {
-    ASSERT(env.nilp() || env.asOrNull<Environment_O>() );
-  };
-  virtual size_t templatedSizeof() const { return sizeof(*this); };
-  virtual const char *describe() const { return "ClosureWithFrame"; };
-};
-
-};
-
-
-namespace core {
-  /*! Keeps track of how many InterpretedClosure calls there are
-*/
-  extern uint64_t global_interpreted_closure_calls;
-
-  LCC_RETURN interpretedClosureEntryPoint(LCC_ARGS_FUNCALL_ELLIPSIS);
-  
-class InterpretedClosure_O : public ClosureWithFrame_O {
-    LISP_CLASS(core,CorePkg,InterpretedClosure_O,"InterpretedClosure",ClosureWithFrame_O);
-public:
-  LambdaListHandler_sp _lambdaListHandler;
-  List_sp _declares;
-  T_sp _docstring;
-  List_sp _code;
-public:
-  InterpretedClosure_O(T_sp fn, Symbol_sp k, LambdaListHandler_sp llh, List_sp dec, T_sp doc, T_sp env, List_sp c, SOURCE_INFO);
-  virtual size_t templatedSizeof() const { return sizeof(*this); };
-  virtual const char *describe() const { return "InterpretedClosure"; };
-  bool interpretedP() const { return true; };
-  T_sp docstring() const { return this->_docstring; };
-  List_sp declares() const { return this->_declares; };
-  CL_DEFMETHOD List_sp code() const { return this->_code; };
-  LambdaListHandler_sp lambdaListHandler() const { return this->_lambdaListHandler; };
-  T_sp lambda_list() const;
-  void setf_lambda_list(List_sp lambda_list);
-};
-
-};
-
-#ifdef USE_COMPILED_CLOSURE
-namespace core {
-class CompiledClosure_O : public core::ClosureWithFrame_O {
-//  friend void dump_funcs(core::CompiledFunction_sp compiledFunction);
-  LISP_CLASS(core,CorePkg,CompiledClosure_O,"CompiledClosure",core::ClosureWithFrame_O);
-public:
-  core::T_sp _lambdaList;
- public:
-  virtual const char *describe() const { return "CompiledClosure"; };
-  virtual size_t templatedSizeof() const { return sizeof(*this); };
-public:
- CompiledClosure_O(claspFunction fptr,
-                   core::T_sp functionName,
-                   core::Symbol_sp type,
-                   core::T_sp renv,
-                   core::T_sp ll,
-                   SOURCE_INFO)
-   : Base(fptr, functionName, type, renv, SOURCE_INFO_PASS), _lambdaList(ll){};
-  bool compiledP() const { return true; };
-  core::T_sp lambda_list() const;
-  void setf_lambda_list(core::List_sp lambda_list);
-  core::LambdaListHandler_sp lambdaListHandler() const { return _Nil<core::LambdaListHandler_O>(); };
-};
-};
-#endif
-
-namespace llvmo {
-  FORWARD(ModuleHandle);
 };
 
 namespace core {

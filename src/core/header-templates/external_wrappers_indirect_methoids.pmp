@@ -29,19 +29,19 @@ $for isConst [[
       template <typename Pols, $if ret==RetVoid [[]] $else [[ typename RT, ]] typename OT $if numArgs>1 [[,]] $for Args_ ,[[typename ARG$Args_]] >
       class IndirectVariadicMethoid
       < Pols,OT $if ret==RetVoid [[,void]] $else [[,RT ]](OT::ExternalType::*)( $for Args_ , [[ARG$Args_]]) $if isConst [[const]] >
-        : public TemplatedFunctionBase_O {
+        : public BuiltinClosure_O {
         public:
         typedef IndirectVariadicMethoid < Pols,OT $if ret==RetVoid [[,void]] $else [[,RT ]](OT::ExternalType::*)( $for Args_ , [[ARG$Args_]]) $if isConst [[const]] > MyType;
       public:
       	virtual const char* describe() const {return "IndirectVariadicMethoid";};
-        typedef TemplatedFunctionBase_O TemplatedBase;
+        typedef BuiltinClosure_O TemplatedBase;
                        public:
 //        typedef std::function<$if ret==RetVoid [[void]] $else [[RT]] (OT& $if numArgs [[,]] $for Args_ , [[ARG$Args_]])> Type;
         typedef $if ret==RetVoid [[void]] $else [[RT]] (OT::ExternalType::*Type)( $for Args_ , [[ARG$Args_]]) $if isConst [[const]];
         Type mptr;
       public:
         enum { NumParams = $numArgs };
-        IndirectVariadicMethoid(core::T_sp name, Type ptr) : TemplatedFunctionBase_O(method_entry_point,name), mptr(ptr) {};
+        IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(method_entry_point,name), mptr(ptr) {};
         virtual size_t templatedSizeof() const { return sizeof(*this); };
         static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
         {

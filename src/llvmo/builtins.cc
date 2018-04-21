@@ -193,8 +193,8 @@ BUILTIN_ATTRIBUTES core::T_O** activationFrameReferenceFromClosure(core::T_O* cl
 {
   ASSERT(closureRaw);
   if (closureRaw!=NULL) {
-    core::ClosureWithFrame_sp closure = core::ClosureWithFrame_sp((gctools::Tagged)closureRaw);
-    return &closure->_closedEnvironment.rawRef_();
+    core::ClosureWithSlots_sp closure = core::ClosureWithSlots_sp((gctools::Tagged)closureRaw);
+    return &closure->closedEnvironment_rawRef();
   }
   return NULL;
 }
