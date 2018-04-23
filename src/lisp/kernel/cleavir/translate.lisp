@@ -507,7 +507,7 @@
 (defmethod translate-simple-instruction
     ((instruction cleavir-ir:create-cell-instruction) return-value inputs outputs abi function-info)
   (cmp:irc-low-level-trace :flow)
-  (let ((result (%intrinsic-call "cc_makeCell" nil)))
+  (let ((result (%intrinsic-invoke-if-landing-pad-or-call "cc_makeCell" nil)))
     (%store result (first outputs))))
 
 (defmethod translate-simple-instruction
