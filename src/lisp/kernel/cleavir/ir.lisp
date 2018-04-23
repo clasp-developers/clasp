@@ -145,6 +145,10 @@
   (llvm-sys:get-parent (llvm-sys:get-parent instr)))
 
 (defun %intrinsic-call (function-name args &optional (label ""))
+  (let* ((info (gethash function-name (cmp::get-primitives)))
+         (does-not-throw (getf (cmp::primitive-properties info) :does-not-throw)))
+    (when (null does-not-throw)
+      (warn "%intrinsic-call is being used for ~a when this intrinsic has been declared with the unwind property - meaning that it can throw an exception and %intrinsic-invoke-if-landing-pad-or-call should be used" function-name)))
   (cmp:irc-intrinsic-call function-name args label))
 
 (defun %intrinsic-invoke-if-landing-pad-or-call (function-name args &optional (label "") (maybe-landing-pad cmp::*current-unwind-landing-pad-dest*))
