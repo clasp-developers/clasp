@@ -15,7 +15,7 @@ At the moment, Clasp is supported on Linux and Mac OS X. On these systems, you s
 
 Building on most systems will take around 8-12GB of memory and ~1-2 hours with a relatively modern processor, so be prepared to watch a movie or do some other useful work until Clasp is all done. You may also want to activate a large enough swap file if your system does not have enough DRAM.
 
-Building can be greately accelerated if you have a multi-core machine - but it requires a specially configured version of the Boehm garbage collector found here: (https://github.com/clasp-developers/forkable-clasp.git)
+Building can be greately accelerated if you have a multi-core machine - but it requires a specially configured version of the Boehm garbage collector found here: (https://github.com/clasp-developers/forkable-boehm.git)
 
 Currently there are no binary releases available.
 
