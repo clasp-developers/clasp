@@ -51,7 +51,7 @@
           (let ((*early-methods* nil))
             (install-method 'function-to-method-temp
                             nil
-                            specializers
+                            (mapcar #'find-class specializers)
                             lambda-list
                             (lambda (.method-args. .next-methods.)
                               (declare (core:lambda-name function-to-method.lambda))

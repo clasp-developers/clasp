@@ -76,6 +76,17 @@ in the generic function lambda-list to the generic function lambda-list"
                                           (if has-aok (list '&allow-other-keys) nil))))
                       (core:function-lambda-list-set gf new-ll)))))))))))
 
+(defun prototypes-for-make-method-lambda (name)
+  (if (not *clos-booted*)
+      (values nil nil)
+      (let ((gf? (and (fboundp name) (fdefinition name))))
+        (if (or (null gf?) (not (si:instancep gf?)))
+            (values (class-prototype (find-class 'standard-generic-function))
+                    (class-prototype (find-class 'standard-method)))
+            (values gf?
+                    (class-prototype (or (generic-function-method-class gf?)
+                                         (find-class 'standard-method))))))))
+
 (defmacro defmethod (&whole whole name &rest args &environment env)
   (let* ((source-location (ext:current-source-location))
          (qualifiers (loop while (and args (not (listp (first args))))
@@ -89,17 +100,8 @@ in the generic function lambda-list to the generic function lambda-list"
 	(parse-specialized-lambda-list specialized-lambda-list)
       (multiple-value-bind (lambda-form declarations documentation)
 	  (make-raw-lambda name lambda-list required-parameters specializers body env qualifiers)
-        (mlog "In defmethod lambda-list %s   lambda-form %s\n" lambda-list lambda-form) 
-	(let* ((generic-function (ensure-generic-function name))
-	       (method-class (generic-function-method-class generic-function))
-	       method)
-	  (when *clos-booted*
-	    (when (symbolp method-class)
-	      (setf method-class (find-class method-class nil)))
-	    (if method-class
-		(setf method (class-prototype method-class))
-		(error "Cannot determine the method class for generic functions of type ~A"
-		       (type-of generic-function))))
+	(multiple-value-bind (generic-function method)
+            (prototypes-for-make-method-lambda name)
 	  (multiple-value-bind (fn-form options)
 	      (make-method-lambda generic-function method lambda-form env)
 	    (when documentation
@@ -119,16 +121,14 @@ in the generic function lambda-list to the generic function lambda-list"
                (maybe-augment-generic-function-lambda-list ',name ',lambda-list))))))))
 
 (defun specializers-expression (specializers)
-  ;; Direct use of quasiquote here is unfortunate.
-  ;; Double backquote would also be terrible, though.
-  (list 'si::quasiquote
-	(loop for spec in specializers
-	   collect (if (atom spec)
-		       spec
-		       `(eql ,(let ((value (second spec)))
-				   (if (constantp value)
-				       (eval value)
-				       (list 'si::unquote value))))))))
+  `(list ,@(loop for spec in specializers
+                 collect (etypecase spec
+                           (symbol `(find-class ',spec))
+                           ((cons (eql eql) (cons t null)) ; (eql #<anything>)
+                            `(intern-eql-specializer ,(second spec)))
+                           ;; CLHS DEFMETHOD seems to say literal specializers are
+                           ;; not allowed, but i'm not sure...
+                           (specializer spec)))))
 
 (defun maybe-remove-block (method-lambda source-location)
   (when (eq (first method-lambda) 'lambda)
