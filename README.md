@@ -2,7 +2,7 @@
 
 ## NOTE:  April 20, 2018 - This contains a pre-release of Clasp 0.5.
 
-## What Is This?
+##  Overview
 Clasp is a new [Common Lisp](https://common-lisp.net/) implementation that seamlessly interoperates with C++ libraries and programs using [LLVM](http://llvm.org/) for compilation to native code. This allows Clasp to take advantage of a vast array of preexisting libraries and programs, such as out of the scientific computing ecosystem. Embedding them in a Common Lisp environment allows you to make use of rapid prototyping, incremental development, and other capabilities that make it a powerful language.
 
 ## Latest Release
@@ -14,6 +14,8 @@ See the [RELEASE-NOTES](RELEASE-NOTES)
 At the moment, Clasp is supported on Linux and Mac OS X. On these systems, you should be able to build it from source. See the [wiki entry](https://github.com/clasp-developers/clasp/wiki/Clasp-0.5-Build-Instructions) for instructions. In case things go wrong, the quickest way to get help is to either [file an issue](#reporting-problems), or to [chat with us directly](#irc).
 
 Building on most systems will take around 8-12GB of memory and ~1-2 hours with a relatively modern processor, so be prepared to watch a movie or do some other useful work until Clasp is all done. You may also want to activate a large enough swap file if your system does not have enough DRAM.
+
+Building can be greately accelerated if you have a multi-core machine - but it requires a specially configured version of the Boehm garbage collector found here: (https://github.com/clasp-developers/forkable-clasp.git)
 
 Currently there are no binary releases available.
 
