@@ -297,8 +297,8 @@
     (primitive         "cc_matchKeywordOnce" %size_t% (list %t*% %t*% %t*%))
     (primitive-unwinds "cc_ifNotKeywordException" %void% (list %t*% %size_t% %va_list*%))
     (primitive         "cc_multipleValuesArrayAddress" %t*[0]*% nil)
-    (primitive-unwinds "cc_unwind" %void% (list %t*% %size_t%))
-    (primitive-unwinds "cc_throw" %void% (list %t*%) :does-not-return t)
+    (primitive         "cc_unwind" %void% (list %t*% %size_t%))  ; Doesn't need invoke
+    (primitive         "cc_throw" %void% (list %t*%) :does-not-return t) ; Doesn't need invoke
     (primitive         "cc_saveMultipleValue0" %void% (list %tmv*%))
     (primitive         "cc_restoreMultipleValue0" %void% (list %tmv*%))
     (primitive         "cc_pushLandingPadFrame" %t*% nil)
