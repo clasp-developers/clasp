@@ -609,10 +609,8 @@
                      (format nil "closure->~a" lambda-name)))
                    (t
                     ;; General case.
-                    (%intrinsic-call
-                     "cc_enclose"
-                     enclose-args
-                     (format nil "closure->~a" lambda-name)))))))
+                    (%intrinsic-invoke-if-landing-pad-or-call "cc_enclose" enclose-args
+                                                              (format nil "closure->~a" lambda-name)))))))
         (cc-dbg-when *debug-log*
                      (format *debug-log* "~:[cc_enclose~;cc_stack_enclose~] with ~a cells~%"
                              dx-p (length inputs))
