@@ -816,7 +816,7 @@
             ((single-float) "to_object_float")
             ((double-float) "to_object_double"))))
     (%store
-     (%intrinsic-call intrinsic (list (%load (first inputs))))
+     (%intrinsic-invoke-if-landing-pad-or-call intrinsic (list (%load (first inputs))))
      (first outputs))))
 
 (defmethod translate-simple-instruction
@@ -838,7 +838,7 @@
             ((single-float) "from_object_float")
             ((double-float) "from_object_double"))))
     (%store
-     (%intrinsic-call intrinsic (list (%load (first inputs))))
+     (%intrinsic-invoke-if-landing-pad-or-call intrinsic (list (%load (first inputs))))
      (first outputs))))
 
 (defmethod translate-simple-instruction
