@@ -1,7 +1,4 @@
-#!/usr/sbin/dtrace -s
-# Usage:  sudo dtrace -x ustackframes=1000 -c ./cclasp-boehm -s onefunc.d -o /tmp/out.user_stacks
-pid$target::*throw*:entry
-/ pid == $target /
-{
-    @[ustack()] = count();
-}
+#!/bin/bash
+# Usage:  $0 <pid> <output>
+echo PID $1   output: $2
+sudo dtrace -p $1 -x ustackframes=2000 -n 'pid$target::*throw*:entry / pid == $target / {@[ustack()] = count();} ' -o $2
