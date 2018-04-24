@@ -266,7 +266,7 @@ public:
   public:
     virtual const char *describe() const { return "CompiledClosure"; };
     virtual size_t templatedSizeof() const {
-      printf("%s:%d templatedSizeof called on closure %s\n", __FILE__, __LINE__, _rep_(this->asSmartPtr()).c_str());
+      printf("%s:%d templatedSizeof called on closure %s - it is probably incorrect because we don't account for the slots\n", __FILE__, __LINE__, _rep_(this->asSmartPtr()).c_str());
       return sizeof(*this);
     };
   public:
@@ -319,8 +319,10 @@ public:
                      core::T_sp ll,
                      SOURCE_INFO)
     : Base(ptr,functionName, type, SOURCE_INFO_PASS),
-      _lambdaList(ll), 
+      _lambdaList(ll),
+      closureType(cclaspClosure),
       _Slots(capacity,_Unbound<T_O>(),true) {};
+    virtual string __repr__() const;
     core::T_sp lambda_list() const { return this->_lambdaList; };
     void setf_lambda_list(core::List_sp lambda_list) { this->_lambdaList = lambda_list; };
     core::LambdaListHandler_sp lambdaListHandler() const {

@@ -200,6 +200,39 @@ CL_DEFUN size_t core__closure_length(Closure_sp tclosure)
   return gc::As<ValueFrame_sp>(tclosure->closedEnvironment())->length();
 }
 
+
+string ClosureWithSlots_O::__repr__() const {
+  T_sp name = this->functionName();
+  stringstream ss;
+  ss << "#<" << this->_instanceClass()->_classNameAsString();
+#ifdef USE_BOEHM
+  ss << "@" << (void*)this << " ";
+#endif
+  ss << " " << _rep_(name);
+  ss << " :type ";
+  switch (this->closureType) {
+  case interpretedClosure:
+      ss << "interpreted ";
+      break;
+  case bclaspClosure:
+      ss << "bclasp ";
+      break;
+  case cclaspClosure:
+      ss << "cclasp ";
+      break;
+  }
+  ss << " :ftype " << _rep_(this->getKind());
+  ss << " lambda-list: " << _rep_(this->lambda_list());
+  if ( this->entry != NULL ) {
+    ss << " :fptr " << reinterpret_cast<void*>(this->entry.load());
+  }
+  
+  ss << ">";
+  return ss.str();
+}
+
+
+
 CL_DEFUN T_sp core__closure_ref(Closure_sp tclosure, size_t index)
 {
   if ( ClosureWithSlots_sp closure = tclosure.asOrNull<ClosureWithSlots_O>() ) {
