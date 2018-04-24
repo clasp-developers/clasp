@@ -784,7 +784,6 @@ class Cons_O;
 typedef gctools::smart_ptr<Cons_O> Cons_sp;
 
 typedef gctools::smart_ptr<Instance_O> Class_sp;
-typedef gctools::multiple_values<Instance_O> Class_mv;
  
  class General_O;
 typedef gctools::smart_ptr<General_O> General_sp;

@@ -1751,7 +1751,7 @@ CL_DEFUN T_sp core__lookup_class_with_stamp(Fixnum stamp) {
 CL_LAMBDA(symbol &optional (errorp t) env);
 CL_DECLARE();
 CL_DOCSTRING("find-class");
-CL_DEFUN Class_mv cl__find_class(Symbol_sp symbol, bool errorp, T_sp env) {
+CL_DEFUN T_sp cl__find_class(Symbol_sp symbol, bool errorp, T_sp env) {
   ASSERTF(env.nilp(), BF("Handle non nil environment"));
   // Should only be single threaded here
   if (_lisp->bootClassTableIsValid()) {
@@ -1771,16 +1771,15 @@ CL_DEFUN Class_mv cl__find_class(Symbol_sp symbol, bool errorp, T_sp env) {
     if (errorp) {
       SIMPLE_ERROR(BF("Could not find class %s") % _rep_(symbol));
     }
-    return (Values(_Nil<Instance_O>()));
+    return _Nil<T_O>();
   }
-  Class_sp omc = gc::As<Class_sp>(cla);
-  return (Values(omc));
+  return cla;
 }
 
 CL_LAMBDA(new-value name);
 CL_DECLARE();
 CL_DOCSTRING("setf_find_class, set value to NIL to remove the class name ");
-CL_DEFUN Class_mv core__set_class(T_sp newValue, Symbol_sp name) {
+CL_DEFUN T_sp core__setf_find_class(T_sp newValue, Symbol_sp name) {
   if (!newValue.nilp() && !clos__classp(newValue)) {
     SIMPLE_ERROR(BF("Classes in cando have to be subclasses of Class or NIL unlike ECL which uses Instances to represent classes - while trying to (setf find-class) of %s you gave: %s") % _rep_(name) % _rep_(newValue));
   }
@@ -1799,25 +1798,9 @@ CL_DEFUN Class_mv core__set_class(T_sp newValue, Symbol_sp name) {
     } else {
       ht->hash_table_setf_gethash(name, newValue);
     }
-    return Values(newValue);
+    return newValue;
   }
 };
-
-
-CL_LAMBDA(new-value name);
-CL_DECLARE();
-CL_DOCSTRING("setf_find_class, set value to NIL to remove the class name ");
-CL_DEFUN Class_mv core__setf_find_class(T_sp newValue, Symbol_sp name) {
-  return core__set_class(newValue,name);
-};
-
-/*
-  __BEGIN_DOC(candoScript.general.dumpEnvironment,dumpEnvironment)
-  \scriptCmdRet{dumpEnvironment}{}{Text::packageName}
-
-  Dump the current environment.
-  __END_DOC
-*/
 
 CL_LAMBDA(partialPath);
 CL_DECLARE();

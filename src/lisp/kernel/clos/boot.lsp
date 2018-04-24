@@ -81,7 +81,7 @@
             (class-default-initargs    class) nil
             (class-finalized-p         class) t)
       (debug-boot "    About to setf class name -> ~a  class -> ~a~%" name class)
-      (core:set-class class name)
+      (core:setf-find-class class name)
       (debug-boot "    Done setf class name -> ~a  class -> ~a~%" name class)
       (setf
        (class-dependents          class) nil)

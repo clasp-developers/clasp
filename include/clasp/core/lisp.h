@@ -1064,8 +1064,8 @@ namespace core {
 
   List_sp cl__assoc(T_sp item, List_sp alist, T_sp key, T_sp test = cl::_sym_eq, T_sp test_not = _Nil<T_O>());
 
-  Class_mv cl__find_class(Symbol_sp symbol, bool errorp = true, T_sp env = _Nil<T_O>());
-  Class_mv core__setf_find_class(T_sp newValue, Symbol_sp name);
+  T_sp cl__find_class(Symbol_sp symbol, bool errorp = true, T_sp env = _Nil<T_O>());
+  T_sp core__setf_find_class(T_sp newValue, Symbol_sp name);
 
   void cl__error(T_sp err, List_sp initializers);
 };
