@@ -46,19 +46,25 @@
   ;; since we still have method.lsp's add-method in place, it will try to add
   ;; the function-to-method-temp entry to *early-methods*. but then we unbind
   ;; that, so things are a bit screwy. We do it more manually.
-  (let ((f (ensure-generic-function 'function-to-method-temp)) ; FIXME: just make an anonymous one?
-        (method
-          (let ((*early-methods* nil))
-            (install-method 'function-to-method-temp
-                            nil
-                            (mapcar #'find-class specializers)
-                            lambda-list
-                            (lambda (.method-args. .next-methods.)
-                              (declare (core:lambda-name function-to-method.lambda))
-                              (mlog "In function-to-method.lambda  about to call %s with args %s\n" function (core:list-from-va-list .method-args.))
-                              (apply function .method-args.))
-                            'leaf-method-p t
-                            'fast-method-function (if (lambda-list-fast-callable-p lambda-list) function nil)))))
+  (let* ((f (ensure-generic-function 'function-to-method-temp)) ; FIXME: just make an anonymous one?
+         (method
+           ;; we're still using the old add-method, which adds things to *early-methods*.
+           ;; We don't want to do that here, so we rebind and discard.
+           (let ((*early-methods* nil))
+             (add-method f
+                         (make-method (find-class 'standard-method)
+                                      nil
+                                      (mapcar #'find-class specializers)
+                                      lambda-list
+                                      (lambda (.method-args. .next-methods.)
+                                        (declare (core:lambda-name function-to-method.lambda))
+                                        (mlog "In function-to-method.lambda  about to call %s with args %s\n"
+                                              function (core:list-from-va-list .method-args.))
+                                        (apply function .method-args.))
+                                      (list
+                                       'leaf-method-p t
+                                       'fast-method-function (if (lambda-list-fast-callable-p lambda-list)
+                                                                 function nil)))))))
     (mlog "function-to-method: installed method\n")
     (core:function-lambda-list-set f lambda-list) ; hook up the introspection
     (setf (fdefinition name) f
