@@ -70,14 +70,6 @@
   (declare (notinline ensure-generic-function))
 ;  (record-definition 'method `(method ,name ,@qualifiers ,specializers))
   (let* ((gf (ensure-generic-function name))
-	 (specializers (mapcar #'(lambda (x)
-                                   (declare (core:lambda-name install-method.lambda))
-				   (cond ((consp x) (intern-eql-specializer (second x)))
-					 ((typep x 'specializer) x)
-					 ((find-class x nil))
-					 (t
-					  (error "In method definition for ~A, found an invalid specializer ~A" name x))))
-			       specializers))
 	 (method (make-method (generic-function-method-class gf)
 			      qualifiers specializers lambda-list
 			      fun options)))
