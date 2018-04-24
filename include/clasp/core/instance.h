@@ -70,7 +70,7 @@ namespace core {
     } Slots;
     
   public: // ctor/dtor for classes with shared virtual base
-  Instance_O() : _Sig(_Unbound<T_O>()), _Class(_Nil<Class_O>()), _Rack(_Nil<T_O>()) {};
+  Instance_O() : _Sig(_Unbound<T_O>()), _Class(_Nil<Instance_O>()), _Rack(_Nil<T_O>()) {};
     explicit Instance_O(Class_sp metaClass) :
       _Sig(_Unbound<T_O>())
       ,_Class(metaClass)
@@ -100,7 +100,7 @@ namespace core {
   public:
     virtual bool isCallable() const { return false; };
   public:
-    // Functions from Class_O
+    // Functions from Instance_O
     string _classNameAsString() const;
     void _setClassName(Symbol_sp id) { this->instanceSet(REF_CLASS_CLASS_NAME, id); };
     Symbol_sp _className() const { return gc::As<Symbol_sp>(this->instanceRef(REF_CLASS_CLASS_NAME)); }

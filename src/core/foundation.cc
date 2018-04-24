@@ -686,7 +686,7 @@ string symbol_repr(Symbol_sp sym) {
   return _rep_(sym);
 }
 
-/* If o is an instance of Instance_O or Class_O then it returns o->_instanceClass()
+/* If o is an instance of Instance_O or Instance_O then it returns o->_instanceClass()
        Otherwise it returns lisp_static_class(o)
     */
 Class_sp lisp_instance_class(T_sp o) {

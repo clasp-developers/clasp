@@ -60,7 +60,7 @@ CL_DEFUN T_sp core__instance_class_set(T_sp obj, Class_sp mc) {
   if (Instance_sp iobj = obj.asOrNull<Instance_O>()) {
     return iobj->instanceClassSet(mc);
   }
-  SIMPLE_ERROR(BF("You can only instanceClassSet on Instance_O or Class_O - you tried to set it on a: %s") % _rep_(mc));
+  SIMPLE_ERROR(BF("You can only instanceClassSet on Instance_O or Instance_O - you tried to set it on a: %s") % _rep_(mc));
 };
 
 CL_LAMBDA(obj);
@@ -126,7 +126,7 @@ CL_DEFUN List_sp core__class_slot_sanity_check()
   List_sp sanity = _Nil<T_O>();
   sanity = Cons_O::create(Cons_O::create(clos::_sym_NUMBER_OF_SLOTS_IN_STANDARD_CLASS, core::clasp_make_fixnum(REF_CLASS_NUMBER_OF_SLOTS_IN_STANDARD_CLASS)),sanity);
   sanity = Cons_O::create(Cons_O::create(clos::_sym_NUMBER_OF_SLOTS_IN_STRUCTURE_CLASS, core::clasp_make_fixnum(REF_CLASS_NUMBER_OF_SLOTS_IN_STRUCTURE_CLASS)),sanity);
-#define ADD_SANITY_CHECK_SIMPLE(slot_name,enum_name)   sanity = Cons_O::create(Cons_O::create(clos::_sym_##slot_name, core::clasp_make_fixnum(Class_O::REF_##enum_name)),sanity);
+#define ADD_SANITY_CHECK_SIMPLE(slot_name,enum_name)   sanity = Cons_O::create(Cons_O::create(clos::_sym_##slot_name, core::clasp_make_fixnum(Instance_O::REF_##enum_name)),sanity);
   ADD_SANITY_CHECK_SIMPLE(NAME,CLASS_CLASS_NAME);
   ADD_SANITY_CHECK_SIMPLE(DIRECT_SUPERCLASSES,CLASS_DIRECT_SUPERCLASSES);
   ADD_SANITY_CHECK_SIMPLE(SLOTS,CLASS_SLOTS);
@@ -253,7 +253,7 @@ T_sp Instance_O::instanceSet(size_t idx, T_sp val) {
 string Instance_O::__repr__() const {
   stringstream ss;
   ss << "#S(";
-  if (Class_sp mc = this->_Class.asOrNull<Class_O>()) {
+  if (Class_sp mc = this->_Class.asOrNull<Instance_O>()) {
     ss << mc->_classNameAsString() << " ";
   } else {
     ss << "<ADD SUPPORT FOR INSTANCE _CLASS=" << _rep_(this->_Class) << " >";
@@ -404,7 +404,7 @@ void Instance_O::lowLevel_calculateClassPrecedenceList() {
   using namespace boost;
   HashTableEq_sp supers = HashTableEq_O::create_default();
   VectorObjects_sp arrayedSupers(VectorObjects_O::make(16, _Nil<T_O>(), clasp_make_fixnum(0)));
-  this->accumulateSuperClasses(supers, arrayedSupers, this->sharedThis<Class_O>());
+  this->accumulateSuperClasses(supers, arrayedSupers, this->sharedThis<Instance_O>());
   vector<list<int>> graph(cl__length(arrayedSupers));
 
   class TopoSortSetup : public KeyValueMapper {
@@ -434,7 +434,7 @@ void Instance_O::lowLevel_calculateClassPrecedenceList() {
   {
     for (size_t zi(0), ziEnd(cl__length(arrayedSupers)); zi < ziEnd; ++zi) {
       stringstream ss;
-      ss << (BF("graph[%d/name=%s] = ") % zi % arrayedSupers->operator[](zi).as<Class_O>()->instanceClassName()).str();
+      ss << (BF("graph[%d/name=%s] = ") % zi % arrayedSupers->operator[](zi).as<Instance_O>()->instanceClassName()).str();
       for (list<int>::const_iterator it = graph[zi].begin(); it != graph[zi].end(); it++) {
         ss << *it << "-> ";
       }
@@ -450,7 +450,7 @@ void Instance_O::lowLevel_calculateClassPrecedenceList() {
     stringstream ss;
     ss << "Topologically sorted superclasses ";
     for (deque<int>::const_reverse_iterator it = topo_order.rbegin(); it != topo_order.rend(); it++) {
-      Class_sp mc = arrayedSupers->operator[](*it).as<Class_O>();
+      Class_sp mc = arrayedSupers->operator[](*it).as<Instance_O>();
       ss << "-> " << mc->className() << "/" << mc->instanceClassName();
     }
     LOG(BF("%s") % ss.str());
@@ -493,7 +493,7 @@ bool Instance_O::isSubClassOf(Class_sp ancestor) const {
     if (this == &*ancestor) return true;
   // TODO: I need to memoize this somehow so that I'm not constantly searching a list in
   // linear time
-    List_sp cpl = this->instanceRef(Class_O::REF_CLASS_CLASS_PRECEDENCE_LIST);
+    List_sp cpl = this->instanceRef(Instance_O::REF_CLASS_CLASS_PRECEDENCE_LIST);
     ASSERTF(!cpl.unboundp(), BF("You tried to use isSubClassOf when the ClassPrecedenceList had not been initialized"));
     for (auto cur : cpl) {
       if (CONS_CAR(cur) == ancestor) return true;
@@ -503,14 +503,14 @@ bool Instance_O::isSubClassOf(Class_sp ancestor) const {
   printf("%s:%d FAILED   this_class->isSubClassOf(_lisp->_Roots._TheClass) ->%d\n", __FILE__, __LINE__, this_class->isSubClassOf(_lisp->_Roots._TheClass));
   {
     printf("%s:%d   this->className() -> %s  checking if subclass of %s\n", __FILE__, __LINE__, _rep_(this->_className()).c_str(), _rep_(ancestor->_className()).c_str());
-    List_sp cpl = this->instanceRef(Class_O::REF_CLASS_CLASS_PRECEDENCE_LIST);
+    List_sp cpl = this->instanceRef(Instance_O::REF_CLASS_CLASS_PRECEDENCE_LIST);
     for ( auto cur: cpl ) {
       printf("%s:%d  cpl -> %s\n", __FILE__, __LINE__, _rep_(gc::As<Instance_sp>(CONS_CAR(cur))->_className()).c_str());
     }
   }
   {
     printf("%s:%d   this->_Class->className() -> %s  its cpl ->>>\n", __FILE__, __LINE__, _rep_(this->_Class->_className()).c_str());
-    List_sp cpl = this_class->instanceRef(Class_O::REF_CLASS_CLASS_PRECEDENCE_LIST);
+    List_sp cpl = this_class->instanceRef(Instance_O::REF_CLASS_CLASS_PRECEDENCE_LIST);
     for ( auto cur: cpl ) {
       Class_sp cc = gc::As<Instance_sp>(CONS_CAR(cur));
       printf("%s:%d  cpl -> %s == _lisp->_Roots._TheClass -> %d\n", __FILE__, __LINE__, _rep_(cc->_className()).c_str(), cc == _lisp->_Roots._TheClass);
@@ -559,7 +559,7 @@ string Instance_O::dumpInfo() {
   return ss.str();
 }
 
-string Class_O::getPackagedName() const {
+string Instance_O::getPackagedName() const {
   return this->_className()->formattedName(false);
 }
 

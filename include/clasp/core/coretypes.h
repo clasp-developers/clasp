@@ -21,11 +21,6 @@ namespace core {
   class T_O;
   typedef gctools::smart_ptr<T_O> T_sp;
 
-#if 0
-  class Class_O;
-typedef gctools::smart_ptr<Class_O> Class_sp;
-#endif
- 
 class Number_O;
 typedef gctools::smart_ptr<Number_O> Number_sp;
 

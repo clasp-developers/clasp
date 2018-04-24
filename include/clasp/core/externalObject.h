@@ -57,7 +57,7 @@ namespace core {
     };
 
   public:
-    explicit ExternalObject_O() : Base(), _Class(_Nil<Class_O>()){};
+    explicit ExternalObject_O() : Base(), _Class(_Nil<Instance_O>()){};
     virtual ~ExternalObject_O(){};
   };
 

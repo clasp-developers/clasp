@@ -783,7 +783,6 @@ extern void initializePythonScript();
 class Cons_O;
 typedef gctools::smart_ptr<Cons_O> Cons_sp;
 
-typedef Instance_O Class_O;
 typedef gctools::smart_ptr<Instance_O> Class_sp;
 typedef gctools::multiple_values<Instance_O> Class_mv;
  

@@ -32,7 +32,7 @@ Setup the compilation-tool-database."
   (defparameter *db* (setup-db)))
 
 ;;;
-;;; Setup the ASTMatcher to recognize .def("foo",&Class_O::foo)
+;;; Setup the ASTMatcher to recognize .def("foo",&Instance_O::foo)
 ;;;
 (progn
   (defconstant +source-path+ (ext:getenv "CLASP_HOME"))
@@ -258,7 +258,7 @@ Setup the compilation-tool-database."
              (:matches-name "core::Array_O")
              (:matches-name "core::Bignum_O")
              (:matches-name "core::BitVector_O")
-             (:matches-name "core::Class_O")
+             (:matches-name "core::Instance_O")
              (:matches-name "core::Cons_O")
              (:matches-name "core::DirectoryEntry_O")
              (:matches-name "core::Environment_O")

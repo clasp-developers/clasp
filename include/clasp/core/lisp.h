@@ -241,7 +241,7 @@ class Lisp_O {
 // THREAD_CHANGE    List_sp _CatchInfo;
     /* The global class table that maps class symbols to classes */
     gctools::Vec0<SymbolClassPair> bootClassTable;
-    //	    SymbolDict<Class_O>		_BootClassTable;
+    //	    SymbolDict<Instance_O>		_BootClassTable;
     /*! When compiled files are loaded, they need to create
 	      LOAD-TIME-VALUEs and QUOTEd objects using C++ calls at runtime.
 	      Those objects are stored here as a map on the compiled file name. */

@@ -1044,7 +1044,7 @@ void Lisp_O::addClassSymbol(Symbol_sp classSymbol,
                             Symbol_sp base1ClassSymbol )
 {
   LOG(BF("Lisp_O::addClass classSymbol(%s) baseClassSymbol1(%u) baseClassSymbol2(%u)") % _rep_(classSymbol) % base1ClassSymbol % base2ClassSymbol);
-  Class_sp cc = Class_O::create(classSymbol,_lisp->_Roots._TheBuiltInClass,alloc);
+  Class_sp cc = Instance_O::create(classSymbol,_lisp->_Roots._TheBuiltInClass,alloc);
   printf("%s:%d --> Adding class[%s]\n", __FILE__, __LINE__, _rep_(classSymbol).c_str());
   core__setf_find_class(cc, classSymbol);
   cc->addInstanceBaseClass(base1ClassSymbol);
@@ -1771,7 +1771,7 @@ CL_DEFUN Class_mv cl__find_class(Symbol_sp symbol, bool errorp, T_sp env) {
     if (errorp) {
       SIMPLE_ERROR(BF("Could not find class %s") % _rep_(symbol));
     }
-    return (Values(_Nil<Class_O>()));
+    return (Values(_Nil<Instance_O>()));
   }
   Class_sp omc = gc::As<Class_sp>(cla);
   return (Values(omc));
@@ -2522,7 +2522,7 @@ Class_sp Lisp_O::boot_findClass(Symbol_sp className, bool errorp) const {
     if (it->symbol == className)
       return it->theClass;
   }
-  return _Nil<Class_O>();
+  return _Nil<Instance_O>();
 }
 
 /*! After the core classes are defined and we have hash-tables, move all class definitions
@@ -2582,7 +2582,7 @@ string Lisp_O::classNameFromClassSymbol(Symbol_sp cid) {
 Class_sp Lisp_O::classFromClassName(const string &name) {
   _OF();
   DEPRECATED();
-  //    return sym->symbolValue().as<Class_O>();
+  //    return sym->symbolValue().as<Instance_O>();
 }
 
 void Lisp_O::parseStringIntoPackageAndSymbolName(const string &name, bool &packageDefined, Package_sp &package, string &symbolName, bool &exported) const {

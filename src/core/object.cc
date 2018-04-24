@@ -101,7 +101,7 @@ CL_DECLARE();
 CL_DOCSTRING("make-cxx-object makes a C++ object using the encode/decode/fields functions");
 CL_DEFUN T_sp core__make_cxx_object(T_sp class_or_name, T_sp args) {
   Class_sp theClass;
-  if (Class_sp argClass = class_or_name.asOrNull<Class_O>()) {
+  if (Class_sp argClass = class_or_name.asOrNull<Instance_O>()) {
     theClass = argClass;
   } else if (class_or_name.nilp()) {
     goto BAD_ARG0;
@@ -135,7 +135,7 @@ CL_DECLARE();
 CL_DOCSTRING("load-cxx-object makes a C++ object using the encode/decode/fields functions using decoder/loader(s) - they support patching of objects");
 CL_DEFUN T_sp core__load_cxx_object(T_sp class_or_name, T_sp args) {
   Class_sp theClass;
-  if (Class_sp argClass = class_or_name.asOrNull<Class_O>()) {
+  if (Class_sp argClass = class_or_name.asOrNull<Instance_O>()) {
     theClass = argClass;
   } else if (class_or_name.nilp()) {
     goto BAD_ARG0;

@@ -63,7 +63,7 @@ namespace core {
                    MIN_GFUN_SLOTS = 4 } GenericFunctionSlots;
   public: // ctor/dtor for classes with shared virtual base
     // entry_point is the LISP_CALLING_CONVENTION() macro
-  FuncallableInstance_O() : Base(not_funcallable_entry_point), _isgf(CLASP_NOT_FUNCALLABLE), _DebugOn(false), _Class(_Nil<Class_O>()), _Sig(_Nil<T_O>()), _CallHistory(_Nil<T_O>()),
+  FuncallableInstance_O() : Base(not_funcallable_entry_point), _isgf(CLASP_NOT_FUNCALLABLE), _DebugOn(false), _Class(_Nil<Instance_O>()), _Sig(_Nil<T_O>()), _CallHistory(_Nil<T_O>()),
       _SpecializerProfile(_Nil<T_O>()),
 //      _Lock(mp::SharedMutex_O::make_shared_mutex(_Nil<T_O>())),
       _CompiledDispatchFunction(_Nil<T_O>()) {};

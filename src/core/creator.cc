@@ -67,9 +67,9 @@ T_sp FuncallableInstanceCreator_O::creator_allocate() {
 // Used during early boot when STANDARD-CLASS itself is being created, and such.
 namespace core {
 T_sp StandardClassCreator_O::creator_allocate() {
-  size_t size = gctools::sizeof_with_header<Class_O>();
+  size_t size = gctools::sizeof_with_header<Instance_O>();
   Class_sp c = lisp_standard_class();
-  GC_ALLOCATE_VARIADIC(Class_O,class_,c);
+  GC_ALLOCATE_VARIADIC(Instance_O,class_,c);
   return class_;
 };
 
@@ -77,8 +77,8 @@ T_sp StandardClassCreator_O::creator_allocate() {
 
 namespace core {
 T_sp DerivableCxxClassCreator_O::creator_allocate() {
-  size_t size = gctools::sizeof_with_header<Class_O>();
-  GC_ALLOCATE_VARIADIC(Class_O,class_,lisp_standard_class()/*,REF_CLASS_NUMBER_OF_SLOTS_IN_STRUCTURE_CLASS*/);
+  size_t size = gctools::sizeof_with_header<Instance_O>();
+  GC_ALLOCATE_VARIADIC(Instance_O,class_,lisp_standard_class()/*,REF_CLASS_NUMBER_OF_SLOTS_IN_STRUCTURE_CLASS*/);
   return class_;
 };
 
@@ -86,7 +86,7 @@ T_sp DerivableCxxClassCreator_O::creator_allocate() {
 
 namespace core {
 T_sp ClassRepCreator_O::creator_allocate() {
-  size_t size = gctools::sizeof_with_header<Class_O>();
+  size_t size = gctools::sizeof_with_header<Instance_O>();
   GC_ALLOCATE_VARIADIC(clbind::ClassRep_O,class_,lisp_class_rep_class());
   return class_;
 };

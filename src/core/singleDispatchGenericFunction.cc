@@ -269,7 +269,7 @@ Function_sp SingleDispatchGenericFunctionClosure_O::slowMethodLookup(Class_sp mc
       printf("%s:%d   ac->className -> %s\n", __FILE__, __LINE__, _rep_(ac->_className()).c_str());
       printf("%s:%d   mc->isSubClassOf(ac) -> %d\n", __FILE__, __LINE__, mc->isSubClassOf(ac));
       printf("%s:%d    class-precedence-list of ac -> %s\n", __FILE__, __LINE__, _rep_(ac->_className()).c_str() );
-      List_sp cpl = ac->instanceRef(Class_O::REF_CLASS_CLASS_PRECEDENCE_LIST);
+      List_sp cpl = ac->instanceRef(Instance_O::REF_CLASS_CLASS_PRECEDENCE_LIST);
       for (auto xxx : cpl ) {
         Class_sp sc = gc::As<Class_sp>(CONS_CAR(xxx));
         printf("%s:%d    :   %s matches mc -> %d\n", __FILE__, __LINE__, _rep_(sc->_className()).c_str(), (mc==sc));

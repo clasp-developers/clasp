@@ -77,7 +77,7 @@ gc::Nilable<Class_sp> identifyCxxDerivableAncestorClass(Class_sp aClass) {
     if (taPossibleCxxDerivableAncestorClass.notnilp())
       return taPossibleCxxDerivableAncestorClass;
   }
-  return _Nil<Class_O>();
+  return _Nil<Instance_O>();
 }
 
 
@@ -101,7 +101,7 @@ CL_DEFUN T_sp core__compute_instance_creator(T_sp tinstance, T_sp tmetaclass, Li
 #endif
   for (auto cur : superclasses) {
     T_sp tsuper = oCar(cur);
-    if (Class_sp aSuperClass = tsuper.asOrNull<Class_O>() ) {
+    if (Class_sp aSuperClass = tsuper.asOrNull<Instance_O>() ) {
       if (aSuperClass->cxxClassP() && !aSuperClass->cxxDerivableClassP()) {
         SIMPLE_ERROR(BF("You cannot derive from the non-derivable C++ class %s\n"
                         "any C++ class you want to derive from must inherit from the clbind derivable class") %
@@ -169,7 +169,7 @@ CL_DEFUN bool core__subclassp(T_sp low, T_sp high) {
   if (low == high)
     return true;
   if (Instance_sp lowmc = low.asOrNull<Instance_O>()) {
-    List_sp lowClassPrecedenceList = lowmc->instanceRef(Class_O::REF_CLASS_CLASS_PRECEDENCE_LIST); // classPrecedenceList();
+    List_sp lowClassPrecedenceList = lowmc->instanceRef(Instance_O::REF_CLASS_CLASS_PRECEDENCE_LIST); // classPrecedenceList();
     return lowClassPrecedenceList.asCons()->memberEq(high).notnilp();
   }
   SIMPLE_ERROR(BF("Illegal argument for subclassp: %s") % _rep_(low));

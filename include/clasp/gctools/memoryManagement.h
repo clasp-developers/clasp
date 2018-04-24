@@ -697,7 +697,6 @@ namespace core {
   class VaList_dummy_O;
   class Instance_O;
   class FuncallableInstance_O;
-  typedef Instance_O Class_O;
 }
 
 
