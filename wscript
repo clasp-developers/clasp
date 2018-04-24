@@ -1416,7 +1416,7 @@ class build_bitcode(Task.Task):
                        self.colon("CPPPATH_ST", "INCPATHS") + \
                        self.colon("DEFINES_ST", "DEFINES") + \
                        [ self.inputs[0].abspath() ] + \
-                       [ '-c' ] + \
+                       [ '-DBUILD_FOR_JIT', '-c' ] + \
                        [ '-o', self.outputs[0].abspath() ]
 #                       [ '-Wl', '-mllvm' ] + \
 #        build_args = ' '.join(preproc_args) + " " + self.inputs[0].abspath()
