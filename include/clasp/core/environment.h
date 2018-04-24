@@ -665,7 +665,7 @@ public: // Simple default ctor/dtor
   DEFAULT_CTOR_DTOR(TagbodyEnvironment_O);
 
 public: // ctor/dtor for classes with shared virtual base
-        //    explicit TagbodyEnvironment_O(core::Class_sp const& mc) : T_O(mc), Environment(mc) {};
+        //    explicit TagbodyEnvironment_O(core::Instance_sp const& mc) : T_O(mc), Environment(mc) {};
         //    virtual ~TagbodyEnvironment_O() {};
 public:
   void initialize();
@@ -720,7 +720,7 @@ public: // Simple default ctor/dtor
   DEFAULT_CTOR_DTOR(MacroletEnvironment_O);
 
 public: // ctor/dtor for classes with shared virtual base
-        //    explicit MacroletEnvironment_O(core::Class_sp const& mc) : T_O(mc), Environment(mc) {};
+        //    explicit MacroletEnvironment_O(core::Instance_sp const& mc) : T_O(mc), Environment(mc) {};
         //    virtual ~MacroletEnvironment_O() {};
 public:
   void initialize();
@@ -757,7 +757,7 @@ public: // Simple default ctor/dtor
   DEFAULT_CTOR_DTOR(SymbolMacroletEnvironment_O);
 
 public: // ctor/dtor for classes with shared virtual base
-        //    explicit SymbolMacroletEnvironment_O(core::Class_sp const& mc) : T_O(mc), Environment(mc) {};
+        //    explicit SymbolMacroletEnvironment_O(core::Instance_sp const& mc) : T_O(mc), Environment(mc) {};
         //    virtual ~SymbolMacroletEnvironment_O() {};
 public:
   void initialize();

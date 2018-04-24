@@ -547,7 +547,7 @@ Convert colons to underscores"
           (let ((class-tag (class-tag% exposed-class)))
             (format sout "namespace ~a { ~%" (tags:namespace% class-tag))
             (format sout "  core::Symbol_sp ~a::static_class_symbol;~%" (tags:name% class-tag))
-            (format sout "  core::Class_sp ~a::static_class;~%" (tags:name% class-tag))
+            (format sout "  core::Instance_sp ~a::static_class;~%" (tags:name% class-tag))
             (format sout "  gctools::Header_s::Value ~a::static_HeaderValue;~%" (tags:name% class-tag))
             (format sout "  gctools::smart_ptr<core::Creator_O> ~a::static_creator;~%" (tags:name% class-tag))
             (format sout "};~%")))

@@ -43,9 +43,6 @@ class CandoException_O : public General_O {
 public: // Simple default ctor/dtor
   DEFAULT_CTOR_DTOR(CandoException_O);
 
-public: // ctor/dtor for classes with shared virtual base
-        //    explicit CandoException_O(core::MetaClass_sp const& mc) : T_O(mc), T(mc) {};
-        //    virtual ~CandoException_O() {};
 public:
   static CandoException_sp create(const string &msg);
 //  static CandoException_sp create(const boost::format &fmt);

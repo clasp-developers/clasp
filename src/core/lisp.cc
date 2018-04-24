@@ -156,10 +156,6 @@ extern "C" void add_history(char *line);
 
 namespace core {
 
-#if 0
-__thread ThreadInfo *threadLocalInfoPtr;
-#endif
-
 const int Lisp_O::MaxFunctionArguments = 64; //<! See ecl/src/c/main.d:163 ecl_make_cache(64,4096)
 const int Lisp_O::MaxClosSlots = 3;          //<! See ecl/src/c/main.d:164 ecl_make_cache(3,4096)
 const int Lisp_O::ClosCacheSize = 1024 * 32;
@@ -171,8 +167,6 @@ extern string getLispError();
 int intArray[10];
 int& _int_0 = intArray[0];
 int& _int_1 = intArray[1];
-
-SMART(BuiltInClass);
 
 struct FindApropos : public KeyValueMapper //, public gctools::StackRoot
 {
@@ -281,22 +275,13 @@ void setup_static_classSymbol(BootStrapCoreSymbolMap const &sidMap) {
   oclass::___set_static_ClassSymbol(sidMap.find_symbol(oclass::static_packageName(), oclass::static_className()));
 }
 
-string dump_instanceClass_info(Class_sp co, Lisp_sp prog) {
+string dump_instanceClass_info(Instance_sp co, Lisp_sp prog) {
   stringstream ss;
   ss << "------------------------------------- class" << _rep_(co->_className()) << std::endl;
   ;
   LOG(BF("Dumping info: %s") % co->dumpInfo());
   ss << co->dumpInfo();
   return ss.str();
-}
-
-template <class oclass>
-void dump_info(BuiltInClass_sp co, Lisp_sp lisp) {
-  LOG(BF("-------    dump_info    --------------- className: %s @ %X") % oclass::static_className() % co.get());
-  LOG(BF("%s::static_classSymbol() = %d") % oclass::static_className() % oclass::static_classSymbol());
-  LOG(BF("%s::Base::static_classSymbol() = %d") % oclass::static_className() % oclass::Base::static_classSymbol());
-  LOG(BF("%s::static_newNil_callback() = %X") % oclass::static_className() % (void *)(oclass::static_allocator));
-  //    LOG(BF("%s")%dump_instanceClass_info(co,lisp));
 }
 
 void Lisp_O::setupSpecialSymbols() {
@@ -580,7 +565,6 @@ void Lisp_O::startupLispEnvironment(Bundle *bundle) {
   this->_Roots._CommandLineArguments.reset_();
   this->_Bundle = bundle;
   CoreExposer_sp coreExposer;
-  BuiltInClass_sp classDummy;
   {
     _BLOCK_TRACE("Initialize core classes");
     initialize_clasp();
@@ -1029,7 +1013,7 @@ void Lisp_O::archive(::core::ArchiveP node) {
 }
 #endif // defined(XML_ARCHIVE)
 
-void Lisp_O::addClassNameToPackageAsDynamic(const string &package, const string &name, Class_sp mc) {
+void Lisp_O::addClassNameToPackageAsDynamic(const string &package, const string &name, Instance_sp mc) {
   Symbol_sp classSymbol = _lisp->intern(name, gc::As<Package_sp>(_lisp->findPackage(package, true)));
   classSymbol->exportYourself();
   classSymbol->setf_symbolValue(mc);
@@ -1044,7 +1028,7 @@ void Lisp_O::addClassSymbol(Symbol_sp classSymbol,
                             Symbol_sp base1ClassSymbol )
 {
   LOG(BF("Lisp_O::addClass classSymbol(%s) baseClassSymbol1(%u) baseClassSymbol2(%u)") % _rep_(classSymbol) % base1ClassSymbol % base2ClassSymbol);
-  Class_sp cc = Instance_O::create(classSymbol,_lisp->_Roots._TheBuiltInClass,alloc);
+  Instance_sp cc = Instance_O::create(classSymbol,_lisp->_Roots._TheBuiltInClass,alloc);
   printf("%s:%d --> Adding class[%s]\n", __FILE__, __LINE__, _rep_(classSymbol).c_str());
   core__setf_find_class(cc, classSymbol);
   cc->addInstanceBaseClass(base1ClassSymbol);
@@ -1740,7 +1724,7 @@ CL_DEFUN T_sp core__lookup_class_with_stamp(Fixnum stamp) {
   HashTable_sp classNames = _lisp->_Roots._ClassTable;
   T_sp foundClass = _Nil<T_O>();
   classNames->maphash([stamp,&foundClass] (T_sp key, T_sp tclass_) {
-      Class_sp class_ = gc::As<Class_sp>(tclass_);
+      Instance_sp class_ = gc::As<Instance_sp>(tclass_);
       if (class_->CLASS_stamp_for_instances() == stamp) {
         foundClass = class_;
       }
@@ -1787,7 +1771,7 @@ CL_DEFUN T_sp core__setf_find_class(T_sp newValue, Symbol_sp name) {
     if (newValue.nilp()) {
       printf("%s:%d Trying to (setf-find-class nil %s) when bootClassTableIsValid (while boostrapping)\n", __FILE__, __LINE__, _rep_(name).c_str());
     }
-    return Values(_lisp->boot_setf_findClass(name, gc::As<Class_sp>(newValue)));
+    return Values(_lisp->boot_setf_findClass(name, gc::As<Instance_sp>(newValue)));
   }
   {
     WITH_READ_WRITE_LOCK(_lisp->_Roots._ClassTableMutex);
@@ -2402,7 +2386,7 @@ CL_DEFUN void cl__cerror(T_sp cformat, T_sp eformat, List_sp arguments) {
 CL_LAMBDA(tag mc);
 CL_DECLARE();
 CL_DOCSTRING("isSubClassOf");
-CL_DEFUN T_mv core__is_sub_class_of(Class_sp tag, Class_sp mc) {
+CL_DEFUN T_mv core__is_sub_class_of(Instance_sp tag, Instance_sp mc) {
   LOG(BF("Checking if instances of class(%s) is assignable to variables of class(%s)") % tag->className() % mc->className());
   bool io = tag->isSubClassOf(mc);
   return (Values(_lisp->_boolean(io)));
@@ -2473,7 +2457,7 @@ CL_DEFUN T_mv cl__not(T_sp x) {
 */
 
 Symbol_sp Lisp_O::getClassSymbolForClassName(const string &name) {
-  Class_sp mc = this->classFromClassName(name);
+  Instance_sp mc = this->classFromClassName(name);
   Symbol_sp sym = mc->_className();
   ASSERTNOTNULL(sym);
   return sym;
@@ -2485,7 +2469,7 @@ void Lisp_O::setEmbeddedInPython(bool b) {
   this->_EmbeddedInPython = b;
 }
 
-Class_sp Lisp_O::boot_setf_findClass(Symbol_sp className, Class_sp mc) {
+Instance_sp Lisp_O::boot_setf_findClass(Symbol_sp className, Instance_sp mc) {
 //    printf("%s:%d    boot_setf_findClass for %s\n", __FILE__, __LINE__, _rep_(className).c_str());
   for (auto it = this->_Roots.bootClassTable.begin(); it != this->_Roots.bootClassTable.end(); ++it) {
     if (it->symbol == className) {
@@ -2498,7 +2482,7 @@ Class_sp Lisp_O::boot_setf_findClass(Symbol_sp className, Class_sp mc) {
   return mc;
 }
 
-Class_sp Lisp_O::boot_findClass(Symbol_sp className, bool errorp) const {
+Instance_sp Lisp_O::boot_findClass(Symbol_sp className, bool errorp) const {
   ASSERTF(this->_BootClassTableIsValid,
           BF("Never use Lisp_O::findClass after boot - use cl::_sym_findClass"));
   for (auto it = this->_Roots.bootClassTable.begin(); it != this->_Roots.bootClassTable.end(); ++it) {
@@ -2557,12 +2541,12 @@ CL_DEFUN void Lisp_O::forget_all_single_dispatch_generic_functions() {
 string Lisp_O::classNameFromClassSymbol(Symbol_sp cid) {
   DEPRECATED();
 #if 0
-  Class_sp mc = this->classFromClassSymbol(cid);
+  Instance_sp mc = this->classFromClassSymbol(cid);
   return mc->getPackagedName();
 #endif
 }
 
-Class_sp Lisp_O::classFromClassName(const string &name) {
+Instance_sp Lisp_O::classFromClassName(const string &name) {
   _OF();
   DEPRECATED();
   //    return sym->symbolValue().as<Instance_O>();

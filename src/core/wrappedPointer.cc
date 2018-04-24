@@ -59,14 +59,14 @@ CL_DEFUN void core__pointer_delete(T_sp ptr) {
 
 
 
-T_sp WrappedPointer_O::_instanceClassSet(Class_sp cl) {
+T_sp WrappedPointer_O::_instanceClassSet(Instance_sp cl) {
   this->Class_ = cl;
   this->Stamp_ = cl->CLASS_stamp_for_instances();
   return this->asSmartPtr();
 }
 
 void WrappedPointer_O::_setInstanceClassUsingSymbol(Symbol_sp classSymbol) {
-  Class_sp cl = gc::As<Class_sp>(cl__find_class(classSymbol));
+  Instance_sp cl = gc::As<Instance_sp>(cl__find_class(classSymbol));
   this->_instanceClassSet(cl);
 }
 

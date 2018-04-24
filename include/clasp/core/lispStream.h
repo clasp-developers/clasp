@@ -416,7 +416,7 @@ public: // Simple default ctor/dtor
   DEFAULT_CTOR_DTOR(StringStream_O);
 
 public: // ctor/dtor for classes with shared virtual base
-        //    explicit StringStream_O(core::Class_sp const& mc) : T_O(mc),AnsiStream(mc) {};
+        //    explicit StringStream_O(core::Instance_sp const& mc) : T_O(mc),AnsiStream(mc) {};
         //    virtual ~StringStream_O() {};
 
 public: // Functions here
@@ -440,7 +440,7 @@ public: // Simple default ctor/dtor
   DEFAULT_CTOR_DTOR(StringOutputStream_O);
 
 public: // ctor/dtor for classes with shared virtual base
-        //    explicit StringStream_O(core::Class_sp const& mc) : T_O(mc),AnsiStream(mc) {};
+        //    explicit StringStream_O(core::Instance_sp const& mc) : T_O(mc),AnsiStream(mc) {};
         //    virtual ~StringStream_O() {};
 public: // instance variables here
   String_sp _Contents;
@@ -468,7 +468,7 @@ public: // Simple default ctor/dtor
   DEFAULT_CTOR_DTOR(StringInputStream_O);
 
 public:    // ctor/dtor for classes with shared virtual base
-           //    explicit StringStream_O(core::Class_sp const& mc) : T_O(mc),AnsiStream(mc) {};
+           //    explicit StringStream_O(core::Instance_sp const& mc) : T_O(mc),AnsiStream(mc) {};
            //    virtual ~StringStream_O() {};
 private: // instance variables here
   String_sp _Contents;

@@ -68,7 +68,7 @@ T_sp FuncallableInstanceCreator_O::creator_allocate() {
 namespace core {
 T_sp StandardClassCreator_O::creator_allocate() {
   size_t size = gctools::sizeof_with_header<Instance_O>();
-  Class_sp c = lisp_standard_class();
+  Instance_sp c = lisp_standard_class();
   GC_ALLOCATE_VARIADIC(Instance_O,class_,c);
   return class_;
 };

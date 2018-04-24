@@ -78,9 +78,9 @@ List_sp cl__member(T_sp item, T_sp list, T_sp key = _Nil<T_O>(), T_sp test = cl:
 
 class SymbolClassPair {
 public:
-  SymbolClassPair(Symbol_sp s, Class_sp c) : symbol(s), theClass(c){};
+  SymbolClassPair(Symbol_sp s, Instance_sp c) : symbol(s), theClass(c){};
   Symbol_sp symbol;
-  Class_sp theClass;
+  Instance_sp theClass;
 };
 
 /*! A structure that stores the integer byte/word ordering information for this processor.
@@ -260,12 +260,12 @@ class Lisp_O {
 #endif
 #endif
     //! Any class defined here needs to be added to predicates.cc::clos__classp
-    Class_sp   _TheClass;
-    Class_sp   _TheBuiltInClass;
-    Class_sp   _TheStandardClass;
-    Class_sp   _TheStructureClass;
-    Class_sp   _TheDerivableCxxClass;
-    Class_sp   _TheClassRep;
+    Instance_sp   _TheClass;
+    Instance_sp   _TheBuiltInClass;
+    Instance_sp   _TheStandardClass;
+    Instance_sp   _TheStructureClass;
+    Instance_sp   _TheDerivableCxxClass;
+    Instance_sp   _TheClassRep;
     Package_sp _CorePackage;
     Package_sp _KeywordPackage;
     Package_sp _CommonLispPackage;
@@ -310,11 +310,6 @@ class Lisp_O {
 #endif // ifdef CLASP_LONG_FLOAT
     bool _Booted;
     HashTableEq_sp _KnownSignals;
-#if 0
-    // One set of caches for the entire system doesn't work with multi-threading
-        /*! SingleDispatchGenericFunction cache */
-    Cache_sp _SingleDispatchMethodCachePtr;
-#endif
     GCRoots();
   };
 
@@ -327,7 +322,7 @@ class Lisp_O {
   friend T_sp sp_eval_when(List_sp args, T_sp env);
   friend List_sp core__all_source_files();
   template <class oclass>
-  friend void define_base_class(Class_sp co, Class_sp cob, uint &classesUpdated);
+  friend void define_base_class(Instance_sp co, Instance_sp cob, uint &classesUpdated);
   template <class oclass>
   friend T_sp core__put_sysprop(T_sp key, T_sp area, T_sp value);
   friend T_mv core__get_sysprop(T_sp key, T_sp area);
@@ -336,11 +331,6 @@ class Lisp_O {
   //	/* disable scrape */ LISP_CLASS(core,CorePkg,Lisp_O,"Lisp",T_O);
 public:
   static void initializeGlobals(Lisp_sp lisp);
-
-#if 0
-  template <class oclass>
-  friend Class_sp hand_initialize_class(uint &classesHandInitialized, Lisp_sp prog, BuiltInClass_sp c);
-#endif
   
 public:
   static void lisp_initSymbols(Lisp_sp lisp);
@@ -772,15 +762,15 @@ public:
   /*! Lookup a class in the _ClassTable by name
 	 If errorp == true then throw an exception if the class is not
 	found otherwise return nil */
-  Class_sp boot_findClass(Symbol_sp className, bool errorp = true) const;
+  Instance_sp boot_findClass(Symbol_sp className, bool errorp = true) const;
   /*! associate a class in the _ClassTable by name */
-  Class_sp boot_setf_findClass(Symbol_sp className, Class_sp mc);
+  Instance_sp boot_setf_findClass(Symbol_sp className, Instance_sp mc);
 
   /*! Move all _BootClassTable class definitions into a hash-table in *class-name-hash-table* */
   void switchToClassNameHashTable();
 
-  //	Class_sp classFromClassSymbol(Symbol_sp cid) const;
-  Class_sp classFromClassName(const string &name);
+  //	Instance_sp classFromClassSymbol(Symbol_sp cid) const;
+  Instance_sp classFromClassName(const string &name);
   string classNameFromClassSymbol(Symbol_sp cid);
 
 public:
@@ -949,7 +939,7 @@ public:
   string getMethodName(uint methodId);
   uint getMethodId(const string &methodName);
 
-  //	Function_sp	lookupMethod(Symbol_sp, Class_sp classSymbol, T_sp receiver );
+  //	Function_sp	lookupMethod(Symbol_sp, Instance_sp classSymbol, T_sp receiver );
 
 public:
   void addToStarModulesStar(Symbol_sp sym);
@@ -970,9 +960,9 @@ public:
   //!Wipes out namespace and fills it with new values
   void initializeEnvironment();
 
-  void addClassNameToPackageAsDynamic(const string &package, const string &name, Class_sp cl);
+  void addClassNameToPackageAsDynamic(const string &package, const string &name, Instance_sp cl);
   void addClassSymbol(Symbol_sp classSymbol, Creator_sp creator, Symbol_sp base1ClassSymbol ); //, Symbol_sp base2ClassSymbol = UNDEFINED_SYMBOL, Symbol_sp base3ClassSymbol = UNDEFINED_SYMBOL);
-//  void addClass(Symbol_sp classSymbol, Class_sp theClass);
+//  void addClass(Symbol_sp classSymbol, Instance_sp theClass);
   //	void addClass( Symbol_sp classSymbol);
 
   string __repr__() const;

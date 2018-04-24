@@ -104,7 +104,7 @@ public:
     printf("%s:%d:%s  create class\n", __FILE__, __LINE__, __FUNCTION__ );
   };
 
- ClassRep_O(core::Class_sp c) : Instance_O(c) {
+ ClassRep_O(core::Instance_sp c) : Instance_O(c) {
     printf("%s:%d:%s  create class\n", __FILE__, __LINE__, __FUNCTION__ );
   };
 

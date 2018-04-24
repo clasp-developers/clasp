@@ -35,25 +35,25 @@ THE SOFTWARE.
 
 namespace core {
 
-CxxClass_sp CxxInstance_O::create(Symbol_sp instanceClassSymbol) {
-  LOG(BF("Creating CxxInstance_O instanceClassSymbol=%d") % instanceClassSymbol);
-  GC_ALLOCATE(CxxInstance_O, oclass);
+CxxClass_sp CxxClass_O::create(Symbol_sp instanceClassSymbol) {
+  LOG(BF("Creating CxxClass_O instanceClassSymbol=%d") % instanceClassSymbol);
+  GC_ALLOCATE(CxxClass_O, oclass);
   oclass->setName(instanceClassSymbol);
   return ((oclass));
 }
 
-CxxClass_sp CxxInstance_O::createUncollectable(gctools::Stamp is) {
-  GC_ALLOCATE_UNCOLLECTABLE(CxxInstance_O, oclass, is);
+CxxClass_sp CxxClass_O::createUncollectable(gctools::Stamp is) {
+  GC_ALLOCATE_UNCOLLECTABLE(CxxClass_O, oclass, is);
   return ((oclass));
 }
 
 #if defined(XML_ARCHIVE)
-void CxxInstance_O::archive(ArchiveP node) {
+void CxxClass_O::archive(ArchiveP node) {
   IMPLEMENT_ME();
 }
 #endif // defined(XML_ARCHIVE)
 
-void CxxInstance_O::initialize() {
+void CxxClass_O::initialize() {
   DEPRECATED();
   this->Base::initialize();
   this->initializeSlots(REF_NUMBER_OF_SLOTS_IN_CLASSES);
@@ -63,11 +63,11 @@ void CxxInstance_O::initialize() {
 
 /* See the description in object.cc Instance_O::describe
  */
-void CxxInstance_O::describe(T_sp stream) {
+void CxxClass_O::describe(T_sp stream) {
   stringstream ss;
   ss << (BF("-------------  Class name: %s") % _rep_(this->name())).str(); //InstanceClassSymbol );
   for (auto cur : this->directSuperclasses()) {
-    ss << (BF("Base class: %s") % _rep_((gc::As<Class_sp>(oCar(cur)))->_className())).str();
+    ss << (BF("Base class: %s") % _rep_((gc::As<Instance_sp>(oCar(cur)))->_className())).str();
   }
   ss << (BF("%s") % this->dumpInfo()).str();
   clasp_write_string(ss.str(), stream);

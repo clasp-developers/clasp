@@ -136,7 +136,7 @@ CL_DOCSTRING("classp");
 CL_DEFUN bool core__built_in_class_p(T_sp obj) {
   if (!clos__classp(obj))
     return false;
-  Class_sp c = gc::As<Class_sp>(obj);
+  Instance_sp c = gc::As<Instance_sp>(obj);
   return c->builtInClassP();
 };
 

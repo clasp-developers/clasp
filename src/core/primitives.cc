@@ -1121,8 +1121,8 @@ CL_DEFUN T_mv cl__null(T_sp obj) {
 CL_LAMBDA(obj);
 CL_DECLARE();
 CL_DOCSTRING("return class of object - see CLHS");
-CL_DEFUN Class_sp cl__class_of(T_sp obj) {
-  Class_sp result = lisp_instance_class(obj);
+CL_DEFUN Instance_sp cl__class_of(T_sp obj) {
+  Instance_sp result = lisp_instance_class(obj);
   return (result);
 }
 
@@ -1799,7 +1799,7 @@ CL_DEFUN Symbol_mv core__type_to_symbol(T_sp x) {
 
 T_sp type_of_decide_class(T_sp cl) {
   // Return the name of the class if it's a proper name, or else the class.
-  Class_sp mcl = gc::As<Class_sp>(cl);
+  Instance_sp mcl = gc::As<Instance_sp>(cl);
   T_sp type = mcl->_className();
   Symbol_sp st = gc::As<Symbol_sp>(type);
   // Only use the class-name as a type if it's the proper name of the class.

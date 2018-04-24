@@ -701,7 +701,7 @@ NOINLINE void set_one_static_class_Header() {
 
 
 template <class TheClass>
-NOINLINE  gc::smart_ptr<core::Instance_O> allocate_one_metaclass(Fixnum theStamp, core::Symbol_sp classSymbol, core::Class_sp metaClass)
+NOINLINE  gc::smart_ptr<core::Instance_O> allocate_one_metaclass(Fixnum theStamp, core::Symbol_sp classSymbol, core::Instance_sp metaClass)
 {
   auto cb = gctools::GC<TheClass>::allocate();
   gc::smart_ptr<core::Instance_O> class_val = core::Instance_O::createClassUncollectable(theStamp,metaClass,REF_CLASS_NUMBER_OF_SLOTS_IN_STANDARD_CLASS,cb);
@@ -715,7 +715,7 @@ NOINLINE  gc::smart_ptr<core::Instance_O> allocate_one_metaclass(Fixnum theStamp
 
 
 template <class TheClass>
-NOINLINE  gc::smart_ptr<core::Instance_O> allocate_one_class(core::Class_sp metaClass)
+NOINLINE  gc::smart_ptr<core::Instance_O> allocate_one_class(core::Instance_sp metaClass)
 {
   gctools::smart_ptr<core::BuiltInObjectCreator<TheClass>> cb = gctools::GC<core::BuiltInObjectCreator<TheClass>>::allocate();
   TheClass::set_static_creator(cb);

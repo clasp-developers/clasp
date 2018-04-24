@@ -44,7 +44,7 @@ namespace core {
     LISP_CLASS(core,CorePkg,ExternalObject_O,"ExternalObject",General_O);
 
   private:
-    Class_sp _Class;
+    Instance_sp _Class;
 
   public:
     virtual bool eql_(T_sp obj) const;
@@ -87,7 +87,7 @@ public:                                                                         
 public:                                                                                                 \
   /*Derived from StandardObject so it supports slots*/                                                  \
   static bool static_supportsSlots() { return true; };                                                  \
-  virtual core::Class_sp __class() const {                                                              \
+  virtual core::Instance_sp __class() const {                                                              \
     return aClass::static_class;                                                                        \
   }
 

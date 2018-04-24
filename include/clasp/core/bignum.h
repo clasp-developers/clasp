@@ -42,7 +42,7 @@ public: // Simple default ctor/dtor
   DEFAULT_CTOR_DTOR(Bignum_O);
 
 public: // ctor/dtor for classes with shared virtual base
-        //    explicit Bignum_O(core::Class_sp const& mc) : T_O(mc), Integer(mc) {};
+        //    explicit Bignum_O(core::Instance_sp const& mc) : T_O(mc), Integer(mc) {};
         //    virtual ~Bignum_O() {};
 public:
   //	void initialize();

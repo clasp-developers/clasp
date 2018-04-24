@@ -71,7 +71,7 @@ namespace core {
     
   public: // ctor/dtor for classes with shared virtual base
   Instance_O() : _Sig(_Unbound<T_O>()), _Class(_Nil<Instance_O>()), _Rack(_Nil<T_O>()) {};
-    explicit Instance_O(Class_sp metaClass) :
+    explicit Instance_O(Instance_sp metaClass) :
       _Sig(_Unbound<T_O>())
       ,_Class(metaClass)
         ,_Rack(_Nil<T_O>())
@@ -85,14 +85,14 @@ namespace core {
     // _Class (matches offset of FuncallableInstance_O)
     // _Rack  (matches offset of FuncallableInstance_O)
     T_sp _Sig;
-    Class_sp _Class;
+    Instance_sp _Class;
     SimpleVector_sp _Rack;
   /*! Mimicking ECL instance->sig generation signature
         This is pointed to the class slots in case they change 
         - then the instances can be updated*/
   public:
-    static Instance_sp createClassUncollectable(gctools::Stamp is,Class_sp metaClass, size_t number_of_slots, Creator_sp creator);
-    static Class_sp create(Symbol_sp symbol,Class_sp metaClass,Creator_sp creator);
+    static Instance_sp createClassUncollectable(gctools::Stamp is,Instance_sp metaClass, size_t number_of_slots, Creator_sp creator);
+    static Instance_sp create(Symbol_sp symbol,Instance_sp metaClass,Creator_sp creator);
   
   /*! Setup the instance nil value */
   //	void setupInstanceNil();
@@ -128,10 +128,10 @@ namespace core {
     return this->isSubClassOf(lisp_classFromClassSymbol(oclass::static_classSymbol()));
   }
 
-    void accumulateSuperClasses(HashTableEq_sp supers, VectorObjects_sp arrayedSupers, Class_sp mc);
+    void accumulateSuperClasses(HashTableEq_sp supers, VectorObjects_sp arrayedSupers, Instance_sp mc);
     void lowLevel_calculateClassPrecedenceList();
 
-    virtual bool isSubClassOf(Class_sp mc) const;
+    virtual bool isSubClassOf(Instance_sp mc) const;
 
     string getPackagedName() const;
     string instanceClassName() { return this->getPackagedName(); };
@@ -177,9 +177,9 @@ namespace core {
   /*! Return number of slots if not nil otherwise nil */
     T_sp oinstancep() const;
 
-    Class_sp _instanceClass() const { return this->_Class; };
+    Instance_sp _instanceClass() const { return this->_Class; };
 
-    T_sp instanceClassSet(Class_sp mc);
+    T_sp instanceClassSet(Instance_sp mc);
 
     virtual T_sp instanceSigSet();
     virtual T_sp instanceSig() const;
@@ -244,7 +244,7 @@ namespace gctools {
 };
 
 namespace core {
-  T_sp core__allocate_new_instance(Class_sp theClass, size_t numberOfSlots);
+  T_sp core__allocate_new_instance(Instance_sp theClass, size_t numberOfSlots);
 };
 
 namespace core {

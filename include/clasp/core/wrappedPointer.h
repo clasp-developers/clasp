@@ -39,11 +39,11 @@ class WrappedPointer_O : public core::General_O {
   LISP_CLASS(core, CorePkg, WrappedPointer_O, "WrappedPointer",core::General_O);
 GCPROTECTED:
   gctools::Fixnum Stamp_;
-  core::Class_sp Class_;
+  core::Instance_sp Class_;
 
 public:
-  virtual core::Class_sp _instanceClass() const { return this->Class_; };
-  virtual T_sp _instanceClassSet(Class_sp mc);
+  virtual core::Instance_sp _instanceClass() const { return this->Class_; };
+  virtual T_sp _instanceClassSet(Instance_sp mc);
   void _setInstanceClassUsingSymbol(core::Symbol_sp classSymbol);
 public:
 CL_LISPIFY_NAME("validp");

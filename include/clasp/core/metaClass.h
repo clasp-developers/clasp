@@ -46,20 +46,18 @@ THE SOFTWARE.
 
 namespace core {
 
-  typedef Instance_sp Class_sp;
-
   Fixnum_sp clasp_make_fixnum(gc::Fixnum v);
   
 
 /*! Class spoofs ECL>>Instance_O classes by doing the following.
 
-  virtual T_sp Instance_O::instanceClass() is overloaded in StandardInstance_O and BuiltInInstance_O
+  virtual T_sp Instance_O::instanceClass() is overloaded in StandardInstance_O and BuiltInClass_O
   and they each return XXXX::___staticClass.
   This should never change because you should never change the meta classes of instances of StandardClass and BuiltInClass
 
-  virtual T_sp Instance_O::instanceSig() is overloaded in StandardInstance_O and BuiltInInstance_O
+  virtual T_sp Instance_O::instanceSig() is overloaded in StandardInstance_O and BuiltInClass_O
   and they each return XXXXClass::___staticClass->slots()
-  This should never change because you should never change the class slots of StandardInstance_O or BuiltInInstance_O
+  This should never change because you should never change the class slots of StandardInstance_O or BuiltInClass_O
 
   
 */

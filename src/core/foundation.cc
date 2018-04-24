@@ -143,15 +143,15 @@ core::Symbol_sp lisp_classSymbolFromClassId(class_id cid) {
 
 namespace core {
 
-Class_sp lisp_built_in_class() {
+Instance_sp lisp_built_in_class() {
   return _lisp->_Roots._TheBuiltInClass;
 //  return cl__find_class(clbind::_sym_built_in_class,false,_Nil<T_O>());
 }
-Class_sp lisp_class_rep_class() {
+Instance_sp lisp_class_rep_class() {
   return _lisp->_Roots._TheClassRep;
   // return cl__find_class(clbind::_sym_ClassRep_O,false,_Nil<T_O>());
 }
-Class_sp lisp_standard_class() {
+Instance_sp lisp_standard_class() {
   return _lisp->_Roots._TheStandardClass;
   // return cl__find_class(cl::_sym_standard_class,false,_Nil<T_O>());
 }
@@ -689,7 +689,7 @@ string symbol_repr(Symbol_sp sym) {
 /* If o is an instance of Instance_O or Instance_O then it returns o->_instanceClass()
        Otherwise it returns lisp_static_class(o)
     */
-Class_sp lisp_instance_class(T_sp o) {
+Instance_sp lisp_instance_class(T_sp o) {
   T_sp tc;
   if (o.fixnump()) {
     tc = core::Fixnum_dummy_O::static_class;
@@ -712,10 +712,10 @@ Class_sp lisp_instance_class(T_sp o) {
   } else {
     SIMPLE_ERROR(BF("Add support for unknown (immediate?) object to lisp_instance_class obj = %p") % (void*)(o.raw_()));
   }
-  return gc::As_unsafe<Class_sp>(tc);
+  return gc::As_unsafe<Instance_sp>(tc);
 }
 
-Class_sp lisp_static_class(T_sp o) {
+Instance_sp lisp_static_class(T_sp o) {
   if ( o.generalp() ) {
     General_sp go(o.unsafe_general());
     if (go.nilp()) {
@@ -769,7 +769,7 @@ void lisp_throwUnexpectedType(T_sp offendingObject, Symbol_sp expectedTypeId) {
   SIMPLE_ERROR(BF("Expected %s of class[%s] to be subclass of class[%s]") % _rep_(offendingObject) % _rep_(offendingTypeId) % _rep_(expectedTypeId));
 }
 
-string lisp_classNameAsString(Class_sp c) {
+string lisp_classNameAsString(Instance_sp c) {
   return c->_classNameAsString();
 }
 
@@ -830,13 +830,13 @@ bool lisp_BuiltInClassesInitialized() {
 }
 
 T_sp lisp_boot_findClassBySymbolOrNil(Symbol_sp classSymbol) {
-  Class_sp mc = gc::As<Class_sp>(eval::funcall(cl::_sym_findClass, classSymbol, _lisp->_true()));
+  Instance_sp mc = gc::As<Instance_sp>(eval::funcall(cl::_sym_findClass, classSymbol, _lisp->_true()));
   return mc;
 }
 
 // void lisp_defineInitializationArgumentsForClassSymbol(Lisp_sp lisp, const string& argumentString, uint classSymbol)
 // {
-//     Class_sp mc = lisp->classFromClassSymbol(classSymbol);
+//     Instance_sp mc = lisp->classFromClassSymbol(classSymbol);
 //     mc->__setLambdaListHandlerString(argumentString);
 // }
 
@@ -914,7 +914,7 @@ void lisp_defineSingleDispatchMethod(T_sp name,
                                      int number_of_required_arguments,
                                      const std::set<int> pureOutIndices) {
   string arguments = fix_method_lambda(classSymbol,raw_arguments);
-  Class_sp receiver_class = gc::As<Class_sp>(eval::funcall(cl::_sym_findClass, classSymbol, _lisp->_true()));
+  Instance_sp receiver_class = gc::As<Instance_sp>(eval::funcall(cl::_sym_findClass, classSymbol, _lisp->_true()));
   Symbol_sp className = receiver_class->_className();
   List_sp ldeclares = lisp_parse_declares(gc::As<Package_sp>(className->getPackage())->getName(), declares);
   // NOTE: We are compiling the llhandler in the package of the class - not the package of the
@@ -980,8 +980,8 @@ string lisp_classNameFromClassSymbol(Symbol_sp classSymbol) {
   return _lisp->classNameFromClassSymbol(classSymbol);
 }
 
-Class_sp lisp_classFromClassSymbol(Symbol_sp classSymbol) {
-  return gc::As<Class_sp>(eval::funcall(cl::_sym_findClass, classSymbol, _lisp->_true()));
+Instance_sp lisp_classFromClassSymbol(Symbol_sp classSymbol) {
+  return gc::As<Instance_sp>(eval::funcall(cl::_sym_findClass, classSymbol, _lisp->_true()));
 }
 
 

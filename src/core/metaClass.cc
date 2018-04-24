@@ -65,15 +65,15 @@ SYMBOL_EXPORT_SC_(CorePkg,cxx_class);
 
 namespace core {
 
-gc::Nilable<Class_sp> identifyCxxDerivableAncestorClass(Class_sp aClass) {
+gc::Nilable<Instance_sp> identifyCxxDerivableAncestorClass(Instance_sp aClass) {
   if (aClass->cxxClassP()) {
     if (aClass->cxxDerivableClassP()) {
       return aClass;
     }
   }
   for (auto supers : aClass->directSuperclasses()) {
-    Class_sp aSuperClass = gc::As<Class_sp>(oCar(supers));
-    gc::Nilable<Class_sp> taPossibleCxxDerivableAncestorClass = identifyCxxDerivableAncestorClass(aSuperClass);
+    Instance_sp aSuperClass = gc::As<Instance_sp>(oCar(supers));
+    gc::Nilable<Instance_sp> taPossibleCxxDerivableAncestorClass = identifyCxxDerivableAncestorClass(aSuperClass);
     if (taPossibleCxxDerivableAncestorClass.notnilp())
       return taPossibleCxxDerivableAncestorClass;
   }
@@ -95,19 +95,19 @@ CL_DEFUN T_sp core__compute_instance_creator(T_sp tinstance, T_sp tmetaclass, Li
     Creator_sp funcallableInstanceCreator = gc::GC<FuncallableInstanceCreator_O>::allocate(instance);
     return funcallableInstanceCreator;
   };
-  Class_sp aCxxDerivableAncestorClass_unsafe; // Danger!  Unitialized!
+  Instance_sp aCxxDerivableAncestorClass_unsafe; // Danger!  Unitialized!
 #ifdef DEBUG_CLASS_INSTANCE
   printf("%s:%d:%s   for class -> %s   superclasses -> %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(instance->name()).c_str(), _rep_(superclasses).c_str());
 #endif
   for (auto cur : superclasses) {
     T_sp tsuper = oCar(cur);
-    if (Class_sp aSuperClass = tsuper.asOrNull<Instance_O>() ) {
+    if (Instance_sp aSuperClass = tsuper.asOrNull<Instance_O>() ) {
       if (aSuperClass->cxxClassP() && !aSuperClass->cxxDerivableClassP()) {
         SIMPLE_ERROR(BF("You cannot derive from the non-derivable C++ class %s\n"
                         "any C++ class you want to derive from must inherit from the clbind derivable class") %
                      _rep_(aSuperClass->_className()));
       }
-      gc::Nilable<Class_sp> aPossibleCxxDerivableAncestorClass = identifyCxxDerivableAncestorClass(aSuperClass);
+      gc::Nilable<Instance_sp> aPossibleCxxDerivableAncestorClass = identifyCxxDerivableAncestorClass(aSuperClass);
       if (aPossibleCxxDerivableAncestorClass.notnilp()) {
         if (!aCxxDerivableAncestorClass_unsafe) {
           aCxxDerivableAncestorClass_unsafe = aPossibleCxxDerivableAncestorClass;

@@ -783,8 +783,6 @@ extern void initializePythonScript();
 class Cons_O;
 typedef gctools::smart_ptr<Cons_O> Cons_sp;
 
-typedef gctools::smart_ptr<Instance_O> Class_sp;
- 
  class General_O;
 typedef gctools::smart_ptr<General_O> General_sp;
 
@@ -859,7 +857,7 @@ namespace core {
 
   Lisp_sp lisp_fromObject(T_sp obj);
   string lisp_currentPackageName();
-  string lisp_classNameAsString(Class_sp c);
+  string lisp_classNameAsString(Instance_sp c);
   void lisp_throwUnexpectedType(T_sp offendingObject, Symbol_sp expectedTypeId);
   core::T_sp lisp_false();
   T_sp lisp_ArgArrayToCons(int nargs, ArgArray args);
@@ -872,9 +870,9 @@ namespace core {
   T_sp lisp_lookup_reader_patch(T_sp patches, T_sp key, bool &found);
 //bool lisp_characterP(core::T_sp obj);
   bool lisp_BuiltInClassesInitialized();
-  Class_sp lisp_built_in_class();
-  Class_sp  lisp_standard_class();
-  Class_sp  lisp_class_rep_class();
+  Instance_sp lisp_built_in_class();
+  Instance_sp  lisp_standard_class();
+  Instance_sp  lisp_class_rep_class();
   void lisp_pushClassSymbolOntoSTARallCxxClassesSTAR(Symbol_sp classSymbol);
   void lisp_defparameter(Symbol_sp sym, T_sp val);
   T_sp lisp_symbolValue(Symbol_sp sym);
@@ -891,9 +889,9 @@ namespace core {
 //void lisp_addClassAndInitialize(Symbol_sp classSymbol, gctools::smart_ptr<Creator> cb, Symbol_sp baseClassSymbol1, Symbol_sp baseClassSymbol2 = UNDEFINED_SYMBOL, Symbol_sp baseClassSymbol3 = UNDEFINED_SYMBOL);
   void lisp_throwIfBuiltInClassesNotInitialized();
   string lisp_classNameFromClassSymbol(Symbol_sp classSymbol);
-  Class_sp lisp_classFromClassSymbol(Symbol_sp classSymbol);
-  Class_sp lisp_instance_class(T_sp obj);
-  Class_sp lisp_static_class(T_sp obj);
+  Instance_sp lisp_classFromClassSymbol(Symbol_sp classSymbol);
+  Instance_sp lisp_instance_class(T_sp obj);
+  Instance_sp lisp_static_class(T_sp obj);
   Function_sp lisp_symbolFunction(Symbol_sp sym);
   string lisp_symbolNameAsString(Symbol_sp sym);
   T_sp lisp_createStr(const string &str);

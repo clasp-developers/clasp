@@ -47,7 +47,7 @@ namespace core {
 
 
 SingleDispatchMethod_sp SingleDispatchMethod_O::create(T_sp name,
-                                                       Class_sp receiverClass,
+                                                       Instance_sp receiverClass,
                                                        LambdaListHandler_sp llh,
                                                        List_sp declares,
                                                        gc::Nilable<String_sp> docstr,
