@@ -336,7 +336,7 @@ template <class T>
 
 
   template <class T>
-    ALWAYS_INLINE T untag_general(T ptr) {
+    inline T untag_general(T ptr) {
     GCTOOLS_ASSERT((reinterpret_cast<uintptr_clasp_t>(ptr) & tag_mask) == general_tag);
     return reinterpret_cast<T>(reinterpret_cast<uintptr_clasp_t>(ptr) - general_tag);
   }

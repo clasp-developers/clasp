@@ -42,6 +42,17 @@ THE SOFTWARE.
   #define NO_UNWIND_END()
 #endif
 
+
+#define LINKAGE __attribute__ ((visibility ("default")))
+#ifdef BUILD_FOR_JIT
+#define ALWAYS_INLINE __attribute((always_inline))
+#define BUILTIN_ATTRIBUTES __attribute__((always_inline))
+#else
+#define ALWAYS_INLINE
+#define BUILTIN_ATTRIBUTES
+#endif
+
+
 namespace llvmo {
   extern core::T_sp  global_arg0;
   extern core::T_sp  global_arg1;

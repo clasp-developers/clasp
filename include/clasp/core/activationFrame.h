@@ -360,7 +360,7 @@ namespace core {
   void error_frame_range(const char* type, int index, int capacity );
   void error_end_of_frame_list(const char* message);
 
-  inline ALWAYS_INLINE ActivationFrame_sp value_frame_lookup(ActivationFrame_sp af, int depth)
+  inline ActivationFrame_sp value_frame_lookup(ActivationFrame_sp af, int depth)
   {
     while (true) {
       if (depth == 0 ) return af;
@@ -369,7 +369,7 @@ namespace core {
     }
   };
   
-  inline ALWAYS_INLINE T_sp& value_frame_lookup_reference(ActivationFrame_sp activationFrame, int depth, int index )
+  inline T_sp& value_frame_lookup_reference(ActivationFrame_sp activationFrame, int depth, int index )
   {
     while (true) {
       if ( depth == 0 ) {
@@ -386,7 +386,7 @@ namespace core {
     }
   };
 
-  inline ALWAYS_INLINE T_sp& function_frame_lookup(ActivationFrame_sp activationFrame, int depth, int index )
+  inline T_sp& function_frame_lookup(ActivationFrame_sp activationFrame, int depth, int index )
   {
     while (true) {
       if ( depth == 0 ) {
@@ -405,7 +405,7 @@ namespace core {
     }
   };
 
-  DONT_OPTIMIZE_WHEN_DEBUG_RELEASE inline /*ALWAYS_INLINE*/ T_sp tagbody_frame_lookup(ActivationFrame_sp activationFrame, int depth, int index )
+  DONT_OPTIMIZE_WHEN_DEBUG_RELEASE inline T_sp tagbody_frame_lookup(ActivationFrame_sp activationFrame, int depth, int index )
   {
     while (true) {
       if ( depth == 0 ) {
