@@ -413,10 +413,10 @@
 
 (defmethod cleavir-ir-graphviz:draw-instruction ((instruction indexed-unwind-instruction) stream)
   (format stream "   ~a [label = \"~a\"];~%"
-	  (cleavir-ir-graphviz::instruction-id instruction) (label instruction))
+          (cleavir-ir-graphviz::instruction-id instruction) (cleavir-ir-graphviz:label instruction))
   (format stream "  ~a -> ~a [color = pink, style = dashed];~%"
-	  (cleavir-ir-graphviz::instruction-id instruction)
-	  (gethash (cleavir-ir:invocation instruction) cleavir-ir-graphviz::*instruction-table*)))
+          (cleavir-ir-graphviz::instruction-id instruction)
+          (gethash (cleavir-ir:invocation instruction) cleavir-ir-graphviz::*instruction-table*)))
 
 (defmethod cleavir-ir-graphviz:label ((instruction indexed-unwind-instruction))
   (format nil "indexed-unwind[~a]" (jump-id instruction)))

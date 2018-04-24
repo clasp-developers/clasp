@@ -72,6 +72,12 @@
 ;;;  (setq (clasp-cleavir::*saved-compile-file-info* nil))
   (clasp-cleavir:cleavir-compile-file "sys:tests;ta.lsp" :print nil))
 
+
+(clasp-cleavir:cleavir-compile-file "sys:kernel;lsp;prologue.lsp")
+
+(clasp-cleavir:cleavir-compile-file "sys:tests;tc.lsp")
+
+
 clasp-cleavir::*saved-compile-file-info*
 
 

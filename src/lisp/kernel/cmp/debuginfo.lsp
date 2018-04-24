@@ -126,7 +126,7 @@
 				       "-v" ; 6 compiler flags
 				       1    ; 7 RV run-time version
 				       "the-split-name.log" ; 8 splitname
-                                       :full-debug ; 9 DebugEmissionKind (:full-debug :line-tables-only)
+                                       :line-tables-only ; 9 DebugEmissionKind (:full-debug :line-tables-only)
                                        0 ; 10 DWOld
                                        t ; 11 SplitDebugInlining
                                        nil ; 12 DebugInfoForProfiling
