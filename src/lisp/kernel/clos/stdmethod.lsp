@@ -52,17 +52,12 @@
 #+threads
 (defun intern-eql-specializer (object)
   (let ((table *eql-specializer-hash*))
-    (mp:with-lock (*eql-specializer-lock*)
-      (or (gethash object table nil)
-	  (setf (gethash object table)
-		(make-instance 'eql-specializer :object object))))))
-
-#-threads
-(defun intern-eql-specializer (object)
-  (let ((table *eql-specializer-hash*))
-    (or (gethash object table nil)
-	(setf (gethash object table)
-	      (make-instance 'eql-specializer :object object)))))
+    (flet ((get-it ()
+             (or (gethash object table nil)
+                 (setf (gethash object table)
+                       (make-instance 'eql-specializer :object object)))))
+      #+threads (mp:with-lock (*eql-specializer-lock*) (get-it))
+      #-threads (get-it))))
 
 (defmethod add-direct-method ((spec specializer) (method method))
   (pushnew method (specializer-direct-methods spec))
