@@ -748,16 +748,6 @@ private:
   static void finalizeSpecialSymbols();
 
 public:
-#if 0
-	/*! Lookup a generic-function in the _GenericFunctionTable by name
-	 If errorp == true then throw an exception if the generic-function is not
-	 found otherwise return nil */
-	GenericFunction_sp findGenericFunction(Symbol_sp gfSym, bool errorp=true) const;
-	/*! Associate a generic function with a symbol by name */
-	GenericFunction_sp setf_findGenericFunction(Symbol_sp gfSym, GenericFunction_sp gf);
-	/*! Clear all generic functions */
-	void forgetAllGenericFunctions();
-#endif
 
   /*! Lookup a class in the _ClassTable by name
 	 If errorp == true then throw an exception if the class is not
@@ -794,9 +784,6 @@ public:
   //
   void initializePackages();
 
-public: // Functions for generating errors to THROW
-  T_sp error(const boost::format &fmt);
-
 public: // Functions for manipulating special forms
   Symbol_sp defineSpecialOperator(const string &package, const string &formName, SpecialFormCallback cb, const string &args = "", const string &docstring = "");
   T_sp specialFormOrNil(Symbol_sp sym);
@@ -808,10 +795,7 @@ public:
   int getRequireLevel() { return this->_RequireLevel; };
   void pushRequireLevel() { this->_RequireLevel++; };
   void popRequireLevel() { this->_RequireLevel--; };
-#if 0 // moved condition handlers into the environment
-	void 	pushConditionHandlers(List_sp handlers);
-	void	popConditionHandlers();
-#endif
+
   /*! Install a package using the newer Exposer idiom */
   void installPackage(const Exposer_O *package);
   /*! Create nils for all classes that don't have them yet */

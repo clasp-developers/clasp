@@ -923,11 +923,6 @@ void Lisp_O::defconstant(Symbol_sp sym, T_sp obj) {
   sym->setReadOnly(true);
 }
 
-T_sp Lisp_O::error(const boost::format &fmt) {
-  _OF();
-  return CandoException_O::create(fmt.str());
-}
-
 Symbol_sp Lisp_O::errorUndefinedSymbol(const char *sym) {
   _OF();
   stringstream ss;

@@ -31,7 +31,6 @@ THE SOFTWARE.
 #include <clasp/core/common.h>
 #include <clasp/core/numbers.h>
 #include <clasp/core/symbol.h>
-#include <clasp/core/conditions.h>
 #include <clasp/core/hashTable.h>
 #include <clasp/core/bignum.h>
 #include <clasp/core/wrappers.h>

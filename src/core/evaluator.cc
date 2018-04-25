@@ -47,7 +47,6 @@ THE SOFTWARE.
 #include <clasp/core/backquote.h>
 #include <clasp/core/sysprop.h>
 #include <clasp/core/hashTableEq.h>
-#include <clasp/core/conditions.h>
 #include <clasp/core/multipleValues.h>
 #include <clasp/core/primitives.h>
 #include <clasp/core/array.h>

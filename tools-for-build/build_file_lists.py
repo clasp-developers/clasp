@@ -95,7 +95,6 @@ SRC_CORE_FILES = \
         'bootStrapCoreSymbolMap',
         'cons',
         'symbol',
-        'conditions',
         'object',
         'arguments',
         'pointer',

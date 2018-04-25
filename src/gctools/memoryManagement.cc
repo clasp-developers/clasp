@@ -419,10 +419,6 @@ int handleFatalCondition() {
   } catch (core::TerminateProgramIfBatch &ee) {
     // Do nothing
     printf("Caught TerminateProgramIfBatch in %s:%d\n", __FILE__, __LINE__);
-  } catch (core::Condition &ee) {
-    IMPLEMENT_MEF("Figure out what to do if we catch a Condition");
-    //        printf("Caught Condition at %s:%d - %s\n", __FILE__, __LINE__, ee.message().c_str() );
-    //        printf("Stack trace:\n%s", ee.conditionObject()->getStackTraceDump().c_str() );
   } catch (core::CatchThrow &ee) {
     _lisp->print(BF("%s:%d Uncaught THROW frame[%s] - this should NEVER happen - the stack should never be unwound unless there is a CATCH clause that matches the THROW") % __FILE__ % __LINE__ % ee.getFrame());
   } catch (core::Unwind &ee) {

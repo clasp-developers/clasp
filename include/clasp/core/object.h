@@ -665,7 +665,6 @@ namespace core {
 #include <clasp/core/glue.h>
 
 
-#include <clasp/core/conditions.h>
 
 #include <clasp/core/array.h>
 #include <clasp/core/instance.h>

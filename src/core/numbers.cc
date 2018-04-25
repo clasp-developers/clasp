@@ -40,7 +40,6 @@ THE SOFTWARE.
 #include <clasp/core/symbol.h>
 #include <clasp/core/bignum.h>
 #include <clasp/core/evaluator.h>
-#include <clasp/core/conditions.h>
 #include <clasp/core/cleavirPrimopsPackage.fwd.h>
 #include <clasp/core/hashTable.h>
 #include <clasp/core/mathDispatch.h>

@@ -64,7 +64,6 @@ THE SOFTWARE.
 //#i n c l u d e "setfExpander.h"
 #include <clasp/core/environment.h>
 #include <clasp/core/primitives.h>
-#include <clasp/core/conditions.h>
 
 #ifdef darwin
 #include <stdint.h>
@@ -1153,17 +1152,6 @@ void lisp_debugLogWrite(char const *fileName, const char *functionName, uint lin
   _lisp->debugLog().endNode(DEBUG_LOG);
 }
 
-void lisp_logException(const char *file, const char *fn, int line, const char *structure, T_sp condition) {
-  string message;
-  if (CandoException_sp ce = condition.asOrNull<CandoException_O>()) {
-    message = ce->message();
-  } else {
-    message = _rep_(condition);
-  }
-  _lisp->debugLog().beginNode(DEBUG_EXCEPTION, file, fn, line, 0, message);
-  _lisp->debugLog().endNode(DEBUG_EXCEPTION);
-}
-
 string concatenateVectorStrings(VectorStrings strs) {
   string conc;
   VectorStrings::iterator vs;
@@ -1365,7 +1353,6 @@ struct ErrorSimpleDepthCounter {
     }
     LispDebugger dbg;
     dbg.invoke();
-    //	    af_error(CandoException_O::create(ss.str()),_Nil<T_O>());
   }
   SYMBOL_EXPORT_SC_(ClPkg, programError);
   eval::funcall(_sym_signalSimpleError,
@@ -1395,7 +1382,6 @@ NOINLINE void lisp_error_simple(const char *functionName, const char *fileName, 
     }
     LispDebugger dbg;
     dbg.invoke();
-    //	    af_error(CandoException_O::create(ss.str()),_Nil<T_O>());
   }
   SYMBOL_EXPORT_SC_(ClPkg, programError);
   eval::funcall(_sym_signalSimpleError,
@@ -1413,7 +1399,6 @@ NOINLINE void lisp_error_simple(const char *functionName, const char *fileName, 
     printf("%s:%d lisp_error ->\n %s\n", __FILE__, __LINE__, ss.str().c_str());
     LispDebugger dbg;
     dbg.invoke();
-    //	    af_error(CandoException_O::create(ss.str()),_Nil<T_O>());
   }
   eval::applyLastArgsPLUSFirst(cl::_sym_error, arguments, datum);
   UNREACHABLE();

@@ -34,7 +34,6 @@ THE SOFTWARE.
 #endif
 #include <clasp/core/object.h>
 #include <clasp/core/lisp.h>
-#include <clasp/core/conditions.h>
 #include <clasp/core/arguments.h>
 #include <clasp/core/myReadLine.h>
 #include <clasp/core/symbolTable.h>
