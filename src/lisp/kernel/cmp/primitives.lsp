@@ -229,7 +229,7 @@
     (primitive         "cc_setTmvToNil" %void% (list %tmv*%))
     (primitive         "cc_precalcSymbol" %t*% (list %ltv**% %size_t%))
     (primitive         "cc_precalcValue" %t*% (list %ltv**% %size_t%))
-    (primitive         "cc_makeCell" %t*% nil)
+    (primitive-unwinds "cc_makeCell" %t*% nil)
     (primitive         "cc_writeCell" %void% (list %t*% %t*%))
     (primitive         "cc_readCell" %t*% (list %t*%))
     (primitive         "cc_t_reference" %t**% nil)
