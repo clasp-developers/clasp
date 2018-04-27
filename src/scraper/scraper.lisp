@@ -48,10 +48,8 @@
                    (format *error-output* "error line: ~a~%" line)
                    (sb-sys:os-exit 1)))))
     (unless (eql exit-code 0)
-      (error "Clang ded")
-      #+(or)
-      (error "Clang returned with exit code: ~A~%the command was: ~{~A~^ ~}~%"
-             exit-code command))
+      (error "Clang returned with exit code: ~a~%the command was: ~{~a~^ ~}~%stdout: ~s~%stderr: ~s~%"
+             exit-code command stdout stderr))
     (make-instance 'buffer-stream
                    :buffer stdout
                    :buffer-pathname output-file-path
