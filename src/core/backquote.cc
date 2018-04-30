@@ -316,7 +316,7 @@ CL_DEFUN T_sp core__backquote_simplify_args(T_sp x) {
                  core__notany_list(_sym_backquote_splicing_frob, Cons_O::create(oCdar(args))).isTrue()) {
         List_sp rev1 = cl__reverse(oCdar(args));
         List_sp rev2 = cl__reverse(oCdr(rev1));
-        List_sp car_last_car_args = oCar(cl__last(head));
+        List_sp car_last_car_args = oCar(cl__last(head, make_fixnum(1)));
         result = core__backquote_attach_conses(rev2,
                                                core__backquote_attach_append(_sym_STARbq_appendSTAR,
                                                                              car_last_car_args,
