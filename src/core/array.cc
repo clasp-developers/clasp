@@ -26,6 +26,8 @@ THE SOFTWARE.
 /* -^- */
 //#define DEBUG_LEVEL_FULL
 
+#include <stdio.h>
+#include <string.h>
 #include <clasp/core/foundation.h>
 #include <clasp/core/common.h>
 #include <clasp/core/corePackage.h>
@@ -39,6 +41,7 @@ THE SOFTWARE.
 #include <clasp/core/lispStream.h>
 #include <clasp/core/array.h>
 #include <clasp/core/character.h>
+#include <clasp/core/fli.h>
 #include <clasp/core/wrappers.h>
 
 /*! Adding a new specialized array
@@ -2568,104 +2571,73 @@ CL_DEFUN T_sp core__default_initial_element(T_sp element_type) {
   else SIMPLE_ERROR(BF("Unknown element type %s") % _rep_(element_type));
 }
 
-CL_LAMBDA(dimension initial_element);
-CL_DOCSTRING("Make a (simple-array t (*)).");
-CL_DEFUN Vector_sp core__make_simple_vector_t(size_t dimension, T_sp initialElement) {
-  return SimpleVector_O::make(dimension, SimpleVector_O::from_object(initialElement), true);
+CL_LAMBDA(dimension initial_element initial_element_supplied_p);
+CL_DECLARE();
+CL_DOCSTRING("Make a (simple-vector t)");
+CL_DEFUN SimpleVector_sp core__make_simple_vector_t(size_t dimension,
+                                                    T_sp initialElement, bool initialElementSuppliedP) {
+  (void)initialElementSuppliedP; // ignore. what is going on with iesp in gctools?
+  return SimpleVector_O::make(dimension, initialElement, true);
 }
 
-CL_LAMBDA(dimension initial_element);
-CL_DOCSTRING("Make a simple-bit-vector.");
-CL_DEFUN Vector_sp core__make_simple_vector_bit(size_t dimension, T_sp initialElement) {
-  return SimpleBitVector_O::make(dimension, SimpleBitVector_O::from_object(initialElement), true);
+#define DEFMAKESIMPLEVECTOR(TYPE, OBJECT, SMART)\
+  CL_LAMBDA(dimension initial_element initial_element_supplied_p);\
+  CL_DECLARE();\
+  CL_DOCSTRING("Make a (simple-vector " #TYPE ")");\
+  CL_DEFUN SMART core__make_simple_vector_##TYPE(size_t dimension, T_sp initialElement, bool initialElementSuppliedP) {\
+  OBJECT::value_type init = OBJECT::initial_element_from_object(initialElement, initialElementSuppliedP);\
+  return OBJECT::make(dimension, init, initialElementSuppliedP);\
+  }
+
+DEFMAKESIMPLEVECTOR(bit, SimpleBitVector_O, SimpleBitVector_sp);
+DEFMAKESIMPLEVECTOR(base_char, SimpleBaseString_O, SimpleBaseString_sp);
+DEFMAKESIMPLEVECTOR(character, SimpleCharacterString_O, SimpleCharacterString_sp);
+DEFMAKESIMPLEVECTOR(single_float, SimpleVectorFloat_O, SimpleVectorFloat_sp);
+DEFMAKESIMPLEVECTOR(double_float, SimpleVectorDouble_O, SimpleVectorDouble_sp);
+DEFMAKESIMPLEVECTOR(int8, SimpleVector_int8_t_O, SimpleVector_int8_t_sp);
+DEFMAKESIMPLEVECTOR(byte8, SimpleVector_byte8_t_O, SimpleVector_byte8_t_sp);
+DEFMAKESIMPLEVECTOR(int16, SimpleVector_int16_t_O, SimpleVector_int16_t_sp);
+DEFMAKESIMPLEVECTOR(byte16, SimpleVector_byte16_t_O, SimpleVector_byte16_t_sp);
+DEFMAKESIMPLEVECTOR(int32, SimpleVector_int32_t_O, SimpleVector_int32_t_sp);
+DEFMAKESIMPLEVECTOR(byte32, SimpleVector_byte32_t_O, SimpleVector_byte32_t_sp);
+DEFMAKESIMPLEVECTOR(int64, SimpleVector_int64_t_O, SimpleVector_int64_t_sp);
+DEFMAKESIMPLEVECTOR(byte64, SimpleVector_byte64_t_O, SimpleVector_byte64_t_sp);
+DEFMAKESIMPLEVECTOR(fixnum, SimpleVector_fixnum_O, SimpleVector_fixnum_sp);
+DEFMAKESIMPLEVECTOR(size_t, SimpleVector_size_t_O, SimpleVector_size_t_sp);
+
+CL_LAMBDA(dimensions initial_element initial_element_supplied_p);
+CL_DECLARE();
+CL_DOCSTRING("Make a (simple-array t) that is not a vector");
+CL_DEFUN SimpleMDArrayT_sp core__make_simple_mdarray_t(List_sp dimensions,
+                                                       T_sp initialElement, bool initialElementSuppliedP) {
+  (void)initialElementSuppliedP;
+  return SimpleMDArrayT_O::make_multi_dimensional(dimensions,initialElement,_Nil<T_O>());
 }
 
-CL_LAMBDA(dimension initial_element);
-CL_DOCSTRING("Make a simple-base-string.");
-CL_DEFUN Vector_sp core__make_simple_vector_base_char(size_t dimension, T_sp initialElement) {
-  return SimpleBaseString_O::make(dimension, SimpleBaseString_O::from_object(initialElement), true);
-}
+#define DEFMAKESIMPLEMDARRAY(TYPE, OBJECT, SMART, SIMPLE)\
+  CL_LAMBDA(dimension initial_element initial_element_supplied_p);\
+  CL_DECLARE();\
+  CL_DOCSTRING("Make a (simple-array " #TYPE ") that is not a vector");\
+  CL_DEFUN SMART core__make_simple_mdarray_##TYPE(List_sp dimensions, T_sp initialElement, bool initialElementSuppliedP) {\
+  SIMPLE::value_type init = SIMPLE::initial_element_from_object(initialElement, initialElementSuppliedP);\
+  return OBJECT::make_multi_dimensional(dimensions, initialElement, _Nil<T_O>());\
+  }
 
-CL_LAMBDA(dimension initial_element);
-CL_DOCSTRING("Make a (simple-array character (*)).");
-CL_DEFUN Vector_sp core__make_simple_vector_character(size_t dimension, T_sp initialElement) {
-  return SimpleCharacterString_O::make(dimension, SimpleCharacterString_O::from_object(initialElement), true);
-}
-
-CL_LAMBDA(dimension initial_element);
-CL_DOCSTRING("Make a (simple-array double-float (*)).");
-CL_DEFUN Vector_sp core__make_simple_vector_double_float(size_t dimension, T_sp initialElement) {
-  return SimpleVectorDouble_O::make(dimension, SimpleVectorDouble_O::from_object(initialElement), true);
-}
-
-CL_LAMBDA(dimension initial_element);
-CL_DOCSTRING("Make a (simple-array single-float (*)).");
-CL_DEFUN Vector_sp core__make_simple_vector_single_float(size_t dimension, T_sp initialElement) {
-  return SimpleVectorFloat_O::make(dimension, SimpleVectorFloat_O::from_object(initialElement), true);
-}
-
-CL_LAMBDA(dimension initial_element);
-CL_DOCSTRING("Make a (simple-array ext:int8 (*)).");
-CL_DEFUN Vector_sp core__make_simple_vector_int8(size_t dimension, T_sp initialElement) {
-  return SimpleVector_int8_t_O::make(dimension, SimpleVector_int8_t_O::from_object(initialElement), true);
-}
-
-CL_LAMBDA(dimension initial_element);
-CL_DOCSTRING("Make a (simple-array ext:byte8 (*)).");
-CL_DEFUN Vector_sp core__make_simple_vector_byte8(size_t dimension, T_sp initialElement) {
-  return SimpleVector_byte8_t_O::make(dimension, SimpleVector_byte8_t_O::from_object(initialElement), true);
-}
-
-CL_LAMBDA(str);
-CL_DOCSTRING("Make a (simple-array ext:byte8 (*)) from a base-char-string.");
-CL_DEFUN Vector_sp core__make_simple_vector_byte8_from_base_string(const std::string& str) {
-  return SimpleVector_byte8_t_O::make(str.size(), 0, false, str.size(), (const unsigned char*)&str[0]);
-}
-
-CL_LAMBDA(dimension initial_element);
-CL_DOCSTRING("Make a (simple-array ext:int16 (*)).");
-CL_DEFUN Vector_sp core__make_simple_vector_int16(size_t dimension, T_sp initialElement) {
-  return SimpleVector_int16_t_O::make(dimension, SimpleVector_int16_t_O::from_object(initialElement), true);
-}
-
-CL_LAMBDA(dimension initial_element);
-CL_DOCSTRING("Make a (simple-array ext:byte16 (*)).");
-CL_DEFUN Vector_sp core__make_simple_vector_byte16(size_t dimension, T_sp initialElement) {
-  return SimpleVector_byte16_t_O::make(dimension, SimpleVector_byte16_t_O::from_object(initialElement), true);
-}
-
-CL_LAMBDA(dimension initial_element);
-CL_DOCSTRING("Make a (simple-array ext:int32 (*)).");
-CL_DEFUN Vector_sp core__make_simple_vector_int32(size_t dimension, T_sp initialElement) {
-  return SimpleVector_int32_t_O::make(dimension, SimpleVector_int32_t_O::from_object(initialElement), true);
-}
-
-CL_LAMBDA(dimension initial_element);
-CL_DOCSTRING("Make a (simple-array ext:byte32 (*)).");
-CL_DEFUN Vector_sp core__make_simple_vector_byte32(size_t dimension, T_sp initialElement) {
-  return SimpleVector_byte32_t_O::make(dimension, SimpleVector_byte32_t_O::from_object(initialElement), true);
-}
-
-CL_LAMBDA(dimension initial_element);
-CL_DOCSTRING("Make a (simple-array ext:int64 (*)).");
-CL_DEFUN Vector_sp core__make_simple_vector_int64(size_t dimension, T_sp initialElement) {
-  return SimpleVector_int64_t_O::make(dimension, SimpleVector_int64_t_O::from_object(initialElement), true);
-}
-
-CL_LAMBDA(dimension initial_element);
-CL_DOCSTRING("Make a (simple-array ext:byte64 (*)).");
-CL_DEFUN Vector_sp core__make_simple_vector_byte64(size_t dimension, T_sp initialElement) {
-  return SimpleVector_byte64_t_O::make(dimension, SimpleVector_byte64_t_O::from_object(initialElement), true);
-}
-
-// TODO: size_t?
-
-CL_LAMBDA(dimension initial_element);
-CL_DOCSTRING("Make a (simple-array fixnum (*))");
-CL_DEFUN Vector_sp core__make_simple_vector_fixnum(size_t dimension, T_sp initialElement) {
-  return SimpleVector_fixnum_O::make(dimension, SimpleVector_fixnum_O::from_object(initialElement), true);
-}
-
+DEFMAKESIMPLEMDARRAY(bit, SimpleMDArrayBit_O, SimpleMDArrayBit_sp, SimpleBitVector_O);
+DEFMAKESIMPLEMDARRAY(base_char, SimpleMDArrayBaseChar_O, SimpleMDArrayBaseChar_sp, SimpleBaseString_O);
+DEFMAKESIMPLEMDARRAY(character, SimpleMDArrayCharacter_O, SimpleMDArrayCharacter_sp, SimpleCharacterString_O);
+DEFMAKESIMPLEMDARRAY(single_float, SimpleMDArrayFloat_O, SimpleMDArrayFloat_sp, SimpleVectorFloat_O);
+DEFMAKESIMPLEMDARRAY(double_float, SimpleMDArrayDouble_O, SimpleMDArrayDouble_sp, SimpleVectorDouble_O);
+DEFMAKESIMPLEMDARRAY(int8, SimpleMDArray_int8_t_O, SimpleMDArray_int8_t_sp, SimpleVector_int8_t_O);
+DEFMAKESIMPLEMDARRAY(byte8, SimpleMDArray_byte8_t_O, SimpleMDArray_byte8_t_sp, SimpleVector_byte8_t_O);
+DEFMAKESIMPLEMDARRAY(int16, SimpleMDArray_int16_t_O, SimpleMDArray_int16_t_sp, SimpleVector_int16_t_O);
+DEFMAKESIMPLEMDARRAY(byte16, SimpleMDArray_byte16_t_O, SimpleMDArray_byte16_t_sp, SimpleVector_byte16_t_O);
+DEFMAKESIMPLEMDARRAY(int32, SimpleMDArray_int32_t_O, SimpleMDArray_int32_t_sp, SimpleVector_int32_t_O);
+DEFMAKESIMPLEMDARRAY(byte32, SimpleMDArray_byte32_t_O, SimpleMDArray_byte32_t_sp, SimpleVector_byte32_t_O);
+DEFMAKESIMPLEMDARRAY(int64, SimpleMDArray_int64_t_O, SimpleMDArray_int64_t_sp, SimpleVector_int64_t_O);
+DEFMAKESIMPLEMDARRAY(byte64, SimpleMDArray_byte64_t_O, SimpleMDArray_byte64_t_sp, SimpleVector_byte64_t_O);
+DEFMAKESIMPLEMDARRAY(fixnum, SimpleMDArray_fixnum_O, SimpleMDArray_fixnum_sp, SimpleVector_fixnum_O);
+DEFMAKESIMPLEMDARRAY(size_t, SimpleMDArray_size_t_O, SimpleMDArray_size_t_sp, SimpleVector_size_t_O);
 
 CL_LAMBDA(element_type dimension &optional adjustable fill_pointer displaced_to (displaced_index_offset 0) initial_element initial_element_supplied_p);
 CL_DECLARE();
@@ -3011,7 +2983,39 @@ bool core__fits_in_base_string(T_sp tstr) {
 }
 
 // Create a byte8 simple vector from any array
-CL_DEFUN Array_sp core__coerce_to_byte8_vector(Array_sp source)
+CL_DEFUN Array_sp core__coerce_to_byte8_vector(T_sp object)
+{
+  if (gc::IsA<Array_sp>(object)) {
+    Array_sp source = gc::As_unsafe<Array_sp>(object);
+    T_sp element_type = source->element_type();
+    if (element_type == cl::_sym_single_float) {
+      AbstractSimpleVector_sp asv;
+      size_t start, end;
+      source->asAbstractSimpleVectorRange(asv,start,end);
+      const unsigned char* memory_start = reinterpret_cast<const unsigned char*>(asv->rowMajorAddressOfElement_(start));
+      const unsigned char* memory_end = reinterpret_cast<const unsigned char*>(asv->rowMajorAddressOfElement_(end));
+      SimpleVector_byte8_t_sp result = SimpleVector_byte8_t_O::make((memory_end-memory_start),0,false,(memory_end-memory_start),memory_start);
+      return result;
+    } else if (element_type == cl::_sym_base_char) {
+      AbstractSimpleVector_sp asv;
+      size_t start, end;
+      source->asAbstractSimpleVectorRange(asv,start,end);
+      const unsigned char* memory_start = reinterpret_cast<const unsigned char*>(asv->rowMajorAddressOfElement_(start));
+      const unsigned char* memory_end = reinterpret_cast<const unsigned char*>(asv->rowMajorAddressOfElement_(end));
+      SimpleVector_byte8_t_sp result = SimpleVector_byte8_t_O::make((memory_end-memory_start),0,false,(memory_end-memory_start),memory_start);
+      return result;
+    }
+    SIMPLE_ERROR(BF("Add support for coercing %s to a byte8 vector") % _rep_(source));
+  } else if (gc::IsA<clasp_ffi::ForeignData_sp>(object)) {
+    clasp_ffi::ForeignData_sp source = gc::As_unsafe<clasp_ffi::ForeignData_sp>(object);
+    SimpleVector_byte8_t_sp result = SimpleVector_byte8_t_O::make(source->foreign_data_size(),0,false,source->foreign_data_size(),(const unsigned char*)source->orig_data_ptr());
+    return result;
+  }
+  SIMPLE_ERROR(BF("Add support for coercing %s to a byte8 vector") % _rep_(object));
+}
+
+// Create a base-char simple vector from any array
+CL_DEFUN Array_sp core__coerce_memory_to_foreign_data(Array_sp source)
 {
   T_sp element_type = source->element_type();
   if (element_type == cl::_sym_single_float) {
@@ -3020,11 +3024,14 @@ CL_DEFUN Array_sp core__coerce_to_byte8_vector(Array_sp source)
     source->asAbstractSimpleVectorRange(asv,start,end);
     const unsigned char* memory_start = reinterpret_cast<const unsigned char*>(asv->rowMajorAddressOfElement_(start));
     const unsigned char* memory_end = reinterpret_cast<const unsigned char*>(asv->rowMajorAddressOfElement_(end));
-    SimpleVector_byte8_t_sp result = SimpleVector_byte8_t_O::make((memory_end-memory_start),0,false,(memory_end-memory_start),memory_start);
-    return result;
+    GC_ALLOCATE(clasp_ffi::ForeignData_O,data);
+    data->allocate(ext::_sym_byte8,DeleteOnDtor,memory_end-memory_start);
+    memcpy(const_cast<void*>(data->orig_data_ptr()),(void*)memory_start,memory_end-memory_start);
+    return data;
   }
-  SIMPLE_ERROR(BF("Add support for coercing %s to a byte8 vector") % _rep_(source));
+  SIMPLE_ERROR(BF("Add support for coercing %s to a simple-base-string") % _rep_(source));
 }
+
 
 
 }; /* core */

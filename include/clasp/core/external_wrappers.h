@@ -40,8 +40,8 @@ namespace core {
 using namespace policies;
 
 template <typename Policies, typename OT, typename Method>
-class IndirectVariadicMethoid : public TemplatedFunctionBase_O {
-  typedef TemplatedFunctionBase_O TemplatedBase;
+class IndirectVariadicMethoid : public BuiltinClosure_O {
+  typedef BuiltinClosure_O TemplatedBase;
   virtual size_t templatedSizeof() const { return sizeof(*this); };
   virtual const char *describe() const { return "IndirectVariadicMethoid"; };
 };
@@ -51,15 +51,15 @@ class IndirectVariadicMethoid : public TemplatedFunctionBase_O {
 
 namespace core {
 template <class D, class C>
-class GetterMethoid : public TemplatedFunctionBase_O {
+class GetterMethoid : public BuiltinClosure_O {
 public:
-  typedef TemplatedFunctionBase_O TemplatedBase;
+  typedef BuiltinClosure_O TemplatedBase;
 
 public:
   //        typedef std::function<void (OT& ,)> Type;
   typedef D(C::*MemPtr);
   MemPtr mptr;
- GetterMethoid(core::T_sp name, MemPtr ptr) : TemplatedFunctionBase_O(entry_point,name), mptr(ptr){};
+ GetterMethoid(core::T_sp name, MemPtr ptr) : BuiltinClosure_O(entry_point,name), mptr(ptr){};
   virtual size_t templatedSizeof() const { return sizeof(*this); };
   static inline LCC_RETURN LISP_CALLING_CONVENTION() {
     SIMPLE_ERROR_SPRINTF("What do I do here");

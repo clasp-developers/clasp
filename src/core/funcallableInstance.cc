@@ -69,7 +69,7 @@ T_sp FuncallableInstance_O::oinstancep() const {
 }
 
 // Identical to allocate_new_instance in instance.cc, except for the type.
-CL_DEFUN T_sp core__allocate_new_funcallable_instance(Class_sp cl, size_t numberOfSlots) {
+CL_DEFUN T_sp core__allocate_new_funcallable_instance(Instance_sp cl, size_t numberOfSlots) {
   // cl is known to be a funcallable-standard-class.
   ASSERT(cl->CLASS_has_creator());
   Creator_sp creator = gctools::As<Creator_sp>(cl->CLASS_get_creator());
@@ -81,7 +81,7 @@ CL_DEFUN T_sp core__allocate_new_funcallable_instance(Class_sp cl, size_t number
 }
 
 CL_DEFUN FuncallableInstance_sp core__reallocate_funcallable_instance(FuncallableInstance_sp instance,
-                                                                      Class_sp new_class,
+                                                                      Instance_sp new_class,
                                                                       size_t new_size) {
   instance->_Class = new_class;
   instance->initializeSlots(new_class->CLASS_stamp_for_instances(), new_size);
@@ -134,7 +134,7 @@ SYMBOL_EXPORT_SC_(CorePkg, instanceClassSet);
 
 
 
-T_sp FuncallableInstance_O::instanceClassSet(Class_sp mc) {
+T_sp FuncallableInstance_O::instanceClassSet(Instance_sp mc) {
   this->_Class = mc;
 #ifdef DEBUG_GUARD_VALIDATE
   client_validate(this->_Rack);
@@ -170,7 +170,7 @@ CL_DEFUN T_sp core__low_level_standard_generic_function_name(FuncallableInstance
 string FuncallableInstance_O::__repr__() const {
   stringstream ss;
   ss << "#S(";
-  if (Class_sp mc = this->_Class.asOrNull<Class_O>()) {
+  if (Instance_sp mc = this->_Class.asOrNull<Instance_O>()) {
     ss << mc->_classNameAsString() << " ";
   } else {
     ss << "<ADD SUPPORT FOR INSTANCE _CLASS=" << _rep_(this->_Class) << " >";
@@ -206,7 +206,7 @@ LCC_RETURN FuncallableInstance_O::not_funcallable_entry_point(LCC_ARGS_ELLIPSIS)
   return core::eval::funcall(clos::_sym_not_funcallable_dispatch_function, closure->asSmartPtr(), lcc_vargs);
 }
 
-Class_sp FuncallableInstance_O::create(Symbol_sp symbol, Class_sp metaClass, Creator_sp creator ) {
+Instance_sp FuncallableInstance_O::create(Symbol_sp symbol, Instance_sp metaClass, Creator_sp creator ) {
   DEPRECATED();
 };
 
@@ -218,7 +218,7 @@ void FuncallableInstance_O::set_kind(Symbol_sp k) {
 
 T_sp FuncallableInstance_O::copyInstance() const {
   DEPRECATED();
-  Class_sp cl = this->_Class;
+  Instance_sp cl = this->_Class;
   FuncallableInstance_sp copy = cl->CLASS_get_creator()->creator_allocate();
   copy->_Class = cl;
   copy->_Rack = this->_Rack;

@@ -19,17 +19,17 @@ $var NumArgs = 16
                 template <typename Pols $if ret==RetVoid [[]] $elif ret==Ret_unique_ptr [[, typename UPRT ]] $else [[, typename RT ]] $if numArgs [[,]] $for Args_ ,[[typename ARG$Args_]] >
                 class VariadicFunctor
                 < $if ret==RetVoid [[void]] $elif ret==Ret_unique_ptr [[ std::unique_ptr<UPRT> ]] $else [[ RT ]] (*)($for Args_ , [[ARG$Args_]]), Pols>
-                : public core::TemplatedFunctionBase_O {
+                : public core::BuiltinClosure_O {
                 public:
                 typedef VariadicFunctor < $if ret==RetVoid [[void]] $elif ret==Ret_unique_ptr [[ std::unique_ptr<UPRT> ]] $else [[ RT ]] (*)($for Args_ , [[ARG$Args_]]), Pols> MyType;
-                typedef core::TemplatedFunctionBase_O TemplatedBase;
+                typedef core::BuiltinClosure_O TemplatedBase;
                 public:
                     typedef $if ret==RetVoid [[void]] $elif ret==Ret_unique_ptr [[ std::unique_ptr<UPRT> ]] $else [[RT]](*Type)($for Args_ , [[ARG$Args_]]);
                     Type fptr;
                 public:
 		    virtual const char* describe() const { return "VariadicFunctor"; };
                     enum { NumParams = $numArgs };
-                    VariadicFunctor(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), fptr(ptr) {};
+                    VariadicFunctor(core::T_sp name, Type ptr) : core::BuiltinClosure_O(entry_point,name), fptr(ptr) {};
                     virtual size_t templatedSizeof() const { return sizeof(*this);};
                     static inline LCC_RETURN LISP_CALLING_CONVENTION()
                     {

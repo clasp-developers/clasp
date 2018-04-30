@@ -2977,6 +2977,8 @@ void finalizeEngineAndTime(llvm::ExecutionEngine *engine) {
   accumulate_llvm_timing_data(thisTime);
 }
 
+
+#if 0
 CL_DEFUN core::Function_sp finalizeEngineAndRegisterWithGcAndGetCompiledFunction(ExecutionEngine_sp oengine, core::T_sp functionName, Function_sp fn, core::T_sp activationFrameEnvironment, core::T_sp fileName, size_t filePos, int linenumber, Function_sp startupFn, Function_sp shutdownFn, core::T_sp initial_data) {
   DEPRECATED();
   // Stuff to support MCJIT
@@ -3000,6 +3002,7 @@ CL_DEFUN core::Function_sp finalizeEngineAndRegisterWithGcAndGetCompiledFunction
   startup(initial_data.tagged_());
   return functoid;
 }
+#endif
 
   CL_DEFUN void finalizeEngineAndRegisterWithGcAndRunMainFunctions(ExecutionEngine_sp oengine) {
   // Stuff to support MCJIT
@@ -3763,12 +3766,12 @@ CL_DEFUN core::Function_sp llvm_sys__jitFinalizeReplFunction(ClaspJIT_sp jit, Mo
   core::Pointer_sp startupPtr = jit->findSymbolIn(handle,startupName,false);
   core::Pointer_sp shutdownPtr = jit->findSymbolIn(handle,shutdownName,false);
   core::CompiledClosure_fptr_type lisp_funcPtr = (core::CompiledClosure_fptr_type)(gc::As_unsafe<core::Pointer_sp>(replPtr)->ptr());
-  gctools::smart_ptr<core::CompiledClosure_O> functoid =
-    gctools::GC<core::CompiledClosure_O>::allocate( lisp_funcPtr,
-                                                    core::_sym_repl, // core::SimpleBaseString_O::make(replName),
+  gctools::smart_ptr<core::ClosureWithSlots_O> functoid =
+    core::ClosureWithSlots_O::make_bclasp_closure( core::_sym_repl,
+                                                   lisp_funcPtr,
                                                     kw::_sym_function,
-                                                    _Nil<core::T_O>() /*activationFrameEnvironment */,
-                                                    _Nil<core::T_O>() /*lambdaList*/,
+                                                   _Nil<core::T_O>(),
+                                                   _Nil<core::T_O>(),
                                                     0, 0, 0, 0 );
   core::module_startup_function_type startup = reinterpret_cast<core::module_startup_function_type>(gc::As_unsafe<core::Pointer_sp>(startupPtr)->ptr());
   startup(initialData.tagged_());

@@ -611,16 +611,16 @@ CL_DEFUN T_mv compiler__implicit_compile_hook_default(T_sp form, T_sp env) {
   Cons_sp code = Cons_O::create(form, _Nil<T_O>());
   T_sp source_manager = _lisp->sourceDatabase();
   T_sp sourcePosInfo = _Nil<T_O>();
-#if 0
-  if ( SourceManager_sp db = source_manager.asOrNull<SourceManager_O>() ) {
-    sourcePosInfo = db->duplicateSourcePosInfo(form, code);
-  }
-#endif
   stringstream ss;
   ss << "repl" << _lisp->nextReplCounter();
   Symbol_sp name = _lisp->intern(ss.str());
-  InterpretedClosure_sp ic =
-    gc::GC<InterpretedClosure_O>::allocate(name, kw::_sym_function, llh, _Nil<T_O>(), _Nil<T_O>(), env, code, SOURCE_POS_INFO_FIELDS(sourcePosInfo));
+  ClosureWithSlots_sp ic = ClosureWithSlots_O::make_interpreted_closure(name,
+                                                                        kw::_sym_function,
+                                                                        _Nil<T_O>(),
+                                                                        llh,
+                                                                        _Nil<T_O>(),
+                                                                        _Nil<T_O>(),
+                                                                        code, env, SOURCE_POS_INFO_FIELDS(sourcePosInfo));
   Function_sp thunk = ic;
   return (thunk->entry.load())(LCC_PASS_ARGS0_ELLIPSIS(thunk.raw_()));
 //  return eval::funcall(thunk);

@@ -61,13 +61,13 @@ void CxxClass_O::initialize() {
   //    LOG(BF("For class(%s)@%p handler@%p") % this->static_className() % ((void*)(this)) % this->_InitializationArguments.get() );
 }
 
-/* See the description in object.cc Class_O::describe
+/* See the description in object.cc Instance_O::describe
  */
 void CxxClass_O::describe(T_sp stream) {
   stringstream ss;
   ss << (BF("-------------  Class name: %s") % _rep_(this->name())).str(); //InstanceClassSymbol );
   for (auto cur : this->directSuperclasses()) {
-    ss << (BF("Base class: %s") % _rep_((gc::As<Class_sp>(oCar(cur)))->_className())).str();
+    ss << (BF("Base class: %s") % _rep_((gc::As<Instance_sp>(oCar(cur)))->_className())).str();
   }
   ss << (BF("%s") % this->dumpInfo()).str();
   clasp_write_string(ss.str(), stream);

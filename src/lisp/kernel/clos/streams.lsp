@@ -234,9 +234,10 @@
 ;;; generic functions.
 ;;;
 
-(defclass fundamental-stream (standard-object stream)
-  ((open-p :initform t :accessor open-stream-p))
-  (:documentation "the base class for all CLOS streams"))
+(let ((clos::*clos-booted* 'clos:map-dependents))
+  (defclass fundamental-stream (standard-object stream)
+    ((open-p :initform t :accessor open-stream-p))
+    (:documentation "the base class for all CLOS streams")))
 
 (defclass fundamental-input-stream (fundamental-stream) nil)
 
@@ -532,15 +533,15 @@
 
 (defmethod stream-read-sequence ((stream fundamental-character-input-stream)
                                  sequence &optional (start 0) (end nil))
-  (si::do-read-sequence sequence stream start end))
+  (core:do-read-sequence sequence stream start end))
 
 (defmethod stream-read-sequence ((stream fundamental-binary-input-stream)
                                  sequence &optional (start 0) (end nil))
-  (si::do-read-sequence sequence stream start end))
+  (core:do-read-sequence sequence stream start end))
 
 (defmethod stream-read-sequence ((stream ansi-stream) sequence
 				 &optional (start 0) (end nil))
-  (si::do-read-sequence stream sequence start end))
+  (core:do-read-sequence sequence stream start end))
 
 (defmethod stream-read-sequence ((stream t) sequence &optional start end)
   (declare (ignore sequence start end))
@@ -596,14 +597,14 @@
 
 (defmethod stream-write-sequence ((stream fundamental-character-output-stream) sequence
                                   &optional (start 0) end)
-  (si::do-write-sequence sequence stream start end))
+  (core:do-write-sequence sequence stream start end))
 
 (defmethod stream-write-sequence ((stream fundamental-binary-output-stream) sequence
                                   &optional (start 0) end)
-  (si::do-write-sequence sequence stream start end))
+  (core:do-write-sequence sequence stream start end))
 
 (defmethod stream-write-sequence ((stream ansi-stream) sequence &optional (start 0) end)
-  (si::do-write-sequence sequence stream start end))
+  (core:do-write-sequence sequence stream start end))
 
 (defmethod stream-write-sequence ((stream t) sequence &optional start end)
   (declare (ignore sequence start end))
@@ -711,5 +712,4 @@
     (si::package-lock "COMMON-LISP" x)
     nil))
 
-(setf *clos-booted* t)
-
+(setf clos::*clos-booted* t)

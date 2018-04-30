@@ -70,7 +70,7 @@ GCPRIVATE: // instance variables here
            /*! Store the generic function name */
   T_sp _name;
   /*! Store the receiver class for this method */
-  Class_sp _receiver_class;
+  Instance_sp _receiver_class;
   /*! Store the body of the method */
   SingleDispatchMethodFunction_sp       _body;
   //	BuiltIn_sp	_method_builtin;
@@ -83,20 +83,20 @@ GCPRIVATE: // instance variables here
 public: // creation function
   // The creates above are depreciated
   static SingleDispatchMethod_sp create(T_sp name,
-                                        Class_sp receiver,
+                                        Instance_sp receiver,
                                         LambdaListHandler_sp lambda_list_handler,
                                         List_sp declares, gc::Nilable<String_sp> docstr,
                                         Function_sp body);
 
 public: // Functions here
-  Class_sp receiver_class() const { return this->_receiver_class; };
+  Instance_sp receiver_class() const { return this->_receiver_class; };
   LambdaListHandler_sp method_lambda_list_handler() const { return this->_argument_handler; };
   string __repr__() const;
 
 CL_LISPIFY_NAME("singleDispatchMethodName");
 CL_DEFMETHOD   T_sp singleDispatchMethodName() const { return this->_name; };
 CL_LISPIFY_NAME("singleDispatchMethodReceiverClass");
-CL_DEFMETHOD   Class_sp singleDispatchMethodReceiverClass() const { return this->_receiver_class; };
+CL_DEFMETHOD   Instance_sp singleDispatchMethodReceiverClass() const { return this->_receiver_class; };
  
 //CL_LISPIFY_NAME("singleDispatchMethodCode");
 //CL_DEFMETHOD   Function_sp singleDispatchMethodCode() const { return this->code; };
@@ -136,7 +136,7 @@ namespace core {
       It creates a FunctionValueEnvironment that defines call-next-method and next-method-p 
       with the method environment as its parent and then invokes the method-function
       with (args next-emfun) */
-  void core__ensure_single_dispatch_method(SingleDispatchGenericFunctionClosure_sp gfunction, T_sp gfname, Class_sp receiver_class, LambdaListHandler_sp lambda_list_handler, List_sp declares, gc::Nilable<String_sp> docstring, Function_sp body);
+  void core__ensure_single_dispatch_method(SingleDispatchGenericFunctionClosure_sp gfunction, T_sp gfname, Instance_sp receiver_class, LambdaListHandler_sp lambda_list_handler, List_sp declares, gc::Nilable<String_sp> docstring, Function_sp body);
 
 
 };

@@ -192,37 +192,72 @@ CL_DEFUN size_t core__closure_with_slots_size(size_t number_of_slots)
 
 CL_DEFUN size_t core__closure_length(Closure_sp tclosure)
 {
-  if ( ClosureWithSlots_sp closure = tclosure.asOrNull<ClosureWithSlots_O>() ) {
+  ASSERT(gc::IsA<ClosureWithSlots_sp>(tclosure));
+  ClosureWithSlots_sp closure = gc::As_unsafe<ClosureWithSlots_sp>(tclosure);
+  if (closure->closureType == ClosureWithSlots_O::cclaspClosure) {
     return closure->_Slots._Length;
-  } else if ( ClosureWithFrame_sp closure = tclosure.asOrNull<ClosureWithFrame_O>() ) {
-    T_sp env = closure->closedEnvironment();
-    if ( ValueEnvironment_sp ve = env.asOrNull<ValueEnvironment_O>() ) {
-      env = ve->getActivationFrame();
-    }
-    if ( ValueFrame_sp tvf = env.asOrNull<ValueFrame_O>() ) {
-      return tvf->length();
-    }
   }
-  return 0;
+  return gc::As<ValueFrame_sp>(tclosure->closedEnvironment())->length();
 }
+
+
+string ClosureWithSlots_O::__repr__() const {
+  T_sp name = this->functionName();
+  stringstream ss;
+  ss << "#<" << this->_instanceClass()->_classNameAsString();
+#ifdef USE_BOEHM
+  ss << "@" << (void*)this << " ";
+#endif
+  ss << " " << _rep_(name);
+  ss << " :type ";
+  switch (this->closureType) {
+  case interpretedClosure:
+      ss << "interpreted ";
+      break;
+  case bclaspClosure:
+      ss << "bclasp ";
+      break;
+  case cclaspClosure:
+      ss << "cclasp ";
+      break;
+  }
+  ss << " :ftype " << _rep_(this->getKind());
+  ss << " lambda-list: " << _rep_(this->lambda_list());
+  if ( this->entry != NULL ) {
+    ss << " :fptr " << reinterpret_cast<void*>(this->entry.load());
+  }
+  
+  ss << ">";
+  return ss.str();
+}
+
+
 
 CL_DEFUN T_sp core__closure_ref(Closure_sp tclosure, size_t index)
 {
   if ( ClosureWithSlots_sp closure = tclosure.asOrNull<ClosureWithSlots_O>() ) {
-    if ( index >= closure->_Slots._Length ) {
-      SIMPLE_ERROR(BF("Out of bounds closure reference - there are only %d slots") % closure->_Slots._Length );
-    }
-    return closure->_Slots[index];
-  } else if ( ClosureWithFrame_sp closure = tclosure.asOrNull<ClosureWithFrame_O>() ) {
-    T_sp env = closure->closedEnvironment();
-    if ( ValueEnvironment_sp ve = env.asOrNull<ValueEnvironment_O>() ) {
-      env = ve->getActivationFrame();
-    }
-    if ( ValueFrame_sp tvf = env.asOrNull<ValueFrame_O>() ) {
-      if ( index >= tvf->length() ) {
-        SIMPLE_ERROR(BF("Out of bounds closure reference - there are only %d slots") % tvf->length() );
+    switch (closure->closureType) {
+    case ClosureWithSlots_O::interpretedClosure:
+    case ClosureWithSlots_O::bclaspClosure:
+      {
+        T_sp env = closure->closedEnvironment();
+        if ( ValueEnvironment_sp ve = env.asOrNull<ValueEnvironment_O>() ) {
+          env = ve->getActivationFrame();
+        }
+        if ( ValueFrame_sp tvf = env.asOrNull<ValueFrame_O>() ) {
+          if ( index >= tvf->length() ) {
+            SIMPLE_ERROR(BF("Out of bounds closure reference - there are only %d slots") % tvf->length() );
+          }
+          return (*tvf)[index];
+        }
+        SIMPLE_ERROR(BF("Out of bounds closure reference - there are no slots"));
       }
-      return (*tvf)[index];
+        break;
+    case ClosureWithSlots_O::cclaspClosure:
+        if ( index >= closure->_Slots._Length ) {
+          SIMPLE_ERROR(BF("Out of bounds closure reference - there are only %d slots") % closure->_Slots._Length );
+        }
+        return closure->_Slots[index];
     }
   }
   SIMPLE_ERROR(BF("Out of bounds closure reference - there are no slots"));
@@ -249,50 +284,26 @@ void BuiltinClosure_O::setf_lambda_list(List_sp lambda_list) {
   // Do nothing
 }
 
-InterpretedClosure_O::InterpretedClosure_O(T_sp fn, Symbol_sp k, LambdaListHandler_sp llh, List_sp dec, T_sp doc, T_sp e, List_sp c, SOURCE_INFO)
-  : Base(interpretedClosureEntryPoint,fn, k, e, SOURCE_INFO_PASS), _lambdaListHandler(llh), _declares(dec), _docstring(doc), _code(c) {
-}
-
-T_sp InterpretedClosure_O::lambda_list() const {
-  return this->lambdaListHandler()->lambdaList();
-}
-
-void InterpretedClosure_O::setf_lambda_list(List_sp lambda_list) {
-  // Do nothing - setting the lambdaListHandler is all that's needed
-}
 
 DONT_OPTIMIZE_WHEN_DEBUG_RELEASE LCC_RETURN interpretedClosureEntryPoint(LCC_ARGS_FUNCALL_ELLIPSIS) {
-  InterpretedClosure_O* closure = gctools::untag_general<InterpretedClosure_O*>((InterpretedClosure_O*)lcc_closure);
+  ClosureWithSlots_O* closure = gctools::untag_general<ClosureWithSlots_O*>((ClosureWithSlots_O*)lcc_closure);
 //  printf("%s:%d    closure name -> %s\n", __FILE__, __LINE__, _rep_(closure->functionName()).c_str());
   INCREMENT_FUNCTION_CALL_COUNTER(closure);
   INITIALIZE_VA_LIST();
   ++global_interpreted_closure_calls;
-  ValueEnvironment_sp newValueEnvironment = ValueEnvironment_O::createForLambdaListHandler(closure->_lambdaListHandler, closure->_closedEnvironment);
+  ValueEnvironment_sp newValueEnvironment = ValueEnvironment_O::createForLambdaListHandler((*closure)[INTERPRETED_CLOSURE_LAMBDA_LIST_HANDLER_SLOT], (*closure)[INTERPRETED_CLOSURE_ENVIRONMENT_SLOT]);
 //  printf("%s:%d ValueEnvironment_O:createForLambdaListHandler llh: %s\n", __FILE__, __LINE__, _rep_(this->_lambdaListHandler).c_str());
 //  newValueEnvironment->dump();
   ValueEnvironmentDynamicScopeManager scope(newValueEnvironment);
   ALWAYS_INVOCATION_HISTORY_FRAME(); // InvocationHistoryFrame _frame(&lcc_arglist_s._Args);
-  lambdaListHandler_createBindings(closure->asSmartPtr(), closure->_lambdaListHandler, scope, LCC_PASS_ARGS_LLH);
+  lambdaListHandler_createBindings(closure->asSmartPtr(), (*closure)[INTERPRETED_CLOSURE_LAMBDA_LIST_HANDLER_SLOT], scope, LCC_PASS_ARGS_LLH);
 //  printf("%s:%d     after lambdaListHandler_createbindings\n", __FILE__, __LINE__);
 //  newValueEnvironment->dump();
   ValueFrame_sp newActivationFrame = gc::As<ValueFrame_sp>(newValueEnvironment->getActivationFrame());
   //        InvocationHistoryFrame _frame(this,newActivationFrame);
-  return eval::sp_progn(closure->_code, newValueEnvironment).as_return_type();
+  return eval::sp_progn((*closure)[INTERPRETED_CLOSURE_FORM_SLOT], newValueEnvironment).as_return_type();
 };
 
 
 };
 
-namespace core {
-
-#ifdef USE_COMPILED_CLOSURE
-core::T_sp CompiledClosure_O::lambda_list() const {
-  return this->_lambdaList;
-}
-
-void CompiledClosure_O::setf_lambda_list(core::List_sp lambda_list) {
-  this->_lambdaList = lambda_list;
-}
-#endif
-
-};

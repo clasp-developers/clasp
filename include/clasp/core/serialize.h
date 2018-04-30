@@ -534,7 +534,7 @@ public:
 
   string __repr__() const;
 
-  //    explicit SNode_O(core::Class_sp const& mc) : _O(mc), Base(mc) {};
+  //    explicit SNode_O(core::Instance_sp const& mc) : _O(mc), Base(mc) {};
   //    virtual ~SNode_O() {};
 };
 

@@ -145,19 +145,6 @@ inline LCC_RETURN funcall(T_sp fn, ARG0 arg0, ARG1 arg1) {
      need to be made consistent with lispCallingConvention.h */
   ASSERT(4 == LCC_ARGS_IN_REGISTERS);
   Function_sp func = interpreter_lookup_function_or_error(fn, _Nil<T_O>());
-#if 0
-  //      printf("%s:%d funcall fn=%s arg0=%s arg1=%s\n", __FILE__, __LINE__, _rep_(fn).c_str(), _rep_(arg0).c_str(), _rep_(arg1).c_str() );
-  if (tfunc.raw_() == NULL || tfunc.nilp()) {
-    // While booting, cl::_sym_findClass will apply'd before
-    // it is bound to a symbol
-    if (fn == cl::_sym_findClass) {
-      Class_mv cl = cl__find_class(gc::As<Symbol_sp>(arg0), false, _Nil<T_O>());
-      T_sp res = cl;
-      return Values(res);
-    }
-    ERROR_UNDEFINED_FUNCTION(fn);
-  }
-#endif
   ASSERT(gc::IsA<Function_sp>(func));
   return func->entry.load()(LCC_PASS_ARGS2_ELLIPSIS(func.raw_(),arg0.raw_(), arg1.raw_()));
 }

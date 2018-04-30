@@ -46,25 +46,18 @@ THE SOFTWARE.
 
 namespace core {
 
-  typedef Instance_O Class_O;
-  typedef Instance_sp Class_sp;
-
   Fixnum_sp clasp_make_fixnum(gc::Fixnum v);
   
-//
-//  Class access functions for when we only have a forward
-//  definition for the Class_O class
-//
 
 /*! Class spoofs ECL>>Instance_O classes by doing the following.
 
-  virtual T_sp Class_O::instanceClass() is overloaded in StandardClass_O and BuiltInClass_O
+  virtual T_sp Instance_O::instanceClass() is overloaded in StandardInstance_O and BuiltInClass_O
   and they each return XXXX::___staticClass.
   This should never change because you should never change the meta classes of instances of StandardClass and BuiltInClass
 
-  virtual T_sp Class_O::instanceSig() is overloaded in StandardClass_O and BuiltInClass_O
+  virtual T_sp Instance_O::instanceSig() is overloaded in StandardInstance_O and BuiltInClass_O
   and they each return XXXXClass::___staticClass->slots()
-  This should never change because you should never change the class slots of StandardClass_O or BuiltInClass_O
+  This should never change because you should never change the class slots of StandardInstance_O or BuiltInClass_O
 
   
 */
@@ -73,19 +66,19 @@ namespace core {
 #define REF_CLASS_NUMBER_OF_SLOTS_IN_STRUCTURE_CLASS 31
 #define REF_CLASS_NUMBER_OF_SLOTS_IN_DERIVABLE_CXX_CLASS REF_CLASS_NUMBER_OF_SLOTS_IN_STANDARD_CLASS
   
-  // Specialize BuiltInObjectCreator for DummyStandardClass_O
+  // Specialize BuiltInObjectCreator for DummyStandardInstance_O
   template <>
-    class BuiltInObjectCreator<Class_O> : public core::Creator_O {
+    class BuiltInObjectCreator<Instance_O> : public core::Creator_O {
   public:
     typedef core::Creator_O TemplatedBase;
   public:
   public:
-    size_t templatedSizeof() const { return sizeof(BuiltInObjectCreator<Class_O>); };
+    size_t templatedSizeof() const { return sizeof(BuiltInObjectCreator<Instance_O>); };
     bool creates_classes() const { return true; };
     virtual core::T_sp creator_allocate() {
-      // BuiltInObjectCreator<Class_O> uses a different allocation method
+      // BuiltInObjectCreator<Instance_O> uses a different allocation method
       // that assigns the next Clos Stamp to the new Class
-      GC_ALLOCATE_VARIADIC(Class_O, obj, lisp_standard_class() /*,REF_CLASS_NUMBER_OF_SLOTS_IN_STANDARD_CLASS */);
+      GC_ALLOCATE_VARIADIC(Instance_O, obj, lisp_standard_class() /*,REF_CLASS_NUMBER_OF_SLOTS_IN_STANDARD_CLASS */);
 //      printf("%s:%d  creating class\n", __FILE__, __LINE__ );
       return obj;
     }

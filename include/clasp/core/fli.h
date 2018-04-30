@@ -139,7 +139,9 @@ namespace clasp_ffi {
     const void *orig_data_ptr( void ) { return m_orig_data_ptr; };
     void *raw_data( void ) { return m_raw_data; };
     void *ptr( void ) { return m_raw_data; };
-
+    
+    CL_DEFMETHOD size_t foreign_data_size(void) { return m_size; };
+    
     // -- TRANSFORMING ACCESS --
     template <class T>
       T data() { return reinterpret_cast<T>(this->raw_data()); };

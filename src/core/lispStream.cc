@@ -2514,7 +2514,9 @@ CL_DEFUN T_sp cl__make_concatenated_stream(List_sp ap) {
   }
   StreamMode(x) = clasp_smm_concatenated;
   StreamOps(x) = duplicate_dispatch_table(concatenated_ops);
-  ConcatenatedStreamList(x) = cl__nreverse(streams);
+  // used to be nreverse, but this gives wrong results, since it han reads first from the last stream past
+  // stick with the original list
+  ConcatenatedStreamList(x) = streams;
   return x;
 }
 
@@ -3241,7 +3243,9 @@ set_stream_elt_type(T_sp tstream, gctools::Fixnum byte_size, int flags,
   StreamOps(stream).write_char = eformat_write_char;
   switch (flags & CLASP_STREAM_FORMAT) {
   case CLASP_STREAM_BINARY:
-    FileStreamEltType(stream) = Cons_O::createList(_lisp->_true(), make_fixnum(byte_size));
+    // e.g. (T size) is not a valid type, use (UnsignedByte size)
+    // This is better than (T Size), but not necesarily the right type
+    FileStreamEltType(stream) = Cons_O::createList(cl::_sym_UnsignedByte, make_fixnum(byte_size));
     StreamFormat(stream) = t;
     StreamOps(stream).read_char = not_character_read_char;
     StreamOps(stream).write_char = not_character_write_char;
@@ -4960,6 +4964,13 @@ CL_DEFUN T_sp cl__read_sequence(T_sp sequence, T_sp stream, T_sp start, T_sp oen
   return si_do_read_sequence(sequence, stream, start, oend);
 }
 
+CL_LAMBDA(sequence stream start end);
+CL_DECLARE();
+CL_DOCSTRING("readSequence");
+CL_DEFUN T_sp core__do_read_sequence(T_sp sequence, T_sp stream, T_sp start, T_sp oend) {
+  stream = coerce::inputStreamDesignator(stream);
+  return si_do_read_sequence(sequence, stream, start, oend);
+}
 /**********************************************************************
  * LISP LEVEL INTERFACE
  */
@@ -6429,6 +6440,7 @@ SYMBOL_EXPORT_SC_(KeywordPkg,output);
 SYMBOL_EXPORT_SC_(KeywordPkg,input);
   SYMBOL_EXPORT_SC_(ClPkg, filePosition);
   SYMBOL_EXPORT_SC_(ClPkg, readSequence);
+  SYMBOL_EXPORT_SC_(CorePkg, doReadSequence);
   SYMBOL_EXPORT_SC_(ClPkg, read_from_string);
   SYMBOL_EXPORT_SC_(ClPkg, read_line);
   SYMBOL_EXPORT_SC_(ClPkg, terpri);

@@ -31,7 +31,6 @@ THE SOFTWARE.
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 #include <clasp/core/lisp.h>
-#include <clasp/core/conditions.h>
 #include <clasp/core/evaluator.h>
 #include <clasp/core/lispStream.h>
 #include <clasp/core/symbolTable.h>
@@ -100,8 +99,8 @@ CL_LAMBDA(class-name &rest args);
 CL_DECLARE();
 CL_DOCSTRING("make-cxx-object makes a C++ object using the encode/decode/fields functions");
 CL_DEFUN T_sp core__make_cxx_object(T_sp class_or_name, T_sp args) {
-  Class_sp theClass;
-  if (Class_sp argClass = class_or_name.asOrNull<Class_O>()) {
+  Instance_sp theClass;
+  if (Instance_sp argClass = class_or_name.asOrNull<Instance_O>()) {
     theClass = argClass;
   } else if (class_or_name.nilp()) {
     goto BAD_ARG0;
@@ -134,8 +133,8 @@ CL_LAMBDA(class-name &rest args);
 CL_DECLARE();
 CL_DOCSTRING("load-cxx-object makes a C++ object using the encode/decode/fields functions using decoder/loader(s) - they support patching of objects");
 CL_DEFUN T_sp core__load_cxx_object(T_sp class_or_name, T_sp args) {
-  Class_sp theClass;
-  if (Class_sp argClass = class_or_name.asOrNull<Class_O>()) {
+  Instance_sp theClass;
+  if (Instance_sp argClass = class_or_name.asOrNull<Instance_O>()) {
     theClass = argClass;
   } else if (class_or_name.nilp()) {
     goto BAD_ARG0;
@@ -197,7 +196,7 @@ CL_DEFUN T_sp core__print_cxx_object(T_sp obj, T_sp stream) {
     clasp_write_char('#', stream);
     clasp_write_char('I', stream);
     clasp_write_char('(', stream);
-    Class_sp myclass = lisp_instance_class(obj);
+    Instance_sp myclass = lisp_instance_class(obj);
     ASSERT(myclass);
     Symbol_sp className = myclass->_className();
     cl__prin1(className, stream);
@@ -261,7 +260,7 @@ CL_DEFUN T_sp core__implementation_class(T_sp arg) {
 CL_LAMBDA(arg);
 CL_DECLARE();
 CL_DOCSTRING("instanceClass");
-CL_DEFUN Class_sp core__instance_class(T_sp arg) {
+CL_DEFUN Instance_sp core__instance_class(T_sp arg) {
   return lisp_instance_class(arg);
 };
 
@@ -269,7 +268,7 @@ CL_LAMBDA(arg);
 CL_DECLARE();
 CL_DOCSTRING("classNameAsString");
 CL_DEFUN string core__class_name_as_string(T_sp arg) {
-  Class_sp c = core__instance_class(arg);
+  Instance_sp c = core__instance_class(arg);
   return c->_className()->fullName();
 };
 
@@ -489,7 +488,7 @@ T_sp General_O::instanceRef(size_t idx) const {
   SIMPLE_ERROR(BF("T_O::instanceRef(%d) invoked on object class[%s] val-->%s") % idx % this->_instanceClass()->_classNameAsString() % this->__repr__());
 }
 
-T_sp General_O::instanceClassSet(Class_sp val) {
+T_sp General_O::instanceClassSet(Instance_sp val) {
   SIMPLE_ERROR(BF("T_O::instanceClassSet to class %s invoked on object class[%s] val-->%s - subclass must implement") % _rep_(val) % this->_instanceClass()->_classNameAsString() % _rep_(this->asSmartPtr()));
 }
 
@@ -505,7 +504,7 @@ T_sp General_O::instanceSigSet() {
   SIMPLE_ERROR(BF("T_O::instanceSigSet() invoked on object class[%s] val-->%s") % this->_instanceClass()->_classNameAsString() % _rep_(this->asSmartPtr()));
 }
 
-Class_sp instance_class(T_sp obj)
+Instance_sp instance_class(T_sp obj)
 {
   return cl__class_of(obj);
 }

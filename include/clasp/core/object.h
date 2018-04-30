@@ -308,7 +308,7 @@ class Hash1Generator {
   typedef gctools::smart_ptr<oClass> smart_ptr_type;                 \
  public:                                                                \
   static core::Symbol_sp static_class_symbol;                           \
-  static core::Class_sp static_class;                                   \
+  static core::Instance_sp static_class;                                   \
   static gctools::smart_ptr<core::Creator_O> static_creator;            \
   static gctools::Header_s::Value static_HeaderValue;                   \
  public:                                                                \
@@ -342,7 +342,7 @@ class Hash1Generator {
   static gctools::smart_ptr<aClass> create() {                          \
       return gctools::GC<aClass>::allocate_with_default_constructor();  \
     };                                                                  \
-  virtual core::Class_sp __class() const {                     \
+  virtual core::Instance_sp __class() const {                     \
     return aClass::static_class;                                        \
   }                                                                     \
   /* end LISP_CLASS */
@@ -380,7 +380,7 @@ namespace core {
     friend class CoreExposer;
     LISP_ABSTRACT_CLASS(core, ClPkg, T_O, "T",::_RootDummyClass);
   public:
-    bool isAInstanceOf(core::Class_sp mc);
+    bool isAInstanceOf(core::Instance_sp mc);
   };
 
 };
@@ -394,7 +394,7 @@ namespace core {
 //
 namespace core {
 
-  Class_sp instance_class(T_sp obj);
+  Instance_sp instance_class(T_sp obj);
 
   class General_O : public T_O {
     LISP_CLASS(core, CorePkg, General_O, "General", T_O );
@@ -487,9 +487,9 @@ namespace core {
   
   public: // Instance protocol
   //! Some Class objects will create instances of classes different from themselves
-    virtual core::Class_sp _instanceClass() const { return this->__class(); };
+    virtual core::Instance_sp _instanceClass() const { return this->__class(); };
 
-    virtual T_sp instanceClassSet(Class_sp mc);
+    virtual T_sp instanceClassSet(Instance_sp mc);
 
   /*! Allocate space for (slots) slots and initialize them */
     virtual void initializeSlots(Fixnum stamp, size_t slots);
@@ -652,7 +652,7 @@ namespace core {
 };
 
 namespace core {
-  Class_sp cl__class_of(T_sp obj);
+  Instance_sp cl__class_of(T_sp obj);
   bool cl__eq(T_sp x, T_sp y);
   bool cl__eql(T_sp x, T_sp y);
   bool cl__equal(T_sp x, T_sp y);
@@ -665,7 +665,6 @@ namespace core {
 #include <clasp/core/glue.h>
 
 
-#include <clasp/core/conditions.h>
 
 #include <clasp/core/array.h>
 #include <clasp/core/instance.h>

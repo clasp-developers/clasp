@@ -38,7 +38,7 @@ public: // Simple default ctor/dtor
   DEFAULT_CTOR_DTOR(Pointer_O);
 
 public: // ctor/dtor for classes with shared virtual base
-        //    explicit Pointer_O(core::Class_sp const& mc) : T_O(mc), T(mc) {};
+        //    explicit Pointer_O(core::Instance_sp const& mc) : T_O(mc), T(mc) {};
         //    virtual ~Pointer_O() {};
 public:
   void initialize();

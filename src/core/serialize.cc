@@ -222,7 +222,7 @@ T_sp BranchSNode_O::createObject(HashTable_sp snodeToObject) {
   DEPRECATED();
 #if 0
   SYMBOL_EXPORT_SC_(CorePkg, serialize);
-  Class_sp cl = cl__find_class(this->_Kind);
+  Instance_sp cl = cl__find_class(this->_Kind);
   BranchSNode_sp me = this->asSmartPtr();
   T_sp obj = cl->make_instance();
   snodeToObject->hash_table_setf_gethash(me, obj);

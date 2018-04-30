@@ -105,9 +105,9 @@ namespace core {
   class InstanceCreator_O : public Creator_O {
     LISP_CLASS(core,CorePkg,InstanceCreator_O,"InstanceCreator",Creator_O);
   public:
-    Class_sp _class;
+    Instance_sp _class;
   public:
-  InstanceCreator_O(Class_sp class_) : _class(class_){};
+  InstanceCreator_O(Instance_sp class_) : _class(class_){};
     T_sp creator_allocate();
     virtual size_t templatedSizeof() const { return sizeof(InstanceCreator_O); };
   };
@@ -117,9 +117,9 @@ namespace core {
   class FuncallableInstanceCreator_O : public Creator_O {
     LISP_CLASS(core,CorePkg,FuncallableInstanceCreator_O,"FuncallableInstanceCreator",Creator_O);
   public:
-    Class_sp _class;
+    Instance_sp _class;
   public:
-  FuncallableInstanceCreator_O(Class_sp class_) : _class(class_){};
+  FuncallableInstanceCreator_O(Instance_sp class_) : _class(class_){};
     T_sp creator_allocate();
     virtual size_t templatedSizeof() const { return sizeof(FuncallableInstanceCreator_O); };
   };

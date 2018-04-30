@@ -417,7 +417,7 @@ inline gctools::return_type funcall_consume_valist_(gc::Tagged func_tagged, VaLi
 #include <clasp/core/applyToFrame.h>
 #undef APPLY_TO_VA_LIST_CASE
   default:
-      printf("%s:%d Handle functions with arity %lu for funcall or reduce the number of args in this call\n", __FILE__, __LINE__, nargs);
+      printf("%s:%d Called %s with %lu arguments - add support for calls with this arity or reduce the number of args in this call\n", __FILE__, __LINE__, _rep_(func).c_str(), nargs);
       SIMPLE_ERROR_SPRINTF("Illegal arity %lu for funcall",  nargs);
       break;
   }

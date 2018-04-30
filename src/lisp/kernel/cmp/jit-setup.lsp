@@ -221,14 +221,6 @@ No DIBuilder is defined for the default module")
       ((= 32 sizeof-size_t) (jit-constant-i32 val))
       (t (error "Add support for size_t sizeof = ~a" sizeof-size_t)))))
 
-(defun jit-constant-size_t (val)
-  (let ((sizeof-size_t +size_t-bits+))
-    (cond
-      ((= 64 sizeof-size_t) (jit-constant-ui64 val))
-      ((= 32 sizeof-size_t) (jit-constant-ui32 val))
-      (t (error "Add support for size_t sizeof = ~a" sizeof-size_t)))))
-
-
 (defun jit-constant-unique-string-ptr (str &optional (label "unique-str"))
   "Get or create a unique string within the module and return a GEP i8* pointer to it"
   (or *the-module* (error "jit-constant-unique-string-ptr *the-module* is NIL"))

@@ -16,16 +16,16 @@ $var NumArgs = 8
                 template <typename Pols, typename Pointer, typename T $if numArgs [[,]] $for Args_ ,[[typename ARG$Args_]] >
                 class VariadicConstructorFunction_O
                  < Pols, Pointer, T, constructor<$for Args_ , [[ARG$Args_]]> >
-                : public core::TemplatedFunctionBase_O {
+                : public core::BuiltinClosure_O {
                 public:
                  typedef VariadicConstructorFunction_O< Pols, Pointer, T, constructor<$for Args_ , [[ARG$Args_]]> > MyType;
-                 typedef core::TemplatedFunctionBase_O TemplatedBase;
+                 typedef core::BuiltinClosure_O TemplatedBase;
                 public:
                     typedef Wrapper<T,Pointer>  WrapperType;
                 public:
 		    virtual const char* describe() const { return "VariadicConstructorFunctor"; };
                     enum { NumParams = $numArgs };
-                    VariadicConstructorFunction_O(core::T_sp name) : core::TemplatedFunctionBase_O(entry_point,name) {};
+                    VariadicConstructorFunction_O(core::T_sp name) : core::BuiltinClosure_O(entry_point,name) {};
                     virtual size_t templatedSizeof() const { return sizeof(*this);};
                     static inline LCC_RETURN LISP_CALLING_CONVENTION()
                     {

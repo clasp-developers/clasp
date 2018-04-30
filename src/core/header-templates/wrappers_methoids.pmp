@@ -26,17 +26,17 @@ $for isConst [[
       template <int DispatchOn $if ret==RetVoid [[]] $else [[,typename RT]], typename OT $if numArgs>1 [[,]]  $for Args_ ,[[typename ARG$Args_]] >
       class VariadicMethoid
       <DispatchOn,$if ret==RetVoid [[void]] $elif ret==RetSV [[RT]] $else [[gctools::multiple_values<RT>]] (OT::*)( $for Args_ , [[ARG$Args_]]) $if isConst [[const]] >
-        : public TemplatedFunctionBase_O {
+        : public BuiltinClosure_O {
       public:
         typedef VariadicMethoid<DispatchOn,$if ret==RetVoid [[void]] $elif ret==RetSV [[RT]] $else [[gctools::multiple_values<RT>]] (OT::*)( $for Args_ , [[ARG$Args_]]) $if isConst [[const]] > MyType;
-        typedef TemplatedFunctionBase_O TemplatedBase;
+        typedef BuiltinClosure_O TemplatedBase;
       public:
 	virtual const char* describe() const {return "VariadicMethoid";};
         typedef $if ret==RetVoid [[void]] $elif ret==RetSV [[RT]] $else [[gctools::multiple_values<RT>]](OT::*Type)($for Args_ , [[ARG$Args_]]) $if isConst [[const]];
         Type mptr;
       public:
         enum { NumParams = $numArgs };
-        VariadicMethoid(T_sp name, Type ptr) : TemplatedFunctionBase_O(&MyType::method_entry_point,name), mptr(ptr) {};
+        VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
         virtual size_t templatedSizeof() const { return sizeof(*this);};
         static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
         {   

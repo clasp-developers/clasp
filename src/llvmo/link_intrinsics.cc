@@ -426,7 +426,7 @@ LtvcReturn ltvc_enclose(gctools::GCRootsInModule* holder, size_t index, gctools:
 LtvcReturn ltvc_set_mlf_creator_funcall(gctools::GCRootsInModule* holder, size_t index, fnLispCallingConvention fptr, const char* name) {
   core::T_O *lcc_arglist = _Nil<core::T_O>().raw_();
   Symbol_sp sname = Symbol_O::create_from_string(std::string(name));
-  GC_ALLOCATE_VARIADIC(CompiledClosure_O, toplevel_closure, fptr, sname, kw::_sym_function, _Nil<T_O>(), _Nil<T_O>(), 0, 0, 0, 0 );
+  core::ClosureWithSlots_sp toplevel_closure = core::ClosureWithSlots_O::make_bclasp_closure(sname, fptr, kw::_sym_function, _Nil<core::T_O>(),  _Nil<core::T_O>(), 0, 0, 0, 0 );
   LCC_RETURN ret = fptr(LCC_PASS_ARGS0_VA_LIST(toplevel_closure.raw_()));
   core::T_sp res((gctools::Tagged)ret.ret0[0]);
   core::T_sp val = res;
@@ -436,7 +436,7 @@ LtvcReturn ltvc_set_mlf_creator_funcall(gctools::GCRootsInModule* holder, size_t
 LtvcReturn ltvc_mlf_init_funcall(fnLispCallingConvention fptr, const char* name) {
   core::T_O *lcc_arglist = _Nil<core::T_O>().raw_();
   Symbol_sp sname = Symbol_O::create_from_string(std::string(name));
-  GC_ALLOCATE_VARIADIC(CompiledClosure_O, toplevel_closure, fptr, sname, kw::_sym_function, _Nil<T_O>(), _Nil<T_O>(), 0, 0, 0, 0 );
+  core::ClosureWithSlots_sp toplevel_closure = core::ClosureWithSlots_O::make_bclasp_closure(sname, fptr, kw::_sym_function, _Nil<core::T_O>(), _Nil<core::T_O>(), 0, 0, 0, 0 );
   LCC_RETURN ret = fptr(LCC_PASS_ARGS0_VA_LIST(toplevel_closure.raw_()));
 //  LTVCRETURN reinterpret_cast<gctools::Tagged>(ret.ret0[0]);
 }
@@ -445,7 +445,7 @@ LtvcReturn ltvc_mlf_init_funcall(fnLispCallingConvention fptr, const char* name)
 LtvcReturn ltvc_set_ltv_funcall(gctools::GCRootsInModule* holder, size_t index, fnLispCallingConvention fptr, const char* name) {
   core::T_O *lcc_arglist = _Nil<core::T_O>().raw_();
   Symbol_sp sname = Symbol_O::create_from_string(std::string(name));
-  GC_ALLOCATE_VARIADIC(CompiledClosure_O, toplevel_closure, fptr, sname, kw::_sym_function, _Nil<T_O>(), _Nil<T_O>(), 0, 0, 0, 0 );
+  core::ClosureWithSlots_sp toplevel_closure = core::ClosureWithSlots_O::make_bclasp_closure(sname, fptr, kw::_sym_function, _Nil<core::T_O>(), _Nil<core::T_O>(), 0, 0, 0, 0 );
   LCC_RETURN ret = fptr(LCC_PASS_ARGS0_VA_LIST(toplevel_closure.raw_()));
   core::T_sp res((gctools::Tagged)ret.ret0[0]);
   core::T_sp val = res;
@@ -458,7 +458,7 @@ LtvcReturn ltvc_set_ltv_funcall_cleavir(gctools::GCRootsInModule* holder, size_t
   // FIXME: Remove this function and use the ltvc_set_ltv_funcall instead
   core::T_O *lcc_arglist = _Nil<core::T_O>().raw_();
   Symbol_sp sname = Symbol_O::create_from_string(std::string(name));
-  GC_ALLOCATE_VARIADIC(CompiledClosure_O, toplevel_closure, fptr, sname, kw::_sym_function, _Nil<T_O>(), _Nil<T_O>(), 0, 0, 0, 0 );
+  core::ClosureWithSlots_sp toplevel_closure = core::ClosureWithSlots_O::make_bclasp_closure(sname, fptr, kw::_sym_function, _Nil<core::T_O>(), _Nil<core::T_O>(), 0, 0, 0, 0 );
   LCC_RETURN ret = fptr(LCC_PASS_ARGS0_VA_LIST(toplevel_closure.raw_()));
   core::T_sp tret((gctools::Tagged)ret.ret0);
 //  printf("%s:%d:%s     ret -> %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(tret).c_str());
@@ -507,7 +507,7 @@ LtvcReturn ltvc_toplevel_funcall(fnLispCallingConvention fptr, const char* name)
 #endif
   core::T_O *lcc_arglist = _Nil<core::T_O>().raw_();
   Symbol_sp sname = Symbol_O::create_from_string(std::string(name));
-  GC_ALLOCATE_VARIADIC(CompiledClosure_O, toplevel_closure, fptr, sname, kw::_sym_function, _Nil<T_O>(), _Nil<T_O>(), 0, 0, 0, 0 );
+  core::ClosureWithSlots_sp toplevel_closure = core::ClosureWithSlots_O::make_bclasp_closure(sname, fptr, kw::_sym_function, _Nil<core::T_O>(), _Nil<core::T_O>(),  0, 0, 0, 0 );
   LCC_RETURN ret = fptr(LCC_PASS_ARGS0_VA_LIST(toplevel_closure.raw_()));
 //  LTVCRETURN reinterpret_cast<gctools::Tagged>(ret.ret0[0]);
 }
@@ -673,8 +673,9 @@ DONT_OPTIMIZE_WHEN_DEBUG_RELEASE core::T_O* makeCompiledFunction(fnLispCallingCo
   core::T_sp functionName((gctools::Tagged)functionNameP);
   core::T_sp frame((gctools::Tagged)frameP);
   core::T_sp lambdaList((gctools::Tagged)lambdaListP);
-  core::Closure_sp closure = gctools::GC<core::CompiledClosure_O>::allocate(funcPtr, functionName, kw::_sym_function, frame, lambdaList, *sourceFileInfoHandleP, filePos, lineno, column);
-  return closure.raw_();
+//  printf("%s:%d In makeCompiledFunction     frame -> %s\n", __FILE__, __LINE__, _rep_(frame).c_str());
+  core::ClosureWithSlots_sp toplevel_closure = core::ClosureWithSlots_O::make_bclasp_closure(functionName, funcPtr, kw::_sym_function, lambdaList, frame, *sourceFileInfoHandleP, filePos, lineno, column);
+  return toplevel_closure.raw_();
   NO_UNWIND_END();
 };
 };

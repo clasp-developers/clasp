@@ -46,6 +46,15 @@
       (let ((info (define-primitive-info name return-ty-attr args-ty-attr varargs does-not-throw does-not-return)))
     (core::hash-table-setf-gethash *primitives* name info)))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;;  WARNING WARNING WARNING WARNING
+;;;
+;;; Don't thoughtlessly change a primitive-unwinds intrinsic to a primitive intrinsic.
+;;; + primitive means that the intrinsic doesn't ever throw an exception
+;;; + primitive-unwinds means that the intrinsic can throw an exception and should be called with INVOKE
+;;; + unless it is cc_throw or cc_unwind - then it should be called with CALL.
+;;;
 (defun primitive-unwinds (name return-ty args-ty &key varargs does-not-return )
   "Define primitives that can unwind the stack, either directly or through transitive calls"
   (define-primitive name return-ty args-ty :varargs varargs :does-not-throw nil :does-not-return does-not-return))
@@ -238,7 +247,7 @@
     (primitive         "cc_setTmvToNil" %void% (list %tmv*%))
     (primitive         "cc_precalcSymbol" %t*% (list %ltv**% %size_t%))
     (primitive         "cc_precalcValue" %t*% (list %ltv**% %size_t%))
-    (primitive         "cc_makeCell" %t*% nil)
+    (primitive-unwinds "cc_makeCell" %t*% nil)
     (primitive         "cc_writeCell" %void% (list %t*% %t*%))
     (primitive         "cc_readCell" %t*% (list %t*%))
     (primitive         "cc_t_reference" %t**% nil)

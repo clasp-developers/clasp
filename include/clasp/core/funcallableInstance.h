@@ -63,11 +63,11 @@ namespace core {
                    MIN_GFUN_SLOTS = 4 } GenericFunctionSlots;
   public: // ctor/dtor for classes with shared virtual base
     // entry_point is the LISP_CALLING_CONVENTION() macro
-  FuncallableInstance_O() : Base(not_funcallable_entry_point), _isgf(CLASP_NOT_FUNCALLABLE), _DebugOn(false), _Class(_Nil<Class_O>()), _Sig(_Nil<T_O>()), _CallHistory(_Nil<T_O>()),
+  FuncallableInstance_O() : Base(not_funcallable_entry_point), _isgf(CLASP_NOT_FUNCALLABLE), _DebugOn(false), _Class(_Nil<Instance_O>()), _Sig(_Nil<T_O>()), _CallHistory(_Nil<T_O>()),
       _SpecializerProfile(_Nil<T_O>()),
 //      _Lock(mp::SharedMutex_O::make_shared_mutex(_Nil<T_O>())),
       _CompiledDispatchFunction(_Nil<T_O>()) {};
-    explicit FuncallableInstance_O(Class_sp metaClass, size_t slots) :
+    explicit FuncallableInstance_O(Instance_sp metaClass, size_t slots) :
     Base(not_funcallable_entry_point),
       _Class(metaClass)
       ,_DebugOn(false)
@@ -83,7 +83,7 @@ namespace core {
     // entry (inherited from Function_O)
     // _Class   (matches offset of Instance_O)
     // _Rack    (matches offset of Instance_O)
-    Class_sp _Class;
+    Instance_sp _Class;
     SimpleVector_sp _Rack;
     T_sp   _Sig;
     gc::atomic_wrapper<T_sp>   _CallHistory;
@@ -93,8 +93,8 @@ namespace core {
     int    _isgf;
     bool   _DebugOn;
   public:
-//    static FuncallableInstance_sp createClassUncollectable(gctools::Stamp is,Class_sp metaClass, size_t number_of_slots, Creator_sp creator);
-    static Class_sp create(Symbol_sp symbol,Class_sp metaClass,Creator_sp creator);
+//    static FuncallableInstance_sp createClassUncollectable(gctools::Stamp is,Instance_sp metaClass, size_t number_of_slots, Creator_sp creator);
+    static Instance_sp create(Symbol_sp symbol,Instance_sp metaClass,Creator_sp creator);
   public:
     T_sp GFUN_NAME() const { return this->instanceRef(REF_GFUN_NAME); };
     T_sp GFUN_SPECIALIZERS() const { return this->instanceRef(REF_GFUN_SPECIALIZERS); };
@@ -119,10 +119,10 @@ namespace core {
     void GFUN_DISPATCHER_set(T_sp val) { this->_CompiledDispatchFunction.store(val); };
   public:
 
-    void accumulateSuperClasses(HashTableEq_sp supers, VectorObjects_sp arrayedSupers, Class_sp mc);
+    void accumulateSuperClasses(HashTableEq_sp supers, VectorObjects_sp arrayedSupers, Instance_sp mc);
     void lowLevel_calculateClassPrecedenceList();
 
-//    virtual bool isSubClassOf(Class_sp mc) const;
+//    virtual bool isSubClassOf(Instance_sp mc) const;
 
     T_sp make_instance();
   public:
@@ -164,9 +164,9 @@ namespace core {
 
     CL_DEFMETHOD int isgf() const { return this->_isgf; };
 
-    Class_sp _instanceClass() const { return this->_Class; };
+    Instance_sp _instanceClass() const { return this->_Class; };
 
-    T_sp instanceClassSet(Class_sp mc);
+    T_sp instanceClassSet(Instance_sp mc);
 
     virtual T_sp instanceSig() const;
 

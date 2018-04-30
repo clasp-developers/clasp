@@ -94,7 +94,7 @@ CL_DEFUN SingleDispatchGenericFunctionClosure_sp core__ensure_single_dispatch_ge
 CL_LAMBDA("gfname receiver-class &key lambda-list-handler declares (docstring \"\") body ");
 CL_DECLARE();
 CL_DOCSTRING("ensureSingleDispatchMethod creates a method and adds it to the single-dispatch-generic-function");
-CL_DEFUN void core__ensure_single_dispatch_method(SingleDispatchGenericFunctionClosure_sp gfunction, T_sp tgfname, Class_sp receiver_class, LambdaListHandler_sp lambda_list_handler, List_sp declares, gc::Nilable<String_sp> docstring, Function_sp body) {
+CL_DEFUN void core__ensure_single_dispatch_method(SingleDispatchGenericFunctionClosure_sp gfunction, T_sp tgfname, Instance_sp receiver_class, LambdaListHandler_sp lambda_list_handler, List_sp declares, gc::Nilable<String_sp> docstring, Function_sp body) {
   //	string docstr = docstring->get();
 //  SingleDispatchGenericFunctionClosure_sp gf = gc::As<SingleDispatchGenericFunctionClosure_sp>(gfname->symbolFunction());
   SingleDispatchMethod_sp method = SingleDispatchMethod_O::create(tgfname, receiver_class, lambda_list_handler, declares, docstring, body);
@@ -205,7 +205,7 @@ LCC_RETURN SingleDispatchGenericFunctionClosure_O::LISP_CALLING_CONVENTION() {
   Cache_sp cache = my_thread->_SingleDispatchMethodCachePtr;
   gctools::Vec0<T_sp> &vektor = cache->keys();
   vektor[0] = closure->functionName();
-  Class_sp dispatchArgClass;
+  Instance_sp dispatchArgClass;
   switch (closure->_SingleDispatchArgumentIndex) {
   case 0:
       dispatchArgClass = lisp_instance_class(LCC_ARG0());
@@ -248,13 +248,13 @@ public:
   }
 };
 
-Function_sp SingleDispatchGenericFunctionClosure_O::slowMethodLookup(Class_sp mc) {
+Function_sp SingleDispatchGenericFunctionClosure_O::slowMethodLookup(Instance_sp mc) {
   _OF();
   LOG(BF("Looking for applicable methods for receivers of class[%s]") % _rep_(mc));
   gctools::Vec0<SingleDispatchMethod_sp> applicableMethods;
   for (auto cur : this->_Methods) {
     SingleDispatchMethod_sp sdm = gc::As<SingleDispatchMethod_sp>(oCar(cur));
-    Class_sp ac = sdm->receiver_class();
+    Instance_sp ac = sdm->receiver_class();
     if (mc->isSubClassOf(ac)) {
       LOG(BF("Found applicable method with receiver class[%s]") % _rep_(ac));
       applicableMethods.push_back(sdm);
@@ -265,13 +265,13 @@ Function_sp SingleDispatchGenericFunctionClosure_O::slowMethodLookup(Class_sp mc
     printf("%s:%d    mc-> %s\n", __FILE__, __LINE__, mc->_classNameAsString().c_str());
     for (auto cur : this->_Methods) {
       SingleDispatchMethod_sp sdm = gc::As<SingleDispatchMethod_sp>(oCar(cur));
-      Class_sp ac = sdm->receiver_class();
+      Instance_sp ac = sdm->receiver_class();
       printf("%s:%d   ac->className -> %s\n", __FILE__, __LINE__, _rep_(ac->_className()).c_str());
       printf("%s:%d   mc->isSubClassOf(ac) -> %d\n", __FILE__, __LINE__, mc->isSubClassOf(ac));
       printf("%s:%d    class-precedence-list of ac -> %s\n", __FILE__, __LINE__, _rep_(ac->_className()).c_str() );
-      List_sp cpl = ac->instanceRef(Class_O::REF_CLASS_CLASS_PRECEDENCE_LIST);
+      List_sp cpl = ac->instanceRef(Instance_O::REF_CLASS_CLASS_PRECEDENCE_LIST);
       for (auto xxx : cpl ) {
-        Class_sp sc = gc::As<Class_sp>(CONS_CAR(xxx));
+        Instance_sp sc = gc::As<Instance_sp>(CONS_CAR(xxx));
         printf("%s:%d    :   %s matches mc -> %d\n", __FILE__, __LINE__, _rep_(sc->_className()).c_str(), (mc==sc));
       }
     }

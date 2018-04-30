@@ -54,6 +54,14 @@
            cmp::*jit-saved-symbol-info*)
   (values))
 
+(defun ensure-function-name (name)
+  "Return a symbol or cons that can be used as a function name in a backtrace.
+For Lisp it's easy - it must be a symbol or (setf symbol) - return that.
+For C/C++ frames - return (list 'c-function name)."
+  (etypecase name
+    (symbol name)
+    (cons name)
+    (string (list :c-function name))))
 
 (defun parse-frame (return-address backtrace-name base-pointer next-base-pointer verbose maybe-shadow-frame)
   ;; Get the name
@@ -67,7 +75,7 @@
       (maybe-shadow-frame
        (make-backtrace-frame :type :lisp
                              :return-address return-address
-                             :function-name (format nil "~a" (shadow-backtrace-frame-function-name maybe-shadow-frame))
+                             :function-name (ensure-function-name (shadow-backtrace-frame-function-name maybe-shadow-frame))
                              :print-name (shadow-backtrace-frame-function-name maybe-shadow-frame)
                              :raw-name (shadow-backtrace-frame-function-name maybe-shadow-frame)
                              :arguments (shadow-backtrace-frame-arguments maybe-shadow-frame)
@@ -102,7 +110,7 @@
               (make-backtrace-frame :type :lisp
                                     :return-address return-address
                                     :raw-name jit-name
-                                    :function-name name
+                                    :function-name (ensure-function-name name)
                                     :print-name (cmp:print-name-from-unescaped-split-name jit-name parts name)
                                     :function-start-address function-start-address
                                     :function-length-bytes function-bytes
@@ -112,7 +120,7 @@
             (if verbose (bformat *debug-io* "-->JITted unknown frame\n"))
             (make-backtrace-frame :type :unknown
                                   :return-address return-address
-                                  :function-name (or jit-name (core:bformat nil "%s" return-address))
+                                  :function-name (ensure-function-name jit-name)
                                   :print-name (or jit-name (core:bformat nil "%s" return-address))
                                   :raw-name backtrace-name
                                   :base-pointer base-pointer
@@ -129,7 +137,7 @@
                               :return-address return-address
                               :raw-name backtrace-name
                               :print-name (cmp:print-name-from-unescaped-split-name backtrace-name parts name)
-                              :function-name name
+                              :function-name (ensure-function-name name)
                               :base-pointer base-pointer
                               :next-base-pointer next-base-pointer)))
      ;; It's a C++ function with a mangled name
@@ -143,7 +151,9 @@
                                 :return-address return-address
                                 :raw-name backtrace-name
                                 :print-name (or unmangled just-name)
-                                :function-name (or unmangled just-name)
+                                :function-name (if unmangled
+                                                   (ensure-function-name unmangled)
+                                                   (ensure-function-name just-name))
                                 :base-pointer base-pointer
                                 :next-base-pointer next-base-pointer))))))
 
@@ -204,7 +214,7 @@
                  (interpreted-frame (make-backtrace-frame :type :lisp
                                                           :return-address nil 
                                                           :raw-name (shadow-backtrace-frame-function-name shadow-frame)
-                                                          :function-name (format nil "~a" (shadow-backtrace-frame-function-name shadow-frame))
+                                                          :function-name (ensure-function-name (shadow-backtrace-frame-function-name shadow-frame))
                                                           :print-name (shadow-backtrace-frame-function-name shadow-frame)
                                                           :arguments (shadow-backtrace-frame-arguments shadow-frame))))
             (push interpreted-frame new-frames))))

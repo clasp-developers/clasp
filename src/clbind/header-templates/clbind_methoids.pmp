@@ -31,17 +31,17 @@ $for isConst [[
               template <typename Pols, typename OT $if ret==RetVoid [[]] $elif ret==Ret_unique_ptr [[, typename UPRT ]] $else [[, typename RT ]] $if numArgs>1 [[,]] $for Args_ ,[[typename ARG$Args_]] >
               class IndirectVariadicMethoid
               < Pols,OT $if ret==RetVoid [[,void]] $elif ret==Ret_unique_ptr [[, std::unique_ptr<UPRT> ]] $else [[,RT ]](OT::*)( $for Args_ , [[ARG$Args_]]) $if isConst [[const]] >
-              : public core::TemplatedFunctionBase_O {
+              : public core::BuiltinClosure_O {
               public:
                   typedef IndirectVariadicMethoid < Pols,OT $if ret==RetVoid [[,void]] $elif ret==Ret_unique_ptr [[, std::unique_ptr<UPRT> ]] $else [[,RT ]](OT::*)( $for Args_ , [[ARG$Args_]]) $if isConst [[const]] > MyType;
-                  typedef TemplatedFunctionBase_O TemplatedBase;
+                  typedef BuiltinClosure_O TemplatedBase;
               public:
 		    virtual const char* describe() const { return "IndirectVariadicMethoid"; };
               typedef $if ret==RetVoid [[void]] $elif ret==Ret_unique_ptr [[std::unique_ptr<UPRT>]] $else [[RT]] (OT::*Type)( $for Args_ , [[ARG$Args_]]) $if isConst [[const]];
               Type mptr;
               public:
               enum { NumParams = $numArgs };
-              IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::TemplatedFunctionBase_O(entry_point,name), mptr(ptr) {};
+              IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure_O(entry_point,name), mptr(ptr) {};
               virtual size_t templatedSizeof() const { return sizeof(*this);};
 
               static inline LCC_RETURN LISP_CALLING_CONVENTION()

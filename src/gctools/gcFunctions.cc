@@ -18,6 +18,8 @@ int gcFunctions_after;
 #include <stdint.h>
 #include <execinfo.h>
 #include <unistd.h>
+#include <sstream>
+#include <iomanip>
 
 #include <clasp/core/object.h>
 #include <clasp/core/bformat.h>
@@ -115,7 +117,7 @@ size_t global_next_unused_kind = STAMP_max+1;
  */
 
 const char *global_HardcodedKinds[] = {
-    "", "core::T_O", "core::Class_O", "core::Symbol_O"};
+    "", "core::T_O", "core::Instance_O", "core::Symbol_O"};
 
 CL_DEFUN int gctools__max_bootstrap_kinds() {
   return sizeof(global_HardcodedKinds) / sizeof(global_HardcodedKinds[0]);
@@ -440,7 +442,6 @@ void boehm_callback_reachable_object(void *ptr, size_t sz, void *client_data) {
 
 template <typename T>
 size_t dumpResults(const std::string &name, const std::string &shortName, T *data) {
-  printf("-------------------- %s -------------------\n", name.c_str());
   typedef typename T::value_type::second_type value_type;
   vector<value_type> values;
   for (auto it : *data) {
@@ -452,6 +453,7 @@ size_t dumpResults(const std::string &name, const std::string &shortName, T *dat
   });
   size_t idx = 0;
   for (auto it : values) {
+    // Does that print? If so should go to the OutputStream
     size_t sz = it.print(shortName);
     totalSize += sz;
     if (sz < 96) break;
@@ -462,7 +464,6 @@ size_t dumpResults(const std::string &name, const std::string &shortName, T *dat
     }
 #endif
   }
-  BFORMAT_T(BF("Skipping objects with less than 96 total_size\n"));
   return totalSize;
 }
 
@@ -500,7 +501,6 @@ void amc_apply_stepper(mps_addr_t client, void *p, size_t s) {
 };
 
 size_t dumpMPSResults(const std::string &name, const std::string &shortName, vector<ReachableMPSObject> &values) {
-  printf("-------------------- %s -------------------\n", name.c_str());
   size_t totalSize(0);
   typedef ReachableMPSObject value_type;
   sort(values.begin(), values.end(), [](const value_type &x, const value_type &y) {
@@ -508,6 +508,7 @@ size_t dumpMPSResults(const std::string &name, const std::string &shortName, vec
   });
   size_t idx = 0;
   for (auto it : values) {
+    // Does that print? If so should go to the OutputStream
     totalSize += it.print(shortName);
     idx += 1;
 #if 0
@@ -609,6 +610,7 @@ CL_LAMBDA(&optional x (marker 0) msg);
 CL_DECLARE();
 CL_DOCSTRING("room - Return info about the reachable objects.  x can be T, nil, :default - as in ROOM.  marker can be a fixnum (0 - matches everything, any other number/only objects with that marker)");
 CL_DEFUN core::T_mv cl__room(core::T_sp x, core::Fixnum_sp marker, core::T_sp tmsg) {
+  std::ostringstream OutputStream;
   string smsg = "Total";
   if (cl__stringp(tmsg)) {
     core::String_sp msg = gc::As_unsafe<core::String_sp>(tmsg);
@@ -623,21 +625,22 @@ CL_DEFUN core::T_mv cl__room(core::T_sp x, core::Fixnum_sp marker, core::T_sp tm
     reachables.push_back(ReachableMPSObject(i));
   }
   mps_amc_apply(global_amc_pool, amc_apply_stepper, &reachables, 0);
+  OutputStream << "-------------------- Reachable Kinds -------------------\n";
   dumpMPSResults("Reachable Kinds", "AMCpool", reachables);
-  printf("%12lu collections\n", numCollections);
-  printf("%12lu mps_arena_committed\n", arena_committed);
-  printf("%12lu mps_arena_reserved\n", arena_reserved);
-  printf("%12lu finalization requests\n", globalMpsMetrics.finalizationRequests.load());
+  OutputStream << std::setw(12) << numCollections << " collections\n";
+  OutputStream << std::setw(12) << arena_committed << " mps_arena_committed\n";
+  OutputStream << std::setw(12) << arena_reserved << " mps_arena_reserved\n";
+  OutputStream << std::setw(12) << globalMpsMetrics.finalizationRequests.load() << " finalization requests\n";
   size_t totalAllocations = globalMpsMetrics.nonMovingAllocations.load()
     + globalMpsMetrics.movingAllocations.load()
     + globalMpsMetrics.movingZeroRankAllocations.load()
     + globalMpsMetrics.unknownAllocations.load();
-  printf("%12lu total allocations\n", totalAllocations);
-  printf("%12lu    non-moving(AWL) allocations\n", globalMpsMetrics.nonMovingAllocations.load());
-  printf("%12lu    moving(AMC) allocations\n", globalMpsMetrics.movingAllocations.load());
-  printf("%12lu    moving zero-rank(AMCZ) allocations\n", globalMpsMetrics.movingZeroRankAllocations.load());
-  printf("%12lu    unknown(configurable) allocations\n", globalMpsMetrics.unknownAllocations.load());
-  printf("%12lu total memory allocated\n", globalMpsMetrics.totalMemoryAllocated.load());
+  OutputStream << std::setw(12) << totalAllocations << " total allocations\n";
+  OutputStream << std::setw(12) <<  globalMpsMetrics.nonMovingAllocations.load() << "    non-moving(AWL) allocations\n";
+  OutputStream << std::setw(12) << globalMpsMetrics.movingAllocations.load() << "    moving(AMC) allocations\n";
+  OutputStream << std::setw(12) << globalMpsMetrics.movingZeroRankAllocations.load() << "    moving zero-rank(AMCZ) allocations\n";
+  OutputStream << std::setw(12) << globalMpsMetrics.unknownAllocations.load() << "    unknown(configurable) allocations\n";
+  OutputStream << std::setw(12) << globalMpsMetrics.totalMemoryAllocated.load() << " total memory allocated\n";
 #endif
 #ifdef USE_BOEHM
   globalSearchMarker = core::unbox_fixnum(marker);
@@ -646,22 +649,24 @@ CL_DEFUN core::T_mv cl__room(core::T_sp x, core::Fixnum_sp marker, core::T_sp tm
 #ifdef BOEHM_GC_ENUMERATE_REACHABLE_OBJECTS_INNER_AVAILABLE
   GC_enumerate_reachable_objects_inner(boehm_callback_reachable_object, NULL);
   #else
-  printf("%s:%d The boehm function GC_enumerate_reachable_objects_inner is not available\n", __FILE__, __LINE__ );
+  OutputStream <<  __FILE__ << ":" << __LINE__ <<  "The boehm function GC_enumerate_reachable_objects_inner is not available\n";
 #endif
-  printf("Walked LispKinds\n");
+  OutputStream << "Walked LispKinds\n" ;
   size_t totalSize(0);
+  OutputStream << "-------------------- Reachable ClassKinds -------------------\n"; 
   totalSize += dumpResults("Reachable ClassKinds", "class", static_ReachableClassKinds);
-  printf("Done walk of memory  %" Puintptr_clasp_t " ClassKinds\n", static_cast<uintptr_clasp_t>(static_ReachableClassKinds->size()));
+  OutputStream << "Skipping objects with less than 96 total_size\n";
+  OutputStream << "Done walk of memory  " << static_cast<uintptr_clasp_t>(static_ReachableClassKinds->size()) << " ClassKinds\n";
 #if USE_CXX_DYNAMIC_CAST
-  printf("%s live memory total size = %12lu\n", smsg.c_str(), invalidHeaderTotalSize);
+  OutputStream << smsg << " live memory total size = " << std::setw(12) << invalidHeaderTotalSize << '\n';
 #else
-  printf("%s invalidHeaderTotalSize = %12lu\n", smsg.c_str(), invalidHeaderTotalSize);
+  OutputStream << smsg << " invalidHeaderTotalSize = " << std::setw(12) << invalidHeaderTotalSize << '\n';
 #endif
-  printf("%s memory usage (bytes):    %12lu\n", smsg.c_str(), totalSize);
-  printf("%s GC_get_heap_size()       %12lu\n", smsg.c_str(), GC_get_heap_size());
-  printf("%s GC_get_free_bytes()      %12lu\n", smsg.c_str(), GC_get_free_bytes());
-  printf("%s GC_get_bytes_since_gc()  %12lu\n", smsg.c_str(), GC_get_bytes_since_gc());
-  printf("%s GC_get_total_bytes()     %12lu\n", smsg.c_str(), GC_get_total_bytes());
+  OutputStream << smsg << " memory usage (bytes):    " << std::setw(12) << totalSize << '\n';
+  OutputStream << smsg << " GC_get_heap_size()       " << std::setw(12) << GC_get_heap_size() << '\n';
+  OutputStream << smsg << " GC_get_free_bytes()      " << std::setw(12) << GC_get_free_bytes() << '\n';
+  OutputStream << smsg << " GC_get_bytes_since_gc()  " <<  std::setw(12) << GC_get_bytes_since_gc() << '\n';
+  OutputStream << smsg << " GC_get_total_bytes()     " <<  std::setw(12) << GC_get_total_bytes() << '\n';
 
   delete static_ReachableClassKinds;
 #endif
@@ -669,10 +674,12 @@ CL_DEFUN core::T_mv cl__room(core::T_sp x, core::Fixnum_sp marker, core::T_sp tm
   gc::GCStack *stack = threadLocalStack();
   size_t totalMaxSize = stack->maxSize();
 #if defined(USE_BOEHM) && defined(BOEHM_ONE_BIG_STACK)
-  printf("Lisp-stack bottom %p cur %p limit %p\n", stack->_StackBottom, stack->_StackCur, stack->_StackLimit);
+  OutputStream << "Lisp-stack bottom " << stack->_StackBottom <<  cur << stack->_StackCur <<  limit << stack->_StackLimit << '\n';
 #endif
-  printf("High water mark (max used) side-stack size: %zu\n", totalMaxSize);
+  OutputStream << "High water mark (max used) side-stack size: " << totalMaxSize << '\n';
 #endif
+
+  clasp_write_string(OutputStream.str(),cl::_sym_STARstandard_outputSTAR->symbolValue());
   return Values(_Nil<core::T_O>());
 };
 };

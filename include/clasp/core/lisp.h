@@ -78,9 +78,9 @@ List_sp cl__member(T_sp item, T_sp list, T_sp key = _Nil<T_O>(), T_sp test = cl:
 
 class SymbolClassPair {
 public:
-  SymbolClassPair(Symbol_sp s, Class_sp c) : symbol(s), theClass(c){};
+  SymbolClassPair(Symbol_sp s, Instance_sp c) : symbol(s), theClass(c){};
   Symbol_sp symbol;
-  Class_sp theClass;
+  Instance_sp theClass;
 };
 
 /*! A structure that stores the integer byte/word ordering information for this processor.
@@ -241,7 +241,7 @@ class Lisp_O {
 // THREAD_CHANGE    List_sp _CatchInfo;
     /* The global class table that maps class symbols to classes */
     gctools::Vec0<SymbolClassPair> bootClassTable;
-    //	    SymbolDict<Class_O>		_BootClassTable;
+    //	    SymbolDict<Instance_O>		_BootClassTable;
     /*! When compiled files are loaded, they need to create
 	      LOAD-TIME-VALUEs and QUOTEd objects using C++ calls at runtime.
 	      Those objects are stored here as a map on the compiled file name. */
@@ -260,12 +260,12 @@ class Lisp_O {
 #endif
 #endif
     //! Any class defined here needs to be added to predicates.cc::clos__classp
-    Class_sp   _TheClass;
-    Class_sp   _TheBuiltInClass;
-    Class_sp   _TheStandardClass;
-    Class_sp   _TheStructureClass;
-    Class_sp   _TheDerivableCxxClass;
-    Class_sp   _TheClassRep;
+    Instance_sp   _TheClass;
+    Instance_sp   _TheBuiltInClass;
+    Instance_sp   _TheStandardClass;
+    Instance_sp   _TheStructureClass;
+    Instance_sp   _TheDerivableCxxClass;
+    Instance_sp   _TheClassRep;
     Package_sp _CorePackage;
     Package_sp _KeywordPackage;
     Package_sp _CommonLispPackage;
@@ -310,11 +310,6 @@ class Lisp_O {
 #endif // ifdef CLASP_LONG_FLOAT
     bool _Booted;
     HashTableEq_sp _KnownSignals;
-#if 0
-    // One set of caches for the entire system doesn't work with multi-threading
-        /*! SingleDispatchGenericFunction cache */
-    Cache_sp _SingleDispatchMethodCachePtr;
-#endif
     GCRoots();
   };
 
@@ -327,7 +322,7 @@ class Lisp_O {
   friend T_sp sp_eval_when(List_sp args, T_sp env);
   friend List_sp core__all_source_files();
   template <class oclass>
-  friend void define_base_class(Class_sp co, Class_sp cob, uint &classesUpdated);
+  friend void define_base_class(Instance_sp co, Instance_sp cob, uint &classesUpdated);
   template <class oclass>
   friend T_sp core__put_sysprop(T_sp key, T_sp area, T_sp value);
   friend T_mv core__get_sysprop(T_sp key, T_sp area);
@@ -336,11 +331,6 @@ class Lisp_O {
   //	/* disable scrape */ LISP_CLASS(core,CorePkg,Lisp_O,"Lisp",T_O);
 public:
   static void initializeGlobals(Lisp_sp lisp);
-
-#if 0
-  template <class oclass>
-  friend Class_sp hand_initialize_class(uint &classesHandInitialized, Lisp_sp prog, BuiltInClass_sp c);
-#endif
   
 public:
   static void lisp_initSymbols(Lisp_sp lisp);
@@ -758,29 +748,19 @@ private:
   static void finalizeSpecialSymbols();
 
 public:
-#if 0
-	/*! Lookup a generic-function in the _GenericFunctionTable by name
-	 If errorp == true then throw an exception if the generic-function is not
-	 found otherwise return nil */
-	GenericFunction_sp findGenericFunction(Symbol_sp gfSym, bool errorp=true) const;
-	/*! Associate a generic function with a symbol by name */
-	GenericFunction_sp setf_findGenericFunction(Symbol_sp gfSym, GenericFunction_sp gf);
-	/*! Clear all generic functions */
-	void forgetAllGenericFunctions();
-#endif
 
   /*! Lookup a class in the _ClassTable by name
 	 If errorp == true then throw an exception if the class is not
 	found otherwise return nil */
-  Class_sp boot_findClass(Symbol_sp className, bool errorp = true) const;
+  Instance_sp boot_findClass(Symbol_sp className, bool errorp = true) const;
   /*! associate a class in the _ClassTable by name */
-  Class_sp boot_setf_findClass(Symbol_sp className, Class_sp mc);
+  Instance_sp boot_setf_findClass(Symbol_sp className, Instance_sp mc);
 
   /*! Move all _BootClassTable class definitions into a hash-table in *class-name-hash-table* */
   void switchToClassNameHashTable();
 
-  //	Class_sp classFromClassSymbol(Symbol_sp cid) const;
-  Class_sp classFromClassName(const string &name);
+  //	Instance_sp classFromClassSymbol(Symbol_sp cid) const;
+  Instance_sp classFromClassName(const string &name);
   string classNameFromClassSymbol(Symbol_sp cid);
 
 public:
@@ -804,9 +784,6 @@ public:
   //
   void initializePackages();
 
-public: // Functions for generating errors to THROW
-  T_sp error(const boost::format &fmt);
-
 public: // Functions for manipulating special forms
   Symbol_sp defineSpecialOperator(const string &package, const string &formName, SpecialFormCallback cb, const string &args = "", const string &docstring = "");
   T_sp specialFormOrNil(Symbol_sp sym);
@@ -818,10 +795,7 @@ public:
   int getRequireLevel() { return this->_RequireLevel; };
   void pushRequireLevel() { this->_RequireLevel++; };
   void popRequireLevel() { this->_RequireLevel--; };
-#if 0 // moved condition handlers into the environment
-	void 	pushConditionHandlers(List_sp handlers);
-	void	popConditionHandlers();
-#endif
+
   /*! Install a package using the newer Exposer idiom */
   void installPackage(const Exposer_O *package);
   /*! Create nils for all classes that don't have them yet */
@@ -949,7 +923,7 @@ public:
   string getMethodName(uint methodId);
   uint getMethodId(const string &methodName);
 
-  //	Function_sp	lookupMethod(Symbol_sp, Class_sp classSymbol, T_sp receiver );
+  //	Function_sp	lookupMethod(Symbol_sp, Instance_sp classSymbol, T_sp receiver );
 
 public:
   void addToStarModulesStar(Symbol_sp sym);
@@ -970,9 +944,9 @@ public:
   //!Wipes out namespace and fills it with new values
   void initializeEnvironment();
 
-  void addClassNameToPackageAsDynamic(const string &package, const string &name, Class_sp cl);
+  void addClassNameToPackageAsDynamic(const string &package, const string &name, Instance_sp cl);
   void addClassSymbol(Symbol_sp classSymbol, Creator_sp creator, Symbol_sp base1ClassSymbol ); //, Symbol_sp base2ClassSymbol = UNDEFINED_SYMBOL, Symbol_sp base3ClassSymbol = UNDEFINED_SYMBOL);
-//  void addClass(Symbol_sp classSymbol, Class_sp theClass);
+//  void addClass(Symbol_sp classSymbol, Instance_sp theClass);
   //	void addClass( Symbol_sp classSymbol);
 
   string __repr__() const;
@@ -1064,8 +1038,8 @@ namespace core {
 
   List_sp cl__assoc(T_sp item, List_sp alist, T_sp key, T_sp test = cl::_sym_eq, T_sp test_not = _Nil<T_O>());
 
-  Class_mv cl__find_class(Symbol_sp symbol, bool errorp = true, T_sp env = _Nil<T_O>());
-  Class_mv core__setf_find_class(T_sp newValue, Symbol_sp name);
+  T_sp cl__find_class(Symbol_sp symbol, bool errorp = true, T_sp env = _Nil<T_O>());
+  T_sp core__setf_find_class(T_sp newValue, Symbol_sp name);
 
   void cl__error(T_sp err, List_sp initializers);
 };
