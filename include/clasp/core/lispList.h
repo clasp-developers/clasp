@@ -33,10 +33,10 @@ THE SOFTWARE.
 namespace core {
   T_sp cl_revappend(List_sp tail);
   T_sp cl__nreconc(List_sp list, T_sp tail);
-  T_sp cl__nth(int idx, T_sp arg);
-  T_sp cl__nthcdr(int idx, T_sp arg);
+  T_sp cl__nth(Integer_sp idx, List_sp arg);
+  T_sp cl__nthcdr(Integer_sp idx, List_sp arg);
 
-  T_sp cl__copy_list(T_sp arg);
+  T_sp cl__copy_list(List_sp arg);
 
   T_sp cl__nconc(List_sp rest);
 
