@@ -24,7 +24,7 @@
     ((ext:byte64) (values 'core:make-simple-vector-byte64 'core:make-simple-mdarray-byte64))
     ((fixnum) (values 'core:make-simple-vector-fixnum 'core:make-simple-mdarray-fixnum))
     ;; size_t?
-    (t (error "BUG: Unknown UAET ~a" uaet))))
+    (t (values nil nil))))
 
 (core:bclasp-define-compiler-macro make-array (&whole form dimensions
                                                       &key (element-type t)
@@ -35,22 +35,23 @@
   (if (constantp element-type env)
       (multiple-value-bind (make-sv make-smdarray)
           (uaet-info (upgraded-array-element-type (ext:constant-form-value element-type env) env))
-        (if (or (or ap fp dp diop) ; complex array; for now punt, could be more specific later
-                (and iesp icsp)) ; error; let the full function handle it. could warn
-            form
-            (let* ((dimsym (gensym "DIMENSIONS"))
-                   (iesym (gensym "INITIAL-ELEMENT"))
-                   (form
-                     `(let ((,dimsym ,dimensions) (,iesym ,initial-element))
-                        (etypecase ,dimsym
-                          ;; vectors are (probably) most common; check that first.
-                          (ext:array-index
-                           (,make-sv ,dimsym ,iesym ,iesp))
-                          ((cons ext:array-index null)
-                           (,make-sv (car ,dimsym) ,iesym ,iesp))
-                          (list
-                           (,make-smdarray ,dimsym ,iesym ,iesp))))))
-              (if icsp
-                  `(core::fill-array-with-seq ,form ,initial-contents)
-                  form))))
+        (cond ((null make-sv) form) ; unknown UAET; fall back
+              ((or (or ap fp dp diop) ; complex array; for now punt, could be more specific later
+                   (and iesp icsp)) ; error; let the full function handle it. could warn
+               form)
+              (t (let* ((dimsym (gensym "DIMENSIONS"))
+                        (iesym (gensym "INITIAL-ELEMENT"))
+                        (form
+                          `(let ((,dimsym ,dimensions) (,iesym ,initial-element))
+                             (etypecase ,dimsym
+                               ;; vectors are (probably) most common; check that first.
+                               (ext:array-index
+                                (,make-sv ,dimsym ,iesym ,iesp))
+                               ((cons ext:array-index null)
+                                (,make-sv (car ,dimsym) ,iesym ,iesp))
+                               (list
+                                (,make-smdarray ,dimsym ,iesym ,iesp))))))
+                   (if icsp
+                       `(core::fill-array-with-seq ,form ,initial-contents)
+                       form)))))
       form))
