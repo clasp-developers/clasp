@@ -1771,8 +1771,6 @@ str_in_listen(T_sp strm) {
 
 static T_sp
 str_in_element_type(T_sp strm) {
-  // kpoeck this is an input-string, no output
-  // T_sp tstring = StringOutputStreamOutputString(strm);
   T_sp tstring = StringInputStreamInputString(strm);
   ASSERT(cl__stringp(tstring));
   return gc::As_unsafe<String_sp>(tstring)->arrayElementType();
@@ -2412,7 +2410,6 @@ concatenated_read_byte(T_sp strm) {
   return c;
 }
 
-//kpoeck
 static T_sp
 concatenated_element_type(T_sp strm) {
   T_sp l = ConcatenatedStreamList(strm);
@@ -2489,10 +2486,9 @@ const FileOps concatenated_ops = {
     generic_always_true,  /* input_p */
     generic_always_false, /* output_p */
     generic_always_false,
-    // kpoeck, this is wrong, must be specific for concatenated streams
+    // this is wrong, must be specific for concatenated streams
     // should be concatenated_element_type with a proper definition for that
     // ccl does more or less (stream-element-type (concatenated-stream-current-input-stream s))
-    //broadcast_element_type,
     concatenated_element_type,
     not_a_file_stream,  /* length */
     generic_always_nil, /* get_position */
@@ -2514,7 +2510,9 @@ CL_DEFUN T_sp cl__make_concatenated_stream(List_sp ap) {
   }
   StreamMode(x) = clasp_smm_concatenated;
   StreamOps(x) = duplicate_dispatch_table(concatenated_ops);
-  ConcatenatedStreamList(x) = cl__nreverse(streams);
+  // used to be nreverse, but this gives wrong results, since it han reads first from the last stream past
+  // stick with the original list
+  ConcatenatedStreamList(x) = streams;
   return x;
 }
 
@@ -3241,7 +3239,9 @@ set_stream_elt_type(T_sp tstream, gctools::Fixnum byte_size, int flags,
   StreamOps(stream).write_char = eformat_write_char;
   switch (flags & CLASP_STREAM_FORMAT) {
   case CLASP_STREAM_BINARY:
-    FileStreamEltType(stream) = Cons_O::createList(_lisp->_true(), make_fixnum(byte_size));
+    // e.g. (T size) is not a valid type, use (UnsignedByte size)
+    // This is better than (T Size), but not necesarily the right type
+    FileStreamEltType(stream) = Cons_O::createList(cl::_sym_UnsignedByte, make_fixnum(byte_size));
     StreamFormat(stream) = t;
     StreamOps(stream).read_char = not_character_read_char;
     StreamOps(stream).write_char = not_character_write_char;
@@ -4863,7 +4863,7 @@ CL_DEFUN T_sp core__do_write_sequence(T_sp seq, T_sp stream, T_sp s, T_sp e) {
     if (cl__listp(seq)) {
       T_sp elt_type = cl__stream_element_type(stream);
       bool ischar = (elt_type == cl::_sym_base_char) || (elt_type == cl::_sym_character);
-      T_sp s = cl__nthcdr(start, seq);
+      T_sp s = cl__nthcdr(clasp_make_integer(start), seq);
       T_sp orig = s;
       for (; s.notnilp(); s = oCdr(s)) {
         if (!cl__listp(s)) {
@@ -4919,7 +4919,7 @@ T_sp si_do_read_sequence(T_sp seq, T_sp stream, T_sp s, T_sp e) {
     if (cl__listp(seq)) {
       T_sp elt_type = cl__stream_element_type(stream);
       bool ischar = (elt_type == cl::_sym_base_char) || (elt_type == cl::_sym_character);
-      seq = cl__nthcdr(start, seq);
+      seq = cl__nthcdr(clasp_make_integer(start), seq);
       T_sp orig = seq;
       for (; seq.notnilp(); seq = oCdr(seq)) {
         if (start >= end) {
@@ -4960,6 +4960,13 @@ CL_DEFUN T_sp cl__read_sequence(T_sp sequence, T_sp stream, T_sp start, T_sp oen
   return si_do_read_sequence(sequence, stream, start, oend);
 }
 
+CL_LAMBDA(sequence stream start end);
+CL_DECLARE();
+CL_DOCSTRING("readSequence");
+CL_DEFUN T_sp core__do_read_sequence(T_sp sequence, T_sp stream, T_sp start, T_sp oend) {
+  stream = coerce::inputStreamDesignator(stream);
+  return si_do_read_sequence(sequence, stream, start, oend);
+}
 /**********************************************************************
  * LISP LEVEL INTERFACE
  */
@@ -6382,7 +6389,7 @@ CL_DEFUN T_sp cl__write_sequence(T_sp seq, T_sp stream, Fixnum_sp fstart, T_sp t
   if (cl__listp(seq)) {
     T_sp elt_type = cl__stream_element_type(stream);
     bool ischar = (elt_type == cl::_sym_base_char) || (elt_type == cl::_sym_character);
-    T_sp s = cl__nthcdr(start, seq);
+    T_sp s = cl__nthcdr(clasp_make_integer(start), seq);
     for (;; s = cons_cdr(s)) {
       if (start < end) {
         T_sp elt = oCar(s);
@@ -6429,6 +6436,7 @@ SYMBOL_EXPORT_SC_(KeywordPkg,output);
 SYMBOL_EXPORT_SC_(KeywordPkg,input);
   SYMBOL_EXPORT_SC_(ClPkg, filePosition);
   SYMBOL_EXPORT_SC_(ClPkg, readSequence);
+  SYMBOL_EXPORT_SC_(CorePkg, doReadSequence);
   SYMBOL_EXPORT_SC_(ClPkg, read_from_string);
   SYMBOL_EXPORT_SC_(ClPkg, read_line);
   SYMBOL_EXPORT_SC_(ClPkg, terpri);
