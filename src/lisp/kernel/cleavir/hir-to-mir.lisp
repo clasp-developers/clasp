@@ -406,7 +406,7 @@
                 (let ((caro (cleavir-ir:new-temporary)))
                   (cleavir-ir:make-car-instruction
                    object caro
-                   (gen-type-check caro cart pro con)))))
+                   (gen-type-check caro cart cdr-branch con)))))
           con)))
       ((simple-array array)
        (destructuring-bind (&optional (et '*) (dims '*)) args

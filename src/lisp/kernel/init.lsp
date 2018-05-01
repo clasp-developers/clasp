@@ -364,12 +364,10 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 
 ;;; Define these here so that Cleavir can do inlining
 (defvar *defun-inline-hook* nil)
-(defvar *inline-on* nil)
 (defvar *do-inline-hook* nil)
 (defvar *proclaim-hook* nil)
 (export '(*defun-inline-hook*
           *do-inline-hook*
-          *inline-on*
           *proclaim-hook*))
 
 ;; Discard documentation until helpfile.lsp is loaded
