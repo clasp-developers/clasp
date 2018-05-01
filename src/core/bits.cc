@@ -462,10 +462,41 @@ inline void store_byte32(Pointer pointer, Index index, Offset offset, Value valu
 //#define TEMPLATE_BIT_ARRAY_OP 1
 #ifndef TEMPLATE_BIT_ARRAY_OP
 
+class Dispatcher
+{
+public:
+    virtual Array_sp dispatcher (Array_O *target, SimpleBitVector_sp result) {
+      //std::cout << "listclass is  " << lisp_classNameAsString(core::instance_class(target->asSmartPtr())) << '\n';
+      // Und bist du nicht willig, so brauche ich Gewalt
+      // Don't understand why target->create_result_bitarray(result) does not work
+      SimpleBitVector_O * sbvptr = dynamic_cast<SimpleBitVector_O *>(target);
+      MDArrayBit_O * mdabptr = dynamic_cast<MDArrayBit_O *>(target);
+      SimpleMDArrayBit_O * smbabptr = dynamic_cast<SimpleMDArrayBit_O *>(target);
+      BitVectorNs_O * bvnptr =  dynamic_cast<BitVectorNs_O *>(target);
+      if (sbvptr)
+        return result;
+      else if (mdabptr)
+        return mdabptr->create_result_bitarray(result);
+      else if (smbabptr)
+        return smbabptr->create_result_bitarray(result);
+      else if (bvnptr)
+        return bvnptr->create_result_bitarray(result);
+      else
+        // most likely return a SimpleBitVector_sp but perhaps better than crashing
+        return result;
+    }
+};
+
+// without these c++ seems always to call create_result_bitarray of Array_0
+//Array_sp return_correct_bitvector (SimpleBitVector_sp target, SimpleBitVector_sp result) {
+//  return (* target).create_result_bitarray(result);
+//}
+
+
 CL_LAMBDA(op x y &optional r);
 CL_DECLARE();
 CL_DOCSTRING("bitArrayOp");
-CL_DEFUN T_sp core__bit_array_op(int opval, T_sp tx, T_sp ty, T_sp tr) {
+CL_DEFUN T_sp core__bit_array_op(int opval, Array_sp tx, Array_sp ty, T_sp tr) {
   gctools::Fixnum i, j, n, d;
   SimpleBitVector_sp r0;
   size_t startr0 = 0;
@@ -478,6 +509,7 @@ CL_DEFUN T_sp core__bit_array_op(int opval, T_sp tx, T_sp ty, T_sp tr) {
   size_t startx, endx;
   AbstractSimpleVector_sp ay;
   size_t starty, endy;
+  Dispatcher dispatcher;
   Array_sp array_x = gc::As<Array_sp>(tx);
   array_x->asAbstractSimpleVectorRange(ax, startx, endx);
   SimpleBitVector_sp x = gc::As_unsafe<SimpleBitVector_sp>(ax);
@@ -489,7 +521,7 @@ CL_DEFUN T_sp core__bit_array_op(int opval, T_sp tx, T_sp ty, T_sp tr) {
   d = (endx - startx); // x->arrayTotalSize();
   xp = x->bytes();
   xo = startx; // x->offset();
-  if (d != array_y->arrayTotalSize())
+  if (d != (endy - starty)) //(d != array_y->arrayTotalSize()) gives incorrect result for multi-dimensional arrays
     goto ERROR;
   yp = y->bytes();
   yo = starty; // y->offset();
@@ -541,7 +573,7 @@ L1:
       set_high32(rp[n], j, rpt);
     }
     if (!replace)
-      return r;
+      return dispatcher.dispatcher(&(* tx),r);
   } else {
     for (n = d / 32, i = 0; i <= n; i++) {
       extract_byte32(xi, xp, i, xo);
@@ -557,7 +589,7 @@ L1:
       store_byte32(rp, i, ro, ri);
     }
     if (!replace)
-      return r;
+      return dispatcher.dispatcher(&(* tx),r);
   }
   rp = r0->bytes();
   ro = startr0; // r0->offset();
@@ -571,11 +603,12 @@ L1:
       ri = r->bytes()[i];
     store_byte32(rp, i, ro, ri);
   }
-  return r0;
+  return dispatcher.dispatcher(&(* tx),r0);
 ERROR:
   SIMPLE_ERROR(BF("Illegal arguments for bit-array operation."));
 }
 
+// I think none of these are called from Lisp
 CL_DEFUN T_sp core__bit_array_op_b_clr_op(T_sp tx, T_sp ty, T_sp tr) { return core__bit_array_op(b_clr_op_id,tx,ty,tr); };
 CL_DEFUN T_sp core__bit_array_op_and_op(T_sp tx, T_sp ty, T_sp tr) { return core__bit_array_op(and_op_id,tx,ty,tr); };
 CL_DEFUN T_sp core__bit_array_op_andc2_op(T_sp tx, T_sp ty, T_sp tr) { return core__bit_array_op(andc2_op_id,tx,ty,tr); };
