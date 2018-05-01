@@ -1771,8 +1771,6 @@ str_in_listen(T_sp strm) {
 
 static T_sp
 str_in_element_type(T_sp strm) {
-  // kpoeck this is an input-string, no output
-  // T_sp tstring = StringOutputStreamOutputString(strm);
   T_sp tstring = StringInputStreamInputString(strm);
   ASSERT(cl__stringp(tstring));
   return gc::As_unsafe<String_sp>(tstring)->arrayElementType();
@@ -2412,7 +2410,6 @@ concatenated_read_byte(T_sp strm) {
   return c;
 }
 
-//kpoeck
 static T_sp
 concatenated_element_type(T_sp strm) {
   T_sp l = ConcatenatedStreamList(strm);
@@ -2489,10 +2486,9 @@ const FileOps concatenated_ops = {
     generic_always_true,  /* input_p */
     generic_always_false, /* output_p */
     generic_always_false,
-    // kpoeck, this is wrong, must be specific for concatenated streams
+    // this is wrong, must be specific for concatenated streams
     // should be concatenated_element_type with a proper definition for that
     // ccl does more or less (stream-element-type (concatenated-stream-current-input-stream s))
-    //broadcast_element_type,
     concatenated_element_type,
     not_a_file_stream,  /* length */
     generic_always_nil, /* get_position */
@@ -4867,7 +4863,7 @@ CL_DEFUN T_sp core__do_write_sequence(T_sp seq, T_sp stream, T_sp s, T_sp e) {
     if (cl__listp(seq)) {
       T_sp elt_type = cl__stream_element_type(stream);
       bool ischar = (elt_type == cl::_sym_base_char) || (elt_type == cl::_sym_character);
-      T_sp s = cl__nthcdr(start, seq);
+      T_sp s = cl__nthcdr(clasp_make_integer(start), seq);
       T_sp orig = s;
       for (; s.notnilp(); s = oCdr(s)) {
         if (!cl__listp(s)) {
@@ -4923,7 +4919,7 @@ T_sp si_do_read_sequence(T_sp seq, T_sp stream, T_sp s, T_sp e) {
     if (cl__listp(seq)) {
       T_sp elt_type = cl__stream_element_type(stream);
       bool ischar = (elt_type == cl::_sym_base_char) || (elt_type == cl::_sym_character);
-      seq = cl__nthcdr(start, seq);
+      seq = cl__nthcdr(clasp_make_integer(start), seq);
       T_sp orig = seq;
       for (; seq.notnilp(); seq = oCdr(seq)) {
         if (start >= end) {
@@ -6393,7 +6389,7 @@ CL_DEFUN T_sp cl__write_sequence(T_sp seq, T_sp stream, Fixnum_sp fstart, T_sp t
   if (cl__listp(seq)) {
     T_sp elt_type = cl__stream_element_type(stream);
     bool ischar = (elt_type == cl::_sym_base_char) || (elt_type == cl::_sym_character);
-    T_sp s = cl__nthcdr(start, seq);
+    T_sp s = cl__nthcdr(clasp_make_integer(start), seq);
     for (;; s = cons_cdr(s)) {
       if (start < end) {
         T_sp elt = oCar(s);
