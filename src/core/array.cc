@@ -1325,14 +1325,20 @@ inline void setup_string_op_arguments(T_sp string1_desig, T_sp string2_desig,
                                       size_t &istart2, size_t &iend2) {
   string1 = coerce::stringDesignator(string1_desig);
   string2 = coerce::stringDesignator(string2_desig);
-  // This silently corrects a negative start1, this is not correct
-  istart1 = MAX(unbox_fixnum(start1), 0);
+  Fixnum fstart1 = unbox_fixnum(start1);
+  if (fstart1 < 0)
+      // a negative start1 should error
+    SIMPLE_ERROR(BF("start1 %d out of bounds for string %s") % fstart1 % string1);
+  istart1 = MAX(fstart1, 0);
   if (istart1 > cl__length(string1)) {
     SIMPLE_ERROR(BF("start1 %d out of bounds for string %s") % istart1 % string1);
   }
   iend1 = MIN(end1.nilp() ? cl__length(string1) : unbox_fixnum(gc::As<Fixnum_sp>(end1)), cl__length(string1));
-  // This silently corrects a negative start2, this is not correct
-  istart2 = MAX(unbox_fixnum(start2), 0);
+  Fixnum fstart2 = unbox_fixnum(start2);
+  if (fstart2 <0)
+    // a negative start2 should error
+    SIMPLE_ERROR(BF("start2 %d out of bounds for string %s") % fstart2 % string2);
+  istart2 = MAX(fstart2, 0);
   if (istart2 > cl__length(string2)) {
     SIMPLE_ERROR(BF("start2 %d out of bounds for string %s") % istart2 % string2);
   }
@@ -2620,7 +2626,7 @@ CL_DEFUN SimpleMDArrayT_sp core__make_simple_mdarray_t(List_sp dimensions,
   CL_DOCSTRING("Make a (simple-array " #TYPE ") that is not a vector");\
   CL_DEFUN SMART core__make_simple_mdarray_##TYPE(List_sp dimensions, T_sp initialElement, bool initialElementSuppliedP) {\
   SIMPLE::value_type init = SIMPLE::initial_element_from_object(initialElement, initialElementSuppliedP);\
-  return OBJECT::make_multi_dimensional(dimensions, initialElement, _Nil<T_O>());\
+  return OBJECT::make_multi_dimensional(dimensions, init, _Nil<T_O>());\
   }
 
 DEFMAKESIMPLEMDARRAY(bit, SimpleMDArrayBit_O, SimpleMDArrayBit_sp, SimpleBitVector_O);
@@ -2660,11 +2666,13 @@ CL_DEFUN Vector_sp core__make_vector(T_sp element_type,
              || element_type == cl::_sym_character) {
     unlikely_if (element_type == cl::_sym_character) {
       claspCharacter initialCharacter = SimpleCharacterString_O::initial_element_from_object(initialElement,initialElementSuppliedP);
-      if (adjustable) return StrWNs_O::make(dimension,initialCharacter,initialElementSuppliedP,fillPointer,displacedTo,true,displacedIndexOffset);
+      // can't understand why displaced was set constantly to true, do as in the other cases with displacedTo.notnilp()
+      if (adjustable) return StrWNs_O::make(dimension,initialCharacter,initialElementSuppliedP,fillPointer,displacedTo,displacedTo.notnilp(),displacedIndexOffset);
       else return SimpleCharacterString_O::make(dimension,initialCharacter,initialElementSuppliedP);
     }
     claspChar initialChar = SimpleBaseString_O::initial_element_from_object(initialElement,initialElementSuppliedP);
-    if (adjustable) return Str8Ns_O::make(dimension,initialChar,initialElementSuppliedP,fillPointer,displacedTo,true,displacedIndexOffset);
+    // can't understand why displaced was set constantly to true, do as in the other cases with displacedTo.notnilp()
+    if (adjustable) return Str8Ns_O::make(dimension,initialChar,initialElementSuppliedP,fillPointer,displacedTo,displacedTo.notnilp(),displacedIndexOffset);
     else return SimpleBaseString_O::make(dimension,initialChar,initialElementSuppliedP);
   } else if ( element_type == cl::_sym_T_O ) {
     if (adjustable) return VectorTNs_O::make(dimension,initialElement,fillPointer,displacedTo,displacedTo.notnilp(),displacedIndexOffset);
