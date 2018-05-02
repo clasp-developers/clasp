@@ -264,12 +264,6 @@ namespace core {
     //return this->cdr()->cdr()->ocar();
     }
 
-#if 0
-    Cons_sp cdr() const 	{ return this->_Cdr.as<Cons_O>();};
-    Cons_sp cddr() const 	{ return oCdr(this->_Cdr).as<Cons_O>();};
-    Cons_sp cdddr() const 	{ return oCddr(this->_Cdr).as<Cons_O>();};
-    Cons_sp cddddr() const 	{ return oCdddr(this->_Cdr).as<Cons_O>();};
-#endif
   /*! Set the data for this element */
     inline void setCar(T_sp o) {
       this->_Car = o;
@@ -286,11 +280,6 @@ namespace core {
     bool equalp(T_sp obj) const;
 
     T_sp setf_nth(cl_index index, T_sp val);
-
-  /*! Return a Cons that has all the same elements
-	 * in the same order but with nil objects removed.
-	 */
-    List_sp filterOutNil();
 
   /*! Return a new list by combinding the given list of elements to our list
 	 */
@@ -314,9 +303,6 @@ namespace core {
   /*! Like Common Lisp copy-list */
     List_sp copyList() const;
 
-  /*! Like Common Lisp copy-list */
-    Cons_sp copyListCar() const;
-
   /*! Like Common Lisp copy-tree */
     List_sp copyTree() const;
 
@@ -338,25 +324,6 @@ namespace core {
       return sz;
     }
 
-#if 0
-	/*! Return an arbitrary member of the list or an empty member*/
-    template <class o_class>
-      gctools::smart_ptr<o_class> listref(int i) { return this->olistref(i).as<o_class>();};
-#endif
-
-  /*! Return an arbitrary member of the list or an empty member*/
-    T_sp olistref(cl_index index);
-
-  /*! Return an arbitrary member of the list or an empty member - used only for passing arguments from Lisp to C++*/
-    T_sp olistrefArgument(cl_index index);
-
-  /*! Lookup the association given a key 
-	 * (associations are two element lists or KeyedObjects)
-	 */
-    T_sp olookupKeyObject(Symbol_sp key);
-
-    T_sp olookupKeyObjectDefault(Symbol_sp key, T_sp dflt);
-
     List_sp reverse();
     List_sp nreverse();
 
@@ -369,40 +336,9 @@ namespace core {
     List_sp member(T_sp item, T_sp key, T_sp test, T_sp testNot) const;
     List_sp assoc(T_sp item, T_sp key, T_sp test, T_sp testNot) const;
 
-  /*! Return true if every CAR of other matches the cooresponding CAR of this pointer */
-    bool exactlyMatches(List_sp other) const;
-
-  /*!If the Cons doesn't contained KeyedObjects
-	 * return nil.
-	 * If it does and they are all at the end of the list
-	 * then set the cdr of the last non-keyed entry to nil
-	 * and return the Cons of the first KeyedObject.
-	 * This will separate the list into two lists.
-	 * If they aren't all at the end of the list then throw
-	 * an exception
-	 */
-  //	void splitListIntoNonKeyedAndKeyedObjects(Cons_sp& nonKeyed, Cons_sp& keyed);
-  //	void splitListIntoNonKeyedListAndDictionary(Cons_sp& nonKeyed, ObjectDictionary_sp& keyed,bool& allArgsIn__args);
-
-    template <class string>
-      T_sp olookup(Symbol_sp key) {
-      return this->olookupKeyObject(key);
-    }
-    template <class oreturnType, class string>
-      gctools::smart_ptr<oreturnType> lookup(Symbol_sp s) {
-      T_sp oret = this->olookupKeyObject(s);
-      return gc::As<oreturnType>(oret);
-    }
-
     void describe(T_sp stream);
     string __repr__() const;
     void __write__(T_sp stream) const;
-
-    T_sp product(Cons_sp list);
-    T_sp max(Cons_sp list);
-    T_sp min(Cons_sp list);
-    T_sp booleanOr(Cons_sp list);
-    T_sp booleanAnd(Cons_sp list);
 
   /*!Set the owner of every car in the list
 	 */
@@ -426,18 +362,6 @@ namespace core {
     explicit Cons_O(T_sp car, T_sp cdr) : _Car(car), _Cdr(cdr){};
   };
 
-//
-// The LispParserPos structure is used to keep track of the parse position
-// while parsing text
-//
-
-  typedef struct {
-    int first_line;
-    int first_column;
-    int last_line;
-    int last_column;
-  } LispParserPos;
-
  CL_PKG_NAME(ClPkg,car);
 CL_DEFUN inline core::T_sp oCar(T_sp obj) {
    if (obj.consp())
@@ -458,9 +382,6 @@ CL_DEFUN inline core::T_sp oCar(T_sp obj) {
  CL_DEFUN inline T_sp cl__rest(List_sp obj) {
    return oCdr(obj);
 };
-
-// inline Cons_sp cCar(Cons_sp obj) { return obj->_Car.as<Cons_O>();};
-// inline Cons_sp cCdr(Cons_sp obj) { return obj->_Cdr.as<Cons_O>();};
 
  CL_PKG_NAME(ClPkg,caar);
 CL_DEFUN inline T_sp oCaar(T_sp o) { return oCar(oCar(o)); };
@@ -576,27 +497,9 @@ void fillVec0FromCons(gctools::Vec0<T> &vec, List_sp list) {
 }; // core namespace
 
 namespace core {
-#if 0
-/* Erase the entry with _key_ from the list. Return the new list. 
-     In cases where the key was in the first entry the first entry is unhooked and the CDR is returned.
-    In other cases the entry is unhooked from the inside of the alist*/
-List_sp core__alist_erase(List_sp alist, T_sp key);
-
-/*! Push the key/val onto the alist.  This will shadow other entries with the same val */
-List_sp core__alist_push(List_sp alist, T_sp key, T_sp val);
-
-
-string core__alist_asString(List_sp alist);
-#endif
 /*! Lookup the key and return the Cons containing the key/val pair - or return NIL if not found */
 List_sp core__alist_assoc_eq(List_sp alist, T_sp key);
  
-};
-
-namespace core {
-List_sp plistErase(List_sp &plist, T_sp key);
-List_sp plistSetf(List_sp &plist, T_sp key, T_sp val);
-T_sp plistGetf(List_sp plist, T_sp key, T_sp defaultValue);
 };
 
 namespace core {

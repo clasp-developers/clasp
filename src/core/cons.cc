@@ -176,24 +176,6 @@ Cons_sp Cons_O::createList(T_sp o1, T_sp o2, T_sp o3, T_sp o4, T_sp o5, T_sp o6,
   return ((Cons_O::create(o1, Cons_O::createList(o2, o3, o4, o5, o6, o7, o8))));
 }
 
-bool isAllDigits(const string &s) {
-  for (uint i = 0; i < s.size(); i++) {
-    if (!isdigit(s[i]))
-      return ((false));
-  }
-  return ((true));
-}
-
-T_sp stringToObject(Lisp_sp e, const string &s) {
-  if (isAllDigits(s)) {
-    return ((make_fixnum(atoi(s.c_str()))));
-  }
-  if (s == "false" || s == "False")
-    return ((_Nil<T_O>()));
-  return (SimpleBaseString_O::make(s));
-}
-
-#if 1
 /*! Copied from ecl append_into
      This copies the CAR's in l into new CONS nodes
     that are appended to the list pointed to by **tailPP
@@ -213,23 +195,6 @@ void Cons_O::appendInto(T_sp head, T_sp *&tailP, T_sp l) {
   }
   *tailP = l;
 }
-
-#else
-/*! Copied from ecl append_into */
-void Cons_O::appendInto(T_sp head, gctools::StackRootedPointerToSmartPtr<T_O> &tail, T_sp l) {
-  if (!(tail.getPointee()).nilp()) {
-    /* (APPEND '(1 . 2) 3) */
-    TYPE_ERROR_PROPER_LIST(head);
-  }
-  while ((l).consp()) {
-    Cons_sp cons = Cons_O::create(cons_car(l));
-    tail.setPointee(cons);
-    tail.setPointer(&(cons->_Cdr)); // = &cons->_Cdr;
-    l = cons_cdr(l);
-  }
-  tail.setPointee(l);
-}
-#endif
 
 CL_LAMBDA(l1 l2);
 CL_DECLARE();
@@ -293,18 +258,6 @@ struct Tester {
     return ((result == this->_test_pass));
   }
 };
-
-CL_LISPIFY_NAME("core:exactlyMatches");
-CL_DEFMETHOD bool Cons_O::exactlyMatches(List_sp other) const {
-  List_sp me = this->asSmartPtr();
-  while (me.notnilp()) {
-    if (oCar(other) != oCar(me))
-      return false;
-    other = oCdr(other);
-    me = oCdr(me);
-  }
-  return true;
-}
 
 List_sp Cons_O::memberEq(T_sp item) const {
   for (auto cur : (List_sp) this->asSmartPtr()) {
@@ -579,20 +532,6 @@ T_sp Cons_O::setf_elt(cl_index index, T_sp value) {
   return ((this->setf_nth(index, value)));
 }
 
-CL_LISPIFY_NAME("core:filterOutNil");
-CL_DEFMETHOD List_sp Cons_O::filterOutNil() {
-  Cons_sp first = Cons_O::create(_Nil<T_O>(), _Nil<T_O>());
-  List_sp newCur = first;
-  for (auto cur : (List_sp) this->asSmartPtr()) {
-    if (oCar(cur).notnilp()) {
-      Cons_sp one = Cons_O::create(oCar(cur), _Nil<T_O>());
-      newCur.asCons()->setCdr(one);
-      newCur = oCdr(newCur);
-    }
-  }
-  return ((oCdr(first)));
-}
-
 T_sp Cons_O::onth(cl_index idx) const {
   T_sp cur = this->asSmartPtr();
   for (cl_index i = 0; i < idx; i++) {
@@ -671,15 +610,6 @@ List_sp Cons_O::copyList() const {
   return first;
 };
 
-Cons_sp Cons_O::copyListCar() const {
-  _OF();
-  T_sp obj = this->_Car;
-  ASSERTNOTNULL(obj);
-  Cons_sp rootCopy = Cons_O::create(_Nil<T_O>(), _Nil<T_O>());
-  rootCopy->setCar(obj);
-  return ((rootCopy));
-}
-
 List_sp Cons_O::copyTree() const {
   _OF();
   List_sp first, cur;
@@ -724,74 +654,8 @@ size_t Cons_O::length() const {
   return sz;
 };
 
-T_sp Cons_O::olistref(cl_index idx) {
-  cl_index i = 0;
-  List_sp p;
-  LOG(BF("Evaluating the length of list: %s") % this->__repr__());
-  p = this->asSmartPtr();
-  while (p.consp()) {
-    if (i == idx)
-      break;
-    i++;
-    LOG(BF("in loop i = %d looking for %d") % i % idx);
-    p = oCdr(p);
-  };
-  if (p.nilp()) {
-    stringstream ss;
-    ss << "List[" << idx << "] is out of bounds, size=" << i;
-    SIMPLE_ERROR(BF("%s") % ss.str());
-  }
-  return ((oCar(p)));
-};
-
-T_sp Cons_O::olistrefArgument(cl_index idx) {
-  cl_index i = 0;
-  List_sp p;
-  p = this->asSmartPtr();
-  while (p.notnilp()) {
-    if (i == idx)
-      break;
-    i++;
-    LOG(BF("in loop i = %d looking for %d") % i % idx);
-    p = oCdr(p);
-  };
-  if (p.nilp()) {
-    stringstream ss;
-    ss << "You did not provide enough arguments for a call to a C++ function - it expected at least " << idx << " arguments and you passed only " << i;
-    SIMPLE_ERROR(BF("%s") % ss.str());
-  }
-  return ((oCar(p)));
-};
-
 void Cons_O::setCdr(T_sp c) {
   this->_Cdr = c;
-}
-
-CL_LISPIFY_NAME("core:lookupDefault");
-CL_DEFMETHOD T_sp Cons_O::olookupKeyObjectDefault(Symbol_sp keyword, T_sp dft) {
-  _OF();
-  ASSERTP(keyword->isKeywordSymbol(), "You can only search for keyword symbols");
-  LOG(BF("lookup %s in %s") % _rep_(keyword) % this->__repr__());
-  List_sp lp = this->asSmartPtr();
-  LOG(BF("Got start of list to search: %s") % _rep_(lp));
-  for (auto p : lp) {
-    if (cl__symbolp(oCar(p))) {
-      Symbol_sp ps = gc::As<Symbol_sp>(oCar(p));
-      if (ps->isKeywordSymbol()) {
-        if (ps == keyword) {
-          return ((oCadr(p)));
-        }
-      }
-    }
-  }
-  LOG(BF("Returning default"));
-  return ((dft));
-}
-
-CL_LISPIFY_NAME("core:lookup");
-CL_DEFMETHOD T_sp Cons_O::olookupKeyObject(Symbol_sp key) {
-  Cons_sp p;
-  return ((this->olookupKeyObjectDefault(key, _Nil<T_O>())));
 }
 
 void Cons_O::describe(T_sp stream)
