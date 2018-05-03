@@ -266,15 +266,6 @@ void assertion_failed(char const *expr, char const *function, char const *file, 
 }
 };
 
-extern "C" {
-
-void closure_dump(core::Closure_sp closure) {
-  core::T_sp sourceFileInfo = core__source_file_info(core::clasp_make_fixnum(closure->sourceFileInfoHandle()), _Nil<core::T_O>(), 0, false);
-  std::string namestring = gc::As<core::SourceFileInfo_sp>(sourceFileInfo)->namestring();
-  printf("%s:%d  Closure %s  file: %s lineno: %d\n", __FILE__, __LINE__, _rep_(closure->functionName()).c_str(), namestring.c_str(), closure->lineNumber());
-}
-};
-
 namespace llvm_interface {
 
 ::llvm_interface::llvmAddSymbolCallbackType addSymbol = NULL;
@@ -973,10 +964,6 @@ void lisp_defineSingleDispatchMethod(T_sp name,
 
 void lisp_throwIfBuiltInClassesNotInitialized() {
   _lisp->throwIfBuiltInClassesNotInitialized();
-}
-
-string lisp_classNameFromClassSymbol(Symbol_sp classSymbol) {
-  return _lisp->classNameFromClassSymbol(classSymbol);
 }
 
 Instance_sp lisp_classFromClassSymbol(Symbol_sp classSymbol) {

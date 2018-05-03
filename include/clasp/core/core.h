@@ -888,7 +888,6 @@ namespace core {
   void lisp_addClass(Symbol_sp classSymbol);
 //void lisp_addClassAndInitialize(Symbol_sp classSymbol, gctools::smart_ptr<Creator> cb, Symbol_sp baseClassSymbol1, Symbol_sp baseClassSymbol2 = UNDEFINED_SYMBOL, Symbol_sp baseClassSymbol3 = UNDEFINED_SYMBOL);
   void lisp_throwIfBuiltInClassesNotInitialized();
-  string lisp_classNameFromClassSymbol(Symbol_sp classSymbol);
   Instance_sp lisp_classFromClassSymbol(Symbol_sp classSymbol);
   Instance_sp lisp_instance_class(T_sp obj);
   Instance_sp lisp_static_class(T_sp obj);

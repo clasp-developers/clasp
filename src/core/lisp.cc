@@ -157,16 +157,7 @@ extern "C" void add_history(char *line);
 namespace core {
 
 const int Lisp_O::MaxFunctionArguments = 64; //<! See ecl/src/c/main.d:163 ecl_make_cache(64,4096)
-const int Lisp_O::MaxClosSlots = 3;          //<! See ecl/src/c/main.d:164 ecl_make_cache(3,4096)
-const int Lisp_O::ClosCacheSize = 1024 * 32;
 const int Lisp_O::SingleDispatchMethodCacheSize = 1024 * 32;
-
-extern void lispScannerDebug(std::istream &sin);
-extern string getLispError();
-
-int intArray[10];
-int& _int_0 = intArray[0];
-int& _int_1 = intArray[1];
 
 struct FindApropos : public KeyValueMapper //, public gctools::StackRoot
 {
@@ -218,7 +209,6 @@ Lisp_O::Lisp_O() : _StackWarnSize(gctools::_global_stack_max_size * 0.9), // 6MB
                    _MpiRank(0),
                    _MpiSize(1),
                    _Interactive(true),
-                   _EmbeddedInPython(false),
                    _BootClassTableIsValid(true),
                    _PathMax(CLASP_MAXPATHLEN) {
 //  this->_Roots._Bindings.reserve(1024); // moved to Lisp_O::initialize()
@@ -260,13 +250,6 @@ void Lisp_O::lisp_initSymbols(Lisp_sp lisp) {
 void Lisp_O::initialize() {
 //  printf("%s:%d Initializing _lisp\n", __FILE__, __LINE__ );
   this->_Roots.charInfo.initialize();
-}
-
-void Lisp_O::addToStarModulesStar(Symbol_sp sym) {
-  _OF();
-  List_sp list = cl::_sym_STARmodulesSTAR->symbolValue();
-  list = Cons_O::create(sym, list);
-  cl::_sym_STARmodulesSTAR->setf_symbolValue(list);
 }
 
 template <class oclass>
@@ -1031,16 +1014,6 @@ void Lisp_O::addClassSymbol(Symbol_sp classSymbol,
   cc->CLASS_set_creator(alloc);
 }
 
-void Lisp_O::exportToPython(Symbol_sp sym) const {
-  _OF();
-  if (this->_ExportSymbolCallback == NULL) {
-    LOG(BF("Could not export symbol[%s] because _ExportSymbolCallback is NULL") % _rep_(sym));
-  } else {
-    LOG(BF("Exporting symbol[%s]") % _rep_(sym));
-    this->_ExportSymbolCallback(sym, _lisp);
-  }
-}
-
 void Lisp_O::mapNameToPackage(const string &name, Package_sp pkg) {
   //TODO Support package names with as regular strings
   int packageIndex;
@@ -1696,23 +1669,6 @@ CL_DEFUN T_mv core__getline(String_sp prompt) {
   return (Values(result));
 }
 
-/*
-  __BEGIN_DOC( candoScript.general.system, subsection,system)
-  \scriptCmdRet{system}{}{String::command}
-
-  Invoke a system call using the UNIX system function call.
-  __END_DOC
-*/
-
-/*
-  __BEGIN_DOC( candoScript.general.render, subsection, render)
-  \scriptCmdRet{render}{ object}{renderedObject}
-
-  Render an object into a graphical representation of the \scriptArg{object} that can be viewed using "candoView". Save the result into a file using the "save" command and view it later.
-  __END_DOC
-*/
-
-
 CL_DOCSTRING("lookup-class-with-stamp");
 CL_DEFUN T_sp core__lookup_class_with_stamp(Fixnum stamp) {
   WITH_READ_LOCK(_lisp->_Roots._ClassTableMutex);
@@ -2018,22 +1974,6 @@ CL_DEFUN T_sp cl__apropos(T_sp string_desig, T_sp package_desig) {
   return (Values(_Nil<T_O>()));
 }
 
-/*
-  __BEGIN_DOC(candoScript.general.funcall,funcall)
-  \scriptCmdRet{funcall}{}{Function arg1 arg2 ...}
-
-  Evaluate the function with the arguments.
-  __END_DOC
-*/
-
-/*
-  __BEGIN_DOC(candoScript.general.apply,apply)
-  \scriptCmdRet{apply}{}{Function argList}
-
-  Evaluate the function with the argument list.
-  __END_DOC
-*/
-
 class OrderByLessThan {
 public:
   bool operator()(T_sp x, T_sp y) {
@@ -2100,14 +2040,6 @@ CL_DEFUN T_sp cl__sort(List_sp sequence, T_sp predicate, T_sp key) {
   return result;
 }
 
-/*
-  __BEGIN_DOC(candoScript.general.sourceFileName,sourceFileName)
-  \scriptCmdRet{sourceFileName}{}{Cons::}
-
-  Return the current file name and line number in a two element Cons.
-  __END_DOC
-*/
-
 CL_LAMBDA();
 CL_DECLARE();
 CL_DOCSTRING("Return the current sourceFileName");
@@ -2139,66 +2071,6 @@ CL_DEFUN T_mv core__source_line_column() {
   return Values(make_fixnum(0),make_fixnum(0));
 }
 
-/*
-  __BEGIN_DOC(candoScript.general.backtrace,backtrace)
-  \scriptCmdRet{backtrace}{}{Cons::}
-
-  Return a backtrace as a list of SourceCodeCons.
-  __END_DOC
-*/
-
-/*
-  __BEGIN_DOC(candoScript.general.databaseDir,databaseDir)
-  \scriptCmdRet{databaseDir}{}{Text::}
-
-  Return the path for the database directory.
-  __END_DOC
-*/
-
-
-
-/*
-  __BEGIN_DOC(candoScript.general.databaseDir,databaseDir)
-  \scriptCmdRet{databaseDir}{}{Text::}
-
-  Return the path for the database directory.
-  __END_DOC
-*/
-
-/*
-  __BEGIN_DOC(candoScript.general.changeWorkingDirectory,changeWorkingDirectory)
-  \scriptCmdRet{changeWorkingDirectory}{}{Text::}
-
-  Change the current working directory.
-  __END_DOC
-*/
-
-/*
-  __BEGIN_DOC(candoScript.general.isTopLevelScript)
-
-  Return a true if this is a top level script or false if its an include file.
-  __END_DOC
-*/
-
-CL_LAMBDA();
-CL_DECLARE();
-CL_DOCSTRING("isTopLevelScript");
-CL_DEFUN T_mv core__is_top_level_script() {
-  LOG(BF("isTopLevelScript = %d") % _lisp->getRequireLevel());
-  T_sp top = _lisp->_boolean(_lisp->getRequireLevel() == 0);
-  return (Values(top));
-}
-
-/*
-  __BEGIN_DOC(candoScript.general.debugLogOn,debugLogOn)
-  \scriptCmd{debugLogOn}{true/false:bool}
-
-  Turn on or off writing debug statements to the debug log. This is useful when running
-  long scripts that crash, you can turn of debug logging up to the point where
-  the crash happens and then examine the output.
-  __END_DOC
-*/
-
 CL_LAMBDA();
 CL_DECLARE();
 CL_DOCSTRING("debugLogOn");
@@ -2207,16 +2079,6 @@ CL_DEFUN void core__debug_log_on() {
   LOG(BF("Turning debugLogOn"));
 }
 
-/*
-  __BEGIN_DOC(candoScript.general.debugLogOff,debugLogOff)
-  \scriptCmd{debugLogOff}{true/false:bool}
-
-  Turn on or off writing debug statements to the debug log. This is useful when running
-  long scripts that crash, you can turn of debug logging up to the point where
-  the crash happens and then examine the output.
-  __END_DOC
-*/
-
 CL_LAMBDA();
 CL_DECLARE();
 CL_DOCSTRING("debugLogOff");
@@ -2224,14 +2086,6 @@ CL_DEFUN void core__debug_log_off() {
   _lisp->debugLog().setSuppressMessages(true);
 }
 
-/*
-  __BEGIN_DOC(candoScript.general.export,export)
-  \scriptCmd{export}{symbols...}
-
-  Tell the symbols that they can be exported.
-
-  __END_DOC
-*/
 CL_LAMBDA(symDes &optional (packageDes *package*));
 CL_DECLARE();
 CL_DOCSTRING("CLHS: export");
@@ -2254,18 +2108,6 @@ CL_DEFUN T_sp cl__unexport(T_sp symbolsDes, T_sp packageDes) {
     package->unexport(gc::As<Symbol_sp>(oCar(sym)));
   }
   return _lisp->_true();
-}
-
-CL_LAMBDA(symbolsDesig);
-CL_DECLARE();
-CL_DOCSTRING("exportToPython");
-CL_DEFUN void core__export_to_python(T_sp symbolsDesig) {
-  List_sp symbols = coerce::listOfSymbols(symbolsDesig);
-  for (Cons_sp cur : symbols) {
-    Symbol_sp one = gc::As<Symbol_sp>(oCar(cur));
-    LOG(BF("Exporting symbol[%s] to python") % _rep_(one));
-    _lisp->exportToPython(one);
-  }
 }
 
 CL_LAMBDA(symbol-name &optional (package-desig *package*));
@@ -2351,50 +2193,6 @@ CL_DEFUN void cl__cerror(T_sp cformat, T_sp eformat, List_sp arguments) {
   eval::funcall(_sym_universalErrorHandler, cformat, eformat, arguments);
 }
 
-/*
-  __BEGIN_DOC(candoScript.general.load,load)
-  \scriptCmd{load}{Text::fileName}
-
-  Open the \sa{fileName}, compile and evaluate its contents.
-  It looks through all of the directories in the global variable PATH and then
-  the Scripts directory in the Cando application directory.
-
-  __END_DOC
-*/
-
-/*
-  __BEGIN_DOC(candoScript.general.isAssignableTo,isAssignableTo)
-  \scriptInfixRet{Object::object}{isAssignableTo}{Class::classObject}{Bool::}
-
-  Return true if \scriptArg{object} can be assigned to a C++ variable of class \scriptArg{classObject}.
-  __END_DOC
-*/
-
-/*
-  __BEGIN_DOC(candoScript.general.isSubClassOf,isSubClassOf)
-  \scriptInfixRet{Object::object}{isSubClassOf}{Class::classObject}{Bool::}
-
-  Return true if \scriptArg{object} can be assigned to a C++ variable of class \scriptArg{classObject}.
-  __END_DOC
-*/
-
-CL_LAMBDA(tag mc);
-CL_DECLARE();
-CL_DOCSTRING("isSubClassOf");
-CL_DEFUN T_mv core__is_sub_class_of(Instance_sp tag, Instance_sp mc) {
-  LOG(BF("Checking if instances of class(%s) is assignable to variables of class(%s)") % tag->className() % mc->className());
-  bool io = tag->isSubClassOf(mc);
-  return (Values(_lisp->_boolean(io)));
-}
-
-/*
-  __BEGIN_DOC(candoScript.general.repr,repr)
-  \scriptCmdRet{repr}{object}{string}
-
-  Return a string representation of the object.
-  __END_DOC
-*/
-
 CL_LAMBDA(arg);
 CL_DECLARE();
 CL_DOCSTRING("Return a string representation of the object");
@@ -2403,66 +2201,12 @@ CL_DEFUN T_mv core__repr(T_sp obj) {
   return (Values(res));
 }
 
-/*
-  __BEGIN_DOC(candoScript.general.list,list)
-  \scriptCmdRet{list}{object1 object2 ...}{list}\par
-  \scriptCmdRet{:}{object1 object2 ...}{list}
-
-  Return a list formed by evaluating the arguments.
-  __END_DOC
-*/
-
-/*
-  __BEGIN_DOC(candoScript.general.not,not)
-  \scriptCmdRet{not}{boolA}{bool}\par
-
-  Return not boolA.
-  __END_DOC
-*/
-
 CL_LAMBDA(arg);
 CL_DECLARE();
 CL_DOCSTRING("not");
 CL_DEFUN T_mv cl__not(T_sp x) {
   return (Values(_lisp->_boolean(!x.isTrue())));
 };
-
-/*
-  __BEGIN_DOC(candoScript.general.printPushPrefix,printPushPrefix)
-  \scriptCmd{printPushPrefixln}{args ...}\par
-
-  Push a prefix to be printed everytime print is called the arguments followed by a new line.
-  __END_DOC
-*/
-
-/*
-  __BEGIN_DOC(candoScript.general.printPopPrefix,printPopPrefix)
-  \scriptCmd{printPopPrefixln}{args ...}\par
-
-  Pop a prefix to be printed everytime print is called the arguments followed by a new line.
-  __END_DOC
-*/
-
-/*
-  __BEGIN_DOC(candoScript.general.print,print)
-  \scriptCmd{println}{args ...}\par
-
-  Print new line followed by string representations of the arguments.
-  __END_DOC
-*/
-
-Symbol_sp Lisp_O::getClassSymbolForClassName(const string &name) {
-  Instance_sp mc = this->classFromClassName(name);
-  Symbol_sp sym = mc->_className();
-  ASSERTNOTNULL(sym);
-  return sym;
-}
-
-void Lisp_O::setEmbeddedInPython(bool b) {
-  _OF();
-  LOG(BF("EmbeddedInPython is being set to[%d]") % b);
-  this->_EmbeddedInPython = b;
-}
 
 Instance_sp Lisp_O::boot_setf_findClass(Symbol_sp className, Instance_sp mc) {
 //    printf("%s:%d    boot_setf_findClass for %s\n", __FILE__, __LINE__, _rep_(className).c_str());
@@ -2530,21 +2274,6 @@ CL_LISPIFY_NAME(forget_all_single_dispatch_generic_functions);
 CL_DEFUN void Lisp_O::forget_all_single_dispatch_generic_functions() {
   WITH_READ_WRITE_LOCK(_lisp->_Roots._SingleDispatchGenericFunctionHashTableEqualMutex);
   _lisp->_Roots._SingleDispatchGenericFunctionHashTableEqual->clrhash();
-}
-
-
-string Lisp_O::classNameFromClassSymbol(Symbol_sp cid) {
-  DEPRECATED();
-#if 0
-  Instance_sp mc = this->classFromClassSymbol(cid);
-  return mc->getPackagedName();
-#endif
-}
-
-Instance_sp Lisp_O::classFromClassName(const string &name) {
-  _OF();
-  DEPRECATED();
-  //    return sym->symbolValue().as<Instance_O>();
 }
 
 void Lisp_O::parseStringIntoPackageAndSymbolName(const string &name, bool &packageDefined, Package_sp &package, string &symbolName, bool &exported) const {
@@ -3012,7 +2741,6 @@ SYMBOL_EXPORT_SC_(ClPkg, acons);
 SYMBOL_EXPORT_SC_(ClPkg, assoc);
 SYMBOL_EXPORT_SC_(ClPkg, member);
 SYMBOL_SC_(CorePkg, member1);
-SYMBOL_SC_(CorePkg, exportToPython);
 SYMBOL_EXPORT_SC_(ClPkg, find_package);
 
 void initialize_Lisp_O() {
