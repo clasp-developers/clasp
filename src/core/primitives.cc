@@ -1088,7 +1088,6 @@ CL_DECLARE();
 CL_DOCSTRING("constantp");
 CL_DEFUN bool cl__constantp(T_sp obj, T_sp env) {
   // ignore env
-  if (obj.nilp()) return true;
   if (cl__symbolp(obj)) {
     if (cl__keywordp(obj)) return true;
     return gc::As<Symbol_sp>(obj)->getReadOnly();
