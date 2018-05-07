@@ -607,6 +607,7 @@ The passed module is modified as a side-effect."
         (progn
           (jit-link-fastgf-module original-module)))
     (let ((module original-module))
+      (irc-verify-module-safe module)
       (let ((jit-engine (jit-engine))
             (repl-name (llvm-sys:get-name main-fn))
             (startup-name (llvm-sys:get-name startup-fn))
