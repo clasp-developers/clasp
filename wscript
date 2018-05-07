@@ -471,9 +471,12 @@ def configure(cfg):
     if (cfg.env['LTO_OPTION']==[] or cfg.env['LTO_OPTION']=='thinlto'):
         cfg.env.LTO_FLAG = '-flto=thin'
         if (cfg.env['DEST_OS'] == LINUX_OS ):
-            cfg.env.append_value('LINKFLAGS', '-Wl,-plugin-opt,cache-dir=/tmp')
+            if (cfg.env['USE_LLD']):
+                cfg.env.append_value('LINKFLAGS', '-Wl,--thinlto-cache-dir=/tmp/clasp')
+            else:
+                cfg.env.append_value('LINKFLAGS', '-Wl,-plugin-opt,cache-dir=/tmp/clasp')
         elif (cfg.env['DEST_OS'] == DARWIN_OS ):
-            cfg.env.append_value('LINKFLAGS', '-Wl,-cache_path_lto,/tmp')
+            cfg.env.append_value('LINKFLAGS', '-Wl,-cache_path_lto,/tmp/clasp')
     elif (cfg.env['LTO_OPTION']=='lto'):
         cfg.env.LTO_FLAG = '-flto'
     elif (cfg.env['LTO_OPTION']=='obj'):
