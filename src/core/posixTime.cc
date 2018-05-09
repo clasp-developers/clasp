@@ -163,8 +163,8 @@ CL_DEFMETHOD PosixTimeDuration_sp PosixTimeDuration_O::sub(PosixTimeDuration_sp 
 
 CL_LISPIFY_NAME("totalSeconds");
 CL_DEFMETHOD mpz_class PosixTimeDuration_O::totalSeconds() {
-  _OF();
-  return mpz_class(this->_Duration.total_seconds());
+  static_assert(sizeof(long long) == sizeof(signed long int),"The size of long long does not match the size of signed long int");
+  return mpz_class((signed long int)this->_Duration.total_seconds());
 }
 
 CL_LISPIFY_NAME("totalMilliseconds");
