@@ -62,7 +62,12 @@ CL_DEFUN T_sp cl__random(T_sp olimit, RandomState_sp random_state) {
   } else if (gc::IsA<Bignum_sp>(olimit)) {
     Bignum_sp gbn = gc::As_unsafe<Bignum_sp>(olimit);
     boost::uniform_int<bmp::mpz_int> gen(0, bmp::mpz_int(gbn->get().get_mpz_t()));
-    return Bignum_O::create(mpz_class(gen(random_state->_Producer)));
+    auto rnd = gen(random_state->_Producer);
+    bmp::mpz_int v = rnd;
+    mpz_t z;
+    mpz_init(z);
+    mpz_set(z,v.backend().data());
+    return Integer_O::create(mpz_class(z));
   } else if (DoubleFloat_sp df = olimit.asOrNull<DoubleFloat_O>()) {
     boost::random::uniform_real_distribution<> range(0.0, df->get());
     return DoubleFloat_O::create(range(random_state->_Producer));
