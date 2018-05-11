@@ -902,9 +902,11 @@ namespace core {
 
   CL_PKG_NAME(ClPkg,oddp);
   CL_DEFUN inline bool clasp_oddp(Integer_sp num) {
+    // for negative numbers num % 2 == 1 does not work, since -1 is returned
     if (num.fixnump()) {
-      return (num.unsafe_fixnum() % 2) == 1;
+      return (num.unsafe_fixnum() % 2) != 0;
     }
+    // now num must be a bignum, works fine
     return num->oddp_();
   }
 
