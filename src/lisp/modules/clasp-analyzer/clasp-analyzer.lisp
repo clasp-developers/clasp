@@ -1,7 +1,7 @@
 (provide :clasp-analyzer)
 
 (defpackage #:clasp-analyzer
-  (:shadow #:function-info)
+  (:shadow #:function-info #:function-type)
   (:use #:common-lisp #:core #:ast-tooling #:clang-ast)
   (:shadow #:dump #:get-string #:size #:type)
   (:export
