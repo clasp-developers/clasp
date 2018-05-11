@@ -26,6 +26,8 @@ except ImportError:
 from waflib import Utils, Logs, Task, TaskGen
 import waflib.Options
 from waflib.Tools import c_preproc
+# clang_compilation_database is needed by the static analyzer
+from waflib.extras import clang_compilation_database
 from waflib.Tools.compiler_cxx import cxx_compiler
 from waflib.Tools.compiler_c import c_compiler
 from waflib.Errors import ConfigurationError

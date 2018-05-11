@@ -45,7 +45,9 @@
                       (flet ((call-next-method (&rest args)
                                (error "In defvirtual defined call-next-method implement a proper one")))
                         ,@code))))
-          `(core:ensure-single-dispatch-method ',name (find-class ',dispatch-class)
+          `(core:ensure-single-dispatch-method (fdefinition ',name)
+                                               ',name
+                                               (find-class ',dispatch-class)
                                                :lambda-list-handler (make-lambda-list-handler
                                                                      ',simple-lambda-list
                                                                      ',declares 'function)

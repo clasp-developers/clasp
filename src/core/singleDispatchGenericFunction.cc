@@ -46,7 +46,6 @@ THE SOFTWARE.
 
 namespace core {
 
-CL_LAMBDA(gfname llhandler);
 CL_DECLARE();
 CL_DOCSTRING("ensureSingleDispatchGenericFunction");
 CL_DEFUN SingleDispatchGenericFunctionClosure_sp core__ensure_single_dispatch_generic_function(T_sp gfname, LambdaListHandler_sp llhandler, bool autoExport, size_t singleDispatchArgumentIndex) {
@@ -91,7 +90,7 @@ CL_DEFUN SingleDispatchGenericFunctionClosure_sp core__ensure_single_dispatch_ge
 };
 
 
-CL_LAMBDA("gfname receiver-class &key lambda-list-handler declares (docstring \"\") body ");
+CL_LAMBDA("gf gfname receiver-class &key lambda-list-handler declares (docstring \"\") body ");
 CL_DECLARE();
 CL_DOCSTRING("ensureSingleDispatchMethod creates a method and adds it to the single-dispatch-generic-function");
 CL_DEFUN void core__ensure_single_dispatch_method(SingleDispatchGenericFunctionClosure_sp gfunction, T_sp tgfname, Instance_sp receiver_class, LambdaListHandler_sp lambda_list_handler, List_sp declares, gc::Nilable<String_sp> docstring, Function_sp body) {
