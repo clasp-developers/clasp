@@ -216,13 +216,13 @@ def fix_lisp_paths(bld_path,out,variant,paths):
                 lsp_name = "%s.lisp"%file_name
                 lsp_res = bld_path.find_resource(lsp_name)
 #            print("Looking for file_name with .lsp or .lisp: %s  --> %s" % (file_name,lsp_res))
-            assert lsp_res!=None, "lsp_res could not be resolved for file %s - did you run ./waf update_submodules" % lsp_name
+            assert lsp_res!=None, "A lisp resource with the name %s could not be found - try running ./waf configure - if it is still missing then wscript needs to be updated with a new dependency" % lsp_name
         else: # generated files
 #            lsp_name = "%s/%s/%s.lisp"%(out,variant.variant_dir(),p)
             lsp_name = "%s.lisp"%(p)
             lsp_res = bld_path.find_or_declare(lsp_name)
 #            print("Looking for generated file with .lisp: %s  --> %s" % (lsp_name,lsp_res))
-            assert lsp_res!=None, "lsp_res could not be resolved for file %s - did you run ./wfa update_submodules" % lsp_name
+            assert lsp_res!=None, "A lisp resource with the name %s could not be found - try running ./waf configure - if it is still missing then wscript needs to be updated with a new dependency" % lsp_name
         nodes.append(lsp_res)
     return nodes
 
