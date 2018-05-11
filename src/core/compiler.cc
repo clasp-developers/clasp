@@ -965,14 +965,6 @@ namespace core {
 CL_DEFUN T_mv core__funwind_protect(T_sp protected_fn, T_sp cleanup_fn) {
   T_mv result;
   try {
-#ifdef DEBUG_FLOW_CONTROL
-    if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
-      printf("%s:%d In funwind_protect try\n", __FILE__, __LINE__);
-      if (core::_sym_STARdebugFlowControlSTAR->symbolValue() == kw::_sym_verbose ) {
-        printf("   %s\n", my_thread->exceptionStack().summary().c_str());
-      }
-    }
-#endif
     Closure_sp closure = gc::As_unsafe<Closure_sp>(protected_fn);
     ASSERT(closure);
     result = closure->entry.load()(LCC_PASS_ARGS0_ELLIPSIS(closure.raw_()));
@@ -984,7 +976,6 @@ CL_DEFUN T_mv core__funwind_protect(T_sp protected_fn, T_sp cleanup_fn) {
     printf("%s:%d  primary_exception = %p\n", __FILE__, __LINE__, primary_exception );
     __cxxabiv1::__cxa_decrement_exception_refcount(primary_exception);
 #endif
-    // TOOK out DEBUG_FLOW_CONTROL
 // Save any return value that may be in the multiple value return array
     gctools::Vec0<T_sp> savemv;
     T_mv tresult;
@@ -996,18 +987,8 @@ CL_DEFUN T_mv core__funwind_protect(T_sp protected_fn, T_sp cleanup_fn) {
     }
     tresult.loadFromVec0(savemv);
     tresult.saveToMultipleValue0();
-    // TOOK out DEBUG_FLOW_CONTROL code
     throw;  // __cxa_rethrow
   }
-  
-#ifdef DEBUG_FLOW_CONTROL
-  if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
-    printf("%s:%d In funwind_protect  normal exit\n", __FILE__, __LINE__);
-    if (core::_sym_STARdebugFlowControlSTAR->symbolValue() == kw::_sym_verbose ) {
-      printf("   %s\n", my_thread->exceptionStack().summary().c_str());
-    }
-  }
-#endif
   gctools::Vec0<T_sp> savemv;
   result.saveToVec0(savemv);
   {
@@ -1071,44 +1052,17 @@ CL_DOCSTRING("catchFunction");
 CL_DEFUN T_mv core__catch_function(T_sp tag, Function_sp thunk) {
   T_mv result;
   int frame = my_thread->exceptionStack().push(CatchFrame, tag);
-#ifdef DEBUG_FLOW_CONTROL
-  if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
-    printf("%s:%d In cc_catch tag@%p thisFrame: %d\n", __FILE__, __LINE__, tag.raw_(), frame);
-    if (core::_sym_STARdebugFlowControlSTAR->symbolValue() == kw::_sym_verbose ) {
-      printf("   %s\n", my_thread->exceptionStack().summary().c_str());
-    }
-  }
-#endif
   try {
     core::Closure_sp closure = thunk.asOrNull<Closure_O>();
     ASSERT(closure);
     result = closure->entry.load()(LCC_PASS_ARGS0_ELLIPSIS(closure.raw_()));
   } catch (CatchThrow &catchThrow) {
     if (catchThrow.getFrame() != frame) {
-#ifdef DEBUG_FLOW_CONTROL
-      if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
-        printf("- - - - - Rethrowing CatchThrow targetFrame[%d] (thisFrame is: %d)\n", catchThrow.getFrame(), frame);
-      }
-#endif
       throw catchThrow;
     }
     result = gctools::multiple_values<T_O>::createFromValues();
   }
-#ifdef DEBUG_FLOW_CONTROL
-  if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
-    printf("- - - - - Matched CatchThrow (thisFrame is: %d)\n", frame);
-    printf("- - - - - Unwinding to thisFrame: %d\n", frame);
-  }
-#endif
   my_thread->exceptionStack().unwind(frame);
-#ifdef DEBUG_FLOW_CONTROL
-  if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
-    printf("%s:%d  After cc_catch unwind\n", __FILE__, __LINE__);
-    if (core::_sym_STARdebugFlowControlSTAR->symbolValue() == kw::_sym_verbose ) {
-      printf("   %s\n", my_thread->exceptionStack().summary().c_str());
-    }
-  }
-#endif
   return result;
 }
 
@@ -1120,14 +1074,6 @@ CL_DEFUN void core__throw_function(T_sp tag, T_sp result_form) {
   if (frame < 0) {
     CONTROL_ERROR();
   }
-#ifdef DEBUG_FLOW_CONTROL
-  if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
-    printf("%s:%d In cc_throw     throwing CatchThrow to reach targetFrame[%d]\n", __FILE__, __LINE__, frame);
-    if (core::_sym_STARdebugFlowControlSTAR->symbolValue() == kw::_sym_verbose ) {
-      printf("   %s\n", my_thread->exceptionStack().summary().c_str());
-    }
-  }
-#endif
   T_mv result;
   Closure_sp closure = result_form.asOrNull<Closure_O>();
   ASSERT(closure);

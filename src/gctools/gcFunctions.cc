@@ -1116,14 +1116,6 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
 #endif
   if (buildReport) ss << (BF("DEBUG_FASTGF = %s\n") % (debug_fastgf ? "**DEFINED**" : "undefined") ).str();
  
-  bool debug_flow_control = false;
-#ifdef DEBUG_FLOW_CONTROL
-  debug_flow_control = true;
-  debugging = true;
-  if (setFeatures) features = core::Cons_O::create(_lisp->internKeyword("DEBUG-FLOW_CONTROL"),features);
-#endif
-  if (buildReport) ss << (BF("DEBUG_FLOW_CONTROL = %s\n") % (debug_flow_control ? "**DEFINED**" : "undefined") ).str();
-
   bool debug_return_from = false;
 #ifdef DEBUG_RETURN_FROM
   debug_return_from = true;
