@@ -103,9 +103,9 @@ def update_submodules(cfg):
     fetch_git_revision("src/lisp/kernel/contrib/Eclector",
                        "https://github.com/clasp-developers/Eclector.git",
                        "7b63e7bbe6c60d3ad3413a231835be6f5824240a")
-    fetch_git_revision("src/mps",
-                       "https://github.com/Ravenbrook/mps.git",
-                       "f3d66d06170bae706809f555dcb56acae35e9497")
+    fetch_git_revision("src/lisp/kernel/contrib/alexandria",
+                       "https://github.com/clasp-developers/alexandria.git",
+                       "e5c54bc30b0887c237bde2827036d17315f88737")
     fetch_git_revision("src/mps",
                        "https://github.com/Ravenbrook/mps.git",
                        "f3d66d06170bae706809f555dcb56acae35e9497")
