@@ -526,7 +526,7 @@ CL_DEFUN T_sp core__bit_array_op(int opval, Array_sp tx, Array_sp ty, T_sp tr) {
   yp = y->bytes();
   yo = starty; // y->offset();
   if (tr == _lisp->_true())
-    tr = x;
+    tr = tx;
   if (tr.notnilp()) {
     AbstractSimpleVector_sp ar;
     Array_sp array_r = gc::As<Array_sp>(tr);
