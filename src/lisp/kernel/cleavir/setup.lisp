@@ -4,13 +4,8 @@
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (setq *echo-repl-read* t))
 
-(defvar *save-compile-file-info* nil
-  "When T causes AST's and HIR to be saved in *saved-compile-file-info* during compile-file")
-(defvar *saved-compile-file-info* nil)
 (defvar *llvm-metadata*)
 (defvar *current-compile-file-source-pos-info* nil)
-
-(defvar *current-function-entry-basic-block*)
 
 (defmethod make-load-form ((object core:source-pos-info) &optional environment)
   `(core:make-cxx-object 'core:source-pos-info

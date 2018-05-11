@@ -1560,11 +1560,6 @@ T_O *cc_pushLandingPadFrame()
   NO_UNWIND_END();
 }
 
-void cc_popLandingPadFrame(T_O *frameFixnum)
-{NO_UNWIND_BEGIN();
-  NO_UNWIND_END();
-}
-
 size_t cc_landingpadUnwindMatchFrameElseRethrow(char *exceptionP, core::T_O *thisFrame) {
   ASSERT(gctools::tagged_fixnump(thisFrame));
   core::Unwind *unwindP = reinterpret_cast<core::Unwind *>(exceptionP);

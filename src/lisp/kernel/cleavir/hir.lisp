@@ -280,38 +280,6 @@
     (setf (lambda-name result) (lambda-name instruction))
     result))
 
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
-;;; Instruction LANDING-PAD-RETURN-INSTRUCTION
-;;;
-;;; This instruction is an RETURN-INSTRUCTION that keeps
-;;; track of the landing-pad
-
-
-
-(defclass landing-pad-return-instruction (cleavir-ir:return-instruction)
-  ((%landing-pad :initarg :landing-pad :accessor landing-pad)))
-
-
-(defmethod cleavir-ir-graphviz:label ((instr landing-pad-return-instruction))
-  (with-output-to-string (s)
-    (format s "landing-pad-return")))
-
-(defmethod cleavir-ir:clone-instruction :around ((instruction landing-pad-return-instruction))
-  (let ((result (call-next-method)))
-    (setf (landing-pad result) (landing-pad instruction))
-    result))
-
-
-(defun frame-holder (enter)
-  ;; The frame holder is the last output
-  (car (last (cleavir-ir:outputs enter))))
-
-(defun (setf frame-holder) (frame-holder enter)
-  (setf (cleavir-ir:outputs enter) (append (cleavir-ir:outputs enter) (list frame-holder))))
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; Instruction PRECALC-VALUE-INSTRUCTION.
@@ -403,35 +371,6 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
-;;; INDEXED-UNWIND-INSTRUCTION
-;;;
-;;; UWIND instruction that takes an enclosed lexical variable as input
-;;; and stores an integer jump-id to represent where to jump to in the
-;;; landing-pad
-(defclass indexed-unwind-instruction (cleavir-ir:unwind-instruction)
-  ((%jump-id :initform nil :initarg :jump-id :accessor jump-id)))
-
-(defmethod cleavir-ir-graphviz:draw-instruction ((instruction indexed-unwind-instruction) stream)
-  (format stream "   ~a [label = \"~a\"];~%"
-          (cleavir-ir-graphviz::instruction-id instruction) (cleavir-ir-graphviz:label instruction))
-  (format stream "  ~a -> ~a [color = pink, style = dashed];~%"
-          (cleavir-ir-graphviz::instruction-id instruction)
-          (gethash (cleavir-ir:invocation instruction) cleavir-ir-graphviz::*instruction-table*)))
-
-(defmethod cleavir-ir-graphviz:label ((instruction indexed-unwind-instruction))
-  (format nil "indexed-unwind[~a]" (jump-id instruction)))
-
-(defmethod cleavir-ir:clone-instruction :around ((instruction indexed-unwind-instruction))
-  (let ((result (call-next-method)))
-    (setf (jump-id result) (jump-id instruction))
-    result))
-
-(defmethod cl:print-object ((instr indexed-unwind-instruction) stream)
-  (format stream "#<indexed-unwind[~a]>" (jump-id instr)))
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
 ;;; throw-instruction
 ;;;
 
@@ -439,12 +378,9 @@
   ((%throw-tag :initform nil :initarg :throw-tag :accessor throw-tag)))
 
 
-(defun make-throw-instruction
-    (throw-tag &key successor)
+(defun make-throw-instruction (throw-tag)
   (make-instance 'throw-instruction
-    :inputs (list throw-tag)
-    :outputs ()
-    :successors (if (null successor) nil (list successor))))
+    :inputs (list throw-tag)))
 
 (defmethod cleavir-ir-graphviz:label ((instr throw-instruction))
   (with-output-to-string (stream)
@@ -463,17 +399,11 @@
 
 (defmethod cleavir-remove-useless-instructions:instruction-may-be-removed-p ((instruction debug-message-instruction)) nil)
 
-;;(defmethod cleavir-remove-useless-instructions:instruction-may-be-removed-p ((instruction landing-pad-return-instruction)) nil)
-
 ;(defmethod cleavir-remove-useless-instructions:instruction-may-be-removed-p ((instruction precalc-value-instruction)) t)
 
 (defmethod cleavir-remove-useless-instructions:instruction-may-be-removed-p ((instruction multiple-value-one-form-call-instruction)) nil)
 
 (defmethod cleavir-remove-useless-instructions:instruction-may-be-removed-p ((instruction setf-fdefinition-instruction)) nil)
-
-;;(defmethod cleavir-remove-useless-instructions:instruction-may-be-removed-p ((instruction landing-pad-instruction)) nil)
-
-;;(defmethod cleavir-remove-useless-instructions:instruction-may-be-removed-p ((instruction indexed-unwind-instruction)) nil)
 
 (defmethod cleavir-remove-useless-instructions:instruction-may-be-removed-p ((instruction throw-instruction)) nil)
 

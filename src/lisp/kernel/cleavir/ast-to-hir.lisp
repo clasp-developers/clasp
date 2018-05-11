@@ -276,30 +276,6 @@
      )))
 
 
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
-;;; Stores the current landing pad
-;;;
-;;; If *landing-pad* is set then all funcalls are converted to invoke
-;;; layout-procedure resets *landing-pad*
-;;;
-(defvar *landing-pad* nil)
-
-
-(defun make-call/invoke (&key inputs outputs successors (landing-pad *landing-pad*))
-  (if landing-pad
-      (prog1
-	(make-instance 'clasp-cleavir-hir:invoke-instruction
-		       :inputs inputs
-		       :outputs outputs
-		       :successors (list (first successors) landing-pad))
-	(error "We should not add invoke-instruction here - we should do it at the MIR stage - otherwise it will screw up optimizations"))
-      (make-instance 'cleavir-ir:funcall-instruction
-		     :inputs inputs
-		     :outputs outputs
-		     :successors successors)))
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; Compile a SETF-FDEFINITION-AST.

@@ -93,9 +93,6 @@
    #:precalc-reference-instruction
    #:named-enter-instruction
    #:frame-holder
-   #:indexed-unwind-instruction
-   #:landing-pad-instruction
-   #:landing-pad-return-instruction
    #:landing-pad
    #:jump-id
    #:lambda-list
@@ -159,6 +156,9 @@
    #:headerq-instruction
    #:header-value-min-max
    #:make-headerq-instruction
+   #:save-frame-instruction
+   #:make-save-frame-instruction
+   #:assign-catch-instruction #:go-index
    #:enter-instruction
    #:typed-lexical-location #:lexical-location-type
    #:closure-pointer-dynamic-lexical-location
