@@ -26,3 +26,9 @@
             always (if (<= rn most-negative-fixnum)
                        (typep rn 'fixnum)
                        (typep rn 'bignum))))
+
+(test oddp-1 (oddp -1))
+(test oddp-2 (oddp most-positive-fixnum))
+(test oddp-3 (oddp (1+ (1+ most-positive-fixnum))))
+(test oddp-4 (not (oddp most-negative-fixnum)))
+(test oddp-5 (oddp (1- most-negative-fixnum)))
