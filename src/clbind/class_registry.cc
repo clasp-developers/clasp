@@ -175,7 +175,11 @@ void ClassRegistry_O::add_class(type_id const &info, ClassRep_sp crep) {
 
 ClassRep_sp ClassRegistry_O::find_class(type_id const &info) const {
   core::Integer_sp key = type_id_toClassRegistryKey(info);
-  return gc::As<ClassRep_sp>(this->m_classes->gethash(key, _Nil<ClassRep_O>()));
+  core::T_sp value = this->m_classes->gethash(key,_Nil<core::T_O>());
+  if ( value.nilp() ) {
+    SIMPLE_ERROR(BF("Could not find class for typeid: %s") % _rep_(key));
+  }
+  return gc::As<ClassRep_sp>(value);
 }
 
 } // namespace clbind

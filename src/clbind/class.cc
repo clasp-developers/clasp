@@ -140,7 +140,6 @@ void class_registration::register_() const {
 
       // the baseclass' class_rep structure
       ClassRep_sp bcrep = registry->find_class(i->first);
-      ASSERTF(bcrep.notnilp(), BF("Could not find base class %s") % i->first.name());
       // Add it to the DirectSuperClass list
       crep->addInstanceBaseClass(bcrep->_className());
       crep->add_base_class(core::make_fixnum(0), bcrep);

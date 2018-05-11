@@ -91,7 +91,7 @@ struct class_registration;
 struct conversion_storage;
 
 class ClassRep_O : public core::Instance_O {
-  // LISP_CLASS(clbind, ClbindPkg, ClassRep_O, "ClassRep",core::Instance_O);
+  LISP_CLASS(clbind, ClbindPkg, ClassRep_O, "ClassRep",core::Instance_O);
   // I may want to change this back to have the metaclass standard-class
   friend struct class_registration;
 
