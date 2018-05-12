@@ -136,7 +136,7 @@ def update_dependencies(cfg):
     fetch_git_revision("src/lisp/modules/asdf",
                        "https://gitlab.common-lisp.net/asdf/asdf.git",
                        label = "master", revision = "3.3.1.2")
-    os.system("(cd src/lisp/modules/asdf; make --quiet)")
+    os.system("(cd src/lisp/modules/asdf; ${MAKE-make} --quiet)")
 
 # run this from a completely cold system with:
 # ./waf distclean configure
@@ -748,7 +748,10 @@ def configure(cfg):
             variant_instance = eval("i" + variant_name + "()")
             log.info("Setting up variant: %s", variant_instance.variant_dir())
             variant_instance.configure_variant(cfg, env_copy)
-    update_dependencies(cfg)
+    if os.getenv("CLASP_SRC_DONTTOUCH") == None:
+        update_dependencies(cfg)
+    else:
+        log.pprint('BLUE', 'not running update_dependencies(), leaving tree alone')
 
 def pre_build_hook(bld):
     bld.build_start_time = time.time()
