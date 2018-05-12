@@ -91,7 +91,7 @@ THE SOFTWARE.
 #endif
 
 
-#if defined( _TARGET_OS_DARWIN )
+#if defined( _TARGET_OS_DARWIN ) || defined( _TARGET_OS_FREEBSD )
 #define sigthreadmask(HOW,NEW,OLD) sigprocmask((HOW),(NEW),(OLD))
 #endif
 

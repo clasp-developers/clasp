@@ -38,7 +38,7 @@ THE SOFTWARE.
 //  SANITY CHECK FOR SUPPORTED PLATFORMS AND ADDRESS MODELS
 // ----------------------------------------------------------------------------
 
-#if !defined( _TARGET_OS_DARWIN ) && !defined( _TARGET_OS_LINUX )
+#if !defined( _TARGET_OS_DARWIN ) && !defined( _TARGET_OS_LINUX ) && !defined( _TARGET_OS_FREEBSD )
 #error "We are sorry but this platform is not supported yet."
 #endif
 
@@ -88,7 +88,7 @@ typedef int64_t    Fixnum; // Signed Fixnum immediate value
 #define PXuintptr_t "llX"
 #define PRsize_t "lu"
 #endif
-#if defined( _TARGET_OS_LINUX )
+#if defined( _TARGET_OS_LINUX ) || defined( _TARGET_OS_FREEBSD)
 #define Puintptr_clasp_t "llu"
 #define Ptagged_stamp_t "lu"
 #define PFixnum "ld"
@@ -147,7 +147,7 @@ typedef uintptr_clasp_t cl_intptr_t;
 
 #endif
 
-#if defined( _TARGET_OS_LINUX )
+#if defined( _TARGET_OS_LINUX ) || defined( _TARGET_OS_FREEBSD)
 
 #undef CLASP_LONG_LONG_IS_INT64
 #undef CLASP_UNSIGNED_LONG_LONG_IS_UINT64

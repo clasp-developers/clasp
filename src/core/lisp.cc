@@ -1301,6 +1301,12 @@ void Lisp_O::parseCommandLineArguments(int argc, char *argv[], const CommandLine
   features = Cons_O::create(_lisp->internKeyword("LINUX"), features);
   features = Cons_O::create(_lisp->internKeyword("X86-64"), features);
 #endif
+#ifdef _TARGET_OS_FREEBSD
+  features = Cons_O::create(_lisp->internKeyword("UNIX"), features);
+  features = Cons_O::create(_lisp->internKeyword("OS-UNIX"), features);
+  features = Cons_O::create(_lisp->internKeyword("FREEBSD"), features);
+  features = Cons_O::create(_lisp->internKeyword("X86-64"), features);
+#endif
 #ifdef CLASP_UNICODE
   features = Cons_O::create(_lisp->internKeyword("UNICODE"), features);
 #endif
