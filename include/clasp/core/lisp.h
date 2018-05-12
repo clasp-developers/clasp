@@ -265,7 +265,7 @@ class Lisp_O {
     Instance_sp   _TheStandardClass;
     Instance_sp   _TheStructureClass;
     Instance_sp   _TheDerivableCxxClass;
-    Instance_sp   _TheClassRep;
+    Instance_sp   _TheClbindCxxClass;
     Package_sp _CorePackage;
     Package_sp _KeywordPackage;
     Package_sp _CommonLispPackage;

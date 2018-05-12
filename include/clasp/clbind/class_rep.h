@@ -100,21 +100,25 @@ public:
   bool cxxDerivableClassP() const { return this->m_derivable; };
   bool primaryCxxDerivableClassP() const { return gctools::As<core::Creator_sp>(this->CLASS_get_creator())->duplicationLevel() == 0; };
 
+#if 0
  ClassRep_O() : Instance_O(core::lisp_class_rep_class()/*,REF_CLASS_NUMBER_OF_SLOTS_IN_STANDARD_CLASS*/) {
     printf("%s:%d:%s  create class\n", __FILE__, __LINE__, __FUNCTION__ );
   };
-
+#endif
+  
  ClassRep_O(core::Instance_sp c) : Instance_O(c) {
     printf("%s:%d:%s  create class\n", __FILE__, __LINE__, __FUNCTION__ );
   };
 
-  ClassRep_O(type_id const &type, const std::string &name, bool derivable);
+  ClassRep_O(core::Instance_sp class_, type_id const &type, const std::string &name, bool derivable);
 
+#if 0
   ClassRep_O(const std::string &name, bool derivable);
+#endif
 
 public:
-  static ClassRep_sp create(type_id const &mtype, const std::string &name, bool derivable) {
-    GC_ALLOCATE_VARIADIC(ClassRep_O, val, mtype, name, derivable);
+  static ClassRep_sp create(core::Instance_sp class_, type_id const &mtype, const std::string &name, bool derivable) {
+    GC_ALLOCATE_VARIADIC(ClassRep_O, val, class_, mtype, name, derivable);
     return val;
   }
   void add_base_class(core::Fixnum_sp pointer_offset, ClassRep_sp base);

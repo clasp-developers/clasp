@@ -123,7 +123,7 @@ CL_DEFUN bool clos__classp(T_sp obj) {
         || iobj->_Class == _lisp->_Roots._TheClass
         || iobj->_Class == _lisp->_Roots._TheBuiltInClass
         || iobj->_Class == _lisp->_Roots._TheStructureClass
-        || iobj->_Class == _lisp->_Roots._TheClassRep
+        || iobj->_Class == _lisp->_Roots._TheClbindCxxClass
         || iobj->_Class == _lisp->_Roots._TheDerivableCxxClass ) return true;
     return core__subclassp(iobj->_Class,_lisp->_Roots._TheClass);
   }

@@ -65,8 +65,8 @@ using namespace clbind::detail;
 
 namespace clbind {
 
-ClassRep_O::ClassRep_O(type_id const &type, const std::string &name, bool derivable)
-  : Instance_O(core::lisp_class_rep_class()/*,REF_CLASS_NUMBER_OF_SLOTS_IN_STANDARD_CLASS*/ ),
+ClassRep_O::ClassRep_O(core::Instance_sp class_, type_id const &type, const std::string &name, bool derivable)
+  : Instance_O(class_/*,REF_CLASS_NUMBER_OF_SLOTS_IN_STANDARD_CLASS*/ ),
     m_type(type),
     m_name(name)
       //	, m_class_type(cpp_class)
@@ -106,7 +106,7 @@ ClassRep_O::ClassRep_O(type_id const &type, const std::string &name, bool deriva
         cl_pop(L, 1);
 #endif
 }
-
+#if 0
 ClassRep_O::ClassRep_O(const std::string &name, bool derivable)
   : Instance_O(core::lisp_class_rep_class()/*,REF_CLASS_NUMBER_OF_SLOTS_IN_STANDARD_CLASS*/),
       m_type(typeid(reg::null_type)), m_name(name)
@@ -147,6 +147,9 @@ ClassRep_O::ClassRep_O(const std::string &name, bool derivable)
         cl_pop(L, 1);
 #endif
 }
+#endif
+
+
 
 #if 0
 // leaves object on cl stack

@@ -93,11 +93,10 @@ derivable_class_registration::derivable_class_registration(char const *name) : m
 
 void derivable_class_registration::register_() const {
   ClassRegistry_sp registry = ClassRegistry_O::get_registry();
-  clbind::ClassRep_sp crep = clbind::ClassRep_O::create(this->m_type, this->m_name, this->m_derivable);
+  clbind::ClassRep_sp crep = clbind::ClassRep_O::create(core::lisp_derivable_cxx_class(), this->m_type, this->m_name, this->m_derivable);
 #ifdef DEBUG_CLASS_INSTANCE
   printf("%s:%d:%s   Registering clbind class\n", __FILE__, __LINE__, __FUNCTION__ );
 #endif
-  crep->_Class = _lisp->_Roots._TheDerivableCxxClass; // core::lisp_standard_class();
   crep->initializeSlots(crep->_Class->CLASS_stamp_for_instances(),REF_CLASS_NUMBER_OF_SLOTS_IN_DERIVABLE_CXX_CLASS);
   std::string classNameString(this->m_name);
   gctools::smart_ptr<core::Creator_O> creator;

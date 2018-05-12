@@ -404,9 +404,9 @@
         (core:cxx-class
          :direct-superclasses (class)
          :direct-slots #1#)
-        (clbind:class-rep
-         :direct-superclasses (class)
-         :direct-slots #1#)
+        #+(or)(clbind:class-rep
+               :direct-superclasses (class)
+               :direct-slots #1#)
         (std-class
          :direct-superclasses (class)
          :direct-slots #1#)
@@ -451,6 +451,9 @@
         (structure-object
          :metaclass structure-class
          :direct-superclasses (t))
+        (core:clbind-cxx-class
+         :direct-superclasses (class)
+         :direct-slots #.+standard-class-slots+)
         (core:derivable-cxx-class
          :direct-superclasses (class)
          :direct-slots #.+standard-class-slots+)

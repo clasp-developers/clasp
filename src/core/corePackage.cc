@@ -152,6 +152,7 @@ SYMBOL_EXPORT_SC_(CorePkg, signal_servicing);
 SYMBOL_EXPORT_SC_(CorePkg, handle_signal);
 SYMBOL_EXPORT_SC_(CorePkg, every_list);
 SYMBOL_EXPORT_SC_(CorePkg, some_list);
+SYMBOL_EXPORT_SC_(CorePkg, clbind_cxx_class);
 SYMBOL_EXPORT_SC_(CorePkg, derivable_cxx_class);
 SYMBOL_EXPORT_SC_(CorePkg, derivable_cxx_object);
 SYMBOL_EXPORT_SC_(CorePkg, stack_closure);

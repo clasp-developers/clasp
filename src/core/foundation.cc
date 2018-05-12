@@ -146,13 +146,16 @@ Instance_sp lisp_built_in_class() {
   return _lisp->_Roots._TheBuiltInClass;
 //  return cl__find_class(clbind::_sym_built_in_class,false,_Nil<T_O>());
 }
-Instance_sp lisp_class_rep_class() {
-  return _lisp->_Roots._TheClassRep;
-  // return cl__find_class(clbind::_sym_ClassRep_O,false,_Nil<T_O>());
-}
 Instance_sp lisp_standard_class() {
   return _lisp->_Roots._TheStandardClass;
   // return cl__find_class(cl::_sym_standard_class,false,_Nil<T_O>());
+}
+
+Instance_sp lisp_derivable_cxx_class() {
+  return _lisp->_Roots._TheDerivableCxxClass;
+}
+Instance_sp lisp_clbind_cxx_class() {
+  return _lisp->_Roots._TheClbindCxxClass;
 }
 
 

@@ -80,7 +80,12 @@ class_registration::class_registration(const std::string &name) : m_default_cons
 
 void class_registration::register_() const {
   ClassRegistry_sp registry = ClassRegistry_O::get_registry();
-  clbind::ClassRep_sp crep = clbind::ClassRep_O::create(this->m_type, this->m_name, this->m_derivable);
+  clbind::ClassRep_sp crep;
+  if (!this->m_derivable) {
+    crep = clbind::ClassRep_O::create(core::lisp_clbind_cxx_class(), this->m_type, this->m_name, this->m_derivable);
+  } else {
+    crep = clbind::ClassRep_O::create(core::lisp_derivable_cxx_class(), this->m_type, this->m_name, this->m_derivable);
+  }
 #ifdef DEBUG_CLASS_INSTANCE
   printf("%s:%d   Registering clbind class\n", __FILE__, __LINE__ );
 #endif
