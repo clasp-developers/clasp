@@ -415,7 +415,7 @@ CL_DEFUN T_mv core__dlload(T_sp pathDesig) {
 #ifdef _TARGET_OS_DARWIN
   lib_extension = ".dylib";
 #endif
-#ifdef _TARGET_OS_LINUX
+#if defined( _TARGET_OS_LINUX) || defined( _TARGET_OS_FREEBSD)
   lib_extension = ".so";
 #endif
   int mode = RTLD_NOW | RTLD_GLOBAL;
@@ -559,7 +559,7 @@ CL_DEFUN T_sp core__dlsym(T_sp ohandle, String_sp name) {
 //      printf("%s:%d handle = %p\n", __FILE__, __LINE__, handle);
     } else if (sym == kw::_sym_rtld_next) {
       handle = RTLD_NEXT;
-#ifndef _TARGET_OS_LINUX
+#ifdef _TARGET_OS_DARWIN
     } else if (sym == kw::_sym_rtld_self) //NOT PORTABLE TO LINUX
     {
       handle = RTLD_SELF;

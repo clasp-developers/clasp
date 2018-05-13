@@ -1208,8 +1208,13 @@ void CoreExposer_O::define_essential_globals(Lisp_sp lisp) {
   SYMBOL_EXPORT_SC_(KeywordPkg, target_os_linux);
   Symbol_sp target_os = kw::_sym_target_os_linux;
 
+#elif defined(__FreeBSD__)
+
+  SYMBOL_EXPORT_SC_(KeywordPkg, target_os_freebsd);
+  Symbol_sp target_os = kw::_sym_target_os_freebsd;
+
 #else
-#error Currently only MacOSX and linux are supported for x86_64
+#error Currently only MacOSX, linux and FreeBSD are supported for x86_64
 #endif
 
 #elif defined(__i386__)

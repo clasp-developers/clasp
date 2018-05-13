@@ -1,6 +1,9 @@
 # -*- mode: GNUmakefile; indent-tabs-mode: t -*-
 # Cleaned up by Shinmera October 13, 2015
 
+MAKE	?= make
+PREFIX	?= /opt/clasp
+
 all:
 	./waf build_dboehm
 
@@ -8,13 +11,12 @@ configure:
 	./waf update_dependencies
 	./waf configure --prefix=$(PREFIX)
 
-
 clean:
 	./waf distclean
 
 pull-sicl-master:
 	(cd src/lisp/kernel/contrib/sicl; git pull origin master)
-	make setup-cleavir
+	$(MAKE) setup-cleavir
 
 dump-local-config:
 	cat $(CLASP_HOME)/wscript.config
@@ -84,7 +86,7 @@ push-to-testing:
 
 analyze:
 	./waf build_cboehmdc
-	make analyze_rest
+	$(MAKE) analyze_rest
 
 analyze_rest:
 	./waf build_impsprep
