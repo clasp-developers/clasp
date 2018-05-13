@@ -132,7 +132,8 @@
          (when (member :debug-run-clang *features*)
            (bformat t "execute-link-fasl   clang-args -> %s\n" clang-args))
          (ext:run-clang clang-args :output-file-name bundle-file)))
-      ((member :target-os-linux *features*)
+      ((or (member :target-os-linux *features*)
+           (member :target-os-freebsd *features*))
        ;; Linux needs to use clang to link
        (ext:run-clang `(#+(or)"-v"
                           ,@options
@@ -169,7 +170,8 @@
                           "-o"
                           ,exec-file)
                         :output-file-name exec-file))
-        ((member :target-os-linux *features*)
+        ((or (member :target-os-linux *features*)
+             (member :target-os-freebsd *features*))
          ;; Linux needs to use clang to link
          (ext:run-clang `(,@options
                           ,@all-names

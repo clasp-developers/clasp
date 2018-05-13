@@ -41,7 +41,7 @@ THE SOFTWARE.
 #include <cstdlib>
 #include <cstdio>
 
-#if defined( _TARGET_OS_LINUX ) || defined( _TARGET_OS_DARWIN )
+#if defined( _TARGET_OS_LINUX ) || defined( _TARGET_OS_DARWIN ) || defined( _TARGET_OS_FREEBSD)
 #include <signal.h>
 #include <sys/resource.h>
 #include <libgen.h>

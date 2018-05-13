@@ -85,11 +85,21 @@ Bundle::Bundle(const string &raw_argv0, const string &appDirName) {
   }
   if (appDirName.size() == 0) {
     pid_t pid = getpid();
-#ifdef _TARGET_OS_DARWIN
+#ifdef _TARGET_OS_DARWIN)
     char pathbuf[PROC_PIDPATHINFO_MAXSIZE];
     /*int ret = */ proc_pidpath(pid, pathbuf, sizeof(pathbuf));
   //        printf("%s:%d pid path = %s\n", __FILE__, __LINE__, pathbuf );
     string argv0 = string(pathbuf);
+#endif
+#ifdef _TARGET_OS_FREEBSD
+    stringstream path;
+    path << "/proc/" << pid << "/file";
+    char buffer[PATH_MAX + 1];
+    char *rp = realpath(path.str().c_str(), buffer);
+    if (!rp) {
+      printf("%s:%d Could not resolve pid realpath for %s\n", __FILE__, __LINE__, path.str().c_str());
+    }
+    string argv0 = string(rp);
 #endif
 #ifdef _TARGET_OS_LINUX
     stringstream path;
