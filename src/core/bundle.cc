@@ -85,7 +85,7 @@ Bundle::Bundle(const string &raw_argv0, const string &appDirName) {
   }
   if (appDirName.size() == 0) {
     pid_t pid = getpid();
-#ifdef _TARGET_OS_DARWIN)
+#ifdef _TARGET_OS_DARWIN
     char pathbuf[PROC_PIDPATHINFO_MAXSIZE];
     /*int ret = */ proc_pidpath(pid, pathbuf, sizeof(pathbuf));
   //        printf("%s:%d pid path = %s\n", __FILE__, __LINE__, pathbuf );
