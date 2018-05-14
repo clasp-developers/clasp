@@ -7,22 +7,26 @@
 ;;; and if so, extract the go-index and jump table and so on in a catch block.
 ;;; Saves a landing pad and my comprehension.
 (defun generate-match-unwind (return-value abi frame-holder landing-pad-for-unwind-rethrow exn.slot)
-  (cmp:with-begin-end-catch (exn.slot exception-ptr nil)
-    ;; Check if frame is correct against tagbody and jump to jumpid
-    (cmp:with-landing-pad landing-pad-for-unwind-rethrow
-      (prog1
-          (%intrinsic-invoke-if-landing-pad-or-call
-           "cc_landingpadUnwindMatchFrameElseRethrow" 
-           (list exception-ptr (cmp:irc-load frame-holder))
-           "go-index")
-        ;; No idea what this is for.
+  ;; We do this weird thing to get the index while still generating the other code around it.
+  ;; FIXME: with-begin-end-catch should maybe abstract away so it can return an actual thing.
+  (let (go-index)
+    (cmp:with-begin-end-catch (exn.slot exception-ptr nil)
+      ;; Check if frame is correct against tagbody and jump to jumpid
+      (cmp:with-landing-pad landing-pad-for-unwind-rethrow
+        (setq go-index
+              (%intrinsic-invoke-if-landing-pad-or-call
+               "cc_landingpadUnwindMatchFrameElseRethrow" 
+               (list exception-ptr (cmp:irc-load frame-holder))
+               "go-index"))
+        ;; Restore multiple values before going to whichever block.
         (with-return-values (return-vals return-value abi)
-          (%intrinsic-call "cc_restoreMultipleValue0" (list return-value)))))))
+          (%intrinsic-call "cc_restoreMultipleValue0" (list return-value)))))
+    go-index))
 
 ;;; Generates a landing pad and code to deal with unwinds to this function.
 (defun generate-catch-landing-pad (maybe-cleanup-landing-pad ehselector.slot exn.slot not-unwind-block
                                    return-value abi frame-holder landing-pad-for-unwind-rethrow
-                                   catches)
+                                   tags catches)
   (let ((landing-pad-block (cmp:irc-basic-block-create "landing-pad")))
     (cmp:irc-begin-block landing-pad-block)
     (let ((lpad (cmp:irc-create-landing-pad 1 "lp")))
@@ -40,11 +44,12 @@
         (let* ((go-index (generate-match-unwind
                          return-value abi frame-holder landing-pad-for-unwind-rethrow exn.slot))
                (default-block (cmp:irc-basic-block-create "switch-default"))
-               (sw (cmp:irc-switch go-index default-block (length unwinds))))
+               (sw (cmp:irc-switch go-index default-block (length catches))))
           (loop for catch in catches
                 for jump-id = (cc-mir:go-index catch)
                 do (let* ((target (second (cleavir-ir:successors catch)))
                           (tag-block (gethash target tags)))
+                     (assert (not (null tag-block)))
                      (llvm-sys:add-case sw (%size_t jump-id) tag-block)))
           (cmp:irc-begin-block default-block)
           (%intrinsic-invoke-if-landing-pad-or-call "throwIllegalSwitchValue"
@@ -55,18 +60,18 @@
       landing-pad-block))
 
 (defun generate-catch-landing-pads (function maybe-cleanup-landing-pad ehselector.slot exn.slot
-                                    next-block return-value abi frame-marker catches)
+                                    next-block return-value abi frame-marker tags catches)
   (let ((landing-pad-for-unwind-rethrow
           (cmp::generate-rethrow-landing-pad function next-block
                                              nil ; '(cmp::typeid-core-unwind)
                                              exn.slot ehselector.slot)))
     (generate-catch-landing-pad maybe-cleanup-landing-pad ehselector.slot exn.slot next-block
                                 return-value abi frame-marker landing-pad-for-unwind-rethrow
-                                catches)))
+                                tags catches)))
 
 (defun generate-cleanup-invocation-history (calling-convention)
   (%intrinsic-call "cc_pop_InvocationHistoryFrame"
-                   (list (cmp:calling-convention-closure cc)
+                   (list (cmp:calling-convention-closure calling-convention)
                          (cmp:calling-convention-invocation-history-frame* calling-convention))))
 
 (defun maybe-gen-cleanup-invocation-history (function-info)
@@ -108,26 +113,25 @@
     ehresume))
 
 ;;; Returns either NIL or a block to serve as a landing pad.
-(defun maybe-generate-landing-pad (function info return-value abi)
+(defun maybe-generate-landing-pad (function info tags return-value abi)
   ;; If we don't need to worry about unwinds, don't generate any code, and return NIL immediately.
   (let* ((debug-on (debug-on info)) (catches (catches info))
          (calling-convention (calling-convention info))
          (catches-p (not (null catches))))
-    (if (or (debug-on function-info) (catches-p function-info))
+    (if (or (debug-on info) (catches-p info))
         (let* ((exn.slot (alloca-i8* "exn.slot"))
                (ehselector.slot (alloca-i32 "ehselector.slot"))
                (resume-block (generate-resume-block function exn.slot ehselector.slot))
-               (cleanup-block (if (debug-on function-info)
+               (cleanup-block (if (debug-on info)
                                   (generate-cleanup-block function calling-convention resume-block)
                                   resume-block))
-               (cleanup-landing-pad (if (debug-on function-info)
+               (cleanup-landing-pad (if (debug-on info)
                                         (generate-cleanup-landing-pad
                                          function exn.slot ehselector.slot cleanup-block)
                                         nil)))
           (if catches-p
-              (generate-catch-landing-pad
-               cleanup-landing-pad ehselector.slot exn.slot cleanup-block
-               return-value abi (translate-datum (frame-marker function-info))
-               landing-pad-for-unwind-rethrow catches)
+              (generate-catch-landing-pads
+               function cleanup-landing-pad ehselector.slot exn.slot cleanup-block
+               return-value abi (translate-datum (frame-marker info)) tags catches)
               cleanup-landing-pad))
         nil)))

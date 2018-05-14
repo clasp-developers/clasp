@@ -79,7 +79,7 @@
 
 (defun policy-anywhere-p (initial-instruction quality)
   (cleavir-ir:map-instructions-arbitrary-order
-   (lambda (i)
+   (lambda (instruction)
      (when (has-policy-p instruction quality)
        (return-from policy-anywhere-p t)))
    initial-instruction)

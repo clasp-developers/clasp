@@ -150,16 +150,6 @@
   (%store (%intrinsic-call "cc_pushLandingPadFrame" nil) (first outputs)))
 
 (defmethod translate-simple-instruction
-    ((instruction cleavir-ir:unwind-instruction) return-value inputs outputs abi function-info)
-  (with-return-values (return-values return-value abi)
-    ;; Save whatever is in return-vals in the multiple-value array
-    (%intrinsic-call "cc_saveMultipleValue0" (list return-value))
-    (maybe-gen-cleanup-invocation-history function-info)
-    (let ((static-index (cc-mir:go-index (cleavir-ir:destination instruction))))
-      (%intrinsic-call "cc_unwind" (list (%load (first inputs)) (%size_t static-index))))
-    (cmp:irc-unreachable)))
-
-(defmethod translate-simple-instruction
     ((instruction cleavir-ir:create-cell-instruction) return-value inputs outputs abi function-info)
   (let ((result (%intrinsic-invoke-if-landing-pad-or-call "cc_makeCell" nil)))
     (%store result (first outputs))))
@@ -571,6 +561,18 @@
   (cmp::compile-header-check
    (cc-mir:header-value-min-max instruction)
    (%load (first inputs)) (first successors) (second successors)))
+
+(defmethod translate-branch-instruction
+    ((instruction cleavir-ir:unwind-instruction)
+     return-value inputs outputs successors abi function-info)
+  (declare (ignore successors))
+  (with-return-values (return-values return-value abi)
+    ;; Save whatever is in return-vals in the multiple-value array
+    (%intrinsic-call "cc_saveMultipleValue0" (list return-value))
+    (maybe-gen-cleanup-invocation-history function-info)
+    (let ((static-index (cc-mir:go-index (cleavir-ir:destination instruction))))
+      (%intrinsic-call "cc_unwind" (list (%load (first inputs)) (%size_t static-index))))
+    (cmp:irc-unreachable)))
 
 ;;; This is not a real branch: it only has two successors for convenience elsewhere.
 ;;; See comment in mir.lisp.

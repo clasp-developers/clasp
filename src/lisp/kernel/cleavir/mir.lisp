@@ -87,7 +87,7 @@
 ;;; it will be the head of a spurious basic block.
 
 (defclass assign-catch-instruction (cleavir-ir:catch-instruction)
-  ((%go-index :initarg go-index :reader go-index)))
+  ((%go-index :initarg :go-index :reader go-index)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;

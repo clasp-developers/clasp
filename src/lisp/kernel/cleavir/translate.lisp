@@ -169,6 +169,7 @@ when this is t a lot of graphs will be generated.")
                         (translate-branch-instruction
                          instruction return-value input-vars output-vars successor-tags
                          abi current-function-info))))
+               (loop-finish)
           else
             do (translate-simple-instruction
                 instruction return-value input-vars output-vars abi current-function-info))
@@ -209,7 +210,7 @@ when this is t a lot of graphs will be generated.")
             (when (debug-on function-info)
               (generate-push-invocation-history-frame (calling-convention function-info)))
             (cmp:with-landing-pad
-                (maybe-generate-landing-pad the-function function-info return-value abi)
+                (maybe-generate-landing-pad the-function function-info *tags* return-value abi)
               (layout-basic-block first-basic-block return-value abi function-info)
               (loop for block in rest-basic-blocks
                     for instruction = (first block)
@@ -224,7 +225,7 @@ when this is t a lot of graphs will be generated.")
 
 ;;; Returns all basic blocks with the given owner.
 (defun function-basic-blocks (enter)
-  (remove initial-instruction *basic-blocks* :test-not #'eq :key #'third))
+  (remove enter *basic-blocks* :test-not #'eq :key #'third))
 
 (defun log-layout-procedure (the-function basic-blocks)
   (format *debug-log* "------------ begin layout-procedure ~a~%" (llvm-sys:get-name the-function))
@@ -245,12 +246,12 @@ when this is t a lot of graphs will be generated.")
 
 (defun layout-procedure (enter abi &key (linkage 'llvm-sys:internal-linkage))
   ;; I think this removes every basic-block that
-  ;; isn't owned by this initial-instruction
-  (let* ((function-info (gethash initial-instruction *map-enter-to-function-info*))
+  ;; isn't owned by this enter
+  (let* ((function-info (gethash enter *map-enter-to-function-info*))
          ;; Gather the basic blocks of this procedure in basic-blocks
          (basic-blocks (function-basic-blocks enter))
          ;; The basic block control starts in.
-         (first-basic-block (find initial-instruction basic-blocks :test #'eq :key #'first))
+         (first-basic-block (find enter basic-blocks :test #'eq :key #'first))
          ;; This gathers the rest of the basic blocks
          (rest-basic-blocks (remove first-basic-block basic-blocks :test #'eq))
          (lambda-name (get-or-create-lambda-name enter))
@@ -293,7 +294,7 @@ when this is t a lot of graphs will be generated.")
     (with-debug-info-disabled
         (cmp:with-irbuilder (cmp:*irbuilder-function-alloca*)
           (let* ((fn-args (llvm-sys:get-argument-list cmp:*current-function*))
-                 (lambda-list (cleavir-ir:lambda-list initial-instruction))
+                 (lambda-list (cleavir-ir:lambda-list enter))
                  (calling-convention (cmp:cclasp-setup-calling-convention
                                       fn-args lambda-list (debug-on function-info))))
             (setf (calling-convention function-info) calling-convention))))
@@ -304,7 +305,7 @@ when this is t a lot of graphs will be generated.")
                        rest-basic-blocks
                        function-info
                        lambda-name
-                       initial-instruction abi :linkage linkage)))
+                       enter abi :linkage linkage)))
 
 (defun log-translate (initial-instruction)
   (let ((mir-pathname (make-pathname :name (format nil "mir~a" (incf *debug-log-index*))
@@ -319,17 +320,18 @@ when this is t a lot of graphs will be generated.")
     (cleavir-ir-graphviz:draw-flowchart initial-instruction (namestring mir-pathname))
     (format *debug-log* "Wrote mir to: ~a~%" (namestring mir-pathname))))
 
-(defun translate (initial-instruction map-enter-to-function-info &optional (abi *abi-x86-64*) &key (linkage 'llvm-sys:internal-linkage))
+(defun translate (initial-instruction map-enter-to-function-info
+                  &optional (abi *abi-x86-64*) (linkage 'llvm-sys:internal-linkage))
   (let* ((*basic-blocks* (cleavir-basic-blocks:basic-blocks initial-instruction))
          (*tags* (make-hash-table :test #'eq))
          (*vars* (make-hash-table :test #'eq))
          (*map-enter-to-function-info* map-enter-to-function-info))
-      (cc-dbg-when *debug-log* (log-translate initial-instruction)))
+    (cc-dbg-when *debug-log* (log-translate initial-instruction))
     (multiple-value-bind (function lambda-name)
         (layout-procedure initial-instruction abi :linkage linkage)
       (cmp::cmp-log-compile-file-dump-module cmp:*the-module* "after-translate")
       (setf *ct-translate* (compiler-timer-elapsed))
-      (values function lambda-name)))
+      (values function lambda-name))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -380,6 +382,7 @@ when this is t a lot of graphs will be generated.")
           (quick-draw-hir init-instr "hir-after-ti")
           (setf *ct-infer-types* (compiler-timer-elapsed))))))
 
+  (cleavir-hir-transformations:eliminate-catches init-instr)
   ;; delete the-instruction and the-values-instruction
   (cleavir-kildall-type-inference:delete-the init-instr)
   (setf *ct-delete-the* (compiler-timer-elapsed))
@@ -408,7 +411,7 @@ when this is t a lot of graphs will be generated.")
 
 (defun cst->ast (cst &optional (env *clasp-env*))
   "Compile a cst into an AST and return it.
-Also does load-time-value hoisting.
+Does not hoist.
 COMPILE might call this with an environment in ENV.
 COMPILE-FILE will use the default *clasp-env*."
   (handler-bind
@@ -422,49 +425,52 @@ COMPILE-FILE will use the default *clasp-env*."
            #+verbose-compiler(warn "Condition: ~a" condition)
            (cmp:register-global-function-ref (cleavir-environment:name condition))
            (invoke-restart 'cleavir-cst-to-ast:consider-global))))
-    (let* ((ast (cleavir-cst-to-ast:cst-to-ast cst env *clasp-system*))
-           (_ (progn (when *interactive-debug* (draw-ast ast))
-                     (cc-dbg-when *debug-log* (log-cst-to-ast ast))
-                     (setf *ct-generate-ast* (compiler-timer-elapsed))))
-           (hoisted-ast (clasp-cleavir-ast:hoist-load-time-value ast env))
-           (_ (setf *ct-hoist-ast* (compiler-timer-elapsed))))
-      (declare (ignore _))
-      hoisted-ast)))
+    (let* ((ast (cleavir-cst-to-ast:cst-to-ast cst env *clasp-system*)))
+      (when *interactive-debug* (draw-ast ast))
+      (cc-dbg-when *debug-log* (log-cst-to-ast ast))
+      (setf *ct-generate-ast* (compiler-timer-elapsed))
+      ast)))
+
+(defun hoist-ast (ast &optional (env *clasp-env*))
+  (prog1
+      (clasp-cleavir-ast:hoist-load-time-value ast env)
+    (setf *ct-hoist-ast* (compiler-timer-elapsed))))
 
 (defun ast->hir (ast)
   "Compile an AST down to HIR and return it."
   (prog1 (cleavir-ast-to-hir:compile-toplevel ast)
     (setf *ct-generate-hir* (compiler-timer-elapsed))))
 
-(defun hir->mir (hir function-info-map &optional (env *clasp-env*))
-  "Perform HIR transformations, then compile down to MIR."
+(defun hir->mir (hir &optional (env *clasp-env*))
+  "Perform HIR transformations, then compile down to MIR. Returns function-info-map as second value."
   ;; Note: We should not have an env parameter. It is only required due to
   ;; how types work at the moment, and will be eliminated as soon as practical.
   (let ((system *clasp-system*))
     (my-hir-transformations hir system env)
     (quick-draw-hir hir "hir-pre-mir")
-    (lower-enter-catches function-info-map)
-    (cleavir-ir:hir-to-mir hir system env)
-    #+stealth-gids(cc-mir:assign-mir-instruction-datum-ids hir)
-    (quick-draw-hir hir "mir")
-    (when *interactive-debug*
-      (draw-hir hir)
-      (format t "Press enter to continue: ")
-      (finish-output)
-      (read-line))
-    hir))
+    (let ((function-info-map (make-function-info-map hir)))
+      (lower-catches function-info-map)
+      (cleavir-ir:hir-to-mir hir system env nil)
+      #+stealth-gids(cc-mir:assign-mir-instruction-datum-ids hir)
+      (quick-draw-hir hir "mir")
+      (when *interactive-debug*
+        (draw-hir hir)
+        (format t "Press enter to continue: ")
+        (finish-output)
+        (read-line))
+      (values hir function-info-map))))
 
-;;; Convenience
+;;; Convenience. AST must have been hoisted already.
 (defun translate-ast (ast &key (abi *abi-x86-64*) (linkage 'llvm-sys:internal-linkage)
                             (env *clasp-env*))
-  (let* ((hir (ast->hir ast))
-         (function-info-map (make-function-info-map hir))
-         (mir (hir->mir hir function-info-map env)))
-    (translate mir function-info-map abi linkage)))
+  (let ((hir (ast->hir ast)))
+    (multiple-value-bind (mir function-info-map)
+        (hir->mir hir env)
+      (translate mir function-info-map abi linkage))))
 (defun translate-cst (cst &key (abi *abi-x86-64*) (linkage 'llvm-sys:internal-linkage)
                             (env *clasp-env*))
-  (translate-ast (cst->ast cst env) :abi abi :linkage linkage :env env))
-   
+  (translate-ast (hoist-ast (cst->ast cst env) env) :abi abi :linkage linkage :env env))
+
 (defparameter *debug-final-gml* nil)
 (defparameter *debug-final-next-id* 0)
 
@@ -487,7 +493,7 @@ COMPILE-FILE will use the default *clasp-env*."
       (multiple-value-bind (ordered-raw-constants-list constants-table startup-fn shutdown-fn)
           (literal:with-rtv
               (multiple-value-setq (function lambda-name)
-                (translate-ast ast :linkage linkage :env env)))
+                (translate-ast (hoist-ast ast env) :linkage linkage :env env)))
         (unless function
           (error "There was no function returned by translate-ast"))
         (cmp:cmp-log "fn --> %s%N" fn)
@@ -497,25 +503,6 @@ COMPILE-FILE will use the default *clasp-env*."
                  cmp:*the-module*
                  function startup-fn shutdown-fn ordered-raw-constants-list)))
           (funcall setup-function))))))
-
-(defun compile-cst-or-form (cst-or-form &optional (env *clasp-env*))
-  (handler-bind
-      ((cleavir-env:no-variable-info
-        (lambda (condition)
-;;;	  (declare (ignore condition))
-          #+verbose-compiler(warn "Condition: ~a" condition)
-          (cmp:compiler-warning-undefined-global-variable (cleavir-environment:name condition))
-          (invoke-restart 'cleavir-cst-to-ast:consider-special)))
-       (cleavir-env:no-function-info
-        (lambda (condition)
-;;;	  (declare (ignore condition))
-          #+verbose-compiler(warn "Condition: ~a" condition)
-          (cmp:register-global-function-ref (cleavir-environment:name condition))
-          (invoke-restart 'cleavir-cst-to-ast:consider-global))))
-    (multiple-value-bind (mir map-enter-to-landing-pad)
-        (compile-cst-or-form-to-mir cst-or-form env)
-      (multiple-value-prog1 (translate mir map-enter-to-landing-pad *abi-x86-64*)
-        (setf *ct-translate* (compiler-timer-elapsed))))))
 
 (defun compile-form (form &optional (env *clasp-env*))
   (setf *ct-start* (compiler-timer-elapsed))
@@ -548,11 +535,11 @@ COMPILE-FILE will use the default *clasp-env*."
              (cst (eclector.concrete-syntax-tree:cst-read source-sin nil eof-value)))
         (when cmp:*debug-compile-file*
           (bformat t "compile-file: cf%d -> %s%N" (incf cmp:*debug-compile-file-counter*) cst))
-        (if (eq cst-form eof-value)
+        (if (eq cst eof-value)
             (return nil)
             (progn
-              (when *compile-print* (cmp::describe-form (cst:raw cst-form)))
-              (cleavir-compile-file-cst cst-form environment)))))))
+              (when *compile-print* (cmp::describe-form (cst:raw cst)))
+              (cleavir-compile-file-cst cst environment)))))))
 
 (defun cclasp-compile-in-env (name form &optional env)
   (let ((cleavir-generate-ast:*compiler* 'cl:compile)

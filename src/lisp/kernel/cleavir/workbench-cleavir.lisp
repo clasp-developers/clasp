@@ -27,6 +27,11 @@
   (time (asdf:load-system "clasp-cleavir"))
   (format t "Done  pid = ~a~%"  (core:getpid)))
 
+
+
+(clasp-cleavir:cleavir-compile-file "/tmp/test.lisp")
+
+
 ;;; --- If you want inlining compile this
 (let ((cmp:*cleavir-compile-hook* 'clasp-cleavir::cclasp-compile*)
       (cmp:*cleavir-compile-file-hook* 'clasp-cleavir::cclasp-loop-read-and-compile-file-forms)

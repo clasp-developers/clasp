@@ -52,7 +52,8 @@
     (unless (null catches)
       (let ((frame (cleavir-ir:new-temporary "FRAME")))
         (cleavir-ir:insert-instruction-after
-         (make-save-frame-instruction frame)
+         (let ((cleavir-ir:*policy* (cleavir-ir:policy enter)))
+           (cc-mir:make-save-frame-instruction frame))
          enter)
         (loop for catchn from 0 for catch in catches
               do (change-class catch 'cc-mir:assign-catch-instruction
