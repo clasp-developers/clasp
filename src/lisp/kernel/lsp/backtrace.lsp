@@ -101,6 +101,7 @@ For C/C++ frames - return (list 'c-function name)."
         ;; strip leading #\_
         (if (and jit-name (search "^^" jit-name))
             (let* ((name-with-parts #+target-os-linux jit-name
+                                    #+target-os-freebsd (subseq jit-name 1 (length jit-name))
                                     #+target-os-darwin (subseq jit-name 1 (length jit-name)))
                    (parts (cmp:unescape-and-split-jit-name name-with-parts))
                    (symbol-name (first parts))
@@ -230,6 +231,13 @@ For C/C++ frames - return (list 'c-function name)."
   ;; "framenumber    processname        address      functionname"
   ;; with variable numbers of spaces. processname is always at character 4 so we start there.
   #+target-os-darwin
+  (let* ((pos1 (position-if (lambda (c) (char/= c #\space)) line :start 4)) ; skip whitespace
+         (pos1e (position-if (lambda (c) (char= c #\space)) line :start pos1)) ; skip chars
+         (pos2 (position-if (lambda (c) (char/= c #\space)) line :start pos1e))
+         (pos2e (position-if (lambda (c) (char= c #\space)) line :start pos2)) ; skip chars
+         (pos3 (position-if (lambda (c) (char/= c #\space)) line :start pos2e)))
+    (subseq line pos3 (length line)))
+  #+target-os-freebsd
   (let* ((pos1 (position-if (lambda (c) (char/= c #\space)) line :start 4)) ; skip whitespace
          (pos1e (position-if (lambda (c) (char= c #\space)) line :start pos1)) ; skip chars
          (pos2 (position-if (lambda (c) (char/= c #\space)) line :start pos1e))

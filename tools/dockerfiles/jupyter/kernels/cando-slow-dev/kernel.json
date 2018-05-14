@@ -12,6 +12,6 @@
         "--",
         "{connection_file}"
     ],
-    "display_name": "cando-dev",
+    "display_name": "cando-slow-dev",
     "language": "lisp"
 }

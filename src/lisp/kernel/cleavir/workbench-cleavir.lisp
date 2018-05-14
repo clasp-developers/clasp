@@ -19,7 +19,7 @@
   (format t "Done building addons~%"))
 
 (progn
-  (require :asdf)
+  (require :asdf "modules:modules;asdf;build;asdf.fasl")
   (format t "Loaded ASDF system~%")
   (finish-output))
 
@@ -50,6 +50,20 @@
   (format t "Done  pid = ~a~%"  (core:getpid)))
 
 
+(defun fork-cleavir-compile-file (filename)
+  (let ((pid (core:fork)))
+    (when (= pid 0)
+             (progn
+               (clasp-cleavir:cleavir-compile-file filename :print t)
+               (format t "Finished compile-file~%")
+               (core:exit)))))
+
+(fork-cleavir-compile-file "sys:kernel;lsp;setf.lsp")
+
+(print "Hello")
+
+
+(
 (clasp-cleavir:cleavir-compile 'foo '(lambda () (let ((f (compile nil '(lambda () (lambda ()))))) (eq (funcall f) (funcall f)))))
 
 (let ((clasp-cleavir::*use-compile-closurette* t))

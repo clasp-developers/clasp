@@ -56,7 +56,7 @@ RUN python -m jupyter nbextension install --py --sys-prefix nglview
 RUN python -m jupyter nbextension enable --py --sys-prefix nglview
 
 ADD cando-build.tgz /home/app/clasp
-ADD tools/dockerfiles/jupyter/kernels /home/app/.local/share/jupyter/
+ADD tools/dockerfiles/jupyter/kernels /home/app/.local/share/jupyter/kernels
 ADD tools/dockerfiles/jupyter/jupyter_notebook_config.py /home/app/.jupyter/jupyter_notebook_config.py
 # RUN chown -R app:app /home/app/.jupyter /home/app/.local
 

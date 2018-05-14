@@ -635,17 +635,16 @@
 (defmethod translate-simple-instruction
     ((instruction clasp-cleavir:invoke-multiple-value-call-instruction) return-value inputs outputs abi function-info)
   (cmp:irc-low-level-trace :flow)
-  (let* ((lpad (clasp-cleavir::landing-pad instruction)))
-    (with-return-values (return-vals return-value abi)
-      ;;(%intrinsic-call "cc_saveMultipleValue0" (list return-value)) ;; (sret-arg return-vals))
-      (let ((call-result (%intrinsic-invoke-if-landing-pad-or-call "cc_call_multipleValueOneFormCallWithRet0" 
-                                                                   (list (%load (first inputs)) (%load return-value))
-                                                           "mvofc")))
-        (%store call-result return-value)
-	(cc-dbg-when *debug-log*
-                     (format *debug-log* "    translate-simple-instruction invoke-multiple-value-call-instruction: ~a~%" 
-                             (cc-mir:describe-mir instruction))
-                     (format *debug-log* "     instruction --> ~a~%" call-result))))))
+  (with-return-values (return-vals return-value abi)
+    ;;(%intrinsic-call "cc_saveMultipleValue0" (list return-value)) ;; (sret-arg return-vals))
+    (let ((call-result (%intrinsic-invoke-if-landing-pad-or-call "cc_call_multipleValueOneFormCallWithRet0" 
+                                                                 (list (%load (first inputs)) (%load return-value))
+                                                                 "mvofc")))
+      (%store call-result return-value)
+      (cc-dbg-when *debug-log*
+                   (format *debug-log* "    translate-simple-instruction invoke-multiple-value-call-instruction: ~a~%" 
+                           (cc-mir:describe-mir instruction))
+                   (format *debug-log* "     instruction --> ~a~%" call-result)))))
 
 (defun gen-vector-effective-address (array index element-type fixnum-type)
   (let* ((array (%load array)) (index (%load index))

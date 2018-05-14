@@ -87,7 +87,7 @@ T_sp DerivableCxxClassCreator_O::creator_allocate() {
 namespace core {
 T_sp ClassRepCreator_O::creator_allocate() {
   size_t size = gctools::sizeof_with_header<Instance_O>();
-  GC_ALLOCATE_VARIADIC(clbind::ClassRep_O,class_,lisp_class_rep_class());
+  GC_ALLOCATE_VARIADIC(clbind::ClassRep_O,class_,lisp_clbind_cxx_class());
   return class_;
 };
 

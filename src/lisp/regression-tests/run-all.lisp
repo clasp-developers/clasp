@@ -22,7 +22,9 @@
 (load (compile-file "sys:regression-tests;symbol0.lisp"))
 (load (compile-file "sys:regression-tests;string-comparison0.lisp"))
 (load (compile-file "sys:regression-tests;bit-array0.lisp"))
+(load (compile-file "sys:regression-tests;bit-array1.lisp"))
 (load (compile-file "sys:regression-tests;character0.lisp"))
+(load (compile-file "sys:regression-tests;misc.lisp"))
 
 (format t "Passes: ~a~%" *passes*)
 (format t "Fails:  ~a~%" *fails*)

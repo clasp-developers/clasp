@@ -100,7 +100,7 @@ namespace translate {
   // from_object( core::T_sp o ) : _v( o.fixnump() ? o.unsafe_fixnum() : not_fixnum_error(o) ) {};
   // };
 
-#ifdef _TARGET_OS_DARWIN
+#if defined(_TARGET_OS_DARWIN) || defined(_TARGET_OS_FREEBSD)
   // linux doesn't like these because they clash with int64_t and uint64_t
   template <>
     struct from_object< long, std::true_type >
@@ -191,7 +191,7 @@ template <>
     from_object( core::T_sp o ) : _v( o.fixnump() ? o.unsafe_fixnum() : core::not_fixnum_error( o ) ) {};
   };
 
-#if defined (_TARGET_OS_LINUX)
+#if defined (_TARGET_OS_LINUX) 
   template <>
     struct from_object< int64_t, std::true_type >
   {
@@ -202,7 +202,7 @@ template <>
   };
 #endif
   
-#if defined (_TARGET_OS_LINUX)
+#if defined (_TARGET_OS_LINUX) 
   template <>
     struct from_object< uint64_t, std::true_type >
   {

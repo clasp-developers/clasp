@@ -152,6 +152,7 @@ SYMBOL_EXPORT_SC_(CorePkg, signal_servicing);
 SYMBOL_EXPORT_SC_(CorePkg, handle_signal);
 SYMBOL_EXPORT_SC_(CorePkg, every_list);
 SYMBOL_EXPORT_SC_(CorePkg, some_list);
+SYMBOL_EXPORT_SC_(CorePkg, clbind_cxx_class);
 SYMBOL_EXPORT_SC_(CorePkg, derivable_cxx_class);
 SYMBOL_EXPORT_SC_(CorePkg, derivable_cxx_object);
 SYMBOL_EXPORT_SC_(CorePkg, stack_closure);
@@ -952,6 +953,7 @@ void CoreExposer_O::define_essential_globals(Lisp_sp lisp) {
   cl::_sym_nil->setf_symbolValue(_Nil<T_O>());
   cl::_sym_nil->makeSpecial();
   cl::_sym_nil->exportYourself();
+  cl::_sym_nil->setReadOnly(true);
   _lisp->commonLispPackage()->add_symbol_to_package(SimpleBaseString_O::make("NIL"), _Nil<Symbol_O>(), true);
   _lisp->_Roots._TrueObject = cl::_sym_T_O;
   cl::_sym_T_O->exportYourself()->defparameter(_lisp->_Roots._TrueObject);
@@ -1206,8 +1208,13 @@ void CoreExposer_O::define_essential_globals(Lisp_sp lisp) {
   SYMBOL_EXPORT_SC_(KeywordPkg, target_os_linux);
   Symbol_sp target_os = kw::_sym_target_os_linux;
 
+#elif defined(__FreeBSD__)
+
+  SYMBOL_EXPORT_SC_(KeywordPkg, target_os_freebsd);
+  Symbol_sp target_os = kw::_sym_target_os_freebsd;
+
 #else
-#error Currently only MacOSX and linux are supported for x86_64
+#error Currently only MacOSX, linux and FreeBSD are supported for x86_64
 #endif
 
 #elif defined(__i386__)

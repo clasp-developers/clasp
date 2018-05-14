@@ -263,7 +263,7 @@
 
 
 (defclass landing-pad-return-instruction (cleavir-ir:return-instruction)
-  ((%landing-pad :initarg :landing-pad :accessor landing-pad)))
+  ((%function-info :initarg :function-info :accessor function-info)))
 
 
 (defmethod cleavir-ir-graphviz:label ((instr landing-pad-return-instruction))

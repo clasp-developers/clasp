@@ -10,7 +10,7 @@ Find directories that look like them and replace the ones defined in the constan
 (provide :clang-tool)
 
 (defpackage #:clang-tool
-  (:shadow #:function-info)
+  (:shadow #:function-info #:function-type)
   (:use #:common-lisp #:core #:ast-tooling #:clang-ast)
   (:shadow #:dump #:get-string #:size #:type #:source-manager)
   (:export

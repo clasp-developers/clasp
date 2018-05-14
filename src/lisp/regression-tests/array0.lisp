@@ -9,3 +9,19 @@
 (test typep-make-adjustable-array (typep (make-array '(10 10) :adjustable t) 'array))
 (test typep-make-adjustable-array-nonsimple (not (typep (make-array '(10 10) :adjustable t) 'simple-array)))
 (test adjust-array0 (equalp (adjust-array #2A((1 2) (3 4)) '(3 3)) #2A((1 2 nil) (3 4 nil) (nil nil nil))))
+(test make-array-0 (null (array-displacement (make-array 5 :element-type 'CHARACTER :initial-element #\a :adjustable t))))
+(test make-array-1 (null (array-displacement (make-array 5 :element-type 'BASE-CHAR :initial-element #\a :adjustable t))))
+(test make-array-2 (arrayp (handler-case
+                               (make-array '(2 2) :element-type '(integer 0 (256))
+                                           :initial-contents '((34 98)(14 119)))
+                             (error (e) e))))
+(test make-array-3 (let ((array (handler-case
+                                    (list (make-array '(0) :element-type nil))
+                                  (error () nil))))
+                     (or (null array)(arrrayp array))))
+
+(test make-array-4 (let ((please-inline (MAKE-ARRAY '(2 3) :INITIAL-ELEMENT #\a :ELEMENT-TYPE 'character)))
+                     (char= #\a (aref please-inline 0 0))))
+
+(test make-array-5 (let ((please-inline (MAKE-ARRAY '(2 3) :INITIAL-ELEMENT #\a :ELEMENT-TYPE 'base-char)))
+                     (char= #\a (aref please-inline 0 0))))

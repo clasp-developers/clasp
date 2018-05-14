@@ -57,7 +57,7 @@ typedef int mode_t;
 
 #include <pwd.h>
 
-#ifdef _TARGET_OS_LINUX
+#if defined( _TARGET_OS_LINUX) || defined( _TARGET_OS_FREEBSD)
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/wait.h>

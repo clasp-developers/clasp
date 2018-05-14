@@ -251,14 +251,14 @@ BEGIN:
         //        printf("%s:%d %s error\n", __FILE__, __LINE__, __FUNCTION__ );
         return kw::_sym_error;
       }
-      item = cl__nth(i - 1, directory);
+      item = cl__nth(clasp_make_integer(i - 1), directory);
       if (item == kw::_sym_absolute || item == kw::_sym_wild_inferiors) {
         //        printf("%s:%d %s error\n", __FILE__, __LINE__, __FUNCTION__ );
         return kw::_sym_error;
       }
       if (delete_back && i >= 2) {
         T_sp next = oCdr(ptr);
-        ptr = cl__nthcdr(i - 2, directory);
+        ptr = cl__nthcdr(clasp_make_integer(i - 2), directory);
         gc::As<Cons_sp>(ptr)->rplacd(next);
         i = i - 2; // Was i--;
       }
@@ -267,7 +267,7 @@ BEGIN:
         //        printf("%s:%d %s error\n", __FILE__, __LINE__, __FUNCTION__ );
         return kw::_sym_error;
       }
-      item = cl__nth(i - 1, directory);
+      item = cl__nth(clasp_make_integer(i - 1), directory);
       if (item == kw::_sym_absolute || item == kw::_sym_wild_inferiors) {
         //        printf("%s:%d %s error\n", __FILE__, __LINE__, __FUNCTION__ );
         return kw::_sym_error;
@@ -296,7 +296,7 @@ BEGIN:
             //            printf("%s:%d %s error\n", __FILE__, __LINE__, __FUNCTION__ );
             return kw::_sym_error;
           }
-          gc::As<Cons_sp>(cl__nthcdr(--i, directory))->rplacd(oCdr(ptr));
+          gc::As<Cons_sp>(cl__nthcdr(clasp_make_integer(--i), directory))->rplacd(oCdr(ptr));
         } else if (l == 2 && cl__char(item, 1).unsafe_character() == '.') {
           gc::As<Cons_sp>(ptr)->rplaca(kw::_sym_up);
           goto BEGIN;
@@ -981,8 +981,6 @@ struct PathnameRecursionGuard {
 CL_DEFUN Pathname_sp cl__pathname(T_sp x) {
   PathnameRecursionGuard guard;
   if (x.nilp()) {
-    // knpk also needs to be a type error
-    // SIMPLE_ERROR(BF("The only argument for pathname is nil"));
        ERROR_WRONG_TYPE_ONLY_ARG(cl::_sym_pathname, x, Cons_O::createList(cl::_sym_or, cl::_sym_fileStream, cl::_sym_string, cl::_sym_pathname));
   }
 L:
@@ -999,21 +997,13 @@ L:
   return gc::As<Pathname_sp>(x);
 }
 
-// knpk, this needs to be exposed to lisp, so "cl__" instead of "cl_"
 CL_LAMBDA(x);
 CL_DECLARE();
 CL_DOCSTRING("logical-pathname converts pathspec to a logical pathname and returns the new logical pathname.");
 CL_DEFUN T_sp cl__logical_pathname(T_sp x) {
-  if (x.nilp()) SIMPLE_ERROR(BF("%s was about to pass nil to pathname") % __FUNCTION__);
+  if (x.nilp()) ERROR_WRONG_TYPE_ONLY_ARG(cl::_sym_logicalPathname, x, Cons_O::createList(cl::_sym_or, cl::_sym_fileStream, cl::_sym_string, cl::_sym_pathname));
   x = cl__pathname(x);
   if (!core__logical_pathname_p(x)) {
-    /* knpk -> Could not find special-operator/macro/function(SIMPLE-TYPE-ERROR) in the lexical/dynamic environment
-    eval::funcall(cl::_sym_simpleTypeError,
-                  kw::_sym_formatControl, SimpleBaseString_O::make("~S cannot be coerced to a logical pathname."),
-                  kw::_sym_formatArguments, lisp_createList(x),
-                  kw::_sym_expectedType, cl::_sym_LogicalPathname_O,
-                  kw::_sym_datum, x);
-    */
       cl__error(cl::_sym_simpleTypeError, Cons_O::createList(kw::_sym_formatControl,
                                                         SimpleBaseString_O::make("~S cannot be coerced to a logical pathname."),
                                                         kw::_sym_formatArguments, Cons_O::createList(x),
@@ -2135,6 +2125,7 @@ string Pathname_O::__repr__() const {
   SYMBOL_EXPORT_SC_(CorePkg, coerceToPhysicalPathname);
 
   SYMBOL_EXPORT_SC_(ClPkg, pathname);
+  SYMBOL_EXPORT_SC_(ClPkg, logicalPathname);
   SYMBOL_EXPORT_SC_(ClPkg, mergePathnames);
   SYMBOL_EXPORT_SC_(ClPkg, wildPathnameP);
   SYMBOL_EXPORT_SC_(ClPkg, make_pathname);

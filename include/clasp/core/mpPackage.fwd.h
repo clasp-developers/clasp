@@ -72,18 +72,15 @@ namespace mp {
   struct GlobalMutex {
     pthread_mutex_t _Mutex;
     bool _Recursive;
+
+
     GlobalMutex(bool recursive) : _Recursive(recursive) {
-      if (!recursive) {
-        this->_Mutex = PTHREAD_MUTEX_INITIALIZER;
-      } else {
-#if defined(_TARGET_OS_LINUX)
-      this->_Mutex = PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP;
-#elif defined(_TARGET_OS_DARWIN)
-      this->_Mutex = PTHREAD_RECURSIVE_MUTEX_INITIALIZER;
-#else
-      #error "You need to initialize this->_Mutex"
-#endif
+      pthread_mutexattr_t Attr;
+      pthread_mutexattr_init(&Attr);
+      if (recursive) {
+        pthread_mutexattr_settype(&Attr, PTHREAD_MUTEX_RECURSIVE);
       }
+      pthread_mutex_init(&this->_Mutex, &Attr);
     };
     bool lock(bool waitp=true) {
 //      printf("%s:%d  locking mutex %p\n", __FILE__, __LINE__, &this->_Mutex); fflush(stdout);
@@ -127,7 +124,7 @@ namespace mp {
         pthread_mutexattr_t Attr;
         pthread_mutexattr_init(&Attr);
         pthread_mutexattr_settype(&Attr, PTHREAD_MUTEX_RECURSIVE);
-        pthread_mutex_init(&this->_Mutex,&Attr);
+        pthread_mutex_init(&this->_Mutex, &Attr);
         pthread_mutexattr_destroy(&Attr);
       }
     };

@@ -146,13 +146,16 @@ Instance_sp lisp_built_in_class() {
   return _lisp->_Roots._TheBuiltInClass;
 //  return cl__find_class(clbind::_sym_built_in_class,false,_Nil<T_O>());
 }
-Instance_sp lisp_class_rep_class() {
-  return _lisp->_Roots._TheClassRep;
-  // return cl__find_class(clbind::_sym_ClassRep_O,false,_Nil<T_O>());
-}
 Instance_sp lisp_standard_class() {
   return _lisp->_Roots._TheStandardClass;
   // return cl__find_class(cl::_sym_standard_class,false,_Nil<T_O>());
+}
+
+Instance_sp lisp_derivable_cxx_class() {
+  return _lisp->_Roots._TheDerivableCxxClass;
+}
+Instance_sp lisp_clbind_cxx_class() {
+  return _lisp->_Roots._TheClbindCxxClass;
 }
 
 
@@ -263,15 +266,6 @@ namespace boost {
 using namespace core;
 void assertion_failed(char const *expr, char const *function, char const *file, long line) {
   THROW_HARD_ERROR(BF("A BOOST assertion failed"));
-}
-};
-
-extern "C" {
-
-void closure_dump(core::Closure_sp closure) {
-  core::T_sp sourceFileInfo = core__source_file_info(core::clasp_make_fixnum(closure->sourceFileInfoHandle()), _Nil<core::T_O>(), 0, false);
-  std::string namestring = gc::As<core::SourceFileInfo_sp>(sourceFileInfo)->namestring();
-  printf("%s:%d  Closure %s  file: %s lineno: %d\n", __FILE__, __LINE__, _rep_(closure->functionName()).c_str(), namestring.c_str(), closure->lineNumber());
 }
 };
 
@@ -973,10 +967,6 @@ void lisp_defineSingleDispatchMethod(T_sp name,
 
 void lisp_throwIfBuiltInClassesNotInitialized() {
   _lisp->throwIfBuiltInClassesNotInitialized();
-}
-
-string lisp_classNameFromClassSymbol(Symbol_sp classSymbol) {
-  return _lisp->classNameFromClassSymbol(classSymbol);
 }
 
 Instance_sp lisp_classFromClassSymbol(Symbol_sp classSymbol) {

@@ -265,7 +265,7 @@ class Lisp_O {
     Instance_sp   _TheStandardClass;
     Instance_sp   _TheStructureClass;
     Instance_sp   _TheDerivableCxxClass;
-    Instance_sp   _TheClassRep;
+    Instance_sp   _TheClbindCxxClass;
     Package_sp _CorePackage;
     Package_sp _KeywordPackage;
     Package_sp _CommonLispPackage;
@@ -337,8 +337,6 @@ public:
 
 public:
   static const int MaxFunctionArguments; //<! See ecl/src/c/main.d:163 ecl_make_cache(64,4096)
-  static const int MaxClosSlots;         //<! See ecl/src/c/main.d:164 ecl_make_cache(3,4096)
-  static const int ClosCacheSize;
   static const int SingleDispatchMethodCacheSize;
 
 public:
@@ -398,7 +396,6 @@ public:
   int _MpiRank;
   int _MpiSize;
   bool _Interactive;
-  bool _EmbeddedInPython;
   string _FunctionName;
   /*! Define the name of a source file that is evaluated
 	 * before everything else to extend the environment
@@ -730,8 +727,6 @@ public:
 public:
   bool isInteractive() { return this->_Interactive; };
   void setInteractive(bool b) { this->_Interactive = b; };
-  bool isEmbeddedInPython() { return this->_EmbeddedInPython; };
-  void setEmbeddedInPython(bool b);
 
   /*! Lookup a single-dispatch-ggeneric-function in the _SingleDispatchGenericFunctionHashTableEqual by name
 	 If errorp == true then throw an exception if the single-dispatch-generic-function is not
@@ -758,10 +753,6 @@ public:
 
   /*! Move all _BootClassTable class definitions into a hash-table in *class-name-hash-table* */
   void switchToClassNameHashTable();
-
-  //	Instance_sp classFromClassSymbol(Symbol_sp cid) const;
-  Instance_sp classFromClassName(const string &name);
-  string classNameFromClassSymbol(Symbol_sp cid);
 
 public:
   void setBuiltInClassesInitialized(bool b) { this->_BuiltInClassesInitialized = b; };
@@ -855,9 +846,6 @@ public:
   /*! Find the keyword symbol with the given name or intern it */
   Symbol_sp internKeyword(const string &keywordName);
 
-  /*! Export a symbol to python */
-  void exportToPython(Symbol_sp sym) const;
-
   Symbol_sp getClassSymbolForClassName(const string &symbolName);
 
   //	void setGlobal(Symbol_sp sym, T_sp obj);
@@ -923,17 +911,9 @@ public:
   string getMethodName(uint methodId);
   uint getMethodId(const string &methodName);
 
-  //	Function_sp	lookupMethod(Symbol_sp, Instance_sp classSymbol, T_sp receiver );
-
 public:
-  void addToStarModulesStar(Symbol_sp sym);
-
   void initializeClassManager();
   void initializeEnvironments();
-
-  /*! Parse a string and return the object that it represents
-	 */
-  //	T_sp parseCodeString(const string& str);
 
   /*! Run the program, if returns _ExitStatus != 0 there was an error */
   int run();
