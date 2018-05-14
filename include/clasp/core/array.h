@@ -349,6 +349,8 @@ namespace core {
     virtual Array_sp unsafe_subseq(size_t start, size_t end) const = 0;
     virtual Array_sp unsafe_setf_subseq(size_t start, size_t end, Array_sp newSubseq) = 0;
     virtual void unsafe_fillArrayWithElt(T_sp initial_element, size_t start, size_t end) = 0;
+
+    virtual Array_sp create_result_bitarray (SimpleBitVector_sp x) const { SUBIMP(); };
   };
 
 
@@ -869,6 +871,10 @@ namespace core {
     virtual clasp_elttype elttype() const { return clasp_aet_bit; };
     virtual T_sp arrayElementType() const override { return cl::_sym_bit; };
   public:
+      Array_sp create_result_bitarray (SimpleBitVector_sp data) {
+        return data;
+      }
+
     void asAbstractSimpleVectorRange(AbstractSimpleVector_sp& sv, size_t& start, size_t& end) const override {
       sv = this->asSmartPtr();
       start = 0;
@@ -1438,6 +1444,9 @@ namespace core {
       start = this->_DisplacedIndexOffset;
       end = this->length()+this->_DisplacedIndexOffset;
     }
+    Array_sp create_result_bitarray (SimpleBitVector_sp data) {
+      return  BitVectorNs_O::make (this->arrayDimension(0),0,false, clasp_make_fixnum(this->fillPointer()), data,this->displacedToP(),clasp_make_fixnum(this->_DisplacedIndexOffset));
+    }
   public:
     virtual clasp_elttype elttype() const { return clasp_aet_bit; };
     virtual bool equal(T_sp other) const final;
@@ -1625,12 +1634,14 @@ namespace core {
       unlikely_if (!gc::IsA<SimpleBitVector_sp>(this->_Data)) {
         this->_Data->asAbstractSimpleVectorRange(sv,start,end);
         start += this->_DisplacedIndexOffset;
-        end = this->length()+this->_DisplacedIndexOffset;
+        //this->length() is a no-op here, returns the dummy value
+        end = this->_Data->length()+this->_DisplacedIndexOffset;
         return;
       }
       sv = gc::As<SimpleBitVector_sp>(this->_Data);
       start = this->_DisplacedIndexOffset;
-      end = this->length()+this->_DisplacedIndexOffset;
+      //this->length() is a no-op here, returns the dummy value
+      end = sv->length()+this->_DisplacedIndexOffset;
     }
     CL_METHOD_OVERLOAD virtual void rowMajorAset(size_t idx, T_sp value) override {this->setBit(idx,value.unsafe_fixnum());};
     CL_METHOD_OVERLOAD virtual T_sp rowMajorAref(size_t idx) const override {return clasp_make_fixnum(this->testBit(idx)); };
@@ -1639,6 +1650,10 @@ namespace core {
     virtual Array_sp reverse() const final {notVectorError(this->asSmartPtr());};
     virtual Array_sp nreverse() override {notVectorError(this->asSmartPtr());};
     virtual void internalAdjustSize_(size_t size, T_sp init_element=_Nil<T_O>(), bool initElementSupplied=false ) {HARD_IMPLEMENT_ME();};
+
+    Array_sp create_result_bitarray (SimpleBitVector_sp data) {
+      return  MDArrayBit_O::make_multi_dimensional (cl__arrayDimensions(this->asSmartPtr()),_Nil<T_O>(),data,false,clasp_make_fixnum(0));
+    }
   };
 };
 
@@ -1681,7 +1696,10 @@ namespace core {
     void asAbstractSimpleVectorRange(AbstractSimpleVector_sp& sv, size_t& start, size_t& end) const final {
       sv = gc::As<SimpleBitVector_sp>(this->_Data);
       start = this->_DisplacedIndexOffset;
-      end = this->length()+this->_DisplacedIndexOffset;
+      // this->length() is the dummy value in this case, 0xDEADBEEF01234567
+      // this->length() in this class shoud return an error
+      // end = this->length()+this->_DisplacedIndexOffset;
+      end = sv->length()+this->_DisplacedIndexOffset;
     }
     CL_METHOD_OVERLOAD virtual void rowMajorAset(size_t idx, T_sp value) override {this->setBit(idx,value.unsafe_fixnum());};
     CL_METHOD_OVERLOAD virtual T_sp rowMajorAref(size_t idx) const override {return clasp_make_fixnum(this->testBit(idx)); };
@@ -1690,6 +1708,9 @@ namespace core {
     virtual Array_sp reverse() const final {notVectorError(this->asSmartPtr());};
     virtual Array_sp nreverse() override {notVectorError(this->asSmartPtr());};
     virtual void internalAdjustSize_(size_t size, T_sp init_element=_Nil<T_O>(), bool initElementSupplied=false ) {HARD_IMPLEMENT_ME();};
+    Array_sp create_result_bitarray (SimpleBitVector_sp data) {
+      return SimpleMDArrayBit_O::make_multi_dimensional(cl__arrayDimensions(this->asSmartPtr()),1,data);
+    }  
 
   };
 };
