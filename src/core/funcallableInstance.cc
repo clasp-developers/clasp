@@ -250,10 +250,6 @@ T_sp FuncallableInstance_O::setFuncallableInstanceFunction(T_sp functionOrT) {
   return ((this->sharedThis<FuncallableInstance_O>()));
 }
 
-bool FuncallableInstance_O::genericFunctionP() const {
-  return (this->_isgf);
-}
-
 void FuncallableInstance_O::describe(T_sp stream) {
   stringstream ss;
   ss << (BF("FuncallableInstance\n")).str();

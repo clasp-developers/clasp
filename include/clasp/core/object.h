@@ -379,8 +379,6 @@ namespace core {
   private:
     friend class CoreExposer;
     LISP_ABSTRACT_CLASS(core, ClPkg, T_O, "T",::_RootDummyClass);
-  public:
-    bool isAInstanceOf(core::Instance_sp mc);
   };
 
 };
@@ -409,7 +407,6 @@ namespace core {
 
       //! Initialize member variables and those that depend on sharedThis
     virtual void initialize();
-    virtual bool isStandardObject() { return false; };
   /*! Objects can catch signals from Models
 	 * but only Model's and subclasses can send them
 	 */
@@ -507,8 +504,6 @@ namespace core {
   /*! Return number of slots if instance of Instance_O otherwise return nil */
     virtual T_sp oinstancep() const { return _Nil<T_O>(); }; //
     bool instancep() const { return oinstancep().isTrue(); };
-    virtual bool environmentp() const { return false; };
-    virtual bool genericFunctionP() const { return false; };
   /*! Return number of slots if instance of Instance_O otherwise return nil */
     virtual T_sp ofuncallableInstanceP() const { return _Nil<T_O>(); }; //
     bool funcallableInstanceP() const { return ofuncallableInstanceP().isTrue(); };
