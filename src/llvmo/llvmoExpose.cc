@@ -193,47 +193,6 @@ CL_DEFUN void llvm_sys__disassemble_instructions(const std::string& striple,
     offset += sz;
   }
   LLVMDisasmDispose(dis);
-#if 0
-//  Target* target = targetsp->wrappedPtr();
-  std::string striple = llvm::sys::getDefaultTargetTriple();
-  Triple theTriple(striple);
-  MCRegisterInfo* MRI = target->createMCRegInfo(striple);
-  MCAsmInfo* MAI = target->createMCAsmInfo(*MRI, striple);
-  MCObjectFileInfo MOFI;
-  MCContext Ctx(MAI, MRI, &MOFI);
-  MOFI.InitMCObjectFileInfo(theTriple, false/*PIC*/, CodeModel::Default, Ctx);
-  std::string MCPU = "";
-  std::string FeaturesStr = "";
-  MCSubtargetInfo* STI = target->createMCSubtargetInfo(striple, MCPU, FeaturesStr);
-  MCInstrInfo* MCII = target->createMCInstrInfo();
-  MCDisassembler* disassembler = target->createMCDisassembler(*STI,Ctx);
-  stringstream sout;
-  MCInstPrinter *IP = target->createMCInstPrinter(theTriple, 0, *MAI, *MCII, *MRI);
-  MCInst mcinst;
-  uint64_t sz;
-  uint64_t offset = 0;
-  for (size_t i=0; i<num; ++i ) {
-    ArrayRef<uint8_t> memory((uint8_t*)address->ptr()+offset,1024);
-    SmallVector<char,64> InsnStr;
-    raw_svector_ostream Annotations(InsnStr);
-    llvm::MCDisassembler::DecodeStatus status = disassembler->getInstruction(mcinst,sz,memory,offset,nulls(),Annotations);
-    if (status == llvm::MCDisassembler::Success ) {
-      StringRef AnnotationsStr = Annotations.str();
-      SmallVector<char, 64> InsnStr;
-      raw_svector_ostream OS(InsnStr);
-      formatted_raw_ostream FormattedOS(OS);
-      IP->printInst(&mcinst, FormattedOS, AnnotationsStr, *STI);
-      size_t OutputSize = InsnStr.size();
-      std::string inststr(InsnStr.data(), OutputSize);
-      sout << inststr;
-      sout << std::endl;
-    } else {
-      BFORMAT_T(BF("Could not disassemble instruction\n"));
-    }
-    offset += sz;
-  }
-  core::clasp_write_string(sout.str());
-#endif
 }
 
 
@@ -754,12 +713,6 @@ Value_sp Value_O::create(llvm::Value *ptr) {
 }
 
 namespace llvmo {
-
-
-#if 0
-CL_LISPIFY_NAME(dump);
-  CL_EXTERN_DEFMETHOD(Value_O, &llvm::Value::dump);
-#endif
   CL_LISPIFY_NAME(getName);
   CL_EXTERN_DEFMETHOD(Value_O, &llvm::Value::getName);
   CL_LISPIFY_NAME(setName);
@@ -1075,10 +1028,6 @@ CL_DEFUN core::List_sp llvm_sys__module_get_function_list(Module_sp module) {
 };
 
 namespace llvmo {
-#if 0
-  CL_LISPIFY_NAME(dump);
-  CL_EXTERN_DEFMETHOD(Module_O, &llvm::Module::dump);
-#endif
   CL_LISPIFY_NAME(addModuleFlag);
   CL_EXTERN_DEFMETHOD(Module_O, (void (llvm::Module::*)(llvm::MDNode *))&llvm::Module::addModuleFlag);
   CL_LISPIFY_NAME(getModuleIdentifier);
@@ -1157,12 +1106,6 @@ CL_LISPIFY_NAME("dump_namedMDList");
 CL_DEFMETHOD void Module_O::dump_namedMDList() const {
   llvm::Module *M = this->wrappedPtr();
   IMPLEMENT_MEF("Come up with a way to dump the MDList without using dump() (only enabled when LLVM_ENABLE_DUMP is on)");
-#if 0
-  for (llvm::Module::const_named_metadata_iterator it = M->named_metadata_begin();
-       it != M->named_metadata_end(); it++) {
-    (*it).dump();
-  }
-#endif
 }
 
 void Module_O::initialize() {
@@ -1422,27 +1365,10 @@ CL_DEFMETHOD void EngineBuilder_O::setEngineKind(core::Symbol_sp kind) {
   }
 }
 
-    void EngineBuilder_O::setUseOrcMCJITReplacement(bool use)
-    {
-	this->wrappedPtr()->setUseOrcMCJITReplacement(use);
-    }
-#if 0
-    void EngineBuilder_O::setUseMCJIT(bool use_mcjit)
-    {
-	this->wrappedPtr()->setUseMCJIT(use_mcjit);
-#if 0
-	if ( use_mcjit )
-	{
-	    // Setup to use MCJIT
-	    llvm::EngineBuilder* builder = this->wrappedPtr();
-	    builder->setRelocationModel(llvm::Reloc::Default);
-	    builder->setOptLevel(llvm::CodeGenOpt::Default);
-	    llvm::JITMemoryManager* mm = new llvm::SectionMemoryManager();
-	    this->wrappedPtr()->setJITMemoryManager(mm);
-	}
-#endif
-    }
-#endif
+void EngineBuilder_O::setUseOrcMCJITReplacement(bool use)
+{
+  this->wrappedPtr()->setUseOrcMCJITReplacement(use);
+}
 
 CL_LISPIFY_NAME("setTargetOptions");
 CL_DEFMETHOD void EngineBuilder_O::setTargetOptions(TargetOptions_sp options) {
@@ -1586,25 +1512,6 @@ CL_DEFUN Constant_sp ConstantExpr_O::getInBoundsGetElementPtr(llvm::Type* elemen
   llvm::ArrayRef<llvm::Constant *> array_ref_vector_IdxList(vector_IdxList);
   llvm::Constant* llvm_constant = constant->wrappedPtr();
   llvm::Constant *llvm_res = llvm::ConstantExpr::getInBoundsGetElementPtr(element_type,llvm_constant, array_ref_vector_IdxList);
-#if 0
-  string str;
-  llvm::raw_string_ostream ro(str);
-  ro << "Input-type: ";
-  element_type->print(ro);
-  ro << " Input-Constant: ";
-  llvm_constant->print(ro);
-  ro << " Result: " << ro.str();
-  llvm_res->print(ro);
-  llvm::Type* gep_result_element_type = llvm::cast<llvm::GetElementPtrConstantExpr>(llvm_res)->getResultElementType();
-  llvm::Type* gep_source_element_type = llvm::cast<llvm::GetElementPtrConstantExpr>(llvm_res)->getSourceElementType();
-  ro << " Result-source_element_type = ";
-  gep_source_element_type->print(ro);
-  ro << " Result-result_element_type = ";
-  gep_result_element_type->print(ro);
-  if (gep_source_element_type->getArrayNumElements() != gep_result_element_type->getArrayNumElements()) {
-    BFORMAT_T(BF("%s:%d %s\n") % __FILE__ % __LINE__ % ro.str());
-  }
-#endif
   res->set_wrapped(llvm_res);
   return res;
 }
@@ -2031,12 +1938,6 @@ CL_DEFUN APInt_sp APInt_O::makeAPIntWidth(core::Integer_sp value, uint width, bo
       SIMPLE_ERROR(BF("You tried to create an unsigned I%d with a value[%s] that requires %d bits to represent") % width % numstr % mpz_size_in_bits);
     }
   }
-#if 0
-	if ( numbits < width )
-	{
-	    apint = apint.zext(width);
-	}
-#endif
   self->_value = apint;
   return self;
 }
@@ -2515,12 +2416,6 @@ CL_EXTERN_DEFMETHOD(IRBuilder_O,(llvm::Value *(IRBuilder_O::ExternalType::*) (ll
 
 namespace llvmo {
 
-#if 0
-  CL_LISPIFY_NAME(addAttr);
-  CL_EXTERN_DEFMETHOD(Argument_O, (void(llvm::Argument::*)(llvm::AttributeSet))&llvm::Argument::addAttr);
-  CL_LISPIFY_NAME(removeAttr);
-CL_EXTERN_DEFMETHOD(Argument_O, (void(llvm::Argument::*)(llvm::AttributeSet))&llvm::Argument::removeAttr);
-#endif
   CL_LISPIFY_NAME(hasStructRetAttr);
   CL_EXTERN_DEFMETHOD(Argument_O, &llvm::Argument::hasStructRetAttr);
   CL_LISPIFY_NAME(hasNoAliasAttr);
@@ -2643,9 +2538,6 @@ bool Function_O::equal(core::T_sp obj) const {
 string Function_O::__repr__() const {
   stringstream ss;
   ss << "#<" << this->_instanceClass()->_classNameAsString() << " " << this->wrappedPtr()->getName().data() << ">";
-#if 0  
-  this->wrappedPtr()->dump();
-#endif
   return ss.str();
 }
 
@@ -2977,33 +2869,6 @@ void finalizeEngineAndTime(llvm::ExecutionEngine *engine) {
   accumulate_llvm_timing_data(thisTime);
 }
 
-
-#if 0
-CL_DEFUN core::Function_sp finalizeEngineAndRegisterWithGcAndGetCompiledFunction(ExecutionEngine_sp oengine, core::T_sp functionName, Function_sp fn, core::T_sp activationFrameEnvironment, core::T_sp fileName, size_t filePos, int linenumber, Function_sp startupFn, Function_sp shutdownFn, core::T_sp initial_data) {
-  DEPRECATED();
-  // Stuff to support MCJIT
-  llvm::ExecutionEngine *engine = oengine->wrappedPtr();
-  finalizeEngineAndTime(engine);
-  ASSERTF(fn.notnilp(), BF("The Function must never be nil"));
-  void *p = engine->getPointerToFunction(fn->wrappedPtr());
-  if (!p) {
-    SIMPLE_ERROR(BF("Could not get a pointer to the function finalizeEngineAndRegisterWithGcAndGetCompiledFunction: %s") % _rep_(functionName));
-  }
-  core::CompiledClosure_fptr_type lisp_funcPtr = (core::CompiledClosure_fptr_type)(p);
-  core::SourceFileInfo_mv sfi = core__source_file_info(fileName);
-  int sfindex = unbox_fixnum(gc::As<core::Fixnum_sp>(sfi.valueGet_(1)));
-  //	printf("%s:%d  Allocating CompiledClosure with name: %s\n", __FILE__, __LINE__, _rep_(sym).c_str() );
-  gctools::smart_ptr<core::CompiledClosure_O> functoid = gctools::GC<core::CompiledClosure_O>::allocate(lisp_funcPtr, functionName, kw::_sym_function, activationFrameEnvironment, _Nil<core::T_O>() /*lambdaList*/, sfindex, filePos, linenumber, 0);
-  void* pstartup = engine->getPointerToFunction(startupFn->wrappedPtr());
-  if (pstartup==NULL) {
-    printf("%s:%d  Could not find function named %s\n", __FILE__, __LINE__, MODULE_STARTUP_FUNCTION_NAME );
-  }
-  core::module_startup_function_type startup = reinterpret_cast<core::module_startup_function_type>(pstartup);
-  startup(initial_data.tagged_());
-  return functoid;
-}
-#endif
-
   CL_DEFUN void finalizeEngineAndRegisterWithGcAndRunMainFunctions(ExecutionEngine_sp oengine) {
   // Stuff to support MCJIT
     llvm::ExecutionEngine *engine = oengine->wrappedPtr();
@@ -3222,17 +3087,6 @@ CL_EXTERN_DEFUN( &llvm::createMemDepPrinter);
       //	.value(_sym_AquireRelease,llvm::AtomicOrdering::AquireRelease)
   CL_VALUE_ENUM(_sym_SequentiallyConsistent, llvm::AtomicOrdering::SequentiallyConsistent);;
   CL_END_ENUM(_sym_STARatomic_orderingSTAR);
-
-#if 0
-// Not in llvm 5.0
-  SYMBOL_EXPORT_SC_(LlvmoPkg, STARsynchronization_scopeSTAR);
-  SYMBOL_EXPORT_SC_(LlvmoPkg, SingleThread);
-  SYMBOL_EXPORT_SC_(LlvmoPkg, CrossThread);
-  CL_BEGIN_ENUM(llvm::SynchronizationScope,_sym_STARsynchronization_scopeSTAR, "llvm::SynchronizationScope");
-  CL_VALUE_ENUM(_sym_SingleThread, llvm::SingleThread);
-  CL_VALUE_ENUM(_sym_CrossThread, llvm::CrossThread);;
-  CL_END_ENUM(_sym_STARsynchronization_scopeSTAR);
-#endif
 
   SYMBOL_EXPORT_SC_(LlvmoPkg, STARAtomicRMWInstBinOpSTAR);
   SYMBOL_EXPORT_SC_(LlvmoPkg, Xchg);
@@ -3617,13 +3471,6 @@ CL_DEFUN void llvm_sys__remove_useless_global_ctors(Module_sp module) {
   llvm::GlobalVariable* ctors = M->getGlobalVariable("llvm.global_ctors");
   if (ctors) {
     Value* init = ctors->getInitializer();
-#if 0
-    printf("%s:%d   init is a ConstantArray -> %d\n", __FILE__, __LINE__, llvm::isa<ConstantArray>(init));
-    printf("%s:%d   init is a Constant -> %d\n", __FILE__, __LINE__, llvm::isa<Constant>(init));
-    printf("%s:%d   init is a User -> %d\n", __FILE__, __LINE__, llvm::isa<User>(init));
-    printf("%s:%d   init is a Value -> %d\n", __FILE__, __LINE__, llvm::isa<User>(init));
-    printf("%s:%d init -> %p\n", __FILE__, __LINE__, (void*)init );
-#endif    
     ConstantArray *list = llvm::dyn_cast<ConstantArray>(init);
     std::vector<Function*> ctors_to_delete;
     if (list) {
