@@ -413,27 +413,6 @@ void run_quick_tests() {
   for ( size_t i(0); i<24; ++i ) {
     printf("%s:%d   vec[%lu] = %s\n", __FILE__, __LINE__, i, _rep_((*vec)[i]).c_str());
   }
-#if 0
-#define TEST_ASSERT_ALWAYS(_x) \
-  if (!(_x))                   \
-    SIMPLE_ERROR(BF("Test failed"));
-  List_sp val1 = eval::funcall(cl::_sym_list, cl::_sym_nil);
-  TEST_ASSERT_ALWAYS(cl__length(val1) == 1);
-  List_sp val2 = eval::funcall(cl::_sym_list, cl::_sym_nil, cl::_sym_nil);
-  TEST_ASSERT_ALWAYS(cl__length(val2) == 2);
-  List_sp val3 = eval::funcall(cl::_sym_list, cl::_sym_nil, cl::_sym_nil, cl::_sym_nil);
-  TEST_ASSERT_ALWAYS(cl__length(val3) == 3);
-  List_sp val4 = eval::funcall(cl::_sym_list, clasp_make_fixnum(1), clasp_make_fixnum(2), clasp_make_fixnum(3), clasp_make_fixnum(4));
-  TEST_ASSERT_ALWAYS(cl__length(val4) == 4);
-  List_sp val5 = eval::funcall(cl::_sym_list, cl::_sym_nil, cl::_sym_nil, cl::_sym_nil, cl::_sym_nil, cl::_sym_nil);
-  TEST_ASSERT_ALWAYS(cl__length(val5) == 5);
-  List_sp val6 = eval::funcall(cl::_sym_list, cl::_sym_nil, cl::_sym_nil, cl::_sym_nil, cl::_sym_nil, cl::_sym_nil, cl::_sym_nil);
-  TEST_ASSERT_ALWAYS(cl__length(val6) == 6);
-  List_sp val7 = eval::funcall(cl::_sym_list, cl::_sym_nil, cl::_sym_nil, cl::_sym_nil, cl::_sym_nil, cl::_sym_nil, cl::_sym_nil, cl::_sym_nil);
-  TEST_ASSERT_ALWAYS(cl__length(val7) == 7);
-  T_sp num = clasp_make_fixnum(63);
-  Real_sp r = gc::As<Real_sp>(num);
-#endif
 }
 Lisp_sp Lisp_O::createLispEnvironment(bool mpiEnabled, int mpiRank, int mpiSize) {
   initialize_clasp_Kinds();
@@ -663,13 +642,6 @@ void Lisp_O::startupLispEnvironment(Bundle *bundle) {
     this->_Roots._LongFloatPlusZero = LongFloat_O::create(0.0l);
 #endif // ifdef CLASP_LONG_FLOAT
     
-#if 0
-    // THREAD_CHANGE
-    this->_Roots._BformatStringOutputStream = clasp_make_string_output_stream();
-    this->_Roots._BignumRegister0 = Bignum_O::create(0);
-    this->_Roots._BignumRegister1 = Bignum_O::create(0);
-    this->_Roots._BignumRegister2 = Bignum_O::create(0);
-#endif
     Real_sp bits = gc::As<Real_sp>(clasp_make_fixnum(gc::fixnum_bits));
     Real_sp two = gc::As<Real_sp>(clasp_make_fixnum(2));
     this->_Roots._IntegerOverflowAdjust = cl__expt(two, bits); // clasp_make_fixnum(2),clasp_make_fixnum(gc::fixnum_bits));
@@ -2422,72 +2394,11 @@ void Lisp_O::dump_apropos(const char *part) const {
   searchForApropos(packages, substring, true);
 }
 
-
-#if 0
-InvocationHistoryStack &Lisp_O::invocationHistoryStack() {
-  return this->_Roots._InvocationHistoryStack;
-}
-#endif
-
 void Lisp_O::dump_backtrace(int numcol) {
   _OF();
   string bt = backtrace_as_string();
   _lisp->print(BF("%s") % bt);
 }
-
-#if 0
-void Lisp_O::gdb_trace_by_name(const char* names)
-{_OF();
-  string snames = lispify_symbol_name(names);
-  if ( snames == "" )
-  {
-    _lisp->print(BF("Tracing: "));
-    for ( auto ti=this->_Roots._TraceFunctions.begin(); ti!=this->_Roots._TraceFunctions.end(); ti++ )
-    {
-      _lisp->print(BF("%s") % _rep_((*ti)->getFunctionName()) );
-    }
-    return;
-  }
-  vector<string> vnames = split(snames," ");
-  for ( vector<string>::iterator it=vnames.begin(); it!=vnames.end(); it++ )
-  {
-    Symbol_sp sym = this->intern(*it);
-    if ( sym->fboundp() )
-    {
-      Function_sp fn = sym->symbolFunction();
-      this->_Roots._TraceFunctions.addUnique(fn,_lisp);
-      _lisp->print(BF("trace: %s") % _rep_(sym) );
-    } else
-    {
-      _lisp->print(BF("Cannot trace function[%s] - it doesnt' exist") % _rep_(sym) );
-    }
-  }
-}
-
-
-
-
-void Lisp_O::gdb_untrace_by_name(const char* names)
-{_OF();
-  string snames = lispify_symbol_name(names);
-  if ( snames == "" )
-  {
-    _lisp->print(BF("untracing all"));
-    this->_Roots._TraceFunctions.clear();
-    return;
-  }
-  vector<string> vnames = split(snames," ");
-  for ( auto it=vnames.begin(); it!=vnames.end(); it++ )
-  {
-    Symbol_sp sym = this->intern(*it);
-    if ( sym->fboundp() )
-    {
-      Function_sp fn = sym->symbolFunction();
-      if (this->_Roots._TraceFunctions.count(fn)>0) this->_Roots._TraceFunctions.erase(fn);
-    }
-  }
-}
-#endif
 
 
 int Lisp_O::run() {
@@ -2645,14 +2556,6 @@ void LispHolder::startup(int argc, char *argv[], const string &appPathEnvironmen
   this->_Lisp->startupLispEnvironment(bundle);
   mp::_sym_STARcurrent_processSTAR->defparameter(my_thread->_Process);
   this->_Lisp->add_process(my_thread->_Process);
-#if 0
-  if (_lisp->mpiEnabled())
-  {
-    stringstream ss;
-    ss << "P"<<_lisp->mpiRank()<<":";
-    printvPushPrefix(ss.str());
-  }
-#endif
   gctools::initialize_signal_constants();
   _lisp->_Roots._Booted = true;
   _lisp->parseCommandLineArguments(argc, argv, options);

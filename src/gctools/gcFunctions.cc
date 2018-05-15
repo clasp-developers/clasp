@@ -294,96 +294,6 @@ CL_DEFUN bool core__inherits_from_instance(core::T_sp obj)
   return (gc::IsA<core::Instance_sp>(obj));
 }
 
-#if 0
-CL_LAMBDA();
-CL_DECLARE();
-CL_DOCSTRING("Return the header kind for the object");
-CL_DEFUN core::T_mv core__hardwired_kinds() {
-  std::vector<Immediate_info> immediates = get_immediate_info();
-  core::List_sp result = _Nil<core::T_O>();
-  for ( int i=0; i<immediates.size(); ++i ) {
-    result = core::Cons_O::create(core::Cons_O::create(core::SimpleBaseString_O::make(immediates[i]._name), core::clasp_make_fixnum(immediates[i]._kind)),result);
-  }
-  core::List_sp ignoreClasses = _Nil<core::T_O>(); // core::Cons_O::createList(SimpleBaseString_O::make("core__Cons_O") <-- future when CONS are in their own pool
-  return Values(result, ignoreClasses, core::clasp_make_fixnum(stamp_first_general), core::clasp_make_fixnum(stamp_first_alien), core::clasp_make_fixnum(stamp_last_alien), core::clasp_make_fixnum(stamp_first_instance));
-}
-#endif
-
-#if 0
-#define ARGS_af_testVec0 "()"
-#define DECL_af_testVec0 ""
-#define DOCS_af_testVec0 "testVec0"
-void af_testVec0()
-{
-  int N = 4;
-  printf("Creating vec(4)\n");
-  gctools::Vec0<TestingClass> v;
-  v.resize(4);
-  vector_dump(v);
-  printf("About to Push_back TestingClass(2)\n");
-  v.push_back(TestingClass(2));
-  vector_dump(v);
-  printf("About to Push_back %d times TestingClass(i)\n", N);
-  for ( int i(0); i<N; ++i ) {v.push_back(TestingClass(i));}
-  vector_dump(v);
-  printf("About to Push_back %d times TestingClass(i+10)\n", N);
-  for ( int i(0); i<N; ++i )
-  {
-    v.push_back(TestingClass(i+10));
-    vector_dump(v,"step");
-  }
-  vector_dump(v,"done");
-  printf("Start again");
-  gctools::Vec0<TestingClass> u;
-  u.resize(4);
-  vector_dump(u,"new");
-  u.resize(8,TestingClass(-8));
-  vector_dump(u,"resized to 8 ");
-  u.resize(16,TestingClass(-16));
-  vector_dump(u,"resized to 16");
-  u.resize(4,TestingClass(-99999));
-  vector_dump(u,"resized to 4 ");
-  printf("Test emplace and erase\n");
-  gctools::Vec0<TestingClass> w;
-  for ( int zi(0); zi<20; ++zi ) {
-    w.emplace(w.begin(),zi);
-  }
-  vector_dump(w,"after 10 emplace");
-  w.erase(w.begin()+4);
-  vector_dump(w,"removed begin()+4");
-  for ( int zz(0); zz<5; ++zz ) w.erase(w.begin()+4);
-  vector_dump(w,"removed begin()+4 4 times");
-  w.erase(w.begin()+13);
-  vector_dump(w,"removed begin()+13 times");
-}
-#endif
-
-#if 0
-#define ARGS_af_testArray0 "()"
-#define DECL_af_testArray0 ""
-#define DOCS_af_testArray0 "testArray0"
-void af_testArray0()
-{
-//        int N = 4;
-  printf("Creating Array0(4)\n");
-  gctools::Array0<core::core::T_sp> v;
-  v.allocate(4,_Nil<core::T_O>());
-  Array0_dump(v,"Nil*4");
-  gctools::Array0<core::core::T_sp> w;
-  w.allocate(4,_Nil<core::T_O>());
-  for (int i(0); i<4; ++i ) {
-    w[i] = core::make_fixnum(i);
-  }
-  Array0_dump(w,"Fixnum*4");
-  printf("Creating ValueFrame\n");
-  core::ValueFrame_sp vf = ValueFrame_O::create_fill_args(_Nil<core::ActivationFrame_O>(),core::make_fixnum(1), core::make_fixnum(2), core::make_fixnum(3));
-  printf("Creating another 1 ValueFrame\n");
-  vf = ValueFrame_O::create_fill_args(_Nil<core::ActivationFrame_O>(),core::make_fixnum(1), core::make_fixnum(2), core::make_fixnum(3));
-  printf("Creating another 2 ValueFrame\n");
-  vf = ValueFrame_O::create_fill_args(_Nil<core::ActivationFrame_O>(),core::make_fixnum(1), core::make_fixnum(2), core::make_fixnum(3));
-  printf("Leaving scope\n");
-}
-#endif
 };
 
 #ifdef USE_BOEHM
@@ -669,14 +579,6 @@ CL_DEFUN core::T_mv cl__room(core::T_sp x, core::Fixnum_sp marker, core::T_sp tm
   OutputStream << smsg << " GC_get_total_bytes()     " <<  std::setw(12) << GC_get_total_bytes() << '\n';
 
   delete static_ReachableClassKinds;
-#endif
-#if 0
-  gc::GCStack *stack = threadLocalStack();
-  size_t totalMaxSize = stack->maxSize();
-#if defined(USE_BOEHM) && defined(BOEHM_ONE_BIG_STACK)
-  OutputStream << "Lisp-stack bottom " << stack->_StackBottom <<  cur << stack->_StackCur <<  limit << stack->_StackLimit << '\n';
-#endif
-  OutputStream << "High water mark (max used) side-stack size: " << totalMaxSize << '\n';
 #endif
 
   clasp_write_string(OutputStream.str(),cl::_sym_STARstandard_outputSTAR->symbolValue());
