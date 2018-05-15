@@ -258,7 +258,7 @@ Otherwise do a variable shift."
 ;;;
 ;;; with-entry-basic-block
 ;;;
-;;; All contained LLVM-IR gets written into the clasp-cleavir:*current-function-entry-basic-block*
+;;; All contained LLVM-IR gets written into the function alloca block.
 ;;;
 
 (defmacro with-entry-ir-builder (&rest body)
