@@ -440,13 +440,15 @@ bool HashTable_O::equalp(T_sp other) const {
   HashTable_sp hto = gc::As_unsafe<HashTable_sp>(other);
   if (this->hashTableTest() != hto->hashTableTest()) return false;
   if (this->hashTableCount() != hto->hashTableCount()) return false;
-  this->map_while_true( [&hto] (T_sp key, T_sp val)->bool const {
+  return this->map_while_true( [&hto] (T_sp key, T_sp val)->bool const {
       T_sp other_value = hto->gethash(key);
-      if (!cl__equalp(val,other_value)) return false;
+      if (!cl__equalp(val,other_value)) {
+        return false;
+      }
+      // return true to continue looping the hash-table;
       return true;
     }
     );
-  return true;
 }
 
 List_sp HashTable_O::keysAsCons() {
@@ -810,7 +812,7 @@ List_sp HashTable_O::tableRef_no_lock(T_sp key) {
     }
   }
 
-  void HashTable_O::map_while_true(std::function<bool(T_sp, T_sp)> const &fn) const {
+  bool HashTable_O::map_while_true(std::function<bool(T_sp, T_sp)> const &fn) const {
   //        HASH_TABLE_LOCK();
     HT_READ_LOCK(this);
     VectorObjects_sp table = ENSURE_VALID_OBJECT(this->_HashTable);
@@ -823,10 +825,11 @@ List_sp HashTable_O::tableRef_no_lock(T_sp key) {
         if (!value.unboundp()) {
           bool cont = fn(key, value);
           if (!cont)
-            return;
+            return false;
         }
       }
     }
+    return true;
   }
 
   void HashTable_O::lowLevelMapHash(KeyValueMapper *mapper) const {
