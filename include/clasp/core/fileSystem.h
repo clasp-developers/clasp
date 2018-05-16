@@ -62,8 +62,6 @@ public:
   boost_filesystem::path &getPath() { return this->_Path; };
 
 public:
-  /*! Comparison of paths */
-  virtual bool lt(T_sp obj) const;
 
 CL_LISPIFY_NAME("isAbsolute");
 CL_DEFMETHOD   bool isAbsolute() const { return this->_Path.is_absolute(); };

@@ -1952,30 +1952,6 @@ CL_DEFUN T_sp cl__apropos(T_sp string_desig, T_sp package_desig) {
   return (Values(_Nil<T_O>()));
 }
 
-class OrderByLessThan {
-public:
-  bool operator()(T_sp x, T_sp y) {
-    if (x.generalp()) {
-      return x.unsafe_general()->operator<(y);
-    }
-    SIMPLE_ERROR(BF("Add support for operator< for class: %s") % _rep_(cl__class_of(x)));
-  }
-};
-
-CL_LAMBDA(unsorted);
-CL_DECLARE();
-CL_DOCSTRING("Sort the list in ascending order using operator< and return the sorted list");
-CL_DEFUN List_sp core__sorted(List_sp unsorted) {
-  gctools::Vec0<T_sp /*,gctools::RootedGCHolder*/> sorted;
-  if (cl__length(unsorted) == 0)
-    return _Nil<T_O>();
-  fillVec0FromCons(sorted, unsorted);
-  OrderByLessThan orderer;
-//  sort::quickSort(sorted.begin(), sorted.end(), orderer);
-  sort::quickSortVec0(sorted,0,sorted.size(), orderer);
-  return asCons(sorted);
-}
-
 /*! I should probably get the key for each element first and then sort */
 class OrderBySortFunction {
 private:
