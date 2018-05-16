@@ -1393,34 +1393,6 @@ Number_sp Number_O::create(double val) {
   return DoubleFloat_O::create(val);
 }
 
-bool Number_O::operator<(T_sp obj) const {
-  if (cl__numberp(obj)) {
-    return basic_compare(this->asSmartPtr(), gc::As<Number_sp>(obj)) < 0;
-  }
-  return this->Base::operator<(obj);
-}
-
-bool Number_O::operator<=(T_sp obj) const {
-  if (cl__numberp(obj)) {
-    return basic_compare(this->asSmartPtr(), gc::As<Number_sp>(obj)) <= 0;
-  }
-  return this->Base::operator<=(obj);
-}
-
-bool Number_O::operator>(T_sp obj) const {
-  if (cl__numberp(obj)) {
-    return basic_compare(this->asSmartPtr(), gc::As<Number_sp>(obj)) > 0;
-  }
-  return this->Base::operator>(obj);
-}
-
-bool Number_O::operator>=(T_sp obj) const {
-  if (cl__numberp(obj)) {
-    return basic_compare(this->asSmartPtr(), gc::As<Number_sp>(obj)) >= 0;
-  }
-  return this->Base::operator>=(obj);
-}
-
 bool Number_O::equal(T_sp obj) const {
   if ( this->eq(obj) ) return true;
   return cl__eql(this->asSmartPtr(), obj);

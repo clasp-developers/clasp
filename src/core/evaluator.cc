@@ -609,12 +609,6 @@ T_sp af_interpreter_lookup_variable(Symbol_sp sym, T_sp env) {
     Environment_O::ValueKind valueKind;
     T_sp value;
     T_sp result_env;
-#if 0
-    printf("%s:%d Looking for %s\n", __FILE__, __LINE__, _rep_(sym).c_str());
-    if ( Environment_sp e = env.asOrNull<Environment_O>() ) {
-      e->dump();
-    }
-#endif
     bool found = Environment_O::clasp_findValue(env, sym, depth, index, crossesFunction, valueKind, value, result_env);
     if (found) {
       switch (valueKind) {
@@ -1022,49 +1016,18 @@ T_mv sp_eval_when(List_sp args, T_sp env) {
   if (mode == FLAG_EXECUTE) {
     if (!when_execute_p(situation))
       body = _Nil<T_O>();
-#if 0
-  } else if (c_env->lexical_level) {
-    if (!when_execute_p(situation))
-      body = _Nil<T_O>();
-#endif
   } else if (mode == FLAG_LOAD) {
     if (!when_load_p(situation)) {
       body = _Nil<T_O>();
     }
-#if 0
-    if (when_compile_p(situation)) {
-      env->c_env->mode = FLAG_COMPILE;
-      execute_each_form(env, body);
-      env->c_env->mode = FLAG_LOAD;
-      if (!when_load_p(situation))
-        body = _Nil<T_O>();
-    } else
-      if (when_load_p(situation)) {
-        env->c_env->mode = FLAG_ONLY_LOAD;
-        flags = compile_toplevel_body(env, body, flags);
-        env->c_env->mode = FLAG_LOAD;
-        return flags;
-      } else {
-        body = _Nil<T_O>();
-      }
-#endif
   } else if (mode == FLAG_ONLY_LOAD) {
     if (!when_load_p(situation))
       body = _Nil<T_O>();
   } else { /* FLAG_COMPILE */
     SIMPLE_ERROR(BF("I don't have a compiler yet"));
-#if 0
-    if (when_execute_p(situation) || when_compile_p(situation)) {
-      execute_each_form(env, body);
-    }
-    body = _Nil<T_O>();
-#endif
   }
   return eval::sp_progn(body, env);
 //	    return eval::evaluateListReturnLast(body,env,_lisp);
-#if 0
-  return compile_toplevel_body(env, body, flags);
-#endif
 };
 
 T_mv sp_step(List_sp args, T_sp env) {
@@ -1298,7 +1261,6 @@ T_mv sp_if(List_sp args, T_sp environment) {
   Works just like lisp "cond" control structure. Evaluates each condition and for the first one that evaluates as true its associated block is evaluated.
   __END_DOC
 */
-#if 1
 T_mv sp_cond(List_sp args, T_sp environment) {
   ASSERT(environment.generalp());
   for (auto cur : args) {
@@ -1318,7 +1280,6 @@ T_mv sp_cond(List_sp args, T_sp environment) {
   }
   return (Values(_Nil<T_O>()));
 }
-#endif
 
 T_mv sp_block(List_sp args, T_sp environment) {
   ASSERT(environment.generalp());
@@ -1357,35 +1318,7 @@ T_mv sp_returnFrom(List_sp args, T_sp environment) {
   throw returnFrom;
 }
 
-#if 0
-struct RaiiUnwindProtect {
-  T_sp cleanup_fn;
-  T_sp environment;
-  RaiiUnwindProtect(T_sp cleanup,T_sp env) : cleanup_fn(cleanup), environment(env) {};
-  ~RaiiUnwindProtect() {
-// Save any return value that may be in the multiple value return array
-    gctools::Vec0<T_sp> savemv;
-    T_mv tresult;
-    tresult.readFromMultipleValue0();
-    tresult.saveToVec0(savemv);
-    eval::sp_progn(this->cleanup_fn,this->environment);
-#if 1 // See comment above about 22a8d7b1
-    tresult.loadFromVec0(savemv);
-    tresult.saveToMultipleValue0();
-#endif
-  };
-};
-#endif
-
-
 T_mv sp_unwindProtect(List_sp args, T_sp environment) {
-#if 0
-  ASSERT(environment.generalp());
-  T_sp protected_fn = oCar(args);
-  T_sp cleanup_fn = oCdr(args);
-  RaiiUnwindProtect cleanup(cleanup_fn,environment);
-  return eval::evaluate(protected_fn, environment);
-#else
   gc::Vec0<core::T_sp> save;
   T_mv result;
   try {
@@ -1407,7 +1340,6 @@ T_mv sp_unwindProtect(List_sp args, T_sp environment) {
   // Restore the return values
   result.loadFromVec0(save);
   return result;
-#endif
 }
 
 T_mv sp_catch(List_sp args, T_sp environment) {
@@ -1449,19 +1381,11 @@ T_mv sp_throw(List_sp args, T_sp environment) {
 
 T_mv sp_multipleValueProg1(List_sp args, T_sp environment) {
   ASSERT(environment.generalp());
-#if 1
   MultipleValues save;
   T_mv val0 = eval::evaluate(oCar(args), environment);
   multipleValuesSaveToMultipleValues(val0, &save);
   eval::evaluateListReturnLast(oCdr(args), environment);
   return multipleValuesLoadFromMultipleValues(&save);
-#else
-  VectorObjects_sp save(VectorObjects_O::create());
-  T_mv val0 = eval::evaluate(oCar(args), environment);
-  multipleValuesSaveToVector(val0, save);
-  eval::evaluateListReturnLast(oCdr(args), environment);
-  return multipleValuesLoadFromVector(save);
-#endif
 }
 
 T_mv sp_multipleValueForeignCall(List_sp args, T_sp env) {
@@ -1545,11 +1469,6 @@ Function_sp lambda(T_sp name, bool wrap_block, T_sp lambda_list, List_sp body, T
                                          Cons_O::create(
                                                         core__function_block_name(name),
                                                         code)));
-#if 0
-    if (_lisp->sourceDatabase().notnilp()) {
-      gc::As<SourceManager_sp>(_lisp->sourceDatabase())->duplicateSourcePosInfo(body, code);
-    }
-#endif
   }
   //            printf("%s:%d Creating InterpretedClosure with no source information - fix this\n", __FILE__, __LINE__ );
   T_sp spi(_Nil<T_O>());

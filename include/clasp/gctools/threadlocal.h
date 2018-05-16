@@ -6,7 +6,7 @@ namespace core {
 #define IHS_BACKTRACE_SIZE 16
   struct InvocationHistoryFrame;
   struct ThreadLocalState {
-  ThreadLocalState(void* stack_top);
+    ThreadLocalState(void* stack_top);
     void initialize_thread(mp::Process_sp process);
     int _DisableInterrupts;
 #if defined(DEBUG_RECURSIVE_ALLOCATIONS)
@@ -46,9 +46,9 @@ namespace core {
     inline core::DynamicBindingStack& bindings() { return this->_Bindings; };
     inline ExceptionStack& exceptionStack() { return this->_ExceptionStack; };
     StringOutputStream_sp& bformatStringOutputStream() { return this->_BFormatStringOutputStream;};
-  Bignum_sp bigRegister0() { return this->_BignumRegister0; };
-  Bignum_sp bigRegister1() { return this->_BignumRegister1; };
-  Bignum_sp bigRegister2() { return this->_BignumRegister2; };
+    Bignum_sp bigRegister0() { return this->_BignumRegister0; };
+    Bignum_sp bigRegister1() { return this->_BignumRegister1; };
+    Bignum_sp bigRegister2() { return this->_BignumRegister2; };
     ~ThreadLocalState();
   };
 

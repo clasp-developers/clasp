@@ -32,6 +32,12 @@
 #define MPS_RECOGNIZE_ZERO_TAG   // recognize #b000 as a tagged pointer
 #define ZERO_TAG_MASK       0x07          // goes with MPS_RECOGNIZE_ZERO_TAG
 
+
+// For MPS extensions can define custom allocation points - but only up to this many
+#define MAX_CUSTOM_ALLOCATION_POINTS 4
+
+
+
 // Match tags using (ptr&MATCH_TAG_MASK)==MATCH_TAG_EQ
 // These values are used in point
 #define FIXNUM_MASK         0x03

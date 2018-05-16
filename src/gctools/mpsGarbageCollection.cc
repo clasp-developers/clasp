@@ -76,6 +76,37 @@ extern "C" {
 
 #include <clasp/gctools/gctoolsPackage.h>
 
+namespace gctools {
+struct custom_allocator_info {
+  mps_pool_t   _Pool;
+  mps_arg_s    _Args;
+  custom_allocator_info(mps_pool_t p, mps_arg_s a) : _Pool(p), _Args(a) {};
+};
+
+std::vector<custom_allocator_info> global_custom_allocator_info;
+
+size_t register_custom_allocation_point(mps_pool_t pool, mps_arg_s args) {
+  size_t ap_handle = global_custom_allocator_info.size();
+  if (ap_handle >= MAX_CUSTOM_ALLOCATION_POINTS) {
+    printf("%s:%d Exceeded the MAX_CUSTOM_ALLOCATION_POINTS = %lu you can increase it and recompile \n", __FILE__, __LINE__, ap_handle);
+    abort();
+  }
+  custom_allocator_info info(pool,args);
+  global_custom_allocator_info.push_back(info);
+  return ap_handle;
+}
+
+
+void destroy_custom_allocation_point_info() {
+  for (int i = global_custom_allocator_info.size()-1; i>=0; --i ) {
+    mps_pool_destroy(global_custom_allocator_info[i]._Pool);
+  };
+}
+
+};
+
+
+
 extern "C" {
 struct PointerSearcher {
   PointerSearcher() : poolObjects(0){};
@@ -969,6 +1000,12 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
   if (res != MPS_RES_OK)
     GC_RESULT_ERROR(res, "Could not create awl pool");
 
+#ifndef SCRAPING
+#define ALL_PREGCSTARTUPS_CALLS
+#include PREGCSTARTUP_INC_H
+#undef ALL_PREGCSTARTUPS_CALLS
+#endif // ifndef SCRAPING
+  
   // register the current and only thread
   mps_thr_t global_thread;
   res = mps_thread_reg(&global_thread, global_arena);
@@ -1055,6 +1092,7 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
   mps_root_destroy(global_scan_root);
   mps_root_destroy(global_stack_root);
   mps_thread_dereg(global_thread);
+  destroy_custom_allocation_point_info();
   mps_pool_destroy(global_awl_pool);
   mps_pool_destroy(global_amcz_pool);
   mps_fmt_destroy(obj_fmt_zero);
@@ -1087,6 +1125,7 @@ void check_all_clients() {
 
 
 namespace gctools {
+
 
 void my_mps_thread_reg(mps_thr_t* threadP) {
   mps_res_t result = mps_thread_reg(threadP,global_arena);
@@ -1140,10 +1179,20 @@ void ThreadLocalAllocationPoints::initializeAllocationPoints() {
                         global_amcz_pool, mps_args_none);
   if (res != MPS_RES_OK)
     GC_RESULT_ERROR(res, "Couldn't create mostly_copying_zero_rank_allocation_point");
+
+  for ( size_t handle = 0; handle<global_custom_allocator_info.size(); ++handle ) {
+    res = mps_ap_create_k(&(this->_custom_allocation_points[handle]),global_custom_allocator_info[handle]._Pool,
+                          &(global_custom_allocator_info[handle]._Args));
+    if (res != MPS_RES_OK)
+      GC_RESULT_ERROR(res,"Couldn't allocate a custom allocation point");
+  }
 };
 
 
 void ThreadLocalAllocationPoints::destroyAllocationPoints() {
+  for ( int handle=global_custom_allocator_info.size()-1; handle >= 0; --handle ) {
+    mps_ap_destroy(this->_custom_allocation_points[handle]);
+  }
   mps_ap_destroy(this->_automatic_mostly_copying_zero_rank_allocation_point);
   mps_ap_destroy(this->_amc_cons_allocation_point);
   mps_ap_destroy(this->_automatic_mostly_copying_allocation_point);

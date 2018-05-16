@@ -154,19 +154,6 @@ Path_mv af_makePath(List_sp args) {
   return (Values(me));
 }
 
-bool Path_O::lt(T_sp obj) const {
-  if (!gc::IsA<Path_sp>(obj)) {
-    return this->Base::operator<(obj);
-  }
-  Path_sp other = gc::As<Path_sp>(obj);
-  return this->asString() < other->asString();
-}
-
-Path_O &Path_O::operator/=(string const &pp) {
-  this->_Path /= pp;
-  return *this;
-}
-
 void Path_O::sxhash_(HashGenerator &hg) const {
   _OF();
   string ts = this->_Path.string();

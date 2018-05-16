@@ -149,13 +149,6 @@ void ltvc_assign_source_file_info_handle(const char *moduleName, const char *sou
   core::SimpleBaseString_sp struename = core::SimpleBaseString_O::make(sourceDebugPathname);
   SourceFileInfo_mv sfi_mv = core::core__source_file_info(mname, struename, sourceDebugOffset, useLineno ? true : false);
   int sfindex = unbox_fixnum(gc::As<core::Fixnum_sp>(sfi_mv.valueGet_(1)));
-#if 0
-  if ( sfindex == 0 ) {
-    printf("%s:%d Could not get a SourceFileInfoHandle for %s\n", __FILE__, __LINE__, moduleName );
-  } else {
-    printf("%s:%d Assigning SourceFileInfoHandle %d for %s  at sourceFileInfoHandleP@%p\n", __FILE__, __LINE__, sfindex, moduleName, sourceFileInfoHandleP );
-  }
-#endif
   *sourceFileInfoHandleP = sfindex;
   NO_UNWIND_END();
 }
@@ -738,58 +731,6 @@ void cc_invoke_startup_functions() {
 
 };
 
-
-extern "C" {
-
-
-#if 0
-extern void attachDebuggingInfoToValueFrame(core::ActivationFrame_sp *resultP,
-                                            core::T_sp *debuggingInfoP) {
-  ASSERT(resultP != NULL);
-  ASSERT(debuggingInfoP != NULL);
-  ASSERT((*resultP));
-  ASSERT((*resultP).isA<ValueFrame_O>());
-  core::ValueFrame_sp vf = gc::reinterpret_cast_smart_ptr<ValueFrame_O, T_O>((*resultP));
-  core::VectorObjects_sp vo = gc::reinterpret_cast_smart_ptr<core::VectorObjects_O, T_O>((*debuggingInfoP));
-  vf->attachDebuggingInfo(vo);
-}
-#endif
-
-
-
-/*! Look for the :allow-other-keywords XX keyword argument and
-      calculate (or (*ampAllowOtherKeywordsP) XX) return 1 if result is true otherwise 0 */
-extern int checkForAllowOtherKeywords(int ampAllowOtherKeywords, core::ActivationFrame_sp *frameP, int argIdx) {
-  ASSERT(frameP != NULL);
-  ASSERT(frameP->objectp());
-  ASSERT(argIdx >= 0);
-  core::ValueFrame_sp vf = gc::As<core::ValueFrame_sp>((*frameP));
-  if (argIdx >= vf->length())
-    return 0;
-  int argsLeft = vf->length() - argIdx;
-  if ((argsLeft % 2) != 0) {
-    stringstream serr;
-    serr << "There must be an even number of keyword arguments - you passed: ";
-    for (int ei = argIdx; ei < vf->length(); ei++) {
-      serr << _rep_(vf->entry(ei)) << " ";
-    }
-    SIMPLE_ERROR(BF("%s") % serr.str());
-  }
-  if (ampAllowOtherKeywords)
-    return 1;
-  for (int ii = argIdx; ii < vf->length(); ii += 2) {
-    if (vf->entry(ii) == kw::_sym_allow_other_keys) {
-      core::T_sp val = vf->entry(ii + 1);
-      if (val.isTrue())
-        return 1;
-      // TODO: Handle :allow-other-keys nil :allow-other-keys t
-      // In safe mode this should throw an exceptions
-      // (see 3.4.1.4.1.1 Examples of Suppressing Keyword Argument Checking)
-    }
-  }
-  return 0;
-}
-
 /*! Look for the keyword in (*frameP) after argIdx.
  */
 extern void throwIfExcessKeywordArguments(char *fnName, core::ActivationFrame_sp *frameP, int argIdx) {
@@ -818,7 +759,6 @@ extern void throwIfExcessArguments(core::T_sp *frameP, int argIdx) {
     SIMPLE_ERROR(BF("extraneous arguments: %s") % serr.str());
   }
 }
-};
 
 inline core::T_sp prependMultipleValues(core::T_mv *multipleValuesP) {
   core::List_sp result = _Nil<core::T_O>();
@@ -1024,29 +964,6 @@ void debugPrint_size_t(size_t v)
   NO_UNWIND_END();
 }
 
-
-#if 0
-void throwCatchThrow(core::T_sp *tagP) {
-  ASSERT(tagP != NULL);
-  core::T_sp tag = *tagP;
-  int frame = my_thread->exceptionStack().findKey(CatchFrame, tag);
-  if (frame < 0) {
-    CONTROL_ERROR();
-  } else {
-    core::CatchThrow catchThrow(frame);
-#ifdef DEBUG_FLOW_CONTROL
-    if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
-      printf("%s:%d Throwing core::CatchThrow exception tag[%s] frame: %d\n", __FILE__, __LINE__, _rep_(*tagP).c_str(), frame);
-      if (core::_sym_STARdebugFlowControlSTAR->symbolValue() == kw::_sym_verbose )
-        printf("   %s\n", my_thread->exceptionStack().summary().c_str());
-    }
-#endif
-    throw catchThrow;
-  }
-  SIMPLE_ERROR(BF("This should never happen"));
-}
-#endif
-
 DONT_OPTIMIZE_WHEN_DEBUG_RELEASE void throwReturnFrom(size_t depth, core::ActivationFrame_O* frameP) {
 #ifdef DEBUG_TRACK_UNWINDS
   global_ReturnFrom_count++;
@@ -1117,27 +1034,6 @@ DONT_OPTIMIZE_WHEN_DEBUG_RELEASE gctools::return_type blockHandleReturnFrom_or_r
 
 extern "C" {
 
-// Return 1 if exception depth is zero				- blockTestDepth0
-// Set the result from the ReturnFrom exception return value   	- blockStoreResult
-//
-
-#if 0
-size_t pushCatchFrame(core::T_O *tagP)
-{NO_UNWIND_BEGIN();
-  T_sp tag((gctools::Tagged)tagP);
-  size_t result = my_thread->exceptionStack().push(CatchFrame, tag);
-#ifdef DEBUG_FLOW_CONTROL
-  if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
-    printf("Pushed CatchThrow frame[%zu]\n", result);
-    if (core::_sym_STARdebugFlowControlSTAR->symbolValue() == kw::_sym_verbose )
-      printf("   %s\n", my_thread->exceptionStack().summary().c_str());
-  }
-#endif
-  return result;
-  NO_UNWIND_END();
-}
-#endif
-
 DONT_OPTIMIZE_WHEN_DEBUG_RELEASE core::T_O* initializeBlockClosure(core::T_O** afP)
 {NO_UNWIND_BEGIN();
   ValueFrame_sp vf = ValueFrame_sp((gc::Tagged)*reinterpret_cast<ValueFrame_O**>(afP));
@@ -1147,17 +1043,6 @@ DONT_OPTIMIZE_WHEN_DEBUG_RELEASE core::T_O* initializeBlockClosure(core::T_O** a
   Cons_sp unique = Cons_O::create(_Nil<T_O>(),_Nil<T_O>());
 #endif
   vf->operator[](0) = unique;
-#if 0
-  T_sp tag((gctools::Tagged)tagP);
-  size_t result = my_thread->exceptionStack().push(BlockFrame, tag);
-#ifdef DEBUG_FLOW_CONTROL
-  if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
-    printf("Pushed Block frame[%zu]\n", result);
-    if (core::_sym_STARdebugFlowControlSTAR->symbolValue() == kw::_sym_verbose )
-      printf("   %s\n", my_thread->exceptionStack().summary().c_str());
-  }
-#endif
-#endif
   return unique.raw_();
   NO_UNWIND_END();
 }
@@ -1239,33 +1124,13 @@ void throwDynamicGo(size_t depth, size_t index, core::T_O *afP) {
   throw dgo;
 }
 
-int tagbodyLexicalGoIndexElseRethrow(char *exceptionP) {
-  IMPLEMENT_MEF("Update me");
-#if 0
-	core::LexicalGo* goExceptionP = (core::LexicalGo*)(exceptionP);
-	if ( goExceptionP->depth() == 0 )
-	{
-	    return goExceptionP->index();
-	}
-	goExceptionP->decrementDepth();
-#ifdef DEBUG_FLOW_CONTROL
-	printf("Re-throwing core::Go depth[%d] index[%d]\n", goExceptionP->depth(), goExceptionP->index());
-        if (core::_sym_STARdebugFlowControlSTAR->symbolValue() == kw::_sym_verbose )
-          printf("   %s\n", my_thread->exceptionStack().summary().c_str());
-#endif
-	throw *goExceptionP;
-#endif
-}
-
 size_t tagbodyHandleDynamicGoIndex_or_rethrow(char *exceptionP, T_O* handle) {
   core::DynamicGo& goException = *reinterpret_cast<core::DynamicGo *>(exceptionP);
   if (goException.getHandle() == handle) {
     return goException.index();
   }
   throw;
-//  throw goException;
 }
-
 
 
 void debugSourceFileInfoHandle(int *sourceFileInfoHandleP)
@@ -1344,21 +1209,6 @@ extern void loadValues(core::T_mv *resultP, core::T_O* simpleVectorP)
   NO_UNWIND_END();
 }
 
-/*! If saw_aok > 0 then return that.
-      Otherwise check the following argument - if true then return 2 --> :a-o-k t
-      Otherwise return 1 --> :a-o-k nil
-    */
-#if 0
-int kw_allowOtherKeywords(int saw_aok, core::ActivationFrame_sp *afP, int argIdx) {
-  if (saw_aok)
-    return saw_aok;
-  ASSERTNOTNULL(*afP);
-  core::ValueFrame_sp valueFrame = gc::As<core::ValueFrame_sp>((*afP));
-  bool aokTrue = valueFrame->entryReference(argIdx + 1).isTrue();
-  return aokTrue ? 2 : 1;
-}
-#endif
-
 size_t cc_trackFirstUnexpectedKeyword(size_t badKwIdx, size_t newBadKwIdx)
 {NO_UNWIND_BEGIN();
   // 65536 is the magic number for badKwIdx has not been assigned yet
@@ -1422,23 +1272,6 @@ void popDynamicBinding(core::T_O *tsymbolP)
 };
 
 extern "C" {
-
-#if 0
-void trace_setLineNumberColumnForIHSTop(char *sourceFileName, int *sourceFileInfoHandleP, size_t fileOffset, int ln, int col) {
-  if (comp::_sym_STARlowLevelTracePrintSTAR->symbolValue().isTrue()) {
-    if (*sourceFileInfoHandleP == 0) {
-      printf("%s:%d trace_setLineNumberColumnForIHSTop has *sourceFileInfoHandleP@%p == 0 soureFileName: %s\n", __FILE__, __LINE__, sourceFileInfoHandleP, sourceFileName);
-    }
-  }
-  my_thread->invocationHistoryStack().setSourcePosForTop(*sourceFileInfoHandleP, fileOffset, ln, col);
-}
-#endif
-
-#if 0
-void trace_setActivationFrameForIHSTop(core::T_sp *afP) {
-  my_thread->invocationHistoryStack().setActivationFrameForTop(*afP);
-}
-#endif
 
 void setFrameUniqueId(size_t id, core::ActivationFrame_O* frameP) {
 #ifdef DEBUG_LEXICAL_DEPTH
@@ -1669,24 +1502,6 @@ T_O *cc_pushLandingPadFrame()
 
 void cc_popLandingPadFrame(T_O *frameFixnum)
 {NO_UNWIND_BEGIN();
-#if 0
-  ASSERT(gctools::tagged_fixnump(frameFixnum));
-  size_t frameIndex = gctools::untag_fixnum(frameFixnum);
-#ifdef DEBUG_FLOW_CONTROL
-  if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
-    printf("%s:%d  popLandingPadFrame   About to unwind exceptionStack to frame: %" PRu "\n", __FILE__, __LINE__, frameIndex);
-    if (core::_sym_STARdebugFlowControlSTAR->symbolValue() == kw::_sym_verbose )
-      printf("   %s\n", my_thread->exceptionStack().summary().c_str());
-  }
-#endif
-  my_thread->exceptionStack().unwind(frameIndex);
-#ifdef DEBUG_FLOW_CONTROL
-  if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
-    if (core::_sym_STARdebugFlowControlSTAR->symbolValue() == kw::_sym_verbose )
-      printf("    After unwind of exceptionStack:  %s\n", my_thread->exceptionStack().summary().c_str());
-  }
-#endif
-#endif
   NO_UNWIND_END();
 }
 
@@ -1856,10 +1671,6 @@ namespace llvmo {
 void initialize_link_intrinsics() {
 //	PRIMITIVE(cc_setSymbolValue);
 //printf("%s:%d  Initializing intrinsics.cc\n", __FILE__, __LINE__ );
-#if 0
-	T_mv foo = testTwoReturns();
-	printf("Called testTwoReturns  foo.raw_() = %p   foo.two = %d\n", foo.raw_(), foo.number_of_values() );
-#endif
 }
 };
 
