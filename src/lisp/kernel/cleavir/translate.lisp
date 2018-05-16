@@ -491,27 +491,15 @@ COMPILE-FILE will use the default *clasp-env*."
          (ast (cst->ast cst env))
          function lambda-name
          ordered-raw-constants-list constants-table startup-fn shutdown-fn)
-    (let ((hir (ast->hir (hoist-ast ast env))))
-      (multiple-value-bind (mir function-info-map)
-          (hir->mir hir env)
-        (cmp:with-debug-info-generator (:module cmp:*the-module* :pathname pathname)
-          (multiple-value-setq (ordered-raw-constants-list constants-table startup-fn shutdown-fn)
-            (literal:with-rtv
-                (multiple-value-setq (function lambda-name)
-                  (translate mir function-info-map *abi-x86-64* linkage)))))))
-    #+(or)(cmp:with-debug-info-generator (:module cmp:*the-module* :pathname pathname)
+    (cmp:with-debug-info-generator (:module cmp:*the-module* :pathname pathname)
       (multiple-value-setq (ordered-raw-constants-list constants-table startup-fn shutdown-fn)
         (literal:with-rtv
-            (multiple-value-setq (function lambda-name)
-              (let ((hir (ast->hir (hoist-ast ast env))))
-                (multiple-value-bind (mir function-info-map)
-                    (hir->mir hir env)
+            (let* ((ast (hoist-ast ast env))
+                   (hir (ast->hir ast)))
+              (multiple-value-bind (mir function-info-map)
+                  (hir->mir hir env)
+                (multiple-value-setq (function lambda-name)
                   (translate mir function-info-map *abi-x86-64* linkage)))))))
-    #+(or)(cmp:with-debug-info-generator (:module cmp:*the-module* :pathname pathname)
-            (multiple-value-setq (ordered-raw-constants-list constants-table startup-fn shutdown-fn)
-              (literal:with-rtv
-                  (multiple-value-setq (function lambda-name)
-                    (translate-ast (hoist-ast ast env) :linkage linkage :env env)))))
     (unless function
       (error "There was no function returned by translate-ast"))
     (cmp:cmp-log "fn --> %s%N" fn)
