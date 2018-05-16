@@ -467,6 +467,7 @@ COMPILE-FILE will use the default *clasp-env*."
     (multiple-value-bind (mir function-info-map)
         (hir->mir hir env)
       (translate mir function-info-map abi linkage))))
+
 (defun translate-cst (cst &key (abi *abi-x86-64*) (linkage 'llvm-sys:internal-linkage)
                             (env *clasp-env*))
   (translate-ast (hoist-ast (cst->ast cst env) env) :abi abi :linkage linkage :env env))
@@ -488,21 +489,38 @@ COMPILE-FILE will use the default *clasp-env*."
          (*llvm-metadata* (make-hash-table :test 'eql))
          (cst (cst:cst-from-expression form))
          (ast (cst->ast cst env))
-         function lambda-name)
-    (cmp:with-debug-info-generator (:module cmp:*the-module* :pathname pathname)
-      (multiple-value-bind (ordered-raw-constants-list constants-table startup-fn shutdown-fn)
-          (literal:with-rtv
-              (multiple-value-setq (function lambda-name)
-                (translate-ast (hoist-ast ast env) :linkage linkage :env env)))
-        (unless function
-          (error "There was no function returned by translate-ast"))
-        (cmp:cmp-log "fn --> %s%N" fn)
-        (cmp:quick-module-dump cmp:*the-module* "cclasp-compile-module-pre-optimize")
-        (let ((setup-function
-                (cmp:jit-add-module-return-function
-                 cmp:*the-module*
-                 function startup-fn shutdown-fn ordered-raw-constants-list)))
-          (funcall setup-function))))))
+         function lambda-name
+         ordered-raw-constants-list constants-table startup-fn shutdown-fn)
+    (let ((hir (ast->hir (hoist-ast ast env))))
+      (multiple-value-bind (mir function-info-map)
+          (hir->mir hir env)
+        (cmp:with-debug-info-generator (:module cmp:*the-module* :pathname pathname)
+          (multiple-value-setq (ordered-raw-constants-list constants-table startup-fn shutdown-fn)
+            (literal:with-rtv
+                (multiple-value-setq (function lambda-name)
+                  (translate mir function-info-map *abi-x86-64* linkage)))))))
+    #+(or)(cmp:with-debug-info-generator (:module cmp:*the-module* :pathname pathname)
+      (multiple-value-setq (ordered-raw-constants-list constants-table startup-fn shutdown-fn)
+        (literal:with-rtv
+            (multiple-value-setq (function lambda-name)
+              (let ((hir (ast->hir (hoist-ast ast env))))
+                (multiple-value-bind (mir function-info-map)
+                    (hir->mir hir env)
+                  (translate mir function-info-map *abi-x86-64* linkage)))))))
+    #+(or)(cmp:with-debug-info-generator (:module cmp:*the-module* :pathname pathname)
+            (multiple-value-setq (ordered-raw-constants-list constants-table startup-fn shutdown-fn)
+              (literal:with-rtv
+                  (multiple-value-setq (function lambda-name)
+                    (translate-ast (hoist-ast ast env) :linkage linkage :env env)))))
+    (unless function
+      (error "There was no function returned by translate-ast"))
+    (cmp:cmp-log "fn --> %s%N" fn)
+    (cmp:quick-module-dump cmp:*the-module* "cclasp-compile-module-pre-optimize")
+    (let ((setup-function
+            (cmp:jit-add-module-return-function
+             cmp:*the-module*
+             function startup-fn shutdown-fn ordered-raw-constants-list)))
+      (funcall setup-function))))
 
 (defun compile-form (form &optional (env *clasp-env*))
   (setf *ct-start* (compiler-timer-elapsed))

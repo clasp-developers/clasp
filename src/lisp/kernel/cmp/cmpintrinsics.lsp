@@ -760,9 +760,9 @@ It has appending linkage.")
     (cmp-log "Dumping module to %s%N" output-path)
     (ensure-directories-exist output-path)
     output-path))
-(defun compile-file-quick-module-dump (module file-name-modifier)
+(defun compile-file-quick-module-dump (module file-name-modifier compile-file-debug-dump-module)
   "Dump the module as a .ll file"
-  (if *compile-file-debug-dump-module*
+  (if compile-file-debug-dump-module
       (let* ((output-path (compile-file-quick-module-pathname file-name-modifier)))
         (let* ((output-name (namestring output-path))
                (fout (open output-name :direction :output)))
@@ -779,17 +779,17 @@ It has appending linkage.")
     (ensure-directories-exist output-path)
     output-path))
 
-(defun compile-quick-module-dump (module file-name-modifier)
+(defun compile-quick-module-dump (module file-name-modifier &optional (compile-debug-dump-module *compile-debug-dump-module*))
   "Dump the module as a .ll file"
-  (if *compile-debug-dump-module*
-      (let* ((output-path (compile-quick-module-pathname file-name-modifier)))
-        (let* ((output-name (namestring output-path))
-               fout)
-          (unwind-protect
-               (progn
-                 (setf fout (open output-name :direction :output))
-                 (llvm-sys:dump-module module fout))
-            (when fout (close fout)))))))
+  (if compile-debug-dump-module
+      (let* ((output-path (compile-quick-module-pathname file-name-modifier))
+             (output-name (namestring output-path))
+             fout)
+        (unwind-protect
+             (progn
+               (setf fout (open output-name :direction :output))
+               (llvm-sys:dump-module module fout))
+          (when fout (close fout))))))
 
 (defun quick-module-pathname (name-modifier)
   "If called under COMPILE-FILE the modules are dumped into the
@@ -805,8 +805,8 @@ same directory as the COMPILE-FILE output.  If called under COMPILE
 they are dumped into /tmp"
   (cmp-log "About to dump module - %s%N" name-modifier)
   (if *compile-file-output-pathname*
-      (compile-file-quick-module-dump module name-modifier)
-      (compile-quick-module-dump module name-modifier)))
+      (compile-file-quick-module-dump module name-modifier *compile-file-debug-dump-module*)
+      (compile-quick-module-dump module name-modifier *compile-debug-dump-module*)))
 
 
 (defun compile-file-quick-message (file-name-modifier msg args)

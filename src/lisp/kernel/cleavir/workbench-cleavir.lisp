@@ -19,13 +19,23 @@
   (finish-output)
   (time (require :asdf))
   (load "~/quicklisp/setup.lisp")
-  (load "sys:local-asdf-config.lisp"))
+  (load "sys:local-asdf-config.lisp")
+  (format t "Done local-asdf-config.lisp~%"))
 
 (progn
   (format t "Loading :clasp-cleavir system~%")
   (finish-output)
   (time (asdf:load-system "clasp-cleavir"))
   (format t "Done  pid = ~a~%"  (core:getpid)))
+
+
+(clasp-cleavir:cleavir-compile-file "/tmp/test.lisp")
+
+(trace clasp-cleavir::cclasp-compile* cst:cst-from-expression clasp-cleavir::cst->ast clasp-cleavir::translate-ast cmp:jit-add-module-return-function cmp::quick-module-dump cmp::compile-quick-module-dump cmp::compile-quick-module-pathname llvm-sys:jit-finalize-repl-function)
+
+(let ((clasp-cleavir::*debug-cleavir* t)
+      (cmp:*compile-debug-dump-module* t))
+  (clasp-cleavir:cleavir-compile 'foo '(lambda (x) x)))
 
 
 
@@ -741,7 +751,7 @@ clasp-cleavir::*pvi*
 
 
 (foo 0)
-(let ((cmp:*compile-debug-dump-module* t)) (clasp-cleavir:cleavir-compile 'foo '(lambda (x) (declare (core:lambda-name foo)) (list x x))))
+(let ((cmp:*compile-debug-dump-module* t)) (clasp-cleavir:cleavir-compile 'foo '(lambda (x) x)))
 (disassemble 'foo)
 
 (fdefinition 'foo)
