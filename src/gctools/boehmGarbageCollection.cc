@@ -249,6 +249,13 @@ int initializeBoehm(MainFunctionType startupFn, int argc, char *argv[], bool mpi
   GC_get_stack_base(&gc_stack_base);
   GC_register_my_thread(&gc_stack_base);
 #endif
+
+#ifndef SCRAPING
+#define ALL_PREGCSTARTUPS_CALLS
+#include PREGCSTARTUP_INC_H
+#undef ALL_PREGCSTARTUPS_CALLS
+#endif
+  
   int exitCode = startupFn(argc, argv, mpiEnabled, mpiRank, mpiSize);
 #if 0
   GC_unregister_my_thread();

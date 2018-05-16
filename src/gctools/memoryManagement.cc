@@ -43,6 +43,11 @@ THE SOFTWARE.
 #ifdef _TARGET_OS_LINUX
 #include <signal.h>
 #endif
+#ifndef SCRAPING
+#define ALL_PREGCSTARTUPS_EXTERN
+#include PREGCSTARTUP_INC_H
+#undef ALL_PREGCSTARTUPS_EXTERN
+#endif
 
 gctools::GlobalAllocationProfiler global_AllocationProfiler(1024*1024,1024*8);
 
@@ -552,7 +557,7 @@ int startupGarbageCollectorAndSystem(MainFunctionType startupFn, int argc, char 
       global_AllocationProfiler._AllocationSizeThreshold = values[0];
     }
   }
-
+  
   void* stackMarker = &stackMarker;
   gctools::_global_stack_marker = (const char*)&stackMarker;
   gctools::_global_stack_max_size = stackMax;
@@ -578,6 +583,7 @@ int startupGarbageCollectorAndSystem(MainFunctionType startupFn, int argc, char 
 # define DEFAULT_THREAD_INTERRUPT_SIGNAL SIGUSR1
 #endif
   gctools::initialize_signals(DEFAULT_THREAD_INTERRUPT_SIGNAL);
+  
 #if defined(USE_MPS)
   int exitCode = gctools::initializeMemoryPoolSystem(startupFn, argc, argv, mpiEnabled, mpiRank, mpiSize);
 #endif
