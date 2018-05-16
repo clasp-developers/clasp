@@ -29,13 +29,16 @@
   (format t "Done  pid = ~a~%"  (core:getpid)))
 
 
+
 (clasp-cleavir:cleavir-compile-file "/tmp/test.lisp")
 
 (trace clasp-cleavir::cclasp-compile* cst:cst-from-expression clasp-cleavir::cst->ast clasp-cleavir::translate-ast cmp:jit-add-module-return-function cmp::quick-module-dump cmp::compile-quick-module-dump cmp::compile-quick-module-pathname llvm-sys:jit-finalize-repl-function)
 
 (let ((clasp-cleavir::*debug-cleavir* t)
       (cmp:*compile-debug-dump-module* t))
-  (clasp-cleavir:cleavir-compile 'foo '(lambda (x) x)))
+  (clasp-cleavir:cleavir-compile
+   nil
+   '(lambda () (block nil ((lambda () (return)))))))
 
 
 
