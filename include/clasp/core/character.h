@@ -47,6 +47,8 @@ int clasp_string_case(String_sp s);
 Fixnum clasp_digitp(claspCharacter ch, int basis);
 
 bool cl__standard_char_p(Character_sp ch);
+bool clasp_islower_wide(claspCharacter code);
+bool clasp_isupper_wide(claspCharacter code);
 
 class Character_dummy_O : public General_O {
   LISP_ABSTRACT_CLASS(core, ClPkg, Character_dummy_O, "character",core::General_O);
@@ -118,11 +120,13 @@ inline bool clasp_invalid_base_char_p(int c) {
 }
 
 inline claspCharacter claspCharacter_upcase(claspCharacter code) {
+  // Should probably be towupper, but doesn't work. not even in Xcode
   claspCharacter uc = toupper(code);
   return uc;
 }
 
 inline claspCharacter claspCharacter_downcase(claspCharacter code) {
+  // Should probably be towlower, but doesn't work. not even in Xcode
   claspCharacter uc = tolower(code);
   return uc;
 }
@@ -148,17 +152,18 @@ inline bool clasp_alphanumericp(claspCharacter i) {
  }
 
  inline bool clasp_isupper(claspCharacter cc) {
-   // FIXME : handle unicode
-    unlikely_if (cc>255) handleWideCharactersError(cc);
-    return isupper(cc);
+   if (cc>255) {
+     return clasp_isupper_wide(cc);
+   }
+   else return isupper(cc);
  }
 
-  inline bool clasp_islower(claspCharacter cc) {
-   // FIXME : handle unicode
-    unlikely_if (cc>255) handleWideCharactersError(cc);
-    return islower(cc);
+inline bool clasp_islower(claspCharacter cc) {
+   if (cc>255) {
+     return clasp_islower_wide(cc);
+   }
+   else return islower(cc);
  }
-
 
 inline Character_sp clasp_make_standard_character(claspCharacter c) {
   return gc::make_tagged_character(c);
