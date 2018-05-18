@@ -208,48 +208,48 @@
 
 (defmethod translate-simple-instruction
     ((instruction cleavir-ir:enclose-instruction) return-value inputs outputs abi function-info)
-  (let ((enter-instruction (cleavir-ir:code instruction)))
-    (multiple-value-bind (enclosed-function lambda-name)
-        (layout-procedure enter-instruction abi)
-      (let* ((loaded-inputs (mapcar (lambda (x) (%load x "cell")) inputs))
-             (ltv-lambda-name (%literal-value lambda-name (format nil "lambda-name->~a" lambda-name)))
-             (dx-p (cleavir-ir:dynamic-extent-p instruction))
-             (enclose-args
-               (list* ltv-lambda-name
-                      enclosed-function
-                      cmp:*gv-source-file-info-handle*
-                      (cmp:irc-size_t-*current-source-pos-info*-filepos)
-                      (cmp:irc-size_t-*current-source-pos-info*-lineno)
-                      (cmp:irc-size_t-*current-source-pos-info*-column)
-                      (%size_t (length inputs))
-                      loaded-inputs))
-             (result
-               (progn
-                 (cond
-                   #| ;;; not available yet
+  (let* ((enter-instruction (cleavir-ir:code instruction))
+         (lambda-name (get-or-create-lambda-name enter-instruction))
+         (enclosed-function (memoized-layout-procedure enter-instruction lambda-name abi))
+         (loaded-inputs (mapcar (lambda (x) (%load x "cell")) inputs))
+         (ltv-lambda-name (%literal-value lambda-name (format nil "lambda-name->~a" lambda-name)))
+         (dx-p (cleavir-ir:dynamic-extent-p instruction))
+         (enclose-args
+           (list* ltv-lambda-name
+                  enclosed-function
+                  cmp:*gv-source-file-info-handle*
+                  (cmp:irc-size_t-*current-source-pos-info*-filepos)
+                  (cmp:irc-size_t-*current-source-pos-info*-lineno)
+                  (cmp:irc-size_t-*current-source-pos-info*-column)
+                  (%size_t (length inputs))
+                  loaded-inputs))
+         (result
+           (progn
+             (cond
+               #| ;;; not available yet
                    ((null inputs)
-                    ;; a "closurette" that doesn't actually close over anything and is therefore immutable.
-                    ;; As such, we can allocate it at load time.
-                    (%closurette-value lambda-name enclosed-function cmp:*gv-source-file-info-handle*
-                                       (cmp:irc-size_t-*current-source-pos-info*-filepos)
-                                       (cmp:irc-size_t-*current-source-pos-info*-lineno)
-                                       (cmp:irc-size_t-*current-source-pos-info*-column))) |#
-                   (dx-p
-                    ;; Closure is dynamic extent, so we can use stack storage.
-                    (%intrinsic-call
-                     "cc_stack_enclose"
-                     (list* (alloca-i8 (core:closure-with-slots-size (length inputs)) "stack-allocated-closure")
-                            enclose-args)
-                     (format nil "closure->~a" lambda-name)))
-                   (t
-                    ;; General case.
-                    (%intrinsic-invoke-if-landing-pad-or-call "cc_enclose" enclose-args
-                                                              (format nil "closure->~a" lambda-name)))))))
-        (cc-dbg-when *debug-log*
-                     (format *debug-log* "~:[cc_enclose~;cc_stack_enclose~] with ~a cells~%"
-                             dx-p (length inputs))
-                     (format *debug-log* "    inputs: ~a~%" inputs))
-        (%store result (first outputs) nil)))))
+               ;; a "closurette" that doesn't actually close over anything and is therefore immutable.
+               ;; As such, we can allocate it at load time.
+               (%closurette-value lambda-name enclosed-function cmp:*gv-source-file-info-handle*
+               (cmp:irc-size_t-*current-source-pos-info*-filepos)
+               (cmp:irc-size_t-*current-source-pos-info*-lineno)
+               (cmp:irc-size_t-*current-source-pos-info*-column))) |#
+               (dx-p
+                ;; Closure is dynamic extent, so we can use stack storage.
+                (%intrinsic-call
+                 "cc_stack_enclose"
+                 (list* (alloca-i8 (core:closure-with-slots-size (length inputs)) "stack-allocated-closure")
+                        enclose-args)
+                 (format nil "closure->~a" lambda-name)))
+               (t
+                ;; General case.
+                (%intrinsic-invoke-if-landing-pad-or-call "cc_enclose" enclose-args
+                                                          (format nil "closure->~a" lambda-name)))))))
+    (cc-dbg-when *debug-log*
+                 (format *debug-log* "~:[cc_enclose~;cc_stack_enclose~] with ~a cells~%"
+                         dx-p (length inputs))
+                 (format *debug-log* "    inputs: ~a~%" inputs))
+    (%store result (first outputs) nil)))
 
 
 (defmethod translate-simple-instruction

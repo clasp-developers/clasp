@@ -29,14 +29,18 @@
                                    tags catches)
   (let ((landing-pad-block (cmp:irc-basic-block-create "landing-pad")))
     (cmp:irc-begin-block landing-pad-block)
-    (let ((lpad (cmp:irc-create-landing-pad 1 "lp")))
+    (let* ((lpad (cmp:irc-create-landing-pad 1 "lp"))
+           (exception-structure (llvm-sys:create-extract-value cmp:*irbuilder* lpad (list 0) "exception-structure"))
+           (exception-selector (llvm-sys:create-extract-value cmp:*irbuilder* lpad (list 1) "exception-selector")))
+      (%store exception-structure exn.slot)
+      (%store exception-selector ehselector.slot)
       (cmp:irc-add-clause lpad (cmp:irc-exception-typeid* 'cmp:typeid-core-unwind))
       ;; we have to go to the cleanup later, so we can't ignore any exceptions.
       (when maybe-cleanup-landing-pad (llvm-sys:set-cleanup lpad t))
       (let* ((is-unwind-block (cmp:irc-basic-block-create "match-unwind"))
              (typeid (%intrinsic-call "llvm.eh.typeid.for"
                                       (list (cmp:irc-exception-typeid* 'cmp:typeid-core-unwind))))
-             (matches-type (cmp:irc-icmp-eq ehselector.slot typeid)))
+             (matches-type (cmp:irc-icmp-eq exception-selector typeid)))
         ;; If the exception is Clasp's UnwindException, we handle it.
         ;; Otherwise we go to the cleanup, or perhaps directly to the resume.
         (cmp:irc-cond-br matches-type is-unwind-block not-unwind-block)
@@ -85,7 +89,7 @@
     (cmp:irc-set-insert-point-basic-block cleanup-landing-pad ehbuilder)
     (cmp:with-irbuilder (ehbuilder)
       (let ((landpad (cmp:irc-create-landing-pad 1)))
-        (cmp:irc-create-landing-pad 1)
+        (llvm-sys:set-cleanup landpad t)
         (cmp:preserve-exception-info landpad exn.slot ehselector.slot)
         (cmp:irc-br block)))
     cleanup-landing-pad))

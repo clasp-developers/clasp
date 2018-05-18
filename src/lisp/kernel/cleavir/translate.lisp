@@ -194,7 +194,6 @@ when this is t a lot of graphs will be generated.")
                           first-basic-block
                           rest-basic-blocks
                           function-info
-                          lambda-name
                           initial-instruction abi &key (linkage 'llvm-sys:internal-linkage))
   (with-debug-info-disabled
       (let ((return-value (cmp:with-irbuilder (cmp:*irbuilder-function-alloca*)
@@ -206,11 +205,11 @@ when this is t a lot of graphs will be generated.")
         (cmp:with-irbuilder (body-irbuilder)
           (cmp:with-dbg-lexical-block (*form*)
             (cmp:irc-set-insert-point-basic-block body-block body-irbuilder)
-            (cmp:irc-begin-block body-block)
-            (when (debug-on function-info)
-              (generate-push-invocation-history-frame (calling-convention function-info)))
             (cmp:with-landing-pad
                 (maybe-generate-landing-pad the-function function-info *tags* return-value abi)
+              (cmp:irc-begin-block body-block)
+              (when (debug-on function-info)
+                (generate-push-invocation-history-frame (calling-convention function-info)))
               (layout-basic-block first-basic-block return-value abi function-info)
               (loop for block in rest-basic-blocks
                     for instruction = (first block)
@@ -221,7 +220,7 @@ when this is t a lot of graphs will be generated.")
               (cmp:irc-br body-block))
             (cc-dbg-when *debug-log* (format *debug-log* "----------end layout-procedure ~a~%"
                                              (llvm-sys:get-name the-function)))
-            (values the-function lambda-name))))))
+            the-function)))))
 
 ;;; Returns all basic blocks with the given owner.
 (defun function-basic-blocks (enter)
@@ -244,9 +243,7 @@ when this is t a lot of graphs will be generated.")
 (defvar *forms*)
 (defvar *map-enter-to-function-info* nil)
 
-(defun layout-procedure (enter abi &key (linkage 'llvm-sys:internal-linkage))
-  ;; I think this removes every basic-block that
-  ;; isn't owned by this enter
+(defun layout-procedure (enter lambda-name abi &key (linkage 'llvm-sys:internal-linkage))
   (let* ((function-info (gethash enter *map-enter-to-function-info*))
          ;; Gather the basic blocks of this procedure in basic-blocks
          (basic-blocks (function-basic-blocks enter))
@@ -254,13 +251,12 @@ when this is t a lot of graphs will be generated.")
          (first-basic-block (find enter basic-blocks :test #'eq :key #'first))
          ;; This gathers the rest of the basic blocks
          (rest-basic-blocks (remove first-basic-block basic-blocks :test #'eq))
-         (lambda-name (get-or-create-lambda-name enter))
          (main-fn-name lambda-name)
          (cmp:*current-function-name* (cmp:jit-function-name main-fn-name))
          (cmp:*gv-current-function-name*
            (cmp:module-make-global-string cmp:*current-function-name* "fn-name"))
          (llvm-function-type cmp:%fn-prototype%)
-         (llvm-function-name (cmp:jit-function-name main-fn-name))
+         (llvm-function-name cmp:*current-function-name*)
          (the-function (cmp:irc-function-create
                         llvm-function-type
                         linkage
@@ -304,8 +300,17 @@ when this is t a lot of graphs will be generated.")
                        first-basic-block
                        rest-basic-blocks
                        function-info
-                       lambda-name
                        enter abi :linkage linkage)))
+
+;; A hash table of enter instructions to llvm functions.
+;; This is used to avoid recompiling ENTERs, which may be
+;; multiply accessible in the HIR.
+;; We assume that the ABI and linkage will not change.
+(defvar *compiled-enters*)
+(defun memoized-layout-procedure (enter lambda-name abi &key (linkage 'llvm-sys:internal-linkage))
+  (or (gethash enter *compiled-enters*)
+      (setf (gethash enter *compiled-enters*)
+            (layout-procedure enter lambda-name abi :linkage linkage))))
 
 (defun log-translate (initial-instruction)
   (let ((mir-pathname (make-pathname :name (format nil "mir~a" (incf *debug-log-index*))
@@ -325,24 +330,16 @@ when this is t a lot of graphs will be generated.")
   (let* ((*basic-blocks* (cleavir-basic-blocks:basic-blocks initial-instruction))
          (*tags* (make-hash-table :test #'eq))
          (*vars* (make-hash-table :test #'eq))
-         (*map-enter-to-function-info* map-enter-to-function-info))
+         (*compiled-enters* (make-hash-table :test #'eq))
+         (*map-enter-to-function-info* map-enter-to-function-info)
+         ;; FIXME: Probably don't return this as a value - it's a property of the ENTER.
+         (lambda-name (get-or-create-lambda-name initial-instruction)))
     (cc-dbg-when *debug-log* (log-translate initial-instruction))
-    (multiple-value-bind (function lambda-name)
-        (layout-procedure initial-instruction abi :linkage linkage)
+    (let ((function
+            (memoized-layout-procedure initial-instruction lambda-name abi :linkage linkage)))
       (cmp::cmp-log-compile-file-dump-module cmp:*the-module* "after-translate")
       (setf *ct-translate* (compiler-timer-elapsed))
       (values function lambda-name))))
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
-;;; Main entry point.
-;;;
-;;; This will compile a top-level form (doing all tlf processing)
-;;; into the current *module*
-
-;; All enclosed functions need to be finalized
-(defvar *functions-to-finalize*)
 
 (defun my-hir-transformations (init-instr system env)
   ;; FIXME: Per Cleavir rules, we shouldn't need the environment at this point.

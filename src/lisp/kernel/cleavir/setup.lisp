@@ -427,23 +427,6 @@
 (defvar *hir* nil)
 (defvar *mir* nil)
 
-
-(defmacro with-ir-function ((lisp-function-name
-			     &key (function-type cmp:%fn-prototype% function-type-p)
-			     (linkage 'llvm-sys:internal-linkage))
-			       &rest body)
-  (let ((fn-gs (gensym "FUNCTION-")))
-    `(let ((,fn-gs (cmp:irc-function-create 
-		   ,function-type
-		   ',linkage
-		    (cmp:jit-function-name ,lisp-function-name)
-		    cmp:*the-module*)))
-       (llvm-sys:set-personality-fn (cmp:irc-personality-function))
-       ,@body
-       ,fn-gs)))
-
-
-
 (defun dump-hir (initial-instruction &optional (stream t))
   (let ((all-basic-blocks (cleavir-basic-blocks:basic-blocks initial-instruction))
 	initials)
