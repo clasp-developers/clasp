@@ -388,8 +388,7 @@ CL_INITIALIZER void clasp_fli_initialization( void )
 ForeignData_O::ForeignData_O() : m_kind( _Nil<T_O>() ),
                                  m_ownership_flags( core::ForeignDataFlagEnum::None ),
                                  m_size( 0 ),
-                                 m_orig_data_ptr( nullptr ),
-                                 m_raw_data( nullptr )
+                                 m_orig_data_ptr( nullptr )
 {
   // NOTHIHG TO DO
 }
