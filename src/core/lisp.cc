@@ -1380,65 +1380,69 @@ T_mv Lisp_O::readEvalPrint(T_sp stream, T_sp environ, bool printResults, bool pr
   T_mv result = Values(_Nil<T_O>());
   DynamicScopeManager scope(_sym_STARcurrentSourceFileInfoSTAR, core__source_file_info(stream));
   while (1) {
-    if (prompt) {
-      stringstream prompts;
-      prompts << std::endl
-              << gc::As<Package_sp>(cl::_sym_STARpackageSTAR->symbolValue())->getName() << "> ";
-      clasp_write_string(prompts.str(), stream);
-    }
+    try {
+      if (prompt) {
+        stringstream prompts;
+        prompts << std::endl
+                << gc::As<Package_sp>(cl::_sym_STARpackageSTAR->symbolValue())->getName() << "> ";
+        clasp_write_string(prompts.str(), stream);
+      }
 #ifdef USE_SOURCE_DATABASE
-    DynamicScopeManager innerScope(_sym_STARsourceDatabaseSTAR, SourceManager_O::create());
+      DynamicScopeManager innerScope(_sym_STARsourceDatabaseSTAR, SourceManager_O::create());
 #else
-    DynamicScopeManager innerScope(_sym_STARsourceDatabaseSTAR, _Nil<T_O>());
+      DynamicScopeManager innerScope(_sym_STARsourceDatabaseSTAR, _Nil<T_O>());
 #endif
-    T_sp expression = cl__read(stream, _Nil<T_O>(), _Unbound<T_O>(), _Nil<T_O>());
-    if (expression.unboundp())
-      break;
-    if (_sym_STARechoReplReadSTAR->symbolValue().isTrue()) {
-      string suppress;
-      if (cl::_sym_STARread_suppressSTAR->symbolValue().isTrue()) {
-        suppress = "SUPPRESSED";
-        if (expression.notnilp()) {
-          SIMPLE_ERROR(BF("*read-suppress* is true but the following expression was read: %s") % _rep_(expression));
+      T_sp expression = cl__read(stream, _Nil<T_O>(), _Unbound<T_O>(), _Nil<T_O>());
+      if (expression.unboundp())
+        break;
+      if (_sym_STARechoReplReadSTAR->symbolValue().isTrue()) {
+        string suppress;
+        if (cl::_sym_STARread_suppressSTAR->symbolValue().isTrue()) {
+          suppress = "SUPPRESSED";
+          if (expression.notnilp()) {
+            SIMPLE_ERROR(BF("*read-suppress* is true but the following expression was read: %s") % _rep_(expression));
+          }
         }
+        BFORMAT_T(BF(";;--read-%s-------------\n#|\n%s\n----------|#\n") % suppress.c_str() % _rep_(expression));
       }
-      BFORMAT_T(BF(";;--read-%s-------------\n#|\n%s\n----------|#\n") % suppress.c_str() % _rep_(expression));
-    }
-    _BLOCK_TRACEF(BF("---REPL read[%s]") % expression->__repr__());
-    if (cl__keywordp(expression)) {
-      ql::list tplCmd;
-      tplCmd << expression;
-      while (T_sp exp = cl__read(stream, _Nil<T_O>(), _Unbound<T_O>(), _Nil<T_O>())) {
-        if (exp.unboundp())
-          break;
-        tplCmd << exp;
-      }
-      if (_sym_STARtopLevelCommandHookSTAR->symbolValue().notnilp()) {
-        eval::funcall(_sym_STARtopLevelCommandHookSTAR->symbolValue(), tplCmd.cons());
-      } else {
-        core__bformat(_lisp->_true(), "Cannot interpret %s - define core::*top-level-command-hook*", Cons_O::createList(tplCmd.cons()));
-      }
-    } else if (expression.notnilp()) {
-      result = eval::funcall(core::_sym_STAReval_with_env_hookSTAR->symbolValue(), expression, environ);
-      gctools::Vec0<core::T_sp /*,gctools::RootedGCHolder*/> vresults;
-      vresults.resize(result.number_of_values());
-      if (result.number_of_values() > 0) {
-        vresults[0] = result;
-        if (result.number_of_values() > 1) {
-          for (int i(1); i < result.number_of_values(); ++i) {
-            vresults[i] = result.valueGet_(i);
+      _BLOCK_TRACEF(BF("---REPL read[%s]") % expression->__repr__());
+      if (cl__keywordp(expression)) {
+        ql::list tplCmd;
+        tplCmd << expression;
+        while (T_sp exp = cl__read(stream, _Nil<T_O>(), _Unbound<T_O>(), _Nil<T_O>())) {
+          if (exp.unboundp())
+            break;
+          tplCmd << exp;
+        }
+        if (_sym_STARtopLevelCommandHookSTAR->symbolValue().notnilp()) {
+          eval::funcall(_sym_STARtopLevelCommandHookSTAR->symbolValue(), tplCmd.cons());
+        } else {
+          core__bformat(_lisp->_true(), "Cannot interpret %s - define core::*top-level-command-hook*", Cons_O::createList(tplCmd.cons()));
+        }
+      } else if (expression.notnilp()) {
+        result = eval::funcall(core::_sym_STAReval_with_env_hookSTAR->symbolValue(), expression, environ);
+        gctools::Vec0<core::T_sp /*,gctools::RootedGCHolder*/> vresults;
+        vresults.resize(result.number_of_values());
+        if (result.number_of_values() > 0) {
+          vresults[0] = result;
+          if (result.number_of_values() > 1) {
+            for (int i(1); i < result.number_of_values(); ++i) {
+              vresults[i] = result.valueGet_(i);
+            }
+          }
+        }
+        if (printResults) {
+          for (int i(0); i < vresults.size(); i++) {
+            T_sp obj = vresults[i];
+            //			    this->print(BF("; --> %s\n")% _rep_(obj));
+            eval::funcall(cl::_sym_print, obj);
           }
         }
       }
-      if (printResults) {
-        for (int i(0); i < vresults.size(); i++) {
-          T_sp obj = vresults[i];
-            //			    this->print(BF("; --> %s\n")% _rep_(obj));
-          eval::funcall(cl::_sym_print, obj);
-        }
-      }
+    } catch (DebuggerSaysAbortToRepl& err) {
+      printf("%s:%d Aborting to repl\n", __FILE__, __LINE__ );
     }
-  }
+  };
   return result;
 }
 
