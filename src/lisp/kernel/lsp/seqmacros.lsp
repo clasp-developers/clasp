@@ -62,7 +62,7 @@
 (defmacro with-start-end ((start end seq &optional (length (gensym) length-p))
                           &body body)
   `(multiple-value-bind (,start ,end ,length)
-       (sequence-start-end 'subseq ,seq ,start ,end) 
+       (sequence-start-end ,seq ,start ,end) 
      (declare (fixnum ,start ,end ,length)
 	      ,@(unless length-p `((ignorable ,length))))
      ,@body))

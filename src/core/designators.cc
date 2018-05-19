@@ -54,9 +54,13 @@ Function_sp functionDesignator(T_sp obj) {
       SIMPLE_ERROR(BF("Function value for %s is unbound") % _rep_(sym));
     return sym->symbolFunction();
   }
-  SIMPLE_ERROR(BF("Illegal function designator %s") % _rep_(obj));
+  // we expect a function (either already a function or an fboundp symbol)
+  TYPE_ERROR(obj,cl::_sym_function);
 }
 
+// this very similar to functionDesignator, can we merge?
+// only use is core__function_source_pos_info
+// perhaps expected type == core::_sym_closure or cl::_sym_symbol
 Closure_sp closureDesignator(T_sp obj) {
   if (Closure_sp fnobj = obj.asOrNull<Closure_O>()) {
     return fnobj;
@@ -67,7 +71,7 @@ Closure_sp closureDesignator(T_sp obj) {
     ASSERT(closure);
     return closure;
   }
-  SIMPLE_ERROR(BF("Illegal function designator %s") % _rep_(obj));
+  SIMPLE_ERROR(BF("Illegal closure designator %s") % _rep_(obj));
 }
 
 #if 0
