@@ -115,9 +115,9 @@ namespace clasp_ffi {
 
   SMART(ForeignData);
 
-  class ForeignData_O : public core::ExternalObject_O {
+  class ForeignData_O : public core::Pointer_O {
     LISP_CLASS(clasp_ffi, Clasp_ffi_pkg,
-               ForeignData_O, "ForeignData", core::ExternalObject_O);
+               ForeignData_O, "ForeignData", core::Pointer_O);
 
   public:
 
@@ -177,11 +177,6 @@ namespace clasp_ffi {
     size_t m_size;
 
     void *m_orig_data_ptr;
-    // If we allocate memory then we save the ptr to the original address.
-    // This enables changing the pointer of m_raw_data without loosing the
-    // ability to free the originally allocated memory.
-
-    void *m_raw_data;
 
   }; // ForeignData_O
 
