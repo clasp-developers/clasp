@@ -137,6 +137,7 @@ public:
   bool fixnump() const { return tagged_fixnump(this->theObject); };
   Fixnum unsafe_fixnum() const { return untag_fixnum(this->theObject); };
   bool unboundp() const { return tagged_unboundp(this->theObject); };
+  bool boundp() const { return !tagged_unboundp(this->theObject); };
   bool deletedp() const { return tagged_deletedp(this->theObject); };
   bool sameAsKeyP() const { return tagged_sameAsKeyP(this->theObject); };
   bool characterp() const { return tagged_characterp<Type *>(this->theObject); };
@@ -355,6 +356,7 @@ class smart_ptr /*: public tagged_ptr<T>*/ {
   };
   bool consp() const { return tagged_consp<Type *>(this->theObject); };
   bool unboundp() const { return tagged_unboundp(this->theObject); };
+  bool boundp() const { return !tagged_unboundp(this->theObject); };
   bool deletedp() const { return tagged_deletedp(this->theObject); };
   bool sameAsKeyP() const { return tagged_sameAsKeyP(this->theObject); };
   bool fixnump() const { return tagged_fixnump(this->theObject); };
@@ -590,6 +592,7 @@ public:
   cl_intptr_t intptr() const { return ((uintptr_clasp_t)(this->theObject)); };
   int number_of_values() const { return this->theObject == NULL ? 0 : 1; };
   bool unboundp() const { return tagged_unboundp(this->theObject); };
+  bool boundp() const { return !tagged_unboundp(this->theObject); };
   bool deletedp() const { return tagged_deletedp(this->theObject); };
   bool sameAsKeyP() const { return tagged_sameAsKeyP(this->theObject); };
   inline bool nilp() const { return tagged_nilp(this->theObject); }
@@ -806,6 +809,7 @@ public:
   inline bool fixnump() const { return tagged_fixnump(this->theObject); };
   Fixnum unsafe_fixnum() const { return untag_fixnum(this->theObject); };
   inline bool unboundp() const { return tagged_unboundp(this->theObject); };
+  bool boundp() const { return !tagged_unboundp(this->theObject); };
   bool deletedp() const { return tagged_deletedp(this->theObject); };
   bool sameAsKeyP() const { return tagged_sameAsKeyP(this->theObject); };
   bool characterp() const { return tagged_characterp<Type *>(this->theObject); };
@@ -915,6 +919,7 @@ public:
   inline bool consp() const { return tagged_consp(this->theObject); };
   inline bool valid() const { return this->consp(); } // || this->nilp(); };
   inline bool unboundp() const { return tagged_unboundp(this->theObject); };
+  bool boundp() const { return !tagged_unboundp(this->theObject); };
   inline Type *&rawRef_() { return this->theObject; };
 
   inline void setRaw_(Tagged p) { this->theObject = reinterpret_cast<Type *>(p); }
@@ -1034,6 +1039,7 @@ public:
   inline bool notnilp() const { return !this->nilp(); };
   inline bool isTrue() const { return !this->nilp(); };
   inline bool unboundp() const { return tagged_unboundp(this->theObject); };
+  inline bool boundp() const { return !tagged_unboundp(this->theObject); };
 
   //	inline operator smart_ptr<core::Cons_O>() const { GCTOOLS_ASSERT(this->consp());return smart_ptr<core::Cons_O>((Tagged)this->theObject); };
   inline smart_ptr<core::Cons_O> asCons() const {
