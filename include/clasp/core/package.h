@@ -64,6 +64,7 @@ class Package_O : public General_O {
 #ifdef CLASP_THREADS
   mutable mp::SharedMutex _Lock;
 #endif
+  bool systemLockedP = false;
  public: // Creation class functions
   static Package_sp create(const string &p);
 
@@ -179,6 +180,18 @@ class Package_O : public General_O {
 
   /*! Map over the Internal key/value pairs */
   void mapInternals(KeyValueMapper *mapper);
+
+  void setSystemLockedP (bool value) {
+    this->systemLockedP = value;
+  }
+
+  bool getSystemLockedP () {
+    return this->systemLockedP;
+  }
+
+  bool getUserLockedP () {
+    return false;
+  }
 
  public:
   // Not default constructable
