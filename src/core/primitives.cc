@@ -1386,25 +1386,31 @@ CL_DEFUN T_sp cl__append(List_sp lists) {
 }
 #endif
 
-CL_LAMBDA(func sequence start end);
+CL_LAMBDA(sequence start end);
 CL_DECLARE();
 CL_DOCSTRING("Copied from ecl::sequence.d::sequence_start_end - throws errors if start/end are out of range for the sequence. I'm not sure what the func argument is for. If end is nil then it is set to the end of the sequence.  Return MultipleValues(start,end,length).");
-CL_DEFUN T_mv core__sequence_start_end(T_sp func, T_sp sequence, Fixnum_sp start, T_sp end) {
+CL_DEFUN T_mv core__sequence_start_end(T_sp sequence, Fixnum_sp start, T_sp end) {
+  // the func argument is useless, drop it here and in the caller with-start-end
   uint len = cl__length(sequence);
   if (end.nilp())
     end = make_fixnum(len);
   Fixnum_sp fnend = gc::As<Fixnum_sp>(end);
   if (unbox_fixnum(start) < 0) {
-    SIMPLE_ERROR(BF("start[%d] must be greater than zero") % _rep_(start));
+    TYPE_ERROR_INDEX_VARIABLE("start[~a] must be greater than zero for sequence ~a", sequence, start, len);
+  }
+  if (unbox_fixnum(start) > len) {
+    TYPE_ERROR_INDEX_VARIABLE("start[~a] must be <= length of sequence[~a]", sequence, start, len);
+  }
+  if (unbox_fixnum(fnend) < 0) {
+    TYPE_ERROR_INDEX_VARIABLE("end[~a] must be greater than zero for sequence ~a", sequence, start, len);
   }
   if (unbox_fixnum(fnend) > len) {
-    SIMPLE_ERROR(BF("end[%d] must be <= length of sequence[%d]") % _rep_(end) % len);
+    TYPE_ERROR_INDEX_VARIABLE("end[~a] must be <= length of sequence[~a]", sequence, end, len);
   }
-  Fixnum_sp length = make_fixnum(len);
   if (unbox_fixnum(fnend) < unbox_fixnum(start)) {
-    SIMPLE_ERROR(BF("end[%d] is less than start[%d]") % _rep_(end) % _rep_(start));
+    SIMPLE_PROGRAM_ERROR_2_ARGS ("end[~d] is less than start[~d]", end, start);
   }
-  return (Values(start, fnend, length));
+  return (Values(start, fnend, make_fixnum(len)));
 };
 
 

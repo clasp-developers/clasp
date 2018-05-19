@@ -65,6 +65,7 @@ extern "C" {
 #include <clasp/llvmo/llvmoExpose.h>
 #include <clasp/llvmo/intrinsics.h>
 #include <clasp/gctools/gc_interface.fwd.h>
+#include <clasp/core/exceptions.h>
 
 using namespace core;
 
@@ -76,7 +77,7 @@ namespace llvmo {
   case noFunctionBoundToSymbol:
     {
       core::Symbol_sp sym(gc::As<core::Symbol_sp>(arg0));
-      SIMPLE_ERROR(BF("There is no function bound to the symbol %s") % sym->fullName());
+      ERROR_UNDEFINED_FUNCTION(sym); 
     }
     break;
   case badKeywordArgument:
@@ -90,12 +91,12 @@ namespace llvmo {
   case unboundSymbolValue:
     {
       core::Symbol_sp sym = gc::As<core::Symbol_sp>(arg0);
-      SIMPLE_ERROR(BF("The symbol %s is unbound") % sym->fullName() );
+      UNBOUND_VARIABLE_ERROR(sym);
     };
   case unboundSymbolFunction:
     {
       core::Symbol_sp sym = gc::As<core::Symbol_sp>(arg0);
-      SIMPLE_ERROR(BF("The symbol %s has no function bound to it") % sym->fullName() );
+      ERROR_UNDEFINED_FUNCTION(sym);
     }
   case unboundSymbolSetfFunction:
     {
