@@ -224,7 +224,8 @@ Return files."
        (go top)
      done)))
 
-(defun compile-system-low-level (files &key reload (output-type (calculate-output-type)))
+(defun compile-system-low-level (files &key reload (output-type (calculate-output-type)) parallel-jobs)
+  (declare (ignore parallel-jobs))
   #+dbg-print(bformat t "DBG-PRINT compile-system files: %s\n" files)
   (with-compilation-unit ()
     (let* ((cur files)
@@ -441,7 +442,9 @@ Return files."
                (files-with-epilogue (out-of-date-bitcodes #P"src/lisp/kernel/tag/min-start" #P"src/lisp/kernel/tag/min-end" :system system)))
           (with-compilation-unit ()
             (let ((cmp::*activation-frame-optimize* nil))
-              (compile-system files :reload t)
+              ;; It's better to compile aclasp with fewer cores because then more of the compilations
+              ;; make use of compiled code.
+              (compile-system files :reload t :parallel-jobs (min *number-of-jobs* 16))
               (if files-with-epilogue (compile-system (bitcode-pathnames #P"src/lisp/kernel/tag/min-pre-epilogue" #P"src/lisp/kernel/tag/min-end" :system system) :reload nil))))
           (let ((all-bitcode (bitcode-pathnames #P"src/lisp/kernel/tag/min-start" #P"src/lisp/kernel/tag/min-end" :system system)))
             (if (out-of-date-target output-file all-bitcode)
