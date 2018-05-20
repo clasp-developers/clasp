@@ -561,7 +561,8 @@ CL_DEFUN T_mv ext__vfork_execvp(List_sp call_and_arguments, T_sp return_stream) 
 
 CL_LAMBDA(call-and-arguments &optional return-stream);
 CL_DECLARE();
-CL_DOCSTRING("fork_execvp - set optional return-stream if you want the output stream of the child");
+CL_DOCSTRING(R"(fork_execvp - set optional return-stream to T if you want the output stream of the child.
+Returns (values error pid return-stream).)");
 CL_DEFUN T_mv ext__fork_execvp(List_sp call_and_arguments, T_sp return_stream) {
   bool bReturnStream = return_stream.isTrue();
   if (call_and_arguments.nilp())
