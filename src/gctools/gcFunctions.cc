@@ -1129,6 +1129,18 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
 #endif
   if (buildReport) ss << (BF("DISABLE_TYPE_INFERENCE = %s\n") % (disable_type_inference ? "**DEFINED**" : "undefined") ).str();
 
+  bool use_lto = false;
+#if LTO_OPTION == 0
+  use_lto = false;
+  debugging = true;
+  if (setFeatures) features = core::Cons_O::create(_lisp->internKeyword("GENERATE-FASL"),features);
+#else
+  use_lto = true;
+  debugging = false;
+  if (setFeatures) features = core::Cons_O::create(_lisp->internKeyword("GENERATE-BITCODE"),features);
+#endif
+  if (buildReport) ss << (BF("USE_LTO = %s\n") % (use_lto ? "**DEFINED**" : "undefined") ).str();
+  
   bool use_human_readable_bitcode = false;
 #if USE_HUMAN_READABLE_BITCODE==1
   use_human_readable_bitcode = true;

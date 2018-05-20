@@ -354,7 +354,8 @@
 	~@
 	See also: :local.~%")
 |#
-      ((:bds :binding-stack) tpl-bds-command nil
+    #+(or)
+    ((:bds :binding-stack) tpl-bds-command nil
        ":bds            Show binding stack"
        ":binding-stack &optional variable		[Break command]~@
 	:bds &optional variable				[Abbreviation]~@
@@ -362,7 +363,7 @@
 	Without an argument, show the entire binding stack since the previous~@
 	break level.  With a variable name, print nothing, but return the~@
 	value of the given variable on the binding stack.~%")
-      ((:frs :frame-stack) tpl-frs-command nil
+    #+(or)((:frs :frame-stack) tpl-frs-command nil
        ":frs            Show frame stack"
        ""
        )
@@ -844,6 +845,7 @@ Use special code 0 to cancel this operation.")
         nil
         env)))
 
+#+(or)
 (defun ihs-environment (ihs-index)
   (labels ((newly-bound-special-variables (bds-min bds-max)
              (loop for i from bds-min to bds-max
@@ -944,6 +946,7 @@ Use special code 0 to cancel this operation.")
       (let ((val (cdr val-pair)))
 	(inspect val)))))
 
+#+(or)
 (defun tpl-bds-command (&optional var)
   (if var
     (do ((bi (1+ (frs-bds (max 0 (1- *frs-base*)))) (1+ bi))
@@ -977,6 +980,7 @@ Use special code 0 to cancel this operation.")
   (clasp-backtrace n)
   (values))
 
+#+(or)
 (defun tpl-frs-command (&optional n)
   (format *debug-io* "tpl-frs-command   ignored~%"))
 

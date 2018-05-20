@@ -148,7 +148,7 @@ Return files."
           (load path)
           (error "Illegal type ~a for load-kernel-file ~a" type path))))
 
-(defun compile-kernel-file (entry &key (reload nil) load-bitcode (force-recompile nil) counter total-files (output-type :bitcode) verbose print silent)
+(defun compile-kernel-file (entry &key (reload nil) load-bitcode (force-recompile nil) counter total-files (output-type (calculate-output-type)) verbose print silent)
   #+dbg-print(bformat t "DBG-PRINT compile-kernel-file: %s\n" entry)
 ;;  (if *target-backend* nil (error "*target-backend* is undefined"))
   (let* ((filename (entry-filename entry))
@@ -176,7 +176,6 @@ Return files."
                    :output-type output-type
                    :print print
                    :verbose verbose
-                   :output-type :bitcode
                    :type :kernel (entry-compile-file-options entry))
 	    (if reload
 		(progn
@@ -200,7 +199,7 @@ Return files."
     (bformat t "Compiling/loading source: %s\n" (namestring name))
     (let ((m (cmp::compile-file-to-module name :print nil)))
       (progn
-        (cmp::jit-link-builtins-module m)
+        (cmp::link-builtins-module m)
         (cmp::optimize-module-for-compile m))
       (llvm-sys:load-module m))))
 
@@ -225,7 +224,7 @@ Return files."
        (go top)
      done)))
 
-(defun compile-system-low-level (files &key reload (output-type :bitcode))
+(defun compile-system-low-level (files &key reload (output-type (calculate-output-type)))
   #+dbg-print(bformat t "DBG-PRINT compile-system files: %s\n" files)
   (with-compilation-unit ()
     (let* ((cur files)
@@ -241,7 +240,7 @@ Return files."
        done))))
 
 
-(defun compile-system-parallel (files &key reload (output-type :bitcode) (parallel-jobs *number-of-jobs*))
+(defun compile-system-parallel (files &key reload (output-type (calculate-output-type)) (parallel-jobs *number-of-jobs*))
   #+dbg-print(bformat t "DBG-PRINT compile-system files: %s\n" files)
   (let ((total (length files))
         (counter 0)
@@ -409,6 +408,20 @@ Return files."
                       #P"src/lisp/kernel/tag/after-init"
                       #P"src/lisp/kernel/tag/min-pre-epilogue" :system system)))))
 
+
+(defun generate-loader (output-file all-compiled-files)
+  (let ((output-file (make-pathname :type "lfasl" :defaults output-file)))
+    (with-open-file (fout output-file :direction :output :if-exists :supersede)
+      (dolist (one-file all-compiled-files)
+        (let ((name (make-pathname :type "fasl" :defaults one-file)))
+          (format fout "(load ~s)~%" name))))))
+
+(defun link-modules (output-file all-bitcode)
+  ;;(format t "link-modules output-file: ~a  all-bitcode: ~a~%" output-file all-bitcode)
+  #+generate-bitcode (cmp:link-bitcode-modules output-file all-bitcode)
+  #+generate-fasl (generate-loader output-file all-bitcode)  )
+
+    
 (export '(compile-aclasp))
 (defun compile-aclasp (&key clean
                          (output-file (build-common-lisp-bitcode-pathname))
@@ -432,7 +445,7 @@ Return files."
               (if files-with-epilogue (compile-system (bitcode-pathnames #P"src/lisp/kernel/tag/min-pre-epilogue" #P"src/lisp/kernel/tag/min-end" :system system) :reload nil))))
           (let ((all-bitcode (bitcode-pathnames #P"src/lisp/kernel/tag/min-start" #P"src/lisp/kernel/tag/min-end" :system system)))
             (if (out-of-date-target output-file all-bitcode)
-                (cmp:link-bitcode-modules output-file all-bitcode)))))))
+                (link-modules output-file all-bitcode)))))))
 
 (export '(bclasp-features with-bclasp-features))
 (defun bclasp-features()
@@ -474,7 +487,7 @@ Return files."
             (compile-system files)
             (let ((all-bitcode (bitcode-pathnames #P"src/lisp/kernel/tag/start" #P"src/lisp/kernel/tag/bclasp" :system system)))
               (if (out-of-date-target output-file all-bitcode)
-                    (cmp:link-bitcode-modules output-file all-bitcode))))))))
+                    (link-modules output-file all-bitcode))))))))
 
 (export '(compile-cclasp recompile-cclasp))
 
@@ -492,7 +505,7 @@ Return files."
 
 (defun link-cclasp (&key (output-file (build-common-lisp-bitcode-pathname)) (system (command-line-arguments-as-list)))
   (let ((all-bitcode (bitcode-pathnames #P"src/lisp/kernel/tag/start" #P"src/lisp/kernel/tag/cclasp" :system system)))
-    (cmp:link-bitcode-modules output-file all-bitcode)))
+    (link-modules output-file all-bitcode)))
 
 (defun compile-cclasp* (output-file system)
   "Compile the cclasp source code."
@@ -510,7 +523,7 @@ Return files."
     (compile-system files :reload nil)
     (let ((all-bitcode (bitcode-pathnames #P"src/lisp/kernel/tag/start" #P"src/lisp/kernel/tag/cclasp" :system system)))
       (if (out-of-date-target output-file all-bitcode)
-          (cmp:link-bitcode-modules output-file all-bitcode)))))
+          (link-modules output-file all-bitcode)))))
   
 (defun recompile-cclasp (&key clean (output-file (build-common-lisp-bitcode-pathname)) (system (command-line-arguments-as-list)))
   (if clean (clean-system #P"src/lisp/kernel/tag/start" :no-prompt t))

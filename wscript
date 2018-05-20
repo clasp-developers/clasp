@@ -207,21 +207,24 @@ class variant(object):
         if (not (use_stage>='a' and use_stage <= 'z')):
             raise Exception("Bad stage: %s"% use_stage)
         return '%s%s-%s%s' % (use_stage,APP_NAME,self.gc_name,self.debug_extension())
-    def fasl_name(self,stage=None):
+    def fasl_name(self,build,stage=None,development_mode=None):
         if ( stage == None ):
             use_stage = self.stage_char
         else:
             use_stage = stage
         if (not (use_stage>='a' and use_stage <= 'z')):
             raise Exception("Bad stage: %s"% use_stage)
-        return 'fasl/%s%s-%s%s-image.fasl' % (use_stage,APP_NAME,self.gc_name,self.debug_extension())
+        if (build.env.DEVELOPMENT_MODE):
+            return build.path.find_or_declare('fasl/%s%s-%s%s-image.lfasl' % (use_stage,APP_NAME,self.gc_name,self.debug_extension()))
+        else:
+            return build.path.find_or_declare('fasl/%s%s-%s%s-image.fasl' % (use_stage,APP_NAME,self.gc_name,self.debug_extension()))
     def fasl_dir(self,stage=None):
         if ( stage == None ):
             use_stage = self.stage_char
         else:
             use_stage = stage
         return 'fasl/%s%s-%s-bitcode' % (use_stage,APP_NAME,self.gc_name)
-    def common_lisp_bitcode_name(self,use_human_readable_bitcode,stage=None):
+    def common_lisp_output_name(self,build,use_human_readable_bitcode,stage=None):
         if ( stage == None ):
             use_stage = self.stage_char
         else:
@@ -229,10 +232,13 @@ class variant(object):
         if (not (use_stage>='a' and use_stage <= 'z')):
             raise Exception("Bad stage: %s"% use_stage)
         name = 'fasl/%s%s-%s-common-lisp' % (use_stage,APP_NAME,self.gc_name)
-        if (use_human_readable_bitcode):
-            return name+".ll"
+        if (build.env.DEVELOPMENT_MODE):
+            return build.path.find_or_declare(name+".lfasl")
         else:
-            return name+".bc"
+            if (use_human_readable_bitcode):
+                return build.path.find_or_declare(name+".ll")
+            else:
+                return build.path.find_or_declare(name+".bc")
     def variant_dir(self):
         return "%s%s"%(self.gc_name,self.debug_dir_extension())
     def variant_name(self):
@@ -472,7 +478,9 @@ def configure(cfg):
     cfg.env["GIT_BINARY"] = cfg.find_program("git", var = "GIT")[0]
     log.debug("cfg.env['LTO_OPTION'] = %s", cfg.env['LTO_OPTION'])
     if (cfg.env['LTO_OPTION']==[] or cfg.env['LTO_OPTION']=='thinlto'):
+        cfg.define("LTO_OPTION",2) # thin-lto
         cfg.env.LTO_FLAG = '-flto=thin'
+        cfg.env.DEVELOPMENT_MODE = False
         if (cfg.env['DEST_OS'] == LINUX_OS ):
             if (cfg.env['USE_LLD']):
                 cfg.env.append_value('LINKFLAGS', '-Wl,--thinlto-cache-dir=/tmp/clasp')
@@ -483,8 +491,12 @@ def configure(cfg):
         elif (cfg.env['DEST_OS'] == DARWIN_OS ):
             cfg.env.append_value('LINKFLAGS', '-Wl,-cache_path_lto,/tmp/clasp')
     elif (cfg.env['LTO_OPTION']=='lto'):
+        cfg.env.DEVELOPMENT_MODE = False
+        cfg.define("LTO_OPTION",1) # lto
         cfg.env.LTO_FLAG = '-flto'
     elif (cfg.env['LTO_OPTION']=='obj'):
+        cfg.define("LTO_OPTION",0) # object files
+        cfg.env.DEVELOPMENT_MODE = True
         cfg.env.LTO_FLAG = []
     else:
         raise Exception("LTO_OPTION can only be 'thinlto'(default), 'lto', or 'obj' - you provided %s" % cfg.env['LTO_OPTION'])
@@ -824,8 +836,8 @@ def build(bld):
     bld.cclasp_executable = bld.path.find_or_declare(variant.executable_name(stage='c'))
     bld.asdf_fasl_bclasp = bld.path.find_or_declare("%s/src/lisp/modules/asdf/asdf.fasl" % variant.fasl_dir(stage='b'))
     bld.asdf_fasl_cclasp = bld.path.find_or_declare("%s/src/lisp/modules/asdf/asdf.fasl" % variant.fasl_dir(stage='c'))
-    bld.bclasp_fasl = bld.path.find_or_declare(variant.fasl_name(stage='b'))
-    bld.cclasp_fasl = bld.path.find_or_declare(variant.fasl_name(stage='c'))
+    bld.bclasp_fasl = variant.fasl_name(bld,stage='b')
+    bld.cclasp_fasl = variant.fasl_name(bld,stage='c')
     bld.iclasp_executable = bld.path.find_or_declare(variant.executable_name(stage='i'))
 
     bld.set_group('compiling/c++')
@@ -874,7 +886,7 @@ def build(bld):
     intrinsics_bitcode_node = bld.path.find_or_declare(variant.inline_bitcode_archive_name("intrinsics"))
     builtins_bitcode_node = bld.path.find_or_declare(variant.inline_bitcode_archive_name("builtins"))
     fastgf_bitcode_node = bld.path.find_or_declare(variant.inline_bitcode_archive_name("fastgf"))
-    cclasp_common_lisp_bitcode = bld.path.find_or_declare(variant.common_lisp_bitcode_name(bld.use_human_readable_bitcode,stage='c'))
+    cclasp_common_lisp_output = variant.common_lisp_output_name(bld,bld.use_human_readable_bitcode,stage='c')
     cxx_all_bitcode_node = bld.path.find_or_declare(variant.cxx_all_bitcode_name())
     out_dir_node = bld.path.find_dir(out)
     bclasp_symlink_node = out_dir_node.make_node("bclasp")
@@ -893,8 +905,8 @@ def build(bld):
                          intrinsics_bitcode_node,
                          builtins_bitcode_node] +
                         waf_nodes_for_lisp_files(bld, bld.clasp_aclasp))
-        aclasp_common_lisp_bitcode = bld.path.find_or_declare(variant.common_lisp_bitcode_name(bld.use_human_readable_bitcode, stage = 'a'))
-        task.set_outputs(aclasp_common_lisp_bitcode)
+        aclasp_common_lisp_output = variant.common_lisp_output_name(bld,bld.use_human_readable_bitcode, stage = 'a')
+        task.set_outputs(aclasp_common_lisp_output)
         bld.add_to_group(task)
     if (bld.stage_val >= 1):
         log.info("Creating compile_aclasp task")
@@ -905,22 +917,22 @@ def build(bld):
                          builtins_bitcode_node,
                          fastgf_bitcode_node] +
                         waf_nodes_for_lisp_files(bld, bld.clasp_aclasp))
-        aclasp_common_lisp_bitcode = bld.path.find_or_declare(variant.common_lisp_bitcode_name(bld.use_human_readable_bitcode, stage = 'a'))
-        log.debug("find_or_declare aclasp_common_lisp_bitcode = %s", aclasp_common_lisp_bitcode)
-        task.set_outputs(aclasp_common_lisp_bitcode)
+        aclasp_common_lisp_output = variant.common_lisp_output_name(bld,bld.use_human_readable_bitcode, stage = 'a')
+        log.debug("find_or_declare aclasp_common_lisp_output = %s", aclasp_common_lisp_output)
+        task.set_outputs(aclasp_common_lisp_output)
         bld.add_to_group(task)
 
+        aclasp_link_product = variant.fasl_name(bld,stage = 'a')
         task = link_fasl(env=bld.env)
         task.set_inputs([fastgf_bitcode_node,
                          builtins_bitcode_node,
                          intrinsics_bitcode_node,
-                         aclasp_common_lisp_bitcode])
-        aclasp_link_product = bld.path.find_or_declare(variant.fasl_name(stage = 'a'))
+                         aclasp_common_lisp_output])
         task.set_outputs([aclasp_link_product])
         bld.add_to_group(task)
 
         install('lib/clasp/', aclasp_link_product)
-        install('lib/clasp/', aclasp_common_lisp_bitcode)
+        install('lib/clasp/', aclasp_common_lisp_output)
     if (bld.stage_val >= 2):
         log.info("Creating compile_bclasp task")
 
@@ -931,24 +943,24 @@ def build(bld):
                          fastgf_bitcode_node,
                          builtins_bitcode_node] +
                         waf_nodes_for_lisp_files(bld, bld.clasp_bclasp))
-        bclasp_common_lisp_bitcode = bld.path.find_or_declare(variant.common_lisp_bitcode_name(bld.use_human_readable_bitcode, stage = 'b'))
-        task.set_outputs(bclasp_common_lisp_bitcode)
+        bclasp_common_lisp_output = variant.common_lisp_output_name(bld,bld.use_human_readable_bitcode, stage = 'b')
+        task.set_outputs(bclasp_common_lisp_output)
         bld.add_to_group(task)
 
         task = link_fasl(env=bld.env)
         task.set_inputs([fastgf_bitcode_node,
                          builtins_bitcode_node,
                          intrinsics_bitcode_node,
-                         bclasp_common_lisp_bitcode])
+                         bclasp_common_lisp_output])
         task.set_outputs([bld.bclasp_fasl])
         bld.add_to_group(task)
 
         install('lib/clasp/', bld.bclasp_fasl)
-        install('lib/clasp/', bclasp_common_lisp_bitcode)
+        install('lib/clasp/', bclasp_common_lisp_output)
 
         if (False):   # build bclasp executable
             task = link_executable(env = bld.env)
-            task.set_inputs([bclasp_common_lisp_bitcode,
+            task.set_inputs([bclasp_common_lisp_output,
                              cxx_all_bitcode_node])
             log.info("About to try and recurse into extensions again")
             bld.recurse('extensions')
@@ -985,7 +997,7 @@ def build(bld):
                          bld.bclasp_fasl,
                          cxx_all_bitcode_node] +
                         waf_nodes_for_lisp_files(bld, bld.clasp_cclasp))
-        task.set_outputs([cclasp_common_lisp_bitcode])
+        task.set_outputs([cclasp_common_lisp_output])
         bld.add_to_group(task)
     if (bld.stage == 'rebuild' or bld.stage == 'dangerzone'):
         log.pprint('RED', "!------------------------------------------------------------")
@@ -995,20 +1007,20 @@ def build(bld):
         # Build cclasp
         task = recompile_cclasp(env = bld.env)
         task.set_inputs(waf_nodes_for_lisp_files(bld, bld.clasp_cclasp_no_wrappers))
-        task.set_outputs([cclasp_common_lisp_bitcode])
+        task.set_outputs([cclasp_common_lisp_output])
         bld.add_to_group(task)
     if (bld.stage == 'dangerzone' or bld.stage == 'rebuild' or bld.stage_val >= 3):
         task = link_fasl(env=bld.env)
         task.set_inputs([fastgf_bitcode_node,
                          builtins_bitcode_node,
                          intrinsics_bitcode_node,
-                         cclasp_common_lisp_bitcode])
+                         cclasp_common_lisp_output])
         task.set_outputs([bld.cclasp_fasl])
         bld.add_to_group(task)
 
         install('lib/clasp/', bld.cclasp_fasl)
     if (bld.stage == 'rebuild' or bld.stage_val >= 3):
-        install('lib/clasp/', cclasp_common_lisp_bitcode)
+        install('lib/clasp/', cclasp_common_lisp_output)
 
         # Build serve-event
         serve_event_fasl = bld.path.find_or_declare("%s/src/lisp/modules/serve-event/serve-event.fasl" % variant.fasl_dir(stage = 'c'))
@@ -1037,7 +1049,7 @@ def build(bld):
     if (bld.stage == 'rebuild' or bld.stage_val >= 4):
         if (True):   # build cclasp executable
             task = link_executable(env = bld.env)
-            task.set_inputs([cclasp_common_lisp_bitcode,
+            task.set_inputs([cclasp_common_lisp_output,
                              cxx_all_bitcode_node])
             log.info("About to try and recurse into extensions again")
             bld.recurse('extensions')
@@ -1128,6 +1140,10 @@ class run_dsymutil(clasp_task):
 
 class link_fasl(clasp_task):
     def run(self):
+        if (self.env.DEVELOPMENT_MODE):
+            print("link_fasl self.inputs[3] = %s   self.outputs[0] = %s"% (self.inputs[3], self.outputs[0]))
+            cmd = [ "cp", self.inputs[3].abspath(),self.outputs[0].abspath()]
+            return self.exec_command(cmd)
         if (self.env.LTO_FLAG):
             lto_option = self.env.LTO_FLAG
             if (self.env.USE_PARALLEL_BUILD and self.bld.stage_val < 3):
@@ -1138,16 +1154,16 @@ class link_fasl(clasp_task):
         else:
             lto_option = ""
             lto_optimize_flag = ""
-        link_options = self.bld.env['LINKFLAGS']
+            link_options = self.bld.env['LINKFLAGS']
         if (self.env['DEST_OS'] == DARWIN_OS):
             link_options = link_options + [ "-flat_namespace", "-undefined", "suppress", "-bundle" ]
         else:
             link_options = link_options + [ "-shared" ]
-        cmd = [self.env.CXX[0]] + \
-              waf_nodes_to_paths(self.inputs) + \
-              [ lto_option, lto_optimize_flag ] + \
-              link_options + \
-              [ "-o", self.outputs[0].abspath() ]
+            cmd = [self.env.CXX[0]] + \
+                  waf_nodes_to_paths(self.inputs) + \
+                  [ lto_option, lto_optimize_flag ] + \
+                  link_options + \
+                  [ "-o", self.outputs[0].abspath() ]
         return self.exec_command(cmd)
 
 class link_executable(clasp_task):

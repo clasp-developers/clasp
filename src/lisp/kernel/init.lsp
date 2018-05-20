@@ -38,7 +38,6 @@
 (setq cl:*print-circle* nil)
 
 (sys:*make-special 'core::*clang-bin*)
-(setq core::*clang-bin* (ext:getenv "CLASP_CLANG_PATH"))
 (export 'core::*clang-bin*)
 
 
@@ -612,23 +611,27 @@ the stage, the +application-name+ and the +bitcode-name+"
         (bformat t "Loading/interpreting source: %s\n" (namestring name)))
     (load pathname)))
 
+(defun calculate-output-type ()
+  #+generate-bitcode :bitcode
+  #+generate-fasl :fasl)
+
 (defun iload (entry &key load-bitcode )
   #+dbg-print(bformat t "DBG-PRINT iload fn: %s\n" fn)
   (let* ((fn (entry-filename entry))
          (lsp-path (build-pathname fn))
-	 (bc-path (build-pathname fn :bitcode))
+	 (built-path (build-pathname fn (calculate-output-type)))
 	 (load-bc (if (not (probe-file lsp-path))
 		      t
-		      (if (not (probe-file bc-path))
+		      (if (not (probe-file built-path))
                           nil
 			  (if load-bitcode
 			      t
-			      (let ((bc-newer (> (file-write-date bc-path) (file-write-date lsp-path))))
+			      (let ((bc-newer (> (file-write-date built-path) (file-write-date lsp-path))))
 				bc-newer))))))
     (if load-bc
 	(progn
-	  (bformat t "Loading bitcode file: %s\n" bc-path)
-	  (cmp:load-bitcode bc-path))
+	  (bformat t "Loading built file: %s\n" built-path)
+	  (load built-path))
 	(if (probe-file lsp-path)
 	    (progn
               (if cmp:*implicit-compile-hook*

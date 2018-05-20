@@ -424,7 +424,7 @@ No DIBuilder is defined for the default module")
 ;;;
 
 
-(defun jit-link-builtins-module (module)
+(defun link-builtins-module (module)
   "Merge the intrinsics module with the passed module.
 The passed module is modified as a side-effect."
   (get-builtins-module)
@@ -467,17 +467,12 @@ The passed module is modified as a side-effect."
 
 (defun optimize-module-for-compile-file (module &optional (optimize-level *optimization-level*) (size-level *size-level*))
   (declare (type (or null llvm-sys:module) module))
-  #+(or)(when (and *optimizations-on* module)
-    #++(let ((call-sites (call-sites-to-always-inline module)))
-         (bformat t "Call-sites -> %s\n" call-sites))
+  (when (and *optimizations-on* module)
+    #+(or)(let ((call-sites (call-sites-to-always-inline module)))
+            (bformat t "Call-sites -> %s\n" call-sites))
     ;; Link in the builtins as part of the optimization
-    #+(or)(progn
-            (let ((linker (llvm-sys:make-linker module))
-                  (builtins-clone (llvm-sys:clone-module (get-builtins-module))))
-              ;;(remove-always-inline-from-functions builtins-clone)
-              (quick-module-dump builtins-clone "builtins-clone")
-              (llvm-sys:link-in-module linker builtins-clone)))
-    
+    (link-builtins-module module)
+    (quick-module-dump module "in-optimize-module-for-compile-file-after-link-builtins")
     (let* ((pass-manager-builder (llvm-sys:make-pass-manager-builder))
            (mpm (llvm-sys:make-pass-manager))
            (fpm (llvm-sys:make-function-pass-manager module))
@@ -495,7 +490,7 @@ The passed module is modified as a side-effect."
         (llvm-sys:populate-module-pass-manager pass-manager-builder mpm))
       #+(or)(llvm-sys:populate-ltopass-manager pass-manager-builder mpm)
       (llvm-sys:pass-manager-run mpm module))
-    #+(or)(llvm-sys:remove-always-inline-functions module))
+    (llvm-sys:remove-always-inline-functions module))
   module)
 
 
@@ -602,7 +597,7 @@ The passed module is modified as a side-effect."
     (if (null dispatcher)
         (progn
           (quick-module-dump original-module "before-link-builtins")
-          (jit-link-builtins-module original-module)
+          (link-builtins-module original-module)
           (quick-module-dump original-module "module-before-optimize"))
         (progn
           (jit-link-fastgf-module original-module)))

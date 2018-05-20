@@ -155,8 +155,7 @@
       (let ((record (rem-record-field (gethash object dict)
                                       key sub-key)))
 	(if record
-            #+ecl(si::hash-set object dict record)
-            #+clasp(core::hash-table-setf-gethash dict object record)
+            (core::hash-table-setf-gethash dict object record)
             (remhash object dict))))))
 
 (defun get-annotation (object key &optional (sub-key :all))
@@ -182,6 +181,7 @@
 ;;If MERGE is true, merges the contents of this table with the original values in
 ;;the help file."
 
+#+(or)
 (defun dump-documentation (file &optional (merge nil))
   (let ((dict (first *documentation-pool*)))
     (when (hash-table-p dict)

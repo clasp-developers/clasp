@@ -309,7 +309,8 @@ Compile a lisp source file into an LLVM module."
         ((eq output-type :object)
          (when verbose (bformat t "Writing object to %s\n" (core:coerce-to-filename output-path)))
          (ensure-directories-exist output-path)
-         ;; Save the bitcode
+         (optimize-module-for-compile-file module)
+         ;; Save the bitcode so we can take a look at it
          (write-bitcode module (core:coerce-to-filename (cfp-output-file-default output-path :bitcode)))
          (with-open-file (fout output-path :direction :output)
            (let ((reloc-model (cond
@@ -327,8 +328,7 @@ Compile a lisp source file into an LLVM module."
            (bformat t "Writing temporary bitcode file to: %s\n" temp-bitcode-file)
            (write-bitcode module (core:coerce-to-filename temp-bitcode-file))
            (bformat t "Writing fasl file to: %s\n" output-file)
-           (llvm-link output-file
-                      :lisp-bitcode-files (list temp-bitcode-file))))
+           (llvm-link output-file :lisp-bitcode-files (list temp-bitcode-file))))
         (t ;; fasl
          (error "Add support to file of type: ~a" output-type)))
       (dolist (c conditions)
