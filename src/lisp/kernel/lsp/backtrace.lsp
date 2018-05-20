@@ -58,10 +58,11 @@
   "Return a symbol or cons that can be used as a function name in a backtrace.
 For Lisp it's easy - it must be a symbol or (setf symbol) - return that.
 For C/C++ frames - return (list 'c-function name)."
-  (etypecase name
-    (symbol name)
-    (cons name)
-    (string (list :c-function name))))
+  (cond
+    ((symbolp name) name)
+    ((consp name) name)
+    ((stringp name) (list :c-function name))
+    (t (error "Illegal name for function ~a" name))))
 
 (defun parse-frame (return-address backtrace-name base-pointer next-base-pointer verbose maybe-shadow-frame)
   ;; Get the name
