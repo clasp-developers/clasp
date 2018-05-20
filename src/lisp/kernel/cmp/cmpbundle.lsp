@@ -112,42 +112,50 @@
                                       in-all-names
                                       (list in-all-names))))
         (bundle-file (ensure-string in-bundle-file)))
-    #+(or)(warn "Linking fasl with -fvisibility=default - use an exported symbol list in the future")
-    (cond
-      ((member :target-os-darwin *features*)
-       (let ((clang-args `(,@options
-                           ,@all-object-files
+    (let ((clang-args (cond
+                        ((member :target-os-darwin *features*)
+                         (let ((clang-args `( "-flto=thin"
+                                              ,@options
+                                              ,@all-object-files
 ;;;                                 "-macosx_version_min" "10.10"
-                           "-flto=thin"
-                           "-flat_namespace"
-                           #+(or)"-fvisibility=default"
-                           "-undefined" "suppress"
-                           ,@*debug-link-options*
-                           #+(or)"-Wl,-save-temps"
-                           "-bundle"
+                                              "-flat_namespace"
+                                              #+(or)"-fvisibility=default"
+                                              "-undefined" "suppress"
+                                              ,@*debug-link-options*
+                                              #+(or)"-Wl,-save-temps"
+                                              "-bundle"
 ;;;                        ,@link-flags
 ;;;                        ,(bformat nil "-Wl,-object_path_lto,%s.lto.o" exec-file)
-                           "-o"
-                           ,bundle-file)))
-         (when (member :debug-run-clang *features*)
-           (bformat t "execute-link-fasl   clang-args -> %s\n" clang-args))
-         (ext:run-clang clang-args :output-file-name bundle-file)))
-      ((or (member :target-os-linux *features*)
-           (member :target-os-freebsd *features*))
-       ;; Linux needs to use clang to link
-       (ext:run-clang `(#+(or)"-v"
-                          ,@options
-                          ,@all-object-files
-                          "-flto=thin"
-                          "-fuse-ld=gold"
-                          ,@*debug-link-options*
-                          #+(or)"-fvisibility=default"
-                          "-shared"
-                          "-o"
-                          ,bundle-file)
-                      :output-file-name bundle-file))
-      (t (error "Add support for this operating system to cmp:generate-link-command")))
-    (truename in-bundle-file)))
+                                              "-o"
+                                              ,bundle-file)))
+                           clang-args))
+                        ((or (member :target-os-linux *features*)
+                             (member :target-os-freebsd *features*))
+                         ;; Linux needs to use clang to link
+                         (let ((clang-args
+                                 (ext:run-clang `(#+(or)"-v"
+                                                    ,@options
+                                                    ,@all-object-files
+                                                    "-flto=thin"
+                                                    "-fuse-ld=gold"
+                                                    ,@*debug-link-options*
+                                                    #+(or)"-fvisibility=default"
+                                                    "-shared"
+                                                    "-o"
+                                                    ,bundle-file)
+                                                :output-file-name bundle-file)))
+                           clang-args))
+                        (t (error "Add support for this operating system to cmp:generate-link-command")))))
+      (ext:run-clang clang-args :output-file-name bundle-file)
+      (unless (probe-file bundle-file)
+        ;; I hate what I'm about to do - but on macOS -flto=thin can sometimes crash the linker
+        ;; so get rid of that option (IT MUST BE THE FIRST ONE!!!!) and try again
+        (when (member :target-os-darwin *features*)
+          (warn "There was a HUGE problem in execute-link-fasl to generate ~a with the arguments: /path-to-clang ~a~%  I'm going to try removing the -flto=thin argument and try linking again~%" bundle-file clang-args)
+          (ext:run-clang (cdr clang-args) :output-file-name bundle-file))
+        (unless (probe-file bundle-file)
+          (error "~%!~%!~%! There is a HUGE problem - an execute-link-fasl command with the arguments:   /path-to-clang ~a~%~%!        failed to generate the output file ~a~%" clang-args bundle-file)))
+      (truename bundle-file))))
 
 (defun execute-link-executable (output-file-name in-bitcode-names)
   ;; options are a list of strings like (list "-v")
