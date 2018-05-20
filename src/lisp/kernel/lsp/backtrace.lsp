@@ -353,7 +353,7 @@ Set gather-all-frames to T and you can gather C++ and Common Lisp frames"
     (setq *current-btcl-frames* frames)
     frames))
 
-(defun btcl (&key all (args t))
+(defun btcl (&key all (args t) (stream *standard-output*))
   "Print backtrace of just common lisp frames.  Set args to nil if you don't want arguments printed"
   (let ((l (btcl-frames :all all))
         (index 0))
@@ -362,22 +362,22 @@ Set gather-all-frames to T and you can gather C++ and Common Lisp frames"
             (arguments (backtrace-frame-arguments e)))
         (if arguments
             (progn
-              (prin1 (prog1 index (incf index)))
-              (princ " (")
-              (princ name)
+              (prin1 (prog1 index (incf index)) stream)
+              (princ ": (" stream)
+              (princ name stream)
               (if (> (length arguments) 0)
                   (progn
                     (if args 
                         (dotimes (i (length arguments))
-                          (princ #\space)
-                          (prin1 (aref arguments i)))
-                      (prin1 " -args-suppressed-"))))
-              (princ ")"))
+                          (princ #\space stream)
+                          (prin1 (aref arguments i) stream))
+                      (prin1 " -args-suppressed-" stream))))
+              (princ ")") stream)
           (progn
-            (prin1 (prog1 index (incf index)))
-            (princ #\space )
-            (princ name)))
-        (terpri)))))
+            (prin1 (prog1 index (incf index)) stream)
+            (princ #\space stream)
+            (princ name stream)))
+        (terpri stream)))))
 
 (defun bt ()
   (let ((l (backtrace-as-list)))
@@ -401,4 +401,5 @@ Set gather-all-frames to T and you can gather C++ and Common Lisp frames"
               (princ name)))
         (terpri)))))
 
-(export '(btcl bt btargs common-lisp-backtrace-frames))
+(export '(btcl bt btargs common-lisp-backtrace-frames
+          backtrace-frame-function-name backtrace-frame-arguments))
