@@ -151,8 +151,10 @@
         ;; I hate what I'm about to do - but on macOS -flto=thin can sometimes crash the linker
         ;; so get rid of that option (IT MUST BE THE FIRST ONE!!!!) and try again
         (when (member :target-os-darwin *features*)
-          (warn "There was a HUGE problem in execute-link-fasl to generate ~a with the arguments: /path-to-clang ~a~%  I'm going to try removing the -flto=thin argument and try linking again~%" bundle-file clang-args)
-          (ext:run-clang (cdr clang-args) :output-file-name bundle-file))
+          (warn "There was a HUGE problem in execute-link-fasl to generate ~a~% with the arguments: /path-to-clang ~a~%  I'm going to try removing the -flto=thin argument and try linking again~%" bundle-file clang-args)
+          (ext:run-clang (cdr clang-args) :output-file-name bundle-file)
+          (when (probe-file bundle-file)
+            (warn "execute-link-fasl worked after removing ~a from the argument list --- FIGURE OUT WHAT IS GOING WRONG WITH THAT ARGUMENT!!!" (car clang-args))))
         (unless (probe-file bundle-file)
           (error "~%!~%!~%! There is a HUGE problem - an execute-link-fasl command with the arguments:   /path-to-clang ~a~%~%!        failed to generate the output file ~a~%" clang-args bundle-file)))
       (truename bundle-file))))
