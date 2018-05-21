@@ -51,6 +51,13 @@ USE_LLD = False
 # This turns on build with address sanitizer
 # ADDRESS_SANITIZER = True
 
+# LTO_OPTION is deprecated - use DEVELOMENT_MODE
 # This controls how whether LTO is used and what kind ("thinlto"(default) or "lto" or "obj" (no lto))
 # 'obj' is faster for debugging
 # LTO_OPTION = 'obj'
+
+# DEVELOPMENT_MODE (default False)
+# This turns on DEVELOPMENT_MODE where thinlto is turned off and fasl and lfasl files are generated
+# when generating aclasp, bclasp and cclasp.   This disables the time consuming linking stages at the
+# end of building each stage - but the downside is the final cclasp takes about 30 seconds to load.
+# DEVELOPMENT_MODE = True

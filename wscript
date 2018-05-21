@@ -477,7 +477,7 @@ def configure(cfg):
 #    cfg.env["LLVM_AR_BINARY"] = cfg.find_program("llvm-ar", var = "LLVM_AR")[0]
     cfg.env["GIT_BINARY"] = cfg.find_program("git", var = "GIT")[0]
     log.debug("cfg.env['LTO_OPTION'] = %s", cfg.env['LTO_OPTION'])
-    if (cfg.env['LTO_OPTION']==[] or cfg.env['LTO_OPTION']=='thinlto'):
+    if (cfg.env['LTO_OPTION']==[] or cfg.env['LTO_OPTION']=='thinlto' or cfg.env["DEVELOPMENT_MODE"]==True):
         cfg.define("LTO_OPTION",2) # thin-lto
         cfg.env.LTO_FLAG = '-flto=thin'
         cfg.env.DEVELOPMENT_MODE = False
