@@ -929,7 +929,7 @@ But no irbuilders or basic-blocks. Return the fn."
    module
    %function-description%
    t
-   'llvm-sys:external-linkage
+   'llvm-sys:internal-linkage
    (llvm-sys:constant-struct-get %function-description%
                                  (list
                                   fn
