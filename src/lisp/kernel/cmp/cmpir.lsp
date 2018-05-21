@@ -887,13 +887,16 @@
                (llvm-sys:create-ret *irbuilder* (irc-load ,result)))
            ,fn)))))
 
+(defun function-description-name (function-name)
+  (format nil "~a^DESC" function-name))
+
 (defun irc-function-create (function-type linkage llvm-function-name module
                             &key
                               (function-attributes *default-function-attributes* function-attributes-p ))
   (let* ((fn (llvm-sys:function-create function-type
-				       linkage
-				       llvm-function-name
-				       module)))
+                                       linkage
+                                       llvm-function-name
+                                       module)))
     (dolist (temp function-attributes)
       (cond
         ((symbolp temp) (llvm-sys:add-fn-attr fn temp))
@@ -903,21 +906,35 @@
         (t (error "Illegal function attribute ~a" temp))))
     fn))
 
+
 (defun irc-simple-function-create (llvm-function-name function-type linkage module
                                    &key (function-attributes *default-function-attributes* function-attributes-p )
-                                     argument-names) ;;; '("result-ptr" "activation-frame-ptr") argument-names-p))
+                                     argument-names ;;; '("result-ptr" "activation-frame-ptr") argument-names-p))
+                                     )
   "A simple function creator - set personality and arguments and function-attributes.
 But no irbuilders or basic-blocks. Return the fn."
-  (let* ((fn (irc-function-create function-type
-                                  linkage
-                                  llvm-function-name
-                                  module
-                                  :function-attributes function-attributes)))
+  (let ((fn (irc-function-create function-type
+                                 linkage
+                                 llvm-function-name
+                                 module
+                                 :function-attributes function-attributes)))
     (llvm-sys:set-personality-fn fn (irc-personality-function))
     (mapcar #'(lambda (arg argname) (llvm-sys:set-name arg argname))
             (llvm-sys:get-argument-list fn) argument-names)
     fn))
-                                   
+
+(defun irc-create-function-description (llvm-function-name fn module)
+  (llvm-sys:make-global-variable
+   module
+   %function-description%
+   t
+   'llvm-sys:external-linkage
+   (llvm-sys:constant-struct-get %function-description%
+                                 (list
+                                  fn
+                                  literal::*gcroots-in-module*))
+   (function-description-name llvm-function-name)))
+
 (defun irc-bclasp-function-create (lisp-function-name env
                                    &key
                                      (function-type %fn-prototype% function-type-p)
@@ -939,6 +956,7 @@ and then the irbuilder-alloca, irbuilder-body."
                                          *the-module*
                                          :function-attributes function-attributes
                                          :argument-names argument-names))
+         (fn-description (irc-create-function-description llvm-function-name fn *the-module*))
          (*current-function* fn)
 	 (func-env (make-function-container-environment env (car (llvm-sys:get-argument-list fn)) fn))
 	 cleanup-block traceid
@@ -957,6 +975,13 @@ and then the irbuilder-alloca, irbuilder-body."
     (setf-metadata func-env :cleanup ())
     (let ((result               (irc-alloca-tmv func-env :irbuilder irbuilder-alloca :label "result")))
       (values fn func-env cleanup-block irbuilder-alloca irbuilder-body result))))
+
+
+(defun irc-cclasp-function-create (llvm-function-type linkage llvm-function-name module)
+  "Create a function and a function description for a cclasp function"f
+  (let* ((fn (irc-function-create llvm-function-type linkage llvm-function-name module))
+         (fn-description (irc-create-function-description llvm-function-name fn module)))
+    (values fn fn-description)))
 
 #+(or)
 (defun irc-function-cleanup-and-return (env result &key return-void)

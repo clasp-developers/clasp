@@ -21,8 +21,8 @@
           *low-level-trace*
           *low-level-trace-print*
           *run-time-literal-holder*
-          *run-time-values-table-name*
-          *run-time-values-table-global-var*
+          #+(or)*run-time-values-table-name*
+          #+(or)*run-time-values-table-global-var*
           *the-module*
           +cons-tag+
           +fixnum-tag+

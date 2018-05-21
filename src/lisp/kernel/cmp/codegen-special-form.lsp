@@ -59,12 +59,15 @@
       (compile-lambda-function lambda-or-lambda-block env)
     (if (null lambda-name) (error "The lambda doesn't have a name"))
     (if result
-        (let ((lambda-list (irc-load (compile-reference-to-literal lambda-list))))
+        (let* ((lambda-list (irc-load (compile-reference-to-literal lambda-list)))
+               (llvm-function-name (llvm-sys:get-name compiled-fn))
+               (function-description (llvm-sys:get-named-global *the-module* (function-description-name llvm-function-name))))
           ;; TODO:   Here walk the source code in lambda-or-lambda-block and
           ;; get the line-number/column for makeCompiledFunction
           (let* ((runtime-environment (irc-load (irc-renv env)))
                  (fnptr (irc-intrinsic "makeCompiledFunction" 
                                        compiled-fn
+                                       (cmp:irc-bit-cast function-description %i8*%)
                                        *gv-source-file-info-handle* 
                                        (irc-size_t-*current-source-pos-info*-filepos)
                                        (irc-size_t-*current-source-pos-info*-lineno)

@@ -11,6 +11,7 @@
           %ltv*%
           irc-function-create
           irc-bclasp-function-create
+          irc-cclasp-function-create
           %fn-prototype%
           *cleavir-compile-file-hook*
           *cleavir-compile-hook*
@@ -22,6 +23,7 @@
           *debug-compile-file*
           *debug-compile-file-counter*
           *generate-compile-file-load-time-values*
+          module-literal-table
           *load-time-initializer-environment*
           *gv-current-function-name*
           *gv-source-file-info-handle*
@@ -35,7 +37,7 @@
           *run-time-literal-holder*
           *run-time-values-table-name*
 ;;          *run-time-values-table*
-          *run-time-values-table-global-var*
+          #+(or)*run-time-values-table-global-var*
           *the-module*
           +header-size+
           +cons-tag+

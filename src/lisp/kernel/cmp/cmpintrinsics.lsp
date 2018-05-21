@@ -95,6 +95,7 @@ Set this to other IRBuilders to make code go where you want")
 (define-symbol-macro %{i32.i1}% (llvm-sys:struct-type-get *llvm-context* (list %i32% %i1%) nil))
 (define-symbol-macro %{i64.i1}% (llvm-sys:struct-type-get *llvm-context* (list %i64% %i1%) nil))
 
+
 ;;  "A ctor void ()* function prototype"
 (define-symbol-macro %fn-ctor%
   (llvm-sys:function-type-get %void% nil))
@@ -503,6 +504,9 @@ eg:  (f closure-ptr nargs a b c d ...)
 (define-symbol-macro %fn-prototype*[1]% (llvm-sys:array-type-get %fn-prototype*% 1))
 ;;;  "An array of pointers to the function prototype"
 (define-symbol-macro %fn-prototype*[2]% (llvm-sys:array-type-get %fn-prototype*% 2))
+
+
+(define-symbol-macro %function-description% (llvm-sys:struct-type-get *llvm-context* (list %fn-prototype*% %gcroots-in-module*%) nil))
 
 ;;
 ;; Define the InvocationHistoryFrame type for LispCompiledFunctionIHF

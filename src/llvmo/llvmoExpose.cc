@@ -2933,7 +2933,7 @@ CL_LISPIFY_NAME(addFnAttr2String);
 CL_EXTERN_DEFMETHOD(Function_O, (void (llvm::Function::*)(llvm::StringRef,llvm::StringRef)) & llvm::Function::addFnAttr);;
 ;
 
-
+#if 0
 CL_LISPIFY_NAME("setLiterals");
 CL_DEFMETHOD void Function_O::setLiterals(core::LoadTimeValues_sp ltv) {
   this->_RunTimeValues = ltv;
@@ -2943,6 +2943,7 @@ CL_LISPIFY_NAME("literals");
 CL_DEFMETHOD core::LoadTimeValues_sp Function_O::literals() const {
   return this->_RunTimeValues;
 }
+#endif
 
 }; // llvmo
 
@@ -3240,31 +3241,6 @@ void finalizeEngineAndTime(llvm::ExecutionEngine *engine) {
   double thisTime = timer.getAccumulatedTime();
   accumulate_llvm_timing_data(thisTime);
 }
-
-CL_DEFUN core::Function_sp finalizeEngineAndRegisterWithGcAndGetCompiledFunction(ExecutionEngine_sp oengine, core::T_sp functionName, Function_sp fn, core::T_sp activationFrameEnvironment, core::T_sp fileName, size_t filePos, int linenumber, Function_sp startupFn, Function_sp shutdownFn, core::T_sp initial_data) {
-  DEPRECATED();
-  // Stuff to support MCJIT
-  llvm::ExecutionEngine *engine = oengine->wrappedPtr();
-  finalizeEngineAndTime(engine);
-  ASSERTF(fn.notnilp(), BF("The Function must never be nil"));
-  void *p = engine->getPointerToFunction(fn->wrappedPtr());
-  if (!p) {
-    SIMPLE_ERROR(BF("Could not get a pointer to the function finalizeEngineAndRegisterWithGcAndGetCompiledFunction: %s") % _rep_(functionName));
-  }
-  core::CompiledClosure_fptr_type lisp_funcPtr = (core::CompiledClosure_fptr_type)(p);
-  core::SourceFileInfo_mv sfi = core__source_file_info(fileName);
-  int sfindex = unbox_fixnum(gc::As<core::Fixnum_sp>(sfi.valueGet_(1)));
-  //	printf("%s:%d  Allocating CompiledClosure with name: %s\n", __FILE__, __LINE__, _rep_(sym).c_str() );
-  gctools::smart_ptr<core::CompiledClosure_O> functoid = gctools::GC<core::CompiledClosure_O>::allocate(lisp_funcPtr, functionName, kw::_sym_function, activationFrameEnvironment, _Nil<core::T_O>() /*lambdaList*/, sfindex, filePos, linenumber, 0);
-  void* pstartup = engine->getPointerToFunction(startupFn->wrappedPtr());
-  if (pstartup==NULL) {
-    printf("%s:%d  Could not find function named %s\n", __FILE__, __LINE__, MODULE_STARTUP_FUNCTION_NAME );
-  }
-  core::module_startup_function_type startup = reinterpret_cast<core::module_startup_function_type>(pstartup);
-  startup(initial_data.tagged_());
-  return functoid;
-}
-
 
 //
   CL_DEFUN core::Function_sp finalizeEngineAndGetDispatchFunction(ExecutionEngine_sp oengine, core::T_sp functionName, Function_sp fn, Function_sp startupFn, Function_sp shutdownFn, core::T_sp initial_data) {
@@ -4074,6 +4050,7 @@ CL_DEFUN core::Function_sp llvm_sys__jitFinalizeReplFunction(ClaspJIT_sp jit, Mo
   core::CompiledClosure_fptr_type lisp_funcPtr = (core::CompiledClosure_fptr_type)(gc::As_unsafe<core::Pointer_sp>(replPtr)->ptr());
   gctools::smart_ptr<core::CompiledClosure_O> functoid =
     gctools::GC<core::CompiledClosure_O>::allocate( lisp_funcPtr,
+                                                    (void*)NULL,
                                                     core::SimpleBaseString_O::make(replName),
                                                     kw::_sym_function,
                                                     _Nil<core::T_O>() /*activationFrameEnvironment */,

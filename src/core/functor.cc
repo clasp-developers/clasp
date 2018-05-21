@@ -240,6 +240,28 @@ CL_DEFUN void core__closure_slots_dump(Closure_sp closure) {
   }
 }
 
+T_sp wrap_function_description(void* fd) {
+  void** data = (void**)fd;
+  printf("%s:%d function description at %p\n", __FILE__, __LINE__, fd);
+  // data[0] function pointer
+  // data[1] global-value-holder (void* void* size_t)
+  void** data1 = (void**)data[1];
+  void* table_ptr = data1[1];
+  size_t table_size = (size_t)data1[2];
+  SimpleVector_sp sv = SimpleVector_O::make(table_size,_Nil<T_O>(),false,table_size,(T_sp*)table_ptr);
+  return sv;
+}
+
+T_sp ClosureWithSlots_O::function_description() const {
+  void* fd = this->_FunctionDescription;
+  return wrap_function_description(fd);
+}
+
+T_sp CompiledClosure_O::function_description() const {
+  void* fd = this->_FunctionDescription;
+  return wrap_function_description(fd);
+}
+
 T_sp BuiltinClosure_O::lambda_list() const {
   return this->_lambdaListHandler->lambdaList();
 }

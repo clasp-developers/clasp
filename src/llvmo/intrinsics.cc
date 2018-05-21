@@ -486,10 +486,12 @@ ALWAYS_INLINE void setParentOfActivationFrame(core::T_O *resultP, core::T_O *par
 
 
 ALWAYS_INLINE core::T_O *cc_stack_enclose(void* closure_address,
-                            core::T_O *lambdaName, fnLispCallingConvention llvm_func,
-                            int *sourceFileInfoHandleP,
-                            size_t filePos, size_t lineno, size_t column,
-                            std::size_t numCells, ...)
+                                          core::T_O *lambdaName,
+                                          fnLispCallingConvention llvm_func,
+                                          void* functionDescription,
+                                          int *sourceFileInfoHandleP,
+                                          size_t filePos, size_t lineno, size_t column,
+                                          std::size_t numCells, ...)
 {NO_UNWIND_BEGIN();
   core::T_sp tlambdaName = gctools::smart_ptr<core::T_O>((gc::Tagged)lambdaName);
   gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(closure_address);
@@ -506,6 +508,7 @@ ALWAYS_INLINE core::T_O *cc_stack_enclose(void* closure_address,
   auto obj = gctools::BasePtrToMostDerivedPtr<typename gctools::smart_ptr<core::ClosureWithSlots_O>::Type>(closure_address);
   new (obj) (typename gctools::smart_ptr<core::ClosureWithSlots_O>::Type)( numCells,
                                                                            llvm_func,
+                                                                           functionDescription,
                                                                            tlambdaName,
                                                                            core::_sym_stack_closure,
                                                                            _Nil<T_O>(),

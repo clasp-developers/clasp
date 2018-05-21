@@ -229,6 +229,7 @@ namespace core {
     Symbol_sp getKind() const { return this->kind; };
     bool macroP() const;
     T_sp sourcePosInfo() const; // { return this->_SourcePosInfo; };
+    CL_DEFMETHOD virtual T_sp function_description() const {SUBIMP();};
     virtual T_sp setSourcePosInfo(T_sp sourceFile, size_t filePos, int lineno, int column);
     virtual int sourceFileInfoHandle() const;
     virtual size_t filePos() const;
@@ -286,6 +287,7 @@ namespace core {
   class ClosureWithSlots_O final : public core::FunctionClosure_O {
     LISP_CLASS(core,CorePkg,ClosureWithSlots_O,"ClosureWithSlots",core::FunctionClosure_O);
   public:
+    void* _FunctionDescription;
     core::T_sp _lambdaList;
   //! Slots must be the last field
     typedef core::T_sp value_type;
@@ -296,13 +298,16 @@ namespace core {
   public:
   ClosureWithSlots_O(size_t capacity,
                      claspFunction ptr,
+                     void* functionDescription,
                      core::T_sp functionName,
                      core::Symbol_sp type,
                      core::T_sp ll,
                      SOURCE_INFO)
     : Base(ptr,functionName, type, SOURCE_INFO_PASS),
+      _FunctionDescription(functionDescription),
       _lambdaList(ll), 
       _Slots(capacity,_Unbound<T_O>(),true) {};
+    virtual T_sp function_description() const;
     bool compiledP() const { return true; };
     core::T_sp lambda_list() const { return this->_lambdaList; };
     void setf_lambda_list(core::List_sp lambda_list) { this->_lambdaList = lambda_list; };
@@ -398,18 +403,23 @@ class CompiledClosure_O : public core::ClosureWithFrame_O {
 //  friend void dump_funcs(core::CompiledFunction_sp compiledFunction);
   LISP_CLASS(core,CorePkg,CompiledClosure_O,"CompiledClosure",core::ClosureWithFrame_O);
 public:
+  void* _FunctionDescription;
   core::T_sp _lambdaList;
  public:
   virtual const char *describe() const { return "CompiledClosure"; };
   virtual size_t templatedSizeof() const { return sizeof(*this); };
 public:
  CompiledClosure_O(claspFunction fptr,
+                   void* functionDescription,
                    core::T_sp functionName,
                    core::Symbol_sp type,
                    core::T_sp renv,
                    core::T_sp ll,
                    SOURCE_INFO)
-   : Base(fptr, functionName, type, renv, SOURCE_INFO_PASS), _lambdaList(ll){};
+   : Base(fptr, functionName, type, renv, SOURCE_INFO_PASS)
+    , _FunctionDescription(functionDescription)
+    , _lambdaList(ll){};
+    virtual T_sp function_description() const;
   bool compiledP() const { return true; };
   core::T_sp lambda_list() const;
   void setf_lambda_list(core::List_sp lambda_list);

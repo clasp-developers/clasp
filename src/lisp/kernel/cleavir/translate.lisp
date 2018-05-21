@@ -257,7 +257,7 @@ when this is t a lot of graphs will be generated.")
            (cmp:module-make-global-string cmp:*current-function-name* "fn-name"))
          (llvm-function-type cmp:%fn-prototype%)
          (llvm-function-name cmp:*current-function-name*)
-         (the-function (cmp:irc-function-create
+         (the-function (cmp:irc-cclasp-function-create
                         llvm-function-type
                         linkage
                         llvm-function-name
