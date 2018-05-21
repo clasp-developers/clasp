@@ -61,7 +61,9 @@
     (if result
         (let* ((lambda-list (irc-load (compile-reference-to-literal lambda-list)))
                (llvm-function-name (llvm-sys:get-name compiled-fn))
-               (function-description (llvm-sys:get-named-global *the-module* (function-description-name llvm-function-name))))
+               (function-description (llvm-sys:get-named-global *the-module* (function-description-name compiled-fn))))
+          (unless function-description
+            (error "Could not find function-description for function name: ~a lambda: ~a" llvm-function-name lambda-or-lambda-block))
           ;; TODO:   Here walk the source code in lambda-or-lambda-block and
           ;; get the line-number/column for makeCompiledFunction
           (let* ((runtime-environment (irc-load (irc-renv env)))

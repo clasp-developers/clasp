@@ -887,8 +887,9 @@
                (llvm-sys:create-ret *irbuilder* (irc-load ,result)))
            ,fn)))))
 
-(defun function-description-name (function-name)
-  (format nil "~a^DESC" function-name))
+(defun function-description-name (function)
+  (let ((function-name (llvm-sys:get-name function)))
+    (format nil "~a^DESC" function-name)))
 
 (defun irc-function-create (function-type linkage llvm-function-name module
                             &key
@@ -933,7 +934,7 @@ But no irbuilders or basic-blocks. Return the fn."
                                  (list
                                   fn
                                   literal::*gcroots-in-module*))
-   (function-description-name llvm-function-name)))
+   (function-description-name fn)))
 
 (defun irc-bclasp-function-create (lisp-function-name env
                                    &key
