@@ -889,7 +889,7 @@
 
 (defun function-description-name (function)
   (let ((function-name (llvm-sys:get-name function)))
-    (format nil "~a^DESC" function-name)))
+    (core:bformat nil "%s^DESC" function-name)))
 
 (defun irc-function-create (function-type linkage llvm-function-name module
                             &key
