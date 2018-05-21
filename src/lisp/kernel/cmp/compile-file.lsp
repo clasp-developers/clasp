@@ -309,7 +309,6 @@ Compile a lisp source file into an LLVM module."
         ((eq output-type :object)
          (when verbose (bformat t "Writing object to %s\n" (core:coerce-to-filename output-path)))
          (ensure-directories-exist output-path)
-         (optimize-module-for-compile-file module)
          ;; Save the bitcode so we can take a look at it
          (write-bitcode module (core:coerce-to-filename (cfp-output-file-default output-path :bitcode)))
          (with-open-file (fout output-path :direction :output)
