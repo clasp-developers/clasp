@@ -979,7 +979,7 @@ and then the irbuilder-alloca, irbuilder-body."
 
 
 (defun irc-cclasp-function-create (llvm-function-type linkage llvm-function-name module)
-  "Create a function and a function description for a cclasp function"f
+  "Create a function and a function description for a cclasp function"
   (let* ((fn (irc-function-create llvm-function-type linkage llvm-function-name module))
          (fn-description (irc-create-function-description llvm-function-name fn module)))
     (values fn fn-description)))
