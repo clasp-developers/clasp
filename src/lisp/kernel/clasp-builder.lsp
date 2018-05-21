@@ -424,9 +424,11 @@ Return files."
 (defun generate-loader (output-file all-compiled-files)
   (let ((output-file (make-pathname :type "lfasl" :defaults output-file)))
     (with-open-file (fout output-file :direction :output :if-exists :supersede)
+      (format fout ";;;; Generated in clasp-builder.lsp by generate-loader - do not edit - these fasls need to be loaded in the given order~%")
       (dolist (one-file all-compiled-files)
-        (let ((name (make-pathname :type "fasl" :defaults one-file)))
-          (format fout "(load ~s)~%" name))))))
+        (let* ((name (make-pathname :type "fasl" :defaults one-file))
+               (relative-name (enough-namestring name (make-pathname :host "app-fasl"))))
+          (format fout "(load #P\"app-fasl:~a\")~%" (namestring relative-name)))))))
 
 (defun link-modules (output-file all-bitcode)
   ;;(format t "link-modules output-file: ~a  all-bitcode: ~a~%" output-file all-bitcode)
