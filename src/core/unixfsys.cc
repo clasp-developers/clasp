@@ -92,6 +92,7 @@ typedef int mode_t;
 #include <clasp/core/bformat.h>
 #include <clasp/core/evaluator.h>
 #include <clasp/core/lispList.h>
+#include <clasp/core/lispStream.h>
 #include <clasp/core/unixfsys.h>
 #include <clasp/core/wrappers.h>
 
@@ -148,12 +149,42 @@ safe_chdir(const char *path, T_sp tprefix) {
   }
 }
 
-CL_LAMBDA();
+CL_LAMBDA(&optional return-stream);
 CL_DECLARE();
 CL_DOCSTRING("fork");
-CL_DEFUN T_sp core__fork() {
-  Fixnum_sp pid = make_fixnum(fork());
-  return pid;
+CL_DEFUN T_mv core__fork(bool bReturnStream) {
+  int filedes[2];
+  if (bReturnStream) {
+    if (pipe(filedes) == -1 ) {
+      perror("pipe");
+      abort();
+    }
+  }
+  pid_t child_PID = fork();
+  if (child_PID >= 0) {
+    if (child_PID == 0) {
+      // Child
+      if ( bReturnStream ) {
+        while ((dup2(filedes[1],STDOUT_FILENO) == -1) && (errno == EINTR)) {}
+        close(filedes[1]);
+        close(filedes[0]);
+        int flags = fcntl(STDOUT_FILENO,F_GETFL,0);
+        fcntl(STDOUT_FILENO,F_SETFL,flags|FD_CLOEXEC);
+      }
+      return Values(_Nil<T_O>(),make_fixnum(child_PID),_Nil<T_O>());
+    } else {
+      // Parent
+      if ( bReturnStream ) {
+        close(filedes[1]);
+        int flags = fcntl(filedes[0],F_GETFL,0);
+        fcntl(filedes[0],F_SETFL,flags|O_NONBLOCK);
+        T_sp stream = clasp_make_file_stream_from_fd(SimpleBaseString_O::make("execvp"), filedes[0], clasp_smm_input_file, 8, CLASP_STREAM_DEFAULT_FORMAT, _Nil<T_O>());
+        return Values(_Nil<T_O>(), clasp_make_fixnum(child_PID),stream);
+      }
+      return Values(_Nil<T_O>(),clasp_make_fixnum(child_PID),_Nil<T_O>());
+    }
+  }
+  return Values(clasp_make_fixnum(-1), SimpleBaseString_O::make(std::strerror(errno)),_Nil<T_O>());
 };
 
 CL_DOCSTRING("wait - see unix wait - returns (values pid status)");
