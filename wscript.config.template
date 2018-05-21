@@ -60,4 +60,7 @@ USE_LLD = False
 # This turns on DEVELOPMENT_MODE where thinlto is turned off and fasl and lfasl files are generated
 # when generating aclasp, bclasp and cclasp.   This disables the time consuming linking stages at the
 # end of building each stage - but the downside is the final cclasp takes about 30 seconds to load.
+#
+# The old LTO_OPTION = 'obj' is equivalent to DEVELOPMENT_MODE = True
+#
 # DEVELOPMENT_MODE = True

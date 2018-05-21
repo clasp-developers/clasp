@@ -477,7 +477,7 @@ def configure(cfg):
 #    cfg.env["LLVM_AR_BINARY"] = cfg.find_program("llvm-ar", var = "LLVM_AR")[0]
     cfg.env["GIT_BINARY"] = cfg.find_program("git", var = "GIT")[0]
     log.debug("cfg.env['LTO_OPTION'] = %s", cfg.env['LTO_OPTION'])
-    if (cfg.env['LTO_OPTION']==[] or cfg.env['LTO_OPTION']=='thinlto' or cfg.env["DEVELOPMENT_MODE"]==True):
+    if (cfg.env['LTO_OPTION']==[] or cfg.env['LTO_OPTION']=='thinlto' or cfg.env["DEVELOPMENT_MODE"]!=True):
         cfg.define("LTO_OPTION",2) # thin-lto
         cfg.env.LTO_FLAG = '-flto=thin'
         cfg.env.DEVELOPMENT_MODE = False
@@ -490,11 +490,7 @@ def configure(cfg):
             cfg.env.append_value('LINKFLAGS', '-Wl,-plugin-opt,cache-dir=/tmp')
         elif (cfg.env['DEST_OS'] == DARWIN_OS ):
             cfg.env.append_value('LINKFLAGS', '-Wl,-cache_path_lto,/tmp/clasp')
-    elif (cfg.env['LTO_OPTION']=='lto'):
-        cfg.env.DEVELOPMENT_MODE = False
-        cfg.define("LTO_OPTION",1) # lto
-        cfg.env.LTO_FLAG = '-flto'
-    elif (cfg.env['LTO_OPTION']=='obj'):
+    elif (cfg.env['LTO_OPTION']=='obj' or cfg.env["DEVELOPMENT_MODE"]==True):
         cfg.define("LTO_OPTION",0) # object files
         cfg.env.DEVELOPMENT_MODE = True
         cfg.env.LTO_FLAG = []
