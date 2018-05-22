@@ -838,7 +838,9 @@
       ;; I currently use llvm-sys:internal-linkage or llvm-sys:external-linkage
       (linkage ''llvm-sys:internal-linkage)
       ;; If the generated function returns void then indicate with this keyword
-      return-void
+        return-void
+        ;; info for the function description
+        function-info
       )
      &rest body)
   "Create a new function with {function-name} and {parent-env} - return the function"
@@ -853,7 +855,8 @@
                                      :function-type ,function-type
                                      :argument-names ,argument-names
                                      :function-attributes ',function-attributes
-                                     :linkage ,linkage)
+                                     :linkage ,linkage
+                                     :function-info ,function-info)
        (let* ((*current-function* ,fn)
               (*current-function-name* (llvm-sys:get-name ,fn))
               (*irbuilder-function-alloca* ,irbuilder-alloca)
@@ -924,17 +927,79 @@ But no irbuilders or basic-blocks. Return the fn."
             (llvm-sys:get-argument-list fn) argument-names)
     fn))
 
-(defun irc-create-function-description (llvm-function-name fn module)
-  (llvm-sys:make-global-variable
-   module
-   %function-description%
-   t
-   'llvm-sys:internal-linkage
-   (llvm-sys:constant-struct-get %function-description%
-                                 (list
-                                  fn
-                                  literal::*gcroots-in-module*))
-   (function-description-name fn)))
+(defun parse-declares-for-source-info (declares)
+  (dolist (one-declare declares)
+    (when (eq (car one-declare) 'core:lambda-name)
+      (return-from parse-declares-for-source-info (values t
+                                                          (second one-declare)
+                                                          (fourth one-declare)
+                                                          (fifth one-declare)
+                                                          (sixth one-declare))))))
+
+(defun irc-create-function-description (llvm-function-name fn module function-info)
+  (unless function-info
+    (error "function info is NIL for ~a" llvm-function-name))
+  (let ((function-name (function-info-function-name function-info))
+        (source-handle (function-info-source-handle function-info))
+        (lambda-list (function-info-lambda-list function-info))
+        (docstring (function-info-docstring function-info))
+        (declares (function-info-declares function-info))
+        (lineno (function-info-lineno function-info))
+        (column (function-info-column function-info))
+        (filepos (function-info-filepos function-info)))
+    (multiple-value-bind (found-source-info n l c f)
+        (parse-declares-for-source-info declares)
+      (when found-source-info
+        (when n (setf function-name n))
+        (when l (setf lineno l))
+        (when c (setf column c))
+        (when f (setf filepos f)))
+      #+(or)
+      (progn
+        (core:bformat t "--------------------------%N")
+        (core:bformat t "found-source-info: %s%N" found-source-info)
+        (core:bformat t "llvm-function-name: %s%N" llvm-function-name)
+        (core:bformat t "function-name: %s%N" function-name)
+        (core:bformat t "declares: %s%N" declares)
+        (core:bformat t "form: %s%N" (function-info-form function-info))
+        (core:bformat t "source-handle: %s%N" source-handle)
+        (core:bformat t "lambda-list: %s%N" lambda-list)
+        (core:bformat t "docstring: %s%N" docstring)
+        (core:bformat t "lineno: %s%N" lineno)
+        (core:bformat t "column: %s%N" column)
+        (core:bformat t "filepos: %s%N" filepos))
+      (let ((function-name-index (literal:reference-literal function-name t))
+            (lambda-list-index (literal:reference-literal lambda-list t))
+            (docstring-index (literal:reference-literal docstring t)))
+        #+(or)
+        (progn
+          (core:bformat t "lambda-list-index: %s%N" lambda-list-index)
+          (core:bformat t "docstring-index: %s%N" docstring-index))
+        (unless lambda-list-index (error "There is no lambda-list-index"))
+        (unless docstring-index (error "There is no docstring-index"))
+        (unless lineno (error "There is no lineno"))
+        (unless column (error "There is no column"))
+        (unless filepos (error "There is no filepos"))
+        (llvm-sys:make-global-variable
+         module
+         %function-description%
+         t
+         'llvm-sys:internal-linkage
+         (llvm-sys:constant-struct-get %function-description%
+                                       (list
+                                        fn
+                                        literal::*gcroots-in-module*
+                                        source-handle
+                                        (jit-constant-intptr_t function-name-index)
+                                        (jit-constant-intptr_t lambda-list-index)
+                                        (jit-constant-intptr_t docstring-index)
+                                        (jit-constant-intptr_t lineno)
+                                        (jit-constant-intptr_t column)
+                                        (jit-constant-intptr_t filepos)))
+         (function-description-name fn))))))
+
+
+(defstruct (function-info (:type vector) :named) function-name source-handle lambda-list docstring declares form lineno column filepos)
 
 (defun irc-bclasp-function-create (lisp-function-name env
                                    &key
@@ -942,7 +1007,8 @@ But no irbuilders or basic-blocks. Return the fn."
                                      (function-attributes *default-function-attributes* function-attributes-p)
                                      ;; If the first argument is NOT meant to be a returned structure then set this to nil
                                      (argument-names '("result-ptr" "activation-frame-ptr") argument-names-p)
-                                     (linkage 'llvm-sys:internal-linkage))
+                                     (linkage 'llvm-sys:internal-linkage)
+                                     function-info)
   "Returns the new function, the lexical environment for the function 
 and the block that cleans up the function and rethrows exceptions,
 followed by the traceid for this function and then the current insert block,
@@ -957,7 +1023,11 @@ and then the irbuilder-alloca, irbuilder-body."
                                          *the-module*
                                          :function-attributes function-attributes
                                          :argument-names argument-names))
-         (fn-description (irc-create-function-description llvm-function-name fn *the-module*))
+         (fn-description (irc-create-function-description
+                          llvm-function-name
+                          fn
+                          *the-module*
+                          function-info))
          (*current-function* fn)
 	 (func-env (make-function-container-environment env (car (llvm-sys:get-argument-list fn)) fn))
 	 cleanup-block traceid
@@ -978,10 +1048,10 @@ and then the irbuilder-alloca, irbuilder-body."
       (values fn func-env cleanup-block irbuilder-alloca irbuilder-body result))))
 
 
-(defun irc-cclasp-function-create (llvm-function-type linkage llvm-function-name module)
+(defun irc-cclasp-function-create (llvm-function-type linkage llvm-function-name module function-info)
   "Create a function and a function description for a cclasp function"
   (let* ((fn (irc-function-create llvm-function-type linkage llvm-function-name module))
-         (fn-description (irc-create-function-description llvm-function-name fn module)))
+         (fn-description (irc-create-function-description llvm-function-name fn module function-info)))
     (values fn fn-description)))
 
 #+(or)

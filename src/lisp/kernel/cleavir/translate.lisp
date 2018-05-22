@@ -28,7 +28,7 @@ when this is t a lot of graphs will be generated.")
          (origin (cleavir-ir:origin instruction))
          (source-pos-info
            (cond (origin (if (consp origin) (car origin) origin))
-                 (*current-compile-file-source-pos-info*)
+                 (core:*current-source-pos-info*)
                  (t (core:make-source-pos-info "no-source-info-available" 0 0 0))))
          (fileid (core:source-pos-info-file-handle source-pos-info))
          (lineno (core:source-pos-info-lineno source-pos-info))
@@ -534,7 +534,7 @@ COMPILE-FILE will use the default *clasp-env*."
           (let ((pos (core:input-stream-source-pos-info source-sin)))
             (setf cmp:*current-form-lineno* (core:source-file-pos-lineno pos)))))
       ;; FIXME: if :environment is provided we should probably use a different read somehow
-      (let* ((*current-compile-file-source-pos-info* (core:input-stream-source-pos-info source-sin))
+      (let* ((core:*current-source-pos-info* (core:input-stream-source-pos-info source-sin))
              (cst (eclector.concrete-syntax-tree:cst-read source-sin nil eof-value)))
         (when cmp:*debug-compile-file*
           (bformat t "compile-file: cf%d -> %s%N" (incf cmp:*debug-compile-file-counter*) cst))

@@ -123,6 +123,14 @@ List_sp FunctionClosure_O::source_info() const {
                             clasp_make_fixnum(this->_column));
 };
 
+T_mv FunctionClosure_O::function_description() const {
+  IMPLEMENT_ME();
+}
+
+T_sp FunctionClosure_O::function_literal_vector_copy() const {
+  IMPLEMENT_ME();
+}
+
 void FunctionClosure_O::set_source_info(List_sp source_info)
 {
   T_sp sourceFileInfo = oCar(source_info);
@@ -240,9 +248,36 @@ CL_DEFUN void core__closure_slots_dump(Closure_sp closure) {
   }
 }
 
-T_sp wrap_function_description(void* fd) {
+T_mv wrap_function_description(void* fd) {
   void** data = (void**)fd;
-  printf("%s:%d function description at %p\n", __FILE__, __LINE__, fd);
+  //printf("%s:%d function description at %p\n", __FILE__, __LINE__, fd);
+  // data[0] function pointer
+  // data[1] global-value-holder (void* void* size_t)
+  void** data1 = (void**)data[1];
+  void* table_ptr = data1[1];
+  size_t table_size = (size_t)data1[2];
+  int source_handle = *(int*)data[2];
+  intptr_t function_name_index = (intptr_t)data[3];
+  intptr_t lambda_list_index = (intptr_t)data[4];
+  intptr_t docstring_index = (intptr_t)data[5];
+  intptr_t lineno = (intptr_t)data[6];
+  intptr_t column = (intptr_t)data[7];
+  intptr_t filepos = (intptr_t)data[8];
+  T_sp function_name((gc::Tagged)((uintptr_t**)table_ptr)[function_name_index]);
+  T_sp lambda_list((gc::Tagged)((uintptr_t**)table_ptr)[lambda_list_index]);
+  T_sp docstring((gc::Tagged)((uintptr_t**)table_ptr)[docstring_index]);
+  return Values(make_fixnum(source_handle),
+                function_name,
+                lambda_list,
+                docstring,
+                make_fixnum(lineno),
+                make_fixnum(column),
+                make_fixnum(filepos));
+}
+
+T_sp wrap_function_literal_vector_copy(void* fd) {
+  void** data = (void**)fd;
+  //printf("%s:%d function description at %p\n", __FILE__, __LINE__, fd);
   // data[0] function pointer
   // data[1] global-value-holder (void* void* size_t)
   void** data1 = (void**)data[1];
@@ -252,14 +287,24 @@ T_sp wrap_function_description(void* fd) {
   return sv;
 }
 
-T_sp ClosureWithSlots_O::function_description() const {
+T_mv ClosureWithSlots_O::function_description() const {
   void* fd = this->_FunctionDescription;
   return wrap_function_description(fd);
 }
 
-T_sp CompiledClosure_O::function_description() const {
+T_mv CompiledClosure_O::function_description() const {
   void* fd = this->_FunctionDescription;
   return wrap_function_description(fd);
+}
+
+T_sp ClosureWithSlots_O::function_literal_vector_copy() const {
+  void* fd = this->_FunctionDescription;
+  return wrap_function_literal_vector_copy(fd);
+}
+
+T_sp CompiledClosure_O::function_literal_vector_copy() const {
+  void* fd = this->_FunctionDescription;
+  return wrap_function_literal_vector_copy(fd);
 }
 
 T_sp BuiltinClosure_O::lambda_list() const {
@@ -277,17 +322,42 @@ LCC_RETURN BuiltinClosure_O::LISP_CALLING_CONVENTION() {
 };
 #endif
 
-
 InterpretedClosure_O::InterpretedClosure_O(T_sp fn, Symbol_sp k, LambdaListHandler_sp llh, List_sp dec, T_sp doc, T_sp e, List_sp c, SOURCE_INFO)
   : Base(interpretedClosureEntryPoint,fn, k, e, SOURCE_INFO_PASS), _lambdaListHandler(llh), _declares(dec), _docstring(doc), _code(c) {
 }
 
 T_sp InterpretedClosure_O::lambda_list() const {
-  return this->lambdaListHandler()->lambdaList();
+  return this->_lambdaListHandler->lambdaList();
 }
 
-void InterpretedClosure_O::setf_lambda_list(List_sp lambda_list) {
-  // Do nothing - setting the lambdaListHandler is all that's needed
+void InterpretedClosure_O::setf_lambda_list(List_sp ll)  {
+  IMPLEMENT_ME();
+}
+
+T_mv InterpretedClosure_O::function_description() const {
+  return Values(make_fixnum(this->_sourceFileInfoHandle),
+                this->_name,
+                this->lambdaListHandler()->lambdaList(),
+                this->_docstring,
+                make_fixnum(this->lineNumber()),
+                make_fixnum(this->column()),
+                make_fixnum(this->filePos()));
+}
+
+#if 0
+T_sp InterpretedClosure_O::function_literal_vector_copy() const {
+  IMPLEMENT_ME();
+}
+#endif
+
+T_mv BuiltinClosure_O::function_description() const {
+  return Values(make_fixnum(this->_sourceFileInfoHandle),
+                this->_name,
+                this->lambdaListHandler()->lambdaList(),
+                this->_docstring,
+                make_fixnum(this->lineNumber()),
+                make_fixnum(this->column()),
+                make_fixnum(this->filePos()));
 }
 
 DONT_OPTIMIZE_WHEN_DEBUG_RELEASE LCC_RETURN interpretedClosureEntryPoint(LCC_ARGS_FUNCALL_ELLIPSIS) {

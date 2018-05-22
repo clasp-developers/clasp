@@ -5,7 +5,6 @@
   (setq *echo-repl-read* t))
 
 (defvar *llvm-metadata*)
-(defvar *current-compile-file-source-pos-info* nil)
 
 (defmethod make-load-form ((object core:source-pos-info) &optional environment)
   `(core:make-cxx-object 'core:source-pos-info

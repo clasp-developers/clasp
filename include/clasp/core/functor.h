@@ -144,6 +144,8 @@ namespace core {
     virtual LambdaListHandler_sp lambdaListHandler() const = 0;
     virtual T_sp lambda_list() const = 0;
     virtual string __repr__() const;
+    CL_DEFMETHOD virtual T_mv function_description() const {SUBIMP();};
+    CL_DEFMETHOD virtual T_sp function_literal_vector_copy() const {SUBIMP();};
     virtual ~Function_O() {};
   };
 };
@@ -229,7 +231,6 @@ namespace core {
     Symbol_sp getKind() const { return this->kind; };
     bool macroP() const;
     T_sp sourcePosInfo() const; // { return this->_SourcePosInfo; };
-    CL_DEFMETHOD virtual T_sp function_description() const {SUBIMP();};
     virtual T_sp setSourcePosInfo(T_sp sourceFile, size_t filePos, int lineno, int column);
     virtual int sourceFileInfoHandle() const;
     virtual size_t filePos() const;
@@ -243,6 +244,8 @@ namespace core {
     virtual List_sp declares() const {NOT_APPLICABLE();};
     virtual T_sp docstring() const {NOT_APPLICABLE();};
     virtual T_sp closedEnvironment() const { return _Nil<T_O>();};
+    virtual T_mv function_description() const;
+    virtual T_sp function_literal_vector_copy() const;
   };
 
   class BuiltinClosure_O : public FunctionClosure_O {
@@ -269,6 +272,7 @@ namespace core {
     LambdaListHandler_sp lambdaListHandler() const { return this->_lambdaListHandler; };
     T_sp docstring() const { return this->_docstring; };
     List_sp declares() const { return this->_declares; };
+    virtual T_mv function_description() const;
   };
 
 }
@@ -307,7 +311,6 @@ namespace core {
       _FunctionDescription(functionDescription),
       _lambdaList(ll), 
       _Slots(capacity,_Unbound<T_O>(),true) {};
-    virtual T_sp function_description() const;
     bool compiledP() const { return true; };
     core::T_sp lambda_list() const { return this->_lambdaList; };
     void setf_lambda_list(core::List_sp lambda_list) { this->_lambdaList = lambda_list; };
@@ -320,6 +323,8 @@ namespace core {
       BOUNDS_ASSERT(idx<this->_Slots._Length);
       return this->_Slots[idx];
     };
+    virtual T_mv function_description() const final;
+    virtual T_sp function_literal_vector_copy() const final;
   };
 };
 
@@ -366,6 +371,7 @@ public:
   LambdaListHandler_sp lambdaListHandler() const { return this->_lambdaListHandler; };
   T_sp lambda_list() const;
   void setf_lambda_list(List_sp lambda_list);
+  T_mv function_description() const;
 };
 
 };
@@ -419,11 +425,12 @@ public:
    : Base(fptr, functionName, type, renv, SOURCE_INFO_PASS)
     , _FunctionDescription(functionDescription)
     , _lambdaList(ll){};
-    virtual T_sp function_description() const;
   bool compiledP() const { return true; };
   core::T_sp lambda_list() const;
   void setf_lambda_list(core::List_sp lambda_list);
   core::LambdaListHandler_sp lambdaListHandler() const { return _Nil<core::LambdaListHandler_O>(); };
+    virtual T_mv function_description() const;
+    virtual T_sp function_literal_vector_copy() const;
 };
 };
 #endif

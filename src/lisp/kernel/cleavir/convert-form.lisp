@@ -28,11 +28,11 @@
         ;; the *current-function-scope-info* object
         #+(or)(progn
                 (format t "About to get source for ~a~%" body)
-                (format t "*current-compile-file-source-pos-info* -> ~a~%" clasp-cleavir::*current-compile-file-source-pos-info*))
+                (format t "core:*current-source-pos-info* -> ~a~%" core:*current-source-pos-info*))
         (let ((origin (or (and (cst:source body)
                                (let ((source (cst:source body)))
                                  (if (consp source) (car source) source)))
-                          clasp-cleavir::*current-compile-file-source-pos-info*
+                          core:*current-source-pos-info*
                           (core:make-source-pos-info "-nowhere-" 0 0 0))))
           (let ((function-ast (call-next-method)))
             (setf (cleavir-ast:origin function-ast) origin)

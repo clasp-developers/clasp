@@ -171,7 +171,8 @@ and the pathname of the source file - this will also be used as the module initi
           (let ((pos (core:input-stream-source-pos-info source-sin)))
             (setq *current-form-lineno* (core:source-file-pos-lineno pos)))))
       ;; FIXME: if :environment is provided we should probably use a different read somehow
-      (let ((form (read source-sin nil eof-value)))
+      (let ((core:*current-source-pos-info* (core:input-stream-source-pos-info source-sin))
+            (form (read source-sin nil eof-value)))
         (if (eq form eof-value)
             (return nil)
             (progn

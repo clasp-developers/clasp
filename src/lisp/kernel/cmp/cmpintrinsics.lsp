@@ -506,7 +506,18 @@ eg:  (f closure-ptr nargs a b c d ...)
 (define-symbol-macro %fn-prototype*[2]% (llvm-sys:array-type-get %fn-prototype*% 2))
 
 
-(define-symbol-macro %function-description% (llvm-sys:struct-type-get *llvm-context* (list %fn-prototype*% %gcroots-in-module*%) nil))
+(define-symbol-macro %function-description%
+    (llvm-sys:struct-type-get *llvm-context*
+                              (list %fn-prototype*%
+                                    %gcroots-in-module*%
+                                    %i32*% ; source handle
+                                    %intptr_t% ; function name literal index
+                                    %intptr_t% ; lambda-list literal index
+                                    %intptr_t% ; docstring literal index
+                                    %intptr_t% ; lineno
+                                    %intptr_t% ; column
+                                    %intptr_t% ; filepos
+                                    ) nil ))
 
 ;;
 ;; Define the InvocationHistoryFrame type for LispCompiledFunctionIHF

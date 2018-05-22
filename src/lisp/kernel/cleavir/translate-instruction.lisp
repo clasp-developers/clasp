@@ -211,14 +211,14 @@
   (let* ((enter-instruction (cleavir-ir:code instruction))
          (lambda-name (get-or-create-lambda-name enter-instruction))
          (enclosed-function (memoized-layout-procedure enter-instruction lambda-name abi))
-         (function-description (llvm-sys:get-named-global *the-module* (cmp::function-description-name enclosed-function)))
+         (function-description (llvm-sys:get-named-global cmp:*the-module* (cmp::function-description-name enclosed-function)))
          (loaded-inputs (mapcar (lambda (x) (%load x "cell")) inputs))
          (ltv-lambda-name (%literal-value lambda-name (format nil "lambda-name->~a" lambda-name)))
          (dx-p (cleavir-ir:dynamic-extent-p instruction))
          (enclose-args
            (list* ltv-lambda-name
                   enclosed-function
-                  (cmp:irc-bit-cast function-description %i8*%)
+                  (cmp:irc-bit-cast function-description cmp:%i8*%)
                   cmp:*gv-source-file-info-handle*
                   (cmp:irc-size_t-*current-source-pos-info*-filepos)
                   (cmp:irc-size_t-*current-source-pos-info*-lineno)
