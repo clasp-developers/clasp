@@ -331,7 +331,7 @@ T_sp InterpretedClosure_O::lambda_list() const {
 }
 
 void InterpretedClosure_O::setf_lambda_list(List_sp ll)  {
-  IMPLEMENT_ME();
+  // Do nothing, setting the lambda list handler is all we need.
 }
 
 T_mv InterpretedClosure_O::function_description() const {
