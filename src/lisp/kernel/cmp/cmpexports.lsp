@@ -87,6 +87,8 @@
           cmp-log-dump-function
           make-file-metadata
           make-function-metadata
+          function-info
+          make-function-info
           irc-create-call
           irc-create-invoke
           compile-file-to-module
