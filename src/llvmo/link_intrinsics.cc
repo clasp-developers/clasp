@@ -1423,6 +1423,7 @@ core::T_O *cc_enclose(core::T_O *lambdaName,
                       fnLispCallingConvention llvm_func,
                       void* functionDescription,
                       int *sourceFileInfoHandleP,
+                      
                       size_t filePos,
                       size_t lineno,
                       size_t column,

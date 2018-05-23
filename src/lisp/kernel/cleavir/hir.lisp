@@ -261,15 +261,18 @@
 
 
 (defclass named-enter-instruction (cleavir-ir:enter-instruction)
-  ((%lambda-name :initarg :lambda-name :initform "lambda" :accessor lambda-name)))
+  ((%lambda-name :initarg :lambda-name :initform "lambda" :accessor lambda-name)
+   (%original-lambda-list :initarg :original-lambda-list :initform nil :reader original-lambda-list)
+   (%docstring :initarg :docstring :initform nil :reader docstring)))
 
 (defun make-named-enter-instruction
-    (lambda-list lambda-name &key (successor nil successor-p) origin)
+    (lambda-list lambda-name &key (successor nil successor-p) origin original-lambda-list docstring)
   (let ((oe (if successor-p
 		(cleavir-ir:make-enter-instruction lambda-list :successor successor :origin origin)
 		(cleavir-ir:make-enter-instruction lambda-list :origin origin))))
-    (change-class oe 'named-enter-instruction :lambda-name lambda-name)))
-
+    (change-class oe 'named-enter-instruction :lambda-name lambda-name
+                                              :original-lambda-list original-lambda-list
+                                              :docstring docstring)))
 
 (defmethod cleavir-ir-graphviz:label ((instr named-enter-instruction))
   (with-output-to-string (s)
@@ -277,7 +280,9 @@
 
 (defmethod cleavir-ir:clone-instruction :around ((instruction named-enter-instruction))
   (let ((result (call-next-method)))
-    (setf (lambda-name result) (lambda-name instruction))
+    (setf (lambda-name result) (lambda-name instruction)
+          (original-lambda-list result) (original-lambda-list instruction)
+          (docstring result) (docstring instruction))
     result))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

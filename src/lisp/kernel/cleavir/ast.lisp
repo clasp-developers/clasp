@@ -29,10 +29,14 @@
 ;;; down to the HIR->MIR.
 
 (defclass named-function-ast (cleavir-ast:function-ast)
-  ((%lambda-name :initarg :lambda-name :initform "lambda-ast" :reader lambda-name)))
+  ((%lambda-name :initarg :lambda-name :initform "lambda-ast" :reader lambda-name)
+   (%original-lambda-list :initarg :original-lambda-list :initform nil :reader original-lambda-list)
+   (%docstring :initarg :docstring :initform nil :reader docstring)))
 
 (cleavir-io:define-save-info named-function-ast
-    (:lambda-name lambda-name))
+    (:lambda-name lambda-name)
+  (:original-lambda-list original-lambda-list)
+  (:docstring docstring))
 
 (defmethod cleavir-ast-graphviz::label ((ast named-function-ast))
   (with-output-to-string (s)

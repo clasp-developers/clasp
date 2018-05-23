@@ -58,6 +58,8 @@
    #:precalculated-value-ast
    #:make-precalc-vector-function-ast
    #:named-function-ast
+   #:original-lambda-list
+   #:docstring
    #:debug-message-ast
    #:multiple-value-foreign-call-ast
    #:foreign-call-ast
@@ -96,6 +98,8 @@
    #:landing-pad
    #:jump-id
    #:lambda-list
+   #:original-lambda-list
+   #:docstring
    #:make-named-enter-instruction
    #:debug-message-instruction
    #:multiple-value-foreign-call-instruction

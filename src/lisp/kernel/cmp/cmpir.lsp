@@ -936,7 +936,11 @@ But no irbuilders or basic-blocks. Return the fn."
                                                           (fifth one-declare)
                                                           (sixth one-declare))))))
 
+(defstruct (function-info (:type vector) :named) function-name source-handle lambda-list docstring declares form lineno column filepos)
+
 (defun irc-create-function-description (llvm-function-name fn module function-info)
+  "If **generate-code** then create a function-description block from function info.
+    Otherwise we are code-walking - and do something else that is appropriate."
   (unless function-info
     (error "function info is NIL for ~a" llvm-function-name))
   (let ((function-name (function-info-function-name function-info))
@@ -999,7 +1003,6 @@ But no irbuilders or basic-blocks. Return the fn."
          (function-description-name fn))))))
 
 
-(defstruct (function-info (:type vector) :named) function-name source-handle lambda-list docstring declares form lineno column filepos)
 
 (defun irc-bclasp-function-create (lisp-function-name env
                                    &key

@@ -243,6 +243,35 @@ when this is t a lot of graphs will be generated.")
 (defvar *forms*)
 (defvar *map-enter-to-function-info* nil)
 
+(defun calculate-function-info (enter llvm-function-name)
+  (let* ((origin (cleavir-ir:origin enter))
+         (source-pos-info (if (consp origin) (car origin) origin))
+         (lineno (core:source-pos-info-lineno origin))
+         (column (1+ (core:source-pos-info-column origin)))
+         (filepos (core:source-pos-info-filepos origin)))
+    (cond
+      ((typep enter 'clasp-cleavir-hir:named-enter-instruction)
+       (cmp:make-function-info :function-name llvm-function-name
+                               :source-handle cmp:*gv-source-file-info-handle*
+                               :lambda-list (clasp-cleavir-hir:original-lambda-list enter)
+                               :docstring (clasp-cleavir-hir:docstring enter)
+                               :declares nil
+                               :form nil
+                               :lineno lineno
+                               :column column
+                               :filepos filepos))
+      ((typep enter 'cleavir-ir:top-level-enter-instruction)
+       (cmp:make-function-info :function-name llvm-function-name
+                               :source-handle cmp:*gv-source-file-info-handle*
+                               :lambda-list nil
+                               :docstring nil
+                               :declares nil
+                               :form nil
+                               :lineno lineno
+                               :column column
+                               :filepos filepos))
+      (t (error "layout-procedure enter is not a known type of enter-instruction - it is a ~a - handle it" enter)))))
+
 (defun layout-procedure (enter lambda-name abi &key (linkage 'llvm-sys:internal-linkage))
   (let* ((function-info (gethash enter *map-enter-to-function-info*))
          ;; Gather the basic blocks of this procedure in basic-blocks
@@ -261,7 +290,8 @@ when this is t a lot of graphs will be generated.")
                         llvm-function-type
                         linkage
                         llvm-function-name
-                        cmp:*the-module*))
+                        cmp:*the-module*
+                        (calculate-function-info enter llvm-function-name)))
          (cmp:*current-function* the-function)
          (entry-block (cmp:irc-basic-block-create "entry" the-function))
          (*function-current-multiple-value-array-address* nil)

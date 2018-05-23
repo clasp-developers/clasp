@@ -25,12 +25,11 @@
 (progn
   (format t "Loading :clasp-cleavir system~%")
   (finish-output)
-  (time (asdf:load-system "clasp-cleavir"))
+  (time (asdf:load-system "clasp-cleavir" :print t :verbose t))
   (format t "Done  pid = ~a~%"  (core:getpid)))
 
 
-
-(clasp-cleavir:cleavir-compile-file "/tmp/test.lisp")
+((clasp-cleavir:cleavir-compile-file "/tmp/test.lisp")
 
 (trace clasp-cleavir::cclasp-compile* cst:cst-from-expression clasp-cleavir::cst->ast clasp-cleavir::translate-ast cmp:jit-add-module-return-function cmp::quick-module-dump cmp::compile-quick-module-dump cmp::compile-quick-module-pathname llvm-sys:jit-finalize-repl-function)
 

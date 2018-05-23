@@ -606,8 +606,12 @@ the stage, the +application-name+ and the +bitcode-name+"
                                         (translate-logical-pathname "GENERATED:")))
                      (t
                       (find-lisp-source module (translate-logical-pathname "SOURCE-DIR:"))))))
-                ((and partial-pathname (or (eq type :fasl) (eq type :bitcode)))
+                ((and partial-pathname (eq type :bitcode))
                  (if cmp::*use-human-readable-bitcode* (setq type :ll))
+                 (merge-pathnames (merge-pathnames (ensure-relative-pathname partial-pathname)
+                                                   (make-pathname :directory (list :relative target-dir) :type (build-extension type)))
+                                  (translate-logical-pathname (make-pathname :host target-host))))
+                ((and partial-pathname (eq type :fasl))
                  (merge-pathnames (merge-pathnames (ensure-relative-pathname partial-pathname)
                                                    (make-pathname :directory (list :relative target-dir) :type (build-extension type)))
                                   (translate-logical-pathname (make-pathname :host target-host))))

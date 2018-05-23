@@ -183,7 +183,10 @@
                       :name function-name
                       :compiler-macro (compiler-macro-function function-name)
                       :inline inline-status
-                      :ast cleavir-ast)))
+                      ;; We need to clone the ast for now because hoisting modifies it
+                      :ast (if (and cleavir-ast (eq inline-status 'inline))
+                               (cleavir-ast-transformations:clone-ast cleavir-ast)
+                               cleavir-ast))))
     ( ;; If it is neither of the cases above, then this name does
      ;; not have any function-info associated with it.
      t
