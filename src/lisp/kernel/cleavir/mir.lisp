@@ -75,6 +75,8 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
+;;; ASSIGN-CATCH-INSTRUCTION
+;;;
 ;;; Like a CATCH-INSTRUCTION, but instead of making a continuation
 ;;; just returns the one it's input.
 ;;; The GO-INDEX is a small integer used to tell apart catches in
@@ -88,6 +90,8 @@
 
 (defclass assign-catch-instruction (cleavir-ir:catch-instruction)
   ((%go-index :initarg :go-index :reader go-index)))
+
+(defmethod cleavir-ir-graphviz:label ((inst assign-catch-instruction)) "acatch")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
