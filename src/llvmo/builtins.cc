@@ -26,12 +26,6 @@
 
 extern "C" {
 
-BUILTIN_ATTRIBUTES int foobar(int x) {return x*x*x*x;}
-
-};
-
-extern "C" {
-
 BUILTIN_ATTRIBUTES void newTmv(core::T_mv *sharedP)
 {
   new (sharedP) core::T_mv();

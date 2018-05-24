@@ -459,6 +459,7 @@ def configure(cfg):
     def load_local_config(cfg):
         if os.path.isfile("./wscript.config"):
             local_environment = {}
+            print(" local_environment = %s\n" % local_environment)
             exec(open("./wscript.config").read(), globals(), local_environment)
             for key in local_environment.keys():
                 if (not key in VALID_OPTIONS):

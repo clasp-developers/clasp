@@ -190,6 +190,7 @@ and the pathname of the source file - this will also be used as the module initi
                                &key
                                  compile-file-hook
                                  type
+                                 output-type
                                  source-debug-namestring
                                  (source-debug-offset 0)
                                  (print *compile-print*)
@@ -255,6 +256,9 @@ Compile a lisp source file into an LLVM module."
                   (with-literal-table
                       (loop-read-and-compile-file-forms source-sin environment compile-file-hook))
                   (make-boot-function-global-variable *the-module* run-all-function)))
+              ;; When generating fasl files we need to link in the builtins before optimization
+              (when (eq output-type :fasl)
+                (link-builtins-module module))
               (cmp-log "About to verify the module\n")
               (cmp-log-dump-module *the-module*)
               (irc-verify-module-safe *the-module*)
@@ -297,6 +301,7 @@ Compile a lisp source file into an LLVM module."
            (*compile-file-output-pathname* output-path)
            (module (compile-file-to-module input-file
                                            :type type
+                                           :output-type output-type
                                            :source-debug-namestring source-debug-namestring
                                            :source-debug-offset source-debug-offset
                                            :compile-file-hook *cleavir-compile-file-hook*
