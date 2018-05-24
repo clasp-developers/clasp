@@ -1133,11 +1133,15 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
 #if LTO_OPTION == 0
   use_lto = false;
   debugging = true;
-  if (setFeatures) features = core::Cons_O::create(_lisp->internKeyword("GENERATE-FASL"),features);
+  if (setFeatures) {
+    features = core::Cons_O::create(_lisp->internKeyword("GENERATE-FASL"),features);
+    features = core::Cons_O::create(_lisp->internKeyword("LINK-BUILTINS-FOR-COMPILE-FILE"),features);
+  }
 #else
   use_lto = true;
   debugging = false;
   if (setFeatures) features = core::Cons_O::create(_lisp->internKeyword("GENERATE-BITCODE"),features);
+  // When we generate bitcode - we don't link builtins for compile-file - we do it during external linking with clang
 #endif
   if (buildReport) ss << (BF("USE_LTO = %s\n") % (use_lto ? "**DEFINED**" : "undefined") ).str();
   

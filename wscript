@@ -1153,12 +1153,12 @@ class link_fasl(clasp_task):
         else:
             lto_option = ""
             lto_optimize_flag = ""
-            link_options = self.bld.env['LINKFLAGS']
+        link_options = self.bld.env['LINKFLAGS']
         if (self.env['DEST_OS'] == DARWIN_OS):
             link_options = link_options + [ "-flat_namespace", "-undefined", "suppress", "-bundle" ]
         else:
             link_options = link_options + [ "-shared" ]
-            cmd = [self.env.CXX[0]] + \
+        cmd = [self.env.CXX[0]] + \
                   waf_nodes_to_paths(self.inputs) + \
                   [ lto_option, lto_optimize_flag ] + \
                   link_options + \

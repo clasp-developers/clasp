@@ -471,7 +471,7 @@ The passed module is modified as a side-effect."
     #+(or)(let ((call-sites (call-sites-to-always-inline module)))
             (bformat t "Call-sites -> %s\n" call-sites))
     ;; Link in the builtins as part of the optimization
-    (link-builtins-module module)
+    #+link-builtins-for-compile-file(link-builtins-module module)
     (quick-module-dump module "in-optimize-module-for-compile-file-after-link-builtins")
     (let* ((pass-manager-builder (llvm-sys:make-pass-manager-builder))
            (mpm (llvm-sys:make-pass-manager))
