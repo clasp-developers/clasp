@@ -63,6 +63,7 @@ APP_NAME = 'clasp'
 DARWIN_OS = 'darwin'
 LINUX_OS = 'linux'
 FREEBSD_OS = 'freebsd'
+CLANG_VERSION = 5
 
 STAGE_CHARS = [ 'r', 'i', 'a', 'b', 'f', 'c', 'd' ]
 
@@ -107,6 +108,20 @@ BOOST_LIBRARIES = [
             'boost_program_options',
             'boost_system',
             'boost_iostreams']
+
+VALID_OPTIONS = [
+    "LLVM_CONFIG_BINARY",
+    "PREFIX",
+    "LLVM5_ORC_NOTIFIER_PATCH",
+    "SBCL",
+    "CLASP",
+    "USE_PARALLEL_BUILD",
+    "DEBUG_GUARD",
+    "DEBUG_GUARD_EXHAUSTIVE_VALIDATE",
+    "INCLUDES",
+    "LINKFLAGS",
+    "DEVELOPMENT_MODE"
+]
 
 def build_extension(bld):
     log.pprint('BLUE', "build_extension()")
@@ -445,6 +460,11 @@ def configure(cfg):
         if os.path.isfile("./wscript.config"):
             local_environment = {}
             exec(open("./wscript.config").read(), globals(), local_environment)
+            for key in local_environment.keys():
+                if (not key in VALID_OPTIONS):
+                    raise Exception("%s is an INVALID wscript.config option - valid options are: %s" % (key, VALID_OPTIONS))
+                else:
+                    print("wscript.config option %s = %s" % ( key, local_environment[key]))
             cfg.env.update(local_environment)
         else:
             log.warn("There is no 'wscript.config' file - assuming default configuration. See 'wscript.config.template' for further details.")
@@ -477,7 +497,6 @@ def configure(cfg):
 #    cfg.env["LLVM_AR_BINARY"] = cfg.find_program("llvm-ar", var = "LLVM_AR")[0]
     cfg.env["GIT_BINARY"] = cfg.find_program("git", var = "GIT")[0]
     log.debug("cfg.env['LTO_OPTION'] = %s", cfg.env['LTO_OPTION'])
-    print("cfg.env['DEVELOPMENT_MODE'] = %s" % cfg.env["DEVELOPMENT_MODE"])
     if (cfg.env["DEVELOPMENT_MODE"] != True and (cfg.env['LTO_OPTION']==[] or cfg.env['LTO_OPTION']=='thinlto')):
         print("Not in DEVELOPMENT_MODE")
         cfg.define("LTO_OPTION",2) # thin-lto
@@ -501,6 +520,10 @@ def configure(cfg):
         raise Exception("LTO_OPTION can only be 'thinlto'(default), 'lto', or 'obj' - you provided %s" % cfg.env['LTO_OPTION'])
     log.info("default cfg.env.LTO_OPTION = %s, final cfg.env.LTO_FLAG = '%s'", cfg.env.LTO_OPTION, cfg.env.LTO_FLAG)
 
+    cur_clang_version = run_llvm_config(cfg, "--version")
+    print("cur_clang_version = %s" % cur_clang_version)
+    if (int(cur_clang_version[0]) != CLANG_VERSION):
+        raise Exception("You must have clang/llvm version %d installed" % CLANG_VERSION )
     # find a lisp for the scraper
     if not cfg.env.SCRAPER_LISP:
         cfg.env["SBCL"] = cfg.find_program("sbcl", var = "SBCL")[0]
