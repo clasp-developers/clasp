@@ -1,48 +1,36 @@
 (in-package :clasp-cleavir-hir)
 
-
-
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; Instruction DEBUG-MESSAGE-INSTRUCTION
 ;;;
-;;; This instruction is an DEBUG-MESSAGE-INSTRUCTION that prints a message
-
+;;; This instruction is an DEBUG-MESSAGE-INSTRUCTION that prints a message at runtime.
 
 (defclass debug-message-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin)
   ((%debug-message :initarg :debug-message :accessor debug-message)))
-
 
 (defmethod cleavir-ir-graphviz:label ((instr debug-message-instruction))
   (with-output-to-string (s)
     (format s "debug-message(~a)" (debug-message instr))))
 
-(defmethod cleavir-ir:clone-instruction :around ((instruction debug-message-instruction))
-  (let ((result (call-next-method)))
-    (setf (debug-message result) (debug-message instruction))
-    result))
-
+(defmethod cleavir-ir:clone-initargs append ((instruction debug-message-instruction))
+  (list :debug-message (debug-message instruction)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; Instruction multiple-value-foreign-CALL-INSTRUCTION
 ;;;
-;;; This instruction is an multiple-value-foreign-CALL-INSTRUCTION that prints a message
-
+;;; Calls a foreign function (designated by its name, a string) and receives its result as values.
 
 (defclass multiple-value-foreign-call-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin)
   ((%function-name :initarg :function-name :accessor function-name)))
-
 
 (defmethod cleavir-ir-graphviz:label ((instr multiple-value-foreign-call-instruction))
   (with-output-to-string (s)
     (format s "multiple-value-foreign-call(~a)" (function-name instr))))
 
-(defmethod cleavir-ir:clone-instruction :around ((instruction multiple-value-foreign-call-instruction))
-  (let ((result (call-next-method)))
-    (setf (function-name result) (function-name instruction))
-    result))
+(defmethod cleavir-ir:clone-initargs append ((instruction multiple-value-foreign-call-instruction))
+  (list :function-name (function-name instruction)))
 
 (defmethod make-multiple-value-foreign-call-instruction
     (function-name inputs outputs &optional (successor nil successor-p))
@@ -51,8 +39,6 @@
                  :inputs inputs
                  :outputs outputs
                  :successors (if successor-p (list successor) '())))
-
-
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -68,11 +54,9 @@
   (with-output-to-string (s)
     (format s "foreign-call(~a)" (function-name instr))))
 
-(defmethod cleavir-ir:clone-instruction :around ((instruction foreign-call-instruction))
-  (let ((result (call-next-method)))
-    (setf (foreign-types result) (foreign-types instruction)
-          (function-name result) (function-name instruction))
-    result))
+(defmethod cleavir-ir:clone-initargs append ((instruction foreign-call-instruction))
+  (list :foreign-types (foreign-types instruction)
+        :foreign-name (foreign-name instruction)))
 
 (defmethod make-foreign-call-instruction
     (foreign-types function-name inputs outputs &optional (successor nil successor-p))
@@ -83,7 +67,6 @@
                  :outputs outputs
                  :successors (if successor-p (list successor) '())))
 
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; Instruction foreign-call-pointer-INSTRUCTION
@@ -93,15 +76,12 @@
 (defclass foreign-call-pointer-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin)
   ((%foreign-types :initarg :foreign-types :accessor foreign-types)))
 
-
 (defmethod cleavir-ir-graphviz:label ((instr foreign-call-pointer-instruction))
   (with-output-to-string (s)
     (format s "foreign-call-pointer")))
 
-(defmethod cleavir-ir:clone-instruction :around ((instruction foreign-call-pointer-instruction))
-  (let ((result (call-next-method)))
-    (setf (foreign-types result) (foreign-types instruction))
-    result))
+(defmethod cleavir-ir:clone-initargs append ((instruction foreign-call-pointer-instruction))
+  (list :foreign-types (foreign-types instruction)))
 
 (defmethod make-foreign-call-pointer-instruction
     (foreign-types inputs outputs &optional (successor nil successor-p))
@@ -234,9 +214,8 @@
 (defmethod cleavir-ir-graphviz:label ((instr bind-va-list-instruction))
   )
 
-(defmethod cleavir-ir:clone-instruction :around ((instruction bind-va-list-instruction))
-  (let ((result (call-next-method)))
-    (setf (cleavir-ir:lambda-list result) (cleavir-ir:lambda-list instruction))))
+(defmethod cleavir-ir:clone-initargs append ((instruction bind-va-list-instruction))
+  (list :lambda-list (cleavir-ir:lambda-list instruction)))
 
 (defun make-bind-va-list-instruction (lambda-list va-list &optional (successor nil successor-p))
   (make-instance 'bind-va-list-instruction
@@ -278,12 +257,10 @@
   (with-output-to-string (s)
     (format s "named-enter(~a)" (lambda-name instr))))
 
-(defmethod cleavir-ir:clone-instruction :around ((instruction named-enter-instruction))
-  (let ((result (call-next-method)))
-    (setf (lambda-name result) (lambda-name instruction)
-          (original-lambda-list result) (original-lambda-list instruction)
-          (docstring result) (docstring instruction))
-    result))
+(defmethod cleavir-ir:clone-initargs append ((instruction named-enter-instruction))
+  (list :lambda-name (lambda-name instruction)
+        :original-lambda-list (original-lambda-list instruction)
+        :docstring (docstring instruction)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -326,14 +303,8 @@
 	  (format s "~a..." (subseq original-object 0 30))
 	  (princ original-object s)))))
 
-(defmethod cleavir-ir:clone-instruction :around ((instruction precalc-value-instruction))
-  (let ((result (call-next-method)))
-    (setf (precalc-value-instruction-original-object result)
-          (precalc-value-instruction-original-object instruction))
-    result))
-
-
-
+(defmethod cleavir-ir:clone-initargs append ((instruction precalc-value-instruction))
+  (list :original-object (precalc-value-instruction-original-object instruction)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
 ;;;
@@ -391,11 +362,8 @@
   (with-output-to-string (stream)
     (format stream "throw")))
 
-(defmethod cleavir-ir:clone-instruction :around ((instruction throw-instruction))
-  (let ((result (call-next-method)))
-    (setf (throw-tag result) (throw-tag instruction))
-    result))
-
+(defmethod cleavir-ir:clone-initargs append ((instruction throw-instruction))
+  (list :throw-tag (throw-tag instruction)))
 
 (defmethod cl:print-object ((instr throw-instruction) stream)
   (format stream "#<throw>"))
