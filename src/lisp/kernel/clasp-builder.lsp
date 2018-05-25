@@ -300,6 +300,8 @@ Return files."
                    (let ((pid pid-or-error))
                      (if (= pid 0)
                          (progn
+                           ;; Turn off interactive mode so that errors cause clasp to die with backtrace
+                           (core:set-interactive-lisp nil)
                            (one-compile-kernel-file entry job-counter)
                            (core:exit))
                          (progn
@@ -441,7 +443,8 @@ Return files."
     ((eq core:*clasp-build-mode* :bitcode)
      (cmp:link-bitcode-modules output-file all-modules))
     ((eq core:*clasp-build-mode* :object)
-     (cmp:link-object-files output-file all-modules))
+     ;; Do nothing - object files are the result
+     )
     ((eq core:*clasp-build-mode* :fasl)
      (generate-loader output-file all-modules))
     (t (error "Unsupported value for core:*clasp-build-mode* -> ~a" core:*clasp-build-mode*))))
@@ -461,14 +464,19 @@ Return files."
         (load-system
          (butlast (select-source-files #P"src/lisp/kernel/tag/after-init" #P"src/lisp/kernel/tag/min-pre-epilogue" :system system)))
         (format t "Loaded system~%")
+        ;; Break up the compilation into files we just want to compile and files that we want to compile and load to speed things up
         (let* ((*target-backend* target-backend)
+               (pre-files (butlast (out-of-date-bitcodes #P"src/lisp/kernel/tag/start" #P"src/lisp/kernel/tag/min-start" :system system)))
                (files (out-of-date-bitcodes #P"src/lisp/kernel/tag/min-start" #P"src/lisp/kernel/tag/min-pre-epilogue" :system system))
-               (files-with-epilogue (out-of-date-bitcodes #P"src/lisp/kernel/tag/min-start" #P"src/lisp/kernel/tag/min-end" :system system)))
+               (files-with-epilogue (out-of-date-bitcodes #P"src/lisp/kernel/tag/start" #P"src/lisp/kernel/tag/min-end" :system system)))
           (with-compilation-unit ()
             (let ((cmp::*activation-frame-optimize* nil))
               ;; It's better to compile aclasp with fewer cores because then more of the compilations
               ;; make use of compiled code.
+              ;;  Compiling and reloading the following files will speed things up
               (compile-system files :reload t :parallel-jobs (min *number-of-jobs* 16))
+              ;;  Just compile the following files and don't reload, they are needed to link
+              (compile-system pre-files :reload nil :parallel-jobs (min *number-of-jobs* 16))
               (if files-with-epilogue (compile-system (output-object-pathnames #P"src/lisp/kernel/tag/min-pre-epilogue" #P"src/lisp/kernel/tag/min-end" :system system) :reload nil))))
           (let ((all-output (output-object-pathnames #P"src/lisp/kernel/tag/min-start" #P"src/lisp/kernel/tag/min-end" :system system)))
             (if (out-of-date-target output-file all-output)

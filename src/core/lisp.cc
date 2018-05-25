@@ -1467,6 +1467,24 @@ CL_DEFUN void core__low_level_repl() {
   }
 };
 
+CL_DEFUN void core__set_interactive_lisp(bool interactive) {
+  List_sp features = cl::_sym_STARfeaturesSTAR->symbolValue();
+  // Remove any old :interactive feature
+  ql::list edited_features;
+  for ( T_sp cur = features; cur.consp(); cur = oCdr(cur) ) {
+    T_sp feature = CONS_CAR(cur);
+    if (feature != kw::_sym_interactive) {
+      edited_features << feature;
+    }
+  }
+  _lisp->_Interactive = interactive;
+  if (interactive) {
+    cl::_sym_STARfeaturesSTAR->defparameter(Cons_O::create(kw::_sym_interactive,edited_features.cons()));
+  } else {
+    cl::_sym_STARfeaturesSTAR->defparameter(edited_features.cons());
+  }
+};
+
 void Lisp_O::readEvalPrintInteractive() {
   Cons_sp expression;
   //	TopLevelIHF topFrame(my_thread->invocationHistoryStack(),_Nil<T_O>());
