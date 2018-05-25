@@ -1134,20 +1134,17 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
 #if CLASP_BUILD_MODE == 0
   use_lto = false;
   debugging = true;
-  core::Symbol_sp sym = INTERN_(kw,fasl);
-  INTERN_(core,STARclasp_build_modeSTAR)->defparameter(sym);
+  INTERN_(core,STARclasp_build_modeSTAR)->defparameter(kw::_sym_fasl);
   // CLASP_BUILD_MODE == 1 means generate object files
 #elif CLASP_BUILD_MODE == 1
   use_lto = false;
   debugging = true;
-  core::Symbol_sp sym = INTERN_(kw,object);
-  INTERN_(core,STARclasp_build_modeSTAR)->defparameter(sym);
+  INTERN_(core,STARclasp_build_modeSTAR)->defparameter(kw::_sym_object);
   // CLASP_BUILD_MODE == 2 means generate bitcode and use thinlto
 #elif CLASP_BUILD_MODE == 2
   use_lto = true;
   debugging = false;
-  core::Symbol_sp sym = INTERN_(kw,bitcode);
-  INTERN_(core,STARclasp_build_modeSTAR)->defparameter(sym);
+  INTERN_(core,STARclasp_build_modeSTAR)->defparameter(sym,kw::_sym_bitcode);
 #endif
   if (buildReport) ss << (BF("CLASP_BUILD_MODE = %s") % CLASP_BUILD_MODE);
   

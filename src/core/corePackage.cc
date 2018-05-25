@@ -130,6 +130,9 @@ const char *CorePkg_nicknames[] = {
 };
 SYMBOL_EXPORT_SC_(CorePkg, STARuse_cleavir_compilerSTAR);  // nil (clasp) or T (cleavir)
 
+SYMBOL_EXPORT_SC_(KeywordPkg,object);
+SYMBOL_EXPORT_SC_(KeywordPkg,fasl);
+SYMBOL_EXPORT_SC_(KeywordPkg,bitcode);
 SYMBOL_EXPORT_SC_(KeywordPkg,linkage);
 SYMBOL_EXPORT_SC_(KeywordPkg, verbose);
 SYMBOL_EXPORT_SC_(KeywordPkg, pause_pid);
