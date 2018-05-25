@@ -254,8 +254,6 @@ class variant(object):
             return [build.path.find_or_declare(name+".lfasl")]
         elif (build.env.CLASP_BUILD_MODE == "object"):
             nodes = waf_nodes_for_object_files(build,input_files,self.fasl_dir(stage=use_stage))
-            print("Input files: %s" % input_files)
-            print("Generating output files: %s" % nodes)
             return nodes
         else:
             if (build.use_human_readable_bitcode):
