@@ -121,8 +121,7 @@ VALID_OPTIONS = [
     "DEBUG_GUARD_EXHAUSTIVE_VALIDATE",
     "INCLUDES",
     "LINKFLAGS",
-    "CLASP_BUILD_MODE",
-    "DEVELOPMENT_MODE"
+    "CLASP_BUILD_MODE"
 ]
 
 def build_extension(bld):
@@ -231,7 +230,7 @@ class variant(object):
             use_stage = stage
         if (not (use_stage>='a' and use_stage <= 'z')):
             raise Exception("Bad stage: %s"% use_stage)
-        if (build.env.DEVELOPMENT_MODE):
+        if (build.env.CLASP_BUILD_MODE == 'fasl'):
             return build.path.find_or_declare('fasl/%s%s-%s%s-image.lfasl' % (use_stage,APP_NAME,self.gc_name,self.debug_extension()))
         else:
             return build.path.find_or_declare('fasl/%s%s-%s%s-image.fasl' % (use_stage,APP_NAME,self.gc_name,self.debug_extension()))
@@ -250,7 +249,7 @@ class variant(object):
         if (not (use_stage>='a' and use_stage <= 'z')):
             raise Exception("Bad stage: %s"% use_stage)
         name = 'fasl/%s%s-%s-common-lisp' % (use_stage,APP_NAME,self.gc_name)
-        if (build.env.DEVELOPMENT_MODE):
+        if (build.env.CLASP_BUILD_MODE == 'fasl'):
             return [build.path.find_or_declare(name+".lfasl")]
         elif (build.env.CLASP_BUILD_MODE == "object"):
             nodes = waf_nodes_for_object_files(build,input_files,self.fasl_dir(stage=use_stage))
@@ -507,8 +506,8 @@ def configure(cfg):
     if ((cfg.env['CLASP_BUILD_MODE'] =='bitcode')):
         print("Not in DEVELOPMENT_MODE")
         cfg.define("CLASP_BUILD_MODE",2) # thin-lto
+        cfg.env.CLASP_BUILD_MODE = 'bitcode'
         cfg.env.LTO_FLAG = '-flto=thin'
-        cfg.env.DEVELOPMENT_MODE = False
         if (cfg.env['DEST_OS'] == LINUX_OS ):
             if (cfg.env['USE_LLD']):
                 cfg.env.append_value('LINKFLAGS', '-Wl,--thinlto-cache-dir=/tmp/clasp')
@@ -519,13 +518,12 @@ def configure(cfg):
         elif (cfg.env['DEST_OS'] == DARWIN_OS ):
             cfg.env.append_value('LINKFLAGS', '-Wl,-cache_path_lto,/tmp/clasp')
     elif (cfg.env['CLASP_BUILD_MODE']==[] or cfg.env['CLASP_BUILD_MODE']=='object'):
-        print("Turning on DEVELOPMENT_MODE")
         cfg.define("CLASP_BUILD_MODE",1) # object files
+        cfg.env.CLASP_BUILD_MODE = 'object'
         cfg.env.LTO_FLAG = []
-    elif (cfg.env['CLASP_BUILD_MODE']=='fasl' or cfg.env["DEVELOPMENT_MODE"]==True):
-        print("Turning on DEVELOPMENT_MODE")
+    elif (cfg.env['CLASP_BUILD_MODE']=='fasl'):
         cfg.define("CLASP_BUILD_MODE",0) # object files
-        cfg.env.DEVELOPMENT_MODE = True
+        cfg.env.CLASP_BUILD_MODE = 'fasl'
         cfg.env.LTO_FLAG = []
     else:
         raise Exception("CLASP_BUILD_MODE can only be 'thinlto'(default), 'lto', or 'obj' - you provided %s" % cfg.env['CLASP_BUILD_MODE'])
@@ -828,7 +826,7 @@ def build(bld):
                      log_file = os.path.join(bld.path.abspath(), out, variant.variant_dir(), "build.log"))
 
     log.debug('build() starts, options: %s', bld.options)
-
+    print("Build is starting clasp_build_mode = %s" % bld.env.CLASP_BUILD_MODE)
     bld.add_pre_fun(pre_build_hook);
     bld.add_post_fun(post_build_hook);
 
@@ -1173,7 +1171,7 @@ class run_dsymutil(clasp_task):
 
 class link_fasl(clasp_task):
     def run(self):
-        if (self.env.DEVELOPMENT_MODE):
+        if (self.env.CLASP_BUILD_MODE=='fasl'):
             print("link_fasl self.inputs[3] = %s   self.outputs[0] = %s"% (self.inputs[3], self.outputs[0]))
             cmd = [ "cp", self.inputs[3].abspath(),self.outputs[0].abspath()]
             return self.exec_command(cmd)
