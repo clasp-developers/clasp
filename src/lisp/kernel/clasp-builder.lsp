@@ -144,7 +144,6 @@ Return files."
 (defun load-kernel-file (path type)
   (if (or (eq type :object) (eq type :bitcode))
       (progn
-        (format t "load-kernel-file path: ~s  type: ~s~%" path type)
         (cmp:load-bitcode path))
       (if (eq type :fasl)
           (load path)
