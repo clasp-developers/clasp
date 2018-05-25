@@ -233,20 +233,20 @@ BUILTIN_ATTRIBUTES core::T_O* cc_builtin_nil()
 
 
 extern "C" {
-core::T_O* ignore_initializeBlockClosure( core::T_O** dummy)
+BUILTIN_ATTRIBUTES core::T_O* ignore_initializeBlockClosure( core::T_O** dummy)
 {
 // Do nothing but return NULL which will never match a handle
   return NULL;
 }
 
-core::T_O* ignore_initializeTagbodyClosure(core::T_O** dummy)
+BUILTIN_ATTRIBUTES core::T_O* ignore_initializeTagbodyClosure(core::T_O** dummy)
 {
 // Do nothing but return NULL which will never match a handle
   return NULL;
 }
 
 
-gctools::return_type ignore_blockHandleReturnFrom(unsigned char *exceptionP, core::T_O* handle) {
+BUILTIN_ATTRIBUTES gctools::return_type ignore_blockHandleReturnFrom(unsigned char *exceptionP, core::T_O* handle) {
 #if 1
   core::ReturnFrom &returnFrom = (core::ReturnFrom &)*((core::ReturnFrom *)(exceptionP));
   if (returnFrom.getHandle() == handle) {
@@ -257,7 +257,7 @@ gctools::return_type ignore_blockHandleReturnFrom(unsigned char *exceptionP, cor
   throw;
 }
 
-void ignore_exceptionStackUnwind()
+BUILTIN_ATTRIBUTES void ignore_exceptionStackUnwind()
 {
 // Do nothing
 }

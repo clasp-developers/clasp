@@ -121,6 +121,7 @@ VALID_OPTIONS = [
     "DEBUG_GUARD_EXHAUSTIVE_VALIDATE",
     "INCLUDES",
     "LINKFLAGS",
+    "CLASP_BUILD_MODE",
     "DEVELOPMENT_MODE"
 ]
 
@@ -250,6 +251,11 @@ class variant(object):
         name = 'fasl/%s%s-%s-common-lisp' % (use_stage,APP_NAME,self.gc_name)
         if (build.env.DEVELOPMENT_MODE):
             return build.path.find_or_declare(name+".lfasl")
+        elif (build.env.CLASP_BUILD_MODE == "object"):
+            if (build.env['DEST_OS'] == LINUX_OS):
+                return build.path.find_or_declare(name+".so")
+            else:
+                return build.path.find_or_declare(name+".dylib")
         else:
             if (use_human_readable_bitcode):
                 return build.path.find_or_declare(name+".ll")
@@ -498,10 +504,10 @@ def configure(cfg):
     cfg.env["LLVM_AR_BINARY"] = "%s/llvm-ar" % cfg.env.LLVM_BIN_DIR
 #    cfg.env["LLVM_AR_BINARY"] = cfg.find_program("llvm-ar", var = "LLVM_AR")[0]
     cfg.env["GIT_BINARY"] = cfg.find_program("git", var = "GIT")[0]
-    log.debug("cfg.env['LTO_OPTION'] = %s", cfg.env['LTO_OPTION'])
-    if (cfg.env["DEVELOPMENT_MODE"] != True and (cfg.env['LTO_OPTION']==[] or cfg.env['LTO_OPTION']=='thinlto')):
+    log.debug("cfg.env['CLASP_BUILD_MODE'] = %s", cfg.env['CLASP_BUILD_MODE'])
+    if ((cfg.env['CLASP_BUILD_MODE'] =='bitcode')):
         print("Not in DEVELOPMENT_MODE")
-        cfg.define("LTO_OPTION",2) # thin-lto
+        cfg.define("CLASP_BUILD_MODE",2) # thin-lto
         cfg.env.LTO_FLAG = '-flto=thin'
         cfg.env.DEVELOPMENT_MODE = False
         if (cfg.env['DEST_OS'] == LINUX_OS ):
@@ -513,14 +519,18 @@ def configure(cfg):
             cfg.env.append_value('LINKFLAGS', '-Wl,-plugin-opt,cache-dir=/tmp')
         elif (cfg.env['DEST_OS'] == DARWIN_OS ):
             cfg.env.append_value('LINKFLAGS', '-Wl,-cache_path_lto,/tmp/clasp')
-    elif (cfg.env['LTO_OPTION']=='obj' or cfg.env["DEVELOPMENT_MODE"]==True):
+    elif (cfg.env['CLASP_BUILD_MODE']==[] or cfg.env['CLASP_BUILD_MODE']=='object'):
         print("Turning on DEVELOPMENT_MODE")
-        cfg.define("LTO_OPTION",0) # object files
+        cfg.define("CLASP_BUILD_MODE",1) # object files
+        cfg.env.LTO_FLAG = []
+    elif (cfg.env['CLASP_BUILD_MODE']=='fasl' or cfg.env["DEVELOPMENT_MODE"]==True):
+        print("Turning on DEVELOPMENT_MODE")
+        cfg.define("CLASP_BUILD_MODE",0) # object files
         cfg.env.DEVELOPMENT_MODE = True
         cfg.env.LTO_FLAG = []
     else:
-        raise Exception("LTO_OPTION can only be 'thinlto'(default), 'lto', or 'obj' - you provided %s" % cfg.env['LTO_OPTION'])
-    log.info("default cfg.env.LTO_OPTION = %s, final cfg.env.LTO_FLAG = '%s'", cfg.env.LTO_OPTION, cfg.env.LTO_FLAG)
+        raise Exception("CLASP_BUILD_MODE can only be 'thinlto'(default), 'lto', or 'obj' - you provided %s" % cfg.env['CLASP_BUILD_MODE'])
+    log.info("default cfg.env.CLASP_BUILD_MODE = %s, final cfg.env.LTO_FLAG = '%s'", cfg.env.CLASP_BUILD_MODE, cfg.env.LTO_FLAG)
 
     cur_clang_version = run_llvm_config(cfg, "--version")
     print("cur_clang_version = %s" % cur_clang_version)

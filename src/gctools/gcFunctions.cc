@@ -1130,20 +1130,26 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
   if (buildReport) ss << (BF("DISABLE_TYPE_INFERENCE = %s\n") % (disable_type_inference ? "**DEFINED**" : "undefined") ).str();
 
   bool use_lto = false;
-#if LTO_OPTION == 0
+  // CLASP_BUILD_MODE == 0 means generate fasls
+#if CLASP_BUILD_MODE == 0
   use_lto = false;
   debugging = true;
-  if (setFeatures) {
-    features = core::Cons_O::create(_lisp->internKeyword("GENERATE-FASL"),features);
-    features = core::Cons_O::create(_lisp->internKeyword("LINK-BUILTINS-FOR-COMPILE-FILE"),features);
-  }
-#else
+  core::Symbol_sp sym = INTERN_(kw,fasl);
+  INTERN_(core,STARclasp_build_modeSTAR)->defparameter(sym);
+  // CLASP_BUILD_MODE == 1 means generate object files
+#elif CLASP_BUILD_MODE == 1
+  use_lto = false;
+  debugging = true;
+  core::Symbol_sp sym = INTERN_(kw,object);
+  INTERN_(core,STARclasp_build_modeSTAR)->defparameter(sym);
+  // CLASP_BUILD_MODE == 2 means generate bitcode and use thinlto
+#elif CLASP_BUILD_MODE == 2
   use_lto = true;
   debugging = false;
-  if (setFeatures) features = core::Cons_O::create(_lisp->internKeyword("GENERATE-BITCODE"),features);
-  // When we generate bitcode - we don't link builtins for compile-file - we do it during external linking with clang
+  core::Symbol_sp sym = INTERN_(kw,bitcode);
+  INTERN_(core,STARclasp_build_modeSTAR)->defparameter(sym);
 #endif
-  if (buildReport) ss << (BF("USE_LTO = %s\n") % (use_lto ? "**DEFINED**" : "undefined") ).str();
+  if (buildReport) ss << (BF("CLASP_BUILD_MODE = %s") % CLASP_BUILD_MODE);
   
   bool use_human_readable_bitcode = false;
 #if USE_HUMAN_READABLE_BITCODE==1

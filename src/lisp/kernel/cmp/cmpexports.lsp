@@ -87,6 +87,7 @@
           irc-create-invoke
           compile-file-to-module
           link-builtins-module
+          link-object-files
           optimize-module-for-compile
           optimize-module-for-compile-file
           codegen-rtv

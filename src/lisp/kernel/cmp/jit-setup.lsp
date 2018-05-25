@@ -432,7 +432,7 @@ The passed module is modified as a side-effect."
   (quick-module-dump module "module before linking builtins-clone")
   (let ((linker (llvm-sys:make-linker module))
         (builtins-clone (llvm-sys:clone-module (get-builtins-module))))
-    ;;(remove-always-inline-from-functions builtins-clone)
+    ;;(switch-always-inline-to-inline builtins-clone)
     (quick-module-dump builtins-clone "builtins-clone")
     (llvm-sys:link-in-module linker builtins-clone))
   module)
@@ -470,8 +470,6 @@ The passed module is modified as a side-effect."
   (when (and *optimizations-on* module)
     #+(or)(let ((call-sites (call-sites-to-always-inline module)))
             (bformat t "Call-sites -> %s\n" call-sites))
-    ;; Link in the builtins as part of the optimization
-    #+link-builtins-for-compile-file(link-builtins-module module)
     (quick-module-dump module "in-optimize-module-for-compile-file-after-link-builtins")
     (let* ((pass-manager-builder (llvm-sys:make-pass-manager-builder))
            (mpm (llvm-sys:make-pass-manager))
@@ -537,6 +535,17 @@ The passed module is modified as a side-effect."
       (if (llvm-sys:has-fn-attribute f 'llvm-sys:attribute-always-inline)
           (progn
             (llvm-sys:remove-fn-attr f 'llvm-sys:attribute-always-inline)
+            (setf inline-functions (cons f inline-functions)))))
+    inline-functions))
+
+(defun switch-always-inline-to-inline (module)
+  (let ((functions (llvm-sys:module-get-function-list module))
+        inline-functions)
+    (dolist (f functions)
+      (if (llvm-sys:has-fn-attribute f 'llvm-sys:attribute-always-inline)
+          (progn
+            (llvm-sys:remove-fn-attr f 'llvm-sys:attribute-always-inline)
+            (llvm-sys:add-fn-attr f 'llvm-sys:attribute-inline-hint)
             (setf inline-functions (cons f inline-functions)))))
     inline-functions))
 

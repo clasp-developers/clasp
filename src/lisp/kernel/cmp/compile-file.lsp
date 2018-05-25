@@ -256,13 +256,20 @@ Compile a lisp source file into an LLVM module."
                   (with-literal-table
                       (loop-read-and-compile-file-forms source-sin environment compile-file-hook))
                   (make-boot-function-global-variable *the-module* run-all-function)))
-              ;; When generating fasl files we need to link in the builtins before optimization
-              (when (eq output-type :fasl)
-                (link-builtins-module module))
               (cmp-log "About to verify the module\n")
               (cmp-log-dump-module *the-module*)
               (irc-verify-module-safe *the-module*)
-              (quick-module-dump *the-module* "preoptimize"))
+              (quick-module-dump *the-module* "preoptimize")
+              (cond
+                ((eq output-type :object)
+                 (link-builtins-module *the-module*))
+                ((eq output-type :fasl)
+                 ;; nothing
+                 )
+                ((eq output-type :bitcode)
+                 ;; don't link builtins - they will be linked later
+                 )
+                (t (error "Handle output-type option ~a" output-type))))
             (quick-module-dump module "postoptimize")
             module))))))
 
@@ -332,7 +339,7 @@ Compile a lisp source file into an LLVM module."
            (bformat t "Writing temporary bitcode file to: %s\n" temp-bitcode-file)
            (write-bitcode module (core:coerce-to-filename temp-bitcode-file))
            (bformat t "Writing fasl file to: %s\n" output-file)
-           (llvm-link output-file :lisp-bitcode-files (list temp-bitcode-file))))
+           (llvm-link output-file :lisp-bitcode-files (list temp-bitcode-file) :input-type :bitcode)))
         (t ;; fasl
          (error "Add support to file of type: ~a" output-type)))
       (dolist (c conditions)
