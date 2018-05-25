@@ -1353,7 +1353,7 @@ package."
   (core:quit 1))
 
 (eval-when (:execute :load-toplevel)
-  (when (null (member :interactive *features*))
+  (when (null (core:is-interactive-lisp))
     (setq *invoke-debugger-hook* 'debugger-disabled-hook)))
 
 (defun safe-eval (form env &optional (err-value nil err-value-p))

@@ -7,4 +7,4 @@
        (core:process-command-line-load-eval-sequence))
   (core::select-package :core)
   (let ((core:*use-interpreter-for-eval* nil))
-    (when (member :interactive *features*) (core::low-level-repl))))
+    (when (core:is-interactive-lisp) (core::low-level-repl))))

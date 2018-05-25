@@ -1467,7 +1467,7 @@ CL_DEFUN void core__low_level_repl() {
   }
 };
 
-CL_DEFUN void core__is_interactive_lisp() {
+CL_DEFUN bool core__is_interactive_lisp() {
   return _lisp->_Interactive;
 }
 

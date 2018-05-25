@@ -5,7 +5,7 @@
           (cl:in-package :cl-user)
           (let ((core:*use-interpreter-for-eval* nil))
             (core:process-command-line-load-eval-sequence)
-            (when (member :interactive *features*)
+            (when (core:is-interactive-lisp)
               (format t "Starting bclasp~%")
               (core:run-repl))))
 

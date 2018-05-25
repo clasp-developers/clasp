@@ -683,7 +683,7 @@ the stage, the +application-name+ and the +bitcode-name+"
 (defun default-prologue-form (&optional features)
   `(progn
      ,@(mapcar #'(lambda (f) `(push ,f *features*)) features)
-     (if (member :interactive *features*)
+     (if (core:is-interactive-lisp)
          (bformat t "Starting %s ... loading image... it takes a few seconds\n" (lisp-implementation-version)))))
 
 
