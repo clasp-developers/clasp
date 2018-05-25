@@ -2106,7 +2106,11 @@ CL_DEFUN T_mv core__universal_error_handler(T_sp continueString, T_sp datum, Lis
     printf("%s\n", ss.str().c_str());
   }
   dbg_hook("universalErrorHandler");
-  core__invoke_internal_debugger(_Nil<T_O>());
+  if (_lisp->_Interactive) {
+    core__invoke_internal_debugger(_Nil<T_O>());
+  } else {
+    c_bt();
+  }
   abort();
 };
 
