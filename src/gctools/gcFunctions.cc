@@ -1144,7 +1144,7 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
 #elif CLASP_BUILD_MODE == 2
   use_lto = true;
   debugging = false;
-  INTERN_(core,STARclasp_build_modeSTAR)->defparameter(sym,kw::_sym_bitcode);
+  INTERN_(core,STARclasp_build_modeSTAR)->defparameter(kw::_sym_bitcode);
 #endif
   if (buildReport) ss << (BF("CLASP_BUILD_MODE = %s") % CLASP_BUILD_MODE);
   
