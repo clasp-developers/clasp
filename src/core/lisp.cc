@@ -1467,6 +1467,10 @@ CL_DEFUN void core__low_level_repl() {
   }
 };
 
+CL_DEFUN void core__is_interactive_lisp() {
+  return _lisp->_Interactive;
+}
+
 CL_DEFUN void core__set_interactive_lisp(bool interactive) {
   List_sp features = cl::_sym_STARfeaturesSTAR->symbolValue();
   // Remove any old :interactive feature
