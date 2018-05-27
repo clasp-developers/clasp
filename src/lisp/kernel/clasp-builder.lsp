@@ -274,23 +274,33 @@ Return files."
                (load-kernel-file output-path output-type)))
            (one-compile-kernel-file (entry counter)
              (compile-kernel-file entry :reload reload :output-type output-type :counter counter :total-files total :silent t)))
-      (let (entry job-counter)
+      (let (entry job-counter wpid status)
         (tagbody
          top
            (setq entry (if files (pop files) nil))
            (setq job-counter (incf counter))
            (when (> counter parallel-jobs)
-             (multiple-value-bind (wpid status)
-                 (core:wait)
-               (if (>= wpid 0)
-                   (let* ((finished-entry-triplet (gethash wpid jobs))
-                          (finished-entry (first finished-entry-triplet))
-                          (finished-job-counter (second finished-entry-triplet))
-                          (result-stream (third finished-entry-triplet)))
-                     (finished-one finished-entry finished-job-counter wpid result-stream)
-                     (when reload (reload-one finished-entry))
-                     (decf child-count))
-                   (error "wait returned ~d  status ~d~%" wpid status))))
+             (block wait-loop
+               (tagbody
+                top
+                  (multiple-value-setq (wpid status) (core:wait))
+                  (core:bformat t "wpid -> %s  status -> %s\n" wpid status)
+                  (when (core:wifexited status) (go done))
+                  (when (core:wifsignaled status)
+                    (let ((signal (core:wtermsig status)))
+                      (warn "Child process with pid ~a got signal ~a" signal)))
+                  (go top)
+                done
+                  ))
+             (if (>= wpid 0)
+                 (let* ((finished-entry-triplet (gethash wpid jobs))
+                        (finished-entry (first finished-entry-triplet))
+                        (finished-job-counter (second finished-entry-triplet))
+                        (result-stream (third finished-entry-triplet)))
+                   (finished-one finished-entry finished-job-counter wpid result-stream)
+                   (when reload (reload-one finished-entry))
+                   (decf child-count))
+                 (error "wait returned ~d  status ~d~%" wpid status)))
            (when entry
              (multiple-value-bind (maybe-error pid-or-error result-stream)
                  (core:fork t)
@@ -301,8 +311,17 @@ Return files."
                          (progn
                            ;; Turn off interactive mode so that errors cause clasp to die with backtrace
                            (core:set-interactive-lisp nil)
-                           (one-compile-kernel-file entry job-counter)
-                           (core:exit))
+                           (let ((new-sigset (core:make-cxx-object 'core:sigset))
+                                 (old-sigset (core:make-cxx-object 'core:sigset)))
+                             (core:sigset-sigaddset new-sigset 'core:signal-sigint)
+                             (core:sigset-sigaddset new-sigset 'core:signal-sigchld)
+                             (multiple-value-bind (fail errno)
+                                 (core:sigthreadmask :sig-setmask new-sigset old-sigset)
+                               (one-compile-kernel-file entry job-counter)
+                               (core:sigthreadmask :sig-setmask old-sigset nil)
+                               (when fail
+                                 (error "sigthreadmask has an error errno = ~a" errno))
+                               (core:exit))))
                          (progn
                            (started-one entry job-counter pid)
                            (setf (gethash pid jobs) (list entry job-counter result-stream))

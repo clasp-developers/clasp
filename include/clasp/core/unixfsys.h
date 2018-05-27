@@ -30,6 +30,58 @@ THE SOFTWARE.
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/pathname.fwd.h>
 
+
+
+
+namespace core {
+
+  enum SignalEnum {
+      signal_SIGABRT = SIGABRT,
+      signal_SIGALRM = SIGALRM,
+      signal_SIGBUS = SIGBUS,
+      signal_SIGCHLD = SIGCHLD,
+      signal_SIGCONT = SIGCONT,
+      signal_SIGFPE = SIGFPE,
+      signal_SIGHUP = SIGHUP,
+      signal_SIGILL = SIGILL,
+      signal_SIGINT = SIGINT,
+      signal_SIGKILL = SIGKILL,
+      signal_SIGPIPE = SIGPIPE,
+      signal_SIGQUIT = SIGQUIT,
+      signal_SIGSEGV = SIGSEGV,
+      signal_SIGSTOP = SIGSTOP,
+      signal_SIGTERM = SIGTERM,
+      signal_SIGTSTP = SIGTSTP,
+      signal_SIGTTIN = SIGTTIN,
+      signal_SIGTTOU = SIGTTOU,
+      signal_SIGUSR1 = SIGUSR1,
+      signal_SIGUSR2 = SIGUSR2,
+//      signal_SIGPOLL = SIGPOLL,
+      signal_SIGPROF = SIGPROF,
+      signal_SIGSYS = SIGSYS,
+      signal_SIGTRAP = SIGTRAP,
+      signal_SIGURG = SIGURG,
+      signal_SIGVTALRM = SIGVTALRM,
+      signal_SIGXCPU = SIGXCPU,
+      signal_SIGXFSZ = SIGXFSZ,
+  };
+
+  FORWARD(Sigset);
+  class Sigset_O : public General_O {
+    LISP_CLASS(core, CorePkg, Sigset_O, "Sigset", General_O);
+  public: // Simple default ctor/dtor
+    Sigset_O();
+  public: // instance variables here
+    sigset_t _sigset;
+  public: // Functions here
+    int sigset_sigaddset(SignalEnum sym);
+    
+  }; // Pointer class
+
+  
+}; // core namespace
+
+
 namespace core {
 
 Integer_sp clasp_file_len(int f);
@@ -43,4 +95,6 @@ T_mv af_renameFile(T_sp oldn, T_sp newn, T_sp if_exists = kw::_sym_supersede);
 T_sp cl__delete_file(T_sp filespec);
 String_sp clasp_strerror(int e);
 };
+
+DECLARE_ENUM_SYMBOL_TRANSLATOR(core::SignalEnum,core::_sym__PLUS_SignalEnumConverter_PLUS_);
 #endif
