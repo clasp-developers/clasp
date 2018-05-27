@@ -68,6 +68,7 @@ namespace core {
 
   FORWARD(Sigset);
   class Sigset_O : public General_O {
+    CL_DOCSTRING(R"(Wraps the unix sigset_t data type used to represent a signal set.)");
     LISP_CLASS(core, CorePkg, Sigset_O, "Sigset", General_O);
   public: // Simple default ctor/dtor
     Sigset_O();
