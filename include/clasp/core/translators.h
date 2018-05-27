@@ -52,6 +52,7 @@ THE SOFTWARE.
 //
 
 #include <cstdint>
+#include <utility>
 
 #include <clasp/core/predicates.h>
 #include <clasp/core/clasp_gmpxx.h>
@@ -608,4 +609,45 @@ template <>
   };
 };
 
+
+
+namespace translate {
+
+#if 0
+  template <typename TX, typename TY>
+    struct to_object< std::pair<const TX&, const TY&> 
+  {
+    typedef std::pair<const TX&, const TY&>
+    static core::T_sp convert( DeclareType v )
+    {
+      core::T_sp oi = core::Cons_O::create(translate::to_object<const TX&>::convert(v.first),
+                                           translate::to_object<const TY&>::convert(v.second));
+      return ( oi );
+    }
+  };
+#endif
+
+
+
+  template <typename TX, typename TY>
+    struct from_object< std::pair<const TX&, gctools::smart_ptr<TY> > >
+  {
+    typedef std::pair<const TX&, gctools::smart_ptr<TY>> DeclareType;
+    DeclareType _v;
+  from_object( core::T_sp o ) : _v( from_object<const TX&>(core::oCar(o))._v, core::oCdr(o)) {};
+  };
+
+    template <typename TX, typename TY>
+      struct to_object< std::pair<const TX&, gctools::smart_ptr<TY>>>
+  {
+    typedef std::pair<const TX&, gctools::smart_ptr<TY>> DeclareType;
+    static core::T_sp convert( DeclareType v )
+    {
+      core::T_sp oi = core::Cons_O::create(to_object<const TX&>::convert(v.first),v.second);
+      return ( oi );
+    }
+  };
+
+    
+};
 #endif
