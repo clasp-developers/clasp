@@ -16,22 +16,28 @@ NOINLINE void define_source_info(source_info_kind kind,
   core::colon_split(lisp_name,package_part,symbol_part);
   core::Symbol_sp sym = core::lisp_intern(symbol_part,package_part);
   core::SimpleBaseString_sp sourceFile = core::SimpleBaseString_O::make(file);
-  core::SimpleBaseString_sp docs = core::SimpleBaseString_O::make(docstring);
+  core::SimpleBaseString_sp docs;
+  bool gotdocs = false;
+  if (docstring != "") {
+    docs = core::SimpleBaseString_O::make(docstring);
+    gotdocs = true;
+  }
   if ( kind == code_kind ) {
     core::Function_sp func = core::coerce::functionDesignator(sym);
     func->setSourcePosInfo(sourceFile, character_offset, line, 0 );
-    ext__annotate(sym,cl::_sym_documentation,cl::_sym_function, docs);
-    ext__annotate(func,cl::_sym_documentation,cl::_sym_function, docs);
+    if (gotdocs) {
+      ext__annotate(sym,cl::_sym_documentation,cl::_sym_function, docs);
+      ext__annotate(func,cl::_sym_documentation,cl::_sym_function, docs);
+    };
   } else if ( kind == method_kind ) {
     core::List_sp info = core__get_sysprop(sym,core::_sym_cxx_method_source_location);
     info = core::Cons_O::create(core::Cons_O::createList(sourceFile,core::clasp_make_fixnum((Fixnum)character_offset)),info);
     core::core__put_sysprop(sym,core::_sym_cxx_method_source_location,info);
-    core::SimpleBaseString_sp docs = core::SimpleBaseString_O::make(docstring);
-    ext__annotate(sym,cl::_sym_documentation,cl::_sym_method, docs);
+    if (gotdocs) ext__annotate(sym,cl::_sym_documentation,cl::_sym_method, docs);
   } else if ( kind == class_kind ) {
     core::List_sp info = core::Cons_O::createList(sourceFile,core::clasp_make_fixnum((Fixnum)character_offset));
     core::core__put_sysprop(sym,core::_sym_class_source_location,info);
-    ext__annotate(sym,cl::_sym_documentation,cl::_sym_class, docs);
+    if (gotdocs) ext__annotate(sym,cl::_sym_documentation,cl::_sym_class, docs);
   } else if ( kind == variable_kind ) {
     printf("%s:%d Handle setting source location of variable_kind\n", __FILE__, __LINE__ );
   } else {
