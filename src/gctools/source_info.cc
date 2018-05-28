@@ -1,6 +1,7 @@
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 #include <clasp/core/numbers.h>
+#include <clasp/core/lisp.h>
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/designators.h>
 #include <clasp/core/documentation.h>
@@ -37,7 +38,10 @@ NOINLINE void define_source_info(source_info_kind kind,
   } else if ( kind == class_kind ) {
     core::List_sp info = core::Cons_O::createList(sourceFile,core::clasp_make_fixnum((Fixnum)character_offset));
     core::core__put_sysprop(sym,core::_sym_class_source_location,info);
-    if (gotdocs) ext__annotate(sym,cl::_sym_documentation,cl::_sym_class, docs);
+    if (gotdocs) {
+      core::Instance_sp class_ = gc::As<core::Instance_sp>(core::cl__find_class(sym));
+      class_->instanceSet(REF_CLASS_DOCSTRING,docs);
+    }
   } else if ( kind == variable_kind ) {
     printf("%s:%d Handle setting source location of variable_kind\n", __FILE__, __LINE__ );
   } else {
