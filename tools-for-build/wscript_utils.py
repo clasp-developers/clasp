@@ -240,6 +240,14 @@ def waf_nodes_for_lisp_files(bld, paths):
         nodes.append(waf_node)
     return nodes
 
+
+def waf_nodes_for_object_files(bld, paths, fasl_dir):
+    nodes = []
+    for path in paths:
+        waf_node = bld.path.find_or_declare("%s/%s.o" % (fasl_dir,path))
+        nodes.append(waf_node)
+    return nodes
+
 def libraries_as_link_flags(fmt, libs):
     result = []
     for x in libs:

@@ -77,6 +77,7 @@ CommandLineOptions::CommandLineOptions(int argc, char *argv[])
              "-- {ARGS}*           - Trailing are added to core:*command-line-arguments*\n"
              "*feature* settings\n"
              " debug-startup       - Print a message for every top level form at startup (requires DEBUG_SLOW)\n"
+             " debug-run-clang     - Print every clang invocation\n"
              " exit-backtrace      - Print a backtrace if a non-zero exit code is used to exit\n"
              " jit-log-symbols     - Generate a log of JITted symbols\n"
              " pause-pid           - Print the PID and pause at startup for a debugger to attach\n"

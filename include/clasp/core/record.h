@@ -228,6 +228,102 @@ public:
     }
   };
 
+  template <typename K, typename SV>
+    void field(Symbol_sp name, gctools::SmallMap<K,gctools::smart_ptr<SV>>& value ) {
+    RECORD_LOG(BF("field(Symbol_sp name, gctools::Vec0<SC& value ) name: %s") % _rep_(name));
+    switch (this->stage()) {
+    case saving: {
+      Vector_sp vec_value = core__make_vector(cl::_sym_T_O, value.size());
+      size_t idx(0);
+      for (auto it : value)
+        vec_value->rowMajorAset(idx++,Cons_O::create(translate::to_object<K>::convert(it.first), it.second));
+      RECORD_LOG(BF("saving entry: %s") % _rep_(vec_value));
+      Cons_sp apair = core::Cons_O::create(name, vec_value);
+      this->_alist = core::Cons_O::create(apair, this->_alist);
+    } break;
+    case initializing:
+    case loading: {
+      // I could speed this up if I cache the entry after this find
+      // and search from there and reverse the alist once it's done
+      List_sp find = core__alist_assoc_eq(this->_alist, name);
+      if (!find.consp())
+        SIMPLE_ERROR_SPRINTF("Could not find field %s",  _rep_(name).c_str());
+      Cons_sp apair = gc::As_unsafe<Cons_sp>(find);
+      RECORD_LOG(BF("loading find: %s") % _rep_(apair));
+      Vector_sp vec_value = gc::As<Vector_sp>(CONS_CDR(apair));
+      RECORD_LOG(BF("vec_value: %s") % _rep_(vec_value));
+      value.clear();
+      for (size_t i(0), iEnd(cl__length(vec_value)); i < iEnd; ++i) {
+        T_sp val = vec_value->rowMajorAref(i);
+        RECORD_LOG(BF("Loading vec0[%d] new@%p: %s\n") % i % (void *)(val.raw_()) % _rep_(val));
+        value.push_back(std::make_pair<K,gctools::smart_ptr<SV>>(translate::from_object<K>(oCar(val))._v, oCdr(val)));
+      }
+      if (this->stage() == initializing)
+        this->flagSeen(apair);
+    } break;
+    case patching: {
+      RECORD_LOG(BF("Patching"));
+      for ( auto pairi : value ) {
+        gc::smart_ptr<T_O> orig = pairi.second;
+        T_sp patch = record_circle_subst(this->_replacement_table, orig);
+        if (patch != orig) {
+          RECORD_LOG(BF("Patching vec0[%d] orig@%p: %s --> new@%p: %s\n") % i % _rep_(orig) % (void *)(orig.raw_()) % _rep_(patch) % (void *)(patch.raw_()));
+          pairi.second = patch;
+        }
+      }
+    } break;
+    }
+  };
+
+  template <typename SK, typename SV>
+    void field(Symbol_sp name, gctools::SmallMap<gctools::smart_ptr<SK>,gctools::smart_ptr<SV>>& value ) {
+    RECORD_LOG(BF("field(Symbol_sp name, gctools::Vec0<SC& value ) name: %s") % _rep_(name));
+    switch (this->stage()) {
+    case saving: {
+      Vector_sp vec_value = core__make_vector(cl::_sym_T_O, value.size());
+      size_t idx(0);
+      for (auto it : value)
+        vec_value->rowMajorAset(idx++,Cons_O::create(it.first, it.second));
+      RECORD_LOG(BF("saving entry: %s") % _rep_(vec_value));
+      Cons_sp apair = core::Cons_O::create(name, vec_value);
+      this->_alist = core::Cons_O::create(apair, this->_alist);
+    } break;
+    case initializing:
+    case loading: {
+      // I could speed this up if I cache the entry after this find
+      // and search from there and reverse the alist once it's done
+      List_sp find = core__alist_assoc_eq(this->_alist, name);
+      if (!find.consp())
+        SIMPLE_ERROR_SPRINTF("Could not find field %s",  _rep_(name).c_str());
+      Cons_sp apair = gc::As_unsafe<Cons_sp>(find);
+      RECORD_LOG(BF("loading find: %s") % _rep_(apair));
+      Vector_sp vec_value = gc::As<Vector_sp>(CONS_CDR(apair));
+      RECORD_LOG(BF("vec_value: %s") % _rep_(vec_value));
+      value.clear();
+      for (size_t i(0), iEnd(cl__length(vec_value)); i < iEnd; ++i) {
+        T_sp val = vec_value->rowMajorAref(i);
+        RECORD_LOG(BF("Loading vec0[%d] new@%p: %s\n") % i % (void *)(val.raw_()) % _rep_(val));
+        value.push_back(std::make_pair<gctools::smart_ptr<SK>,gctools::smart_ptr<SV>>(oCar(val), oCdr(val)));
+      }
+      if (this->stage() == initializing)
+        this->flagSeen(apair);
+    } break;
+    case patching: {
+      RECORD_LOG(BF("Patching"));
+      for ( auto pairi : value ) {
+        gc::smart_ptr<T_O> orig_key = pairi.first;
+        gc::smart_ptr<T_O> orig_value = pairi.second;
+        T_sp patch_key = record_circle_subst(this->_replacement_table, orig_key);
+        T_sp patch_value = record_circle_subst(this->_replacement_table, orig_value);
+        if (patch_value != orig_value) {
+          pairi.first = patch_key;
+          pairi.second = patch_value;
+        }
+      }
+    } break;
+    }
+  };
+
   template <typename OT>
   void field_if_not_empty(Symbol_sp name, gctools::Vec0<gc::smart_ptr<OT>> &value) {
     switch (this->stage()) {

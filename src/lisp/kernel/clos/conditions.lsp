@@ -463,7 +463,7 @@ format string."
   (let ((*debugger-hook* nil)
         (core:*stack-top-hint* (1- (core:ihs-top))))
     (with-simple-restart (continue "Return from BREAK.")
-      (invoke-debugger
+      (maybe-invoke-debugger
        (make-condition 'SIMPLE-CONDITION
                        :FORMAT-CONTROL format-control
                        :FORMAT-ARGUMENTS format-arguments))))
@@ -861,6 +861,13 @@ memory limits before executing the program again."))
 ;;; ----------------------------------------------------------------------
 ;;; ECL's interface to the toplevel and debugger
 
+(defun maybe-invoke-debugger (condition)
+  (if (core:is-interactive-lisp)
+      (invoke-debugger condition)
+      (progn
+        (core:bt)
+        (core:exit))))
+
 (defun sys::universal-error-handler (continue-string datum args)
   "Args: (error-name continuable-p function-name
        continue-format-string error-format-string
@@ -884,12 +891,12 @@ bstrings."
        ; from CEerror; mostly allocation errors
        (with-simple-restart (ignore "Ignore the error, and try the operation again")
 	 (signal condition)
-	 (invoke-debugger condition)))
+	 (maybe-invoke-debugger condition)))
       ((stringp continue-string)
        (with-simple-restart
 	 (continue "~A" (format nil "~?" continue-string args))
 	 (signal condition)
-	 (invoke-debugger condition)))
+	 (maybe-invoke-debugger condition)))
       ((and continue-string (symbolp continue-string))
        ; from CEerror
        (with-simple-restart (accept "Accept the error, returning NIL")
@@ -898,21 +905,14 @@ bstrings."
 	     (multiple-value-bind (rv used-restart)
 	       (with-simple-restart (continue "Continue, using ~S" continue-string)
 		 (signal condition)
-		 (invoke-debugger condition))
+		 (maybe-invoke-debugger condition))
 
 	       (if used-restart continue-string rv)))
 	   (if used-restart t rv))))
       (t
        (signal condition)
-       (invoke-debugger condition)))))
+       (maybe-invoke-debugger condition)))))
 
 (defun sys::tpl-continue-command (&rest any)
   (apply #'invoke-restart 'continue any))
 
-
-
-#||
-#+clasp
-(defun invoke-debugger (condition)
-  (invoke-internal-debugger condition))
-||#

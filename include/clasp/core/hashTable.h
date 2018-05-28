@@ -160,7 +160,7 @@ namespace core {
     void maphash(std::function<void(T_sp, T_sp)> const &fn) { this->mapHash(fn); };
 
   /*! maps function across a hash table until the function returns false */
-    void /*terminatingMapHash*/ map_while_true(std::function<bool(T_sp, T_sp)> const &fn) const;
+    bool /*terminatingMapHash*/ map_while_true(std::function<bool(T_sp, T_sp)> const &fn) const;
 
   /*! Return the number of entries in the HashTable Vector0 */
     int hashTableNumberOfHashes() const;

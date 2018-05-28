@@ -134,6 +134,7 @@ CL_DEFUN T_sp cl__format(T_sp destination, T_sp control, List_sp args) {
       ++cur;
       switch (*cur) {
       case 'c':
+      case 'C':
         tf << "%c";
         break;
       case 's':
@@ -141,6 +142,7 @@ CL_DEFUN T_sp cl__format(T_sp destination, T_sp control, List_sp args) {
         tf << "%s";
         break;
       case 'd':
+      case 'D':
         tf << "%d";
         break;
       case 'a':

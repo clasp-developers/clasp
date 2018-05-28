@@ -266,6 +266,8 @@ struct ThreadLocalAllocationPoints {
     mps_ap_t _non_moving_allocation_point;
     mps_ap_t _weak_link_allocation_point;
     mps_ap_t _strong_link_allocation_point;
+  // Custom allocators
+  mps_ap_t   _custom_allocation_points[MAX_CUSTOM_ALLOCATION_POINTS];
 };
 
  extern THREAD_LOCAL ThreadLocalAllocationPoints my_thread_allocation_points;

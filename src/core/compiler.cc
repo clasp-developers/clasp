@@ -329,7 +329,17 @@ CL_DECLARE();
 CL_DOCSTRING("startupImagePathname - returns a pathname based on *features* :CLASP-MIN, :USE-MPS, :BCLASP");
 CL_DEFUN T_sp core__startup_image_pathname() {
   stringstream ss;
-  ss << "app-fasl:cclasp-" << VARIANT_NAME << "-image.fasl";
+  ss << "app-fasl:cclasp-" << VARIANT_NAME << "-image";
+  T_sp mode = core::_sym_STARclasp_build_modeSTAR->symbolValue();
+  if (mode == kw::_sym_object) {
+    ss << ".fasl";
+  } else if (mode == kw::_sym_bitcode) {
+    ss << ".fasl";
+  } else if (mode == kw::_sym_fasl) {
+    ss << ".lfasl";
+  } else {
+    SIMPLE_ERROR(BF("Add support for *clasp-build-mode* = %s") % _rep_(mode));
+  }
   String_sp spath = SimpleBaseString_O::make(ss.str());
   Pathname_sp pn = cl__pathname(spath);
   return pn;

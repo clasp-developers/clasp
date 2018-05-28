@@ -815,23 +815,6 @@ eformat_read_char(T_sp strm) {
     StreamLastCode(strm, 0) = c;
     StreamLastCode(strm, 1) = EOF;
   }
-#if 0
-	if ( c == '\n' )
-	{
-	    StreamInputCursor(strm).advanceLineNumber(c);
-	} else if ( c == '\r' )
-	{
-#if 0
-	    if ( this->peek_char() == '\n')
-	    {
-		c = this->_get();
-	    }
-#endif
-	    StreamInputCursor(strm).advanceLineNumber(c);
-        } else {
-            StreamInputCursor(strm).advanceColumn(c);
-        }
-#endif
   StreamInputCursor(strm).advanceForChar(strm, c, StreamLastChar(strm));
   return c;
 }
@@ -2977,48 +2960,11 @@ io_file_close(T_sp strm) {
 
 static cl_index
 io_file_read_vector(T_sp strm, T_sp data, cl_index start, cl_index end) {
-#if 0
-        IMPLEMENT_ME();
-	cl__elttype t = clasp_array_elttype(data);
-	if (start >= end)
-            return start;
-	if (t == clasp_aet_b8 || t == clasp_aet_i8) {
-            if (StreamByteSize(strm) == 8) {
-                void *aux = data->vector.self.bc + start;
-                return start + StreamOps(strm).read_byte8(strm, aux, end-start);
-            }
-	} else if (t == clasp_aet_fix || t == clasp_aet_index) {
-            if (StreamByteSize(strm) == sizeof(gctools::Fixnum)*8) {
-                void *aux = data->vector.self.fix + start;
-                cl_index bytes = (end - start) * sizeof(gctools::Fixnum);
-                bytes = StreamOps(strm).read_byte8(strm, aux, bytes);
-                return start + bytes / sizeof(gctools::Fixnum);
-            }
-	}
-#endif
   return generic_read_vector(strm, data, start, end);
 }
 
 static cl_index
 io_file_write_vector(T_sp strm, T_sp data, cl_index start, cl_index end) {
-#if 0
-	cl__elttype t = clasp_array_elttype(data);
-	if (start >= end)
-            return start;
-	if (t == clasp_aet_b8 || t == clasp_aet_i8) {
-            if (StreamByteSize(strm) == 8) {
-                void *aux = data->vector.self.bc + start;
-                return StreamOps(strm).write_byte8(strm, aux, end-start);
-            }
-	} else if (t == clasp_aet_fix || t == clasp_aet_index) {
-            if (StreamByteSize(strm) == sizeof(gctools::Fixnum)*8) {
-                void *aux = data->vector.self.fix + start;
-                cl_index bytes = (end - start) * sizeof(gctools::Fixnum);
-                bytes = StreamOps(strm).write_byte8(strm, aux, bytes);
-                return start + bytes / sizeof(gctools::Fixnum);
-            }
-	}
-#endif
   return generic_write_vector(strm, data, start, end);
 }
 
@@ -4326,302 +4272,6 @@ CL_DEFUN T_sp core__file_stream_fd(T_sp s) {
   return ret;
 }
 
-/**********************************************************************
- * SEQUENCE INPUT STREAMS
- */
-#if 0 // Sequence streams
-    static cl_index
-    seq_in_read_byte8(T_sp strm, unsigned char *c, cl_index n)
-    {
-	gctools::Fixnum curr_pos = SEQ_INPUT_POSITION(strm);
-	gctools::Fixnum last = SEQ_INPUT_LIMIT(strm);
-	gctools::Fixnum delta = last - curr_pos;
-	if (delta > 0) {
-            T_sp vector = SEQ_INPUT_VECTOR(strm);
-            if (delta > n) delta = n;
-            memcpy(c, vector->vector.self.bc + curr_pos, delta);
-            SEQ_INPUT_POSITION(strm) += delta;
-            return delta;
-	}
-	return 0;
-    }
-
-    static void
-    seq_in_unread_char(T_sp strm, claspCharacter c)
-    {
-	eformat_unread_char(strm, c);
-	SEQ_INPUT_POSITION(strm) -= clasp_length(StreamByteStack(strm));
-	StreamByteStack(strm) = _Nil<T_O>();
-    }
-
-    static int
-    seq_in_listen(T_sp strm)
-    {
-	if (SEQ_INPUT_POSITION(strm) < SEQ_INPUT_LIMIT(strm))
-            return CLASP_LISTEN_AVAILABLE;
-	else
-            return CLASP_LISTEN_EOF;
-    }
-
-    static T_sp
-    seq_in_get_position(T_sp strm)
-    {
-	return Integer_O::createUnsigned((size_t)(SEQ_INPUT_POSITION(strm)));
-    }
-
-    static T_sp
-    seq_in_set_position(T_sp strm, T_sp pos)
-    {
-	gctools::Fixnum disp;
-	if (pos.nilp()) {
-            disp = SEQ_INPUT_LIMIT(strm);
-	}  else {
-            disp = clasp_toSize(pos);
-            if (disp >= SEQ_INPUT_LIMIT(strm)) {
-                disp = SEQ_INPUT_LIMIT(strm);
-            }
-	}
-	SEQ_INPUT_POSITION(strm) = disp;
-	return _lisp->_true();
-    }
-
-    const FileOps seq_in_ops = {
-	not_output_write_byte8,
-	seq_in_read_byte8,
-
-	not_output_write_byte,
-	generic_read_byte,
-
-	eformat_read_char,
-	not_output_write_char,
-	seq_in_unread_char,
-	generic_peek_char,
-
-	generic_read_vector,
-	generic_write_vector,
-
-	seq_in_listen,
-	generic_void, /* clear-input */
-	not_output_clear_output,
-	not_output_finish_output,
-	not_output_force_output,
-
-	generic_always_true, /* input_p */
-	generic_always_false, /* output_p */
-	generic_always_false,
-	io_file_element_type,
-
-	not_a_file_stream, /* length */
-	seq_in_get_position,
-	seq_in_set_position,
-	generic_column,
-	generic_close
-    };
-
-    static T_sp
-    make_sequence_input_stream(T_sp vector, cl_index istart, cl_index iend,
-                               T_sp external_format)
-    {
-	T_sp strm;
-        cl__elttype type;
-        T_sp type_name;
-        int byte_size;
-        int flags = 0;
-        if (!ECL_VECTORP(vector) ||
-            ((type = clasp_array_elttype(vector)) < clasp_aet_b8 &&
-	     type > clasp_aet_bc) ||
-	    clasp_aet_size[type] != 1)
-        {
-            FEerror("MAKE-SEQUENCE-INPUT-STREAM only accepts vectors whose element has a size of 1 byte.~%~A", 1, vector.raw_());
-        }
-        type_name = clasp_elttype_to_symbol(type);
-        byte_size = clasp_normalize_stream_element_type(type_name);
-        /* Character streams always get some external format. For binary
-         * sequences it has to be explicitly mentioned. */
-        strm = alloc_stream();
-	StreamOps(strm) = duplicate_dispatch_table(seq_in_ops);
-	StreamMode(strm) = clasp_smm_sequence_input;
-        if (!byte_size) {
-#if defined(CLASP_UNICODE)
-            if (cl__simple_string_p(vector)) {
-              if (external_format.nilp())
-                    external_format = kw::_sym_default;
-            } else {
-              if (external_format.nilp()) {
-#ifdef WORDS_BIGENDIAN
-                    external_format = @':ucs-4be';
-#else
-                    external_format = @':ucs-4le';
-#endif
-                }
-            }
-#else
-            if (external_format.nilp()) {
-                external_format = kw::_sym_default;
-            }
-#endif
-        }
-        set_stream_elt_type(strm, byte_size, flags, external_format);
-        /* Override byte size and elt type */
-        if (byte_size) StreamByteSize(strm) = byte_size;
-	SEQ_INPUT_VECTOR(strm) = vector;
-	SEQ_INPUT_POSITION(strm) = istart;
-	SEQ_INPUT_LIMIT(strm) = iend;
-	return strm;
-    }
-
-    @(defun ext::make_sequence_input_stream (vector &key
-                                             (start make_fixnum(0))
-                                             (end _Nil<T_O>())
-                                             (external_format _Nil<T_O>()))
-      cl_index_pair p;
-      @
-      p = clasp_vector_start_end(@[ext::make-sequence-input-stream],
-                               vector, start, end);
-      @(return make_sequence_input_stream(vector, p.start, p.end,
-                                          external_format))
-      @)
-
-    /**********************************************************************
-     * SEQUENCE OUTPUT STREAMS
-     */
-
-    static cl_index
-    seq_out_write_byte8(T_sp strm, unsigned char *c, cl_index n)
-    {
-    AGAIN:
-        {
-            T_sp vector = SEQ_OUTPUT_VECTOR(strm);
-	    gctools::Fixnum curr_pos = SEQ_OUTPUT_POSITION(strm);
-	    gctools::Fixnum last = vector->vector.dim;
-	    gctools::Fixnum delta = last - curr_pos;
-            if (delta < n) {
-                /* Not enough space, enlarge */
-                vector = eval::funcall(@'adjust-array', vector,
-				       clasp_ash(make_fixnum(last), 1));
-                SEQ_OUTPUT_VECTOR(strm) = vector;
-                goto AGAIN;
-            }
-            memcpy(vector->vector.self.bc + curr_pos, c, n);
-            SEQ_OUTPUT_POSITION(strm) = curr_pos += n;
-            if (vector->vector.fillp < curr_pos)
-		vector->vector.fillp = curr_pos;
-        }
-        return n;
-    }
-
-    static T_sp
-    seq_out_get_position(T_sp strm)
-    {
-	return Integer_O::createUnsigned((size_t)(SEQ_OUTPUT_POSITION(strm)));
-    }
-
-    static T_sp
-    seq_out_set_position(T_sp strm, T_sp pos)
-    {
-	T_sp vector = SEQ_OUTPUT_VECTOR(strm);
-	gctools::Fixnum disp;
-	if (pos.nilp()) {
-            disp = vector->vector.fillp;
-	} else {
-            disp = clasp_toSize(pos);
-            if (disp >= vector->vector.dim) {
-                disp = vector->vector.fillp;
-            }
-	}
-	SEQ_OUTPUT_POSITION(strm) = disp;
-	return _lisp->_true();
-    }
-
-    const FileOps seq_out_ops = {
-	seq_out_write_byte8,
-	not_input_read_byte8,
-
-	generic_write_byte,
-	not_input_read_byte,
-
-	not_input_read_char,
-	eformat_write_char,
-	not_input_unread_char,
-	generic_peek_char,
-
-	generic_read_vector,
-	generic_write_vector,
-
-	not_input_listen,
-	not_input_clear_input,
-	generic_void, /* clear-output */
-	generic_void, /* finish-output */
-	generic_void, /* force-output */
-
-	generic_always_false, /* input_p */
-	generic_always_true, /* output_p */
-	generic_always_false,
-	io_file_element_type,
-
-	not_a_file_stream, /* length */
-	seq_out_get_position,
-	seq_out_set_position,
-	generic_column,
-	generic_close
-    };
-
-    static T_sp
-    make_sequence_output_stream(T_sp vector, T_sp external_format)
-    {
-	T_sp strm;
-        cl__elttype type;
-        T_sp type_name;
-        int byte_size;
-        int flags = 0;
-        if (!ECL_VECTORP(vector) ||
-            ((type = clasp_array_elttype(vector)) < clasp_aet_b8 &&
-	     type > clasp_aet_bc) ||
-	    clasp_aet_size[type] != 1)
-        {
-            FEerror("MAKE-SEQUENCE-OUTPUT-STREAM only accepts vectors whose element has a size of 1 byte.~%~A", 1, vector.raw_());
-        }
-        type_name = clasp_elttype_to_symbol(type);
-        byte_size = clasp_normalize_stream_element_type(type_name);
-        /* Character streams always get some external format. For binary
-         * sequences it has to be explicitly mentioned. */
-	strm = alloc_stream();
-	StreamOps(strm) = duplicate_dispatch_table(seq_out_ops);
-	StreamMode(strm) = clasp_smm_sequence_output;
-        if (!byte_size) {
-#if defined(CLASP_UNICODE)
-            if (cl__simple_string_p(vector)) {
-              if (external_format.nilp())
-                    external_format = kw::_sym_default;
-            } else {
-              if (external_format.nilp()) {
-#ifdef WORDS_BIGENDIAN
-                    external_format = @':ucs-4be';
-#else
-                    external_format = @':ucs-4le';
-#endif
-                }
-            }
-#else
-            if (external_format.nilp()) {
-                external_format = kw::_sym_default;
-            }
-#endif
-        }
-        set_stream_elt_type(strm, byte_size, flags, external_format);
-        /* Override byte size and elt type */
-        if (byte_size) StreamByteSize(strm) = byte_size;
-	SEQ_OUTPUT_VECTOR(strm) = vector;
-	SEQ_OUTPUT_POSITION(strm) = vector->vector.fillp;
-	return strm;
-    }
-
-    @(defun ext::make_sequence_output_stream (vector &key (external_format _Nil<T_O>()))
-      @
-      @(return make_sequence_output_stream(vector, external_format))
-      @)
-
-#endif // Sequence streams
        /**********************************************************************
      * MEDIUM LEVEL INTERFACE
      */
@@ -5480,19 +5130,6 @@ T_sp clasp_off_t_to_integer(clasp_off_t offset) {
     output = make_fixnum((gctools::Fixnum)offset);
   } else {
     IMPLEMENT_MEF("Handle breaking converting clasp_off_t to Bignum");
-#if 0
-            T_sp y = _clasp_big_register0();
-            if (sizeof(ECL_BIGNUM_LIMBS(y)[0]) == sizeof(cl_index)) {
-                ECL_BIGNUM_LIMBS(y)[0] = (cl_index)offset;
-                offset >>= FIXNUM_BITS;
-                ECL_BIGNUM_LIMBS(y)[1] = offset;
-                ECL_BIGNUM_SIZE(y) = offset? 2 : 1;
-            } else if (sizeof(ECL_BIGNUM_LIMBS(y)[0]) >= sizeof(clasp_off_t)) {
-                ECL_BIGNUM_LIMBS(y)[0] = offset;
-                ECL_BIGNUM_SIZE(y) = 1;
-            }
-            output = _clasp_big_register_normalize(y);
-#endif
   }
   return output;
 }
@@ -5506,53 +5143,13 @@ clasp_integer_to_off_t(T_sp offset) {
     output = fixint(offset);
   } else if (core__bignump(offset)) {
     IMPLEMENT_MEF("Implement convert Bignum to clasp_off_t");
-#if 0
-            if (sizeof(ECL_BIGNUM_LIMBS(offset)[0]) == sizeof(cl_index)) {
-                if (ECL_BIGNUM_SIZE(offset) > 2) {
-                    goto ERR;
-                }
-                if (ECL_BIGNUM_SIZE(offset) == 2) {
-                    output = ECL_BIGNUM_LIMBS(offset)[1];
-                    output <<= FIXNUM_BITS;
-                }
-                output += ECL_BIGNUM_LIMBS(offset)[0];
-            } else if (sizeof(ECL_BIGNUM_LIMBS(offset)[0]) >= sizeof(clasp_off_t)) {
-                if (ECL_BIGNUM_SIZE(offset) > 1) {
-                    goto ERR;
-                }
-                output = ECL_BIGNUM_LIMBS(offset)[0];
-            }
-#endif
   } else {
     //	ERR:
     FEerror("Not a valid file offset: ~S", 1, offset.raw_());
   }
   return output;
 }
-#if 0
-    static T_sp
-    alloc_stream()
-    {
-	T_sp x = clasp_alloc_object(t_stream);
-	x->stream.closed = 0;
-	x->stream.format = _Nil<T_O>();
-	x->stream.flags = 0;
-	x->stream.byte_size = 8;
-	x->stream.buffer = NULL;
-	x->stream.encoder = NULL;
-	x->stream.decoder = NULL;
-	x->stream.last_char = EOF;
-	x->stream.byte_stack = _Nil<T_O>();
-	x->stream.last_code[0] = x->stream.last_code[1] = EOF;
-	x->stream.eof_char = EOF;
-// Other streams
-	x->stream.file.descriptor = -1;
-	x->stream.object0 =
-            x->stream.object1 = OBJNULL;
-	x->stream.int0 = x->stream.int1 = 0;
-	return x;
-    }
-#endif
+
 /**********************************************************************
  * ERROR MESSAGES
  */
@@ -5728,77 +5325,6 @@ wsock_error(const char *err_msg, T_sp strm) {
   clasp_enable_interrupts();
   FEerror(err_msg, 2, strm.raw_(), msg_obj.raw_());
 }
-#endif
-
-#if 0
-
-    void
-    initialize_lispStream(void)
-    {
-	int flags;
-	T_sp standard_input;
-	T_sp standard_output;
-	T_sp error_output;
-	T_sp aux;
-	T_sp null_stream;
-	T_sp external_format = _Nil<T_O>();
-#if defined(CLASP_MS_WINDOWS_HOST)
-#ifdef CLASP_UNICODE
-	external_format = Cons_O::createList( kw::_sym_latin_1, kw::_sym_crlf);
-	flags = 0;
-#else
-	external_format = Cons_O::createList( kw::_sym_crlf, kw::_sym_passThrough);
-	flags = CLASP_STREAM_DEFAULT_FORMAT;
-#endif
-#else
-	flags = CLASP_STREAM_DEFAULT_FORMAT;
-#endif
-
-	null_stream = clasp_make_stream_from_FILE(SimpleBaseString_O::make("/dev/null"),
-						NULL, clasp_smm_io, 8, flags, external_format);
-	generic_close(null_stream);
-	null_stream = cl__make_two_way_stream(null_stream, cl_make_broadcast_stream(0));
-	cl_core.null_stream = null_stream;
-
-        /* We choose C streams by default only when _not_ using threads.
-         * The reason is that C streams block on I/O operations. */
-#if !defined(ECL_THREADS)
-	standard_input = maybe_make_windows_console_FILE(make_constant_base_string("stdin"),
-							 stdin, clasp_smm_input, 8, flags, external_format);
-	standard_output = maybe_make_windows_console_FILE(make_constant_base_string("stdout"),
-							  stdout, clasp_smm_output, 8, flags, external_format);
-	error_output = maybe_make_windows_console_FILE(make_constant_base_string("stderr"),
-						       stderr, clasp_smm_output, 8, flags, external_format);
-#else
-	standard_input = maybe_make_windows_console_fd(make_constant_base_string("stdin"),
-						       STDIN_FILENO, clasp_smm_input_file, 8, flags,
-						       external_format);
-	standard_output = maybe_make_windows_console_fd(make_constant_base_string("stdout"),
-							STDOUT_FILENO, clasp_smm_output_file, 8, flags,
-							external_format);
-	error_output = maybe_make_windows_console_fd(make_constant_base_string("stderr"),
-						     STDERR_FILENO, clasp_smm_output_file, 8, flags,
-						     external_format);
-#endif
-	cl_core.standard_input = standard_input;
-        ECL_SET(@'ext::+process-standard-input+', standard_input);
-	ECL_SET(@'*standard-input*', standard_input);
-	cl_core.standard_output = standard_output;
-        ECL_SET(@'ext::+process-standard-output+', standard_output);
-	ECL_SET(@'*standard-output*', standard_output);
-	ECL_SET(@'*trace-output*', standard_output);
-	cl_core.error_output = error_output;
-        ECL_SET(@'ext::+process-error-output+', error_output);
-	ECL_SET(@'*error-output*', error_output);
-THIS NEEDS TO BE TAKEN OUT
-	cl_core.terminal_io = aux
-            = cl__make_two_way_stream(standard_input, standard_output);
-
-	ECL_SET(@'*terminal-io*', aux);
-	aux = cl__make_synonym_stream(@'*terminal-io*');
-	ECL_SET(@'*query-io*', aux);
-	ECL_SET(@'*debug-io*', aux);
-    }
 #endif
 
 CL_LAMBDA(stream);

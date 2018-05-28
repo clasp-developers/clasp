@@ -482,8 +482,11 @@ CL_DEFUN T_sp core__symbol_global_value(Symbol_sp s) {
   return s->_GlobalValue;
 }
 
-CL_DEFUN void core__symbol_global_value_set(Symbol_sp s, T_sp v) {
-  s->_GlobalValue = v;
+CL_DOCSTRING(R"(Set the value slot of the symbol to the value.
+This bypasses thread local storage of symbol value slots and any threads that start
+after this has been set will start with the value set here.)");
+CL_DEFUN void core__symbol_global_value_set(Symbol_sp symbol, T_sp value) {
+  symbol->_GlobalValue = value;
 }
 
 };

@@ -379,8 +379,6 @@ namespace core {
   private:
     friend class CoreExposer;
     LISP_ABSTRACT_CLASS(core, ClPkg, T_O, "T",::_RootDummyClass);
-  public:
-    bool isAInstanceOf(core::Instance_sp mc);
   };
 
 };
@@ -399,7 +397,6 @@ namespace core {
   class General_O : public T_O {
     LISP_CLASS(core, CorePkg, General_O, "General", T_O );
   public:
-//    General_O& &operator=(const General_O &) { return *this; };
 
     virtual void sxhash_(HashGenerator &hg) const;
     virtual void sxhash_equal(HashGenerator &hg,LocationDependencyPtrT ptr) const;
@@ -409,7 +406,6 @@ namespace core {
 
       //! Initialize member variables and those that depend on sharedThis
     virtual void initialize();
-    virtual bool isStandardObject() { return false; };
   /*! Objects can catch signals from Models
 	 * but only Model's and subclasses can send them
 	 */
@@ -459,29 +455,6 @@ namespace core {
 	 */
     virtual bool equalp(T_sp obj) const;
 
-  /*! Return true if the this is less than obj
-	 * All other relative comparisons call this one
-	 * so if you define this in a subclass then all the other comparisons
-	 * will work
-	 * but you can define the others if you want
-	 *
-	 * -lt- is the only one that has to be defined if you want relative comparisons
-	 * but the others can be defined to improve efficiency
-	 */
-    virtual bool operator<(T_sp obj) const {
-      _OF();
-      SUBCLASS_MUST_IMPLEMENT();
-    }; // This is the only one that absolutely has to be defined in a subclass
-    virtual bool operator<=(T_sp obj) const {
-      if (cl__eql(this->asSmartPtr(), obj))
-        return true;
-      return this->operator<(obj);
-    };
-    virtual bool operator>(T_sp obj) const { return !this->operator<=(obj); };
-    virtual bool operator>=(T_sp obj) const { return !this->operator<(obj); };
-
-//    virtual void validate() const {};
-
     //! This is to support Derivable<T> classes in clbind
     virtual void* pointerToAlienWithin() { SUBIMP(); };
   
@@ -507,8 +480,6 @@ namespace core {
   /*! Return number of slots if instance of Instance_O otherwise return nil */
     virtual T_sp oinstancep() const { return _Nil<T_O>(); }; //
     bool instancep() const { return oinstancep().isTrue(); };
-    virtual bool environmentp() const { return false; };
-    virtual bool genericFunctionP() const { return false; };
   /*! Return number of slots if instance of Instance_O otherwise return nil */
     virtual T_sp ofuncallableInstanceP() const { return _Nil<T_O>(); }; //
     bool funcallableInstanceP() const { return ofuncallableInstanceP().isTrue(); };

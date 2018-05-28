@@ -1,5 +1,5 @@
 /*
-    File: pointer.fwd.h
+    File: fli.fwd.h
 */
 
 /*
@@ -24,13 +24,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#ifndef _core__pointer_fwd_H_
-#define _core__pointer_fwd_H_
+#ifndef _core__fli_fwd_H_
+#define _core__fli_fwd_H_
 
-#include <clasp/core/fli.fwd.h>
-
-namespace core {
-  FORWARD(Pointer);
+namespace clasp_ffi {
+  FORWARD(ForeignData);
 };
-
-#endif /* _core__pointer.fwd_H_ */
+#endif /* _core__fli.fwd_H_ */

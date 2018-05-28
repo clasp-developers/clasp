@@ -1290,23 +1290,6 @@ namespace translate {
   from_object(T_P object) : _v(gc::As<llvmo::DataLayout_sp>(object)->dataLayout()) {};
   };
 
-#if 0
-  template <>
-    struct from_object<llvm::DataLayout *, std::true_type> {
-    typedef llvm::DataLayout *DeclareType;
-    DeclareType _v;
-  from_object(T_P object) : _v(gc::As<llvmo::DataLayout_sp>(object)->wrappedPtr()){};
-  };
-#endif
-#if 0
-  template <>
-    struct from_object<const llvm::DataLayout *, std::true_type> {
-    typedef llvm::DataLayout *DeclareType;
-    DeclareType _v;
-  from_object(T_P object) : _v(gc::As<llvmo::DataLayout_sp>(object)->wrappedPtr()){};
-  };
-#endif
-
   // ----------   to_object converters
   template <>
     struct to_object<const llvm::DataLayout &> {
@@ -1326,24 +1309,6 @@ namespace translate {
       return val;
     }
   };
-
-#if 0
-  template <>
-    struct to_object<const llvm::DataLayout *> {
-    static core::T_sp convert(const llvm::DataLayout *ptr) {
-      _G();
-      return ((core::RP_Create_wrapped<llvmo::DataLayout_O, llvm::DataLayout *>(const_cast<llvm::DataLayout *>(ptr))));
-    }
-  };
-#endif
-#if 0
-  template <>
-    struct to_object<llvm::DataLayout *> {
-    static core::T_sp convert(llvm::DataLayout *ptr) {
-      return ((core::RP_Create_wrapped<llvmo::DataLayout_O, llvm::DataLayout *>(ptr)));
-    }
-  };
-#endif
 };
 
 
@@ -1424,9 +1389,6 @@ private:
 public:
   PointerToExternalType wrappedPtr() const { return llvm_cast<ExternalType>(this->_ptr); };
   void set_wrapped(PointerToExternalType ptr) {
-#if 0
-	    if (this->_ptr != NULL && this->_PtrIsOwned ) delete this->_ptr;
-#endif
     this->_ptr = ptr;
   }
   ConstantArray_O() : Base(){};
@@ -1450,9 +1412,6 @@ private:
 public:
   PointerToExternalType wrappedPtr() const { return llvm_cast<ExternalType>(this->_ptr); };
   void set_wrapped(PointerToExternalType ptr) {
-#if 0
-	    if (this->_ptr != NULL && this->_PtrIsOwned ) delete this->_ptr;
-#endif
     this->_ptr = ptr;
   }
   BlockAddress_O() : Base(){};
@@ -1476,9 +1435,6 @@ private:
 public:
   PointerToExternalType wrappedPtr() const { return llvm_cast<ExternalType>(this->_ptr); };
   void set_wrapped(PointerToExternalType ptr) {
-#if 0
-	    if (this->_ptr != NULL && this->_PtrIsOwned ) delete this->_ptr;
-#endif
     this->_ptr = ptr;
   }
   ConstantDataSequential_O() : Base(){};
@@ -1501,9 +1457,6 @@ private:
 public:
   PointerToExternalType wrappedPtr() const { return llvm_cast<ExternalType>(this->_ptr); };
   void set_wrapped(PointerToExternalType ptr) {
-#if 0
-	    if (this->_ptr != NULL && this->_PtrIsOwned ) delete this->_ptr;
-#endif
     this->_ptr = ptr;
   }
   ConstantDataArray_O() : Base(){};
@@ -1527,9 +1480,6 @@ private:
 public:
   PointerToExternalType wrappedPtr() const { return llvm_cast<ExternalType>(this->_ptr); };
   void set_wrapped(PointerToExternalType ptr) {
-#if 0
-	    if (this->_ptr != NULL && this->_PtrIsOwned ) delete this->_ptr;
-#endif
     this->_ptr = ptr;
   }
   ConstantExpr_O() : Base(){};
@@ -1673,17 +1623,6 @@ public:
   void runFunction(Function_sp func, core::String_sp fileName); //, core::Cons_sp args );
 };                                                           // ExecutionEngine_O
 };                                                           // llvmo
-
-namespace llvmo {
-#if 0
-    struct GlobalVariableStringHolder
-    {
-	string			_String;
-	GlobalVariable_sp 	_LlvmValue;
-        DECLARE_onHeapScanGCRoots();
-    };
-#endif
-};
 
 namespace llvmo {
   FORWARD(Module);
@@ -1866,76 +1805,6 @@ struct to_object<const llvm::TargetLibraryInfoWrapperPass *> {
   }
 };
 };
-    ;
-
-
-#if 0
-namespace llvmo
-{
-  FORWARD(TargetData);
-  c l a s s TargetData_O : public ImmutablePass_O
-  {
-    L I S P_EXTERNAL_CLASS(LlvmoPkg,llvm::TargetData,TargetData_O,"TARGET-DATA",ImmutablePass_O);
-    typedef llvm::TargetData ExternalType;
-    typedef llvm::TargetData* PointerToExternalType;
-  public:
-    static TargetData_sp copy(llvm::TargetData const& orig);
-  public:
-    PointerToExternalType wrappedPtr() { return static_cast<PointerToExternalType>(this->_ptr);};
-    void set_wrapped(PointerToExternalType ptr)
-    {
-      /*        if (this->_ptr != NULL ) delete this->_ptr; */
-      this->_ptr = ptr;
-    }
-    TargetData_O() : Base() {};
-    ~TargetData_O() {}
-  }; // TargetData_O
-}; // llvmo
-/* from_object translators */
-
-namespace translate
-{
-    template <>
-    struct from_object<llvm::TargetData*,std::true_type>
-    {
-        typedef llvm::TargetData* DeclareType;
-        DeclareType _v;
-	from_object(T_P object) : _v(object.as<llvmo::TargetData_O>()->wrappedPtr()) {};
-    };
-    template <>
-    struct from_object<llvm::TargetData const&,std::true_type>
-    {
-        typedef llvm::TargetData const& DeclareType;
-        DeclareType _v;
-	from_object(T_P object) : _v(*(object.as<llvmo::TargetData_O>()->wrappedPtr())) {};
-    };
-};
-;
-/* to_object translators */
-
-namespace translate
-{
-    template <>
-    struct to_object<llvm::TargetData*>
-    {
-        static core::T_sp convert(llvm::TargetData* ptr)
-        {_G(); return(( core::RP_Create_wrapped<llvmo::TargetData_O,llvm::TargetData*>(ptr)));}
-    };
-};
-;
-
-namespace translate
-{
-    template <>
-    struct to_object<const llvm::TargetData*>
-    {
-        static core::T_sp convert(const llvm::TargetData* ptr)
-        {_G(); return(( core::RP_Create_wrapped<llvmo::TargetData_O,llvm::TargetData*>(const_cast<llvm::TargetData*>(ptr))));}
-    };
-};
-;
-
-#endif
 
 namespace llvmo {
 FORWARD(FunctionPassManager);
@@ -2203,14 +2072,6 @@ struct from_object<const llvm::APFloat &, std::true_type> {
 
 /* to_object translators */
 
-#if 0
-template <>
-struct gctools::GCInfo<llvmo::APFloat_O> {
-  static bool constexpr NeedsInitialization = false;
-  static bool constexpr NeedsFinalization = false;
-  static GCInfo_policy constexpr Policy = unmanaged;
-};
-#endif
 namespace llvmo {
 FORWARD(APInt);
 class APInt_O : public core::ExternalObject_O {
@@ -2248,14 +2109,6 @@ struct from_object<const llvm::APInt &, std::true_type> {
   from_object(T_P object) : _v(gc::As<llvmo::APInt_sp>(object)->_value){};
 };
 /* to_object translators */
-#if 0
- template <>
-struct gctools::GCInfo<llvmo::APInt_O> {
-  static bool constexpr NeedsInitialization = false;
-  static bool constexpr NeedsFinalization = false;
-  static GCInfo_policy constexpr Policy = unmanaged;
-};
-#endif
 template <>
 struct to_object<llvm::APInt> {
   static core::T_sp convert(llvm::APInt sr) { return llvmo::APInt_O::create(sr); };
@@ -3749,23 +3602,6 @@ struct to_object<llvm::Argument> {
 };
 };
 
-#if 0
-namespace translate {
-template <>
-struct to_object<llvm::Function::ArgumentListType &> {
-  static core::List_sp convert(llvm::Function::ArgumentListType &al) {
-    _G();
-    ql::list l;
-    for (llvm::Function::ArgumentListType::iterator it = al.begin(); it != al.end(); it++) {
-      l << to_object<llvm::Argument>::convert(*it);
-    }
-    return (l.cons());
-  }
-};
-};
-#endif
-
-
 namespace llvmo {
 FORWARD(Type);
 class Type_O : public core::ExternalObject_O {
@@ -4232,25 +4068,6 @@ struct from_object<llvm::GlobalValue::ThreadLocalMode, std::true_type> {
   }
 };
 
-#if 0
-    template <>
-    struct from_object<llvm::VerifierFailureAction,std::true_type>
-    {
-	typedef llvm::VerifierFailureAction	DeclareType;
-	DeclareType _v;
-	from_object(T_P object)
-	{_G();
-	    if ( core::Symbol_sp sym = object.asOrNull<core::Symbol_O>() )
-	    {
-		core::SymbolToEnumConverter_sp converter = llvmo::_sym_STARverifier_failure_actionsSTAR->symbolValue().as<core::SymbolToEnumConverter_O>();
-		this->_v = converter->enumForSymbol<llvm::VerifierFailureAction>(sym);
-		return;
-	    }
-	    SIMPLE_ERROR_SPRINTF("Cannot convert object %s to llvm::VerifierFailureAction", _rep_(object).c_str());
-	}
-    };
-#endif
-
 template <>
 struct from_object<llvm::AtomicOrdering, std::true_type> {
   typedef llvm::AtomicOrdering DeclareType;
@@ -4268,23 +4085,6 @@ struct from_object<llvm::AtomicOrdering, std::true_type> {
   }
 };
 
-#if 0
-template <>
-struct from_object<llvm::SynchronizationScope, std::true_type> {
-  typedef llvm::SynchronizationScope DeclareType;
-  DeclareType _v;
-  from_object(T_P object) {
-    _G();
-    if (core::Symbol_sp sym = object.asOrNull<core::Symbol_O>()) {
-      core::SymbolToEnumConverter_sp converter = gc::As<core::SymbolToEnumConverter_sp>(llvmo::_sym_STARsynchronization_scopeSTAR->symbolValue());
-      this->_v = converter->enumForSymbol<llvm::SynchronizationScope>(sym);
-      return;
-    }
-    SIMPLE_ERROR_SPRINTF("Cannot convert object %s to llvm::SynchronizationScope", _rep_(object).c_str());
-  }
-};
-#endif
- 
 template <>
 struct from_object<llvm::AtomicRMWInst::BinOp, std::true_type> {
   typedef llvm::AtomicRMWInst::BinOp DeclareType;

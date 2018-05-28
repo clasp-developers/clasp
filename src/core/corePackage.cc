@@ -130,6 +130,9 @@ const char *CorePkg_nicknames[] = {
 };
 SYMBOL_EXPORT_SC_(CorePkg, STARuse_cleavir_compilerSTAR);  // nil (clasp) or T (cleavir)
 
+SYMBOL_EXPORT_SC_(KeywordPkg,object);
+SYMBOL_EXPORT_SC_(KeywordPkg,fasl);
+SYMBOL_EXPORT_SC_(KeywordPkg,bitcode);
 SYMBOL_EXPORT_SC_(KeywordPkg,linkage);
 SYMBOL_EXPORT_SC_(KeywordPkg, verbose);
 SYMBOL_EXPORT_SC_(KeywordPkg, pause_pid);
@@ -1129,6 +1132,7 @@ void CoreExposer_O::define_essential_globals(Lisp_sp lisp) {
   comp::_sym_STARllvm_contextSTAR->defparameter(llvmo::LLVMContext_O::create_llvm_context());
   comp::_sym_STARload_time_value_holder_nameSTAR->defparameter(core::SimpleBaseString_O::make("[VALUES-TABLE]"));
   List_sp hooks = _Nil<T_O>();
+  hooks = Cons_O::create(Cons_O::create(SimpleBaseString_O::make("lfasl"), _sym_loadSource), hooks); // List of load commands
   hooks = Cons_O::create(Cons_O::create(SimpleBaseString_O::make("fasl"), _sym_load_binary), hooks);
   hooks = Cons_O::create(Cons_O::create(SimpleBaseString_O::make("fasb"), _sym_load_binary), hooks);
   hooks = Cons_O::create(Cons_O::create(SimpleBaseString_O::make("bundle"), _sym_load_binary), hooks);
