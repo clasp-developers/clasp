@@ -40,7 +40,7 @@ NOINLINE void define_source_info(source_info_kind kind,
     core::core__put_sysprop(sym,core::_sym_class_source_location,info);
     if (gotdocs) {
       core::Instance_sp class_ = gc::As<core::Instance_sp>(core::cl__find_class(sym));
-      class_->instanceSet(REF_CLASS_DOCSTRING,docs);
+      class_->instanceSet(core::Instance_O::REF_CLASS_DOCSTRING,docs);
     }
   } else if ( kind == variable_kind ) {
     printf("%s:%d Handle setting source location of variable_kind\n", __FILE__, __LINE__ );
