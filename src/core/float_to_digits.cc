@@ -188,10 +188,10 @@ static StrNs_sp generate(StrNs_sp digits, float_approx *approx) {
 
 static void
 change_precision(float_approx *approx, T_sp tposition, T_sp relativep) {
-  gctools::Fixnum pos;
   if (tposition.nilp())
     return;
-  Real_sp position = gc::As<Real_sp>(tposition);
+  gctools::Fixnum pos;
+  Fixnum_sp position = gc::As<Fixnum_sp>(tposition);
   pos = clasp_fixnum(position);
   if (!relativep.nilp()) {
     Real_sp k = clasp_make_fixnum(0);
@@ -230,7 +230,7 @@ change_precision(float_approx *approx, T_sp tposition, T_sp relativep) {
 CL_LAMBDA(digits number position relativep);
 CL_DECLARE();
 CL_DOCSTRING("float_to_digits");
-CL_DEFUN T_mv core__float_to_digits(T_sp tdigits, Float_sp number, gc::Nilable<Real_sp> position, T_sp relativep) {
+CL_DEFUN T_mv core__float_to_digits(T_sp tdigits, Float_sp number, T_sp position, T_sp relativep) {
   ASSERT(tdigits.nilp()||gc::IsA<Str8Ns_sp>(tdigits));
   gctools::Fixnum k;
   float_approx approx[1];
