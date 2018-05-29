@@ -43,6 +43,9 @@
 (defclass expose-initializer (expose-code function-mixin)
   ((signature% :initform nil :initarg :signature% :accessor signature%)))
 
+(defclass expose-pregcstartup (expose-code function-mixin)
+  ((signature% :initform nil :initarg :signature% :accessor signature%)))
+
 (defclass expose-defun (expose-code function-mixin)
   ((signature% :initform nil :initarg :signature% :accessor signature%)
    (provide-declaration% :initform t :initarg :provide-declaration% :accessor provide-declaration%)))
@@ -258,6 +261,7 @@ This interprets the tags and generates objects that are used to generate code."
         cur-values
         enums
         initializers
+        pregcstartups
         (namespace-to-assoc (make-hash-table :test #'equal))
         (package-to-assoc (make-hash-table :test #'equal))
         (packages (make-hash-table :test #'equal)) ; map ns/package to package string
@@ -318,10 +322,10 @@ This interprets the tags and generates objects that are used to generate code."
                                              cur-declare
                                              cur-docstring)
              (let* ((packaged-function-name
-                     (maybe-override-name cur-namespace-tag
-                                          cur-name
-                                          (packaged-name cur-namespace-tag tag packages)
-                                          packages)))
+                      (maybe-override-name cur-namespace-tag
+                                           cur-name
+                                           (packaged-name cur-namespace-tag tag packages)
+                                           packages)))
                (let* ((namespace (tags:namespace% cur-namespace-tag))
                       (signature (tags:signature-text% tag))
                       (signature-text (tags:signature-text% tag))
@@ -358,10 +362,10 @@ This interprets the tags and generates objects that are used to generate code."
                                              cur-declare
                                              cur-docstring)
              (let* ((packaged-function-name
-                     (maybe-override-name cur-namespace-tag
-                                          cur-name
-                                          (packaged-name cur-namespace-tag tag packages)
-                                          packages)))
+                      (maybe-override-name cur-namespace-tag
+                                           cur-name
+                                           (packaged-name cur-namespace-tag tag packages)
+                                           packages)))
                (let* ((namespace (tags:namespace% cur-namespace-tag))
                       (signature (tags:signature-text% tag))
                       (signature-text (tags:signature-text% tag))
@@ -505,11 +509,11 @@ This interprets the tags and generates objects that are used to generate code."
                     (class-key (make-class-key cur-namespace-tag class-name))
                     (class (gethash class-key classes))
                     (packaged-method-name
-                     (maybe-override-name
-                      cur-namespace-tag
-                      cur-name
-                      (packaged-name cur-namespace-tag method-name packages)
-                      packages))
+                      (maybe-override-name
+                       cur-namespace-tag
+                       cur-name
+                       (packaged-name cur-namespace-tag method-name packages)
+                       packages))
                     (lambda-list (or (tags:maybe-lambda-list cur-lambda) ""))
                     (declare-form (tags:maybe-declare cur-declare))
                     (docstring (tags:maybe-docstring cur-docstring))
@@ -659,6 +663,21 @@ This interprets the tags and generates objects that are used to generate code."
                                          :character-offset% (tags:character-offset% tag))
                           initializers
                           :test #'string=
+                          :key #'function-name% ))))
+            (tags:cl-pregcstartup-tag
+             (let* ((namespace (tags:namespace% cur-namespace-tag))
+                    (signature-text (tags:signature-text% tag)))
+               (multiple-value-bind (function-name full-function-name simple-function)
+                   (extract-function-name-from-signature signature-text tag)
+                 (declare (ignore function-name))
+                 (pushnew (make-instance 'expose-pregcstartup
+                                         :namespace% namespace
+                                         :function-name% full-function-name
+                                         :file% (tags:file% tag)
+                                         :line% (tags:line% tag)
+                                         :character-offset% (tags:character-offset% tag))
+                          pregcstartups
+                          :test #'string=
                           :key #'function-name% )))))
         (error (e)
           (error "While parsing tag from ~a:~d - ~a"
@@ -666,4 +685,4 @@ This interprets the tags and generates objects that are used to generate code."
                  (tags:line% tag)
                  e))))
     (calculate-class-stamps-and-flags classes gc-managed-types)
-    (values (order-packages-by-use packages-to-create) functions symbols classes gc-managed-types enums initializers)))
+    (values (order-packages-by-use packages-to-create) functions symbols classes gc-managed-types enums pregcstartups initializers)))

@@ -200,12 +200,12 @@ namespace core {
     virtual Number_sp negate_() const { SUBIMP(); };
 
     virtual Number_sp exp_() const { SUBIMP(); };
-
+/*
     virtual bool operator<(T_sp obj) const;
     virtual bool operator<=(T_sp obj) const;
     virtual bool operator>(T_sp obj) const;
     virtual bool operator>=(T_sp obj) const;
-
+*/
     virtual gc::Fixnum as_int_() const { SUBIMP(); }
     virtual uint as_uint_() const { SUBIMP(); }
     virtual Bignum as_mpz_() const { SUBIMP(); }

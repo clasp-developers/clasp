@@ -95,7 +95,6 @@ public:
   void dump();
   // quick and dirty way to identify environments (only works with Boehm)
   CL_DEFMETHOD std::string environmentAddress() const { stringstream ss; ss << (void*)this; return ss.str(); };
-  virtual bool environmentp() const { return true; }
 CL_LISPIFY_NAME("lexicalEnvironmentP");
 CL_DEFMETHOD   virtual bool lexicalEnvironmentP() const { return false; };
 CL_LISPIFY_NAME("functionContainerEnvironmentP");

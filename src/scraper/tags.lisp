@@ -22,6 +22,10 @@
 (defclass tags:source-tag (tag)
   ((character-offset% :initform nil :initarg :character-offset% :accessor tags:character-offset%)))
 
+(defclass tags:cl-pregcstartup-tag (source-tag)
+  ((character-offset% :initform nil :initarg :character-offset% :accessor tags:character-offset%)
+   (signature-text% :initform nil :initarg :signature-text% :accessor signature-text%)))
+
 (defclass tags:cl-initializer-tag (source-tag)
   ((character-offset% :initform nil :initarg :character-offset% :accessor tags:character-offset%)
    (signature-text% :initform nil :initarg :signature-text% :accessor signature-text%)))
@@ -256,6 +260,8 @@
     :namespace% (getf plist :namespace)
     :package% (getf plist :package)
     :package-str% (getf plist :package-name))
+  (define-tag-handler cl-pregcstartup-tag "CL_PRE_GC_STARTUP_TAG" tags:cl-pregcstartup-tag
+    :signature-text% (cscrape:read-string-to-character bufs #\) t))  
   (define-tag-handler cl-initializer-tag "CL_INITIALIZER_TAG" tags:cl-initializer-tag
     :signature-text% (cscrape:read-string-to-character bufs #\) t))
   ;; Handle more tags here

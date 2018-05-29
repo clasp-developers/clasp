@@ -365,7 +365,7 @@ void colon_split(const string& name, string& package_str, string& symbol_str)
 }
 
 CL_LAMBDA("name &optional (package \"\")");
-CL_DOCSTRING(R"doc(Intern the package:name or name/package combination)doc");
+CL_DOCSTRING(R"(Intern the package:name or name/package combination)");
 CL_DEFUN Symbol_sp core__magic_intern(const string& name, const string& package)
 {
   std::string pkg_sym = magic_name(name,package);

@@ -82,7 +82,7 @@ p  (core:pathname-translations "cclasp-boehm" '(("**;*.*" #P"SYS:build;system;cc
                                           (make-package "CLASP-CLEAVIR-AST")
                                           (if (member :clos *features*) nil (setq *features* (cons :clos *features*)))
                                           (if (member :cclasp *features*) nil (setq *features* (cons :cclasp *features*)))
-                                          (if (member :interactive *features*) 
+                                          (if (core:is-interactive-lisp)
                                               (core:bformat t "Starting %s cclasp %s ... loading image... it takes a few seconds\n"
                                                             (if (member :use-mps *features*) "MPS" "Boehm" ) (software-version))))
                          :epilogue-form '(progn
@@ -90,5 +90,5 @@ p  (core:pathname-translations "cclasp-boehm" '(("**;*.*" #P"SYS:build;system;cc
                                           (core:maybe-load-clasprc)
                                           (core:process-command-line-load-eval-sequence)
                                           (let ((core:*use-interpreter-for-eval* nil))
-                                            (when (member :interactive *features*) (core:top-level)))))))
+                                            (when (core:is-interactive-lisp) (core:top-level)))))))
 (export '(link-cclasp))

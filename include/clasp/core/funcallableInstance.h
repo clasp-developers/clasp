@@ -181,8 +181,6 @@ namespace core {
 
     T_sp setFuncallableInstanceFunction(T_sp functionOrT);
 
-    bool genericFunctionP() const;
-
     void describe(T_sp stream);
 
     void __write__(T_sp sout) const; // Look in write_ugly.cc

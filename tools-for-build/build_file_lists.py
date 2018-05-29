@@ -237,6 +237,7 @@ def collect_aclasp_lisp_files(wrappers = True):
         "src/lisp/kernel/lsp/iolib",
         "src/lisp/kernel/lsp/sharpmacros",
         "src/lisp/kernel/lsp/backtrace",
+        "src/lisp/kernel/lsp/trace",
         "src/lisp/kernel/cmp/cmpexports",
         "src/lisp/kernel/cmp/cmpsetup",
         "src/lisp/kernel/cmp/cmpglobals",
@@ -272,7 +273,6 @@ def collect_bclasp_lisp_files(**kwargs):
     files = collect_aclasp_lisp_files(**kwargs) + [
         "src/lisp/kernel/tag/bclasp-start",
         "src/lisp/kernel/cmp/cmpwalk",
-        "src/lisp/kernel/lsp/trace",
         "src/lisp/kernel/lsp/assert",
         "src/lisp/kernel/lsp/numlib",
         "src/lisp/kernel/lsp/describe",
@@ -318,6 +318,7 @@ def collect_bclasp_lisp_files(**kwargs):
         "src/lisp/kernel/clos/streams",
         "src/lisp/kernel/lsp/pprint",
         "src/lisp/kernel/clos/inspect",
+        "src/lisp/kernel/clos/install-documentation",
         "src/lisp/kernel/lsp/fli",
         "src/lisp/modules/sockets/sockets",
         "src/lisp/kernel/lsp/top",

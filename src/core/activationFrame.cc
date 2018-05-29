@@ -97,46 +97,6 @@ string ActivationFrame_O::summaryOfContents() const {
   SUBCLASS_MUST_IMPLEMENT();
 }
 
-#if 0
-T_sp ActivationFrame_O::_lookupTagbodyId(int depth, int index) const {
-  if (depth == 0) {
-    SIMPLE_ERROR(BF("Hit depth=0 and did not find value - this activation frame: %s") % this->__repr__());
-  }
-  --depth;
-  return Environment_O::clasp_lookupTagbodyId(this->parentFrame(), depth, index);
-}
-#endif
-
-#if 0
-T_sp &ActivationFrame_O::lookupValueReference(int depth, int index) {
-  if (depth == 0) {
-    SIMPLE_ERROR(BF("Hit depth=0 and did not find value - this activation frame: %s") % this->__repr__());
-  }
-  --depth;
-  return Environment_O::clasp_lookupValueReference(this->parentFrame(), depth, index);
-}
-#endif
-
-
-#if 0
-T_sp ActivationFrame_O::_lookupValue(int depth, int index) {
-  return this->lookupValueReference(depth, index);
-}
-#endif
-
-#if 0
-Function_sp ActivationFrame_O::_lookupFunction(int depth, int index) const {
-  if (depth == 0) {
-    SIMPLE_ERROR(BF("Hit depth=0 and did not find function - this activation frame: %s") % this->__repr__());
-  }
-  --depth;
-  return Environment_O::clasp_lookupFunction(this->parentFrame(), depth, index);
-}
-#endif
-
-
-
-
 };
 
 namespace core {
@@ -175,17 +135,6 @@ string ValueFrame_O::asString() const {
   return this->summaryOfContents();
 }
 
-#if 0
-T_sp &ValueFrame_O::lookupValueReference(int depth, int index) {
-  if (depth == 0) {
-    ASSERTF(index < this->_Objects.capacity(), BF("Out of range index %d for ValueFrame with %d entries") % index % this->_Objects.capacity());
-    return ((this->_Objects[index]));
-  }
-  --depth;
-  return Environment_O::clasp_lookupValueReference(this->parentFrame(), depth, index);
-}
-#endif
-
 void ValueFrame_O::fillRestOfEntries(int istart, List_sp values) {
   ASSERTF((istart + cl__length(values)) == this->length(), BF("Mismatch between size of ValueFrame[%d] and the number of entries[%d] that are about to fill it") % this->length() % (istart + cl__length(values)));
   int iend = this->length();
@@ -198,11 +147,6 @@ void ValueFrame_O::fillRestOfEntries(int istart, List_sp values) {
   }
 }
 
-#if 0
-T_sp ValueFrame_O::_lookupValue(int depth, int index) {
-  return this->lookupValueReference(depth, index);
-}
-#endif
 ValueFrame_sp ValueFrame_O::createForLambdaListHandler(LambdaListHandler_sp llh, T_sp parent) {
   ValueFrame_sp vf(ValueFrame_O::create(llh->numberOfLexicalVariables(), parent));
   return ((vf));
@@ -295,45 +239,5 @@ string FunctionFrame_O::asString() const {
   ss << "]>";
   return ((ss.str()));
 }
-
-#if 0
-Function_sp FunctionFrame_O::_lookupFunction(int depth, int index) const {
-  if (depth == 0) {
-    if (index >= this->_Objects.capacity()) {
-      SIMPLE_ERROR(BF("Out of range index[%d] for FunctionFrame with %d entries") % index % this->_Objects.capacity());
-    }
-    return gc::As<Function_sp>((this->entry(index)));
-  }
-  --depth;
-  return Environment_O::clasp_lookupFunction(this->parentFrame(), depth, index);
-}
-#endif
-
-};
-
-namespace core {
-
-#if 0
-T_sp TagbodyFrame_O::_lookupTagbodyId(int depth, int index) const {
-  if (depth == 0) {
-    return this->asSmartPtr();
-  }
-  --depth;
-  return Environment_O::clasp_lookupTagbodyId(this->parentFrame(), depth, index);
-}
-
-
-string TagbodyFrame_O::summaryOfContents() const {
-  stringstream ss;
-  ss << "---" << this->_instanceClass()->_classNameAsString()
-     << std::endl;
-  return (ss.str());
-}
-
-string TagbodyFrame_O::asString() const {
-  return this->summaryOfContents();
-}
-
-#endif
 
 };

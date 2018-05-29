@@ -7,7 +7,7 @@
           (core:maybe-load-clasprc)
           (let ((core:*use-interpreter-for-eval* nil))
             (core:process-command-line-load-eval-sequence)
-            (if (member :interactive *features*)
+            (if (core:is-interactive-lisp)
                 (core:top-level)
                 (format t "In non-interactive mode - control fell through to epilogue-cclasp.lisp~%"))))
 
