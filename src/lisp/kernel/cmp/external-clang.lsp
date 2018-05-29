@@ -46,7 +46,7 @@
             (let ((file (probe-file cp)))
               (when file (return-from discover-clang file))))))))
 
-(defparameter core:*clang-bin* (discover-clang))
+(defvar core:*clang-bin* (discover-clang))
 
  ;; This would only work after kernel/clos/conditions
 #+(or)
@@ -57,6 +57,8 @@
 
 (defun run-clang (args &key (clang core:*clang-bin*) output-file-name)
   "Run the discovered clang compiler on the arguments. This replaces a simpler version of run-clang."
+  (unless clang
+    (error "There is no clang compiler path defined!!!!"))
   (unless (probe-file clang)
     (error "Could not find clang at ~a" clang))
   ;; This would only work after kernel/clos/conditions

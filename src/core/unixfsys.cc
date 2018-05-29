@@ -42,6 +42,12 @@ THE SOFTWARE.
 #include <stdio.h>
 #include <stdlib.h>
 #include <limits.h>
+#include <fcntl.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <unistd.h>
+#include <pthread.h> // TODO: PORTING - frgo, 2017-08-04
+#include <signal.h>  // TODO: PORTING - frgo, 2017-08-04
 
 #ifndef _MSC_VER
 #include <unistd.h>
@@ -92,8 +98,17 @@ typedef int mode_t;
 #include <clasp/core/bformat.h>
 #include <clasp/core/evaluator.h>
 #include <clasp/core/lispList.h>
+#include <clasp/core/lispStream.h>
 #include <clasp/core/unixfsys.h>
 #include <clasp/core/wrappers.h>
+
+#if defined( DEBUG_LEVEL_FULL )
+#define DEBUG_PRINT(_msg_) fprintf( stderr, "%s", (_msg_).str().c_str())
+#else
+#define DEBUG_PRINT(msg)
+#endif
+
+
 
 SYMBOL_EXPORT_SC_(KeywordPkg, absolute);
 SYMBOL_EXPORT_SC_(KeywordPkg, default);
@@ -114,6 +129,17 @@ SYMBOL_EXPORT_SC_(KeywordPkg, type);
 SYMBOL_EXPORT_SC_(KeywordPkg, up);
 SYMBOL_EXPORT_SC_(KeywordPkg, version);
 SYMBOL_EXPORT_SC_(KeywordPkg, wild);
+
+
+
+#if defined( _TARGET_OS_DARWIN ) || defined( _TARGET_OS_FREEBSD )
+#define sigthreadmask(HOW,NEW,OLD) sigprocmask((HOW),(NEW),(OLD))
+#endif
+
+#if defined( _TARGET_OS_LINUX )
+#define sigthreadmask(HOW,NEW,OLD) sigprocmask((HOW),(NEW),(OLD))
+#endif
+
 
 namespace core {
 
@@ -148,19 +174,183 @@ safe_chdir(const char *path, T_sp tprefix) {
   }
 }
 
-CL_LAMBDA();
+CL_LAMBDA(&optional return-stream);
 CL_DECLARE();
 CL_DOCSTRING("fork");
-CL_DEFUN T_sp core__fork() {
-  Fixnum_sp pid = make_fixnum(fork());
-  return pid;
+CL_DEFUN T_mv core__fork(bool bReturnStream) {
+  int filedes[2];
+  if (bReturnStream) {
+    if (pipe(filedes) == -1 ) {
+      perror("pipe");
+      abort();
+    }
+  }
+  pid_t child_PID = fork();
+  if (child_PID >= 0) {
+    if (child_PID == 0) {
+      // Child
+      if ( bReturnStream ) {
+        while ((dup2(filedes[1],STDOUT_FILENO) == -1) && (errno == EINTR)) {}
+        close(filedes[1]);
+        close(filedes[0]);
+        int flags = fcntl(STDOUT_FILENO,F_GETFL,0);
+        fcntl(STDOUT_FILENO,F_SETFL,flags|FD_CLOEXEC);
+      }
+      return Values(_Nil<T_O>(),make_fixnum(child_PID),_Nil<T_O>());
+    } else {
+      // Parent
+      if ( bReturnStream ) {
+        close(filedes[1]);
+        int flags = fcntl(filedes[0],F_GETFL,0);
+        fcntl(filedes[0],F_SETFL,flags|O_NONBLOCK);
+        T_sp stream = clasp_make_file_stream_from_fd(SimpleBaseString_O::make("execvp"), filedes[0], clasp_smm_input_file, 8, CLASP_STREAM_DEFAULT_FORMAT, _Nil<T_O>());
+        return Values(_Nil<T_O>(), clasp_make_fixnum(child_PID),stream);
+      }
+      return Values(_Nil<T_O>(),clasp_make_fixnum(child_PID),_Nil<T_O>());
+    }
+  }
+  return Values(clasp_make_fixnum(-1), SimpleBaseString_O::make(std::strerror(errno)),_Nil<T_O>());
 };
 
-CL_DOCSTRING("wait - see unix wait - returns (values pid status)");
+
+CL_DOCSTRING(R"(wait - see unix wait - returns (values pid status).
+The status can be passed to //core:wifexited// and //core:wifsignaled//. )");
 CL_DEFUN T_mv core__wait() {
   int status;
   pid_t p = wait(&status);
   return Values(make_fixnum(p), make_fixnum(status));
+};
+
+
+SYMBOL_EXPORT_SC_(CorePkg,signal_SIGABRT);
+SYMBOL_EXPORT_SC_(CorePkg,signal_SIGALRM);
+SYMBOL_EXPORT_SC_(CorePkg,signal_SIGBUS);
+SYMBOL_EXPORT_SC_(CorePkg,signal_SIGCHLD);
+SYMBOL_EXPORT_SC_(CorePkg,signal_SIGCONT);
+SYMBOL_EXPORT_SC_(CorePkg,signal_SIGFPE);
+SYMBOL_EXPORT_SC_(CorePkg,signal_SIGHUP);
+SYMBOL_EXPORT_SC_(CorePkg,signal_SIGILL);
+SYMBOL_EXPORT_SC_(CorePkg,signal_SIGINT);
+SYMBOL_EXPORT_SC_(CorePkg,signal_SIGKILL);
+SYMBOL_EXPORT_SC_(CorePkg,signal_SIGPIPE);
+SYMBOL_EXPORT_SC_(CorePkg,signal_SIGQUIT);
+SYMBOL_EXPORT_SC_(CorePkg,signal_SIGSEGV);
+SYMBOL_EXPORT_SC_(CorePkg,signal_SIGSTOP);
+SYMBOL_EXPORT_SC_(CorePkg,signal_SIGTERM);
+SYMBOL_EXPORT_SC_(CorePkg,signal_SIGTSTP);
+SYMBOL_EXPORT_SC_(CorePkg,signal_SIGTTIN);
+SYMBOL_EXPORT_SC_(CorePkg,signal_SIGTTOU);
+SYMBOL_EXPORT_SC_(CorePkg,signal_SIGUSR1);
+SYMBOL_EXPORT_SC_(CorePkg,signal_SIGUSR2);
+//SYMBOL_EXPORT_SC_(CorePkg,signal_SIGPOLL);
+SYMBOL_EXPORT_SC_(CorePkg,signal_SIGPROF);
+SYMBOL_EXPORT_SC_(CorePkg,signal_SIGSYS);
+SYMBOL_EXPORT_SC_(CorePkg,signal_SIGTRAP);
+SYMBOL_EXPORT_SC_(CorePkg,signal_SIGURG);
+SYMBOL_EXPORT_SC_(CorePkg,signal_SIGVTALRM);
+SYMBOL_EXPORT_SC_(CorePkg,signal_SIGXCPU);
+SYMBOL_EXPORT_SC_(CorePkg,signal_SIGXFSZ);
+
+SYMBOL_EXPORT_SC_(CorePkg,_PLUS_SignalEnumConverter_PLUS_);
+
+CL_BEGIN_ENUM(SignalEnum,_sym__PLUS_SignalEnumConverter_PLUS_,"Signals");
+CL_VALUE_ENUM(_sym_signal_SIGABRT,signal_SIGABRT);
+CL_VALUE_ENUM(_sym_signal_SIGALRM,signal_SIGALRM);
+CL_VALUE_ENUM(_sym_signal_SIGBUS,signal_SIGBUS);
+CL_VALUE_ENUM(_sym_signal_SIGCHLD,signal_SIGCHLD);
+CL_VALUE_ENUM(_sym_signal_SIGCONT,signal_SIGCONT);
+CL_VALUE_ENUM(_sym_signal_SIGFPE,signal_SIGFPE);
+CL_VALUE_ENUM(_sym_signal_SIGHUP,signal_SIGHUP);
+CL_VALUE_ENUM(_sym_signal_SIGILL,signal_SIGILL);
+CL_VALUE_ENUM(_sym_signal_SIGINT,signal_SIGINT);
+CL_VALUE_ENUM(_sym_signal_SIGKILL,signal_SIGKILL);
+CL_VALUE_ENUM(_sym_signal_SIGPIPE,signal_SIGPIPE);
+CL_VALUE_ENUM(_sym_signal_SIGQUIT,signal_SIGQUIT);
+CL_VALUE_ENUM(_sym_signal_SIGSEGV,signal_SIGSEGV);
+CL_VALUE_ENUM(_sym_signal_SIGSTOP,signal_SIGSTOP);
+CL_VALUE_ENUM(_sym_signal_SIGTERM,signal_SIGTERM);
+CL_VALUE_ENUM(_sym_signal_SIGTSTP,signal_SIGTSTP);
+CL_VALUE_ENUM(_sym_signal_SIGTTIN,signal_SIGTTIN);
+CL_VALUE_ENUM(_sym_signal_SIGTTOU,signal_SIGTTOU);
+CL_VALUE_ENUM(_sym_signal_SIGUSR1,signal_SIGUSR1);
+CL_VALUE_ENUM(_sym_signal_SIGUSR2,signal_SIGUSR2);
+//CL_VALUE_ENUM(_sym_signal_SIGPOLL,signal_SIGPOLL);
+CL_VALUE_ENUM(_sym_signal_SIGPROF,signal_SIGPROF);
+CL_VALUE_ENUM(_sym_signal_SIGSYS,signal_SIGSYS);
+CL_VALUE_ENUM(_sym_signal_SIGTRAP,signal_SIGTRAP);
+CL_VALUE_ENUM(_sym_signal_SIGURG,signal_SIGURG);
+CL_VALUE_ENUM(_sym_signal_SIGVTALRM,signal_SIGVTALRM);
+CL_VALUE_ENUM(_sym_signal_SIGXCPU,signal_SIGXCPU);
+CL_VALUE_ENUM(_sym_signal_SIGXFSZ,signal_SIGXFSZ);
+CL_END_ENUM(_sym__PLUS_SignalEnumConverter_PLUS_);
+
+  
+
+Sigset_O::Sigset_O()
+{
+  sigemptyset(&this->_sigset);
+};
+
+SYMBOL_EXPORT_SC_(KeywordPkg,sigchld);
+SYMBOL_EXPORT_SC_(KeywordPkg,sigint);
+CL_DOCSTRING(R"(Like the unix function //sigaddset//. The second argument is a symbol that can currently be one of
+:sigchld or :sigint correspoding to the SIGCHLD and SIGINT arguments of the unix function.
+The int result of sigaddset is returned.)");
+CL_DEFMETHOD int Sigset_O::sigset_sigaddset(SignalEnum signo)
+{
+  return sigaddset(&(this->_sigset),(int)signo);
+}
+
+SYMBOL_EXPORT_SC_(KeywordPkg,sig_block);
+SYMBOL_EXPORT_SC_(KeywordPkg,sig_unblock);
+SYMBOL_EXPORT_SC_(KeywordPkg,sig_setmask);
+
+CL_DOCSTRING(R"(Like the unix function sigthreadmask. 
+The **how** argument can be one of :sig-setmask, :sig-block, :sig-unblock.
+The **old-set** can be a core:sigset or nil (NULL).
+Returns (values NIL(success)/T(fail) errno)");
+CL_DEFUN T_mv core__sigthreadmask(Symbol_sp how, Sigset_sp set, T_sp old_set)
+{
+  sigset_t* old_setp;
+  if (old_set.nilp()) {
+    old_setp = NULL;
+  } else {
+    old_setp = &(gc::As<Sigset_sp>(old_set)->_sigset);
+  }
+  int ihow;
+  if (how == kw::_sym_sig_block) {
+    ihow = SIG_BLOCK;
+  } else if (how == kw::_sym_sig_unblock) {
+    ihow = SIG_UNBLOCK;
+  } else if (how == kw::_sym_sig_setmask) {
+    ihow = SIG_SETMASK;
+  } else {
+    SIMPLE_ERROR(BF("Illegal how argument %s - must be one of :sig-block, :sig-unblock, or :sig-setmask") % _rep_(how));
+  }
+  int result = sigthreadmask(ihow,&set->_sigset,old_setp);
+  if (result == 0) {
+    return Values(_Nil<T_O>(),_Nil<T_O>());
+  } else {
+    return Values(_lisp->_true(),make_fixnum(errno));
+  }
+}
+
+CL_DOCSTRING("Wraps the WIFEXITED(status) macro of the posix wait function.")
+CL_DEFUN bool core__wifexited(Fixnum_sp fstatus) {
+  int status = fstatus.unsafe_fixnum();
+  return WIFEXITED(status);
+};
+
+CL_DOCSTRING("Wraps the WTERMSIG(status) macro of the posix wait function.")
+CL_DEFUN int core__wtermsig(Fixnum_sp fstatus) {
+  int status = fstatus.unsafe_fixnum();
+  return WTERMSIG(status);
+};
+
+CL_DOCSTRING("Wraps the WIFSIGNALED(status) macro of the posix wait function.")
+CL_DEFUN bool core__wifsignaled(Fixnum_sp fstatus) {
+  int status = fstatus.unsafe_fixnum();
+  return WIFSIGNALED(status);
 };
 
 CL_LAMBDA(pid options);
@@ -1565,6 +1755,284 @@ CL_DEFUN T_sp core__mkdir(T_sp directory, T_sp mode) {
   }
   return filename;
 }
+
+
+
+
+CL_LAMBDA(name value &optional (overwrite t));
+CL_DECLARE();
+CL_DOCSTRING("Set environment variable NAME to VALUE");
+CL_DEFUN void ext__setenv(String_sp name, String_sp value, bool overwrite) {
+  ASSERT(cl__stringp(name));
+  ASSERT(cl__stringp(value));
+  setenv(name->get().c_str(), value->get().c_str(), overwrite);
+}
+
+CL_LAMBDA(cmd);
+CL_DECLARE();
+CL_DOCSTRING("system");
+CL_DEFUN T_mv ext__system(String_sp cmd) {
+  ASSERT(cl__stringp(cmd));
+  string command = cmd->get();
+  int ret = system(command.c_str());
+  if (ret == 0) {
+    return Values(core::make_fixnum(0));
+  } else {
+    return Values(core::make_fixnum(ret), SimpleBaseString_O::make(std::strerror(errno)));
+  }
+}
+
+CL_LAMBDA(call-and-arguments &optional return-stream);
+CL_DECLARE();
+CL_DOCSTRING("vfork_execvp - set optional return-stream if you want the output stream of the child");
+CL_DEFUN T_mv ext__vfork_execvp(List_sp call_and_arguments, T_sp return_stream) {
+
+  if (call_and_arguments.nilp())
+    return Values0<T_O>();
+
+  bool bReturnStream = return_stream.isTrue();
+
+  std::vector<char const *> execvp_args(cl__length(call_and_arguments) + 1);
+
+  size_t idx = 0;
+
+  for (auto cur : call_and_arguments) {
+    String_sp sarg = gc::As<String_sp>(oCar(cur));
+    size_t sarg_size = sarg->length();
+//    printf("%s:%d sarg = %s sarg->size() = %ld  strlen(sarg->c_str()) = %ld\n", __FILE__, __LINE__, sarg->c_str(), sarg->size(), strlen(sarg->c_str()));
+    char *arg = (char *)malloc(sarg_size + 1);
+    std::strncpy(arg, sarg->get_std_string().c_str(),sarg_size);
+    arg[sarg_size] = '\0';
+    execvp_args[idx++] = arg;
+  }
+
+  execvp_args[idx] = NULL;
+  int filedes[2] = { -1, -1 };
+
+  if (bReturnStream) {
+    if (pipe(filedes) == -1 ) {
+      perror("pipe");
+      abort();
+    }
+  }
+
+  pid_t child_PID = vfork();
+
+  if (child_PID >= 0) {
+    if (child_PID == 0) {
+      // Child
+
+      if ( bReturnStream ) {
+        while ((dup2(filedes[1],STDOUT_FILENO) == -1) && (errno == EINTR)) {}
+        close(filedes[1]);
+        close(filedes[0]);
+        int flags = fcntl(STDOUT_FILENO,F_GETFL,0);
+        fcntl(STDOUT_FILENO,F_SETFL,flags|FD_CLOEXEC);
+      }
+
+      bool b_done = false;
+      sigset_t new_sigset;
+      sigset_t old_sigset;
+
+      while( b_done == false )
+      {
+        int rc = 0;
+
+        sigemptyset( &new_sigset );
+        sigemptyset( &old_sigset );
+        sigaddset( &new_sigset, SIGINT );
+        sigaddset( &new_sigset, SIGCHLD );
+
+        rc = sigthreadmask( SIG_SETMASK, &new_sigset, &old_sigset ); // TODO: Check return value
+        rc = execvp( execvp_args[0], ( char * const * ) execvp_args.data() );
+        sigthreadmask( SIG_SETMASK, &old_sigset, NULL ); // Restore signal mask
+
+        if( rc == -1 ) // An  error has occurred during - we do a retry
+        {
+          if( errno != EINTR )
+            b_done = true;
+        }
+      }
+
+      _exit( EXIT_FAILURE ); // Should never reach
+    }
+    else
+    {
+      // Parent
+
+      int   status            = 0;
+      bool  b_done            = false;
+      pid_t wait_ret          = -1;
+      int   child_exit_status = -1;
+
+      while( b_done == false )
+      {
+        errno = 0;
+
+        wait_ret = wait( &status );
+
+        if( WIFEXITED( status ) )
+        {
+          child_exit_status = WEXITSTATUS( status );
+          DEBUG_PRINT(BF("%s (%s:%d) | Child process exited with status %d\n.") % __FUNCTION__ % __FILE__ % __LINE__ % child_exit_status );
+
+          b_done = true;
+        }
+
+        if( WIFSIGNALED( status ) )
+        {
+          int signal = 0;
+
+          signal = WTERMSIG( status );
+          DEBUG_PRINT(BF("%s (%s:%d) | Child process got signal %d\n.") % __FUNCTION__ % __FILE__ % __LINE__ % signal );
+
+          // Continue waiting !
+        }
+      }
+
+      DEBUG_PRINT(BF("%s (%s:%d) | Child process cmd = %s\n.") % __FUNCTION__ % __FILE__ % __LINE__ % execvp_args[ 0 ] );
+      DEBUG_PRINT(BF("%s (%s:%d) | Child process wait(): return code = %d, errno = %d, error = %s\n.") % __FUNCTION__ % __FILE__ % __LINE__ % wait_ret % errno % strerror(errno) );
+
+      // Clean up args
+      for ( int i(0); i < execvp_args.size() - 1; ++i )
+      {
+        free( (void *) execvp_args[ i ] );
+        execvp_args[ i ] = nullptr;
+      }
+
+      if (( wait_ret >= 0 ) ||
+          (( wait_ret == -1 ) && ( errno == EINTR ) && ( child_exit_status == 0 )))
+      {
+        errno = 0;
+
+        if ( bReturnStream )
+        {
+          int flags = fcntl(filedes[0],F_GETFL,0);
+          fcntl(filedes[0],F_SETFL,flags|O_NONBLOCK);
+          T_sp stream = clasp_make_file_stream_from_fd(SimpleBaseString_O::make("execvp"), filedes[0], clasp_smm_input_file, 8, CLASP_STREAM_DEFAULT_FORMAT, _Nil<T_O>());
+
+          DEBUG_PRINT(BF("%s (%s:%d) | Values( %d %d %p )\n.") % __FUNCTION__ % __FILE__ % __LINE__ % 0 % child_PID % stream );
+
+
+          return Values( clasp_make_fixnum( 0 ), clasp_make_fixnum( child_PID ), stream);
+        }
+
+          DEBUG_PRINT(BF("%s (%s:%d) | Values( %d %d %d )\n.") % __FUNCTION__ % __FILE__ % __LINE__ % 0 % child_PID % 0 );
+
+          return Values( clasp_make_fixnum( 0 ), clasp_make_fixnum( child_PID ), _Nil<T_O>() );
+      }
+
+      // error
+      DEBUG_PRINT(BF("%s (%s:%d) | Values( %d %d %d )\n.") % __FUNCTION__ % __FILE__ % __LINE__ % errno % strerror( errno ) % 0 );
+
+      return Values( clasp_make_fixnum( errno ), SimpleBaseString_O::make( std::strerror( errno )), _Nil<T_O>() );
+    }
+  }
+  else
+  {
+    // Creating the child failed
+
+    // Clean up args
+    for ( int i(0); i < execvp_args.size() - 1; ++i )
+    {
+      free( (void *) execvp_args[ i ] );
+      execvp_args[ i ] = nullptr;
+    }
+
+    return Values(clasp_make_fixnum(-1), SimpleBaseString_O::make(std::strerror(errno)),_Nil<T_O>());
+  }
+}
+
+
+
+CL_LAMBDA(call-and-arguments &optional return-stream);
+CL_DECLARE();
+CL_DOCSTRING(R"(fork_execvp - set optional return-stream to T if you want the output stream of the child.
+Returns (values error pid return-stream).)");
+CL_DEFUN T_mv ext__fork_execvp(List_sp call_and_arguments, T_sp return_stream) {
+  bool bReturnStream = return_stream.isTrue();
+  if (call_and_arguments.nilp())
+    return Values0<T_O>();
+  std::vector<char const *> execvp_args(cl__length(call_and_arguments) + 1);
+  size_t idx = 0;
+  for (auto cur : call_and_arguments) {
+    String_sp sarg = gc::As<String_sp>(oCar(cur));
+    size_t sarg_size = sarg->length();
+//    printf("%s:%d sarg = %s sarg->size() = %ld\n", __FILE__, __LINE__, sarg->c_str(), sarg->size());
+    char *arg = (char *)malloc(sarg_size + 1);
+    std::strncpy(arg, sarg->get_std_string().c_str(),sarg_size);
+    arg[sarg_size] = '\0';
+      execvp_args[idx++] = arg;
+  }
+  execvp_args[idx] = NULL;
+  int filedes[2];
+  if (bReturnStream) {
+    if (pipe(filedes) == -1 ) {
+      perror("pipe");
+      abort();
+    }
+  }
+  pid_t child_PID = fork();
+  if (child_PID >= 0) {
+    if (child_PID == 0) {
+      // Child
+      if ( bReturnStream ) {
+        while ((dup2(filedes[1],STDOUT_FILENO) == -1) && (errno == EINTR)) {}
+        close(filedes[1]);
+        close(filedes[0]);
+        int flags = fcntl(STDOUT_FILENO,F_GETFL,0);
+        fcntl(STDOUT_FILENO,F_SETFL,flags|FD_CLOEXEC);
+      }
+      execvp(execvp_args[0], (char *const *)execvp_args.data());
+      printf("%s:%d execvp returned with errno=%d   strerror(errno) = %s\n", __FILE__, __LINE__, errno, strerror(errno));
+      for (int i = 0; execvp_args[i] != NULL; ++i) {
+        printf("    arg#%d  %s\n", i, execvp_args[i]);
+      }
+      printf("  cannot continue... exiting... sorry...\n");
+      _exit(0); // Should never reach
+    } else {
+      // Parent
+      int status;
+      pid_t wait_ret = wait(&status);
+      // Clean up args
+      for (int i(0); i < execvp_args.size() - 1; ++i)
+        free((void *)execvp_args[i]);
+      if (wait_ret >= 0) {
+        if (wait_ret != child_PID) {
+          printf("%s:%d wait return PID(%d) that did not match child(%d)\n", __FILE__, __LINE__, wait_ret, child_PID);
+        }
+        if ( bReturnStream ) {
+          int flags = fcntl(filedes[0],F_GETFL,0);
+          fcntl(filedes[0],F_SETFL,flags|O_NONBLOCK);
+          T_sp stream = clasp_make_file_stream_from_fd(SimpleBaseString_O::make("execvp"), filedes[0], clasp_smm_input_file, 8, CLASP_STREAM_DEFAULT_FORMAT, _Nil<T_O>());
+          return Values(_Nil<T_O>(), clasp_make_fixnum(child_PID),stream);
+        }
+        return Values(_Nil<T_O>(),clasp_make_fixnum(child_PID),_Nil<T_O>());
+      }
+      // error
+      return Values(clasp_make_fixnum(errno), SimpleBaseString_O::make(std::strerror(errno)),_Nil<T_O>());
+    }
+  } else {
+    // Clean up args
+    for (int i(0); i < execvp_args.size() - 1; ++i)
+      free((void *)execvp_args[i]);
+    return Values(clasp_make_fixnum(-1), SimpleBaseString_O::make(std::strerror(errno)),_Nil<T_O>());
+  }
+}
+
+CL_LAMBDA(arg);
+CL_DECLARE();
+CL_DOCSTRING("Get environment variable NAME");
+CL_DEFUN T_sp ext__getenv(String_sp arg) {
+  ASSERT(cl__stringp(arg));
+  char *sres = getenv(arg->get_std_string().c_str());
+  if (sres == NULL) {
+    return _Nil<T_O>();
+  }
+  return SimpleBaseString_O::make(sres);
+};
+
+
 
    SYMBOL_EXPORT_SC_(CorePkg, currentDir);
   SYMBOL_EXPORT_SC_(CorePkg, file_kind);

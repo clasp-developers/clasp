@@ -190,6 +190,7 @@ and the pathname of the source file - this will also be used as the module initi
                                &key
                                  compile-file-hook
                                  type
+                                 output-type
                                  source-debug-namestring
                                  (source-debug-offset 0)
                                  (print *compile-print*)
@@ -258,7 +259,17 @@ Compile a lisp source file into an LLVM module."
               (cmp-log "About to verify the module\n")
               (cmp-log-dump-module *the-module*)
               (irc-verify-module-safe *the-module*)
-              (quick-module-dump *the-module* "preoptimize"))
+              (quick-module-dump *the-module* "preoptimize")
+              (cond
+                ((eq output-type :object)
+                 (link-builtins-module *the-module*))
+                ((eq output-type :fasl)
+                 ;; nothing
+                 )
+                ((eq output-type :bitcode)
+                 ;; don't link builtins - they will be linked later
+                 )
+                (t (error "Handle output-type option ~a" output-type))))
             (quick-module-dump module "postoptimize")
             module))))))
 
@@ -297,6 +308,7 @@ Compile a lisp source file into an LLVM module."
            (*compile-file-output-pathname* output-path)
            (module (compile-file-to-module input-file
                                            :type type
+                                           :output-type output-type
                                            :source-debug-namestring source-debug-namestring
                                            :source-debug-offset source-debug-offset
                                            :compile-file-hook *cleavir-compile-file-hook*
@@ -309,7 +321,7 @@ Compile a lisp source file into an LLVM module."
         ((eq output-type :object)
          (when verbose (bformat t "Writing object to %s\n" (core:coerce-to-filename output-path)))
          (ensure-directories-exist output-path)
-         ;; Save the bitcode
+         ;; Save the bitcode so we can take a look at it
          (write-bitcode module (core:coerce-to-filename (cfp-output-file-default output-path :bitcode)))
          (with-open-file (fout output-path :direction :output)
            (let ((reloc-model (cond
@@ -327,8 +339,7 @@ Compile a lisp source file into an LLVM module."
            (bformat t "Writing temporary bitcode file to: %s\n" temp-bitcode-file)
            (write-bitcode module (core:coerce-to-filename temp-bitcode-file))
            (bformat t "Writing fasl file to: %s\n" output-file)
-           (llvm-link output-file
-                      :lisp-bitcode-files (list temp-bitcode-file))))
+           (llvm-link output-file :lisp-bitcode-files (list temp-bitcode-file) :input-type :bitcode)))
         (t ;; fasl
          (error "Add support to file of type: ~a" output-type)))
       (dolist (c conditions)

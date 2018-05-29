@@ -92,6 +92,7 @@ void af_evalPrint(const string &expr);
 
 // Generate a backtrace with JIT symbols resolved 
 void c_bt();
+void c_btcl();
 };
 };
 #endif

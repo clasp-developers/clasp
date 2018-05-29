@@ -38,7 +38,6 @@
 (setq cl:*print-circle* nil)
 
 (sys:*make-special 'core::*clang-bin*)
-(setq core::*clang-bin* (ext:getenv "CLASP_CLANG_PATH"))
 (export 'core::*clang-bin*)
 
 
@@ -67,7 +66,7 @@
 ;; Setup a few things for the CMP package
 (eval-when (:execute :compile-toplevel :load-toplevel)
   (core::select-package :cmp))
-(export '(llvm-link link-bitcode-modules))
+(export '(llvm-link link-bitcode-modules link-object-files))
 ;;; Turn on aclasp/bclasp activation-frame optimization
 (sys:*make-special '*activation-frame-optimize*)
 (setq *activation-frame-optimize* t)
@@ -539,7 +538,9 @@ a relative path from there."
           "bc"
           (if (eq type :ll)
               "ll"
-              (error "Unsupported build-extension type ~a" type)))))
+              (if (eq type :object)
+                  "o"
+                  (error "Unsupported build-extension type ~a" type))))))
 
 (defun build-pathname (partial-pathname &optional (type :lisp) stage)
   "If partial-pathname is nil and type is :fasl or :executable then construct the name using
@@ -568,8 +569,16 @@ the stage, the +application-name+ and the +bitcode-name+"
                                         (translate-logical-pathname "GENERATED:")))
                      (t
                       (find-lisp-source module (translate-logical-pathname "SOURCE-DIR:"))))))
-                ((and partial-pathname (or (eq type :fasl) (eq type :bitcode)))
-                 (if (and (eq type :bitcode) cmp::*use-human-readable-bitcode*) (setq type :ll))
+                ((and partial-pathname (eq type :bitcode))
+                 (if cmp::*use-human-readable-bitcode* (setq type :ll))
+                 (merge-pathnames (merge-pathnames (ensure-relative-pathname partial-pathname)
+                                                   (make-pathname :directory (list :relative target-dir) :type (build-extension type)))
+                                  (translate-logical-pathname (make-pathname :host target-host))))
+                ((and partial-pathname (eq type :object))
+                 (merge-pathnames (merge-pathnames (ensure-relative-pathname partial-pathname)
+                                                   (make-pathname :directory (list :relative target-dir) :type (build-extension type)))
+                                  (translate-logical-pathname (make-pathname :host target-host))))
+                ((and partial-pathname (eq type :fasl))
                  (merge-pathnames (merge-pathnames (ensure-relative-pathname partial-pathname)
                                                    (make-pathname :directory (list :relative target-dir) :type (build-extension type)))
                                   (translate-logical-pathname (make-pathname :host target-host))))
@@ -616,26 +625,27 @@ the stage, the +application-name+ and the +bitcode-name+"
   #+dbg-print(bformat t "DBG-PRINT iload fn: %s\n" fn)
   (let* ((fn (entry-filename entry))
          (lsp-path (build-pathname fn))
-	 (bc-path (build-pathname fn :bitcode))
-	 (load-bc (if (not (probe-file lsp-path))
-		      t
-		      (if (not (probe-file bc-path))
+         (bc-path (build-pathname fn :bitcode))
+         (load-bc (if (not (probe-file lsp-path))
+                      t
+                      (if (not (probe-file bc-path))
                           nil
-			  (if load-bitcode
-			      t
-			      (let ((bc-newer (> (file-write-date bc-path) (file-write-date lsp-path))))
-				bc-newer))))))
+                          (if load-bitcode
+                              t
+                              (let ((bc-newer (> (file-write-date bc-path) (file-write-date lsp-path))))
+                                bc-newer))))))
     (if load-bc
-	(progn
-	  (bformat t "Loading bitcode file: %s\n" bc-path)
-	  (cmp:load-bitcode bc-path))
-	(if (probe-file lsp-path)
-	    (progn
+        (progn
+          (bformat t "Loading bitcode file: %s\n" bc-path)
+          (cmp:load-bitcode bc-path))
+        (if (probe-file lsp-path)
+            (progn
               (if cmp:*implicit-compile-hook*
                   (bformat t "Loading/compiling source: %s\n" lsp-path)
                   (bformat t "Loading/interpreting source: %s\n" lsp-path))
-	      (load lsp-path))
-	    (bformat t "No interpreted or bitcode file for %s could be found\n" lsp-path)))))
+              (load lsp-path))
+            (bformat t "No interpreted or bitcode file for %s could be found\n" lsp-path)))))
+
 
 (defun delete-init-file (entry &key (really-delete t) stage)
   (let* ((module (entry-filename entry))
@@ -673,7 +683,7 @@ the stage, the +application-name+ and the +bitcode-name+"
 (defun default-prologue-form (&optional features)
   `(progn
      ,@(mapcar #'(lambda (f) `(push ,f *features*)) features)
-     (if (member :interactive *features*)
+     (if (core:is-interactive-lisp)
          (bformat t "Starting %s ... loading image... it takes a few seconds\n" (lisp-implementation-version)))))
 
 

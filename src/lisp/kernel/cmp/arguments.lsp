@@ -466,6 +466,7 @@
       cc)))
 
 
+#+(or)
 (defun cclasp-compile-lambda-list-code (lambda-list outputs calling-conv
                                         &key translate-datum)
   (let ((*translate-datum* (lambda (datum)

@@ -31,11 +31,6 @@ THE SOFTWARE.
 
 namespace core {
 
-void Pointer_O::initialize() {
-  this->Base::initialize();
-  this->_Pointer = NULL;
-}
-
 CL_DEFUN Pointer_sp core__make_pointer(T_sp address)
 {
   if (address.fixnump()) {
@@ -51,7 +46,7 @@ CL_DEFUN SimpleBaseString_sp core__pointer_as_string(Pointer_sp p) {
   
 Pointer_sp Pointer_O::create(void *p) {
   GC_ALLOCATE(Pointer_O, ptr);
-  ptr->_Pointer = p;
+  ptr->m_raw_data = p;
   return ptr;
 }
 
@@ -63,14 +58,14 @@ Pointer_sp Pointer_O::create(void *p) {
 bool Pointer_O::eql_(T_sp obj) const {
   if (this->eq(obj)) return true;
   if (Pointer_sp pobj = obj.asOrNull<Pointer_O>()) {
-    return (this->_Pointer == pobj->_Pointer);
+    return (this->m_raw_data == pobj->m_raw_data);
   }
   return false;
 }
 
 string Pointer_O::__repr__() const {
   stringstream ss;
-  ss << "#<" << this->_instanceClass()->_classNameAsString() << " :ptr " << (BF("%p") % this->_Pointer).str() << ">";
+  ss << "#<" << this->_instanceClass()->_classNameAsString() << " :ptr " << (BF("%p") % this->m_raw_data).str() << ">";
   return ss.str();
 }
 

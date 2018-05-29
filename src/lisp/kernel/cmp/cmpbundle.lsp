@@ -103,7 +103,53 @@
 
 (defparameter *link-options* (list "-O2"))
 
-(defun execute-link-fasl (in-bundle-file in-all-names)
+
+(defun link-object-files (library-file in-all-names)
+  "Link object files together to create a .dylib (macOS) or .so (linux) library.
+The **library-file** is the name of the output library with the appropriate extension.
+**in-all-names** are the object files."
+  ;; options are a list of strings like (list "-v")
+  (let ((options *link-options*)
+        (all-object-files (mapcar (lambda (n)
+                                    (ensure-string n))
+                                  (if (listp in-all-names)
+                                      in-all-names
+                                      (list in-all-names))))
+        (library-file (ensure-string library-file)))
+    (let ((clang-args (cond
+                        ((member :target-os-darwin *features*)
+                         (let ((clang-args `( ,@options
+                                              ,@all-object-files
+;;;                                 "-macosx_version_min" "10.10"
+                                              "-flat_namespace"
+                                              #+(or)"-fvisibility=default"
+                                              "-undefined" "suppress"
+                                              ,@*debug-link-options*
+;;;                        ,@link-flags
+;;;                        ,(bformat nil "-Wl,-object_path_lto,%s.lto.o" exec-file)
+                                              "-shared"
+                                              "-o"
+                                              ,library-file)))
+                           clang-args))
+                        ((or (member :target-os-linux *features*)
+                             (member :target-os-freebsd *features*))
+                         ;; Linux needs to use clang to link
+                         (let ((clang-args `(#+(or)"-v"
+                                                    ,@options
+                                                    ,@all-object-files
+                                                    ,@*debug-link-options*
+                                                    #+(or)"-fvisibility=default"
+                                                    "-shared"
+                                                    "-o"
+                                                    ,library-file)))
+                           clang-args))
+                        (t (error "Add support for this operating system to cmp:generate-link-command")))))
+      (ext:run-clang clang-args :output-file-name library-file)
+      (unless (probe-file library-file)
+        (error "~%!~%!~%! There is a HUGE problem - an execute-link-dylib-so command with the arguments:   /path-to-clang ~a~%~%!        failed to generate the output file ~a~%" clang-args library-file)))
+    (truename library-file)))
+
+(defun execute-link-fasl (in-bundle-file in-all-names &key input-type)
   ;; options are a list of strings like (list "-v")
   (let ((options *link-options*)
         (all-object-files (mapcar (lambda (n)
@@ -112,42 +158,50 @@
                                       in-all-names
                                       (list in-all-names))))
         (bundle-file (ensure-string in-bundle-file)))
-    #+(or)(warn "Linking fasl with -fvisibility=default - use an exported symbol list in the future")
-    (cond
-      ((member :target-os-darwin *features*)
-       (let ((clang-args `(,@options
-                           ,@all-object-files
+    (let ((clang-args (cond
+                        ((member :target-os-darwin *features*)
+                         (let ((clang-args `( "-flto=thin"
+                                              ,@options
+                                              ,@all-object-files
 ;;;                                 "-macosx_version_min" "10.10"
-                           "-flto=thin"
-                           "-flat_namespace"
-                           #+(or)"-fvisibility=default"
-                           "-undefined" "suppress"
-                           ,@*debug-link-options*
-                           #+(or)"-Wl,-save-temps"
-                           "-bundle"
+                                              "-flat_namespace"
+                                              #+(or)"-fvisibility=default"
+                                              "-undefined" "suppress"
+                                              ,@*debug-link-options*
+                                              #+(or)"-Wl,-save-temps"
+                                              "-bundle"
 ;;;                        ,@link-flags
 ;;;                        ,(bformat nil "-Wl,-object_path_lto,%s.lto.o" exec-file)
-                           "-o"
-                           ,bundle-file)))
-         (when (member :debug-run-clang *features*)
-           (bformat t "execute-link-fasl   clang-args -> %s\n" clang-args))
-         (ext:run-clang clang-args :output-file-name bundle-file)))
-      ((or (member :target-os-linux *features*)
-           (member :target-os-freebsd *features*))
-       ;; Linux needs to use clang to link
-       (ext:run-clang `(#+(or)"-v"
-                          ,@options
-                          ,@all-object-files
-                          "-flto=thin"
-                          "-fuse-ld=gold"
-                          ,@*debug-link-options*
-                          #+(or)"-fvisibility=default"
-                          "-shared"
-                          "-o"
-                          ,bundle-file)
-                      :output-file-name bundle-file))
-      (t (error "Add support for this operating system to cmp:generate-link-command")))
-    (truename in-bundle-file)))
+                                              "-o"
+                                              ,bundle-file)))
+                           clang-args))
+                        ((or (member :target-os-linux *features*)
+                             (member :target-os-freebsd *features*))
+                         ;; Linux needs to use clang to link
+                         (let ((clang-args `(#+(or)"-v"
+                                                    ,@options
+                                                    ,@all-object-files
+                                                    "-flto=thin"
+                                                    "-fuse-ld=gold"
+                                                    ,@*debug-link-options*
+                                                    #+(or)"-fvisibility=default"
+                                                    "-shared"
+                                                    "-o"
+                                                    ,bundle-file)))
+                           clang-args))
+                        (t (error "Add support for this operating system to cmp:generate-link-command")))))
+      (ext:run-clang clang-args :output-file-name bundle-file)
+      (unless (probe-file bundle-file)
+        ;; I hate what I'm about to do - but on macOS -flto=thin can sometimes crash the linker
+        ;; so get rid of that option (IT MUST BE THE FIRST ONE!!!!) and try again
+        (when (member :target-os-darwin *features*)
+          (warn "There was a HUGE problem in execute-link-fasl to generate ~a~% with the arguments: /path-to-clang ~a~%  I'm going to try removing the -flto=thin argument and try linking again~%" bundle-file clang-args)
+          (ext:run-clang (cdr clang-args) :output-file-name bundle-file)
+          (when (probe-file bundle-file)
+            (warn "execute-link-fasl worked after removing ~a from the argument list --- FIGURE OUT WHAT IS GOING WRONG WITH THAT ARGUMENT!!!" (car clang-args))))
+        (unless (probe-file bundle-file)
+          (error "~%!~%!~%! There is a HUGE problem - an execute-link-fasl command with the arguments:   /path-to-clang ~a~%~%!        failed to generate the output file ~a~%" clang-args bundle-file)))
+      (truename bundle-file))))
 
 (defun execute-link-executable (output-file-name in-bitcode-names)
   ;; options are a list of strings like (list "-v")
@@ -181,7 +235,6 @@
                         :output-file-name exec-file))
         (t (error "Add support for this operating system to cmp:generate-link-command"))))
     (truename output-file-name)))
-
 
 (defun link-bitcode-modules (output-pathname part-pathnames
                              &key additional-bitcode-pathnames
@@ -249,20 +302,28 @@
 
 (defun llvm-link (output-pathname
                   &key (link-type :fasl)
+                    input-type 
                     lisp-bitcode-files
                     (target-backend (default-target-backend)))
   (let* ((*target-backend* target-backend)
          (intrinsics-bitcode-path (core:build-inline-bitcode-pathname link-type :intrinsics))
          (builtins-bitcode-path (core:build-inline-bitcode-pathname link-type :builtins))
-         (all-bitcode (list* builtins-bitcode-path intrinsics-bitcode-path lisp-bitcode-files))
+         (all-bitcode (list* intrinsics-bitcode-path lisp-bitcode-files))
          (output-pathname (pathname output-pathname)))
     (cond
+      ((eq input-type :object)
+       ;; don't link builtins - object files already have them linked in by compile-file
+       )
+      ((eq input-type :bitcode)
+       (setf all-bitcode (append (list builtins-bitcode-path) all-bitcode)))
+      (t (error "Add support for llvm-link input-type ~a" input-type)))
+    (cond
       ((eq link-type :executable)
-       (execute-link-executable output-pathname all-bitcode))
+       (execute-link-executable output-pathname all-bitcode :input-type input-type))
       ((eq link-type :fasl)
        (when (member :debug-run-clang *features*)
          (bformat t "In llvm-link -> link-type :fasl all-bitcode -> %s\n" all-bitcode))
-       (execute-link-fasl output-pathname all-bitcode))
+       (execute-link-fasl output-pathname all-bitcode :input-type input-type))
       (t (error "Cannot link format ~a" link-type)))
     output-pathname))
 

@@ -108,7 +108,7 @@
           jit-function-name
           module-make-global-string
           llvm-link
-          jit-link-builtins-module
+          link-builtins-module
           load-bitcode
           initialize-calling-convention
           treat-as-special-operator-p

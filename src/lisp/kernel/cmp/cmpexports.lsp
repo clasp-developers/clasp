@@ -86,7 +86,8 @@
           irc-create-call
           irc-create-invoke
           compile-file-to-module
-          jit-link-builtins-module
+          link-builtins-module
+          link-object-files
           optimize-module-for-compile
           optimize-module-for-compile-file
           codegen-rtv
@@ -159,7 +160,7 @@
           module-make-global-string
           make-boot-function-global-variable
           llvm-link
-          jit-link-builtins-module
+          link-builtins-module
           load-bitcode
           initialize-calling-convention
           treat-as-special-operator-p

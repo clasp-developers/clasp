@@ -200,6 +200,13 @@ CL_DEFUN size_t core__closure_length(Closure_sp tclosure)
   return gc::As<ValueFrame_sp>(tclosure->closedEnvironment())->length();
 }
 
+T_sp ClosureWithSlots_O::code() const {
+  if (this->interpretedP()) {
+    return (*this)[INTERPRETED_CLOSURE_FORM_SLOT];
+  }
+  SIMPLE_ERROR(BF("Tried to get code for a non interpreted closure"));
+}
+
 
 string ClosureWithSlots_O::__repr__() const {
   T_sp name = this->functionName();

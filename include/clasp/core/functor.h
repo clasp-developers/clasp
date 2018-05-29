@@ -358,6 +358,7 @@ public:
       BOUNDS_ASSERT(idx<this->_Slots._Length);
       return this->_Slots[idx];
     };
+    T_sp code() const;
   };
 };
 
