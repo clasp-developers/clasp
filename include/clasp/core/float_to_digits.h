@@ -32,7 +32,7 @@ THE SOFTWARE.
 
 namespace core {
 
-T_mv core__float_to_digits(T_sp tdigits, Float_sp number, gc::Nilable<Real_sp> position,
+T_mv core__float_to_digits(T_sp tdigits, Float_sp number, T_sp position,
                           T_sp relativep);
 
 };
