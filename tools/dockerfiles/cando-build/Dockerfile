@@ -49,6 +49,7 @@ RUN echo "PREFIX='/out/clasp'" >> wscript.config
 RUN echo "CLASP_VERSION='clasp_docker'" >> wscript.config
 RUN echo "USE_PARALLEL_BUILD = True" >> wscript.config
 RUN echo "USE_LLD = True" >> wscript.config
+RUN echo "CLASP_BUILD_MODE = 'bitcode'" >> wscript.config
 RUN git clone --depth=1 https://github.com/quicklisp/quicklisp-client.git $HOME/quicklisp
 RUN mkdir $HOME/quicklisp/local-projects
 RUN git clone --depth=1 https://github.com/slime/slime $HOME/slime
