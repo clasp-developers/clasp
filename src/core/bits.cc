@@ -129,7 +129,9 @@ typedef enum {
     nand_op_id =14,
     b_set_op_id =15} bit_op_id;
 
-static bit_operator fixnum_operations[16] = {
+#define boolOpsMax 16
+
+static bit_operator fixnum_operations[boolOpsMax] = {
     b_clr_op,
     and_op,
     andc2_op,
@@ -241,7 +243,7 @@ mpz_b_c2_op(Bignum_sp out, Bignum_sp i, Bignum_sp j) {
 
 typedef void (*_clasp_big_binary_op)(Bignum_sp out, Bignum_sp o1, Bignum_sp o2);
 
-static _clasp_big_binary_op bignum_operations[16] = {
+static _clasp_big_binary_op bignum_operations[boolOpsMax] = {
     mpz_b_clr_op,
     mpz_and_op,
     mpz_andc2_op,
@@ -265,6 +267,9 @@ T_sp clasp_boole(int op, T_sp x, T_sp y) {
   if (x.nilp() || y.nilp()) {
     SIMPLE_ERROR(BF("boole cannot accept nil"));
   }
+  if ((op < 0) || (op >= boolOpsMax))
+    // issue #438
+     ERROR_WRONG_TYPE_NTH_ARG(cl::_sym_boole, 1, x, Cons_O::createList(cl::_sym_Integer_O, make_fixnum(0), make_fixnum(boolOpsMax-1)));
   if (x.fixnump()) {
     Fixnum_sp fnx = gc::As<Fixnum_sp>(x);
     if (y.fixnump()) { //Fixnum_sp fny = y.asOrNull<Fixnum_O>() ) {
