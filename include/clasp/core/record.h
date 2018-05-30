@@ -492,7 +492,11 @@ public:
         value = _Nil<core::T_O>();
       else {
         Cons_sp apair = gc::As_unsafe<Cons_sp>(find);
-        value = gc::As<gc::smart_ptr<OT>>(CONS_CDR(apair));
+        if (CONS_CDR(apair).nilp()) {
+          value = _Nil<T_O>();
+        } else {
+          value = gc::As<gc::smart_ptr<OT>>(CONS_CDR(apair));
+        }
         if (this->stage() == initializing)
           this->flagSeen(apair);
       }

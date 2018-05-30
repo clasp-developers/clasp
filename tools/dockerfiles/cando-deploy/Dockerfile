@@ -44,7 +44,7 @@ RUN pip install awscli
 
 RUN whoami
 RUN python -m pip install numpy
-RUN python -m pip install jupyter
+RUN python -m pip install jupyterlab
 RUN python -m pip install ipywidgets
 RUN git clone -b "v1.1.2" https://github.com/arose/nglview /home/app/nglview
 RUN whoami 
@@ -112,5 +112,5 @@ ADD demos.tar /home/app/
 # USER app
 
 ENV HOME /home/app/
-ENTRYPOINT [ "jupyter", "notebook" ]
+ENTRYPOINT [ "jupyter", "lab" ]
 CMD [ "--allow-root", "--no-browser", "--ip=0.0.0.0", "--port=8888" ]

@@ -121,7 +121,8 @@ VALID_OPTIONS = [
     "DEBUG_GUARD_EXHAUSTIVE_VALIDATE",
     "INCLUDES",
     "LINKFLAGS",
-    "CLASP_BUILD_MODE"
+    "CLASP_BUILD_MODE",
+    "CLASP_VERSION"
 ]
 
 def build_extension(bld):
