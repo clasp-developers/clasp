@@ -538,6 +538,14 @@ The passed module is modified as a side-effect."
             (setf inline-functions (cons f inline-functions)))))
     inline-functions))
 
+
+
+(defun link-inline-remove-builtins (module)
+  (link-builtins-module module)
+  (optimize-module-for-compile-file module)
+  (llvm-sys:remove-always-inline-functions module))
+
+
 (defun switch-always-inline-to-inline (module)
   (let ((functions (llvm-sys:module-get-function-list module))
         inline-functions)

@@ -260,16 +260,7 @@ Compile a lisp source file into an LLVM module."
               (cmp-log-dump-module *the-module*)
               (irc-verify-module-safe *the-module*)
               (quick-module-dump *the-module* "preoptimize")
-              (cond
-                ((eq output-type :object)
-                 (link-builtins-module *the-module*))
-                ((eq output-type :fasl)
-                 ;; nothing
-                 )
-                ((eq output-type :bitcode)
-                 ;; don't link builtins - they will be linked later
-                 )
-                (t (error "Handle output-type option ~a" output-type))))
+              (link-inline-remove-builtins *the-module*))
             (quick-module-dump module "postoptimize")
             module))))))
 
