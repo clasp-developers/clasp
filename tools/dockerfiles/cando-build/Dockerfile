@@ -55,11 +55,14 @@ RUN mkdir $HOME/quicklisp/local-projects
 RUN git clone --depth=1 https://github.com/slime/slime $HOME/slime
 RUN cd $HOME/quicklisp/local-projects \
  && git clone --depth=1 https://github.com/clasp-developers/usocket.git \
- && git clone --depth=1 https://github.com/clasp-developers/cl-jupyter.git \
+ && git clone  https://github.com/clasp-developers/cl-jupyter.git \
  && git clone --depth=1 https://github.com/clasp-developers/ironclad.git \
  && git clone --depth=1 https://github.com/clasp-developers/uuid.git \
  && git clone --depth=1 https://github.com/clasp-developers/bordeaux-threads.git \
  && git clone --depth=1 https://github.com/clasp-developers/cffi.git
+
+###  cl-jupyter is messed up - choose a working commit 
+RUN cd $HOME/quicklisp/local-projects/cl-jupyter && git reset --hard c17b927
 
 RUN ./waf configure
 RUN ./waf -j $(nproc) build_cboehm
