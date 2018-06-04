@@ -43,7 +43,7 @@
 
 (load "sys:kernel;cleavir;asdf-system-groveler.lisp")
 
-(time (defparameter *files* (asdf-system-groveler::determine-complete-set-of-asdf-source-files-absolute-path (list :cando :nglview :cl-jupyter))))
+(time (defparameter *files* (asdf-system-groveler::determine-complete-set-of-asdf-source-files-absolute-path (list :cando :cl-nglview :cl-jupyter))))
 
 (defparameter *cache* #P"/tmp/build/")
 

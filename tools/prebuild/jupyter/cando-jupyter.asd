@@ -11,4 +11,4 @@
   :components ()
   :build-operation asdf:monolithic-compile-bundle-op
   :build-pathname "cando-jupyter"
-  :depends-on (:cando :cl-jupyter :nglview))
+  :depends-on (:cando :cl-jupyter :cl-nglview))
