@@ -29,11 +29,21 @@ RUN apt-get -y install \
 
 # add app user
 RUN groupadd -g 9999 app && useradd -u 9999 -g 9999 -ms /bin/bash app
+
 ENV HOME=/home/app
 
-RUN apt-get update && apt-get -y install git-core 
+RUN apt-get -y install python3.6
+
+RUN cd /tmp && wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh
+RUN cd /tmp && bash Miniconda3-latest-Linux-x86_64.sh -b -p /home/app/miniconda
+
+ENV PATH="/home/app/miniconda/bin:$PATH"
+RUN /bin/bash -c "source /home/app/miniconda/bin/activate"
+
+RUN apt-get update && apt-get -y install git-core
 # AWS command-line utilities
 RUN apt-get -y install python-setuptools python-dev build-essential
+
 
 USER root
 # Install sudo
@@ -44,16 +54,17 @@ RUN pip install awscli
 
 RUN whoami
 RUN python -m pip install numpy
-RUN python -m pip install jupyterlab
-RUN python -m pip install ipywidgets
-RUN git clone -b "v1.1.2" https://github.com/arose/nglview /home/app/nglview
-RUN whoami 
-RUN cd /home/app/nglview && python setup.py install
-# probably need to activate widgetsnbextension
-RUN python -m ipykernel install --sys-prefix
-RUN python -m jupyter nbextension enable --py --sys-prefix widgetsnbextension
-RUN python -m jupyter nbextension install --py --sys-prefix nglview
-RUN python -m jupyter nbextension enable --py --sys-prefix nglview
+
+RUN apt-get install -y nodejs npm
+
+RUN conda create -n lab python=3.6 -y
+RUN /bin/bash -c "source activate lab"
+RUN conda install ipywidgets=7.1.2 -c conda-forge -y
+RUN pip install nglview==1.1.2
+RUN nglview enable # might need this to enable nglview-js-widgets extension for notebook
+RUN conda install jupyterlab=0.31.12 -y -c conda-forge
+RUN jupyter-labextension install @jupyter-widgets/jupyterlab-manager@0.33.2
+RUN jupyter-labextension install nglview-js-widgets@1.1.2
 
 ADD cando-build.tgz /home/app/clasp
 ADD tools/dockerfiles/jupyter/kernels /home/app/.local/share/jupyter/kernels
@@ -72,7 +83,10 @@ RUN mkdir $HOME/quicklisp/local-projects
 # Checkout quicklisp stuff - but not needed
 RUN cd $HOME/quicklisp/local-projects \
   && git clone --depth=1 https://github.com/clasp-developers/usocket.git \
-  && git clone --depth=1 https://github.com/clasp-developers/cl-jupyter.git \
+  && git clone --depth=1 https://github.com/drmeister/cl-jupyter.git \
+  && git clone --depth=1 https://github.com/clasp-developers/cl-jupyter-widgets.git \
+  && git clone --depth=1 https://github.com/clasp-developers/cl-nglview.git \
+  && git clone --depth=1 https://github.com/clasp-developers/cl-bqplot.git \
   && git clone --depth=1 https://github.com/clasp-developers/uuid.git \
   && git clone --depth=1 https://github.com/clasp-developers/bordeaux-threads.git \
   && git clone --depth=1 https://github.com/clasp-developers/cffi.git

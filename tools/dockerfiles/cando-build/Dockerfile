@@ -55,7 +55,10 @@ RUN mkdir $HOME/quicklisp/local-projects
 RUN git clone --depth=1 https://github.com/slime/slime $HOME/slime
 RUN cd $HOME/quicklisp/local-projects \
  && git clone --depth=1 https://github.com/clasp-developers/usocket.git \
- && git clone --depth=1 https://github.com/clasp-developers/cl-jupyter.git \
+ && git clone --depth=1 https://github.com/drmeister/cl-jupyter.git \
+ && git clone --depth=1 https://github.com/clasp-developers/cl-jupyter-widgets.git \
+ && git clone --depth=1 https://github.com/clasp-developers/cl-nglview.git \
+ && git clone --depth=1 https://github.com/clasp-developers/cl-bqplot.git \
  && git clone --depth=1 https://github.com/clasp-developers/ironclad.git \
  && git clone --depth=1 https://github.com/clasp-developers/uuid.git \
  && git clone --depth=1 https://github.com/clasp-developers/bordeaux-threads.git \

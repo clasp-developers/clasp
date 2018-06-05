@@ -96,6 +96,15 @@ extern core::Symbol_sp& _sym_name;
                                                                            make_fixnum((_seq_)->length()-1)), \
                               kw::_sym_datum, make_fixnum(_idx_)));
 
+#define TYPE_ERROR_INDEX_VARIABLE(message, seqobject, idxobject,len) \
+  ERROR(cl::_sym_simpleTypeError, \
+        core::lisp_createList(kw::_sym_formatControl, core::lisp_createStr(message), \
+                              kw::_sym_formatArguments, core::lisp_createList(idxobject, seqobject), \
+                              kw::_sym_expectedType, core::lisp_createList(cl::_sym_integer, \
+                                                                           make_fixnum(0), \
+                                                                           make_fixnum(len-1)), \
+                              kw::_sym_datum, idxobject));
+
 #define TYPE_ERROR_PROPER_LIST(_lst_)                                                                  \
   ERROR(cl::_sym_simpleTypeError,                                                                      \
         core::lisp_createList(kw::_sym_formatControl, core::lisp_createStr("~S is not a proper list"), \
@@ -103,6 +112,9 @@ extern core::Symbol_sp& _sym_name;
                               kw::_sym_expectedType, cl::_sym_cons,                                    \
                               kw::_sym_datum, _lst_));
 
+// this might be a copy-paste error _obj_ is declared, but _lst_ is used
+// the text also does not work fit the error name
+// can't find a use in all clasp
 #define TYPE_ERROR_NO_FILL_POINTER(_obj_)                                                                  \
   ERROR(cl::_sym_simpleTypeError,                                                                      \
         core::lisp_createList(kw::_sym_formatControl, core::lisp_createStr("~S is not a proper list"), \
@@ -119,8 +131,13 @@ extern core::Symbol_sp& _sym_name;
 
 #define TYPE_ERROR(_datum_, _expectedType_) ERROR(cl::_sym_typeError, core::lisp_createList(kw::_sym_datum, _datum_, kw::_sym_expectedType, _expectedType_))
 #define PROGRAM_ERROR() ERROR(cl::_sym_programError, (_Nil<T_O>()))
-// (make-instance 'CORE:SIMPLE-PROGRAM-ERROR :format-control "Programm Error")
-#define SIMPLE_PROGRAM_ERROR(_datum_) ERROR(core::_sym_simpleProgramError, core::lisp_createList(kw::_sym_formatControl, _datum_))
+#define SIMPLE_PROGRAM_ERROR(message, datum)                                                     \
+        ERROR(core::_sym_simpleProgramError,                                                     \
+              core::lisp_createList(kw::_sym_formatControl, core::lisp_createStr(message),kw::_sym_formatArguments, core::lisp_createList(datum)))
+#define SIMPLE_PROGRAM_ERROR_2_ARGS(message, datum1, datum2)                                                     \
+        ERROR(core::_sym_simpleProgramError,                                                     \
+              core::lisp_createList(kw::_sym_formatControl, core::lisp_createStr(message),kw::_sym_formatArguments, core::lisp_createList(datum1, datum2)))
+
 #define FILE_ERROR(_file_) ERROR(cl::_sym_fileError, core::lisp_createList(kw::_sym_pathname, _file_))
 #define CANNOT_OPEN_FILE_ERROR(_file_) FILE_ERROR(_file_)
 #define TOO_FEW_ARGUMENTS_ERROR() NO_INITIALIZERS_ERROR(core::_sym_tooFewArgumentsError)
@@ -137,7 +154,7 @@ extern core::Symbol_sp& _sym_name;
 
 #define PRINT_NOT_READABLE_ERROR(obj) ERROR(cl::_sym_printNotReadable, core::lisp_createList(kw::_sym_object, obj));
 #define CELL_ERROR(name) ERROR(cl::_sym_cellError, core::lisp_createList(kw::_sym_name, name))
-#define UNBOUND_VARIABLE_ERROR(name) ERROR(cl::_sym_unboundVariable, core::lisp_createList(kw::_sym_name, name))
+#define UNBOUND_VARIABLE_ERROR(name) ERROR(::cl::_sym_unboundVariable, core::lisp_createList(kw::_sym_name, name))
 #define KEY_NOT_FOUND_ERROR(_key_) SIMPLE_ERROR(BF("Key %s not found") % _key_)
 #define CONTROL_ERROR() NO_INITIALIZERS_ERROR(cl::_sym_controlError);
 
@@ -157,7 +174,7 @@ extern core::Symbol_sp& _sym_name;
 
 #define ERROR_DIVISION_BY_ZERO(_x_, _y_) ERROR(cl::_sym_divisionByZero, core::lisp_createList(kw::_sym_operation, cl::_sym__DIVIDE_, kw::_sym_operands, core::lisp_createList(_x_, _y_)))
 
-#define ERROR_UNDEFINED_FUNCTION(_f_) ERROR(cl::_sym_undefinedFunction, core::lisp_createList(kw::_sym_name, _f_));
+#define ERROR_UNDEFINED_FUNCTION(_f_) ERROR(::cl::_sym_undefinedFunction, core::lisp_createList(kw::_sym_name, _f_));
 #define FE_ERROR(_type_, _args_)
 
 namespace core {

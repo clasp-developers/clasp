@@ -953,8 +953,9 @@ FAILURE_CLOBBER:
 
 SUCCESS:
   clasp_enable_interrupts();
-  new_truename = cl__truename(newn);
-  return Values(newn, old_truename, new_truename);
+  new_truename = cl__truename(pnewn);
+  // The first result value is newn with any missing components filled by a merge-pathnames
+  return Values(pnewn, old_truename, new_truename);
 }
 
 static int

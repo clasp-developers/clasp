@@ -175,7 +175,8 @@ CL_DOCSTRING("SeeCLHS delete-package");
 CL_DEFUN T_sp cl__delete_package(T_sp pobj)
 {
   Package_sp pkg = coerce::packageDesignator(pobj);
-  if (pkg == _lisp->commonLispPackage() || pkg == _lisp->keywordPackage()) {
+  // better would be to check for locked packages as in unintern
+  if (pkg == _lisp->commonLispPackage() || pkg == _lisp->keywordPackage() || pkg == _lisp->corePackage()) {
     FEpackage_error("Cannot delete the package ~S", pkg, 0);
   }
   /* 2) Now remove the package from the other packages that use it
@@ -184,6 +185,13 @@ CL_DEFUN T_sp cl__delete_package(T_sp pobj)
   if (pkg->packageName() == "") {
     return _Nil<T_O>();
   }
+   // Need to remove the nicknames, since package is not fully deleted
+  // do this before the WITH_PACKAGE_READ_WRITE_LOCK
+  for (auto cur : pkg->getNicknames()) {
+    _lisp->unmapNameToPackage(gc::As<String_sp>(oCar(cur))->get_std_string());
+  }
+  pkg->setNicknames(_Nil<T_O>());
+  
   WITH_PACKAGE_READ_WRITE_LOCK(pkg);
   for (auto pi : pkg->_UsingPackages) {
     if (pi.notnilp())
@@ -793,6 +801,16 @@ bool Package_O::unintern_no_lock(Symbol_sp sym) {
   // The following is not completely conformant with CLHS
   // unintern should throw an exception if removing a shadowing symbol
   // uncovers a name conflict of the symbol in two packages that are being used
+  // never unintern in protected packages 
+  if ((this->getSystemLockedP()) || (this->getUserLockedP()))
+    return false;
+  // dont unintern Symbols belonging to protected packages
+  T_sp home = sym->getPackage();
+    if (!home.nilp()) {
+        Package_sp package = coerce::packageDesignator(home);
+        if ((package->getSystemLockedP()) || (package->getUserLockedP()))
+        return false;
+    }
   SimpleString_sp nameKey = sym->_Name;
   {
     Symbol_sp sym, status;

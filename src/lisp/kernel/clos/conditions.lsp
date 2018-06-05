@@ -865,7 +865,7 @@ memory limits before executing the program again."))
   (if (core:is-interactive-lisp)
       (invoke-debugger condition)
       (progn
-        (core:bt)
+        (core:btcl)
         (core:exit))))
 
 (defun sys::universal-error-handler (continue-string datum args)
