@@ -230,6 +230,7 @@ void* boehm_create_shadow_table(size_t nargs)
 namespace gctools {
 __attribute__((noinline))
 int initializeBoehm(MainFunctionType startupFn, int argc, char *argv[], bool mpiEnabled, int mpiRank, int mpiSize) {
+  GC_set_handle_fork(1);
   GC_INIT();
   GC_allow_register_threads();
   GC_set_java_finalization(1);
