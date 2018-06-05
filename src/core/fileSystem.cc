@@ -30,7 +30,7 @@ THE SOFTWARE.
 
 #include <sys/types.h>
 #include <pwd.h>
-#ifdef _TARGET_OS_LINUX
+#if defined(_TARGET_OS_LINUX) || defined(_TARGET_OS_FREEBSD)
 #else
 #include <uuid/uuid.h>
 #endif
