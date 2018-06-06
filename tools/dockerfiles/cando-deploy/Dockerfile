@@ -124,6 +124,8 @@ ADD demos.tar /home/app/
 # RUN chown -R app:app /home/app/slime
 # USER app
 
+RUN apt-get install -y libgfortran4
+
 ENV HOME /home/app/
 ENTRYPOINT [ "jupyter", "lab" ]
 CMD [ "--allow-root", "--no-browser", "--ip=0.0.0.0", "--port=8888" ]
