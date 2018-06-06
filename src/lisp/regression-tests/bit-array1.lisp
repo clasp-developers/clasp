@@ -136,6 +136,21 @@
         (and (equal #*0101 bit-and)
              (equal #*0101 value))))
 
+;;; If the 2 fill-pointer are different, this fails
+(test hell-mdbit-5
+      (equalp #*1
+              (LET ((V1 (MAKE-ARRAY 1 :ELEMENT-TYPE 'BIT :INITIAL-CONTENTS '(1) :FILL-POINTER 1))
+                    (V2 (MAKE-ARRAY 1 :ELEMENT-TYPE 'BIT :INITIAL-CONTENTS '(1) :FILL-POINTER 1)))
+                (BIT-AND v1 v2))))
+
+(test hell-mdbit-5a
+      (equalp #*1
+              (LET ((V1 (MAKE-ARRAY 1 :ELEMENT-TYPE 'BIT :INITIAL-CONTENTS '(1) :FILL-POINTER 1))
+                    (V2 (MAKE-ARRAY 1 :ELEMENT-TYPE 'BIT :INITIAL-CONTENTS '(1) :FILL-POINTER 0)))
+                (BIT-AND v1 v2))))
+
+                                   
+
 
 
 

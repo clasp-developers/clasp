@@ -130,11 +130,83 @@
 		   (ELT (make-array 0) 0)
 		   :type type-error)
 
-;;; fails
+;;; fails, should report an error, since 5 is after the fill-pointer
+;;; for aref should not fail, since elt is convert to aref, we have a deviation
 (test-expect-error elt-8 
 		   (elt (make-array 10 :initial-contents '(0 1 2 3 4 5 6 7 8 9) :fill-pointer 3) 5)
 		   :type type-error)
 
+;;;
+(test-expect-error fill-1 
+                   (FILL (make-array 6 :initial-element 3) -5 :start -1)
+                   :type  type-error)
+
+(test-expect-error fill-1a 
+                   (FILL (make-array 6 :initial-element 3) -5 :start 23)
+                   :type  type-error)
+
+(test-expect-error fill-2
+                   (FILL (make-array 6 :initial-element 3) -5 :end -1)
+                   :type  type-error)
+
+(test-expect-error fill-3
+                   (FILL (make-array 6 :initial-element 3) -5 :end 27)
+                   :type  type-error)
+
+(test-expect-error fill-4
+                   (FILL (make-array 6 :initial-element 3) -5 :start 4 :end 3)
+                   :type  program-error)
+
+(test fill-5 (equalp (make-array 6 :initial-element 3)
+                      (FILL (make-array 6 :initial-element 3) -5 :start 3 :end 3)))
+
+(test fill-6
+      (equalp #*01010111111111110101010101010101
+              (fill (make-array  32 :element-type 'bit
+                                 :initial-contents (list 0 1 0 1 0 1 0 1 0 1 0 1 0 1 0 1 0 1 0 1 0 1 0 1 0 1 0 1 0 1 0 1)) 1
+                                 :start 5 :end 16)))
 
 
-  
+(test search-sequence-1 (= 5  (search "5" "0123456789" :start2 2)))
+(test search-sequence-2 (= 4  (search (vector 4 5) (vector 0 1 2 3 4 5 6 7 8 9) :start2 2)))
+(test search-sequence-3 (= 4 (search (list 4 5) (list 0 1 2 3 4 5 6 7 8 9) :start2 2)))
+
+(test equalp-1
+ (equalp "1234567890" (make-array 15 :element-type 'character :initial-contents "123456789012345" :fill-pointer 10)))
+
+;;; fails
+(test equalp-2
+ (equalp
+  (make-array 12 :element-type 'character :initial-contents "123456789012" :fill-pointer 10)
+  (make-array 15 :element-type 'character :initial-contents "123456789012345" :fill-pointer 10)))
+
+;;; from clhs Fill-pointer in the second array seem to be respected
+(test equalp-clhs-1
+      (Let ((array1 (make-array 6 :element-type 'integer
+                                :initial-contents '(1 1 1 3 5 7)))
+            (array2 (make-array 8 :element-type 'integer
+                                :initial-contents '(1 1 1 3 5 7 2 6)
+                                :fill-pointer 6)))
+        (equalp array1 array2)))
+
+;;; from clhs Fill-pointer in the first array not, although I assume that (equalp a b) implies (equalp b a)
+(test equalp-clhs-2
+      (Let ((array1 (make-array 6 :element-type 'integer
+                                :initial-contents '(1 1 1 3 5 7)))
+            (array2 (make-array 8 :element-type 'integer
+                                :initial-contents '(1 1 1 3 5 7 2 6)
+                                :fill-pointer 6)))
+        (equalp array2 array1)))
+
+(test equalp-3
+      (equalp #*0010 #(0 0 1 0)))
+
+(test equalp-4
+      (equalp
+       (MAKE-ARRAY '(4) :INITIAL-CONTENTS '(0 0 1 0) :ELEMENT-TYPE 'BIT)
+       #(0 0 1 0)))
+
+(test equalp-5
+      (equalp
+       (MAKE-ARRAY '(4) :INITIAL-CONTENTS '(1 2 3 4) :ELEMENT-TYPE 'Integer)
+       #(1 2 3 4)))
