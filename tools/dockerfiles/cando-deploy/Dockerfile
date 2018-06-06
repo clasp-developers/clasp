@@ -100,8 +100,7 @@ RUN clasp -l "/home/app/quicklisp/setup.lisp" \
            -e "(swank-loader:init :delete nil :reload nil :load-contribs nil)"\
            -e "(core:quit)"
 
-ADD ambertools.tar.gz /home/app
-RUN chown -R app:app /home/app/amber16
+ADD --chown=app:app ambertools.tar.gz /home/app
 ENV AMBERHOME=/home/app/amber16/
 
 RUN cp /home/app/clasp/lib/clasp/extensions/cando/src/data/force-field/ATOMTYPE_SYBYL.DEF /home/app/clasp/lib/clasp/extensions/cando/src/data/force-field/atomtype_sybyl.def
