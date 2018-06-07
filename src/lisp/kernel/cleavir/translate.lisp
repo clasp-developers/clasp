@@ -260,7 +260,7 @@ when this is t a lot of graphs will be generated.")
                                :lineno lineno
                                :column column
                                :filepos filepos))
-      ((typep enter 'cleavir-ir:top-level-enter-instruction)
+      ((typep enter 'cleavir-ir:enter-instruction)
        (cmp:make-function-info :function-name llvm-function-name
                                :source-handle cmp:*gv-source-file-info-handle*
                                :lambda-list nil
@@ -355,8 +355,31 @@ when this is t a lot of graphs will be generated.")
     (cleavir-ir-graphviz:draw-flowchart initial-instruction (namestring mir-pathname))
     (format *debug-log* "Wrote mir to: ~a~%" (namestring mir-pathname))))
 
+;;; This is "dumb" in that it can only find data that are used without ever being
+;;; assigned to. It is also possible for bad HIR to have control paths that lead
+;;; to a datum being used without being assigned to, even though in some other
+;;; control paths it is assigned to; this function doesn't find that, and with the
+;;; structure of CATCH/UNWIND it would be difficult to do so.
+(defun check-for-uninitialized-inputs-dumb (initial-instruction)
+  (cleavir-ir:reinitialize-data initial-instruction)
+  (let ((uninitialized nil))
+    (cleavir-ir:map-instructions-arbitrary-order
+     (lambda (instruction)
+       (loop for datum in (append (cleavir-ir:inputs instruction)
+                                  (cleavir-ir:outputs instruction))
+             when (and (typep datum '(or cleavir-ir:lexical-location
+                                      cleavir-ir:values-location))
+                       (null (cleavir-ir:defining-instructions datum))
+                       (not (null (cleavir-ir:using-instructions datum))))
+               do (pushnew datum uninitialized)))
+     initial-instruction)
+    uninitialized))
+
 (defun translate (initial-instruction map-enter-to-function-info
                   &optional (abi *abi-x86-64*) (linkage 'llvm-sys:internal-linkage))
+  (let ((uninitialized (check-for-uninitialized-inputs-dumb initial-instruction)))
+    (unless (null uninitialized)
+      (error "Uninitialized inputs: ~a" uninitialized)))
   (let* ((*basic-blocks* (cleavir-basic-blocks:basic-blocks initial-instruction))
          (*tags* (make-hash-table :test #'eq))
          (*vars* (make-hash-table :test #'eq))
@@ -380,6 +403,7 @@ when this is t a lot of graphs will be generated.")
   (quick-draw-hir init-instr "hir-before-transformations")
   #+(or)
   (cleavir-partial-inlining:do-inlining init-instr)
+  (quick-draw-hir init-instr "hir-after-inlining")
   ;; required by most of the below
   (cleavir-hir-transformations:process-captured-variables init-instr)
   (setf *ct-process-captured-variables* (compiler-timer-elapsed))
