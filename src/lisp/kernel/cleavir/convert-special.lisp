@@ -1,29 +1,5 @@
 (in-package :cc-generate-ast)
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
-;;; Expand local-macro-info definitions
-;;; use the macro WITH-EARLY-ACCESSORS - it creates
-;;; macrolet macros that substitute for functions - this confuses cleavir
-;;; Treat LOCAL-MACRO-INFO function names as globals
-(defmethod cleavir-generate-ast:convert-function
-    ((info cleavir-env:local-macro-info) env (system clasp-cleavir:clasp))
-  (format t "In kernel/cleavir/convert-special.lisp -- cleavir-generate-ast:convert-function for: ~a~%" info)
-  (cleavir-generate-ast:convert-global-function info (cleavir-env:global-environment env) system))
-
-
-
-#+(or)(defmethod cleavir-generate-ast::convert-special
-          ((symbol (eql 'unwind-protect)) form env)
-        (let* ((ast (cc-ast:make-unwind-protect-ast nil nil))
-               (new-env (cc-env:add-unwind-protect env ast))
-               (cleanup-forms (cleavir-generate-ast::convert-sequence (cddr form) env)))
-          (setf (cc-ast:cleanup-ast ast)
-                (cleavir-ast:make-progn-ast cleanup-forms))
-          (let ((protected-form (cleavir-generate-ast::convert (cadr form) new-env)))
-            (setf (cc-ast:protected-ast ast) protected-form)
-            ast)))
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; Define a "macro" for the Cleavir compiler.
