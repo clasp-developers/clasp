@@ -182,11 +182,8 @@
        (make-instance 'cleavir-env:global-function-info
                       :name function-name
                       :compiler-macro (compiler-macro-function function-name)
-                      :inline inline-status
-                      ;; We need to clone the ast for now because hoisting modifies it
-                      :ast (if (and cleavir-ast (eq inline-status 'inline))
-                               (cleavir-ast-transformations:clone-ast cleavir-ast)
-                               cleavir-ast))))
+                      :inline 'cl:notinline ;inline-status ; CST inlining is not working.
+                      :ast cleavir-ast)))
     ( ;; If it is neither of the cases above, then this name does
      ;; not have any function-info associated with it.
      t
