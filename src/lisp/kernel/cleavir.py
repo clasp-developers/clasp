@@ -181,6 +181,7 @@ cleavir_parts = [
     "src/lisp/kernel/contrib/sicl/Code/Cleavir/Intermediate-representation/map-instructions-arbitrary-order",
     "src/lisp/kernel/contrib/sicl/Code/Cleavir/Intermediate-representation/set-predecessors",
     "src/lisp/kernel/contrib/sicl/Code/Cleavir/Intermediate-representation/map-instructions",
+    "src/lisp/kernel/contrib/sicl/Code/Cleavir/Intermediate-representation/map-local-instructions",
     "src/lisp/kernel/contrib/sicl/Code/Cleavir/Intermediate-representation/HIR/data",
     "src/lisp/kernel/contrib/sicl/Code/Cleavir/Intermediate-representation/HIR/general-purpose-instructions",
     "src/lisp/kernel/contrib/sicl/Code/Cleavir/Intermediate-representation/HIR/box-related-instructions",
