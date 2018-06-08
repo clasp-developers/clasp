@@ -1785,7 +1785,8 @@ CL_DEFUN T_mv ext__system(String_sp cmd) {
 
 CL_LAMBDA(call-and-arguments &optional return-stream);
 CL_DECLARE();
-CL_DOCSTRING("vfork_execvp - set optional return-stream if you want the output stream of the child");
+CL_DOCSTRING(R"(vfork_execvp - pass optional return-stream value of T if you want the output stream of the child.
+Returns (values 0 child-pid stream) if return-stream is T, (values errno error-message nil) if there was an error. )");
 CL_DEFUN T_mv ext__vfork_execvp(List_sp call_and_arguments, T_sp return_stream) {
 
   if (call_and_arguments.nilp())
