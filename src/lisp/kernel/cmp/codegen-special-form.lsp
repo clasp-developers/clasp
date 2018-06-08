@@ -18,7 +18,6 @@
     (tagbody codegen-tagbody convert-tagbody)
     (go codegen-go convert-go)
     (multiple-value-call  codegen-multiple-value-call convert-multiple-value-call)
-    ;;;(multiple-value-prog1  codegen-multiple-value-prog1 convert-multiple-value-prog1)
     (flet  codegen-flet convert-flet)
     (labels  codegen-labels convert-labels)
     (eval-when  codegen-eval-when convert-eval-when)
@@ -222,17 +221,13 @@
 
 ;;; MULTIPLE-VALUE-PROG1
 
-(defun codegen-multiple-value-prog1 (result rest env)
-  (with-dbg-lexical-block (rest)
-    (let ((first-form (car rest))
-          (forms (cdr rest)))
-      (if (null forms)
-          ;; trivial case
-          (codegen result first-form env)
-          (codegen result `(core:multiple-value-prog1-function
-                            (lambda () ,first-form)
-                            (lambda () (progn ,@forms)))
-                   env)))))
+(defmacro multiple-value-prog1 (first-form &rest forms)
+  (if (null forms) ; triviality check
+      first-form
+      `(core:multiple-value-prog1-function
+        ;; progn is to make sure code like (multiple-value-prog1 (declare ...)) fails right.
+        (lambda () (progn ,first-form))
+        (lambda () (progn ,@forms)))))
 
 (defun codegen-special-var-reference (var &optional env)
   (irc-intrinsic "symbolValueReference" (irc-global-symbol var env) (bformat nil "<special-var:%s>" (symbol-name var) )))
