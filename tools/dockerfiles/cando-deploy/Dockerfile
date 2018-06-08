@@ -100,30 +100,15 @@ RUN clasp -l "/home/app/quicklisp/setup.lisp" \
            -e "(swank-loader:init :delete nil :reload nil :load-contribs nil)"\
            -e "(core:quit)"
 
-ADD amber16-data.tar /home/app
-RUN chown -R app:app /home/app/amber16-data
-ENV AMBERHOME=/home/app/amber16-data/
+ADD --chown=app:app ambertools18-docker.tar.gz /home/app
+ENV AMBERHOME=/home/app/amber18/
 
 RUN cp /home/app/clasp/lib/clasp/extensions/cando/src/data/force-field/ATOMTYPE_SYBYL.DEF /home/app/clasp/lib/clasp/extensions/cando/src/data/force-field/atomtype_sybyl.def
 
 ADD tools/dockerfiles/start-demos.sh /home/app/start-demos.sh
 ADD demos.tar /home/app/
-# RUN chown -R root:root /home/app/demos
 
-# USER root
-# RUN mkdir /home/app/home
-# RUN chown -R app:app /home/app/home
-# RUN chown -R app:app /home/app/.local
-# RUN chown -R app:app /home/app/.jupyter
-# # RUN chown -R app:app /home/app/.cache
-# RUN chown -R app:app /home/app/amber16
-# RUN chown -R app:app /home/app/clasp
-# RUN chown -R app:app /home/app/demos
-# RUN chown -R app:app /home/app/home
-# RUN chown -R app:app /home/app/nglview
-# RUN chown -R app:app /home/app/quicklisp
-# RUN chown -R app:app /home/app/slime
-# USER app
+RUN apt-get install -y libgfortran4
 
 ENV HOME /home/app/
 ENTRYPOINT [ "jupyter", "lab" ]
