@@ -1062,7 +1062,7 @@ T_sp read_lisp_object(T_sp sin, bool eofErrorP, T_sp eofValue, bool recursiveP) 
     ReadTable_sp readtable = gc::As<ReadTable_sp>(cl::_sym_STARreadtableSTAR->symbolValue());
     LOG_READ(BF("About to cl__peek_char"));
     T_sp tcharc = cl__peek_char(_Nil<T_O>(),sin,_Nil<T_O>(),_Nil<T_O>(),_Nil<T_O>());
-    if (tcharc.notnilp() && readtable->syntax_type(gc::As_unsafe<Character_sp>(tcharc)) == kw::_sym_whitespace_character) {
+    if (tcharc.notnilp() && readtable->syntax_type(gc::As_unsafe<Character_sp>(tcharc)) == kw::_sym_whitespace) {
       LOG_READ(BF("cl__peek_char returned |%s|") % _rep_(tcharc));
       cl__read_char(sin,_lisp->_boolean(eofErrorP),eofValue,_lisp->_true());
       LOG_READ(BF("Returned from cl__read_char"));
@@ -1108,12 +1108,12 @@ step1:
   LOG_READ(BF("Read character x[%d/%s]") % (int)clasp_as_claspCharacter(xxx) % (char)clasp_as_claspCharacter(xxx));
   Symbol_sp xxx_syntax_type = readTable->syntax_type(xxx);
   //    step2:
-  if (xxx_syntax_type == kw::_sym_invalid_character) {
+  if (xxx_syntax_type == kw::_sym_invalid) {
     LOG_READ(BF("step2 - invalid-character[%c]") % clasp_as_claspCharacter(xxx));
     SIMPLE_ERROR(BF("ReaderError_O::create(sin,_lisp)"));
   }
   //    step3:
-  if (xxx_syntax_type == kw::_sym_whitespace_character) {
+  if (xxx_syntax_type == kw::_sym_whitespace) {
     LOG_READ(BF("step3 - whitespace character[%c/%d]") % clasp_as_claspCharacter(xxx) % clasp_as_claspCharacter(xxx));
     goto step1;
   }
@@ -1132,7 +1132,7 @@ step1:
     return object;
   }
   //    step5:
-  if (xxx_syntax_type == kw::_sym_single_escape_character) {
+  if (xxx_syntax_type == kw::_sym_single_escape) {
     LOG_READ(BF("step5 - single-escape-character char[%c]") % clasp_as_claspCharacter(xxx));
     LOG_READ(BF("Handling single escape"));
     T_sp ty = cl__read_char(sin, _lisp->_true(), _Nil<T_O>(), _lisp->_true());
@@ -1146,7 +1146,7 @@ step1:
     goto step8;
   }
   //    step6:
-  if (xxx_syntax_type == kw::_sym_multiple_escape_character) {
+  if (xxx_syntax_type == kw::_sym_multiple_escape) {
     LOG_READ(BF("step6 - multiple-escape-character char[%c]") % clasp_as_claspCharacter(xxx));
     LOG_READ(BF("Handling multiple escape - clearing token"));
     token.clear();
@@ -1155,7 +1155,7 @@ step1:
     goto step9;
   }
   //    step7:
-  if ( xxx_syntax_type /*readTable->syntax_type(xxx)*/ == kw::_sym_constituent_character) {
+  if ( xxx_syntax_type /*readTable->syntax_type(xxx)*/ == kw::_sym_constituent) {
     LOG_READ(BF("step7 - Handling constituent-character char[%s]") % _rep_(xxx));
     token.clear();
     // X = readTable->convert_case(x);
@@ -1174,7 +1174,7 @@ step8:
     LOG_READ(BF("Step8: Read y[%s/%c]") % clasp_as_claspCharacter(y) % (char)clasp_as_claspCharacter(y));
     Symbol_sp y8_syntax_type = readTable->syntax_type(y);
     LOG_READ(BF("y8_syntax_type=%s") % _rep_(y8_syntax_type));
-    if ((y8_syntax_type == kw::_sym_constituent_character) || (y8_syntax_type == kw::_sym_non_terminating_macro_character)) {
+    if ((y8_syntax_type == kw::_sym_constituent) || (y8_syntax_type == kw::_sym_non_terminating_macro)) {
       // Y = readTable->convert_case(y);
       Y = y;  // convert case once the entire token is accumulated
       LOG_READ(BF("  Pushing back character %d") % constituentChar(Y));
@@ -1194,12 +1194,12 @@ step8:
     }
     if (y8_syntax_type == kw::_sym_invalid)
       SIMPLE_ERROR(BF("ReaderError_O::create()"));
-    if (y8_syntax_type == kw::_sym_terminating_macro_character) {
+    if (y8_syntax_type == kw::_sym_terminating_macro) {
       LOG_READ(BF("UNREADING char y[%s]") % clasp_as_claspCharacter(y));
       clasp_unread_char(clasp_as_claspCharacter(y), sin);
       goto step10;
     }
-    if (y8_syntax_type == kw::_sym_whitespace_character) {
+    if (y8_syntax_type == kw::_sym_whitespace) {
       LOG_READ(BF("y is whitespace"));
 #if 0
       if (_sym_STARpreserve_whitespace_pSTAR->symbolValue().isTrue()) { // Can this be recursiveP?
@@ -1218,20 +1218,20 @@ step9:
     y = gc::As<Character_sp>(cl__read_char(sin, _lisp->_true(), _Nil<T_O>(), _lisp->_true()));
     Symbol_sp y9_syntax_type = readTable->syntax_type(y);
     LOG_READ(BF("Step9: Read y[%s] y9_syntax_type[%s]") % clasp_as_claspCharacter(y) % _rep_(y9_syntax_type));
-    if ((y9_syntax_type == kw::_sym_constituent_character) || (y9_syntax_type == kw::_sym_non_terminating_macro_character) || (y9_syntax_type == kw::_sym_terminating_macro_character) || (y9_syntax_type == kw::_sym_whitespace_character)) {
+    if ((y9_syntax_type == kw::_sym_constituent) || (y9_syntax_type == kw::_sym_non_terminating_macro) || (y9_syntax_type == kw::_sym_terminating_macro) || (y9_syntax_type == kw::_sym_whitespace)) {
       token.push_back(constituentChar(y, TRAIT_ALPHABETIC|TRAIT_ESCAPED));
       LOG_READ(BF("token[%s]") % tokenStr(sin,token));
       goto step9;
     }
-    LOG_READ(BF("About to test y9_syntax_type[%s] single_escape[%s] are equal? ==> %d") % _rep_(y9_syntax_type) % _rep_(kw::_sym_single_escape_character) % (y9_syntax_type == kw::_sym_single_escape_character));
-    if (y9_syntax_type == kw::_sym_single_escape_character) {
+    LOG_READ(BF("About to test y9_syntax_type[%s] single_escape[%s] are equal? ==> %d") % _rep_(y9_syntax_type) % _rep_(kw::_sym_single_escape) % (y9_syntax_type == kw::_sym_single_escape));
+    if (y9_syntax_type == kw::_sym_single_escape) {
       LOG_READ(BF("Handling single_escape_character"));
       z = gc::As<Character_sp>(cl__read_char(sin, _lisp->_true(), _Nil<T_O>(), _lisp->_true()));
       token.push_back(constituentChar(z, TRAIT_ALPHABETIC|TRAIT_ESCAPED));
       LOG_READ(BF("Read z[%s] accumulated token[%s]") % clasp_as_claspCharacter(z) % tokenStr(sin,token));
       goto step9;
     }
-    if (y9_syntax_type == kw::_sym_multiple_escape_character) {
+    if (y9_syntax_type == kw::_sym_multiple_escape) {
       LOG_READ(BF("Handling multiple_escape_character"));
       // |....| or ....|| or ..|.|.. is ok
       only_dots_ok = true;
