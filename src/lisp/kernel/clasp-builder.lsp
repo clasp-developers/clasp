@@ -238,7 +238,7 @@ Return files."
       (tagbody
        top
          (if (endp cur) (go done))
-         (compile-kernel-file (car cur) :reload reload :output-type output-type :counter counter :total-files total)
+         (compile-kernel-file (car cur) :reload reload :output-type output-type :counter counter :total-files total :print t :verbose t)
          (setq cur (cdr cur))
          (setq counter (+ 1 counter))
          (go top)
@@ -330,7 +330,7 @@ Return files."
   (format t "Leaving compile-system-parallel~%"))
 
 (defun compile-system (&rest args)
-  (apply (if (or core:*use-parallel-build* (> *number-of-jobs* 1))
+  (apply (if (and core:*use-parallel-build* (> *number-of-jobs* 1))
              'compile-system-parallel
              'compile-system-serial)
          args))
