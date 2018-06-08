@@ -1,7 +1,7 @@
 #
 # This is a generated file, editing it is unwise
 #
-cleavir_parts = [
+cleavir_file_list = [
     "src/lisp/kernel/contrib/Acclimation/packages",
     "src/lisp/kernel/contrib/Acclimation/locale",
     "src/lisp/kernel/contrib/Acclimation/date",
