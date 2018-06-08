@@ -335,17 +335,7 @@ T_mv ClosureWithSlots_O::function_description() const {
   return wrap_function_description(fd);
 }
 
-T_mv CompiledClosure_O::function_description() const {
-  void* fd = this->_FunctionDescription;
-  return wrap_function_description(fd);
-}
-
 T_sp ClosureWithSlots_O::function_literal_vector_copy() const {
-  void* fd = this->_FunctionDescription;
-  return wrap_function_literal_vector_copy(fd);
-}
-
-T_sp CompiledClosure_O::function_literal_vector_copy() const {
   void* fd = this->_FunctionDescription;
   return wrap_function_literal_vector_copy(fd);
 }
@@ -356,6 +346,16 @@ T_sp BuiltinClosure_O::lambda_list() const {
 
 void BuiltinClosure_O::setf_lambda_list(List_sp lambda_list) {
   // Do nothing
+}
+
+T_mv BuiltinClosure_O::function_description() const {
+  return Values(make_fixnum(this->_sourceFileInfoHandle),
+                this->_name,
+                this->lambdaListHandler()->lambdaList(),
+                this->_docstring,
+                make_fixnum(this->lineNumber()),
+                make_fixnum(this->column()),
+                make_fixnum(this->filePos()));
 }
 
 DONT_OPTIMIZE_WHEN_DEBUG_RELEASE LCC_RETURN interpretedClosureEntryPoint(LCC_ARGS_FUNCALL_ELLIPSIS) {

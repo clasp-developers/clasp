@@ -280,6 +280,7 @@ namespace core {
       ClosureWithSlots_sp closure =
         gctools::GC<core::ClosureWithSlots_O>::allocate_container(INTERPRETED_CLOSURE_SLOTS,
                                                                   &interpretedClosureEntryPoint,
+                                                                  (void*)NULL,
                                                                   name,
                                                                   type,
                                                                   lambda_list,
@@ -297,11 +298,12 @@ namespace core {
     static ClosureWithSlots_sp make_bclasp_closure(T_sp name, claspFunction ptr, T_sp type, T_sp lambda_list, T_sp environment, SOURCE_INFO) {
       ClosureWithSlots_sp closure = 
         gctools::GC<core::ClosureWithSlots_O>::allocate_container(BCLASP_CLOSURE_SLOTS,
-                                                                         ptr,
-                                                                         name,
-                                                                         type,
-                                                                         lambda_list,
-                                                                         SOURCE_INFO_PASS);
+                                                                  ptr,
+                                                                  (void*)NULL,
+                                                                  name,
+                                                                  type,
+                                                                  lambda_list,
+                                                                  SOURCE_INFO_PASS);
       closure->closureType = bclaspClosure;
       (*closure)[BCLASP_CLOSURE_ENVIRONMENT_SLOT] = environment;
       return closure;
@@ -310,6 +312,7 @@ namespace core {
       ClosureWithSlots_sp closure = 
         gctools::GC<core::ClosureWithSlots_O>::allocate_container(0,
                                                                   ptr,
+                                                                  (void*)NULL,
                                                                   name,
                                                                   type,
                                                                   lambda_list,

@@ -94,6 +94,7 @@
     (primitive         "ltvc_enclose" %ltvc-return% (list %gcroots-in-module*%
                                                           %size_t%
                                                           %t*%
+                                                          %i8*%
                                                           %fn-prototype*%
                                                           %i32*%
                                                           %size_t%
@@ -270,12 +271,13 @@
 
     (primitive-unwinds  "cc_enclose" %t*% (list %t*%
                                                 %fn-prototype*%
+                                                %i8*%
                                                 %i32*%
                                                 %size_t%
                                                 %size_t%
                                                 %size_t%
                                                 %size_t% ) :varargs t)
-    (primitive         "cc_stack_enclose" %t*% (list %i8*% %t*% %fn-prototype*% %i32*% %size_t% %size_t% %size_t% %size_t% ) :varargs t)
+    (primitive         "cc_stack_enclose" %t*% (list %i8*% %t*% %fn-prototype*% %i8*% %i32*% %size_t% %size_t% %size_t% %size_t% ) :varargs t)
     (primitive         "cc_saveThreadLocalMultipleValues" %void% (list %tmv*% %mv-struct*%))
     (primitive         "cc_loadThreadLocalMultipleValues" %void% (list %tmv*% %mv-struct*%))
     (primitive-unwinds "cc_safe_fdefinition" %t*% (list %t*%))

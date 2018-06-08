@@ -401,13 +401,15 @@ gctools::Tagged ltvc_lookup_value( gctools::GCRootsInModule* holder, size_t inde
 }
 
 LtvcReturn ltvc_enclose(gctools::GCRootsInModule* holder, size_t index, gctools::Tagged lambdaName,
-                        fnLispCallingConvention llvm_func, int *sourceFileInfoHandleP,
+                        fnLispCallingConvention llvm_func, void* functionDescription,
+                        int *sourceFileInfoHandleP,
                         size_t filePos, size_t lineno, size_t column)
 {NO_UNWIND_BEGIN();
   core::T_sp tlambdaName = gctools::smart_ptr<core::T_O>((gc::Tagged)lambdaName);
   gctools::smart_ptr<core::ClosureWithSlots_O> functoid =
     gctools::GC<core::ClosureWithSlots_O>::allocate_container(0,
                                                               llvm_func,
+                                                              functionDescription,
                                                               tlambdaName,
                                                               kw::_sym_function,
                                                               _Nil<T_O>(), // lambdaList
