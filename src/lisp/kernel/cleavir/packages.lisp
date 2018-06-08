@@ -10,10 +10,16 @@
   (:use #:common-lisp #:core)
   (:nicknames #:cc)
   (:export
+   #:*use-cst*
+   #:literal
+   #:literal-label
+   #:immediate-literal
+   #:arrayed-literal
    #:%literal-index
+   #:*clasp-ordinary-lambda-list-grammar*
    #:*use-type-inference*
    #:cleavir-compile-eval
-   #:compile-form
+   #:compile-cst-or-form
    #:clasp
    #:invoke-instruction
    #:invoke-multiple-value-call-instruction
@@ -52,6 +58,8 @@
    #:precalculated-value-ast
    #:make-precalc-vector-function-ast
    #:named-function-ast
+   #:original-lambda-list
+   #:docstring
    #:debug-message-ast
    #:multiple-value-foreign-call-ast
    #:foreign-call-ast
@@ -65,7 +73,7 @@
    #:lambda-name
    #:debug-message
    #:precalc-value-reference-ast
-   #:precalc-value-reference-index
+   #:precalc-value-reference-ast-index
    #:precalc-value-reference-ast-original-object
    #:setf-fdefinition-ast
    #:throw-ast
@@ -87,12 +95,11 @@
    #:precalc-reference-instruction
    #:named-enter-instruction
    #:frame-holder
-   #:indexed-unwind-instruction
-   #:landing-pad-instruction
-   #:landing-pad-return-instruction
    #:landing-pad
    #:jump-id
    #:lambda-list
+   #:original-lambda-list
+   #:docstring
    #:make-named-enter-instruction
    #:debug-message-instruction
    #:multiple-value-foreign-call-instruction
@@ -153,6 +160,9 @@
    #:headerq-instruction
    #:header-value-min-max
    #:make-headerq-instruction
+   #:save-frame-instruction
+   #:make-save-frame-instruction
+   #:assign-catch-instruction #:go-index
    #:enter-instruction
    #:typed-lexical-location #:lexical-location-type
    #:closure-pointer-dynamic-lexical-location

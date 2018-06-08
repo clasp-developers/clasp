@@ -317,7 +317,7 @@ exceptions to higher levels of the code and unwinding the stack.
                   (,cont-block-gs (irc-basic-block-create "try-cont"))
                   (,previous-exception-handler-cleanup-block-gs *exception-handler-cleanup-block*)
                   (*exception-handler-cleanup-block* ,dispatch-header-gs ))
-             (cmp-log "====>> In TRY --> parent-cleanup-block: %s\n" ,parent-cleanup-block-gs)
+             (cmp-log "====>> In TRY --> parent-cleanup-block: %s%N" ,parent-cleanup-block-gs)
              (let ,(mapcar #'(lambda (var-name)
                                (list var-name `(irc-basic-block-create ,(symbol-name var-name))))
                     dispatcher-block-gensyms)

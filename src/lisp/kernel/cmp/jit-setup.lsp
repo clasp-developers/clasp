@@ -120,6 +120,7 @@ using features defined in corePackage.cc"
         (get-builtin-target-triple-and-data-layout)
       (llvm-sys:set-target-triple m target-triple)
       (llvm-sys:set-data-layout.string m data-layout)
+      (llvm-sys:emit-version-ident-metadata m)
       m)))
 
 (defvar *run-time-module-counter* 1)
@@ -188,6 +189,13 @@ No DIBuilder is defined for the default module")
   "Create an i64 constant in the current context"
   (let ((ap-arg (llvm-sys:make-apint-width val 64 t)))
     (llvm-sys:constant-int-get *llvm-context* ap-arg)))
+
+(defun ensure-jit-constant-i64 (val)
+  "Create an i64 constant in the current context if the val is a fixnum - otherwise it should already be a value"
+  (if (fixnump val)
+      (let ((ap-arg (llvm-sys:make-apint-width val 64 t)))
+        (llvm-sys:constant-int-get *llvm-context* ap-arg))
+      val))
 
 (defun jit-constant-ui32 (val)
   "Create an unsigned i32 constant in the current context"
@@ -293,7 +301,7 @@ No DIBuilder is defined for the default module")
     (tagbody
      top
        (let ((c (aref name i))
-             (cnext (if (< i len-1) (aref name (+ i 1)) #\nul)))
+             (cnext (if (< i len-1) (aref name (+ i 1)) #.(code-char 0))))
          (if (char= c #\\)
              (if (char= cnext #\\)
                  (progn
@@ -355,7 +363,7 @@ No DIBuilder is defined for the default module")
        ((string= lname "lambda") lname)         ; this one is ok
        ((string= lname "ltv-literal") lname)    ; this one is ok
        ((string= lname "disassemble") lname)    ; this one is ok
-       (t (bformat t "jit-function-name lname = %s\n" lname)
+       (t (bformat t "jit-function-name lname = %s%N" lname)
           (break "Always pass symbol as name") lname)))
     ((symbolp lname)
      (cond ((eq lname 'core::top-level)
@@ -373,7 +381,7 @@ No DIBuilder is defined for the default module")
                                  "KEYWORD")))
               (escape-and-join-jit-name (list sym-name pkg-name "FN"))))))
     ((and (consp lname) (eq (car lname) 'setf) (symbolp (second lname)))
-;;;     (core:bformat t "jit-function-name handling SETF: %s\n" lname)
+;;;     (core:bformat t "jit-function-name handling SETF: %s%N" lname)
      (let* ((sn (cadr lname))
             (sym-pkg (symbol-package sn))
             (sym-name (symbol-name sn))
@@ -382,7 +390,7 @@ No DIBuilder is defined for the default module")
                           "KEYWORD")))
        (escape-and-join-jit-name (list sym-name pkg-name "SETF"))))
     ((and (consp lname) (eq (car lname) 'setf) (consp (second lname)))
-;;;     (core:bformat t "jit-function-name handling SETFCONS: %s\n" lname)
+;;;     (core:bformat t "jit-function-name handling SETFCONS: %s%N" lname)
      ;; (setf (something ...))
      (let* ((sn (second lname))
             (sn-sym (first sn))
@@ -408,7 +416,7 @@ No DIBuilder is defined for the default module")
             (specializers (core:bformat nil "%s" (cddr lname))))
        (escape-and-join-jit-name (list (string setf-name-symbol) pkg-name specializers "SETFMETHOD"))))
     ((consp lname)
-;;;     (core:bformat t "jit-function-name handling UNKNOWN: %s\n" lname)
+;;;     (core:bformat t "jit-function-name handling UNKNOWN: %s%N" lname)
      ;; What is this????
      (bformat nil "%s_CONS-LNAME?" lname))
     (t (error "Illegal lisp function name[~a]" lname))))
@@ -464,12 +472,13 @@ The passed module is modified as a side-effect."
 (defvar *optimization-level* :-O3)
 (defvar *size-level* 1)
 
+(defun foobly-file ()
+  #+(or)(when (and *optimizations-on* module)
+          #+(or) 1))
 
 (defun optimize-module-for-compile-file (module &optional (optimize-level *optimization-level*) (size-level *size-level*))
   (declare (type (or null llvm-sys:module) module))
   (when (and *optimizations-on* module)
-    #+(or)(let ((call-sites (call-sites-to-always-inline module)))
-            (bformat t "Call-sites -> %s\n" call-sites))
     (quick-module-dump module "in-optimize-module-for-compile-file-after-link-builtins")
     (let* ((pass-manager-builder (llvm-sys:make-pass-manager-builder))
            (mpm (llvm-sys:make-pass-manager))
@@ -493,7 +502,7 @@ The passed module is modified as a side-effect."
 
 
 (defun optimize-module-for-compile (module)
-  #+(or)(bformat *debug-io* "In optimize-module-for-compile\n")
+  #+(or)(bformat *debug-io* "In optimize-module-for-compile%N")
   #+(or)(llvm-sys:dump-module module)
   module)
 
@@ -502,7 +511,7 @@ The passed module is modified as a side-effect."
   (declare (type (or null llvm-sys:module) module))
   (when (and *optimizations-on* module)
     #++(let ((call-sites (call-sites-to-always-inline module)))
-      (bformat t "Call-sites -> %s\n" call-sites))
+      (bformat t "Call-sites -> %s%N" call-sites))
     (let* ((pass-manager-builder (llvm-sys:make-pass-manager-builder))
            (mpm (llvm-sys:make-pass-manager))
            (fpm (llvm-sys:make-function-pass-manager module))
@@ -593,7 +602,7 @@ The passed module is modified as a side-effect."
              #+threads(mp:lock *jit-log-lock* t)
              (if (not (boundp '*jit-log-stream*))
                  (let ((filename (core:bformat nil "/tmp/clasp-symbols-%s" (core:getpid))))
-                   (core:bformat *debug-io* "Writing jitted symbols to %s\n" filename)
+                   (core:bformat *debug-io* "Writing jitted symbols to %s%N" filename)
                    (setq *jit-log-stream* (open filename :direction :output))))
              (write-string (core:pointer-as-string (cadr symbol-info)) *jit-log-stream*)
              (write-char #\space *jit-log-stream*)

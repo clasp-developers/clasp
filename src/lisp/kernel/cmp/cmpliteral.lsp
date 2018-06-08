@@ -18,16 +18,16 @@
 ;;;;   return, an index into the load-time-values table for run-time.
 ;;;; * When the compiler runs into load-time-value, it calls REFERENCE-LOAD-TIME-VALUE,  *****WRONG????
 ;;;;   which also returns an index into the load-time-values table that will etc.
-;;;; * The compiler provides a function COMPILE-FORM that LTV can call. COMPILE-FORM
+;;;; * The compiler provides a function COMPILE-CST-OR-FORM that LTV can call. COMPILE-FORM
 ;;;;   receives a lisp form, compiles it, and arranges for it to be put into the FASL
-;;;;   just like any function compile-file runs into. COMPILE-FORM returns some kind of
+;;;;   just like any function compile-file runs into. COMPILE-CST-OR-FORM returns some kind of
 ;;;;   handle that can be used in the run-all code.
 ;;;; * Code that will be put into the LTV initialization is added by LTV via
 ;;;;   ADD-TO-RUN-ALL. This is not lisp code, but rather a restricted language:
 ;;;;
 ;;;; * (SET-LTV index form) evaluates form and sets entry number INDEX in the LTV table
 ;;;;   to the value returned.
-;;;; * (CALL handle) calls the function denoted by HANDLE (returned from COMPILE-FORM)
+;;;; * (CALL handle) calls the function denoted by HANDLE (returned from COMPILE-CST-OR-FORM)
 
 (defvar *gcroots-in-module*)
 #+threads(defvar *value-table-id-lock* (mp:make-lock :name '*value-table-id-lock*))
@@ -77,7 +77,7 @@
   "Find the highest index and return 1+ that"
   (let ((highest-index -1))
     (dolist (node nodes)
-      #+(or)(bformat t "generate-run-all-code  generating node: %s\n" node)
+      #+(or)(bformat t "generate-run-all-code  generating node: %s%N" node)
       (when (literal-node-creator-p node)
         (setf highest-index (max highest-index (literal-node-creator-index node)))))
     (1+ highest-index)))
@@ -88,11 +88,11 @@
 ;;;
 
 ;;; Return NIL if the object is not immediate - or return
-;;;     a tagged pointer that represents the immediate object.
+;;;     a fixnum that can be cast directly to a tagged pointer that represents the immediate object.
 (defun immediate-object-or-nil (x)
   (let ((immediate (core:create-tagged-immediate-value-or-nil x)))
     (if immediate
-        (let ((val (irc-int-to-ptr (jit-constant-i64 immediate) %t*%)))
+        (let ((val (irc-maybe-cast-integer-to-t* immediate)))
           val)
         (progn
           nil))))
@@ -126,7 +126,7 @@
   "Return the next ltv-index. If this is being invoked from COMPILE then
 the value is put into *default-load-time-value-vector* and its index is returned"
   (let ((index *table-index*))
-    #+(or)(bformat t "new-table-index depth %4d - %d\n" *with-ltv-depth* index)
+    #+(or)(bformat t "new-table-index depth %4d - %d%N" *with-ltv-depth* index)
     (incf *table-index*)
     index))
 
@@ -298,8 +298,7 @@ the value is put into *default-load-time-value-vector* and its index is returned
     ((complexp object) (values *complex-coalesce* #'ltv/complex))
     ((random-state-p object) (values *identity-coalesce* #'ltv/random-state))
     ((core:built-in-class-p object) (values *built-in-class-coalesce* #'ltv/built-in-class))
-    ((typep object '(or standard-object structure-object condition class)) (values *identity-coalesce* #'ltv/mlf))
-    (t (error "Handle object ~a" object))))
+    (t (values *identity-coalesce* #'ltv/mlf))))
 
 (defun make-similarity-table (test)
   (make-hash-table :test test))
@@ -396,7 +395,6 @@ the value is put into *default-load-time-value-vector* and its index is returned
            (t (error "Unknown run-all node ~a" node))))
        foo))))
 
-
 (defun generate-run-time-code-for-closurette (node irbuilder-alloca array)
   ;; Generate calls to ltvc_enclose for closurettes that are created at JIT startup time
   (declare (ignore array))
@@ -412,7 +410,6 @@ the value is put into *default-load-time-value-vector* and its index is returned
                               (literal-node-closure-filepos node)
                               (literal-node-closure-lineno node)
                               (literal-node-closure-column node)))))
-
 
 (defun do-ltv (type body-fn)
   "Evaluate body-fn in an environment where load-time-values, literals and constants are
@@ -571,9 +568,9 @@ and  return the sorted values and the constant-table or (values nil nil)."
        "Put the constants in order they will appear in the table.
 Return the orderered-raw-constants-list and the constants-table GlobalVariable"
        #+(or)(progn
-               (bformat t "run-time-values: vvvvvvv\n")
+               (bformat t "run-time-values: vvvvvvv%N")
                (literal::constant-list-dump run-time-values)
-               (bformat t "Number of run-time-values: %d\n" (length run-time-values)))
+               (bformat t "Number of run-time-values: %d%N" (length run-time-values)))
        (when (> num-elements 0)
          (let* ((ordered-literals-list (sort run-time-values #'< :key #'literal-node-runtime-index))
                 (array-type (llvm-sys:array-type-get %t*% (length ordered-literals-list))))
@@ -595,7 +592,7 @@ Return the orderered-raw-constants-list and the constants-table GlobalVariable"
    Otherwise return (values creator T)."
   (let ((immediate (immediate-object-or-nil object)))
     (if immediate
-        (values immediate nil)
+        (values (irc-maybe-cast-integer-to-t* immediate) nil)
         (multiple-value-bind (similarity creator)
             (object-similarity-table-and-creator object read-only-p)
           (let ((existing (if similarity (find-similar object similarity) nil)))
@@ -634,7 +631,7 @@ Return the orderered-raw-constants-list and the constants-table GlobalVariable"
    Otherwise return (values creator T index)."
   (let ((immediate (immediate-object-or-nil object)))
     (if immediate
-        (values immediate NIL NIL)
+        (values immediate NIL)
         (let* ((similarity *run-time-coalesce*)
                (existing (find-similar object similarity)))
           (if existing
@@ -663,7 +660,7 @@ Return the orderered-raw-constants-list and the constants-table GlobalVariable"
                                    :function-form form)
               (let* ((given-name (llvm-sys:get-name fn)))
                 ;; Map the function argument names
-                (cmp-log "Creating ltv thunk with name: %s\n" given-name)
+                (cmp-log "Creating ltv thunk with name: %s%N" given-name)
                 (dbg-set-current-debug-location-here)
                 (codegen fn-result form fn-env)
                 (dbg-set-current-debug-location-here)))))
@@ -790,7 +787,7 @@ If it isn't NIL then copy the literal from its index in the LTV into result."
           data-or-index)
         (progn
           (when result
-            (irc-store data-or-index result))
+            (irc-store (cmp:ensure-jit-constant-i64 data-or-index) result))
           :poison-value-from-codegen-literal))))
 
 ;; Should be bclasp-compile-load-time-value-thunk
@@ -800,7 +797,18 @@ If it isn't NIL then copy the literal from its index in the LTV into result."
   (let ((fn (with-new-function (fn fn-env fn-result
                                    :function-name 'bclasp-top-level-form
                                    :parent-env nil
-                                   :function-form form)
+                                   :function-form form
+                                   :function-info (cmp:make-function-info
+                                                   :function-name 'bclasp-top-level-form
+                                                   :source-handle *gv-source-file-info-handle*
+                                                   :lambda-list nil
+                                                   :docstring nil
+                                                   :declares nil
+                                                   :form nil
+                                                   :lineno (core:source-pos-info-lineno core:*current-source-pos-info*)
+                                                   :column (core:source-pos-info-column core:*current-source-pos-info*)
+                                                   :filepos (core:source-pos-info-filepos core:*current-source-pos-info*))
+                                   )
               (let* ((given-name (llvm-sys:get-name fn)))
                 (dbg-set-current-debug-location-here)
                 (codegen fn-result form fn-env)

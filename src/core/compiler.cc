@@ -738,58 +738,14 @@ LCC_RETURN call_with_variable_bound(core::T_O* tsym, core::T_O* tval, core::T_O*
 
 namespace core {
 
-
-struct RaiiUnwindProtect {
-  T_sp cleanup_fn;
-  RaiiUnwindProtect(T_sp cleanup) : cleanup_fn(cleanup) {};
-  ~RaiiUnwindProtect() {
-// Save any return value that may be in the multiple value return array
-    gctools::Vec0<T_sp> savemv;
-    T_mv tresult;
-    tresult.readFromMultipleValue0();
-    tresult.saveToVec0(savemv);
-    {
-      Closure_sp closure = gc::As_unsafe<Closure_sp>(this->cleanup_fn);
-      tresult = closure->entry.load()(LCC_PASS_ARGS0_ELLIPSIS(closure.raw_()));
-      // T_mv tresult = closure->entry(LCC_PASS_ARGS0_VA_LIST(closure.raw_()));
-    }
-#if 1 // See comment above about 22a8d7b1
-    tresult.loadFromVec0(savemv);
-    tresult.saveToMultipleValue0();
-#endif
-  };
-};
-
-
-#if 0
-// RAII approach DOES NOT WORK
-CL_LAMBDA(protected-fn cleanup-fn);
-CL_DECLARE();
-CL_DOCSTRING("funwind_protect");
-CL_DEFUN T_mv core__funwind_protect(T_sp protected_fn, T_sp cleanup_fn) {
-  RaiiUnwindProtect finally(cleanup_fn);
-  Closure_sp closure = gc::As_unsafe<Closure_sp>(protected_fn);
-  T_mv result = closure->entry.load()(LCC_PASS_ARGS0_ELLIPSIS(closure.raw_()));
-  return result;
-}
-#else
 // try/catch approach does work
 CL_DEFUN T_mv core__funwind_protect(T_sp protected_fn, T_sp cleanup_fn) {
   T_mv result;
   try {
-#ifdef DEBUG_FLOW_CONTROL
-    if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
-      printf("%s:%d In funwind_protect try\n", __FILE__, __LINE__);
-      if (core::_sym_STARdebugFlowControlSTAR->symbolValue() == kw::_sym_verbose ) {
-        printf("   %s\n", my_thread->exceptionStack().summary().c_str());
-      }
-    }
-#endif
     Closure_sp closure = gc::As_unsafe<Closure_sp>(protected_fn);
     ASSERT(closure);
     result = closure->entry.load()(LCC_PASS_ARGS0_ELLIPSIS(closure.raw_()));
   }
-#if 1
   catch (...)
   {
 #if 0
@@ -797,7 +753,6 @@ CL_DEFUN T_mv core__funwind_protect(T_sp protected_fn, T_sp cleanup_fn) {
     printf("%s:%d  primary_exception = %p\n", __FILE__, __LINE__, primary_exception );
     __cxxabiv1::__cxa_decrement_exception_refcount(primary_exception);
 #endif
-    // TOOK out DEBUG_FLOW_CONTROL
 // Save any return value that may be in the multiple value return array
     gctools::Vec0<T_sp> savemv;
     T_mv tresult;
@@ -809,106 +764,8 @@ CL_DEFUN T_mv core__funwind_protect(T_sp protected_fn, T_sp cleanup_fn) {
     }
     tresult.loadFromVec0(savemv);
     tresult.saveToMultipleValue0();
-    // TOOK out DEBUG_FLOW_CONTROL code
     throw;  // __cxa_rethrow
   }
-#else  
-  catch (Unwind& unwind)
-  {
-#ifdef DEBUG_FLOW_CONTROL
-    if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
-      printf("%s:%d In funwind_protect catch(Unwind&) just caught Unwind to frame: %" PRu "\n", __FILE__, __LINE__, gctools::untag_fixnum(unwind.getFrame()));
-      if (core::_sym_STARdebugFlowControlSTAR->symbolValue() == kw::_sym_verbose ) {
-        printf("   %s\n", my_thread->exceptionStack().summary().c_str());
-      }
-    }
-#endif
-// Save any return value that may be in the multiple value return array
-    gctools::Vec0<T_sp> savemv;
-    T_mv tresult;
-    tresult.readFromMultipleValue0();
-    tresult.saveToVec0(savemv);
-    {
-      Closure_sp closure = gc::As_unsafe<Closure_sp>(cleanup_fn);
-      tresult = closure->entry.load()(LCC_PASS_ARGS0_ELLIPSIS(closure.raw_()));
-      // T_mv tresult = closure->entry(LCC_PASS_ARGS0_VA_LIST(closure.raw_()));
-    }
-#if 1 // See comment above about 22a8d7b1
-    tresult.loadFromVec0(savemv);
-    tresult.saveToMultipleValue0();
-#endif
-#ifdef DEBUG_FLOW_CONTROL
-    if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
-      printf("%s:%d In funwind_protect catch(Unwind&) about to rethrow to frame: %" PRu "\n", __FILE__, __LINE__,gctools::untag_fixnum(unwind.getFrame()));
-      if (core::_sym_STARdebugFlowControlSTAR->symbolValue() == kw::_sym_verbose ) {
-        printf("   %s\n", my_thread->exceptionStack().summary().c_str());
-      }
-    }
-    my_thread->exceptionStack().validateFrame(gctools::untag_fixnum(unwind.getFrame()));
-#endif
-    throw unwind;
-  }
-  catch (const ReturnFrom& returnFrom)
-  {
-    // TOOK out DEBUG_FLOW_CONTROL
-// Save any return value that may be in the multiple value return array
-    gctools::Vec0<T_sp> savemv;
-    T_mv tresult;
-    tresult.readFromMultipleValue0();
-    tresult.saveToVec0(savemv);
-    {
-      Closure_sp closure = gc::As_unsafe<Closure_sp>(cleanup_fn);
-      tresult = closure->entry.load()(LCC_PASS_ARGS0_ELLIPSIS(closure.raw_()));
-    }
-    tresult.loadFromVec0(savemv);
-    tresult.saveToMultipleValue0();
-    // TOOK out DEBUG_FLOW_CONTROL code
-    throw returnFrom;
-  }
-  catch (const DynamicGo& dynamicGo)
-  {
-    // TOOK out DEBUG_FLOW_CONTROL
-// Save any return value that may be in the multiple value return array
-    gctools::Vec0<T_sp> savemv;
-    T_mv tresult;
-    tresult.readFromMultipleValue0();
-    tresult.saveToVec0(savemv);
-    {
-      Closure_sp closure = gc::As_unsafe<Closure_sp>(cleanup_fn);
-      tresult = closure->entry.load()(LCC_PASS_ARGS0_ELLIPSIS(closure.raw_()));
-    }
-    tresult.loadFromVec0(savemv);
-    tresult.saveToMultipleValue0();
-    // TOOK out DEBUG_FLOW_CONTROL code
-    throw dynamicGo;
-  }
-  catch (const CatchThrow& catchThrow)
-  {
-    // TOOK out DEBUG_FLOW_CONTROL
-// Save any return value that may be in the multiple value return array
-    gctools::Vec0<T_sp> savemv;
-    T_mv tresult;
-    tresult.readFromMultipleValue0();
-    tresult.saveToVec0(savemv);
-    {
-      Closure_sp closure = gc::As_unsafe<Closure_sp>(cleanup_fn);
-      tresult = closure->entry.load()(LCC_PASS_ARGS0_ELLIPSIS(closure.raw_()));
-    }
-    tresult.loadFromVec0(savemv);
-    tresult.saveToMultipleValue0();
-    // TOOK out DEBUG_FLOW_CONTROL code
-    throw catchThrow;
-  }
-#endif // #if 0
-  
-#ifdef DEBUG_FLOW_CONTROL
-  if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
-    printf("%s:%d In funwind_protect  normal exit\n", __FILE__, __LINE__);
-    if (core::_sym_STARdebugFlowControlSTAR->symbolValue() == kw::_sym_verbose ) {
-      printf("   %s\n", my_thread->exceptionStack().summary().c_str());
-    }
-  }
-#endif
   gctools::Vec0<T_sp> savemv;
   result.saveToVec0(savemv);
   {
@@ -919,7 +776,6 @@ CL_DEFUN T_mv core__funwind_protect(T_sp protected_fn, T_sp cleanup_fn) {
   result.loadFromVec0(savemv);
   return result;
 }
-#endif
 
 CL_LAMBDA(function-designator &rest functions);
 CL_DECLARE();
@@ -973,44 +829,17 @@ CL_DOCSTRING("catchFunction");
 CL_DEFUN T_mv core__catch_function(T_sp tag, Function_sp thunk) {
   T_mv result;
   int frame = my_thread->exceptionStack().push(CatchFrame, tag);
-#ifdef DEBUG_FLOW_CONTROL
-  if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
-    printf("%s:%d In cc_catch tag@%p thisFrame: %d\n", __FILE__, __LINE__, tag.raw_(), frame);
-    if (core::_sym_STARdebugFlowControlSTAR->symbolValue() == kw::_sym_verbose ) {
-      printf("   %s\n", my_thread->exceptionStack().summary().c_str());
-    }
-  }
-#endif
   try {
     core::Closure_sp closure = thunk.asOrNull<Closure_O>();
     ASSERT(closure);
     result = closure->entry.load()(LCC_PASS_ARGS0_ELLIPSIS(closure.raw_()));
   } catch (CatchThrow &catchThrow) {
     if (catchThrow.getFrame() != frame) {
-#ifdef DEBUG_FLOW_CONTROL
-      if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
-        printf("- - - - - Rethrowing CatchThrow targetFrame[%d] (thisFrame is: %d)\n", catchThrow.getFrame(), frame);
-      }
-#endif
       throw catchThrow;
     }
     result = gctools::multiple_values<T_O>::createFromValues();
   }
-#ifdef DEBUG_FLOW_CONTROL
-  if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
-    printf("- - - - - Matched CatchThrow (thisFrame is: %d)\n", frame);
-    printf("- - - - - Unwinding to thisFrame: %d\n", frame);
-  }
-#endif
   my_thread->exceptionStack().unwind(frame);
-#ifdef DEBUG_FLOW_CONTROL
-  if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
-    printf("%s:%d  After cc_catch unwind\n", __FILE__, __LINE__);
-    if (core::_sym_STARdebugFlowControlSTAR->symbolValue() == kw::_sym_verbose ) {
-      printf("   %s\n", my_thread->exceptionStack().summary().c_str());
-    }
-  }
-#endif
   return result;
 }
 
@@ -1022,14 +851,6 @@ CL_DEFUN void core__throw_function(T_sp tag, T_sp result_form) {
   if (frame < 0) {
     CONTROL_ERROR();
   }
-#ifdef DEBUG_FLOW_CONTROL
-  if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
-    printf("%s:%d In cc_throw     throwing CatchThrow to reach targetFrame[%d]\n", __FILE__, __LINE__, frame);
-    if (core::_sym_STARdebugFlowControlSTAR->symbolValue() == kw::_sym_verbose ) {
-      printf("   %s\n", my_thread->exceptionStack().summary().c_str());
-    }
-  }
-#endif
   T_mv result;
   Closure_sp closure = result_form.asOrNull<Closure_O>();
   ASSERT(closure);

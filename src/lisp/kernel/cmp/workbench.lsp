@@ -126,7 +126,7 @@
 ;;; Work with generic function dispatch
 ;;;
 (dolist (x (clos::all-generic-functions))
-;;;  (core:bformat t "%s\n" x)
+;;;  (core:bformat t "%s%N" x)
   (if (member x (list
                  #'clos::compute-applicable-methods-using-classes
                  #'clos::add-direct-method
@@ -137,7 +137,7 @@
                  #'clos:validate-superclass
 |#
                       ))
-;;;      (core:bformat t "     Skipping\n")
+;;;      (core:bformat t "     Skipping%N")
       (progn
         (clos::update-specializer-profile x)
         (clos::switch-to-fastgf x))))
@@ -158,7 +158,7 @@
              (clos::safe-set-funcallable-instance-function gf disp))
            dispatchers))
 
-;;;  (core:bformat t "%s\n" x)
+;;;  (core:bformat t "%s%N" x)
   (if (member x (list
                  #'clos::compute-applicable-methods-using-classes
                  #'clos::add-direct-method
@@ -169,7 +169,7 @@
                  #'clos:validate-superclass
 |#
                       ))
-;;;      (core:bformat t "     Skipping\n")
+;;;      (core:bformat t "     Skipping%N")
       (progn
         (clos::update-specializer-profile x)
         (clos::switch-to-fastgf x))))

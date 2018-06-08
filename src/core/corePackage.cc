@@ -307,6 +307,9 @@ SYMBOL_EXPORT_SC_(CorePkg, bclasp_compile);
 SYMBOL_EXPORT_SC_(ClPkg, nil);
 SYMBOL_EXPORT_SC_(CorePkg, STARpollTicksPerGcSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, _PLUS_standardReadtable_PLUS_);
+SYMBOL_EXPORT_SC_(CorePkg, syntax_type);
+SYMBOL_EXPORT_SC_(CorePkg, sicl_readtable_case);
+SYMBOL_EXPORT_SC_(CorePkg, sicl_syntax_type);
 SYMBOL_EXPORT_SC_(KeywordPkg, create);
 SYMBOL_EXPORT_SC_(KeywordPkg, append);
 SYMBOL_EXPORT_SC_(KeywordPkg, debugStartup);
@@ -698,7 +701,6 @@ SYMBOL_EXPORT_SC_(ClPkg, STARreadtableSTAR);
 SYMBOL_SC_(CorePkg, input_stream_designator);
 /*! Set to true if you want the repl to print what was read */
 SYMBOL_SC_(CorePkg, STARechoReplReadSTAR);
-SYMBOL_EXPORT_SC_(KeywordPkg, invalid_character);
 SYMBOL_EXPORT_SC_(KeywordPkg, brcl);
 SYMBOL_EXPORT_SC_(KeywordPkg, not);
 SYMBOL_EXPORT_SC_(KeywordPkg, and);

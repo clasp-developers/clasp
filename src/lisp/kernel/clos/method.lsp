@@ -149,6 +149,15 @@ in the generic function lambda-list to the generic function lambda-list"
                      ,@(cddr block))))))))
   method-lambda)
 
+(defun fixup-specializers (specializers)
+  (mapcar (lambda (spec)
+            (if (consp spec)
+                (if (or (symbolp (second spec)) (numberp (second spec)))
+                    spec
+                    `(eql ,(make-symbol (format nil "~s" (second spec)))))
+                spec))
+          specializers))
+
 (defun make-raw-lambda (name lambda-list required-parameters specializers body env qualifiers)
   (multiple-value-bind (declarations real-body documentation)
       (sys::find-declarations body)
@@ -190,7 +199,7 @@ in the generic function lambda-list to the generic function lambda-list"
                    (filepos (if loc (source-file-pos-filepos loc) 0))
                    (lineno (if loc (source-file-pos-lineno loc) 0)))
               `(lambda ,lambda-list
-                 (declare (core:lambda-name (method ,name ,@qualifiers ,specializers) ,filepos ,lineno))
+                 (declare (core:lambda-name (method ,name ,@qualifiers ,(fixup-specializers specializers)) ,filepos ,lineno))
                  ,@(and class-declarations `((declare ,@class-declarations)))
                  ,(if copied-variables
                       `(let* ,copied-variables ,block)

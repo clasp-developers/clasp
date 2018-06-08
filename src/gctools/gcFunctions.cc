@@ -53,10 +53,11 @@ extern "C" {
 FILE* global_flow_tracker_file;
 
 mp::Mutex global_flow_tracker_mutex;
-size_t global_flow_tracker_counter;
+size_t global_flow_tracker_counter = 0;
 bool global_flow_tracker_on = false;
 #define FLOW_TRACKER_LAST_THROW_BACKTRACE_SIZE 4096
 void* global_flow_tracker_last_throw_backtrace[FLOW_TRACKER_LAST_THROW_BACKTRACE_SIZE];
+Fixnum global_flow_tracker_last_throw_tracker_counter = 0;
 size_t global_flow_tracker_last_throw_backtrace_size;
 void initialize_flow_tracker()
 {
@@ -69,12 +70,17 @@ void initialize_flow_tracker()
   global_flow_tracker_on = false;
 };
 
-void flow_tracker_about_to_throw() {
+void flow_tracker_about_to_throw(Fixnum tracker_counter) {
+  global_flow_tracker_last_throw_tracker_counter = tracker_counter;
   global_flow_tracker_last_throw_backtrace_size = backtrace(global_flow_tracker_last_throw_backtrace,FLOW_TRACKER_LAST_THROW_BACKTRACE_SIZE);
 }
 
 void flow_tracker_last_throw_backtrace_dump() {
+  if (!global_flow_tracker_on) {
+    printf("!!!!! Turn the flow-tracker on   Use: (gctools:flow-tracker-on)\n");
+  }
   printf("flow_tracker_last_throw_backtrace_dump %lu frames\n", global_flow_tracker_last_throw_backtrace_size);
+  printf("global_flow_tracker_last_throw_tracker_counter -> %lld\n", global_flow_tracker_last_throw_tracker_counter );
   for ( int i=0; i<global_flow_tracker_last_throw_backtrace_size; ++i ) {
     printf("dis -s %p\n", global_flow_tracker_last_throw_backtrace[i]);
   }
@@ -1013,14 +1019,6 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
 #endif
   if (buildReport) ss << (BF("DEBUG_FASTGF = %s\n") % (debug_fastgf ? "**DEFINED**" : "undefined") ).str();
  
-  bool debug_flow_control = false;
-#ifdef DEBUG_FLOW_CONTROL
-  debug_flow_control = true;
-  debugging = true;
-  if (setFeatures) features = core::Cons_O::create(_lisp->internKeyword("DEBUG-FLOW_CONTROL"),features);
-#endif
-  if (buildReport) ss << (BF("DEBUG_FLOW_CONTROL = %s\n") % (debug_flow_control ? "**DEFINED**" : "undefined") ).str();
-
   bool debug_return_from = false;
 #ifdef DEBUG_RETURN_FROM
   debug_return_from = true;

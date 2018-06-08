@@ -124,6 +124,14 @@ List_sp FunctionClosure_O::source_info() const {
                             clasp_make_fixnum(this->_column));
 };
 
+T_mv FunctionClosure_O::function_description() const {
+  IMPLEMENT_ME();
+}
+
+T_sp FunctionClosure_O::function_literal_vector_copy() const {
+  IMPLEMENT_ME();
+}
+
 void FunctionClosure_O::set_source_info(List_sp source_info)
 {
   T_sp sourceFileInfo = oCar(source_info);
@@ -283,6 +291,65 @@ CL_DEFUN void core__closure_slots_dump(Closure_sp closure) {
   }
 }
 
+T_mv wrap_function_description(void* fd) {
+  void** data = (void**)fd;
+  //printf("%s:%d function description at %p\n", __FILE__, __LINE__, fd);
+  // data[0] function pointer
+  // data[1] global-value-holder (void* void* size_t)
+  void** data1 = (void**)data[1];
+  void* table_ptr = data1[1];
+  size_t table_size = (size_t)data1[2];
+  int source_handle = *(int*)data[2];
+  intptr_t function_name_index = (intptr_t)data[3];
+  intptr_t lambda_list_index = (intptr_t)data[4];
+  intptr_t docstring_index = (intptr_t)data[5];
+  intptr_t lineno = (intptr_t)data[6];
+  intptr_t column = (intptr_t)data[7];
+  intptr_t filepos = (intptr_t)data[8];
+  T_sp function_name((gc::Tagged)((uintptr_t**)table_ptr)[function_name_index]);
+  T_sp lambda_list((gc::Tagged)((uintptr_t**)table_ptr)[lambda_list_index]);
+  T_sp docstring((gc::Tagged)((uintptr_t**)table_ptr)[docstring_index]);
+  return Values(make_fixnum(source_handle),
+                function_name,
+                lambda_list,
+                docstring,
+                make_fixnum(lineno),
+                make_fixnum(column),
+                make_fixnum(filepos));
+}
+
+T_sp wrap_function_literal_vector_copy(void* fd) {
+  void** data = (void**)fd;
+  //printf("%s:%d function description at %p\n", __FILE__, __LINE__, fd);
+  // data[0] function pointer
+  // data[1] global-value-holder (void* void* size_t)
+  void** data1 = (void**)data[1];
+  void* table_ptr = data1[1];
+  size_t table_size = (size_t)data1[2];
+  SimpleVector_sp sv = SimpleVector_O::make(table_size,_Nil<T_O>(),false,table_size,(T_sp*)table_ptr);
+  return sv;
+}
+
+T_mv ClosureWithSlots_O::function_description() const {
+  void* fd = this->_FunctionDescription;
+  return wrap_function_description(fd);
+}
+
+T_mv CompiledClosure_O::function_description() const {
+  void* fd = this->_FunctionDescription;
+  return wrap_function_description(fd);
+}
+
+T_sp ClosureWithSlots_O::function_literal_vector_copy() const {
+  void* fd = this->_FunctionDescription;
+  return wrap_function_literal_vector_copy(fd);
+}
+
+T_sp CompiledClosure_O::function_literal_vector_copy() const {
+  void* fd = this->_FunctionDescription;
+  return wrap_function_literal_vector_copy(fd);
+}
+
 T_sp BuiltinClosure_O::lambda_list() const {
   return this->_lambdaListHandler->lambdaList();
 }
@@ -290,7 +357,6 @@ T_sp BuiltinClosure_O::lambda_list() const {
 void BuiltinClosure_O::setf_lambda_list(List_sp lambda_list) {
   // Do nothing
 }
-
 
 DONT_OPTIMIZE_WHEN_DEBUG_RELEASE LCC_RETURN interpretedClosureEntryPoint(LCC_ARGS_FUNCALL_ELLIPSIS) {
   ClosureWithSlots_O* closure = gctools::untag_general<ClosureWithSlots_O*>((ClosureWithSlots_O*)lcc_closure);

@@ -1682,6 +1682,8 @@ public:
   /*! Wrap the Module::getFunction function */
   llvm::Function *getFunction(core::String_sp dispatchName);
 
+  void emit_version_ident_metadata();
+  
   /*! Get or create a string GlobalVariable with the given name.
 	  Make sure that the string passed is the same as the string
 	  in the GlobalVariable.
@@ -2152,6 +2154,8 @@ public:
 public:
   void restoreIP(InsertPoint_sp insertPoint);
   InsertPoint_sp saveIP();
+
+  void ClearCurrentDebugLocation();
 
   /*! Set the current debug location for generated code */
   void SetCurrentDebugLocation(DebugLoc_sp loc);
@@ -3439,12 +3443,13 @@ GCPRIVATE:
   core::LoadTimeValues_sp _RunTimeValues;
 
 public:
+#if 0
   /*! If a Function is compiled with COMPILE then quoted values and literals need to be stored
 	  somewhere.  We store them in a LoadTimeValue array and associate it with the Function
 	  so that if the Function is destructed then the LoadTimeValues get destructed as well */
   void setLiterals(core::LoadTimeValues_sp ltv);
   core::LoadTimeValues_sp literals() const;
-
+#endif
 public:
   PointerToExternalType wrappedPtr() { return static_cast<PointerToExternalType>(this->_ptr); };
   PointerToExternalType wrappedPtr() const { return static_cast<PointerToExternalType>(this->_ptr); };

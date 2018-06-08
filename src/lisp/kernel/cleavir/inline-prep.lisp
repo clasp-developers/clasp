@@ -26,13 +26,14 @@
   #+clc(warn "Convert this to use predicate ext:local_function_p")
   (and (listp form) (member (first form) '(flet labels))))
 
-(defmethod cleavir-generate-ast:convert :around (form environment (system clasp-64bit))
+(defmethod cleavir-cst-to-ast:convert :around (cst environment (system clasp-64bit))
   (declare (ignore system))
   (let ((*simple-environment* *simple-environment*))
     (when *code-walker*
-      (when (local-function-form-p form)
-        (mark-env-as-function))
-      (funcall *code-walker* form *simple-environment*))
+      (let ((form (cst:raw cst)))
+        (when (local-function-form-p form)
+          (mark-env-as-function))
+        (funcall *code-walker* form *simple-environment*)))
     (call-next-method)))
 
 (defun code-walk-using-cleavir (form env &key code-walker-function)
@@ -42,11 +43,11 @@
     (handler-bind
         ((cleavir-env:no-variable-info
            (lambda (condition)
-             (invoke-restart 'cleavir-generate-ast:consider-special)))
+             (invoke-restart 'cleavir-cst-to-ast:consider-special)))
          (cleavir-env:no-function-info
            (lambda (condition)
-             (invoke-restart 'cleavir-generate-ast:consider-global))))
-      (cleavir-generate-ast:generate-ast form env *clasp-system*))))
+             (invoke-restart 'cleavir-cst-to-ast:consider-global))))
+      (cleavir-cst-to-ast:cst-to-ast (cst:cst-from-expression form) env *clasp-system*))))
 
 (export 'code-walk-using-cleavir)
 
@@ -86,14 +87,14 @@
                               env (cleavir-env:name condition))
                              ;; we could potentially leave a note.
                              (return-from defun-inline-hook nil)
-                             (invoke-restart 'cleavir-generate-ast:consider-special))))
+                             (invoke-restart 'cleavir-cst-to-ast:consider-special))))
                      (cleavir-env:no-function-info
                        (lambda (condition)
                          (if (cleavir-env:function-info
                               env (cleavir-env:name condition))
                              (return-from defun-inline-hook nil)
-                             (invoke-restart 'cleavir-generate-ast:consider-global)))))
-                  (cleavir-generate-ast:generate-ast function-form (cleavir-env:compile-time env) *clasp-system*))))
+                             (invoke-restart 'cleavir-cst-to-ast:consider-global)))))
+                  (cleavir-cst-to-ast:cst-to-ast (cst:cst-from-expression function-form) (cleavir-env:compile-time env) *clasp-system*))))
       `(eval-when (:compile-toplevel :load-toplevel :execute)
          (when (core:declared-global-inline-p ',name)
            (when (fboundp ',name)

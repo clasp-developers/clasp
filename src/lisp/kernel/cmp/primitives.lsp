@@ -111,13 +111,14 @@
     (primitive         "valueOrNilIfZero" %t*% (list %return_type%))
     
     (primitive         "makeCompiledFunction" %t*% (list %fn-prototype*% ; funcPtr
-                                                             %i32*%   ; sourceFileInfoHandleP
-                                                             %size_t% ; filePos
-                                                             %size_t% ; lineno
-                                                             %size_t% ; column
-                                                             %t*%   ; functionNameP
-                                                             %t*%  ; renv
-                                                             %t*%)) ; lambdaListP
+                                                         %i8*%
+                                                         %i32*% ; sourceFileInfoHandleP
+                                                         %size_t% ; filePos
+                                                         %size_t% ; lineno
+                                                         %size_t% ; column
+                                                         %t*% ; functionNameP
+                                                         %t*% ; renv
+                                                         %t*%)) ; lambdaListP
     
     (primitive-unwinds "symbolValueRead" %t*% (list %t*%))
     (primitive         "symbolValueReference" %t**% (list %t*%))

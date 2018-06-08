@@ -67,7 +67,6 @@ THE SOFTWARE.
 #define DONT_OPTIMIZE_WHEN_DEBUG_RELEASE 
 #endif
 #define DONT_OPTIMIZE_ALWAYS __attribute__((optnone))
-#define ALWAYS_INLINE __attribute__((always_inline))
 #define NOINLINE __attribute__((noinline))
 #define MAYBE_INLINE __attribute__((noinline))
 

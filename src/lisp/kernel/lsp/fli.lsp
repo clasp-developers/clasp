@@ -85,7 +85,7 @@
              when spec
                collect
              `(progn
-;;;             (core:bformat t "Defining %lisp-type->type-spec for %s\n" ,(%lisp-symbol spec))
+;;;             (core:bformat t "Defining %lisp-type->type-spec for %s%N" ,(%lisp-symbol spec))
                 (defmethod %lisp-type->type-spec ((lisp-type-kw (eql ',(%lisp-symbol spec))))
                   (elt *foreign-type-spec-table* ,idx))))))
 

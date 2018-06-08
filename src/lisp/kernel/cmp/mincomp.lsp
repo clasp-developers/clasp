@@ -43,13 +43,13 @@
 (defun analyze-variable-get (node)
   (let ((sym (variable-get-ast-symbol node))
         (env (variable-get-ast-env node)))
-    (bformat t "analyze-variable-get>>Analyze the one variable: %s\n" (variable-get-ast-symbol node))
+    (bformat t "analyze-variable-get>>Analyze the one variable: %s%N" (variable-get-ast-symbol node))
     (let ((classified (variable-info env sym)))
       (setf (variable-get-ast-classified node) classified))))
 
 (defun analyze-variable-set (node)
   (progn
-  (bformat t "analyze-variable-set node: %s\n" node)
+  (bformat t "analyze-variable-set node: %s%N" node)
   (let* ((symbol (variable-set-ast-symbol node))
          (env (variable-set-ast-env node))
          (classified (variable-info env symbol)))
@@ -64,8 +64,8 @@
     (t    
      (let* ((struct-name (ast-name node))
             (child-accessors (gethash struct-name *ast-node-children*)))
-       (bformat t "analyze-variables name: %s\n" struct-name)
-       (bformat t "analyze-variables accessors: %s\n" child-accessors)
+       (bformat t "analyze-variables name: %s%N" struct-name)
+       (bformat t "analyze-variables accessors: %s%N" child-accessors)
        (dolist (ca child-accessors)
          (let ((child-ren (funcall ca node)))
            (cond
@@ -225,7 +225,7 @@
     (dbg-set-current-debug-location-here)
     (irc-intrinsic "makeFunctionFrame" result-af (jit-constant-i32 (length functions)) (irc-renv parent-env))
     ;;    )
-    (cmp-log "About to generate code for args\n")
+    (cmp-log "About to generate code for args%N")
     (do* ((cur functions (cdr cur)))
 	 ((endp cur) nil)
       (let* ((fn (car cur))
@@ -295,14 +295,14 @@
             (compiler-error var "setq target needs to be a symbol"))
           (push var vars)
           (push exp exps))
-      (bformat t "variables = %s\n" variables)
-      (bformat t "expressions = %s\n" expressions)
+      (bformat t "variables = %s%N" variables)
+      (bformat t "expressions = %s%N" expressions)
       (let ((varlen (length variables)))
         (cond
           ((= varlen 0)
            (mincomp nil env))
           ((= varlen 1)
-           (bformat t "varlen 1\n")
+           (bformat t "varlen 1%N")
            (let* ((var (car variables))
                   (exp (car expressions))
                   (expanded (macroexpand var env)))
@@ -348,7 +348,7 @@
     ;; Create a tag for each symbol and at first associate the rest of the code
     ;; with that tag
     (mapl #'(lambda (x)
-              (mincmp-log "first x: %s\n" x)
+              (mincmp-log "first x: %s%N" x)
 	      (if (and (car x) (symbolp (car x)))
 		  (progn
                     (setq result (cons (make-tag-ast :name (car x)
@@ -380,7 +380,7 @@ jump to blocks within this tagbody."
     (unless (and (car rest) (symbolp (car rest))) (push (gensym) rest))
     (let* ((tagbody-env (make-tagbody-environment env))
            (enumerated-tags (tagbody.enumerate-tags rest tagbody-env)))
-      (mincmp-log "enumerated-tags: %s\n" enumerated-tags)
+      (mincmp-log "enumerated-tags: %s%N" enumerated-tags)
       ;; If the GO spec.ops. are in the same function
       ;; we could use simple cleanup and branches for TAGBODY/GO
       ;; so save the function
@@ -399,7 +399,7 @@ jump to blocks within this tagbody."
        (let ((depth (cadr classified-tag))
 	     (index (caddr classified-tag))
 	     (tagbody-env (cadddr classified-tag)))
-	 (cmp-log "Target tagbody environment: %s  tag: %s\n" tagbody-env tag)
+	 (cmp-log "Target tagbody environment: %s  tag: %s%N" tagbody-env tag)
          (make-local-go-ast :tag tag :index index :target-env tagbody-env :env env :form form)))
       (t (error "go to unknown classified tag ~a ~a" tag classified-tag)))))
 
@@ -407,11 +407,11 @@ jump to blocks within this tagbody."
 
 (defun mincomp-progn (form env)
   "Evaluate forms discarding results but keep last one"
-  (cmp-log "mincomp-progn %s\n" form)
+  (cmp-log "mincomp-progn %s%N" form)
   (make-progn-ast :forms (mapcar #'(lambda (f) (mincomp f env)) (cdr form)) :env env :form form))
 
 (defun mincomp-call (form evaluate-env)
-  (mincmp-log "mincomp-call form: %s\n" form)
+  (mincmp-log "mincomp-call form: %s%N" form)
   (make-call-ast :function (car form)
                  :arguments (mapcar (lambda (arg) (mincomp arg evaluate-env)) (cdr form))
                  :env evaluate-env
@@ -419,7 +419,7 @@ jump to blocks within this tagbody."
 
 (defun mincomp-application (form env)
   "A compiler macro function, macro function or a regular function"
-  (mincmp-log "mincomp-application form: %s\n" form)
+  (mincmp-log "mincomp-application form: %s%N" form)
   (cond
     ;; A compiler macro
     ((and ;;(symbolp (car form))
@@ -434,7 +434,7 @@ jump to blocks within this tagbody."
     ((and (symbolp (car form))
           (not (core:lexical-function (car form) env))
           (macro-function (car form) env))
-     (bformat t "regular macro\n")
+     (bformat t "regular macro%N")
      (multiple-value-bind (expansion expanded-p)
          (macroexpand form env)
        (mincomp expansion env)))
@@ -464,7 +464,7 @@ jump to blocks within this tagbody."
          (*current-env* env))
     ;; If a *code-walker* is defined then invoke the code-walker
     ;; with the current form and environment
-    (cmp-log "mincomp form: %s\n" form)
+    (cmp-log "mincomp form: %s%N" form)
     ;;
     ;; If a *code-walker* is defined then invoke the code-walker
     ;; with the current form and environment
@@ -474,7 +474,7 @@ jump to blocks within this tagbody."
         (if (symbolp form)
             (mincomp-symbol-value form env)
             (progn
-              (cmp-log "make-constant :constant %s\n" form)
+              (cmp-log "make-constant :constant %s%N" form)
               (make-constant-ast :constant form)))
         (let ((head (car form))
               (rest (cdr form)))

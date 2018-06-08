@@ -718,8 +718,8 @@ void Lisp_O::put_StrWNs_buffer_string(StrWNs_sp str) {
 
 
 
-ReadTable_sp Lisp_O::getCurrentReadTable() {
-  return gc::As<ReadTable_sp>(cl::_sym_STARreadtableSTAR->symbolValue());
+T_sp Lisp_O::getCurrentReadTable() {
+  return cl::_sym_STARreadtableSTAR->symbolValue();
 }
 
 void Lisp_O::setMakePackageAndExportSymbolCallbacks(MakePackageCallback mpc, ExportSymbolCallback esc) {

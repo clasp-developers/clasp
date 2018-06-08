@@ -20,8 +20,8 @@
   (error "The built-in class (~A) cannot be instantiated" class))
 
 (defmethod ensure-class-using-class ((class null) name &rest rest)
-  (clos::gf-log "In ensure-class-using-class (class null)\n")
-  (clos::gf-log "     class -> %s\n" name)
+  (clos::gf-log "In ensure-class-using-class (class null)%N")
+  (clos::gf-log "     class -> %s%N" name)
   (multiple-value-bind (metaclass direct-superclasses options)
       (apply #'help-ensure-class rest)
     (setf class (apply #'make-instance metaclass :name name options))

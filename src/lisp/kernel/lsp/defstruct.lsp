@@ -537,11 +537,11 @@ as a STRUCTURE doc and can be retrieved by (documentation 'NAME 'structure)."
                     (setq conc-name nil)
                     (setq conc-name v)))
                (:CONSTRUCTOR
-                (if (null v)
-                    (setq no-constructor t)
-                    (if (endp (cddar os))
-                        (setq constructors (cons v constructors))
-                        (setq constructors (cons (cdar os) constructors)))))
+                   (if (null v)
+                       (setq no-constructor t)
+                       (if (endp (cddar os))
+                           (setq constructors (cons v constructors))
+                           (setq constructors (cons (cdar os) constructors)))))
                (:COPIER (setq copier v))
                (:PREDICATE
                 (setq predicate v)
@@ -559,8 +559,8 @@ as a STRUCTURE doc and can be retrieved by (documentation 'NAME 'structure)."
                  (setq o (car os)))
              (case o
                (:CONSTRUCTOR
-                (setq constructors
-                      (cons default-constructor constructors)))
+                   (setq constructors
+                         (cons default-constructor constructors)))
 	       (:CONC-NAME
 		(setq conc-name nil))
                ((:COPIER :PREDICATE :PRINT-FUNCTION :PRINT-OBJECT))
@@ -570,8 +570,8 @@ as a STRUCTURE doc and can be retrieved by (documentation 'NAME 'structure)."
     ;; Skip the documentation string.
     (when (and (not (endp slot-descriptions))
                (stringp (car slot-descriptions)))
-          (setq documentation (car slot-descriptions))
-          (setq slot-descriptions (cdr slot-descriptions)))
+      (setq documentation (car slot-descriptions))
+      (setq slot-descriptions (cdr slot-descriptions)))
 
     ;; check initial-offset and type consistency.
     (when initial-offset
@@ -626,7 +626,7 @@ as a STRUCTURE doc and can be retrieved by (documentation 'NAME 'structure)."
            ;; If a constructor option is NIL,
            ;;  no constructor should have been specified.
            (when constructors
-                 (error "Contradictory constructor options.")))
+             (error "Contradictory constructor options.")))
           ((null constructors)
            ;; If no constructor is specified,
            ;;  the default-constructor is made.

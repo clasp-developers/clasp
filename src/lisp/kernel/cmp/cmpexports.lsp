@@ -11,6 +11,7 @@
           %ltv*%
           irc-function-create
           irc-bclasp-function-create
+          irc-cclasp-function-create
           %fn-prototype%
           *cleavir-compile-file-hook*
           *cleavir-compile-hook*
@@ -22,6 +23,7 @@
           *debug-compile-file*
           *debug-compile-file-counter*
           *generate-compile-file-load-time-values*
+          module-literal-table
           *load-time-initializer-environment*
           *gv-current-function-name*
           *gv-source-file-info-handle*
@@ -35,7 +37,7 @@
           *run-time-literal-holder*
           *run-time-values-table-name*
 ;;          *run-time-values-table*
-          *run-time-values-table-global-var*
+          #+(or)*run-time-values-table-global-var*
           *the-module*
           +header-size+
           +cons-tag+
@@ -83,6 +85,10 @@
           cmp-log
           cmp-log-dump-module
           cmp-log-dump-function
+          make-file-metadata
+          make-function-metadata
+          function-info
+          make-function-info
           irc-create-call
           irc-create-invoke
           compile-file-to-module
@@ -123,6 +129,7 @@
           irc-intrinsic-invoke
           irc-bit-cast
           irc-pointer-cast
+          irc-maybe-cast-integer-to-t*
           irc-create-invoke
           irc-create-invoke-default-unwind
           irc-create-landing-pad
@@ -154,6 +161,7 @@
           jit-constant-i8
           jit-constant-i32
           jit-constant-i64
+          ensure-jit-constant-i64
           jit-constant-size_t
           jit-constant-unique-string-ptr
           jit-function-name

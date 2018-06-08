@@ -32,10 +32,7 @@
 (defvar *debug-log-on* nil)
 (defvar *debug-instruction-function* nil)
 (defvar *debug-log-index* 0)
-(defvar *debug-basic-blocks*)
 (defvar *debug-ownerships*)
-(defvar *debug-tags*)
-(defvar *debug-vars*)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -114,7 +111,6 @@
 (defvar *ct-generate-ast*)
 (defvar *ct-hoist-ast*)
 (defvar *ct-generate-hir*)
-(defvar *ct-convert-funcalls*)
 (defvar *ct-process-captured-variables*)
 (defvar *ct-liveness*)
 (defvar *ct-optimize-stack-enclose*)
@@ -125,7 +121,6 @@
 (defvar *ct-delete-the*)
 (defvar *ct-eliminate-typeq*)
 (defvar *ct-eliminate-load-time-value-inputs*)
-(defvar *ct-finalize-unwind-and-landing-pad-instructions*)
 (defvar *ct-translate*)
 
 (defun ct-total ()
@@ -134,7 +129,6 @@
      *ct-generate-ast*
      *ct-hoist-ast*
      *ct-generate-hir*
-     *ct-convert-funcalls*
      *ct-process-captured-variables*
      *ct-liveness*
      *ct-optimize-stack-enclose*
@@ -145,7 +139,6 @@
      *ct-delete-the*
      *ct-eliminate-typeq*
      *ct-eliminate-load-time-value-inputs*
-     *ct-finalize-unwind-and-landing-pad-instructions*
      *ct-translate*))
 
 
@@ -165,7 +158,6 @@
          (*ct-generate-ast* 0)
          (*ct-hoist-ast* 0)
          (*ct-generate-hir* 0)
-         (*ct-convert-funcalls* 0)
          (*ct-process-captured-variables* 0)
          (*ct-liveness* 0)
          (*ct-optimize-stack-enclose* 0)
@@ -176,7 +168,6 @@
          (*ct-delete-the* 0)
          (*ct-eliminate-typeq* 0)
          (*ct-eliminate-load-time-value-inputs* 0)
-         (*ct-finalize-unwind-and-landing-pad-instructions* 0)
          (*ct-translate* 0))
      (compiler-timer-start)
      (multiple-value-prog1 ,form
@@ -189,7 +180,6 @@
                 (float (/ *ct-generate-ast* internal-time-units-per-second)) "*ct-generate-ast*"
                 (float (/ *ct-hoist-ast* internal-time-units-per-second)) "*ct-hoist-ast*"
                 (float (/ *ct-generate-hir* internal-time-units-per-second)) "*ct-generate-hir*"
-                (float (/ *ct-convert-funcalls* internal-time-units-per-second)) "*ct-convert-funcalls*"
                 (float (/ *ct-process-captured-variables* internal-time-units-per-second)) "*ct-process-captured-variables*"
                 (float (/ *ct-liveness* internal-time-units-per-second)) "*ct-liveness*"
                 (float (/ *ct-optimize-stack-enclose* internal-time-units-per-second)) "*ct-optimize-stack-enclose*"
@@ -200,7 +190,6 @@
                 (float (/ *ct-delete-the* internal-time-units-per-second)) "*ct-delete-the*"
                 (float (/ *ct-eliminate-typeq* internal-time-units-per-second)) "*ct-eliminate-typeq*"
                 (float (/ *ct-eliminate-load-time-value-inputs* internal-time-units-per-second)) "*ct-eliminate-load-time-value-inputs*"
-                (float (/ *ct-finalize-unwind-and-landing-pad-instructions* internal-time-units-per-second)) "*ct-finalize-unwind-and-landing-pad-instructions*"
                 (float (/ *ct-translate* internal-time-units-per-second)) "*ct-translate*"
                 (float (/ *ct-end* internal-time-units-per-second)) "*ct-end*"
                 )

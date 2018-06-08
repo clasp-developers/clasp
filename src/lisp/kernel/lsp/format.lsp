@@ -20,7 +20,7 @@
 
 (in-package "SYS")
 
-;;(defmacro fmt-log (&rest args) `(core:bformat t "FMT-LOG: %s\n" (list ,@args)))
+;;(defmacro fmt-log (&rest args) `(core:bformat t "FMT-LOG: %s%N" (list ,@args)))
 (defmacro fmt-log (&rest args) nil)
 
 (pushnew :cdr-7 *features*)
@@ -240,19 +240,7 @@
                while (>= y 1.0l0)
                do (incf ex)
                finally (return (values y (the fixnum (+ delta ex)))))))
-      #+(or)
-      (loop with ex of-type fixnum
-	   = (round (* exponent #.(log 2l0 10)))
-	 for y of-type long-float
-	   = (if (minusp ex)
-		 (* x (the long-float (expt 10.0l0 (- ex))))
-		 (/ x (the long-float (expt 10.0l0 ex))))
-	 do (cond ((<= y 0.1l0)
-		   (decf ex))
-		  ((> y 1.0l0)
-		   (incf ex))
-		  (t
-		   (return (values y (the fixnum (+ delta ex))))))))))
+)))
 #+(or)
 (defun scale-exponent (original-x)
   (let* ((x (coerce original-x 'long-float)))
