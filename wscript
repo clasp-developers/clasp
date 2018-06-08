@@ -142,8 +142,8 @@ def update_dependencies(cfg):
 
     log.pprint('BLUE', 'update_dependencies()')
     fetch_git_revision("src/lisp/kernel/contrib/sicl",
-                       "https://github.com/drmeister/SICL.git",
-                       "52e836bf78ee9f6183b18b9deeb9315515fd3dd9")
+                       "https://github.com/robert-strandh/SICL.git",
+                       "11059a3d28bab6d378df4e3b429efc3c41301a12")
     fetch_git_revision("src/lisp/kernel/contrib/Concrete-Syntax-Tree",
                        "https://github.com/clasp-developers/Concrete-Syntax-Tree.git",
                        "e5ab78ca27084d3c809e00886a1088d5ce28a864")
