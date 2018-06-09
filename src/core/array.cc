@@ -2060,6 +2060,7 @@ Array_sp SimpleBitVector_O::unsafe_setf_subseq(size_t start, size_t end, Array_s
 }
 
 // This does not work properly
+/*
 void SimpleBitVector_O::unsafe_fillArrayWithElt(T_sp initialElement, size_t start, size_t end)
 {
   value_type initBlockValue = (initialElement.nilp()) ? 0 : ~0;
@@ -2076,6 +2077,22 @@ void SimpleBitVector_O::unsafe_fillArrayWithElt(T_sp initialElement, size_t star
     this->setBit(i,initBlockValue);
   }
 };
+*/
+
+void SimpleBitVector_O::unsafe_fillArrayWithElt(T_sp initialElement, size_t start, size_t end) {
+  if (CLASP_FIXNUMP (initialElement))
+  {
+    Fixnum zero_or_one = clasp_fixnum(gc::As<core::Fixnum_sp>(initialElement));
+    if ((zero_or_one == 0) || (zero_or_one == 1)) {
+      for (size_t i(start),iEnd(end); i<iEnd; ++i) {
+        this->setBit(i, zero_or_one);
+      }
+    }
+    else TYPE_ERROR(initialElement, cl::_sym_bit);
+  }
+  else TYPE_ERROR(initialElement, cl::_sym_bit);
+}
+
 
 bool SimpleBitVector_O::equal(T_sp other) const {
   if (this == &*other) return true;
