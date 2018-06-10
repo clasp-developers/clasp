@@ -20,6 +20,10 @@
 #define ENSURE_VALID_OBJECT_BUILTINS(x) x
 #endif
 
+#define BUILTIN_ATTRIBUTES __attribute__((always_inline))
+
+
+
 extern "C" {
 
 BUILTIN_ATTRIBUTES void newTmv(core::T_mv *sharedP)

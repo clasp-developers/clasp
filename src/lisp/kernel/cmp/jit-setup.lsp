@@ -623,7 +623,7 @@ The passed module is modified as a side-effect."
     (if (null dispatcher)
         (progn
           (quick-module-dump original-module "before-link-builtins")
-          (link-builtins-module original-module)
+          (link-inline-remove-builtins original-module)
           (quick-module-dump original-module "module-before-optimize"))
         (progn
           (jit-link-fastgf-module original-module)))

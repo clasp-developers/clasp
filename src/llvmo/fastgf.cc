@@ -21,6 +21,10 @@
 #define ENSURE_VALID_OBJECT_BUILTINS(x) x
 #endif
 
+#define LINKAGE __attribute__ ((visibility ("default")))
+
+#define BUILTIN_ATTRIBUTES __attribute__((always_inline))
+
 
 extern "C" {
 
