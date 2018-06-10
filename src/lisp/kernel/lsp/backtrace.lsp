@@ -373,7 +373,7 @@ Set gather-all-frames to T and you can gather C++ and Common Lisp frames"
                           (princ #\space stream)
                           (prin1 (aref arguments i) stream))
                       (prin1 " -args-suppressed-" stream))))
-              (princ ")") stream)
+              (princ ")" stream))
           (progn
             (prin1 (prog1 index (incf index)) stream)
             (princ #\space stream)
