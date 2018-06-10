@@ -224,7 +224,7 @@ class variant(object):
         if (not (use_stage>='a' and use_stage <= 'z')):
             raise Exception("Bad stage: %s"% use_stage)
         return '%s%s-%s%s' % (use_stage,APP_NAME,self.gc_name,self.debug_extension())
-    def fasl_name(self,build,stage=None,development_mode=None):
+    def fasl_name(self,build,stage=None):
         if ( stage == None ):
             use_stage = self.stage_char
         else:
@@ -505,7 +505,6 @@ def configure(cfg):
     cfg.env["GIT_BINARY"] = cfg.find_program("git", var = "GIT")[0]
     log.debug("cfg.env['CLASP_BUILD_MODE'] = %s", cfg.env['CLASP_BUILD_MODE'])
     if ((cfg.env['CLASP_BUILD_MODE'] =='bitcode')):
-        print("Not in DEVELOPMENT_MODE")
         cfg.define("CLASP_BUILD_MODE",2) # thin-lto
         cfg.env.CLASP_BUILD_MODE = 'bitcode'
         cfg.env.LTO_FLAG = '-flto=thin'
