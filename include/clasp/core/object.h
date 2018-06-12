@@ -531,6 +531,7 @@ namespace core {
     } else if ( x.consp() ) {
       return x.raw_() == y.raw_();
     } else if ( x.generalp() ) {
+      if (x.raw_() == y.raw_()) return true;
       General_O* general = x.unsafe_general();
       return general->eql_(y);
     }
