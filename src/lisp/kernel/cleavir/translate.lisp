@@ -375,6 +375,7 @@ when this is t a lot of graphs will be generated.")
 
 (defun translate (initial-instruction map-enter-to-function-info
                   &optional (abi *abi-x86-64*) (linkage 'llvm-sys:internal-linkage))
+  #+(or)
   (let ((uninitialized (check-for-uninitialized-inputs-dumb initial-instruction)))
     (unless (null uninitialized)
       (error "Uninitialized inputs: ~a" uninitialized)))
@@ -447,6 +448,7 @@ when this is t a lot of graphs will be generated.")
   #+(or)
   (quick-draw-hir init-instr "hir-after-remove-useless-instructions"))
 
+;; Used by both CST-to-AST and Generate-AST versions.
 (defun log-cst-to-ast (ast)
   (let ((ast-pathname (make-pathname :name (format nil "ast~a" (incf *debug-log-index*))
                                      :type "dot" :defaults (pathname *debug-log*))))
@@ -458,6 +460,7 @@ when this is t a lot of graphs will be generated.")
 
 (defvar *interactive-debug* nil)
 
+#+cst
 (defun cst->ast (cst &optional (env *clasp-env*))
   "Compile a cst into an AST and return it.
 Does not hoist.
@@ -468,13 +471,32 @@ COMPILE-FILE will use the default *clasp-env*."
          (lambda (condition)
            #+verbose-compiler(warn "Condition: ~a" condition)
            (cmp:compiler-warning-undefined-global-variable (cleavir-environment:name condition))
-           (invoke-restart 'cleavir-cst-to-ast:consider-special)))
+           (invoke-restart (find-restart 'cleavir-cst-to-ast:recover condition))))
        (cleavir-env:no-function-info
          (lambda (condition)
            #+verbose-compiler(warn "Condition: ~a" condition)
            (cmp:register-global-function-ref (cleavir-environment:name condition))
            (invoke-restart 'cleavir-cst-to-ast:consider-global))))
     (let* ((ast (cleavir-cst-to-ast:cst-to-ast cst env *clasp-system*)))
+      (when *interactive-debug* (draw-ast ast))
+      (cc-dbg-when *debug-log* (log-cst-to-ast ast))
+      (setf *ct-generate-ast* (compiler-timer-elapsed))
+      ast)))
+
+(defun generate-ast (form &optional (env *clasp-env*))
+  "Compile a form into an AST and return it.
+Does not hoist."
+  (handler-bind
+      ((cleavir-env:no-variable-info
+         (lambda (condition)
+           (cmp:compiler-warning-undefined-global-variable (cleavir-environment:name condition))
+           (invoke-restart 'cleavir-generate-ast:consider-special)))
+       (cleavir-env:no-function-info
+         (lambda (condition)
+           #+verbose-compiler(warn "Condition: ~a" condition)
+           (cmp:register-global-function-ref (cleavir-environment:name condition))
+           (invoke-restart 'cleavir-generate-ast:consider-global))))
+    (let* ((ast (cleavir-generate-ast:generate-ast form env *clasp-system*)))
       (when *interactive-debug* (draw-ast ast))
       (cc-dbg-when *debug-log* (log-cst-to-ast ast))
       (setf *ct-generate-ast* (compiler-timer-elapsed))
@@ -517,9 +539,14 @@ COMPILE-FILE will use the default *clasp-env*."
         (hir->mir hir env)
       (translate mir function-info-map abi linkage))))
 
+#+cst
 (defun translate-cst (cst &key (abi *abi-x86-64*) (linkage 'llvm-sys:internal-linkage)
                             (env *clasp-env*))
   (translate-ast (hoist-ast (cst->ast cst env) env) :abi abi :linkage linkage :env env))
+
+(defun translate-form (form &key (abi *abi-x86-64*) (linkage 'llvm-sys:internal-linkage)
+                              (env *clasp-env*))
+  (translate-ast (hoist-ast (generate-ast form env) env) :abi abi :linkage linkage :env env))
 
 (defparameter *debug-final-gml* nil)
 (defparameter *debug-final-next-id* 0)
@@ -536,8 +563,11 @@ COMPILE-FILE will use the default *clasp-env*."
   (setf *ct-start* (compiler-timer-elapsed))
   (let* ((cleavir-generate-ast:*compiler* 'cl:compile)
          (*llvm-metadata* (make-hash-table :test 'eql))
+         #+cst
          (cst (cst:cst-from-expression form))
+         #+cst
          (ast (cst->ast cst env))
+         (ast (generate-ast form env))
          function lambda-name
          ordered-raw-constants-list constants-table startup-fn shutdown-fn)
     (cmp:with-debug-info-generator (:module cmp:*the-module* :pathname pathname)
@@ -561,13 +591,22 @@ COMPILE-FILE will use the default *clasp-env*."
 
 (defun compile-form (form &optional (env *clasp-env*))
   (setf *ct-start* (compiler-timer-elapsed))
-  (translate-cst (cst:cst-from-expression form) :env env))
+  #+cst
+  (translate-cst (cst:cst-from-expression form) :env env)
+  (translate-form form :env env))
 
+#+cst
 (defun cleavir-compile-file-cst (cst &optional (env *clasp-env*))
   (literal:with-top-level-form
       (if cmp::*debug-compile-file*
           (compiler-time (translate-cst cst :env env))
           (translate-cst cst :env env))))
+
+(defun cleavir-compile-file-form (form &optional (env *clasp-env*))
+  (literal:with-top-level-form
+    (if cmp:*debug-compile-file*
+        (compiler-time (translate-form form :env env))
+        (translate-form form :env env))))
 
 (defmethod eclector.concrete-syntax-tree:source-position
     (stream (client eclector.concrete-syntax-tree::cst-client))
@@ -587,14 +626,20 @@ COMPILE-FILE will use the default *clasp-env*."
             (setf cmp:*current-form-lineno* (core:source-file-pos-lineno pos)))))
       ;; FIXME: if :environment is provided we should probably use a different read somehow
       (let* ((core:*current-source-pos-info* (core:input-stream-source-pos-info source-sin))
-             (cst (eclector.concrete-syntax-tree:cst-read source-sin nil eof-value)))
-        (when cmp:*debug-compile-file*
-          (bformat t "compile-file: cf%d -> %s%N" (incf cmp:*debug-compile-file-counter*) cst))
+             #+cst
+             (cst (eclector.concrete-syntax-tree:cst-read source-sin nil eof-value))
+             (form (read source-sin nil eof-value)))
+        #+cst
         (if (eq cst eof-value)
             (return nil)
             (progn
               (when *compile-print* (cmp::describe-form (cst:raw cst)))
-              (cleavir-compile-file-cst cst environment)))))))
+              (cleavir-compile-file-cst cst environment)))
+        (if (eq form eof-value)
+            (return nil)
+            (progn
+              (when *compile-print* (cmp::describe-form form))
+              (cleavir-compile-file-form form)))))))
 
 (defun cclasp-compile-in-env (name form &optional env)
   (let ((cleavir-generate-ast:*compiler* 'cl:compile)
