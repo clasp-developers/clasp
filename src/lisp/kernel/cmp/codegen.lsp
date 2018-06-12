@@ -272,6 +272,7 @@ then compile it and return (values compiled-llvm-function lambda-name)"
     ((eq sym 'cl:multiple-value-prog1) nil)     ;; handled with macro
     ((eq sym 'cl:catch) nil)              ;; handled with macro
     ((eq sym 'cl:throw) nil)              ;; handled with macro
+    ((eq sym 'cl:progv) nil)              ;; handled with macro
     ((eq sym 'core:debug-message) t)      ;; special operator
     ((eq sym 'core:multiple-value-foreign-call) t) ;; Call intrinsic functions
     ((eq sym 'core:foreign-call-pointer) t) ;; Call function pointers

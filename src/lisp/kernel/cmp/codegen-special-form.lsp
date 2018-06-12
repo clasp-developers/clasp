@@ -34,7 +34,6 @@
     (llvm-inline codegen-llvm-inline convert-llvm-inline)
     (:gc-profiling codegen-gc-profiling convert-gc-profiling)
     (core::debug-message codegen-debug-message convert-debug-message)
-    (progv codegen-progv convert-progv)
     ))
 
 (defun make-dispatch-table (alist)
@@ -177,27 +176,8 @@
 
 ;;; PROGV
 
-(defun codegen-progv (result args env)
-  (cmp-log "Started codegen-progv%N")
-  (let ((symbols (car args))
-	(values (cadr args))
-	(forms (cddr args))
-	(evaluated-symbols (irc-alloca-t* :label "symbols"))
-	(evaluated-values (irc-alloca-t* :label "values"))
-	(save-specials (irc-alloca-i8* :label "specials")))
-    (cmp-log "Evaluating symbols: %s%N" symbols)
-    (codegen evaluated-symbols symbols env)
-    (cmp-log "Evaluating values: %s%N" values)
-    (codegen evaluated-values values env)
-    (cmp-log "About to setup evaluation of forms env: %s%N" env)
-    (with-try
-      (progn
-	(cmp-log "About to call progvSaveSpecials%N")
-	(irc-intrinsic "progvSaveSpecials" save-specials (irc-load evaluated-symbols) (irc-load evaluated-values))
-	(cmp-log "About to codegen-progn with: %s%N" forms)
-	(codegen-progn result forms env))
-      ((cleanup)
-       (irc-intrinsic "progvRestoreSpecials" save-specials)))))
+(defmacro progv (symbols values &body forms)
+  `(core:progv-function ,symbols ,values (lambda () (progn ,@forms))))
 
 ;; MULTIPLE-VALUE-CALL
 

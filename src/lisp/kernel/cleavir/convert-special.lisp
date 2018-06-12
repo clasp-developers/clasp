@@ -388,32 +388,6 @@
      (cleavir-cst-to-ast::convert result-cst environment system)
      origin)))
 
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
-;;; Converting CL:PROGV
-;;;
-;;; Convert this into a function call
-(defmethod cleavir-cst-to-ast:convert-special ((head (eql 'cl:progv)) cst env (system clasp-cleavir:clasp))
-  (cleavir-cst-to-ast:convert
-   (destructuring-bind (symbols values &rest forms)
-       (cst:raw (cst:rest cst))
-     (cst:reconstruct
-      `(core:progv-function ,symbols ,values (lambda () (progn ,@forms)))
-      cst
-      system))
-   env system))
-#+(or)
-(defmacro cl:progv (symbols values &body forms)
-  `(core:progv-function ',symbols ,values (lambda () (progn ,@forms))))
-#+(or)(progn
-  (def-ast-macro progv (symbols values &body forms)
-    `(core:progv-function ,symbols ,values (lambda () (progn ,@forms))))
-
-  (def-cst-macro progv (symbols values . forms) origin
-    (reinitialize-instance (cst:cst-from-expression `(core:progv-function ,symbols ,values (lambda () (progn ,@forms)))) :source origin)))
-
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; Converting CORE::BIND-VA-LIST
