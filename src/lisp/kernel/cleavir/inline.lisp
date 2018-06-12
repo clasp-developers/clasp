@@ -1,7 +1,20 @@
 (in-package :clasp-cleavir)
 
+(defpackage "PRIMOP"
+  (:export #:convert-to-bignum
+           #:inlined-two-arg-+
+           #:inlined-two-arg--
+           #:inlined-two-arg-*
+           #:inlined-two-arg-/
+           #:inlined-two-arg-<
+           #:inlined-two-arg-<=
+           #:inlined-two-arg-=
+           #:inlined-two-arg->
+           #:inlined-two-arg->=
+           ))
+
 ;;; FIXME: Just conditionalize out the file or something!
-#+inlining
+#-cst
 (progn
 
 (progn
@@ -292,19 +305,6 @@
 
 
 (debug-inline "primop")
-
-(defpackage "PRIMOP"
-  (:export #:convert-to-bignum
-           #:inlined-two-arg-+
-           #:inlined-two-arg--
-           #:inlined-two-arg-*
-           #:inlined-two-arg-/
-           #:inlined-two-arg-<
-           #:inlined-two-arg-<=
-           #:inlined-two-arg-=
-           #:inlined-two-arg->
-           #:inlined-two-arg->=
-           ))
 
 #-use-boehmdc
 (progn
