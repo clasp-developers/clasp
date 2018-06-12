@@ -1508,7 +1508,11 @@ def postprocess_all_c_tasks(self):
                     builtins_cc = node
                 if ends_with(node.name, 'fastgf.cc'):
                     fastgf_cc = node
-            for node in task.outputs:
+#switch back to old way to create scraper tasks                    
+                sif_node = node.change_ext('.sif')
+                self.create_task('generate_one_sif', node, [sif_node])
+                all_sif_files.append(sif_node)
+           for node in task.outputs:
                 all_o_nodes.append(node)
                 if ends_with(node.name, 'intrinsics.cc'):
                     intrinsics_o = node
@@ -1522,16 +1526,16 @@ def postprocess_all_c_tasks(self):
 
     all_sif_nodes = []
 
-    # Start 'jobs' number of scraper processes in parallel, each processing several files
-    #chunks = split_list(all_cxx_nodes, min(self.bld.jobs, len(all_cxx_nodes))) # this splits into the optimal chunk sizes
-    chunk_size = min(20, max(1, len(all_cxx_nodes) // self.bld.jobs)) # this splits into task chunks of at most 20 files
-    chunks = list(list_chunks_of_size(all_cxx_nodes, chunk_size))
-    log.info('Creating %s parallel scraper tasks, each processing %s files, for the total %s cxx files', len(chunks), chunk_size, len(all_cxx_nodes))
-    assert len([x for sublist in chunks for x in sublist]) == len(all_cxx_nodes)
-    for cxx_nodes in chunks:
-        sif_nodes = [x.change_ext('.sif') for x in cxx_nodes]
-        all_sif_nodes += sif_nodes
-        self.create_task('generate_sif_files', cxx_nodes, sif_nodes)
+#    # Start 'jobs' number of scraper processes in parallel, each processing several files
+#    #chunks = split_list(all_cxx_nodes, min(self.bld.jobs, len(all_cxx_nodes))) # this splits into the optimal chunk sizes
+#    chunk_size = min(20, max(1, len(all_cxx_nodes) // self.bld.jobs)) # this splits into task chunks of at most 20 files
+#    chunks = list(list_chunks_of_size(all_cxx_nodes, chunk_size))
+#    log.info('Creating %s parallel scraper tasks, each processing %s files, for the total %s cxx files', len(chunks), chunk_size, len(all_cxx_nodes))
+#    assert len([x for sublist in chunks for x in sublist]) == len(all_cxx_nodes)
+#    for cxx_nodes in chunks:
+#        sif_nodes = [x.change_ext('.sif') for x in cxx_nodes]
+#        all_sif_nodes += sif_nodes
+#        self.create_task('generate_sif_files', cxx_nodes, sif_nodes)
 
     scraper_output_nodes = [self.path.find_or_declare('generated/' + i) for i in
                             ['c-wrappers.h',
