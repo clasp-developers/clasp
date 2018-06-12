@@ -51,12 +51,7 @@ USE_LLD = False
 # This turns on build with address sanitizer
 # ADDRESS_SANITIZER = True
 
-# LTO_OPTION is deprecated - use DEVELOMENT_MODE
-# This controls how whether LTO is used and what kind ("thinlto"(default) or "lto" or "obj" (no lto))
-# 'obj' is faster for debugging
-# LTO_OPTION = 'obj'
-
-# CLASP_BUILD_MODE can be "bitcode" or "object" (default)
+# CLASP_BUILD_MODE (which replaced LTO_OPTION) can be "bitcode" or "object" (default)
 # This controls if object files are generated and linked (fast build time)
 # or bitcode is generated and lto linked (slow build time).
 #

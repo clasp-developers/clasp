@@ -59,12 +59,13 @@ RUN apt-get install -y nodejs npm
 
 RUN conda create -n lab python=3.6 -y
 RUN /bin/bash -c "source activate lab"
-RUN conda install ipywidgets=7.1.2 -c conda-forge -y
+#RUN conda install ipywidgets=7.1.2 -c conda-forge -y
+RUN conda install ipywidgets -c conda-forge -y
 RUN pip install nglview==1.1.2
 RUN nglview enable # might need this to enable nglview-js-widgets extension for notebook
-RUN conda install jupyterlab=0.31.12 -y -c conda-forge
-RUN jupyter-labextension install @jupyter-widgets/jupyterlab-manager@0.33.2
-RUN jupyter-labextension install nglview-js-widgets@1.1.2
+RUN conda install jupyterlab -y -c conda-forge
+RUN jupyter-labextension install @jupyter-widgets/jupyterlab-manager nglview-js-widgets@1.1.2
+#RUN jupyter-labextension install nglview-js-widgets@1.1.2
 
 ADD cando-build.tgz /home/app/clasp
 ADD tools/dockerfiles/jupyter/kernels /home/app/.local/share/jupyter/kernels
@@ -100,29 +101,13 @@ RUN clasp -l "/home/app/quicklisp/setup.lisp" \
            -e "(swank-loader:init :delete nil :reload nil :load-contribs nil)"\
            -e "(core:quit)"
 
-ADD --chown=app:app ambertools.tar.gz /home/app
-ENV AMBERHOME=/home/app/amber16/
+ADD --chown=app:app ambertools18-docker.tar.gz /home/app
+ENV AMBERHOME=/home/app/amber18/
 
 RUN cp /home/app/clasp/lib/clasp/extensions/cando/src/data/force-field/ATOMTYPE_SYBYL.DEF /home/app/clasp/lib/clasp/extensions/cando/src/data/force-field/atomtype_sybyl.def
 
 ADD tools/dockerfiles/start-demos.sh /home/app/start-demos.sh
 ADD demos.tar /home/app/
-# RUN chown -R root:root /home/app/demos
-
-# USER root
-# RUN mkdir /home/app/home
-# RUN chown -R app:app /home/app/home
-# RUN chown -R app:app /home/app/.local
-# RUN chown -R app:app /home/app/.jupyter
-# # RUN chown -R app:app /home/app/.cache
-# RUN chown -R app:app /home/app/amber16
-# RUN chown -R app:app /home/app/clasp
-# RUN chown -R app:app /home/app/demos
-# RUN chown -R app:app /home/app/home
-# RUN chown -R app:app /home/app/nglview
-# RUN chown -R app:app /home/app/quicklisp
-# RUN chown -R app:app /home/app/slime
-# USER app
 
 RUN apt-get install -y libgfortran4
 

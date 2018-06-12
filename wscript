@@ -236,7 +236,7 @@ class variant(object):
         if (not (use_stage>='a' and use_stage <= 'z')):
             raise Exception("Bad stage: %s"% use_stage)
         return '%s%s-%s%s' % (use_stage,APP_NAME,self.gc_name,self.debug_extension())
-    def fasl_name(self,build,stage=None,development_mode=None):
+    def fasl_name(self,build,stage=None):
         if ( stage == None ):
             use_stage = self.stage_char
         else:
@@ -477,13 +477,13 @@ def configure(cfg):
     def load_local_config(cfg):
         if os.path.isfile("./wscript.config"):
             local_environment = {}
-            print(" local_environment = %s\n" % local_environment)
+            log.debug("local_environment = %s", local_environment)
             exec(open("./wscript.config").read(), globals(), local_environment)
             for key in local_environment.keys():
                 if (not key in VALID_OPTIONS):
                     raise Exception("%s is an INVALID wscript.config option - valid options are: %s" % (key, VALID_OPTIONS))
                 else:
-                    print("wscript.config option %s = %s" % ( key, local_environment[key]))
+                    log.debug("wscript.config option %s = %s", key, local_environment[key])
             cfg.env.update(local_environment)
         else:
             log.warn("There is no 'wscript.config' file - assuming default configuration. See 'wscript.config.template' for further details.")
@@ -517,7 +517,6 @@ def configure(cfg):
     cfg.env["GIT_BINARY"] = cfg.find_program("git", var = "GIT")[0]
     log.debug("cfg.env['CLASP_BUILD_MODE'] = %s", cfg.env['CLASP_BUILD_MODE'])
     if ((cfg.env['CLASP_BUILD_MODE'] =='bitcode')):
-        print("Not in DEVELOPMENT_MODE")
         cfg.define("CLASP_BUILD_MODE",2) # thin-lto
         cfg.env.CLASP_BUILD_MODE = 'bitcode'
         cfg.env.LTO_FLAG = '-flto=thin'
@@ -543,7 +542,7 @@ def configure(cfg):
     log.info("default cfg.env.CLASP_BUILD_MODE = %s, final cfg.env.LTO_FLAG = '%s'", cfg.env.CLASP_BUILD_MODE, cfg.env.LTO_FLAG)
 
     cur_clang_version = run_llvm_config(cfg, "--version")
-    print("cur_clang_version = %s" % cur_clang_version)
+    log.debug("cur_clang_version = %s", cur_clang_version)
     if (int(cur_clang_version[0]) != CLANG_VERSION):
         raise Exception("You must have clang/llvm version %d installed" % CLANG_VERSION )
     # find a lisp for the scraper
@@ -839,8 +838,7 @@ def build(bld):
     log.reinitialize(console_level = logging.DEBUG if Logs.verbose >= 1 else logging.INFO,
                      log_file = os.path.join(bld.path.abspath(), out, variant.variant_dir(), "build.log"))
 
-    log.debug('build() starts, options: %s', bld.options)
-    print("Build is starting clasp_build_mode = %s" % bld.env.CLASP_BUILD_MODE)
+    log.debug('build() starts, CLASP_BUILD_MODE = %s, options: %s', bld.env.CLASP_BUILD_MODE, bld.options)
     bld.add_pre_fun(pre_build_hook);
     bld.add_post_fun(post_build_hook);
 
@@ -848,8 +846,9 @@ def build(bld):
     stage_val = stage_value(bld,bld.stage)
     bld.stage_val = stage_val
 
-    log.pprint('BLUE', 'build(), %s, stage %s=%s%s' %
+    log.pprint('BLUE', 'build(), %s, %s, stage %s=%s%s' %
                 (variant.variant_name(),
+                 bld.env.CLASP_BUILD_MODE,
                  bld.stage,
                  bld.stage_val,
                  ", DEBUG_WHILE_BUILDING" if bld.options.DEBUG_WHILE_BUILDING else ''))
@@ -1186,7 +1185,7 @@ class run_dsymutil(clasp_task):
 class link_fasl(clasp_task):
     def run(self):
         if (self.env.CLASP_BUILD_MODE=='fasl'):
-            print("link_fasl self.inputs[3] = %s   self.outputs[0] = %s"% (self.inputs[3], self.outputs[0]))
+            log.debug("link_fasl self.inputs[3] = %s   self.outputs[0] = %s", self.inputs[3], self.outputs[0])
             cmd = [ "cp", self.inputs[3].abspath(),self.outputs[0].abspath()]
             return self.exec_command(cmd)
         if (self.env.LTO_FLAG):
