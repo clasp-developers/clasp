@@ -330,10 +330,12 @@ Return files."
   (format t "Leaving compile-system-parallel~%"))
 
 (defun compile-system (&rest args)
-  (apply (if (and core:*use-parallel-build* (> *number-of-jobs* 1))
-             'compile-system-parallel
-             'compile-system-serial)
-         args))
+  (let ((compile-function (if (and core:*use-parallel-build* (> *number-of-jobs* 1))
+                              'compile-system-parallel
+                              'compile-system-serial)))
+    (format t "Compiling with ~a / core:*use-parallel-build* -> ~a  core:*number-of-jobs* -> ~a~%" compile-function core:*use-parallel-build* *number-of-jobs*)
+    
+    (apply compile-function args)))
 
 (export '(compile-system-serial compile-system compile-system-parallel))
 
