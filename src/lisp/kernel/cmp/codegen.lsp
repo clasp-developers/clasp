@@ -36,18 +36,29 @@ Could return more functions that provide lambda-list for swank for example"
   (setq *lambda-args-num* (1+ *lambda-args-num*))
   (multiple-value-bind (cleavir-lambda-list new-body)
       (transform-lambda-parts lambda-list declares code)
-    (cmp-log "generate-llvm-function-from-code\n")
-    (cmp-log "cleavir-lambda-list -> %s\n" cleavir-lambda-list)
-    (cmp-log "new-body -> %s\n" new-body)
-;;;    (bformat *debug-io* "old  -> %s %s %s %s\n" lambda-list-handler declares docstring code)
-;;;    (bformat *debug-io* "new-body -> %s\n" new-body)
+    (cmp-log "generate-llvm-function-from-code%N")
+    (cmp-log "cleavir-lambda-list -> %s%N" cleavir-lambda-list)
+    (cmp-log "new-body -> %s%N" new-body)
+;;;    (bformat *debug-io* "old  -> %s %s %s %s%N" lambda-list-handler declares docstring code)
+;;;    (bformat *debug-io* "new-body -> %s%N" new-body)
     (let* ((name (core:extract-lambda-name-from-declares declares (or given-name 'cl:lambda)))
            (fn (with-new-function (fn fn-env result
                                       :function-name name
                                       :parent-env env-around-lambda
                                       :function-form new-body
-                                      :linkage linkage)
-                 (cmp-log "Starting new function name: %s\n" name)
+                                      :linkage linkage
+                                      :function-info (make-function-info
+                                                      :function-name name
+                                                      :source-handle *gv-source-file-info-handle*
+                                                      :lambda-list lambda-list
+                                                      :docstring docstring
+                                                      :declares declares
+                                                      :form code
+                                                      :lineno (core:source-pos-info-lineno core:*current-source-pos-info*)
+                                                      :column (core:source-pos-info-column core:*current-source-pos-info*)
+                                                      :filepos (core:source-pos-info-filepos core:*current-source-pos-info*))
+                                      )
+                 (cmp-log "Starting new function name: %s%N" name)
                  ;; The following injects a debugInspectT_sp at the start of the body
                  ;; it will print the address of the literal which must correspond to an entry in the
                  ;; load time values table
@@ -56,7 +67,7 @@ Could return more functions that provide lambda-list for swank for example"
                         (callconv       (bclasp-setup-calling-convention arguments lambda-list core::*debug-bclasp* #|!DEBUG-ON|#)))
                    (calling-convention-maybe-push-invocation-history-frame callconv)
                    (let ((new-env (bclasp-compile-lambda-list-code cleavir-lambda-list fn-env callconv)))
-                     (cmp-log "Created new register environment -> %s\n" new-env)
+                     (cmp-log "Created new register environment -> %s%N" new-env)
                      (dbg-set-current-debug-location-here)
                      (with-try
                          (progn
@@ -64,10 +75,10 @@ Could return more functions that provide lambda-list for swank for example"
                                (codegen-block result (list* block-name (list new-body)) new-env)
                                (codegen-progn result (list new-body) new-env)))
                        ((cleanup)
-                        (cmp-log "About to calling-convention-maybe-pop-invocation-history-frame\n")
+                        (cmp-log "About to calling-convention-maybe-pop-invocation-history-frame%N")
                         (calling-convention-maybe-pop-invocation-history-frame callconv)
                         (irc-unwind-environment new-env))))))))
-      (cmp-log "About to dump the function constructed by generate-llvm-function-from-code\n")
+      (cmp-log "About to dump the function constructed by generate-llvm-function-from-code%N")
       (cmp-log-dump-function fn)
       (irc-verify-function fn)
       ;; Return the llvm Function and the symbol/setf name
@@ -90,7 +101,7 @@ Return the same things that generate-llvm-function-from-code returns"
 	      body (cddr lambda-or-lambda-block)))
     (multiple-value-bind (declares code docstring specials )
 	(process-declarations body t)
-      (cmp-log "About to create lambda-list-handler\n")
+      (cmp-log "About to create lambda-list-handler%N")
       (dbg-set-current-debug-location-here)
       (generate-llvm-function-from-code nil
                                         lambda-list
@@ -121,11 +132,11 @@ then compile it and return (values compiled-llvm-function lambda-name)"
 	 (env (closed-environment fn)))
     (when docstring (setq docstring (list docstring)))
     #+(or)(progn
-	    (bformat t "lambda-list = %s\n" lambda-list)
-	    (bformat t "declares    = %s\n" declares)
-	    (bformat t "docstring   = %s\n" docstring)
-	    (bformat t "code        = %s\n" code)
-	    (bformat t "env         = %s\n" env))
+	    (bformat t "lambda-list = %s%N" lambda-list)
+	    (bformat t "declares    = %s%N" declares)
+	    (bformat t "docstring   = %s%N" docstring)
+	    (bformat t "code        = %s%N" code)
+	    (bformat t "env         = %s%N" env))
     (values `(lambda ,lambda-list ,@docstring (declare ,@declares) ,@code) env)))
 
 (defun function-name-from-lambda (name)
@@ -145,7 +156,7 @@ then compile it and return (values compiled-llvm-function lambda-name)"
               (values llvm-function-from-lambda :function env lambda-name)))
         (or lambda-name (error "lambda-name is nil - this shouldn't happen"))
         (or fn (error "There was no function returned by compile-lambda-function outer: ~a" fn))
-        (cmp-log "fn --> %s\n" fn)
+        (cmp-log "fn --> %s%N" fn)
         (cmp-log-dump-module *the-module*)
         (values fn function-kind wrapped-env lambda-name warnp failp))))
 
@@ -231,7 +242,7 @@ then compile it and return (values compiled-llvm-function lambda-name)"
          (multiple-value-bind (expansion expanded-p)
              (macroexpand form env)
            (declare (core:lambda-name codegen-application--about-to-macroexpand))
-           (cmp-log "MACROEXPANDed form[%s] expanded to [%s]\n" form expansion )
+           (cmp-log "MACROEXPANDed form[%s] expanded to [%s]%N" form expansion )
            (irc-low-level-trace)
            (codegen result expansion env) 
            ))
@@ -241,11 +252,11 @@ then compile it and return (values compiled-llvm-function lambda-name)"
     ))
 
 (defun codegen-special-operator (result head rest env)
-  (cmp-log "entered codegen-special-operator head: %s rest: %s\n" head rest)
+  (cmp-log "entered codegen-special-operator head: %s rest: %s%N" head rest)
   (assert-result-isa-llvm-value result)
-  (cmp-log "About to set source pos\n")
+  (cmp-log "About to set source pos%N")
   (dbg-set-current-source-pos rest)
-  (cmp-log "About to do case on head: %s\n" head)
+  (cmp-log "About to do case on head: %s%N" head)
   (let* ((functions (gethash head *special-operator-dispatch* 'nil))
          (function (cadr functions)))
     (if function
@@ -256,17 +267,18 @@ then compile it and return (values compiled-llvm-function lambda-name)"
 ;;; Return true if the symbol should be treated as a special operator
 ;;; Special operators that are handled as macros are exempt
 (defun treat-as-special-operator-p (sym)
-  #+clc(clc-env:treat-as-special-operator-p sym)
-  #-clc(cond
-         ((eq sym 'cl:unwind-protect) nil)  ;; handled with macro
-         ((eq sym 'cl:catch) nil)           ;; handled with macro
-         ((eq sym 'cl:throw) nil)           ;; handled with macro
-         ((eq sym 'core:debug-message) t)   ;; special operator
-         ((eq sym 'core:multiple-value-foreign-call) t) ;; Call intrinsic functions
-         ((eq sym 'core:foreign-call-pointer) t) ;; Call function pointers
-         ((eq sym 'core:foreign-call) t) ;; Call foreign function
-         ((eq sym 'core:bind-va-list) t) ;; bind-va-list
-         (t (special-operator-p sym))))
+  (cond
+    ((eq sym 'cl:unwind-protect) nil)     ;; handled with macro
+    ((eq sym 'cl:multiple-value-prog1) nil)     ;; handled with macro
+    ((eq sym 'cl:catch) nil)              ;; handled with macro
+    ((eq sym 'cl:throw) nil)              ;; handled with macro
+    ((eq sym 'cl:progv) nil)              ;; handled with macro
+    ((eq sym 'core:debug-message) t)      ;; special operator
+    ((eq sym 'core:multiple-value-foreign-call) t) ;; Call intrinsic functions
+    ((eq sym 'core:foreign-call-pointer) t) ;; Call function pointers
+    ((eq sym 'core:foreign-call) t)         ;; Call foreign function
+    ((eq sym 'core:bind-va-list) t)         ;; bind-va-list
+    (t (special-operator-p sym))))
 
 (export 'treat-as-special-operator-p)
 
@@ -277,8 +289,8 @@ then compile it and return (values compiled-llvm-function lambda-name)"
       (dbg-set-current-source-pos form)
     (let* ((*current-form* form)
            (*current-env* env))
-      (cmp-log "codegen stack-used[%d bytes]\n" (stack-used))
-      (cmp-log "codegen evaluate-depth[%d]  %s\n" (evaluate-depth) form)
+      (cmp-log "codegen stack-used[%d bytes]%N" (stack-used))
+      (cmp-log "codegen evaluate-depth[%d]  %s%N" (evaluate-depth) form)
       ;;
       ;; If a *code-walker* is defined then invoke the code-walker
       ;; with the current form and environment
@@ -290,7 +302,7 @@ then compile it and return (values compiled-llvm-function lambda-name)"
               (codegen-literal result form env))
           (let ((head (car form))
                 (rest (cdr form)))
-            (cmp-log "About to codegen special-operator or application for: %s\n" form)
+            (cmp-log "About to codegen special-operator or application for: %s%N" form)
             ;;  (trace-linenumber-column (walk-to-find-parse-pos form) env)
             (cond
               ((treat-as-special-operator-p head)
@@ -311,15 +323,26 @@ then compile it and return (values compiled-llvm-function lambda-name)"
                                               result
                                               :function-name name
                                               :parent-env env
-                                              :function-form form) 
+                                              :function-form form
+                                              :function-info (make-function-info
+                                                              :function-name name
+                                                              :source-handle *gv-source-file-info-handle*
+                                                              :lambda-list nil
+                                                              :docstring nil
+                                                              :declares nil
+                                                              :form form
+                                                              :lineno (core:source-pos-info-lineno core:*current-source-pos-info*)
+                                                              :column 0
+                                                              :filepos (core:source-pos-info-filepos core:*current-source-pos-info*))
+                                              )
                             (let* ((given-name (llvm-sys:get-name fn)))
                               ;; Map the function argument names
-                              (cmp-log "Creating repl function with name: %s\n" given-name)
+                              (cmp-log "Creating repl function with name: %s%N" given-name)
                               ;;	(break "codegen repl form")
                               (dbg-set-current-debug-location-here) 
                               (codegen result form fn-env)
                               (dbg-set-current-debug-location-here)))))
-      (cmp-log "Dumping the repl function\n")
+      (cmp-log "Dumping the repl function%N")
       (cmp-log-dump-function top-level-func)
       (irc-verify-function top-level-func t)
       top-level-func)))

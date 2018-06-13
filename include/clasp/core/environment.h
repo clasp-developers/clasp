@@ -68,7 +68,7 @@ public:
   static bool clasp_lexicalSpecialP(T_sp env, Symbol_sp sym);
 //  static T_sp clasp_lookupValue(T_sp env, int depth, int index);
 #if 0
-  ALWAYS_INLINE static T_sp &clasp_lookupValueReference(T_sp env, int depth, int index) {
+  inline static T_sp &clasp_lookupValueReference(T_sp env, int depth, int index) {
     ASSERT(env && env.isA<Environment_O>());
     if (env.isA<ValueFrame_O>()) {
       ValueFrame_sp eenv = gc::reinterpret_cast_smart_ptr<Environment_O, T_O>(env);

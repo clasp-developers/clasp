@@ -106,7 +106,7 @@ VARIABLE doc and can be retrieved by (DOCUMENTATION 'SYMBOL 'VARIABLE)."
       (process-declarations body t)
     (let* ((loc (ext:current-source-location))
            (filepos (if loc (source-file-pos-filepos loc) 0))
-           (lineno (if loc (source-file-pos-lineno loc) 0))
+           (lineno (if loc (source-file-pos-lineno loc) 1234))
            (column (if loc (source-file-pos-column loc) 0))
            (fn (gensym))
            (doclist (when doc-string (list doc-string)))
@@ -115,8 +115,8 @@ VARIABLE doc and can be retrieved by (DOCUMENTATION 'SYMBOL 'VARIABLE)."
                   (declare (core:lambda-name ,name core:current-source-file ,filepos ,lineno ,column) ,@decls) 
                   ,@doclist
                   (block ,(si::function-block-name name) ,@body))))
-      ;;(bformat t "macro expansion of defun current-source-location -> %s\n" current-source-location)
-      ;;(bformat t "DEFUN global-function --> %s\n" global-function )
+      ;;(bformat t "macro expansion of defun current-source-location -> %s%N" current-source-location)
+      ;;(bformat t "DEFUN global-function --> %s%N" global-function )
       `(progn
          (eval-when (:compile-toplevel)
            ;; this function won't be ready for a while, but it's okay as there's no

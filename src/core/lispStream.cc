@@ -5498,7 +5498,7 @@ namespace core {
 
 string FileStream_O::__repr__() const {
   stringstream ss;
-  ss << "#<" << this->_instanceClass()->_classNameAsString() << " " << _rep_(FileStreamFilename(this->asSmartPtr())) << ">";
+  ss << "#<" << this->_instanceClass()->_classNameAsString() << " " << _rep_(FileStreamFilename(this->asSmartPtr())) <<  " file-pos " << _rep_(clasp_file_position(this->asSmartPtr())) << ">";
   return ss.str();
 }
 
@@ -5559,13 +5559,13 @@ CL_DEFUN T_sp cl__peek_char(T_sp peek_type, T_sp strm, T_sp eof_errorp, T_sp eof
   if (peek_type != _lisp->_true()) {
     SIMPLE_ERROR(BF("Illegal first argument for PEEK-CHAR %s") % _rep_(peek_type));
   } else {
-    ReadTable_sp readtable = gc::As<ReadTable_sp>(cl::_sym_STARreadtableSTAR->symbolValue());
+    T_sp readtable = cl::_sym_STARreadtableSTAR->symbolValue();
     while (1) {
       int c = clasp_peek_char(strm);
       if (c == EOF)
         goto HANDLE_EOF;
       Character_sp charc = clasp_make_character(c);
-      if (readtable->syntax_type(charc) != kw::_sym_whitespace_character)
+      if (core__syntax_type(readtable, charc) != kw::_sym_whitespace)
         return charc;
       clasp_read_char(strm);
     }
@@ -5665,6 +5665,7 @@ CL_DECLARE();
 CL_DOCSTRING("See clhs");
 CL_DEFUN T_mv cl__read_line(T_sp sin, T_sp eof_error_p, T_sp eof_value, T_sp recursive_p) {
   // TODO Handle encodings from sin - currently only Str8Ns is supported
+  bool eofErrorP = eof_error_p.isTrue();
   sin = coerce::inputStreamDesignator(sin);
   if (!AnsiStreamP(sin)) {
     T_mv results = eval::funcall(gray::_sym_stream_read_line, sin);
@@ -5676,7 +5677,6 @@ CL_DEFUN T_mv cl__read_line(T_sp sin, T_sp eof_error_p, T_sp eof_value, T_sp rec
       }
     }
   }
-  bool eofErrorP = eof_error_p.isTrue();
   //    bool recursiveP = translate::from_object<bool>::convert(env->lookup(_sym_recursive_p));
   Str8Ns_sp sbuf = Str8Ns_O::createBufferString();
   while (1) {

@@ -25,7 +25,7 @@ load-time-value manager (true - in COMPILE-FILE) or not (false - in COMPILE)."
 (defvar *load-time-value-holder-global-var* nil
   "Store the current load-time-value data structure for COMPILE-FILE")
 
-(defvar *run-time-values-table-global-var* nil
+#+(or)(defvar *run-time-values-table-global-var* nil
   "All load-time-values and quoted values are stored in this array accessed with an integer index"
   )
 
@@ -98,4 +98,12 @@ load-time-value manager (true - in COMPILE-FILE) or not (false - in COMPILE)."
       *run-time-values-table-global-var*))
 
 (defun generate-load-time-values () *generate-compile-file-load-time-values*)
+
+(defun module-literal-table ()
+  (format t "literal::*gcroots-in-module* -> ~a~%" literal::*gcroots-in-module*)
+  (format t "*load-time-value-holder-global-var* -> ~a~%" *load-time-value-holder-global-var*)
+  #+(or)(format t "*run-time-values-table-global-var* -> ~a~%" *run-time-values-table-global-var*)
+  #+(or)(if (generate-load-time-values)
+      *load-time-value-holder-global-var*
+      *run-time-values-table-global-var*))
 

@@ -188,9 +188,6 @@ ThreadLocalState::ThreadLocalState(void* stack_top) :  _DisableInterrupts(false)
 #ifdef DEBUG_RECURSIVE_ALLOCATIONS
                                                     , _RecursiveAllocationCounter(0)
 #endif
-#ifdef DEBUG_FLOW_CONTROL
-                                                    , _FlowCounter(0)
-#endif
 {
   my_thread = this;
 #ifdef _TARGET_OS_DARWIN

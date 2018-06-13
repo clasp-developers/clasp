@@ -21,7 +21,7 @@ search for the string 'src', or 'generated' and return the rest of the list that
 (defun ensure-relative-pathname (input)
   "If the input pathname is absolute then search for src, or generated and return
 a relative path from there."
-  #+(or)(bformat t "ensure-relative-pathname input = %s   sys-pn = %s\n" input sys-pn)
+  #+(or)(bformat t "ensure-relative-pathname input = %s   sys-pn = %s%N" input sys-pn)
   (cond
     ((eq :relative (car (pathname-directory input)))
      (make-pathname :directory (pathname-directory input)

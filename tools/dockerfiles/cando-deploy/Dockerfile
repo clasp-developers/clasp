@@ -59,12 +59,13 @@ RUN apt-get install -y nodejs npm
 
 RUN conda create -n lab python=3.6 -y
 RUN /bin/bash -c "source activate lab"
-RUN conda install ipywidgets=7.1.2 -c conda-forge -y
+#RUN conda install ipywidgets=7.1.2 -c conda-forge -y
+RUN conda install ipywidgets -c conda-forge -y
 RUN pip install nglview==1.1.2
 RUN nglview enable # might need this to enable nglview-js-widgets extension for notebook
-RUN conda install jupyterlab=0.31.12 -y -c conda-forge
-RUN jupyter-labextension install @jupyter-widgets/jupyterlab-manager@0.33.2
-RUN jupyter-labextension install nglview-js-widgets@1.1.2
+RUN conda install jupyterlab -y -c conda-forge
+RUN jupyter-labextension install @jupyter-widgets/jupyterlab-manager nglview-js-widgets@1.1.2
+#RUN jupyter-labextension install nglview-js-widgets@1.1.2
 
 ADD cando-build.tgz /home/app/clasp
 ADD tools/dockerfiles/jupyter/kernels /home/app/.local/share/jupyter/kernels

@@ -1,29 +1,5 @@
 (in-package :cc-generate-ast)
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
-;;; Expand local-macro-info definitions
-;;; use the macro WITH-EARLY-ACCESSORS - it creates
-;;; macrolet macros that substitute for functions - this confuses cleavir
-;;; Treat LOCAL-MACRO-INFO function names as globals
-(defmethod cleavir-generate-ast:convert-function
-    ((info cleavir-env:local-macro-info) env (system clasp-cleavir:clasp))
-  (format t "In kernel/cleavir/convert-special.lisp -- cleavir-generate-ast:convert-function for: ~a~%" info)
-  (cleavir-generate-ast:convert-global-function info (cleavir-env:global-environment env) system))
-
-
-
-#+(or)(defmethod cleavir-generate-ast::convert-special
-	  ((symbol (eql 'unwind-protect)) form env)
-	(let* ((ast (cc-ast:make-unwind-protect-ast nil nil))
-	       (new-env (cc-env:add-unwind-protect env ast))
-	       (cleanup-forms (cleavir-generate-ast::convert-sequence (cddr form) env)))
-	  (setf (cc-ast:cleanup-ast ast)
-		(cleavir-ast:make-progn-ast cleanup-forms))
-	  (let ((protected-form (cleavir-generate-ast::convert (cadr form) new-env)))
-	    (setf (cc-ast:protected-ast ast) protected-form)
-	    ast)))
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; Define a "macro" for the Cleavir compiler.
@@ -31,7 +7,7 @@
 ;;; avoid overwriting any bclasp definitions.
 ;;; Don't use &environment or &whole.
 
-(defmacro defsmacro (name lambda-list &body body)
+(defmacro def-ast-macro (name lambda-list &body body)
   (let ((head (gensym "HEAD"))
         (form (gensym "FORM"))
         (environment (gensym "ENVIRONMENT"))
@@ -42,6 +18,18 @@
         (destructuring-bind ,lambda-list (rest ,form) ,@body)
         ,environment ,system))))
 
+(defmacro def-cst-macro (name lambda-list origin &body body)
+  (let ((head (gensym "HEAD"))
+        (form (gensym "FORM"))
+        (environment (gensym "ENVIRONMENT"))
+        (system (gensym "SYSTEM")))
+    `(defmethod cleavir-cst-to-ast:convert-special
+         ((,head (eql ',name)) ,form ,environment (,system clasp-cleavir:clasp))
+       (cleavir-cst-to-ast:convert
+        (cst:db ,origin ,lambda-list (cst:rest ,form) ,@body)
+        ,environment ,system))))
+
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; Converting MULTIPLE-VALUE-CALL.
@@ -50,7 +38,8 @@
 ;;; into a multiple-value-call-ast.  In the general case with multiple forms
 ;;; it gets converted into a function call to CORE:MULTIPLE-VALUE-FUNCALL.
 ;;;
-(defsmacro multiple-value-call (function-form &rest forms)
+
+(def-ast-macro multiple-value-call (function-form &rest forms)
   ;;; Technically we could convert the 0-forms case to FUNCALL, but it's
   ;;; probably not a big deal. (In practice, almost all MULTIPLE-VALUE-CALLs
   ;;; result from MULTIPLE-VALUE-BIND, which uses only have one argument form.)
@@ -60,20 +49,35 @@
         (core::coerce-fdesignator ,function-form)
         ,@(mapcar (lambda (x) `#'(lambda () (progn ,x))) forms))))
 
+(defun cst-length (csts)
+  (loop for remaining = csts then (cst:rest csts)
+        until (cst:null remaining)
+        count 1))
+
+(defmethod cleavir-cst-to-ast:convert-special ((head (eql 'multiple-value-call)) cst env (system clasp-cleavir:clasp))
+  (cleavir-cst-to-ast:convert
+   (destructuring-bind (function-form &rest forms)
+       (cst:raw (cst:rest cst))
+     (cst:reconstruct
+      (if (eql (length forms) 1)
+          `(cleavir-primop:multiple-value-call (core::coerce-fdesignator ,function-form) ,@forms)
+          `(core:multiple-value-funcall
+            (core::coerce-fdesignator ,function-form)
+            ,@(mapcar (lambda (x) `#'(lambda () (progn ,x))) forms)))
+      cst
+      system))
+   env system))
 
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
-;;; Converting MULTIPLE-VALUE-PROG1
-;;;
-;;; This is converted into a call to core:multiple-value-prog1-function func1 func2
-;;; Func1 is evaluated and the multiple values are saved and then func2 is evaluated
-;;; and the multiple values returned from func1 are restored
-;;;
-(defsmacro multiple-value-prog1 (first-form &rest forms)
-  (if (null forms) ; skip it. This can come up in generated code, e.g. method combinations
-      first-form
-      `(core:multiple-value-prog1-function (lambda () (progn ,first-form)) (lambda () (progn ,@forms)))))
+#+(or)(def-cst-macro multiple-value-call (function-form . csts) origin
+  (if (eql (cst-length csts) 1)
+      (my-cstify origin `(cleavir-primop:multiple-value-call (core::coerce-fdesignator ,function-form) ,@csts))
+      (my-cstify origin `(core:multiple-value-funcall
+                          (core::coerce-fdesignator ,function-form)
+                          ,@(loop for remaining = csts then (cst:rest csts)
+                                  for x = (cst:first remaining)
+                                  collect `#'(lambda () (progn ,x)))))))
+
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -104,6 +108,8 @@
   (cleavir-code-utilities:check-form-proper-list form)
   (cleavir-code-utilities:check-argcount form 1 1))
 
+
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; Converting CORE:multiple-value-foreign-CALL
@@ -116,6 +122,14 @@
   (make-instance 'clasp-cleavir-ast:multiple-value-foreign-call-ast
                  :function-name (second form)
                  :argument-asts (cleavir-generate-ast:convert-sequence (cddr form) environment system)))
+
+(defmethod cleavir-cst-to-ast::convert-special
+    ((symbol (eql 'core:multiple-value-foreign-call)) cst environment (system clasp-cleavir:clasp))
+  (check-type (cst:raw (cst:second cst)) string)
+  (make-instance 'clasp-cleavir-ast:multiple-value-foreign-call-ast
+                 :function-name (cst:raw (cst:second cst))
+                 :argument-asts (cleavir-cst-to-ast::convert-sequence (cst:rest (cst:rest cst)) environment system)
+                 :origin (cst:source cst)))
 
 (defmethod cleavir-generate-ast::check-special-form-syntax ((head (eql 'core:multiple-value-foreign-call)) form)
   (cleavir-code-utilities:check-form-proper-list form)
@@ -137,6 +151,17 @@
                  :function-name (third form)
                  :argument-asts (cleavir-generate-ast:convert-sequence (cdddr form) environment system)))
 
+(defmethod cleavir-cst-to-ast::convert-special
+    ((symbol (eql 'core:foreign-call)) cst environment (system clasp-cleavir:clasp))
+                                        ;  (format t "convert-special form: ~a~%"  cst)
+  (check-type (cst:raw (cst:second cst)) list)
+  (check-type (cst:raw (cst:third cst)) string)
+  (make-instance 'clasp-cleavir-ast:foreign-call-ast
+                 :foreign-types (cst:raw (cst:second cst))
+                 :function-name (cst:raw (cst:third cst))
+                 :argument-asts (cleavir-cst-to-ast::convert-sequence (cst:rest (cst:rest (cst:rest cst))) environment system)
+                 :origin (source cst)))
+
 (defmethod cleavir-generate-ast::check-special-form-syntax ((head (eql 'core:foreign-call)) form)
   (cleavir-code-utilities:check-form-proper-list form)
   (cleavir-code-utilities:check-argcount form 2 nil))
@@ -156,6 +181,15 @@
                  :foreign-types (second form)
                  :argument-asts (cleavir-generate-ast:convert-sequence (cddr form) environment system)))
 
+(defmethod cleavir-cst-to-ast::convert-special
+    ((symbol (eql 'core:foreign-call-pointer)) cst environment (system clasp-cleavir:clasp))
+;  (format t "convert-special cst: ~a~%"  cst)
+  (check-type (cst:raw (cst:second cst)) list)
+  (make-instance 'clasp-cleavir-ast:foreign-call-pointer-ast
+                 :foreign-types (cst:raw (cst:second cst))
+                 :argument-asts (cleavir-cst-to-ast::convert-sequence (cst:rest (cst:rest cst)) environment system)
+                 :origin (source cst)))
+
 (defmethod cleavir-generate-ast::check-special-form-syntax ((head (eql 'core:foreign-call-pointer)) form)
   (cleavir-code-utilities:check-form-proper-list form)
   (cleavir-code-utilities:check-argcount form 2 nil))
@@ -172,6 +206,13 @@
   (destructuring-bind (vector) (rest form)
     (make-instance 'clasp-cleavir-ast::vector-length-ast
                    :vector (cleavir-generate-ast:convert vector environment system))))
+
+(defmethod cleavir-cst-to-ast::convert-special
+    ((symbol (eql 'core::vector-length)) cst environment (system clasp-cleavir:clasp))
+  (cst:db origin (vector) (cst:rest cst)
+    (make-instance 'clasp-cleavir-ast::vector-length-ast
+                   :vector (cleavir-cst-to-ast:convert vector environment system)
+                   :origin origin)))
 
 (defmethod cleavir-generate-ast:check-special-form-syntax ((head (eql 'core::vector-length)) form)
   (cleavir-code-utilities:check-form-proper-list form)
@@ -191,6 +232,13 @@
     (make-instance 'clasp-cleavir-ast::displacement-ast
                    :mdarray (cleavir-generate-ast:convert mdarray environment system))))
 
+(defmethod cleavir-cst-to-ast:convert-special
+    ((symbol (eql 'core::%displacement)) cst environment (system clasp-cleavir:clasp))
+  (cst:db origin (mdarray) (cst:rest cst)
+    (make-instance 'clasp-cleavir-ast::displacement-ast
+                   :mdarray (cleavir-cst-to-ast:convert mdarray environment system)
+                   :origin origin)))
+
 (defmethod cleavir-generate-ast:check-special-form-syntax ((head (eql 'core::%displacement)) form)
   (cleavir-code-utilities:check-form-proper-list form)
   (cleavir-code-utilities:check-argcount form 1 1))
@@ -208,6 +256,14 @@
   (destructuring-bind (mdarray) (rest form)
     (make-instance 'clasp-cleavir-ast::displaced-index-offset-ast
                    :mdarray (cleavir-generate-ast:convert mdarray environment system))))
+
+
+(defmethod cleavir-cst-to-ast:convert-special
+    ((symbol (eql 'core::%displaced-index-offset)) cst environment (system clasp-cleavir:clasp))
+  (cst:db origin (mdarray) (cst:rest cst)
+    (make-instance 'clasp-cleavir-ast::displaced-index-offset-ast
+                   :mdarray (cleavir-cst-to-ast:convert mdarray environment system)
+                   :origin origin)))
 
 (defmethod cleavir-generate-ast:check-special-form-syntax ((head (eql 'core::%displaced-index-offset)) form)
   (cleavir-code-utilities:check-form-proper-list form)
@@ -227,6 +283,13 @@
     (make-instance 'clasp-cleavir-ast::array-total-size-ast
                    :mdarray (cleavir-generate-ast:convert mdarray environment system))))
 
+(defmethod cleavir-cst-to-ast:convert-special
+    ((symbol (eql 'core::%array-total-size)) cst environment (system clasp-cleavir:clasp))
+  (cst:db origin (mdarray) (cst:rest cst)
+    (make-instance 'clasp-cleavir-ast::array-total-size-ast
+                   :mdarray (cleavir-cst-to-ast:convert mdarray environment system)
+                   :origin origin)))
+
 (defmethod cleavir-generate-ast:check-special-form-syntax ((head (eql 'core::%array-total-size)) form)
   (cleavir-code-utilities:check-form-proper-list form)
   (cleavir-code-utilities:check-argcount form 1 1))
@@ -241,6 +304,13 @@
   (destructuring-bind (mdarray) (rest form)
     (make-instance 'clasp-cleavir-ast::array-rank-ast
                    :mdarray (cleavir-generate-ast:convert mdarray environment system))))
+
+(defmethod cleavir-cst-to-ast:convert-special
+    ((symbol (eql 'core::%array-rank)) cst environment (system clasp-cleavir:clasp))
+  (cst:db origin (mdarray) (cst:rest cst)
+    (make-instance 'clasp-cleavir-ast::array-rank-ast
+                   :mdarray (cleavir-cst-to-ast:convert mdarray environment system)
+                   :origin origin)))
 
 (defmethod cleavir-generate-ast:check-special-form-syntax ((head (eql 'core::%array-rank)) form)
   (cleavir-code-utilities:check-form-proper-list form)
@@ -258,6 +328,14 @@
                    :mdarray (cleavir-generate-ast:convert mdarray environment system)
                    :axis (cleavir-generate-ast:convert axis environment system))))
 
+(defmethod cleavir-cst-to-ast:convert-special
+    ((symbol (eql 'core::%array-dimension)) cst environment (system clasp-cleavir:clasp))
+  (cst:db origin (mdarray axis) (cst:rest cst)
+    (make-instance 'clasp-cleavir-ast::array-dimension-ast
+                   :mdarray (cleavir-cst-to-ast:convert mdarray environment system)
+                   :axis (cleavir-cst-to-ast:convert axis environment system)
+                   :origin origin)))
+
 (defmethod cleavir-generate-ast:check-special-form-syntax ((head (eql 'core::%array-dimension)) form)
   (cleavir-code-utilities:check-form-proper-list form)
   (cleavir-code-utilities:check-argcount form 2 2))
@@ -267,8 +345,17 @@
 ;;; Converting CATCH
 ;;;
 ;;; Convert catch into a call
-(defsmacro catch (tag &body body)
+
+(defmacro catch (tag &body body)
   `(core:catch-function ,tag (lambda () (declare (core:lambda-name catch-lambda)) (progn ,@body))))
+
+#+(or)
+(progn
+  (def-ast-macro catch (tag &body body)
+    `(core:catch-function ,tag (lambda () (declare (core:lambda-name catch-lambda)) (progn ,@body))))
+
+  (def-cst-macro catch (tag . body) origin
+    (reinitialize-instance (cst:cst-from-expression `(core:catch-function ,tag (lambda () (declare (core:lambda-name catch-lambda)) (progn ,@body)))) :source origin)))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -288,16 +375,18 @@
      (cleavir-generate-ast::convert tag environment system)
      (cleavir-generate-ast::convert result-form environment system))))
 
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
-;;; Converting CL:PROGV
-;;;
-;;; Convert this into a function call
-(defsmacro progv (symbols values &body forms)
-  `(core:progv-function ,symbols ,values (lambda () (progn ,@forms))))
-
+(defmethod cleavir-cst-to-ast::convert-special
+    ((symbol (eql 'cl:throw)) cst environment (system clasp-cleavir:clasp))
+  (cst:db origin (tag result-cst) 
+      (cst:rest cst)
+    ;; If I don't use a throw-ast node use the following
+    #+(or)
+    (cleavir-cst-to-ast::convert `(core:throw-function ,tag ,result-cst) environment system)
+    ;; If I decide to go with a throw-ast node use the following
+    (clasp-cleavir-ast:make-throw-ast
+     (cleavir-cst-to-ast::convert tag environment system)
+     (cleavir-cst-to-ast::convert result-cst environment system)
+     origin)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -307,7 +396,7 @@
 (defmethod cleavir-generate-ast:convert-special
     ((symbol (eql 'core::bind-va-list)) form environment (system clasp-cleavir:clasp))
   (cleavir-generate-ast:db origin (op lambda-list va-list-form . body) form
-    (declare (ignore op))
+    (declare (ignore op origin))
     (let* ((parsed-lambda-list
              (cleavir-code-utilities:parse-ordinary-lambda-list lambda-list))
            (required (cleavir-code-utilities:required parsed-lambda-list)))
@@ -335,6 +424,43 @@
                 (cleavir-generate-ast::convert va-list-form environment system)
                 ast))))))))
 
+(defmethod cleavir-cst-to-ast:convert-special
+    ((symbol (eql 'core::bind-va-list)) cst environment (system clasp-cleavir:clasp))
+  (cst:db origin (op lambda-list-cst va-list-cst . body-cst) cst
+          (declare (ignore op origin))
+          (let* ((parsed-lambda-list
+                   (cst:parse-ordinary-lambda-list system lambda-list-cst :error-p nil)))
+            (when (null parsed-lambda-list)
+              (error 'cleavir-cst-to-ast::malformed-lambda-list
+                     :expr (cst:raw lambda-list-cst)
+                     :origin (cst:source lambda-list-cst)))
+            (multiple-value-bind (declaration-csts documentation form-csts)
+                (cst:separate-function-body body-cst)
+              (declare (ignore documentation))
+              (let* ((declaration-specifiers
+                       (loop for declaration-cst in declaration-csts
+                             append (cdr (cst:listify declaration-cst))))
+                     (canonicalized-dspecs
+                       (cst:canonicalize-declaration-specifiers
+                        system
+                        declaration-specifiers)))
+                (multiple-value-bind (idspecs rdspecs)
+                    (cleavir-cst-to-ast::itemize-declaration-specifiers-by-parameter-group
+                     (cleavir-cst-to-ast::itemize-lambda-list parsed-lambda-list)
+                     canonicalized-dspecs)
+                  (multiple-value-bind (ast lexical-lambda-list)
+                      (cleavir-cst-to-ast::process-parameter-groups
+                       (cst:children parsed-lambda-list)
+                       idspecs
+                       (cleavir-cst-to-ast::make-body rdspecs form-csts nil)
+                       environment
+                       system)
+                    (cc-ast:make-bind-va-list-ast
+                     lexical-lambda-list
+                     (cleavir-cst-to-ast::convert va-list-cst environment system)
+                     ast
+                     :origin origin))))))))
+
 (defmethod cleavir-generate-ast:check-special-form-syntax
     ((head (eql 'core::bind-va-list)) form)
   (cleavir-code-utilities:check-form-proper-list form)
@@ -348,9 +474,26 @@
     (cond 
       ((and (consp name) (eq (car name) 'cl:setf))
        (clasp-cleavir-ast:make-setf-fdefinition-ast
-	(cleavir-ast:make-load-time-value-ast `',(cadr name) t)))
+        (cleavir-ast:make-load-time-value-ast `',(cadr name) t)))
       ((consp name)
        (error "Illegal name for function - must be (setf xxx)"))
       (t
        (cleavir-ast:make-fdefinition-ast
-	(cleavir-ast:make-load-time-value-ast `',name t))))))
+        (cleavir-ast:make-load-time-value-ast `',name t))))))
+
+(defmethod cleavir-cst-to-ast:convert-global-function-reference (cst info global-env (system clasp-cleavir:clasp))
+  (declare (ignore global-env))
+  (let ((name (cleavir-env:name info)))
+    (cond 
+      ((and (consp name) (eq (car name) 'cl:setf))
+       (clasp-cleavir-ast:make-setf-fdefinition-ast
+        (cleavir-ast:make-load-time-value-ast `',(cadr name)
+                                              t
+                                              :origin (cst:source cst))))
+      ((consp name)
+       (error "Illegal name for function - must be (setf xxx)"))
+      (t
+       (cleavir-ast:make-fdefinition-ast
+        (cleavir-ast:make-load-time-value-ast `',name
+                                              t
+                                              :origin (cst:source cst)))))))

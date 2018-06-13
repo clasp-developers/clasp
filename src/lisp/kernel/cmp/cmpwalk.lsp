@@ -68,6 +68,5 @@ Returns T if walked, NIL if not (if errorp NIL)."
                   nil))))
     t))
 
-
 (export '(code-walk code-walk-using-bclasp))
 

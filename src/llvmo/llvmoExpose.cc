@@ -1113,6 +1113,17 @@ void Module_O::initialize() {
   this->_UniqueGlobalVariableStrings = core::HashTableEqual_O::create_default();
 }
 
+CL_DEFMETHOD void Module_O::emit_version_ident_metadata()
+{
+  llvm::Module& TheModule = *this->wrappedPtr();
+  llvm::NamedMDNode *IdentMetadata =
+    TheModule.getOrInsertNamedMetadata("llvm.ident");
+  std::string Version = "Clasp";
+  llvm::LLVMContext &Ctx = TheModule.getContext();
+  llvm::Metadata *IdentNode[] = {llvm::MDString::get(Ctx, Version)};
+  IdentMetadata->addOperand(llvm::MDNode::get(Ctx, IdentNode));
+}
+
 CL_LISPIFY_NAME("getOrCreateUniquedStringGlobalVariable");
 CL_DEFMETHOD GlobalVariable_sp Module_O::getOrCreateUniquedStringGlobalVariable(const string &value, const string &name) {
   core::SimpleBaseString_sp nameKey = core::SimpleBaseString_O::make(name);
@@ -2028,6 +2039,13 @@ CL_DEFMETHOD core::T_sp IRBuilderBase_O::getInsertPointInstruction() {
 }
 
 
+CL_LISPIFY_NAME("ClearCurrentDebugLocation");
+CL_DEFMETHOD void IRBuilderBase_O::ClearCurrentDebugLocation() {
+  this->_CurrentDebugLocationSet = false;
+  llvm::DebugLoc dl;
+  this->wrappedPtr()->SetCurrentDebugLocation(dl);
+}
+
 CL_LISPIFY_NAME("SetCurrentDebugLocation");
 CL_DEFMETHOD void IRBuilderBase_O::SetCurrentDebugLocation(DebugLoc_sp loc) {
   //	llvm::DebugLoc dlold = this->wrappedPtr()->getCurrentDebugLocation();
@@ -2512,6 +2530,9 @@ CL_EXTERN_DEFMETHOD(Function_O, (void (llvm::Function::*)(unsigned i, typename l
 CL_LISPIFY_NAME("addParamAttr");
 CL_EXTERN_DEFMETHOD(Function_O, (void (llvm::Function::*)(unsigned i, typename llvm::Attribute::AttrKind Attr))&llvm::Function::addParamAttr);
 
+CL_LISPIFY_NAME("setSubprogram");
+CL_EXTERN_DEFMETHOD(Function_O, (void (llvm::Function::*)(llvm::DISubprogram*))&llvm::Function::setSubprogram);
+
 CL_LISPIFY_NAME("addReturnAttr");
 CL_DEFMETHOD void Function_O::addReturnAttr(typename llvm::Attribute::AttrKind Attr) {
   this->wrappedPtr()->addAttribute(llvm::AttributeList::ReturnIndex, Attr);
@@ -2589,7 +2610,7 @@ CL_LISPIFY_NAME(addFnAttr2String);
 CL_EXTERN_DEFMETHOD(Function_O, (void (llvm::Function::*)(llvm::StringRef,llvm::StringRef)) & llvm::Function::addFnAttr);;
 ;
 
-
+#if 0
 CL_LISPIFY_NAME("setLiterals");
 CL_DEFMETHOD void Function_O::setLiterals(core::LoadTimeValues_sp ltv) {
   this->_RunTimeValues = ltv;
@@ -2599,6 +2620,7 @@ CL_LISPIFY_NAME("literals");
 CL_DEFMETHOD core::LoadTimeValues_sp Function_O::literals() const {
   return this->_RunTimeValues;
 }
+#endif
 
 }; // llvmo
 

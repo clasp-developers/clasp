@@ -22,7 +22,7 @@
     (let* ((class (find-class class-symbol))
 	   (supers-names (mapcar #'(lambda (x) (class-name x))
                                  (clos:direct-superclasses class))))
-;;      (bformat *debug-io* "add-cxx-class -> %s\n" class)
+;;      (bformat *debug-io* "add-cxx-class -> %s%N" class)
       (ensure-boot-class class-symbol :metaclass 'core:cxx-class ;; was 'builtin-class
                          :direct-superclasses supers-names)
       (finalize-inheritance class)))

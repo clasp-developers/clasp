@@ -17,24 +17,25 @@
 (defgeneric convert-constant-to-immediate (constant system))
 
 (defmethod convert-constant-to-immediate (constant system)
-  (cleavir-generate-ast:convert-constant-to-immediate
-   constant *clasp-env* system))
+  (cleavir-generate-ast:convert-constant-to-immediate constant *clasp-env* system))
 
 
 (defun replace-constant-with-lexical (initial-instruction input env)
   (loop for instr in (cleavir-ir:using-instructions input)
-        do (let* ((index-input (cleavir-ir:make-immediate-input
-                                (clasp-cleavir-ast::generate-new-precalculated-value-index
-                                 env
-                                 `',(cleavir-ir:value input)
-                                 t #|constant-value are read-only-p|#)))
-                  (cleavir-ir:*policy* (cleavir-ir:policy instr)) 
-                  (pvi (clasp-cleavir-hir:make-precalc-value-instruction
-                        index-input
-                        input
+        do (let ((index (clasp-cleavir-ast::generate-new-precalculated-value-index
+                         env
+                         `',(cleavir-ir:value input)
+                         t #|constant-value are read-only-p|#)))
+             (check-type index clasp-cleavir:arrayed-literal)
+             (let* ((index-input (cleavir-ir:make-immediate-input
+                                  index))
+                    (cleavir-ir:*policy* (cleavir-ir:policy instr)) 
+                    (pvi (clasp-cleavir-hir:make-precalc-value-instruction
+                          index-input
+                          input
 ;;;                       :successor instr
-                        :original-object `',(cleavir-ir:value input))))
-             (cleavir-ir:insert-instruction-before pvi instr)))
+                          :original-object `',(cleavir-ir:value input))))
+               (cleavir-ir:insert-instruction-before pvi instr))))
   (let ((new-sym (gensym "CV")))
     (change-class input 'cleavir-ir:lexical-location
                   :name new-sym)))
@@ -50,22 +51,24 @@
 
 (defun replace-load-time-value-with-lexical (initial-instruction input env)
   (loop for instr in (cleavir-ir:using-instructions input)
-     do (let* ((index-input (cleavir-ir:make-immediate-input
-                             (clasp-cleavir-ast::generate-new-precalculated-value-index
+     do (let ((index (clasp-cleavir-ast::generate-new-precalculated-value-index
                               env
                               (cleavir-ir:form input)
                               (cleavir-ir:read-only-p input))))
-               (cleavir-ir:*policy* (cleavir-ir:policy instr)) 
-               (pvi (clasp-cleavir-hir:make-precalc-value-instruction
-                     index-input
-                     input
-                     :successor instr
-                     :original-object (cleavir-ir:form input))))
-          (cleavir-ir:insert-instruction-before pvi instr)))
+          (let* ((index-input (cleavir-ir:make-immediate-input
+                               index))
+                 (cleavir-ir:*policy* (cleavir-ir:policy instr)) 
+                 (pvi (clasp-cleavir-hir:make-precalc-value-instruction
+                       index-input
+                       input
+                       :successor instr
+                       :original-object (cleavir-ir:form input))))
+            (cleavir-ir:insert-instruction-before pvi instr))))
   (change-class input 'cleavir-ir:lexical-location
                 :name (gensym)))
 
 (defun replace-load-time-value-with-immediate (value input)
+  (check-type value integer)
   (change-class input 'cleavir-ir:immediate-input :value value))
 
 (defun eliminate-load-time-value-input (initial-instruction input system env)

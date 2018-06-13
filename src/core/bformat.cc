@@ -44,7 +44,7 @@ namespace core {
 CL_LAMBDA(destination control &rest args);
 CL_DECLARE();
 CL_DOCSTRING("Like CL format but uses C/boost format strings");
-CL_DEFUN T_sp core__bformat(T_sp destination, const string &control, List_sp args) {
+CL_DEFUN T_sp core__bformat(T_sp destination, const string &original_control, List_sp args) {
   T_sp output;
   if (destination.nilp()) {
     output = my_thread->bformatStringOutputStream();
@@ -52,6 +52,21 @@ CL_DEFUN T_sp core__bformat(T_sp destination, const string &control, List_sp arg
     output = destination;
   } else {
     output = coerce::outputStreamDesignator(destination);
+  }
+  std::stringstream scontrol;
+  std::string control;
+  if (original_control.size()>1) {
+    for ( int i(0); i<original_control.size(); ++i ) {
+      if (original_control[i] == '%' && original_control[i+1] == 'N') {
+        scontrol << '\n';
+        ++i;
+      } else {
+        scontrol << original_control[i];
+      }
+    }
+    control = scontrol.str();
+  } else {
+    control = original_control;
   }
   boost::format fmter(control);
   string fmter_str;

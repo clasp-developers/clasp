@@ -106,6 +106,8 @@ namespace core {
     virtual LambdaListHandler_sp lambdaListHandler() const = 0;
     virtual T_sp lambda_list() const = 0;
     virtual string __repr__() const;
+    CL_DEFMETHOD virtual T_mv function_description() const {SUBIMP();};
+    CL_DEFMETHOD virtual T_sp function_literal_vector_copy() const {SUBIMP();};
     virtual ~Function_O() {};
   };
 };
@@ -214,6 +216,8 @@ namespace core {
     virtual List_sp declares() const {NOT_APPLICABLE();};
     virtual T_sp docstring() const {NOT_APPLICABLE();};
     virtual T_sp closedEnvironment() const { return _Nil<T_O>();};
+    virtual T_mv function_description() const;
+    virtual T_sp function_literal_vector_copy() const;
   };
 
   class BuiltinClosure_O : public FunctionClosure_O {
@@ -240,6 +244,7 @@ namespace core {
     LambdaListHandler_sp lambdaListHandler() const { return this->_lambdaListHandler; };
     T_sp docstring() const { return this->_docstring; };
     List_sp declares() const { return this->_declares; };
+    virtual T_mv function_description() const;
   };
 
 }
@@ -257,7 +262,8 @@ namespace core {
 #define INTERPRETED_CLOSURE_LAMBDA_LIST_HANDLER_SLOT 2
 #define BCLASP_CLOSURE_SLOTS  1
 #define BCLASP_CLOSURE_ENVIRONMENT_SLOT ENVIRONMENT_SLOT
-public:
+  public:
+    void* _FunctionDescription;
     core::T_sp _lambdaList;
     ClosureType   closureType;
   //! Slots must be the last field
@@ -274,6 +280,7 @@ public:
       ClosureWithSlots_sp closure =
         gctools::GC<core::ClosureWithSlots_O>::allocate_container(INTERPRETED_CLOSURE_SLOTS,
                                                                   &interpretedClosureEntryPoint,
+                                                                  (void*)NULL,
                                                                   name,
                                                                   type,
                                                                   lambda_list,
@@ -291,11 +298,12 @@ public:
     static ClosureWithSlots_sp make_bclasp_closure(T_sp name, claspFunction ptr, T_sp type, T_sp lambda_list, T_sp environment, SOURCE_INFO) {
       ClosureWithSlots_sp closure = 
         gctools::GC<core::ClosureWithSlots_O>::allocate_container(BCLASP_CLOSURE_SLOTS,
-                                                                         ptr,
-                                                                         name,
-                                                                         type,
-                                                                         lambda_list,
-                                                                         SOURCE_INFO_PASS);
+                                                                  ptr,
+                                                                  (void*)NULL,
+                                                                  name,
+                                                                  type,
+                                                                  lambda_list,
+                                                                  SOURCE_INFO_PASS);
       closure->closureType = bclaspClosure;
       (*closure)[BCLASP_CLOSURE_ENVIRONMENT_SLOT] = environment;
       return closure;
@@ -304,6 +312,7 @@ public:
       ClosureWithSlots_sp closure = 
         gctools::GC<core::ClosureWithSlots_O>::allocate_container(0,
                                                                   ptr,
+                                                                  (void*)NULL,
                                                                   name,
                                                                   type,
                                                                   lambda_list,
@@ -314,11 +323,13 @@ public:
   public:
   ClosureWithSlots_O(size_t capacity,
                      claspFunction ptr,
+                     void* functionDescription,
                      core::T_sp functionName,
                      core::Symbol_sp type,
                      core::T_sp ll,
                      SOURCE_INFO)
     : Base(ptr,functionName, type, SOURCE_INFO_PASS),
+      _FunctionDescription(functionDescription),
       _lambdaList(ll),
       closureType(cclaspClosure),
       _Slots(capacity,_Unbound<T_O>(),true) {};
@@ -359,6 +370,8 @@ public:
       return this->_Slots[idx];
     };
     T_sp code() const;
+    virtual T_mv function_description() const final;
+    virtual T_sp function_literal_vector_copy() const final;
   };
 };
 

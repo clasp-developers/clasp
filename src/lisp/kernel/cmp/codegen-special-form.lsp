@@ -18,7 +18,6 @@
     (tagbody codegen-tagbody convert-tagbody)
     (go codegen-go convert-go)
     (multiple-value-call  codegen-multiple-value-call convert-multiple-value-call)
-    (multiple-value-prog1  codegen-multiple-value-prog1 convert-multiple-value-prog1)
     (flet  codegen-flet convert-flet)
     (labels  codegen-labels convert-labels)
     (eval-when  codegen-eval-when convert-eval-when)
@@ -35,7 +34,6 @@
     (llvm-inline codegen-llvm-inline convert-llvm-inline)
     (:gc-profiling codegen-gc-profiling convert-gc-profiling)
     (core::debug-message codegen-debug-message convert-debug-message)
-    (progv codegen-progv convert-progv)
     ))
 
 (defun make-dispatch-table (alist)
@@ -59,12 +57,17 @@
       (compile-lambda-function lambda-or-lambda-block env)
     (if (null lambda-name) (error "The lambda doesn't have a name"))
     (if result
-        (let ((lambda-list (irc-load (compile-reference-to-literal lambda-list))))
+        (let* ((lambda-list (irc-load (compile-reference-to-literal lambda-list)))
+               (llvm-function-name (llvm-sys:get-name compiled-fn))
+               (function-description (llvm-sys:get-named-global *the-module* (function-description-name compiled-fn))))
+          (unless function-description
+            (error "Could not find function-description for function name: ~a lambda: ~a" llvm-function-name lambda-or-lambda-block))
           ;; TODO:   Here walk the source code in lambda-or-lambda-block and
           ;; get the line-number/column for makeCompiledFunction
           (let* ((runtime-environment (irc-load (irc-renv env)))
                  (fnptr (irc-intrinsic "makeCompiledFunction" 
                                        compiled-fn
+                                       (cmp:irc-bit-cast function-description %i8*%)
                                        *gv-source-file-info-handle* 
                                        (irc-size_t-*current-source-pos-info*-filepos)
                                        (irc-size_t-*current-source-pos-info*-lineno)
@@ -108,7 +111,7 @@
   (let ((name-or-lambda (car rest)))
     (assert-result-isa-llvm-value result)
     (dbg-set-current-debug-location-here)
-    (cmp-log "About to codegen-function for: %s\n" name-or-lambda)
+    (cmp-log "About to codegen-function for: %s%N" name-or-lambda)
     (cond
       ((and name-or-lambda (symbolp name-or-lambda))
        (codegen-function-symbol-lookup result name-or-lambda env))
@@ -126,8 +129,8 @@
 
 (defun codegen-progn (result forms env)
   "Evaluate forms discarding results but keep last one"
-  (cmp-log "About to codegen-progn with forms: %s\n" forms)
-  (cmp-log "Dumping the module\n")
+  (cmp-log "About to codegen-progn with forms: %s%N" forms)
+  (cmp-log "Dumping the module%N")
   (cmp-log-dump-module *the-module*)
   (if forms
       (let ((temp-val (irc-alloca-t* :label "temp")))
@@ -173,27 +176,8 @@
 
 ;;; PROGV
 
-(defun codegen-progv (result args env)
-  (cmp-log "Started codegen-progv\n")
-  (let ((symbols (car args))
-	(values (cadr args))
-	(forms (cddr args))
-	(evaluated-symbols (irc-alloca-t* :label "symbols"))
-	(evaluated-values (irc-alloca-t* :label "values"))
-	(save-specials (irc-alloca-i8* :label "specials")))
-    (cmp-log "Evaluating symbols: %s\n" symbols)
-    (codegen evaluated-symbols symbols env)
-    (cmp-log "Evaluating values: %s\n" values)
-    (codegen evaluated-values values env)
-    (cmp-log "About to setup evaluation of forms env: %s\n" env)
-    (with-try
-      (progn
-	(cmp-log "About to call progvSaveSpecials\n")
-	(irc-intrinsic "progvSaveSpecials" save-specials (irc-load evaluated-symbols) (irc-load evaluated-values))
-	(cmp-log "About to codegen-progn with: %s\n" forms)
-	(codegen-progn result forms env))
-      ((cleanup)
-       (irc-intrinsic "progvRestoreSpecials" save-specials)))))
+(defmacro progv (symbols values &body forms)
+  `(core:progv-function ,symbols ,values (lambda () (progn ,@forms))))
 
 ;; MULTIPLE-VALUE-CALL
 
@@ -217,17 +201,13 @@
 
 ;;; MULTIPLE-VALUE-PROG1
 
-(defun codegen-multiple-value-prog1 (result rest env)
-  (with-dbg-lexical-block (rest)
-    (let ((first-form (car rest))
-          (forms (cdr rest)))
-      (if (null forms)
-          ;; trivial case
-          (codegen result first-form env)
-          (codegen result `(core:multiple-value-prog1-function
-                            (lambda () ,first-form)
-                            (lambda () (progn ,@forms)))
-                   env)))))
+(defmacro multiple-value-prog1 (first-form &rest forms)
+  (if (null forms) ; triviality check
+      first-form
+      `(core:multiple-value-prog1-function
+        ;; progn is to make sure code like (multiple-value-prog1 (declare ...)) fails right.
+        (lambda () (progn ,first-form))
+        (lambda () (progn ,@forms)))))
 
 (defun codegen-special-var-reference (var &optional env)
   (irc-intrinsic "symbolValueReference" (irc-global-symbol var env) (bformat nil "<special-var:%s>" (symbol-name var) )))
@@ -242,12 +222,12 @@
 	      (cur-var (car cur) (car cur))
 	      (cur-expr (cadr cur) (cadr cur)))
 	     ((endp cur) nil)
-	  (cmp-log "Compiling setq for target[%s]\n" cur-var)
+	  (cmp-log "Compiling setq for target[%s]%N" cur-var)
 	  (let ((expanded (macroexpand cur-var env)))
 	    (if (eq expanded cur-var)
 		;; symbol was not macroexpanded use SETQ
 		(progn
-		  (cmp-log "The symbol[%s] was not macroexpanded - using SETQ to set it\n" cur-var)
+		  (cmp-log "The symbol[%s] was not macroexpanded - using SETQ to set it%N" cur-var)
 		  (let* ((classified (variable-info env cur-var))
 			 (target-ref
                            (cond
@@ -269,7 +249,7 @@
 		    (irc-store temp-res target-ref))) ;;(irc-intrinsic "copyTsp" target-ref temp-res)))
 		;; symbol was macroexpanded use SETF
 		(progn
-		  (cmp-log "The symbol[%s] was macroexpanded to result[%s] setting with SETF\n" cur-var expanded)
+		  (cmp-log "The symbol[%s] was macroexpanded to result[%s] setting with SETF%N" cur-var expanded)
 		  (codegen temp-res `(setf ,expanded ,cur-expr) env))))
 	  (unless (cddr cur)
 	    (irc-store temp-res result)))
@@ -311,7 +291,7 @@ env is the parent environment of the (result-af) value frame"
 	  (dbg-set-current-source-pos exp)
 	  (codegen temp exp evaluate-env))
 	;; Now generate code for let
-	(cmp-log "About to generate code for exps: %s\n" exps)
+	(cmp-log "About to generate code for exps: %s%N" exps)
 	(do* ((cur-req (cdr reqvars) (cdr cur-req))
 	      (classified-target (car cur-req) (car cur-req))
 	      (tempidx 0 (1+ tempidx)))
@@ -326,10 +306,10 @@ env is the parent environment of the (result-af) value frame"
   "Evaluate each of the exps in the evaluate-env environment
 and put the values into the activation frame for new-env.
 env is the parent environment of the (result-af) value frame"
-  (cmp-log "entered codegen-fill-let*-environment\n")
-  (cmp-log "   new-env -> %s\n" new-env)
-  (cmp-log "   parent-env -> %s\n" parent-env)
-  (cmp-log "   evaluate-env -> %s\n" evaluate-env)
+  (cmp-log "entered codegen-fill-let*-environment%N")
+  (cmp-log "   new-env -> %s%N" new-env)
+  (cmp-log "   parent-env -> %s%N" parent-env)
+  (cmp-log "   evaluate-env -> %s%N" evaluate-env)
   (multiple-value-bind (reqvars)
       (process-lambda-list-handler lambda-list-handler)
     (let ((number-of-lexical-vars (number-of-lexical-variables lambda-list-handler))
@@ -345,7 +325,7 @@ env is the parent environment of the (result-af) value frame"
 	   ((endp cur-req) nil)
 	(compile-save-if-special new-env classified-target))
       ;; Now generate code for let
-      (cmp-log "About to generate code for exps: %s\n" exps)
+      (cmp-log "About to generate code for exps: %s%N" exps)
       (do* ((cur-req (cdr reqvars) (cdr cur-req))
 	    (classified-target (car cur-req) (car cur-req))
 	    (cur-exp exps (cdr cur-exp))
@@ -365,7 +345,7 @@ env is the parent environment of the (result-af) value frame"
 	  (separate-pair-list assignments)
 	(multiple-value-bind (declares code docstring specials )
 	    (process-declarations body t)
-	  (cmp-log "About to create lambda-list-handler\n")
+	  (cmp-log "About to create lambda-list-handler%N")
 	  (dbg-set-current-debug-location-here)
 	  (let* ((lambda-list-handler (make-lambda-list-handler variables declares 'core::function))
 		 (new-env (irc-new-unbound-value-environment-of-size
@@ -389,7 +369,7 @@ env is the parent environment of the (result-af) value frame"
                   (if (eq operator-symbol 'let)
                       (codegen-fill-let-environment new-env lambda-list-handler expressions env evaluate-env)
                       (codegen-fill-let*-environment new-env lambda-list-handler expressions env evaluate-env))
-                  (cmp-log "About to evaluate codegen-progn\n")
+                  (cmp-log "About to evaluate codegen-progn%N")
                   (codegen-progn result code new-env))
 	      ((cleanup)
                ;;               (dbg-set-activation-frame-for-ihs-top (irc-renv new-env))
@@ -397,7 +377,7 @@ env is the parent environment of the (result-af) value frame"
 	       ))
 	    )
 	  ))))
-  (cmp-log "Done codegen-let/let*\n"))
+  (cmp-log "Done codegen-let/let*%N"))
 
 (defun codegen-let (result rest env)
   (codegen-let/let* 'let result rest env))
@@ -481,7 +461,7 @@ jump to blocks within this tagbody."
       (irc-store instruction (irc-renv tagbody-env))
       (irc-low-level-trace :tagbody)
       (setf-metadata tagbody-env 'tagbody-function *current-function*)
-      (cmp-log "codegen-tagbody tagbody environment: %s\n" tagbody-env)
+      (cmp-log "codegen-tagbody tagbody environment: %s%N" tagbody-env)
       (let ((handle (irc-intrinsic "initializeTagbodyClosure" (irc-renv tagbody-env))))
         #+optimize-bclasp
         (setf (gethash tagbody-env *tagbody-frame-info*)
@@ -536,7 +516,7 @@ jump to blocks within this tagbody."
              (start-renv (irc-load (irc-renv env))))
          #+optimize-bclasp
          (let ((frame-info (gethash tagbody-env *tagbody-frame-info*)))
-           (unless frame-info (error "Could not find frame-info for block ~s" block-symbol))
+           (unless frame-info (error "Could not find frame-info for tagbody-env ~s" tagbody-env))
            (setf (tagbody-frame-info-needed frame-info) t))
 	 (irc-low-level-trace :go)
 	 (let ((instruction (irc-intrinsic "throwDynamicGo"
@@ -556,7 +536,7 @@ jump to blocks within this tagbody."
        (let ((depth (cadr classified-tag))
 	     (index (caddr classified-tag))
 	     (tagbody-env (cadddr classified-tag)))
-	 (cmp-log "Target tagbody environment: %s  tag: %s\n" tagbody-env tag)
+	 (cmp-log "Target tagbody environment: %s  tag: %s%N" tagbody-env tag)
 	 (let* ((go-vec (lookup-metadata tagbody-env 'tagbody-blocks))
 		(go-block (elt go-vec index)))
 	   (irc-unwind-into-environment env tagbody-env)
@@ -674,7 +654,7 @@ jump to blocks within this tagbody."
                               parent-renv)))
       (irc-store val result-af))
     ;;    )
-    (cmp-log "About to generate code for args\n")
+    (cmp-log "About to generate code for args%N")
     (do* ((cur functions (cdr cur)))
 	 ((endp cur) nil)
       (let* ((fn (car cur))
@@ -809,7 +789,7 @@ jump to blocks within this tagbody."
 ;;; LOAD-TIME-VALUE
 
 (defun codegen-load-time-value (result rest env)
-  (cmp-log "Starting codegen-load-time-value rest: %s\n" rest)
+  (cmp-log "Starting codegen-load-time-value rest: %s%N" rest)
   (let* ((form (car rest))
 	 (read-only-p (cadr rest)))
 ;;; Currently if read-only-p is T there is no
@@ -856,12 +836,12 @@ jump to blocks within this tagbody."
   (let ((lambda-list (first form))
         (vaslist     (second form))
         (body        (cddr form)))
-    (blog "evaluate-env -> %s\n" evaluate-env)
+    (blog "evaluate-env -> %s%N" evaluate-env)
     (multiple-value-bind (declares code docstring specials)
         (process-declarations body t)
       (multiple-value-bind (cleavir-lambda-list new-body)
           (transform-lambda-parts lambda-list declares code)
-        (blog "got cleavir-lambda-list -> %s\n" cleavir-lambda-list)
+        (blog "got cleavir-lambda-list -> %s%N" cleavir-lambda-list)
         (let ((debug-on nil)
               (eval-vaslist (irc-alloca-t* :label "bind-vaslist")))
           (codegen eval-vaslist vaslist evaluate-env)
@@ -892,7 +872,7 @@ jump to blocks within this tagbody."
   "Evaluate each of the arguments into an alloca and invoke the function"
   ;; setup the ActivationFrame for passing arguments to this function in the setup arena
   (assert-result-isa-llvm-value result)
-  ;;(bformat t "In codegen-multiple-value-foreign-call codegen form: %s\n" form)
+  ;;(bformat t "In codegen-multiple-value-foreign-call codegen form: %s%N" form)
   (let* ((intrinsic-name (car form))
          (nargs (length (cdr form)))
          args
@@ -904,7 +884,7 @@ jump to blocks within this tagbody."
           (exp (car cur-exp) (car cur-exp))
           (i 0 (+ 1 i)))
          ((endp cur-exp) nil)
-      ;;(bformat t "In codegen-multiple-value-foreign-call codegen arg[%d] -> %d\n" i exp)
+      ;;(bformat t "In codegen-multiple-value-foreign-call codegen arg[%d] -> %d%N" i exp)
       (codegen temp-result exp evaluate-env)
       (push (irc-load temp-result) args))
     (let* ((func (or (llvm-sys:get-function *the-module* intrinsic-name)
@@ -937,7 +917,7 @@ jump to blocks within this tagbody."
           (type (car type-cur) (car type-cur))
           (i 0 (+ 1 i)))
          ((endp cur-exp) nil)
-      ;;(bformat t "In codegen-multiple-value-foreign-call codegen arg[%d] -> %d\n" i exp)
+      ;;(bformat t "In codegen-multiple-value-foreign-call codegen arg[%d] -> %d%N" i exp)
       (codegen temp-result exp evaluate-env)
       (push (irc-intrinsic-call (clasp-ffi::from-translator-name type)
                              (list (irc-load temp-result))) args))
@@ -947,7 +927,7 @@ jump to blocks within this tagbody."
   "Evaluate each of the arguments into an alloca and invoke the function"
   ;; setup the ActivationFrame for passing arguments to this function in the setup arena
   (assert-result-isa-llvm-value result)
-  ;;(bformat t "In codegen-multiple-value-foreign-call codegen form: %s\n" form)
+  ;;(bformat t "In codegen-multiple-value-foreign-call codegen form: %s%N" form)
   (let* ((foreign-types (first form))
          (intrinsic-name (second form))
          (fargs (cddr form))

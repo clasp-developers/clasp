@@ -110,19 +110,60 @@ BOOST_LIBRARIES = [
             'boost_iostreams']
 
 VALID_OPTIONS = [
+    # point to the llvm-config executable - this tells the build system which clang to use
+    # Default on macOS = /usr/local/opt/llvm@%s/bin/llvm-config'%CLANG_VERSION   - brew installed
+    # Default on linux = it searches your path
     "LLVM_CONFIG_BINARY",
+    # point to where you want to install clasp - this has to be defined before ./waf configure
     "PREFIX",
+    # This tells clasp that a special patch has been made to LLVM5 that allows the ORC JIT engine
+    # to notify clasp when JITted symbols are created.  This is not needed as of (June 13, 2018)
+    # and will become completely irrelevant after we switch to llvm6 because ORC should be fixed.
+    # default = False
     "LLVM5_ORC_NOTIFIER_PATCH",
+    # Path to sbcl
     "SBCL",
+    # What do you want to call clasp?
     "CLASP",
+    # Build clasp in parallel
+    # default = True
     "USE_PARALLEL_BUILD",
+    # Use lld only on Linux when CLASP_BUILD_MODE is "bitcode" - it's faster than ld
+    # default = True
     "USE_LLD",
+    # Turn on memory guards - this allocates space in the header and after every general object
+    # in clasp and writes information into it that can be checked to test for writing outside of
+    # object memory - it slows things down by a few tens percent. This flag also turns on simple
+    # checking of the guard
+    # default = False
     "DEBUG_GUARD",
+    # In combination with DEBUG_GUARD, this option turns on extensive testing of guards
+    # this adds more runtime cost (maybe it slows down clasp by 2x) but it tests every byte
+    # of the header guard and the tail guard
+    # default = False
     "DEBUG_GUARD_EXHAUSTIVE_VALIDATE",
+    # Add additional includes 
     "INCLUDES",
+    # Add additional link flags
     "LINKFLAGS",
+    # Define how clasp is built - can be one of "bitcode" or "object".
+    # If "bitcode" then C++ and CL compiles to bitcode and thinLTO is used to link everything.
+    #   this gives the fastest product but linking takes a long time.
+    # If "object" then C++ and CL produce object files and regular linking is used.
+    #   This is probably not as fast as bitcode (maybe a few percent slower) but it links fast.
+    #   This is good for development.
+    # Default = "object"
     "CLASP_BUILD_MODE",
-    "CLASP_VERSION"
+    # Set the version name of clasp - this is used when building the docker image to give a predictable
+    # version name.  Usually the version is calculated from the git hash
+    "CLASP_VERSION",
+    # Set if on macOS libffi is required.   On macOS we can build with brew installed llvm
+    # but brew installed llvm has libffi as a dependency and doesn't report that when you invoke llvm-config --libs!!!
+    # This is a bug in llvm-config and has to be fixed upstream.
+    # Default = True
+    "REQUIRE_LIBFFI",
+    # If waf doesn't recognize the OS then use this option (darwin|linux|freebsd)
+    "DEST_OS"
 ]
 
 def build_extension(bld):
@@ -143,10 +184,22 @@ def update_dependencies(cfg):
     log.pprint('BLUE', 'update_dependencies()')
     fetch_git_revision("src/lisp/kernel/contrib/sicl",
                        "https://github.com/Bike/SICL.git",
-                       "a080c75b0aa17a939b09cb378514cfee7a72a4c0")
+                       "2601c5ced17308b30f09df9779d5dedff24222a3")
+    fetch_git_revision("src/lisp/kernel/contrib/Concrete-Syntax-Tree",
+                       "https://github.com/clasp-developers/Concrete-Syntax-Tree.git",
+                       "e5ab78ca27084d3c809e00886a1088d5ce28a864")
+    fetch_git_revision("src/lisp/kernel/contrib/closer-mop",
+                       "https://github.com/pcostanza/closer-mop.git",
+                       "d4d1c7aa6aba9b4ac8b7bb78ff4902a52126633f")
     fetch_git_revision("src/lisp/kernel/contrib/Acclimation",
-                       "https://github.com/clasp-developers/Acclimation.git",
-                       "5e0add45b7c6140e4ab07a2cbfd28964e36e6e48")
+                       "https://github.com/robert-strandh/Acclimation.git",
+                       "dd15c86b0866fc5d8b474be0da15c58a3c04c45c")
+    fetch_git_revision("src/lisp/kernel/contrib/Eclector",
+                       "https://github.com/clasp-developers/Eclector.git",
+                       "7b63e7bbe6c60d3ad3413a231835be6f5824240a")
+    fetch_git_revision("src/lisp/kernel/contrib/alexandria",
+                       "https://github.com/clasp-developers/alexandria.git",
+                       "e5c54bc30b0887c237bde2827036d17315f88737")
     fetch_git_revision("src/mps",
                        "https://github.com/Ravenbrook/mps.git",
                        label = "master", revision = "release-1.115.0")
@@ -224,7 +277,7 @@ class variant(object):
         if (not (use_stage>='a' and use_stage <= 'z')):
             raise Exception("Bad stage: %s"% use_stage)
         return '%s%s-%s%s' % (use_stage,APP_NAME,self.gc_name,self.debug_extension())
-    def fasl_name(self,build,stage=None,development_mode=None):
+    def fasl_name(self,build,stage=None):
         if ( stage == None ):
             use_stage = self.stage_char
         else:
@@ -428,17 +481,23 @@ class cmpsprep_d(mpsprep_d):
 
 def configure(cfg):
     def update_exe_search_path(cfg):
+        log.info("DEST_OS = %s" % cfg.env['DEST_OS'])
         llvm_config_binary = cfg.env.LLVM_CONFIG_BINARY
         if (len(llvm_config_binary) == 0):
-            try:
-                llvm_config_binary = cfg.find_program('llvm-config-5.0')
-            except cfg.errors.ConfigurationError:
-                cfg.to_log('llvm-config-5.0 was not found (ignoring)')
-                # Let's fail if no llvm-config binary has been found
-                llvm_config_binary = cfg.find_program('llvm-config')
-            llvm_config_binary = llvm_config_binary[0]
+            if (cfg.env['DEST_OS'] == DARWIN_OS ):
+                llvm_config_binary = '/usr/local/opt/llvm@%s/bin/llvm-config'%CLANG_VERSION
+                log.info("On darwin looking for %s" % llvm_config_binary)
+            else:
+                try:
+                    llvm_config_binary = cfg.find_program('llvm-config-%s.0'%CLANG_VERSION)
+                except cfg.errors.ConfigurationError:
+                    cfg.to_log('llvm-config-%s.0 was not found (ignoring)'%CLANG_VERSION)
+                    # Let's fail if no llvm-config binary has been found
+                    llvm_config_binary = cfg.find_program('llvm-config')
+                llvm_config_binary = llvm_config_binary[0]
+                log.info("On %s looking for %s" % (cfg.env['DEST_OS'],llvm_config_binary))
             cfg.env["LLVM_CONFIG_BINARY"] = llvm_config_binary
-        log.debug("Using llvm-config binary: %s", cfg.env.LLVM_CONFIG_BINARY)
+        log.info("Using llvm-config binary: %s", cfg.env.LLVM_CONFIG_BINARY)
         # Let's prefix the OS's binary search PATH with the configured LLVM bin dir.
         # TODO Maybe it would be better to handle full binary paths explicitly -- if possible at all.
         path = os.getenv("PATH").split(os.pathsep)
@@ -465,13 +524,13 @@ def configure(cfg):
     def load_local_config(cfg):
         if os.path.isfile("./wscript.config"):
             local_environment = {}
-            print(" local_environment = %s\n" % local_environment)
+            log.debug("local_environment = %s", local_environment)
             exec(open("./wscript.config").read(), globals(), local_environment)
             for key in local_environment.keys():
                 if (not key in VALID_OPTIONS):
                     raise Exception("%s is an INVALID wscript.config option - valid options are: %s" % (key, VALID_OPTIONS))
                 else:
-                    print("wscript.config option %s = %s" % ( key, local_environment[key]))
+                    log.debug("wscript.config option %s = %s", key, local_environment[key])
             cfg.env.update(local_environment)
         else:
             log.warn("There is no 'wscript.config' file - assuming default configuration. See 'wscript.config.template' for further details.")
@@ -505,7 +564,6 @@ def configure(cfg):
     cfg.env["GIT_BINARY"] = cfg.find_program("git", var = "GIT")[0]
     log.debug("cfg.env['CLASP_BUILD_MODE'] = %s", cfg.env['CLASP_BUILD_MODE'])
     if ((cfg.env['CLASP_BUILD_MODE'] =='bitcode')):
-        print("Not in DEVELOPMENT_MODE")
         cfg.define("CLASP_BUILD_MODE",2) # thin-lto
         cfg.env.CLASP_BUILD_MODE = 'bitcode'
         cfg.env.LTO_FLAG = '-flto=thin'
@@ -531,7 +589,7 @@ def configure(cfg):
     log.info("default cfg.env.CLASP_BUILD_MODE = %s, final cfg.env.LTO_FLAG = '%s'", cfg.env.CLASP_BUILD_MODE, cfg.env.LTO_FLAG)
 
     cur_clang_version = run_llvm_config(cfg, "--version")
-    print("cur_clang_version = %s" % cur_clang_version)
+    log.debug("cur_clang_version = %s", cur_clang_version)
     if (int(cur_clang_version[0]) != CLANG_VERSION):
         raise Exception("You must have clang/llvm version %d installed" % CLANG_VERSION )
     # find a lisp for the scraper
@@ -558,14 +616,16 @@ def configure(cfg):
     cfg.check_cxx(lib='ncurses', cflags='-Wall', uselib_store='NCURSES')
 #    cfg.check_cxx(stlib='lldb', cflags='-Wall', uselib_store='LLDB')
     cfg.check_cxx(lib='m', cflags='-Wall', uselib_store='M')
-    if (cfg.env['DEST_OS'] == DARWIN_OS ):
-        pass
+    if (cfg.env['REQUIRE_LIBFFI'] == []):
+        cfg.env['REQUIRE_LIBFFI'] = True
+    if (cfg.env['DEST_OS'] == DARWIN_OS and cfg.env['REQUIRE_LIBFFI'] == True):
+        cfg.check_cxx(lib='ffi', cflags='-Wall', uselib_store="FFI")
     elif (cfg.env['DEST_OS'] == LINUX_OS ):
         pass
-        cfg.check_cxx(lib='gcc_s', cflags='-Wall', uselib_store="GCC_S")
-        cfg.check_cxx(lib='unwind-x86_64', cflags='-Wall', uselib_store='UNWIND_X86_64')
-        cfg.check_cxx(lib='unwind', cflags='-Wall', uselib_store='UNWIND')
-        cfg.check_cxx(lib='lzma', cflags='-Wall', uselib_store='LZMA')
+#        cfg.check_cxx(lib='gcc_s', cflags='-Wall', uselib_store="GCC_S")
+#        cfg.check_cxx(lib='unwind-x86_64', cflags='-Wall', uselib_store='UNWIND_X86_64')
+#        cfg.check_cxx(lib='unwind', cflags='-Wall', uselib_store='UNWIND')
+#        cfg.check_cxx(lib='lzma', cflags='-Wall', uselib_store='LZMA')
     else:
         pass
     cfg.check_cxx(stlib=BOOST_LIBRARIES, cflags='-Wall', uselib_store='BOOST')
@@ -668,7 +728,8 @@ def configure(cfg):
         cfg.env.append_value('CFLAGS', cfg.env.LTO_FLAG )
         cfg.env.append_value('LINKFLAGS', cfg.env.LTO_FLAG )
     if (cfg.env['DEST_OS'] == LINUX_OS ):
-        if (cfg.env['USE_LLD']):
+        if (cfg.env['USE_LLD'] and cfg.env.CLASP_BUILD_MODE == 'bitcode'):
+            # Only use lld if USE_LLD is set and CLASP_BUILD_MODE is bitcode
             cfg.env.append_value('LINKFLAGS', '-fuse-ld=lld-5.0')
             log.info("Using the lld linker")
         else:
@@ -771,6 +832,11 @@ def configure(cfg):
     cfg.env.append_value('STLIB', cfg.env.STLIB_LLVM)
     cfg.env.append_value('STLIB', cfg.env.STLIB_BOOST)
     cfg.env.append_value('STLIB', cfg.env.STLIB_Z)
+    log.info("About to check if appending LIB_FFI")
+    if (cfg.env['DEST_OS'] == DARWIN_OS ):
+        if (cfg.env['REQUIRE_LIBFFI'] == True):
+            log.info("Appending LIB_FFI")
+            cfg.env.append_value('LIB', cfg.env.LIB_FFI)
     if (cfg.env['DEST_OS'] == LINUX_OS ):
         cfg.env.append_value('LIB', cfg.env.LIB_DL)
         cfg.env.append_value('LIB', cfg.env.LIB_GCC_S)
@@ -826,8 +892,7 @@ def build(bld):
     log.reinitialize(console_level = logging.DEBUG if Logs.verbose >= 1 else logging.INFO,
                      log_file = os.path.join(bld.path.abspath(), out, variant.variant_dir(), "build.log"))
 
-    log.debug('build() starts, options: %s', bld.options)
-    print("Build is starting clasp_build_mode = %s" % bld.env.CLASP_BUILD_MODE)
+    log.debug('build() starts, CLASP_BUILD_MODE = %s, options: %s', bld.env.CLASP_BUILD_MODE, bld.options)
     bld.add_pre_fun(pre_build_hook);
     bld.add_post_fun(post_build_hook);
 
@@ -835,8 +900,9 @@ def build(bld):
     stage_val = stage_value(bld,bld.stage)
     bld.stage_val = stage_val
 
-    log.pprint('BLUE', 'build(), %s, stage %s=%s%s' %
+    log.pprint('BLUE', 'build(), %s, %s, stage %s=%s%s' %
                 (variant.variant_name(),
+                 bld.env.CLASP_BUILD_MODE,
                  bld.stage,
                  bld.stage_val,
                  ", DEBUG_WHILE_BUILDING" if bld.options.DEBUG_WHILE_BUILDING else ''))
@@ -1173,7 +1239,7 @@ class run_dsymutil(clasp_task):
 class link_fasl(clasp_task):
     def run(self):
         if (self.env.CLASP_BUILD_MODE=='fasl'):
-            print("link_fasl self.inputs[3] = %s   self.outputs[0] = %s"% (self.inputs[3], self.outputs[0]))
+            log.debug("link_fasl self.inputs[3] = %s   self.outputs[0] = %s", self.inputs[3], self.outputs[0])
             cmd = [ "cp", self.inputs[3].abspath(),self.outputs[0].abspath()]
             return self.exec_command(cmd)
         if (self.env.LTO_FLAG):
@@ -1414,7 +1480,6 @@ class generate_sif_files(scraper_task):
         for cxx_node, sif_node in zip(self.inputs, self.outputs):
             cmd.append(cxx_node.abspath())
             cmd.append(sif_node.abspath())
-
         return self.exec_command(cmd)
 
 class generate_headers_from_all_sifs(scraper_task):
@@ -1496,6 +1561,10 @@ def postprocess_all_c_tasks(self):
                     builtins_cc = node
                 if ends_with(node.name, 'fastgf.cc'):
                     fastgf_cc = node
+##switch back to old way to create scraper tasks                    
+#                sif_node = node.change_ext('.sif')
+#                self.create_task('generate_one_sif', node, [sif_node])
+#                all_sif_files.append(sif_node)
             for node in task.outputs:
                 all_o_nodes.append(node)
                 if ends_with(node.name, 'intrinsics.cc'):
@@ -1512,7 +1581,7 @@ def postprocess_all_c_tasks(self):
 
     # Start 'jobs' number of scraper processes in parallel, each processing several files
     #chunks = split_list(all_cxx_nodes, min(self.bld.jobs, len(all_cxx_nodes))) # this splits into the optimal chunk sizes
-    chunk_size = min(20, max(1, len(all_cxx_nodes) // self.bld.jobs)) # this splits into task chunks of at most 20 files
+    chunk_size = min(20, max(1, len(all_cxx_nodes) // 8 ))# self.bld.jobs)) # this splits into task chunks of at most 20 files
     chunks = list(list_chunks_of_size(all_cxx_nodes, chunk_size))
     log.info('Creating %s parallel scraper tasks, each processing %s files, for the total %s cxx files', len(chunks), chunk_size, len(all_cxx_nodes))
     assert len([x for sublist in chunks for x in sublist]) == len(all_cxx_nodes)

@@ -29,7 +29,7 @@
      (multiple-value-prog1
          (with-irbuilder ((llvm-sys:make-irbuilder *llvm-context*))
            ,@body)
-       (cmp-log "About to optimize-module\n")
+       (cmp-log "About to optimize-module%N")
        (when (and ,optimize ,optimize-level) (funcall ,optimize ,module ,optimize-level )))))
 
 (defun compile-with-hook (compile-hook name &optional definition env pathname &key (linkage 'llvm-sys:internal-linkage))
@@ -54,7 +54,7 @@ We could do more fancy things here - like if cleavir-clasp fails, use the clasp 
                               :optimize nil
                               :source-namestring (namestring pathname)
                               :source-file-info-handle handle)
-          (cmp-log "Dumping module\n")
+          (cmp-log "Dumping module%N")
           (cmp-log-dump-module *the-module*)
           (multiple-value-bind (compiled-function warnp failp)
               (compile-with-hook compile-hook bind-to-name definition env pathname :linkage linkage)
@@ -74,12 +74,12 @@ We could do more fancy things here - like if cleavir-clasp fails, use the clasp 
          ;; Recover the lambda-expression from the interpreted-function
          (multiple-value-bind (lambda-expression wrapped-env)
              (generate-lambda-expression-from-interpreted-function definition)
-           (cmp-log "About to compile  name: %s  lambda-expression: %s wrapped-env: %s\n" name lambda-expression wrapped-env)
+           (cmp-log "About to compile  name: %s  lambda-expression: %s wrapped-env: %s%N" name lambda-expression wrapped-env)
            (compile-in-env name lambda-expression wrapped-env *cleavir-compile-hook* 'llvm-sys:external-linkage)))
         ((functionp definition)
          (error "COMPILE doesn't know how to handle this type of function"))
         ((and (consp definition) (eq (car definition) 'lambda))
-         (cmp-log "compile form: %s\n" definition)
+         (cmp-log "compile form: %s%N" definition)
          (compile-in-env name definition nil *cleavir-compile-hook* 'llvm-sys:external-linkage))
         ((null definition)
          (let ((func (cond ((fboundp name) (fdefinition name))
@@ -91,7 +91,7 @@ We could do more fancy things here - like if cleavir-clasp fails, use the clasp 
               ;; Recover the lambda-expression from the interpreted-function
               (multiple-value-bind (lambda-expression wrapped-env)
                   (generate-lambda-expression-from-interpreted-function func)
-                (cmp-log "About to compile  name: %s  lambda-expression: %s wrapped-env: %s\n" name lambda-expression wrapped-env)
+                (cmp-log "About to compile  name: %s  lambda-expression: %s wrapped-env: %s%N" name lambda-expression wrapped-env)
                 (compile-in-env name lambda-expression wrapped-env *cleavir-compile-hook* 'llvm-sys:external-linkage)))
              ((compiled-function-p func)
               (values func nil nil))
@@ -114,9 +114,9 @@ We could do more fancy things here - like if cleavir-clasp fails, use the clasp 
           (t (values function warnp failp)))))
 
 (defun compiler-stats ()
-  (bformat t "Accumulated finalization time %s\n" llvm-sys:*accumulated-llvm-finalization-time*)
-  (bformat t "Most recent finalization time %s\n" llvm-sys:*most-recent-llvm-finalization-time*)
-  (bformat t "Number of compilations %s\n" llvm-sys:*number-of-llvm-finalizations*))
+  (bformat t "Accumulated finalization time %s%N" llvm-sys:*accumulated-llvm-finalization-time*)
+  (bformat t "Most recent finalization time %s%N" llvm-sys:*most-recent-llvm-finalization-time*)
+  (bformat t "Number of compilations %s%N" llvm-sys:*number-of-llvm-finalizations*))
 
 (export 'compiler-stats)
 

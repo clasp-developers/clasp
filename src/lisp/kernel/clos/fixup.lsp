@@ -41,8 +41,8 @@
 
 (defun function-to-method (name lambda-list specializers
                            &optional (function (fdefinition name)))
-  (mlog "function-to-method: name -> %s specializers -> %s  lambda-list -> %s\n" name specializers lambda-list)
-  (mlog "function-to-method:  function -> %s\n" function)
+  (mlog "function-to-method: name -> %s specializers -> %s  lambda-list -> %s%N" name specializers lambda-list)
+  (mlog "function-to-method:  function -> %s%N" function)
   ;; since we still have method.lsp's add-method in place, it will try to add
   ;; the function-to-method-temp entry to *early-methods*. but then we unbind
   ;; that, so things are a bit screwy. We do it more manually.
@@ -58,14 +58,14 @@
                                       lambda-list
                                       (lambda (.method-args. .next-methods.)
                                         (declare (core:lambda-name function-to-method.lambda))
-                                        (mlog "In function-to-method.lambda  about to call %s with args %s\n"
+                                        (mlog "In function-to-method.lambda  about to call %s with args %s%N"
                                               function (core:list-from-va-list .method-args.))
                                         (apply function .method-args.))
                                       (list
                                        'leaf-method-p t
                                        'fast-method-function (if (lambda-list-fast-callable-p lambda-list)
                                                                  function nil)))))))
-    (mlog "function-to-method: installed method\n")
+    (mlog "function-to-method: installed method%N")
     (core:function-lambda-list-set f lambda-list) ; hook up the introspection
     (setf (fdefinition name) f
           (generic-function-name f) name)
@@ -88,7 +88,7 @@
                     '(standard-generic-function method-combination t)
                     #'std-compute-effective-method)
 
-(mlog "done with the first function-to-methods\n")
+(mlog "done with the first function-to-methods%N")
 
 ;;; ----------------------------------------------------------------------
 ;;;                                                                satiate
@@ -101,11 +101,11 @@
   (satiation-setup-specializer-profile
    (fdefinition (car method-info))))
 
-(mlog "About to satiate\n")
+(mlog "About to satiate%N")
 
 (satiate-standard-generic-functions)
 
-(mlog "Done satiating\n")
+(mlog "Done satiating%N")
 
 ;;; Generic functions can be called now!
 
@@ -138,30 +138,30 @@
 ;;; so after this they will do generic function calls.
 
 (defun ensure-generic-function (name &rest args &key &allow-other-keys)
-  (mlog "ensure-generic-function  name -> %s  args -> %s \n" name args)
-  (mlog "(not (fboundp name)) -> %s\n" (not (fboundp name)))
+  (mlog "ensure-generic-function  name -> %s  args -> %s %N" name args)
+  (mlog "(not (fboundp name)) -> %s%N" (not (fboundp name)))
   (let ((gfun (si::traced-old-definition name)))
     (cond ((not (legal-generic-function-name-p name))
 	   (simple-program-error "~A is not a valid generic function name" name))
           ((not (fboundp name))
-           (mlog "A gfun -> %s name -> %s  args -> %s\n" gfun name args)
+           (mlog "A gfun -> %s name -> %s  args -> %s%N" gfun name args)
            ;;           (break "About to setf (fdefinition name)")
-           (mlog "#'ensure-generic-function-using-class -> %s\n" #'ensure-generic-function-using-class )
+           (mlog "#'ensure-generic-function-using-class -> %s%N" #'ensure-generic-function-using-class )
 	   (setf (fdefinition name)
 		 (apply #'ensure-generic-function-using-class gfun name args)))
           ((si::instancep (or gfun (setf gfun (fdefinition name))))
-           (mlog "B\n")
+           (mlog "B%N")
 	   (let ((new-gf (apply #'ensure-generic-function-using-class gfun name args)))
 	     new-gf))
 	  ((special-operator-p name)
-           (mlog "C\n")
+           (mlog "C%N")
 	   (simple-program-error "The special operator ~A is not a valid name for a generic function" name))
 	  ((macro-function name)
-           (mlog "D\n")
+           (mlog "D%N")
 	   (simple-program-error
             "The symbol ~A is bound to a macro and is not a valid name for a generic function" name))
           ((not *clos-booted*)
-           (mlog "E\n")
+           (mlog "E%N")
            (setf (fdefinition name)
 		 (apply #'ensure-generic-function-using-class nil name args))
            (fdefinition name))
