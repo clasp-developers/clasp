@@ -64,6 +64,7 @@ DARWIN_OS = 'darwin'
 LINUX_OS = 'linux'
 FREEBSD_OS = 'freebsd'
 CLANG_VERSION = 5
+CLANG_FULL_VERSION = "5.0.1"
 
 STAGE_CHARS = [ 'r', 'i', 'a', 'b', 'f', 'c', 'd' ]
 
@@ -156,12 +157,14 @@ VALID_OPTIONS = [
     "CLASP_BUILD_MODE",
     # Set the version name of clasp - this is used when building the docker image to give a predictable
     # version name.  Usually the version is calculated from the git hash
-    "CLASP_VERSION"
+    "CLASP_VERSION",
     # Set if on macOS libffi is required.   On macOS we can build with brew installed llvm
     # but brew installed llvm has libffi as a dependency and doesn't report that when you invoke llvm-config --libs!!!
     # This is a bug in llvm-config and has to be fixed upstream.
     # Default = True
-    "REQUIRE_LIBFFI"
+    "REQUIRE_LIBFFI",
+    # If waf doesn't recognize the OS then use this option (darwin|linux|freebsd)
+    "DEST_OS"
 ]
 
 def build_extension(bld):
