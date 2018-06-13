@@ -192,8 +192,14 @@ def update_dependencies(cfg):
                        "https://github.com/pcostanza/closer-mop.git",
                        "d4d1c7aa6aba9b4ac8b7bb78ff4902a52126633f")
     fetch_git_revision("src/lisp/kernel/contrib/Acclimation",
-                       "https://github.com/clasp-developers/Acclimation.git",
-                       "5e0add45b7c6140e4ab07a2cbfd28964e36e6e48")
+                       "https://github.com/robert-strandh/Acclimation.git",
+                       "dd15c86b0866fc5d8b474be0da15c58a3c04c45c")
+    fetch_git_revision("src/lisp/kernel/contrib/Eclector",
+                       "https://github.com/clasp-developers/Eclector.git",
+                       "7b63e7bbe6c60d3ad3413a231835be6f5824240a")
+    fetch_git_revision("src/lisp/kernel/contrib/alexandria",
+                       "https://github.com/clasp-developers/alexandria.git",
+                       "e5c54bc30b0887c237bde2827036d17315f88737")
     fetch_git_revision("src/mps",
                        "https://github.com/Ravenbrook/mps.git",
                        label = "master", revision = "release-1.115.0")
