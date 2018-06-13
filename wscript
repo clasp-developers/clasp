@@ -110,19 +110,58 @@ BOOST_LIBRARIES = [
             'boost_iostreams']
 
 VALID_OPTIONS = [
+    # point to the llvm-config executable - this tells the build system which clang to use
+    # Default on macOS = /usr/local/opt/llvm@%s/bin/llvm-config'%CLANG_VERSION   - brew installed
+    # Default on linux = it searches your path
     "LLVM_CONFIG_BINARY",
+    # point to where you want to install clasp - this has to be defined before ./waf configure
     "PREFIX",
+    # This tells clasp that a special patch has been made to LLVM5 that allows the ORC JIT engine
+    # to notify clasp when JITted symbols are created.  This is not needed as of (June 13, 2018)
+    # and will become completely irrelevant after we switch to llvm6 because ORC should be fixed.
+    # default = False
     "LLVM5_ORC_NOTIFIER_PATCH",
+    # Path to sbcl
     "SBCL",
+    # What do you want to call clasp?
     "CLASP",
+    # Build clasp in parallel
+    # default = True
     "USE_PARALLEL_BUILD",
+    # Use lld only on Linux when CLASP_BUILD_MODE is "bitcode" - it's faster than ld
+    # default = True
     "USE_LLD",
+    # Turn on memory guards - this allocates space in the header and after every general object
+    # in clasp and writes information into it that can be checked to test for writing outside of
+    # object memory - it slows things down by a few tens percent. This flag also turns on simple
+    # checking of the guard
+    # default = False
     "DEBUG_GUARD",
+    # In combination with DEBUG_GUARD, this option turns on extensive testing of guards
+    # this adds more runtime cost (maybe it slows down clasp by 2x) but it tests every byte
+    # of the header guard and the tail guard
+    # default = False
     "DEBUG_GUARD_EXHAUSTIVE_VALIDATE",
+    # Add additional includes 
     "INCLUDES",
+    # Add additional link flags
     "LINKFLAGS",
+    # Define how clasp is built - can be one of "bitcode" or "object".
+    # If "bitcode" then C++ and CL compiles to bitcode and thinLTO is used to link everything.
+    #   this gives the fastest product but linking takes a long time.
+    # If "object" then C++ and CL produce object files and regular linking is used.
+    #   This is probably not as fast as bitcode (maybe a few percent slower) but it links fast.
+    #   This is good for development.
+    # Default = "object"
     "CLASP_BUILD_MODE",
+    # Set the version name of clasp - this is used when building the docker image to give a predictable
+    # version name.  Usually the version is calculated from the git hash
     "CLASP_VERSION"
+    # Set if on macOS libffi is required.   On macOS we can build with brew installed llvm
+    # but brew installed llvm has libffi as a dependency and doesn't report that when you invoke llvm-config --libs!!!
+    # This is a bug in llvm-config and has to be fixed upstream.
+    # Default = True
+    "REQUIRE_LIBFFI"
 ]
 
 def build_extension(bld):
@@ -430,15 +469,18 @@ def configure(cfg):
     def update_exe_search_path(cfg):
         llvm_config_binary = cfg.env.LLVM_CONFIG_BINARY
         if (len(llvm_config_binary) == 0):
-            try:
-                llvm_config_binary = cfg.find_program('llvm-config-5.0')
-            except cfg.errors.ConfigurationError:
-                cfg.to_log('llvm-config-5.0 was not found (ignoring)')
-                # Let's fail if no llvm-config binary has been found
-                llvm_config_binary = cfg.find_program('llvm-config')
-            llvm_config_binary = llvm_config_binary[0]
+            if (cfg.env['DEST_OS'] == DARWIN_OS ):
+                llvm_config_binary = '/usr/local/opt/llvm@%s/bin/llvm-config'%CLANG_VERSION
+            else:
+                try:
+                    llvm_config_binary = cfg.find_program('llvm-config-%s.0'%CLANG_VERSION)
+                except cfg.errors.ConfigurationError:
+                    cfg.to_log('llvm-config-%s.0 was not found (ignoring)'%CLANG_VERSION)
+                    # Let's fail if no llvm-config binary has been found
+                    llvm_config_binary = cfg.find_program('llvm-config')
+                llvm_config_binary = llvm_config_binary[0]
             cfg.env["LLVM_CONFIG_BINARY"] = llvm_config_binary
-        log.debug("Using llvm-config binary: %s", cfg.env.LLVM_CONFIG_BINARY)
+        log.info("Using llvm-config binary: %s", cfg.env.LLVM_CONFIG_BINARY)
         # Let's prefix the OS's binary search PATH with the configured LLVM bin dir.
         # TODO Maybe it would be better to handle full binary paths explicitly -- if possible at all.
         path = os.getenv("PATH").split(os.pathsep)
@@ -557,7 +599,9 @@ def configure(cfg):
     cfg.check_cxx(lib='ncurses', cflags='-Wall', uselib_store='NCURSES')
 #    cfg.check_cxx(stlib='lldb', cflags='-Wall', uselib_store='LLDB')
     cfg.check_cxx(lib='m', cflags='-Wall', uselib_store='M')
-    if (cfg.env['DEST_OS'] == DARWIN_OS ):
+    if (cfg.env['REQUIRE_LIBFFI'] == []):
+        cfg.env['REQUIRE_LIBFFI'] = True
+    if (cfg.env['DEST_OS'] == DARWIN_OS and cfg.env['REQUIRE_LIBFFI'] == True):
         cfg.check_cxx(lib='ffi', cflags='-Wall', uselib_store="FFI")
     elif (cfg.env['DEST_OS'] == LINUX_OS ):
         pass
@@ -772,8 +816,9 @@ def configure(cfg):
     cfg.env.append_value('STLIB', cfg.env.STLIB_Z)
     log.info("About to check if appending LIB_FFI")
     if (cfg.env['DEST_OS'] == DARWIN_OS ):
-        log.info("Appending LIB_FFI")
-        cfg.env.append_value('LIB', cfg.env.LIB_FFI)
+        if (cfg.env['REQUIRE_LIBFFI'] == True):
+            log.info("Appending LIB_FFI")
+            cfg.env.append_value('LIB', cfg.env.LIB_FFI)
     if (cfg.env['DEST_OS'] == LINUX_OS ):
         cfg.env.append_value('LIB', cfg.env.LIB_DL)
         cfg.env.append_value('LIB', cfg.env.LIB_GCC_S)
