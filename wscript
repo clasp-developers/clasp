@@ -142,11 +142,23 @@ def update_dependencies(cfg):
 
     log.pprint('BLUE', 'update_dependencies()')
     fetch_git_revision("src/lisp/kernel/contrib/sicl",
-                       "https://github.com/Bike/SICL.git",
-                       "a080c75b0aa17a939b09cb378514cfee7a72a4c0")
+                       "https://github.com/robert-strandh/SICL.git",
+                       "11059a3d28bab6d378df4e3b429efc3c41301a12")
+    fetch_git_revision("src/lisp/kernel/contrib/Concrete-Syntax-Tree",
+                       "https://github.com/clasp-developers/Concrete-Syntax-Tree.git",
+                       "e5ab78ca27084d3c809e00886a1088d5ce28a864")
+    fetch_git_revision("src/lisp/kernel/contrib/closer-mop",
+                       "https://github.com/pcostanza/closer-mop.git",
+                       "d4d1c7aa6aba9b4ac8b7bb78ff4902a52126633f")
     fetch_git_revision("src/lisp/kernel/contrib/Acclimation",
-                       "https://github.com/clasp-developers/Acclimation.git",
-                       "5e0add45b7c6140e4ab07a2cbfd28964e36e6e48")
+                       "https://github.com/robert-strandh/Acclimation.git",
+                       "dd15c86b0866fc5d8b474be0da15c58a3c04c45c")
+    fetch_git_revision("src/lisp/kernel/contrib/Eclector",
+                       "https://github.com/clasp-developers/Eclector.git",
+                       "7b63e7bbe6c60d3ad3413a231835be6f5824240a")
+    fetch_git_revision("src/lisp/kernel/contrib/alexandria",
+                       "https://github.com/clasp-developers/alexandria.git",
+                       "e5c54bc30b0887c237bde2827036d17315f88737")
     fetch_git_revision("src/mps",
                        "https://github.com/Ravenbrook/mps.git",
                        label = "master", revision = "release-1.115.0")
@@ -667,7 +679,8 @@ def configure(cfg):
         cfg.env.append_value('CFLAGS', cfg.env.LTO_FLAG )
         cfg.env.append_value('LINKFLAGS', cfg.env.LTO_FLAG )
     if (cfg.env['DEST_OS'] == LINUX_OS ):
-        if (cfg.env['USE_LLD']):
+        if (cfg.env['USE_LLD'] and cfg.env.CLASP_BUILD_MODE == 'bitcode'):
+            # Only use lld if USE_LLD is set and CLASP_BUILD_MODE is bitcode
             cfg.env.append_value('LINKFLAGS', '-fuse-ld=lld-5.0')
             log.info("Using the lld linker")
         else:
@@ -1417,7 +1430,6 @@ class generate_sif_files(scraper_task):
         for cxx_node, sif_node in zip(self.inputs, self.outputs):
             cmd.append(cxx_node.abspath())
             cmd.append(sif_node.abspath())
-
         return self.exec_command(cmd)
 
 class generate_headers_from_all_sifs(scraper_task):
@@ -1499,6 +1511,10 @@ def postprocess_all_c_tasks(self):
                     builtins_cc = node
                 if ends_with(node.name, 'fastgf.cc'):
                     fastgf_cc = node
+##switch back to old way to create scraper tasks                    
+#                sif_node = node.change_ext('.sif')
+#                self.create_task('generate_one_sif', node, [sif_node])
+#                all_sif_files.append(sif_node)
             for node in task.outputs:
                 all_o_nodes.append(node)
                 if ends_with(node.name, 'intrinsics.cc'):
@@ -1515,7 +1531,7 @@ def postprocess_all_c_tasks(self):
 
     # Start 'jobs' number of scraper processes in parallel, each processing several files
     #chunks = split_list(all_cxx_nodes, min(self.bld.jobs, len(all_cxx_nodes))) # this splits into the optimal chunk sizes
-    chunk_size = min(20, max(1, len(all_cxx_nodes) // self.bld.jobs)) # this splits into task chunks of at most 20 files
+    chunk_size = min(20, max(1, len(all_cxx_nodes) // 8 ))# self.bld.jobs)) # this splits into task chunks of at most 20 files
     chunks = list(list_chunks_of_size(all_cxx_nodes, chunk_size))
     log.info('Creating %s parallel scraper tasks, each processing %s files, for the total %s cxx files', len(chunks), chunk_size, len(all_cxx_nodes))
     assert len([x for sublist in chunks for x in sublist]) == len(all_cxx_nodes)

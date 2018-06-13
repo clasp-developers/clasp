@@ -13,9 +13,10 @@
 (in-package "CLOS")
 
 #+(or)(eval-when (:execute)
-  (setq core:*echo-repl-read* t))
+        (setq core:*echo-repl-read* t))
 
 (defparameter *clos-booted* nil)
+(export '*clos-booted*)
 
 ;;; Sets a GF's discrminating function to the "invalidated" state.
 ;;; In this state, the next call will compute a real discriminating function.
@@ -170,21 +171,21 @@
                                      (values nil nil)))
                                  nil)
                                 ((si::subclassp class spec))))))
-      (mlog "std-compute-applicable-methods-using-classes gf -> %s classes -> %s\n" gf classes)
+      (mlog "std-compute-applicable-methods-using-classes gf -> %s classes -> %s%N" gf classes)
       (let ((result (sort-applicable-methods
                      gf
                      (loop for method in (generic-function-methods gf)
                            when (applicable-method-p method classes)
                              collect method)
                      classes)))
-        (mlog "  result -> %s\n" result)
+        (mlog "  result -> %s%N" result)
         (values result t)))))
 
 #-mlog
 (defun std-compute-applicable-methods-using-classes (gf classes)
   (declare (optimize (speed 3)))
   (with-early-accessors (+standard-method-slots+ +eql-specializer-slots+ +standard-generic-function-slots+)
-    (mlog "std-compute-applicable-methods-using-classes gf -> %s classes -> %s\n" gf classes)
+    (mlog "std-compute-applicable-methods-using-classes gf -> %s classes -> %s%N" gf classes)
     (flet ((applicable-method-p (method classes)
 	     (loop for spec in (method-specializers method)
 		for class in classes

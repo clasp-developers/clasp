@@ -5,19 +5,56 @@
 
 (in-package :clasp-cleavir)
 
+(defgeneric literal-label (literal))
+
+(defclass literal ()
+  ((%value :initarg :value :reader literal-value)))
+
+(defclass immediate-literal (literal)
+  ((%tagged-value :initarg :tagged-value :reader immediate-literal-tagged-value)))
+
+(defmethod literal-label ((literal immediate-literal))
+  (format nil "~a" (immediate-literal-tagged-value literal)))
+
+(defmethod make-load-form ((thing clasp-cleavir::immediate-literal) &optional environment)
+  (make-load-form-saving-slots thing :environment environment))
+  
+(defmethod print-object ((object immediate-literal) stream)
+  (print-unreadable-object (object stream :type t :identity t)
+    (format stream ":value ~s" (literal-value object))))
+
+(defclass arrayed-literal (literal)
+  ((%index :initarg :index :reader arrayed-literal-index)))
+
+(defmethod literal-label ((literal arrayed-literal))
+  (format nil "~a" (arrayed-literal-index literal)))
+
+(defmethod print-object ((object arrayed-literal) stream)
+  (print-unreadable-object (object stream :type t :identity t)
+    (format stream ":value ~s :index ~s" (literal-value object) (arrayed-literal-index object))))
+
+
 (defun %literal-index (value &optional read-only-p)
   (let ((*debug-cleavir* *debug-cleavir-literals*))
-    (literal:reference-literal value read-only-p)))
+    (multiple-value-bind (data in-array)
+        (literal:reference-literal value read-only-p)
+      (if in-array
+          (make-instance 'arrayed-literal :value value :index data)
+          (make-instance 'immediate-literal :value value :tagged-value data)))))
 
+  
 (defun %literal-ref (value &optional read-only-p)
-  (let* ((index (%literal-index value read-only-p))
-         (gep (llvm-sys:create-const-gep2-64 cmp:*irbuilder*
-                                             (cmp:ltv-global)
-                                             0 index
-                                             (bformat nil "values-table[%d]" index))))
-    gep))
+  (let ((literal (%literal-index value read-only-p)))
+    (if (typep literal 'arrayed-literal)
+        (let* ((index (arrayed-literal-index literal))
+               (gep (llvm-sys:create-const-gep2-64 cmp:*irbuilder*
+                                                   (cmp:ltv-global)
+                                                   0 index
+                                                   (bformat nil "values-table[%d]" index))))
+          gep)
+        (error "%literal-ref of immediate value ~s is illegal" value))))
 
-(defun %literal-value (value &optional label)
+(defun %literal-value (value &optional (label "literal"))
   (cmp:irc-load (%literal-ref value)))
 
 (defun %closurette-index (lambda-name function source-info-handle
@@ -62,15 +99,12 @@
 (defmethod %default-int-type ((abi abi-x86-64)) cmp:%i64%)
 (defmethod %default-int-type ((abi abi-x86-32)) cmp:%i32%)
 
-(defun %literal (lit &optional (label "literal"))
-  (cmp:irc-load (literal:compile-reference-to-literal lit)))
-
 (defun %extract (val index &optional (label "extract"))
   (llvm-sys:create-extract-value cmp:*irbuilder* val (list index) label))
 
 (defun %nil ()
   "A nil in a T*"
-  (%literal nil))
+  (%literal-value nil))
 
 (defun alloca (type size &optional (label ""))
   (llvm-sys:create-alloca cmp:*irbuilder-function-alloca* type (%i32 size) label))
@@ -127,11 +161,13 @@
 (defun %intrinsic-call (function-name args &optional (label ""))
   (let* ((info (gethash function-name (cmp::get-primitives)))
          (does-not-throw (getf (cmp::primitive-properties info) :does-not-throw)))
-    (when (and (null does-not-throw)   ; it throws
+    (when (and (null does-not-throw)                     ; it throws
                (not (string= function-name "cc_unwind")) ; it's not cc_unwind
                (not (string= function-name "cc_throw"))) ; it's not cc_throw
-      ;;; If we are using llvm CALL to call the intrinsic but it can throw an exception then print a warning - it should be called with %intrinsic-invoke-if-landing-pad-or-call
-      ;;; UNLESS it's cc_unwind or cc_throw - they are called but they are defined as primitive-unwinds
+      ;; If we are using llvm CALL to call the intrinsic but it can
+      ;; + throw an exception then print a warning - it should be
+      ;; + called with %intrinsic-invoke-if-landing-pad-or-call
+      ;; + ... unless its cc_unwind or cc_throw
       (warn "%intrinsic-call is being used for ~a when this intrinsic has been declared with the unwind property - meaning that it can throw an exception and %intrinsic-invoke-if-landing-pad-or-call should be used" function-name)))
   (cmp:irc-intrinsic-call function-name args label))
 

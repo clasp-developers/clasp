@@ -108,9 +108,9 @@
   ;;    so we compute one here using the number of required arguments in the lambda-list.
   ;; The call-history may be incorrect because of improper initialization as
   ;;    clos starts up - so lets wipe it out and then satiate it.
-  (gf-log "Starting satiate-generic-function\n")
+  (gf-log "Starting satiate-generic-function%N")
   ;; Wipe out the call-history and satiate it using methods
-  (gf-log "About to set call history\n")
+  (gf-log "About to set call history%N")
   (erase-generic-function-call-history generic-function)
   (add-satiation-entries generic-function lists-of-specializers)
   ;; Now when the function is called the discriminating-function will be invalidated-dispatch-function
@@ -121,13 +121,13 @@
 (defun satiate-standard-generic-functions ()
   (macrolet ((satiate-one (gf-name &body lists-of-class-names)
                `(prog2
-                    (gf-log ,(concatenate 'string "Satiating " (string gf-name) "\n"))
+                    (gf-log ,(concatenate 'string "Satiating " (string gf-name) "%N"))
                     (satiate-generic-function
                      (fdefinition ',gf-name)
                      (list ,@(loop for list in lists-of-class-names
                                    collect `(list ,@(loop for name in list
                                                           collect `(find-class ',name))))))
-                  (gf-log ,(concatenate 'string "Done satiating " (string gf-name) "\n")))))
+                  (gf-log ,(concatenate 'string "Done satiating " (string gf-name) "%N")))))
     ;; I think what we need to satiate are just what dispatch-miss can call.
     ;; With the actual classes. Abstract classes aren't relevant.
     (satiate-one class-slots
@@ -210,7 +210,7 @@
                 do (update-specializer-profile proto-gf specializers))
           (error "In satiation-setup-specializer-profile - ~s has no methods!"
                  (core:low-level-standard-generic-function-name proto-gf))))
-    (gf-log "Set initial specializer profile for satiated function %s to %s\n"
+    (gf-log "Set initial specializer profile for satiated function %s to %s%N"
             (core:low-level-standard-generic-function-name proto-gf)
             (generic-function-specializer-profile proto-gf))))
 

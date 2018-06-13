@@ -95,6 +95,7 @@ Set this to other IRBuilders to make code go where you want")
 (define-symbol-macro %{i32.i1}% (llvm-sys:struct-type-get *llvm-context* (list %i32% %i1%) nil))
 (define-symbol-macro %{i64.i1}% (llvm-sys:struct-type-get *llvm-context* (list %i64% %i1%) nil))
 
+
 ;;  "A ctor void ()* function prototype"
 (define-symbol-macro %fn-ctor%
   (llvm-sys:function-type-get %void% nil))
@@ -353,11 +354,11 @@ Boehm and MPS use a single pointer"
       (progn
         (let* ((vaslist                    (calling-convention-configuration-vaslist* setup))
                #++(_dbg                        (progn
-                                                 (llvm-print "vaslist\n")
+                                                 (llvm-print "vaslist%N")
                                                  (irc-intrinsic "debugPointer" (irc-bit-cast vaslist %i8*%))))
                (register-save-area*         (calling-convention-configuration-register-save-area* setup))
                #++(_dbg                        (progn
-                                                 (llvm-print "register-save-area\n")
+                                                 (llvm-print "register-save-area%N")
                                                  (irc-intrinsic "debugPointer" (irc-bit-cast register-save-area* %i8*%))))
                (vaslist-addr-uint           (irc-ptr-to-int vaslist %uintptr_t% "vaslist-tagged-uint"))
                (va-list-addr                (irc-add vaslist-addr-uint (jit-constant-uintptr_t +vaslist-valist-offset+) "va-list-addr"))
@@ -377,7 +378,7 @@ Boehm and MPS use a single pointer"
                ;; va-start is done in caller
                #+(or)(_                           (calling-convention-args.va-start cc))
                #++(_dbg                        (progn
-                                                 (llvm-print "After calling-convention-args.va-start\n")
+                                                 (llvm-print "After calling-convention-args.va-start%N")
                                                  (irc-intrinsic "debug_va_list" va-list*))))
           cc))))
 
@@ -503,6 +504,20 @@ eg:  (f closure-ptr nargs a b c d ...)
 (define-symbol-macro %fn-prototype*[1]% (llvm-sys:array-type-get %fn-prototype*% 1))
 ;;;  "An array of pointers to the function prototype"
 (define-symbol-macro %fn-prototype*[2]% (llvm-sys:array-type-get %fn-prototype*% 2))
+
+
+(define-symbol-macro %function-description%
+    (llvm-sys:struct-type-get *llvm-context*
+                              (list %fn-prototype*%
+                                    %gcroots-in-module*%
+                                    %i32*% ; source handle
+                                    %intptr_t% ; function name literal index
+                                    %intptr_t% ; lambda-list literal index
+                                    %intptr_t% ; docstring literal index
+                                    %intptr_t% ; lineno
+                                    %intptr_t% ; column
+                                    %intptr_t% ; filepos
+                                    ) nil ))
 
 ;;
 ;; Define the InvocationHistoryFrame type for LispCompiledFunctionIHF
@@ -637,7 +652,7 @@ and initialize it with an array consisting of one function pointer."
     (typeid-core-unwind      "_ZTIN4core6UnwindE")
     ))
 
-;;#+debug-mps (bformat t "cmp::*exceptions* --> %s\n" *exceptions*)
+;;#+debug-mps (bformat t "cmp::*exceptions* --> %s%N" *exceptions*)
 
 
 (defvar *exception-types-hash-table* (make-hash-table :test #'eq)
@@ -770,12 +785,12 @@ It has appending linkage.")
                               "-" name-suffix)
                        :type "ll"
                        :defaults *compile-file-output-pathname*)))
-    (cmp-log "Dumping module to %s\n" output-path)
+    (cmp-log "Dumping module to %s%N" output-path)
     (ensure-directories-exist output-path)
     output-path))
-(defun compile-file-quick-module-dump (module file-name-modifier)
+(defun compile-file-quick-module-dump (module file-name-modifier compile-file-debug-dump-module)
   "Dump the module as a .ll file"
-  (if *compile-file-debug-dump-module*
+  (if compile-file-debug-dump-module
       (let* ((output-path (compile-file-quick-module-pathname file-name-modifier)))
         (let* ((output-name (namestring output-path))
                (fout (open output-name :direction :output)))
@@ -792,17 +807,17 @@ It has appending linkage.")
     (ensure-directories-exist output-path)
     output-path))
 
-(defun compile-quick-module-dump (module file-name-modifier)
+(defun compile-quick-module-dump (module file-name-modifier &optional (compile-debug-dump-module *compile-debug-dump-module*))
   "Dump the module as a .ll file"
-  (if *compile-debug-dump-module*
-      (let* ((output-path (compile-quick-module-pathname file-name-modifier)))
-        (let* ((output-name (namestring output-path))
-               fout)
-          (unwind-protect
-               (progn
-                 (setf fout (open output-name :direction :output))
-                 (llvm-sys:dump-module module fout))
-            (when fout (close fout)))))))
+  (if compile-debug-dump-module
+      (let* ((output-path (compile-quick-module-pathname file-name-modifier))
+             (output-name (namestring output-path))
+             fout)
+        (unwind-protect
+             (progn
+               (setf fout (open output-name :direction :output))
+               (llvm-sys:dump-module module fout))
+          (when fout (close fout))))))
 
 (defun quick-module-pathname (name-modifier)
   "If called under COMPILE-FILE the modules are dumped into the
@@ -816,10 +831,10 @@ they are dumped into /tmp"
   "If called under COMPILE-FILE the modules are dumped into the
 same directory as the COMPILE-FILE output.  If called under COMPILE
 they are dumped into /tmp"
-  (cmp-log "About to dump module - %s\n" name-modifier)
+  (cmp-log "About to dump module - %s%N" name-modifier)
   (if *compile-file-output-pathname*
-      (compile-file-quick-module-dump module name-modifier)
-      (compile-quick-module-dump module name-modifier)))
+      (compile-file-quick-module-dump module name-modifier *compile-file-debug-dump-module*)
+      (compile-quick-module-dump module name-modifier *compile-debug-dump-module*)))
 
 
 (defun compile-file-quick-message (file-name-modifier msg args)

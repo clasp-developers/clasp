@@ -94,3 +94,13 @@ Return the source-location for the name/kind pair"
           (list (make-source-location :pathname file :offset pos))))))
     ((symbolp kind) (source-location-impl obj kind))
     (t (error "Cannot obtain source-location for ~a of kind ~a" obj kind))))
+
+#||
+#+cclasp
+(defmethod make-load-form ((object core:source-file-info) &optional environment)
+  `(core:decode (core:make-cxx-object 'core:source-file-info) ',(core:encode object)))
+
+#+cclasp
+(defmethod make-load-form ((object core:source-pos-info) &optional environment)
+  `(core:decode (core:make-cxx-object 'core:source-pos-info) ',(core:encode object)))
+||#

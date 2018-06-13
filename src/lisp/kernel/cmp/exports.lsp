@@ -41,6 +41,7 @@ irc-basic-block-create
 irc-basic-block-create
 irc-basic-block-create
 irc-basic-block-create
+irc-maybe-cast-integer-to-t*
 irc-load
 irc-branch-to-and-begin-block
 irc-icmp-slt
@@ -234,7 +235,7 @@ codegen-literal
 irc-intrinsic
 *generate-compile-file-load-time-values*
 *load-time-value-holder-global-var*
-*run-time-values-table-global-var*
+#+(or)*run-time-values-table-global-var*
 irc-unreachable
 irc-br
 *current-function-name*

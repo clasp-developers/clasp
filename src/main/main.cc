@@ -57,6 +57,7 @@ THE SOFTWARE.
 //  CLASP INCLUDES
 // ---------------------------------------------------------------------------
 
+#include <clasp/gctools/gcFunctions.h>
 #include <clasp/core/bundle.h>
 #include <clasp/core/object.h>
 #include <clasp/core/lisp.h>
@@ -262,7 +263,9 @@ static void clasp_terminate_handler( void )
 
   if( abort_flag() )
     abort();
-
+#if DEBUG_FLOW_TRACKER
+  flow_tracker_last_throw_backtrace_dump();
+#endif
   printf("%s:%d There was an unhandled exception - do something about it.\n", __FILE__, __LINE__ );
   abort();
 }

@@ -5,8 +5,11 @@
   :version "0.0.1"
   :author "Christian Schafmeister <chris.schaf@verizon.net>"
   :licence "LGPL-3.0"
-  :depends-on (:sicl-reader-simple
+  :depends-on (:concrete-syntax-tree
+               :eclector-concrete-syntax-tree
+               :eclector
                :cleavir-generate-ast
+               :cleavir-cst-to-ast
                :cleavir-ir
                :cleavir-compilation-policy
                :cleavir-ast-to-hir
@@ -14,6 +17,7 @@
                :cleavir-kildall-type-inference
                :cleavir-escape
                :cleavir-hir-transformations
+               :cleavir-partial-inlining
                :cleavir-remove-useless-instructions
                :cleavir-hir-to-mir
                :cleavir-basic-blocks
@@ -24,7 +28,7 @@
                (:file "cleavir-fixups-and-hacks")
                (:file "system")
                (:file "policy")
-;;;               (:file "reader")
+               (:file "reader")
                (:file "ast")
                (:file "convert-form")
                (:file "convert-special")
@@ -42,6 +46,7 @@
                ;;		 (:file "arguments")
                (:file "closure-optimize")
                (:file "translate")
+               (:file "translate-instruction")
                (:file "inline-prep")
                ;;                 (:file "auto-compile")
                ;;                 (:file "inline")

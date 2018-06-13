@@ -39,7 +39,9 @@ THE SOFTWARE.
 namespace core {
 class SourceFileInfo_O : public General_O {
   LISP_CLASS(core, CorePkg, SourceFileInfo_O, "SourceFileInfo",General_O);
-
+ public:
+  bool fieldsp() const { return true; };
+  void fields(Record_sp node);
 public:
   static SourceFileInfo_sp create(Pathname_sp path, int handle, T_sp truename = _Nil<T_O>(), size_t offset = 0, bool useLineno = true);
   static SourceFileInfo_sp create(const string &fileNamePath, int handle, T_sp truename = _Nil<T_O>(), size_t offset = 0, bool useLineno = true);
@@ -83,8 +85,9 @@ class SourcePosInfo_O : public General_O {
   friend T_mv core__source_file_info(T_sp sourceFile, T_sp truename, size_t offset, bool useLineno);
 
   LISP_CLASS(core, CorePkg, SourcePosInfo_O, "SourcePosInfo",General_O);
-
-public:
+ public:
+  bool fieldsp() const { return true; };
+  void fields(Record_sp node);
 public:                                                                                    // ctor/dtor for classes with shared virtual base
   explicit SourcePosInfo_O() : _FileId(UNDEF_UINT), _Filepos(0), _Lineno(0), _Column(0){}; //, _Filepos(0) {};
 public:                                                                                    // instance variables here

@@ -28,6 +28,9 @@
 
 (defgeneric cclasp-eval-with-env (form env))
 
+(defun run-thunk (thunk)
+  (funcall thunk))
+
 (defmethod cclasp-eval-with-env (form env)
 ;;  (format t "cclasp-eval eval: ~a~%" form)
   (flet ((eval-progn (body &optional (penv env))
@@ -37,9 +40,10 @@
               else
               return (cclasp-eval form penv)))
          (eval-compile (form)
-           (funcall (cclasp-compile-in-env nil
+           (let ((thunk (cclasp-compile-in-env nil
                                            ;; PROGN is needed to avoid processing DECLARE as a declaration
-                                           `(lambda () (progn ,form)) env))))
+                                               `(lambda () (progn ,form)) env)))
+             (run-thunk thunk))))
     (let ((form (macroexpand form env)))
       (typecase form
         (symbol

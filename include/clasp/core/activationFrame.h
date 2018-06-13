@@ -59,7 +59,11 @@ public:
   T_sp &parentFrameRef_() { return this->_Parent; };
   T_sp parentFrame() const { return this->_Parent; };
 public:
- ActivationFrame_O() : Base(), _Parent(_Nil<T_O>()){};
+ ActivationFrame_O() : Base(), _Parent(_Nil<T_O>())
+#ifdef DEBUG_LEXICAL_DEPTH
+    , _UniqueId((size_t)-1)
+#endif
+  {};
  ActivationFrame_O(T_sp p) : Base(), _Parent(p) {};
   virtual ~ActivationFrame_O(){};
 
@@ -325,7 +329,7 @@ namespace core {
   void error_frame_range(const char* type, int index, int capacity );
   void error_end_of_frame_list(const char* message);
 
-  inline ALWAYS_INLINE ActivationFrame_sp value_frame_lookup(ActivationFrame_sp af, int depth)
+  inline ActivationFrame_sp value_frame_lookup(ActivationFrame_sp af, int depth)
   {
     while (true) {
       if (depth == 0 ) return af;
@@ -334,7 +338,7 @@ namespace core {
     }
   };
   
-  inline ALWAYS_INLINE T_sp& value_frame_lookup_reference(ActivationFrame_sp activationFrame, int depth, int index )
+  inline T_sp& value_frame_lookup_reference(ActivationFrame_sp activationFrame, int depth, int index )
   {
     while (true) {
       if ( depth == 0 ) {
@@ -351,7 +355,7 @@ namespace core {
     }
   };
 
-  inline ALWAYS_INLINE T_sp& function_frame_lookup(ActivationFrame_sp activationFrame, int depth, int index )
+  inline T_sp& function_frame_lookup(ActivationFrame_sp activationFrame, int depth, int index )
   {
     while (true) {
       if ( depth == 0 ) {
@@ -370,7 +374,7 @@ namespace core {
     }
   };
 
-  DONT_OPTIMIZE_WHEN_DEBUG_RELEASE inline /*ALWAYS_INLINE*/ T_sp tagbody_frame_lookup(ActivationFrame_sp activationFrame, int depth, int index )
+  DONT_OPTIMIZE_WHEN_DEBUG_RELEASE inline T_sp tagbody_frame_lookup(ActivationFrame_sp activationFrame, int depth, int index )
   {
     while (true) {
       if ( depth == 0 ) {

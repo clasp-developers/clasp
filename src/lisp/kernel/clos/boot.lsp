@@ -157,7 +157,7 @@
   `(progn
      ,@(loop for (class . options) in +class-hierarchy+
           for direct-slots = (getf options :direct-slots)
-;;;          do (core:bformat t "boot-hierarchy  class->%s\n" class)
+;;;          do (core:bformat t "boot-hierarchy  class->%s%N" class)
           collect
             (if direct-slots
                 `(apply #'ensure-boot-class ',class
@@ -170,7 +170,7 @@
 (boot-hierarchy)
 
 (progn
-  (dbg-boot "About to setq stuff\n")
+  (dbg-boot "About to setq stuff%N")
   (setq +the-t-class+ (find-class 't nil))
   (setq +the-class+ (find-class 'class nil))
   (setq +the-std-class+ (find-class 'std-class nil))

@@ -205,8 +205,8 @@
   ;; convert the slots from lists to direct slots
   (apply #'call-next-method class
          :direct-slots
-	 (loop for s in direct-slots
-	    collect (canonical-slot-to-direct-slot class s))
+         (loop for s in direct-slots
+            collect (canonical-slot-to-direct-slot class s))
          initargs)
   (finalize-unless-forward class)
   ;; In this case we are assigning the stamp for the first time.
@@ -468,8 +468,8 @@ because it contains a reference to the undefined class~%  ~A"
 (defmethod ensure-class-using-class ((class class) name &rest rest
 				     &key direct-slots direct-default-initargs)
   (declare (ignore direct-default-initargs direct-slots))
-  (clos::gf-log "In ensure-class-using-class (class class) \n")
-  (clos::gf-log "     name -> %s\n" name)
+  (clos::gf-log "In ensure-class-using-class (class class) %N")
+  (clos::gf-log "     name -> %s%N" name)
   (multiple-value-bind (metaclass direct-superclasses options)
       (apply #'help-ensure-class rest)
     (cond ((forward-referenced-class-p class)
@@ -480,7 +480,7 @@ because it contains a reference to the undefined class~%  ~A"
     (when name
       (si:create-type-name name)
       (setf (find-class name) class))
-    (clos::gf-log "Returning from ensure-class-using-class (class class)\n")
+    (clos::gf-log "Returning from ensure-class-using-class (class class)%N")
     class))
 
 (defun coerce-to-class (class-or-symbol &optional (fail nil))

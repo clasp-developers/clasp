@@ -147,7 +147,6 @@ CL_LAMBDA(name);
 CL_DECLARE();
 CL_DOCSTRING("make_symbol");
 CL_DEFUN Symbol_sp cl__make_symbol(String_sp tstrng) {
-  // shoud take a string, but not necessarily a simple string
   SimpleString_sp name = coerce::simple_string(tstrng);
   Symbol_sp sym = Symbol_O::create(name);
   return sym;

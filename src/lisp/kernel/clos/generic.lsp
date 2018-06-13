@@ -220,7 +220,7 @@
        (method-class 'STANDARD-METHOD method-class-p)
        (generic-function-class (class-of gfun))
        (delete-methods nil))
-  (mlog "In ensure-generic-function-using-class (gfun generic-function) gfun -> %s  name -> %s args -> %s\n" gfun name args)
+  (mlog "In ensure-generic-function-using-class (gfun generic-function) gfun -> %s  name -> %s args -> %s%N" gfun name args)
   ;; modify the existing object
   (setf args (copy-list args))
   (remf args :generic-function-class)
@@ -253,7 +253,7 @@
                                    (generic-function-class 'STANDARD-GENERIC-FUNCTION)
                                    (delete-methods nil))
   (declare (ignore delete-methods gfun))
-  (mlog "In ensure-generic-function-using-class (gfun generic-function) gfun -> %s  name -> %s args -> %s\n" gfun name args)
+  (mlog "In ensure-generic-function-using-class (gfun generic-function) gfun -> %s  name -> %s args -> %s%N" gfun name args)
   ;; else create a new generic function object
   (setf args (copy-list args))
   (remf args :generic-function-class)

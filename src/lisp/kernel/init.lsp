@@ -22,7 +22,7 @@
 #+debug-flow-tracker
 (if (member :flow-tracker *features*)
     (progn
-      (core:bformat t "Turning flow-tracker on\n")
+      (core:bformat t "Turning flow-tracker on%N")
       (gctools:flow-tracker-on)))
 
 
@@ -175,10 +175,10 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 (export 'defvar)
 
 (si:fset 'core::defparameter #'(lambda (whole env)
-			    (let ((var (cadr whole))
-				  (form (caddr whole))
-				  (doc-string (cadddr whole)))
-				  "Syntax: (defparameter name form [doc])
+                            (let ((var (cadr whole))
+                                  (form (caddr whole))
+                                  (doc-string (cadddr whole)))
+                                  "Syntax: (defparameter name form [doc])
 Declares the global variable named by NAME as a special variable and assigns
 the value of FORM to the variable.  The doc-string DOC, if supplied, is saved
 as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
@@ -192,10 +192,10 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 
 
 (si:fset 'core::defconstant #'(lambda (whole env)
-			    (let ((var (cadr whole))
-				  (form (caddr whole))
-				  (doc-string (cadddr whole)))
-				  "Syntax: (defconstant name form [doc])
+                            (let ((var (cadr whole))
+                                  (form (caddr whole))
+                                  (doc-string (cadddr whole)))
+                                  "Syntax: (defconstant name form [doc])
 Declares the global variable named by NAME as a special variable and assigns
 the value of FORM to the variable.  The doc-string DOC, if supplied, is saved
 as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
@@ -352,7 +352,7 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
                        (declare (ignore rest))
                        (if decl (setq decl (list (cons 'declare decl))))
                        (let ((func `#'(lambda ,lambda-list ,@decl ,@doc (block ,(si::function-block-name name) ,@body))))
-                         ;;(bformat t "PRIMITIVE DEFUN defun --> %s\n" func )
+                         ;;(bformat t "PRIMITIVE DEFUN defun --> %s%N" func )
                           `(progn (eval-when (:compile-toplevel)
                                     (cmp::register-global-function-def 'defun ',name))
                                   (si:fset ',name ,func nil ',lambda-list)))))
@@ -434,29 +434,29 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
 
 
 (si:fset 'and
-	   #'(lambda (whole env)
-	       (let ((forms (cdr whole)))
-		 (if (null forms)
-		     t
-		     (if (null (cdr forms))
-			 (car forms)
-			 `(if ,(car forms)
-			      (and ,@(cdr forms)))))))
-	   t)
+           #'(lambda (whole env)
+               (let ((forms (cdr whole)))
+                 (if (null forms)
+                     t
+                     (if (null (cdr forms))
+                         (car forms)
+                         `(if ,(car forms)
+                              (and ,@(cdr forms)))))))
+           t)
 
 (si:fset 'or
-	   #'(lambda (whole env)
-	       (let ((forms (cdr whole)))
-		 (if (null forms)
-		     nil
-		     (if ( null (cdr forms))
-			 (car forms)
-			 (let ((tmp (gensym)))
-			   `(let ((,tmp ,(car forms)))
-			      (if ,tmp
-				  ,tmp
-				  (or ,@(cdr forms)))))))))
-	   t )
+           #'(lambda (whole env)
+               (let ((forms (cdr whole)))
+                 (if (null forms)
+                     nil
+                     (if ( null (cdr forms))
+                         (car forms)
+                         (let ((tmp (gensym)))
+                           `(let ((,tmp ,(car forms)))
+                              (if ,tmp
+                                  ,tmp
+                                  (or ,@(cdr forms)))))))))
+           t )
 (export '(and or))
 
 (defun build-target-dir (type &optional stage)
@@ -489,7 +489,7 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
 (defun ensure-relative-pathname (input)
   "If the input pathname is absolute then search for src, or generated and return
 a relative path from there."
-  #+(or)(bformat t "ensure-relative-pathname input = %s   sys-pn = %s\n" input sys-pn)
+  #+(or)(bformat t "ensure-relative-pathname input = %s   sys-pn = %s%N" input sys-pn)
   (let ((result
          (cond
            ((eq :relative (car (pathname-directory input)))
@@ -499,7 +499,7 @@ a relative path from there."
             (make-pathname :directory (cons :relative (strip-root (pathname-directory input)))
                            :name (pathname-name input)))
            (t (error "ensure-relative-pathname could not handle ~a" input)))))
-    #+(or)(bformat t "ensure-relative-pathname result = %s\n" result)
+    #+(or)(bformat t "ensure-relative-pathname result = %s%N" result)
     result))
 
 
@@ -553,9 +553,9 @@ the stage, the +application-name+ and the +bitcode-name+"
     (let ((target-host "lib")
           (target-dir (build-target-dir type stage))
           pn)
-      #+dbg-print(bformat t "DBG-PRINT build-pathname module: %s\n" module)
-      #+dbg-print(bformat t "DBG-PRINT build-pathname target-host: %s\n" target-host)
-      #+dbg-print(bformat t "DBG-PRINT build-pathname target-dir: %s\n" target-dir)
+      #+dbg-print(bformat t "DBG-PRINT build-pathname module: %s%N" module)
+      #+dbg-print(bformat t "DBG-PRINT build-pathname target-host: %s%N" target-host)
+      #+dbg-print(bformat t "DBG-PRINT build-pathname target-dir: %s%N" target-dir)
       (let ((result
               (cond
                 ((eq type :lisp)
@@ -617,12 +617,12 @@ the stage, the +application-name+ and the +bitcode-name+"
          (pathname (probe-file (build-pathname filename :lisp)))
          (name (namestring pathname)))
     (if cmp:*implicit-compile-hook*
-        (bformat t "Loading/compiling source: %s\n" (namestring name))
-        (bformat t "Loading/interpreting source: %s\n" (namestring name)))
+        (bformat t "Loading/compiling source: %s%N" (namestring name))
+        (bformat t "Loading/interpreting source: %s%N" (namestring name)))
     (load pathname)))
 
 (defun iload (entry &key load-bitcode )
-  #+dbg-print(bformat t "DBG-PRINT iload fn: %s\n" fn)
+  #+dbg-print(bformat t "DBG-PRINT iload fn: %s%N" fn)
   (let* ((fn (entry-filename entry))
          (lsp-path (build-pathname fn))
          (bc-path (build-pathname fn :bitcode))
@@ -636,25 +636,24 @@ the stage, the +application-name+ and the +bitcode-name+"
                                 bc-newer))))))
     (if load-bc
         (progn
-          (bformat t "Loading bitcode file: %s\n" bc-path)
+          (bformat t "Loading bitcode file: %s%N" bc-path)
           (cmp:load-bitcode bc-path))
         (if (probe-file lsp-path)
             (progn
               (if cmp:*implicit-compile-hook*
-                  (bformat t "Loading/compiling source: %s\n" lsp-path)
-                  (bformat t "Loading/interpreting source: %s\n" lsp-path))
+                  (bformat t "Loading/compiling source: %s%N" lsp-path)
+                  (bformat t "Loading/interpreting source: %s%N" lsp-path))
               (load lsp-path))
-            (bformat t "No interpreted or bitcode file for %s could be found\n" lsp-path)))))
-
+            (bformat t "No interpreted or bitcode file for %s could be found%N" lsp-path)))))
 
 (defun delete-init-file (entry &key (really-delete t) stage)
   (let* ((module (entry-filename entry))
          (bitcode-path (build-pathname module :bitcode stage)))
     (if (probe-file bitcode-path)
-	(if really-delete
-	    (progn
-	      (bformat t "     Deleting bitcode: %s\n" bitcode-path)
-	      (delete-file bitcode-path))))))
+        (if really-delete
+            (progn
+              (bformat t "     Deleting bitcode: %s%N" bitcode-path)
+              (delete-file bitcode-path))))))
 
 
 ;; I need to search the list rather than using features because *features* may change at runtime
@@ -684,8 +683,7 @@ the stage, the +application-name+ and the +bitcode-name+"
   `(progn
      ,@(mapcar #'(lambda (f) `(push ,f *features*)) features)
      (if (core:is-interactive-lisp)
-         (bformat t "Starting %s ... loading image... it takes a few seconds\n" (lisp-implementation-version)))))
-
+         (bformat t "Starting %s ... loading image... it takes a few seconds%N" (lisp-implementation-version)))))
 
 (export '*extension-startup-loads*) ;; ADDED: frgo, 2016-08-10
 (defvar *extension-startup-loads* nil)
@@ -724,10 +722,10 @@ the stage, the +application-name+ and the +bitcode-name+"
 
 (defun tpl-change-default-pathname-defaults-dir-command (raw-dir)
   (let* ((corrected-dir (format nil "~a/" (string-right-trim "/" (string raw-dir))))
-	 (dir (pathname-directory (parse-namestring corrected-dir)))
-	 (pn-dir (mapcar #'(lambda (x) (if (eq x :up) :back x)) dir))
-	 (new-pathname (merge-pathnames (make-pathname :directory pn-dir) *default-pathname-defaults*))
-	 )
+         (dir (pathname-directory (parse-namestring corrected-dir)))
+         (pn-dir (mapcar #'(lambda (x) (if (eq x :up) :back x)) dir))
+         (new-pathname (merge-pathnames (make-pathname :directory pn-dir) *default-pathname-defaults*))
+         )
     (setq *default-pathname-defaults* new-pathname)))
 
 
@@ -742,7 +740,7 @@ the stage, the +application-name+ and the +bitcode-name+"
   (cond
     ((eq (car cmd) :pwd) (tpl-default-pathname-defaults-command))
     ((eq (car cmd) :cd) (tpl-change-default-pathname-defaults-dir-command (cadr cmd)))
-    (t (bformat t "Unknown command %s\n" cmd))))
+    (t (bformat t "Unknown command %s%N" cmd))))
 
 (setq *top-level-command-hook* #'tpl-hook)
 
@@ -755,16 +753,16 @@ the stage, the +application-name+ and the +bitcode-name+"
 (defun run-repl ()
   (if (fboundp 'core:top-level)
       (progn
-	(maybe-load-clasprc)
-	(core:top-level))
+        (maybe-load-clasprc)
+        (core:top-level))
       (core:low-level-repl)))
 
 #-(or aclasp bclasp cclasp)
 (eval-when (:execute)
   (process-command-line-load-eval-sequence)
-  (bformat t "Low level repl - in init.lsp\n")
+  (bformat t "Low level repl - in init.lsp%N")
   (core:low-level-repl))
 
 #-(or bclasp cclasp)
 (eval-when (:execute :load-top-level)
-  (bformat t "init.lsp  \n!\n!\n! Hello from the bottom of init.lsp - for some reason execution is passing through here\n!\n!\n"))
+  (bformat t "init.lsp  %N!\n!\n! Hello from the bottom of init.lsp - for some reason execution is passing through here\n!\n!\n"))
