@@ -182,7 +182,7 @@ def update_dependencies(cfg):
     log.pprint('BLUE', 'update_dependencies()')
     fetch_git_revision("src/lisp/kernel/contrib/sicl",
                        "https://github.com/Bike/SICL.git",
-                       "b60fd40664699f7eef35f517ab529db319a387a3")
+                       "a080c75b0aa17a939b09cb378514cfee7a72a4c0")
     fetch_git_revision("src/lisp/kernel/contrib/Acclimation",
                        "https://github.com/clasp-developers/Acclimation.git",
                        "5e0add45b7c6140e4ab07a2cbfd28964e36e6e48")
