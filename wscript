@@ -470,10 +470,12 @@ class cmpsprep_d(mpsprep_d):
 
 def configure(cfg):
     def update_exe_search_path(cfg):
+        log.info("DEST_OS = %s" % cfg.env['DEST_OS'])
         llvm_config_binary = cfg.env.LLVM_CONFIG_BINARY
         if (len(llvm_config_binary) == 0):
             if (cfg.env['DEST_OS'] == DARWIN_OS ):
                 llvm_config_binary = '/usr/local/opt/llvm@%s/bin/llvm-config'%CLANG_VERSION
+                log.info("On darwin looking for %s" % llvm_config_binary)
             else:
                 try:
                     llvm_config_binary = cfg.find_program('llvm-config-%s.0'%CLANG_VERSION)
@@ -482,6 +484,7 @@ def configure(cfg):
                     # Let's fail if no llvm-config binary has been found
                     llvm_config_binary = cfg.find_program('llvm-config')
                 llvm_config_binary = llvm_config_binary[0]
+                log.info("On %s looking for %s" % (cfg.env['DEST_OS'],llvm_config_binary))
             cfg.env["LLVM_CONFIG_BINARY"] = llvm_config_binary
         log.info("Using llvm-config binary: %s", cfg.env.LLVM_CONFIG_BINARY)
         # Let's prefix the OS's binary search PATH with the configured LLVM bin dir.
