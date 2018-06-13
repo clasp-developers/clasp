@@ -236,7 +236,7 @@ def waf_nodes_for_lisp_files(bld, paths):
         else: # generated files
             waf_node = bld.path.find_or_declare("%s.lisp" % path)
             #log.debug("Looking for generated lisp file with .lisp: %s --> %s", path, waf_node)
-        assert waf_node != None, "Could not find waf node for lisp file %s - did you run './waf update_dependencies'?" % file_name
+        assert waf_node != None, "Could not find waf node for lisp file %s - did you run './waf update_dependencies'?" % path
         nodes.append(waf_node)
     return nodes
 
