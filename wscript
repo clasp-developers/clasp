@@ -1527,7 +1527,7 @@ def postprocess_all_c_tasks(self):
 
     # Start 'jobs' number of scraper processes in parallel, each processing several files
     #chunks = split_list(all_cxx_nodes, min(self.bld.jobs, len(all_cxx_nodes))) # this splits into the optimal chunk sizes
-    chunk_size = min(20, max(1, len(all_cxx_nodes) // 8 # self.bld.jobs)) # this splits into task chunks of at most 20 files
+    chunk_size = min(20, max(1, len(all_cxx_nodes) // 8 ))# self.bld.jobs)) # this splits into task chunks of at most 20 files
     chunks = list(list_chunks_of_size(all_cxx_nodes, chunk_size))
     log.info('Creating %s parallel scraper tasks, each processing %s files, for the total %s cxx files', len(chunks), chunk_size, len(all_cxx_nodes))
     assert len([x for sublist in chunks for x in sublist]) == len(all_cxx_nodes)
