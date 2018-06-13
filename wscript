@@ -1512,7 +1512,7 @@ def postprocess_all_c_tasks(self):
                 sif_node = node.change_ext('.sif')
                 self.create_task('generate_one_sif', node, [sif_node])
                 all_sif_files.append(sif_node)
-           for node in task.outputs:
+            for node in task.outputs:
                 all_o_nodes.append(node)
                 if ends_with(node.name, 'intrinsics.cc'):
                     intrinsics_o = node
