@@ -400,6 +400,7 @@ when this is t a lot of graphs will be generated.")
   ;; or an object needing a make-load-form.
   ;; That shouldn't actually happen, but it's a little ambiguous in Cleavir right now.
   (quick-draw-hir init-instr "hir-before-transformations")
+
   #+(or)
   (cleavir-partial-inlining:do-inlining init-instr)
   (quick-draw-hir init-instr "hir-after-inlining")
@@ -471,7 +472,7 @@ COMPILE-FILE will use the default *clasp-env*."
          (lambda (condition)
            #+verbose-compiler(warn "Condition: ~a" condition)
            (cmp:compiler-warning-undefined-global-variable (cleavir-environment:name condition))
-           (invoke-restart (find-restart 'cleavir-cst-to-ast:recover condition))))
+           (invoke-restart 'cleavir-cst-to-ast:consider-special)))
        (cleavir-env:no-function-info
          (lambda (condition)
            #+verbose-compiler(warn "Condition: ~a" condition)
@@ -483,6 +484,7 @@ COMPILE-FILE will use the default *clasp-env*."
       (setf *ct-generate-ast* (compiler-timer-elapsed))
       ast)))
 
+#-cst
 (defun generate-ast (form &optional (env *clasp-env*))
   "Compile a form into an AST and return it.
 Does not hoist."
@@ -544,6 +546,7 @@ Does not hoist."
                             (env *clasp-env*))
   (translate-ast (hoist-ast (cst->ast cst env) env) :abi abi :linkage linkage :env env))
 
+#-cst
 (defun translate-form (form &key (abi *abi-x86-64*) (linkage 'llvm-sys:internal-linkage)
                               (env *clasp-env*))
   (translate-ast (hoist-ast (generate-ast form env) env) :abi abi :linkage linkage :env env))
@@ -567,6 +570,7 @@ Does not hoist."
          (cst (cst:cst-from-expression form))
          #+cst
          (ast (cst->ast cst env))
+         #-cst
          (ast (generate-ast form env))
          function lambda-name
          ordered-raw-constants-list constants-table startup-fn shutdown-fn)
@@ -593,6 +597,7 @@ Does not hoist."
   (setf *ct-start* (compiler-timer-elapsed))
   #+cst
   (translate-cst (cst:cst-from-expression form) :env env)
+  #-cst
   (translate-form form :env env))
 
 #+cst
@@ -602,6 +607,7 @@ Does not hoist."
           (compiler-time (translate-cst cst :env env))
           (translate-cst cst :env env))))
 
+#-cst
 (defun cleavir-compile-file-form (form &optional (env *clasp-env*))
   (literal:with-top-level-form
     (if cmp:*debug-compile-file*
@@ -635,6 +641,7 @@ Does not hoist."
             (progn
               (when *compile-print* (cmp::describe-form (cst:raw cst)))
               (cleavir-compile-file-cst cst environment)))
+        #-cst
         (if (eq form eof-value)
             (return nil)
             (progn

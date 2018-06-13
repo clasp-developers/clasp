@@ -54,7 +54,7 @@
     (handler-bind
         ((cleavir-env:no-variable-info
            (lambda (condition)
-             (invoke-restart #+cst (find-restart 'cleavir-cst-to-ast:recover condition)
+             (invoke-restart #+cst 'cleavir-cst-to-ast:consider-special
                              #-cst 'cleavir-generate-ast:consider-special)))
          (cleavir-env:no-function-info
            (lambda (condition)
@@ -103,7 +103,7 @@
                               env (cleavir-env:name condition))
                              ;; we could potentially leave a note.
                              (return-from defun-inline-hook nil)
-                             (invoke-restart #+cst (find-restart 'cleavir-cst-to-ast:recover condition)
+                             (invoke-restart #+cst 'cleavir-cst-to-ast:consider-special
                                              #-cst 'cleavir-generate-ast:consider-special))))
                      (cleavir-env:no-function-info
                        (lambda (condition)
