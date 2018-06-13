@@ -397,9 +397,12 @@ when this is t a lot of graphs will be generated.")
       (format stream "====== Procedure: ~a~%" (cc-mir:describe-mir procedure-initial))
       (let ((basic-blocks (remove procedure-initial
 				  all-basic-blocks
-				  :test-not #'eq :key #'third)))
+				  :test-not #'eq :key #'cleavir-basic-blocks:owner)))
 	(dolist (bb basic-blocks)
-	  (destructuring-bind (first last owner) bb
+	  (with-accessors ((first cleavir-basic-blocks:first-instruction)
+                           (last cleavir-basic-blocks:last-instruction)
+                           (owner cleavir-basic-blocks:owner))
+              bb
 	    (format stream "-------------------basic-block owner: ~a~%" 
 		    (cc-mir:describe-mir owner))
 	    (loop for instruction = first

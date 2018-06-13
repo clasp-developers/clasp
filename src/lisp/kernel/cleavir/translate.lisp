@@ -139,7 +139,10 @@ when this is t a lot of graphs will be generated.")
   (mapcar #'translate-lambda-list-item lambda-list))
 
 (defun layout-basic-block (basic-block return-value abi current-function-info)
-  (destructuring-bind (first last owner) basic-block
+  (with-accessors ((first cleavir-basic-blocks:first-instruction)
+                   (last cleavir-basic-blocks:last-instruction)
+                   (owner cleavir-basic-blocks:owner))
+      basic-block
     (cc-dbg-when *debug-log*
                          (format *debug-log* "- - - -  begin layout-basic-block  owner: ~a~%" (cc-mir:describe-mir owner))
                          (loop for instruction = first
@@ -210,7 +213,7 @@ when this is t a lot of graphs will be generated.")
                 (generate-push-invocation-history-frame (calling-convention function-info)))
               (layout-basic-block first-basic-block return-value abi function-info)
               (loop for block in rest-basic-blocks
-                    for instruction = (first block)
+                    for instruction = (cleavir-basic-blocks:first-instruction block)
                     do (cmp:irc-begin-block (gethash instruction *tags*))
                        (layout-basic-block block return-value abi function-info)))
             ;; finish up by jumping from the entry block to the body block
@@ -222,13 +225,16 @@ when this is t a lot of graphs will be generated.")
 
 ;;; Returns all basic blocks with the given owner.
 (defun function-basic-blocks (enter)
-  (remove enter *basic-blocks* :test-not #'eq :key #'third))
+  (remove enter *basic-blocks* :test-not #'eq :key #'cleavir-basic-blocks:owner))
 
 (defun log-layout-procedure (the-function basic-blocks)
   (format *debug-log* "------------ begin layout-procedure ~a~%" (llvm-sys:get-name the-function))
   (format *debug-log* "   basic-blocks for procedure~%")
   (dolist (bb basic-blocks)
-    (destructuring-bind (first last owner) bb
+    (with-accessors ((first cleavir-basic-blocks:first-instruction)
+                     (last cleavir-basic-blocks:last-instruction)
+                     (owner cleavir-basic-blocks:owner))
+        bb
       #+stealth-gids(format *debug-log* "basic-block owner: ~a:~a~%"
                             (cleavir-ir-gml::label owner) (clasp-cleavir:instruction-gid owner))
       #-stealth-gids(format *debug-log* "basic-block owner: ~a~%" (cleavir-ir-gml::label owner))
@@ -275,7 +281,8 @@ when this is t a lot of graphs will be generated.")
          ;; Gather the basic blocks of this procedure in basic-blocks
          (basic-blocks (function-basic-blocks enter))
          ;; The basic block control starts in.
-         (first-basic-block (find enter basic-blocks :test #'eq :key #'first))
+         (first-basic-block (find enter basic-blocks
+                                  :test #'eq :key #'cleavir-basic-blocks:first-instruction))
          ;; This gathers the rest of the basic blocks
          (rest-basic-blocks (remove first-basic-block basic-blocks :test #'eq))
          (main-fn-name lambda-name)
@@ -310,7 +317,7 @@ when this is t a lot of graphs will be generated.")
             (llvm-sys:get-argument-list the-function) cmp:+fn-prototype-argument-names+))
     ;; create a basic-block for every remaining tag
     (loop for block in rest-basic-blocks
-          for instruction = (first block)
+          for instruction = (cleavir-basic-blocks:first-instruction block)
           do (setf (gethash instruction *tags*) (cmp:irc-basic-block-create "tag")))
     (cmp:irc-set-insert-point-basic-block entry-block cmp:*irbuilder-function-alloca*)
     ;; Generate code to get the arguments into registers.
@@ -415,7 +422,7 @@ when this is t a lot of graphs will be generated.")
   (setf *ct-thes->typeqs* (compiler-timer-elapsed))
 
   ;;; See comment in policy.lisp. tl;dr these analyses are slow.
-  #-disable-type-inference
+  #+(or)
   (let ((do-dx (policy-anywhere-p init-instr 'do-dx-analysis))
         (do-ty (policy-anywhere-p init-instr 'do-type-inference)))
     (when (or do-dx do-ty)
