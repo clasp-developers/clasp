@@ -442,9 +442,10 @@
                                   (append cl-args (make-list (- core:+number-of-fixed-arguments+ (length cl-args)) :initial-element (cmp::null-t-ptr)))
                                   cl-args))
                    (function-object (if core:*use-cleavir-compiler*
-                                        (let ((compile-form (find-symbol "COMPILE-LAMBDA-FORM-TO-LLVM-FUNCTION" :clasp-cleavir)))
+                                        (let* ((name (load-time-value (string :translate-lambda-expression-to-llvm-function)))
+                                               (compile-form (find-symbol name :clasp-cleavir)))
                                           (unless compile-form
-                                            (error "Could not file function COMPILE-LAMBDA-FORM-TO-LLVM-FUNCTION in :clasp-cleavir"))
+                                            (error "Could not file function ~a in :clasp-cleavir" name))
                                           (funcall compile-form body-form))
                                         (cmp:compile-lambda-function body-form)))
                    (invoke-fn (cmp::get-or-declare-function-or-error cmp::*the-module* "cc_call_callback"))
