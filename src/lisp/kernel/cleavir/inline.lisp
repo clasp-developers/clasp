@@ -815,10 +815,12 @@
 (define-compiler-macro values (&rest values)
   `(cleavir-primop:values ,@values))
 
-#++
-(defun symbol-value (symbol)
-  (if (cleavir-primop:typeq symbol symbol)
-      (cleavir-primop:symbol-value symbol)
-      (error 'type-error :datum symbol :expected-type 'symbol)))
-
+;;; Written as a compiler macro to avoid confusing bclasp.
+(define-compiler-macro multiple-value-bind (vars form &body body)
+  (let ((syms (loop for var in vars collecting (gensym (symbol-name var)))))
+    `(cleavir-primop:let-uninitialized (,@syms)
+       (cleavir-primop:multiple-value-setq (,@syms) ,form)
+       (let (,@(loop for var in vars for sym in syms
+                     collecting `(,var ,sym)))
+         ,@body))))
 )
