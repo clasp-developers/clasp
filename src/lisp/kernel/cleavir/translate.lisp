@@ -569,17 +569,18 @@ This works like compile-lambda-function in bclasp."
          (ast (generate-ast lambda-expression))
          (hir (ast->hir (hoist-ast ast))))
     (multiple-value-bind (mir function-info-map)
-        (let ((function-enter-instruction
-                (block first-function
-                  (cleavir-ir:map-local-instructions
-                   (lambda (instruction)
-                     (when (typep instruction 'cleavir-ir:enclose-instruction)
-                       (return-from first-function (cleavir-ir:code instruction))))
-                   mir))))
-          (unless function-enter-instruction
-            (error "Could not find enter-instruction for enclosed function in ~a"
-                   lambda-expression))
-          (translate function-enter-instruction function-info-map)))))
+        (hir->mir hir)
+      (let ((function-enter-instruction
+              (block first-function
+                (cleavir-ir:map-local-instructions
+                 (lambda (instruction)
+                   (when (typep instruction 'cleavir-ir:enclose-instruction)
+                     (return-from first-function (cleavir-ir:code instruction))))
+                 mir))))
+        (unless function-enter-instruction
+          (error "Could not find enter-instruction for enclosed function in ~a"
+                 lambda-expression))
+        (translate function-enter-instruction function-info-map)))))
 
 (defparameter *debug-final-gml* nil)
 (defparameter *debug-final-next-id* 0)
