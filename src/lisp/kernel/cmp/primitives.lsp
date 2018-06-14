@@ -216,10 +216,6 @@
     (primitive         "saveValues" %t*% (list %tmv*%))
     (primitive         "loadValues" %void% (list %tmv*% %t*%))
     
-   
-    (primitive         "progvSaveSpecials" %void% (list %i8**% %t*% %t*%))
-    (primitive         "progvRestoreSpecials" %void% (list %i8**%))
-    
     (primitive         "pushDynamicBinding" %void% (list %t*%))
     (primitive         "popDynamicBinding" %void% (list %t*%))
     

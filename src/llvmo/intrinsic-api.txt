@@ -119,8 +119,6 @@ _restoreFromMultipleValue0
 _saveValues
 _loadValues
 _setjmp_set_jump_address
-_progvSaveSpecials
-_progvRestoreSpecials
 _pushDynamicBinding
 _popDynamicBinding
 _matchKeywordOnce

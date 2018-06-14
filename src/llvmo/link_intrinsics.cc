@@ -1195,30 +1195,6 @@ size_t cc_trackFirstUnexpectedKeyword(size_t badKwIdx, size_t newBadKwIdx)
 
 extern "C" {
 
-void progvSaveSpecials(void **saveSpecialsP, core::T_O *symbolsP, core::T_O *valuesP)
-{NO_UNWIND_BEGIN();
-  core::DynamicScopeManager *managerP = new core::DynamicScopeManager();
-  (*saveSpecialsP) = (void *)managerP;
-  core::List_sp symbols((gctools::Tagged)symbolsP);
-  core::List_sp values((gctools::Tagged)valuesP);
-  for (; symbols.notnilp(); symbols = oCdr(symbols), values = oCdr(values)) {
-    core::Symbol_sp symbol = gc::As<Symbol_sp>(oCar(symbols));
-    core::T_sp value = oCar(values);
-    managerP->pushSpecialVariableAndSet(symbol, value);
-  }
-  NO_UNWIND_END();
-}
-
-void progvRestoreSpecials(void **saveSpecialsP)
-{NO_UNWIND_BEGIN();
-  core::DynamicScopeManager *managerP = (core::DynamicScopeManager *)(*saveSpecialsP);
-  delete (managerP);
-  NO_UNWIND_END();
-}
-};
-
-extern "C" {
-
 void pushDynamicBinding(core::T_O *tsymbolP)
 {NO_UNWIND_BEGIN();
   core::Symbol_sp sym((gctools::Tagged)tsymbolP);
