@@ -1579,10 +1579,18 @@ def postprocess_all_c_tasks(self):
 
     all_sif_nodes = []
 
-    # Start 'jobs' number of scraper processes in parallel, each processing several files
-    #chunks = split_list(all_cxx_nodes, min(self.bld.jobs, len(all_cxx_nodes))) # this splits into the optimal chunk sizes
-    chunk_size = min(20, max(1, len(all_cxx_nodes) // 8 ))# self.bld.jobs)) # this splits into task chunks of at most 20 files
-    chunks = list(list_chunks_of_size(all_cxx_nodes, chunk_size))
+    # Start 'job_count' number of parallel scraper processes, each processing several files at once
+    job_count = self.bld.jobs
+    job_count = 8 # KLUDGE fixed to 8 jobs because waf seems to redo the entire scraping when the task layout changes, e.g. due to a different ./waf --jobs xx
+    if True:
+        # Split into task chunks of at most 20 files each
+        chunk_size = min(20, max(1, len(all_cxx_nodes) // job_count))
+        chunks = list(list_chunks_of_size(all_cxx_nodes, chunk_size))
+    else:
+        # Split into the optimal sized chunks
+        chunks = split_list(all_cxx_nodes, min(job_count, len(all_cxx_nodes)))
+        chunk_size = len(chunks[0])
+
     log.info('Creating %s parallel scraper tasks, each processing %s files, for the total %s cxx files', len(chunks), chunk_size, len(all_cxx_nodes))
     assert len([x for sublist in chunks for x in sublist]) == len(all_cxx_nodes)
     for cxx_nodes in chunks:
