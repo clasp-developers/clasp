@@ -111,6 +111,9 @@ ADD demos.tar /home/app/
 
 RUN apt-get install -y libgfortran4
 
+RUN pip install bqplot
+RUN jupyter-labextension install bqplot
+
 ENV HOME /home/app/
 ENTRYPOINT [ "jupyter", "lab" ]
 CMD [ "--allow-root", "--no-browser", "--ip=0.0.0.0", "--port=8888" ]
