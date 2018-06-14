@@ -558,6 +558,29 @@ Does not hoist."
                               (env *clasp-env*))
   (translate-ast (hoist-ast (generate-ast form env) env) :abi abi :linkage linkage :env env))
 
+(defun translate-lambda-expression-to-llvm-function (lambda-expression)
+  "Compile a lambda expression into an llvm-function and return it.
+This works like compile-lambda-function in bclasp."
+  (let* (#+cst
+         (cst (cst:cst-from-expression lambda-expression))
+         #+cst
+         (ast (cst->ast cst))
+         #-cst
+         (ast (generate-ast lambda-expression))
+         (hir (ast->hir (hoist-ast ast))))
+    (multiple-value-bind (mir function-info-map)
+        (let ((function-enter-instruction
+                (block first-function
+                  (cleavir-ir:map-local-instructions
+                   (lambda (instruction)
+                     (when (typep instruction 'cleavir-ir:enclose-instruction)
+                       (return-from first-function (cleavir-ir:code instruction))))
+                   mir))))
+          (unless function-enter-instruction
+            (error "Could not find enter-instruction for enclosed function in ~a"
+                   lambda-expression))
+          (translate function-enter-instruction function-info-map)))))
+
 (defparameter *debug-final-gml* nil)
 (defparameter *debug-final-next-id* 0)
 
