@@ -54,24 +54,22 @@
 
 (defmacro do-in-seq ((%elt sequence &key (start 0) end output) &body body)
   (si::with-unique-names (%start %iterator %counter %sequence)
-    (let* ((counter (if end
-                        `(- (or ,end most-positive-fixnum) ,%start)
-                        0))
-           (test (if end
-                     `(and ,%iterator (plusp ,%counter))
-                     %iterator)))
+    (flet ((optional-end (&rest forms)
+             (when end
+               `(,@forms))))
       `(let* ((,%sequence ,sequence)
               (,%start ,start)
               (,%iterator (si::make-seq-iterator ,%sequence ,%start))
-              (,%counter ,counter))
-         (declare (ignorable ,%counter)
-                  (type fixnum ,%counter))
+              ,@(optional-end `(,%counter (- (or ,end most-positive-fixnum) ,%start))))
+         ,@(optional-end `(declare (type fixnum ,%counter)))
          (loop
-            (unless ,test (return ,output))
-            (let ((,%elt (si::seq-iterator-ref ,%sequence ,%iterator)))
-              ,@body)
-            (setf ,%iterator (si::seq-iterator-next ,%sequence ,%iterator))
-            (decf ,%counter))))))
+           (unless (and ,%iterator
+                        ,@(optional-end `(plusp ,%counter)))
+             (return ,output))
+           (let ((,%elt (si::seq-iterator-ref ,%sequence ,%iterator)))
+             ,@body)
+           (setf ,%iterator (si::seq-iterator-next ,%sequence ,%iterator))
+           ,@(optional-end `(decf ,%counter)))))))
 
 (defun gensym-list (list &optional x)
   (if x
@@ -113,22 +111,20 @@
 ;;; FIND
 ;;;
 
-(defun expand-find (env value sequence &rest sequence-args)
+(core:bclasp-define-compiler-macro find (&whole whole value sequence &rest sequence-args &environment env)
   (multiple-value-bind (key-function test-function init
                         key-flag test-flag test start end)
       (two-arg-test-parse-args 'find sequence-args :environment env)
-    (when test-function
-      (si::with-unique-names (%value %elt)
-        `(let ((,%value ,value)
-               ,@init)
-           (do-in-seq (,%elt ,sequence :start ,start :end ,end)
-             (when ,(funcall test-function %value
-                             (funcall key-function %elt))
-               (return ,%elt))))))))
+    (if key-function
+        (si::with-unique-names (%value %elt)
+          `(let ((,%value ,value)
+                 ,@init)
+             (do-in-seq (,%elt ,sequence :start ,start :end ,end)
+               (when ,(funcall test-function %value
+                               (funcall key-function %elt))
+                 (return ,%elt)))))
+        whole)))
 
-(core:bclasp-define-compiler-macro find (&whole whole value sequence &rest sequence-args &environment env)
-  (or (apply #'expand-find env (rest whole))
-      whole))
 ;;;
 ;;; MAKE-SEQUENCE
 ;;;
