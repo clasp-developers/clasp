@@ -70,7 +70,8 @@
             (unless ,test (return ,output))
             (let ((,%elt (si::seq-iterator-ref ,%sequence ,%iterator)))
               ,@body)
-           (setf ,%iterator (si::seq-iterator-next ,%sequence ,%iterator)))))))
+            (setf ,%iterator (si::seq-iterator-next ,%sequence ,%iterator))
+            (decf ,%counter))))))
 
 (defun gensym-list (list &optional x)
   (if x
