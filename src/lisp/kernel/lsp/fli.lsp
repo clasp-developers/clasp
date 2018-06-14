@@ -385,7 +385,7 @@
   (format nil "clasp_ffi_cb_~a" name))
 
 (defun %expand-callback-definition (name-and-options return-type-kw argument-symbols argument-type-kws body)
-
+  "Expand a callback into the current cmp::*the-module*"
   (multiple-value-bind (function-name convention)
       (if (consp name-and-options)
           (destructuring-bind (name &key convention)
@@ -442,7 +442,10 @@
                                   (append cl-args (make-list (- core:+number-of-fixed-arguments+ (length cl-args)) :initial-element (cmp::null-t-ptr)))
                                   cl-args))
                    (function-object (if core:*use-cleavir-compiler*
-                                        (funcall (find-symbol "COMPILE-LAMBDA-FORM-TO-LLVM-FUNCTION" :clasp-cleavir) body-form)
+                                        (let ((compile-form (find-symbol "COMPILE-LAMBDA-FORM-TO-LLVM-FUNCTION" :clasp-cleavir)))
+                                          (unless compile-form
+                                            (error "Could not file function COMPILE-LAMBDA-FORM-TO-LLVM-FUNCTION in :clasp-cleavir"))
+                                          (funcall compile-form body-form))
                                         (cmp:compile-lambda-function body-form)))
                    (invoke-fn (cmp::get-or-declare-function-or-error cmp::*the-module* "cc_call_callback"))
                    (fptr (cmp:irc-bit-cast function-object cmp:%t*% "fptr-t*"))
