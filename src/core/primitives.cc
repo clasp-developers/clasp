@@ -1402,7 +1402,7 @@ CL_DEFUN T_mv core__sequence_start_end(T_sp sequence, Fixnum_sp start, T_sp end)
     TYPE_ERROR_INDEX_VARIABLE("start[~a] must be <= length of sequence[~a]", sequence, start, len);
   }
   if (unbox_fixnum(fnend) < 0) {
-    TYPE_ERROR_INDEX_VARIABLE("end[~a] must be greater than zero for sequence ~a", sequence, start, len);
+    TYPE_ERROR_INDEX_VARIABLE("end[~a] must be greater than zero for sequence ~a", sequence, end, len);
   }
   if (unbox_fixnum(fnend) > len) {
     TYPE_ERROR_INDEX_VARIABLE("end[~a] must be <= length of sequence[~a]", sequence, end, len);
