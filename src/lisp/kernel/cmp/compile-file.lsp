@@ -261,6 +261,7 @@ Compile a lisp source file into an LLVM module."
               (cmp-log-dump-module *the-module*)
               (irc-verify-module-safe *the-module*)
               (quick-module-dump *the-module* "preoptimize")
+              ;; ALWAYS link the builtins in, inline them and then remove them.
               (link-inline-remove-builtins *the-module*))
             (quick-module-dump module "postoptimize")
             module))))))
@@ -331,7 +332,7 @@ Compile a lisp source file into an LLVM module."
            (bformat t "Writing temporary bitcode file to: %s%N" temp-bitcode-file)
            (write-bitcode module (core:coerce-to-filename temp-bitcode-file))
            (bformat t "Writing fasl file to: %s%N" output-file)
-           (llvm-link output-file :lisp-bitcode-files (list temp-bitcode-file) :input-type :bitcode)))
+           (llvm-link output-file :input-files (list temp-bitcode-file) :input-type :bitcode)))
         (t ;; fasl
          (error "Add support to file of type: ~a" output-type)))
       (dolist (c conditions)
