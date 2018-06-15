@@ -72,9 +72,9 @@
            ,@(optional-end `(decf ,%counter)))))))
 
 (defun gensym-list (list &optional x)
-  (if x
-      (loop for _ in list collect (gensym x))
-      (loop for _ in list collect (gensym))))
+  (loop
+    :for _ :in list
+    :collect (if x (gensym x) (gensym))))
 
 ;;; Somewhat harder to understand version of do-sequences
 ;;; where the list of sequences is known at compile time.
