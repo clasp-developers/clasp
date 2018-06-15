@@ -13,6 +13,7 @@
   (flet ((build-module (source-file)
            (core:compile-kernel-file source-file :force-recompile t)
            (cmp:llvm-link (core:build-pathname source-file :fasl)
+                          :input-type :bitcode
                           :lisp-bitcode-files (list (core:build-pathname source-file :bitcode)))))
     (build-module #P"src/lisp/modules/serve-event/serve-event")
     (build-module #P"src/lisp/modules/asdf/build/asdf"))
@@ -21,8 +22,7 @@
 (progn ;; Set up everything for building cclasp from bclasp with auto-compile
   (format t "Loading ASDF system~%")
   (finish-output)
-  (time (require :asdf))
-  (load "~/quicklisp/setup.lisp")
+  (time (require :asdf "modules:modules;asdf;build;asdf.fasl"))
   (load "sys:local-asdf-config.lisp")
   (format t "Done local-asdf-config.lisp~%"))
 
