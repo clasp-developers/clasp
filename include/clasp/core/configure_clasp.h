@@ -89,7 +89,7 @@ typedef int64_t    Fixnum; // Signed Fixnum immediate value
 #define PRsize_t "lu"
 #endif
 #if defined( _TARGET_OS_LINUX ) || defined( _TARGET_OS_FREEBSD)
-#define Puintptr_clasp_t "llu"
+#define Puintptr_clasp_t "lu"
 #define Ptagged_stamp_t "lu"
 #define PFixnum "ld"
 #define Plu "lu"
