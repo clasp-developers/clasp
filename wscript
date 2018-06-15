@@ -191,7 +191,7 @@ def update_dependencies(cfg):
                        "5e0add45b7c6140e4ab07a2cbfd28964e36e6e48")
     fetch_git_revision("src/mps",
                        "https://github.com/Ravenbrook/mps.git",
-                       label = "branch/2018-06-13/fork", revision = "9fecfb27798c57acabb9eff6f3e86dcd50d5bc5e")
+                       label = "master", revision = "46e0a8d77ac470282de7300f5eaf471ca2fbee05")
     fetch_git_revision("src/lisp/modules/asdf",
                        "https://gitlab.common-lisp.net/asdf/asdf.git",
                        label = "master", revision = "3.3.1.2")
