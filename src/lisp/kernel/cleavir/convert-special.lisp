@@ -125,7 +125,7 @@
 
 (defmethod cleavir-cst-to-ast::convert-special
     ((symbol (eql 'core:multiple-value-foreign-call)) cst environment (system clasp-cleavir:clasp))
-  (check-type (cst:raw (cst:second cst)) string)
+  (assert (stringp (cst:raw (cst:second cst))))
   (make-instance 'clasp-cleavir-ast:multiple-value-foreign-call-ast
                  :function-name (cst:raw (cst:second cst))
                  :argument-asts (cleavir-cst-to-ast::convert-sequence (cst:rest (cst:rest cst)) environment system)
@@ -154,8 +154,8 @@
 (defmethod cleavir-cst-to-ast::convert-special
     ((symbol (eql 'core:foreign-call)) cst environment (system clasp-cleavir:clasp))
                                         ;  (format t "convert-special form: ~a~%"  cst)
-  (check-type (cst:raw (cst:second cst)) list)
-  (check-type (cst:raw (cst:third cst)) string)
+  (assert (listp (cst:raw (cst:second cst))))
+  (assert (stringp (cst:raw (cst:third cst))))
   (make-instance 'clasp-cleavir-ast:foreign-call-ast
                  :foreign-types (cst:raw (cst:second cst))
                  :function-name (cst:raw (cst:third cst))
@@ -175,7 +175,6 @@
 ;;;
 (defmethod cleavir-generate-ast::convert-special
     ((symbol (eql 'core:foreign-call-pointer)) form environment (system clasp-cleavir:clasp))
-;  (format t "convert-special form: ~a~%"  form)
   (check-type (second form) list)
   (make-instance 'clasp-cleavir-ast:foreign-call-pointer-ast
                  :foreign-types (second form)
@@ -183,8 +182,7 @@
 
 (defmethod cleavir-cst-to-ast::convert-special
     ((symbol (eql 'core:foreign-call-pointer)) cst environment (system clasp-cleavir:clasp))
-;  (format t "convert-special cst: ~a~%"  cst)
-  (check-type (cst:raw (cst:second cst)) list)
+  (assert (listp (cst:raw (cst:second cst))))
   (make-instance 'clasp-cleavir-ast:foreign-call-pointer-ast
                  :foreign-types (cst:raw (cst:second cst))
                  :argument-asts (cleavir-cst-to-ast::convert-sequence (cst:rest (cst:rest cst)) environment system)
@@ -434,7 +432,7 @@
               (error 'cleavir-cst-to-ast::malformed-lambda-list
                      :expr (cst:raw lambda-list-cst)
                      :origin (cst:source lambda-list-cst)))
-            (multiple-value-bind (declaration-csts documentation form-csts)
+            (multiple-value-bind (declaration-csts documentation forms-cst)
                 (cst:separate-function-body body-cst)
               (declare (ignore documentation))
               (let* ((declaration-specifiers
@@ -452,7 +450,7 @@
                       (cleavir-cst-to-ast::process-parameter-groups
                        (cst:children parsed-lambda-list)
                        idspecs
-                       (cleavir-cst-to-ast::make-body rdspecs form-csts nil)
+                       (cleavir-cst-to-ast::make-body rdspecs (cst:listify forms-cst) nil)
                        environment
                        system)
                     (cc-ast:make-bind-va-list-ast
