@@ -37,5 +37,11 @@
   (test nicknames-1 (null (package-nicknames pkg))))
 
 (test nicknames-2 (packagep (make-package "KARSTEN-NEW" :nicknames (list "CARLES" "CARLITO"))))
+
+;;; used to unintern the symbols in shadowing-import-from when delete-package
+(test shadowing-import-1
+      (let ((package (defpackage "FOO" (:use)(:shadowing-import-from "CL" "T"))))
+        (delete-package package)
+        (not (null (symbol-package 'cl:t)))))
  
 

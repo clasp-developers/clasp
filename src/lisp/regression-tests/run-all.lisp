@@ -24,6 +24,7 @@
 (load (compile-file "sys:regression-tests;bit-array0.lisp"))
 (load (compile-file "sys:regression-tests;bit-array1.lisp"))
 (load (compile-file "sys:regression-tests;character0.lisp"))
+(load (compile-file "sys:regression-tests;hash-tables0.lisp"))
 (load (compile-file "sys:regression-tests;misc.lisp"))
 
 (format t "Passes: ~a~%" *passes*)
