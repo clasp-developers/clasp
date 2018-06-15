@@ -221,8 +221,8 @@ void rawHeaderDescribe(const uintptr_clasp_t *headerP) {
     printf(" Not an object header!\n");
     break;
   case Header_s::stamp_tag: {
-    printf("  %p : %llu (%p)\n", headerP, *headerP, (void*)*headerP);
-    printf("  %p : %llu (%p)\n", (headerP+1), *(headerP+1), (void*)*(headerP+1));
+    printf("  %p : %" Puintptr_clasp_t " (%p)\n", headerP, *headerP, (void*)*headerP);
+    printf("  %p : %" Puintptr_clasp_t " (%p)\n", (headerP+1), *(headerP+1), (void*)*(headerP+1));
 #ifdef DEBUG_GUARD
     printf("  %p : %p\n", (headerP+2), (void*)*(headerP+2));
     printf("  %p : %p\n", (headerP+3), (void*)*(headerP+3));
@@ -236,9 +236,9 @@ void rawHeaderDescribe(const uintptr_clasp_t *headerP) {
   } break;
   case Header_s::fwd_tag: {
     Header_s *hdr = (Header_s *)headerP;
-    printf("  0x%p : 0x%llu 0x%llu\n", headerP, *headerP, *(headerP + 1));
-    printf(" fwd_tag - fwd address: 0x%llu\n", (*headerP) & Header_s::fwd_ptr_mask);
-    printf("     fwdSize = %llu/0x%llu\n", hdr->fwdSize(), hdr->fwdSize());
+    printf("  0x%p : 0x%" Puintptr_clasp_t " 0x%" Puintptr_clasp_t "\n", headerP, *headerP, *(headerP + 1));
+    printf(" fwd_tag - fwd address: 0x%" Puintptr_clasp_t "\n", (*headerP) & Header_s::fwd_ptr_mask);
+    printf("     fwdSize = %" Puintptr_clasp_t "/0x%" Puintptr_clasp_t "\n", hdr->fwdSize(), hdr->fwdSize());
   } break;
   case Header_s::pad_tag:
     printf("  0x%p : 0x%" PRu " 0x%" PRu "\n", headerP, *headerP, *(headerP + 1));
