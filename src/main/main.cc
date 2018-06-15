@@ -266,7 +266,7 @@ static void clasp_terminate_handler( void )
 #if DEBUG_FLOW_TRACKER
   flow_tracker_last_throw_backtrace_dump();
 #endif
-  printf("%s:%d There was an unhandled exception - do something about it.\n", __FILE__, __LINE__ );
+  fprintf(stderr, "%s:%d There was an unhandled exception - do something about it.\n", __FILE__, __LINE__ );
   abort();
 }
 
