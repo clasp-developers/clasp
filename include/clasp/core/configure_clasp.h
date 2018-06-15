@@ -95,11 +95,11 @@ typedef int64_t    Fixnum; // Signed Fixnum immediate value
 #define Plu "lu"
 #define PRu "llu"
 #define PRi "lld"
-#define PRF "lld"
-#define PRFoctal "llo"
+#define PRF "ld"
+#define PRFoctal "lo"
 #define Puint "u"
 #define PXuintptr_t "llX"
-#define PRFhex "llX"
+#define PRFhex "lX"
 #define PRsize_t "lu"
 #endif
 
