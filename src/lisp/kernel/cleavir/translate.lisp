@@ -665,6 +665,7 @@ This works like compile-lambda-function in bclasp."
       (let* ((core:*current-source-pos-info* (core:input-stream-source-pos-info source-sin))
              #+cst
              (cst (eclector.concrete-syntax-tree:cst-read source-sin nil eof-value))
+             #-cst
              (form (read source-sin nil eof-value)))
         #+cst
         (if (eq cst eof-value)
