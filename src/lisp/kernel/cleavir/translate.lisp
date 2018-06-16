@@ -297,7 +297,7 @@ when this is t a lot of graphs will be generated.")
          linkage
          llvm-function-name
          cmp:*the-module*
-         (calculate-function-info enter llvm-function-name))
+         (calculate-function-info enter lambda-name))
       (let* ((cmp:*current-function* the-function)
              (cmp:*current-function-description* function-description)
              (entry-block (cmp:irc-basic-block-create "entry" the-function))

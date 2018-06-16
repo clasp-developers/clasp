@@ -214,7 +214,7 @@
 		    (cmp:irc-cond-br loop-arg-idx_lt_nargs loop-kw-args-block loop-cont-block)
 		    (cmp:irc-begin-block loop-cont-block)
                     ;; FIXME    This must be an INVOKE if there is a cleanup clause in the function
-		    (irc-intrinsic-invoke-if-landing-pad-or-call "cc_ifBadKeywordArgumentException" (list phi-arg-bad-good-aok phi.aok-bad-good.bad-kw-idx arg-val))
+		    (irc-intrinsic-invoke-if-landing-pad-or-call "cc_ifBadKeywordArgumentException" (list phi-arg-bad-good-aok phi.aok-bad-good.bad-kw-idx arg-val *current-function-description*))
 		    (let ((kw-done-block (cmp:irc-basic-block-create "kw-done-block")))
 		      (cmp:irc-branch-to-and-begin-block kw-done-block)
 		      (cmp:irc-branch-to-and-begin-block kw-exit-block)

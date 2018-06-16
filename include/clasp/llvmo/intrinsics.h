@@ -210,6 +210,7 @@ namespace llvmo {
                  dummyErrorCode
   } ErrorCode;
 
+  core::T_sp functionNameOrNilFromFunctionDescription(core::FunctionDescription* functionDescription);
 
   [[noreturn]]extern void intrinsic_error(ErrorCode err, core::T_sp arg0 = _Nil<core::T_O>(), core::T_sp arg1 = _Nil<core::T_O>(), core::T_sp arg2 = _Nil<core::T_O>());
 
