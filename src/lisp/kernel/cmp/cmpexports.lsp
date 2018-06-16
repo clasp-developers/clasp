@@ -20,6 +20,7 @@
           *compile-duration-ns*
           *current-function*
           *current-function-name*
+          *current-function-description*
           *debug-compile-file*
           *debug-compile-file-counter*
           *generate-compile-file-load-time-values*
