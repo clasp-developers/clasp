@@ -955,7 +955,7 @@ But no irbuilders or basic-blocks. Return the fn."
         (when l (setf lineno l))
         (when c (setf column c))
         (when f (setf filepos f)))
-;;;      #+(or)
+      #+(or)
       (progn
         (core:bformat t "--------------------------%N")
         (core:bformat t "found-source-info: %s%N" found-source-info)
