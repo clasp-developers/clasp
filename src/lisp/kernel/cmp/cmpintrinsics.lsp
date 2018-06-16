@@ -518,6 +518,7 @@ eg:  (f closure-ptr nargs a b c d ...)
                                     %intptr_t% ; column
                                     %intptr_t% ; filepos
                                     ) nil ))
+(define-symbol-macro %function-description*% (llvm-sys:type-get-pointer-to %function-description%))
 
 ;;
 ;; Define the InvocationHistoryFrame type for LispCompiledFunctionIHF
@@ -629,13 +630,15 @@ and initialize it with an array consisting of one function pointer."
          (vaslist-size (llvm-sys:data-layout-get-type-alloc-size data-layout %vaslist%))
          (register-save-area-size (llvm-sys:data-layout-get-type-alloc-size data-layout %register-save-area%))
          (invocation-history-frame-size (llvm-sys:data-layout-get-type-alloc-size data-layout %InvocationHistoryFrame%))
-         (gcroots-in-module-size (llvm-sys:data-layout-get-type-alloc-size data-layout %gcroots-in-module%)))
+         (gcroots-in-module-size (llvm-sys:data-layout-get-type-alloc-size data-layout %gcroots-in-module%))
+         (function-description-size (llvm-sys:data-layout-get-type-alloc-size data-layout %function-description%)))
     (llvm-sys:throw-if-mismatched-structure-sizes :tsp tsp-size
                                                   :tmv tmv-size
                                                   :contab gcroots-in-module-size
                                                   :valist vaslist-size
                                                   :ihf invocation-history-frame-size
-                                                  :register-save-area register-save-area-size)))
+                                                  :register-save-area register-save-area-size
+                                                  :function-description function-description-size)))
 
 ;;
 ;; Define exception types in the module
@@ -771,6 +774,7 @@ It has appending linkage.")
 (defvar *current-form* nil "The current form being compiled")
 (defvar *current-env* nil "Current environment")
 (defvar *current-function* nil "The current function")
+(defvar *current-function-description* nil "The current function description")
 (defvar *current-function-name* nil "Store the current function name")
 (defvar *gv-current-function-name* nil "Store the global value in the module of the current function name ")
 

@@ -844,8 +844,9 @@
 	(traceid-gs (gensym "traceid"))
 	(irbuilder-alloca (gensym))
         (temp (gensym))
-	(irbuilder-body (gensym)))
-    `(multiple-value-bind (,fn ,fn-env ,cleanup-block-gs ,irbuilder-alloca ,irbuilder-body ,result)
+	(irbuilder-body (gensym))
+        (function-description (gensym)))
+    `(multiple-value-bind (,fn ,fn-env ,cleanup-block-gs ,irbuilder-alloca ,irbuilder-body ,result ,function-description)
 	 (irc-bclasp-function-create ,function-name ,parent-env
                                      :function-type ,function-type
                                      :argument-names ,argument-names
@@ -853,6 +854,7 @@
                                      :linkage ,linkage
                                      :function-info ,function-info)
        (let* ((*current-function* ,fn)
+              (*current-function-description* ,function-description)
               (*current-function-name* (llvm-sys:get-name ,fn))
               (*irbuilder-function-alloca* ,irbuilder-alloca)
               (*irbuilder-function-body* ,irbuilder-body)
@@ -1043,7 +1045,7 @@ and then the irbuilder-alloca, irbuilder-body."
 	(irc-set-insert-point-basic-block body-bb irbuilder-body)))
     (setf-metadata func-env :cleanup ())
     (let ((result               (irc-alloca-tmv func-env :irbuilder irbuilder-alloca :label "result")))
-      (values fn func-env cleanup-block irbuilder-alloca irbuilder-body result))))
+      (values fn func-env cleanup-block irbuilder-alloca irbuilder-body result fn-description))))
 
 
 (defun irc-cclasp-function-create (llvm-function-type linkage llvm-function-name module function-info)

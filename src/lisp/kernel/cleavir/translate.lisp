@@ -290,52 +290,54 @@ when this is t a lot of graphs will be generated.")
          (cmp:*gv-current-function-name*
            (cmp:module-make-global-string cmp:*current-function-name* "fn-name"))
          (llvm-function-type cmp:%fn-prototype%)
-         (llvm-function-name cmp:*current-function-name*)
-         (the-function (cmp:irc-cclasp-function-create
-                        llvm-function-type
-                        linkage
-                        llvm-function-name
-                        cmp:*the-module*
-                        (calculate-function-info enter llvm-function-name)))
-         (cmp:*current-function* the-function)
-         (entry-block (cmp:irc-basic-block-create "entry" the-function))
-         (*function-current-multiple-value-array-address* nil)
-         (cmp:*irbuilder-function-alloca* (llvm-sys:make-irbuilder cmp:*llvm-context*))
-         (body-irbuilder (llvm-sys:make-irbuilder cmp:*llvm-context*))
-         (body-block (cmp:irc-basic-block-create "body")))
-    (setup-function-scope-metadata main-fn-name
-                                   function-info
-                                   :function the-function
-                                   :llvm-function-name llvm-function-name
-                                   :llvm-function the-function
-                                   :llvm-function-type llvm-function-type)
-    (llvm-sys:set-personality-fn the-function (cmp:irc-personality-function))
-    (llvm-sys:add-fn-attr the-function 'llvm-sys:attribute-uwtable)
-    (cc-dbg-when *debug-log* (log-layout-procedure the-function basic-blocks))
-    (let ((args (llvm-sys:get-argument-list the-function)))
-      (mapc #'(lambda (arg argname) (llvm-sys:set-name arg argname))
-            (llvm-sys:get-argument-list the-function) cmp:+fn-prototype-argument-names+))
-    ;; create a basic-block for every remaining tag
-    (loop for block in rest-basic-blocks
-          for instruction = (cleavir-basic-blocks:first-instruction block)
-          do (setf (gethash instruction *tags*) (cmp:irc-basic-block-create "tag")))
-    (cmp:irc-set-insert-point-basic-block entry-block cmp:*irbuilder-function-alloca*)
-    ;; Generate code to get the arguments into registers.
-    ;; (Actual lambda list stuff is covered by ENTER-INSTRUCTION.)
-    (with-debug-info-disabled
-        (cmp:with-irbuilder (cmp:*irbuilder-function-alloca*)
-          (let* ((fn-args (llvm-sys:get-argument-list cmp:*current-function*))
-                 (lambda-list (cleavir-ir:lambda-list enter))
-                 (calling-convention (cmp:cclasp-setup-calling-convention
-                                      fn-args lambda-list (debug-on function-info))))
-            (setf (calling-convention function-info) calling-convention))))
-    (layout-procedure* the-function
-                       body-irbuilder
-                       body-block
-                       first-basic-block
-                       rest-basic-blocks
-                       function-info
-                       enter abi :linkage linkage)))
+         (llvm-function-name cmp:*current-function-name*))
+    (multiple-value-bind (the-function function-description)
+        (cmp:irc-cclasp-function-create
+         llvm-function-type
+         linkage
+         llvm-function-name
+         cmp:*the-module*
+         (calculate-function-info enter llvm-function-name))
+      (let* ((cmp:*current-function* the-function)
+             (cmp:*current-function-description* function-description)
+             (entry-block (cmp:irc-basic-block-create "entry" the-function))
+             (*function-current-multiple-value-array-address* nil)
+             (cmp:*irbuilder-function-alloca* (llvm-sys:make-irbuilder cmp:*llvm-context*))
+             (body-irbuilder (llvm-sys:make-irbuilder cmp:*llvm-context*))
+             (body-block (cmp:irc-basic-block-create "body")))
+        (setup-function-scope-metadata main-fn-name
+                                       function-info
+                                       :function the-function
+                                       :llvm-function-name llvm-function-name
+                                       :llvm-function the-function
+                                       :llvm-function-type llvm-function-type)
+        (llvm-sys:set-personality-fn the-function (cmp:irc-personality-function))
+        (llvm-sys:add-fn-attr the-function 'llvm-sys:attribute-uwtable)
+        (cc-dbg-when *debug-log* (log-layout-procedure the-function basic-blocks))
+        (let ((args (llvm-sys:get-argument-list the-function)))
+          (mapc #'(lambda (arg argname) (llvm-sys:set-name arg argname))
+                (llvm-sys:get-argument-list the-function) cmp:+fn-prototype-argument-names+))
+        ;; create a basic-block for every remaining tag
+        (loop for block in rest-basic-blocks
+              for instruction = (cleavir-basic-blocks:first-instruction block)
+              do (setf (gethash instruction *tags*) (cmp:irc-basic-block-create "tag")))
+        (cmp:irc-set-insert-point-basic-block entry-block cmp:*irbuilder-function-alloca*)
+        ;; Generate code to get the arguments into registers.
+        ;; (Actual lambda list stuff is covered by ENTER-INSTRUCTION.)
+        (with-debug-info-disabled
+            (cmp:with-irbuilder (cmp:*irbuilder-function-alloca*)
+              (let* ((fn-args (llvm-sys:get-argument-list cmp:*current-function*))
+                     (lambda-list (cleavir-ir:lambda-list enter))
+                     (calling-convention (cmp:cclasp-setup-calling-convention
+                                          fn-args lambda-list (debug-on function-info))))
+                (setf (calling-convention function-info) calling-convention))))
+        (layout-procedure* the-function
+                           body-irbuilder
+                           body-block
+                           first-basic-block
+                           rest-basic-blocks
+                           function-info
+                           enter abi :linkage linkage)))))
 
 ;; A hash table of enter instructions to llvm functions.
 ;; This is used to avoid recompiling ENTERs, which may be

@@ -67,6 +67,8 @@
           null-t-ptr
           %gcroots-in-module%
           %gcroots-in-module*%
+          %function-description%
+          %function-description*%
           function-type-create-on-the-fly
           evaluate-foreign-arguments
           jit-remove-module

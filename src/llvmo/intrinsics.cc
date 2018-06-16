@@ -427,7 +427,7 @@ ALWAYS_INLINE void setParentOfActivationFrame(core::T_O *resultP, core::T_O *par
 ALWAYS_INLINE core::T_O *cc_stack_enclose(void* closure_address,
                                           core::T_O *lambdaName,
                                           fnLispCallingConvention llvm_func,
-                                          void* functionDescription,
+                                          core::FunctionDescription* functionDescription,
                                           int *sourceFileInfoHandleP,
                                           size_t filePos, size_t lineno, size_t column,
                                           std::size_t numCells, ...)

@@ -49,6 +49,22 @@ struct gctools::GCInfo<core::BuiltinClosure_O> {
 #define INCREMENT_FUNCTION_CALL_COUNTER(x)
 #endif
 namespace core {
+
+  /* The following MUST MATCH %function-description% in cmpintrinsics.lsp
+   */ 
+  struct FunctionDescription {
+    void* functionPrototype;
+    gctools::GCRootsInModule* gcrootsInModule;
+    int*  sourceHandleP;
+    intptr_t functionNameIndex;
+    intptr_t lambdaListIndex;
+    intptr_t docstringIndex;
+    intptr_t linenoIndex;
+    intptr_t columnIndex;
+    intptr_t fileposIndex;
+  };
+
+
   /*! Function_O is a Funcallable object that adds no fields to anything that inherits from it
 */
   class Function_O : public General_O {
@@ -263,7 +279,7 @@ namespace core {
 #define BCLASP_CLOSURE_SLOTS  1
 #define BCLASP_CLOSURE_ENVIRONMENT_SLOT ENVIRONMENT_SLOT
   public:
-    void* _FunctionDescription;
+    FunctionDescription* _FunctionDescription;
     core::T_sp _lambdaList;
     ClosureType   closureType;
   //! Slots must be the last field
@@ -280,7 +296,7 @@ namespace core {
       ClosureWithSlots_sp closure =
         gctools::GC<core::ClosureWithSlots_O>::allocate_container(INTERPRETED_CLOSURE_SLOTS,
                                                                   &interpretedClosureEntryPoint,
-                                                                  (void*)NULL,
+                                                                  (core::FunctionDescription*)NULL,
                                                                   name,
                                                                   type,
                                                                   lambda_list,
@@ -299,7 +315,7 @@ namespace core {
       ClosureWithSlots_sp closure = 
         gctools::GC<core::ClosureWithSlots_O>::allocate_container(BCLASP_CLOSURE_SLOTS,
                                                                   ptr,
-                                                                  (void*)NULL,
+                                                                  (core::FunctionDescription*)NULL,
                                                                   name,
                                                                   type,
                                                                   lambda_list,
@@ -312,7 +328,7 @@ namespace core {
       ClosureWithSlots_sp closure = 
         gctools::GC<core::ClosureWithSlots_O>::allocate_container(0,
                                                                   ptr,
-                                                                  (void*)NULL,
+                                                                  (core::FunctionDescription*)NULL,
                                                                   name,
                                                                   type,
                                                                   lambda_list,
@@ -323,7 +339,7 @@ namespace core {
   public:
   ClosureWithSlots_O(size_t capacity,
                      claspFunction ptr,
-                     void* functionDescription,
+                     FunctionDescription* functionDescription,
                      core::T_sp functionName,
                      core::Symbol_sp type,
                      core::T_sp ll,

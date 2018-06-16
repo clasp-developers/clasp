@@ -499,6 +499,10 @@ void initialize_gcroots_in_module(GCRootsInModule* roots, core::T_O** root_addre
 #endif
 }
 
+core::T_O* read_gcroots_in_module(GCRootsInModule* roots, size_t index) {
+  return (core::T_O*)(roots->get(index));
+}
+
 void shutdown_gcroots_in_module(GCRootsInModule* roots) {
 #ifdef USE_BOEHM
   GC_FREE(roots->_boehm_shadow_memory);

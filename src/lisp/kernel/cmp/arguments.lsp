@@ -144,7 +144,7 @@
                (arg-idx+1 (cmp:irc-add phi-arg-idx (cmp:jit-constant-size_t 1)))
                (kw-arg-val (cmp:calling-convention-args.va-arg args)))
 ;;; FIXME: This must INVOKE if the function has cleanup forms.
-	  (irc-intrinsic-invoke-if-landing-pad-or-call "cc_ifNotKeywordException" (list arg-val phi-arg-idx (cmp:calling-convention-va-list* args)))
+	  (irc-intrinsic-invoke-if-landing-pad-or-call "cc_ifNotKeywordException" (list arg-val phi-arg-idx (cmp:calling-convention-va-list* args) *current-function-description*))
 	  (let* ((eq-aok-val-and-arg-val (cmp:irc-trunc (cmp:irc-icmp-eq aok-val arg-val) cmp:%i1%)) ; compare arg-val to a-o-k
 		 (aok-block (cmp:irc-basic-block-create "aok-block"))
 		 (possible-kw-block (cmp:irc-basic-block-create "possible-kw-block"))
@@ -298,7 +298,8 @@
                     (irc-intrinsic "cc_check_if_wrong_number_of_arguments"
                                    (cmp:calling-convention-nargs cc)
                                    (jit-constant-size_t (car reqargs))
-                                   (jit-constant-size_t (+ (car reqargs) (car optargs))))
+                                   (jit-constant-size_t (+ (car reqargs) (car optargs)))
+                                   *current-function-description*)
                     (irc-add-case sw (jit-constant-size_t opti) case-bb))
                 (do* ((optj 0 (1+ optj))
                       (cur-target (cdr optargs) (cdddr cur-target))
@@ -321,7 +322,8 @@
             (irc-intrinsic "cc_check_if_wrong_number_of_arguments"
                            (cmp:calling-convention-nargs cc)
                            (jit-constant-size_t (car reqargs))
-                           (jit-constant-size_t (+ (car reqargs) (car optargs))))
+                           (jit-constant-size_t (+ (car reqargs) (car optargs)))
+                           *current-function-description*)
             (irc-br req-bb)))
       (irc-begin-block req-bb)
       (do* ((cur-target (cdr reqargs) (cdr cur-target))
