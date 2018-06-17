@@ -89,6 +89,7 @@ RUN cd $HOME/quicklisp/local-projects \
   && git clone --depth=1 https://github.com/clasp-developers/cl-nglview.git \
   && git clone --depth=1 https://github.com/clasp-developers/cl-bqplot.git \
   && git clone --depth=1 https://github.com/clasp-developers/uuid.git \
+  && git clone --depth=1 https://github.com/clasp-developers/trivial-backtrace.git \
   && git clone --depth=1 https://github.com/clasp-developers/bordeaux-threads.git \
   && git clone --depth=1 https://github.com/clasp-developers/cffi.git
 
