@@ -198,7 +198,6 @@ then compile it and return (values compiled-llvm-function lambda-name)"
        (let ((nargs (length (cdr form)))
              args
              (temp-result (irc-alloca-t*)))
-         (dbg-set-invocation-history-stack-top-source-pos form)
          ;; evaluate the arguments into the array
          ;;  used to be done by --->    (codegen-evaluate-arguments (cdr form) evaluate-env)
          (do* ((cur-exp (cdr form) (cdr cur-exp))

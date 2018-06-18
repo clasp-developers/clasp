@@ -668,23 +668,16 @@ jump to blocks within this tagbody."
 	(let ((evaluate-env (cond
 			      ((eq operator-symbol 'flet) env)
 			      ((eq operator-symbol 'labels) function-env)
-			      (t (error "flet/labels doesn't understand operator symbol[~a]" operator-symbol))))
-	      traceid)
+			      (t (error "flet/labels doesn't understand operator symbol[~a]" operator-symbol)))))
 	  (with-try
 	    (progn
 	      (irc-branch-to-and-begin-block (irc-basic-block-create
 					      (bformat nil "%s-start"
 						       (symbol-name operator-symbol))))
-	      (setq traceid (if (eq operator-symbol 'flet)
-				(trace-enter-flet-scope function-env code)
-				(trace-enter-labels-scope function-env code)))
 	      (codegen-fill-function-frame operator-symbol function-env functions env evaluate-env)
 ;;              (dbg-set-activation-frame-for-ihs-top (irc-renv function-env))
 	      (codegen-progn result code function-env))
 	    ((cleanup)
-	     (if (eq operator-symbol 'flet)
-		 (trace-exit-flet-scope function-env traceid)
-		 (trace-exit-labels-scope function-env traceid))
 	     (irc-unwind-environment function-env)))
 	  )))))
 
@@ -866,7 +859,6 @@ jump to blocks within this tagbody."
          (nargs (length (cdr form)))
          args
          (temp-result (irc-alloca-t*)))
-    (dbg-set-invocation-history-stack-top-source-pos form)
     ;; evaluate the arguments into the array
     ;;  used to be done by --->    (codegen-evaluate-arguments (cdr form) evaluate-env)
     (do* ((cur-exp (cdr form) (cdr cur-exp))
@@ -922,7 +914,6 @@ jump to blocks within this tagbody."
          (fargs (cddr form))
          (nargs (length fargs))
          (temp-result (irc-alloca-t*)))
-    (dbg-set-invocation-history-stack-top-source-pos form)
     ;; evaluate the arguments into the array
     ;;  used to be done by --->    (codegen-evaluate-arguments (cddr form) evaluate-env)
     (let* ((args (evaluate-foreign-arguments fargs foreign-types temp-result evaluate-env))
@@ -951,7 +942,6 @@ jump to blocks within this tagbody."
          (fargs (cddr form))
          (nargs (length fargs))
          (temp-result (irc-alloca-t*)))
-    (dbg-set-invocation-history-stack-top-source-pos form)
     ;; evaluate the arguments into the array
     (let ((args (evaluate-foreign-arguments fargs foreign-types temp-result evaluate-env))
           (function-type (function-type-create-on-the-fly foreign-types)))
