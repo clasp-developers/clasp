@@ -67,7 +67,6 @@
           compiler-message-file
           compiler-message-file-position
           safe-system
-          dbg-set-current-debug-location-here
           irc-verify-module-safe
           irc-add
           irc-add-clause

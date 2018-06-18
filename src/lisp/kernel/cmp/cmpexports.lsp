@@ -112,7 +112,6 @@
           register-global-function-ref
           analyze-top-level-form
           safe-system
-          dbg-set-current-debug-location-here
           jit-constant-uintptr_t
           irc-int-to-ptr
           irc-verify-module-safe

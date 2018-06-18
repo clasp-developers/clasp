@@ -216,7 +216,6 @@ eg: '(block ((exception var) code...))"
     (with-irbuilder (ehbuilder)
       (let* ((landpad                   (irc-create-landing-pad 1))
              (_                         (llvm-sys:add-clause landpad (llvm-sys:constant-pointer-null-get %i8*%)))
-             (_                         (dbg-set-current-debug-location-here))
              (_                         (irc-intrinsic "clasp_terminate"))
              (_                         (irc-unreachable)))))
     terminate-basic-block))
@@ -333,7 +332,6 @@ exceptions to higher levels of the code and unwinding the stack.
                  (let* ((,unique-clause-types-gs (try.identify-all-unique-clause-types ,all-clause-types-gs))
                         (,landpad-gs (irc-create-landing-pad (length ,unique-clause-types-gs) "")))
                    (try.add-landing-pad-clauses ,landpad-gs ,unique-clause-types-gs)
-                   (dbg-set-current-debug-location-here)
                    (irc-low-level-trace :eh-landing-pads)
                    ,(when cleanup-clause-body
                       `(irc-set-cleanup ,landpad-gs t))

@@ -130,7 +130,6 @@
 
 
 (defun irc-generate-resume-code (exn.slot ehselector.slot env)
-  (dbg-set-current-debug-location-here)
   (let ((exn7 (llvm-sys:create-load-value-twine *irbuilder* exn.slot "exn7")))
     (if *use-unwind-resume*
 	(progn
@@ -147,7 +146,6 @@
 	      (llvm-sys:create-resume *irbuilder* lpad.val8)))))))
 
 (defun irc-rethrow (env)
-  (dbg-set-current-debug-location-here)
   (irc-intrinsic "__cxa_rethrow")
 ;;  (llvm-sys:create-unreachable *irbuilder*)
   )
@@ -420,7 +418,6 @@
 (defun irc-generate-terminate-code ()
       (let* ((landpad (irc-create-landing-pad 1)))
 	(llvm-sys:add-clause landpad (llvm-sys:constant-pointer-null-get %i8*%))
-	(dbg-set-current-debug-location-here)
 	(irc-low-level-trace)
 	(irc-intrinsic "clasp_terminate" (irc-constant-string-ptr *gv-source-namestring*)
 		       (irc-size_t-*current-source-pos-info*-lineno) 
@@ -433,7 +430,6 @@
 (defun irc-generate-unwind-protect-landing-pad-code (env)
       (let* ((landpad (irc-create-landing-pad 1)))
 	(llvm-sys:add-clause landpad (llvm-sys:constant-pointer-null-get %i8*%))
-	(dbg-set-current-debug-location-here)
 	(irc-low-level-trace)
 	))
 
@@ -580,7 +576,6 @@
   (or (llvm-sys:get-parent theblock) (error "irc-begin-block>> The block ~a doesn't have a parent" theblock))
   #+(or)(irc-append-basic-block function theblock)
   (irc-set-insert-point-basic-block theblock)
-  (dbg-set-current-debug-location-here)
   )
 
 

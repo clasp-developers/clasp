@@ -110,7 +110,6 @@
   "Return IR code for a function or closure"
   (let ((name-or-lambda (car rest)))
     (assert-result-isa-llvm-value result)
-    (dbg-set-current-debug-location-here)
     (cmp-log "About to codegen-function for: %s%N" name-or-lambda)
     (cond
       ((and name-or-lambda (symbolp name-or-lambda))
@@ -121,7 +120,6 @@
       ((and (consp name-or-lambda)
             (or (eq (car name-or-lambda) 'lambda)
                 (eq (car name-or-lambda) 'ext::lambda-block)))
-       (dbg-set-current-debug-location-here)
        (codegen-closure result name-or-lambda env))
       (t (error "FUNCTION special operator only supports symbol names or lambda expression - you gave: ~a" name-or-lambda)))))
 
@@ -267,11 +265,9 @@ env is the parent environment of the (result-af) value frame"
       (process-lambda-list-handler lambda-list-handler)
     (let ((number-of-lexical-vars (number-of-lexical-variables lambda-list-handler))
 	  (result-af (irc-renv new-env)))
-      (dbg-set-current-debug-location-here)
 ;      (irc-make-value-frame result-af number-of-lexical-vars)
 ;;      (dbg-set-activation-frame-for-ihs-top (irc-renv new-env))
       (irc-make-value-frame-set-parent new-env number-of-lexical-vars parent-env) ;(irc-intrinsic "setParentOfActivationFrame" result-af (irc-renv parent-env))
-      (dbg-set-current-debug-location-here)
       ;; Save all special variables
       (do* ((cur-req (cdr reqvars) (cdr cur-req))
 	    (classified-target (car cur-req) (car cur-req)))
@@ -314,11 +310,9 @@ env is the parent environment of the (result-af) value frame"
       (process-lambda-list-handler lambda-list-handler)
     (let ((number-of-lexical-vars (number-of-lexical-variables lambda-list-handler))
 	  (result-af (irc-renv new-env)))
-      (dbg-set-current-debug-location-here)
 ;      (irc-make-value-frame result-af number-of-lexical-vars)
 ;;      (dbg-set-activation-frame-for-ihs-top (irc-renv new-env))
       (irc-make-value-frame-set-parent new-env number-of-lexical-vars parent-env)
-      (dbg-set-current-debug-location-here)
       ;; Save all special variables
       (do* ((cur-req (cdr reqvars) (cdr cur-req))
 	    (classified-target (car cur-req) (car cur-req)))
@@ -346,7 +340,6 @@ env is the parent environment of the (result-af) value frame"
 	(multiple-value-bind (declares code docstring specials )
 	    (process-declarations body t)
 	  (cmp-log "About to create lambda-list-handler%N")
-	  (dbg-set-current-debug-location-here)
 	  (let* ((lambda-list-handler (make-lambda-list-handler variables declares 'core::function))
 		 (new-env (irc-new-unbound-value-environment-of-size
 			   env
@@ -450,7 +443,6 @@ tag symbols to code and llvm-ir basic-blocks. Store the alist in the symbol-to-b
 metadata of the tagbody-env. These can be accessed by (go XXXX) special operators to
 jump to blocks within this tagbody."
   (assert-result-isa-llvm-value result)
-  (dbg-set-current-debug-location-here)
   (unless (and (car rest) (symbolp (car rest))) (push (gensym) rest)) ;; stick a dummy tag at the head if there isn't one
   (let* ((tagbody-env (irc-new-tagbody-environment env))
 	 (enumerated-tag-blocks (tagbody.enumerate-tag-blocks rest tagbody-env)))
@@ -505,7 +497,6 @@ jump to blocks within this tagbody."
         (codegen-literal result nil env)))))
 
 (defun codegen-go (result rest env)
-  (dbg-set-current-debug-location-here)
   (let* ((tag (car rest))
 	 (classified-tag (classify-tag env tag)))
     (cond
@@ -588,7 +579,6 @@ jump to blocks within this tagbody."
             (irc-begin-block after-return-block)))))))
 
 (defun codegen-return-from (result rest env)
-  (dbg-set-current-debug-location-here)
   (let* ((temp-mv-result (irc-alloca-tmv env :label "temp-mv-result"))
 	 (block-symbol (car rest))
 	 (return-form (cadr rest)))
@@ -647,7 +637,6 @@ jump to blocks within this tagbody."
 (defun codegen-fill-function-frame (operator-symbol function-env functions parent-env closure-env)
   "Create a closure for each of the function bodies in the flet/labels and put the closures into the activation frame in (result-af). (env) is the parent environment of the (result-af) value frame"
   (let ((result-af (irc-renv function-env)))
-    (dbg-set-current-debug-location-here)
     (let* ((parent-renv (irc-load (irc-renv parent-env)))
            (val (irc-intrinsic "makeFunctionFrame"
                               (jit-constant-i32 (length functions))

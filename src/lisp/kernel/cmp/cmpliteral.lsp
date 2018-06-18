@@ -653,7 +653,6 @@ Return the orderered-raw-constants-list and the constants-table GlobalVariable"
 
 
 (defun bclasp-compile-form (form)
-  (dbg-set-current-debug-location-here)
   (let ((fn (with-new-function (fn fn-env fn-result
                                    :function-name 'bclasp-top-level-form
                                    :parent-env nil
@@ -661,9 +660,7 @@ Return the orderered-raw-constants-list and the constants-table GlobalVariable"
               (let* ((given-name (llvm-sys:get-name fn)))
                 ;; Map the function argument names
                 (cmp-log "Creating ltv thunk with name: %s%N" given-name)
-                (dbg-set-current-debug-location-here)
-                (codegen fn-result form fn-env)
-                (dbg-set-current-debug-location-here)))))
+                (codegen fn-result form fn-env)))))
     (cmp-log-dump-function fn)
     (irc-verify-function fn t)
     fn))
@@ -793,7 +790,6 @@ If it isn't NIL then copy the literal from its index in the LTV into result."
 ;; Should be bclasp-compile-load-time-value-thunk
 (defun compile-load-time-value-thunk (form)
   "bclasp compile the form into an llvm function and return that function"
-  (dbg-set-current-debug-location-here)
   (let ((fn (with-new-function (fn fn-env fn-result
                                    :function-name 'bclasp-top-level-form
                                    :parent-env nil
@@ -810,9 +806,7 @@ If it isn't NIL then copy the literal from its index in the LTV into result."
                                                    :filepos (core:source-pos-info-filepos core:*current-source-pos-info*))
                                    )
               (let* ((given-name (llvm-sys:get-name fn)))
-                (dbg-set-current-debug-location-here)
-                (codegen fn-result form fn-env)
-                (dbg-set-current-debug-location-here)))))
+                (codegen fn-result form fn-env)))))
     (irc-verify-function fn t)
     (or (llvm-sys:valuep fn) (error "compile-load-time-value-thunk must return an llvm::Function object - it will return ~a" fn))
     fn))

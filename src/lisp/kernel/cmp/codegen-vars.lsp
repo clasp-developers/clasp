@@ -588,7 +588,6 @@
 
 (defun codegen-lexical-var-lookup (result symbol depth index src-env dest-env)
   "Generate IR for lookup of lexical value in runtime-env using depth and index"
-  (dbg-set-current-debug-location-here)
   (let* ((ref (codegen-lexical-var-reference symbol depth index src-env dest-env))
          (val (irc-load ref "lexical-value-load")))
     (irc-store val result))

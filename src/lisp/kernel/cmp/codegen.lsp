@@ -68,7 +68,6 @@ Could return more functions that provide lambda-list for swank for example"
                    (calling-convention-maybe-push-invocation-history-frame callconv)
                    (let ((new-env (bclasp-compile-lambda-list-code cleavir-lambda-list fn-env callconv)))
                      (cmp-log "Created new register environment -> %s%N" new-env)
-                     (dbg-set-current-debug-location-here)
                      (with-try
                          (progn
                            (if wrap-block
@@ -89,7 +88,6 @@ Could return more functions that provide lambda-list for swank for example"
 (defun compile-lambda-function (lambda-or-lambda-block &optional env &key (linkage 'llvm-sys:internal-linkage))
   "Compile a lambda form and return an llvm-ir function that evaluates it.
 Return the same things that generate-llvm-function-from-code returns"
-  (dbg-set-current-debug-location-here)
   (let* (wrap-block block-name lambda-list body lambda-block-name)
     (if (eq (car lambda-or-lambda-block) 'ext::lambda-block)
 	(setq wrap-block t
@@ -102,7 +100,6 @@ Return the same things that generate-llvm-function-from-code returns"
     (multiple-value-bind (declares code docstring specials )
 	(process-declarations body t)
       (cmp-log "About to create lambda-list-handler%N")
-      (dbg-set-current-debug-location-here)
       (generate-llvm-function-from-code nil
                                         lambda-list
                                         declares
@@ -317,7 +314,6 @@ then compile it and return (values compiled-llvm-function lambda-name)"
 (defun compile-thunk (name form env optimize)
   "Compile the form into an llvm function and return that function"
   (with-lexical-variable-optimizer (optimize)
-    (dbg-set-current-debug-location-here)
     (let ((top-level-func (with-new-function (fn
                                               fn-env
                                               result
@@ -338,10 +334,8 @@ then compile it and return (values compiled-llvm-function lambda-name)"
                             (let* ((given-name (llvm-sys:get-name fn)))
                               ;; Map the function argument names
                               (cmp-log "Creating repl function with name: %s%N" given-name)
-                              ;;	(break "codegen repl form")
-                              (dbg-set-current-debug-location-here) 
-                              (codegen result form fn-env)
-                              (dbg-set-current-debug-location-here)))))
+                              ;;	(break "codegen repl form") 
+                              (codegen result form fn-env)))))
       (cmp-log "Dumping the repl function%N")
       (cmp-log-dump-function top-level-func)
       (irc-verify-function top-level-func t)

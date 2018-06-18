@@ -316,19 +316,6 @@
 (defun dbg-set-current-line ()
   (bformat t "DEBUG - line/column = %d/%d%N" 1 2))
 
-(defmacro dbg-set-current-debug-location-here ()
-#||
-  (let ((filename-gs (gensym))
-	(path-gs (gensym))
-	(lineno-gs (gensym))
-	(column-gs (gensym)))
-    `(multiple-value-bind (,filename-gs ,path-gs) (source-file-name)
-       (multiple-value-bind (,lineno-gs ,column-gs) (source-line-column)
-	 (dbg-set-current-debug-location ,filename-gs ,path-gs ,lineno-gs ,column-gs))))
-  ||#)
-
-
-
 #||
 (defun dbg-push-invocation-history-stack (invocation-history-frame)
   (print "dbg-push-invocation-history-stack"))

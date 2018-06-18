@@ -45,6 +45,5 @@
 	  calling-convention-copy-args
 	  calling-convention-args.gep
 	  compile-error-if-not-enough-arguments
-	  dbg-set-current-debug-location-here
 	  irc-t
 	  ))

@@ -222,7 +222,6 @@
     (codegen-closure target fn-lambda closure-env)))))
 
   (let ((result-af (irc-renv function-env)))
-    (dbg-set-current-debug-location-here)
     (irc-intrinsic "makeFunctionFrame" result-af (jit-constant-i32 (length functions)) (irc-renv parent-env))
     ;;    )
     (cmp-log "About to generate code for args%N")

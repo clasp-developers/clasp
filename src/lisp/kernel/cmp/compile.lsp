@@ -70,7 +70,6 @@ We could do more fancy things here - like if cleavir-clasp fails, use the clasp 
         ((compiled-function-p definition)
          (values definition nil nil))
         ((interpreted-function-p definition)
-         (dbg-set-current-debug-location-here)
          ;; Recover the lambda-expression from the interpreted-function
          (multiple-value-bind (lambda-expression wrapped-env)
              (generate-lambda-expression-from-interpreted-function definition)
@@ -87,7 +86,6 @@ We could do more fancy things here - like if cleavir-clasp fails, use the clasp 
                            (t (error "No definition for ~a" name)))))
            (cond
              ((interpreted-function-p func)
-              (dbg-set-current-debug-location-here)
               ;; Recover the lambda-expression from the interpreted-function
               (multiple-value-bind (lambda-expression wrapped-env)
                   (generate-lambda-expression-from-interpreted-function func)

@@ -2,7 +2,6 @@ irc-branch-to-and-begin-block
 irc-basic-block-create
 compile-error-if-not-enough-arguments
 calling-convention-nargs
-dbg-set-current-debug-location-here
 irc-low-level-trace
 irc-load
 irc-add

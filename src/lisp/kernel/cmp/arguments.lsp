@@ -37,7 +37,6 @@
   (cmp:irc-branch-to-and-begin-block (cmp:irc-basic-block-create "process-required-arguments"))
   (cmp:compile-error-if-not-enough-arguments (cmp:calling-convention-nargs args)
 					     (irc-size_t (car reqargs)))
-  (cmp:dbg-set-current-debug-location-here)
   (cmp:irc-low-level-trace :arguments)
   ;; Now get the required arguments
   (do* ((cur-req (cdr reqargs) (cdr cur-req))
