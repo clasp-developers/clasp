@@ -433,9 +433,8 @@ No DIBuilder is defined for the default module")
 
 
 (defun link-builtins-module (module)
-  "Merge the intrinsics module with the passed module.
+  "Merge the builtins module with the passed module.
 The passed module is modified as a side-effect."
-  (get-builtins-module)
   ;; Clone the intrinsics module and link it in
   (quick-module-dump module "module before linking builtins-clone")
   (let ((linker (llvm-sys:make-linker module))
@@ -445,7 +444,7 @@ The passed module is modified as a side-effect."
     (llvm-sys:link-in-module linker builtins-clone))
   module)
 
-(defun jit-link-fastgf-module (module)
+(defun link-fastgf-module (module)
   "Merge the intrinsics module with the passed module.
 The passed module is modified as a side-effect."
   (unless *thread-local-fastgf-module*
@@ -554,6 +553,10 @@ The passed module is modified as a side-effect."
   (optimize-module-for-compile-file module)
   (llvm-sys:remove-always-inline-functions module))
 
+(defun link-inline-remove-fastgf (module)
+  (link-fastgf-module module)
+  (optimize-module-for-compile-file module)
+  (llvm-sys:remove-always-inline-functions module))
 
 (defun switch-always-inline-to-inline (module)
   (let ((functions (llvm-sys:module-get-function-list module))
@@ -626,19 +629,22 @@ The passed module is modified as a side-effect."
           (link-inline-remove-builtins original-module)
           (quick-module-dump original-module "module-before-optimize"))
         (progn
-          (jit-link-fastgf-module original-module)))
+          (link-inline-remove-fastgf original-module)))
     (let ((module original-module))
-      (irc-verify-module-safe module)
+      ;; (irc-verify-module-safe module)
       (let ((jit-engine (jit-engine))
             (repl-name (llvm-sys:get-name main-fn))
             (startup-name (llvm-sys:get-name startup-fn))
-            (shutdown-name (llvm-sys:get-name shutdown-fn)))
+            (shutdown-name (llvm-sys:get-name shutdown-fn))
+            (start-llvm-time (get-internal-run-time)))
         (unwind-protect
              (progn
                (mp:lock *jit-lock* t)
                (let ((handle (llvm-sys:clasp-jit-add-module jit-engine module)))
                  (llvm-sys:jit-finalize-repl-function jit-engine handle repl-name startup-name shutdown-name literals-list)))
-          (mp:unlock *jit-lock*)))))
+          (let ((llvm-time (/ (- (get-internal-run-time) start-llvm-time) (float internal-time-units-per-second))))
+            (llvm-sys:accumulate-llvm-usage-seconds llvm-time)
+            (mp:unlock *jit-lock*))))))
 
   (defun jit-add-module-return-dispatch-function (original-module dispatch-fn startup-fn shutdown-fn literals-list)
     (jit-add-module-return-function original-module dispatch-fn startup-fn shutdown-fn literals-list :dispatch))

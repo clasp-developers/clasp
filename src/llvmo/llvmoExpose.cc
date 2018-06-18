@@ -2870,7 +2870,7 @@ CL_DEFUN PointerType_sp PointerType_O::get(Type_sp elementType, uint addressSpac
 
 namespace llvmo {
 
-void accumulate_llvm_timing_data(double time)
+CL_DEFUN void llvm_sys__accumulate_llvm_usage_seconds(double time)
 {
   core::DoubleFloat_sp df = core::DoubleFloat_O::create(time);
   _sym_STARmostRecentLlvmFinalizationTimeSTAR->setf_symbolValue(df);
@@ -2888,10 +2888,11 @@ void finalizeEngineAndTime(llvm::ExecutionEngine *engine) {
   engine->finalizeObject();
   timer.stop();
   double thisTime = timer.getAccumulatedTime();
-  accumulate_llvm_timing_data(thisTime);
+  llvm_sys__accumulate_llvm_usage_seconds(thisTime);
 }
 
-  CL_DEFUN void finalizeEngineAndRegisterWithGcAndRunMainFunctions(ExecutionEngine_sp oengine) {
+
+CL_DEFUN void finalizeEngineAndRegisterWithGcAndRunMainFunctions(ExecutionEngine_sp oengine) {
   // Stuff to support MCJIT
     llvm::ExecutionEngine *engine = oengine->wrappedPtr();
 #ifdef DEBUG_STARTUP
@@ -2923,6 +2924,7 @@ void finalizeEngineAndTime(llvm::ExecutionEngine *engine) {
     printf("%s:%d Leaving %s\n", __FILE__, __LINE__, __FUNCTION__ );
 #endif
   }
+
 
 /*! Return (values target nil) if successful or (values nil error-message) if not */
   CL_DEFUN core::T_mv TargetRegistryLookupTarget(const std::string &ArchName, Triple_sp triple) {
@@ -3398,8 +3400,6 @@ CL_DEFUN core::T_sp llvm_sys__lookup_jit_symbol_info(void* ptr) {
 CL_LISPIFY_NAME("CLASP-JIT-ADD-MODULE");
 __attribute__((optnone))
 CL_DEFMETHOD ModuleHandle_sp ClaspJIT_O::addModule(Module_sp cM) {
-  core::LightTimer timer;
-  timer.start();
   Module* M = cM->wrappedPtr();
     // Build our symbol resolver:
     // Lambda 1: Look back into the JIT itself to find symbols that are part of
@@ -3434,9 +3434,6 @@ CL_DEFMETHOD ModuleHandle_sp ClaspJIT_O::addModule(Module_sp cM) {
   } else {
     SIMPLE_ERROR(BF("Could not addModule"));
   }
-  timer.stop();
-  double thisTime = timer.getAccumulatedTime();
-  accumulate_llvm_timing_data(thisTime);
   this->ModuleHandles = core::Cons_O::create(mh,this->ModuleHandles);
   return mh;
 }
@@ -3551,9 +3548,6 @@ std::shared_ptr<llvm::Module> optimizeModule(std::shared_ptr<llvm::Module> M) {
   printf("%s:%d  Returning module\n", __FILE__, __LINE__ );
   return result;
 #else
-  // Optimize in C++
-  core::LightTimer timer;
-  timer.start();
   // Create a function pass manager.
   auto FPM = llvm::make_unique<llvm::legacy::FunctionPassManager>(M.get());
 
@@ -3590,9 +3584,6 @@ std::shared_ptr<llvm::Module> optimizeModule(std::shared_ptr<llvm::Module> M) {
   }
 
   removeAlwaysInlineFunctions(&*M);
-  timer.stop();
-  double thisTime = timer.getAccumulatedTime();
-  accumulate_llvm_timing_data(thisTime);
 
   if ((!comp::_sym_STARsave_module_for_disassembleSTAR.unboundp()) &&
       comp::_sym_STARsave_module_for_disassembleSTAR->symbolValue().notnilp()) {
