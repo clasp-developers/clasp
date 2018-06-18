@@ -122,7 +122,6 @@
           byte64
           integer64
           cl-fixnum
-          cl-index
           assume-no-errors
           sequence-stream
           all-encodings

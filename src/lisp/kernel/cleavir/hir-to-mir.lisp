@@ -304,7 +304,6 @@
     (ext:integer16 . core:simple-vector-int16-t)
     (ext:integer32 . core:simple-vector-int32-t)
     (ext:integer64 . core:simple-vector-int64-t)
-    ;; ext:cl-index is apparently byte64. ??
     (single-float . core:simple-vector-float)
     (double-float . core:simple-vector-double)
     (base-char . simple-base-string)
@@ -330,7 +329,6 @@
     (ext:integer16 . core:simple-mdarray-int16-t)
     (ext:integer32 . core:simple-mdarray-int32-t)
     (ext:integer64 . core:simple-mdarray-int64-t)
-    ;; cl-index?
     (single-float . core:simple-mdarray-float)
     (double-float . core:simple-mdarray-double)
     (base-char . core:simple-mdarray-base-char)
@@ -356,7 +354,6 @@
     (ext:integer16 . core:mdarray-int16-t)
     (ext:integer32 . core:mdarray-int32-t)
     (ext:integer64 . core:mdarray-int64-t)
-    ;; cl-index?
     (single-float . core:mdarray-float)
     (double-float . core:mdarray-double)
     (base-char . core:mdarray-base-char)
