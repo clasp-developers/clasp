@@ -65,8 +65,6 @@ public: // initialize
   T_sp setSourcePosInfo(T_sp sourceFile, size_t filePos, int lineno, int column) { SIMPLE_ERROR_SPRINTF("special-form does not implement sourcePosInfo"); } ;
   string __repr__() const;
   T_mv evaluate(List_sp args, T_sp environment);
-  virtual T_sp cleavir_ast() const { NOT_APPLICABLE(); };
-  virtual void setf_cleavir_ast(T_sp ast) { NOT_APPLICABLE(); };
   virtual List_sp declares() const { NOT_APPLICABLE(); };
   virtual T_sp docstring() const { NOT_APPLICABLE(); };
   virtual bool macroP() const { NOT_APPLICABLE(); };

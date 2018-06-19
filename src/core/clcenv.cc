@@ -98,9 +98,7 @@ CL_DEFUN core::T_sp defining_function_info_global(core::T_sp function_name)
     info->_CompilerMacro = core::cl__compiler_macro_function(function_name,_Nil<core::T_O>());
     info->_Inline = core::core__get_global_inline_status(function_name,_Nil<core::T_O>());
     core::T_sp fdef = core::cl__fdefinition(function_name);
-    if ( fdef.notnilp() ) {
-      info->_Ast = gc::As<core::Function_sp>(fdef)->cleavir_ast();
-    } else info->_Ast = _Nil<core::T_O>();
+    info->_Ast = _Nil<core::T_O>(); // FIXME: stored in environments now
     return info;
   }
   return _Nil<core::T_O>();

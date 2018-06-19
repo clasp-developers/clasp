@@ -78,7 +78,7 @@
                     collect `(quote ,keyword)
                     collect `(quote ,value)))))
 
-
+;; Store
 
 ;; Generate an AST and save it for inlining if the
 ;; function is proclaimed as inline
@@ -122,7 +122,7 @@
       `(eval-when (:compile-toplevel :load-toplevel :execute)
          (when (core:declared-global-inline-p ',name)
            (when (fboundp ',name)
-             (core:setf-cleavir-ast (fdefinition ',name) ,ast)))))))
+             (setf (inline-ast ',name) ,ast)))))))
 
 
 (export '(*simple-environment* *code-walker*))

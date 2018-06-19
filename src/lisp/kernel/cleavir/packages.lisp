@@ -45,6 +45,7 @@
    #:*clasp-system*
    #:*code-walker*
    #:alloca-i8
+   #:inline-ast
 ))
 
 (defpackage #:cc-generate-ast)

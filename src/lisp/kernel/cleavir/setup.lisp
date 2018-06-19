@@ -126,7 +126,12 @@ when this is t a lot of graphs will be generated.")
     ((eq (symbol-package name) (find-package :cleavir-primop)) t)
     (t nil)))
 
-
+;;; Store inline ASTs in the environment, keyed to their name.
+;;; FIXME: Fix sysprops for setf names
+(defun inline-ast (name)
+  (core:get-sysprop name 'inline-ast))
+(defun (setf inline-ast) (ast name)
+  (core:put-sysprop name 'inline-ast ast))
 
 (defmethod cleavir-env:function-info ((environment clasp-global-environment) function-name)
   (cond
@@ -141,7 +146,7 @@ when this is t a lot of graphs will be generated.")
 		    :expander (macro-function function-name)
 		    :compiler-macro (compiler-macro-function function-name)))
     ((fboundp function-name)
-     (let* ((cleavir-ast (core:cleavir-ast (fdefinition function-name)))
+     (let* ((cleavir-ast (inline-ast function-name))
             (inline-status (core:global-inline-status function-name)))
        (make-instance 'cleavir-env:global-function-info
                       :name function-name

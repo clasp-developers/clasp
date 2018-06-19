@@ -41,14 +41,12 @@ namespace core {
   /*! If this is the allocator for a primary CxxAdapter class then return true, */
     T_sp functionName() const { return _Nil<T_O>(); };
     T_sp closedEnvironment() const { return _Nil<T_O>(); };
-    T_sp cleavir_ast() const { return _Nil<T_O>(); };
     T_sp docstring() const { return _Nil<T_O>(); };
     Symbol_sp getKind() const { return _Nil<Symbol_O>(); };
     int sourceFileInfoHandle() const { return 0; };
     bool macroP() const { return false; };
     void set_kind(Symbol_sp k) { };
     void setf_lambda_list(List_sp ll) {};
-    void setf_cleavir_ast(T_sp v) {};
     List_sp declares() const { return _Nil<T_O>(); };
     LambdaListHandler_sp lambdaListHandler() const { return _Nil<LambdaListHandler_O>(); };
     T_sp lambda_list() const { return _Nil<T_O>(); };

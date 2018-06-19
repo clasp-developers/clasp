@@ -107,8 +107,6 @@ namespace core {
     virtual T_sp closedEnvironment() const = 0;
     virtual T_sp setSourcePosInfo(T_sp sourceFile, size_t filePos, int lineno, int column) = 0;
     virtual T_mv functionSourcePos() const;
-    CL_DEFMETHOD virtual T_sp cleavir_ast() const = 0;
-    CL_DEFMETHOD virtual void setf_cleavir_ast(T_sp ast) = 0;
     virtual List_sp declares() const = 0;
     CL_DEFMETHOD virtual T_sp docstring() const = 0;
     CL_DEFMETHOD virtual bool macroP() const = 0;
@@ -192,7 +190,6 @@ namespace core {
     LISP_CLASS(core,CorePkg,FunctionClosure_O,"FunctionClosure",Closure_O);
   public:
   //  T_sp _SourcePosInfo;
-    T_sp _cleavir_ast;
     Symbol_sp kind;
     Fixnum _sourceFileInfoHandle;
     Fixnum _filePos;
@@ -202,9 +199,9 @@ namespace core {
 #define SOURCE_INFO core::Fixnum sourceFileInfoHandle, core::Fixnum filePos, core::Fixnum lineno, core::Fixnum column
 #define SOURCE_INFO_PASS sourceFileInfoHandle, filePos, lineno, column
   FunctionClosure_O(claspFunction fptr, T_sp name, Symbol_sp k, SOURCE_INFO)
-    : Closure_O(fptr,name), kind(k), _cleavir_ast(_Nil<T_O>()), _sourceFileInfoHandle(sourceFileInfoHandle), _filePos(filePos), _lineno(lineno), _column(column){};
+    : Closure_O(fptr,name), kind(k), _sourceFileInfoHandle(sourceFileInfoHandle), _filePos(filePos), _lineno(lineno), _column(column){};
   FunctionClosure_O(claspFunction fptr, T_sp name)
-    : Closure_O(fptr,name), kind(kw::_sym_function), _cleavir_ast(_Nil<T_O>()), _sourceFileInfoHandle(0), _filePos(0), _lineno(0), _column(0){};
+    : Closure_O(fptr,name), kind(kw::_sym_function), _sourceFileInfoHandle(0), _filePos(0), _lineno(0), _column(0){};
     static FunctionClosure_sp create(fnLispCallingConvention fptr, T_sp name, T_sp function_kind, SOURCE_INFO ) {
       FunctionClosure_sp fc = gctools::GC<FunctionClosure_O>::allocate(fptr,name,function_kind,SOURCE_INFO_PASS);
       return fc;
@@ -222,8 +219,6 @@ namespace core {
     virtual size_t filePos() const;
     virtual int lineNumber() const;
     virtual int column() const;
-    virtual T_sp cleavir_ast() const { return this->_cleavir_ast; };
-    virtual void setf_cleavir_ast(T_sp ast) { this->_cleavir_ast = ast; };
     virtual LambdaListHandler_sp lambdaListHandler() const {SUBIMP();};
     virtual T_sp lambda_list() const {SUBIMP();};
     virtual void setf_lambda_list(List_sp lambda_list) {SUBIMP();};

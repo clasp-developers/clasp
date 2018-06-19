@@ -132,8 +132,6 @@ namespace core {
     virtual T_sp closedEnvironment() const { HARD_IMPLEMENT_ME(); };
     virtual T_sp setSourcePosInfo(T_sp sourceFile, size_t filePos, int lineno, int column) { HARD_IMPLEMENT_ME(); };
 //  virtual T_mv functionSourcePos() const { HARD_IMPLEMENT_ME();;
-    virtual T_sp cleavir_ast() const { return _Nil<T_O>(); };
-    virtual void setf_cleavir_ast(T_sp ast) { SIMPLE_ERROR_SPRINTF("Generic functions cannot be inlined");};
     virtual List_sp declares() const { HARD_IMPLEMENT_ME(); };
     virtual T_sp docstring() const { HARD_IMPLEMENT_ME(); };
     virtual void *functionAddress() const { HARD_IMPLEMENT_ME(); };
