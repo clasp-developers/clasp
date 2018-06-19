@@ -248,7 +248,7 @@
 (defun maybe-update-instances (arguments)
   (let ((invalid-instance nil))
     (dolist (x arguments)
-      (when (core:cxx-instance-p x)
+      (when (core:instancep x)
         (let* ((i x)
                (s (si::instance-sig i)))
           (clos::with-early-accessors (clos::+standard-class-slots+)

@@ -93,7 +93,7 @@ We could do more fancy things here - like if cleavir-clasp fails, use the clasp 
                 (compile-in-env name lambda-expression wrapped-env *cleavir-compile-hook* 'llvm-sys:external-linkage)))
              ((compiled-function-p func)
               (values func nil nil))
-             ((core:cxx-instance-p func)
+             ((core:instancep func) ; FIXME: funcallable-instance-p, probably
               (let ((user-func (clos:get-funcallable-instance-function func)))
                 (when (and user-func (interpreted-function-p user-func))
                   (let ((compiled-user-func (compile nil user-func)))

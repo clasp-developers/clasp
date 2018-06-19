@@ -143,10 +143,6 @@ CL_DEFUN List_sp core__class_slot_sanity_check()
   return sanity;
 }
 
-T_sp Instance_O::oinstancep() const {
-  return make_fixnum((gctools::Fixnum)(this->numberOfSlots()));
-}
-
 CL_LAMBDA(class slot-count);
 CL_DEFUN T_sp core__allocate_new_instance(Instance_sp cl, size_t slot_count) {
   // cl is known to be a standard-class.

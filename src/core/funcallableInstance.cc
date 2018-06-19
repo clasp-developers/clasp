@@ -64,10 +64,6 @@ void FuncallableInstance_O::initializeClassSlots(Creator_sp creator, gctools::St
   DEPRECATED();
 }
 
-T_sp FuncallableInstance_O::oinstancep() const {
-  return make_fixnum((gctools::Fixnum)(this->numberOfSlots()));
-}
-
 // Identical to allocate_new_instance in instance.cc, except for the type.
 CL_DEFUN T_sp core__allocate_new_funcallable_instance(Instance_sp cl, size_t numberOfSlots) {
   // cl is known to be a funcallable-standard-class.

@@ -477,12 +477,6 @@ namespace core {
   /*! Get the signature (metaclass slot definitions) for the instance */
     virtual T_sp instanceSig() const;
 
-  /*! Return number of slots if instance of Instance_O otherwise return nil */
-    virtual T_sp oinstancep() const { return _Nil<T_O>(); }; //
-    bool instancep() const { return oinstancep().isTrue(); };
-  /*! Return number of slots if instance of Instance_O otherwise return nil */
-    virtual T_sp ofuncallableInstanceP() const { return _Nil<T_O>(); }; //
-    bool funcallableInstanceP() const { return ofuncallableInstanceP().isTrue(); };
     virtual Fixnum get_stamp_() const { lisp_error_no_stamp((void*)this); };
   };
 };

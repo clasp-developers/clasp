@@ -310,14 +310,6 @@ CL_DEFUN T_sp core__instance_ref(T_sp obj, int idx) {
   IMPLEMENT_MEF("Implement for non-general objects");
 };
 
-CL_LAMBDA(obj);
-CL_DECLARE();
-CL_DOCSTRING("instancep");
-CL_DEFUN T_sp core__instancep(T_sp obj) {
-  if (obj.generalp()) return obj.unsafe_general()->oinstancep();
-  else return _Nil<T_O>();
-};
-
 void General_O::initialize() {
   // do nothing
 }
@@ -512,7 +504,7 @@ Instance_sp instance_class(T_sp obj)
 SYMBOL_SC_(CorePkg, slBoundp);
 SYMBOL_SC_(CorePkg, instanceRef);
 SYMBOL_SC_(CorePkg, instanceSet);
-SYMBOL_SC_(CorePkg, instancep);
+SYMBOL_EXPORT_SC_(CorePkg, instancep); // move to predicates.cc?
 SYMBOL_SC_(CorePkg, instanceSigSet);
 SYMBOL_SC_(CorePkg, instanceSig);
 SYMBOL_EXPORT_SC_(CorePkg, instanceClass);
