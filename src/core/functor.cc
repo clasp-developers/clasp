@@ -85,33 +85,6 @@ string Function_O::__repr__() const {
   return ss.str();
 }
 
-
-string Closure_O::nameAsString() const {
-  if (this->_name.nilp()) {
-    return "Function-name(NIL)";
-  } else if (Symbol_sp sname = this->_name.asOrNull<Symbol_O>()) {
-    stringstream ss;
-    ss << "Function-name(";
-    ss << sname->symbolNameAsString();
-    ss << ")";
-    return ss.str();
-  } else if (Cons_sp cname = this->_name.asOrNull<Cons_O>()) {
-    stringstream ss;
-    ss << "Function-name(setf ";
-    ss << gc::As<Symbol_sp>(oCadr(cname))->symbolNameAsString();
-    ss << ")";
-    return ss.str();
-  } else if (cl__stringp(this->_name)) {
-    String_sp strname = gc::As_unsafe<String_sp>(this->_name);
-    stringstream ss;
-    ss << "Function-name(string-";
-    ss << strname->get();
-    ss << ")";
-    return ss.str();
-  }
-  THROW_HARD_ERROR(BF("Cannot get name as string of Functoid"));
-}
-
 };
 
 

@@ -93,7 +93,6 @@ namespace core {
 #endif
     };
     Pointer_sp function_pointer() const;
-    virtual string nameAsString() const {SUBIMP();};
     virtual bool compiledP() const { return false; };
     virtual bool interpretedP() const { return false; };
     virtual bool builtinP() const { return false; };
@@ -183,7 +182,6 @@ public:
  Closure_O(claspFunction fptr, T_sp name ) : Base(fptr,name) {};
 public:
   virtual const char *describe() const { return "Closure"; };
-  virtual string nameAsString() const;
 };
 };
 
