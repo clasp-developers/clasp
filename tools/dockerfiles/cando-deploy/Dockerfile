@@ -64,7 +64,8 @@ RUN conda install ipywidgets -c conda-forge -y
 RUN pip install nglview==1.1.2
 RUN nglview enable # might need this to enable nglview-js-widgets extension for notebook
 RUN conda install jupyterlab -y -c conda-forge
-RUN jupyter-labextension install @jupyter-widgets/jupyterlab-manager nglview-js-widgets@1.1.2
+RUN pip install bqplot
+RUN jupyter-labextension install @jupyter-widgets/jupyterlab-manager nglview-js-widgets@1.1.2 bqplot
 #RUN jupyter-labextension install nglview-js-widgets@1.1.2
 
 ADD cando-build.tgz /home/app/clasp
@@ -111,9 +112,6 @@ ADD tools/dockerfiles/start-demos.sh /home/app/start-demos.sh
 ADD demos.tar /home/app/
 
 RUN apt-get install -y libgfortran4
-
-RUN pip install bqplot
-RUN jupyter-labextension install bqplot
 
 ENV HOME /home/app/
 ENTRYPOINT [ "jupyter", "lab" ]
