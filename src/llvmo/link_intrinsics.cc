@@ -72,6 +72,18 @@ using namespace core;
 #pragma GCC visibility push(default)
 
 namespace llvmo {
+
+core::T_sp functionNameOrNilFromFunctionDescription(core::FunctionDescription* functionDescription)
+{
+  if (functionDescription==NULL) {
+    return _Nil<core::T_O>();
+  }
+  core::T_sp functionName((gctools::Tagged)functionDescription->gcrootsInModule->get(functionDescription->functionNameIndex));
+  return functionName;
+}
+  
+
+
 [[noreturn]] __attribute__((optnone))  void intrinsic_error(ErrorCode err, core::T_sp arg0, core::T_sp arg1, core::T_sp arg2) {
   switch (err) {
   case noFunctionBoundToSymbol:
@@ -80,8 +92,6 @@ namespace llvmo {
       ERROR_UNDEFINED_FUNCTION(sym); 
     }
     break;
-  case badKeywordArgument:
-      SIMPLE_ERROR(BF("Bad keyword argument %s") % _rep_(arg0));
   case couldNotCoerceToClosure:
       SIMPLE_ERROR(BF(" symbol %s") % _rep_(arg0));
   case destinationMustBeActivationFrame:
@@ -409,7 +419,7 @@ LtvcReturn ltvc_enclose(gctools::GCRootsInModule* holder, size_t index, gctools:
   gctools::smart_ptr<core::ClosureWithSlots_O> functoid =
     gctools::GC<core::ClosureWithSlots_O>::allocate_container(0,
                                                               llvm_func,
-                                                              functionDescription,
+                                                              (core::FunctionDescription*)functionDescription,
                                                               tlambdaName,
                                                               kw::_sym_function,
                                                               _Nil<T_O>(), // lambdaList
@@ -625,13 +635,19 @@ __attribute__((visibility("default"))) core::T_O *cc_gatherRestArguments(va_list
   NO_UNWIND_END();
 }
 
-void cc_ifBadKeywordArgumentException(size_t allowOtherKeys, std::size_t badKwIdx, core::T_O *kw)
+void badKeywordArgumentError(core::T_sp keyword, core::FunctionDescription* functionDescription)
 {
-  if (allowOtherKeys == 2) {
-    return;
+  core::T_sp functionName = llvmo::functionNameOrNilFromFunctionDescription(functionDescription);
+  if (functionName.nilp()) {
+    SIMPLE_ERROR(BF("When calling an unnamed function the bad keyword argument %s was passed") % _rep_(keyword) );
   }
-  if (badKwIdx != 65536)
-    intrinsic_error(llvmo::badKeywordArgument, core::T_sp((gc::Tagged)kw));
+  SIMPLE_ERROR(BF("When calling %s the bad keyword argument %s was passed") % _rep_(functionName) % _rep_(keyword) );
+}
+
+void cc_ifBadKeywordArgumentException(size_t allowOtherKeys, std::size_t badKwIdx, core::T_O *kw, core::FunctionDescription* functionDescription)
+{
+  if (allowOtherKeys == 2) return;
+  if (badKwIdx != 65536) badKeywordArgumentError(core::T_sp((gc::Tagged)kw),functionDescription);
 }
 
 
@@ -1302,7 +1318,7 @@ core::T_O *cc_enclose(core::T_O *lambdaName,
   gctools::smart_ptr<core::ClosureWithSlots_O> functoid =
     gctools::GC<core::ClosureWithSlots_O>::allocate_container( numCells
                                                               , llvm_func
-                                                               , functionDescription
+                                                               , (core::FunctionDescription*)functionDescription
                                                               , tlambdaName
                                                               , kw::_sym_function
                                                               , _Nil<T_O>() // lambdaList
@@ -1388,11 +1404,14 @@ void cc_loadThreadLocalMultipleValues(core::T_mv *result, core::MultipleValues *
 }
 
 
-
-void cc_ifNotKeywordException(core::T_O *obj, size_t argIdx, va_list valist) {
+void cc_ifNotKeywordException(core::T_O *obj, size_t argIdx, va_list valist, core::FunctionDescription* functionDescription) {
   T_sp vobj((gc::Tagged)obj);
   if (!cl__symbolp(vobj)) {
-    SIMPLE_ERROR(BF("Expected keyword argument at argument %d got %s") % argIdx % _rep_(gctools::smart_ptr<core::T_O>((gc::Tagged)obj)));
+    T_sp functionName = llvmo::functionNameOrNilFromFunctionDescription(functionDescription);
+    if (functionName.nilp()) {
+      SIMPLE_ERROR(BF("Expected keyword argument at argument %d got %s") % argIdx % _rep_(gctools::smart_ptr<core::T_O>((gc::Tagged)obj)));
+    }
+    SIMPLE_ERROR(BF("In call to %s expected keyword argument at argument %d got %s") % _rep_(functionName) % argIdx % _rep_(gctools::smart_ptr<core::T_O>((gc::Tagged)obj)));
   }
 }
 
@@ -1619,12 +1638,20 @@ gctools::return_type cc_dispatch_slot_writer_index_debug(core::T_O* toptimized_s
 }
 
 
-void cc_error_too_few_arguments(size_t nargs, size_t minargs) {
-  SIMPLE_ERROR(BF("Not enough arguments - you provided %lu and %lu are required") % nargs % minargs );
+void cc_error_too_few_arguments(size_t nargs, size_t minargs, core::FunctionDescription* functionDescription) {
+  T_sp functionName = llvmo::functionNameOrNilFromFunctionDescription(functionDescription);
+  if (functionName.nilp()) {
+    SIMPLE_ERROR(BF("Not enough arguments when calling an unknown function - you provided %lu and %lu are required") % nargs % minargs );
+  }
+  SIMPLE_ERROR(BF("Not enough arguments when calling %s - you provided %lu and %lu are required") % _rep_(functionName) % nargs % minargs );
 }
 
-void cc_error_too_many_arguments(size_t nargs, size_t maxargs) {
-  SIMPLE_ERROR(BF("Too many arguments - you provided %lu and %lu are allowed") % nargs % maxargs );
+void cc_error_too_many_arguments(size_t nargs, size_t maxargs, core::FunctionDescription* functionDescription) {
+  T_sp functionName = llvmo::functionNameOrNilFromFunctionDescription(functionDescription);
+  if (functionName.nilp()) {
+        SIMPLE_ERROR(BF("Too many arguments when calling an unknown function - you provided %lu and %lu are required") % nargs % maxargs );
+  }
+  SIMPLE_ERROR(BF("Too many arguments when calling %s - you provided %lu and %lu are allowed") % _rep_(functionName) % nargs % maxargs );
 }
 
 };

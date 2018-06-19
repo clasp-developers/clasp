@@ -42,7 +42,8 @@
     ((quality (eql 'maintain-shadow-stack))
      optimize
      (environment clasp-global-environment))
-  (= (cleavir-policy:optimize-value optimize 'debug) 3))
+  #-debug-cclasp-lisp(= (cleavir-policy:optimize-value optimize 'debug) 3)
+  #+debug-cclasp-lisp t)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;

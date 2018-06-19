@@ -268,8 +268,8 @@ CL_DEFUN core::T_sp llvm_sys__cxxDataStructuresInfo() {
   return list;
 }
 
-CL_LAMBDA(&key tsp tmv ihf contab valist register-save-area);
-CL_DEFUN void llvm_sys__throwIfMismatchedStructureSizes(core::Fixnum_sp tspSize, core::Fixnum_sp tmvSize, gc::Nilable<core::Fixnum_sp> givenIhfSize, core::T_sp contabSize, core::T_sp tvalistsize, core::T_sp tRegisterSaveAreaSize ) {
+CL_LAMBDA(&key tsp tmv ihf contab valist register-save-area function-description);
+CL_DEFUN void llvm_sys__throwIfMismatchedStructureSizes(core::Fixnum_sp tspSize, core::Fixnum_sp tmvSize, gc::Nilable<core::Fixnum_sp> givenIhfSize, core::T_sp contabSize, core::T_sp tvalistsize, core::T_sp tRegisterSaveAreaSize, core::T_sp tFunctionDescriptionSize ) {
   int T_sp_size = sizeof(core::T_sp);
   if (unbox_fixnum(tspSize) != T_sp_size) {
     SIMPLE_ERROR(BF("Mismatch between tsp size[%d] and core::T_sp size[%d]") % unbox_fixnum(tspSize) % T_sp_size);
@@ -304,6 +304,18 @@ CL_DEFUN void llvm_sys__throwIfMismatchedStructureSizes(core::Fixnum_sp tspSize,
     size_t registerSaveAreaSize = tRegisterSaveAreaSize.unsafe_fixnum();
     if (registerSaveAreaSize != (sizeof(void*)*LCC_ABI_ARGS_IN_REGISTERS)) {
       SIMPLE_ERROR(BF("register-save-area size %lu mismatch with Common Lisp code %lu") % (sizeof(void*)*LCC_ABI_ARGS_IN_REGISTERS) % registerSaveAreaSize );
+    }
+  }
+  if (tRegisterSaveAreaSize.fixnump()) {
+    size_t registerSaveAreaSize = tRegisterSaveAreaSize.unsafe_fixnum();
+    if (registerSaveAreaSize != (sizeof(void*)*LCC_ABI_ARGS_IN_REGISTERS)) {
+      SIMPLE_ERROR(BF("register-save-area size %lu mismatch with Common Lisp code %lu") % (sizeof(void*)*LCC_ABI_ARGS_IN_REGISTERS) % registerSaveAreaSize );
+    }
+  }
+  if (tFunctionDescriptionSize.fixnump()) {
+    size_t functionDescriptionSize = tFunctionDescriptionSize.unsafe_fixnum();
+    if (functionDescriptionSize != sizeof(core::FunctionDescription)) {
+      SIMPLE_ERROR(BF("function-description size %lu mismatch with Common Lisp code %lu") % sizeof(core::FunctionDescription) % functionDescriptionSize );
     }
   }
 }

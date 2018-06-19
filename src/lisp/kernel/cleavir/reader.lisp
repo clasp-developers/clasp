@@ -17,10 +17,6 @@
 
 (defclass clasp-ordinary-lambda-list (cst::ordinary-lambda-list) ())
 
-(cst::define-top-level-parser parse-clasp-ordinary-lambda-list
-  *clasp-ordinary-lambda-list-grammar*
-  clasp-ordinary-lambda-list)
-
 (defclass clasp-ordinary-rest-parameter-group (cst::ordinary-rest-parameter-group)
   ())
 
@@ -44,6 +40,9 @@
                    *clasp-ordinary-rest-parameter-group*
                    cst:*standard-grammar*)))
 
+(cst::define-top-level-parser parse-clasp-ordinary-lambda-list
+  *clasp-ordinary-lambda-list-grammar*
+  clasp-ordinary-lambda-list)
 
 (defmethod cleavir-cst-to-ast:process-parameter-group
     ((parameter-group clasp-ordinary-rest-parameter-group)

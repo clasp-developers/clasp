@@ -870,6 +870,7 @@ namespace gctools {
   };
   
   void initialize_gcroots_in_module(GCRootsInModule* gcroots_in_module, core::T_O** root_address, size_t num_roots, gctools::Tagged initial_data);
+  core::T_O* read_gcroots_in_module(GCRootsInModule* roots, size_t index);
   void shutdown_gcroots_in_module(GCRootsInModule* gcroots_in_module);
 
   inline core::T_O* ensure_valid_object(core::T_O* tagged_object) {

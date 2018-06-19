@@ -7,8 +7,9 @@
   "If (constantp form env) is true, returns the constant value of the form in the environment."
   (declare (ignore env))
   (cond ((symbolp form) (symbol-value form))
-        ;; assume quote
-        ((consp form) (second form))
+        ((consp form)
+         (assert (eql (first form) 'quote))
+         (second form))
         ;; self-evaluating
         (t form)))
 
@@ -40,19 +41,25 @@
 ;; (opt-test-function :test (generate-test) nil) =>
 ;;   #'(lambda (v1 v2) `([gensym] ,v1 ,v2)), (([gensym] (generate-test)))
 (defun opt-test-function (test-flag test env)
-  (cond ((null test-flag)
-         (values (opt-test-function :test '#'eql env) nil))
-        ((eq test-flag :test-not)
-         (multiple-value-bind (function init)
-             (opt-test-function :test test env)
-           (values #'(lambda (v1 v2) `(not ,(funcall function v1 v2)))
-                   init)))
-        (t (let ((maybe-head (constant-function-expression test env)))
-             (if maybe-head
-                 (values #'(lambda (v1 v2) `(,maybe-head ,v1 ,v2)) nil)
-                 (si::with-unique-names (test-function)
-                   (values #'(lambda (v1 v2) `(funcall ,test-function ,v1 ,v2))
-                           (list (list test-function test)))))))))
+  (ecase test-flag
+    ((nil)
+     (values (opt-test-function :test '#'eql env) nil))
+    (:test-not
+     (multiple-value-bind (function init)
+         (opt-test-function :test test env)
+       (values #'(lambda (v1 v2)
+                   `(not ,(funcall function v1 v2)))
+               init)))
+    (:test
+     (let ((maybe-head (constant-function-expression test env)))
+       (if maybe-head
+           (values #'(lambda (v1 v2)
+                       `(,maybe-head ,v1 ,v2))
+                   nil)
+           (si::with-unique-names (test-function)
+             (values #'(lambda (v1 v2)
+                         `(funcall ,test-function ,v1 ,v2))
+                     `((,test-function ,test)))))))))
 
 ;; Like the above, but with a key function.
 (defun opt-key-function (key env)
@@ -60,22 +67,24 @@
          (values #'identity nil))
         (t (let ((maybe-head (constant-function-expression key env)))
              (if maybe-head
-                 (values #'(lambda (elt) `(,maybe-head ,elt)) nil)
+                 (values #'(lambda (elt)
+                             `(,maybe-head ,elt))
+                         nil)
                  (si::with-unique-names (key-function)
-                   (values #'(lambda (elt) `(funcall ,key-function ,elt))
-                           (list (list key-function
-                                       `(or ,key #'identity))))))))))
+                   (values #'(lambda (elt)
+                               `(funcall ,key-function ,elt))
+                           `((,key-function (or ,key #'identity))))))))))
 
-;;; Use the above to do an entire two-arg test, and allow for start and end as well.
-;;; Returns (values keyf testf inits keyk testk test start end)
-;;; keyf and testf are the functions returned by seq-opt-etc above. inits are from them as well.
-;;; keyk and testk are the keywords for them, i.e. keyk is :key if :key was specified or else NIL,
-;;;  and testk is :test or :test-not or nil.
-;;; test is the form passed as a :test or :test-not, or #'eql if none was passed.
-;;; test is used for dropping to memq and friends even if a full inline isn't done. (FIXME: will be used for.)
-;;; start and end are the same parameters. the start-end argument controls whether they're valid.
+;;; Use the above to do an entire two-arg test, and allow for START and END as well.
+;;; Returns (VALUES KEYF TESTF INITS KEYK TESTK TEST START END)
+;;; KEYF and TESTF are the functions returned by SEQ-OPT-ETC above. INITS are from them as well.
+;;; KEYK and TESTK are the keywords for them, i.e. KEYK is :key if :key was specified or else NIL,
+;;;  and TESTK is :test or :test-not or nil.
+;;; TEST is the form passed as a :test or :test-not, or #'eql if none was passed.
+;;; TEST is used for dropping to MEMQ and friends even if a full inline isn't done. (FIXME: will be used for.)
+;;; START and END are the same parameters. the START-END argument controls whether they're valid.
 ;;; If the call is invalid - e.g. has both :test and :test-not - all values will be nil, including the
-;;;  primary value keyf, which is otherwise a function.
+;;;  primary value KEYF, which is otherwise a function.
 (defun two-arg-test-parse-args (function args &key (start-end t) environment)
   (loop with key-flag = nil
         with key = nil

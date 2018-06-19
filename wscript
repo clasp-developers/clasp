@@ -967,6 +967,7 @@ def build(bld):
     # Without this the parallel ASDF load-op's would step on each other's feet
     if (bld.options.RUN_THE_SCRAPER):
         task = precompile_scraper(env = bld.env)
+        # TODO set the inputs to be all of the scraper dir? this would enable proper dependency tracking and recompilation.
         task.set_outputs([bld.path.find_or_declare("scraper-precompile-done")])
         bld.add_to_group(task)
 
@@ -1475,8 +1476,11 @@ class generate_sif_files(scraper_task):
                        self.colon("FRAMEWORKPATH_ST", "FRAMEWORKPATH") + \
                        self.colon("CPPPATH_ST", "INCPATHS") + \
                        self.colon("DEFINES_ST", "DEFINES")
+        # NOTE if we ever want to turn the scraper into an executable sbcl image, then we will need to pass
+        # every argument on the command line. Passing the preprocessor args is a headache due to escaping and
+        # such, so for now we just pass it as an arg in the --eval form.
         preproc_args_as_string = ' '.join('"' + item + '"' for item in preproc_args)
-        cmd = self.scraper_command_line(["--eval", "(cscrape:generate-sif-files '(%s))" % preproc_args_as_string])
+        cmd = self.scraper_command_line(["--eval", "(cscrape:generate-sif-files \"%s\" '(%s))" % (env.BUILD_ROOT + "/", preproc_args_as_string)])
         for cxx_node, sif_node in zip(self.inputs, self.outputs):
             cmd.append(cxx_node.abspath())
             cmd.append(sif_node.abspath())

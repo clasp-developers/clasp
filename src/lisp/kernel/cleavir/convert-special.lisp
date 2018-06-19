@@ -118,7 +118,7 @@
 ;;;
 (defmethod cleavir-generate-ast::convert-special
     ((symbol (eql 'core:multiple-value-foreign-call)) form environment (system clasp-cleavir:clasp))
-  (check-type (second form) string)
+  (assert (typep (second form) 'string))
   (make-instance 'clasp-cleavir-ast:multiple-value-foreign-call-ast
                  :function-name (second form)
                  :argument-asts (cleavir-generate-ast:convert-sequence (cddr form) environment system)))
@@ -144,8 +144,8 @@
 (defmethod cleavir-generate-ast::convert-special
     ((symbol (eql 'core:foreign-call)) form environment (system clasp-cleavir:clasp))
                                         ;  (format t "convert-special form: ~a~%"  form)
-  (check-type (second form) list)
-  (check-type (third form) string)
+  (assert (typep (second form) 'list))
+  (assert (typep (third form) 'string))
   (make-instance 'clasp-cleavir-ast:foreign-call-ast
                  :foreign-types (second form)
                  :function-name (third form)
@@ -175,7 +175,7 @@
 ;;;
 (defmethod cleavir-generate-ast::convert-special
     ((symbol (eql 'core:foreign-call-pointer)) form environment (system clasp-cleavir:clasp))
-  (check-type (second form) list)
+  (assert (typep (second form) 'list))
   (make-instance 'clasp-cleavir-ast:foreign-call-pointer-ast
                  :foreign-types (second form)
                  :argument-asts (cleavir-generate-ast:convert-sequence (cddr form) environment system)))

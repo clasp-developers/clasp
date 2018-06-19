@@ -175,7 +175,7 @@
     
     (primitive         "cc_gatherRestArguments" %t*% (list %va_list*% %size_t*%))
     (primitive         "cc_gatherVaRestArguments" %t*% (list %va_list*% %size_t*% %vaslist*%))
-    (primitive-unwinds "cc_ifBadKeywordArgumentException" %void% (list %size_t% %size_t% %t*%))
+    (primitive-unwinds "cc_ifBadKeywordArgumentException" %void% (list %size_t% %size_t% %t*% %function-description*%))
     
     (primitive         "initializeBlockClosure" %t*% (list %t**%))
     (primitive         "ignore_initializeBlockClosure" %t*% (list %t**%))
@@ -239,7 +239,7 @@
     (primitive-unwinds "cc_bound_or_error" %t*% (list %t*% %t*% %t*%)) ; optimized-data instance value
     (primitive         "cc_vaslist_end" %void% (list %t*%))
 
-    (primitive-unwinds "cc_check_if_wrong_number_of_arguments" %void% (list %size_t% %size_t% %size_t%))
+    (primitive-unwinds "cc_check_if_wrong_number_of_arguments" %void% (list %size_t% %size_t% %size_t% %function-description*%))
     (primitive         "cc_ensure_valid_object" %t*% (list %t*%))
     (primitive         "cc_getPointer" %i8*% (list %t*%))
     (primitive         "cc_setTmvToNil" %void% (list %tmv*%))
@@ -303,7 +303,7 @@
                         :varargs t)
     (primitive         "cc_allowOtherKeywords" %i64% (list %i64% %t*%))
     (primitive         "cc_matchKeywordOnce" %size_t% (list %t*% %t*% %t*%))
-    (primitive-unwinds "cc_ifNotKeywordException" %void% (list %t*% %size_t% %va_list*%))
+    (primitive-unwinds "cc_ifNotKeywordException" %void% (list %t*% %size_t% %va_list*% %function-description*%))
     (primitive         "cc_multipleValuesArrayAddress" %t*[0]*% nil)
     (primitive-unwinds "cc_unwind" %void% (list %t*% %size_t%))
     (primitive-unwinds "cc_throw" %void% (list %t*%) :does-not-return t)

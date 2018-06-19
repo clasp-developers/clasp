@@ -31,6 +31,7 @@ THE SOFTWARE.
 #include <clasp/core/common.h>
 #include <clasp/core/numbers.h>
 #include <clasp/core/symbol.h>
+#include <clasp/core/evaluator.h>
 #include <clasp/core/hashTable.h>
 #include <clasp/core/bignum.h>
 #include <clasp/core/wrappers.h>
@@ -427,7 +428,7 @@ CL_DEFUN void core__test_bignum_to_int64(Bignum_sp b) {
     if (sgn<0) {
       val = -val;
     }
-    printf("%s:%d Converted bignum sgn -> %d  val -> %lld\n", __FILE__, __LINE__, sgn, val);
+    SIMPLE_WARN(BF("Converted bignum sgn -> %d  val -> %d\n") % sgn % val);
     return;
   }
  BAD:

@@ -302,28 +302,34 @@ The **library-file** is the name of the output library with the appropriate exte
 
 (defun llvm-link (output-pathname
                   &key (link-type :fasl)
-                    input-type 
-                    lisp-bitcode-files
+                    (input-type :bitcode)
+                    input-files
                     (target-backend (default-target-backend)))
+  "Link a collection of files together into a fasl or executable.
+The input files are passed as a list in **input-files**.
+The type of file generated is specified by **link-type** (:fasl|:executable).
+The type of the files to be linked is defined with **input-type** (:bitcode|:object).
+The **target-backend** indicates if we are linking for aclasp, bclasp or cclasp.
+Return the **output-pathname**."
   (let* ((*target-backend* target-backend)
          (intrinsics-bitcode-path (core:build-inline-bitcode-pathname link-type :intrinsics))
          (builtins-bitcode-path (core:build-inline-bitcode-pathname link-type :builtins))
-         (all-bitcode (list* intrinsics-bitcode-path lisp-bitcode-files))
+         (all-input-files (list* intrinsics-bitcode-path input-files))
          (output-pathname (pathname output-pathname)))
     (cond
       ((eq input-type :object)
        ;; don't link builtins - object files already have them linked in by compile-file
        )
       ((eq input-type :bitcode)
-       (setf all-bitcode (append (list builtins-bitcode-path) all-bitcode)))
+       (setf all-input-files (append (list builtins-bitcode-path) all-input-files)))
       (t (error "Add support for llvm-link input-type ~a" input-type)))
     (cond
       ((eq link-type :executable)
-       (execute-link-executable output-pathname all-bitcode :input-type input-type))
+       (execute-link-executable output-pathname all-input-files :input-type input-type))
       ((eq link-type :fasl)
        (when (member :debug-run-clang *features*)
-         (bformat t "In llvm-link -> link-type :fasl all-bitcode -> %s%N" all-bitcode))
-       (execute-link-fasl output-pathname all-bitcode :input-type input-type))
+         (bformat t "In llvm-link -> link-type :fasl all-input-files -> %s%N" all-input-files))
+       (execute-link-fasl output-pathname all-input-files :input-type input-type))
       (t (error "Cannot link format ~a" link-type)))
     output-pathname))
 

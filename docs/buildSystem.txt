@@ -23,9 +23,9 @@ src/mpip/
 ----------------------------------------------------------------------
 Google pump
 
-Google pump.py is a python program that converts .pmp files into header files.
+Google pump.py is a python program that expands .pmp templates into C++ header files.
 ".pmp" files contain a description of C++ template code that gets expanded into lots of repetative C++ template code.
-Every .pmp file needs to have google pump run on it.
+The wscript file runs google pump on every .pmp file.
 
 These are the current .pmp files:
 
@@ -75,44 +75,4 @@ To summarize:
 1) Symbol scraping scrapes all of the .cc files and may or may not generate a new symbols_scraped_inc.h file
 2) .cc files #include the symbols_scraped_inc.h file
 
-There is one very annoying bug that a user encounters when building Clasp.  The very first time a fresh repo is built with "make", a lot of errors will be reported.  If the user halts the make with Control-C and then types "make" again - the problem disappears, never to return.  We tracked down the problem to a problem with boost build (https://github.com/drmeister/clasp/issues/17) but it is not clear how to resolve it.
 When you add new symbols it forces lots of recompilation because almost every .cc file #include's symbols_scraped_inc.h either directly or indirectly.
-
-
-----------------------------------------------------------------------
-----------------------------------------------------------------------
-Register classes
-
-
-/usr/bin/python /Users/meister/Development/clasp/src/common/registerClasses.py ../../src/core/bin/boehm/clang-darwin-4.2.1/release/link-static/core_initClasses_inc.h ../../src/core/bin/boehm/clang-darwin-4.2.1/release/link-static/${bname}_initScripting_inc.h include/*Package.h include/*.h ../../src/core/bin/boehm/clang-darwin-4.2.1/release/link-static/*.h *.cc ../../src/core/bin/boehm/clang-darwin-4.2.1/release/link-static/*.cc > registerClasses.log
-
-Searches through all header files looking for macros like:
-LISP_CLASS(...)
-
-It populates the file XXX_initClasses_inc.h with code that exposes these C++ classes to Common Lisp
-
-
-----------------------------------------------------------------------
-----------------------------------------------------------------------
-
-
-
-
-
-See src/lisp/Jamfile.jam
-Copy src/lisp source tree (*.l *.lsp *.lisp *.sh) to $(APPRES-LISP)
-
-src/core/bin/boehm/clang-darwin-4.2.1/release/link-static/core_scrape_flag.h
-src/cffi/bin/boehm/clang-darwin-4.2.1/release/link-static/cffi_scrape_flag.h
-
-Build .cc files in main
-
-scraped ../../src/gctools/bin/boehm/clang-darwin-4.2.1/release/link-static/gctools_scrape_flag.h
-	touch ../../src/gctools/bin/boehm/clang-darwin-4.2.1/release/link-static/gctools_scrape_flag.h
-scraped ../../src/sockets/bin/boehm/clang-darwin-4.2.1/release/link-static/sockets_scrape_flag.h
-	touch ../../src/sockets/bin/boehm/clang-darwin-4.2.1/release/link-static/sockets_scrape_flag.h
-scraped ../../src/serveEvent/bin/boehm/clang-darwin-4.2.1/release/link-static/serveEvent_scrape_flag.h
-	touch ../../src/serveEvent/bin/boehm/clang-darwin-4.2.1/release/link-static/serveEvent_scrape_flag.h
-scraped ../../src/clbind/bin/boehm/clang-darwin-4.2.1/release/link-static/clbind_scrape_flag.h
-	touch ../../src/clbind/bin/boehm/clang-darwin-4.2.1/release/link-static/clbind_scrape_flag.h
-

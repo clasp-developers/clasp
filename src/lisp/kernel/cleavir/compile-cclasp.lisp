@@ -76,7 +76,7 @@ p  (core:pathname-translations "cclasp-boehm" '(("**;*.*" #P"SYS:build;system;cc
 (defun link-cclasp (from-mod to-mod &key (system *cleavir-system*))
   (let* ((bitcode-files (select-bitcode-files from-mod to-mod :system system)))
     (cmp:llvm-link (core:target-backend-pathname core:+image-pathname+)
-                         :lisp-bitcode-files bitcode-files
+                         :input-files bitcode-files
                          :prologue-form '(progn
                                           (make-package "CLEAVIR-AST")
                                           (make-package "CLASP-CLEAVIR-AST")

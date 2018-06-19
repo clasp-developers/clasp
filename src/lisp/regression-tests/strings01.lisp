@@ -44,3 +44,7 @@
 
 (test closest-sequence-type0 (eq (core::closest-sequence-type 'simple-base-string) 'base-char))
 (test closest-sequence-type1 (eq (core::closest-sequence-type 'simple-string) 'character))
+
+;;; These should not return t, but the first index, where it is different
+(test eql-1 (eql 0 (string/= "a" "b")))
+(test eql-2 (eql 0 (string-not-equal "a" "b")))

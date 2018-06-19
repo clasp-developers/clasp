@@ -48,8 +48,8 @@ RUN echo "LLVM_CONFIG_BINARY='/usr/bin/llvm-config-5.0'" > wscript.config
 RUN echo "PREFIX='/out/clasp'" >> wscript.config
 RUN echo "CLASP_VERSION='clasp_docker'" >> wscript.config
 RUN echo "USE_PARALLEL_BUILD = True" >> wscript.config
-RUN echo "USE_LLD = True" >> wscript.config
-RUN echo "CLASP_BUILD_MODE = 'bitcode'" >> wscript.config
+RUN echo "USE_LLD = False" >> wscript.config
+RUN echo "CLASP_BUILD_MODE = 'object'" >> wscript.config
 RUN git clone --depth=1 https://github.com/quicklisp/quicklisp-client.git $HOME/quicklisp
 RUN mkdir $HOME/quicklisp/local-projects
 RUN git clone --depth=1 https://github.com/slime/slime $HOME/slime
@@ -59,7 +59,7 @@ RUN cd $HOME/quicklisp/local-projects \
  && git clone --depth=1 https://github.com/clasp-developers/cl-jupyter-widgets.git \
  && git clone --depth=1 https://github.com/clasp-developers/cl-nglview.git \
  && git clone --depth=1 https://github.com/clasp-developers/cl-bqplot.git \
- && git clone --depth=1 https://github.com/clasp-developers/ironclad.git \
+ && git clone --depth=1 https://github.com/clasp-developers/trivial-backtrace.git \
  && git clone --depth=1 https://github.com/clasp-developers/uuid.git \
  && git clone --depth=1 https://github.com/clasp-developers/bordeaux-threads.git \
  && git clone --depth=1 https://github.com/clasp-developers/cffi.git

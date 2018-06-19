@@ -1,7 +1,8 @@
 (defpackage "CSCRAPE"
   (:use :cl)
   (:import-from :alexandria
-                #:define-constant)
+                #:define-constant
+                #:starts-with-subseq)
   (:export
    #:+begin-tag+
    #:+end-tag+
