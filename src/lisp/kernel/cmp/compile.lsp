@@ -56,12 +56,7 @@ We could do more fancy things here - like if cleavir-clasp fails, use the clasp 
                               :source-file-info-handle handle)
           (cmp-log "Dumping module%N")
           (cmp-log-dump-module *the-module*)
-          (multiple-value-bind (compiled-function warnp failp)
-              (compile-with-hook compile-hook bind-to-name definition env pathname :linkage linkage)
-            (when bind-to-name
-              (let ((lambda-list (cadr definition)))
-                (core:fset bind-to-name compiled-function nil lambda-list)))
-            (values compiled-function warnp failp)))))))
+          (compile-with-hook compile-hook bind-to-name definition env pathname :linkage linkage))))))
 
 (defun compile (name &optional definition)
   (multiple-value-bind (function warnp failp)

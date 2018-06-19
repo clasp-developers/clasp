@@ -144,7 +144,7 @@ then compile it and return (values compiled-llvm-function lambda-name)"
 
 (defun compile-to-module (form env pathname &key (linkage 'llvm-sys:internal-linkage))
   (with-lexical-variable-optimizer (t)
-      (multiple-value-bind (fn function-kind wrapped-env lambda-name warnp failp)
+      (multiple-value-bind (fn function-kind wrapped-env lambda-name)
           (with-debug-info-generator (:module *the-module* :pathname pathname)
             (multiple-value-bind (llvm-function-from-lambda lambda-name)
                 (compile-lambda-function form env :linkage linkage)
@@ -155,23 +155,23 @@ then compile it and return (values compiled-llvm-function lambda-name)"
         (or fn (error "There was no function returned by compile-lambda-function outer: ~a" fn))
         (cmp-log "fn --> %s%N" fn)
         (cmp-log-dump-module *the-module*)
-        (values fn function-kind wrapped-env lambda-name warnp failp))))
+        (values fn function-kind wrapped-env lambda-name))))
 
 (defun compile-to-module-with-run-time-table (definition env pathname &key (linkage 'llvm-sys:internal-linkage))
-  (let* (fn function-kind wrapped-env lambda-name warnp failp)
+  (let* (fn function-kind wrapped-env lambda-name)
     (multiple-value-bind (ordered-raw-constants-list constants-table startup-fn shutdown-fn)
         (literal:with-rtv
-            (multiple-value-setq (fn function-kind wrapped-env lambda-name warnp failp)
+            (multiple-value-setq (fn function-kind wrapped-env lambda-name)
               (compile-to-module definition env pathname :linkage linkage)))
-      (values fn function-kind wrapped-env lambda-name warnp failp ordered-raw-constants-list constants-table startup-fn shutdown-fn))))
+      (values fn function-kind wrapped-env lambda-name ordered-raw-constants-list constants-table startup-fn shutdown-fn))))
 
 (defun bclasp-compile* (bind-to-name &optional definition env pathname &key (linkage 'llvm-sys:internal-linkage))
   "Compile the definition"
-  (multiple-value-bind (fn function-kind wrapped-env lambda-name warnp failp ordered-raw-constants-list constants-table startup-fn shutdown-fn)
+  (multiple-value-bind (fn function-kind wrapped-env lambda-name ordered-raw-constants-list constants-table startup-fn shutdown-fn)
       (compile-to-module-with-run-time-table definition env pathname :linkage linkage)
     (quick-module-dump *the-module* "preoptimize")
-    (let* ((compiled-function (jit-add-module-return-function *the-module* fn startup-fn shutdown-fn ordered-raw-constants-list)))
-      (values compiled-function warnp failp))))
+    (let ((compiled-function (jit-add-module-return-function *the-module* fn startup-fn shutdown-fn ordered-raw-constants-list)))
+      compiled-function)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
