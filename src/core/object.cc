@@ -443,7 +443,7 @@ CL_DEFUN bool core__sl_boundp(T_sp obj) {
 };
 
 void General_O::describe(T_sp stream) {
-  clasp_write_string(this->__str__(), stream);
+  clasp_write_string(this->__repr__(), stream);
 }
 
 void General_O::__write__(T_sp strm) const {

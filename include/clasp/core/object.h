@@ -418,8 +418,6 @@ namespace core {
     virtual string __repr__() const;
   //! Common Lisp __write__(T_sp strm)
     virtual void __write__(T_sp strm) const;
-  //! A pretty-print representation
-    virtual string __str__() { return _rep_(this->sharedThis<T_O>()); };
     virtual void describe(T_sp stream);
     virtual void dump() { this->describe(lisp_true()); };
 
