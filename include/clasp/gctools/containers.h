@@ -72,6 +72,7 @@ public:
   const_iterator end() const { return this->_Vector.end(); };
   size_t size() const { return this->_Vector.size(); };
   inline void unsafe_set_end(size_t e) { this->_Vector.unsafe_set_end(e); };
+  void ensure_initialized() { return this->_Vector.ensure_initialized(); };
   size_t capacity() const { return this->_Vector.capacity(); };
   //  pointer_type data() const { return this->_Vector.data(); };
   inline reference operator[](size_t i) { return this->_Vector[i]; };

@@ -392,13 +392,19 @@ public:
     }
   }
 
+  inline void ensure_initialized() {
+    if (!this->_Contents) {
+      this->reserve(GCVectorPad);
+    }
+  }
+
   template <typename... ARGS>
-  iterator emplace(iterator position, ARGS &&... args) {
+    iterator emplace(iterator position, ARGS &&... args) {
+    Allocator alloc;
 #ifdef DEBUG_ASSERT
     if (!this->_Contents)
       this->errorEmpty();
 #endif
-    Allocator alloc;
     if (this->_Contents->_End == this->_Contents->_Capacity) {
       // Must grow the container
       // Save the insertion position relative to the start
