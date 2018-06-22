@@ -129,26 +129,6 @@ void lisp_decrement_recursive_allocation_counter(core::ThreadLocalState* thread)
 };
 };
 
-
-#if 0
-namespace gctools {
-std::vector<Immediate_info> get_immediate_info() {
-  std::vector<Immediate_info> info;
-  info.push_back(Immediate_info(STAMP_fixnum,"FIXNUM"));
-  info.push_back(Immediate_info(stamp_single_float,"SINGLE_FLOAT"));
-  info.push_back(Immediate_info(stamp_character,"CHARACTER"));
-  info.push_back(Immediate_info(stamp_cons,"CONS"));
-  info.push_back(Immediate_info(stamp_va_list_s,"VA_LIST_S"));
-  if ( (info.size()+1) != stamp_first_general ) {
-    printf("get_immediate_info does not set up all of the immediate types\n");
-    abort();
-  }
-  return info;
-};
-};
-#endif
-
-
 namespace gctools {
 #if 0
 AllocationRecord* allocation_backtrace(size_t kind, uintptr_clasp_t stamp, size_t size, AllocationRecord* prev) {

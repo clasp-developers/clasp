@@ -208,14 +208,6 @@ ABI's  */
   static const uintptr_clasp_t single_float_shift = SINGLE_FLOAT_SHIFT;
   static const uintptr_clasp_t single_float_mask = 0x1FFFFFFFFF; // single-floats are in these 32+5bits
 
-  struct Immediate_info {
-    uintptr_clasp_t _kind;
-    const char* _name;
-  Immediate_info(uintptr_clasp_t k, const char* n) : _kind(k), _name(n) {};
-  };
-
-//  std::vector<Immediate_info> get_immediate_info();
-
   /* These values define the Stamp ranges for different kinds of
      objects.  There are the following kinds of objects:
        Special objects that don't have headers (fixnum, single_float, character, cons)
