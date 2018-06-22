@@ -454,23 +454,16 @@ void General_O::__write__(T_sp strm) const {
   }
 }
 
-
-
-string General_O::descriptionOfContents() const {
-  return "";
-};
-
-string General_O::description() const {
+string General_O::__repr__() const {
   stringstream ss;
   if (this == _lisp->_true().get()) {
     ss << "t";
   } else {
-    General_O *me_gc_safe = const_cast<General_O *>(this);
-    ss << "#<" << me_gc_safe->_instanceClass()->_classNameAsString() << " ";
-    ss << this->descriptionOfContents() << ">";
+    General_O *me_gc_safe = const_cast<General_O*>(this);
+    ss << "#<" << me_gc_safe->_instanceClass()->_classNameAsString() << ">";
   }
   return ss.str();
-};
+}
 
 void General_O::initializeSlots(Fixnum stamp, size_t slots) {
   SIMPLE_ERROR(BF("T_O::initializeSlots invoked - subclass must implement"));

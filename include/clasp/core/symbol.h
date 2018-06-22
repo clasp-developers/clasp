@@ -228,7 +228,6 @@ CL_DEFMETHOD   bool specialP() const { return this->_IsSpecial; };
 
   string __repr__() const;
   string __str__() { return _rep_(gctools::make_tagged_other<Symbol_O>(this)); };
-  //	string description() const { return "Symbol("+this->_Value+")";};
 
 public: // ctor/dtor for classes with shared virtual base
   /*! Special constructor used when starting up the Lisp environment */
