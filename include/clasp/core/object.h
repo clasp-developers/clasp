@@ -419,8 +419,6 @@ namespace core {
   //! Just describe the contents
     virtual string descriptionOfContents() const;
   //! A pretty-print representation
-    virtual string descriptionNoConst() { return this->description(); };
-  //! A pretty-print representation
     virtual string __repr__() const { return this->description(); };
   //! Common Lisp __write__(T_sp strm)
     virtual void __write__(T_sp strm) const;
