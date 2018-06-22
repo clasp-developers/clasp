@@ -879,7 +879,6 @@ namespace core {
   T_sp lisp_symbolValue(Symbol_sp sym);
   string symbol_symbolName(Symbol_sp);
   string symbol_packageName(Symbol_sp);
-  string symbol_repr(Symbol_sp);
   Symbol_sp lisp_symbolNil();
   bool lisp_boundp(Symbol_sp s);
   T_sp lisp_adjust_array(T_sp array, T_sp new_size, T_sp fill_pointer);
@@ -988,9 +987,6 @@ namespace core {
   bool lisp_debugIsOn(const char *fileName, uint debugFlag = DEBUG_CPP_FUNCTION);
 
   DebugStream *lisp_debugLog();
-  T_sp lisp_ocar(List_sp args);
-  T_sp lisp_ocadr(List_sp args);
-  T_sp lisp_ocaddr(List_sp args);
 /*! Return a string representation of the object */
   string lisp_rep(T_sp obj);
   Symbol_sp lisp_internKeyword(const string &name);

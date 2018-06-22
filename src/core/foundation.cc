@@ -675,10 +675,6 @@ string symbol_packageName(Symbol_sp sym) {
   return gc::As<Package_sp>(p)->packageName();
 }
 
-string symbol_repr(Symbol_sp sym) {
-  return _rep_(sym);
-}
-
 /* If o is an instance of Instance_O or Instance_O then it returns o->_instanceClass()
        Otherwise it returns lisp_static_class(o)
     */
@@ -796,18 +792,6 @@ T_sp lisp_true() {
 
 T_sp lisp_false() {
   return _lisp->_false();
-}
-
-T_sp lisp_ocar(List_sp args) {
-  return oCar(args);
-}
-
-T_sp lisp_ocadr(List_sp args) {
-  return oCadr(args);
-}
-
-T_sp lisp_ocaddr(List_sp args) {
-  return oCaddr(args);
 }
 
 string lisp_rep(T_sp obj) {
