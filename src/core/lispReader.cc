@@ -856,13 +856,26 @@ T_sp interpret_token_or_throw_reader_error(T_sp sin, Token &token, bool only_dot
         char *lastValid = NULL;
         if (cl::_sym_STARreadDefaultFloatFormatSTAR->symbolValue() == cl::_sym_single_float) {
           string numstr = tokenStr(sin,token, start - token.data())->get_std_string();
+          // don't understand this, clasp_make_single_float takes a float , not a double
+          // shouldn't that be float f = strtof(......
           double d = ::strtod(numstr.c_str(), &lastValid);
           return clasp_make_single_float(d);
         } else if (cl::_sym_STARreadDefaultFloatFormatSTAR->symbolValue() == cl::_sym_DoubleFloat_O) {
           string numstr = tokenStr(sin,token, start - token.data())->get_std_string();
           double d = ::strtod(numstr.c_str(), &lastValid);
           return DoubleFloat_O::create(d);
-        } else {
+        }
+        else if (cl::_sym_STARreadDefaultFloatFormatSTAR->symbolValue() == cl::_sym_ShortFloat_O) {
+          string numstr = tokenStr(sin,token, start - token.data())->get_std_string();
+          float f = ::strtof(numstr.c_str(), &lastValid);
+          return clasp_make_single_float(f); //ShortFloat_O::create(f) crashes
+        }
+        else if (cl::_sym_STARreadDefaultFloatFormatSTAR->symbolValue() == cl::_sym_LongFloat_O) {
+          string numstr = tokenStr(sin,token, start - token.data())->get_std_string();
+          LongFloat l = ::strtod(numstr.c_str(), &lastValid);
+          return LongFloat_O::create(l);
+        }
+        else {
           SIMPLE_ERROR(BF("Handle *read-default-float-format* of %s") % _rep_(cl::_sym_STARreadDefaultFloatFormatSTAR->symbolValue()));
         }
       }
