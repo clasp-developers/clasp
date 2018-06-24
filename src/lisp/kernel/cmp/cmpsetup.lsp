@@ -38,6 +38,9 @@
 (defvar *verify-llvm-modules* nil)
 (defvar *verify-llvm-functions* nil)
 
+(defvar *default-code-model* 'llvm-sys:code-model-small
+  "The default code-model")
+
 ;; Turn on all sorts of debug printing within the compiler
 ;;
 (defvar *debug-compiler* nil)

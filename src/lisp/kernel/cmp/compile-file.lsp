@@ -137,8 +137,10 @@ and the pathname of the source file - this will also be used as the module initi
 							     ""
 							     target-options
 							     reloc-model
-							     'llvm-sys:code-model-default
-							     'llvm-sys:code-gen-opt-default ))
+							     *default-code-model*
+							     'llvm-sys:code-gen-opt-default
+                                                             NIL ; JIT?
+                                                             ))
 	     (pm (llvm-sys:make-pass-manager))
 	     (tli (llvm-sys:make-target-library-info-wrapper-pass triple #||LLVM3.7||#))
 	     (data-layout (llvm-sys:create-data-layout target-machine)))

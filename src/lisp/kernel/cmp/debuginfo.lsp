@@ -130,6 +130,7 @@
                                        0 ; 10 DWOld
                                        t ; 11 SplitDebugInlining
                                        nil ; 12 DebugInfoForProfiling
+                                       nil ; 13 GnuPubnames
 				       )))
 	     (cmp-log "with-dbg-compile-unit *dbg-compile-unit*: %s%N" *dbg-compile-unit*)
 	     (cmp-log "with-dbg-compile-unit source-pathname: %s%N" ,source-pathname)

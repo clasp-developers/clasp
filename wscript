@@ -63,7 +63,7 @@ APP_NAME = 'clasp'
 DARWIN_OS = 'darwin'
 LINUX_OS = 'linux'
 FREEBSD_OS = 'freebsd'
-CLANG_VERSION = 5
+CLANG_VERSION = 6
 
 STAGE_CHARS = [ 'r', 'i', 'a', 'b', 'f', 'c', 'd' ]
 
@@ -766,7 +766,7 @@ def configure(cfg):
         cfg.define("DEBUG_GUARD_EXHAUSTIVE_VALIDATE",1)
     cfg.define("DEBUG_TRACE_INTERPRETED_CLOSURES",1)
     cfg.define("DEBUG_ENVIRONMENTS",1)
-#    cfg.define("DEBUG_RELEASE",1)   # Turn off optimization for a few C++ functions; undef this to optimize everything
+    cfg.define("DEBUG_RELEASE",1)   # Turn off optimization for a few C++ functions; undef this to optimize everything
 #    cfg.define("DEBUG_CACHE",1)      # Debug the dispatch caches - see cache.cc
 #    cfg.define("DEBUG_BITUNIT_CONTAINER",1)  # prints debug info for bitunit containers
 #    cfg.define("DEBUG_ZERO_KIND",1);

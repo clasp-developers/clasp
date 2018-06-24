@@ -67,6 +67,7 @@ THE SOFTWARE.
 #include <llvm/Support/FormattedStream.h>
 #include <llvm/Support/TargetRegistry.h>
 #include <llvm/Support/MathExtras.h>
+#include <llvm/Support/SourceMgr.h>
 #include <llvm/Pass.h>
 #include <llvm/Transforms/Utils/Cloning.h>
 #include <llvm/IR/LegacyPassManager.h>
@@ -346,7 +347,7 @@ CL_DEFMETHOD void TargetMachine_O::addPassesToEmitFileAndRunPassManager(PassMana
   } else {
     SIMPLE_ERROR(BF("Illegal file type %s for addPassesToEmitFileAndRunPassManager") % _rep_(stream));
   }
-  if (this->wrappedPtr()->addPassesToEmitFile(*passManager->wrappedPtr(), *ostreamP, FileType, true, nullptr, nullptr)) {
+  if (this->wrappedPtr()->addPassesToEmitFile(*passManager->wrappedPtr(), *ostreamP, FileType, true, nullptr)) {
     delete ostreamP;
     SIMPLE_ERROR(BF("Could not generate file type"));
   }
@@ -398,15 +399,11 @@ CL_DEFMETHOD void TargetMachine_O::addPassesToEmitFileAndRunPassManager(PassMana
   CL_END_ENUM(_sym_RelocModel);
 
   SYMBOL_EXPORT_SC_(LlvmoPkg, CodeModel);
-  SYMBOL_EXPORT_SC_(LlvmoPkg, CodeModel_Default);
-  SYMBOL_EXPORT_SC_(LlvmoPkg, CodeModel_JITDefault);
   SYMBOL_EXPORT_SC_(LlvmoPkg, CodeModel_Small);
   SYMBOL_EXPORT_SC_(LlvmoPkg, CodeModel_Kernel);
   SYMBOL_EXPORT_SC_(LlvmoPkg, CodeModel_Medium);
   SYMBOL_EXPORT_SC_(LlvmoPkg, CodeModel_Large);
   CL_BEGIN_ENUM(llvm::CodeModel::Model,_sym_CodeModel, "CodeModel");
-  CL_VALUE_ENUM(_sym_CodeModel_Default, llvm::CodeModel::Default);
-  CL_VALUE_ENUM(_sym_CodeModel_JITDefault, llvm::CodeModel::JITDefault);
   CL_VALUE_ENUM(_sym_CodeModel_Small, llvm::CodeModel::Small);
   CL_VALUE_ENUM(_sym_CodeModel_Kernel, llvm::CodeModel::Kernel);
   CL_VALUE_ENUM(_sym_CodeModel_Medium, llvm::CodeModel::Medium);
@@ -602,7 +599,7 @@ CL_EXTERN_DEFUN(( std::string(*)(llvm::StringRef str))&llvm::Triple::normalize);
   SYMBOL_EXPORT_SC_(LlvmoPkg, OSType_RTEMS);
   SYMBOL_EXPORT_SC_(LlvmoPkg, OSType_NaCl);
   SYMBOL_EXPORT_SC_(LlvmoPkg, OSType_CNK);
-  SYMBOL_EXPORT_SC_(LlvmoPkg, OSType_Bitrig);
+//  SYMBOL_EXPORT_SC_(LlvmoPkg, OSType_Bitrig);
   SYMBOL_EXPORT_SC_(LlvmoPkg, OSType_AIX);
   SYMBOL_EXPORT_SC_(LlvmoPkg, OSType_CUDA);
   SYMBOL_EXPORT_SC_(LlvmoPkg, OSType_NVCL);
@@ -627,7 +624,7 @@ CL_EXTERN_DEFUN(( std::string(*)(llvm::StringRef str))&llvm::Triple::normalize);
   CL_VALUE_ENUM(_sym_OSType_RTEMS, llvm::Triple::RTEMS);
   CL_VALUE_ENUM(_sym_OSType_NaCl, llvm::Triple::NaCl);
   CL_VALUE_ENUM(_sym_OSType_CNK, llvm::Triple::CNK);
-  CL_VALUE_ENUM(_sym_OSType_Bitrig, llvm::Triple::Bitrig);
+//  CL_VALUE_ENUM(_sym_OSType_Bitrig, llvm::Triple::Bitrig);
   CL_VALUE_ENUM(_sym_OSType_AIX, llvm::Triple::AIX);
   CL_VALUE_ENUM(_sym_OSType_CUDA, llvm::Triple::CUDA);
   CL_VALUE_ENUM(_sym_OSType_NVCL, llvm::Triple::NVCL);;
@@ -3024,8 +3021,10 @@ CL_EXTERN_DEFUN((llvm::Pass * (*)(unsigned, unsigned,bool)) & llvm::createFuncti
   CL_LISPIFY_NAME(createRegionInfoPass);
   CL_EXTERN_DEFUN( &llvm::createRegionInfoPass);
 
+#if 0
 CL_LISPIFY_NAME(createCountingFunctionInserterPass);
 CL_EXTERN_DEFUN( &llvm::createCountingFunctionInserterPass);
+#endif
 
 CL_LISPIFY_NAME(createModuleDebugInfoPrinterPass);
 CL_EXTERN_DEFUN( &llvm::createModuleDebugInfoPrinterPass);

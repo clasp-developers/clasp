@@ -39,7 +39,7 @@ THE SOFTWARE.
 #include <llvm/Linker/Linker.h>
 #include <llvm/ExecutionEngine/ExecutionEngine.h>
 #include <llvm/MC/MCSubtargetInfo.h>
-#include <llvm/Target/TargetSubtargetInfo.h>
+#include <llvm/CodeGen/TargetSubtargetInfo.h>
 //#include "llvm/ExecutionEngine/JIT.h"
 #include <llvm/ExecutionEngine/MCJIT.h>
 //#include "llvm/ExecutionEngine/JITMemoryManager.h"
@@ -654,7 +654,7 @@ template <>
 struct from_object<llvm::CodeModel::Model, std::true_type> {
   typedef llvm::CodeModel::Model DeclareType;
   DeclareType _v;
-  from_object(T_P object) : _v(llvm::CodeModel::Default) {
+  from_object(T_P object) : _v(llvm::CodeModel::Small) {
     if (object.nilp()) {
       SIMPLE_ERROR_SPRINTF("You must pass a valid CodeModel");
     }
