@@ -428,8 +428,8 @@ ALWAYS_INLINE core::T_O *cc_stack_enclose(void* closure_address,
                                           core::T_O *lambdaName,
                                           fnLispCallingConvention llvm_func,
                                           core::FunctionDescription* functionDescription,
-                                          int *sourceFileInfoHandleP,
-                                          size_t filePos, size_t lineno, size_t column,
+                                          /* int *sourceFileInfoHandleP,
+                                          size_t filePos, size_t lineno, size_t column, */
                                           std::size_t numCells, ...)
 {NO_UNWIND_BEGIN();
   core::T_sp tlambdaName = gctools::smart_ptr<core::T_O>((gc::Tagged)lambdaName);
@@ -450,8 +450,8 @@ ALWAYS_INLINE core::T_O *cc_stack_enclose(void* closure_address,
                                                                            functionDescription,
                                                                            tlambdaName,
                                                                            core::_sym_stack_closure,
-                                                                           _Nil<T_O>(),
-                                                                           *sourceFileInfoHandleP, filePos, lineno, column);
+                                                                           _Nil<T_O>()
+                                                                           /* , *sourceFileInfoHandleP, filePos, lineno, column */);
 
   gctools::smart_ptr<core::ClosureWithSlots_O> functoid = gctools::smart_ptr<core::ClosureWithSlots_O>(obj);
   core::T_O *p;

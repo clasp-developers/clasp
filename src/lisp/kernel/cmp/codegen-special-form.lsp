@@ -68,10 +68,11 @@
                  (fnptr (irc-intrinsic "makeCompiledFunction" 
                                        compiled-fn
                                        (cmp:irc-bit-cast function-description %i8*%)
-                                       *gv-source-file-info-handle* 
+                                       #| *gv-source-file-info-handle* 
                                        (irc-size_t-*current-source-pos-info*-filepos)
                                        (irc-size_t-*current-source-pos-info*-lineno)
                                        (irc-size_t-*current-source-pos-info*-column)
+                                       |#
                                        (irc-load (compile-reference-to-literal lambda-name)) ; (bformat nil "%s" lambda-name)))
                                        runtime-environment
                                        lambda-list)))

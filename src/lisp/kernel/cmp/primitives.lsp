@@ -113,10 +113,11 @@
     
     (primitive         "makeCompiledFunction" %t*% (list %fn-prototype*% ; funcPtr
                                                          %i8*%
-                                                         %i32*% ; sourceFileInfoHandleP
+                                                         #| %i32*% ; sourceFileInfoHandleP
                                                          %size_t% ; filePos
                                                          %size_t% ; lineno
-                                                         %size_t% ; column
+                                                         %size_t% ; column 
+                                                         |#
                                                          %t*% ; functionNameP
                                                          %t*% ; renv
                                                          %t*%)) ; lambdaListP
@@ -145,7 +146,7 @@
     (primitive-unwinds "makeFunctionFrame" %t*% (list %i32% %t*%))
     (primitive-unwinds "functionFrameReference" %t**% (list %t*% %i32%))
     
-    (primitive-unwinds "invokeTopLevelFunction" %void% (list %tmv*% %fn-prototype*% %i8*% %i32*% %size_t% %size_t% %size_t% %ltv**%))
+;;;    (primitive-unwinds "invokeTopLevelFunction" %void% (list %tmv*% %fn-prototype*% %i8*% %i32*% %size_t% %size_t% %size_t% %ltv**%))
     (primitive-unwinds "cc_register_startup_function" %void% (list %fn-start-up*%))
     (primitive-unwinds "cc_invoke_sub_run_all_function" %void% (list %fn-start-up*%))
     
@@ -268,12 +269,13 @@
     (primitive-unwinds  "cc_enclose" %t*% (list %t*%
                                                 %fn-prototype*%
                                                 %i8*%
-                                                %i32*%
-                                                %size_t%
-                                                %size_t%
-                                                %size_t%
+                                                #| %i32*% %size_t% %size_t% %size_t% |#
                                                 %size_t% ) :varargs t)
-    (primitive         "cc_stack_enclose" %t*% (list %i8*% %t*% %fn-prototype*% %i8*% %i32*% %size_t% %size_t% %size_t% %size_t% ) :varargs t)
+    (primitive         "cc_stack_enclose" %t*% (list %i8*% %t*%
+                                                     %fn-prototype*%
+                                                     %i8*%
+                                                     #| %i32*% %size_t% %size_t% %size_t% |#
+                                                     %size_t% ) :varargs t)
     (primitive         "cc_saveThreadLocalMultipleValues" %void% (list %tmv*% %mv-struct*%))
     (primitive         "cc_loadThreadLocalMultipleValues" %void% (list %tmv*% %mv-struct*%))
     (primitive-unwinds "cc_safe_fdefinition" %t*% (list %t*%))

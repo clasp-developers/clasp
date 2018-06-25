@@ -84,8 +84,8 @@ namespace core {
   public:
     static SingleDispatchGenericFunctionClosure_sp create(T_sp functionName, LambdaListHandler_sp llhandler, size_t singleDispatchArgumentIndex);
 public:
-  SingleDispatchGenericFunctionClosure_O(T_sp name, Symbol_sp k, size_t sdai, SOURCE_INFO)
-    : Base(entry_point,name, k, SOURCE_INFO_PASS), _Methods(_Nil<T_O>()), _lambdaListHandler(_Nil<LambdaListHandler_O>()), _SingleDispatchArgumentIndex(sdai) {};
+  SingleDispatchGenericFunctionClosure_O(T_sp name, Symbol_sp k, size_t sdai)
+    : Base(entry_point,name, k), _Methods(_Nil<T_O>()), _lambdaListHandler(_Nil<LambdaListHandler_O>()), _SingleDispatchArgumentIndex(sdai) {};
   SingleDispatchGenericFunctionClosure_O(T_sp name, size_t sdai)
     : Base(entry_point,name), _Methods(_Nil<T_O>()), _lambdaListHandler(_Nil<LambdaListHandler_O>()), _SingleDispatchArgumentIndex(sdai) {};
     void finishSetup(LambdaListHandler_sp llh, Symbol_sp k) {

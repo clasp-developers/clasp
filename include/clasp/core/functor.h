@@ -198,12 +198,12 @@ namespace core {
   public:
 #define SOURCE_INFO core::Fixnum sourceFileInfoHandle, core::Fixnum filePos, core::Fixnum lineno, core::Fixnum column
 #define SOURCE_INFO_PASS sourceFileInfoHandle, filePos, lineno, column
-  FunctionClosure_O(claspFunction fptr, T_sp name, Symbol_sp k, SOURCE_INFO)
-    : Closure_O(fptr,name), kind(k), _sourceFileInfoHandle(sourceFileInfoHandle), _filePos(filePos), _lineno(lineno), _column(column){};
+  FunctionClosure_O(claspFunction fptr, T_sp name, Symbol_sp k)
+    : Closure_O(fptr,name), kind(k) {};
   FunctionClosure_O(claspFunction fptr, T_sp name)
-    : Closure_O(fptr,name), kind(kw::_sym_function), _sourceFileInfoHandle(0), _filePos(0), _lineno(0), _column(0){};
-    static FunctionClosure_sp create(fnLispCallingConvention fptr, T_sp name, T_sp function_kind, SOURCE_INFO ) {
-      FunctionClosure_sp fc = gctools::GC<FunctionClosure_O>::allocate(fptr,name,function_kind,SOURCE_INFO_PASS);
+    : Closure_O(fptr,name), kind(kw::_sym_function) {};
+    static FunctionClosure_sp create(fnLispCallingConvention fptr, T_sp name, T_sp function_kind) {
+      FunctionClosure_sp fc = gctools::GC<FunctionClosure_O>::allocate(fptr,name,function_kind);
       return fc;
     }
     CL_DEFMETHOD List_sp source_info() const;
@@ -236,8 +236,8 @@ namespace core {
     List_sp _declares;
     T_sp _docstring;
   public:
-  BuiltinClosure_O(claspFunction fptr, T_sp name, Symbol_sp k, SOURCE_INFO)
-    : FunctionClosure_O(fptr, name, k, SOURCE_INFO_PASS){};
+  BuiltinClosure_O(claspFunction fptr, T_sp name, Symbol_sp k)
+    : FunctionClosure_O(fptr, name, k){};
   BuiltinClosure_O(claspFunction fptr, T_sp name )
     : FunctionClosure_O(fptr,name) {}
     void finishSetup(LambdaListHandler_sp llh, Symbol_sp k) {
@@ -292,8 +292,7 @@ namespace core {
                                                                   (core::FunctionDescription*)NULL,
                                                                   name,
                                                                   type,
-                                                                  lambda_list,
-                                                                  SOURCE_INFO_PASS);
+                                                                  lambda_list);
       closure->closureType = interpretedClosure;
       (*closure)[INTERPRETED_CLOSURE_FORM_SLOT] = form;
       (*closure)[INTERPRETED_CLOSURE_ENVIRONMENT_SLOT] = environment;
@@ -304,15 +303,14 @@ namespace core {
       (*closure)[INTERPRETED_CLOSURE_LAMBDA_LIST_HANDLER_SLOT] = lambda_list_handler;
       return closure;
     }
-    static ClosureWithSlots_sp make_bclasp_closure(T_sp name, claspFunction ptr, T_sp type, T_sp lambda_list, T_sp environment, SOURCE_INFO) {
+    static ClosureWithSlots_sp make_bclasp_closure(T_sp name, claspFunction ptr, T_sp type, T_sp lambda_list, T_sp environment) {
       ClosureWithSlots_sp closure = 
         gctools::GC<core::ClosureWithSlots_O>::allocate_container(BCLASP_CLOSURE_SLOTS,
                                                                   ptr,
                                                                   (core::FunctionDescription*)NULL,
                                                                   name,
                                                                   type,
-                                                                  lambda_list,
-                                                                  SOURCE_INFO_PASS);
+                                                                  lambda_list);
       closure->closureType = bclaspClosure;
       (*closure)[BCLASP_CLOSURE_ENVIRONMENT_SLOT] = environment;
       return closure;
@@ -324,8 +322,7 @@ namespace core {
                                                                   (core::FunctionDescription*)NULL,
                                                                   name,
                                                                   type,
-                                                                  lambda_list,
-                                                                  SOURCE_INFO_PASS);
+                                                                  lambda_list);
       closure->closureType = cclaspClosure;
       return closure;
     }
@@ -335,9 +332,8 @@ namespace core {
                      FunctionDescription* functionDescription,
                      core::T_sp functionName,
                      core::Symbol_sp type,
-                     core::T_sp ll,
-                     SOURCE_INFO)
-    : Base(ptr,functionName, type, SOURCE_INFO_PASS),
+                     core::T_sp ll)
+    : Base(ptr,functionName, type),
       _FunctionDescription(functionDescription),
       _lambdaList(ll),
       closureType(cclaspClosure),

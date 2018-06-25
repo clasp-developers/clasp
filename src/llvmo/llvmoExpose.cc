@@ -3630,8 +3630,7 @@ CL_DEFUN core::Function_sp llvm_sys__jitFinalizeReplFunction(ClaspJIT_sp jit, Mo
                                                    lisp_funcPtr,
                                                     kw::_sym_function,
                                                    _Nil<core::T_O>(),
-                                                   _Nil<core::T_O>(),
-                                                    0, 0, 0, 0 );
+                                                   _Nil<core::T_O>() );
   core::module_startup_function_type startup = reinterpret_cast<core::module_startup_function_type>(gc::As_unsafe<core::Pointer_sp>(startupPtr)->ptr());
   startup(initialData.tagged_());
   return functoid;

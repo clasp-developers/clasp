@@ -219,10 +219,11 @@
            (list* ltv-lambda-name
                   enclosed-function
                   (cmp:irc-bit-cast function-description cmp:%i8*%)
-                  cmp:*gv-source-file-info-handle*
+                  #| cmp:*gv-source-file-info-handle*
                   (cmp:irc-size_t-*current-source-pos-info*-filepos)
                   (cmp:irc-size_t-*current-source-pos-info*-lineno)
                   (cmp:irc-size_t-*current-source-pos-info*-column)
+                  |#
                   (%size_t (length inputs))
                   loaded-inputs))
          (result
