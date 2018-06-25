@@ -40,12 +40,12 @@ namespace core {
     List_sp _BufferStr8NsPool;
     List_sp _BufferStrWNsPool;
     StringOutputStream_sp _BFormatStringOutputStream;
+    StringOutputStream_sp _WriteToStringOutputStream;
     Bignum_sp _BignumRegister0;
     Bignum_sp _BignumRegister1;
     Bignum_sp _BignumRegister2;
     inline core::DynamicBindingStack& bindings() { return this->_Bindings; };
     inline ExceptionStack& exceptionStack() { return this->_ExceptionStack; };
-    StringOutputStream_sp& bformatStringOutputStream() { return this->_BFormatStringOutputStream;};
     Bignum_sp bigRegister0() { return this->_BignumRegister0; };
     Bignum_sp bigRegister1() { return this->_BignumRegister1; };
     Bignum_sp bigRegister2() { return this->_BignumRegister2; };

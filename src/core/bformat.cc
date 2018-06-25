@@ -47,7 +47,7 @@ CL_DOCSTRING("Like CL format but uses C/boost format strings");
 CL_DEFUN T_sp core__bformat(T_sp destination, const string &original_control, List_sp args) {
   T_sp output;
   if (destination.nilp()) {
-    output = my_thread->bformatStringOutputStream();
+    output = my_thread->_BFormatStringOutputStream;
   } else if (destination == _sym_printf) {
     output = destination;
   } else {

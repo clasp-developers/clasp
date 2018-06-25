@@ -183,6 +183,7 @@ String_sp &StringOutputStreamOutputString(T_sp strm) {
   return sout->_Contents;
 }
 
+
 Fixnum StringFillp(String_sp s) {
   ASSERT(core__non_simple_stringp(s));
   if (!s->arrayHasFillPointerP()) {
@@ -197,6 +198,26 @@ void SetStringFillp(String_sp s, Fixnum fp) {
     SIMPLE_ERROR(BF("The vector does not have a fill pointer"));
   }
   s->fillPointerSet(fp);
+}
+
+
+CL_DEFUN StringOutputStream_sp core__thread_local_write_to_string_output_stream()
+{
+  return my_thread->_WriteToStringOutputStream;
+}
+
+CL_DEFUN String_sp core__get_thread_local_write_to_string_output_stream_string(StringOutputStream_sp my_stream)
+{
+  // This is like get-string-output-stream-string but it checks the size of the
+  // buffer string and if it is too large it knocks it down to 128 characters
+  String_sp buffer = StringOutputStreamOutputString(my_stream);
+  T_sp result = cl__copy_seq(buffer);
+  if (buffer->length()>1024) {
+    StringOutputStreamOutputString(my_stream) = Str8Ns_O::createBufferString(128);
+  } else {
+    SetStringFillp(buffer,core::make_fixnum(0));
+  }
+  return result;
 }
 
 gctools::Fixnum &StringInputStreamInputPosition(T_sp strm) {

@@ -209,6 +209,7 @@ void ThreadLocalState::initialize_thread(mp::Process_sp process) {
   this->_Process = process;
   process->_ThreadInfo = this;
   this->_BFormatStringOutputStream = clasp_make_string_output_stream();
+  this->_WriteToStringOutputStream = clasp_make_string_output_stream();
   this->_BignumRegister0 = Bignum_O::create( (gc::Fixnum) 0);
   this->_BignumRegister1 = Bignum_O::create( (gc::Fixnum) 0);
   this->_BignumRegister2 = Bignum_O::create( (gc::Fixnum) 0);
