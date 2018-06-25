@@ -2306,9 +2306,6 @@ void Lisp_O::parseStringIntoPackageAndSymbolName(const string &name, bool &packa
 }
 
 Symbol_mv Lisp_O::intern(const string &name, T_sp optionalPackageDesignator) {
-#if DEBUG_ENVIRONMENT_CREATION
-//    ASSERT(this->_PackagesInitialized);
-#endif
   Package_sp package;
   string symbolName;
   bool exported, packageDefined;
@@ -2333,9 +2330,6 @@ Symbol_sp Lisp_O::intern(string const &symbolName) {
 }
 
 Symbol_sp Lisp_O::findSymbol(const string &name, T_sp optionalPackageDesignator) const {
-#if DEBUG_ENVIRONMENT_CREATION
-  ASSERT(this->_PackagesInitialized);
-#endif
   Package_sp package;
   string symbolName;
   bool exported, packageDefined;
