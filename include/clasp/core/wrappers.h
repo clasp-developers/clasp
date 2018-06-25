@@ -291,8 +291,6 @@ public:
 };
 };
 
-//ostream& operator<<(ostream& out, gctools::smart_ptr<core::T_O> obj);
-
-#include <clasp/core/python_wrappers.h>
+//ostream& operator<<(ostream& out, gctools::smart_ptr<core::T_O>
 
 #endif // wrappers_h

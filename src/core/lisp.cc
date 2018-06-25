@@ -137,7 +137,6 @@ THE SOFTWARE.
 #include <clasp/core/readtable.h>
 #include <clasp/llvmo/intrinsics.h>
 #include <clasp/core/wrappers.h>
-#include <clasp/core/python_wrappers.h>
 #ifdef CLASP_THREADS
 #include <clasp/core/mpPackage.h>
 #endif
