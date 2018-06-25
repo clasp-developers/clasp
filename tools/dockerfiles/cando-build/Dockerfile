@@ -12,7 +12,7 @@ RUN apt-get update && apt-get install -y \
   libboost-date-time-dev libboost-program-options-dev libboost-system-dev \
   libboost-iostreams-dev csh flex gfortran zlib1g-dev libbz2-dev patch \
   git sbcl libexpat-dev wget vim libzmq3-dev \
-  clang-6.0 libclang-common-6.0-dev libclang-6.0-dev libclang1-6.0 clang1-6.0-dbg \
+  clang-6.0 libclang-common-6.0-dev libclang-6.0-dev libclang1-6.0 \
   libllvm5.0 libllvm5.0-dbg llvm-6.0 llvm-6.0-dev llvm-6.0-doc \
   llvm-6.0-runtime clang-format-6.0 python-clang-6.0 lld-6.0
 ENV CC=/usr/bin/clang-6.0 CXX=/usr/bin/clang++-6.0
