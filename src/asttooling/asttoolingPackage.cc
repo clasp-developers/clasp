@@ -37,18 +37,6 @@ THE SOFTWARE.
 #include <clasp/core/array.h>
 #include <clasp/core/wrappers.h>
 
-namespace asttooling {
-#if 0
-#define EXPOSE_TO_CANDO
-#define Use_AstToolingPkg
-#define EXTERN_REGISTER
-#include <clasp/core/initClasses.h>
-#undef EXTERN_REGISTER
-#undef Use_AstToolingPkg
-#undef EXPOSE_TO_CANDO
-#endif
-};
-
 using namespace core;
 
 namespace asttooling {
@@ -56,19 +44,6 @@ namespace asttooling {
 void AsttoolingExposer_O::expose(core::Lisp_sp lisp, core::Exposer_O::WhatToExpose what) const {
   switch (what) {
   case candoClasses: {
-
-#if 0
-#define ALL_STAGES
-#define Use_AstToolingPkg
-#define INVOKE_REGISTER
-#define LOOKUP_SYMBOL(s, p) DEFAULT_LOOKUP_SYMBOL(s, p)
-#include <clasp/core/initClasses.h>
-#undef LOOKUP_SYMBOL
-#undef INVOKE_REGISTER
-#undef Use_AstToolingPkg
-#undef ALL_STAGES
-#endif
-
   } break;
   case candoFunctions: {
     initialize_astExpose();

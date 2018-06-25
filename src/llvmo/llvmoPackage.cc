@@ -56,16 +56,6 @@ THE SOFTWARE.
 
 using namespace core;
 
-namespace llvmo {
-#define EXPOSE_TO_CANDO
-#define Use_LlvmoPkg
-#define EXTERN_REGISTER
-//#include <clasp/core/initClasses.h>
-#undef EXTERN_REGISTER
-#undef Use_LlvmoPkg
-#undef EXPOSE_TO_CANDO
-};
-
 //
 // Load the gctools::GcInfo<core-classes>::Kind specializers
 //
@@ -439,17 +429,6 @@ void LlvmoExposer_O::expose(core::Lisp_sp lisp, core::Exposer_O::WhatToExpose wh
 
   switch (what) {
   case candoClasses: {
-#if 0
-#define ALL_STAGES
-#define Use_LlvmoPkg
-#define INVOKE_REGISTER
-#define LOOKUP_SYMBOL(pkg, name) _lisp->internUniqueWithPackageName(pkg, name)
-//#include <clasp/core/initClasses.h>
-#undef LOOKUP_SYMBOL
-#undef INVOKE_REGISTER
-#undef Use_LlvmoPkg
-#undef ALL_STAGES
-#endif
   } break;
   case candoFunctions: {
     SYMBOL_EXPORT_SC_(LlvmoPkg, getOrCreateExternalGlobal);

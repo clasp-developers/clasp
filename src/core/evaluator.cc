@@ -895,14 +895,6 @@ void parse_lambda_body(List_sp body, List_sp &declares, gc::Nilable<String_sp> &
   extract_declares_docstring_code_specials(body, declares, true, docstring, code, specials);
 }
 
-
-/*
-  __BEGIN_DOC(candoScript.specialForm.block,block)
-  \scriptCmdRet{block}{command1 command2 ...}{lastObject}
-
-  Evaluates each command and returns the value \scriptArg{lastObject} from evaluating the last command. This is what you use to write blocks of code.
-  __END_DOC
-*/
 T_mv sp_progn(List_sp args, T_sp environment) {
   ASSERT(environment.generalp());
   return eval::evaluateListReturnLast(args, environment);
@@ -1099,24 +1091,8 @@ DONT_OPTIMIZE_WHEN_DEBUG_RELEASE T_mv sp_go(List_sp args, T_sp env) {
 }
 };
 
-
-
-/*
-  __BEGIN_DOC(candoScript.specialForm.let,let)
-  \scriptCmd{let}{assignments code}
-
-  Assign lexical variables and then evaluate code in that context.
-  __END_DOC
-*/
-
 namespace eval {
-/*
-  __BEGIN_DOC(candoScript.specialForm.let,let)
-  \scriptCmd{let\*}{assignments code}
 
-  Assign lexical variables and then evaluate code in that context.
-  __END_DOC
-*/
 T_mv sp_let(List_sp args, T_sp parentEnvironment) {
   ASSERT(parentEnvironment.generalp());
   List_sp assignments = oCar(args);
@@ -1227,14 +1203,6 @@ T_mv sp_letSTAR(List_sp args, T_sp parentEnvironment) {
   return eval::sp_progn(code, newEnvironment);
 }
 
-/*
-  __BEGIN_DOC(candoScript.specialForm.if,if)
-  \scriptCmd{if}{condition thenCode elseCode}\par
-  \scriptCmd{if}{condition thenCode }
-
-  If/then/else control statement.
-  __END_DOC
-*/
 T_mv sp_if(List_sp args, T_sp environment) {
   ASSERT(environment.generalp());
   T_sp res;
@@ -1254,13 +1222,6 @@ T_mv sp_if(List_sp args, T_sp environment) {
   return (Values(_Nil<T_O>()));
 }
 
-/*
-  __BEGIN_DOC(candoScript.specialForm.cond,cond)
-  \scriptCmd{cond}{[ [cond1 code1 ...] [cond2 code2 ... ] ...] }\par
-
-  Works just like lisp "cond" control structure. Evaluates each condition and for the first one that evaluates as true its associated block is evaluated.
-  __END_DOC
-*/
 T_mv sp_cond(List_sp args, T_sp environment) {
   ASSERT(environment.generalp());
   for (auto cur : args) {
@@ -1484,15 +1445,6 @@ Function_sp lambda(T_sp name, bool wrap_block, T_sp lambda_list, List_sp body, T
   return ic;
 }
 
-/*
-  __BEGIN_DOC(candoScript.specialForm.function,function)
-  \scriptCmd{function}{object}
-
-  Returns function associated with the name.
-  (name) is either a symbol or a lambda or lambda-block expression.
-  (lambda (args...) body...) or (lambda-block name (args...) body...)
-  __END_DOC
-*/
 T_mv sp_function(List_sp args, T_sp environment) {
   ASSERT(environment.generalp());
   ASSERTP(oCdr(args).nilp(), "You can provide only one argument - a symbol that has a function bound to it or a lambda");
@@ -1543,27 +1495,12 @@ T_mv sp_function(List_sp args, T_sp environment) {
   SIMPLE_ERROR(BF("Illegal argument[%s] for function") % _rep_(arg));
 }
 
-/*
-  __BEGIN_DOC(candoScript.specialForm.quote,quote)
-  \scriptCmdRet{quote}{object}{unevaluatedObject}
-
-  Returns the \scriptArg{object} without evaluating it.
-  __END_DOC
-*/
 T_mv sp_quote(List_sp args, T_sp environment) {
   ASSERT(environment.generalp());
   ASSERTF(cl__length(args) == 1, BF("Only one argument allowed for QUOTE"));
   return (Values(oCar(args)));
 }
 
-/*
-  __BEGIN_DOC(candoScript.general.let,let)
-  \scriptCmd{let}{symbol object}\par
-  \scriptInfix{symbol}{=}{object}
-
-  Evaluate the arguments and put it into the local variable \scriptArg{symbol}.
-  __END_DOC
-*/
 T_mv sp_setq(List_sp args, T_sp environment) {
   ASSERT(environment.generalp());
   ASSERTP(oCdr(args).notnilp(), "You must provide at least 2 arguments");
@@ -1616,13 +1553,6 @@ T_mv sp_flet(List_sp args, T_sp environment) {
   return eval::sp_progn(code, newEnvironment);
 }
 
-/*
-  __BEGIN_DOC(candoScript.macros.labels,labels)
-  \scriptCmd{labels}{(function bindings) code...}
-
-  Define functions recursively in new lexical environments.
-  __END_DOC
-*/
 T_mv sp_labels(List_sp args, T_sp environment) {
   ASSERT(environment.generalp());
   T_sp name;
@@ -1704,13 +1634,6 @@ T_mv doMacrolet(List_sp args, T_sp env, bool toplevel) {
   }
 }
 
-/*
-  __BEGIN_DOC(candoScript.macros.macroLet,macroLet)
-  \scriptCmd{macroLet}{(function bindings) code...}
-
-  Define macros recursively in new lexical environments.
-  __END_DOC
-*/
 T_mv sp_macrolet(List_sp args, T_sp env) {
   ASSERT(env.generalp());
   return doMacrolet(args, env, false /* toplevel */);

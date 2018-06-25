@@ -34,17 +34,6 @@ THE SOFTWARE.
 #include <clasp/core/array.h>
 #include <clasp/core/wrappers.h>
 
-namespace serveEvent {
-
-#define EXPOSE_TO_CANDO
-#define Use_ServeEventPkg
-#define EXTERN_REGISTER
-//#include <clasp/core/initClasses.h>
-#undef EXTERN_REGISTER
-#undef Use_ServeEventPkg
-#undef EXPOSE_TO_CANDO
-};
-
 using namespace core;
 
 namespace serveEvent {
@@ -53,14 +42,6 @@ namespace serveEvent {
 void ServeEventExposer_O::expose(core::Lisp_sp lisp, core::Exposer_O::WhatToExpose what) const {
   switch (what) {
   case candoClasses: {
-#define ALL_STAGES
-#define Use_ServeEventPkg
-#define INVOKE_REGISTER
-//#include <clasp/core/initClasses.h>
-#undef INVOKE_REGISTER
-#undef Use_ServeEventPkg
-#undef ALL_STAGES
-
   } break;
   case candoFunctions: {
     //nothing

@@ -895,16 +895,6 @@ CoreExposer_O::CoreExposer_O(Lisp_sp lisp) : Exposer_O(lisp, CorePkg, CorePkg_ni
 void CoreExposer_O::expose(core::Lisp_sp lisp, WhatToExpose what) const {
   switch (what) {
   case candoClasses:
-#define EXPOSE_TO_CANDO
-#define Use_CorePkg
-#define Use_ClPkg
-#define Use_ExtPkg
-#define INVOKE_REGISTER
-//#include <clasp/core/initClasses.h>
-#undef INVOKE_REGISTER
-#undef Use_ExtPkg
-#undef Use_ClPkg
-#undef Use_CorePkg
     break;
   case candoFunctions:
     exposeCando_Numerics();
