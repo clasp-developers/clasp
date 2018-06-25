@@ -26,10 +26,6 @@ THE SOFTWARE.
 /* -^- */
 //#define DEBUG_LEVEL_FULL
 
-#ifdef USEBOOSTPYTHON
-#include <clasp/core/useBoostPython.h>
-#endif
-
 #include <errno.h>
 #include <dlfcn.h>
 #include <sys/wait.h>

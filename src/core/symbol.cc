@@ -26,7 +26,6 @@ THE SOFTWARE.
 /* -^- */
 //#define DEBUG_LEVEL_FULL
 
-#include <clasp/core/useBoostPython.h>
 #include <clasp/core/foundation.h>
 #include <clasp/core/common.h>
 #include <clasp/core/symbol.h>

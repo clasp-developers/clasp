@@ -917,9 +917,6 @@ void CoreExposer_O::expose(core::Lisp_sp lisp, WhatToExpose what) const {
     IMPLEMENT_MEF("Handle other packages");
   } break;
   case pythonFunctions:
-#ifdef USEBOOSTPYTHON
-    exposePython_Numerics();
-#endif
     break;
   case pythonGlobals:
     // expose globals here

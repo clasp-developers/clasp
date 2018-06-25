@@ -557,10 +557,6 @@ void _stackTraceDump() {
   IMPLEMENT_ME();
 }
 
-#ifdef USEBOOSTPYTHON
-
-#endif
-
 #define ARGS_af_wrongTypeKeyArg "(source-file lineno function narg value type)"
 #define DECL_af_wrongTypeKeyArg ""
 #define DOCS_af_wrongTypeKeyArg "wrongTypeKeyArg"
