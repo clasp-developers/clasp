@@ -730,7 +730,7 @@ def configure(cfg):
     if (cfg.env['DEST_OS'] == LINUX_OS ):
         if (cfg.env['USE_LLD'] and cfg.env.CLASP_BUILD_MODE == 'bitcode'):
             # Only use lld if USE_LLD is set and CLASP_BUILD_MODE is bitcode
-            cfg.env.append_value('LINKFLAGS', '-fuse-ld=lld-5.0')
+            cfg.env.append_value('LINKFLAGS', '-fuse-ld=lld-%d.0' % CLANG_VERSION)
             log.info("Using the lld linker")
         else:
             cfg.env.append_value('LINKFLAGS', '-fuse-ld=gold')
