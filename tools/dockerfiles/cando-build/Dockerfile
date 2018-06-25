@@ -5,17 +5,17 @@ MAINTAINER Christian Schafmeister <meister@temple.edu>
 RUN apt-get update && apt-get -y upgrade && apt-get install -y \
   software-properties-common python-software-properties wget curl
 RUN curl http://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add -
-RUN apt-add-repository "deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial-5.0 main"
+RUN apt-add-repository "deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial-6.0 main"
 RUN apt-get update && apt-get install -y \
   gcc g++ llvm clang cmake libunwind-dev liblzma-dev libgmp-dev binutils-gold binutils-dev \
   zlib1g-dev libncurses-dev libboost-filesystem-dev libboost-regex-dev \
   libboost-date-time-dev libboost-program-options-dev libboost-system-dev \
   libboost-iostreams-dev csh flex gfortran zlib1g-dev libbz2-dev patch \
   git sbcl libexpat-dev wget vim libzmq3-dev \
-  clang-5.0 libclang-common-5.0-dev libclang-5.0-dev libclang1-5.0 clang1-5.0-dbg \
-  libllvm5.0 libllvm5.0-dbg llvm-5.0 llvm-5.0-dev llvm-5.0-doc \
-  llvm-5.0-runtime clang-format-5.0 python-clang-5.0 lld-5.0
-ENV CC=/usr/bin/clang-5.0 CXX=/usr/bin/clang++-5.0
+  clang-6.0 libclang-common-6.0-dev libclang-6.0-dev libclang1-6.0 clang1-6.0-dbg \
+  libllvm5.0 libllvm5.0-dbg llvm-6.0 llvm-6.0-dev llvm-6.0-doc \
+  llvm-6.0-runtime clang-format-6.0 python-clang-6.0 lld-6.0
+ENV CC=/usr/bin/clang-6.0 CXX=/usr/bin/clang++-6.0
 
 
 # Copy the entire clasp directory less .dockerignore and clean the build dir
@@ -44,7 +44,7 @@ WORKDIR /home/app/clasp
 RUN rm -rf build/* && mkdir -p /out/clasp
 
 # checkout submodules, configure, and build
-RUN echo "LLVM_CONFIG_BINARY='/usr/bin/llvm-config-5.0'" > wscript.config
+RUN echo "LLVM_CONFIG_BINARY='/usr/bin/llvm-config-6.0'" > wscript.config
 RUN echo "PREFIX='/out/clasp'" >> wscript.config
 RUN echo "CLASP_VERSION='clasp_docker'" >> wscript.config
 RUN echo "USE_PARALLEL_BUILD = True" >> wscript.config
