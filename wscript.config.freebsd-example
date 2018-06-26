@@ -1,0 +1,14 @@
+#-*- mode: python; coding: utf-8-unix -*-
+
+PREFIX = '/opt/clasp/'
+LLVM_CONFIG_BINARY = '/usr/local/bin/llvm-config60'
+INCLUDES = ["/opt/clasp/include", "/usr/local/include"]
+LINKFLAGS = ["-L/opt/clasp/lib", "-L/usr/local/lib", "-lexecinfo"]
+USE_PARALLEL_BUILD = True
+
+CLASP_BUILD_MODE = "bitcode" # more inlining, let llvm do it at link time
+#CLASP_BUILD_MODE = "object" # faster linking
+
+# under FreeBSD use of LLD will be attempted both in bitcode and
+# object mode
+USE_LLD = False
