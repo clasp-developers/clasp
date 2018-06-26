@@ -79,7 +79,8 @@
             ;; direct-slots also by add-slots
             (class-direct-default-initargs class) nil
             (class-default-initargs    class) nil
-            (class-finalized-p         class) t)
+            (class-finalized-p         class) t
+            (class-source-position     class) nil)
       (debug-boot "    About to setf class name -> ~a  class -> ~a~%" name class)
       (core:setf-find-class class name)
       (debug-boot "    Done setf class name -> ~a  class -> ~a~%" name class)
