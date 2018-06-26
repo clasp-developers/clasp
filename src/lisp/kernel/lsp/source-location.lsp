@@ -41,6 +41,7 @@
   pathname offset)
 
 ;;; FIXME: above struct is redundant and should be vaporized.
+;;; Class source positions are just stored in a slot.
 (defun class-source-position (class)
   (let ((csp (clos:class-source-position class)))
     (when csp
@@ -49,6 +50,17 @@
                   (core:source-file-info
                    (core:source-pos-info-file-handle csp)))
        :offset (core:source-pos-info-filepos csp)))))
+
+;;; Method combinations don't have source positions. In fact,
+;;; they don't even exist as objects globally. The only global
+;;; is the "compiler", which is an ordinary function that does
+;;; the computation. find-method-combination always makes a fresh
+;;; object.
+;;; As such, we use the compiler's source info.
+;;; Note that due to this, when provided a name, we don't go through
+;;; this function- check source-location-impl.
+(defun method-combination-source-position (method-combination)
+  (source-location (clos::method-combination-compiler method-combination) t))
 
 (defun source-location-impl (name kind)
   "* Arguments
@@ -80,11 +92,13 @@ Return the source-location for the name/kind pair"
          ((fboundp name)
           (multiple-value-bind (file pos)
               (compiled-function-file* (fdefinition name))
-            (list (make-source-location :pathname file :offset pos)))))))))
+            (list (make-source-location :pathname file :offset pos))))))
+      (:method-combination
+       (let ((method-combination-compiler (clos::search-method-combination name)))
+         (when method-combination-compiler
+           (source-location method-combination-compiler t)))))))
 
-(defparameter *source-location-kinds* '(:class :method :function))
-
-(defparameter *source-location-kinds* '(:class :method :function))
+(defparameter *source-location-kinds* '(:class :method :function :method-combination))
 
 (defun source-location (obj kind)
   "* Arguments
@@ -102,16 +116,9 @@ Return the source-location for the name/kind pair"
        ((functionp obj)
         (multiple-value-bind (file pos)
             (compiled-function-file* obj)
-          (list (make-source-location :pathname file :offset pos))))))
+          (list (make-source-location :pathname file :offset pos))))
+       ((typep obj 'clos:method-combination)
+        (let ((source-loc (method-combination-source-position obj)))
+          (when source-loc (list source-loc))))))
     ((symbolp kind) (source-location-impl obj kind))
     (t (error "Cannot obtain source-location for ~a of kind ~a" obj kind))))
-
-#||
-#+cclasp
-(defmethod make-load-form ((object core:source-file-info) &optional environment)
-  `(core:decode (core:make-cxx-object 'core:source-file-info) ',(core:encode object)))
-
-#+cclasp
-(defmethod make-load-form ((object core:source-pos-info) &optional environment)
-  `(core:decode (core:make-cxx-object 'core:source-pos-info) ',(core:encode object)))
-||#

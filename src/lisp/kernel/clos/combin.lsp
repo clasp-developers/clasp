@@ -138,8 +138,7 @@
 
 (defun search-method-combination (name)
   (mp:with-lock (*method-combinations-lock*)
-    (or (gethash name *method-combinations*)
-	(error "~A does not name a method combination" name))))
+    (gethash name *method-combinations*)))
 
 (defun install-method-combination (name function)
   (mp:with-lock (*method-combinations-lock*)
@@ -157,9 +156,9 @@
 ;; Will be upgraded into a generic function later.
 (defun find-method-combination (gf method-combination-type-name method-combination-options)
   (make-method-combination method-combination-type-name
-			   (search-method-combination method-combination-type-name)
-			   method-combination-options
-			   ))
+			   (or (search-method-combination method-combination-type-name)
+                               (error "~A does not name a method combination" name))
+			   method-combination-options))
 
 (defun define-simple-method-combination (name &key documentation
 					 identity-with-one-argument
