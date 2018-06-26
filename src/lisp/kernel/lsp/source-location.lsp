@@ -94,11 +94,17 @@ Return the source-location for the name/kind pair"
               (compiled-function-file* (fdefinition name))
             (list (make-source-location :pathname file :offset pos))))))
       (:method-combination
+       ;; See comment on method-combination-source-position
        (let ((method-combination-compiler (clos::search-method-combination name)))
          (when method-combination-compiler
-           (source-location method-combination-compiler t)))))))
+           (source-location method-combination-compiler t))))
+      (:type
+       ;; We use the source location of the expander function.
+       (let ((expander (core::type-expander name)))
+         (when expander
+           (source-location expander t)))))))
 
-(defparameter *source-location-kinds* '(:class :method :function :method-combination))
+(defparameter *source-location-kinds* '(:class :method :function :method-combination :type))
 
 (defun source-location (obj kind)
   "* Arguments
