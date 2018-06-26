@@ -93,6 +93,11 @@ Return the source-location for the name/kind pair"
           (multiple-value-bind (file pos)
               (compiled-function-file* (fdefinition name))
             (list (make-source-location :pathname file :offset pos))))))
+      (:compiler-macro
+       (when (fboundp name)
+         (let ((cmf (compiler-macro-function name)))
+           (when cmf
+             (source-location cmf t)))))
       (:method-combination
        ;; See comment on method-combination-source-position
        (let ((method-combination-compiler (clos::search-method-combination name)))
@@ -104,7 +109,8 @@ Return the source-location for the name/kind pair"
          (when expander
            (source-location expander t)))))))
 
-(defparameter *source-location-kinds* '(:class :method :function :method-combination :type))
+(defparameter *source-location-kinds* '(:class :method :function :compiler-macro
+                                        :method-combination :type))
 
 (defun source-location (obj kind)
   "* Arguments
