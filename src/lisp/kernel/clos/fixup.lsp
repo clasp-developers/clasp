@@ -20,9 +20,10 @@
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (setf *echo-repl-read* t))
 
-
-;;; ----------------------------------------------------------------------
-;;;                                                for debugging this file
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; For debugging this file
+;;; (Which happens a fair amount, because it's where CLOS begins use.)
 
 ;;; This will print every form as its compiled
 #+(or)
@@ -36,8 +37,9 @@
 (eval-when (:compile-toplevel :execute)
   (setq core::*debug-dispatch* t))
 
-;;; ----------------------------------------------------------------------
-;;;                                     define generics for core functions
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Define generics for core functions.
 
 (defun function-to-method (name lambda-list specializers
                            &optional (function (fdefinition name)))
@@ -90,8 +92,9 @@
 
 (mlog "done with the first function-to-methods%N")
 
-;;; ----------------------------------------------------------------------
-;;;                                                                satiate
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Satiate
 
 ;;; Every gf needs a specializer profile, not just satiated ones
 ;;; They pretty much all need one, and before any gf calls, so we do this
@@ -109,8 +112,9 @@
 
 ;;; Generic functions can be called now!
 
-;;; ----------------------------------------------------------------------
-;;;                                                      make methods real
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Make methods real
 
 ;;; First generic function calls done here.
 
@@ -130,8 +134,9 @@
 ;;; *early-methods* is used by the primitive add-method in method.lsp.
 ;;; Avoid defining any new methods until the new add-method is installed.
 
-;;; ----------------------------------------------------------------------
-;;;                                       redefine ensure-generic-function
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Redefine ENSURE-GENERIC-FUNCTION
 
 ;;; Uses generic functions properly now.
 ;;; DEFMETHOD and INSTALL-METHOD and stuff call ensure-generic-function,
@@ -168,8 +173,9 @@
 	  (t
 	   (simple-program-error "The symbol ~A is bound to an ordinary function and is not a valid name for a generic function" name)))))
 
-;;; ----------------------------------------------------------------------
-;;;                                                              redefined
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Redefine things to their final form.
 
 (defun method-p (method) (typep method 'METHOD))
 
@@ -295,7 +301,8 @@ and cannot be added to ~A." method other-gf gf)))
 (function-to-method 'find-method '(gf qualifiers specializers &optional error)
                     '(standard-generic-function t t))
 
-;;; ----------------------------------------------------------------------
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
 ;;; Error messages
 
 (defgeneric no-applicable-method (gf &rest args)
@@ -319,8 +326,9 @@ and cannot be added to ~A." method other-gf gf)))
           Given arguments: ~a"
          group-name gf args))
 
-;;; ----------------------------------------------------------------------
-;;;                                                             miscellany
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; MISCELLANY
 
 (defmethod reader-method-class ((class std-class)
 				(direct-slot direct-slot-definition)
@@ -334,7 +342,56 @@ and cannot be added to ~A." method other-gf gf)))
   (declare (ignore class direct-slot initargs))
   (find-class 'standard-writer-method))
 
-;;; ----------------------------------------------------------------------
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Finish initializing classes that we defined in C++ that
+;;; are not in :COMMON-LISP or :SYS package
+;;; so that we can use them as specializers for generic functions
+
+(defun gather-cxx-classes ()
+  (let ((additional-classes (reverse core:*all-cxx-classes*))
+	classes)
+    (dolist (class-symbol additional-classes)
+      (unless (or (eq class-symbol 'core::model)
+                  (eq class-symbol 'core::instance)
+                  (assoc class-symbol +class-hierarchy+))
+        (push class-symbol classes)))
+    (nreverse classes)))
+
+(defun add-cxx-class (class-symbol)
+    (let* ((class (find-class class-symbol))
+	   (supers-names (mapcar #'(lambda (x) (class-name x))
+                                 (clos:direct-superclasses class))))
+      (ensure-boot-class class-symbol :metaclass 'core:cxx-class ;; was 'builtin-class
+                         :direct-superclasses supers-names)
+      (finalize-inheritance class)))
+
+(defun add-extra-classes (additional-classes)
+  (dolist (class-symbol additional-classes)
+    (add-cxx-class class-symbol)))
+
+;;
+;; Initialize all extra classes
+;;
+(add-extra-classes (gather-cxx-classes))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; We define the MAKE-LOAD-FORM for source-pos-info early, so that it can be
+;;; used in the expansion of the defclass below.
+;;; Most MAKE-LOAD-FORMs are in print.lsp.
+
+(defmethod make-load-form ((object core:source-pos-info) &optional environment)
+  `(core:make-cxx-object 'core:source-pos-info
+                         :sfi (core:decode (core:make-cxx-object 'core:source-file-info)
+                                           ',(core:encode (core:source-file-info
+                                                           (core:source-pos-info-file-handle object))))
+                         :fp ,(core:source-pos-info-filepos object)
+                         :l ,(core:source-pos-info-lineno object)
+                         :c ,(core:source-pos-info-column object)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
 ;;; DEPENDENT MAINTENANCE PROTOCOL
 ;;;
 

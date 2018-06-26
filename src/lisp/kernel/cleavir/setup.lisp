@@ -6,15 +6,6 @@
 
 (defvar *llvm-metadata*)
 
-(defmethod make-load-form ((object core:source-pos-info) &optional environment)
-  `(core:make-cxx-object 'core:source-pos-info
-                         :sfi (core:decode (core:make-cxx-object 'core:source-file-info)
-                                           ',(core:encode (core:source-file-info
-                                                           (core:source-pos-info-file-handle object))))
-                         :fp ,(core:source-pos-info-filepos object)
-                         :l ,(core:source-pos-info-lineno object)
-                         :c ,(core:source-pos-info-column object)))
-
 (defvar *debug-cleavir* nil
   "controls if graphs are generated as forms are being compiled.")
 (defvar *debug-cleavir-literals* nil

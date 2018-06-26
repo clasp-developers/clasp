@@ -656,7 +656,17 @@ Return the orderered-raw-constants-list and the constants-table GlobalVariable"
   (let ((fn (with-new-function (fn fn-env fn-result
                                    :function-name 'bclasp-top-level-form
                                    :parent-env nil
-                                   :function-form form)
+                                   :function-form form
+                                   :function-info (cmp:make-function-info
+                                                   :function-name 'bclasp-top-level-form
+                                                   :source-handle *gv-source-file-info-handle*
+                                                   :lambda-list nil
+                                                   :docstring nil
+                                                   :declares nil
+                                                   :form nil
+                                                   :lineno (core:source-pos-info-lineno core:*current-source-pos-info*)
+                                                   :column (core:source-pos-info-column core:*current-source-pos-info*)
+                                                   :filepos (core:source-pos-info-column core:*current-source-pos-info*)))
               (let* ((given-name (llvm-sys:get-name fn)))
                 ;; Map the function argument names
                 (cmp-log "Creating ltv thunk with name: %s%N" given-name)

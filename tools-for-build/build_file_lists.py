@@ -310,7 +310,6 @@ def collect_bclasp_lisp_files(**kwargs):
         "src/lisp/kernel/clos/stdmethod",
         "src/lisp/kernel/clos/generic",
         "src/lisp/kernel/clos/fixup",
-        "src/lisp/kernel/clos/extraclasses",
         "src/lisp/kernel/lsp/source-location",
         "src/lisp/kernel/lsp/defvirtual",
         "src/lisp/kernel/clos/conditions",

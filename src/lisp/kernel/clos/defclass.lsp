@@ -39,7 +39,12 @@
   (let* ((name (pop args))
 	 (superclasses (pop args))
 	 (slots (pop args))
-	 (options args))
+         ;; Throw in source info if there is any.
+         ;; FIXME: We basically write out the load-form ourselves.
+         ;; This is because we can't define a make-load-form method until extraclasses
+	 (options (if core:*current-source-pos-info*
+                      (list* (cons :source-position core:*current-source-pos-info*) args)
+                      args)))
     (unless (and (listp superclasses) (listp slots))
       (si::simple-program-error "Illegal defclass form: superclasses and slots should be lists"))
     (unless (and (symbolp name) (every #'symbolp superclasses))
@@ -48,6 +53,9 @@
           (processed-class-options (process-class-options options)))
       `(progn
          (eval-when (:compile-toplevel)
+           ;; Don't wipe classes at compile time if we don't have to.
+           ;; Per CLHS we do need a class object returned from find-class at compile time, but it
+           ;; doesn't actually need any information or anything.
            (unless (find-class ',name nil)
              (load-defclass ',name ',superclasses ,parsed-slots ,processed-class-options)))
          (eval-when (:load-toplevel :execute)
@@ -68,6 +76,7 @@
 	      (case option-name
 		((:metaclass :documentation)
 		 (ext:maybe-quote (second option)))
+;;                ((:source-position) (second option)) ; see FIXME above
 		(:default-initargs
 		 (setf option-name :direct-default-initargs)
 		 (parse-default-initargs (rest option)))
@@ -75,8 +84,8 @@
 		 (ext:maybe-quote (rest option))))
 	      options (list* (ext:maybe-quote option-name)
 			     option-value options))))
-    (and options `(list ,@options))))
-  
+    (when options `(list ,@options))))
+
 (defun load-defclass (name superclasses slot-definitions options)
   (clos::gf-log "In load-defclass name -> %s%N" name)
   (apply #'ensure-class name :direct-superclasses superclasses

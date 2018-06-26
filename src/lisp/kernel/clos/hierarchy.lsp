@@ -87,16 +87,15 @@
       (location-table :initform nil :accessor class-location-table)
       (stamp-for-instances :accessor stamp-for-instances)
       (creator :accessor creator)
-      ;;; Any changes to the slots above need to be reflected in instance.h
+      (source-position :initform nil :initarg :source-position :accessor class-source-position)
+      ;;; Any changes to the slots above need to be reflected in instance.h and metaClass.h
       )))
 
 ;;; ----------------------------------------------------------------------
 ;;; STANDARD-CLASS
 
 (eval-when (:compile-toplevel :execute #+clasp :load-toplevel)
-  (defparameter +standard-class-slots+
-    (append +class-slots+
-	    '((source-position :initform nil :initarg :source-position :accessor class-source-position)))))
+  (defparameter +standard-class-slots+ +class-slots+))
 
 ;;; ----------------------------------------------------------------------
 ;;; STRUCTURE-CLASS

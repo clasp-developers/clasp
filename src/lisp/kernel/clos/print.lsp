@@ -15,8 +15,9 @@
 ;;; ----------------------------------------------------------------------
 ;;; Load forms
 ;;;
-;;; ECL extends the ANSI specification by allowing to use
+;;; Clasp extends the ANSI specification by allowing to use
 ;;; MAKE-LOAD-FORM on almost any kind of lisp object.
+;;; But it doesn't necessarily use those methods in the compiler. see cmpliteral.lsp
 ;;;
 
 (defun make-load-form-saving-slots (object &key slot-names environment)

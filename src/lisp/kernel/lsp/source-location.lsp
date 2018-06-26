@@ -40,7 +40,15 @@
 (defstruct source-location
   pathname offset)
 
-
+;;; FIXME: above struct is redundant and should be vaporized.
+(defun class-source-position (class)
+  (let ((csp (clos:class-source-position class)))
+    (when csp
+      (make-source-location
+       :pathname (core:source-file-info-pathname
+                  (core:source-file-info
+                   (core:source-pos-info-file-handle csp)))
+       :offset (core:source-pos-info-filepos csp)))))
 
 (defun source-location-impl (name kind)
   "* Arguments
@@ -58,9 +66,10 @@ Return the source-location for the name/kind pair"
                        rels))))
     (case kind
       (:class
-       (let ((source-loc (core:get-sysprop name 'core:class-source-location)))
-         (when source-loc
-           (fix-paths-and-make-source-locations (list source-loc)))))
+       (let ((class (find-class name nil)))
+         (when class
+           (let ((source-loc (class-source-position class)))
+             (when source-loc (list source-loc))))))
       (:method
           (let ((source-loc (core:get-sysprop name 'core:cxx-method-source-location)))
             (fix-paths-and-make-source-locations source-loc)))
@@ -85,7 +94,9 @@ Return the source-location for the name/kind pair"
   (cond
     ((eq kind t)
      (cond
-       ((clos:classp obj) (source-location-impl (class-name obj) :class))
+       ((clos:classp obj)
+        (let ((source-loc (class-source-position obj)))
+          (when source-loc (list source-loc))))
        ((core:single-dispatch-generic-function-p obj)
         (source-location (core:function-name obj) :method))
        ((functionp obj)

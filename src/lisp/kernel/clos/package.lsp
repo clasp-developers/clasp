@@ -146,7 +146,8 @@
           +THE-T-CLASS+ 
           CLASS-DIRECT-DEFAULT-INITARGS 
           SLOT-DEFINITION-INITFUNCTION 
-          SLOT-DEFINITION-INITFORM )
+          SLOT-DEFINITION-INITFORM
+          class-source-position)
         )
 #+clasp
 (export '(invalidate-generic-functions-with-class-selector
