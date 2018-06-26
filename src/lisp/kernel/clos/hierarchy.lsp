@@ -168,9 +168,8 @@
   (defparameter +standard-accessor-method-slots+
     (append +standard-method-slots+
 	    '((slot-definition :initarg :slot-definition
-		    :initform nil 
-	       ;; FIXME! Should be a :reader
-		    :accessor accessor-method-slot-definition)))))
+                               :initform nil
+                               :reader accessor-method-slot-definition)))))
 
 ;;; ----------------------------------------------------------------------
 ;;; SLOT-DEFINITION
