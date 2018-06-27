@@ -19,6 +19,12 @@
 ;;;; A SETF expander is a function. It is called, as seen in GET-SETF-EXPANSION,
 ;;;; as (apply expander env (cdr place)), so it had better accept that.
 
+;;; NOTE: At present, source info for setf expanders is simply obtained from the
+;;; setf expander function (in source-location.lsp). This has the unintuitive
+;;; consequence that for things to work correctly, each DEFSETF or
+;;; DEFINE-SETF-EXPANDER or whatever must expand into its own function. This was
+;;; not always done.
+
 (defun setf-expander (symbol)
   (get-sysprop symbol 'setf-method))
 (defun (setf setf-expander) (expander symbol)

@@ -98,6 +98,10 @@ Return the source-location for the name/kind pair"
          (let ((cmf (compiler-macro-function name)))
            (when cmf
              (source-location cmf t)))))
+      (:setf-expander
+       (let ((expander (core::setf-expander name)))
+         (when expander
+           (source-location expander t))))
       (:method-combination
        ;; See comment on method-combination-source-position
        (let ((method-combination-compiler (clos::search-method-combination name)))
@@ -110,7 +114,7 @@ Return the source-location for the name/kind pair"
            (source-location expander t)))))))
 
 (defparameter *source-location-kinds* '(:class :method :function :compiler-macro
-                                        :method-combination :type))
+                                        :method-combination :type :setf-expander))
 
 (defun source-location (obj kind)
   "* Arguments
