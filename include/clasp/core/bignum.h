@@ -129,6 +129,12 @@ public: // Functions here
 
   virtual void increment() { ++this->_value; };
   virtual void decrement() { --this->_value; };
+  //virtual Number_sp copy() const;
+  string description() const {
+    stringstream ss;
+    ss << this->_value;
+    return ss.str();
+  };
   void set(gc::Fixnum val) { this->_value = static_cast<long>(val); };
   void setFixnum(gctools::Fixnum val) { this->_value = static_cast<long>(val); };
   Bignum get() const;
