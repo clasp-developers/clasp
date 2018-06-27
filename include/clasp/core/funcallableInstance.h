@@ -63,15 +63,22 @@ namespace core {
                    MIN_GFUN_SLOTS = 4 } GenericFunctionSlots;
   public: // ctor/dtor for classes with shared virtual base
     // entry_point is the LISP_CALLING_CONVENTION() macro
-  FuncallableInstance_O(FunctionDescription* fdesc) : Base(not_funcallable_entry_point,fdesc), _isgf(CLASP_NOT_FUNCALLABLE), _DebugOn(false), _Class(_Nil<Instance_O>()), _Sig(_Nil<T_O>()), _CallHistory(_Nil<T_O>()),
-      _SpecializerProfile(_Nil<T_O>()),
+  FuncallableInstance_O(FunctionDescription* fdesc) : Base(not_funcallable_entry_point)
+      , _isgf(CLASP_NOT_FUNCALLABLE)
+      , _DebugOn(false)
+      , _Class(_Nil<Instance_O>())
+      , _Sig(_Nil<T_O>())
+      , _FunctionDescription(fdesc)
+      , _CallHistory(_Nil<T_O>())
+      , _SpecializerProfile(_Nil<T_O>())
 //      _Lock(mp::SharedMutex_O::make_shared_mutex(_Nil<T_O>())),
-      _CompiledDispatchFunction(_Nil<T_O>()) {};
+      , _CompiledDispatchFunction(_Nil<T_O>()) {};
     explicit FuncallableInstance_O(FunctionDescription* fdesc,Instance_sp metaClass, size_t slots) :
-    Base(not_funcallable_entry_point,fdesc),
+    Base(not_funcallable_entry_point),
       _Class(metaClass)
       ,_DebugOn(false)
       ,_Sig(_Unbound<T_O>())
+      ,_FunctionDescription(fdesc)
       , _CallHistory(_Nil<T_O>())
       ,_SpecializerProfile(_Nil<T_O>())
 //      ,_Lock(mp::SharedMutex_O::make_shared_mutex(_Nil<T_O>()))
@@ -86,6 +93,7 @@ namespace core {
     Instance_sp _Class;
     SimpleVector_sp _Rack;
     T_sp   _Sig;
+    FunctionDescription* _FunctionDescription;
     gc::atomic_wrapper<T_sp>   _CallHistory;
     gc::atomic_wrapper<T_sp>   _SpecializerProfile;
 //    T_sp   _Lock;
@@ -124,6 +132,7 @@ namespace core {
 
 //    virtual bool isSubClassOf(Instance_sp mc) const;
 
+    FunctionDescription* fdesc() const { return this->_FunctionDescription; }
     T_sp make_instance();
   public:
   // Add support for Function_O methods

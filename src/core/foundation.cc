@@ -940,7 +940,7 @@ void lisp_defineSingleDispatchMethod(T_sp name,
   SimpleBaseString_sp docStr = SimpleBaseString_O::make(docstring);
   T_sp gfn = core__ensure_single_dispatch_generic_function(name, llhandler,autoExport,single_dispatch_argument_index); // Ensure the single dispatch generic function exists
   (void)gfn;                                                         // silence compiler warning
-  method_body->finishSetup(llhandler, kw::_sym_function);
+  method_body->finishSetup(llhandler,false);
   ASSERT(llhandler || llhandler.notnilp());
 #ifdef DEBUG_PROGRESS
   printf("%s:%d lisp_defineSingleDispatchMethod sym: %s\n", __FILE__, __LINE__, _rep_(sym).c_str());
@@ -991,7 +991,7 @@ void lisp_defun(Symbol_sp sym,
     List_sp ll = lisp_parse_arguments(packageName, arguments);
     llh = lisp_function_lambda_list_handler(ll, _Nil<T_O>(), skipIndices);
   }
-  fc->finishSetup(llh, kw::_sym_function);
+  fc->finishSetup(llh, false);
   fc->setSourcePosInfo(SimpleBaseString_O::make(sourceFile), 0, lineNumber, 0);
   Function_sp func = fc;
   sym->setf_symbolFunction(func);
@@ -1020,7 +1020,7 @@ void lisp_defun_setf(Symbol_sp sym,
     List_sp ll = lisp_parse_arguments(packageName, arguments);
     llh = lisp_function_lambda_list_handler(ll, _Nil<T_O>(), skipIndices);
   }
-  fc->finishSetup(llh, kw::_sym_function);
+  fc->finishSetup(llh, false);
   fc->setSourcePosInfo(SimpleBaseString_O::make(sourceFile), 0, lineNumber, 0);
   Function_sp func = fc;
   sym->setSetfFdefinition(func);
@@ -1040,7 +1040,7 @@ void lisp_defmacro(Symbol_sp sym,
   List_sp ldeclares = lisp_parse_declares(packageName, declarestring);
   (void)ldeclares;
   LambdaListHandler_sp llh = lisp_function_lambda_list_handler(ll, _Nil<T_O>());
-  f->finishSetup(llh, kw::_sym_macro);
+  f->finishSetup(llh, true);
   Function_sp func = f;
   //    Package_sp package = lisp->getPackage(packageName);
   //    package->addFunctionForLambdaListHandlerCreation(func);

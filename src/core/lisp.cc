@@ -564,6 +564,8 @@ void Lisp_O::startupLispEnvironment(Bundle *bundle) {
   printf("%s:%d startupLispEnvironment initialize everything\n", __FILE__, __LINE__ );
 #endif
   this->_Roots._CommandLineArguments = _Nil<T_O>();
+  mp::Process_sp main_process = mp::Process_O::make_process(INTERN_(core,top_level),_Nil<T_O>(),_lisp->copy_default_special_bindings(),_Nil<T_O>(),0);
+  my_thread->initialize_thread(main_process);
   {
     _BLOCK_TRACE("Initialize other code"); // needs _TrueObject
     initialize_Lisp_O();
@@ -647,8 +649,6 @@ void Lisp_O::startupLispEnvironment(Bundle *bundle) {
   //
   // Initialize the main thread info
   //
-  mp::Process_sp main_process = mp::Process_O::make_process(INTERN_(core,top_level),_Nil<T_O>(),_lisp->copy_default_special_bindings(),_Nil<T_O>(),0);
-  my_thread->initialize_thread(main_process);
   {
     // initialize caches
     my_thread->_SingleDispatchMethodCachePtr = gc::GC<Cache_O>::allocate();

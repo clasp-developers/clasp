@@ -30,7 +30,7 @@ $var ConstTypeCount = 1
                         template <typename Pols, typename OT $if ret==RetVoid [[]] $else [[, typename RT ]] $if numArgs>1 [[,]] $for Args_ ,[[typename ARG$Args_]] >
                         class IndirectVariadicMethoid
                         < Pols,OT $if ret==RetVoid [[,void]] $else [[,RT ]](*)( $for Args_ , [[ARG$Args_]]) $if isConst [[const]] >
-                        : public core::Function_O {
+                        : public core::Closure_O {
                         public:
                             typedef IndirectVariadicMethoid < Pols,OT $if ret==RetVoid [[,void]] $else [[,RT ]](*)( $for Args_ , [[ARG$Args_]]) $if isConst [[const]] > MyType;
 			    virtual const char* describe() const { return "IndirectVariadicMethoid"; };
@@ -38,7 +38,7 @@ $var ConstTypeCount = 1
                         Type mptr;
                         public:
                         enum { NumParams = $numArgs };
-                        IndirectVariadicMethoid(core::FunctionDescription* fdesc, Type ptr) : core::Function_O(entry_point,fdesc), mptr(ptr) {};
+                        IndirectVariadicMethoid(core::FunctionDescription* fdesc, Type ptr) : core::Closure_O(entry_point,fdesc), mptr(ptr) {};
                     static inline LCC_RETURN LISP_CALLING_CONVENTION()
                     {
                       MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);

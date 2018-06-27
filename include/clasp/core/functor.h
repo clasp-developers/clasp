@@ -55,9 +55,10 @@ namespace core {
     int column;
     int filepos;
     int declareIndex;
+    int macroP;
   };
 
- FunctionDescription* makeFunctionDescription(T_sp functionName, T_sp lambda_list=_Unbound<T_O>(), T_sp docstring=_Unbound<T_O>(), SourceFileInfo_sp sourceFileInfo=_Unbound<SourceFileInfo_O>(), int lineno=0, int column=0, int filePos=0, T_sp declares = _Nil<core::T_O>());
+  FunctionDescription* makeFunctionDescription(T_sp functionName, T_sp lambda_list=_Unbound<T_O>(), T_sp docstring=_Unbound<T_O>(), SourceFileInfo_sp sourceFileInfo=_Unbound<SourceFileInfo_O>(), int lineno=0, int column=0, int filePos=0, T_sp declares = _Nil<core::T_O>(), bool macroP=false);
 //  FunctionDescription* makeFunctionDescription(T_sp functionName, T_sp lambda_list, T_sp docstring, SourcePosInfo_sp sourcePosInfo, T_sp functionType = kw::_sym_function, T_sp declares = _Nil<core::T_O>());
 
 
@@ -68,14 +69,12 @@ namespace core {
     LISP_ABSTRACT_CLASS(core,ClPkg,Function_O,"FUNCTION",General_O);
   public:
     std::atomic<claspFunction>    entry;
-    FunctionDescription* _FunctionDescription;
-    Symbol_sp            _FunctionType;
   public:
     virtual const char *describe() const { return "Function - subclass must implement describe()"; };
     virtual size_t templatedSizeof() const { return sizeof(*this); };
   public:
-  Function_O(claspFunction ptr, FunctionDescription* functionDescription)
-    : entry(ptr), _FunctionDescription(functionDescription), _FunctionType(kw::_sym_function)
+  Function_O(claspFunction ptr)
+    : entry(ptr)
     {
 #ifdef _DEBUG_BUILD
       if (((uintptr_t)ptr)&0x7 || !ptr) {
@@ -84,63 +83,66 @@ namespace core {
       }
 #endif
     };
+    virtual FunctionDescription* fdesc() const = 0;
     T_sp fdescInfo(int index) const {
-      T_sp result((gctools::Tagged)this->_FunctionDescription->gcrootsInModule->get(this->_FunctionDescription->functionNameIndex));
+      T_sp result((gctools::Tagged)this->fdesc()->gcrootsInModule->get(this->fdesc()->functionNameIndex));
       return result;
     }
     CL_LISPIFY_NAME("core:functionName");
     CL_DEFMETHOD T_sp functionName() const {
-      return this->fdescInfo(this->_FunctionDescription->functionNameIndex);
+      return this->fdescInfo(this->fdesc()->functionNameIndex);
     }
-    virtual T_sp getKind() const {
-      return this->_FunctionType;
-    }
-    void setKind(Symbol_sp k) { this->_FunctionType = k;};
+    void setMacroP(bool m) { this->fdesc()->macroP = m; };
     T_sp docstring() const {
-      T_sp result((gctools::Tagged)this->_FunctionDescription->gcrootsInModule->get(this->_FunctionDescription->docstringIndex));
+      T_sp result((gctools::Tagged)this->fdesc()->gcrootsInModule->get(this->fdesc()->docstringIndex));
       return result;
     }
     T_sp declares() const {
-      T_sp result((gctools::Tagged)this->_FunctionDescription->gcrootsInModule->get(this->_FunctionDescription->declareIndex));
+      T_sp result((gctools::Tagged)this->fdesc()->gcrootsInModule->get(this->fdesc()->declareIndex));
       return result;
     }
     void setf_lambdaList(T_sp lambda_list) {
-      this->_FunctionDescription->gcrootsInModule->set(this->_FunctionDescription->lambdaListIndex,lambda_list.tagged_());
+      this->fdesc()->gcrootsInModule->set(this->fdesc()->lambdaListIndex,lambda_list.tagged_());
     }
     T_sp sourceFileInfo() const {
-      T_sp result((gctools::Tagged)this->_FunctionDescription->gcrootsInModule->get(this->_FunctionDescription->sourceFileInfoIndex));
+      T_sp result((gctools::Tagged)this->fdesc()->gcrootsInModule->get(this->fdesc()->sourceFileInfoIndex));
       return result;
     }
 
     void setf_sourceFileInfo(T_sp sourceFileInfo) const {
-      this->_FunctionDescription->gcrootsInModule->set(this->_FunctionDescription->sourceFileInfoIndex,sourceFileInfo.tagged_());
+      this->fdesc()->gcrootsInModule->set(this->fdesc()->sourceFileInfoIndex,sourceFileInfo.tagged_());
     }
 size_t filePos() const {
-      return this->_FunctionDescription->filepos;
+      return this->fdesc()->filepos;
     }
-    void setf_filePos(int filePos) { this->_FunctionDescription->filepos = filePos; };
+    void setf_filePos(int filePos) { this->fdesc()->filepos = filePos; };
     int lineNumber() const {
-      return this->_FunctionDescription->lineno;
+      return this->fdesc()->lineno;
     }
     int lineno() const {
-      return this->_FunctionDescription->lineno;
+      return this->fdesc()->lineno;
     }
-    void setf_lineno(int lineno) { this->_FunctionDescription->lineno = lineno; };
+    void setf_lineno(int lineno) { this->fdesc()->lineno = lineno; };
     virtual int column() const {
-      return this->_FunctionDescription->column;
+      return this->fdesc()->column;
     }
-    void setf_column(int x) { this->_FunctionDescription->column = x; };
+    void setf_column(int x) { this->fdesc()->column = x; };
 
     T_mv function_description() const;
     virtual void __write__(T_sp) const;
     
     Pointer_sp function_pointer() const;
-    CL_DEFMETHOD bool macroP() const { return this->_FunctionType != kw::_sym_macro; };
+    CL_DEFMETHOD virtual bool macroP() const { return this->fdesc()->macroP;}
     virtual bool compiledP() const { return false; };
     virtual bool interpretedP() const { return false; };
     virtual bool builtinP() const { return false; };
     virtual T_sp sourcePosInfo() const { return _Nil<T_O>(); };
-    CL_DEFMETHOD virtual T_sp functionKind() const { return this->getKind(); };
+    CL_DEFMETHOD virtual T_sp functionKind() const {
+      if (this->macroP()) {
+	return kw::_sym_macro;
+      }
+      return kw::_sym_function;
+    }
     CL_DEFMETHOD List_sp function_declares() const { return this->declares(); };
     CL_DEFMETHOD T_sp functionLambdaListHandler() const {
       return this->lambdaListHandler();
@@ -150,7 +152,7 @@ size_t filePos() const {
     virtual T_mv functionSourcePos() const;
     virtual LambdaListHandler_sp lambdaListHandler() const {SUBIMP();};
     virtual T_sp lambdaList() const {
-      T_sp result((gctools::Tagged)this->_FunctionDescription->gcrootsInModule->get(this->_FunctionDescription->lambdaListIndex));
+      T_sp result((gctools::Tagged)this->fdesc()->gcrootsInModule->get(this->fdesc()->lambdaListIndex));
       return result;
     }
     virtual string __repr__() const;
@@ -179,11 +181,14 @@ namespace core {
    */
 class Closure_O : public Function_O {
     LISP_CLASS(core,CorePkg,Closure_O,"Closure",Function_O);
-public:
- Closure_O(claspFunction fptr, FunctionDescription* fdesc ) : Base(fptr,fdesc) {};
-public:
-  virtual const char *describe() const { return "Closure"; };
-};
+  public:
+    FunctionDescription* _FunctionDescription;
+  public:
+  Closure_O(claspFunction fptr, FunctionDescription* fdesc ) : Base(fptr), _FunctionDescription(fdesc) {};
+  public:
+    virtual FunctionDescription* fdesc() const { return this->_FunctionDescription; };
+    virtual const char *describe() const { return "Closure"; };
+  };
 };
 
 
@@ -200,9 +205,9 @@ namespace core {
     : Closure_O(fptr, fdesc), _lambdaListHandler(_Unbound<LambdaListHandler_O>())  {};
   BuiltinClosure_O(claspFunction fptr, FunctionDescription* fdesc, LambdaListHandler_sp llh)
     : Closure_O(fptr, fdesc), _lambdaListHandler(llh)  {};
-    void finishSetup(LambdaListHandler_sp llh, Symbol_sp k) {
+    void finishSetup(LambdaListHandler_sp llh, bool macroP) {
       this->_lambdaListHandler = llh;
-      this->setKind(k);
+      this->setMacroP(macroP);
     }
     T_sp closedEnvironment() const { return _Nil<T_O>(); };
     virtual size_t templatedSizeof() const { return sizeof(*this); };

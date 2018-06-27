@@ -52,7 +52,7 @@ namespace core {
 std::atomic<uint64_t> global_interpreted_closure_calls;
 
 
-FunctionDescription* makeFunctionDescription(T_sp functionName, T_sp lambda_list, T_sp docstring, SourceFileInfo_sp sourceFileInfo, int lineno, int column, int filePos, T_sp declares ) {
+  FunctionDescription* makeFunctionDescription(T_sp functionName, T_sp lambda_list, T_sp docstring, SourceFileInfo_sp sourceFileInfo, int lineno, int column, int filePos, T_sp declares, bool macroP ) {
   // There is space for 5 roots needed - make sure that matches the number pushed below
   if (my_thread->_GCRoots->remainingCapacity()<5) {
     my_thread->_GCRoots = new gctools::GCRootsInModule();
@@ -69,6 +69,7 @@ FunctionDescription* makeFunctionDescription(T_sp functionName, T_sp lambda_list
   fdesc->lineno = lineno;
   fdesc->column = column;
   fdesc->filepos = filePos;
+  fdesc->macroP = macroP;
   return fdesc;
 }
 
@@ -178,7 +179,7 @@ string Function_O::__repr__() const {
   ss << "@" << (void*)this << " ";
 #endif
   ss << " " << _rep_(name);
-  ss << " :ftype " << _rep_(this->getKind());
+  ss << " :ftype " << _rep_(this->functionKind());
   ss << " lambda-list: " << _rep_(this->lambdaList());
   if ( this->entry != NULL ) {
     ss << " :fptr " << reinterpret_cast<void*>(this->entry.load());
@@ -255,7 +256,7 @@ string ClosureWithSlots_O::__repr__() const {
       ss << "cclasp ";
       break;
   }
-  ss << " :ftype " << _rep_(this->getKind());
+  ss << " :ftype " << _rep_(this->functionKind());
   ss << " lambda-list: " << _rep_(this->lambdaList());
   if ( this->entry != NULL ) {
     ss << " :fptr " << reinterpret_cast<void*>(this->entry.load());

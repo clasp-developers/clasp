@@ -53,19 +53,20 @@ public: // virtual functions inherited from Object
 
 GCPRIVATE: // instance variables
   SpecialFormCallback _fptr;
-
+  FunctionDescription* _FunctionDescription;
 public:
   static SpecialForm_sp create(Symbol_sp symbol, SpecialFormCallback cb);
 
 public: // initialize
   virtual bool isSpecialForm() { return true; };
+  virtual FunctionDescription* fdesc() const { return this->_FunctionDescription; };
 
   LambdaListHandler_sp lambdaListHandler() const { SIMPLE_ERROR_SPRINTF("special-form does not implement lambdaListHandler");} ;
   string __repr__() const;
   T_mv evaluate(List_sp args, T_sp environment);
   SpecialForm_O(const SpecialForm_O &ss); //!< Copy constructor
 
- SpecialForm_O(FunctionDescription* fdesc) : Base(specialFormDummyEntryPoint,fdesc) {};
+ SpecialForm_O(FunctionDescription* fdesc) : Base(specialFormDummyEntryPoint), _FunctionDescription(fdesc) {};
   virtual ~SpecialForm_O() {};
 };
 };

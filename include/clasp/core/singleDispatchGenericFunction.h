@@ -87,9 +87,9 @@ public:
   SingleDispatchGenericFunctionClosure_O(FunctionDescription* fdesc, size_t sdai)
     : Base(entry_point,fdesc), _Methods(_Nil<T_O>()), _lambdaListHandler(_Unbound<LambdaListHandler_O>()), _SingleDispatchArgumentIndex(sdai) {};
     T_sp lambdaList() const;
-    void finishSetup(LambdaListHandler_sp llh, Symbol_sp k) {
+    void finishSetup(LambdaListHandler_sp llh) {
       this->_lambdaListHandler = llh;
-      this->setKind(k);
+      this->setMacroP(false);
     }
     virtual size_t templatedSizeof() const { return sizeof(*this); };
     virtual const char *describe() const { return "SingleDispatchGenericFunctionClosure"; };

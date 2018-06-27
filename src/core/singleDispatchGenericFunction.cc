@@ -331,7 +331,7 @@ SingleDispatchGenericFunctionClosure_sp SingleDispatchGenericFunctionClosure_O::
 //  GC_ALLOCATE(SingleDispatchGenericFunctionClosure_O, gf);
   FunctionDescription* fdesc = makeFunctionDescription(kw::_sym_create);
   SingleDispatchGenericFunctionClosure_sp gfc = gctools::GC<SingleDispatchGenericFunctionClosure_O>::allocate(fdesc,singleDispatchArgumentIndex);
-  gfc->finishSetup(llh, kw::_sym_function);
+  gfc->finishSetup(llh);
   return gfc;
 }
 

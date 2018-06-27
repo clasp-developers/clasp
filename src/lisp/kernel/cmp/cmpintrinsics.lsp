@@ -518,6 +518,7 @@ eg:  (f closure-ptr nargs a b c d ...)
                                     %i32% ; column
                                     %i32% ; filepos
                                     %i32% ; declareIndex
+				    %i32% ; macroP
                                     ) nil ))
 (define-symbol-macro %function-description*% (llvm-sys:type-get-pointer-to %function-description%))
 

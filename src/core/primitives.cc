@@ -641,7 +641,7 @@ CL_DEFUN_SETF T_sp setf_macro_function(Function_sp function, Symbol_sp symbol, T
   (void)env; // ignore
   
   if ((namedFunction = function.asOrNull<Function_O>()))
-    namedFunction->setKind(kw::_sym_macro);
+    namedFunction->setMacroP(true);
   symbol->setf_symbolFunction(function);
   return function;
 }
@@ -851,11 +851,7 @@ IS-MACRO defines if the function is a macro or not.
 LAMBDA-LIST passes the lambda-list.)doc");
 CL_DEFUN T_sp core__fset(T_sp functionName, Function_sp functor, T_sp is_macro, T_sp lambda_list, T_sp lambda_list_p) {
   if ( Function_sp functionObject = functor.asOrNull<Function_O>() ) {
-    if (is_macro.isTrue()) {
-      functionObject->setKind(kw::_sym_macro);
-    } else {
-      functionObject->setKind(kw::_sym_function);
-    }
+    functionObject->setMacroP(is_macro.isTrue());
     if ( lambda_list_p.notnilp() ) {
       functionObject->setf_lambdaList(lambda_list);
     }
@@ -910,7 +906,7 @@ CL_DEFUN_SETF T_sp setf_fdefinition(Function_sp function, T_sp name) {
   Function_sp functionObject;
   
   if ((functionObject = function.asOrNull<Function_O>())) {
-    functionObject->setKind(kw::_sym_function);
+    functionObject->setMacroP(false);
   }
   if ((symbol = name.asOrNull<Symbol_O>())) {
     symbol->setf_symbolFunction(function);
@@ -937,7 +933,7 @@ CL_DOCSTRING("(setf symbol-function)");
 CL_DEFUN_SETF T_sp setf_symbol_function(Function_sp function, Symbol_sp name) {
   Function_sp functionObject;
   if ((functionObject = function.asOrNull<Function_O>())) {
-    functionObject->setKind(kw::_sym_function);
+    functionObject->setMacroP(false);
   }
   name->setf_symbolFunction(function);
   return function;
@@ -2105,8 +2101,13 @@ CL_DECLARE();
 CL_DOCSTRING("set the kind of a function object (:function|:macro)");
 CL_DEFUN void core__set_kind(Function_sp fn, Symbol_sp kind) {
   if ( Function_sp func = fn.asOrNull<Function_O>() ) {
-    fn->setKind(kind);
-    return;
+    if (kind == kw::_sym_function) {
+      fn->setMacroP(false);
+      return;
+    } else if (kind == kw::_sym_macro) {
+      fn->setMacroP(true);
+      return;
+    }
   }
   if ( kind == kw::_sym_function ) return; // by default everything is a function
   SIMPLE_ERROR(BF("You cannot set the kind: %s of a Function_O object") % _rep_(kind));

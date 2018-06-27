@@ -35,8 +35,11 @@ namespace core {
   class Creator_O : public Function_O {
     LISP_CLASS(core,CorePkg,Creator_O,"Creator",Function_O);
   public:
+    FunctionDescription* _FunctionDescription;
+  public:
   // Some Creators don't actually allocate anything -
   // classes that don't have default allocators
+    virtual FunctionDescription* fdesc() const { return this->_FunctionDescription; }
     virtual bool allocates() const { return true; };
   /*! If this is the allocator for a primary CxxAdapter class then return true, */
     T_sp functionName() const { return _Nil<T_O>(); };
@@ -58,8 +61,8 @@ namespace core {
     // use this when we inherit from Function_O
     static LCC_RETURN LISP_CALLING_CONVENTION();
     // entry_point is LISP_CALLING_CONVENTION() macro
-  Creator_O(FunctionDescription* fdesc) : Base(entry_point,fdesc) {};
-  Creator_O() : Base(entry_point,(FunctionDescription*)NULL) {};
+  Creator_O(FunctionDescription* fdesc) : Base(entry_point), _FunctionDescription(fdesc) {};
+  Creator_O() : Base(entry_point) {};
     virtual ~Creator_O() {};
   };
 
