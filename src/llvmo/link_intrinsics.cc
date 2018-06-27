@@ -419,11 +419,7 @@ LtvcReturn ltvc_enclose(gctools::GCRootsInModule* holder, size_t index, gctools:
   gctools::smart_ptr<core::ClosureWithSlots_O> functoid =
     gctools::GC<core::ClosureWithSlots_O>::allocate_container(0,
                                                               llvm_func,
-                                                              (core::FunctionDescription*)functionDescription,
-                                                              tlambdaName,
-                                                              kw::_sym_function,
-                                                              _Nil<T_O>() // lambdaList
-                                                              );
+                                                              (core::FunctionDescription*)functionDescription);
   LTVCRETURN holder->set(index, functoid.tagged_());
   NO_UNWIND_END();
 }
@@ -705,7 +701,7 @@ void invokeTopLevelFunction(core::T_mv *resultP,
                             core::LoadTimeValues_O **ltvPP) {
   ASSERT(ltvPP != NULL);
   core::SimpleBaseString_sp name = core::SimpleBaseString_O::make(cpname);
-  FunctionClosure_sp tc = FunctionClosure_O::create(fptr,name, kw::_sym_function, *sourceFileInfoHandleP, filePos, lineno, column);
+  Closure_sp tc = Closure_O::create(fptr,name, kw::_sym_function, *sourceFileInfoHandleP, filePos, lineno, column);
 #define TIME_TOP_LEVEL_FUNCTIONS
 #ifdef TIME_TOP_LEVEL_FUNCTIONS
   core::Number_sp startTime;
@@ -1321,11 +1317,7 @@ core::T_O *cc_enclose(core::T_O *lambdaName,
   gctools::smart_ptr<core::ClosureWithSlots_O> functoid =
     gctools::GC<core::ClosureWithSlots_O>::allocate_container( numCells
                                                               , llvm_func
-                                                               , (core::FunctionDescription*)functionDescription
-                                                              , tlambdaName
-                                                              , kw::_sym_function
-                                                              , _Nil<T_O>() // lambdaList
-                                                               );
+                                                               , (core::FunctionDescription*)functionDescription);
   core::T_O *p;
   va_list argp;
   va_start(argp, numCells);

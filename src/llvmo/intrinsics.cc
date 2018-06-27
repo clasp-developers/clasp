@@ -228,7 +228,7 @@ ALWAYS_INLINE T_O *cc_safe_setfdefinition(core::T_O *sym) {
 }
 
 ALWAYS_INLINE gc::return_type cc_call(LCC_ARGS_CC_CALL_ELLIPSIS) {
-  //	core::Function_O* func = gctools::DynamicCast<core::NamedFunction_O*,core::T_O*>::castOrNULL(tfunc);
+  //	core::Function_O* func = gctools::DynamicCast<core::Function_O*,core::T_O*>::castOrNULL(tfunc);
   core::Closure_O *tagged_closure = reinterpret_cast<core::Closure_O *>(lcc_closure);
   core::Closure_O* closure = gc::untag_general<core::Closure_O *>(tagged_closure);
 #ifdef ENABLE_BACKTRACE_ARGS
@@ -241,7 +241,7 @@ ALWAYS_INLINE gc::return_type cc_call(LCC_ARGS_CC_CALL_ELLIPSIS) {
 }
 
 ALWAYS_INLINE gc::return_type cc_call_callback(LCC_ARGS_CC_CALL_ELLIPSIS) {
-  //	core::Function_O* func = gctools::DynamicCast<core::NamedFunction_O*,core::T_O*>::castOrNULL(tfunc);
+  //	core::Function_O* func = gctools::DynamicCast<core::Function_O*,core::T_O*>::castOrNULL(tfunc);
   auto closure = reinterpret_cast<CompiledClosure_fptr_type>(lcc_closure);
   Vaslist lcc_arglist_s;
   va_start(lcc_arglist_s._Args, LCC_VA_START_ARG);
@@ -447,11 +447,7 @@ ALWAYS_INLINE core::T_O *cc_stack_enclose(void* closure_address,
   auto obj = gctools::BasePtrToMostDerivedPtr<typename gctools::smart_ptr<core::ClosureWithSlots_O>::Type>(closure_address);
   new (obj) (typename gctools::smart_ptr<core::ClosureWithSlots_O>::Type)( numCells,
                                                                            llvm_func,
-                                                                           functionDescription,
-                                                                           tlambdaName,
-                                                                           core::_sym_stack_closure,
-                                                                           _Nil<T_O>()
-                                                                           /* , *sourceFileInfoHandleP, filePos, lineno, column */);
+                                                                           functionDescription);
 
   gctools::smart_ptr<core::ClosureWithSlots_O> functoid = gctools::smart_ptr<core::ClosureWithSlots_O>(obj);
   core::T_O *p;

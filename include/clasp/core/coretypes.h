@@ -43,8 +43,6 @@ typedef gctools::smart_ptr<Instance_O> Instance_sp;
  typedef gctools::smart_ptr<Cache_O> Cache_sp;
 class Lisp_O;
 typedef gctools::tagged_pointer<Lisp_O> Lisp_sp;
-class NamedFunction_O;
-typedef gctools::smart_ptr<NamedFunction_O> NamedFunction_sp;
 class LambdaListHandler_O;
 typedef gctools::smart_ptr<LambdaListHandler_O> LambdaListHandler_sp;
 class Environment_O;
@@ -76,7 +74,7 @@ class DynamicScopeManager;
 
 class Function_O;
  class Closure_O;
-class FunctionClosure_O;
+class Closure_O;
 class BuiltinClosure_O;
 };
 

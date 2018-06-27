@@ -912,6 +912,20 @@ namespace core {
   List_sp lisp_parse_arguments(const string &packageName, const string &args);
   List_sp lisp_parse_declares(const string &packageName, const string &declarestring);
   LambdaListHandler_sp lisp_function_lambda_list_handler(List_sp lambda_list, List_sp declares, std::set<int> pureOutValues = std::set<int>());
+
+  void lisp_defineSingleDispatchMethod(T_sp name,
+                                       Symbol_sp classSymbol,
+                                       BuiltinClosure_sp,
+                                       size_t TemplateDispatchOn = 0,
+                                       bool useTemplateDispatchOn = false,
+                                       const string &lambda_list = "",
+                                       const string &declares = "",
+                                       const string &docstring = "",
+                                       bool autoExport = true,
+                                       int number_of_required_arguments = -1,
+                                       std::set<int> pureOutIndices = std::set<int>());
+
+
   void lisp_defmacro(Symbol_sp name, const string &packageName,
                      BuiltinClosure_sp, const string &arguments = "", const string &declarestring = "",
                      const string &docstring = "");
@@ -927,24 +941,13 @@ namespace core {
                        const std::set<int> &skipIndices = std::set<int>());
   void lisp_defmethod(Symbol_sp gfSymbol, Function_sp, const string &arguments, const string &docstring);
 
-  void lisp_defineSingleDispatchMethod(T_sp name,
-                                       Symbol_sp classSymbol,
-                                       BuiltinClosure_sp,
-                                       size_t TemplateDispatchOn = 0,
-                                       bool useTemplateDispatchOn = false,
-                                       const string &lambda_list = "",
-                                       const string &declares = "",
-                                       const string &docstring = "",
-                                       bool autoExport = true,
-                                       int number_of_required_arguments = -1,
-                                       std::set<int> pureOutIndices = std::set<int>());
-
   void lisp_defsetfSingleDispatchMethod(Lisp_sp lisp, const string &name, Symbol_sp classSymbol,
                                         Function_sp, const string &arguments = "", const string &declares = "", const string &docstring = "", bool autoExport = true);
 
   void lisp_defsetf(const string &name, Symbol_sp classSymbol,
                     Function_sp, const string &arguments = "", const string &docstring = "", bool autoExport = true);
 
+  
   core::T_sp lisp_hiddenBinderLookup(Symbol_sp sym);
 
 //

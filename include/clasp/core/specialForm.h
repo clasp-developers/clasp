@@ -41,8 +41,8 @@ namespace core {
   
 
 SMART(SpecialForm);
-class SpecialForm_O : public NamedFunction_O {
-  LISP_CLASS(core, CorePkg, SpecialForm_O, "SpecialForm",NamedFunction_O);
+class SpecialForm_O : public Function_O {
+  LISP_CLASS(core, CorePkg, SpecialForm_O, "SpecialForm",Function_O);
 
 public: // virtual functions inherited from Object
   void initialize();
@@ -60,23 +60,12 @@ public:
 public: // initialize
   virtual bool isSpecialForm() { return true; };
 
-  void setf_lambda_list(List_sp lambda_list) {SIMPLE_ERROR_SPRINTF("special-form does not implement setf_lambda_list");};
   LambdaListHandler_sp lambdaListHandler() const { SIMPLE_ERROR_SPRINTF("special-form does not implement lambdaListHandler");} ;
-  T_sp setSourcePosInfo(T_sp sourceFile, size_t filePos, int lineno, int column) { SIMPLE_ERROR_SPRINTF("special-form does not implement sourcePosInfo"); } ;
   string __repr__() const;
   T_mv evaluate(List_sp args, T_sp environment);
-  virtual List_sp declares() const { NOT_APPLICABLE(); };
-  virtual T_sp docstring() const { NOT_APPLICABLE(); };
-  virtual bool macroP() const { NOT_APPLICABLE(); };
-  virtual Symbol_sp getKind() const { NOT_APPLICABLE(); };
-  virtual T_sp lambda_list() const { NOT_APPLICABLE(); };
-  virtual int sourceFileInfoHandle() const { NOT_APPLICABLE(); };
-  virtual T_sp closedEnvironment() const { NOT_APPLICABLE(); };
-  virtual void *functionAddress() const { NOT_APPLICABLE(); };
-  virtual void set_kind(Symbol_sp k) { NOT_APPLICABLE(); };
   SpecialForm_O(const SpecialForm_O &ss); //!< Copy constructor
 
- SpecialForm_O(T_sp name) : Base(specialFormDummyEntryPoint,name) {};
+ SpecialForm_O(FunctionDescription* fdesc) : Base(specialFormDummyEntryPoint,fdesc) {};
   virtual ~SpecialForm_O() {};
 };
 };

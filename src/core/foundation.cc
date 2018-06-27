@@ -940,7 +940,6 @@ void lisp_defineSingleDispatchMethod(T_sp name,
   SimpleBaseString_sp docStr = SimpleBaseString_O::make(docstring);
   T_sp gfn = core__ensure_single_dispatch_generic_function(name, llhandler,autoExport,single_dispatch_argument_index); // Ensure the single dispatch generic function exists
   (void)gfn;                                                         // silence compiler warning
-  LOG(BF("Attaching single_dispatch_method symbol[%s] receiver_class[%s]  method_body@%p") % _rep_(sym) % _rep_(receiver_class) % ((void *)(method_body)));
   method_body->finishSetup(llhandler, kw::_sym_function);
   ASSERT(llhandler || llhandler.notnilp());
 #ifdef DEBUG_PROGRESS
@@ -1048,6 +1047,7 @@ void lisp_defmacro(Symbol_sp sym,
   sym->setf_symbolFunction(func);
   sym->exportYourself();
 }
+
 
 Symbol_sp lisp_internKeyword(const string &name) {
   if (name == "")

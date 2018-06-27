@@ -935,14 +935,15 @@ But no irbuilders or basic-blocks. Return the fn."
     Otherwise we are code-walking - and do something else that is appropriate."
   (unless function-info
     (error "function info is NIL for ~a" llvm-function-name))
+  (error "Fix irc-create-function-description and function-info to set up the new function-description")
   (let ((function-name (function-info-function-name function-info))
         (source-handle (function-info-source-handle function-info))
         (lambda-list (function-info-lambda-list function-info))
         (docstring (function-info-docstring function-info))
-        (declares (function-info-declares function-info))
         (lineno (function-info-lineno function-info))
         (column (function-info-column function-info))
-        (filepos (function-info-filepos function-info)))
+        (filepos (function-info-filepos function-info))
+        (declares (function-info-declares function-info)))
     (multiple-value-bind (found-source-info n l c f)
         (parse-declares-for-source-info declares)
       (when found-source-info

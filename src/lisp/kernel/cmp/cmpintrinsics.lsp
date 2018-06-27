@@ -510,13 +510,14 @@ eg:  (f closure-ptr nargs a b c d ...)
     (llvm-sys:struct-type-get *llvm-context*
                               (list %fn-prototype*%
                                     %gcroots-in-module*%
-                                    %i32*% ; source handle
-                                    %intptr_t% ; function name literal index
-                                    %intptr_t% ; lambda-list literal index
-                                    %intptr_t% ; docstring literal index
-                                    %intptr_t% ; lineno
-                                    %intptr_t% ; column
-                                    %intptr_t% ; filepos
+                                    %i32% ; source name index
+                                    %i32% ; function name literal index
+                                    %i32% ; lambda-list literal index
+                                    %i32% ; docstring literal index
+                                    %i32% ; lineno
+                                    %i32% ; column
+                                    %i32% ; filepos
+                                    %i32% ; declareIndex
                                     ) nil ))
 (define-symbol-macro %function-description*% (llvm-sys:type-get-pointer-to %function-description%))
 

@@ -35,21 +35,21 @@ THE SOFTWARE.
 namespace core {
 
   FORWARD(SingleDispatchCxxEffectiveMethodFunction);  
-  class SingleDispatchCxxEffectiveMethodFunction_O : public FunctionClosure_O {
-    LISP_CLASS(core,CorePkg,SingleDispatchCxxEffectiveMethodFunction_O,"SingleDispatchCxxEffectiveMethodFunction",FunctionClosure_O);
+  class SingleDispatchCxxEffectiveMethodFunction_O : public Closure_O {
+    LISP_CLASS(core,CorePkg,SingleDispatchCxxEffectiveMethodFunction_O,"SingleDispatchCxxEffectiveMethodFunction",Closure_O);
   public:
     const char *describe() const { return "SingleDispatchCxxEffectiveMethodFunction"; };
   public:
     CxxMethodFunction_sp _onlyCxxMethodFunction;
   public:
     T_sp lambda_list() const { return _Nil<T_O>();};
-  SingleDispatchCxxEffectiveMethodFunction_O(T_sp name, CxxMethodFunction_sp mf) : Base(SingleDispatchCxxEffectiveMethodFunction_O::entry_point,name), _onlyCxxMethodFunction(mf) {};
+  SingleDispatchCxxEffectiveMethodFunction_O(FunctionDescription* fdesc, CxxMethodFunction_sp mf) : Base(SingleDispatchCxxEffectiveMethodFunction_O::entry_point,fdesc), _onlyCxxMethodFunction(mf) {};
     static LCC_RETURN LISP_CALLING_CONVENTION();
   };
 
   FORWARD(SingleDispatchEffectiveMethodFunction);  
-  class SingleDispatchEffectiveMethodFunction_O : public FunctionClosure_O {
-    LISP_CLASS(core,CorePkg,SingleDispatchEffectiveMethodFunction_O,"SingleDispatchEffectiveMethodFunction",FunctionClosure_O);
+  class SingleDispatchEffectiveMethodFunction_O : public Closure_O {
+    LISP_CLASS(core,CorePkg,SingleDispatchEffectiveMethodFunction_O,"SingleDispatchEffectiveMethodFunction",Closure_O);
   public:
     const char *describe() const { return "SingleDispatchEffectiveMethodFunction"; };
   public:
@@ -58,7 +58,7 @@ namespace core {
     List_sp _Afters;
   public:
     T_sp lambda_list() const { return _Nil<T_O>();};
-  SingleDispatchEffectiveMethodFunction_O(T_sp name, List_sp befores, List_sp primaries, List_sp afters) : Base(entry_point,name), _Befores(befores),_Primaries(primaries),_Afters(afters) {};
+  SingleDispatchEffectiveMethodFunction_O(FunctionDescription* fdesc, List_sp befores, List_sp primaries, List_sp afters) : Base(entry_point,fdesc), _Befores(befores),_Primaries(primaries),_Afters(afters) {};
     static LCC_RETURN LISP_CALLING_CONVENTION();
   };
 };
@@ -72,8 +72,8 @@ struct gctools::GCInfo<core::SingleDispatchGenericFunctionClosure_O> {
 };
 namespace core {
   FORWARD(SingleDispatchMethod);
-  class SingleDispatchGenericFunctionClosure_O : public FunctionClosure_O {
-    LISP_CLASS(core,CorePkg,SingleDispatchGenericFunctionClosure_O,"SingleDispatchGenericFunctionClosure",FunctionClosure_O);
+  class SingleDispatchGenericFunctionClosure_O : public Closure_O {
+    LISP_CLASS(core,CorePkg,SingleDispatchGenericFunctionClosure_O,"SingleDispatchGenericFunctionClosure",Closure_O);
   public:
   /*! Store the methods here */
     List_sp _Methods;
@@ -84,16 +84,13 @@ namespace core {
   public:
     static SingleDispatchGenericFunctionClosure_sp create(T_sp functionName, LambdaListHandler_sp llhandler, size_t singleDispatchArgumentIndex);
 public:
-  SingleDispatchGenericFunctionClosure_O(T_sp name, Symbol_sp k, size_t sdai)
-    : Base(entry_point,name, k), _Methods(_Nil<T_O>()), _lambdaListHandler(_Nil<LambdaListHandler_O>()), _SingleDispatchArgumentIndex(sdai) {};
-  SingleDispatchGenericFunctionClosure_O(T_sp name, size_t sdai)
-    : Base(entry_point,name), _Methods(_Nil<T_O>()), _lambdaListHandler(_Nil<LambdaListHandler_O>()), _SingleDispatchArgumentIndex(sdai) {};
+  SingleDispatchGenericFunctionClosure_O(FunctionDescription* fdesc, size_t sdai)
+    : Base(entry_point,fdesc), _Methods(_Nil<T_O>()), _lambdaListHandler(_Unbound<LambdaListHandler_O>()), _SingleDispatchArgumentIndex(sdai) {};
+    T_sp lambdaList() const;
     void finishSetup(LambdaListHandler_sp llh, Symbol_sp k) {
       this->_lambdaListHandler = llh;
-      this->kind = k;
+      this->setKind(k);
     }
-    T_sp lambda_list() const;
-    void setf_lambda_list(List_sp lambda_list);
     virtual size_t templatedSizeof() const { return sizeof(*this); };
     virtual const char *describe() const { return "SingleDispatchGenericFunctionClosure"; };
     static LCC_RETURN LISP_CALLING_CONVENTION();
@@ -121,7 +118,7 @@ public:
 
 namespace core {
  
-class Lambda_emf : public FunctionClosure_O {
+class Lambda_emf : public Closure_O {
   FRIEND_GC_SCANNER(core::Lambda_emf);
 
 private:

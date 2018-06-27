@@ -41,13 +41,8 @@ namespace core {
   /*! If this is the allocator for a primary CxxAdapter class then return true, */
     T_sp functionName() const { return _Nil<T_O>(); };
     T_sp closedEnvironment() const { return _Nil<T_O>(); };
-    T_sp docstring() const { return _Nil<T_O>(); };
-    Symbol_sp getKind() const { return _Nil<Symbol_O>(); };
     int sourceFileInfoHandle() const { return 0; };
     bool macroP() const { return false; };
-    void set_kind(Symbol_sp k) { };
-    void setf_lambda_list(List_sp ll) {};
-    List_sp declares() const { return _Nil<T_O>(); };
     LambdaListHandler_sp lambdaListHandler() const { return _Nil<LambdaListHandler_O>(); };
     T_sp lambda_list() const { return _Nil<T_O>(); };
     T_sp setSourcePosInfo(T_sp sourceFile, size_t filePos, int lineno, int column ) {return _Nil<T_O>();};
@@ -60,12 +55,11 @@ namespace core {
       abort();
     };
     virtual core::T_sp creator_allocate() = 0;
-#if 1
     // use this when we inherit from Function_O
     static LCC_RETURN LISP_CALLING_CONVENTION();
     // entry_point is LISP_CALLING_CONVENTION() macro
-  Creator_O() : Base(entry_point) {};
-#endif
+  Creator_O(FunctionDescription* fdesc) : Base(entry_point,fdesc) {};
+  Creator_O() : Base(entry_point,(FunctionDescription*)NULL) {};
     virtual ~Creator_O() {};
   };
 
@@ -105,7 +99,7 @@ namespace core {
   public:
     Instance_sp _class;
   public:
-  InstanceCreator_O(Instance_sp class_) : _class(class_){};
+  InstanceCreator_O(FunctionDescription* fdesc, Instance_sp class_) : Base(fdesc), _class(class_){};
     T_sp creator_allocate();
     virtual size_t templatedSizeof() const { return sizeof(InstanceCreator_O); };
   };
@@ -117,7 +111,7 @@ namespace core {
   public:
     Instance_sp _class;
   public:
-  FuncallableInstanceCreator_O(Instance_sp class_) : _class(class_){};
+  FuncallableInstanceCreator_O(FunctionDescription* fdesc, Instance_sp class_) : Base(fdesc), _class(class_){};
     T_sp creator_allocate();
     virtual size_t templatedSizeof() const { return sizeof(FuncallableInstanceCreator_O); };
   };
@@ -127,7 +121,7 @@ namespace core {
   class StandardClassCreator_O : public Creator_O {
     LISP_CLASS(core,CorePkg,StandardClassCreator_O,"StandardClassCreator",Creator_O);
   public:
-    StandardClassCreator_O() {};
+  StandardClassCreator_O(FunctionDescription* fdesc) : Base(fdesc) {};
     T_sp creator_allocate();
     virtual size_t templatedSizeof() const { return sizeof(StandardClassCreator_O); };
   };
@@ -137,7 +131,7 @@ namespace core {
   class DerivableCxxClassCreator_O : public Creator_O {
     LISP_CLASS(core,CorePkg,DerivableCxxClassCreator_O,"DerivableCxxClassCreator",Creator_O);
   public:
-    DerivableCxxClassCreator_O() {};
+  DerivableCxxClassCreator_O(FunctionDescription* fdesc) : Base(fdesc) {};
     T_sp creator_allocate();
     virtual size_t templatedSizeof() const { return sizeof(DerivableCxxClassCreator_O); };
   };
@@ -147,7 +141,7 @@ namespace core {
   class ClassRepCreator_O : public Creator_O {
     LISP_CLASS(core,CorePkg,ClassRepCreator_O,"ClassRepCreator",Creator_O);
   public:
-    ClassRepCreator_O() {};
+  ClassRepCreator_O(FunctionDescription* fdesc) : Base(fdesc) {};
     T_sp creator_allocate();
     virtual size_t templatedSizeof() const { return sizeof(ClassRepCreator_O); };
   };

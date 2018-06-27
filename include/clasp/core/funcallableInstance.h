@@ -63,12 +63,12 @@ namespace core {
                    MIN_GFUN_SLOTS = 4 } GenericFunctionSlots;
   public: // ctor/dtor for classes with shared virtual base
     // entry_point is the LISP_CALLING_CONVENTION() macro
-  FuncallableInstance_O() : Base(not_funcallable_entry_point), _isgf(CLASP_NOT_FUNCALLABLE), _DebugOn(false), _Class(_Nil<Instance_O>()), _Sig(_Nil<T_O>()), _CallHistory(_Nil<T_O>()),
+  FuncallableInstance_O(FunctionDescription* fdesc) : Base(not_funcallable_entry_point,fdesc), _isgf(CLASP_NOT_FUNCALLABLE), _DebugOn(false), _Class(_Nil<Instance_O>()), _Sig(_Nil<T_O>()), _CallHistory(_Nil<T_O>()),
       _SpecializerProfile(_Nil<T_O>()),
 //      _Lock(mp::SharedMutex_O::make_shared_mutex(_Nil<T_O>())),
       _CompiledDispatchFunction(_Nil<T_O>()) {};
-    explicit FuncallableInstance_O(Instance_sp metaClass, size_t slots) :
-    Base(not_funcallable_entry_point),
+    explicit FuncallableInstance_O(FunctionDescription* fdesc,Instance_sp metaClass, size_t slots) :
+    Base(not_funcallable_entry_point,fdesc),
       _Class(metaClass)
       ,_DebugOn(false)
       ,_Sig(_Unbound<T_O>())
@@ -128,7 +128,6 @@ namespace core {
   public:
   // Add support for Function_O methods
     T_sp functionName() const { ASSERT(this->isgf()); return this->GFUN_NAME(); };
-    virtual Symbol_sp functionKind() const { HARD_IMPLEMENT_ME(); };
     virtual T_sp closedEnvironment() const { HARD_IMPLEMENT_ME(); };
     virtual T_sp setSourcePosInfo(T_sp sourceFile, size_t filePos, int lineno, int column) { HARD_IMPLEMENT_ME(); };
 //  virtual T_mv functionSourcePos() const { HARD_IMPLEMENT_ME();;
@@ -136,8 +135,7 @@ namespace core {
     virtual T_sp docstring() const { HARD_IMPLEMENT_ME(); };
     virtual void *functionAddress() const { HARD_IMPLEMENT_ME(); };
     virtual bool macroP() const { return false; };
-    virtual void set_kind(Symbol_sp k);
-    virtual Symbol_sp getKind() const { return kw::_sym_function; };
+    virtual T_sp getKind() const { return kw::_sym_function; };
     virtual int sourceFileInfoHandle() const { HARD_IMPLEMENT_ME(); };
     virtual size_t filePos() const { return 0; }
     virtual int lineNumber() const { return 0; }

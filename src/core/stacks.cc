@@ -238,12 +238,11 @@ string InvocationHistoryFrame::asStringLowLevel(Closure_sp closure,int index) co
   if (!closure) {
     return "InvocationHistoryFrame::asStringLowLevel NULL closure";
   };
-  T_sp funcNameObj = closure->_name;
+  T_sp funcNameObj = closure->functionName();
   string funcName = _rep_(funcNameObj);
   uint lineNumber = closure->lineNumber();
   uint column = closure->column();
-  int sourceFileInfoHandle = closure->sourceFileInfoHandle();
-  SourceFileInfo_sp sfi = core__source_file_info(make_fixnum(sourceFileInfoHandle));
+  SourceFileInfo_sp sfi = core__source_file_info(closure->sourceFileInfo());
   string sourceFileName = sfi->fileName();
   stringstream ss;
   string closureType = "/?";

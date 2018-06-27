@@ -382,7 +382,7 @@ void low_level_backtrace(bool with_args) {
             name = "-BAD-NAME-";
           }
         }
-        /*Nilable?*/ T_sp sfi = core__source_file_info(make_fixnum(func->sourceFileInfoHandle()));
+        /*Nilable?*/ T_sp sfi = core__source_file_info(func->sourceFileInfo());
         string sourceName = "cannot-determine";
         if (sfi.notnilp()) {
           sourceName = gc::As<SourceFileInfo_sp>(sfi)->fileName();

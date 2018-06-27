@@ -21,6 +21,7 @@ namespace core {
     BignumExportBuffer _AsInt64Buffer;
     BignumExportBuffer _AsUint64Buffer;
     const InvocationHistoryFrame* _InvocationHistoryStackTop;
+    gctools::GCRootsInModule*  _GCRoots;
 #ifdef DEBUG_IHS
     // Save the last return address before IHS screws up
     void*                    _IHSBacktrace[IHS_BACKTRACE_SIZE];

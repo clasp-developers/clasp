@@ -581,10 +581,19 @@ int startupGarbageCollectorAndSystem(MainFunctionType startupFn, int argc, char 
 Tagged GCRootsInModule::set(size_t index, Tagged val) {
 #ifdef USE_BOEHM
   // shadow_memory is only used by Boehm
-  reinterpret_cast<core::T_O**>(this->_boehm_shadow_memory)[index] = reinterpret_cast<core::T_O*>(val);
+  if (this->_boehm_shadow_memory != this->_module_memory) {
+    reinterpret_cast<core::T_O**>(this->_boehm_shadow_memory)[index] = reinterpret_cast<core::T_O*>(val);
+  }
 #endif
   reinterpret_cast<core::T_O**>(this->_module_memory)[index] = reinterpret_cast<core::T_O*>(val);
   return val;
+}
+
+size_t GCRootsInModule::push_back( Tagged val) {
+  size_t index = this->_num_entries;
+  this->_num_entries++;
+  this->set(index,val);
+  return index;
 }
 
 Tagged GCRootsInModule::get(size_t index) {

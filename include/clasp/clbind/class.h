@@ -385,26 +385,16 @@ struct memfun_registration : registration {
   memfun_registration(const std::string &name, MethodPointerType f, Policies const &policies, string const &arguments, string const &declares, string const &docstring)
       : name(name), methodPtr(f), policies(policies), m_arguments(arguments), m_declares(declares), m_docstring(docstring) {}
 
-  void register_() const {
+    void register_() const {
     core::Symbol_sp classSymbol = reg::lisp_classSymbol<Class>();
     core::Symbol_sp sym = core::lispify_intern(name, symbol_packageName(classSymbol));
-    core::BuiltinClosure_sp methoid = gc::GC<IndirectVariadicMethoid<Policies, Class, MethodPointerType>>::allocate(sym, methodPtr);
-    lisp_defineSingleDispatchMethod(sym, classSymbol, methoid, 0, true, m_arguments, m_declares, m_docstring, true, CountMethodArguments<MethodPointerType>::value + 1 // +1 for the self argument
-                                    ,
+    core::FunctionDescription* fdesc = core::makeFunctionDescription(sym);
+    core::BuiltinClosure_sp methoid = gc::GC<IndirectVariadicMethoid<Policies, Class, MethodPointerType>>::allocate(fdesc,methodPtr);
+    lisp_defineSingleDispatchMethod(sym, classSymbol, methoid, 0, true,
+                                    m_arguments, m_declares, m_docstring,
+                                    true,
+                                    CountMethodArguments<MethodPointerType>::value + 1, // +1 for the self argument
                                     GatherPureOutValues<Policies, 0>::gather());
-// I'm going to comment out the luabind way of defining member functions
-// and use my way of defining member functions
-//
-#if 0
-                object fn = make_function(
-                    L, f, deduce_signature(f, (Class*)0), policies);
-
-                add_overload(
-                    object(from_stack(L, -1))
-                    , name
-                    , fn
-                    );
-#endif
   }
 
   std::string name;
@@ -423,7 +413,8 @@ struct iterator_registration : registration {
   void register_() const {
     core::Symbol_sp classSymbol = reg::lisp_classSymbol<Class>();
     core::Symbol_sp sym = core::lispify_intern(name, symbol_packageName(classSymbol));
-    core::BuiltinClosure_sp methoid = gc::GC<IteratorMethoid<Policies, Class, Begin, End>>::allocate(sym, beginPtr, endPtr);
+    core::FunctionDescription* fdesc = makeFunctionDescription(sym);
+    core::BuiltinClosure_sp methoid = gc::GC<IteratorMethoid<Policies, Class, Begin, End>>::allocate(fdesc, beginPtr, endPtr);
 
     //                int*** i = MethodPointerType(); printf("%p\n", i); // generate error to check type
     //                print_value_as_warning<CountMethodArguments<MethodPointerType>::value>()();
@@ -476,8 +467,9 @@ struct constructor_registration_base : public registration {
     };
     //                printf("%s:%d    constructor_registration_base::register_ called for %s\n", __FILE__, __LINE__, m_name.c_str());
     core::Symbol_sp sym = core::lispify_intern(tname, core::lisp_currentPackageName());
-    core::BuiltinClosure_sp f = gc::GC<VariadicConstructorFunction_O<Policies, Pointer, Class, Signature>>::allocate(sym);
-    lisp_defun(sym, core::lisp_currentPackageName(), f, m_arguments, m_declares, m_docstring, "=external=", 0, CountConstructorArguments<Signature>::value);
+    core::FunctionDescription* fdesc = core::makeFunctionDescription(sym);
+    core::BuiltinClosure_sp func = gc::GC<VariadicConstructorFunction_O<Policies, Pointer, Class, Signature>>::allocate(fdesc);
+    lisp_defun(sym, core::lisp_currentPackageName(),func, m_arguments, m_declares, m_docstring, "=external=", 0, CountConstructorArguments<Signature>::value);
   }
 
   Policies policies;
@@ -556,16 +548,18 @@ struct property_registration : registration {
       : name(name), get(get), get_policies(get_policies), set(set), set_policies(set_policies), m_arguments(arguments), m_declares(declares), m_docstring(docstring) {}
 
   void register_() const {
-    const string n(name);
+      const string n(name);
     //                int*** i = GetterMethoid<reg::null_type,Class,Get>(n,get);
     //                printf("%p\n", i);
-    core::Symbol_sp classSymbol = reg::lisp_classSymbol<Class>();
-    core::Symbol_sp sym = core::lispify_intern(n, symbol_packageName(classSymbol));
-    core::BuiltinClosure_sp getter = gc::GC<GetterMethoid<reg::null_type, Class, Get>>::allocate(sym, get);
-    lisp_defineSingleDispatchMethod(sym, classSymbol, getter, 0, true, m_arguments, m_declares, m_docstring, true, 1);
-    core::T_sp setf_name = core::Cons_O::createList(cl::_sym_setf,sym);
-    core::BuiltinClosure_sp setter = gc::GC<SetterMethoid<reg::null_type, Class, Set>>::allocate(setf_name, set);
-    lisp_defineSingleDispatchMethod(setf_name, classSymbol, setter, 1, true, m_arguments, m_declares, m_docstring, true, 2);
+      core::Symbol_sp classSymbol = reg::lisp_classSymbol<Class>();
+      core::Symbol_sp sym = core::lispify_intern(n, symbol_packageName(classSymbol));
+      core::FunctionDescription* fdesc = core::makeFunctionDescription(sym);
+      core::BuiltinClosure_sp getter = gc::GC<GetterMethoid<reg::null_type, Class, Get>>::allocate(fdesc, get);
+      lisp_defineSingleDispatchMethod(sym, classSymbol, getter, 0, true, m_arguments, m_declares, m_docstring, true, 1);
+      core::T_sp setf_name = core::Cons_O::createList(cl::_sym_setf,sym);
+      core::FunctionDescription* fdesc_setf = core::makeFunctionDescription(setf_name);
+      core::BuiltinClosure_sp setter = gc::GC<SetterMethoid<reg::null_type, Class, Set>>::allocate(fdesc_setf, set);
+      lisp_defineSingleDispatchMethod(setf_name, classSymbol, setter, 1, true, m_arguments, m_declares, m_docstring, true, 2);
     //                printf("%s:%d - allocated a getter@%p for %s\n", __FILE__, __LINE__, getter, name);
     // register the getter here
   }
@@ -600,7 +594,8 @@ struct property_registration : registration {
     //                printf("%p\n", i);
     core::Symbol_sp classSymbol = reg::lisp_classSymbol<Class>();
     core::Symbol_sp sym = core::lispify_intern(n, symbol_packageName(classSymbol));
-    core::BuiltinClosure_sp getter = gc::GC<GetterMethoid<reg::null_type, Class, Get>>::allocate(sym, get);
+    core::FunctionDescription* fdesc = core::makeFunctionDescription(sym);
+    core::BuiltinClosure_sp getter = gc::GC<GetterMethoid<reg::null_type, Class, Get>>::allocate(fdesc, get);
     lisp_defineSingleDispatchMethod(sym, classSymbol, getter, 0, true, m_arguments, m_declares, m_docstring, true, 1);
     //                printf("%s:%d - allocated a getter@%p for %s\n", __FILE__, __LINE__, getter, name);
     // register the getter here

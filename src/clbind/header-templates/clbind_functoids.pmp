@@ -29,7 +29,7 @@ $var NumArgs = 16
                 public:
 		    virtual const char* describe() const { return "VariadicFunctor"; };
                     enum { NumParams = $numArgs };
-                    VariadicFunctor(core::T_sp name, Type ptr) : core::BuiltinClosure_O(entry_point,name), fptr(ptr) {};
+                    VariadicFunctor(core::FunctionDescription* fdesc, Type ptr) : core::BuiltinClosure_O(entry_point,fdesc), fptr(ptr) {};
                     virtual size_t templatedSizeof() const { return sizeof(*this);};
                     static inline LCC_RETURN LISP_CALLING_CONVENTION()
                     {
