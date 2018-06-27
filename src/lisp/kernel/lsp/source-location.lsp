@@ -62,6 +62,14 @@
 (defun method-combination-source-position (method-combination)
   (source-location (clos::method-combination-compiler method-combination) t))
 
+(defun method-source-location (method)
+  ;; NOTE: Because we return this to MAPCON, make sure the lists are fresh.
+  (source-location (clos:method-function method) t))
+
+(defun generic-function-source-locations (gf)
+  ;; FIXME: Include the actual defgeneric's location too.
+  (mapcan #'method-source-location (clos:generic-function-methods gf)))
+
 (defun source-location-impl (name kind)
   "* Arguments
 - name : A symbol.
@@ -86,13 +94,16 @@ Return the source-location for the name/kind pair"
           (let ((source-loc (core:get-sysprop name 'core:cxx-method-source-location)))
             (fix-paths-and-make-source-locations source-loc)))
       (:function
-       (cond
-         ((and (fboundp name) (core:single-dispatch-generic-function-p (fdefinition name)))
-          (source-location name :method))
-         ((fboundp name)
-          (multiple-value-bind (file pos)
-              (compiled-function-file* (fdefinition name))
-            (list (make-source-location :pathname file :offset pos))))))
+       (when (fboundp name)
+         (let ((func (fdefinition name)))
+           (cond ((core:single-dispatch-generic-function-p func)
+                  (source-location name :method))
+                 ((typep func 'generic-function)
+                  (generic-function-source-locations func))
+                 (t ; normal function
+                  (multiple-value-bind (file pos)
+                      (compiled-function-file* (fdefinition name))
+                    (list (make-source-location :pathname file :offset pos))))))))
       (:compiler-macro
        (when (fboundp name)
          (let ((cmf (compiler-macro-function name)))
@@ -129,6 +140,8 @@ Return the source-location for the name/kind pair"
           (when source-loc (list source-loc))))
        ((core:single-dispatch-generic-function-p obj)
         (source-location (core:function-name obj) :method))
+       ((typep obj 'generic-function)
+        (generic-function-source-locations obj))
        ((functionp obj)
         (multiple-value-bind (file pos)
             (compiled-function-file* obj)
