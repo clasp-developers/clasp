@@ -52,7 +52,7 @@ namespace core {
 std::atomic<uint64_t> global_interpreted_closure_calls;
 
 
-FunctionDescription* makeFunctionDescription(T_sp functionName, T_sp lambda_list, T_sp docstring, SourceFileInfo_sp sourceFileInfo, int lineno, int column, int filePos, T_sp functionType, T_sp declares ) {
+FunctionDescription* makeFunctionDescription(T_sp functionName, T_sp lambda_list, T_sp docstring, SourceFileInfo_sp sourceFileInfo, int lineno, int column, int filePos, T_sp declares ) {
   // There is space for 5 roots needed - make sure that matches the number pushed below
   if (my_thread->_GCRoots->remainingCapacity()<5) {
     my_thread->_GCRoots = new gctools::GCRootsInModule();
@@ -106,7 +106,7 @@ FunctionDescription* makeFunctionDescriptionFromCxx(Symbol_sp& symbol,
 
 
 
-static ClosureWithSlots_sp make_interpreted_closure(T_sp name, T_sp type, T_sp lambda_list, LambdaListHandler_sp lambda_list_handler, T_sp declares, T_sp docstring, T_sp form, T_sp environment, SOURCE_INFO) {
+  ClosureWithSlots_sp ClosureWithSlots_O::make_interpreted_closure(T_sp name, T_sp type, T_sp lambda_list, LambdaListHandler_sp lambda_list_handler, T_sp declares, T_sp docstring, T_sp form, T_sp environment, SOURCE_INFO) {
   SourceFileInfo_sp sfi = core__source_file_info(core::make_fixnum(sourceFileInfoHandle));
   FunctionDescription* interpretedFunctionDescription = makeFunctionDescription(name,lambda_list,docstring,sfi,lineno,column,filePos);
   ClosureWithSlots_sp closure =
@@ -123,7 +123,7 @@ static ClosureWithSlots_sp make_interpreted_closure(T_sp name, T_sp type, T_sp l
   (*closure)[INTERPRETED_CLOSURE_LAMBDA_LIST_HANDLER_SLOT] = lambda_list_handler;
   return closure;
 }
-static ClosureWithSlots_sp make_bclasp_closure(T_sp name, claspFunction ptr, T_sp type, T_sp lambda_list, T_sp environment) {
+  ClosureWithSlots_sp ClosureWithSlots_O::make_bclasp_closure(T_sp name, claspFunction ptr, T_sp type, T_sp lambda_list, T_sp environment) {
   core::FunctionDescription* fdesc = makeFunctionDescription(name,lambda_list);
   ClosureWithSlots_sp closure = 
     gctools::GC<core::ClosureWithSlots_O>::allocate_container(BCLASP_CLOSURE_SLOTS,
@@ -134,7 +134,7 @@ static ClosureWithSlots_sp make_bclasp_closure(T_sp name, claspFunction ptr, T_s
   return closure;
 }
 
-static ClosureWithSlots_sp make_cclasp_closure(T_sp name, claspFunction ptr, T_sp type, T_sp lambda_list, SOURCE_INFO) {
+  ClosureWithSlots_sp ClosureWithSlots_O::make_cclasp_closure(T_sp name, claspFunction ptr, T_sp type, T_sp lambda_list, SOURCE_INFO) {
   core::FunctionDescription* fdesc = makeFunctionDescription(name,lambda_list);
   ClosureWithSlots_sp closure = 
     gctools::GC<core::ClosureWithSlots_O>::allocate_container(0,

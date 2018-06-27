@@ -149,7 +149,10 @@ size_t filePos() const {
     T_sp setSourcePosInfo(T_sp sourceFile, size_t filePos, int lineno, int column);
     virtual T_mv functionSourcePos() const;
     virtual LambdaListHandler_sp lambdaListHandler() const {SUBIMP();};
-    virtual T_sp lambdaList() const;
+    virtual T_sp lambdaList() const {
+      T_sp result((gctools::Tagged)this->_FunctionDescription->gcrootsInModule->get(this->_FunctionDescription->lambdaListIndex));
+      return result;
+    }
     virtual string __repr__() const;
     CL_DEFMETHOD virtual T_sp function_literal_vector_copy() const {SUBIMP();};
     virtual ~Function_O() {};
