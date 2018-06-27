@@ -244,9 +244,6 @@ by (DOCUMENTATION 'SYMBOL 'SETF)."
 (defsetf nth (n l) (v) `(progn (rplaca (nthcdr ,n ,l) ,v) ,v))
 (defsetf fill-pointer sys:fill-pointer-set)
 (defsetf gethash (k h &optional d) (v) (declare (ignore d)) `(core::hash-table-setf-gethash ,h ,k ,v))
-;;#-clos
-;; FIXME: This bypasses (setf documentation), a standard generic function!
-(defsetf documentation sys::set-documentation)
 #+clos
 (defsetf instance-ref instance-set)
 
