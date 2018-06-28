@@ -659,7 +659,6 @@ Return the orderered-raw-constants-list and the constants-table GlobalVariable"
                                    :function-form form
                                    :function-info (cmp:make-function-info
                                                    :function-name 'bclasp-top-level-form
-                                                   :source-handle *gv-source-file-info-handle*
                                                    :lambda-list nil
                                                    :docstring nil
                                                    :declares nil
