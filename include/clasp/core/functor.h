@@ -82,9 +82,8 @@ fields at the same offset as Instance_O.
   };
 
   FunctionDescription* makeFunctionDescription(T_sp functionName, T_sp lambda_list=_Unbound<T_O>(), T_sp docstring=_Unbound<T_O>(), T_sp sourceFileName=_Unbound<T_O>(), int lineno=-1, int column=-1, int filePos=-1, T_sp declares = _Nil<core::T_O>(), bool macroP=false, T_sp sourceDebugFileName = _Unbound<T_O>(), int sourceDebugOffset = -1, bool sourceDebugUseLinenoP = false);
-//  FunctionDescription* makeFunctionDescription(T_sp functionName, T_sp lambda_list, T_sp docstring, SourcePosInfo_sp sourcePosInfo, T_sp functionType = kw::_sym_function, T_sp declares = _Nil<core::T_O>());
 
-
+  void validateFunctionDescription(const char* filename, size_t lineno, Function_sp function);
 
   /*! Function_O is a Funcallable object that adds no fields to anything that inherits from it
 */
@@ -138,6 +137,12 @@ fields at the same offset as Instance_O.
 
     void setf_sourceFileName(T_sp sourceFileName) const {
       this->fdesc()->gcrootsInModule->set(this->fdesc()->sourceFileNameIndex,sourceFileName.tagged_());
+    }
+    void setf_docstring(T_sp x) const {
+      this->fdesc()->gcrootsInModule->set(this->fdesc()->docstringIndex,x.tagged_());
+    }
+    void setf_declares(T_sp x) const {
+      this->fdesc()->gcrootsInModule->set(this->fdesc()->declareIndex,x.tagged_());
     }
 size_t filePos() const {
       return this->fdesc()->filepos;

@@ -62,7 +62,7 @@ T_sp FuncallableInstanceCreator_O::creator_allocate() {
   FunctionDescription* fdesc = makeFunctionDescription(kw::_sym_creator);
   FuncallableInstance_sp instance = gctools::GC<FuncallableInstance_O>::allocate_instance(gctools::Header_s::Value::make_funcallable_instance(), size,fdesc);
   return instance;
-    };
+};
 };
 
 // Used during early boot when STANDARD-CLASS itself is being created, and such.

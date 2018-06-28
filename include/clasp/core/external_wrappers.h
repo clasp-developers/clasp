@@ -135,6 +135,7 @@ public:
     FunctionDescription* fdesc = makeFunctionDescription(symbol);
     BuiltinClosure_sp m = gc::GC<VariadicMethoid<0, RT (OT::*)(ARGS...)>>::allocate(fdesc, mp);
     lisp_defineSingleDispatchMethod(symbol, this->_ClassSymbol, m, 0, true, lambda_list, declares, docstring, autoExport, sizeof...(ARGS)+1);
+    validateFunctionDescription(__FILE__,__LINE__,m);
     return *this;
   }
 
@@ -146,6 +147,7 @@ public:
     FunctionDescription* fdesc = makeFunctionDescription(symbol);
     BuiltinClosure_sp m = gctools::GC<VariadicMethoid<0, RT (OT::*)(ARGS...) const>>::allocate(fdesc, mp);
     lisp_defineSingleDispatchMethod(symbol, this->_ClassSymbol, m, 0, true, lambda_list, declares, docstring, autoExport, sizeof...(ARGS)+1);
+    validateFunctionDescription(__FILE__,__LINE__,m);
     return *this;
   }
 
@@ -157,6 +159,7 @@ public:
     FunctionDescription* fdesc = makeFunctionDescription(symbol);
     BuiltinClosure_sp m = gctools::GC<IndirectVariadicMethoid<policies_<>, OT, RT (OT::ExternalType::*)(ARGS...)>>::allocate(fdesc, mp);
     lisp_defineSingleDispatchMethod(symbol, this->_ClassSymbol, m, 0, true, lambda_list, declares, docstring, autoExport, sizeof...(ARGS)+1);
+    validateFunctionDescription(__FILE__,__LINE__,m);
     return *this;
   }
 
@@ -168,6 +171,7 @@ public:
     FunctionDescription* fdesc = makeFunctionDescription(symbol);
     BuiltinClosure_sp m = gctools::GC<IndirectVariadicMethoid<policies_<>, OT, RT (OT::ExternalType::*)(ARGS...) const>>::allocate(fdesc, mp);
     lisp_defineSingleDispatchMethod(symbol, this->_ClassSymbol, m, 0, true, lambda_list, declares, docstring, autoExport, sizeof...(ARGS)+1);
+    validateFunctionDescription(__FILE__,__LINE__,m);
     return *this;
   }
 

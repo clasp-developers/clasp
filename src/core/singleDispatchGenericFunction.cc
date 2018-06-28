@@ -297,6 +297,11 @@ Function_sp SingleDispatchGenericFunctionClosure_O::computeEffectiveMethodFuncti
     if ( CxxMethodFunction_sp cmf = mf.as<CxxMethodFunction_O>() ) {
       FunctionDescription* fdesc = makeFunctionDescription(this->functionName());
       Function_sp emf = gctools::GC<SingleDispatchCxxEffectiveMethodFunction_O>::allocate(fdesc,mf);
+      emf->setf_lambdaList(this->lambdaList());
+      emf->setf_declares(this->declares());
+      emf->setf_docstring(this->docstring());
+      emf->setf_sourceFileName(this->sourceFileName());
+      validateFunctionDescription(__FILE__,__LINE__,emf);
       return emf;
     }
   }
@@ -307,6 +312,11 @@ Function_sp SingleDispatchGenericFunctionClosure_O::computeEffectiveMethodFuncti
   List_sp afters = _Nil<T_O>();
   FunctionDescription* fdesc = makeFunctionDescription(this->functionName());
   Function_sp emf = gctools::GC<SingleDispatchEffectiveMethodFunction_O>::allocate(fdesc,befores,primaries,afters);
+  emf->setf_lambdaList(this->lambdaList());
+  emf->setf_declares(this->declares());
+  emf->setf_docstring(this->docstring());
+  emf->setf_sourceFileName(this->sourceFileName());
+  validateFunctionDescription(__FILE__,__LINE__,emf);
   return emf;
 #if 1
   printf("%s:%d   in computeEffectiveMethodFunction name: %s  contains %zu methods\n", __FILE__, __LINE__, _rep_(this->functionName()).c_str(), core::cl__length(applicableMethodsList) );
@@ -332,6 +342,9 @@ SingleDispatchGenericFunctionClosure_sp SingleDispatchGenericFunctionClosure_O::
   FunctionDescription* fdesc = makeFunctionDescription(name,llh->lambdaList());
   SingleDispatchGenericFunctionClosure_sp gfc = gctools::GC<SingleDispatchGenericFunctionClosure_O>::allocate(fdesc,singleDispatchArgumentIndex);
   gfc->finishSetup(llh);
+  gfc->setf_docstring(_Nil<T_O>());
+  gfc->setf_sourceFileName(_Nil<T_O>());
+  validateFunctionDescription(__FILE__,__LINE__,gfc);
   return gfc;
 }
 

@@ -87,6 +87,29 @@ FunctionDescription* makeFunctionDescription(T_sp functionName,
   return fdesc;
 }
 
+void validateFunctionDescription(const char* filename, size_t lineno, Function_sp func) {
+  T_sp functionName = func->functionName();
+  if (functionName.unboundp()) {
+    printf("FunctionDescription defined at %s:%zu  is missing functionName\n", filename, lineno);
+    abort();
+  }
+  T_sp sourceFileName = func->sourceFileName();
+  if (sourceFileName.unboundp()) {
+    printf("FunctionDescription for function %s defined at %s:%zu  is missing sourceFileName\n", _rep_(functionName).c_str(), filename, lineno);
+  }
+  T_sp lambdaList = func->lambdaList();
+  if (lambdaList.unboundp()) {
+    printf("FunctionDescription for function %s defined at %s:%zu  is missing lambdaList\n", _rep_(functionName).c_str(), filename, lineno);
+  }
+  T_sp docstring = func->docstring();
+  if (docstring.unboundp()) {
+    printf("FunctionDescription for function %s defined at %s:%zu  is missing docstring\n", _rep_(functionName).c_str(), filename, lineno);
+  }
+  T_sp declares = func->declares();
+  if (declares.unboundp()) {
+    printf("FunctionDescription for function %s defined at %s:%zu  is missing declares\n", _rep_(functionName).c_str(), filename, lineno);
+  }
+}
 };
 
 extern "C" void dumpFunctionDescription(void* vfdesc)
@@ -131,6 +154,10 @@ CL_DEFUN void core__dumpFunctionDescription(Function_sp func)
     abort();
   }
   (*closure)[INTERPRETED_CLOSURE_LAMBDA_LIST_HANDLER_SLOT] = lambda_list_handler;
+  closure->setf_lambdaList(lambda_list_handler->lambdaList());
+  closure->setf_declares(declares);
+  closure->setf_docstring(docstring);
+  validateFunctionDescription(__FILE__,__LINE__,closure);
   return closure;
 }
   ClosureWithSlots_sp ClosureWithSlots_O::make_bclasp_closure(T_sp name, claspFunction ptr, T_sp type, T_sp lambda_list, T_sp environment) {
@@ -141,6 +168,10 @@ CL_DEFUN void core__dumpFunctionDescription(Function_sp func)
                                                               (core::FunctionDescription*)fdesc);
   closure->closureType = ClosureWithSlots_O::bclaspClosure;
   (*closure)[BCLASP_CLOSURE_ENVIRONMENT_SLOT] = environment;
+  closure->setf_lambdaList(lambda_list);
+  closure->setf_declares(_Nil<T_O>());
+  closure->setf_docstring(_Nil<T_O>());
+  validateFunctionDescription(__FILE__,__LINE__,closure);
   return closure;
 }
 
@@ -151,6 +182,10 @@ CL_DEFUN void core__dumpFunctionDescription(Function_sp func)
                                                               ptr,
                                                               (core::FunctionDescription*)fdesc);
   closure->closureType = ClosureWithSlots_O::cclaspClosure;
+  closure->setf_lambdaList(lambda_list);
+  closure->setf_declares(_Nil<T_O>());
+  closure->setf_docstring(_Nil<T_O>());
+  validateFunctionDescription(__FILE__,__LINE__,closure);
   return closure;
 }
 

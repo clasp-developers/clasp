@@ -389,12 +389,13 @@ struct memfun_registration : registration {
     core::Symbol_sp classSymbol = reg::lisp_classSymbol<Class>();
     core::Symbol_sp sym = core::lispify_intern(name, symbol_packageName(classSymbol));
     core::FunctionDescription* fdesc = core::makeFunctionDescription(sym);
-    core::BuiltinClosure_sp methoid = gc::GC<IndirectVariadicMethoid<Policies, Class, MethodPointerType>>::allocate(fdesc,methodPtr);
-    lisp_defineSingleDispatchMethod(sym, classSymbol, methoid, 0, true,
+    core::BuiltinClosure_sp ffunc = gc::GC<IndirectVariadicMethoid<Policies, Class, MethodPointerType>>::allocate(fdesc,methodPtr);
+    lisp_defineSingleDispatchMethod(sym, classSymbol, ffunc, 0, true,
                                     m_arguments, m_declares, m_docstring,
                                     true,
                                     CountMethodArguments<MethodPointerType>::value + 1, // +1 for the self argument
                                     GatherPureOutValues<Policies, 0>::gather());
+    core::validateFunctionDescription(__FILE__, __LINE__, ffunc);
   }
 
   std::string name;
@@ -419,6 +420,7 @@ struct iterator_registration : registration {
     //                int*** i = MethodPointerType(); printf("%p\n", i); // generate error to check type
     //                print_value_as_warning<CountMethodArguments<MethodPointerType>::value>()();
     lisp_defineSingleDispatchMethod(sym, classSymbol, methoid, 0, true, m_arguments, m_declares, m_docstring, true, 1); // one argument required for iterator - the object that has the sequence
+    core::validateFunctionDescription(__FILE__, __LINE__, methoid);
   }
 
   char const *name;
@@ -470,6 +472,7 @@ struct constructor_registration_base : public registration {
     core::FunctionDescription* fdesc = core::makeFunctionDescription(sym);
     core::BuiltinClosure_sp func = gc::GC<VariadicConstructorFunction_O<Policies, Pointer, Class, Signature>>::allocate(fdesc);
     lisp_defun(sym, core::lisp_currentPackageName(),func, m_arguments, m_declares, m_docstring, "=external=", 0, CountConstructorArguments<Signature>::value);
+    core::validateFunctionDescription( __FILE__, __LINE__, func );
   }
 
   Policies policies;
@@ -556,10 +559,12 @@ struct property_registration : registration {
       core::FunctionDescription* fdesc = core::makeFunctionDescription(sym);
       core::BuiltinClosure_sp getter = gc::GC<GetterMethoid<reg::null_type, Class, Get>>::allocate(fdesc, get);
       lisp_defineSingleDispatchMethod(sym, classSymbol, getter, 0, true, m_arguments, m_declares, m_docstring, true, 1);
+      core::validateFunctionDescription(__FILE__,__LINE__,getter);
       core::T_sp setf_name = core::Cons_O::createList(cl::_sym_setf,sym);
       core::FunctionDescription* fdesc_setf = core::makeFunctionDescription(setf_name);
       core::BuiltinClosure_sp setter = gc::GC<SetterMethoid<reg::null_type, Class, Set>>::allocate(fdesc_setf, set);
       lisp_defineSingleDispatchMethod(setf_name, classSymbol, setter, 1, true, m_arguments, m_declares, m_docstring, true, 2);
+      core::validateFunctionDescription(__FILE__,__LINE__,setter);
     //                printf("%s:%d - allocated a getter@%p for %s\n", __FILE__, __LINE__, getter, name);
     // register the getter here
   }
@@ -597,6 +602,7 @@ struct property_registration : registration {
     core::FunctionDescription* fdesc = core::makeFunctionDescription(sym);
     core::BuiltinClosure_sp getter = gc::GC<GetterMethoid<reg::null_type, Class, Get>>::allocate(fdesc, get);
     lisp_defineSingleDispatchMethod(sym, classSymbol, getter, 0, true, m_arguments, m_declares, m_docstring, true, 1);
+    core::validateFunctionDescription(__FILE__, __LINE__, getter);
     //                printf("%s:%d - allocated a getter@%p for %s\n", __FILE__, __LINE__, getter, name);
     // register the getter here
   }

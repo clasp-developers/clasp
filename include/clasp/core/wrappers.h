@@ -93,6 +93,7 @@ namespace core {
     FunctionDescription* fdesc = makeFunctionDescription(symbol);
     BuiltinClosure_sp f = gctools::GC<TranslationFunctor_O>::allocate(fdesc,fp);
     lisp_defun(symbol, packageName, f, arguments, declares, docstring, sourceFile, sourceLine, 1 );
+    validateFunctionDescription(__FILE__,__LINE__,f);
   }
 
 
@@ -104,6 +105,7 @@ void wrap_function(const string &packageName, const string &name, RT (*fp)(ARGS.
    FunctionDescription* fdesc = makeFunctionDescription(symbol);
    BuiltinClosure_sp f = gctools::GC<VariadicFunctor<RT(ARGS...)>>::allocate(fdesc,fp);
    lisp_defun(symbol, packageName, f, arguments, declares, docstring, sourceFile, sourceLine, sizeof...(ARGS));
+   validateFunctionDescription(__FILE__,__LINE__,f);
  }
 
 // this is used in gc_interface.cc expose_function_setf
@@ -113,6 +115,7 @@ void wrap_function_setf(const string &packageName, const string &name, RT (*fp)(
   FunctionDescription* fdesc = makeFunctionDescription(symbol);
   BuiltinClosure_sp f = gctools::GC<VariadicFunctor<RT(ARGS...)>>::allocate(fdesc,fp);
   lisp_defun_setf(symbol, packageName, f, arguments, declares, docstring, sourceFile, sourceLine, sizeof...(ARGS));
+  validateFunctionDescription(__FILE__,__LINE__,f);
   }
 
 
@@ -142,6 +145,7 @@ inline void defmacro(const string &packageName, const string &name, T_mv (*mp)(L
   FunctionDescription* fdesc = makeFunctionDescription(symbol);
   BuiltinClosure_sp f = gc::GC<VariadicFunctor<T_mv(List_sp, T_sp)>>::allocate(fdesc,mp);
   lisp_defmacro(symbol, packageName, f, arguments, declares, docstring);
+  validateFunctionDescription(__FILE__,__LINE__,f);
 }
 
  
@@ -226,6 +230,7 @@ public:
     FunctionDescription* fdesc = makeFunctionDescription(symbol);
     BuiltinClosure_sp m = gc::GC<VariadicMethoid<0, RT (OT::*)(ARGS...)>>::allocate(fdesc,mp);
     lisp_defineSingleDispatchMethod(symbol, this->_ClassSymbol, m, 0, true, lambda_list, declares, docstring, autoExport, sizeof...(ARGS)+1);
+    validateFunctionDescription(__FILE__,__LINE__,m);
     return *this;
   }
  
@@ -244,6 +249,7 @@ public:
     FunctionDescription* fdesc = makeFunctionDescription(symbol);
     BuiltinClosure_sp m = gc::GC<VariadicMethoid<0, RT (OT::*)(ARGS...) const>>::allocate(fdesc,mp);
     lisp_defineSingleDispatchMethod(symbol, this->_ClassSymbol, m, 0, true, lambda_list, declares, docstring, autoExport, sizeof...(ARGS)+1);
+    validateFunctionDescription(__FILE__,__LINE__,m);
     return *this;
   }
 };

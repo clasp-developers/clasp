@@ -44,7 +44,7 @@ namespace core {
 
 
 
-
+SYMBOL_EXPORT_SC_(CorePkg,no_filename_single_dispatch_method);
 
 SingleDispatchMethod_sp SingleDispatchMethod_O::create(T_sp name,
                                                        Instance_sp receiverClass,
@@ -53,13 +53,14 @@ SingleDispatchMethod_sp SingleDispatchMethod_O::create(T_sp name,
                                                        gc::Nilable<String_sp> docstr,
                                                        Function_sp body) {
   SingleDispatchMethodFunction_sp method_body;
-  FunctionDescription* fdesc = makeFunctionDescription(name,llh->lambdaList(),docstr);
+  FunctionDescription* fdesc = makeFunctionDescription(name,llh->lambdaList(),docstr,core::_sym_no_filename_single_dispatch_method,0,0,0,declares,false);
   if ( BuiltinClosure_sp bif = body.asOrNull<BuiltinClosure_O>() ) {
     method_body = gctools::GC<CxxMethodFunction_O>::allocate(fdesc,body);
   } else {
     method_body = gctools::GC<SingleDispatchMethodFunction_O>::allocate(fdesc,body);
   }
   GC_ALLOCATE_VARIADIC(SingleDispatchMethod_O, method, name,receiverClass,llh,declares,docstr,method_body);
+  validateFunctionDescription(__FILE__,__LINE__, method_body);
   // method->_name = name;
   // method->_receiver_class = receiverClass;
   // ASSERTF(body.notnilp(), BF("The body of a method should never be nil"));

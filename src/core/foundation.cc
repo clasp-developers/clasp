@@ -937,10 +937,16 @@ void lisp_defineSingleDispatchMethod(T_sp name,
     SIMPLE_ERROR(BF("Mismatch between single_dispatch_argument_index[%d] from lambda_list and TemplateDispatchOn[%d] for class %s  method: %s  lambda_list: %s") % single_dispatch_argument_index % TemplateDispatchOn % _rep_(classSymbol) % _rep_(name) % arguments);
   }
   LOG(BF("Interned method in class[%s]@%p with symbol[%s] arguments[%s] - autoexport[%d]") % receiver_class->instanceClassName() % (receiver_class.get()) % sym->fullName() % arguments % autoExport);
-  SimpleBaseString_sp docStr = SimpleBaseString_O::make(docstring);
+  
+  T_sp docStr = _Nil<T_O>();
+  if (docstring!="") docStr = SimpleBaseString_O::make(docstring);
   T_sp gfn = core__ensure_single_dispatch_generic_function(name, llhandler,autoExport,single_dispatch_argument_index); // Ensure the single dispatch generic function exists
   (void)gfn;                                                         // silence compiler warning
   method_body->finishSetup(llhandler,false);
+  method_body->setf_sourceFileName(_Nil<T_O>());
+  method_body->setf_lambdaList(llhandler->lambdaList());
+  method_body->setf_docstring(docStr);
+  method_body->setf_declares(ldeclares);
   ASSERT(llhandler || llhandler.notnilp());
 #ifdef DEBUG_PROGRESS
   printf("%s:%d lisp_defineSingleDispatchMethod sym: %s\n", __FILE__, __LINE__, _rep_(sym).c_str());
@@ -996,8 +1002,13 @@ void lisp_defun(Symbol_sp sym,
   Function_sp func = fc;
   sym->setf_symbolFunction(func);
   sym->exportYourself();
-  core::ext__annotate(sym,cl::_sym_documentation,cl::_sym_function, core::SimpleBaseString_O::make(docstring));
-  core::ext__annotate(func,cl::_sym_documentation,cl::_sym_function, core::SimpleBaseString_O::make(docstring));
+  T_sp tdocstring = _Nil<T_O>();
+  if (docstring!="") tdocstring = core::SimpleBaseString_O::make(docstring);
+  fc->setf_lambdaList(llh->lambdaList());
+  fc->setf_declares(ldeclares);
+  fc->setf_docstring(tdocstring);
+  core::ext__annotate(sym,cl::_sym_documentation,cl::_sym_function, tdocstring);
+  core::ext__annotate(func,cl::_sym_documentation,cl::_sym_function, tdocstring);
 }
 
 // identical to above except for using setSetfFdefinition.
@@ -1022,11 +1033,17 @@ void lisp_defun_setf(Symbol_sp sym,
   }
   fc->finishSetup(llh, false);
   fc->setSourcePosInfo(SimpleBaseString_O::make(sourceFile), 0, lineNumber, 0);
+  T_sp tdocstring = _Nil<T_O>();
+  if (docstring!="") tdocstring = core::SimpleBaseString_O::make(docstring);
+  fc->setf_sourceFileName(_Nil<T_O>());
+  fc->setf_lambdaList(llh->lambdaList());
+  fc->setf_declares(ldeclares);
+  fc->setf_docstring(tdocstring);
   Function_sp func = fc;
   sym->setSetfFdefinition(func);
   sym->exportYourself();
-  core::ext__annotate(sym,cl::_sym_documentation,cl::_sym_function, core::SimpleBaseString_O::make(docstring));
-  core::ext__annotate(func,cl::_sym_documentation,cl::_sym_function, core::SimpleBaseString_O::make(docstring));
+  core::ext__annotate(sym,cl::_sym_documentation,cl::_sym_function, tdocstring);
+  core::ext__annotate(func,cl::_sym_documentation,cl::_sym_function, tdocstring);
 }
 
 void lisp_defmacro(Symbol_sp sym,
@@ -1041,6 +1058,12 @@ void lisp_defmacro(Symbol_sp sym,
   (void)ldeclares;
   LambdaListHandler_sp llh = lisp_function_lambda_list_handler(ll, _Nil<T_O>());
   f->finishSetup(llh, true);
+  f->setf_sourceFileName(_Nil<T_O>());
+  f->setf_lambdaList(llh->lambdaList());
+  f->setf_declares(ldeclares);
+  T_sp tdocstring = _Nil<T_O>();
+  if (docstring!="") tdocstring = core::SimpleBaseString_O::make(docstring);
+  f->setf_docstring(tdocstring);
   Function_sp func = f;
   //    Package_sp package = lisp->getPackage(packageName);
   //    package->addFunctionForLambdaListHandlerCreation(func);
