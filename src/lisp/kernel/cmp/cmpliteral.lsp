@@ -806,7 +806,6 @@ If it isn't NIL then copy the literal from its index in the LTV into result."
                                    :function-form form
                                    :function-info (cmp:make-function-info
                                                    :function-name 'bclasp-top-level-form
-                                                   :source-handle *gv-source-file-info-handle*
                                                    :lambda-list nil
                                                    :docstring nil
                                                    :declares nil

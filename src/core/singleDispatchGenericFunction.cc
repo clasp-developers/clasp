@@ -329,7 +329,7 @@ Function_sp SingleDispatchGenericFunctionClosure_O::computeEffectiveMethodFuncti
 
 SingleDispatchGenericFunctionClosure_sp SingleDispatchGenericFunctionClosure_O::create(T_sp name, LambdaListHandler_sp llh, size_t singleDispatchArgumentIndex) {
 //  GC_ALLOCATE(SingleDispatchGenericFunctionClosure_O, gf);
-  FunctionDescription* fdesc = makeFunctionDescription(kw::_sym_create);
+  FunctionDescription* fdesc = makeFunctionDescription(name,llh->lambdaList());
   SingleDispatchGenericFunctionClosure_sp gfc = gctools::GC<SingleDispatchGenericFunctionClosure_O>::allocate(fdesc,singleDispatchArgumentIndex);
   gfc->finishSetup(llh);
   return gfc;

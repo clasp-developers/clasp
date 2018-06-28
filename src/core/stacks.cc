@@ -242,7 +242,7 @@ string InvocationHistoryFrame::asStringLowLevel(Closure_sp closure,int index) co
   string funcName = _rep_(funcNameObj);
   uint lineNumber = closure->lineNumber();
   uint column = closure->column();
-  SourceFileInfo_sp sfi = core__source_file_info(closure->sourceFileInfo());
+  SourceFileInfo_sp sfi = core__source_file_info(closure->sourceFileName());
   string sourceFileName = sfi->fileName();
   stringstream ss;
   string closureType = "/?";

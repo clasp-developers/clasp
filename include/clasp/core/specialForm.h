@@ -60,6 +60,7 @@ public:
 public: // initialize
   virtual bool isSpecialForm() { return true; };
   virtual FunctionDescription* fdesc() const { return this->_FunctionDescription; };
+  virtual void set_fdesc(FunctionDescription* address) { this->_FunctionDescription = address; };
 
   LambdaListHandler_sp lambdaListHandler() const { SIMPLE_ERROR_SPRINTF("special-form does not implement lambdaListHandler");} ;
   string __repr__() const;

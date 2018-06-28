@@ -52,16 +52,27 @@ namespace core {
 std::atomic<uint64_t> global_interpreted_closure_calls;
 
 
-  FunctionDescription* makeFunctionDescription(T_sp functionName, T_sp lambda_list, T_sp docstring, SourceFileInfo_sp sourceFileInfo, int lineno, int column, int filePos, T_sp declares, bool macroP ) {
+FunctionDescription* makeFunctionDescription(T_sp functionName,
+                                             T_sp lambda_list,
+                                             T_sp docstring,
+                                             T_sp sourceFileName,
+                                             int lineno,
+                                             int column,
+                                             int filePos,
+                                             T_sp declares,
+                                             bool macroP,
+                                             T_sp sourceDebugFileName,
+                                             int sourceDebugOffset,
+                                             bool sourceDebugUseLinenoP) {
   // There is space for 5 roots needed - make sure that matches the number pushed below
-  if (my_thread->_GCRoots->remainingCapacity()<5) {
+  if (my_thread->_GCRoots->remainingCapacity()<FunctionDescription::Roots) {
     my_thread->_GCRoots = new gctools::GCRootsInModule();
   }
   FunctionDescription* fdesc = new FunctionDescription();
   gctools::GCRootsInModule* roots = my_thread->_GCRoots;
   fdesc->gcrootsInModule = roots;
-  // There are 5 roots needed 
-  fdesc->sourceFileInfoIndex =  roots->push_back(sourceFileInfo.tagged_());
+  // There are 6 roots needed 
+  fdesc->sourceFileNameIndex =  roots->push_back(sourceFileName.tagged_());
   fdesc->functionNameIndex = roots->push_back(functionName.tagged_());
   fdesc->lambdaListIndex = roots->push_back(lambda_list.tagged_());
   fdesc->docstringIndex = roots->push_back(docstring.tagged_());
@@ -70,41 +81,39 @@ std::atomic<uint64_t> global_interpreted_closure_calls;
   fdesc->column = column;
   fdesc->filepos = filePos;
   fdesc->macroP = macroP;
+  fdesc->sourceDebugFileNameIndex = roots->push_back(sourceDebugFileName.tagged_());
+  fdesc->sourceDebugOffset = sourceDebugOffset;
+  fdesc->sourceDebugUseLinenoP = sourceDebugUseLinenoP;
   return fdesc;
 }
 
-#if 0
-FunctionDescription* makeFunctionDescriptionFromCxx(Symbol_sp& symbol,
-                                                    LambdaListHandler& llh,
-                                                    const string& name,
-                                                    const string &packageName,
-                                                    const string &arguments,
-                                                    const string &declarestring,
-                                                    const string &docstring,
-                                                    const string &sourceFile,
-                                                    int lineNumber,
-                                                    int number_of_required_arguments,
-                                                    const std::set<int> &skipIndices) {
-// (const string &packageName, const string &name, core::T_O* (*fp)(core::T_O*), const string& filename,  const string &arguments = "", const string &declarestring = "", const string &docstring = "", const string &sourceFile = "", int sourceLine = 0)
-  Symbol_sp symbol = lispify_intern(name, packageName);
-  List_sp ldeclares = lisp_parse_declares(packageName, declarestring); // get the declares but ignore them for now
-  List_sp ll;
-  if ((arguments == "" || arguments == "()") && number_of_required_arguments >= 0) {
-    ll = _Nil<core::T_O>();
-    llh = LambdaListHandler_O::create(number_of_required_arguments, skipIndices);
-  } else {
-    ll = lisp_parse_arguments(packageName, arguments);
-    llh = lisp_function_lambda_list_handler(ll, _Nil<T_O>(), skipIndices);
-  }
-  core::SimpleBaseString_sp sdocstring = core::SimpleBaseString_O::make(docstring);
-  symbol->exportYourself();
-  core::ext__annotate(symbol,cl::_sym_documentation,cl::_sym_function, sdocstring);
-//  core::ext__annotate(func,cl::_sym_documentation,cl::_sym_function, core::SimpleBaseString_O::make(docstring));
-  FunctionDescription* fdesc = makeFunctionDescription(symbol, ll, sdocstring, sourceFileInfo, sourceLine, 0, 0, kw::_sym_function, ldeclares);
-  return fdesc;
-}
-#endif
+};
 
+extern "C" void dumpFunctionDescription(void* vfdesc)
+{
+  core::FunctionDescription* fdesc = (core::FunctionDescription*)vfdesc;
+  printf("FunctionDescription @%p\n", fdesc);
+  printf("sourceFileName[%d] = %s\n", fdesc->sourceFileNameIndex, _rep_(core::T_sp((gctools::Tagged)fdesc->gcrootsInModule->get(fdesc->sourceFileNameIndex))).c_str()); 
+  printf("functionName[%d] = %s\n", fdesc->functionNameIndex, _rep_(core::T_sp((gctools::Tagged)fdesc->gcrootsInModule->get(fdesc->functionNameIndex))).c_str()); 
+  printf("lambdaList[%d] = %s\n", fdesc->lambdaListIndex, _rep_(core::T_sp((gctools::Tagged)fdesc->gcrootsInModule->get(fdesc->lambdaListIndex))).c_str()); 
+  printf("docstring[%d] = %s\n", fdesc->docstringIndex, _rep_(core::T_sp((gctools::Tagged)fdesc->gcrootsInModule->get(fdesc->docstringIndex))).c_str()); 
+  printf("declare[%d] = %s\n", fdesc->declareIndex, _rep_(core::T_sp((gctools::Tagged)fdesc->gcrootsInModule->get(fdesc->declareIndex))).c_str()); 
+  printf("sourceDebugFileName[%d] = %s\n", fdesc->sourceDebugFileNameIndex, _rep_(core::T_sp((gctools::Tagged)fdesc->gcrootsInModule->get(fdesc->sourceDebugFileNameIndex))).c_str());
+  printf("lineno = %d\n", fdesc->lineno);
+  printf("column = %d\n", fdesc->column);
+  printf("filepos = %d\n", fdesc->filepos);
+  printf("macroP = %d\n", fdesc->macroP);
+  printf("sourceDebugOffset = %d\n", fdesc->sourceDebugOffset);
+  printf("sourceDebugUseLinenoP = %d\n", fdesc->sourceDebugUseLinenoP);
+}; 
+    
+namespace core {
+
+CL_DEFUN void core__dumpFunctionDescription(Function_sp func)
+{
+  FunctionDescription* fdesc = func->fdesc();
+  dumpFunctionDescription(fdesc);
+}
 
 
   ClosureWithSlots_sp ClosureWithSlots_O::make_interpreted_closure(T_sp name, T_sp type, T_sp lambda_list, LambdaListHandler_sp lambda_list_handler, T_sp declares, T_sp docstring, T_sp form, T_sp environment, SOURCE_INFO) {
@@ -159,7 +168,7 @@ CL_DEFUN size_t core__function_call_counter(Function_sp f)
 
 T_sp Function_O::setSourcePosInfo(T_sp sourceFile, size_t filePos, int lineno, int column) {
   SourceFileInfo_mv sfi = core__source_file_info(sourceFile);
-  this->setf_sourceFileInfo(sfi);
+  this->setf_sourceFileName(sfi);
   this->setf_filePos(filePos);
   this->setf_lineno(lineno);
   this->setf_column(column);
@@ -189,10 +198,19 @@ string Function_O::__repr__() const {
   return ss.str();
 }
 
+CL_DEFMETHOD Pointer_sp Function_O::function_description_address() const {
+  return Pointer_O::create(this->fdesc());
+}
+
+CL_DEFUN void core__set_function_description_address(Function_sp func, Pointer_sp address) {
+  func->set_fdesc((FunctionDescription*)(address->ptr()));
+}
+
 CL_DEFMETHOD T_mv Function_O::function_description() const {
   return Values(this->functionName(),
                 this->lambdaList(),
                 this->docstring(),
+                this->sourceFileName(),
                 make_fixnum(this->lineNumber()),
                 make_fixnum(this->column()),
                 make_fixnum(this->filePos()));
@@ -203,6 +221,13 @@ CL_DEFMETHOD T_mv Function_O::function_description() const {
 
 
 namespace core {
+char* global_dump_functions = NULL;
+void Closure_O::describeFunction() const {
+  if (global_dump_functions) {
+    printf("%s:%d  Closure_O %s entry@%p fdesc@%p\n", __FILE__, __LINE__, _rep_(this->functionName()).c_str(), (void*)this->entry.load(),(void*)this->fdesc());
+  }
+}
+
 #if 0
 List_sp Closure_O::source_info() const {
   return Cons_O::createList(clasp_make_fixnum(this->_sourceFileInfoHandle),

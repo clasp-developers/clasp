@@ -12,8 +12,6 @@
           *debug-compile-file*
           *generate-compile-file-load-time-values*
           *gv-current-function-name*
-          *gv-source-file-info-handle*
-          *gv-source-namestring*
           *implicit-compile-hook*
           *irbuilder*
           *llvm-context*

@@ -219,24 +219,11 @@
            (list* ltv-lambda-name
                   enclosed-function
                   (cmp:irc-bit-cast function-description cmp:%i8*%)
-                  #| cmp:*gv-source-file-info-handle*
-                  (cmp:irc-size_t-*current-source-pos-info*-filepos)
-                  (cmp:irc-size_t-*current-source-pos-info*-lineno)
-                  (cmp:irc-size_t-*current-source-pos-info*-column)
-                  |#
                   (%size_t (length inputs))
                   loaded-inputs))
          (result
            (progn
              (cond
-               #| ;;; not available yet
-                   ((null inputs)
-               ;; a "closurette" that doesn't actually close over anything and is therefore immutable.
-               ;; As such, we can allocate it at load time.
-               (%closurette-value lambda-name enclosed-function cmp:*gv-source-file-info-handle*
-               (cmp:irc-size_t-*current-source-pos-info*-filepos)
-               (cmp:irc-size_t-*current-source-pos-info*-lineno)
-               (cmp:irc-size_t-*current-source-pos-info*-column))) |#
                (dx-p
                 ;; Closure is dynamic extent, so we can use stack storage.
                 (%intrinsic-call

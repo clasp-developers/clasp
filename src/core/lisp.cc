@@ -470,6 +470,15 @@ void Lisp_O::startupLispEnvironment(Bundle *bundle) {
     printf("%s:%d   Opening file %s for logging\n", __FILE__, __LINE__, ss.str().c_str());
   }
 #endif
+  global_dump_functions = getenv("CLASP_DUMP_FUNCTIONS");
+  char* pause_startup = getenv("CLASP_PAUSE_STARTUP");
+  if (pause_startup) {
+      printf("%s:%d PID = %d  Paused at startup - press enter to continue: \n", __FILE__, __LINE__, getpid() );
+      fflush(stdout);
+      getchar();
+  }
+
+  my_thread->_GCRoots = new gctools::GCRootsInModule();
   { // Trap symbols as they are interned
     if (offsetof(Function_O,entry)!=offsetof(FuncallableInstance_O,entry)) {
       printf("%s:%d  The offsetf(Function_O,entry)/%lu!=offsetof(FuncallableInstance_O,entry)/%lu!!!!\n", __FILE__, __LINE__, offsetof(Function_O,entry),offsetof(FuncallableInstance_O,entry) );
@@ -564,8 +573,6 @@ void Lisp_O::startupLispEnvironment(Bundle *bundle) {
   printf("%s:%d startupLispEnvironment initialize everything\n", __FILE__, __LINE__ );
 #endif
   this->_Roots._CommandLineArguments = _Nil<T_O>();
-  mp::Process_sp main_process = mp::Process_O::make_process(INTERN_(core,top_level),_Nil<T_O>(),_lisp->copy_default_special_bindings(),_Nil<T_O>(),0);
-  my_thread->initialize_thread(main_process);
   {
     _BLOCK_TRACE("Initialize other code"); // needs _TrueObject
     initialize_Lisp_O();
@@ -649,6 +656,10 @@ void Lisp_O::startupLispEnvironment(Bundle *bundle) {
   //
   // Initialize the main thread info
   //
+  {
+    mp::Process_sp main_process = mp::Process_O::make_process(INTERN_(core,top_level),_Nil<T_O>(),_lisp->copy_default_special_bindings(),_Nil<T_O>(),0);
+    my_thread->initialize_thread(main_process,false);
+  }
   {
     // initialize caches
     my_thread->_SingleDispatchMethodCachePtr = gc::GC<Cache_O>::allocate();
@@ -2026,7 +2037,7 @@ CL_DEFUN T_mv core__source_file_name() {
   T_sp tclosure = frame->function();
   if (tclosure.notnilp()) {
     Function_sp closure = gc::As<Function_sp>(tclosure);
-    string sourcePath = gc::As<SourceFileInfo_sp>(core__source_file_info(closure->sourceFileInfo()))->fileName();
+    string sourcePath = gc::As<SourceFileInfo_sp>(core__source_file_info(closure->sourceFileName()))->fileName();
     Path_sp path = Path_O::create(sourcePath);
     Path_sp parent_path = path->parent_path();
     return Values(SimpleBaseString_O::make(path->fileName()), SimpleBaseString_O::make(parent_path->asString()));

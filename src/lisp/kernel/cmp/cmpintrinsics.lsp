@@ -205,7 +205,7 @@ Boehm and MPS use a single pointer"
 (define-symbol-macro %tsp**% (llvm-sys:type-get-pointer-to %tsp*%))
 
 ;; This structure must match the gctools::ConstantsTable structure
-(define-symbol-macro %gcroots-in-module% (llvm-sys:struct-type-get *llvm-context* (list %i8*% %i8*% %size_t%) nil))
+(define-symbol-macro %gcroots-in-module% (llvm-sys:struct-type-get *llvm-context* (list %i8*% %i8*% %size_t% %size_t%) nil))
 (define-symbol-macro %gcroots-in-module*% (llvm-sys:type-get-pointer-to %gcroots-in-module%))
 
 ;; The definition of %tmv% doesn't quite match T_mv because T_mv inherits from T_sp
@@ -510,15 +510,18 @@ eg:  (f closure-ptr nargs a b c d ...)
     (llvm-sys:struct-type-get *llvm-context*
                               (list %fn-prototype*%
                                     %gcroots-in-module*%
-                                    %i32% ; source name index
+                                    %i32% ; source info index
                                     %i32% ; function name literal index
                                     %i32% ; lambda-list literal index
                                     %i32% ; docstring literal index
+                                    %i32% ; declare index
                                     %i32% ; lineno
                                     %i32% ; column
                                     %i32% ; filepos
-                                    %i32% ; declareIndex
-				    %i32% ; macroP
+                                    %i32% ; macroP
+                                    %i32% ; source-debug-file-name index
+                                    %i32% ; source-debug-offset
+                                    %i32% ; source-debug-use-lineno-p
                                     ) nil ))
 (define-symbol-macro %function-description*% (llvm-sys:type-get-pointer-to %function-description%))
 
@@ -535,7 +538,7 @@ eg:  (f closure-ptr nargs a b c d ...)
 ;; %"class.core::LispCompiledFunctionIHF" = type { %"class.core::LispFunctionIHF" }
 ;(define-symbol-macro %LispCompiledFunctionIHF% (llvm-sys:struct-type-create *llvm-context* :elements (list %LispFunctionIHF%) :name "LispCompiledFunctionIHF"))
 
-
+#|
   (defun make-gv-source-file-info-handle (module &optional handle)
     (if (null handle) (setq handle -1))
     (llvm-sys:make-global-variable module
@@ -544,7 +547,7 @@ eg:  (f closure-ptr nargs a b c d ...)
                                    'llvm-sys:internal-linkage
                                    (jit-constant-i32 handle)
                                    "source-file-info-handle"))
-
+|#
 
   (defun add-global-ctor-function (module main-function)
     "Create a function with the name core:+clasp-ctor-function-name+ and
@@ -759,16 +762,10 @@ and initialize it with an array consisting of one function pointer."
 (defvar *compile-file-truename* nil "Store the truename of the currently compiled file")
 (defvar *compile-file-source-file-info* nil "Store the SourceFileInfo object for the compile-file target")
 
-
-(defvar *gv-source-namestring* nil
-  "Store a global value that defines the filename of the current compilation")
-(defvar *gv-source-debug-namestring* nil
-  "A global value that defines the spoofed name of the current compilation - used by SLIME")
+(defvar *source-file-name*)
+(defvar *source-debug-file-name*)
 (defvar *source-debug-offset* 0)
-(defvar *source-debug-use-lineno* t)
-(defvar *gv-source-file-info-handle* nil
-  "Store a global value that stores an integer handle assigned at load-time that uniquely
-identifies the current source file.  Used for tracing and debugging")
+(defvar *source-debug-use-lineno-p* t)
 
 (defvar *gv-boot-functions* nil
   "A global value that stores a pointer to the boot function for the Module.

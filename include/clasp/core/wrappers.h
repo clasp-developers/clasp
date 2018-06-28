@@ -100,7 +100,7 @@ namespace core {
 // this is used in gc_interface.cc expose_function
  template <typename RT, typename... ARGS>
 void wrap_function(const string &packageName, const string &name, RT (*fp)(ARGS...), const string &arguments = "", const string &declares = "", const string &docstring = "", const string &sourceFile = "", int sourceLine = 0) {
-   Symbol_sp symbol = lispify_intern(name, packageName);
+   Symbol_sp symbol = _lisp->intern(name, packageName);
    FunctionDescription* fdesc = makeFunctionDescription(symbol);
    BuiltinClosure_sp f = gctools::GC<VariadicFunctor<RT(ARGS...)>>::allocate(fdesc,fp);
    lisp_defun(symbol, packageName, f, arguments, declares, docstring, sourceFile, sourceLine, sizeof...(ARGS));

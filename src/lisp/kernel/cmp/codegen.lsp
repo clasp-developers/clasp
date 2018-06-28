@@ -49,7 +49,6 @@ Could return more functions that provide lambda-list for swank for example"
                                       :linkage linkage
                                       :function-info (make-function-info
                                                       :function-name name
-                                                      :source-handle *gv-source-file-info-handle*
                                                       :lambda-list lambda-list
                                                       :docstring docstring
                                                       :declares declares
@@ -321,7 +320,6 @@ then compile it and return (values compiled-llvm-function lambda-name)"
                                               :function-form form
                                               :function-info (make-function-info
                                                               :function-name name
-                                                              :source-handle *gv-source-file-info-handle*
                                                               :lambda-list nil
                                                               :docstring nil
                                                               :declares nil

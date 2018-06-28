@@ -194,7 +194,7 @@ and the pathname of the source file - this will also be used as the module initi
                                  compile-file-hook
                                  type
                                  output-type
-                                 source-debug-namestring
+                                 source-debug-file-name
                                  (source-debug-offset 0)
                                  (print *compile-print*)
                                  (verbose *compile-verbose*)
@@ -206,7 +206,7 @@ and the pathname of the source file - this will also be used as the module initi
 - output-path :: A pathname.
 - compile-file-hook :: A function that will do the compile-file
 - type :: :kernel or :user (I'm not sure this is useful anymore)
-- source-debug-namestring :: A namestring.
+- source-debug-file-name :: A namestring.
 - source-debug-offset :: An integer.
 - environment :: Arbitrary, passed only to hook
 Compile a lisp source file into an LLVM module."
@@ -230,8 +230,8 @@ Compile a lisp source file into an LLVM module."
     (with-open-stream (sin source-sin)
       ;; If a truename is provided then spoof the file-system to treat input-pathname
       ;; as source-truename with the given offset
-      (when source-debug-namestring
-	(core:source-file-info (namestring input-pathname) source-debug-namestring source-debug-offset nil))
+      (when source-debug-file-name
+	(core:source-file-info (namestring input-pathname) source-debug-file-name source-debug-offset nil))
       (when *compile-verbose*
 	(bformat t "; Compiling file: %s%N" (namestring input-pathname)))
       (with-one-source-database
@@ -240,25 +240,18 @@ Compile a lisp source file into an LLVM module."
           (let* ((*compile-file-pathname* (pathname (merge-pathnames given-input-pathname)))
                  (*compile-file-truename* (translate-logical-pathname *compile-file-pathname*)))
             (with-module (:module module
-                          :source-namestring (namestring source-location)
-                          :source-debug-namestring source-debug-namestring
-                          :source-debug-offset source-debug-offset
                           :optimize (when optimize #'optimize-module-for-compile-file)
                           :optimize-level optimize-level)
-              (with-debug-info-generator (:module *the-module*
-                                          :pathname *compile-file-truename*)
-                (or *the-module* (error "*the-module* is NIL"))
-                (with-make-new-run-all (run-all-function)
-                  (with-run-all-body-codegen ;;(result)
-                      (irc-intrinsic "ltvc_assign_source_file_info_handle"
-                                     (irc-constant-string-ptr *gv-source-namestring*)
-                                     (irc-constant-string-ptr *gv-source-debug-namestring*)
-                                     (jit-constant-i64 *source-debug-offset*)
-                                     (jit-constant-i32 (if *source-debug-use-lineno* 1 0))
-                                     *gv-source-file-info-handle*))
-                  (with-literal-table
-                      (loop-read-and-compile-file-forms source-sin environment compile-file-hook))
-                  (make-boot-function-global-variable *the-module* run-all-function)))
+              (with-source-file-names (:source-file-name *compile-file-truename* ;(namestring source-location)
+                                       :source-debug-file-name source-debug-file-name
+                                       :source-debug-offset source-debug-offset)
+                (with-debug-info-generator (:module *the-module*
+                                            :pathname *compile-file-truename*)
+                  (or *the-module* (error "*the-module* is NIL"))
+                  (with-make-new-run-all (run-all-function)
+                    (with-literal-table
+                        (loop-read-and-compile-file-forms source-sin environment compile-file-hook))
+                    (make-boot-function-global-variable *the-module* run-all-function))))
               (cmp-log "About to verify the module%N")
               (cmp-log-dump-module *the-module*)
               (irc-verify-module-safe *the-module*)
@@ -278,9 +271,9 @@ Compile a lisp source file into an LLVM module."
                        (system-p nil system-p-p)
                        (external-format :default)
                        ;; If we are spoofing the source-file system to treat given-input-name
-                       ;; as a part of another file then use source-truename to provide the
+                       ;; as a part of another file then use source-debug-file-name to provide the
                        ;; truename of the file we want to mimic
-                       source-debug-namestring
+                       source-debug-file-name
                        ;; This is the offset we want to spoof
                        (source-debug-offset 0)
                        ;; output-type can be (or :fasl :bitcode :object)
@@ -304,7 +297,7 @@ Compile a lisp source file into an LLVM module."
            (module (compile-file-to-module input-file
                                            :type type
                                            :output-type output-type
-                                           :source-debug-namestring source-debug-namestring
+                                           :source-debug-file-name source-debug-file-name
                                            :source-debug-offset source-debug-offset
                                            :compile-file-hook *cleavir-compile-file-hook*
                                            :environment environment

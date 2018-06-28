@@ -7,7 +7,7 @@ namespace core {
   struct InvocationHistoryFrame;
   struct ThreadLocalState {
     ThreadLocalState(void* stack_top);
-    void initialize_thread(mp::Process_sp process);
+    void initialize_thread(mp::Process_sp process, bool initialize_GCRoots);
     int _DisableInterrupts;
 #if defined(DEBUG_RECURSIVE_ALLOCATIONS)
     int _RecursiveAllocationCounter;

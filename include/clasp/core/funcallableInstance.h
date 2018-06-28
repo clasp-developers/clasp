@@ -133,6 +133,8 @@ namespace core {
 //    virtual bool isSubClassOf(Instance_sp mc) const;
 
     FunctionDescription* fdesc() const { return this->_FunctionDescription; }
+    virtual void set_fdesc(FunctionDescription* address) { this->_FunctionDescription = address; };
+    
     T_sp make_instance();
   public:
   // Add support for Function_O methods

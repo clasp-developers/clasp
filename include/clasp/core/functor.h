@@ -42,23 +42,33 @@ struct gctools::GCInfo<core::BuiltinClosure_O> {
 #endif
 namespace core {
 
+  /*! Set to something other than NIL to dump functions as they are defined at startup */
+  
+  extern char* global_dump_functions;
+  
   /* The following MUST MATCH %function-description% in cmpintrinsics.lsp
    */ 
   struct FunctionDescription {
+// There are six slots below that end with Index
+    // They need space opened up in the GCRoots vector
+    static const size_t Roots = 6;
     void* functionPrototype;
     gctools::GCRootsInModule* gcrootsInModule;
-    int sourceFileInfoIndex;
+    int sourceFileNameIndex;
     int functionNameIndex;
     int lambdaListIndex;
     int docstringIndex;
+    int declareIndex;
     int lineno;
     int column;
     int filepos;
-    int declareIndex;
     int macroP;
+    int sourceDebugFileNameIndex;
+    int sourceDebugOffset;
+    int sourceDebugUseLinenoP;
   };
 
-  FunctionDescription* makeFunctionDescription(T_sp functionName, T_sp lambda_list=_Unbound<T_O>(), T_sp docstring=_Unbound<T_O>(), SourceFileInfo_sp sourceFileInfo=_Unbound<SourceFileInfo_O>(), int lineno=0, int column=0, int filePos=0, T_sp declares = _Nil<core::T_O>(), bool macroP=false);
+  FunctionDescription* makeFunctionDescription(T_sp functionName, T_sp lambda_list=_Unbound<T_O>(), T_sp docstring=_Unbound<T_O>(), T_sp sourceFileName=_Unbound<T_O>(), int lineno=-1, int column=-1, int filePos=-1, T_sp declares = _Nil<core::T_O>(), bool macroP=false, T_sp sourceDebugFileName = _Unbound<T_O>(), int sourceDebugOffset = -1, bool sourceDebugUseLinenoP = false);
 //  FunctionDescription* makeFunctionDescription(T_sp functionName, T_sp lambda_list, T_sp docstring, SourcePosInfo_sp sourcePosInfo, T_sp functionType = kw::_sym_function, T_sp declares = _Nil<core::T_O>());
 
 
@@ -84,6 +94,10 @@ namespace core {
 #endif
     };
     virtual FunctionDescription* fdesc() const = 0;
+    // Rewrite the function-description pointer - used in direct-calls.lsp
+    
+    virtual void set_fdesc(FunctionDescription* address) = 0;
+    
     T_sp fdescInfo(int index) const {
       T_sp result((gctools::Tagged)this->fdesc()->gcrootsInModule->get(this->fdesc()->functionNameIndex));
       return result;
@@ -101,16 +115,16 @@ namespace core {
       T_sp result((gctools::Tagged)this->fdesc()->gcrootsInModule->get(this->fdesc()->declareIndex));
       return result;
     }
-    void setf_lambdaList(T_sp lambda_list) {
+    CL_DEFMETHOD void setf_lambdaList(T_sp lambda_list) {
       this->fdesc()->gcrootsInModule->set(this->fdesc()->lambdaListIndex,lambda_list.tagged_());
     }
-    T_sp sourceFileInfo() const {
-      T_sp result((gctools::Tagged)this->fdesc()->gcrootsInModule->get(this->fdesc()->sourceFileInfoIndex));
+    T_sp sourceFileName() const {
+      T_sp result((gctools::Tagged)this->fdesc()->gcrootsInModule->get(this->fdesc()->sourceFileNameIndex));
       return result;
     }
 
-    void setf_sourceFileInfo(T_sp sourceFileInfo) const {
-      this->fdesc()->gcrootsInModule->set(this->fdesc()->sourceFileInfoIndex,sourceFileInfo.tagged_());
+    void setf_sourceFileName(T_sp sourceFileName) const {
+      this->fdesc()->gcrootsInModule->set(this->fdesc()->sourceFileNameIndex,sourceFileName.tagged_());
     }
 size_t filePos() const {
       return this->fdesc()->filepos;
@@ -128,6 +142,9 @@ size_t filePos() const {
     }
     void setf_column(int x) { this->fdesc()->column = x; };
 
+    Pointer_sp function_description_address() const;
+    void setf_function_description_address(Pointer_sp address);
+    
     T_mv function_description() const;
     virtual void __write__(T_sp) const;
     
@@ -184,10 +201,14 @@ class Closure_O : public Function_O {
   public:
     FunctionDescription* _FunctionDescription;
   public:
-  Closure_O(claspFunction fptr, FunctionDescription* fdesc ) : Base(fptr), _FunctionDescription(fdesc) {};
+  Closure_O(claspFunction fptr, FunctionDescription* fdesc ) : Base(fptr), _FunctionDescription(fdesc) {
+      describeFunction();
+    };
   public:
     virtual FunctionDescription* fdesc() const { return this->_FunctionDescription; };
+    virtual void set_fdesc(FunctionDescription* fdesc) { this->_FunctionDescription = fdesc; };
     virtual const char *describe() const { return "Closure"; };
+    void describeFunction() const;
   };
 };
 

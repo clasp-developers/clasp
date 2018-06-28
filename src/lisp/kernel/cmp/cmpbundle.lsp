@@ -246,41 +246,41 @@ The **library-file** is the name of the output library with the appropriate exte
            (*compile-file-truename* (translate-logical-pathname *compile-file-pathname*))
            (bcnum 0))
       (with-module ( :module module
-                             :optimize nil
-                             :source-namestring (namestring output-pathname))
-        (with-debug-info-generator (:module module :pathname output-pathname)
-          (let* ((linker (llvm-sys:make-linker *the-module*))
-                 (part-index 1))
-            ;; Don't enforce .bc extension for additional-bitcode-pathnames
-            ;; This is where I used to link the additional-bitcode-pathnames
-            (dolist (part-pn part-pathnames)
-              (let* ((bc-file (make-pathname :type (if cmp::*use-human-readable-bitcode* "ll" "bc") :defaults part-pn)))
+                     :optimize nil)
+        (with-source-file-names (:source-file-name (namestring output-pathname))
+          (with-debug-info-generator (:module module :pathname output-pathname)
+            (let* ((linker (llvm-sys:make-linker *the-module*))
+                   (part-index 1))
+              ;; Don't enforce .bc extension for additional-bitcode-pathnames
+              ;; This is where I used to link the additional-bitcode-pathnames
+              (dolist (part-pn part-pathnames)
+                (let* ((bc-file (make-pathname :type (if cmp::*use-human-readable-bitcode* "ll" "bc") :defaults part-pn)))
 ;;;                (bformat t "Linking %s%N" bc-file)
-                (let* ((part-module (parse-bitcode (namestring (truename bc-file)) *llvm-context*)))
-                  (incf part-index)
-                  (multiple-value-bind (failure error-msg)
-                      (let ((global-ctor (find-global-ctor-function part-module))
-                            (priority part-index))
-                        (remove-llvm.global_ctors-if-exists part-module)
-                        (add-llvm.global_ctors part-module priority global-ctor)
-                        (llvm-sys:link-in-module linker part-module))
-                    (when failure
-                      (error "While linking part module: ~a  encountered error: ~a" part-pn error-msg))))))
-            ;; The following links in additional-bitcode-pathnames
-            (dolist (part-pn additional-bitcode-pathnames)
-              (let* ((bc-file part-pn))
+                  (let* ((part-module (parse-bitcode (namestring (truename bc-file)) *llvm-context*)))
+                    (incf part-index)
+                    (multiple-value-bind (failure error-msg)
+                        (let ((global-ctor (find-global-ctor-function part-module))
+                              (priority part-index))
+                          (remove-llvm.global_ctors-if-exists part-module)
+                          (add-llvm.global_ctors part-module priority global-ctor)
+                          (llvm-sys:link-in-module linker part-module))
+                      (when failure
+                        (error "While linking part module: ~a  encountered error: ~a" part-pn error-msg))))))
+              ;; The following links in additional-bitcode-pathnames
+              (dolist (part-pn additional-bitcode-pathnames)
+                (let* ((bc-file part-pn))
 ;;;                (bformat t "Linking %s%N" bc-file)
-                (let* ((part-module (llvm-sys:parse-bitcode-file (namestring (truename bc-file)) *llvm-context*)))
-                  (remove-main-function-if-exists part-module) ;; Remove the ClaspMain FN if it exists
-                  (multiple-value-bind (failure error-msg)
-                      (llvm-sys:link-in-module linker part-module)
-                    (when failure
-                      (error "While linking additional module: ~a  encountered error: ~a" bc-file error-msg))
-                    ))))
-            (write-bitcode *the-module* (core:coerce-to-filename (pathname (if output-pathname
-                                                                               output-pathname
-                                                                               (error "The output pathname is NIL")))))
-            *the-module*))))))
+                  (let* ((part-module (llvm-sys:parse-bitcode-file (namestring (truename bc-file)) *llvm-context*)))
+                    (remove-main-function-if-exists part-module) ;; Remove the ClaspMain FN if it exists
+                    (multiple-value-bind (failure error-msg)
+                        (llvm-sys:link-in-module linker part-module)
+                      (when failure
+                        (error "While linking additional module: ~a  encountered error: ~a" bc-file error-msg))
+                      ))))
+              (write-bitcode *the-module* (core:coerce-to-filename (pathname (if output-pathname
+                                                                                 output-pathname
+                                                                                 (error "The output pathname is NIL")))))
+              *the-module*)))))))
 (export 'link-bitcode-modules)
 
 

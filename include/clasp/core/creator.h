@@ -40,6 +40,7 @@ namespace core {
   // Some Creators don't actually allocate anything -
   // classes that don't have default allocators
     virtual FunctionDescription* fdesc() const { return this->_FunctionDescription; }
+    virtual void set_fdesc(FunctionDescription* address) { this->_FunctionDescription = address; };
     virtual bool allocates() const { return true; };
   /*! If this is the allocator for a primary CxxAdapter class then return true, */
     T_sp functionName() const { return _Nil<T_O>(); };
