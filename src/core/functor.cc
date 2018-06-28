@@ -168,6 +168,7 @@ CL_DEFUN void core__dumpFunctionDescription(Function_sp func)
                                                               (core::FunctionDescription*)fdesc);
   closure->closureType = ClosureWithSlots_O::bclaspClosure;
   (*closure)[BCLASP_CLOSURE_ENVIRONMENT_SLOT] = environment;
+  closure->setf_sourceFileName(_Nil<T_O>());
   closure->setf_lambdaList(lambda_list);
   closure->setf_declares(_Nil<T_O>());
   closure->setf_docstring(_Nil<T_O>());

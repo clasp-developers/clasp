@@ -106,9 +106,6 @@ public:
     CL_DEFMETHOD   List_sp methods() const {
       return this->_Methods;
     };
-    virtual List_sp declares() const {NOT_APPLICABLE();};
-    virtual T_sp docstring() const {NOT_APPLICABLE();};
-
     Function_sp slowMethodLookup(Instance_sp mc);
     Function_sp computeEffectiveMethodFunction(List_sp applicableMethodList);
   };
