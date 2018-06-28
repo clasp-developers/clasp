@@ -3325,7 +3325,7 @@ https://groups.google.com/forum/#!topic/llvm-dev/m3JjMNswgcU
 }
 
 void register_symbol_with_libunwind(const std::string& name, uint64_t start, size_t size) {
-#if defined(USE_LIBUNWIND) && defined(_TARGET_OS_LINUX)
+#if defined(USE_LIBUNWIND) && (defined(_TARGET_OS_LINUX) || defined(_TARGET_OS_FREEBSD))
   unw_dyn_info_t info;
   info.start_ip = start;
   info.end_ip = start+size;

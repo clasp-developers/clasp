@@ -410,12 +410,12 @@ Find directories that look like them and replace the ones defined in the constan
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
            (defparameter *externals-clasp-pathname* (make-pathname :directory (pathname-directory (pathname ext:*clasp-clang-path*))))
-           #+target-os-linux (defparameter *externals-clasp-include-dir* (namestring (car (directory (pathname (format nil "~a../lib/clang/*/" *externals-clasp-pathname*))))))
+           #+(or target-os-linux target-os-freebsd) (defparameter *externals-clasp-include-dir* (namestring (car (directory (pathname (format nil "~a../lib/clang/*/" *externals-clasp-pathname*))))))
            )
 
 (defvar +resource-dir+ 
   #+target-os-darwin (namestring (car (directory "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/*/")))
-  #+target-os-linux *externals-clasp-include-dir*
+  #+(or target-os-linux target-os-freebsd) *externals-clasp-include-dir*
   "Define the -resource-dir command line option for Clang compiler runs")
 
 #++

@@ -104,7 +104,8 @@ For C/C++ frames - return (list 'c-function name)."
         ;; strip leading #\_
         (if (and jit-name (search "^^" jit-name))
             (let* ((name-with-parts #+target-os-linux jit-name
-                                    #+target-os-freebsd (subseq jit-name 1 (length jit-name))
+                                    ;; fixme cracauer.  Find out what FreeBSD actually needs here
+                                    #+target-os-freebsd jit-name
                                     #+target-os-darwin (subseq jit-name 1 (length jit-name)))
                    (parts (cmp:unescape-and-split-jit-name name-with-parts))
                    (symbol-name (first parts))
@@ -130,7 +131,7 @@ For C/C++ frames - return (list 'c-function name)."
                                   :base-pointer base-pointer
                                   :next-base-pointer next-base-pointer)))))
      ;; For some reason only darwin backtrace_symbols gives us Common Lisp function names
-     #+target-os-darwin
+     #+(or target-os-darwin target-os-freebsd)
      ((setq pos (search "^^" backtrace-name :from-end t))
       (if verbose (bformat *debug-io* "-->CL frame%N"))
       (let* ((parts (cmp:unescape-and-split-jit-name (subseq backtrace-name 0 pos)))
@@ -240,7 +241,7 @@ For C/C++ frames - return (list 'c-function name)."
          (pos2e (position-if (lambda (c) (char= c #\space)) line :start pos2)) ; skip chars
          (pos3 (position-if (lambda (c) (char/= c #\space)) line :start pos2e)))
     (subseq line pos3 (length line)))
-  #+target-os-freebsd
+  #+target-os-freebsd ; fixme cracauer, confirm that this works
   (let* ((pos1 (position-if (lambda (c) (char/= c #\space)) line :start 4)) ; skip whitespace
          (pos1e (position-if (lambda (c) (char= c #\space)) line :start pos1)) ; skip chars
          (pos2 (position-if (lambda (c) (char/= c #\space)) line :start pos1e))

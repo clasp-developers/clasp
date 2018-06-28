@@ -80,7 +80,8 @@
 (defun generate-object-file (part-bitcode-pathname &key test)
   (let ((output-pathname (compile-file-pathname part-bitcode-pathname :output-type :object))
         (reloc-model (cond
-                       ((member :target-os-linux *features*) 'llvm-sys:reloc-model-pic-)
+                       ((or (member :target-os-linux *features*) (member :target-os-freebsd *features*))
+                        'llvm-sys:reloc-model-pic-)
                        (t 'llvm-sys:reloc-model-undefined))))
     (bitcode-to-obj-file part-bitcode-pathname output-pathname :reloc-model reloc-model)
     (truename output-pathname)))
@@ -105,7 +106,7 @@
 
 
 (defun link-object-files (library-file in-all-names)
-  "Link object files together to create a .dylib (macOS) or .so (linux) library.
+  "Link object files together to create a .dylib (macOS) or .so (linux/freebsd) library.
 The **library-file** is the name of the output library with the appropriate extension.
 **in-all-names** are the object files."
   ;; options are a list of strings like (list "-v")
@@ -134,6 +135,7 @@ The **library-file** is the name of the output library with the appropriate exte
                         ((or (member :target-os-linux *features*)
                              (member :target-os-freebsd *features*))
                          ;; Linux needs to use clang to link
+                         ;; FreeBSD might
                          (let ((clang-args `(#+(or)"-v"
                                                     ,@options
                                                     ,@all-object-files
@@ -178,6 +180,7 @@ The **library-file** is the name of the output library with the appropriate exte
                         ((or (member :target-os-linux *features*)
                              (member :target-os-freebsd *features*))
                          ;; Linux needs to use clang to link
+                         ;; FreeBSD might
                          (let ((clang-args `(#+(or)"-v"
                                                     ,@options
                                                     ,@all-object-files
@@ -227,6 +230,7 @@ The **library-file** is the name of the output library with the appropriate exte
         ((or (member :target-os-linux *features*)
              (member :target-os-freebsd *features*))
          ;; Linux needs to use clang to link
+         ;; FreeBSD might
          (ext:run-clang `(,@options
                           ,@all-names
                           ,@link-flags
@@ -349,6 +353,7 @@ Note: 'object-files' would be a better name than 'lisp-files' - but 'lisp-files'
 Return the truename of the output file.
 NOTE: On Linux it looks like we MUST link all of the bitcode files first into one and then convert that into a fasb.
 This is to ensure that the RUN-ALL functions are evaluated in the correct order."
+  ;; fixme cracauer - figure out what FreeBSD needs here
   (declare (ignore init-name))
   ;;  (bformat t "cmpbundle.lsp:build-fasl  building fasl for %s from files: %s%N" out-file lisp-files)
   (let ((bitcode-files (mapcar (lambda (p) (make-pathname :type (core:bitcode-extension) :defaults p))

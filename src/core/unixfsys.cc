@@ -467,7 +467,7 @@ CL_DEFUN core::String_sp ext__getcwd() {
   }
   output->fillPointerSet(size-1);
 #endif
-#if defined(_TARGET_OS_DARWIN) || defined(_TARGET_OS_LINUX)
+#if defined(_TARGET_OS_DARWIN) || defined(_TARGET_OS_LINUX) || defined(_TARGET_OS_FREEBSD)
   // Add a terminal '/' if there is none
   if ((*output)[output->fillPointer() - 1] != DIR_SEPARATOR_CHAR) {
     output->vectorPushExtend(core::clasp_make_character(DIR_SEPARATOR_CHAR));
