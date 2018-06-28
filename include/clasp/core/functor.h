@@ -144,7 +144,7 @@ fields at the same offset as Instance_O.
     void setf_declares(T_sp x) const {
       this->fdesc()->gcrootsInModule->set(this->fdesc()->declareIndex,x.tagged_());
     }
-size_t filePos() const {
+    size_t filePos() const {
       return this->fdesc()->filepos;
     }
     void setf_filePos(int filePos) { this->fdesc()->filepos = filePos; };
@@ -191,7 +191,6 @@ size_t filePos() const {
       return result;
     }
     virtual string __repr__() const;
-    CL_DEFMETHOD virtual T_sp function_literal_vector_copy() const {SUBIMP();};
     virtual ~Function_O() {};
   };
 };

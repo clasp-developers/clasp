@@ -2113,17 +2113,6 @@ CL_DEFUN void core__set_kind(Function_sp fn, Symbol_sp kind) {
   SIMPLE_ERROR(BF("You cannot set the kind: %s of a Function_O object") % _rep_(kind));
 };
 
-CL_LISPIFY_NAME("core:functionSourcePos");
-CL_DEFMETHOD T_mv Function_O::functionSourcePos() const {
-  T_sp spi = this->sourcePosInfo();
-  T_sp sfi = core__source_file_info(spi);
-  if (sfi.nilp() || spi.nilp()) {
-    return Values(sfi, make_fixnum(0), make_fixnum(0));
-  }
-  return Values(sfi, make_fixnum(gc::As<SourcePosInfo_sp>(spi)->filepos()), make_fixnum(gc::As<SourcePosInfo_sp>(spi)->lineno()));
-}
-
-
 };
 
 namespace core {

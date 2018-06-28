@@ -138,8 +138,23 @@ CL_DEFUN void core__dumpFunctionDescription(Function_sp func)
   dumpFunctionDescription(fdesc);
 }
 
+CL_LISPIFY_NAME("core:functionSourcePos");
+CL_DEFMETHOD T_mv Function_O::functionSourcePos() const {
+  T_sp sfi = this->sourceFileName();
+  return Values(sfi, make_fixnum(this->filePos()), make_fixnum(this->lineno()));
+}
 
-  ClosureWithSlots_sp ClosureWithSlots_O::make_interpreted_closure(T_sp name, T_sp type, T_sp lambda_list, LambdaListHandler_sp lambda_list_handler, T_sp declares, T_sp docstring, T_sp form, T_sp environment, SOURCE_INFO) {
+CL_DEFUN T_sp core__function_docstring(Function_sp func) {
+  return func->docstring();
+}
+
+CL_LISPIFY_NAME("core:function-docstring");
+CL_DEFUN_SETF T_sp setf_function_docstring(T_sp doc, Function_sp func) {
+  func->setf_docstring(doc);
+  return doc;
+}
+
+ClosureWithSlots_sp ClosureWithSlots_O::make_interpreted_closure(T_sp name, T_sp type, T_sp lambda_list, LambdaListHandler_sp lambda_list_handler, T_sp declares, T_sp docstring, T_sp form, T_sp environment, SOURCE_INFO) {
   SourceFileInfo_sp sfi = core__source_file_info(core::make_fixnum(sourceFileInfoHandle));
   FunctionDescription* interpretedFunctionDescription = makeFunctionDescription(name,lambda_list,docstring,sfi,lineno,column,filePos);
   ClosureWithSlots_sp closure =
@@ -160,7 +175,7 @@ CL_DEFUN void core__dumpFunctionDescription(Function_sp func)
   validateFunctionDescription(__FILE__,__LINE__,closure);
   return closure;
 }
-  ClosureWithSlots_sp ClosureWithSlots_O::make_bclasp_closure(T_sp name, claspFunction ptr, T_sp type, T_sp lambda_list, T_sp environment) {
+ClosureWithSlots_sp ClosureWithSlots_O::make_bclasp_closure(T_sp name, claspFunction ptr, T_sp type, T_sp lambda_list, T_sp environment) {
   core::FunctionDescription* fdesc = makeFunctionDescription(name,lambda_list);
   ClosureWithSlots_sp closure = 
     gctools::GC<core::ClosureWithSlots_O>::allocate_container(BCLASP_CLOSURE_SLOTS,
@@ -176,7 +191,7 @@ CL_DEFUN void core__dumpFunctionDescription(Function_sp func)
   return closure;
 }
 
-  ClosureWithSlots_sp ClosureWithSlots_O::make_cclasp_closure(T_sp name, claspFunction ptr, T_sp type, T_sp lambda_list, SOURCE_INFO) {
+ClosureWithSlots_sp ClosureWithSlots_O::make_cclasp_closure(T_sp name, claspFunction ptr, T_sp type, T_sp lambda_list, SOURCE_INFO) {
   core::FunctionDescription* fdesc = makeFunctionDescription(name,lambda_list);
   ClosureWithSlots_sp closure = 
     gctools::GC<core::ClosureWithSlots_O>::allocate_container(0,
@@ -242,17 +257,6 @@ CL_DEFUN void core__set_function_description_address(Function_sp func, Pointer_s
   func->set_fdesc((FunctionDescription*)(address->ptr()));
 }
 
-CL_DEFMETHOD T_mv Function_O::function_description() const {
-  return Values(this->functionName(),
-                this->lambdaList(),
-                this->docstring(),
-                this->sourceFileName(),
-                make_fixnum(this->lineNumber()),
-                make_fixnum(this->column()),
-                make_fixnum(this->filePos()));
-}
-
-
 };
 
 
@@ -263,15 +267,6 @@ void Closure_O::describeFunction() const {
     printf("%s:%d  Closure_O %s entry@%p fdesc@%p\n", __FILE__, __LINE__, _rep_(this->functionName()).c_str(), (void*)this->entry.load(),(void*)this->fdesc());
   }
 }
-
-#if 0
-List_sp Closure_O::source_info() const {
-  return Cons_O::createList(clasp_make_fixnum(this->_sourceFileInfoHandle),
-                            clasp_make_fixnum(this->filePos()),
-                            clasp_make_fixnum(this->lineno()),
-                            clasp_make_fixnum(this->column()));
-};
-#endif
 
 CL_DEFUN size_t core__closure_with_slots_size(size_t number_of_slots)
 {
@@ -370,45 +365,6 @@ CL_DEFUN void core__closure_slots_dump(Closure_sp closure) {
   if ( SourceFileInfo_sp sfi = tsfi.asOrNull<SourceFileInfo_O>() ) {
     printf("Closure source: %s:%d\n", sfi->namestring().c_str(), spi->lineno() );
   }
-}
-
-T_mv wrap_function_description(void* fd) {
-  void** data = (void**)fd;
-  //printf("%s:%d function description at %p\n", __FILE__, __LINE__, fd);
-  // data[0] function pointer
-  // data[1] global-value-holder (void* void* size_t)
-  void** data1 = (void**)data[1];
-  void* table_ptr = data1[1];
-  size_t table_size = (size_t)data1[2];
-  int source_handle = *(int*)data[2];
-  intptr_t function_name_index = (intptr_t)data[3];
-  intptr_t lambda_list_index = (intptr_t)data[4];
-  intptr_t docstring_index = (intptr_t)data[5];
-  intptr_t lineno = (intptr_t)data[6];
-  intptr_t column = (intptr_t)data[7];
-  intptr_t filepos = (intptr_t)data[8];
-  T_sp function_name((gc::Tagged)((uintptr_t**)table_ptr)[function_name_index]);
-  T_sp lambda_list((gc::Tagged)((uintptr_t**)table_ptr)[lambda_list_index]);
-  T_sp docstring((gc::Tagged)((uintptr_t**)table_ptr)[docstring_index]);
-  return Values(make_fixnum(source_handle),
-                function_name,
-                lambda_list,
-                docstring,
-                make_fixnum(lineno),
-                make_fixnum(column),
-                make_fixnum(filepos));
-}
-
-T_sp wrap_function_literal_vector_copy(void* fd) {
-  void** data = (void**)fd;
-  //printf("%s:%d function description at %p\n", __FILE__, __LINE__, fd);
-  // data[0] function pointer
-  // data[1] global-value-holder (void* void* size_t)
-  void** data1 = (void**)data[1];
-  void* table_ptr = data1[1];
-  size_t table_size = (size_t)data1[2];
-  SimpleVector_sp sv = SimpleVector_O::make(table_size,_Nil<T_O>(),false,table_size,(T_sp*)table_ptr);
-  return sv;
 }
 
 DONT_OPTIMIZE_WHEN_DEBUG_RELEASE LCC_RETURN interpretedClosureEntryPoint(LCC_ARGS_FUNCALL_ELLIPSIS) {
