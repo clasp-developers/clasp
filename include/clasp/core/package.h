@@ -61,6 +61,7 @@ class Package_O : public General_O {
   std::atomic<bool> _AmpPackage;
   std::atomic<bool> _ActsLikeKeywordPackage;
   List_sp _Nicknames;
+  T_sp _Documentation;
 #ifdef CLASP_THREADS
   mutable mp::SharedMutex _Lock;
 #endif
@@ -168,6 +169,9 @@ class Package_O : public General_O {
   bool usingPackageP_no_lock(Package_sp pkg) const;
   /*! Return true if we are using the package */
   bool usingPackageP(Package_sp pkg) const;
+
+  T_sp documentation() const {return this->_Documentation;}
+  void setDocumentation(T_sp docstring) {this->_Documentation = docstring;}
 
   /*! Dump all the symbols to stdout */
   void dumpSymbols();
