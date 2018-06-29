@@ -162,12 +162,14 @@ Symbol_O::Symbol_O(bool dummy) : _HomePackage(_Nil<T_O>()),
                                  _Binding(NO_THREAD_LOCAL_BINDINGS),
                                  _IsSpecial(false),
                                  _IsConstant(false),
+                                 _IsMacro(false),
                                  _PropertyList(_Nil<List_V>()) {};
 
 Symbol_O::Symbol_O() : Base(),
                        _Binding(NO_THREAD_LOCAL_BINDINGS),
                        _IsSpecial(false),
                        _IsConstant(false),
+                       _IsMacro(false),
                        _PropertyList(_Nil<List_V>()) {};
 
 void Symbol_O::finish_setup(Package_sp pkg, bool exportp, bool shadowp) {

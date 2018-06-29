@@ -60,7 +60,6 @@ FunctionDescription* makeFunctionDescription(T_sp functionName,
                                              int column,
                                              int filePos,
                                              T_sp declares,
-                                             bool macroP,
                                              T_sp sourceDebugFileName,
                                              int sourceDebugOffset,
                                              bool sourceDebugUseLinenoP) {
@@ -80,7 +79,6 @@ FunctionDescription* makeFunctionDescription(T_sp functionName,
   fdesc->lineno = lineno;
   fdesc->column = column;
   fdesc->filepos = filePos;
-  fdesc->macroP = macroP;
   fdesc->sourceDebugFileNameIndex = roots->push_back(sourceDebugFileName.tagged_());
   fdesc->sourceDebugOffset = sourceDebugOffset;
   fdesc->sourceDebugUseLinenoP = sourceDebugUseLinenoP;
@@ -125,7 +123,6 @@ extern "C" void dumpFunctionDescription(void* vfdesc)
   printf("lineno = %d\n", fdesc->lineno);
   printf("column = %d\n", fdesc->column);
   printf("filepos = %d\n", fdesc->filepos);
-  printf("macroP = %d\n", fdesc->macroP);
   printf("sourceDebugOffset = %d\n", fdesc->sourceDebugOffset);
   printf("sourceDebugUseLinenoP = %d\n", fdesc->sourceDebugUseLinenoP);
 }; 
@@ -239,7 +236,6 @@ string Function_O::__repr__() const {
   ss << "@" << (void*)this << " ";
 #endif
   ss << " " << _rep_(name);
-  ss << " :ftype " << _rep_(this->functionKind());
   ss << " lambda-list: " << _rep_(this->lambdaList());
   if ( this->entry != NULL ) {
     ss << " :fptr " << reinterpret_cast<void*>(this->entry.load());
@@ -312,7 +308,6 @@ string ClosureWithSlots_O::__repr__() const {
       ss << "cclasp ";
       break;
   }
-  ss << " :ftype " << _rep_(this->functionKind());
   ss << " lambda-list: " << _rep_(this->lambdaList());
   if ( this->entry != NULL ) {
     ss << " :fptr " << reinterpret_cast<void*>(this->entry.load());

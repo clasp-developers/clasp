@@ -690,9 +690,10 @@ T_sp af_interpreter_lookup_macro(Symbol_sp sym, T_sp env) {
   if (found)
     return macro;
   if (sym->fboundp()) {
-    if (Function_sp fn = sym->symbolFunction().asOrNull<Function_O>()) {
-      if (fn->macroP())
+    if (sym->macroP()) {
+      if (Function_sp fn = sym->symbolFunction().asOrNull<Function_O>()) {
         return fn;
+      }
     }
   }
   return _Nil<T_O>();

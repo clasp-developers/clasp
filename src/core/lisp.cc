@@ -1938,7 +1938,7 @@ void searchForApropos(List_sp packages, SimpleString_sp insubstring, bool print_
           T_sp tfn = cl__symbol_function(sym);
           if ( !tfn.unboundp() && gc::IsA<Function_sp>(tfn)) {
             Function_sp fn = gc::As_unsafe<Function_sp>(tfn);
-            if (fn->macroP()) ss << "(MACRO)";
+            if (sym->macroP()) ss << "(MACRO)";
           }
         }
         if ( !(sym)->symbolValueUnsafe() ) {

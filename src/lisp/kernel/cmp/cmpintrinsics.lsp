@@ -518,7 +518,6 @@ eg:  (f closure-ptr nargs a b c d ...)
                                     %i32% ; lineno
                                     %i32% ; column
                                     %i32% ; filepos
-                                    %i32% ; macroP
                                     %i32% ; source-debug-file-name index
                                     %i32% ; source-debug-offset
                                     %i32% ; source-debug-use-lineno-p

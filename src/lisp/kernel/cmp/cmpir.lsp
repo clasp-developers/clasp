@@ -1010,7 +1010,6 @@ But no irbuilders or basic-blocks. Return the fn."
                                         (jit-constant-i32 lineno)
                                         (jit-constant-i32 column)
                                         (jit-constant-i32 filepos)
-                                        (jit-constant-i32 0) ; macroP
                                         (jit-constant-i32 source-debug-file-name-index)
                                         (jit-constant-i32 source-debug-offset)
                                         (jit-constant-i32 (if source-debug-use-lineno-p 1 0))

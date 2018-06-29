@@ -75,13 +75,12 @@ fields at the same offset as Instance_O.
     int lineno;
     int column;
     int filepos;
-    int macroP;
     int sourceDebugFileNameIndex;
     int sourceDebugOffset;
     int sourceDebugUseLinenoP;
   };
 
-  FunctionDescription* makeFunctionDescription(T_sp functionName, T_sp lambda_list=_Unbound<T_O>(), T_sp docstring=_Unbound<T_O>(), T_sp sourceFileName=_Unbound<T_O>(), int lineno=-1, int column=-1, int filePos=-1, T_sp declares = _Nil<core::T_O>(), bool macroP=false, T_sp sourceDebugFileName = _Unbound<T_O>(), int sourceDebugOffset = -1, bool sourceDebugUseLinenoP = false);
+  FunctionDescription* makeFunctionDescription(T_sp functionName, T_sp lambda_list=_Unbound<T_O>(), T_sp docstring=_Unbound<T_O>(), T_sp sourceFileName=_Unbound<T_O>(), int lineno=-1, int column=-1, int filePos=-1, T_sp declares = _Nil<core::T_O>(), T_sp sourceDebugFileName = _Unbound<T_O>(), int sourceDebugOffset = -1, bool sourceDebugUseLinenoP = false);
 
   void validateFunctionDescription(const char* filename, size_t lineno, Function_sp function);
 
@@ -118,7 +117,6 @@ fields at the same offset as Instance_O.
     CL_DEFMETHOD T_sp functionName() const {
       return this->fdescInfo(this->fdesc()->functionNameIndex);
     }
-    void setMacroP(bool m) { this->fdesc()->macroP = m; };
     T_sp docstring() const {
       T_sp result((gctools::Tagged)this->fdesc()->gcrootsInModule->get(this->fdesc()->docstringIndex));
       return result;
@@ -167,17 +165,10 @@ fields at the same offset as Instance_O.
     virtual void __write__(T_sp) const;
     
     Pointer_sp function_pointer() const;
-    CL_DEFMETHOD virtual bool macroP() const { return this->fdesc()->macroP;}
     virtual bool compiledP() const { return false; };
     virtual bool interpretedP() const { return false; };
     virtual bool builtinP() const { return false; };
     virtual T_sp sourcePosInfo() const { return _Nil<T_O>(); };
-    CL_DEFMETHOD virtual T_sp functionKind() const {
-      if (this->macroP()) {
-	return kw::_sym_macro;
-      }
-      return kw::_sym_function;
-    }
     CL_DEFMETHOD List_sp function_declares() const { return this->declares(); };
     CL_DEFMETHOD T_sp functionLambdaListHandler() const {
       return this->lambdaListHandler();
@@ -243,9 +234,8 @@ namespace core {
     : Closure_O(fptr, fdesc), _lambdaListHandler(_Unbound<LambdaListHandler_O>())  {};
   BuiltinClosure_O(claspFunction fptr, FunctionDescription* fdesc, LambdaListHandler_sp llh)
     : Closure_O(fptr, fdesc), _lambdaListHandler(llh)  {};
-    void finishSetup(LambdaListHandler_sp llh, bool macroP) {
+    void finishSetup(LambdaListHandler_sp llh) {
       this->_lambdaListHandler = llh;
-      this->setMacroP(macroP);
     }
     T_sp closedEnvironment() const { return _Nil<T_O>(); };
     virtual size_t templatedSizeof() const { return sizeof(*this); };

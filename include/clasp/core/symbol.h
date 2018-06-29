@@ -63,6 +63,7 @@ public:
   mutable size_t _Binding;
   bool _IsSpecial;
   bool _IsConstant;
+  bool _IsMacro;
   List_sp _PropertyList;
 
 private:
@@ -104,6 +105,9 @@ public:
   bool isKeywordSymbol();
   Symbol_sp asKeywordSymbol();
 
+  bool macroP() const { return this->_IsMacro;};
+  void setf_macroP(bool m) { this->_IsMacro = m; };
+  
   bool amp_symbol_p() const;
 
   /*! Return a pointer to the value cell */
