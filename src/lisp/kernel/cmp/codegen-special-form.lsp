@@ -702,7 +702,7 @@ jump to blocks within this tagbody."
 				 (macro-body (cddr macro-def)))
 	      (let* ((lambdablock (ext:parse-macro name vl macro-body))
 		     (macro-fn (eval (list 'function lambdablock))))
-		(set-kind macro-fn :macro)
+;;;		(core:set-kind macro-fn :macro)
 		(add-macro macro-env name macro-fn)))
 	  macros )
     (multiple-value-bind (declares code docstring specials )
