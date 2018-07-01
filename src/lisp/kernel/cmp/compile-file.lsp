@@ -194,7 +194,7 @@ and the pathname of the source file - this will also be used as the module initi
                                  compile-file-hook
                                  type
                                  output-type
-                                 source-debug-file-name
+                                 source-debug-pathname
                                  (source-debug-offset 0)
                                  (print *compile-print*)
                                  (verbose *compile-verbose*)
@@ -206,7 +206,7 @@ and the pathname of the source file - this will also be used as the module initi
 - output-path :: A pathname.
 - compile-file-hook :: A function that will do the compile-file
 - type :: :kernel or :user (I'm not sure this is useful anymore)
-- source-debug-file-name :: A namestring.
+- source-debug-pathname :: A pathname.
 - source-debug-offset :: An integer.
 - environment :: Arbitrary, passed only to hook
 Compile a lisp source file into an LLVM module."
@@ -230,8 +230,8 @@ Compile a lisp source file into an LLVM module."
     (with-open-stream (sin source-sin)
       ;; If a truename is provided then spoof the file-system to treat input-pathname
       ;; as source-truename with the given offset
-      (when source-debug-file-name
-	(core:source-file-info (namestring input-pathname) source-debug-file-name source-debug-offset nil))
+      (when source-debug-pathname
+	(core:source-file-info (namestring input-pathname) source-debug-pathname source-debug-offset nil))
       (when *compile-verbose*
 	(bformat t "; Compiling file: %s%N" (namestring input-pathname)))
       (with-one-source-database
@@ -242,8 +242,8 @@ Compile a lisp source file into an LLVM module."
             (with-module (:module module
                           :optimize (when optimize #'optimize-module-for-compile-file)
                           :optimize-level optimize-level)
-              (with-source-file-names (:source-file-name *compile-file-truename* ;(namestring source-location)
-                                       :source-debug-file-name source-debug-file-name
+              (with-source-pathnames (:source-pathname *compile-file-truename* ;(namestring source-location)
+                                       :source-debug-pathname source-debug-pathname
                                        :source-debug-offset source-debug-offset)
                 (with-debug-info-generator (:module *the-module*
                                             :pathname *compile-file-truename*)
@@ -271,9 +271,9 @@ Compile a lisp source file into an LLVM module."
                        (system-p nil system-p-p)
                        (external-format :default)
                        ;; If we are spoofing the source-file system to treat given-input-name
-                       ;; as a part of another file then use source-debug-file-name to provide the
+                       ;; as a part of another file then use source-debug-pathname to provide the
                        ;; truename of the file we want to mimic
-                       source-debug-file-name
+                       source-debug-pathname
                        ;; This is the offset we want to spoof
                        (source-debug-offset 0)
                        ;; output-type can be (or :fasl :bitcode :object)
@@ -297,7 +297,7 @@ Compile a lisp source file into an LLVM module."
            (module (compile-file-to-module input-file
                                            :type type
                                            :output-type output-type
-                                           :source-debug-file-name source-debug-file-name
+                                           :source-debug-pathname source-debug-pathname
                                            :source-debug-offset source-debug-offset
                                            :compile-file-hook *cleavir-compile-file-hook*
                                            :environment environment

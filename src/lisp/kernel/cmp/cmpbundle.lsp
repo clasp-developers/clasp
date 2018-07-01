@@ -247,7 +247,7 @@ The **library-file** is the name of the output library with the appropriate exte
            (bcnum 0))
       (with-module ( :module module
                      :optimize nil)
-        (with-source-file-names (:source-file-name (namestring output-pathname))
+        (with-source-pathnames (:source-pathname (pathname output-pathname))
           (with-debug-info-generator (:module module :pathname output-pathname)
             (let* ((linker (llvm-sys:make-linker *the-module*))
                    (part-index 1))

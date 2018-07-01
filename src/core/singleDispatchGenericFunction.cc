@@ -300,7 +300,7 @@ Function_sp SingleDispatchGenericFunctionClosure_O::computeEffectiveMethodFuncti
       emf->setf_lambdaList(this->lambdaList());
       emf->setf_declares(this->declares());
       emf->setf_docstring(this->docstring());
-      emf->setf_sourceFileName(this->sourceFileName());
+      emf->setf_sourcePathname(this->sourcePathname());
       validateFunctionDescription(__FILE__,__LINE__,emf);
       return emf;
     }
@@ -315,7 +315,7 @@ Function_sp SingleDispatchGenericFunctionClosure_O::computeEffectiveMethodFuncti
   emf->setf_lambdaList(this->lambdaList());
   emf->setf_declares(this->declares());
   emf->setf_docstring(this->docstring());
-  emf->setf_sourceFileName(this->sourceFileName());
+  emf->setf_sourcePathname(this->sourcePathname());
   validateFunctionDescription(__FILE__,__LINE__,emf);
   return emf;
 #if 1
@@ -343,7 +343,7 @@ SingleDispatchGenericFunctionClosure_sp SingleDispatchGenericFunctionClosure_O::
   SingleDispatchGenericFunctionClosure_sp gfc = gctools::GC<SingleDispatchGenericFunctionClosure_O>::allocate(fdesc,singleDispatchArgumentIndex);
   gfc->finishSetup(llh);
   gfc->setf_docstring(_Nil<T_O>());
-  gfc->setf_sourceFileName(_Nil<T_O>());
+  gfc->setf_sourcePathname(_Nil<T_O>());
   validateFunctionDescription(__FILE__,__LINE__,gfc);
   return gfc;
 }

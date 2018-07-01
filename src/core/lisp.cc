@@ -2037,7 +2037,7 @@ CL_DEFUN T_mv core__source_file_name() {
   T_sp tclosure = frame->function();
   if (tclosure.notnilp()) {
     Function_sp closure = gc::As<Function_sp>(tclosure);
-    string sourcePath = gc::As<SourceFileInfo_sp>(core__source_file_info(closure->sourceFileName()))->fileName();
+    string sourcePath = gc::As<SourceFileInfo_sp>(core__source_file_info(closure->sourcePathname()))->fileName();
     Path_sp path = Path_O::create(sourcePath);
     Path_sp parent_path = path->parent_path();
     return Values(SimpleBaseString_O::make(path->fileName()), SimpleBaseString_O::make(parent_path->asString()));
@@ -2626,7 +2626,7 @@ SYMBOL_EXPORT_SC_(ClPkg, apropos);
 SYMBOL_EXPORT_SC_(ClPkg, export);
 SYMBOL_EXPORT_SC_(ClPkg, intern);
 SYMBOL_SC_(CorePkg, isTopLevelScript);
-SYMBOL_SC_(CorePkg, sourceFileName);
+SYMBOL_SC_(CorePkg, sourcePathname);
 SYMBOL_SC_(CorePkg, sourceLineColumn);
 SYMBOL_SC_(CorePkg, findFileInLispPath);
 SYMBOL_EXPORT_SC_(ClPkg, findClass);

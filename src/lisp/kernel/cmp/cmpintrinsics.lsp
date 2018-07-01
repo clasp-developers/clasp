@@ -518,7 +518,7 @@ eg:  (f closure-ptr nargs a b c d ...)
                                     %i32% ; lineno
                                     %i32% ; column
                                     %i32% ; filepos
-                                    %i32% ; source-debug-file-name index
+                                    %i32% ; source-debug-pathname index
                                     %i32% ; source-debug-offset
                                     %i32% ; source-debug-use-lineno-p
                                     ) nil ))
@@ -761,8 +761,8 @@ and initialize it with an array consisting of one function pointer."
 (defvar *compile-file-truename* nil "Store the truename of the currently compiled file")
 (defvar *compile-file-source-file-info* nil "Store the SourceFileInfo object for the compile-file target")
 
-(defvar *source-file-name*)
-(defvar *source-debug-file-name*)
+(defvar *source-pathname*)
+(defvar *source-debug-pathname*)
 (defvar *source-debug-offset* 0)
 (defvar *source-debug-use-lineno-p* t)
 

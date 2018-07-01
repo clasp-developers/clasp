@@ -40,7 +40,7 @@
     (with-compilation-unit ()
       (with-module ( :module module
                      :optimize nil)
-        (with-source-file-names (:source-file-name "code-walk-using-bclasp")
+        (with-source-pathnames (:source-pathname "code-walk-using-bclasp")
           (with-debug-info-generator (:module module
                                       :pathname #P"/dev/null")
             (with-make-new-run-all (run-all-function)

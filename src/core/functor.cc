@@ -55,12 +55,12 @@ std::atomic<uint64_t> global_interpreted_closure_calls;
 FunctionDescription* makeFunctionDescription(T_sp functionName,
                                              T_sp lambda_list,
                                              T_sp docstring,
-                                             T_sp sourceFileName,
+                                             T_sp sourcePathname,
                                              int lineno,
                                              int column,
                                              int filePos,
                                              T_sp declares,
-                                             T_sp sourceDebugFileName,
+                                             T_sp sourceDebugPathname,
                                              int sourceDebugOffset,
                                              bool sourceDebugUseLinenoP) {
   // There is space for 5 roots needed - make sure that matches the number pushed below
@@ -71,7 +71,7 @@ FunctionDescription* makeFunctionDescription(T_sp functionName,
   gctools::GCRootsInModule* roots = my_thread->_GCRoots;
   fdesc->gcrootsInModule = roots;
   // There are 6 roots needed 
-  fdesc->sourceFileNameIndex =  roots->push_back(sourceFileName.tagged_());
+  fdesc->sourcePathnameIndex =  roots->push_back(sourcePathname.tagged_());
   fdesc->functionNameIndex = roots->push_back(functionName.tagged_());
   fdesc->lambdaListIndex = roots->push_back(lambda_list.tagged_());
   fdesc->docstringIndex = roots->push_back(docstring.tagged_());
@@ -79,7 +79,7 @@ FunctionDescription* makeFunctionDescription(T_sp functionName,
   fdesc->lineno = lineno;
   fdesc->column = column;
   fdesc->filepos = filePos;
-  fdesc->sourceDebugFileNameIndex = roots->push_back(sourceDebugFileName.tagged_());
+  fdesc->sourceDebugPathnameIndex = roots->push_back(sourceDebugPathname.tagged_());
   fdesc->sourceDebugOffset = sourceDebugOffset;
   fdesc->sourceDebugUseLinenoP = sourceDebugUseLinenoP;
   return fdesc;
@@ -91,9 +91,9 @@ void validateFunctionDescription(const char* filename, size_t lineno, Function_s
     printf("FunctionDescription defined at %s:%zu  is missing functionName\n", filename, lineno);
     abort();
   }
-  T_sp sourceFileName = func->sourceFileName();
-  if (sourceFileName.unboundp()) {
-    printf("FunctionDescription for function %s defined at %s:%zu  is missing sourceFileName\n", _rep_(functionName).c_str(), filename, lineno);
+  T_sp sourcePathname = func->sourcePathname();
+  if (sourcePathname.unboundp()) {
+    printf("FunctionDescription for function %s defined at %s:%zu  is missing sourcePathname\n", _rep_(functionName).c_str(), filename, lineno);
   }
   T_sp lambdaList = func->lambdaList();
   if (lambdaList.unboundp()) {
@@ -114,12 +114,12 @@ extern "C" void dumpFunctionDescription(void* vfdesc)
 {
   core::FunctionDescription* fdesc = (core::FunctionDescription*)vfdesc;
   printf("FunctionDescription @%p\n", fdesc);
-  printf("sourceFileName[%d] = %s\n", fdesc->sourceFileNameIndex, _rep_(core::T_sp((gctools::Tagged)fdesc->gcrootsInModule->get(fdesc->sourceFileNameIndex))).c_str()); 
+  printf("sourcePathname[%d] = %s\n", fdesc->sourcePathnameIndex, _rep_(core::T_sp((gctools::Tagged)fdesc->gcrootsInModule->get(fdesc->sourcePathnameIndex))).c_str()); 
   printf("functionName[%d] = %s\n", fdesc->functionNameIndex, _rep_(core::T_sp((gctools::Tagged)fdesc->gcrootsInModule->get(fdesc->functionNameIndex))).c_str()); 
   printf("lambdaList[%d] = %s\n", fdesc->lambdaListIndex, _rep_(core::T_sp((gctools::Tagged)fdesc->gcrootsInModule->get(fdesc->lambdaListIndex))).c_str()); 
   printf("docstring[%d] = %s\n", fdesc->docstringIndex, _rep_(core::T_sp((gctools::Tagged)fdesc->gcrootsInModule->get(fdesc->docstringIndex))).c_str()); 
   printf("declare[%d] = %s\n", fdesc->declareIndex, _rep_(core::T_sp((gctools::Tagged)fdesc->gcrootsInModule->get(fdesc->declareIndex))).c_str()); 
-  printf("sourceDebugFileName[%d] = %s\n", fdesc->sourceDebugFileNameIndex, _rep_(core::T_sp((gctools::Tagged)fdesc->gcrootsInModule->get(fdesc->sourceDebugFileNameIndex))).c_str());
+  printf("sourceDebugPathname[%d] = %s\n", fdesc->sourceDebugPathnameIndex, _rep_(core::T_sp((gctools::Tagged)fdesc->gcrootsInModule->get(fdesc->sourceDebugPathnameIndex))).c_str());
   printf("lineno = %d\n", fdesc->lineno);
   printf("column = %d\n", fdesc->column);
   printf("filepos = %d\n", fdesc->filepos);
@@ -137,7 +137,7 @@ CL_DEFUN void core__dumpFunctionDescription(Function_sp func)
 
 CL_LISPIFY_NAME("core:functionSourcePos");
 CL_DEFMETHOD T_mv Function_O::functionSourcePos() const {
-  T_sp sfi = this->sourceFileName();
+  T_sp sfi = this->sourcePathname();
   return Values(sfi, make_fixnum(this->filePos()), make_fixnum(this->lineno()));
 }
 
@@ -180,7 +180,7 @@ ClosureWithSlots_sp ClosureWithSlots_O::make_bclasp_closure(T_sp name, claspFunc
                                                               (core::FunctionDescription*)fdesc);
   closure->closureType = ClosureWithSlots_O::bclaspClosure;
   (*closure)[BCLASP_CLOSURE_ENVIRONMENT_SLOT] = environment;
-  closure->setf_sourceFileName(_Nil<T_O>());
+  closure->setf_sourcePathname(_Nil<T_O>());
   closure->setf_lambdaList(lambda_list);
   closure->setf_declares(_Nil<T_O>());
   closure->setf_docstring(_Nil<T_O>());
@@ -216,7 +216,7 @@ CL_DEFUN size_t core__function_call_counter(Function_sp f)
 
 T_sp Function_O::setSourcePosInfo(T_sp sourceFile, size_t filePos, int lineno, int column) {
   SourceFileInfo_mv sfi = core__source_file_info(sourceFile);
-  this->setf_sourceFileName(sfi);
+  this->setf_sourcePathname(sfi->pathname());
   this->setf_filePos(filePos);
   this->setf_lineno(lineno);
   this->setf_column(column);

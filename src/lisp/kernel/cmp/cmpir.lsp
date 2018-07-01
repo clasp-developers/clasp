@@ -930,9 +930,9 @@ But no irbuilders or basic-blocks. Return the fn."
 
 (defstruct (function-info (:type vector) :named)
   function-name
-  (source-file-name cmp:*source-file-name*)
+  (source-pathname cmp:*source-pathname*)
   lambda-list docstring declares form lineno column filepos
-  (source-debug-file-name cmp:*source-debug-file-name*)
+  (source-debug-pathname cmp:*source-debug-pathname*)
   (source-debug-offset cmp:*source-debug-offset*)
   (source-debug-use-lineno-p cmp:*source-debug-use-lineno-p*))
 
@@ -942,7 +942,7 @@ But no irbuilders or basic-blocks. Return the fn."
   (unless function-info
     (error "function info is NIL for ~a" llvm-function-name))
   (let ((function-name (function-info-function-name function-info))
-        (source-file-name (function-info-source-file-name function-info))
+        (source-pathname (function-info-source-pathname function-info))
         source-info-name
         (lambda-list (function-info-lambda-list function-info))
         (docstring (function-info-docstring function-info))
@@ -950,7 +950,7 @@ But no irbuilders or basic-blocks. Return the fn."
         (column (function-info-column function-info))
         (filepos (function-info-filepos function-info))
         (declares (function-info-declares function-info))
-        (source-debug-file-name (function-info-source-debug-file-name function-info))
+        (source-debug-pathname (function-info-source-debug-pathname function-info))
         (source-debug-offset (function-info-source-debug-offset function-info))
         (source-debug-use-lineno-p (function-info-source-debug-use-lineno-p function-info)))
     (multiple-value-bind (found-source-info n l c f)
@@ -964,7 +964,7 @@ But no irbuilders or basic-blocks. Return the fn."
       (progn
         (core:bformat t "--------------------------%N")
         (core:bformat t "found-source-info: %s%N" found-source-info)
-        (core:bformat t "source-file-name: %s%N" source-file-name)
+        (core:bformat t "source-pathname: %s%N" source-pathname)
         (core:bformat t "source-info-name: %s%N" source-info-name)
         (core:bformat t "llvm-function-name: %s%N" llvm-function-name)
         (core:bformat t "function-name: %s%N" function-name)
@@ -975,15 +975,15 @@ But no irbuilders or basic-blocks. Return the fn."
         (core:bformat t "lineno: %s%N" lineno)
         (core:bformat t "column: %s%N" column)
         (core:bformat t "filepos: %s%N" filepos))
-      (let ((source-file-name-index (literal:reference-literal source-file-name))
+      (let ((source-pathname-index (literal:reference-literal source-pathname))
             (function-name-index (literal:reference-literal function-name t))
             (lambda-list-index (literal:reference-literal lambda-list t))
             (docstring-index (literal:reference-literal docstring t))
             (declare-index (literal:reference-literal declares t))
-            (source-debug-file-name-index (literal:reference-literal source-debug-file-name)))
+            (source-debug-pathname-index (literal:reference-literal source-debug-pathname)))
         #+(or)
         (progn
-          (core:bformat t "source-file-name-index: %s%N" source-file-name-index)
+          (core:bformat t "source-pathname-index: %s%N" source-pathname-index)
           (core:bformat t "function-name-index: %s%N" function-name-index)
           (core:bformat t "lambda-list-index: %s%N" lambda-list-index)
           (core:bformat t "docstring-index: %s%N" docstring-index)
@@ -1002,7 +1002,7 @@ But no irbuilders or basic-blocks. Return the fn."
                                        (list
                                         fn
                                         literal::*gcroots-in-module*
-                                        (jit-constant-i32 source-file-name-index)
+                                        (jit-constant-i32 source-pathname-index)
                                         (jit-constant-i32 function-name-index)
                                         (jit-constant-i32 lambda-list-index)
                                         (jit-constant-i32 docstring-index)
@@ -1010,7 +1010,7 @@ But no irbuilders or basic-blocks. Return the fn."
                                         (jit-constant-i32 lineno)
                                         (jit-constant-i32 column)
                                         (jit-constant-i32 filepos)
-                                        (jit-constant-i32 source-debug-file-name-index)
+                                        (jit-constant-i32 source-debug-pathname-index)
                                         (jit-constant-i32 source-debug-offset)
                                         (jit-constant-i32 (if source-debug-use-lineno-p 1 0))
                                         )
