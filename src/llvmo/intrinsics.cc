@@ -425,14 +425,10 @@ ALWAYS_INLINE void setParentOfActivationFrame(core::T_O *resultP, core::T_O *par
 
 
 ALWAYS_INLINE core::T_O *cc_stack_enclose(void* closure_address,
-                                          core::T_O *lambdaName,
                                           fnLispCallingConvention llvm_func,
                                           core::FunctionDescription* functionDescription,
-                                          /* int *sourceFileInfoHandleP,
-                                          size_t filePos, size_t lineno, size_t column, */
                                           std::size_t numCells, ...)
 {NO_UNWIND_BEGIN();
-  core::T_sp tlambdaName = gctools::smart_ptr<core::T_O>((gc::Tagged)lambdaName);
   gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(closure_address);
   const gctools::Header_s::Value closure_header = gctools::Header_s::Value::make<core::ClosureWithSlots_O>();
   size_t size = gctools::sizeof_container_with_header<core::ClosureWithSlots_O>(numCells);

@@ -1300,16 +1300,10 @@ void cc_setSymbolValue(core::T_O *sym, core::T_O *val)
   NO_UNWIND_END();
 }
 
-core::T_O *cc_enclose(core::T_O *lambdaName,
-                      fnLispCallingConvention llvm_func,
+core::T_O *cc_enclose(fnLispCallingConvention llvm_func,
                       void* functionDescription,
-                      /* int *sourceFileInfoHandleP,
-                      size_t filePos,
-                      size_t lineno,
-                      size_t column, */
                       std::size_t numCells, ...)
 {
-  core::T_sp tlambdaName = gctools::smart_ptr<core::T_O>((gc::Tagged)lambdaName);
   gctools::smart_ptr<core::ClosureWithSlots_O> functoid =
     gctools::GC<core::ClosureWithSlots_O>::allocate_container( numCells
                                                               , llvm_func

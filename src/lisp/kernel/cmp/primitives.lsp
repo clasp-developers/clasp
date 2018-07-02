@@ -260,15 +260,12 @@
     (primitive         "cc_initialize_gcroots_in_module" %void% (list %gcroots-in-module*% %t**% %size_t% %t*%))
     (primitive         "cc_shutdown_gcroots_in_module" %void% (list %gcroots-in-module*% ))
 
-    (primitive-unwinds  "cc_enclose" %t*% (list %t*%
-                                                %fn-prototype*%
-                                                %i8*%
-                                                #| %i32*% %size_t% %size_t% %size_t% |#
-                                                %size_t% ) :varargs t)
-    (primitive         "cc_stack_enclose" %t*% (list %i8*% %t*%
+    (primitive-unwinds "cc_enclose" %t*% (list %fn-prototype*%
+                                               %i8*%
+                                               %size_t% ) :varargs t)
+    (primitive         "cc_stack_enclose" %t*% (list %i8*%
                                                      %fn-prototype*%
                                                      %i8*%
-                                                     #| %i32*% %size_t% %size_t% %size_t% |#
                                                      %size_t% ) :varargs t)
     (primitive         "cc_saveThreadLocalMultipleValues" %void% (list %tmv*% %mv-struct*%))
     (primitive         "cc_loadThreadLocalMultipleValues" %void% (list %tmv*% %mv-struct*%))
