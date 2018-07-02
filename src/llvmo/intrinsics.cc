@@ -443,7 +443,8 @@ ALWAYS_INLINE core::T_O *cc_stack_enclose(void* closure_address,
   auto obj = gctools::BasePtrToMostDerivedPtr<typename gctools::smart_ptr<core::ClosureWithSlots_O>::Type>(closure_address);
   new (obj) (typename gctools::smart_ptr<core::ClosureWithSlots_O>::Type)( numCells,
                                                                            llvm_func,
-                                                                           functionDescription);
+                                                                           functionDescription,
+                                                                           core::ClosureWithSlots_O::cclaspClosure);
 
   gctools::smart_ptr<core::ClosureWithSlots_O> functoid = gctools::smart_ptr<core::ClosureWithSlots_O>(obj);
   core::T_O *p;

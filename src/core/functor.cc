@@ -157,8 +157,8 @@ ClosureWithSlots_sp ClosureWithSlots_O::make_interpreted_closure(T_sp name, T_sp
   ClosureWithSlots_sp closure =
     gctools::GC<core::ClosureWithSlots_O>::allocate_container(INTERPRETED_CLOSURE_SLOTS,
                                                               &interpretedClosureEntryPoint,
-                                                              interpretedFunctionDescription);
-  closure->closureType = ClosureWithSlots_O::interpretedClosure;
+                                                              interpretedFunctionDescription,
+                                                              ClosureWithSlots_O::interpretedClosure);
   (*closure)[INTERPRETED_CLOSURE_FORM_SLOT] = form;
   (*closure)[INTERPRETED_CLOSURE_ENVIRONMENT_SLOT] = environment;
   if (lambda_list_handler.nilp()) {
@@ -177,8 +177,8 @@ ClosureWithSlots_sp ClosureWithSlots_O::make_bclasp_closure(T_sp name, claspFunc
   ClosureWithSlots_sp closure = 
     gctools::GC<core::ClosureWithSlots_O>::allocate_container(BCLASP_CLOSURE_SLOTS,
                                                               ptr,
-                                                              (core::FunctionDescription*)fdesc);
-  closure->closureType = ClosureWithSlots_O::bclaspClosure;
+                                                              (core::FunctionDescription*)fdesc,
+                                                              ClosureWithSlots_O::bclaspClosure);
   (*closure)[BCLASP_CLOSURE_ENVIRONMENT_SLOT] = environment;
   closure->setf_sourcePathname(_Nil<T_O>());
   closure->setf_lambdaList(lambda_list);
@@ -193,8 +193,8 @@ ClosureWithSlots_sp ClosureWithSlots_O::make_cclasp_closure(T_sp name, claspFunc
   ClosureWithSlots_sp closure = 
     gctools::GC<core::ClosureWithSlots_O>::allocate_container(0,
                                                               ptr,
-                                                              (core::FunctionDescription*)fdesc);
-  closure->closureType = ClosureWithSlots_O::cclaspClosure;
+                                                              (core::FunctionDescription*)fdesc,
+                                                              ClosureWithSlots_O::cclaspClosure);
   closure->setf_lambdaList(lambda_list);
   closure->setf_declares(_Nil<T_O>());
   closure->setf_docstring(_Nil<T_O>());

@@ -18,7 +18,6 @@ namespace core {
   FORWARD(Function);
   FORWARD(Closure);
   FORWARD(BuiltinClosure);
-  FORWARD(Closure);
   FORWARD(ClosureWithSlots);
 };
 
@@ -289,8 +288,10 @@ namespace core {
   public:
   ClosureWithSlots_O(size_t capacity,
                      claspFunction ptr,
-                     FunctionDescription* functionDescription)
+                     FunctionDescription* functionDescription,
+                     ClosureType nclosureType)
     : Base(ptr, functionDescription),
+      closureType(nclosureType),
       _Slots(capacity,_Unbound<T_O>(),true) {};
     virtual string __repr__() const;
     core::LambdaListHandler_sp lambdaListHandler() const {

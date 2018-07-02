@@ -419,7 +419,8 @@ LtvcReturn ltvc_enclose(gctools::GCRootsInModule* holder, size_t index, gctools:
   gctools::smart_ptr<core::ClosureWithSlots_O> functoid =
     gctools::GC<core::ClosureWithSlots_O>::allocate_container(0,
                                                               llvm_func,
-                                                              (core::FunctionDescription*)functionDescription);
+                                                              (core::FunctionDescription*)functionDescription,
+                                                              core::ClosureWithSlots_O::cclaspClosure);
   LTVCRETURN holder->set(index, functoid.tagged_());
   NO_UNWIND_END();
 }
@@ -677,8 +678,8 @@ DONT_OPTIMIZE_WHEN_DEBUG_RELEASE core::T_O* makeCompiledFunction(fnLispCallingCo
   core::ClosureWithSlots_sp toplevel_closure =
     gctools::GC<core::ClosureWithSlots_O>::allocate_container(BCLASP_CLOSURE_SLOTS,
                                                               funcPtr,
-                                                              (core::FunctionDescription*)functionDescription);
-  toplevel_closure->closureType = ClosureWithSlots_O::bclaspClosure;
+                                                              (core::FunctionDescription*)functionDescription,
+                                                              core::ClosureWithSlots_O::bclaspClosure);
   (*toplevel_closure)[BCLASP_CLOSURE_ENVIRONMENT_SLOT] = frame;
   return toplevel_closure.raw_();
   NO_UNWIND_END();
@@ -1307,7 +1308,8 @@ core::T_O *cc_enclose(fnLispCallingConvention llvm_func,
   gctools::smart_ptr<core::ClosureWithSlots_O> functoid =
     gctools::GC<core::ClosureWithSlots_O>::allocate_container( numCells
                                                               , llvm_func
-                                                               , (core::FunctionDescription*)functionDescription);
+                                                               , (core::FunctionDescription*)functionDescription,
+                                                               core::ClosureWithSlots_O::cclaspClosure);
   core::T_O *p;
   va_list argp;
   va_start(argp, numCells);
