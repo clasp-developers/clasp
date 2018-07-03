@@ -244,6 +244,15 @@ CL_DEFUN void core__help_booting() {
          "(default-epilogue-form) - Returns an epilogue form for link-system\n");
 }
 
+
+CL_DOCSTRING("Return the rdtsc performance timer value");
+CL_DEFUN Fixnum core__rdtsc(){
+    unsigned int lo,hi;
+    __asm__ __volatile__ ("rdtsc" : "=a" (lo), "=d" (hi));
+    return ((uint64_t)hi << 32) | lo;
+}
+
+
 CL_LAMBDA(pow2);
 CL_DECLARE();
 CL_DOCSTRING("Evaluate a TaggedCast 2^pow2 times");
