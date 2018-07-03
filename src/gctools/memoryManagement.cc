@@ -492,6 +492,10 @@ void shutdown_gcroots_in_module(GCRootsInModule* roots) {
 #endif
 }
 
+CL_DEFUN Fixnum gctools__nextStampValue() {
+  return global_NextStamp;
+}
+
 CL_LAMBDA(address args);
 CL_DEFUN void gctools__register_roots(core::T_sp taddress, core::List_sp args) {
   core::T_O** shadow_mem = NULL;
@@ -567,7 +571,7 @@ int startupGarbageCollectorAndSystem(MainFunctionType startupFn, int argc, char 
 # define DEFAULT_THREAD_INTERRUPT_SIGNAL SIGUSR1
 #endif
   gctools::initialize_signals(DEFAULT_THREAD_INTERRUPT_SIGNAL);
-  
+
 #if defined(USE_MPS)
   int exitCode = gctools::initializeMemoryPoolSystem(startupFn, argc, argv, mpiEnabled, mpiRank, mpiSize);
 #endif
