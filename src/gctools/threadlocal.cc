@@ -1,5 +1,6 @@
 
 #include <sys/types.h>
+#include <signal.h>
 #include <clasp/core/foundation.h>
 #include <clasp/gctools/threadlocal.h>
 #include <clasp/core/lisp.h>
@@ -222,5 +223,22 @@ void ThreadLocalState::initialize_thread(mp::Process_sp process, bool initialize
   this->_PendingInterrupts = _Nil<T_O>();
   this->_SparePendingInterruptRecords = cl__make_list(clasp_make_fixnum(16),_Nil<T_O>());
 };
+
+void ThreadLocalState::destroy_sigaltstack()
+{
+  if (sigaltstack(&my_thread->_original_stack, (stack_t *)0) < 0) perror("sigaltstack problem");
+  free(my_thread->_sigaltstack_buffer);
+}
+
+void ThreadLocalState::create_sigaltstack() {
+  // Set up a sigaltstack
+  stack_t sigstk;
+  size_t size = SIGNAL_STACK_SIZE+SIGSTKSZ;
+  my_thread->_sigaltstack_buffer = (void*)malloc(size);
+  if (!my_thread->_sigaltstack_buffer) perror("Could not allocate signal stack");
+  sigstk.ss_size = SIGNAL_STACK_SIZE+SIGSTKSZ;
+  sigstk.ss_flags = 0;
+  if (sigaltstack(&sigstk,&my_thread->_original_stack) < 0) perror("sigaltstack problem");
+}
 
 };

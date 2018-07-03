@@ -233,6 +233,7 @@ void Lisp_O::shutdownLispEnvironment() {
     this->_DebugStream->endNode(DEBUG_TOPLEVEL);
     delete this->_DebugStream;
   }
+  my_thread->destroy_sigaltstack();
 }
 
 void Lisp_O::lisp_initSymbols(Lisp_sp lisp) {
@@ -478,6 +479,7 @@ void Lisp_O::startupLispEnvironment(Bundle *bundle) {
       getchar();
   }
 
+  my_thread->create_sigaltstack();
   my_thread->_GCRoots = new gctools::GCRootsInModule();
   { // Trap symbols as they are interned
     if (offsetof(Function_O,entry)!=offsetof(FuncallableInstance_O,entry)) {

@@ -134,6 +134,7 @@ void start_thread_inner(Process_sp process, void* cold_end_of_stack) {
 #endif
   my_thread = &my_thread_local_state;
   my_thread->initialize_thread(process,true);
+  my_thread->create_sigaltstack();
   process->_ThreadInfo = my_thread;
   // Set the mp:*current-process* variable to the current process
   core::DynamicScopeManager scope(_sym_STARcurrent_processSTAR,process);
@@ -177,6 +178,7 @@ void start_thread_inner(Process_sp process, void* cold_end_of_stack) {
   }
   result_list = core::Cons_O::create(result0,result_list);
   process->_ReturnValuesList = result_list;
+  
 //  gctools::unregister_thread(process);
 //  printf("%s:%d leaving start_thread\n", __FILE__, __LINE__);
 
@@ -191,7 +193,7 @@ void* start_thread(void* claspProcess) {
   // MPS setup of thread
   //
   start_thread_inner(process,cold_end_of_stack);
-  
+
 #if 0
 #ifdef USE_BOEHM
   GC_unregister_my_thread();
@@ -202,6 +204,7 @@ void* start_thread(void* claspProcess) {
   mps_root_destroy(process->root);
   mps_thread_dereg(process->thr_o);
 #endif
+  my_thread->destroy_sigaltstack();
 //  printf("%s:%d  really leaving start_thread\n", __FILE__, __LINE__ );
   return NULL;
 }

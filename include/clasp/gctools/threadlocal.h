@@ -8,6 +8,9 @@ namespace core {
   struct ThreadLocalState {
     ThreadLocalState(void* stack_top);
     void initialize_thread(mp::Process_sp process, bool initialize_GCRoots);
+    void create_sigaltstack();
+    void destroy_sigaltstack();
+    
     int _DisableInterrupts;
 #if defined(DEBUG_RECURSIVE_ALLOCATIONS)
     int _RecursiveAllocationCounter;
@@ -22,6 +25,8 @@ namespace core {
     BignumExportBuffer _AsUint64Buffer;
     const InvocationHistoryFrame* _InvocationHistoryStackTop;
     gctools::GCRootsInModule*  _GCRoots;
+    void* _sigaltstack_buffer;
+    stack_t _original_stack;
 #ifdef DEBUG_IHS
     // Save the last return address before IHS screws up
     void*                    _IHSBacktrace[IHS_BACKTRACE_SIZE];

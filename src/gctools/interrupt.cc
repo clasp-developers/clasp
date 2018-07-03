@@ -389,7 +389,7 @@ void initialize_signals(int clasp_signal) {
   /* Set up the structure to specify the new action. */
   new_action.sa_handler = interrupt_handle_signals;
   sigemptyset (&new_action.sa_mask);
-  new_action.sa_flags = SA_RESTART;
+  new_action.sa_flags = SA_RESTART | SA_ONSTACK;
   if (sigaction (clasp_signal, &new_action, NULL) != 0) {
     printf("failed to register clasp_signal signal-handler with kernel error: %s\n", strerror(errno));
   }
@@ -401,9 +401,15 @@ void initialize_signals(int clasp_signal) {
   }
   new_action.sa_handler = handle_signals;
   sigemptyset (&new_action.sa_mask);
-  new_action.sa_flags = SA_RESTART;
+  new_action.sa_flags = SA_RESTART | SA_ONSTACK;
   if (sigaction (SIGABRT, &new_action, NULL) != 0) {
     printf("failed to register SIGABRT signal-handler with kernel error: %s\n", strerror(errno));
+  }
+  new_action.sa_handler = handle_signals;
+  sigemptyset (&new_action.sa_mask);
+  new_action.sa_flags = SA_RESTART | SA_ONSTACK;
+  if (sigaction (SIGSEGV, &new_action, NULL) != 0) {
+    printf("failed to register SIGSEGV signal-handler with kernel error: %s\n", strerror(errno));
   }
 #if 0
   if (signal(SIGCHLD, handle_signals) == SIG_ERR) {
