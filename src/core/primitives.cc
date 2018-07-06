@@ -966,12 +966,12 @@ CL_DEFUN T_mv cl__fmakunbound(T_sp functionName) {
     if (oCar(cname) == cl::_sym_setf) {
       Symbol_sp name = gc::As<Symbol_sp>(oCadr(cname));
       if (name.notnilp()) {
-        name->resetSetfFdefinition(); //_lisp->remove_setfDefinition(name);
+        name->fmakunbound_setf();
         return (Values(functionName));
       }
     }
   } else if (Symbol_sp sym = functionName.asOrNull<Symbol_O>() ) {
-    sym->setf_symbolFunction(_Unbound<Function_O>());
+    sym->fmakunbound();
     return (Values(sym));
   }
   TYPE_ERROR(functionName,cl::_sym_function);
