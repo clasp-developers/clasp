@@ -1110,6 +1110,14 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
 #endif
   if (buildReport) ss << (BF("DEBUG_MEMORY_PROFILE = %s\n") % (debug_memory_profile ? "**DEFINED**" : "undefined") ).str();
 
+  bool debug_compiler = false;
+#ifdef DEBUG_COMPILER
+  debug_compiler = true;
+  debugging = true;
+  if (setFeatures) features = core::Cons_O::create(_lisp->internKeyword("DEBUG-COMPILER"),features);
+#endif
+  if (buildReport) ss << (BF("DEBUG_COMPILER = %s\n") % (debug_compiler ? "**DEFINED**" : "undefined") ).str();
+
   bool debug_count_allocations = false;
 #ifdef DEBUG_COUNT_ALLOCATIONS
   debug_count_allocations = true;
