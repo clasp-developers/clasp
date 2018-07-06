@@ -1,10 +1,17 @@
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <limits.h>
+#include <fcntl.h>
 #include <sys/types.h>
 #include <signal.h>
+#include <execinfo.h>
 #include <clasp/core/foundation.h>
 #include <clasp/gctools/threadlocal.h>
 #include <clasp/core/lisp.h>
 #include <clasp/core/mpPackage.h>
+#include <clasp/core/array.h>
+#include <clasp/core/debugger.h>
 #include <clasp/core/lispStream.h>
 
 
@@ -224,13 +231,8 @@ void ThreadLocalState::initialize_thread(mp::Process_sp process, bool initialize
   this->_SparePendingInterruptRecords = cl__make_list(clasp_make_fixnum(16),_Nil<T_O>());
 };
 
-void ThreadLocalState::destroy_sigaltstack()
-{
-  if (sigaltstack(&my_thread->_original_stack, (stack_t *)0) < 0) perror("sigaltstack problem");
-  free(my_thread->_sigaltstack_buffer);
-}
-
 void ThreadLocalState::create_sigaltstack() {
+#if 0
   // Set up a sigaltstack
   stack_t sigstk;
   size_t size = SIGNAL_STACK_SIZE+SIGSTKSZ;
@@ -239,7 +241,17 @@ void ThreadLocalState::create_sigaltstack() {
   sigstk.ss_size = SIGNAL_STACK_SIZE+SIGSTKSZ;
   sigstk.ss_flags = 0;
   if (sigaltstack(&sigstk,&my_thread->_original_stack) < 0) perror("sigaltstack problem");
+#endif
 }
+
+void ThreadLocalState::destroy_sigaltstack()
+{
+#if 0
+  if (sigaltstack(&my_thread->_original_stack, (stack_t *)0) < 0) perror("sigaltstack problem");
+  free(my_thread->_sigaltstack_buffer);
+#endif
+}
+
 
 };
 
