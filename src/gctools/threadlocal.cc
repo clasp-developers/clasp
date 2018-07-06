@@ -248,18 +248,41 @@ void ThreadLocalState::create_sigaltstack() {
 namespace gctools {
 
 #ifdef DEBUG_COUNT_ALLOCATIONS
-void count_allocation(Fixnum stamp) {
+void start_backtrace_allocations(const std::string& filename, Fixnum stamp) {
+  int fd = open(filename.c_str(),O_WRONLY|O_CREAT,S_IRWXU);
+  if (fd<0) {
+    SIMPLE_ERROR(BF("Could not open file %s - %s") % filename % strerror(errno));
+  }
+  my_thread->_BacktraceStamp = stamp;
+  my_thread->_BacktraceFd = fd;
+  my_thread->_BacktraceAllocationsP = true;
+}
+
+void stop_backtrace_allocations() {
+  close(my_thread->_BacktraceFd);
+  my_thread->_BacktraceAllocationsP = false;
+}
+
+void count_allocation(stamp_t stamp) {
   if (my_thread->_CountAllocations.size() <= stamp) {
     my_thread->_CountAllocations.resize(stamp+1,0);
+  }
+  if (my_thread->_BacktraceAllocationsP) {
+    if (my_thread->_BacktraceStamp == stamp) {
+      void** buffer = NULL;
+      int nptrs = core::safe_backtrace(buffer);
+      backtrace_symbols_fd(buffer,nptrs,my_thread->_BacktraceFd);
+      write(my_thread->_BacktraceFd,"\n",strlen("\n"));
+    }
   }
   my_thread->_CountAllocations[stamp]++;
 }
 
 CL_DEFUN core::SimpleVector_sp gctools__allocation_counts()
 {
-  core::SimpleVector_sp counts = core::core__make_array(my_thread->_CountAllocations.size());
+  core::SimpleVector_sp counts = core::core__make_vector(_lisp->_true(),my_thread->_CountAllocations.size());
   for ( size_t i=0; i<my_thread->_CountAllocations.size(); ++i ) {
-    (*counts)[i] = my_thread->_CountAllocations[i];
+    (*counts)[i] = core::make_fixnum(my_thread->_CountAllocations[i]);
   }
   return counts;
 }

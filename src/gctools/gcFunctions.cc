@@ -37,6 +37,8 @@ int gcFunctions_after;
 #include <clasp/gctools/gctoolsPackage.h>
 #include <clasp/gctools/gcFunctions.h>
 #include <clasp/llvmo/intrinsics.h>
+#include <clasp/gctools/gc_interface.h>
+#include <clasp/gctools/threadlocal.h>
 #include <clasp/core/wrappers.h>
 
 #ifdef DEBUG_TRACK_UNWINDS
@@ -202,6 +204,7 @@ CL_DEFUN core::T_sp gctools__bytes_allocated() {
   ASSERT(my_bytes < gc::most_positive_fixnum);
   return core::clasp_make_fixnum(my_bytes);
 }
+
 
 
 CL_DOCSTRING("Return the next unused kind");
@@ -731,6 +734,19 @@ void dbg_room() {
 }
 namespace gctools {
 
+#ifdef DEBUG_COUNT_ALLOCATIONS
+CL_DOCSTRING("Start collecting backtraces for allocations of a particular stamp. Write the bactraces into the file specified by filename.");
+CL_DEFUN void gctools__start_collecting_backtraces_for_allocations_by_stamp(const std::string& filename, Fixnum stamp) {
+  gctools::start_backtrace_allocations(filename,stamp);
+}
+
+CL_DOCSTRING("Stop collecting backtraces for allocations of a particular stamp.");
+CL_DEFUN void gctools__stop_collecting_backtraces_for_allocations_by_stamp() {
+  gctools::stop_backtrace_allocations();
+}
+#endif
+
+
 CL_DEFUN void gctools__telemetryFlush() {
 #ifdef USE_BOEHM
   IMPLEMENT_ME();
@@ -793,11 +809,14 @@ CL_DEFUN void gctools__garbage_collect() {
   //        printf("Garbage collection done\n");
 };
 
+CL_DEFUN void gctools__register_stamp_name(const std::string& name,size_t stamp_num)
+{
+  register_stamp_name(name,stamp_num);
+}
 
-
-CL_DEFUN core::T_sp gctools__get_builtin_stamps() {
+CL_DEFUN core::T_sp gctools__get_stamp_name_map() {
   core::List_sp l = _Nil<core::T_O>();
-  for ( auto it : _global_stamp_names ) {
+  for ( auto it : global_stamp_name_map ) {
     l = core::Cons_O::create(core::Cons_O::create(core::SimpleBaseString_O::make(it.first),core::make_fixnum(it.second)),l);
   }
   return l;
@@ -1125,7 +1144,6 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
   if (setFeatures) features = core::Cons_O::create(_lisp->internKeyword("DEBUG-COUNT-ALLOCATIONS"),features);
 #endif
   if (buildReport) ss << (BF("DEBUG_COUNT_ALLOCATIONS = %s\n") % (debug_count_allocations ? "**DEFINED**" : "undefined") ).str();
-
 
   bool dont_optimize_bclasp = false;
 #ifdef DONT_OPTIMIZE_BCLASP
