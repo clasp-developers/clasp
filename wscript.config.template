@@ -56,3 +56,12 @@ USE_LLD = False
 # or bitcode is generated and lto linked (slow build time).
 #
 # CLASP_BUILD_MODE = "bitcode"
+
+# Turn on debug options that slow down clasp while checking for various things.
+# info on the various options is in wscript
+DEBUG_OPTIONS = [ "DEBUG_RELEASE",
+                  "DEBUG_BCLASP_LISP",
+                  "DEBUG_CCLASP_LISP",
+                  "DEBUG_COMPILER",
+                  "DEBUG_SLOW"
+                  ]

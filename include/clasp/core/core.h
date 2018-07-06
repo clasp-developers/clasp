@@ -28,7 +28,6 @@ THE SOFTWARE.
 #define CORE_H
 
 // Debug flow control
-//#define DEBUG_FLOW_CONTROL 1
 
 /*! Turn this on to force turn on xxx_ASSERT messages in release code*/
 //#ifndef DEBUG_ASSERT

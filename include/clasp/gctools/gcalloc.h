@@ -95,12 +95,6 @@ namespace gctools {
   inline Header_s* do_boehm_atomic_allocation(const Header_s::Value& the_header, size_t size) 
   {
     RAII_DISABLE_INTERRUPTS();
-#ifdef DEBUG_ZERO_KIND
-      if (the_header == 0) {
-        printf("%s:%d the_header cannot have a value of zero\n", __FILE__, __LINE__ );
-        abort();
-      }
-#endif
     size_t true_size = size;
 #ifdef DEBUG_GUARD
     size_t tail_size = ((rand()%8)+1)*Alignment();
@@ -119,12 +113,6 @@ namespace gctools {
   inline Header_s* do_boehm_normal_allocation(const Header_s::Value& the_header, size_t size) 
   {
     RAII_DISABLE_INTERRUPTS();
-#ifdef DEBUG_ZERO_KIND
-      if (the_header == 0) {
-        printf("%s:%d the_header cannot have a value of zero\n", __FILE__, __LINE__ );
-        abort();
-      }
-#endif
     size_t true_size = size;
 #ifdef DEBUG_GUARD
     size_t tail_size = ((rand()%8)+1)*Alignment();
@@ -143,12 +131,6 @@ namespace gctools {
   inline Header_s* do_boehm_uncollectable_allocation(const Header_s::Value& the_header, size_t size) 
   {
     RAII_DISABLE_INTERRUPTS();
-#ifdef DEBUG_ZERO_KIND
-      if (the_header == 0) {
-        printf("%s:%d the_header cannot have a value of zero\n", __FILE__, __LINE__ );
-        abort();
-      }
-#endif
     size_t true_size = size;
 #ifdef DEBUG_GUARD
     size_t tail_size = ((rand()%8)+1)*Alignment();

@@ -131,17 +131,6 @@ VALID_OPTIONS = [
     # Use lld only on Linux when CLASP_BUILD_MODE is "bitcode" - it's faster than ld
     # default = True
     "USE_LLD",
-    # Turn on memory guards - this allocates space in the header and after every general object
-    # in clasp and writes information into it that can be checked to test for writing outside of
-    # object memory - it slows things down by a few tens percent. This flag also turns on simple
-    # checking of the guard
-    # default = False
-    "DEBUG_GUARD",
-    # In combination with DEBUG_GUARD, this option turns on extensive testing of guards
-    # this adds more runtime cost (maybe it slows down clasp by 2x) but it tests every byte
-    # of the header guard and the tail guard
-    # default = False
-    "DEBUG_GUARD_EXHAUSTIVE_VALIDATE",
     # Add additional includes 
     "INCLUDES",
     # Add additional link flags
@@ -163,7 +152,49 @@ VALID_OPTIONS = [
     # Default = True
     "REQUIRE_LIBFFI",
     # If waf doesn't recognize the OS then use this option (darwin|linux|freebsd)
-    "DEST_OS"
+    "DEST_OS",
+    # Turn on debug options
+    "DEBUG_OPTIONS"
+]
+
+DEBUG_OPTIONS = [
+    "DEBUG_GUARD", # Add guards around allocated objects
+    "DEBUG_GUARD_VALIDATE", # add simple checks of guards (fast)
+    "DEBUG_GUARD_EXHAUSTIVE_VALIDATE", #add exhaustive, slow, checks of guards
+    "DEBUG_TRACE_INTERPRETED_CLOSURES", # Count how many interpreted closures are evaluated
+    "DEBUG_ENVIRONMENTS",
+    "DEBUG_RELEASE",   # Turn off optimization for a few C++ functions; undef this to optimize everything
+    "DEBUG_CACHE",      # Debug the dispatch caches - see cache.cc
+    "DEBUG_BITUNIT_CONTAINER",  # prints debug info for bitunit containers
+    "DEBUG_LEXICAL_DEPTH", # Generate tests for lexical closure depths
+    "DEBUG_FLOW_TRACKER",  # record small backtraces to track flow
+    "DEBUG_DYNAMIC_BINDING_STACK",  # dynamic variable binding debugging
+    "DEBUG_VALUES",   # turn on printing (values x y z) values when core:*debug-values* is not nil
+    "DEBUG_IHS",
+    "DEBUG_TRACK_UNWINDS",  # Count cc_unwind calls and report in TIME
+    "DEBUG_NO_UNWIND",   # debug intrinsics that say they don't unwind but actually do
+    "DEBUG_STARTUP",
+    ##  Generate per-thread logs in /tmp/dispatch-history/**  of the slow path of fastgf
+    "DEBUG_REHASH_COUNT",   # Keep track of the number of times each hash table has been rehashed
+    "DEBUG_MONITOR",   # generate logging messages to a file in /tmp for non-hot code
+    "DEBUG_MEMORY_PROFILE",  # Profile memory allocations total size and counter
+    "DEBUG_BCLASP_LISP",  # Generate debugging frames for all bclasp code - like declaim
+    "DEBUG_CCLASP_LISP",  # Generate debugging frames for all cclasp code - like declaim
+    "DEBUG_COUNT_ALLOCATIONS", # count per-thread allocations of instances of classes
+    "DEBUG_COMPILER", # Turn on compiler debugging
+    "DEBUG_LONG_CALL_HISTORY",   # The GF call histories used to blow up - this triggers an error if they get too long
+    "DEBUG_BOUNDS_ASSERT",  # check bounds 
+    "DEBUG_GFDISPATCH",  # debug call history manipulation
+    "DEBUG_CMPFASTGF",  # debug dispatch functions by inserting code into them that traces them
+    "DEBUG_FASTGF",   # generate slow gf dispatch logging and write out dispatch functions to /tmp/dispatch-history-**
+    "DEBUG_SLOT_ACCESSORS", # GF accessors have extra debugging added to them
+    "DEBUG_THREADS",
+    "DEBUG_ENSURE_VALID_OBJECT",  #Defines ENSURE_VALID_OBJECT(x)->x macro - sprinkle these around to run checks on objects
+    "DEBUG_QUICK_VALIDATE",    # quick/cheap validate if on and comprehensive validate if not
+    "DEBUG_MPS_SIZE",   # check that the size of the MPS object will be calculated properly by obj_skip
+    "DEBUG_DONT_OPTIMIZE_BCLASP",  # Optimize bclasp by editing llvm-ir
+    "DEBUG_RECURSIVE_ALLOCATIONS",
+    "DEBUG_SLOW"    # Code runs slower due to checks - undefine to remove checks
 ]
 
 def build_extension(bld):
@@ -775,53 +806,18 @@ def configure(cfg):
         cfg.define("DEBUG_GUARD_VALIDATE",1)
     if (cfg.env.DEBUG_GUARD_EXHAUSTIVE_VALIDATE):
         cfg.define("DEBUG_GUARD_EXHAUSTIVE_VALIDATE",1)
-    cfg.define("DEBUG_TRACE_INTERPRETED_CLOSURES",1)
-    cfg.define("DEBUG_ENVIRONMENTS",1)
-    cfg.define("DEBUG_RELEASE",1)   # Turn off optimization for a few C++ functions; undef this to optimize everything
-#    cfg.define("DEBUG_CACHE",1)      # Debug the dispatch caches - see cache.cc
-#    cfg.define("DEBUG_BITUNIT_CONTAINER",1)  # prints debug info for bitunit containers
-#    cfg.define("DEBUG_ZERO_KIND",1);
-#    cfg.define("DEBUG_FLOW_CONTROL",1)  # broken - probably should be removed unless it can be
-#    cfg.define("DEBUG_RETURN_FROM",1)   # broken
-#    cfg.define("DEBUG_LEXICAL_DEPTH",1) # Generate tests for lexical closure depths
-#    cfg.define("DEBUG_FLOW_TRACKER",1)  # record small backtraces to track flow
-#    cfg.define("DEBUG_DYNAMIC_BINDING_STACK",1)
-#    cfg.define("DEBUG_VALUES",1)   # turn on printing (values x y z) values when core:*debug-values* is not nil
-#    cfg.define("DEBUG_IHS",1)
-    cfg.define("DEBUG_TRACK_UNWINDS",1)  # Count cc_unwind calls and report in TIME
-#    cfg.define("DEBUG_NO_UNWIND",1)
-#    cfg.define("DEBUG_STARTUP",1)
-#    cfg.define("DEBUG_ACCESSORS",1)
-#    cfg.define("DEBUG_GFDISPATCH",1)
-##  Generate per-thread logs in /tmp/dispatch-history/**  of the slow path of fastgf
-#    cfg.define("DEBUG_CMPFASTGF",1)  # debug dispatch functions by inserting code into them that traces them
-#    cfg.define("DEBUG_FASTGF",1)   # generate slow gf dispatch logging and write out dispatch functions to /tmp/dispatch-history-**
-#    cfg.define("DEBUG_REHASH_COUNT",1)   # Keep track of the number of times each hash table has been rehashed
-#    cfg.define("DEBUG_MONITOR",1)   # generate logging messages to a file in /tmp for non-hot code
-#    cfg.define("DEBUG_MEMORY_PROFILE",1)  # Profile memory allocations
-    cfg.define("DEBUG_BCLASP_LISP",1)  # Generate debugging frames for all bclasp code - like declaim
-    cfg.define("DEBUG_CCLASP_LISP",1)  # Generate debugging frames for all cclasp code - like declaim
-    cfg.define("DEBUG_COUNT_ALLOCATIONS",1)
-    cfg.define("DEBUG_COMPILER",1) # Turn on compiler debugging
-#    cfg.define("DEBUG_LONG_CALL_HISTORY",1)
-#    cfg.define("DONT_OPTIMIZE_BCLASP",1)  # Optimize bclasp by editing llvm-ir
-#    cfg.define("DEBUG_BOUNDS_ASSERT",1)
-#    cfg.define("DEBUG_SLOT_ACCESSORS",1)
+    if (cfg.env.DEBUG_OPTIONS):
+        for opt in cfg.env.DEBUG_OPTIONS:
+            if (opt in DEBUG_OPTIONS):
+                cfg.define(opt,1)
+            else:
+                raise error("Illegal DEBUG_OPTION - allowed options: %s" % (opt, DEBUG_OPTIONS))
+
 #    cfg.define("DISABLE_TYPE_INFERENCE",1)
-#    cfg.define("DEBUG_THREADS",1)
-###  cfg.define("DEBUG_GUARD",1) #<<< this is set in wscript.config
 #    cfg.define("CONFIG_VAR_COOL",1)
-#    cfg.define("DEBUG_ENSURE_VALID_OBJECT",1)  #Defines ENSURE_VALID_OBJECT(x)->x macro - sprinkle these around to run checks on objects
-#    cfg.define("DEBUG_QUICK_VALIDATE",1)    # quick/cheap validate if on and comprehensive validate if not
-#    cfg.define("DEBUG_MPS_SIZE",1)   # check that the size of the MPS object will be calculated properly by obj_skip
     cfg.env.USE_HUMAN_READABLE_BITCODE=True
     if (cfg.env.USE_HUMAN_READABLE_BITCODE):
         cfg.define("USE_HUMAN_READABLE_BITCODE",1)
-    cfg.define("DEBUG_RECURSIVE_ALLOCATIONS",1)
-# -----------------
-# defines that slow down program execution
-#  There are more defined in clasp/include/gctools/configure_memory.h
-    cfg.define("DEBUG_SLOW",1)    # Code runs slower due to checks - undefine to remove checks
 # ----------
 
 # --------------------------------------------------

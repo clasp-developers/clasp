@@ -1038,15 +1038,6 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
 #endif
   if (buildReport) ss << (BF("DEBUG_FASTGF = %s\n") % (debug_fastgf ? "**DEFINED**" : "undefined") ).str();
  
-  bool debug_return_from = false;
-#ifdef DEBUG_RETURN_FROM
-  debug_return_from = true;
-  debugging = true;
-  if (setFeatures) features = core::Cons_O::create(_lisp->internKeyword("DEBUG-RETURN_FROM"),features);
-#endif
-  if (buildReport) ss << (BF("DEBUG_RETURN_FROM = %s\n") % (debug_return_from ? "**DEFINED**" : "undefined") ).str();
-
-
  bool debug_rehash_count = false;
 #ifdef DEBUG_REHASH_COUNT
   debug_rehash_count = true;
@@ -1145,13 +1136,13 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
 #endif
   if (buildReport) ss << (BF("DEBUG_COUNT_ALLOCATIONS = %s\n") % (debug_count_allocations ? "**DEFINED**" : "undefined") ).str();
 
-  bool dont_optimize_bclasp = false;
-#ifdef DONT_OPTIMIZE_BCLASP
-  dont_optimize_bclasp = true;
+  bool debug_dont_optimize_bclasp = false;
+#ifdef DEBUG_DONT_OPTIMIZE_BCLASP
+  debug_dont_optimize_bclasp = true;
   debugging = true;
-  if (setFeatures) features = core::Cons_O::create(_lisp->internKeyword("DONT-OPTIMIZE-BCLASP"),features);
+  if (setFeatures) features = core::Cons_O::create(_lisp->internKeyword("DEBUG-DONT-OPTIMIZE-BCLASP"),features);
 #endif
-  if (buildReport) ss << (BF("DONT_OPTIMIZE_BCLASP = %s\n") % (dont_optimize_bclasp ? "**DEFINED**" : "undefined") ).str();
+  if (buildReport) ss << (BF("DEBUG_DONT_OPTIMIZE_BCLASP = %s\n") % (debug_dont_optimize_bclasp ? "**DEFINED**" : "undefined") ).str();
 
   bool disable_type_inference = false;
 #ifdef DISABLE_TYPE_INFERENCE

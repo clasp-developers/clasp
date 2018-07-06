@@ -70,7 +70,7 @@
 ;;; Turn on aclasp/bclasp activation-frame optimization
 (sys:*make-special '*activation-frame-optimize*)
 (setq *activation-frame-optimize* t)
-#-dont-optimize-bclasp (setq *features* (cons :optimize-bclasp *features*))
+#-debug-dont-optimize-bclasp (setq *features* (cons :optimize-bclasp *features*))
 (sys:*make-special '*use-human-readable-bitcode*)
 (setq *use-human-readable-bitcode* (member :use-human-readable-bitcode *features*))
 (sys:*make-special '*compile-file-debug-dump-module*)
