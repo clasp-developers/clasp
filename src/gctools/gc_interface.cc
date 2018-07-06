@@ -736,13 +736,15 @@ struct TempClass {
 };
 
 
-std::map<std::string,size_t> _global_stamp_names;
+std::map<std::string,size_t> global_stamp_name_map;
+std::vector<std::string> global_stamp_names
 size_t _global_last_stamp = 0;
 
 void register_stamp_name(const std::string& stamp_name, size_t stamp_num) {
-  _global_stamp_names[stamp_name] = stamp_num;
-  if (stamp_num>_global_last_stamp) {
-    _global_last_stamp = stamp_num;
+  global_stamp_name_map[stamp_name] = stamp_num;
+  if (stamp_num>=global_stamp_names.size()) {
+    global_stamp_names.resize(stamp_num+1,"");
+    global_stamp_names[stamp_num] = stamp_name;
   }
 }
 

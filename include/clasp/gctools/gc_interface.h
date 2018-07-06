@@ -158,7 +158,8 @@ void initialize_classes_and_methods();
 void initialize_typeq_map();
 
 
-extern std::map<std::string,size_t> _global_stamp_names;
-extern size_t _global_last_stamp;
+extern std::map<std::string,size_t> global_stamp_name_map;
+extern std::vector<std::string> global_stamp_names;
+extern size_t global_last_stamp;
 
 #endif

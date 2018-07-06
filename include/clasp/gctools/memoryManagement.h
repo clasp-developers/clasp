@@ -603,18 +603,19 @@ namespace gctools {
   extern void monitorAllocation(stamp_t k, size_t sz);
   extern uint64_t globalBytesAllocated;
 
-#if defined(TRACK_ALLOCATIONS) && defined(DEBUG_SLOW)
   inline void monitor_allocation(const stamp_t k, size_t sz) {
+#ifdef DEBUG_COUNT_ALLOCATIONS
+    gctools::count_allocation(k);
+#endif
+#if defined(TRACK_ALLOCATIONS) && defined(DEBUG_SLOW)
     globalBytesAllocated += sz;
 #ifdef GC_MONITOR_ALLOCATIONS
     if ( global_monitorAllocations.on ) {
       monitorAllocation(k,sz);
     }
 #endif
-  }
-#else
-  inline void monitor_allocation(const stamp_t k, size_t sz) {};
 #endif
+  }
 
 };
 

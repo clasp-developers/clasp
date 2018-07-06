@@ -31,6 +31,9 @@ namespace core {
     // Save the last return address before IHS screws up
     void*                    _IHSBacktrace[IHS_BACKTRACE_SIZE];
 #endif
+#ifdef DEBUG_COUNT_ALLOCATIONS
+    std::vector<size_t>    _CountAllocations;
+#endif
 #if 1
 // thread local caches work fine
     /*! SingleDispatchGenericFunction cache */
@@ -61,8 +64,11 @@ namespace core {
 };
 
 
-namespace core {
- 
+namespace gctools {
+
+#ifdef DEBUG_COUNT_ALLOCATIONS
+  
+#endif
 };
 
 

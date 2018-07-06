@@ -242,3 +242,28 @@ void ThreadLocalState::create_sigaltstack() {
 }
 
 };
+
+
+
+namespace gctools {
+
+#ifdef DEBUG_COUNT_ALLOCATIONS
+void count_allocation(Fixnum stamp) {
+  if (my_thread->_CountAllocations.size() <= stamp) {
+    my_thread->_CountAllocations.resize(stamp+1,0);
+  }
+  my_thread->_CountAllocations[stamp]++;
+}
+
+CL_DEFUN core::SimpleVector_sp gctools__allocation_counts()
+{
+  core::SimpleVector_sp counts = core::core__make_array(my_thread->_CountAllocations.size());
+  for ( size_t i=0; i<my_thread->_CountAllocations.size(); ++i ) {
+    (*counts)[i] = my_thread->_CountAllocations[i];
+  }
+  return counts;
+}
+  
+#endif
+
+};
