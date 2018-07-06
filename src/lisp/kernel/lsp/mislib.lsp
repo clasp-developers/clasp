@@ -338,3 +338,62 @@ hash table; otherwise it signals that we have reached the end of the hash table.
 
 (defun si::simple-program-error (message &rest datum)
   (signal-simple-error 'simple-program-error nil message datum))
+
+#+debug-count-allocations
+(defun do-allocations (closure)
+  (let ((start-memory (gctools:allocation-counts)))
+    (multiple-value-prog1
+        (funcall closure)
+      (let ((end-memory (gctools:allocation-counts)))
+        (let* ((number-of-stamps (gctools:next-stamp-value))
+               (stamp-names (make-array number-of-stamps))
+               (stamp-name-alist (gctools:get-stamp-name-map))
+               (allocs-stamp-name nil))
+          (dolist (name-stamp stamp-name-alist)
+            (let ((name (car name-stamp))
+                  (stamp (cdr name-stamp)))
+              (setf (aref stamp-names stamp) name)))
+          (dotimes (i (length end-memory))
+            (let* ((start-count (if (>= i (length start-memory)) 0 (svref start-memory i)))
+                   (end-count (if (>= i (length end-memory)) 0 (svref end-memory i)))
+                   (allocs (- end-count start-count)))
+              (when (> allocs 0)
+                (push (list allocs (svref stamp-names i) i) allocs-stamp-name))))
+          (setf allocs-stamp-name (sort allocs-stamp-name #'< :key #'car))
+          (terpri *trace-output*)
+          (format *trace-output* "Allocations  Stamp-name/Stamp~%")
+          (dolist (part allocs-stamp-name)
+            (core:bformat *trace-output* "%10d %s/%d%N"
+                          (first part)
+                          (second part)
+                          (third part))))))))
+
+#+debug-count-allocations
+(defmacro allocations (form)
+  "Syntax: (allocations form)
+Evaluates FORM, outputs the allocations that took place for the evaluation to
+*TRACE-OUTPUT*, and then returns all values of FORM."
+  `(do-allocations #'(lambda () ,form)))
+
+              
+#+debug-count-allocations
+(defun do-collect-backtraces-for-allocations-by-stamp (backtrace-filename stamp closure)
+  (unless (and (>= stamp 0) (< stamp (gctools:next-stamp-value)))
+    (error "Stamp value ~d must be less than maximum stamp value ~d" stamp (gctools:next-stamp-value)))
+  (unwind-protect
+       (progn
+         (gctools:start-collecting-backtraces-for-allocations-by-stamp backtrace-filename stamp)
+         (funcall closure))
+    (gctools:stop-collecting-backtraces-for-allocations-by-stamp)))
+
+
+#+debug-count-allocations
+(defmacro collect-backtraces-for-allocations-by-stamp (backtrace-filename stamp form)
+  "Syntax: (allocations form)
+Evaluates FORM, outputs the allocations that took place for the evaluation to
+*TRACE-OUTPUT*, and then returns all values of FORM."
+  `(do-collect-backtraces-for-allocations-by-stamp ,backtrace-filename ,stamp #'(lambda () ,form)))
+
+
+#+debug-count-allocations
+(export '(allocations collect-backtraces-for-allocations-by-stamp))

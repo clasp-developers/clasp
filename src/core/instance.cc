@@ -153,6 +153,9 @@ CL_DEFUN T_sp core__allocate_new_instance(Instance_sp cl, size_t slot_count) {
   /* Unlike other slots, the stamp must be initialized in the allocator,
    * as it's required for dispatch. */
   obj->initializeSlots(cl->CLASS_stamp_for_instances(), slot_count);
+#ifdef DEBUG_COUNT_ALLOCATIONS
+  gctools::count_allocation(cl->CLASS_stamp_for_instances());
+#endif
   obj->_Sig = cl->slots();
   return obj;
 }
@@ -161,6 +164,9 @@ CL_DEFUN T_sp core__allocate_new_instance(Instance_sp cl, size_t slot_count) {
 CL_DEFUN Instance_sp core__reallocate_instance(Instance_sp instance, Instance_sp new_class, size_t new_size) {
   instance->_Class = new_class;
   instance->initializeSlots(new_class->CLASS_stamp_for_instances(), new_size); // set the rack
+#ifdef DEBUG_COUNT_ALLOCATIONS
+  gctools::count_allocation(new_class->CLASS_stamp_for_instances());
+#endif
   instance->_Sig = new_class->slots();
   return instance;
 }
@@ -596,8 +602,23 @@ CL_DEFUN List_sp clos__direct_superclasses(Instance_sp c) {
 }
 
 // FIXME: Perhaps gctools::NextStamp could be exported and used as the stamp slot's initform.
-CL_DEFUN void core__class_new_stamp(Instance_sp c) {
+CL_LAMBDA(class_ &optional (name nil name-p));
+CL_DEFUN void core__class_new_stamp(Instance_sp c, T_sp name, T_sp namep) {
+  Fixnum stamp = gctools::NextStamp();
   c->CLASS_set_stamp_for_instances(gctools::NextStamp());
+  std::string sname;
+  if (namep.notnilp()) {
+    if (gc::IsA<Symbol_sp>(name)) {
+      sname = gc::As_unsafe<Symbol_sp>(name)->formattedName(true);
+    } else {
+      printf("%s:%d Name %s must be a symbol\n", __FILE__, __LINE__, _rep_(name).c_str());
+      sname = "UNKNOWN";
+    }
+  } else {
+    sname = c->_className()->formattedName(true);
+  }
+//  printf("%s:%d Registering %s with stamp %lld\n", __FILE__, __LINE__, sname.c_str(), stamp);
+  register_stamp_name(sname,stamp);
 }
 
 CL_DEFUN Fixnum core__class_stamp_for_instances(Instance_sp c) {

@@ -33,6 +33,9 @@ namespace core {
 #endif
 #ifdef DEBUG_COUNT_ALLOCATIONS
     std::vector<size_t>    _CountAllocations;
+    bool                   _BacktraceAllocationsP;
+    Fixnum                 _BacktraceStamp;
+    int                    _BacktraceFd;
 #endif
 #if 1
 // thread local caches work fine
@@ -67,7 +70,8 @@ namespace core {
 namespace gctools {
 
 #ifdef DEBUG_COUNT_ALLOCATIONS
-  
+  void start_backtrace_allocations(const std::string& filename, Fixnum stamp);
+  void stop_backtrace_allocations();
 #endif
 };
 
