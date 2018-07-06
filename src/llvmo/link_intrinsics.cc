@@ -806,7 +806,6 @@ extern "C" {
 core::T_O* symbolFunctionRead(const core::T_O *tsymP)
 {NO_UNWIND_BEGIN();
   const core::Symbol_sp sym((gc::Tagged)tsymP);
-  ASSERTF((sym)->fboundp(), BF("There is no function bound to symbol[%s]") % _rep_(sym));
   return sym->symbolFunction().raw_();
   NO_UNWIND_END();
 }

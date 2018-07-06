@@ -68,7 +68,6 @@ BUILTIN_ATTRIBUTES core::T_O* cc_setup_vaslist_internal(core::Vaslist* vaslist, 
 BUILTIN_ATTRIBUTES
 core::T_O *va_symbolFunction(core::T_O *symP) {
   core::Symbol_sp sym((gctools::Tagged)symP);
-  unlikely_if (!sym->fboundp()) intrinsic_error(llvmo::noFunctionBoundToSymbol, sym);
   core::Function_sp func((gc::Tagged)(sym)->_Function.theObject);
   return func.raw_();
 }

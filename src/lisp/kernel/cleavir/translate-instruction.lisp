@@ -178,7 +178,7 @@
     ((instruction cleavir-ir:fdefinition-instruction) return-value inputs outputs abi function-info)
   ;; How do we figure out if we should use safe or unsafe version
   (let ((cell (%load (first inputs) "func-name")))
-    (let ((result (%intrinsic-invoke-if-landing-pad-or-call "cc_safe_fdefinition" (list cell))))
+    (let ((result (%intrinsic-invoke-if-landing-pad-or-call "cc_fdefinition" (list cell))))
       (%store result (first outputs)))))
 
 (defmethod translate-simple-instruction
