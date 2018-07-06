@@ -277,7 +277,7 @@ namespace gctools {
     static constexpr tagged_stamp_t pad1_tag   = (((tagged_stamp_t)BOOST_BINARY(111))<<60);
     static constexpr tagged_stamp_t fwd_ptr_mask = ~tag_mask;
     static constexpr tagged_stamp_t stamp_mask    = ~tag_mask; // BOOST_BINARY(11...11111111111100);
-//    static const int stamp_shift = 2;
+    static constexpr int stamp_shift = 0;
     static constexpr tagged_stamp_t largest_possible_stamp = (((tagged_stamp_t)1)<<60)-1; // stamp_mask>>stamp_shift;
   public:
     struct Value {

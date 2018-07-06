@@ -273,7 +273,7 @@ CL_DEFUN core::T_mv core__instance_stamp(core::T_sp obj)
   if (obj.generalp()) {
     Header_s* header = reinterpret_cast<Header_s*>(ClientPtrToBasePtr(obj.unsafe_general()));
     return Values(core::make_fixnum(stamp),
-                  core::make_fixnum(static_cast<Fixnum>(header->header._value)>>gctools::Header_s::stamp_shift));
+                  core::make_fixnum(static_cast<Fixnum>(header->header.stamp())));
   }
   return Values(core::make_fixnum(stamp),_Nil<core::T_O>());
 }

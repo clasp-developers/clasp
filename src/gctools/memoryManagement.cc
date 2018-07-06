@@ -198,8 +198,8 @@ void rawHeaderDescribe(const uintptr_clasp_t *headerP) {
   switch (headerTag) {
   case 0:
       printf("  %p : %" Puintptr_clasp_t "(%p) %" Puintptr_clasp_t "(%p)\n", headerP, *headerP, (void*)*headerP, *(headerP + 1), (void*)*(headerP + 1));
-    printf(" Not an object header!\n");
-    break;
+      printf(" Not an object header!\n");
+      break;
   case Header_s::stamp_tag: {
     printf("  %p : %" Puintptr_clasp_t " (%p)\n", headerP, *headerP, (void*)*headerP);
     printf("  %p : %" Puintptr_clasp_t " (%p)\n", (headerP+1), *(headerP+1), (void*)*(headerP+1));
@@ -209,8 +209,8 @@ void rawHeaderDescribe(const uintptr_clasp_t *headerP) {
     printf("  %p : %p\n", (headerP+4), (void*)*(headerP+4));
     printf("  %p : %p\n", (headerP+5), (void*)*(headerP+5));
 #endif    
-    gctools::GCStampEnum kind = (gctools::GCStampEnum)((*headerP) >> 2);
-    printf(" Kind tag - kind: %d", kind);
+    GCStampEnum kind = (GCStampEnum)(((*headerP)&tag_mask) >> stamp_shift);
+    printf(" stamp tag - stamp: %d", kind);
     fflush(stdout);
     printf("     %s\n", obj_name(kind));
   } break;
@@ -221,16 +221,16 @@ void rawHeaderDescribe(const uintptr_clasp_t *headerP) {
     printf("     fwdSize = %" Puintptr_clasp_t "/0x%" Puintptr_clasp_t "\n", hdr->fwdSize(), hdr->fwdSize());
   } break;
   case Header_s::pad_tag:
-    printf("  0x%p : 0x%" PRu " 0x%" PRu "\n", headerP, *headerP, *(headerP + 1));
-    if (((*headerP) & Header_s::pad1_tag) == Header_s::pad1_tag) {
-      printf("   pad1_tag\n");
-      printf("  0x%p : 0x%" PRu "\n", headerP, *headerP);
-    } else {
-      printf("   pad_tag\n");
-      printf("  0x%p : 0x%" PRu "\n", headerP, *headerP);
-      printf("  0x%p : 0x%" PRu "\n", (headerP+1), *(headerP+1));
-    }
-    break;
+      printf("  0x%p : 0x%" PRu " 0x%" PRu "\n", headerP, *headerP, *(headerP + 1));
+      if (((*headerP) & Header_s::pad1_tag) == Header_s::pad1_tag) {
+        printf("   pad1_tag\n");
+        printf("  0x%p : 0x%" PRu "\n", headerP, *headerP);
+      } else {
+        printf("   pad_tag\n");
+        printf("  0x%p : 0x%" PRu "\n", headerP, *headerP);
+        printf("  0x%p : 0x%" PRu "\n", (headerP+1), *(headerP+1));
+      }
+      break;
   }
 #if DEBUG_GUARD
   Header_s* header = (Header_s*)headerP;
