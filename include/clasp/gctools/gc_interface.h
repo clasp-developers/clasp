@@ -161,5 +161,6 @@ void initialize_typeq_map();
 extern std::map<std::string,size_t> global_stamp_name_map;
 extern std::vector<std::string> global_stamp_names;
 extern size_t global_last_stamp;
+extern void register_stamp_name(const std::string& stamp_name, size_t stamp_num);
 
 #endif
