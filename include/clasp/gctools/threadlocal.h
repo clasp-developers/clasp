@@ -1,6 +1,7 @@
 #ifndef gctools_threadlocal_H
 #define gctools_threadlocal_H
 
+#include <signal.h>
 
 namespace core {
 #define IHS_BACKTRACE_SIZE 16
