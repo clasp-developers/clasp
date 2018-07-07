@@ -294,7 +294,8 @@ Function_sp SingleDispatchGenericFunctionClosure_O::computeEffectiveMethodFuncti
   if ( core::cl__length(applicableMethodsList) == 1 ) {
     SingleDispatchMethod_sp cur_method = gc::As<SingleDispatchMethod_sp>(oCar(applicableMethodsList));
     SingleDispatchMethodFunction_sp mf = cur_method->_body;
-    if ( CxxMethodFunction_sp cmf = mf.as<CxxMethodFunction_O>() ) {
+    if ( gctools::IsA<CxxMethodFunction_sp>(mf) ) {
+      CxxMethodFunction_sp cmf = gc::As_unsafe<CxxMethodFunction_sp>(mf);
       FunctionDescription* fdesc = makeFunctionDescription(this->functionName());
       Function_sp emf = gctools::GC<SingleDispatchCxxEffectiveMethodFunction_O>::allocate(fdesc,mf);
       emf->setf_lambdaList(this->lambdaList());
