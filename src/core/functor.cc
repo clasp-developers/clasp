@@ -368,6 +368,13 @@ LCC_RETURN unboundFunctionEntryPoint(LCC_ARGS_FUNCALL_ELLIPSIS) {
   ERROR_UNDEFINED_FUNCTION(symbol);
 }
 
+LCC_RETURN unboundSetfFunctionEntryPoint(LCC_ARGS_FUNCALL_ELLIPSIS) {
+  ClosureWithSlots_O* closure = gctools::untag_general<ClosureWithSlots_O*>((ClosureWithSlots_O*)lcc_closure);
+  Symbol_sp symbol = gc::As<Symbol_sp>((*closure)[0]);
+  List_sp name = Cons_O::createList(cl::_sym_setf,symbol);
+  ERROR_UNDEFINED_FUNCTION(name);
+}
+
 //  printf("%s:%d    closure name -> %s\n", __FILE__, __LINE__, _rep_(closure->functionName()).c_str());
 
 DONT_OPTIMIZE_WHEN_DEBUG_RELEASE LCC_RETURN interpretedClosureEntryPoint(LCC_ARGS_FUNCALL_ELLIPSIS) {

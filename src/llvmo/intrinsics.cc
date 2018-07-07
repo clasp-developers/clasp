@@ -202,20 +202,11 @@ ALWAYS_INLINE T_O *cc_fdefinition(core::T_O *sym)
   NO_UNWIND_END();
 }
 
-ALWAYS_INLINE T_O *cc_unsafe_setfdefinition(core::T_O *sym)
+ALWAYS_INLINE T_O *cc_setfdefinition(core::T_O *sym)
 {NO_UNWIND_BEGIN();
   core::Symbol_O *symP = reinterpret_cast<core::Symbol_O *>(gctools::untag_general<core::T_O *>(sym));
   return symP->_SetfFunction.raw_();
   NO_UNWIND_END();
-}
-
-ALWAYS_INLINE T_O *cc_safe_setfdefinition(core::T_O *sym) {
-  core::Symbol_O *symP = reinterpret_cast<core::Symbol_O *>(gctools::untag_general<core::T_O *>(sym));
-  T_O *sv = symP->_SetfFunction.raw_();
-  if (sv == gctools::global_tagged_Symbol_OP_unbound) {
-    intrinsic_error(llvmo::unboundSymbolSetfFunction, gc::smart_ptr<core::Symbol_O>((gc::Tagged)sym));
-  }
-  return symP->_SetfFunction.raw_();
 }
 
 ALWAYS_INLINE gc::return_type cc_call(LCC_ARGS_CC_CALL_ELLIPSIS) {

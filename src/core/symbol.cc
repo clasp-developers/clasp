@@ -170,12 +170,28 @@ ClosureWithSlots_sp make_unbound_symbol_function(Symbol_sp name)
   return closure;
 }
 
+core::FunctionDescription* global_unboundSetfSymbolFunctionFunctionDescription = NULL;
+ClosureWithSlots_sp make_unbound_setf_symbol_function(Symbol_sp name)
+{
+  if (global_unboundSetfSymbolFunctionFunctionDescription == NULL) {
+    List_sp sname = Cons_O::createList(cl::_sym_setf,name);
+    global_unboundSetfSymbolFunctionFunctionDescription = makeFunctionDescription(sname,_Nil<T_O>());
+  }
+  ClosureWithSlots_sp closure = 
+    gctools::GC<core::ClosureWithSlots_O>::allocate_container(1,
+                                                              unboundSetfFunctionEntryPoint,
+                                                              global_unboundSetfSymbolFunctionFunctionDescription,
+                                                              ClosureWithSlots_O::cclaspClosure);
+  (*closure)[0] = name;
+  return closure;
+}
+
 
 /*! Construct a symbol that is incomplete, it has no Class or Package */
 Symbol_O::Symbol_O(bool dummy) : _HomePackage(_Nil<T_O>()),
                                  _GlobalValue(_Unbound<T_O>()),
                                  _Function(_Unbound<Function_O>()),
-                                 _SetfFunction(_Unbound<T_O>()),
+                                 _SetfFunction(_Unbound<Function_O>()),
                                  _Binding(NO_THREAD_LOCAL_BINDINGS),
                                  _IsSpecial(false),
                                  _IsConstant(false),
@@ -198,7 +214,7 @@ void Symbol_O::finish_setup(Package_sp pkg, bool exportp, bool shadowp) {
   else
     this->_GlobalValue = _Unbound<T_O>();
   this->_Function = make_unbound_symbol_function(this->asSmartPtr());
-  this->_SetfFunction = _Unbound<T_O>();
+  this->_SetfFunction = make_unbound_setf_symbol_function(this->asSmartPtr());
   pkg->bootstrap_add_symbol_to_package(this->symbolName()->get().c_str(), this->sharedThis<Symbol_O>(), exportp, shadowp);
   this->_PropertyList = _Nil<T_O>();
 }
@@ -243,14 +259,22 @@ CL_DEFMETHOD Symbol_sp Symbol_O::makunbound() {
   return this->asSmartPtr();
 }
 
+bool Symbol_O::fboundp() const {
+  return this->_Function->entry.load() != unboundFunctionEntryPoint;
+};
+
 void Symbol_O::fmakunbound()
 {
   this->_Function = make_unbound_symbol_function(this->asSmartPtr());
 }
 
+bool Symbol_O::setf_fboundp() const {
+  return this->_SetfFunction->entry.load() != unboundSetfFunctionEntryPoint;
+};
+
 void Symbol_O::fmakunbound_setf()
 {
-  this->_SetfFunction = _Unbound<T_O>();
+  this->_SetfFunction = make_unbound_setf_symbol_function(this->asSmartPtr());
 }
 
 
@@ -288,10 +312,6 @@ CL_DEFMETHOD Symbol_sp Symbol_O::copy_symbol(T_sp copy_properties) const {
     else new_symbol->_Function = make_unbound_symbol_function(new_symbol);
   }
   return new_symbol;
-};
-
-bool Symbol_O::fboundp() const {
-  return this->_Function->entry.load() != unboundFunctionEntryPoint;
 };
 
 

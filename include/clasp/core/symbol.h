@@ -59,7 +59,7 @@ public:
   T_sp _HomePackage; // NIL or Package
   T_sp _GlobalValue;
   Function_sp _Function;
-  T_sp _SetfFunction;
+  Function_sp _SetfFunction;
   mutable size_t _Binding;
   bool _IsSpecial;
   bool _IsConstant;
@@ -195,9 +195,9 @@ CL_DEFMETHOD   bool specialP() const { return this->_IsSpecial; };
 
   void fmakunbound();
   
-  void setSetfFdefinition(T_sp fn) { this->_SetfFunction = fn; };
-  inline T_sp getSetfFdefinition() { return this->_SetfFunction; };
-  inline bool setf_fboundp() const { return !this->_SetfFunction.unboundp(); };
+  void setSetfFdefinition(Function_sp fn) { this->_SetfFunction = fn; };
+  inline Function_sp getSetfFdefinition() { return this->_SetfFunction; };
+  bool setf_fboundp() const;
   void fmakunbound_setf();
   
 

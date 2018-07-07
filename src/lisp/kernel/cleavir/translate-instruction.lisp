@@ -190,7 +190,7 @@
 (defmethod translate-simple-instruction
     ((instruction clasp-cleavir-hir:setf-fdefinition-instruction) return-value inputs outputs abi function-info)
   (let ((cell (%load (first inputs) "setf-func-name")))
-    (let ((result (%intrinsic-invoke-if-landing-pad-or-call "cc_safe_setfdefinition" (list cell))))
+    (let ((result (%intrinsic-invoke-if-landing-pad-or-call "cc_setfdefinition" (list cell))))
       (%store result (first outputs)))))
 
 (defmethod translate-simple-instruction
