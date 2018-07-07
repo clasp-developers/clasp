@@ -11,12 +11,6 @@ LLVM_CONFIG_BINARY = '/path/to/llvm-config-4.0'
 # To link to the debug versions of the LLVM libraries, set a path here to the llvm-config binary of the LLVM debug build
 # LLVM_CONFIG_BINARY_FOR_LIBS = "/full/path/externals-clasp/build/debug/bin/llvm-config"
 
-# Use JIT notification - which is broken in llvm5.0
-# Set this to True if you have applied the patch to llvm 5.0 or the
-#   fix has been installed in llvm 5.whatever
-LLVM5_ORC_NOTIFIER_PATCH = False
-
-
 # Use Parallel building
 #  COMPILE-FILE during Clasp building will run in fork'd children
 #  You can specify the number of children that can run in parallel using -j #
