@@ -69,6 +69,9 @@ namespace gctools {
 struct MpsMetrics {
   std::atomic<size_t> finalizationRequests;
   std::atomic<size_t> nonMovingAllocations;
+  std::atomic<size_t> movingAllocations;
+  std::atomic<size_t> movingZeroRankAllocations;
+  std::atomic<size_t> consAllocations;
   std::atomic<size_t> unknownAllocations;
   std::atomic<size_t> totalMemoryAllocated;
   
