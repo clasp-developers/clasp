@@ -116,11 +116,6 @@ VALID_OPTIONS = [
     "LLVM_CONFIG_BINARY",
     # point to where you want to install clasp - this has to be defined before ./waf configure
     "PREFIX",
-    # This tells clasp that a special patch has been made to LLVM5 that allows the ORC JIT engine
-    # to notify clasp when JITted symbols are created.  This is not needed as of (June 13, 2018)
-    # and will become completely irrelevant after we switch to llvm6 because ORC should be fixed.
-    # default = False
-    "LLVM5_ORC_NOTIFIER_PATCH",
     # Path to sbcl
     "SBCL",
     # What do you want to call clasp?
