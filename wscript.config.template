@@ -35,15 +35,19 @@ USE_LLD = False
 # clasp, e.g. with the './waf rebuild_cboehm' command.
 #CLASP               = '/path/cclasp-boehm'
 
-# Optional turn on gprof profiling of all code (Linux only for now)
-# PROFILING = True
-
 # This is how you can specify non-standard locations
 #INCLUDES = "/opt/boost_1_62_0/include"
 #LINKFLAGS = ["-L/opt/boost_1_62_0/lib", "-Wl,-rpath=/opt/boost_1_62_0/lib"]
 
 # This turns on build with address sanitizer
 # ADDRESS_SANITIZER = True
+
+# Set if on macOS libffi is required.   On macOS we can build with brew installed llvm
+# but brew installed llvm has libffi as a dependency and doesn't report that when you invoke llvm-config --libs!!!
+# This is a bug in llvm-config and has to be fixed upstream.
+# Default = True
+# REQUIRE_LIBFFI = True
+
 
 # CLASP_BUILD_MODE (which replaced LTO_OPTION) can be "bitcode" or "object" (default)
 # This controls if object files are generated and linked (fast build time)

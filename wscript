@@ -114,6 +114,8 @@ VALID_OPTIONS = [
     # Default on macOS = /usr/local/opt/llvm@%s/bin/llvm-config'%CLANG_VERSION   - brew installed
     # Default on linux = it searches your path
     "LLVM_CONFIG_BINARY",
+    # To link to the debug versions of the LLVM libraries, set a path here to the llvm-config binary of the LLVM debug build
+    "LLVM_CONFIG_BINARY_FOR_LIBS",
     # point to where you want to install clasp - this has to be defined before ./waf configure
     "PREFIX",
     # Path to sbcl
@@ -149,7 +151,9 @@ VALID_OPTIONS = [
     # If waf doesn't recognize the OS then use this option (darwin|linux|freebsd)
     "DEST_OS",
     # Turn on debug options
-    "DEBUG_OPTIONS"
+    "DEBUG_OPTIONS",
+    # Turn on address sanitizer
+    "ADDRESS_SANITIZER"
 ]
 
 DEBUG_OPTIONS = [
@@ -687,10 +691,6 @@ def configure(cfg):
     if (cfg.env['DEST_OS'] == LINUX_OS):
         cfg.env.append_value('CXXFLAGS',['-fno-omit-frame-pointer', '-mno-omit-leaf-frame-pointer'])
         cfg.env.append_value('CFLAGS',['-fno-omit-frame-pointer', '-mno-omit-leaf-frame-pointer'])
-    if (cfg.env["PROFILING"] == True):
-        cfg.env.append_value('CXXFLAGS',["-pg"])
-        cfg.env.append_value('CFLAGS',["-pg"])
-        cfg.define("ENABLE_PROFILING",1)
 #    if ('program_name' in cfg.__dict__):
 #        pass
 #    else:
