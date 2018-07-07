@@ -215,7 +215,7 @@ void rawHeaderDescribe(const uintptr_clasp_t *headerP) {
     printf("  %p : %p\n", (headerP+4), (void*)*(headerP+4));
     printf("  %p : %p\n", (headerP+5), (void*)*(headerP+5));
 #endif    
-    GCStampEnum kind = (GCStampEnum)(((*headerP)&tag_mask) >> stamp_shift);
+    GCStampEnum kind = (GCStampEnum)((*((Header_s*)headerP)).stamp());
     printf(" stamp tag - stamp: %d", kind);
     fflush(stdout);
     printf("     %s\n", obj_name(kind));
