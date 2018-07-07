@@ -199,7 +199,7 @@
 
 (defclass stamp-value-generator ()
   ((unused-builtin-stamps :initform (let ((ht (make-hash-table :test #'equal)))
-                                      (loop for (name . stamp) in (gctools:get-builtin-stamps)
+                                      (loop for (name . stamp) in (gctools:get-stamp-name-map)
                                             do (setf (gethash name ht) stamp))
                                       ht) :accessor unused-builtin-stamps)
    (used-builtin-stamps :initform (make-hash-table :test #'equal) :accessor used-builtin-stamps)
