@@ -266,24 +266,24 @@ namespace gctools {
 
   class Header_s {
   public:
-    static constexpr tagged_stamp_t tag_mask   = ((tagged_stamp_t)BOOST_BINARY(111))<<60;
-    static constexpr tagged_stamp_t invalid_tag=  ((tagged_stamp_t)BOOST_BINARY(00))<<60; // indicates not header
-    static constexpr tagged_stamp_t stamp_tag  =  ((tagged_stamp_t)BOOST_BINARY(01))<<60; // KIND = tagged_value>>2
-    static constexpr tagged_stamp_t fwd_tag    =  ((tagged_stamp_t)BOOST_BINARY(10))<<60;
-    static constexpr tagged_stamp_t pad_mask   = ((tagged_stamp_t)BOOST_BINARY(111))<<60;
-    static constexpr tagged_stamp_t pad_test   = ((tagged_stamp_t)BOOST_BINARY(011))<<60;
-    static constexpr int pad_shift = 3; // 3 bits for pad tag
-    static constexpr tagged_stamp_t pad_tag    = (((tagged_stamp_t)BOOST_BINARY(011))<<60);
-    static constexpr tagged_stamp_t pad1_tag   = (((tagged_stamp_t)BOOST_BINARY(111))<<60);
-    static constexpr tagged_stamp_t fwd_ptr_mask = ~tag_mask;
-    static constexpr tagged_stamp_t stamp_mask    = ~tag_mask; // BOOST_BINARY(11...11111111111100);
-    static constexpr int stamp_shift = 0;
-    static constexpr tagged_stamp_t largest_possible_stamp = (((tagged_stamp_t)1)<<60)-1; // stamp_mask>>stamp_shift;
+    static const tagged_stamp_t tag_mask   =  BOOST_BINARY(11);
+    static const tagged_stamp_t invalid_tag=  BOOST_BINARY(00); // indicates not header
+    static const tagged_stamp_t stamp_tag  =  BOOST_BINARY(01); // KIND = tagged_value>>2
+    static const tagged_stamp_t fwd_tag    =  BOOST_BINARY(10);
+    static const tagged_stamp_t pad_mask   = BOOST_BINARY(111);
+    static const tagged_stamp_t pad_test   = BOOST_BINARY(011);
+    static const int pad_shift = 3; // 3 bits for pad tag
+    static const tagged_stamp_t pad_tag    = BOOST_BINARY(011);
+    static const tagged_stamp_t pad1_tag   = BOOST_BINARY(111);
+    static const tagged_stamp_t fwd_ptr_mask = ~tag_mask;
+    static const tagged_stamp_t stamp_mask    = ~tag_mask; // BOOST_BINARY(11...11111111111100);
+    static const int stamp_shift = 2;
+    static const tagged_stamp_t largest_possible_stamp = stamp_mask>>stamp_shift;
   public:
     struct Value {
       tagged_stamp_t _value;
     Value() : _value(0) {};
-    Value(GCStampEnum stamp) : _value((stamp) | stamp_tag) {};
+    Value(GCStampEnum stamp) : _value((stamp << stamp_shift) | stamp_tag) {};
       template <typename T>
       static Value make()
       {
@@ -307,12 +307,12 @@ namespace gctools {
       }
     public:
       template <typename T>
-      static  tagged_stamp_t GenerateHeaderValue() { return (GCStamp<T>::Stamp)|stamp_tag; };
+      static  tagged_stamp_t GenerateHeaderValue() { return (GCStamp<T>::Stamp<<stamp_shift)|stamp_tag; };
     public: // header readers
       inline size_t tag() const { return (size_t)(this->_value & tag_mask);};
       inline bool pad1P() const { return (this->_value & pad_mask) == pad1_tag; };
       inline GCStampEnum stamp() const {
-        return static_cast<GCStampEnum>( this->_value & stamp_mask );
+        return static_cast<GCStampEnum>( (this->_value & stamp_mask)>>stamp_shift );
       }
     };
   public:
@@ -359,7 +359,7 @@ namespace gctools {
         this->fill_tail();
       };
 #endif
-    static GCStampEnum value_to_stamp(Fixnum value) { return (GCStampEnum)((value&stamp_mask)); };
+    static GCStampEnum value_to_stamp(Fixnum value) { return (GCStampEnum)((value&stamp_mask)>>stamp_shift); };
   public:
     size_t tag() const { return (size_t)(this->header._value & tag_mask);};
 #ifdef DEBUG_GUARD
