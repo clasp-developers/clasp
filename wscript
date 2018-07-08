@@ -193,7 +193,8 @@ DEBUG_OPTIONS = [
     "DEBUG_MPS_SIZE",   # check that the size of the MPS object will be calculated properly by obj_skip
     "DEBUG_DONT_OPTIMIZE_BCLASP",  # Optimize bclasp by editing llvm-ir
     "DEBUG_RECURSIVE_ALLOCATIONS",
-    "DEBUG_SLOW"    # Code runs slower due to checks - undefine to remove checks
+    "DEBUG_SLOW",    # Code runs slower due to checks - undefine to remove checks
+    "CONFIG_VAR_COOL" # mps setting
 ]
 
 def build_extension(bld):
@@ -810,7 +811,6 @@ def configure(cfg):
                 raise error("Illegal DEBUG_OPTION - allowed options: %s" % (opt, DEBUG_OPTIONS))
 
 #    cfg.define("DISABLE_TYPE_INFERENCE",1)
-#    cfg.define("CONFIG_VAR_COOL",1)
     cfg.env.USE_HUMAN_READABLE_BITCODE=True
     if (cfg.env.USE_HUMAN_READABLE_BITCODE):
         cfg.define("USE_HUMAN_READABLE_BITCODE",1)
@@ -1425,6 +1425,7 @@ class link_bitcode(clasp_task):
         for f in self.inputs:
             all_inputs.write(' %s' % f.abspath())
         cmd = "" + self.env.LLVM_AR_BINARY + " ru %s %s" % (self.outputs[0], all_inputs.getvalue())
+        print("link_bitcode command: %s" % cmd);
         return self.exec_command(cmd)
 
 class build_bitcode(clasp_task):
