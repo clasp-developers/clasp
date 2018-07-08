@@ -407,7 +407,7 @@ If this form has already been precalculated then just return the precalculated-v
          ;; more correctly with alternate global environments.
          (let* ((value (cleavir-env:eval form env env))
                 (index (cmp:codegen-rtv nil value))
-                (result (make-instance 'clasp-cleavir:arrayed-literal :value form :index index)))
+                (result (make-instance 'clasp-cleavir:arrayed-literal :value form :index index :literal-name "NIL")))
            (check-type result clasp-cleavir:literal)
            result)))))
 
