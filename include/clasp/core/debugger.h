@@ -83,16 +83,18 @@ namespace core {
   void dbg_lowLevelDescribe(T_sp obj);
   void dbg_describe_tagged_T_Optr(T_O *p);
 
-extern "C" {
-void af_gotoIhsTop();
-void af_gotoIhsNext();
-void af_gotoIhsPrev();
-void af_printCurrentIhsFrame();
-void af_evalPrint(const string &expr);
+  extern "C" {
+  void af_gotoIhsTop();
+  void af_gotoIhsNext();
+  void af_gotoIhsPrev();
+  void af_printCurrentIhsFrame();
+  void af_evalPrint(const string &expr);
 
 // Generate a backtrace with JIT symbols resolved 
-void c_bt();
-void c_btcl();
-};
+  void c_bt();
+  void c_btcl();
+  };
+
+  int safe_backtrace(void**& return_buffer);
 };
 #endif
