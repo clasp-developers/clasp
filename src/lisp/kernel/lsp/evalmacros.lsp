@@ -108,7 +108,7 @@ VARIABLE doc and can be retrieved by (DOCUMENTATION 'SYMBOL 'VARIABLE)."
            (doclist (when doc-string (list doc-string)))
            (global-function
              `#'(lambda ,vl 
-                  (declare (core:lambda-name ,name core:current-source-file) ,@decls) 
+                  (declare (core:lambda-name ,name) ,@decls) 
                   ,@doclist
                   (block ,(si::function-block-name name) ,@body))))
       ;;(bformat t "macro expansion of defun current-source-location -> %s%N" current-source-location)
