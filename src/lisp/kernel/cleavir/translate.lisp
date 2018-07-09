@@ -656,10 +656,8 @@ This works like compile-lambda-function in bclasp."
         (cleavir-generate-ast:*compiler* 'cl:compile-file)
         (core:*use-cleavir-compiler* t))
     (loop
-      (let ((eof (peek-char t source-sin nil eof-value)))
-        (unless (eq eof eof-value)
-          (let ((pos (core:input-stream-source-pos-info source-sin)))
-            (setf cmp:*current-form-lineno* (core:source-file-pos-lineno pos)))))
+      ;; Required to update the source pos info. FIXME!?
+      (peek-char t source-sin nil)
       ;; FIXME: if :environment is provided we should probably use a different read somehow
       (let* ((core:*current-source-pos-info* (core:input-stream-source-pos-info source-sin))
              #+cst

@@ -168,10 +168,8 @@ and the pathname of the source file - this will also be used as the module initi
 (defun bclasp-loop-read-and-compile-file-forms (source-sin environment)
   (let ((eof-value (gensym)))
     (loop
-      (let ((eof (peek-char t source-sin nil eof-value)))
-        (unless (eq eof eof-value)
-          (let ((pos (core:input-stream-source-pos-info source-sin)))
-            (setq *current-form-lineno* (core:source-file-pos-lineno pos)))))
+      ;; Required to update the source pos info. FIXME!?
+      (peek-char t source-sin nil)
       ;; FIXME: if :environment is provided we should probably use a different read somehow
       (let ((core:*current-source-pos-info* (core:input-stream-source-pos-info source-sin))
             (form (read source-sin nil eof-value)))
@@ -291,7 +289,6 @@ Compile a lisp source file into an LLVM module."
     ;; Do the different kind of compile-file here
     (let* ((*compile-print* print)
            (*compile-verbose* verbose)
-           (*current-form-lineno* 0)
            (output-path (compile-file-pathname input-file :output-file output-file :output-type output-type ))
            (*compile-file-output-pathname* output-path)
            (module (compile-file-to-module input-file

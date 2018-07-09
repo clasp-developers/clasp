@@ -863,8 +863,10 @@
                                      :function-type ,function-type
                                      :form ,function-form )
                    (with-dbg-lexical-block (,function-form)
-                     (dbg-set-current-source-pos-for-irbuilder ,irbuilder-alloca *current-form-lineno*)
-                     (dbg-set-current-source-pos-for-irbuilder ,irbuilder-body *current-form-lineno*)
+                     (when core:*current-source-pos-info*
+                       (let ((lineno (core:source-pos-info-lineno core:*current-source-pos-info*)))
+                         (dbg-set-current-source-pos-for-irbuilder ,irbuilder-alloca lineno)
+                         (dbg-set-current-source-pos-for-irbuilder ,irbuilder-body lineno)))
                      (with-irbuilder (*irbuilder-function-body*)
                        (or *the-module* (error "with-new-function *the-module* is NIL"))
                        (cmp-log "with-landing-pad around body%N")

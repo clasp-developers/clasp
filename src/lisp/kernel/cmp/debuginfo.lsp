@@ -269,18 +269,15 @@
            (progn
              ,@body)))))
 
-(defun dbg-set-current-source-pos (form &optional (lineno *current-form-lineno*))
+(defun dbg-set-current-source-pos (form)
   (when *dbg-generate-dwarf*
     (setq *dbg-set-current-source-pos* t)
+    (when *current-source-pos-info*
     (cmp-log "dbg-set-current-source-pos on form: %s%N" form)
-    #++(multiple-value-bind (source-dir source-file filepos line-number column)
-        (walk-form-for-source-info form)
-      #+(or)(warn "Dwarf metadata is not currently being generated - the llvm-sys:set-current-debug-location-to-line-column-scope call is disabled")
-      (llvm-sys:set-current-debug-location-to-line-column-scope *irbuilder* line-number column *dbg-current-scope*)
-      (values source-dir source-file line-number column))
-    (llvm-sys:set-current-debug-location-to-line-column-scope *irbuilder* lineno 0 *dbg-current-scope*)))
+    (llvm-sys:set-current-debug-location-to-line-column-scope
+     *irbuilder* (core:source-pos-info-lineno *current-source-pos-info*) 0 *dbg-current-scope*))))
 
-(defun dbg-set-current-source-pos-for-irbuilder (irbuilder &optional (lineno *current-form-lineno*))
+(defun dbg-set-current-source-pos-for-irbuilder (irbuilder lineno)
   (llvm-sys:set-current-debug-location-to-line-column-scope irbuilder lineno 0 *dbg-current-scope*))
 
 (defun check-debug-info-setup (irbuilder)

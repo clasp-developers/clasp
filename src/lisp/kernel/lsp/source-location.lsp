@@ -6,13 +6,14 @@
 (defun compiled-function-name (x)
   (core:function-name x))
 
-(defun compiled-function-file* (xfunction)
+(defun compiled-function-file (xfunction)
   (assert (functionp xfunction))
   (multiple-value-bind (filename pos lineno)
       (core:function-source-pos xfunction)
     (let* ((source-file (let ((pathname (core:source-debug-pathname xfunction)))
                           (unless filename
-                            (error "NIL was returned for find source-debug-pathname for ~a" xfunction))
+                            ;; e.g., a repl function - no source location.
+                            (return-from compiled-function-file nil))
                           (unless (typep pathname 'pathname)
                             (error "The source-debug-pathname for ~a was ~a - it needs to be a pathname" xfunction pathname))
                           (namestring pathname))))
@@ -25,29 +26,22 @@
           (let* ((pn (if (eq (car src-directory) :relative)
                          (merge-pathnames src-pathname (translate-logical-pathname "source-dir:"))
                          src-pathname)))
-            (return-from compiled-function-file* (values pn filepos lineno))))))))
+            (values pn filepos lineno)))))))
 
-(defun compiled-function-file (x)
-  "This is provided for slime - it can removed once slime switches to source-location"
-  (cond
-    ((and x (core:single-dispatch-generic-function-p x))
-     (let ((locs (source-location x t)))
-       (values (source-location-pathname (car locs)) (source-location-offset (car locs)))))
-    ((and x (functionp x)) (compiled-function-file* x))
-    (t (values nil 0 0))))
-
-#+(or)
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (format t "About to define the first defstruct~%")
-  (setq core:*echo-repl-read* t))
-
-
+;;; This happens to be the first non-:TYPE defstruct during build.
+;;; But FIXME: It's redundant to core:source-pos-info and should be vaporized.
 (defstruct source-location
   pathname offset)
 
-;;; FIXME: above struct is redundant and should be vaporized.
+(defun function-source-locations (function)
+  (multiple-value-bind (file pos)
+      (compiled-function-file function)
+    (if file
+        (list (make-source-location :pathname file :offset pos))
+        nil)))
+
 ;;; Class source positions are just stored in a slot.
-(defun class-source-position (class)
+(defun class-source-location (class)
   (let ((csp (clos:class-source-position class)))
     (when csp
       (make-source-location
@@ -64,7 +58,7 @@
 ;;; As such, we use the compiler's source info.
 ;;; Note that due to this, when provided a name, we don't go through
 ;;; this function- check source-location-impl.
-(defun method-combination-source-position (method-combination)
+(defun method-combination-source-location (method-combination)
   (source-location (clos::method-combination-compiler method-combination) t))
 
 (defun method-source-location (method)
@@ -93,7 +87,7 @@ Return the source-location for the name/kind pair"
       (:class
        (let ((class (find-class name nil)))
          (when class
-           (let ((source-loc (class-source-position class)))
+           (let ((source-loc (class-source-location class)))
              (when source-loc (list source-loc))))))
       (:method
           (let ((source-loc (core:get-sysprop name 'core:cxx-method-source-location)))
@@ -106,9 +100,7 @@ Return the source-location for the name/kind pair"
                  ((typep func 'generic-function)
                   (generic-function-source-locations func))
                  (t ; normal function
-                  (multiple-value-bind (file pos)
-                      (compiled-function-file* (fdefinition name))
-                    (list (make-source-location :pathname file :offset pos))))))))
+                  (function-source-locations (fdefinition name)))))))
       (:compiler-macro
        (when (fboundp name)
          (let ((cmf (compiler-macro-function name)))
@@ -147,12 +139,9 @@ Return the source-location for the name/kind pair"
         (source-location (core:function-name obj) :method))
        ((typep obj 'generic-function)
         (generic-function-source-locations obj))
-       ((functionp obj)
-        (multiple-value-bind (file pos)
-            (compiled-function-file* obj)
-          (list (make-source-location :pathname file :offset pos))))
+       ((functionp obj) (function-source-locations obj))
        ((typep obj 'clos:method-combination)
-        (let ((source-loc (method-combination-source-position obj)))
+        (let ((source-loc (method-combination-source-location obj)))
           (when source-loc (list source-loc))))))
     ((symbolp kind) (source-location-impl obj kind))
     (t (error "Cannot obtain source-location for ~a of kind ~a" obj kind))))
