@@ -154,6 +154,7 @@
     (primitive         "debug_vaslistPtr" %void% (list %vaslist*%))
     (primitive         "debug_va_list" %void% (list %va_list*%))
     (primitive         "debugMessage" %void% (list %i8*%))
+    (primitive         "debugBreak" %void% ())
     (primitive         "debugPrintI32" %void% (list %i32%))
     (primitive         "debugPrint_blockFrame" %void% (list %t*%))
     (primitive         "debugPrint_blockHandleReturnFrom" %void% (list %i8*% %t*%))
