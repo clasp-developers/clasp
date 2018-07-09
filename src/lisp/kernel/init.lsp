@@ -11,7 +11,8 @@
 (export '(*echo-repl-tpl-read*
           run-repl
           cons-car
-          cons-cdr))
+          cons-cdr
+          debug-break))
 (export '*trace-startup*)
 
 ;;; ------------------------------------------------------------
