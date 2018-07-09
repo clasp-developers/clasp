@@ -884,7 +884,7 @@ void debugInspect_return_type(gctools::return_type rt)
 
 void debugMessage(const char *msg)
 {NO_UNWIND_BEGIN();
-  printf("++++++ debug-message: %s", msg);
+  printf("++++++ debug-message: %s3", msg);
   NO_UNWIND_END();
 }
 
