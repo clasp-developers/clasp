@@ -185,7 +185,11 @@
     ((instruction clasp-cleavir-hir:debug-message-instruction) return-value inputs outputs abi function-info)
   (let ((msg (cmp:jit-constant-unique-string-ptr (clasp-cleavir-hir:debug-message instruction))))
     (%intrinsic-call "debugMessage" (list msg))))
-	
+
+(defmethod translate-simple-instruction
+    ((instruction clasp-cleavir-hir:debug-break-instruction) return-value inputs outputs abi function-info)
+  (%intrinsic-call "debugBreak"))
+
 
 (defmethod translate-simple-instruction
     ((instruction clasp-cleavir-hir:setf-fdefinition-instruction) return-value inputs outputs abi function-info)
