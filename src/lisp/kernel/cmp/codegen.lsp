@@ -213,6 +213,37 @@ then compile it and return (values compiled-llvm-function lambda-name)"
        (error "Handle lambda applications"))
       (t (compiler-error form "Illegal head for form %s" head)))))
 
+(defun codegen-funcall (result form env)
+  (let ((closure-arg (second form))
+        (call-args (cddr form)))
+    (cond
+      ((and (consp closure-arg)
+            (eq (first closure-arg) 'quote)
+            (= (length closure-arg) 2)
+            (symbolp (second closure-arg)))
+       (codegen-call result (cons (second closure-arg) call-args) env))
+      #+(or)((and (consp closure-arg)
+                  (eq (first closure-arg) 'function)
+                  (= (length closure-arg) 2)
+                  (symbolp (second closure-arg)))
+             (codegen-call result (cons (second closure-arg) call-args) env))
+      (t
+       (let ((nargs (length call-args))
+             args
+             (temp-closure (irc-alloca-t*))
+             (temp-result (irc-alloca-t*)))
+         ;; evaluate the arguments into the array
+         ;;  used to be done by --->    (codegen-evaluate-arguments (cdr form) evaluate-env)
+         (do* ((cur-exp call-args (cdr cur-exp))
+               (exp (car cur-exp) (car cur-exp))
+               (i 0 (+ 1 i)))
+              ((endp cur-exp) nil)
+           (codegen temp-result exp env)
+           (push (irc-load temp-result) args))
+         (codegen temp-closure closure-arg env)
+         (let ((closure (irc-intrinsic "bc_function_from_function_designator" (irc-load temp-closure))))
+           (irc-funcall result closure (reverse args))))))))
+
 (defun codegen-application (result form env)
   "A compiler macro function, macro function or a regular function"
   (assert-result-isa-llvm-value result)
@@ -241,6 +272,10 @@ then compile it and return (values compiled-llvm-function lambda-name)"
            (irc-low-level-trace)
            (codegen result expansion env) 
            ))
+        ;; An invocation of FUNCALL
+        ((and (symbolp (car form))
+              (eq (car form) 'funcall))
+         (codegen-funcall result form env))
         ;; It's a regular function call
         (t
          (codegen-call result form env))) 
@@ -269,6 +304,7 @@ then compile it and return (values compiled-llvm-function lambda-name)"
     ((eq sym 'cl:throw) nil)              ;; handled with macro
     ((eq sym 'cl:progv) nil)              ;; handled with macro
     ((eq sym 'core:debug-message) t)      ;; special operator
+    ((eq sym 'core:debug-break) t)      ;; special operator
     ((eq sym 'core:multiple-value-foreign-call) t) ;; Call intrinsic functions
     ((eq sym 'core:foreign-call-pointer) t) ;; Call function pointers
     ((eq sym 'core:foreign-call) t)         ;; Call foreign function
@@ -279,7 +315,7 @@ then compile it and return (values compiled-llvm-function lambda-name)"
 
 (defun codegen (result form env)
 ;;;  (declare (optimize (debug 3)))
-  (assert-result-isa-llvm-value result) 
+  (assert-result-isa-llvm-value result)
   (multiple-value-bind (source-directory source-filename lineno column)
       (dbg-set-current-source-pos form)
     (let* ((*current-form* form)

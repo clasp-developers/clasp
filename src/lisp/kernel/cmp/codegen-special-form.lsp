@@ -34,6 +34,7 @@
     (llvm-inline codegen-llvm-inline convert-llvm-inline)
     (:gc-profiling codegen-gc-profiling convert-gc-profiling)
     (core::debug-message codegen-debug-message convert-debug-message)
+    (core::debug-break codegen-debug-break convert-debug-break)
     ))
 
 (defun make-dispatch-table (alist)
@@ -73,7 +74,8 @@
           (values compiled-fn lambda-name)))))
 
 (defun codegen-global-function-lookup (result sym env)
-  (let ((val (irc-intrinsic "symbolFunctionRead" (irc-global-symbol sym env))))
+  ;; Was symbolFunctionRead
+  (let ((val (irc-intrinsic "va_symbolFunction" (irc-global-symbol sym env))))
     (irc-store val result)))
 
 (defun codegen-global-setf-function-lookup (result setf-function-name env)
@@ -792,6 +794,9 @@ jump to blocks within this tagbody."
 (defun codegen-debug-message (result rest env)
   (let ((message (jit-constant-unique-string-ptr (car rest))))
     (irc-intrinsic "debugMessage" message)))
+
+(defun codegen-debug-break (result rest env)
+  (irc-intrinsic "debugBreak"))
 
 ;;; LLVM-INLINE
 

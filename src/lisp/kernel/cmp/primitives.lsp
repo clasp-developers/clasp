@@ -120,7 +120,7 @@
     (primitive         "symbolValueReference" %t**% (list %t*%))
     (primitive         "lexicalValueReference" %t**% (list %size_t% %size_t% %t*%))
     (primitive         "registerReference" %t**% (list %t**%))
-    (primitive         "symbolFunctionRead" %t*% (list %t*%))
+;;;    (primitive         "symbolFunctionRead" %t*% (list %t*%))
     (primitive         "setfSymbolFunctionRead" %t*% (list %t*%))
     
     (primitive         "activationFrameReferenceFromClosure" %t**% (list %t*%))
@@ -145,6 +145,8 @@
     (primitive-unwinds "cc_invoke_sub_run_all_function" %void% (list %fn-start-up*%))
     
     (primitive         "cc_trackFirstUnexpectedKeyword" %size_t% (list %size_t% %size_t%))
+    (primitive-unwinds "bc_function_from_function_designator" %t*% (list %t*%))
+    
     (primitive-unwinds "gdb" %void% nil)
     (primitive         "debugInspectTPtr" %void% (list %t*%))
     (primitive         "debugInspectT_mv" %void% (list %tmv*%))

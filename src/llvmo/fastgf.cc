@@ -129,10 +129,6 @@ BUILTIN_ATTRIBUTES core::T_O* cc_fastgf_nil() {
   return _Nil<core::T_O>().raw_();
 }
 
-BUILTIN_ATTRIBUTES void debugBreak() {
-  asm("int $03");
-}
-
 
 BUILTIN_ATTRIBUTES core::T_O* cc_rewind_vaslist(core::Vaslist* vaslist, va_list va_args, void** register_save_areaP)
 {

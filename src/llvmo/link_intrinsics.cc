@@ -67,10 +67,9 @@ extern "C" {
 #include <clasp/gctools/gc_interface.fwd.h>
 #include <clasp/core/exceptions.h>
 
-using namespace core;
-
 #pragma GCC visibility push(default)
 
+using namespace core;
 namespace llvmo {
 
 core::T_sp functionNameOrNilFromFunctionDescription(core::FunctionDescription* functionDescription)
@@ -83,6 +82,9 @@ core::T_sp functionNameOrNilFromFunctionDescription(core::FunctionDescription* f
 }
   
 
+[[noreturn]] __attribute__((optnone)) void not_function_designator_error(core::T_sp arg) {
+  TYPE_ERROR(arg,core::Cons_O::createList(::cl::_sym_or,::cl::_sym_function,::cl::_sym_symbol));
+}
 
 [[noreturn]] __attribute__((optnone))  void intrinsic_error(ErrorCode err, core::T_sp arg0, core::T_sp arg1, core::T_sp arg2) {
   switch (err) {
@@ -799,28 +801,6 @@ void mv_prependMultipleValues(core::T_mv *resultP, core::T_mv *multipleValuesP) 
   ASSERTNOTNULL(*resultP);
 }
 };
-
-extern "C" {
-
-/*! Invoke a symbol function with the given arguments and put the result in (*resultP) */
-core::T_O* symbolFunctionRead(const core::T_O *tsymP)
-{NO_UNWIND_BEGIN();
-  const core::Symbol_sp sym((gc::Tagged)tsymP);
-  return sym->symbolFunction().raw_();
-  NO_UNWIND_END();
-}
-
-/*! Invoke a symbol function with the given arguments and put the result in (*resultP) */
-extern core::T_O* setfSymbolFunctionRead(const core::T_O *tsymP)
-{NO_UNWIND_BEGIN();
- const core::Symbol_sp sym((gctools::Tagged)tsymP);
- core::Function_sp setfFunc = sym->getSetfFdefinition(); //_lisp->get_setfDefinition(*symP);
- ASSERTF(setfFunc, BF("There is no setf function bound to symbol[%s]") % _rep_(sym));
- return setfFunc.raw_();
-  NO_UNWIND_END();
-}
-};
-
 
 extern "C" {
 
