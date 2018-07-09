@@ -770,7 +770,7 @@ Return the orderered-raw-constants-list and the constants-table GlobalVariable"
   (multiple-value-bind (data-or-index in-array literal-name)
       (reference-literal literal t)
     (if in-array
-        (constants-table-reference data-or-index (pretty-load-time-name literal data-or-index))
+        (values (constants-table-reference data-or-index (pretty-load-time-name literal data-or-index)) literal-name)
         data-or-index)))
 
 (defun codegen-rtv (result obj)

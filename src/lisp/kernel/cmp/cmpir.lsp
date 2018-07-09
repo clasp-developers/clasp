@@ -1552,7 +1552,12 @@ Write T_O* pointers into the current multiple-values array starting at the (offs
 
 (defun irc-global-symbol (sym env)
   "Return an llvm GlobalValue for a symbol"
-  (irc-load (literal:compile-reference-to-literal sym)))
+  (multiple-value-bind (ref literal-name)
+      (literal:compile-reference-to-literal sym)
+    (let ((label (if literal-name
+                     literal-name
+                     "")))
+      (values (irc-load ref label) literal-name))))
 
 (defun irc-global-setf-symbol (sym env)
   "Return an llvm GlobalValue for a function name of the form (setf XXXX).
