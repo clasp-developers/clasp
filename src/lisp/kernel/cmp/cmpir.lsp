@@ -935,8 +935,7 @@ But no irbuilders or basic-blocks. Return the fn."
   (source-pathname cmp:*source-pathname*)
   lambda-list docstring declares form lineno column filepos
   (source-debug-pathname cmp:*source-debug-pathname*)
-  (source-debug-offset cmp:*source-debug-offset*)
-  (source-debug-use-lineno-p cmp:*source-debug-use-lineno-p*))
+  (source-debug-offset cmp:*source-debug-offset*))
 
 (defun irc-create-function-description (llvm-function-name fn module function-info)
   "If **generate-code** then create a function-description block from function info.
@@ -953,8 +952,7 @@ But no irbuilders or basic-blocks. Return the fn."
         (filepos (function-info-filepos function-info))
         (declares (function-info-declares function-info))
         (source-debug-pathname (function-info-source-debug-pathname function-info))
-        (source-debug-offset (function-info-source-debug-offset function-info))
-        (source-debug-use-lineno-p (function-info-source-debug-use-lineno-p function-info)))
+        (source-debug-offset (function-info-source-debug-offset function-info)))
     (multiple-value-bind (found-source-info n l c f)
         (parse-declares-for-source-info declares)
       (when found-source-info
@@ -1014,7 +1012,6 @@ But no irbuilders or basic-blocks. Return the fn."
                                         (jit-constant-i32 filepos)
                                         (jit-constant-i32 source-debug-pathname-index)
                                         (jit-constant-i32 source-debug-offset)
-                                        (jit-constant-i32 (if source-debug-use-lineno-p 1 0))
                                         )
                                        )
          (function-description-name fn))))))

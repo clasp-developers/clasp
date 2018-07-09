@@ -209,7 +209,6 @@
           *source-pathname*
           *source-debug-pathname*
           *source-debug-offset*
-          *source-debug-use-lineno-p*
           irc-get-terminate-landing-pad-block
           irc-function-cleanup-and-return
           %RUN-AND-LOAD-TIME-VALUE-HOLDER-GLOBAL-VAR-TYPE%

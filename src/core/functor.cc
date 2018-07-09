@@ -61,8 +61,7 @@ FunctionDescription* makeFunctionDescription(T_sp functionName,
                                              int filePos,
                                              T_sp declares,
                                              T_sp sourceDebugPathname,
-                                             int sourceDebugOffset,
-                                             bool sourceDebugUseLinenoP) {
+                                             int sourceDebugOffset) {
   // There is space for 5 roots needed - make sure that matches the number pushed below
   if (my_thread->_GCRoots->remainingCapacity()<FunctionDescription::Roots) {
     my_thread->_GCRoots = new gctools::GCRootsInModule();
@@ -81,7 +80,6 @@ FunctionDescription* makeFunctionDescription(T_sp functionName,
   fdesc->filepos = filePos;
   fdesc->sourceDebugPathnameIndex = roots->push_back(sourceDebugPathname.tagged_());
   fdesc->sourceDebugOffset = sourceDebugOffset;
-  fdesc->sourceDebugUseLinenoP = sourceDebugUseLinenoP;
   return fdesc;
 }
 
@@ -124,7 +122,6 @@ extern "C" void dumpFunctionDescription(void* vfdesc)
   printf("column = %d\n", fdesc->column);
   printf("filepos = %d\n", fdesc->filepos);
   printf("sourceDebugOffset = %d\n", fdesc->sourceDebugOffset);
-  printf("sourceDebugUseLinenoP = %d\n", fdesc->sourceDebugUseLinenoP);
 }; 
     
 namespace core {

@@ -19,21 +19,16 @@
        (cmp-log "About to optimize-module%N")
        (when (and ,optimize ,optimize-level) (funcall ,optimize ,module ,optimize-level )))))
 
-(defmacro with-source-pathnames((&key source-pathname
+(defmacro with-source-pathnames ((&key source-pathname
                                     source-debug-pathname
-                                    (source-debug-offset 0)
-                                    (source-debug-use-lineno-p t)) &rest body)
+                                    (source-debug-offset 0)) &rest body)
   `(let* ((*source-pathname* ,source-pathname)
           (*source-debug-pathname* (if ,source-debug-pathname
                                        ,source-debug-pathname
                                        ,source-pathname))
-          (*source-debug-offset* ,source-debug-offset)
-	  (*source-debug-use-lineno-p* ,source-debug-use-lineno-p))
+          (*source-debug-offset* ,source-debug-offset))
      (with-irbuilder ((llvm-sys:make-irbuilder *llvm-context*))
        ,@body)))
-     
-          
-     
 
 (defun compile-with-hook (compile-hook name &optional definition env pathname &key (linkage 'llvm-sys:internal-linkage))
   "Dispatch to clasp compiler or cleavir-clasp compiler if available.

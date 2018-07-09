@@ -520,7 +520,6 @@ eg:  (f closure-ptr nargs a b c d ...)
                                     %i32% ; filepos
                                     %i32% ; source-debug-pathname index
                                     %i32% ; source-debug-offset
-                                    %i32% ; source-debug-use-lineno-p
                                     ) nil ))
 (define-symbol-macro %function-description*% (llvm-sys:type-get-pointer-to %function-description%))
 
@@ -764,7 +763,6 @@ and initialize it with an array consisting of one function pointer."
 (defvar *source-pathname*)
 (defvar *source-debug-pathname*)
 (defvar *source-debug-offset* 0)
-(defvar *source-debug-use-lineno-p* t)
 
 (defvar *gv-boot-functions* nil
   "A global value that stores a pointer to the boot function for the Module.

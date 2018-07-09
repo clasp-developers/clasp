@@ -76,10 +76,9 @@ fields at the same offset as Instance_O.
     int filepos;
     int sourceDebugPathnameIndex;
     int sourceDebugOffset;
-    int sourceDebugUseLinenoP;
   };
 
-  FunctionDescription* makeFunctionDescription(T_sp functionName, T_sp lambda_list=_Unbound<T_O>(), T_sp docstring=_Unbound<T_O>(), T_sp sourcePathname=_Unbound<T_O>(), int lineno=-1, int column=-1, int filePos=-1, T_sp declares = _Nil<core::T_O>(), T_sp sourceDebugPathname = _Unbound<T_O>(), int sourceDebugOffset = -1, bool sourceDebugUseLinenoP = false);
+  FunctionDescription* makeFunctionDescription(T_sp functionName, T_sp lambda_list=_Unbound<T_O>(), T_sp docstring=_Unbound<T_O>(), T_sp sourcePathname=_Unbound<T_O>(), int lineno=-1, int column=-1, int filePos=-1, T_sp declares = _Nil<core::T_O>(), T_sp sourceDebugPathname = _Unbound<T_O>(), int sourceDebugOffset = -1);
 
   void validateFunctionDescription(const char* filename, size_t lineno, Function_sp function);
 
