@@ -2487,23 +2487,23 @@ int Lisp_O::run() {
   return exit_code;
 };
 
-SourceFileInfo_mv Lisp_O::getOrRegisterSourceFileInfo(const string &fileName, T_sp sourceDebugNamestring, size_t sourceDebugOffset, bool useLineno) {
+SourceFileInfo_mv Lisp_O::getOrRegisterSourceFileInfo(const string &fileName, T_sp sourceDebugPathname, size_t sourceDebugOffset, bool useLineno) {
   WITH_READ_WRITE_LOCK(this->_Roots._SourceFilesMutex);
   map<string, int>::iterator it = this->_Roots._SourceFileIndices.find(fileName);
   if (it == this->_Roots._SourceFileIndices.end()) {
     if (this->_Roots._SourceFiles.size() == 0) {
-      SourceFileInfo_sp unknown = SourceFileInfo_O::create("-unknown-file-", 0, sourceDebugNamestring, sourceDebugOffset);
+      SourceFileInfo_sp unknown = SourceFileInfo_O::create("-unknown-file-", 0, sourceDebugPathname, sourceDebugOffset);
       this->_Roots._SourceFiles.push_back(unknown);
     }
     int idx = this->_Roots._SourceFiles.size();
     this->_Roots._SourceFileIndices[fileName] = idx;
-    SourceFileInfo_sp sfi = SourceFileInfo_O::create(fileName, idx, sourceDebugNamestring, sourceDebugOffset, useLineno);
+    SourceFileInfo_sp sfi = SourceFileInfo_O::create(fileName, idx, sourceDebugPathname, sourceDebugOffset, useLineno);
     this->_Roots._SourceFiles.push_back(sfi);
     return Values(sfi, make_fixnum(idx));
   }
   SourceFileInfo_sp sfi = this->_Roots._SourceFiles[it->second];
-  if (sourceDebugNamestring.notnilp()) {
-    sfi->_SourceDebugNamestring = gc::As<String_sp>(sourceDebugNamestring);
+  if (sourceDebugPathname.notnilp()) {
+    sfi->_SourceDebugPathname = sourceDebugPathname;
     sfi->_SourceDebugOffset = sourceDebugOffset;
     sfi->_TrackLineno = useLineno;
   }
