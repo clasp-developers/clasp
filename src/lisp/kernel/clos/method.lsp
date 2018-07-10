@@ -109,7 +109,7 @@ in the generic function lambda-list to the generic function lambda-list"
                  (install-method ',name ',qualifiers
                                  ,(specializers-expression specializers)
                                  ',lambda-list
-                                 ,(maybe-remove-block fn-form)
+                                 ,fn-form
                                  ;; Note that we do not quote the options returned by make-method-lambda.
                                  ;; This is essentially to make the fast method function easier.
                                  ;; MOP is in my view ambiguous about whether they're supposed to be quoted.
@@ -128,22 +128,6 @@ in the generic function lambda-list to the generic function lambda-list"
                            ;; CLHS DEFMETHOD seems to say literal specializers are
                            ;; not allowed, but i'm not sure...
                            (specializer spec)))))
-
-(defun maybe-remove-block (method-lambda)
-  (when (eq (first method-lambda) 'lambda)
-    (multiple-value-bind (declarations body documentation)
-	(si::find-declarations (cddr method-lambda))
-      (let (block)
-	(when (and (null (rest body))
-		   (listp (setf block (first body)))
-		   (eq (first block) 'block))
-	  (setf method-lambda
-		`(lambda ,(second method-lambda)
-                   (declare (core:lambda-name ,(second block)))
-                   ,@declarations
-                   (block ,(if (symbolp (second block)) (second block) (error "The block name ~a is not a symbol" (second block)))
-                     ,@(cddr block))))))))
-  method-lambda)
 
 (defun fixup-specializers (specializers)
   (mapcar (lambda (spec)
