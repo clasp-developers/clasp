@@ -101,8 +101,7 @@
 
 (in-package :cmp)
 
-(defparameter *link-options* (list "-O2"))
-
+(defparameter *link-options* nil)
 
 (defun link-object-files (library-file in-all-names)
   "Link object files together to create a .dylib (macOS) or .so (linux) library.
@@ -119,6 +118,7 @@ The **library-file** is the name of the output library with the appropriate exte
     (let ((clang-args (cond
                         ((member :target-os-darwin *features*)
                          (let ((clang-args `( ,@options
+                                              (core:bformat nil "-O%d" *optimization-level*)
                                               ,@all-object-files
 ;;;                                 "-macosx_version_min" "10.10"
                                               "-flat_namespace"
@@ -136,6 +136,7 @@ The **library-file** is the name of the output library with the appropriate exte
                          ;; Linux needs to use clang to link
                          (let ((clang-args `(#+(or)"-v"
                                                     ,@options
+                                                    (core:bformat nil "-O%d" *optimization-level*)
                                                     ,@all-object-files
                                                     ,@*debug-link-options*
                                                     #+(or)"-fvisibility=default"
@@ -162,6 +163,7 @@ The **library-file** is the name of the output library with the appropriate exte
                         ((member :target-os-darwin *features*)
                          (let ((clang-args `( "-flto=thin"
                                               ,@options
+                                              (core:bformat nil "-O%d" *optimization-level*)
                                               ,@all-object-files
 ;;;                                 "-macosx_version_min" "10.10"
                                               "-flat_namespace"
@@ -180,7 +182,8 @@ The **library-file** is the name of the output library with the appropriate exte
                          ;; Linux needs to use clang to link
                          (let ((clang-args `(#+(or)"-v"
                                                     ,@options
-                                                    ,@all-object-files
+                                                    (core:bformat nil "-O%d" *optimization-level*) 
+                                                   ,@all-object-files
                                                     "-flto=thin"
                                                     "-fuse-ld=gold"
                                                     ,@*debug-link-options*
@@ -217,6 +220,7 @@ The **library-file** is the name of the output library with the appropriate exte
       (cond
         ((member :target-os-darwin *features*)
          (ext:run-clang `(,@options
+                          (core:bformat nil "-O%d" *optimization-level*)
                           ,@all-names
                           #+(or)"-v"
                           ,@link-flags
@@ -228,6 +232,7 @@ The **library-file** is the name of the output library with the appropriate exte
              (member :target-os-freebsd *features*))
          ;; Linux needs to use clang to link
          (ext:run-clang `(,@options
+                          (core:bformat nil "-O%d" *optimization-level*)
                           ,@all-names
                           ,@link-flags
                           "-o"

@@ -468,7 +468,7 @@ The passed module is modified as a side-effect."
       (setf *thread-local-jit-engine* (make-cxx-object 'llvm-sys:clasp-jit))))
 
 (defvar *optimizations-on* t)
-(defvar *optimization-level* :-O3)
+(defvar *optimization-level* 3)
 (defvar *size-level* 1)
 
 (defun foobly-file ()
@@ -482,12 +482,7 @@ The passed module is modified as a side-effect."
     (let* ((pass-manager-builder (llvm-sys:make-pass-manager-builder))
            (mpm (llvm-sys:make-pass-manager))
            (fpm (llvm-sys:make-function-pass-manager module))
-           (olevel (cond
-                     ((eq optimize-level :-O3) 3)
-                     ((eq optimize-level :-O2) 2)
-                     ((eq optimize-level :-O1) 1)
-                     ((eq optimize-level :-O0) 0)
-                     (t (error "Unsupported optimize-level ~a - only :-O3 :-O2 :-O1 :-O0 are allowed" optimize-level)))))
+           (olevel optimize-level))
       (llvm-sys:pass-manager-builder-setf-opt-level pass-manager-builder olevel)
       (llvm-sys:pass-manager-builder-setf-size-level pass-manager-builder size-level)
       (progn
@@ -514,12 +509,7 @@ The passed module is modified as a side-effect."
     (let* ((pass-manager-builder (llvm-sys:make-pass-manager-builder))
            (mpm (llvm-sys:make-pass-manager))
            (fpm (llvm-sys:make-function-pass-manager module))
-           (olevel (cond
-                     ((eq optimize-level :-O3) 3)
-                     ((eq optimize-level :-O2) 2)
-                     ((eq optimize-level :-O1) 1)
-                     ((eq optimize-level :-O0) 0)
-                     (t (error "Unsupported optimize-level ~a - only :-O3 :-O2 :-O1 :-O0 are allowed" optimize-level)))))
+           (olevel optimize-level))
       (llvm-sys:pass-manager-builder-setf-opt-level pass-manager-builder olevel)
       (llvm-sys:pass-manager-builder-setf-size-level pass-manager-builder size-level)
       (llvm-sys:pass-manager-builder-setf-inliner pass-manager-builder (llvm-sys:create-always-inliner-legacy-pass))

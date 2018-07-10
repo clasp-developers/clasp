@@ -182,7 +182,8 @@ and the pathname of the source file - this will also be used as the module initi
                                  (verbose *compile-verbose*)
                                  environment
                                  (optimize t)
-                                 (optimize-level :|-O3|))
+                                 (optimize-level *optimization-level*)
+                                 dry-run)
   "* Arguments
 - given-input-pathname :: A pathname.
 - output-path :: A pathname.
@@ -248,7 +249,7 @@ Compile a lisp source file into an LLVM module."
                        (verbose *compile-verbose*)
                        (print *compile-print*)
                        (optimize t)
-                       (optimize-level :|-O3|)
+                       (optimize-level *optimization-level*)
                        (system-p nil system-p-p)
                        (external-format :default)
                        ;; If we are spoofing the source-file system to treat given-input-name
@@ -282,7 +283,8 @@ Compile a lisp source file into an LLVM module."
                                            :compile-file-hook *cleavir-compile-file-hook*
                                            :environment environment
                                            :optimize optimize
-                                           :optimize-level optimize-level)))
+                                           :optimize-level optimize-level
+                                           :dry-run dry-run)))
       (cond
         ((null output-path)
          (error "The output-path is nil for input filename ~a~%" input-file))
