@@ -1087,6 +1087,14 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
 #endif
   if (buildReport) ss << (BF("DEBUG_TRACK_UNWINDS = %s\n") % (debug_track_unwinds ? "**DEFINED**" : "undefined") ).str();
 
+  bool track_allocations = false;
+#ifdef DEBUG_TRACK_ALLOCATIONS
+  track_allocations = true;
+  debugging = true;
+  if (setFeatures) features = core::Cons_O::create(_lisp->internKeyword("TRACK-ALLOCATIONS"),features);
+#endif
+  if (buildReport) ss << (BF("TRACK_ALLOCATIONS = %s\n") % (track_allocations ? "**DEFINED**" : "undefined") ).str();
+
     bool debug_lexical_depth = false;
 #ifdef DEBUG_LEXICAL_DEPTH
   debug_lexical_depth = true;
