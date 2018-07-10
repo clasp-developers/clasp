@@ -39,6 +39,20 @@
               ((or (or ap fp dp diop) ; complex array; for now punt, could be more specific later
                    (and iesp icsp)) ; error; let the full function handle it. could warn
                form)
+              ((constantp dimensions env)
+               ;; do constant dimensions ahead of time
+               ;; FIXME: ideally this clause wouldn't exist, and constant propagation/types
+               ;; would fix it from the next clause. probably.
+               (let ((dimensions (ext:constant-form-value dimensions env)))
+                 (typecase dimensions
+                   (ext:array-index
+                    `(,make-sv ,dimensions ,initial-element ,iesp))
+                   ((cons ext:array-index null)
+                    `(,make-sv ,(car dimensions) ,initial-element ,iesp))
+                   (list
+                    `(,make-smdarray ',dimensions ,initial-element ,iesp))
+                   (t ; type error, but let the full function handle it. could warn
+                    form))))
               (t (let* ((dimsym (gensym "DIMENSIONS"))
                         (iesym (gensym "INITIAL-ELEMENT"))
                         (form
