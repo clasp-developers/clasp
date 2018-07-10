@@ -260,7 +260,7 @@
                    (list `(declaim (ftype (function ,ftype-parameters vector)
                                           ,constructor-name)) ; useless atm
                          `(defun ,constructor-name ,lambda-list
-                            (let ((result (make-array ,(length vars) :element-type ',element-type)))
+                            (let ((result (core:make-vector ',element-type ,(length vars))))
                               ,@(let ((index 0))
                                   (mapcar (lambda (var)
                                             (prog1 `(setf (row-major-aref result ,index) ,var)
