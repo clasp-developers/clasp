@@ -24,8 +24,7 @@
                                     (source-debug-offset 0)) &rest body)
   `(let* ((*source-debug-pathname* (or ,source-debug-pathname ,source-pathname))
           (*source-debug-offset* ,source-debug-offset))
-     (with-irbuilder ((llvm-sys:make-irbuilder *llvm-context*))
-       ,@body)))
+     ,@body))
 
 (defun compile-with-hook (compile-hook name &optional definition env pathname &key (linkage 'llvm-sys:internal-linkage))
   "Dispatch to clasp compiler or cleavir-clasp compiler if available.
