@@ -74,11 +74,9 @@ fields at the same offset as Instance_O.
     int lineno;
     int column;
     int filepos;
-    int sourceDebugPathnameIndex;
-    int sourceDebugOffset;
   };
 
-  FunctionDescription* makeFunctionDescription(T_sp functionName, T_sp lambda_list=_Unbound<T_O>(), T_sp docstring=_Unbound<T_O>(), T_sp sourcePathname=_Unbound<T_O>(), int lineno=-1, int column=-1, int filePos=-1, T_sp declares = _Nil<core::T_O>(), T_sp sourceDebugPathname = _Unbound<T_O>(), int sourceDebugOffset = -1);
+  FunctionDescription* makeFunctionDescription(T_sp functionName, T_sp lambda_list=_Unbound<T_O>(), T_sp docstring=_Unbound<T_O>(), T_sp sourcePathname=_Unbound<T_O>(), int lineno=-1, int column=-1, int filePos=-1, T_sp declares = _Nil<core::T_O>());
 
   void validateFunctionDescription(const char* filename, size_t lineno, Function_sp function);
 
@@ -126,19 +124,9 @@ fields at the same offset as Instance_O.
     CL_DEFMETHOD void setf_lambdaList(T_sp lambda_list) {
       this->fdesc()->gcrootsInModule->set(this->fdesc()->lambdaListIndex,lambda_list.tagged_());
     }
-    T_sp sourcePathname() const {
+    CL_DEFMETHOD T_sp sourcePathname() const {
       T_sp result((gctools::Tagged)this->fdesc()->gcrootsInModule->get(this->fdesc()->sourcePathnameIndex));
       return result;
-    }
-    CL_DEFMETHOD T_sp sourceDebugPathname() const {
-      T_sp result((gctools::Tagged)this->fdesc()->gcrootsInModule->get(this->fdesc()->sourceDebugPathnameIndex));
-      if (result.unboundp()) {
-        result = this->sourcePathname();
-      }
-      return result;
-    }
-    CL_DEFMETHOD int sourceDebugOffset() const {
-      return this->fdesc()->sourceDebugOffset;
     }
     void setf_sourcePathname(T_sp sourceFileName) const {
       this->fdesc()->gcrootsInModule->set(this->fdesc()->sourcePathnameIndex,sourceFileName.tagged_());

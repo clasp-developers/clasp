@@ -489,31 +489,6 @@
     (irc-unwind-environment cur-env))
   )
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-    
-  
-
-
-
-#|
-(defun irc-rename-insert-block (name)
-  "Rename the current insertion block to something more useful for reading/debugging IR"
-  (let ((current-block (llvm-sys:get-insert-block *irbuilder*)))
-    (llvm-sys:set-name current-block name)))
-|#
-
 (defun irc-basic-block-create (name &optional (function *current-function*))
   "Create a llvm::BasicBlock with (name) in the (function)"
   (let ((bb (llvm-sys:basic-block-create *llvm-context* (bformat nil "%s%s" *block-name-prefix* name) function)))
@@ -930,12 +905,21 @@ But no irbuilders or basic-blocks. Return the fn."
                                                           (fifth one-declare)
                                                           (sixth one-declare))))))
 
-(defstruct (function-info (:type vector) :named)
+(defstruct (function-info (:type vector) :named
+                          (:constructor %make-function-info
+                              (function-name lambda-list docstring declares form
+                               source-pathname lineno column filepos)))
   function-name
-  (source-pathname cmp:*source-pathname*)
-  lambda-list docstring declares form lineno column filepos
-  (source-debug-pathname cmp:*source-debug-pathname*)
-  (source-debug-offset cmp:*source-debug-offset*))
+  lambda-list docstring declares form
+  source-pathname lineno column filepos)
+
+(defun make-function-info (&key function-name lambda-list docstring declares form
+                             lineno column filepos)
+  ;; FIXME: *current-source-pos-info* could be installed already knowing about offsets
+  ;; and such, thus leaving the handling waaaaay up in compile-file.
+  (%make-function-info function-name lambda-list docstring declares form
+                       *source-debug-pathname* lineno column
+                       (+ filepos *source-debug-offset*)))
 
 (defun irc-create-function-description (llvm-function-name fn module function-info)
   "If **generate-code** then create a function-description block from function info.
@@ -950,9 +934,7 @@ But no irbuilders or basic-blocks. Return the fn."
         (lineno (function-info-lineno function-info))
         (column (function-info-column function-info))
         (filepos (function-info-filepos function-info))
-        (declares (function-info-declares function-info))
-        (source-debug-pathname (function-info-source-debug-pathname function-info))
-        (source-debug-offset (function-info-source-debug-offset function-info)))
+        (declares (function-info-declares function-info)))
     (multiple-value-bind (found-source-info n l c f)
         (parse-declares-for-source-info declares)
       (when found-source-info
@@ -979,8 +961,7 @@ But no irbuilders or basic-blocks. Return the fn."
             (function-name-index (literal:reference-literal function-name t))
             (lambda-list-index (literal:reference-literal lambda-list t))
             (docstring-index (literal:reference-literal docstring t))
-            (declare-index (literal:reference-literal declares t))
-            (source-debug-pathname-index (literal:reference-literal source-debug-pathname)))
+            (declare-index (literal:reference-literal declares t)))
         #+(or)
         (progn
           (core:bformat t "source-pathname-index: %s%N" source-pathname-index)
@@ -1010,8 +991,6 @@ But no irbuilders or basic-blocks. Return the fn."
                                         (jit-constant-i32 lineno)
                                         (jit-constant-i32 column)
                                         (jit-constant-i32 filepos)
-                                        (jit-constant-i32 source-debug-pathname-index)
-                                        (jit-constant-i32 source-debug-offset)
                                         )
                                        )
          (function-description-name fn))))))

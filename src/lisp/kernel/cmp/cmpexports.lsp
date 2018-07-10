@@ -206,7 +206,6 @@
           *irbuilder-function-alloca*
           irc-get-cleanup-landing-pad-block
           irc-constant-string-ptr
-          *source-pathname*
           *source-debug-pathname*
           *source-debug-offset*
           irc-get-terminate-landing-pad-block

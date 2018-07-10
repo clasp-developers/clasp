@@ -59,9 +59,7 @@ FunctionDescription* makeFunctionDescription(T_sp functionName,
                                              int lineno,
                                              int column,
                                              int filePos,
-                                             T_sp declares,
-                                             T_sp sourceDebugPathname,
-                                             int sourceDebugOffset) {
+                                             T_sp declares) {
   // There is space for 5 roots needed - make sure that matches the number pushed below
   if (my_thread->_GCRoots->remainingCapacity()<FunctionDescription::Roots) {
     my_thread->_GCRoots = new gctools::GCRootsInModule();
@@ -78,8 +76,6 @@ FunctionDescription* makeFunctionDescription(T_sp functionName,
   fdesc->lineno = lineno;
   fdesc->column = column;
   fdesc->filepos = filePos;
-  fdesc->sourceDebugPathnameIndex = roots->push_back(sourceDebugPathname.tagged_());
-  fdesc->sourceDebugOffset = sourceDebugOffset;
   return fdesc;
 }
 
@@ -116,14 +112,12 @@ extern "C" void dumpFunctionDescription(void* vfdesc)
   printf("functionName[%d] = %s\n", fdesc->functionNameIndex, _rep_(core::T_sp((gctools::Tagged)fdesc->gcrootsInModule->get(fdesc->functionNameIndex))).c_str()); 
   printf("lambdaList[%d] = %s\n", fdesc->lambdaListIndex, _rep_(core::T_sp((gctools::Tagged)fdesc->gcrootsInModule->get(fdesc->lambdaListIndex))).c_str()); 
   printf("docstring[%d] = %s\n", fdesc->docstringIndex, _rep_(core::T_sp((gctools::Tagged)fdesc->gcrootsInModule->get(fdesc->docstringIndex))).c_str()); 
-  printf("declare[%d] = %s\n", fdesc->declareIndex, _rep_(core::T_sp((gctools::Tagged)fdesc->gcrootsInModule->get(fdesc->declareIndex))).c_str()); 
-  printf("sourceDebugPathname[%d] = %s\n", fdesc->sourceDebugPathnameIndex, _rep_(core::T_sp((gctools::Tagged)fdesc->gcrootsInModule->get(fdesc->sourceDebugPathnameIndex))).c_str());
+  printf("declare[%d] = %s\n", fdesc->declareIndex, _rep_(core::T_sp((gctools::Tagged)fdesc->gcrootsInModule->get(fdesc->declareIndex))).c_str());
   printf("lineno = %d\n", fdesc->lineno);
   printf("column = %d\n", fdesc->column);
   printf("filepos = %d\n", fdesc->filepos);
-  printf("sourceDebugOffset = %d\n", fdesc->sourceDebugOffset);
-}; 
-    
+};
+
 namespace core {
 
 CL_DEFUN void core__dumpFunctionDescription(Function_sp func)

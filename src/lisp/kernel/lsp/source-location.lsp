@@ -8,25 +8,24 @@
 
 (defun compiled-function-file (xfunction)
   (if (and xfunction (functionp xfunction))
-      (multiple-value-bind (filename pos lineno)
+      (multiple-value-bind (src-pathname pos lineno)
           (core:function-source-pos xfunction)
-        (let* ((source-file (let ((pathname (core:source-debug-pathname xfunction)))
-                              (unless filename
-                                ;; e.g., a repl function - no source location.
-                                (return-from compiled-function-file nil))
-                              (unless (typep pathname 'pathname)
-                                (error "The source-debug-pathname for ~a was ~a - it needs to be a pathname" xfunction pathname))
-                              (namestring pathname))))
-          (when source-file
-            (let* ((src-pathname (pathname source-file))
-                   (src-directory (pathname-directory src-pathname))
-                   (src-name (pathname-name src-pathname))
-                   (src-type (pathname-type src-pathname))
-                   (filepos (+ (core:source-debug-offset xfunction) pos)))
-              (let* ((pn (if (eq (car src-directory) :relative)
-                             (merge-pathnames src-pathname (translate-logical-pathname "source-dir:"))
-                             src-pathname)))
-                (values pn filepos lineno))))))
+        (when (null src-pathname)
+          ;; e.g., a repl function - no source location.
+          ;; FIXME: in the future, anyway. right now this is never true :(
+          (return-from compiled-function-file nil))
+        ;; FIXME: This indicates an internal bookkeeping problem, i.e., a bug.
+        (unless (typep src-pathname 'pathname)
+          (error "The source-debug-pathname for ~a was ~a - it needs to be a pathname"
+                 xfunction src-pathname))
+        (let ((src-directory (pathname-directory src-pathname))
+              (src-name (pathname-name src-pathname))
+              (src-type (pathname-type src-pathname))
+          (filepos pos))
+          (let ((pn (if (eq (car src-directory) :relative)
+                        (merge-pathnames src-pathname (translate-logical-pathname "source-dir:"))
+                        src-pathname)))
+            (values pn filepos lineno))))
       (progn
         (warn "compiled-function-file expected a function as argument - but it got ~a - there may not be any backtrace available" xfunction)
         (values nil 0 0))))
@@ -47,11 +46,14 @@
 (defun class-source-location (class)
   (let ((csp (clos:class-source-position class)))
     (when csp
-      (make-source-location
-       :pathname (core:source-file-info-pathname
-                  (core:source-file-info
-                   (core:source-pos-info-file-handle csp)))
-       :offset (core:source-pos-info-filepos csp)))))
+      ;; FIXME: Move this source debug stuff to an interface
+      ;; (in SPI, probably)
+      (let ((csi (core:source-file-info
+                  (core:source-pos-info-file-handle csp))))
+        (make-source-location
+         :pathname (core:source-file-info-source-debug-pathname csi)
+         :offset (+ (core:source-file-info-source-debug-offset csi)
+                    (core:source-pos-info-filepos csp)))))))
 
 ;;; Method combinations don't have source positions. In fact,
 ;;; they don't even exist as objects globally. The only global
@@ -136,7 +138,7 @@ Return the source-location for the name/kind pair"
     ((eq kind t)
      (cond
        ((clos:classp obj)
-        (let ((source-loc (class-source-position obj)))
+        (let ((source-loc (class-source-location obj)))
           (when source-loc (list source-loc))))
        ((core:single-dispatch-generic-function-p obj)
         (source-location (core:function-name obj) :method))

@@ -518,8 +518,6 @@ eg:  (f closure-ptr nargs a b c d ...)
                                     %i32% ; lineno
                                     %i32% ; column
                                     %i32% ; filepos
-                                    %i32% ; source-debug-pathname index
-                                    %i32% ; source-debug-offset
                                     ) nil ))
 (define-symbol-macro %function-description*% (llvm-sys:type-get-pointer-to %function-description%))
 
@@ -756,11 +754,10 @@ and initialize it with an array consisting of one function pointer."
 ;;
 ;;
 
-(defvar *compile-file-pathname* nil "Store the path-name of the currently compiled file")
+(defvar *compile-file-pathname* nil "Store the pathname of the currently compiled file")
 (defvar *compile-file-truename* nil "Store the truename of the currently compiled file")
 (defvar *compile-file-source-file-info* nil "Store the SourceFileInfo object for the compile-file target")
 
-(defvar *source-pathname*)
 (defvar *source-debug-pathname*)
 (defvar *source-debug-offset* 0)
 

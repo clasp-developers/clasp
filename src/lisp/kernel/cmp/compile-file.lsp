@@ -241,8 +241,8 @@ Compile a lisp source file into an LLVM module."
                           :optimize (when optimize #'optimize-module-for-compile-file)
                           :optimize-level optimize-level)
               (with-source-pathnames (:source-pathname *compile-file-truename* ;(namestring source-location)
-                                       :source-debug-pathname source-debug-pathname
-                                       :source-debug-offset source-debug-offset)
+                                      :source-debug-pathname source-debug-pathname
+                                      :source-debug-offset source-debug-offset)
                 (with-debug-info-generator (:module *the-module*
                                             :pathname *compile-file-truename*)
                   (or *the-module* (error "*the-module* is NIL"))
