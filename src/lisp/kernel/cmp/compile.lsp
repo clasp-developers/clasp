@@ -38,14 +38,12 @@ We could do more fancy things here - like if cleavir-clasp fails, use the clasp 
   (with-compiler-env (conditions)
     (let* ((*the-module* (create-run-time-module-for-compile)))
       ;; Link the C++ intrinsics into the module
-      (let* ((pathname (if *load-pathname*
-                           (namestring *load-pathname*)
-                           "repl-code")))
-        (with-module (:module *the-module*
-                      :optimize nil)
-          (with-source-pathnames (:source-pathname (namestring pathname))
-            (cmp-log "Dumping module%N")
-            (cmp-log-dump-module *the-module*)
+      (with-module (:module *the-module*
+                    :optimize nil)
+        (with-source-pathnames (:source-pathname *load-pathname*) ; may be NIL.
+          (cmp-log "Dumping module%N")
+          (cmp-log-dump-module *the-module*)
+          (let ((pathname (if *load-pathname* (namestring *load-pathname*) "repl-code")))
             (compile-with-hook compile-hook bind-to-name definition env pathname :linkage linkage)))))))
 
 (defun compile (name &optional definition)

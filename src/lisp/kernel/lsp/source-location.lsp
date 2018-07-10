@@ -12,7 +12,6 @@
           (core:function-source-pos xfunction)
         (when (null src-pathname)
           ;; e.g., a repl function - no source location.
-          ;; FIXME: in the future, anyway. right now this is never true :(
           (return-from compiled-function-file nil))
         ;; FIXME: This indicates an internal bookkeeping problem, i.e., a bug.
         (unless (typep src-pathname 'pathname)

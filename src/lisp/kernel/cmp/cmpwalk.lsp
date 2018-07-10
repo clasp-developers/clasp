@@ -38,9 +38,9 @@
   (let* ((module (llvm-create-module "code-walk-for-defmethod"))
 	 (*code-walker* code-walker-function))
     (with-compilation-unit ()
-      (with-module ( :module module
-                     :optimize nil)
-        (with-source-pathnames (:source-pathname "code-walk-using-bclasp")
+      (with-module (:module module
+                    :optimize nil)
+        (with-source-pathnames (:source-pathname nil)
           (with-debug-info-generator (:module module
                                       :pathname #P"/dev/null")
             (with-make-new-run-all (run-all-function)
