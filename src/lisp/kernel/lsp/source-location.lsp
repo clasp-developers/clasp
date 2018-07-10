@@ -7,26 +7,29 @@
   (core:function-name x))
 
 (defun compiled-function-file (xfunction)
-  (assert (functionp xfunction))
-  (multiple-value-bind (filename pos lineno)
-      (core:function-source-pos xfunction)
-    (let* ((source-file (let ((pathname (core:source-debug-pathname xfunction)))
-                          (unless filename
-                            ;; e.g., a repl function - no source location.
-                            (return-from compiled-function-file nil))
-                          (unless (typep pathname 'pathname)
-                            (error "The source-debug-pathname for ~a was ~a - it needs to be a pathname" xfunction pathname))
-                          (namestring pathname))))
-      (when source-file
-        (let* ((src-pathname (pathname source-file))
-               (src-directory (pathname-directory src-pathname))
-               (src-name (pathname-name src-pathname))
-               (src-type (pathname-type src-pathname))
-               (filepos (+ (core:source-debug-offset xfunction) pos)))
-          (let* ((pn (if (eq (car src-directory) :relative)
-                         (merge-pathnames src-pathname (translate-logical-pathname "source-dir:"))
-                         src-pathname)))
-            (values pn filepos lineno)))))))
+  (if (and xfunction (functionp xfunction))
+      (multiple-value-bind (filename pos lineno)
+          (core:function-source-pos xfunction)
+        (let* ((source-file (let ((pathname (core:source-debug-pathname xfunction)))
+                              (unless filename
+                                ;; e.g., a repl function - no source location.
+                                (return-from compiled-function-file nil))
+                              (unless (typep pathname 'pathname)
+                                (error "The source-debug-pathname for ~a was ~a - it needs to be a pathname" xfunction pathname))
+                              (namestring pathname))))
+          (when source-file
+            (let* ((src-pathname (pathname source-file))
+                   (src-directory (pathname-directory src-pathname))
+                   (src-name (pathname-name src-pathname))
+                   (src-type (pathname-type src-pathname))
+                   (filepos (+ (core:source-debug-offset xfunction) pos)))
+              (let* ((pn (if (eq (car src-directory) :relative)
+                             (merge-pathnames src-pathname (translate-logical-pathname "source-dir:"))
+                             src-pathname)))
+                (values pn filepos lineno))))))
+      (progn
+        (warn "compiled-function-file expected a function as argument - but it got ~a - there may not be any backtrace available" xfunction)
+        (values nil 0 0))))
 
 ;;; This happens to be the first non-:TYPE defstruct during build.
 ;;; But FIXME: It's redundant to core:source-pos-info and should be vaporized.
