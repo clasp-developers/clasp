@@ -31,12 +31,13 @@ THE SOFTWARE.
 // All class forward declarations
 //
 namespace core {
-class T_O;
-class WrappedPointer_O;
-class Function_O;
-class Creator_O;
-class Iterator_O;
-class SequenceStepper_O;
+  class T_O;
+  class WrappedPointer_O;
+  class Function_O;
+  class Closure_O;
+  class Creator_O;
+  class Iterator_O;
+  class SequenceStepper_O;
 };
 namespace asttooling {
 namespace internal {
