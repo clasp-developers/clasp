@@ -88,8 +88,7 @@ in the generic function lambda-list to the generic function lambda-list"
                                          (find-class 'standard-method))))))))
 
 (defmacro defmethod (&whole whole name &rest args &environment env)
-  (let* ((source-location (ext:current-source-location))
-         (qualifiers (loop while (and args (not (listp (first args))))
+  (let* ((qualifiers (loop while (and args (not (listp (first args))))
 			collect (pop args)))
 	 (specialized-lambda-list
 	  (if args
@@ -110,7 +109,7 @@ in the generic function lambda-list to the generic function lambda-list"
                  (install-method ',name ',qualifiers
                                  ,(specializers-expression specializers)
                                  ',lambda-list
-                                 ,(maybe-remove-block fn-form source-location)
+                                 ,(maybe-remove-block fn-form)
                                  ;; Note that we do not quote the options returned by make-method-lambda.
                                  ;; This is essentially to make the fast method function easier.
                                  ;; MOP is in my view ambiguous about whether they're supposed to be quoted.
@@ -130,7 +129,7 @@ in the generic function lambda-list to the generic function lambda-list"
                            ;; not allowed, but i'm not sure...
                            (specializer spec)))))
 
-(defun maybe-remove-block (method-lambda source-location)
+(defun maybe-remove-block (method-lambda)
   (when (eq (first method-lambda) 'lambda)
     (multiple-value-bind (declarations body documentation)
 	(si::find-declarations (cddr method-lambda))
@@ -140,10 +139,7 @@ in the generic function lambda-list to the generic function lambda-list"
 		   (eq (first block) 'block))
 	  (setf method-lambda
 		`(lambda ,(second method-lambda)
-                   (declare (core:lambda-name ,(second block)
-                                              ,(if source-location (source-file-pos-filepos source-location) 0)
-                                              ,(if source-location (source-file-pos-lineno source-location) 0)
-                                              ,(if source-location (source-file-pos-column source-location) 0)))
+                   (declare (core:lambda-name ,(second block)))
                    ,@declarations
                    (block ,(if (symbolp (second block)) (second block) (error "The block name ~a is not a symbol" (second block)))
                      ,@(cddr block))))))))
@@ -195,15 +191,12 @@ in the generic function lambda-list to the generic function lambda-list"
             ;; second of the method lambda.  The class declarations
             ;; are inserted to communicate the class of the method's
             ;; arguments to the code walk.
-            (let* ((loc (ext:current-source-location))
-                   (filepos (if loc (source-file-pos-filepos loc) 0))
-                   (lineno (if loc (source-file-pos-lineno loc) 0)))
-              `(lambda ,lambda-list
-                 (declare (core:lambda-name (method ,name ,@qualifiers ,(fixup-specializers specializers)) ,filepos ,lineno))
-                 ,@(and class-declarations `((declare ,@class-declarations)))
-                 ,(if copied-variables
-                      `(let* ,copied-variables ,block)
-                      block)))))
+             `(lambda ,lambda-list
+                (declare (core:lambda-name (method ,name ,@qualifiers ,(fixup-specializers specializers))))
+                ,@(and class-declarations `((declare ,@class-declarations)))
+                ,(if copied-variables
+                     `(let* ,copied-variables ,block)
+                     block))))
       (values method-lambda declarations documentation))))
 
 (defun lambda-list-fast-callable-p (lambda-list)
