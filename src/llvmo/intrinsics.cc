@@ -195,36 +195,18 @@ ALWAYS_INLINE T_O *cc_safe_symbol_value(core::T_O *sym) {
   return sv;
 }
 
-ALWAYS_INLINE T_O *cc_unsafe_fdefinition(core::T_O *sym)
+ALWAYS_INLINE T_O *cc_fdefinition(core::T_O *sym)
 {NO_UNWIND_BEGIN();
   core::Symbol_O *symP = reinterpret_cast<core::Symbol_O *>(gctools::untag_general<core::T_O *>(sym));
   return symP->_Function.raw_();
   NO_UNWIND_END();
 }
 
-ALWAYS_INLINE T_O *cc_safe_fdefinition(core::T_O *sym) {
-  core::Symbol_O *symP = reinterpret_cast<core::Symbol_O *>(gctools::untag_general<core::T_O *>(sym));
-  T_O *sv = symP->_Function.raw_();
-  unlikely_if (sv == gctools::global_tagged_Symbol_OP_unbound) {
-    intrinsic_error(llvmo::unboundSymbolFunction, gc::smart_ptr<core::Symbol_O>((gc::Tagged)sym));
-  }
-  return symP->_Function.raw_();
-}
-
-ALWAYS_INLINE T_O *cc_unsafe_setfdefinition(core::T_O *sym)
+ALWAYS_INLINE T_O *cc_setfdefinition(core::T_O *sym)
 {NO_UNWIND_BEGIN();
   core::Symbol_O *symP = reinterpret_cast<core::Symbol_O *>(gctools::untag_general<core::T_O *>(sym));
   return symP->_SetfFunction.raw_();
   NO_UNWIND_END();
-}
-
-ALWAYS_INLINE T_O *cc_safe_setfdefinition(core::T_O *sym) {
-  core::Symbol_O *symP = reinterpret_cast<core::Symbol_O *>(gctools::untag_general<core::T_O *>(sym));
-  T_O *sv = symP->_SetfFunction.raw_();
-  if (sv == gctools::global_tagged_Symbol_OP_unbound) {
-    intrinsic_error(llvmo::unboundSymbolSetfFunction, gc::smart_ptr<core::Symbol_O>((gc::Tagged)sym));
-  }
-  return symP->_SetfFunction.raw_();
 }
 
 ALWAYS_INLINE gc::return_type cc_call(LCC_ARGS_CC_CALL_ELLIPSIS) {
@@ -322,6 +304,7 @@ ALWAYS_INLINE void cc_writeCell(core::T_O *cell, core::T_O* val)
 
 ALWAYS_INLINE void cc_push_InvocationHistoryFrame(core::T_O* tagged_closure, InvocationHistoryFrame* frame, va_list va_args, size_t nargs)
 {NO_UNWIND_BEGIN();
+  core::core__stack_monitor(_Nil<core::T_O>());
   new (frame) InvocationHistoryFrame(va_args, nargs);
   core::push_InvocationHistoryStack(frame);
 #if 0
@@ -425,14 +408,10 @@ ALWAYS_INLINE void setParentOfActivationFrame(core::T_O *resultP, core::T_O *par
 
 
 ALWAYS_INLINE core::T_O *cc_stack_enclose(void* closure_address,
-                                          core::T_O *lambdaName,
                                           fnLispCallingConvention llvm_func,
                                           core::FunctionDescription* functionDescription,
-                                          /* int *sourceFileInfoHandleP,
-                                          size_t filePos, size_t lineno, size_t column, */
                                           std::size_t numCells, ...)
 {NO_UNWIND_BEGIN();
-  core::T_sp tlambdaName = gctools::smart_ptr<core::T_O>((gc::Tagged)lambdaName);
   gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(closure_address);
   const gctools::Header_s::Value closure_header = gctools::Header_s::Value::make<core::ClosureWithSlots_O>();
   size_t size = gctools::sizeof_container_with_header<core::ClosureWithSlots_O>(numCells);
@@ -447,7 +426,8 @@ ALWAYS_INLINE core::T_O *cc_stack_enclose(void* closure_address,
   auto obj = gctools::BasePtrToMostDerivedPtr<typename gctools::smart_ptr<core::ClosureWithSlots_O>::Type>(closure_address);
   new (obj) (typename gctools::smart_ptr<core::ClosureWithSlots_O>::Type)( numCells,
                                                                            llvm_func,
-                                                                           functionDescription);
+                                                                           functionDescription,
+                                                                           core::ClosureWithSlots_O::cclaspClosure);
 
   gctools::smart_ptr<core::ClosureWithSlots_O> functoid = gctools::smart_ptr<core::ClosureWithSlots_O>(obj);
   core::T_O *p;

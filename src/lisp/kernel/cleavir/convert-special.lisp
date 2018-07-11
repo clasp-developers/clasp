@@ -109,6 +109,21 @@
   (cleavir-code-utilities:check-argcount form 1 1))
 
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Converting CORE:DEBUG-BREAK
+;;;
+;;; This is converted into a call to invoke the debugger
+;;;
+(defmethod cleavir-generate-ast::convert-special
+    ((symbol (eql 'core:debug-break)) form environment (system clasp-cleavir:clasp))
+  (make-instance 'clasp-cleavir-ast:debug-break-ast))
+
+(defmethod cleavir-generate-ast::check-special-form-syntax ((head (eql 'core:debug-break)) form)
+  (cleavir-code-utilities:check-form-proper-list form)
+  (cleavir-code-utilities:check-argcount form 0 0))
+
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;

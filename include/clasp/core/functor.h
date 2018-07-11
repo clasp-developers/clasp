@@ -18,7 +18,6 @@ namespace core {
   FORWARD(Function);
   FORWARD(Closure);
   FORWARD(BuiltinClosure);
-  FORWARD(Closure);
   FORWARD(ClosureWithSlots);
 };
 
@@ -67,7 +66,7 @@ fields at the same offset as Instance_O.
     static const size_t Roots = 6;
     void* functionPrototype;
     gctools::GCRootsInModule* gcrootsInModule;
-    int sourceFileNameIndex;
+    int sourcePathnameIndex;
     int functionNameIndex;
     int lambdaListIndex;
     int docstringIndex;
@@ -75,13 +74,9 @@ fields at the same offset as Instance_O.
     int lineno;
     int column;
     int filepos;
-    int macroP;
-    int sourceDebugFileNameIndex;
-    int sourceDebugOffset;
-    int sourceDebugUseLinenoP;
   };
 
-  FunctionDescription* makeFunctionDescription(T_sp functionName, T_sp lambda_list=_Unbound<T_O>(), T_sp docstring=_Unbound<T_O>(), T_sp sourceFileName=_Unbound<T_O>(), int lineno=-1, int column=-1, int filePos=-1, T_sp declares = _Nil<core::T_O>(), bool macroP=false, T_sp sourceDebugFileName = _Unbound<T_O>(), int sourceDebugOffset = -1, bool sourceDebugUseLinenoP = false);
+  FunctionDescription* makeFunctionDescription(T_sp functionName, T_sp lambda_list=_Unbound<T_O>(), T_sp docstring=_Unbound<T_O>(), T_sp sourcePathname=_Unbound<T_O>(), int lineno=-1, int column=-1, int filePos=-1, T_sp declares = _Nil<core::T_O>());
 
   void validateFunctionDescription(const char* filename, size_t lineno, Function_sp function);
 
@@ -118,7 +113,6 @@ fields at the same offset as Instance_O.
     CL_DEFMETHOD T_sp functionName() const {
       return this->fdescInfo(this->fdesc()->functionNameIndex);
     }
-    void setMacroP(bool m) { this->fdesc()->macroP = m; };
     T_sp docstring() const {
       T_sp result((gctools::Tagged)this->fdesc()->gcrootsInModule->get(this->fdesc()->docstringIndex));
       return result;
@@ -130,13 +124,12 @@ fields at the same offset as Instance_O.
     CL_DEFMETHOD void setf_lambdaList(T_sp lambda_list) {
       this->fdesc()->gcrootsInModule->set(this->fdesc()->lambdaListIndex,lambda_list.tagged_());
     }
-    T_sp sourceFileName() const {
-      T_sp result((gctools::Tagged)this->fdesc()->gcrootsInModule->get(this->fdesc()->sourceFileNameIndex));
+    CL_DEFMETHOD T_sp sourcePathname() const {
+      T_sp result((gctools::Tagged)this->fdesc()->gcrootsInModule->get(this->fdesc()->sourcePathnameIndex));
       return result;
     }
-
-    void setf_sourceFileName(T_sp sourceFileName) const {
-      this->fdesc()->gcrootsInModule->set(this->fdesc()->sourceFileNameIndex,sourceFileName.tagged_());
+    void setf_sourcePathname(T_sp sourceFileName) const {
+      this->fdesc()->gcrootsInModule->set(this->fdesc()->sourcePathnameIndex,sourceFileName.tagged_());
     }
     void setf_docstring(T_sp x) const {
       this->fdesc()->gcrootsInModule->set(this->fdesc()->docstringIndex,x.tagged_());
@@ -144,7 +137,7 @@ fields at the same offset as Instance_O.
     void setf_declares(T_sp x) const {
       this->fdesc()->gcrootsInModule->set(this->fdesc()->declareIndex,x.tagged_());
     }
-size_t filePos() const {
+    size_t filePos() const {
       return this->fdesc()->filepos;
     }
     void setf_filePos(int filePos) { this->fdesc()->filepos = filePos; };
@@ -167,17 +160,10 @@ size_t filePos() const {
     virtual void __write__(T_sp) const;
     
     Pointer_sp function_pointer() const;
-    CL_DEFMETHOD virtual bool macroP() const { return this->fdesc()->macroP;}
     virtual bool compiledP() const { return false; };
     virtual bool interpretedP() const { return false; };
     virtual bool builtinP() const { return false; };
     virtual T_sp sourcePosInfo() const { return _Nil<T_O>(); };
-    CL_DEFMETHOD virtual T_sp functionKind() const {
-      if (this->macroP()) {
-	return kw::_sym_macro;
-      }
-      return kw::_sym_function;
-    }
     CL_DEFMETHOD List_sp function_declares() const { return this->declares(); };
     CL_DEFMETHOD T_sp functionLambdaListHandler() const {
       return this->lambdaListHandler();
@@ -191,7 +177,6 @@ size_t filePos() const {
       return result;
     }
     virtual string __repr__() const;
-    CL_DEFMETHOD virtual T_sp function_literal_vector_copy() const {SUBIMP();};
     virtual ~Function_O() {};
   };
 };
@@ -244,9 +229,8 @@ namespace core {
     : Closure_O(fptr, fdesc), _lambdaListHandler(_Unbound<LambdaListHandler_O>())  {};
   BuiltinClosure_O(claspFunction fptr, FunctionDescription* fdesc, LambdaListHandler_sp llh)
     : Closure_O(fptr, fdesc), _lambdaListHandler(llh)  {};
-    void finishSetup(LambdaListHandler_sp llh, bool macroP) {
+    void finishSetup(LambdaListHandler_sp llh) {
       this->_lambdaListHandler = llh;
-      this->setMacroP(macroP);
     }
     T_sp closedEnvironment() const { return _Nil<T_O>(); };
     virtual size_t templatedSizeof() const { return sizeof(*this); };
@@ -259,6 +243,8 @@ namespace core {
 
 namespace core {
   extern LCC_RETURN interpretedClosureEntryPoint(LCC_ARGS_FUNCALL_ELLIPSIS);
+  extern LCC_RETURN unboundFunctionEntryPoint(LCC_ARGS_FUNCALL_ELLIPSIS);
+  extern LCC_RETURN unboundSetfFunctionEntryPoint(LCC_ARGS_FUNCALL_ELLIPSIS);
    
   class ClosureWithSlots_O final : public core::Closure_O {
     LISP_CLASS(core,CorePkg,ClosureWithSlots_O,"ClosureWithSlots",core::Closure_O);
@@ -291,8 +277,10 @@ namespace core {
   public:
   ClosureWithSlots_O(size_t capacity,
                      claspFunction ptr,
-                     FunctionDescription* functionDescription)
+                     FunctionDescription* functionDescription,
+                     ClosureType nclosureType)
     : Base(ptr, functionDescription),
+      closureType(nclosureType),
       _Slots(capacity,_Unbound<T_O>(),true) {};
     virtual string __repr__() const;
     core::LambdaListHandler_sp lambdaListHandler() const {

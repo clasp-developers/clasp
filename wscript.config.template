@@ -11,12 +11,6 @@ LLVM_CONFIG_BINARY = '/path/to/llvm-config-4.0'
 # To link to the debug versions of the LLVM libraries, set a path here to the llvm-config binary of the LLVM debug build
 # LLVM_CONFIG_BINARY_FOR_LIBS = "/full/path/externals-clasp/build/debug/bin/llvm-config"
 
-# Use JIT notification - which is broken in llvm5.0
-# Set this to True if you have applied the patch to llvm 5.0 or the
-#   fix has been installed in llvm 5.whatever
-LLVM5_ORC_NOTIFIER_PATCH = False
-
-
 # Use Parallel building
 #  COMPILE-FILE during Clasp building will run in fork'd children
 #  You can specify the number of children that can run in parallel using -j #
@@ -41,9 +35,6 @@ USE_LLD = False
 # clasp, e.g. with the './waf rebuild_cboehm' command.
 #CLASP               = '/path/cclasp-boehm'
 
-# Optional turn on gprof profiling of all code (Linux only for now)
-# PROFILING = True
-
 # This is how you can specify non-standard locations
 #INCLUDES = "/opt/boost_1_62_0/include"
 #LINKFLAGS = ["-L/opt/boost_1_62_0/lib", "-Wl,-rpath=/opt/boost_1_62_0/lib"]
@@ -51,8 +42,24 @@ USE_LLD = False
 # This turns on build with address sanitizer
 # ADDRESS_SANITIZER = True
 
+# Set if on macOS libffi is required.   On macOS we can build with brew installed llvm
+# but brew installed llvm has libffi as a dependency and doesn't report that when you invoke llvm-config --libs!!!
+# This is a bug in llvm-config and has to be fixed upstream.
+# Default = True
+# REQUIRE_LIBFFI = True
+
+
 # CLASP_BUILD_MODE (which replaced LTO_OPTION) can be "bitcode" or "object" (default)
 # This controls if object files are generated and linked (fast build time)
 # or bitcode is generated and lto linked (slow build time).
 #
 # CLASP_BUILD_MODE = "bitcode"
+
+# Turn on debug options that slow down clasp while checking for various things.
+# info on the various options is in wscript
+DEBUG_OPTIONS = [ "DEBUG_RELEASE",
+                  "DEBUG_BCLASP_LISP",
+                  "DEBUG_CCLASP_LISP",
+                  "DEBUG_COMPILER",
+                  "DEBUG_SLOW"
+                  ]

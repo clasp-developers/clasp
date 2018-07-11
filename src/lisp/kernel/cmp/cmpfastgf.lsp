@@ -934,7 +934,7 @@
             (core:bformat t "  specializer-profile -> %s%N" specializer-profile))
     (with-module (:module *the-module*
                   :optimize nil)
-      (with-source-file-names (:source-file-name "dispatcher")
+      (with-source-pathnames (:source-pathname nil)
         (let* ((dispatcher-name (jit-function-name generic-function-name))
                (disp-fn (irc-simple-function-create dispatcher-name
                                                     %fn-registers-prototype% #| was %fn-gf% |#

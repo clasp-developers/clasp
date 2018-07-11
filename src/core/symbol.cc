@@ -32,6 +32,7 @@ THE SOFTWARE.
 #include <clasp/core/array.h>
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/hashTable.h>
+#include <clasp/core/functor.h>
 #include <clasp/core/numbers.h>
 #include <clasp/core/lispList.h>
 #include <clasp/core/package.h>
@@ -154,21 +155,56 @@ CL_DEFUN Symbol_sp cl__make_symbol(String_sp tstrng) {
 
 namespace core {
 
+core::FunctionDescription* global_unboundSymbolFunctionFunctionDescription = NULL;
+ClosureWithSlots_sp make_unbound_symbol_function(Symbol_sp name)
+{
+  if (global_unboundSymbolFunctionFunctionDescription == NULL) {
+    global_unboundSymbolFunctionFunctionDescription = makeFunctionDescription(name,_Nil<T_O>());
+  }
+  ClosureWithSlots_sp closure = 
+    gctools::GC<core::ClosureWithSlots_O>::allocate_container(1,
+                                                              unboundFunctionEntryPoint,
+                                                              global_unboundSymbolFunctionFunctionDescription,
+                                                              ClosureWithSlots_O::cclaspClosure);
+  (*closure)[0] = name;
+  return closure;
+}
+
+core::FunctionDescription* global_unboundSetfSymbolFunctionFunctionDescription = NULL;
+ClosureWithSlots_sp make_unbound_setf_symbol_function(Symbol_sp name)
+{
+  if (global_unboundSetfSymbolFunctionFunctionDescription == NULL) {
+    List_sp sname = Cons_O::createList(cl::_sym_setf,name);
+    global_unboundSetfSymbolFunctionFunctionDescription = makeFunctionDescription(sname,_Nil<T_O>());
+  }
+  ClosureWithSlots_sp closure = 
+    gctools::GC<core::ClosureWithSlots_O>::allocate_container(1,
+                                                              unboundSetfFunctionEntryPoint,
+                                                              global_unboundSetfSymbolFunctionFunctionDescription,
+                                                              ClosureWithSlots_O::cclaspClosure);
+  (*closure)[0] = name;
+  return closure;
+}
+
+
 /*! Construct a symbol that is incomplete, it has no Class or Package */
 Symbol_O::Symbol_O(bool dummy) : _HomePackage(_Nil<T_O>()),
                                  _GlobalValue(_Unbound<T_O>()),
-                                 _Function(_Unbound<T_O>()),
-                                 _SetfFunction(_Unbound<T_O>()),
+                                 _Function(_Unbound<Function_O>()),
+                                 _SetfFunction(_Unbound<Function_O>()),
                                  _Binding(NO_THREAD_LOCAL_BINDINGS),
                                  _IsSpecial(false),
                                  _IsConstant(false),
+                                 _IsMacro(false),
                                  _PropertyList(_Nil<List_V>()) {};
 
 Symbol_O::Symbol_O() : Base(),
                        _Binding(NO_THREAD_LOCAL_BINDINGS),
                        _IsSpecial(false),
                        _IsConstant(false),
+                       _IsMacro(false),
                        _PropertyList(_Nil<List_V>()) {};
+
 
 void Symbol_O::finish_setup(Package_sp pkg, bool exportp, bool shadowp) {
   ASSERTF(pkg, BF("The package is UNDEFINED"));
@@ -177,8 +213,8 @@ void Symbol_O::finish_setup(Package_sp pkg, bool exportp, bool shadowp) {
     this->_GlobalValue = this->asSmartPtr();
   else
     this->_GlobalValue = _Unbound<T_O>();
-  this->_Function = _Unbound<T_O>();
-  this->_SetfFunction = _Unbound<T_O>();
+  this->_Function = make_unbound_symbol_function(this->asSmartPtr());
+  this->_SetfFunction = make_unbound_setf_symbol_function(this->asSmartPtr());
   pkg->bootstrap_add_symbol_to_package(this->symbolName()->get().c_str(), this->sharedThis<Symbol_O>(), exportp, shadowp);
   this->_PropertyList = _Nil<T_O>();
 }
@@ -203,6 +239,8 @@ Symbol_sp Symbol_O::create_from_string(const string &nm) {
   Symbol_sp n = gctools::GC<Symbol_O>::root_allocate(true);
   SimpleString_sp snm = SimpleBaseString_O::make(nm);
   n->setf_name(snm);
+  n->fmakunbound();
+  n->fmakunbound_setf();
   ASSERTF(nm != "", BF("You cannot create a symbol without a name"));
 #if VERBOSE_SYMBOLS
   if (nm.find("/dyn") != string::npos) {
@@ -220,6 +258,25 @@ CL_DEFMETHOD Symbol_sp Symbol_O::makunbound() {
   *my_thread->_Bindings.reference_raw(this,&this->_GlobalValue) = _Unbound<T_O>();
   return this->asSmartPtr();
 }
+
+bool Symbol_O::fboundp() const {
+  return this->_Function->entry.load() != unboundFunctionEntryPoint;
+};
+
+void Symbol_O::fmakunbound()
+{
+  this->_Function = make_unbound_symbol_function(this->asSmartPtr());
+}
+
+bool Symbol_O::setf_fboundp() const {
+  return this->_SetfFunction->entry.load() != unboundSetfFunctionEntryPoint;
+};
+
+void Symbol_O::fmakunbound_setf()
+{
+  this->_SetfFunction = make_unbound_setf_symbol_function(this->asSmartPtr());
+}
+
 
 __attribute__((optnone)) void Symbol_O::symbolUnboundError() const {
   UNBOUND_VARIABLE_ERROR(this->asSmartPtr());
@@ -240,21 +297,23 @@ void Symbol_O::sxhash_equal(HashGenerator &hg,LocationDependencyPtrT ld) const
   if (hg.isFilling()) HashTable_O::sxhash_equal(hg,this->_Name,ld);
 }
 
+
 CL_LISPIFY_NAME("cl:copy_symbol");
 CL_LAMBDA(symbol &optional copy-properties);
 CL_DEFMETHOD Symbol_sp Symbol_O::copy_symbol(T_sp copy_properties) const {
-  Symbol_sp new_symbol = Symbol_O::create(this->_Name);
+  Symbol_sp new_symbol = Symbol_O::create
+    (this->_Name);
   if (copy_properties.isTrue()) {
-    ASSERT(this->_Function);
     if (this->boundP())
       new_symbol->_GlobalValue = this->symbolValue();
-    if (this->fboundp())
-      new_symbol->_Function = this->_Function;
     new_symbol->_IsConstant = this->_IsConstant;
     new_symbol->_PropertyList = cl__copy_list(this->_PropertyList);
+    if (this->fboundp()) new_symbol->_Function = this->_Function;
+    else new_symbol->_Function = make_unbound_symbol_function(new_symbol);
   }
   return new_symbol;
 };
+
 
 bool Symbol_O::isKeywordSymbol() {
   if (this->homePackage().nilp()) return false;
@@ -321,8 +380,7 @@ T_sp Symbol_O::defparameter(T_sp val) {
 }
 
 CL_LISPIFY_NAME("core:setf_symbolFunction");
-CL_DEFMETHOD void Symbol_O::setf_symbolFunction(T_sp exec) {
-  _OF();
+CL_DEFMETHOD void Symbol_O::setf_symbolFunction(Function_sp exec) {
   this->_Function = exec;
 }
 
@@ -449,14 +507,10 @@ void Symbol_O::dump() {
     } else {
       ss << "Value: " << _rep_(val) << std::endl;
     }
-    if (!this->_Function) {
-      ss << "Function: NULL" << std::endl;
-    } else if (this->_Function.unboundp()) {
-      ss << "Function: UNBOUND" << std::endl;
-    } else if (this->_Function.nilp()) {
-      ss << "Function: nil" << std::endl;
-    } else {
+    if (this->fboundp()) {
       ss << "Function: " << _rep_(this->_Function) << std::endl;
+    } else {
+      ss << "Function: UNBOUND" << std::endl;
     }
     ss << "IsSpecial: " << this->_IsSpecial << std::endl;
     ss << "IsConstant: " << this->_IsConstant << std::endl;

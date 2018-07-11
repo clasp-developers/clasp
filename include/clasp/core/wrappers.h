@@ -140,7 +140,7 @@ class Function_O;
 // Wrapper for ActivationFrameMacroPtr
 
 // basically like wrap_function.
-inline void defmacro(const string &packageName, const string &name, T_mv (*mp)(List_sp, T_sp env), const string &arguments, const string &declares, const string &docstring, const string &sourceFileName, int lineno) {
+inline void defmacro(const string &packageName, const string &name, T_mv (*mp)(List_sp, T_sp env), const string &arguments, const string &declares, const string &docstring, const string &sourcePathname, int lineno) {
   Symbol_sp symbol = lispify_intern(name, packageName);
   FunctionDescription* fdesc = makeFunctionDescription(symbol);
   BuiltinClosure_sp f = gc::GC<VariadicFunctor<T_mv(List_sp, T_sp)>>::allocate(fdesc,mp);

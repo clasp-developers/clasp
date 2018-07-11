@@ -648,8 +648,11 @@ Function_sp interpreter_lookup_function_or_error(T_sp name, T_sp env) {
   }
   if (gc::IsA<Symbol_sp>(name)) {
     Symbol_sp sname = gc::As_unsafe<Symbol_sp>(name);
+    return sname->symbolFunction();
+#if 0    
     if (sname->fboundp()) return sname->symbolFunction();
     SIMPLE_ERROR(BF("Could not find special-operator/macro/function(%s) in the lexical/dynamic environment") % _rep_(name) );
+#endif
   }
   ASSERT(gc::IsA<Function_sp>(name));
   return gc::As_unsafe<Function_sp>(name);
@@ -690,9 +693,10 @@ T_sp af_interpreter_lookup_macro(Symbol_sp sym, T_sp env) {
   if (found)
     return macro;
   if (sym->fboundp()) {
-    if (Function_sp fn = sym->symbolFunction().asOrNull<Function_O>()) {
-      if (fn->macroP())
+    if (sym->macroP()) {
+      if (Function_sp fn = sym->symbolFunction().asOrNull<Function_O>()) {
         return fn;
+      }
     }
   }
   return _Nil<T_O>();

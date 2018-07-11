@@ -42,12 +42,12 @@ struct BeginReturnType<T, RT (T::*)()> {
 };
 
 template <typename Pols, typename OT, typename Begin, typename End>
-class IteratorMethoid : public core::Closure_O {
+class IteratorMethoid : public core::BuiltinClosure_O {
 public:
-  typedef core::Closure_O TemplatedBase;
+  typedef core::BuiltinClosure_O TemplatedBase;
 
 public:
- IteratorMethoid(core::FunctionDescription* fdesc, Begin begin, End end) : core::Closure_O(entry_point,fdesc), _begin(begin), _end(end){};
+ IteratorMethoid(core::FunctionDescription* fdesc, Begin begin, End end) : core::BuiltinClosure_O(entry_point,fdesc), _begin(begin), _end(end){};
 
 private:
   typedef typename BeginReturnType<OT, Begin>::type IteratorType;

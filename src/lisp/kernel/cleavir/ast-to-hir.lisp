@@ -14,6 +14,12 @@
 		 :debug-message (clasp-cleavir-ast:debug-message ast)
 		 :successors (cleavir-ast-to-hir::successors context)))
 
+(defmethod cleavir-ast-to-hir:compile-ast ((ast clasp-cleavir-ast:debug-break-ast) context)
+  (cleavir-ast-to-hir::assert-context ast context 1 1)
+  (format t "cleavir-ast-to-hir:compile-ast on debug-break-ast successors: ~a~%" (cleavir-ast-to-hir::successors context))
+  (make-instance 'clasp-cleavir-hir:debug-break-instruction 
+		 :successors (cleavir-ast-to-hir::successors context)))
+
 
 
 (defmethod cleavir-ast-to-hir:compile-ast ((ast clasp-cleavir-ast:multiple-value-foreign-call-ast) context)

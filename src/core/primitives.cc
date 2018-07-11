@@ -639,9 +639,7 @@ CL_DOCSTRING("(setf macro-function)");
 CL_DEFUN_SETF T_sp setf_macro_function(Function_sp function, Symbol_sp symbol, T_sp env) {
   Function_sp namedFunction;
   (void)env; // ignore
-  
-  if ((namedFunction = function.asOrNull<Function_O>()))
-    namedFunction->setMacroP(true);
+  symbol->setf_macroP(true);
   symbol->setf_symbolFunction(function);
   return function;
 }
@@ -851,13 +849,13 @@ IS-MACRO defines if the function is a macro or not.
 LAMBDA-LIST passes the lambda-list.)doc");
 CL_DEFUN T_sp core__fset(T_sp functionName, Function_sp functor, T_sp is_macro, T_sp lambda_list, T_sp lambda_list_p) {
   if ( Function_sp functionObject = functor.asOrNull<Function_O>() ) {
-    functionObject->setMacroP(is_macro.isTrue());
     if ( lambda_list_p.notnilp() ) {
       functionObject->setf_lambdaList(lambda_list);
     }
   }
   if (cl__symbolp(functionName)) {
     Symbol_sp symbol = gc::As<Symbol_sp>(functionName);
+    symbol->setf_macroP(is_macro.isTrue());
     symbol->setf_symbolFunction(functor);
     return functor;
   } else if ((functionName).consp()) {
@@ -904,11 +902,8 @@ CL_DOCSTRING("(setf fdefinition)");
 CL_DEFUN_SETF T_sp setf_fdefinition(Function_sp function, T_sp name) {
   Symbol_sp symbol;
   Function_sp functionObject;
-  
-  if ((functionObject = function.asOrNull<Function_O>())) {
-    functionObject->setMacroP(false);
-  }
   if ((symbol = name.asOrNull<Symbol_O>())) {
+    symbol->setf_macroP(false);
     symbol->setf_symbolFunction(function);
     return function;
   } else if (name.consp()) {
@@ -932,9 +927,7 @@ CL_DECLARE();
 CL_DOCSTRING("(setf symbol-function)");
 CL_DEFUN_SETF T_sp setf_symbol_function(Function_sp function, Symbol_sp name) {
   Function_sp functionObject;
-  if ((functionObject = function.asOrNull<Function_O>())) {
-    functionObject->setMacroP(false);
-  }
+  name->setf_macroP(false);
   name->setf_symbolFunction(function);
   return function;
 }
@@ -973,12 +966,12 @@ CL_DEFUN T_mv cl__fmakunbound(T_sp functionName) {
     if (oCar(cname) == cl::_sym_setf) {
       Symbol_sp name = gc::As<Symbol_sp>(oCadr(cname));
       if (name.notnilp()) {
-        name->resetSetfFdefinition(); //_lisp->remove_setfDefinition(name);
+        name->fmakunbound_setf();
         return (Values(functionName));
       }
     }
   } else if (Symbol_sp sym = functionName.asOrNull<Symbol_O>() ) {
-    sym->setf_symbolFunction(_Unbound<Function_O>());
+    sym->fmakunbound();
     return (Values(sym));
   }
   TYPE_ERROR(functionName,cl::_sym_function);
@@ -2094,33 +2087,6 @@ CL_DOCSTRING("functionSourcePosInfo");
 CL_DEFUN T_sp core__function_source_pos_info(T_sp functionDesignator) {
   Closure_sp closure = coerce::closureDesignator(functionDesignator);
   return closure->sourcePosInfo();
-}
-
-CL_LAMBDA(fn kind);
-CL_DECLARE();
-CL_DOCSTRING("set the kind of a function object (:function|:macro)");
-CL_DEFUN void core__set_kind(Function_sp fn, Symbol_sp kind) {
-  if ( Function_sp func = fn.asOrNull<Function_O>() ) {
-    if (kind == kw::_sym_function) {
-      fn->setMacroP(false);
-      return;
-    } else if (kind == kw::_sym_macro) {
-      fn->setMacroP(true);
-      return;
-    }
-  }
-  if ( kind == kw::_sym_function ) return; // by default everything is a function
-  SIMPLE_ERROR(BF("You cannot set the kind: %s of a Function_O object") % _rep_(kind));
-};
-
-CL_LISPIFY_NAME("core:functionSourcePos");
-CL_DEFMETHOD T_mv Function_O::functionSourcePos() const {
-  T_sp spi = this->sourcePosInfo();
-  T_sp sfi = core__source_file_info(spi);
-  if (sfi.nilp() || spi.nilp()) {
-    return Values(sfi, make_fixnum(0), make_fixnum(0));
-  }
-  return Values(sfi, make_fixnum(gc::As<SourcePosInfo_sp>(spi)->filepos()), make_fixnum(gc::As<SourcePosInfo_sp>(spi)->lineno()));
 }
 
 

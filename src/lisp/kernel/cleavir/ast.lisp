@@ -89,6 +89,25 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
+;;; Class DEBUG-BREAK-AST
+;;;
+;;; This AST is used to represent a debugging break inserted into the generated code.
+
+(defclass debug-break-ast (cleavir-ast:ast cleavir-ast:no-value-ast-mixin)
+  ())
+
+(cleavir-io:define-save-info debug-break-ast
+    ())
+
+(defmethod cleavir-ast-graphviz::label ((ast debug-break-ast))
+  (with-output-to-string (s)
+    (format s "debug-break (~a)" (debug-break ast))))
+
+(defmethod cleavir-ast:children ((ast debug-break-ast)) nil)
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
 ;;; Class BASE-FOREIGN-CALL-AST
 ;;;
 ;;; This AST is used to represent a call to an intrinsic function inserted into the generated code.
@@ -407,7 +426,7 @@ If this form has already been precalculated then just return the precalculated-v
          ;; more correctly with alternate global environments.
          (let* ((value (cleavir-env:eval form env env))
                 (index (cmp:codegen-rtv nil value))
-                (result (make-instance 'clasp-cleavir:arrayed-literal :value form :index index)))
+                (result (make-instance 'clasp-cleavir:arrayed-literal :value form :index index :literal-name "NIL")))
            (check-type result clasp-cleavir:literal)
            result)))))
 

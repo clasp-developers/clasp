@@ -942,8 +942,8 @@ void lisp_defineSingleDispatchMethod(T_sp name,
   if (docstring!="") docStr = SimpleBaseString_O::make(docstring);
   T_sp gfn = core__ensure_single_dispatch_generic_function(name, llhandler,autoExport,single_dispatch_argument_index); // Ensure the single dispatch generic function exists
   (void)gfn;                                                         // silence compiler warning
-  method_body->finishSetup(llhandler,false);
-  method_body->setf_sourceFileName(_Nil<T_O>());
+  method_body->finishSetup(llhandler);
+  method_body->setf_sourcePathname(_Nil<T_O>());
   method_body->setf_lambdaList(llhandler->lambdaList());
   method_body->setf_docstring(docStr);
   method_body->setf_declares(ldeclares);
@@ -997,7 +997,7 @@ void lisp_defun(Symbol_sp sym,
     List_sp ll = lisp_parse_arguments(packageName, arguments);
     llh = lisp_function_lambda_list_handler(ll, _Nil<T_O>(), skipIndices);
   }
-  fc->finishSetup(llh, false);
+  fc->finishSetup(llh);
   fc->setSourcePosInfo(SimpleBaseString_O::make(sourceFile), 0, lineNumber, 0);
   Function_sp func = fc;
   sym->setf_symbolFunction(func);
@@ -1031,11 +1031,11 @@ void lisp_defun_setf(Symbol_sp sym,
     List_sp ll = lisp_parse_arguments(packageName, arguments);
     llh = lisp_function_lambda_list_handler(ll, _Nil<T_O>(), skipIndices);
   }
-  fc->finishSetup(llh, false);
+  fc->finishSetup(llh);
   fc->setSourcePosInfo(SimpleBaseString_O::make(sourceFile), 0, lineNumber, 0);
   T_sp tdocstring = _Nil<T_O>();
   if (docstring!="") tdocstring = core::SimpleBaseString_O::make(docstring);
-  fc->setf_sourceFileName(_Nil<T_O>());
+  fc->setf_sourcePathname(_Nil<T_O>());
   fc->setf_lambdaList(llh->lambdaList());
   fc->setf_declares(ldeclares);
   fc->setf_docstring(tdocstring);
@@ -1057,8 +1057,9 @@ void lisp_defmacro(Symbol_sp sym,
   List_sp ldeclares = lisp_parse_declares(packageName, declarestring);
   (void)ldeclares;
   LambdaListHandler_sp llh = lisp_function_lambda_list_handler(ll, _Nil<T_O>());
-  f->finishSetup(llh, true);
-  f->setf_sourceFileName(_Nil<T_O>());
+  f->finishSetup(llh);
+  sym->setf_macroP(true);
+  f->setf_sourcePathname(_Nil<T_O>());
   f->setf_lambdaList(llh->lambdaList());
   f->setf_declares(ldeclares);
   T_sp tdocstring = _Nil<T_O>();

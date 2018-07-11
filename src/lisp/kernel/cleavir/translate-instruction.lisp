@@ -178,19 +178,23 @@
     ((instruction cleavir-ir:fdefinition-instruction) return-value inputs outputs abi function-info)
   ;; How do we figure out if we should use safe or unsafe version
   (let ((cell (%load (first inputs) "func-name")))
-    (let ((result (%intrinsic-invoke-if-landing-pad-or-call "cc_safe_fdefinition" (list cell))))
+    (let ((result (%intrinsic-invoke-if-landing-pad-or-call "cc_fdefinition" (list cell))))
       (%store result (first outputs)))))
 
 (defmethod translate-simple-instruction
     ((instruction clasp-cleavir-hir:debug-message-instruction) return-value inputs outputs abi function-info)
   (let ((msg (cmp:jit-constant-unique-string-ptr (clasp-cleavir-hir:debug-message instruction))))
     (%intrinsic-call "debugMessage" (list msg))))
-	
+
+(defmethod translate-simple-instruction
+    ((instruction clasp-cleavir-hir:debug-break-instruction) return-value inputs outputs abi function-info)
+  (%intrinsic-call "debugBreak"))
+
 
 (defmethod translate-simple-instruction
     ((instruction clasp-cleavir-hir:setf-fdefinition-instruction) return-value inputs outputs abi function-info)
   (let ((cell (%load (first inputs) "setf-func-name")))
-    (let ((result (%intrinsic-invoke-if-landing-pad-or-call "cc_safe_setfdefinition" (list cell))))
+    (let ((result (%intrinsic-invoke-if-landing-pad-or-call "cc_setfdefinition" (list cell))))
       (%store result (first outputs)))))
 
 (defmethod translate-simple-instruction
@@ -213,11 +217,9 @@
          (enclosed-function (memoized-layout-procedure enter-instruction lambda-name abi))
          (function-description (llvm-sys:get-named-global cmp:*the-module* (cmp::function-description-name enclosed-function)))
          (loaded-inputs (mapcar (lambda (x) (%load x "cell")) inputs))
-         (ltv-lambda-name (%literal-value lambda-name (format nil "lambda-name->~a" lambda-name)))
          (dx-p (cleavir-ir:dynamic-extent-p instruction))
          (enclose-args
-           (list* ltv-lambda-name
-                  enclosed-function
+           (list* enclosed-function
                   (cmp:irc-bit-cast function-description cmp:%i8*%)
                   (%size_t (length inputs))
                   loaded-inputs))

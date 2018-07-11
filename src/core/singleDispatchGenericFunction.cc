@@ -128,7 +128,7 @@ CL_DEFUN void core__ensure_single_dispatch_method(SingleDispatchGenericFunctionC
 
 
 
-LCC_RETURN SingleDispatchCxxEffectiveMethodFunction_O::LISP_CALLING_CONVENTION() {
+DONT_OPTIMIZE_WHEN_DEBUG_RELEASE LCC_RETURN SingleDispatchCxxEffectiveMethodFunction_O::LISP_CALLING_CONVENTION() {
   SETUP_CLOSURE(SingleDispatchCxxEffectiveMethodFunction_O,closure);
   INCREMENT_FUNCTION_CALL_COUNTER(closure);
   COPY_VA_LIST();
@@ -137,7 +137,7 @@ LCC_RETURN SingleDispatchCxxEffectiveMethodFunction_O::LISP_CALLING_CONVENTION()
 };
 
 
-LCC_RETURN SingleDispatchEffectiveMethodFunction_O::LISP_CALLING_CONVENTION() {
+DONT_OPTIMIZE_WHEN_DEBUG_RELEASE LCC_RETURN SingleDispatchEffectiveMethodFunction_O::LISP_CALLING_CONVENTION() {
   SETUP_CLOSURE(SingleDispatchEffectiveMethodFunction_O,closure);
   INCREMENT_FUNCTION_CALL_COUNTER(closure);
   COPY_VA_LIST();
@@ -197,7 +197,7 @@ void SingleDispatchGenericFunctionClosure_O::addMethod(SingleDispatchMethod_sp m
 /*! I think this fills the role of the lambda returned by
       std-compute-discriminating-function (gf) AMOP-303 top
     */
-LCC_RETURN SingleDispatchGenericFunctionClosure_O::LISP_CALLING_CONVENTION() {
+DONT_OPTIMIZE_WHEN_DEBUG_RELEASE LCC_RETURN SingleDispatchGenericFunctionClosure_O::LISP_CALLING_CONVENTION() {
   SETUP_CLOSURE(SingleDispatchGenericFunctionClosure_O,closure);
   INCREMENT_FUNCTION_CALL_COUNTER(closure);
   INITIALIZE_VA_LIST(); //  lcc_vargs now points to argument list
@@ -206,6 +206,8 @@ LCC_RETURN SingleDispatchGenericFunctionClosure_O::LISP_CALLING_CONVENTION() {
   gctools::Vec0<T_sp> &vektor = cache->keys();
   vektor[0] = closure->functionName();
   Instance_sp dispatchArgClass;
+  // SingleDispatchGenericFunctions can dispatch on the first or second argument
+  // so we need this switch here.
   switch (closure->_SingleDispatchArgumentIndex) {
   case 0:
       dispatchArgClass = lisp_instance_class(LCC_ARG0());
@@ -294,13 +296,14 @@ Function_sp SingleDispatchGenericFunctionClosure_O::computeEffectiveMethodFuncti
   if ( core::cl__length(applicableMethodsList) == 1 ) {
     SingleDispatchMethod_sp cur_method = gc::As<SingleDispatchMethod_sp>(oCar(applicableMethodsList));
     SingleDispatchMethodFunction_sp mf = cur_method->_body;
-    if ( CxxMethodFunction_sp cmf = mf.as<CxxMethodFunction_O>() ) {
+    if ( gctools::IsA<CxxMethodFunction_sp>(mf) ) {
+      CxxMethodFunction_sp cmf = gc::As_unsafe<CxxMethodFunction_sp>(mf);
       FunctionDescription* fdesc = makeFunctionDescription(this->functionName());
       Function_sp emf = gctools::GC<SingleDispatchCxxEffectiveMethodFunction_O>::allocate(fdesc,mf);
       emf->setf_lambdaList(this->lambdaList());
       emf->setf_declares(this->declares());
       emf->setf_docstring(this->docstring());
-      emf->setf_sourceFileName(this->sourceFileName());
+      emf->setf_sourcePathname(this->sourcePathname());
       validateFunctionDescription(__FILE__,__LINE__,emf);
       return emf;
     }
@@ -315,7 +318,7 @@ Function_sp SingleDispatchGenericFunctionClosure_O::computeEffectiveMethodFuncti
   emf->setf_lambdaList(this->lambdaList());
   emf->setf_declares(this->declares());
   emf->setf_docstring(this->docstring());
-  emf->setf_sourceFileName(this->sourceFileName());
+  emf->setf_sourcePathname(this->sourcePathname());
   validateFunctionDescription(__FILE__,__LINE__,emf);
   return emf;
 #if 1
@@ -343,7 +346,7 @@ SingleDispatchGenericFunctionClosure_sp SingleDispatchGenericFunctionClosure_O::
   SingleDispatchGenericFunctionClosure_sp gfc = gctools::GC<SingleDispatchGenericFunctionClosure_O>::allocate(fdesc,singleDispatchArgumentIndex);
   gfc->finishSetup(llh);
   gfc->setf_docstring(_Nil<T_O>());
-  gfc->setf_sourceFileName(_Nil<T_O>());
+  gfc->setf_sourcePathname(_Nil<T_O>());
   validateFunctionDescription(__FILE__,__LINE__,gfc);
   return gfc;
 }

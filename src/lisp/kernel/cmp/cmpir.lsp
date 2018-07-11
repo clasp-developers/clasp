@@ -489,31 +489,6 @@
     (irc-unwind-environment cur-env))
   )
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-    
-  
-
-
-
-#|
-(defun irc-rename-insert-block (name)
-  "Rename the current insertion block to something more useful for reading/debugging IR"
-  (let ((current-block (llvm-sys:get-insert-block *irbuilder*)))
-    (llvm-sys:set-name current-block name)))
-|#
-
 (defun irc-basic-block-create (name &optional (function *current-function*))
   "Create a llvm::BasicBlock with (name) in the (function)"
   (let ((bb (llvm-sys:basic-block-create *llvm-context* (bformat nil "%s%s" *block-name-prefix* name) function)))
@@ -863,8 +838,10 @@
                                      :function-type ,function-type
                                      :form ,function-form )
                    (with-dbg-lexical-block (,function-form)
-                     (dbg-set-current-source-pos-for-irbuilder ,irbuilder-alloca *current-form-lineno*)
-                     (dbg-set-current-source-pos-for-irbuilder ,irbuilder-body *current-form-lineno*)
+                     (when core:*current-source-pos-info*
+                       (let ((lineno (core:source-pos-info-lineno core:*current-source-pos-info*)))
+                         (dbg-set-current-source-pos-for-irbuilder ,irbuilder-alloca lineno)
+                         (dbg-set-current-source-pos-for-irbuilder ,irbuilder-body lineno)))
                      (with-irbuilder (*irbuilder-function-body*)
                        (or *the-module* (error "with-new-function *the-module* is NIL"))
                        (cmp-log "with-landing-pad around body%N")
@@ -928,13 +905,21 @@ But no irbuilders or basic-blocks. Return the fn."
                                                           (fifth one-declare)
                                                           (sixth one-declare))))))
 
-(defstruct (function-info (:type vector) :named)
+(defstruct (function-info (:type vector) :named
+                          (:constructor %make-function-info
+                              (function-name lambda-list docstring declares form
+                               source-pathname lineno column filepos)))
   function-name
-  (source-file-name cmp:*source-file-name*)
-  lambda-list docstring declares form lineno column filepos
-  (source-debug-file-name cmp:*source-debug-file-name*)
-  (source-debug-offset cmp:*source-debug-offset*)
-  (source-debug-use-lineno-p cmp:*source-debug-use-lineno-p*))
+  lambda-list docstring declares form
+  source-pathname lineno column filepos)
+
+(defun make-function-info (&key function-name lambda-list docstring declares form
+                             lineno column filepos)
+  ;; FIXME: *current-source-pos-info* could be installed already knowing about offsets
+  ;; and such, thus leaving the handling waaaaay up in compile-file.
+  (%make-function-info function-name lambda-list docstring declares form
+                       *source-debug-pathname* lineno column
+                       (+ filepos *source-debug-offset*)))
 
 (defun irc-create-function-description (llvm-function-name fn module function-info)
   "If **generate-code** then create a function-description block from function info.
@@ -942,17 +927,14 @@ But no irbuilders or basic-blocks. Return the fn."
   (unless function-info
     (error "function info is NIL for ~a" llvm-function-name))
   (let ((function-name (function-info-function-name function-info))
-        (source-file-name (function-info-source-file-name function-info))
+        (source-pathname (function-info-source-pathname function-info))
         source-info-name
         (lambda-list (function-info-lambda-list function-info))
         (docstring (function-info-docstring function-info))
         (lineno (function-info-lineno function-info))
         (column (function-info-column function-info))
         (filepos (function-info-filepos function-info))
-        (declares (function-info-declares function-info))
-        (source-debug-file-name (function-info-source-debug-file-name function-info))
-        (source-debug-offset (function-info-source-debug-offset function-info))
-        (source-debug-use-lineno-p (function-info-source-debug-use-lineno-p function-info)))
+        (declares (function-info-declares function-info)))
     (multiple-value-bind (found-source-info n l c f)
         (parse-declares-for-source-info declares)
       (when found-source-info
@@ -964,7 +946,7 @@ But no irbuilders or basic-blocks. Return the fn."
       (progn
         (core:bformat t "--------------------------%N")
         (core:bformat t "found-source-info: %s%N" found-source-info)
-        (core:bformat t "source-file-name: %s%N" source-file-name)
+        (core:bformat t "source-pathname: %s%N" source-pathname)
         (core:bformat t "source-info-name: %s%N" source-info-name)
         (core:bformat t "llvm-function-name: %s%N" llvm-function-name)
         (core:bformat t "function-name: %s%N" function-name)
@@ -975,15 +957,14 @@ But no irbuilders or basic-blocks. Return the fn."
         (core:bformat t "lineno: %s%N" lineno)
         (core:bformat t "column: %s%N" column)
         (core:bformat t "filepos: %s%N" filepos))
-      (let ((source-file-name-index (literal:reference-literal source-file-name))
+      (let ((source-pathname-index (literal:reference-literal source-pathname))
             (function-name-index (literal:reference-literal function-name t))
             (lambda-list-index (literal:reference-literal lambda-list t))
             (docstring-index (literal:reference-literal docstring t))
-            (declare-index (literal:reference-literal declares t))
-            (source-debug-file-name-index (literal:reference-literal source-debug-file-name)))
+            (declare-index (literal:reference-literal declares t)))
         #+(or)
         (progn
-          (core:bformat t "source-file-name-index: %s%N" source-file-name-index)
+          (core:bformat t "source-pathname-index: %s%N" source-pathname-index)
           (core:bformat t "function-name-index: %s%N" function-name-index)
           (core:bformat t "lambda-list-index: %s%N" lambda-list-index)
           (core:bformat t "docstring-index: %s%N" docstring-index)
@@ -1002,7 +983,7 @@ But no irbuilders or basic-blocks. Return the fn."
                                        (list
                                         fn
                                         literal::*gcroots-in-module*
-                                        (jit-constant-i32 source-file-name-index)
+                                        (jit-constant-i32 source-pathname-index)
                                         (jit-constant-i32 function-name-index)
                                         (jit-constant-i32 lambda-list-index)
                                         (jit-constant-i32 docstring-index)
@@ -1010,10 +991,6 @@ But no irbuilders or basic-blocks. Return the fn."
                                         (jit-constant-i32 lineno)
                                         (jit-constant-i32 column)
                                         (jit-constant-i32 filepos)
-                                        (jit-constant-i32 0) ; macroP
-                                        (jit-constant-i32 source-debug-file-name-index)
-                                        (jit-constant-i32 source-debug-offset)
-                                        (jit-constant-i32 (if source-debug-use-lineno-p 1 0))
                                         )
                                        )
          (function-description-name fn))))))
@@ -1438,7 +1415,7 @@ Write T_O* pointers into the current multiple-values array starting at the (offs
 
 (defun irc-intrinsic-call-or-invoke (function-name args &optional (label "") (landing-pad *current-unwind-landing-pad-dest*))
   "landing-pad is either a landing pad or NIL (depends on function)"
-  (throw-if-mismatched-arguments function-name args)
+  #+debug-compiler(throw-if-mismatched-arguments function-name args)
   (multiple-value-bind (the-function primitive-info)
       (get-or-declare-function-or-error *the-module* function-name)
     (let* ((function-throws (not (llvm-sys:does-not-throw the-function)))
@@ -1551,7 +1528,12 @@ Write T_O* pointers into the current multiple-values array starting at the (offs
 
 (defun irc-global-symbol (sym env)
   "Return an llvm GlobalValue for a symbol"
-  (irc-load (literal:compile-reference-to-literal sym)))
+  (multiple-value-bind (ref literal-name)
+      (literal:compile-reference-to-literal sym)
+    (let ((label (if literal-name
+                     literal-name
+                     "")))
+      (values (irc-load ref label) literal-name))))
 
 (defun irc-global-setf-symbol (sym env)
   "Return an llvm GlobalValue for a function name of the form (setf XXXX).

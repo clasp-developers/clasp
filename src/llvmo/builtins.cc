@@ -68,11 +68,28 @@ BUILTIN_ATTRIBUTES core::T_O* cc_setup_vaslist_internal(core::Vaslist* vaslist, 
 BUILTIN_ATTRIBUTES
 core::T_O *va_symbolFunction(core::T_O *symP) {
   core::Symbol_sp sym((gctools::Tagged)symP);
-  unlikely_if (!sym->fboundp()) intrinsic_error(llvmo::noFunctionBoundToSymbol, sym);
   core::Function_sp func((gc::Tagged)(sym)->_Function.theObject);
   return func.raw_();
 }
 
+#if 0
+/*! Invoke a symbol function with the given arguments and put the result in (*resultP) */
+BUILTIN_ATTRIBUTES core::T_O* symbolFunctionRead(const core::T_O *tsymP)
+{NO_UNWIND_BEGIN();
+  const core::Symbol_sp sym((gc::Tagged)tsymP);
+  return sym->symbolFunction().raw_();
+  NO_UNWIND_END();
+}
+#endif
+
+/*! Invoke a symbol function with the given arguments and put the result in (*resultP) */
+BUILTIN_ATTRIBUTES core::T_O* setfSymbolFunctionRead(const core::T_O *tsymP)
+{NO_UNWIND_BEGIN();
+  const core::Symbol_sp sym((gctools::Tagged)tsymP);
+  core::Function_sp setfFunc = sym->getSetfFdefinition(); //_lisp->get_setfDefinition(*symP);
+  return setfFunc.raw_();
+  NO_UNWIND_END();
+}
 
 #if 0
 BUILTIN_ATTRIBUTES core::T_sp *symbolValueReference(core::T_sp *symbolP)
@@ -228,6 +245,19 @@ BUILTIN_ATTRIBUTES core::T_O* cc_builtin_nil()
   return _Nil<core::T_O>().raw_();
 };
 
+BUILTIN_ATTRIBUTES core::T_O* bc_function_from_function_designator(core::T_O* function_designator)
+{
+  core::T_sp tfunction_designator((gctools::Tagged)function_designator);
+  if (gc::IsA<core::Function_sp>(tfunction_designator)) {
+    return function_designator;
+  } else if (gc::IsA<core::Symbol_sp>(tfunction_designator)) {
+    core::Symbol_sp sym = gc::As_unsafe<core::Symbol_sp>(tfunction_designator);
+    core::Function_sp func((gc::Tagged)(sym)->_Function.theObject);
+    return func.raw_();
+  }
+  llvmo::not_function_designator_error(tfunction_designator);
+};
+
 
 };
 
@@ -255,6 +285,11 @@ BUILTIN_ATTRIBUTES gctools::return_type ignore_blockHandleReturnFrom(unsigned ch
   }
 #endif
   throw;
+}
+
+
+BUILTIN_ATTRIBUTES void debugBreak() {
+  asm("int $03");
 }
 
 BUILTIN_ATTRIBUTES void ignore_exceptionStackUnwind()

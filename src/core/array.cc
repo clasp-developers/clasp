@@ -2660,7 +2660,10 @@ CL_DEFUN Vector_sp core__make_vector(T_sp element_type,
                                      bool initialElementSuppliedP) {
   if (fillPointer == cl::_sym_T_O) fillPointer = clasp_make_fixnum(dimension);
   if ( fillPointer.notnilp() || displacedTo.notnilp()) adjustable = true;
-  if (element_type == cl::_sym_bit) {
+  if ( element_type == cl::_sym_T_O ) {
+    if (adjustable) return VectorTNs_O::make(dimension,initialElement,fillPointer,displacedTo,displacedTo.notnilp(),displacedIndexOffset);
+    return SimpleVector_O::make(dimension,initialElement,true);
+  } else if (element_type == cl::_sym_bit) {
     SimpleBitVector_O::value_type init_bit = SimpleBitVector_O::initial_element_from_object(initialElement,initialElementSuppliedP);
     if (adjustable) return BitVectorNs_O::make(dimension,init_bit,initialElementSuppliedP,fillPointer,displacedTo,displacedTo.notnilp(),displacedIndexOffset);
     return SimpleBitVector_O::make(dimension,init_bit,initialElementSuppliedP);
@@ -2676,9 +2679,6 @@ CL_DEFUN Vector_sp core__make_vector(T_sp element_type,
     // can't understand why displaced was set constantly to true, do as in the other cases with displacedTo.notnilp()
     if (adjustable) return Str8Ns_O::make(dimension,initialChar,initialElementSuppliedP,fillPointer,displacedTo,displacedTo.notnilp(),displacedIndexOffset);
     else return SimpleBaseString_O::make(dimension,initialChar,initialElementSuppliedP);
-  } else if ( element_type == cl::_sym_T_O ) {
-    if (adjustable) return VectorTNs_O::make(dimension,initialElement,fillPointer,displacedTo,displacedTo.notnilp(),displacedIndexOffset);
-    return SimpleVector_O::make(dimension,initialElement,true);
   } else if ( element_type == cl::_sym_double_float ) {
     double initialValue = SimpleVectorDouble_O::initial_element_from_object(initialElement,initialElementSuppliedP);
     if (adjustable) return MDArrayDouble_O::make(dimension,initialValue,fillPointer,displacedTo,displacedTo.notnilp(),displacedIndexOffset);
@@ -2687,7 +2687,6 @@ CL_DEFUN Vector_sp core__make_vector(T_sp element_type,
     float initialValue = SimpleVectorFloat_O::initial_element_from_object(initialElement,initialElementSuppliedP);
     if (adjustable) return MDArrayFloat_O::make(dimension,initialValue,fillPointer,displacedTo,displacedTo.notnilp(),displacedIndexOffset);
     return SimpleVectorFloat_O::make(dimension,initialValue,true);
-
   } else if ( element_type == ext::_sym_integer8 ) {
     int8_t initialValue = SimpleVector_int8_t_O::initial_element_from_object(initialElement,initialElementSuppliedP);
     if (adjustable) return MDArray_int8_t_O::make_vector(dimension,initialValue,fillPointer,displacedTo,displacedTo.notnilp(),displacedIndexOffset);

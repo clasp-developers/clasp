@@ -6,11 +6,14 @@
     (multiple-value-bind (declarations documentation forms)
         (cleavir-code-utilities:separate-function-body body)
       (let* ((dspecs (reduce #'append (mapcar #'cdr declarations)))
-             (lambda-name (cadr (find 'core:lambda-name dspecs :key #'car))))
+             (lambda-name (cadr (find 'core:lambda-name dspecs :key #'car)))
+             (origin (or (cleavir-ast:origin function-ast) ; should be nil, but just in case.
+                         core:*current-source-pos-info*)))
         (unless lambda-name (setq lambda-name 'cl:lambda))
         ;; Make the change here to a named-function-ast with lambda-name
         (change-class function-ast 'clasp-cleavir-ast:named-function-ast
                       :lambda-name lambda-name
+                      :origin origin
                       :original-lambda-list lambda-list
                       :docstring documentation)))))
 
@@ -24,27 +27,20 @@
              (lambda-name-info (find 'core:lambda-name dspecs :key (lambda (cst) (cst:raw (cst:first cst)))))
              (lambda-name (if lambda-name-info
                               (car (cdr (cst:raw lambda-name-info))))))
-        #+(or)(format *debug-io* "lambda-name -> ~a~%" lambda-name)
-        #+(or)(format *debug-io* "cleavir-cst-to-ast:convert-code lambda-list -> ~s~%" (cst:raw lambda-list))
-        #+(or)(format *debug-io* "cleavir-cst-to-ast:convert-code documentation -> ~s~%" documentation)
         (unless lambda-name (setq lambda-name 'lambda))
         ;; Define the function-scope-info object and bind it to
         ;; the *current-function-scope-info* object
-        #+(or)(progn
-                (format t "About to get source for ~a~%" body)
-                (format t "core:*current-source-pos-info* -> ~a~%" core:*current-source-pos-info*))
         (let ((origin (or (and (cst:source body)
                                (let ((source (cst:source body)))
                                  (if (consp source) (car source) source)))
-                          core:*current-source-pos-info*
-                          (core:make-source-pos-info "-nowhere-" 0 0 0))))
-          (let ((function-ast (call-next-method)))
-            (setf (cleavir-ast:origin function-ast) origin)
+                          core:*current-source-pos-info*))
+              (function-ast (call-next-method)))
             ;; Make the change here to a named-function-ast with lambda-name
             (change-class function-ast 'clasp-cleavir-ast:named-function-ast
                           :lambda-name lambda-name
+                          :origin origin
                           :original-lambda-list (if lambda-list (cst:raw lambda-list) nil)
-                          :docstring (when documentation (cst:raw documentation)))))))))
+                          :docstring (when documentation (cst:raw documentation))))))))
 
 
  

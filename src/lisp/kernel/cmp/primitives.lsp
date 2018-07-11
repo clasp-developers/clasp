@@ -120,7 +120,7 @@
     (primitive         "symbolValueReference" %t**% (list %t*%))
     (primitive         "lexicalValueReference" %t**% (list %size_t% %size_t% %t*%))
     (primitive         "registerReference" %t**% (list %t**%))
-    (primitive         "symbolFunctionRead" %t*% (list %t*%))
+;;;    (primitive         "symbolFunctionRead" %t*% (list %t*%))
     (primitive         "setfSymbolFunctionRead" %t*% (list %t*%))
     
     (primitive         "activationFrameReferenceFromClosure" %t**% (list %t*%))
@@ -145,6 +145,8 @@
     (primitive-unwinds "cc_invoke_sub_run_all_function" %void% (list %fn-start-up*%))
     
     (primitive         "cc_trackFirstUnexpectedKeyword" %size_t% (list %size_t% %size_t%))
+    (primitive-unwinds "bc_function_from_function_designator" %t*% (list %t*%))
+    
     (primitive-unwinds "gdb" %void% nil)
     (primitive         "debugInspectTPtr" %void% (list %t*%))
     (primitive         "debugInspectT_mv" %void% (list %tmv*%))
@@ -154,6 +156,7 @@
     (primitive         "debug_vaslistPtr" %void% (list %vaslist*%))
     (primitive         "debug_va_list" %void% (list %va_list*%))
     (primitive         "debugMessage" %void% (list %i8*%))
+    (primitive         "debugBreak" %void% ())
     (primitive         "debugPrintI32" %void% (list %i32%))
     (primitive         "debugPrint_blockFrame" %void% (list %t*%))
     (primitive         "debugPrint_blockHandleReturnFrom" %void% (list %i8*% %t*%))
@@ -260,22 +263,17 @@
     (primitive         "cc_initialize_gcroots_in_module" %void% (list %gcroots-in-module*% %t**% %size_t% %t*%))
     (primitive         "cc_shutdown_gcroots_in_module" %void% (list %gcroots-in-module*% ))
 
-    (primitive-unwinds  "cc_enclose" %t*% (list %t*%
-                                                %fn-prototype*%
-                                                %i8*%
-                                                #| %i32*% %size_t% %size_t% %size_t% |#
-                                                %size_t% ) :varargs t)
-    (primitive         "cc_stack_enclose" %t*% (list %i8*% %t*%
+    (primitive-unwinds "cc_enclose" %t*% (list %fn-prototype*%
+                                               %i8*%
+                                               %size_t% ) :varargs t)
+    (primitive         "cc_stack_enclose" %t*% (list %i8*%
                                                      %fn-prototype*%
                                                      %i8*%
-                                                     #| %i32*% %size_t% %size_t% %size_t% |#
                                                      %size_t% ) :varargs t)
     (primitive         "cc_saveThreadLocalMultipleValues" %void% (list %tmv*% %mv-struct*%))
     (primitive         "cc_loadThreadLocalMultipleValues" %void% (list %tmv*% %mv-struct*%))
-    (primitive-unwinds "cc_safe_fdefinition" %t*% (list %t*%))
-    (primitive         "cc_unsafe_fdefinition" %t*% (list %t*%))
-    (primitive-unwinds "cc_safe_setfdefinition" %t*% (list %t*%))
-    (primitive         "cc_unsafe_setfdefinition" %t*% (list %t*%))
+    (primitive         "cc_fdefinition" %t*% (list %t*%))
+    (primitive         "cc_setfdefinition" %t*% (list %t*%))
     (primitive-unwinds "cc_safe_symbol_value" %t*% (list %t*%))
     (primitive         "cc_unsafe_symbol_value" %t*% (list %t*%))
     (primitive         "cc_setSymbolValue" %void% (list %t*% %t*%))

@@ -515,7 +515,17 @@ mps_res_t weak_obj_scan(mps_ss_t ss, mps_addr_t base, mps_addr_t limit) {
       switch (weakObj->kind()) {
       case WeakBucketKind: {
         WeakBucketsObjectType *obj = reinterpret_cast<WeakBucketsObjectType *>(weakObj);
-        MPS_FIX12(ss, reinterpret_cast<mps_addr_t *>(&obj->dependent));
+        // Fix the obj->dependent pointer
+        core::T_O *p = reinterpret_cast<core::T_O *>(obj->dependent.raw_());
+        if (gctools::tagged_objectp(p) && MPS_FIX1(ss, p)) {
+          core::T_O *pobj = gctools::untag_object<core::T_O *>(p);
+          core::T_O *tag = gctools::tag<core::T_O *>(p);
+          mps_res_t res = MPS_FIX2(ss, reinterpret_cast<mps_addr_t *>(&pobj));
+          if (res != MPS_RES_OK)
+            return res;
+          p = reinterpret_cast<core::T_O *>(reinterpret_cast<uintptr_clasp_t>(pobj) | reinterpret_cast<uintptr_clasp_t>(tag));
+          obj->dependent.rawRef_() = reinterpret_cast<gctools::tagged_pointer<gctools::BucketsBase<gctools::smart_ptr<core::T_O>, gctools::smart_ptr<core::T_O> > >::Type *>(p); //reinterpret_cast<gctools::Header_s*>(p);
+        }
         for (int i(0), iEnd(obj->length()); i < iEnd; ++i) {
           core::T_O *p = reinterpret_cast<core::T_O *>(obj->bucket[i].raw_());
           if (gctools::tagged_objectp(p) && MPS_FIX1(ss, p)) {
@@ -537,7 +547,17 @@ mps_res_t weak_obj_scan(mps_ss_t ss, mps_addr_t base, mps_addr_t limit) {
       } break;
       case StrongBucketKind: {
         StrongBucketsObjectType *obj = reinterpret_cast<StrongBucketsObjectType *>(base);
-        MPS_FIX12(ss, reinterpret_cast<mps_addr_t *>(&obj->dependent));
+        // Fix the obj->dependent pointer
+        core::T_O *p = reinterpret_cast<core::T_O *>(obj->dependent.raw_());
+        if (gctools::tagged_objectp(p) && MPS_FIX1(ss, p)) {
+          core::T_O *pobj = gctools::untag_object<core::T_O *>(p);
+          core::T_O *tag = gctools::tag<core::T_O *>(p);
+          mps_res_t res = MPS_FIX2(ss, reinterpret_cast<mps_addr_t *>(&pobj));
+          if (res != MPS_RES_OK)
+            return res;
+          p = reinterpret_cast<core::T_O *>(reinterpret_cast<uintptr_clasp_t>(pobj) | reinterpret_cast<uintptr_clasp_t>(tag));
+          obj->dependent.rawRef_() = reinterpret_cast<gctools::tagged_pointer<gctools::BucketsBase<gctools::smart_ptr<core::T_O>, gctools::smart_ptr<core::T_O> > >::Type *>(p); //reinterpret_cast<gctools::Header_s*>(p);
+        }
         for (int i(0), iEnd(obj->length()); i < iEnd; ++i) {
           // MPS_FIX12(ss,reinterpret_cast<mps_addr_t*>(&(obj->bucket[i].raw_())));
           core::T_O *p = reinterpret_cast<core::T_O *>(obj->bucket[i].raw_());
@@ -555,7 +575,19 @@ mps_res_t weak_obj_scan(mps_ss_t ss, mps_addr_t base, mps_addr_t limit) {
       } break;
       case WeakMappingKind: {
         WeakMappingObjectType *obj = reinterpret_cast<WeakMappingObjectType *>(weakObj);
-        MPS_FIX12(ss, reinterpret_cast<mps_addr_t *>(&obj->dependent));
+        // Fix the obj->dependent pointer
+        {
+          core::T_O *p = reinterpret_cast<core::T_O *>(obj->dependent.raw_());
+          if (gctools::tagged_objectp(p) && MPS_FIX1(ss, p)) {
+            core::T_O *pobj = gctools::untag_object<core::T_O *>(p);
+            core::T_O *tag = gctools::tag<core::T_O *>(p);
+            mps_res_t res = MPS_FIX2(ss, reinterpret_cast<mps_addr_t *>(&pobj));
+            if (res != MPS_RES_OK)
+              return res;
+            p = reinterpret_cast<core::T_O *>(reinterpret_cast<uintptr_clasp_t>(pobj) | reinterpret_cast<uintptr_clasp_t>(tag));
+            obj->dependent.rawRef_() = reinterpret_cast<gctools::tagged_pointer<gctools::MappingBase<gctools::smart_ptr<core::T_O>, gctools::smart_ptr<core::T_O> > >::Type *>(p); //reinterpret_cast<gctools::Header_s*>(p);
+          }
+        }
         core::T_O *p = reinterpret_cast<core::T_O *>(obj->bucket.raw_());
         if (gctools::tagged_objectp(p) && MPS_FIX1(ss, p)) {
           core::T_O *pobj = gctools::untag_object<core::T_O *>(p);
@@ -575,7 +607,19 @@ mps_res_t weak_obj_scan(mps_ss_t ss, mps_addr_t base, mps_addr_t limit) {
       } break;
       case StrongMappingKind: {
         StrongMappingObjectType *obj = reinterpret_cast<StrongMappingObjectType *>(base);
-        MPS_FIX12(ss, reinterpret_cast<mps_addr_t *>(&obj->dependent));
+        // Fix the obj->dependent pointer
+        {
+          core::T_O *p = reinterpret_cast<core::T_O *>(obj->dependent.raw_());
+          if (gctools::tagged_objectp(p) && MPS_FIX1(ss, p)) {
+            core::T_O *pobj = gctools::untag_object<core::T_O *>(p);
+            core::T_O *tag = gctools::tag<core::T_O *>(p);
+            mps_res_t res = MPS_FIX2(ss, reinterpret_cast<mps_addr_t *>(&pobj));
+            if (res != MPS_RES_OK)
+              return res;
+            p = reinterpret_cast<core::T_O *>(reinterpret_cast<uintptr_clasp_t>(pobj) | reinterpret_cast<uintptr_clasp_t>(tag));
+            obj->dependent.rawRef_() = reinterpret_cast<gctools::tagged_pointer<gctools::MappingBase<gctools::smart_ptr<core::T_O>, gctools::smart_ptr<core::T_O> > >::Type *>(p); //reinterpret_cast<gctools::Header_s*>(p);
+          }
+        }
         //                    MPS_FIX12(ss,reinterpret_cast<mps_addr_t*>(&(obj->bucket.raw_())));
         core::T_O *p = reinterpret_cast<core::T_O *>(obj->bucket.raw_());
         if (gctools::tagged_objectp(p) && MPS_FIX1(ss, p)) {

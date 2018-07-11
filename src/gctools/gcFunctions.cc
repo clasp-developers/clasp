@@ -37,6 +37,8 @@ int gcFunctions_after;
 #include <clasp/gctools/gctoolsPackage.h>
 #include <clasp/gctools/gcFunctions.h>
 #include <clasp/llvmo/intrinsics.h>
+#include <clasp/gctools/gc_interface.h>
+#include <clasp/gctools/threadlocal.h>
 #include <clasp/core/wrappers.h>
 
 #ifdef DEBUG_TRACK_UNWINDS
@@ -204,6 +206,7 @@ CL_DEFUN core::T_sp gctools__bytes_allocated() {
 }
 
 
+
 CL_DOCSTRING("Return the next unused kind");
 CL_DEFUN size_t core__next_unused_kind() {
   size_t next = global_next_unused_kind;
@@ -273,7 +276,7 @@ CL_DEFUN core::T_mv core__instance_stamp(core::T_sp obj)
   if (obj.generalp()) {
     Header_s* header = reinterpret_cast<Header_s*>(ClientPtrToBasePtr(obj.unsafe_general()));
     return Values(core::make_fixnum(stamp),
-                  core::make_fixnum(static_cast<Fixnum>(header->header._value)>>gctools::Header_s::stamp_shift));
+                  core::make_fixnum(static_cast<Fixnum>(header->header.stamp())));
   }
   return Values(core::make_fixnum(stamp),_Nil<core::T_O>());
 }
@@ -731,6 +734,19 @@ void dbg_room() {
 }
 namespace gctools {
 
+#ifdef DEBUG_COUNT_ALLOCATIONS
+CL_DOCSTRING("Start collecting backtraces for allocations of a particular stamp. Write the bactraces into the file specified by filename.");
+CL_DEFUN void gctools__start_collecting_backtraces_for_allocations_by_stamp(const std::string& filename, Fixnum stamp) {
+  gctools::start_backtrace_allocations(filename,stamp);
+}
+
+CL_DOCSTRING("Stop collecting backtraces for allocations of a particular stamp.");
+CL_DEFUN void gctools__stop_collecting_backtraces_for_allocations_by_stamp() {
+  gctools::stop_backtrace_allocations();
+}
+#endif
+
+
 CL_DEFUN void gctools__telemetryFlush() {
 #ifdef USE_BOEHM
   IMPLEMENT_ME();
@@ -793,11 +809,14 @@ CL_DEFUN void gctools__garbage_collect() {
   //        printf("Garbage collection done\n");
 };
 
+CL_DEFUN void gctools__register_stamp_name(const std::string& name,size_t stamp_num)
+{
+  register_stamp_name(name,stamp_num);
+}
 
-
-CL_DEFUN core::T_sp gctools__get_builtin_stamps() {
+CL_DEFUN core::T_sp gctools__get_stamp_name_map() {
   core::List_sp l = _Nil<core::T_O>();
-  for ( auto it : _global_stamp_names ) {
+  for ( auto it : global_stamp_name_map ) {
     l = core::Cons_O::create(core::Cons_O::create(core::SimpleBaseString_O::make(it.first),core::make_fixnum(it.second)),l);
   }
   return l;
@@ -1019,15 +1038,6 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
 #endif
   if (buildReport) ss << (BF("DEBUG_FASTGF = %s\n") % (debug_fastgf ? "**DEFINED**" : "undefined") ).str();
  
-  bool debug_return_from = false;
-#ifdef DEBUG_RETURN_FROM
-  debug_return_from = true;
-  debugging = true;
-  if (setFeatures) features = core::Cons_O::create(_lisp->internKeyword("DEBUG-RETURN_FROM"),features);
-#endif
-  if (buildReport) ss << (BF("DEBUG_RETURN_FROM = %s\n") % (debug_return_from ? "**DEFINED**" : "undefined") ).str();
-
-
  bool debug_rehash_count = false;
 #ifdef DEBUG_REHASH_COUNT
   debug_rehash_count = true;
@@ -1110,14 +1120,29 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
 #endif
   if (buildReport) ss << (BF("DEBUG_MEMORY_PROFILE = %s\n") % (debug_memory_profile ? "**DEFINED**" : "undefined") ).str();
 
-
-  bool dont_optimize_bclasp = false;
-#ifdef DONT_OPTIMIZE_BCLASP
-  dont_optimize_bclasp = true;
+  bool debug_compiler = false;
+#ifdef DEBUG_COMPILER
+  debug_compiler = true;
   debugging = true;
-  if (setFeatures) features = core::Cons_O::create(_lisp->internKeyword("DONT-OPTIMIZE-BCLASP"),features);
+  if (setFeatures) features = core::Cons_O::create(_lisp->internKeyword("DEBUG-COMPILER"),features);
 #endif
-  if (buildReport) ss << (BF("DONT_OPTIMIZE_BCLASP = %s\n") % (dont_optimize_bclasp ? "**DEFINED**" : "undefined") ).str();
+  if (buildReport) ss << (BF("DEBUG_COMPILER = %s\n") % (debug_compiler ? "**DEFINED**" : "undefined") ).str();
+
+  bool debug_count_allocations = false;
+#ifdef DEBUG_COUNT_ALLOCATIONS
+  debug_count_allocations = true;
+  debugging = true;
+  if (setFeatures) features = core::Cons_O::create(_lisp->internKeyword("DEBUG-COUNT-ALLOCATIONS"),features);
+#endif
+  if (buildReport) ss << (BF("DEBUG_COUNT_ALLOCATIONS = %s\n") % (debug_count_allocations ? "**DEFINED**" : "undefined") ).str();
+
+  bool debug_dont_optimize_bclasp = false;
+#ifdef DEBUG_DONT_OPTIMIZE_BCLASP
+  debug_dont_optimize_bclasp = true;
+  debugging = true;
+  if (setFeatures) features = core::Cons_O::create(_lisp->internKeyword("DEBUG-DONT-OPTIMIZE-BCLASP"),features);
+#endif
+  if (buildReport) ss << (BF("DEBUG_DONT_OPTIMIZE_BCLASP = %s\n") % (debug_dont_optimize_bclasp ? "**DEFINED**" : "undefined") ).str();
 
   bool disable_type_inference = false;
 #ifdef DISABLE_TYPE_INFERENCE

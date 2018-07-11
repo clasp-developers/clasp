@@ -46,7 +46,7 @@
       (bformat nil "CONTAB%d" (incf-value-table-id-value))))
 
 (defstruct (literal-node-toplevel-funcall (:type vector) :named) arguments)
-(defstruct (literal-node-creator (:type vector) :named) index name arguments)
+(defstruct (literal-node-creator (:type vector) :named) index name literal-name arguments)
 (defstruct (literal-node-call (:type vector) :named) function source-pos-info holder)
 (defstruct (literal-node-side-effect (:type vector) :named) name arguments)
 (defstruct (literal-node-runtime (:type vector) :named) index object)
@@ -130,12 +130,16 @@ the value is put into *default-load-time-value-vector* and its index is returned
     (incf *table-index*)
     index))
 
-(defun add-creator (name index &rest args)
+(defun add-named-creator (name index literal-name &rest args)
   "Call the named function after converting fixnum args to llvm constants"
-  (let ((creator (make-literal-node-creator :index index :name name :arguments args)))
+  (let ((creator (make-literal-node-creator :index index :name name :literal-name literal-name :arguments args)))
     (setf (gethash index *constant-index-to-literal-node-creator*) creator)
     (run-all-add-node creator)
     creator))
+
+(defun add-creator (name index &rest args)
+  "Call the named function after converting fixnum args to llvm constants"
+  (apply 'add-named-creator name index nil args))
 
 (defun add-side-effect-call (name &rest args)
   "Call the named function after converting fixnum args to llvm constants"
@@ -144,10 +148,10 @@ the value is put into *default-load-time-value-vector* and its index is returned
     rase))
 
 (defun ltv/nil (object index read-only-p)
-  (add-creator "ltvc_make_nil" index))
+  (add-named-creator "ltvc_make_nil" index "NIL"))
 
 (defun ltv/t (object index read-only-p)
-  (add-creator "ltvc_make_t" index))
+  (add-named-creator "ltvc_make_t" index "T"))
 
 (defun ltv/ratio (ratio index read-only-p)
   (add-creator "ltvc_make_ratio" index
@@ -224,7 +228,7 @@ the value is put into *default-load-time-value-vector* and its index is returned
 (defun ltv/symbol (symbol index read-only-p)
   (let ((pkg (symbol-package symbol))
         (sym-str (symbol-name symbol)))
-    (add-creator "ltvc_make_symbol" index
+    (add-named-creator "ltvc_make_symbol" index sym-str
               (load-time-reference-literal sym-str read-only-p)
               (load-time-reference-literal pkg read-only-p))))
 
@@ -331,12 +335,15 @@ the value is put into *default-load-time-value-vector* and its index is returned
 (defun lookup-arg (creator)
   (ensure-creator-llvm-value creator)
   (let* ((idx (literal-node-creator-index creator))
+         (label (if (literal-node-creator-literal-name creator)
+                    (bformat nil "CONTAB[%d]/%s" idx (literal-node-creator-literal-name creator))
+                    (bformat nil "CONTAB[%d]%t*" idx)))
          (entry (llvm-sys:create-geparray cmp:*irbuilder*
                                           cmp:*load-time-value-holder-global-var*
                                           (list (jit-constant-i32 0)
                                                 (jit-constant-i32 idx))
-                                          (bformat nil "CONTAB[%d]%t*" idx)))
-         (arg (irc-load entry (bformat nil "CONTAB[%d]%t*" idx))))
+                                          label))
+         (arg (irc-load entry label)))
     arg))
            
 (defun fix-arg (arg)
@@ -702,7 +709,7 @@ Return the orderered-raw-constants-list and the constants-table GlobalVariable"
             (load-time-reference-literal object read-only-p)
           (if in-array
               (let ((index (literal-node-creator-index data)))
-                (values index T))
+                (values index T (literal-node-creator-literal-name data)))
               (values data nil)))
         (multiple-value-bind (immediate?literal-node-runtime in-array)
             (run-time-reference-literal object read-only-p)
@@ -760,10 +767,10 @@ Return the orderered-raw-constants-list and the constants-table GlobalVariable"
 
 (defun compile-reference-to-literal (literal)
   "Generate a reference to a load-time-value or run-time-value literal depending if called from COMPILE-FILE or COMPILE respectively"
-  (multiple-value-bind (data-or-index in-array)
+  (multiple-value-bind (data-or-index in-array literal-name)
       (reference-literal literal t)
     (if in-array
-        (constants-table-reference data-or-index (pretty-load-time-name literal data-or-index))
+        (values (constants-table-reference data-or-index (pretty-load-time-name literal data-or-index)) literal-name)
         data-or-index)))
 
 (defun codegen-rtv (result obj)
@@ -826,8 +833,11 @@ If it isn't NIL then copy the literal from its index in the LTV into result."
 ;;; Access load-time-values
 ;;;
 
-(defun constants-table-reference (index &optional (label "ltv") (holder cmp:*load-time-value-holder-global-var*))
-  (llvm-sys:create-const-gep2-64 *irbuilder* holder 0 index (bformat nil "values-table[%d]" index)))
+(defun constants-table-reference (index &optional (label "ltv") (holder cmp:*load-time-value-holder-global-var*) literal-name)
+  (let ((label (if literal-name
+                   (bformat nil "values-table[%d]/%s" index literal-name)
+                   (bformat nil "values-table[%d]" index))))
+    (llvm-sys:create-const-gep2-64 *irbuilder* holder 0 index label)))
 
 (defun constants-table-value (index &optional (label "ltv") (holder cmp:*load-time-value-holder-global-var*))
   (cmp:irc-load (constants-table-reference index label holder)))

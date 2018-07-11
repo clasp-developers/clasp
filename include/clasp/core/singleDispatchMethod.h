@@ -42,15 +42,33 @@ namespace core {
   public:
     core::T_sp lambda_list() const { return _Nil<T_O>(); };
   SingleDispatchMethodFunction_O(FunctionDescription* fdesc, Function_sp body) : Base(entry_point,fdesc), _body(body) {};
-    static inline LCC_RETURN LISP_CALLING_CONVENTION() {
-      SingleDispatchMethodFunction_O* closure = gctools::untag_general<SingleDispatchMethodFunction_O*>((SingleDispatchMethodFunction_O*)lcc_closure);
-      COPY_VA_LIST();
-      INCREMENT_FUNCTION_CALL_COUNTER(closure);
-      return (closure->_body->entry.load())(LCC_PASS_ARGS_VASLIST(closure->_body.raw_(),lcc_vargs));
-//      return funcall_consume_valist_<core::Function_O>(closure->_body.tagged_(),lcc_vargs);
-    };
+    static LCC_RETURN LISP_CALLING_CONVENTION();
   };
 
+};
+
+namespace core {
+
+
+  /*! A CxxMethodFunction_O is invoked with two arguments (args next-emfun)
+      It will invoke the method body using the args and ignore the next-emfun) */
+    
+  class CxxMethodFunction_O : public SingleDispatchMethodFunction_O {
+    LISP_CLASS(core,CorePkg,CxxMethodFunction_O,"CxxMethodFunction",SingleDispatchMethodFunction_O);
+  public:
+    const char *describe() const { return "CxxMethodFunction"; };
+  public:
+  CxxMethodFunction_O(FunctionDescription* fdesc, Function_sp body) : Base(fdesc,body) {};
+  };
+};
+
+
+
+template <>
+struct gctools::GCInfo<core::SingleDispatchMethod_O> {
+  static bool constexpr NeedsInitialization = false;
+  static bool constexpr NeedsFinalization = false;
+  static GCInfo_policy constexpr Policy = normal;
 };
 
 namespace core {
@@ -111,27 +129,8 @@ CL_DEFMETHOD   T_sp singleDispatchMethodDocstring() const { return this->_docstr
 }; // SingleDispatchMethod class
 
 }; // core namespace
-template <>
-struct gctools::GCInfo<core::SingleDispatchMethod_O> {
-  static bool constexpr NeedsInitialization = false;
-  static bool constexpr NeedsFinalization = false;
-  static GCInfo_policy constexpr Policy = normal;
-};
 
 namespace core {
-
-
-  /*! A CxxMethodFunction_O is invoked with two arguments (args next-emfun)
-      It will invoke the method body using the args and ignore the next-emfun) */
-    
-  class CxxMethodFunction_O : public SingleDispatchMethodFunction_O {
-    LISP_CLASS(core,CorePkg,CxxMethodFunction_O,"CxxMethodFunction",SingleDispatchMethodFunction_O);
-  public:
-    const char *describe() const { return "CxxMethodFunction"; };
-  public:
-  CxxMethodFunction_O(FunctionDescription* fdesc, Function_sp body) : Base(fdesc,body) {};
-  };
-
 /*! A method function when invoked is given two arguments: (args next-emfun)
       It creates a FunctionValueEnvironment that defines call-next-method and next-method-p 
       with the method environment as its parent and then invokes the method-function

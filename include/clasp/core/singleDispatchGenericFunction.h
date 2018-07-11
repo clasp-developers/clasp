@@ -89,7 +89,6 @@ public:
     T_sp lambdaList() const;
     void finishSetup(LambdaListHandler_sp llh) {
       this->_lambdaListHandler = llh;
-      this->setMacroP(false);
     }
     virtual size_t templatedSizeof() const { return sizeof(*this); };
     virtual const char *describe() const { return "SingleDispatchGenericFunctionClosure"; };

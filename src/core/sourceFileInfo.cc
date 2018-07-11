@@ -41,58 +41,22 @@ THE SOFTWARE.
 #include <clasp/core/write_ugly.h>
 #include <clasp/core/wrappers.h>
 
-#define REQUIRE_SOURCE_INFO 0
-extern "C" {
-// For debugging the sourceManager
-void dumpSourceInfo(core::T_sp exp) {
-  string repExp = _rep_(exp);
-  printf("Object: %s\n", repExp.c_str());
-  if (_lisp->sourceDatabase().notnilp()) {
-    core::T_sp tspi = gc::As<core::SourceManager_sp>(_lisp->sourceDatabase())->lookupSourcePosInfo(exp);
-    if (core::SourcePosInfo_sp spi = gc::As<core::SourcePosInfo_sp>(tspi)) {
-      core::SourceFileInfo_sp sfi = core__source_file_info(core::make_fixnum(spi->fileHandle()));
-      string sf = sfi->sourceDebugNamestring();
-      size_t filepos = spi->_Filepos;
-      int lineno = spi->_Lineno;
-      int column = spi->_Column;
-      if (lineno != 0) {
-        printf("     Source file: %s   lineno: %d  column: %d   filepos %zu\n",
-               sf.c_str(), lineno, column, filepos);
-      } else {
-        printf("     Source file: %s   filepos %zu\n", sf.c_str(), filepos);
-      }
-    } else {
-      printf("     No source file info found\n");
-    }
-    if ((exp).consp()) {
-      dumpSourceInfo(oCar(exp));
-      dumpSourceInfo(oCdr(exp));
-    }
-  }
-}
-
-void dumpSourceInfoCons(core::Cons_sp exp) {
-  dumpSourceInfo(oCar(exp));
-  dumpSourceInfo(oCdr(exp));
-}
-};
-
 namespace core {
 
-CL_LAMBDA(name &optional source-debug-namestring (source-debug-offset 0) (use-lineno t));
+CL_LAMBDA(name &optional source-debug-pathname (source-debug-offset 0) (use-lineno t));
 CL_DECLARE();
 CL_DOCSTRING("sourceFileInfo given a source name (string) or pathname or integer, return the source-file-info structure and the integer index");
-CL_DEFUN T_mv core__source_file_info(T_sp sourceFile, T_sp sourceDebugNamestring, size_t sourceDebugOffset, bool useLineno) {
+CL_DEFUN T_mv core__source_file_info(T_sp sourceFile, T_sp sourceDebugPathname, size_t sourceDebugOffset, bool useLineno) {
   if (sourceFile.nilp()) {
     return core__source_file_info(make_fixnum(0));
   } else if (cl__stringp(sourceFile)) {
-    return _lisp->getOrRegisterSourceFileInfo(gc::As<String_sp>(sourceFile)->get_std_string(), sourceDebugNamestring, sourceDebugOffset, useLineno);
+    return _lisp->getOrRegisterSourceFileInfo(gc::As<String_sp>(sourceFile)->get_std_string(), sourceDebugPathname, sourceDebugOffset, useLineno);
   } else if (Pathname_sp pnSourceFile = sourceFile.asOrNull<Pathname_O>()) {
     T_sp ns = cl__namestring(pnSourceFile);
     if (ns.nilp()) {
       SIMPLE_ERROR(BF("No namestring could be generated for %s") % _rep_(pnSourceFile));
     }
-    return _lisp->getOrRegisterSourceFileInfo(gc::As<String_sp>(ns)->get_std_string(), sourceDebugNamestring, sourceDebugOffset, useLineno);
+    return _lisp->getOrRegisterSourceFileInfo(gc::As<String_sp>(ns)->get_std_string(), sourceDebugPathname, sourceDebugOffset, useLineno);
   } else if (sourceFile.fixnump()) { // Fixnum_sp fnSourceFile = sourceFile.asOrNull<Fixnum_O>() ) {
     WITH_READ_LOCK(_lisp->_Roots._SourceFilesMutex);
     Fixnum_sp fnSourceFile(gc::As<Fixnum_sp>(sourceFile));
@@ -107,7 +71,7 @@ CL_DEFUN T_mv core__source_file_info(T_sp sourceFile, T_sp sourceDebugNamestring
     T_sp sfi = clasp_input_source_file_info(so);
     return core__source_file_info(sfi);
   } else if (SourceFileInfo_sp sfi = sourceFile.asOrNull<SourceFileInfo_O>()) {
-    return _lisp->getOrRegisterSourceFileInfo(sfi->namestring(), sourceDebugNamestring, sourceDebugOffset, useLineno);
+    return _lisp->getOrRegisterSourceFileInfo(sfi->namestring(), sourceDebugPathname, sourceDebugOffset, useLineno);
   } else if (SourcePosInfo_sp spi = sourceFile.asOrNull<SourcePosInfo_O>()) {
     return core__source_file_info(make_fixnum(spi->_FileId));
   }
@@ -318,11 +282,11 @@ void SourceFileInfo_O::initialize() {
   this->Base::initialize();
 }
 
-SourceFileInfo_sp SourceFileInfo_O::create(Pathname_sp path, int handle, T_sp sourceDebugNamestring, size_t sourceDebugOffset, bool useLineno) {
+SourceFileInfo_sp SourceFileInfo_O::create(Pathname_sp path, int handle, T_sp sourceDebugPathname, size_t sourceDebugOffset, bool useLineno) {
   GC_ALLOCATE(SourceFileInfo_O, sfi);
   sfi->_pathname = path;
   sfi->_FileHandle = handle;
-  sfi->_SourceDebugNamestring = sourceDebugNamestring;
+  sfi->_SourceDebugPathname = sourceDebugPathname;
   sfi->_SourceDebugOffset = sourceDebugOffset;
   sfi->_TrackLineno = useLineno;
   return sfi;
@@ -356,19 +320,19 @@ string SourceFileInfo_O::__repr__() const {
   ss << "#<" << this->_instanceClass()->_classNameAsString();
   ss << " " << _rep_(this->_pathname);
   ss << " :file-handle " << this->_FileHandle;
-  ss << " :source-debug-namestring " << _rep_(this->_SourceDebugNamestring);
+  ss << " :source-debug-pathname " << _rep_(this->_SourceDebugPathname);
   ss << " :source-debug-offset " << this->_SourceDebugOffset;
   ss << " :trackLineno " << this->_TrackLineno;
   ss << " >";
   return ss.str();
 }
 
-CL_LISPIFY_NAME("SourceFileInfo-sourceDebugNamestring");
-CL_DEFMETHOD string SourceFileInfo_O::sourceDebugNamestring() const {
-  if (this->_SourceDebugNamestring.notnilp()) {
-    return gc::As<String_sp>(this->_SourceDebugNamestring)->get_std_string();
+CL_LISPIFY_NAME("SourceFileInfo-sourceDebugPathname");
+CL_DEFMETHOD Pathname_sp SourceFileInfo_O::sourceDebugPathname() const {
+  if (this->_SourceDebugPathname.notnilp()) {
+    return this->_SourceDebugPathname;
   }
-  return this->namestring();
+  return this->_pathname;
 }
 
 string SourceFileInfo_O::fileName() const {

@@ -389,11 +389,11 @@ q (or Q):             quits the inspection.~%~
 
 (defmethod documentation ((object package) doc-type)
   (when (member doc-type '(t package))
-    (si::get-documentation object 'package)))
+    (core:package-documentation object)))
 
 (defmethod (setf documentation) (new-value (object package) doc-type)
   (when (member doc-type '(t package))
-    (si::set-documentation object 'package new-value)))
+    (setf (core:package-documentation object) new-value)))
 
 (defmethod documentation ((object class) doc-type)
   (when (and (member doc-type '(t type)) (slot-boundp object 'docstring))

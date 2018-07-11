@@ -252,15 +252,19 @@ CL_DEFUN T_mv cl__shadow(T_sp symbol_names_desig, T_sp package_desig) {
   return (Values(_lisp->_true()));
 }
 
-CL_LAMBDA(symbol-names-desig &optional (package-desig *package*));
-CL_DOCSTRING("This was my old CL:SHADOW function - if called with (core:broken-shadow \"FOO\" :bar) will signal an error but the wrong one.  I need to debug why when passing a string to a function that expects a list the error generates a second error");
-CL_DEFUN T_mv core__broken_shadow(List_sp symbol_names_desig, T_sp package_desig) {
-  List_sp symbolNames = coerce::listOfStringDesignators(symbol_names_desig);
-  Package_sp package = coerce::packageDesignator(package_desig);
-  package->shadow(symbolNames);
-  return Values(_lisp->_true());
+CL_LAMBDA(package);
+CL_DOCSTRING("Retrieve the documentation of a package.");
+CL_DEFUN T_sp core__package_documentation(Package_sp package) {
+  return package->documentation();
 }
 
+CL_LISPIFY_NAME("core:package-documentation");
+CL_LAMBDA(documentation package);
+CL_DOCSTRING("Set the documentation of a package.");
+CL_DEFUN_SETF T_sp set_package_documentation(T_sp documentation, Package_sp package) {
+  package->setDocumentation(documentation);
+  return documentation;
+}
 
 CL_LAMBDA(symbol-names-desig &optional (package-desig *package*));
 CL_DECLARE();

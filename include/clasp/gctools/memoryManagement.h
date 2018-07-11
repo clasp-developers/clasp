@@ -307,12 +307,12 @@ namespace gctools {
       }
     public:
       template <typename T>
-      static size_t GenerateHeaderValue() { return (GCStamp<T>::Stamp<<stamp_shift)|stamp_tag; };
+      static  tagged_stamp_t GenerateHeaderValue() { return (GCStamp<T>::Stamp<<stamp_shift)|stamp_tag; };
     public: // header readers
       inline size_t tag() const { return (size_t)(this->_value & tag_mask);};
       inline bool pad1P() const { return (this->_value & pad_mask) == pad1_tag; };
       inline GCStampEnum stamp() const {
-        return static_cast<GCStampEnum>( this->_value >> stamp_shift );
+        return static_cast<GCStampEnum>( (this->_value & stamp_mask)>>stamp_shift );
       }
     };
   public:
@@ -359,7 +359,7 @@ namespace gctools {
         this->fill_tail();
       };
 #endif
-    static GCStampEnum value_to_stamp(Fixnum value) { return (GCStampEnum)((value&stamp_mask) >> stamp_shift); };
+    static GCStampEnum value_to_stamp(Fixnum value) { return (GCStampEnum)((value&stamp_mask)>>stamp_shift); };
   public:
     size_t tag() const { return (size_t)(this->header._value & tag_mask);};
 #ifdef DEBUG_GUARD
@@ -602,19 +602,20 @@ namespace gctools {
 
   extern void monitorAllocation(stamp_t k, size_t sz);
   extern uint64_t globalBytesAllocated;
-
-#if defined(TRACK_ALLOCATIONS) && defined(DEBUG_SLOW)
+  extern void count_allocation(const stamp_t k);
   inline void monitor_allocation(const stamp_t k, size_t sz) {
+#ifdef DEBUG_COUNT_ALLOCATIONS
+    gctools::count_allocation(k);
+#endif
+#if defined(TRACK_ALLOCATIONS) && defined(DEBUG_SLOW)
     globalBytesAllocated += sz;
 #ifdef GC_MONITOR_ALLOCATIONS
     if ( global_monitorAllocations.on ) {
       monitorAllocation(k,sz);
     }
 #endif
-  }
-#else
-  inline void monitor_allocation(const stamp_t k, size_t sz) {};
 #endif
+  }
 
 };
 

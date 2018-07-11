@@ -129,7 +129,7 @@ extern core::Symbol_sp& _sym_name;
                               kw::_sym_expectedType, cl::_sym_cons,                             \
                               kw::_sym_datum, _lst_));
 
-#define TYPE_ERROR(_datum_, _expectedType_) ERROR(cl::_sym_typeError, core::lisp_createList(kw::_sym_datum, _datum_, kw::_sym_expectedType, _expectedType_))
+#define TYPE_ERROR(_datum_, _expectedType_) ERROR(::cl::_sym_typeError, core::lisp_createList(kw::_sym_datum, _datum_, kw::_sym_expectedType, _expectedType_))
 #define PROGRAM_ERROR() ERROR(cl::_sym_programError, (_Nil<T_O>()))
 #define SIMPLE_PROGRAM_ERROR(message, datum)                                                     \
         ERROR(core::_sym_simpleProgramError,                                                     \

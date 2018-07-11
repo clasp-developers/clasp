@@ -67,10 +67,9 @@ extern "C" {
 #include <clasp/gctools/gc_interface.fwd.h>
 #include <clasp/core/exceptions.h>
 
-using namespace core;
-
 #pragma GCC visibility push(default)
 
+using namespace core;
 namespace llvmo {
 
 core::T_sp functionNameOrNilFromFunctionDescription(core::FunctionDescription* functionDescription)
@@ -83,6 +82,9 @@ core::T_sp functionNameOrNilFromFunctionDescription(core::FunctionDescription* f
 }
   
 
+[[noreturn]] __attribute__((optnone)) void not_function_designator_error(core::T_sp arg) {
+  TYPE_ERROR(arg,core::Cons_O::createList(::cl::_sym_or,::cl::_sym_function,::cl::_sym_symbol));
+}
 
 [[noreturn]] __attribute__((optnone))  void intrinsic_error(ErrorCode err, core::T_sp arg0, core::T_sp arg1, core::T_sp arg2) {
   switch (err) {
@@ -419,7 +421,8 @@ LtvcReturn ltvc_enclose(gctools::GCRootsInModule* holder, size_t index, gctools:
   gctools::smart_ptr<core::ClosureWithSlots_O> functoid =
     gctools::GC<core::ClosureWithSlots_O>::allocate_container(0,
                                                               llvm_func,
-                                                              (core::FunctionDescription*)functionDescription);
+                                                              (core::FunctionDescription*)functionDescription,
+                                                              core::ClosureWithSlots_O::cclaspClosure);
   LTVCRETURN holder->set(index, functoid.tagged_());
   NO_UNWIND_END();
 }
@@ -677,8 +680,8 @@ DONT_OPTIMIZE_WHEN_DEBUG_RELEASE core::T_O* makeCompiledFunction(fnLispCallingCo
   core::ClosureWithSlots_sp toplevel_closure =
     gctools::GC<core::ClosureWithSlots_O>::allocate_container(BCLASP_CLOSURE_SLOTS,
                                                               funcPtr,
-                                                              (core::FunctionDescription*)functionDescription);
-  toplevel_closure->closureType = ClosureWithSlots_O::bclaspClosure;
+                                                              (core::FunctionDescription*)functionDescription,
+                                                              core::ClosureWithSlots_O::bclaspClosure);
   (*toplevel_closure)[BCLASP_CLOSURE_ENVIRONMENT_SLOT] = frame;
   return toplevel_closure.raw_();
   NO_UNWIND_END();
@@ -801,29 +804,6 @@ void mv_prependMultipleValues(core::T_mv *resultP, core::T_mv *multipleValuesP) 
 
 extern "C" {
 
-/*! Invoke a symbol function with the given arguments and put the result in (*resultP) */
-core::T_O* symbolFunctionRead(const core::T_O *tsymP)
-{NO_UNWIND_BEGIN();
-  const core::Symbol_sp sym((gc::Tagged)tsymP);
-  ASSERTF((sym)->fboundp(), BF("There is no function bound to symbol[%s]") % _rep_(sym));
-  return sym->symbolFunction().raw_();
-  NO_UNWIND_END();
-}
-
-/*! Invoke a symbol function with the given arguments and put the result in (*resultP) */
-extern core::T_O* setfSymbolFunctionRead(const core::T_O *tsymP)
-{NO_UNWIND_BEGIN();
- const core::Symbol_sp sym((gctools::Tagged)tsymP);
- core::Function_sp setfFunc = sym->getSetfFdefinition(); //_lisp->get_setfDefinition(*symP);
- ASSERTF(setfFunc, BF("There is no setf function bound to symbol[%s]") % _rep_(sym));
- return setfFunc.raw_();
-  NO_UNWIND_END();
-}
-};
-
-
-extern "C" {
-
 void gdb() {
   printf("%s:%d Set a breakpoint here to invoke gdb\n", __FILE__, __LINE__);
 }
@@ -884,7 +864,7 @@ void debugInspect_return_type(gctools::return_type rt)
 
 void debugMessage(const char *msg)
 {NO_UNWIND_BEGIN();
-  printf("++++++ debug-message: %s", msg);
+  printf("++++++ debug-message: %s3", msg);
   NO_UNWIND_END();
 }
 
@@ -1300,20 +1280,15 @@ void cc_setSymbolValue(core::T_O *sym, core::T_O *val)
   NO_UNWIND_END();
 }
 
-core::T_O *cc_enclose(core::T_O *lambdaName,
-                      fnLispCallingConvention llvm_func,
+core::T_O *cc_enclose(fnLispCallingConvention llvm_func,
                       void* functionDescription,
-                      /* int *sourceFileInfoHandleP,
-                      size_t filePos,
-                      size_t lineno,
-                      size_t column, */
                       std::size_t numCells, ...)
 {
-  core::T_sp tlambdaName = gctools::smart_ptr<core::T_O>((gc::Tagged)lambdaName);
   gctools::smart_ptr<core::ClosureWithSlots_O> functoid =
     gctools::GC<core::ClosureWithSlots_O>::allocate_container( numCells
                                                               , llvm_func
-                                                               , (core::FunctionDescription*)functionDescription);
+                                                               , (core::FunctionDescription*)functionDescription,
+                                                               core::ClosureWithSlots_O::cclaspClosure);
   core::T_O *p;
   va_list argp;
   va_start(argp, numCells);
