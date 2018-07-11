@@ -101,7 +101,7 @@
 
 (defmethod cleavir-ast-graphviz::label ((ast debug-break-ast))
   (with-output-to-string (s)
-    (format s "debug-break (~a)" (debug-break ast))))
+    (format s "debug-break")))
 
 (defmethod cleavir-ast:children ((ast debug-break-ast)) nil)
 

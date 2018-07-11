@@ -72,7 +72,7 @@
 
 (defmethod cleavir-ir:clone-initargs append ((instruction foreign-call-instruction))
   (list :foreign-types (foreign-types instruction)
-        :foreign-name (foreign-name instruction)))
+        :function-name (function-name instruction)))
 
 (defmethod make-foreign-call-instruction
     (foreign-types function-name inputs outputs &optional (successor nil successor-p))
