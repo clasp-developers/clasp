@@ -1873,14 +1873,16 @@ bool AbstractSimpleVector_O::equalp(T_sp other) const {
       if (!cl__equalp(this->rowMajorAref(i),svother->rowMajorAref(i))) return false;
     }
     return true;
+  } else if (gc::IsA<MDArray_sp>(other)) {
+    MDArray_sp mdother = gc::As_unsafe<MDArray_sp>(other);
+    if (mdother->rank()!=1) return false;
+    if (mdother->length()!=this->length()) return false;
+    for (size_t i(0),iEnd(this->length()); i<iEnd; ++i ) {
+      if (!cl__equalp(this->rowMajorAref(i),mdother->rowMajorAref(i))) return false;
+    }
+    return true;
   }
-  MDArray_sp mdother = gc::As_unsafe<MDArray_sp>(other);
-  if (mdother->rank()!=1) return false;
-  if (mdother->length()!=this->length()) return false;
-  for (size_t i(0),iEnd(this->length()); i<iEnd; ++i ) {
-    if (!cl__equalp(this->rowMajorAref(i),mdother->rowMajorAref(i))) return false;
-  }
-  return true;
+  return false;
 }
 
 // ------------------------------------------------------------

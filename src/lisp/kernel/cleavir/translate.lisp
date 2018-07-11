@@ -256,7 +256,6 @@ when this is t a lot of graphs will be generated.")
     (cond
       ((typep enter 'clasp-cleavir-hir:named-enter-instruction)
        (cmp:make-function-info :function-name llvm-function-name
-                               :source-handle cmp:*gv-source-file-info-handle*
                                :lambda-list (clasp-cleavir-hir:original-lambda-list enter)
                                :docstring (clasp-cleavir-hir:docstring enter)
                                :declares nil
@@ -266,7 +265,6 @@ when this is t a lot of graphs will be generated.")
                                :filepos filepos))
       ((typep enter 'cleavir-ir:enter-instruction)
        (cmp:make-function-info :function-name llvm-function-name
-                               :source-handle cmp:*gv-source-file-info-handle*
                                :lambda-list nil
                                :docstring nil
                                :declares nil

@@ -10,27 +10,30 @@
 
 (defmacro with-module (( &key module
                               (optimize nil)
-                              (optimize-level :-O3)
-                              source-namestring
-                              source-file-info-handle
-                              source-debug-namestring
-                              (source-debug-offset 0)
-                              (source-debug-use-lineno t)) &rest body)
-  `(let* ((*the-module* ,module)
- 	  #+(or)(*generate-load-time-values* t)
-	  (*gv-source-namestring* (module-make-global-string ,source-namestring "source-namestring"))
-	  (*gv-source-debug-namestring* (module-make-global-string (if ,source-debug-namestring
-									,source-debug-namestring
-									,source-namestring) "source-debug-namestring"))
-	  (*source-debug-offset* ,source-debug-offset)
-	  (*source-debug-use-lineno* ,source-debug-use-lineno)
-	  (*gv-source-file-info-handle* (make-gv-source-file-info-handle ,module ,source-file-info-handle)))
+                              (optimize-level :-O3)) &rest body)
+  `(let* ((*the-module* ,module))
      (or *the-module* (error "with-module *the-module* is NIL"))
      (multiple-value-prog1
          (with-irbuilder ((llvm-sys:make-irbuilder *llvm-context*))
            ,@body)
        (cmp-log "About to optimize-module%N")
        (when (and ,optimize ,optimize-level) (funcall ,optimize ,module ,optimize-level )))))
+
+(defmacro with-source-file-names((&key source-file-name
+                                    source-debug-file-name
+                                    (source-debug-offset 0)
+                                    (source-debug-use-lineno-p t)) &rest body)
+  `(let* ((*source-file-name* ,source-file-name)
+          (*source-debug-file-name* (if ,source-debug-file-name
+                                       ,source-debug-file-name
+                                       ,source-file-name))
+          (*source-debug-offset* ,source-debug-offset)
+	  (*source-debug-use-lineno-p* ,source-debug-use-lineno-p))
+     (with-irbuilder ((llvm-sys:make-irbuilder *llvm-context*))
+       ,@body)))
+     
+          
+     
 
 (defun compile-with-hook (compile-hook name &optional definition env pathname &key (linkage 'llvm-sys:internal-linkage))
   "Dispatch to clasp compiler or cleavir-clasp compiler if available.
@@ -45,18 +48,14 @@ We could do more fancy things here - like if cleavir-clasp fails, use the clasp 
     (let* ((*the-module* (create-run-time-module-for-compile)))
       ;; Link the C++ intrinsics into the module
       (let* ((pathname (if *load-pathname*
-			   (namestring *load-pathname*)
-			   "repl-code"))
-	     (handle (multiple-value-bind (the-source-file-info the-handle)
-			 (core:source-file-info pathname)
-		       the-handle)))
-	(with-module (:module *the-module*
-                              :optimize nil
-                              :source-namestring (namestring pathname)
-                              :source-file-info-handle handle)
-          (cmp-log "Dumping module%N")
-          (cmp-log-dump-module *the-module*)
-          (compile-with-hook compile-hook bind-to-name definition env pathname :linkage linkage))))))
+                           (namestring *load-pathname*)
+                           "repl-code")))
+        (with-module (:module *the-module*
+                      :optimize nil)
+          (with-source-file-names (:source-file-name (namestring pathname))
+            (cmp-log "Dumping module%N")
+            (cmp-log-dump-module *the-module*)
+            (compile-with-hook compile-hook bind-to-name definition env pathname :linkage linkage)))))))
 
 (defun compile (name &optional definition)
   (multiple-value-bind (function warnp failp)

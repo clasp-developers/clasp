@@ -852,15 +852,39 @@ namespace gctools {
         TODO: get GC_add_roots to work
    */
   struct GCRootsInModule {
+    static size_t const DefaultCapacity = 256;
     void* _boehm_shadow_memory;
     void* _module_memory;
     size_t _num_entries;
+    size_t _capacity;
 
     GCRootsInModule(void* shadow_mem, void* module_mem, size_t num_entries) {
       this->_boehm_shadow_memory = shadow_mem;
       this->_module_memory = module_mem;
       this->_num_entries = num_entries;
+      this->_capacity = num_entries;
     }
+    GCRootsInModule(size_t capacity = DefaultCapacity) {
+#ifdef USE_BOEHM
+      core::T_O** shadow_mem = reinterpret_cast<core::T_O**>(boehm_create_shadow_table(capacity));
+      core::T_O** module_mem = shadow_mem;
+#endif
+#ifdef USE_MPS
+      core::T_O** shadow_mem = reinterpret_cast<core::T_O**>(NULL);
+      core::T_O** module_mem = reinterpret_cast<core::T_O**>(malloc(sizeof(core::T_O*)*capacity));
+#endif
+      this->_boehm_shadow_memory = shadow_mem;
+      this->_module_memory = module_mem;
+      this->_num_entries = 0;
+      this->_capacity = capacity;
+      memset(module_mem, 0, sizeof(core::T_O*)*capacity);
+#ifdef USE_MPS
+  // MPS registers the roots with the GC and doesn't need a shadow table
+      mps_register_roots(reinterpret_cast<void*>(module_mem),capacity);
+#endif
+    }
+    size_t remainingCapacity() { return this->_capacity - this->_num_entries;};
+    size_t push_back(Tagged val);
     Tagged set(size_t index, Tagged val);
     Tagged get(size_t index);
     void* address(size_t index) {

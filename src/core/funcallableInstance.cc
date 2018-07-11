@@ -206,12 +206,6 @@ Instance_sp FuncallableInstance_O::create(Symbol_sp symbol, Instance_sp metaClas
   DEPRECATED();
 };
 
-void FuncallableInstance_O::set_kind(Symbol_sp k) {
-  if (k == kw::_sym_macro) {
-    SIMPLE_ERROR(BF("You cannot set a generic-function (instance) to macro"));
-  }
-}
-
 T_sp FuncallableInstance_O::copyInstance() const {
   DEPRECATED();
   Instance_sp cl = this->_Class;

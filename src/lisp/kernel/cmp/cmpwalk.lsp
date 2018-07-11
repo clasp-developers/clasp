@@ -39,15 +39,15 @@
 	 (*code-walker* code-walker-function))
     (with-compilation-unit ()
       (with-module ( :module module
-                             :optimize nil
-                             :source-namestring "code-walk-using-bclasp")
-        (with-debug-info-generator (:module module
-                                            :pathname #P"/dev/null")
-          (with-make-new-run-all (run-all-function)
-            (with-literal-table
-                (let ((fn (literal:with-top-level-form (compile-thunk 'walk-thunk form env nil))))
-                  ;; Do nothing (irc-intrinsic-call "ltvc_toplevel_funcall" (list fn))
-                  ))))
+                     :optimize nil)
+        (with-source-file-names (:source-file-name "code-walk-using-bclasp")
+          (with-debug-info-generator (:module module
+                                      :pathname #P"/dev/null")
+            (with-make-new-run-all (run-all-function)
+              (with-literal-table
+                  (let ((fn (literal:with-top-level-form (compile-thunk 'walk-thunk form env nil))))
+                    ;; Do nothing (irc-intrinsic-call "ltvc_toplevel_funcall" (list fn))
+                    )))))
         (llvm-sys::module-delete module)))))
 
 (defun code-walk (form env &key code-walker-function (errorp t))

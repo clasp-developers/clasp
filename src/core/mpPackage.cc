@@ -133,7 +133,7 @@ void start_thread_inner(Process_sp process, void* cold_end_of_stack) {
   gctools::my_thread_allocation_points.initializeAllocationPoints();
 #endif
   my_thread = &my_thread_local_state;
-  my_thread->initialize_thread(process);
+  my_thread->initialize_thread(process,true);
   process->_ThreadInfo = my_thread;
   // Set the mp:*current-process* variable to the current process
   core::DynamicScopeManager scope(_sym_STARcurrent_processSTAR,process);

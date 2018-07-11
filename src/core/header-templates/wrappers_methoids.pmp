@@ -36,7 +36,7 @@ $for isConst [[
         Type mptr;
       public:
         enum { NumParams = $numArgs };
-        VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,name), mptr(ptr) {};
+        VariadicMethoid(FunctionDescription* fdesc, Type ptr) : BuiltinClosure_O(&MyType::method_entry_point,fdesc), mptr(ptr) {};
         virtual size_t templatedSizeof() const { return sizeof(*this);};
         static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
         {   

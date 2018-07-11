@@ -203,7 +203,11 @@ ThreadLocalState::ThreadLocalState(void* stack_top) :  _DisableInterrupts(false)
 ThreadLocalState::~ThreadLocalState() {
 }
   
-void ThreadLocalState::initialize_thread(mp::Process_sp process) {
+void ThreadLocalState::initialize_thread(mp::Process_sp process, bool initialize_GCRoots=true ) {
+  if (initialize_GCRoots) {
+    // The main process needs to initialize _GCRoots before classes are initialized.
+    this->_GCRoots = new gctools::GCRootsInModule();
+  }
 //  printf("%s:%d Initialize all ThreadLocalState things this->%p\n",__FILE__, __LINE__, (void*)this);
   this->_Bindings.reserve(1024);
   this->_Process = process;
@@ -213,10 +217,8 @@ void ThreadLocalState::initialize_thread(mp::Process_sp process) {
   this->_BignumRegister0 = Bignum_O::create( (gc::Fixnum) 0);
   this->_BignumRegister1 = Bignum_O::create( (gc::Fixnum) 0);
   this->_BignumRegister2 = Bignum_O::create( (gc::Fixnum) 0);
-#if 1
   this->_SingleDispatchMethodCachePtr = gc::GC<Cache_O>::allocate();
   this->_SingleDispatchMethodCachePtr->setup(2, Lisp_O::SingleDispatchMethodCacheSize);
-#endif
   this->_PendingInterrupts = _Nil<T_O>();
   this->_SparePendingInterruptRecords = cl__make_list(clasp_make_fixnum(16),_Nil<T_O>());
 };

@@ -42,7 +42,7 @@ namespace core {
     typedef core::T_O* (*Type)(core::T_O* arg);
     Type fptr;
   public:
-  TranslationFunctor_O(T_sp name, Symbol_sp funcType, Type ptr) : BuiltinClosure_O(TranslationFunctor_O::entry_point,name,funcType), fptr(ptr) {};
+  TranslationFunctor_O(FunctionDescription* fdesc, Type ptr) : BuiltinClosure_O(TranslationFunctor_O::entry_point,fdesc), fptr(ptr) {};
   public:
     typedef BuiltinClosure_O TemplatedBase;
     virtual size_t templatedSizeof() const { return sizeof(TranslationFunctor_O); };
@@ -88,32 +88,35 @@ public:
 
 namespace core {
 
-  inline void wrap_translator(const string &packageName, const string &name, core::T_O* (*fp)(core::T_O*), const string &arguments = "", const string &declares = "", const string &docstring = "", const string &sourceFile = "", int sourceLine = 0) {
-  Symbol_sp symbol = lispify_intern(name, packageName);
-  SourcePosInfo_sp spi = lisp_createSourcePosInfo(sourceFile, 0, sourceLine);
-  BuiltinClosure_sp f = gctools::GC<TranslationFunctor_O>::allocate(symbol, kw::_sym_function, fp);
-  lisp_defun(symbol, packageName, f, arguments, declares, docstring, sourceFile, sourceLine, 1);
-}
+  inline void wrap_translator(const string &packageName, const string &name, core::T_O* (*fp)(core::T_O*), const string& filename,  const string &arguments = "", const string &declares = "", const string &docstring = "", const string &sourceFile = "", int sourceLine = 0) {
+    Symbol_sp symbol = lispify_intern(name, packageName);
+    FunctionDescription* fdesc = makeFunctionDescription(symbol);
+    BuiltinClosure_sp f = gctools::GC<TranslationFunctor_O>::allocate(fdesc,fp);
+    lisp_defun(symbol, packageName, f, arguments, declares, docstring, sourceFile, sourceLine, 1 );
+    validateFunctionDescription(__FILE__,__LINE__,f);
+  }
 
 
 
 // this is used in gc_interface.cc expose_function
  template <typename RT, typename... ARGS>
 void wrap_function(const string &packageName, const string &name, RT (*fp)(ARGS...), const string &arguments = "", const string &declares = "", const string &docstring = "", const string &sourceFile = "", int sourceLine = 0) {
-  Symbol_sp symbol = _lisp->intern(name, packageName);
-  SourcePosInfo_sp spi = lisp_createSourcePosInfo(sourceFile, 0, sourceLine);
-  BuiltinClosure_sp f = gctools::GC<VariadicFunctor<RT(ARGS...)>>::allocate(symbol, kw::_sym_function, fp);
-  lisp_defun(symbol, packageName, f, arguments, declares, docstring, sourceFile, sourceLine, sizeof...(ARGS));
-}
+   Symbol_sp symbol = _lisp->intern(name, packageName);
+   FunctionDescription* fdesc = makeFunctionDescription(symbol);
+   BuiltinClosure_sp f = gctools::GC<VariadicFunctor<RT(ARGS...)>>::allocate(fdesc,fp);
+   lisp_defun(symbol, packageName, f, arguments, declares, docstring, sourceFile, sourceLine, sizeof...(ARGS));
+   validateFunctionDescription(__FILE__,__LINE__,f);
+ }
 
 // this is used in gc_interface.cc expose_function_setf
   template <typename RT, typename... ARGS>
 void wrap_function_setf(const string &packageName, const string &name, RT (*fp)(ARGS...), const string &arguments = "", const string &declares = "", const string &docstring = "", const string &sourceFile = "", int sourceLine = 0) {
   Symbol_sp symbol = _lisp->intern(name, packageName);
-  SourcePosInfo_sp spi = lisp_createSourcePosInfo(sourceFile, 0, sourceLine);
-  BuiltinClosure_sp f = gctools::GC<VariadicFunctor<RT(ARGS...)>>::allocate(symbol, kw::_sym_function, fp);
+  FunctionDescription* fdesc = makeFunctionDescription(symbol);
+  BuiltinClosure_sp f = gctools::GC<VariadicFunctor<RT(ARGS...)>>::allocate(fdesc,fp);
   lisp_defun_setf(symbol, packageName, f, arguments, declares, docstring, sourceFile, sourceLine, sizeof...(ARGS));
-}
+  validateFunctionDescription(__FILE__,__LINE__,f);
+  }
 
 
 
@@ -138,11 +141,11 @@ class Function_O;
 
 // basically like wrap_function.
 inline void defmacro(const string &packageName, const string &name, T_mv (*mp)(List_sp, T_sp env), const string &arguments, const string &declares, const string &docstring, const string &sourceFileName, int lineno) {
-  _G();
   Symbol_sp symbol = lispify_intern(name, packageName);
-  SourcePosInfo_sp spi = lisp_createSourcePosInfo(sourceFileName, 0, lineno);
-  BuiltinClosure_sp f = gc::GC<VariadicFunctor<T_mv(List_sp, T_sp)>>::allocate(symbol, kw::_sym_macro, mp);
+  FunctionDescription* fdesc = makeFunctionDescription(symbol);
+  BuiltinClosure_sp f = gc::GC<VariadicFunctor<T_mv(List_sp, T_sp)>>::allocate(fdesc,mp);
   lisp_defmacro(symbol, packageName, f, arguments, declares, docstring);
+  validateFunctionDescription(__FILE__,__LINE__,f);
 }
 
  
@@ -224,8 +227,10 @@ public:
       pkgName = symbol_packageName(this->_ClassSymbol);
     }
     Symbol_sp symbol = _lisp->intern(symbolName,pkgName);
-    BuiltinClosure_sp m = gc::GC<VariadicMethoid<0, RT (OT::*)(ARGS...)>>::allocate(symbol, mp);
+    FunctionDescription* fdesc = makeFunctionDescription(symbol);
+    BuiltinClosure_sp m = gc::GC<VariadicMethoid<0, RT (OT::*)(ARGS...)>>::allocate(fdesc,mp);
     lisp_defineSingleDispatchMethod(symbol, this->_ClassSymbol, m, 0, true, lambda_list, declares, docstring, autoExport, sizeof...(ARGS)+1);
+    validateFunctionDescription(__FILE__,__LINE__,m);
     return *this;
   }
  
@@ -241,8 +246,10 @@ public:
       pkgName = symbol_packageName(this->_ClassSymbol);
     }
     Symbol_sp symbol = _lisp->intern(symbolName,pkgName);
-    BuiltinClosure_sp m = gc::GC<VariadicMethoid<0, RT (OT::*)(ARGS...) const>>::allocate(symbol, mp);
+    FunctionDescription* fdesc = makeFunctionDescription(symbol);
+    BuiltinClosure_sp m = gc::GC<VariadicMethoid<0, RT (OT::*)(ARGS...) const>>::allocate(fdesc,mp);
     lisp_defineSingleDispatchMethod(symbol, this->_ClassSymbol, m, 0, true, lambda_list, declares, docstring, autoExport, sizeof...(ARGS)+1);
+    validateFunctionDescription(__FILE__,__LINE__,m);
     return *this;
   }
 };

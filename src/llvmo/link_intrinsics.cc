@@ -419,11 +419,7 @@ LtvcReturn ltvc_enclose(gctools::GCRootsInModule* holder, size_t index, gctools:
   gctools::smart_ptr<core::ClosureWithSlots_O> functoid =
     gctools::GC<core::ClosureWithSlots_O>::allocate_container(0,
                                                               llvm_func,
-                                                              (core::FunctionDescription*)functionDescription,
-                                                              tlambdaName,
-                                                              kw::_sym_function,
-                                                              _Nil<T_O>() // lambdaList
-                                                              );
+                                                              (core::FunctionDescription*)functionDescription);
   LTVCRETURN holder->set(index, functoid.tagged_());
   NO_UNWIND_END();
 }
@@ -673,21 +669,17 @@ extern "C" {
 
 DONT_OPTIMIZE_WHEN_DEBUG_RELEASE core::T_O* makeCompiledFunction(fnLispCallingConvention funcPtr,
                                                                  void* functionDescription,
-                                                                 /* int *sourceFileInfoHandleP,
-                                                                    size_t filePos,
-                                                                    size_t lineno,
-                                                                    size_t column,
-                                                                 */
-                                                                 core::T_O* functionNameP,
-                                                                 core::T_O* frameP,
-                                                                 core::T_O* lambdaListP)
+                                                                 core::T_O* frameP
+                                                                 )
 {NO_UNWIND_BEGIN();
   // TODO: If a pointer to an integer was passed here we could write the sourceName SourceFileInfo_sp index into it for source line debugging
-  core::T_sp functionName((gctools::Tagged)functionNameP);
   core::T_sp frame((gctools::Tagged)frameP);
-  core::T_sp lambdaList((gctools::Tagged)lambdaListP);
-//  printf("%s:%d In makeCompiledFunction     frame -> %s\n", __FILE__, __LINE__, _rep_(frame).c_str());
-  core::ClosureWithSlots_sp toplevel_closure = core::ClosureWithSlots_O::make_bclasp_closure(functionName, funcPtr, kw::_sym_function, lambdaList, frame);
+  core::ClosureWithSlots_sp toplevel_closure =
+    gctools::GC<core::ClosureWithSlots_O>::allocate_container(BCLASP_CLOSURE_SLOTS,
+                                                              funcPtr,
+                                                              (core::FunctionDescription*)functionDescription);
+  toplevel_closure->closureType = ClosureWithSlots_O::bclaspClosure;
+  (*toplevel_closure)[BCLASP_CLOSURE_ENVIRONMENT_SLOT] = frame;
   return toplevel_closure.raw_();
   NO_UNWIND_END();
 };
@@ -705,7 +697,7 @@ void invokeTopLevelFunction(core::T_mv *resultP,
                             core::LoadTimeValues_O **ltvPP) {
   ASSERT(ltvPP != NULL);
   core::SimpleBaseString_sp name = core::SimpleBaseString_O::make(cpname);
-  FunctionClosure_sp tc = FunctionClosure_O::create(fptr,name, kw::_sym_function, *sourceFileInfoHandleP, filePos, lineno, column);
+  Closure_sp tc = Closure_O::create(fptr,name, kw::_sym_function, *sourceFileInfoHandleP, filePos, lineno, column);
 #define TIME_TOP_LEVEL_FUNCTIONS
 #ifdef TIME_TOP_LEVEL_FUNCTIONS
   core::Number_sp startTime;
@@ -1321,11 +1313,7 @@ core::T_O *cc_enclose(core::T_O *lambdaName,
   gctools::smart_ptr<core::ClosureWithSlots_O> functoid =
     gctools::GC<core::ClosureWithSlots_O>::allocate_container( numCells
                                                               , llvm_func
-                                                               , (core::FunctionDescription*)functionDescription
-                                                              , tlambdaName
-                                                              , kw::_sym_function
-                                                              , _Nil<T_O>() // lambdaList
-                                                               );
+                                                               , (core::FunctionDescription*)functionDescription);
   core::T_O *p;
   va_list argp;
   va_start(argp, numCells);

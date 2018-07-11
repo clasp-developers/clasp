@@ -7,7 +7,7 @@ namespace core {
   struct InvocationHistoryFrame;
   struct ThreadLocalState {
     ThreadLocalState(void* stack_top);
-    void initialize_thread(mp::Process_sp process);
+    void initialize_thread(mp::Process_sp process, bool initialize_GCRoots);
     int _DisableInterrupts;
 #if defined(DEBUG_RECURSIVE_ALLOCATIONS)
     int _RecursiveAllocationCounter;
@@ -21,6 +21,7 @@ namespace core {
     BignumExportBuffer _AsInt64Buffer;
     BignumExportBuffer _AsUint64Buffer;
     const InvocationHistoryFrame* _InvocationHistoryStackTop;
+    gctools::GCRootsInModule*  _GCRoots;
 #ifdef DEBUG_IHS
     // Save the last return address before IHS screws up
     void*                    _IHSBacktrace[IHS_BACKTRACE_SIZE];

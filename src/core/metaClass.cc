@@ -80,6 +80,7 @@ gc::Nilable<Instance_sp> identifyCxxDerivableAncestorClass(Instance_sp aClass) {
   return _Nil<Instance_O>();
 }
 
+SYMBOL_EXPORT_SC_(KeywordPkg,creator);
 
 CL_DEFUN T_sp core__compute_instance_creator(T_sp tinstance, T_sp tmetaclass, List_sp superclasses)
 {
@@ -92,7 +93,8 @@ CL_DEFUN T_sp core__compute_instance_creator(T_sp tinstance, T_sp tmetaclass, Li
   // If instance class already has an allocator then leave it alone
   if (instance->CLASS_has_creator()) return instance->CLASS_get_creator();
   if (metaclass->_className() == clos::_sym_funcallable_standard_class) {
-    Creator_sp funcallableInstanceCreator = gc::GC<FuncallableInstanceCreator_O>::allocate(instance);
+    FunctionDescription* fdesc = makeFunctionDescription(kw::_sym_creator);
+    Creator_sp funcallableInstanceCreator = gc::GC<FuncallableInstanceCreator_O>::allocate(fdesc,instance);
     return funcallableInstanceCreator;
   };
   Instance_sp aCxxDerivableAncestorClass_unsafe; // Danger!  Unitialized!
@@ -137,7 +139,8 @@ CL_DEFUN T_sp core__compute_instance_creator(T_sp tinstance, T_sp tmetaclass, Li
 #ifdef DEBUG_CLASS_INSTANCE
     printf("%s:%d   Creating an InstanceCreator_O for the class: %s\n", __FILE__, __LINE__, _rep_(instance->name()).c_str());
 #endif
-    InstanceCreator_sp instanceAllocator = gc::GC<InstanceCreator_O>::allocate(instance);
+    FunctionDescription* fdesc = makeFunctionDescription(kw::_sym_creator);
+    InstanceCreator_sp instanceAllocator = gc::GC<InstanceCreator_O>::allocate(fdesc,instance);
     return instanceAllocator;
   }
 }

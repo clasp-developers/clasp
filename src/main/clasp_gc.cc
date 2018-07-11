@@ -170,7 +170,7 @@
     class FunctionClosure_O;
     class SimpleMDArrayBaseChar_O;
     class Package_O;
-    class NamedFunction_O;
+    class Function_O;
     class FileStatus_O;
     class SimpleMDArrayFloat_O;
     class SimpleVector_size_t_O;
@@ -530,7 +530,7 @@ STAMP_clbind__ConstructorCreator_O = 144,
 STAMP_clbind__DummyCreator_O = 145,
 STAMP_core__InstanceCreator_O = 146,
 STAMP_core__StandardClassCreator_O = 147,
-STAMP_core__NamedFunction_O = 148,
+STAMP_core__Function_O = 148,
 STAMP_core__Closure_O = 149,
 STAMP_core__FunctionClosure_O = 150,
 STAMP_core__ClosureWithSlots_O = 151,

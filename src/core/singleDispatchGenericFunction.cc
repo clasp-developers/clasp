@@ -96,7 +96,12 @@ CL_DOCSTRING("ensureSingleDispatchMethod creates a method and adds it to the sin
 CL_DEFUN void core__ensure_single_dispatch_method(SingleDispatchGenericFunctionClosure_sp gfunction, T_sp tgfname, Instance_sp receiver_class, LambdaListHandler_sp lambda_list_handler, List_sp declares, gc::Nilable<String_sp> docstring, Function_sp body) {
   //	string docstr = docstring->get();
 //  SingleDispatchGenericFunctionClosure_sp gf = gc::As<SingleDispatchGenericFunctionClosure_sp>(gfname->symbolFunction());
-  SingleDispatchMethod_sp method = SingleDispatchMethod_O::create(tgfname, receiver_class, lambda_list_handler, declares, docstring, body);
+  SingleDispatchMethod_sp method = SingleDispatchMethod_O::create(tgfname,
+                                                                  receiver_class,
+                                                                  lambda_list_handler,
+                                                                  declares,
+                                                                  docstring,
+                                                                  body);
   ASSERT(lambda_list_handler.notnilp());
   LambdaListHandler_sp gf_llh = gfunction->_lambdaListHandler;
   if (lambda_list_handler->numberOfRequiredArguments() != gf_llh->numberOfRequiredArguments()) {
@@ -161,13 +166,9 @@ LCC_RETURN SingleDispatchEffectiveMethodFunction_O::LISP_CALLING_CONVENTION() {
 // ----------------------------------------------------------------------
 //
 
-T_sp SingleDispatchGenericFunctionClosure_O::lambda_list() const {
+T_sp SingleDispatchGenericFunctionClosure_O::lambdaList() const {
   return this->_lambdaListHandler->lambdaList();
 }
-
-void SingleDispatchGenericFunctionClosure_O::setf_lambda_list(List_sp ll) {
-  // Do nothing
-};
 
 void SingleDispatchGenericFunctionClosure_O::addMethod(SingleDispatchMethod_sp method) {
   _OF();
@@ -294,7 +295,13 @@ Function_sp SingleDispatchGenericFunctionClosure_O::computeEffectiveMethodFuncti
     SingleDispatchMethod_sp cur_method = gc::As<SingleDispatchMethod_sp>(oCar(applicableMethodsList));
     SingleDispatchMethodFunction_sp mf = cur_method->_body;
     if ( CxxMethodFunction_sp cmf = mf.as<CxxMethodFunction_O>() ) {
-      Function_sp emf = gctools::GC<SingleDispatchCxxEffectiveMethodFunction_O>::allocate(this->functionName(),mf);
+      FunctionDescription* fdesc = makeFunctionDescription(this->functionName());
+      Function_sp emf = gctools::GC<SingleDispatchCxxEffectiveMethodFunction_O>::allocate(fdesc,mf);
+      emf->setf_lambdaList(this->lambdaList());
+      emf->setf_declares(this->declares());
+      emf->setf_docstring(this->docstring());
+      emf->setf_sourceFileName(this->sourceFileName());
+      validateFunctionDescription(__FILE__,__LINE__,emf);
       return emf;
     }
   }
@@ -303,7 +310,13 @@ Function_sp SingleDispatchGenericFunctionClosure_O::computeEffectiveMethodFuncti
   List_sp befores = _Nil<T_O>();
   List_sp primaries = Cons_O::create(cur_method->_body,_Nil<T_O>());
   List_sp afters = _Nil<T_O>();
-  Function_sp emf = gctools::GC<SingleDispatchEffectiveMethodFunction_O>::allocate(this->functionName(),befores,primaries,afters);
+  FunctionDescription* fdesc = makeFunctionDescription(this->functionName());
+  Function_sp emf = gctools::GC<SingleDispatchEffectiveMethodFunction_O>::allocate(fdesc,befores,primaries,afters);
+  emf->setf_lambdaList(this->lambdaList());
+  emf->setf_declares(this->declares());
+  emf->setf_docstring(this->docstring());
+  emf->setf_sourceFileName(this->sourceFileName());
+  validateFunctionDescription(__FILE__,__LINE__,emf);
   return emf;
 #if 1
   printf("%s:%d   in computeEffectiveMethodFunction name: %s  contains %zu methods\n", __FILE__, __LINE__, _rep_(this->functionName()).c_str(), core::cl__length(applicableMethodsList) );
@@ -326,8 +339,12 @@ Function_sp SingleDispatchGenericFunctionClosure_O::computeEffectiveMethodFuncti
 
 SingleDispatchGenericFunctionClosure_sp SingleDispatchGenericFunctionClosure_O::create(T_sp name, LambdaListHandler_sp llh, size_t singleDispatchArgumentIndex) {
 //  GC_ALLOCATE(SingleDispatchGenericFunctionClosure_O, gf);
-  SingleDispatchGenericFunctionClosure_sp gfc = gctools::GC<SingleDispatchGenericFunctionClosure_O>::allocate(name,singleDispatchArgumentIndex);
-  gfc->finishSetup(llh, kw::_sym_function);
+  FunctionDescription* fdesc = makeFunctionDescription(name,llh->lambdaList());
+  SingleDispatchGenericFunctionClosure_sp gfc = gctools::GC<SingleDispatchGenericFunctionClosure_O>::allocate(fdesc,singleDispatchArgumentIndex);
+  gfc->finishSetup(llh);
+  gfc->setf_docstring(_Nil<T_O>());
+  gfc->setf_sourceFileName(_Nil<T_O>());
+  validateFunctionDescription(__FILE__,__LINE__,gfc);
   return gfc;
 }
 
