@@ -110,8 +110,6 @@ public:
   bool macroP() const { return this->_IsMacro;};
   void setf_macroP(bool m) { this->_IsMacro = m; };
   
-  bool amp_symbol_p() const;
-
   /*! Return a pointer to the value cell */
   inline T_sp *valueReference(T_sp* globalValuePtr) {
 #ifdef CLASP_THREADS

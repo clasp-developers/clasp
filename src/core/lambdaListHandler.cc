@@ -391,16 +391,19 @@ T_mv LambdaListHandler_O::process_single_dispatch_lambda_list(List_sp llraw, boo
   List_sp llprocessed = cl__copy_list(llraw);
   Symbol_sp sd_symbol = _Nil<Symbol_O>();
   Symbol_sp sd_class = _Nil<Symbol_O>();
-  bool saw_amp = false;
   int dispatchIndex = 0;
   int idx = 0;
   for (auto cur : llprocessed) {
     T_sp arg = oCar(cur);
     if (cl__symbolp(arg)) {
-      if (gc::As<Symbol_sp>(arg)->amp_symbol_p()) {
-        saw_amp = true;
+      // Originally checked if the symbol started with an ampersand.
+      // Unfortunately, I don't fully understand the logic here.
+      if (arg == cl::_sym_AMPoptional ||
+          arg == cl::_sym_AMPrest || arg == cl::_sym_AMPbody ||
+          arg == core::_sym_AMPva_rest ||
+          arg == cl::_sym_AMPkey || arg == cl::_sym_AMPallow_other_keys ||
+          arg == cl::_sym_AMPaux)
         break;
-      }
     } else if ((arg).consp()) {
       List_sp carg = arg;
       if (cl__length(carg) != 2) {
@@ -677,17 +680,8 @@ string argument_mode_as_string(ArgumentMode mode) {
 
 bool switch_add_argument_mode(T_sp context, T_sp symbol, ArgumentMode &mode, T_sp &key_flag) {
   LOG(BF("In switch_add_argument_mode argument is a symbol: %s %X") % _rep_(symbol) % symbol.get());
-  bool isAmpSymbol = false;
-  if (symbol.notnilp()) {
-    if (Symbol_sp sym = symbol.asOrNull<Symbol_O>()) {
-      isAmpSymbol = (sym == _sym_DOT || sym->amp_symbol_p());
-    }
-  }
-  //	bool isAmpSymbol = ( symbol == _sym_DOT || (symbol.notnilp() && symbol->amp_symbol_p()) );
-  if (isAmpSymbol) {
-    LOG(BF("It is an amp symbol"));
-    switch (mode) {
-    case required:
+  switch (mode) {
+  case required:
       LOG(BF("Was in required mode"));
       if (symbol == cl::_sym_AMPoptional) {
         mode = optional;
@@ -704,15 +698,18 @@ bool switch_add_argument_mode(T_sp context, T_sp symbol, ArgumentMode &mode, T_s
       } else if (symbol == cl::_sym_AMPaux) {
         mode = aux;
         goto NEWMODE;
+      } else if (symbol == cl::_sym_AMPallow_other_keys) {
+        goto BADMODE;
       } else if (symbol == _sym_DOT) {
         mode = dot_rest;
         goto NEWMODE;
       }
-      goto BADMODE;
       break;
-    case optional:
+  case optional:
       LOG(BF("Was in optional mode"));
-      if (symbol == cl::_sym_AMPrest || symbol == cl::_sym_AMPbody) {
+      if (symbol == cl::_sym_AMPoptional) {
+        goto BADMODE;
+      } else if (symbol == cl::_sym_AMPrest || symbol == cl::_sym_AMPbody) {
         mode = rest;
         goto NEWMODE;
       } else if (symbol == core::_sym_AMPva_rest) {
@@ -724,70 +721,123 @@ bool switch_add_argument_mode(T_sp context, T_sp symbol, ArgumentMode &mode, T_s
       } else if (symbol == cl::_sym_AMPaux) {
         mode = aux;
         goto NEWMODE;
+      } else if (symbol == cl::_sym_AMPallow_other_keys) {
+        goto BADMODE;
       } else if (symbol == _sym_DOT) {
         mode = dot_rest;
         goto NEWMODE;
       }
-      goto BADMODE;
       break;
-    case rest:
+  case rest:
       LOG(BF("Was in rest mode"));
-      if (symbol == cl::_sym_AMPkey) {
+      if (symbol == cl::_sym_AMPoptional) {
+        goto BADMODE;
+      } else if (symbol == cl::_sym_AMPrest || symbol == cl::_sym_AMPbody) {
+        goto BADMODE;
+      } else if (symbol == core::_sym_AMPva_rest) {
+        goto BADMODE;
+      } else if (symbol == cl::_sym_AMPkey) {
         mode = keyword;
         goto NEWMODE;
       } else if (symbol == cl::_sym_AMPaux) {
         mode = aux;
         goto NEWMODE;
+      } else if (symbol == cl::_sym_AMPallow_other_keys) {
+        goto BADMODE;
       } else if (symbol == _sym_DOT) {
         mode = dot_rest;
         goto NEWMODE;
       }
-      goto BADMODE;
       break;
-    case va_rest:
+  case va_rest:
       LOG(BF("Was in va_rest mode"));
-      if (symbol == cl::_sym_AMPkey) {
+      if (symbol == cl::_sym_AMPoptional) {
+        goto BADMODE;
+      } else if (symbol == cl::_sym_AMPrest || symbol == cl::_sym_AMPbody) {
+        goto BADMODE;
+      } else if (symbol == core::_sym_AMPva_rest) {
+        goto BADMODE;
+      } else if (symbol == cl::_sym_AMPkey) {
         mode = keyword;
         goto NEWMODE;
       } else if (symbol == cl::_sym_AMPaux) {
         mode = aux;
         goto NEWMODE;
+      } else if (symbol == cl::_sym_AMPallow_other_keys) {
+        goto BADMODE;
       } else if (symbol == _sym_DOT) {
         mode = dot_rest;
         goto NEWMODE;
       }
-      goto BADMODE;
       break;
-    case keyword:
+  case keyword:
       LOG(BF("Was in keyword mode"));
-      if (symbol == cl::_sym_AMPaux) {
+      if (symbol == cl::_sym_AMPoptional) {
+        goto BADMODE;
+      } else if (symbol == cl::_sym_AMPrest || symbol == cl::_sym_AMPbody) {
+        goto BADMODE;
+      } else if (symbol == core::_sym_AMPva_rest) {
+        goto BADMODE;
+      } else if (symbol == cl::_sym_AMPkey) {
+        goto BADMODE;
+      } else if (symbol == cl::_sym_AMPaux) {
         mode = aux;
         goto NEWMODE;
       } else if (symbol == cl::_sym_AMPallow_other_keys) {
         mode = allowOtherKeys;
         goto NEWMODE;
       }
-      goto BADMODE;
       break;
-    case allowOtherKeys:
-        LOG(BF("Did not recognize symbol(%s)") % _rep_(symbol));
-      if (symbol == cl::_sym_AMPaux) {
+  case allowOtherKeys:
+      LOG(BF("Did not recognize symbol(%s)") % _rep_(symbol));
+      if (symbol == cl::_sym_AMPoptional) {
+        goto BADMODE;
+      } else if (symbol == cl::_sym_AMPrest || symbol == cl::_sym_AMPbody) {
+        goto BADMODE;
+      } else if (symbol == core::_sym_AMPva_rest) {
+        goto BADMODE;
+      } else if (symbol == cl::_sym_AMPkey) {
+        goto BADMODE;
+      } else if (symbol == cl::_sym_AMPaux) {
         mode = aux;
         goto NEWMODE;
+      } else if (symbol == cl::_sym_AMPallow_other_keys) {
+        goto BADMODE;
       }
-      goto BADMODE;
       break;
-    case aux:
+  case aux:
       LOG(BF("Was in aux mode"));
-      goto BADMODE;
+      if (symbol == cl::_sym_AMPoptional) {
+        goto BADMODE;
+      } else if (symbol == cl::_sym_AMPrest || symbol == cl::_sym_AMPbody) {
+        goto BADMODE;
+      } else if (symbol == core::_sym_AMPva_rest) {
+        goto BADMODE;
+      } else if (symbol == cl::_sym_AMPkey) {
+        goto BADMODE;
+      } else if (symbol == cl::_sym_AMPaux) {
+        goto BADMODE;
+      } else if (symbol == cl::_sym_AMPallow_other_keys) {
+        goto BADMODE;
+      }
       break;
-    case dot_rest:
-      goto BADMODE;
+  case dot_rest:
+      if (symbol == cl::_sym_AMPoptional) {
+        goto BADMODE;
+      } else if (symbol == cl::_sym_AMPrest || symbol == cl::_sym_AMPbody) {
+        goto BADMODE;
+      } else if (symbol == core::_sym_AMPva_rest) {
+        goto BADMODE;
+      } else if (symbol == cl::_sym_AMPkey) {
+        goto BADMODE;
+      } else if (symbol == cl::_sym_AMPaux) {
+        goto BADMODE;
+      } else if (symbol == cl::_sym_AMPallow_other_keys) {
+        goto BADMODE;
+      }
+
       break;
-    };
-  } else {
-    LOG(BF("It is not an amp symbol"));
-  }
+  };
   return false;
 BADMODE:
   SIMPLE_ERROR(BF("While in lambda-list mode %s encountered illegal symbol[%s]") % argument_mode_as_string(mode) % _rep_(symbol));

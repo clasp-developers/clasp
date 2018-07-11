@@ -321,10 +321,6 @@ bool Symbol_O::isKeywordSymbol() {
   return pkg->isKeywordPackage();
 };
 
-bool Symbol_O::amp_symbol_p() const {
-  return (this->_Name->get()[0] == '&');
-}
-
 #if defined(OLD_SERIALIZE)
 void Symbol_O::serialize(serialize::SNode node) {
   _OF();
