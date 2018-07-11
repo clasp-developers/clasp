@@ -1437,9 +1437,6 @@ Function_sp lambda(T_sp name, bool wrap_block, T_sp lambda_list, List_sp body, T
   }
   //            printf("%s:%d Creating InterpretedClosure with no source information - fix this\n", __FILE__, __LINE__ );
   T_sp spi(_Nil<T_O>());
-  if (_lisp->sourceDatabase().notnilp()) {
-    spi = gc::As<SourceManager_sp>(_lisp->sourceDatabase())->lookupSourcePosInfo(code);
-  }
   if (spi.nilp()) {
     if ( _sym_STARcurrentSourcePosInfoSTAR->symbolValue().notnilp() ) {
       spi = _sym_STARcurrentSourcePosInfoSTAR->symbolValue();

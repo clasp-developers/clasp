@@ -11,22 +11,6 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
-;;; Source database
-
-(defparameter *active-compilation-source-database* nil)
-(defun do-one-source-database (closure)
-  (if (null *active-compilation-source-database*)
-      (let ((*active-compilation-source-database* t)
-            (core:*source-database* (core:make-source-manager)))
-        (do-one-source-database closure))
-      (unwind-protect
-           (funcall closure)
-        (core:source-manager-empty core:*source-database*))))
-(defmacro with-one-source-database (&rest body)
-  `(do-one-source-database #'(lambda () ,@body)))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
 ;;; Describing top level forms (for compile-verbose)
 
 (defun describe-form (form)
@@ -232,32 +216,31 @@ Compile a lisp source file into an LLVM module."
 	(core:source-file-info (namestring input-pathname) source-debug-pathname source-debug-offset nil))
       (when *compile-verbose*
 	(bformat t "; Compiling file: %s%N" (namestring input-pathname)))
-      (with-one-source-database
-	  (cmp-log "About to start with-compilation-unit%N")
-        (with-compilation-unit ()
-          (let* ((*compile-file-pathname* (pathname (merge-pathnames given-input-pathname)))
-                 (*compile-file-truename* (translate-logical-pathname *compile-file-pathname*)))
-            (with-module (:module module
-                          :optimize (when optimize #'optimize-module-for-compile-file)
-                          :optimize-level optimize-level)
-              (with-source-pathnames (:source-pathname *compile-file-truename* ;(namestring source-location)
-                                      :source-debug-pathname source-debug-pathname
-                                      :source-debug-offset source-debug-offset)
-                (with-debug-info-generator (:module *the-module*
-                                            :pathname *compile-file-truename*)
-                  (or *the-module* (error "*the-module* is NIL"))
-                  (with-make-new-run-all (run-all-function)
-                    (with-literal-table
-                        (loop-read-and-compile-file-forms source-sin environment compile-file-hook))
-                    (make-boot-function-global-variable *the-module* run-all-function))))
-              (cmp-log "About to verify the module%N")
-              (cmp-log-dump-module *the-module*)
-              (irc-verify-module-safe *the-module*)
-              (quick-module-dump *the-module* "preoptimize")
-              ;; ALWAYS link the builtins in, inline them and then remove them.
-              (link-inline-remove-builtins *the-module*))
-            (quick-module-dump module "postoptimize")
-            module))))))
+      (cmp-log "About to start with-compilation-unit%N")
+      (with-compilation-unit ()
+        (let* ((*compile-file-pathname* (pathname (merge-pathnames given-input-pathname)))
+               (*compile-file-truename* (translate-logical-pathname *compile-file-pathname*)))
+          (with-module (:module module
+                        :optimize (when optimize #'optimize-module-for-compile-file)
+                        :optimize-level optimize-level)
+            (with-source-pathnames (:source-pathname *compile-file-truename* ;(namestring source-location)
+                                    :source-debug-pathname source-debug-pathname
+                                    :source-debug-offset source-debug-offset)
+              (with-debug-info-generator (:module *the-module*
+                                          :pathname *compile-file-truename*)
+                (or *the-module* (error "*the-module* is NIL"))
+                (with-make-new-run-all (run-all-function)
+                  (with-literal-table
+                      (loop-read-and-compile-file-forms source-sin environment compile-file-hook))
+                  (make-boot-function-global-variable *the-module* run-all-function))))
+            (cmp-log "About to verify the module%N")
+            (cmp-log-dump-module *the-module*)
+            (irc-verify-module-safe *the-module*)
+            (quick-module-dump *the-module* "preoptimize")
+            ;; ALWAYS link the builtins in, inline them and then remove them.
+            (link-inline-remove-builtins *the-module*))
+          (quick-module-dump module "postoptimize")
+          module)))))
 
 (defun compile-file (input-file
                      &key

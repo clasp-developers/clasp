@@ -475,11 +475,6 @@ List_sp LambdaListHandler_O::process_macro_lambda_list(List_sp lambda_list) {
   ql::list sclist; // (af_lineNumber(lambda_list),af_column(lambda_list),core__source_file_info(lambda_list));
   sclist << whole_symbol << environment_symbol << Cons_O::create(name_symbol, new_lambda_list);
   List_sp macro_ll = sclist.cons();
-#if 0
-  if (_lisp->sourceDatabase().notnilp()) {
-    gc::As<SourceManager_sp>(_lisp->sourceDatabase())->duplicateSourcePosInfo(lambda_list, macro_ll);
-  }
-#endif
   return macro_ll;
 }
 

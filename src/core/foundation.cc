@@ -1095,22 +1095,6 @@ string symbol_fullName(Symbol_sp s) {
   return s->fullName();
 }
 
-core::T_sp lisp_registerSourceInfo(T_sp obj, SourceFileInfo_sp sfo, size_t filePos, int lineno, int column) {
-  T_sp tdb = _lisp->sourceDatabase();
-  if (SourceManager_sp db = tdb.asOrNull<SourceManager_O>()) {
-    return db->registerSourceInfo(obj, sfo, filePos, lineno, column);
-  }
-  return _Nil<T_O>();
-}
-
-core::T_sp lisp_registerSourcePosInfo(T_sp obj, SourcePosInfo_sp spi) {
-  T_sp tdb = _lisp->sourceDatabase();
-  if (SourceManager_sp db = tdb.asOrNull<SourceManager_O>()) {
-    return db->registerSourcePosInfo(obj, spi);
-  }
-  return _Nil<T_O>();
-}
-
 void lisp_installGlobalInitializationCallback(InitializationCallback initGlobals) {
   _lisp->installGlobalInitializationCallback(initGlobals);
 }

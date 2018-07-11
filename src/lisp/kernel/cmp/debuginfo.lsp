@@ -49,22 +49,6 @@
          (source-directory (directory-namestring pathname))
          (source-filename (file-namestring pathname)))
     (values source-directory source-filename filepos lineno 0)))
-#|  
-  (bformat t "walk-form-for-source-info *current-source-pos-info* -> %s%N" core:*current-source-pos-info*)
-  (multiple-value-bind (source-file-info file-pos line-number column)
-      (core:walk-to-find-source-info form)
-    (when source-file-info
-      (let* ((source-pathname (source-file-info-pathname source-file-info))
-             (source-directory (directory-namestring source-pathname))
-             (source-filename (file-namestring source-pathname)))
-        (bformat t "    Returning source-filename: %s line-number: %d%N" source-filename line-number)
-        (return-from walk-form-for-source-info
-          (values source-directory source-filename file-pos line-number column)))))
-  (bformat t "    Returning no-file 0%N")
-  (values "no-dir" "no-file" 0 0 0))
-|#
-
-
 
 (defun dbg-create-function-type (difile function-type)
   "Currently create a bogus function type"

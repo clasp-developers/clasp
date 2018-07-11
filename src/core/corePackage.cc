@@ -387,7 +387,6 @@ SYMBOL_EXPORT_SC_(CorePkg, size_t);
 SYMBOL_EXPORT_SC_(CorePkg, threadInfo);
 
 SYMBOL_EXPORT_SC_(CorePkg, circle_subst);
-SYMBOL_EXPORT_SC_(CorePkg, STARsourceDatabaseSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARcurrentSourcePosInfoSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARstartRunTimeSTAR);
 SYMBOL_EXPORT_SC_(ClPkg, internalTimeUnitsPerSecond);
@@ -1023,7 +1022,6 @@ void CoreExposer_O::define_essential_globals(Lisp_sp lisp) {
   ext::_sym__PLUS_processStandardInput_PLUS_->defparameter(stdin_stream);
   ext::_sym__PLUS_processStandardOutput_PLUS_->defparameter(stdout_stream);
   ext::_sym__PLUS_processErrorOutput_PLUS_->defparameter(stderr_stream);
-  _sym_STARsourceDatabaseSTAR->defparameter(_Nil<T_O>());
   _sym_STARcurrentSourcePosInfoSTAR->defparameter(_Nil<T_O>());
   cl::_sym_STARstandard_inputSTAR->defparameter(SynonymStream_O::make(ext::_sym__PLUS_processStandardInput_PLUS_));
   cl::_sym_STARstandard_outputSTAR->defparameter(SynonymStream_O::make(ext::_sym__PLUS_processStandardOutput_PLUS_));
@@ -1242,7 +1240,6 @@ void add_defsetf_access_update(Symbol_sp access_fn, Symbol_sp update_fn) {
   Cons_sp pair = Cons_O::create(access_fn, update_fn);
   List_sp list = _sym_STARsystem_defsetf_update_functionsSTAR->symbolValue();
   _sym_STARsystem_defsetf_update_functionsSTAR->defparameter(Cons_O::create(pair, list));
-  _sym_STARmonitorRegisterSourceInfoSTAR->defparameter(_Nil<T_O>());
 }
 };
 

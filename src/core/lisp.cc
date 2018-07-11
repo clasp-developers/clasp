@@ -1166,24 +1166,6 @@ void Lisp_O::selectPackage(Package_sp pack) {
   cl::_sym_STARpackageSTAR->setf_symbolValue(pack);
 }
 
-T_sp Lisp_O::sourceDatabase() const {
-  _OF();
-  // At startup the *package* symbol may not yet
-  // be defined or bound to a package - in that case just say we are in the core package
-  //
-  T_sp cur;
-  if (_sym_STARsourceDatabaseSTAR.unboundp()) {
-    return _Nil<T_O>();
-  }
-  if (!_sym_STARsourceDatabaseSTAR->specialP()) {
-    return _Nil<T_O>();
-  }
-  cur = _sym_STARsourceDatabaseSTAR->symbolValue();
-  if (cur.nilp()) return cur;
-  return gc::As<SourceManager_sp>(cur);
-}
-
-
 void Lisp_O::throwIfBuiltInClassesNotInitialized() {
   if (this->_BuiltInClassesInitialized)
     return;
@@ -1398,11 +1380,6 @@ T_mv Lisp_O::readEvalPrint(T_sp stream, T_sp environ, bool printResults, bool pr
                 << gc::As<Package_sp>(cl::_sym_STARpackageSTAR->symbolValue())->getName() << "> ";
         clasp_write_string(prompts.str(), stream);
       }
-#ifdef USE_SOURCE_DATABASE
-      DynamicScopeManager innerScope(_sym_STARsourceDatabaseSTAR, SourceManager_O::create());
-#else
-      DynamicScopeManager innerScope(_sym_STARsourceDatabaseSTAR, _Nil<T_O>());
-#endif
       T_sp expression = cl__read(stream, _Nil<T_O>(), _Unbound<T_O>(), _Nil<T_O>());
       if (expression.unboundp())
         break;

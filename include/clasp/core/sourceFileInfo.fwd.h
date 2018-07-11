@@ -30,7 +30,6 @@ THE SOFTWARE.
 namespace core {
 FORWARD(SourceFileInfo);
 FORWARD(SourcePosInfo);
-FORWARD(SourceManager);
 
 uint clasp_sourcePosInfo_fileHandle(SourcePosInfo_sp info);
 size_t clasp_sourcePosInfo_filepos(SourcePosInfo_sp info);
