@@ -442,31 +442,12 @@ namespace ext {
 CL_DOCSTRING("Return the unix current working directory");
 CL_DEFUN core::String_sp ext__getcwd() {
   // TESTME :   Test this function with the new code
-#if 1
   const char *ok = ::getcwd(NULL,0);
   size_t cwdsize = strlen(ok);
   // Pad with 4 characters for / and terminator \0
   core::Str8Ns_sp output = core::Str8Ns_O::make(cwdsize+2,'\0',true,core::clasp_make_fixnum(0));
   StringPushStringCharStar(output, ok);
   ::free((void*)ok);
-#else
-  DEPRECATED();
-  size_t size = 128;
-  core::String_sp output(core::Str8Ns_O::create_with_fill_pointer(' ', 32, 0, true));
-  do {
-    output->internalAdjustSize_(core::clasp_make_character(' '),size);
-    clasp_disable_interrupts();
-    ok = ::getcwd((char *)output->addressOfBuffer(), size - 1);
-    clasp_enable_interrupts();
-    size += 256;
-  } while (ok == NULL);
-  size = strlen((char *)output->addressOfBuffer());
-  if ((size + 1 /* / */ + 1 /* 0 */) >= output->arrayTotalSize()) {
-    /* Too large to host the trailing '/' */
-    output->adjust(core::clasp_make_character(' '),output->arrayTotalSize()+2);
-  }
-  output->fillPointerSet(size-1);
-#endif
 #if defined(_TARGET_OS_DARWIN) || defined(_TARGET_OS_LINUX)
   // Add a terminal '/' if there is none
   if ((*output)[output->fillPointer() - 1] != DIR_SEPARATOR_CHAR) {
