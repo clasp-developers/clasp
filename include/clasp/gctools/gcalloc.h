@@ -716,6 +716,9 @@ namespace gctools {
 
     /*! Allocate enough space for capacity elements, but set the length to length */
 
+    // Allocates an object with proper header and everything.
+    // Uses the underlying constructor. Like, GC<SimpleVector_O>::allocate_container(...)
+    // ends up passing the ... to the SimpleVector_O constructor.
     template <typename... ARGS>
       static smart_pointer_type allocate_container( size_t length, /*const typename OT::value_type& initial_element,*/ ARGS &&... args) {
       size_t capacity = length;
