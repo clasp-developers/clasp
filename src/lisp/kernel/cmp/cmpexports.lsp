@@ -27,7 +27,6 @@
           module-literal-table
           *load-time-initializer-environment*
           *gv-current-function-name*
-          *gv-source-file-info-handle*
           *gv-source-namestring*
           *implicit-compile-hook*
           *irbuilder*
@@ -207,9 +206,8 @@
           *irbuilder-function-alloca*
           irc-get-cleanup-landing-pad-block
           irc-constant-string-ptr
-          *gv-source-debug-namestring*
+          *source-debug-pathname*
           *source-debug-offset*
-          *source-debug-use-lineno*
           irc-get-terminate-landing-pad-block
           irc-function-cleanup-and-return
           %RUN-AND-LOAD-TIME-VALUE-HOLDER-GLOBAL-VAR-TYPE%

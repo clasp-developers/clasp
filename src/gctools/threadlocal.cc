@@ -1,9 +1,17 @@
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <limits.h>
+#include <fcntl.h>
 #include <sys/types.h>
+#include <signal.h>
+#include <execinfo.h>
 #include <clasp/core/foundation.h>
 #include <clasp/gctools/threadlocal.h>
 #include <clasp/core/lisp.h>
 #include <clasp/core/mpPackage.h>
+#include <clasp/core/array.h>
+#include <clasp/core/debugger.h>
 #include <clasp/core/lispStream.h>
 
 
@@ -203,7 +211,11 @@ ThreadLocalState::ThreadLocalState(void* stack_top) :  _DisableInterrupts(false)
 ThreadLocalState::~ThreadLocalState() {
 }
   
-void ThreadLocalState::initialize_thread(mp::Process_sp process) {
+void ThreadLocalState::initialize_thread(mp::Process_sp process, bool initialize_GCRoots=true ) {
+  if (initialize_GCRoots) {
+    // The main process needs to initialize _GCRoots before classes are initialized.
+    this->_GCRoots = new gctools::GCRootsInModule();
+  }
 //  printf("%s:%d Initialize all ThreadLocalState things this->%p\n",__FILE__, __LINE__, (void*)this);
   this->_Bindings.reserve(1024);
   this->_Process = process;
@@ -213,12 +225,80 @@ void ThreadLocalState::initialize_thread(mp::Process_sp process) {
   this->_BignumRegister0 = Bignum_O::create( (gc::Fixnum) 0);
   this->_BignumRegister1 = Bignum_O::create( (gc::Fixnum) 0);
   this->_BignumRegister2 = Bignum_O::create( (gc::Fixnum) 0);
-#if 1
   this->_SingleDispatchMethodCachePtr = gc::GC<Cache_O>::allocate();
   this->_SingleDispatchMethodCachePtr->setup(2, Lisp_O::SingleDispatchMethodCacheSize);
-#endif
   this->_PendingInterrupts = _Nil<T_O>();
   this->_SparePendingInterruptRecords = cl__make_list(clasp_make_fixnum(16),_Nil<T_O>());
 };
+
+void ThreadLocalState::create_sigaltstack() {
+#if 0
+  // Set up a sigaltstack
+  stack_t sigstk;
+  size_t size = SIGNAL_STACK_SIZE+SIGSTKSZ;
+  my_thread->_sigaltstack_buffer = (void*)malloc(size);
+  if (!my_thread->_sigaltstack_buffer) perror("Could not allocate signal stack");
+  sigstk.ss_size = SIGNAL_STACK_SIZE+SIGSTKSZ;
+  sigstk.ss_flags = 0;
+  if (sigaltstack(&sigstk,&my_thread->_original_stack) < 0) perror("sigaltstack problem");
+#endif
+}
+
+void ThreadLocalState::destroy_sigaltstack()
+{
+#if 0
+  if (sigaltstack(&my_thread->_original_stack, (stack_t *)0) < 0) perror("sigaltstack problem");
+  free(my_thread->_sigaltstack_buffer);
+#endif
+}
+
+
+};
+
+
+
+namespace gctools {
+
+#ifdef DEBUG_COUNT_ALLOCATIONS
+void start_backtrace_allocations(const std::string& filename, Fixnum stamp) {
+  int fd = open(filename.c_str(),O_WRONLY|O_CREAT,S_IRWXU);
+  if (fd<0) {
+    SIMPLE_ERROR(BF("Could not open file %s - %s") % filename % strerror(errno));
+  }
+  my_thread->_BacktraceStamp = stamp;
+  my_thread->_BacktraceFd = fd;
+  my_thread->_BacktraceAllocationsP = true;
+}
+
+void stop_backtrace_allocations() {
+  close(my_thread->_BacktraceFd);
+  my_thread->_BacktraceAllocationsP = false;
+}
+
+void count_allocation(stamp_t stamp) {
+  if (my_thread->_CountAllocations.size() <= stamp) {
+    my_thread->_CountAllocations.resize(stamp+1,0);
+  }
+  if (my_thread->_BacktraceAllocationsP) {
+    if (my_thread->_BacktraceStamp == stamp) {
+      void** buffer = NULL;
+      int nptrs = core::safe_backtrace(buffer);
+      backtrace_symbols_fd(buffer,nptrs,my_thread->_BacktraceFd);
+      write(my_thread->_BacktraceFd,"\n",strlen("\n"));
+    }
+  }
+  my_thread->_CountAllocations[stamp]++;
+}
+
+CL_DEFUN core::SimpleVector_sp gctools__allocation_counts()
+{
+  core::SimpleVector_sp counts = core::core__make_vector(_lisp->_true(),my_thread->_CountAllocations.size());
+  for ( size_t i=0; i<my_thread->_CountAllocations.size(); ++i ) {
+    (*counts)[i] = core::make_fixnum(my_thread->_CountAllocations[i]);
+  }
+  return counts;
+}
+  
+#endif
 
 };

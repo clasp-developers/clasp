@@ -104,15 +104,11 @@ VARIABLE doc and can be retrieved by (DOCUMENTATION 'SYMBOL 'VARIABLE)."
   ;; Documentation in help.lsp
   (multiple-value-bind (decls body doc-string) 
       (process-declarations body t)
-    (let* ((loc (ext:current-source-location))
-           (filepos (if loc (source-file-pos-filepos loc) 0))
-           (lineno (if loc (source-file-pos-lineno loc) 1234))
-           (column (if loc (source-file-pos-column loc) 0))
-           (fn (gensym))
+    (let* ((fn (gensym))
            (doclist (when doc-string (list doc-string)))
            (global-function
              `#'(lambda ,vl 
-                  (declare (core:lambda-name ,name core:current-source-file ,filepos ,lineno ,column) ,@decls) 
+                  (declare (core:lambda-name ,name) ,@decls) 
                   ,@doclist
                   (block ,(si::function-block-name name) ,@body))))
       ;;(bformat t "macro expansion of defun current-source-location -> %s%N" current-source-location)
@@ -125,12 +121,11 @@ VARIABLE doc and can be retrieved by (DOCUMENTATION 'SYMBOL 'VARIABLE)."
          (let ((,fn ,global-function))
            (funcall #'(setf fdefinition) ,fn ',name)
            (setf-lambda-list ,fn ',vl)
-           (core:set-source-info ,fn ',(list 'core:current-source-file filepos lineno column))
+           #+(or)(core:set-source-info ,fn ',(list 'core:current-source-file filepos lineno column))
            ,@(si::expand-set-documentation name 'function doc-string)
            ;; This can't be at toplevel.
            ,@(and *defun-inline-hook*
                   (list (funcall *defun-inline-hook* name global-function env)))
-           (setq cmp::*current-form-lineno* ,lineno)
            ',name)))))
 
 ;;;

@@ -47,7 +47,7 @@ public:
   typedef core::BuiltinClosure_O TemplatedBase;
 
 public:
- IteratorMethoid(core::T_sp name, Begin begin, End end) : core::BuiltinClosure_O(entry_point,name), _begin(begin), _end(end){};
+ IteratorMethoid(core::FunctionDescription* fdesc, Begin begin, End end) : core::BuiltinClosure_O(entry_point,fdesc), _begin(begin), _end(end){};
 
 private:
   typedef typename BeginReturnType<OT, Begin>::type IteratorType;

@@ -250,19 +250,18 @@
       info)))
 
 (defun compilation-unit-finished (messages)
+  ;; Add messages for global function references that were never satisfied
+  (maphash (lambda (name references)
+             (unless (or (fboundp name)
+                         (gethash name *global-function-defs*))
+               (dolist (ref references)
+                 (pushnew (make-compiler-style-warning
+                           :message (core:bformat nil "Undefined function %s" name)
+                           :source-pos-info (global-function-ref-source-pos-info ref)
+                           :form name)
+                          messages :test #'equalp))))
+           *global-function-refs*)
   (when messages
-    (bformat t "Compilation-unit finished %N%N")
-    ;; Add messages for global function references that were never satisfied
-    (maphash (lambda (name references)
-               (unless (or (fboundp name)
-                           (gethash name *global-function-defs*))
-                 (dolist (ref references)
-                   (pushnew (make-compiler-style-warning
-                             :message (core:bformat nil "Undefined function %s" name)
-                             :source-pos-info (global-function-ref-source-pos-info ref)
-                             :form name)
-                            messages :test #'equalp))))
-             *global-function-refs*)
-    (dolist (m (reverse messages))
-      (print-compiler-message m *debug-io*))))
-
+    (bformat t "Compilation-unit finished %N%N"))
+  (dolist (m (reverse messages))
+    (print-compiler-message m *debug-io*)))

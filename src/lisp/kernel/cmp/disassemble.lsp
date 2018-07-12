@@ -73,7 +73,7 @@ Return T if disassembly was achieved - otherwise NIL"
                                      :start-byte-offset start-byte-offset
                                      :end-byte-offset end-byte-offset))
 
-(defun disassemble (desig &key ((:start start-instruction-index) 0) ((:num num-instructions) 16) (type :IR))
+(defun disassemble (desig &key ((:start start-instruction-index) 0) ((:num num-instructions) 16) (type :asm))
   "If type is :ASM then disassemble to assembly language from the START instruction, disassembling NUM instructions
    if type is :IR then dump the llvm-ir for all of the associated functions and ignore START and NUM"
   (check-type type (member :ir :asm))
@@ -113,7 +113,7 @@ Return T if disassembly was achieved - otherwise NIL"
                 (progn
                   (disassemble-assembly fn start-instruction-index num-instructions)
                   (bformat t "Done%N"))
-                (llvm-sys:disassemble* fn)))
+                (error "LLVM-IR is not saved for functions - use :type :asm to disassemble to native code")))
            ((interpreted-function-p fn)
             (format t "This is a interpreted function - compile it first~%"))
            ((eq type :asm)

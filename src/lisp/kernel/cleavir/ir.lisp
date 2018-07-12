@@ -24,22 +24,27 @@
     (format stream ":value ~s" (literal-value object))))
 
 (defclass arrayed-literal (literal)
-  ((%index :initarg :index :reader arrayed-literal-index)))
+  ((%index :initarg :index :reader arrayed-literal-index)
+   (%literal-name :initarg :literal-name :reader arrayed-literal-literal-name)))
 
 (defmethod literal-label ((literal arrayed-literal))
-  (format nil "~a" (arrayed-literal-index literal)))
+  (if (arrayed-literal-literal-name literal)
+      (format nil "~a/~a" (arrayed-literal-index literal) (arrayed-literal-literal-name literal))
+      (format nil "~a" (arrayed-literal-index literal))))
 
 (defmethod print-object ((object arrayed-literal) stream)
   (print-unreadable-object (object stream :type t :identity t)
-    (format stream ":value ~s :index ~s" (literal-value object) (arrayed-literal-index object))))
+    (format stream ":value ~s :index ~s :literal-name ~s" (literal-value object)
+            (arrayed-literal-index object)
+            (arrayed-literal-literal-name object))))
 
 
 (defun %literal-index (value &optional read-only-p)
   (let ((*debug-cleavir* *debug-cleavir-literals*))
-    (multiple-value-bind (data in-array)
+    (multiple-value-bind (data in-array literal-name)
         (literal:reference-literal value read-only-p)
       (if in-array
-          (make-instance 'arrayed-literal :value value :index data)
+          (make-instance 'arrayed-literal :value value :index data :literal-name literal-name)
           (make-instance 'immediate-literal :value value :tagged-value data)))))
 
   
@@ -47,10 +52,13 @@
   (let ((literal (%literal-index value read-only-p)))
     (if (typep literal 'arrayed-literal)
         (let* ((index (arrayed-literal-index literal))
+               (literal-label (if (arrayed-literal-literal-name literal)
+                                  (bformat nil "values-table[%d]/%s" index (arrayed-literal-literal-name literal))
+                                  (bformat nil "values-table[%d]" index)))
                (gep (llvm-sys:create-const-gep2-64 cmp:*irbuilder*
                                                    (cmp:ltv-global)
                                                    0 index
-                                                   (bformat nil "values-table[%d]" index))))
+                                                   literal-label)))
           gep)
         (error "%literal-ref of immediate value ~s is illegal" value))))
 

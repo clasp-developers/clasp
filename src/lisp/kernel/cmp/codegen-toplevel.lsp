@@ -45,7 +45,7 @@
                         (let ((macro-fn (eval (ext:parse-macro (car macro-def)
                                                                (cadr macro-def)
                                                                (cddr macro-def)))))
-                          (set-kind macro-fn :macro)
+;;;                          (set-kind macro-fn :macro)
                           (cons (car macro-def) macro-fn)))
                       (car body))))
     (multiple-value-bind (decls macrolet-body)

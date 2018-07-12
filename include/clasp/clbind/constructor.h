@@ -146,7 +146,7 @@ public:
   typedef core::Function_O TemplatedBase;
 public:
   enum { NumParams = 0 };
- DerivableDefaultConstructorFunctor(core::T_sp name) : core::Closure_O(entry_point,name){};
+ DerivableDefaultConstructorFunctor(core::FunctionDescription* fdesc) : core::Closure_O(entry_point,fdesc){};
 public:
   virtual size_t templatedSizeof() const { return sizeof(*this); };
 public:

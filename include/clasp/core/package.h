@@ -61,6 +61,7 @@ class Package_O : public General_O {
   std::atomic<bool> _AmpPackage;
   std::atomic<bool> _ActsLikeKeywordPackage;
   List_sp _Nicknames;
+  T_sp _Documentation;
 #ifdef CLASP_THREADS
   mutable mp::SharedMutex _Lock;
 #endif
@@ -169,6 +170,9 @@ class Package_O : public General_O {
   /*! Return true if we are using the package */
   bool usingPackageP(Package_sp pkg) const;
 
+  T_sp documentation() const {return this->_Documentation;}
+  void setDocumentation(T_sp docstring) {this->_Documentation = docstring;}
+
   /*! Dump all the symbols to stdout */
   void dumpSymbols();
 
@@ -195,7 +199,7 @@ class Package_O : public General_O {
 
  public:
   // Not default constructable
- Package_O() : _Nicknames(_Nil<T_O>()), _ActsLikeKeywordPackage(false){};
+ Package_O() : _Nicknames(_Nil<T_O>()), _Documentation(_Nil<T_O>()), _ActsLikeKeywordPackage(false){};
   virtual ~Package_O(){};
 };
 

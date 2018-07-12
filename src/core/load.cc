@@ -86,11 +86,6 @@ CL_DEFUN T_sp core__load_source(T_sp source, bool verbose, bool print, core::T_s
   SourcePosInfo_sp spi = SourcePosInfo_O::create(sfi->fileHandle(), 0, 0, 0);
   while (true) {
     bool echoReplRead = _sym_STARechoReplReadSTAR->symbolValue().isTrue();
-#ifdef USE_SOURCE_DATABASE
-      DynamicScopeManager innerScope(_sym_STARsourceDatabaseSTAR, SourceManager_O::create());
-#else
-      DynamicScopeManager innerScope(_sym_STARsourceDatabaseSTAR, _Nil<T_O>());
-#endif
     //    printf("%s:%d  Pushing stream source pos for strm@%p   tagged-ptr: %p\n", __FILE__, __LINE__, &strm, strm.raw_());
     T_sp x = cl__read(strm, _Nil<T_O>(), _Unbound<T_O>(), _Nil<T_O>());
     if (x.unboundp())

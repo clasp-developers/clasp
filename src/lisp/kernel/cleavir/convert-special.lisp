@@ -109,6 +109,21 @@
   (cleavir-code-utilities:check-argcount form 1 1))
 
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Converting CORE:DEBUG-BREAK
+;;;
+;;; This is converted into a call to invoke the debugger
+;;;
+(defmethod cleavir-generate-ast::convert-special
+    ((symbol (eql 'core:debug-break)) form environment (system clasp-cleavir:clasp))
+  (make-instance 'clasp-cleavir-ast:debug-break-ast))
+
+(defmethod cleavir-generate-ast::check-special-form-syntax ((head (eql 'core:debug-break)) form)
+  (cleavir-code-utilities:check-form-proper-list form)
+  (cleavir-code-utilities:check-argcount form 0 0))
+
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -160,7 +175,7 @@
                  :foreign-types (cst:raw (cst:second cst))
                  :function-name (cst:raw (cst:third cst))
                  :argument-asts (cleavir-cst-to-ast::convert-sequence (cst:rest (cst:rest (cst:rest cst))) environment system)
-                 :origin (source cst)))
+                 :origin (cst:source cst)))
 
 (defmethod cleavir-generate-ast::check-special-form-syntax ((head (eql 'core:foreign-call)) form)
   (cleavir-code-utilities:check-form-proper-list form)
@@ -186,7 +201,7 @@
   (make-instance 'clasp-cleavir-ast:foreign-call-pointer-ast
                  :foreign-types (cst:raw (cst:second cst))
                  :argument-asts (cleavir-cst-to-ast::convert-sequence (cst:rest (cst:rest cst)) environment system)
-                 :origin (source cst)))
+                 :origin (cst:source cst)))
 
 (defmethod cleavir-generate-ast::check-special-form-syntax ((head (eql 'core:foreign-call-pointer)) form)
   (cleavir-code-utilities:check-form-proper-list form)

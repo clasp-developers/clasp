@@ -384,28 +384,28 @@ when this is t a lot of graphs will be generated.")
 
 (defun dump-hir (initial-instruction &optional (stream t))
   (let ((all-basic-blocks (cleavir-basic-blocks:basic-blocks initial-instruction))
-	initials)
+        initials)
     (cleavir-ir:map-instructions
      (lambda (instr)
        (when (typep instr 'cleavir-ir:enter-instruction)
-	 (push instr initials))) initial-instruction)
+         (push instr initials))) initial-instruction)
     (dolist (procedure-initial initials)
       (format stream "====== Procedure: ~a~%" (cc-mir:describe-mir procedure-initial))
       (let ((basic-blocks (remove procedure-initial
-				  all-basic-blocks
-				  :test-not #'eq :key #'cleavir-basic-blocks:owner)))
-	(dolist (bb basic-blocks)
-	  (with-accessors ((first cleavir-basic-blocks:first-instruction)
+                                  all-basic-blocks
+                                  :test-not #'eq :key #'cleavir-basic-blocks:owner)))
+        (dolist (bb basic-blocks)
+          (with-accessors ((first cleavir-basic-blocks:first-instruction)
                            (last cleavir-basic-blocks:last-instruction)
                            (owner cleavir-basic-blocks:owner))
               bb
-	    (format stream "-------------------basic-block owner: ~a~%" 
-		    (cc-mir:describe-mir owner))
-	    (loop for instruction = first
-	       then (first (cleavir-ir:successors instruction))
-	       until (eq instruction last)
-	       do (format stream "~a~%" (cc-mir:describe-mir instruction)))
-	    (format stream "~a~%" (cc-mir:describe-mir last))))))))
+            (format stream "-------------------basic-block owner: ~a~%" 
+                    (cc-mir:describe-mir owner))
+            (loop for instruction = first
+               then (first (cleavir-ir:successors instruction))
+               until (eq instruction last)
+               do (format stream "~a~%" (cc-mir:describe-mir instruction)))
+            (format stream "~a~%" (cc-mir:describe-mir last))))))))
 
 ;;; These should be set up in Cleavir code
 ;;; Remove them once beach implements them

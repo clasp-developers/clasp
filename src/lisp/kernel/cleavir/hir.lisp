@@ -18,6 +18,22 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
+;;; Instruction DEBUG-BREAK-INSTRUCTION
+;;;
+;;; This instruction is an DEBUG-BREAK-INSTRUCTION that invokes the debugger
+
+(defclass debug-break-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin)
+  ())
+
+(defmethod cleavir-ir-graphviz:label ((instr debug-break-instruction))
+  (with-output-to-string (s)
+    (format s "debug-break")))
+
+(defmethod cleavir-ir:clone-initargs append ((instruction debug-break-instruction))
+  ())
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
 ;;; Instruction multiple-value-foreign-CALL-INSTRUCTION
 ;;;
 ;;; Calls a foreign function (designated by its name, a string) and receives its result as values.
@@ -56,7 +72,7 @@
 
 (defmethod cleavir-ir:clone-initargs append ((instruction foreign-call-instruction))
   (list :foreign-types (foreign-types instruction)
-        :foreign-name (foreign-name instruction)))
+        :function-name (function-name instruction)))
 
 (defmethod make-foreign-call-instruction
     (foreign-types function-name inputs outputs &optional (successor nil successor-p))
@@ -371,6 +387,8 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defmethod cleavir-remove-useless-instructions:instruction-may-be-removed-p ((instruction debug-message-instruction)) nil)
+
+(defmethod cleavir-remove-useless-instructions:instruction-may-be-removed-p ((instruction debug-break-instruction)) nil)
 
 ;(defmethod cleavir-remove-useless-instructions:instruction-may-be-removed-p ((instruction precalc-value-instruction)) t)
 

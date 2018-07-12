@@ -36,9 +36,9 @@
 ;; properly, and furthermore that it's only done once
 ;; (Because if ensure-boot-class is called again with the same name,
 ;;  it'll just find-class the existing one.)
-(defun allocate-boot-class (metaclass slot-count)
+(defun allocate-boot-class (metaclass slot-count name)
   (let ((class (core:allocate-new-instance metaclass slot-count)))
-    (core:class-new-stamp class)
+    (core:class-new-stamp class name)
     class))
 
 (defun ensure-boot-class (name &key (metaclass 'standard-class)
@@ -51,7 +51,7 @@
          (class (progn
                   (debug-boot "    About to allocate-boot-class~%")
                   (or (find-class name nil)
-                      (allocate-boot-class the-metaclass #.(length +standard-class-slots+))))))
+                      (allocate-boot-class the-metaclass #.(length +standard-class-slots+) name)))))
     ;;    (debug-boot "About to with-early-accessors -> macroexpand = ~a~%" (macroexpand '(with-early-accessors (+standard-class-slots+) (setf (class-id                  class) name))))
     (debug-boot "    About to with-early-accessors~%")
     (with-early-accessors (+standard-class-slots+)

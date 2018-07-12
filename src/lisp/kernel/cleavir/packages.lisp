@@ -62,6 +62,7 @@
    #:original-lambda-list
    #:docstring
    #:debug-message-ast
+   #:debug-break-ast
    #:multiple-value-foreign-call-ast
    #:foreign-call-ast
    #:foreign-call-pointer-ast
@@ -73,6 +74,7 @@
    #:make-setf-fdefinition-ast
    #:lambda-name
    #:debug-message
+   #:debug-break
    #:precalc-value-reference-ast
    #:precalc-value-reference-ast-index
    #:precalc-value-reference-ast-original-object
@@ -103,6 +105,7 @@
    #:docstring
    #:make-named-enter-instruction
    #:debug-message-instruction
+   #:debug-break-instruction
    #:multiple-value-foreign-call-instruction
    #:foreign-call-instruction
    #:foreign-call-pointer-instruction
@@ -118,6 +121,7 @@
    #:lambda-name
    #:precalc-value-instruction
    #:debug-message
+   #:debug-break
    #:setf-fdefinition-instruction
    #:throw-instruction
    #:precalc-value-instruction-original-object

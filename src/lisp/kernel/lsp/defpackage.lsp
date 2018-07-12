@@ -71,8 +71,6 @@
 	 symbol of one of the packages in the :EXPORT-FROM option,
 	 then the symbol is exported from the package being created.
 
-	 :DOCUMENTATION is an extension to DEFPACKAGE.
-
 	 :SIZE is used only in Genera and Allegro.]"
 
   (dolist (option options)
@@ -173,7 +171,7 @@
       (make-package name :use nil :nicknames nicknames))
   (let ((*package* (find-package name)))
     (when documentation
-      (setf (documentation *package* t) documentation))
+      (setf (package-documentation *package*) documentation))
     (shadow shadowed-symbol-names)
     (dolist (item shadowing-imported-from-symbol-names-list)
       (let ((package (find-package (first item))))

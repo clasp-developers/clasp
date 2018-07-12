@@ -3,7 +3,6 @@
 (export '(
           *cleavir-compile-file-hook*
           *cleavir-compile-hook*
-          *current-form-lineno*
           *compile-print*
           *compile-counter*
           *compile-duration-ns*
@@ -12,8 +11,6 @@
           *debug-compile-file*
           *generate-compile-file-load-time-values*
           *gv-current-function-name*
-          *gv-source-file-info-handle*
-          *gv-source-namestring*
           *implicit-compile-hook*
           *irbuilder*
           *llvm-context*

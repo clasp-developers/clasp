@@ -32,14 +32,6 @@
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (core:select-package :cmp))
 
-
-;;;
-;;; Until we have proper source tracking set this to the current source line number
-;;; whenever we read a new form in compile-file or evaluate the DEFUN macro.
-;;; This should give us at least some level of source location information
-;;;
-(defvar *current-form-lineno* 0)
-
 (defconstant +debug-dwarf-version+ 4)
 
 ;; bound when a new thread is created
@@ -336,18 +328,26 @@ No DIBuilder is defined for the default module")
       (t raw-name))))
 
 (export 'print-name-from-unescaped-split-name)
+;;; FIXME: Get the filename from source-pos-info also.
 (defun function-name-from-source-info (lname)
-  (cond
-    ((and *compile-file-pathname*
-          *current-form-lineno*)
-     (core:bformat nil "%s.%s^%d^TOP-COMPILE-FILE" (pathname-name *compile-file-pathname*) (pathname-type *compile-file-pathname*) *current-form-lineno*))
-    ((and *load-pathname*
-          *current-form-lineno*)
-     (core:bformat nil "%s.%s^%d^TOP-LOAD" (pathname-name *load-pathname*) (pathname-type *load-pathname*) *current-form-lineno*))
-    (*current-form-lineno*
-     (core:bformat nil "UNKNOWN^%d^TOP-UNKNOWN" *current-form-lineno*))
-    (t "UNKNOWN??LINE^TOP-UNKNOWN")))
-  
+  (if *current-source-pos-info*
+      (let ((lineno (core:source-pos-info-lineno *current-source-pos-info*)))
+        (cond
+          (*compile-file-pathname*
+           (core:bformat nil "%s.%s^%d^TOP-COMPILE-FILE"
+                         (pathname-name *compile-file-pathname*)
+                         (pathname-type *compile-file-pathname*)
+                         lineno))
+          ;; Is this even possible?
+          (*load-pathname*
+           (core:bformat nil "%s.%s^%d^TOP-LOAD"
+                         (pathname-name *load-pathname*)
+                         (pathname-type *load-pathname*)
+                         lineno))
+          (t
+           (core:bformat nil "UNKNOWN^%d^TOP-UNKNOWN" lineno))))
+      "UNKNOWN??LINE^TOP-UNKNOWN"))
+
 (defun jit-function-name (lname)
   "Depending on the type of LNAME an actual LLVM name is generated"
   ;;  (break "Check backtrace")

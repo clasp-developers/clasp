@@ -307,12 +307,12 @@ namespace gctools {
       }
     public:
       template <typename T>
-      static size_t GenerateHeaderValue() { return (GCStamp<T>::Stamp<<stamp_shift)|stamp_tag; };
+      static  tagged_stamp_t GenerateHeaderValue() { return (GCStamp<T>::Stamp<<stamp_shift)|stamp_tag; };
     public: // header readers
       inline size_t tag() const { return (size_t)(this->_value & tag_mask);};
       inline bool pad1P() const { return (this->_value & pad_mask) == pad1_tag; };
       inline GCStampEnum stamp() const {
-        return static_cast<GCStampEnum>( this->_value >> stamp_shift );
+        return static_cast<GCStampEnum>( (this->_value & stamp_mask)>>stamp_shift );
       }
     };
   public:
@@ -359,7 +359,7 @@ namespace gctools {
         this->fill_tail();
       };
 #endif
-    static GCStampEnum value_to_stamp(Fixnum value) { return (GCStampEnum)((value&stamp_mask) >> stamp_shift); };
+    static GCStampEnum value_to_stamp(Fixnum value) { return (GCStampEnum)((value&stamp_mask)>>stamp_shift); };
   public:
     size_t tag() const { return (size_t)(this->header._value & tag_mask);};
 #ifdef DEBUG_GUARD
@@ -602,19 +602,20 @@ namespace gctools {
 
   extern void monitorAllocation(stamp_t k, size_t sz);
   extern uint64_t globalBytesAllocated;
-
-#if defined(TRACK_ALLOCATIONS) && defined(DEBUG_SLOW)
+  extern void count_allocation(const stamp_t k);
   inline void monitor_allocation(const stamp_t k, size_t sz) {
+#ifdef DEBUG_COUNT_ALLOCATIONS
+    gctools::count_allocation(k);
+#endif
+#if defined(TRACK_ALLOCATIONS) && defined(DEBUG_SLOW)
     globalBytesAllocated += sz;
 #ifdef GC_MONITOR_ALLOCATIONS
     if ( global_monitorAllocations.on ) {
       monitorAllocation(k,sz);
     }
 #endif
-  }
-#else
-  inline void monitor_allocation(const stamp_t k, size_t sz) {};
 #endif
+  }
 
 };
 
@@ -852,15 +853,39 @@ namespace gctools {
         TODO: get GC_add_roots to work
    */
   struct GCRootsInModule {
+    static size_t const DefaultCapacity = 256;
     void* _boehm_shadow_memory;
     void* _module_memory;
     size_t _num_entries;
+    size_t _capacity;
 
     GCRootsInModule(void* shadow_mem, void* module_mem, size_t num_entries) {
       this->_boehm_shadow_memory = shadow_mem;
       this->_module_memory = module_mem;
       this->_num_entries = num_entries;
+      this->_capacity = num_entries;
     }
+    GCRootsInModule(size_t capacity = DefaultCapacity) {
+#ifdef USE_BOEHM
+      core::T_O** shadow_mem = reinterpret_cast<core::T_O**>(boehm_create_shadow_table(capacity));
+      core::T_O** module_mem = shadow_mem;
+#endif
+#ifdef USE_MPS
+      core::T_O** shadow_mem = reinterpret_cast<core::T_O**>(NULL);
+      core::T_O** module_mem = reinterpret_cast<core::T_O**>(malloc(sizeof(core::T_O*)*capacity));
+#endif
+      this->_boehm_shadow_memory = shadow_mem;
+      this->_module_memory = module_mem;
+      this->_num_entries = 0;
+      this->_capacity = capacity;
+      memset(module_mem, 0, sizeof(core::T_O*)*capacity);
+#ifdef USE_MPS
+  // MPS registers the roots with the GC and doesn't need a shadow table
+      mps_register_roots(reinterpret_cast<void*>(module_mem),capacity);
+#endif
+    }
+    size_t remainingCapacity() { return this->_capacity - this->_num_entries;};
+    size_t push_back(Tagged val);
     Tagged set(size_t index, Tagged val);
     Tagged get(size_t index);
     void* address(size_t index) {

@@ -11,22 +11,6 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
-;;; Source database
-
-(defparameter *active-compilation-source-database* nil)
-(defun do-one-source-database (closure)
-  (if (null *active-compilation-source-database*)
-      (let ((*active-compilation-source-database* t)
-            (core:*source-database* (core:make-source-manager)))
-        (do-one-source-database closure))
-      (unwind-protect
-           (funcall closure)
-        (core:source-manager-empty core:*source-database*))))
-(defmacro with-one-source-database (&rest body)
-  `(do-one-source-database #'(lambda () ,@body)))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
 ;;; Describing top level forms (for compile-verbose)
 
 (defun describe-form (form)
@@ -168,10 +152,8 @@ and the pathname of the source file - this will also be used as the module initi
 (defun bclasp-loop-read-and-compile-file-forms (source-sin environment)
   (let ((eof-value (gensym)))
     (loop
-      (let ((eof (peek-char t source-sin nil eof-value)))
-        (unless (eq eof eof-value)
-          (let ((pos (core:input-stream-source-pos-info source-sin)))
-            (setq *current-form-lineno* (core:source-file-pos-lineno pos)))))
+      ;; Required to update the source pos info. FIXME!?
+      (peek-char t source-sin nil)
       ;; FIXME: if :environment is provided we should probably use a different read somehow
       (let ((core:*current-source-pos-info* (core:input-stream-source-pos-info source-sin))
             (form (read source-sin nil eof-value)))
@@ -194,7 +176,7 @@ and the pathname of the source file - this will also be used as the module initi
                                  compile-file-hook
                                  type
                                  output-type
-                                 source-debug-namestring
+                                 source-debug-pathname
                                  (source-debug-offset 0)
                                  (print *compile-print*)
                                  (verbose *compile-verbose*)
@@ -206,7 +188,7 @@ and the pathname of the source file - this will also be used as the module initi
 - output-path :: A pathname.
 - compile-file-hook :: A function that will do the compile-file
 - type :: :kernel or :user (I'm not sure this is useful anymore)
-- source-debug-namestring :: A namestring.
+- source-debug-pathname :: A pathname.
 - source-debug-offset :: An integer.
 - environment :: Arbitrary, passed only to hook
 Compile a lisp source file into an LLVM module."
@@ -230,43 +212,35 @@ Compile a lisp source file into an LLVM module."
     (with-open-stream (sin source-sin)
       ;; If a truename is provided then spoof the file-system to treat input-pathname
       ;; as source-truename with the given offset
-      (when source-debug-namestring
-	(core:source-file-info (namestring input-pathname) source-debug-namestring source-debug-offset nil))
+      (when source-debug-pathname
+	(core:source-file-info (namestring input-pathname) source-debug-pathname source-debug-offset nil))
       (when *compile-verbose*
 	(bformat t "; Compiling file: %s%N" (namestring input-pathname)))
-      (with-one-source-database
-	  (cmp-log "About to start with-compilation-unit%N")
-        (with-compilation-unit ()
-          (let* ((*compile-file-pathname* (pathname (merge-pathnames given-input-pathname)))
-                 (*compile-file-truename* (translate-logical-pathname *compile-file-pathname*)))
-            (with-module (:module module
-                          :source-namestring (namestring source-location)
-                          :source-debug-namestring source-debug-namestring
-                          :source-debug-offset source-debug-offset
-                          :optimize (when optimize #'optimize-module-for-compile-file)
-                          :optimize-level optimize-level)
+      (cmp-log "About to start with-compilation-unit%N")
+      (with-compilation-unit ()
+        (let* ((*compile-file-pathname* (pathname (merge-pathnames given-input-pathname)))
+               (*compile-file-truename* (translate-logical-pathname *compile-file-pathname*)))
+          (with-module (:module module
+                        :optimize (when optimize #'optimize-module-for-compile-file)
+                        :optimize-level optimize-level)
+            (with-source-pathnames (:source-pathname *compile-file-truename* ;(namestring source-location)
+                                    :source-debug-pathname source-debug-pathname
+                                    :source-debug-offset source-debug-offset)
               (with-debug-info-generator (:module *the-module*
                                           :pathname *compile-file-truename*)
                 (or *the-module* (error "*the-module* is NIL"))
                 (with-make-new-run-all (run-all-function)
-                  (with-run-all-body-codegen ;;(result)
-                      (irc-intrinsic "ltvc_assign_source_file_info_handle"
-                                     (irc-constant-string-ptr *gv-source-namestring*)
-                                     (irc-constant-string-ptr *gv-source-debug-namestring*)
-                                     (jit-constant-i64 *source-debug-offset*)
-                                     (jit-constant-i32 (if *source-debug-use-lineno* 1 0))
-                                     *gv-source-file-info-handle*))
                   (with-literal-table
                       (loop-read-and-compile-file-forms source-sin environment compile-file-hook))
-                  (make-boot-function-global-variable *the-module* run-all-function)))
-              (cmp-log "About to verify the module%N")
-              (cmp-log-dump-module *the-module*)
-              (irc-verify-module-safe *the-module*)
-              (quick-module-dump *the-module* "preoptimize")
-              ;; ALWAYS link the builtins in, inline them and then remove them.
-              (link-inline-remove-builtins *the-module*))
-            (quick-module-dump module "postoptimize")
-            module))))))
+                  (make-boot-function-global-variable *the-module* run-all-function))))
+            (cmp-log "About to verify the module%N")
+            (cmp-log-dump-module *the-module*)
+            (irc-verify-module-safe *the-module*)
+            (quick-module-dump *the-module* "preoptimize")
+            ;; ALWAYS link the builtins in, inline them and then remove them.
+            (link-inline-remove-builtins *the-module*))
+          (quick-module-dump module "postoptimize")
+          module)))))
 
 (defun compile-file (input-file
                      &key
@@ -278,9 +252,9 @@ Compile a lisp source file into an LLVM module."
                        (system-p nil system-p-p)
                        (external-format :default)
                        ;; If we are spoofing the source-file system to treat given-input-name
-                       ;; as a part of another file then use source-truename to provide the
+                       ;; as a part of another file then use source-debug-pathname to provide the
                        ;; truename of the file we want to mimic
-                       source-debug-namestring
+                       source-debug-pathname
                        ;; This is the offset we want to spoof
                        (source-debug-offset 0)
                        ;; output-type can be (or :fasl :bitcode :object)
@@ -298,13 +272,12 @@ Compile a lisp source file into an LLVM module."
     ;; Do the different kind of compile-file here
     (let* ((*compile-print* print)
            (*compile-verbose* verbose)
-           (*current-form-lineno* 0)
            (output-path (compile-file-pathname input-file :output-file output-file :output-type output-type ))
            (*compile-file-output-pathname* output-path)
            (module (compile-file-to-module input-file
                                            :type type
                                            :output-type output-type
-                                           :source-debug-namestring source-debug-namestring
+                                           :source-debug-pathname source-debug-pathname
                                            :source-debug-offset source-debug-offset
                                            :compile-file-hook *cleavir-compile-file-hook*
                                            :environment environment

@@ -346,11 +346,8 @@ mps_addr_t obj_skip(mps_addr_t client) {
   size_t size = 0;
   const gctools::Header_s& header = *reinterpret_cast<const gctools::Header_s *>(ClientPtrToBasePtr(client));
   const Header_s::Value& header_value = header.header;
-  size_t tag = header_value.tag();
+  tagged_stamp_t tag = header_value.tag();
   switch (tag) {
-  case gctools::Header_s::invalid_tag: {
-    throw_hard_error_bad_client((void*)client);
-  }
   case gctools::Header_s::stamp_tag: {
 #ifdef DEBUG_VALIDATE_GUARD
     header->validate();
@@ -401,6 +398,9 @@ mps_addr_t obj_skip(mps_addr_t client) {
     }
     break;
   }
+  case gctools::Header_s::invalid_tag: {
+    throw_hard_error_bad_client((void*)client);
+  }
   }
   return client;
 }
@@ -420,11 +420,8 @@ GC_RESULT obj_scan(mps_ss_t ss, mps_addr_t client, mps_addr_t limit) {
       // The client must have a valid header
       const gctools::Header_s& header = *reinterpret_cast<const gctools::Header_s *>(ClientPtrToBasePtr(client));
       const Header_s::Value& header_value = header.header;
-      size_t tag = header_value.tag();
+      tagged_stamp_t tag = header_value.tag();
       switch (tag) {
-      case gctools::Header_s::invalid_tag: {
-        throw_hard_error_bad_client((void*)client);
-      }
       case gctools::Header_s::stamp_tag: {
 #ifdef DEBUG_VALIDATE_GUARD
         header->validate();
@@ -477,7 +474,7 @@ GC_RESULT obj_scan(mps_ss_t ss, mps_addr_t client, mps_addr_t limit) {
             }
           }
         }
-      STAMP_CONTINUE:
+        STAMP_CONTINUE:
         client = (mps_addr_t)((char*)client + AlignUp(size + sizeof(Header_s)) + header.tail_size());
 #ifdef DEBUG_MPS_SIZE
         {
@@ -522,6 +519,9 @@ GC_RESULT obj_scan(mps_ss_t ss, mps_addr_t client, mps_addr_t limit) {
         }
 #endif
         break;
+      }
+      case gctools::Header_s::invalid_tag: {
+        throw_hard_error_bad_client((void*)client);
       }
       }
     }
@@ -704,7 +704,8 @@ NOINLINE void set_one_static_class_Header() {
 template <class TheClass>
 NOINLINE  gc::smart_ptr<core::Instance_O> allocate_one_metaclass(Fixnum theStamp, core::Symbol_sp classSymbol, core::Instance_sp metaClass)
 {
-  auto cb = gctools::GC<TheClass>::allocate();
+  core::FunctionDescription* fdesc = core::makeFunctionDescription(kw::_sym_create);
+  auto cb = gctools::GC<TheClass>::allocate(fdesc);
   gc::smart_ptr<core::Instance_O> class_val = core::Instance_O::createClassUncollectable(theStamp,metaClass,REF_CLASS_NUMBER_OF_SLOTS_IN_STANDARD_CLASS,cb);
   class_val->__setup_stage1_with_sharedPtr_lisp_sid(class_val,classSymbol);
 //  reg::lisp_associateClassIdWithClassSymbol(reg::registered_class<TheClass>::id,TheClass::static_classSymbol());
@@ -735,13 +736,15 @@ struct TempClass {
 };
 
 
-std::map<std::string,size_t> _global_stamp_names;
+std::map<std::string,size_t> global_stamp_name_map;
+std::vector<std::string> global_stamp_names;
 size_t _global_last_stamp = 0;
 
 void register_stamp_name(const std::string& stamp_name, size_t stamp_num) {
-  _global_stamp_names[stamp_name] = stamp_num;
-  if (stamp_num>_global_last_stamp) {
-    _global_last_stamp = stamp_num;
+  global_stamp_name_map[stamp_name] = stamp_num;
+  if (stamp_num>=global_stamp_names.size()) {
+    global_stamp_names.resize(stamp_num+1,"");
+    global_stamp_names[stamp_num] = stamp_name;
   }
 }
 

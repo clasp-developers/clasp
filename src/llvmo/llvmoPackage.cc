@@ -239,7 +239,8 @@ CL_DEFUN core::T_sp llvm_sys__cxxDataStructuresInfo() {
   ENTRY(list, "CLASS-REP-STAMP", make_fixnum(global_TheClassRep_stamp));
   ENTRY(list, "FIXNUM-STAMP", make_fixnum(gctools::STAMP_FIXNUM));
   ENTRY(list, "FIXNUM-SHIFT", make_fixnum(gctools::fixnum_shift));
-  ENTRY(list, "STAMP-SHIFT", make_fixnum(gctools::Header_s::stamp_shift));
+//  ENTRY(list, "STAMP-SHIFT", make_fixnum(gctools::Header_s::stamp_shift));
+  ENTRY(list, "STAMP-MASK", make_fixnum(gctools::Header_s::stamp_mask));
 #if 0
   ENTRY(list, "STAMP-IN-RACK-MASK", make_fixnum(gctools::Header_s::stamp_in_rack_mask));
   ENTRY(list, "STAMP-NEEDS-CALL-MASK", make_fixnum(gctools::Header_s::stamp_needs_call_mask));

@@ -146,7 +146,6 @@ bclasp-compile-form
 irc-intrinsic
 irc-renv
 jit-constant-unique-string-ptr
-*gv-source-file-info-handle*
 *load-time-value-holder-global-var*
 *cleavir-compile-hook*
 *cleavir-compile-file-hook*
@@ -355,7 +354,6 @@ cmp-log
 irc-intrinsic
 irc-renv
 jit-constant-unique-string-ptr
-*gv-source-file-info-handle*
 *load-time-value-holder-global-var*
 *cleavir-compile-hook*
 *cleavir-compile-file-hook*

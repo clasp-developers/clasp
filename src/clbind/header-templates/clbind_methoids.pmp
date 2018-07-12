@@ -41,7 +41,7 @@ $for isConst [[
               Type mptr;
               public:
               enum { NumParams = $numArgs };
-              IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure_O(entry_point,name), mptr(ptr) {};
+              IndirectVariadicMethoid(core::FunctionDescription* fdesc, Type ptr) : core::BuiltinClosure_O(entry_point,fdesc), mptr(ptr) {};
               virtual size_t templatedSizeof() const { return sizeof(*this);};
 
               static inline LCC_RETURN LISP_CALLING_CONVENTION()
