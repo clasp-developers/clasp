@@ -212,9 +212,9 @@ String_sp stringDesignator(T_sp obj) {
     return cl__symbol_name(sym);
   } else if (Character_sp chr = obj.asOrNull<Character_O>()) {
     if (clasp_base_char_p(chr)) {
-      return SimpleBaseString_O::make(1,chr.unsafe_character());
+      return SimpleBaseString_O::make(1,chr.unsafe_character(),true);
     }
-    return SimpleCharacterString_O::make(1,chr.unsafe_character());
+    return SimpleCharacterString_O::make(1,chr.unsafe_character(),true);
   }
   TYPE_ERROR(obj, Cons_O::createList(cl::_sym_or, cl::_sym_string, cl::_sym_Symbol_O, cl::_sym_character));
 }
