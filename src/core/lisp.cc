@@ -2114,11 +2114,11 @@ CL_DOCSTRING("invokeInternalDebugger");
     LispDebugger debugger;
     debugger.invoke();
   } else {
-    _lisp->print(BF("%s:%d core__invoke_internal_debugger --> %s") % __FILE__ % __LINE__ % _rep_(condition).c_str());
+    BFORMAT_T(BF("%s:%d core__invoke_internal_debugger --> %s") % __FILE__ % __LINE__ % _rep_(condition).c_str());
     LispDebugger debugger(condition);
     debugger.invoke();
   }
-  printf("%s:%d Unreachable\n", __FILE__, __LINE__);
+  printf("%s:%d Cannot continue\n", __FILE__, __LINE__);
   abort();
 };
 
@@ -2384,7 +2384,7 @@ void Lisp_O::dump_apropos(const char *part) const {
 void Lisp_O::dump_backtrace(int numcol) {
   _OF();
   string bt = backtrace_as_string();
-  _lisp->print(BF("%s") % bt);
+  BFORMAT_T(BF("%s") % bt);
 }
 
 

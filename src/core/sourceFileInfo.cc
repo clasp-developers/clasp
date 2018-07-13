@@ -31,6 +31,7 @@ THE SOFTWARE.
 #include <clasp/core/fileSystem.h>
 #include <clasp/core/numbers.h>
 #include <clasp/core/array.h>
+#include <clasp/core/bformat.h>
 #include <clasp/core/lispStream.h>
 #include <clasp/core/hashTableEq.h>
 #include <clasp/core/pathname.h>
