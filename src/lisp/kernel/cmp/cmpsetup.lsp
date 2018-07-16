@@ -106,6 +106,8 @@ Options are :tagbody :go :all :eh-landing-pads
   (defmacro cmp-log (fmt &rest args ) nil)
   (defun is-debug-compiler-on () nil))
 
+(defvar *suppress-llvm-output* nil)
+
 #+optimize-bclasp
 (progn
   (defvar *tagbody-frame-info*)
