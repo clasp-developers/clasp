@@ -118,6 +118,10 @@ struct Token {
 
 
 
+SYMBOL_EXPORT_SC_(ClPkg, STARread_suppressSTAR);
+
+
+
 // -----------------------------------------------------------------
 // -----------
 

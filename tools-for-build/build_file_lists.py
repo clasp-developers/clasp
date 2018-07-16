@@ -5,7 +5,6 @@ from cleavir_file_list import cleavir_file_list
 SRC_CORE_FILES = \
     [
         'dummy',
-        'clcenv',
         'mpPackage',
         'nativeVector',
         'environment',
@@ -112,7 +111,7 @@ SRC_CORE_FILES = \
         'designators',
         'sequence',
         'loadTimeValues',
-        'reader',
+#        'reader',
         'lightProfiler',
         'fileSystem',
         'intArray',

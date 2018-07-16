@@ -58,7 +58,7 @@ THE SOFTWARE.
 #include <clasp/core/genericFunction.h>
 #include <clasp/core/pointer.h>
 #include <clasp/core/symbolTable.h>
-#include <clasp/core/clcenv.h>
+//#include <clasp/core/clcenv.h>
 #include <clasp/core/null.h>
 //#include "debugger.h"
 #include <clasp/core/ql.h>
@@ -614,6 +614,7 @@ CL_DEFUN T_sp cl__macro_function(Symbol_sp symbol, T_sp env) {
     func = af_interpreter_lookup_macro(symbol, env);
   } else if (Environment_sp eenv = env.asOrNull<Environment_O>()) {
     func = af_interpreter_lookup_macro(symbol, eenv);
+#if 0    
   } else if (clcenv::Entry_sp cenv = env.asOrNull<clcenv::Entry_O>()) {
     clcenv::Info_sp info = clcenv::function_info(cenv,symbol);
     if ( clcenv::LocalMacroInfo_sp lm = info.asOrNull<clcenv::LocalMacroInfo_O>() ) {
@@ -621,6 +622,7 @@ CL_DEFUN T_sp cl__macro_function(Symbol_sp symbol, T_sp env) {
     } else if (clcenv::GlobalMacroInfo_sp gm = info.asOrNull<clcenv::GlobalMacroInfo_O>() ) {
       func = gm->_Expander;
     }
+#endif
   } else {
     if (cleavirEnv::_sym_macroFunction->fboundp()) {
       func = eval::funcall(cleavirEnv::_sym_macroFunction, symbol, env);

@@ -123,7 +123,7 @@ typedef bool _Bool;
 #include <clasp/core/lambdaListHandler.h>
 #include <clasp/core/package.h>
 #include <clasp/core/character.h>
-#include <clasp/core/reader.h>
+//#include <clasp/core/reader.h>
 //#include <clasp/core/regex.h>
 #include <clasp/core/array.h>
 #include <clasp/core/readtable.h>
@@ -145,7 +145,7 @@ typedef bool _Bool;
 #include <clasp/gctools/gc_boot.h>
 
 //#include <clasp/core/clc.h>
-#include <clasp/core/clcenv.h>
+//#include <clasp/core/clcenv.h>
 
 #include <clasp/clbind/clbind.h>
 

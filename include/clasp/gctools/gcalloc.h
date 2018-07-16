@@ -617,7 +617,7 @@ namespace gctools {
       GCObjectInitializer<OT, /*gctools::*/ GCInfo<OT>::NeedsInitialization>::initializeIfNeeded(sp);
       GCObjectFinalizer<OT, /*gctools::*/ GCInfo<OT>::NeedsFinalization>::finalizeIfNeeded(sp);
     //            printf("%s:%d About to return allocate result ptr@%p\n", __FILE__, __LINE__, sp.px_ref());
-      handle_all_queued_interrupts(my_thread); }
+      handle_all_queued_interrupts(my_thread);
       return sp;
 #endif
 #ifdef USE_MPS
