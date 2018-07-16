@@ -751,7 +751,12 @@ void register_stamp_name(const std::string& stamp_name, size_t stamp_num) {
 void define_builtin_cxx_classes() {
 #ifndef SCRAPING
  #define GC_ENUM_NAMES
-  #include INIT_CLASSES_INC_H
+  #ifdef USE_BOEHM
+   #include INIT_CLASSES_INC_H
+  #endif
+  #ifdef USE_MPS
+   #include CLASP_GC_FILENAME
+  #endif
  #undef GC_ENUM_NAMES
 #endif
 }
