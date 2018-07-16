@@ -175,6 +175,7 @@ SYMBOL_EXPORT_SC_(CorePkg,cxx_method_source_location);
 SYMBOL_EXPORT_SC_(CompPkg, STARllvm_contextSTAR);
 SYMBOL_EXPORT_SC_(CompPkg, STARdebug_jitSTAR );
 SYMBOL_EXPORT_SC_(CompPkg, STARload_time_value_holder_nameSTAR);
+SYMBOL_EXPORT_SC_(CompPkg, STARoptimization_levelSTAR);
 SYMBOL_EXPORT_SC_(CorePkg,c_local);
 SYMBOL_EXPORT_SC_(CorePkg,_PLUS_known_typep_predicates_PLUS_);
 SYMBOL_EXPORT_SC_(CorePkg,_PLUS_class_name_to_lisp_name_PLUS_);
@@ -1173,6 +1174,7 @@ void CoreExposer_O::define_essential_globals(Lisp_sp lisp) {
   _sym_STARdebug_fastgfSTAR->defparameter(_Nil<core::T_O>());
   _sym_STARdebug_dispatchSTAR->defparameter(_Nil<core::T_O>());
   _sym_STARdebug_valuesSTAR->defparameter(_Nil<core::T_O>());
+  comp::_sym_STARoptimization_levelSTAR->defparameter(core::make_fixnum(3));
   _sym_STARbits_in_bit_array_wordSTAR->defparameter(core::clasp_make_fixnum(BIT_ARRAY_BYTE_SIZE));
   _sym_STARreader_generate_cstSTAR->defparameter(_Nil<core::T_O>());
   _sym_STARreader_cst_resultSTAR->defparameter(_Nil<core::T_O>());

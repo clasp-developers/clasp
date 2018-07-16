@@ -467,17 +467,11 @@ The passed module is modified as a side-effect."
       *thread-local-jit-engine*
       (setf *thread-local-jit-engine* (make-cxx-object 'llvm-sys:clasp-jit))))
 
-(defvar *optimizations-on* t)
-(defvar *optimization-level* 3)
 (defvar *size-level* 1)
-
-(defun foobly-file ()
-  #+(or)(when (and *optimizations-on* module)
-          #+(or) 1))
 
 (defun optimize-module-for-compile-file (module &optional (optimize-level *optimization-level*) (size-level *size-level*))
   (declare (type (or null llvm-sys:module) module))
-  (when (and *optimizations-on* module)
+  (when (> *optimization-level* 0)
     (quick-module-dump module "in-optimize-module-for-compile-file-after-link-builtins")
     (let* ((pass-manager-builder (llvm-sys:make-pass-manager-builder))
            (mpm (llvm-sys:make-pass-manager))
@@ -503,7 +497,7 @@ The passed module is modified as a side-effect."
 #+(or)
 (defun optimize-module-for-compile (module &optional (optimize-level *optimization-level*) (size-level *size-level*))
   (declare (type (or null llvm-sys:module) module))
-  (when (and *optimizations-on* module)
+  (when (> *optimization-level* 0)
     #++(let ((call-sites (call-sites-to-always-inline module)))
       (bformat t "Call-sites -> %s%N" call-sites))
     (let* ((pass-manager-builder (llvm-sys:make-pass-manager-builder))
@@ -536,17 +530,39 @@ The passed module is modified as a side-effect."
             (setf inline-functions (cons f inline-functions)))))
     inline-functions))
 
+(defun do-track-llvm-time (closure)
+  "Run the closure in and keep track of the time, adding it to this threads accumulated llvm time"
+  (let ((start-llvm-time (get-internal-run-time)))
+    (unwind-protect
+         (funcall closure)
+      (let ((llvm-time (/ (- (get-internal-run-time) start-llvm-time) (float internal-time-units-per-second))))
+        (llvm-sys:accumulate-llvm-usage-seconds llvm-time)))))
+
+(si::fset 'with-track-llvm-time
+	   #'(lambda (args env)
+               (declare (core:lambda-name with-track-llvm-time))
+               (let ((code (cdr args)))
+                 `(do-track-llvm-time
+                      (function
+                       (lambda ()
+                        ,@code)))))
+	  t)
 
 
 (defun link-inline-remove-builtins (module)
-  (link-builtins-module module)
-  (optimize-module-for-compile-file module)
-  (llvm-sys:remove-always-inline-functions module))
+  (when (>= *optimization-level* 2)
+    (with-track-llvm-time
+        (link-builtins-module module)
+      (optimize-module-for-compile-file module)
+      (llvm-sys:remove-always-inline-functions module))))
+
 
 (defun link-inline-remove-fastgf (module)
-  (link-fastgf-module module)
-  (optimize-module-for-compile-file module)
-  (llvm-sys:remove-always-inline-functions module))
+  (when (>= *optimization-level* 2)
+    (with-track-llvm-time
+        (link-fastgf-module module)
+      (optimize-module-for-compile-file module)
+      (llvm-sys:remove-always-inline-functions module))))
 
 (defun switch-always-inline-to-inline (module)
   (let ((functions (llvm-sys:module-get-function-list module))
@@ -625,16 +641,14 @@ The passed module is modified as a side-effect."
       (let ((jit-engine (jit-engine))
             (repl-name (llvm-sys:get-name main-fn))
             (startup-name (llvm-sys:get-name startup-fn))
-            (shutdown-name (llvm-sys:get-name shutdown-fn))
-            (start-llvm-time (get-internal-run-time)))
-        (unwind-protect
-             (progn
-               (mp:lock *jit-lock* t)
-               (let ((handle (llvm-sys:clasp-jit-add-module jit-engine module)))
-                 (llvm-sys:jit-finalize-repl-function jit-engine handle repl-name startup-name shutdown-name literals-list)))
-          (let ((llvm-time (/ (- (get-internal-run-time) start-llvm-time) (float internal-time-units-per-second))))
-            (llvm-sys:accumulate-llvm-usage-seconds llvm-time)
-            (mp:unlock *jit-lock*))))))
+            (shutdown-name (llvm-sys:get-name shutdown-fn)))
+        (with-track-llvm-time
+            (unwind-protect
+                 (progn
+                   (mp:lock *jit-lock* t)
+                   (let ((handle (llvm-sys:clasp-jit-add-module jit-engine module)))
+                     (llvm-sys:jit-finalize-repl-function jit-engine handle repl-name startup-name shutdown-name literals-list)))
+              (mp:unlock *jit-lock*))))))
 
   (defun jit-add-module-return-dispatch-function (original-module dispatch-fn startup-fn shutdown-fn literals-list)
     (jit-add-module-return-function original-module dispatch-fn startup-fn shutdown-fn literals-list :dispatch))
