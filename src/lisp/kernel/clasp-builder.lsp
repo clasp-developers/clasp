@@ -6,6 +6,16 @@
 
 (defparameter *number-of-jobs* 1)
 
+#+(not bclasp cclasp)
+(core:fset 'cmp::with-compiler-timer
+           (let ((body (gensym)))
+             (core:bformat t "body = %s%N" body)
+             #'(lambda (whole env)
+                 (let ((body (cddr whole)))
+                   `(progn
+                      ,@body))))
+           t)
+
 (defun strip-root (pn-dir)
   "Remove the SOURCE-DIR: part of the path in l and then
 search for the string 'src', or 'generated' and return the rest of the list that starts with that"
@@ -207,22 +217,61 @@ Return files."
         (cmp::optimize-module-for-compile m))
       (llvm-sys:load-module m))))
 
+(defun interpreter-iload (entry)
+  (let* ((filename (entry-filename entry))
+         (pathname (probe-file (build-pathname filename :lisp)))
+         (name (namestring pathname)))
+    (if cmp:*implicit-compile-hook*
+        (bformat t "Loading/compiling source: %s%N" (namestring name))
+        (bformat t "Loading/interpreting source: %s%N" (namestring name)))
+    (cmp::with-compiler-timer (:message "Compiler" :verbose t)
+     (load pathname))))
+
+(defun iload (entry &key load-bitcode )
+  #+dbg-print(bformat t "DBG-PRINT iload fn: %s%N" fn)
+  (let* ((fn (entry-filename entry))
+         (lsp-path (build-pathname fn))
+         (bc-path (build-pathname fn :bitcode))
+         (load-bc (if (not (probe-file lsp-path))
+                      t
+                      (if (not (probe-file bc-path))
+                          nil
+                          (if load-bitcode
+                              t
+                              (let ((bc-newer (> (file-write-date bc-path) (file-write-date lsp-path))))
+                                bc-newer))))))
+    (if load-bc
+        (progn
+          (bformat t "Loading bitcode file: %s%N" bc-path)
+          (cmp::with-compiler-timer (:message "Loaded bitcode" :verbose t)
+            (cmp:load-bitcode bc-path)))
+        (if (probe-file lsp-path)
+            (progn
+              (if cmp:*implicit-compile-hook*
+                  (bformat t "Loading/compiling source: %s%N" lsp-path)
+                  (bformat t "Loading/interpreting source: %s%N" lsp-path))
+              (cmp::with-compiler-timer (:message "Compiler" :verbose t)
+               (load lsp-path)))
+            (bformat t "No interpreted or bitcode file for %s could be found%N" lsp-path)))))
+
 (defun load-system (files &key compile-file-load interp load-bitcode (target-backend *target-backend*) system)
   #+dbg-print(bformat t "DBG-PRINT  load-system: %s - %s%N" first-file last-file )
   (let* ((*target-backend* target-backend)
+         (*compile-verbose* t)
 	 (cur files))
     (tagbody
      top
        (if (endp cur) (go done))
-       (if (not interp)
-	   (if (bitcode-exists-and-up-to-date (car cur))
-               (iload (car cur) :load-bitcode load-bitcode)
-               (if compile-file-load
-                   (compile-file-and-load (car cur))
-                   (progn
-                     (setq load-bitcode nil)
-                     (interpreter-iload (car cur)))))
-	   (interpreter-iload (car cur)))
+       (cmp::with-compiler-timer (:message "Compiler" :verbose t)
+         (if (not interp)
+             (if (bitcode-exists-and-up-to-date (car cur))
+                 (iload (car cur) :load-bitcode load-bitcode)
+                 (if compile-file-load
+                     (compile-file-and-load (car cur))
+                     (progn
+                       (setq load-bitcode nil)
+                       (interpreter-iload (car cur)))))
+             (interpreter-iload (car cur))))
        (gctools:cleanup)
        (setq cur (cdr cur))
        (go top)
@@ -231,8 +280,7 @@ Return files."
 (defun compile-system-serial (files &key reload (output-type core:*clasp-build-mode*) parallel-jobs)
   (declare (ignore parallel-jobs))
   #+dbg-print(bformat t "DBG-PRINT compile-system files: %s%N" files)
-  (with-compilation-unit ()
-    (let* ((cur files)
+  (let* ((cur files)
            (counter 1)
            (total (length files)))
       (tagbody
@@ -242,7 +290,7 @@ Return files."
          (setq cur (cdr cur))
          (setq counter (+ 1 counter))
          (go top)
-       done))))
+       done)))
 
 
 (defun compile-system-parallel (files &key reload (output-type core:*clasp-build-mode*) (parallel-jobs *number-of-jobs*))
@@ -273,7 +321,7 @@ Return files."
                (format t "Loading ~a~%" output-path)
                (load-kernel-file output-path output-type)))
            (one-compile-kernel-file (entry counter)
-             (compile-kernel-file entry :reload reload :output-type output-type :counter counter :total-files total :silent t)))
+             (compile-kernel-file entry :reload reload :output-type output-type :counter counter :total-files total :silent t :verbose t)))  ;; Yeah silent and verbose
       (let (entry job-counter wpid status)
         (tagbody
          top
@@ -488,15 +536,14 @@ Return files."
                (pre-files (butlast (out-of-date-bitcodes #P"src/lisp/kernel/tag/start" #P"src/lisp/kernel/tag/min-start" :system system)))
                (files (out-of-date-bitcodes #P"src/lisp/kernel/tag/min-start" #P"src/lisp/kernel/tag/min-pre-epilogue" :system system))
                (files-with-epilogue (out-of-date-bitcodes #P"src/lisp/kernel/tag/start" #P"src/lisp/kernel/tag/min-end" :system system)))
-          (with-compilation-unit ()
-            (let ((cmp::*activation-frame-optimize* nil))
-              ;; It's better to compile aclasp with fewer cores because then more of the compilations
-              ;; make use of compiled code.
-              ;;  Compiling and reloading the following files will speed things up
-              (compile-system files :reload t :parallel-jobs (min *number-of-jobs* 16))
-              ;;  Just compile the following files and don't reload, they are needed to link
-              (compile-system pre-files :reload nil :parallel-jobs (min *number-of-jobs* 16))
-              (if files-with-epilogue (compile-system (output-object-pathnames #P"src/lisp/kernel/tag/min-pre-epilogue" #P"src/lisp/kernel/tag/min-end" :system system) :reload nil))))
+          (let ((cmp::*activation-frame-optimize* nil))
+            ;; It's better to compile aclasp with fewer cores because then more of the compilations
+            ;; make use of compiled code.
+            ;;  Compiling and reloading the following files will speed things up
+            (compile-system files :reload t :parallel-jobs (min *number-of-jobs* 16))
+            ;;  Just compile the following files and don't reload, they are needed to link
+            (compile-system pre-files :reload nil :parallel-jobs (min *number-of-jobs* 16))
+            (if files-with-epilogue (compile-system (output-object-pathnames #P"src/lisp/kernel/tag/min-pre-epilogue" #P"src/lisp/kernel/tag/min-end" :system system) :reload nil)))
           (let ((all-output (output-object-pathnames #P"src/lisp/kernel/tag/min-start" #P"src/lisp/kernel/tag/min-end" :system system)))
             (if (out-of-date-target output-file all-output)
                 (link-modules output-file all-output)))))))
@@ -593,7 +640,8 @@ Return files."
       ((error #'build-failure))
     (cclasp-features)
     (if clean (clean-system #P"src/lisp/kernel/tag/start" :no-prompt t :system system))
-    (let ((*target-backend* (default-target-backend)))
+    (let ((*target-backend* (default-target-backend))
+          (*trace-output* *standard-output*))
       (time
        (progn
          (unwind-protect
@@ -618,6 +666,7 @@ Return files."
 
 (eval-when (:execute)
   (bformat t "Loaded clasp-builder.lsp%N")
+  (bformat t "*features* -> %s%N" *features*)
   (if (member :clasp-builder-repl *features*)
       (progn
         (core:bformat t "Starting low-level repl%N")
