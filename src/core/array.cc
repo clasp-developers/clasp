@@ -1833,7 +1833,7 @@ CL_DEFUN T_mv cl__parse_integer(String_sp str, Fixnum start, T_sp end, uint radi
       return (Values(_Nil<T_O>(), make_fixnum(cur)));
     }
   }
-  PARSE_ERROR(SimpleBaseString_O::make("Could not parse integer from ~S"), Cons_O::create(str));
+  PARSE_ERROR(SimpleBaseString_O::make("Could not parse integer from ~S"), Cons_O::create(str,_Nil<T_O>()));
   UNREACHABLE();
 };
 

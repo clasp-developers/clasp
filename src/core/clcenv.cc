@@ -340,7 +340,7 @@ CL_DEFUN core::T_sp function_type(core::T_sp environment, Info_sp defining_info 
   } else if ( Function_sp fe = environment.asOrNull<Function_O>() ) {
     if ( LocalFunctionInfo_sp lfi = defining_info.asOrNull<LocalFunctionInfo_O>() ) {
       if ( core::cl__equal(fe->_Name,lfi->_Name) ) {
-        return core::Cons_O::create(lfi->_Type);
+        return core::Cons_O::create(lfi->_Type,_Nil<core::T_O>());
       } else {
         return function_type(fe->_Next,defining_info);
       }
@@ -783,7 +783,7 @@ CL_DEFUN Entry_sp clcenv__augment_environment_with_variable(core::T_sp variable,
     new_env = add_lexical_variable(new_env,variable,var_ast);
   }
   core::T_sp type = clcenv__declared_type(declarations);
-  if ( !(core::cl__equal(type,core::Cons_O::create(cl::_sym_and))) ) {
+  if ( !(core::cl__equal(type,core::Cons_O::create(cl::_sym_and,_Nil<core::T_O>()))) ) {
     new_env = add_variable_type(new_env,variable,type);
   }
   if ( core::cl__member(cl::_sym_dynamic_extent,declarations,cl::_sym_car->symbolFunction(),cl::_sym_eq->symbolFunction(),_Nil<core::T_O>()).notnilp()) {

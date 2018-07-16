@@ -31,6 +31,7 @@ THE SOFTWARE.
 //#define DEBUG_BOEHM_STACK 1
 
 #include <limits>
+#include <clasp/gctools/interrupt.h>
 
 #define STACK_ALIGNMENT alignof(char *)
 #define STACK_ALIGN_UP(size) \
@@ -152,10 +153,17 @@ namespace gctools {
 
 namespace gctools {
 #ifdef USE_MPS
+  extern void bad_cons_mps_reserve_error();
+
   template <typename Cons, typename... ARGS>
-    inline smart_ptr<Cons> cons_mps_allocation(mps_ap_t& allocation_point,
-                                        const char* ap_name,
-                                        ARGS &&... args) {
+#ifdef ALWAYS_INLINE_MPS_ALLOCATIONS
+  __attribute__((always_inline))
+#else
+    inline
+#endif
+    smart_ptr<Cons> cons_mps_allocation(mps_ap_t& allocation_point,
+                                               const char* ap_name,
+                                               ARGS &&... args) {
     gc::smart_ptr<Cons> tagged_obj;
     DO_DEBUG_RECURSIVE_ALLOCATIONS();
     { RAII_DISABLE_INTERRUPTS();
@@ -163,9 +171,7 @@ namespace gctools {
       Cons* cons;
       do {
         mps_res_t res = mps_reserve(&addr, allocation_point, sizeof(Cons));
-        if ( res != MPS_RES_OK ) {
-          printf("%s:%d Bad mps_reserve\n", __FILE__, __LINE__ );
-        }
+        if ( res != MPS_RES_OK ) bad_cons_mps_reserve_error();
         cons = reinterpret_cast<Cons*>(addr);
         new (cons) Cons(std::forward<ARGS>(args)...);
         tagged_obj = smart_ptr<Cons>((Tagged)tag_cons(cons));
@@ -173,14 +179,23 @@ namespace gctools {
       global_AllocationProfiler.registerAllocation(sizeof(Cons));
     }
     DEBUG_MPS_UNDERSCANNING_TESTS();
-    lisp_check_pending_interrupts(my_thread);
+    handle_all_queued_interrupts(my_thread);
+#if 0
     globalMpsMetrics.totalMemoryAllocated += sizeof(Cons);
     ++globalMpsMetrics.consAllocations;
+#endif    
     return tagged_obj;
   };
 
+  extern void bad_general_mps_reserve_error(const char* ap_name);
+  
   template <class PTR_TYPE, typename... ARGS>
-    inline PTR_TYPE do_mps_allocation_(const Header_s::Value& the_header,
+#ifdef ALWAYS_INLINE_MPS_ALLOCATIONS
+  __attribute__((always_inline))
+#else
+    inline
+#endif
+     PTR_TYPE general_mps_allocation(const Header_s::Value& the_header,
                                       size_t size,
                                       mps_ap_t& allocation_point,
                                       const char* ap_name,
@@ -188,15 +203,7 @@ namespace gctools {
     mps_addr_t addr;
     typedef typename PTR_TYPE::Type T;
     typedef typename GCHeader<T>::HeaderType HeadT;
-//    GCTOOLS_ASSERT(the_header.stamp()>=stamp_first_general);
     DO_DEBUG_RECURSIVE_ALLOCATIONS();
-    GCTOOLS_ASSERT(the_header.stamp()!=STAMP_core__General_O);
-    // BF("The kind value[%d] must be > %d - if the type being allocated is a templated type then it should have the same kind as its TemplateBase ... eg:\n"\
-      // "template <typename T>\n"\
-           // "class gctools::GCStamp<clbind::Wrapper<T, T *>> {\n"\
-    // "public:\n"\
-         // "  static gctools::GCStampEnum const Kind = gctools::GCStamp<typename clbind::Wrapper<T, T *>::TemplatedBase>::Stamp;\n"\
-              // "};") % the_header % stamp_first_general );
     PTR_TYPE tagged_obj;
     T* obj;
     size_t true_size = size;
@@ -208,9 +215,7 @@ namespace gctools {
     { RAII_DISABLE_INTERRUPTS(); 
       do {
         mps_res_t res = mps_reserve(&addr, allocation_point, true_size);
-        if ( res != MPS_RES_OK ) {
-          printf("%s:%d Bad mps_reserve\n", __FILE__, __LINE__ );
-        }
+        if ( res != MPS_RES_OK ) bad_general_mps_reserve_error(ap_name);
         header = reinterpret_cast<HeadT *>(addr);
 #ifdef DEBUG_GUARD
         memset(header,0x00,true_size);
@@ -228,7 +233,7 @@ namespace gctools {
     header->validate();
 #endif
     DEBUG_MPS_UNDERSCANNING_TESTS();
-    lisp_check_pending_interrupts(my_thread);
+    handle_all_queued_interrupts(my_thread);
     globalMpsMetrics.totalMemoryAllocated += true_size;
 #ifdef DEBUG_MPS_SIZE
     {
@@ -276,7 +281,7 @@ namespace gctools {
       } while (!mps_commit(allocation_point, addr, size));
       global_AllocationProfiler.registerAllocation(size);
     }
-    lisp_check_pending_interrupts(my_thread);
+    handle_all_queued_interrupts(my_thread);
     DEBUG_MPS_UNDERSCANNING_TESTS();
     if (!myAddress)
       throw_hard_error("Could not allocate from GCBucketAllocator<Buckets<VT,VT,WeakLinks>>");
@@ -301,7 +306,7 @@ namespace gctools {
         Header_s* base = do_boehm_uncollectable_allocation(the_header,size);
         T *obj = BasePtrToMostDerivedPtr<T>(base);
         new (obj) T(std::forward<ARGS>(args)...);
-        lisp_check_pending_interrupts(my_thread);
+        handle_all_queued_interrupts(my_thread);
         gctools::tagged_pointer<T> tagged_obj(obj);
         return tagged_obj;
 #endif
@@ -309,7 +314,7 @@ namespace gctools {
         monitor_allocation(the_header.stamp(),size);
         globalMpsMetrics.nonMovingAllocations++;
         tagged_pointer<T> tagged_obj =
-          do_mps_allocation_<tagged_pointer<T>>(the_header,
+          general_mps_allocation<tagged_pointer<T>>(the_header,
                                                size,
                                                my_thread_allocation_points._non_moving_allocation_point,
                                                "NON_MOVING_POOL",
@@ -348,6 +353,11 @@ namespace gctools {
   template <class Cons>
   struct ConsAllocator {
     template <class... ARGS>
+#ifdef ALWAYS_INLINE_MPS_ALLOCATIONS
+  __attribute__((always_inline))
+#else
+    inline
+#endif
     static smart_ptr<Cons> allocate(ARGS &&... args) {
 #ifdef USE_BOEHM
       Cons* cons;
@@ -357,7 +367,7 @@ namespace gctools {
         global_AllocationProfiler.registerAllocation(sizeof(Cons));
         new (cons) Cons(std::forward<ARGS>(args)...);
       }
-      lisp_check_pending_interrupts(my_thread);
+      handle_all_queued_interrupts(my_thread);
       return smart_ptr<Cons>((Tagged)tag_cons(cons));
 #endif
 #ifdef USE_MPS
@@ -394,7 +404,7 @@ namespace gctools {
         mps_ap_t obj_ap = my_thread_allocation_points._automatic_mostly_copying_allocation_point;
         globalMpsMetrics.movingAllocations++;
         smart_ptr<OT> sp =
-          do_mps_allocation_<smart_ptr<OT>>(the_header,size,obj_ap,"AMC",
+          general_mps_allocation<smart_ptr<OT>>(the_header,size,obj_ap,"AMC",
                                            std::forward<ARGS>(args)...);
         return sp;
 #endif
@@ -426,7 +436,7 @@ namespace gctools {
       mps_ap_t obj_ap = my_thread_allocation_points._automatic_mostly_copying_zero_rank_allocation_point;
       globalMpsMetrics.movingZeroRankAllocations++;
       smart_pointer_type sp =
-        do_mps_allocation_<smart_pointer_type>(the_header,size,obj_ap,"AMCZ",
+        general_mps_allocation<smart_pointer_type>(the_header,size,obj_ap,"AMCZ",
                                               std::forward<ARGS>(args)...);
       return sp;
 #endif
@@ -461,7 +471,7 @@ When would I ever want the GC to automatically collect objects but not move them
       mps_ap_t obj_ap = my_thread_allocation_points._non_moving_allocation_point;
       globalMpsMetrics.nonMovingAllocations++;
       smart_pointer_type sp =
-        do_mps_allocation_<smart_pointer_type>(the_header,size,obj_ap,"NON_MOVING_POOL",
+        general_mps_allocation<smart_pointer_type>(the_header,size,obj_ap,"NON_MOVING_POOL",
                                               std::forward<ARGS>(args)...);
       return sp;
 #endif
@@ -488,7 +498,7 @@ should not be managed by the GC */
       Header_s* base = do_boehm_uncollectable_allocation(the_header,size);
       OT *obj = BasePtrToMostDerivedPtr<OT>(base);
       new (obj) OT(std::forward<ARGS>(args)...);
-      lisp_check_pending_interrupts(my_thread);
+      handle_all_queued_interrupts(my_thread);
       gctools::smart_ptr<OT> sp(obj);
       return sp;
 #endif
@@ -497,7 +507,7 @@ should not be managed by the GC */
       mps_ap_t obj_ap = my_thread_allocation_points._non_moving_allocation_point;
       globalMpsMetrics.nonMovingAllocations++;
       gctools::smart_ptr<OT> sp =
-        do_mps_allocation_<gctools::smart_ptr<OT>>(the_header,size,obj_ap,"NON_MOVING_POOL",
+        general_mps_allocation<gctools::smart_ptr<OT>>(the_header,size,obj_ap,"NON_MOVING_POOL",
                                                   std::forward<ARGS>(args)...);
       return sp;
 #endif
@@ -595,7 +605,7 @@ namespace gctools {
       smart_pointer_type sp = GCObjectAppropriatePoolAllocator<OT, GCInfo<OT>::Policy>::allocate_in_appropriate_pool_kind(the_header,size,std::forward<ARGS>(args)...);
       GCObjectInitializer<OT, GCInfo<OT>::NeedsInitialization>::initializeIfNeeded(sp);
       GCObjectFinalizer<OT, GCInfo<OT>::NeedsFinalization>::finalizeIfNeeded(sp);
-      lisp_check_pending_interrupts(my_thread);
+      handle_all_queued_interrupts(my_thread);
       return sp;
 #endif
     };
@@ -607,7 +617,7 @@ namespace gctools {
       GCObjectInitializer<OT, /*gctools::*/ GCInfo<OT>::NeedsInitialization>::initializeIfNeeded(sp);
       GCObjectFinalizer<OT, /*gctools::*/ GCInfo<OT>::NeedsFinalization>::finalizeIfNeeded(sp);
     //            printf("%s:%d About to return allocate result ptr@%p\n", __FILE__, __LINE__, sp.px_ref());
-      lisp_check_pending_interrupts(my_thread);
+      handle_all_queued_interrupts(my_thread); }
       return sp;
 #endif
 #ifdef USE_MPS
@@ -615,7 +625,7 @@ namespace gctools {
       GCObjectInitializer<OT, GCInfo<OT>::NeedsInitialization>::initializeIfNeeded(sp);
       GCObjectFinalizer<OT, GCInfo<OT>::NeedsFinalization>::finalizeIfNeeded(sp);
     //            printf("%s:%d About to return allocate result ptr@%p\n", __FILE__, __LINE__, sp.px_ref());
-      lisp_check_pending_interrupts(my_thread);
+      handle_all_queued_interrupts(my_thread);
       return sp;
 #endif
     };
@@ -803,7 +813,7 @@ public:
     monitor_allocation(the_header.stamp(),size);
     Header_s* base = do_boehm_normal_allocation(the_header,size);
     container_pointer myAddress = BasePtrToMostDerivedPtr<TY>(base);
-    lisp_check_pending_interrupts(my_thread);
+    handle_all_queued_interrupts(my_thread);
     return gctools::tagged_pointer<container_type>(myAddress);
 #endif
 #ifdef USE_MPS
@@ -812,7 +822,7 @@ public:
     mps_ap_t obj_ap = my_thread_allocation_points._automatic_mostly_copying_allocation_point;
     globalMpsMetrics.movingAllocations++;
     gc::tagged_pointer<container_type> obj =
-      do_mps_allocation_<gc::tagged_pointer<container_type>>(the_header,
+      general_mps_allocation<gc::tagged_pointer<container_type>>(the_header,
                                                             size,obj_ap,"containerAMC",
                                                             num);
     return obj;
@@ -910,7 +920,7 @@ public:
     // prepend a one pointer header with a pointer to the typeinfo.name
     Header_s* base = do_boehm_normal_allocation(the_header,size);
     container_pointer myAddress = BasePtrToMostDerivedPtr<TY>(base);
-    lisp_check_pending_interrupts(my_thread);
+    handle_all_queued_interrupts(my_thread);
     return myAddress;
 #endif
 #ifdef USE_MPS
@@ -919,7 +929,7 @@ public:
     mps_ap_t obj_ap = my_thread_allocation_points._non_moving_allocation_point;
     globalMpsMetrics.nonMovingAllocations++;
     gctools::tagged_pointer<container_type> obj =
-      do_mps_allocation_<gc::tagged_pointer<container_type>>(the_header,size,obj_ap,"container_non_moving_ap",
+      general_mps_allocation<gc::tagged_pointer<container_type>>(the_header,size,obj_ap,"container_non_moving_ap",
                                                             num);
     return obj;
 #endif

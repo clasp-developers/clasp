@@ -1411,7 +1411,7 @@ T_sp lisp_ArgArrayToCons(int nargs, ArgArray args) {
   Cons_O::CdrType_sp *curP = &first;
   //        gctools::StackRootedPointerToSmartPtr<Cons_O::CdrType_O> cur(&first);
   for (int i(0); i < nargs; ++i) {
-    Cons_sp one = Cons_O::create(gctools::smart_ptr<core::T_O>((gctools::Tagged)(args[i])));
+    Cons_sp one = Cons_O::create(gctools::smart_ptr<core::T_O>((gctools::Tagged)(args[i])),_Nil<T_O>());
     *curP = one;          // cur.setPointee(one); //*cur = one;
     curP = one->cdrPtr(); // cur.setPointer(one->cdrPtr()); // cur = one->cdrPtr();
   }

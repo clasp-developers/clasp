@@ -120,7 +120,7 @@ void PASS_FUNCTION_REST(RestArgument const &restarg,
     //        gctools::StackRootedPointerToSmartPtr<Cons_O::CdrType_O> cur(&rest);
     for (int i(arg_idx), iEnd(PASS_ARGS_NUM); i < iEnd; ++i) {
       T_sp obj = PASS_NEXT_ARG(arg_idx);
-      Cons_sp one = Cons_O::create(obj);
+      Cons_sp one = Cons_O::create(obj,_Nil<T_O>());
       *curP = one;          // cur.setPointee(one);
       curP = one->cdrPtr(); // cur.setPointer(one->cdrPtr());
       ++arg_idx;

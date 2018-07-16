@@ -188,14 +188,15 @@ namespace core {
     static Cons_sp createList(T_sp o1, T_sp o2, T_sp o3, T_sp o4, T_sp o5, T_sp o6);
     static Cons_sp createList(T_sp o1, T_sp o2, T_sp o3, T_sp o4, T_sp o5, T_sp o6, T_sp o7);
     static Cons_sp createList(T_sp o1, T_sp o2, T_sp o3, T_sp o4, T_sp o5, T_sp o6, T_sp o7, T_sp o8);
-    inline static Cons_sp create(T_sp car, T_sp cdr) {
+#ifdef ALWAYS_INLINE_MPS_ALLOCATIONS
+  __attribute__((always_inline))
+#else
+    inline
+#endif
+    static Cons_sp create(T_sp car, T_sp cdr) {
       gctools::smart_ptr<Cons_O> ll = gctools::ConsAllocator<Cons_O>::allocate(car,cdr);
       return ll;
     };
-    inline static Cons_sp create(T_sp obj) {
-      return create(obj,_Nil<T_O>());
-    }
-
   public:
     inline static int car_offset() {
       Cons_O x;

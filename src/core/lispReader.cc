@@ -239,7 +239,7 @@ List_sp collect_lexemes(/*Character_sp*/ T_sp tc, T_sp sin) {
       return Cons_O::create(collect_escaped_lexemes(read_ch_or_die(sin), sin),
                             collect_lexemes(read_ch(sin), sin));
     } else if (syntax_type == kw::_sym_single_escape) {
-      return Cons_O::create(Cons_O::create(constituentCharAsFixnum(read_ch_or_die(sin))),
+      return Cons_O::create(Cons_O::create(constituentCharAsFixnum(read_ch_or_die(sin)),_Nil<T_O>()),
                             collect_lexemes(read_ch(sin), sin));
     } else if (syntax_type == kw::_sym_constituent || syntax_type == kw::_sym_non_terminating_macro) {
       return Cons_O::create(constituentCharAsFixnum(c), collect_lexemes(read_ch(sin), sin));

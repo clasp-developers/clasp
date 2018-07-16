@@ -162,7 +162,7 @@ List_sp listOfPackageDesignators(T_sp obj) {
     return res.cons();
   }
   Package_sp onePackage = packageDesignator(obj);
-  return Cons_O::create(onePackage);
+  return Cons_O::create(onePackage,_Nil<T_O>());
 }
 
 List_sp listOfSymbols(T_sp syms) {
@@ -170,7 +170,7 @@ List_sp listOfSymbols(T_sp syms) {
     return _Nil<List_V>();
   List_sp symbols;
   if (cl__symbolp(syms)) {
-    symbols = Cons_O::create(syms);
+    symbols = Cons_O::create(syms,_Nil<T_O>());
   } else {
     symbols = syms;
   }
@@ -222,10 +222,10 @@ String_sp stringDesignator(T_sp obj) {
 List_sp listOfStringDesignators(T_sp obj) {
   if (obj.consp()) {
     List_sp lobj = gc::As_unsafe<Cons_sp>(obj);
-    Cons_sp first = Cons_O::create(_Nil<T_O>());
+    Cons_sp first = Cons_O::create(_Nil<T_O>(),_Nil<T_O>());
     Cons_sp cur = first;
     for (auto ic : lobj) {
-      Cons_sp one = Cons_O::create(stringDesignator(oCar(ic)));
+      Cons_sp one = Cons_O::create(stringDesignator(oCar(ic)),_Nil<T_O>());
       cur->setCdr(one);
       cur = one;
     }
@@ -233,7 +233,7 @@ List_sp listOfStringDesignators(T_sp obj) {
   } else if (obj.nilp()) {
     return _Nil<List_V>();
   } else {
-    return Cons_O::create(stringDesignator(obj));
+    return Cons_O::create(stringDesignator(obj),_Nil<T_O>());
   }
   SIMPLE_ERROR(BF("Illegal list of string designators[%s]") % _rep_(obj));
 }
