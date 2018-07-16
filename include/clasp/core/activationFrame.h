@@ -113,19 +113,6 @@ public:
   /*! Access a function */
   Function_sp function(int idx) const { throw_hard_error("Subclass must implement function(idx)"); };
 
-#if 0
-  List_sp asCons(int start = 0) const {
-    _G();
-    Cons_sp dummy = Cons_O::create(_Nil<T_O>());
-    Cons_sp cur = dummy;
-    for (int i = start; i < (int)this->length(); i++) {
-      Cons_sp one = Cons_O::create(this->entry(i));
-      cur->setCdr(one);
-      cur = one;
-    }
-    return coerce_to_list(oCdr(dummy));
-  }
-#endif
 
 }; // ActivationFrame class
 }; // core namespace
