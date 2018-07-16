@@ -31,6 +31,7 @@ THE SOFTWARE.
 #include <clasp/core/common.h>
 #include <clasp/core/multiStringBuffer.h>
 #include <clasp/core/lisp.h>
+#include <clasp/core/bformat.h>
 #include <clasp/core/environment.h>
 #
 // last include is wrappers.h
@@ -231,10 +232,10 @@ CL_DEFMETHOD void MultiStringBuffer_O::dump() {
 LongLongInt MultiStringBuffer_O::describeMemoryUsage() {
   LongLongInt total = 0;
   uint headerMemory = (sizeof(MultiStringBlock) + sizeof(MultiStringBlock *)) * this->_Blocks.size();
-  _lisp->print(BF("MultiStringBlock storage = %d bytes") % headerMemory);
+  BFORMAT_T(BF("MultiStringBlock storage = %d bytes") % headerMemory);
   total += headerMemory;
   LongLongInt storage = MultiStringBlockSize * this->_Blocks.size();
-  _lisp->print(BF("String storage = %d bytes") % storage);
+  BFORMAT_T(BF("String storage = %d bytes") % storage);
   total += storage;
   return total;
 }

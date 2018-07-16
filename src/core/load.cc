@@ -31,6 +31,7 @@ THE SOFTWARE.
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/arguments.h>
 #include <clasp/core/array.h>
+#include <clasp/core/bformat.h>
 #include <clasp/core/lispStream.h>
 #include <clasp/core/lambdaListHandler.h>
 #include <clasp/core/primitives.h>
@@ -91,12 +92,12 @@ CL_DEFUN T_sp core__load_source(T_sp source, bool verbose, bool print, core::T_s
     if (x.unboundp())
       break;
     if (echoReplRead) {
-      _lisp->print(BF("Read: %s\n") % _rep_(x));
+      BFORMAT_T(BF("Read: %s\n") % _rep_(x));
     }
     if (x.number_of_values() > 0) {
       //                printf("%s:%d  ;; -- read- %s\n", __FILE__, __LINE__, _rep_(x).c_str() );
       if (print) {
-        _lisp->print(BF(";; -- read- %s\n") % _rep_(x));
+        BFORMAT_T(BF(";; -read- %s") % _rep_(x));
       };
       eval::funcall(core::_sym_STAReval_with_env_hookSTAR->symbolValue(), x, _Nil<T_O>());
       //                gctools::af_cleanup();
@@ -120,9 +121,7 @@ CL_DEFUN T_sp core__load_no_package_set(T_sp lsource, T_sp verbose, T_sp print, 
   T_sp msource = lsource;
   //        printf("%s:%d cl__load source= %s\n", __FILE__, __LINE__, _rep_(source).c_str());
   if (verbose.notnilp()) {
-    eval::funcall(cl::_sym_format, _lisp->_true(),
-                  SimpleBaseString_O::make("~&;;; Loading ~s~%"),
-                  lsource);
+    BFORMAT_T(BF(";;; Loading %s\n") % _rep_(lsource));
   }
 
   /* If source is a stream, read conventional lisp code from it */
