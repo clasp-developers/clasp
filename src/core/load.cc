@@ -72,9 +72,7 @@ CL_DEFUN T_sp core__load_source(T_sp source, bool verbose, bool print, core::T_s
     //    printf("%s:%d  Just created strm@%p  tagged-pointer: %p\n", __FILE__, __LINE__, &strm, strm.raw_());
     strmPointer = &(*strm);
   }
-  /* Define the source file */
-  SourceFileInfo_sp sfi = core__source_file_info(source);
-  DynamicScopeManager scope(_sym_STARcurrentSourceFileInfoSTAR, sfi);
+  DynamicScopeManager scope;
   if (source.nilp()) SIMPLE_ERROR(BF("%s was about to pass nil to pathname") % __FUNCTION__);
   Pathname_sp pathname = cl__pathname(source);
   ASSERTF(pathname.objectp(), BF("Problem getting pathname of [%s] in loadSource") % _rep_(source));
@@ -84,7 +82,6 @@ CL_DEFUN T_sp core__load_source(T_sp source, bool verbose, bool print, core::T_s
   scope.pushSpecialVariableAndSet(cl::_sym_STARloadPathnameSTAR, pathname);
   scope.pushSpecialVariableAndSet(cl::_sym_STARloadTruenameSTAR, truename);
   /* Create a temporary closure to load the source */
-  SourcePosInfo_sp spi = SourcePosInfo_O::create(sfi->fileHandle(), 0, 0, 0);
   while (true) {
     bool echoReplRead = _sym_STARechoReplReadSTAR->symbolValue().isTrue();
     //    printf("%s:%d  Pushing stream source pos for strm@%p   tagged-ptr: %p\n", __FILE__, __LINE__, &strm, strm.raw_());

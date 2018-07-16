@@ -358,9 +358,7 @@ CL_LAMBDA(name &optional verbose print external-format);
 CL_DECLARE();
 CL_DOCSTRING("load-binary");
 CL_DEFUN T_mv core__load_binary(T_sp pathDesig, T_sp verbose, T_sp print, T_sp external_format) {
-  /* Define the source file */
-  SourceFileInfo_sp sfi = core__source_file_info(pathDesig);
-  DynamicScopeManager scope(_sym_STARcurrentSourceFileInfoSTAR, sfi);
+  DynamicScopeManager scope;
   scope.pushSpecialVariableAndSet(_sym_STARcurrentSourcePosInfoSTAR, SourcePosInfo_O::create(0, 0, 0, 0));
   scope.pushSpecialVariableAndSet(cl::_sym_STARreadtableSTAR, cl::_sym_STARreadtableSTAR->symbolValue());
   scope.pushSpecialVariableAndSet(cl::_sym_STARpackageSTAR, cl::_sym_STARpackageSTAR->symbolValue());

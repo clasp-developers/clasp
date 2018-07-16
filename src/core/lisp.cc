@@ -1373,7 +1373,6 @@ void Lisp_O::parseCommandLineArguments(int argc, char *argv[], const CommandLine
 
 T_mv Lisp_O::readEvalPrint(T_sp stream, T_sp environ, bool printResults, bool prompt) {
   T_mv result = Values(_Nil<T_O>());
-  DynamicScopeManager scope(_sym_STARcurrentSourceFileInfoSTAR, core__source_file_info(stream));
   while (1) {
     try {
       if (prompt) {
