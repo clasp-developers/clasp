@@ -375,7 +375,7 @@ CL_DEFUN Function_sp core__coerce_to_function(T_sp arg) {
     T_sp head = oCar(carg);
     if (head == cl::_sym_setf) {
       Symbol_sp sym = oCadr(carg).as<Symbol_O>();
-      if (!sym->setf_fboundp()) {
+      if (!sym->fboundp_setf()) {
         SIMPLE_ERROR(BF("SETF function value for %s is unbound") % _rep_(sym));
       }
       return sym->getSetfFdefinition();
@@ -640,7 +640,7 @@ Function_sp interpreter_lookup_function_or_error(T_sp name, T_sp env) {
     T_sp head = CONS_CAR(name);
     if (head == cl::_sym_setf) {
       Symbol_sp sym = oCar(CONS_CDR(name)).template as<Symbol_O>();
-      if (sym->setf_fboundp()) {
+      if (sym->fboundp_setf()) {
         return sym->getSetfFdefinition();
       }
       SIMPLE_ERROR(BF("SETF function value for %s is unbound") % _rep_(sym));
@@ -672,7 +672,7 @@ T_sp af_interpreter_lookup_setf_function(List_sp setf_name, T_sp env) {
     if (Environment_O::clasp_findFunction(env, name, depth, index, fn, functionEnv))
       return fn;
   }
-  if (name->setf_fboundp())
+  if (name->fboundp_setf())
     return name->getSetfFdefinition();
   return _Nil<T_O>();
 };
@@ -1430,10 +1430,7 @@ Function_sp lambda(T_sp name, bool wrap_block, T_sp lambda_list, List_sp body, T
 
   List_sp code(form);
   if (wrap_block) {
-    code = Cons_O::create(Cons_O::create(cl::_sym_block,
-                                         Cons_O::create(
-                                                        core__function_block_name(name),
-                                                        code)));
+    code = Cons_O::create(Cons_O::create(cl::_sym_block, Cons_O::create(core__function_block_name(name), code)),_Nil<T_O>());
   }
   //            printf("%s:%d Creating InterpretedClosure with no source information - fix this\n", __FILE__, __LINE__ );
   T_sp spi(_Nil<T_O>());
@@ -2003,7 +2000,7 @@ void evaluateIntoActivationFrame(ActivationFrame_sp af,
 }
 
 List_sp evaluateList(List_sp args, T_sp environment) {
-  Cons_sp firstCons = Cons_O::create(_Nil<T_O>());
+  Cons_sp firstCons = Cons_O::create(_Nil<T_O>(),_Nil<T_O>());
   Cons_sp curCons = firstCons;
   if (args.nilp()) {
     LOG(BF("Arguments before evaluateList: Nil ---> returning Nil"));
@@ -2020,7 +2017,7 @@ List_sp evaluateList(List_sp args, T_sp environment) {
       T_sp result = eval::evaluate(inObj, environment);
       ASSERTNOTNULL(result);
       LOG(BF("After evaluation result = %s @ %X") % result->__repr__() % (void *)(result.get()));
-      Cons_sp outCons = Cons_O::create(result);
+      Cons_sp outCons = Cons_O::create(result,_Nil<T_O>());
       curCons->setCdr(outCons);
       curCons = outCons;
     }

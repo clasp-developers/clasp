@@ -97,7 +97,7 @@ void clasp_musleep(double dsec, bool alertable) {
  AGAIN:
   code = nanosleep(&ts, &ts);
   int old_errno = errno;
-  gctools::lisp_check_pending_interrupts(my_thread);
+  gctools::handle_all_queued_interrupts(my_thread);
   {
     if (code < 0 && old_errno == EINTR && !alertable) {
       goto AGAIN;
@@ -882,7 +882,7 @@ CL_DEFUN T_sp cl__fdefinition(T_sp functionName) {
     if (oCar(cname) == cl::_sym_setf) {
       Symbol_sp name = gc::As<Symbol_sp>(oCadr(cname));
       if (name.notnilp()) {
-        if (!name->setf_fboundp())
+        if (!name->fboundp_setf())
           ERROR_UNDEFINED_FUNCTION(functionName);
         return name->getSetfFdefinition();
       }
@@ -941,7 +941,7 @@ CL_DEFUN bool cl__fboundp(T_sp functionName) {
     if (oCar(cname) == cl::_sym_setf) {
       Symbol_sp name = gc::As<Symbol_sp>(oCadr(cname));
       if (name.notnilp())
-        return name->setf_fboundp();
+        return name->fboundp_setf();
       else
         return false;
     }
