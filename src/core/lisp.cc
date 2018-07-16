@@ -263,6 +263,7 @@ string dump_instanceClass_info(Instance_sp co, Lisp_sp prog) {
 }
 
 void Lisp_O::setupSpecialSymbols() {
+  RAII_DISABLE_INTERRUPTS();
   Null_sp symbol_nil = Null_O::create_at_boot("NIL");
   Symbol_sp symbol_unbound = Symbol_O::create_at_boot("UNBOUND");
   Symbol_sp symbol_no_thread_local_binding = Symbol_O::create_at_boot("NO-THREAD-LOCAL-BINDING");
@@ -278,6 +279,8 @@ void Lisp_O::setupSpecialSymbols() {
   symbol_no_thread_local_binding->_HomePackage = symbol_nil;
   symbol_deleted->_HomePackage = symbol_nil;
   symbol_sameAsKey->_HomePackage = symbol_nil;
+  // 
+  my_thread->_PendingInterrupts = symbol_nil;
 }
 
 void Lisp_O::finalizeSpecialSymbols() {
