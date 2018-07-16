@@ -266,9 +266,9 @@ CL_DEFUN List_sp cl__butlast(List_sp ll, Integer_sp in) {
 	  } else {
 		Cons_sp head;
 		Cons_sp tail;
-		head = tail = Cons_O::create(oCar(l));
+		head = tail = Cons_O::create(oCar(l),_Nil<T_O>());
 		while (l = oCdr(l), r = oCdr(r), (r).consp()) {
-		  Cons_sp cons = Cons_O::create(oCar(l));
+		  Cons_sp cons = Cons_O::create(oCar(l),_Nil<T_O>());
 		  tail->rplacd(cons);
 		  tail = cons;
 		}

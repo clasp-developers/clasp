@@ -9,15 +9,16 @@
 (defparameter *lambda-args-num* 0)
 
 (defmacro with-module (( &key module
-                              (optimize nil)
-                              (optimize-level :-O3)) &rest body)
+                           (optimize nil)
+                           (optimize-level *optimization-level*)
+                           dry-run) &rest body)
   `(let* ((*the-module* ,module))
      (or *the-module* (error "with-module *the-module* is NIL"))
      (multiple-value-prog1
          (with-irbuilder ((llvm-sys:make-irbuilder *llvm-context*))
            ,@body)
        (cmp-log "About to optimize-module%N")
-       (when (and ,optimize ,optimize-level) (funcall ,optimize ,module ,optimize-level )))))
+       (when (and ,optimize ,optimize-level (null ,dry-run)) (funcall ,optimize ,module ,optimize-level )))))
 
 (defmacro with-source-pathnames ((&key source-pathname
                                     source-debug-pathname

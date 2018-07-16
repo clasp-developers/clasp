@@ -26,6 +26,44 @@
 ;;;
 ;;; Compilation units
 
+(defvar *compiler-real-time*)
+(defvar *compiler-run-time*)
+(defvar *compiler-timer-protection* nil)
+
+(defun do-compiler-timer (closure &rest args &key message report-link-time verbose override)
+  (cond (override
+	 (let* ((*compiler-timer-protection* nil))
+	   (apply #'do-compiler-timer closure args)))
+	((null *compiler-timer-protection*)
+	 (let* ((*compiler-timer-protection* t)
+                (llvm-sys:*accumulated-llvm-finalization-time* 0)
+                (llvm-sys:*number-of-llvm-finalizations* 0)
+                (*compiler-real-time* (get-internal-real-time))
+                (*compiler-run-time* (get-internal-run-time))
+                (llvm-sys:*accumulated-clang-link-time* 0)
+                (llvm-sys:*number-of-clang-links* 0))
+           (multiple-value-prog1
+               (do-compiler-timer closure)
+             (let ((llvm-finalization-time llvm-sys:*accumulated-llvm-finalization-time*)
+                   (compiler-real-time (/ (- (get-internal-real-time) *compiler-real-time*) (float internal-time-units-per-second)))
+                   (compiler-run-time (/ (- (get-internal-run-time) *compiler-run-time*) (float internal-time-units-per-second)))
+                   (link-time llvm-sys:*accumulated-clang-link-time*))
+               (when verbose
+                 (let ((link-string (if report-link-time
+                                        (core:bformat nil " link(%.1f)" link-time)
+                                        "")))
+                   (core:bformat t "%s seconds real(%.1f) run(%.1f) llvm(%.1f)%s%N"
+                                 message
+                                 compiler-real-time
+                                 compiler-run-time
+                                 llvm-finalization-time
+                                 link-string)))))))
+        (t (funcall closure))))
+
+(defmacro with-compiler-timer ((&key message report-link-time verbose override) &rest body)
+  `(do-compiler-timer (lambda () (progn ,@body)) :message ,message :report-link-time ,report-link-time :verbose ,verbose))
+
+
 ;;; ------------------------------------------------------------
 ;;;
 ;;; BE VERY CAREFUL WHAT YOU DO HERE!!!
@@ -43,13 +81,14 @@
                 (*compilation-messages* nil)
                 (*global-function-defs* (make-hash-table))
                 (*global-function-refs* (make-hash-table :test #'equal)))
-	   (unwind-protect
-                (do-compilation-unit closure) ; --> result*
-             (progn
-               (dolist (action *pending-actions*)
-                 (funcall action))
-               (compilation-unit-finished *compilation-messages*))) ; --> result*
-           ))
+           (multiple-value-prog1
+               (unwind-protect
+                    (do-compilation-unit closure) ; --> result*
+                 (progn
+                   (dolist (action *pending-actions*)
+                     (funcall action))
+                   (compilation-unit-finished *compilation-messages*))) ; --> result*
+             )))
 	(t
 	 (funcall closure))))
 
@@ -166,7 +205,7 @@ and the pathname of the source file - this will also be used as the module initi
 
 (defun loop-read-and-compile-file-forms (source-sin environment compile-file-hook)
   ;; If the Cleavir compiler hook is set up then use that
-  ;; to generate code 
+  ;; to generate code
   (if compile-file-hook
       (funcall compile-file-hook source-sin environment)
       (bclasp-loop-read-and-compile-file-forms source-sin environment)))
@@ -178,11 +217,10 @@ and the pathname of the source file - this will also be used as the module initi
                                  output-type
                                  source-debug-pathname
                                  (source-debug-offset 0)
-                                 (print *compile-print*)
-                                 (verbose *compile-verbose*)
                                  environment
                                  (optimize t)
-                                 (optimize-level :|-O3|))
+                                 (optimize-level *optimization-level*)
+                                 dry-run)
   "* Arguments
 - given-input-pathname :: A pathname.
 - output-path :: A pathname.
@@ -194,8 +232,6 @@ and the pathname of the source file - this will also be used as the module initi
 Compile a lisp source file into an LLVM module."
   ;; TODO: Save read-table and package with unwind-protect
   (let* ((*package* *package*)
-         (*compile-print* print)
-         (*compile-verbose* verbose)
          (clasp-source-root (translate-logical-pathname "source-dir:"))
          (clasp-source (merge-pathnames (make-pathname :directory '(:relative :wild-inferiors) :name :wild :type :wild) clasp-source-root))
          (source-location
@@ -213,7 +249,7 @@ Compile a lisp source file into an LLVM module."
       ;; If a truename is provided then spoof the file-system to treat input-pathname
       ;; as source-truename with the given offset
       (when source-debug-pathname
-	(core:source-file-info (namestring input-pathname) source-debug-pathname source-debug-offset nil))
+        (core:source-file-info (namestring input-pathname) source-debug-pathname source-debug-offset nil))
       (when *compile-verbose*
 	(bformat t "; Compiling file: %s%N" (namestring input-pathname)))
       (cmp-log "About to start with-compilation-unit%N")
@@ -248,7 +284,7 @@ Compile a lisp source file into an LLVM module."
                        (verbose *compile-verbose*)
                        (print *compile-print*)
                        (optimize t)
-                       (optimize-level :|-O3|)
+                       (optimize-level *optimization-level*)
                        (system-p nil system-p-p)
                        (external-format :default)
                        ;; If we are spoofing the source-file system to treat given-input-name
@@ -264,6 +300,8 @@ Compile a lisp source file into an LLVM module."
                        ;; ignored by bclasp
                        ;; but passed to hook functions
                        environment
+                       ;; Use as little llvm as possible for timing
+                       dry-run
                      &aux conditions)
   "See CLHS compile-file."
   (if system-p-p (error "I don't support system-p keyword argument - use output-type"))
@@ -282,6 +320,7 @@ Compile a lisp source file into an LLVM module."
                                            :compile-file-hook *cleavir-compile-file-hook*
                                            :environment environment
                                            :optimize optimize
+<<<<<<< HEAD
                                            :optimize-level optimize-level)))
       (cond
         ((null output-path)
@@ -293,7 +332,8 @@ Compile a lisp source file into an LLVM module."
          (write-bitcode module (core:coerce-to-filename (cfp-output-file-default output-path :bitcode)))
          (with-open-file (fout output-path :direction :output)
            (let ((reloc-model (cond
-                                ((or (member :target-os-linux *features*) (member :target-os-freebsd *features*))
+                                ((or (member :target-os-linux *features*)
+                                     (member :target-os-freebsd *features*))
                                  'llvm-sys:reloc-model-pic-)
                                 (t 'llvm-sys:reloc-model-undefined))))
              (generate-obj-asm module fout :file-type 'llvm-sys:code-gen-file-type-object-file :reloc-model reloc-model))))
@@ -315,6 +355,44 @@ Compile a lisp source file into an LLVM module."
         (bformat t "conditions: %s%N" c))
       (llvm-sys:module-delete module)
       (compile-file-results output-path conditions))))
+=======
+                                           :optimize-level optimize-level
+                                           :dry-run dry-run)))
+      (with-compiler-timer (:message "Compile-file" :report-link-time t :verbose t)
+        (progn
+          (cond
+            ((null output-path)
+             (error "The output-path is nil for input filename ~a~%" input-file))
+            ((eq output-type :object)
+             (when verbose (bformat t "Writing object to %s%N" (core:coerce-to-filename output-path)))
+             (ensure-directories-exist output-path)
+             ;; Save the bitcode so we can take a look at it
+             (write-bitcode module (core:coerce-to-filename (cfp-output-file-default output-path :bitcode)))
+             (with-open-file (fout output-path :direction :output)
+               (let ((reloc-model (cond
+                                   ((or (member :target-os-linux *features*)
+                                        (member :target-os-freebsd *features*))
+                                    'llvm-sys:reloc-model-pic-)
+                                    (t 'llvm-sys:reloc-model-undefined))))
+                 (unless dry-run (generate-obj-asm module fout :file-type 'llvm-sys:code-gen-file-type-object-file :reloc-model reloc-model)))))
+            ((eq output-type :bitcode)
+             (when verbose (bformat t "Writing bitcode to %s%N" (core:coerce-to-filename output-path)))
+             (ensure-directories-exist output-path)
+             (unless dry-run (write-bitcode module (core:coerce-to-filename output-path))))
+            ((eq output-type :fasl)
+             (ensure-directories-exist output-path)
+             (let ((temp-bitcode-file (compile-file-pathname input-file :output-file output-file :output-type :bitcode)))
+               (ensure-directories-exist temp-bitcode-file)
+               (bformat t "Writing temporary bitcode file to: %s%N" temp-bitcode-file)
+               (write-bitcode module (core:coerce-to-filename temp-bitcode-file))
+               (bformat t "Writing fasl file to: %s%N" output-file)
+               (unless dry-run (llvm-link output-file :input-files (list temp-bitcode-file) :input-type :bitcode))))
+            (t ;; fasl
+             (error "Add support to file of type: ~a" output-type)))
+          (dolist (c conditions)
+            (bformat t "conditions: %s%N" c))
+          (llvm-sys:module-delete module)
+          (compile-file-results output-path conditions))))))
 
 (export 'compile-file)
 

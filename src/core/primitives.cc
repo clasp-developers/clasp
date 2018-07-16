@@ -58,7 +58,7 @@ THE SOFTWARE.
 #include <clasp/core/genericFunction.h>
 #include <clasp/core/pointer.h>
 #include <clasp/core/symbolTable.h>
-#include <clasp/core/clcenv.h>
+//#include <clasp/core/clcenv.h>
 #include <clasp/core/null.h>
 //#include "debugger.h"
 #include <clasp/core/ql.h>
@@ -97,7 +97,7 @@ void clasp_musleep(double dsec, bool alertable) {
  AGAIN:
   code = nanosleep(&ts, &ts);
   int old_errno = errno;
-  gctools::lisp_check_pending_interrupts(my_thread);
+  gctools::handle_all_queued_interrupts(my_thread);
   {
     if (code < 0 && old_errno == EINTR && !alertable) {
       goto AGAIN;
@@ -614,6 +614,7 @@ CL_DEFUN T_sp cl__macro_function(Symbol_sp symbol, T_sp env) {
     func = af_interpreter_lookup_macro(symbol, env);
   } else if (Environment_sp eenv = env.asOrNull<Environment_O>()) {
     func = af_interpreter_lookup_macro(symbol, eenv);
+#if 0    
   } else if (clcenv::Entry_sp cenv = env.asOrNull<clcenv::Entry_O>()) {
     clcenv::Info_sp info = clcenv::function_info(cenv,symbol);
     if ( clcenv::LocalMacroInfo_sp lm = info.asOrNull<clcenv::LocalMacroInfo_O>() ) {
@@ -621,6 +622,7 @@ CL_DEFUN T_sp cl__macro_function(Symbol_sp symbol, T_sp env) {
     } else if (clcenv::GlobalMacroInfo_sp gm = info.asOrNull<clcenv::GlobalMacroInfo_O>() ) {
       func = gm->_Expander;
     }
+#endif
   } else {
     if (cleavirEnv::_sym_macroFunction->fboundp()) {
       func = eval::funcall(cleavirEnv::_sym_macroFunction, symbol, env);
@@ -882,7 +884,7 @@ CL_DEFUN T_sp cl__fdefinition(T_sp functionName) {
     if (oCar(cname) == cl::_sym_setf) {
       Symbol_sp name = gc::As<Symbol_sp>(oCadr(cname));
       if (name.notnilp()) {
-        if (!name->setf_fboundp())
+        if (!name->fboundp_setf())
           ERROR_UNDEFINED_FUNCTION(functionName);
         return name->getSetfFdefinition();
       }
@@ -941,7 +943,7 @@ CL_DEFUN bool cl__fboundp(T_sp functionName) {
     if (oCar(cname) == cl::_sym_setf) {
       Symbol_sp name = gc::As<Symbol_sp>(oCadr(cname));
       if (name.notnilp())
-        return name->setf_fboundp();
+        return name->fboundp_setf();
       else
         return false;
     }

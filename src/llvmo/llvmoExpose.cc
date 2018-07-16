@@ -2576,7 +2576,7 @@ CL_DEFMETHOD core::List_sp Function_O::basic_blocks() const {
   for (llvm::Function::iterator b = this->wrappedPtr()->begin(), be = this->wrappedPtr()->end(); b != be; ++b) {
     llvm::BasicBlock& BB = *b;
     // Delete the basic block from the old function, and the list of blocks
-    result = core::Cons_O::create(translate::to_object<llvm::BasicBlock*>::convert(&BB));
+    result = core::Cons_O::create(translate::to_object<llvm::BasicBlock*>::convert(&BB),_Nil<T_O>());
   }
   return result;
 }
@@ -2867,6 +2867,7 @@ CL_DEFUN PointerType_sp PointerType_O::get(Type_sp elementType, uint addressSpac
 
 namespace llvmo {
 
+CL_LAMBDA(time)
 CL_DEFUN void llvm_sys__accumulate_llvm_usage_seconds(double time)
 {
   core::DoubleFloat_sp df = core::DoubleFloat_O::create(time);
@@ -3301,7 +3302,7 @@ ClaspJIT_O::ClaspJIT_O() : TM(EngineBuilder().selectTarget()),
 /* The following doesn't work in llvm5.0 because of a bug in the definition of NotifyLoadedFtor
 https://groups.google.com/forum/#!topic/llvm-dev/m3JjMNswgcU
 */
-#ifdef LLVM5_ORC_NOTIFIER_PATCH
+//#ifdef LLVM5_ORC_NOTIFIER_PATCH
 ,
                                        [this](llvm::orc::RTDyldObjectLinkingLayer::ObjHandleT H,
                                               const RTDyldObjectLinkingLayerBase::ObjectPtr& Obj,
@@ -3309,7 +3310,7 @@ https://groups.google.com/forum/#!topic/llvm-dev/m3JjMNswgcU
                                          this->GDBEventListener->NotifyObjectEmitted(*(Obj->getBinary()), Info);
                                          save_symbol_info(*(Obj->getBinary()), Info);
                                        }
-#endif
+//#endif
 )
                          ,
                            CompileLayer(ObjectLayer, SimpleCompiler(*TM)),
@@ -3547,56 +3548,59 @@ std::shared_ptr<llvm::Module> optimizeModule(std::shared_ptr<llvm::Module> M) {
   printf("%s:%d  Returning module\n", __FILE__, __LINE__ );
   return result;
 #else
+  if (comp::_sym_STARoptimization_levelSTAR->symbolValue().fixnump() &&
+      comp::_sym_STARoptimization_levelSTAR->symbolValue().unsafe_fixnum() >= 2) {
   // Create a function pass manager.
-  auto FPM = llvm::make_unique<llvm::legacy::FunctionPassManager>(M.get());
+    auto FPM = llvm::make_unique<llvm::legacy::FunctionPassManager>(M.get());
 
   // Add some optimizations.
-  FPM->add(createInstructionCombiningPass());
-  FPM->add(createReassociatePass());
-  FPM->add(createNewGVNPass());
-  FPM->add(createCFGSimplificationPass());
-  FPM->add(createPromoteMemoryToRegisterPass());
+    FPM->add(createInstructionCombiningPass());
+    FPM->add(createReassociatePass());
+    FPM->add(createNewGVNPass());
+    FPM->add(createCFGSimplificationPass());
+    FPM->add(createPromoteMemoryToRegisterPass());
 //  FPM->add(createFunctionInliningPass());
-  FPM->doInitialization();
+    FPM->doInitialization();
 
   // !!!! I run this after inlining again -
   // - But if I don't run it here - it crashes when I try to clone the module for disassemble
   // Run the optimizations over all functions in the module being added to the JIT.
-  for (auto &F : *M)
-    FPM->run(F);
+    for (auto &F : *M)
+      FPM->run(F);
   
-  llvm::legacy::PassManager my_passes;
-  my_passes.add(llvm::createFunctionInliningPass(4096));
-  my_passes.run(*M);
+    llvm::legacy::PassManager my_passes;
+    my_passes.add(llvm::createFunctionInliningPass(4096));
+    my_passes.run(*M);
 
     // After inlining - run the optimizations over all functions again
-  for (auto &F : *M)
-    FPM->run(F);
+    for (auto &F : *M)
+      FPM->run(F);
   
   // Silently remove llvm.used functions if they are defined
   //     I may use this to prevent functions from being removed from the bitcode
   //     by clang before we need them.
-  llvm::GlobalVariable* used = M->getGlobalVariable("llvm.used");
-  if (used) {
-    Value* init = used->getInitializer();
-    used->eraseFromParent();
-  }
+    llvm::GlobalVariable* used = M->getGlobalVariable("llvm.used");
+    if (used) {
+      Value* init = used->getInitializer();
+      used->eraseFromParent();
+    }
 
-  removeAlwaysInlineFunctions(&*M);
+    removeAlwaysInlineFunctions(&*M);
 
-  if ((!comp::_sym_STARsave_module_for_disassembleSTAR.unboundp()) &&
-      comp::_sym_STARsave_module_for_disassembleSTAR->symbolValue().notnilp()) {
+    if ((!comp::_sym_STARsave_module_for_disassembleSTAR.unboundp()) &&
+        comp::_sym_STARsave_module_for_disassembleSTAR->symbolValue().notnilp()) {
     //printf("%s:%d     About to save the module *save-module-for-disassemble*->%s\n",__FILE__, __LINE__, _rep_(comp::_sym_STARsave_module_for_disassembleSTAR->symbolValue()).c_str());
-    llvm::Module* o = &*M;
-    std::unique_ptr<llvm::Module> cm = llvm::CloneModule(o);
-    Module_sp module = core::RP_Create_wrapped<Module_O,llvm::Module*>(cm.release());
-    comp::_sym_STARsaved_module_from_clasp_jitSTAR->setf_symbolValue(module);
-  }
+      llvm::Module* o = &*M;
+      std::unique_ptr<llvm::Module> cm = llvm::CloneModule(o);
+      Module_sp module = core::RP_Create_wrapped<Module_O,llvm::Module*>(cm.release());
+      comp::_sym_STARsaved_module_from_clasp_jitSTAR->setf_symbolValue(module);
+    }
   // Check if we should dump the module for debugging
-  {
-    Module_sp module = core::RP_Create_wrapped<Module_O,llvm::Module*>(&*M);
-    core::SimpleBaseString_sp label = core::SimpleBaseString_O::make("after-optimize");
-    core::eval::funcall(comp::_sym_compile_quick_module_dump,module,label);
+    {
+      Module_sp module = core::RP_Create_wrapped<Module_O,llvm::Module*>(&*M);
+      core::SimpleBaseString_sp label = core::SimpleBaseString_O::make("after-optimize");
+      core::eval::funcall(comp::_sym_compile_quick_module_dump,module,label);
+    }
   }
   //printf("%s:%d  Done optimizeModule\n", __FILE__, __LINE__ );
   return M;

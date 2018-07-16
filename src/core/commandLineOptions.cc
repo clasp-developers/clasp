@@ -97,6 +97,11 @@ CommandLineOptions::CommandLineOptions(int argc, char *argv[])
              "export CLASP_TELEMETRY_MASK=1  #turn on telemetry for (1=gc,2=stack)\n"
              "export CLASP_TELEMETRY_FILE=/tmp/clasp.tel # (file to write telemetry)\n"
              "export CLASP_FEATURES=clasp-builder-repl  # Set *features* (separate multiple features with spaces)\n"
+             "export CLASP_MEMORY_PROFILE <size-threshold> <number-theshold> # This means call \n"
+             "                      # HitAllocationSizeThreshold every time 16000000 bytes are allocated\n"
+             "                      # and call HitAllocationNumberThreshold every time 1024 allocations take place\n"
+             "export CLASP_BACKTRACE_ALLOCATIONS <stamp-val> # generate a backtrace to /tmp/stamp<stamp-val>.backtraces\n"
+             "                      # everytime a <stamp-val> object is allocates (VERY EXPENSIVE)\n"
              "# to control MPS\n"
              "export CLASP_MPS_CONFIG=\"32 32 16 80 32 80 64\" # for lots of GC's\n");
       exit(0);

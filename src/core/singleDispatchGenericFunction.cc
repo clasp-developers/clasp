@@ -54,7 +54,7 @@ CL_DEFUN SingleDispatchGenericFunctionClosure_sp core__ensure_single_dispatch_ge
   if (gfn.nilp()) {
     if (gfname.consp() && CONS_CAR(gfname) == cl::_sym_setf) {
       Symbol_sp setf_gfname = CONS_CAR(CONS_CDR(gfname));
-      if (setf_gfname->setf_fboundp()) {
+      if (setf_gfname->fboundp_setf()) {
         T_sp symFunc = setf_gfname->getSetfFdefinition();
       // printf("%s:%d   gfname->symbolFunction() --> %p\n", __FILE__, __LINE__, gfname->symbolFunction().raw_());
         if (SingleDispatchGenericFunctionClosure_sp existingGf = symFunc.asOrNull<SingleDispatchGenericFunctionClosure_O>()) {

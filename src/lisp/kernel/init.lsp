@@ -602,40 +602,6 @@ the stage, the +application-name+ and the +bitcode-name+"
       (cadr entry)
       nil))
 
-(defun interpreter-iload (entry)
-  (let* ((filename (entry-filename entry))
-         (pathname (probe-file (build-pathname filename :lisp)))
-         (name (namestring pathname)))
-    (if cmp:*implicit-compile-hook*
-        (bformat t "Loading/compiling source: %s%N" (namestring name))
-        (bformat t "Loading/interpreting source: %s%N" (namestring name)))
-    (load pathname)))
-
-(defun iload (entry &key load-bitcode )
-  #+dbg-print(bformat t "DBG-PRINT iload fn: %s%N" fn)
-  (let* ((fn (entry-filename entry))
-         (lsp-path (build-pathname fn))
-         (bc-path (build-pathname fn :bitcode))
-         (load-bc (if (not (probe-file lsp-path))
-                      t
-                      (if (not (probe-file bc-path))
-                          nil
-                          (if load-bitcode
-                              t
-                              (let ((bc-newer (> (file-write-date bc-path) (file-write-date lsp-path))))
-                                bc-newer))))))
-    (if load-bc
-        (progn
-          (bformat t "Loading bitcode file: %s%N" bc-path)
-          (cmp:load-bitcode bc-path))
-        (if (probe-file lsp-path)
-            (progn
-              (if cmp:*implicit-compile-hook*
-                  (bformat t "Loading/compiling source: %s%N" lsp-path)
-                  (bformat t "Loading/interpreting source: %s%N" lsp-path))
-              (load lsp-path))
-            (bformat t "No interpreted or bitcode file for %s could be found%N" lsp-path)))))
-
 (defun delete-init-file (entry &key (really-delete t) stage)
   (let* ((module (entry-filename entry))
          (bitcode-path (build-pathname module :bitcode stage)))

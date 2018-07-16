@@ -300,7 +300,7 @@ T_sp varArgsList(int n_args, ...) {
   Cons_O::CdrType_sp *curP = &first; // gctools::StackRootedPointerToSmartPtr<Cons_O::CdrType_O> cur(&first);
   for (int i = 1; i <= n_args; ++i) {
     T_sp obj = *(va_arg(ap, const T_sp *));
-    Cons_sp one = Cons_O::create(obj);
+    Cons_sp one = Cons_O::create(obj,_Nil<T_O>());
     *curP = one;          // cur.setPointee(one); // *cur = one;
     curP = one->cdrPtr(); // cur.setPointer(one->cdrPtr()); // cur = one->cdrPtr();
   }

@@ -55,12 +55,6 @@ successfully, T is returned, else error."
 (defun do-time (closure)
   (let* ((real-start (get-internal-real-time))
 	 (run-start (get-internal-run-time))
-	 (llvm-finalization-time-start llvm-sys:*accumulated-llvm-finalization-time*)
-	 (llvm-finalization-number-start llvm-sys:*number-of-llvm-finalizations*)
-	 llvm-finalization-time-end
-	 llvm-finalization-number-end
-	 (clang-link-time-start llvm-sys:*accumulated-clang-link-time*)
-	 (clang-link-number-start llvm-sys:*number-of-clang-links*)
          #+(and debug-track-unwinds) (start-unwinds (gctools:unwind-counter))
          #+(and debug-track-unwinds) end-unwinds
          #+(and debug-track-unwinds) (start-return-from (gctools:return-from-counter))
@@ -89,42 +83,24 @@ successfully, T is returned, else error."
       (setq run-end (get-internal-run-time)
 	    real-end (get-internal-real-time)
             interpreted-calls-end (core:interpreted-closure-calls)
-	    llvm-finalization-time-end llvm-sys:*accumulated-llvm-finalization-time*
-	    llvm-finalization-number-end llvm-sys:*number-of-llvm-finalizations*
-	    clang-link-time-end llvm-sys:*accumulated-clang-link-time*
-	    clang-link-number-end llvm-sys:*number-of-clang-links*
             )
       #+(and debug-track-unwinds) (setf end-unwinds (gctools:unwind-counter))
       #+(and debug-track-unwinds) (setf end-return-from (gctools:return-from-counter))
       #+(and debug-track-unwinds) (setf end-dynamic-go (gctools:dynamic-go-counter))
       #+(and debug-track-unwinds) (setf end-catch-throw (gctools:catch-throw-counter))
-      (format *trace-output*
-              "Real time           : ~,3F secs~%~
-              Run time            : ~,3F secs~%~
-              Bytes consed        : ~a bytes~%~
-              LLVM time           : ~,3F secs~%~
-              LLVM compiles       : ~A~%~
-              clang link time     : ~,3F secs~%~
-              clang links         : ~A~%~
-              Interpreted closures: ~A~%"
-              (float (/ (- real-end real-start) internal-time-units-per-second))
-              (float (/ (- run-end run-start) internal-time-units-per-second))
-              (- clasp-bytes-end clasp-bytes-start)
-              (- llvm-finalization-time-end llvm-finalization-time-start)
-              (- llvm-finalization-number-end llvm-finalization-number-start)
-              (- clang-link-time-end clang-link-time-start)
-              (- clang-link-number-end clang-link-number-start)
-              (- interpreted-calls-end interpreted-calls-start))
+      (core:bformat *trace-output*
+                    "Time real(%.3f secs) run(%.3f secs) consed(%d bytes) interps(%d)%N"
+                    (float (/ (- real-end real-start) internal-time-units-per-second))
+                    (float (/ (- run-end run-start) internal-time-units-per-second))
+                    (- clasp-bytes-end clasp-bytes-start)
+                    (- interpreted-calls-end interpreted-calls-start))
       #+(and debug-track-unwinds)
-      (format *trace-output*
-              "Unwinds             : ~A~%~
-              ReturnFrom unwinds  : ~A~%~
-              DynamicGo unwinds   : ~A~%~
-              CatchThrow unwinds  : ~A~%"
-              (- end-unwinds start-unwinds)
-              (- end-return-from start-return-from)
-              (- end-dynamic-go start-dynamic-go)
-              (- end-catch-throw start-catch-throw))))
+      (core:bformat *trace-output*
+                    "Unwinds(%d) ReturnFrom(%d) DynamicGo(%d) CatchThrow(%d)%N"
+                    (- end-unwinds start-unwinds)
+                    (- end-return-from start-return-from)
+                    (- end-dynamic-go start-dynamic-go)
+                    (- end-catch-throw start-catch-throw))))
   #+boehm-gc
   (let* ((*do-time-level* (1+ *do-time-level*))
          real-start
@@ -361,7 +337,7 @@ hash table; otherwise it signals that we have reached the end of the hash table.
                 (push (list allocs (svref stamp-names i) i) allocs-stamp-name))))
           (setf allocs-stamp-name (sort allocs-stamp-name #'< :key #'car))
           (terpri *trace-output*)
-          (format *trace-output* "Allocations  Stamp-name/Stamp~%")
+          (core:bformat *trace-output* "Allocations  Stamp-name/Stamp%N")
           (dolist (part allocs-stamp-name)
             (core:bformat *trace-output* "%10d %s/%d%N"
                           (first part)

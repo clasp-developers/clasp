@@ -1626,10 +1626,10 @@ CL_DEFUN T_sp cl__make_string(Fixnum_sp size, T_sp initial_element, T_sp element
     if (!clasp_base_char_p(initial_element_cc)) {
       TYPE_ERROR(initial_element,cl::_sym_base_char);
     }
-    SimpleBaseString_sp s = SimpleBaseString_O::make(size.unsafe_fixnum(),initial_element.unsafe_character());
+    SimpleBaseString_sp s = SimpleBaseString_O::make(size.unsafe_fixnum(),initial_element.unsafe_character(), true);
     return s;
   }
-  SimpleCharacterString_sp s = SimpleCharacterString_O::make(size.unsafe_fixnum(),initial_element.unsafe_character());
+  SimpleCharacterString_sp s = SimpleCharacterString_O::make(size.unsafe_fixnum(),initial_element.unsafe_character(), true);
   return s;
 }
 
@@ -1833,7 +1833,7 @@ CL_DEFUN T_mv cl__parse_integer(String_sp str, Fixnum start, T_sp end, uint radi
       return (Values(_Nil<T_O>(), make_fixnum(cur)));
     }
   }
-  PARSE_ERROR(SimpleBaseString_O::make("Could not parse integer from ~S"), Cons_O::create(str));
+  PARSE_ERROR(SimpleBaseString_O::make("Could not parse integer from ~S"), Cons_O::create(str,_Nil<T_O>()));
   UNREACHABLE();
 };
 
@@ -2100,16 +2100,6 @@ Array_sp SimpleBitVector_O::nreverse() {
   return this->asSmartPtr();
 }
 
-
-SimpleBitVector_sp SimpleBitVector_copy(SimpleBitVector_sp orig_sbv)
-{
-  size_t value_type_size = core::SimpleBitVector_O::bitunit_array_type::sizeof_for_length(orig_sbv->length())/sizeof(core::SimpleBitVector_O::value_type);
-//  printf("%s:%d Copy SimpleBitVector length = %" PRu "   value_type_size = %lu\n", __FILE__, __LINE__, orig_sbv->length(), value_type_size );
-//  fflush(stdout);
-  core::SimpleBitVector_sp sbv = core::SimpleBitVector_O::make(orig_sbv->length(),0,true,value_type_size,&orig_sbv->_Data[0]);
-  return sbv;
-}
-
 void SimpleBitVector_inPlaceOr(SimpleBitVector_sp x, SimpleBitVector_sp y) {
   size_t i;
   if (x->length() != y->length()) SIMPLE_ERROR(BF("BitVectors aren't the same length for in place or - lengths are %d and %d") % x->length() % y->length());
@@ -2367,7 +2357,7 @@ void BitVectorNs_O::internalAdjustSize_(size_t size, T_sp initElement, bool init
   this->asAbstractSimpleVectorRange(basesv,start,end);
   gctools::smart_ptr<simple_type> sv = gc::As_unsafe<gctools::smart_ptr<simple_type>>(basesv);
   size_t initialContentsSize = MIN(this->length(),size);
-  gc::smart_ptr<simple_type> newData = simple_type::make(size,0);
+  gc::smart_ptr<simple_type> newData = simple_type::make(size,0,true);
 //  printf("%s:%d  class-of newData -> %s   newData.raw_() -> %p\n", __FILE__, __LINE__, _rep_(cl__class_of(newData)).c_str(), (void*)newData.raw_());
   for (size_t i(0),iEnd(initialContentsSize); i<iEnd; ++i ) {
 //    printf("%s:%d   Reading bit at i+start->%zu  value-> %u    writing to index: %zu\n", __FILE__, __LINE__, i+start, sv->testBit(i+start), i);
@@ -2531,7 +2521,7 @@ CL_LAMBDA(&rest args);
 CL_DECLARE();
 CL_DOCSTRING("vector");
 CL_DEFUN Vector_sp cl__vector(List_sp args) {
-  SimpleVector_sp vec = SimpleVector_O::make(cl__length(args), _Nil<T_O>());
+  SimpleVector_sp vec = SimpleVector_O::make(cl__length(args));
   vec->fillInitialContents(args);
   return vec;
 };
@@ -2584,7 +2574,7 @@ CL_DECLARE();
 CL_DOCSTRING("Make a (simple-vector t)");
 CL_DEFUN SimpleVector_sp core__make_simple_vector_t(size_t dimension,
                                                     T_sp initialElement, bool initialElementSuppliedP) {
-  (void)initialElementSuppliedP; // ignore. what is going on with iesp in gctools?
+  (void)initialElementSuppliedP; // ignore
   return SimpleVector_O::make(dimension, initialElement, true);
 }
 
@@ -2662,6 +2652,7 @@ CL_DEFUN Vector_sp core__make_vector(T_sp element_type,
   if ( fillPointer.notnilp() || displacedTo.notnilp()) adjustable = true;
   if ( element_type == cl::_sym_T_O ) {
     if (adjustable) return VectorTNs_O::make(dimension,initialElement,fillPointer,displacedTo,displacedTo.notnilp(),displacedIndexOffset);
+    // true because we MUST initialize vectors including pointers, such as simple vectors.
     return SimpleVector_O::make(dimension,initialElement,true);
   } else if (element_type == cl::_sym_bit) {
     SimpleBitVector_O::value_type init_bit = SimpleBitVector_O::initial_element_from_object(initialElement,initialElementSuppliedP);
@@ -2682,65 +2673,65 @@ CL_DEFUN Vector_sp core__make_vector(T_sp element_type,
   } else if ( element_type == cl::_sym_double_float ) {
     double initialValue = SimpleVectorDouble_O::initial_element_from_object(initialElement,initialElementSuppliedP);
     if (adjustable) return MDArrayDouble_O::make(dimension,initialValue,fillPointer,displacedTo,displacedTo.notnilp(),displacedIndexOffset);
-    return SimpleVectorDouble_O::make(dimension,initialValue,true);
+    return SimpleVectorDouble_O::make(dimension,initialValue,initialElementSuppliedP);
   } else if ( element_type == cl::_sym_single_float ) {
     float initialValue = SimpleVectorFloat_O::initial_element_from_object(initialElement,initialElementSuppliedP);
     if (adjustable) return MDArrayFloat_O::make(dimension,initialValue,fillPointer,displacedTo,displacedTo.notnilp(),displacedIndexOffset);
-    return SimpleVectorFloat_O::make(dimension,initialValue,true);
+    return SimpleVectorFloat_O::make(dimension,initialValue,initialElementSuppliedP);
   } else if ( element_type == ext::_sym_integer8 ) {
     int8_t initialValue = SimpleVector_int8_t_O::initial_element_from_object(initialElement,initialElementSuppliedP);
     if (adjustable) return MDArray_int8_t_O::make_vector(dimension,initialValue,fillPointer,displacedTo,displacedTo.notnilp(),displacedIndexOffset);
-    return SimpleVector_int8_t_O::make(dimension,initialValue,true);
+    return SimpleVector_int8_t_O::make(dimension,initialValue,initialElementSuppliedP);
   } else if ( element_type == ext::_sym_byte8 ) {
     byte8_t initialValue = SimpleVector_byte8_t_O::initial_element_from_object(initialElement,initialElementSuppliedP);
     if (adjustable) return MDArray_byte8_t_O::make_vector(dimension,initialValue,fillPointer,displacedTo,displacedTo.notnilp(),displacedIndexOffset);
-    return SimpleVector_byte8_t_O::make(dimension,initialValue,true);
+    return SimpleVector_byte8_t_O::make(dimension,initialValue,initialElementSuppliedP);
 
   } else if ( element_type == ext::_sym_integer16 ) {
     int16_t initialValue = SimpleVector_int16_t_O::initial_element_from_object(initialElement,initialElementSuppliedP);
     if (adjustable) return MDArray_int16_t_O::make_vector(dimension,initialValue,fillPointer,displacedTo,displacedTo.notnilp(),displacedIndexOffset);
-    return SimpleVector_int16_t_O::make(dimension,initialValue,true);
+    return SimpleVector_int16_t_O::make(dimension,initialValue,initialElementSuppliedP);
   } else if ( element_type == ext::_sym_byte16 ) {
     byte16_t initialValue = SimpleVector_byte16_t_O::initial_element_from_object(initialElement,initialElementSuppliedP);
     if (adjustable) return MDArray_byte16_t_O::make_vector(dimension,initialValue,fillPointer,displacedTo,displacedTo.notnilp(),displacedIndexOffset);
-    return SimpleVector_byte16_t_O::make(dimension,initialValue,true);
+    return SimpleVector_byte16_t_O::make(dimension,initialValue,initialElementSuppliedP);
 
   } else if ( element_type == ext::_sym_integer32 ) {
     int32_t initialValue = SimpleVector_int32_t_O::initial_element_from_object(initialElement,initialElementSuppliedP);
     if (adjustable) return MDArray_int32_t_O::make_vector(dimension,initialValue,fillPointer,displacedTo,displacedTo.notnilp(),displacedIndexOffset);
-    return SimpleVector_int32_t_O::make(dimension,initialValue,true);
+    return SimpleVector_int32_t_O::make(dimension,initialValue,initialElementSuppliedP);
   } else if ( element_type == ext::_sym_byte32 ) {
     byte32_t initialValue = SimpleVector_byte32_t_O::initial_element_from_object(initialElement,initialElementSuppliedP);
     if (adjustable) return MDArray_byte32_t_O::make_vector(dimension,initialValue,fillPointer,displacedTo,displacedTo.notnilp(),displacedIndexOffset);
-    return SimpleVector_byte32_t_O::make(dimension,initialValue,true);
+    return SimpleVector_byte32_t_O::make(dimension,initialValue,initialElementSuppliedP);
 
   } else if ( element_type == ext::_sym_integer64 ) {
     int64_t initialValue = SimpleVector_int64_t_O::initial_element_from_object(initialElement,initialElementSuppliedP);
     if (adjustable) return MDArray_int64_t_O::make_vector(dimension,initialValue,fillPointer,displacedTo,displacedTo.notnilp(),displacedIndexOffset);
-    return SimpleVector_int64_t_O::make(dimension,initialValue,true);
+    return SimpleVector_int64_t_O::make(dimension,initialValue,initialElementSuppliedP);
   } else if ( element_type == ext::_sym_byte64 ) {
     byte64_t initialValue = SimpleVector_byte64_t_O::initial_element_from_object(initialElement,initialElementSuppliedP);
     if (adjustable) return MDArray_byte64_t_O::make_vector(dimension,initialValue,fillPointer,displacedTo,displacedTo.notnilp(),displacedIndexOffset);
-    return SimpleVector_byte64_t_O::make(dimension,initialValue,true);
+    return SimpleVector_byte64_t_O::make(dimension,initialValue,initialElementSuppliedP);
 
   } else if ( element_type == ext::_sym_integer64 ) {
     int64_t initialValue = SimpleVector_int64_t_O::initial_element_from_object(initialElement,initialElementSuppliedP);
     if (adjustable) return MDArray_int64_t_O::make_vector(dimension,initialValue,fillPointer,displacedTo,displacedTo.notnilp(),displacedIndexOffset);
-    return SimpleVector_int64_t_O::make(dimension,initialValue,true);
+    return SimpleVector_int64_t_O::make(dimension,initialValue,initialElementSuppliedP);
   } else if ( element_type == ext::_sym_byte64 ) {
     byte64_t initialValue = SimpleVector_byte64_t_O::initial_element_from_object(initialElement,initialElementSuppliedP);
     if (adjustable) return MDArray_byte64_t_O::make_vector(dimension,initialValue,fillPointer,displacedTo,displacedTo.notnilp(),displacedIndexOffset);
-    return SimpleVector_byte64_t_O::make(dimension,initialValue,true);
+    return SimpleVector_byte64_t_O::make(dimension,initialValue,initialElementSuppliedP);
 
   } else if ( element_type == _sym_size_t ) {
     size_t initialValue = SimpleVector_size_t_O::initial_element_from_object(initialElement,initialElementSuppliedP);
     if (adjustable) return MDArray_size_t_O::make_vector(dimension,initialValue,fillPointer,displacedTo,displacedTo.notnilp(),displacedIndexOffset);
-    return SimpleVector_size_t_O::make(dimension,initialValue,true);
+    return SimpleVector_size_t_O::make(dimension,initialValue,initialElementSuppliedP);
 
   } else if ( element_type == cl::_sym_fixnum ) {
     Fixnum initialValue = SimpleVector_fixnum_O::initial_element_from_object(initialElement,initialElementSuppliedP);
     if (adjustable) return MDArray_fixnum_O::make_vector(dimension,initialValue,fillPointer,displacedTo,displacedTo.notnilp(),displacedIndexOffset);
-    return SimpleVector_fixnum_O::make(dimension,initialValue,true);
+    return SimpleVector_fixnum_O::make(dimension,initialValue,initialElementSuppliedP);
 
   }
   SIMPLE_ERROR(BF("Handle make-vector :element-type %s") % _rep_(element_type));

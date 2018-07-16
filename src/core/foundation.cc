@@ -48,7 +48,6 @@ THE SOFTWARE.
 #include <clasp/core/lambdaListHandler.h>
 #include <clasp/core/functor.h>
 #include <clasp/clbind/class_rep.h>
-#include <clasp/core/reader.h>
 #include <clasp/core/pointer.h>
 #include <clasp/core/singleDispatchGenericFunction.h>
 #include <clasp/core/singleDispatchMethod.h>
@@ -59,6 +58,7 @@ THE SOFTWARE.
 #include <clasp/core/documentation.h>
 #include <clasp/core/array.h>
 #include <clasp/core/pointer.h>
+#include <clasp/core/lispReader.h>
 #include <clasp/core/wrappedPointer.h>
 #include <clasp/core/debugger.h>
 //#i n c l u d e "setfExpander.h"
@@ -837,8 +837,12 @@ List_sp lisp_parse_arguments(const string &packageName, const string &args) {
   ChangePackage changePackage(pkg);
   SimpleBaseString_sp ss = SimpleBaseString_O::make(args);
   Stream_sp str = cl__make_string_input_stream(ss, make_fixnum(0), _Nil<T_O>());
+#if 0  
   Reader_sp reader = Reader_O::create(str);
   T_sp osscons = reader->primitive_read(true, _Nil<T_O>(), false);
+#else
+  T_sp osscons = read_lisp_object(str,true,_Nil<T_O>(), false);
+#endif
   List_sp sscons = osscons;
   return sscons;
 }
@@ -850,8 +854,12 @@ List_sp lisp_parse_declares(const string &packageName, const string &declarestri
   ChangePackage changePackage(pkg);
   SimpleBaseString_sp ss = SimpleBaseString_O::make(declarestring);
   Stream_sp str = cl__make_string_input_stream(ss, make_fixnum(0), _Nil<T_O>());
+#if 0
   Reader_sp reader = Reader_O::create(str);
   List_sp sscons = reader->primitive_read(true, _Nil<T_O>(), false);
+#else
+  List_sp sscons = read_lisp_object(str,true,_Nil<T_O>(), false);
+#endif
   return sscons;
 }
 
@@ -1411,7 +1419,7 @@ T_sp lisp_ArgArrayToCons(int nargs, ArgArray args) {
   Cons_O::CdrType_sp *curP = &first;
   //        gctools::StackRootedPointerToSmartPtr<Cons_O::CdrType_O> cur(&first);
   for (int i(0); i < nargs; ++i) {
-    Cons_sp one = Cons_O::create(gctools::smart_ptr<core::T_O>((gctools::Tagged)(args[i])));
+    Cons_sp one = Cons_O::create(gctools::smart_ptr<core::T_O>((gctools::Tagged)(args[i])),_Nil<T_O>());
     *curP = one;          // cur.setPointee(one); //*cur = one;
     curP = one->cdrPtr(); // cur.setPointer(one->cdrPtr()); // cur = one->cdrPtr();
   }

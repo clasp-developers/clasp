@@ -195,7 +195,7 @@ CL_DEFMETHOD   bool specialP() const { return this->_IsSpecial; };
   
   void setSetfFdefinition(Function_sp fn) { this->_SetfFunction = fn; };
   inline Function_sp getSetfFdefinition() { return this->_SetfFunction; };
-  bool setf_fboundp() const;
+  bool fboundp_setf() const;
   void fmakunbound_setf();
   
 

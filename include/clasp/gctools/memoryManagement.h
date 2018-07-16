@@ -749,7 +749,6 @@ namespace core {
 namespace gctools {
   void lisp_disable_interrupts(core::ThreadLocalState* t);
   void lisp_enable_interrupts(core::ThreadLocalState* t);
-  void lisp_check_pending_interrupts(core::ThreadLocalState* thread);
   void lisp_increment_recursive_allocation_counter(core::ThreadLocalState* thread);
   void lisp_decrement_recursive_allocation_counter(core::ThreadLocalState* thread);
 };

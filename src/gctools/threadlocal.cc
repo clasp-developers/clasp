@@ -260,6 +260,20 @@ void ThreadLocalState::destroy_sigaltstack()
 namespace gctools {
 
 #ifdef DEBUG_COUNT_ALLOCATIONS
+void maybe_initialize_mythread_backtrace_allocations()
+{
+  char *backtraceStamp = getenv("CLASP_BACKTRACE_ALLOCATIONS");
+  if (backtraceStamp) {
+    stringstream ss;
+    ss << "/tmp/stamp" << backtraceStamp << ".backtraces";
+    Fixnum stamp = strtol(backtraceStamp, &backtraceStamp, 10);
+    start_backtrace_allocations(ss.str(),stamp);
+    printf("%s:%d Starting backtrace_allocations to file %s for stamp %" PFixnum "\n", __FILE__, __LINE__, ss.str().c_str(), stamp );
+  }
+}
+#endif
+
+#ifdef DEBUG_COUNT_ALLOCATIONS
 void start_backtrace_allocations(const std::string& filename, Fixnum stamp) {
   int fd = open(filename.c_str(),O_WRONLY|O_CREAT,S_IRWXU);
   if (fd<0) {

@@ -71,6 +71,7 @@ namespace core {
 namespace gctools {
 
 #ifdef DEBUG_COUNT_ALLOCATIONS
+  void maybe_initialize_mythread_backtrace_allocations();
   void start_backtrace_allocations(const std::string& filename, Fixnum stamp);
   void stop_backtrace_allocations();
 #endif

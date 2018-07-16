@@ -114,8 +114,6 @@ CL_LAMBDA(object1 object2);
 CL_DECLARE();
 CL_DOCSTRING("cons");
 CL_DEFUN Cons_sp cl__cons(T_sp obj1, T_sp obj2) {
-  ASSERTNOTNULL(obj1);
-  ASSERTNOTNULL(obj2);
   return Cons_O::create(obj1, obj2);
 };
 
@@ -150,7 +148,7 @@ Cons_sp Cons_O::createList(T_sp o1) {
 }
 
 Cons_sp Cons_O::createList(T_sp o1, T_sp o2) {
-  return (Cons_O::create(o1, Cons_O::create(o2)));
+  return (Cons_O::create(o1, Cons_O::create(o2,_Nil<T_O>())));
 }
 
 Cons_sp Cons_O::createList(T_sp o1, T_sp o2, T_sp o3) {
@@ -188,7 +186,7 @@ void Cons_O::appendInto(T_sp head, T_sp *&tailP, T_sp l) {
     TYPE_ERROR_PROPER_LIST(head);
   }
   while ((l).consp()) {
-    Cons_sp cons = Cons_O::create(cons_car(l));
+    Cons_sp cons = Cons_O::create(cons_car(l),_Nil<T_O>());
     *tailP = cons;
     tailP = &(cons->_Cdr);
     l = cons_cdr(l);

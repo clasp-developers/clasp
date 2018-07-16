@@ -1602,7 +1602,7 @@ CL_DEFUN T_sp cl__enough_namestring(T_sp tpath, T_sp tdefaults) {
   T_sp pathdir = path->_Directory;
   T_sp defaultdir = defaults->_Directory;
   if (pathdir.nilp()) {
-    pathdir = Cons_O::create(kw::_sym_relative);
+    pathdir = Cons_O::create(kw::_sym_relative,_Nil<T_O>());
   } else if (defaultdir.nilp()) {
     /* The defaults pathname does not have a directory. */
   } else if (cons_car(pathdir) == kw::_sym_relative) {
@@ -1836,7 +1836,7 @@ find_wilds(T_sp l, T_sp source, T_sp match) {
   size_t i, j, k, ls, lm;
 
   if (match == kw::_sym_wild)
-    return Cons_O::create(source);
+    return Cons_O::create(source,_Nil<T_O>());
   if (!cl__stringp(match) || !cl__stringp(source)) {
     if (match != source)
       return kw::_sym_error;

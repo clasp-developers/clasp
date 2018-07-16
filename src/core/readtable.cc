@@ -225,14 +225,14 @@ CL_DEFUN T_mv core__reader_error_backquote_context(T_sp sin) {
   if (fn.compare("-no-name-") == 0) {
       	READER_ERROR(SimpleBaseString_O::make("Comma outside of backquote in stream at line: ~a column ~a."),
     		Cons_O::createList(
-    			Cons_O::create(make_fixnum (clasp_input_lineno(sin))),
-    			Cons_O::create(make_fixnum (clasp_input_column(sin)))),
+                                   Cons_O::create(make_fixnum (clasp_input_lineno(sin)),_Nil<T_O>()),
+                                   Cons_O::create(make_fixnum (clasp_input_column(sin)),_Nil<T_O>())),
     		sin);
   } else {
   	  READER_ERROR(SimpleBaseString_O::make("Comma outside of backquote in file: ~a line: ~a column ~a."),
     	Cons_O::createList(SimpleBaseString_O::make(fn),
-    		Cons_O::create(make_fixnum (clasp_input_lineno(sin))),
-    		Cons_O::create(make_fixnum (clasp_input_column(sin)))),
+                           Cons_O::create(make_fixnum (clasp_input_lineno(sin)),_Nil<T_O>()),
+                           Cons_O::create(make_fixnum (clasp_input_column(sin)),_Nil<T_O>())),
     	sin);
   };
   return (Values(_Nil<T_O>()));
@@ -281,14 +281,14 @@ CL_DEFUN T_mv core__reader_error_unmatched_close_parenthesis(T_sp sin, Character
   if (fn.compare("-no-name-") == 0) {
       	READER_ERROR(SimpleBaseString_O::make("Unmatched close parenthesis in stream at line: ~a column ~a."),
     		Cons_O::createList(
-    			Cons_O::create(make_fixnum (clasp_input_lineno(sin))),
-    			Cons_O::create(make_fixnum (clasp_input_column(sin)))),
+                                   Cons_O::create(make_fixnum (clasp_input_lineno(sin)),_Nil<T_O>()),
+                                   Cons_O::create(make_fixnum (clasp_input_column(sin)),_Nil<T_O>())),
     		sin);
   } else {
   	  READER_ERROR(SimpleBaseString_O::make("Unmatched close parenthesis in file ~a line: ~a column ~a."),
     	Cons_O::createList(SimpleBaseString_O::make(fn),
-    		Cons_O::create(make_fixnum (clasp_input_lineno(sin))),
-    		Cons_O::create(make_fixnum (clasp_input_column(sin)))),
+                           Cons_O::create(make_fixnum (clasp_input_lineno(sin)),_Nil<T_O>()),
+                           Cons_O::create(make_fixnum (clasp_input_column(sin)),_Nil<T_O>())),
     	sin);
   };	
   return (Values(_Nil<T_O>()));
@@ -357,8 +357,8 @@ CL_DEFUN T_mv core__dispatch_macro_character(T_sp sin, Character_sp ch) {
     		Cons_O::createList(
     			ch,
     			subchar,
-    			Cons_O::create(make_fixnum (clasp_input_lineno(sin))),
-    			Cons_O::create(make_fixnum (clasp_input_column(sin)))),
+    			Cons_O::create(make_fixnum (clasp_input_lineno(sin)),_Nil<T_O>()),
+    			Cons_O::create(make_fixnum (clasp_input_column(sin)),_Nil<T_O>())),
     		sin);
     } else {
   	  READER_ERROR(SimpleBaseString_O::make("Undefined reader macro for char '~a' subchar '~a' in file ~a line: ~a column ~a."),
@@ -366,8 +366,8 @@ CL_DEFUN T_mv core__dispatch_macro_character(T_sp sin, Character_sp ch) {
     		ch,
     		subchar,
     		SimpleBaseString_O::make(fn),
-    		Cons_O::create(make_fixnum (clasp_input_lineno(sin))),
-    		Cons_O::create(make_fixnum (clasp_input_column(sin)))),
+    		Cons_O::create(make_fixnum (clasp_input_lineno(sin)),_Nil<T_O>()),
+    		Cons_O::create(make_fixnum (clasp_input_column(sin)),_Nil<T_O>())),
     	sin);
     };
   }
@@ -402,7 +402,7 @@ CL_DEFUN T_mv core__sharp_dot(T_sp sin, Character_sp ch, T_sp num) {
   if (!cl::_sym_STARread_suppressSTAR->symbolValue().isTrue()) {
     if (!cl::_sym_STARread_evalSTAR->symbolValue().isTrue()) {
       READER_ERROR(SimpleBaseString_O::make("Cannot evaluate the form #.~S"),
-                   Cons_O::create(object),
+                   Cons_O::create(object,_Nil<T_O>()),
                    sin);
     }
     T_mv result = eval::funcall(core::_sym_STAReval_with_env_hookSTAR->symbolValue(), object, _Nil<T_O>());
@@ -477,7 +477,7 @@ CL_DEFUN T_mv core__sharp_asterisk(T_sp sin, Character_sp ch, T_sp num) {
     unlikely_if(syntaxType == kw::_sym_single_escape ||
                 syntaxType == kw::_sym_multiple_escape ||
                 (clasp_as_claspCharacter(ch) != '0' && clasp_as_claspCharacter(ch) != '1')) {
-      READER_ERROR(SimpleBaseString_O::make("Character ~:C is not allowed after #*"), Cons_O::create(ch), sin);
+      READER_ERROR(SimpleBaseString_O::make("Character ~:C is not allowed after #*"), Cons_O::create(ch,_Nil<T_O>()), sin);
     }
     pattern << (char)(clasp_as_claspCharacter(ch));
   }
@@ -487,7 +487,7 @@ CL_DEFUN T_mv core__sharp_asterisk(T_sp sin, Character_sp ch, T_sp num) {
     dim = unbox_fixnum(gc::As<Fixnum_sp>(num));
     unlikely_if(dim < 0 ||
                 (dim > CLASP_ARRAY_DIMENSION_LIMIT)) {
-      READER_ERROR(SimpleBaseString_O::make("Wrong vector dimension size ~D in #*."), Cons_O::create(num), sin);
+      READER_ERROR(SimpleBaseString_O::make("Wrong vector dimension size ~D in #*."), Cons_O::create(num,_Nil<T_O>()), sin);
     }
     unlikely_if(dimcount > dim)
       READER_ERROR(SimpleBaseString_O::make("Too many elements in #*."), _Nil<T_O>(), sin);
