@@ -444,7 +444,7 @@ CL_DEFUN core::List_sp mp__process_initial_special_bindings(Process_sp p) {
 }
 
 CL_DEFUN void mp__check_pending_interrupts() {
-  gctools::lisp_check_pending_interrupts(my_thread);
+  gctools::handle_all_queued_interrupts(my_thread);
 }
 
 };
