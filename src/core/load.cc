@@ -45,6 +45,29 @@ THE SOFTWARE.
 
 namespace core {
 
+T_sp load_stream(T_sp strm, bool print) {
+  while (true) {
+    // Required to get source position correct. FIXME
+    cl__peek_char(_lisp->_true(), strm, _Nil<T_O>(), _Nil<T_O>(), _Nil<T_O>());
+    DynamicScopeManager scope(_sym_STARcurrentSourcePosInfoSTAR,
+                              core__input_stream_source_pos_info(strm));
+    bool echoReplRead = _sym_STARechoReplReadSTAR->symbolValue().isTrue();
+    T_sp x = cl__read(strm, _Nil<T_O>(), _Unbound<T_O>(), _Nil<T_O>());
+    if (x.unboundp())
+      break;
+    if (echoReplRead) {
+      BFORMAT_T(BF("Read: %s\n") % _rep_(x));
+    }
+    if (x.number_of_values() > 0) {
+      if (print)
+        BFORMAT_T(BF(";; -read- %s") % _rep_(x));
+      eval::funcall(core::_sym_STAReval_with_env_hookSTAR->symbolValue(), x, _Nil<T_O>());
+    }
+  }
+  cl__close(strm);
+  return _lisp->_true();
+}
+
 CL_LAMBDA(source &optional verbose print external-format);
 CL_DECLARE();
 CL_DOCSTRING("loadSource");
@@ -54,58 +77,27 @@ CL_DEFUN T_sp core__load_source(T_sp source, bool verbose, bool print, core::T_s
   if (source.nilp()) {
     SIMPLE_ERROR(BF("%s was called with NIL as the source filename") % __FUNCTION__);
   }
-  if (cl__streamp(source)) {
-    strm = source;
-    if (!clasp_input_stream_p(strm)) {
-      SIMPLE_ERROR(BF("Stream must be an input stream"));
-    }
-  } else {
-    strm = cl__open(source,
-                   kw::_sym_input,
-                   cl::_sym_character,
-                   _Nil<T_O>(), false,
-                   _Nil<T_O>(), false,
+  strm = cl__open(source,
+                  kw::_sym_input,
+                  cl::_sym_character,
+                  _Nil<T_O>(), false,
+                  _Nil<T_O>(), false,
                    kw::_sym_default,
-                   _Nil<T_O>());
-    if (strm.nilp())
-      return _Nil<T_O>();
-    //    printf("%s:%d  Just created strm@%p  tagged-pointer: %p\n", __FILE__, __LINE__, &strm, strm.raw_());
-    strmPointer = &(*strm);
-  }
+                  _Nil<T_O>());
+  if (strm.nilp())
+    return _Nil<T_O>();
+  strmPointer = &(*strm);
+  
   DynamicScopeManager scope;
   if (source.nilp()) SIMPLE_ERROR(BF("%s was about to pass nil to pathname") % __FUNCTION__);
   Pathname_sp pathname = cl__pathname(source);
   ASSERTF(pathname.objectp(), BF("Problem getting pathname of [%s] in loadSource") % _rep_(source));
   Pathname_sp truename = cl__truename(source);
   ASSERTF(truename.objectp(), BF("Problem getting truename of [%s] in loadSource") % _rep_(source));
-  ;
   scope.pushSpecialVariableAndSet(cl::_sym_STARloadPathnameSTAR, pathname);
   scope.pushSpecialVariableAndSet(cl::_sym_STARloadTruenameSTAR, truename);
-  /* Create a temporary closure to load the source */
-  while (true) {
-    bool echoReplRead = _sym_STARechoReplReadSTAR->symbolValue().isTrue();
-    //    printf("%s:%d  Pushing stream source pos for strm@%p   tagged-ptr: %p\n", __FILE__, __LINE__, &strm, strm.raw_());
-    T_sp x = cl__read(strm, _Nil<T_O>(), _Unbound<T_O>(), _Nil<T_O>());
-    if (x.unboundp())
-      break;
-    if (echoReplRead) {
-      BFORMAT_T(BF("Read: %s\n") % _rep_(x));
-    }
-    if (x.number_of_values() > 0) {
-      //                printf("%s:%d  ;; -- read- %s\n", __FILE__, __LINE__, _rep_(x).c_str() );
-      if (print) {
-        BFORMAT_T(BF(";; -read- %s") % _rep_(x));
-      };
-      eval::funcall(core::_sym_STAReval_with_env_hookSTAR->symbolValue(), x, _Nil<T_O>());
-      //                gctools::af_cleanup();
-    }
-  }
-  //  printf("%s:%d  closing strm@%p  tagged-ptr: %p\n", __FILE__, __LINE__, &strm, strm.raw_());
-  cl__close(strm);
-  return _lisp->_true();
+  return load_stream(strm, print);
 }
-
-
 
 CL_DEFUN T_sp core__load_no_package_set(T_sp lsource, T_sp verbose, T_sp print, T_sp if_does_not_exist, T_sp external_format, T_sp search_list) {
   Pathname_sp pathname;
@@ -114,24 +106,19 @@ CL_DEFUN T_sp core__load_no_package_set(T_sp lsource, T_sp verbose, T_sp print, 
   T_sp filename;
   T_sp function = _Nil<T_O>();
   T_sp ok;
-  bool not_a_filename = false;
   T_sp msource = lsource;
   //        printf("%s:%d cl__load source= %s\n", __FILE__, __LINE__, _rep_(source).c_str());
   if (verbose.notnilp()) {
     BFORMAT_T(BF(";;; Loading %s\n") % _rep_(lsource));
   }
 
-  /* If source is a stream, read conventional lisp code from it */
-  if (lsource.nilp() || cl__streamp(lsource)) {
-    /* INV: if "source" is not a valid stream, file.d will complain */
-    filename = lsource;
-    function = _Nil<T_O>();
-    not_a_filename = true;
-    goto NOT_A_FILENAME;
-  }
-  /* INV: coerce_to_file_pathname() creates a fresh new pathname object */
+  /* If source is a stream, read source from it. Don't rebind load-truename or anything.
+   * FIXME: Hypothetically we could load FASL streams directly as well. */
+  if (cl__streamp(lsource))
+    return load_stream(lsource, print.notnilp());
+
+  // lsource must be a pathname, so
   msource = cl__merge_pathnames(lsource);
-  //        printf("%s:%d cl__load after mergePathnames source= %s\n", __FILE__, __LINE__, _rep_(source).c_str());
   if (msource.nilp()) {
     SIMPLE_ERROR(BF("About to call core__coerce_to_file_pathname with NIL which was returned from cl__merge_pathnames when passed %s") % _rep_(lsource));
   }
@@ -200,25 +187,19 @@ CL_DEFUN T_sp core__load_no_package_set(T_sp lsource, T_sp verbose, T_sp print, 
       CANNOT_OPEN_FILE_ERROR(lsource);
     }
   }
-NOT_A_FILENAME:
-  DynamicScopeManager scope(cl::_sym_STARloadPathnameSTAR, not_a_filename ? _Nil<T_O>() : msource);
-  T_sp truename = cl__truename(filename);
-  scope.pushSpecialVariableAndSet(cl::_sym_STARloadTruenameSTAR, not_a_filename ? _Nil<T_O>() : truename);
-  if (!not_a_filename)
-    filename = truename;
+
   if (!function.nilp()) {
+    /* We only bind these here rather than outside the condition because core:load-source,
+     * being an exported function, has to bind them itself. */
+    DynamicScopeManager scope(cl::_sym_STARloadPathnameSTAR, msource);
+    T_sp truename = cl__truename(filename);
+    scope.pushSpecialVariableAndSet(cl::_sym_STARloadTruenameSTAR, truename);
     ok = eval::funcall(function, filename, verbose, print, external_format);
   } else {
-//    SIMPLE_ERROR(BF("LOAD could not identify type of file for loading %s") % _rep_(filename));
     ok = core__load_source(filename, verbose.isTrue(), print.isTrue(), external_format );
   }
   if (ok.nilp()) {
     SIMPLE_ERROR(BF("LOAD: Could not load file %s") % _rep_(filename));
-  }
-  if (print.notnilp()) {
-    eval::funcall(cl::_sym_format, _lisp->_true(),
-                  SimpleBaseString_O::make("~&;;; Loading ~s~%"),
-                  filename);
   }
   return _lisp->_true();
 }
