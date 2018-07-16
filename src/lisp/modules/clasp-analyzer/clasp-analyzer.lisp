@@ -3254,6 +3254,14 @@ Recursively analyze x and return T if x contains fixable pointers."
     (format fout "  STAMP_max = ~a,~%" maxstamp)
     (format fout "~%" )))
 
+(defun generate-register-stamp-names (&optional (fout t) (analysis *analysis*))
+  (let ((maxstamp 0))
+    (format fout "register_stamp_name("STAMP_null",0); ~%")
+    (mapc (lambda (stamp)
+            (format fout "register_stamp_name(\"~A\", ~A);~%" (get-stamp-name stamp) (stamp-value stamp)))
+          (analysis-sorted-stamps analysis))
+    (format fout "~%" )))
+
 (defun is-alloc-p (ctype project)
   "Returns true if the ctype is an object allocated using a template function in gcalloc.
 These are objects that are directly managed by the garbage collector.
@@ -3379,6 +3387,9 @@ Pointers to these objects are fixed in obj_scan or they must be roots."
           do (format stream "// ~a~%" problem))
     (generate-alloc-stamp stream analysis)
     (format stream "#endif // defined(GC_STAMP)~%")
+    (format stream "#if defined(GC_ENUM_NAMES)~%")
+    (generate-register-stamp-names stream analysis)
+    (format stream "#endif // defined(GC_ENUM_NAMES)~%")
     (format stream "#if defined(GC_DYNAMIC_CAST)~%")
     (generate-dynamic-cast-code stream analysis )
     (format stream "#endif // defined(GC_DYNAMIC_CAST)~%")
