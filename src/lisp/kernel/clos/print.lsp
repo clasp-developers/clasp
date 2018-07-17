@@ -228,21 +228,21 @@ printer and we should rather use MAKE-LOAD-FORM."
   (when (and *print-readably* (null *read-eval*))
     (error 'print-not-readable :object x))
   (let* ((negative-infinities '((single-float .
-                                 "#.core::single-float-negative-infinity")
+                                 "#.ext::single-float-negative-infinity")
                                 (double-float .
-                                 "#.core::double-float-negative-infinity")
+                                 "#.ext::double-float-negative-infinity")
                                 (long-float .
-                                 "#.core::long-float-negative-infinity")
+                                 "#.ext::long-float-negative-infinity")
                                 (short-float .
-                                 "#.core::short-float-negative-infinity")))
+                                 "#.ext::short-float-negative-infinity")))
          (positive-infinities '((single-float .
-                                 "#.core::single-float-positive-infinity")
+                                 "#.ext::single-float-positive-infinity")
                                 (double-float .
-                                 "#.core::double-float-positive-infinity")
+                                 "#.ext::double-float-positive-infinity")
                                 (long-float .
-                                 "#.core::long-float-positive-infinity")
+                                 "#.ext::long-float-positive-infinity")
                                 (short-float .
-                                 "#.core::short-float-positive-infinity")))
+                                 "#.ext::short-float-positive-infinity")))
          (record (assoc (type-of x)
                         (if (plusp x) positive-infinities negative-infinities))))
     (unless record
