@@ -239,7 +239,9 @@ Compile a lisp source file into an LLVM module."
                (enough-namestring given-input-pathname clasp-source-root)
                given-input-pathname))
          (input-pathname (or (probe-file given-input-pathname)
-                             (error "compile-file-to-module could not find the file ~a to open it" given-input-pathname)))
+			     (error 'core:simple-file-error
+				    :format-control "compile-file-to-module could not find the file ~s to open it"
+				    :format-arguments (list given-input-pathname))))
          (source-sin (open input-pathname :direction :input))
          (module (llvm-create-module (namestring input-pathname)))
 	 (module-name (cf-module-name type given-input-pathname))
