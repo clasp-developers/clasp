@@ -36,7 +36,9 @@
   (delete-package "KARSTEN")
   (test nicknames-1 (null (package-nicknames pkg))))
 
-(test nicknames-2 (packagep (make-package "KARSTEN-NEW" :nicknames (list "CARLES" "CARLITO"))))
+(test nicknames-2 (prog1
+                      (packagep (make-package "KARSTEN-NEW" :nicknames (list "CARLES" "CARLITO")))
+                    (delete-package "KARSTEN-NEW")))
 
 ;;; used to unintern the symbols in shadowing-import-from when delete-package
 (test shadowing-import-1
