@@ -147,29 +147,30 @@ and the pathname of the source file - this will also be used as the module initi
 ;;; Compile-file proper
 
 (defun generate-obj-asm (module output-stream &key file-type (reloc-model 'llvm-sys:reloc-model-undefined))
-  (let* ((triple-string (llvm-sys:get-target-triple module))
-	 (normalized-triple-string (llvm-sys:triple-normalize triple-string))
-	 (triple (llvm-sys:make-triple normalized-triple-string))
-	 (target-options (llvm-sys:make-target-options)))
-    (multiple-value-bind (target msg)
-	(llvm-sys:target-registry-lookup-target "" triple)
-      (unless target (error msg))
-      (let* ((target-machine (llvm-sys:create-target-machine target
-							     (llvm-sys:get-triple triple)
-							     ""
-							     ""
-							     target-options
-							     reloc-model
-							     *default-code-model*
-							     'llvm-sys:code-gen-opt-default
-                                                             NIL ; JIT?
-                                                             ))
-	     (pm (llvm-sys:make-pass-manager))
-	     (tli (llvm-sys:make-target-library-info-wrapper-pass triple #||LLVM3.7||#))
-	     (data-layout (llvm-sys:create-data-layout target-machine)))
-	(llvm-sys:set-data-layout module data-layout)
-	(llvm-sys:pass-manager-add pm tli)
-	(llvm-sys:add-passes-to-emit-file-and-run-pass-manager target-machine pm output-stream file-type module)))))
+  (with-track-llvm-time
+      (let* ((triple-string (llvm-sys:get-target-triple module))
+             (normalized-triple-string (llvm-sys:triple-normalize triple-string))
+             (triple (llvm-sys:make-triple normalized-triple-string))
+             (target-options (llvm-sys:make-target-options)))
+        (multiple-value-bind (target msg)
+            (llvm-sys:target-registry-lookup-target "" triple)
+          (unless target (error msg))
+          (let* ((target-machine (llvm-sys:create-target-machine target
+                                                                 (llvm-sys:get-triple triple)
+                                                                 ""
+                                                                 ""
+                                                                 target-options
+                                                                 reloc-model
+                                                                 *default-code-model*
+                                                                 'llvm-sys:code-gen-opt-default
+                                                                 NIL ; JIT?
+                                                                 ))
+                 (pm (llvm-sys:make-pass-manager))
+                 (tli (llvm-sys:make-target-library-info-wrapper-pass triple #||LLVM3.7||#))
+                 (data-layout (llvm-sys:create-data-layout target-machine)))
+            (llvm-sys:set-data-layout module data-layout)
+            (llvm-sys:pass-manager-add pm tli)
+            (llvm-sys:add-passes-to-emit-file-and-run-pass-manager target-machine pm output-stream file-type module))))))
 
 (defun compile-file-results (output-file conditions)
   (let (warnings-p failures-p)
@@ -311,19 +312,18 @@ Compile a lisp source file into an LLVM module."
     (let* ((*compile-print* print)
            (*compile-verbose* verbose)
            (output-path (compile-file-pathname input-file :output-file output-file :output-type output-type ))
-           (*compile-file-output-pathname* output-path)
-           (module (compile-file-to-module input-file
-                                           :type type
-                                           :output-type output-type
-                                           :source-debug-pathname source-debug-pathname
-                                           :source-debug-offset source-debug-offset
-                                           :compile-file-hook *cleavir-compile-file-hook*
-                                           :environment environment
-                                           :optimize optimize
-                                           :optimize-level optimize-level
-                                           :dry-run dry-run)))
+           (*compile-file-output-pathname* output-path))
       (with-compiler-timer (:message "Compile-file" :report-link-time t :verbose t)
-        (progn
+        (let ((module (compile-file-to-module input-file
+                                              :type type
+                                              :output-type output-type
+                                              :source-debug-pathname source-debug-pathname
+                                              :source-debug-offset source-debug-offset
+                                              :compile-file-hook *cleavir-compile-file-hook*
+                                              :environment environment
+                                              :optimize optimize
+                                              :optimize-level optimize-level
+                                              :dry-run dry-run)))
           (cond
             ((null output-path)
              (error "The output-path is nil for input filename ~a~%" input-file))
@@ -331,7 +331,8 @@ Compile a lisp source file into an LLVM module."
              (when verbose (bformat t "Writing object to %s%N" (core:coerce-to-filename output-path)))
              (ensure-directories-exist output-path)
              ;; Save the bitcode so we can take a look at it
-             (write-bitcode module (core:coerce-to-filename (cfp-output-file-default output-path :bitcode)))
+             (with-track-llvm-time
+                 (write-bitcode module (core:coerce-to-filename (cfp-output-file-default output-path :bitcode))))
              (with-open-file (fout output-path :direction :output)
                (let ((reloc-model (cond
                                     ((member :target-os-linux *features*) 'llvm-sys:reloc-model-pic-)
@@ -340,20 +341,24 @@ Compile a lisp source file into an LLVM module."
             ((eq output-type :bitcode)
              (when verbose (bformat t "Writing bitcode to %s%N" (core:coerce-to-filename output-path)))
              (ensure-directories-exist output-path)
-             (unless dry-run (write-bitcode module (core:coerce-to-filename output-path))))
+             (unless dry-run
+               (with-track-llvm-time
+                   (write-bitcode module (core:coerce-to-filename output-path)))))
             ((eq output-type :fasl)
              (ensure-directories-exist output-path)
              (let ((temp-bitcode-file (compile-file-pathname input-file :output-file output-file :output-type :bitcode)))
                (ensure-directories-exist temp-bitcode-file)
                (bformat t "Writing temporary bitcode file to: %s%N" temp-bitcode-file)
-               (write-bitcode module (core:coerce-to-filename temp-bitcode-file))
+               (with-track-llvm-time
+                   (write-bitcode module (core:coerce-to-filename temp-bitcode-file)))
                (bformat t "Writing fasl file to: %s%N" output-file)
                (unless dry-run (llvm-link output-file :input-files (list temp-bitcode-file) :input-type :bitcode))))
             (t ;; fasl
              (error "Add support to file of type: ~a" output-type)))
           (dolist (c conditions)
             (bformat t "conditions: %s%N" c))
-          (llvm-sys:module-delete module)
+          (with-track-llvm-time
+              (llvm-sys:module-delete module))
           (compile-file-results output-path conditions))))))
 
 (export 'compile-file)
