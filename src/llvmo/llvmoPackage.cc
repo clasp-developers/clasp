@@ -388,7 +388,7 @@ void dump_funcs(core::Function_sp compiledFunction) {
 }
 #endif
 
-CL_LAMBDA(module strm);
+CL_LAMBDA(module &optional (stream t));
 CL_DEFUN void dump_module(Module_sp module, core::T_sp tstream) {
   core::T_sp stream = core::coerce::outputStreamDesignator(tstream);
   string outstr;
@@ -397,7 +397,7 @@ CL_DEFUN void dump_module(Module_sp module, core::T_sp tstream) {
   core::clasp_write_string(outstr,stream);
 }
 
-CL_LAMBDA("func strm)");
+CL_LAMBDA(func &optional (stream t));
 CL_DEFUN void dump_function(Function_sp function, core::T_sp tstream) {
   core::T_sp stream = core::coerce::outputStreamDesignator(tstream);
   string outstr;
