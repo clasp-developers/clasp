@@ -378,15 +378,6 @@ void make_str(StrWNs_sp sout, List_sp cur_char) {
   }
 }
 
-
-CL_LAMBDA(sin &optional (eof-error-p t) eof-value);
-CL_DECLARE();
-CL_DOCSTRING("nread");
-CL_DEFUN T_mv core__nread(T_sp sin, T_sp eof_error_p, T_sp eof_value) {
-  T_sp result = read_lisp_object(sin, eof_error_p.isTrue(), eof_value, false);
-  return Values(result);
-};
-
 string fix_exponent_char(const char *cur) {
   stringstream ss;
   while (*cur) {
