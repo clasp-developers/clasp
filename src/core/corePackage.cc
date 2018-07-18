@@ -607,7 +607,6 @@ SYMBOL_EXPORT_SC_(CorePkg, STARbuild_linkflagsSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, _PLUS_run_all_function_name_PLUS_);
 SYMBOL_EXPORT_SC_(CorePkg, _PLUS_clasp_ctor_function_name_PLUS_);
 SYMBOL_EXPORT_SC_(CorePkg, STARcodeWalkerSTAR);
-SYMBOL_EXPORT_SC_(CorePkg, current_source_file);
 SYMBOL_SC_(CorePkg, STARdebugMacroexpandSTAR);
 SYMBOL_EXPORT_SC_(ClPkg, T);
 SYMBOL_EXPORT_SC_(ClPkg, method);
