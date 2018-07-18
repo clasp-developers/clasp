@@ -180,7 +180,7 @@ SYMBOL_SC_(CorePkg, STARstandard_readtableSTAR);
 CL_LAMBDA(stream chr);
 CL_DECLARE();
 CL_DOCSTRING("reader_double_quote_string");
-CL_DEFUN T_mv core__reader_double_quote_string(T_sp stream, Character_sp ch) {
+CL_DEFUN T_sp core__reader_double_quote_string(T_sp stream, Character_sp ch) {
   // Create a wide character string buffer
   SafeBufferStrWNs buffer;
   bool done = false;
@@ -198,7 +198,7 @@ CL_DEFUN T_mv core__reader_double_quote_string(T_sp stream, Character_sp ch) {
     buffer.string()->vectorPushExtend(clasp_make_character(cc));
   }
   SimpleString_sp result = buffer.string()->asMinimalSimpleString();
-  return Values(result);
+  return result;
 };
 
 CL_LAMBDA(sin ch);
@@ -264,7 +264,7 @@ CL_DEFUN T_sp core__reader_comma_form(T_sp sin, Character_sp ch) {
   return (list.cons());
 };
 
-CL_LAMBDA(sin ch);
+CL_PRIORITY(1);
 CL_DECLARE();
 CL_DOCSTRING("reader_list_allow_consing_dot");
 CL_DEFUN T_sp core__reader_list_allow_consing_dot(T_sp sin, Character_sp ch) {
@@ -749,30 +749,30 @@ ReadTable_sp ReadTable_O::create_standard_readtable() {
   ASSERTNOTNULL(_sym_reader_backquoted_expression->symbolFunction());
   ASSERT(_sym_reader_backquoted_expression->symbolFunction().notnilp());
   rt->set_macro_character(clasp_make_standard_character('`'),
-                          _sym_reader_backquoted_expression->symbolFunction(),
+                          _sym_reader_backquoted_expression,
                           _Nil<T_O>());
   rt->set_macro_character(clasp_make_standard_character(','),
                           _sym_reader_comma_form->symbolFunction(),
                           _Nil<T_O>());
   SYMBOL_SC_(CorePkg, read_list_allow_consing_dot);
   rt->set_macro_character(clasp_make_standard_character('('),
-                          _sym_reader_list_allow_consing_dot->symbolFunction(),
+                          _sym_reader_list_allow_consing_dot,
                           _Nil<T_O>());
   SYMBOL_SC_(CorePkg, reader_error_unmatched_close_parenthesis);
   rt->set_macro_character(clasp_make_standard_character(')'),
-                          _sym_reader_error_unmatched_close_parenthesis->symbolFunction(),
+                          _sym_reader_error_unmatched_close_parenthesis,
                           _Nil<T_O>());
   SYMBOL_SC_(CorePkg, reader_quote);
   rt->set_macro_character(clasp_make_standard_character('\''),
-                          _sym_reader_quote->symbolFunction(),
+                          _sym_reader_quote,
                           _Nil<T_O>());
   SYMBOL_SC_(CorePkg, reader_skip_semicolon_comment);
   rt->set_macro_character(clasp_make_standard_character(';'),
-                          _sym_reader_skip_semicolon_comment->symbolFunction(),
+                          _sym_reader_skip_semicolon_comment,
                           _Nil<T_O>());
   SYMBOL_SC_(CorePkg, reader_read_double_quote_string);
   rt->set_macro_character(clasp_make_standard_character('"'),
-                          _sym_reader_double_quote_string->symbolFunction(),
+                          _sym_reader_double_quote_string,
                           _Nil<T_O>());
   Character_sp sharp = clasp_make_standard_character('#');
   rt->make_dispatch_macro_character(sharp, _lisp->_true());
@@ -875,8 +875,10 @@ T_sp ReadTable_O::set_macro_character(Character_sp ch, T_sp funcDesig, T_sp non_
   } else {
     this->set_syntax_type(ch, kw::_sym_terminating_macro);
   }
-  Function_sp func = coerce::functionDesignator(funcDesig);
-  this->_MacroCharacters->setf_gethash(ch, func);
+  if (!(gctools::IsA<core::Symbol_sp>(funcDesig)||gctools::IsA<core::Function_sp>(funcDesig))) {
+    TYPE_ERROR(funcDesig,Cons_O::createList(cl::_sym_or,cl::_sym_symbol,cl::_sym_function));
+  }
+  this->_MacroCharacters->setf_gethash(ch, funcDesig);
   return _lisp->_true();
 }
 
@@ -923,8 +925,11 @@ T_sp ReadTable_O::set_dispatch_macro_character(Character_sp disp_char, Character
   HashTable_sp dispatch_table = gc::As_unsafe<HashTable_sp>(tdispatch_table);
   ASSERTF(dispatch_table.notnilp(), BF("The dispatch table for the character[%s] is nil! - this shouldn't happen") % _rep_(disp_char));
   Character_sp upcase_sub_char = clasp_make_character(claspCharacter_upcase(sub_char.unsafe_character()));
-  Function_sp new_func = coerce::functionDesignator(new_func_desig);
-  dispatch_table->hash_table_setf_gethash(upcase_sub_char, new_func);
+  if (!(gctools::IsA<core::Symbol_sp>(new_func_desig)||gctools::IsA<core::Function_sp>(new_func_desig))) {
+    TYPE_ERROR(new_func_desig,Cons_O::createList(cl::_sym_or,cl::_sym_symbol,cl::_sym_function));
+  }
+//  Function_sp new_func = coerce::functionDesignator(new_func_desig);
+  dispatch_table->hash_table_setf_gethash(upcase_sub_char, new_func_desig);
   return _lisp->_true();
 }
 

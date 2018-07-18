@@ -416,7 +416,7 @@ CL_DEFUN T_mv core__smart_pointer_details() {
   return Values(ptrType, pxOffset, pxSize);
 }
 
-CL_LAMBDA(&va-rest args);
+CL_LAMBDA(core:&va-rest args);
 CL_DECLARE();
 CL_DOCSTRING("values");
 CL_DEFUN T_mv cl__values(VaList_sp vargs) {
@@ -1321,7 +1321,7 @@ CL_DEFUN T_mv cl__mapcan(T_sp op, List_sp lists) {
   to c.
 */
 #if 1
-CL_LAMBDA(&va-rest lists);
+CL_LAMBDA(core:&va-rest lists);
 CL_DECLARE();
 CL_DOCSTRING("append as in clhs");
 CL_DEFUN T_sp cl__append(VaList_sp args) {

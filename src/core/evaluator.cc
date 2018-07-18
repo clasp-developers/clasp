@@ -86,7 +86,7 @@ CL_DEFUN T_mv core__compile_form_and_eval_with_env(T_sp form, T_sp env, T_sp ste
   return result;
 };
 
-CL_LAMBDA(head &va-rest args);
+CL_LAMBDA(head core:&va-rest args);
 CL_DECLARE();
 CL_DOCSTRING("apply");
 DONT_OPTIMIZE_WHEN_DEBUG_RELEASE
@@ -338,7 +338,7 @@ CL_DEFUN T_mv core__interpret(T_sp form, T_sp env) {
 
 
 // fast funcall
-CL_LAMBDA(function-desig &va-rest args);
+CL_LAMBDA(function-desig core:&va-rest args);
 CL_DECLARE();
 CL_DOCSTRING("See CLHS: funcall");
 CL_DEFUN T_mv cl__funcall(T_sp function_desig, VaList_sp args) {

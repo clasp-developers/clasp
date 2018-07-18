@@ -484,7 +484,7 @@ CL_DEFUN  T_sp cl__arrayElementType(Array_sp array)
   return array->arrayElementType();
 }
 
-CL_LAMBDA(array &va-rest core::indices);
+CL_LAMBDA(array core:&va-rest core::indices);
 CL_LISPIFY_NAME("cl:arrayRowMajorIndex");
 CL_DEFUN size_t cl__arrayRowMajorIndex(Array_sp array, VaList_sp indices) {
   return array->arrayRowMajorIndex(indices);
@@ -604,7 +604,7 @@ void core__copy_subarray(Array_sp dest, Fixnum_sp destStart, Array_sp orig, Fixn
 }
 
 CL_LISPIFY_NAME("CL:aref");
-CL_LAMBDA(value array &va-rest indices);
+CL_LAMBDA(value array core:&va-rest indices);
 CL_DECLARE();
 CL_DOCSTRING("aset");
 CL_DEFUN_SETF T_sp core__aset(T_sp value, Array_sp array, VaList_sp indices) {
@@ -614,14 +614,14 @@ CL_DEFUN_SETF T_sp core__aset(T_sp value, Array_sp array, VaList_sp indices) {
 };
 
 CL_LISPIFY_NAME("cl:aref");
-CL_LAMBDA(array &va-rest core::indices);
+CL_LAMBDA(array core:&va-rest core::indices);
 CL_DEFUN T_sp cl__aref(Array_sp array, VaList_sp vargs)
 {
   cl_index rowMajorIndex = array->arrayRowMajorIndex(vargs);
   return array->rowMajorAref(rowMajorIndex);
 }
 
-CL_LAMBDA(array &va-rest indices);
+CL_LAMBDA(array core:&va-rest indices);
 CL_LISPIFY_NAME("core:index");
 CL_DEFUN gc::Fixnum core__index(Array_sp array, VaList_sp indices) {
   return array->arrayRowMajorIndex(indices);
@@ -2849,7 +2849,7 @@ SYMBOL_EXPORT_SC_(ClPkg, vectorPushExtend);
 
 
 
-CL_LAMBDA(&va-rest args);
+CL_LAMBDA(core:&va-rest args);
 CL_LISPIFY_NAME(base_string_concatenate);
 CL_DEFUN T_sp core__base_string_concatenate(VaList_sp vargs) {
   size_t nargs = vargs->remaining_nargs();

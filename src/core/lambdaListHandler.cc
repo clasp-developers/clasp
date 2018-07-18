@@ -413,6 +413,8 @@ T_mv LambdaListHandler_O::process_single_dispatch_lambda_list(List_sp llraw, boo
               Cons_O::createList(kw::_sym_arguments, carg));
       }
       if (sd_symbol.notnilp()) {
+        // There is already a sd_symbol defined -
+        // This means there are too many specialized arguments
         SYMBOL_SC_(CorePkg, singleDispatchTooManyArgumentsError);
         ERROR(_sym_singleDispatchTooManyArgumentsError,
               Cons_O::createList(kw::_sym_arguments, llraw));
@@ -1223,6 +1225,7 @@ void LambdaListHandler_O::parse_lambda_list_declares(List_sp lambda_list, List_s
                                              this->_KeywordArguments,
                                              this->_AllowOtherKeys,
                                              this->_AuxArguments);
+//  printf("%s:%d parse_lambda_list_declares lambda_list -> %s  handler -> %s\n", __FILE__, __LINE__, _rep_(lambda_list).c_str(), _rep_(this->asSmartPtr()).c_str());
   if (this->_CreatesBindings) {
     this->recursively_build_handlers_count_arguments(declareSpecifierList, context, classifier);
     this->_ClassifiedSymbolList = classifier.finalClassifiedSymbols();

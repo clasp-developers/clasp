@@ -887,7 +887,7 @@ void testFeatures() {
   testConses();
 }
 
-CoreExposer_O::CoreExposer_O(Lisp_sp lisp) : Exposer_O(lisp, CorePkg, CorePkg_nicknames) {
+CoreExposer_O::CoreExposer_O(Lisp_sp lisp) : Exposer_O(lisp, CorePkg) {
 };
 
 void CoreExposer_O::expose(core::Lisp_sp lisp, WhatToExpose what) const {

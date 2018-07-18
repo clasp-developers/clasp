@@ -760,7 +760,7 @@ void initialize_clangTooling() {
      .def("getCommentForDecl", &clang::ASTContext::getCommentForDecl)
      .def("getASTRecordLayout",&clang::ASTContext::getASTRecordLayout),
      class_<clang::SourceManager>("SourceManager", no_default_constructor)
-     .def("getPresumedLoc", &clang::SourceManager::getPresumedLoc, policies<>(), "((self ast-tooling:source-manager) source-location &optional (use-line-directives t))")
+      .def("getPresumedLoc", &clang::SourceManager::getPresumedLoc, policies<>(), "((self ast-tooling:source-manager) source-location &optional (use-line-directives t))")
      .def("getFilename", &clang::SourceManager::getFilename)
      .def("getExpansionLoc", &clang::SourceManager::getExpansionLoc)
      .def("getExpansionLineNumber", &clang::SourceManager::getExpansionLineNumber, policies<pureOutValue<2>>())
