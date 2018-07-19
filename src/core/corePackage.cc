@@ -1171,7 +1171,15 @@ void CoreExposer_O::define_essential_globals(Lisp_sp lisp) {
   _sym_STARdebug_fastgfSTAR->defparameter(_Nil<core::T_O>());
   _sym_STARdebug_dispatchSTAR->defparameter(_Nil<core::T_O>());
   _sym_STARdebug_valuesSTAR->defparameter(_Nil<core::T_O>());
-  comp::_sym_STARoptimization_levelSTAR->defparameter(core::make_fixnum(3));
+  int optimization_level = 3;
+  const char* optLevel = getenv("CLASP_OPTIMIZATION_LEVEL");
+  if (optLevel) {
+    optimization_level = strtol(optLevel,NULL,10);
+    if (optimization_level < 0) optimization_level = 0;
+    if (optimization_level > 3) optimization_level = 3;
+    printf("%s:%d CLASP_OPTIMIZATION_LEVEL = %d\n", __FILE__, __LINE__, optimization_level);
+  }
+  comp::_sym_STARoptimization_levelSTAR->defparameter(core::make_fixnum(optimization_level));
   _sym_STARbits_in_bit_array_wordSTAR->defparameter(core::clasp_make_fixnum(BIT_ARRAY_BYTE_SIZE));
   _sym_STARreader_generate_cstSTAR->defparameter(_Nil<core::T_O>());
   _sym_STARreader_cst_resultSTAR->defparameter(_Nil<core::T_O>());

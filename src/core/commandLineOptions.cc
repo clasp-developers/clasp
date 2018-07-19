@@ -90,6 +90,7 @@ CommandLineOptions::CommandLineOptions(int argc, char *argv[])
              "export CLASP_DEBUG=<file-names-space-or-comma-separated>  Define files that\n"
              "                        generate log info when DEBUG_LEVEL_FULL is set at top of file.\n"
              "export CLASP_HOME=<dir>   Define where clasp source code lives\n"
+             "export CLASP_OPTIMIZATION_LEVEL=0|1|2|3 Set the llvm optimization level for compiled code\n"
              "export CLASP_TRAP_INTERN=PKG:SYMBOL Trap the intern of the symbol\n"
              "export CLASP_VERBOSE_BUNDLE_SETUP   Dump info during bundle setup\n"
              "export CLASP_PAUSE_STARTUP (set to anything)  Pause right at startup\n"
