@@ -1,5 +1,7 @@
 (provide :clasp-analyzer)
 
+(declaim (debug 3))
+
 (defpackage #:clasp-analyzer
   (:shadow #:function-info #:function-type)
   (:use #:common-lisp #:core #:ast-tooling #:clang-ast)
@@ -311,7 +313,10 @@
   :no-stamp-value)
 
 (defun traverse-inheritance-tree (name analysis operation root-cclass assign-stamp-value-function)
-  (let* ((stamp (gethash name (analysis-stamps analysis)))
+  (let* ((stamp (let ((stamp (gethash name (analysis-stamps analysis))))
+                  (unless stamp
+                    (error "Could not find stamp for ~a" name))
+                  stamp))
          (stamp-value (funcall assign-stamp-value-function analysis stamp operation)))
     (setf (stamp-value stamp) stamp-value)
     (setf (stamp-root-cclass stamp) root-cclass)
@@ -1511,41 +1516,42 @@ can be saved and reloaded within the project for later analysis"
     (:has-name "GCObjectAllocator"))
   )
 
+(defun %%lispalloc-matcher-callback (match-info)
+  (declare (core:lambda-name %%lispalloc-matcher-callback.lambda))
+  "This function can only be called as a ASTMatcher callback"
+  (let* ((decl (clang-tool:mtag-node match-info :whole))
+         (args (cast:get-template-args decl))
+         (arg (cast:template-argument-list-get args 0))
+         (qtarg (cast:get-as-type arg))
+         (tsty-new (cast:get-type-ptr-or-null qtarg))
+         (class-key (record-key tsty-new))
+         (classified (classify-ctype tsty-new))
+         (class-location (clang-tool:mtag-loc-start match-info :whole))
+         (arg-decl (cast:get-decl tsty-new)) ;; Should I convert to canonical type?????
+         (arg-location (clang-tool:source-loc-as-string match-info (get-loc-start arg-decl)))
+         (arg-name (cast:get-name arg-decl)))
+    (unless (gethash class-key class-results)
+      (gclog "Adding class name: ~a~%" class-name)
+      ;;                 (break "Check locations")
+      (let ((lispalloc (make-lispalloc :key class-key
+                                       :name arg-name ;; XXXXXX (clang-tool:mtag-name :whole)
+                                       :location arg-location ;; class-location
+                                       :ctype classified)))
+        (setf (gethash class-key class-results) lispalloc)))))
+
 (defun setup-lispalloc-search (mtool)
   "Setup the TOOL (multitool) to look for instance variables that we want to garbage collect
 and the inheritance hierarchy that the garbage collector will need"
   (symbol-macrolet ((class-results (project-lispallocs (clang-tool:multitool-results mtool))))
-    (flet ((%%lispalloc-matcher-callback (match-info)
-             (declare (core:lambda-name %%lispalloc-matcher-callback.lambda))
-             "This function can only be called as a ASTMatcher callback"
-             (let* ((decl (clang-tool:mtag-node match-info :whole))
-                    (args (cast:get-template-args decl))
-                    (arg (cast:template-argument-list-get args 0))
-                    (qtarg (cast:get-as-type arg))
-                    (tsty-new (cast:get-type-ptr-or-null qtarg))
-                    (class-key (record-key tsty-new))
-                    (classified (classify-ctype tsty-new))
-                    (class-location (clang-tool:mtag-loc-start match-info :whole))
-                    (arg-decl (cast:get-decl tsty-new)) ;; Should I convert to canonical type?????
-                    (arg-location (clang-tool:source-loc-as-string match-info (get-loc-start arg-decl)))
-                    (arg-name (cast:get-name arg-decl)))
-               (unless (gethash class-key class-results)
-                 (gclog "Adding class name: ~a~%" class-name)
-;;                 (break "Check locations")
-                 (let ((lispalloc (make-lispalloc :key class-key
-                                                  :name arg-name ;; XXXXXX (clang-tool:mtag-name :whole)
-                                                  :location arg-location ;; class-location
-                                                  :ctype classified)))
-                   (setf (gethash class-key class-results) lispalloc))))))
-      ;; Initialize the class search
-      (clang-tool:multitool-add-matcher mtool
-                             :name :lispallocs
-                             :matcher-sexp `(:bind :whole ,*lispalloc-matcher*)
-                             :initializer (lambda () (setf class-results (make-hash-table :test #'equal :thread-safe t))) ; initializer
-                             :callback (make-instance 'clang-tool:code-match-callback
-                                                      :timer (make-instance 'clang-tool:code-match-timer
-                                                                            :name 'lisp-alloc-matcher)
-                                                      :match-code (function %%lispalloc-matcher-callback))))))
+    ;; Initialize the class search
+    (clang-tool:multitool-add-matcher mtool
+                                      :name :lispallocs
+                                      :matcher-sexp `(:bind :whole ,*lispalloc-matcher*)
+                                      :initializer (lambda () (setf class-results (make-hash-table :test #'equal :thread-safe t))) ; initializer
+                                      :callback (make-instance 'clang-tool:code-match-callback
+                                                               :timer (make-instance 'clang-tool:code-match-timer
+                                                                                     :name 'lisp-alloc-matcher)
+                                                               :match-code '%%lispalloc-matcher-callback))))
 
 
 
@@ -2225,11 +2231,14 @@ so that they don't have to be constantly recalculated"
 
 (defun organize-allocs-into-species-and-create-stamps (analysis &aux (project (analysis-project analysis)))
   "Every GCObject and GCContainer is assigned to a species and given a GCStamp stamp value."
-  (let ((project (analysis-project analysis)))
-    (maphash (lambda (k alloc) (ensure-stamp-for-alloc-and-parent-classes alloc analysis)) (project-lispallocs project))
-    (maphash (lambda (k alloc) (ensure-stamp-for-alloc-and-parent-classes alloc analysis)) (project-containerallocs project))
-    (maphash (lambda (k alloc) (ensure-stamp-for-alloc-and-parent-classes alloc analysis)) (project-classallocs project))
-    (maphash (lambda (k alloc) (ensure-stamp-for-alloc-and-parent-classes alloc analysis)) (project-rootclassallocs project))))
+  (let ((project (analysis-project analysis))
+        (allocs 0))
+    (maphash (lambda (k alloc) (incf allocs) (ensure-stamp-for-alloc-and-parent-classes alloc analysis)) (project-lispallocs project))
+    (maphash (lambda (k alloc) (incf allocs) (ensure-stamp-for-alloc-and-parent-classes alloc analysis)) (project-containerallocs project))
+    (maphash (lambda (k alloc) (incf allocs) (ensure-stamp-for-alloc-and-parent-classes alloc analysis)) (project-classallocs project))
+    (maphash (lambda (k alloc) (incf allocs) (ensure-stamp-for-alloc-and-parent-classes alloc analysis)) (project-rootclassallocs project))
+    (unless (> allocs 0)
+      (error "There are no allocs - so stamps can't be assigned"))))
 
 (defgeneric fixer-macro-name (fixer-head))
 (defmethod fixer-macro-name ((x (eql :smart-ptr-fix))) "SMART_PTR_FIX")
@@ -2416,6 +2425,7 @@ so that they don't have to be constantly recalculated"
          (key (alloc-key alloc))
          (stamp-name (get-stamp-name stamp)))
     ;;    (with-jump-table (fout jti dest stamp "goto SCAN_ADVANCE")
+    #+(or)
     (let ((fh (destination-helper-stream dest)))
       (if (cxxrecord-ctype-p decl)
           (progn
@@ -3255,12 +3265,11 @@ Recursively analyze x and return T if x contains fixable pointers."
     (format fout "~%" )))
 
 (defun generate-register-stamp-names (&optional (fout t) (analysis *analysis*))
-  (let ((maxstamp 0))
-    (format fout "register_stamp_name("STAMP_null",0); ~%")
-    (mapc (lambda (stamp)
-            (format fout "register_stamp_name(\"~A\", ~A);~%" (get-stamp-name stamp) (stamp-value stamp)))
-          (analysis-sorted-stamps analysis))
-    (format fout "~%" )))
+  (format fout "register_stamp_name(\"STAMP_null\",0); ~%")
+  (mapc (lambda (stamp)
+          (format fout "register_stamp_name(\"~A\", ~A);~%" (get-stamp-name stamp) (stamp-value stamp)))
+        (analysis-sorted-stamps analysis))
+  (format fout "~%" ))
 
 (defun is-alloc-p (ctype project)
   "Returns true if the ctype is an object allocated using a template function in gcalloc.
@@ -3477,8 +3486,9 @@ Setup all of the ASTMatcher tools for the clasp-analyzer."
      (push one-job (elt jobvec i)))))
 
 
-
-(defun run-job (proc job-list compilation-tool-database)
+#+(or)
+(progn
+  (defun run-job (proc job-list compilation-tool-database)
   (let ((*results* (make-project)))
     (format t "====== Running jobs in fork #~a: ~a~%" proc job-list)
     (clang-tool:batch-run-multitool *tools* compilation-tool-database)
@@ -3486,64 +3496,63 @@ Setup all of the ASTMatcher tools for the clasp-analyzer."
     (save-data *results*
                (merge-pathnames "project.dat" (clang-tool:main-pathname compilation-tool-database)))
     (core:exit)))
+  (defvar *parallel-search-pids* nil)
+  (defun parallel-search-all-fork (compilation-tool-database &key test one-at-a-time)
+    "Run *max-parallel-searches* processes at a time - whenever one finishes, start the next"
+    (setq *parallel-search-pids* nil)
+    (let ((all-jobs (split-jobs (if test
+                                    test
+                                    (reverse (lremove (lremove $* ".*mps\.c$") ".*gc_interface\.cc$")))
+                                *max-parallel-searches*
+                                ))
+          (spare-processes (if one-at-a-time 1 *max-parallel-searches*)))
+      (save-data all-jobs (merge-pathnames "project-all.dat" (clang-tool:main-pathname compilation-tool-database)))
+      (format t "all-jobs: ~a~%" all-jobs)
+      (dotimes (proc (length all-jobs))
+        (setq spare-processes (1- spare-processes))
+        (ext:system "sleep 1")
+        (let* ((job-list (elt all-jobs proc))
+               (pid (core:fork)))
+          (if (eql 0 pid)
+              (run-job proc job-list)
+              (when (eql spare-processes 0)
+                (core:waitpid -1 0)
+                (setq spare-processes (1+ spare-processes)))))
+        (format t "Bottom of loop proc: ~a~%" proc))
+      (dotimes (proc (1- *max-parallel-searches*))
+        (core:waitpid -1 0))
+      (format t "~%!~%!  Done ~%!~%")
+      (parallel-merge compilation-tool-database)))
 
-(defvar *parallel-search-pids* nil)
-(defun parallel-search-all-fork (compilation-tool-database &key test one-at-a-time)
-        "Run *max-parallel-searches* processes at a time - whenever one finishes, start the next"
-        (setq *parallel-search-pids* nil)
-        (let ((all-jobs (split-jobs (if test
-                                        test
-                                        (reverse (lremove (lremove $* ".*mps\.c$") ".*gc_interface\.cc$")))
-                                    *max-parallel-searches*
-                                    ))
-              (spare-processes (if one-at-a-time 1 *max-parallel-searches*)))
-          (save-data all-jobs (merge-pathnames "project-all.dat" (clang-tool:main-pathname compilation-tool-database)))
-          (format t "all-jobs: ~a~%" all-jobs)
-          (dotimes (proc (length all-jobs))
-            (setq spare-processes (1- spare-processes))
-            (ext:system "sleep 1")
-            (let* ((job-list (elt all-jobs proc))
-                   (pid (core:fork)))
-              (if (eql 0 pid)
-                  (run-job proc job-list)
-                  (when (eql spare-processes 0)
-                    (core:waitpid -1 0)
-                    (setq spare-processes (1+ spare-processes)))))
-            (format t "Bottom of loop proc: ~a~%" proc))
-          (dotimes (proc (1- *max-parallel-searches*))
-            (core:waitpid -1 0))
-          (format t "~%!~%!  Done ~%!~%")
-          (parallel-merge compilation-tool-database)))
-
-(defun parallel-merge (compilation-tool-database &key end (start 0) restart)
-        "Merge the analyses generated from the parallel search"
-        (let* ((all-jobs (load-data (merge-pathnames "project-all.dat" (clang-tool:main-pathname compilation-tool-database))))
-               (merged (if restart
-                           (progn
-                             (format t "Loading existing project and restarting from ~a~%" start)
-                             (load-project))
-                           (make-project)))
-               (endnum (if (null end)
-                           (length all-jobs)
-                           end)))
-          (setq *project* merged)
-          (format t "Starting load/merge loop from ~a up to ~a~%" start endnum)
-          (do ((proc start (1+ proc)))
-              ((>= proc endnum) nil)
-            (format t "Marking memory with ~a~%" (1+ proc))
-            (gctools:gc-marker (1+ proc))
-            (format t "Loading project for job ~a~%" proc)
-            (let* ((project-dat-name (probe-file (project-pathname (format nil "project~a" proc) "dat")))
-                   (one (if project-dat-name
-                            (load-data (project-pathname (format nil "project~a" proc) "dat"))
-                            nil)))
-              (if one
-                  (progn
-                    (format t "     merging...~%")
-                    (merge-projects merged one))
-                  (format t "File not found.~%"))))
-          (save-project)
-          merged))
+  (defun parallel-merge (compilation-tool-database &key end (start 0) restart)
+    "Merge the analyses generated from the parallel search"
+    (let* ((all-jobs (load-data (merge-pathnames "project-all.dat" (clang-tool:main-pathname compilation-tool-database))))
+           (merged (if restart
+                       (progn
+                         (format t "Loading existing project and restarting from ~a~%" start)
+                         (load-project))
+                       (make-project)))
+           (endnum (if (null end)
+                       (length all-jobs)
+                       end)))
+      (setq *project* merged)
+      (format t "Starting load/merge loop from ~a up to ~a~%" start endnum)
+      (do ((proc start (1+ proc)))
+          ((>= proc endnum) nil)
+        (format t "Marking memory with ~a~%" (1+ proc))
+        (gctools:gc-marker (1+ proc))
+        (format t "Loading project for job ~a~%" proc)
+        (let* ((project-dat-name (probe-file (project-pathname (format nil "project~a" proc) "dat")))
+               (one (if project-dat-name
+                        (load-data (project-pathname (format nil "project~a" proc) "dat"))
+                        nil)))
+          (if one
+              (progn
+                (format t "     merging...~%")
+                (merge-projects merged one))
+              (format t "File not found.~%"))))
+      (save-project)
+      merged)))
 
 
 (defun run-test ()
@@ -3668,7 +3677,7 @@ Convert -Iinclude to -I<main-sourcefile-pathname>/include. Uses dynamic variable
 (defun setup-clasp-analyzer-compilation-tool-database (pathname &key selection-pattern source-path-identifier arguments-adjuster)
   "* Arguments
 - pathname :: The pathname to the compilation database for clasp analyzer.
-- selection-pattern : Used to select a subset of the source files for testing - any files with names that contain this string..
+- selection-pattern : Used to select a subset of the source files for testing - any files with names that contain this string.
 - source-path-identifier :: A string
 * Description
 Return a compilation database for analyzing the clasp (or some other clasp derived project) source code.

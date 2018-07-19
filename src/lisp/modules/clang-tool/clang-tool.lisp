@@ -9,6 +9,7 @@ Find directories that look like them and replace the ones defined in the constan
 
 (provide :clang-tool)
 
+(declaim (debug 3))
 (defpackage #:clang-tool
   (:shadow #:function-info #:function-type)
   (:use #:common-lisp #:core #:ast-tooling #:clang-ast)
