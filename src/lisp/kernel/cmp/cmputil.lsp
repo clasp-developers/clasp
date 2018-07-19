@@ -209,13 +209,17 @@
 (defun register-global-function-def (type name)
   (when (boundp '*global-function-defs*)
     (let ((existing (gethash name *global-function-defs*)))
-      (if existing
+      (if (and existing
+               ;; defmethod can define a gf, so we still want to note it-
+               ;; but multiple defmethods, or a defmethod after a defgeneric,
+               ;; shouldn't cause a warning.
+               (not (and (eq type 'defmethod)
+                         (or (eq (global-function-def-type existing) 'defgeneric)
+                             (eq (global-function-def-type existing) 'defmethod)))))
           (compiler-warning name "The %s %s was previously defined as a %s at %s%N"
-                            type
-                            name
-                            (global-function-def-type existing)
+                            type name (global-function-def-type existing)
                             (describe-source-location (global-function-def-source-pos-info existing)))
-          (setf (gethash name *global-function-defs*) 
+          (setf (gethash name *global-function-defs*)
                 (make-global-function-def :type type
                                        :name name
                                        :source-pos-info (ext:current-source-location)))))))
