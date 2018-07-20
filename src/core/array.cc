@@ -1988,40 +1988,6 @@ std::string SimpleCharacterString_O::__repr__() const {
   return this->get_std_string();
 }
 
-// ------------------------------------------------------------
-//
-// Class SimpleVector_O
-//
-
-bool SimpleVector_O::equalp(T_sp other) const {
-  if (&*other==this) return true;
-  if (!other.generalp()) return false;
-  if (gc::IsA<SimpleVector_sp>(other)) {
-    SimpleVector_sp svother = gc::As_unsafe<SimpleVector_sp>(other);
-    if (svother->length()!=this->length()) return false;
-    for (size_t i(0),iEnd(this->length()); i<iEnd; ++i ) {
-      if (!cl__equalp((*this)[i],(*svother)[i])) return false;
-    }
-    return true;
-  } else if (gc::IsA<VectorTNs_sp>(other)) {
-    VectorTNs_sp vother = gc::As_unsafe<VectorTNs_sp>(other);
-    if (vother->length()!=this->length()) return false;
-    for (size_t i(0),iEnd(this->length()); i<iEnd; ++i ) {
-      if (!cl__equalp((*this)[i],(*vother)[i])) return false;
-    }
-    return true;
-  }
-  return this->AbstractSimpleVector_O::equalp(other);
-}
-
-
-// ------------------------------------------------------------
-//
-// Class SimpleVectorDouble_O
-//
-
-
-
 // ----------------------------------------------------------------------
 //
 // Class SimpleBitVector
