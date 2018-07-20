@@ -1513,7 +1513,8 @@ can be saved and reloaded within the project for later analysis"
   '(:cxxrecord-decl
     (:is-definition)
     (:is-template-instantiation)
-    (:has-name "GCObjectAllocator"))
+;;    (:has-name "GCObjectAllocator")
+    )
   )
 
 (defun setup-lispalloc-search (mtool)
@@ -1536,7 +1537,7 @@ and the inheritance hierarchy that the garbage collector will need"
                     (arg-name (cast:get-name arg-decl)))
                (unless (gethash class-key class-results)
                  (gclog "Adding class name: ~a~%" class-name)
-                 ;;                 (break "Check locations")
+                 (break "Check locations")
                  (let ((lispalloc (make-lispalloc :key class-key
                                                   :name arg-name ;; XXXXXX (clang-tool:mtag-name :whole)
                                                   :location arg-location ;; class-location
