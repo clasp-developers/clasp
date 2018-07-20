@@ -344,7 +344,8 @@ using namespace gctools;
 mps_addr_t obj_skip(mps_addr_t client) {
   mps_addr_t oldClient = client;
   size_t size = 0;
-  const gctools::Header_s& header = *reinterpret_cast<const gctools::Header_s *>(ClientPtrToBasePtr(client));
+  const gctools::Header_s* header_ptr = reinterpret_cast<const gctools::Header_s *>(ClientPtrToBasePtr(client));
+  const gctools::Header_s& header = *header_ptr;
   const Header_s::Value& header_value = header.header;
   tagged_stamp_t tag = header_value.tag();
   switch (tag) {
