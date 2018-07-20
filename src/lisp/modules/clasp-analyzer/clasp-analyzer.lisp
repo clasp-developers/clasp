@@ -1516,42 +1516,41 @@ can be saved and reloaded within the project for later analysis"
     (:has-name "GCObjectAllocator"))
   )
 
-(defun %%lispalloc-matcher-callback (match-info)
-  (declare (core:lambda-name %%lispalloc-matcher-callback.lambda))
-  "This function can only be called as a ASTMatcher callback"
-  (let* ((decl (clang-tool:mtag-node match-info :whole))
-         (args (cast:get-template-args decl))
-         (arg (cast:template-argument-list-get args 0))
-         (qtarg (cast:get-as-type arg))
-         (tsty-new (cast:get-type-ptr-or-null qtarg))
-         (class-key (record-key tsty-new))
-         (classified (classify-ctype tsty-new))
-         (class-location (clang-tool:mtag-loc-start match-info :whole))
-         (arg-decl (cast:get-decl tsty-new)) ;; Should I convert to canonical type?????
-         (arg-location (clang-tool:source-loc-as-string match-info (get-loc-start arg-decl)))
-         (arg-name (cast:get-name arg-decl)))
-    (unless (gethash class-key class-results)
-      (gclog "Adding class name: ~a~%" class-name)
-      ;;                 (break "Check locations")
-      (let ((lispalloc (make-lispalloc :key class-key
-                                       :name arg-name ;; XXXXXX (clang-tool:mtag-name :whole)
-                                       :location arg-location ;; class-location
-                                       :ctype classified)))
-        (setf (gethash class-key class-results) lispalloc)))))
-
 (defun setup-lispalloc-search (mtool)
   "Setup the TOOL (multitool) to look for instance variables that we want to garbage collect
 and the inheritance hierarchy that the garbage collector will need"
   (symbol-macrolet ((class-results (project-lispallocs (clang-tool:multitool-results mtool))))
-    ;; Initialize the class search
-    (clang-tool:multitool-add-matcher mtool
-                                      :name :lispallocs
-                                      :matcher-sexp `(:bind :whole ,*lispalloc-matcher*)
-                                      :initializer (lambda () (setf class-results (make-hash-table :test #'equal :thread-safe t))) ; initializer
-                                      :callback (make-instance 'clang-tool:code-match-callback
-                                                               :timer (make-instance 'clang-tool:code-match-timer
-                                                                                     :name 'lisp-alloc-matcher)
-                                                               :match-code '%%lispalloc-matcher-callback))))
+    (flet ((%%lispalloc-matcher-callback (match-info)
+             (declare (core:lambda-name %%lispalloc-matcher-callback.lambda))
+             "This function can only be called as a ASTMatcher callback"
+             (let* ((decl (clang-tool:mtag-node match-info :whole))
+                    (args (cast:get-template-args decl))
+                    (arg (cast:template-argument-list-get args 0))
+                    (qtarg (cast:get-as-type arg))
+                    (tsty-new (cast:get-type-ptr-or-null qtarg))
+                    (class-key (record-key tsty-new))
+                    (classified (classify-ctype tsty-new))
+                    (class-location (clang-tool:mtag-loc-start match-info :whole))
+                    (arg-decl (cast:get-decl tsty-new)) ;; Should I convert to canonical type?????
+                    (arg-location (clang-tool:source-loc-as-string match-info (get-loc-start arg-decl)))
+                    (arg-name (cast:get-name arg-decl)))
+               (unless (gethash class-key class-results)
+                 (gclog "Adding class name: ~a~%" class-name)
+                 ;;                 (break "Check locations")
+                 (let ((lispalloc (make-lispalloc :key class-key
+                                                  :name arg-name ;; XXXXXX (clang-tool:mtag-name :whole)
+                                                  :location arg-location ;; class-location
+                                                  :ctype classified)))
+                   (setf (gethash class-key class-results) lispalloc))))))
+      ;; Initialize the class search
+      (clang-tool:multitool-add-matcher mtool
+                                        :name :lispallocs
+                                        :matcher-sexp `(:bind :whole ,*lispalloc-matcher*)
+                                        :initializer (lambda () (setf class-results (make-hash-table :test #'equal :thread-safe t))) ; initializer
+                                        :callback (make-instance 'clang-tool:code-match-callback
+                                                                 :timer (make-instance 'clang-tool:code-match-timer
+                                                                                       :name 'lisp-alloc-matcher)
+                                                                 :match-code (function %%lispalloc-matcher-callback))))))
 
 
 
