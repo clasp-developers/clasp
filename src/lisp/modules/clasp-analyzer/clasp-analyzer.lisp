@@ -1513,8 +1513,7 @@ can be saved and reloaded within the project for later analysis"
   '(:cxxrecord-decl
     (:is-definition)
     (:is-template-instantiation)
-;;    (:has-name "GCObjectAllocator")
-    )
+    (:has-name "GCObjectAllocator"))
   )
 
 (defun setup-lispalloc-search (mtool)
@@ -1537,7 +1536,7 @@ and the inheritance hierarchy that the garbage collector will need"
                     (arg-name (cast:get-name arg-decl)))
                (unless (gethash class-key class-results)
                  (gclog "Adding class name: ~a~%" class-name)
-                 (break "Check locations")
+                 ;; (break "Check locations")
                  (let ((lispalloc (make-lispalloc :key class-key
                                                   :name arg-name ;; XXXXXX (clang-tool:mtag-name :whole)
                                                   :location arg-location ;; class-location
@@ -2231,14 +2230,11 @@ so that they don't have to be constantly recalculated"
 
 (defun organize-allocs-into-species-and-create-stamps (analysis &aux (project (analysis-project analysis)))
   "Every GCObject and GCContainer is assigned to a species and given a GCStamp stamp value."
-  (let ((project (analysis-project analysis))
-        (allocs 0))
-    (maphash (lambda (k alloc) (incf allocs) (ensure-stamp-for-alloc-and-parent-classes alloc analysis)) (project-lispallocs project))
-    (maphash (lambda (k alloc) (incf allocs) (ensure-stamp-for-alloc-and-parent-classes alloc analysis)) (project-containerallocs project))
-    (maphash (lambda (k alloc) (incf allocs) (ensure-stamp-for-alloc-and-parent-classes alloc analysis)) (project-classallocs project))
-    (maphash (lambda (k alloc) (incf allocs) (ensure-stamp-for-alloc-and-parent-classes alloc analysis)) (project-rootclassallocs project))
-    (unless (> allocs 0)
-      (error "There are no allocs - so stamps can't be assigned"))))
+  (let ((project (analysis-project analysis)))
+    (maphash (lambda (k alloc) (ensure-stamp-for-alloc-and-parent-classes alloc analysis)) (project-lispallocs project))
+    (maphash (lambda (k alloc) (ensure-stamp-for-alloc-and-parent-classes alloc analysis)) (project-containerallocs project))
+    (maphash (lambda (k alloc) (ensure-stamp-for-alloc-and-parent-classes alloc analysis)) (project-classallocs project))
+    (maphash (lambda (k alloc) (ensure-stamp-for-alloc-and-parent-classes alloc analysis)) (project-rootclassallocs project))))
 
 (defgeneric fixer-macro-name (fixer-head))
 (defmethod fixer-macro-name ((x (eql :smart-ptr-fix))) "SMART_PTR_FIX")

@@ -421,6 +421,7 @@ Find directories that look like them and replace the ones defined in the constan
 
 (defvar +additional-arguments+
   #+target-os-darwin (vector "-I/usr/local/include")
+  #+target-os-linux (vector)
   #+(or)(vector
          "-I/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.12.sdk/usr/include"
          "-I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include"
