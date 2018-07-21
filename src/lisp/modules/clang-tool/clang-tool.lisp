@@ -519,7 +519,8 @@ Otherwise the value of convert-relative-includes-to-absolute is used.
 * Description
 Setup the default arguments adjusters."
   (push (lambda (args filename)
-          (format t "Arguments: ~s~%" args)
+          (format t "Arguments:~%")
+          (format t "~{~A \\~%~}%" (coerce args 'list))
           (format t "If nothing seems to be working - try running the arguments on the command line and look for errors~%")
           args)
         (arguments-adjuster-list compilation-tool-database))

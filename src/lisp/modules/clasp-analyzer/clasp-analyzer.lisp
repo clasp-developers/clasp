@@ -2420,12 +2420,10 @@ so that they don't have to be constantly recalculated"
          (decl (containeralloc-ctype alloc))
          (key (alloc-key alloc))
          (stamp-name (get-stamp-name stamp)))
-    ;;    (with-jump-table (fout jti dest stamp "goto SCAN_ADVANCE")
-    #+(or)
     (let ((fh (destination-helper-stream dest)))
       (if (cxxrecord-ctype-p decl)
           (progn
-            (format fout "    THROW_HARD_ERROR(BF(\"Should never scan ~a\"));~%" (cxxrecord-ctype-key decl)))
+            (format fh "    THROW_HARD_ERROR(BF(\"Should never scan ~a\"));~%" (cxxrecord-ctype-key decl)))
           (let ((layout (class-layout (gethash key (project-classes (analysis-project anal))) anal)))
             (codegen-container-layout fh stamp-name key layout anal))))))
 
@@ -3412,6 +3410,7 @@ Pointers to these objects are fixed in obj_scan or they must be roots."
       :jump-table-index-function 'scanner-jump-table-index-for-stamp-name
       :generator (lambda (dest anal)
                    (dolist (stamp (analysis-sorted-stamps anal))
+                     (format (destination-helper-stream dest) "// Stamp = ~a/~a~%" (stamp-key stamp) (stamp-value stamp))
                      (funcall (species-scan (stamp-species stamp)) dest stamp anal))))
     (do-generator stream analysis
                   :table-name "OBJ_FINALIZE"
