@@ -240,6 +240,7 @@ Compile a lisp source file into an LLVM module."
                given-input-pathname))
          (input-pathname (or (probe-file given-input-pathname)
 			     (error 'core:simple-file-error
+				    :pathname given-input-pathname
 				    :format-control "compile-file-to-module could not find the file ~s to open it"
 				    :format-arguments (list given-input-pathname))))
          (source-sin (open input-pathname :direction :input))
