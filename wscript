@@ -155,7 +155,9 @@ VALID_OPTIONS = [
     # Turn on debug options
     "DEBUG_OPTIONS",
     # Turn on address sanitizer
-    "ADDRESS_SANITIZER"
+    "ADDRESS_SANITIZER",
+    # Link libraries statically vs dynamically
+    "LINK_STATIC"
 ]
 
 DEBUG_OPTIONS = [
@@ -665,7 +667,10 @@ def configure(cfg):
 #        cfg.check_cxx(lib='lzma', cflags='-Wall', uselib_store='LZMA')
     else:
         pass
-    cfg.check_cxx(stlib=BOOST_LIBRARIES, cflags='-Wall', uselib_store='BOOST')
+    if (cfg.env['LINK_STATIC']):
+        cfg.check_cxx(stlib=BOOST_LIBRARIES, cflags='-Wall', uselib_store='BOOST')
+    else:
+        cfg.check_cxx(lib=BOOST_LIBRARIES, cflags='-Wall', uselib_store='BOOST')
     cfg.extensions_include_dirs = []
     cfg.extensions_gcinterface_include_files = []
     cfg.extensions_stlib = []
@@ -840,8 +845,11 @@ def configure(cfg):
     cfg.env.append_value('LIB', cfg.extensions_lib)
     cfg.env.append_value('STLIB', cfg.env.STLIB_CLANG)
     cfg.env.append_value('STLIB', cfg.env.STLIB_LLVM)
-    cfg.env.append_value('STLIB', cfg.env.STLIB_BOOST)
     cfg.env.append_value('STLIB', cfg.env.STLIB_Z)
+    if (cfg.env['LINK_STATIC']):
+        cfg.env.append_value('STLIB', cfg.env.STLIB_BOOST)
+    else:
+        cfg.env.append_value('LIB', cfg.env.LIB_BOOST)
     log.info("About to check if appending LIB_FFI")
     if (cfg.env['DEST_OS'] == DARWIN_OS ):
         if (cfg.env['REQUIRE_LIBFFI'] == True):
