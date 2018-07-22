@@ -255,9 +255,10 @@ size_t cc_matchKeywordOnce(core::T_O *xP, core::T_O *yP, core::T_O *sawKeyAlread
 }
 
 
-ALWAYS_INLINE core::T_O *cc_gatherVaRestArguments(va_list vargs, std::size_t* nargs, Vaslist* untagged_vargs_rest)
+ALWAYS_INLINE core::T_O *cc_gatherVaRestArguments(va_list vargs, std::size_t* nargs, Vaslist untagged_vargs_rest[2])
 {NO_UNWIND_BEGIN();
-  va_copy(untagged_vargs_rest->_Args,vargs);
+  va_copy(untagged_vargs_rest[0]._Args,vargs);
+  va_copy(untagged_vargs_rest[1]._Args,vargs);
 #ifdef DEBUG_ENSURE_VALID_OBJECT
   // Validate the arguments in the va_list
   va_list validate_vargs;
@@ -268,7 +269,8 @@ ALWAYS_INLINE core::T_O *cc_gatherVaRestArguments(va_list vargs, std::size_t* na
   }
   va_end(validate_vargs);
 #endif
-  untagged_vargs_rest->_remaining_nargs = *nargs;
+  untagged_vargs_rest[0]._remaining_nargs = *nargs;
+  untagged_vargs_rest[1]._remaining_nargs = *nargs;
   T_O* result = untagged_vargs_rest->asTaggedPtr();
   return result;
   NO_UNWIND_END();
