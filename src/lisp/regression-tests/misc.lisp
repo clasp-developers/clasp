@@ -83,3 +83,77 @@
 (test load-stream.2
       (with-input-from-string (s "(defun foo())")
         (load s :print t :verbose t)))
+
+(test wots-bformat
+ (not (string= "" (with-output-to-string (*standard-output*)(core:bformat t "Foo")))))
+
+(test load-stream.3
+      (let ((result-string
+             (with-output-to-string
+                 (*standard-output*)
+               (with-input-from-string
+                   (load-stream "(defun foo())")
+                 (load load-stream :verbose nil :print nil)))))
+        (= 0 (length result-string))))
+
+(test load-stream.3a
+      (let ((result-string
+             (with-output-to-string
+                 (*standard-output*)
+               (with-input-from-string
+                   (load-stream "(defun foo())")
+                 (load load-stream :verbose t :print nil)))))
+        (not (= 0 (length result-string)))))
+
+(test load-stream.3b
+      (let ((result-string
+             (with-output-to-string
+                 (*standard-output*)
+               (with-input-from-string
+                   (load-stream "(defun foo())")
+                 (load load-stream :verbose nil :print t)))))
+        (not (= 0 (length result-string)))))
+
+(test load-stream.3c
+      (let ((result-string
+             (with-output-to-string
+                 (*standard-output*)
+               (with-input-from-string
+                   (load-stream "(defun foo())")
+                 (load load-stream :verbose t :print t)))))
+        (not (= 0 (length result-string)))))
+
+(test load-stream.3c
+      (let ((result-string
+             (with-output-to-string
+                 (*standard-output*)
+               (with-input-from-string
+                   (load-stream "(defun foo())")
+                 (load load-stream :verbose t :print t)))))
+        (not (= 0 (length result-string)))))
+
+(test-expect-error
+ compile-1
+ (compile-file "sys:regression-tests;I-do-not-exist.lisp")
+ :type core:simple-file-error)
+
+(test compile-2
+      (string= ""
+               (with-output-to-string (*standard-output*)
+                 (compile-file "sys:regression-tests;test-compile-file.lisp" :verbose nil :print nil))))
+
+(test compile-4
+      (not (string= ""
+               (with-output-to-string (*standard-output*)
+                 (compile-file "sys:regression-tests;test-compile-file.lisp" :verbose t :print nil)))))
+
+(test compile-4
+      (not (string= ""
+               (with-output-to-string (*standard-output*)
+                 (compile-file "sys:regression-tests;test-compile-file.lisp" :print t :verbose nil)))))
+
+(test compile-5
+      (not (string= ""
+               (with-output-to-string (*standard-output*)
+                 (compile-file "sys:regression-tests;test-compile-file.lisp" :print t :verbose t)))))
+                 
