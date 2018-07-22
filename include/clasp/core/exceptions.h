@@ -142,9 +142,19 @@ extern core::Symbol_sp& _sym_name;
 #define CANNOT_OPEN_FILE_ERROR(_file_) FILE_ERROR(_file_)
 #define TOO_FEW_ARGUMENTS_ERROR() NO_INITIALIZERS_ERROR(core::_sym_tooFewArgumentsError)
 //#define TOO_MANY_ARGUMENTS_ERROR() NO_INITIALIZERS_ERROR(core::_sym_tooManyArgumentsError)
-//#define UNRECOGNIZED_KEYWORD_ARGUMENTS_ERROR(obj) ERROR(core::_sym_unrecognizedKeywordArgumentsError,obj)
-#define INVALID_KEYWORD_ARGUMENT_ERROR(obj) ERROR(core::_sym_invalidKeywordArgumentError, obj)
+#define UNRECOGNIZED_KEYWORD_ARGUMENTS_ERROR(obj) ERROR(core::_sym_unrecognizedKeywordArgumentsError,obj)
+// the following class does not exist in conditions.lsp and is not used
+// #define INVALID_KEYWORD_ARGUMENT_ERROR(obj) ERROR(core::_sym_invalidKeywordArgumentError, obj)
 #define STREAM_ERROR(st) ERROR(cl::_sym_streamError, core::lisp_createList(kw::_sym_stream, st))
+// core::_sym_simplePackageError with message and datum
+#define SIMPLE_PACKAGE_ERROR(message, datum)                                                     \
+        ERROR(core::_sym_simplePackageError,                                                     \
+              core::lisp_createList(kw::_sym_formatControl, core::lisp_createStr(message),kw::_sym_formatArguments, core::lisp_createList(core::lisp_createStr(datum))))
+#define SIMPLE_PACKAGE_ERROR_2_args(message, datum1, datum2)                                     \
+        ERROR(core::_sym_simplePackageError,                                                     \
+              core::lisp_createList(kw::_sym_formatControl, core::lisp_createStr(message),       \
+              kw::_sym_formatArguments, core::lisp_createList(core::lisp_createStr(datum1), core::lisp_createStr(datum2))))
+
 #define PACKAGE_ERROR(p) ERROR(cl::_sym_package_error, core::lisp_createList(kw::_sym_package, p))
 #define ERROR_END_OF_FILE(st) ERROR(cl::_sym_endOfFile, core::lisp_createList(kw::_sym_stream, st))
 #define CLOSED_STREAM_ERROR(st) ERROR(core::_sym_closedStream, core::lisp_createList(kw::_sym_stream, st))
@@ -170,7 +180,7 @@ extern core::Symbol_sp& _sym_name;
 
 #define QERROR_WRONG_TYPE_NTH_ARG(_nth_, _datum_, _expectedType_) core__wrong_type_nth_arg(__FILE__, __LINE__, core::lisp_intern(__FUNCTION__, CurrentPkg), _nth_, _datum_, _expectedType_)
 
-#define ARITHMATIC_ERROR(_operation_, _operands_) ERROR(cl::_sym_arithmaticError, core::lisp_createList(kw::_sym_operation, _operation_, kw::_sym_operands, _operands_))
+#define ARITHMETIC_ERROR(_operation_, _operands_) ERROR(cl::_sym_arithmeticError, core::lisp_createList(kw::_sym_operation, _operation_, kw::_sym_operands, _operands_))
 
 #define ERROR_DIVISION_BY_ZERO(_x_, _y_) ERROR(cl::_sym_divisionByZero, core::lisp_createList(kw::_sym_operation, cl::_sym__DIVIDE_, kw::_sym_operands, core::lisp_createList(_x_, _y_)))
 

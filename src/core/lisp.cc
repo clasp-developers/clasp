@@ -1129,10 +1129,10 @@ Package_sp Lisp_O::makePackage(const string &name, list<string> const &nicknames
     // When SIMPLE_ERROR is replaced with something that can do corrections, the continues will be necessary.
     // Corrections will mean, essentially, setting the name and nicknames variables.
   name_exists:
-    SIMPLE_ERROR(BF("There already exists a package with name: %s") % name);
+    SIMPLE_PACKAGE_ERROR("There already exists a package with name: ~a", name);
     continue;
   nickname_exists:
-    SIMPLE_ERROR(BF("Package nickname[%s] is already being used by package[%s]") % usedNickName % packageUsingNickName);
+    SIMPLE_PACKAGE_ERROR_2_args("Package nickname[~a] is already being used by package[~a]" , usedNickName , packageUsingNickName);
     continue;
   }
 }
