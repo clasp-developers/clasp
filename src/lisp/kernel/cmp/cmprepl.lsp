@@ -35,7 +35,6 @@
 
 (defun bclasp-implicit-compile-repl-form (form &optional environment)
   (declare (core:lambda-name cmp-repl-implicit-compile))
-  (gctools:garbage-collect)
   (unwind-protect
        (progn
          (when *print-implicit-compile-form* 
