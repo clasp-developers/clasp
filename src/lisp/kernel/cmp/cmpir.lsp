@@ -487,9 +487,7 @@
 
 (defun irc-basic-block-create (name &optional (function *current-function*))
   "Create a llvm::BasicBlock with (name) in the (function)"
-  (let ((bb (llvm-sys:basic-block-create *llvm-context* (bformat nil "%s%s" *block-name-prefix* name) function)))
-    (cmp-log "Created basic block  <*block-name-prefix* = %s>  <name=%s>: bb-> %s%N" *block-name-prefix* name bb)
-    bb))
+  (llvm-sys:basic-block-create *llvm-context* name function))
 
 (defun irc-get-insert-block ()
   (llvm-sys:get-insert-block *irbuilder*))
