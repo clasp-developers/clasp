@@ -215,7 +215,7 @@ in the generic function lambda-list to the generic function lambda-list"
                                         ;; that will get access to the current method and
                                         ;; current generic function? The method does not yet exist.
                                         (error "No next method") ;; FIXME: should call no-next-method.
-                                        (let ((use-args (if (> (va-list-length args) 0) args .method-args.)))
+                                        (let ((use-args (if (> (vaslist-length args) 0) args .method-args.)))
                                           (funcall (car .next-methods.)
                                                    use-args ; (or args .method-args.)
                                                    (cdr .next-methods.)))))))

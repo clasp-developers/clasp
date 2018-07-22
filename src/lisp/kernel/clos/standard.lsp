@@ -21,11 +21,11 @@
 ;;; INSTANCES INITIALIZATION AND REINITIALIZATION
 ;;;
 
-(defmethod initialize-instance ((instance #| #+clasp standard-object #+ecl |# T) &rest initargs)
+(defmethod initialize-instance ((instance T) core:&va-rest initargs)
   (dbg-standard "standard.lsp:29  initialize-instance unbound instance ->~a~%" (eq (core:unbound) instance))
   (apply #'shared-initialize instance 'T initargs))
 
-(defmethod reinitialize-instance ((instance #| #+clasp standard-object #+ecl |# T ) &rest initargs)
+(defmethod reinitialize-instance ((instance T ) &rest initargs)
 ;;  (print "HUNT entered reinitialize-instance") ;
   (check-initargs (class-of instance) initargs
 		  (valid-keywords-from-methods
@@ -93,7 +93,7 @@
         when (eq (slot-definition-allocation slotd) :instance)
           sum 1))
 
-(defmethod allocate-instance ((class standard-class) &rest initargs)
+(defmethod allocate-instance ((class standard-class) core:&va-rest initargs)
   (declare (ignore initargs))
   ;; CLHS says allocate-instance finalizes the class first, but we don't.
   ;; Dr. Strandh argues that this is impossible since the initargs should be the
@@ -109,13 +109,13 @@
     (mlog "In allocate-instance  x -> %s\n" x)
     x))
 
-(defmethod allocate-instance ((class derivable-cxx-class) &rest initargs)
+(defmethod allocate-instance ((class derivable-cxx-class) core:&va-rest initargs)
   (declare (ignore initargs))
   ;; derivable cxx objects are Instance_O's, so this is _probably_ okay.
   ;; (And allocate-new-instance uses the creator, so it'll do any C++ junk.)
   (core:allocate-new-instance class (class-size class)))
 
-(defmethod allocate-instance ((class funcallable-standard-class) &rest initargs)
+(defmethod allocate-instance ((class funcallable-standard-class) core:&va-rest initargs)
   (declare (ignore initargs))
   (dbg-standard "About to allocate-new-funcallable-instance class->~a~%" class)
   (let ((x (core:allocate-new-funcallable-instance class (class-size class))))
