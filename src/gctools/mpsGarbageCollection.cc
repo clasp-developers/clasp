@@ -58,6 +58,7 @@ templated_class_jump_table_index, jump_table_index, NULL
 #include <clasp/core/loadTimeValues.h>
 #include <clasp/core/posixTime.h> // was core/posixTime.cc???
 #include <clasp/core/symbolTable.h>
+#include <clasp/gctools/threadlocal.h>
 #include <clasp/core/evaluator.h>
 #include <clasp/gctools/globals.h>
 #include <clasp/core/wrappers.h>
@@ -225,6 +226,19 @@ mps_res_t clasp_scan_area_tagged(mps_ss_t ss,
 };
 
 namespace gctools {
+
+void bad_cons_mps_reserve_error()
+{
+  printf("%s:%d Bad cons_mps_allocation\n", __FILE__, __LINE__);
+  abort();
+}
+
+void bad_general_mps_reserve_error(const char* ap_name)
+{
+  printf("%s:%d Bad general_mps_allocation for %s\n", __FILE__, __LINE__, ap_name);
+  abort();
+}
+
 void mps_register_roots(void* roots_begin, size_t num_roots) {
   mps_root_t mps_root;
   mps_res_t res;
@@ -1067,6 +1081,9 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
   // Create the allocation points
     my_thread_allocation_points.initializeAllocationPoints();
     run_quick_tests();
+#ifdef DEBUG_COUNT_ALLOCATIONS
+    maybe_initialize_mythread_backtrace_allocations();
+#endif
 #if 1
     try {
       exit_code = startupFn(argc, argv, mpiEnabled, mpiRank, mpiSize);

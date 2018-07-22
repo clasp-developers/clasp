@@ -213,8 +213,8 @@ void Symbol_O::finish_setup(Package_sp pkg, bool exportp, bool shadowp) {
     this->_GlobalValue = this->asSmartPtr();
   else
     this->_GlobalValue = _Unbound<T_O>();
-  this->_Function = make_unbound_symbol_function(this->asSmartPtr());
-  this->_SetfFunction = make_unbound_setf_symbol_function(this->asSmartPtr());
+  this->fmakunbound();
+  this->fmakunbound_setf();
   pkg->bootstrap_add_symbol_to_package(this->symbolName()->get().c_str(), this->sharedThis<Symbol_O>(), exportp, shadowp);
   this->_PropertyList = _Nil<T_O>();
 }
@@ -239,8 +239,9 @@ Symbol_sp Symbol_O::create_from_string(const string &nm) {
   Symbol_sp n = gctools::GC<Symbol_O>::root_allocate(true);
   SimpleString_sp snm = SimpleBaseString_O::make(nm);
   n->setf_name(snm);
-  n->fmakunbound();
-  n->fmakunbound_setf();
+  // The following are done in finish_setup
+//  n->fmakunbound();
+//  n->fmakunbound_setf();
   ASSERTF(nm != "", BF("You cannot create a symbol without a name"));
 #if VERBOSE_SYMBOLS
   if (nm.find("/dyn") != string::npos) {
@@ -268,7 +269,7 @@ void Symbol_O::fmakunbound()
   this->_Function = make_unbound_symbol_function(this->asSmartPtr());
 }
 
-bool Symbol_O::setf_fboundp() const {
+bool Symbol_O::fboundp_setf() const {
   return this->_SetfFunction->entry.load() != unboundSetfFunctionEntryPoint;
 };
 
@@ -301,15 +302,16 @@ void Symbol_O::sxhash_equal(HashGenerator &hg,LocationDependencyPtrT ld) const
 CL_LISPIFY_NAME("cl:copy_symbol");
 CL_LAMBDA(symbol &optional copy-properties);
 CL_DEFMETHOD Symbol_sp Symbol_O::copy_symbol(T_sp copy_properties) const {
-  Symbol_sp new_symbol = Symbol_O::create
-    (this->_Name);
+  Symbol_sp new_symbol = Symbol_O::create(this->_Name);
   if (copy_properties.isTrue()) {
     if (this->boundP())
       new_symbol->_GlobalValue = this->symbolValue();
     new_symbol->_IsConstant = this->_IsConstant;
     new_symbol->_PropertyList = cl__copy_list(this->_PropertyList);
     if (this->fboundp()) new_symbol->_Function = this->_Function;
-    else new_symbol->_Function = make_unbound_symbol_function(new_symbol);
+    else new_symbol->fmakunbound();
+    if (this->fboundp_setf()) new_symbol->_SetfFunction = this->_SetfFunction;
+    else new_symbol->fmakunbound_setf();
   }
   return new_symbol;
 };
@@ -320,10 +322,6 @@ bool Symbol_O::isKeywordSymbol() {
   Package_sp pkg = gc::As<Package_sp>(this->_HomePackage); //
   return pkg->isKeywordPackage();
 };
-
-bool Symbol_O::amp_symbol_p() const {
-  return (this->_Name->get()[0] == '&');
-}
 
 #if defined(OLD_SERIALIZE)
 void Symbol_O::serialize(serialize::SNode node) {
@@ -524,10 +522,23 @@ void Symbol_O::dump() {
   printf("%s", ss.str().c_str());
 }
 
+// This should not ignore pkg, nor should it unintern shadowed symbols
+// what is done with T_sp tpkg(pkg)
 void Symbol_O::remove_package(Package_sp pkg)
 {
-  T_sp tpkg(pkg);
-  this->_HomePackage = _Nil<T_O>();
+  // can't even understand the syntax of this, cast of package to T_sp?
+  // T_sp tpkg(pkg);
+  if ((pkg->getSystemLockedP()) || (pkg->getUserLockedP()))
+    return;
+  T_sp home = this->getPackage();
+  if (!home.nilp()) {
+     Package_sp home_package = coerce::packageDesignator(home);
+    if ((home_package == pkg) &&
+        !home_package->getSystemLockedP() &&
+        !home_package->getUserLockedP()) {
+      this->_HomePackage = _Nil<T_O>();
+    }
+  }
 };
 
 CL_DEFUN T_sp core__symbol_global_value(Symbol_sp s) {

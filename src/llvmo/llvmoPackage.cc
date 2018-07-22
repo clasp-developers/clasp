@@ -125,7 +125,7 @@ CL_DEFUN bool llvm_sys__load_bitcode_ll(core::Pathname_sp filename, bool verbose
 }
 
 
- CL_LAMBDA(filename &optional verbose print external_format);
+CL_LAMBDA(filename &optional verbose print external_format);
 CL_DEFUN bool llvm_sys__load_bitcode(core::Pathname_sp filename, bool verbose, bool print, core::T_sp externalFormat )
 {
   core::DynamicScopeManager scope(::cl::_sym_STARpackageSTAR, ::cl::_sym_STARpackageSTAR->symbolValue());
@@ -388,7 +388,7 @@ void dump_funcs(core::Function_sp compiledFunction) {
 }
 #endif
 
-CL_LAMBDA(module &optional (stream t))
+CL_LAMBDA(module &optional (stream t));
 CL_DEFUN void dump_module(Module_sp module, core::T_sp tstream) {
   core::T_sp stream = core::coerce::outputStreamDesignator(tstream);
   string outstr;
@@ -397,7 +397,7 @@ CL_DEFUN void dump_module(Module_sp module, core::T_sp tstream) {
   core::clasp_write_string(outstr,stream);
 }
 
-CL_LAMBDA(function &optional (stream t))
+CL_LAMBDA(func &optional (stream t));
 CL_DEFUN void dump_function(Function_sp function, core::T_sp tstream) {
   core::T_sp stream = core::coerce::outputStreamDesignator(tstream);
   string outstr;

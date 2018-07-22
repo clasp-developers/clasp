@@ -26,8 +26,11 @@
     ;; process options
     (multiple-value-bind (option-list method-list)
 	(parse-generic-options options lambda-list)
-      (let* ((output `(ensure-generic-function ',function-specifier
-		       :delete-methods t ,@option-list)))
+      (let* ((output `(progn
+                        (eval-when (:compile-toplevel)
+                          (cmp:register-global-function-def 'defgeneric ',function-specifier))
+                        (ensure-generic-function ',function-specifier
+                                                 :delete-methods t ,@option-list))))
         (if method-list
             `(progn
                ,output

@@ -357,18 +357,14 @@
 
 (defun irc-set-parent (new-renv parent-env)
   (let ((visible-ancestor-environment (current-visible-environment parent-env t)))
-    ;;    (core:bformat *debug-io* "irc-set-parent-of-activation-frame parent-> %s%N" visible-ancestor-environment)
-    ;;    (core:bformat *debug-io* "irc-set-parent-of-activation-frame parent is f-c-e-p -> %s%N" (core:function-container-environment-p visible-ancestor-environment))
     (if (core:function-container-environment-p visible-ancestor-environment)
         (progn
           (error "Only value-frames should directly access the function-container-environment")
           #+(or)(let ((closure (core:function-container-environment-closure visible-ancestor-environment)))
-                  ;;          (core:bformat *debug-io* "setParentOfActivationFrameFromClosure to %s%N" visible-ancestor-environment)
                   (irc-intrinsic "setParentOfActivationFrameFromClosure"
                                  new-renv
                                  closure)))
         (let ((parent-renv2 (irc-renv visible-ancestor-environment)))
-          ;;          (core:bformat *debug-io* "setParentOfActivationFrame to %s%N" visible-ancestor-environment)
           (irc-intrinsic "setParentOfActivationFrame"
                          new-renv
                          (irc-load parent-renv2))))))
@@ -1315,11 +1311,11 @@ Write T_O* pointers into the current multiple-values array starting at the (offs
                (ret-tmv1 (llvm-sys:create-insert-value *irbuilder* ret-tmv0 nret '(1) "nret")))
           (irc-store ret-tmv1 result)))))
 
-(defun irc-calculate-entry (closure)
+(defun irc-calculate-entry (closure &optional (label "entry-point"))
   (let* ((closure-uintptr        (irc-ptr-to-int closure %uintptr_t%))
          (entry-point-addr-uint  (irc-add closure-uintptr (jit-constant-uintptr_t (- +closure-entry-point-offset+ +general-tag+)) "entry-point-addr-uint"))
          (entry-point-addr       (irc-int-to-ptr entry-point-addr-uint %fn-prototype**% "entry-point-addr"))
-         (entry-point            (irc-load entry-point-addr "entry-point")))
+         (entry-point            (irc-load entry-point-addr label)))
     entry-point))
 
 (defun irc-calculate-real-args (args)
@@ -1334,12 +1330,14 @@ Write T_O* pointers into the current multiple-values array starting at the (offs
     real-args))
 
 (defun irc-funcall-results-in-registers (closure args &optional (label ""))
-  (let* ((entry-point         (irc-calculate-entry closure))   ; Calculate the function pointer
+  (let* ((entry-point         (irc-calculate-entry closure label))   ; Calculate the function pointer
          (real-args           (irc-calculate-real-args args))  ; fill in NULL for missing register arguments
-         (result-in-registers (irc-call-or-invoke entry-point (list* closure (jit-constant-size_t (length args)) real-args) *current-unwind-landing-pad-dest* label)))
+         (result-in-registers (irc-call-or-invoke entry-point (list* closure (jit-constant-size_t (length args)) real-args) *current-unwind-landing-pad-dest*)))
     result-in-registers))
 
-(defun irc-funcall (result closure args &optional (label ""))
+(defun irc-funcall (result closure args &optional label)
+  (unless label
+    (setf label "unlabeled-function"))
   (let ((result-in-registers (irc-funcall-results-in-registers closure args label)))
     (irc-store-result result result-in-registers)))
 
@@ -1533,7 +1531,7 @@ Write T_O* pointers into the current multiple-values array starting at the (offs
     (let ((label (if literal-name
                      literal-name
                      "")))
-      (values (irc-load ref label) literal-name))))
+      (values (irc-load ref label) label))))
 
 (defun irc-global-setf-symbol (sym env)
   "Return an llvm GlobalValue for a function name of the form (setf XXXX).

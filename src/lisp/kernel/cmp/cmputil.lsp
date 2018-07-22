@@ -209,13 +209,17 @@
 (defun register-global-function-def (type name)
   (when (boundp '*global-function-defs*)
     (let ((existing (gethash name *global-function-defs*)))
-      (if existing
+      (if (and existing
+               ;; defmethod can define a gf, so we still want to note it-
+               ;; but multiple defmethods, or a defmethod after a defgeneric,
+               ;; shouldn't cause a warning.
+               (not (and (eq type 'defmethod)
+                         (or (eq (global-function-def-type existing) 'defgeneric)
+                             (eq (global-function-def-type existing) 'defmethod)))))
           (compiler-warning name "The %s %s was previously defined as a %s at %s%N"
-                            type
-                            name
-                            (global-function-def-type existing)
+                            type name (global-function-def-type existing)
                             (describe-source-location (global-function-def-source-pos-info existing)))
-          (setf (gethash name *global-function-defs*) 
+          (setf (gethash name *global-function-defs*)
                 (make-global-function-def :type type
                                        :name name
                                        :source-pos-info (ext:current-source-location)))))))
@@ -250,19 +254,18 @@
       info)))
 
 (defun compilation-unit-finished (messages)
+  ;; Add messages for global function references that were never satisfied
+  (maphash (lambda (name references)
+             (unless (or (fboundp name)
+                         (gethash name *global-function-defs*))
+               (dolist (ref references)
+                 (pushnew (make-compiler-style-warning
+                           :message (core:bformat nil "Undefined function %s" name)
+                           :source-pos-info (global-function-ref-source-pos-info ref)
+                           :form name)
+                          messages :test #'equalp))))
+           *global-function-refs*)
   (when messages
-    (bformat t "Compilation-unit finished %N%N")
-    ;; Add messages for global function references that were never satisfied
-    (maphash (lambda (name references)
-               (unless (or (fboundp name)
-                           (gethash name *global-function-defs*))
-                 (dolist (ref references)
-                   (pushnew (make-compiler-style-warning
-                             :message (core:bformat nil "Undefined function %s" name)
-                             :source-pos-info (global-function-ref-source-pos-info ref)
-                             :form name)
-                            messages :test #'equalp))))
-             *global-function-refs*)
-    (dolist (m (reverse messages))
-      (print-compiler-message m *debug-io*))))
-
+    (bformat t "Compilation-unit finished %N%N"))
+  (dolist (m (reverse messages))
+    (print-compiler-message m *debug-io*)))

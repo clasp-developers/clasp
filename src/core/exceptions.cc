@@ -837,8 +837,7 @@ void CEpackage_error(const char *fmt,
   clasp_va_start(args, nargs);
   List_sp fmtargs = clasp_grab_rest_args(args, nargs);
   clasp_va_end(args);
-  if (fmtargs.nilp())
-    fmtargs = Cons_O::create(package);
+  if (fmtargs.nilp()) fmtargs = Cons_O::create(package,_Nil<T_O>());
   eval::funcall(core::_sym_signalSimpleError,
                 core::_sym_simplePackageError,
                 SimpleBaseString_O::make(continue_message),
@@ -855,8 +854,7 @@ void FEpackage_error(const char *fmt,
   clasp_va_start(args, nargs);
   List_sp fmtargs = clasp_grab_rest_args(args, nargs);
   clasp_va_end(args);
-  if (fmtargs.nilp())
-    fmtargs = Cons_O::create(package);
+  if (fmtargs.nilp()) fmtargs = Cons_O::create(package,_Nil<T_O>());
   eval::funcall(core::_sym_signalSimpleError,
                 core::_sym_simplePackageError,
                 _Nil<T_O>(),

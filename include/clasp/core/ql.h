@@ -86,7 +86,7 @@ class list {
   };
 
   inline list &operator<<(core::T_sp const &obj) {
-    core::Cons_sp one = core::Cons_O::create(obj);
+    core::Cons_sp one = core::Cons_O::create(obj,_Nil<core::T_O>());
     if (!this->_Head.consp()) {
       this->_Head = one;
       this->_Tail = &CONS_CDR(this->_Head);

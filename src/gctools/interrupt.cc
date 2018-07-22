@@ -216,17 +216,10 @@ core::T_sp pop_signal(core::ThreadLocalState* thread) {
   }
   return value;
 }
-static void handle_all_queued(core::ThreadLocalState* thread)
+void handle_all_queued_interrupts(core::ThreadLocalState* thread)
 {
-  unlikely_if (!thread->_PendingInterrupts) {
-    // While initializing thread->_PendingInterrupts will be 0x00
-    // and we will ignore it until it is set up properly
-    return;
-  }
-  while (thread->_PendingInterrupts.notnilp()) {
+  while (thread->_PendingInterrupts.consp()) {
     core::T_sp sig = pop_signal(thread);
-//    printf("%s:%d  handle_all_queued \n", __FILE__, __LINE__);
-//    core::dbg_lowLevelDescribe(sig);
     handle_signal_now(sig, thread->_Process);
   }
 }
@@ -306,19 +299,9 @@ void interrupt_handle_signals(int signo) {
   handle_or_queue(my_thread,core::clasp_make_fixnum(signo));
 }
 
-
-
-
-void lisp_check_pending_interrupts(core::ThreadLocalState* thread)
-{
-  handle_all_queued(thread);
-}
-
-
 CL_DEFUN void core__check_pending_interrupts() {
-  handle_all_queued(my_thread);
+  handle_all_queued_interrupts(my_thread);
 }
-
 
 void fatal_error_handler(void *user_data, const std::string &reason, bool gen_crash_diag) {
   printf("%s:%d Hit a fatal error in llvm: %s\n", __FILE__, __LINE__, reason.c_str());

@@ -242,7 +242,7 @@
 
 (defmethod draw-instruction-edges ((instruction unwind-instruction) stream)
   (render-edge stream (instruction-id instruction)
-	       (gethash (invocation instruction) *instruction-table*)
+	       (gethash (destination instruction) *instruction-table*)
 	       :type :unwind))
 
 (defmethod label ((instruction catch-instruction)) "catch")

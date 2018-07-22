@@ -390,15 +390,15 @@ size_t dumpResults(const std::string &name, const std::string &shortName, T *dat
 
 #ifdef USE_MPS
 struct ReachableMPSObject {
-  ReachableMPSObject(int k) : kind(k){};
-  int kind = 0;
+  ReachableMPSObject(int k) : stamp(k) {};
+  size_t stamp = 0;
   size_t instances = 0;
   size_t totalMemory = 0;
   size_t largest = 0;
-  size_t print(const std::string &shortName) {
+  size_t print(const std::string &shortName,const vector<std::string> stampNames) {
     if (this->instances > 0) {
-      printf("%s: totalMemory: %10lu count: %8lu largest: %8lu avg.sz: %8lu %s/%d\n", shortName.c_str(),
-             this->totalMemory, this->instances, this->largest, this->totalMemory / this->instances, obj_name((gctools::GCStampEnum) this->kind), this->kind);
+      printf("%s: totalMemory: %10lu count: %8lu largest: %8lu avg.sz: %8lu %s/%lu\n", shortName.c_str(),
+             this->totalMemory, this->instances, this->largest, this->totalMemory / this->instances, stampNames[this->stamp].c_str(), this->stamp);
     }
     return this->totalMemory;
   }
@@ -426,9 +426,14 @@ size_t dumpMPSResults(const std::string &name, const std::string &shortName, vec
             return (x.totalMemory > y.totalMemory);
   });
   size_t idx = 0;
+  vector<std::string> stampNames;
+  stampNames.resize(gctools::global_NextStamp.load());
+  for ( auto it : global_stamp_name_map ) {
+    stampNames[it.second] = it.first;
+  }
   for (auto it : values) {
     // Does that print? If so should go to the OutputStream
-    totalSize += it.print(shortName);
+    totalSize += it.print(shortName,stampNames);
     idx += 1;
 #if 0
     if ( idx % 100 == 0 ) {
@@ -540,10 +545,11 @@ CL_DEFUN core::T_mv cl__room(core::T_sp x, core::Fixnum_sp marker, core::T_sp tm
   size_t arena_committed = mps_arena_committed(global_arena);
   size_t arena_reserved = mps_arena_reserved(global_arena);
   vector<ReachableMPSObject> reachables;
-  for (int i = 0; i < gctools::STAMP_max; ++i) {
+  for (int i = 0; i < global_NextStamp.load(); ++i) {
     reachables.push_back(ReachableMPSObject(i));
   }
   mps_amc_apply(global_amc_pool, amc_apply_stepper, &reachables, 0);
+  mps_amc_apply(global_amcz_pool, amc_apply_stepper, &reachables, 0);
   OutputStream << "-------------------- Reachable Kinds -------------------\n";
   dumpMPSResults("Reachable Kinds", "AMCpool", reachables);
   OutputStream << std::setw(12) << numCollections << " collections\n";
@@ -1086,6 +1092,14 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
   if (setFeatures) features = core::Cons_O::create(_lisp->internKeyword("DEBUG-TRACK-UNWINDS"),features);
 #endif
   if (buildReport) ss << (BF("DEBUG_TRACK_UNWINDS = %s\n") % (debug_track_unwinds ? "**DEFINED**" : "undefined") ).str();
+
+  bool track_allocations = false;
+#ifdef DEBUG_TRACK_ALLOCATIONS
+  track_allocations = true;
+  debugging = true;
+  if (setFeatures) features = core::Cons_O::create(_lisp->internKeyword("TRACK-ALLOCATIONS"),features);
+#endif
+  if (buildReport) ss << (BF("TRACK_ALLOCATIONS = %s\n") % (track_allocations ? "**DEFINED**" : "undefined") ).str();
 
     bool debug_lexical_depth = false;
 #ifdef DEBUG_LEXICAL_DEPTH

@@ -68,7 +68,6 @@ THE SOFTWARE.
 #include <clasp/core/array.h>
 #include <clasp/core/designators.h>
 #include <clasp/core/unixfsys.h>
-#include <clasp/core/reader.h>
 #include <clasp/core/lispReader.h>
 #include <clasp/core/fileSystem.h>
 #include <clasp/core/wrappers.h>

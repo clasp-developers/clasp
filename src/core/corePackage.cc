@@ -83,7 +83,6 @@ THE SOFTWARE.
 #include <clasp/core/posixTime.h>
 #include <clasp/core/random.h>
 #include <clasp/core/readtable.h>
-#include <clasp/core/reader.h>
 #include <clasp/core/record.h>
 #include <clasp/core/singleDispatchMethod.h>
 #include <clasp/core/smallMap.h>
@@ -175,6 +174,7 @@ SYMBOL_EXPORT_SC_(CorePkg,cxx_method_source_location);
 SYMBOL_EXPORT_SC_(CompPkg, STARllvm_contextSTAR);
 SYMBOL_EXPORT_SC_(CompPkg, STARdebug_jitSTAR );
 SYMBOL_EXPORT_SC_(CompPkg, STARload_time_value_holder_nameSTAR);
+SYMBOL_EXPORT_SC_(CompPkg, STARoptimization_levelSTAR);
 SYMBOL_EXPORT_SC_(CorePkg,c_local);
 SYMBOL_EXPORT_SC_(CorePkg,_PLUS_known_typep_predicates_PLUS_);
 SYMBOL_EXPORT_SC_(CorePkg,_PLUS_class_name_to_lisp_name_PLUS_);
@@ -387,7 +387,6 @@ SYMBOL_EXPORT_SC_(CorePkg, size_t);
 SYMBOL_EXPORT_SC_(CorePkg, threadInfo);
 
 SYMBOL_EXPORT_SC_(CorePkg, circle_subst);
-SYMBOL_EXPORT_SC_(CorePkg, STARsourceDatabaseSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARcurrentSourcePosInfoSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARstartRunTimeSTAR);
 SYMBOL_EXPORT_SC_(ClPkg, internalTimeUnitsPerSecond);
@@ -608,8 +607,6 @@ SYMBOL_EXPORT_SC_(CorePkg, STARbuild_linkflagsSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, _PLUS_run_all_function_name_PLUS_);
 SYMBOL_EXPORT_SC_(CorePkg, _PLUS_clasp_ctor_function_name_PLUS_);
 SYMBOL_EXPORT_SC_(CorePkg, STARcodeWalkerSTAR);
-SYMBOL_EXPORT_SC_(CorePkg, STARcurrentSourceFileInfoSTAR);
-SYMBOL_EXPORT_SC_(CorePkg, current_source_file);
 SYMBOL_SC_(CorePkg, STARdebugMacroexpandSTAR);
 SYMBOL_EXPORT_SC_(ClPkg, T);
 SYMBOL_EXPORT_SC_(ClPkg, method);
@@ -889,7 +886,7 @@ void testFeatures() {
   testConses();
 }
 
-CoreExposer_O::CoreExposer_O(Lisp_sp lisp) : Exposer_O(lisp, CorePkg, CorePkg_nicknames) {
+CoreExposer_O::CoreExposer_O(Lisp_sp lisp) : Exposer_O(lisp, CorePkg) {
 };
 
 void CoreExposer_O::expose(core::Lisp_sp lisp, WhatToExpose what) const {
@@ -1023,7 +1020,6 @@ void CoreExposer_O::define_essential_globals(Lisp_sp lisp) {
   ext::_sym__PLUS_processStandardInput_PLUS_->defparameter(stdin_stream);
   ext::_sym__PLUS_processStandardOutput_PLUS_->defparameter(stdout_stream);
   ext::_sym__PLUS_processErrorOutput_PLUS_->defparameter(stderr_stream);
-  _sym_STARsourceDatabaseSTAR->defparameter(_Nil<T_O>());
   _sym_STARcurrentSourcePosInfoSTAR->defparameter(_Nil<T_O>());
   cl::_sym_STARstandard_inputSTAR->defparameter(SynonymStream_O::make(ext::_sym__PLUS_processStandardInput_PLUS_));
   cl::_sym_STARstandard_outputSTAR->defparameter(SynonymStream_O::make(ext::_sym__PLUS_processStandardOutput_PLUS_));
@@ -1053,7 +1049,6 @@ void CoreExposer_O::define_essential_globals(Lisp_sp lisp) {
   _sym_cArgumentsLimit->defconstant(make_fixnum(Lisp_O::MaxFunctionArguments));
   _sym_STARdebugMacroexpandSTAR->defparameter(_Nil<T_O>());
   _lisp->_Roots._ClassTable = HashTable_O::create(cl::_sym_eq);
-  _sym_STARcurrentSourceFileInfoSTAR->defparameter(_Nil<T_O>());
   _sym_STARcodeWalkerSTAR->defparameter(_Nil<T_O>());
   _sym_STARsharpEqContextSTAR->defparameter(_Nil<T_O>());
   cl::_sym_STARreadDefaultFloatFormatSTAR->defparameter(cl::_sym_single_float);
@@ -1175,6 +1170,15 @@ void CoreExposer_O::define_essential_globals(Lisp_sp lisp) {
   _sym_STARdebug_fastgfSTAR->defparameter(_Nil<core::T_O>());
   _sym_STARdebug_dispatchSTAR->defparameter(_Nil<core::T_O>());
   _sym_STARdebug_valuesSTAR->defparameter(_Nil<core::T_O>());
+  int optimization_level = 3;
+  const char* optLevel = getenv("CLASP_OPTIMIZATION_LEVEL");
+  if (optLevel) {
+    optimization_level = strtol(optLevel,NULL,10);
+    if (optimization_level < 0) optimization_level = 0;
+    if (optimization_level > 3) optimization_level = 3;
+    printf("%s:%d CLASP_OPTIMIZATION_LEVEL = %d\n", __FILE__, __LINE__, optimization_level);
+  }
+  comp::_sym_STARoptimization_levelSTAR->defparameter(core::make_fixnum(optimization_level));
   _sym_STARbits_in_bit_array_wordSTAR->defparameter(core::clasp_make_fixnum(BIT_ARRAY_BYTE_SIZE));
   _sym_STARreader_generate_cstSTAR->defparameter(_Nil<core::T_O>());
   _sym_STARreader_cst_resultSTAR->defparameter(_Nil<core::T_O>());
@@ -1242,7 +1246,6 @@ void add_defsetf_access_update(Symbol_sp access_fn, Symbol_sp update_fn) {
   Cons_sp pair = Cons_O::create(access_fn, update_fn);
   List_sp list = _sym_STARsystem_defsetf_update_functionsSTAR->symbolValue();
   _sym_STARsystem_defsetf_update_functionsSTAR->defparameter(Cons_O::create(pair, list));
-  _sym_STARmonitorRegisterSourceInfoSTAR->defparameter(_Nil<T_O>());
 }
 };
 

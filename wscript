@@ -66,7 +66,9 @@ FREEBSD_OS = 'freebsd'
 CLANG_VERSION = 6
 
 STAGE_CHARS = [ 'r', 'i', 'a', 'b', 'f', 'c', 'd' ]
-
+# Full LTO  -flto
+# thin LTO  -flto=thin
+LTO_OPTION = "-flto"
 GCS_NAMES = [ 'boehm',
               'mpsprep',
               'mps' ]
@@ -153,7 +155,9 @@ VALID_OPTIONS = [
     # Turn on debug options
     "DEBUG_OPTIONS",
     # Turn on address sanitizer
-    "ADDRESS_SANITIZER"
+    "ADDRESS_SANITIZER",
+    # Link libraries statically vs dynamically
+    "LINK_STATIC"
 ]
 
 DEBUG_OPTIONS = [
@@ -191,6 +195,7 @@ DEBUG_OPTIONS = [
     "DEBUG_ENSURE_VALID_OBJECT",  #Defines ENSURE_VALID_OBJECT(x)->x macro - sprinkle these around to run checks on objects
     "DEBUG_QUICK_VALIDATE",    # quick/cheap validate if on and comprehensive validate if not
     "DEBUG_MPS_SIZE",   # check that the size of the MPS object will be calculated properly by obj_skip
+    "DEBUG_MPS_UNDERSCANNING",   # Very expensive - does a mps_arena_collect/mps_arena_release for each allocation
     "DEBUG_DONT_OPTIMIZE_BCLASP",  # Optimize bclasp by editing llvm-ir
     "DEBUG_RECURSIVE_ALLOCATIONS",
     "DEBUG_SLOW",    # Code runs slower due to checks - undefine to remove checks
@@ -233,8 +238,8 @@ def update_dependencies(cfg):
                        "e5c54bc30b0887c237bde2827036d17315f88737")
     fetch_git_revision("src/mps",
                        "https://github.com/Ravenbrook/mps.git",
-                       label = "master", revision = "b5be454728c2ac58b9cb2383360ed0366a7e4115")
-#                       label = "master", revision = "46e0a8d77ac470282de7300f5eaf471ca2fbee05")
+#                       label = "master", revision = "b5be454728c2ac58b9cb2383360ed0366a7e4115")
+                       label = "master", revision = "46e0a8d77ac470282de7300f5eaf471ca2fbee05")
     fetch_git_revision("src/lisp/modules/asdf",
                        "https://gitlab.common-lisp.net/asdf/asdf.git",
                        label = "master", revision = "3.3.1.2")
@@ -361,6 +366,7 @@ class variant(object):
         cfg.define("_RELEASE_BUILD",1)
         cfg.env.append_value('CXXFLAGS', [ '-O3', '-g' ])
         cfg.env.append_value('CFLAGS', [ '-O3', '-g' ])
+        cfg.define("ALWAYS_INLINE_MPS_ALLOCATIONS",1)
         if (os.getenv("CLASP_RELEASE_CXXFLAGS") != None):
             cfg.env.append_value('CXXFLAGS', os.getenv("CLASP_RELEASE_CXXFLAGS").split() )
         if (os.getenv("CLASP_RELEASE_LINKFLAGS") != None):
@@ -599,7 +605,7 @@ def configure(cfg):
     if ((cfg.env['CLASP_BUILD_MODE'] =='bitcode')):
         cfg.define("CLASP_BUILD_MODE",2) # thin-lto
         cfg.env.CLASP_BUILD_MODE = 'bitcode'
-        cfg.env.LTO_FLAG = '-flto=thin'
+        cfg.env.LTO_FLAG = LTO_OPTION
         if (cfg.env['DEST_OS'] == LINUX_OS ):
             if (cfg.env['USE_LLD']):
                 cfg.env.append_value('LINKFLAGS', '-Wl,--thinlto-cache-dir=/tmp/clasp')
@@ -661,7 +667,10 @@ def configure(cfg):
 #        cfg.check_cxx(lib='lzma', cflags='-Wall', uselib_store='LZMA')
     else:
         pass
-    cfg.check_cxx(stlib=BOOST_LIBRARIES, cflags='-Wall', uselib_store='BOOST')
+    if (cfg.env['LINK_STATIC']):
+        cfg.check_cxx(stlib=BOOST_LIBRARIES, cflags='-Wall', uselib_store='BOOST')
+    else:
+        cfg.check_cxx(lib=BOOST_LIBRARIES, cflags='-Wall', uselib_store='BOOST')
     cfg.extensions_include_dirs = []
     cfg.extensions_gcinterface_include_files = []
     cfg.extensions_stlib = []
@@ -809,7 +818,7 @@ def configure(cfg):
             if (opt in DEBUG_OPTIONS):
                 cfg.define(opt,1)
             else:
-                raise error("Illegal DEBUG_OPTION - allowed options: %s" % (opt, DEBUG_OPTIONS))
+                raise Exception("Illegal DEBUG_OPTION %s - allowed options: %s" % (opt, DEBUG_OPTIONS))
 
 #    cfg.define("DISABLE_TYPE_INFERENCE",1)
     cfg.env.USE_HUMAN_READABLE_BITCODE=True
@@ -836,8 +845,11 @@ def configure(cfg):
     cfg.env.append_value('LIB', cfg.extensions_lib)
     cfg.env.append_value('STLIB', cfg.env.STLIB_CLANG)
     cfg.env.append_value('STLIB', cfg.env.STLIB_LLVM)
-    cfg.env.append_value('STLIB', cfg.env.STLIB_BOOST)
     cfg.env.append_value('STLIB', cfg.env.STLIB_Z)
+    if (cfg.env['LINK_STATIC']):
+        cfg.env.append_value('STLIB', cfg.env.STLIB_BOOST)
+    else:
+        cfg.env.append_value('LIB', cfg.env.LIB_BOOST)
     log.info("About to check if appending LIB_FFI")
     if (cfg.env['DEST_OS'] == DARWIN_OS ):
         if (cfg.env['REQUIRE_LIBFFI'] == True):
@@ -928,6 +940,37 @@ def build(bld):
     bld.clasp_aclasp = collect_aclasp_lisp_files(wrappers = False)
     bld.clasp_bclasp = collect_bclasp_lisp_files()
     bld.clasp_cclasp = collect_cclasp_lisp_files()
+
+    def find_lisp(bld,x):
+        find = bld.path.find_node("%s.lsp"%x)
+        if (find):
+            return find.abspath()
+        find = bld.path.find_node("%s.lisp"%x)
+        if (find):
+            return find.abspath()
+        find = bld.path.find_or_declare("%s.lisp"%x)
+        if (find):
+            return find.abspath()
+        return x
+    
+    fout = open("/tmp/build.lisp", "w")
+    fout.write('(core:select-package :core)\n')
+    fout.write('(core:*make-special \'core::*number-of-jobs*)\n')
+    fout.write('(setq core::*number-of-jobs* 1)\n')
+    fout.write('(export \'core::*number-of-jobs*)\n')
+    fout.write('(load "%s" :verbose t)\n' % find_lisp(bld,"src/lisp/kernel/clasp-builder"))
+    fout.write('(core::remove-stage-features)\n')
+    fout.write('(setq *features* (cons :aclasp (cons :clasp-min *features*)))\n')
+    for x in bld.clasp_aclasp:
+        fout.write('(load "%s" :verbose t)\n' % find_lisp(bld,x))
+    for x in bld.clasp_aclasp:
+        fout.write('(load "%s" :verbose t)\n' % find_lisp(bld,x))
+    fout.write('(core::remove-stage-features)\n')
+    fout.write('(setq *features* (cons :bclasp (cons :clos *features*)))\n')
+    for x in bld.clasp_bclasp:
+        fout.write('(load "%s" :verbose t)\n' % find_lisp(bld,x))
+    fout.close()
+    
     bld.clasp_cclasp_no_wrappers = collect_cclasp_lisp_files(wrappers = False)
 
     bld.extensions_include_dirs = []
@@ -1284,7 +1327,7 @@ class link_executable(clasp_task):
             lto_object_path_lto = []
         link_options = []
         if (self.env['DEST_OS'] == DARWIN_OS ):
-            link_options = link_options + [ "-flto=thin", "-v", '-Wl,-stack_size,0x1000000']
+            link_options = link_options + [ LTO_OPTION, "-v", '-Wl,-stack_size,0x1000000']
         cmd = [ self.env.CXX[0] ] + \
               waf_nodes_to_paths(self.inputs) + \
               self.env['LINKFLAGS'] + \
@@ -1321,7 +1364,8 @@ class compile_aclasp(clasp_task):
         cmd = self.clasp_command_line(executable,
                                       image = False,
                                       features = ["clasp-min"],
-                                      forms = ['(load "sys:kernel;clasp-builder.lsp")',
+                                      forms = ['(setq *features* (cons :aclasp *features*))',
+                                               '(load "sys:kernel;clasp-builder.lsp")',
                                                #'(load-aclasp)',
                                                '(setq core::*number-of-jobs* %d)' % self.bld.jobs,
                                                '(core:compile-aclasp :output-file #P"%s")' % output_file,
@@ -1338,7 +1382,8 @@ class compile_bclasp(clasp_task):
         cmd = self.clasp_command_line(executable,
                                       image = image_file,
                                       features = [],
-                                      forms = ['(load "sys:kernel;clasp-builder.lsp")',
+                                      forms = ['(setq *features* (cons :bclasp *features*))',
+                                               '(load "sys:kernel;clasp-builder.lsp")',
                                                '(setq core::*number-of-jobs* %d)' % self.bld.jobs,
                                                '(core:compile-bclasp :output-file #P"%s")' % output_file,
                                                '(core:quit)'],
@@ -1352,7 +1397,8 @@ class compile_cclasp(clasp_task):
         image_file = self.inputs[1].abspath()
         output_file = self.outputs[0].abspath()
         log.debug("In compile_cclasp %s --image %s -> %s", executable, image_file, output_file)
-        forms = ['(load "sys:kernel;clasp-builder.lsp")',
+        forms = ['(setq *features* (cons :cclasp *features*))',
+                 '(load "sys:kernel;clasp-builder.lsp")',
                  '(setq core::*number-of-jobs* %d)' % self.bld.jobs]
         if (self.bld.options.LOAD_CCLASP):
             forms += ['(load-cclasp)']
@@ -1377,7 +1423,8 @@ class recompile_cclasp(clasp_task):
         cmd = self.clasp_command_line(other_clasp,
                                       features = ['ignore-extensions'],
                                       resource_dir = os.path.join(self.bld.path.abspath(), out, self.bld.variant_obj.variant_dir()),
-                                      forms = ['(load "sys:kernel;clasp-builder.lsp")',
+                                      forms = ['(setq *features* (cons :cclasp *features*))',
+                                               '(load "sys:kernel;clasp-builder.lsp")',
                                                '(setq core::*number-of-jobs* %d)' % self.bld.jobs,
                                                '(core:recompile-cclasp :output-file #P"%s")' % output_file,
                                                '(core:quit)'],

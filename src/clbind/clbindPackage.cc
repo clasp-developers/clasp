@@ -61,7 +61,7 @@ void ClbindExposer_O::expose(core::Lisp_sp lisp, core::Exposer_O::WhatToExpose w
       break;
   case candoGlobals: {
     list<string> nicknames;
-    list<string> usePackages = {"COMMON-LISP", "CLOS", ClbindPkg};
+    list<string> usePackages = {"COMMON-LISP" /*, "CLOS"*/ , ClbindPkg};
     _lisp->makePackage("SB-BSD-CLBIND", nicknames, usePackages);
     initialize_clbind();
   };

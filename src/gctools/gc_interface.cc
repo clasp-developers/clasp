@@ -123,7 +123,7 @@ typedef bool _Bool;
 #include <clasp/core/lambdaListHandler.h>
 #include <clasp/core/package.h>
 #include <clasp/core/character.h>
-#include <clasp/core/reader.h>
+//#include <clasp/core/reader.h>
 //#include <clasp/core/regex.h>
 #include <clasp/core/array.h>
 #include <clasp/core/readtable.h>
@@ -145,7 +145,7 @@ typedef bool _Bool;
 #include <clasp/gctools/gc_boot.h>
 
 //#include <clasp/core/clc.h>
-#include <clasp/core/clcenv.h>
+//#include <clasp/core/clcenv.h>
 
 #include <clasp/clbind/clbind.h>
 
@@ -344,7 +344,8 @@ using namespace gctools;
 mps_addr_t obj_skip(mps_addr_t client) {
   mps_addr_t oldClient = client;
   size_t size = 0;
-  const gctools::Header_s& header = *reinterpret_cast<const gctools::Header_s *>(ClientPtrToBasePtr(client));
+  const gctools::Header_s* header_ptr = reinterpret_cast<const gctools::Header_s *>(ClientPtrToBasePtr(client));
+  const gctools::Header_s& header = *header_ptr;
   const Header_s::Value& header_value = header.header;
   tagged_stamp_t tag = header_value.tag();
   switch (tag) {
@@ -751,7 +752,12 @@ void register_stamp_name(const std::string& stamp_name, size_t stamp_num) {
 void define_builtin_cxx_classes() {
 #ifndef SCRAPING
  #define GC_ENUM_NAMES
-  #include INIT_CLASSES_INC_H
+  #ifdef USE_BOEHM
+   #include INIT_CLASSES_INC_H
+  #endif
+  #ifdef USE_MPS
+   #include CLASP_GC_FILENAME
+  #endif
  #undef GC_ENUM_NAMES
 #endif
 }

@@ -1,5 +1,8 @@
 (in-package :tags)
 
+(defvar *default-priority* 10
+  "Default priority for defining functions is 10")
+
 (define-condition unknown-tag ()
   ((tag :initarg :tag :accessor unknown-tag-tag))
   (:report (lambda (condition stream)
@@ -76,6 +79,7 @@
 (defclass tags:cl-lambda-tag (tag)
   ((lambda-list% :initarg :lambda-list% :reader tags:lambda-list%)))
 
+
 (defun maybe-lambda-list (tag)
   (if tag
       (lambda-list% tag)
@@ -88,6 +92,16 @@
   (if tag
       (docstring% tag)
       "\"\""))
+
+(defclass tags:cl-priority-tag (tag)
+  ((priority% :initarg :priority% :reader tags:priority%)))
+
+(defun maybe-priority (tag)
+  "Default priority is 10"
+  (if tag
+      (parse-integer (priority% tag))
+      *default-priority*))
+
 
 (defclass tags:cl-declare-tag (tag)
   ((declare-form% :initarg :declare-form% :reader tags:declare-form%)))
@@ -206,6 +220,8 @@
                         lambda-list)))
   (define-tag-handler cl-docstring-tag "CL_DOCSTRING_TAG" tags:cl-docstring-tag
     :docstring% (cscrape:read-string-to-tag bufs cscrape:+end-tag+))
+  (define-tag-handler cl-priority-tag "CL_PRIORITY_TAG" tags:cl-priority-tag
+    :priority% (cscrape:read-string-to-tag bufs cscrape:+end-tag+))
   (define-tag-handler cl-declare-tag "CL_DECLARE_TAG" tags:cl-declare-tag
     :declare-form% (getf plist :declare))
   (define-tag-handler cl-defun-tag "CL_DEFUN_TAG" tags:cl-defun-tag

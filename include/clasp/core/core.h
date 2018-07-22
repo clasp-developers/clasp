@@ -66,7 +66,7 @@ THE SOFTWARE.
 #define DONT_OPTIMIZE_WHEN_DEBUG_RELEASE 
 #endif
 #define DONT_OPTIMIZE_ALWAYS __attribute__((optnone))
-#define ALWAYS_INLINE __attribute((always_inline))
+#define ALWAYS_INLINE __attribute__((always_inline))
 #define NOINLINE __attribute__((noinline))
 #define MAYBE_INLINE __attribute__((noinline))
 
@@ -1004,14 +1004,6 @@ namespace core {
   size_t lisp_pushCatchThrowException(T_sp throwTag, T_sp value);
   int lisp_lookupEnumForSymbol(Symbol_sp predefSymId, T_sp symbol);
   core::Symbol_sp lisp_lookupSymbolForEnum(Symbol_sp predefSymId, int enumVal);
-
-/*! Register source info for the object in the current source database */
-  core::T_sp lisp_registerSourceInfo(T_sp obj, SourceFileInfo_sp sfo, size_t filePos, int lineno, int column);
-  core::T_sp lisp_registerSourcePosInfo(T_sp obj, SourcePosInfo_sp spi);
-
-
-
-
 };
 
 #include <clasp/gctools/interrupt.h>

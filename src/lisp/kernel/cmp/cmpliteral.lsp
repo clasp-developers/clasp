@@ -678,7 +678,7 @@ Return the orderered-raw-constants-list and the constants-table GlobalVariable"
                 (cmp-log "Creating ltv thunk with name: %s%N" given-name)
                 (codegen fn-result form fn-env)))))
     (cmp-log-dump-function fn)
-    (irc-verify-function fn t)
+    (unless cmp:*suppress-llvm-output* (irc-verify-function fn t))
     fn))
 
 (defun compile-form (form)
@@ -822,7 +822,7 @@ If it isn't NIL then copy the literal from its index in the LTV into result."
                                    )
               (let* ((given-name (llvm-sys:get-name fn)))
                 (codegen fn-result form fn-env)))))
-    (irc-verify-function fn t)
+    (unless cmp:*suppress-llvm-output* (irc-verify-function fn t))
     (or (llvm-sys:valuep fn) (error "compile-load-time-value-thunk must return an llvm::Function object - it will return ~a" fn))
     fn))
 

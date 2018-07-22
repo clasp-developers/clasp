@@ -175,7 +175,7 @@
                  :foreign-types (cst:raw (cst:second cst))
                  :function-name (cst:raw (cst:third cst))
                  :argument-asts (cleavir-cst-to-ast::convert-sequence (cst:rest (cst:rest (cst:rest cst))) environment system)
-                 :origin (source cst)))
+                 :origin (cst:source cst)))
 
 (defmethod cleavir-generate-ast::check-special-form-syntax ((head (eql 'core:foreign-call)) form)
   (cleavir-code-utilities:check-form-proper-list form)
@@ -201,7 +201,7 @@
   (make-instance 'clasp-cleavir-ast:foreign-call-pointer-ast
                  :foreign-types (cst:raw (cst:second cst))
                  :argument-asts (cleavir-cst-to-ast::convert-sequence (cst:rest (cst:rest cst)) environment system)
-                 :origin (source cst)))
+                 :origin (cst:source cst)))
 
 (defmethod cleavir-generate-ast::check-special-form-syntax ((head (eql 'core:foreign-call-pointer)) form)
   (cleavir-code-utilities:check-form-proper-list form)

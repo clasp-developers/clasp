@@ -118,6 +118,9 @@
           irc-int-to-ptr
           irc-verify-module-safe
           irc-verify-function
+          *suppress-llvm-output*
+          *optimization-level*
+          with-track-llvm-time
           irc-add
           irc-alloca-tmv
           irc-add-clause

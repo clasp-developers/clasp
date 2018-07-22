@@ -50,8 +50,12 @@ CL_DEFUN T_sp core__bformat(T_sp destination, const string &original_control, Li
     output = my_thread->_BFormatStringOutputStream;
   } else if (destination == _sym_printf) {
     output = destination;
+  } else if (destination == _lisp->_true()) {
+    output = cl::_sym_STARstandard_outputSTAR->symbolValue();
+  } else if (cl__streamp(destination)) {
+    output = destination;
   } else {
-    output = coerce::outputStreamDesignator(destination);
+    TYPE_ERROR(destination,cl::_sym_streamError);
   }
   std::stringstream scontrol;
   std::string control;
@@ -120,8 +124,9 @@ CL_DEFUN T_sp core__bformat(T_sp destination, const string &original_control, Li
     clasp_write_string(fmter_str, output);
   }
   if (destination.nilp()) {
-    StringOutputStream_sp sout = gc::As<StringOutputStream_sp>(output);
-    return sout->getAndReset();
+    StringOutputStream_sp sout = gc::As_unsafe<StringOutputStream_sp>(output);
+    String_sp result = sout->getAndReset();
+    return result;
   }
   return _Nil<T_O>();
 }
