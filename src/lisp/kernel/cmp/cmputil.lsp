@@ -265,7 +265,5 @@
                            :form name)
                           messages :test #'equalp))))
            *global-function-refs*)
-  (when messages
-    (bformat t "Compilation-unit finished %N%N"))
   (dolist (m (reverse messages))
     (print-compiler-message m *debug-io*)))
