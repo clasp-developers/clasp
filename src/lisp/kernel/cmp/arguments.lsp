@@ -466,15 +466,6 @@
       (calling-convention-args.va-start cc)
       cc)))
 
-
-#+(or)
-(defun cclasp-compile-lambda-list-code (lambda-list outputs calling-conv
-                                        &key translate-datum)
-  (let ((*translate-datum* (lambda (datum)
-                             (funcall translate-datum datum))))
-    (compile-lambda-list-code* lambda-list outputs calling-conv)))
-
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; bclasp 
@@ -537,48 +528,6 @@
 ;;;(bformat *debug-io* "translate-datum %s -> %s%N" datum ref)
                           ref)))
     new-env))
-
-
-#+(or)
-(defun clasp-maybe-alloc-cc-info (lambda-list debug-on)
-  "Maybe allocate slots in the stack frame to handle the calls
-   depending on what is in the lambda-list (&rest, &key etc) and debug-on.
-   Return a calling-convention-configuration object that describes what was allocated.
-   See the cclasp version in arguments.lisp "
-  (multiple-value-bind (reqargs optargs rest-var key-flag keyargs allow-other-keys auxargs varest-p)
-      (core:process-lambda-list lambda-list 'core::function)
-    ;; Currently if nargs <= +args-in-registers+ required arguments and (null debug-on)
-    ;;      then can optimize and use the arguments in registers directly
-    ;;  If anything else then allocate space to spill the registers
-    ;;
-    ;; Currently only cases:
-    ;; (w)
-    ;; (w x)
-    ;; (w x y)
-    ;; (w x y z)  up to the +args-in-registers+
-    ;;    can use only registers
-    ;; In the future add support for required + optional 
-    ;; (x &optional y)
-    ;; (x y &optional z) etc
-    (let* ((req-opt-only (and (not rest-var)
-                              (not key-flag)
-                              (eql 0 (car keyargs))
-                              (not allow-other-keys)))
-           (num-req (car reqargs))
-           (num-opt (car optargs))
-           ;; Currently only required arguments are accepted
-           ;;          and (<= num-req +args-in-register+)
-           ;;          and not debugging
-           ;;     --> Use only register arguments
-           (may-use-only-registers (and req-opt-only (<= num-req +args-in-registers+) (eql 0 num-opt))))
-      (if (and may-use-only-registers (null debug-on))
-          (make-calling-convention-configuration
-           :use-only-registers t)
-          (make-calling-convention-configuration
-           :use-only-registers may-use-only-registers ; if may-use-only-registers then debug-on is T and we could use only registers
-           :vaslist* (irc-alloca-vaslist :label "vaslist")
-           :register-save-area* (irc-alloca-register-save-area :label "register-save-area")
-           :invocation-history-frame* (and debug-on (irc-alloca-invocation-history-frame :label "invocation-history-frame")))))))
 
 (defun bclasp-setup-calling-convention (arguments lambda-list debug-on)
   (let ((setup (maybe-alloc-cc-setup lambda-list debug-on)))
