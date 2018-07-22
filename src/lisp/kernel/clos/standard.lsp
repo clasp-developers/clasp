@@ -35,7 +35,7 @@
                     #'shared-initialize (list instance t))))
   (apply #'shared-initialize instance '() initargs))
 
-(defmethod shared-initialize ((instance #| #+clasp standard-object #+ecl |# T) slot-names &rest initargs)
+(defmethod shared-initialize ((instance T) slot-names #+(or)&rest core:&va-rest initargs)
   ;;
   ;; initialize the instance's slots is a two step process
   ;;   1 A slot for which one of the initargs in initargs can set
@@ -59,32 +59,36 @@
   (let* ((class (class-of instance)))
     ;; initialize-instance slots
     (dolist (slotd (class-slots class))
+      (core:vaslist-rewind initargs)
       (let* ((slot-initargs (slot-definition-initargs slotd))
-	     (slot-name (slot-definition-name slotd)))
-	(or
-	 ;; Try to initialize the slot from one of the initargs.
-	 (do ((l initargs) initarg val)
-	     ((null l)
-	      (progn
-		nil))
-	   (setf initarg (pop l))
-	   (when (endp l)
-	     (simple-program-error "Wrong number of keyword arguments for SHARED-INITIALIZE, ~A"
-				   initargs))
-	   (unless (symbolp initarg)
-	     (simple-program-error "Not a valid initarg: ~A" initarg))
-	   (setf val (pop l))
-	   (when (member initarg slot-initargs :test #'eq)
-	     (setf (slot-value instance slot-name) val)
-	     (return t)))
-
-	 (when (and slot-names
-		    (or (eq slot-names 'T)
-			(member slot-name slot-names))
-		    (not (slot-boundp instance slot-name)))
-	   (let ((initfun (slot-definition-initfunction slotd)))
-	     (when initfun
-	       (setf (slot-value instance slot-name) (funcall initfun)))))))))
+             (slot-name (slot-definition-name slotd)))
+        (or
+         ;; Try to initialize the slot from one of the initargs.
+         (do ((largs initargs)
+              initarg
+              val)
+           (#+(or)(null largs) (= (core:vaslist-length largs) 0)
+              (progn nil))
+           (setf initarg #+(or)(pop largs) (core:vaslist-pop largs))
+           #+(or)(when (endp largs) (simple-program-error "Wrong number of keyword arguments for SHARED-INITIALIZE, ~A" initargs))
+           (when (= (core:vaslist-length largs) 0)
+             (simple-program-error "Wrong number of keyword arguments for SHARED-INITIALIZE, ~A"
+                                   (progn
+                                     (core:vaslist-rewind initargs)
+                                     (core:vaslist-as-list initargs))))
+           (unless (symbolp initarg)
+             (simple-program-error "Not a valid initarg: ~A" initarg))
+           (setf val #+(or)(pop l) (core:vaslist-pop largs))
+           (when (member initarg slot-initargs :test #'eq)
+             (setf (slot-value instance slot-name) val)
+             (return t)))
+         (when (and slot-names
+                    (or (eq slot-names 'T)
+                        (member slot-name slot-names))
+                    (not (slot-boundp instance slot-name)))
+           (let ((initfun (slot-definition-initfunction slotd)))
+             (when initfun
+               (setf (slot-value instance slot-name) (funcall initfun)))))))))
   instance)
 
 (defun compute-instance-size (slots)
