@@ -568,7 +568,7 @@ def configure(cfg):
                 if (not key in VALID_OPTIONS):
                     raise Exception("%s is an INVALID wscript.config option - valid options are: %s" % (key, VALID_OPTIONS))
                 else:
-                    log.debug("wscript.config option %s = %s", key, local_environment[key])
+                    log.info("wscript.config option %s = %s", key, local_environment[key])
             cfg.env.update(local_environment)
         else:
             log.warn("There is no 'wscript.config' file - assuming default configuration. See 'wscript.config.template' for further details.")
