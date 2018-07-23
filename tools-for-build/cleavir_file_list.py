@@ -1,5 +1,5 @@
 #
-# This is a generated file, editing it is unwise
+# This is a generated file, editing it is extremely unwise - instead run regenerate-cleavir-file-list.lisp
 #
 cleavir_file_list = [
     "src/lisp/kernel/contrib/Acclimation/packages",
