@@ -11,7 +11,7 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
-;;; Describing top level forms (for compile-verbose)
+;;; Describing top level forms (for compile-print)
 
 (defun describe-form (form)
   ;; We could be smarter about this. For example, for (progn ...) nothing very interesting
@@ -316,7 +316,7 @@ Compile a lisp source file into an LLVM module."
            (*compile-verbose* verbose)
            (output-path (compile-file-pathname input-file :output-file output-file :output-type output-type ))
            (*compile-file-output-pathname* output-path))
-      (with-compiler-timer (:message "Compile-file" :report-link-time t :verbose t)
+      (with-compiler-timer (:message "Compile-file" :report-link-time t :verbose verbose)
         (let ((module (compile-file-to-module input-file
                                               :type type
                                               :output-type output-type
@@ -351,15 +351,18 @@ Compile a lisp source file into an LLVM module."
              (ensure-directories-exist output-path)
              (let ((temp-bitcode-file (compile-file-pathname input-file :output-file output-file :output-type :bitcode)))
                (ensure-directories-exist temp-bitcode-file)
-               (bformat t "Writing temporary bitcode file to: %s%N" temp-bitcode-file)
+               (when verbose
+		 (bformat t "Writing temporary bitcode file to: %s%N" temp-bitcode-file))
                (with-track-llvm-time
                    (write-bitcode module (core:coerce-to-filename temp-bitcode-file)))
-               (bformat t "Writing fasl file to: %s%N" output-file)
+               (when verbose
+		 (bformat t "Writing fasl file to: %s%N" output-file))
                (unless dry-run (llvm-link output-file :input-files (list temp-bitcode-file) :input-type :bitcode))))
             (t ;; fasl
              (error "Add support to file of type: ~a" output-type)))
           (dolist (c conditions)
-            (bformat t "conditions: %s%N" c))
+            (when verbose
+	      (bformat t "conditions: %s%N" c)))
           (with-track-llvm-time
               (llvm-sys:module-delete module))
           (compile-file-results output-path conditions))))))
