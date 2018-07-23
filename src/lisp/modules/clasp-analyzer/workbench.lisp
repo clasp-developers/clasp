@@ -8,20 +8,71 @@
   (format t "Done Loading clasp-analyzer~%"))
 (in-package :clasp-analyzer)
 ;;; ------------------------------------------------------------
-;;; To load and analyze the project
+;;; To load and analyze one file in the project
+(progn
+  (defparameter *compile-commands* (probe-file "source-dir:build;mpsprep;compile_commands.json"))
+  (defparameter *db* (clasp-analyzer:setup-clasp-analyzer-compilation-tool-database
+                (pathname *compile-commands*)
+                ))
+  (time (clasp-analyzer:serial-search/generate-code *db*))
+  (format t "Done searching project~%"))))
+
+
+;;; ------------------------------------------------------------
+;;; To load and analyze the entire project
 (progn
   (defparameter *compile-commands* (probe-file "~/aws/static-analyze-clasp/results/compile_commands.json"))
-  (defvar *db* (clasp-analyzer:setup-clasp-analyzer-compilation-tool-database
-                (pathname *compile-commands*)))
+  (defparameter *db* (clasp-analyzer:setup-clasp-analyzer-compilation-tool-database
+                      (pathname *compile-commands*)
+                      ))
   (time
    (progn
      (format t "Loading project~%")
      (defparameter *p1* (load-project *db* "~/aws/static-analyze-clasp/results/project.dat"))
      (format t "Done loading project~%"))))
 (progn
+  (setf *print-pretty* nil)
   (defparameter *analysis* (analyze-project *p1*))
   (generate-code *analysis* :output-file #P"/tmp/clasp_gc.cc")
   (format t "Done analyze and generate-code for project~%")))
+
+
+
+;; --- Test pattern matchers
+
+(probe-file "source-dir:build;mpsprep;compile_commands.json")
+(probe-file "source-dir:build;mpsprep;compile_commands.json")
+
+(progn
+  (defparameter *compile-commands* (probe-file "source-dir:build;mpsprep;compile_commands.json"))
+  (defparameter *db* (clasp-analyzer:setup-clasp-analyzer-compilation-tool-database
+                      (pathname *compile-commands*)
+                      :selection-pattern "bignum.cc"
+                      ))
+  (clang-tool::load-asts *db*)
+  (clang-tool::with-compilation-tool-database *db*
+    (clang-tool::match-count-loaded-asts
+     '(:cxxrecord-decl)
+     :limit 10)
+    )
+  )
+
+(clang-tool::run-matcher-on-loaded-asts '(:cxxrecord-decl) :callback (lambda (&rest r) (format t "In callback~%")) :counter-limit 10)
+
+(defparameter *db* (clasp-analyzer:setup-clasp-analyzer-compilation-tool-database
+                    (pathname *compile-commands*)
+                    :selection-pattern "bignum.cc"
+                    ))
+
+
+
+
+
+
+
+
+
+
 
 
 (trace codegen-variable-part)

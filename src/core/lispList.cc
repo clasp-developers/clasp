@@ -330,7 +330,7 @@ CL_DEFUN T_sp cl__list(T_sp objects) {
   return objects;
 };
 
-CL_LAMBDA(&va-rest objects);
+CL_LAMBDA(core:&va-rest objects);
 CL_DECLARE();
 CL_DOCSTRING("list* see CLHS");
 CL_DEFUN T_sp cl__listSTAR(VaList_sp vargs) {

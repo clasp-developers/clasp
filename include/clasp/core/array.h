@@ -249,12 +249,12 @@ namespace core {
   }
 
   template <class T>
-    Array_sp templated_nreverse_VectorNs(T& me) {
+    void templated_nreverse_VectorNs(T& me) {
     AbstractSimpleVector_sp bsv;
     size_t start, end;
     me.asAbstractSimpleVectorRange(bsv,start,end);
     auto sv = gc::As_unsafe<gctools::smart_ptr<typename T::simple_type>>(bsv);
-    return templated_ranged_nreverse(*sv,start,end);
+    templated_ranged_nreverse(*sv,start,end);
   }
 
 };
@@ -805,10 +805,7 @@ namespace core {
     virtual clasp_elttype elttype() const { return clasp_aet_object; };
     virtual T_sp arrayElementType() const override { return cl::_sym_T_O; };
   public:
-    // Implement these methods for simple vectors - some are implemented in parent classes
-    // for convenience if not speed
     virtual bool equal(T_sp other) const override { return this->eq(other);};
-    virtual bool equalp(T_sp other) const override;
   };
 };
 
@@ -1024,7 +1021,7 @@ namespace core {
       this->this_asAbstractSimpleVectorRange(sv,start,end);
     }
     virtual Array_sp reverse() const final { return templated_reverse_VectorNs(*this); };
-    virtual Array_sp nreverse() final { return templated_nreverse_VectorNs(*this); };
+    virtual Array_sp nreverse() final { templated_nreverse_VectorNs(*this); return this->asSmartPtr(); };
     virtual void internalAdjustSize_(size_t size, T_sp initElement=_Nil<T_O>(), bool initElementSupplied=false ) final {
       if (size == this->_ArrayTotalSize) return;
       AbstractSimpleVector_sp basesv;
@@ -1040,29 +1037,6 @@ namespace core {
       if (!this->_Flags.fillPointerP()) this->_FillPointerOrLengthOrDummy = size;
       this->_DisplacedIndexOffset = 0;
       this->_Flags.set_displacedToP(false);
-    }
-    bool equalp(T_sp o) const {
-      if (&*o == this) return true;
-      if (my_smart_ptr_type other = o.asOrNull<my_array_type>()) {
-        if (this->rank() != other->rank() ) return false;
-        for (size_t i(0); i<this->rank(); ++i ) {
-          if (this->_Dimensions[i] != other->_Dimensions[i]) return false;
-        }
-        for (size_t i(0),iEnd(this->arrayTotalSize()); i<iEnd; ++i) {
-          if (!cl__equalp(this->rowMajorAref(i), other->rowMajorAref(i))) return false;
-        }
-        return true;
-      } else if (my_simple_smart_ptr_type other = o.asOrNull<my_simple_array_type>()) {
-        if (this->rank() != other->rank() ) return false;
-        for (size_t i(0); i<this->rank(); ++i ) {
-          if (this->_Dimensions[i] != other->_Dimensions[i]) return false;
-        }
-        for (size_t i(0),iEnd(this->arrayTotalSize()); i<iEnd; ++i) {
-          if (!cl__equalp(this->rowMajorAref(i), other->rowMajorAref(i))) return false;
-        }
-        return true;
-      }
-      return false;
     }
     CL_METHOD_OVERLOAD virtual void rowMajorAset(size_t idx, T_sp value) final {(*this)[idx] = simple_type::from_object(value);}
     CL_METHOD_OVERLOAD virtual T_sp rowMajorAref(size_t idx) const final {return simple_type::to_object((*this)[idx]);}
@@ -1142,7 +1116,7 @@ namespace core {
       this->this_asAbstractSimpleVectorRange(sv,start,end);
     }
     virtual Array_sp reverse() const final { return templated_reverse_VectorNs(*this); };
-    virtual Array_sp nreverse() final { return templated_nreverse_VectorNs(*this); };
+    virtual Array_sp nreverse() final { templated_nreverse_VectorNs(*this); return this->asSmartPtr(); };
     virtual void internalAdjustSize_(size_t size, T_sp initElement=_Nil<T_O>(), bool initElementSupplied=false ) final {
       if (size == this->_ArrayTotalSize) return;
       AbstractSimpleVector_sp basesv;
@@ -1218,7 +1192,7 @@ namespace core {
     const simple_element_type* end() const { return &(*this)[this->length()]; };
   public:
     virtual Array_sp reverse() const final { return templated_reverse_VectorNs(*this); };
-    virtual Array_sp nreverse() final { return templated_nreverse_VectorNs(*this); };
+    virtual Array_sp nreverse() final { templated_nreverse_VectorNs(*this); return this->asSmartPtr(); };
     virtual void internalAdjustSize_(size_t size, T_sp initElement=_Nil<T_O>(), bool initElementSupplied=false ) final {cannotAdjustSizeOfSimpleArrays(this->asSmartPtr());};
 public:
     void this_asAbstractSimpleVectorRange(AbstractSimpleVector_sp& sv, size_t& start, size_t& end) const  {

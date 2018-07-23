@@ -30,6 +30,7 @@ THE SOFTWARE.
 
 #include <clasp/core/common.h>
 
+PACKAGE_USE("COMMON-LISP");
 NAMESPACE_PACKAGE_ASSOCIATION(cffi, CffiPkg, "CFFI-SYS");
 
 namespace cffi {

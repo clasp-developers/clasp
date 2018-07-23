@@ -484,7 +484,7 @@ CL_DEFUN  T_sp cl__arrayElementType(Array_sp array)
   return array->arrayElementType();
 }
 
-CL_LAMBDA(array &va-rest core::indices);
+CL_LAMBDA(array core:&va-rest core::indices);
 CL_LISPIFY_NAME("cl:arrayRowMajorIndex");
 CL_DEFUN size_t cl__arrayRowMajorIndex(Array_sp array, VaList_sp indices) {
   return array->arrayRowMajorIndex(indices);
@@ -604,7 +604,7 @@ void core__copy_subarray(Array_sp dest, Fixnum_sp destStart, Array_sp orig, Fixn
 }
 
 CL_LISPIFY_NAME("CL:aref");
-CL_LAMBDA(value array &va-rest indices);
+CL_LAMBDA(value array core:&va-rest indices);
 CL_DECLARE();
 CL_DOCSTRING("aset");
 CL_DEFUN_SETF T_sp core__aset(T_sp value, Array_sp array, VaList_sp indices) {
@@ -614,14 +614,14 @@ CL_DEFUN_SETF T_sp core__aset(T_sp value, Array_sp array, VaList_sp indices) {
 };
 
 CL_LISPIFY_NAME("cl:aref");
-CL_LAMBDA(array &va-rest core::indices);
+CL_LAMBDA(array core:&va-rest core::indices);
 CL_DEFUN T_sp cl__aref(Array_sp array, VaList_sp vargs)
 {
   cl_index rowMajorIndex = array->arrayRowMajorIndex(vargs);
   return array->rowMajorAref(rowMajorIndex);
 }
 
-CL_LAMBDA(array &va-rest indices);
+CL_LAMBDA(array core:&va-rest indices);
 CL_LISPIFY_NAME("core:index");
 CL_DEFUN gc::Fixnum core__index(Array_sp array, VaList_sp indices) {
   return array->arrayRowMajorIndex(indices);
@@ -652,6 +652,8 @@ CL_DEFUN void core__arrayFill(Array_sp array, T_sp val)
    if end is nil then fill to the end of the array*/
 CL_LISPIFY_NAME("core:fill-array-with-elt");
 CL_DEFUN void core__fillArrayWithElt(Array_sp array, T_sp element, cl_index start, T_sp end) {
+    // dimensions probably already checked with core__sequence_start_end
+    // this is probably a redundant check
     size_t_pair p = sequenceStartEnd(core::_sym_fillArrayWithElt,
                                      array->arrayTotalSize(),start,end);
     array->unsafe_fillArrayWithElt(element,p.start,p.end);
@@ -975,7 +977,7 @@ T_sp template_string_NE_(const T1& string1, const T2& string2, size_t start1, si
   goto RETURN_FALSE;
  END_STRING2: // Did not hit end of string 1 at this point
  RETURN_TRUE: // strings are not equal
-  return _lisp->_true();
+  return make_fixnum((int)(cp1.offset() + start1));
  RETURN_FALSE:
   return _Nil<T_O>();
 }
@@ -1169,7 +1171,7 @@ T_sp template_string_not_equal(const T1& string1, const T2& string2, size_t star
   goto RETURN_FALSE;
  END_STRING2: // Did not hit end of string 1 at this point
  RETURN_TRUE: // strings are not equal
-  return _lisp->_true();
+  return make_fixnum((int)(cp1.offset() + start1)); //_lisp->_true();
  RETURN_FALSE:
   return _Nil<T_O>();
 }
@@ -1917,9 +1919,12 @@ bool SimpleBaseString_O::equal(T_sp other) const {
 bool SimpleBaseString_O::equalp(T_sp other) const {
   if (&*other==this) return true;
   if (!other.generalp()) return false;
-  if (!cl__stringp(other)) return false;
-  String_sp sother = gc::As_unsafe<String_sp>(other);
-  TEMPLATE_HALF_STRING_DISPATCHER(this,sother,template_string_equalp_bool,0,this->length(),0,sother->length());
+  if (cl__stringp(other)) {
+    String_sp sother = gc::As_unsafe<String_sp>(other);
+    TEMPLATE_HALF_STRING_DISPATCHER(this,sother,template_string_equalp_bool,0,this->length(),0,sother->length());
+  } else {
+    return this->AbstractSimpleVector_O::equalp(other);
+  }
 }
 
 
@@ -1966,9 +1971,12 @@ bool SimpleCharacterString_O::equal(T_sp other) const {
 bool SimpleCharacterString_O::equalp(T_sp other) const {
   if (&*other==this) return true;
   if (!other.generalp()) return false;
-  if (!cl__stringp(other)) return false;
-  String_sp sother = gc::As_unsafe<String_sp>(other);
-  TEMPLATE_HALF_STRING_DISPATCHER(this,sother,template_string_equalp_bool,0,this->length(),0,sother->length());
+  if (!cl__stringp(other)) {
+    String_sp sother = gc::As_unsafe<String_sp>(other);
+    TEMPLATE_HALF_STRING_DISPATCHER(this,sother,template_string_equalp_bool,0,this->length(),0,sother->length());
+  } else {
+    return this->AbstractSimpleVector_O::equalp(other);
+  }
 }
 
 std::string SimpleCharacterString_O::get_std_string() const {
@@ -1981,40 +1989,6 @@ std::string SimpleCharacterString_O::get_std_string() const {
 std::string SimpleCharacterString_O::__repr__() const {
   return this->get_std_string();
 }
-
-// ------------------------------------------------------------
-//
-// Class SimpleVector_O
-//
-
-bool SimpleVector_O::equalp(T_sp other) const {
-  if (&*other==this) return true;
-  if (!other.generalp()) return false;
-  if (gc::IsA<SimpleVector_sp>(other)) {
-    SimpleVector_sp svother = gc::As_unsafe<SimpleVector_sp>(other);
-    if (svother->length()!=this->length()) return false;
-    for (size_t i(0),iEnd(this->length()); i<iEnd; ++i ) {
-      if (!cl__equalp((*this)[i],(*svother)[i])) return false;
-    }
-    return true;
-  } else if (gc::IsA<VectorTNs_sp>(other)) {
-    VectorTNs_sp vother = gc::As_unsafe<VectorTNs_sp>(other);
-    if (vother->length()!=this->length()) return false;
-    for (size_t i(0),iEnd(this->length()); i<iEnd; ++i ) {
-      if (!cl__equalp((*this)[i],(*vother)[i])) return false;
-    }
-    return true;
-  }
-  return this->AbstractSimpleVector_O::equalp(other);
-}
-
-
-// ------------------------------------------------------------
-//
-// Class SimpleVectorDouble_O
-//
-
-
 
 // ----------------------------------------------------------------------
 //
@@ -2059,6 +2033,8 @@ Array_sp SimpleBitVector_O::unsafe_setf_subseq(size_t start, size_t end, Array_s
   TYPE_ERROR(other,cl::_sym_bit_vector);
 }
 
+// This does not work properly
+/*
 void SimpleBitVector_O::unsafe_fillArrayWithElt(T_sp initialElement, size_t start, size_t end)
 {
   value_type initBlockValue = (initialElement.nilp()) ? 0 : ~0;
@@ -2075,6 +2051,23 @@ void SimpleBitVector_O::unsafe_fillArrayWithElt(T_sp initialElement, size_t star
     this->setBit(i,initBlockValue);
   }
 };
+*/
+
+void SimpleBitVector_O::unsafe_fillArrayWithElt(T_sp initialElement, size_t start, size_t end) {
+  if (CLASP_FIXNUMP (initialElement))
+  {
+    Fixnum zero_or_one = clasp_fixnum(gc::As<core::Fixnum_sp>(initialElement));
+    if ((zero_or_one == 0) || (zero_or_one == 1)) {
+      for (size_t i(start),iEnd(end); i<iEnd; ++i) {
+        this->setBit(i, zero_or_one);
+      }
+    }
+    else TYPE_ERROR(initialElement, cl::_sym_bit);
+  }
+  else TYPE_ERROR(initialElement, cl::_sym_bit);
+}
+
+
 bool SimpleBitVector_O::equal(T_sp other) const {
   if (this == &*other) return true;
   if (SimpleBitVector_sp sbv = other.asOrNull<SimpleBitVector_O>()) {
@@ -2849,7 +2842,7 @@ SYMBOL_EXPORT_SC_(ClPkg, vectorPushExtend);
 
 
 
-CL_LAMBDA(&va-rest args);
+CL_LAMBDA(core:&va-rest args);
 CL_LISPIFY_NAME(base_string_concatenate);
 CL_DEFUN T_sp core__base_string_concatenate(VaList_sp vargs) {
   size_t nargs = vargs->remaining_nargs();
@@ -2868,13 +2861,16 @@ template <typename T1,typename T2>
 T_sp template_search_string(const T1& sub, const T2& outer, size_t sub_start, size_t sub_end, size_t outer_start, size_t outer_end)
 {
   // The std::search convention is reversed -->  std::search(outer,sub,...)
+  const typename T2::simple_element_type* startp = &outer[0];
   const typename T2::simple_element_type* cps = &outer[outer_start];
   const typename T2::simple_element_type* cpe = &outer[outer_end];
   const typename T1::simple_element_type* s_cps = &sub[sub_start];
   const typename T1::simple_element_type* s_cpe = &sub[sub_end];
   const typename T2::simple_element_type* pos = std::search(cps,cpe,s_cps,s_cpe);
   if (pos == cpe ) return _Nil<T_O>();
-  return clasp_make_fixnum(pos-cps);
+  // this should return the absolute position starting from 0, not relative to outer_start
+  //now that I understood this in pointer arithmethic, compare to the beginning of the string, e.g. index 0
+  return clasp_make_fixnum(pos-startp);
 }
 
 SYMBOL_EXPORT_SC_(CorePkg,search_string);

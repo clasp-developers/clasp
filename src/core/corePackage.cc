@@ -607,7 +607,6 @@ SYMBOL_EXPORT_SC_(CorePkg, STARbuild_linkflagsSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, _PLUS_run_all_function_name_PLUS_);
 SYMBOL_EXPORT_SC_(CorePkg, _PLUS_clasp_ctor_function_name_PLUS_);
 SYMBOL_EXPORT_SC_(CorePkg, STARcodeWalkerSTAR);
-SYMBOL_EXPORT_SC_(CorePkg, current_source_file);
 SYMBOL_SC_(CorePkg, STARdebugMacroexpandSTAR);
 SYMBOL_EXPORT_SC_(ClPkg, T);
 SYMBOL_EXPORT_SC_(ClPkg, method);
@@ -887,7 +886,7 @@ void testFeatures() {
   testConses();
 }
 
-CoreExposer_O::CoreExposer_O(Lisp_sp lisp) : Exposer_O(lisp, CorePkg, CorePkg_nicknames) {
+CoreExposer_O::CoreExposer_O(Lisp_sp lisp) : Exposer_O(lisp, CorePkg) {
 };
 
 void CoreExposer_O::expose(core::Lisp_sp lisp, WhatToExpose what) const {
@@ -1171,7 +1170,15 @@ void CoreExposer_O::define_essential_globals(Lisp_sp lisp) {
   _sym_STARdebug_fastgfSTAR->defparameter(_Nil<core::T_O>());
   _sym_STARdebug_dispatchSTAR->defparameter(_Nil<core::T_O>());
   _sym_STARdebug_valuesSTAR->defparameter(_Nil<core::T_O>());
-  comp::_sym_STARoptimization_levelSTAR->defparameter(core::make_fixnum(3));
+  int optimization_level = 3;
+  const char* optLevel = getenv("CLASP_OPTIMIZATION_LEVEL");
+  if (optLevel) {
+    optimization_level = strtol(optLevel,NULL,10);
+    if (optimization_level < 0) optimization_level = 0;
+    if (optimization_level > 3) optimization_level = 3;
+    printf("%s:%d CLASP_OPTIMIZATION_LEVEL = %d\n", __FILE__, __LINE__, optimization_level);
+  }
+  comp::_sym_STARoptimization_levelSTAR->defparameter(core::make_fixnum(optimization_level));
   _sym_STARbits_in_bit_array_wordSTAR->defparameter(core::clasp_make_fixnum(BIT_ARRAY_BYTE_SIZE));
   _sym_STARreader_generate_cstSTAR->defparameter(_Nil<core::T_O>());
   _sym_STARreader_cst_resultSTAR->defparameter(_Nil<core::T_O>());

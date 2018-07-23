@@ -378,15 +378,6 @@ void make_str(StrWNs_sp sout, List_sp cur_char) {
   }
 }
 
-
-CL_LAMBDA(sin &optional (eof-error-p t) eof-value);
-CL_DECLARE();
-CL_DOCSTRING("nread");
-CL_DEFUN T_mv core__nread(T_sp sin, T_sp eof_error_p, T_sp eof_value) {
-  T_sp result = read_lisp_object(sin, eof_error_p.isTrue(), eof_value, false);
-  return Values(result);
-};
-
 string fix_exponent_char(const char *cur) {
   stringstream ss;
   while (*cur) {
@@ -1119,6 +1110,21 @@ step1:
     T_sp reader_macro;
     reader_macro = readTable->get_macro_character(xxx);
     ASSERT(reader_macro.notnilp());
+    if (gc::IsA<Symbol_sp>(reader_macro)) {
+      // At startup symbols that define reader macro functions aren't fbound yet
+      // We need to read the lambda lists somehow - so hard code the reader macro calls
+      Symbol_sp sreader_macro = gc::As_unsafe<Symbol_sp>(reader_macro);
+      if (!sreader_macro->fboundp()) {
+        if (clasp_as_claspCharacter(xxx) == '(') {
+          return core__reader_list_allow_consing_dot(sin,xxx);
+        } else if (clasp_as_claspCharacter(xxx) == '"') {
+          return core__reader_double_quote_string(sin,xxx);
+        } else if (clasp_as_claspCharacter(xxx) == '\'') {
+          return core__reader_quote(sin,xxx);
+        }
+        printf("%s:%d Handle character '%c' in lisp_object_query\n", __FILE__, __LINE__, clasp_as_claspCharacter(xxx));
+      }
+    }
     T_mv results = eval::funcall(reader_macro, sin, xxx);
     if (results.number_of_values() == 0) {
       return results;

@@ -121,7 +121,6 @@ VARIABLE doc and can be retrieved by (DOCUMENTATION 'SYMBOL 'VARIABLE)."
          (let ((,fn ,global-function))
            (funcall #'(setf fdefinition) ,fn ',name)
            (setf-lambda-list ,fn ',vl)
-           #+(or)(core:set-source-info ,fn ',(list 'core:current-source-file filepos lineno column))
            ,@(si::expand-set-documentation name 'function doc-string)
            ;; This can't be at toplevel.
            ,@(and *defun-inline-hook*

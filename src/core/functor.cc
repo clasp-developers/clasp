@@ -353,7 +353,7 @@ CL_DEFUN void core__closure_slots_dump(Closure_sp closure) {
   }
 }
 
-LCC_RETURN unboundFunctionEntryPoint(LCC_ARGS_FUNCALL_ELLIPSIS) {
+__attribute__((optnone)) LCC_RETURN unboundFunctionEntryPoint(LCC_ARGS_FUNCALL_ELLIPSIS) {
   ClosureWithSlots_O* closure = gctools::untag_general<ClosureWithSlots_O*>((ClosureWithSlots_O*)lcc_closure);
   Symbol_sp symbol = gc::As<Symbol_sp>((*closure)[0]);
   ERROR_UNDEFINED_FUNCTION(symbol);

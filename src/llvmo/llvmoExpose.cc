@@ -3625,9 +3625,9 @@ SYMBOL_EXPORT_SC_(CorePkg,repl);
 
 CL_DEFUN core::Function_sp llvm_sys__jitFinalizeReplFunction(ClaspJIT_sp jit, ModuleHandle_sp handle, const string& replName, const string& startupName, const string& shutdownName, core::T_sp initialData) {
   // Stuff to support MCJIT
-  core::Pointer_sp replPtr = jit->findSymbolIn(handle,replName,false);
-  core::Pointer_sp startupPtr = jit->findSymbolIn(handle,startupName,false);
-  core::Pointer_sp shutdownPtr = jit->findSymbolIn(handle,shutdownName,false);
+  core::Pointer_sp replPtr = jit->findSymbolIn(handle,replName,true);
+  core::Pointer_sp startupPtr = jit->findSymbolIn(handle,startupName,true);
+  core::Pointer_sp shutdownPtr = jit->findSymbolIn(handle,shutdownName,true);
   core::CompiledClosure_fptr_type lisp_funcPtr = (core::CompiledClosure_fptr_type)(gc::As_unsafe<core::Pointer_sp>(replPtr)->ptr());
   gctools::smart_ptr<core::ClosureWithSlots_O> functoid =
     core::ClosureWithSlots_O::make_bclasp_closure( core::_sym_repl,

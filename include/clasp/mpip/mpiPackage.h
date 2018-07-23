@@ -29,6 +29,7 @@ THE SOFTWARE.
 
 #include <clasp/core/lisp.h>
 
+PACKAGE_USE("COMMON-LISP");
 NAMESPACE_PACKAGE_ASSOCIATION(mpip, MpiPkg, "MPI");
 
 namespace mpip {

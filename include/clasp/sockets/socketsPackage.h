@@ -30,6 +30,7 @@ THE SOFTWARE.
 
 #include <clasp/core/common.h>
 
+PACKAGE_USE("COMMON-LISP");
 NAMESPACE_PACKAGE_ASSOCIATION(sockets, SocketsPkg, "SOCKETS-INTERNAL");
 
 namespace sockets {

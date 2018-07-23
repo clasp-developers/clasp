@@ -583,6 +583,8 @@ void Lisp_O::startupLispEnvironment(Bundle *bundle) {
     initialize_Lisp_O();
     core::HashTableEql_sp ht = core::HashTableEql_O::create_default();
     core::_sym_STARcxxDocumentationSTAR->defparameter(ht);
+    ReadTable_sp readtable = ReadTable_O::create_standard_readtable();
+    cl::_sym_STARreadtableSTAR->defparameter(readtable);
     initialize_functions();
     eval::defineSpecialOperatorsAndMacros(this->_Roots._CorePackage);
 #ifdef DEBUG_PROGRESS
@@ -1029,6 +1031,39 @@ void Lisp_O::unmapNameToPackage(const string &name) {
   SIMPLE_ERROR(BF("Could not find package with (nick)name: %s") % name);
 }
 
+void Lisp_O::finishPackageSetup(const string &pkgname, list<string> const &nicknames, list<string> const &usePackages, list<std::string> const& shadow) {
+  T_sp tpkg = _lisp->findPackage(pkgname,false);
+  if (tpkg.nilp()) {
+    this->makePackage(pkgname,nicknames,usePackages,shadow);
+    return;
+  }
+  Package_sp pkg = gc::As_unsafe<Package_sp>(tpkg);
+  {
+    ql::list nn;
+    for ( auto name : nicknames ) {
+      SimpleBaseString_sp str = SimpleBaseString_O::make(name);
+      nn << str;
+    }
+    pkg->setNicknames(nn.cons());
+  }
+  {
+    ql::list sn;
+    for ( auto name : shadow ) {
+      SimpleBaseString_sp str = SimpleBaseString_O::make(name);
+      sn << str;
+    }
+    pkg->shadow((List_sp)sn.cons());
+  }
+  {
+    ql::list sn;
+    for ( auto name : usePackages ) {
+      Package_sp other = _lisp->findPackage(name,true);
+      pkg->usePackage(other);
+    }
+  }
+};
+
+
 Package_sp Lisp_O::makePackage(const string &name, list<string> const &nicknames, list<string> const &usePackages, list<std::string> const& shadow) {
   /* This function is written somewhat bizarrely for lock safety reasons.
    * The trick is that the error infrastructure, among other things, uses the package system.
@@ -1072,6 +1107,11 @@ Package_sp Lisp_O::makePackage(const string &name, list<string> const &nicknames
         }
         newPackage->setNicknames(cnicknames);
       }
+      for ( auto x : shadow ) {
+        SimpleBaseString_sp sx = SimpleBaseString_O::make(x);
+        printf("%s:%d in makePackage  for package %s  shadow: %s\n", __FILE__,__LINE__, newPackage->getName().c_str(),sx->get_std_string().c_str());
+        newPackage->shadow(sx);
+      }
       for (list<string>::const_iterator jit = usePackages.begin(); jit != usePackages.end(); jit++) {
         Package_sp usePkg = gc::As<Package_sp>(this->findPackage_no_lock(*jit, true));
         LOG(BF("Using package[%s]") % usePkg->getName());
@@ -1082,11 +1122,6 @@ Package_sp Lisp_O::makePackage(const string &name, list<string> const &nicknames
         this->_MakePackageCallback(name, _lisp);
       } else {
         LOG(BF("_MakePackageCallback is NULL - not calling callback"));
-      }
-      for ( auto x : shadow ) {
-        SimpleBaseString_sp sx = SimpleBaseString_O::make(x);
-        printf("%s:%d in makePackage  for package %s  shadow: %s\n", __FILE__,__LINE__, newPackage->getName().c_str(),sx->get_std_string().c_str());
-        newPackage->shadow(sx);
       }
       return newPackage;
     }
@@ -2555,20 +2590,6 @@ void LispHolder::startup(int argc, char *argv[], const string &appPathEnvironmen
 
 LispHolder::~LispHolder() {
   this->_Lisp->shutdownLispEnvironment();
-}
-
-Exposer_O::Exposer_O(Lisp_sp lisp, const string &packageName, const char *nicknames[]) {
-  if (!lisp->recognizesPackage(packageName)) {
-    list<string> lnnames;
-    for (int i = 0; strcmp(nicknames[i], "") != 0; i++) {
-      lnnames.push_front(nicknames[i]);
-    }
-    list<string> lp;
-    this->_Package = lisp->makePackage(packageName, lnnames, lp);
-  } else {
-    this->_Package = gc::As<Package_sp>(lisp->findPackage(packageName, true));
-  }
-  this->_PackageName = packageName;
 }
 
 Exposer_O::Exposer_O(Lisp_sp lisp, const string &packageName) {

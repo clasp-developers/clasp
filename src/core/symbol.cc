@@ -522,10 +522,23 @@ void Symbol_O::dump() {
   printf("%s", ss.str().c_str());
 }
 
+// This should not ignore pkg, nor should it unintern shadowed symbols
+// what is done with T_sp tpkg(pkg)
 void Symbol_O::remove_package(Package_sp pkg)
 {
-  T_sp tpkg(pkg);
-  this->_HomePackage = _Nil<T_O>();
+  // can't even understand the syntax of this, cast of package to T_sp?
+  // T_sp tpkg(pkg);
+  if ((pkg->getSystemLockedP()) || (pkg->getUserLockedP()))
+    return;
+  T_sp home = this->getPackage();
+  if (!home.nilp()) {
+     Package_sp home_package = coerce::packageDesignator(home);
+    if ((home_package == pkg) &&
+        !home_package->getSystemLockedP() &&
+        !home_package->getUserLockedP()) {
+      this->_HomePackage = _Nil<T_O>();
+    }
+  }
 };
 
 CL_DEFUN T_sp core__symbol_global_value(Symbol_sp s) {

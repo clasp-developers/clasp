@@ -142,8 +142,7 @@ when this is t a lot of graphs will be generated.")
        (make-instance 'cleavir-env:global-function-info
                       :name function-name
                       :compiler-macro (compiler-macro-function function-name)
-                      ;; CST inlining does not work, and as such...
-                      :inline #+cst 'cl:notinline #-cst inline-status
+                      :inline inline-status
                       :ast cleavir-ast)))
     ;; A top-level defun for the function has been seen.
     ;; The expansion calls cmp::register-global-function-def at compile time,

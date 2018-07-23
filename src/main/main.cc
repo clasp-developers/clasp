@@ -297,7 +297,7 @@ static int startup(int argc, char *argv[], bool &mpiEnabled, int &mpiRank, int &
 {
   core::LispHolder lispHolder(mpiEnabled, mpiRank, mpiSize);
   int exit_code = 0;
-  
+
   gctools::GcToolsExposer_O GcToolsPkg(_lisp);
   clbind::ClbindExposer_O ClbindPkg(_lisp);
   llvmo::LlvmoExposer_O llvmopkg(_lisp);
@@ -313,7 +313,7 @@ static int startup(int argc, char *argv[], bool &mpiEnabled, int &mpiRank, int &
   _lisp->installPackage(&SocketsPkg);
   _lisp->installPackage(&ServeEventPkg);
   _lisp->installPackage(&AsttoolingPkg);
-
+  
 #ifdef USE_MPI
   mpip::MpiExposer TheMpiPkg(_lisp);
   _lisp->installPackage(&TheMpiPkg);

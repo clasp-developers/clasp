@@ -13,10 +13,6 @@
            #:inlined-two-arg->=
            ))
 
-;;; FIXME: Just conditionalize out the file or something!
-#-cst
-(progn
-
 (progn
   #+(or)
   (eval-when (:execute)
@@ -823,4 +819,4 @@
        (let (,@(loop for var in vars for sym in syms
                      collecting `(,var ,sym)))
          ,@body))))
-)
+

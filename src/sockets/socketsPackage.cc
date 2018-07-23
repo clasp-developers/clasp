@@ -49,7 +49,7 @@ void SocketsExposer_O::expose(core::Lisp_sp lisp, core::Exposer_O::WhatToExpose 
       break;
   case candoGlobals: {
     list<string> nicknames;
-    list<string> usePackages = {"COMMON-LISP", "CLOS", SocketsPkg};
+    list<string> usePackages = {"COMMON-LISP" /*, "CLOS"*/ , SocketsPkg};
     _lisp->makePackage("SB-BSD-SOCKETS", nicknames, usePackages);
     initialize_sockets_globals();
   };

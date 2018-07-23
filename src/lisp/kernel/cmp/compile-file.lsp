@@ -320,42 +320,6 @@ Compile a lisp source file into an LLVM module."
                                            :compile-file-hook *cleavir-compile-file-hook*
                                            :environment environment
                                            :optimize optimize
-<<<<<<< HEAD
-                                           :optimize-level optimize-level)))
-      (cond
-        ((null output-path)
-         (error "The output-path is nil for input filename ~a~%" input-file))
-        ((eq output-type :object)
-         (when verbose (bformat t "Writing object to %s%N" (core:coerce-to-filename output-path)))
-         (ensure-directories-exist output-path)
-         ;; Save the bitcode so we can take a look at it
-         (write-bitcode module (core:coerce-to-filename (cfp-output-file-default output-path :bitcode)))
-         (with-open-file (fout output-path :direction :output)
-           (let ((reloc-model (cond
-                                ((or (member :target-os-linux *features*)
-                                     (member :target-os-freebsd *features*))
-                                 'llvm-sys:reloc-model-pic-)
-                                (t 'llvm-sys:reloc-model-undefined))))
-             (generate-obj-asm module fout :file-type 'llvm-sys:code-gen-file-type-object-file :reloc-model reloc-model))))
-        ((eq output-type :bitcode)
-         (when verbose (bformat t "Writing bitcode to %s%N" (core:coerce-to-filename output-path)))
-         (ensure-directories-exist output-path)
-         (write-bitcode module (core:coerce-to-filename output-path)))
-        ((eq output-type :fasl)
-         (ensure-directories-exist output-path)
-         (let ((temp-bitcode-file (compile-file-pathname input-file :output-file output-file :output-type :bitcode)))
-           (ensure-directories-exist temp-bitcode-file)
-           (bformat t "Writing temporary bitcode file to: %s%N" temp-bitcode-file)
-           (write-bitcode module (core:coerce-to-filename temp-bitcode-file))
-           (bformat t "Writing fasl file to: %s%N" output-file)
-           (llvm-link output-file :input-files (list temp-bitcode-file) :input-type :bitcode)))
-        (t ;; fasl
-         (error "Add support to file of type: ~a" output-type)))
-      (dolist (c conditions)
-        (bformat t "conditions: %s%N" c))
-      (llvm-sys:module-delete module)
-      (compile-file-results output-path conditions))))
-=======
                                            :optimize-level optimize-level
                                            :dry-run dry-run)))
       (with-compiler-timer (:message "Compile-file" :report-link-time t :verbose t)
@@ -370,9 +334,7 @@ Compile a lisp source file into an LLVM module."
              (write-bitcode module (core:coerce-to-filename (cfp-output-file-default output-path :bitcode)))
              (with-open-file (fout output-path :direction :output)
                (let ((reloc-model (cond
-                                   ((or (member :target-os-linux *features*)
-                                        (member :target-os-freebsd *features*))
-                                    'llvm-sys:reloc-model-pic-)
+                                    ((member :target-os-linux *features*) 'llvm-sys:reloc-model-pic-)
                                     (t 'llvm-sys:reloc-model-undefined))))
                  (unless dry-run (generate-obj-asm module fout :file-type 'llvm-sys:code-gen-file-type-object-file :reloc-model reloc-model)))))
             ((eq output-type :bitcode)
