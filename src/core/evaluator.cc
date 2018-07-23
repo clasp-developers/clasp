@@ -1869,7 +1869,7 @@ struct InterpreterTrace {
   };
 };
 
-DONT_OPTIMIZE_WHEN_DEBUG_RELEASE T_mv evaluate(T_sp exp, T_sp environment) {
+T_mv evaluate(T_sp exp, T_sp environment) {
   //	    Environment_sp localEnvironment = environment;
   //            printf("%s:%d evaluate %s environment@%p\n", __FILE__, __LINE__, _rep_(exp).c_str(), environment.raw_());
   //            printf("    environment: %s\n", _rep_(environment).c_str() );
@@ -1926,9 +1926,7 @@ DONT_OPTIMIZE_WHEN_DEBUG_RELEASE T_mv evaluate(T_sp exp, T_sp environment) {
 
     T_sp theadFunc = af_interpreter_lookup_macro(headSym, environment);
     if (theadFunc.notnilp()) {
-      /* Macro expansion should be done immediately after the reader -
-		       - done here the macros are expanded again and again and again
-		    */
+      /* macros are expanded again and again and again */
       T_sp expanded = _Nil<T_O>();
       if (_sym_STARinterpreterTraceSTAR->symbolValue().notnilp()) {
         if (gc::As<HashTable_sp>(_sym_STARinterpreterTraceSTAR->symbolValue())->gethash(headSym).notnilp()) {
