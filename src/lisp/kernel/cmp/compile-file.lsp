@@ -202,7 +202,11 @@ and the pathname of the source file - this will also be used as the module initi
             (progn
               (when *compile-print* (describe-form form))
               (when *debug-compile-file* (bformat t "compile-file: cf%d -> %s%N" (incf *debug-compile-file-counter*) form))
-              (t1expr form)))))))
+              (unwind-protect
+                   (progn
+                     (gctools:alloc-pattern-begin 'gctools:ramp)
+                     (t1expr form))
+                (gctools:alloc-pattern-end))))))))
 
 (defun loop-read-and-compile-file-forms (source-sin environment compile-file-hook)
   ;; If the Cleavir compiler hook is set up then use that
