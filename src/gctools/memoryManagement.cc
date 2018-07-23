@@ -49,15 +49,13 @@ THE SOFTWARE.
 #undef ALL_PREGCSTARTUPS_EXTERN
 #endif
 
-gctools::GlobalAllocationProfiler global_AllocationProfiler(1024*1024,1024*8);
-
 extern "C" {
 __attribute__((noinline)) void HitAllocationSizeThreshold() {
-    global_AllocationProfiler._HitAllocationSizeCounter++;
+  my_thread_low_level->_Allocations._HitAllocationSizeCounter++;
 }
 
 __attribute__((noinline)) void HitAllocationNumberThreshold() {
-    global_AllocationProfiler._HitAllocationNumberCounter++;
+  my_thread_low_level->_Allocations._HitAllocationNumberCounter++;
 }
 }
 
@@ -531,26 +529,6 @@ CL_DEFUN void gctools__register_roots(core::T_sp taddress, core::List_sp args) {
 
 int startupGarbageCollectorAndSystem(MainFunctionType startupFn, int argc, char *argv[], size_t stackMax, bool mpiEnabled, int mpiRank, int mpiSize) {
 
-  // Read the memory profiling settings <size-threshold> <number-theshold>
-  // as in export CLASP_MEMORY_PROFILE="16000000 1024"
-  // This means call HitAllocationSizeThreshold every time 16000000 bytes are allocated
-  //        and call HitAllocationNumberThreshold every time 1024 allocations take place
-  char *cur = getenv("CLASP_MEMORY_PROFILE");
-  size_t values[2];
-  int numValues = 0;
-  if (cur) {
-    while (*cur && numValues < 2) {
-      values[numValues] = strtol(cur, &cur, 10);
-      ++numValues;
-    }
-    if (numValues == 2) {
-      global_AllocationProfiler._AllocationNumberThreshold = values[1];
-    }
-    if (numValues >= 1) {
-      global_AllocationProfiler._AllocationSizeThreshold = values[0];
-    }
-  }
-  
   void* stackMarker = &stackMarker;
   gctools::_global_stack_marker = (const char*)&stackMarker;
   gctools::_global_stack_max_size = stackMax;
