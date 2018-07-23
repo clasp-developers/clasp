@@ -434,17 +434,6 @@ GC_RESULT obj_scan(mps_ss_t ss, mps_addr_t client, mps_addr_t limit) {
         // to determine the Instance_O offset and the total size of the object.
           printf("%s:%d Handle STAMP_core__DerivableCxxObject_O\n", __FILE__, __LINE__ );
         }
-        if ( stamp == STAMP_core__SimpleBitVector_O ) {
-          size_t capacity = *(size_t*)((const char*)client + stamp_layout.capacity_offset);
-          size = core::SimpleBitVector_O::bitunit_array_type::sizeof_for_length(capacity) + stamp_layout.data_offset;
-          goto STAMP_CONTINUE;
-        // Do other bitunit vectors here
-        } else if (stamp == gctools::STAMP_core__SimpleBaseString_O) {
-          // Account for the SimpleBaseString additional byte for \0
-          size_t capacity = *(size_t*)((const char*)client + stamp_layout.capacity_offset) + 1;
-          size = stamp_layout.element_size*capacity + stamp_layout.data_offset;
-          goto STAMP_CONTINUE;
-        }
         if (stamp_layout.layout_op == templated_op ) {
           size = ((core::General_O*)client)->templatedSizeof();
         } else {
@@ -475,7 +464,6 @@ GC_RESULT obj_scan(mps_ss_t ss, mps_addr_t client, mps_addr_t limit) {
             }
           }
         }
-        STAMP_CONTINUE:
         client = (mps_addr_t)((char*)client + AlignUp(size + sizeof(Header_s)) + header.tail_size());
 #ifdef DEBUG_MPS_SIZE
         {
