@@ -32,14 +32,12 @@ THE SOFTWARE.
 
 #include <limits>
 #include <clasp/gctools/interrupt.h>
+#include <clasp/gctools/threadlocal.fwd.h>
 
 #define STACK_ALIGNMENT alignof(char *)
 #define STACK_ALIGN_UP(size) \
   (((size)+STACK_ALIGNMENT - 1) & ~(STACK_ALIGNMENT - 1))
 
-namespace gctools {
-extern uint64_t globalBytesAllocated;
-};
 
 namespace gctools {
 template <class OT, bool Needed = true>
@@ -102,7 +100,7 @@ namespace gctools {
     true_size += tail_size;
 #endif
     Header_s* header = reinterpret_cast<Header_s*>(GC_MALLOC_ATOMIC(true_size));
-    global_AllocationProfiler.registerAllocation(true_size);
+    my_thread_low_level->_Allocations.registerAllocation(the_header.stamp(),true_size);
 #ifdef DEBUG_GUARD
     memset(header,0x00,true_size);
     new (header) Header_s(the_header,size,tail_size,true_size);
@@ -120,7 +118,7 @@ namespace gctools {
     true_size += tail_size;
 #endif
     Header_s* header = reinterpret_cast<Header_s*>(GC_MALLOC(true_size));
-    global_AllocationProfiler.registerAllocation(true_size);
+    my_thread_low_level->_Allocations.registerAllocation(the_header.stamp(),true_size);
 #ifdef DEBUG_GUARD
     memset(header,0x00,true_size);
     new (header) Header_s(the_header,size,tail_size,true_size);
@@ -138,7 +136,7 @@ namespace gctools {
     true_size += tail_size;
 #endif
     Header_s* header = reinterpret_cast<Header_s*>(GC_MALLOC_UNCOLLECTABLE(true_size));
-    global_AllocationProfiler.registerAllocation(true_size);
+    my_thread_low_level->_Allocations.registerAllocation(the_header.stamp(),true_size);
 #ifdef DEBUG_GUARD
     memset(header,0x00,true_size);
     new (header) Header_s(the_header,size,tail_size,true_size);
@@ -165,8 +163,8 @@ namespace gctools {
                                                const char* ap_name,
                                                ARGS &&... args) {
     gc::smart_ptr<Cons> tagged_obj;
-    DO_DEBUG_RECURSIVE_ALLOCATIONS();
     { RAII_DISABLE_INTERRUPTS();
+      RAII_DEBUG_RECURSIVE_ALLOCATIONS();
       mps_addr_t addr;
       Cons* cons;
       do {
@@ -176,10 +174,10 @@ namespace gctools {
         new (cons) Cons(std::forward<ARGS>(args)...);
         tagged_obj = smart_ptr<Cons>((Tagged)tag_cons(cons));
       } while (!mps_commit(allocation_point, addr, sizeof(Cons)));
-      global_AllocationProfiler.registerAllocation(sizeof(Cons));
+      my_thread_low_level->_Allocations.registerAllocation(STAMP_CONS,sizeof(Cons));
     }
     DEBUG_MPS_UNDERSCANNING_TESTS();
-    handle_all_queued_interrupts(my_thread);
+    handle_all_queued_interrupts();
 #if 0
     globalMpsMetrics.totalMemoryAllocated += sizeof(Cons);
     ++globalMpsMetrics.consAllocations;
@@ -203,7 +201,7 @@ namespace gctools {
     mps_addr_t addr;
     typedef typename PTR_TYPE::Type T;
     typedef typename GCHeader<T>::HeaderType HeadT;
-    DO_DEBUG_RECURSIVE_ALLOCATIONS();
+    RAII_DEBUG_RECURSIVE_ALLOCATIONS();
     PTR_TYPE tagged_obj;
     T* obj;
     size_t true_size = size;
@@ -227,13 +225,13 @@ namespace gctools {
         new (obj) (typename PTR_TYPE::Type)(std::forward<ARGS>(args)...);
         tagged_obj = PTR_TYPE(obj);
       } while (!mps_commit(allocation_point, addr, true_size));
-      global_AllocationProfiler.registerAllocation(true_size);
+      my_thread_low_level->_Allocations.registerAllocation(the_header.stamp(),true_size);
     }
 #ifdef DEBUG_VALIDATE_GUARD
     header->validate();
 #endif
     DEBUG_MPS_UNDERSCANNING_TESTS();
-    handle_all_queued_interrupts(my_thread);
+    handle_all_queued_interrupts();
     globalMpsMetrics.totalMemoryAllocated += true_size;
 #ifdef DEBUG_MPS_SIZE
     {
@@ -266,8 +264,8 @@ namespace gctools {
     PTR_TYPE tagged_obj;
     mps_addr_t addr;
     T* myAddress;
-    DO_DEBUG_RECURSIVE_ALLOCATIONS();
     { RAII_DISABLE_INTERRUPTS();
+      RAII_DEBUG_RECURSIVE_ALLOCATIONS();
       do {
         mps_res_t res = mps_reserve(&addr, allocation_point, size);
         if (res != MPS_RES_OK)
@@ -279,9 +277,9 @@ namespace gctools {
         new (myAddress) T(std::forward<ARGS>(args)...);
         tagged_obj = PTR_TYPE(myAddress);
       } while (!mps_commit(allocation_point, addr, size));
-      global_AllocationProfiler.registerAllocation(size);
+      my_thread_low_level->_Allocations.registerAllocation(STAMP_null,size);
     }
-    handle_all_queued_interrupts(my_thread);
+    handle_all_queued_interrupts();
     DEBUG_MPS_UNDERSCANNING_TESTS();
     if (!myAddress)
       throw_hard_error("Could not allocate from GCBucketAllocator<Buckets<VT,VT,WeakLinks>>");
@@ -302,16 +300,14 @@ namespace gctools {
       template <class... ARGS>
       static gctools::tagged_pointer<T> allocate_kind(const Header_s::Value& the_header, size_t size, ARGS &&... args) {
 #ifdef USE_BOEHM
-        monitor_allocation(the_header.stamp(),size);
         Header_s* base = do_boehm_uncollectable_allocation(the_header,size);
         T *obj = BasePtrToMostDerivedPtr<T>(base);
         new (obj) T(std::forward<ARGS>(args)...);
-        handle_all_queued_interrupts(my_thread);
+        handle_all_queued_interrupts();
         gctools::tagged_pointer<T> tagged_obj(obj);
         return tagged_obj;
 #endif
 #ifdef USE_MPS
-        monitor_allocation(the_header.stamp(),size);
         globalMpsMetrics.nonMovingAllocations++;
         tagged_pointer<T> tagged_obj =
           general_mps_allocation<tagged_pointer<T>>(the_header,
@@ -362,16 +358,14 @@ namespace gctools {
 #ifdef USE_BOEHM
       Cons* cons;
       { RAII_DISABLE_INTERRUPTS();
-        monitor_allocation(STAMP_CONS,sizeof(Cons));
         cons = reinterpret_cast<Cons*>(GC_MALLOC(sizeof(Cons)));
-        global_AllocationProfiler.registerAllocation(sizeof(Cons));
+        my_thread_low_level->_Allocations.registerAllocation(STAMP_CONS,sizeof(Cons));
         new (cons) Cons(std::forward<ARGS>(args)...);
       }
-      handle_all_queued_interrupts(my_thread);
+      handle_all_queued_interrupts();
       return smart_ptr<Cons>((Tagged)tag_cons(cons));
 #endif
 #ifdef USE_MPS
-        monitor_allocation(STAMP_CONS,sizeof(Cons));
         mps_ap_t obj_ap = my_thread_allocation_points._amc_cons_allocation_point;
         globalMpsMetrics.consAllocations++;
         smart_ptr<Cons> obj =
@@ -392,7 +386,6 @@ namespace gctools {
       template <typename... ARGS>
       static smart_pointer_type allocate_in_appropriate_pool_kind(const Header_s::Value& the_header, size_t size, ARGS &&... args) {
 #ifdef USE_BOEHM
-        monitor_allocation(the_header.stamp(),size);
         Header_s* base = do_boehm_normal_allocation(the_header,size);
         pointer_type ptr = BasePtrToMostDerivedPtr<OT>(base);
         new (ptr) OT(std::forward<ARGS>(args)...);
@@ -400,7 +393,6 @@ namespace gctools {
         return sp;
 #endif
 #ifdef USE_MPS
-        monitor_allocation(the_header.stamp(),size);
         mps_ap_t obj_ap = my_thread_allocation_points._automatic_mostly_copying_allocation_point;
         globalMpsMetrics.movingAllocations++;
         smart_ptr<OT> sp =
@@ -423,7 +415,6 @@ namespace gctools {
     template <typename... ARGS>
       static smart_pointer_type allocate_in_appropriate_pool_kind( const Header_s::Value& the_header, size_t size, ARGS &&... args) {
 #ifdef USE_BOEHM
-      monitor_allocation(the_header.stamp(),size);
     // Atomic objects (do not contain pointers) are allocated in separate pool
       Header_s* base = do_boehm_atomic_allocation(the_header,size);
       pointer_type ptr = BasePtrToMostDerivedPtr<OT>(base);
@@ -432,7 +423,6 @@ namespace gctools {
       return sp;
 #endif
 #ifdef USE_MPS
-      monitor_allocation(the_header.stamp(),size);
       mps_ap_t obj_ap = my_thread_allocation_points._automatic_mostly_copying_zero_rank_allocation_point;
       globalMpsMetrics.movingZeroRankAllocations++;
       smart_pointer_type sp =
@@ -459,7 +449,6 @@ When would I ever want the GC to automatically collect objects but not move them
     template <typename... ARGS>
       static smart_pointer_type allocate_in_appropriate_pool_kind( const Header_s::Value& the_header, size_t size, ARGS &&... args) {
 #ifdef USE_BOEHM
-      monitor_allocation(the_header.stamp(),size);
       Header_s* base = do_boehm_normal_allocation(the_header,size);
       pointer_type ptr = BasePtrToMostDerivedPtr<OT>(base);
       new (ptr) OT(std::forward<ARGS>(args)...);
@@ -467,7 +456,6 @@ When would I ever want the GC to automatically collect objects but not move them
       return sp;
 #endif
 #ifdef USE_MPS
-      monitor_allocation(the_header.stamp(),size);
       mps_ap_t obj_ap = my_thread_allocation_points._non_moving_allocation_point;
       globalMpsMetrics.nonMovingAllocations++;
       smart_pointer_type sp =
@@ -494,16 +482,14 @@ should not be managed by the GC */
     template <typename... ARGS>
       static smart_pointer_type allocate_in_appropriate_pool_kind( const Header_s::Value& the_header, size_t size, ARGS &&... args) {
 #ifdef USE_BOEHM
-      monitor_allocation(the_header.stamp(),size);
       Header_s* base = do_boehm_uncollectable_allocation(the_header,size);
       OT *obj = BasePtrToMostDerivedPtr<OT>(base);
       new (obj) OT(std::forward<ARGS>(args)...);
-      handle_all_queued_interrupts(my_thread);
+      handle_all_queued_interrupts();
       gctools::smart_ptr<OT> sp(obj);
       return sp;
 #endif
 #ifdef USE_MPS
-      monitor_allocation(the_header.stamp(), size);
       mps_ap_t obj_ap = my_thread_allocation_points._non_moving_allocation_point;
       globalMpsMetrics.nonMovingAllocations++;
       gctools::smart_ptr<OT> sp =
@@ -592,7 +578,6 @@ namespace gctools {
     template <typename... ARGS>
       static smart_pointer_type root_allocate_kind( const Header_s::Value& the_header, size_t size, ARGS &&... args) {
 #ifdef USE_BOEHM
-      monitor_allocation(the_header.stamp(),size);
       Header_s* base = do_boehm_uncollectable_allocation(the_header,size);
       pointer_type ptr = BasePtrToMostDerivedPtr<OT>(base);
       new (ptr) OT(std::forward<ARGS>(args)...);
@@ -605,7 +590,7 @@ namespace gctools {
       smart_pointer_type sp = GCObjectAppropriatePoolAllocator<OT, GCInfo<OT>::Policy>::allocate_in_appropriate_pool_kind(the_header,size,std::forward<ARGS>(args)...);
       GCObjectInitializer<OT, GCInfo<OT>::NeedsInitialization>::initializeIfNeeded(sp);
       GCObjectFinalizer<OT, GCInfo<OT>::NeedsFinalization>::finalizeIfNeeded(sp);
-      handle_all_queued_interrupts(my_thread);
+      handle_all_queued_interrupts();
       return sp;
 #endif
     };
@@ -617,7 +602,7 @@ namespace gctools {
       GCObjectInitializer<OT, /*gctools::*/ GCInfo<OT>::NeedsInitialization>::initializeIfNeeded(sp);
       GCObjectFinalizer<OT, /*gctools::*/ GCInfo<OT>::NeedsFinalization>::finalizeIfNeeded(sp);
     //            printf("%s:%d About to return allocate result ptr@%p\n", __FILE__, __LINE__, sp.px_ref());
-      handle_all_queued_interrupts(my_thread);
+      handle_all_queued_interrupts();
       return sp;
 #endif
 #ifdef USE_MPS
@@ -625,7 +610,7 @@ namespace gctools {
       GCObjectInitializer<OT, GCInfo<OT>::NeedsInitialization>::initializeIfNeeded(sp);
       GCObjectFinalizer<OT, GCInfo<OT>::NeedsFinalization>::finalizeIfNeeded(sp);
     //            printf("%s:%d About to return allocate result ptr@%p\n", __FILE__, __LINE__, sp.px_ref());
-      handle_all_queued_interrupts(my_thread);
+      handle_all_queued_interrupts();
       return sp;
 #endif
     };
@@ -810,15 +795,13 @@ public:
   gc::tagged_pointer<container_type> allocate_kind(const Header_s::Value& the_header, size_type num, const void * = 0) {
 #ifdef USE_BOEHM
     size_t size = sizeof_container_with_header<TY>(num);
-    monitor_allocation(the_header.stamp(),size);
     Header_s* base = do_boehm_normal_allocation(the_header,size);
     container_pointer myAddress = BasePtrToMostDerivedPtr<TY>(base);
-    handle_all_queued_interrupts(my_thread);
+    handle_all_queued_interrupts();
     return gctools::tagged_pointer<container_type>(myAddress);
 #endif
 #ifdef USE_MPS
     size_t size = sizeof_container_with_header<TY>(num);
-    monitor_allocation(the_header.stamp(),size);
     mps_ap_t obj_ap = my_thread_allocation_points._automatic_mostly_copying_allocation_point;
     globalMpsMetrics.movingAllocations++;
     gc::tagged_pointer<container_type> obj =
@@ -916,16 +899,14 @@ public:
   gctools::tagged_pointer<container_type> allocate_kind( const Header_s::Value& the_header, size_type num, const void * = 0) {
 #ifdef USE_BOEHM
     size_t size = sizeof_container_with_header<TY>(num);
-    monitor_allocation(the_header.stamp(),size);
     // prepend a one pointer header with a pointer to the typeinfo.name
     Header_s* base = do_boehm_normal_allocation(the_header,size);
     container_pointer myAddress = BasePtrToMostDerivedPtr<TY>(base);
-    handle_all_queued_interrupts(my_thread);
+    handle_all_queued_interrupts();
     return myAddress;
 #endif
 #ifdef USE_MPS
     size_t size = sizeof_container_with_header<TY>(num);
-    monitor_allocation(the_header.stamp(),size);
     mps_ap_t obj_ap = my_thread_allocation_points._non_moving_allocation_point;
     globalMpsMetrics.nonMovingAllocations++;
     gctools::tagged_pointer<container_type> obj =
@@ -1002,13 +983,12 @@ public:
   // allocate but don't initialize num elements of type value_type
   static gctools::tagged_pointer<container_type> allocate( size_type num, const void * = 0) {
     size_t size = sizeof_container<container_type>(num); // NO HEADER FOR BUCKETS
-    monitor_allocation(STAMP_null,size);
 #ifdef USE_BOEHM
 #ifdef DEBUG_GCWEAK
     printf("%s:%d Allocating Bucket with GC_MALLOC_ATOMIC\n", __FILE__, __LINE__);
 #endif
     container_pointer myAddress = (container_pointer)GC_MALLOC_ATOMIC(size);
-    global_AllocationProfiler.registerAllocation(size);
+    my_thread_low_level->_Allocations.registerAllocation(STAMP_null,size);
     if (!myAddress)
       throw_hard_error("Out of memory in allocate");
     new (myAddress) container_type(num);
@@ -1077,13 +1057,12 @@ public:
   // allocate but don't initialize num elements of type value_type
   static gctools::tagged_pointer<container_type> allocate( size_type num, const void * = 0) {
     size_t size = sizeof_container<container_type>(num); // NO HEADER FOR BUCKETS
-    monitor_allocation(STAMP_null,size);
 #ifdef USE_BOEHM
 #ifdef DEBUG_GCWEAK
     printf("%s:%d Allocating Bucket with GC_MALLOC\n", __FILE__, __LINE__);
 #endif
     container_pointer myAddress = (container_pointer)GC_MALLOC(size);
-    global_AllocationProfiler.registerAllocation(size);
+    my_thread_low_level->_Allocations.registerAllocation(STAMP_null,size);
     if (!myAddress)
       throw_hard_error("Out of memory in allocate");
     new (myAddress) container_type(num);
@@ -1144,11 +1123,10 @@ public:
   // allocate but don't initialize num elements of type value_type
   static gctools::tagged_pointer<container_type> allocate( const VT &val) {
     size_t size = sizeof(container_type);
-    monitor_allocation(STAMP_null,size);
 #ifdef USE_BOEHM
     printf("%s:%d Allocating Mapping with GC_MALLOC_ATOMIC\n", __FILE__, __LINE__);
     container_pointer myAddress = (container_pointer)GC_MALLOC_ATOMIC(size);
-    global_AllocationProfiler.registerAllocation(size);
+    my_thread_low_level->_Allocations.registerAllocation(STAMP_null,size);
     if (!myAddress)
       throw_hard_error("Out of memory in allocate");
     new (myAddress) container_type(val);
@@ -1182,11 +1160,10 @@ public:
   // allocate but don't initialize num elements of type value_type
   static gctools::tagged_pointer<container_type> allocate(const VT &val) {
     size_t size = sizeof(container_type);
-    monitor_allocation(STAMP_null,size);
 #ifdef USE_BOEHM
     printf("%s:%d Allocating Mapping with GC_MALLOC\n", __FILE__, __LINE__);
     container_pointer myAddress = (container_pointer)GC_MALLOC(size);
-    global_AllocationProfiler.registerAllocation(size);
+    my_thread_low_level->_Allocations.registerAllocation(STAMP_null,size);
     if (!myAddress)
       throw_hard_error("Out of memory in allocate");
     new (myAddress) container_type(val);
@@ -1220,11 +1197,10 @@ public:
   // allocate but don't initialize num elements of type value_type
   static gctools::tagged_pointer<value_type> allocate(const contained_type &val) {
     size_t size = sizeof(VT);
-    monitor_allocation(STAMP_null,size);
 #ifdef USE_BOEHM
     printf("%s:%d Allocating WeakPointer with GC_MALLOC_ATOMIC\n", __FILE__, __LINE__);
     value_pointer myAddress = (value_pointer)GC_MALLOC_ATOMIC(size);
-    global_AllocationProfiler.registerAllocation(size);
+    my_thread_low_level->_Allocations.registerAllocation(STAMP_null,size);
     if (!myAddress)
       throw_hard_error("Out of memory in allocate");
     new (myAddress) VT(val);

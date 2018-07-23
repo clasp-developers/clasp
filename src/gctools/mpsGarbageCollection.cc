@@ -1076,8 +1076,11 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
 #else
   void* stackTop = NULL;
   {
-    core::ThreadLocalState thread_local_state(&stackTop);
+    gctools::ThreadLocalStateLowLevel thread_local_state_low_level(&stackTop);
+    core::ThreadLocalState thread_local_state;
+    my_thread_low_level = &thread_local_state_low_level;
     my_thread = &thread_local_state;
+    
   // Create the allocation points
     my_thread_allocation_points.initializeAllocationPoints();
     run_quick_tests();

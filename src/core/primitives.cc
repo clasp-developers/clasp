@@ -97,7 +97,7 @@ void clasp_musleep(double dsec, bool alertable) {
  AGAIN:
   code = nanosleep(&ts, &ts);
   int old_errno = errno;
-  gctools::handle_all_queued_interrupts(my_thread);
+  gctools::handle_all_queued_interrupts();
   {
     if (code < 0 && old_errno == EINTR && !alertable) {
       goto AGAIN;

@@ -131,6 +131,8 @@ namespace gctools {
   class GCObject {};
 };
 
+#include <clasp/gctools/threadlocal.fwd.h>
+
 extern "C" {
 const char *obj_name(gctools::stamp_t kind);
 extern void obj_dump_base(void *base);
@@ -587,77 +589,12 @@ namespace gctools {
 };
 
 
-namespace gctools {
-
-  struct MonitorAllocations {
-    bool on;
-    bool stackDump;
-    int counter;
-    int start;
-    int end;
-    int backtraceDepth;
-  MonitorAllocations() : on(false), stackDump(false), counter(0){};
-  };
-  extern MonitorAllocations global_monitorAllocations;
-
-  extern void monitorAllocation(stamp_t k, size_t sz);
-  extern uint64_t globalBytesAllocated;
-  extern void count_allocation(const stamp_t k);
-  inline void monitor_allocation(const stamp_t k, size_t sz) {
-#ifdef DEBUG_COUNT_ALLOCATIONS
-    gctools::count_allocation(k);
-#endif
-#if defined(TRACK_ALLOCATIONS) && defined(DEBUG_SLOW)
-    globalBytesAllocated += sz;
-#ifdef GC_MONITOR_ALLOCATIONS
-    if ( global_monitorAllocations.on ) {
-      monitorAllocation(k,sz);
-    }
-#endif
-#endif
-  }
-
-};
-
 extern "C" {
 const char *obj_name(gctools::stamp_t kind);
 const char *obj_kind_name(core::T_O *ptr);
 size_t obj_kind(core::T_O *ptr);
 extern void obj_dump_base(void *base);
 };
-
-extern "C" void HitAllocationSizeThreshold();
-extern "C" void HitAllocationNumberThreshold();
-
-namespace gctools {
-  struct GlobalAllocationProfiler {
-    std::atomic<int64_t> _AllocationNumberCounter;
-    std::atomic<int64_t> _AllocationSizeCounter;
-    std::atomic<int64_t> _HitAllocationNumberCounter;
-    std::atomic<int64_t> _HitAllocationSizeCounter;
-    size_t               _AllocationNumberThreshold;
-    size_t               _AllocationSizeThreshold;
-  GlobalAllocationProfiler(size_t size, size_t number) : _AllocationNumberThreshold(number), _AllocationSizeThreshold(size) {};
-    
-    inline void registerAllocation(size_t size) {
-#ifdef DEBUG_MEMORY_PROFILE
-      this->_AllocationSizeCounter += size;
-      if (this->_AllocationSizeCounter >= this->_AllocationSizeThreshold) {
-        this->_AllocationSizeCounter -= this->_AllocationSizeThreshold;
-        HitAllocationSizeThreshold();
-      }
-      this->_AllocationNumberCounter++;
-      if (this->_AllocationNumberCounter >= this->_AllocationNumberThreshold) {
-        this->_AllocationNumberCounter = 0;
-        HitAllocationNumberThreshold();
-      }
-#endif
-  };
-  };
-};
-
-extern gctools::GlobalAllocationProfiler global_AllocationProfiler;
-
 
 namespace gctools {
 /*! Specialize GcKindSelector so that it returns the appropriate GcKindEnum for OT */
@@ -746,48 +683,9 @@ void *SmartPtrToBasePtr(smart_ptr<T> obj) {
 namespace core {
   class ThreadLocalState;
 };
-namespace gctools {
-  void lisp_disable_interrupts(core::ThreadLocalState* t);
-  void lisp_enable_interrupts(core::ThreadLocalState* t);
-  void lisp_increment_recursive_allocation_counter(core::ThreadLocalState* thread);
-  void lisp_decrement_recursive_allocation_counter(core::ThreadLocalState* thread);
-};
-
-
-namespace core {
-  struct RAIIDisableInterrupts {
-    ThreadLocalState* this_thread;
-  RAIIDisableInterrupts(ThreadLocalState* t) : this_thread(t) {
-    gctools::lisp_disable_interrupts(this->this_thread);
-  }
-    ~RAIIDisableInterrupts() {
-      gctools::lisp_enable_interrupts(this->this_thread);
-    }
-  };
-};
-
 
 /*! Declare this in the top namespace */
 extern THREAD_LOCAL core::ThreadLocalState *my_thread;
-#define RAII_DISABLE_INTERRUPTS() core::RAIIDisableInterrupts disable_interrupts__(my_thread)
-
-namespace core {
-  #ifdef DEBUG_RECURSIVE_ALLOCATIONS
-struct RecursiveAllocationCounter {
-  RecursiveAllocationCounter() {
-    gctools::lisp_increment_recursive_allocation_counter(my_thread);
-  };
-  ~RecursiveAllocationCounter() {
-    gctools::lisp_decrement_recursive_allocation_counter(my_thread);
-  }
-};
-#endif
-#ifdef DEBUG_RECURSIVE_ALLOCATIONS
-#define DO_DEBUG_RECURSIVE_ALLOCATIONS() ::core::RecursiveAllocationCounter _rac_;
-#else
-#define DO_DEBUG_RECURSIVE_ALLOCATIONS()
-#endif
-};
 
 
 #include <clasp/gctools/gcStack.h>

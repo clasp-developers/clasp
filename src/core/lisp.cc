@@ -1525,11 +1525,11 @@ CL_DOCSTRING("stackUsed");
 CL_DEFUN size_t core__stack_used() {
   int x;
   char *xaddr = (char *)(&x);
-  if ( xaddr > my_thread->_StackTop ) {
-    printf("%s:%d There is a problem with the stack _lisp->_StackTop@%p is below the current stack pointer@%p\n", __FILE__, __LINE__, my_thread->_StackTop, xaddr );
+  if ( xaddr > my_thread_low_level->_StackTop ) {
+    printf("%s:%d There is a problem with the stack _lisp->_StackTop@%p is below the current stack pointer@%p\n", __FILE__, __LINE__, my_thread_low_level->_StackTop, xaddr );
     abort();
   }
-  size_t stack = (size_t)((const char*)my_thread->_StackTop - xaddr);
+  size_t stack = (size_t)((const char*)my_thread_low_level->_StackTop - xaddr);
   return stack;
 };
 
@@ -1554,7 +1554,7 @@ void af_stackSizeWarning(size_t stackUsed) {
     printf("%s:%d Stack is getting full currently at %zu bytes - warning at %u bytes  top@%p current@%p\n",
            __FILE__, __LINE__,
            stackUsed, _lisp->_StackWarnSize,
-           my_thread->_StackTop, xaddr );
+           my_thread_low_level->_StackTop, xaddr );
     ExceptionSafeResetInvokedInternalDebugger safe;
     core__invoke_internal_debugger(_Nil<core::T_O>());
   }

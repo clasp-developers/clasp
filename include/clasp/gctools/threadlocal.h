@@ -2,23 +2,20 @@
 #define gctools_threadlocal_H
 
 #include <signal.h>
+#include <clasp/gctools/threadlocal.fwd.h>
 
 namespace core {
 #define IHS_BACKTRACE_SIZE 16
   struct InvocationHistoryFrame;
   struct ThreadLocalState {
-    ThreadLocalState(void* stack_top);
+    ThreadLocalState();
     void initialize_thread(mp::Process_sp process, bool initialize_GCRoots);
     void create_sigaltstack();
     void destroy_sigaltstack();
     
-    int _DisableInterrupts;
-#if defined(DEBUG_RECURSIVE_ALLOCATIONS)
-    int _RecursiveAllocationCounter;
-#endif
+    uint64_t   _BytesAllocated;
     mp::Process_sp _Process;
     uint64_t  _Tid;
-    void* _StackTop;
     DynamicBindingStack _Bindings;
     ExceptionStack _ExceptionStack;
     MultipleValues _MultipleValues;
@@ -75,6 +72,8 @@ namespace gctools {
   void start_backtrace_allocations(const std::string& filename, Fixnum stamp);
   void stop_backtrace_allocations();
 #endif
+
+  void registerBytesAllocated(size_t bytes);
 };
 
 
