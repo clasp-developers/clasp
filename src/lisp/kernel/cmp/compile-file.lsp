@@ -49,15 +49,23 @@
                    (compiler-run-time (/ (- (get-internal-run-time) *compiler-run-time*) (float internal-time-units-per-second)))
                    (link-time llvm-sys:*accumulated-clang-link-time*))
                (when verbose
-                 (let ((link-string (if report-link-time
+                 (let* ((link-string (if report-link-time
                                         (core:bformat nil " link(%.1f)" link-time)
-                                        "")))
-                   (core:bformat t "%s seconds real(%.1f) run(%.1f) llvm(%.1f)%s%N"
+                                        ""))
+                       (total-llvm-time (+ llvm-finalization-time (if report-link-time
+                                                                      link-time
+                                                                      0.0)))
+                       (percent-llvm-time (* 100.0 (/ total-llvm-time compiler-real-time)))
+                       (percent-time-string (if report-link-time
+                                                (core:bformat nil "(llvm+link)/real(%1.f%%)" percent-llvm-time)
+                                                (core:bformat nil "llvm/real(%1.f%%)" percent-llvm-time))))
+                   (core:bformat t "   %s seconds real(%.1f) run(%.1f) llvm(%.1f)%s %s%N"
                                  message
                                  compiler-real-time
                                  compiler-run-time
                                  llvm-finalization-time
-                                 link-string)))))))
+                                 link-string
+                                 percent-time-string)))))))
         (t (funcall closure))))
 
 (defmacro with-compiler-timer ((&key message report-link-time verbose override) &rest body)
