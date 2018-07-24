@@ -1109,7 +1109,7 @@ Package_sp Lisp_O::makePackage(const string &name, list<string> const &nicknames
       }
       for ( auto x : shadow ) {
         SimpleBaseString_sp sx = SimpleBaseString_O::make(x);
-        printf("%s:%d in makePackage  for package %s  shadow: %s\n", __FILE__,__LINE__, newPackage->getName().c_str(),sx->get_std_string().c_str());
+//        printf("%s:%d in makePackage  for package %s  shadow: %s\n", __FILE__,__LINE__, newPackage->getName().c_str(),sx->get_std_string().c_str());
         newPackage->shadow(sx);
       }
       for (list<string>::const_iterator jit = usePackages.begin(); jit != usePackages.end(); jit++) {
