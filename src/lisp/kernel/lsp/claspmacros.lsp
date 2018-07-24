@@ -132,7 +132,7 @@
 
 (defmacro with-memory-ramp ((&key (pattern 'gctools:ramp)) &body body)
   `(if (member :disable-memory-ramp *features*)
-       (funcall (lamda () (progn ,@body)))
+       (funcall (lambda () (progn ,@body)))
        (do-memory-ramp (lambda () (progn ,@body)) ,pattern)))
 
 ;;;
