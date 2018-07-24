@@ -536,13 +536,11 @@ Return files."
                (pre-files (butlast (out-of-date-bitcodes #P"src/lisp/kernel/tag/start" #P"src/lisp/kernel/tag/min-start" :system system)))
                (files (out-of-date-bitcodes #P"src/lisp/kernel/tag/min-start" #P"src/lisp/kernel/tag/min-pre-epilogue" :system system))
                (files-with-epilogue (out-of-date-bitcodes #P"src/lisp/kernel/tag/start" #P"src/lisp/kernel/tag/min-end" :system system)))
-          (let ((cmp::*activation-frame-optimize* nil))
-            ;; It's better to compile aclasp with fewer cores because then more of the compilations
-            ;; make use of compiled code.
-            ;;  Compiling and reloading the following files will speed things up
+          (let ((cmp::*activation-frame-optimize* t)
+                (core:*cache-macroexpand* (make-hash-table :test #'equal)))
             (compile-system files :reload t :parallel-jobs (min *number-of-jobs* 16))
             ;;  Just compile the following files and don't reload, they are needed to link
-            (compile-system pre-files :reload nil :parallel-jobs (min *number-of-jobs* 16))
+            (compile-system pre-files :reload nil)
             (if files-with-epilogue (compile-system (output-object-pathnames #P"src/lisp/kernel/tag/min-pre-epilogue" #P"src/lisp/kernel/tag/min-end" :system system) :reload nil)))
           (let ((all-output (output-object-pathnames #P"src/lisp/kernel/tag/min-start" #P"src/lisp/kernel/tag/min-end" :system system)))
             (if (out-of-date-target output-file all-output)

@@ -47,6 +47,7 @@ THE SOFTWARE.
 #include <clasp/core/backquote.h>
 #include <clasp/core/sysprop.h>
 #include <clasp/core/hashTableEq.h>
+#include <clasp/core/hashTableEqual.h>
 #include <clasp/core/multipleValues.h>
 #include <clasp/core/primitives.h>
 #include <clasp/core/array.h>
@@ -1926,23 +1927,19 @@ T_mv evaluate(T_sp exp, T_sp environment) {
 
     T_sp theadFunc = af_interpreter_lookup_macro(headSym, environment);
     if (theadFunc.notnilp()) {
+      T_sp expanded;
       /* macros are expanded again and again and again */
-      T_sp expanded = _Nil<T_O>();
-      if (_sym_STARinterpreterTraceSTAR->symbolValue().notnilp()) {
-        if (gc::As<HashTable_sp>(_sym_STARinterpreterTraceSTAR->symbolValue())->gethash(headSym).notnilp()) {
-          InterpreterTrace itrace;
-          printf("eval::evaluate Trace [%d] macroexpand > %s\n", global_interpreter_trace_depth, _rep_(form).c_str());
-          expanded = cl__macroexpand(form, environment);
-          printf("eval::evaluate Trace [%d] < (%s ...)\n", global_interpreter_trace_depth, _rep_(headSym).c_str());
+      if (_sym_STARcache_macroexpandSTAR->symbolValue().notnilp()) {
+        HashTableEqual_sp ht = gc::As<HashTableEqual_sp>(_sym_STARcache_macroexpandSTAR->symbolValue());
+        T_mv expanded_mv = ht->gethash(form);
+        if (expanded_mv.second().notnilp()) {
+          expanded = expanded_mv;
         } else {
-          expanded = cl__macroexpand(form, environment);
+          expanded = cl__macroexpand(form,environment);
+          ht->setf_gethash(form,expanded);
         }
       } else {
         expanded = cl__macroexpand(form, environment);
-      }
-      if (_evaluateVerbosity > 0) {
-        string es = _rep_(expanded);
-        printf("core::eval::evaluate expression is macro - expanded --> %s\n", es.c_str());
       }
       return eval::evaluate(expanded, environment);
     }
