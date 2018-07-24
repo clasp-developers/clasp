@@ -669,21 +669,15 @@ This works like compile-lambda-function in bclasp."
             (return nil)
             (progn
               (when *compile-print* (cmp::describe-form (cst:raw cst)))
-              (unwind-protect
-                   (progn
-                     (gctools:alloc-pattern-begin 'gctools:ramp)
-                     (cleavir-compile-file-cst cst environment))
-                (gctools:alloc-pattern-end))))
+              (core:with-memory-ramp (:pattern 'gctools:ramp)
+                (cleavir-compile-file-cst cst environment))))
         #-cst
         (if (eq form eof-value)
             (return nil)
             (progn
               (when *compile-print* (cmp::describe-form form))
-              (unwind-protect
-                   (progn
-                     (gctools:alloc-pattern-begin 'gctools:ramp)
-                     (cleavir-compile-file-form form))
-                (gctools:alloc-pattern-end))))))))
+              (core:with-memory-ramp (:pattern 'gctools:ramp)
+                (cleavir-compile-file-form form))))))))
 
 (defun cclasp-compile-in-env (name form &optional env)
   (let ((cleavir-generate-ast:*compiler* 'cl:compile)

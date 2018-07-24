@@ -42,17 +42,14 @@
            (bformat t "*active-protection* --> %s%N" cmp::*active-protection*))
          (with-compilation-unit (:override nil)
            (multiple-value-bind (compiled-function warn fail)
-               (unwind-protect
-                    (progn
-                      (gctools:alloc-pattern-begin 'gctools:ramp)
-                      (compile-in-env 'repl
-                                      `(lambda () 
-                                         (declare (core:lambda-name from-bclasp-implicit-compile-repl-form))
-                                         ,form)
-                                      environment
-                                      nil
-                                      'llvm-sys:external-linkage))
-                 (gctools:alloc-pattern-end))
+               (core:with-memory-ramp (:pattern 'gctools:ramp)
+                 (compile-in-env 'repl
+                                 `(lambda () 
+                                    (declare (core:lambda-name from-bclasp-implicit-compile-repl-form))
+                                    ,form)
+                                 environment
+                                 nil
+                                 'llvm-sys:external-linkage))
              (funcall compiled-function))))))
 
 ;;;

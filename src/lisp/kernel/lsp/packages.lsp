@@ -30,6 +30,7 @@
             proper-list-p
             expand-associative
             expand-compare
+            with-memory-ramp
             ))
 
   (export '( ;;;;MISSING SYMBOLS!!!!!
