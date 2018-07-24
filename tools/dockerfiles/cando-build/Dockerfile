@@ -65,6 +65,9 @@ RUN cd $HOME/quicklisp/local-projects \
  && git clone --depth=1 https://github.com/clasp-developers/cffi.git
 
 RUN ./waf configure
+RUN ./waf -j $(nproc) build_iboehm
+RUN ./waf -j $(nproc) build_aboehm
+RUN ./waf -j $(nproc) build_bboehm
 RUN ./waf -j $(nproc) build_cboehm
 RUN ./waf -j $(nproc) build_dboehm
 RUN ./waf install_dboehm
