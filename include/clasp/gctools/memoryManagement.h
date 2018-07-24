@@ -790,6 +790,9 @@ namespace gctools {
     }
 
   };
+
+  extern std::atomic<uint64_t> global_NumberOfRootTables;
+  extern std::atomic<uint64_t> global_TotalRootTableSize;
   
   void initialize_gcroots_in_module(GCRootsInModule* gcroots_in_module, core::T_O** root_address, size_t num_roots, gctools::Tagged initial_data);
   core::T_O* read_gcroots_in_module(GCRootsInModule* roots, size_t index);

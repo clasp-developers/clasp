@@ -447,11 +447,15 @@ CL_DEFUN core::Fixnum gctools__next_header_kind()
     return ensure_fixnum(next);
 }
 
+std::atomic<uint64_t> global_TotalRootTableSize;
+std::atomic<uint64_t> global_NumberOfRootTables;
 
 
 /*! initial_data is a gctools::Tagged pointer to a List of tagged pointers.
 */
 void initialize_gcroots_in_module(GCRootsInModule* roots, core::T_O** root_address, size_t num_roots, gctools::Tagged initial_data) {
+  global_TotalRootTableSize += num_roots;
+  global_NumberOfRootTables++;
   core::T_O** shadow_mem = NULL;
 #ifdef USE_BOEHM
   shadow_mem = reinterpret_cast<core::T_O**>(boehm_create_shadow_table(num_roots));
