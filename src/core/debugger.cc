@@ -501,7 +501,7 @@ CL_DEFUN T_sp core__clib_backtrace_as_list() {
   char *funcname = (char *)malloc(1024);
   size_t funcnamesize = 1024;
   void** buffer = NULL;
-  uintptr_t stackTop = (uintptr_t)my_thread->_StackTop;
+  uintptr_t stackTop = (uintptr_t)my_thread_low_level->_StackTop;
   int nptrs = safe_backtrace(buffer);
   char **strings = backtrace_symbols(buffer, nptrs);
   if (strings == NULL) {

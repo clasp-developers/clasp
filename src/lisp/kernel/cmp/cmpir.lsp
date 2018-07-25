@@ -487,9 +487,7 @@
 
 (defun irc-basic-block-create (name &optional (function *current-function*))
   "Create a llvm::BasicBlock with (name) in the (function)"
-  (let ((bb (llvm-sys:basic-block-create *llvm-context* (bformat nil "%s%s" *block-name-prefix* name) function)))
-    (cmp-log "Created basic block  <*block-name-prefix* = %s>  <name=%s>: bb-> %s%N" *block-name-prefix* name bb)
-    bb))
+  (llvm-sys:basic-block-create *llvm-context* name function))
 
 (defun irc-get-insert-block ()
   (llvm-sys:get-insert-block *irbuilder*))
@@ -1222,9 +1220,9 @@ Within the _irbuilder_ dynamic environment...
     :init nil))
 
 (defun irc-alloca-vaslist (&key (irbuilder *irbuilder-function-alloca*) (label "va_list"))
-  "Alloca space for an vaslist"
+  "Alloca space for an vaslist and a backup so that it can be rewound"
   (with-alloca-insert-point-no-cleanup irbuilder
-    :alloca (llvm-sys::create-alloca *irbuilder* %vaslist% (jit-constant-size_t 1) label)
+    :alloca (llvm-sys::create-alloca *irbuilder* %vaslist% (jit-constant-size_t 2) label)
     :init nil))
 
 (defun irc-alloca-i8* (&key (irbuilder *irbuilder-function-alloca*) (label "i8*-"))

@@ -50,7 +50,6 @@ extern core::Symbol_sp& _sym_fixnum;
 
 namespace gctools {
 
-uint64_t globalBytesAllocated = 0;
 bool _GlobalDebugAllocations = false;
 
 // -----------------------------------------------------------

@@ -568,7 +568,7 @@ def configure(cfg):
                 if (not key in VALID_OPTIONS):
                     raise Exception("%s is an INVALID wscript.config option - valid options are: %s" % (key, VALID_OPTIONS))
                 else:
-                    log.debug("wscript.config option %s = %s", key, local_environment[key])
+                    log.info("wscript.config option %s = %s", key, local_environment[key])
             cfg.env.update(local_environment)
         else:
             log.warn("There is no 'wscript.config' file - assuming default configuration. See 'wscript.config.template' for further details.")
@@ -595,7 +595,10 @@ def configure(cfg):
 
     if (cfg.env.LLVM5_ORC_NOTIFIER_PATCH):
         cfg.define("LLVM5_ORC_NOTIFIER_PATCH",1)
-    if (cfg.env.USE_PARALLEL_BUILD):
+    if (cfg.env.USE_PARALLEL_BUILD == False):
+        pass
+    else:
+        cfg.env.USE_PARALLEL_BUILD = True
         cfg.define("USE_PARALLEL_BUILD",1)
     cfg.env["LLVM_BIN_DIR"] = run_llvm_config(cfg, "--bindir")
     cfg.env["LLVM_AR_BINARY"] = "%s/llvm-ar" % cfg.env.LLVM_BIN_DIR

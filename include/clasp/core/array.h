@@ -1888,6 +1888,8 @@ CL_DOCSTRING("copy_subarray");
   void SimpleBitVector_getOnIndices(SimpleBitVector_sp x, vector<size_t> &res);
   size_t SimpleBitVector_lowestIndex(SimpleBitVector_sp x);
   bool SimpleBitVector_isZero(SimpleBitVector_sp x);
+  SimpleBitVector_sp SimpleBitVector_copy(SimpleBitVector_sp orig_sbv);
+  
 };
 
 

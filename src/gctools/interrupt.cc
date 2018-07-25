@@ -137,21 +137,13 @@ void clasp_interrupt_process(mp::Process_sp process, core::T_sp function)
 
 
 
-void lisp_enable_interrupts(core::ThreadLocalState* thread) {
-  thread->_DisableInterrupts = false;
+inline bool interrupts_disabled_by_C() {
+  return my_thread_low_level->_DisableInterrupts;
 }
 
-void lisp_disable_interrupts(core::ThreadLocalState* thread) {
-  thread->_DisableInterrupts = true;
-}
-
-inline bool interrupts_disabled_by_C(core::ThreadLocalState* thread) {
-  return thread->_DisableInterrupts;
-}
-
-inline bool interrupts_disabled_by_lisp(core::ThreadLocalState* thread) {
-  return thread->_Bindings.value(core::_sym_STARinterrupts_enabledSTAR,
-                                 &core::_sym_STARinterrupts_enabledSTAR->_GlobalValue).notnilp();
+inline bool interrupts_disabled_by_lisp() {
+  return my_thread->_Bindings.value(core::_sym_STARinterrupts_enabledSTAR,
+                                    &core::_sym_STARinterrupts_enabledSTAR->_GlobalValue).notnilp();
 }
 
 void handle_signal_now( core::T_sp signal_code, core::T_sp process ) {
@@ -216,11 +208,11 @@ core::T_sp pop_signal(core::ThreadLocalState* thread) {
   }
   return value;
 }
-void handle_all_queued_interrupts(core::ThreadLocalState* thread)
+void handle_all_queued_interrupts()
 {
-  while (thread->_PendingInterrupts.consp()) {
-    core::T_sp sig = pop_signal(thread);
-    handle_signal_now(sig, thread->_Process);
+  while (my_thread->_PendingInterrupts.consp()) {
+    core::T_sp sig = pop_signal(my_thread);
+    handle_signal_now(sig, my_thread->_Process);
   }
 }
 
@@ -229,11 +221,11 @@ void handle_or_queue(core::ThreadLocalState* thread, core::T_sp signal_code ) {
     printf("%s:%d handle_or_queue   signal_code is NULL\n", __FILE__, __LINE__ );
   }
   if (signal_code.nilp() || !signal_code) return;
-  if (interrupts_disabled_by_lisp(thread)) {
+  if (interrupts_disabled_by_lisp()) {
     queue_signal(thread,signal_code,false);
   }
-  else if(interrupts_disabled_by_C(thread)) {
-    thread->_DisableInterrupts = 3;
+  else if(interrupts_disabled_by_C()) {
+    my_thread_low_level->_DisableInterrupts = 3;
     queue_signal(thread,signal_code,false);
 //    set_guard_page(thread);
   }
@@ -300,7 +292,7 @@ void interrupt_handle_signals(int signo) {
 }
 
 CL_DEFUN void core__check_pending_interrupts() {
-  handle_all_queued_interrupts(my_thread);
+  handle_all_queued_interrupts();
 }
 
 void fatal_error_handler(void *user_data, const std::string &reason, bool gen_crash_diag) {

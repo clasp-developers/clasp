@@ -15,6 +15,7 @@
 #include <clasp/core/lispStream.h>
 
 
+THREAD_LOCAL gctools::ThreadLocalStateLowLevel* my_thread_low_level;
 THREAD_LOCAL core::ThreadLocalState* my_thread;
 
 namespace core {
@@ -189,12 +190,23 @@ void DynamicBindingStack::pop_binding() {
 
 };
 
+namespace gctools {
+ThreadLocalStateLowLevel::ThreadLocalStateLowLevel(void* stack_top) :
+  _DisableInterrupts(false)
+  ,  _StackTop(stack_top)
+{};
+
+ThreadLocalStateLowLevel::~ThreadLocalStateLowLevel()
+{};
+
+};
 namespace core {
 
 
-ThreadLocalState::ThreadLocalState(void* stack_top) :  _DisableInterrupts(false), _StackTop(stack_top), _PendingInterrupts(_Nil<core::T_O>())
+ThreadLocalState::ThreadLocalState() :
+_PendingInterrupts(_Nil<core::T_O>())
 #ifdef DEBUG_RECURSIVE_ALLOCATIONS
-                                                    , _RecursiveAllocationCounter(0)
+  , _RecursiveAllocationCounter(0)
 #endif
 {
   my_thread = this;
@@ -210,7 +222,12 @@ ThreadLocalState::ThreadLocalState(void* stack_top) :  _DisableInterrupts(false)
 
 ThreadLocalState::~ThreadLocalState() {
 }
-  
+
+// Need to use LTO to inline this.
+inline void registerTypesAllocated(size_t bytes) {
+  my_thread->_BytesAllocated += bytes;
+}
+
 void ThreadLocalState::initialize_thread(mp::Process_sp process, bool initialize_GCRoots=true ) {
   if (initialize_GCRoots) {
     // The main process needs to initialize _GCRoots before classes are initialized.

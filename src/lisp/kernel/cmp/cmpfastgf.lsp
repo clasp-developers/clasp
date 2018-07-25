@@ -368,7 +368,7 @@
 
 (defun compile-node (node args orig-args)
   (let ((arg (gensym "ARG")))
-    `(let ((,arg (va-arg ,args)))
+    `(let ((,arg (core:vaslist-pop ,args))) ;; was (va-arg ,args)
        ,@(compile-eql-specializers node arg args orig-args)
        ,(compile-class-specializers node arg args orig-args))))
 

@@ -28,7 +28,6 @@
 	  cmp-log-dump-function
 	  irc-environment-activation-frame
 	  *run-time-values-table-name*
-	  *block-name-prefix*
 	  irc-switch
 	  %t*%
 	  %i1%

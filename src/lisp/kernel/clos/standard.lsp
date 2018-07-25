@@ -21,11 +21,11 @@
 ;;; INSTANCES INITIALIZATION AND REINITIALIZATION
 ;;;
 
-(defmethod initialize-instance ((instance #| #+clasp standard-object #+ecl |# T) &rest initargs)
+(defmethod initialize-instance ((instance T) core:&va-rest initargs)
   (dbg-standard "standard.lsp:29  initialize-instance unbound instance ->~a~%" (eq (core:unbound) instance))
   (apply #'shared-initialize instance 'T initargs))
 
-(defmethod reinitialize-instance ((instance #| #+clasp standard-object #+ecl |# T ) &rest initargs)
+(defmethod reinitialize-instance ((instance T ) &rest initargs)
 ;;  (print "HUNT entered reinitialize-instance") ;
   (check-initargs (class-of instance) initargs
 		  (valid-keywords-from-methods
@@ -35,7 +35,7 @@
                     #'shared-initialize (list instance t))))
   (apply #'shared-initialize instance '() initargs))
 
-(defmethod shared-initialize ((instance #| #+clasp standard-object #+ecl |# T) slot-names &rest initargs)
+(defmethod shared-initialize ((instance T) slot-names #+(or)&rest core:&va-rest initargs)
   ;;
   ;; initialize the instance's slots is a two step process
   ;;   1 A slot for which one of the initargs in initargs can set
@@ -59,32 +59,36 @@
   (let* ((class (class-of instance)))
     ;; initialize-instance slots
     (dolist (slotd (class-slots class))
+      (core:vaslist-rewind initargs)
       (let* ((slot-initargs (slot-definition-initargs slotd))
-	     (slot-name (slot-definition-name slotd)))
-	(or
-	 ;; Try to initialize the slot from one of the initargs.
-	 (do ((l initargs) initarg val)
-	     ((null l)
-	      (progn
-		nil))
-	   (setf initarg (pop l))
-	   (when (endp l)
-	     (simple-program-error "Wrong number of keyword arguments for SHARED-INITIALIZE, ~A"
-				   initargs))
-	   (unless (symbolp initarg)
-	     (simple-program-error "Not a valid initarg: ~A" initarg))
-	   (setf val (pop l))
-	   (when (member initarg slot-initargs :test #'eq)
-	     (setf (slot-value instance slot-name) val)
-	     (return t)))
-
-	 (when (and slot-names
-		    (or (eq slot-names 'T)
-			(member slot-name slot-names))
-		    (not (slot-boundp instance slot-name)))
-	   (let ((initfun (slot-definition-initfunction slotd)))
-	     (when initfun
-	       (setf (slot-value instance slot-name) (funcall initfun)))))))))
+             (slot-name (slot-definition-name slotd)))
+        (or
+         ;; Try to initialize the slot from one of the initargs.
+         (do ((largs initargs)
+              initarg
+              val)
+           (#+(or)(null largs) (= (core:vaslist-length largs) 0)
+              (progn nil))
+           (setf initarg #+(or)(pop largs) (core:vaslist-pop largs))
+           #+(or)(when (endp largs) (simple-program-error "Wrong number of keyword arguments for SHARED-INITIALIZE, ~A" initargs))
+           (when (= (core:vaslist-length largs) 0)
+             (simple-program-error "Wrong number of keyword arguments for SHARED-INITIALIZE, ~A"
+                                   (progn
+                                     (core:vaslist-rewind initargs)
+                                     (core:vaslist-as-list initargs))))
+           (unless (symbolp initarg)
+             (simple-program-error "Not a valid initarg: ~A" initarg))
+           (setf val #+(or)(pop l) (core:vaslist-pop largs))
+           (when (member initarg slot-initargs :test #'eq)
+             (setf (slot-value instance slot-name) val)
+             (return t)))
+         (when (and slot-names
+                    (or (eq slot-names 'T)
+                        (member slot-name slot-names))
+                    (not (slot-boundp instance slot-name)))
+           (let ((initfun (slot-definition-initfunction slotd)))
+             (when initfun
+               (setf (slot-value instance slot-name) (funcall initfun)))))))))
   instance)
 
 (defun compute-instance-size (slots)
@@ -93,7 +97,7 @@
         when (eq (slot-definition-allocation slotd) :instance)
           sum 1))
 
-(defmethod allocate-instance ((class standard-class) &rest initargs)
+(defmethod allocate-instance ((class standard-class) core:&va-rest initargs)
   (declare (ignore initargs))
   ;; CLHS says allocate-instance finalizes the class first, but we don't.
   ;; Dr. Strandh argues that this is impossible since the initargs should be the
@@ -109,13 +113,13 @@
     (mlog "In allocate-instance  x -> %s\n" x)
     x))
 
-(defmethod allocate-instance ((class derivable-cxx-class) &rest initargs)
+(defmethod allocate-instance ((class derivable-cxx-class) core:&va-rest initargs)
   (declare (ignore initargs))
   ;; derivable cxx objects are Instance_O's, so this is _probably_ okay.
   ;; (And allocate-new-instance uses the creator, so it'll do any C++ junk.)
   (core:allocate-new-instance class (class-size class)))
 
-(defmethod allocate-instance ((class funcallable-standard-class) &rest initargs)
+(defmethod allocate-instance ((class funcallable-standard-class) core:&va-rest initargs)
   (declare (ignore initargs))
   (dbg-standard "About to allocate-new-funcallable-instance class->~a~%" class)
   (let ((x (core:allocate-new-funcallable-instance class (class-size class))))

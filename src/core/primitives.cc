@@ -97,7 +97,7 @@ void clasp_musleep(double dsec, bool alertable) {
  AGAIN:
   code = nanosleep(&ts, &ts);
   int old_errno = errno;
-  gctools::handle_all_queued_interrupts(my_thread);
+  gctools::handle_all_queued_interrupts();
   {
     if (code < 0 && old_errno == EINTR && !alertable) {
       goto AGAIN;
@@ -1981,20 +1981,21 @@ CL_DEFUN void core__dynamic_binding_stack_dump(std::ostream &out) {
   };
 }
 
-CL_DEFUN size_t core__va_list_length(VaList_sp v)
+CL_DEFUN VaList_sp core__vaslist_rewind(VaList_sp v)
+{
+  Vaslist* vaslist0 = &*v;
+  Vaslist* vaslist1 = &vaslist0[1];
+  memcpy(vaslist0,vaslist1,sizeof(Vaslist));
+  return v;
+}
+
+CL_DEFUN size_t core__vaslist_length(VaList_sp v)
 {
 //  printf("%s:%d va_list length %" PRu "\n", __FILE__, __LINE__, v->remaining_nargs());
   return v->remaining_nargs();
 }
 
-CL_DEFUN size_t core__va_list_current_index(VaList_sp v)
-{
-//  printf("%s:%d va_list_current_index = %" PRu "\n", __FILE__, __LINE__, v->current_index());
-  IMPLEMENT_ME();
-//  return v->current_index();
-}
-
-CL_DEFUN T_sp core__va_arg(VaList_sp v)
+CL_DEFUN T_sp core__vaslist_pop(VaList_sp v)
 {
   return v->next_arg();
 }
@@ -2018,6 +2019,11 @@ CL_DEFUN List_sp core__list_from_va_list(VaList_sp vorig)
   }
   T_sp result = l.cons();
   return result;
+}
+
+CL_DEFUN List_sp core__vaslist_as_list(VaList_sp vorig)
+{
+  return core__list_from_va_list(vorig);
 }
 
 CL_LAMBDA(&optional (out t) msg);

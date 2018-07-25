@@ -435,7 +435,7 @@ public:
   inline void stack_monitor() {
     int x;
     char *xaddr = (char *)(&x);
-    size_t stack = (size_t)(((const char*)my_thread->_StackTop) - xaddr);
+    size_t stack = (size_t)(((const char*)my_thread_low_level->_StackTop) - xaddr);
     if (stack > _lisp->_StackWarnSize) {
       af_stackSizeWarning(stack);
     }

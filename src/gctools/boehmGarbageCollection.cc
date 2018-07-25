@@ -242,7 +242,9 @@ int initializeBoehm(MainFunctionType startupFn, int argc, char *argv[], bool mpi
   GC_init();
   void* topOfStack;
   // ctor sets up my_thread
-  core::ThreadLocalState thread_local_state(&topOfStack);
+  gctools::ThreadLocalStateLowLevel thread_local_state_low_level(&topOfStack);
+  core::ThreadLocalState thread_local_state;
+  my_thread_low_level = &thread_local_state_low_level;
   my_thread = &thread_local_state;
 #if 0
   // I'm not sure if this needs to be done for the main thread
