@@ -580,13 +580,12 @@ jump to blocks within this tagbody."
 	 (return-form (cadr rest)))
     (multiple-value-bind (recognizes-block-symbol inter-function block-env)
 	(classify-return-from-symbol env block-symbol)
-      #+optimize-bclasp
-      (let ((frame-info (gethash block-env *block-frame-info*)))
-        (unless frame-info (error "Could not find frame-info for block ~s" block-symbol))
-        (setf (block-frame-info-needed frame-info) t))
       (if recognizes-block-symbol
           (if inter-function
-              (let ((depth (core:calculate-runtime-visible-environment-depth env block-env)))
+              (let ((depth (core:calculate-runtime-visible-environment-depth env block-env))
+                    (frame-info (gethash block-env *block-frame-info*)))
+                (unless frame-info (error "Could not find frame-info for block ~s" block-symbol))
+                (setf (block-frame-info-needed frame-info) t) ; mark the block closure as needed since we have a return-from in an inner function
                 (codegen temp-mv-result return-form env)
                 (irc-intrinsic "saveToMultipleValue0" temp-mv-result)
                 (irc-low-level-trace)
