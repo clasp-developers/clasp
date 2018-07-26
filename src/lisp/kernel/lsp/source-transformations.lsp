@@ -62,6 +62,19 @@
                      nil)))
         args))
 
+  ;; /=, char/=, and so on have to compare every pair.
+  ;; In general this results in order n^2 comparisons, requiring a loop etc.
+  ;; For now we don't do that, and only inline the 1 and 2 arg cases.
+  (defun expand-uncompare (form fun args)
+    (if (proper-list-p args)
+        (case (length args)
+          ((1)
+           ;; preserve nontoplevelness and side effects.
+           `(progn (the t ,(first args)) t))
+          ((2) `(not (,fun ,@args)))
+          (otherwise form))
+        form))
+
   (core:bclasp-define-compiler-macro < (&rest numbers)
     (expand-compare 'two-arg-< numbers))
 
@@ -77,6 +90,9 @@
   (core:bclasp-define-compiler-macro = (&rest numbers)
     (expand-compare 'two-arg-= numbers))
 
+  (core:bclasp-define-compiler-macro /= (&whole form &rest numbers)
+    (expand-uncompare form 'two-arg-= numbers))
+  
   (core:bclasp-define-compiler-macro 1+ (x)
     `(core:two-arg-+ ,x 1))
 

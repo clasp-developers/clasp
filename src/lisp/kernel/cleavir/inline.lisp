@@ -408,10 +408,8 @@
     (core:expand-compare 'primop:inlined-two-arg-<= numbers))
   (define-compiler-macro = (&rest numbers)
     (core:expand-compare 'primop:inlined-two-arg-= numbers))
-  ;; FIXME: could be slightly more efficient by just returning T, maybe
-  ;; FIXME: could just have `(not (= ...)) and put this elsewhere
-  (define-compiler-macro /= (&rest numbers)
-    `(not ,(core:expand-compare 'primop:inlined-two-arg-= numbers)))
+  (define-compiler-macro /= (&whole form &rest numbers)
+    (core:expand-uncompare form 'primop:inlined-two-arg-= numbers))
   (define-compiler-macro > (&rest numbers)
     (core:expand-compare 'primop:inlined-two-arg-> numbers))
   (define-compiler-macro >= (&rest numbers)
