@@ -38,19 +38,6 @@
       (2 (values `(,two-arg-fun ,@args) t))
       (t (simple-associate-args two-arg-fun (first args) (rest args)))))
 
-  (core:bclasp-define-compiler-macro + (&rest numbers)
-    (expand-associative '+ 'two-arg-+ numbers 0))
-
-  (core:bclasp-define-compiler-macro * (&rest numbers)
-    (expand-associative '* 'two-arg-* numbers 1))
-
-  (core:bclasp-define-compiler-macro - (minuend &rest subtrahends)
-    (if (proper-list-p subtrahends)
-        (if subtrahends
-            `(core:two-arg-- ,minuend ,(expand-associative '+ 'two-arg-+ subtrahends 0))
-            `(core:negate ,minuend))
-        (error "The - operator can not be part of a form that is a dotted list.")))
-
   (defun simple-compare-args (fun first-arg more-args)
     (let ((next (rest more-args))
           (arg (first more-args)))
@@ -91,30 +78,6 @@
           ((2) `(not (,fun ,@args)))
           (otherwise form))
         form))
-
-  (core:bclasp-define-compiler-macro < (&whole form &rest numbers)
-    (expand-compare form 'two-arg-< numbers))
-
-  (core:bclasp-define-compiler-macro <= (&whole form &rest numbers)
-    (expand-compare form 'two-arg-<= numbers))
-
-  (core:bclasp-define-compiler-macro > (&whole form &rest numbers)
-    (expand-compare form 'two-arg-> numbers))
-
-  (core:bclasp-define-compiler-macro >= (&whole form &rest numbers)
-    (expand-compare form 'two-arg->= numbers))
-
-  (core:bclasp-define-compiler-macro = (&whole form &rest numbers)
-    (expand-compare form 'two-arg-= numbers))
-
-  (core:bclasp-define-compiler-macro /= (&whole form &rest numbers)
-    (expand-uncompare form 'two-arg-= numbers))
-  
-  (core:bclasp-define-compiler-macro 1+ (x)
-    `(core:two-arg-+ ,x 1))
-
-  (core:bclasp-define-compiler-macro 1- (x)
-    `(core:two-arg-- ,x 1))
 
   (core:bclasp-define-compiler-macro aref (&whole whole array &rest indeces)
     (if (= (length indeces) 1)
