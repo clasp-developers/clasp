@@ -51,16 +51,33 @@
             `(core:negate ,minuend))
         (error "The - operator can not be part of a form that is a dotted list.")))
 
-  (defun expand-compare (fun args)
-    (if (consp args)
-        (if (= (length args) 1)
-            t
-            (if (= (length args) 2)
-                `(,fun ,(car args) ,(cadr args))
-                `(if (,fun ,(car args) ,(cadr args))
-                     ,(expand-compare fun (cdr args))
-                     nil)))
-        args))
+  (defun simple-compare-args (fun first-arg more-args)
+    (let ((next (rest more-args))
+          (arg (first more-args)))
+      (if (null next)
+          `(,fun ,first-arg ,arg)
+          `(if (,fun ,first-arg ,arg)
+               ,(simple-compare-args fun arg next)
+               nil))))
+
+  (defun expand-compare (form fun args)
+    (if (proper-list-p args)
+        (case (length args)
+          ((0)
+           ;; need at least one argument. FIXME: warn?
+           form)
+          ((1)
+           ;; preserve nontoplevelness and side effects
+           `(progn (the t ,(first args)) t))
+          ((2)
+           `(,fun ,@args))
+          (otherwise
+           ;; Evaluate arguments only once
+           (let ((syms (mapcar (lambda (a) (declare (ignore a)) (gensym)) args)))
+             `(let (,@(mapcar #'list syms args))
+                ,(simple-compare-args fun (first syms) (rest syms))))))
+        ;; bad syntax. warn?
+        form))
 
   ;; /=, char/=, and so on have to compare every pair.
   ;; In general this results in order n^2 comparisons, requiring a loop etc.
@@ -75,20 +92,20 @@
           (otherwise form))
         form))
 
-  (core:bclasp-define-compiler-macro < (&rest numbers)
-    (expand-compare 'two-arg-< numbers))
+  (core:bclasp-define-compiler-macro < (&whole form &rest numbers)
+    (expand-compare form 'two-arg-< numbers))
 
-  (core:bclasp-define-compiler-macro <= (&rest numbers)
-    (expand-compare 'two-arg-<= numbers))
+  (core:bclasp-define-compiler-macro <= (&whole form &rest numbers)
+    (expand-compare form 'two-arg-<= numbers))
 
-  (core:bclasp-define-compiler-macro > (&rest numbers)
-    (expand-compare 'two-arg-> numbers))
+  (core:bclasp-define-compiler-macro > (&whole form &rest numbers)
+    (expand-compare form 'two-arg-> numbers))
 
-  (core:bclasp-define-compiler-macro >= (&rest numbers)
-    (expand-compare 'two-arg->= numbers))
+  (core:bclasp-define-compiler-macro >= (&whole form &rest numbers)
+    (expand-compare form 'two-arg->= numbers))
 
-  (core:bclasp-define-compiler-macro = (&rest numbers)
-    (expand-compare 'two-arg-= numbers))
+  (core:bclasp-define-compiler-macro = (&whole form &rest numbers)
+    (expand-compare form 'two-arg-= numbers))
 
   (core:bclasp-define-compiler-macro /= (&whole form &rest numbers)
     (expand-uncompare form 'two-arg-= numbers))

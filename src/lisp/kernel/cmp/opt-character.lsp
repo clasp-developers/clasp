@@ -5,8 +5,8 @@
 
 ;; Note: On low optimize safety, in cclasp, there will be no type checks here.
 
-(core:bclasp-define-compiler-macro char= (&rest args)
-  (core:expand-compare 'eq (mapcar (lambda (arg) `(the character ,arg)) args)))
+(core:bclasp-define-compiler-macro char= (&whole form &rest args)
+  (core:expand-compare form 'eq (mapcar (lambda (arg) `(the character ,arg)) args)))
 
 (core:bclasp-define-compiler-macro char/= (&whole form &rest args)
   (core:expand-uncompare form 'eq (mapcar (lambda (arg) `(the character ,arg)) args)))
