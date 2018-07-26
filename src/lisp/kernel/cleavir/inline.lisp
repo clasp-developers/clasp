@@ -1,8 +1,7 @@
 (in-package :clasp-cleavir)
 
 (defpackage "PRIMOP"
-  (:export #:convert-to-bignum
-           #:inlined-two-arg-+
+  (:export #:inlined-two-arg-+
            #:inlined-two-arg--
            #:inlined-two-arg-*
            #:inlined-two-arg-/
@@ -304,10 +303,6 @@
 
 #-use-boehmdc
 (progn
-  (defun convert-to-bignum (z)
-    (if (> z 0)
-        (- z (expt 2 cl-fixnum-bits))
-        (+ z (expt 2 cl-fixnum-bits))))
   (defmacro define-with-contagion (inlined-name comparison (x y) fixnum single-float double-float generic)
     (declare (ignore comparison)) ; this will be used to control fp behavior, see CLHS 12.1.4.1
     `(progn
