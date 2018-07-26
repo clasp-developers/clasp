@@ -928,17 +928,10 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
   if (res != MPS_RES_OK)
     GC_RESULT_ERROR(res, "Could not create cons format");
 
-  mps_chain_t cons_chain;
-  res = mps_chain_create(&cons_chain,
-                         global_arena,
-                         LENGTH(gen_params),
-                         gen_params);
-  if (res != MPS_RES_OK)
-    GC_RESULT_ERROR(res, "Couldn't create cons_chain");
   // Create the AMC CONS pool
   MPS_ARGS_BEGIN(args) {
     MPS_ARGS_ADD(args, MPS_KEY_FORMAT, cons_fmt);
-    MPS_ARGS_ADD(args, MPS_KEY_CHAIN, cons_chain);
+    MPS_ARGS_ADD(args, MPS_KEY_CHAIN, general_chain);
 #ifdef DEBUG_MPS_FENCEPOST_FREE
     MPS_ARGS_ADD(args, MPS_KEY_POOL_DEBUG_OPTIONS, &debug_options);
 #endif
@@ -1120,7 +1113,6 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
   mps_pool_destroy(global_amc_cons_pool);
   mps_pool_destroy(global_amc_pool);
   mps_arena_park(global_arena);
-  mps_chain_destroy(cons_chain);
   mps_chain_destroy(general_chain);
   mps_fmt_destroy(weak_obj_fmt);
   mps_fmt_destroy(obj_fmt);
