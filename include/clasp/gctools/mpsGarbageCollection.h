@@ -92,11 +92,6 @@ extern MpsMetrics globalMpsMetrics;
 #define GC_SCAN_STATE ss
 };
 
-namespace gctools {
-template <class T>
-GC_RESULT obj_scan_helper(mps_ss_t _ss, mps_word_t _mps_zs, mps_word_t _mps_w, mps_word_t &_mps_ufs, mps_word_t _mps_wt, mps_addr_t &client);
-};
-
 extern "C" {
 
 void my_mps_finalize(void* client);
@@ -175,23 +170,6 @@ template <typename T>
 class smart_ptr;
 };
 
-inline mps_res_t taggedPtrFix(mps_ss_t _ss, mps_word_t _mps_zs, mps_word_t _mps_w, mps_word_t &_mps_ufs, mps_word_t _mps_wt, gctools::Tagged *taggedP) {
-  if (gctools::tagged_objectp(*taggedP)) {
-    gctools::Tagged tagged_obj = *taggedP;
-    if (MPS_FIX1(_ss, tagged_obj)) {
-      gctools::Tagged obj = gctools::untag_object<gctools::Tagged>(tagged_obj);
-      gctools::Tagged tag = gctools::tag<gctools::Tagged>(tagged_obj);
-      mps_res_t res = MPS_FIX2(_ss, reinterpret_cast<mps_addr_t *>(&obj));
-      if (res != MPS_RES_OK) return res;
-      obj = obj | tag;
-      *taggedP = obj;
-    }
-  };
-  return MPS_RES_OK;
-};
-
-#define SMART_PTR_FIX(_smartptr_) taggedPtrFix(_ss, _mps_zs, _mps_w, _mps_ufs, _mps_wt, reinterpret_cast<gctools::Tagged *>(&((_smartptr_).rawRef_())))
-
 inline mps_res_t ptrFix(mps_ss_t _ss, mps_word_t _mps_zs, mps_word_t _mps_w, mps_word_t &_mps_ufs, mps_word_t _mps_wt, gctools::Tagged *taggedP) {
   if (gctools::tagged_objectp(*taggedP)) {
     gctools::Tagged tagged_obj = *taggedP;
@@ -206,6 +184,7 @@ inline mps_res_t ptrFix(mps_ss_t _ss, mps_word_t _mps_zs, mps_word_t _mps_w, mps
   };
   return MPS_RES_OK;
 };
+#define SMART_PTR_FIX(_smartptr_) ptrFix(_ss, _mps_zs, _mps_w, _mps_ufs, _mps_wt, reinterpret_cast<gctools::Tagged *>(&((_smartptr_).rawRef_())))
 #define TAGGED_POINTER_FIX(_ptr_) ptrFix(_ss, _mps_zs, _mps_w, _mps_ufs, _mps_wt, reinterpret_cast<gctools::Tagged *>(&(_ptr_).rawRef_()))
 // Get rid of SIMPLE_POINTER_FIX - its a terrible name
 #define SIMPLE_POINTER_FIX(_ptr_) ptrFix(_ss, _mps_zs, _mps_w, _mps_ufs, _mps_wt, reinterpret_cast<gctools::Tagged *>(&(_ptr_)))
