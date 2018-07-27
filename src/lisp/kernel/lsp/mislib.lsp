@@ -88,12 +88,18 @@ successfully, T is returned, else error."
       #+(and debug-track-unwinds) (setf end-return-from (gctools:return-from-counter))
       #+(and debug-track-unwinds) (setf end-dynamic-go (gctools:dynamic-go-counter))
       #+(and debug-track-unwinds) (setf end-catch-throw (gctools:catch-throw-counter))
-      (core:bformat *trace-output*
-                    "Time real(%.3f secs) run(%.3f secs) consed(%d bytes) interps(%d)%N"
-                    (float (/ (- real-end real-start) internal-time-units-per-second))
-                    (float (/ (- run-end run-start) internal-time-units-per-second))
-                    (- clasp-bytes-end clasp-bytes-start)
-                    (- interpreted-calls-end interpreted-calls-start))
+      (if (= interpreted-calls-end interpreted-calls-start)
+          (core:bformat *trace-output*
+                        "Time real(%.3f secs) run(%.3f secs) consed(%d bytes)%N"
+                        (float (/ (- real-end real-start) internal-time-units-per-second))
+                        (float (/ (- run-end run-start) internal-time-units-per-second))
+                        (- clasp-bytes-end clasp-bytes-start))
+          (core:bformat *trace-output*
+                        "Time real(%.3f secs) run(%.3f secs) consed(%d bytes) interps(%d)%N"
+                        (float (/ (- real-end real-start) internal-time-units-per-second))
+                        (float (/ (- run-end run-start) internal-time-units-per-second))
+                        (- clasp-bytes-end clasp-bytes-start)
+                        (- interpreted-calls-end interpreted-calls-start)))
       #+(and debug-track-unwinds)
       (core:bformat *trace-output*
                     "Unwinds(%d) ReturnFrom(%d) DynamicGo(%d) CatchThrow(%d)%N"
