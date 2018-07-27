@@ -213,7 +213,7 @@ def update_dependencies(cfg):
     # Specifying only label = "some-tag" will check out that tag into a "detached head", but
     # specifying both label = "master" and revision = "some-tag" will stay on master and reset to that revision.
     def fetch_git_revision(path, url, revision = "", label = "master"):
-        log.info("Git repository %s  url: %s\n     revision: %s  label: %s\n" % (path, url, revision, label)
+        log.info("Git repository %s  url: %s\n     revision: %s  label: %s\n" % (path, url, revision, label))
         ret = os.system("./tools-for-build/fetch-git-revision.sh '%s' '%s' '%s' '%s'" % (path, url, revision, label))
         if ( ret != 0 ):
             raise Exception("Failed to fetch git url %s" % url)
