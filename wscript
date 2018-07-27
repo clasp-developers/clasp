@@ -213,6 +213,7 @@ def update_dependencies(cfg):
     # Specifying only label = "some-tag" will check out that tag into a "detached head", but
     # specifying both label = "master" and revision = "some-tag" will stay on master and reset to that revision.
     def fetch_git_revision(path, url, revision = "", label = "master"):
+        log.info("Git repository %s  url: %s\n     revision: %s  label: %s\n" % (path, url, revision, label))
         ret = os.system("./tools-for-build/fetch-git-revision.sh '%s' '%s' '%s' '%s'" % (path, url, revision, label))
         if ( ret != 0 ):
             raise Exception("Failed to fetch git url %s" % url)
@@ -238,7 +239,11 @@ def update_dependencies(cfg):
                        "e5c54bc30b0887c237bde2827036d17315f88737")
     fetch_git_revision("src/mps",
                        "https://github.com/Ravenbrook/mps.git",
+                       #DLM says this will be faster.
+#                       label = "master", revision = "b1cc9aa5f87f2619ff675c8756e83211865419de")
+                       # Very recent branch - may have problems
 #                       label = "master", revision = "b5be454728c2ac58b9cb2383360ed0366a7e4115")
+                       #First branch that supported fork
                        label = "master", revision = "46e0a8d77ac470282de7300f5eaf471ca2fbee05")
     fetch_git_revision("src/lisp/modules/asdf",
                        "https://gitlab.common-lisp.net/asdf/asdf.git",

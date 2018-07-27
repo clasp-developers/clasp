@@ -432,6 +432,7 @@ void Instance_O::lowLevel_calculateClassPrecedenceList() {
   };
   TopoSortSetup topoSortSetup(supers, &graph);
   supers->lowLevelMapHash(&topoSortSetup);
+#if 0
 #ifdef DEBUG_ON
   {
     for (size_t zi(0), ziEnd(cl__length(arrayedSupers)); zi < ziEnd; ++zi) {
@@ -445,8 +446,10 @@ void Instance_O::lowLevel_calculateClassPrecedenceList() {
     }
   }
 #endif
+#endif
   deque<int> topo_order;
   topological_sort(graph, front_inserter(topo_order), vertex_index_map(identity_property_map()));
+#if 0
 #ifdef DEBUG_ON
   {
     stringstream ss;
@@ -457,6 +460,7 @@ void Instance_O::lowLevel_calculateClassPrecedenceList() {
     }
     LOG(BF("%s") % ss.str());
   }
+#endif
 #endif
   List_sp cpl = _Nil<T_O>();
   for (deque<int>::const_reverse_iterator it = topo_order.rbegin(); it != topo_order.rend(); it++) {

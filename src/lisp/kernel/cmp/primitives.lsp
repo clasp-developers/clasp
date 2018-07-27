@@ -211,8 +211,8 @@
     
     (primitive         "saveToMultipleValue0" %void% (list %tmv*%))
     (primitive         "restoreFromMultipleValue0" %return_type% nil)
-    (primitive         "saveValues" %t*% (list %tmv*%))
-    (primitive         "loadValues" %void% (list %tmv*% %t*%))
+;;;    (primitive         "saveValues" %t*% (list %tmv*%))
+;;;    (primitive         "loadValues" %void% (list %tmv*% %t*%))
     
     (primitive         "pushDynamicBinding" %void% (list %t*%))
     (primitive         "popDynamicBinding" %void% (list %t*%))

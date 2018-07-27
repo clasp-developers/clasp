@@ -27,6 +27,7 @@ namespace gctools {
    
 
  struct GlobalAllocationProfiler {
+   std::atomic<int64_t> _BytesAllocated;
    std::atomic<int64_t> _AllocationNumberCounter;
    std::atomic<int64_t> _AllocationSizeCounter;
    std::atomic<int64_t> _HitAllocationNumberCounter;
@@ -49,6 +50,7 @@ namespace gctools {
    {};
     
    inline void registerAllocation(stamp_t stamp, size_t size) {
+     this->_BytesAllocated += size;
      this->_AllocationSizeCounter += size;
      this->_AllocationNumberCounter++;
 #if defined(DEBUG_COUNT_ALLOCATIONS) && defined(DEBUG_SLOW)
