@@ -170,7 +170,7 @@ T_sp clasp_make_file_stream_from_fd(T_sp fname, int fd, enum StreamMode smm, gct
 T_sp cl__make_synonym_stream(T_sp sym);
 T_sp cl__make_two_way_stream(T_sp in, T_sp out);
 
-T_sp cl__make_string_input_stream(String_sp strng, Fixnum_sp istart, T_sp iend);
+T_sp cl__make_string_input_stream(String_sp strng, cl_index istart, T_sp iend);
 T_sp clasp_make_string_output_stream(cl_index line_length = 128, bool extended = false);
  T_sp cl__make_string_output_stream(Symbol_sp elementType);
 T_sp cl__get_output_stream_string(T_sp strm);
