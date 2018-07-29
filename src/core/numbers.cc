@@ -1175,11 +1175,6 @@ CL_DEFUN bool two_arg__GE_(Number_sp x, Number_sp y) {
   return basic_compare(x, y) != -1;
 }
 
-CL_NAME("TWO-ARG-=");
-CL_DEFUN bool two_arg__EQ_(Number_sp x, Number_sp y) {
-  return basic_compare(x, y) == 0;
-}
-
 CL_LAMBDA(&rest args);
 CL_DEFUN T_sp cl___LT_(List_sp args) {
   if (args.nilp())
@@ -1336,6 +1331,11 @@ bool basic_equalp(Number_sp na, Number_sp nb) {
       not_comparable_error(na, nb);
   };
   MATH_DISPATCH_END();
+}
+
+CL_NAME("TWO-ARG-=");
+CL_DEFUN bool two_arg__EQ_(Number_sp x, Number_sp y) {
+  return basic_equalp(x, y);
 }
 
 CL_LAMBDA(core:&va-rest args);
