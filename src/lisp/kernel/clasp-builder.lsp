@@ -349,6 +349,7 @@ Return files."
                (dolist (entry entries)
                  (one-compile-kernel-file entry count)
                  (incf count)))))
+      (gctools:garbage-collect)
       (let (entries wpid status)
         (tagbody
          top
