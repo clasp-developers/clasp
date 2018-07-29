@@ -607,7 +607,9 @@ jump to blocks within this tagbody."
                         *throw-return-from-instructions*)))
               (let* ((local-return-block (lookup-metadata block-env :local-return-block)))
                 (codegen temp-mv-result return-form env)
-                (let ((saved-values (irc-intrinsic "saveValues" temp-mv-result)))
+                
+                (irc-unwind-into-environment env block-env)
+                #+(or)(let ((saved-values (irc-intrinsic "saveValues" temp-mv-result)))
                   (irc-unwind-into-environment env block-env)
                   (irc-intrinsic "loadValues" temp-mv-result saved-values))
                 (irc-intrinsic "saveToMultipleValue0" temp-mv-result)
@@ -615,7 +617,7 @@ jump to blocks within this tagbody."
                 (irc-begin-block (irc-basic-block-create "after-return-from"))))
           (error "Unrecognized block symbol ~a" block-symbol)))))
 
-;;; FLET, LABELS
+;;; FLET, LABELS3
 
 (defun generate-lambda-block (name lambda-list raw-body)
   "Generate a (lambda ... (block name ...)) after extracting declares and docstring from raw-body"

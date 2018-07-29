@@ -162,7 +162,7 @@ Return files."
 
 (defun compile-kernel-file (entry &key (reload nil) load-bitcode (force-recompile nil) counter total-files (output-type core:*clasp-build-mode*) verbose print silent)
   #+dbg-print(bformat t "DBG-PRINT compile-kernel-file: %s%N" entry)
-;;  (if *target-backend* nil (error "*target-backend* is undefined"))
+  ;;  (if *target-backend* nil (error "*target-backend* is undefined"))
   (let* ((filename (entry-filename entry))
          (source-path (build-pathname filename :lisp))
          (output-path (build-pathname filename output-type))
@@ -193,7 +193,8 @@ Return files."
                 (let ((reload-file (if (eq output-type :object)
                                        (make-pathname :type (bitcode-extension) :defaults output-path)
                                        output-path)))
-                  (bformat t "    Loading newly compiled file: %s%N" reload-file)
+		  (unless silent
+		    (bformat t "    Loading newly compiled file: %s%N" reload-file))
                   (load-kernel-file reload-file output-type))))))
     output-path))
 (export 'compile-kernel-file)

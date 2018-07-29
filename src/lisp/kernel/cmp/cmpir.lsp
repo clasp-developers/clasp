@@ -1229,6 +1229,9 @@ Within the _irbuilder_ dynamic environment...
   "Allocate space for an i8*"
   (llvm-sys::create-alloca irbuilder %i8*% (jit-constant-i32 1) label))
 
+(defun irc-alloca-mv-struct (&key (irbuilder *irbuilder-function-alloca*) (label "V"))
+  (llvm-sys:create-alloca ir-builder %mv-struct% (%i32 1) label))
+
 
 
 ; ----------------------------------------------------------------------

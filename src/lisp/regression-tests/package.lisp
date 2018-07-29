@@ -1,3 +1,5 @@
+(in-package #:clasp-tests)
+
 ;; Test for #433: unexport not accepting designators
 (let* ((package-name (symbol-name (gensym)))
        (package (make-package package-name)))
@@ -45,5 +47,22 @@
       (let ((package (defpackage "FOO" (:use)(:shadowing-import-from "CL" "T"))))
         (delete-package package)
         (not (null (symbol-package 'cl:t)))))
- 
+
+(let ((pkg (make-package "KARSTEN-NEW" :nicknames (list "pepito"))))
+  (test-expect-error
+   nicknames-3
+   (let ((p2 (make-package "KARSTEN-OLD" :nicknames (list "pepito")))))
+   :type core:simple-package-error)
+  (when (find-package "KARSTEN-NEW")
+    (delete-package (find-package "KARSTEN-NEW")))
+  (when (find-package "KARSTEN-OLD")
+    (delete-package (find-package "KARSTEN-OLD"))))
+
+(let ((pkg (make-package "KARSTEN-NEW")))
+  (test-expect-error
+   packages-1
+   (let ((p2 (make-package "KARSTEN-NEW"))))
+   :type core:simple-package-error)
+  (when (find-package "KARSTEN-NEW")
+    (delete-package (find-package "KARSTEN-NEW"))))
 

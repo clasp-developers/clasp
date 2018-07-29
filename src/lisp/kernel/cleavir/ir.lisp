@@ -153,9 +153,11 @@
     instr))
 
 (defun alloca-mv-struct (&optional (label "V"))
+  (cmp:irc-alloca-mv-struct :label label))
+#||
   (cmp:with-irbuilder (cmp:*irbuilder-function-alloca*)
     (llvm-sys:create-alloca cmp:*irbuilder* cmp:%mv-struct% (%i32 1) label)))
-
+||#
 
 (defun %load-or-null (obj)
   (if obj

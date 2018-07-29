@@ -447,19 +447,22 @@ ALWAYS_INLINE core::T_O *cc_stack_enclose(void* closure_address,
   NO_UNWIND_END();
 }
 
-
+// Used by fastgf, and not in implementing cl:eql.
 int cc_eql(core::T_O* x, core::T_O* y)
 {NO_UNWIND_BEGIN();
   // The eql part of the test only eq part was handled by caller
   T_sp tx((gctools::Tagged)x);
   T_sp ty((gctools::Tagged)y);
+  // single floats could hypothetically not be eq, if their (otherwise ignored)
+  // high bits are distinct.
   if (tx.single_floatp()) {
     if (ty.single_floatp()) {
       if (tx.unsafe_single_float()==ty.unsafe_single_float()) return 1;
+      else return 0;
     }
   } else if (tx.generalp()) {
     if (ty.generalp()) {
-      return cl__eql(tx,ty) ? 1 : 0;
+      return tx.unsafe_general()->equal(ty) ? 1 : 0;
     }
   }
   return 0;
