@@ -15,7 +15,7 @@
         (equalp res (list #\x
                           NIL
                           NIL
-                          T
+                          NIL
                           #\x))))
 
 (test listen-3
