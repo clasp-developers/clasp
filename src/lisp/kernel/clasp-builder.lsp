@@ -278,7 +278,7 @@ Return files."
        (go top)
      done)))
 
-(defun compile-system-serial (files &key reload (output-type core:*clasp-build-mode*) parallel-jobs)
+(defun compile-system-serial (files &key reload (output-type core:*clasp-build-mode*) parallel-jobs batch-min batch-max)
   (declare (ignore parallel-jobs))
   #+dbg-print(bformat t "DBG-PRINT compile-system files: %s%N" files)
   (let* ((cur files)
@@ -294,7 +294,7 @@ Return files."
        done)))
 
 
-(defun compile-system-parallel (files &key reload (output-type core:*clasp-build-mode*) (parallel-jobs *number-of-jobs*) (batch-min 2) (batch-max 8))
+(defun compile-system-parallel (files &key reload (output-type core:*clasp-build-mode*) (parallel-jobs *number-of-jobs*) (batch-min 1) (batch-max 10))
   #+dbg-print(bformat t "DBG-PRINT compile-system files: %s\n" files)
   (let ((total (length files))
         (counter 1)
