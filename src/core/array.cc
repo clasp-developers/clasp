@@ -1762,11 +1762,14 @@ cl_index fsmInteger(mpz_class &result, cl_index &numDigits, bool &sawJunk, Strin
     }
     case inum: {
       if (isspace(c)) {
+        // Optional leading and trailing whitespace[1] is ignored.
+        // don't understand this but sbcl and ccl seem to agree, that if junkAllowed, than the parsing stop
+        // once a space after the number is read
         if (junkAllowed) {
           state = ijunk; // itrailspace;
           break;
         }
-        state = idone;
+        state = itrailspace;
         break;
       } else if (isalnum(c)) {
         cl_index idigit = fsmIntegerDigit(c, radix);
@@ -1783,7 +1786,8 @@ cl_index fsmInteger(mpz_class &result, cl_index &numDigits, bool &sawJunk, Strin
       break;
     }
     case itrailspace: {
-      if (junkAllowed) {
+      if (!isspace(c)) {
+        state = ijunk;
         break;
       }
     }
