@@ -294,12 +294,12 @@ Return files."
        done)))
 
 
-(defun compile-system-parallel (files &key reload (output-type core:*clasp-build-mode*) (parallel-jobs *number-of-jobs*))
+(defun compile-system-parallel (files &key reload (output-type core:*clasp-build-mode*) (parallel-jobs *number-of-jobs*) (batch-min 2) (batch-max 8))
   #+dbg-print(bformat t "DBG-PRINT compile-system files: %s\n" files)
   (let ((total (length files))
         (counter 1)
         (job-counter 0)
-        (files-in-job 0)
+        (batch-size 0)
         (child-count 0)
         (jobs (make-hash-table :test #'eql)))
     (labels ((started-one (entry counter child-pid)
@@ -352,10 +352,15 @@ Return files."
       (let (entries wpid status)
         (tagbody
          top
-           (setq counter (+ counter files-in-job))
-           (setq files-in-job (ceiling (length files) (* 2 parallel-jobs)))
-           (setq entries (subseq files 0 files-in-job))
-           (setq files (nthcdr files-in-job files))
+           (setq counter (+ counter batch-size))
+           (setq batch-size (let ((remaining (length files)))
+                              (min remaining
+                                   batch-max
+                                   (max batch-min
+                                        (ceiling remaining
+                                                 parallel-jobs)))))
+           (setq entries (subseq files 0 batch-size))
+           (setq files (nthcdr batch-size files))
            (incf job-counter)
            (when (> job-counter parallel-jobs)
              (block wait-loop
