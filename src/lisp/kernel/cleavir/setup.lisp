@@ -90,7 +90,7 @@ when this is t a lot of graphs will be generated.")
             :name symbol
             :global-p t))
 	(;; Maybe it's a symbol macro.
-	 (core:symbol-macro symbol)
+	 (ext:symbol-macro symbol)
 	 (make-instance 'cleavir-env:symbol-macro-info
 	   :name symbol
 	   :expansion (macroexpand-1 symbol)))

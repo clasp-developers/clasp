@@ -394,8 +394,8 @@ values of the last FORM.  If no FORM is given, returns NIL."
      (si::select-package ,(string name))
      *package*))
 
-(defun (setf symbol-macro) (expansion name)
-  (put-sysprop name 'core:symbol-macro
+(defun (setf ext:symbol-macro) (expansion name)
+  (put-sysprop name 'ext:symbol-macro
                (lambda (form env)
                  (declare (ignore form env))
                  expansion)))
@@ -409,7 +409,7 @@ values of the last FORM.  If no FORM is given, returns NIL."
 		symbol))
 	(t
 	 `(eval-when (:compile-toplevel :load-toplevel :execute)
-            (funcall #'(setf symbol-macro) ',expansion ',symbol)
+            (funcall #'(setf ext:symbol-macro) ',expansion ',symbol)
 	   ',symbol))))
 
 (defmacro nth-value (n expr)
