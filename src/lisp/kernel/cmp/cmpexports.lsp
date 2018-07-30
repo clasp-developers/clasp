@@ -98,7 +98,6 @@
           link-object-files
           optimize-module-for-compile
           optimize-module-for-compile-file
-          codegen-rtv
           codegen
           compile-error-if-not-enough-arguments
           compile-in-env
@@ -191,8 +190,6 @@
           with-debug-info-generator
           with-irbuilder
           with-landing-pad
-          compile-reference-to-literal
-          ltv-global
           bclasp-compile
           make-uintptr_t
           +cons-car-offset+
@@ -223,14 +220,13 @@
           with-make-new-run-all
           with-run-all-entry-codegen
           with-run-all-body-codegen
-          ltv-global
           generate-load-time-values
           ))
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (if (find-package "LITERAL")
       nil
-      (make-package "LITERAL" :use (list :CL :CMP :CORE))))
+      (make-package "LITERAL" :use (list :CL :CORE))))
 
 (in-package :literal)
 

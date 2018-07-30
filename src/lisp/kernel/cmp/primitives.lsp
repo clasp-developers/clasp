@@ -172,6 +172,7 @@
     (primitive         "va_lexicalFunction" %t*% (list %size_t% %size_t% %t*%))
     
     (primitive         "cc_gatherRestArguments" %t*% (list %va_list*% %size_t*%))
+    (primitive         "cc_gatherDynamicExtentRestArguments" %t*% (list %va_list*% %size_t*% %t**%))
     (primitive         "cc_gatherVaRestArguments" %t*% (list %va_list*% %size_t*% %vaslist*%))
     (primitive-unwinds "cc_ifBadKeywordArgumentException" %void% (list %size_t% %size_t% %t*% %function-description*%))
     

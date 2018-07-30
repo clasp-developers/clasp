@@ -257,17 +257,19 @@
 
 (defclass named-enter-instruction (cleavir-ir:enter-instruction)
   ((%lambda-name :initarg :lambda-name :initform "lambda" :accessor lambda-name)
+   (%declares :initarg :declares :initform nil :accessor declares)
    (%original-lambda-list :initarg :original-lambda-list :initform nil :reader original-lambda-list)
    (%docstring :initarg :docstring :initform nil :reader docstring)))
 
 (defun make-named-enter-instruction
-    (lambda-list lambda-name &key (successor nil successor-p) origin original-lambda-list docstring)
+    (lambda-list lambda-name &key (successor nil successor-p) origin original-lambda-list docstring declares)
   (let ((oe (if successor-p
 		(cleavir-ir:make-enter-instruction lambda-list :successor successor :origin origin)
 		(cleavir-ir:make-enter-instruction lambda-list :origin origin))))
     (change-class oe 'named-enter-instruction :lambda-name lambda-name
                                               :original-lambda-list original-lambda-list
-                                              :docstring docstring)))
+                                              :docstring docstring
+                                              :declares declares)))
 
 (defmethod cleavir-ir-graphviz:label ((instr named-enter-instruction))
   (with-output-to-string (s)
@@ -276,7 +278,16 @@
 (defmethod cleavir-ir:clone-initargs append ((instruction named-enter-instruction))
   (list :lambda-name (lambda-name instruction)
         :original-lambda-list (original-lambda-list instruction)
-        :docstring (docstring instruction)))
+        :docstring (docstring instruction)
+        :declares (declares instruction)))
+
+(defmethod original-lambda-list ((self cleavir-ir:top-level-enter-instruction))
+  "Provide a method for top-level-enter-instruction"
+  nil)
+
+(defmethod declares ((self cleavir-ir:top-level-enter-instruction))
+  "Provide a method for top-level-enter-instruction - they never have declares"
+  nil)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;

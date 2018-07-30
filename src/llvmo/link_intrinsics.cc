@@ -633,6 +633,27 @@ __attribute__((visibility("default"))) core::T_O *cc_gatherRestArguments(va_list
   NO_UNWIND_END();
 }
 
+__attribute__((visibility("default"))) core::T_O *cc_gatherDynamicExtentRestArguments(va_list rargs, std::size_t* remainingP, core::Cons_O* cur)
+{NO_UNWIND_BEGIN();
+  core::List_sp result = Cons_sp((gctools::Tagged)gctools::tag_cons((core::Cons_O*)cur));
+  size_t nargs = *remainingP;
+  if (nargs) {
+    for (int i = 0; i<nargs-1; ++i ) {
+      core::T_O* tagged_obj = ENSURE_VALID_OBJECT(va_arg(rargs,core::T_O*));
+      Cons_O* next = cur+1;
+      new (cur) Cons_O(T_sp((gctools::Tagged)tagged_obj),T_sp((gctools::Tagged)gctools::tag_cons((core::Cons_O*)next)));
+      cur = next;
+    }
+    core::T_O* tagged_obj = ENSURE_VALID_OBJECT(va_arg(rargs,core::T_O*));
+    new (cur) Cons_O(T_sp((gctools::Tagged)tagged_obj),_Nil<T_O>());
+    va_end(rargs);
+    return result.raw_();
+  }
+  va_end(rargs);
+  return _Nil<T_O>().raw_();
+  NO_UNWIND_END();
+}
+
 void badKeywordArgumentError(core::T_sp keyword, core::FunctionDescription* functionDescription)
 {
   core::T_sp functionName = llvmo::functionNameOrNilFromFunctionDescription(functionDescription);
