@@ -767,7 +767,7 @@ CL_DEFUN void core__gdb_inspect(String_sp msg, T_sp o) {
   core__invoke_internal_debugger(_Nil<core::T_O>());
 };
 
-CL_LISPIFY_NAME("CORE:specialp");
+CL_LISPIFY_NAME("EXT:specialp");
 CL_LAMBDA(specialp symbol);
 CL_DECLARE();
 CL_DOCSTRING("Set whether SYMBOL is globally known to be special. Use cautiously.");

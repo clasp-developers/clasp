@@ -248,7 +248,7 @@
         ;; We treat constants pretty much identically to specials in bclasp.
         ;; It's not the best way to compile constants.
         (setq info (cons 'ext:special-var var))
-        (unless (or (core:specialp var) (core:symbol-constantp var))
+        (unless (or (ext:specialp var) (core:symbol-constantp var))
           (when (not *code-walking*)
             (compiler-warning-undefined-global-variable var))))
       info)))

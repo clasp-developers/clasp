@@ -80,7 +80,7 @@ existing value."
                   (unless (,test ,value (symbol-value ',var))
                     ;; This will just trigger the error in SET.
                     (set ',var ,value)))
-                 ((core:specialp ',var)
+                 ((ext:specialp ',var)
                   (error "Cannot redefine special variable ~a as constant" ',var))
                  (t (set ',var ,value)
                     (funcall #'(setf core:symbol-constantp) t ',var)))))
@@ -404,7 +404,7 @@ values of the last FORM.  If no FORM is given, returns NIL."
   (cond ((not (symbolp symbol))
 	 (error "DEFINE-SYMBOL-MACRO: ~A is not a symbol"
 		symbol))
-	((specialp symbol)
+	((ext:specialp symbol)
 	 (error "DEFINE-SYMBOL-MACRO: cannot redefine a special variable, ~A"
 		symbol))
 	(t

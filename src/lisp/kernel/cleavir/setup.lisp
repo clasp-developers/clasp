@@ -85,7 +85,7 @@ when this is t a lot of graphs will be generated.")
         (;; Use Clasp's core:specialp test to determine if it is special.
          ;; Note that in Clasp constants are also special (FIXME?) so we
          ;; have to do this test after checking for constantness.
-         (core:specialp symbol)
+         (ext:specialp symbol)
 	 (make-instance 'cleavir-env:special-variable-info
             :name symbol
             :global-p t))
