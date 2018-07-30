@@ -321,7 +321,7 @@
 	(progn
 	  (cmp-log "Returning non-nil renv%N")
 	  renv)
-	(let ((nil-renv (compile-reference-to-literal nil))) ;; (irc-intrinsic "activationFrameNil")))
+	(let ((nil-renv (literal:compile-reference-to-literal nil))) ;; (irc-intrinsic "activationFrameNil")))
 	  (cmp-log "Returning nil renv: %s%N" nil-renv)
 	  nil-renv))))
 
@@ -375,7 +375,7 @@
 	(progn
 	  (cmp-log "Returning non-nil renv%N")
 	  renv)
-	(let ((nil-renv (compile-reference-to-literal nil))) ;; (irc-intrinsic "activationFrameNil")))
+	(let ((nil-renv (literal:compile-reference-to-literal nil))) ;; (irc-intrinsic "activationFrameNil")))
 	  (cmp-log "Returning nil renv: %s%N" nil-renv)
 	  nil-renv))))
 
@@ -1225,12 +1225,17 @@ Within the _irbuilder_ dynamic environment...
     :alloca (llvm-sys::create-alloca *irbuilder* %vaslist% (jit-constant-size_t 2) label)
     :init nil))
 
+(defun irc-alloca-dynamic-extent-list (&key (irbuilder *irbuilder-function-alloca*)
+                                            length
+                                         (label "dext-list"))
+  (llvm-sys:create-alloca irbuilder %cons% length label))
+
 (defun irc-alloca-i8* (&key (irbuilder *irbuilder-function-alloca*) (label "i8*-"))
   "Allocate space for an i8*"
   (llvm-sys::create-alloca irbuilder %i8*% (jit-constant-i32 1) label))
 
 (defun irc-alloca-mv-struct (&key (irbuilder *irbuilder-function-alloca*) (label "V"))
-  (llvm-sys:create-alloca ir-builder %mv-struct% (%i32 1) label))
+  (llvm-sys:create-alloca irbuilder %mv-struct% (%i32 1) label))
 
 
 

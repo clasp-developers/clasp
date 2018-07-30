@@ -3312,7 +3312,7 @@ Pointers to these objects are fixed in obj_scan or they must be roots."
   (fix-macro-name (global-variable-ctype var)))
 (defmethod fix-macro-name ((var smart-ptr-ctype)) "SMART_PTR_FIX")
 (defmethod fix-macro-name ((var tagged-pointer-ctype)) "TAGGED_POINTER_FIX")
-(defmethod fix-macro-name ((var pointer-ctype)) "SIMPLE_POINTER_FIX")
+(defmethod fix-macro-name ((var pointer-ctype)) "TAGGED_POINTER_FIX") ; Was "SIMPLE_POINTER_FIX")
 (defmethod fix-macro-name ((var cxxrecord-ctype)) "RECORD_FIX")
 
 (defgeneric validate-macro-name (var))                           

@@ -15,7 +15,8 @@
                       :lambda-name lambda-name
                       :origin origin
                       :original-lambda-list lambda-list
-                      :docstring documentation)))))
+                      :docstring documentation
+                      :declares dspecs)))))
 
 (defmethod cleavir-cst-to-ast:convert-code (lambda-list body
                                             env (system clasp-cleavir:clasp) &key block-name-cst origin)
@@ -40,7 +41,8 @@
                           :lambda-name lambda-name
                           :origin origin
                           :original-lambda-list (if lambda-list (cst:raw lambda-list) nil)
-                          :docstring (when documentation (cst:raw documentation))))))))
+                          :docstring (when documentation (cst:raw documentation))
+                          :declares (when dspecs (cst:raw dspecs))))))))
 
 
  

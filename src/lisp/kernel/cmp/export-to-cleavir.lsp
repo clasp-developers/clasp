@@ -55,8 +55,7 @@
           compile-in-env
           compile-lambda-function
           compile-lambda-list-code
-          cclasp-maybe-alloc-cc-setup
-          cclasp-setup-calling-convention
+          setup-calling-convention
           bclasp-compile-form
           compile-form
           compiler-error

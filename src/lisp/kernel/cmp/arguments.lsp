@@ -89,19 +89,44 @@
   (cmp:irc-branch-to-and-begin-block (cmp:irc-basic-block-create "process-rest-argument"))
   (when rest-var
     ;; Copy argument values or evaluate init forms
-    (let* ((arg-idx (cmp:irc-load arg-idx-alloca))
-	   (rest (if varest-p
-                     (let ((temp-valist (irc-alloca-vaslist :label "rest")))
-                       (irc-intrinsic-call "cc_gatherVaRestArguments" 
-                                           (list (cmp:calling-convention-va-list* args)
-                                                 (cmp:calling-convention-remaining-nargs* args)
-                                                 temp-valist)))
-                     (irc-intrinsic-call "cc_gatherRestArguments" 
-                                         (list (cmp:calling-convention-va-list* args)
-                                               (cmp:calling-convention-remaining-nargs* args)))))
-           (rest-alloca (funcall *translate-datum* rest-var)))
-      (irc-store rest rest-alloca)
-      rest-alloca)))
+    (let* ((original-rest-var (let ((var (car (rassoc rest-var (calling-convention-name-map args)))))
+                                var))
+           (arg-idx (cmp:irc-load arg-idx-alloca))
+	   (rest (cond
+                   ((core:declare-p (calling-convention-canonical-declares args)
+                                    'ignore
+                                    original-rest-var)
+                    (format t "Ignoring rest~%")
+                    ;; Do nothing
+                    nil
+                    )
+                   ((core:declare-p (calling-convention-canonical-declares args)
+                                    'dynamic-extent
+                                    original-rest-var)
+                                        ; Do the dynamic extent thing
+                    (format t "Doing dynamic-extent~%")
+                    (let ((rrest
+                            (irc-alloca-dynamic-extent-list :irbuilder *irbuilder*
+                                                            :length (irc-load (calling-convention-remaining-nargs* args))
+                                                            :label "rrest")))
+                      (irc-intrinsic-call "cc_gatherDynamicExtentRestArguments"
+                                          (list (cmp:calling-convention-va-list* args)
+                                                (cmp:calling-convention-remaining-nargs* args)
+                                                (irc-bit-cast rrest %t**%)))))
+                   (varest-p
+                    (let ((temp-valist (irc-alloca-vaslist :label "rest")))
+                      (irc-intrinsic-call "cc_gatherVaRestArguments" 
+                                          (list (cmp:calling-convention-va-list* args)
+                                                (cmp:calling-convention-remaining-nargs* args)
+                                                temp-valist))))
+                   (t
+                    (irc-intrinsic-call "cc_gatherRestArguments" 
+                                        (list (cmp:calling-convention-va-list* args)
+                                              (cmp:calling-convention-remaining-nargs* args)))))))
+      (when rest
+        (let ((rest-alloca (funcall *translate-datum* rest-var)))
+          (irc-store rest rest-alloca)
+          rest-alloca)))))
 
 (defun compile-key-arguments (keyargs
 			      lambda-list-allow-other-keys
@@ -392,7 +417,7 @@
 ;;;   translate-datum (datum) that translates a datum into an alloca in the current function
 (defun compile-lambda-list-code (lambda-list outputs calling-conv
                                  &key translate-datum)
-  (cmp-log "About to process-cleavir-lambda-list%N")
+  (cmp-log "About to process-cleavir-lambda-list lambda-list: %s%N" lambda-list)
   (multiple-value-bind (reqargs optargs rest-var key-flag keyargs allow-other-keys unused-auxs varest-p)
       (process-cleavir-lambda-list lambda-list)
     (cmp-log "About to calling-convention-use-only-registers%N")
@@ -451,18 +476,32 @@
            ;; than the number +args-in-register+ then use only registers.
            (may-use-only-registers (and req-opt-only (<= (+ num-req num-opt) +args-in-registers+))))
       (if (and may-use-only-registers (null debug-on))
-          (make-calling-convention-configuration
-           :use-only-registers t)
-          (make-calling-convention-configuration
-           :use-only-registers may-use-only-registers ; if may-use-only-registers then debug-on is T and we could use only registers
-           :vaslist* (irc-alloca-vaslist :label "vaslist")
-           :register-save-area* (irc-alloca-register-save-area :label "register-save-area")
-           :invocation-history-frame* (and debug-on (irc-alloca-invocation-history-frame :label "invocation-history-frame")))))))
+           (make-calling-convention-configuration
+            :use-only-registers t)
+           (make-calling-convention-configuration
+            :use-only-registers may-use-only-registers ; if may-use-only-registers then debug-on is T and we could use only registers
+            :vaslist* (irc-alloca-vaslist :label "vaslist")
+            :register-save-area* (irc-alloca-register-save-area :label "register-save-area")
+            :invocation-history-frame* (and debug-on (irc-alloca-invocation-history-frame :label "invocation-history-frame")))))))
 
 
-(defun cclasp-setup-calling-convention (arguments lambda-list debug-on)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;; Setup the calling convention
+;;
+(defun setup-calling-convention (arguments &key lambda-list
+                                             debug-on
+                                             canonical-declares
+                                             cleavir-lambda-list
+                                             name-map)
   (let ((setup (maybe-alloc-cc-setup lambda-list debug-on)))
-    (let ((cc (cmp:initialize-calling-convention arguments setup)))
+    (let ((cc (initialize-calling-convention arguments
+                                             setup
+                                             :rewind t
+                                             :lambda-list lambda-list
+                                             :canonical-declares canonical-declares
+                                             :cleavir-lambda-list cleavir-lambda-list
+                                             :name-map name-map)))
       (calling-convention-args.va-start cc)
       cc)))
 
@@ -502,35 +541,31 @@
         (push (cons keyp (incf index)) bindings))
       (nreverse bindings))))
 
-(defun bclasp-compile-lambda-list-code (cleavir-lambda-list fn-env callconv)
-  (cmp-log "Entered bclasp-compile-lambda-list-code%N")
-  (let* ((output-bindings (bclasp-map-lambda-list-symbols-to-indices cleavir-lambda-list))
-         (new-env (irc-new-unbound-value-environment-of-size
-                   fn-env
-                   :number-of-arguments (length output-bindings)
-                   :label "arguments-env")))
-    (irc-make-value-frame-set-parent new-env (length output-bindings) fn-env)
-    (cmp-log "output-bindings: %s%N" output-bindings)
-    (mapc (lambda (ob)
-            (cmp-log "Adding to environment: %s%N" ob)
-            (core:value-environment-define-lexical-binding new-env (car ob) (cdr ob)))
-          output-bindings)
-    (cmp-log "register-environment contents -> %s%N" new-env)
-    (compile-lambda-list-code
-     cleavir-lambda-list
-     (mapcar #'car output-bindings)
-     callconv
-     :translate-datum (lambda (datum)
-                        (let* ((info (assoc datum output-bindings))
-                               (symbol (car info))
-                               (index (cdr info))
-                               (ref (codegen-lexical-var-reference symbol 0 index new-env new-env)))
+(defun bclasp-compile-lambda-list-code (fn-env callconv)
+  (let ((cleavir-lambda-list (calling-convention-cleavir-lambda-list callconv)))
+    (cmp-log "Entered bclasp-compile-lambda-list-code%N")
+    (let* ((output-bindings (bclasp-map-lambda-list-symbols-to-indices cleavir-lambda-list))
+           (new-env (irc-new-unbound-value-environment-of-size
+                     fn-env
+                     :number-of-arguments (length output-bindings)
+                     :label "arguments-env")))
+      (irc-make-value-frame-set-parent new-env (length output-bindings) fn-env)
+      (cmp-log "output-bindings: %s%N" output-bindings)
+      (mapc (lambda (ob)
+              (cmp-log "Adding to environment: %s%N" ob)
+              (core:value-environment-define-lexical-binding new-env (car ob) (cdr ob)))
+            output-bindings)
+      (cmp-log "register-environment contents -> %s%N" new-env)
+      (compile-lambda-list-code
+       cleavir-lambda-list
+       (mapcar #'car output-bindings)
+       callconv
+       :translate-datum (lambda (datum)
+                          (let* ((info (assoc datum output-bindings))
+                                 (symbol (car info))
+                                 (index (cdr info))
+                                 (ref (codegen-lexical-var-reference symbol 0 index new-env new-env)))
 ;;;(bformat *debug-io* "translate-datum %s -> %s%N" datum ref)
-                          ref)))
-    new-env))
+                            ref)))
+      new-env)))
 
-(defun bclasp-setup-calling-convention (arguments lambda-list debug-on)
-  (let ((setup (maybe-alloc-cc-setup lambda-list debug-on)))
-    (let ((cc (initialize-calling-convention arguments setup)))
-      (calling-convention-args.va-start cc)
-      cc)))

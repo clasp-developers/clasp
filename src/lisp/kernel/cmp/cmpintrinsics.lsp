@@ -204,6 +204,8 @@ Boehm and MPS use a single pointer"
 (define-symbol-macro %tsp*% (llvm-sys:type-get-pointer-to %tsp%))
 (define-symbol-macro %tsp**% (llvm-sys:type-get-pointer-to %tsp*%))
 
+(define-symbol-macro %cons% (llvm-sys:struct-type-get *llvm-context* (smart-pointer-fields %t*% %t*%) nil))
+
 ;; This structure must match the gctools::GCRootsInModule structure
 (define-symbol-macro %gcroots-in-module% (llvm-sys:struct-type-get *llvm-context* (list %i8*% %i8*% %size_t% %size_t%) nil))
 (define-symbol-macro %gcroots-in-module*% (llvm-sys:type-get-pointer-to %gcroots-in-module%))
@@ -333,12 +335,16 @@ Boehm and MPS use a single pointer"
   remaining-nargs* ; The address of vaslist._remaining_nargs on the stack
   register-save-area*
   invocation-history-frame*
+  lambda-list ; the original lambda-list
+  canonical-declares  ; canonicalized declares
+  cleavir-lambda-list ; cleavir-style lambda-list
+  name-map ; lambda-list names mapped to cleavir-names in alist
   )
 
 ;; Parse the function arguments into a calling-convention
 ;;
 ;; What if we don't want/need to spill the registers to the register-save-area?
-(defun initialize-calling-convention (arguments setup &optional (rewind t))
+(defun initialize-calling-convention (arguments setup &key (rewind t) name-map canonical-declares lambda-list cleavir-lambda-list)
   (if (null (calling-convention-configuration-vaslist* setup))
       ;; If there is no vaslist then only register arguments are available
       ;;    no registers are spilled to the register-save-area and no InvocationHistoryFrame
@@ -347,7 +353,11 @@ Boehm and MPS use a single pointer"
         (make-calling-convention-impl :closure (first arguments)
                                       :nargs (second arguments)
                                       :use-only-registers t
-                                      :register-args (nthcdr 2 arguments)))
+                                      :register-args (nthcdr 2 arguments)
+                                      :lambda-list lambda-list
+                                      :canonical-declares canonical-declares
+                                      :cleavir-lambda-list cleavir-lambda-list
+                                      :name-map name-map))
       ;; The register arguments need to be spilled to the register-save-area
       ;;    and the vaslist needs to be initialized.
       ;;    If a InvocationHistoryFrame is available, then initialize it.
@@ -374,7 +384,11 @@ Boehm and MPS use a single pointer"
                                                                           :va-list* va-list*
                                                                           :remaining-nargs* remaining-nargs*
                                                                           :register-save-area* (calling-convention-configuration-register-save-area* setup)
-                                                                          :invocation-history-frame* (calling-convention-configuration-invocation-history-frame* setup)))
+                                                                          :invocation-history-frame* (calling-convention-configuration-invocation-history-frame* setup)
+                                                                          :lambda-list lambda-list
+                                                                          :canonical-declares canonical-declares
+                                                                          :cleavir-lambda-list cleavir-lambda-list
+                                                                          :name-map name-map))
                ;; va-start is done in caller
                #+(or)(_                           (calling-convention-args.va-start cc))
                #++(_dbg                        (progn
