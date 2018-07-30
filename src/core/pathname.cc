@@ -989,7 +989,7 @@ L:
     x = cl__parse_namestring(x);
   } else if (gc::IsA<Pathname_sp>(x)) {
     // do nothing
-  } else if ((gc::IsA<FileStream_sp>(x)) or (gc::IsA<SynonymStream_sp>(x))){
+  } else if ((gc::IsA<FileStream_sp>(x)) || (gc::IsA<SynonymStream_sp>(x))){
     // other streams don't have an associated pathname, no use return "-no-name-" here, SBCL says SynonymStream_sp also valid
     x = clasp_filename(x);
     goto L;
