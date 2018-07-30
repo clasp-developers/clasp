@@ -326,8 +326,31 @@ when this is t a lot of graphs will be generated.")
             (cmp:with-irbuilder (cmp:*irbuilder-function-alloca*)
               (let* ((fn-args (llvm-sys:get-argument-list cmp:*current-function*))
                      (lambda-list (cleavir-ir:lambda-list enter))
-                     (calling-convention (cmp:cclasp-setup-calling-convention
-                                          fn-args lambda-list (debug-on function-info))))
+                     (decls (clasp-cleavir-hir:declares enter))
+                     (original-lambda-list (clasp-cleavir-hir::original-lambda-list enter))
+                     (name-map (let* ((original-rest-position (position '&rest original-lambda-list))
+                                      (original-rest-name (and original-rest-position
+                                                               (elt original-lambda-list (1+ original-rest-position))))
+                                      (cleavir-rest-position (position '&rest lambda-list))
+                                      (cleavir-rest-name (and cleavir-rest-position
+                                                              (elt lambda-list (1+ cleavir-rest-position)))))
+                                 (and original-rest-name cleavir-rest-name
+                                      (list (cons original-rest-name cleavir-rest-name)))))
+                     #+(or)(_ (progn
+                                (format t "lambda-list: ~s~%" lambda-list)
+                                (format t "decls: ~s~%" decls)
+                                (format t "instruction original-lambda-list: ~s~%" (clasp-cleavir-hir::original-lambda-list enter))
+                                (format t "name-map: ~s~%" name-map)
+                                (when (and lambda-list (null name-map))
+                                  (break "About to setup calling convention")
+                                  )))
+                     (calling-convention (cmp:setup-calling-convention
+                                          fn-args
+                                          :debug-on (debug-on function-info)
+                                          :lambda-list (clasp-cleavir-hir::original-lambda-list enter)
+                                          :cleavir-lambda-list lambda-list
+                                          :canonical-declares decls
+                                          :name-map nil)))
                 (setf (calling-convention function-info) calling-convention))))
         (layout-procedure* the-function
                            body-irbuilder

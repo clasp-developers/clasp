@@ -424,7 +424,7 @@ CL_DEFUN T_mv core__process_declarations(List_sp inputBody, T_sp expectDocString
   List_sp specials;
   eval::extract_declares_docstring_code_specials(inputBody, declares,
                                                  b_expect_doc, docstring, code, specials);
-  T_sp tdeclares = canonicalize_declarations(declares);
+  T_sp tdeclares = core__canonicalize_declarations(declares);
   return Values(tdeclares, code, (T_sp)docstring, specials);
 };
 
@@ -1870,6 +1870,7 @@ struct InterpreterTrace {
   };
 };
 
+DONT_OPTIMIZE_WHEN_DEBUG_RELEASE
 T_mv evaluate(T_sp exp, T_sp environment) {
   //	    Environment_sp localEnvironment = environment;
   //            printf("%s:%d evaluate %s environment@%p\n", __FILE__, __LINE__, _rep_(exp).c_str(), environment.raw_());

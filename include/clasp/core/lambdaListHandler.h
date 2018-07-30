@@ -300,7 +300,7 @@ public:
   virtual ~LambdaListHandler_O(){};
 };
 
- List_sp canonicalize_declarations(List_sp declares);
+ List_sp core__canonicalize_declarations(List_sp declares);
 };
 TRANSLATE(core::LambdaListHandler_O);
 

@@ -5,7 +5,8 @@
   (change-class (call-next-method) 'clasp-cleavir-hir:named-enter-instruction
                 :lambda-name (clasp-cleavir-ast:lambda-name ast)
                 :original-lambda-list (clasp-cleavir-ast:original-lambda-list ast)
-                :docstring (clasp-cleavir-ast:docstring ast)))
+                :docstring (clasp-cleavir-ast:docstring ast)
+                :declares (clasp-cleavir-ast:declares ast)))
 
 (defmethod cleavir-ast-to-hir:compile-ast ((ast clasp-cleavir-ast:debug-message-ast) context)
   (cleavir-ast-to-hir::assert-context ast context 1 1)

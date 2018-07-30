@@ -125,7 +125,7 @@ ftype           inline     special
 ignorable       notinline  type
 And my own special one:    core:_sym_lambda_name
 */
-CL_DEFUN List_sp canonicalize_declarations(List_sp decls)
+CL_DEFUN List_sp core__canonicalize_declarations(List_sp decls)
 {
   List_sp canon = _Nil<T_O>();
   for ( auto decl : decls ) {
@@ -893,6 +893,8 @@ bool contextSupportsEnvironment(T_sp context) {
   return false;
 }
 
+
+
 /*! Process the arguments and return the components
  * context may be: ordinary, macro, destructuring, deftype,
  * define_method_combination, defsetf  HOWEVER ECL>>clos/method.lsp:line 402 passes T!!!!
@@ -1091,6 +1093,7 @@ DONE:
   return true;
 }
 
+  
 CL_LAMBDA(vl context);
 CL_DECLARE();
 CL_DOCSTRING("processLambdaList - this is like ECL::process-lambda-list except auxs are returned as nil or a list of 2*n elements of the form (sym1 init1 sym2 init2 ...) In ECL they say you need to prepend the number of auxs - that breaks the destructure macro. ECL process-lambda-list says context may be MACRO, FTYPE, FUNCTION, METHOD or DESTRUCTURING-BIND but in ECL>>clos/method.lsp they pass T!!!");
@@ -1103,6 +1106,7 @@ CL_DEFUN T_mv core__process_lambda_list(List_sp lambdaList, T_sp context) {
   RestArgument restarg;
   T_sp key_flag;
   T_sp allow_other_keys;
+  T_sp decl_dict = _Nil<T_O>();
   parse_lambda_list(lambdaList,
                     context,
                     reqs,
@@ -1135,7 +1139,7 @@ CL_DEFUN T_mv core__process_lambda_list(List_sp lambdaList, T_sp context) {
   }
   ql::list lauxs;
   if (auxs.size() != 0) { // auxes arguments   auxs = (num aux1 init1 ...)
-    // !!!! The above is not true auxs = nil or (aux1 init1 aux2 init 2)
+    // !!!! The above is not true auxs = nil or (aux1 init1 aux2 init2)
     //	    lauxs << make_fixnum((int)auxs.size());
     for (auto &it : auxs) {
       lauxs << it._ArgTarget << it._Expression;
@@ -1149,8 +1153,7 @@ CL_DEFUN T_mv core__process_lambda_list(List_sp lambdaList, T_sp context) {
                 lkeys.cons(),
                 allow_other_keys,
                 lauxs.cons(),
-                _lisp->_boolean(restarg.VaRest)
-                );
+                _lisp->_boolean(restarg.VaRest));
 };
 
 /*

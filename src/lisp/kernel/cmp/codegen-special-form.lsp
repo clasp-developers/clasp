@@ -58,7 +58,7 @@
       (compile-lambda-function lambda-or-lambda-block env)
     (if (null lambda-name) (error "The lambda doesn't have a name"))
     (if result
-        (let* ((lambda-list (irc-load (compile-reference-to-literal lambda-list)))
+        (let* ((lambda-list (irc-load (literal:compile-reference-to-literal lambda-list)))
                (llvm-function-name (llvm-sys:get-name compiled-fn))
                (function-description (llvm-sys:get-named-global *the-module* (function-description-name compiled-fn))))
           (unless function-description
@@ -821,31 +821,36 @@ jump to blocks within this tagbody."
     (blog "evaluate-env -> %s%N" evaluate-env)
     (multiple-value-bind (declares code docstring specials)
         (process-declarations body t)
-      (multiple-value-bind (cleavir-lambda-list new-body)
-          (transform-lambda-parts lambda-list declares code)
-        (blog "got cleavir-lambda-list -> %s%N" cleavir-lambda-list)
-        (let ((debug-on nil)
-              (eval-vaslist (irc-alloca-t* :label "bind-vaslist")))
-          (codegen eval-vaslist vaslist evaluate-env)
-          (let* ((lvaslist (irc-load eval-vaslist "lvaslist"))
-                 (src-remaining-nargs* (irc-intrinsic "cc_vaslist_remaining_nargs_address" lvaslist))
-                 (src-va_list* (irc-intrinsic "cc_vaslist_va_list_address" lvaslist "vaslist_address"))
-                 (local-remaining-nargs* (irc-alloca-size_t :label "local-remaining-nargs"))
-                 (local-va_list* (irc-alloca-va_list :label "local-va_list"))
-                 (_             (irc-store (irc-load src-remaining-nargs*) local-remaining-nargs*))
-                 (_             (irc-intrinsic-call "llvm.va_copy" (list (irc-pointer-cast local-va_list* %i8*%)
-                                                                         (irc-pointer-cast src-va_list* %i8*%))))
-                 (callconv (make-calling-convention-impl :nargs (irc-load src-remaining-nargs*)
-                                                         :va-list* local-va_list*
-                                                         :remaining-nargs* local-remaining-nargs*)))
-            (let ((new-env (bclasp-compile-lambda-list-code cleavir-lambda-list evaluate-env callconv)))
-              (irc-intrinsic-call "llvm.va_end" (list (irc-pointer-cast local-va_list* %i8*%)))
-              (codegen-let/let* (car new-body) result (cdr new-body) new-env)
-              #+(or)(cmp:with-try
-                        (codegen-let/let* 'let* result (cdr new-body) new-env)
-                      ((cleanup)
-                       (calling-convention-maybe-pop-invocation-history-frame callconv)
-                       (irc-unwind-environment new-env))))))))))
+      (let ((canonical-declares (core:canonicalize-declarations declares)))
+        (multiple-value-bind (cleavir-lambda-list new-body name-map)
+            (transform-lambda-parts lambda-list canonical-declares code)
+          (blog "got cleavir-lambda-list -> %s%N" cleavir-lambda-list)
+          (let ((debug-on nil)
+                (eval-vaslist (irc-alloca-t* :label "bind-vaslist")))
+            (codegen eval-vaslist vaslist evaluate-env)
+            (let* ((lvaslist (irc-load eval-vaslist "lvaslist"))
+                   (src-remaining-nargs* (irc-intrinsic "cc_vaslist_remaining_nargs_address" lvaslist))
+                   (src-va_list* (irc-intrinsic "cc_vaslist_va_list_address" lvaslist "vaslist_address"))
+                   (local-remaining-nargs* (irc-alloca-size_t :label "local-remaining-nargs"))
+                   (local-va_list* (irc-alloca-va_list :label "local-va_list"))
+                   (_             (irc-store (irc-load src-remaining-nargs*) local-remaining-nargs*))
+                   (_             (irc-intrinsic-call "llvm.va_copy" (list (irc-pointer-cast local-va_list* %i8*%)
+                                                                           (irc-pointer-cast src-va_list* %i8*%))))
+                   (callconv (make-calling-convention-impl :nargs (irc-load src-remaining-nargs*)
+                                                           :va-list* local-va_list*
+                                                           :remaining-nargs* local-remaining-nargs*
+                                                           :lambda-list lambda-list
+                                                           :canonical-declares canonical-declares
+                                                           :cleavir-lambda-list cleavir-lambda-list
+                                                           :name-map name-map)))
+              (let ((new-env (bclasp-compile-lambda-list-code evaluate-env callconv)))
+                (irc-intrinsic-call "llvm.va_end" (list (irc-pointer-cast local-va_list* %i8*%)))
+                (codegen-let/let* (car new-body) result (cdr new-body) new-env)
+                #+(or)(cmp:with-try
+                          (codegen-let/let* 'let* result (cdr new-body) new-env)
+                        ((cleanup)
+                         (calling-convention-maybe-pop-invocation-history-frame callconv)
+                         (irc-unwind-environment new-env)))))))))))
 
 
 ;;; MULTIPLE-VALUE-FOREIGN-CALL
