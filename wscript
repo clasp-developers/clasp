@@ -614,15 +614,6 @@ def configure(cfg):
         cfg.define("CLASP_BUILD_MODE",2) # thin-lto
         cfg.env.CLASP_BUILD_MODE = 'bitcode'
         cfg.env.LTO_FLAG = LTO_OPTION
-        if (cfg.env['DEST_OS'] == LINUX_OS ):
-            if (cfg.env['USE_LLD']):
-                cfg.env.append_value('LINKFLAGS', '-Wl,--thinlto-cache-dir=/tmp/clasp')
-            else:
-                cfg.env.append_value('LINKFLAGS', '-Wl,-plugin-opt,cache-dir=/tmp/clasp')
-        elif (cfg.env['DEST_OS'] == FREEBSD_OS ):
-            cfg.env.append_value('LINKFLAGS', '-Wl,-plugin-opt,cache-dir=/tmp')
-        elif (cfg.env['DEST_OS'] == DARWIN_OS ):
-            cfg.env.append_value('LINKFLAGS', '-Wl,-cache_path_lto,/tmp/clasp')
     elif (cfg.env['CLASP_BUILD_MODE']==[] or cfg.env['CLASP_BUILD_MODE']=='object'):
         cfg.define("CLASP_BUILD_MODE",1) # object files
         cfg.env.CLASP_BUILD_MODE = 'object'
