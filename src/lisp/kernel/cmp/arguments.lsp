@@ -96,7 +96,6 @@
                    ((core:declare-p (calling-convention-canonical-declares args)
                                     'ignore
                                     original-rest-var)
-                    (format t "Ignoring rest~%")
                     ;; Do nothing
                     nil
                     )
@@ -104,7 +103,6 @@
                                     'dynamic-extent
                                     original-rest-var)
                                         ; Do the dynamic extent thing
-                    (format t "Doing dynamic-extent~%")
                     (let ((rrest
                             (irc-alloca-dynamic-extent-list :irbuilder *irbuilder*
                                                             :length (irc-load (calling-convention-remaining-nargs* args))
