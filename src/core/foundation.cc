@@ -836,7 +836,7 @@ List_sp lisp_parse_arguments(const string &packageName, const string &args) {
   Package_sp pkg = gc::As<Package_sp>(_lisp->findPackage(packageName, true));
   ChangePackage changePackage(pkg);
   SimpleBaseString_sp ss = SimpleBaseString_O::make(args);
-  Stream_sp str = cl__make_string_input_stream(ss, make_fixnum(0), _Nil<T_O>());
+  Stream_sp str = cl__make_string_input_stream(ss, 0, _Nil<T_O>());
 #if 0  
   Reader_sp reader = Reader_O::create(str);
   T_sp osscons = reader->primitive_read(true, _Nil<T_O>(), false);
@@ -853,7 +853,7 @@ List_sp lisp_parse_declares(const string &packageName, const string &declarestri
   Package_sp pkg = gc::As<Package_sp>(_lisp->findPackage(packageName, true));
   ChangePackage changePackage(pkg);
   SimpleBaseString_sp ss = SimpleBaseString_O::make(declarestring);
-  Stream_sp str = cl__make_string_input_stream(ss, make_fixnum(0), _Nil<T_O>());
+  Stream_sp str = cl__make_string_input_stream(ss, 0, _Nil<T_O>());
 #if 0
   Reader_sp reader = Reader_O::create(str);
   List_sp sscons = reader->primitive_read(true, _Nil<T_O>(), false);
