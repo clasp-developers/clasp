@@ -310,11 +310,11 @@
 
 (defstruct (track-rewrites (:type vector) :named)
   (total 0)
-  (ignored 0)
+  (removed 0)
   (mutex (mp:make-lock :name 'rewrites)))
 
 (defvar *block-rewrite-counter* (make-track-rewrites)
-  "Keep track of block special operators that were seen and those that were rewritten to be ignored")
+  "Keep track of block special operators that were seen and those that were rewritten to be removed")
   
 (defvar *rewrite-blocks* t)
 (defun rewrite-blocks-with-no-return-froms (block-info)
@@ -323,11 +323,11 @@
           (ignore-initialize-block-closure-function (get-or-declare-function-or-error *the-module* "ignore_initializeBlockClosure"))
           #+debug-lexical-depth(ignore-set-frame-unique-id (get-or-declare-function-or-error *the-module* "ignore_setFrameUniqueId")))
       (let ((total 0)
-            (ignored 0))
+            (removed 0))
         (maphash (lambda (env block-info)
                    (incf total)
                    (unless (block-frame-info-needed block-info)
-                     (incf ignored)
+                     (incf removed)
                      (core:set-invisible (block-frame-info-block-environment block-info) t)
                      (funcall 'llvm-sys:replace-call-keep-args ignore-make-block-frame-function
                             (car (block-frame-info-make-block-frame-instruction block-info)))
@@ -343,14 +343,14 @@
              (progn
                (mp:get-lock (track-rewrites-mutex *block-rewrite-counter*) nil)
                (let ((total-sum (+ (track-rewrites-total *block-rewrite-counter*) total))
-                     (ignored-sum (+ (track-rewrites-ignored *block-rewrite-counter*) ignored)))
+                     (removed-sum (+ (track-rewrites-removed *block-rewrite-counter*) removed)))
                  (setf (track-rewrites-total *block-rewrite-counter*) total-sum)
-                 (setf (track-rewrites-ignored *block-rewrite-counter*) ignored-sum)))
+                 (setf (track-rewrites-removed *block-rewrite-counter*) removed-sum)))
           (mp:giveup-lock (track-rewrites-mutex *block-rewrite-counter*)))
         (cv-log "Done%N")))))
 
 (defvar *tagbody-rewrite-counter* (make-track-rewrites)
-  "Keep track of tagbody special operators that were seen and those that were rewritten to be ignored")
+  "Keep track of tagbody special operators that were seen and those that were rewritten to be removed")
   
 (defvar *rewrite-tagbody* t)
 (defun rewrite-tagbody-with-no-go (tagbody-info)
@@ -358,11 +358,11 @@
     (let ((ignore-make-tagbody-frame-function (get-or-declare-function-or-error *the-module* "invisible_makeTagbodyFrameSetParent"))
           (ignore-initialize-tagbody-closure-function (get-or-declare-function-or-error *the-module* "ignore_initializeTagbodyClosure")))
       (let ((total 0)
-            (ignored 0))
+            (removed 0))
         (maphash (lambda (env tagbody-info)
                    (incf total)
                    (unless (tagbody-frame-info-needed tagbody-info)
-                     (incf ignored)
+                     (incf removed)
                      (core:set-invisible (tagbody-frame-info-tagbody-environment tagbody-info) t)
                      (funcall 'llvm-sys:replace-call-keep-args ignore-initialize-tagbody-closure-function
                             (car (tagbody-frame-info-initialize-tagbody-closure tagbody-info)))
@@ -373,9 +373,9 @@
              (progn
                (mp:get-lock (track-rewrites-mutex *tagbody-rewrite-counter*) nil)
 (let ((total-sum (+ (track-rewrites-total *tagbody-rewrite-counter*) total))
-                     (ignored-sum (+ (track-rewrites-ignored *tagbody-rewrite-counter*) ignored)))
+                     (removed-sum (+ (track-rewrites-removed *tagbody-rewrite-counter*) removed)))
                  (setf (track-rewrites-total *tagbody-rewrite-counter*) total-sum)
-                 (setf (track-rewrites-ignored *tagbody-rewrite-counter*) ignored-sum)))
+                 (setf (track-rewrites-removed *tagbody-rewrite-counter*) removed-sum)))
           (mp:giveup-lock (track-rewrites-mutex *tagbody-rewrite-counter*)))
         (cv-log "Done%N")))))
 

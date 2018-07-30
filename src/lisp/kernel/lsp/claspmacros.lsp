@@ -123,6 +123,19 @@
   (if *interpreter-trace*
       (remhash name *interpreter-trace*)))
 
+(defun do-memory-ramp (closure pattern)
+  (unwind-protect
+       (progn
+         (gctools:alloc-pattern-begin pattern)
+         (funcall closure))
+    (gctools:alloc-pattern-end)))
+
+(defmacro with-memory-ramp ((&key (pattern 'gctools:ramp)) &body body)
+  `(if (member :disable-memory-ramp *features*)
+       (progn
+         (core:bformat t "Compiling with memory-ramp DISABLED%N")
+         (funcall (lambda () (progn ,@body))))
+       (do-memory-ramp (lambda () (progn ,@body)) ,pattern)))
 
 ;;;
 ;;; When threading is supported this macro should replicate the ECL mp:with-lock macro

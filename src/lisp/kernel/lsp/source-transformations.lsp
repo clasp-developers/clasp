@@ -38,50 +38,46 @@
       (2 (values `(,two-arg-fun ,@args) t))
       (t (simple-associate-args two-arg-fun (first args) (rest args)))))
 
-  (core:bclasp-define-compiler-macro + (&rest numbers)
-    (expand-associative '+ 'two-arg-+ numbers 0))
+  (defun simple-compare-args (fun first-arg more-args)
+    (let ((next (rest more-args))
+          (arg (first more-args)))
+      (if (null next)
+          `(,fun ,first-arg ,arg)
+          `(if (,fun ,first-arg ,arg)
+               ,(simple-compare-args fun arg next)
+               nil))))
 
-  (core:bclasp-define-compiler-macro * (&rest numbers)
-    (expand-associative '* 'two-arg-* numbers 1))
+  (defun expand-compare (form fun args)
+    (if (proper-list-p args)
+        (case (length args)
+          ((0)
+           ;; need at least one argument. FIXME: warn?
+           form)
+          ((1)
+           ;; preserve nontoplevelness and side effects
+           `(progn (the t ,(first args)) t))
+          ((2)
+           `(,fun ,@args))
+          (otherwise
+           ;; Evaluate arguments only once
+           (let ((syms (mapcar (lambda (a) (declare (ignore a)) (gensym)) args)))
+             `(let (,@(mapcar #'list syms args))
+                ,(simple-compare-args fun (first syms) (rest syms))))))
+        ;; bad syntax. warn?
+        form))
 
-  (core:bclasp-define-compiler-macro - (minuend &rest subtrahends)
-    (if (proper-list-p subtrahends)
-        (if subtrahends
-            `(core:two-arg-- ,minuend ,(expand-associative '+ 'two-arg-+ subtrahends 0))
-            `(core:negate ,minuend))
-        (error "The - operator can not be part of a form that is a dotted list.")))
-
-  (defun expand-compare (fun args)
-    (if (consp args)
-        (if (= (length args) 1)
-            t
-            (if (= (length args) 2)
-                `(,fun ,(car args) ,(cadr args))
-                `(if (,fun ,(car args) ,(cadr args))
-                     ,(expand-compare fun (cdr args))
-                     nil)))
-        args))
-
-  (core:bclasp-define-compiler-macro < (&rest numbers)
-    (expand-compare 'two-arg-< numbers))
-
-  (core:bclasp-define-compiler-macro <= (&rest numbers)
-    (expand-compare 'two-arg-<= numbers))
-
-  (core:bclasp-define-compiler-macro > (&rest numbers)
-    (expand-compare 'two-arg-> numbers))
-
-  (core:bclasp-define-compiler-macro >= (&rest numbers)
-    (expand-compare 'two-arg->= numbers))
-
-  (core:bclasp-define-compiler-macro = (&rest numbers)
-    (expand-compare 'two-arg-= numbers))
-
-  (core:bclasp-define-compiler-macro 1+ (x)
-    `(core:two-arg-+ ,x 1))
-
-  (core:bclasp-define-compiler-macro 1- (x)
-    `(core:two-arg-- ,x 1))
+  ;; /=, char/=, and so on have to compare every pair.
+  ;; In general this results in order n^2 comparisons, requiring a loop etc.
+  ;; For now we don't do that, and only inline the 1 and 2 arg cases.
+  (defun expand-uncompare (form fun args)
+    (if (proper-list-p args)
+        (case (length args)
+          ((1)
+           ;; preserve nontoplevelness and side effects.
+           `(progn (the t ,(first args)) t))
+          ((2) `(not (,fun ,@args)))
+          (otherwise form))
+        form))
 
   (core:bclasp-define-compiler-macro aref (&whole whole array &rest indeces)
     (if (= (length indeces) 1)

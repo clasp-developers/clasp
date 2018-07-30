@@ -88,17 +88,14 @@
                              `(the t ,obj)
                              (aux obj tail))))
                       (t ; a sequence type, we figure
-                       (cond ((subtypep type 'list env)
-                              (da `(coerce-to-list ,obj)))
-                             ((subtypep type 'sequence env)
-                              ;; FIXME: full call to concatenate for this is ridick.
-                              ;; but replace make-sequence is actually slower.
-                              ;; Not sure why. concatenate can skip some parts of
-                              ;; replace, like an alias check, but how is that enough?
-                              #+(or)
-                              (da `(replace (make-sequence ',type (length ,obj)) ,obj))
-                              (da `(concatenate ',type ,obj)))
-                             ;; give up for runtime
-                             (t
-                              (return-from coerce form))))))))))
+                       (multiple-value-bind (uaet length validp)
+                           (closest-sequence-type type env)
+                         (if validp
+                             (if (eq uaet 'list)
+                                 (da `(coerce-to-list ,obj))
+                                 (da `(make-array (length ,obj)
+                                                  :element-type ',uaet
+                                                  :initial-contents ,obj)))
+                             ;; Dunno what's going on. Punt to runtime.
+                             (return-from coerce form))))))))))
       form))

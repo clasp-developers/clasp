@@ -110,28 +110,18 @@ Fixnum search_print_circle(T_sp x) {
 }
 
 T_sp write_object(T_sp x, T_sp stream) {
-#if 1 //def ECL_CMU_FORMAT   // Disable this for now - until we get Grey streams working
-  if (!cl::_sym_STARprint_prettySTAR.unboundp() && cl::_sym_STARprint_prettySTAR->symbolValueUnsafe().notnilp()) {
-    T_sp objx = x;
-    T_mv mv_f = eval::funcall(cl::_sym_pprint_dispatch, objx);
-    T_sp f0 = mv_f;
-    T_sp f1 = mv_f.valueGet_(1);
-    if (f1.notnilp()) {
-      eval::funcall(f0, stream, objx);
-      return objx;
-    }
-  }
-#endif /* ECL_CMU_FORMAT */
+  // First, make sure *print-circle* is ready.
+  // If it is and we need to just print a #n# tag, we can goto OUTPUT.
   bool circle = clasp_print_circle();
+  // We only worry about *print-circle* for objects that aren't numbers, valists, characters,
+  // or interned symbols.
   if (circle &&
       (x) &&
       !x.fixnump() &&
       !x.valistp() &&
       !x.characterp() &&
-      !cl__symbolp(x) &&
-      !cl__numberp(x) // && !x.single_floatp()
-      && (cl__listp(x)
-          || !cl__symbolp(x) || !gc::As<Symbol_sp>(x)->homePackage().nilp())) {
+      !cl__numberp(x) &&
+      (!cl__symbolp(x) || gc::As<Symbol_sp>(x)->homePackage().nilp())) {
     Fixnum code;
     T_sp circle_counter = _sym_STARcircle_counterSTAR->symbolValue();
     if (circle_counter.nilp()) {
@@ -171,6 +161,18 @@ T_sp write_object(T_sp x, T_sp stream) {
       goto OUTPUT;
     }
   }
+  // Now for the actual printing. If *print-pretty*, and there's a dispatch function, we call that.
+  if (!cl::_sym_STARprint_prettySTAR.unboundp() && cl::_sym_STARprint_prettySTAR->symbolValueUnsafe().notnilp()) {
+    T_sp objx = x;
+    T_mv mv_f = eval::funcall(cl::_sym_pprint_dispatch, objx);
+    T_sp f0 = mv_f;
+    T_sp f1 = mv_f.valueGet_(1);
+    if (f1.notnilp()) {
+      eval::funcall(f0, stream, objx);
+      return objx;
+    }
+  }
+  // Otherwise print_ugly_object can take care of it.
   return write_ugly_object(x, stream);
 OUTPUT:
   return x;

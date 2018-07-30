@@ -37,7 +37,7 @@
   (make-instances-obsolete (find-class class))
   class)
 
-(defmethod make-instance ((class-name symbol) &rest initargs)
+(defmethod make-instance ((class-name symbol) core:&va-rest initargs)
   (apply #'make-instance (find-class class-name) initargs))
 
 (defmethod slot-makunbound-using-class ((class built-in-class) self slotd)

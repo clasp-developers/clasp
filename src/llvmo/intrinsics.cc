@@ -255,9 +255,10 @@ size_t cc_matchKeywordOnce(core::T_O *xP, core::T_O *yP, core::T_O *sawKeyAlread
 }
 
 
-ALWAYS_INLINE core::T_O *cc_gatherVaRestArguments(va_list vargs, std::size_t* nargs, Vaslist* untagged_vargs_rest)
+ALWAYS_INLINE core::T_O *cc_gatherVaRestArguments(va_list vargs, std::size_t* nargs, Vaslist untagged_vargs_rest[2])
 {NO_UNWIND_BEGIN();
-  va_copy(untagged_vargs_rest->_Args,vargs);
+  va_copy(untagged_vargs_rest[0]._Args,vargs);
+  va_copy(untagged_vargs_rest[1]._Args,vargs);
 #ifdef DEBUG_ENSURE_VALID_OBJECT
   // Validate the arguments in the va_list
   va_list validate_vargs;
@@ -268,7 +269,8 @@ ALWAYS_INLINE core::T_O *cc_gatherVaRestArguments(va_list vargs, std::size_t* na
   }
   va_end(validate_vargs);
 #endif
-  untagged_vargs_rest->_remaining_nargs = *nargs;
+  untagged_vargs_rest[0]._remaining_nargs = *nargs;
+  untagged_vargs_rest[1]._remaining_nargs = *nargs;
   T_O* result = untagged_vargs_rest->asTaggedPtr();
   return result;
   NO_UNWIND_END();
@@ -445,19 +447,22 @@ ALWAYS_INLINE core::T_O *cc_stack_enclose(void* closure_address,
   NO_UNWIND_END();
 }
 
-
+// Used by fastgf, and not in implementing cl:eql.
 int cc_eql(core::T_O* x, core::T_O* y)
 {NO_UNWIND_BEGIN();
   // The eql part of the test only eq part was handled by caller
   T_sp tx((gctools::Tagged)x);
   T_sp ty((gctools::Tagged)y);
+  // single floats could hypothetically not be eq, if their (otherwise ignored)
+  // high bits are distinct.
   if (tx.single_floatp()) {
     if (ty.single_floatp()) {
       if (tx.unsafe_single_float()==ty.unsafe_single_float()) return 1;
+      else return 0;
     }
   } else if (tx.generalp()) {
     if (ty.generalp()) {
-      return cl__eql(tx,ty) ? 1 : 0;
+      return tx.unsafe_general()->equal(ty) ? 1 : 0;
     }
   }
   return 0;

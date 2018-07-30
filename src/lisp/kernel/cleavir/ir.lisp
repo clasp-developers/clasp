@@ -153,9 +153,11 @@
     instr))
 
 (defun alloca-mv-struct (&optional (label "V"))
+  (cmp:irc-alloca-mv-struct :label label))
+#||
   (cmp:with-irbuilder (cmp:*irbuilder-function-alloca*)
     (llvm-sys:create-alloca cmp:*irbuilder* cmp:%mv-struct% (%i32 1) label)))
-
+||#
 
 (defun %load-or-null (obj)
   (if obj
@@ -191,11 +193,12 @@
 
 (defun %store (val target &optional label)
   (let* ((instr (cmp:irc-store val target)))
+    #+debug-compiler
     (when (typep target 'llvm-sys::instruction)
       (let ((store-fn (llvm-sys:get-name (instruction-llvm-function instr)))
-	    (target-fn (llvm-sys:get-name (instruction-llvm-function target))))
-	(unless (string= store-fn target-fn)
-	  (error "Mismatch in store function vs target function - you are attempting to store a value in a target where the store instruction is in a different LLVM function(~a) from the target value(~a)" store-fn target-fn))))
+            (target-fn (llvm-sys:get-name (instruction-llvm-function target))))
+        (unless (string= store-fn target-fn)
+          (error "Mismatch in store function vs target function - you are attempting to store a value in a target where the store instruction is in a different LLVM function(~a) from the target value(~a)" store-fn target-fn))))
     instr))
 
 (defun %bit-cast (val type &optional (label ""))

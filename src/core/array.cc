@@ -1980,10 +1980,9 @@ bool SimpleCharacterString_O::equalp(T_sp other) const {
 }
 
 std::string SimpleCharacterString_O::get_std_string() const {
-  T_sp stream = cl__make_string_output_stream(cl::_sym_base_char);
-  for (size_t i(0),iEnd(this->length()); i<iEnd; ++i ) clasp_write_char((*this)[i],stream);
-  String_sp s = gc::As_unsafe<String_sp>(cl__get_output_stream_string(stream));
-  return s->get_std_string();
+  std::string sout(this->length(),' ');
+  for (size_t i(0),iEnd(this->length()); i<iEnd; ++i ) sout[i] = (*this)[i];
+  return sout;
 }
 
 std::string SimpleCharacterString_O::__repr__() const {
@@ -2003,6 +2002,17 @@ SimpleBitVector_sp SimpleBitVector_O::make(const string& bv) {
     x->setBit(i,elt-'0');
   }
   return x;
+}
+
+// Restored by drmeister because Cando uses this function
+//  we can remove it if there is a problem with it or it is redundant.
+SimpleBitVector_sp SimpleBitVector_copy(SimpleBitVector_sp orig_sbv)
+{
+  size_t value_type_size = core::SimpleBitVector_O::bitunit_array_type::sizeof_for_length(orig_sbv->length())/sizeof(core::SimpleBitVector_O::value_type);
+//  printf("%s:%d Copy SimpleBitVector length = %" PRu "   value_type_size = %lu\n", __FILE__, __LINE__, orig_sbv->length(), value_type_size );
+//  fflush(stdout);
+  core::SimpleBitVector_sp sbv = core::SimpleBitVector_O::make(orig_sbv->length(),0,true,value_type_size,&orig_sbv->_Data[0]);
+  return sbv;
 }
 
 Array_sp SimpleBitVector_O::unsafe_subseq(size_t start, size_t end) const {
@@ -2266,10 +2276,9 @@ bool StrWNs_O::equal(T_sp other) const {
 };
 
 std::string StrWNs_O::get_std_string() const {
-  T_sp stream = cl__make_string_output_stream(cl::_sym_base_char);
-  for (size_t i(0),iEnd(this->length()); i<iEnd; ++i ) clasp_write_char((*this)[i],stream);
-  String_sp s = gc::As_unsafe<String_sp>(cl__get_output_stream_string(stream));
-  return s->get_std_string();
+  std::string sout(this->length(),' ');
+  for (size_t i(0),iEnd(this->length()); i<iEnd; ++i ) sout[i] = (*this)[i];
+  return sout;
 }
 
 std::string StrWNs_O::__repr__() const {

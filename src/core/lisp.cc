@@ -1109,7 +1109,7 @@ Package_sp Lisp_O::makePackage(const string &name, list<string> const &nicknames
       }
       for ( auto x : shadow ) {
         SimpleBaseString_sp sx = SimpleBaseString_O::make(x);
-        printf("%s:%d in makePackage  for package %s  shadow: %s\n", __FILE__,__LINE__, newPackage->getName().c_str(),sx->get_std_string().c_str());
+//        printf("%s:%d in makePackage  for package %s  shadow: %s\n", __FILE__,__LINE__, newPackage->getName().c_str(),sx->get_std_string().c_str());
         newPackage->shadow(sx);
       }
       for (list<string>::const_iterator jit = usePackages.begin(); jit != usePackages.end(); jit++) {
@@ -1129,10 +1129,10 @@ Package_sp Lisp_O::makePackage(const string &name, list<string> const &nicknames
     // When SIMPLE_ERROR is replaced with something that can do corrections, the continues will be necessary.
     // Corrections will mean, essentially, setting the name and nicknames variables.
   name_exists:
-    SIMPLE_ERROR(BF("There already exists a package with name: %s") % name);
+    SIMPLE_PACKAGE_ERROR("There already exists a package with name: ~a", name);
     continue;
   nickname_exists:
-    SIMPLE_ERROR(BF("Package nickname[%s] is already being used by package[%s]") % usedNickName % packageUsingNickName);
+    SIMPLE_PACKAGE_ERROR_2_args("Package nickname[~a] is already being used by package[~a]" , usedNickName , packageUsingNickName);
     continue;
   }
 }
@@ -1525,11 +1525,11 @@ CL_DOCSTRING("stackUsed");
 CL_DEFUN size_t core__stack_used() {
   int x;
   char *xaddr = (char *)(&x);
-  if ( xaddr > my_thread->_StackTop ) {
-    printf("%s:%d There is a problem with the stack _lisp->_StackTop@%p is below the current stack pointer@%p\n", __FILE__, __LINE__, my_thread->_StackTop, xaddr );
+  if ( xaddr > my_thread_low_level->_StackTop ) {
+    printf("%s:%d There is a problem with the stack _lisp->_StackTop@%p is below the current stack pointer@%p\n", __FILE__, __LINE__, my_thread_low_level->_StackTop, xaddr );
     abort();
   }
-  size_t stack = (size_t)((const char*)my_thread->_StackTop - xaddr);
+  size_t stack = (size_t)((const char*)my_thread_low_level->_StackTop - xaddr);
   return stack;
 };
 
@@ -1554,7 +1554,7 @@ void af_stackSizeWarning(size_t stackUsed) {
     printf("%s:%d Stack is getting full currently at %zu bytes - warning at %u bytes  top@%p current@%p\n",
            __FILE__, __LINE__,
            stackUsed, _lisp->_StackWarnSize,
-           my_thread->_StackTop, xaddr );
+           my_thread_low_level->_StackTop, xaddr );
     ExceptionSafeResetInvokedInternalDebugger safe;
     core__invoke_internal_debugger(_Nil<core::T_O>());
   }

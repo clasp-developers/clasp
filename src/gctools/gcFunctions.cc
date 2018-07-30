@@ -200,7 +200,7 @@ CL_DEFUN void gctools__deallocate_unmanaged_instance(core::T_sp obj) {
 
 CL_DOCSTRING("Return bytes allocated (values clasp-calculated-bytes)");
 CL_DEFUN core::T_sp gctools__bytes_allocated() {
-  size_t my_bytes = globalBytesAllocated;
+  size_t my_bytes = my_thread_low_level->_Allocations._BytesAllocated;
   ASSERT(my_bytes < gc::most_positive_fixnum);
   return core::clasp_make_fixnum(my_bytes);
 }
@@ -460,6 +460,7 @@ CL_DEFUN core::T_mv gctools__gc_info(core::T_sp x, core::Fixnum_sp marker) {
 
 CL_LAMBDA(on &key (backtrace-start 0) (backtrace-count 0) (backtrace-depth 6));
 CL_DEFUN void gctools__monitor_allocations(bool on, core::Fixnum_sp backtraceStart, core::Fixnum_sp backtraceCount, core::Fixnum_sp backtraceDepth) {
+#ifdef DEBUG_MONITOR_ALLOCATIONS
   global_monitorAllocations.on = on;
   global_monitorAllocations.counter = 0;
   if (backtraceStart.unsafe_fixnum() < 0 ||
@@ -471,6 +472,7 @@ CL_DEFUN void gctools__monitor_allocations(bool on, core::Fixnum_sp backtraceSta
   global_monitorAllocations.end = backtraceStart.unsafe_fixnum() + backtraceCount.unsafe_fixnum();
   global_monitorAllocations.backtraceDepth = backtraceDepth.unsafe_fixnum();
   printf("%s:%d  monitorAllocations set to %d\n", __FILE__, __LINE__, on);
+#endif
 };
 
 CL_LAMBDA(&optional marker);
@@ -498,18 +500,20 @@ SYMBOL_EXPORT_SC_(GcToolsPkg, rampCollectAll);
 
 CL_DEFUN void gctools__alloc_pattern_begin(core::Symbol_sp pattern) {
 #ifdef USE_MPS
-  if (pattern == _sym_ramp || pattern == _sym_rampCollectAll) {
-    core::List_sp patternStack = gctools::_sym_STARallocPatternStackSTAR->symbolValue();
-    patternStack = core::Cons_O::create(pattern, patternStack);
-    gctools::_sym_STARallocPatternStackSTAR->setf_symbolValue(patternStack);
-    if (pattern == _sym_ramp) {
-      mps_ap_alloc_pattern_begin(my_thread_allocation_points._automatic_mostly_copying_allocation_point, mps_alloc_pattern_ramp());
-    } else {
-      mps_ap_alloc_pattern_begin(my_thread_allocation_points._automatic_mostly_copying_allocation_point, mps_alloc_pattern_ramp_collect_all());
-    }
-    return;
+  mps_alloc_pattern_t mps_pat;
+  if (pattern == _sym_ramp) {
+    mps_pat = mps_alloc_pattern_ramp();
+  } else if (pattern == _sym_rampCollectAll) {
+    mps_pat = mps_alloc_pattern_ramp_collect_all();
+  } else {
+    TYPE_ERROR(pattern, core::Cons_O::createList(cl::_sym_or, _sym_ramp, _sym_rampCollectAll));
   }
-  SIMPLE_ERROR(BF("Only options for alloc-pattern-begin is %s@%p and %s@%p - you passed: %s@%p") % _rep_(_sym_ramp) % _sym_rampCollectAll.raw_() % _rep_(_sym_rampCollectAll) % _sym_rampCollectAll.raw_() % _rep_(pattern) % pattern.raw_());
+  core::List_sp patternStack = gctools::_sym_STARallocPatternStackSTAR->symbolValue();
+  patternStack = core::Cons_O::create(pattern, patternStack);
+  gctools::_sym_STARallocPatternStackSTAR->setf_symbolValue(patternStack);
+  mps_ap_alloc_pattern_begin(my_thread_allocation_points._automatic_mostly_copying_allocation_point, mps_pat);
+  mps_ap_alloc_pattern_begin(my_thread_allocation_points._amc_cons_allocation_point, mps_pat);
+  mps_ap_alloc_pattern_begin(my_thread_allocation_points._automatic_mostly_copying_zero_rank_allocation_point,mps_pat);
 #endif
 };
 
@@ -521,11 +525,15 @@ CL_DEFUN core::Symbol_sp gctools__alloc_pattern_end() {
     return _Nil<core::Symbol_O>();
   pattern = gc::As<core::Symbol_sp>(oCar(patternStack));
   gctools::_sym_STARallocPatternStackSTAR->setf_symbolValue(oCdr(patternStack));
+  mps_alloc_pattern_t mps_pat;
   if (pattern == _sym_ramp) {
-    mps_ap_alloc_pattern_end(my_thread_allocation_points._automatic_mostly_copying_allocation_point, mps_alloc_pattern_ramp());
+    mps_pat = mps_alloc_pattern_ramp();
   } else {
-    mps_ap_alloc_pattern_end(my_thread_allocation_points._automatic_mostly_copying_allocation_point, mps_alloc_pattern_ramp_collect_all());
+    mps_pat = mps_alloc_pattern_ramp_collect_all();
   }
+  mps_ap_alloc_pattern_end(my_thread_allocation_points._automatic_mostly_copying_zero_rank_allocation_point,mps_pat);
+  mps_ap_alloc_pattern_end(my_thread_allocation_points._amc_cons_allocation_point, mps_pat);
+  mps_ap_alloc_pattern_end(my_thread_allocation_points._automatic_mostly_copying_allocation_point, mps_pat);
 #endif
   return pattern;
 };
@@ -566,6 +574,9 @@ CL_DEFUN core::T_mv cl__room(core::T_sp x, core::Fixnum_sp marker, core::T_sp tm
   OutputStream << std::setw(12) << globalMpsMetrics.movingZeroRankAllocations.load() << "    moving zero-rank(AMCZ) allocations\n";
   OutputStream << std::setw(12) << globalMpsMetrics.unknownAllocations.load() << "    unknown(configurable) allocations\n";
   OutputStream << std::setw(12) << globalMpsMetrics.totalMemoryAllocated.load() << " total memory allocated\n";
+  OutputStream << std::setw(12) << global_NumberOfRootTables.load() << " module root tables\n";
+  OutputStream << std::setw(12) << global_TotalRootTableSize.load() << " words - total module root table size\n";
+                                                                
 #endif
 #ifdef USE_BOEHM
   globalSearchMarker = core::unbox_fixnum(marker);
@@ -781,10 +792,10 @@ CL_DEFUN void gctools__telemetryReset(core::Fixnum_sp flags) {
 };
 
 CL_DEFUN core::T_mv gctools__memory_profile_status() {
-  int64_t allocationNumberCounter = global_AllocationProfiler._AllocationNumberCounter;
-  size_t allocationNumberThreshold = global_AllocationProfiler._AllocationNumberThreshold;
-  int64_t allocationSizeCounter = global_AllocationProfiler._AllocationSizeCounter;
-  size_t allocationSizeThreshold = global_AllocationProfiler._AllocationSizeThreshold;
+  int64_t allocationNumberCounter = my_thread_low_level->_Allocations._AllocationNumberCounter;
+  size_t allocationNumberThreshold = my_thread_low_level->_Allocations._AllocationNumberThreshold;
+  int64_t allocationSizeCounter = my_thread_low_level->_Allocations._AllocationSizeCounter;
+  size_t allocationSizeThreshold = my_thread_low_level->_Allocations._AllocationSizeThreshold;
   return Values(core::make_fixnum(allocationNumberCounter),
                 core::make_fixnum(allocationNumberThreshold),
                 core::make_fixnum(allocationSizeCounter),

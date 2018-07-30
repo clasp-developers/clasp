@@ -1131,6 +1131,7 @@ void mv_restoreFromMultipleValue0(core::T_mv *resultP)
   NO_UNWIND_END();
 }
 
+#if 0
 /*! Copy the current MultipleValues in _lisp->values() into a SimpleVector */
 extern core::T_O* saveValues(core::T_mv *mvP)
 {NO_UNWIND_BEGIN();
@@ -1174,6 +1175,8 @@ extern void loadValues(core::T_mv *resultP, core::T_O* simpleVectorP)
   }
   NO_UNWIND_END();
 }
+#endif
+
 
 size_t cc_trackFirstUnexpectedKeyword(size_t badKwIdx, size_t newBadKwIdx)
 {NO_UNWIND_BEGIN();

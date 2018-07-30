@@ -162,7 +162,7 @@ Return files."
 
 (defun compile-kernel-file (entry &key (reload nil) load-bitcode (force-recompile nil) counter total-files (output-type core:*clasp-build-mode*) verbose print silent)
   #+dbg-print(bformat t "DBG-PRINT compile-kernel-file: %s%N" entry)
-;;  (if *target-backend* nil (error "*target-backend* is undefined"))
+  ;;  (if *target-backend* nil (error "*target-backend* is undefined"))
   (let* ((filename (entry-filename entry))
          (source-path (build-pathname filename :lisp))
          (output-path (build-pathname filename output-type))
@@ -193,7 +193,8 @@ Return files."
                 (let ((reload-file (if (eq output-type :object)
                                        (make-pathname :type (bitcode-extension) :defaults output-path)
                                        output-path)))
-                  (bformat t "    Loading newly compiled file: %s%N" reload-file)
+		  (unless silent
+		    (bformat t "    Loading newly compiled file: %s%N" reload-file))
                   (load-kernel-file reload-file output-type))))))
     output-path))
 (export 'compile-kernel-file)
@@ -308,12 +309,13 @@ Return files."
              (let* ((filename (entry-filename entry))
                     (source-path (build-pathname filename :lisp)))
                (format t "Finished [~d of ~d (child pid: ~d)] ~a output follows...~%" counter total child-pid source-path)
-               (with-open-stream (sin result-stream)
-                 (do ((line (read-line sin nil nil) (read-line sin nil nil)))
-                     ((null line))
-                   (princ "--> ")
-                   (princ line)
-                   (terpri)))))
+	       (when result-stream  ;;;can be empty
+		 (with-open-stream (sin result-stream)
+		   (do ((line (read-line sin nil nil) (read-line sin nil nil)))
+		       ((null line))
+		     (princ "--> ")
+		     (princ line)
+		     (terpri))))))
            (reload-one (entry)
              (let* ((filename (entry-filename entry))
                     (source-path (build-pathname filename :lisp))
@@ -536,13 +538,11 @@ Return files."
                (pre-files (butlast (out-of-date-bitcodes #P"src/lisp/kernel/tag/start" #P"src/lisp/kernel/tag/min-start" :system system)))
                (files (out-of-date-bitcodes #P"src/lisp/kernel/tag/min-start" #P"src/lisp/kernel/tag/min-pre-epilogue" :system system))
                (files-with-epilogue (out-of-date-bitcodes #P"src/lisp/kernel/tag/start" #P"src/lisp/kernel/tag/min-end" :system system)))
-          (let ((cmp::*activation-frame-optimize* nil))
-            ;; It's better to compile aclasp with fewer cores because then more of the compilations
-            ;; make use of compiled code.
-            ;;  Compiling and reloading the following files will speed things up
+          (let ((cmp::*activation-frame-optimize* t)
+                (core:*cache-macroexpand* (make-hash-table :test #'equal)))
             (compile-system files :reload t :parallel-jobs (min *number-of-jobs* 16))
             ;;  Just compile the following files and don't reload, they are needed to link
-            (compile-system pre-files :reload nil :parallel-jobs (min *number-of-jobs* 16))
+            (compile-system pre-files :reload nil)
             (if files-with-epilogue (compile-system (output-object-pathnames #P"src/lisp/kernel/tag/min-pre-epilogue" #P"src/lisp/kernel/tag/min-end" :system system) :reload nil)))
           (let ((all-output (output-object-pathnames #P"src/lisp/kernel/tag/min-start" #P"src/lisp/kernel/tag/min-end" :system system)))
             (if (out-of-date-target output-file all-output)

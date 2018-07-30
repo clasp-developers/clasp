@@ -127,12 +127,14 @@ void start_thread_inner(Process_sp process, void* cold_end_of_stack) {
     abort();
   };
 #endif
-  core::ThreadLocalState my_thread_local_state(cold_end_of_stack);
+  gctools::ThreadLocalStateLowLevel thread_local_state_low_level(cold_end_of_stack);
+  core::ThreadLocalState thread_local_state;
+  my_thread_low_level = &thread_local_state_low_level;
+  my_thread = &thread_local_state;
 //  printf("%s:%d entering start_thread  &my_thread -> %p \n", __FILE__, __LINE__, (void*)&my_thread);
 #ifdef USE_MPS
   gctools::my_thread_allocation_points.initializeAllocationPoints();
 #endif
-  my_thread = &my_thread_local_state;
   my_thread->initialize_thread(process,true);
   my_thread->create_sigaltstack();
   process->_ThreadInfo = my_thread;
@@ -444,7 +446,7 @@ CL_DEFUN core::List_sp mp__process_initial_special_bindings(Process_sp p) {
 }
 
 CL_DEFUN void mp__check_pending_interrupts() {
-  gctools::handle_all_queued_interrupts(my_thread);
+  gctools::handle_all_queued_interrupts();
 }
 
 };

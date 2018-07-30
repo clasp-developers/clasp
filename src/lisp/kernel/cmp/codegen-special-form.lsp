@@ -580,13 +580,12 @@ jump to blocks within this tagbody."
 	 (return-form (cadr rest)))
     (multiple-value-bind (recognizes-block-symbol inter-function block-env)
 	(classify-return-from-symbol env block-symbol)
-      #+optimize-bclasp
-      (let ((frame-info (gethash block-env *block-frame-info*)))
-        (unless frame-info (error "Could not find frame-info for block ~s" block-symbol))
-        (setf (block-frame-info-needed frame-info) t))
       (if recognizes-block-symbol
           (if inter-function
-              (let ((depth (core:calculate-runtime-visible-environment-depth env block-env)))
+              (let ((depth (core:calculate-runtime-visible-environment-depth env block-env))
+                    (frame-info (gethash block-env *block-frame-info*)))
+                (unless frame-info (error "Could not find frame-info for block ~s" block-symbol))
+                (setf (block-frame-info-needed frame-info) t) ; mark the block closure as needed since we have a return-from in an inner function
                 (codegen temp-mv-result return-form env)
                 (irc-intrinsic "saveToMultipleValue0" temp-mv-result)
                 (irc-low-level-trace)
@@ -608,7 +607,9 @@ jump to blocks within this tagbody."
                         *throw-return-from-instructions*)))
               (let* ((local-return-block (lookup-metadata block-env :local-return-block)))
                 (codegen temp-mv-result return-form env)
-                (let ((saved-values (irc-intrinsic "saveValues" temp-mv-result)))
+                
+                (irc-unwind-into-environment env block-env)
+                #+(or)(let ((saved-values (irc-intrinsic "saveValues" temp-mv-result)))
                   (irc-unwind-into-environment env block-env)
                   (irc-intrinsic "loadValues" temp-mv-result saved-values))
                 (irc-intrinsic "saveToMultipleValue0" temp-mv-result)
@@ -616,7 +617,7 @@ jump to blocks within this tagbody."
                 (irc-begin-block (irc-basic-block-create "after-return-from"))))
           (error "Unrecognized block symbol ~a" block-symbol)))))
 
-;;; FLET, LABELS
+;;; FLET, LABELS3
 
 (defun generate-lambda-block (name lambda-list raw-body)
   "Generate a (lambda ... (block name ...)) after extracting declares and docstring from raw-body"
