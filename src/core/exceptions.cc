@@ -746,10 +746,10 @@ CL_DEFUN void core__wrong_index(const string &sourceFile, int lineno, Symbol_sp 
   }
 };
 
-CL_LAMBDA(sourceFileName lineno functionName fmt fmtargs stream);
+CL_LAMBDA(sourceFileName lineno fmt fmtargs stream);
 CL_DECLARE();
 CL_DOCSTRING("readerError");
-CL_DEFUN void cl__reader_error(const string &sourceFile, uint lineno,
+CL_DEFUN void core__reader_error(const string &sourceFile, uint lineno,
                     String_sp fmt, List_sp fmtargs, T_sp stream) {
   ASSERT(cl__stringp(fmt));
   if (stream.nilp()) {
