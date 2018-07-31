@@ -3295,10 +3295,40 @@ namespace llvmo {
 using namespace llvm;
 using namespace llvm::orc;
 
+
+class ClaspSectionMemoryManager : public SectionMemoryManager {
+
+
+  uint8_t* allocateCodeSection( uintptr_t Size, unsigned Alignment,
+                                unsigned SectionID,
+                                StringRef SectionName ) {
+    uint8_t* ptr = this->SectionMemoryManager::allocateCodeSection(Size,Alignment,SectionID,SectionName);
+#ifdef MONITOR_JIT_MEMORY_MANAGER
+    printf("%s:%d  allocateCodeSection Size: %lu  Alignment: %u SectionId: %u SectionName: %s --> allocated at: %p\n", __FILE__, __LINE__, Size, Alignment, SectionID, SectionName.str().c_str(), ptr );
+#endif
+    return ptr;
+  }
+
+  uint8_t* allocateDataSection( uintptr_t Size, unsigned Alignment,
+                                unsigned SectionID,
+                                StringRef SectionName,
+                                bool isReadOnly) {
+    uint8_t* ptr = this->SectionMemoryManager::allocateDataSection(Size,Alignment,SectionID,SectionName,isReadOnly);
+#ifdef MONITOR_JIT_MEMORY_MANAGER
+    printf("%s:%d  allocateDataSection Size: %lu  Alignment: %u SectionId: %u SectionName: %s isReadOnly: %d --> allocated at: %p\n", __FILE__, __LINE__, Size, Alignment, SectionID, SectionName.str().c_str(), isReadOnly, ptr );
+#endif
+    return ptr;
+  }
+
+};
+
+
+
+
 ClaspJIT_O::ClaspJIT_O() : TM(EngineBuilder().selectTarget()),
                            DL(TM->createDataLayout()),
 //                           NotifyObjectLoaded(*this),
-                           ObjectLayer([]() { return std::make_shared<SectionMemoryManager>(); }
+                           ObjectLayer([]() { return std::make_shared<ClaspSectionMemoryManager>(); }
 /* The following doesn't work in llvm5.0 because of a bug in the definition of NotifyLoadedFtor
 https://groups.google.com/forum/#!topic/llvm-dev/m3JjMNswgcU
 */
