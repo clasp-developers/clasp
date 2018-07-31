@@ -63,7 +63,7 @@ RUN /bin/bash -c "source activate lab"
 RUN conda install ipywidgets -c conda-forge -y
 RUN pip install nglview==1.1.2
 RUN nglview enable # might need this to enable nglview-js-widgets extension for notebook
-RUN conda install jupyterlab -y -c conda-forge
+RUN conda install jupyterlab=0.32 -y -c conda-forge
 RUN pip install bqplot
 RUN jupyter-labextension install @jupyter-widgets/jupyterlab-manager nglview-js-widgets@1.1.2 bqplot
 #RUN jupyter-labextension install nglview-js-widgets@1.1.2

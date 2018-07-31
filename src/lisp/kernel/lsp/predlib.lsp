@@ -45,18 +45,17 @@ Builds a new function which accepts any number of arguments but always outputs N
     (error "Symbol ~s is a declaration specifier and cannot be used to name a new type" name)))
 (export 'create-type-name)
 
-(defun type-expander (name)
+(export 'ext::type-expander "EXT")
+(defun ext:type-expander (name)
   (get-sysprop name 'deftype-definition))
 
-(defun (setf type-expander) (function name)
+(defun (setf ext:type-expander) (function name)
   (unless (symbolp name)
     (error "~s is not a valid type specifier" name))
   (create-type-name name)
   (put-sysprop name 'DEFTYPE-DEFINITION function)
   (subtypep-clear-cache)
   function)
-
-
 
 
 ;;; DEFTYPE macro.
