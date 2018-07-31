@@ -294,7 +294,7 @@ Return files."
        done)))
 
 
-(defun compile-system-parallel (files &key reload (output-type core:*clasp-build-mode*) (parallel-jobs *number-of-jobs*) (batch-min 1) (batch-max 1))
+(defun compile-system-parallel (files &key reload (output-type core:*clasp-build-mode*) (parallel-jobs *number-of-jobs*) (batch-min 1) (batch-max 10))
   #+dbg-print(bformat t "DBG-PRINT compile-system files: %s\n" files)
   (let ((total (length files))
         (counter 1)

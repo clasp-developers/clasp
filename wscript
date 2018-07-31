@@ -782,8 +782,9 @@ def configure(cfg):
             cfg.env.append_value('LINKFLAGS', '-fuse-ld=lld-%d.0' % CLANG_VERSION)
             log.info("Using the lld linker")
         else:
-            cfg.env.append_value('LINKFLAGS', '-fuse-ld=/opt/clasp/bin/ld.clasp')
-            log.info("Using linker frontend /opt/clasp/bin/ld.clasp")
+            #cfg.env.append_value('LINKFLAGS', '-fuse-ld=/opt/clasp/bin/ld.clasp')
+            #log.info("Using linker frontend /opt/clasp/bin/ld.clasp")
+            cfg.env.append_value('LINKFLAGS', '-fuse-ld=gold')
         cfg.env.append_value('LINKFLAGS', '-pthread')
         cfg.env.append_value('LINKFLAGS', '-lexecinfo')
     elif (cfg.env['DEST_OS'] == DARWIN_OS ):
