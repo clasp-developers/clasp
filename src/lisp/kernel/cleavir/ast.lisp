@@ -32,13 +32,17 @@
   ((%lambda-name :initarg :lambda-name :initform "lambda-ast" :reader lambda-name)
    (%original-lambda-list :initarg :original-lambda-list :initform nil :reader original-lambda-list)
    (%docstring :initarg :docstring :initform nil :reader docstring)
-   (%declares :initarg :declares :initform nil :reader declares)))
+   ;; We can avoid or dx-allocate the &rest list sometimes- controlled here,
+   ;; and set up from declarations in convert-form.lisp.
+   ;; NIL indicates the general case (i.e. full heap allocation).
+   (%rest-alloc :initarg :rest-alloc :initform nil :reader rest-alloc
+                     :type (member nil ignore dynamic-extent))))
 
 (cleavir-io:define-save-info named-function-ast
     (:lambda-name lambda-name)
   (:original-lambda-list original-lambda-list)
   (:docstring docstring)
-  (:declares declares))
+  (:rest-alloc rest-alloc))
 
 (defmethod cleavir-ast-graphviz::label ((ast named-function-ast))
   (with-output-to-string (s)

@@ -7,6 +7,10 @@
         (cleavir-code-utilities:separate-function-body body)
       (let* ((dspecs (reduce #'append (mapcar #'cdr declarations)))
              (lambda-name (cadr (find 'core:lambda-name dspecs :key #'car)))
+             (rest-position (position '&rest lambda-list))
+             ;; FIXME? for an invalid lambda list like (foo &rest) this could cause a weird error
+             (restvar (and rest-position (elt lambda-list (1+ rest-position))))
+             (rest-alloc (cmp:compute-rest-alloc restvar dspecs))
              (origin (or (cleavir-ast:origin function-ast) ; should be nil, but just in case.
                          core:*current-source-pos-info*)))
         (unless lambda-name (setq lambda-name 'cl:lambda))
@@ -16,7 +20,7 @@
                       :origin origin
                       :original-lambda-list lambda-list
                       :docstring documentation
-                      :declares dspecs)))))
+                      :rest-alloc rest-alloc)))))
 
 (defmethod cleavir-cst-to-ast:convert-code (lambda-list body
                                             env (system clasp-cleavir:clasp) &key block-name-cst origin)
@@ -27,7 +31,12 @@
                            append (cdr (cst:listify declaration-cst))))
              (lambda-name-info (find 'core:lambda-name dspecs :key (lambda (cst) (cst:raw (cst:first cst)))))
              (lambda-name (if lambda-name-info
-                              (car (cdr (cst:raw lambda-name-info))))))
+                              (car (cdr (cst:raw lambda-name-info)))))
+             (original-lambda-list (if lambda-list (cst:raw lambda-list) nil))
+             (rest-position (position '&rest original-lambda-list))
+             ;; ditto FIXME in c-g-a version
+             (restvar (and rest-position (elt original-lambda-list (1+ rest-position))))
+             (rest-alloc (cmp:compute-rest-alloc restvar dspecs)))
         (unless lambda-name (setq lambda-name 'lambda))
         ;; Define the function-scope-info object and bind it to
         ;; the *current-function-scope-info* object
@@ -40,9 +49,6 @@
             (change-class function-ast 'clasp-cleavir-ast:named-function-ast
                           :lambda-name lambda-name
                           :origin origin
-                          :original-lambda-list (if lambda-list (cst:raw lambda-list) nil)
+                          :original-lambda-list original-lambda-list
                           :docstring (when documentation (cst:raw documentation))
-                          :declares (when dspecs (cst:raw dspecs))))))))
-
-
- 
+                          :rest-alloc rest-alloc))))))

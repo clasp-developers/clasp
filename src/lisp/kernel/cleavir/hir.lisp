@@ -257,19 +257,20 @@
 
 (defclass named-enter-instruction (cleavir-ir:enter-instruction)
   ((%lambda-name :initarg :lambda-name :initform "lambda" :accessor lambda-name)
-   (%declares :initarg :declares :initform nil :accessor declares)
    (%original-lambda-list :initarg :original-lambda-list :initform nil :reader original-lambda-list)
-   (%docstring :initarg :docstring :initform nil :reader docstring)))
+   (%docstring :initarg :docstring :initform nil :reader docstring)
+   (%rest-alloc :initarg :rest-alloc :initform nil :reader rest-alloc
+                :type (member nil ignore dynamic-extent))))
 
 (defun make-named-enter-instruction
-    (lambda-list lambda-name &key (successor nil successor-p) origin original-lambda-list docstring declares)
+    (lambda-list lambda-name &key (successor nil successor-p) origin original-lambda-list docstring rest-alloc)
   (let ((oe (if successor-p
 		(cleavir-ir:make-enter-instruction lambda-list :successor successor :origin origin)
 		(cleavir-ir:make-enter-instruction lambda-list :origin origin))))
     (change-class oe 'named-enter-instruction :lambda-name lambda-name
                                               :original-lambda-list original-lambda-list
                                               :docstring docstring
-                                              :declares declares)))
+                                              :rest-alloc rest-alloc)))
 
 (defmethod cleavir-ir-graphviz:label ((instr named-enter-instruction))
   (with-output-to-string (s)
@@ -279,14 +280,12 @@
   (list :lambda-name (lambda-name instruction)
         :original-lambda-list (original-lambda-list instruction)
         :docstring (docstring instruction)
-        :declares (declares instruction)))
+        :rest-alloc (rest-alloc instruction)))
 
 (defmethod original-lambda-list ((self cleavir-ir:top-level-enter-instruction))
-  "Provide a method for top-level-enter-instruction"
   nil)
 
-(defmethod declares ((self cleavir-ir:top-level-enter-instruction))
-  "Provide a method for top-level-enter-instruction - they never have declares"
+(defmethod rest-alloc ((self cleavir-ir:top-level-enter-instruction))
   nil)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
