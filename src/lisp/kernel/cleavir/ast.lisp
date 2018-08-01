@@ -382,7 +382,8 @@
 (cleavir-io:define-save-info bind-va-list-ast
     (:lambda-list cleavir-ast:lambda-list)
   (:va-list va-list-ast)
-  (:body-ast cleavir-ast:body-ast))
+  (:body-ast cleavir-ast:body-ast)
+  (:rest-alloc rest-alloc))
 
 (defmethod cleavir-ast:children ((ast bind-va-list-ast))
   (list* (va-list-ast ast)
