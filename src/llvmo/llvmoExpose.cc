@@ -3295,9 +3295,16 @@ namespace llvmo {
 using namespace llvm;
 using namespace llvm::orc;
 
+//#define MONITOR_JIT_MEMORY_MANAGER 1
 
 class ClaspSectionMemoryManager : public SectionMemoryManager {
 
+  void 	notifyObjectLoaded (RuntimeDyld &RTDyld, const object::ObjectFile &Obj) {
+#ifdef MONITOR_JIT_MEMORY_MANAGER
+    printf("%s:%d notifyObjectLoaded was invoked\n", __FILE__, __LINE__ );
+#endif
+  }
+  
 
   uint8_t* allocateCodeSection( uintptr_t Size, unsigned Alignment,
                                 unsigned SectionID,
