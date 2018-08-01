@@ -249,7 +249,7 @@ when this is t a lot of graphs will be generated.")
       (class (return-from type-expand-1 (values type-specifier nil)))
       (symbol (setf head type-specifier tail nil))
       (cons (setf head (first type-specifier) tail (rest type-specifier))))
-    (let ((def (core::type-expander head)))
+    (let ((def (ext:type-expander head)))
       (if def
           (values (apply def tail) t)
           (values type-specifier nil)))))
