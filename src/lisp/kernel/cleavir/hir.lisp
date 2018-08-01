@@ -225,17 +225,20 @@
 ;;; and only allowing ordinary lambda lists.
 
 (defclass bind-va-list-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin)
-  ((%lambda-list :initarg :lambda-list :accessor cleavir-ir:lambda-list)))
+  ((%lambda-list :initarg :lambda-list :accessor cleavir-ir:lambda-list)
+   (%rest-alloc :initarg :rest-alloc :reader rest-alloc)))
 
 (defmethod cleavir-ir-graphviz:label ((instr bind-va-list-instruction))
   )
 
 (defmethod cleavir-ir:clone-initargs append ((instruction bind-va-list-instruction))
-  (list :lambda-list (cleavir-ir:lambda-list instruction)))
+  (list :lambda-list (cleavir-ir:lambda-list instruction)
+        :rest-alloc (rest-alloc instruction)))
 
-(defun make-bind-va-list-instruction (lambda-list va-list &optional (successor nil successor-p))
+(defun make-bind-va-list-instruction (lambda-list va-list rest-alloc &optional (successor nil successor-p))
   (make-instance 'bind-va-list-instruction
                  :lambda-list lambda-list
+                 :rest-alloc rest-alloc
                  :inputs (list va-list)
                  ;; copied from cleavir-ir:make-enter-instruction
                  :outputs (loop for item in lambda-list

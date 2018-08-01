@@ -207,6 +207,7 @@
        (clasp-cleavir-hir:make-bind-va-list-instruction
         (cleavir-ast-to-hir:translate-lambda-list (cleavir-ast:lambda-list ast))
         temp
+        (clasp-cleavir-ast:rest-alloc ast)
         (cleavir-ast-to-hir:compile-ast
          (cleavir-ast:body-ast ast)
          context)))

@@ -369,11 +369,14 @@
 (defclass bind-va-list-ast (cleavir-ast:ast)
   ((%lambda-list :initarg :lambda-list :reader cleavir-ast:lambda-list)
    (%va-list-ast :initarg :va-list :reader va-list-ast)
-   (%body-ast :initarg :body-ast :reader cleavir-ast:body-ast)))
+   (%body-ast :initarg :body-ast :reader cleavir-ast:body-ast)
+   ;; as for named-function-ast
+   (%rest-alloc :initarg :rest-alloc :reader rest-alloc)))
 
-(defun make-bind-va-list-ast (lambda-list va-list-ast body-ast &key origin (policy cleavir-ast:*policy*))
+(defun make-bind-va-list-ast (lambda-list va-list-ast body-ast rest-alloc
+                              &key origin (policy cleavir-ast:*policy*))
   (make-instance 'bind-va-list-ast
-    :origin origin :policy policy
+    :origin origin :policy policy :rest-alloc rest-alloc
     :va-list va-list-ast :body-ast body-ast :lambda-list lambda-list))
 
 (cleavir-io:define-save-info bind-va-list-ast
