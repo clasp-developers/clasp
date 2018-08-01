@@ -2,7 +2,13 @@
 ;;; Any symbols we want to export from EXT must be done in init.lsp
 ;;;
 
+(in-package :core)
+;;; Temporary alias for SLIME compatibility- remove as soon as possible
+(setf (fdefinition 'function-lambda-list) #'ext:function-lambda-list)
+(export 'function-lambda-list)
+
 (in-package :ext)
+
 (defun compiled-function-name (x)
   (core:function-name x))
 
