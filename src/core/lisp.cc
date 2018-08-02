@@ -1875,9 +1875,9 @@ CL_DEFUN T_mv cl__macroexpand_1(T_sp form, T_sp env) {
     return (Values(form, _Nil<T_O>()));
   } else if (Symbol_sp sform = form.asOrNull<Symbol_O>()) {
     if (env.nilp()) {
-      expansionFunction = core__symbol_macro(sform, env);
+      expansionFunction = ext__symbol_macro(sform, env);
     } else if (Environment_sp eenv = env.asOrNull<Environment_O>()) {
-      expansionFunction = core__symbol_macro(sform, eenv);
+      expansionFunction = ext__symbol_macro(sform, eenv);
 #if 0
     } else if (clcenv::Entry_sp cenv = env.asOrNull<clcenv::Entry_O>() ) {
       clcenv::Info_sp info = clcenv::variable_info(cenv,sform);

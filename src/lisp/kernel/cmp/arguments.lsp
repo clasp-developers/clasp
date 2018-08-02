@@ -88,21 +88,14 @@
 			      arg-idx-alloca)
   (cmp:irc-branch-to-and-begin-block (cmp:irc-basic-block-create "process-rest-argument"))
   (when rest-var
-    ;; Copy argument values or evaluate init forms
-    (let* ((original-rest-var (let ((var (car (rassoc rest-var (calling-convention-name-map args)))))
-                                var))
-           (arg-idx (cmp:irc-load arg-idx-alloca))
+    (let* ((arg-idx (cmp:irc-load arg-idx-alloca))
+           (rest-alloc (calling-convention-rest-alloc args))
 	   (rest (cond
-                   ((core:declare-p (calling-convention-canonical-declares args)
-                                    'ignore
-                                    original-rest-var)
-                    ;; Do nothing
-                    nil
-                    )
-                   ((core:declare-p (calling-convention-canonical-declares args)
-                                    'dynamic-extent
-                                    original-rest-var)
-                                        ; Do the dynamic extent thing
+                   ((eq rest-alloc 'ignore)
+                    ;; &rest variable is ignored- allocate nothing
+                    nil)
+                   ((eq rest-alloc 'dynamic-extent)
+                    ;; Do the dynamic extent thing- alloca, then an intrinsic to initialize it.
                     (let ((rrest
                             (irc-alloca-dynamic-extent-list :irbuilder *irbuilder*
                                                             :length (irc-load (calling-convention-remaining-nargs* args))
@@ -118,6 +111,7 @@
                                                 (cmp:calling-convention-remaining-nargs* args)
                                                 temp-valist))))
                    (t
+                    ;; general case- heap allocation
                     (irc-intrinsic-call "cc_gatherRestArguments" 
                                         (list (cmp:calling-convention-va-list* args)
                                               (cmp:calling-convention-remaining-nargs* args)))))))
@@ -489,17 +483,15 @@
 ;;
 (defun setup-calling-convention (arguments &key lambda-list
                                              debug-on
-                                             canonical-declares
-                                             cleavir-lambda-list
-                                             name-map)
+                                             rest-alloc
+                                             cleavir-lambda-list)
   (let ((setup (maybe-alloc-cc-setup lambda-list debug-on)))
     (let ((cc (initialize-calling-convention arguments
                                              setup
                                              :rewind t
                                              :lambda-list lambda-list
-                                             :canonical-declares canonical-declares
-                                             :cleavir-lambda-list cleavir-lambda-list
-                                             :name-map name-map)))
+                                             :rest-alloc rest-alloc
+                                             :cleavir-lambda-list cleavir-lambda-list)))
       (calling-convention-args.va-start cc)
       cc)))
 

@@ -34,7 +34,7 @@ lambda-list, environment.
 All code generation comes through here.   Return (llvm:function lambda-name)
 Could return more functions that provide lambda-list for swank for example"
   (setq *lambda-args-num* (1+ *lambda-args-num*))
-  (multiple-value-bind (cleavir-lambda-list new-body name-map)
+  (multiple-value-bind (cleavir-lambda-list new-body rest-alloc)
       (transform-lambda-parts lambda-list original-declares code)
     (let ((declares (core:canonicalize-declarations original-declares)))
       (cmp-log "generate-llvm-function-from-code%N")
@@ -67,9 +67,8 @@ Could return more functions that provide lambda-list for swank for example"
                           (callconv       (setup-calling-convention arguments
                                                                     :lambda-list lambda-list
                                                                     :debug-on core::*debug-bclasp*
-                                                                    :canonical-declares declares
                                                                     :cleavir-lambda-list cleavir-lambda-list
-                                                                    :name-map name-map)))
+                                                                    :rest-alloc rest-alloc)))
                      (calling-convention-maybe-push-invocation-history-frame callconv)
                      (let ((new-env (bclasp-compile-lambda-list-code fn-env callconv)))
                        (cmp-log "Created new register environment -> %s%N" new-env)

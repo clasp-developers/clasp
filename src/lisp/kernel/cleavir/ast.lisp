@@ -32,13 +32,17 @@
   ((%lambda-name :initarg :lambda-name :initform "lambda-ast" :reader lambda-name)
    (%original-lambda-list :initarg :original-lambda-list :initform nil :reader original-lambda-list)
    (%docstring :initarg :docstring :initform nil :reader docstring)
-   (%declares :initarg :declares :initform nil :reader declares)))
+   ;; We can avoid or dx-allocate the &rest list sometimes- controlled here,
+   ;; and set up from declarations in convert-form.lisp.
+   ;; NIL indicates the general case (i.e. full heap allocation).
+   (%rest-alloc :initarg :rest-alloc :initform nil :reader rest-alloc
+                     :type (member nil ignore dynamic-extent))))
 
 (cleavir-io:define-save-info named-function-ast
     (:lambda-name lambda-name)
   (:original-lambda-list original-lambda-list)
   (:docstring docstring)
-  (:declares declares))
+  (:rest-alloc rest-alloc))
 
 (defmethod cleavir-ast-graphviz::label ((ast named-function-ast))
   (with-output-to-string (s)
@@ -365,17 +369,21 @@
 (defclass bind-va-list-ast (cleavir-ast:ast)
   ((%lambda-list :initarg :lambda-list :reader cleavir-ast:lambda-list)
    (%va-list-ast :initarg :va-list :reader va-list-ast)
-   (%body-ast :initarg :body-ast :reader cleavir-ast:body-ast)))
+   (%body-ast :initarg :body-ast :reader cleavir-ast:body-ast)
+   ;; as for named-function-ast
+   (%rest-alloc :initarg :rest-alloc :reader rest-alloc)))
 
-(defun make-bind-va-list-ast (lambda-list va-list-ast body-ast &key origin (policy cleavir-ast:*policy*))
+(defun make-bind-va-list-ast (lambda-list va-list-ast body-ast rest-alloc
+                              &key origin (policy cleavir-ast:*policy*))
   (make-instance 'bind-va-list-ast
-    :origin origin :policy policy
+    :origin origin :policy policy :rest-alloc rest-alloc
     :va-list va-list-ast :body-ast body-ast :lambda-list lambda-list))
 
 (cleavir-io:define-save-info bind-va-list-ast
     (:lambda-list cleavir-ast:lambda-list)
   (:va-list va-list-ast)
-  (:body-ast cleavir-ast:body-ast))
+  (:body-ast cleavir-ast:body-ast)
+  (:rest-alloc rest-alloc))
 
 (defmethod cleavir-ast:children ((ast bind-va-list-ast))
   (list* (va-list-ast ast)

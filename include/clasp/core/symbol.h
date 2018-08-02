@@ -136,7 +136,7 @@ public:
   bool getReadOnly() const { return this->_IsConstant; };
 
   /*! Return true if the symbol is dynamic/special */
-CL_LISPIFY_NAME("core:specialp");
+CL_LISPIFY_NAME("ext:specialp");
 CL_DEFMETHOD   bool specialP() const { return this->_IsSpecial; };
 
   void setf_specialP(bool specialp) { this->_IsSpecial = specialp; };

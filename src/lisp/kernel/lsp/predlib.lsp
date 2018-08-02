@@ -86,7 +86,7 @@ by (documentation 'NAME 'type)."
     ;; FIXME: Use FORMAT to produce a default docstring. Maybe.
     `(eval-when (:compile-toplevel :load-toplevel :execute)
        ,@(si::expand-set-documentation name 'type doc)
-       (funcall #'(setf type-expander)
+       (funcall #'(setf ext:type-expander)
                 #'(lambda ,lambda-list
                     (declare (core:lambda-name ,name) ,@decls)
                     ,@(when doc (list doc))
@@ -291,7 +291,7 @@ fill-pointer, and is not adjustable."
 and is not adjustable."
   (if size `(simple-array bit (,size)) '(simple-array bit (*))))
 
-(deftype array-index ()
+(deftype ext:array-index ()
   '(integer 0 #.(1- array-dimension-limit)))
 
 ;;************************************************************
@@ -542,8 +542,8 @@ Returns T if X belongs to TYPE; NIL otherwise."
           (or (endp (cdr i)) (match-dimensions object (second i)))))
     (t
      (cond
-           ((type-expander tp)
-            (typep object (apply (type-expander tp) i)))
+           ((ext:type-expander tp)
+            (typep object (apply (ext:type-expander tp) i)))
 	   ((consp i)
 	    (error-type-specifier type))
 	   ((setq c (find-class type nil))
@@ -562,7 +562,7 @@ Returns T if X belongs to TYPE; NIL otherwise."
 (defun normalize-type (type &aux tp i fd)
   ;; Loops until the car of type has no DEFTYPE definition.
   (cond ((symbolp type)
-	 (if (setq fd (type-expander type))
+	 (if (setq fd (ext:type-expander type))
              (normalize-type (funcall fd))
              (values type nil)))
 	#+clos
@@ -571,7 +571,7 @@ Returns T if X belongs to TYPE; NIL otherwise."
 	 (error-type-specifier type))
 	((progn
 	   (setq tp (car type) i (cdr type))
-	   (setq fd (type-expander tp)))
+	   (setq fd (ext:type-expander tp)))
 	 (normalize-type (apply fd i)))
 	((and (eq tp 'INTEGER) (consp (cadr i)))
 	 (values tp (list (car i) (1- (caadr i)))))
@@ -579,13 +579,13 @@ Returns T if X belongs to TYPE; NIL otherwise."
 
 (defun expand-deftype (type)
   (cond ((symbolp type)
-	 (let ((fd (type-expander type)))
+	 (let ((fd (ext:type-expander type)))
 	   (if fd
 	       (expand-deftype (funcall fd))
 	       type)))
 	((and (consp type)
 	      (symbolp (first type)))
-	 (let ((fd (type-expander (first type))))
+	 (let ((fd (ext:type-expander (first type))))
 	   (if fd
 	       (expand-deftype (funcall fd (rest type)))
 	       type)))
@@ -1266,7 +1266,7 @@ if not possible."
 	((eq type 'T) -1)
 	((eq type 'NIL) 0)
         ((symbolp type)
-	 (let ((expander (type-expander type)))
+	 (let ((expander (ext:type-expander type)))
 	   (cond (expander
 		  (canonical-type (funcall expander)))
 		 ((find-built-in-tag type))
@@ -1309,7 +1309,7 @@ if not possible."
 			  (register-array-type `(SIMPLE-ARRAY ,@(rest type)))))
 	   ((COMPLEX-ARRAY SIMPLE-ARRAY) (register-array-type type))
 	   (FUNCTION (canonical-type 'FUNCTION))
-	   (t (let ((expander (type-expander (first type))))
+	   (t (let ((expander (ext:type-expander (first type))))
 		(if expander
 		    (canonical-type (apply expander (rest type)))
 		    (unless (assoc (first type) *elementary-types*)

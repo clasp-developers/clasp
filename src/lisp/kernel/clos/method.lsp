@@ -48,7 +48,7 @@
 in the generic function lambda-list to the generic function lambda-list"
   (when method-lambda-list
     (let* ((gf (fdefinition name))
-           (gf-lambda-list-all (core:function-lambda-list gf))
+           (gf-lambda-list-all (ext:function-lambda-list gf))
            (has-aok (member '&allow-other-keys gf-lambda-list-all))
            (gf-lambda-list (if has-aok
                                (butlast gf-lambda-list-all 1)

@@ -37,42 +37,6 @@ List_sp Argument::lambda_list() const {
   return ((this->_ArgTarget));
 };
 
-// Return true if the variable is declared dynamic extent
-CL_DOCSTRING("Return true if the variable is declared dynamic extent");
-CL_DEFUN bool core__declare_p(List_sp dspecs, T_sp decl, T_sp variable) {
-//  printf("%s:%d dspecs -> %s   variable -> %s\n", __FILE__, __LINE__, _rep_(dspecs).c_str(), _rep_(variable).c_str());
-  for ( auto dccur : dspecs ) {
-    T_sp d0cur = CONS_CAR(dccur);
-    T_sp dcur = oCar(d0cur);
-    if (dcur == decl) {
-      for ( auto vccur : gc::As<List_sp>(CONS_CDR(d0cur))) {
-        T_sp vcur = oCar(vccur);
-        if (vcur == variable) return true;
-      }
-    }
-  }
-  return false;
-}
-
-// Return true if the variable is declared dynamic extent
-CL_DOCSTRING("Return the type if the variable is declared with a type");
-CL_DEFUN T_sp core__declare_type_p(List_sp dspecs, T_sp variable) {
-//  printf("%s:%d dspecs -> %s   variable -> %s\n", __FILE__, __LINE__, _rep_(dspecs).c_str(), _rep_(variable).c_str());
-  for ( auto dccur : dspecs ) {
-    T_sp dcur = CONS_CAR(dccur);
-    if (oCar(dcur) == cl::_sym_type) {
-      List_sp type_rest = CONS_CDR(dcur);
-      T_sp type = oCar(type_rest);
-      for ( auto vccur : gc::As<List_sp>(oCdr(type_rest))) {
-        T_sp vcur = CONS_CAR(vccur);
-        if (vcur == variable) return type;
-      }
-    }
-  }
-  return _Nil<T_O>();
-}
-
-
 Symbol_sp Argument::symbol() const {
   return ((gc::As<Symbol_sp>(this->_ArgTarget)));
 };

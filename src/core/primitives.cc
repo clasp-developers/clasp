@@ -767,7 +767,7 @@ CL_DEFUN void core__gdb_inspect(String_sp msg, T_sp o) {
   core__invoke_internal_debugger(_Nil<core::T_O>());
 };
 
-CL_LISPIFY_NAME("CORE:specialp");
+CL_LISPIFY_NAME("EXT:specialp");
 CL_LAMBDA(specialp symbol);
 CL_DECLARE();
 CL_DOCSTRING("Set whether SYMBOL is globally known to be special. Use cautiously.");
@@ -2051,11 +2051,11 @@ namespace core {
 
 SYMBOL_EXPORT_SC_(CorePkg,generic_function_lambda_lists);
 
-
+CL_LISPIFY_NAME("ext:function-lambda-list");
 CL_LAMBDA(function);
 CL_DECLARE();
 CL_DOCSTRING("Return the lambda-list of a function");
-CL_DEFUN T_mv core__function_lambda_list(T_sp obj) {
+CL_DEFUN T_mv ext__function_lambda_list(T_sp obj) {
   if (obj.nilp()) {
     return Values(_Nil<T_O>(),_Nil<T_O>());
   } else if (Symbol_sp sym = obj.asOrNull<Symbol_O>()) {
@@ -2063,7 +2063,7 @@ CL_DEFUN T_mv core__function_lambda_list(T_sp obj) {
       return Values(_Nil<T_O>(),_Nil<T_O>());
     }
     Function_sp fn = sym->symbolFunction();
-    return Values(core__function_lambda_list(fn),_lisp->_true());
+    return Values(ext__function_lambda_list(fn),_lisp->_true());
   } else if (gc::IsA<FuncallableInstance_sp>(obj)) {
     FuncallableInstance_sp iobj = gc::As_unsafe<FuncallableInstance_sp>(obj);
     if (iobj->isgf()) {
