@@ -639,6 +639,9 @@
 (defun irc-sub (lhs rhs &optional (label ""))
   (llvm-sys:create-sub *irbuilder* lhs rhs label nil nil))
 
+(defun irc-srem (lhs rhs &optional (label ""))
+  (llvm-sys:create-srem *irbuilder* lhs rhs label))
+
 (defun irc-load (source &optional (label ""))
   (llvm-sys:create-load-value-twine *irbuilder* source label))
 

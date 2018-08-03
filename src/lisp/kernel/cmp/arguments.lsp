@@ -140,34 +140,60 @@
     (let* ((entry-saw-aok (irc-size_t (if lambda-list-allow-other-keys 2 0)))
 	   (entry-bad-kw-idx (irc-size_t 65536))
 	   (aok-val (irc-literal :allow-other-keys "aok"))
+           ;; main processing loop
 	   (loop-kw-args-block (cmp:irc-basic-block-create "loop-kw-args"))
+           ;; exit point
 	   (kw-exit-block (cmp:irc-basic-block-create "kw-exit-block"))
 	   (loop-cont-block (cmp:irc-basic-block-create "loop-cont"))
-	   (kw-start-block (cmp:irc-basic-block-create "kw-begin-block"))
+           ;; where we're about to be
+	   (kw-start-block (cmp:irc-basic-block-create "kw-start-block"))
+           ;; halfway through the pre-loop checks
+           (kw-start2-block (cmp:irc-basic-block-create "kw-start2-block"))
+           ;; block for signaling an odd-keywords error
+           (odd-kw-block (cmp:irc-basic-block-create "odd-kw-block"))
 	   (entry-arg-idx (cmp:irc-load arg-idx-alloca "arg-idx")))
+      ;; check if there are any arguments left - if not, we're done
       (cmp:irc-branch-to-and-begin-block kw-start-block)
-      (let ((entry-arg-idx_lt_nargs (cmp:irc-icmp-slt entry-arg-idx (cmp:calling-convention-nargs args))) )
-	(cmp:irc-cond-br entry-arg-idx_lt_nargs loop-kw-args-block kw-exit-block))
+      (let ((entry-arg-idx_lt_nargs (cmp:irc-icmp-slt entry-arg-idx (cmp:calling-convention-nargs args))))
+	(cmp:irc-cond-br entry-arg-idx_lt_nargs kw-start2-block kw-exit-block))
+      ;; check if there are an even number of arguments left - if not, error
+      (cmp:irc-begin-block kw-start2-block)
+      (let* ((sub (irc-sub entry-arg-idx (cmp:calling-convention-nargs args))) ; get # remaining
+             (rem (irc-srem sub (cmp:jit-constant-size_t 2))) ; get parity
+             (evenp (cmp:irc-icmp-eq rem (cmp:jit-constant-size_t 0)))) ; is it zero (even?)
+        ;; if so, continue on, else, sadness
+        (cmp:irc-cond-br evenp loop-kw-args-block odd-kw-block))
+      ;; if there were an odd number of kws, err
+      (cmp:irc-begin-block odd-kw-block)
+      (irc-intrinsic-invoke-if-landing-pad-or-call "cc_oddKeywordException"
+                                                   (list *current-function-description*))
+      (irc-unreachable)
+      ;; Really start processing
       (cmp:irc-begin-block loop-kw-args-block)
       (let* ((phi-saw-aok (cmp:irc-phi cmp:%size_t% 2 "phi-saw-aok"))
 	     (phi-arg-idx (cmp:irc-phi cmp:%size_t% 2 "phi-reg-arg-idx"))
 	     (phi-bad-kw-idx (cmp:irc-phi cmp:%size_t% 2 "phi-bad-kw-idx")) )
-	(cmp:irc-phi-add-incoming phi-saw-aok entry-saw-aok kw-start-block)
-	(cmp:irc-phi-add-incoming phi-arg-idx entry-arg-idx kw-start-block)
-	(cmp:irc-phi-add-incoming phi-bad-kw-idx entry-bad-kw-idx kw-start-block)
+	(cmp:irc-phi-add-incoming phi-saw-aok entry-saw-aok kw-start2-block)
+	(cmp:irc-phi-add-incoming phi-arg-idx entry-arg-idx kw-start2-block)
+	(cmp:irc-phi-add-incoming phi-bad-kw-idx entry-bad-kw-idx kw-start2-block)
 	(cmp:irc-low-level-trace :arguments)
+        ;; arg-val will have the keyword, and kw-arg-val its value.
 	(let* ((arg-val (cmp:calling-convention-args.va-arg args))
                (arg-idx+1 (cmp:irc-add phi-arg-idx (cmp:jit-constant-size_t 1)))
                (kw-arg-val (cmp:calling-convention-args.va-arg args)))
-;;; FIXME: This must INVOKE if the function has cleanup forms.
+          ;; Check that arg-val is a symbol
 	  (irc-intrinsic-invoke-if-landing-pad-or-call "cc_ifNotKeywordException" (list arg-val phi-arg-idx (cmp:calling-convention-va-list* args) *current-function-description*))
-	  (let* ((eq-aok-val-and-arg-val (cmp:irc-trunc (cmp:irc-icmp-eq aok-val arg-val) cmp:%i1%)) ; compare arg-val to a-o-k
+	  (let* (;; compare whether the keyword is :allow-other-keys
+                 (eq-aok-val-and-arg-val (cmp:irc-trunc (cmp:irc-icmp-eq aok-val arg-val) cmp:%i1%))
 		 (aok-block (cmp:irc-basic-block-create "aok-block"))
 		 (possible-kw-block (cmp:irc-basic-block-create "possible-kw-block"))
 		 (advance-arg-idx-block (cmp:irc-basic-block-create "advance-arg-idx-block"))
 		 (bad-kw-block (cmp:irc-basic-block-create "bad-kw-block"))
 		 (good-kw-block (cmp:irc-basic-block-create "good-kw-block")))
+            ;; if it is :allow-other-keys, go to aok-block, else possible-kw-block.
 	    (cmp:irc-cond-br eq-aok-val-and-arg-val aok-block possible-kw-block)
+            ;; aok-block updates saw-aok and then jumps to advanced-arg-idx-block
+            ;; FIXME: This might break &key allow-other-keys, weird as that is to do?
 	    (cmp:irc-begin-block aok-block)
 	    (let* ((loop-saw-aok (irc-intrinsic-call "cc_allowOtherKeywords" (list phi-saw-aok kw-arg-val))))
 	      (cmp:irc-br advance-arg-idx-block)
@@ -177,9 +203,7 @@
 		    (key (car cur-key-arg) (car cur-key-arg))
 		    (target (caddr cur-key-arg) (caddr cur-key-arg))
 		    (supplied (cadddr cur-key-arg) (cadddr cur-key-arg))
-		    (idx 0 (1+ idx))
-		    #+(or)(next-kw-block (cmp:irc-basic-block-create "next-kw-block")
-                                         (cmp:irc-basic-block-create "next-kw-block")) )
+		    (idx 0 (1+ idx)))
 		   ((endp cur-key-arg))
 		(cmp:irc-branch-to-and-begin-block (cmp:irc-basic-block-create (core:bformat nil "kw-%s-test" key)))
 		(cmp:irc-low-level-trace :arguments)
@@ -229,7 +253,6 @@
 		    (cmp:irc-phi-add-incoming phi-arg-idx loop-arg-idx advance-arg-idx-block)
 		    (cmp:irc-cond-br loop-arg-idx_lt_nargs loop-kw-args-block loop-cont-block)
 		    (cmp:irc-begin-block loop-cont-block)
-                    ;; FIXME    This must be an INVOKE if there is a cleanup clause in the function
 		    (irc-intrinsic-invoke-if-landing-pad-or-call "cc_ifBadKeywordArgumentException" (list phi-arg-bad-good-aok phi.aok-bad-good.bad-kw-idx arg-val *current-function-description*))
 		    (let ((kw-done-block (cmp:irc-basic-block-create "kw-done-block")))
 		      (cmp:irc-branch-to-and-begin-block kw-done-block)
