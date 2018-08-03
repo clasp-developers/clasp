@@ -179,7 +179,6 @@
 	(cmp:irc-low-level-trace :arguments)
         ;; arg-val will have the keyword, and kw-arg-val its value.
 	(let* ((arg-val (cmp:calling-convention-args.va-arg args))
-               (arg-idx+1 (cmp:irc-add phi-arg-idx (cmp:jit-constant-size_t 1)))
                (kw-arg-val (cmp:calling-convention-args.va-arg args)))
           ;; Check that arg-val is a symbol
 	  (irc-intrinsic-invoke-if-landing-pad-or-call "cc_ifNotKeywordException" (list arg-val phi-arg-idx (cmp:calling-convention-va-list* args) *current-function-description*))
@@ -225,8 +224,8 @@
                     (irc-store true-val supplied-ref)
                     (cmp:irc-br good-kw-block)
                     (cmp:irc-begin-block next-kw-block))))
-	      ;; We fell through all the keyword tests - this might be a unparameterized keyword
-	      (cmp:irc-branch-to-and-begin-block bad-kw-block) ; fall through to here if no kw recognized
+	      ;; We fell through all the keyword tests - this is an unknown keyword
+	      (cmp:irc-branch-to-and-begin-block bad-kw-block)
 	      (let ((loop-bad-kw-idx (irc-intrinsic-call "cc_trackFirstUnexpectedKeyword"
                                                          (list phi-bad-kw-idx phi-arg-idx))))
 		(cmp:irc-low-level-trace :arguments)
@@ -246,22 +245,22 @@
 		  (cmp:irc-phi-add-incoming phi.aok-bad-good.bad-kw-idx loop-bad-kw-idx bad-kw-block)
 		  (cmp:irc-phi-add-incoming phi.aok-bad-good.bad-kw-idx phi-bad-kw-idx good-kw-block)
 		  (cmp:irc-low-level-trace :arguments)
+                  ;; Advance arg-idx and check if there are any more to process.
 		  (let* ((loop-arg-idx (cmp:irc-add phi-arg-idx (irc-size_t 2)))
 			 (loop-arg-idx_lt_nargs (cmp:irc-icmp-slt loop-arg-idx (cmp:calling-convention-nargs args))))
 		    (cmp:irc-phi-add-incoming phi-saw-aok phi-arg-bad-good-aok advance-arg-idx-block)
 		    (cmp:irc-phi-add-incoming phi-bad-kw-idx phi.aok-bad-good.bad-kw-idx advance-arg-idx-block)
 		    (cmp:irc-phi-add-incoming phi-arg-idx loop-arg-idx advance-arg-idx-block)
+                    ;; jump back up to the loop if there are more- otherwise continue to cont-block
 		    (cmp:irc-cond-br loop-arg-idx_lt_nargs loop-kw-args-block loop-cont-block)
 		    (cmp:irc-begin-block loop-cont-block)
-		    (irc-intrinsic-invoke-if-landing-pad-or-call "cc_ifBadKeywordArgumentException" (list phi-arg-bad-good-aok phi.aok-bad-good.bad-kw-idx arg-val *current-function-description*))
-		    (let ((kw-done-block (cmp:irc-basic-block-create "kw-done-block")))
-		      (cmp:irc-branch-to-and-begin-block kw-done-block)
-		      (cmp:irc-branch-to-and-begin-block kw-exit-block)
-		      (let ((phi-arg-idx-final (cmp:irc-phi cmp:%size_t% 2 "phi-arg-idx-final")))
-			(cmp:irc-phi-add-incoming phi-arg-idx-final entry-arg-idx kw-start-block)
-			(cmp:irc-phi-add-incoming phi-arg-idx-final loop-arg-idx kw-done-block)
-			(cmp:irc-low-level-trace :arguments)
-			phi-arg-idx-final))))))))))))
+                    ;; If we've seen a bad keyword, signal an error.
+                    ;; FIXME: Currently just uses the last keyword. Wrong.
+		    (irc-intrinsic-invoke-if-landing-pad-or-call
+                     "cc_ifBadKeywordArgumentException"
+                     (list phi-arg-bad-good-aok phi.aok-bad-good.bad-kw-idx arg-val
+                           *current-function-description*))
+                    (irc-branch-to-and-begin-block kw-exit-block)))))))))))
 
 (defun compile-general-lambda-list-code (reqargs 
 					 optargs 
