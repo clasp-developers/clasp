@@ -1031,8 +1031,11 @@ def build(bld):
 
     # Build the fork client
 
-    bld(features='c cprogram', source="src/fork-server/fork-client.c", target="fork-client")
-    
+    bld(features='c cprogram', \
+        source="src/fork-server/fork-client.c", \
+        target="fork-client", \
+        install_path="${PREFIX}/bin")
+
     # Always build the C++ code
     intrinsics_bitcode_node = bld.path.find_or_declare(variant.inline_bitcode_archive_name("intrinsics"))
     builtins_bitcode_node = bld.path.find_or_declare(variant.inline_bitcode_archive_name("builtins"))
