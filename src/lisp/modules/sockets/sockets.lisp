@@ -14,16 +14,16 @@
 
 #+clasp
 (export '(
-	  GET-HOST-BY-NAME GET-HOST-BY-ADDRESS
-	  SOCKET-BIND SOCKET-ACCEPT SOCKET-CONNECT
-	  SOCKET-PEERNAME SOCKET-NAME SOCKET-LISTEN
-	  SOCKET-RECEIVE SOCKET-CLOSE SOCKET-MAKE-STREAM
-	  GET-PROTOCOL-BY-NAME MAKE-INET-ADDRESS LOCAL-SOCKET
-	  SOCKET INET-SOCKET SOCKET-FILE-DESCRIPTOR 
-	  SOCKET-FAMILY SOCKET-PROTOCOL SOCKET-TYPE
-	  SOCKET-ERROR NAME-SERVICE-ERROR NON-BLOCKING-MODE
-	  HOST-ENT-NAME HOST-ENT-ALIASES HOST-ENT-ADDRESS-TYPE
-	  HOST-ENT-ADDRESSES HOST-ENT HOST-ENT-ADDRESS SOCKET-SEND))
+          GET-HOST-BY-NAME GET-HOST-BY-ADDRESS
+          SOCKET-BIND SOCKET-ACCEPT SOCKET-CONNECT
+          SOCKET-PEERNAME SOCKET-NAME SOCKET-LISTEN
+          SOCKET-RECEIVE SOCKET-CLOSE SOCKET-MAKE-STREAM
+          GET-PROTOCOL-BY-NAME MAKE-INET-ADDRESS LOCAL-SOCKET
+          SOCKET INET-SOCKET SOCKET-FILE-DESCRIPTOR 
+          SOCKET-FAMILY SOCKET-PROTOCOL SOCKET-TYPE
+          SOCKET-ERROR NAME-SERVICE-ERROR NON-BLOCKING-MODE
+          HOST-ENT-NAME HOST-ENT-ALIASES HOST-ENT-ADDRESS-TYPE
+          HOST-ENT-ADDRESSES HOST-ENT HOST-ENT-ADDRESS SOCKET-SEND))
 
 
 
@@ -63,7 +63,7 @@ containing the whole rest of the given `string', if any."
   ((name :initarg :name :accessor host-ent-name)
    (aliases :initarg :aliases :accessor host-ent-aliases)
    (address-type :initarg :type :accessor host-ent-address-type)
-					; presently always AF_INET
+                                        ; presently always AF_INET
    (addresses :initarg :addresses :accessor host-ent-addresses))
   (:documentation ""))
 
@@ -84,12 +84,12 @@ weird stuff - see gethostbyname(3) for grisly details."
                                               #'(setf host-ent-aliases)
                                               #'(setf host-ent-address-type)
                                               #'(setf host-ent-addresses))
-	host-ent
-	(name-service-error "get-host-by-name"))))
+        host-ent
+        (name-service-error "get-host-by-name"))))
 
 (defun get-host-by-address (address)
   (assert (and (typep address 'vector)
-	       (= (length address) 4)))
+               (= (length address) 4)))
   (let ((host-ent (make-instance 'host-ent)))
     (if (sockets-internal:ll-get-host-by-address address host-ent
                                                  #'(setf host-ent-name)
@@ -106,19 +106,19 @@ weird stuff - see gethostbyname(3) for grisly details."
 
 (defclass socket ()
   ((file-descriptor :initarg :descriptor
-		    :reader socket-file-descriptor)
+                    :reader socket-file-descriptor)
    (family :initform (error "No socket family")
-	   :reader socket-family)
+           :reader socket-family)
    (protocol :initarg :protocol
-	     :reader socket-protocol
-	     :documentation "Protocol used by the socket. If a
+             :reader socket-protocol
+             :documentation "Protocol used by the socket. If a
 keyword, the symbol-name of the keyword will be passed to
 GET-PROTOCOL-BY-NAME downcased, and the returned value used as
 protocol. Other values are used as-is.")
    (type  :initarg :type
-	  :reader socket-type
-	  :initform :stream
-	  :documentation "Type of the socket: :STREAM or :DATAGRAM.")
+          :reader socket-type
+          :initform :stream
+          :documentation "Type of the socket: :STREAM or :DATAGRAM.")
    (stream)
 )
   (:documentation "Common base class of all sockets, not meant to be
@@ -131,24 +131,24 @@ directly instantiated."))
                            (princ (slot-value object 'file-descriptor) stream)))
 
 (defmethod shared-initialize :after ((socket socket) slot-names
-				     &key protocol type
-				     &allow-other-keys)
+                                     &key protocol type
+                                     &allow-other-keys)
   (let* ((proto-num
-	  (cond ((and protocol (keywordp protocol))
-		 (get-protocol-by-name (string-downcase (symbol-name protocol))))
-		(protocol protocol)
-		(t 0)))
-	 (fd (or (and (slot-boundp socket 'file-descriptor)
-		      (socket-file-descriptor socket))
-		 (ff-socket (socket-family socket)
-			    (ecase (or type
-				       (socket-type socket))
-			      ((:datagram) +sock-dgram+)
-			      ((:stream) +sock-stream+))
-			    proto-num))))
+          (cond ((and protocol (keywordp protocol))
+                 (get-protocol-by-name (string-downcase (symbol-name protocol))))
+                (protocol protocol)
+                (t 0)))
+         (fd (or (and (slot-boundp socket 'file-descriptor)
+                      (socket-file-descriptor socket))
+                 (ff-socket (socket-family socket)
+                            (ecase (or type
+                                       (socket-type socket))
+                              ((:datagram) +sock-dgram+)
+                              ((:stream) +sock-stream+))
+                            proto-num))))
     (if (= fd -1) (socket-error "socket"))
     (setf (slot-value socket 'file-descriptor) fd
-	  (slot-value socket 'protocol) proto-num)
+          (slot-value socket 'protocol) proto-num)
     #+ ignore
     (sb-ext:finalize socket (lambda () (sockint::close fd)))))
 
@@ -183,8 +183,8 @@ defines the maximum length that the queue of pending connections may
 grow to before new connection attempts are refused.  See also listen(2)"))
 
 (defgeneric socket-receive (socket buffer length
-			    &key
-			    oob peek waitall element-type)
+                            &key
+                            oob peek waitall element-type)
   (:documentation "Read LENGTH octets from SOCKET into BUFFER (or a freshly-consed buffer if
 NIL), using recvfrom(2).  If LENGTH is NIL, the length of BUFFER is
 used, so at least one of these two arguments must be non-NIL.  If
@@ -195,9 +195,9 @@ so that the actual packet length is returned even if the buffer was too
 small"))
 
 (defgeneric socket-send (socket buffer length 
-			 &key 
+                         &key 
                          address external-format oob eor dontroute dontwait 
-			 nosignal confirm more)
+                         nosignal confirm more)
   (:documentation "Send length octets from buffer into socket, using sendto(2).
 If buffer is a string, it will converted to octets according to external-format&
 If length is nil, the length of the octet buffer is used. The format of address
@@ -259,19 +259,19 @@ SB-SYS:MAKE-FD-STREAM."))
                (close (two-way-stream-output-stream stream))
                #-threads
                (close stream)) ;; closes fd indirectly
-	     (slot-makunbound socket 'stream))
-	    ((= (socket-close-low-level socket) -1)
-	     (socket-error "close")))
+             (slot-makunbound socket 'stream))
+            ((= (socket-close-low-level socket) -1)
+             (socket-error "close")))
       (setf (slot-value socket 'file-descriptor) -1))))
 
 
 ;; FIXME: How bad is manipulating fillp directly?
 (defmethod socket-receive ((socket socket) buffer length
-			   &key oob peek waitall element-type)
+                           &key oob peek waitall element-type)
   (unless (or buffer length) (error "You have to supply either buffer or length!"))
-  (let ((buffer (or buffer (make-array length :element-type element-type)))
-	(length (or length (length buffer)))
-	(fd (socket-file-descriptor socket)))
+  (let ((buffer (or buffer (make-array length :element-type element-type :fill-pointer 0)))
+        (length (or length (length buffer)))
+        (fd (socket-file-descriptor socket)))
 
     (multiple-value-bind (len-recv errno)
         (ll-socket-receive fd buffer length oob peek waitall)
@@ -323,67 +323,67 @@ Examples:
 (defmethod socket-bind ((socket inet-socket) &rest address)
   (assert (= 2 (length address)) (address) "Socket-bind needs three parameters for inet sockets.")
   (let ((ip (first address))
-	(port (second address)))
+        (port (second address)))
     (if (= -1 (ll-socket-bind-inet-socket
                port (aref ip 0) (aref ip 1) (aref ip 2) (aref ip 3)
                (socket-file-descriptor socket)))
-	(socket-error "bind"))))
+        (socket-error "bind"))))
 
 (defmethod socket-accept ((socket inet-socket))
   (let ((sfd (socket-file-descriptor socket)))
     (multiple-value-bind (fd vector port)
         (ll-socket-accept-inet-socket sfd)
       (cond
-	((= fd -1)
-	 (socket-error "accept"))
-	(t
-	 (values
-	   (make-instance (class-of socket)
-			  :type (socket-type socket)
-			  :protocol (socket-protocol socket)
-			  :descriptor fd)
-	   vector
-	   port))))))
+        ((= fd -1)
+         (socket-error "accept"))
+        (t
+         (values
+           (make-instance (class-of socket)
+                          :type (socket-type socket)
+                          :protocol (socket-protocol socket)
+                          :descriptor fd)
+           vector
+           port))))))
 
 (defmethod socket-connect ((socket inet-socket) &rest address)
   (let ((ip (first address))
-	(port (second address)))
+        (port (second address)))
     (if (= -1
            (ll-socket-connect-inet-socket port (aref ip 0) (aref ip 1) (aref ip 2) (aref ip 3)
                                           (socket-file-descriptor socket)))
-	(socket-error "connect"))))
+        (socket-error "connect"))))
 
 (defmethod socket-peername ((socket inet-socket))
   (let* ((vector (make-array 4))
-	 (fd (socket-file-descriptor socket))
-	 (port (ll-socket-peername-inet-socket fd vector)))
+         (fd (socket-file-descriptor socket))
+         (port (ll-socket-peername-inet-socket fd vector)))
     (if (>= port 0)
-	(values vector port)
-	(socket-error "getpeername"))))
+        (values vector port)
+        (socket-error "getpeername"))))
 
 (defmethod socket-name ((socket inet-socket))
   (let* ((vector (make-array 4))
-	 (fd (socket-file-descriptor socket))
-	 (port (ll-socket-name fd vector)))
+         (fd (socket-file-descriptor socket))
+         (port (ll-socket-name fd vector)))
     (if (>= port 0)
-	(values vector port)
-	(socket-error "getsockname"))))
+        (values vector port)
+        (socket-error "getsockname"))))
 
 
 
 (defmethod socket-send ((socket socket) buffer length
-			   &key address external-format oob eor dontroute dontwait nosignal confirm more)
+                           &key address external-format oob eor dontroute dontwait nosignal confirm more)
   (declare (ignore external-format more))
   (assert (or (stringp buffer)
-		(typep buffer 'vector)))
+                (typep buffer 'vector)))
   (let (;eh, here goes string->octet convertion... 
-	;When will ecl support Unicode?
-	(length (or length (length buffer)))
-	(fd (socket-file-descriptor socket)))
+        ;When will ecl support Unicode?
+        (length (or length (length buffer)))
+        (fd (socket-file-descriptor socket)))
     (let ((len-sent
-	   (if address
-	       (progn
-		 (assert (= 2 (length address)))
+           (if address
+               (progn
+                 (assert (= 2 (length address)))
                  (ll-socket-send-address fd buffer length (second address)
                                          (aref (first address) 0) (aref (first address) 1)
                                          (aref (first address) 2) (aref (first address) 3)
@@ -391,8 +391,8 @@ Examples:
                (ll-socket-send-no-address fd buffer length
                                           oob eor dontroute dontwait nosignal confirm))))
       (if (= len-sent -1)
-	  (socket-error "send")
-	  len-sent))))
+          (socket-error "send")
+          len-sent))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -410,11 +410,11 @@ also known as unix-domain sockets."))
 (defmethod socket-bind ((socket local-socket) &rest address)
   (assert (= 1 (length address)) (address) "Socket-bind needs two parameters for local sockets.")
   (let ((name (first address))
-	(fd (socket-file-descriptor socket))
-	(family (socket-family socket)))
+        (fd (socket-file-descriptor socket))
+        (family (socket-family socket)))
     (if (= -1
            (ll-socket-bind-local-socket fd name family))
-	(socket-error "bind"))))
+        (socket-error "bind"))))
 
 (defmethod socket-accept ((socket local-socket))
   (multiple-value-bind (fd name)
@@ -424,27 +424,27 @@ also known as unix-domain sockets."))
        (socket-error "accept"))
       (t
        (values
-	(make-instance (class-of socket)
-		       :type (socket-type socket)
-		       :protocol (socket-protocol socket)
-		       :descriptor fd)
-	name)))))
+        (make-instance (class-of socket)
+                       :type (socket-type socket)
+                       :protocol (socket-protocol socket)
+                       :descriptor fd)
+        name)))))
 
 (defmethod socket-connect ((socket local-socket) &rest address)
   (assert (= 1 (length address)) (address) "Socket-connect needs two parameters for local sockets.")
   (let ((path (first address))
-	(fd (socket-file-descriptor socket))
-	(family (socket-family socket)))
+        (fd (socket-file-descriptor socket))
+        (family (socket-family socket)))
     (if (= -1
            (ll-socket-connect-local-socket fd family path))
-	(socket-error "connect"))))
+        (socket-error "connect"))))
 
 (defmethod socket-peername ((socket local-socket))
   (let* ((fd (socket-file-descriptor socket))
-	 (peer (ll-socket-peername-local-socket fd)))
+         (peer (ll-socket-peername-local-socket fd)))
     (if peer
-	peer
-	(socket-error "getpeername"))))
+        peer
+        (socket-error "getpeername"))))
 
 ) ;#-:wsock
 
@@ -468,11 +468,11 @@ also known as unix-domain sockets."))
 
 (defmethod (setf non-blocking-mode) (non-blocking-p (socket socket))
   (let ((fd (socket-file-descriptor socket))
-	(nblock (if non-blocking-p 1 0)))
+        (nblock (if non-blocking-p 1 0)))
     (if (= -1 (ll-setf-non-blocking-mode fd nblock))
-	(socket-error #-:wsock "fcntl" )
-	#-:wsock non-blocking-p
-	)))
+        (socket-error #-:wsock "fcntl" )
+        #-:wsock non-blocking-p
+        )))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -492,11 +492,11 @@ also known as unix-domain sockets."))
                             (name "FD-STREAM"))
   (assert (stringp name) (name) "name must be a string.")
   (let* ((smm-mode (ecase mode
-		       (:input +clasp-stream-mode-input+)
-		       (:output +clasp-stream-mode-output+)
-		       (:input-output +clasp-stream-mode-io+)
-		       ))
-	 (external-format (unless (subtypep element-type 'integer) external-format))
+                       (:input +clasp-stream-mode-input+)
+                       (:output +clasp-stream-mode-output+)
+                       (:input-output +clasp-stream-mode-io+)
+                       ))
+         (external-format (unless (subtypep element-type 'integer) external-format))
          (stream (ll-make-stream-from-fd name fd smm-mode element-type external-format)))
     (when buffering
       (si::set-buffering-mode stream buffering))
@@ -528,29 +528,29 @@ also known as unix-domain sockets."))
                               :buffering buffering
                               :element-type element-type
                               :external-format external-format))
-	(output
-	 (make-stream-from-fd fd #-wsock :output 
+        (output
+         (make-stream-from-fd fd #-wsock :output 
                               :buffering buffering
                               :element-type element-type
                               :external-format external-format))
-	(t
-	 (error "SOCKET-MAKE-STREAM: at least one of :INPUT or :OUTPUT has to be true."))))
+        (t
+         (error "SOCKET-MAKE-STREAM: at least one of :INPUT or :OUTPUT has to be true."))))
 
 (defmethod socket-make-stream ((socket socket)
-			       &key (input nil input-p)
+                               &key (input nil input-p)
                                (output nil output-p)
-			       (buffering :full)
+                               (buffering :full)
                                (element-type 'base-char)
                                (external-format :default))
   (let ((stream (and (slot-boundp socket 'stream)
-		     (slot-value socket 'stream))))
+                     (slot-value socket 'stream))))
     (unless stream
       ;; Complicated default logic for compatibility with previous releases
       ;; should disappear soon. (FIXME!)
       (unless (or input-p output-p)
-	(setf input t output t))
+        (setf input t output t))
       (setf stream (socket-make-stream-inner (socket-file-descriptor socket)
-					     input output buffering element-type
+                                             input output buffering element-type
                                              external-format))
       (setf (slot-value socket 'stream) stream)
       #+ ignore
@@ -585,7 +585,7 @@ also known as unix-domain sockets."))
                (format s "Socket error in \"~A\": ~A (~A)"
                        (socket-error-syscall c)
                        (or (socket-error-symbol c) (socket-error-errno c))
-		       #-:wsock
+                       #-:wsock
                        (ll-strerror num)))))
   (:documentation "Common base class of socket related conditions."))
 
@@ -640,22 +640,22 @@ GET-NAME-SERVICE-ERRNO")
   (if (= *name-service-errno* +NETDB-INTERNAL+)
       (socket-error where)
     (let ((condition
-	   (condition-for-name-service-errno *name-service-errno*)))
+           (condition-for-name-service-errno *name-service-errno*)))
       (error condition :errno *name-service-errno* :syscall where))))
 
 (define-condition name-service-error (condition)
   ((errno :initform nil
-	  :initarg :errno
-	  :reader name-service-error-errno)
+          :initarg :errno
+          :reader name-service-error-errno)
    (symbol :initform nil :initarg :symbol :reader name-service-error-symbol)
    (syscall :initform "an unknown location" :initarg :syscall :reader name-service-error-syscall))
   (:report (lambda (c s)
-	     (let ((num (name-service-error-errno c)))
-	       (format s "Name service error in \"~A\": ~A (~A)"
-		       (name-service-error-syscall c)
-		       (or (name-service-error-symbol c)
-			   (name-service-error-errno c))
-		       (get-name-service-error-message num))))))
+             (let ((num (name-service-error-errno c)))
+               (format s "Name service error in \"~A\": ~A (~A)"
+                       (name-service-error-syscall c)
+                       (or (name-service-error-symbol c)
+                           (name-service-error-errno c))
+                       (get-name-service-error-message num))))))
 
 (defmacro define-name-service-condition (symbol name)
   `(let ()
@@ -694,72 +694,72 @@ GET-NAME-SERVICE-ERRNO")
 (defun get-sockopt-int (fd level const)
   (let ((ret (sockets-internal:ll-get-sockopt-int fd level const)))
     (if ret
-	ret
-	(error "Sockopt error: ~A" (ll-strerror-errno)))))
+        ret
+        (error "Sockopt error: ~A" (ll-strerror-errno)))))
 
 (defun get-sockopt-bool (fd level const)
   (let ((ret (sockets-internal:ll-get-sockopt-bool fd level const)))
     (if ret
-	(/= ret 0)
-	(error "Sockopt error: ~A" (ll-strerror-errno)))))
+        (/= ret 0)
+        (error "Sockopt error: ~A" (ll-strerror-errno)))))
 
 
 #-wsock
 (defun get-sockopt-timeval (fd level const)
   (let ((ret (sockets-internal:ll-get-sockopt-timeval fd level const)))
     (if ret
-	ret
-	(error "Sockopt error: ~A" (ll-strerror-errno)))))
+        ret
+        (error "Sockopt error: ~A" (ll-strerror-errno)))))
 
 (defun get-sockopt-linger (fd level const)
   (let ((ret (sockets-internal:ll-get-sockopt-linger fd level const)))
     (if ret
-	ret
-	(error "Sockopt error: ~A" (ll-strerror-errno)))))
+        ret
+        (error "Sockopt error: ~A" (ll-strerror-errno)))))
 
 (defun set-sockopt-int (fd level const value)
   (let ((ret (ll-set-sockopt-int fd level const value)))
     (if ret
-	value
-	(error "Sockopt error: ~A" (ll-strerror-errno)))))
+        value
+        (error "Sockopt error: ~A" (ll-strerror-errno)))))
 
 (defun set-sockopt-bool (fd level const value)
   (let ((ret (ll-set-sockopt-bool fd level const value)))
     (if ret
-	value
-	(error "Sockopt error: ~A" (ll-strerror-errno)))))
+        value
+        (error "Sockopt error: ~A" (ll-strerror-errno)))))
 
 #-wsock
 (defun set-sockopt-timeval (fd level const value)
   (let ((ret (ll-set-sockopt-timeval fd level const value)))
     (if ret
-	value
-	(error "Sockopt error: ~A" (ll-strerror-errno)))))
+        value
+        (error "Sockopt error: ~A" (ll-strerror-errno)))))
 
 
 (defun set-sockopt-linger (fd level const value)
   (let ((ret (ll-set-sockopt-linger fd level const value)))
     (if ret
-	value
-	(error "Sockopt error: ~A" (ll-strerror-errno)))))
+        value
+        (error "Sockopt error: ~A" (ll-strerror-errno)))))
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (defmacro define-sockopt (name c-level c-const type &optional (read-only nil))
     `(progn
        (export ',name)
        (defun ,name (socket)
-	 (,(intern (format nil "GET-SOCKOPT-~A" type))
-	   (socket-file-descriptor socket)
-	   ,c-level
-	   ,c-const
-	   ))
+         (,(intern (format nil "GET-SOCKOPT-~A" type))
+           (socket-file-descriptor socket)
+           ,c-level
+           ,c-const
+           ))
        ,@(unless read-only
-	   `((defun (setf ,name) (value socket)
-	       (,(intern (format nil "SET-SOCKOPT-~A" type))
-		 (socket-file-descriptor socket)
-		 ,c-level
-		 ,c-const
-		 value)))))))
+           `((defun (setf ,name) (value socket)
+               (,(intern (format nil "SET-SOCKOPT-~A" type))
+                 (socket-file-descriptor socket)
+                 ,c-level
+                 ,c-const
+                 value)))))))
 
 (define-sockopt sockopt-type sockets-internal:+SOL-SOCKET+ sockets-internal:+SO-TYPE+ int t)
 (define-sockopt sockopt-receive-buffer sockets-internal:+SOL-SOCKET+ sockets-internal:+SO-RCVBUF+ int)

@@ -822,7 +822,7 @@ jump to blocks within this tagbody."
     (multiple-value-bind (declares code docstring specials)
         (process-declarations body t)
       (let ((canonical-declares (core:canonicalize-declarations declares)))
-        (multiple-value-bind (cleavir-lambda-list new-body name-map)
+        (multiple-value-bind (cleavir-lambda-list new-body rest-alloc)
             (transform-lambda-parts lambda-list canonical-declares code)
           (blog "got cleavir-lambda-list -> %s%N" cleavir-lambda-list)
           (let ((debug-on nil)
@@ -840,9 +840,8 @@ jump to blocks within this tagbody."
                                                            :va-list* local-va_list*
                                                            :remaining-nargs* local-remaining-nargs*
                                                            :lambda-list lambda-list
-                                                           :canonical-declares canonical-declares
-                                                           :cleavir-lambda-list cleavir-lambda-list
-                                                           :name-map name-map)))
+                                                           :rest-alloc rest-alloc
+                                                           :cleavir-lambda-list cleavir-lambda-list)))
               (let ((new-env (bclasp-compile-lambda-list-code evaluate-env callconv)))
                 (irc-intrinsic-call "llvm.va_end" (list (irc-pointer-cast local-va_list* %i8*%)))
                 (codegen-let/let* (car new-body) result (cdr new-body) new-env)

@@ -61,7 +61,7 @@
    #:named-function-ast
    #:original-lambda-list
    #:docstring
-   #:declares
+   #:rest-alloc
    #:debug-message-ast
    #:debug-break-ast
    #:multiple-value-foreign-call-ast
@@ -104,7 +104,7 @@
    #:lambda-list
    #:original-lambda-list
    #:docstring
-   #:declares
+   #:rest-alloc
    #:make-named-enter-instruction
    #:debug-message-instruction
    #:debug-break-instruction

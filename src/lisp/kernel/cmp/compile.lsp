@@ -10,7 +10,7 @@
 
 (defmacro with-module (( &key module
                            (optimize nil)
-                           (optimize-level *optimization-level*)
+                           (optimize-level '*optimization-level*)
                            dry-run) &rest body)
   `(let* ((*the-module* ,module))
      (or *the-module* (error "with-module *the-module* is NIL"))

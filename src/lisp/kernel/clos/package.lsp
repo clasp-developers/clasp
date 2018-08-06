@@ -20,7 +20,7 @@
 
 
 #+clasp (in-package "CLOS")
-#+clasp (use-package '(:CORE :ext) :clos)
+#+clasp (use-package '(:CORE) :clos)
 #+clasp (import '(unbound get-sysprop put-sysprop rem-sysprop simple-program-error
 		 slot-descriptions
 		 SLOT-NAMES SLOT-NAME CLASS-PRECEDENCE-LIST PRINT-FUNCTION

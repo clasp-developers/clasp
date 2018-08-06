@@ -103,7 +103,7 @@ SETF doc and can be retrieved by (documentation 'SYMBOL 'setf)."
       (let ((real-env-var (or env-var (gensym "ENV")))
             (argssym (gensym "ARGS")))
         `(eval-when (:compile-toplevel :load-toplevel :execute)
-           (funcall #'(setf setf-expander)
+           (funcall #'(setf ext:setf-expander)
                     (lambda (,real-env-var &rest ,argssym)
                       (declare (core:lambda-name ,access-fn)
                                ,@(unless env-var `((ignore ,real-env-var))))
@@ -152,7 +152,7 @@ by (DOCUMENTATION 'SYMBOL 'SETF)."
 	(core:process-declarations lambda-body t)
       (let ((listdoc (when doc (list doc))))
 	`(eval-when (:compile-toplevel :load-toplevel :execute)
-           (funcall #'(setf setf-expander)
+           (funcall #'(setf ext:setf-expander)
                     #'(lambda ,args ,@listdoc
                         (declare (core:lambda-name ,access-fn)
                                  ,@decls)
@@ -177,7 +177,7 @@ by (DOCUMENTATION 'SYMBOL 'SETF)."
         ((or (not (consp place)) (not (symbolp (car place))))
          (error "Invalid syntax: ~S is not a place." place))
         ;; Compound place. Check for SETF expander.
-        ((setq f (setf-expander (car place)))
+        ((setq f (ext:setf-expander (car place)))
          (apply f env (cdr place)))
         ;; Check for macro definition.
         ((and (setq f (macroexpand-1 place env)) (not (equal f place)))

@@ -616,11 +616,12 @@ ALWAYS_INLINE T_O *va_lexicalFunction(size_t depth, size_t index, core::T_O* eva
   NO_UNWIND_END();
 }
 
-
+/* Conses up a &rest argument from the passed valist.
+ * Used in cmp/arguments.lsp for the general case of functions with a &rest in their lambda list. */
 __attribute__((visibility("default"))) core::T_O *cc_gatherRestArguments(va_list vargs, std::size_t* remainingP)
 {NO_UNWIND_BEGIN();
   va_list rargs;
-  va_copy(rargs, vargs);
+  va_copy(rargs, vargs); // the original valist is needed for &key processing elsewhere.
   core::List_sp result = _Nil<core::T_O>();
   core::Cons_sp *cur = reinterpret_cast<Cons_sp *>(&result);
   size_t nargs = *remainingP;
@@ -629,12 +630,17 @@ __attribute__((visibility("default"))) core::T_O *cc_gatherRestArguments(va_list
     *cur = core::Cons_O::create(gc::smart_ptr<core::T_O>((gc::Tagged)tagged_obj), _Nil<core::T_O>());
     cur = reinterpret_cast<Cons_sp *>(&(*cur)->_Cdr);
   }
+  va_end(rargs);
   return result.raw_();
   NO_UNWIND_END();
 }
 
-__attribute__((visibility("default"))) core::T_O *cc_gatherDynamicExtentRestArguments(va_list rargs, std::size_t* remainingP, core::Cons_O* cur)
+/* Like cc_gatherRestArguments, but uses a vector of conses provided by the caller-
+ * intended to be stack space, for &rest parameters declared dynamic-extent. */
+__attribute__((visibility("default"))) core::T_O *cc_gatherDynamicExtentRestArguments(va_list vargs, std::size_t* remainingP, core::Cons_O* cur)
 {NO_UNWIND_BEGIN();
+  va_list rargs;
+  va_copy(rargs, vargs);
   core::List_sp result = Cons_sp((gctools::Tagged)gctools::tag_cons((core::Cons_O*)cur));
   size_t nargs = *remainingP;
   if (nargs) {
@@ -1393,7 +1399,7 @@ void cc_loadThreadLocalMultipleValues(core::T_mv *result, core::MultipleValues *
   NO_UNWIND_END();
 }
 
-
+// name is a misnomer- more like ifNotSymbolException. FIXME
 void cc_ifNotKeywordException(core::T_O *obj, size_t argIdx, va_list valist, core::FunctionDescription* functionDescription) {
   T_sp vobj((gc::Tagged)obj);
   if (!cl__symbolp(vobj)) {
@@ -1403,6 +1409,14 @@ void cc_ifNotKeywordException(core::T_O *obj, size_t argIdx, va_list valist, cor
     }
     SIMPLE_ERROR(BF("In call to %s expected keyword argument at argument %d got %s") % _rep_(functionName) % argIdx % _rep_(gctools::smart_ptr<core::T_O>((gc::Tagged)obj)));
   }
+}
+
+void cc_oddKeywordException(core::FunctionDescription* functionDescription) {
+  T_sp functionName = llvmo::functionNameOrNilFromFunctionDescription(functionDescription);
+  if (functionName.nilp())
+    SIMPLE_ERROR(BF("Odd number of keyword arguments"));
+  else
+    SIMPLE_ERROR(BF("In call to %s got odd number of keyword arguments") % _rep_(functionName));
 }
 
 T_O **cc_multipleValuesArrayAddress()

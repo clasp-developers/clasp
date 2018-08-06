@@ -456,17 +456,6 @@ CL_DEFUN T_mv cl__values(VaList_sp vargs) {
   return mv;
 }
 
-
-CL_LAMBDA(&rest args);
-CL_DECLARE();
-CL_DOCSTRING("values");
-CL_DEFUN T_mv core__values_testing(List_sp args) {
-  // returns multiple values
-  T_mv result = ValuesFromCons(args);
-  printf("%s:%d core__values_testing: %s\n", __FILE__, __LINE__, _rep_(args).c_str());
-  return result;
-}
-
 CL_LAMBDA(list);
 CL_DECLARE();
 CL_DOCSTRING("values_list");
@@ -505,16 +494,6 @@ CL_DEFUN T_mv core__valid_function_name_p(T_sp arg) {
   if (name.nilp())
     return (Values(_Nil<T_O>()));
   return (Values(_lisp->_true()));
-};
-
-CL_LAMBDA();
-CL_DECLARE();
-CL_DOCSTRING("testMemoryError");
-CL_DEFUN void core__test_memory_error() {
-  int *h = (int *)malloc(sizeof(int));
-  *h = 1;
-  free(h);
-  *h = 2;
 };
 
 CL_LAMBDA(listOfPairs);
@@ -767,7 +746,7 @@ CL_DEFUN void core__gdb_inspect(String_sp msg, T_sp o) {
   core__invoke_internal_debugger(_Nil<core::T_O>());
 };
 
-CL_LISPIFY_NAME("CORE:specialp");
+CL_LISPIFY_NAME("EXT:specialp");
 CL_LAMBDA(specialp symbol);
 CL_DECLARE();
 CL_DOCSTRING("Set whether SYMBOL is globally known to be special. Use cautiously.");
@@ -1320,7 +1299,6 @@ CL_DEFUN T_mv cl__mapcan(T_sp op, List_sp lists) {
   them together into one list and then points the cdr of the last element of this new list
   to c.
 */
-#if 1
 CL_LAMBDA(core:&va-rest lists);
 CL_DECLARE();
 CL_DOCSTRING("append as in clhs");
@@ -1347,35 +1325,6 @@ CL_DEFUN T_sp cl__append(VaList_sp args) {
   T_sp res = list.cons();
   return res;
 }
-#endif
-
-#if 0
-CL_LAMBDA(&rest lists);
-CL_DECLARE();
-CL_DOCSTRING("append as in clhs");
-CL_DEFUN T_sp cl__append(List_sp lists) {
-  ql::list list;
-  LOG(BF("Carrying out append with arguments: %s") % _rep_(lists));
-  auto it = lists.begin();
-  auto end = lists.end();
-  T_sp curit = *it;
-  while (it != end) {
-    curit = *it;
-    it++;
-    if (it == end)
-      break;
-    for (auto inner : (List_sp)oCar(curit)) {
-      list << oCar(inner);
-    }
-  }
-  /* Now append the last argument by setting the new lists last element cdr
-       to the last argument of append */
-  T_sp last = oCar(curit);
-  list.dot(last);
-  T_sp res = list.cons();
-  return res;
-}
-#endif
 
 CL_LAMBDA(sequence start end);
 CL_DECLARE();
@@ -2051,11 +2000,11 @@ namespace core {
 
 SYMBOL_EXPORT_SC_(CorePkg,generic_function_lambda_lists);
 
-
+CL_LISPIFY_NAME("ext:function-lambda-list");
 CL_LAMBDA(function);
 CL_DECLARE();
 CL_DOCSTRING("Return the lambda-list of a function");
-CL_DEFUN T_mv core__function_lambda_list(T_sp obj) {
+CL_DEFUN T_mv ext__function_lambda_list(T_sp obj) {
   if (obj.nilp()) {
     return Values(_Nil<T_O>(),_Nil<T_O>());
   } else if (Symbol_sp sym = obj.asOrNull<Symbol_O>()) {
@@ -2063,7 +2012,7 @@ CL_DEFUN T_mv core__function_lambda_list(T_sp obj) {
       return Values(_Nil<T_O>(),_Nil<T_O>());
     }
     Function_sp fn = sym->symbolFunction();
-    return Values(core__function_lambda_list(fn),_lisp->_true());
+    return Values(ext__function_lambda_list(fn),_lisp->_true());
   } else if (gc::IsA<FuncallableInstance_sp>(obj)) {
     FuncallableInstance_sp iobj = gc::As_unsafe<FuncallableInstance_sp>(obj);
     if (iobj->isgf()) {

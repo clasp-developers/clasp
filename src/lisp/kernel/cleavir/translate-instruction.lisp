@@ -32,7 +32,8 @@
                                                                               (%pointer-cast src-va_list* cmp:%i8*%))))
          (callconv                      (cmp:make-calling-convention-impl :nargs (%load src-remaining-nargs*)
                                                                           :va-list* local-va_list*
-                                                                          :remaining-nargs* local-remaining-nargs*)))
+                                                                          :remaining-nargs* local-remaining-nargs*
+                                                                          :rest-alloc (clasp-cleavir-hir:rest-alloc instr))))
     (cmp:compile-lambda-list-code lambda-list outputs callconv
                                   :translate-datum (lambda (datum)
                                                      (if (typep datum 'cleavir-ir:lexical-location)

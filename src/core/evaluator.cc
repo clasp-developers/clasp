@@ -491,10 +491,12 @@ CL_DEFUN T_sp core__extract_lambda_name(List_sp lambdaExpression, T_sp defaultVa
   // Fallback return LAMBDA as the name
   return defaultValue;
 }
+
+CL_LISPIFY_NAME("ext:symbol-macro");
 CL_LAMBDA(symbol &optional env);
 CL_DECLARE();
 CL_DOCSTRING("Returns the macro expansion function for a symbol if it exists, or else NIL.");
-CL_DEFUN T_sp core__symbol_macro(Symbol_sp sym, T_sp env) {
+CL_DEFUN T_sp ext__symbol_macro(Symbol_sp sym, T_sp env) {
   if (sym.nilp())
     return _Nil<T_O>();
   if (env.notnilp()) {
@@ -506,9 +508,9 @@ CL_DEFUN T_sp core__symbol_macro(Symbol_sp sym, T_sp env) {
     if (found)
       return macro;
   }
-  SYMBOL_SC_(CorePkg, symbolMacro);
+  SYMBOL_SC_(ExtPkg, symbolMacro);
   T_sp fn = _Nil<T_O>();
-  T_mv result = core__get_sysprop(sym, core::_sym_symbolMacro);
+  T_mv result = core__get_sysprop(sym, ext::_sym_symbolMacro);
   if (gc::As<T_sp>(result.valueGet_(1)).notnilp()) {
     fn = gc::As<Function_sp>(result);
   }
@@ -1716,7 +1718,7 @@ T_mv evaluate_atom(T_sp exp, T_sp environment) {
     _BLOCK_TRACEF(BF("Evaluating symbol: %s") % exp->__repr__());
     if (sym->isKeywordSymbol())
       return Values(sym);
-    if (core__symbol_macro(sym, environment).notnilp()) {
+    if (ext__symbol_macro(sym, environment).notnilp()) {
       T_sp texpr;
       {
         texpr = cl__macroexpand(sym, environment);

@@ -837,8 +837,6 @@ Use special code 0 to cancel this operation.")
   (let ((args (core:get-annotation name :lambda-list nil)))
     (values args (and args t))))
 
-(export 'function-lambda-list)
-
 (defun decode-ihs-env (*break-env*)
   (let ((env *break-env*))
     (if (vectorp env)

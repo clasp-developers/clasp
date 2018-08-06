@@ -80,7 +80,7 @@ existing value."
                   (unless (,test ,value (symbol-value ',var))
                     ;; This will just trigger the error in SET.
                     (set ',var ,value)))
-                 ((core:specialp ',var)
+                 ((ext:specialp ',var)
                   (error "Cannot redefine special variable ~a as constant" ',var))
                  (t (set ',var ,value)
                     (funcall #'(setf core:symbol-constantp) t ',var)))))
@@ -394,8 +394,8 @@ values of the last FORM.  If no FORM is given, returns NIL."
      (si::select-package ,(string name))
      *package*))
 
-(defun (setf symbol-macro) (expansion name)
-  (put-sysprop name 'core:symbol-macro
+(defun (setf ext:symbol-macro) (expansion name)
+  (put-sysprop name 'ext:symbol-macro
                (lambda (form env)
                  (declare (ignore form env))
                  expansion)))
@@ -404,12 +404,12 @@ values of the last FORM.  If no FORM is given, returns NIL."
   (cond ((not (symbolp symbol))
 	 (error "DEFINE-SYMBOL-MACRO: ~A is not a symbol"
 		symbol))
-	((specialp symbol)
+	((ext:specialp symbol)
 	 (error "DEFINE-SYMBOL-MACRO: cannot redefine a special variable, ~A"
 		symbol))
 	(t
 	 `(eval-when (:compile-toplevel :load-toplevel :execute)
-            (funcall #'(setf symbol-macro) ',expansion ',symbol)
+            (funcall #'(setf ext:symbol-macro) ',expansion ',symbol)
 	   ',symbol))))
 
 (defmacro nth-value (n expr)

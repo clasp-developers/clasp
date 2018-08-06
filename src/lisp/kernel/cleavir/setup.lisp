@@ -85,12 +85,12 @@ when this is t a lot of graphs will be generated.")
         (;; Use Clasp's core:specialp test to determine if it is special.
          ;; Note that in Clasp constants are also special (FIXME?) so we
          ;; have to do this test after checking for constantness.
-         (core:specialp symbol)
+         (ext:specialp symbol)
 	 (make-instance 'cleavir-env:special-variable-info
             :name symbol
             :global-p t))
 	(;; Maybe it's a symbol macro.
-	 (core:symbol-macro symbol)
+	 (ext:symbol-macro symbol)
 	 (make-instance 'cleavir-env:symbol-macro-info
 	   :name symbol
 	   :expansion (macroexpand-1 symbol)))
@@ -249,7 +249,7 @@ when this is t a lot of graphs will be generated.")
       (class (return-from type-expand-1 (values type-specifier nil)))
       (symbol (setf head type-specifier tail nil))
       (cons (setf head (first type-specifier) tail (rest type-specifier))))
-    (let ((def (core::type-expander head)))
+    (let ((def (ext:type-expander head)))
       (if def
           (values (apply def tail) t)
           (values type-specifier nil)))))
