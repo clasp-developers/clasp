@@ -109,15 +109,7 @@ int main(int argc, const char* argv[])
   printf("Starting client loop\n");
   while(1)
   {
-    char* line = readline("fork-server client> ");
-    if (line) {
-      printf("Read: %s\n", line);
-      free(line);
-    } else {
-      printf("Nothing read\n");
-    }
-    printf("Sleep(10)\n");
-    sleep(10);
+    sleep(600);
 //    read(sid,(void*)s1,sizeof(s1));
 //    printf("\n The received string is:%s\n",s1);
   }
