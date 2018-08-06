@@ -56,6 +56,7 @@ namespace core {
 
 struct BundleDirectories {
   boost_filesystem::path _StartupWorkingDir;
+  boost_filesystem::path _HomeDir;
   boost_filesystem::path _ExecutableDir;
   boost_filesystem::path _ContentsDir;
   boost_filesystem::path _ResourcesDir;
@@ -156,8 +157,9 @@ Bundle::Bundle(const string &raw_argv0, const string &appDirName) {
     printf("%s:%d Find Contents elsewhere\n", __FILE__, __LINE__ );
 #endif
 //  this->_Directories->_RootDir = appDir;
-    bf::path one_up_contents = this->_Directories->_ExecutableDir.parent_path();
-    one_up_contents = one_up_contents / "lib" / "clasp";
+    bf::path original_one_up_contents = this->_Directories->_ExecutableDir.parent_path();
+    this->_Directories->_HomeDir = original_one_up_contents;
+    one_up_contents = original_one_up_contents / "lib" / "clasp";
     if (bf::exists(one_up_contents)) {
       this->_Directories->_ContentsDir = one_up_contents;
       if (verbose) {
@@ -171,9 +173,11 @@ Bundle::Bundle(const string &raw_argv0, const string &appDirName) {
       char *homedir = getenv("CLASP_HOME");
       if (homedir) {
         if (verbose) printf("%s:%d  Using the CLASP_HOME directory %s\n", __FILE__, __LINE__, homedir);
-        this->_Directories->_ContentsDir = bf::path(homedir) / "lib" / "clasp";
+        this->_Directories->_HomeDir = bf::path(homedir);
+        this->_Directories->_ContentsDir = this->_Directories->_HomeDir / "lib" / "clasp";
         foundContents = true;
       } else {
+        this->_Directories->_HomeDir = bf::path(std::string(PREFIX));
         std::string install_path = std::string(PREFIX)+"/lib/clasp";
         bf::path test_path(install_path);
         if (bf::exists(test_path)) {
@@ -326,6 +330,7 @@ boost_filesystem::path Bundle::findAppDir( const string &argv0, const string &cw
 
 string Bundle::describe() {
   stringstream ss;
+  ss << "HomeDir:         " << this->_Directories->_HomeDir.string() << std::endl;
   ss << "ExecutableDir:   " << this->_Directories->_ExecutableDir.string() << std::endl;
   ss << "Lib dir:         " << this->_Directories->_LibDir.string() << std::endl;
   ss << "Contents dir:    " << this->_Directories->_ContentsDir.string() << std::endl;
@@ -417,7 +422,13 @@ void Bundle::setup_pathname_translations()
                                       );
   core__pathname_translations(SimpleBaseString_O::make("tmp"), _lisp->_true(), ptsTmp);
 
-            // setup the APP-EXECUTABLE logical-pathname-translations
+  // Setup hostname pathname translations
+  {
+    Cons_sp appc =
+      Cons_O::createList(Cons_O::createList(SimpleBaseString_O::make("clasp-home:**;*.*"),
+                                            generate_pathname(this->_Directories->_HomeDir)));
+    core__pathname_translations(SimpleBaseString_O::make("clasp-home"), _lisp->_true(), appc);
+  }
   {
     Cons_sp appc =
       Cons_O::createList(Cons_O::createList(SimpleBaseString_O::make("app-executable:**;*.*"),
