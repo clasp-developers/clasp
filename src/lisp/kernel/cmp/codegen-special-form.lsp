@@ -839,7 +839,6 @@ jump to blocks within this tagbody."
                    (callconv (make-calling-convention-impl :nargs (irc-load src-remaining-nargs*)
                                                            :va-list* local-va_list*
                                                            :remaining-nargs* local-remaining-nargs*
-                                                           :lambda-list lambda-list
                                                            :rest-alloc rest-alloc
                                                            :cleavir-lambda-list cleavir-lambda-list)))
               (let ((new-env (bclasp-compile-lambda-list-code evaluate-env callconv)))

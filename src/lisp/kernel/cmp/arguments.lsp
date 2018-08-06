@@ -503,15 +503,12 @@
 ;;
 ;; Setup the calling convention
 ;;
-(defun setup-calling-convention (arguments &key lambda-list
-                                             debug-on
-                                             rest-alloc
-                                             cleavir-lambda-list)
+(defun setup-calling-convention (arguments
+                                 &key lambda-list debug-on rest-alloc cleavir-lambda-list)
   (let ((setup (maybe-alloc-cc-setup lambda-list debug-on)))
     (let ((cc (initialize-calling-convention arguments
                                              setup
                                              :rewind t
-                                             :lambda-list lambda-list
                                              :rest-alloc rest-alloc
                                              :cleavir-lambda-list cleavir-lambda-list)))
       (calling-convention-args.va-start cc)

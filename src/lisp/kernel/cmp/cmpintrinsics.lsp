@@ -335,7 +335,6 @@ Boehm and MPS use a single pointer"
   remaining-nargs* ; The address of vaslist._remaining_nargs on the stack
   register-save-area*
   invocation-history-frame*
-  lambda-list ; the original lambda-list
   cleavir-lambda-list ; cleavir-style lambda-list
   rest-alloc ; whether we can dx or ignore a &rest argument
   )
@@ -343,7 +342,7 @@ Boehm and MPS use a single pointer"
 ;; Parse the function arguments into a calling-convention
 ;;
 ;; What if we don't want/need to spill the registers to the register-save-area?
-(defun initialize-calling-convention (arguments setup &key (rewind t) lambda-list cleavir-lambda-list rest-alloc)
+(defun initialize-calling-convention (arguments setup &key (rewind t) cleavir-lambda-list rest-alloc)
   (if (null (calling-convention-configuration-vaslist* setup))
       ;; If there is no vaslist then only register arguments are available
       ;;    no registers are spilled to the register-save-area and no InvocationHistoryFrame
@@ -353,7 +352,6 @@ Boehm and MPS use a single pointer"
                                       :nargs (second arguments)
                                       :use-only-registers t
                                       :register-args (nthcdr 2 arguments)
-                                      :lambda-list lambda-list
                                       :cleavir-lambda-list cleavir-lambda-list
                                       :rest-alloc rest-alloc))
       ;; The register arguments need to be spilled to the register-save-area
@@ -383,7 +381,6 @@ Boehm and MPS use a single pointer"
                                                                           :remaining-nargs* remaining-nargs*
                                                                           :register-save-area* (calling-convention-configuration-register-save-area* setup)
                                                                           :invocation-history-frame* (calling-convention-configuration-invocation-history-frame* setup)
-                                                                          :lambda-list lambda-list
                                                                           :cleavir-lambda-list cleavir-lambda-list
                                                                           :rest-alloc rest-alloc))
                ;; va-start is done in caller
