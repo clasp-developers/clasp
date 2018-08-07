@@ -669,12 +669,11 @@ void badKeywordArgumentError(core::T_sp keyword, core::FunctionDescription* func
   SIMPLE_ERROR(BF("When calling %s the bad keyword argument %s was passed") % _rep_(functionName) % _rep_(keyword) );
 }
 
-void cc_ifBadKeywordArgumentException(size_t allowOtherKeys, std::size_t badKwIdx, core::T_O *kw, core::FunctionDescription* functionDescription)
-{
-  if (allowOtherKeys == 2) return;
-  if (badKwIdx != 65536) badKeywordArgumentError(core::T_sp((gc::Tagged)kw),functionDescription);
+void cc_ifBadKeywordArgumentException(core::T_O *allowOtherKeys, core::T_O *kw,
+                                      core::FunctionDescription* functionDescription) {
+  if (gctools::tagged_nilp(allowOtherKeys))
+    badKeywordArgumentError(core::T_sp((gc::Tagged)kw), functionDescription);
 }
-
 
 extern void mv_copyTmv(core::T_mv *destP, core::T_mv *sourceP)
 {NO_UNWIND_BEGIN();
