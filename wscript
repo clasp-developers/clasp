@@ -198,7 +198,7 @@ DEBUG_OPTIONS = [
     "DEBUG_MPS_UNDERSCANNING",   # Very expensive - does a mps_arena_collect/mps_arena_release for each allocation
     "DEBUG_DONT_OPTIMIZE_BCLASP",  # Optimize bclasp by editing llvm-ir
     "DEBUG_RECURSIVE_ALLOCATIONS",
-    "DEBUG_LLVM_OPTIMIZATION_0",
+    "DEBUG_LLVM_OPTIMIZATION_LEVEL_0",
     "DEBUG_SLOW",    # Code runs slower due to checks - undefine to remove checks
     "CONFIG_VAR_COOL" # mps setting
 ]
