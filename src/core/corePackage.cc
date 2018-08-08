@@ -1177,7 +1177,15 @@ void CoreExposer_O::define_essential_globals(Lisp_sp lisp) {
     optimization_level = strtol(optLevel,NULL,10);
     if (optimization_level < 0) optimization_level = 0;
     if (optimization_level > 3) optimization_level = 3;
-    printf("%s:%d CLASP_OPTIMIZATION_LEVEL = %d\n", __FILE__, __LINE__, optimization_level);
+    printf("%s:%d Due to CLASP_OPTIMIZATION_LEVEL environment variable --> cmp:*optimization-level* = %d\n", __FILE__, __LINE__, optimization_level);
+  } else {
+    optimization_level = 3;
+#ifdef DEBUG_LLVM_OPTIMIZATION_LEVEL_0
+    optimization_level = 0;
+    printf("%s:%d Due to DEBUG_LLVM_OPTIMIZATION_LEVEL_0 --> cmp:*optimization-level* = %d\n", __FILE__, __LINE__, optimization_level);
+#else
+    optimization_level = 3;
+#endif
   }
   comp::_sym_STARoptimization_levelSTAR->defparameter(core::make_fixnum(optimization_level));
   _sym_STARbits_in_bit_array_wordSTAR->defparameter(core::clasp_make_fixnum(BIT_ARRAY_BYTE_SIZE));
