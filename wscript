@@ -911,7 +911,7 @@ def build(bld):
 
     # Reinitialize logging system with a handler that appends to ./build/variant/build.log
     log.reinitialize(console_level = logging.DEBUG if Logs.verbose >= 1 else logging.INFO,
-                     log_file = os.path.join(bld.path.abspath(), out, variant.variant_dir(), "build.log"))
+                     log_file = os.path.join(bld.path.abspath(), out, variant.variant_dir(), "build-%s.log" % os.getpid()))
 
     log.debug('build() starts, CLASP_BUILD_MODE = %s, options: %s', bld.env.CLASP_BUILD_MODE, bld.options)
     bld.add_pre_fun(pre_build_hook);
