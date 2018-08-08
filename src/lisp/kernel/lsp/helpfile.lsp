@@ -186,7 +186,7 @@
 
 (defun get-documentation (object doc-type)
   (when (functionp object)
-    (when (null (setq object (compiled-function-name object)))
+    (when (null (setq object (ext:compiled-function-name object)))
       (return-from get-documentation nil)))
   (if (and object (listp object) (si::valid-function-name-p object))
       (get-annotation (second object) 'setf-documentation doc-type)
