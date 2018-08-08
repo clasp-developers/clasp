@@ -296,9 +296,7 @@
                                                                          (make-list core:+number-of-fixed-arguments+
                                                                                     :initial-element %t*%))
                         :varargs t)
-    (primitive         "cc_allowOtherKeywords" %i64% (list %i64% %t*%))
     (primitive         "cc_matchKeywordOnce" %size_t% (list %t*% %t*% %t*%))
-    (primitive-unwinds "cc_ifNotKeywordException" %void% (list %t*% %size_t% %va_list*% %function-description*%))
     (primitive-unwinds "cc_oddKeywordException" %void% (list %function-description*%))
     (primitive         "cc_multipleValuesArrayAddress" %t*[0]*% nil)
     (primitive-unwinds "cc_unwind" %void% (list %t*% %size_t%))

@@ -235,15 +235,6 @@ ALWAYS_INLINE gc::return_type cc_call_callback(LCC_ARGS_CC_CALL_ELLIPSIS) {
   return closure(LCC_PASS_ARGS);
 }
 
-
-ALWAYS_INLINE size_t cc_allowOtherKeywords(size_t saw_aok, core::T_O *kw_arg)
-{NO_UNWIND_BEGIN();
-  if (saw_aok) return saw_aok;
-  bool aokTrue = !(gctools::tagged_nilp(kw_arg));
-  return aokTrue ? 2 : 1;
-  NO_UNWIND_END();
-}
-
 size_t cc_matchKeywordOnce(core::T_O *xP, core::T_O *yP, core::T_O *sawKeyAlreadyP)
 {NO_UNWIND_BEGIN();
   if (xP != yP)
