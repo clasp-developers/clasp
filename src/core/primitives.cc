@@ -525,14 +525,16 @@ CL_DEFUN T_mv core__separate_pair_list(List_sp listOfPairs) {
 }
 
 // ignore env
+CL_LISPIFY_NAME("core:bclasp-compiler-macro-function");
 CL_LAMBDA(name &optional env);
-CL_DEFUN T_mv core__get_bclasp_compiler_macro_function(core::T_sp name, core::T_sp env)
+CL_DEFUN T_mv core___bclasp_compiler_macro_function(core::T_sp name, core::T_sp env)
 {
   return core__get_sysprop(name,core::_sym_bclasp_compiler_macro);
 }
 
+CL_LISPIFY_NAME("CORE:bclasp-compiler-macro-function");
 CL_LAMBDA(name function &optional env);
-CL_DEFUN void core__setf_bclasp_compiler_macro_function(core::T_sp name, core::T_sp function, core::T_sp env)
+CL_DEFUN_SETF void core__setf_bclasp_compiler_macro_function(core::T_sp name, core::T_sp function, core::T_sp env)
 {
   core__put_sysprop(name,core::_sym_bclasp_compiler_macro,function);
 }
