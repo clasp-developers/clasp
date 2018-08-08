@@ -78,7 +78,18 @@ int main(int argc, const char* argv[])
   signal(SIGTERM, onsig);
   atexit(onexit);
   int sid;
-  size_t port = strtol(argv[2],NULL,10);
+  const char* server_portfile = "/tmp/clasp-fork-server/portfile";
+  if (argc==3) {
+    server_portfile = argv[2];
+  }
+  if (strlen(server_portfile)>1024) {
+    perror("server_portfile is too long");
+  }
+  FILE* fin = fopen(server_portfile,"r");
+  char portnum[16];
+  fread(portnum,15,1,fin);
+  fclose(fin);
+  size_t port = strtol(portnum,NULL,10);
   struct sockaddr_in ssock,csock;
   sid=socket(AF_INET,SOCK_STREAM,0);
   ssock.sin_family=AF_INET;
