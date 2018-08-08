@@ -911,7 +911,7 @@ def build(bld):
 
     # Reinitialize logging system with a handler that appends to ./build/variant/build.log
     log.reinitialize(console_level = logging.DEBUG if Logs.verbose >= 1 else logging.INFO,
-                     log_file = os.path.join(bld.path.abspath(), out, variant.variant_dir(), "build-%s.log" % os.getpid()))
+                     log_file = os.path.join(bld.path.abspath(), out, variant.variant_dir(), "build.log"))
 
     log.debug('build() starts, CLASP_BUILD_MODE = %s, options: %s', bld.env.CLASP_BUILD_MODE, bld.options)
     bld.add_pre_fun(pre_build_hook);
@@ -956,23 +956,23 @@ def build(bld):
             return find.abspath()
         return x
     
-    fout = open("/tmp/build.lisp", "w")
-    fout.write('(core:select-package :core)\n')
-    fout.write('(core:*make-special \'core::*number-of-jobs*)\n')
-    fout.write('(setq core::*number-of-jobs* 1)\n')
-    fout.write('(export \'core::*number-of-jobs*)\n')
-    fout.write('(load "%s" :verbose t)\n' % find_lisp(bld,"src/lisp/kernel/clasp-builder"))
-    fout.write('(core::remove-stage-features)\n')
-    fout.write('(setq *features* (cons :aclasp (cons :clasp-min *features*)))\n')
-    for x in bld.clasp_aclasp:
-        fout.write('(load "%s" :verbose t)\n' % find_lisp(bld,x))
-    for x in bld.clasp_aclasp:
-        fout.write('(load "%s" :verbose t)\n' % find_lisp(bld,x))
-    fout.write('(core::remove-stage-features)\n')
-    fout.write('(setq *features* (cons :bclasp (cons :clos *features*)))\n')
-    for x in bld.clasp_bclasp:
-        fout.write('(load "%s" :verbose t)\n' % find_lisp(bld,x))
-    fout.close()
+#    fout = open("/tmp/build.lisp", "w")
+#    fout.write('(core:select-package :core)\n')
+#    fout.write('(core:*make-special \'core::*number-of-jobs*)\n')
+#    fout.write('(setq core::*number-of-jobs* 1)\n')
+#    fout.write('(export \'core::*number-of-jobs*)\n')
+#    fout.write('(load "%s" :verbose t)\n' % find_lisp(bld,"src/lisp/kernel/clasp-builder"))
+#    fout.write('(core::remove-stage-features)\n')
+#    fout.write('(setq *features* (cons :aclasp (cons :clasp-min *features*)))\n')
+#    for x in bld.clasp_aclasp:
+#        fout.write('(load "%s" :verbose t)\n' % find_lisp(bld,x))
+#    for x in bld.clasp_aclasp:
+#        fout.write('(load "%s" :verbose t)\n' % find_lisp(bld,x))
+#    fout.write('(core::remove-stage-features)\n')
+#    fout.write('(setq *features* (cons :bclasp (cons :clos *features*)))\n')
+#    for x in bld.clasp_bclasp:
+#        fout.write('(load "%s" :verbose t)\n' % find_lisp(bld,x))
+#    fout.close()
     
     bld.clasp_cclasp_no_wrappers = collect_cclasp_lisp_files(wrappers = False)
 
