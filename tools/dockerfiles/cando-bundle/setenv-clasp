@@ -1,0 +1,21 @@
+
+#if ! echo $LD_LIBRARY_PATH | grep -q /opt/local ; then
+#    setenv-macports
+#fi
+
+if ! echo $LD_LIBRARY_PATH | grep -q /opt/clasp ; then
+    export LD_LIBRARY_PATH="/opt/clasp/lib:$LD_LIBRARY_PATH"
+    export PATH="/opt/clasp/bin:$PATH"
+    export PKG_CONFIG_PATH="/opt/local/lib/pkgconfig,$PKG_CONFIG_PATH"
+    export ACLOCAL_FLAGS="-I /opt/clasp/share/aclocal ${ACLOCAL_FLAGS-}"
+    export JUPYTERLAB_DIR=/opt/clasp/jupyter/lab
+    export JUPYTER_PATH=/opt/clasp/run
+    for file in /opt/clasp/lib/python3*/site-packages $HOME/.local/lib/python3.6/site-packages ; do
+        export PYTHONPATH="$file:$PYTHONPATH"
+    done
+    export PYTHONPATH="${PYTHONPATH%:}"
+    export PYTHONPATH="${PYTHONPATH%:}"
+    export PYTHONPATH="${PYTHONPATH%:}"
+    export PYTHONPATH="${PYTHONPATH%:}"
+fi
+export CRAENVPROMPT='$clasp'
