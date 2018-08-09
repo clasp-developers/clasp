@@ -57,12 +57,12 @@ int socket_read_line(int sid, char* buffer, int buffer_size)
   int pos = 0;
   while (1) {
     int rread = read(sid,&buffer[pos],buffer_size-pos);
-    if (buffer[pos+rread-1] == '\n') {
-      buffer[pos+rread-1] = '\0';
+    pos += rread;
+    if (buffer[pos-1] == '\n') {
+      buffer[pos-1] = '\0';
       break;
     }
     if (rread+pos>buffer_size) perror("Read overflow");
-    pos += rread;
     buffer[pos] = '\0';
   }
   return pos;
@@ -75,6 +75,7 @@ int main(int argc, const char* argv[])
 {
   signal(SIGINT, onsig);
   signal(SIGQUIT, onsig);
+  //  signal(SIGKILL, onsig);
   signal(SIGTERM, onsig);
   atexit(onexit);
   int sid;
