@@ -360,6 +360,6 @@ This is to ensure that the RUN-ALL functions are evaluated in the correct order.
                                lisp-files))
         (temp-bitcode-file (make-pathname :type (core:bitcode-extension) :defaults out-file)))
     (link-bitcode-modules temp-bitcode-file bitcode-files)
-      (execute-link-fasl out-file (list temp-bitcode-file))))
+    (execute-link-fasl out-file (list temp-bitcode-file))))
 
 (export 'build-fasl)
