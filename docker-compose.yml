@@ -27,6 +27,16 @@ services:
       context: .
       dockerfile: tools/dockerfiles/cando-cache/Dockerfile
 
+  # To build quicklisp and the common lisp cache  run: docker-compose build cando-bundle
+  #    Expected time:  xxx min
+  # This will start with a smaller base image, that has only the runtime
+  # dependencies, and copy and unpack ./build/cando-build.tgz into the directory /home/app
+  cando-bundle:
+    image: cando-bundle
+    build:
+      context: .
+      dockerfile: tools/dockerfiles/cando-bundle/Dockerfile
+
   # To build quicklisp and the common lisp cache  run: docker-compose build cando-deploy
   #    Expected time:  xxx min
   # This will start with a smaller base image, that has only the runtime
