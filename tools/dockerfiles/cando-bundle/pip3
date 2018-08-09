@@ -1,8 +1,9 @@
 #!/usr/bin/python3
 
 import sys
-from pip._internal import main as _main
-#from pip import main
+#from pip._internal import main as _main
+from pip import main
 
 if __name__ == '__main__':
-    sys.exit(_main())
+#    sys.exit(_main())
+    sys.exit(main())

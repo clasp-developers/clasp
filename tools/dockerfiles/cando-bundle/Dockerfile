@@ -44,11 +44,17 @@ RUN mkdir -p /opt/clasp
 RUN cd /home/app/node && git checkout v10.8.0 && ./configure --prefix=/opt/clasp && make install
 
 RUN mkdir -p /opt/clasp/bin
-ADD tools/dockerfiles/pip3 /opt/clasp/bin/pip3
+ADD tools/dockerfiles/cando-bundle/pip3 /opt/clasp/bin/pip3
+RUN chmod a+x /opt/clasp/bin/pip3
+ADD tools/dockerfiles/cando-bundle/pip3 /opt/clasp/bin/pip
+RUN chmod a+x /opt/clasp/bin/pip
+RUN ln -s /usr/bin/python3.6 /opt/clasp/bin/python3
+ENV PATH=/opt/clasp/bin:$PATH
+RUN apt-get -y install python3-setuptools python3-pip
 RUN cd $HOME/jupyterlab && git checkout 0.32.x && mkdir -p /opt/clasp/jupyter/lab && python3 setup.py build && /opt/clasp/bin/pip3 install --prefix=/opt/clasp .
 
 RUN mkdir -p /opt/clasp/lib
 RUN cd /opt/clasp/lib && git clone https://github.com/quicklisp/quicklisp-client quicklisp
 RUN mkdir -p /opt/clasp/lib/quicklisp/local-projects
 RUN cd /opt/clasp/lib/quicklisp/local-projects && git clone https://github.com/clasp-developers/clasp-local-projects.git
-RUN cd /opt/clasp/lib/quicklisp/local-projects/clasp-local/projects && make
+RUN cd /opt/clasp/lib/quicklisp/local-projects/clasp-local-projects && make

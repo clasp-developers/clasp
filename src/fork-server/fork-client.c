@@ -1,7 +1,5 @@
 #include <stdlib.h>
 #include<stdio.h>
-#include <readline/readline.h>
-#include <readline/history.h>
 #include <fcntl.h>
 #include <unistd.h>
 #include <sys/types.h>
