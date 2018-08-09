@@ -194,6 +194,18 @@ CL_DEFUN size_t gctools__catch_throw_counter() {
 }
 #endif
 
+CL_DEFUN void gctools__change_sigchld_sigport_handlers()
+{
+  void* old = (void*)signal(SIGCHLD, SIG_DFL);
+  signal(SIGPIPE, SIG_DFL);
+  printf("%s:%d old signal handler for SIGCHLD = %p   SIG_DFL = %p\n", __FILE__, __LINE__, old, SIG_DFL);
+}
+
+CL_DEFUN core::T_sp gctools__known_signals()
+{
+  return _lisp->_Roots._KnownSignals;
+}
+
 CL_DEFUN void gctools__deallocate_unmanaged_instance(core::T_sp obj) {
   obj_deallocate_unmanaged_instance(obj);
 }
