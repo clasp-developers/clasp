@@ -1,8 +1,6 @@
-
 #if ! echo $LD_LIBRARY_PATH | grep -q /opt/local ; then
 #    setenv-macports
 #fi
-
 if ! echo $LD_LIBRARY_PATH | grep -q /opt/clasp ; then
     export LD_LIBRARY_PATH="/opt/clasp/lib:$LD_LIBRARY_PATH"
     export PATH="/opt/clasp/bin:$PATH"
@@ -18,4 +16,4 @@ if ! echo $LD_LIBRARY_PATH | grep -q /opt/clasp ; then
     export PYTHONPATH="${PYTHONPATH%:}"
     export PYTHONPATH="${PYTHONPATH%:}"
 fi
-export CRAENVPROMPT='$clasp'
+export CRAENVPROMPT="$clasp"
