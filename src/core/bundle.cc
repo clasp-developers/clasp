@@ -144,7 +144,11 @@ Bundle::Bundle(const string &raw_argv0, const string &appDirName) {
   // Setup the quicklisp dir - if none is available then leave _QuicklispDir empty and don't create a hostname
   const char* quicklisp_env = getenv("CLASP_QUICKLISP_DIRECTORY");
   if (quicklisp_env) {
-    this->_Directories->_QuicklispDir = bf::path(quicklisp_env);
+    if (bf::is_directory(bf::path(quicklisp_env))) {
+      this->_Directories->_QuicklispDir = bf::path(quicklisp_env);
+    } else {
+      SIMPLE_ERROR(BF("The contents of CLASP_QUICKLISP_DIRECTORY (%s) is not a directory") % quicklisp_env);
+    }
   } else {
     std::string opt_clasp_quicklisp_string = "/opt/clasp/lib/quicklisp/";
     bf::path opt_clasp_quicklisp_path = bf::path(opt_clasp_quicklisp_string);
