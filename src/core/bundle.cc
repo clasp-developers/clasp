@@ -68,6 +68,7 @@ struct BundleDirectories {
   boost_filesystem::path _DatabasesDir;
   boost_filesystem::path _FaslDir;
   boost_filesystem::path _BitcodeDir;
+  boost_filesystem::path _QuicklispDir;
 };
 
 Bundle::Bundle(const string &raw_argv0, const string &appDirName) {
@@ -140,6 +141,25 @@ Bundle::Bundle(const string &raw_argv0, const string &appDirName) {
     printf("%s:%d   Climb one level up from _ExecutablePath = %s\n", __FILE__, __LINE__, appDir.string().c_str());
   }
 
+  // Setup the quicklisp dir - if none is available then leave _QuicklispDir empty and don't create a hostname
+  const char* quicklisp_env = getenv("CLASP_QUICKLISP_DIRECTORY");
+  if (quicklisp_env) {
+    this->_Directories->_QuicklispDir = bf::path(quicklisp_env);
+  } else {
+    std::string opt_clasp_quicklisp_string = "/opt/clasp/lib/quicklisp/";
+    bf::path opt_clasp_quicklisp_path = bf::path(opt_clasp_quicklisp_string);
+    if (bf::exists(opt_clasp_quicklisp_path)) {
+      this->_Directories->_QuicklispDir = opt_clasp_quicklisp_path;
+    } else {
+      std::string home_quicklisp_string = "~/quicklisp/";
+      bf::path home_quicklisp_path = bf::path(home_quicklisp_string);
+      if (bf::exists(home_quicklisp_path)) {
+        this->_Directories->_QuicklispDir = home_quicklisp_path;
+      }
+    }
+  }
+      
+   
   // Check if there is a 'src' directory in _ExecutableDir - if so we are building
   bf::path srcPath = this->_Directories->_ExecutableDir / "src";
   bool foundContents = false;
@@ -343,6 +363,7 @@ string Bundle::describe() {
   ss << "Fasl dir:        " << this->_Directories->_FaslDir.string() << std::endl;
   ss << "Bitcode dir:     " << this->_Directories->_BitcodeDir.string() << std::endl;
   ss << "Databases dir:   " << this->_Directories->_DatabasesDir.string() << std::endl;
+  ss << "Quicklisp dir:   " << this->_Directories->_QuicklispDir.string() << std::endl;
   return ss.str();
 }
 
@@ -464,6 +485,12 @@ void Bundle::setup_pathname_translations()
       Cons_O::createList(Cons_O::createList(SimpleBaseString_O::make("app-resources:**;*.*"),
                                             generate_pathname(this->_Directories->_ResourcesDir)));
     core__pathname_translations(SimpleBaseString_O::make("app-resources"), _lisp->_true(), appc);
+  }
+  if ( !this->_Directories->_QuicklispDir.empty() ) {
+    Cons_sp appc =
+      Cons_O::createList(Cons_O::createList(SimpleBaseString_O::make("quicklisp:**;*.*"),
+                                            generate_pathname(this->_Directories->_QuicklispDir)));
+    core__pathname_translations(SimpleBaseString_O::make("quicklisp"), _lisp->_true(), appc);
   }
 }
 
