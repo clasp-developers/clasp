@@ -97,6 +97,7 @@ CommandLineOptions::CommandLineOptions(int argc, char *argv[])
              "export CLASP_DUMP_FUNCTIONS (set to anything)  Dump all function definitions at startup\n"
              "export CLASP_TELEMETRY_MASK=1  #turn on telemetry for (1=gc,2=stack)\n"
              "export CLASP_TELEMETRY_FILE=/tmp/clasp.tel # (file to write telemetry)\n"
+             "export CLASP_QUICKLISP_DIRECTORY=<dir> # (directory that contains quicklisp setup.lisp)\n"
              "export CLASP_FEATURES=clasp-builder-repl  # Set *features* (separate multiple features with spaces)\n"
              "export CLASP_MEMORY_PROFILE <size-threshold> <number-theshold> # This means call \n"
              "                      # HitAllocationSizeThreshold every time 16000000 bytes are allocated\n"
