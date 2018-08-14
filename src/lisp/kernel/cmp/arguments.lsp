@@ -389,7 +389,7 @@ if (seen_bad_keyword)
         (compile-error-if-too-many-arguments nfixed calling-conv))
       (irc-branch-to-and-begin-block final))))
 
-(defun compile-only-reg-and-opt-arguments (reqargs optargs outputs cc &key translate-datum)
+(defun compile-only-reg-and-opt-arguments (reqargs optargs cc &key translate-datum)
   (let ((*translate-datum* (lambda (datum) (funcall translate-datum datum))))
     (let ((register-args (cmp:calling-convention-register-args cc))
           (req-bb (irc-basic-block-create "req-bb")))
@@ -415,9 +415,8 @@ if (seen_bad_keyword)
                 (do* ((optj 0 (1+ optj))
                       (cur-target (cdr optargs) (cdddr cur-target))
                       (cur-register-args (nthcdr (first reqargs) register-args) (cdr cur-register-args))
-                      (cur-output (nthcdr (first reqargs) outputs) (cddr cur-output))
-                      (target (first cur-output) (first cur-output))
-                      (targetp (second cur-output) (second cur-output))
+                      (target (first cur-target) (first cur-target))
+                      (targetp (second cur-target) (second cur-target))
                       (arg (car cur-register-args) (car cur-register-args)))
                      ((null cur-target))
                   (let ((dest (funcall *translate-datum* target))
@@ -439,8 +438,7 @@ if (seen_bad_keyword)
       (irc-begin-block req-bb)
       (do* ((cur-target (cdr reqargs) (cdr cur-target))
             (cur-register-args register-args (cdr cur-register-args))
-            (cur-output outputs (cdr cur-output))
-            (target (car cur-output) (car cur-output))
+            (target (car cur-target) (car cur-target))
             (arg (car cur-register-args) (car cur-register-args)))
            ((null cur-target))
         #+(or)(format t "compile-all-register-required-arguments store: ~a to ~a  target: ~a~%" arg dest target)
@@ -502,7 +500,7 @@ if (seen_bad_keyword)
 ;;;   alloca-size_t (label) that allocas a size_t slot in the current function
 ;;;   alloca-vaslist (label) that allocas a vaslist slot in the current function
 ;;;   translate-datum (datum) that translates a datum into an alloca in the current function
-(defun compile-lambda-list-code (lambda-list outputs calling-conv
+(defun compile-lambda-list-code (lambda-list calling-conv
                                  &key translate-datum)
   (cmp-log "About to process-cleavir-lambda-list lambda-list: %s%N" lambda-list)
   (multiple-value-bind (reqargs optargs rest-var key-flag keyargs allow-other-keys unused-auxs varest-p)
@@ -515,7 +513,7 @@ if (seen_bad_keyword)
     (if (calling-convention-use-only-registers calling-conv)
         ;; Special cases (foo) (foo x) (foo x y) (foo x y z)  - passed in registers
         (progn
-          (compile-only-reg-and-opt-arguments reqargs optargs outputs calling-conv
+          (compile-only-reg-and-opt-arguments reqargs optargs calling-conv
                                               :translate-datum translate-datum))
         ;; Test for
         ;; (x &optional y)
@@ -639,7 +637,6 @@ if (seen_bad_keyword)
       (cmp-log "register-environment contents -> %s%N" new-env)
       (compile-lambda-list-code
        cleavir-lambda-list
-       (mapcar #'car output-bindings)
        callconv
        :translate-datum (lambda (datum)
                           (let* ((info (assoc datum output-bindings))

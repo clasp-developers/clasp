@@ -11,13 +11,12 @@
          (closed-env-dest (first outputs))
          (calling-convention (calling-convention function-info)))
     (%store (cmp:calling-convention-closure calling-convention) closed-env-dest)
-    (let ((args (cdr (cleavir-ir:outputs instr))))
-      ;; We used to change the landing pad here, so that it skipped unwinds
-      ;; (which after all can't possibly be from the lambda list code)
-      ;; But it substantially complicates the code and it's not that important.
-      ;; Better usage of INVOKE might be able to restore the situation.
-      (cmp:compile-lambda-list-code lambda-list args calling-convention
-                                    :translate-datum #'translate-datum))))
+    ;; We used to change the landing pad here, so that it skipped unwinds
+    ;; (which after all can't possibly be from the lambda list code)
+    ;; But it substantially complicates the code and it's not that important.
+    ;; Better usage of INVOKE might be able to restore the situation.
+    (cmp:compile-lambda-list-code lambda-list calling-convention
+                                  :translate-datum #'translate-datum)))
 
 (defmethod translate-simple-instruction
     ((instr clasp-cleavir-hir:bind-va-list-instruction) return-value inputs outputs (abi abi-x86-64) function-info)
@@ -34,12 +33,8 @@
                                                                           :va-list* local-va_list*
                                                                           :remaining-nargs* local-remaining-nargs*
                                                                           :rest-alloc (clasp-cleavir-hir:rest-alloc instr))))
-    (cmp:compile-lambda-list-code lambda-list outputs callconv
-                                  :translate-datum (lambda (datum)
-                                                     (if (typep datum 'cleavir-ir:lexical-location)
-                                                         (translate-datum datum)
-                                                         datum)))))
-
+    (cmp:compile-lambda-list-code lambda-list callconv
+                                  :translate-datum #'translate-datum)))
 
 (defmethod translate-simple-instruction
     ((instruction cleavir-ir:instruction) return-value inputs outputs abi function-info)
