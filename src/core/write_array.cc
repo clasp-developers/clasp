@@ -222,13 +222,13 @@ namespace core {
             clasp_write_string(" data: ",stream);
             int print_base = clasp_print_base();
             for (size_t ndx=0; ndx<this->length(); ++ndx) {
-                    buffer._Buffer->fillPointerSet(0);
                     core__integer_to_string(buffer._Buffer, clasp_make_fixnum((*this)[ndx]),
                                             make_fixnum(print_base),
                                             cl::_sym_STARprint_radixSTAR->symbolValue().isTrue(),
                                             true);
                     cl__write_sequence(buffer._Buffer,stream,make_fixnum(0),_Nil<T_O>());
                     clasp_write_string(" ",stream);
+                    buffer._Buffer->fillPointerSet(0);
             }
             clasp_write_string(">",stream);
     }
