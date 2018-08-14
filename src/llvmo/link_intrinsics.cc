@@ -618,13 +618,12 @@ ALWAYS_INLINE T_O *va_lexicalFunction(size_t depth, size_t index, core::T_O* eva
 
 /* Conses up a &rest argument from the passed valist.
  * Used in cmp/arguments.lsp for the general case of functions with a &rest in their lambda list. */
-__attribute__((visibility("default"))) core::T_O *cc_gatherRestArguments(va_list vargs, std::size_t* remainingP)
+__attribute__((visibility("default"))) core::T_O *cc_gatherRestArguments(va_list vargs, std::size_t nargs)
 {NO_UNWIND_BEGIN();
   va_list rargs;
   va_copy(rargs, vargs); // the original valist is needed for &key processing elsewhere.
   core::List_sp result = _Nil<core::T_O>();
   core::Cons_sp *cur = reinterpret_cast<Cons_sp *>(&result);
-  size_t nargs = *remainingP;
   for (int i = 0; i<nargs; ++i ) {
     core::T_O* tagged_obj = ENSURE_VALID_OBJECT(va_arg(rargs,core::T_O*));
     *cur = core::Cons_O::create(gc::smart_ptr<core::T_O>((gc::Tagged)tagged_obj), _Nil<core::T_O>());
@@ -637,12 +636,11 @@ __attribute__((visibility("default"))) core::T_O *cc_gatherRestArguments(va_list
 
 /* Like cc_gatherRestArguments, but uses a vector of conses provided by the caller-
  * intended to be stack space, for &rest parameters declared dynamic-extent. */
-__attribute__((visibility("default"))) core::T_O *cc_gatherDynamicExtentRestArguments(va_list vargs, std::size_t* remainingP, core::Cons_O* cur)
+__attribute__((visibility("default"))) core::T_O *cc_gatherDynamicExtentRestArguments(va_list vargs, std::size_t nargs, core::Cons_O* cur)
 {NO_UNWIND_BEGIN();
   va_list rargs;
   va_copy(rargs, vargs);
   core::List_sp result = Cons_sp((gctools::Tagged)gctools::tag_cons((core::Cons_O*)cur));
-  size_t nargs = *remainingP;
   if (nargs) {
     for (int i = 0; i<nargs-1; ++i ) {
       core::T_O* tagged_obj = ENSURE_VALID_OBJECT(va_arg(rargs,core::T_O*));
