@@ -173,14 +173,14 @@ if (seen_bad_keyword)
   ;; KW-KEY and KW-VALUE are the keyword-value pair to test against.
 
   ;; FIXME: We could use a switch here, depending on how literals move.
-  (irc-branch-to-and-begin-block (irc-basic-block-create (core:bformat nil "kw-%s-test" keyword)))
+  (irc-branch-to-and-begin-block (irc-basic-block-create (core:bformat nil "kw-%s-test" (symbol-name keyword))))
   (let* ((key-const (irc-literal keyword (string keyword)))
          ;; matchKeywordOnce returns 0 if the keys don't match, 2 if suppliedp is T
          ;; (i.e. the keyword has been seen already), and 1 otherwise.
          (test-keyword (irc-intrinsic-call "cc_matchKeywordOnce"
                                            (list key-const kw-key (irc-load-t* suppliedp-alloca))))
-         (mismatch-block (irc-basic-block-create (core:bformat nil "not-%s" keyword)))
-         (match-block (irc-basic-block-create (core:bformat nil "matched-%s" keyword)))
+         (mismatch-block (irc-basic-block-create (core:bformat nil "not-%s" (symbol-name keyword))))
+         (match-block (irc-basic-block-create (core:bformat nil "matched-%s" (symbol-name keyword))))
          (switch (irc-switch test-keyword mismatch-block 3)))
     (irc-add-case switch (irc-size_t 0) mismatch-block)
     (irc-add-case switch (irc-size_t 1) match-block)
@@ -360,7 +360,7 @@ if (seen_bad_keyword)
     (unless (zerop nreq)
       (compile-error-if-not-enough-arguments nreq calling-conv)
       (compile-required-arguments reqargs calling-conv))
-    (let ((final (irc-basic-block-create "check-too-many-args"))
+    (let ((final (irc-basic-block-create "done-parsing-arguments"))
           ;; note: atm, we won't be in this function if we only have required args,
           ;; so we basically always need these. But that can (hopefully will) change.
           (iNIL (irc-nil)) (iT (irc-t)))
@@ -564,7 +564,6 @@ if (seen_bad_keyword)
             :use-only-registers t)
            (make-calling-convention-configuration
             :use-only-registers may-use-only-registers ; if may-use-only-registers then debug-on is T and we could use only registers
-            :vaslist* (irc-alloca-vaslist :label "vaslist")
             :register-save-area* (irc-alloca-register-save-area :label "register-save-area")
             :invocation-history-frame* (and debug-on (irc-alloca-invocation-history-frame :label "invocation-history-frame")))))))
 

@@ -281,7 +281,7 @@
 
     (primitive         "cc_setup_vaslist" %t*% (list %vaslist*% %va_list*% %size_t%))
     (primitive         "cc_setup_vaslist_internal" %t*% (list %vaslist*% %size_t%))
-    (primitive         "cc_rewind_va_list" %void% (list %va_list*% %size_t*% %register-save-area*%))
+    (primitive         "cc_rewind_va_list" %void% (list %va_list*% %register-save-area*%))
     (primitive         "cc_rewind_vaslist" %t*% (list %vaslist*% %va_list*% %register-save-area*%))
     (primitive         "cc_push_InvocationHistoryFrame" %void% (list %t*% %InvocationHistoryFrame*% %va_list*% %size_t%))
     (primitive         "cc_pop_InvocationHistoryFrame" %void% (list %t*% %InvocationHistoryFrame*%))

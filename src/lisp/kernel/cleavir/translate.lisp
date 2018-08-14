@@ -188,7 +188,7 @@ when this is t a lot of graphs will be generated.")
                    (list (cmp:calling-convention-closure cc)
                          (cmp:calling-convention-invocation-history-frame* cc)
                          (cmp:calling-convention-va-list* cc)
-                         (cmp:irc-load (cmp:calling-convention-remaining-nargs* cc)))))
+                         (cmp:calling-convention-nargs cc))))
 
 (defun layout-procedure* (the-function body-irbuilder
                           body-block

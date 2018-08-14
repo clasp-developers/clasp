@@ -24,14 +24,11 @@
          (vaslist                       (car inputs))
          (src-remaining-nargs*          (%intrinsic-call "cc_vaslist_remaining_nargs_address" (list (%load vaslist))))
          (src-va_list*                  (%intrinsic-call "cc_vaslist_va_list_address" (list (%load vaslist)) "vaslist_address"))
-         (local-remaining-nargs*        (alloca-size_t "local-remaining-nargs"))
          (local-va_list*                (alloca-va_list "local-va_list"))
-         (_                             (%store (%load src-remaining-nargs*) local-remaining-nargs*))
          (_                             (%intrinsic-call "llvm.va_copy" (list (%pointer-cast local-va_list* cmp:%i8*%)
                                                                               (%pointer-cast src-va_list* cmp:%i8*%))))
          (callconv                      (cmp:make-calling-convention-impl :nargs (%load src-remaining-nargs*)
                                                                           :va-list* local-va_list*
-                                                                          :remaining-nargs* local-remaining-nargs*
                                                                           :rest-alloc (clasp-cleavir-hir:rest-alloc instr))))
     (cmp:compile-lambda-list-code lambda-list callconv
                                   :translate-datum #'translate-datum)))
