@@ -337,7 +337,11 @@ values of the last FORM.  If no FORM is given, returns NIL."
       ;; Who would write m-v-b with one variable, you ask? Computers! (Mostly SETF.)
       ;; Note that in cclasp, a compiler macro (in inline.lsp) takes over from this macro.
       `(let ((,(first vars) ,form)) ,@body)
-      `(multiple-value-call #'(lambda (&optional ,@(mapcar #'list vars) &rest ,(gensym)) ,@body) ,form)))
+      (let ((restvar (gensym)))
+        `(multiple-value-call #'(lambda (&optional ,@(mapcar #'list vars) &rest ,restvar)
+                                  (declare (ignore ,restvar))
+                                  ,@body)
+           ,form))))
 
 (defun while-until (test body jmp-op)
   (let ((label (gensym))
