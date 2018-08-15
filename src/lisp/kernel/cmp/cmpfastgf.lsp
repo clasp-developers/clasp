@@ -123,7 +123,6 @@
   vaslist*
   methods-vaslist-t*
   invocation-history-frame*
-  cleanup-action
   continue-after-dispatch
   miss-basic-block)
 
@@ -761,9 +760,8 @@
 ;;;
 ;;; Debugging a generic function dispatcher
 ;;;
-(defun debug-save-dispatcher (gf module disp-fn startup-fn shutdown-fn sorted-roots &optional (output-path #P"/tmp/dispatcher.ll"))
+(defun debug-save-dispatcher (module &optional (output-path #P"/tmp/dispatcher.ll"))
   "Save everything about the generic function so that it can be saved to a file and then edited and re-installed"
-  ;;  (cmp::gf-log-sorted-roots sorted-roots)
   (when (wild-pathname-p output-path)
     (setf output-path (pathname (substitute #\_ #\* (namestring output-path)))))
   (let ((fout (open output-path :direction :output)))
@@ -860,12 +858,7 @@
                                                          ihs*
                                                          va-list*
                                                          number-of-arguments-passed)
-                                          ihs*)))
-           (cleanup-action (when need-debug-frame
-                             #'(lambda (arguments)
-                                 (irc-intrinsic "cc_pop_InvocationHistoryFrame"
-                                                (first (argument-holder-register-arguments arguments))
-                                                (argument-holder-invocation-history-frame* arguments))))))
+                                          ihs*))))
       ;; We have va-list* and register-arguments for the arguments
       ;; We also have specializer-profile - now we can gather up the arguments we need to dispatch on.
       (flet ((next-argument (idx dispatch-register-arguments)
@@ -889,7 +882,6 @@
                                 :dispatch-va-list* va-list*
                                 :vaslist* vaslist*
                                 :methods-vaslist-t* vaslist-t*
-                                :cleanup-action cleanup-action
                                 :invocation-history-frame* invocation-history-frame*
                                 :miss-basic-block miss-basic-block))))))
 
@@ -935,12 +927,13 @@
     (with-module (:module *the-module*
                   :optimize nil)
       (with-source-pathnames (:source-pathname nil)
-        (let* ((dispatcher-name (jit-function-name generic-function-name))
-               (disp-fn (irc-simple-function-create dispatcher-name
+        (let* ((*current-function-name* (jit-function-name generic-function-name))
+               (*gv-current-function-name* (module-make-global-string *current-function-name* "fn-name"))
+               (disp-fn (irc-simple-function-create *current-function-name*
                                                     %fn-registers-prototype% #| was %fn-gf% |#
                                                     'llvm-sys::External-linkage
                                                     *the-module*
-                                                    :argument-names +fn-registers-prototype-argument-names+ #| was %fn-gf-arguments% |# )))
+                                                    :argument-names +fn-registers-prototype-argument-names+)))
           ;;(1) Create a function with a regular signature
           ;;(2) Allocate space for a va_list and copy the va_list passed into it.
           ;;(3) compile the dispatch function to llvm-ir refering to the eql specializers and stamps and
@@ -1032,7 +1025,9 @@
                                 (codegen-rest-of-dispatcher)
                                 (irc-begin-block (argument-holder-continue-after-dispatch arguments)))
                             ((cleanup)
-                             (funcall (argument-holder-cleanup-action arguments) arguments))))
+                             (irc-intrinsic "cc_pop_InvocationHistoryFrame"
+                                            (first (argument-holder-register-arguments arguments))
+                                            (argument-holder-invocation-history-frame* arguments)))))
                         (with-landing-pad nil
                           (codegen-node-or-outcome arguments -1 (dtree-root dtree))
                           (codegen-rest-of-dispatcher)
@@ -1054,18 +1049,10 @@
                                (core:bformat t "Dumping the module from codegen-dispatcher%N")
                                (llvm-sys:dump-module *the-module*))
                 (let ((sorted-roots (gather-sorted-outcomes *eql-selectors* *outcomes*)))
-                  ;; REMOVE THE FOLLOWING IN PRODUCTION CODE
-                  #||                #+debug-cmpgf
-                  (progn
-                  (let ((before-disp-name (llvm-sys:get-name disp-fn)))
-                  (debug-save-dispatcher the-gf *the-module* disp-fn startup-fn shutdown-fn sorted-roots)
-                  (let ((after-disp-name (llvm-sys:get-name disp-fn)))
-                  (format t "Saved dispatcher  before-disp-name -> ~a     after-disp-name -> ~a~%" before-disp-name after-disp-name))))
-                  ||#
                   (when output-path
-                    (debug-save-dispatcher generic-function *the-module* disp-fn startup-fn shutdown-fn sorted-roots output-path))
-                  (let* ((compiled-dispatcher (jit-add-module-return-dispatch-function *the-module* disp-fn startup-fn shutdown-fn sorted-roots)))
-                    compiled-dispatcher))))))))))
+                    (debug-save-dispatcher *the-module* output-path))
+                  (jit-add-module-return-dispatch-function
+                   *the-module* disp-fn startup-fn shutdown-fn sorted-roots))))))))))
 
 (defun codegen-dispatcher (raw-call-history specializer-profile generic-function &rest args &key generic-function-name output-path log-gf (debug-on t debug-on-p))
   (let* ((*log-gf* log-gf)
