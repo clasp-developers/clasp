@@ -5,12 +5,11 @@
 (defvar *translate-datum*)
 
 ;; Generate code to signal an error iff there weren't enough arguments provided.
-(defun compile-error-if-not-enough-arguments (minimum cc)
-  (let* ((nargs (calling-convention-nargs cc))
-         (cmin (irc-size_t minimum))
+(defun compile-error-if-not-enough-arguments (minimum nargs)
+  (let* ((cmin (irc-size_t minimum))
          (error-block (irc-basic-block-create "not-enough-arguments"))
          (cont-block (irc-basic-block-create "enough-arguments"))
-         (cmp (irc-icmp-ult (calling-convention-nargs cc) cmin)))
+         (cmp (irc-icmp-ult nargs cmin)))
     (irc-cond-br cmp error-block cont-block)
     (irc-begin-block error-block)
     (irc-intrinsic-call-or-invoke
@@ -21,12 +20,11 @@
     (irc-begin-block cont-block)))
 
 ;; Ditto but with too many.
-(defun compile-error-if-too-many-arguments (maximum cc)
-  (let* ((nargs (calling-convention-nargs cc))
-         (cmax (irc-size_t maximum))
+(defun compile-error-if-too-many-arguments (maximum nargs)
+  (let* ((cmax (irc-size_t maximum))
          (error-block (irc-basic-block-create "not-enough-arguments"))
          (cont-block (irc-basic-block-create "enough-arguments"))
-         (cmp (irc-icmp-ugt (calling-convention-nargs cc) cmax)))
+         (cmp (irc-icmp-ugt nargs cmax)))
     (irc-cond-br cmp error-block cont-block)
     (irc-begin-block error-block)
     (irc-intrinsic-call-or-invoke
@@ -351,14 +349,15 @@ if (seen_bad_keyword)
 					 keyargs 
 					 allow-other-keys
 					 calling-conv
-                                         &key translate-datum)
+                                         &key translate-datum (safep t))
   (cmp-log "Entered compile-general-lambda-list-code%N")
   (let* ((*translate-datum* (lambda (datum) (funcall translate-datum datum)))
          (nreq (car reqargs))
          (nopt (car optargs))
          (nfixed (+ nreq nopt)))
     (unless (zerop nreq)
-      (compile-error-if-not-enough-arguments nreq calling-conv)
+      (when safep
+        (compile-error-if-not-enough-arguments nreq (calling-convention-nargs calling-conv)))
       (compile-required-arguments reqargs calling-conv))
     (let ((final (irc-basic-block-create "done-parsing-arguments"))
           ;; note: atm, we won't be in this function if we only have required args,
@@ -386,10 +385,11 @@ if (seen_bad_keyword)
         (when key-flag
           (compile-key-arguments keyargs allow-other-keys nremaining calling-conv iNIL iT)))
       (unless (or rest-var key-flag)
-        (compile-error-if-too-many-arguments nfixed calling-conv))
+        (when safep
+          (compile-error-if-too-many-arguments nfixed (calling-convention-nargs calling-conv))))
       (irc-branch-to-and-begin-block final))))
 
-(defun compile-only-reg-and-opt-arguments (reqargs optargs cc &key translate-datum)
+(defun compile-only-reg-and-opt-arguments (reqargs optargs cc &key translate-datum (safep t))
   (let ((*translate-datum* (lambda (datum) (funcall translate-datum datum))))
     (let ((register-args (cmp:calling-convention-register-args cc))
           (req-bb (irc-basic-block-create "req-bb")))
@@ -406,11 +406,12 @@ if (seen_bad_keyword)
               (let ((case-bb (elt cases opti)))
                 (irc-begin-block case-bb)
                 (if (= opti 0)
-                    (irc-intrinsic "cc_check_if_wrong_number_of_arguments"
-                                   (cmp:calling-convention-nargs cc)
-                                   (jit-constant-size_t (car reqargs))
-                                   (jit-constant-size_t (+ (car reqargs) (car optargs)))
-                                   *current-function-description*)
+                    (when safep
+                      (irc-intrinsic "cc_check_if_wrong_number_of_arguments"
+                                     (cmp:calling-convention-nargs cc)
+                                     (jit-constant-size_t (car reqargs))
+                                     (jit-constant-size_t (+ (car reqargs) (car optargs)))
+                                     *current-function-description*))
                     (irc-add-case sw (jit-constant-size_t opti) case-bb))
                 (do* ((optj 0 (1+ optj))
                       (cur-target (cdr optargs) (cdddr cur-target))
@@ -429,11 +430,12 @@ if (seen_bad_keyword)
                           (irc-store true-val destp)))))
                 (irc-br req-bb))))
           (progn
-            (irc-intrinsic "cc_check_if_wrong_number_of_arguments"
-                           (cmp:calling-convention-nargs cc)
-                           (jit-constant-size_t (car reqargs))
-                           (jit-constant-size_t (+ (car reqargs) (car optargs)))
-                           *current-function-description*)
+            (when safep
+              (irc-intrinsic "cc_check_if_wrong_number_of_arguments"
+                             (cmp:calling-convention-nargs cc)
+                             (jit-constant-size_t (car reqargs))
+                             (jit-constant-size_t (+ (car reqargs) (car optargs)))
+                             *current-function-description*))
             (irc-br req-bb)))
       (irc-begin-block req-bb)
       (do* ((cur-target (cdr reqargs) (cdr cur-target))
@@ -501,7 +503,7 @@ if (seen_bad_keyword)
 ;;;   alloca-vaslist (label) that allocas a vaslist slot in the current function
 ;;;   translate-datum (datum) that translates a datum into an alloca in the current function
 (defun compile-lambda-list-code (lambda-list calling-conv
-                                 &key translate-datum)
+                                 &key translate-datum (safep t))
   (cmp-log "About to process-cleavir-lambda-list lambda-list: %s%N" lambda-list)
   (multiple-value-bind (reqargs optargs rest-var key-flag keyargs allow-other-keys unused-auxs varest-p)
       (process-cleavir-lambda-list lambda-list)
@@ -514,7 +516,8 @@ if (seen_bad_keyword)
         ;; Special cases (foo) (foo x) (foo x y) (foo x y z)  - passed in registers
         (progn
           (compile-only-reg-and-opt-arguments reqargs optargs calling-conv
-                                              :translate-datum translate-datum))
+                                              :translate-datum translate-datum
+                                              :safep safep))
         ;; Test for
         ;; (x &optional y)
         ;; (x y &optional z)
@@ -527,7 +530,8 @@ if (seen_bad_keyword)
                                             keyargs 
                                             allow-other-keys
                                             calling-conv
-                                            :translate-datum translate-datum)))))
+                                            :translate-datum translate-datum
+                                            :safep safep)))))
 
 (defun maybe-alloc-cc-setup (lambda-list debug-on)
   "Maybe allocate slots in the stack frame to handle the calls
