@@ -777,7 +777,12 @@
   (unless (or (not *print-circle*)
 	      (fixnump object)
 	      (characterp object)
-	      (and (symbolp object) (symbol-package object)))
+	      (and (symbolp object) (symbol-package object)
+                   ;; This is so that we do handle print-circle even when e.g. pretty printing a vector
+                   ;; (for which object = nil here).
+                   ;; It doesn't SEEM to result in (NIL . NIL) being printed as (#1=NIL . #1#), but
+                   ;; I don't understand this very well.
+                   (not (null object))))
     (let (code)
       (cond ((not *circle-counter*)
 	     (let* ((hash (make-hash-table :test 'eq :size 1024
