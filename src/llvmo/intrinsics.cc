@@ -309,31 +309,6 @@ ALWAYS_INLINE void cc_push_InvocationHistoryFrame(core::T_O* tagged_closure, Inv
   core::core__stack_monitor(_Nil<core::T_O>());
   new (frame) InvocationHistoryFrame(va_args, nargs);
   core::push_InvocationHistoryStack(frame);
-#if 0
-  if (core::debug_InvocationHistoryFrame) {
-    Closure_sp closure((gc::Tagged)tagged_closure);
-    if ( strcmp(_rep_(frame->function()->name()).c_str(),debug_InvocationHistoryFrame_name)==0) {
-      printf("%s:%d !!!!!!!!!!!!!!!!!!!!!!   Saw %s\n", __FILE__, __LINE__, debug_InvocationHistoryFrame_name);
-      core::debug_InvocationHistoryFrame = 2;
-    }
-    if (core::debug_InvocationHistoryFrame >= 2) {
-//      printf("%s:%d  --------   Entering closure %s\n", __FILE__, __LINE__, _rep_(closure).c_str());
-//      printf("%s:%d:%s  push    frame @%p   stack @%p\n", __FILE__, __LINE__, __FUNCTION__, frame, my_thread->_InvocationHistoryStack );
-      if (_rep_(frame->function()->name()) == std::string("THROW-FUNCTION")) {
-        core::debug_InvocationHistoryFrame = 3;
-      }
-      if (core::debug_InvocationHistoryFrame == 3) {
-        printf("%s:%d:%s  push    frame @%p     stack @%p\n", __FILE__, __LINE__, __FUNCTION__, frame, my_thread->_InvocationHistoryStack );
-        printf("%s:%d:%s          name: %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(frame->function()->name()).c_str());
-      }
-//      printf("          %s\n", frame->asString(0).c_str());
-    }
-  }
-  if (frame==NULL || nargsP==NULL) {
-    printf("%s:%d   Bad call to cc_push_InvocationHistoryFrame\n", __FILE__, __LINE__);
-    abort();
-  }
-#endif
   NO_UNWIND_END();
 }
 
