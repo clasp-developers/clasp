@@ -1,7 +1,11 @@
+
+(format t "fork-server.lisp starting *features* -> ~s~%" *features*)
+(format t "fork-server.lisp - loading start-cando.lisp~%") 
 (load "source-dir:extensions;cando;src;lisp;start-cando.lisp")
-(load "source-dir:extensions;cando;src;lisp;load-cando-jupyter.lisp")
 
+(in-package :cl-user)
 
+(defparameter *parent-cleanup* t)
 (defmacro with-directory-cleanup ((dir &key (cleanup t)) &body code)
   `(unwind-protect
         (progn
@@ -9,7 +13,7 @@
           ,@code)
      (progn
        (format t "Process ~a is cleaning up directory ~a~%" (core:getpid) ,dir)
-     (when ,cleanup (core:rmdir ,dir)))))
+     (when (and *parent-cleanup* ,cleanup) (core:rmdir ,dir)))))
 
 (defmacro with-file-cleanup ((stream filename &key (cleanup t)) &body body)
   `(unwind-protect
@@ -18,7 +22,7 @@
             ,@body))
      (progn
        (format t "Process ~a is cleaning up file ~a~%" (core:getpid) ,filename)
-       (when ,cleanup (delete-file ,filename)))))
+       (when (and *parent-cleanup* ,cleanup) (delete-file ,filename)))))
 
 (defmacro with-server-data ((&key server-info-directory pid port) &body body)
   (let ((pidstream (gensym))
@@ -43,7 +47,11 @@
              (format ,cstream "~s~%" ,connection-file-name)
              ,@body))))))
 
-(defun jupyterlab-fork-server (&optional (server-info-directory #P"/tmp/clasp-fork-server/"))
+
+(defun main-jupyterlab-fork-server (&optional (server-info-directory #P"/tmp/clasp-fork-server/"))
+  (format t "Warming up the compiler... #dispatchers -> ~d~%" cmp::*dispatcher-count*)
+  (compile-file "sys:kernel;lsp;foundation.lsp" :output-file (core:mkstemp "/tmp/foundation"))
+  (format t "The compiler is warmed up #dispatchers -> ~d~%" cmp::*dispatcher-count*)
   (let ((listen (make-instance 'sb-bsd-sockets:inet-socket
                                :type :stream
                                :protocol :tcp)))
@@ -51,6 +59,7 @@
     (sb-bsd-sockets:socket-bind listen
                                 (sb-bsd-sockets:make-inet-address "127.0.0.1")
                                 0)
+    (format t "Listening to socket~%")
     (multiple-value-bind (address port)
         (sb-bsd-sockets:socket-name listen)
       (with-server-data (:server-info-directory server-info-directory
@@ -72,14 +81,20 @@
                                                             :element-type :default)))
             (unwind-protect
                  (let ((connection-file-name (read-line stream)))
-                   (format t "Received: ~s~%" connection-file-name)
+                   (format t "Received connection-file-name: ~s~%" connection-file-name)
+                   (finish-output)
+		   (format t "server-info-directory: ~s~%" server-info-directory)
                    (finish-output)
                    (gctools:change-sigchld-sigport-handlers)
                    (multiple-value-bind (maybe-error pid child-stream)
                        (core:fork)
                      (if (= pid 0)
                          (let* ((child-directory (merge-pathnames (make-pathname :directory (list :relative (format nil "~d" (core:getpid)))) server-info-directory))
-                                (child-connection-file-name (make-pathname :name connection-file-name :defaults child-directory)))
+                                (child-connection-file-name (make-pathname :name "connection-file-name" :defaults child-directory)))
+                           (setf *parent-cleanup* nil)
+			   (format t "child-directory: ~s~%" child-directory)
+			   (format t "child-connection-file-name: ~s~%" child-connection-file-name)
+			   (finish-output)
                            (format stream "~d~%" (core:getpid))
                            (finish-output stream)
                            (let ((client-pid (parse-integer (read-line stream))))
@@ -90,9 +105,11 @@
                                                :client-pid client-pid)
                                (format t "Starting cl-jupyter-kernel-start child pid ~d~%" (core:getpid))
                                (let* ((delay (ext:getenv "CLASP_FORK_SERVER_DELAY"))
-                                      (delay-seconds (if (null delay) 0 (parse-integer delay))))
-                                 (format t "Delaying before starting server~%")
-                                 (sleep delay-seconds))
+                                      (delay-seconds (if delay (parse-integer delay) nil)))
+                                 (when delay-seconds
+                                   (format t "Delaying ~d seconds before starting server~%" delay-seconds)
+                                   (sleep delay-seconds)
+                                   (format t "Done delay~%")))
                                (cando-user:cl-jupyter-kernel-start connection-file-name)
                                (sb-bsd-sockets:socket-close listen))
                              (format t "Child ~a is exiting - client ~a should be killed as well...~%" (core:getpid) client-pid)
@@ -102,4 +119,11 @@
                 (close stream)))))))
     (sb-bsd-sockets:socket-close listen)))
 
-(jupyterlab-fork-server)
+(export 'main-jupyterlab-fork-server)
+
+(in-package :cando-user)
+(format t "Entered :cando-user package~%")
+
+
+(format t "Starting jupyterlab-fork-server *load-pathname* -> ~s~%" *load-pathname*)
+(cl-user:main-jupyterlab-fork-server)
