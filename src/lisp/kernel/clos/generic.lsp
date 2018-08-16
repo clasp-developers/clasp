@@ -266,3 +266,15 @@
   (when (and method-class-p (symbolp generic-function-class))
     (setf args (list* :method-class (find-class method-class) args)))
   (apply #'make-instance generic-function-class :name name args))
+
+;;; Miscellany
+
+;;; Kind of badly placed, but- returns minimum and maximum number of args allowed as values.
+;;; max is NIL if infinite. Used by fastgf.
+(defun generic-function-min-max-args (gf)
+  ;; since we call this from fastgf, it can't use generic functions (like g-f-l-l)
+  ;; but FIXME: this may be a problem if g-f-l-l being generic is relevant, e.g. for a user subclass.
+  (with-early-accessors (+standard-generic-function-slots+)
+    (multiple-value-bind (req opt restvar keyflag) ; rest are irrelevant
+        (core:process-lambda-list (generic-function-lambda-list gf) 'function)
+      (values (car req) (if (or restvar keyflag) nil (+ (car req) (car opt)))))))

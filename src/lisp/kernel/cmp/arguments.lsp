@@ -538,8 +538,9 @@ if (seen_bad_keyword)
    depending on what is in the lambda-list (&rest, &key etc) and debug-on.
    Return a calling-convention-configuration object that describes what was allocated.
    See the bclasp version in lambdalistva.lsp."
-  (multiple-value-bind (reqargs optargs rest-var key-flag keyargs allow-other-keys unused-auxs varest-p)
+  (multiple-value-bind (reqargs optargs rest-var key-flag keyargs allow-other-keys aux varest-p)
       (core:process-lambda-list lambda-list 'core::function)
+    (declare (ignore aux))
     ;; Currently if nargs <= +args-in-registers+ required arguments and (null debug-on)
     ;;      then can optimize and use the arguments in registers directly
     ;;  If anything else then allocate space to spill the registers
@@ -623,7 +624,7 @@ if (seen_bad_keyword)
         (push (cons keyp (incf index)) bindings))
       (nreverse bindings))))
 
-(defun bclasp-compile-lambda-list-code (fn-env callconv)
+(defun bclasp-compile-lambda-list-code (fn-env callconv &key (safep t))
   (let ((cleavir-lambda-list (calling-convention-cleavir-lambda-list callconv)))
     (cmp-log "Entered bclasp-compile-lambda-list-code%N")
     (let* ((output-bindings (bclasp-map-lambda-list-symbols-to-indices cleavir-lambda-list))
@@ -641,6 +642,7 @@ if (seen_bad_keyword)
       (compile-lambda-list-code
        cleavir-lambda-list
        callconv
+       :safep safep
        :translate-datum (lambda (datum)
                           (let* ((info (assoc datum output-bindings))
                                  (symbol (car info))

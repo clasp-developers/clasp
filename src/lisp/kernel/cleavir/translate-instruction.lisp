@@ -31,6 +31,10 @@
                                                                           :va-list* local-va_list*
                                                                           :rest-alloc (clasp-cleavir-hir:rest-alloc instr))))
     (cmp:compile-lambda-list-code lambda-list callconv
+                                  ;; BIND-VA-LIST is used exclusively internally, and furthermore,
+                                  ;; in method bodies. In that case the generic function does the
+                                  ;; checking anyway, so there's no point in each method repeating.
+                                  :safep nil
                                   :translate-datum #'translate-datum)))
 
 (defmethod translate-simple-instruction

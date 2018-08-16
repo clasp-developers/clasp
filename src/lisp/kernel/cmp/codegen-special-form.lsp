@@ -838,7 +838,8 @@ jump to blocks within this tagbody."
                                                            :va-list* local-va_list*
                                                            :rest-alloc rest-alloc
                                                            :cleavir-lambda-list cleavir-lambda-list)))
-              (let ((new-env (bclasp-compile-lambda-list-code evaluate-env callconv)))
+              ;; See comment in cleavir bind-va-list w/r/t safep.
+              (let ((new-env (bclasp-compile-lambda-list-code evaluate-env callconv :safep nil)))
                 (irc-intrinsic-call "llvm.va_end" (list (irc-pointer-cast local-va_list* %i8*%)))
                 (codegen-let/let* (car new-body) result (cdr new-body) new-env)))))))))
 

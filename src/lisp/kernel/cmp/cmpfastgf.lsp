@@ -1017,21 +1017,31 @@
                                         (argument-holder-return-value arguments))
                              (argument-holder-return-value arguments))
                            (irc-br (argument-holder-continue-after-dispatch arguments))))
-                    (if (argument-holder-invocation-history-frame* arguments)
-                        (with-new-function-prepare-for-try (disp-fn irbuilder-alloca)
-                          (with-try
-                              (progn
-                                (codegen-node-or-outcome arguments -1 (dtree-root dtree))
-                                (codegen-rest-of-dispatcher)
-                                (irc-begin-block (argument-holder-continue-after-dispatch arguments)))
-                            ((cleanup)
-                             (irc-intrinsic "cc_pop_InvocationHistoryFrame"
-                                            (first (argument-holder-register-arguments arguments))
-                                            (argument-holder-invocation-history-frame* arguments)))))
-                        (with-landing-pad nil
-                          (codegen-node-or-outcome arguments -1 (dtree-root dtree))
-                          (codegen-rest-of-dispatcher)
-                          (irc-begin-block (argument-holder-continue-after-dispatch arguments)))))
+                    (multiple-value-bind (min max)
+                        (clos:generic-function-min-max-args generic-function)
+                      (if (argument-holder-invocation-history-frame* arguments)
+                          (with-new-function-prepare-for-try (disp-fn irbuilder-alloca)
+                            (with-try
+                                (progn
+                                  (unless (zerop min)
+                                    (compile-error-if-not-enough-arguments min num-args))
+                                  (unless (null max)
+                                    (compile-error-if-too-many-arguments max num-args))
+                                  (codegen-node-or-outcome arguments -1 (dtree-root dtree))
+                                  (codegen-rest-of-dispatcher)
+                                  (irc-begin-block (argument-holder-continue-after-dispatch arguments)))
+                              ((cleanup)
+                               (irc-intrinsic "cc_pop_InvocationHistoryFrame"
+                                              (first (argument-holder-register-arguments arguments))
+                                              (argument-holder-invocation-history-frame* arguments)))))
+                          (with-landing-pad nil
+                            (unless (zerop min)
+                              (compile-error-if-not-enough-arguments min num-args))
+                            (unless (null max)
+                              (compile-error-if-too-many-arguments max num-args))
+                            (codegen-node-or-outcome arguments -1 (dtree-root dtree))
+                            (codegen-rest-of-dispatcher)
+                            (irc-begin-block (argument-holder-continue-after-dispatch arguments))))))
                   (irc-ret (irc-load (argument-holder-return-value arguments))))))
             (let* ((array-type (llvm-sys:array-type-get cmp:%t*% *gf-data-id*))
                    (correct-size-holder (llvm-sys:make-global-variable *the-module*
