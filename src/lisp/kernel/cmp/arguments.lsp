@@ -204,6 +204,7 @@ if (seen_bad_keyword)
   ;; and use those in the internal check.
   ;; We also initialize the aok to NIL, even before it's supplied. Body code will initialize it
   ;; based on the suppliedp so there's no problem, and it means we can just use the aok as a flag.
+  ;; (With &allow-other-keys, we skip this stuff because we don't care.)
   (irc-branch-to-and-begin-block (irc-basic-block-create "parse-key-arguments"))
   ;; Set up all the blocks we need- except the ones for each keyword, those are later.
   (let ((initialize-suppliedps (irc-basic-block-create "initialize-suppliedps")) ; set all suppliedp to nil
@@ -213,11 +214,11 @@ if (seen_bad_keyword)
         (args-depleted (irc-basic-block-create "args-depleted"))
         ;; Where we get one key-value pair from the arguments list.
         (parse-arg (irc-basic-block-create "parse-arg"))
-        ;; Two used for phi wackiness (see below)
-        (kw-matched (irc-basic-block-create "kw-matched"))
-        (kw-unmatched (irc-basic-block-create "kw-unmatched"))
         ;; Once we've taken care of a keyword, go here to decrement the count and continue.
         (kw-loop-continue (irc-basic-block-create "kw-loop-continue"))
+        ;; Two used for phi wackiness (see below) if no &allow-other-keys
+        (kw-matched (irc-basic-block-create "kw-matched"))
+        (kw-unmatched (irc-basic-block-create "kw-unmatched"))
         ;; The end.
         (exit (irc-basic-block-create "kw-exit"))
         )
@@ -237,7 +238,7 @@ if (seen_bad_keyword)
           ;; The first bad keyword we see.
           ;; We can't signal an error until the end, as :allow-other-keys T could suppress.
           ;; FIXME: Hypothetically we could just store a list of all of them.
-          (bad-kw-alloca (irc-alloca-t* :label "bad-keyword")))
+          (bad-kw-alloca (unless lambda-list-aokp (irc-alloca-t* :label "bad-keyword"))))
       ;; do the initializations.
       (do* ((cur-key (cdr keyargs) (cddddr cur-key))
             (key (car cur-key) (car cur-key))
@@ -245,28 +246,31 @@ if (seen_bad_keyword)
            ((null cur-key))
         (let ((suppliedp-alloca (funcall *translate-datum* suppliedp)))
           (irc-store false suppliedp-alloca)
-          (when (eq key :allow-other-keys)
-            (setf aok-parameter-p t
-                  aok-alloca (funcall *translate-datum* (caddr cur-key))
-                  aok-suppliedp-alloca suppliedp-alloca)
-            (irc-store false aok-alloca))))
-      ;; No allow-other-keys parameter, so make allocas for it.
-      (unless aok-parameter-p
-        (setf aok-alloca (irc-alloca-t* :label "allow-other-keys")
-              aok-suppliedp-alloca (irc-alloca-t* :label "allow-other-keys-suppliedp"))
-        (irc-store false aok-suppliedp-alloca)
-        (irc-store false aok-alloca))
+          (unless lambda-list-aokp
+            (when (eq key :allow-other-keys)
+              (setf aok-parameter-p t
+                    aok-alloca (funcall *translate-datum* (caddr cur-key))
+                    aok-suppliedp-alloca suppliedp-alloca)
+              (irc-store false aok-alloca)))))
+      (unless lambda-list-aokp
+        ;; No allow-other-keys parameter, so make allocas for it.
+        (unless aok-parameter-p
+          (setf aok-alloca (irc-alloca-t* :label "allow-other-keys")
+                aok-suppliedp-alloca (irc-alloca-t* :label "allow-other-keys-suppliedp"))
+          (irc-store false aok-suppliedp-alloca)
+          (irc-store false aok-alloca)))
       (irc-br kw-loop)
       ;; Main loop.
       (irc-begin-block kw-loop)
       (let (;; This variable holds the number of args we have left to process.
             (nargs-remaining (irc-phi %size_t% 2 "nargs-remaining"))
             ;; Whether we've seen an invalid or unrecognized keyword.
-            (seen-bad-kw (irc-phi %i1% 2 "seen-bad-kw")))
+            (seen-bad-kw (unless lambda-list-aokp (irc-phi %i1% 2 "seen-bad-kw"))))
         ;; If we're just entering the loop, we have nremaining args left. (We subtract two each loop.)
         (irc-phi-add-incoming nargs-remaining nremaining initialize-suppliedps)
         ;; If we're just entering the loop, we haven't seen any bad keywords.
-        (irc-phi-add-incoming seen-bad-kw (jit-constant-i1 0) initialize-suppliedps)
+        (unless lambda-list-aokp
+          (irc-phi-add-incoming seen-bad-kw (jit-constant-i1 0) initialize-suppliedps))
         ;; If there are no arguments remaining, we're done.
         (let ((zerop (irc-icmp-eq nargs-remaining (irc-size_t 0))))
           (irc-cond-br zerop args-depleted parse-arg))
@@ -283,32 +287,40 @@ if (seen_bad_keyword)
             (compile-one-key-test
              key (funcall *translate-datum* target) (funcall *translate-datum* suppliedp)
              kw-matched key-arg value-arg true))
-          ;; We've checked against all known keywords and come up short.
-          ;; But if allow-other-keys isn't a parameter, we have to check that too.
-          ;; (If it is a parameter we checked it in the loop.)
-          (unless aok-parameter-p
-            (compile-one-key-test :allow-other-keys aok-alloca aok-suppliedp-alloca
-                                  kw-matched key-arg value-arg true))
-          ;; At this point the keyword is definitely unknown or invalid.
-          ;; If we haven't yet seen such a keyword, store it and trip our flag (via phi)
-          ;; FIXME: we could conditionalize on the flag so that we store only the first bad keyword,
-          ;; but it doesn't matter too much whether we report the first or last.
-          (irc-br kw-unmatched)
-          (irc-begin-block kw-unmatched)
-          (irc-store key-arg bad-kw-alloca)
-          (irc-br kw-loop-continue))
-        ;; This block is used for phi. It's basically empty.
-        ;; With more detail: there are N (= # of specified keywords) matched-foo that can hit the continue.
-        ;; For all of them, we don't want to alter the value of the seen-bad-keyword flag.
-        ;; But I don't want to make a phi with thirty clauses, so we shove all the matched-foo together.
-        ;; LLVM optimizations will likely make such a phi, or otherwise axe this stupid block.
+          ;; now :allow-other-keys and the miss.
+          (cond (lambda-list-aokp ; or just do nothing.
+                 (irc-br kw-unmatched)
+                 (irc-begin-block kw-unmatched)
+                 (irc-br kw-loop-continue))
+                (t
+                 ;; We've checked against all known keywords and come up short.
+                 ;; But if allow-other-keys isn't a parameter, we have to check that too.
+                 ;; (If it is a parameter we checked it in the loop.)
+                 (unless aok-parameter-p
+                   (compile-one-key-test :allow-other-keys aok-alloca aok-suppliedp-alloca
+                                         kw-matched key-arg value-arg true))
+                 ;; At this point the keyword is definitely unknown or invalid.
+                 ;; If we haven't yet seen such a keyword, store it and trip our flag (via phi)
+                 ;; FIXME: we could conditionalize on the flag so that we store only the first bad keyword,
+                 ;; but it doesn't matter too much whether we report the first or last.
+                 (irc-br kw-unmatched)
+                 (irc-begin-block kw-unmatched)
+                 (irc-store key-arg bad-kw-alloca)
+                 (irc-br kw-loop-continue))))
+        ;; This block is used for phi. It's basically empty. In more detail:
+        ;; there are N (= # of specified keywords) matched-foo that can hit the continue. For all of
+        ;; them, we don't want to alter the value of the seen-bad-keyword flag. But I don't want to
+        ;; make a phi with thirty clauses, so we shove all the matched-foo together.
+        ;; LLVM optimizations seem to make such a phi for us.
+        ;; If &allow-other-keys, it's used for nothing.
         (irc-begin-block kw-matched) (irc-br kw-loop-continue)
         ;; We're done with a pair. Move on.
         (irc-begin-block kw-loop-continue)
-        (let ((sbkw (irc-phi %i1% 2 "other-seen-bad-kw"))) ; phi silliness time.
-          (irc-phi-add-incoming sbkw seen-bad-kw kw-matched) ; don't change the existing value
-          (irc-phi-add-incoming sbkw (jit-constant-i1 1) kw-unmatched) ; we've seen some shit.
-          (irc-phi-add-incoming seen-bad-kw sbkw kw-loop-continue))
+        (unless lambda-list-aokp
+          (let ((sbkw (irc-phi %i1% 2 "other-seen-bad-kw"))) ; phi silliness time.
+            (irc-phi-add-incoming sbkw seen-bad-kw kw-matched) ; don't change the existing value
+            (irc-phi-add-incoming sbkw (jit-constant-i1 1) kw-unmatched) ; we've seen some shit.
+            (irc-phi-add-incoming seen-bad-kw sbkw kw-loop-continue)))
         (let ((dec (irc-sub nargs-remaining (irc-size_t 2))))
           (irc-phi-add-incoming nargs-remaining dec kw-loop-continue))
         (irc-br kw-loop)
@@ -383,7 +395,7 @@ if (seen_bad_keyword)
         (when rest-var
           (compile-rest-argument rest-var varest-p nremaining calling-conv))
         (when key-flag
-          (compile-key-arguments keyargs allow-other-keys nremaining calling-conv iNIL iT)))
+          (compile-key-arguments keyargs (or allow-other-keys (not safep)) nremaining calling-conv iNIL iT)))
       (unless (or rest-var key-flag)
         (when safep
           (compile-error-if-too-many-arguments nfixed (calling-convention-nargs calling-conv))))
