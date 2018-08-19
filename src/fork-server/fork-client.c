@@ -102,6 +102,14 @@ int main(int argc, const char* argv[])
   const char* s = argv[1];
   printf("Sending: |%s|\n", s);
   socket_write_line(sid,s);
+  char cwd[1024];
+  if (getcwd(cwd,1024) != NULL) {
+    printf("fork-client cwd: %s\n", cwd);
+  } else {
+    perror("getcwd() error");
+    exit(1);
+  }
+  socket_write_line(sid,cwd);
   char buffer[1024];
   int rread = socket_read_line(sid,buffer,1024);
   if (rread > 0 && rread < 1024) {
@@ -111,6 +119,7 @@ int main(int argc, const char* argv[])
     printf("Read child pid: %d\n", otherpid);
   } else {
     perror("read response");
+    exit(1);
   }
   char bpid[1024];
   sprintf(bpid,"%d", getpid());
