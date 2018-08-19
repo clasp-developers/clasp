@@ -58,3 +58,5 @@ RUN cd /opt/clasp/lib && git clone https://github.com/quicklisp/quicklisp-client
 RUN mkdir -p /opt/clasp/lib/quicklisp/local-projects
 RUN cd /opt/clasp/lib/quicklisp/local-projects && git clone https://github.com/clasp-developers/clasp-local-projects.git
 RUN cd /opt/clasp/lib/quicklisp/local-projects/clasp-local-projects && make
+
+# finish this so that it starts jupyterlab
