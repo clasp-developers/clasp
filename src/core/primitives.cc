@@ -533,10 +533,11 @@ CL_DEFUN T_mv core___bclasp_compiler_macro_function(core::T_sp name, core::T_sp 
 }
 
 CL_LISPIFY_NAME("CORE:bclasp-compiler-macro-function");
-CL_LAMBDA(name function &optional env);
-CL_DEFUN_SETF void core__setf_bclasp_compiler_macro_function(core::T_sp name, core::T_sp function, core::T_sp env)
+CL_LAMBDA(function name &optional env);
+CL_DEFUN_SETF T_sp core__setf_bclasp_compiler_macro_function(core::T_sp function, core::T_sp name, core::T_sp env)
 {
   core__put_sysprop(name,core::_sym_bclasp_compiler_macro,function);
+  return function;
 }
 
 // ignore env
