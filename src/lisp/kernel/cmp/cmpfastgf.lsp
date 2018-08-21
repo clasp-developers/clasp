@@ -129,21 +129,7 @@
 (defun argument-get (arguments index)
   (elt (argument-holder-dispatch-arguments arguments) index))
 
-(defun argument-next (arguments)
-  (if (argument-holder-remaining-register-arguments arguments)
-      (pop (argument-holder-remaining-register-arguments arguments))
-      (irc-va_arg (argument-holder-dispatch-va-list* arguments) %t*%)))
-
 (defstruct (dtree (:type vector) :named) root)
-
-(defstruct (spec-vec-iterator (:type vector))
-  index vector)
-
-(defun spec-vec-iterator-value (spec-vec)
-  (svref (spec-vec-iterator-vector spec-vec) (spec-vec-iterator-index spec-vec)))
-
-(defun spec-vec-iterator-advance (spec-vec)
-  (incf (spec-vec-iterator-index spec-vec)))
 
 (defun dtree-add-call-history (dtree call-history)
   "Add call-history for one generic-function to the dtree"
