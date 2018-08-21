@@ -1793,6 +1793,13 @@ ConstantInt_sp ConstantInt_O::create(llvm::ConstantInt *ptr) {
   CL_LISPIFY_NAME(constant-int-get);
   CL_EXTERN_DEFUN((llvm::ConstantInt *(*)(llvm::LLVMContext &, const llvm::APInt &)) &llvm::ConstantInt::get);
 
+CL_LISPIFY_NAME(get-true);
+CL_EXTERN_DEFUN((llvm::ConstantInt *(*)(llvm::LLVMContext &)) &llvm::ConstantInt::getTrue);
+
+CL_LISPIFY_NAME(get-false);
+CL_EXTERN_DEFUN((llvm::ConstantInt *(*)(llvm::LLVMContext &)) &llvm::ConstantInt::getFalse);
+
+
 ;
 
 

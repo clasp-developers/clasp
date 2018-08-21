@@ -171,10 +171,10 @@
     (primitive-unwinds "va_symbolFunction" %t*% (list %t*%))
     (primitive         "va_lexicalFunction" %t*% (list %size_t% %size_t% %t*%))
     
-    (primitive         "cc_gatherRestArguments" %t*% (list %va_list*% %size_t*%))
-    (primitive         "cc_gatherDynamicExtentRestArguments" %t*% (list %va_list*% %size_t*% %t**%))
-    (primitive         "cc_gatherVaRestArguments" %t*% (list %va_list*% %size_t*% %vaslist*%))
-    (primitive-unwinds "cc_ifBadKeywordArgumentException" %void% (list %size_t% %size_t% %t*% %function-description*%))
+    (primitive         "cc_gatherRestArguments" %t*% (list %va_list*% %size_t%))
+    (primitive         "cc_gatherDynamicExtentRestArguments" %t*% (list %va_list*% %size_t% %t**%))
+    (primitive         "cc_gatherVaRestArguments" %t*% (list %va_list*% %size_t% %vaslist*%))
+    (primitive-unwinds "cc_ifBadKeywordArgumentException" %void% (list %t*% %t*% %function-description*%))
     
     (primitive         "initializeBlockClosure" %t*% (list %t**%))
     (primitive         "ignore_initializeBlockClosure" %t*% (list %t**%))
@@ -281,7 +281,7 @@
 
     (primitive         "cc_setup_vaslist" %t*% (list %vaslist*% %va_list*% %size_t%))
     (primitive         "cc_setup_vaslist_internal" %t*% (list %vaslist*% %size_t%))
-    (primitive         "cc_rewind_va_list" %void% (list %va_list*% %size_t*% %register-save-area*%))
+    (primitive         "cc_rewind_va_list" %void% (list %va_list*% %register-save-area*%))
     (primitive         "cc_rewind_vaslist" %t*% (list %vaslist*% %va_list*% %register-save-area*%))
     (primitive         "cc_push_InvocationHistoryFrame" %void% (list %t*% %InvocationHistoryFrame*% %va_list*% %size_t%))
     (primitive         "cc_pop_InvocationHistoryFrame" %void% (list %t*% %InvocationHistoryFrame*%))
@@ -296,9 +296,7 @@
                                                                          (make-list core:+number-of-fixed-arguments+
                                                                                     :initial-element %t*%))
                         :varargs t)
-    (primitive         "cc_allowOtherKeywords" %i64% (list %i64% %t*%))
     (primitive         "cc_matchKeywordOnce" %size_t% (list %t*% %t*% %t*%))
-    (primitive-unwinds "cc_ifNotKeywordException" %void% (list %t*% %size_t% %va_list*% %function-description*%))
     (primitive-unwinds "cc_oddKeywordException" %void% (list %function-description*%))
     (primitive         "cc_multipleValuesArrayAddress" %t*[0]*% nil)
     (primitive-unwinds "cc_unwind" %void% (list %t*% %size_t%))

@@ -317,12 +317,11 @@ Boehm and MPS use a single pointer"
 (defstruct (calling-convention-configuration (:type vector))
   use-only-registers
   invocation-history-frame*
-  vaslist*
   register-save-area*)
 
 ;; Provide the arguments passed to the function in a convenient manner.
 ;; Either the register arguments are available in register-args
-;;   or the va-list/remaining-nargs is used to access the arguments
+;;   or the va-list is used to access the arguments
 ;;   one after the other with calling-convention.va-arg
 (defstruct (calling-convention-impl
             (:conc-name "CALLING-CONVENTION-")
@@ -331,8 +330,7 @@ Boehm and MPS use a single pointer"
   nargs
   use-only-registers ; If T then use only the register-args
   register-args ; The arguments that were passed in registers
-  va-list*       ; The address of vaslist.va_list on the stack
-  remaining-nargs* ; The address of vaslist._remaining_nargs on the stack
+  va-list*       ; The address of the va_list on the stack
   register-save-area*
   invocation-history-frame*
   cleavir-lambda-list ; cleavir-style lambda-list
@@ -343,52 +341,29 @@ Boehm and MPS use a single pointer"
 ;;
 ;; What if we don't want/need to spill the registers to the register-save-area?
 (defun initialize-calling-convention (arguments setup &key (rewind t) cleavir-lambda-list rest-alloc)
-  (if (null (calling-convention-configuration-vaslist* setup))
-      ;; If there is no vaslist then only register arguments are available
-      ;;    no registers are spilled to the register-save-area and no InvocationHistoryFrame
-      ;;    will be available to initialize
-      (progn
+  (let ((register-save-area* (calling-convention-configuration-register-save-area* setup)))
+    (if (null register-save-area*)
+        ;; If there's no RSA, we determined we only need registers and don't need to dump things.
         (make-calling-convention-impl :closure (first arguments)
                                       :nargs (second arguments)
                                       :use-only-registers t
                                       :register-args (nthcdr 2 arguments)
                                       :cleavir-lambda-list cleavir-lambda-list
-                                      :rest-alloc rest-alloc))
-      ;; The register arguments need to be spilled to the register-save-area
-      ;;    and the vaslist needs to be initialized.
-      ;;    If a InvocationHistoryFrame is available, then initialize it.
-      (progn
-        (let* ((vaslist                    (calling-convention-configuration-vaslist* setup))
-               #++(_dbg                        (progn
-                                                 (llvm-print "vaslist%N")
-                                                 (irc-intrinsic "debugPointer" (irc-bit-cast vaslist %i8*%))))
-               (register-save-area*         (calling-convention-configuration-register-save-area* setup))
-               #++(_dbg                        (progn
-                                                 (llvm-print "register-save-area%N")
-                                                 (irc-intrinsic "debugPointer" (irc-bit-cast register-save-area* %i8*%))))
-               (vaslist-addr-uint           (irc-ptr-to-int vaslist %uintptr_t% "vaslist-tagged-uint"))
-               (va-list-addr                (irc-add vaslist-addr-uint (jit-constant-uintptr_t +vaslist-valist-offset+) "va-list-addr"))
-               (va-list*                    (irc-int-to-ptr va-list-addr %va_list*% "va-list*"))
-               (remaining-nargs*-uint       (irc-add vaslist-addr-uint (jit-constant-uintptr_t +vaslist-remaining-nargs-offset+) "remaining-nargs*-uint"))
-               (remaining-nargs*            (irc-int-to-ptr remaining-nargs*-uint %size_t*% "remaining-nargs*"))
-               #++(_dbg                        (irc-intrinsic "debugPointer" (irc-bit-cast remaining-nargs* %i8*%)))
-               (_                           (maybe-spill-to-register-save-area arguments register-save-area*))
-               (cc                          (make-calling-convention-impl :closure (first arguments)
-                                                                          :nargs (second arguments) ;; The number of arguments
-                                                                          :register-args (nthcdr 2 arguments)
-                                                                          :use-only-registers (calling-convention-configuration-use-only-registers setup)
-                                                                          :va-list* va-list*
-                                                                          :remaining-nargs* remaining-nargs*
-                                                                          :register-save-area* (calling-convention-configuration-register-save-area* setup)
-                                                                          :invocation-history-frame* (calling-convention-configuration-invocation-history-frame* setup)
-                                                                          :cleavir-lambda-list cleavir-lambda-list
-                                                                          :rest-alloc rest-alloc))
-               ;; va-start is done in caller
-               #+(or)(_                           (calling-convention-args.va-start cc))
-               #++(_dbg                        (progn
-                                                 (llvm-print "After calling-convention-args.va-start%N")
-                                                 (irc-intrinsic "debug_va_list" va-list*))))
-          cc))))
+                                      :rest-alloc rest-alloc)
+        ;; The register arguments need to be spilled to the register-save-area
+        ;;    and the va_list needs to be initialized.
+        ;;    If a InvocationHistoryFrame is available, then initialize it.
+        (progn
+          (maybe-spill-to-register-save-area arguments register-save-area*)
+          (make-calling-convention-impl :closure (first arguments)
+                                        :nargs (second arguments) ;; The number of arguments
+                                        :register-args (nthcdr 2 arguments)
+                                        :use-only-registers (calling-convention-configuration-use-only-registers setup)
+                                        :va-list* (irc-alloca-va_list)
+                                        :register-save-area* register-save-area*
+                                        :invocation-history-frame* (calling-convention-configuration-invocation-history-frame* setup)
+                                        :cleavir-lambda-list cleavir-lambda-list
+                                        :rest-alloc rest-alloc)))))
 
 (defun calling-convention-maybe-push-invocation-history-frame (cc)
   (when (calling-convention-invocation-history-frame* cc)
@@ -396,7 +371,7 @@ Boehm and MPS use a single pointer"
                    (calling-convention-closure cc)
                    (calling-convention-invocation-history-frame* cc)
                    (calling-convention-va-list* cc)
-                   (irc-load (calling-convention-remaining-nargs* cc)))))
+                   (calling-convention-nargs cc))))
 
 (defun calling-convention-maybe-pop-invocation-history-frame (cc)
   (when (calling-convention-invocation-history-frame* cc)
@@ -411,24 +386,14 @@ Boehm and MPS use a single pointer"
 
 ;;;
 ;;; Read the next argument from the va_list
-;;; Everytime the arg-idx is incremented, this function must be called.
-(defun calling-convention-args.va-arg (cc &optional target-idx)
-  (let* ((label                 (if (and target-idx core::*enable-print-pretty*)
-                                    (bformat nil "arg-%d" target-idx)
-                                    "rawarg"))
-         (remaining-nargs*-addr (calling-convention-remaining-nargs* cc))
-         (remaining-nargs       (irc-load remaining-nargs*-addr "rem-nargs"))
-         (rem-nargs-1           (irc-sub  remaining-nargs (jit-constant-size_t 1) "rem-nargs-1"))
-         (_                     (irc-store rem-nargs-1 remaining-nargs*-addr))
-         (result                (irc-va_arg (calling-convention-va-list* cc) %t*% )))
-    result))
+(defun calling-convention-args.va-arg (cc)
+  (irc-va_arg (calling-convention-va-list* cc) %t*%))
 
 (defun calling-convention-args.va-start (cc &optional (rewind t))
   "Like va-start - but it rewinds the va-list to start at the third argument. 
 This allows all of the arguments to be accessed with successive calls to calling-convention-args.va-arg.
 eg:  (f closure-ptr nargs a b c d ...)
-                          ^-----  after calling-convention-args.va-start the va-list will point here.
-                                  and remaining-nargs will contain nargs."
+                          ^-----  after calling-convention-args.va-start the va-list will point here."
                                         ; Initialize the va_list - the only valid field will be overflow-area
   (let* ((va-list*                      (calling-convention-va-list* cc)))
     (when va-list*
@@ -483,9 +448,8 @@ eg:  (f closure-ptr nargs a b c d ...)
 
   (defun calling-convention-rewind-va-list-to-start-on-third-argument (cc)
     (let* ((va-list*                      (calling-convention-va-list* cc))
-           (register-save-area*           (calling-convention-register-save-area* cc))
-           (remaining-nargs*              (calling-convention-remaining-nargs* cc)))
-      (irc-intrinsic "cc_rewind_va_list" va-list* remaining-nargs* register-save-area*)))
+           (register-save-area*           (calling-convention-register-save-area* cc)))
+      (irc-intrinsic "cc_rewind_va_list" va-list* register-save-area*)))
 ;;; end of x86-64 specific stuff
   )
 
