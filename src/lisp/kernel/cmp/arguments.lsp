@@ -270,7 +270,7 @@ if (seen_bad_keyword)
         (irc-phi-add-incoming nargs-remaining nremaining initialize-suppliedps)
         ;; If we're just entering the loop, we haven't seen any bad keywords.
         (unless lambda-list-aokp
-          (irc-phi-add-incoming seen-bad-kw (jit-constant-i1 0) initialize-suppliedps))
+          (irc-phi-add-incoming seen-bad-kw (jit-constant-false) initialize-suppliedps))
         ;; If there are no arguments remaining, we're done.
         (let ((zerop (irc-icmp-eq nargs-remaining (irc-size_t 0))))
           (irc-cond-br zerop args-depleted parse-arg))
@@ -319,7 +319,7 @@ if (seen_bad_keyword)
         (unless lambda-list-aokp
           (let ((sbkw (irc-phi %i1% 2 "other-seen-bad-kw"))) ; phi silliness time.
             (irc-phi-add-incoming sbkw seen-bad-kw kw-matched) ; don't change the existing value
-            (irc-phi-add-incoming sbkw (jit-constant-i1 1) kw-unmatched) ; we've seen some shit.
+            (irc-phi-add-incoming sbkw (jit-constant-true) kw-unmatched) ; we've seen some shit.
             (irc-phi-add-incoming seen-bad-kw sbkw kw-loop-continue)))
         (let ((dec (irc-sub nargs-remaining (irc-size_t 2))))
           (irc-phi-add-incoming nargs-remaining dec kw-loop-continue))
@@ -333,9 +333,7 @@ if (seen_bad_keyword)
            ;; Check if we saw a bad keyword. If we did, call an intrinsic that tests our aokp thing.
            ;; FIXME: change the jit-constants to getTrue and/or getFalse, mother fucker
            (let ((aok-check (irc-basic-block-create "aok-check")))
-             (irc-cond-br #+(or) seen-bad-kw
-                          #-(or) (irc-icmp-eq seen-bad-kw (jit-constant-i1 1))
-                          aok-check exit)
+             (irc-cond-br seen-bad-kw aok-check exit)
              (irc-begin-block aok-check)
              (irc-intrinsic-invoke-if-landing-pad-or-call
               "cc_ifBadKeywordArgumentException"
