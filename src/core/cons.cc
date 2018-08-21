@@ -308,12 +308,16 @@ List_sp Cons_O::assoc(T_sp item, T_sp key, T_sp test, T_sp testNot) const {
   Tester t(item, key, test, testNot, false);
   for (auto cur : (List_sp) this->asSmartPtr()) {
     LOG(BF("Testing for assoc with item=%s entry = %s") % item % oCar(cur));
-    if (CONS_CAR(cur).consp()) {
-      T_sp obj = CONS_CAR(CONS_CAR(cur));
-      if (t.test(obj))
-        return (coerce_to_list(CONS_CAR(cur)));
-    } else {
-      TYPE_ERROR(cur, cl::_sym_list);
+    T_sp obj = CONS_CAR(cur);
+    if (!obj.nilp()) {
+      if (obj.consp()) {
+        T_sp obj1 = CONS_CAR(obj);
+        if (t.test(obj1))
+          return (coerce_to_list(obj));
+      } else {
+        // Real error is that (car cur) is not a cons, not that cur is not a list
+        TYPE_ERROR(obj, cl::_sym_Cons_O);
+      }
     }
   }
   return coerce_to_list(_Nil<T_O>());
