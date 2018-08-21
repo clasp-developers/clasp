@@ -587,7 +587,7 @@ Returns T if X belongs to TYPE; NIL otherwise."
 	      (symbolp (first type)))
 	 (let ((fd (ext:type-expander (first type))))
 	   (if fd
-	       (expand-deftype (funcall fd (rest type)))
+	       (expand-deftype (apply fd (rest type)))
 	       type)))
 	(t type)))
 

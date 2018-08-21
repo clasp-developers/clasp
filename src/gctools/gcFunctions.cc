@@ -194,6 +194,18 @@ CL_DEFUN size_t gctools__catch_throw_counter() {
 }
 #endif
 
+CL_DEFUN void gctools__change_sigchld_sigport_handlers()
+{
+  void* old = (void*)signal(SIGCHLD, SIG_DFL);
+  signal(SIGPIPE, SIG_DFL);
+  printf("%s:%d old signal handler for SIGCHLD = %p   SIG_DFL = %p\n", __FILE__, __LINE__, old, SIG_DFL);
+}
+
+CL_DEFUN core::T_sp gctools__known_signals()
+{
+  return _lisp->_Roots._KnownSignals;
+}
+
 CL_DEFUN void gctools__deallocate_unmanaged_instance(core::T_sp obj) {
   obj_deallocate_unmanaged_instance(obj);
 }
@@ -1152,6 +1164,14 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
   if (setFeatures) features = core::Cons_O::create(_lisp->internKeyword("DEBUG-COMPILER"),features);
 #endif
   if (buildReport) ss << (BF("DEBUG_COMPILER = %s\n") % (debug_compiler ? "**DEFINED**" : "undefined") ).str();
+
+  bool debug_llvm_optimization_level_0 = false;
+#ifdef DEBUG_LLVM_OPTIMIZATION_LEVEL_0
+  debug_llvm_optimization_level_0 = true;
+  debugging = true;
+  if (setFeatures) features = core::Cons_O::create(_lisp->internKeyword("DEBUG-LLVM-OPTIMIZATION-LEVEL-0"),features);
+#endif
+  if (buildReport) ss << (BF("DEBUG_LLVM_OPTIMIZATION_LEVEL_0 = %s\n") % (debug_llvm_optimization_level_0 ? "**DEFINED**" : "undefined") ).str();
 
   bool debug_count_allocations = false;
 #ifdef DEBUG_COUNT_ALLOCATIONS

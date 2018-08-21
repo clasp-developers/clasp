@@ -1399,7 +1399,7 @@ void cc_loadThreadLocalMultipleValues(core::T_mv *result, core::MultipleValues *
   NO_UNWIND_END();
 }
 
-
+// name is a misnomer- more like ifNotSymbolException. FIXME
 void cc_ifNotKeywordException(core::T_O *obj, size_t argIdx, va_list valist, core::FunctionDescription* functionDescription) {
   T_sp vobj((gc::Tagged)obj);
   if (!cl__symbolp(vobj)) {
@@ -1409,6 +1409,14 @@ void cc_ifNotKeywordException(core::T_O *obj, size_t argIdx, va_list valist, cor
     }
     SIMPLE_ERROR(BF("In call to %s expected keyword argument at argument %d got %s") % _rep_(functionName) % argIdx % _rep_(gctools::smart_ptr<core::T_O>((gc::Tagged)obj)));
   }
+}
+
+void cc_oddKeywordException(core::FunctionDescription* functionDescription) {
+  T_sp functionName = llvmo::functionNameOrNilFromFunctionDescription(functionDescription);
+  if (functionName.nilp())
+    SIMPLE_ERROR(BF("Odd number of keyword arguments"));
+  else
+    SIMPLE_ERROR(BF("In call to %s got odd number of keyword arguments") % _rep_(functionName));
 }
 
 T_O **cc_multipleValuesArrayAddress()

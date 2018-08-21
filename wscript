@@ -198,6 +198,7 @@ DEBUG_OPTIONS = [
     "DEBUG_MPS_UNDERSCANNING",   # Very expensive - does a mps_arena_collect/mps_arena_release for each allocation
     "DEBUG_DONT_OPTIMIZE_BCLASP",  # Optimize bclasp by editing llvm-ir
     "DEBUG_RECURSIVE_ALLOCATIONS",
+    "DEBUG_LLVM_OPTIMIZATION_LEVEL_0",
     "DEBUG_SLOW",    # Code runs slower due to checks - undefine to remove checks
     "CONFIG_VAR_COOL" # mps setting
 ]
@@ -292,7 +293,10 @@ def configure_common(cfg,variant):
 #    cfg.env.append_value("CFLAGS", ['-I%s' % include_path])
     # These will end up in build/config.h
     cfg.define("EXECUTABLE_NAME",variant.executable_name())
-    cfg.define("PREFIX",cfg.env.PREFIX)
+    if (cfg.env.PREFIX):
+        cfg.define("PREFIX",cfg.env.PREFIX)
+    else:
+        cfg.define("PREFIX","/opt/clasp/")
     assert os.path.isdir(cfg.env.LLVM_BIN_DIR)
     cfg.define("CLASP_CLANG_PATH", os.path.join(cfg.env.LLVM_BIN_DIR, "clang"))
     cfg.define("APP_NAME",APP_NAME)
@@ -953,23 +957,23 @@ def build(bld):
             return find.abspath()
         return x
     
-    fout = open("/tmp/build.lisp", "w")
-    fout.write('(core:select-package :core)\n')
-    fout.write('(core:*make-special \'core::*number-of-jobs*)\n')
-    fout.write('(setq core::*number-of-jobs* 1)\n')
-    fout.write('(export \'core::*number-of-jobs*)\n')
-    fout.write('(load "%s" :verbose t)\n' % find_lisp(bld,"src/lisp/kernel/clasp-builder"))
-    fout.write('(core::remove-stage-features)\n')
-    fout.write('(setq *features* (cons :aclasp (cons :clasp-min *features*)))\n')
-    for x in bld.clasp_aclasp:
-        fout.write('(load "%s" :verbose t)\n' % find_lisp(bld,x))
-    for x in bld.clasp_aclasp:
-        fout.write('(load "%s" :verbose t)\n' % find_lisp(bld,x))
-    fout.write('(core::remove-stage-features)\n')
-    fout.write('(setq *features* (cons :bclasp (cons :clos *features*)))\n')
-    for x in bld.clasp_bclasp:
-        fout.write('(load "%s" :verbose t)\n' % find_lisp(bld,x))
-    fout.close()
+#    fout = open("/tmp/build.lisp", "w")
+#    fout.write('(core:select-package :core)\n')
+#    fout.write('(core:*make-special \'core::*number-of-jobs*)\n')
+#    fout.write('(setq core::*number-of-jobs* 1)\n')
+#    fout.write('(export \'core::*number-of-jobs*)\n')
+#    fout.write('(load "%s" :verbose t)\n' % find_lisp(bld,"src/lisp/kernel/clasp-builder"))
+#    fout.write('(core::remove-stage-features)\n')
+#    fout.write('(setq *features* (cons :aclasp (cons :clasp-min *features*)))\n')
+#    for x in bld.clasp_aclasp:
+#        fout.write('(load "%s" :verbose t)\n' % find_lisp(bld,x))
+#    for x in bld.clasp_aclasp:
+#        fout.write('(load "%s" :verbose t)\n' % find_lisp(bld,x))
+#    fout.write('(core::remove-stage-features)\n')
+#    fout.write('(setq *features* (cons :bclasp (cons :clos *features*)))\n')
+#    for x in bld.clasp_bclasp:
+#        fout.write('(load "%s" :verbose t)\n' % find_lisp(bld,x))
+#    fout.close()
     
     bld.clasp_cclasp_no_wrappers = collect_cclasp_lisp_files(wrappers = False)
 
@@ -1003,7 +1007,7 @@ def build(bld):
     clasp_c_source_files = bld.clasp_source_files + bld.extensions_source_files
     install('lib/clasp/', clasp_c_source_files)
     install('lib/clasp/', collect_waf_nodes(bld, 'include/clasp/', suffix = ".h"))
-    install('lib/clasp/src/lisp/', collect_waf_nodes(bld, 'src/lisp/', suffix = [".lsp", ".lisp", ".asd"]))
+    install('lib/clasp/', collect_waf_nodes(bld, 'src/lisp/', suffix = [".lsp", ".lisp", ".asd"]))
 
     bld.env = bld.all_envs[bld.variant]
     include_dirs = ['.']
@@ -1029,6 +1033,13 @@ def build(bld):
     bld.add_to_group(task)
 
     bld.set_group('compiling/c++')
+
+    # Build the fork client
+
+    bld(features='c cprogram', \
+        source="src/fork-server/fork-client.c", \
+        target="fork-client", \
+        install_path="${PREFIX}/bin")
 
     # Always build the C++ code
     intrinsics_bitcode_node = bld.path.find_or_declare(variant.inline_bitcode_archive_name("intrinsics"))

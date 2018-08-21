@@ -248,26 +248,29 @@ the corresponding VAR.  Returns NIL."
         (hash 0)
         cur-alist)
     (labels ((advance-hash-table-iterator ()
-               (if cur-alist
-                   (progn
-                     (setq cur-alist (cdr cur-alist))
-                     (if cur-alist
-                         (progn
-                           (when (core:hash-table-entry-deleted-p (car cur-alist))
-                             (advance-hash-table-iterator)))
-                         (progn
-                           (setq hash (1+ hash))
-                           (advance-hash-table-iterator))))
-                   (if (< hash number-of-buckets)
-                       (progn
-                         (setq cur-alist (elt buckets hash))
-                         (if cur-alist
-                             (progn
-                               (when (core:hash-table-entry-deleted-p (car cur-alist))
-                                 (advance-hash-table-iterator)))
-                             (progn
-                               (setq hash (1+ hash))
-                               (advance-hash-table-iterator))))))))
+               (declare (core:lambda-name advance-hash-table-iterator))
+               (tagbody
+                top
+                  (if cur-alist
+                      (progn
+                        (setq cur-alist (cdr cur-alist))
+                        (if cur-alist
+                            (progn
+                              (when (core:hash-table-entry-deleted-p (car cur-alist))
+                                (go top)))
+                            (progn
+                              (setq hash (1+ hash))
+                              (go top))))
+                      (if (< hash number-of-buckets)
+                          (progn
+                            (setq cur-alist (elt buckets hash))
+                            (if cur-alist
+                                (progn
+                                  (when (core:hash-table-entry-deleted-p (car cur-alist))
+                                    (go top)))
+                                (progn
+                                  (setq hash (1+ hash))
+                                  (go top)))))))))
       (function (lambda ()
         (if (>= hash number-of-buckets)
             nil

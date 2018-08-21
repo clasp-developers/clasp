@@ -335,7 +335,6 @@ Boehm and MPS use a single pointer"
   remaining-nargs* ; The address of vaslist._remaining_nargs on the stack
   register-save-area*
   invocation-history-frame*
-  lambda-list ; the original lambda-list
   cleavir-lambda-list ; cleavir-style lambda-list
   rest-alloc ; whether we can dx or ignore a &rest argument
   )
@@ -343,7 +342,7 @@ Boehm and MPS use a single pointer"
 ;; Parse the function arguments into a calling-convention
 ;;
 ;; What if we don't want/need to spill the registers to the register-save-area?
-(defun initialize-calling-convention (arguments setup &key (rewind t) lambda-list cleavir-lambda-list rest-alloc)
+(defun initialize-calling-convention (arguments setup &key (rewind t) cleavir-lambda-list rest-alloc)
   (if (null (calling-convention-configuration-vaslist* setup))
       ;; If there is no vaslist then only register arguments are available
       ;;    no registers are spilled to the register-save-area and no InvocationHistoryFrame
@@ -353,7 +352,6 @@ Boehm and MPS use a single pointer"
                                       :nargs (second arguments)
                                       :use-only-registers t
                                       :register-args (nthcdr 2 arguments)
-                                      :lambda-list lambda-list
                                       :cleavir-lambda-list cleavir-lambda-list
                                       :rest-alloc rest-alloc))
       ;; The register arguments need to be spilled to the register-save-area
@@ -383,7 +381,6 @@ Boehm and MPS use a single pointer"
                                                                           :remaining-nargs* remaining-nargs*
                                                                           :register-save-area* (calling-convention-configuration-register-save-area* setup)
                                                                           :invocation-history-frame* (calling-convention-configuration-invocation-history-frame* setup)
-                                                                          :lambda-list lambda-list
                                                                           :cleavir-lambda-list cleavir-lambda-list
                                                                           :rest-alloc rest-alloc))
                ;; va-start is done in caller
@@ -466,24 +463,23 @@ eg:  (f closure-ptr nargs a b c d ...)
                                              %i8*%
                                              (/ +register-save-area-size+ +void*-size+)))
   (define-symbol-macro %register-save-area*% (llvm-sys:type-get-pointer-to %register-save-area%))
+  ;; (Maybe) generate code to store registers in memory. Return value unspecified.
   (defun maybe-spill-to-register-save-area (registers register-save-area*)
-    (unless registers
-      (unless register-save-area*
-        (error "If registers is NIL then register-save-area* also must be NIL")))
-    (when registers
-      (labels ((spill-reg (idx reg addr-name)
-                 (let* ((addr          (irc-gep register-save-area* (list (jit-constant-size_t 0) (jit-constant-size_t idx)) addr-name))
-                        (reg-i8*       (irc-bit-cast reg %i8*% "reg-i8*"))
-                        (_             (irc-store reg-i8* addr)))
-                   addr)))
-        (let* (
-               (addr-closure  (spill-reg 0 (elt registers 0) "closure0"))
-               (addr-nargs    (spill-reg 1 (irc-int-to-ptr (elt registers 1) %i8*%) "nargs1"))
-               (addr-farg0    (spill-reg 2 (elt registers 2) "arg0")) ; this is the first fixed arg currently.
-               (addr-farg1    (spill-reg 3 (elt registers 3) "arg1"))
-               (addr-farg2    (spill-reg 4 (elt registers 4) "arg2"))
-               (addr-farg3    (spill-reg 5 (elt registers 5) "arg3")))))))
-
+    (if registers
+        (labels ((spill-reg (idx reg addr-name)
+                   (let* ((addr          (irc-gep register-save-area* (list (jit-constant-size_t 0) (jit-constant-size_t idx)) addr-name))
+                          (reg-i8*       (irc-bit-cast reg %i8*% "reg-i8*"))
+                          (_             (irc-store reg-i8* addr)))
+                     addr)))
+          (let* (
+                 (addr-closure  (spill-reg 0 (elt registers 0) "closure0"))
+                 (addr-nargs    (spill-reg 1 (irc-int-to-ptr (elt registers 1) %i8*%) "nargs1"))
+                 (addr-farg0    (spill-reg 2 (elt registers 2) "arg0")) ; this is the first fixed arg currently.
+                 (addr-farg1    (spill-reg 3 (elt registers 3) "arg1"))
+                 (addr-farg2    (spill-reg 4 (elt registers 4) "arg2"))
+                 (addr-farg3    (spill-reg 5 (elt registers 5) "arg3")))))
+        (unless register-save-area*
+          (error "If registers is NIL then register-save-area* also must be NIL"))))
 
   (defun calling-convention-rewind-va-list-to-start-on-third-argument (cc)
     (let* ((va-list*                      (calling-convention-va-list* cc))

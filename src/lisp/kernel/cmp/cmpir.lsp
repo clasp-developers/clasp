@@ -639,6 +639,9 @@
 (defun irc-sub (lhs rhs &optional (label ""))
   (llvm-sys:create-sub *irbuilder* lhs rhs label nil nil))
 
+(defun irc-srem (lhs rhs &optional (label ""))
+  (llvm-sys:create-srem *irbuilder* lhs rhs label))
+
 (defun irc-load (source &optional (label ""))
   (llvm-sys:create-load-value-twine *irbuilder* source label))
 
@@ -1235,7 +1238,7 @@ Within the _irbuilder_ dynamic environment...
   (llvm-sys::create-alloca irbuilder %i8*% (jit-constant-i32 1) label))
 
 (defun irc-alloca-mv-struct (&key (irbuilder *irbuilder-function-alloca*) (label "V"))
-  (llvm-sys:create-alloca irbuilder %mv-struct% (%i32 1) label))
+  (llvm-sys:create-alloca irbuilder %mv-struct% (jit-constant-i32 1) label))
 
 
 

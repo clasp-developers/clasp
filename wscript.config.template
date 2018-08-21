@@ -26,7 +26,7 @@ USE_PARALLEL_BUILD = False
 USE_LLD = False
 
 # Where to install clasp. Defaults to '/usr/local/'.
-#PREFIX = '/usr/local/'
+#PREFIX = '/opt/clasp/'
 
 # SBCL is used at build time. Defaults to 'sbcl'.
 #SBCL                = '/path/sbcl/run-sbcl.sh'

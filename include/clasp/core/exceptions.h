@@ -159,8 +159,8 @@ extern core::Symbol_sp& _sym_name;
 #define ERROR_END_OF_FILE(st) ERROR(cl::_sym_endOfFile, core::lisp_createList(kw::_sym_stream, st))
 #define CLOSED_STREAM_ERROR(st) ERROR(core::_sym_closedStream, core::lisp_createList(kw::_sym_stream, st))
 
-#define READER_ERROR(_fmt_, _fmtArgs_, _stream_) cl__reader_error(__FILE__, __LINE__, _fmt_, _fmtArgs_, _stream_)
-#define PARSE_ERROR(_fmt_, _fmtArgs_) cl__reader_error(__FILE__, __LINE__, _fmt_, _fmtArgs_, _Nil<Stream_O>())
+#define READER_ERROR(_fmt_, _fmtArgs_, _stream_) core__reader_error(__FILE__, __LINE__, _fmt_, _fmtArgs_, _stream_)
+#define PARSE_ERROR(_fmt_, _fmtArgs_) core__reader_error(__FILE__, __LINE__, _fmt_, _fmtArgs_, _Nil<Stream_O>())
 
 #define PRINT_NOT_READABLE_ERROR(obj) ERROR(cl::_sym_printNotReadable, core::lisp_createList(kw::_sym_object, obj));
 #define CELL_ERROR(name) ERROR(cl::_sym_cellError, core::lisp_createList(kw::_sym_name, name))
@@ -714,7 +714,7 @@ void af_wrongTypeOnlyArg(const string &sourceFile, int lineno, Symbol_sp functio
 
 void core__wrong_index(const string &sourceFile, int lineno, Symbol_sp function, T_sp array, int which, T_sp index, int noninc_index);
 
- void cl__reader_error(const string &sourceFile, uint lineno,
+void core__reader_error(const string &sourceFile, uint lineno,
                     String_sp fmt, List_sp fmtargs, T_sp stream = _Nil<T_O>());
 
 void assert_type_integer(T_sp p, int idx);

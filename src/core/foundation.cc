@@ -625,6 +625,10 @@ string lispify_symbol_name(const string &s) {
       stream_pass1 << ">=";
       continue;
     }
+    if (lispify_match(cur, "_UNDERSCORE_")) {
+      stream_pass1 << "_";
+      continue;
+    }
     if (lispify_match(cur, "STAR")) {
       stream_pass1 << "*";
       continue;

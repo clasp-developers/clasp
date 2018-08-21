@@ -65,8 +65,8 @@ Could return more functions that provide lambda-list for swank for example"
                    #+(or)(irc-intrinsic-call "debugInspectT_sp" (list (literal:compile-reference-to-literal :This-is-a-test)))
                    (let* ((arguments      (llvm-sys:get-argument-list fn))
                           (callconv       (setup-calling-convention arguments
-                                                                    :lambda-list lambda-list
                                                                     :debug-on core::*debug-bclasp*
+                                                                    :lambda-list lambda-list
                                                                     :cleavir-lambda-list cleavir-lambda-list
                                                                     :rest-alloc rest-alloc)))
                      (calling-convention-maybe-push-invocation-history-frame callconv)

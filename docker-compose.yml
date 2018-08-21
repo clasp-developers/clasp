@@ -1,31 +1,29 @@
-# docker-compose uses this file to build clasp or cando in 2 steps.
+# docker-compose uses this file to build in several steps.
 # To compile clasp, you need to have docker set up, and docker-compose installed.
 # To build cando, the cando extension must be present at ./extensions/cando
-# To checkout cando's 'testing' branch, do this:
-#    git clone git@github.com:drmeister/cando.git extensions/cando
-#    cd extensions/cando && git checkout testing && cd -
 version: '2'
 services:
   # first, run: docker-compose run cando-build
   # this will compile clasp and copy it's build output ./build/cando-build.tgz
-  #   Expected time: 90 min
+  #   Expected time: 60 min
   cando-build:
     image: cando-build
     build:
       context: .
       dockerfile: tools/dockerfiles/cando-build/Dockerfile
-    entrypoint: tar -cvzf /build/cando-build.tgz -C /out/clasp .
+    entrypoint: tar -cvzf /build/cando-build.tgz -C /opt/clasp .
     volumes:
       - /host-build:/build
-  # To build quicklisp and the common lisp cache  run: docker-compose build cando-cache
+
+  # To build node and jupyterlabb   run: docker-compose build cando-bundle
   #    Expected time:  xxx min
-  # This will start with a smaller base image, that has only the runtime
-  # dependencies, and copy and unpack ./build/clasp.tgz into the directory /home/app
-  cando-cache:
-    image: cando-cache
+  cando-bundle:
+    image: cando-bundle
     build:
       context: .
-      dockerfile: tools/dockerfiles/cando-cache/Dockerfile
+      dockerfile: tools/dockerfiles/cando-bundle/Dockerfile
+    entrypoint: tar -cvzf /build/cando-bundle.tgz -C /opt/clasp .
+      - /host-build:/build
 
   # To build quicklisp and the common lisp cache  run: docker-compose build cando-deploy
   #    Expected time:  xxx min

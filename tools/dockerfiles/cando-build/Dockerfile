@@ -20,22 +20,22 @@ ENV CC=/usr/bin/clang-6.0 CXX=/usr/bin/clang++-6.0
 
 # Copy the entire clasp directory less .dockerignore and clean the build dir
 RUN mkdir /home/app
-RUN mkdir /out
-RUN mkdir /out/clasp
+RUN mkdir /opt
+RUN mkdir /opt/clasp
 WORKDIR /home/app
 # add app user, to set correct UID and GID on files
 RUN groupadd -g 9999 app && useradd -u 9999 -g 9999 -ms /bin/bash app
 ADD . clasp
 RUN chown -R app:app /home/app
-RUN chown -R app:app /out/clasp
+RUN chown -R app:app /opt/clasp
 
 USER app
 WORKDIR /home/app/clasp
-RUN rm -rf build/* && mkdir -p /out/clasp
+RUN rm -rf build/* && mkdir -p /opt/clasp
 
 # checkout submodules, configure, and build
 RUN echo "LLVM_CONFIG_BINARY='/usr/bin/llvm-config-6.0'" > wscript.config
-RUN echo "PREFIX='/out/clasp'" >> wscript.config
+RUN echo "PREFIX='/opt/clasp'" >> wscript.config
 RUN echo "CLASP_VERSION='clasp_docker'" >> wscript.config
 RUN echo "USE_PARALLEL_BUILD = True" >> wscript.config
 RUN echo "USE_LLD = False" >> wscript.config

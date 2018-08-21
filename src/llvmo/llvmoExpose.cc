@@ -3295,13 +3295,36 @@ namespace llvmo {
 using namespace llvm;
 using namespace llvm::orc;
 
-//#define MONITOR_JIT_MEMORY_MANAGER 1
+//#define MONITOR_JIT_MEMORY_MANAGER 1    // monitor SectionMemoryManager
+//#define DUMP_OBJECT_FILES 1
+
+#ifdef DUMP_OBJECT_FILES
+size_t fileNum = 1;
+void dumpObjectFile(size_t num, const char* start, size_t size) {
+  std::stringstream filename;
+  filename << "object-file-" << num << ".o";
+  std::ofstream fout;
+  fout.open(filename.str(), std::ios::out | std::ios::binary );
+  fout.write(start,size);
+  fout.close();
+}
+#endif
 
 class ClaspSectionMemoryManager : public SectionMemoryManager {
 
   void 	notifyObjectLoaded (RuntimeDyld &RTDyld, const object::ObjectFile &Obj) {
 #ifdef MONITOR_JIT_MEMORY_MANAGER
     printf("%s:%d notifyObjectLoaded was invoked\n", __FILE__, __LINE__ );
+    llvm::MemoryBufferRef mem = Obj.getMemoryBufferRef();
+    printf("%s:%d      --> sizeof(ObjectFile) -> %lu  MemoryBufferRef start: %p   size: %lu\n", __FILE__, __LINE__, sizeof(Obj), mem.getBufferStart(), mem.getBufferSize() );
+    void** words = (void**)(&Obj);
+    printf("%s:%d      --> ObjectFile words:\n", __FILE__, __LINE__ );
+    printf("%s:%d            0x00: %18p %18p\n", __FILE__, __LINE__, words[0], words[1]);
+    printf("%s:%d            0x10: %18p %18p\n", __FILE__, __LINE__, words[2], words[3]);
+    printf("%s:%d            0x20: %18p %18p\n", __FILE__, __LINE__, words[4], words[5]);
+#ifdef DUMP_OBJECT_FILES
+    dumpObjectFile(fileNum++,mem.getBufferStart(),mem.getBufferSize());
+#endif
 #endif
   }
   

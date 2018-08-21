@@ -133,17 +133,12 @@ VARIABLE doc and can be retrieved by (DOCUMENTATION 'SYMBOL 'VARIABLE)."
 (defmacro bclasp-define-compiler-macro (&whole whole name vl &rest body &environment env)
   ;; CLHS doesn't actually say d-c-m has compile time effects, but it's nice to match defmacro
   `(eval-when (:compile-toplevel :load-toplevel :execute)
-     (core:setf-bclasp-compiler-macro-function
-      ',name
-      (function ,(ext:parse-compiler-macro name vl body env)))
+     (funcall #'(setf core:bclasp-compiler-macro-function)
+              (function ,(ext:parse-compiler-macro name vl body env))
+              ',name)
      ',name))
 
-(defun bclasp-compiler-macro-function (name &optional env)
-  ;;  (declare (ignorable env))
-  (core:get-bclasp-compiler-macro-function name env))
-;;  (values (get-sysprop name 'sys::compiler-macro)))
-
-(export '(bclasp-define-compiler-macro bclasp-compiler-macro-function))
+(export '(bclasp-define-compiler-macro))
 
 (defun bclasp-compiler-macroexpand-1 (form &optional env)
   (if (atom form)

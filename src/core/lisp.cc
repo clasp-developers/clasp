@@ -1622,6 +1622,20 @@ CL_DEFUN void core__exit(int exitValue) {
 
 CL_LAMBDA(&optional (exit-value 0));
 CL_DECLARE();
+CL_DOCSTRING("C exit");
+CL_DEFUN void core__cexit(int exitValue) {
+  exit(exitValue);
+};
+
+CL_LAMBDA(&optional (exit-value 0));
+CL_DECLARE();
+CL_DOCSTRING("C exit");
+CL_DEFUN void core__c_UNDERSCORE_exit(int exitValue) {
+  _exit(exitValue);
+};
+
+CL_LAMBDA(&optional (exit-value 0));
+CL_DECLARE();
 CL_DOCSTRING("quit");
 CL_DEFUN void core__quit(int exitValue) {
   core__exit(exitValue);
