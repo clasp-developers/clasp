@@ -334,9 +334,12 @@ the corresponding VAR.  Returns NIL."
                (declare (core:lambda-name multiple-value-bind-macro))
                (let ((vars (cadr whole))
                      (form (caddr whole))
-                     (body (cdddr whole)))
+                     (body (cdddr whole))
+                     (restvar (gensym)))
                  `(multiple-value-call
-                      #'(lambda (&optional ,@(mapcar #'list vars) &rest ,(gensym)) ,@body)
+                      #'(lambda (&optional ,@(mapcar #'list vars) &rest ,restvar)
+                          (declare (ignore ,restvar))
+                          ,@body)
                     ,form)))
            t)
 

@@ -264,12 +264,13 @@ static _clasp_big_binary_op bignum_operations[boolOpsMax] = {
 // ----------------------------------------------------------------------
 
 T_sp clasp_boole(int op, T_sp x, T_sp y) {
-  if (x.nilp() || y.nilp()) {
-    SIMPLE_ERROR(BF("boole cannot accept nil"));
-  }
+  if (x.nilp())
+    ERROR_WRONG_TYPE_NTH_ARG(cl::_sym_boole, 2, x, cl::_sym_integer);
+  else if (y.nilp())
+    ERROR_WRONG_TYPE_NTH_ARG(cl::_sym_boole, 3, y, cl::_sym_integer);
   if ((op < 0) || (op >= boolOpsMax))
     // issue #438
-     ERROR_WRONG_TYPE_NTH_ARG(cl::_sym_boole, 1, x, Cons_O::createList(cl::_sym_Integer_O, make_fixnum(0), make_fixnum(boolOpsMax-1)));
+    ERROR_WRONG_TYPE_NTH_ARG(cl::_sym_boole, 1, make_fixnum(op), Cons_O::createList(cl::_sym_Integer_O, make_fixnum(0), make_fixnum(boolOpsMax-1)));
   if (x.fixnump()) {
     Fixnum_sp fnx = gc::As<Fixnum_sp>(x);
     if (y.fixnump()) { //Fixnum_sp fny = y.asOrNull<Fixnum_O>() ) {
@@ -282,7 +283,7 @@ T_sp clasp_boole(int op, T_sp x, T_sp y) {
       (bignum_operations[op])(x_copy, x_copy, bny);
       return _clasp_big_register_normalize(x_copy);
     } else {
-      ERROR_WRONG_TYPE_NTH_ARG(cl::_sym_boole, 2, y, cl::_sym_integer);
+      ERROR_WRONG_TYPE_NTH_ARG(cl::_sym_boole, 3, y, cl::_sym_integer);
     }
   } else if (Bignum_sp bnx = x.asOrNull<Bignum_O>()) {
     Bignum_sp x_copy = my_thread->bigRegister0();
@@ -295,11 +296,11 @@ T_sp clasp_boole(int op, T_sp x, T_sp y) {
     } else if (Bignum_sp bny = y.asOrNull<Bignum_O>()) {
       (bignum_operations[op])(x_copy, x, bny);
     } else {
-      ERROR_WRONG_TYPE_NTH_ARG(cl::_sym_boole, 2, y, cl::_sym_integer);
+      ERROR_WRONG_TYPE_NTH_ARG(cl::_sym_boole, 3, y, cl::_sym_integer);
     }
     return _clasp_big_register_normalize(x_copy);
   } else {
-    ERROR_WRONG_TYPE_NTH_ARG(cl::_sym_boole, 1, x, cl::_sym_integer);
+    ERROR_WRONG_TYPE_NTH_ARG(cl::_sym_boole, 2, x, cl::_sym_integer);
   }
   return x;
 }
@@ -811,7 +812,8 @@ CL_DECLARE();
 CL_DOCSTRING("boole");
 CL_DEFUN T_sp cl__boole(T_sp op, T_sp arg1, T_sp arg2) {
   if (op.nilp()) {
-    ERROR_WRONG_TYPE_NTH_ARG(cl::_sym_boole, 1, op, cl::_sym_integer);
+    // the type of this error should be one of values of cl::_sym_boole_1 .. cl::_sym_boole_xor
+    ERROR_WRONG_TYPE_NTH_ARG(cl::_sym_boole, 1, op, Cons_O::createList(cl::_sym_Integer_O, make_fixnum(0), make_fixnum(boolOpsMax-1)));
   }
   Fixnum_sp fnop = gc::As<Fixnum_sp>(op);
   return clasp_boole(unbox_fixnum(fnop), arg1, arg2);
