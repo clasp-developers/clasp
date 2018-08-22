@@ -658,7 +658,7 @@ void Lisp_O::startupLispEnvironment(Bundle *bundle) {
     Real_sp bits = gc::As<Real_sp>(clasp_make_fixnum(gc::fixnum_bits));
     Real_sp two = gc::As<Real_sp>(clasp_make_fixnum(2));
     this->_Roots._IntegerOverflowAdjust = cl__expt(two, bits); // clasp_make_fixnum(2),clasp_make_fixnum(gc::fixnum_bits));
-    getcwd(true);                                             // set *default-pathname-defaults*
+    core::getcwd(true);                                        // set *default-pathname-defaults*
   };
   //
   // Initialize the main thread info

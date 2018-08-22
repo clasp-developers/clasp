@@ -96,5 +96,9 @@ T_sp cl__delete_file(T_sp filespec);
 String_sp clasp_strerror(int e);
 };
 
+namespace ext {
+core::Str8Ns_sp ext__getcwd();
+};
+
 DECLARE_ENUM_SYMBOL_TRANSLATOR(core::SignalEnum,core::_sym__PLUS_SignalEnumConverter_PLUS_);
 #endif
