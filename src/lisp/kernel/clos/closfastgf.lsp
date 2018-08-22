@@ -601,12 +601,17 @@ FIXME!!!! This code will have problems with multithreading if a generic function
   "This effectively does what compute-discriminator-function does and maybe memoizes the result 
 and calls the effective-method-function that is calculated.
 It takes the arguments in two forms, as a vaslist and as a list of arguments."
-  (when (< (length arguments) (length (generic-function-specializer-profile generic-function)))
-    (error 'simple-program-error
-           :format-control "Not enough arguments when calling ~a - you provided ~d and ~d are required"
-           :format-arguments (list (generic-function-name generic-function)
-                                   (length arguments)
-                                   (length (generic-function-specializer-profile generic-function)))))
+  (multiple-value-bind (min max) (generic-function-min-max-args generic-function)
+    (cond ((< (length arguments) min)
+           (error 'simple-program-error
+                  :format-control "Not enough arguments when calling ~a - you provided ~d and ~d are required"
+                  :format-arguments (list (generic-function-name generic-function)
+                                          (length arguments) min)))
+          ((and max (> (length arguments) max))
+           (error 'simple-program-error
+                  :format-control "Too many arguments when calling ~a - you provided ~d and ~d are allowed"
+                  :format-arguments (list (generic-function-name generic-function)
+                                          (length arguments) max)))))
   (let ((argument-classes (mapcar #'class-of arguments))
         #+debug-fastgf
         (*dispatch-miss-start-time* (get-internal-real-time)))
