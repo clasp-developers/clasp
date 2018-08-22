@@ -347,9 +347,9 @@ Compile a lisp source file into an LLVM module."
                  (write-bitcode module (core:coerce-to-filename (cfp-output-file-default output-path :bitcode))))
              (with-open-file (fout output-path :direction :output)
                (let ((reloc-model (cond
-                                    ((or (member :target-os-linux *features*) (member :target-os-freebsd *features*))
-                                      'llvm-sys:reloc-model-pic-)
-                                    (t 'llvm-sys:reloc-model-undefined))))
+                                   ((or (member :target-os-linux *features*) (member :target-os-freebsd *features*))
+                                    'llvm-sys:reloc-model-pic-)
+                                   (t 'llvm-sys:reloc-model-undefined))))
                  (unless dry-run (generate-obj-asm module fout :file-type 'llvm-sys:code-gen-file-type-object-file :reloc-model reloc-model)))))
             ((eq output-type :bitcode)
              (when verbose (bformat t "Writing bitcode to %s%N" (core:coerce-to-filename output-path)))
