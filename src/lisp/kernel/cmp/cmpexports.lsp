@@ -80,7 +80,6 @@
           calling-convention-register-save-area*
           calling-convention-invocation-history-frame*
           calling-convention-nargs
-          calling-convention-remaining-nargs*
           calling-convention-register-args
           calling-convention-write-registers-to-multiple-values
           describe-constants-table

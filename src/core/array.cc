@@ -1836,7 +1836,12 @@ CL_DEFUN T_mv cl__parse_integer(String_sp str, Fixnum start, T_sp end, uint radi
       LOG(BF("Returning parse-integer with result = %s  cur = %d") % _rep_(iresult) % cur );
       return (Values(iresult, make_fixnum(cur)));
     } else {
-      return (Values(_Nil<T_O>(), make_fixnum(cur)));
+      //If junk-allowed is false, an error of type parse-error is signaled if substring does not consist entirely of the representation
+      // of a signed integer, possibly surrounded on either side by whitespace[1] characters.
+      // The first value returned is either the integer that was parsed, or else nil if no syntactically correct integer was seen but junk-allowed was true.
+      if (junkAllowed.notnilp())
+        return (Values(_Nil<T_O>(), make_fixnum(cur)));
+      else PARSE_ERROR(SimpleBaseString_O::make("Could not parse integer from ~S"), Cons_O::create(str,_Nil<T_O>()));
     }
   }
   PARSE_ERROR(SimpleBaseString_O::make("Could not parse integer from ~S"), Cons_O::create(str,_Nil<T_O>()));

@@ -144,6 +144,11 @@ No DIBuilder is defined for the default module")
 (defun jit-constant-pointer-null-get (type)
   (llvm-sys:constant-pointer-null-get type))
 
+(defun jit-constant-true ()
+  (llvm-sys:get-true *llvm-context*))
+
+(defun jit-constant-false ()
+  (llvm-sys:get-false *llvm-context*))
 
 (defun jit-constant-i1 (val)
   "Create an i1 constant in the current context"

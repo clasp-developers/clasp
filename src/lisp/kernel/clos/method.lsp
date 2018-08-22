@@ -144,20 +144,6 @@ in the generic function lambda-list to the generic function lambda-list"
 (defun make-raw-lambda (name lambda-list required-parameters specializers body env qualifiers)
   (multiple-value-bind (declarations real-body documentation)
       (sys::find-declarations body)
-    ;; FIXME!! This deactivates the checking of keyword arguments
-    ;; inside methods. The reason is that this checking must be
-    ;; supplemented the knowledge of the keyword arguments of all
-    ;; applicable methods (X3J13 7.6.5). Therefore, we should insert
-    ;; that check, either in the method itself so that it is done
-    ;; incrementally, or in COMPUTE-EFFECTIVE-METHOD.
-    (when (and (member '&key lambda-list)
-               (not (member '&allow-other-keys lambda-list)))
-      (let ((x (position '&aux lambda-list)))
-        (setf lambda-list
-              (append (subseq lambda-list 0 x)
-                      '(&allow-other-keys)
-                      (and x (subseq lambda-list x))
-                      nil))))
     (setf qualifiers (if qualifiers (list qualifiers)))
     (let* ((copied-variables '())
            (class-declarations
@@ -222,6 +208,9 @@ in the generic function lambda-list to the generic function lambda-list"
                             ,@(and next-method-p-p
                                 `((next-method-p ()
                                                  (and .next-methods. t)))))
+                       ;; Per CLHS 7.6.4, methods do not do keyword argument checking- the gf does.
+                       ;; BIND-VA-LIST is therefore set up to pass :safep nil to the argument parser
+                       ;; generator, which essentially implies &allow-other-keys.
                        (core::bind-va-list ,lambda-list .method-args.
                                            (declare ,@declarations)
                                            ,@body)))

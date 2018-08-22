@@ -876,7 +876,10 @@ CL_DEFUN T_sp cl__fdefinition(T_sp functionName) {
       ERROR_UNDEFINED_FUNCTION(functionName);
     return sym->symbolFunction();
   }
-  TYPE_ERROR(functionName,cl::_sym_function);
+  TYPE_ERROR(functionName, // type of function names
+             Cons_O::createList(cl::_sym_or, cl::_sym_symbol,
+                                Cons_O::createList(cl::_sym_cons,
+                                                   Cons_O::createList(cl::_sym_eql, cl::_sym_setf))));
 }
 
 CL_LISPIFY_NAME("cl:fdefinition")

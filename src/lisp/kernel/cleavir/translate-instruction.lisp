@@ -11,13 +11,12 @@
          (closed-env-dest (first outputs))
          (calling-convention (calling-convention function-info)))
     (%store (cmp:calling-convention-closure calling-convention) closed-env-dest)
-    (let ((args (cdr (cleavir-ir:outputs instr))))
-      ;; We used to change the landing pad here, so that it skipped unwinds
-      ;; (which after all can't possibly be from the lambda list code)
-      ;; But it substantially complicates the code and it's not that important.
-      ;; Better usage of INVOKE might be able to restore the situation.
-      (cmp:compile-lambda-list-code lambda-list args calling-convention
-                                    :translate-datum #'translate-datum))))
+    ;; We used to change the landing pad here, so that it skipped unwinds
+    ;; (which after all can't possibly be from the lambda list code)
+    ;; But it substantially complicates the code and it's not that important.
+    ;; Better usage of INVOKE might be able to restore the situation.
+    (cmp:compile-lambda-list-code lambda-list calling-convention
+                                  :translate-datum #'translate-datum)))
 
 (defmethod translate-simple-instruction
     ((instr clasp-cleavir-hir:bind-va-list-instruction) return-value inputs outputs (abi abi-x86-64) function-info)
@@ -25,21 +24,18 @@
          (vaslist                       (car inputs))
          (src-remaining-nargs*          (%intrinsic-call "cc_vaslist_remaining_nargs_address" (list (%load vaslist))))
          (src-va_list*                  (%intrinsic-call "cc_vaslist_va_list_address" (list (%load vaslist)) "vaslist_address"))
-         (local-remaining-nargs*        (alloca-size_t "local-remaining-nargs"))
          (local-va_list*                (alloca-va_list "local-va_list"))
-         (_                             (%store (%load src-remaining-nargs*) local-remaining-nargs*))
          (_                             (%intrinsic-call "llvm.va_copy" (list (%pointer-cast local-va_list* cmp:%i8*%)
                                                                               (%pointer-cast src-va_list* cmp:%i8*%))))
          (callconv                      (cmp:make-calling-convention-impl :nargs (%load src-remaining-nargs*)
                                                                           :va-list* local-va_list*
-                                                                          :remaining-nargs* local-remaining-nargs*
                                                                           :rest-alloc (clasp-cleavir-hir:rest-alloc instr))))
-    (cmp:compile-lambda-list-code lambda-list outputs callconv
-                                  :translate-datum (lambda (datum)
-                                                     (if (typep datum 'cleavir-ir:lexical-location)
-                                                         (translate-datum datum)
-                                                         datum)))))
-
+    (cmp:compile-lambda-list-code lambda-list callconv
+                                  ;; BIND-VA-LIST is used exclusively internally, and furthermore,
+                                  ;; in method bodies. In that case the generic function does the
+                                  ;; checking anyway, so there's no point in each method repeating.
+                                  :safep nil
+                                  :translate-datum #'translate-datum)))
 
 (defmethod translate-simple-instruction
     ((instruction cleavir-ir:instruction) return-value inputs outputs abi function-info)
