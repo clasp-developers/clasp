@@ -1175,11 +1175,6 @@ CL_DEFUN bool two_arg__GE_(Number_sp x, Number_sp y) {
   return basic_compare(x, y) != -1;
 }
 
-CL_NAME("TWO-ARG-=");
-CL_DEFUN bool two_arg__EQ_(Number_sp x, Number_sp y) {
-  return basic_compare(x, y) == 0;
-}
-
 CL_LAMBDA(&rest args);
 CL_DEFUN T_sp cl___LT_(List_sp args) {
   if (args.nilp())
@@ -1338,20 +1333,33 @@ bool basic_equalp(Number_sp na, Number_sp nb) {
   MATH_DISPATCH_END();
 }
 
-CL_LAMBDA(&rest args);
+CL_NAME("TWO-ARG-=");
+CL_DEFUN bool two_arg__EQ_(Number_sp x, Number_sp y) {
+  return basic_equalp(x, y);
+}
+
+CL_LAMBDA(core:&va-rest args);
 CL_DECLARE();
 CL_DOCSTRING("NE");
-CL_DEFUN T_sp cl___NE_(List_sp args) {
-  if (args.nilp())
+CL_DEFUN T_sp cl___NE_(VaList_sp args) {
+  if (args->remaining_nargs() == 1) return _lisp->_true();
+  if (args->remaining_nargs()==0) return _lisp->_true();
+  if (args->remaining_nargs() == 2) {
+    Number_sp a = args->next_arg();
+    Number_sp b = args->next_arg();
+    if (basic_equalp(a, b)) return _Nil<T_O>();
     return _lisp->_true();
-  Number_sp a = gc::As<Number_sp>(oCar(args));
-  Number_sp b;
-  for (auto cur : (List_sp)oCdr(args)) {
-    b = gc::As<Number_sp>(oCar(cur));
-    if (basic_equalp(a, b))
-      return _Nil<T_O>();
   }
-  return _lisp->_true();
+  if (args->remaining_nargs() == 3) {
+    Number_sp a = args->next_arg();
+    Number_sp b = args->next_arg();
+    Number_sp c = args->next_arg();
+    if (basic_equalp(a, b)) return _Nil<T_O>();
+    if (basic_equalp(a, c)) return _Nil<T_O>();
+    if (basic_equalp(b, c)) return _Nil<T_O>();
+    return _lisp->_true();
+  }
+  SIMPLE_ERROR(BF("Handle /= with more than 3 arguments"));
 }
 
 CL_LAMBDA(&rest args);

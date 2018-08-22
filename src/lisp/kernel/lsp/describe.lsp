@@ -506,7 +506,7 @@ Prints information about OBJECT to STREAM."
            (unless (and (eq (symbol-package symbol) (find-package "KEYWORD"))
                         (null (si::get-documentation symbol 'VARIABLE)))
              (doc1 (or (si::get-documentation symbol 'VARIABLE) "") "[Constant]")))
-          ((sys:specialp symbol)
+          ((ext:specialp symbol)
            (doc1 (or (si::get-documentation symbol 'VARIABLE) "")
                  "[Special variable]"))
           ((or (setq x (si::get-documentation symbol 'VARIABLE)) (boundp symbol))

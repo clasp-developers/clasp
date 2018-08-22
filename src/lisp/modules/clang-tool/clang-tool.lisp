@@ -9,6 +9,7 @@ Find directories that look like them and replace the ones defined in the constan
 
 (provide :clang-tool)
 
+(declaim (debug 3))
 (defpackage #:clang-tool
   (:shadow #:function-info #:function-type)
   (:use #:common-lisp #:core #:ast-tooling #:clang-ast)
@@ -418,14 +419,10 @@ Find directories that look like them and replace the ones defined in the constan
   #+(or target-os-linux target-os-freebsd) *externals-clasp-include-dir*
   "Define the -resource-dir command line option for Clang compiler runs")
 
-#++
 (defvar +additional-arguments+
-  #+target-os-darwin (vector "GARBAGE2")
-  #+(or)(vector
-         "-I/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.12.sdk/usr/include"
-         "-I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include"
-         "-I/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.12.sdk/System/Library/Frameworks")
-  #-target-os-darwin (vector))
+  #+target-os-darwin (vector "-I/usr/local/include")
+  #+target-os-linux (vector)
+)
 
 (defmacro with-unmanaged-object ((var obj) &body body)
   `(let ((,var ,obj))
@@ -517,6 +514,12 @@ as the root of the absolute includes, if nil relative includes are left alone.
 Otherwise the value of convert-relative-includes-to-absolute is used.
 * Description
 Setup the default arguments adjusters."
+  (push (lambda (args filename)
+          (format t "Arguments:~%")
+          (format t "~{~A \\~%~}%" (coerce args 'list))
+          (format t "If nothing seems to be working - try running the arguments on the command line and look for errors~%")
+          args)
+        (arguments-adjuster-list compilation-tool-database))
   (push (ast-tooling:get-clang-syntax-only-adjuster) (arguments-adjuster-list compilation-tool-database))
   (push (ast-tooling:get-clang-strip-output-adjuster) (arguments-adjuster-list compilation-tool-database))
   (push (lambda (args filename)
@@ -524,7 +527,7 @@ Setup the default arguments adjusters."
                        args
                        (vector #+target-os-darwin "-isysroot" #+target-os-darwin +isysroot+
                                "-resource-dir" +resource-dir+)
-                       #++ +additional-arguments+))
+                       +additional-arguments+))
         (arguments-adjuster-list compilation-tool-database))
   (cond
     ((eq convert-relative-includes-to-absolute t)
@@ -1016,7 +1019,13 @@ run out of memory. This function can be used to rapidly search ASTs for testing 
       (time 
        (multiple-value-bind (num asts)
            (ast-tooling:build-asts tool)
-         (setq *asts* asts)
+         (if (> num 0)
+             (progn
+               (format t "build-asts result: ~s ~s~%" num asts)
+               (setq *asts* asts))
+             (progn
+               (setq *asts* nil)
+               (format t "NO ASTS WERE LOADED!!!!~%")))
          (format t "Built asts: ~a~%" asts))))))
 
 (defun safe-add-dynamic-matcher (match-finder compiled-matcher callback &key matcher-sexp)
@@ -1101,9 +1110,10 @@ run out of memory. This function can be used to rapidly search ASTs for testing 
          (*match-counter* 0)
          (*current-multitool* mtool)
          (*print-reports* print-reports)
-         (*number-of-files* (length (map 'list #'identity (ast-tooling:get-all-files (clang-database compilation-tool-database)))))
+         (*number-of-files* (length source-namestrings))
          (*current-file-index* 0))
     (format t "Starting search of ~a files~%" *number-of-files*)
+    (format t "source-namestrings: ~a~%" source-namestrings)
     (finish-output)
     (incf *current-file-index*)
     (start-search-timer)
@@ -1156,6 +1166,7 @@ Limit the number of times you call the callback with counter-limit."
            (matcher (compile-matcher whole-matcher-sexp))
            (match-finder (ast-tooling:new-match-finder)))
       (safe-add-dynamic-matcher match-finder matcher callback :matcher-sexp match-sexp)
+      (format t "About to start matching asts -> ~a~%" *asts*)
       (catch 'match-counter-reached-limit
         (map 'list #'(lambda (x) (match-ast match-finder (get-astcontext x))) *asts*))
       (format t "Number of matches ~a~%" *match-counter*))))

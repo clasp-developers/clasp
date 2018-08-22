@@ -142,7 +142,7 @@ CL_DEFUN T_sp cl__make_hash_table(T_sp test, Fixnum_sp size, Number_sp rehash_si
   int isize = clasp_to_int(size);
   double rehash_threshold = clasp_to_double(orehash_threshold);
   HashTable_sp table = _Nil<HashTable_O>();
-  //	_lisp->print(BF("%s:%d - make_hash_table - fix me so that I grow by powers of 2\n") % __FILE__ % __LINE__ );
+  //	BFORMAT_T(BF("%s:%d - make_hash_table - fix me so that I grow by powers of 2\n") % __FILE__ % __LINE__ );
   if (test == cl::_sym_eq || test == cl::_sym_eq->symbolFunction()) {
     table = HashTableEq_O::create(isize, rehash_size, rehash_threshold);
   } else if (test == cl::_sym_eql || test == cl::_sym_eql->symbolFunction()) {

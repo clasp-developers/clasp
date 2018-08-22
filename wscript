@@ -66,7 +66,9 @@ FREEBSD_OS = 'freebsd'
 CLANG_VERSION = 6
 
 STAGE_CHARS = [ 'r', 'i', 'a', 'b', 'f', 'c', 'd' ]
-
+# Full LTO  -flto
+# thin LTO  -flto=thin
+LTO_OPTION = "-flto"
 GCS_NAMES = [ 'boehm',
               'mpsprep',
               'mps' ]
@@ -114,13 +116,10 @@ VALID_OPTIONS = [
     # Default on macOS = /usr/local/opt/llvm@%s/bin/llvm-config'%CLANG_VERSION   - brew installed
     # Default on linux = it searches your path
     "LLVM_CONFIG_BINARY",
+    # To link to the debug versions of the LLVM libraries, set a path here to the llvm-config binary of the LLVM debug build
+    "LLVM_CONFIG_BINARY_FOR_LIBS",
     # point to where you want to install clasp - this has to be defined before ./waf configure
     "PREFIX",
-    # This tells clasp that a special patch has been made to LLVM5 that allows the ORC JIT engine
-    # to notify clasp when JITted symbols are created.  This is not needed as of (June 13, 2018)
-    # and will become completely irrelevant after we switch to llvm6 because ORC should be fixed.
-    # default = False
-    "LLVM5_ORC_NOTIFIER_PATCH",
     # Path to sbcl
     "SBCL",
     # What do you want to call clasp?
@@ -131,17 +130,6 @@ VALID_OPTIONS = [
     # Use lld only on Linux when CLASP_BUILD_MODE is "bitcode" - it's faster than ld
     # default = True
     "USE_LLD",
-    # Turn on memory guards - this allocates space in the header and after every general object
-    # in clasp and writes information into it that can be checked to test for writing outside of
-    # object memory - it slows things down by a few tens percent. This flag also turns on simple
-    # checking of the guard
-    # default = False
-    "DEBUG_GUARD",
-    # In combination with DEBUG_GUARD, this option turns on extensive testing of guards
-    # this adds more runtime cost (maybe it slows down clasp by 2x) but it tests every byte
-    # of the header guard and the tail guard
-    # default = False
-    "DEBUG_GUARD_EXHAUSTIVE_VALIDATE",
     # Add additional includes 
     "INCLUDES",
     # Add additional link flags
@@ -163,7 +151,56 @@ VALID_OPTIONS = [
     # Default = True
     "REQUIRE_LIBFFI",
     # If waf doesn't recognize the OS then use this option (darwin|linux|freebsd)
-    "DEST_OS"
+    "DEST_OS",
+    # Turn on debug options
+    "DEBUG_OPTIONS",
+    # Turn on address sanitizer
+    "ADDRESS_SANITIZER",
+    # Link libraries statically vs dynamically
+    "LINK_STATIC"
+]
+
+DEBUG_OPTIONS = [
+    "DEBUG_GUARD", # Add guards around allocated objects
+    "DEBUG_GUARD_VALIDATE", # add simple checks of guards (fast)
+    "DEBUG_GUARD_EXHAUSTIVE_VALIDATE", #add exhaustive, slow, checks of guards
+    "DEBUG_TRACE_INTERPRETED_CLOSURES", # Count how many interpreted closures are evaluated
+    "DEBUG_ENVIRONMENTS",
+    "DEBUG_RELEASE",   # Turn off optimization for a few C++ functions; undef this to optimize everything
+    "DEBUG_CACHE",      # Debug the dispatch caches - see cache.cc
+    "DEBUG_BITUNIT_CONTAINER",  # prints debug info for bitunit containers
+    "DEBUG_LEXICAL_DEPTH", # Generate tests for lexical closure depths
+    "DEBUG_FLOW_TRACKER",  # record small backtraces to track flow
+    "DEBUG_DYNAMIC_BINDING_STACK",  # dynamic variable binding debugging
+    "DEBUG_VALUES",   # turn on printing (values x y z) values when core:*debug-values* is not nil
+    "DEBUG_IHS",
+    "DEBUG_TRACK_UNWINDS",  # Count cc_unwind calls and report in TIME
+    "DEBUG_NO_UNWIND",   # debug intrinsics that say they don't unwind but actually do
+    "DEBUG_STARTUP",
+    ##  Generate per-thread logs in /tmp/dispatch-history/**  of the slow path of fastgf
+    "DEBUG_REHASH_COUNT",   # Keep track of the number of times each hash table has been rehashed
+    "DEBUG_MONITOR",   # generate logging messages to a file in /tmp for non-hot code
+    "DEBUG_MEMORY_PROFILE",  # Profile memory allocations total size and counter
+    "DEBUG_BCLASP_LISP",  # Generate debugging frames for all bclasp code - like declaim
+    "DEBUG_CCLASP_LISP",  # Generate debugging frames for all cclasp code - like declaim
+    "DEBUG_COUNT_ALLOCATIONS", # count per-thread allocations of instances of classes
+    "DEBUG_COMPILER", # Turn on compiler debugging
+    "DEBUG_LONG_CALL_HISTORY",   # The GF call histories used to blow up - this triggers an error if they get too long
+    "DEBUG_BOUNDS_ASSERT",  # check bounds 
+    "DEBUG_GFDISPATCH",  # debug call history manipulation
+    "DEBUG_CMPFASTGF",  # debug dispatch functions by inserting code into them that traces them
+    "DEBUG_FASTGF",   # generate slow gf dispatch logging and write out dispatch functions to /tmp/dispatch-history-**
+    "DEBUG_SLOT_ACCESSORS", # GF accessors have extra debugging added to them
+    "DEBUG_THREADS",
+    "DEBUG_ENSURE_VALID_OBJECT",  #Defines ENSURE_VALID_OBJECT(x)->x macro - sprinkle these around to run checks on objects
+    "DEBUG_QUICK_VALIDATE",    # quick/cheap validate if on and comprehensive validate if not
+    "DEBUG_MPS_SIZE",   # check that the size of the MPS object will be calculated properly by obj_skip
+    "DEBUG_MPS_UNDERSCANNING",   # Very expensive - does a mps_arena_collect/mps_arena_release for each allocation
+    "DEBUG_DONT_OPTIMIZE_BCLASP",  # Optimize bclasp by editing llvm-ir
+    "DEBUG_RECURSIVE_ALLOCATIONS",
+    "DEBUG_LLVM_OPTIMIZATION_LEVEL_0",
+    "DEBUG_SLOW",    # Code runs slower due to checks - undefine to remove checks
+    "CONFIG_VAR_COOL" # mps setting
 ]
 
 def build_extension(bld):
@@ -177,6 +214,7 @@ def update_dependencies(cfg):
     # Specifying only label = "some-tag" will check out that tag into a "detached head", but
     # specifying both label = "master" and revision = "some-tag" will stay on master and reset to that revision.
     def fetch_git_revision(path, url, revision = "", label = "master"):
+        log.info("Git repository %s  url: %s\n     revision: %s  label: %s\n" % (path, url, revision, label))
         ret = os.system("./tools-for-build/fetch-git-revision.sh '%s' '%s' '%s' '%s'" % (path, url, revision, label))
         if ( ret != 0 ):
             raise Exception("Failed to fetch git url %s" % url)
@@ -202,7 +240,12 @@ def update_dependencies(cfg):
                        "e5c54bc30b0887c237bde2827036d17315f88737")
     fetch_git_revision("src/mps",
                        "https://github.com/Ravenbrook/mps.git",
-                       label = "master", revision = "release-1.115.0")
+                       #DLM says this will be faster.
+#                       label = "master", revision = "b1cc9aa5f87f2619ff675c8756e83211865419de")
+                       # Very recent branch - may have problems
+#                       label = "master", revision = "b5be454728c2ac58b9cb2383360ed0366a7e4115")
+                       #First branch that supported fork
+                       label = "master", revision = "46e0a8d77ac470282de7300f5eaf471ca2fbee05")
     fetch_git_revision("src/lisp/modules/asdf",
                        "https://gitlab.common-lisp.net/asdf/asdf.git",
                        label = "master", revision = "3.3.1.2")
@@ -250,7 +293,10 @@ def configure_common(cfg,variant):
 #    cfg.env.append_value("CFLAGS", ['-I%s' % include_path])
     # These will end up in build/config.h
     cfg.define("EXECUTABLE_NAME",variant.executable_name())
-    cfg.define("PREFIX",cfg.env.PREFIX)
+    if (cfg.env.PREFIX):
+        cfg.define("PREFIX",cfg.env.PREFIX)
+    else:
+        cfg.define("PREFIX","/opt/clasp/")
     assert os.path.isdir(cfg.env.LLVM_BIN_DIR)
     cfg.define("CLASP_CLANG_PATH", os.path.join(cfg.env.LLVM_BIN_DIR, "clang"))
     cfg.define("APP_NAME",APP_NAME)
@@ -329,6 +375,7 @@ class variant(object):
         cfg.define("_RELEASE_BUILD",1)
         cfg.env.append_value('CXXFLAGS', [ '-O3', '-g' ])
         cfg.env.append_value('CFLAGS', [ '-O3', '-g' ])
+        cfg.define("ALWAYS_INLINE_MPS_ALLOCATIONS",1)
         if (os.getenv("CLASP_RELEASE_CXXFLAGS") != None):
             cfg.env.append_value('CXXFLAGS', os.getenv("CLASP_RELEASE_CXXFLAGS").split() )
         if (os.getenv("CLASP_RELEASE_LINKFLAGS") != None):
@@ -530,7 +577,7 @@ def configure(cfg):
                 if (not key in VALID_OPTIONS):
                     raise Exception("%s is an INVALID wscript.config option - valid options are: %s" % (key, VALID_OPTIONS))
                 else:
-                    log.debug("wscript.config option %s = %s", key, local_environment[key])
+                    log.info("wscript.config option %s = %s", key, local_environment[key])
             cfg.env.update(local_environment)
         else:
             log.warn("There is no 'wscript.config' file - assuming default configuration. See 'wscript.config.template' for further details.")
@@ -544,6 +591,7 @@ def configure(cfg):
     load_local_config(cfg)
     cfg.load("why")
     cfg.check_waf_version(mini = '1.7.5')
+    cfg.env["DEST_OS"] = cfg.env["DEST_OS"] or Utils.unversioned_sys_platform()
     update_exe_search_path(cfg)
     run_llvm_config(cfg, "--version") # make sure we fail early
     check_externals_clasp_version(cfg)
@@ -556,7 +604,10 @@ def configure(cfg):
 
     if (cfg.env.LLVM5_ORC_NOTIFIER_PATCH):
         cfg.define("LLVM5_ORC_NOTIFIER_PATCH",1)
-    if (cfg.env.USE_PARALLEL_BUILD):
+    if (cfg.env.USE_PARALLEL_BUILD == False):
+        pass
+    else:
+        cfg.env.USE_PARALLEL_BUILD = True
         cfg.define("USE_PARALLEL_BUILD",1)
     cfg.env["LLVM_BIN_DIR"] = run_llvm_config(cfg, "--bindir")
     cfg.env["LLVM_AR_BINARY"] = "%s/llvm-ar" % cfg.env.LLVM_BIN_DIR
@@ -566,16 +617,7 @@ def configure(cfg):
     if ((cfg.env['CLASP_BUILD_MODE'] =='bitcode')):
         cfg.define("CLASP_BUILD_MODE",2) # thin-lto
         cfg.env.CLASP_BUILD_MODE = 'bitcode'
-        cfg.env.LTO_FLAG = '-flto=thin'
-        if (cfg.env['DEST_OS'] == LINUX_OS ):
-            if (cfg.env['USE_LLD']):
-                cfg.env.append_value('LINKFLAGS', '-Wl,--thinlto-cache-dir=/tmp/clasp')
-            else:
-                cfg.env.append_value('LINKFLAGS', '-Wl,-plugin-opt,cache-dir=/tmp/clasp')
-        elif (cfg.env['DEST_OS'] == FREEBSD_OS ):
-            cfg.env.append_value('LINKFLAGS', '-Wl,-plugin-opt,cache-dir=/tmp')
-        elif (cfg.env['DEST_OS'] == DARWIN_OS ):
-            cfg.env.append_value('LINKFLAGS', '-Wl,-cache_path_lto,/tmp/clasp')
+        cfg.env.LTO_FLAG = LTO_OPTION
     elif (cfg.env['CLASP_BUILD_MODE']==[] or cfg.env['CLASP_BUILD_MODE']=='object'):
         cfg.define("CLASP_BUILD_MODE",1) # object files
         cfg.env.CLASP_BUILD_MODE = 'object'
@@ -628,7 +670,10 @@ def configure(cfg):
 #        cfg.check_cxx(lib='lzma', cflags='-Wall', uselib_store='LZMA')
     else:
         pass
-    cfg.check_cxx(stlib=BOOST_LIBRARIES, cflags='-Wall', uselib_store='BOOST')
+    if (cfg.env['LINK_STATIC']):
+        cfg.check_cxx(stlib=BOOST_LIBRARIES, cflags='-Wall', uselib_store='BOOST')
+    else:
+        cfg.check_cxx(lib=BOOST_LIBRARIES, cflags='-Wall', uselib_store='BOOST')
     cfg.extensions_include_dirs = []
     cfg.extensions_gcinterface_include_files = []
     cfg.extensions_stlib = []
@@ -661,10 +706,6 @@ def configure(cfg):
     if (cfg.env['DEST_OS'] == LINUX_OS):
         cfg.env.append_value('CXXFLAGS',['-fno-omit-frame-pointer', '-mno-omit-leaf-frame-pointer'])
         cfg.env.append_value('CFLAGS',['-fno-omit-frame-pointer', '-mno-omit-leaf-frame-pointer'])
-    if (cfg.env["PROFILING"] == True):
-        cfg.env.append_value('CXXFLAGS',["-pg"])
-        cfg.env.append_value('CFLAGS',["-pg"])
-        cfg.define("ENABLE_PROFILING",1)
 #    if ('program_name' in cfg.__dict__):
 #        pass
 #    else:
@@ -775,51 +816,17 @@ def configure(cfg):
         cfg.define("DEBUG_GUARD_VALIDATE",1)
     if (cfg.env.DEBUG_GUARD_EXHAUSTIVE_VALIDATE):
         cfg.define("DEBUG_GUARD_EXHAUSTIVE_VALIDATE",1)
-    cfg.define("DEBUG_TRACE_INTERPRETED_CLOSURES",1)
-    cfg.define("DEBUG_ENVIRONMENTS",1)
-    cfg.define("DEBUG_RELEASE",1)   # Turn off optimization for a few C++ functions; undef this to optimize everything
-#    cfg.define("DEBUG_CACHE",1)      # Debug the dispatch caches - see cache.cc
-#    cfg.define("DEBUG_BITUNIT_CONTAINER",1)  # prints debug info for bitunit containers
-#    cfg.define("DEBUG_ZERO_KIND",1);
-#    cfg.define("DEBUG_FLOW_CONTROL",1)  # broken - probably should be removed unless it can be
-#    cfg.define("DEBUG_RETURN_FROM",1)   # broken
-#    cfg.define("DEBUG_LEXICAL_DEPTH",1) # Generate tests for lexical closure depths
-#    cfg.define("DEBUG_FLOW_TRACKER",1)  # record small backtraces to track flow
-#    cfg.define("DEBUG_DYNAMIC_BINDING_STACK",1)
-#    cfg.define("DEBUG_VALUES",1)   # turn on printing (values x y z) values when core:*debug-values* is not nil
-#    cfg.define("DEBUG_IHS",1)
-    cfg.define("DEBUG_TRACK_UNWINDS",1)  # Count cc_unwind calls and report in TIME
-#    cfg.define("DEBUG_NO_UNWIND",1)
-#    cfg.define("DEBUG_STARTUP",1)
-#    cfg.define("DEBUG_ACCESSORS",1)
-#    cfg.define("DEBUG_GFDISPATCH",1)
-##  Generate per-thread logs in /tmp/dispatch-history/**  of the slow path of fastgf
-#    cfg.define("DEBUG_CMPFASTGF",1)  # debug dispatch functions by inserting code into them that traces them
-#    cfg.define("DEBUG_FASTGF",1)   # generate slow gf dispatch logging and write out dispatch functions to /tmp/dispatch-history-**
-#    cfg.define("DEBUG_REHASH_COUNT",1)   # Keep track of the number of times each hash table has been rehashed
-#    cfg.define("DEBUG_MONITOR",1)   # generate logging messages to a file in /tmp for non-hot code
-#    cfg.define("DEBUG_MEMORY_PROFILE",1)  # Profile memory allocations
-#    cfg.define("DEBUG_BCLASP_LISP",1)  # Generate debugging frames for all bclasp code - like declaim
-#    cfg.define("DEBUG_CCLASP_LISP",1)  # Generate debugging frames for all cclasp code - like declaim
-#    cfg.define("DEBUG_LONG_CALL_HISTORY",1)
-#    cfg.define("DONT_OPTIMIZE_BCLASP",1)  # Optimize bclasp by editing llvm-ir
-#    cfg.define("DEBUG_BOUNDS_ASSERT",1)
-#    cfg.define("DEBUG_SLOT_ACCESSORS",1)
+    if (cfg.env.DEBUG_OPTIONS):
+        for opt in cfg.env.DEBUG_OPTIONS:
+            if (opt in DEBUG_OPTIONS):
+                cfg.define(opt,1)
+            else:
+                raise Exception("Illegal DEBUG_OPTION %s - allowed options: %s" % (opt, DEBUG_OPTIONS))
+
 #    cfg.define("DISABLE_TYPE_INFERENCE",1)
-#    cfg.define("DEBUG_THREADS",1)
-###  cfg.define("DEBUG_GUARD",1) #<<< this is set in wscript.config
-#    cfg.define("CONFIG_VAR_COOL",1)
-#    cfg.define("DEBUG_ENSURE_VALID_OBJECT",1)  #Defines ENSURE_VALID_OBJECT(x)->x macro - sprinkle these around to run checks on objects
-#    cfg.define("DEBUG_QUICK_VALIDATE",1)    # quick/cheap validate if on and comprehensive validate if not
-#    cfg.define("DEBUG_MPS_SIZE",1)   # check that the size of the MPS object will be calculated properly by obj_skip
     cfg.env.USE_HUMAN_READABLE_BITCODE=True
     if (cfg.env.USE_HUMAN_READABLE_BITCODE):
         cfg.define("USE_HUMAN_READABLE_BITCODE",1)
-    cfg.define("DEBUG_RECURSIVE_ALLOCATIONS",1)
-# -----------------
-# defines that slow down program execution
-#  There are more defined in clasp/include/gctools/configure_memory.h
-    cfg.define("DEBUG_SLOW",1)    # Code runs slower due to checks - undefine to remove checks
 # ----------
 
 # --------------------------------------------------
@@ -841,8 +848,11 @@ def configure(cfg):
     cfg.env.append_value('LIB', cfg.extensions_lib)
     cfg.env.append_value('STLIB', cfg.env.STLIB_CLANG)
     cfg.env.append_value('STLIB', cfg.env.STLIB_LLVM)
-    cfg.env.append_value('STLIB', cfg.env.STLIB_BOOST)
     cfg.env.append_value('STLIB', cfg.env.STLIB_Z)
+    if (cfg.env['LINK_STATIC']):
+        cfg.env.append_value('STLIB', cfg.env.STLIB_BOOST)
+    else:
+        cfg.env.append_value('LIB', cfg.env.LIB_BOOST)
     log.info("About to check if appending LIB_FFI")
     if (cfg.env['DEST_OS'] == DARWIN_OS ):
         if (cfg.env['REQUIRE_LIBFFI'] == True):
@@ -933,6 +943,37 @@ def build(bld):
     bld.clasp_aclasp = collect_aclasp_lisp_files(wrappers = False)
     bld.clasp_bclasp = collect_bclasp_lisp_files()
     bld.clasp_cclasp = collect_cclasp_lisp_files()
+
+    def find_lisp(bld,x):
+        find = bld.path.find_node("%s.lsp"%x)
+        if (find):
+            return find.abspath()
+        find = bld.path.find_node("%s.lisp"%x)
+        if (find):
+            return find.abspath()
+        find = bld.path.find_or_declare("%s.lisp"%x)
+        if (find):
+            return find.abspath()
+        return x
+    
+#    fout = open("/tmp/build.lisp", "w")
+#    fout.write('(core:select-package :core)\n')
+#    fout.write('(core:*make-special \'core::*number-of-jobs*)\n')
+#    fout.write('(setq core::*number-of-jobs* 1)\n')
+#    fout.write('(export \'core::*number-of-jobs*)\n')
+#    fout.write('(load "%s" :verbose t)\n' % find_lisp(bld,"src/lisp/kernel/clasp-builder"))
+#    fout.write('(core::remove-stage-features)\n')
+#    fout.write('(setq *features* (cons :aclasp (cons :clasp-min *features*)))\n')
+#    for x in bld.clasp_aclasp:
+#        fout.write('(load "%s" :verbose t)\n' % find_lisp(bld,x))
+#    for x in bld.clasp_aclasp:
+#        fout.write('(load "%s" :verbose t)\n' % find_lisp(bld,x))
+#    fout.write('(core::remove-stage-features)\n')
+#    fout.write('(setq *features* (cons :bclasp (cons :clos *features*)))\n')
+#    for x in bld.clasp_bclasp:
+#        fout.write('(load "%s" :verbose t)\n' % find_lisp(bld,x))
+#    fout.close()
+    
     bld.clasp_cclasp_no_wrappers = collect_cclasp_lisp_files(wrappers = False)
 
     bld.extensions_include_dirs = []
@@ -965,7 +1006,7 @@ def build(bld):
     clasp_c_source_files = bld.clasp_source_files + bld.extensions_source_files
     install('lib/clasp/', clasp_c_source_files)
     install('lib/clasp/', collect_waf_nodes(bld, 'include/clasp/', suffix = ".h"))
-    install('lib/clasp/src/lisp/', collect_waf_nodes(bld, 'src/lisp/', suffix = [".lsp", ".lisp", ".asd"]))
+    install('lib/clasp/', collect_waf_nodes(bld, 'src/lisp/', suffix = [".lsp", ".lisp", ".asd"]))
 
     bld.env = bld.all_envs[bld.variant]
     include_dirs = ['.']
@@ -991,6 +1032,13 @@ def build(bld):
     bld.add_to_group(task)
 
     bld.set_group('compiling/c++')
+
+    # Build the fork client
+
+    bld(features='c cprogram', \
+        source="src/fork-server/fork-client.c", \
+        target="fork-client", \
+        install_path="${PREFIX}/bin")
 
     # Always build the C++ code
     intrinsics_bitcode_node = bld.path.find_or_declare(variant.inline_bitcode_archive_name("intrinsics"))
@@ -1289,7 +1337,7 @@ class link_executable(clasp_task):
             lto_object_path_lto = []
         link_options = []
         if (self.env['DEST_OS'] == DARWIN_OS ):
-            link_options = link_options + [ "-flto=thin", "-v", '-Wl,-stack_size,0x1000000']
+            link_options = link_options + [ LTO_OPTION, "-v", '-Wl,-stack_size,0x1000000']
         cmd = [ self.env.CXX[0] ] + \
               waf_nodes_to_paths(self.inputs) + \
               self.env['LINKFLAGS'] + \
@@ -1326,7 +1374,8 @@ class compile_aclasp(clasp_task):
         cmd = self.clasp_command_line(executable,
                                       image = False,
                                       features = ["clasp-min"],
-                                      forms = ['(load "sys:kernel;clasp-builder.lsp")',
+                                      forms = ['(setq *features* (cons :aclasp *features*))',
+                                               '(load "sys:kernel;clasp-builder.lsp")',
                                                #'(load-aclasp)',
                                                '(setq core::*number-of-jobs* %d)' % self.bld.jobs,
                                                '(core:compile-aclasp :output-file #P"%s")' % output_file,
@@ -1343,7 +1392,8 @@ class compile_bclasp(clasp_task):
         cmd = self.clasp_command_line(executable,
                                       image = image_file,
                                       features = [],
-                                      forms = ['(load "sys:kernel;clasp-builder.lsp")',
+                                      forms = ['(setq *features* (cons :bclasp *features*))',
+                                               '(load "sys:kernel;clasp-builder.lsp")',
                                                '(setq core::*number-of-jobs* %d)' % self.bld.jobs,
                                                '(core:compile-bclasp :output-file #P"%s")' % output_file,
                                                '(core:quit)'],
@@ -1357,7 +1407,8 @@ class compile_cclasp(clasp_task):
         image_file = self.inputs[1].abspath()
         output_file = self.outputs[0].abspath()
         log.debug("In compile_cclasp %s --image %s -> %s", executable, image_file, output_file)
-        forms = ['(load "sys:kernel;clasp-builder.lsp")',
+        forms = ['(setq *features* (cons :cclasp *features*))',
+                 '(load "sys:kernel;clasp-builder.lsp")',
                  '(setq core::*number-of-jobs* %d)' % self.bld.jobs]
         if (self.bld.options.LOAD_CCLASP):
             forms += ['(load-cclasp)']
@@ -1382,7 +1433,8 @@ class recompile_cclasp(clasp_task):
         cmd = self.clasp_command_line(other_clasp,
                                       features = ['ignore-extensions'],
                                       resource_dir = os.path.join(self.bld.path.abspath(), out, self.bld.variant_obj.variant_dir()),
-                                      forms = ['(load "sys:kernel;clasp-builder.lsp")',
+                                      forms = ['(setq *features* (cons :cclasp *features*))',
+                                               '(load "sys:kernel;clasp-builder.lsp")',
                                                '(setq core::*number-of-jobs* %d)' % self.bld.jobs,
                                                '(core:recompile-cclasp :output-file #P"%s")' % output_file,
                                                '(core:quit)'],
@@ -1431,6 +1483,7 @@ class link_bitcode(clasp_task):
         for f in self.inputs:
             all_inputs.write(' %s' % f.abspath())
         cmd = "" + self.env.LLVM_AR_BINARY + " ru %s %s" % (self.outputs[0], all_inputs.getvalue())
+        print("link_bitcode command: %s" % cmd);
         return self.exec_command(cmd)
 
 class build_bitcode(clasp_task):

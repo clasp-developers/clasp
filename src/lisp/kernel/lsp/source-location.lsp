@@ -2,54 +2,63 @@
 ;;; Any symbols we want to export from EXT must be done in init.lsp
 ;;;
 
+(in-package :core)
+;;; Temporary alias for SLIME compatibility- remove as soon as possible
+(setf (fdefinition 'function-lambda-list) #'ext:function-lambda-list)
+(export 'function-lambda-list)
+
 (in-package :ext)
+
 (defun compiled-function-name (x)
   (core:function-name x))
 
-(defun compiled-function-file* (x)
-  (assert (functionp x))
-  (multiple-value-bind (sfi pos lineno)
-      (core:function-source-pos x)
-    (let* ((source-file (core:source-file-info-source-debug-namestring sfi)))
-      (when source-file
-        (let* ((src-pathname (pathname source-file))
-               (src-directory (pathname-directory src-pathname))
-               (src-name (pathname-name src-pathname))
-               (src-type (pathname-type src-pathname))
-               (filepos (+ (core:source-file-info-source-debug-offset sfi) pos)))
-          (let* ((pn (if (eq (car src-directory) :relative)
-                         (merge-pathnames src-pathname (translate-logical-pathname "source-dir:"))
-                         src-pathname)))
-            (return-from compiled-function-file* (values pn filepos lineno))))))))
+(defun compiled-function-file (xfunction)
+  (if (and xfunction (functionp xfunction))
+      (multiple-value-bind (src-pathname pos lineno)
+          (core:function-source-pos xfunction)
+        (when (null src-pathname)
+          ;; e.g., a repl function - no source location.
+          (return-from compiled-function-file nil))
+        ;; FIXME: This indicates an internal bookkeeping problem, i.e., a bug.
+        (unless (typep src-pathname 'pathname)
+          (error "The source-debug-pathname for ~a was ~a - it needs to be a pathname"
+                 xfunction src-pathname))
+        (let ((src-directory (pathname-directory src-pathname))
+              (src-name (pathname-name src-pathname))
+              (src-type (pathname-type src-pathname))
+          (filepos pos))
+          (let ((pn (if (eq (car src-directory) :relative)
+                        (merge-pathnames src-pathname (translate-logical-pathname "source-dir:"))
+                        src-pathname)))
+            (values pn filepos lineno))))
+      (progn
+        (warn "compiled-function-file expected a function as argument - but it got ~a - there may not be any backtrace available" xfunction)
+        (values nil 0 0))))
 
-(defun compiled-function-file (x)
-  "This is provided for slime - it can removed once slime switches to source-location"
-  (cond
-    ((and x (core:single-dispatch-generic-function-p x))
-     (let ((locs (source-location x t)))
-       (values (source-location-pathname (car locs)) (source-location-offset (car locs)))))
-    ((and x (functionp x)) (compiled-function-file* x))
-    (t (values nil 0 0))))
-
-#+(or)
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (format t "About to define the first defstruct~%")
-  (setq core:*echo-repl-read* t))
-
-
+;;; This happens to be the first non-:TYPE defstruct during build.
+;;; But FIXME: It's redundant to core:source-pos-info and should be vaporized.
 (defstruct source-location
   pathname offset)
 
-;;; FIXME: above struct is redundant and should be vaporized.
+(defun function-source-locations (function)
+  (multiple-value-bind (file pos)
+      (compiled-function-file function)
+    (if file
+        (list (make-source-location :pathname file :offset pos))
+        nil)))
+
 ;;; Class source positions are just stored in a slot.
-(defun class-source-position (class)
+(defun class-source-location (class)
   (let ((csp (clos:class-source-position class)))
     (when csp
-      (make-source-location
-       :pathname (core:source-file-info-pathname
-                  (core:source-file-info
-                   (core:source-pos-info-file-handle csp)))
-       :offset (core:source-pos-info-filepos csp)))))
+      ;; FIXME: Move this source debug stuff to an interface
+      ;; (in SPI, probably)
+      (let ((csi (core:source-file-info
+                  (core:source-pos-info-file-handle csp))))
+        (make-source-location
+         :pathname (core:source-file-info-source-debug-pathname csi)
+         :offset (+ (core:source-file-info-source-debug-offset csi)
+                    (core:source-pos-info-filepos csp)))))))
 
 ;;; Method combinations don't have source positions. In fact,
 ;;; they don't even exist as objects globally. The only global
@@ -59,7 +68,7 @@
 ;;; As such, we use the compiler's source info.
 ;;; Note that due to this, when provided a name, we don't go through
 ;;; this function- check source-location-impl.
-(defun method-combination-source-position (method-combination)
+(defun method-combination-source-location (method-combination)
   (source-location (clos::method-combination-compiler method-combination) t))
 
 (defun method-source-location (method)
@@ -88,7 +97,7 @@ Return the source-location for the name/kind pair"
       (:class
        (let ((class (find-class name nil)))
          (when class
-           (let ((source-loc (class-source-position class)))
+           (let ((source-loc (class-source-location class)))
              (when source-loc (list source-loc))))))
       (:method
           (let ((source-loc (core:get-sysprop name 'core:cxx-method-source-location)))
@@ -101,16 +110,14 @@ Return the source-location for the name/kind pair"
                  ((typep func 'generic-function)
                   (generic-function-source-locations func))
                  (t ; normal function
-                  (multiple-value-bind (file pos)
-                      (compiled-function-file* (fdefinition name))
-                    (list (make-source-location :pathname file :offset pos))))))))
+                  (function-source-locations (fdefinition name)))))))
       (:compiler-macro
        (when (fboundp name)
          (let ((cmf (compiler-macro-function name)))
            (when cmf
              (source-location cmf t)))))
       (:setf-expander
-       (let ((expander (core::setf-expander name)))
+       (let ((expander (ext:setf-expander name)))
          (when expander
            (source-location expander t))))
       (:method-combination
@@ -120,7 +127,7 @@ Return the source-location for the name/kind pair"
            (source-location method-combination-compiler t))))
       (:type
        ;; We use the source location of the expander function.
-       (let ((expander (core::type-expander name)))
+       (let ((expander (ext:type-expander name)))
          (when expander
            (source-location expander t)))))))
 
@@ -136,18 +143,15 @@ Return the source-location for the name/kind pair"
     ((eq kind t)
      (cond
        ((clos:classp obj)
-        (let ((source-loc (class-source-position obj)))
+        (let ((source-loc (class-source-location obj)))
           (when source-loc (list source-loc))))
        ((core:single-dispatch-generic-function-p obj)
         (source-location (core:function-name obj) :method))
        ((typep obj 'generic-function)
         (generic-function-source-locations obj))
-       ((functionp obj)
-        (multiple-value-bind (file pos)
-            (compiled-function-file* obj)
-          (list (make-source-location :pathname file :offset pos))))
+       ((functionp obj) (function-source-locations obj))
        ((typep obj 'clos:method-combination)
-        (let ((source-loc (method-combination-source-position obj)))
+        (let ((source-loc (method-combination-source-location obj)))
           (when source-loc (list source-loc))))))
     ((symbolp kind) (source-location-impl obj kind))
     (t (error "Cannot obtain source-location for ~a of kind ~a" obj kind))))

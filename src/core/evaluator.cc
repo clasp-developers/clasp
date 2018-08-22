@@ -47,6 +47,7 @@ THE SOFTWARE.
 #include <clasp/core/backquote.h>
 #include <clasp/core/sysprop.h>
 #include <clasp/core/hashTableEq.h>
+#include <clasp/core/hashTableEqual.h>
 #include <clasp/core/multipleValues.h>
 #include <clasp/core/primitives.h>
 #include <clasp/core/array.h>
@@ -86,7 +87,7 @@ CL_DEFUN T_mv core__compile_form_and_eval_with_env(T_sp form, T_sp env, T_sp ste
   return result;
 };
 
-CL_LAMBDA(head &va-rest args);
+CL_LAMBDA(head core:&va-rest args);
 CL_DECLARE();
 CL_DOCSTRING("apply");
 DONT_OPTIMIZE_WHEN_DEBUG_RELEASE
@@ -338,7 +339,7 @@ CL_DEFUN T_mv core__interpret(T_sp form, T_sp env) {
 
 
 // fast funcall
-CL_LAMBDA(function-desig &va-rest args);
+CL_LAMBDA(function-desig core:&va-rest args);
 CL_DECLARE();
 CL_DOCSTRING("See CLHS: funcall");
 CL_DEFUN T_mv cl__funcall(T_sp function_desig, VaList_sp args) {
@@ -375,7 +376,7 @@ CL_DEFUN Function_sp core__coerce_to_function(T_sp arg) {
     T_sp head = oCar(carg);
     if (head == cl::_sym_setf) {
       Symbol_sp sym = oCadr(carg).as<Symbol_O>();
-      if (!sym->setf_fboundp()) {
+      if (!sym->fboundp_setf()) {
         SIMPLE_ERROR(BF("SETF function value for %s is unbound") % _rep_(sym));
       }
       return sym->getSetfFdefinition();
@@ -423,7 +424,7 @@ CL_DEFUN T_mv core__process_declarations(List_sp inputBody, T_sp expectDocString
   List_sp specials;
   eval::extract_declares_docstring_code_specials(inputBody, declares,
                                                  b_expect_doc, docstring, code, specials);
-  T_sp tdeclares = canonicalize_declarations(declares);
+  T_sp tdeclares = core__canonicalize_declarations(declares);
   return Values(tdeclares, code, (T_sp)docstring, specials);
 };
 
@@ -490,10 +491,12 @@ CL_DEFUN T_sp core__extract_lambda_name(List_sp lambdaExpression, T_sp defaultVa
   // Fallback return LAMBDA as the name
   return defaultValue;
 }
+
+CL_LISPIFY_NAME("ext:symbol-macro");
 CL_LAMBDA(symbol &optional env);
 CL_DECLARE();
 CL_DOCSTRING("Returns the macro expansion function for a symbol if it exists, or else NIL.");
-CL_DEFUN T_sp core__symbol_macro(Symbol_sp sym, T_sp env) {
+CL_DEFUN T_sp ext__symbol_macro(Symbol_sp sym, T_sp env) {
   if (sym.nilp())
     return _Nil<T_O>();
   if (env.notnilp()) {
@@ -505,9 +508,9 @@ CL_DEFUN T_sp core__symbol_macro(Symbol_sp sym, T_sp env) {
     if (found)
       return macro;
   }
-  SYMBOL_SC_(CorePkg, symbolMacro);
+  SYMBOL_SC_(ExtPkg, symbolMacro);
   T_sp fn = _Nil<T_O>();
-  T_mv result = core__get_sysprop(sym, core::_sym_symbolMacro);
+  T_mv result = core__get_sysprop(sym, ext::_sym_symbolMacro);
   if (gc::As<T_sp>(result.valueGet_(1)).notnilp()) {
     fn = gc::As<Function_sp>(result);
   }
@@ -640,7 +643,7 @@ Function_sp interpreter_lookup_function_or_error(T_sp name, T_sp env) {
     T_sp head = CONS_CAR(name);
     if (head == cl::_sym_setf) {
       Symbol_sp sym = oCar(CONS_CDR(name)).template as<Symbol_O>();
-      if (sym->setf_fboundp()) {
+      if (sym->fboundp_setf()) {
         return sym->getSetfFdefinition();
       }
       SIMPLE_ERROR(BF("SETF function value for %s is unbound") % _rep_(sym));
@@ -648,8 +651,11 @@ Function_sp interpreter_lookup_function_or_error(T_sp name, T_sp env) {
   }
   if (gc::IsA<Symbol_sp>(name)) {
     Symbol_sp sname = gc::As_unsafe<Symbol_sp>(name);
+    return sname->symbolFunction();
+#if 0    
     if (sname->fboundp()) return sname->symbolFunction();
     SIMPLE_ERROR(BF("Could not find special-operator/macro/function(%s) in the lexical/dynamic environment") % _rep_(name) );
+#endif
   }
   ASSERT(gc::IsA<Function_sp>(name));
   return gc::As_unsafe<Function_sp>(name);
@@ -669,7 +675,7 @@ T_sp af_interpreter_lookup_setf_function(List_sp setf_name, T_sp env) {
     if (Environment_O::clasp_findFunction(env, name, depth, index, fn, functionEnv))
       return fn;
   }
-  if (name->setf_fboundp())
+  if (name->fboundp_setf())
     return name->getSetfFdefinition();
   return _Nil<T_O>();
 };
@@ -690,9 +696,10 @@ T_sp af_interpreter_lookup_macro(Symbol_sp sym, T_sp env) {
   if (found)
     return macro;
   if (sym->fboundp()) {
-    if (Function_sp fn = sym->symbolFunction().asOrNull<Function_O>()) {
-      if (fn->macroP())
+    if (sym->macroP()) {
+      if (Function_sp fn = sym->symbolFunction().asOrNull<Function_O>()) {
         return fn;
+      }
     }
   }
   return _Nil<T_O>();
@@ -1426,16 +1433,10 @@ Function_sp lambda(T_sp name, bool wrap_block, T_sp lambda_list, List_sp body, T
 
   List_sp code(form);
   if (wrap_block) {
-    code = Cons_O::create(Cons_O::create(cl::_sym_block,
-                                         Cons_O::create(
-                                                        core__function_block_name(name),
-                                                        code)));
+    code = Cons_O::create(Cons_O::create(cl::_sym_block, Cons_O::create(core__function_block_name(name), code)),_Nil<T_O>());
   }
   //            printf("%s:%d Creating InterpretedClosure with no source information - fix this\n", __FILE__, __LINE__ );
   T_sp spi(_Nil<T_O>());
-  if (_lisp->sourceDatabase().notnilp()) {
-    spi = gc::As<SourceManager_sp>(_lisp->sourceDatabase())->lookupSourcePosInfo(code);
-  }
   if (spi.nilp()) {
     if ( _sym_STARcurrentSourcePosInfoSTAR->symbolValue().notnilp() ) {
       spi = _sym_STARcurrentSourcePosInfoSTAR->symbolValue();
@@ -1717,7 +1718,7 @@ T_mv evaluate_atom(T_sp exp, T_sp environment) {
     _BLOCK_TRACEF(BF("Evaluating symbol: %s") % exp->__repr__());
     if (sym->isKeywordSymbol())
       return Values(sym);
-    if (core__symbol_macro(sym, environment).notnilp()) {
+    if (ext__symbol_macro(sym, environment).notnilp()) {
       T_sp texpr;
       {
         texpr = cl__macroexpand(sym, environment);
@@ -1871,7 +1872,8 @@ struct InterpreterTrace {
   };
 };
 
-DONT_OPTIMIZE_WHEN_DEBUG_RELEASE T_mv evaluate(T_sp exp, T_sp environment) {
+DONT_OPTIMIZE_WHEN_DEBUG_RELEASE
+T_mv evaluate(T_sp exp, T_sp environment) {
   //	    Environment_sp localEnvironment = environment;
   //            printf("%s:%d evaluate %s environment@%p\n", __FILE__, __LINE__, _rep_(exp).c_str(), environment.raw_());
   //            printf("    environment: %s\n", _rep_(environment).c_str() );
@@ -1928,25 +1930,19 @@ DONT_OPTIMIZE_WHEN_DEBUG_RELEASE T_mv evaluate(T_sp exp, T_sp environment) {
 
     T_sp theadFunc = af_interpreter_lookup_macro(headSym, environment);
     if (theadFunc.notnilp()) {
-      /* Macro expansion should be done immediately after the reader -
-		       - done here the macros are expanded again and again and again
-		    */
-      T_sp expanded = _Nil<T_O>();
-      if (_sym_STARinterpreterTraceSTAR->symbolValue().notnilp()) {
-        if (gc::As<HashTable_sp>(_sym_STARinterpreterTraceSTAR->symbolValue())->gethash(headSym).notnilp()) {
-          InterpreterTrace itrace;
-          printf("eval::evaluate Trace [%d] macroexpand > %s\n", global_interpreter_trace_depth, _rep_(form).c_str());
-          expanded = cl__macroexpand(form, environment);
-          printf("eval::evaluate Trace [%d] < (%s ...)\n", global_interpreter_trace_depth, _rep_(headSym).c_str());
+      T_sp expanded;
+      /* macros are expanded again and again and again */
+      if (_sym_STARcache_macroexpandSTAR->symbolValue().notnilp()) {
+        HashTableEqual_sp ht = gc::As<HashTableEqual_sp>(_sym_STARcache_macroexpandSTAR->symbolValue());
+        T_mv expanded_mv = ht->gethash(form);
+        if (expanded_mv.second().notnilp()) {
+          expanded = expanded_mv;
         } else {
-          expanded = cl__macroexpand(form, environment);
+          expanded = cl__macroexpand(form,environment);
+          ht->setf_gethash(form,expanded);
         }
       } else {
         expanded = cl__macroexpand(form, environment);
-      }
-      if (_evaluateVerbosity > 0) {
-        string es = _rep_(expanded);
-        printf("core::eval::evaluate expression is macro - expanded --> %s\n", es.c_str());
       }
       return eval::evaluate(expanded, environment);
     }
@@ -2002,7 +1998,7 @@ void evaluateIntoActivationFrame(ActivationFrame_sp af,
 }
 
 List_sp evaluateList(List_sp args, T_sp environment) {
-  Cons_sp firstCons = Cons_O::create(_Nil<T_O>());
+  Cons_sp firstCons = Cons_O::create(_Nil<T_O>(),_Nil<T_O>());
   Cons_sp curCons = firstCons;
   if (args.nilp()) {
     LOG(BF("Arguments before evaluateList: Nil ---> returning Nil"));
@@ -2019,7 +2015,7 @@ List_sp evaluateList(List_sp args, T_sp environment) {
       T_sp result = eval::evaluate(inObj, environment);
       ASSERTNOTNULL(result);
       LOG(BF("After evaluation result = %s @ %X") % result->__repr__() % (void *)(result.get()));
-      Cons_sp outCons = Cons_O::create(result);
+      Cons_sp outCons = Cons_O::create(result,_Nil<T_O>());
       curCons->setCdr(outCons);
       curCons = outCons;
     }

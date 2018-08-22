@@ -1,29 +1,39 @@
 #ifndef gctools_threadlocal_H
 #define gctools_threadlocal_H
 
+#include <signal.h>
+#include <clasp/gctools/threadlocal.fwd.h>
 
 namespace core {
 #define IHS_BACKTRACE_SIZE 16
   struct InvocationHistoryFrame;
   struct ThreadLocalState {
-    ThreadLocalState(void* stack_top);
-    void initialize_thread(mp::Process_sp process);
-    int _DisableInterrupts;
-#if defined(DEBUG_RECURSIVE_ALLOCATIONS)
-    int _RecursiveAllocationCounter;
-#endif
+    ThreadLocalState();
+    void initialize_thread(mp::Process_sp process, bool initialize_GCRoots);
+    void create_sigaltstack();
+    void destroy_sigaltstack();
+    
+    uint64_t   _BytesAllocated;
     mp::Process_sp _Process;
     uint64_t  _Tid;
-    void* _StackTop;
     DynamicBindingStack _Bindings;
     ExceptionStack _ExceptionStack;
     MultipleValues _MultipleValues;
     BignumExportBuffer _AsInt64Buffer;
     BignumExportBuffer _AsUint64Buffer;
     const InvocationHistoryFrame* _InvocationHistoryStackTop;
+    gctools::GCRootsInModule*  _GCRoots;
+    void* _sigaltstack_buffer;
+    stack_t _original_stack;
 #ifdef DEBUG_IHS
     // Save the last return address before IHS screws up
     void*                    _IHSBacktrace[IHS_BACKTRACE_SIZE];
+#endif
+#ifdef DEBUG_COUNT_ALLOCATIONS
+    std::vector<size_t>    _CountAllocations;
+    bool                   _BacktraceAllocationsP;
+    Fixnum                 _BacktraceStamp;
+    int                    _BacktraceFd;
 #endif
 #if 1
 // thread local caches work fine
@@ -55,8 +65,15 @@ namespace core {
 };
 
 
-namespace core {
- 
+namespace gctools {
+
+#ifdef DEBUG_COUNT_ALLOCATIONS
+  void maybe_initialize_mythread_backtrace_allocations();
+  void start_backtrace_allocations(const std::string& filename, Fixnum stamp);
+  void stop_backtrace_allocations();
+#endif
+
+  void registerBytesAllocated(size_t bytes);
 };
 
 

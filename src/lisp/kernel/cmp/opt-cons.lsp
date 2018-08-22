@@ -88,14 +88,16 @@
                         key-flag test-flag test)
       (two-arg-test-parse-args 'adjoin sequence-args :start-end nil :environment env)
     (when test-function
-      (si::with-unique-names (%value %sublist %elt %car %list)
-        `(let ((,%value ,value)
-               (,%list ,list)
-               ,@init)
-           (do-in-list (,%elt ,%sublist ,%list (cons ,%value ,%list))
-             (when ,(funcall test-function %value
-                             (funcall key-function %elt))
-               (return ,%list))))))))
+      (si::with-unique-names
+	  (%value %sublist %elt %car %list %value-after-key-function-)
+	`(let ((,%value ,value)
+	       (,%list ,list)
+	       ,@init)
+	   (let ((,%value-after-key-function- ,(funcall key-function %value)))
+	     (do-in-list (,%elt ,%sublist ,%list (cons ,%value ,%list))
+	       (when ,(funcall test-function %value-after-key-function- 
+			       (funcall key-function %elt))
+		 (return ,%list)))))))))
 
 (core:bclasp-define-compiler-macro adjoin (&whole whole value list &rest sequence-args &environment env)
   (or (apply #'expand-adjoin env (rest whole))

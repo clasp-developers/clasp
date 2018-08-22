@@ -18,6 +18,22 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
+;;; Instruction DEBUG-BREAK-INSTRUCTION
+;;;
+;;; This instruction is an DEBUG-BREAK-INSTRUCTION that invokes the debugger
+
+(defclass debug-break-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin)
+  ())
+
+(defmethod cleavir-ir-graphviz:label ((instr debug-break-instruction))
+  (with-output-to-string (s)
+    (format s "debug-break")))
+
+(defmethod cleavir-ir:clone-initargs append ((instruction debug-break-instruction))
+  ())
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
 ;;; Instruction multiple-value-foreign-CALL-INSTRUCTION
 ;;;
 ;;; Calls a foreign function (designated by its name, a string) and receives its result as values.
@@ -56,7 +72,7 @@
 
 (defmethod cleavir-ir:clone-initargs append ((instruction foreign-call-instruction))
   (list :foreign-types (foreign-types instruction)
-        :foreign-name (foreign-name instruction)))
+        :function-name (function-name instruction)))
 
 (defmethod make-foreign-call-instruction
     (foreign-types function-name inputs outputs &optional (successor nil successor-p))
@@ -209,17 +225,20 @@
 ;;; and only allowing ordinary lambda lists.
 
 (defclass bind-va-list-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin)
-  ((%lambda-list :initarg :lambda-list :accessor cleavir-ir:lambda-list)))
+  ((%lambda-list :initarg :lambda-list :accessor cleavir-ir:lambda-list)
+   (%rest-alloc :initarg :rest-alloc :reader rest-alloc)))
 
 (defmethod cleavir-ir-graphviz:label ((instr bind-va-list-instruction))
   )
 
 (defmethod cleavir-ir:clone-initargs append ((instruction bind-va-list-instruction))
-  (list :lambda-list (cleavir-ir:lambda-list instruction)))
+  (list :lambda-list (cleavir-ir:lambda-list instruction)
+        :rest-alloc (rest-alloc instruction)))
 
-(defun make-bind-va-list-instruction (lambda-list va-list &optional (successor nil successor-p))
+(defun make-bind-va-list-instruction (lambda-list va-list rest-alloc &optional (successor nil successor-p))
   (make-instance 'bind-va-list-instruction
                  :lambda-list lambda-list
+                 :rest-alloc rest-alloc
                  :inputs (list va-list)
                  ;; copied from cleavir-ir:make-enter-instruction
                  :outputs (loop for item in lambda-list
@@ -242,16 +261,19 @@
 (defclass named-enter-instruction (cleavir-ir:enter-instruction)
   ((%lambda-name :initarg :lambda-name :initform "lambda" :accessor lambda-name)
    (%original-lambda-list :initarg :original-lambda-list :initform nil :reader original-lambda-list)
-   (%docstring :initarg :docstring :initform nil :reader docstring)))
+   (%docstring :initarg :docstring :initform nil :reader docstring)
+   (%rest-alloc :initarg :rest-alloc :initform nil :reader rest-alloc
+                :type (member nil ignore dynamic-extent))))
 
 (defun make-named-enter-instruction
-    (lambda-list lambda-name &key (successor nil successor-p) origin original-lambda-list docstring)
+    (lambda-list lambda-name &key (successor nil successor-p) origin original-lambda-list docstring rest-alloc)
   (let ((oe (if successor-p
 		(cleavir-ir:make-enter-instruction lambda-list :successor successor :origin origin)
 		(cleavir-ir:make-enter-instruction lambda-list :origin origin))))
     (change-class oe 'named-enter-instruction :lambda-name lambda-name
                                               :original-lambda-list original-lambda-list
-                                              :docstring docstring)))
+                                              :docstring docstring
+                                              :rest-alloc rest-alloc)))
 
 (defmethod cleavir-ir-graphviz:label ((instr named-enter-instruction))
   (with-output-to-string (s)
@@ -260,7 +282,14 @@
 (defmethod cleavir-ir:clone-initargs append ((instruction named-enter-instruction))
   (list :lambda-name (lambda-name instruction)
         :original-lambda-list (original-lambda-list instruction)
-        :docstring (docstring instruction)))
+        :docstring (docstring instruction)
+        :rest-alloc (rest-alloc instruction)))
+
+(defmethod original-lambda-list ((self cleavir-ir:top-level-enter-instruction))
+  nil)
+
+(defmethod rest-alloc ((self cleavir-ir:top-level-enter-instruction))
+  nil)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -371,6 +400,8 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defmethod cleavir-remove-useless-instructions:instruction-may-be-removed-p ((instruction debug-message-instruction)) nil)
+
+(defmethod cleavir-remove-useless-instructions:instruction-may-be-removed-p ((instruction debug-break-instruction)) nil)
 
 ;(defmethod cleavir-remove-useless-instructions:instruction-may-be-removed-p ((instruction precalc-value-instruction)) t)
 

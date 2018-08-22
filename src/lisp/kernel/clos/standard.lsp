@@ -21,12 +21,14 @@
 ;;; INSTANCES INITIALIZATION AND REINITIALIZATION
 ;;;
 
-(defmethod initialize-instance ((instance #| #+clasp standard-object #+ecl |# T) &rest initargs)
+(defmethod initialize-instance ((instance T) core:&va-rest initargs)
   (dbg-standard "standard.lsp:29  initialize-instance unbound instance ->~a~%" (eq (core:unbound) instance))
   (apply #'shared-initialize instance 'T initargs))
 
-(defmethod reinitialize-instance ((instance #| #+clasp standard-object #+ecl |# T ) &rest initargs)
-;;  (print "HUNT entered reinitialize-instance") ;
+(defmethod reinitialize-instance ((instance T ) &rest initargs)
+  (declare (dynamic-extent initargs))
+  ;; NOTE: This dynamic extent declaration relies on the fact clasp's APPLY does not reuse rest lists.
+  ;; If it did, a method on #'shared-initialize, or whatever, could potentially let the rest list escape.
   (check-initargs (class-of instance) initargs
 		  (valid-keywords-from-methods
                    (compute-applicable-methods
@@ -35,7 +37,7 @@
                     #'shared-initialize (list instance t))))
   (apply #'shared-initialize instance '() initargs))
 
-(defmethod shared-initialize ((instance #| #+clasp standard-object #+ecl |# T) slot-names &rest initargs)
+(defmethod shared-initialize ((instance T) slot-names #+(or)&rest core:&va-rest initargs)
   ;;
   ;; initialize the instance's slots is a two step process
   ;;   1 A slot for which one of the initargs in initargs can set
@@ -59,32 +61,36 @@
   (let* ((class (class-of instance)))
     ;; initialize-instance slots
     (dolist (slotd (class-slots class))
+      (core:vaslist-rewind initargs)
       (let* ((slot-initargs (slot-definition-initargs slotd))
-	     (slot-name (slot-definition-name slotd)))
-	(or
-	 ;; Try to initialize the slot from one of the initargs.
-	 (do ((l initargs) initarg val)
-	     ((null l)
-	      (progn
-		nil))
-	   (setf initarg (pop l))
-	   (when (endp l)
-	     (simple-program-error "Wrong number of keyword arguments for SHARED-INITIALIZE, ~A"
-				   initargs))
-	   (unless (symbolp initarg)
-	     (simple-program-error "Not a valid initarg: ~A" initarg))
-	   (setf val (pop l))
-	   (when (member initarg slot-initargs :test #'eq)
-	     (setf (slot-value instance slot-name) val)
-	     (return t)))
-
-	 (when (and slot-names
-		    (or (eq slot-names 'T)
-			(member slot-name slot-names))
-		    (not (slot-boundp instance slot-name)))
-	   (let ((initfun (slot-definition-initfunction slotd)))
-	     (when initfun
-	       (setf (slot-value instance slot-name) (funcall initfun)))))))))
+             (slot-name (slot-definition-name slotd)))
+        (or
+         ;; Try to initialize the slot from one of the initargs.
+         (do ((largs initargs)
+              initarg
+              val)
+           (#+(or)(null largs) (= (core:vaslist-length largs) 0)
+              (progn nil))
+           (setf initarg #+(or)(pop largs) (core:vaslist-pop largs))
+           #+(or)(when (endp largs) (simple-program-error "Wrong number of keyword arguments for SHARED-INITIALIZE, ~A" initargs))
+           (when (= (core:vaslist-length largs) 0)
+             (simple-program-error "Wrong number of keyword arguments for SHARED-INITIALIZE, ~A"
+                                   (progn
+                                     (core:vaslist-rewind initargs)
+                                     (core:vaslist-as-list initargs))))
+           (unless (symbolp initarg)
+             (simple-program-error "Not a valid initarg: ~A" initarg))
+           (setf val #+(or)(pop l) (core:vaslist-pop largs))
+           (when (member initarg slot-initargs :test #'eq)
+             (setf (slot-value instance slot-name) val)
+             (return t)))
+         (when (and slot-names
+                    (or (eq slot-names 'T)
+                        (member slot-name slot-names))
+                    (not (slot-boundp instance slot-name)))
+           (let ((initfun (slot-definition-initfunction slotd)))
+             (when initfun
+               (setf (slot-value instance slot-name) (funcall initfun)))))))))
   instance)
 
 (defun compute-instance-size (slots)
@@ -124,6 +130,7 @@
     x))
 
 (defmethod make-instance ((class class) &rest initargs)
+  (declare (dynamic-extent initargs)) ; see NOTE in reinitialize-instance/T
   (dbg-standard "standard.lsp:128  make-instance class ->~a~%" class)
   ;; Without finalization we can not find initargs.
   (unless (class-finalized-p class)
@@ -201,6 +208,7 @@
   class)
 
 (defmethod initialize-instance ((class class) &rest initargs &key direct-slots)
+  (declare (dynamic-extent initargs)) ; see NOTE in reinitialize-instance/T
   (dbg-standard "standard.lsp:196  initialize-instance class->~a~%" class)
   ;; convert the slots from lists to direct slots
   (apply #'call-next-method class
@@ -214,6 +222,7 @@
   class)
 
 (defmethod shared-initialize ((class class) slot-names &rest initargs &key direct-superclasses)
+  (declare (dynamic-extent initargs)) ; see NOTE in reinitialize-instance/T
   ;; verify that the inheritance list makes sense
   (dbg-standard "standard.lsp:200 shared-initialize of class-> ~a direct-superclasses-> ~a~%" class direct-superclasses)
   (let* ((class (apply #'call-next-method class slot-names
@@ -260,6 +269,7 @@
      #'(lambda (dep) (apply #'update-dependent object dep initargs)))))
 
 (defmethod reinitialize-instance :after ((class class) &rest initargs)
+  (declare (dynamic-extent initargs)) ; see NOTE in reinitialize-instance/T
   (update-dependents class initargs))
 
 (defmethod add-direct-subclass ((parent class) child)
@@ -465,7 +475,7 @@ because it contains a reference to the undefined class~%  ~A"
 ;;; IMPORTANT: The following implementation of ENSURE-CLASS-USING-CLASS is
 ;;; shared by the metaclasses STANDARD-CLASS and STRUCTURE-CLASS.
 ;;;
-(defmethod ensure-class-using-class ((class class) name &rest rest
+(defmethod ensure-class-using-class ((class class) name core:&va-rest rest
 				     &key direct-slots direct-default-initargs)
   (declare (ignore direct-default-initargs direct-slots))
   (clos::gf-log "In ensure-class-using-class (class class) %N")
@@ -614,6 +624,7 @@ because it contains a reference to the undefined class~%  ~A"
 ;;;
 
 (defun valid-keywords-from-methods (&rest method-lists)
+  (declare (dynamic-extent method-lists))
   (loop for methods in method-lists
      when (member t methods :key #'method-keywords)
      return t

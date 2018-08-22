@@ -1079,7 +1079,7 @@ Pathname_sp clasp_mergePathnames(T_sp tpath, T_sp tdefaults, T_sp defaultVersion
   return defaults;
 }
 
-CL_LAMBDA(arg &optional (default-pathname (core:safe-default-pathname-defaults)) (default-version :newest));
+CL_LAMBDA(arg &optional (default-pathname (core::safe-default-pathname-defaults)) (default-version :newest));
 CL_DECLARE();
 CL_DOCSTRING("mergePathnames");
 CL_DEFUN Pathname_sp cl__merge_pathnames(T_sp path, T_sp defaults, T_sp defaultVersion) {
@@ -1403,7 +1403,7 @@ CL_DEFUN T_sp cl__namestring(T_sp x) {
   return clasp_namestring(x, CLASP_NAMESTRING_TRUNCATE_IF_ERROR);
 }
 
-CL_LAMBDA(thing &optional host (defaults (core:safe-default-pathname-defaults)) &key (start 0) end junk-allowed);
+CL_LAMBDA(thing &optional host (defaults (core::safe-default-pathname-defaults)) &key (start 0) end junk-allowed);
 CL_DECLARE();
 CL_DOCSTRING("parseNamestring");
 CL_DEFUN T_mv cl__parse_namestring(T_sp thing, T_sp host, T_sp tdefaults, Fixnum_sp start, T_sp end, bool junkAllowed) {
@@ -1448,7 +1448,7 @@ OUTPUT:
   return Values(output, start);
 };
 
-CL_LAMBDA(&key (host nil hostp) (device nil devicep) (directory nil directoryp) (name nil namep) (type nil typep) (version nil versionp) ((:case scase) :local) (defaults (core:safe-default-pathname-defaults-host-only)));
+CL_LAMBDA(&key (host nil hostp) (device nil devicep) (directory nil directoryp) (name nil namep) (type nil typep) (version nil versionp) ((:case scase) :local) (defaults (core::safe-default-pathname-defaults-host-only)));
 CL_DECLARE();
 CL_DOCSTRING("makePathname");
 CL_DEFUN Pathname_sp cl__make_pathname(T_sp host, bool hostp, T_sp device, bool devicep, T_sp directory, bool directoryp, T_sp name, bool namep, T_sp type, bool typep, T_sp version, bool versionp, T_sp scase, T_sp odefaults) {
@@ -1602,7 +1602,7 @@ CL_DEFUN T_sp cl__enough_namestring(T_sp tpath, T_sp tdefaults) {
   T_sp pathdir = path->_Directory;
   T_sp defaultdir = defaults->_Directory;
   if (pathdir.nilp()) {
-    pathdir = Cons_O::create(kw::_sym_relative);
+    pathdir = Cons_O::create(kw::_sym_relative,_Nil<T_O>());
   } else if (defaultdir.nilp()) {
     /* The defaults pathname does not have a directory. */
   } else if (cons_car(pathdir) == kw::_sym_relative) {
@@ -1836,7 +1836,7 @@ find_wilds(T_sp l, T_sp source, T_sp match) {
   size_t i, j, k, ls, lm;
 
   if (match == kw::_sym_wild)
-    return Cons_O::create(source);
+    return Cons_O::create(source,_Nil<T_O>());
   if (!cl__stringp(match) || !cl__stringp(source)) {
     if (match != source)
       return kw::_sym_error;

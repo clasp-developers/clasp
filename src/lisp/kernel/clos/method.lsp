@@ -48,7 +48,7 @@
 in the generic function lambda-list to the generic function lambda-list"
   (when method-lambda-list
     (let* ((gf (fdefinition name))
-           (gf-lambda-list-all (core:function-lambda-list gf))
+           (gf-lambda-list-all (ext:function-lambda-list gf))
            (has-aok (member '&allow-other-keys gf-lambda-list-all))
            (gf-lambda-list (if has-aok
                                (butlast gf-lambda-list-all 1)
@@ -88,8 +88,7 @@ in the generic function lambda-list to the generic function lambda-list"
                                          (find-class 'standard-method))))))))
 
 (defmacro defmethod (&whole whole name &rest args &environment env)
-  (let* ((source-location (ext:current-source-location))
-         (qualifiers (loop while (and args (not (listp (first args))))
+  (let* ((qualifiers (loop while (and args (not (listp (first args))))
 			collect (pop args)))
 	 (specialized-lambda-list
 	  (if args
@@ -106,19 +105,22 @@ in the generic function lambda-list to the generic function lambda-list"
 	      (make-method-lambda generic-function method lambda-form env)
 	    (when documentation
 	      (setf options (list* :documentation documentation options)))
-            `(prog1
-                 (install-method ',name ',qualifiers
-                                 ,(specializers-expression specializers)
-                                 ',lambda-list
-                                 ,(maybe-remove-block fn-form source-location)
-                                 ;; Note that we do not quote the options returned by make-method-lambda.
-                                 ;; This is essentially to make the fast method function easier.
-                                 ;; MOP is in my view ambiguous about whether they're supposed to be quoted.
-                                 ;; There's an example that sort of implies they are, but the extra flexibility
-                                 ;; is pretty convenient, and matches that the primary value is of course
-                                 ;; evaluated.
-                                 ,@options)
-               (maybe-augment-generic-function-lambda-list ',name ',lambda-list))))))))
+            `(progn
+               (eval-when (:compile-toplevel)
+                 (cmp:register-global-function-def 'defmethod ',name))
+               (prog1
+                   (install-method ',name ',qualifiers
+                                   ,(specializers-expression specializers)
+                                   ',lambda-list
+                                   ,fn-form
+                                   ;; Note that we do not quote the options returned by make-method-lambda.
+                                   ;; This is essentially to make the fast method function easier.
+                                   ;; MOP is in my view ambiguous about whether they're supposed to be quoted.
+                                   ;; There's an example that sort of implies they are, but the extra
+                                   ;; flexibility is pretty convenient, and matches that the primary value is
+                                   ;; of course evaluated.
+                                   ,@options)
+                 (maybe-augment-generic-function-lambda-list ',name ',lambda-list)))))))))
 
 (defun specializers-expression (specializers)
   `(list ,@(loop for spec in specializers
@@ -129,25 +131,6 @@ in the generic function lambda-list to the generic function lambda-list"
                            ;; CLHS DEFMETHOD seems to say literal specializers are
                            ;; not allowed, but i'm not sure...
                            (specializer spec)))))
-
-(defun maybe-remove-block (method-lambda source-location)
-  (when (eq (first method-lambda) 'lambda)
-    (multiple-value-bind (declarations body documentation)
-	(si::find-declarations (cddr method-lambda))
-      (let (block)
-	(when (and (null (rest body))
-		   (listp (setf block (first body)))
-		   (eq (first block) 'block))
-	  (setf method-lambda
-		`(lambda ,(second method-lambda)
-                   (declare (core:lambda-name ,(second block)
-                                              ,(if source-location (source-file-pos-filepos source-location) 0)
-                                              ,(if source-location (source-file-pos-lineno source-location) 0)
-                                              ,(if source-location (source-file-pos-column source-location) 0)))
-                   ,@declarations
-                   (block ,(if (symbolp (second block)) (second block) (error "The block name ~a is not a symbol" (second block)))
-                     ,@(cddr block))))))))
-  method-lambda)
 
 (defun fixup-specializers (specializers)
   (mapcar (lambda (spec)
@@ -195,15 +178,12 @@ in the generic function lambda-list to the generic function lambda-list"
             ;; second of the method lambda.  The class declarations
             ;; are inserted to communicate the class of the method's
             ;; arguments to the code walk.
-            (let* ((loc (ext:current-source-location))
-                   (filepos (if loc (source-file-pos-filepos loc) 0))
-                   (lineno (if loc (source-file-pos-lineno loc) 0)))
-              `(lambda ,lambda-list
-                 (declare (core:lambda-name (method ,name ,@qualifiers ,(fixup-specializers specializers)) ,filepos ,lineno))
-                 ,@(and class-declarations `((declare ,@class-declarations)))
-                 ,(if copied-variables
-                      `(let* ,copied-variables ,block)
-                      block)))))
+             `(lambda ,lambda-list
+                (declare (core:lambda-name (method ,name ,@qualifiers ,(fixup-specializers specializers))))
+                ,@(and class-declarations `((declare ,@class-declarations)))
+                ,(if copied-variables
+                     `(let* ,copied-variables ,block)
+                     block))))
       (values method-lambda declarations documentation))))
 
 (defun lambda-list-fast-callable-p (lambda-list)
@@ -235,7 +215,7 @@ in the generic function lambda-list to the generic function lambda-list"
                                         ;; that will get access to the current method and
                                         ;; current generic function? The method does not yet exist.
                                         (error "No next method") ;; FIXME: should call no-next-method.
-                                        (let ((use-args (if (> (va-list-length args) 0) args .method-args.)))
+                                        (let ((use-args (if (> (vaslist-length args) 0) args .method-args.)))
                                           (funcall (car .next-methods.)
                                                    use-args ; (or args .method-args.)
                                                    (cdr .next-methods.)))))))

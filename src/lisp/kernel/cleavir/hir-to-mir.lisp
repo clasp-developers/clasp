@@ -203,7 +203,6 @@
                     (maybe-gen-primitive-type-check
                      object simple-mdarray-type
                      (gen-rank-check object rank pro con)
-                     ;;;kpoeck
                      con))))
             (t
              (cond ((eql rank 1)
@@ -212,6 +211,7 @@
                      (if complex-vector-type ; probably next most likely.
                          (maybe-gen-primitive-type-check
                           object complex-vector-type pro
+                          ;; rank is one, so it can't be a simple mdarray.
                           (maybe-gen-primitive-type-check
                            object mdarray-type
                            (gen-rank-check object rank pro con)
@@ -221,16 +221,19 @@
                           object mdarray-type
                           (gen-rank-check object rank pro con) con))))
                    ((eq rank '*)
-                    ;; just the above without the rank check.
+                    ;; just the above without the rank check, and plus simple mdarray.
                     (maybe-gen-primitive-type-check
                      object simple-vector-type pro
-                     (if complex-vector-type
-                         (maybe-gen-primitive-type-check
-                          object complex-vector-type pro
-                          (maybe-gen-primitive-type-check
-                           object mdarray-type pro con))
-                         (maybe-gen-primitive-type-check
-                          object mdarray-type pro con))))
+                     (let ((mdarray-check
+                             (maybe-gen-primitive-type-check
+                              object simple-mdarray-type pro
+                              (maybe-gen-primitive-type-check
+                               object mdarray-type pro con))))
+                       (if complex-vector-type
+                           (maybe-gen-primitive-type-check
+                            object complex-vector-type
+                            pro mdarray-check)
+                           mdarray-check))))
                    (t ;; checking for some multidimensional type
                     (maybe-gen-primitive-type-check
                      object mdarray-type

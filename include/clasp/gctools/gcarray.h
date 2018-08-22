@@ -42,20 +42,36 @@ class GCArray_moveable : public GCContainer {
  typedef T const *const_iterator;
  size_t _Length; // Index one beyond the total number of elements allocated
  T _Data[0];      // Store _Length numbers of T structs/classes starting here
- GCArray_moveable(size_t length, const T& initialElement,bool initialElementSupplied,
+ // This is the deepest part of the array allocation machinery.
+ // The arguments here don't exactly match make-array's, though. Having both is ok here.
+ // initialElement is used most of the time.
+ // initialContents takes a C array, so it's not directly accessible from Lisp.
+ // But it's used for unsafe_subseq (which cl:subseq does use), among other things.
+ // Providing both initialElement and initialContents is done when resizing arrays
+ // (i.e. allocating new arrays based on old ones).
+ GCArray_moveable(size_t length, const T& initialElement, bool initialElementSupplied,
                   size_t initialContentsSize=0, const T* initialContents=NULL) : _Length(length) {
    GCTOOLS_ASSERT(initialContentsSize<=length);
    for ( size_t h(0); h<initialContentsSize; ++h ) {
      this->_Data[h] = initialContents[h];
    }
-   // If initialElementSupplied is false and we are in an Atomic pool then
-   // we don't need to initialize all elements - otherwise we do.
-   // For now just initialize all elements
-   for ( size_t i(initialContentsSize); i<this->_Length; ++i ) {
+#if 1
+   for (size_t i(initialContentsSize); i<this->_Length; ++i)
      new(&(this->_Data[i])) value_type(initialElement);
+#else
+   // You can use this to leave arrays uninitialized if there's no :initial-element.
+   // I'm leaving it off until we have good reason to know it's worth the attendant weird bugs.
+   // (Not that there are any specific known bugs- it's just that it's a bit dangerous.)
+
+   // initialElementSupplied must always be true if T involves pointers, for GC reasons.
+   // All code that uses GCArray must ensure this.
+   if (initialElementSupplied) {
+     for ( size_t i(initialContentsSize); i<this->_Length; ++i ) {
+       new(&(this->_Data[i])) value_type(initialElement);
+     }
    }
+#endif
  }
- GCArray_moveable() : _Length(0) {};
  public:
  inline size_t size() const { return this->length(); };
  inline size_t length() const { return this->_Length; };

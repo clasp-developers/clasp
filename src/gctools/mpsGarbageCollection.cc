@@ -58,6 +58,7 @@ templated_class_jump_table_index, jump_table_index, NULL
 #include <clasp/core/loadTimeValues.h>
 #include <clasp/core/posixTime.h> // was core/posixTime.cc???
 #include <clasp/core/symbolTable.h>
+#include <clasp/gctools/threadlocal.h>
 #include <clasp/core/evaluator.h>
 #include <clasp/gctools/globals.h>
 #include <clasp/core/wrappers.h>
@@ -225,6 +226,19 @@ mps_res_t clasp_scan_area_tagged(mps_ss_t ss,
 };
 
 namespace gctools {
+
+void bad_cons_mps_reserve_error()
+{
+  printf("%s:%d Bad cons_mps_allocation\n", __FILE__, __LINE__);
+  abort();
+}
+
+void bad_general_mps_reserve_error(const char* ap_name)
+{
+  printf("%s:%d Bad general_mps_allocation for %s\n", __FILE__, __LINE__, ap_name);
+  abort();
+}
+
 void mps_register_roots(void* roots_begin, size_t num_roots) {
   mps_root_t mps_root;
   mps_res_t res;
@@ -914,17 +928,10 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
   if (res != MPS_RES_OK)
     GC_RESULT_ERROR(res, "Could not create cons format");
 
-  mps_chain_t cons_chain;
-  res = mps_chain_create(&cons_chain,
-                         global_arena,
-                         LENGTH(gen_params),
-                         gen_params);
-  if (res != MPS_RES_OK)
-    GC_RESULT_ERROR(res, "Couldn't create cons_chain");
   // Create the AMC CONS pool
   MPS_ARGS_BEGIN(args) {
     MPS_ARGS_ADD(args, MPS_KEY_FORMAT, cons_fmt);
-    MPS_ARGS_ADD(args, MPS_KEY_CHAIN, cons_chain);
+    MPS_ARGS_ADD(args, MPS_KEY_CHAIN, general_chain);
 #ifdef DEBUG_MPS_FENCEPOST_FREE
     MPS_ARGS_ADD(args, MPS_KEY_POOL_DEBUG_OPTIONS, &debug_options);
 #endif
@@ -1062,11 +1069,17 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
 #else
   void* stackTop = NULL;
   {
-    core::ThreadLocalState thread_local_state(&stackTop);
+    gctools::ThreadLocalStateLowLevel thread_local_state_low_level(&stackTop);
+    core::ThreadLocalState thread_local_state;
+    my_thread_low_level = &thread_local_state_low_level;
     my_thread = &thread_local_state;
+    
   // Create the allocation points
     my_thread_allocation_points.initializeAllocationPoints();
     run_quick_tests();
+#ifdef DEBUG_COUNT_ALLOCATIONS
+    maybe_initialize_mythread_backtrace_allocations();
+#endif
 #if 1
     try {
       exit_code = startupFn(argc, argv, mpiEnabled, mpiRank, mpiSize);
@@ -1100,7 +1113,6 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
   mps_pool_destroy(global_amc_cons_pool);
   mps_pool_destroy(global_amc_pool);
   mps_arena_park(global_arena);
-  mps_chain_destroy(cons_chain);
   mps_chain_destroy(general_chain);
   mps_fmt_destroy(weak_obj_fmt);
   mps_fmt_destroy(obj_fmt);

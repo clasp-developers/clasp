@@ -321,7 +321,7 @@
 	(progn
 	  (cmp-log "Returning non-nil renv%N")
 	  renv)
-	(let ((nil-renv (compile-reference-to-literal nil))) ;; (irc-intrinsic "activationFrameNil")))
+	(let ((nil-renv (literal:compile-reference-to-literal nil))) ;; (irc-intrinsic "activationFrameNil")))
 	  (cmp-log "Returning nil renv: %s%N" nil-renv)
 	  nil-renv))))
 
@@ -357,18 +357,14 @@
 
 (defun irc-set-parent (new-renv parent-env)
   (let ((visible-ancestor-environment (current-visible-environment parent-env t)))
-    ;;    (core:bformat *debug-io* "irc-set-parent-of-activation-frame parent-> %s%N" visible-ancestor-environment)
-    ;;    (core:bformat *debug-io* "irc-set-parent-of-activation-frame parent is f-c-e-p -> %s%N" (core:function-container-environment-p visible-ancestor-environment))
     (if (core:function-container-environment-p visible-ancestor-environment)
         (progn
           (error "Only value-frames should directly access the function-container-environment")
           #+(or)(let ((closure (core:function-container-environment-closure visible-ancestor-environment)))
-                  ;;          (core:bformat *debug-io* "setParentOfActivationFrameFromClosure to %s%N" visible-ancestor-environment)
                   (irc-intrinsic "setParentOfActivationFrameFromClosure"
                                  new-renv
                                  closure)))
         (let ((parent-renv2 (irc-renv visible-ancestor-environment)))
-          ;;          (core:bformat *debug-io* "setParentOfActivationFrame to %s%N" visible-ancestor-environment)
           (irc-intrinsic "setParentOfActivationFrame"
                          new-renv
                          (irc-load parent-renv2))))))
@@ -379,7 +375,7 @@
 	(progn
 	  (cmp-log "Returning non-nil renv%N")
 	  renv)
-	(let ((nil-renv (compile-reference-to-literal nil))) ;; (irc-intrinsic "activationFrameNil")))
+	(let ((nil-renv (literal:compile-reference-to-literal nil))) ;; (irc-intrinsic "activationFrameNil")))
 	  (cmp-log "Returning nil renv: %s%N" nil-renv)
 	  nil-renv))))
 
@@ -489,36 +485,9 @@
     (irc-unwind-environment cur-env))
   )
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-    
-  
-
-
-
-#|
-(defun irc-rename-insert-block (name)
-  "Rename the current insertion block to something more useful for reading/debugging IR"
-  (let ((current-block (llvm-sys:get-insert-block *irbuilder*)))
-    (llvm-sys:set-name current-block name)))
-|#
-
 (defun irc-basic-block-create (name &optional (function *current-function*))
   "Create a llvm::BasicBlock with (name) in the (function)"
-  (let ((bb (llvm-sys:basic-block-create *llvm-context* (bformat nil "%s%s" *block-name-prefix* name) function)))
-    (cmp-log "Created basic block  <*block-name-prefix* = %s>  <name=%s>: bb-> %s%N" *block-name-prefix* name bb)
-    bb))
+  (llvm-sys:basic-block-create *llvm-context* name function))
 
 (defun irc-get-insert-block ()
   (llvm-sys:get-insert-block *irbuilder*))
@@ -669,6 +638,9 @@
 
 (defun irc-sub (lhs rhs &optional (label ""))
   (llvm-sys:create-sub *irbuilder* lhs rhs label nil nil))
+
+(defun irc-srem (lhs rhs &optional (label ""))
+  (llvm-sys:create-srem *irbuilder* lhs rhs label))
 
 (defun irc-load (source &optional (label ""))
   (llvm-sys:create-load-value-twine *irbuilder* source label))
@@ -863,8 +835,10 @@
                                      :function-type ,function-type
                                      :form ,function-form )
                    (with-dbg-lexical-block (,function-form)
-                     (dbg-set-current-source-pos-for-irbuilder ,irbuilder-alloca *current-form-lineno*)
-                     (dbg-set-current-source-pos-for-irbuilder ,irbuilder-body *current-form-lineno*)
+                     (when core:*current-source-pos-info*
+                       (let ((lineno (core:source-pos-info-lineno core:*current-source-pos-info*)))
+                         (dbg-set-current-source-pos-for-irbuilder ,irbuilder-alloca lineno)
+                         (dbg-set-current-source-pos-for-irbuilder ,irbuilder-body lineno)))
                      (with-irbuilder (*irbuilder-function-body*)
                        (or *the-module* (error "with-new-function *the-module* is NIL"))
                        (cmp-log "with-landing-pad around body%N")
@@ -928,7 +902,21 @@ But no irbuilders or basic-blocks. Return the fn."
                                                           (fifth one-declare)
                                                           (sixth one-declare))))))
 
-(defstruct (function-info (:type vector) :named) function-name source-handle lambda-list docstring declares form lineno column filepos)
+(defstruct (function-info (:type vector) :named
+                          (:constructor %make-function-info
+                              (function-name lambda-list docstring declares form
+                               source-pathname lineno column filepos)))
+  function-name
+  lambda-list docstring declares form
+  source-pathname lineno column filepos)
+
+(defun make-function-info (&key function-name lambda-list docstring declares form
+                             lineno column filepos)
+  ;; FIXME: *current-source-pos-info* could be installed already knowing about offsets
+  ;; and such, thus leaving the handling waaaaay up in compile-file.
+  (%make-function-info function-name lambda-list docstring declares form
+                       *source-debug-pathname* lineno column
+                       (+ filepos *source-debug-offset*)))
 
 (defun irc-create-function-description (llvm-function-name fn module function-info)
   "If **generate-code** then create a function-description block from function info.
@@ -936,41 +924,48 @@ But no irbuilders or basic-blocks. Return the fn."
   (unless function-info
     (error "function info is NIL for ~a" llvm-function-name))
   (let ((function-name (function-info-function-name function-info))
-        (source-handle (function-info-source-handle function-info))
+        (source-pathname (function-info-source-pathname function-info))
+        source-info-name
         (lambda-list (function-info-lambda-list function-info))
         (docstring (function-info-docstring function-info))
-        (declares (function-info-declares function-info))
         (lineno (function-info-lineno function-info))
         (column (function-info-column function-info))
-        (filepos (function-info-filepos function-info)))
+        (filepos (function-info-filepos function-info))
+        (declares (function-info-declares function-info)))
     (multiple-value-bind (found-source-info n l c f)
         (parse-declares-for-source-info declares)
       (when found-source-info
-        (when n (setf function-name n))
+        (when n (setf source-info-name n))
         (when l (setf lineno l))
         (when c (setf column c))
         (when f (setf filepos f)))
-      #+(or)
+ #+(or)
       (progn
         (core:bformat t "--------------------------%N")
         (core:bformat t "found-source-info: %s%N" found-source-info)
+        (core:bformat t "source-pathname: %s%N" source-pathname)
+        (core:bformat t "source-info-name: %s%N" source-info-name)
         (core:bformat t "llvm-function-name: %s%N" llvm-function-name)
         (core:bformat t "function-name: %s%N" function-name)
         (core:bformat t "declares: %s%N" declares)
         (core:bformat t "form: %s%N" (function-info-form function-info))
-        (core:bformat t "source-handle: %s%N" source-handle)
         (core:bformat t "lambda-list: %s%N" lambda-list)
         (core:bformat t "docstring: %s%N" docstring)
         (core:bformat t "lineno: %s%N" lineno)
         (core:bformat t "column: %s%N" column)
         (core:bformat t "filepos: %s%N" filepos))
-      (let ((function-name-index (literal:reference-literal function-name t))
+      (let ((source-pathname-index (literal:reference-literal source-pathname))
+            (function-name-index (literal:reference-literal function-name t))
             (lambda-list-index (literal:reference-literal lambda-list t))
-            (docstring-index (literal:reference-literal docstring t)))
+            (docstring-index (literal:reference-literal docstring t))
+            (declare-index (literal:reference-literal declares t)))
         #+(or)
         (progn
+          (core:bformat t "source-pathname-index: %s%N" source-pathname-index)
+          (core:bformat t "function-name-index: %s%N" function-name-index)
           (core:bformat t "lambda-list-index: %s%N" lambda-list-index)
-          (core:bformat t "docstring-index: %s%N" docstring-index))
+          (core:bformat t "docstring-index: %s%N" docstring-index)
+          (core:bformat t "declare-index: %s%N" declare-index))
         (unless lambda-list-index (error "There is no lambda-list-index"))
         (unless docstring-index (error "There is no docstring-index"))
         (unless lineno (error "There is no lineno"))
@@ -985,13 +980,16 @@ But no irbuilders or basic-blocks. Return the fn."
                                        (list
                                         fn
                                         literal::*gcroots-in-module*
-                                        source-handle
-                                        (jit-constant-intptr_t function-name-index)
-                                        (jit-constant-intptr_t lambda-list-index)
-                                        (jit-constant-intptr_t docstring-index)
-                                        (jit-constant-intptr_t lineno)
-                                        (jit-constant-intptr_t column)
-                                        (jit-constant-intptr_t filepos)))
+                                        (jit-constant-i32 source-pathname-index)
+                                        (jit-constant-i32 function-name-index)
+                                        (jit-constant-i32 lambda-list-index)
+                                        (jit-constant-i32 docstring-index)
+                                        (jit-constant-i32 declare-index)
+                                        (jit-constant-i32 lineno)
+                                        (jit-constant-i32 column)
+                                        (jit-constant-i32 filepos)
+                                        )
+                                       )
          (function-description-name fn))))))
 
 
@@ -1225,14 +1223,22 @@ Within the _irbuilder_ dynamic environment...
     :init nil))
 
 (defun irc-alloca-vaslist (&key (irbuilder *irbuilder-function-alloca*) (label "va_list"))
-  "Alloca space for an vaslist"
+  "Alloca space for an vaslist and a backup so that it can be rewound"
   (with-alloca-insert-point-no-cleanup irbuilder
-    :alloca (llvm-sys::create-alloca *irbuilder* %vaslist% (jit-constant-size_t 1) label)
+    :alloca (llvm-sys::create-alloca *irbuilder* %vaslist% (jit-constant-size_t 2) label)
     :init nil))
+
+(defun irc-alloca-dynamic-extent-list (&key (irbuilder *irbuilder-function-alloca*)
+                                            length
+                                         (label "dext-list"))
+  (llvm-sys:create-alloca irbuilder %cons% length label))
 
 (defun irc-alloca-i8* (&key (irbuilder *irbuilder-function-alloca*) (label "i8*-"))
   "Allocate space for an i8*"
   (llvm-sys::create-alloca irbuilder %i8*% (jit-constant-i32 1) label))
+
+(defun irc-alloca-mv-struct (&key (irbuilder *irbuilder-function-alloca*) (label "V"))
+  (llvm-sys:create-alloca irbuilder %mv-struct% (jit-constant-i32 1) label))
 
 
 
@@ -1314,11 +1320,11 @@ Write T_O* pointers into the current multiple-values array starting at the (offs
                (ret-tmv1 (llvm-sys:create-insert-value *irbuilder* ret-tmv0 nret '(1) "nret")))
           (irc-store ret-tmv1 result)))))
 
-(defun irc-calculate-entry (closure)
+(defun irc-calculate-entry (closure &optional (label "entry-point"))
   (let* ((closure-uintptr        (irc-ptr-to-int closure %uintptr_t%))
          (entry-point-addr-uint  (irc-add closure-uintptr (jit-constant-uintptr_t (- +closure-entry-point-offset+ +general-tag+)) "entry-point-addr-uint"))
          (entry-point-addr       (irc-int-to-ptr entry-point-addr-uint %fn-prototype**% "entry-point-addr"))
-         (entry-point            (irc-load entry-point-addr "entry-point")))
+         (entry-point            (irc-load entry-point-addr label)))
     entry-point))
 
 (defun irc-calculate-real-args (args)
@@ -1333,12 +1339,14 @@ Write T_O* pointers into the current multiple-values array starting at the (offs
     real-args))
 
 (defun irc-funcall-results-in-registers (closure args &optional (label ""))
-  (let* ((entry-point         (irc-calculate-entry closure))   ; Calculate the function pointer
+  (let* ((entry-point         (irc-calculate-entry closure label))   ; Calculate the function pointer
          (real-args           (irc-calculate-real-args args))  ; fill in NULL for missing register arguments
-         (result-in-registers (irc-call-or-invoke entry-point (list* closure (jit-constant-size_t (length args)) real-args) *current-unwind-landing-pad-dest* label)))
+         (result-in-registers (irc-call-or-invoke entry-point (list* closure (jit-constant-size_t (length args)) real-args) *current-unwind-landing-pad-dest*)))
     result-in-registers))
 
-(defun irc-funcall (result closure args &optional (label ""))
+(defun irc-funcall (result closure args &optional label)
+  (unless label
+    (setf label "unlabeled-function"))
   (let ((result-in-registers (irc-funcall-results-in-registers closure args label)))
     (irc-store-result result result-in-registers)))
 
@@ -1414,7 +1422,7 @@ Write T_O* pointers into the current multiple-values array starting at the (offs
 
 (defun irc-intrinsic-call-or-invoke (function-name args &optional (label "") (landing-pad *current-unwind-landing-pad-dest*))
   "landing-pad is either a landing pad or NIL (depends on function)"
-  (throw-if-mismatched-arguments function-name args)
+  #+debug-compiler(throw-if-mismatched-arguments function-name args)
   (multiple-value-bind (the-function primitive-info)
       (get-or-declare-function-or-error *the-module* function-name)
     (let* ((function-throws (not (llvm-sys:does-not-throw the-function)))
@@ -1527,7 +1535,12 @@ Write T_O* pointers into the current multiple-values array starting at the (offs
 
 (defun irc-global-symbol (sym env)
   "Return an llvm GlobalValue for a symbol"
-  (irc-load (literal:compile-reference-to-literal sym)))
+  (multiple-value-bind (ref literal-name)
+      (literal:compile-reference-to-literal sym)
+    (let ((label (if literal-name
+                     literal-name
+                     "")))
+      (values (irc-load ref label) label))))
 
 (defun irc-global-setf-symbol (sym env)
   "Return an llvm GlobalValue for a function name of the form (setf XXXX).

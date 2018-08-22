@@ -58,11 +58,12 @@ public:
 #endif
   T_sp _HomePackage; // NIL or Package
   T_sp _GlobalValue;
-  T_sp _Function;
-  T_sp _SetfFunction;
+  Function_sp _Function;
+  Function_sp _SetfFunction;
   mutable size_t _Binding;
   bool _IsSpecial;
   bool _IsConstant;
+  bool _IsMacro;
   List_sp _PropertyList;
 
 private:
@@ -91,6 +92,8 @@ public:
   // to by global variable _sym_XXX  and will never be collected
     Symbol_sp n = gctools::GC<Symbol_O>::root_allocate(true);
     n->setf_name(snm);
+    n->fmakunbound();
+    n->fmakunbound_setf();
 //    ASSERTF(nm != "", BF("You cannot create a symbol without a name"));
     return n;
   };
@@ -104,8 +107,9 @@ public:
   bool isKeywordSymbol();
   Symbol_sp asKeywordSymbol();
 
-  bool amp_symbol_p() const;
-
+  bool macroP() const { return this->_IsMacro;};
+  void setf_macroP(bool m) { this->_IsMacro = m; };
+  
   /*! Return a pointer to the value cell */
   inline T_sp *valueReference(T_sp* globalValuePtr) {
 #ifdef CLASP_THREADS
@@ -132,7 +136,7 @@ public:
   bool getReadOnly() const { return this->_IsConstant; };
 
   /*! Return true if the symbol is dynamic/special */
-CL_LISPIFY_NAME("core:specialp");
+CL_LISPIFY_NAME("ext:specialp");
 CL_DEFMETHOD   bool specialP() const { return this->_IsSpecial; };
 
   void setf_specialP(bool specialp) { this->_IsSpecial = specialp; };
@@ -187,19 +191,22 @@ CL_DEFMETHOD   bool specialP() const { return this->_IsSpecial; };
     return val;
   }
 
-  void setSetfFdefinition(T_sp fn) { this->_SetfFunction = fn; };
-  inline T_sp getSetfFdefinition() { return this->_SetfFunction; };
-  inline bool setf_fboundp() const { return !this->_SetfFunction.unboundp(); };
-  void resetSetfFdefinition() { this->_SetfFunction = _Unbound<Function_O>(); };
+  void fmakunbound();
+  
+  void setSetfFdefinition(Function_sp fn) { this->_SetfFunction = fn; };
+  inline Function_sp getSetfFdefinition() { return this->_SetfFunction; };
+  bool fboundp_setf() const;
+  void fmakunbound_setf();
+  
 
   /*! Set the global function value of this symbol */
-  void setf_symbolFunction(T_sp exec);
+  void setf_symbolFunction(Function_sp exec);
 
   /*! Return the global bound function */
-  inline T_sp symbolFunction() const { return this->_Function; };
+  inline Function_sp symbolFunction() const { return this->_Function; };
 
   /*! Return true if the symbol has a function bound*/
-  bool fboundp() const { return !this->_Function.unboundp(); };
+  bool fboundp() const;
 
   string symbolNameAsString() const;
 

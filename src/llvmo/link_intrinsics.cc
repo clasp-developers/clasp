@@ -67,10 +67,9 @@ extern "C" {
 #include <clasp/gctools/gc_interface.fwd.h>
 #include <clasp/core/exceptions.h>
 
-using namespace core;
-
 #pragma GCC visibility push(default)
 
+using namespace core;
 namespace llvmo {
 
 core::T_sp functionNameOrNilFromFunctionDescription(core::FunctionDescription* functionDescription)
@@ -83,6 +82,9 @@ core::T_sp functionNameOrNilFromFunctionDescription(core::FunctionDescription* f
 }
   
 
+[[noreturn]] __attribute__((optnone)) void not_function_designator_error(core::T_sp arg) {
+  TYPE_ERROR(arg,core::Cons_O::createList(::cl::_sym_or,::cl::_sym_function,::cl::_sym_symbol));
+}
 
 [[noreturn]] __attribute__((optnone))  void intrinsic_error(ErrorCode err, core::T_sp arg0, core::T_sp arg1, core::T_sp arg2) {
   switch (err) {
@@ -420,10 +422,7 @@ LtvcReturn ltvc_enclose(gctools::GCRootsInModule* holder, size_t index, gctools:
     gctools::GC<core::ClosureWithSlots_O>::allocate_container(0,
                                                               llvm_func,
                                                               (core::FunctionDescription*)functionDescription,
-                                                              tlambdaName,
-                                                              kw::_sym_function,
-                                                              _Nil<T_O>() // lambdaList
-                                                              );
+                                                              core::ClosureWithSlots_O::cclaspClosure);
   LTVCRETURN holder->set(index, functoid.tagged_());
   NO_UNWIND_END();
 }
@@ -617,11 +616,12 @@ ALWAYS_INLINE T_O *va_lexicalFunction(size_t depth, size_t index, core::T_O* eva
   NO_UNWIND_END();
 }
 
-
+/* Conses up a &rest argument from the passed valist.
+ * Used in cmp/arguments.lsp for the general case of functions with a &rest in their lambda list. */
 __attribute__((visibility("default"))) core::T_O *cc_gatherRestArguments(va_list vargs, std::size_t* remainingP)
 {NO_UNWIND_BEGIN();
   va_list rargs;
-  va_copy(rargs, vargs);
+  va_copy(rargs, vargs); // the original valist is needed for &key processing elsewhere.
   core::List_sp result = _Nil<core::T_O>();
   core::Cons_sp *cur = reinterpret_cast<Cons_sp *>(&result);
   size_t nargs = *remainingP;
@@ -630,7 +630,33 @@ __attribute__((visibility("default"))) core::T_O *cc_gatherRestArguments(va_list
     *cur = core::Cons_O::create(gc::smart_ptr<core::T_O>((gc::Tagged)tagged_obj), _Nil<core::T_O>());
     cur = reinterpret_cast<Cons_sp *>(&(*cur)->_Cdr);
   }
+  va_end(rargs);
   return result.raw_();
+  NO_UNWIND_END();
+}
+
+/* Like cc_gatherRestArguments, but uses a vector of conses provided by the caller-
+ * intended to be stack space, for &rest parameters declared dynamic-extent. */
+__attribute__((visibility("default"))) core::T_O *cc_gatherDynamicExtentRestArguments(va_list vargs, std::size_t* remainingP, core::Cons_O* cur)
+{NO_UNWIND_BEGIN();
+  va_list rargs;
+  va_copy(rargs, vargs);
+  core::List_sp result = Cons_sp((gctools::Tagged)gctools::tag_cons((core::Cons_O*)cur));
+  size_t nargs = *remainingP;
+  if (nargs) {
+    for (int i = 0; i<nargs-1; ++i ) {
+      core::T_O* tagged_obj = ENSURE_VALID_OBJECT(va_arg(rargs,core::T_O*));
+      Cons_O* next = cur+1;
+      new (cur) Cons_O(T_sp((gctools::Tagged)tagged_obj),T_sp((gctools::Tagged)gctools::tag_cons((core::Cons_O*)next)));
+      cur = next;
+    }
+    core::T_O* tagged_obj = ENSURE_VALID_OBJECT(va_arg(rargs,core::T_O*));
+    new (cur) Cons_O(T_sp((gctools::Tagged)tagged_obj),_Nil<T_O>());
+    va_end(rargs);
+    return result.raw_();
+  }
+  va_end(rargs);
+  return _Nil<T_O>().raw_();
   NO_UNWIND_END();
 }
 
@@ -673,21 +699,17 @@ extern "C" {
 
 DONT_OPTIMIZE_WHEN_DEBUG_RELEASE core::T_O* makeCompiledFunction(fnLispCallingConvention funcPtr,
                                                                  void* functionDescription,
-                                                                 /* int *sourceFileInfoHandleP,
-                                                                    size_t filePos,
-                                                                    size_t lineno,
-                                                                    size_t column,
-                                                                 */
-                                                                 core::T_O* functionNameP,
-                                                                 core::T_O* frameP,
-                                                                 core::T_O* lambdaListP)
+                                                                 core::T_O* frameP
+                                                                 )
 {NO_UNWIND_BEGIN();
   // TODO: If a pointer to an integer was passed here we could write the sourceName SourceFileInfo_sp index into it for source line debugging
-  core::T_sp functionName((gctools::Tagged)functionNameP);
   core::T_sp frame((gctools::Tagged)frameP);
-  core::T_sp lambdaList((gctools::Tagged)lambdaListP);
-//  printf("%s:%d In makeCompiledFunction     frame -> %s\n", __FILE__, __LINE__, _rep_(frame).c_str());
-  core::ClosureWithSlots_sp toplevel_closure = core::ClosureWithSlots_O::make_bclasp_closure(functionName, funcPtr, kw::_sym_function, lambdaList, frame);
+  core::ClosureWithSlots_sp toplevel_closure =
+    gctools::GC<core::ClosureWithSlots_O>::allocate_container(BCLASP_CLOSURE_SLOTS,
+                                                              funcPtr,
+                                                              (core::FunctionDescription*)functionDescription,
+                                                              core::ClosureWithSlots_O::bclaspClosure);
+  (*toplevel_closure)[BCLASP_CLOSURE_ENVIRONMENT_SLOT] = frame;
   return toplevel_closure.raw_();
   NO_UNWIND_END();
 };
@@ -705,7 +727,7 @@ void invokeTopLevelFunction(core::T_mv *resultP,
                             core::LoadTimeValues_O **ltvPP) {
   ASSERT(ltvPP != NULL);
   core::SimpleBaseString_sp name = core::SimpleBaseString_O::make(cpname);
-  FunctionClosure_sp tc = FunctionClosure_O::create(fptr,name, kw::_sym_function, *sourceFileInfoHandleP, filePos, lineno, column);
+  Closure_sp tc = Closure_O::create(fptr,name, kw::_sym_function, *sourceFileInfoHandleP, filePos, lineno, column);
 #define TIME_TOP_LEVEL_FUNCTIONS
 #ifdef TIME_TOP_LEVEL_FUNCTIONS
   core::Number_sp startTime;
@@ -809,29 +831,6 @@ void mv_prependMultipleValues(core::T_mv *resultP, core::T_mv *multipleValuesP) 
 
 extern "C" {
 
-/*! Invoke a symbol function with the given arguments and put the result in (*resultP) */
-core::T_O* symbolFunctionRead(const core::T_O *tsymP)
-{NO_UNWIND_BEGIN();
-  const core::Symbol_sp sym((gc::Tagged)tsymP);
-  ASSERTF((sym)->fboundp(), BF("There is no function bound to symbol[%s]") % _rep_(sym));
-  return sym->symbolFunction().raw_();
-  NO_UNWIND_END();
-}
-
-/*! Invoke a symbol function with the given arguments and put the result in (*resultP) */
-extern core::T_O* setfSymbolFunctionRead(const core::T_O *tsymP)
-{NO_UNWIND_BEGIN();
- const core::Symbol_sp sym((gctools::Tagged)tsymP);
- core::Function_sp setfFunc = sym->getSetfFdefinition(); //_lisp->get_setfDefinition(*symP);
- ASSERTF(setfFunc, BF("There is no setf function bound to symbol[%s]") % _rep_(sym));
- return setfFunc.raw_();
-  NO_UNWIND_END();
-}
-};
-
-
-extern "C" {
-
 void gdb() {
   printf("%s:%d Set a breakpoint here to invoke gdb\n", __FILE__, __LINE__);
 }
@@ -892,7 +891,7 @@ void debugInspect_return_type(gctools::return_type rt)
 
 void debugMessage(const char *msg)
 {NO_UNWIND_BEGIN();
-  printf("++++++ debug-message: %s", msg);
+  printf("++++++ debug-message: %s3", msg);
   NO_UNWIND_END();
 }
 
@@ -1159,6 +1158,7 @@ void mv_restoreFromMultipleValue0(core::T_mv *resultP)
   NO_UNWIND_END();
 }
 
+#if 0
 /*! Copy the current MultipleValues in _lisp->values() into a SimpleVector */
 extern core::T_O* saveValues(core::T_mv *mvP)
 {NO_UNWIND_BEGIN();
@@ -1202,6 +1202,8 @@ extern void loadValues(core::T_mv *resultP, core::T_O* simpleVectorP)
   }
   NO_UNWIND_END();
 }
+#endif
+
 
 size_t cc_trackFirstUnexpectedKeyword(size_t badKwIdx, size_t newBadKwIdx)
 {NO_UNWIND_BEGIN();
@@ -1308,24 +1310,15 @@ void cc_setSymbolValue(core::T_O *sym, core::T_O *val)
   NO_UNWIND_END();
 }
 
-core::T_O *cc_enclose(core::T_O *lambdaName,
-                      fnLispCallingConvention llvm_func,
+core::T_O *cc_enclose(fnLispCallingConvention llvm_func,
                       void* functionDescription,
-                      /* int *sourceFileInfoHandleP,
-                      size_t filePos,
-                      size_t lineno,
-                      size_t column, */
                       std::size_t numCells, ...)
 {
-  core::T_sp tlambdaName = gctools::smart_ptr<core::T_O>((gc::Tagged)lambdaName);
   gctools::smart_ptr<core::ClosureWithSlots_O> functoid =
     gctools::GC<core::ClosureWithSlots_O>::allocate_container( numCells
                                                               , llvm_func
-                                                               , (core::FunctionDescription*)functionDescription
-                                                              , tlambdaName
-                                                              , kw::_sym_function
-                                                              , _Nil<T_O>() // lambdaList
-                                                               );
+                                                               , (core::FunctionDescription*)functionDescription,
+                                                               core::ClosureWithSlots_O::cclaspClosure);
   core::T_O *p;
   va_list argp;
   va_start(argp, numCells);
@@ -1406,7 +1399,7 @@ void cc_loadThreadLocalMultipleValues(core::T_mv *result, core::MultipleValues *
   NO_UNWIND_END();
 }
 
-
+// name is a misnomer- more like ifNotSymbolException. FIXME
 void cc_ifNotKeywordException(core::T_O *obj, size_t argIdx, va_list valist, core::FunctionDescription* functionDescription) {
   T_sp vobj((gc::Tagged)obj);
   if (!cl__symbolp(vobj)) {
@@ -1416,6 +1409,14 @@ void cc_ifNotKeywordException(core::T_O *obj, size_t argIdx, va_list valist, cor
     }
     SIMPLE_ERROR(BF("In call to %s expected keyword argument at argument %d got %s") % _rep_(functionName) % argIdx % _rep_(gctools::smart_ptr<core::T_O>((gc::Tagged)obj)));
   }
+}
+
+void cc_oddKeywordException(core::FunctionDescription* functionDescription) {
+  T_sp functionName = llvmo::functionNameOrNilFromFunctionDescription(functionDescription);
+  if (functionName.nilp())
+    SIMPLE_ERROR(BF("Odd number of keyword arguments"));
+  else
+    SIMPLE_ERROR(BF("In call to %s got odd number of keyword arguments") % _rep_(functionName));
 }
 
 T_O **cc_multipleValuesArrayAddress()

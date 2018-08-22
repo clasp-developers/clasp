@@ -44,7 +44,7 @@ namespace core {
 
 
 
-
+SYMBOL_EXPORT_SC_(CorePkg,no_filename_single_dispatch_method);
 
 SingleDispatchMethod_sp SingleDispatchMethod_O::create(T_sp name,
                                                        Instance_sp receiverClass,
@@ -52,18 +52,21 @@ SingleDispatchMethod_sp SingleDispatchMethod_O::create(T_sp name,
                                                        List_sp declares,
                                                        gc::Nilable<String_sp> docstr,
                                                        Function_sp body) {
-  GC_ALLOCATE(SingleDispatchMethod_O, method);
-  method->_name = name;
-  method->_receiver_class = receiverClass;
-  ASSERTF(body.notnilp(), BF("The body of a method should never be nil"));
+  SingleDispatchMethodFunction_sp method_body;
+  FunctionDescription* fdesc = makeFunctionDescription(name,llh->lambdaList(),docstr,core::_sym_no_filename_single_dispatch_method,0,0,0,declares);
   if ( BuiltinClosure_sp bif = body.asOrNull<BuiltinClosure_O>() ) {
-    method->_body = gctools::GC<CxxMethodFunction_O>::allocate(name,body);
+    method_body = gctools::GC<CxxMethodFunction_O>::allocate(fdesc,body);
   } else {
-    method->_body = gctools::GC<SingleDispatchMethodFunction_O>::allocate(name,body);
+    method_body = gctools::GC<SingleDispatchMethodFunction_O>::allocate(fdesc,body);
   }
-  method->_argument_handler = llh;
-  method->_declares = declares;
-  method->_docstring = docstr;
+  GC_ALLOCATE_VARIADIC(SingleDispatchMethod_O, method, name,receiverClass,llh,declares,docstr,method_body);
+  validateFunctionDescription(__FILE__,__LINE__, method_body);
+  // method->_name = name;
+  // method->_receiver_class = receiverClass;
+  // ASSERTF(body.notnilp(), BF("The body of a method should never be nil"));
+  // method->_argument_handler = llh;
+  // method->_declares = declares;
+  // method->_docstring = docstr;
   return method;
 }
 
@@ -77,5 +80,14 @@ string SingleDispatchMethod_O::__repr__() const {
      << " >";
   return ss.str();
 }
+
+
+DONT_OPTIMIZE_WHEN_DEBUG_RELEASE LCC_RETURN SingleDispatchMethodFunction_O::LISP_CALLING_CONVENTION() {
+      SingleDispatchMethodFunction_O* closure = gctools::untag_general<SingleDispatchMethodFunction_O*>((SingleDispatchMethodFunction_O*)lcc_closure);
+      COPY_VA_LIST();
+      INCREMENT_FUNCTION_CALL_COUNTER(closure);
+      return (closure->_body->entry.load())(LCC_PASS_ARGS_VASLIST(closure->_body.raw_(),lcc_vargs));
+//      return funcall_consume_valist_<core::Function_O>(closure->_body.tagged_(),lcc_vargs);
+    };
 
 }; /* core */

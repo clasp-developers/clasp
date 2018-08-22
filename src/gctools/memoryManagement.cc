@@ -49,15 +49,13 @@ THE SOFTWARE.
 #undef ALL_PREGCSTARTUPS_EXTERN
 #endif
 
-gctools::GlobalAllocationProfiler global_AllocationProfiler(1024*1024,1024*8);
-
 extern "C" {
 __attribute__((noinline)) void HitAllocationSizeThreshold() {
-    global_AllocationProfiler._HitAllocationSizeCounter++;
+  my_thread_low_level->_Allocations._HitAllocationSizeCounter++;
 }
 
 __attribute__((noinline)) void HitAllocationNumberThreshold() {
-    global_AllocationProfiler._HitAllocationNumberCounter++;
+  my_thread_low_level->_Allocations._HitAllocationNumberCounter++;
 }
 }
 
@@ -116,18 +114,24 @@ GC_MANAGED_TYPE(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::T_
 namespace gctools {
 void lisp_increment_recursive_allocation_counter(core::ThreadLocalState* thread)
 {
+#ifdef DEBUG_RECURSIVE_ALLOCATIONS
   int x = thread->_RecursiveAllocationCounter+1;
   thread->_RecursiveAllocationCounter = x;
   if (x!=1) {
     printf("%s:%d A recursive allocation took place - these are illegal!!!!\n", __FILE__, __LINE__ );
     abort();
   }
+#endif
 }
 void lisp_decrement_recursive_allocation_counter(core::ThreadLocalState* thread)
 {
+#ifdef DEBUG_RECURSIVE_ALLOCATIONS
   --thread->_RecursiveAllocationCounter;
+#endif
 };
+
 };
+
 
 namespace gctools {
 #if 0
@@ -198,8 +202,8 @@ void rawHeaderDescribe(const uintptr_clasp_t *headerP) {
   switch (headerTag) {
   case 0:
       printf("  %p : %" Puintptr_clasp_t "(%p) %" Puintptr_clasp_t "(%p)\n", headerP, *headerP, (void*)*headerP, *(headerP + 1), (void*)*(headerP + 1));
-    printf(" Not an object header!\n");
-    break;
+      printf(" Not an object header!\n");
+      break;
   case Header_s::stamp_tag: {
     printf("  %p : %" Puintptr_clasp_t " (%p)\n", headerP, *headerP, (void*)*headerP);
     printf("  %p : %" Puintptr_clasp_t " (%p)\n", (headerP+1), *(headerP+1), (void*)*(headerP+1));
@@ -209,8 +213,8 @@ void rawHeaderDescribe(const uintptr_clasp_t *headerP) {
     printf("  %p : %p\n", (headerP+4), (void*)*(headerP+4));
     printf("  %p : %p\n", (headerP+5), (void*)*(headerP+5));
 #endif    
-    gctools::GCStampEnum kind = (gctools::GCStampEnum)((*headerP) >> 2);
-    printf(" Kind tag - kind: %d", kind);
+    GCStampEnum kind = (GCStampEnum)((*((Header_s*)headerP)).stamp());
+    printf(" stamp tag - stamp: %d", kind);
     fflush(stdout);
     printf("     %s\n", obj_name(kind));
   } break;
@@ -221,16 +225,16 @@ void rawHeaderDescribe(const uintptr_clasp_t *headerP) {
     printf("     fwdSize = %" Puintptr_clasp_t "/0x%" Puintptr_clasp_t "\n", hdr->fwdSize(), hdr->fwdSize());
   } break;
   case Header_s::pad_tag:
-    printf("  0x%p : 0x%" PRu " 0x%" PRu "\n", headerP, *headerP, *(headerP + 1));
-    if (((*headerP) & Header_s::pad1_tag) == Header_s::pad1_tag) {
-      printf("   pad1_tag\n");
-      printf("  0x%p : 0x%" PRu "\n", headerP, *headerP);
-    } else {
-      printf("   pad_tag\n");
-      printf("  0x%p : 0x%" PRu "\n", headerP, *headerP);
-      printf("  0x%p : 0x%" PRu "\n", (headerP+1), *(headerP+1));
-    }
-    break;
+      printf("  0x%p : 0x%" PRu " 0x%" PRu "\n", headerP, *headerP, *(headerP + 1));
+      if (((*headerP) & Header_s::pad1_tag) == Header_s::pad1_tag) {
+        printf("   pad1_tag\n");
+        printf("  0x%p : 0x%" PRu "\n", headerP, *headerP);
+      } else {
+        printf("   pad_tag\n");
+        printf("  0x%p : 0x%" PRu "\n", headerP, *headerP);
+        printf("  0x%p : 0x%" PRu "\n", (headerP+1), *(headerP+1));
+      }
+      break;
   }
 #if DEBUG_GUARD
   Header_s* header = (Header_s*)headerP;
@@ -382,14 +386,13 @@ namespace gctools {
 
 size_t global_alignup_sizeof_header;
 
-MonitorAllocations global_monitorAllocations;
-
 void monitorAllocation(stamp_t k, size_t sz) {
-  printf("%s:%d monitor allocation of %s with %zu bytes\n", __FILE__, __LINE__, obj_name(k), sz);
+#ifdef DEBUG_MONITOR_ALLOCATIONS  
   if (global_monitorAllocations.counter >= global_monitorAllocations.start && global_monitorAllocations.counter < global_monitorAllocations.end) {
     core::core__clib_backtrace(global_monitorAllocations.backtraceDepth);
   }
   global_monitorAllocations.counter++;
+#endif
 }
 
 
@@ -444,11 +447,15 @@ CL_DEFUN core::Fixnum gctools__next_header_kind()
     return ensure_fixnum(next);
 }
 
+std::atomic<uint64_t> global_TotalRootTableSize;
+std::atomic<uint64_t> global_NumberOfRootTables;
 
 
 /*! initial_data is a gctools::Tagged pointer to a List of tagged pointers.
 */
 void initialize_gcroots_in_module(GCRootsInModule* roots, core::T_O** root_address, size_t num_roots, gctools::Tagged initial_data) {
+  global_TotalRootTableSize += num_roots;
+  global_NumberOfRootTables++;
   core::T_O** shadow_mem = NULL;
 #ifdef USE_BOEHM
   shadow_mem = reinterpret_cast<core::T_O**>(boehm_create_shadow_table(num_roots));
@@ -492,6 +499,10 @@ void shutdown_gcroots_in_module(GCRootsInModule* roots) {
 #endif
 }
 
+CL_DEFUN Fixnum gctools__nextStampValue() {
+  return global_NextStamp;
+}
+
 CL_LAMBDA(address args);
 CL_DEFUN void gctools__register_roots(core::T_sp taddress, core::List_sp args) {
   core::T_O** shadow_mem = NULL;
@@ -522,26 +533,6 @@ CL_DEFUN void gctools__register_roots(core::T_sp taddress, core::List_sp args) {
 
 int startupGarbageCollectorAndSystem(MainFunctionType startupFn, int argc, char *argv[], size_t stackMax, bool mpiEnabled, int mpiRank, int mpiSize) {
 
-  // Read the memory profiling settings <size-threshold> <number-theshold>
-  // as in export CLASP_MEMORY_PROFILE="16000000 1024"
-  // This means call HitAllocationSizeThreshold every time 16000000 bytes are allocated
-  //        and call HitAllocationNumberThreshold every time 1024 allocations take place
-  char *cur = getenv("CLASP_MEMORY_PROFILE");
-  size_t values[2];
-  int numValues = 0;
-  if (cur) {
-    while (*cur && numValues < 2) {
-      values[numValues] = strtol(cur, &cur, 10);
-      ++numValues;
-    }
-    if (numValues == 2) {
-      global_AllocationProfiler._AllocationNumberThreshold = values[1];
-    }
-    if (numValues >= 1) {
-      global_AllocationProfiler._AllocationSizeThreshold = values[0];
-    }
-  }
-  
   void* stackMarker = &stackMarker;
   gctools::_global_stack_marker = (const char*)&stackMarker;
   gctools::_global_stack_max_size = stackMax;
@@ -567,7 +558,7 @@ int startupGarbageCollectorAndSystem(MainFunctionType startupFn, int argc, char 
 # define DEFAULT_THREAD_INTERRUPT_SIGNAL SIGUSR1
 #endif
   gctools::initialize_signals(DEFAULT_THREAD_INTERRUPT_SIGNAL);
-  
+
 #if defined(USE_MPS)
   int exitCode = gctools::initializeMemoryPoolSystem(startupFn, argc, argv, mpiEnabled, mpiRank, mpiSize);
 #endif
@@ -581,10 +572,19 @@ int startupGarbageCollectorAndSystem(MainFunctionType startupFn, int argc, char 
 Tagged GCRootsInModule::set(size_t index, Tagged val) {
 #ifdef USE_BOEHM
   // shadow_memory is only used by Boehm
-  reinterpret_cast<core::T_O**>(this->_boehm_shadow_memory)[index] = reinterpret_cast<core::T_O*>(val);
+  if (this->_boehm_shadow_memory != this->_module_memory) {
+    reinterpret_cast<core::T_O**>(this->_boehm_shadow_memory)[index] = reinterpret_cast<core::T_O*>(val);
+  }
 #endif
   reinterpret_cast<core::T_O**>(this->_module_memory)[index] = reinterpret_cast<core::T_O*>(val);
   return val;
+}
+
+size_t GCRootsInModule::push_back( Tagged val) {
+  size_t index = this->_num_entries;
+  this->_num_entries++;
+  this->set(index,val);
+  return index;
 }
 
 Tagged GCRootsInModule::get(size_t index) {

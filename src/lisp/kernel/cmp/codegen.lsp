@@ -17,7 +17,7 @@
                                          ;; generated from lambda-list
                                          lambda-list
                                          ;; lambda declares as a list of conses
-                                         declares
+                                         original-declares
                                          ;; lambda docstring
                                          docstring
                                          ;; lambda code
@@ -34,55 +34,59 @@ lambda-list, environment.
 All code generation comes through here.   Return (llvm:function lambda-name)
 Could return more functions that provide lambda-list for swank for example"
   (setq *lambda-args-num* (1+ *lambda-args-num*))
-  (multiple-value-bind (cleavir-lambda-list new-body)
-      (transform-lambda-parts lambda-list declares code)
-    (cmp-log "generate-llvm-function-from-code%N")
-    (cmp-log "cleavir-lambda-list -> %s%N" cleavir-lambda-list)
-    (cmp-log "new-body -> %s%N" new-body)
+  (multiple-value-bind (cleavir-lambda-list new-body rest-alloc)
+      (transform-lambda-parts lambda-list original-declares code)
+    (let ((declares (core:canonicalize-declarations original-declares)))
+      (cmp-log "generate-llvm-function-from-code%N")
+      (cmp-log "cleavir-lambda-list -> %s%N" cleavir-lambda-list)
+      (cmp-log "new-body -> %s%N" new-body)
 ;;;    (bformat *debug-io* "old  -> %s %s %s %s%N" lambda-list-handler declares docstring code)
 ;;;    (bformat *debug-io* "new-body -> %s%N" new-body)
-    (let* ((name (core:extract-lambda-name-from-declares declares (or given-name 'cl:lambda)))
-           (fn (with-new-function (fn fn-env result
-                                      :function-name name
-                                      :parent-env env-around-lambda
-                                      :function-form new-body
-                                      :linkage linkage
-                                      :function-info (make-function-info
-                                                      :function-name name
-                                                      :source-handle *gv-source-file-info-handle*
-                                                      :lambda-list lambda-list
-                                                      :docstring docstring
-                                                      :declares declares
-                                                      :form code
-                                                      :lineno (core:source-pos-info-lineno core:*current-source-pos-info*)
-                                                      :column (core:source-pos-info-column core:*current-source-pos-info*)
-                                                      :filepos (core:source-pos-info-filepos core:*current-source-pos-info*))
-                                      )
-                 (cmp-log "Starting new function name: %s%N" name)
-                 ;; The following injects a debugInspectT_sp at the start of the body
-                 ;; it will print the address of the literal which must correspond to an entry in the
-                 ;; load time values table
-                 #+(or)(irc-intrinsic-call "debugInspectT_sp" (list (literal:compile-reference-to-literal :This-is-a-test)))
-                 (let* ((arguments      (llvm-sys:get-argument-list fn))
-                        (callconv       (bclasp-setup-calling-convention arguments lambda-list core::*debug-bclasp* #|!DEBUG-ON|#)))
-                   (calling-convention-maybe-push-invocation-history-frame callconv)
-                   (let ((new-env (bclasp-compile-lambda-list-code cleavir-lambda-list fn-env callconv)))
-                     (cmp-log "Created new register environment -> %s%N" new-env)
-                     (with-try
-                         (progn
-                           (if wrap-block
-                               (codegen-block result (list* block-name (list new-body)) new-env)
-                               (codegen-progn result (list new-body) new-env)))
-                       ((cleanup)
-                        (cmp-log "About to calling-convention-maybe-pop-invocation-history-frame%N")
-                        (calling-convention-maybe-pop-invocation-history-frame callconv)
-                        (irc-unwind-environment new-env))))))))
-      (cmp-log "About to dump the function constructed by generate-llvm-function-from-code%N")
-      (cmp-log-dump-function fn)
-      (irc-verify-function fn)
-      ;; Return the llvm Function and the symbol/setf name
-      (if (null name) (error "The lambda name is nil"))
-      (values fn name lambda-list))))
+      (let* ((name (core:extract-lambda-name-from-declares declares (or given-name 'cl:lambda)))
+             (fn (with-new-function (fn fn-env result
+                                        :function-name name
+                                        :parent-env env-around-lambda
+                                        :function-form new-body
+                                        :linkage linkage
+                                        :function-info (make-function-info
+                                                        :function-name name
+                                                        :lambda-list lambda-list
+                                                        :docstring docstring
+                                                        :declares declares
+                                                        :form code
+                                                        :lineno (core:source-pos-info-lineno core:*current-source-pos-info*)
+                                                        :column (core:source-pos-info-column core:*current-source-pos-info*)
+                                                        :filepos (core:source-pos-info-filepos core:*current-source-pos-info*))
+                                        )
+                   (cmp-log "Starting new function name: %s%N" name)
+                   ;; The following injects a debugInspectT_sp at the start of the body
+                   ;; it will print the address of the literal which must correspond to an entry in the
+                   ;; load time values table
+                   #+(or)(irc-intrinsic-call "debugInspectT_sp" (list (literal:compile-reference-to-literal :This-is-a-test)))
+                   (let* ((arguments      (llvm-sys:get-argument-list fn))
+                          (callconv       (setup-calling-convention arguments
+                                                                    :debug-on core::*debug-bclasp*
+                                                                    :lambda-list lambda-list
+                                                                    :cleavir-lambda-list cleavir-lambda-list
+                                                                    :rest-alloc rest-alloc)))
+                     (calling-convention-maybe-push-invocation-history-frame callconv)
+                     (let ((new-env (bclasp-compile-lambda-list-code fn-env callconv)))
+                       (cmp-log "Created new register environment -> %s%N" new-env)
+                       (with-try
+                           (progn
+                             (if wrap-block
+                                 (codegen-block result (list* block-name (list new-body)) new-env)
+                                 (codegen-progn result (list new-body) new-env)))
+                         ((cleanup)
+                          (cmp-log "About to calling-convention-maybe-pop-invocation-history-frame%N")
+                          (calling-convention-maybe-pop-invocation-history-frame callconv)
+                          (irc-unwind-environment new-env))))))))
+        (cmp-log "About to dump the function constructed by generate-llvm-function-from-code%N")
+        (cmp-log-dump-function fn)
+        (unless *suppress-llvm-output* (irc-verify-function fn))
+        ;; Return the llvm Function and the symbol/setf name
+        (if (null name) (error "The lambda name is nil"))
+        (values fn name lambda-list)))))
 
 
 (defun compile-lambda-function (lambda-or-lambda-block &optional env &key (linkage 'llvm-sys:internal-linkage))
@@ -182,8 +186,10 @@ then compile it and return (values compiled-llvm-function lambda-name)"
   (if (atom fn-designator)
       (let ((classified (function-info evaluate-env fn-designator)))
 	(if (eq (car classified) 'core::global-function)
-	    (irc-intrinsic "va_symbolFunction" (irc-global-symbol fn-designator evaluate-env))
-            (irc-lexical-function-lookup classified evaluate-env)))
+            (multiple-value-bind (sym-arg label)
+                (irc-global-symbol fn-designator evaluate-env)
+              (values (irc-intrinsic-call-or-invoke "va_symbolFunction" (list sym-arg) label) label))
+            (values (irc-lexical-function-lookup classified evaluate-env) "lexical-func")))
       (if (eq (car fn-designator) 'cl:lambda)
 	  (error "Handle lambda expressions at head of form")
 	  (error "Illegal head of form: ~a" fn-designator))))
@@ -206,13 +212,45 @@ then compile it and return (values compiled-llvm-function lambda-name)"
               ((endp cur-exp) nil)
            (codegen temp-result exp evaluate-env)
            (push (irc-load temp-result) args))
-         (let ((closure (codegen-lookup-function head evaluate-env)))
+         (multiple-value-bind (closure label)
+             (codegen-lookup-function head evaluate-env)
 	   (irc-low-level-trace :flow)
-           (irc-funcall result closure (reverse args))
+           (irc-funcall result closure (reverse args) label)
 	   (irc-low-level-trace :flow))))
       ((and (consp head) (eq head 'lambda))
        (error "Handle lambda applications"))
       (t (compiler-error form "Illegal head for form %s" head)))))
+
+(defun codegen-funcall (result form env)
+  (let ((closure-arg (second form))
+        (call-args (cddr form)))
+    (cond
+      ((and (consp closure-arg)
+            (eq (first closure-arg) 'quote)
+            (= (length closure-arg) 2)
+            (symbolp (second closure-arg)))
+       (codegen-call result (cons (second closure-arg) call-args) env))
+      #+(or)((and (consp closure-arg)
+                  (eq (first closure-arg) 'function)
+                  (= (length closure-arg) 2)
+                  (symbolp (second closure-arg)))
+             (codegen-call result (cons (second closure-arg) call-args) env))
+      (t
+       (let ((nargs (length call-args))
+             args
+             (temp-closure (irc-alloca-t*))
+             (temp-result (irc-alloca-t*)))
+         ;; evaluate the arguments into the array
+         ;;  used to be done by --->    (codegen-evaluate-arguments (cdr form) evaluate-env)
+         (do* ((cur-exp call-args (cdr cur-exp))
+               (exp (car cur-exp) (car cur-exp))
+               (i 0 (+ 1 i)))
+              ((endp cur-exp) nil)
+           (codegen temp-result exp env)
+           (push (irc-load temp-result) args))
+         (codegen temp-closure closure-arg env)
+         (let ((closure (irc-intrinsic "bc_function_from_function_designator" (irc-load temp-closure))))
+           (irc-funcall result closure (reverse args))))))))
 
 (defun codegen-application (result form env)
   "A compiler macro function, macro function or a regular function"
@@ -242,6 +280,10 @@ then compile it and return (values compiled-llvm-function lambda-name)"
            (irc-low-level-trace)
            (codegen result expansion env) 
            ))
+        ;; An invocation of FUNCALL
+        ((and (symbolp (car form))
+              (eq (car form) 'funcall))
+         (codegen-funcall result form env))
         ;; It's a regular function call
         (t
          (codegen-call result form env))) 
@@ -270,6 +312,7 @@ then compile it and return (values compiled-llvm-function lambda-name)"
     ((eq sym 'cl:throw) nil)              ;; handled with macro
     ((eq sym 'cl:progv) nil)              ;; handled with macro
     ((eq sym 'core:debug-message) t)      ;; special operator
+    ((eq sym 'core:debug-break) t)      ;; special operator
     ((eq sym 'core:multiple-value-foreign-call) t) ;; Call intrinsic functions
     ((eq sym 'core:foreign-call-pointer) t) ;; Call function pointers
     ((eq sym 'core:foreign-call) t)         ;; Call foreign function
@@ -280,7 +323,7 @@ then compile it and return (values compiled-llvm-function lambda-name)"
 
 (defun codegen (result form env)
 ;;;  (declare (optimize (debug 3)))
-  (assert-result-isa-llvm-value result) 
+  (assert-result-isa-llvm-value result)
   (multiple-value-bind (source-directory source-filename lineno column)
       (dbg-set-current-source-pos form)
     (let* ((*current-form* form)
@@ -321,7 +364,6 @@ then compile it and return (values compiled-llvm-function lambda-name)"
                                               :function-form form
                                               :function-info (make-function-info
                                                               :function-name name
-                                                              :source-handle *gv-source-file-info-handle*
                                                               :lambda-list nil
                                                               :docstring nil
                                                               :declares nil
@@ -337,5 +379,5 @@ then compile it and return (values compiled-llvm-function lambda-name)"
                               (codegen result form fn-env)))))
       (cmp-log "Dumping the repl function%N")
       (cmp-log-dump-function top-level-func)
-      (irc-verify-function top-level-func t)
+      (unless *suppress-llvm-output* (irc-verify-function top-level-func t))
       top-level-func)))

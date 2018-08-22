@@ -109,6 +109,21 @@
   (cleavir-code-utilities:check-argcount form 1 1))
 
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Converting CORE:DEBUG-BREAK
+;;;
+;;; This is converted into a call to invoke the debugger
+;;;
+(defmethod cleavir-generate-ast::convert-special
+    ((symbol (eql 'core:debug-break)) form environment (system clasp-cleavir:clasp))
+  (make-instance 'clasp-cleavir-ast:debug-break-ast))
+
+(defmethod cleavir-generate-ast::check-special-form-syntax ((head (eql 'core:debug-break)) form)
+  (cleavir-code-utilities:check-form-proper-list form)
+  (cleavir-code-utilities:check-argcount form 0 0))
+
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -160,7 +175,7 @@
                  :foreign-types (cst:raw (cst:second cst))
                  :function-name (cst:raw (cst:third cst))
                  :argument-asts (cleavir-cst-to-ast::convert-sequence (cst:rest (cst:rest (cst:rest cst))) environment system)
-                 :origin (source cst)))
+                 :origin (cst:source cst)))
 
 (defmethod cleavir-generate-ast::check-special-form-syntax ((head (eql 'core:foreign-call)) form)
   (cleavir-code-utilities:check-form-proper-list form)
@@ -186,7 +201,7 @@
   (make-instance 'clasp-cleavir-ast:foreign-call-pointer-ast
                  :foreign-types (cst:raw (cst:second cst))
                  :argument-asts (cleavir-cst-to-ast::convert-sequence (cst:rest (cst:rest cst)) environment system)
-                 :origin (source cst)))
+                 :origin (cst:source cst)))
 
 (defmethod cleavir-generate-ast::check-special-form-syntax ((head (eql 'core:foreign-call-pointer)) form)
   (cleavir-code-utilities:check-form-proper-list form)
@@ -397,14 +412,17 @@
     (declare (ignore op origin))
     (let* ((parsed-lambda-list
              (cleavir-code-utilities:parse-ordinary-lambda-list lambda-list))
-           (required (cleavir-code-utilities:required parsed-lambda-list)))
+           (required (cleavir-code-utilities:required parsed-lambda-list))
+           (semi-rest (cleavir-code-utilities:rest-body parsed-lambda-list))
+           (rest (if (eq semi-rest :none) nil semi-rest)))
       (multiple-value-bind (declarations documentation forms)
           (cleavir-code-utilities:separate-function-body body)
         (declare (ignore documentation))
-        (let ((canonicalized-dspecs
-                (cleavir-code-utilities:canonicalize-declaration-specifiers
-                 (reduce #'append (mapcar #'cdr declarations))
-                 (cleavir-env:declarations environment))))
+        (let* ((canonicalized-dspecs
+                 (cleavir-code-utilities:canonicalize-declaration-specifiers
+                  (reduce #'append (mapcar #'cdr declarations))
+                  (cleavir-env:declarations environment)))
+               (rest-alloc (cmp:compute-rest-alloc rest canonicalized-dspecs)))
           (multiple-value-bind (idspecs rdspecs)
               (cleavir-generate-ast::itemize-declaration-specifiers
                (cleavir-generate-ast::itemize-lambda-list parsed-lambda-list)
@@ -420,7 +438,8 @@
               (cc-ast:make-bind-va-list-ast
                 lexical-lambda-list
                 (cleavir-generate-ast::convert va-list-form environment system)
-                ast))))))))
+                ast
+                rest-alloc))))))))
 
 (defmethod cleavir-cst-to-ast:convert-special
     ((symbol (eql 'core::bind-va-list)) cst environment (system clasp-cleavir:clasp))
@@ -457,6 +476,7 @@
                      lexical-lambda-list
                      (cleavir-cst-to-ast::convert va-list-cst environment system)
                      ast
+                     nil ; FIXME: handle rest-alloc (parse &rest from lambda list)
                      :origin origin))))))))
 
 (defmethod cleavir-generate-ast:check-special-form-syntax

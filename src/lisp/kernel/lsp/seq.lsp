@@ -93,7 +93,6 @@
                     (values nil nil nil))
                    ((eq len '*) (values 'list '* t))
                    (t (values 'list (1+ len) t))))
-           ;;;Kpoeck, this seems to be missing
            (values 'list '* t)))
       (t
        ;; We arrive here when the sequence type is not easy to parse.

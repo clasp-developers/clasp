@@ -19,7 +19,7 @@
   (declare (ignore initargs))
   (error "The built-in class (~A) cannot be instantiated" class))
 
-(defmethod ensure-class-using-class ((class null) name &rest rest)
+(defmethod ensure-class-using-class ((class null) name core:&va-rest rest)
   (clos::gf-log "In ensure-class-using-class (class null)%N")
   (clos::gf-log "     class -> %s%N" name)
   (multiple-value-bind (metaclass direct-superclasses options)
@@ -30,14 +30,14 @@
       (si:create-type-name name)
       (setf (find-class name) class))))
 
-(defmethod change-class ((instance t) (new-class symbol) &rest initargs)
+(defmethod change-class ((instance t) (new-class symbol) core:&va-rest initargs)
   (apply #'change-class instance (find-class new-class) initargs))
 
 (defmethod make-instances-obsolete ((class symbol))
   (make-instances-obsolete (find-class class))
   class)
 
-(defmethod make-instance ((class-name symbol) &rest initargs)
+(defmethod make-instance ((class-name symbol) core:&va-rest initargs)
   (apply #'make-instance (find-class class-name) initargs))
 
 (defmethod slot-makunbound-using-class ((class built-in-class) self slotd)

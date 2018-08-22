@@ -33,6 +33,7 @@
 
 (defmethod update-instance-for-different-class
     ((old-data standard-object) (new-data standard-object) &rest initargs)
+  (declare (dynamic-extent initargs))
   (let ((old-local-slotds (si:instance-sig old-data))
 	(new-local-slotds (remove :instance (si:instance-sig new-data)
 				  :test-not #'eq :key #'slot-definition-allocation))
@@ -49,7 +50,7 @@
     (apply #'shared-initialize new-data added-slots initargs)))
 
 (defmethod change-class ((instance standard-object) (new-class std-class)
-			 &rest initargs)
+			 core:&va-rest initargs)
   (let ((old-instance (si:copy-instance instance))
         (instance (core:reallocate-instance instance new-class (class-size new-class))))
     ;; "The values of local slots specified by both the class Cto and
@@ -107,6 +108,7 @@
 (defmethod update-instance-for-redefined-class
     ((instance standard-object) added-slots discarded-slots property-list
      &rest initargs)
+  (declare (dynamic-extent initargs))
   (check-initargs (class-of instance) initargs
 		  (valid-keywords-from-methods
                    (compute-applicable-methods
@@ -154,6 +156,7 @@
 ;;; CLASS REDEFINITION PROTOCOL
 
 (defmethod reinitialize-instance :before ((class class) &rest initargs &key)
+  (declare (ignore initargs))
   (let ((name (class-name class)))
     (when (member name '(CLASS BUILT-IN-CLASS) :test #'eq)
       (error "The kernel CLOS class ~S cannot be changed." name)))
@@ -165,6 +168,7 @@
 (defmethod reinitialize-instance :after ((class class) &rest initargs
                                          &key (direct-superclasses () direct-superclasses-p)
                                            (direct-slots nil direct-slots-p))
+  (declare (dynamic-extent initargs))
   ;; the list of direct slots is converted to direct-slot-definitions
   (when direct-slots-p
     (setf (class-direct-slots class)

@@ -79,6 +79,10 @@
 #define USE_SYMBOLS_IN_GLOBAL_ARRAY
 
 
+/// The size of the sigaltstack that Clasp requires to do at least some Common Lisp calls
+/// 1 MB is large - if we have a lot of threads we will want to knock this down
+#define SIGNAL_STACK_SIZE (1024*1024) 
+
 /// ----------------------------------------------------------------------
 ///
 /// MPS debugging options

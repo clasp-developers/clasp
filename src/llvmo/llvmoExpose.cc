@@ -2576,7 +2576,7 @@ CL_DEFMETHOD core::List_sp Function_O::basic_blocks() const {
   for (llvm::Function::iterator b = this->wrappedPtr()->begin(), be = this->wrappedPtr()->end(); b != be; ++b) {
     llvm::BasicBlock& BB = *b;
     // Delete the basic block from the old function, and the list of blocks
-    result = core::Cons_O::create(translate::to_object<llvm::BasicBlock*>::convert(&BB));
+    result = core::Cons_O::create(translate::to_object<llvm::BasicBlock*>::convert(&BB),_Nil<T_O>());
   }
   return result;
 }
@@ -2867,6 +2867,7 @@ CL_DEFUN PointerType_sp PointerType_O::get(Type_sp elementType, uint addressSpac
 
 namespace llvmo {
 
+CL_LAMBDA(time)
 CL_DEFUN void llvm_sys__accumulate_llvm_usage_seconds(double time)
 {
   core::DoubleFloat_sp df = core::DoubleFloat_O::create(time);
@@ -3294,14 +3295,74 @@ namespace llvmo {
 using namespace llvm;
 using namespace llvm::orc;
 
+//#define MONITOR_JIT_MEMORY_MANAGER 1    // monitor SectionMemoryManager
+//#define DUMP_OBJECT_FILES 1
+
+#ifdef DUMP_OBJECT_FILES
+size_t fileNum = 1;
+void dumpObjectFile(size_t num, const char* start, size_t size) {
+  std::stringstream filename;
+  filename << "object-file-" << num << ".o";
+  std::ofstream fout;
+  fout.open(filename.str(), std::ios::out | std::ios::binary );
+  fout.write(start,size);
+  fout.close();
+}
+#endif
+
+class ClaspSectionMemoryManager : public SectionMemoryManager {
+
+  void 	notifyObjectLoaded (RuntimeDyld &RTDyld, const object::ObjectFile &Obj) {
+#ifdef MONITOR_JIT_MEMORY_MANAGER
+    printf("%s:%d notifyObjectLoaded was invoked\n", __FILE__, __LINE__ );
+    llvm::MemoryBufferRef mem = Obj.getMemoryBufferRef();
+    printf("%s:%d      --> sizeof(ObjectFile) -> %lu  MemoryBufferRef start: %p   size: %lu\n", __FILE__, __LINE__, sizeof(Obj), mem.getBufferStart(), mem.getBufferSize() );
+    void** words = (void**)(&Obj);
+    printf("%s:%d      --> ObjectFile words:\n", __FILE__, __LINE__ );
+    printf("%s:%d            0x00: %18p %18p\n", __FILE__, __LINE__, words[0], words[1]);
+    printf("%s:%d            0x10: %18p %18p\n", __FILE__, __LINE__, words[2], words[3]);
+    printf("%s:%d            0x20: %18p %18p\n", __FILE__, __LINE__, words[4], words[5]);
+#ifdef DUMP_OBJECT_FILES
+    dumpObjectFile(fileNum++,mem.getBufferStart(),mem.getBufferSize());
+#endif
+#endif
+  }
+  
+
+  uint8_t* allocateCodeSection( uintptr_t Size, unsigned Alignment,
+                                unsigned SectionID,
+                                StringRef SectionName ) {
+    uint8_t* ptr = this->SectionMemoryManager::allocateCodeSection(Size,Alignment,SectionID,SectionName);
+#ifdef MONITOR_JIT_MEMORY_MANAGER
+    printf("%s:%d  allocateCodeSection Size: %lu  Alignment: %u SectionId: %u SectionName: %s --> allocated at: %p\n", __FILE__, __LINE__, Size, Alignment, SectionID, SectionName.str().c_str(), ptr );
+#endif
+    return ptr;
+  }
+
+  uint8_t* allocateDataSection( uintptr_t Size, unsigned Alignment,
+                                unsigned SectionID,
+                                StringRef SectionName,
+                                bool isReadOnly) {
+    uint8_t* ptr = this->SectionMemoryManager::allocateDataSection(Size,Alignment,SectionID,SectionName,isReadOnly);
+#ifdef MONITOR_JIT_MEMORY_MANAGER
+    printf("%s:%d  allocateDataSection Size: %lu  Alignment: %u SectionId: %u SectionName: %s isReadOnly: %d --> allocated at: %p\n", __FILE__, __LINE__, Size, Alignment, SectionID, SectionName.str().c_str(), isReadOnly, ptr );
+#endif
+    return ptr;
+  }
+
+};
+
+
+
+
 ClaspJIT_O::ClaspJIT_O() : TM(EngineBuilder().selectTarget()),
                            DL(TM->createDataLayout()),
 //                           NotifyObjectLoaded(*this),
-                           ObjectLayer([]() { return std::make_shared<SectionMemoryManager>(); }
+                           ObjectLayer([]() { return std::make_shared<ClaspSectionMemoryManager>(); }
 /* The following doesn't work in llvm5.0 because of a bug in the definition of NotifyLoadedFtor
 https://groups.google.com/forum/#!topic/llvm-dev/m3JjMNswgcU
 */
-#ifdef LLVM5_ORC_NOTIFIER_PATCH
+//#ifdef LLVM5_ORC_NOTIFIER_PATCH
 ,
                                        [this](llvm::orc::RTDyldObjectLinkingLayer::ObjHandleT H,
                                               const RTDyldObjectLinkingLayerBase::ObjectPtr& Obj,
@@ -3309,7 +3370,7 @@ https://groups.google.com/forum/#!topic/llvm-dev/m3JjMNswgcU
                                          this->GDBEventListener->NotifyObjectEmitted(*(Obj->getBinary()), Info);
                                          save_symbol_info(*(Obj->getBinary()), Info);
                                        }
-#endif
+//#endif
 )
                          ,
                            CompileLayer(ObjectLayer, SimpleCompiler(*TM)),
@@ -3547,56 +3608,59 @@ std::shared_ptr<llvm::Module> optimizeModule(std::shared_ptr<llvm::Module> M) {
   printf("%s:%d  Returning module\n", __FILE__, __LINE__ );
   return result;
 #else
+  if (comp::_sym_STARoptimization_levelSTAR->symbolValue().fixnump() &&
+      comp::_sym_STARoptimization_levelSTAR->symbolValue().unsafe_fixnum() >= 2) {
   // Create a function pass manager.
-  auto FPM = llvm::make_unique<llvm::legacy::FunctionPassManager>(M.get());
+    auto FPM = llvm::make_unique<llvm::legacy::FunctionPassManager>(M.get());
 
   // Add some optimizations.
-  FPM->add(createInstructionCombiningPass());
-  FPM->add(createReassociatePass());
-  FPM->add(createNewGVNPass());
-  FPM->add(createCFGSimplificationPass());
-  FPM->add(createPromoteMemoryToRegisterPass());
+    FPM->add(createInstructionCombiningPass());
+    FPM->add(createReassociatePass());
+    FPM->add(createNewGVNPass());
+    FPM->add(createCFGSimplificationPass());
+    FPM->add(createPromoteMemoryToRegisterPass());
 //  FPM->add(createFunctionInliningPass());
-  FPM->doInitialization();
+    FPM->doInitialization();
 
   // !!!! I run this after inlining again -
   // - But if I don't run it here - it crashes when I try to clone the module for disassemble
   // Run the optimizations over all functions in the module being added to the JIT.
-  for (auto &F : *M)
-    FPM->run(F);
+    for (auto &F : *M)
+      FPM->run(F);
   
-  llvm::legacy::PassManager my_passes;
-  my_passes.add(llvm::createFunctionInliningPass(4096));
-  my_passes.run(*M);
+    llvm::legacy::PassManager my_passes;
+    my_passes.add(llvm::createFunctionInliningPass(4096));
+    my_passes.run(*M);
 
     // After inlining - run the optimizations over all functions again
-  for (auto &F : *M)
-    FPM->run(F);
+    for (auto &F : *M)
+      FPM->run(F);
   
   // Silently remove llvm.used functions if they are defined
   //     I may use this to prevent functions from being removed from the bitcode
   //     by clang before we need them.
-  llvm::GlobalVariable* used = M->getGlobalVariable("llvm.used");
-  if (used) {
-    Value* init = used->getInitializer();
-    used->eraseFromParent();
-  }
+    llvm::GlobalVariable* used = M->getGlobalVariable("llvm.used");
+    if (used) {
+      Value* init = used->getInitializer();
+      used->eraseFromParent();
+    }
 
-  removeAlwaysInlineFunctions(&*M);
+    removeAlwaysInlineFunctions(&*M);
 
-  if ((!comp::_sym_STARsave_module_for_disassembleSTAR.unboundp()) &&
-      comp::_sym_STARsave_module_for_disassembleSTAR->symbolValue().notnilp()) {
+    if ((!comp::_sym_STARsave_module_for_disassembleSTAR.unboundp()) &&
+        comp::_sym_STARsave_module_for_disassembleSTAR->symbolValue().notnilp()) {
     //printf("%s:%d     About to save the module *save-module-for-disassemble*->%s\n",__FILE__, __LINE__, _rep_(comp::_sym_STARsave_module_for_disassembleSTAR->symbolValue()).c_str());
-    llvm::Module* o = &*M;
-    std::unique_ptr<llvm::Module> cm = llvm::CloneModule(o);
-    Module_sp module = core::RP_Create_wrapped<Module_O,llvm::Module*>(cm.release());
-    comp::_sym_STARsaved_module_from_clasp_jitSTAR->setf_symbolValue(module);
-  }
+      llvm::Module* o = &*M;
+      std::unique_ptr<llvm::Module> cm = llvm::CloneModule(o);
+      Module_sp module = core::RP_Create_wrapped<Module_O,llvm::Module*>(cm.release());
+      comp::_sym_STARsaved_module_from_clasp_jitSTAR->setf_symbolValue(module);
+    }
   // Check if we should dump the module for debugging
-  {
-    Module_sp module = core::RP_Create_wrapped<Module_O,llvm::Module*>(&*M);
-    core::SimpleBaseString_sp label = core::SimpleBaseString_O::make("after-optimize");
-    core::eval::funcall(comp::_sym_compile_quick_module_dump,module,label);
+    {
+      Module_sp module = core::RP_Create_wrapped<Module_O,llvm::Module*>(&*M);
+      core::SimpleBaseString_sp label = core::SimpleBaseString_O::make("after-optimize");
+      core::eval::funcall(comp::_sym_compile_quick_module_dump,module,label);
+    }
   }
   //printf("%s:%d  Done optimizeModule\n", __FILE__, __LINE__ );
   return M;
@@ -3621,9 +3685,9 @@ SYMBOL_EXPORT_SC_(CorePkg,repl);
 
 CL_DEFUN core::Function_sp llvm_sys__jitFinalizeReplFunction(ClaspJIT_sp jit, ModuleHandle_sp handle, const string& replName, const string& startupName, const string& shutdownName, core::T_sp initialData) {
   // Stuff to support MCJIT
-  core::Pointer_sp replPtr = jit->findSymbolIn(handle,replName,false);
-  core::Pointer_sp startupPtr = jit->findSymbolIn(handle,startupName,false);
-  core::Pointer_sp shutdownPtr = jit->findSymbolIn(handle,shutdownName,false);
+  core::Pointer_sp replPtr = jit->findSymbolIn(handle,replName,true);
+  core::Pointer_sp startupPtr = jit->findSymbolIn(handle,startupName,true);
+  core::Pointer_sp shutdownPtr = jit->findSymbolIn(handle,shutdownName,true);
   core::CompiledClosure_fptr_type lisp_funcPtr = (core::CompiledClosure_fptr_type)(gc::As_unsafe<core::Pointer_sp>(replPtr)->ptr());
   gctools::smart_ptr<core::ClosureWithSlots_O> functoid =
     core::ClosureWithSlots_O::make_bclasp_closure( core::_sym_repl,

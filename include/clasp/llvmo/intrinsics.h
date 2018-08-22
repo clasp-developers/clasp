@@ -216,7 +216,8 @@ namespace llvmo {
 
 
   core::T_sp intrinsic_slot_unbound(core::T_sp info, core::T_sp instance);
-  
+
+  [[noreturn]] void not_function_designator_error(core::T_sp datum);
   void initialize_raw_translators( void );
 }
 

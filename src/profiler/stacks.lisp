@@ -1,4 +1,4 @@
-#! /usr/bin/env sbcl --noinform
+#! /usr/bin/env sbcl --dynamic-space-size 4096 --noinform
 (defun read-dtrace-header (stream &optional eofp eof)
   (list (read-line stream eofp eof)
         (read-line stream eofp eof)
@@ -153,8 +153,11 @@
               (total 0)
               (gc-counts 0)
               (hash-table-counts 0))
+          (format fout "Functions with less than 0.01 fractional time are not displayed~%")
           (loop for (count . name ) in sorted
-                do (format fout "~5d ~5,3f  - ~a~%" count (float (/ count num-backtraces)) name)
+                do (let ((frac (/ count num-backtraces)))
+                     (when (> frac 0.01)
+                       (format fout "~5d ~5,3f  - ~a~%" count (float (/ count num-backtraces)) name)))
                 do (incf total count)
                 do (cond
                      ((search "GC_" name)

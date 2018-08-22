@@ -127,13 +127,16 @@ void start_thread_inner(Process_sp process, void* cold_end_of_stack) {
     abort();
   };
 #endif
-  core::ThreadLocalState my_thread_local_state(cold_end_of_stack);
+  gctools::ThreadLocalStateLowLevel thread_local_state_low_level(cold_end_of_stack);
+  core::ThreadLocalState thread_local_state;
+  my_thread_low_level = &thread_local_state_low_level;
+  my_thread = &thread_local_state;
 //  printf("%s:%d entering start_thread  &my_thread -> %p \n", __FILE__, __LINE__, (void*)&my_thread);
 #ifdef USE_MPS
   gctools::my_thread_allocation_points.initializeAllocationPoints();
 #endif
-  my_thread = &my_thread_local_state;
-  my_thread->initialize_thread(process);
+  my_thread->initialize_thread(process,true);
+  my_thread->create_sigaltstack();
   process->_ThreadInfo = my_thread;
   // Set the mp:*current-process* variable to the current process
   core::DynamicScopeManager scope(_sym_STARcurrent_processSTAR,process);
@@ -177,6 +180,7 @@ void start_thread_inner(Process_sp process, void* cold_end_of_stack) {
   }
   result_list = core::Cons_O::create(result0,result_list);
   process->_ReturnValuesList = result_list;
+  
 //  gctools::unregister_thread(process);
 //  printf("%s:%d leaving start_thread\n", __FILE__, __LINE__);
 
@@ -191,7 +195,7 @@ void* start_thread(void* claspProcess) {
   // MPS setup of thread
   //
   start_thread_inner(process,cold_end_of_stack);
-  
+
 #if 0
 #ifdef USE_BOEHM
   GC_unregister_my_thread();
@@ -202,6 +206,7 @@ void* start_thread(void* claspProcess) {
   mps_root_destroy(process->root);
   mps_thread_dereg(process->thr_o);
 #endif
+  my_thread->destroy_sigaltstack();
 //  printf("%s:%d  really leaving start_thread\n", __FILE__, __LINE__ );
   return NULL;
 }
@@ -441,7 +446,7 @@ CL_DEFUN core::List_sp mp__process_initial_special_bindings(Process_sp p) {
 }
 
 CL_DEFUN void mp__check_pending_interrupts() {
-  gctools::lisp_check_pending_interrupts(my_thread);
+  gctools::handle_all_queued_interrupts();
 }
 
 };

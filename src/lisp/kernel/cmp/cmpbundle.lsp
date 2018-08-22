@@ -102,8 +102,7 @@
 
 (in-package :cmp)
 
-(defparameter *link-options* (list "-O2"))
-
+(defparameter *link-options* nil)
 
 (defun link-object-files (library-file in-all-names)
   "Link object files together to create a .dylib (macOS) or .so (linux/freebsd) library.
@@ -120,6 +119,7 @@ The **library-file** is the name of the output library with the appropriate exte
     (let ((clang-args (cond
                         ((member :target-os-darwin *features*)
                          (let ((clang-args `( ,@options
+                                              ,(core:bformat nil "-O%d" *optimization-level*)
                                               ,@all-object-files
 ;;;                                 "-macosx_version_min" "10.10"
                                               "-flat_namespace"
@@ -138,6 +138,7 @@ The **library-file** is the name of the output library with the appropriate exte
                          ;; FreeBSD might
                          (let ((clang-args `(#+(or)"-v"
                                                     ,@options
+                                                    ,(core:bformat nil "-O%d" *optimization-level*)
                                                     ,@all-object-files
                                                     ,@*debug-link-options*
                                                     #+(or)"-fvisibility=default"
@@ -162,8 +163,9 @@ The **library-file** is the name of the output library with the appropriate exte
         (bundle-file (ensure-string in-bundle-file)))
     (let ((clang-args (cond
                         ((member :target-os-darwin *features*)
-                         (let ((clang-args `( "-flto=thin"
+                         (let ((clang-args `( "-flto"
                                               ,@options
+                                              ,(core:bformat nil "-O%d" *optimization-level*)
                                               ,@all-object-files
 ;;;                                 "-macosx_version_min" "10.10"
                                               "-flat_namespace"
@@ -183,8 +185,9 @@ The **library-file** is the name of the output library with the appropriate exte
                          ;; FreeBSD might
                          (let ((clang-args `(#+(or)"-v"
                                                     ,@options
-                                                    ,@all-object-files
-                                                    "-flto=thin"
+                                                    ,(core:bformat nil "-O%d" *optimization-level*) 
+                                                   ,@all-object-files
+                                                    "-flto"
                                                     "-fuse-ld=gold"
                                                     ,@*debug-link-options*
                                                     #+(or)"-fvisibility=default"
@@ -220,6 +223,7 @@ The **library-file** is the name of the output library with the appropriate exte
       (cond
         ((member :target-os-darwin *features*)
          (ext:run-clang `(,@options
+                          ,(core:bformat nil "-O%d" *optimization-level*)
                           ,@all-names
                           #+(or)"-v"
                           ,@link-flags
@@ -232,6 +236,7 @@ The **library-file** is the name of the output library with the appropriate exte
          ;; Linux needs to use clang to link
          ;; FreeBSD might
          (ext:run-clang `(,@options
+                          ,(core:bformat nil "-O%d" *optimization-level*)
                           ,@all-names
                           ,@link-flags
                           "-o"
@@ -250,41 +255,41 @@ The **library-file** is the name of the output library with the appropriate exte
            (*compile-file-truename* (translate-logical-pathname *compile-file-pathname*))
            (bcnum 0))
       (with-module ( :module module
-                             :optimize nil
-                             :source-namestring (namestring output-pathname))
-        (with-debug-info-generator (:module module :pathname output-pathname)
-          (let* ((linker (llvm-sys:make-linker *the-module*))
-                 (part-index 1))
-            ;; Don't enforce .bc extension for additional-bitcode-pathnames
-            ;; This is where I used to link the additional-bitcode-pathnames
-            (dolist (part-pn part-pathnames)
-              (let* ((bc-file (make-pathname :type (if cmp::*use-human-readable-bitcode* "ll" "bc") :defaults part-pn)))
+                     :optimize nil)
+        (with-source-pathnames (:source-pathname (pathname output-pathname))
+          (with-debug-info-generator (:module module :pathname output-pathname)
+            (let* ((linker (llvm-sys:make-linker *the-module*))
+                   (part-index 1))
+              ;; Don't enforce .bc extension for additional-bitcode-pathnames
+              ;; This is where I used to link the additional-bitcode-pathnames
+              (dolist (part-pn part-pathnames)
+                (let* ((bc-file (make-pathname :type (if cmp::*use-human-readable-bitcode* "ll" "bc") :defaults part-pn)))
 ;;;                (bformat t "Linking %s%N" bc-file)
-                (let* ((part-module (parse-bitcode (namestring (truename bc-file)) *llvm-context*)))
-                  (incf part-index)
-                  (multiple-value-bind (failure error-msg)
-                      (let ((global-ctor (find-global-ctor-function part-module))
-                            (priority part-index))
-                        (remove-llvm.global_ctors-if-exists part-module)
-                        (add-llvm.global_ctors part-module priority global-ctor)
-                        (llvm-sys:link-in-module linker part-module))
-                    (when failure
-                      (error "While linking part module: ~a  encountered error: ~a" part-pn error-msg))))))
-            ;; The following links in additional-bitcode-pathnames
-            (dolist (part-pn additional-bitcode-pathnames)
-              (let* ((bc-file part-pn))
+                  (let* ((part-module (parse-bitcode (namestring (truename bc-file)) *llvm-context*)))
+                    (incf part-index)
+                    (multiple-value-bind (failure error-msg)
+                        (let ((global-ctor (find-global-ctor-function part-module))
+                              (priority part-index))
+                          (remove-llvm.global_ctors-if-exists part-module)
+                          (add-llvm.global_ctors part-module priority global-ctor)
+                          (llvm-sys:link-in-module linker part-module))
+                      (when failure
+                        (error "While linking part module: ~a  encountered error: ~a" part-pn error-msg))))))
+              ;; The following links in additional-bitcode-pathnames
+              (dolist (part-pn additional-bitcode-pathnames)
+                (let* ((bc-file part-pn))
 ;;;                (bformat t "Linking %s%N" bc-file)
-                (let* ((part-module (llvm-sys:parse-bitcode-file (namestring (truename bc-file)) *llvm-context*)))
-                  (remove-main-function-if-exists part-module) ;; Remove the ClaspMain FN if it exists
-                  (multiple-value-bind (failure error-msg)
-                      (llvm-sys:link-in-module linker part-module)
-                    (when failure
-                      (error "While linking additional module: ~a  encountered error: ~a" bc-file error-msg))
-                    ))))
-            (write-bitcode *the-module* (core:coerce-to-filename (pathname (if output-pathname
-                                                                               output-pathname
-                                                                               (error "The output pathname is NIL")))))
-            *the-module*))))))
+                  (let* ((part-module (llvm-sys:parse-bitcode-file (namestring (truename bc-file)) *llvm-context*)))
+                    (remove-main-function-if-exists part-module) ;; Remove the ClaspMain FN if it exists
+                    (multiple-value-bind (failure error-msg)
+                        (llvm-sys:link-in-module linker part-module)
+                      (when failure
+                        (error "While linking additional module: ~a  encountered error: ~a" bc-file error-msg))
+                      ))))
+              (write-bitcode *the-module* (core:coerce-to-filename (pathname (if output-pathname
+                                                                                 output-pathname
+                                                                                 (error "The output pathname is NIL")))))
+              *the-module*)))))))
 (export 'link-bitcode-modules)
 
 
@@ -360,6 +365,6 @@ This is to ensure that the RUN-ALL functions are evaluated in the correct order.
                                lisp-files))
         (temp-bitcode-file (make-pathname :type (core:bitcode-extension) :defaults out-file)))
     (link-bitcode-modules temp-bitcode-file bitcode-files)
-      (execute-link-fasl out-file (list temp-bitcode-file))))
+    (execute-link-fasl out-file (list temp-bitcode-file))))
 
 (export 'build-fasl)

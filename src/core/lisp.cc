@@ -91,7 +91,7 @@ THE SOFTWARE.
 #include <clasp/core/lispReader.h>
 #include <clasp/core/write_object.h>
 #include <clasp/core/write_ugly.h>
-#include <clasp/core/clcenv.h>
+//#include <clasp/core/clcenv.h>
 #include <clasp/core/pathname.h>
 #include <clasp/core/print.h>
 #include <clasp/core/genericFunction.h>
@@ -105,7 +105,6 @@ THE SOFTWARE.
 #endif // defined(OLD_SERIALIZE)
 #include <clasp/core/bootStrapCoreSymbolMap.h>
 #include <clasp/core/numerics.h>
-#include <clasp/core/reader.h>
 //#i n c l u d e "genericFunction.h"
 #include <clasp/core/singleDispatchGenericFunction.h>
 #include <clasp/core/designators.h>
@@ -233,6 +232,7 @@ void Lisp_O::shutdownLispEnvironment() {
     this->_DebugStream->endNode(DEBUG_TOPLEVEL);
     delete this->_DebugStream;
   }
+  my_thread->destroy_sigaltstack();
 }
 
 void Lisp_O::lisp_initSymbols(Lisp_sp lisp) {
@@ -262,6 +262,7 @@ string dump_instanceClass_info(Instance_sp co, Lisp_sp prog) {
 }
 
 void Lisp_O::setupSpecialSymbols() {
+  RAII_DISABLE_INTERRUPTS();
   Null_sp symbol_nil = Null_O::create_at_boot("NIL");
   Symbol_sp symbol_unbound = Symbol_O::create_at_boot("UNBOUND");
   Symbol_sp symbol_no_thread_local_binding = Symbol_O::create_at_boot("NO-THREAD-LOCAL-BINDING");
@@ -277,6 +278,8 @@ void Lisp_O::setupSpecialSymbols() {
   symbol_no_thread_local_binding->_HomePackage = symbol_nil;
   symbol_deleted->_HomePackage = symbol_nil;
   symbol_sameAsKey->_HomePackage = symbol_nil;
+  // 
+  my_thread->_PendingInterrupts = symbol_nil;
 }
 
 void Lisp_O::finalizeSpecialSymbols() {
@@ -285,8 +288,6 @@ void Lisp_O::finalizeSpecialSymbols() {
   symbol_nil->setf_name(SimpleBaseString_O::make("NIL"));
   symbol_nil->setPackage(_lisp->findPackage("COMMON-LISP"));
   symbol_nil->setf_plist(_Nil<T_O>());
-  symbol_nil->setf_symbolFunction(_Unbound<T_O>());
-  symbol_nil->setSetfFdefinition(_Unbound<T_O>());
   //    	Symbol_sp symbol_unbound = gctools::smart_ptr<Symbol_O>(gctools::global_Symbol_OP_unbound);
   //    	Symbol_sp symbol_deleted = gctools::smart_ptr<Symbol_O>(gctools::global_Symbol_OP_deleted);
   //    	Symbol_sp symbol_sameAsKey = gctools::smart_ptr<Symbol_O>(gctools::global_Symbol_OP_sameAsKey);
@@ -470,6 +471,19 @@ void Lisp_O::startupLispEnvironment(Bundle *bundle) {
     printf("%s:%d   Opening file %s for logging\n", __FILE__, __LINE__, ss.str().c_str());
   }
 #endif
+  global_dump_functions = getenv("CLASP_DUMP_FUNCTIONS");
+  char* pause_startup = getenv("CLASP_PAUSE_STARTUP");
+  if (pause_startup) {
+      printf("%s:%d PID = %d  Paused at startup - press enter to continue: \n", __FILE__, __LINE__, getpid() );
+      fflush(stdout);
+      getchar();
+  }
+
+  my_thread->create_sigaltstack();
+  my_thread->_GCRoots = new gctools::GCRootsInModule();
+  Symbol_sp symbol_nil = gctools::smart_ptr<Symbol_O>((gc::Tagged)gctools::global_tagged_Symbol_OP_nil);
+  symbol_nil->fmakunbound();
+  symbol_nil->fmakunbound_setf();
   { // Trap symbols as they are interned
     if (offsetof(Function_O,entry)!=offsetof(FuncallableInstance_O,entry)) {
       printf("%s:%d  The offsetf(Function_O,entry)/%lu!=offsetof(FuncallableInstance_O,entry)/%lu!!!!\n", __FILE__, __LINE__, offsetof(Function_O,entry),offsetof(FuncallableInstance_O,entry) );
@@ -569,6 +583,8 @@ void Lisp_O::startupLispEnvironment(Bundle *bundle) {
     initialize_Lisp_O();
     core::HashTableEql_sp ht = core::HashTableEql_O::create_default();
     core::_sym_STARcxxDocumentationSTAR->defparameter(ht);
+    ReadTable_sp readtable = ReadTable_O::create_standard_readtable();
+    cl::_sym_STARreadtableSTAR->defparameter(readtable);
     initialize_functions();
     eval::defineSpecialOperatorsAndMacros(this->_Roots._CorePackage);
 #ifdef DEBUG_PROGRESS
@@ -647,8 +663,10 @@ void Lisp_O::startupLispEnvironment(Bundle *bundle) {
   //
   // Initialize the main thread info
   //
-  mp::Process_sp main_process = mp::Process_O::make_process(INTERN_(core,top_level),_Nil<T_O>(),_lisp->copy_default_special_bindings(),_Nil<T_O>(),0);
-  my_thread->initialize_thread(main_process);
+  {
+    mp::Process_sp main_process = mp::Process_O::make_process(INTERN_(core,top_level),_Nil<T_O>(),_lisp->copy_default_special_bindings(),_Nil<T_O>(),0);
+    my_thread->initialize_thread(main_process,false);
+  }
   {
     // initialize caches
     my_thread->_SingleDispatchMethodCachePtr = gc::GC<Cache_O>::allocate();
@@ -1013,6 +1031,39 @@ void Lisp_O::unmapNameToPackage(const string &name) {
   SIMPLE_ERROR(BF("Could not find package with (nick)name: %s") % name);
 }
 
+void Lisp_O::finishPackageSetup(const string &pkgname, list<string> const &nicknames, list<string> const &usePackages, list<std::string> const& shadow) {
+  T_sp tpkg = _lisp->findPackage(pkgname,false);
+  if (tpkg.nilp()) {
+    this->makePackage(pkgname,nicknames,usePackages,shadow);
+    return;
+  }
+  Package_sp pkg = gc::As_unsafe<Package_sp>(tpkg);
+  {
+    ql::list nn;
+    for ( auto name : nicknames ) {
+      SimpleBaseString_sp str = SimpleBaseString_O::make(name);
+      nn << str;
+    }
+    pkg->setNicknames(nn.cons());
+  }
+  {
+    ql::list sn;
+    for ( auto name : shadow ) {
+      SimpleBaseString_sp str = SimpleBaseString_O::make(name);
+      sn << str;
+    }
+    pkg->shadow((List_sp)sn.cons());
+  }
+  {
+    ql::list sn;
+    for ( auto name : usePackages ) {
+      Package_sp other = _lisp->findPackage(name,true);
+      pkg->usePackage(other);
+    }
+  }
+};
+
+
 Package_sp Lisp_O::makePackage(const string &name, list<string> const &nicknames, list<string> const &usePackages, list<std::string> const& shadow) {
   /* This function is written somewhat bizarrely for lock safety reasons.
    * The trick is that the error infrastructure, among other things, uses the package system.
@@ -1056,6 +1107,11 @@ Package_sp Lisp_O::makePackage(const string &name, list<string> const &nicknames
         }
         newPackage->setNicknames(cnicknames);
       }
+      for ( auto x : shadow ) {
+        SimpleBaseString_sp sx = SimpleBaseString_O::make(x);
+//        printf("%s:%d in makePackage  for package %s  shadow: %s\n", __FILE__,__LINE__, newPackage->getName().c_str(),sx->get_std_string().c_str());
+        newPackage->shadow(sx);
+      }
       for (list<string>::const_iterator jit = usePackages.begin(); jit != usePackages.end(); jit++) {
         Package_sp usePkg = gc::As<Package_sp>(this->findPackage_no_lock(*jit, true));
         LOG(BF("Using package[%s]") % usePkg->getName());
@@ -1067,21 +1123,16 @@ Package_sp Lisp_O::makePackage(const string &name, list<string> const &nicknames
       } else {
         LOG(BF("_MakePackageCallback is NULL - not calling callback"));
       }
-      for ( auto x : shadow ) {
-        SimpleBaseString_sp sx = SimpleBaseString_O::make(x);
-        printf("%s:%d in makePackage  for package %s  shadow: %s\n", __FILE__,__LINE__, newPackage->getName().c_str(),sx->get_std_string().c_str());
-        newPackage->shadow(sx);
-      }
       return newPackage;
     }
     // FIXME: These ought to be correctable.
     // When SIMPLE_ERROR is replaced with something that can do corrections, the continues will be necessary.
     // Corrections will mean, essentially, setting the name and nicknames variables.
   name_exists:
-    SIMPLE_ERROR(BF("There already exists a package with name: %s") % name);
+    SIMPLE_PACKAGE_ERROR("There already exists a package with name: ~a", name);
     continue;
   nickname_exists:
-    SIMPLE_ERROR(BF("Package nickname[%s] is already being used by package[%s]") % usedNickName % packageUsingNickName);
+    SIMPLE_PACKAGE_ERROR_2_args("Package nickname[~a] is already being used by package[~a]" , usedNickName , packageUsingNickName);
     continue;
   }
 }
@@ -1151,24 +1202,6 @@ Package_sp Lisp_O::getCurrentPackage() const {
 void Lisp_O::selectPackage(Package_sp pack) {
   cl::_sym_STARpackageSTAR->setf_symbolValue(pack);
 }
-
-T_sp Lisp_O::sourceDatabase() const {
-  _OF();
-  // At startup the *package* symbol may not yet
-  // be defined or bound to a package - in that case just say we are in the core package
-  //
-  T_sp cur;
-  if (_sym_STARsourceDatabaseSTAR.unboundp()) {
-    return _Nil<T_O>();
-  }
-  if (!_sym_STARsourceDatabaseSTAR->specialP()) {
-    return _Nil<T_O>();
-  }
-  cur = _sym_STARsourceDatabaseSTAR->symbolValue();
-  if (cur.nilp()) return cur;
-  return gc::As<SourceManager_sp>(cur);
-}
-
 
 void Lisp_O::throwIfBuiltInClassesNotInitialized() {
   if (this->_BuiltInClassesInitialized)
@@ -1375,7 +1408,6 @@ void Lisp_O::parseCommandLineArguments(int argc, char *argv[], const CommandLine
 
 T_mv Lisp_O::readEvalPrint(T_sp stream, T_sp environ, bool printResults, bool prompt) {
   T_mv result = Values(_Nil<T_O>());
-  DynamicScopeManager scope(_sym_STARcurrentSourceFileInfoSTAR, core__source_file_info(stream));
   while (1) {
     try {
       if (prompt) {
@@ -1384,11 +1416,6 @@ T_mv Lisp_O::readEvalPrint(T_sp stream, T_sp environ, bool printResults, bool pr
                 << gc::As<Package_sp>(cl::_sym_STARpackageSTAR->symbolValue())->getName() << "> ";
         clasp_write_string(prompts.str(), stream);
       }
-#ifdef USE_SOURCE_DATABASE
-      DynamicScopeManager innerScope(_sym_STARsourceDatabaseSTAR, SourceManager_O::create());
-#else
-      DynamicScopeManager innerScope(_sym_STARsourceDatabaseSTAR, _Nil<T_O>());
-#endif
       T_sp expression = cl__read(stream, _Nil<T_O>(), _Unbound<T_O>(), _Nil<T_O>());
       if (expression.unboundp())
         break;
@@ -1498,11 +1525,11 @@ CL_DOCSTRING("stackUsed");
 CL_DEFUN size_t core__stack_used() {
   int x;
   char *xaddr = (char *)(&x);
-  if ( xaddr > my_thread->_StackTop ) {
-    printf("%s:%d There is a problem with the stack _lisp->_StackTop@%p is below the current stack pointer@%p\n", __FILE__, __LINE__, my_thread->_StackTop, xaddr );
+  if ( xaddr > my_thread_low_level->_StackTop ) {
+    printf("%s:%d There is a problem with the stack _lisp->_StackTop@%p is below the current stack pointer@%p\n", __FILE__, __LINE__, my_thread_low_level->_StackTop, xaddr );
     abort();
   }
-  size_t stack = (size_t)((const char*)my_thread->_StackTop - xaddr);
+  size_t stack = (size_t)((const char*)my_thread_low_level->_StackTop - xaddr);
   return stack;
 };
 
@@ -1527,7 +1554,7 @@ void af_stackSizeWarning(size_t stackUsed) {
     printf("%s:%d Stack is getting full currently at %zu bytes - warning at %u bytes  top@%p current@%p\n",
            __FILE__, __LINE__,
            stackUsed, _lisp->_StackWarnSize,
-           my_thread->_StackTop, xaddr );
+           my_thread_low_level->_StackTop, xaddr );
     ExceptionSafeResetInvokedInternalDebugger safe;
     core__invoke_internal_debugger(_Nil<core::T_O>());
   }
@@ -1591,6 +1618,20 @@ CL_DEFUN void core__exit(int exitValue) {
     }
   }
   throw(ExitProgramException(exitValue));
+};
+
+CL_LAMBDA(&optional (exit-value 0));
+CL_DECLARE();
+CL_DOCSTRING("C exit");
+CL_DEFUN void core__cexit(int exitValue) {
+  exit(exitValue);
+};
+
+CL_LAMBDA(&optional (exit-value 0));
+CL_DECLARE();
+CL_DOCSTRING("C exit");
+CL_DEFUN void core__c_UNDERSCORE_exit(int exitValue) {
+  _exit(exitValue);
 };
 
 CL_LAMBDA(&optional (exit-value 0));
@@ -1828,8 +1869,10 @@ CL_DEFUN T_mv cl__macroexpand_1(T_sp form, T_sp env) {
         expansionFunction = eval::funcall(cl::_sym_macroFunction, headSymbol, env);
       } else if (Environment_sp eenv = env.asOrNull<Environment_O>()) {
         expansionFunction = eval::funcall(cl::_sym_macroFunction, headSymbol, env);
+#if 0        
       } else if (clcenv::Entry_sp ce = env.asOrNull<clcenv::Entry_O>() ) {
         expansionFunction = eval::funcall(cl::_sym_macroFunction, headSymbol, ce);
+#endif        
       } else {
         // It must be a Cleavir environment
         if (cleavirEnv::_sym_macroFunction->fboundp()) {
@@ -1846,14 +1889,16 @@ CL_DEFUN T_mv cl__macroexpand_1(T_sp form, T_sp env) {
     return (Values(form, _Nil<T_O>()));
   } else if (Symbol_sp sform = form.asOrNull<Symbol_O>()) {
     if (env.nilp()) {
-      expansionFunction = core__symbol_macro(sform, env);
+      expansionFunction = ext__symbol_macro(sform, env);
     } else if (Environment_sp eenv = env.asOrNull<Environment_O>()) {
-      expansionFunction = core__symbol_macro(sform, eenv);
+      expansionFunction = ext__symbol_macro(sform, eenv);
+#if 0
     } else if (clcenv::Entry_sp cenv = env.asOrNull<clcenv::Entry_O>() ) {
       clcenv::Info_sp info = clcenv::variable_info(cenv,sform);
       if (clcenv::SymbolMacroInfo_sp smi = info.asOrNull<clcenv::SymbolMacroInfo_O>() ) {
         expansionFunction = smi->_Expansion;
       }
+#endif
     } else {
       // It must be a Cleavir environment
       if (cleavirEnv::_sym_symbolMacroExpansion->fboundp()) {
@@ -1927,7 +1972,7 @@ void searchForApropos(List_sp packages, SimpleString_sp insubstring, bool print_
           T_sp tfn = cl__symbol_function(sym);
           if ( !tfn.unboundp() && gc::IsA<Function_sp>(tfn)) {
             Function_sp fn = gc::As_unsafe<Function_sp>(tfn);
-            if (fn->macroP()) ss << "(MACRO)";
+            if (sym->macroP()) ss << "(MACRO)";
           }
         }
         if ( !(sym)->symbolValueUnsafe() ) {
@@ -2026,8 +2071,7 @@ CL_DEFUN T_mv core__source_file_name() {
   T_sp tclosure = frame->function();
   if (tclosure.notnilp()) {
     Function_sp closure = gc::As<Function_sp>(tclosure);
-    int sourceFileInfoHandle = closure->sourceFileInfoHandle();
-    string sourcePath = gc::As<SourceFileInfo_sp>(core__source_file_info(make_fixnum(sourceFileInfoHandle)))->namestring();
+    string sourcePath = gc::As<SourceFileInfo_sp>(core__source_file_info(closure->sourcePathname()))->fileName();
     Path_sp path = Path_O::create(sourcePath);
     Path_sp parent_path = path->parent_path();
     return Values(SimpleBaseString_O::make(path->fileName()), SimpleBaseString_O::make(parent_path->asString()));
@@ -2124,11 +2168,11 @@ CL_DOCSTRING("invokeInternalDebugger");
     LispDebugger debugger;
     debugger.invoke();
   } else {
-    _lisp->print(BF("%s:%d core__invoke_internal_debugger --> %s") % __FILE__ % __LINE__ % _rep_(condition).c_str());
+    BFORMAT_T(BF("%s:%d core__invoke_internal_debugger --> %s") % __FILE__ % __LINE__ % _rep_(condition).c_str());
     LispDebugger debugger(condition);
     debugger.invoke();
   }
-  printf("%s:%d Unreachable\n", __FILE__, __LINE__);
+  printf("%s:%d Cannot continue\n", __FILE__, __LINE__);
   abort();
 };
 
@@ -2394,7 +2438,7 @@ void Lisp_O::dump_apropos(const char *part) const {
 void Lisp_O::dump_backtrace(int numcol) {
   _OF();
   string bt = backtrace_as_string();
-  _lisp->print(BF("%s") % bt);
+  BFORMAT_T(BF("%s") % bt);
 }
 
 
@@ -2474,23 +2518,23 @@ int Lisp_O::run() {
   return exit_code;
 };
 
-SourceFileInfo_mv Lisp_O::getOrRegisterSourceFileInfo(const string &fileName, T_sp sourceDebugNamestring, size_t sourceDebugOffset, bool useLineno) {
+SourceFileInfo_mv Lisp_O::getOrRegisterSourceFileInfo(const string &fileName, T_sp sourceDebugPathname, size_t sourceDebugOffset, bool useLineno) {
   WITH_READ_WRITE_LOCK(this->_Roots._SourceFilesMutex);
   map<string, int>::iterator it = this->_Roots._SourceFileIndices.find(fileName);
   if (it == this->_Roots._SourceFileIndices.end()) {
     if (this->_Roots._SourceFiles.size() == 0) {
-      SourceFileInfo_sp unknown = SourceFileInfo_O::create("-unknown-file-", 0, sourceDebugNamestring, sourceDebugOffset);
+      SourceFileInfo_sp unknown = SourceFileInfo_O::create("-unknown-file-", 0, sourceDebugPathname, sourceDebugOffset);
       this->_Roots._SourceFiles.push_back(unknown);
     }
     int idx = this->_Roots._SourceFiles.size();
     this->_Roots._SourceFileIndices[fileName] = idx;
-    SourceFileInfo_sp sfi = SourceFileInfo_O::create(fileName, idx, sourceDebugNamestring, sourceDebugOffset, useLineno);
+    SourceFileInfo_sp sfi = SourceFileInfo_O::create(fileName, idx, sourceDebugPathname, sourceDebugOffset, useLineno);
     this->_Roots._SourceFiles.push_back(sfi);
     return Values(sfi, make_fixnum(idx));
   }
   SourceFileInfo_sp sfi = this->_Roots._SourceFiles[it->second];
-  if (sourceDebugNamestring.notnilp()) {
-    sfi->_SourceDebugNamestring = gc::As<String_sp>(sourceDebugNamestring);
+  if (sourceDebugPathname.notnilp()) {
+    sfi->_SourceDebugPathname = sourceDebugPathname;
     sfi->_SourceDebugOffset = sourceDebugOffset;
     sfi->_TrackLineno = useLineno;
   }
@@ -2562,20 +2606,6 @@ LispHolder::~LispHolder() {
   this->_Lisp->shutdownLispEnvironment();
 }
 
-Exposer_O::Exposer_O(Lisp_sp lisp, const string &packageName, const char *nicknames[]) {
-  if (!lisp->recognizesPackage(packageName)) {
-    list<string> lnnames;
-    for (int i = 0; strcmp(nicknames[i], "") != 0; i++) {
-      lnnames.push_front(nicknames[i]);
-    }
-    list<string> lp;
-    this->_Package = lisp->makePackage(packageName, lnnames, lp);
-  } else {
-    this->_Package = gc::As<Package_sp>(lisp->findPackage(packageName, true));
-  }
-  this->_PackageName = packageName;
-}
-
 Exposer_O::Exposer_O(Lisp_sp lisp, const string &packageName) {
   if (!lisp->recognizesPackage(packageName)) {
     list<string> lnnames;
@@ -2616,7 +2646,7 @@ SYMBOL_EXPORT_SC_(ClPkg, apropos);
 SYMBOL_EXPORT_SC_(ClPkg, export);
 SYMBOL_EXPORT_SC_(ClPkg, intern);
 SYMBOL_SC_(CorePkg, isTopLevelScript);
-SYMBOL_SC_(CorePkg, sourceFileName);
+SYMBOL_SC_(CorePkg, sourcePathname);
 SYMBOL_SC_(CorePkg, sourceLineColumn);
 SYMBOL_SC_(CorePkg, findFileInLispPath);
 SYMBOL_EXPORT_SC_(ClPkg, findClass);

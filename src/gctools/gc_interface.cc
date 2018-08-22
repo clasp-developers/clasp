@@ -123,7 +123,7 @@ typedef bool _Bool;
 #include <clasp/core/lambdaListHandler.h>
 #include <clasp/core/package.h>
 #include <clasp/core/character.h>
-#include <clasp/core/reader.h>
+//#include <clasp/core/reader.h>
 //#include <clasp/core/regex.h>
 #include <clasp/core/array.h>
 #include <clasp/core/readtable.h>
@@ -145,7 +145,7 @@ typedef bool _Bool;
 #include <clasp/gctools/gc_boot.h>
 
 //#include <clasp/core/clc.h>
-#include <clasp/core/clcenv.h>
+//#include <clasp/core/clcenv.h>
 
 #include <clasp/clbind/clbind.h>
 
@@ -344,13 +344,11 @@ using namespace gctools;
 mps_addr_t obj_skip(mps_addr_t client) {
   mps_addr_t oldClient = client;
   size_t size = 0;
-  const gctools::Header_s& header = *reinterpret_cast<const gctools::Header_s *>(ClientPtrToBasePtr(client));
+  const gctools::Header_s* header_ptr = reinterpret_cast<const gctools::Header_s *>(ClientPtrToBasePtr(client));
+  const gctools::Header_s& header = *header_ptr;
   const Header_s::Value& header_value = header.header;
-  size_t tag = header_value.tag();
+  tagged_stamp_t tag = header_value.tag();
   switch (tag) {
-  case gctools::Header_s::invalid_tag: {
-    throw_hard_error_bad_client((void*)client);
-  }
   case gctools::Header_s::stamp_tag: {
 #ifdef DEBUG_VALIDATE_GUARD
     header->validate();
@@ -401,6 +399,9 @@ mps_addr_t obj_skip(mps_addr_t client) {
     }
     break;
   }
+  case gctools::Header_s::invalid_tag: {
+    throw_hard_error_bad_client((void*)client);
+  }
   }
   return client;
 }
@@ -420,11 +421,8 @@ GC_RESULT obj_scan(mps_ss_t ss, mps_addr_t client, mps_addr_t limit) {
       // The client must have a valid header
       const gctools::Header_s& header = *reinterpret_cast<const gctools::Header_s *>(ClientPtrToBasePtr(client));
       const Header_s::Value& header_value = header.header;
-      size_t tag = header_value.tag();
+      tagged_stamp_t tag = header_value.tag();
       switch (tag) {
-      case gctools::Header_s::invalid_tag: {
-        throw_hard_error_bad_client((void*)client);
-      }
       case gctools::Header_s::stamp_tag: {
 #ifdef DEBUG_VALIDATE_GUARD
         header->validate();
@@ -435,17 +433,6 @@ GC_RESULT obj_scan(mps_ss_t ss, mps_addr_t client, mps_addr_t limit) {
         // If this is true then I think we need to call virtual functions on the client
         // to determine the Instance_O offset and the total size of the object.
           printf("%s:%d Handle STAMP_core__DerivableCxxObject_O\n", __FILE__, __LINE__ );
-        }
-        if ( stamp == STAMP_core__SimpleBitVector_O ) {
-          size_t capacity = *(size_t*)((const char*)client + stamp_layout.capacity_offset);
-          size = core::SimpleBitVector_O::bitunit_array_type::sizeof_for_length(capacity) + stamp_layout.data_offset;
-          goto STAMP_CONTINUE;
-        // Do other bitunit vectors here
-        } else if (stamp == gctools::STAMP_core__SimpleBaseString_O) {
-          // Account for the SimpleBaseString additional byte for \0
-          size_t capacity = *(size_t*)((const char*)client + stamp_layout.capacity_offset) + 1;
-          size = stamp_layout.element_size*capacity + stamp_layout.data_offset;
-          goto STAMP_CONTINUE;
         }
         if (stamp_layout.layout_op == templated_op ) {
           size = ((core::General_O*)client)->templatedSizeof();
@@ -477,7 +464,6 @@ GC_RESULT obj_scan(mps_ss_t ss, mps_addr_t client, mps_addr_t limit) {
             }
           }
         }
-      STAMP_CONTINUE:
         client = (mps_addr_t)((char*)client + AlignUp(size + sizeof(Header_s)) + header.tail_size());
 #ifdef DEBUG_MPS_SIZE
         {
@@ -522,6 +508,9 @@ GC_RESULT obj_scan(mps_ss_t ss, mps_addr_t client, mps_addr_t limit) {
         }
 #endif
         break;
+      }
+      case gctools::Header_s::invalid_tag: {
+        throw_hard_error_bad_client((void*)client);
       }
       }
     }
@@ -704,7 +693,8 @@ NOINLINE void set_one_static_class_Header() {
 template <class TheClass>
 NOINLINE  gc::smart_ptr<core::Instance_O> allocate_one_metaclass(Fixnum theStamp, core::Symbol_sp classSymbol, core::Instance_sp metaClass)
 {
-  auto cb = gctools::GC<TheClass>::allocate();
+  core::FunctionDescription* fdesc = core::makeFunctionDescription(kw::_sym_create);
+  auto cb = gctools::GC<TheClass>::allocate(fdesc);
   gc::smart_ptr<core::Instance_O> class_val = core::Instance_O::createClassUncollectable(theStamp,metaClass,REF_CLASS_NUMBER_OF_SLOTS_IN_STANDARD_CLASS,cb);
   class_val->__setup_stage1_with_sharedPtr_lisp_sid(class_val,classSymbol);
 //  reg::lisp_associateClassIdWithClassSymbol(reg::registered_class<TheClass>::id,TheClass::static_classSymbol());
@@ -735,20 +725,27 @@ struct TempClass {
 };
 
 
-std::map<std::string,size_t> _global_stamp_names;
+std::map<std::string,size_t> global_stamp_name_map;
+std::vector<std::string> global_stamp_names;
 size_t _global_last_stamp = 0;
 
 void register_stamp_name(const std::string& stamp_name, size_t stamp_num) {
-  _global_stamp_names[stamp_name] = stamp_num;
-  if (stamp_num>_global_last_stamp) {
-    _global_last_stamp = stamp_num;
+  global_stamp_name_map[stamp_name] = stamp_num;
+  if (stamp_num>=global_stamp_names.size()) {
+    global_stamp_names.resize(stamp_num+1,"");
+    global_stamp_names[stamp_num] = stamp_name;
   }
 }
 
 void define_builtin_cxx_classes() {
 #ifndef SCRAPING
  #define GC_ENUM_NAMES
-  #include INIT_CLASSES_INC_H
+  #ifdef USE_BOEHM
+   #include INIT_CLASSES_INC_H
+  #endif
+  #ifdef USE_MPS
+   #include CLASP_GC_FILENAME
+  #endif
  #undef GC_ENUM_NAMES
 #endif
 }

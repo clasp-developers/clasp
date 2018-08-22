@@ -131,6 +131,8 @@ namespace gctools {
   class GCObject {};
 };
 
+#include <clasp/gctools/threadlocal.fwd.h>
+
 extern "C" {
 const char *obj_name(gctools::stamp_t kind);
 extern void obj_dump_base(void *base);
@@ -307,12 +309,12 @@ namespace gctools {
       }
     public:
       template <typename T>
-      static size_t GenerateHeaderValue() { return (GCStamp<T>::Stamp<<stamp_shift)|stamp_tag; };
+      static  tagged_stamp_t GenerateHeaderValue() { return (GCStamp<T>::Stamp<<stamp_shift)|stamp_tag; };
     public: // header readers
       inline size_t tag() const { return (size_t)(this->_value & tag_mask);};
       inline bool pad1P() const { return (this->_value & pad_mask) == pad1_tag; };
       inline GCStampEnum stamp() const {
-        return static_cast<GCStampEnum>( this->_value >> stamp_shift );
+        return static_cast<GCStampEnum>( (this->_value & stamp_mask)>>stamp_shift );
       }
     };
   public:
@@ -359,7 +361,7 @@ namespace gctools {
         this->fill_tail();
       };
 #endif
-    static GCStampEnum value_to_stamp(Fixnum value) { return (GCStampEnum)((value&stamp_mask) >> stamp_shift); };
+    static GCStampEnum value_to_stamp(Fixnum value) { return (GCStampEnum)((value&stamp_mask)>>stamp_shift); };
   public:
     size_t tag() const { return (size_t)(this->header._value & tag_mask);};
 #ifdef DEBUG_GUARD
@@ -587,76 +589,12 @@ namespace gctools {
 };
 
 
-namespace gctools {
-
-  struct MonitorAllocations {
-    bool on;
-    bool stackDump;
-    int counter;
-    int start;
-    int end;
-    int backtraceDepth;
-  MonitorAllocations() : on(false), stackDump(false), counter(0){};
-  };
-  extern MonitorAllocations global_monitorAllocations;
-
-  extern void monitorAllocation(stamp_t k, size_t sz);
-  extern uint64_t globalBytesAllocated;
-
-#if defined(TRACK_ALLOCATIONS) && defined(DEBUG_SLOW)
-  inline void monitor_allocation(const stamp_t k, size_t sz) {
-    globalBytesAllocated += sz;
-#ifdef GC_MONITOR_ALLOCATIONS
-    if ( global_monitorAllocations.on ) {
-      monitorAllocation(k,sz);
-    }
-#endif
-  }
-#else
-  inline void monitor_allocation(const stamp_t k, size_t sz) {};
-#endif
-
-};
-
 extern "C" {
 const char *obj_name(gctools::stamp_t kind);
 const char *obj_kind_name(core::T_O *ptr);
 size_t obj_kind(core::T_O *ptr);
 extern void obj_dump_base(void *base);
 };
-
-extern "C" void HitAllocationSizeThreshold();
-extern "C" void HitAllocationNumberThreshold();
-
-namespace gctools {
-  struct GlobalAllocationProfiler {
-    std::atomic<int64_t> _AllocationNumberCounter;
-    std::atomic<int64_t> _AllocationSizeCounter;
-    std::atomic<int64_t> _HitAllocationNumberCounter;
-    std::atomic<int64_t> _HitAllocationSizeCounter;
-    size_t               _AllocationNumberThreshold;
-    size_t               _AllocationSizeThreshold;
-  GlobalAllocationProfiler(size_t size, size_t number) : _AllocationNumberThreshold(number), _AllocationSizeThreshold(size) {};
-    
-    inline void registerAllocation(size_t size) {
-#ifdef DEBUG_MEMORY_PROFILE
-      this->_AllocationSizeCounter += size;
-      if (this->_AllocationSizeCounter >= this->_AllocationSizeThreshold) {
-        this->_AllocationSizeCounter -= this->_AllocationSizeThreshold;
-        HitAllocationSizeThreshold();
-      }
-      this->_AllocationNumberCounter++;
-      if (this->_AllocationNumberCounter >= this->_AllocationNumberThreshold) {
-        this->_AllocationNumberCounter = 0;
-        HitAllocationNumberThreshold();
-      }
-#endif
-  };
-  };
-};
-
-extern gctools::GlobalAllocationProfiler global_AllocationProfiler;
-
 
 namespace gctools {
 /*! Specialize GcKindSelector so that it returns the appropriate GcKindEnum for OT */
@@ -745,49 +683,9 @@ void *SmartPtrToBasePtr(smart_ptr<T> obj) {
 namespace core {
   class ThreadLocalState;
 };
-namespace gctools {
-  void lisp_disable_interrupts(core::ThreadLocalState* t);
-  void lisp_enable_interrupts(core::ThreadLocalState* t);
-  void lisp_check_pending_interrupts(core::ThreadLocalState* thread);
-  void lisp_increment_recursive_allocation_counter(core::ThreadLocalState* thread);
-  void lisp_decrement_recursive_allocation_counter(core::ThreadLocalState* thread);
-};
-
-
-namespace core {
-  struct RAIIDisableInterrupts {
-    ThreadLocalState* this_thread;
-  RAIIDisableInterrupts(ThreadLocalState* t) : this_thread(t) {
-    gctools::lisp_disable_interrupts(this->this_thread);
-  }
-    ~RAIIDisableInterrupts() {
-      gctools::lisp_enable_interrupts(this->this_thread);
-    }
-  };
-};
-
 
 /*! Declare this in the top namespace */
 extern THREAD_LOCAL core::ThreadLocalState *my_thread;
-#define RAII_DISABLE_INTERRUPTS() core::RAIIDisableInterrupts disable_interrupts__(my_thread)
-
-namespace core {
-  #ifdef DEBUG_RECURSIVE_ALLOCATIONS
-struct RecursiveAllocationCounter {
-  RecursiveAllocationCounter() {
-    gctools::lisp_increment_recursive_allocation_counter(my_thread);
-  };
-  ~RecursiveAllocationCounter() {
-    gctools::lisp_decrement_recursive_allocation_counter(my_thread);
-  }
-};
-#endif
-#ifdef DEBUG_RECURSIVE_ALLOCATIONS
-#define DO_DEBUG_RECURSIVE_ALLOCATIONS() ::core::RecursiveAllocationCounter _rac_;
-#else
-#define DO_DEBUG_RECURSIVE_ALLOCATIONS()
-#endif
-};
 
 
 #include <clasp/gctools/gcStack.h>
@@ -852,15 +750,39 @@ namespace gctools {
         TODO: get GC_add_roots to work
    */
   struct GCRootsInModule {
+    static size_t const DefaultCapacity = 256;
     void* _boehm_shadow_memory;
     void* _module_memory;
     size_t _num_entries;
+    size_t _capacity;
 
     GCRootsInModule(void* shadow_mem, void* module_mem, size_t num_entries) {
       this->_boehm_shadow_memory = shadow_mem;
       this->_module_memory = module_mem;
       this->_num_entries = num_entries;
+      this->_capacity = num_entries;
     }
+    GCRootsInModule(size_t capacity = DefaultCapacity) {
+#ifdef USE_BOEHM
+      core::T_O** shadow_mem = reinterpret_cast<core::T_O**>(boehm_create_shadow_table(capacity));
+      core::T_O** module_mem = shadow_mem;
+#endif
+#ifdef USE_MPS
+      core::T_O** shadow_mem = reinterpret_cast<core::T_O**>(NULL);
+      core::T_O** module_mem = reinterpret_cast<core::T_O**>(malloc(sizeof(core::T_O*)*capacity));
+#endif
+      this->_boehm_shadow_memory = shadow_mem;
+      this->_module_memory = module_mem;
+      this->_num_entries = 0;
+      this->_capacity = capacity;
+      memset(module_mem, 0, sizeof(core::T_O*)*capacity);
+#ifdef USE_MPS
+  // MPS registers the roots with the GC and doesn't need a shadow table
+      mps_register_roots(reinterpret_cast<void*>(module_mem),capacity);
+#endif
+    }
+    size_t remainingCapacity() { return this->_capacity - this->_num_entries;};
+    size_t push_back(Tagged val);
     Tagged set(size_t index, Tagged val);
     Tagged get(size_t index);
     void* address(size_t index) {
@@ -868,6 +790,9 @@ namespace gctools {
     }
 
   };
+
+  extern std::atomic<uint64_t> global_NumberOfRootTables;
+  extern std::atomic<uint64_t> global_TotalRootTableSize;
   
   void initialize_gcroots_in_module(GCRootsInModule* gcroots_in_module, core::T_O** root_address, size_t num_roots, gctools::Tagged initial_data);
   core::T_O* read_gcroots_in_module(GCRootsInModule* roots, size_t index);

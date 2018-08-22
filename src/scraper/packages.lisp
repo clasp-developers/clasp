@@ -75,6 +75,9 @@
    #:lambda-list%
    #:cl-docstring-tag
    #:docstring%
+   #:cl-priority-tag
+   #:priority%
+   #:maybe-priority
    #:cl-declare-tag
    #:declare-form%
    #:source-tag

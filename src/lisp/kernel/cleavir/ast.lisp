@@ -31,12 +31,18 @@
 (defclass named-function-ast (cleavir-ast:function-ast)
   ((%lambda-name :initarg :lambda-name :initform "lambda-ast" :reader lambda-name)
    (%original-lambda-list :initarg :original-lambda-list :initform nil :reader original-lambda-list)
-   (%docstring :initarg :docstring :initform nil :reader docstring)))
+   (%docstring :initarg :docstring :initform nil :reader docstring)
+   ;; We can avoid or dx-allocate the &rest list sometimes- controlled here,
+   ;; and set up from declarations in convert-form.lisp.
+   ;; NIL indicates the general case (i.e. full heap allocation).
+   (%rest-alloc :initarg :rest-alloc :initform nil :reader rest-alloc
+                     :type (member nil ignore dynamic-extent))))
 
 (cleavir-io:define-save-info named-function-ast
     (:lambda-name lambda-name)
   (:original-lambda-list original-lambda-list)
-  (:docstring docstring))
+  (:docstring docstring)
+  (:rest-alloc rest-alloc))
 
 (defmethod cleavir-ast-graphviz::label ((ast named-function-ast))
   (with-output-to-string (s)
@@ -85,6 +91,25 @@
     (format s "debug-message (~a)" (debug-message ast))))
 
 (defmethod cleavir-ast:children ((ast debug-message-ast)) nil)
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Class DEBUG-BREAK-AST
+;;;
+;;; This AST is used to represent a debugging break inserted into the generated code.
+
+(defclass debug-break-ast (cleavir-ast:ast cleavir-ast:no-value-ast-mixin)
+  ())
+
+(cleavir-io:define-save-info debug-break-ast
+    ())
+
+(defmethod cleavir-ast-graphviz::label ((ast debug-break-ast))
+  (with-output-to-string (s)
+    (format s "debug-break")))
+
+(defmethod cleavir-ast:children ((ast debug-break-ast)) nil)
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -344,17 +369,21 @@
 (defclass bind-va-list-ast (cleavir-ast:ast)
   ((%lambda-list :initarg :lambda-list :reader cleavir-ast:lambda-list)
    (%va-list-ast :initarg :va-list :reader va-list-ast)
-   (%body-ast :initarg :body-ast :reader cleavir-ast:body-ast)))
+   (%body-ast :initarg :body-ast :reader cleavir-ast:body-ast)
+   ;; as for named-function-ast
+   (%rest-alloc :initarg :rest-alloc :reader rest-alloc)))
 
-(defun make-bind-va-list-ast (lambda-list va-list-ast body-ast &key origin (policy cleavir-ast:*policy*))
+(defun make-bind-va-list-ast (lambda-list va-list-ast body-ast rest-alloc
+                              &key origin (policy cleavir-ast:*policy*))
   (make-instance 'bind-va-list-ast
-    :origin origin :policy policy
+    :origin origin :policy policy :rest-alloc rest-alloc
     :va-list va-list-ast :body-ast body-ast :lambda-list lambda-list))
 
 (cleavir-io:define-save-info bind-va-list-ast
     (:lambda-list cleavir-ast:lambda-list)
   (:va-list va-list-ast)
-  (:body-ast cleavir-ast:body-ast))
+  (:body-ast cleavir-ast:body-ast)
+  (:rest-alloc rest-alloc))
 
 (defmethod cleavir-ast:children ((ast bind-va-list-ast))
   (list* (va-list-ast ast)
@@ -407,7 +436,7 @@ If this form has already been precalculated then just return the precalculated-v
          ;; more correctly with alternate global environments.
          (let* ((value (cleavir-env:eval form env env))
                 (index (cmp:codegen-rtv nil value))
-                (result (make-instance 'clasp-cleavir:arrayed-literal :value form :index index)))
+                (result (make-instance 'clasp-cleavir:arrayed-literal :value form :index index :literal-name "NIL")))
            (check-type result clasp-cleavir:literal)
            result)))))
 

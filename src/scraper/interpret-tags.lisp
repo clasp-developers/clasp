@@ -26,7 +26,8 @@
    (lisp-name% :initform nil :initarg :lisp-name% :accessor lisp-name%)
    (lambda-list% :initform nil :initarg :lambda-list% :accessor lambda-list%)
    (declare% :initform nil :initarg :declare% :accessor declare%)
-   (docstring% :initform nil :initarg :docstring% :accessor docstring%)))
+   (docstring% :initform nil :initarg :docstring% :accessor docstring%)
+   (priority% :initform tags::*default-priority* :initarg :priority% :accessor priority%)))
 
 (defclass package-to-create ()
   ((name% :initarg :name% :accessor name%)
@@ -248,6 +249,7 @@ This interprets the tags and generates objects that are used to generate code."
   (let ((source-info (gather-source-files tags)))
     (calculate-character-offsets source-info))
   (let (cur-lambda
+        cur-priority
         cur-name
         cur-docstring
         cur-declare
@@ -305,10 +307,12 @@ This interprets the tags and generates objects that are used to generate code."
              (setf cur-name tag))
             (tags:cl-lambda-tag
              (setf cur-lambda tag))
-            (tags:cl-docstring-tag
-             (setf cur-docstring tag))
             (tags:cl-declare-tag
              (setf cur-declare tag))
+            (tags:cl-docstring-tag
+             (setf cur-docstring tag))
+            (tags:cl-priority-tag
+             (setf cur-priority tag))
             (tags:package-nickname-tag
              (push tag cur-package-nickname-tags))
             (tags:package-use-tag
@@ -320,7 +324,8 @@ This interprets the tags and generates objects that are used to generate code."
                                              cur-name
                                              cur-lambda
                                              cur-declare
-                                             cur-docstring)
+                                             cur-docstring
+                                             cur-priority)
              (let* ((packaged-function-name
                       (maybe-override-name cur-namespace-tag
                                            cur-name
@@ -332,7 +337,8 @@ This interprets the tags and generates objects that are used to generate code."
                       (lambda-list (or (tags:maybe-lambda-list cur-lambda)
                                        (parse-lambda-list-from-signature signature-text)))
                       (declare-form (tags:maybe-declare cur-declare))
-                      (docstring (tags:maybe-docstring cur-docstring)))
+                      (docstring (tags:maybe-docstring cur-docstring))
+                      (priority (tags:maybe-priority cur-priority)))
                  (multiple-value-bind (function-name full-function-name simple-function)
                      (extract-function-name-from-signature signature-text tag)
                    (declare (ignore function-name))
@@ -346,6 +352,7 @@ This interprets the tags and generates objects that are used to generate code."
                                            :lambda-list% lambda-list
                                            :declare% declare-form
                                            :docstring% docstring
+                                           :priority% priority
                                            :provide-declaration% simple-function
                                            :signature% signature)
                             functions
@@ -354,6 +361,7 @@ This interprets the tags and generates objects that are used to generate code."
                  (setf cur-lambda nil
                        cur-declare nil
                        cur-docstring nil
+                       cur-priority nil
                        cur-name nil))))
             (tags:cl-defun-setf-tag ; identical to previous case, except for...
              (error-if-bad-expose-info-setup tag
@@ -394,6 +402,7 @@ This interprets the tags and generates objects that are used to generate code."
                  (setf cur-lambda nil
                        cur-declare nil
                        cur-docstring nil
+                       cur-priority nil
                        cur-name nil))))
             (tags:cl-extern-defun-tag
              (error-if-bad-expose-info-setup tag cur-name cur-lambda cur-declare cur-docstring)
@@ -431,6 +440,7 @@ This interprets the tags and generates objects that are used to generate code."
                (setf cur-lambda nil
                      cur-declare nil
                      cur-docstring nil
+                     cur-priority nil
                      cur-name nil)))
             (tags:cl-defmethod-tag
              (error-if-bad-expose-info-setup tag cur-name cur-lambda cur-declare cur-docstring)
@@ -466,6 +476,7 @@ This interprets the tags and generates objects that are used to generate code."
              (setf cur-lambda nil
                    cur-declare nil
                    cur-docstring nil
+                   cur-priority nil
                    cur-name nil))
             (tags:cl-def-class-method-tag
              (error-if-bad-expose-info-setup tag cur-name cur-lambda cur-declare cur-docstring)
@@ -501,6 +512,7 @@ This interprets the tags and generates objects that are used to generate code."
              (setf cur-lambda nil
                    cur-declare nil
                    cur-docstring nil
+                   cur-priority nil
                    cur-name nil))
             (tags:cl-extern-defmethod-tag
              (error-if-bad-expose-info-setup tag cur-name cur-lambda cur-declare cur-docstring)
@@ -536,6 +548,7 @@ This interprets the tags and generates objects that are used to generate code."
                (setf cur-lambda nil
                      cur-declare nil
                      cur-docstring nil
+                     cur-priority nil
                      cur-name nil)))
             (tags:gc-managed-type-tag
              (let ((type-key (tags:c++type% tag)))
@@ -566,6 +579,7 @@ This interprets the tags and generates objects that are used to generate code."
                                       :lisp-name% (lispify-class-name tag packages)
                                       :class-tag% tag))))
              (setf cur-docstring nil
+                   cur-priority nil
                    cur-meta-class nil))
             (tags:lisp-external-class-tag
              (when cur-docstring (error-if-bad-expose-info-setup* tag cur-docstring))
@@ -588,6 +602,7 @@ This interprets the tags and generates objects that are used to generate code."
                                       :lisp-name% (lispify-class-name tag packages)
                                       :class-tag% tag))))
              (setf cur-docstring nil
+                   cur-priority nil
                    cur-meta-class nil))
             (tags:cl-begin-enum-tag
              (when cur-begin-enum

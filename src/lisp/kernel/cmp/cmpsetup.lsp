@@ -81,12 +81,6 @@ Options are :tagbody :go :all :eh-landing-pads
 ;;
 (defparameter *next-try-id* 0)
 
-
-;; 
-;; Name basic-blocks according to what with-try block they are in
-;;
-(defparameter *block-name-prefix* "")
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; Turn off compiler debugging code once we are confident it works
@@ -105,6 +99,8 @@ Options are :tagbody :go :all :eh-landing-pads
   (defmacro cmp-log-dump-module (fn) nil)
   (defmacro cmp-log (fmt &rest args ) nil)
   (defun is-debug-compiler-on () nil))
+
+(defvar *suppress-llvm-output* nil)
 
 #+optimize-bclasp
 (progn

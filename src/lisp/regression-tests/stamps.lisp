@@ -1,7 +1,7 @@
 
 ;; Test that header stamps work for builtin classes
 (test stamp-of-builtin
-      (= (core:instance-stamp (make-hash-table) (core:class-stamp-for-instances (class-of (make-hash-table))))))
+      (= (core:instance-stamp (make-hash-table)) (core:class-stamp-for-instances (class-of (make-hash-table)))))
 ;; Test that rack stamps work for CLOS classes
 (defclass mygoofytestclass () ())
 (test stamp-from-rack

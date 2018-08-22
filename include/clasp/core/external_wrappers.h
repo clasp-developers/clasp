@@ -59,7 +59,7 @@ public:
   //        typedef std::function<void (OT& ,)> Type;
   typedef D(C::*MemPtr);
   MemPtr mptr;
- GetterMethoid(core::T_sp name, MemPtr ptr) : BuiltinClosure_O(entry_point,name), mptr(ptr){};
+ GetterMethoid(core::FunctionDescription* fdesc, MemPtr ptr) : BuiltinClosure_O(entry_point,fdesc), mptr(ptr){};
   virtual size_t templatedSizeof() const { return sizeof(*this); };
   static inline LCC_RETURN LISP_CALLING_CONVENTION() {
     SIMPLE_ERROR_SPRINTF("What do I do here");
@@ -132,8 +132,10 @@ public:
   externalClass_ &def(string const &name, RT (OT::*mp)(ARGS...), string const &lambda_list = "", const string &declares = "", const string &docstring = "", bool autoExport = true) {
     _G();
     Symbol_sp symbol = lispify_intern(name, symbol_packageName(this->_ClassSymbol));
-    BuiltinClosure_sp m = gc::GC<VariadicMethoid<0, RT (OT::*)(ARGS...)>>::allocate(symbol, mp);
+    FunctionDescription* fdesc = makeFunctionDescription(symbol);
+    BuiltinClosure_sp m = gc::GC<VariadicMethoid<0, RT (OT::*)(ARGS...)>>::allocate(fdesc, mp);
     lisp_defineSingleDispatchMethod(symbol, this->_ClassSymbol, m, 0, true, lambda_list, declares, docstring, autoExport, sizeof...(ARGS)+1);
+    validateFunctionDescription(__FILE__,__LINE__,m);
     return *this;
   }
 
@@ -142,8 +144,10 @@ public:
                       string const &lambda_list = "", const string &declares = "", const string &docstring = "", bool autoExport = true) {
     _G();
     Symbol_sp symbol = lispify_intern(name, symbol_packageName(this->_ClassSymbol));
-    BuiltinClosure_sp m = gctools::GC<VariadicMethoid<0, RT (OT::*)(ARGS...) const>>::allocate(symbol, mp);
+    FunctionDescription* fdesc = makeFunctionDescription(symbol);
+    BuiltinClosure_sp m = gctools::GC<VariadicMethoid<0, RT (OT::*)(ARGS...) const>>::allocate(fdesc, mp);
     lisp_defineSingleDispatchMethod(symbol, this->_ClassSymbol, m, 0, true, lambda_list, declares, docstring, autoExport, sizeof...(ARGS)+1);
+    validateFunctionDescription(__FILE__,__LINE__,m);
     return *this;
   }
 
@@ -152,8 +156,10 @@ public:
                       const string &lambda_list = "", const string &declares = "", const string &docstring = "", bool autoExport = true) {
     _G();
     Symbol_sp symbol = lispify_intern(name, symbol_packageName(this->_ClassSymbol));
-    BuiltinClosure_sp m = gctools::GC<IndirectVariadicMethoid<policies_<>, OT, RT (OT::ExternalType::*)(ARGS...)>>::allocate(symbol, mp);
+    FunctionDescription* fdesc = makeFunctionDescription(symbol);
+    BuiltinClosure_sp m = gctools::GC<IndirectVariadicMethoid<policies_<>, OT, RT (OT::ExternalType::*)(ARGS...)>>::allocate(fdesc, mp);
     lisp_defineSingleDispatchMethod(symbol, this->_ClassSymbol, m, 0, true, lambda_list, declares, docstring, autoExport, sizeof...(ARGS)+1);
+    validateFunctionDescription(__FILE__,__LINE__,m);
     return *this;
   }
 
@@ -162,8 +168,10 @@ public:
                       const string &lambda_list = "", const string &declares = "", const string &docstring = "", bool autoExport = true) {
     _G();
     Symbol_sp symbol = lispify_intern(name, symbol_packageName(this->_ClassSymbol));
-    BuiltinClosure_sp m = gctools::GC<IndirectVariadicMethoid<policies_<>, OT, RT (OT::ExternalType::*)(ARGS...) const>>::allocate(symbol, mp);
+    FunctionDescription* fdesc = makeFunctionDescription(symbol);
+    BuiltinClosure_sp m = gctools::GC<IndirectVariadicMethoid<policies_<>, OT, RT (OT::ExternalType::*)(ARGS...) const>>::allocate(fdesc, mp);
     lisp_defineSingleDispatchMethod(symbol, this->_ClassSymbol, m, 0, true, lambda_list, declares, docstring, autoExport, sizeof...(ARGS)+1);
+    validateFunctionDescription(__FILE__,__LINE__,m);
     return *this;
   }
 

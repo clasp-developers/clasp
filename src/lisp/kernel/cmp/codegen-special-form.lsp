@@ -34,6 +34,7 @@
     (llvm-inline codegen-llvm-inline convert-llvm-inline)
     (:gc-profiling codegen-gc-profiling convert-gc-profiling)
     (core::debug-message codegen-debug-message convert-debug-message)
+    (core::debug-break codegen-debug-break convert-debug-break)
     ))
 
 (defun make-dispatch-table (alist)
@@ -57,7 +58,7 @@
       (compile-lambda-function lambda-or-lambda-block env)
     (if (null lambda-name) (error "The lambda doesn't have a name"))
     (if result
-        (let* ((lambda-list (irc-load (compile-reference-to-literal lambda-list)))
+        (let* ((lambda-list (irc-load (literal:compile-reference-to-literal lambda-list)))
                (llvm-function-name (llvm-sys:get-name compiled-fn))
                (function-description (llvm-sys:get-named-global *the-module* (function-description-name compiled-fn))))
           (unless function-description
@@ -68,19 +69,13 @@
                  (fnptr (irc-intrinsic "makeCompiledFunction" 
                                        compiled-fn
                                        (cmp:irc-bit-cast function-description %i8*%)
-                                       #| *gv-source-file-info-handle* 
-                                       (irc-size_t-*current-source-pos-info*-filepos)
-                                       (irc-size_t-*current-source-pos-info*-lineno)
-                                       (irc-size_t-*current-source-pos-info*-column)
-                                       |#
-                                       (irc-load (compile-reference-to-literal lambda-name)) ; (bformat nil "%s" lambda-name)))
-                                       runtime-environment
-                                       lambda-list)))
+                                       runtime-environment)))
             (irc-store fnptr result))
           (values compiled-fn lambda-name)))))
 
 (defun codegen-global-function-lookup (result sym env)
-  (let ((val (irc-intrinsic "symbolFunctionRead" (irc-global-symbol sym env))))
+  ;; Was symbolFunctionRead
+  (let ((val (irc-intrinsic "va_symbolFunction" (irc-global-symbol sym env))))
     (irc-store val result)))
 
 (defun codegen-global-setf-function-lookup (result setf-function-name env)
@@ -585,13 +580,12 @@ jump to blocks within this tagbody."
 	 (return-form (cadr rest)))
     (multiple-value-bind (recognizes-block-symbol inter-function block-env)
 	(classify-return-from-symbol env block-symbol)
-      #+optimize-bclasp
-      (let ((frame-info (gethash block-env *block-frame-info*)))
-        (unless frame-info (error "Could not find frame-info for block ~s" block-symbol))
-        (setf (block-frame-info-needed frame-info) t))
       (if recognizes-block-symbol
           (if inter-function
-              (let ((depth (core:calculate-runtime-visible-environment-depth env block-env)))
+              (let ((depth (core:calculate-runtime-visible-environment-depth env block-env))
+                    (frame-info (gethash block-env *block-frame-info*)))
+                (unless frame-info (error "Could not find frame-info for block ~s" block-symbol))
+                (setf (block-frame-info-needed frame-info) t) ; mark the block closure as needed since we have a return-from in an inner function
                 (codegen temp-mv-result return-form env)
                 (irc-intrinsic "saveToMultipleValue0" temp-mv-result)
                 (irc-low-level-trace)
@@ -613,7 +607,9 @@ jump to blocks within this tagbody."
                         *throw-return-from-instructions*)))
               (let* ((local-return-block (lookup-metadata block-env :local-return-block)))
                 (codegen temp-mv-result return-form env)
-                (let ((saved-values (irc-intrinsic "saveValues" temp-mv-result)))
+                
+                (irc-unwind-into-environment env block-env)
+                #+(or)(let ((saved-values (irc-intrinsic "saveValues" temp-mv-result)))
                   (irc-unwind-into-environment env block-env)
                   (irc-intrinsic "loadValues" temp-mv-result saved-values))
                 (irc-intrinsic "saveToMultipleValue0" temp-mv-result)
@@ -621,7 +617,7 @@ jump to blocks within this tagbody."
                 (irc-begin-block (irc-basic-block-create "after-return-from"))))
           (error "Unrecognized block symbol ~a" block-symbol)))))
 
-;;; FLET, LABELS
+;;; FLET, LABELS3
 
 (defun generate-lambda-block (name lambda-list raw-body)
   "Generate a (lambda ... (block name ...)) after extracting declares and docstring from raw-body"
@@ -709,7 +705,7 @@ jump to blocks within this tagbody."
 				 (macro-body (cddr macro-def)))
 	      (let* ((lambdablock (ext:parse-macro name vl macro-body))
 		     (macro-fn (eval (list 'function lambdablock))))
-		(set-kind macro-fn :macro)
+;;;		(core:set-kind macro-fn :macro)
 		(add-macro macro-env name macro-fn)))
 	  macros )
     (multiple-value-bind (declares code docstring specials )
@@ -800,6 +796,9 @@ jump to blocks within this tagbody."
   (let ((message (jit-constant-unique-string-ptr (car rest))))
     (irc-intrinsic "debugMessage" message)))
 
+(defun codegen-debug-break (result rest env)
+  (irc-intrinsic "debugBreak"))
+
 ;;; LLVM-INLINE
 
 (defun codegen-llvm-inline (result result-env-body compiler-env)
@@ -822,31 +821,34 @@ jump to blocks within this tagbody."
     (blog "evaluate-env -> %s%N" evaluate-env)
     (multiple-value-bind (declares code docstring specials)
         (process-declarations body t)
-      (multiple-value-bind (cleavir-lambda-list new-body)
-          (transform-lambda-parts lambda-list declares code)
-        (blog "got cleavir-lambda-list -> %s%N" cleavir-lambda-list)
-        (let ((debug-on nil)
-              (eval-vaslist (irc-alloca-t* :label "bind-vaslist")))
-          (codegen eval-vaslist vaslist evaluate-env)
-          (let* ((lvaslist (irc-load eval-vaslist "lvaslist"))
-                 (src-remaining-nargs* (irc-intrinsic "cc_vaslist_remaining_nargs_address" lvaslist))
-                 (src-va_list* (irc-intrinsic "cc_vaslist_va_list_address" lvaslist "vaslist_address"))
-                 (local-remaining-nargs* (irc-alloca-size_t :label "local-remaining-nargs"))
-                 (local-va_list* (irc-alloca-va_list :label "local-va_list"))
-                 (_             (irc-store (irc-load src-remaining-nargs*) local-remaining-nargs*))
-                 (_             (irc-intrinsic-call "llvm.va_copy" (list (irc-pointer-cast local-va_list* %i8*%)
-                                                                         (irc-pointer-cast src-va_list* %i8*%))))
-                 (callconv (make-calling-convention-impl :nargs (irc-load src-remaining-nargs*)
-                                                         :va-list* local-va_list*
-                                                         :remaining-nargs* local-remaining-nargs*)))
-            (let ((new-env (bclasp-compile-lambda-list-code cleavir-lambda-list evaluate-env callconv)))
-              (irc-intrinsic-call "llvm.va_end" (list (irc-pointer-cast local-va_list* %i8*%)))
-              (codegen-let/let* (car new-body) result (cdr new-body) new-env)
-              #+(or)(cmp:with-try
-                        (codegen-let/let* 'let* result (cdr new-body) new-env)
-                      ((cleanup)
-                       (calling-convention-maybe-pop-invocation-history-frame callconv)
-                       (irc-unwind-environment new-env))))))))))
+      (let ((canonical-declares (core:canonicalize-declarations declares)))
+        (multiple-value-bind (cleavir-lambda-list new-body rest-alloc)
+            (transform-lambda-parts lambda-list canonical-declares code)
+          (blog "got cleavir-lambda-list -> %s%N" cleavir-lambda-list)
+          (let ((debug-on nil)
+                (eval-vaslist (irc-alloca-t* :label "bind-vaslist")))
+            (codegen eval-vaslist vaslist evaluate-env)
+            (let* ((lvaslist (irc-load eval-vaslist "lvaslist"))
+                   (src-remaining-nargs* (irc-intrinsic "cc_vaslist_remaining_nargs_address" lvaslist))
+                   (src-va_list* (irc-intrinsic "cc_vaslist_va_list_address" lvaslist "vaslist_address"))
+                   (local-remaining-nargs* (irc-alloca-size_t :label "local-remaining-nargs"))
+                   (local-va_list* (irc-alloca-va_list :label "local-va_list"))
+                   (_             (irc-store (irc-load src-remaining-nargs*) local-remaining-nargs*))
+                   (_             (irc-intrinsic-call "llvm.va_copy" (list (irc-pointer-cast local-va_list* %i8*%)
+                                                                           (irc-pointer-cast src-va_list* %i8*%))))
+                   (callconv (make-calling-convention-impl :nargs (irc-load src-remaining-nargs*)
+                                                           :va-list* local-va_list*
+                                                           :remaining-nargs* local-remaining-nargs*
+                                                           :rest-alloc rest-alloc
+                                                           :cleavir-lambda-list cleavir-lambda-list)))
+              (let ((new-env (bclasp-compile-lambda-list-code evaluate-env callconv)))
+                (irc-intrinsic-call "llvm.va_end" (list (irc-pointer-cast local-va_list* %i8*%)))
+                (codegen-let/let* (car new-body) result (cdr new-body) new-env)
+                #+(or)(cmp:with-try
+                          (codegen-let/let* 'let* result (cdr new-body) new-env)
+                        ((cleanup)
+                         (calling-convention-maybe-pop-invocation-history-frame callconv)
+                         (irc-unwind-environment new-env)))))))))))
 
 
 ;;; MULTIPLE-VALUE-FOREIGN-CALL

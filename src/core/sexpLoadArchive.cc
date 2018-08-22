@@ -71,16 +71,16 @@ SNode_sp parseNode(HashTable_sp objToNode, T_sp obj) {
       snode = BranchSNode_O::create();
       objToNode->hash_table_setf_gethash(obj, snode);
       Symbol_sp head = gc::As<Symbol_sp>(oFirst(consObj));
-      Cons_sp dummyCons = Cons_O::create(_Nil<T_O>());
+      Cons_sp dummyCons = Cons_O::create(_Nil<T_O>(),_Nil<T_O>());
       Cons_sp result = dummyCons;
       for (List_sp cur = oSecond(consObj); cur.consp(); cur = oCddr(cur)) {
         Symbol_sp propertyName = gc::As<Symbol_sp>(oCar(cur));
         T_sp rawData = oCadr(cur);
         SNode_sp propertyData = parseNode(objToNode, rawData);
-        Cons_sp one = Cons_O::create(propertyName);
+        Cons_sp one = Cons_O::create(propertyName,_Nil<T_O>());
         result->setCdr(one);
         result = one;
-        one = Cons_O::create(propertyData);
+        one = Cons_O::create(propertyData,_Nil<T_O>());
         result->setCdr(one);
         result = one;
       }
@@ -121,9 +121,6 @@ CL_DEFMETHOD void SexpLoadArchive_O::parseFromObject(T_sp object) {
 CL_LISPIFY_NAME("parseFromStream");
 CL_DEFMETHOD void SexpLoadArchive_O::parseFromStream(T_sp streamDesignator) {
   DynamicScopeManager scope(_sym_STARserializerArchiveSTAR, this->asSmartPtr());
-  // Don't track source code for archives
-  scope.pushSpecialVariableAndSet(_sym_STARsourceDatabaseSTAR, _Nil<T_O>());
-  scope.pushSpecialVariableAndSet(_sym_STARmonitorRegisterSourceInfoSTAR, _lisp->_true());
   T_sp obj = cl__read(streamDesignator, _lisp->_true(), _Unbound<T_O>());
   if (obj.unboundp()) {
     SIMPLE_ERROR(BF("Nothing could be read from stream"));

@@ -118,6 +118,10 @@ struct Token {
 
 
 
+SYMBOL_EXPORT_SC_(ClPkg, STARread_suppressSTAR);
+
+
+
 // -----------------------------------------------------------------
 // -----------
 
@@ -239,7 +243,7 @@ List_sp collect_lexemes(/*Character_sp*/ T_sp tc, T_sp sin) {
       return Cons_O::create(collect_escaped_lexemes(read_ch_or_die(sin), sin),
                             collect_lexemes(read_ch(sin), sin));
     } else if (syntax_type == kw::_sym_single_escape) {
-      return Cons_O::create(Cons_O::create(constituentCharAsFixnum(read_ch_or_die(sin))),
+      return Cons_O::create(Cons_O::create(constituentCharAsFixnum(read_ch_or_die(sin)),_Nil<T_O>()),
                             collect_lexemes(read_ch(sin), sin));
     } else if (syntax_type == kw::_sym_constituent || syntax_type == kw::_sym_non_terminating_macro) {
       return Cons_O::create(constituentCharAsFixnum(c), collect_lexemes(read_ch(sin), sin));
@@ -373,15 +377,6 @@ void make_str(StrWNs_sp sout, List_sp cur_char) {
     SIMPLE_ERROR(BF("Bad readtable case %s") % _rep_(readtable->_Case));
   }
 }
-
-
-CL_LAMBDA(sin &optional (eof-error-p t) eof-value);
-CL_DECLARE();
-CL_DOCSTRING("nread");
-CL_DEFUN T_mv core__nread(T_sp sin, T_sp eof_error_p, T_sp eof_value) {
-  T_sp result = read_lisp_object(sin, eof_error_p.isTrue(), eof_value, false);
-  return Values(result);
-};
 
 string fix_exponent_char(const char *cur) {
   stringstream ss;
@@ -856,13 +851,24 @@ T_sp interpret_token_or_throw_reader_error(T_sp sin, Token &token, bool only_dot
         char *lastValid = NULL;
         if (cl::_sym_STARreadDefaultFloatFormatSTAR->symbolValue() == cl::_sym_single_float) {
           string numstr = tokenStr(sin,token, start - token.data())->get_std_string();
-          double d = ::strtod(numstr.c_str(), &lastValid);
-          return clasp_make_single_float(d);
+          float f = ::strtof(numstr.c_str(), &lastValid);
+          return clasp_make_single_float(f);
         } else if (cl::_sym_STARreadDefaultFloatFormatSTAR->symbolValue() == cl::_sym_DoubleFloat_O) {
           string numstr = tokenStr(sin,token, start - token.data())->get_std_string();
           double d = ::strtod(numstr.c_str(), &lastValid);
           return DoubleFloat_O::create(d);
-        } else {
+        }
+        else if (cl::_sym_STARreadDefaultFloatFormatSTAR->symbolValue() == cl::_sym_ShortFloat_O) {
+          string numstr = tokenStr(sin,token, start - token.data())->get_std_string();
+          float f = ::strtof(numstr.c_str(), &lastValid);
+          return clasp_make_single_float(f); //ShortFloat_O::create(f) crashes
+        }
+        else if (cl::_sym_STARreadDefaultFloatFormatSTAR->symbolValue() == cl::_sym_LongFloat_O) {
+          string numstr = tokenStr(sin,token, start - token.data())->get_std_string();
+          LongFloat l = ::strtod(numstr.c_str(), &lastValid);
+          return LongFloat_O::create(l);
+        }
+        else {
           SIMPLE_ERROR(BF("Handle *read-default-float-format* of %s") % _rep_(cl::_sym_STARreadDefaultFloatFormatSTAR->symbolValue()));
         }
       }
@@ -938,9 +944,6 @@ List_sp read_list(T_sp sin, claspCharacter end_char, bool allow_consing_dot) {
   Cons_sp first = Cons_O::create(_Nil<T_O>(), _Nil<T_O>());
   List_sp cur = first;
   while (1) {
-#ifdef SOURCE_TRACKING
-    SourcePosInfo_sp info = core__input_stream_source_pos_info(sin);
-#endif
     Character_sp cp = gc::As<Character_sp>(cl__peek_char(_lisp->_true(), sin, _lisp->_true(), _Nil<Character_O>(), _lisp->_true()));
     LOG_READ(BF("read_list ---> peeked char[%s]") % _rep_(cp));
     if (clasp_as_claspCharacter(cp) == end_char) {
@@ -957,9 +960,6 @@ List_sp read_list(T_sp sin, claspCharacter end_char, bool allow_consing_dot) {
       TRAP_BAD_CONS(otherResult);
       if (otherResult.nilp())
         return (Values(_Nil<T_O>()));
-#ifdef SOURCE_TRACKING
-      lisp_registerSourcePosInfo(otherResult, info);
-#endif
       return (otherResult);
     }
     int ivalues;
@@ -987,9 +987,6 @@ List_sp read_list(T_sp sin, claspCharacter end_char, bool allow_consing_dot) {
           SIMPLE_ERROR(BF("More than one object after consing dot"));
         }
         Cons_sp one = Cons_O::create(obj, _Nil<T_O>());
-#ifdef SOURCE_TRACKING
-        lisp_registerSourcePosInfo(one, info);
-#endif
         LOG_READ(BF("One = %s") % _rep_(one));
 //        LOG_READ(BF("one->sourceFileInfo()=%s") % _rep_(core__source_file_info(one)));
 //        LOG_READ(BF("one->sourceFileInfo()->fileName()=%s") % core__source_file_info(one)->fileName());
@@ -1124,6 +1121,21 @@ step1:
     T_sp reader_macro;
     reader_macro = readTable->get_macro_character(xxx);
     ASSERT(reader_macro.notnilp());
+    if (gc::IsA<Symbol_sp>(reader_macro)) {
+      // At startup symbols that define reader macro functions aren't fbound yet
+      // We need to read the lambda lists somehow - so hard code the reader macro calls
+      Symbol_sp sreader_macro = gc::As_unsafe<Symbol_sp>(reader_macro);
+      if (!sreader_macro->fboundp()) {
+        if (clasp_as_claspCharacter(xxx) == '(') {
+          return core__reader_list_allow_consing_dot(sin,xxx);
+        } else if (clasp_as_claspCharacter(xxx) == '"') {
+          return core__reader_double_quote_string(sin,xxx);
+        } else if (clasp_as_claspCharacter(xxx) == '\'') {
+          return core__reader_quote(sin,xxx);
+        }
+        printf("%s:%d Handle character '%c' in lisp_object_query\n", __FILE__, __LINE__, clasp_as_claspCharacter(xxx));
+      }
+    }
     T_mv results = eval::funcall(reader_macro, sin, xxx);
     if (results.number_of_values() == 0) {
       return results;

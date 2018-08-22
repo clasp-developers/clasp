@@ -5,13 +5,20 @@
   (change-class (call-next-method) 'clasp-cleavir-hir:named-enter-instruction
                 :lambda-name (clasp-cleavir-ast:lambda-name ast)
                 :original-lambda-list (clasp-cleavir-ast:original-lambda-list ast)
-                :docstring (clasp-cleavir-ast:docstring ast)))
+                :docstring (clasp-cleavir-ast:docstring ast)
+                :rest-alloc (clasp-cleavir-ast:rest-alloc ast)))
 
 (defmethod cleavir-ast-to-hir:compile-ast ((ast clasp-cleavir-ast:debug-message-ast) context)
   (cleavir-ast-to-hir::assert-context ast context 1 1)
   (format t "cleavir-ast-to-hir:compile-ast on debug-message-ast successors: ~a~%" (cleavir-ast-to-hir::successors context))
   (make-instance 'clasp-cleavir-hir:debug-message-instruction 
 		 :debug-message (clasp-cleavir-ast:debug-message ast)
+		 :successors (cleavir-ast-to-hir::successors context)))
+
+(defmethod cleavir-ast-to-hir:compile-ast ((ast clasp-cleavir-ast:debug-break-ast) context)
+  (cleavir-ast-to-hir::assert-context ast context 1 1)
+  (format t "cleavir-ast-to-hir:compile-ast on debug-break-ast successors: ~a~%" (cleavir-ast-to-hir::successors context))
+  (make-instance 'clasp-cleavir-hir:debug-break-instruction 
 		 :successors (cleavir-ast-to-hir::successors context)))
 
 
@@ -200,6 +207,7 @@
        (clasp-cleavir-hir:make-bind-va-list-instruction
         (cleavir-ast-to-hir:translate-lambda-list (cleavir-ast:lambda-list ast))
         temp
+        (clasp-cleavir-ast:rest-alloc ast)
         (cleavir-ast-to-hir:compile-ast
          (cleavir-ast:body-ast ast)
          context)))

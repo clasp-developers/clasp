@@ -295,9 +295,29 @@ void handle_unhandled_exception( void )
 
 static int startup(int argc, char *argv[], bool &mpiEnabled, int &mpiRank, int &mpiSize)
 {
+
+    // Read the memory profiling settings <size-threshold> <number-theshold>
+  // as in export CLASP_MEMORY_PROFILE="16000000 1024"
+  // This means call HitAllocationSizeThreshold every time 16000000 bytes are allocated
+  //        and call HitAllocationNumberThreshold every time 1024 allocations take place
+  char *cur = getenv("CLASP_MEMORY_PROFILE");
+  size_t values[2];
+  int numValues = 0;
+  if (cur) {
+    while (*cur && numValues < 2) {
+      values[numValues] = strtol(cur, &cur, 10);
+      ++numValues;
+    }
+    if (numValues == 2) {
+      my_thread_low_level->_Allocations._AllocationNumberThreshold = values[1];
+    }
+    if (numValues >= 1) {
+      my_thread_low_level->_Allocations._AllocationSizeThreshold = values[0];
+    }
+  }
   core::LispHolder lispHolder(mpiEnabled, mpiRank, mpiSize);
   int exit_code = 0;
-  
+
   gctools::GcToolsExposer_O GcToolsPkg(_lisp);
   clbind::ClbindExposer_O ClbindPkg(_lisp);
   llvmo::LlvmoExposer_O llvmopkg(_lisp);
@@ -313,7 +333,7 @@ static int startup(int argc, char *argv[], bool &mpiEnabled, int &mpiRank, int &
   _lisp->installPackage(&SocketsPkg);
   _lisp->installPackage(&ServeEventPkg);
   _lisp->installPackage(&AsttoolingPkg);
-
+  
 #ifdef USE_MPI
   mpip::MpiExposer TheMpiPkg(_lisp);
   _lisp->installPackage(&TheMpiPkg);

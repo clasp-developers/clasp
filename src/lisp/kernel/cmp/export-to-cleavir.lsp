@@ -3,7 +3,6 @@
 (export '(
           *cleavir-compile-file-hook*
           *cleavir-compile-hook*
-          *current-form-lineno*
           *compile-print*
           *compile-counter*
           *compile-duration-ns*
@@ -12,8 +11,6 @@
           *debug-compile-file*
           *generate-compile-file-load-time-values*
           *gv-current-function-name*
-          *gv-source-file-info-handle*
-          *gv-source-namestring*
           *implicit-compile-hook*
           *irbuilder*
           *llvm-context*
@@ -58,8 +55,7 @@
           compile-in-env
           compile-lambda-function
           compile-lambda-list-code
-          cclasp-maybe-alloc-cc-setup
-          cclasp-setup-calling-convention
+          setup-calling-convention
           bclasp-compile-form
           compile-form
           compiler-error
@@ -144,4 +140,5 @@
           compile-error-if-wrong-number-of-arguments
           compile-error-if-too-many-arguments
           compile-throw-if-excess-keyword-arguments
+          compute-rest-alloc
           ))

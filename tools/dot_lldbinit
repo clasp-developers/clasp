@@ -28,7 +28,7 @@ command alias lreload command source ~/.lldbinit
 # set breakpoints
 break set -n dbg_hook
 
-command alias lbt expr (void) tbacktrace()
+command alias lbt expr (void) c_btcl()
 
 #
 # When we continue invoke the debugger as if control-c was hit

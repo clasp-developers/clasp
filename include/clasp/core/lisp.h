@@ -144,9 +144,6 @@ public:
   Package_sp _Package;
   string _PackageName;
 public:
-  /*! CTor that looks up a Package with packageName and if it
-	  doesn't exist it makes it - allows nicknames */
-  Exposer_O(Lisp_sp lisp, const string &packageName, const char *nicknames[]);
 
   /*! CTor that looks up a Package with packageName and if it
 	  doesn't exist it makes it - no nicknames allowed */
@@ -438,7 +435,7 @@ public:
   inline void stack_monitor() {
     int x;
     char *xaddr = (char *)(&x);
-    size_t stack = (size_t)(((const char*)my_thread->_StackTop) - xaddr);
+    size_t stack = (size_t)(((const char*)my_thread_low_level->_StackTop) - xaddr);
     if (stack > _lisp->_StackWarnSize) {
       af_stackSizeWarning(stack);
     }
@@ -546,10 +543,6 @@ public:
 
 public:
   uint mode() const { return this->_Mode; };
-
-public:
-  /*! Get access to the SourceManager of the Common Lisp environment */
-  T_sp sourceDatabase() const;
 
 public:
   bool isSingleStepOn() { return this->_SingleStepLevel != UndefinedUnsignedInt; };
@@ -886,6 +879,7 @@ public:
   Package_sp getCurrentPackage() const;
   void mapNameToPackage(const string &name, Package_sp pkg);
   void unmapNameToPackage(const string &name);
+  void finishPackageSetup(const string &packageName, list<string> const &nicknames, list<string> const &usePackages, list<string> const& shadow = {});
   Package_sp makePackage(const string &packageName, list<string> const &nicknames, list<string> const &usePackages, list<string> const& shadow = {});
   void remove_package(const string& package_name);
   bool usePackage(const string &packageName);

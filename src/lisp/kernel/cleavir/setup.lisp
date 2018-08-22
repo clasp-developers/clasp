@@ -85,12 +85,12 @@ when this is t a lot of graphs will be generated.")
         (;; Use Clasp's core:specialp test to determine if it is special.
          ;; Note that in Clasp constants are also special (FIXME?) so we
          ;; have to do this test after checking for constantness.
-         (core:specialp symbol)
+         (ext:specialp symbol)
 	 (make-instance 'cleavir-env:special-variable-info
             :name symbol
             :global-p t))
 	(;; Maybe it's a symbol macro.
-	 (core:symbol-macro symbol)
+	 (ext:symbol-macro symbol)
 	 (make-instance 'cleavir-env:symbol-macro-info
 	   :name symbol
 	   :expansion (macroexpand-1 symbol)))
@@ -142,8 +142,7 @@ when this is t a lot of graphs will be generated.")
        (make-instance 'cleavir-env:global-function-info
                       :name function-name
                       :compiler-macro (compiler-macro-function function-name)
-                      ;; CST inlining does not work, and as such...
-                      :inline #+cst 'cl:notinline #-cst inline-status
+                      :inline inline-status
                       :ast cleavir-ast)))
     ;; A top-level defun for the function has been seen.
     ;; The expansion calls cmp::register-global-function-def at compile time,
@@ -250,7 +249,7 @@ when this is t a lot of graphs will be generated.")
       (class (return-from type-expand-1 (values type-specifier nil)))
       (symbol (setf head type-specifier tail nil))
       (cons (setf head (first type-specifier) tail (rest type-specifier))))
-    (let ((def (core::type-expander head)))
+    (let ((def (ext:type-expander head)))
       (if def
           (values (apply def tail) t)
           (values type-specifier nil)))))
@@ -384,28 +383,28 @@ when this is t a lot of graphs will be generated.")
 
 (defun dump-hir (initial-instruction &optional (stream t))
   (let ((all-basic-blocks (cleavir-basic-blocks:basic-blocks initial-instruction))
-	initials)
+        initials)
     (cleavir-ir:map-instructions
      (lambda (instr)
        (when (typep instr 'cleavir-ir:enter-instruction)
-	 (push instr initials))) initial-instruction)
+         (push instr initials))) initial-instruction)
     (dolist (procedure-initial initials)
       (format stream "====== Procedure: ~a~%" (cc-mir:describe-mir procedure-initial))
       (let ((basic-blocks (remove procedure-initial
-				  all-basic-blocks
-				  :test-not #'eq :key #'cleavir-basic-blocks:owner)))
-	(dolist (bb basic-blocks)
-	  (with-accessors ((first cleavir-basic-blocks:first-instruction)
+                                  all-basic-blocks
+                                  :test-not #'eq :key #'cleavir-basic-blocks:owner)))
+        (dolist (bb basic-blocks)
+          (with-accessors ((first cleavir-basic-blocks:first-instruction)
                            (last cleavir-basic-blocks:last-instruction)
                            (owner cleavir-basic-blocks:owner))
               bb
-	    (format stream "-------------------basic-block owner: ~a~%" 
-		    (cc-mir:describe-mir owner))
-	    (loop for instruction = first
-	       then (first (cleavir-ir:successors instruction))
-	       until (eq instruction last)
-	       do (format stream "~a~%" (cc-mir:describe-mir instruction)))
-	    (format stream "~a~%" (cc-mir:describe-mir last))))))))
+            (format stream "-------------------basic-block owner: ~a~%" 
+                    (cc-mir:describe-mir owner))
+            (loop for instruction = first
+               then (first (cleavir-ir:successors instruction))
+               until (eq instruction last)
+               do (format stream "~a~%" (cc-mir:describe-mir instruction)))
+            (format stream "~a~%" (cc-mir:describe-mir last))))))))
 
 ;;; These should be set up in Cleavir code
 ;;; Remove them once beach implements them

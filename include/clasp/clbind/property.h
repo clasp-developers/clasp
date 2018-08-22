@@ -45,10 +45,10 @@ struct memberpointertraits<M C::*> {
 };
 
 template <typename GetterPolicies, typename OT, typename VariablePtrType>
-class GetterMethoid : public core::BuiltinClosure_O {
+class GetterMethoid : public core::Closure_O {
 public:
   typedef GetterMethoid<GetterPolicies,OT,VariablePtrType> MyType;
-  typedef core::BuiltinClosure_O TemplatedBase;
+  typedef core::Closure_O TemplatedBase;
 
 private:
   typedef typename memberpointertraits<VariablePtrType>::member_type MemberType;
@@ -59,7 +59,7 @@ public:
   virtual size_t templatedSizeof() const { return sizeof(*this); };
 
 public:
- GetterMethoid(core::T_sp name, VariablePtrType p) : core::BuiltinClosure_O(entry_point,name), _MemberPtr(p){};
+ GetterMethoid(core::FunctionDescription* fdesc, VariablePtrType p) : core::Closure_O(entry_point,fdesc), _MemberPtr(p){};
   inline static LCC_RETURN LISP_CALLING_CONVENTION() {
     MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
     INCREMENT_FUNCTION_CALL_COUNTER(closure);
@@ -72,10 +72,10 @@ public:
 
 namespace clbind {
 template <typename GetterPolicies, typename OT, typename MemberType>
-class GetterMethoid<GetterPolicies, OT, MemberType *const(OT::*)> : public core::BuiltinClosure_O {
+class GetterMethoid<GetterPolicies, OT, MemberType *const(OT::*)> : public core::Closure_O {
  public:
   typedef GetterMethoid<GetterPolicies,OT,MemberType *const(OT::*)> MyType;
-  typedef core::BuiltinClosure_O TemplatedBase;
+  typedef core::Closure_O TemplatedBase;
 
 private:
   typedef clbind::Wrapper<MemberType> WrapperType;
@@ -83,7 +83,7 @@ private:
   typedef MemberType *const(OT::*VariablePtrType);
   VariablePtrType _MemberPtr;
 public:
- GetterMethoid(core::T_sp name, VariablePtrType p) : BuiltinClosure_O(entry_point,name), _MemberPtr(p){};
+ GetterMethoid(core::FunctionDescription* fdesc, VariablePtrType p) : Closure_O(entry_point,fdesc), _MemberPtr(p){};
   static inline LCC_RETURN LISP_CALLING_CONVENTION() {
     MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
     INCREMENT_FUNCTION_CALL_COUNTER(closure);
@@ -103,10 +103,10 @@ public:
 
 namespace clbind {
 template <typename SetterPolicies, typename OT, typename VariablePtrType>
-class SetterMethoid : public core::BuiltinClosure_O {
+class SetterMethoid : public core::Closure_O {
 public:
   typedef SetterMethoid<SetterPolicies,OT,VariablePtrType> MyType;
-  typedef core::BuiltinClosure_O TemplatedBase;
+  typedef core::Closure_O TemplatedBase;
 
 private:
   typedef typename memberpointertraits<VariablePtrType>::member_type MemberType;
@@ -117,7 +117,7 @@ public:
   virtual size_t templatedSizeof() const { return sizeof(*this); };
 
 public:
- SetterMethoid(core::T_sp name, VariablePtrType p) : core::BuiltinClosure_O(entry_point,name), _MemberPtr(p){};
+ SetterMethoid(core::FunctionDescription* fdesc, VariablePtrType p) : core::Closure_O(entry_point,fdesc), _MemberPtr(p){};
   inline static LCC_RETURN LISP_CALLING_CONVENTION() {
     MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
     INCREMENT_FUNCTION_CALL_COUNTER(closure);
@@ -132,10 +132,10 @@ public:
 
 namespace clbind {
 template <typename SetterPolicies, typename OT, typename MemberType>
-class SetterMethoid<SetterPolicies, OT, MemberType *const(OT::*)> : public core::BuiltinClosure_O {
+class SetterMethoid<SetterPolicies, OT, MemberType *const(OT::*)> : public core::Closure_O {
  public:
   typedef SetterMethoid<SetterPolicies,OT,MemberType *const(OT::*)> MyType;
-  typedef core::BuiltinClosure_O TemplatedBase;
+  typedef core::Closure_O TemplatedBase;
 
 private:
   typedef clbind::Wrapper<MemberType> WrapperType;
@@ -143,7 +143,7 @@ private:
   typedef MemberType *const(OT::*VariablePtrType);
   VariablePtrType _MemberPtr;
 public:
- SetterMethoid(core::T_sp name, VariablePtrType p) : BuiltinClosure_O(entry_point,name), _MemberPtr(p){};
+ SetterMethoid(core::FunctionDescription* fdesc, VariablePtrType p) : Closure_O(entry_point,fdesc), _MemberPtr(p){};
   static inline LCC_RETURN LISP_CALLING_CONVENTION() {
     MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
     INCREMENT_FUNCTION_CALL_COUNTER(closure);

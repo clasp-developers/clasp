@@ -68,7 +68,6 @@ THE SOFTWARE.
 #include <clasp/core/array.h>
 #include <clasp/core/designators.h>
 #include <clasp/core/unixfsys.h>
-#include <clasp/core/reader.h>
 #include <clasp/core/lispReader.h>
 #include <clasp/core/fileSystem.h>
 #include <clasp/core/wrappers.h>
@@ -1863,7 +1862,7 @@ T_sp clasp_make_string_input_stream(T_sp strng, cl_index istart, cl_index iend) 
 CL_LAMBDA(strng &optional (istart 0) iend);
 CL_DECLARE();
 CL_DOCSTRING("make_string_input_stream");
-CL_DEFUN T_sp cl__make_string_input_stream(String_sp strng, Fixnum_sp istart, T_sp iend) {
+CL_DEFUN T_sp cl__make_string_input_stream(String_sp strng, cl_index istart, T_sp iend) {
   ASSERT(cl__stringp(strng));
   size_t_pair p = sequenceStartEnd(cl::_sym_make_string_input_stream,
                                    strng->length(), istart, iend);
@@ -2187,6 +2186,20 @@ CL_DECLARE();
 CL_DOCSTRING("makeBroadcastStream");
 CL_DEFUN T_sp cl__make_broadcast_stream(List_sp ap) {
   T_sp x, streams;
+  // we need to verify that ap are all streams
+  // currently (make-broadcast-stream 1 2 3) works fine
+  if (!ap.nilp()) {
+    T_sp acons = oCar(ap);
+      Stream_sp aStream =acons.asOrNull<Stream_O>();
+    if (!aStream)
+      TYPE_ERROR(acons, cl::_sym_Stream_O);
+    for (auto cur : (List_sp)oCdr(ap)) {
+      T_sp acons1 = oCar(ap);
+      Stream_sp aStream1 =acons1.asOrNull<Stream_O>();
+      if (!aStream1)
+        TYPE_ERROR(acons1, cl::_sym_Stream_O);
+    }
+  }
   streams = ap;
   x = BroadcastStream_O::create();
   StreamFormat(x) = kw::_sym_default;
@@ -2515,7 +2528,7 @@ CL_DEFUN T_sp cl__make_concatenated_stream(List_sp ap) {
   }
   StreamMode(x) = clasp_smm_concatenated;
   StreamOps(x) = duplicate_dispatch_table(concatenated_ops);
-  // used to be nreverse, but this gives wrong results, since it han reads first from the last stream past
+  // used to be nreverse, but this gives wrong results, since it than reads first from the last stream passed
   // stick with the original list
   ConcatenatedStreamList(x) = streams;
   return x;
@@ -3209,7 +3222,8 @@ set_stream_elt_type(T_sp tstream, gctools::Fixnum byte_size, int flags,
   case CLASP_STREAM_BINARY:
     // e.g. (T size) is not a valid type, use (UnsignedByte size)
     // This is better than (T Size), but not necesarily the right type
-    FileStreamEltType(stream) = Cons_O::createList(cl::_sym_UnsignedByte, make_fixnum(byte_size));
+    // Probably the value of the vriable t was meant, use it now!
+    FileStreamEltType(stream) = Cons_O::createList(t, make_fixnum(byte_size));
     StreamFormat(stream) = t;
     StreamOps(stream).read_char = not_character_read_char;
     StreamOps(stream).write_char = not_character_write_char;
@@ -5868,7 +5882,10 @@ CL_DECLARE();
 CL_DOCSTRING("listen");
 CL_DEFUN bool cl__listen(T_sp strm) {
   strm = coerce::inputStreamDesignator(strm);
-  return clasp_listen_stream(strm);
+  int result = clasp_listen_stream(strm);
+  if (result == CLASP_LISTEN_EOF)
+    return 0;
+  else return result;
 }
 
 CL_LAMBDA(&optional strm);

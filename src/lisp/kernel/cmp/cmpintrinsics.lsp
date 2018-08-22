@@ -204,8 +204,10 @@ Boehm and MPS use a single pointer"
 (define-symbol-macro %tsp*% (llvm-sys:type-get-pointer-to %tsp%))
 (define-symbol-macro %tsp**% (llvm-sys:type-get-pointer-to %tsp*%))
 
-;; This structure must match the gctools::ConstantsTable structure
-(define-symbol-macro %gcroots-in-module% (llvm-sys:struct-type-get *llvm-context* (list %i8*% %i8*% %size_t%) nil))
+(define-symbol-macro %cons% (llvm-sys:struct-type-get *llvm-context* (smart-pointer-fields %t*% %t*%) nil))
+
+;; This structure must match the gctools::GCRootsInModule structure
+(define-symbol-macro %gcroots-in-module% (llvm-sys:struct-type-get *llvm-context* (list %i8*% %i8*% %size_t% %size_t%) nil))
 (define-symbol-macro %gcroots-in-module*% (llvm-sys:type-get-pointer-to %gcroots-in-module%))
 
 ;; The definition of %tmv% doesn't quite match T_mv because T_mv inherits from T_sp
@@ -333,12 +335,14 @@ Boehm and MPS use a single pointer"
   remaining-nargs* ; The address of vaslist._remaining_nargs on the stack
   register-save-area*
   invocation-history-frame*
+  cleavir-lambda-list ; cleavir-style lambda-list
+  rest-alloc ; whether we can dx or ignore a &rest argument
   )
 
 ;; Parse the function arguments into a calling-convention
 ;;
 ;; What if we don't want/need to spill the registers to the register-save-area?
-(defun initialize-calling-convention (arguments setup &optional (rewind t))
+(defun initialize-calling-convention (arguments setup &key (rewind t) cleavir-lambda-list rest-alloc)
   (if (null (calling-convention-configuration-vaslist* setup))
       ;; If there is no vaslist then only register arguments are available
       ;;    no registers are spilled to the register-save-area and no InvocationHistoryFrame
@@ -347,7 +351,9 @@ Boehm and MPS use a single pointer"
         (make-calling-convention-impl :closure (first arguments)
                                       :nargs (second arguments)
                                       :use-only-registers t
-                                      :register-args (nthcdr 2 arguments)))
+                                      :register-args (nthcdr 2 arguments)
+                                      :cleavir-lambda-list cleavir-lambda-list
+                                      :rest-alloc rest-alloc))
       ;; The register arguments need to be spilled to the register-save-area
       ;;    and the vaslist needs to be initialized.
       ;;    If a InvocationHistoryFrame is available, then initialize it.
@@ -374,7 +380,9 @@ Boehm and MPS use a single pointer"
                                                                           :va-list* va-list*
                                                                           :remaining-nargs* remaining-nargs*
                                                                           :register-save-area* (calling-convention-configuration-register-save-area* setup)
-                                                                          :invocation-history-frame* (calling-convention-configuration-invocation-history-frame* setup)))
+                                                                          :invocation-history-frame* (calling-convention-configuration-invocation-history-frame* setup)
+                                                                          :cleavir-lambda-list cleavir-lambda-list
+                                                                          :rest-alloc rest-alloc))
                ;; va-start is done in caller
                #+(or)(_                           (calling-convention-args.va-start cc))
                #++(_dbg                        (progn
@@ -455,25 +463,23 @@ eg:  (f closure-ptr nargs a b c d ...)
                                              %i8*%
                                              (/ +register-save-area-size+ +void*-size+)))
   (define-symbol-macro %register-save-area*% (llvm-sys:type-get-pointer-to %register-save-area%))
+  ;; (Maybe) generate code to store registers in memory. Return value unspecified.
   (defun maybe-spill-to-register-save-area (registers register-save-area*)
-    (unless registers
-      (unless register-save-area*
-        (error "If registers is NIL then register-save-area* also must be NIL")))
-    (when registers
-      (labels ((spill-reg (idx reg)
-                 (let* ((addr-name     (bformat nil "addr%d" idx))
-                        (addr          (irc-gep register-save-area* (list (jit-constant-size_t 0) (jit-constant-size_t idx)) addr-name))
-                        (reg-i8*       (irc-bit-cast reg %i8*% "reg-i8*"))
-                        (_             (irc-store reg-i8* addr)))
-                   addr)))
-        (let* (
-               (addr-closure  (spill-reg 0 (elt registers 0)))
-               (addr-nargs    (spill-reg 1 (irc-int-to-ptr (elt registers 1) %i8*%)))
-               (addr-farg0    (spill-reg 2 (elt registers 2))) ; this is the first fixed arg currently.
-               (addr-farg1    (spill-reg 3 (elt registers 3)))
-               (addr-farg2    (spill-reg 4 (elt registers 4)))
-               (addr-farg3    (spill-reg 5 (elt registers 5))))))))
-
+    (if registers
+        (labels ((spill-reg (idx reg addr-name)
+                   (let* ((addr          (irc-gep register-save-area* (list (jit-constant-size_t 0) (jit-constant-size_t idx)) addr-name))
+                          (reg-i8*       (irc-bit-cast reg %i8*% "reg-i8*"))
+                          (_             (irc-store reg-i8* addr)))
+                     addr)))
+          (let* (
+                 (addr-closure  (spill-reg 0 (elt registers 0) "closure0"))
+                 (addr-nargs    (spill-reg 1 (irc-int-to-ptr (elt registers 1) %i8*%) "nargs1"))
+                 (addr-farg0    (spill-reg 2 (elt registers 2) "arg0")) ; this is the first fixed arg currently.
+                 (addr-farg1    (spill-reg 3 (elt registers 3) "arg1"))
+                 (addr-farg2    (spill-reg 4 (elt registers 4) "arg2"))
+                 (addr-farg3    (spill-reg 5 (elt registers 5) "arg3")))))
+        (unless register-save-area*
+          (error "If registers is NIL then register-save-area* also must be NIL"))))
 
   (defun calling-convention-rewind-va-list-to-start-on-third-argument (cc)
     (let* ((va-list*                      (calling-convention-va-list* cc))
@@ -510,13 +516,14 @@ eg:  (f closure-ptr nargs a b c d ...)
     (llvm-sys:struct-type-get *llvm-context*
                               (list %fn-prototype*%
                                     %gcroots-in-module*%
-                                    %i32*% ; source handle
-                                    %intptr_t% ; function name literal index
-                                    %intptr_t% ; lambda-list literal index
-                                    %intptr_t% ; docstring literal index
-                                    %intptr_t% ; lineno
-                                    %intptr_t% ; column
-                                    %intptr_t% ; filepos
+                                    %i32% ; source info index
+                                    %i32% ; function name literal index
+                                    %i32% ; lambda-list literal index
+                                    %i32% ; docstring literal index
+                                    %i32% ; declare index
+                                    %i32% ; lineno
+                                    %i32% ; column
+                                    %i32% ; filepos
                                     ) nil ))
 (define-symbol-macro %function-description*% (llvm-sys:type-get-pointer-to %function-description%))
 
@@ -533,7 +540,7 @@ eg:  (f closure-ptr nargs a b c d ...)
 ;; %"class.core::LispCompiledFunctionIHF" = type { %"class.core::LispFunctionIHF" }
 ;(define-symbol-macro %LispCompiledFunctionIHF% (llvm-sys:struct-type-create *llvm-context* :elements (list %LispFunctionIHF%) :name "LispCompiledFunctionIHF"))
 
-
+#|
   (defun make-gv-source-file-info-handle (module &optional handle)
     (if (null handle) (setq handle -1))
     (llvm-sys:make-global-variable module
@@ -542,7 +549,7 @@ eg:  (f closure-ptr nargs a b c d ...)
                                    'llvm-sys:internal-linkage
                                    (jit-constant-i32 handle)
                                    "source-file-info-handle"))
-
+|#
 
   (defun add-global-ctor-function (module main-function)
     "Create a function with the name core:+clasp-ctor-function-name+ and
@@ -655,9 +662,6 @@ and initialize it with an array consisting of one function pointer."
     (typeid-core-unwind      "_ZTIN4core6UnwindE")
     ))
 
-;;#+debug-mps (bformat t "cmp::*exceptions* --> %s%N" *exceptions*)
-
-
 (defvar *exception-types-hash-table* (make-hash-table :test #'eq)
   "Map exception names to exception class extern 'C' names")
 
@@ -753,20 +757,12 @@ and initialize it with an array consisting of one function pointer."
 ;;
 ;;
 
-(defvar *compile-file-pathname* nil "Store the path-name of the currently compiled file")
+(defvar *compile-file-pathname* nil "Store the pathname of the currently compiled file")
 (defvar *compile-file-truename* nil "Store the truename of the currently compiled file")
 (defvar *compile-file-source-file-info* nil "Store the SourceFileInfo object for the compile-file target")
 
-
-(defvar *gv-source-namestring* nil
-  "Store a global value that defines the filename of the current compilation")
-(defvar *gv-source-debug-namestring* nil
-  "A global value that defines the spoofed name of the current compilation - used by SLIME")
+(defvar *source-debug-pathname*)
 (defvar *source-debug-offset* 0)
-(defvar *source-debug-use-lineno* t)
-(defvar *gv-source-file-info-handle* nil
-  "Store a global value that stores an integer handle assigned at load-time that uniquely
-identifies the current source file.  Used for tracing and debugging")
 
 (defvar *gv-boot-functions* nil
   "A global value that stores a pointer to the boot function for the Module.

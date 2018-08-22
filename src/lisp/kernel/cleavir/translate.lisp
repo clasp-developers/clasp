@@ -256,7 +256,6 @@ when this is t a lot of graphs will be generated.")
     (cond
       ((typep enter 'clasp-cleavir-hir:named-enter-instruction)
        (cmp:make-function-info :function-name llvm-function-name
-                               :source-handle cmp:*gv-source-file-info-handle*
                                :lambda-list (clasp-cleavir-hir:original-lambda-list enter)
                                :docstring (clasp-cleavir-hir:docstring enter)
                                :declares nil
@@ -266,7 +265,6 @@ when this is t a lot of graphs will be generated.")
                                :filepos filepos))
       ((typep enter 'cleavir-ir:enter-instruction)
        (cmp:make-function-info :function-name llvm-function-name
-                               :source-handle cmp:*gv-source-file-info-handle*
                                :lambda-list nil
                                :docstring nil
                                :declares nil
@@ -328,8 +326,12 @@ when this is t a lot of graphs will be generated.")
             (cmp:with-irbuilder (cmp:*irbuilder-function-alloca*)
               (let* ((fn-args (llvm-sys:get-argument-list cmp:*current-function*))
                      (lambda-list (cleavir-ir:lambda-list enter))
-                     (calling-convention (cmp:cclasp-setup-calling-convention
-                                          fn-args lambda-list (debug-on function-info))))
+                     (calling-convention (cmp:setup-calling-convention
+                                          fn-args
+                                          :debug-on (debug-on function-info)
+                                          :lambda-list (clasp-cleavir-hir::original-lambda-list enter)
+                                          :cleavir-lambda-list lambda-list
+                                          :rest-alloc (clasp-cleavir-hir::rest-alloc enter))))
                 (setf (calling-convention function-info) calling-convention))))
         (layout-procedure* the-function
                            body-irbuilder
@@ -658,10 +660,8 @@ This works like compile-lambda-function in bclasp."
         (cleavir-generate-ast:*compiler* 'cl:compile-file)
         (core:*use-cleavir-compiler* t))
     (loop
-      (let ((eof (peek-char t source-sin nil eof-value)))
-        (unless (eq eof eof-value)
-          (let ((pos (core:input-stream-source-pos-info source-sin)))
-            (setf cmp:*current-form-lineno* (core:source-file-pos-lineno pos)))))
+      ;; Required to update the source pos info. FIXME!?
+      (peek-char t source-sin nil)
       ;; FIXME: if :environment is provided we should probably use a different read somehow
       (let* ((core:*current-source-pos-info* (core:input-stream-source-pos-info source-sin))
              #+cst
@@ -673,13 +673,15 @@ This works like compile-lambda-function in bclasp."
             (return nil)
             (progn
               (when *compile-print* (cmp::describe-form (cst:raw cst)))
-              (cleavir-compile-file-cst cst environment)))
+              (core:with-memory-ramp (:pattern 'gctools:ramp)
+                (cleavir-compile-file-cst cst environment))))
         #-cst
         (if (eq form eof-value)
             (return nil)
             (progn
               (when *compile-print* (cmp::describe-form form))
-              (cleavir-compile-file-form form)))))))
+              (core:with-memory-ramp (:pattern 'gctools:ramp)
+                (cleavir-compile-file-form form))))))))
 
 (defun cclasp-compile-in-env (name form &optional env)
   (let ((cleavir-generate-ast:*compiler* 'cl:compile)
