@@ -831,25 +831,17 @@ jump to blocks within this tagbody."
             (let* ((lvaslist (irc-load eval-vaslist "lvaslist"))
                    (src-remaining-nargs* (irc-intrinsic "cc_vaslist_remaining_nargs_address" lvaslist))
                    (src-va_list* (irc-intrinsic "cc_vaslist_va_list_address" lvaslist "vaslist_address"))
-                   (local-remaining-nargs* (irc-alloca-size_t :label "local-remaining-nargs"))
                    (local-va_list* (irc-alloca-va_list :label "local-va_list"))
-                   (_             (irc-store (irc-load src-remaining-nargs*) local-remaining-nargs*))
                    (_             (irc-intrinsic-call "llvm.va_copy" (list (irc-pointer-cast local-va_list* %i8*%)
                                                                            (irc-pointer-cast src-va_list* %i8*%))))
                    (callconv (make-calling-convention-impl :nargs (irc-load src-remaining-nargs*)
                                                            :va-list* local-va_list*
-                                                           :remaining-nargs* local-remaining-nargs*
                                                            :rest-alloc rest-alloc
                                                            :cleavir-lambda-list cleavir-lambda-list)))
-              (let ((new-env (bclasp-compile-lambda-list-code evaluate-env callconv)))
+              ;; See comment in cleavir bind-va-list w/r/t safep.
+              (let ((new-env (bclasp-compile-lambda-list-code evaluate-env callconv :safep nil)))
                 (irc-intrinsic-call "llvm.va_end" (list (irc-pointer-cast local-va_list* %i8*%)))
-                (codegen-let/let* (car new-body) result (cdr new-body) new-env)
-                #+(or)(cmp:with-try
-                          (codegen-let/let* 'let* result (cdr new-body) new-env)
-                        ((cleanup)
-                         (calling-convention-maybe-pop-invocation-history-frame callconv)
-                         (irc-unwind-environment new-env)))))))))))
-
+                (codegen-let/let* (car new-body) result (cdr new-body) new-env)))))))))
 
 ;;; MULTIPLE-VALUE-FOREIGN-CALL
 

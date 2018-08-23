@@ -618,13 +618,12 @@ ALWAYS_INLINE T_O *va_lexicalFunction(size_t depth, size_t index, core::T_O* eva
 
 /* Conses up a &rest argument from the passed valist.
  * Used in cmp/arguments.lsp for the general case of functions with a &rest in their lambda list. */
-__attribute__((visibility("default"))) core::T_O *cc_gatherRestArguments(va_list vargs, std::size_t* remainingP)
+__attribute__((visibility("default"))) core::T_O *cc_gatherRestArguments(va_list vargs, std::size_t nargs)
 {NO_UNWIND_BEGIN();
   va_list rargs;
   va_copy(rargs, vargs); // the original valist is needed for &key processing elsewhere.
   core::List_sp result = _Nil<core::T_O>();
   core::Cons_sp *cur = reinterpret_cast<Cons_sp *>(&result);
-  size_t nargs = *remainingP;
   for (int i = 0; i<nargs; ++i ) {
     core::T_O* tagged_obj = ENSURE_VALID_OBJECT(va_arg(rargs,core::T_O*));
     *cur = core::Cons_O::create(gc::smart_ptr<core::T_O>((gc::Tagged)tagged_obj), _Nil<core::T_O>());
@@ -637,12 +636,11 @@ __attribute__((visibility("default"))) core::T_O *cc_gatherRestArguments(va_list
 
 /* Like cc_gatherRestArguments, but uses a vector of conses provided by the caller-
  * intended to be stack space, for &rest parameters declared dynamic-extent. */
-__attribute__((visibility("default"))) core::T_O *cc_gatherDynamicExtentRestArguments(va_list vargs, std::size_t* remainingP, core::Cons_O* cur)
+__attribute__((visibility("default"))) core::T_O *cc_gatherDynamicExtentRestArguments(va_list vargs, std::size_t nargs, core::Cons_O* cur)
 {NO_UNWIND_BEGIN();
   va_list rargs;
   va_copy(rargs, vargs);
   core::List_sp result = Cons_sp((gctools::Tagged)gctools::tag_cons((core::Cons_O*)cur));
-  size_t nargs = *remainingP;
   if (nargs) {
     for (int i = 0; i<nargs-1; ++i ) {
       core::T_O* tagged_obj = ENSURE_VALID_OBJECT(va_arg(rargs,core::T_O*));
@@ -669,12 +667,11 @@ void badKeywordArgumentError(core::T_sp keyword, core::FunctionDescription* func
   SIMPLE_ERROR(BF("When calling %s the bad keyword argument %s was passed") % _rep_(functionName) % _rep_(keyword) );
 }
 
-void cc_ifBadKeywordArgumentException(size_t allowOtherKeys, std::size_t badKwIdx, core::T_O *kw, core::FunctionDescription* functionDescription)
-{
-  if (allowOtherKeys == 2) return;
-  if (badKwIdx != 65536) badKeywordArgumentError(core::T_sp((gc::Tagged)kw),functionDescription);
+void cc_ifBadKeywordArgumentException(core::T_O *allowOtherKeys, core::T_O *kw,
+                                      core::FunctionDescription* functionDescription) {
+  if (gctools::tagged_nilp(allowOtherKeys))
+    badKeywordArgumentError(core::T_sp((gc::Tagged)kw), functionDescription);
 }
-
 
 extern void mv_copyTmv(core::T_mv *destP, core::T_mv *sourceP)
 {NO_UNWIND_BEGIN();
@@ -1397,18 +1394,6 @@ void cc_loadThreadLocalMultipleValues(core::T_mv *result, core::MultipleValues *
     mvThread[i] = ENSURE_VALID_OBJECT((*mv)[i]);
   }
   NO_UNWIND_END();
-}
-
-// name is a misnomer- more like ifNotSymbolException. FIXME
-void cc_ifNotKeywordException(core::T_O *obj, size_t argIdx, va_list valist, core::FunctionDescription* functionDescription) {
-  T_sp vobj((gc::Tagged)obj);
-  if (!cl__symbolp(vobj)) {
-    T_sp functionName = llvmo::functionNameOrNilFromFunctionDescription(functionDescription);
-    if (functionName.nilp()) {
-      SIMPLE_ERROR(BF("Expected keyword argument at argument %d got %s") % argIdx % _rep_(gctools::smart_ptr<core::T_O>((gc::Tagged)obj)));
-    }
-    SIMPLE_ERROR(BF("In call to %s expected keyword argument at argument %d got %s") % _rep_(functionName) % argIdx % _rep_(gctools::smart_ptr<core::T_O>((gc::Tagged)obj)));
-  }
 }
 
 void cc_oddKeywordException(core::FunctionDescription* functionDescription) {

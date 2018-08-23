@@ -48,6 +48,7 @@ THE SOFTWARE.
 #include <clasp/core/array.h>
 #include <clasp/core/hashTable.h>
 #include <clasp/core/wrappers.h>
+#include <clasp/core/unixfsys.h>
 #include <string>
 
 namespace bf = boost_filesystem;
@@ -556,11 +557,14 @@ CL_DEFMETHOD bool FileStatus_O::isOther() {
 }
 
 Pathname_sp getcwd(bool change_d_p_d) {
-  boost::filesystem::path cwd = boost::filesystem::current_path();
-  SimpleBaseString_sp namestring = SimpleBaseString_O::make(cwd.string());
+  Str8Ns_sp namestring = ext::ext__getcwd();
   size_t i = namestring->length();
-  if (!IS_DIR_SEPARATOR(clasp_as_claspCharacter(namestring->rowMajorAref(i - 1))))
-    namestring = SimpleBaseString_O::make(namestring->get() + DIR_SEPARATOR);
+  // This commented out code adds a directory delimiter if none is there yet.
+  // Not currently required because ext::ext__getcwd already does it.
+  // However, ext::ext__getcwd() shouldn't, so leave this here to re-activate
+  // on cleanup.
+  //if (!IS_DIR_SEPARATOR(clasp_as_claspCharacter(namestring->rowMajorAref(i - 1))))
+  //  namestring = SimpleBaseString_O::make(namestring->get() + DIR_SEPARATOR);
   Pathname_sp pathname = cl__parse_namestring(namestring);
   if (change_d_p_d && pathname.notnilp()) {
     cl::_sym_STARdefaultPathnameDefaultsSTAR->setf_symbolValue(pathname);

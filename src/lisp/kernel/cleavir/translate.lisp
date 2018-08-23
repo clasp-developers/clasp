@@ -188,7 +188,7 @@ when this is t a lot of graphs will be generated.")
                    (list (cmp:calling-convention-closure cc)
                          (cmp:calling-convention-invocation-history-frame* cc)
                          (cmp:calling-convention-va-list* cc)
-                         (cmp:irc-load (cmp:calling-convention-remaining-nargs* cc)))))
+                         (cmp:calling-convention-nargs cc))))
 
 (defun layout-procedure* (the-function body-irbuilder
                           body-block
@@ -283,8 +283,7 @@ when this is t a lot of graphs will be generated.")
                                   :test #'eq :key #'cleavir-basic-blocks:first-instruction))
          ;; This gathers the rest of the basic blocks
          (rest-basic-blocks (remove first-basic-block basic-blocks :test #'eq))
-         (main-fn-name lambda-name)
-         (cmp:*current-function-name* (cmp:jit-function-name main-fn-name))
+         (cmp:*current-function-name* (cmp:jit-function-name lambda-name))
          (cmp:*gv-current-function-name*
            (cmp:module-make-global-string cmp:*current-function-name* "fn-name"))
          (llvm-function-type cmp:%fn-prototype%)
@@ -303,7 +302,7 @@ when this is t a lot of graphs will be generated.")
              (cmp:*irbuilder-function-alloca* (llvm-sys:make-irbuilder cmp:*llvm-context*))
              (body-irbuilder (llvm-sys:make-irbuilder cmp:*llvm-context*))
              (body-block (cmp:irc-basic-block-create "body")))
-        (setup-function-scope-metadata main-fn-name
+        (setup-function-scope-metadata lambda-name
                                        function-info
                                        :function the-function
                                        :llvm-function-name llvm-function-name

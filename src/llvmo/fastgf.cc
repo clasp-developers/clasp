@@ -132,11 +132,6 @@ BUILTIN_ATTRIBUTES core::T_O* cc_fastgf_nil() {
 
 BUILTIN_ATTRIBUTES core::T_O* cc_rewind_vaslist(core::Vaslist* vaslist, va_list va_args, void** register_save_areaP)
 {
-#if 0
-  if (core::debug_InvocationHistoryFrame==3) {
-    printf("%s:%d cc_rewind_va_list     va_args=%p     nargsP = %p      register_save_areaP = %p\n", __FILE__, __LINE__, va_args, nargsP, register_save_areaP );
-  }
-#endif
   va_copy(vaslist->_Args,va_args);
   LCC_REWIND_VA_LIST(vaslist->_Args,register_save_areaP);
   vaslist->remaining_nargs() = (uintptr_t)register_save_areaP[1];

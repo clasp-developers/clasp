@@ -383,7 +383,7 @@
   (jit-constant-size_t num))
 
 (defun irc-literal (lit &optional (label "literal"))
-  (irc-load (literal:compile-reference-to-literal lit)))
+  (irc-load (literal:compile-reference-to-literal lit) label))
 
 (defun irc-t ()
   (irc-literal t "T"))
