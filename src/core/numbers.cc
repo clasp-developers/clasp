@@ -2955,6 +2955,20 @@ CL_DEFUN gc::Fixnum cl__integer_length(Integer_sp i) {
   return clasp_integer_length(i);
 };
 
+CL_LAMBDA(i);
+CL_DECLARE();
+CL_DOCSTRING("float-nan-p");
+CL_DEFUN bool ext__float_nan_p(Float_sp i) {
+  return clasp_float_nan_p(i);
+};
+
+CL_LAMBDA(i);
+CL_DECLARE();
+CL_DOCSTRING("float-infinity-p");
+CL_DEFUN bool ext__float_infinity_p(Float_sp i) {
+  return clasp_float_infinity_p(i);
+};
+
 SYMBOL_EXPORT_SC_(ClPkg, sqrt);
 SYMBOL_EXPORT_SC_(ClPkg, sin);
 SYMBOL_EXPORT_SC_(ClPkg, cos);
