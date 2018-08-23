@@ -315,8 +315,8 @@ List_sp Cons_O::assoc(T_sp item, T_sp key, T_sp test, T_sp testNot) const {
         if (t.test(obj1))
           return (coerce_to_list(obj));
       } else {
-        // Real error is that (car cur) is not a cons, not that cur is not a list
-        TYPE_ERROR(obj, cl::_sym_Cons_O);
+        // Real error is that (car cur) is not a list, not that cur is not a list
+        TYPE_ERROR(obj, cl::_sym_list);
       }
     }
   }
