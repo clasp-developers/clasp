@@ -1,4 +1,4 @@
-#! /usr/bin/env sbcl --dynamic-space-size 4096 --noinform
+#!/usr/local/bin/sbcl --script
 (defun read-dtrace-header (stream &optional eofp eof)
   (list (read-line stream eofp eof)
         (read-line stream eofp eof)
