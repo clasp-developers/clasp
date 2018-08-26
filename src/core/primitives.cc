@@ -33,6 +33,7 @@ THE SOFTWARE.
 #include <unistd.h>
 #include <pthread.h> // TODO: PORTING - frgo, 2017-08-04
 #include <signal.h>  // TODO: PORTING - frgo, 2017-08-04
+#include <sys/utsname.h> 
 #include <clasp/external/PicoSHA2/picosha2.h>
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
@@ -235,7 +236,11 @@ CL_LAMBDA();
 CL_DECLARE();
 CL_DOCSTRING("softwareType");
 CL_DEFUN T_sp cl__software_type() {
-  return _Nil<T_O>();
+  struct utsname aux;
+  if (uname(&aux) < 0)
+    return _Nil<T_O>();
+  else
+    return SimpleBaseString_O::make(aux.sysname);
 };
 
 CL_LAMBDA();
@@ -250,21 +255,33 @@ CL_LAMBDA();
 CL_DECLARE();
 CL_DOCSTRING("machineType");
 CL_DEFUN T_sp cl__machine_type() {
-  return _Nil<T_O>();
+  struct utsname aux;
+  if (uname(&aux) < 0)
+    return _Nil<T_O>();
+  else
+    return SimpleBaseString_O::make(aux.machine);
 };
 
 CL_LAMBDA();
 CL_DECLARE();
 CL_DOCSTRING("machineVersion");
 CL_DEFUN T_sp cl__machine_version() {
-  return _Nil<T_O>();
+  struct utsname aux;
+  if (uname(&aux) < 0)
+    return _Nil<T_O>();
+  else
+    return SimpleBaseString_O::make(aux.version);
 };
 
 CL_LAMBDA();
 CL_DECLARE();
 CL_DOCSTRING("machineInstance");
 CL_DEFUN T_sp cl__machine_instance() {
-  return _Nil<T_O>();
+  struct utsname aux;
+   if (uname(&aux) < 0)
+     return _Nil<T_O>();
+   else
+     return SimpleBaseString_O::make(aux.nodename);
 };
 
 CL_LAMBDA();
