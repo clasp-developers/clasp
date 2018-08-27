@@ -86,7 +86,7 @@ THE SOFTWARE.
 
 namespace core {
 
-void clasp_musleep(double dsec, bool alertable) {
+int clasp_musleep(double dsec, bool alertable) {
   double seconds = floor(dsec);
   double frac_seconds = dsec - seconds;
   double nanoseconds = (frac_seconds * 1000000000.0);
@@ -105,6 +105,7 @@ void clasp_musleep(double dsec, bool alertable) {
       printf("%s:%d nanosleep returned code = %d  errno = %d\n", __FILE__, __LINE__, code, errno);
     }
   }
+  return code;
 }
 
 CL_LAMBDA(seconds);
@@ -117,9 +118,10 @@ CL_DEFUN void cl__sleep(T_sp oseconds) {
   }
   double dsec = clasp_to_double(oseconds);
   if (dsec < 0.0) {
-    SIMPLE_ERROR(BF("You cannot sleep for < 0 seconds"));
+    TYPE_ERROR(oseconds,Cons_O::createList(cl::_sym_float,clasp_make_single_float(0.0)));
   }
-  clasp_musleep(dsec,false);
+  int retval = clasp_musleep(dsec,false);
+  // ignore the return value
 }
 
 

@@ -1623,6 +1623,13 @@ CL_DEFUN T_sp cl__make_string(Fixnum_sp size, T_sp initial_element, T_sp element
   if (!initial_element.characterp()) {
     TYPE_ERROR(initial_element,cl::_sym_character);
   }
+  if (!size.fixnump()) {
+    TYPE_ERROR(size,cl::_sym_fixnum);
+  }
+  Fixnum sz = size.unsafe_fixnum();
+  if (sz < 0 ) {
+    SIMPLE_ERROR(BF("Size must be >= 0"));
+  }
   claspCharacter initial_element_cc = initial_element.unsafe_character();
   if ( element_type == cl::_sym_base_char ) {
     if (!clasp_base_char_p(initial_element_cc)) {

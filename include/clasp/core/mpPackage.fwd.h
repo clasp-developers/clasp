@@ -39,7 +39,7 @@ namespace mp {
 };
 
 namespace core {
-  extern void clasp_musleep(double dsec, bool alertable);
+  extern int clasp_musleep(double dsec, bool alertable);
 }
 
 namespace mp {

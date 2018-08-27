@@ -36,6 +36,7 @@ THE SOFTWARE.
 #include <clasp/core/mpPackage.h>
 #include <clasp/core/multipleValues.h>
 #include <clasp/core/primitives.h>
+#include <clasp/core/compiler.h>
 #include <clasp/core/package.h>
 #include <clasp/core/lispList.h>
 #include <clasp/gctools/interrupt.h>
@@ -332,13 +333,29 @@ CL_DEFUN core::T_sp mp__process_active_p(Process_sp p) {
   return p->_Phase ? _lisp->_true() : _Nil<core::T_O>();
 }
 
+SYMBOL_EXPORT_SC_(MpPkg,suspend_loop);
+SYMBOL_EXPORT_SC_(MpPkg,break_suspend_loop);
+CL_DEFUN void mp__suspend_loop() {
+  printf("%s:%d %s\n", __FILE__, __LINE__, __FUNCTION__);
+  SafeExceptionStackPush save(&my_thread->exceptionStack(), core::CatchFrame,_sym_suspend_loop);
+  for ( ; ; ) {
+    core::cl__sleep(core::make_fixnum(100));
+  }
+};
+
+CL_DEFUN void mp__break_suspend_loop() {
+  printf("%s:%d %s\n", __FILE__, __LINE__, __FUNCTION__);
+  core::core__throw_function(_sym_suspend_loop,_Nil<core::T_O>());
+};
 
 CL_DEFUN void mp__process_suspend(Process_sp process) {
-  printf("%s:%d  process_suspend - implement me\n", __FILE__, __LINE__ );
+  printf("%s:%d %s\n", __FILE__, __LINE__, __FUNCTION__);
+  mp__interrupt_process(process,_sym_suspend_loop);
 };
 
 CL_DEFUN void mp__process_resume(Process_sp process) {
-  printf("%s:%d  process_resume - implement me\n", __FILE__, __LINE__ );
+  printf("%s:%d %s\n", __FILE__, __LINE__, __FUNCTION__);
+  mp__interrupt_process(process,_sym_break_suspend_loop);
 };
 
 CL_DEFUN void mp__process_yield() {
