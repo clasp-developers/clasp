@@ -47,6 +47,21 @@
 #include <clasp/core/bignum.fwd.h>
 #include <clasp/core/numbers.fwd.h>
 
+//Class Hierarchy
+//Number_0
+//  Real_O
+//    Rational_O
+//      Integer_O
+//        Fixnum_dummy_O (immediate)
+//        Bignum_O
+//      Ratio_O
+//    Float_O
+//      ShortFloat_O
+//      SingleFloat_dummy_O (immediate)
+//      DoubleFloat_O
+//      LongFloat_O
+//  Complex_O
+
 #define CLASP_PI_D 3.14159265358979323846264338327950288
 #define CLASP_PI_L 3.14159265358979323846264338327950288l
 #define CLASP_PI2_D 1.57079632679489661923132169163975144
@@ -141,6 +156,7 @@ namespace core
   SingleFloat_sp clasp_make_single_float(float d);
   DoubleFloat_sp clasp_make_double_float(double d);
   Number_sp clasp_log1_complex_inner(Number_sp r, Number_sp i);
+  void clasp_report_divide_by_zero(Number_sp x);
 };
 
 namespace core {
@@ -800,6 +816,13 @@ namespace core {
     return Ratio_O::create(num, denom);
   }
 
+  inline Rational_sp clasp_make_rational(Integer_sp num, Integer_sp denom) {
+    // will check whether denom = 1
+    return Rational_O::create(num, denom);
+  }
+
+  Number_sp clasp_make_complex (Real_sp r, Real_sp i);
+
   inline Fixnum_sp clasp_make_fixnum(gc::Fixnum i) {
     return make_fixnum(i);
   }
@@ -1079,8 +1102,9 @@ namespace core {
 
   inline Number_sp clasp_reciprocal(Number_sp x) {
     if (x.fixnump() ) {
-      if ( x.unsafe_fixnum() == 1 ) return x;
-      return Ratio_O::create(clasp_make_fixnum((Fixnum)1),x);
+      if (x.unsafe_fixnum() == 1) return x;
+      if (x.unsafe_fixnum() == 0) clasp_report_divide_by_zero(x);
+      return Rational_O::create(clasp_make_fixnum((Fixnum)1),x);
     } else if (x.single_floatp()) {
       float f = x.unsafe_single_float();
       return clasp_make_single_float(1.0 / f);

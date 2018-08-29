@@ -257,7 +257,7 @@ Real_mv clasp_floor2(Real_sp x, Real_sp y) {
       v0 = mv_v0;
       Integer_sp t1 = gc::As<Integer_sp>(mv_v0.valueGet_(1));
       //		v1 = clasp_make_ratio(clasp_nth_value(the_env, 1), y->den());
-      v1 = clasp_make_ratio(t1, ry->den());
+      v1 = clasp_divide(t1, ry->den());
       break;
     }
     case number_SingleFloat: /* FIX / SF */
@@ -314,7 +314,7 @@ Real_mv clasp_floor2(Real_sp x, Real_sp y) {
       Real_mv mv_v0 = clasp_floor2(gc::As<Real_sp>(clasp_times(x, ry->den())), ry->num());
       v0 = mv_v0;
       Integer_sp tv1 = gc::As<Integer_sp>(mv_v0.valueGet_(1));
-      v1 = clasp_make_ratio(tv1, ry->den());
+      v1 = clasp_divide(tv1, ry->den());
       break;
     }
     case number_SingleFloat: { /* BIG / SF */
@@ -353,23 +353,28 @@ Real_mv clasp_floor2(Real_sp x, Real_sp y) {
     {
       Ratio_sp rx = gc::As<Ratio_sp>(x);
       Ratio_sp ry = gc::As<Ratio_sp>(y);
-      Real_mv mv_v0 = clasp_floor2(gc::As<Real_sp>(clasp_times(rx->num(), ry->den())),
+      // rx-num/rx-den / ry-num/ry-den = rx-num* ry-den / rx-den*ry-num
+      Real_mv temp = clasp_floor2(gc::As<Real_sp>(clasp_times(rx->num(), ry->den())),
                                    gc::As<Real_sp>(clasp_times(rx->den(), ry->num())));
-      v0 = mv_v0;
-      Integer_sp tv1 = gc::As<Integer_sp>(mv_v0.valueGet_(1));
-      v1 = clasp_make_ratio(tv1, gc::As<Integer_sp>(clasp_times(rx->den(), ry->den())));
+      // do I need here to access the first value?
+      // where on earth is Real_mv defined
+      Integer_sp secondValue = gc::As<Integer_sp>(temp.valueGet_(1));
+      v0 = temp;
+      v1 = Rational_O::create(secondValue, clasp_times(rx->den(), ry->den()));
       break;
     }
     default: /* RAT / ANY */
     {
       Ratio_sp rx = gc::As<Ratio_sp>(x);
-      Real_mv mv_v0 = clasp_floor2(rx->num(), gc::As<Real_sp>(clasp_times(rx->den(), y)));
-      v0 = mv_v0;
-      Number_sp tv1 = gc::As<Number_sp>(mv_v0.valueGet_(1));
-      v1 = gc::As<Real_sp>(clasp_divide(tv1, rx->den()));
+      // rx-num/rx-den / y == (floor rx-num (* rx-den y)
+      Real_mv temp = clasp_floor2(rx->num(), gc::As<Real_sp>(clasp_times(rx->den(), y)));
+      Integer_sp secondValue = gc::As<Integer_sp>(temp.valueGet_(1));
+      v0 = temp;
+      v1 = clasp_divide(secondValue, rx->den());
       break;
     }
     }
+    break;
   case number_SingleFloat: { /* SF / ANY */
     float n = clasp_to_double(y);
     float p = clasp_single_float(x) / n;
@@ -503,7 +508,7 @@ Real_mv clasp_ceiling2(Real_sp x, Real_sp y) {
       Real_mv mv_v = clasp_ceiling2(gc::As<Real_sp>(clasp_times(x, ry->den())), ry->num());
       v0 = mv_v;
       Integer_sp tv1 = gc::As<Integer_sp>(mv_v.valueGet_(1));
-      v1 = clasp_make_ratio(tv1, ry->den());
+      v1 = Rational_O::create(tv1, ry->den());
       break;
     }
     case number_SingleFloat: { /* FIX / SF */
@@ -556,7 +561,7 @@ Real_mv clasp_ceiling2(Real_sp x, Real_sp y) {
       Real_mv mv_v = clasp_ceiling2(gc::As<Real_sp>(clasp_times(x, ry->den())), ry->num());
       v0 = mv_v;
       Integer_sp tv1 = gc::As<Integer_sp>(mv_v.valueGet_(1));
-      v1 = clasp_make_ratio(tv1, ry->den());
+      v1 = Rational_O::create(tv1, ry->den());
       break;
     }
     case number_SingleFloat: { /* BIG / SF */
@@ -600,7 +605,7 @@ Real_mv clasp_ceiling2(Real_sp x, Real_sp y) {
                                     gc::As<Real_sp>(clasp_times(rx->den(), ry->num())));
       v0 = mv_v;
       Integer_sp tv1 = gc::As<Integer_sp>(mv_v.valueGet_(1));
-      v1 = clasp_make_ratio(tv1, gc::As<Integer_sp>(clasp_times(rx->den(), ry->den())));
+      v1 = Rational_O::create(tv1, gc::As<Integer_sp>(clasp_times(rx->den(), ry->den())));
       break;
     }
     default: /* RAT / ANY */
@@ -1145,7 +1150,7 @@ CL_LAMBDA(r &optional (i 0));
 CL_DECLARE();
 CL_DOCSTRING("complex");
 CL_DEFUN Complex_sp cl__complex(Real_sp r, Real_sp i) {
-  return Complex_O::create(r, i);
+  return clasp_make_complex(r, i);
 }
 
 CL_LAMBDA(x);
