@@ -446,7 +446,11 @@ void General_O::describe(T_sp stream) {
 
 void General_O::__write__(T_sp strm) const {
   if (clasp_print_readably() && this->fieldsp()) {
-    core__print_cxx_object(this->asSmartPtr(), strm);
+    if (cl::_sym_print_object->fboundp()) {
+      core::eval::funcall(cl::_sym_print_object,this->asSmartPtr(),strm);
+    } else {
+      core__print_cxx_object(this->asSmartPtr(), strm);
+    }
   } else {
     clasp_write_string(this->__repr__(), strm);
   }
