@@ -1121,7 +1121,8 @@ Within the _irbuilder_ dynamic environment...
 	 (when ,init (funcall ,init ,alloca-sym))
 	 ,alloca-sym))))
 
-(defmacro with-alloca-insert-point (env irbuilder
+#+(or)
+(defmacro with-allocak-insert-point (env irbuilder
 				    &key alloca init cleanup)
   "Switch to the alloca-insert-point and generate code to alloca a local variable.
 Within the _irbuilder_ dynamic environment...
@@ -1163,23 +1164,19 @@ Within the _irbuilder_ dynamic environment...
 
 (defun irc-alloca-t* (&key (irbuilder *irbuilder-function-alloca*) (label ""))
   "Allocate a T_O* on the stack"
-  (with-alloca-insert-point-no-cleanup
+  (with-alloca-insert-point-no-cleanup 
     irbuilder
     :alloca (llvm-sys:create-alloca *irbuilder* %t*% (jit-constant-i32 1) label)))
 
 (defun irc-alloca-af* (env &key (irbuilder *irbuilder-function-alloca*) (label ""))
   (cmp-log "irc-alloca-af* label: %s for %s%N" label irbuilder)
-  (with-alloca-insert-point env irbuilder
-    :alloca (llvm-sys::create-alloca *irbuilder* %af*% (jit-constant-i32 1) label)
-    :init (lambda (a) );;(irc-intrinsic "newAFsp" a))
-    :cleanup (lambda (a)))); (irc-dtor "destructAFsp" a))))
+  (with-alloca-insert-point-no-cleanup irbuilder
+    :alloca (llvm-sys::create-alloca *irbuilder* %af*% (jit-constant-i32 1) label)))
 
 (defun irc-alloca-af*-value-frame-of-size (env size &key (irbuilder *irbuilder-function-alloca*) (label ""))
   (cmp-log "irc-alloca-af*-value-frame-of-size label: %s for %s%N" label irbuilder)
-  (with-alloca-insert-point env irbuilder
-    :alloca (llvm-sys::create-alloca *irbuilder* %af*% (jit-constant-i32 1) label)
-    :init (lambda (a) ); (irc-intrinsic "newAFsp" a))
-    :cleanup (lambda (a)))); (irc-dtor "destructAFsp" a))))
+  (with-alloca-insert-point-no-cleanup irbuilder
+    :alloca (llvm-sys::create-alloca *irbuilder* %af*% (jit-constant-i32 1) label)))
 
 (defun irc-alloca-i32-no-init (&key (irbuilder *irbuilder-function-alloca*) (label "i32-"))
   "Allocate space for an i32"
@@ -1187,14 +1184,14 @@ Within the _irbuilder_ dynamic environment...
 
 (defun irc-alloca-i8 (env init-val &key (irbuilder *irbuilder-function-alloca*) (label "i8-"))
   "Allocate space for an i8"
-  (with-alloca-insert-point env irbuilder
+  (with-alloca-insert-point-no-cleanup irbuilder
     :alloca (llvm-sys::create-alloca *irbuilder* %i8% (jit-constant-i32 1) label)
     :init (lambda (a) (irc-store (jit-constant-i8 init-val) a))))
 
 
 (defun irc-alloca-i32 (env init-val &key (irbuilder *irbuilder-function-alloca*) (label "i32-"))
   "Allocate space for an i32"
-  (with-alloca-insert-point env irbuilder
+  (with-alloca-insert-point-no-cleanup irbuilder
     :alloca (llvm-sys::create-alloca *irbuilder* %i32% (jit-constant-i32 1) label)
     :init (lambda (a) (irc-store (jit-constant-i32 init-val) a))))
 
