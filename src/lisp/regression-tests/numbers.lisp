@@ -197,7 +197,7 @@
       (multiple-value-bind
             (div rem)
           (floor 1/2 1.0d0)
-        (and (zerop dov)(floatp rem))))
+        (and (zerop div)(floatp rem))))
 
 ;;; ceiling
 (test ceiling-ratio-1  ;;;error rem == 0/1
