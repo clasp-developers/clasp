@@ -2998,7 +2998,7 @@ bool template_fits_in_base_string(const T1& sub, size_t start, size_t end)
   return true;
 }
 
-bool core__fits_in_base_string(T_sp tstr) {
+CL_DEFUN bool core__fits_in_base_string(T_sp tstr) {
   String_sp str = gc::As<String_sp>(tstr);
   TEMPLATE_SINGLE_STRING_DISPATCHER(str,template_fits_in_base_string,0,str->length());
 }

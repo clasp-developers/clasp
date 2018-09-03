@@ -2191,6 +2191,53 @@ CL_DEFUN T_sp core__digest_sha256(List_sp data)
   std::string result = digest.getHash();
   return SimpleBaseString_O::make(result);
 }
+
+CL_DEFUN SimpleVector_byte8_t_sp core__base_string_to_octets(T_sp tarray)
+{
+  if (!core__base_string_p(tarray)) {
+    TYPE_ERROR(tarray,cl::_sym_base_string);
+  }
+  if (gc::IsA<SimpleBaseString_sp>(tarray)) {
+    SimpleBaseString_sp sarray = gc::As_unsafe<SimpleBaseString_sp>(tarray);
+    SimpleVector_byte8_t_sp result = SimpleVector_byte8_t_O::make(sarray->length(),0,false,sarray->length(),&(*sarray)[0]);
+    return result;
+  } else if (gc::IsA<Str8Ns_sp>(tarray)) {
+    Str8Ns_sp sarray = gc::As_unsafe<Str8Ns_sp>(tarray);
+    AbstractSimpleVector_sp basesv;
+    size_t start, end;
+    sarray->asAbstractSimpleVectorRange(basesv,start,end);
+    SimpleBaseString_sp sbs = gc::As_unsafe<SimpleBaseString_sp>(basesv);
+    SimpleVector_byte8_t_sp result = SimpleVector_byte8_t_O::make((end-start),0,false,(end-start),&(*sbs)[start]);
+    return result;
+  }
+  SIMPLE_ERROR(BF("Don't get here"));
+}
+
+CL_DEFUN SimpleVector_byte8_t_sp core__character_string_that_fits_in_base_string_to_octets(T_sp tarray)
+{
+  if (gc::IsA<SimpleCharacterString_sp>(tarray)) {
+    SimpleCharacterString_sp sarray = gc::As_unsafe<SimpleCharacterString_sp>(tarray);
+    SimpleVector_byte8_t_sp result = SimpleVector_byte8_t_O::make(sarray->length(),0,false);
+    for ( int i=0; i<sarray->length(); ++i ) {
+      int c = (*sarray)[i];
+      (*result)[i] = c;
+    }
+    return result;
+  } else if (gc::IsA<StrWNs_sp>(tarray)) {
+    StrWNs_sp sarray = gc::As_unsafe<StrWNs_sp>(tarray);
+    AbstractSimpleVector_sp basesv;
+    size_t start, end;
+    sarray->asAbstractSimpleVectorRange(basesv,start,end);
+    SimpleCharacterString_sp sbs = gc::As_unsafe<SimpleCharacterString_sp>(basesv);
+    SimpleVector_byte8_t_sp result = SimpleVector_byte8_t_O::make((end-start),0,false);
+    for ( int i=0; i<sarray->length(); ++i ) {
+      int c = (*sarray)[i];
+      (*result)[i] = c;
+    }
+    return result;
+  }
+  SIMPLE_ERROR(BF("Handle Don't get here"));
+}
 };
 
 extern "C" {
