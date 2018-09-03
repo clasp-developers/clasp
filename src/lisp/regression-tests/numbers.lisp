@@ -193,6 +193,12 @@
           (floor 1/3 (expt 2 64))
         (and (zerop div)(= rem 1/3))))
 
+(test floor-ratio-float-1
+      (multiple-value-bind
+            (div rem)
+          (floor 1/2 1.0d0)
+        (and (zerop dov)(floatp rem))))
+
 ;;; ceiling
 (test ceiling-ratio-1  ;;;error rem == 0/1
       (multiple-value-bind
@@ -322,21 +328,21 @@
         (equal a b)))
 
 ;;; infinities
-(test infinity-1 (ext::float-infinity-p ext::short-float-positive-infinity))
-(test infinity-2 (ext::float-infinity-p ext::short-float-negative-infinity))
-(test infinity-3 (ext::float-infinity-p ext::single-float-positive-infinity))
-(test infinity-4 (ext::float-infinity-p ext::single-float-negative-infinity))
-(test infinity-5 (ext::float-infinity-p ext::double-float-positive-infinity))
-(test infinity-6 (ext::float-infinity-p ext::double-float-negative-infinity))
-(test infinity-7 (ext::float-infinity-p ext::long-float-positive-infinity))
-(test infinity-8 (ext::float-infinity-p ext::long-float-negative-infinity))
-(test infinity-9 (ext::float-infinity-p (+ most-positive-long-float most-positive-long-float)))
+(test infinity-1 (ext:float-infinity-p ext:short-float-positive-infinity))
+(test infinity-2 (ext:float-infinity-p ext:short-float-negative-infinity))
+(test infinity-3 (ext:float-infinity-p ext:single-float-positive-infinity))
+(test infinity-4 (ext:float-infinity-p ext:single-float-negative-infinity))
+(test infinity-5 (ext:float-infinity-p ext:double-float-positive-infinity))
+(test infinity-6 (ext:float-infinity-p ext:double-float-negative-infinity))
+(test infinity-7 (ext:float-infinity-p ext:long-float-positive-infinity))
+(test infinity-8 (ext:float-infinity-p ext:long-float-negative-infinity))
+(test infinity-9 (ext:float-infinity-p (+ most-positive-long-float most-positive-long-float)))
 
 ;;; nan
-(test nan-1 (ext::float-nan-p (/ 0s0 0s0)))
-(test nan-1 (ext::float-nan-p (/ 0.0 0.0)))
-(test nan-3 (ext::float-nan-p (/ 0d0 0d0)))
-(test nan-4 (ext::float-nan-p (/ 0l0 0l0)))
+(test nan-1 (ext:float-nan-p (/ 0s0 0s0)))
+(test nan-1 (ext:float-nan-p (/ 0.0 0.0)))
+(test nan-3 (ext:float-nan-p (/ 0d0 0d0)))
+(test nan-4 (ext:float-nan-p (/ 0l0 0l0)))
 
 
 

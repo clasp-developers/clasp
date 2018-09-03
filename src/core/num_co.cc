@@ -368,7 +368,7 @@ Real_mv clasp_floor2(Real_sp x, Real_sp y) {
       Ratio_sp rx = gc::As<Ratio_sp>(x);
       // rx-num/rx-den / y == (floor rx-num (* rx-den y)
       Real_mv temp = clasp_floor2(rx->num(), gc::As<Real_sp>(clasp_times(rx->den(), y)));
-      Integer_sp secondValue = gc::As<Integer_sp>(temp.valueGet_(1));
+      Real_sp secondValue = gc::As<Real_sp>(temp.valueGet_(1));
       v0 = temp;
       v1 = clasp_divide(secondValue, rx->den());
       break;
