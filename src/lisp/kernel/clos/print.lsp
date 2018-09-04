@@ -298,3 +298,12 @@ printer and we should rather use MAKE-LOAD-FORM."
   obj)
 
 ;;; ----------------------------------------------------------------------
+;;; Clasp specific methods
+
+(defmethod cl:print-object ((object core:general) stream)
+  (if (and *print-readably* (core:fieldsp object))
+      (progn
+        (write-string "#i" stream)
+        (write (cons (class-name (class-of object)) (core:encode object)) :stream stream))
+      (call-next-method)))
+                          
