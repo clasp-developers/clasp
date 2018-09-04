@@ -27,7 +27,10 @@
                  (progn
                    (setf (tags:character-offset% tag) (1+ prev-char-offset))
                    (return nil))
-                 (let ((l (read-line fin)))
+                 (let ((l (read-line fin nil :eof)))
+                   (when (eq l :eof)
+                     (error "While searching for character offset for tag: ~a at line ~d we hit the bottom of the file - it was not found?~%    This means an old .sif file with out of date information everything needs to be rebuilt.  Try ./waf distclean"
+                            tag search-line))
                    (incf cur-line)
                    (setq prev-char-offset char-offset)
                    (setq char-offset (+ (length l) 1 char-offset))))))))))
