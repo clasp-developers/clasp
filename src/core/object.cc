@@ -144,7 +144,7 @@ CL_DEFUN T_sp core__load_cxx_object(T_sp class_or_name, T_sp args) {
   {
     T_sp instance = theClass->make_instance();
     if (args.notnilp()) {
-      args = alist_from_plist(args);
+//      args = alist_from_plist(args);
       //      printf("%s:%d initializer alist = %s\n", __FILE__, __LINE__, _rep_(args).c_str());
       if ( instance.generalp() ) {
         General_sp ginstance(instance.unsafe_general());
@@ -331,9 +331,12 @@ void General_O::fields(Record_sp record) {
 }
 
 List_sp General_O::encode() {
-  Record_sp record = Record_O::create_encoder();
-  this->fields(record);
-  return record->data();
+  if (this->fieldsp()) {
+    Record_sp record = Record_O::create_encoder();
+    this->fields(record);
+    return record->data();
+  }
+  return _Nil<T_O>();
 }
 
 void General_O::decode(core::List_sp alist) {
