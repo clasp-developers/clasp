@@ -65,7 +65,8 @@
                                  compiler-run-time
                                  llvm-finalization-time
                                  link-string
-                                 percent-time-string)))))))
+                                 percent-time-string)
+                   (finish-output)))))))
         (t (funcall closure))))
 
 (defmacro with-compiler-timer ((&key message report-link-time verbose override) &rest body)
@@ -366,7 +367,8 @@ Compile a lisp source file into an LLVM module."
                (with-track-llvm-time
                    (write-bitcode module (core:coerce-to-filename temp-bitcode-file)))
                (when verbose
-		 (bformat t "Writing fasl file to: %s%N" output-file))
+		 (bformat t "Writing fasl file to: %s%N" output-file)
+                 (finish-output))
                (unless dry-run (llvm-link output-file :input-files (list temp-bitcode-file) :input-type :bitcode))))
             (t ;; fasl
              (error "Add support to file of type: ~a" output-type)))
