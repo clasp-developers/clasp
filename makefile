@@ -7,6 +7,9 @@ PREFIX	?= /opt/clasp
 all:
 	./waf build_dboehm
 
+cando-jupyter:
+	./waf build_cboehm && ~/Development/cando/build/boehm/iclasp-boehm -l "source-dir:extensions;cando;src;lisp;load-cando-jupyter.lisp" -e "(core:quit)"
+
 configure:
 	./waf update_dependencies
 	./waf configure --prefix=$(PREFIX)
