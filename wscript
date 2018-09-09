@@ -233,8 +233,10 @@ def update_dependencies(cfg):
                        "https://github.com/robert-strandh/Acclimation.git",
                        "dd15c86b0866fc5d8b474be0da15c58a3c04c45c")
     fetch_git_revision("src/lisp/kernel/contrib/Eclector",
-                       "https://github.com/clasp-developers/Eclector.git",
-                       "7b63e7bbe6c60d3ad3413a231835be6f5824240a")
+                       "https://github.com/robert-strandh/Eclector.git",
+                       "287ce817c0478668bd389051d2cc6b26ddc62ec9")
+    
+#                      "7b63e7bbe6c60d3ad3413a231835be6f5824240a") works with AST clasp
     fetch_git_revision("src/lisp/kernel/contrib/alexandria",
                        "https://github.com/clasp-developers/alexandria.git",
                        "e5c54bc30b0887c237bde2827036d17315f88737")

@@ -647,13 +647,15 @@ This works like compile-lambda-function in bclasp."
         (compiler-time (translate-form form :env env))
         (translate-form form :env env))))
 
-(defmethod eclector.concrete-syntax-tree:source-position
-    (stream (client eclector.concrete-syntax-tree::cst-client))
+(defvar *cst-client* (make-instance 'eclector.concrete-syntax-tree:cst-client))
+
+(defmethod eclector.parse-result:source-position
+    (stream (client eclector.concrete-syntax-tree:cst-client))
   (core:input-stream-source-pos-info stream))
 
 (defun cclasp-loop-read-and-compile-file-forms (source-sin environment)
   (let ((eof-value (gensym))
-        (eclector.reader:*client* eclector.concrete-syntax-tree::*cst-client*)
+        (eclector.reader:*client* *cst-client*)
         (read-function 'eclector.concrete-syntax-tree:cst-read)
         (*llvm-metadata* (make-hash-table :test 'eql))
         (cleavir-generate-ast:*compiler* 'cl:compile-file)
