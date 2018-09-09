@@ -56,6 +56,7 @@ THE SOFTWARE.
 #include <clasp/clbind/cl_include.h>
 #include <clasp/core/arguments.h>
 #include <clasp/core/package.h>
+#include <clasp/core/ql.h>
 #include <clasp/core/symbolTable.h>
 
 namespace clbind {
@@ -132,6 +133,24 @@ void package_::operator[](scope s) {
   core::T_sp pkg = _lisp->findPackage(packageName);
   if (pkg.nilp()) {
     pkg = _lisp->makePackage(packageName, m_nicknames, m_usePackageNames);
+  } else {
+    core::Package_sp ppkg = gc::As_unsafe<core::Package_sp>(pkg);
+    ql::list l;
+    if (m_nicknames.size()!=0) {
+      for ( auto nick : m_nicknames) {
+        l << _lisp->findPackage(nick);
+      }
+      ppkg->setNicknames(l.cons());
+    }
+    if (m_usePackageNames.size()!=0) {
+      for ( auto usen : m_usePackageNames) {
+        core::Package_sp other = _lisp->findPackage(usen);
+        bool used = ppkg->usePackage(other);
+        if (!used) {
+          printf("There was a problem (conflicting symbols?) using package %s in package %s\n", usen.c_str(), packageName.c_str());
+        }
+      }
+    }
   }
   core::DynamicScopeManager lispScope(cl::_sym_STARpackageSTAR, pkg);
   s.register_();
