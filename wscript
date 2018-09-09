@@ -373,8 +373,8 @@ class variant(object):
         return 'fasl/%s-%s-cxx.bc' % (self.bitcode_name(),name)
     def configure_for_release(self,cfg):
         cfg.define("_RELEASE_BUILD",1)
-        cfg.env.append_value('CXXFLAGS', [ '-O3', '-g' ])
-        cfg.env.append_value('CFLAGS', [ '-O3', '-g' ])
+        cfg.env.append_value('CXXFLAGS', [ '-O3', '-g', '-fPIC' ])
+        cfg.env.append_value('CFLAGS', [ '-O3', '-g', '-fPIC' ])
         cfg.define("ALWAYS_INLINE_MPS_ALLOCATIONS",1)
         if (os.getenv("CLASP_RELEASE_CXXFLAGS") != None):
             cfg.env.append_value('CXXFLAGS', os.getenv("CLASP_RELEASE_CXXFLAGS").split() )
@@ -391,7 +391,7 @@ class variant(object):
         log.debug("cfg.env.LTO_FLAG = %s", cfg.env.LTO_FLAG)
         if (cfg.env.LTO_FLAG):
             cfg.env.append_value('LDFLAGS', [ '-Wl','-mllvm', '-O0', '-g' ])
-        cfg.env.append_value('CFLAGS', [ '-O0', '-g' ])
+        cfg.env.append_value('CFLAGS', [ '-O0', '-g', '-fPIC' ])
         if (os.getenv("CLASP_DEBUG_CXXFLAGS") != None):
             cfg.env.append_value('CXXFLAGS', os.getenv("CLASP_DEBUG_CXXFLAGS").split() )
         if (os.getenv("CLASP_DEBUG_LINKFLAGS") != None):
@@ -706,6 +706,8 @@ def configure(cfg):
     if (cfg.env['DEST_OS'] == LINUX_OS):
         cfg.env.append_value('CXXFLAGS',['-fno-omit-frame-pointer', '-mno-omit-leaf-frame-pointer'])
         cfg.env.append_value('CFLAGS',['-fno-omit-frame-pointer', '-mno-omit-leaf-frame-pointer'])
+    cfg.env.append_value('CXXFLAGS',['-fPIC'])
+    cfg.env.append_value('CFLAGS',['-fPIC'])
 #    if ('program_name' in cfg.__dict__):
 #        pass
 #    else:

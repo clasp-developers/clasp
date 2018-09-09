@@ -254,6 +254,7 @@ namespace core {
   int core__ihs_current_frame();
 /*! Set the current core:*ihs-current* value.
       If the idx is out of bounds then return a valid value */
+void core__gdb(T_sp msg);
   T_mv core__valid_function_name_p(T_sp arg);
   int core__set_ihs_current_frame(int idx);
   void core__exception_stack_dump();
