@@ -30,6 +30,7 @@
 (load (compile-file "sys:regression-tests;misc.lisp"))
 (load (compile-file "sys:regression-tests;read01.lisp"))
 (load (compile-file "sys:regression-tests;streams01.lisp"))
+(load (compile-file "sys:regression-tests;loop.lisp"))
 
 (progn
   (note-test-finished)

@@ -103,3 +103,6 @@
            (unless (name-char name)
              (push name result)))
          result)))
+
+(test test-char-17 (char/= #\a #\b #\c #\d))
+(test test-char-18 (let ()(char/= #\a #\b #\c #\d)))
