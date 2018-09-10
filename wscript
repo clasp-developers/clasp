@@ -224,7 +224,7 @@ def update_dependencies(cfg):
                        "https://github.com/Bike/SICL.git",
                        "80b08f787b55d0095bbf617f7910b18a64f940fc")
     fetch_git_revision("src/lisp/kernel/contrib/Concrete-Syntax-Tree",
-                       "https://github.com/clasp-developers/Concrete-Syntax-Tree.git",
+                       "https://github.com/robert-strandh/Concrete-Syntax-Tree.git",
                        "8d8c5abf8f1690cb2b765241d81c2eb86d60d77e")
     fetch_git_revision("src/lisp/kernel/contrib/closer-mop",
                        "https://github.com/pcostanza/closer-mop.git",
