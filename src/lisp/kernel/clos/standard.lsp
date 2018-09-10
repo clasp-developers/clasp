@@ -193,7 +193,10 @@
                  (class-direct-superclasses class)))))
 
 (defun finalize-unless-forward (class)
-  (unless (find-if #'has-forward-referenced-parents (class-direct-superclasses class))
+  (unless (or
+           ;; We used to have all forward-referenced classes "finalized", weirdly.
+           (forward-referenced-class-p class)
+           (find-if #'has-forward-referenced-parents (class-direct-superclasses class)))
     (finalize-inheritance class)))
 
 (defmethod make-instances-obsolete ((class class))
