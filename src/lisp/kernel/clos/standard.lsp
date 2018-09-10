@@ -320,9 +320,6 @@ argument was supplied for metaclass ~S." (class-of class))))))))
 ;;; ----------------------------------------------------------------------
 ;;; FINALIZATION OF CLASS INHERITANCE
 ;;;
-(defun forward-referenced-class-p (x)
-  (let ((y (find-class 'FORWARD-REFERENCED-CLASS nil)))
-    (and y (si::subclassp (class-of x) y))))
 
 (defmethod finalize-inheritance ((class class))
   ;; FINALIZE-INHERITANCE computes the guts of what defines a class: the

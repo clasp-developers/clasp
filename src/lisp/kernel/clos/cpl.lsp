@@ -12,6 +12,11 @@
 
 (in-package "CLOS")
 
+;;; Used below, so it needs to be defined at least before compute-clos-cpl is called.
+(defun forward-referenced-class-p (x)
+  (let ((y (find-class 'FORWARD-REFERENCED-CLASS nil)))
+    (and y (si::subclassp (class-of x) y))))
+
 ;;; ----------------------------------------------------------------------
 ;;; ORDERING OF CLASSES
 ;;;
@@ -75,13 +80,16 @@
 		   (precedence-lists (list superclasses)))
 	       (loop (unless superclasses
 		       (return (values class-list precedence-lists)))
-		  (let ((next-class (pop superclasses)))
-		    (unless (member next-class class-list :test 'eql)
-		      (let ((more-classes (slot-value next-class 'direct-superclasses)))
-			(setf class-list (list* next-class class-list)
-			      precedence-lists (list* (list* next-class more-classes)
-						      precedence-lists)
-			      superclasses (append more-classes superclasses))))))))
+                     (let ((next-class (pop superclasses)))
+                       (when (forward-referenced-class-p next-class)
+                         (error "Cannot compute class precedence list for forward-referenced class ~A."
+                                (class-name next-class)))
+                       (unless (member next-class class-list :test 'eql)
+                         (let ((more-classes (slot-value next-class 'direct-superclasses)))
+                           (setf class-list (list* next-class class-list)
+                                 precedence-lists (list* (list* next-class more-classes)
+                                                         precedence-lists)
+                                 superclasses (append more-classes superclasses))))))))
 	   (cycle-error (class)
 	     (error "A cycle has been detected in the class precedence list for ~A."
 		    (class-name class)))
@@ -114,9 +122,9 @@
 		   (setf (first l) (rest one-list)))))))
     (cond ((null superclasses)
 	   (list new-class))
-	  ((endp (rest superclasses))
-	   (let ((class (first superclasses)))
-	     (list* new-class (slot-value class 'precedence-list))))
+	  ((and (endp (rest superclasses))
+                (not (forward-referenced-class-p (first superclasses))))
+           (list* new-class (slot-value (first superclasses) 'precedence-list)))
 	  (t
 	   (multiple-value-bind (class-list precedence-lists)
 	       (walk-supers superclasses)
