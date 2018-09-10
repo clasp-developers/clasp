@@ -427,8 +427,13 @@ and cannot be added to ~A." method other-gf gf)))
   ())
 
 (defun recursively-update-class-initargs-cache (a-class)
-  (precompute-valid-initarg-keywords a-class)
-  (mapc #'recursively-update-class-initargs-cache (class-direct-subclasses a-class)))
+  ;; Bug #588: If a class is forward referenced and you define an initialize-instance
+  ;; (or whatever) method on it, it got here and tried to compute valid initargs, which
+  ;; involved taking the class-prototype, which couldn't be allocated of course.
+  ;; There's no value in precomputing the initargs for an unfinished class, so we don't.
+  (when (class-finalized-p a-class)
+    (precompute-valid-initarg-keywords a-class)
+    (mapc #'recursively-update-class-initargs-cache (class-direct-subclasses a-class))))
 
 (defmethod update-dependent ((object generic-function) (dep initargs-updater)
 			     &rest initargs
