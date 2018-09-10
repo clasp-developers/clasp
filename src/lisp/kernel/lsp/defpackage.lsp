@@ -50,12 +50,11 @@
 
    Each standard OPTION is a list of keyword (the name of the option)
    and associated arguments.  No part of a DEFPACKAGE form is evaluated.
-   Except for the :SIZE and :DOCUMENTATION options, more than one option 
+   Except for the :DOCUMENTATION option, more than one option 
    of the same kind may occur within the same DEFPACKAGE form.
 
   Valid Options:
 	(:documentation		string)
-	(:size			integer)
 	(:nicknames		{package-name}*)
 	(:shadow		{symbol-name}*)
 	(:shadowing-import-from	package-name {symbol-name}*)
@@ -69,9 +68,7 @@
 	 If a symbol is interned in the package being created and
 	 if a symbol with the same print name appears as an external
 	 symbol of one of the packages in the :EXPORT-FROM option,
-	 then the symbol is exported from the package being created.
-
-	 :SIZE is used only in Genera and Allegro.]"
+	 then the symbol is exported from the package being created.]"
 
   (dolist (option options)
     (unless (member (first option)
@@ -101,9 +98,9 @@
 		 (when (string= o-option option)
 		   (setq output (union o-symbols output :test #'equal)))))
 	     output))
-    (dolist (option '(:SIZE :DOCUMENTATION))
+    (dolist (option '(:DOCUMENTATION)) ; could add more later.
       (when (<= 2 (count option options ':key #'car))
-	(si::simple-program-error "DEFPACKAGE option ~s specified more than once."
+	(simple-program-error "DEFPACKAGE option ~s specified more than once."
 				  option)))
     (setq name (string name))
     (let* ((nicknames (option-values ':nicknames options))
@@ -120,7 +117,7 @@
 					  interned-symbol-names
 					  (loop for list in shadowing-imported-from-symbol-names-list append (rest list))
 					  (loop for list in imported-from-symbol-names-list append (rest list))))
-	(si::simple-program-error
+	(simple-program-error
 	 "The symbol ~s cannot coexist in these lists:~{ ~s~}"
 	 (first duplicate)
 	 (loop for num in (rest duplicate)
@@ -131,7 +128,7 @@
 			 (4 ':IMPORT-FROM)))))
       (dolist (duplicate (find-duplicates exported-symbol-names
 					  interned-symbol-names))
-	(si::simple-program-error
+	(simple-program-error
 	 "The symbol ~s cannot coexist in these lists:~{ ~s~}"
 	 (first duplicate)
 	 (loop for num in (rest duplicate) collect
@@ -139,7 +136,7 @@
 		 (1 ':EXPORT)
 		 (2 ':INTERN)))))
       `(eval-when (eval compile load)
-        (si::dodefpackage
+        (dodefpackage
 	,name
 	',nicknames
 	,(car documentation)
