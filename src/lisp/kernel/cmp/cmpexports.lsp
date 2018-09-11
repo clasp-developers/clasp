@@ -164,6 +164,7 @@
           jit-constant-i8
           jit-constant-i32
           jit-constant-i64
+          *default-function-attributes*
           ensure-jit-constant-i64
           jit-constant-size_t
           jit-constant-unique-string-ptr

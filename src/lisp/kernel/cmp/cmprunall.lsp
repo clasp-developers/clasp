@@ -46,7 +46,9 @@ load-time-value manager (true - in COMPILE-FILE) or not (false - in COMPILE)."
                                                     %fn-start-up%
                                                     'llvm-sys:internal-linkage
                                                     *the-module*
-                                                    :argument-names +fn-start-up-argument-names+))
+                                                    :argument-names +fn-start-up-argument-names+
+                                                    :function-attributes (list* "optnone" *default-function-attributes*)
+                                                    ))
            (,irbuilder-alloca (llvm-sys:make-irbuilder *llvm-context*))
            (,irbuilder-body (llvm-sys:make-irbuilder *llvm-context*)))
        (let* ((*run-all-function* ,run-all-fn)
