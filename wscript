@@ -217,9 +217,9 @@ def fetch_git_revision(path, url, revision = "", label = "master"):
         raise Exception("Failed to fetch git url %s" % url)
 
 def add_cando_extension(cfg):
-    fetch_git_revision("extensions",
+    fetch_git_revision("extensions/cando",
                        "https://github.com/drmeister/cando.git",
-                       "master")
+                       label="dev")
     
 
 def update_dependencies(cfg):
