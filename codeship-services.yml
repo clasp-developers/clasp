@@ -1,0 +1,7 @@
+
+codeship-build-clasp:
+  build:
+    image: codeship-build-clasp
+    dockerfile: tools/dockerfiles/codeship-build-clasp/Dockerfile
+  environment:
+    EXAMPLE_ENV_VAR: example-var
