@@ -24,6 +24,7 @@ RUN apt-get -y install \
   clang-6.0 binutils python-clang-6.0 lld-6.0 libzmq3-dev \
   && apt-get clean
 
+RUN dpkg-query -L libboost-filesystem1.62.0
 RUN apt-get -y install git
 RUN apt-get -y install sbcl
 
