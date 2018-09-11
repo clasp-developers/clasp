@@ -9,6 +9,7 @@ all:
 
 cando-jupyter:
 	./waf build_cboehm && ~/Development/cando/build/boehm/iclasp-boehm -l "source-dir:extensions;cando;src;lisp;load-cando-jupyter.lisp" -e "(core:quit)"
+	echo "Build done"
 
 configure:
 	./waf update_dependencies
