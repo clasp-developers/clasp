@@ -1,0 +1,4 @@
+- name: build-clasp
+  tag: testing
+  service: foo
+  command: echo foo
