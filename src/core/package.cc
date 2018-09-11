@@ -43,6 +43,7 @@ THE SOFTWARE.
 #include <clasp/core/bignum.h>
 #include <clasp/core/array.h>
 #include <clasp/core/multipleValues.h>
+#include <clasp/core/evaluator.h> // for eval for assoc :(
 
 // last include is wrappers.h
 #include <clasp/core/wrappers.h>
@@ -83,6 +84,28 @@ CL_DEFUN T_sp cl__package_nicknames(T_sp pkg) {
   Package_sp package = coerce::packageDesignator(pkg);
   return package->getNicknames();
 };
+
+CL_LAMBDA(pkg);
+CL_DECLARE();
+CL_DOCSTRING("Returns an alist of (local-nickname . actual-package) describing the nicknames local to the package. \
+LOCAL-NICKNAMEs are strings. ACTUAL-PACKAGEs are packages.");
+CL_DEFUN T_sp ext__package_local_nicknames(T_sp pkg) {
+  Package_sp package = coerce::packageDesignator(pkg);
+  return package->getLocalNicknames();
+}
+
+CL_LAMBDA(local-nickname actual-package &optional (package *package*));
+CL_DECLARE();
+CL_DOCSTRING("Add LOCAL-NICKNAME (a string designator) as a local nickname in PACKAGE (a package designator) of ACTUAL-PACKAGE (a package designator).");
+CL_DEFUN T_sp ext__add_package_local_nickname(T_sp local_nickname, T_sp actual_package, T_sp package) {
+  // TODO: rethink locking. Signal more errors.
+  SimpleString_sp nick = coerce::simple_string(local_nickname);
+  Package_sp actual = coerce::packageDesignator(actual_package);
+  Package_sp dest = coerce::packageDesignator(package);
+  List_sp existing_locals = dest->getLocalNicknames();
+  dest->setLocalNicknames(Cons_O::create(Cons_O::create(nick, actual), existing_locals));
+  return dest;
+}
 
 CL_LAMBDA(symbol &optional (package *package*));
 CL_DECLARE();
@@ -518,6 +541,15 @@ bool Package_O::usingPackageP_no_lock(Package_sp usePackage) const {
 bool Package_O::usingPackageP(Package_sp usePackage) const {
   WITH_PACKAGE_READ_LOCK(this);
   return this->usingPackageP_no_lock(usePackage);
+}
+
+// Find a package by local nickname, or return NIL.
+T_sp Package_O::findPackageByLocalNickname(String_sp name) {
+  List_sp nicks = this->getLocalNicknames();
+  T_sp pair = eval::funcall(cl::_sym_assoc, name, nicks, kw::_sym_test, cl::_sym_string_EQ_);
+  if (pair.nilp())
+    return pair; // no result
+  else return oCdr(pair);
 }
 
   //

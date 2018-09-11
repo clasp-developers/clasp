@@ -74,7 +74,7 @@
     (unless (member (first option)
 		    '(:DOCUMENTATION :SIZE :NICKNAMES :SHADOW
 		      :SHADOWING-IMPORT-FROM :USE :IMPORT-FROM :INTERN :EXPORT
-		      :EXPORT-FROM) :test #'eq)
+		      :EXPORT-FROM :LOCAL-NICKNAMES) :test #'eq)
       (cerror "Proceed, ignoring this option."
 	      "~s is not a valid DEFPACKAGE option." option)))
   (labels ((to-string (x) (if (numberp x) x (string x)))
@@ -93,10 +93,9 @@
 	     output)
 	   (option-values (option options &aux output)
 	     (dolist (o options)
-	       (let* ((o-option (first o))
-		      (o-symbols (mapcar #'to-string (cdr o))))
+	       (let ((o-option (first o)))
 		 (when (string= o-option option)
-		   (setq output (union o-symbols output :test #'equal)))))
+		   (setq output (union (mapcar #'to-string (cdr o)) output :test #'equal)))))
 	     output))
     (dolist (option '(:DOCUMENTATION)) ; could add more later.
       (when (<= 2 (count option options ':key #'car))
@@ -112,7 +111,11 @@
 	    (option-values-list ':shadowing-import-from options))
 	   (imported-from-symbol-names-list
 	    (option-values-list ':import-from options))
-	   (exported-from-package-names (option-values ':export-from options)))
+	   (exported-from-package-names (option-values ':export-from options))
+           (local-nicknames-list
+             (loop for option in options
+                   when (eq (car option) :local-nicknames)
+                     append (cdr option))))
       (dolist (duplicate (find-duplicates shadowed-symbol-names
 					  interned-symbol-names
 					  (loop for list in shadowing-imported-from-symbol-names-list append (rest list))
@@ -146,19 +149,21 @@
 	',exported-symbol-names
 	',shadowing-imported-from-symbol-names-list
 	',imported-from-symbol-names-list
-	',exported-from-package-names)))))
+	',exported-from-package-names
+        ',local-nicknames-list)))))
 
 
 (defun dodefpackage (name
-		    nicknames
-		    documentation
-		    use
-		    shadowed-symbol-names
-		    interned-symbol-names
-		    exported-symbol-names
-		    shadowing-imported-from-symbol-names-list
-		    imported-from-symbol-names-list
-		    exported-from-package-names)
+                     nicknames
+                     documentation
+                     use
+                     shadowed-symbol-names
+                     interned-symbol-names
+                     exported-symbol-names
+                     shadowing-imported-from-symbol-names-list
+                     imported-from-symbol-names-list
+                     exported-from-package-names
+                     local-nicknames-list)
   (if (find-package name)
       (progn ; (rename-package name name)
         (when nicknames
@@ -176,7 +181,7 @@
           (signal-simple-error 'simple-package-error "Create the package"
                                "The name ~s does not designate any package"
                                (list (first item))
-                               :package (find-package name)))
+                               :package *package*))
 	(dolist (name (rest item))
 	  (shadowing-import (find-or-make-symbol name package)))))
     (use-package use)
@@ -192,7 +197,14 @@
       (do-external-symbols (symbol (find-package package))
 	(when (nth 1 (multiple-value-list
 		      (find-symbol (string symbol))))
-	  (export (list (intern (string symbol))))))))
+	  (export (list (intern (string symbol)))))))
+    (dolist (spec local-nicknames-list)
+      (unless (and (consp spec) (consp (cdr spec)) (null (cddr spec)))
+        (simple-program-error
+         "~a is not a valid ~a specification"
+         spec :local-nicknames))
+      (destructuring-bind (nickname actual) spec
+        (ext:add-package-local-nickname nickname actual))))
   (find-package name))
 
 (defun find-or-make-symbol (name package)
