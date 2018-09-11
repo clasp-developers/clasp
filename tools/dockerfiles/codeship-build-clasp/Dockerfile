@@ -24,9 +24,13 @@ RUN apt-get -y install \
   clang-6.0 binutils python-clang-6.0 lld-6.0 libzmq3-dev \
   && apt-get clean
 
-RUN mkdir /usr/Development/clasp
+RUN mkdir -p /usr/Development/clasp
 WORKDIR /usr/Development/clasp
 
 COPY . .
+
+RUN ./waf distclean
+RUN ./waf configure
+RUN ./waf build_cboehm
 
 CMD ["printenv"]
