@@ -7,7 +7,7 @@ RUN apt-get update && apt-get -y upgrade && apt-get install -y wget curl
 # Copied from the original dependencies
 RUN apt-get update && apt-get upgrade -y && apt-get install -y \
   libunwind-dev liblzma-dev libgmp-dev binutils-gold binutils-dev \
-  zlib1g-dev libbz2-dev libexpat-dev
+  zlib1g-dev libbz2-dev libexpat-dev libgc-dev
 
 # Maybe need these...
 #  libncurses-dev libboost-filesystem-dev libboost-regex-dev \
