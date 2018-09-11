@@ -20,7 +20,7 @@ RUN apt-get update && apt-get upgrade -y && apt-get install -y \
 # install clasp runtime dependencies
 RUN apt-get -y install \
   libboost-filesystem1.62.0 libboost-date-time1.62.0 libboost-program-options1.62.0 \
-  libboost-iostreams1.62.0 libgc1c2 llvm-6.0-runtime libgmpxx4ldbl \
+  libboost-system1.62.0 libboost-iostreams1.62.0 libgc1c2 llvm-6.0-runtime libgmpxx4ldbl \
   clang-6.0 binutils python-clang-6.0 lld-6.0 libzmq3-dev \
   && apt-get clean
 
