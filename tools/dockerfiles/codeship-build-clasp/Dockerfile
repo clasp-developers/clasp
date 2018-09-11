@@ -24,6 +24,8 @@ RUN apt-get -y install \
   clang-6.0 binutils python-clang-6.0 lld-6.0 libzmq3-dev \
   && apt-get clean
 
+RUN apt-get -y install git
+
 RUN mkdir -p /usr/Development/clasp
 WORKDIR /usr/Development/clasp
 
