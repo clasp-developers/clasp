@@ -25,6 +25,7 @@ RUN apt-get -y install \
   && apt-get clean
 
 RUN apt-get -y install git
+RUN apt-get -y install sbcl
 
 RUN mkdir -p /usr/Development/clasp
 WORKDIR /usr/Development/clasp
