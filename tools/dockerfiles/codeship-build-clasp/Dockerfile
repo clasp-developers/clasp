@@ -2,8 +2,7 @@ FROM debian:buster
 MAINTAINER Christian Schafmeister <meister@temple.edu>
 
 # install all clasp build deps: mostly clang, boost, LLVM4
-RUN apt-get update && apt-get -y upgrade && apt-get install -y \
-  software-properties-common python-software-properties wget curl
+RUN apt-get update && apt-get -y upgrade && apt-get install -y wget curl
 RUN curl http://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add -
 RUN apt-add-repository "deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial-6.0 main"
 RUN apt-get update && apt-get install -y \
