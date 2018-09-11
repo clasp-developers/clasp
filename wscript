@@ -679,6 +679,13 @@ def configure(cfg):
 #        cfg.check_cxx(lib='lzma', cflags='-Wall', uselib_store='LZMA')
     else:
         pass
+    # Check the boost libraries one at a time and then all together to put them in uselib_store
+    for onelib in BOOST_LIBRARIES:
+        if (cfg.env['LINK_STATIC']):
+            cfg.check_cxx(stlib=onelib, cflags='-Wall', uselib_store='BOOST-%s'%onelib)
+        else:
+            cfg.check_cxx(lib=onelib, cflags='-Wall', uselib_store='BOOST-%s'%onelib)
+    log.info("Checking for all boost libraries together to put them all in one uselib_store")
     if (cfg.env['LINK_STATIC']):
         cfg.check_cxx(stlib=BOOST_LIBRARIES, cflags='-Wall', uselib_store='BOOST')
     else:
