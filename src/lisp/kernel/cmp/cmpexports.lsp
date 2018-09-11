@@ -179,6 +179,7 @@
           walk-form-for-source-info
           with-begin-end-catch
           preserve-exception-info
+          *dbg-generate-dwarf*
           with-new-function
           with-dbg-function
           with-dbg-lexical-block

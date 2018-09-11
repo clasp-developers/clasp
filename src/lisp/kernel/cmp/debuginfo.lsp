@@ -28,7 +28,7 @@
 
 (defconstant +file.dbg+ :file.dbg)
 
-(defvar *dbg-generate-dwarf* t)
+;;; (defvar *dbg-generate-dwarf* t) <<--- defined in init.lsp
 (defvar *dbg-compile-unit* )
 (defvar *dbg-current-file* )
 (defvar *dbg-current-function*)
