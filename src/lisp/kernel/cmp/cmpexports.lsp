@@ -253,7 +253,8 @@
           number-of-entries
           reference-literal
           load-time-reference-literal
-          codegen-rtv
+          codegen-rtv-bclasp
+          codegen-rtv-cclasp
           codegen-literal
           codegen-quote
           compile-reference-to-literal

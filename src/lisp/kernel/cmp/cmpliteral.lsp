@@ -773,20 +773,33 @@ Return the orderered-raw-constants-list and the constants-table GlobalVariable"
         (values (constants-table-reference data-or-index (pretty-load-time-name literal data-or-index)) literal-name)
         data-or-index)))
 
-(defun codegen-rtv (result obj)
-  "bclasp calls this to get copy the run-time-value for obj into result"
+(defun codegen-rtv-bclasp (result obj)
+  "bclasp calls this to get copy the run-time-value for obj into result.
+Returns (value index t) if the value was put in the literal vector or it
+returns (value immediate nil) if the value is an immediate value."
   (multiple-value-bind (immediate?literal-node-runtime in-array)
       (run-time-reference-literal obj t)
     (if in-array
         (let* ((literal-node-runtime immediate?literal-node-runtime)
                (index (literal-node-runtime-index literal-node-runtime)))
-          (when result
-            (cmp:irc-store (constants-table-value index) result))
+          (cmp:irc-store (constants-table-value index) result)
           index)
         (let ((immediate immediate?literal-node-runtime))
-          (when result
-            (cmp:irc-store immediate result))
-          :poison-value-from-codegen-rtv))))
+          (cmp:irc-store immediate result)
+          :poison-value-from-codegen-rtv-bclasp))))
+
+(defun codegen-rtv-cclasp (obj)
+  "bclasp calls this to get copy the run-time-value for obj into result.
+Returns (value index t) if the value was put in the literal vector or it
+returns (value immediate nil) if the value is an immediate value."
+  (multiple-value-bind (immediate?literal-node-runtime in-array)
+      (run-time-reference-literal obj t)
+    (if in-array
+        (let* ((literal-node-runtime immediate?literal-node-runtime)
+               (index (literal-node-runtime-index literal-node-runtime)))
+          (values index t))
+        (let ((immediate immediate?literal-node-runtime))
+          (values immediate nil)))))
 
 (defun codegen-literal (result object env)
   "This is called by bclasp.  If result is nil then just return the ltv index.

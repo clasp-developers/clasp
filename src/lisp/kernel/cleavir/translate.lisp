@@ -40,14 +40,15 @@ when this is t a lot of graphs will be generated.")
     (setf (metadata function-info) function-metadata)))
 
 (defun set-instruction-source-position (origin function-metadata)
-  (if origin
-      (let ((source-pos-info (if (consp origin) (car origin) origin)))
-        (llvm-sys:set-current-debug-location-to-line-column-scope
-         cmp:*irbuilder*
-         (core:source-pos-info-lineno source-pos-info)
-         (1+ (core:source-pos-info-column source-pos-info))
-         function-metadata))
-      (llvm-sys:clear-current-debug-location cmp:*irbuilder*)))
+  (when cmp:*dbg-generate-dwarf*
+    (if origin
+        (let ((source-pos-info (if (consp origin) (car origin) origin)))
+          (llvm-sys:set-current-debug-location-to-line-column-scope
+           cmp:*irbuilder*
+           (core:source-pos-info-lineno source-pos-info)
+           (1+ (core:source-pos-info-column source-pos-info))
+           function-metadata))
+        (llvm-sys:clear-current-debug-location cmp:*irbuilder*))))
 
 
 (defvar *current-source-position* nil)
