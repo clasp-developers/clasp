@@ -546,10 +546,14 @@ bool Package_O::usingPackageP(Package_sp usePackage) const {
 // Find a package by local nickname, or return NIL.
 T_sp Package_O::findPackageByLocalNickname(String_sp name) {
   List_sp nicks = this->getLocalNicknames();
-  T_sp pair = eval::funcall(cl::_sym_assoc, name, nicks, kw::_sym_test, cl::_sym_string_EQ_);
-  if (pair.nilp())
-    return pair; // no result
-  else return oCdr(pair);
+  // This is used by findPackage, which happens pretty early,
+  // so we use underlying stuff instead of cl:assoc.
+  if (nicks.notnilp()) {
+    T_sp pair = nicks.asCons()->assoc(name, _Nil<T_O>(), cl::_sym_string_EQ_, _Nil<T_O>());
+    if (pair.nilp())
+      return pair; // no result
+    else return oCdr(pair);
+  } else return nicks;
 }
 
   //
