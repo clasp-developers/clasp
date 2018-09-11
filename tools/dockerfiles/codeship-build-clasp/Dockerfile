@@ -31,6 +31,7 @@ WORKDIR /usr/Development/clasp
 
 COPY . .
 
+RUN ./waf add_cando_extension
 RUN ./waf distclean
 RUN ./waf configure
 RUN ./waf build_cboehm
