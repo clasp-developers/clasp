@@ -43,7 +43,7 @@ THE SOFTWARE.
 #include <clasp/core/bignum.h>
 #include <clasp/core/array.h>
 #include <clasp/core/multipleValues.h>
-#include <clasp/core/evaluator.h> // for eval for assoc :(
+#include <clasp/core/evaluator.h> // for eval::funcall
 
 // last include is wrappers.h
 #include <clasp/core/wrappers.h>
@@ -87,37 +87,34 @@ CL_DEFUN T_sp cl__package_nicknames(T_sp pkg) {
 
 CL_LAMBDA(pkg);
 CL_DECLARE();
-CL_DOCSTRING("Returns an alist of (local-nickname . actual-package) describing the nicknames local to the package. \
-LOCAL-NICKNAMEs are strings. ACTUAL-PACKAGEs are packages.");
-CL_DEFUN T_sp ext__package_local_nicknames(T_sp pkg) {
-  Package_sp package = coerce::packageDesignator(pkg);
+CL_DOCSTRING("Grab the (local-nickname . package) alist without locking. No coercion.");
+CL_DEFUN T_sp core__package_local_nicknames_internal(Package_sp package) {
   return package->getLocalNicknames();
 }
 
+CL_LISPIFY_NAME("core:package-local-nicknames-internal");
 CL_LAMBDA(nicks pkg);
 CL_DECLARE();
-CL_DOCSTRING("Set the local nicknames of PKG to be NICKS. Internal. Use with caution.");
-CL_DEFUN void core__set_package_local_nicknames(T_sp nicks, T_sp pkg) {
-  Package_sp package = coerce::packageDesignator(pkg);
+CL_DOCSTRING("Set the local nicknames of PKG to be NICKS. Internal, unlocked, no coercion. Be careful.");
+CL_DEFUN_SETF void set_package_local_nicknames_internal(T_sp nicks, Package_sp package) {
   package->setLocalNicknames(nicks);
 }
 
-CL_LAMBDA(local-nickname actual-package &optional (package *package*));
+// FIXME: Maybe we can just grab the lock in CL?
+CL_LAMBDA(pkg thunk);
 CL_DECLARE();
-CL_DOCSTRING("Add LOCAL-NICKNAME (a string designator) as a local nickname in PACKAGE (a package designator) of ACTUAL-PACKAGE (a package designator).");
-CL_DEFUN T_sp ext__add_package_local_nickname(T_sp local_nickname, T_sp actual_package, T_sp package) {
-  // TODO: rethink locking. Signal more, continuable errors.
-  SimpleString_sp nick = coerce::simple_string(local_nickname);
-  Package_sp actual = coerce::packageDesignator(actual_package);
-  Package_sp dest = coerce::packageDesignator(package);
-  List_sp existing_locals = dest->getLocalNicknames();
+CL_DOCSTRING("Call THUNK while holding the read lock for PKG, and return the result.");
+CL_DEFUN T_sp core__call_with_package_read_lock(Package_sp pkg, Function_sp thunk) {
+  WITH_PACKAGE_READ_LOCK(pkg);
+  return eval::funcall(thunk);
+}
 
-  if (dest->findPackageByLocalNickname(nick).notnilp())
-    SIMPLE_ERROR(BF("Error: %s is already a local nickname in %s") %
-                 _rep_(nick) % dest->getName());
-  // TODO: Ban nicknames of "CL", "COMMON-LISP", "KEYWORD"
-  dest->setLocalNicknames(Cons_O::create(Cons_O::create(nick, actual), existing_locals));
-  return dest;
+CL_LAMBDA(pkg thunk);
+CL_DECLARE();
+CL_DOCSTRING("Call THUNK while holding the read-write lock for PKG, and return the result.");
+CL_DEFUN T_sp core__call_with_package_read_write_lock(Package_sp pkg, Function_sp thunk) {
+  WITH_PACKAGE_READ_WRITE_LOCK(pkg);
+  return eval::funcall(thunk);
 }
 
 CL_LAMBDA(symbol &optional (package *package*));
@@ -558,6 +555,7 @@ bool Package_O::usingPackageP(Package_sp usePackage) const {
 
 // Find a package by local nickname, or return NIL.
 T_sp Package_O::findPackageByLocalNickname(String_sp name) {
+  WITH_PACKAGE_READ_LOCK(this);
   List_sp nicks = this->getLocalNicknames();
   // This is used by findPackage, which happens pretty early,
   // so we use underlying stuff instead of cl:assoc.

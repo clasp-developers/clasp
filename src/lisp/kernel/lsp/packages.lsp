@@ -99,6 +99,10 @@
             system
             float-nan-string
             float-infinity-string
+            package-local-nicknames
+            add-package-local-nickname
+            remove-package-local-nickname
+            package-locally-nicknamed-by-list
             )))
 
 

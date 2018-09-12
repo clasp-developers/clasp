@@ -97,11 +97,9 @@ class Package_O : public General_O {
   };
 
   void setLocalNicknames(List_sp localNicknames) {
-    WITH_PACKAGE_READ_WRITE_LOCK(this);
     this->_LocalNicknames = localNicknames;
   }
   List_sp getLocalNicknames() const {
-    WITH_PACKAGE_READ_LOCK(this);
     return this->_LocalNicknames;
   }
   T_sp findPackageByLocalNickname(String_sp);

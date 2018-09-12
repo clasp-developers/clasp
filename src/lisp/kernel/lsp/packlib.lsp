@@ -183,23 +183,3 @@ If PACKAGE is non-NIL, then only the specified PACKAGE is searched."
 	     (when (search string (string symbol) :test #'char-equal)
 	       (setq list (cons symbol list))))))
     list))
-
-(in-package #:ext)
-
-(defun remove-package-local-nickname (nickname-designator &optional (package-designator *package*))
-  (let* ((package (find-package package-designator))
-         (nickname (string nickname-designator))
-         (locals (ext:package-local-nicknames package))
-         (pair (assoc nickname locals :test #'string=)))
-    (when pair ; else return NIL
-      (core:set-package-local-nicknames (remove pair locals :test #'eq) package)
-      t)))
-(export 'remove-package-local-nickname)
-
-(defun package-locally-nicknamed-by-list (package-designator)
-  (let ((package (find-package package-designator))
-        (result nil))
-    (dolist (p (list-all-packages) result)
-      (when (find package (ext:package-local-nicknames p) :key #'cdr :test #'eq)
-        (push p result)))))
-(export 'package-locally-nicknamed-by-list)
