@@ -98,11 +98,16 @@ CL_LAMBDA(local-nickname actual-package &optional (package *package*));
 CL_DECLARE();
 CL_DOCSTRING("Add LOCAL-NICKNAME (a string designator) as a local nickname in PACKAGE (a package designator) of ACTUAL-PACKAGE (a package designator).");
 CL_DEFUN T_sp ext__add_package_local_nickname(T_sp local_nickname, T_sp actual_package, T_sp package) {
-  // TODO: rethink locking. Signal more errors.
+  // TODO: rethink locking. Signal more, continuable errors.
   SimpleString_sp nick = coerce::simple_string(local_nickname);
   Package_sp actual = coerce::packageDesignator(actual_package);
   Package_sp dest = coerce::packageDesignator(package);
   List_sp existing_locals = dest->getLocalNicknames();
+
+  if (dest->findPackageByLocalNickname(nick).notnilp())
+    SIMPLE_ERROR(BF("Error: %s is already a local nickname in %s") %
+                 _rep_(nick) % dest->getName());
+  // TODO: Ban nicknames of "CL", "COMMON-LISP", "KEYWORD"
   dest->setLocalNicknames(Cons_O::create(Cons_O::create(nick, actual), existing_locals));
   return dest;
 }
