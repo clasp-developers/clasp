@@ -144,10 +144,13 @@ exec sbcl --noinform --disable-ldb --lose-on-corruption --disable-debugger \
         (num-backtraces 0))
     (declare (ignore header))
     (let ((calls (loop for backtrace = (read-dtrace-backtrace fin nil :eof)
-                       until (eq backtrace :eof)
-                       when (> (length backtrace) 0)
-                         append (butlast backtrace 1)
-                       and do (incf num-backtraces))))
+                  for backtrace-times = (if (consp backtrace) (parse-integer (string-trim " " (car (last backtrace)))) nil)
+                  do (when (eq backtrace :eof) (loop-finish))
+                 do (format t "Number of times backtrace appears: ~a~%" backtrace-times)
+                    when (> (length backtrace) 0)
+                    append (loop for times below backtrace-times
+                            append (butlast backtrace 1))
+                    and do (incf num-backtraces backtrace-times))))
       (values calls num-backtraces))))
 
 
@@ -328,3 +331,5 @@ exec sbcl --noinform --disable-ldb --lose-on-corruption --disable-debugger \
     (unless (eq out-stream *standard-output*)
       (when out-file (format *debug-io* "~a~%" out-file))
       (close out-stream))))
+
+(sb-ext:exit)
