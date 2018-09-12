@@ -10,7 +10,7 @@
 #
 #  examples:
 #    ./waf build_cboehm
-#
+#    ./waf install_cboehm
 #
 #   ./waf build_fboehm             # will build most of clasp, except the most memory hungry linking tasks at the end
 #   ./waf --jobs 2 install_cboehm  # will build and install cclasp
