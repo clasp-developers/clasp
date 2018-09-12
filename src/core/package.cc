@@ -94,6 +94,14 @@ CL_DEFUN T_sp ext__package_local_nicknames(T_sp pkg) {
   return package->getLocalNicknames();
 }
 
+CL_LAMBDA(nicks pkg);
+CL_DECLARE();
+CL_DOCSTRING("Set the local nicknames of PKG to be NICKS. Internal. Use with caution.");
+CL_DEFUN void core__set_package_local_nicknames(T_sp nicks, T_sp pkg) {
+  Package_sp package = coerce::packageDesignator(pkg);
+  package->setLocalNicknames(nicks);
+}
+
 CL_LAMBDA(local-nickname actual-package &optional (package *package*));
 CL_DECLARE();
 CL_DOCSTRING("Add LOCAL-NICKNAME (a string designator) as a local nickname in PACKAGE (a package designator) of ACTUAL-PACKAGE (a package designator).");
