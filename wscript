@@ -3,7 +3,8 @@
 # USAGE:
 #   ./waf distclean configure
 #   ./waf [action]_[stage-char][gc-name][_d for debug build]
-#   [action] is build, clean, install
+#   [action] is one of ( build | clean | install )
+#   [stage-char] is one of ( i | a | b | c )
 #   ./waf build_fboehm             # will build most of clasp, except the most memory hungry linking tasks at the end
 #   ./waf --jobs 2 install_cboehm  # will build and install cclasp
 #   to run with low priority, you can prefix with:
