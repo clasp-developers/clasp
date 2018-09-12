@@ -63,12 +63,22 @@
 	(:intern		{symbol-name}*)
 	(:export		{symbol-name}*)
 	(:export-from		{package-name}*)
+        (:local-nicknames       (nickname package-name)*)
 
-  [Note: :EXPORT-FROM is an extension to DEFPACKAGE.
-	 If a symbol is interned in the package being created and
-	 if a symbol with the same print name appears as an external
-	 symbol of one of the packages in the :EXPORT-FROM option,
-	 then the symbol is exported from the package being created.]"
+  :EXPORT-FROM is an extension to DEFPACKAGE.
+  If a symbol is interned in the package being created and
+  if a symbol with the same print name appears as an external
+  symbol of one of the packages in the :EXPORT-FROM option,
+  then the symbol is exported from the package being created.
+
+  :LOCAL-NICKNAMES is an extension to DEFPACKAGE.
+  The created package will have NICKNAME (a string designator)
+  as a local nickname for PACKAGE-NAME (a package designator).
+  Whenever *PACKAGE* is the new package, NICKNAME will be understood
+  by FIND-PACKAGE and all implicit uses thereof to refer to the
+  package named by PACKAGE-NAME.
+  See also EXT:PACKAGE-LOCAL-NICKNAMES, EXT:ADD-PACKAGE-LOCAL-NICKNAME,
+  EXT:REMOVE-PACKAGE-LOCAL-NICKNAME, EXT:PACKAGE-LOCALLY-NICKNAMED-BY-LIST."
 
   (dolist (option options)
     (unless (member (first option)
