@@ -103,6 +103,7 @@
             add-package-local-nickname
             remove-package-local-nickname
             package-locally-nicknamed-by-list
+            keep-old change-nick ; restarts for add-package-local-nicknames
             )))
 
 
