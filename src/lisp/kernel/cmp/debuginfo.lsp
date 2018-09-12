@@ -66,31 +66,31 @@
   "Map types to DITypes")
 
 (defmacro with-dibuilder ((module) &rest body)
-  `(if *dbg-generate-dwarf*
-       (let ((*the-module-dibuilder* (llvm-sys:make-dibuilder ,module))
-             (*llvm-metadata* (make-hash-table :test #'eql))
-             (*dibuilder-type-hash-table* (make-hash-table :test #'eq)))
-         (unwind-protect
-              (progn ,@body)
-           (progn
-             (llvm-sys:finalize *the-module-dibuilder*)
-             ;; add the flag that defines the Dwarf Version
-             (llvm-sys:add-module-flag *the-module*
-                                       (llvm-sys:mdnode-get *llvm-context*
-                                                            (list
-                                                             (llvm-sys:value-as-metadata-get (jit-constant-i32 2))
-                                                             (llvm-sys:mdstring-get *llvm-context* "Dwarf Version")
-                                                             (llvm-sys:value-as-metadata-get (jit-constant-i32 +debug-dwarf-version+)))))
-             (llvm-sys:add-module-flag *the-module*
-                                       (llvm-sys:mdnode-get *llvm-context*
-                                                            (list
-                                                             (llvm-sys:value-as-metadata-get (jit-constant-i32 2))
-                                                             (llvm-sys:mdstring-get *llvm-context* "Debug Info Version")
-                                                             (llvm-sys:value-as-metadata-get (jit-constant-i32 llvm-sys:+debug-metadata-version+))))) ;; Debug Info Version
-             "This should not be the return value - it should be what is returned in the unwind-protect body"
-             )))
-       (let ((*the-module-dibuilder* nil))
-         ,@body)))
+  `(let ((*the-module-dibuilder* (llvm-sys:make-dibuilder ,module)))
+     (if *dbg-generate-dwarf*
+         (let ((*llvm-metadata* (make-hash-table :test #'eql))
+               (*dibuilder-type-hash-table* (make-hash-table :test #'eq)))
+           (unwind-protect
+                (progn ,@body)
+             (progn
+               (llvm-sys:finalize *the-module-dibuilder*)
+               ;; add the flag that defines the Dwarf Version
+               (llvm-sys:add-module-flag *the-module*
+                                         (llvm-sys:mdnode-get *llvm-context*
+                                                              (list
+                                                               (llvm-sys:value-as-metadata-get (jit-constant-i32 2))
+                                                               (llvm-sys:mdstring-get *llvm-context* "Dwarf Version")
+                                                               (llvm-sys:value-as-metadata-get (jit-constant-i32 +debug-dwarf-version+)))))
+               (llvm-sys:add-module-flag *the-module*
+                                         (llvm-sys:mdnode-get *llvm-context*
+                                                              (list
+                                                               (llvm-sys:value-as-metadata-get (jit-constant-i32 2))
+                                                               (llvm-sys:mdstring-get *llvm-context* "Debug Info Version")
+                                                               (llvm-sys:value-as-metadata-get (jit-constant-i32 llvm-sys:+debug-metadata-version+))))) ;; Debug Info Version
+               "This should not be the return value - it should be what is returned in the unwind-protect body"
+               )))
+         (progn
+           ,@body))))
 
 (defmacro with-dbg-compile-unit ((source-pathname) &rest body)
   (let ((path (gensym))
@@ -262,7 +262,8 @@
      *irbuilder* (core:source-pos-info-lineno *current-source-pos-info*) 0 *dbg-current-scope*))))
 
 (defun dbg-set-current-source-pos-for-irbuilder (irbuilder lineno)
-  (llvm-sys:set-current-debug-location-to-line-column-scope irbuilder lineno 0 *dbg-current-scope*))
+  (when *dbg-generate-dwarf*
+    (llvm-sys:set-current-debug-location-to-line-column-scope irbuilder lineno 0 *dbg-current-scope*)))
 
 (defun check-debug-info-setup (irbuilder)
   "Signal an error if debug-info for the irbuilder is not setup properly for inlining"
@@ -271,26 +272,28 @@
     (break "The debug-info is not set for the current irbuilder")))
 
 (defun dbg-set-source-pos (source-pos)
-  (multiple-value-bind (file-handle file-pos lineno column)
-      (core:source-pos-info-unpack source-pos)
-    (when file-handle
-      (let ((scope (gethash file-handle *llvm-metadata*)))
-        #+(or)(unless scope
-          (setq scope (mdnode-file-descriptor filename pathname))
-          (setf (gethash file-handle *llvm-metadata*) scope))
-        (llvm-sys:set-current-debug-location-to-line-column-scope *irbuilder* lineno column scope)))))
+  (when *dbg-generate-dwarf*
+    (multiple-value-bind (file-handle file-pos lineno column)
+        (core:source-pos-info-unpack source-pos)
+      (when file-handle
+        (let ((scope (gethash file-handle *llvm-metadata*)))
+          #+(or)(unless scope
+                  (setq scope (mdnode-file-descriptor filename pathname))
+                  (setf (gethash file-handle *llvm-metadata*) scope))
+          (llvm-sys:set-current-debug-location-to-line-column-scope *irbuilder* lineno column scope))))))
 
 (defun dbg-set-current-debug-location (filename pathname lineno column)
-  (let* ((scope-name (bformat nil "%s>>%s" pathname filename))
-	 (scope (gethash scope-name *llvm-metadata*)))
-    (unless scope
-      (setq scope (mdnode-file-descriptor filename pathname))
-      (core::hash-table-setf-gethash *llvm-metadata* scope-name scope))
-    (let ((debugloc (llvm-sys:debug-loc-get lineno column scope)))
-	    (llvm-sys:set-current-debug-location *irbuilder* debugloc))
-    #+(or)(warn "Dwarf metadata is not currently being generated - the llvm-sys:set-current-debug-location-to-line-column-scope call is disabled")
-    (llvm-sys:set-current-debug-location-to-line-column-scope *irbuilder* lineno column scope)
-    ))
+  (when *dbg-generate-dwarf*
+    (let* ((scope-name (bformat nil "%s>>%s" pathname filename))
+	   (scope (gethash scope-name *llvm-metadata*)))
+      (unless scope
+        (setq scope (mdnode-file-descriptor filename pathname))
+        (core::hash-table-setf-gethash *llvm-metadata* scope-name scope))
+      (let ((debugloc (llvm-sys:debug-loc-get lineno column scope)))
+	(llvm-sys:set-current-debug-location *irbuilder* debugloc))
+      #+(or)(warn "Dwarf metadata is not currently being generated - the llvm-sys:set-current-debug-location-to-line-column-scope call is disabled")
+      (llvm-sys:set-current-debug-location-to-line-column-scope *irbuilder* lineno column scope)
+      )))
 
 (defvar *current-file-metadata-node* nil
   "Store the metadata node for the current source file info")
