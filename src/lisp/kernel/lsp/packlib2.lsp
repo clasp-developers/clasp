@@ -15,6 +15,7 @@
   "Return an alist (string . package) of local nicknames in the given package.
 See also: :LOCAL-NICKNAMES option to DEFPACKAGE."
   (let ((package (find-package package-designator)))
+    (when (null package) (error 'package-error :package package))
     (with-package-read-lock (package)
       (core:package-local-nicknames-internal package))))
 
@@ -28,6 +29,8 @@ See also: :LOCAL-NICKNAMES option to DEFPACKAGE."
          (package (find-package package-designator))
          old
          (force nil))
+    (when (null actual) (error 'package-error :package actual-package))
+    (when (null package) (error 'package-error :package package-designator))
     (tagbody
      loop
        (with-package-read-write-lock (package)
@@ -65,6 +68,7 @@ Otherwise NIL is returned.
 See also: :LOCAL-NICKNAMES option to DEFPACKAGE."
   (let ((package (find-package package-designator))
         (nickname (string nickname-designator)))
+    (when (null package) (error 'package-error :package package))
     (with-package-read-write-lock (package)
       (let* ((locals (core:package-local-nicknames-internal package))
              (pair (assoc nickname locals :test #'string=)))
@@ -77,6 +81,7 @@ See also: :LOCAL-NICKNAMES option to DEFPACKAGE."
 See also: :LOCAL-NICKNAMES option to DEFPACKAGE."
   (let ((package (find-package package-designator))
         (result nil))
+    (when (null package) (error 'package-error :package package))
     (dolist (p (list-all-packages) result)
       (when (find package (package-local-nicknames p) :key #'cdr :test #'eq)
         (push p result)))))
