@@ -24,7 +24,8 @@
 #
 # NOTE: please observe the following best practices:
 #
-# - do *not* use waf's ant_glob (you can shoot yourself in the feet with it, leading to tasks getting redone unnecessarily)
+# - do *not* use waf's ant_glob (you can shoot yourself in the feet
+#          with it, leading to tasks getting redone unnecessarily)
 # - in emacs, you may want to: (add-to-list 'auto-mode-alist '("wscript\\'" . python-mode))
 # - waf constructs have strange names; it's better not to assume that you know what something is or does based solely on its name.
 #   e.g. node.change_ext() returns a new node instance... you've been warned!
