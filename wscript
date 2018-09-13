@@ -317,10 +317,10 @@ def configure_common(cfg,variant):
     # These will end up in build/config.h
     cfg.define("EXECUTABLE_NAME",variant.executable_name())
     if (cfg.env.PREFIX):
-        cfg.define("PREFIX",cfg.env.PREFIX)
+        pass
     else:
-        cfg.define("PREFIX","/opt/clasp/")
         cfg.env.PREFIX = "/opt/clasp"
+    cfg.define("PREFIX",cfg.env.PREFIX)
     assert os.path.isdir(cfg.env.LLVM_BIN_DIR)
     log.info("cfg.env.PREFIX is %s" % cfg.env.PREFIX)
     cfg.define("CLASP_CLANG_PATH", os.path.join(cfg.env.LLVM_BIN_DIR, "clang"))
