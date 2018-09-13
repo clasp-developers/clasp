@@ -61,6 +61,7 @@ class Package_O : public General_O {
   std::atomic<bool> _AmpPackage;
   std::atomic<bool> _ActsLikeKeywordPackage;
   List_sp _Nicknames;
+  List_sp _LocalNicknames;
   T_sp _Documentation;
 #ifdef CLASP_THREADS
   mutable mp::SharedMutex _Lock;
@@ -94,6 +95,14 @@ class Package_O : public General_O {
     WITH_PACKAGE_READ_LOCK(this);
     return this->_Nicknames;
   };
+
+  void setLocalNicknames(List_sp localNicknames) {
+    this->_LocalNicknames = localNicknames;
+  }
+  List_sp getLocalNicknames() const {
+    return this->_LocalNicknames;
+  }
+  T_sp findPackageByLocalNickname(String_sp);
   void setKeywordPackage(bool b) { this->_KeywordPackage = b; };
   bool isKeywordPackage() const { return this->_KeywordPackage; };
   // Cando makes a package that acts like the keyword package (symbol values are symbols and all symbols extern)
@@ -199,7 +208,8 @@ class Package_O : public General_O {
 
  public:
   // Not default constructable
- Package_O() : _Nicknames(_Nil<T_O>()), _Documentation(_Nil<T_O>()), _ActsLikeKeywordPackage(false){};
+ Package_O() : _Nicknames(_Nil<T_O>()), _LocalNicknames(_Nil<T_O>()),
+    _Documentation(_Nil<T_O>()), _ActsLikeKeywordPackage(false){};
   virtual ~Package_O(){};
 };
 

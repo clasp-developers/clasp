@@ -149,6 +149,8 @@ extern "C" void add_history(char *line);
 
 namespace core {
 
+bool globalTheSystemIsUp = false;
+
 const int Lisp_O::MaxFunctionArguments = 64; //<! See ecl/src/c/main.d:163 ecl_make_cache(64,4096)
 const int Lisp_O::SingleDispatchMethodCacheSize = 1024 * 32;
 
@@ -1138,6 +1140,13 @@ Package_sp Lisp_O::makePackage(const string &name, list<string> const &nicknames
 }
 
 T_sp Lisp_O::findPackage_no_lock(const string &name, bool errorp) const {
+  // Check local nicknames first.
+  // FIXME: This conses!
+  if (globalTheSystemIsUp) {
+    T_sp local = this->getCurrentPackage()->findPackageByLocalNickname(SimpleBaseString_O::make(name));
+    if (local.notnilp()) return local;
+  }
+  
   //        printf("%s:%d Lisp_O::findPackage name: %s\n", __FILE__, __LINE__, name.c_str());
   map<string, int>::const_iterator fi = this->_Roots._PackageNameIndexMap.find(name);
   if (fi == this->_Roots._PackageNameIndexMap.end()) {
@@ -2475,6 +2484,8 @@ int Lisp_O::run() {
       getchar();
     }
   }
+  // The system is fully up now
+  globalTheSystemIsUp = true;
   Package_sp cluser = _lisp->findPackage("COMMON-LISP-USER");
   cl::_sym_STARpackageSTAR->defparameter(cluser);
   try {
