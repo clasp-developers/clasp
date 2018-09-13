@@ -320,7 +320,9 @@ def configure_common(cfg,variant):
         cfg.define("PREFIX",cfg.env.PREFIX)
     else:
         cfg.define("PREFIX","/opt/clasp/")
+        cfg.env.PREFIX = "/opt/clasp"
     assert os.path.isdir(cfg.env.LLVM_BIN_DIR)
+    log.info("cfg.env.PREFIX = %s" % cfg.env.PREFIX)
     cfg.define("CLASP_CLANG_PATH", os.path.join(cfg.env.LLVM_BIN_DIR, "clang"))
     cfg.define("APP_NAME",APP_NAME)
     cfg.define("BITCODE_NAME",variant.bitcode_name())
