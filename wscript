@@ -12,6 +12,8 @@
 #    ./waf build_cboehm      # build cboehm
 #    ./waf install_cboehm    # build and install cboehm
 #    ./waf build_aboehm      # useful for debugging build system - build only aclasp
+#    ./waf build_iboehm      # useful to build C++ without rebuilding CL code -
+#                            # If done carefully this can be used to quickly test C++ code
 #
 #   ./waf build_fboehm             # will build most of clasp, except the most memory hungry linking tasks at the end
 #   ./waf --jobs 2 install_cboehm  # will build and install cclasp
