@@ -19,7 +19,6 @@
 #   to run with low priority, you can prefix with:
 #     nice -n 19 ionice --class 3 ./waf --jobs 2 ...
 #
-
 #
 #   ./waf build_fboehm             # will build most of clasp, except the most memory hungry linking tasks at the end
 #
