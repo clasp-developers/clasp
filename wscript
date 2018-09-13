@@ -15,8 +15,6 @@
 #    ./waf build_iboehm      # useful to build C++ without rebuilding CL code -
 #                            # If done carefully this can be used to quickly test C++ code
 #
-#
-#
 #   ./waf --jobs 2 install_cboehm  # will build and install cclasp
 #   to run with low priority, you can prefix with:
 #     nice -n 19 ionice --class 3 ./waf --jobs 2 ...
