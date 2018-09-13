@@ -230,11 +230,29 @@ def fetch_git_revision(path, url, revision = "", label = "master"):
     if ( ret != 0 ):
         raise Exception("Failed to fetch git url %s" % url)
 
-def add_cando_extension(cfg):
+def add_cando_extension_dev(cfg):
+    log.pprint('BLUE', 'add_cando_extension_dev')
     fetch_git_revision("extensions/cando",
                        "https://github.com/drmeister/cando.git",
                        label="dev")
-    
+
+def add_cando_extension_testing(cfg):
+    log.pprint('BLUE', 'add_cando_extension_testing')
+    fetch_git_revision("extensions/cando",
+                       "https://github.com/drmeister/cando.git",
+                       label="testing")
+
+def add_cando_extension_preview(cfg):
+    log.pprint('BLUE', 'add_cando_extension_preview')
+    fetch_git_revision("extensions/cando",
+                       "https://github.com/drmeister/cando.git",
+                       label="preview")
+
+def add_cando_extension_master(cfg):
+    log.pprint('BLUE', 'add_cando_extension_master')
+    fetch_git_revision("extensions/cando",
+                       "https://github.com/drmeister/cando.git",
+                       label="master")
 
 def update_dependencies(cfg):
     # Specifying only label = "some-tag" will check out that tag into a "detached head", but
