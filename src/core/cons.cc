@@ -141,11 +141,11 @@ CL_DEFUN List_sp cl__make_list(Fixnum_sp osize, T_sp initial_element) {
   if (size < 0)
     TYPE_ERROR(osize, cl::_sym_UnsignedByte);
   else {
-  ql::list result;
-  for (size_t i = 0; i < size; i++) {
-    result << initial_element;
-  }
-  return (result.cons());
+    ql::list result;
+    for (size_t i = 0; i < size; i++) {
+      result << initial_element;
+    }
+    return (result.cons());
   }
 };
 
