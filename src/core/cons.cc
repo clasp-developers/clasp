@@ -135,12 +135,18 @@ CL_LAMBDA(osize &key initial-element);
 CL_DECLARE();
 CL_DOCSTRING("make_list");
 CL_DEFUN List_sp cl__make_list(Fixnum_sp osize, T_sp initial_element) {
-  size_t size = osize.unsafe_fixnum();
+  // Might be a negative Fixnum, take the right type, size_t is unsigned
+  gc::Fixnum size = osize.unsafe_fixnum();
+  // osize must be 0 or positive
+  if (size < 0)
+    TYPE_ERROR(osize, cl::_sym_UnsignedByte);
+  else {
   ql::list result;
   for (size_t i = 0; i < size; i++) {
     result << initial_element;
   }
   return (result.cons());
+  }
 };
 
 Cons_sp Cons_O::createList(T_sp o1) {
