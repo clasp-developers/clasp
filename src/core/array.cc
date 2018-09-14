@@ -1069,9 +1069,7 @@ T_sp template_string_LE_(const T1& string1, const T2& string2, size_t start1, si
     ++cp2;
   }
  END_STRING1:
-  if (num2 == 0)
     goto RETURN_TRUE;
-  goto RETURN_FALSE;
  END_STRING2:
  RETURN_FALSE:
   return _Nil<T_O>();
@@ -1188,8 +1186,8 @@ T_sp template_string_lessp(const T1& string1, const T2& string2, size_t start1, 
       goto END_STRING1;
     if (num2 == 0)
       goto END_STRING2;
-    char ucp1 = toupper(static_cast<claspCharacter>(*cp1));
-    char ucp2 = toupper(static_cast<claspCharacter>(*cp2));
+    claspCharacter ucp1 = toupper(static_cast<claspCharacter>(*cp1));
+    claspCharacter ucp2 = toupper(static_cast<claspCharacter>(*cp2));
     if (ucp1 != ucp2) {
       if (ucp1 < ucp2)
         goto RETURN_TRUE;
@@ -1222,8 +1220,8 @@ T_sp template_string_greaterp(const T1& string1, const T2& string2, size_t start
       goto END_STRING1;
     if (num2 == 0)
       goto END_STRING2;
-    char ucp1 = toupper(static_cast<claspCharacter>(*cp1));
-    char ucp2 = toupper(static_cast<claspCharacter>(*cp2));
+    claspCharacter ucp1 = toupper(static_cast<claspCharacter>(*cp1));
+    claspCharacter ucp2 = toupper(static_cast<claspCharacter>(*cp2));
     if ((ucp1 != ucp2)) {
       if (ucp1 > ucp2)
         goto RETURN_TRUE;
@@ -1256,8 +1254,8 @@ T_sp template_string_not_greaterp(const T1& string1, const T2& string2, size_t s
       goto END_STRING1;
     if (num2 == 0)
       goto END_STRING2;
-    char ucp1 = toupper(static_cast<claspCharacter>(*cp1));
-    char ucp2 = toupper(static_cast<claspCharacter>(*cp2));
+    claspCharacter ucp1 = toupper(static_cast<claspCharacter>(*cp1));
+    claspCharacter ucp2 = toupper(static_cast<claspCharacter>(*cp2));
     if ((ucp1 != ucp2)) {
       if (ucp1 < ucp2)
         goto RETURN_TRUE;
@@ -1269,9 +1267,7 @@ T_sp template_string_not_greaterp(const T1& string1, const T2& string2, size_t s
     ++cp2;
   }
  END_STRING1:
-  if (num2 == 0)
     goto RETURN_TRUE;
-  goto RETURN_FALSE;
  END_STRING2:
  RETURN_FALSE:
   return _Nil<T_O>();
@@ -1294,8 +1290,8 @@ T_sp template_string_not_lessp(const T1& string1, const T2& string2, size_t star
       goto END_STRING1;
     if (num2 == 0)
       goto END_STRING2;
-    char ucp1 = toupper(static_cast<claspCharacter>(*cp1));
-    char ucp2 = toupper(static_cast<claspCharacter>(*cp2));
+    claspCharacter ucp1 = toupper(static_cast<claspCharacter>(*cp1));
+    claspCharacter ucp2 = toupper(static_cast<claspCharacter>(*cp2));
     if ((ucp1 != ucp2)) {
       if (ucp1 > ucp2)
         goto RETURN_TRUE;
