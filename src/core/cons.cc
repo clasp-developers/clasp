@@ -661,7 +661,7 @@ size_t Cons_O::length() const {
   T_sp cur = _Nil<T_O>();
   for (cur = this->_Cdr; cur.consp(); cur = gc::As_unsafe<Cons_sp>(cur)->_Cdr) ++sz;
   if (cur.notnilp()) {
-    TYPE_ERROR_PROPER_LIST(this->asSmartPtr());
+    TYPE_ERROR_PROPER_LIST(cur->asSmartPtr());
   }
   return sz;
 };
