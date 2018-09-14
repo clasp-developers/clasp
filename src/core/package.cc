@@ -425,7 +425,7 @@ CL_DEFMETHOD T_mv Package_O::hashTables() const {
 string Package_O::__repr__() const {
   WITH_PACKAGE_READ_LOCK(this);
   stringstream ss;
-  ss << "#<" << this->_Name->get_std_string() << ">";
+  ss << "#<PACKAGE " << this->_Name->get_std_string() << ">";
   return ss.str();
 }
 

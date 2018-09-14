@@ -20,7 +20,8 @@
 #     nice -n 19 ionice --class 3 ./waf --jobs 2 ...
 #
 #
-#   ./waf build_fboehm             # will build most of clasp, except the most memory hungry linking tasks at the end
+#   ./waf build_fboehm # will build most of clasp,
+#                        except the most memory hungry linking tasks at the end
 #
 # NOTE: please observe the following best practices:
 #
@@ -803,8 +804,6 @@ def configure(cfg):
     cfg.define("__STDC_CONSTANT_MACROS",1)
     cfg.define("__STDC_FORMAT_MACROS",1)
     cfg.define("__STDC_LIMIT_MACROS",1)
-#    cfg.env.append_value('CXXFLAGS', ['-v'] )
-#    cfg.env.append_value('CFLAGS', ['-v'] )
     cfg.env.append_value('LINKFLAGS', ['-v'] )
 #    includes = [ 'include/' ]
 #    includes = includes + cfg.plugins_include_dirs
