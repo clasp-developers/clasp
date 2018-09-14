@@ -233,7 +233,8 @@ struct Buckets<T, U, WeakLinks> : public BucketsBase<T, U> {
 
   void set(size_t idx, const value_type &val) {
     if (!val.objectp()) {
-      throw_hard_error("Only generalp() or consp() objects can be added to Mapping - you are trying to add a tagged pointer->%p");
+      printf("%s:%d Only  objectp() objects can be added to Mapping\n", __FILE__, __LINE__);
+      abort();
     }
 #ifdef USE_BOEHM
     //	    printf("%s:%d ---- Buckets set idx: %zu   this->bucket[idx] = %p\n", __FILE__, __LINE__, idx, this->bucket[idx].raw_() );
@@ -417,7 +418,8 @@ struct Mapping<T, U, WeakLinks> : public MappingBase<T, U> {
   typedef typename MappingBase<T, U>::dependent_type dependent_type;
   Mapping(const T &val) : MappingBase<T, U>(val) {
     if (!val.objectp()) {
-      throw_hard_error("Only objectp() objects can be added to Mapping");
+      printf("%s:%d Only  objectp() objects can be added to Mapping\n", __FILE__, __LINE__);
+      abort();
     }
 #ifdef USE_BOEHM
     GCTOOLS_ASSERT(this->bucket.objectp());
@@ -548,7 +550,8 @@ struct WeakPointerManager {
 
   WeakPointerManager(const value_type &val) {
     if (!val.objectp()) {
-      throw_hard_error("Only objectp() objects can be added to Mapping");
+      printf("%s:%d WeakPointerManager - only  objectp() objects can be added to Mapping\n", __FILE__, __LINE__);
+      abort();
     }
 #if 0
     this->pointer = AllocatorType::allocate(val);
