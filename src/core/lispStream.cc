@@ -4389,6 +4389,10 @@ void clasp_finish_output(T_sp strm) {
   stream_dispatch_table(strm).finish_output(strm);
 }
 
+void clasp_finish_output_t() {
+  clasp_finish_output(cl::_sym_STARstandard_outputSTAR->symbolValue());
+}
+
 int clasp_file_column(T_sp strm) {
   return stream_dispatch_table(strm).column(strm);
 }
