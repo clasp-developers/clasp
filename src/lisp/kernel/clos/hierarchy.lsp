@@ -354,8 +354,7 @@
          :direct-slots #3=#.+slot-definition-slots+)
         (standard-effective-slot-definition
          :direct-slots #3#)
-        (t
-         :index 0)
+        (t)
         (class :direct-slots #.+class-slots+)
         (standard-object
          :direct-superclasses (t))
@@ -420,7 +419,6 @@
         ,@(loop for (name . rest) in +builtin-classes-list+
              for index from 1
              collect (list name :metaclass 'built-in-class
-                           :index index
                            :direct-superclasses (or rest '(core:general))))
         (funcallable-standard-object
          :direct-superclasses (standard-object function))
