@@ -215,3 +215,146 @@
             (generic-function-specializer-profile proto-gf))))
 
 (export '(satiate-standard-generic-functions))
+
+(defmacro satiated-call-history (generic-function-name &rest lists-of-specializer-names)
+  (let* ((generic-function (fdefinition generic-function-name))
+         (mc (generic-function-method-combination generic-function))
+         (methods (generic-function-methods generic-function))
+         ;; alist (method . (name method-form mf-name mf-form))
+         (bindmap (loop for method in methods
+                        for name = (gensym "METHOD")
+                        for mf-name = (gensym "METHOD-FUNCTION")
+                        collect (list method
+                                      name
+                                      `(find-method #',generic-function-name
+                                                    ',(method-qualifiers method)
+                                                    (list ,@(loop for s in (method-specializers method)
+                                                                  collect (etypecase s
+                                                                            (eql-specializer
+                                                                             `(intern-eql-specializer
+                                                                               ',(eql-specializer-object s)))
+                                                                            (class s)))))
+                                      mf-name
+                                      `(method-function ,name))))
+         (emfo-binds nil) ; alist (applicable-methods . (name form))
+         (fmf-binds nil) ; alist (method . (name form))
+         (entries
+           (loop for list-of-specializer-names in lists-of-specializer-names
+                 for list-of-specializers = (mapcar (lambda (sname)
+                                                      (etypecase sname
+                                                        ;; (eql 'something)
+                                                        ((cons (eql eql)
+                                                               (cons (cons (eql quote)
+                                                                           (cons t null))
+                                                                     null))
+                                                         ;; The fake EQL specializers used by c-a-m-u-s
+                                                         (list (cadadr sname)))
+                                                        (symbol (find-class sname))))
+                                                    list-of-specializer-names)
+                 for am = (compute-applicable-methods-using-specializers generic-function list-of-specializers)
+                 for em = (compute-effective-method generic-function mc am)
+                 ;; time to recapitulate compute-effective-method-function-maybe-optimize.
+                 for method = (and (consp em) (eq (first em) 'call-method) (second em))
+                 for leafp = (when method (leaf-method-p method))
+                 for fmf = (when leafp (fast-method-function method))
+                 for readerp = (when method (eq (class-of method) (find-class 'standard-reader-method)))
+                 for writerp = (when method (eq (class-of method) (find-class 'standard-writer-method)))
+                 for accessor-class = (cond ((not method) nil)
+                                            (readerp (first list-of-specializers))
+                                            (writerp (second list-of-specializers))
+                                            (t nil))
+                 for slotd = (when accessor-class (effective-slotd-from-accessor-method method accessor-class))
+                 for standard-slotd-p = (when slotd
+                                          (eq (class-of slotd)
+                                              (find-class 'standard-effective-slot-definition)))
+                 ;; could alternately memoize a no-applicable-method call
+                 do (when (null am)
+                      (error "No applicable methods for SATIATE of ~a with ~a"
+                             generic-function list-of-specializer-names))
+                 do (when (and (consp em) (eq (first em) 'no-required-method))
+                      (error "No requried methods for SATIATE of ~a with ~a"
+                             generic-function list-of-specializer-names))
+                 collect `(cons ,(coerce list-of-specializers 'vector)
+                                ,(cond
+                                   (standard-slotd-p
+                                    (cond (readerp `(cmp::make-optimized-slot-reader
+                                                     :index ',(slot-definition-location slotd)
+                                                     :slot-name ',(slot-definition-name slotd)
+                                                     :method ,(or (second (assoc method bindmap)) (error "wtf"))
+                                                     :class ,accessor-class))
+                                          (writerp `(cmp::make-optimized-slot-writer
+                                                     :index ',(slot-definition-location slotd)
+                                                     :slot-name ',(slot-definition-name slotd)
+                                                     :method ,(or (second (assoc method bindmap)) (error "wtf"))
+                                                     :class ,accessor-class))
+                                          (t (error "Unreachable weirdness in SATIATE for ~a, ~a"
+                                                    generic-function list-of-specializer-names))))
+                                   (fmf (let ((group (assoc method fmf-binds)))
+                                          (if group
+                                              (second group)
+                                              (let ((fmf-name (gensym "FAST-METHOD-FUNCTION"))
+                                                    (fmf-form `(cmp::make-fast-method-call
+                                                                :function
+                                                                (fast-method-function
+                                                                 ,(or (second (assoc method bindmap))
+                                                                      (error "wtf"))))))
+                                                (push (list method fmf-name fmf-form) fmf-binds)
+                                                fmf-name))))
+                                   (leafp (or (fourth (assoc method bindmap)) (error "wtf")))
+                                   (t (let ((existing (assoc am emfo-binds :test #'equal)))
+                                        (if existing
+                                            (second existing)
+                                            (let ((name (gensym "EFFECTIVE-METHOD-OUTCOME")))
+                                              (push (list am name
+                                                          `(cmp::make-effective-method-outcome
+                                                            :applicable-methods (list ,@(loop for m in am
+                                                                                              collect (or (second (assoc m bindmap)) (error "wtf"))))
+                                                            :function (lambda (.method-args. .next-methods.)
+                                                                        (declare (ignore .next-methods.))
+                                                                        ,em)))
+                                                    emfo-binds)
+                                              name)))))))))
+    `(let (,@(loop for (method name method-form mf-name mf-form) in bindmap
+                   collect `(,name ,method-form)))
+       (let (,@(loop for (method name method-form mf-name mf-form) in bindmap
+                     collect `(,mf-name ,mf-form)))
+         (declare (ignorable ,@(mapcar #'fourth bindmap)))
+         (let (,@(loop for (method fmf-name fmf-form) in fmf-binds
+                       collect `(,fmf-name ,fmf-form)))
+           (declare (ignorable ,@(mapcar #'second bindmap)))
+           (macrolet ((call-method (method &optional nexts &environment env)
+                        (if (consp method)
+                            (second method) ; (make-method form)
+                            (let ((mfs '(,@(loop for (method name method-form mf-name) in bindmap
+                                                 collect (cons method mf-name)))))
+                              (flet ((ensure-mf (method)
+                                       (or (cdr (assoc method mfs)) (error "Horrible things are occurring."))))
+                                `(funcall ,(ensure-mf method) .method-args.
+                                          (list ,@(loop for next in nexts
+                                                        collect (if (consp next)
+                                                                    `(lambda (.method-args. .next-methods.)
+                                                                       (declare (ignore .next-methods.))
+                                                                       ,(second next))
+                                                                      (ensure-mf next))))))))))
+             (let (,@(loop for (methods name emfo-form) in emfo-binds
+                           collect `(,name ,emfo-form)))
+               (list ,@entries))))))))
+
+(defmacro satiate (generic-function-name &rest lists-of-specializer-names)
+  `(let ((new-call-history (satiated-call-history ,generic-function-name ,@lists-of-specializer-names))
+         (generic-function (fdefinition ',generic-function-name)))
+     (loop for call-history = (generic-function-call-history generic-function)
+           for exchange = (generic-function-call-history-compare-exchange
+                           generic-function call-history new-call-history)
+           until (eq exchange new-call-history))))
+
+(defmacro satiate-from-experience (generic-function-name)
+  (let* ((generic-function (fdefinition generic-function-name))
+         (ch (generic-function-call-history generic-function))
+         (lists (loop for (vec . outcome) in ch
+                      collect (map 'list (lambda (entry)
+                                           (if (listp entry)
+                                               `(eql ',(car entry))
+                                               (class-name entry)))
+                                   vec))))
+    `(satiate ,generic-function-name ,@lists)))
