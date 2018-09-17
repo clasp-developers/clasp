@@ -75,7 +75,7 @@
        (format *debug-io* "~d: ~S~&" idx spec)))
 
 ;;; %LISP-TYPE->TYPE-SPEC
-(defgeneric %lisp-type->lisp-name (lisp-type-kw))
+(defgeneric %lisp-type->type-spec (lisp-type-kw))
 
 (defmacro generate-type-spec-accessor-functions ()
   `(progn
