@@ -396,12 +396,12 @@ FORWARD(Cons);
 #define HARD_ASSERT(t)                                                                   \
   if (!(t)) {                                                                            \
     core::errorFormatted("HARD_ASSERT failed");                                          \
-    throw(HardError(__FILE__, __FUNCTION__, __LINE__, "Assertion " #t " failed")); \
+    abort(); \
   };
 #define HARD_ASSERTF(t, fmt) \
   if (!(t)) { \
     core::errorFormatted(fmt); \
-    throw(core::HardError(__FILE__, __FUNCTION__, __LINE__, BF("Assertion %s failed: %s") % #t % (fmt).str())); \
+    abort(); \
   };
 #else
 #define HARD_ASSERT(t) \
@@ -666,10 +666,26 @@ extern string _stackTraceAsString();
 #define LOG_CXX_FUNCTION_INVOCATION() core::CxxFunctionInvocationLogger __cxxFunctionInvocationLogger(__FILE__, __FUNCTION__, __LINE__);
 
 #ifdef CALLSTACK_ON //[
-#define _G()
+#define LOG_CXX_FUNCTION_INVOCATION() core::CxxFunctionInvocationLogger __cxxFunctionInvocationLogger(__FILE__, __FUNCTION__, __LINE__);
+
+struct _StackTrace {
+  const char* _Filename;
+  _StackTrace(const char* filename, const char* kind, size_t line, size_t col, const boost::format& fmt) :_Filename(filename) {
+    if (core::lisp_debugIsOn(filename)) { 
+      lisp_debugLog()->beginNode(DEBUG_CPP_BLOCK,filename,kind,line,col,fmt.str());
+    } 
+  }
+  ~_StackTrace() {
+    if (core::lisp_debugIsOn(this->_Filename)) {
+      lisp_debugLog()->endNode(DEBUG_CPP_BLOCK);
+    } 
+  }
+};
+
+#define _G()                     \
+  LOG_CXX_FUNCTION_INVOCATION(); 
 #define _OF() _G();
-#define _lisp_BLOCK_TRACEF(__f) \
-  {} // core::_StackTrace _B_stackTrace(__FILE__,"LexicalScope",__LINE__,0,DEBUG_CPP_BLOCK,__f)
+#define _lisp_BLOCK_TRACEF(__f) core::_StackTrace _B_stackTrace(__FILE__,"LexicalScope",__LINE__,0,__f)
 #define _lisp_BLOCK_TRACE(__s) _lisp_BLOCK_TRACEF(BF("%s") % (__s))
 #define _BLOCK_TRACEF(f) _lisp_BLOCK_TRACEF(f)
 #define _BLOCK_TRACE(s) _lisp_BLOCK_TRACEF(BF("%s") % (s))
