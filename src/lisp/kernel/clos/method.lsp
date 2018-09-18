@@ -432,11 +432,3 @@ have disappeared."
 		       (push `(,(caar scan) (,(cadar scan) ,temp)) res))))
     `(let ((,temp ,instance-form))
        (symbol-macrolet ,accessors ,@body))))
-
-
-;;; Force the compiler into optimizing use of gethash inside methods:
-(setf (symbol-function 'SLOT-INDEX) (symbol-function 'GETHASH))
-
-
-
-
