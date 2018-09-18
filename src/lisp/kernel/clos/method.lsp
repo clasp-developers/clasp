@@ -182,6 +182,7 @@ in the generic function lambda-list to the generic function lambda-list"
                  lambda-list))))
 
 (defun make-method-lambda (gf method method-lambda env)
+  (declare (ignore gf method))
   (multiple-value-bind (call-next-method-p next-method-p-p)
       (walk-method-lambda method-lambda env)
     (let ((leaf-method-p (null (or call-next-method-p next-method-p-p))))
