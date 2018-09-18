@@ -117,6 +117,8 @@ void Cons_O::__write__(T_sp stream) const {
     }
     y = oCar(x);
     x = oCdr(x);
+    // recursion with printlevel -1
+    DynamicScopeManager scope(cl::_sym_STARprint_levelSTAR, clasp_make_fixnum(print_level - 1));
     write_object(y, stream);
     /* FIXME! */
     if (!x || cl__atom(x) ||
