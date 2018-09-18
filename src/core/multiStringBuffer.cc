@@ -232,10 +232,10 @@ CL_DEFMETHOD void MultiStringBuffer_O::dump() {
 LongLongInt MultiStringBuffer_O::describeMemoryUsage() {
   LongLongInt total = 0;
   uint headerMemory = (sizeof(MultiStringBlock) + sizeof(MultiStringBlock *)) * this->_Blocks.size();
-  BFORMAT_T(BF("MultiStringBlock storage = %d bytes") % headerMemory);
+  write_bf_stream(BF("MultiStringBlock storage = %d bytes") % headerMemory);
   total += headerMemory;
   LongLongInt storage = MultiStringBlockSize * this->_Blocks.size();
-  BFORMAT_T(BF("String storage = %d bytes") % storage);
+  write_bf_stream(BF("String storage = %d bytes") % storage);
   total += storage;
   return total;
 }

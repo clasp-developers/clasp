@@ -342,8 +342,9 @@ struct ReachableClass {
     } else {
       className << "??CONS??";
     }
-    BFORMAT_T(BF("%s: total_size: %10d count: %8d avg.sz: %8d kind: %s/%d\n")
-              % shortName % this->totalSize % this->instances % (this->totalSize / this->instances) % className.str().c_str() % k);
+    core::write_bf_stream(BF("%s: total_size: %10d count: %8d avg.sz: %8d kind: %s/%d\n")
+                          % shortName % this->totalSize % this->instances
+                          % (this->totalSize / this->instances) % className.str().c_str() % k);
     return this->totalSize;
   }
 };
@@ -825,7 +826,7 @@ CL_DEFUN core::T_sp gctools__stack_depth() {
 CL_DEFUN void gctools__garbage_collect() {
 #ifdef USE_BOEHM
   GC_gcollect();
-//  BFORMAT_T(BF("GC_invoke_finalizers\n"));
+//  write_bf_stream(BF("GC_invoke_finalizers\n"));
   GC_invoke_finalizers();
 #endif
 //        printf("%s:%d Starting garbage collection of arena\n", __FILE__, __LINE__ );
@@ -858,7 +859,7 @@ CL_DEFUN void gctools__cleanup(bool verbose) {
   size_t finalizations;
   size_t messages = processMpsMessages(finalizations);
   if (verbose) {
-    BFORMAT_T(BF("Processed %d finalization messages and %d total messages\n") % messages % finalizations );
+    write_bf_stream(BF("Processed %d finalization messages and %d total messages\n") % messages % finalizations );
   }
 #endif
 }

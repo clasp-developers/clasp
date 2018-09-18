@@ -518,14 +518,14 @@ CL_DEFUN size_t core__arrayFlags(Array_sp a)
 CL_DEFUN void core__mdarray_dump(Array_sp a)
 {
   MDArray_sp mda = gc::As<MDArray_sp>(a);
-  BFORMAT_T(BF("MDArray address = %p\n") % (void*)&*mda);
-  BFORMAT_T(BF("MDArray _ArrayTotalSize = %d\n") % mda->_ArrayTotalSize);
-  BFORMAT_T(BF("MDArray _Data = %p\n") % (void*)&*(mda->_Data));
-  BFORMAT_T(BF("MDArray _DisplacedIndexOffset = %d\n") % mda->_DisplacedIndexOffset);
-  BFORMAT_T(BF("MDArray _Flags = %d\n") % mda->_Flags._Flags);
-  BFORMAT_T(BF("MDArray _Dimensions._Length = %d\n") % mda->_Dimensions._Length);
+  write_bf_stream(BF("MDArray address = %p\n") % (void*)&*mda);
+  write_bf_stream(BF("MDArray _ArrayTotalSize = %d\n") % mda->_ArrayTotalSize);
+  write_bf_stream(BF("MDArray _Data = %p\n") % (void*)&*(mda->_Data));
+  write_bf_stream(BF("MDArray _DisplacedIndexOffset = %d\n") % mda->_DisplacedIndexOffset);
+  write_bf_stream(BF("MDArray _Flags = %d\n") % mda->_Flags._Flags);
+  write_bf_stream(BF("MDArray _Dimensions._Length = %d\n") % mda->_Dimensions._Length);
   for ( size_t i(0); i<mda->_Dimensions._Length; ++i ) {
-    BFORMAT_T(BF("MDArray _Dimensions[%d = %d\n") % i % mda->_Dimensions[i]);
+    write_bf_stream(BF("MDArray _Dimensions[%d = %d\n") % i % mda->_Dimensions[i]);
   }
 }
 

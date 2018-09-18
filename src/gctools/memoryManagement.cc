@@ -476,7 +476,7 @@ void initialize_gcroots_in_module(GCRootsInModule* roots, core::T_O** root_addre
     for ( auto c : args ) {
       core::T_sp arg = oCar(c);
       roots->set(i,arg.tagged_());
-    //if (debug) BFORMAT_T(BF("Filling roots table[%d]@%p -> %p\n") % i % ct.address(i) % (void*)arg.tagged_());
+    //if (debug) write_bf_stream(BF("Filling roots table[%d]@%p -> %p\n") % i % ct.address(i) % (void*)arg.tagged_());
       ++i;
     }
   }

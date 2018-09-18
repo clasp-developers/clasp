@@ -56,11 +56,11 @@ T_sp load_stream(T_sp strm, bool print) {
     if (x.unboundp())
       break;
     if (echoReplRead) {
-      BFORMAT_T(BF("Read: %s\n") % _rep_(x));
+      write_bf_stream(BF("Read: %s\n") % _rep_(x));
     }
     if (x.number_of_values() > 0) {
       if (print)
-        BFORMAT_T(BF(";; -read- %s") % _rep_(x));
+        write_bf_stream(BF(";; -read- %s") % _rep_(x));
       eval::funcall(core::_sym_STAReval_with_env_hookSTAR->symbolValue(), x, _Nil<T_O>());
     }
   }
@@ -109,7 +109,7 @@ CL_DEFUN T_sp core__load_no_package_set(T_sp lsource, T_sp verbose, T_sp print, 
   T_sp msource = lsource;
   //        printf("%s:%d cl__load source= %s\n", __FILE__, __LINE__, _rep_(source).c_str());
   if (verbose.notnilp()) {
-    BFORMAT_T(BF(";;; Loading %s\n") % _rep_(lsource));
+    write_bf_stream(BF(";;; Loading %s\n") % _rep_(lsource));
   }
 
   /* If source is a stream, read source from it. Don't rebind load-truename or anything.
