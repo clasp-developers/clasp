@@ -76,8 +76,9 @@ contiguous block."
           (not (and (subtypep array-element-type upgraded-element-type)
                     (subtypep upgraded-element-type array-element-type))))
         (error "Cannot displace the array, because the element types don't match"))
-    (when (< (core::%array-total-size displaced-to) displaced-index-offset)
-        (error "Cannot displace the array, because the total size of the displaced-to-array is too small.")))
+    (when (< (array-total-size displaced-to) displaced-index-offset)
+      (error "Cannot displace the array, because the total size of the displaced-to-array ~s is too small for displaced-index-offset ~a."
+             displaced-to displaced-index-offset)))
   (cond
     ((null dimensions)
      (make-mdarray dimensions upgraded-element-type adjustable displaced-to displaced-index-offset
