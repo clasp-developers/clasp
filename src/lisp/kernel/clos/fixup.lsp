@@ -90,6 +90,13 @@
                     '(standard-generic-function method-combination t)
                     #'std-compute-effective-method)
 
+(function-to-method 'generic-function-method-class '(gf)
+                    '(standard-generic-function))
+
+(function-to-method 'find-method-combination
+                    '(gf method-combination-type-name method-combination-options)
+                    '(standard-generic-function t t))
+
 (mlog "done with the first function-to-methods%N")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -454,20 +461,12 @@ and cannot be added to ~A." method other-gf gf)))
   (add-dependent #'initialize-instance x)
   (add-dependent #'allocate-instance x))
 
-
 (function-to-method 'make-method-lambda
                     '(gf method lambda-form environment)
                     '(standard-generic-function standard-method t t))
 
 (function-to-method 'compute-discriminating-function '(gf)
                     '(standard-generic-function))
-
-(function-to-method 'generic-function-method-class '(gf)
-                    '(standard-generic-function))
-
-(function-to-method 'find-method-combination
-                    '(gf method-combination-type-name method-combination-options)
-                    '(standard-generic-function t t))
 
 (function-to-method 'print-object
                     '(object stream)
