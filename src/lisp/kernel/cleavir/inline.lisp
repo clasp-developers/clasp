@@ -12,6 +12,9 @@
            #:inlined-two-arg->=
            ))
 
+(eval-when (:compile-toplevel :execute :load-toplevel)
+  (setq core:*defun-inline-hook* 'defun-inline-hook))
+
 (progn
   #+(or)
   (eval-when (:execute)

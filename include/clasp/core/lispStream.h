@@ -135,6 +135,7 @@ void clasp_clear_output(T_sp strm);
 void clasp_force_output(T_sp strm);
 
 void clasp_finish_output(T_sp strm);
+void clasp_finish_output_t(); // finish output to *standard-output*
 int clasp_file_column(T_sp strm);
 size_t clasp_input_filePos(T_sp strm);
 int clasp_input_lineno(T_sp strm);

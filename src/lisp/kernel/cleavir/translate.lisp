@@ -411,8 +411,9 @@ when this is t a lot of graphs will be generated.")
   ;; or an object needing a make-load-form.
   ;; That shouldn't actually happen, but it's a little ambiguous in Cleavir right now.
   (quick-draw-hir init-instr "hir-before-transformations")
-  #+(or)
+  #+cst
   (cleavir-partial-inlining:do-inlining init-instr)
+  #+cst
   (quick-draw-hir init-instr "hir-after-inlining")
   ;; required by most of the below
   (cleavir-hir-transformations:process-captured-variables init-instr)
@@ -651,7 +652,7 @@ This works like compile-lambda-function in bclasp."
 (defvar *cst-client* (make-instance 'eclector.concrete-syntax-tree:cst-client))
 
 (defmethod eclector.parse-result:source-position
-    (stream (client eclector.concrete-syntax-tree:cst-client))
+    ((client eclector.concrete-syntax-tree:cst-client) stream)
   (core:input-stream-source-pos-info stream))
 
 (defun cclasp-loop-read-and-compile-file-forms (source-sin environment)

@@ -112,7 +112,7 @@ int clasp_musleep(double dsec, bool alertable) {
 CL_LAMBDA(seconds);
 CL_DECLARE();
 CL_DOCSTRING("sleep");
-CL_DEFUN void cl__sleep(T_sp oseconds) {
+CL_DEFUN T_sp cl__sleep(T_sp oseconds) {
   SYMBOL_EXPORT_SC_(ClPkg, sleep);
   if (oseconds.nilp()) {
     ERROR_WRONG_TYPE_ONLY_ARG(cl::_sym_sleep, oseconds, cl::_sym_Number_O);
@@ -122,7 +122,7 @@ CL_DEFUN void cl__sleep(T_sp oseconds) {
     TYPE_ERROR(oseconds,Cons_O::createList(cl::_sym_float,clasp_make_single_float(0.0)));
   }
   int retval = clasp_musleep(dsec,false);
-  // ignore the return value
+  return _Nil<T_O>();
 }
 
 

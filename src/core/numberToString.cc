@@ -109,6 +109,10 @@ CL_DEFUN StrNs_sp core__integer_to_string(StrNs_sp buffer, Integer_sp integer,
   if (integer.fixnump()) {
     char txt[64];
     gc::Fixnum fn = unbox_fixnum(gc::As<Fixnum_sp>(integer));
+    if (fn < 0) {
+      StringPushStringCharStar(buffer,"-");
+      fn = - fn;
+    }
     switch (unbox_fixnum(base)) {
     case 8:
       sprintf(txt, "%" PRFoctal, fn);
