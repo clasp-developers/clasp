@@ -652,7 +652,7 @@ This works like compile-lambda-function in bclasp."
 (defvar *cst-client* (make-instance 'eclector.concrete-syntax-tree:cst-client))
 
 (defmethod eclector.parse-result:source-position
-    (stream (client eclector.concrete-syntax-tree:cst-client))
+    ((client eclector.concrete-syntax-tree:cst-client) stream)
   (core:input-stream-source-pos-info stream))
 
 (defun cclasp-loop-read-and-compile-file-forms (source-sin environment)
