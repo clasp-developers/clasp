@@ -120,6 +120,7 @@ typedef enum { WeakBucketKind,
                WeakMappingKind,
                StrongMappingKind,
                WeakPointerKind,
+               WeakImmediateKind,
                WeakFwdKind,
                WeakFwd2Kind,
                WeakPadKind,
@@ -540,6 +541,7 @@ struct WeakPointer : public WeakObject {
 #endif
 
   WeakPointer(const value_type &val) : WeakObject(WeakPointerKind), value(val){};
+  
   value_type value;
 };
 
