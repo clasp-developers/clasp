@@ -103,7 +103,11 @@ CL_DEFUN Integer_mv core__source_pos_info_unpack(T_sp source_pos_info) {
 CL_LAMBDA(source-pos-info);
 CL_DEFUN Integer_sp core__source_pos_info_file_handle(T_sp info) {
   if (info.nilp() ) return make_fixnum(0);
-  return Integer_O::create((gc::Fixnum)clasp_sourcePosInfo_fileHandle(info));
+  if (gc::IsA<SourcePosInfo_sp>(info)) {
+    SourcePosInfo_sp spi = gc::As_unsafe<SourcePosInfo_sp>(info);
+    return Integer_O::create((gc::Fixnum)clasp_sourcePosInfo_fileHandle(spi));
+  }
+  SIMPLE_ERROR(BF("Argument %s must be a source-pos-info object") % _rep_(info));
 }
 
 CL_LAMBDA(source-pos-info);
@@ -281,7 +285,8 @@ SourcePosInfo_sp SourcePosInfo_O::make(const string& filename, size_t filepos, s
 {
   SourceFileInfo_mv sfi = _lisp->getOrRegisterSourceFileInfo(filename);
   uint sfi_handle = sfi->fileHandle();
-  return SourcePosInfo_O::create(sfi_handle,filepos,lineno,column);
+  SourcePosInfo_sp res = SourcePosInfo_O::create(sfi_handle,filepos,lineno,column);
+  return res;
 }
 
 
