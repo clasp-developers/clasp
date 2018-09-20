@@ -1,4 +1,0 @@
-- name: build-clasp
-  tag: dev
-  service: codeship-build-clasp
-  command: echo "codeship-steps.yml command - done codeship-build-clasp"
