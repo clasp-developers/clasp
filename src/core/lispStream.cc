@@ -2188,16 +2188,14 @@ CL_DEFUN T_sp cl__make_broadcast_stream(List_sp ap) {
   T_sp x, streams;
   // we need to verify that ap are all streams
   // currently (make-broadcast-stream 1 2 3) works fine
-  if (!ap.nilp()) {
+  if (ap.notnilp()) {
     T_sp acons = oCar(ap);
-      Stream_sp aStream =acons.asOrNull<Stream_O>();
-    if (!aStream)
-      TYPE_ERROR(acons, cl::_sym_Stream_O);
+    Stream_sp aStream =acons.asOrNull<Stream_O>();
+    if (!aStream) TYPE_ERROR(acons, cl::_sym_Stream_O);
     for (auto cur : (List_sp)oCdr(ap)) {
       T_sp acons1 = oCar(ap);
       Stream_sp aStream1 =acons1.asOrNull<Stream_O>();
-      if (!aStream1)
-        TYPE_ERROR(acons1, cl::_sym_Stream_O);
+      if (!aStream1) TYPE_ERROR(acons1, cl::_sym_Stream_O);
     }
   }
   streams = ap;

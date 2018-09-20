@@ -299,6 +299,9 @@ CL_DEFUN Fixnum_sp core__test_tagged_cast(Fixnum_sp pow2) __attribute__((optnone
   for (i = 0; i < times; ++i) {
     f(env);
     Environment_sp e = env.asOrNull<Environment_O>();
+    if (!e) {
+      SIMPLE_ERROR(BF("e is NULL!"));
+    }
     v += f(e);
   }
   return Integer_O::create(v);
@@ -815,16 +818,13 @@ CL_DECLARE();
 CL_DOCSTRING("multipleValueFuncall");
 CL_DEFUN T_mv core__multiple_value_funcall(T_sp funcDesignator, List_sp functions) {
   Function_sp fmv = coerce::functionDesignator(funcDesignator);
-  Closure_sp func = fmv.asOrNull<Closure_O>();
-  ASSERT(func);
-  MAKE_STACK_FRAME(frame, func.raw_(), MultipleValues::MultipleValuesLimit);
+  MAKE_STACK_FRAME(frame, fmv.raw_(), MultipleValues::MultipleValuesLimit);
   size_t numArgs = 0;
   size_t idx = 0;
   MultipleValues& mv = lisp_multipleValues();
   for (auto cur : functions) {
-    Function_sp func = gc::As<Function_sp>(oCar(cur));
-    T_mv result = (func->entry.load())(LCC_PASS_ARGS0_ELLIPSIS(func.raw_()));
-//    T_mv result = eval::funcall(func);
+    Function_sp tfunc = gc::As<Function_sp>(oCar(cur));
+    T_mv result = (tfunc->entry.load())(LCC_PASS_ARGS0_ELLIPSIS(tfunc.raw_()));
     ASSERT(idx < MultipleValues::MultipleValuesLimit);
     if (result.number_of_values() > 0  ) {
         (*frame)[idx] = result.raw_();
@@ -839,7 +839,7 @@ CL_DEFUN T_mv core__multiple_value_funcall(T_sp funcDesignator, List_sp function
   frame->set_number_of_arguments(idx);
   Vaslist valist_s(frame);
   VaList_sp args(&valist_s);
-  return funcall_consume_valist_<Closure_O>(func.tagged_(),args);
+  return funcall_consume_valist_<Function_O>(fmv.tagged_(),args);
 }
 
 CL_LAMBDA(func1 func2);
@@ -863,9 +863,7 @@ CL_DEFUN T_mv core__catch_function(T_sp tag, Function_sp thunk) {
   T_mv result;
   int frame = my_thread->exceptionStack().push(CatchFrame, tag);
   try {
-    core::Closure_sp closure = thunk.asOrNull<Closure_O>();
-    ASSERT(closure);
-    result = closure->entry.load()(LCC_PASS_ARGS0_ELLIPSIS(closure.raw_()));
+    result = thunk->entry.load()(LCC_PASS_ARGS0_ELLIPSIS(thunk.raw_()));
   } catch (CatchThrow &catchThrow) {
     if (catchThrow.getFrame() != frame) {
       throw catchThrow;
