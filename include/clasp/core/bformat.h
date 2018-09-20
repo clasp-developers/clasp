@@ -28,13 +28,11 @@ THE SOFTWARE.
 #define _core_bformat_H_
 
 #include <clasp/core/object.h>
+#include <clasp/core/lispStream.h>
 
 namespace core {
 
 T_sp cl__format(T_sp dest, T_sp control, List_sp args);
 T_sp core__bformat(T_sp dest, const string &control, List_sp args);
-
-#define BFORMAT(dest,fmt) core::core__bformat(dest,(fmt).str(),_Nil<core::T_O>());
-#define BFORMAT_T(fmt) core::core__bformat(_lisp->_true(),(fmt).str(),_Nil<core::T_O>());
 };
 #endif /* _bformat_H_ */

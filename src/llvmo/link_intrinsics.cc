@@ -1545,32 +1545,32 @@ void cc_dispatch_debug(int msg_id, uintptr_clasp_t val)
   //         7 - print the value as a pointer to a dispatch function
   switch (msg_id) {
   case 0:
-      BFORMAT_T(BF("Step %d\n") % val);
+      write_bf_stream(BF("Step %d\n") % val);
 //      printf("%s:%d    cc_dispatch_debug step %d\n", __FILE__, __LINE__, val );
       break;
   case 1:
-      BFORMAT_T(BF("Arg val[%d]") % val);
+      write_bf_stream(BF("Arg val[%d]") % val);
 //      printf("%s:%d    cc_dispatch_debug arg val[%d]\n", __FILE__, __LINE__, val );
       break;
   case 2:
-      BFORMAT_T(BF(" tag = %d\n") % val); 
+      write_bf_stream(BF(" tag = %d\n") % val); 
 //      printf("%s:%d    cc_dispatch_debug tag [%d]\n", __FILE__, __LINE__, val );
      break;
   case 3: {
     VaList_sp vls((gc::Tagged)val);
 //    printf("%s:%d    vaList_sp.raw_() = %p\n", __FILE__, __LINE__, vls.raw_());
-    BFORMAT_T(BF("Arg VaList_sp.raw_() = %p list -> %s\n") % (void*)vls.raw_() % _rep_(vls) );
+    write_bf_stream(BF("Arg VaList_sp.raw_() = %p list -> %s\n") % (void*)vls.raw_() % _rep_(vls) );
     dump_Vaslist_ptr(&*vls);
     break;
   }
   case 4: {
 //      printf("%s:%d     ptr: %p\n", __FILE__, __LINE__, (void*)val);
-      BFORMAT_T(BF("Ptr: %p\n") % (void*)val );
+      write_bf_stream(BF("Ptr: %p\n") % (void*)val );
   }
       break;
   case 5: {
 //      printf("%s:%d     ptr: %p\n", __FILE__, __LINE__, (void*)val);
-      BFORMAT_T(BF("va_list: %p\n") % (void*)val );
+      write_bf_stream(BF("va_list: %p\n") % (void*)val );
       void* dump_va_list_voidSTAR = (void*)&dump_va_list;
       typedef void (*fptr)(uintptr_t);
       fptr my_fptr = reinterpret_cast<fptr>(dump_va_list_voidSTAR);
@@ -1578,10 +1578,10 @@ void cc_dispatch_debug(int msg_id, uintptr_clasp_t val)
       break;
   }
   case 6:
-      BFORMAT_T(BF("Argument stamp: %lu\n") % val);
+      write_bf_stream(BF("Argument stamp: %lu\n") % val);
       break;
   case 7:
-      BFORMAT_T(BF("Dispatch to: %p\n") % val);
+      write_bf_stream(BF("Dispatch to: %p\n") % val);
       break;
   }
   fflush(stdout);
