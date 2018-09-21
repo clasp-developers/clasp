@@ -777,7 +777,7 @@ jump to blocks within this tagbody."
         (let ((index (literal:with-load-time-value (literal:compile-load-time-value-thunk form))))
           (irc-store (literal:constants-table-value index) result))
         (let ((ltv (eval form)))
-          (codegen-rtv result ltv)))))
+          (literal:codegen-rtv-bclasp result ltv)))))
 
 ;;; DBG-i32
 

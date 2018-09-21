@@ -50,7 +50,7 @@
           cmp-log-dump-function
           codegen-literal
           reference-literal
-          codegen-rtv
+          codegen-rtv-cclasp
           compile-error-if-not-enough-arguments
           compile-in-env
           compile-lambda-function

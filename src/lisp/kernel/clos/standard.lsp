@@ -193,7 +193,10 @@
                  (class-direct-superclasses class)))))
 
 (defun finalize-unless-forward (class)
-  (unless (find-if #'has-forward-referenced-parents (class-direct-superclasses class))
+  (unless (or
+           ;; We used to have all forward-referenced classes "finalized", weirdly.
+           (forward-referenced-class-p class)
+           (find-if #'has-forward-referenced-parents (class-direct-superclasses class)))
     (finalize-inheritance class)))
 
 (defmethod make-instances-obsolete ((class class))
@@ -317,9 +320,6 @@ argument was supplied for metaclass ~S." (class-of class))))))))
 ;;; ----------------------------------------------------------------------
 ;;; FINALIZATION OF CLASS INHERITANCE
 ;;;
-(defun forward-referenced-class-p (x)
-  (let ((y (find-class 'FORWARD-REFERENCED-CLASS nil)))
-    (and y (si::subclassp (class-of x) y))))
 
 (defmethod finalize-inheritance ((class class))
   ;; FINALIZE-INHERITANCE computes the guts of what defines a class: the

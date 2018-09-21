@@ -25,7 +25,7 @@ THE SOFTWARE.
 */
 /* -^- */
 
-#define DEBUG_LEVEL_FULL
+//#define DEBUG_LEVEL_FULL
 #include <clasp/core/foundation.h>
 #include <clasp/core/common.h>
 #include <clasp/core/environment.h>
@@ -583,7 +583,7 @@ CL_DEFUN T_mv core__sharp_c(T_sp sin, Character_sp ch, T_sp num) {
     }
     Real_sp r = gc::As<Real_sp>(oCar(list));
     Real_sp i = gc::As<Real_sp>(oCadr(list));
-    return (Values(Complex_O::create(r, i)));
+    return (Values(clasp_make_complex(r, i)));
   }
   return (Values(_Nil<T_O>()));
 

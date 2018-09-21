@@ -1,5 +1,6 @@
 #-*- mode: python; coding: utf-8-unix -*-
 
+### Configure for Debian 10
 #### Clasp build configuration file.
 ###
 ### This file has to be named `wscript.config` to be

@@ -254,6 +254,7 @@ namespace core {
   int core__ihs_current_frame();
 /*! Set the current core:*ihs-current* value.
       If the idx is out of bounds then return a valid value */
+void core__gdb(T_sp msg);
   T_mv core__valid_function_name_p(T_sp arg);
   int core__set_ihs_current_frame(int idx);
   void core__exception_stack_dump();
@@ -266,7 +267,7 @@ namespace core {
   void core__setf_global_inline_statis(core::T_sp name, bool status, core::T_sp env);
   T_sp cl__fdefinition(T_sp functionName);
   T_mv cl__special_operator_p(T_sp sym);
-  void cl__sleep(T_sp oseconds);
+  T_sp cl__sleep(T_sp oseconds);
   List_sp core__list_from_va_list(VaList_sp valist);
 
 };

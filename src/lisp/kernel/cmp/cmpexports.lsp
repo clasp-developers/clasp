@@ -164,6 +164,7 @@
           jit-constant-i8
           jit-constant-i32
           jit-constant-i64
+          *default-function-attributes*
           ensure-jit-constant-i64
           jit-constant-size_t
           jit-constant-unique-string-ptr
@@ -179,6 +180,7 @@
           walk-form-for-source-info
           with-begin-end-catch
           preserve-exception-info
+          *dbg-generate-dwarf*
           with-new-function
           with-dbg-function
           with-dbg-lexical-block
@@ -253,7 +255,8 @@
           number-of-entries
           reference-literal
           load-time-reference-literal
-          codegen-rtv
+          codegen-rtv-bclasp
+          codegen-rtv-cclasp
           codegen-literal
           codegen-quote
           compile-reference-to-literal

@@ -152,8 +152,9 @@
 	     (when test
 	       (setq keywords (list :TEST-FUNCTION `#',test)))				    
 	     (when interactive
-	       (setq keywords (list :INTERACTIVE-FUNCTION
-				    `#',interactive)))
+	       (setq keywords (list* :INTERACTIVE-FUNCTION
+                                     `#',interactive
+                                     keywords)))
 	     (when report
 	       (setq keywords (list* :REPORT-FUNCTION
 				     (if (stringp report)
@@ -575,8 +576,8 @@ returns with NIL."
    (type :initarg :type :initform nil :reader ext:stack-overflow-type))
   (:REPORT
    (lambda (condition stream)
-     (let* ((type (ext::stack-overflow-type condition))
-	    (size (ext::stack-overflow-size condition)))
+     (let* ((type (ext:stack-overflow-type condition))
+	    (size (ext:stack-overflow-size condition)))
        (if size
 	   (format stream "~A overflow at size ~D. Stack can probably be resized."
 		   type size)
@@ -846,9 +847,6 @@ memory limits before executing the program again."))
       value))
 
 (defvar *assert-failure-test-form* nil)
-
-(eval-when (:load-toplevel :compile-toplevel :execute)
-  (export 'ext::assert-error (find-package :ext)))
 
 (define-condition ext:assert-error (simple-error) ())
 

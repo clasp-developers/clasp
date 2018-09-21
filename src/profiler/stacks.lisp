@@ -1,4 +1,16 @@
-#!/usr/local/bin/sbcl --script
+#!/bin/sh
+#--eval '(set-dispatch-macro-character #\# #\! (lambda (s c n)(declare (ignore c n)) (read-line s) (values)))' \
+#|
+SCRIPT_DIR="$(dirname "$0")"
+exec sbcl --noinform --disable-ldb --lose-on-corruption --disable-debugger \
+--no-sysinit --no-userinit --noprint \
+--eval '(set-dispatch-macro-character #\# #\! (lambda (s c n)(declare (ignore c n)) (read-line s) (values)))' \
+--eval "(defvar *script-args* '( $# \"$0\" \"$1\" \"$2\" \"$3\" \"$4\" \"$5\" \"$6\" \"$7\" ))" \
+--eval "(require :asdf)" \
+--load "$0"
+|#
+
+
 (defun read-dtrace-header (stream &optional eofp eof)
   (list (read-line stream eofp eof)
         (read-line stream eofp eof)
@@ -132,10 +144,13 @@
         (num-backtraces 0))
     (declare (ignore header))
     (let ((calls (loop for backtrace = (read-dtrace-backtrace fin nil :eof)
-                       until (eq backtrace :eof)
-                       when (> (length backtrace) 0)
-                         append (butlast backtrace 1)
-                       and do (incf num-backtraces))))
+                  for backtrace-times = (if (consp backtrace) (parse-integer (string-trim " " (car (last backtrace)))) nil)
+                  do (when (eq backtrace :eof) (loop-finish))
+                 do (format t "Number of times backtrace appears: ~a~%" backtrace-times)
+                    when (> (length backtrace) 0)
+                    append (loop for times below backtrace-times
+                            append (butlast backtrace 1))
+                    and do (incf num-backtraces backtrace-times))))
       (values calls num-backtraces))))
 
 
@@ -268,14 +283,11 @@
 ;;;  callers -i <in> -o <out> -c <callee-name>
 ;;;      generates a list of callers of callee-name and how often they call
 
-(let* ((sym-link (null (search "stacks.lisp" (second sb-ext:*posix-argv*))))
-       (cmd (if sym-link
-                (second sb-ext:*posix-argv*)
-                (third sb-ext:*posix-argv*)))
-       (argv (if sym-link
-                 (cddr sb-ext:*posix-argv*)
-                 (cdddr sb-ext:*posix-argv*)))
-       (args (make-hash-table :test #'equal)))
+
+(let* ((number-args (first *script-args*))
+       (cmd (second *script-args*))
+       (argv (subseq (cddr *script-args*) 0 number-args))
+       (args (make-hash-table :test #'equal )))
   (declare (optimize (debug 3)))
   (loop for cur = argv then (cddr cur)
         for key = (car cur)
@@ -320,3 +332,4 @@
       (when out-file (format *debug-io* "~a~%" out-file))
       (close out-stream))))
 
+(sb-ext:exit)

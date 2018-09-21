@@ -3,14 +3,30 @@
 # USAGE:
 #   ./waf distclean configure
 #   ./waf [action]_[stage-char][gc-name][_d for debug build]
-#   ./waf build_fboehm             # will build most of clasp, except the most memory hungry linking tasks at the end
+#   [action] is one of ( build | clean | install )
+#   [stage-char] is one of ( i | a | b | c )
+#   [gc-name] is one of ( boehm | mps )  --- mps needs special support
+#   [_d]  Sets up debug build
+#
+#  examples:
+#    ./waf build_cboehm      # build cboehm
+#    ./waf install_cboehm    # build and install cboehm
+#    ./waf build_aboehm      # useful for debugging build system - build only aclasp
+#    ./waf build_iboehm      # useful to build C++ without rebuilding CL code -
+#                            # If done carefully this can be used to quickly test C++ code
+#
 #   ./waf --jobs 2 install_cboehm  # will build and install cclasp
 #   to run with low priority, you can prefix with:
 #     nice -n 19 ionice --class 3 ./waf --jobs 2 ...
 #
+#
+#   ./waf build_fboehm # will build most of clasp,
+#                        except the most memory hungry linking tasks at the end
+#
 # NOTE: please observe the following best practices:
 #
-# - do *not* use waf's ant_glob (you can shoot yourself in the feet with it, leading to tasks getting redone unnecessarily)
+# - do *not* use waf's ant_glob (you can shoot yourself in the feet
+#          with it, leading to tasks getting redone unnecessarily)
 # - in emacs, you may want to: (add-to-list 'auto-mode-alist '("wscript\\'" . python-mode))
 # - waf constructs have strange names; it's better not to assume that you know what something is or does based solely on its name.
 #   e.g. node.change_ext() returns a new node instance... you've been warned!
@@ -210,22 +226,49 @@ def build_extension(bld):
 def grovel(bld):
     bld.recurse("extensions")
 
+def fetch_git_revision(path, url, revision = "", label = "master"):
+    log.info("Git repository %s  url: %s\n     revision: %s  label: %s\n" % (path, url, revision, label))
+    ret = os.system("./tools-for-build/fetch-git-revision.sh '%s' '%s' '%s' '%s'" % (path, url, revision, label))
+    if ( ret != 0 ):
+        raise Exception("Failed to fetch git url %s" % url)
+
+def add_cando_extension_dev(cfg):
+    log.pprint('BLUE', 'add_cando_extension_dev')
+    fetch_git_revision("extensions/cando",
+                       "https://github.com/drmeister/cando.git",
+                       label="dev")
+
+def add_cando_extension_testing(cfg):
+    log.pprint('BLUE', 'add_cando_extension_testing')
+    fetch_git_revision("extensions/cando",
+                       "https://github.com/drmeister/cando.git",
+                       label="testing")
+
+def add_cando_extension_preview(cfg):
+    log.pprint('BLUE', 'add_cando_extension_preview')
+    fetch_git_revision("extensions/cando",
+                       "https://github.com/drmeister/cando.git",
+                       label="preview")
+
+def add_cando_extension_master(cfg):
+    log.pprint('BLUE', 'add_cando_extension_master')
+    fetch_git_revision("extensions/cando",
+                       "https://github.com/drmeister/cando.git",
+                       label="master")
+
 def update_dependencies(cfg):
     # Specifying only label = "some-tag" will check out that tag into a "detached head", but
     # specifying both label = "master" and revision = "some-tag" will stay on master and reset to that revision.
-    def fetch_git_revision(path, url, revision = "", label = "master"):
-        log.info("Git repository %s  url: %s\n     revision: %s  label: %s\n" % (path, url, revision, label))
-        ret = os.system("./tools-for-build/fetch-git-revision.sh '%s' '%s' '%s' '%s'" % (path, url, revision, label))
-        if ( ret != 0 ):
-            raise Exception("Failed to fetch git url %s" % url)
-
     log.pprint('BLUE', 'update_dependencies()')
+#    fetch_git_revision("src/lisp/kernel/contrib/sicl",
+#                       "https://github.com/robert-strandh/SICL.git",
+#                       "master")
     fetch_git_revision("src/lisp/kernel/contrib/sicl",
                        "https://github.com/Bike/SICL.git",
-                       "80b08f787b55d0095bbf617f7910b18a64f940fc")
+                       "4fedcfc9ae0cfeb4bdee3d030d7c2c4a928c8feb")
     fetch_git_revision("src/lisp/kernel/contrib/Concrete-Syntax-Tree",
-                       "https://github.com/clasp-developers/Concrete-Syntax-Tree.git",
-                       "e5ab78ca27084d3c809e00886a1088d5ce28a864")
+                       "https://github.com/robert-strandh/Concrete-Syntax-Tree.git",
+                       "8d8c5abf8f1690cb2b765241d81c2eb86d60d77e")
     fetch_git_revision("src/lisp/kernel/contrib/closer-mop",
                        "https://github.com/pcostanza/closer-mop.git",
                        "d4d1c7aa6aba9b4ac8b7bb78ff4902a52126633f")
@@ -233,8 +276,10 @@ def update_dependencies(cfg):
                        "https://github.com/robert-strandh/Acclimation.git",
                        "dd15c86b0866fc5d8b474be0da15c58a3c04c45c")
     fetch_git_revision("src/lisp/kernel/contrib/Eclector",
-                       "https://github.com/clasp-developers/Eclector.git",
-                       "7b63e7bbe6c60d3ad3413a231835be6f5824240a")
+                       "https://github.com/robert-strandh/Eclector.git",
+                       "287ce817c0478668bd389051d2cc6b26ddc62ec9")
+    
+#                      "7b63e7bbe6c60d3ad3413a231835be6f5824240a") works with AST clasp
     fetch_git_revision("src/lisp/kernel/contrib/alexandria",
                        "https://github.com/clasp-developers/alexandria.git",
                        "e5c54bc30b0887c237bde2827036d17315f88737")
@@ -294,10 +339,12 @@ def configure_common(cfg,variant):
     # These will end up in build/config.h
     cfg.define("EXECUTABLE_NAME",variant.executable_name())
     if (cfg.env.PREFIX):
-        cfg.define("PREFIX",cfg.env.PREFIX)
+        pass
     else:
-        cfg.define("PREFIX","/opt/clasp/")
+        cfg.env.PREFIX = "/opt/clasp"
+    cfg.define("PREFIX",cfg.env.PREFIX)
     assert os.path.isdir(cfg.env.LLVM_BIN_DIR)
+    log.info("cfg.env.PREFIX is %s" % cfg.env.PREFIX)
     cfg.define("CLASP_CLANG_PATH", os.path.join(cfg.env.LLVM_BIN_DIR, "clang"))
     cfg.define("APP_NAME",APP_NAME)
     cfg.define("BITCODE_NAME",variant.bitcode_name())
@@ -373,8 +420,8 @@ class variant(object):
         return 'fasl/%s-%s-cxx.bc' % (self.bitcode_name(),name)
     def configure_for_release(self,cfg):
         cfg.define("_RELEASE_BUILD",1)
-        cfg.env.append_value('CXXFLAGS', [ '-O3', '-g' ])
-        cfg.env.append_value('CFLAGS', [ '-O3', '-g' ])
+        cfg.env.append_value('CXXFLAGS', [ '-O3', '-g', '-fPIC' ])
+        cfg.env.append_value('CFLAGS', [ '-O3', '-g', '-fPIC' ])
         cfg.define("ALWAYS_INLINE_MPS_ALLOCATIONS",1)
         if (os.getenv("CLASP_RELEASE_CXXFLAGS") != None):
             cfg.env.append_value('CXXFLAGS', os.getenv("CLASP_RELEASE_CXXFLAGS").split() )
@@ -391,7 +438,7 @@ class variant(object):
         log.debug("cfg.env.LTO_FLAG = %s", cfg.env.LTO_FLAG)
         if (cfg.env.LTO_FLAG):
             cfg.env.append_value('LDFLAGS', [ '-Wl','-mllvm', '-O0', '-g' ])
-        cfg.env.append_value('CFLAGS', [ '-O0', '-g' ])
+        cfg.env.append_value('CFLAGS', [ '-O0', '-g', '-fPIC' ])
         if (os.getenv("CLASP_DEBUG_CXXFLAGS") != None):
             cfg.env.append_value('CXXFLAGS', os.getenv("CLASP_DEBUG_CXXFLAGS").split() )
         if (os.getenv("CLASP_DEBUG_LINKFLAGS") != None):
@@ -670,6 +717,13 @@ def configure(cfg):
 #        cfg.check_cxx(lib='lzma', cflags='-Wall', uselib_store='LZMA')
     else:
         pass
+    # Check the boost libraries one at a time and then all together to put them in uselib_store
+    for onelib in BOOST_LIBRARIES:
+        if (cfg.env['LINK_STATIC']):
+            cfg.check_cxx(stlib=onelib, cflags='-Wall', uselib_store='BOOST-%s'%onelib)
+        else:
+            cfg.check_cxx(lib=onelib, cflags='-Wall', uselib_store='BOOST-%s'%onelib)
+    log.info("Checking for all boost libraries together to put them all in one uselib_store")
     if (cfg.env['LINK_STATIC']):
         cfg.check_cxx(stlib=BOOST_LIBRARIES, cflags='-Wall', uselib_store='BOOST')
     else:
@@ -706,6 +760,8 @@ def configure(cfg):
     if (cfg.env['DEST_OS'] == LINUX_OS):
         cfg.env.append_value('CXXFLAGS',['-fno-omit-frame-pointer', '-mno-omit-leaf-frame-pointer'])
         cfg.env.append_value('CFLAGS',['-fno-omit-frame-pointer', '-mno-omit-leaf-frame-pointer'])
+    cfg.env.append_value('CXXFLAGS',['-fPIC'])
+    cfg.env.append_value('CFLAGS',['-fPIC'])
 #    if ('program_name' in cfg.__dict__):
 #        pass
 #    else:
@@ -751,8 +807,6 @@ def configure(cfg):
     cfg.define("__STDC_CONSTANT_MACROS",1)
     cfg.define("__STDC_FORMAT_MACROS",1)
     cfg.define("__STDC_LIMIT_MACROS",1)
-#    cfg.env.append_value('CXXFLAGS', ['-v'] )
-#    cfg.env.append_value('CFLAGS', ['-v'] )
     cfg.env.append_value('LINKFLAGS', ['-v'] )
 #    includes = [ 'include/' ]
 #    includes = includes + cfg.plugins_include_dirs

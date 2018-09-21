@@ -434,11 +434,16 @@ If this form has already been precalculated then just return the precalculated-v
          ;; value in the run-time environment.
          ;; We use cleavir-env:eval rather than cclasp-eval-with-env so that it works
          ;; more correctly with alternate global environments.
-         (let* ((value (cleavir-env:eval form env env))
-                (index (cmp:codegen-rtv nil value))
-                (result (make-instance 'clasp-cleavir:arrayed-literal :value form :index index :literal-name "NIL")))
-           (check-type result clasp-cleavir:literal)
-           result)))))
+         (let* ((value (cleavir-env:eval form env env)))
+           (multiple-value-bind (index-or-immediate index-p)
+               (cmp:codegen-rtv-cclasp value)
+             (let ((result (if index-p
+                               (let ((index index-or-immediate))
+                                 (make-instance 'clasp-cleavir:arrayed-literal :value form :index index :literal-name "NIL"))
+                               (let ((immediate index-or-immediate))
+                                 (make-instance 'clasp-cleavir:immediate-literal :tagged-value immediate)))))
+               (check-type result clasp-cleavir:literal)
+               result)))))))
 
 
 (defun find-load-time-value-asts (ast)

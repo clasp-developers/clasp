@@ -24,7 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#define DEBUG_LEVEL_FULL
+//#define DEBUG_LEVEL_FULL
 #include <clasp/core/foundation.h>
 #pragma clang diagnostic push
 //#pragma clang diagnostic ignored "-Wunused-local-typedef"
@@ -833,12 +833,13 @@ T_sp interpret_token_or_throw_reader_error(T_sp sin, Token &token, bool only_dot
     // interpret ratio
     SimpleString_sp sRatioStr = tokenStr(sin,token, start - token.data());
     std::string ratioStr = sRatioStr->get_std_string();
-    if (ratioStr[0] == '+') {
-      Ratio_sp rp = Ratio_O::create(ratioStr.substr(1, ratioStr.size() - 1).c_str());
-      return rp;
-    }
-    Ratio_sp r = Ratio_O::create(ratioStr.c_str());
-    return r;
+    if (ratioStr[0] == '+')
+      ratioStr = ratioStr.substr(1, ratioStr.size() - 1);
+    vector<string> parts = split(ratioStr.c_str(), "/");
+    ASSERT(parts.size() == 2);
+    Integer_sp num = Integer_O::create(parts[0]);
+    Integer_sp denom = Integer_O::create(parts[1]);
+    return Rational_O::create(num, denom);
     break;
   }
   case tfloat0:

@@ -34,7 +34,7 @@
                 (error "Handle hash-tables in circle-subst"))
                ;; Do something for builtin objects
                ((typep tree 'cxx-object)
-                (error "Handle cxx-object in circle-subst")
+                (error "Handle cxx-object in circle-subst tree: ~s" tree)
                 #+(or)(let ((record (make-record-patcher circle-table)))
                         (patch-object tree record)))
                #+clos ((typep tree 'instance)

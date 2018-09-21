@@ -149,6 +149,8 @@ extern "C" void add_history(char *line);
 
 namespace core {
 
+bool globalTheSystemIsUp = false;
+
 const int Lisp_O::MaxFunctionArguments = 64; //<! See ecl/src/c/main.d:163 ecl_make_cache(64,4096)
 const int Lisp_O::SingleDispatchMethodCacheSize = 1024 * 32;
 
@@ -1138,6 +1140,13 @@ Package_sp Lisp_O::makePackage(const string &name, list<string> const &nicknames
 }
 
 T_sp Lisp_O::findPackage_no_lock(const string &name, bool errorp) const {
+  // Check local nicknames first.
+  // FIXME: This conses!
+  if (globalTheSystemIsUp) {
+    T_sp local = this->getCurrentPackage()->findPackageByLocalNickname(SimpleBaseString_O::make(name));
+    if (local.notnilp()) return local;
+  }
+  
   //        printf("%s:%d Lisp_O::findPackage name: %s\n", __FILE__, __LINE__, name.c_str());
   map<string, int>::const_iterator fi = this->_Roots._PackageNameIndexMap.find(name);
   if (fi == this->_Roots._PackageNameIndexMap.end()) {
@@ -1427,7 +1436,7 @@ T_mv Lisp_O::readEvalPrint(T_sp stream, T_sp environ, bool printResults, bool pr
             SIMPLE_ERROR(BF("*read-suppress* is true but the following expression was read: %s") % _rep_(expression));
           }
         }
-        BFORMAT_T(BF(";;--read-%s-------------\n#|\n%s\n----------|#\n") % suppress.c_str() % _rep_(expression));
+        write_bf_stream(BF(";;--read-%s-------------\n#|\n%s\n----------|#\n") % suppress.c_str() % _rep_(expression));
       }
       _BLOCK_TRACEF(BF("---REPL read[%s]") % expression->__repr__());
       if (cl__keywordp(expression)) {
@@ -2168,7 +2177,7 @@ CL_DOCSTRING("invokeInternalDebugger");
     LispDebugger debugger;
     debugger.invoke();
   } else {
-    BFORMAT_T(BF("%s:%d core__invoke_internal_debugger --> %s") % __FILE__ % __LINE__ % _rep_(condition).c_str());
+    write_bf_stream(BF("%s:%d core__invoke_internal_debugger --> %s") % __FILE__ % __LINE__ % _rep_(condition).c_str());
     LispDebugger debugger(condition);
     debugger.invoke();
   }
@@ -2438,7 +2447,7 @@ void Lisp_O::dump_apropos(const char *part) const {
 void Lisp_O::dump_backtrace(int numcol) {
   _OF();
   string bt = backtrace_as_string();
-  BFORMAT_T(BF("%s") % bt);
+  write_bf_stream(BF("%s") % bt);
 }
 
 
@@ -2475,6 +2484,8 @@ int Lisp_O::run() {
       getchar();
     }
   }
+  // The system is fully up now
+  globalTheSystemIsUp = true;
   Package_sp cluser = _lisp->findPackage("COMMON-LISP-USER");
   cl::_sym_STARpackageSTAR->defparameter(cluser);
   try {

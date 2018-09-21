@@ -1461,6 +1461,7 @@ T_mv cc_multiple_value_funcall(core::T_mv* result, T_O* funcDesignator, std::siz
   va_start(argp,numFuns);
   for (; numFuns; --numFuns) {
     core::T_O* tfunc = va_arg(argp,core::T_O*);
+#error "Check the return value of tfunc.asOrNull"
     core::Function_sp func = tfunc.asOrNull<core::Function_O>();
     ASSERT(func);
     auto closure = func->closure;
@@ -1476,6 +1477,7 @@ T_mv cc_multiple_value_funcall(core::T_mv* result, T_O* funcDesignator, std::siz
   va_end(argp);
   ASSERT(idx < MultipleValues::MultipleValuesLimit);
   mvAccumulate._Size = idx;
+#error "Check the return value of tfunc.asOrNull"
   core::Function_sp func = funcDesignator.asOrNull<core::Function_O>();
   ASSERT(func);
   auto closure = gc::untag_general<core::Function_O *>(func)->closure.as<core::Closure>();
@@ -1489,6 +1491,7 @@ T_mv cc_multiple_value_funcall(core::T_mv* result, T_O* funcDesignator, std::siz
 
 T_mv cc_multiple_value_prog1_function(core::T_mv* result, core::T_O* tfunc1, core::T_O* tfunc2) {
   MultipleValues mvFunc1;
+#error "Check the return value of tfunc.asOrNull"
   core::Function_sp func1 = tfunc1.asOrNull<core::Function_O>();
   ASSERT(func1);
   core::Closure_sp closure1 = func1->closure;
@@ -1498,6 +1501,7 @@ T_mv cc_multiple_value_prog1_function(core::T_mv* result, core::T_O* tfunc1, cor
   MultipleValues &mvThreadLocal = lisp_multipleValues();
   for (size_t i(1), iEnd(mvFunc1._Size); i < iEnd; ++i) mvFunc1[i] = mvThreadLocal[i];
   T_mv resultTemp;
+#error "Check the return value of tfunc.asOrNull"
   core::Function_sp func2 = tfunc2.asOrNull<core::Function_O>();
   ASSERT(func2);
   core::Closure_sp closure2 = func2->closure;
@@ -1541,32 +1545,32 @@ void cc_dispatch_debug(int msg_id, uintptr_clasp_t val)
   //         7 - print the value as a pointer to a dispatch function
   switch (msg_id) {
   case 0:
-      BFORMAT_T(BF("Step %d\n") % val);
+      write_bf_stream(BF("Step %d\n") % val);
 //      printf("%s:%d    cc_dispatch_debug step %d\n", __FILE__, __LINE__, val );
       break;
   case 1:
-      BFORMAT_T(BF("Arg val[%d]") % val);
+      write_bf_stream(BF("Arg val[%d]") % val);
 //      printf("%s:%d    cc_dispatch_debug arg val[%d]\n", __FILE__, __LINE__, val );
       break;
   case 2:
-      BFORMAT_T(BF(" tag = %d\n") % val); 
+      write_bf_stream(BF(" tag = %d\n") % val); 
 //      printf("%s:%d    cc_dispatch_debug tag [%d]\n", __FILE__, __LINE__, val );
      break;
   case 3: {
     VaList_sp vls((gc::Tagged)val);
 //    printf("%s:%d    vaList_sp.raw_() = %p\n", __FILE__, __LINE__, vls.raw_());
-    BFORMAT_T(BF("Arg VaList_sp.raw_() = %p list -> %s\n") % (void*)vls.raw_() % _rep_(vls) );
+    write_bf_stream(BF("Arg VaList_sp.raw_() = %p list -> %s\n") % (void*)vls.raw_() % _rep_(vls) );
     dump_Vaslist_ptr(&*vls);
     break;
   }
   case 4: {
 //      printf("%s:%d     ptr: %p\n", __FILE__, __LINE__, (void*)val);
-      BFORMAT_T(BF("Ptr: %p\n") % (void*)val );
+      write_bf_stream(BF("Ptr: %p\n") % (void*)val );
   }
       break;
   case 5: {
 //      printf("%s:%d     ptr: %p\n", __FILE__, __LINE__, (void*)val);
-      BFORMAT_T(BF("va_list: %p\n") % (void*)val );
+      write_bf_stream(BF("va_list: %p\n") % (void*)val );
       void* dump_va_list_voidSTAR = (void*)&dump_va_list;
       typedef void (*fptr)(uintptr_t);
       fptr my_fptr = reinterpret_cast<fptr>(dump_va_list_voidSTAR);
@@ -1574,10 +1578,10 @@ void cc_dispatch_debug(int msg_id, uintptr_clasp_t val)
       break;
   }
   case 6:
-      BFORMAT_T(BF("Argument stamp: %lu\n") % val);
+      write_bf_stream(BF("Argument stamp: %lu\n") % val);
       break;
   case 7:
-      BFORMAT_T(BF("Dispatch to: %p\n") % val);
+      write_bf_stream(BF("Dispatch to: %p\n") % val);
       break;
   }
   fflush(stdout);

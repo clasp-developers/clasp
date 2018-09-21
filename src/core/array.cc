@@ -518,14 +518,14 @@ CL_DEFUN size_t core__arrayFlags(Array_sp a)
 CL_DEFUN void core__mdarray_dump(Array_sp a)
 {
   MDArray_sp mda = gc::As<MDArray_sp>(a);
-  BFORMAT_T(BF("MDArray address = %p\n") % (void*)&*mda);
-  BFORMAT_T(BF("MDArray _ArrayTotalSize = %d\n") % mda->_ArrayTotalSize);
-  BFORMAT_T(BF("MDArray _Data = %p\n") % (void*)&*(mda->_Data));
-  BFORMAT_T(BF("MDArray _DisplacedIndexOffset = %d\n") % mda->_DisplacedIndexOffset);
-  BFORMAT_T(BF("MDArray _Flags = %d\n") % mda->_Flags._Flags);
-  BFORMAT_T(BF("MDArray _Dimensions._Length = %d\n") % mda->_Dimensions._Length);
+  write_bf_stream(BF("MDArray address = %p\n") % (void*)&*mda);
+  write_bf_stream(BF("MDArray _ArrayTotalSize = %d\n") % mda->_ArrayTotalSize);
+  write_bf_stream(BF("MDArray _Data = %p\n") % (void*)&*(mda->_Data));
+  write_bf_stream(BF("MDArray _DisplacedIndexOffset = %d\n") % mda->_DisplacedIndexOffset);
+  write_bf_stream(BF("MDArray _Flags = %d\n") % mda->_Flags._Flags);
+  write_bf_stream(BF("MDArray _Dimensions._Length = %d\n") % mda->_Dimensions._Length);
   for ( size_t i(0); i<mda->_Dimensions._Length; ++i ) {
-    BFORMAT_T(BF("MDArray _Dimensions[%d = %d\n") % i % mda->_Dimensions[i]);
+    write_bf_stream(BF("MDArray _Dimensions[%d = %d\n") % i % mda->_Dimensions[i]);
   }
 }
 
@@ -1069,9 +1069,7 @@ T_sp template_string_LE_(const T1& string1, const T2& string2, size_t start1, si
     ++cp2;
   }
  END_STRING1:
-  if (num2 == 0)
     goto RETURN_TRUE;
-  goto RETURN_FALSE;
  END_STRING2:
  RETURN_FALSE:
   return _Nil<T_O>();
@@ -1188,8 +1186,8 @@ T_sp template_string_lessp(const T1& string1, const T2& string2, size_t start1, 
       goto END_STRING1;
     if (num2 == 0)
       goto END_STRING2;
-    char ucp1 = toupper(static_cast<claspCharacter>(*cp1));
-    char ucp2 = toupper(static_cast<claspCharacter>(*cp2));
+    claspCharacter ucp1 = toupper(static_cast<claspCharacter>(*cp1));
+    claspCharacter ucp2 = toupper(static_cast<claspCharacter>(*cp2));
     if (ucp1 != ucp2) {
       if (ucp1 < ucp2)
         goto RETURN_TRUE;
@@ -1222,8 +1220,8 @@ T_sp template_string_greaterp(const T1& string1, const T2& string2, size_t start
       goto END_STRING1;
     if (num2 == 0)
       goto END_STRING2;
-    char ucp1 = toupper(static_cast<claspCharacter>(*cp1));
-    char ucp2 = toupper(static_cast<claspCharacter>(*cp2));
+    claspCharacter ucp1 = toupper(static_cast<claspCharacter>(*cp1));
+    claspCharacter ucp2 = toupper(static_cast<claspCharacter>(*cp2));
     if ((ucp1 != ucp2)) {
       if (ucp1 > ucp2)
         goto RETURN_TRUE;
@@ -1256,8 +1254,8 @@ T_sp template_string_not_greaterp(const T1& string1, const T2& string2, size_t s
       goto END_STRING1;
     if (num2 == 0)
       goto END_STRING2;
-    char ucp1 = toupper(static_cast<claspCharacter>(*cp1));
-    char ucp2 = toupper(static_cast<claspCharacter>(*cp2));
+    claspCharacter ucp1 = toupper(static_cast<claspCharacter>(*cp1));
+    claspCharacter ucp2 = toupper(static_cast<claspCharacter>(*cp2));
     if ((ucp1 != ucp2)) {
       if (ucp1 < ucp2)
         goto RETURN_TRUE;
@@ -1269,9 +1267,7 @@ T_sp template_string_not_greaterp(const T1& string1, const T2& string2, size_t s
     ++cp2;
   }
  END_STRING1:
-  if (num2 == 0)
     goto RETURN_TRUE;
-  goto RETURN_FALSE;
  END_STRING2:
  RETURN_FALSE:
   return _Nil<T_O>();
@@ -1294,8 +1290,8 @@ T_sp template_string_not_lessp(const T1& string1, const T2& string2, size_t star
       goto END_STRING1;
     if (num2 == 0)
       goto END_STRING2;
-    char ucp1 = toupper(static_cast<claspCharacter>(*cp1));
-    char ucp2 = toupper(static_cast<claspCharacter>(*cp2));
+    claspCharacter ucp1 = toupper(static_cast<claspCharacter>(*cp1));
+    claspCharacter ucp2 = toupper(static_cast<claspCharacter>(*cp2));
     if ((ucp1 != ucp2)) {
       if (ucp1 > ucp2)
         goto RETURN_TRUE;

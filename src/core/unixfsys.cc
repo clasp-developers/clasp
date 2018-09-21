@@ -387,7 +387,7 @@ CL_DEFUN T_sp ext__chdir(T_sp dir, T_sp change_default_pathname_defaults) {
     String_sp sdir = gc::As_unsafe<String_sp>(tdir);
     Integer_sp result = Integer_O::create((gc::Fixnum)safe_chdir(sdir->get_std_string().c_str(), _Nil<T_O>()));
     if (change_default_pathname_defaults.notnilp()) {
-      BFORMAT_T(BF("Changing *default-pathname-defaults* because change-default-pathname-defaults -> %s\n") % _rep_(change_default_pathname_defaults));
+      write_bf_stream(BF("Changing *default-pathname-defaults* because change-default-pathname-defaults -> %s\n") % _rep_(change_default_pathname_defaults));
       core::getcwd(true); // get the current working directory and change *default-pathname-defaults* to it
     }
     return result;
