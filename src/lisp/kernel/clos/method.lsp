@@ -382,6 +382,7 @@ have disappeared."
       (invalidate-discriminating-function gf)
       method)))
 
+;; Upgraded into method in fixup.
 (defun find-method (gf qualifiers specializers &optional (errorp t))
   (declare (notinline method-qualifiers))
   (flet ((filter-specializer (name)

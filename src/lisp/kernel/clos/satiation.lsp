@@ -226,7 +226,9 @@
                         for mf-name = (gensym "METHOD-FUNCTION")
                         collect (list method
                                       name
-                                      `(find-method #',generic-function-name
+                                      ;; FIXME: We use FDEFINITIOn instead of #' because we have
+                                      ;; local macros for method-qualifiers etc, which are also satiated.
+                                      `(find-method (fdefinition ',generic-function-name)
                                                     ',(method-qualifiers method)
                                                     (list ,@(loop for s in (method-specializers method)
                                                                   collect (etypecase s
