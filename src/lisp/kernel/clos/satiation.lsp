@@ -118,7 +118,9 @@
   ;; no generic-function calls (other than the one for the actual call, of course).
   (invalidate-discriminating-function generic-function))
 
-(defun satiate-standard-generic-functions ()
+;;; Satiate the minimum set of functions to make the system work.
+;;; Essentially those that are used to compute new call history entries in the full system.
+(defun satiate-minimal-generic-functions ()
   (macrolet ((satiate-one (gf-name &body lists-of-class-names)
                `(prog2
                     (gf-log ,(concatenate 'string "Satiating " (string gf-name) "%N"))
@@ -128,8 +130,6 @@
                                    collect `(list ,@(loop for name in list
                                                           collect `(find-class ',name))))))
                   (gf-log ,(concatenate 'string "Done satiating " (string gf-name) "%N")))))
-    ;; I think what we need to satiate are just what dispatch-miss can call.
-    ;; With the actual classes. Abstract classes aren't relevant.
     (satiate-one class-slots
                  (standard-class)
                  (funcallable-standard-class))
@@ -179,6 +179,10 @@
     (satiate-one fast-method-function
                  (standard-method)
                  (standard-reader-method) (standard-writer-method))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; COMPILE-TIME VERSION
 
 ;;; This function sets up an initial specializer profile for a gf that doesn't have one.
 ;;; It can only not have one if it was defined unnaturally, i.e. during boot.

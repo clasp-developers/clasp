@@ -114,7 +114,7 @@
 (mlog "About to satiate%N")
 
 (eval-when (:execute)
-  (satiate-standard-generic-functions))
+  (satiate-minimal-generic-functions))
 (eval-when (:load-toplevel)
   (defun early-find-method (gf qualifiers specializers &optional (errorp t))
     (declare (notinline method-qualifiers))
