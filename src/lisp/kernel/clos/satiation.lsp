@@ -184,6 +184,13 @@
 ;;;
 ;;; COMPILE-TIME VERSION
 
+;;; Put a particular call history into a gf, discarding whatever's there already.
+(defun force-generic-function-call-history (generic-function new-call-history)
+  (loop for call-history = (generic-function-call-history generic-function)
+        for exchange = (generic-function-call-history-compare-exchange
+                        generic-function call-history new-call-history)
+        until (eq exchange new-call-history)))
+
 ;;; This function sets up an initial specializer profile for a gf that doesn't have one.
 ;;; It can only not have one if it was defined unnaturally, i.e. during boot.
 ;;; We have to call this on all generic functions so defined, so more than the ones that
@@ -347,12 +354,9 @@
                (list ,@entries))))))))
 
 (defmacro satiate (generic-function-name &rest lists-of-specializer-names)
-  `(let ((new-call-history (satiated-call-history ,generic-function-name ,@lists-of-specializer-names))
-         (generic-function (fdefinition ',generic-function-name)))
-     (loop for call-history = (generic-function-call-history generic-function)
-           for exchange = (generic-function-call-history-compare-exchange
-                           generic-function call-history new-call-history)
-           until (eq exchange new-call-history))))
+  `(force-generic-function-call-history
+    (fdefinition ',generic-function-name)
+    (satiated-call-history ,generic-function-name ,@lists-of-specializer-names)))
 
 (defmacro satiate-from-experience (generic-function-name)
   (let* ((generic-function (fdefinition generic-function-name))
