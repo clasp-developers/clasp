@@ -150,15 +150,25 @@ Bundle::Bundle(const string &raw_argv0, const string &appDirName) {
       SIMPLE_ERROR(BF("The contents of CLASP_QUICKLISP_DIRECTORY (%s) is not a directory") % quicklisp_env);
     }
   } else {
-    std::string opt_clasp_quicklisp_string = "/opt/clasp/lib/quicklisp/";
-    bf::path opt_clasp_quicklisp_path = bf::path(opt_clasp_quicklisp_string);
-    if (bf::exists(opt_clasp_quicklisp_path)) {
-      this->_Directories->_QuicklispDir = opt_clasp_quicklisp_path;
-    } else {
-      std::string home_quicklisp_string = "~/quicklisp/";
-      bf::path home_quicklisp_path = bf::path(home_quicklisp_string);
-      if (bf::exists(home_quicklisp_path)) {
-        this->_Directories->_QuicklispDir = home_quicklisp_path;
+    bool gotQuicklispPath = false;
+    const char* home_dir = getenv("HOME");
+    std::stringstream sdir;
+    if (home_dir) {
+      bf::path quicklispPath(home_dir);
+      quicklispPath = quicklispPath / "quicklisp";
+      if (bf::exists(quicklispPath)) {
+        printf("%s:%d  ~/quicklisp/ exists\n", __FILE__, __LINE__);
+        this->_Directories->_QuicklispDir = quicklispPath;
+        gotQuicklispPath = true;
+      }
+    }
+    if (!gotQuicklispPath) {
+      std::string opt_clasp_quicklisp_string = "/opt/clasp/lib/quicklisp/";
+      bf::path opt_clasp_quicklisp_path = bf::path(opt_clasp_quicklisp_string);
+      if (bf::exists(opt_clasp_quicklisp_path)) {
+        this->_Directories->_QuicklispDir = opt_clasp_quicklisp_path;
+      } else {
+        // there is no quicklisp directory
       }
     }
   }

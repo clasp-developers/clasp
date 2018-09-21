@@ -199,7 +199,8 @@ LtvcReturn ltvc_make_complex(gctools::GCRootsInModule* holder, size_t index, gct
 {NO_UNWIND_BEGIN();
   core::Number_sp nreal((gctools::Tagged)real);
   core::Number_sp nimag((gctools::Tagged)imag);
-  core::T_sp val = core::Complex_O::create(clasp_to_double(nreal),clasp_to_double(nimag));
+  // Do not convert nreal and nimag to double, can be all types of Real_sp
+  core::T_sp val = core::Complex_O::create(nreal,nimag);
   LTVCRETURN holder->set(index,val.tagged_());
   NO_UNWIND_END();
 }

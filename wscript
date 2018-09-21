@@ -1007,7 +1007,8 @@ def build(bld):
     clasp_c_source_files = bld.clasp_source_files + bld.extensions_source_files
     install('lib/clasp/', clasp_c_source_files)
     install('lib/clasp/', collect_waf_nodes(bld, 'include/clasp/', suffix = ".h"))
-    install('lib/clasp/', collect_waf_nodes(bld, 'src/lisp/', suffix = [".lsp", ".lisp", ".asd"]))
+    # Gather lisp source files - but don't only use files with these extensions or we will miss lisp assets
+    install('lib/clasp/', collect_waf_nodes(bld, 'src/lisp/')) # , suffix = [".lsp", ".lisp", ".asd"]))
 
     bld.env = bld.all_envs[bld.variant]
     include_dirs = ['.']

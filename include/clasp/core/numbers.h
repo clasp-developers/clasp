@@ -1170,7 +1170,8 @@ namespace core {
       float f = num.unsafe_single_float();
       return std::isinf(f);
     }
-    return num->isnan_();
+    // test for isinf not for isnan, good old friend copy paste
+    return num->isinf_();
   }
 
 #if 0

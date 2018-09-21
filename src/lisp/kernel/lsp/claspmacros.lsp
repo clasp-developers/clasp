@@ -104,7 +104,7 @@
 (defun read-cxx-object (stream char n)
   (declare (ignore char))
   (let ((description (read stream t nil t)))
-    (apply #'core:make-cxx-object (car description) (cdr description))))
+    (apply #'core:load-cxx-object (car description) (cdr description))))
 
 (set-dispatch-macro-character #\# #\I #'read-cxx-object)
 

@@ -198,6 +198,38 @@ void startup_functions_invoke()
 }
 
 
+}
+
+extern "C" {
+
+NOINLINE void start_dtrace() {
+  printf("%s:%d start_dtrace\n", __FILE__, __LINE__ );
+  // Do nothing
+};
+
+NOINLINE void stop_dtrace() {
+  printf("%s:%d stop_dtrace\n", __FILE__, __LINE__ );
+  // do nothing
+}
+}
+
+namespace core {
+
+NOINLINE CL_DEFUN T_mv core__trigger_dtrace_start(T_sp closure)
+{
+  start_dtrace();
+  return eval::funcall(closure);
+}
+
+
+NOINLINE CL_DEFUN T_sp core__trigger_dtrace_stop()
+{
+  stop_dtrace();
+  return _Nil<T_O>();
+}
+
+  
+
 
 CL_DEFUN void core__startup_functions_invoke()
 {

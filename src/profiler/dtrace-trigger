@@ -1,0 +1,10 @@
+#! /bin/bash
+PID=$1
+PPIDO=$2
+FRAMES=${3:-4000}
+sudo ./trigger.d -x ustackframes=${FRAMES} -p $PID -o /tmp/out-$PID.raw.stacks
+sudo chown $USER /tmp/out-$PID.raw.stacks
+sbcl --dynamic-space-size 4096 symbolicate.lisp -i /tmp/out-$PID.raw.stacks -o /tmp/out-$PID.sym.stacks -s /tmp/clasp-symbols-$PPIDO
+./strip-address.awk /tmp/out-$PID.sym.stacks >/tmp/out-$PID.strip.stacks
+./flame /tmp/out-$PID.strip.stacks
+open -a /Applications/Google\ Chrome.app/ /tmp/out-flame.svg -F

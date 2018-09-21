@@ -418,3 +418,11 @@ Set gather-all-frames to T and you can gather C++ and Common Lisp frames"
 
 (export '(btcl bt btargs common-lisp-backtrace-frames
           backtrace-frame-function-name backtrace-frame-arguments))
+
+(defmacro with-dtrace-trigger (&body body)
+  `(unwind-protect
+        (progn
+          (core:trigger-dtrace-start
+           (lambda ()
+             ,@body)))
+     (core:trigger-dtrace-stop)))

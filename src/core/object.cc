@@ -144,7 +144,7 @@ CL_DEFUN T_sp core__load_cxx_object(T_sp class_or_name, T_sp args) {
   {
     T_sp instance = theClass->make_instance();
     if (args.notnilp()) {
-      args = alist_from_plist(args);
+//      args = alist_from_plist(args);
       //      printf("%s:%d initializer alist = %s\n", __FILE__, __LINE__, _rep_(args).c_str());
       if ( instance.generalp() ) {
         General_sp ginstance(instance.unsafe_general());
@@ -331,9 +331,12 @@ void General_O::fields(Record_sp record) {
 }
 
 List_sp General_O::encode() {
-  Record_sp record = Record_O::create_encoder();
-  this->fields(record);
-  return record->data();
+  if (this->fieldsp()) {
+    Record_sp record = Record_O::create_encoder();
+    this->fields(record);
+    return record->data();
+  }
+  return _Nil<T_O>();
 }
 
 void General_O::decode(core::List_sp alist) {
@@ -446,7 +449,11 @@ void General_O::describe(T_sp stream) {
 
 void General_O::__write__(T_sp strm) const {
   if (clasp_print_readably() && this->fieldsp()) {
-    core__print_cxx_object(this->asSmartPtr(), strm);
+    if (cl::_sym_printObject->fboundp()) {
+      core::eval::funcall(cl::_sym_printObject,this->asSmartPtr(),strm);
+    } else {
+      core__print_cxx_object(this->asSmartPtr(), strm);
+    }
   } else {
     clasp_write_string(this->__repr__(), strm);
   }

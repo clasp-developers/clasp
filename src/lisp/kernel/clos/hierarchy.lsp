@@ -359,8 +359,10 @@
         (class :direct-slots #.+class-slots+)
         (standard-object
          :direct-superclasses (t))
-        (core:cxx-object
+        (core:general
          :direct-superclasses (t))
+        (core:cxx-object
+         :direct-superclasses (core:general))
         (metaobject
          :direct-superclasses (standard-object))
         (slot-definition
@@ -419,7 +421,7 @@
              for index from 1
              collect (list name :metaclass 'built-in-class
                            :index index
-                           :direct-superclasses (or rest '(t))))
+                           :direct-superclasses (or rest '(core:general))))
         (funcallable-standard-object
          :direct-superclasses (standard-object function))
         (generic-function
@@ -457,7 +459,7 @@
          :direct-slots #.+standard-class-slots+)
         (derivable-cxx-object
          :metaclass core:derivable-cxx-class
-         :direct-superclasses (standard-object #+(or)t))
+         :direct-superclasses (standard-object))
         ))))
 
 (eval-when (:compile-toplevel :execute)

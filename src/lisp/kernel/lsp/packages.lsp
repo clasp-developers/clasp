@@ -32,6 +32,7 @@
             expand-compare
             expand-uncompare
             with-memory-ramp
+            with-dtrace-trigger
             ))
 
   (export '( ;;;;MISSING SYMBOLS!!!!!

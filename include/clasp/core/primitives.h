@@ -239,7 +239,7 @@ InvocationHistoryFrameIterator_sp core__get_invocation_history_frame_prev(int id
 };
 
 namespace core {
-  void clasp_musleep(double dsec, bool alertable);
+  int clasp_musleep(double dsec, bool alertable);
   void core__dynamic_binding_stack_dump(std::ostream &out);
   core::T_sp core__ihs_backtrace(core::T_sp outDesignator, core::T_sp msg);
   int core__ihs_top();
@@ -266,6 +266,7 @@ namespace core {
   void core__setf_global_inline_statis(core::T_sp name, bool status, core::T_sp env);
   T_sp cl__fdefinition(T_sp functionName);
   T_mv cl__special_operator_p(T_sp sym);
+  void cl__sleep(T_sp oseconds);
   List_sp core__list_from_va_list(VaList_sp valist);
 
 };

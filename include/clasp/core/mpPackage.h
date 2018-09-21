@@ -307,7 +307,7 @@ namespace mp {
     void signal() { this->_ConditionVariable.signal();};
     void broadcast() { this->_ConditionVariable.broadcast();};
   };
-
+  core::T_sp mp__interrupt_process(Process_sp process, core::T_sp func);
 };
 
 #endif

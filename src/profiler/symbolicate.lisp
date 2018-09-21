@@ -1,4 +1,4 @@
-#! /usr/bin/env sbcl --noinform --dynamic-space-size 4096
+#!/usr/local/bin/sbcl --script
 
 (defstruct symbol-entry
   start end symbol)
