@@ -42,13 +42,19 @@
 ;;; Define generics for core functions.
 
 (defun function-to-method (name lambda-list specializers
-                           &optional (function (fdefinition name)))
+                           &optional satiation-specializers (function (fdefinition name)))
   (mlog "function-to-method: name -> %s specializers -> %s  lambda-list -> %s%N" name specializers lambda-list)
   (mlog "function-to-method:  function -> %s%N" function)
   ;; since we still have method.lsp's add-method in place, it will try to add
   ;; the function-to-method-temp entry to *early-methods*. but then we unbind
   ;; that, so things are a bit screwy. We do it more manually.
   (let* ((f (ensure-generic-function 'function-to-method-temp)) ; FIXME: just make an anonymous one?
+         (mf (lambda (.method-args. .next-methods.)
+               (declare (core:lambda-name function-to-method.lambda))
+               (mlog "In function-to-method.lambda  about to call %s with args %s%N"
+                     function (core:list-from-va-list .method-args.))
+               (apply function .method-args.)))
+         (fmfp (lambda-list-fast-callable-p lambda-list))
          (method
            ;; we're still using the old add-method, which adds things to *early-methods*.
            ;; We don't want to do that here, so we rebind and discard.
@@ -58,15 +64,18 @@
                                       nil
                                       (mapcar #'find-class specializers)
                                       lambda-list
-                                      (lambda (.method-args. .next-methods.)
-                                        (declare (core:lambda-name function-to-method.lambda))
-                                        (mlog "In function-to-method.lambda  about to call %s with args %s%N"
-                                              function (core:list-from-va-list .method-args.))
-                                        (apply function .method-args.))
+                                      mf
                                       (list
                                        'leaf-method-p t
-                                       'fast-method-function (if (lambda-list-fast-callable-p lambda-list)
-                                                                 function nil)))))))
+                                       'fast-method-function (if fmfp function nil)))))))
+    ;; Put in a call history to speed things up a little.
+    (loop ;; either a fast method function, or just the method function.
+          with outcome = (if fmfp (cmp::make-fast-method-call :function function) mf)
+          for specializers in satiation-specializers
+          collect (cons (map 'vector #'find-class specializers) outcome)
+            into new-call-history
+          finally (force-generic-function-call-history f new-call-history))
+    ;; Finish setup
     (mlog "function-to-method: installed method%N")
     (core:function-lambda-list-set f lambda-list) ; hook up the introspection
     (setf (fdefinition name) f
@@ -78,24 +87,30 @@
 (function-to-method 'compute-applicable-methods
                     '(generic-function arguments)
                     '(standard-generic-function t)
+                    '((standard-generic-function cons) (standard-generic-function null))
                     #'std-compute-applicable-methods)
 
 (function-to-method 'compute-applicable-methods-using-classes
                     '(generic-function classes)
                     '(standard-generic-function t)
+                    '((standard-generic-function cons) (standard-generic-function null))
                     #'std-compute-applicable-methods-using-classes)
 
 (function-to-method 'compute-effective-method
                     '(generic-function method-combination applicable-methods)
                     '(standard-generic-function method-combination t)
+                    '((standard-generic-function method-combination cons)
+                      (standard-generic-function method-combination null))
                     #'std-compute-effective-method)
 
 (function-to-method 'generic-function-method-class '(gf)
-                    '(standard-generic-function))
+                    '(standard-generic-function)
+                    '((standard-generic-function)))
 
 (function-to-method 'find-method-combination
                     '(gf method-combination-type-name method-combination-options)
-                    '(standard-generic-function t t))
+                    '(standard-generic-function t t)
+                    '((standard-generic-function symbol null)))
 
 (mlog "done with the first function-to-methods%N")
 
@@ -394,10 +409,18 @@ and cannot be added to ~A." method other-gf gf)))
 
 
 ;;(setq cmp:*debug-compiler* t)
-(function-to-method 'add-method '(gf method) '(standard-generic-function standard-method))
-(function-to-method 'remove-method '(gf method) '(standard-generic-function standard-method))
+(function-to-method 'add-method '(gf method) '(standard-generic-function standard-method)
+                    '((standard-generic-function standard-method)
+                      (standard-generic-function standard-reader-method)
+                      (standard-generic-function standard-writer-method)))
+(function-to-method 'remove-method '(gf method) '(standard-generic-function standard-method)
+                    '((standard-generic-function standard-method)
+                      (standard-generic-function standard-reader-method)
+                      (standard-generic-function standard-writer-method)))
 (function-to-method 'find-method '(gf qualifiers specializers &optional error)
-                    '(standard-generic-function t t))
+                    '(standard-generic-function t t)
+                    '((standard-generic-function null cons)
+                      (standard-generic-function cons cons)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -552,12 +575,14 @@ and cannot be added to ~A." method other-gf gf)))
   (add-dependent #'initialize-instance x)
   (add-dependent #'allocate-instance x))
 
+;; can't satiate this one, because the environment class will vary.
 (function-to-method 'make-method-lambda
                     '(gf method lambda-form environment)
                     '(standard-generic-function standard-method t t))
 
 (function-to-method 'compute-discriminating-function '(gf)
-                    '(standard-generic-function))
+                    '(standard-generic-function)
+                    '((standard-generic-function)))
 
 (function-to-method 'print-object
                     '(object stream)
