@@ -82,7 +82,7 @@
       (direct-default-initargs :initarg :direct-default-initargs
 			       :initform nil :accessor class-direct-default-initargs)
       (default-initargs :accessor class-default-initargs)
-      (finalized :initform nil :accessor class-finalized-p)
+      (finalized :initform nil :accessor class-finalized-p) ; FIXME: is the writer supposed to be exported?
       (docstring :initarg :documentation :initform nil)
       (size :accessor class-size)
       (prototype)
@@ -107,7 +107,7 @@
 
 (eval-when (:compile-toplevel :execute  #+clasp :load-toplevel)
   (defparameter +structure-class-slots+
-    (append +class-slots+
+    (append +class-slots+ ; NOTE: Probably don't need several, e.g. default initargs stuff.
 	    '((slot-descriptions)
 	      (initial-offset)
 	      (defstruct-form)
