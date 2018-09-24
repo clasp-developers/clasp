@@ -443,44 +443,20 @@
                           '((standard-reader-method) (standard-writer-method)))
        ,@(satiate-readers +slot-definition-slots+
                           '((standard-direct-slot-definition) (standard-effective-slot-definition)))
+       #+(or) ; done in function-to-method
        (satiate compute-applicable-methods-using-classes
                 (standard-generic-function cons)
                 (standard-generic-function null))
+       #+(or) ; done in function-to-method
        (satiate compute-applicable-methods
                 (standard-generic-function cons)
                 (standard-generic-function null))
        (satiate compute-effective-method
                 (standard-generic-function method-combination cons)
                 (standard-generic-function method-combination null))
-       (satiate method-qualifiers     ; called by method combinations
-                (standard-method)
-                (standard-reader-method) (standard-writer-method))
-       (satiate method-specializers
-                (standard-method)
-                (standard-reader-method) (standard-writer-method))
-       (satiate method-function
-                (standard-method)
-                (standard-reader-method) (standard-writer-method))
-       (satiate accessor-method-slot-definition
-                (standard-reader-method) (standard-writer-method))
-       (satiate slot-definition-allocation
-                (standard-direct-slot-definition)
-                (standard-effective-slot-definition))
-       (satiate slot-definition-name
-                (standard-direct-slot-definition)
-                (standard-effective-slot-definition))
-       (satiate slot-definition-location
-                (standard-direct-slot-definition)
-                (standard-effective-slot-definition))
        (satiate generic-function-name
                 (standard-generic-function))
        (satiate generic-function-method-combination
                 (standard-generic-function))
        (satiate generic-function-lambda-list
-                (standard-generic-function))
-       (satiate leaf-method-p
-                (standard-method)
-                (standard-reader-method) (standard-writer-method))
-       (satiate fast-method-function
-                (standard-method)
-                (standard-reader-method) (standard-writer-method)))))
+                (standard-generic-function)))))
