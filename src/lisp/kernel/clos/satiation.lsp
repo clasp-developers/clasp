@@ -414,31 +414,35 @@
     nil))
 (defmacro satiate-clos ()
   ;;; This is the ahead-of-time satiation. If we get as much as possible we can speed startup a bit.
-  (flet ((accessors-from-slot-description (slot-description)
-           (loop for (key arg) on (cdr slot-description) by #'cddr
-                 when (eq key :reader)
-                   collect arg into readers
-                 when (eq key :writer)
-                   collect arg into writers
-                 when (eq key :accessor)
-                   collect arg into readers and collect `(setf ,arg) into writers
-                 finally (return (cons readers writers)))))
+  (labels ((accessors-from-slot-description (slot-description)
+             (loop for (key arg) on (cdr slot-description) by #'cddr
+                   when (eq key :reader)
+                     collect arg into readers
+                   when (eq key :writer)
+                     collect arg into writers
+                   when (eq key :accessor)
+                     collect arg into readers and collect `(setf ,arg) into writers
+                   finally (return (cons readers writers))))
+           (satiate-readers (slot-descriptions specializerses)
+             (loop for slotdesc in slot-descriptions
+                   for (readers . writers) = (accessors-from-slot-description slotdesc)
+                   nconc (loop for reader in readers
+                               collect `(satiate ,reader ,@specializerses)))))
     `(progn
-       ;; First, accessors.
+       ;; First, accessors. (FIXME: for writers, need an actual class for the new-value!)
        ;; And first among those, classes.
-       ,@(loop for slotdesc in +specializer-slots+
-               for (readers . writers) = (accessors-from-slot-description slotdesc)
-               ;; FIXME: for writers, need an actual class for the new-value!
-               nconc (loop for reader in readers
-                           collect `(satiate ,reader (eql-specializer)
-                                             (standard-class) (funcallable-standard-class)
-                                             (structure-class) (built-in-class) (core:cxx-class))))
-       ,@(loop for slotdesc in (ldiff +class-slots+ +specializer-slots+)
-               for (readers . writers) = (accessors-from-slot-description slotdesc)
-               nconc (loop for reader in readers
-                           collect `(satiate ,reader
-                                             (standard-class) (funcallable-standard-class)
-                                             (structure-class) (built-in-class) (core:cxx-class))))
+       ,@(satiate-readers +specializer-slots+ '((eql-specializer)
+                                                (standard-class) (funcallable-standard-class)
+                                                (structure-class) (built-in-class) (core:cxx-class)))
+       ,@(satiate-readers (set-difference +class-slots+ +specializer-slots+)
+                          '((standard-class) (funcallable-standard-class)
+                            (structure-class) (built-in-class) (core:cxx-class)))
+       ,@(satiate-readers +standard-method-slots+ '((standard-method)
+                                                    (standard-reader-method) (standard-writer-method)))
+       ,@(satiate-readers (set-difference +standard-accessor-method-slots+ +standard-method-slots+)
+                          '((standard-reader-method) (standard-writer-method)))
+       ,@(satiate-readers +slot-definition-slots+
+                          '((standard-direct-slot-definition) (standard-effective-slot-definition)))
        (satiate compute-applicable-methods-using-classes
                 (standard-generic-function cons)
                 (standard-generic-function null))
