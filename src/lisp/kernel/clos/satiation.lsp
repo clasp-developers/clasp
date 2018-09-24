@@ -443,6 +443,8 @@
                           '((standard-reader-method) (standard-writer-method)))
        ,@(satiate-readers +slot-definition-slots+
                           '((standard-direct-slot-definition) (standard-effective-slot-definition)))
+       ,@(satiate-readers +standard-generic-function-slots+
+                          '((standard-generic-function)))
        #+(or) ; done in function-to-method
        (satiate compute-applicable-methods-using-classes
                 (standard-generic-function cons)
@@ -451,12 +453,7 @@
        (satiate compute-applicable-methods
                 (standard-generic-function cons)
                 (standard-generic-function null))
+       #+(or) ; done in function-to-method
        (satiate compute-effective-method
                 (standard-generic-function method-combination cons)
-                (standard-generic-function method-combination null))
-       (satiate generic-function-name
-                (standard-generic-function))
-       (satiate generic-function-method-combination
-                (standard-generic-function))
-       (satiate generic-function-lambda-list
-                (standard-generic-function)))))
+                (standard-generic-function method-combination null)))))
