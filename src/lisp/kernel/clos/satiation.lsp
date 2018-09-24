@@ -456,4 +456,30 @@
        #+(or) ; done in function-to-method
        (satiate compute-effective-method
                 (standard-generic-function method-combination cons)
-                (standard-generic-function method-combination null)))))
+                (standard-generic-function method-combination null))
+       (satiate make-instance (symbol) (standard-class) (funcallable-standard-class))
+       (satiate allocate-instance (standard-class) (funcallable-standard-class))
+       (satiate add-direct-subclass
+                (standard-class standard-class) (funcallable-standard-class funcallable-standard-class)
+                (built-in-class standard-class) ; for gray streams
+                (structure-class structure-class))
+       (satiate validate-superclass
+                (standard-class standard-class) (funcallable-standard-class funcallable-standard-class)
+                (structure-class structure-class) (standard-class built-in-class))
+       (macrolet ((satiate-classdef (class)
+                    `(progn (satiate finalize-inheritance (,class))
+                            (satiate compute-class-precedence-list (,class))
+                            (satiate compute-slots (,class))))
+                  (satiate-classdefs (&rest classes)
+                    `(progn ,@(loop for class in classes collecting `(satiate-classdef class)))))
+         (satiate-classdefs standard-class funcallable-standard-class structure-class
+                            built-in-class core:derivable-cxx-class core:clbind-cxx-class))
+       (satiate ensure-class-using-class (standard-class symbol) (null symbol))
+       (satiate function-keywords (standard-method) (standard-reader-method) (standard-writer-method))
+       (satiate add-direct-method
+                (structure-class standard-method) (eql-specializer standard-method)
+                (standard-class standard-method) (funcallable-standard-class standard-method)
+                (standard-class standard-reader-method) (standard-class standard-writer-method)
+                (funcallable-standard-class standard-reader-method) (funcallable-standard-class standard-writer-method))
+       (satiate ensure-generic-function-using-class
+                (standard-generic-function symbol) (null symbol)))))
