@@ -46,9 +46,14 @@
 
 (eval-when (:compile-toplevel :execute #+clasp :load-toplevel)
   (defparameter +eql-specializer-slots+
+    ;; We don't splice in +specializer-slots+ because we need the :initform t for flag.
+    ;; Nonetheless, these slots should match those of specializer, plus the slot for the object.
     '((flag :initform t :accessor eql-specializer-flag)
       (direct-methods :initform nil :accessor specializer-direct-methods)
       (direct-generic-functions :initform nil :accessor specializer-direct-generic-functions)
+      (call-history-generic-functions :initform nil :accessor specializer-call-history-generic-functions)
+      (specializer-mutex :initform (mp:make-shared-mutex 'call-history-generic-functions-mutex)
+                         :accessor specializer-mutex)
       (object :initarg :object :accessor eql-specializer-object))))
 
 ;;; ----------------------------------------------------------------------
