@@ -368,3 +368,115 @@
                                                (class-name entry)))
                                    vec))))
     `(satiate ,generic-function-name ,@lists)))
+
+;;; Used in fixup.
+(defun early-find-method (gf qualifiers specializers &optional (errorp t))
+  (declare (notinline method-qualifiers))
+  (with-early-accessors (+eql-specializer-slots+
+                         +standard-generic-function-slots+
+                         +standard-method-slots+)
+    (flet ((filter-specializer (name)
+             (cond ((typep name 'specializer)
+                    name)
+                   ((atom name)
+                    (let ((class (find-class name nil)))
+                      (unless class
+                        (error "~A is not a valid specializer name" name))
+                      class))
+                   ((and (eq (first name) 'EQL)
+                         (null (cddr name)))
+                    (cdr name))
+                   (t
+                    (error "~A is not a valid specializer name" name))))
+           (specializer= (cons-or-class specializer)
+             (if (consp cons-or-class)
+                 (and (eql-specializer-flag specializer)
+                      (eql (car cons-or-class)
+                           (eql-specializer-object specializer)))
+                 (eq cons-or-class specializer))))
+      (when (/= (length specializers)
+                (length (generic-function-argument-precedence-order gf)))
+        (error
+         "The specializers list~%~A~%does not match the number of required arguments in ~A"
+         specializers (generic-function-name gf)))
+      (loop with specializers = (mapcar #'filter-specializer specializers)
+            for method in (generic-function-methods gf)
+            when (and (equal qualifiers (method-qualifiers method))
+                      (every #'specializer= specializers (method-specializers method)))
+              do (return-from early-find-method method))
+      ;; If we did not find any matching method, then the list of
+      ;; specializers might have the wrong size and we must signal
+      ;; an error.
+      (when errorp
+        (error "There is no method on the generic function ~S that agrees on qualifiers ~S and specializers ~S"
+               (generic-function-name gf)
+               qualifiers specializers)))
+    nil))
+(defmacro satiate-clos ()
+  ;;; This is the ahead-of-time satiation. If we get as much as possible we can speed startup a bit.
+  (flet ((accessors-from-slot-description (slot-description)
+           (loop for (key arg) on (cdr slot-description) by #'cddr
+                 when (eq key :reader)
+                   collect arg into readers
+                 when (eq key :writer)
+                   collect arg into writers
+                 when (eq key :accessor)
+                   collect arg into readers and collect `(setf ,arg) into writers
+                 finally (return (cons readers writers)))))
+    `(progn
+       ;; First, accessors.
+       ;; And first among those, classes.
+       ,@(loop for slotdesc in +specializer-slots+
+               for (readers . writers) = (accessors-from-slot-description slotdesc)
+               ;; FIXME: for writers, need an actual class for the new-value!
+               nconc (loop for reader in readers
+                           collect `(satiate ,reader (eql-specializer)
+                                             (standard-class) (funcallable-standard-class)
+                                             (structure-class) (built-in-class) (core:cxx-class))))
+       ,@(loop for slotdesc in (ldiff +class-slots+ +specializer-slots+)
+               for (readers . writers) = (accessors-from-slot-description slotdesc)
+               nconc (loop for reader in readers
+                           collect `(satiate ,reader
+                                             (standard-class) (funcallable-standard-class)
+                                             (structure-class) (built-in-class) (core:cxx-class))))
+       (satiate compute-applicable-methods-using-classes
+                (standard-generic-function cons)
+                (standard-generic-function null))
+       (satiate compute-applicable-methods
+                (standard-generic-function cons)
+                (standard-generic-function null))
+       (satiate compute-effective-method
+                (standard-generic-function method-combination cons)
+                (standard-generic-function method-combination null))
+       (satiate method-qualifiers     ; called by method combinations
+                (standard-method)
+                (standard-reader-method) (standard-writer-method))
+       (satiate method-specializers
+                (standard-method)
+                (standard-reader-method) (standard-writer-method))
+       (satiate method-function
+                (standard-method)
+                (standard-reader-method) (standard-writer-method))
+       (satiate accessor-method-slot-definition
+                (standard-reader-method) (standard-writer-method))
+       (satiate slot-definition-allocation
+                (standard-direct-slot-definition)
+                (standard-effective-slot-definition))
+       (satiate slot-definition-name
+                (standard-direct-slot-definition)
+                (standard-effective-slot-definition))
+       (satiate slot-definition-location
+                (standard-direct-slot-definition)
+                (standard-effective-slot-definition))
+       (satiate generic-function-name
+                (standard-generic-function))
+       (satiate generic-function-method-combination
+                (standard-generic-function))
+       (satiate generic-function-lambda-list
+                (standard-generic-function))
+       (satiate leaf-method-p
+                (standard-method)
+                (standard-reader-method) (standard-writer-method))
+       (satiate fast-method-function
+                (standard-method)
+                (standard-reader-method) (standard-writer-method)))))

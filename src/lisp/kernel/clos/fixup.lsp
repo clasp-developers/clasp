@@ -131,95 +131,10 @@
 (eval-when (:execute)
   (satiate-minimal-generic-functions))
 (eval-when (:load-toplevel)
-  (defun early-find-method (gf qualifiers specializers &optional (errorp t))
-    (declare (notinline method-qualifiers))
-    (with-early-accessors (+eql-specializer-slots+
-                           +standard-generic-function-slots+
-                           +standard-method-slots+)
-      (flet ((filter-specializer (name)
-               (cond ((typep name 'specializer)
-                      name)
-                     ((atom name)
-                      (let ((class (find-class name nil)))
-                        (unless class
-                          (error "~A is not a valid specializer name" name))
-                        class))
-                     ((and (eq (first name) 'EQL)
-                           (null (cddr name)))
-                      (cdr name))
-                     (t
-                      (error "~A is not a valid specializer name" name))))
-             (specializer= (cons-or-class specializer)
-               (if (consp cons-or-class)
-                   (and (eql-specializer-flag specializer)
-                        (eql (car cons-or-class)
-                             (eql-specializer-object specializer)))
-                   (eq cons-or-class specializer))))
-        (when (/= (length specializers)
-                  (length (generic-function-argument-precedence-order gf)))
-          (error
-           "The specializers list~%~A~%does not match the number of required arguments in ~A"
-           specializers (generic-function-name gf)))
-        (loop with specializers = (mapcar #'filter-specializer specializers)
-              for method in (generic-function-methods gf)
-              when (and (equal qualifiers (method-qualifiers method))
-                        (every #'specializer= specializers (method-specializers method)))
-                do (return-from early-find-method method))
-        ;; If we did not find any matching method, then the list of
-        ;; specializers might have the wrong size and we must signal
-        ;; an error.
-        (when errorp
-          (error "There is no method on the generic function ~S that agrees on qualifiers ~S and specializers ~S"
-                 (generic-function-name gf)
-                 qualifiers specializers)))
-      nil))
   (macrolet ((find-method (&rest args)
                `(early-find-method ,@args)))
     (with-early-accessors (+standard-method-slots+)
-      (satiate class-slots
-               (standard-class)
-               (funcallable-standard-class))
-      (satiate compute-applicable-methods-using-classes
-               (standard-generic-function cons)
-               (standard-generic-function null))
-      (satiate compute-applicable-methods
-               (standard-generic-function cons)
-               (standard-generic-function null))
-      (satiate compute-effective-method
-               (standard-generic-function method-combination cons)
-               (standard-generic-function method-combination null))
-      (satiate method-qualifiers     ; called by method combinations
-               (standard-method)
-               (standard-reader-method) (standard-writer-method))
-      (satiate method-specializers
-               (standard-method)
-               (standard-reader-method) (standard-writer-method))
-      (satiate method-function
-               (standard-method)
-               (standard-reader-method) (standard-writer-method))
-      (satiate accessor-method-slot-definition
-               (standard-reader-method) (standard-writer-method))
-      (satiate slot-definition-allocation
-               (standard-direct-slot-definition)
-               (standard-effective-slot-definition))
-      (satiate slot-definition-name
-               (standard-direct-slot-definition)
-               (standard-effective-slot-definition))
-      (satiate slot-definition-location
-               (standard-direct-slot-definition)
-               (standard-effective-slot-definition))
-      (satiate generic-function-name
-               (standard-generic-function))
-      (satiate generic-function-method-combination
-               (standard-generic-function))
-      (satiate generic-function-lambda-list
-               (standard-generic-function))
-      (satiate leaf-method-p
-               (standard-method)
-               (standard-reader-method) (standard-writer-method))
-      (satiate fast-method-function
-               (standard-method)
-               (standard-reader-method) (standard-writer-method)))))
+      (satiate-clos))))
 
 (mlog "Done satiating%N")
 
