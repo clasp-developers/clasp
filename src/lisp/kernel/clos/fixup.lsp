@@ -128,6 +128,16 @@
 
 (mlog "About to satiate%N")
 
+;;; Trickiness here.
+;;; During build we first load this file as source. In that case we add only
+;;; enough call history entries to boot the system.
+;;; Then we compile this file. And in that compiler, we have full CLOS, so we
+;;; can use the complicated satiation code to some extent. Importantly, we
+;;; work out actual EMFs ahead of time so that they're in the FASL and don't
+;;; have to compile those at runtime.
+;;; The complicated stuff is in the :load-toplevel.
+;;; TODO: Figure out precompiled discriminating functions too.
+;;; Main problem there is making sure the stamps are the same at compile and load.
 (eval-when (:execute)
   (satiate-minimal-generic-functions))
 (eval-when (:load-toplevel)
