@@ -414,23 +414,18 @@
     nil))
 (defmacro satiate-clos ()
   ;;; This is the ahead-of-time satiation. If we get as much as possible we can speed startup a bit.
-  (labels ((accessors-from-slot-description (slot-description)
+  (labels ((readers-from-slot-description (slot-description)
              (loop for (key arg) on (cdr slot-description) by #'cddr
                    when (eq key :reader)
-                     collect arg into readers
-                   when (eq key :writer)
-                     collect arg into writers
+                     collect arg
                    when (eq key :accessor)
-                     collect arg into readers and collect `(setf ,arg) into writers
-                   finally (return (cons readers writers))))
+                     collect arg))
            (satiate-readers (slot-descriptions specializerses)
              (loop for slotdesc in slot-descriptions
-                   for (readers . writers) = (accessors-from-slot-description slotdesc)
+                   for readers = (readers-from-slot-description slotdesc)
                    nconc (loop for reader in readers
                                collect `(satiate ,reader ,@specializerses)))))
     `(progn
-       ;; First, accessors. (FIXME: for writers, need an actual class for the new-value!)
-       ;; And first among those, classes.
        ,@(satiate-readers +specializer-slots+ '((eql-specializer)
                                                 (standard-class) (funcallable-standard-class)
                                                 (structure-class) (built-in-class) (core:cxx-class)))
@@ -445,6 +440,35 @@
                           '((standard-direct-slot-definition) (standard-effective-slot-definition)))
        ,@(satiate-readers +standard-generic-function-slots+
                           '((standard-generic-function)))
+       ;; Writers are done manually since the new-value classes are tricky to sort out
+       (macrolet ((satiate-specializer-writer (name &rest types) ; i mean, the types are classes though.
+                    `(satiate
+                      (setf ,name)
+                      ,@(loop for class in '(eql-specializer standard-class funcallable-standard-class
+                                             structure-class built-in-class core:cxx-class)
+                              nconc (loop for type in types
+                                          collect `(,type ,class))))))
+         (satiate-specializer-writer specializer-direct-methods null cons)
+         (satiate-specializer-writer specializer-direct-generic-functions null cons))
+       (macrolet ((satiate-class-writer (name &rest types)
+                    `(satiate
+                      (setf ,name)
+                      ,@(loop for class in '(standard-class funcallable-standard-class
+                                             structure-class built-in-class core:cxx-class)
+                              nconc (loop for type in types
+                                          collect `(,type ,class))))))
+         (satiate-class-writer class-id symbol)
+         (satiate-class-writer class-direct-superclasses null cons)
+         (satiate-class-writer class-slots null cons)
+         (satiate-class-writer class-precedence-list null cons)
+         (satiate-class-writer class-direct-slots null cons)
+         (satiate-class-writer class-direct-default-initargs null cons)
+         (satiate-class-writer class-default-initargs null cons)
+         (satiate-class-writer class-finalized-p symbol) ; don't really "unfinalize", so no null
+         (satiate-class-writer class-size fixnum)
+         (satiate-class-writer class-dependents null cons)
+         (satiate-class-writer class-valid-initargs null cons)
+         (satiate-class-writer creator core:funcallable-instance-creator core:instance-creator))
        #+(or) ; done in function-to-method
        (satiate compute-applicable-methods-using-classes
                 (standard-generic-function cons)
