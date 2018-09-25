@@ -126,7 +126,7 @@
     '((name :initarg :name :initform nil
        :reader generic-function-name)
       (spec-list :initform nil :accessor generic-function-spec-list)
-      (method-combination 
+      (method-combination
        :initarg :method-combination :initform (find-method-combination (class-prototype (find-class 'standard-generic-function)) 'standard nil)
        :accessor generic-function-method-combination)
       (lambda-list :initarg :lambda-list

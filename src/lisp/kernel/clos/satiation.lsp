@@ -535,7 +535,7 @@
                 (standard-generic-function method-combination cons)
                 (standard-generic-function method-combination null))
        (satiate make-instance (symbol) (standard-class) (funcallable-standard-class))
-       (satiate allocate-instance (standard-class) (funcallable-standard-class))
+       (satiate allocate-instance (standard-class) (funcallable-standard-class) (structure-class))
        (satiate add-direct-subclass
                 (standard-class standard-class) (funcallable-standard-class funcallable-standard-class)
                 (built-in-class standard-class) ; for gray streams
@@ -555,6 +555,9 @@
                               (satiate effective-slot-definition-class ,@tail)))))
          (satiate-classdefs standard-class funcallable-standard-class structure-class
                             built-in-class core:derivable-cxx-class core:clbind-cxx-class))
+       (satiate compute-effective-slot-definition
+                (standard-class symbol cons) (funcallable-standard-class symbol cons)
+                (structure-class symbol cons))
        (satiate ensure-class-using-class (standard-class symbol) (null symbol))
        (satiate function-keywords (standard-method) (standard-reader-method) (standard-writer-method))
        (satiate add-direct-method
@@ -577,4 +580,5 @@
                          (satiate reinitialize-instance ,@tail)))))
          (partly-satiate-initializations
           standard-generic-function standard-method standard-class structure-class
-          standard-direct-slot-definition standard-effective-slot-definition)))))
+          standard-direct-slot-definition standard-effective-slot-definition))
+       (satiate make-instances-obsolete (standard-class) (funcallable-standard-class) (structure-class)))))
