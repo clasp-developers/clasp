@@ -455,8 +455,7 @@
                       (setf ,name)
                       ,@(loop for class in '(standard-class funcallable-standard-class
                                              structure-class built-in-class core:cxx-class)
-                              nconc (loop for type in types
-                                          collect `(,type ,class))))))
+                              nconc (loop for type in types collect `(,type ,class))))))
          (satiate-class-writer class-id symbol)
          (satiate-class-writer class-direct-superclasses null cons)
          (satiate-class-writer class-slots null cons)
@@ -469,6 +468,16 @@
          (satiate-class-writer class-dependents null cons)
          (satiate-class-writer class-valid-initargs null cons)
          (satiate-class-writer creator core:funcallable-instance-creator core:instance-creator))
+       (macrolet ((satiate-method-writer (name &rest types)
+                    `(satiate
+                      (setf ,name)
+                      ,@(loop for class in '(standard-method
+                                             standard-writer-method standard-reader-method)
+                              nconc (loop for type in types collect `(,type ,class))))))
+         (satiate-method-writer method-generic-function standard-generic-function)
+         (satiate-method-writer method-plist null cons)
+         (satiate-method-writer method-keywords null cons) ; note: why is this being called??
+         (satiate-method-writer method-allows-other-keys-p null cons))
        #+(or) ; done in function-to-method
        (satiate compute-applicable-methods-using-classes
                 (standard-generic-function cons)
