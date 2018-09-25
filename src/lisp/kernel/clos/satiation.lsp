@@ -354,9 +354,25 @@
                (list ,@entries))))))))
 
 (defmacro satiate (generic-function-name &rest lists-of-specializer-names)
-  `(force-generic-function-call-history
-    (fdefinition ',generic-function-name)
-    (satiated-call-history ,generic-function-name ,@lists-of-specializer-names)))
+  `(let ((gf (fdefinition ',generic-function-name)))
+     (force-generic-function-call-history
+      gf
+      (satiated-call-history ,generic-function-name ,@lists-of-specializer-names))
+     ;; copied from invalidated-dispatch-function: put in the actual discriminator
+     ;; (still compiled at load time though, sad)
+     #+(or)
+     (let (log-output)
+       #+debug-fastgf(progn
+                       (if (eq (class-of generic-function) (find-class 'standard-generic-function))
+                           (let ((generic-function-name (core:low-level-standard-generic-function-name generic-function)))
+                             (setf log-output (log-cmpgf-filename generic-function-name "func" "ll"))
+                             (gf-log "Writing dispatcher to %s%N" log-output))
+                           (setf log-output (log-cmpgf-filename (generic-function-name generic-function) "func" "ll")))
+                       (incf-debug-fastgf-didx))
+       (set-funcallable-instance-function generic-function
+                                          (calculate-fastgf-dispatch-function
+                                           generic-function
+                                           :output-path log-output)))))
 
 (defmacro satiate-from-experience (generic-function-name)
   (let* ((generic-function (fdefinition generic-function-name))
@@ -428,10 +444,12 @@
     `(progn
        ,@(satiate-readers +specializer-slots+ '((eql-specializer)
                                                 (standard-class) (funcallable-standard-class)
-                                                (structure-class) (built-in-class) (core:cxx-class)))
+                                                (structure-class) (built-in-class) (core:cxx-class)
+                                                (core:derivable-cxx-class) (core:clbind-cxx-class)))
        ,@(satiate-readers (set-difference +class-slots+ +specializer-slots+)
                           '((standard-class) (funcallable-standard-class)
-                            (structure-class) (built-in-class) (core:cxx-class)))
+                            (structure-class) (built-in-class) (core:cxx-class)
+                            (core:derivable-cxx-class) (core:clbind-cxx-class)))
        ,@(satiate-readers +standard-method-slots+ '((standard-method)
                                                     (standard-reader-method) (standard-writer-method)))
        ,@(satiate-readers (set-difference +standard-accessor-method-slots+ +standard-method-slots+)
@@ -445,7 +463,8 @@
                     `(satiate
                       (setf ,name)
                       ,@(loop for class in '(eql-specializer standard-class funcallable-standard-class
-                                             structure-class built-in-class core:cxx-class)
+                                             structure-class built-in-class core:cxx-class
+                                             core:clbind-cxx-class core:derivable-cxx-class)
                               nconc (loop for type in types
                                           collect `(,type ,class))))))
          (satiate-specializer-writer specializer-direct-methods null cons)
@@ -454,10 +473,12 @@
                     `(satiate
                       (setf ,name)
                       ,@(loop for class in '(standard-class funcallable-standard-class
-                                             structure-class built-in-class core:cxx-class)
+                                             structure-class built-in-class core:cxx-class
+                                             core:clbind-cxx-class core:derivable-cxx-class)
                               nconc (loop for type in types collect `(,type ,class))))))
          (satiate-class-writer class-id symbol)
          (satiate-class-writer class-direct-superclasses null cons)
+         (satiate-class-writer class-direct-subclasses null cons)
          (satiate-class-writer class-slots null cons)
          (satiate-class-writer class-precedence-list null cons)
          (satiate-class-writer class-direct-slots null cons)
@@ -522,12 +543,16 @@
        (satiate validate-superclass
                 (standard-class standard-class) (funcallable-standard-class funcallable-standard-class)
                 (structure-class structure-class) (standard-class built-in-class))
-       (macrolet ((satiate-classdef (class)
-                    `(progn (satiate finalize-inheritance (,class))
-                            (satiate compute-class-precedence-list (,class))
-                            (satiate compute-slots (,class))))
-                  (satiate-classdefs (&rest classes)
-                    `(progn ,@(loop for class in classes collecting `(satiate-classdef class)))))
+       (macrolet ((satiate-classdefs (&rest classes)
+                    (let ((tail (mapcar #'list classes)))
+                      `(progn (satiate finalize-inheritance ,@tail)
+                              (satiate compute-class-precedence-list ,@tail)
+                              (satiate compute-slots ,@tail)
+                              (satiate class-name ,@tail)
+                              (satiate class-prototype ,@tail)
+                              (satiate compute-default-initargs ,@tail)
+                              (satiate direct-slot-definition-class ,@tail)
+                              (satiate effective-slot-definition-class ,@tail)))))
          (satiate-classdefs standard-class funcallable-standard-class structure-class
                             built-in-class core:derivable-cxx-class core:clbind-cxx-class))
        (satiate ensure-class-using-class (standard-class symbol) (null symbol))
@@ -538,4 +563,18 @@
                 (standard-class standard-reader-method) (standard-class standard-writer-method)
                 (funcallable-standard-class standard-reader-method) (funcallable-standard-class standard-writer-method))
        (satiate ensure-generic-function-using-class
-                (standard-generic-function symbol) (null symbol)))))
+                (standard-generic-function symbol) (null symbol))
+       ;; these are obviously not complete, but we can throw em in.
+       ;; FIXME: No we can't, because the satiation code tries to look up ALL methods, including ones
+       ;; for classes that are defined later, at load time.
+       #+(or)
+       (macrolet ((partly-satiate-initializations (&rest classes)
+                    (let ((tail (mapcar #'list classes)))
+                      `(progn
+                         (satiate initialize-instance ,@tail)
+                         (satiate shared-initialize
+                                  ,@(loop for class in classes collect `(,class symbol)))
+                         (satiate reinitialize-instance ,@tail)))))
+         (partly-satiate-initializations
+          standard-generic-function standard-method standard-class structure-class
+          standard-direct-slot-definition standard-effective-slot-definition)))))
