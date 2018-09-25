@@ -476,8 +476,31 @@
                               nconc (loop for type in types collect `(,type ,class))))))
          (satiate-method-writer method-generic-function standard-generic-function)
          (satiate-method-writer method-plist null cons)
-         (satiate-method-writer method-keywords null cons) ; note: why is this being called??
+         (satiate-method-writer method-keywords null cons) ; note: why is this being called?
          (satiate-method-writer method-allows-other-keys-p null cons))
+       (macrolet ((satiate-slotd-writer (name &rest types)
+                    `(satiate
+                      (setf ,name)
+                      ,@(loop for class in '(standard-direct-slot-definition
+                                             standard-effective-slot-definition)
+                              nconc (loop for type in types collect `(,type ,class))))))
+         (satiate-slotd-writer slot-definition-name symbol)
+         (satiate-slotd-writer slot-definition-initform null cons) ; guess at what a form is
+         (satiate-slotd-writer slot-definition-initfunction function)
+         (satiate-slotd-writer slot-definition-type symbol cons) ; type specifiers
+         (satiate-slotd-writer slot-definition-allocation symbol)
+         (satiate-slotd-writer slot-definition-initargs null cons)
+         (satiate-slotd-writer slot-definition-readers null cons)
+         (satiate-slotd-writer slot-definition-writers null cons)
+         (satiate-slotd-writer slot-definition-location fixnum cons))
+       (macrolet ((satiate-gf-writer (name &rest types)
+                    `(satiate
+                      (setf ,name)
+                      ,@(loop for type in types collect `(,type standard-generic-function)))))
+         (satiate-gf-writer generic-function-method-combination method-combination)
+         (satiate-gf-writer generic-function-argument-precedence-order cons)
+         (satiate-gf-writer generic-function-methods null cons)
+         (satiate-gf-writer generic-function-dependents null cons))
        #+(or) ; done in function-to-method
        (satiate compute-applicable-methods-using-classes
                 (standard-generic-function cons)
