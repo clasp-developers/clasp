@@ -195,11 +195,6 @@
                  (standard-method)
                  (standard-reader-method) (standard-writer-method))))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
-;;; GENERAL SATIATION
-
-
 ;;; This function sets up an initial specializer profile for a gf that doesn't have one.
 ;;; It can only not have one if it was defined unnaturally, i.e. during boot.
 ;;; We have to call this on all generic functions so defined, so more than the ones that
@@ -207,12 +202,12 @@
 ;;; Furthermore, we have to do so before any generic functions are called. That's why
 ;;; we use this separate function rather than compute-and-set-specializer-profile.
 ;;; FIXME: Since this is only called during boot, we probably only need one compare-exchange.
-(defun satiation-setup-specializer-profile (proto-gf)
+(defun setup-specializer-profile (proto-gf)
   ;; proto-gf in that it's unnaturally defined. it's still a standard-generic-function object.
   (with-early-accessors (+standard-generic-function-slots+
                          +standard-method-slots+)
     (unless (slot-boundp proto-gf 'lambda-list)
-      (error "In satiation-setup-specializer-profile - ~s has no lambda list!"
+      (error "In setup-specializer-profile - ~s has no lambda list!"
              (core:low-level-standard-generic-function-name proto-gf)))
     (let* ((ll (generic-function-lambda-list proto-gf))
            ;; FIXME: l-l-r-a is defined in generic.lsp, which is after this, so we get a style warning.
@@ -228,13 +223,105 @@
                 for specializers = (method-specializers method)
                 ;; in closfastgf. we rely on this function not calling gfs.
                 do (update-specializer-profile proto-gf specializers))
-          (error "In satiation-setup-specializer-profile - ~s has no methods!"
+          (error "In setup-specializer-profile - ~s has no methods!"
                  (core:low-level-standard-generic-function-name proto-gf))))
     (gf-log "Set initial specializer profile for satiated function %s to %s%N"
             (core:low-level-standard-generic-function-name proto-gf)
             (generic-function-specializer-profile proto-gf))))
 
-(export '(satiate-standard-generic-functions))
+;;; Used in fixup for the %satiate macroexpansions (below).
+(defun early-find-method (gf qualifiers specializers &optional (errorp t))
+  (declare (notinline method-qualifiers))
+  (with-early-accessors (+eql-specializer-slots+
+                         +standard-generic-function-slots+
+                         +standard-method-slots+)
+    (flet ((filter-specializer (name)
+             (cond ((typep name 'specializer)
+                    name)
+                   ((atom name)
+                    (let ((class (find-class name nil)))
+                      (unless class
+                        (error "~A is not a valid specializer name" name))
+                      class))
+                   ((and (eq (first name) 'EQL)
+                         (null (cddr name)))
+                    (cdr name))
+                   (t
+                    (error "~A is not a valid specializer name" name))))
+           (specializer= (cons-or-class specializer)
+             (if (consp cons-or-class)
+                 (and (eql-specializer-flag specializer)
+                      (eql (car cons-or-class)
+                           (eql-specializer-object specializer)))
+                 (eq cons-or-class specializer))))
+      (when (/= (length specializers)
+                (length (generic-function-argument-precedence-order gf)))
+        (error
+         "The specializers list~%~A~%does not match the number of required arguments in ~A"
+         specializers (generic-function-name gf)))
+      (loop with specializers = (mapcar #'filter-specializer specializers)
+            for method in (generic-function-methods gf)
+            when (and (equal qualifiers (method-qualifiers method))
+                      (every #'specializer= specializers (method-specializers method)))
+              do (return-from early-find-method method))
+      ;; If we did not find any matching method, then the list of
+      ;; specializers might have the wrong size and we must signal
+      ;; an error.
+      (when errorp
+        (error "There is no method on the generic function ~S that agrees on qualifiers ~S and specializers ~S"
+               (generic-function-name gf)
+               qualifiers specializers)))
+    nil))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; GENERAL SATIATION
+
+;;; Main entry point
+;;; Actually quite simple.
+;;; Possible improvement: Put in some handler-case stuff to reduce any errors to
+;;; warnings, given that this is just for optimization.
+(defun satiate (generic-function &rest lists-of-specializer-designators)
+  (flet ((coerce-specializer-designator (specializer-designator)
+           (etypecase specializer-designator
+             (specializer specializer-designator)
+             (symbol (find-class specializer-designator))
+             ((cons (eql eql) (cons t null)) ; (eql thing)
+              (intern-eql-specializer (second specializer-designator))))))
+    (loop with method-combination = (generic-function-method-combination generic-function)
+          for list in lists-of-specializer-designators
+          for specializers = (mapcar #'coerce-specializer-designator list)
+          for applicable-methods
+            = (compute-applicable-methods-using-specializers generic-function specializers)
+          for outcome = (compute-effective-method-function-maybe-optimize
+                         generic-function method-combination
+                         applicable-methods specializers)
+          collect (cons (coerce specializers 'simple-vector) outcome) into history
+          finally (force-generic-function-call-history generic-function history))))
+(export 'satiate)
+
+;;; The less simple part is doing things at compile-time.
+;;; We can't put discriminating functions into FASLs because they include the class stamps,
+;;; which are hard to synchronize between compile- and load-time.
+;;; But we can dump (invented) call histories, including ones with functions in them.
+;;; It's somewhat convoluted however.
+;;; Anywho, we do that for SATIATE calls provided
+;;; 1) the GENERIC-FUNCTION form is #'foo
+;;; 2) all the lists of specializer designators are constant.
+;;; At the moment, it also requires that the generic function and all relevant methods are defined
+;;; at compile time. If we store information about DEFMETHODs in the environment at compile time,
+;;; though, that shouldn't be required. (EQL specializers will be a bit weird, though.)
+
+(define-compiler-macro satiate (&whole form generic-function &rest lists &environment env)
+  (if (and (consp generic-function)
+           (eq (car generic-function) 'function)
+           (consp (cdr generic-function))
+           (null (cddr generic-function))
+           (fboundp (second generic-function))
+           (loop for list in lists always (constantp list env)))
+      `(%satiate ,(second generic-function)
+                 ,@(mapcar (lambda (form) (ext:constant-form-value form env)) lists))
+      form))
 
 (defmacro satiated-call-history (generic-function-name &rest lists-of-specializer-names)
   (let* ((generic-function (fdefinition generic-function-name))
@@ -246,7 +333,7 @@
                         for mf-name = (gensym "METHOD-FUNCTION")
                         collect (list method
                                       name
-                                      ;; FIXME: We use FDEFINITIOn instead of #' because we have
+                                      ;; FIXME: We use FDEFINITION instead of #' because we have
                                       ;; local macros for method-qualifiers etc, which are also satiated.
                                       `(find-method (fdefinition ',generic-function-name)
                                                     ',(method-qualifiers method)
@@ -266,11 +353,9 @@
                                                       (etypecase sname
                                                         ;; (eql 'something)
                                                         ((cons (eql eql)
-                                                               (cons (cons (eql quote)
-                                                                           (cons t null))
-                                                                     null))
+                                                               (cons t null))
                                                          ;; The fake EQL specializers used by c-a-m-u-s
-                                                         (list (cadadr sname)))
+                                                         (list (second sname)))
                                                         (symbol (find-class sname))))
                                                     list-of-specializer-names)
                  for am = (compute-applicable-methods-using-specializers generic-function list-of-specializers)
@@ -362,7 +447,8 @@
                            collect `(,name ,emfo-form)))
                (list ,@entries))))))))
 
-(defmacro satiate (generic-function-name &rest lists-of-specializer-names)
+;;; Macro version of SATIATE, that the exported function sometimes expands into.
+(defmacro %satiate (generic-function-name &rest lists-of-specializer-names)
   `(let ((gf (fdefinition ',generic-function-name)))
      (force-generic-function-call-history
       gf
@@ -383,60 +469,7 @@
                                            generic-function
                                            :output-path log-output)))))
 
-(defmacro satiate-from-experience (generic-function-name)
-  (let* ((generic-function (fdefinition generic-function-name))
-         (ch (generic-function-call-history generic-function))
-         (lists (loop for (vec . outcome) in ch
-                      collect (map 'list (lambda (entry)
-                                           (if (listp entry)
-                                               `(eql ',(car entry))
-                                               (class-name entry)))
-                                   vec))))
-    `(satiate ,generic-function-name ,@lists)))
-
-;;; Used in fixup.
-(defun early-find-method (gf qualifiers specializers &optional (errorp t))
-  (declare (notinline method-qualifiers))
-  (with-early-accessors (+eql-specializer-slots+
-                         +standard-generic-function-slots+
-                         +standard-method-slots+)
-    (flet ((filter-specializer (name)
-             (cond ((typep name 'specializer)
-                    name)
-                   ((atom name)
-                    (let ((class (find-class name nil)))
-                      (unless class
-                        (error "~A is not a valid specializer name" name))
-                      class))
-                   ((and (eq (first name) 'EQL)
-                         (null (cddr name)))
-                    (cdr name))
-                   (t
-                    (error "~A is not a valid specializer name" name))))
-           (specializer= (cons-or-class specializer)
-             (if (consp cons-or-class)
-                 (and (eql-specializer-flag specializer)
-                      (eql (car cons-or-class)
-                           (eql-specializer-object specializer)))
-                 (eq cons-or-class specializer))))
-      (when (/= (length specializers)
-                (length (generic-function-argument-precedence-order gf)))
-        (error
-         "The specializers list~%~A~%does not match the number of required arguments in ~A"
-         specializers (generic-function-name gf)))
-      (loop with specializers = (mapcar #'filter-specializer specializers)
-            for method in (generic-function-methods gf)
-            when (and (equal qualifiers (method-qualifiers method))
-                      (every #'specializer= specializers (method-specializers method)))
-              do (return-from early-find-method method))
-      ;; If we did not find any matching method, then the list of
-      ;; specializers might have the wrong size and we must signal
-      ;; an error.
-      (when errorp
-        (error "There is no method on the generic function ~S that agrees on qualifiers ~S and specializers ~S"
-               (generic-function-name gf)
-               qualifiers specializers)))
-    nil))
+;; Used in boot
 (defmacro satiate-clos ()
   ;;; This is the ahead-of-time satiation. If we get as much as possible we can speed startup a bit.
   (labels ((readers-from-slot-description (slot-description)
@@ -449,7 +482,7 @@
              (loop for slotdesc in slot-descriptions
                    for readers = (readers-from-slot-description slotdesc)
                    nconc (loop for reader in readers
-                               collect `(satiate ,reader ,@specializerses)))))
+                               collect `(%satiate ,reader ,@specializerses)))))
     `(progn
        ,@(satiate-readers +specializer-slots+ '((eql-specializer)
                                                 (standard-class) (funcallable-standard-class)
@@ -469,7 +502,7 @@
                           '((standard-generic-function)))
        ;; Writers are done manually since the new-value classes are tricky to sort out
        (macrolet ((satiate-specializer-writer (name &rest types) ; i mean, the types are classes though.
-                    `(satiate
+                    `(%satiate
                       (setf ,name)
                       ,@(loop for class in '(eql-specializer standard-class funcallable-standard-class
                                              structure-class built-in-class core:cxx-class
@@ -479,7 +512,7 @@
          (satiate-specializer-writer specializer-direct-methods null cons)
          (satiate-specializer-writer specializer-direct-generic-functions null cons))
        (macrolet ((satiate-class-writer (name &rest types)
-                    `(satiate
+                    `(%satiate
                       (setf ,name)
                       ,@(loop for class in '(standard-class funcallable-standard-class
                                              structure-class built-in-class core:cxx-class
@@ -499,7 +532,7 @@
          (satiate-class-writer class-valid-initargs null cons)
          (satiate-class-writer creator core:funcallable-instance-creator core:instance-creator))
        (macrolet ((satiate-method-writer (name &rest types)
-                    `(satiate
+                    `(%satiate
                       (setf ,name)
                       ,@(loop for class in '(standard-method
                                              standard-writer-method standard-reader-method)
@@ -509,7 +542,7 @@
          (satiate-method-writer method-keywords null cons) ; note: why is this being called?
          (satiate-method-writer method-allows-other-keys-p null cons))
        (macrolet ((satiate-slotd-writer (name &rest types)
-                    `(satiate
+                    `(%satiate
                       (setf ,name)
                       ,@(loop for class in '(standard-direct-slot-definition
                                              standard-effective-slot-definition)
@@ -524,7 +557,7 @@
          (satiate-slotd-writer slot-definition-writers null cons)
          (satiate-slotd-writer slot-definition-location fixnum cons))
        (macrolet ((satiate-gf-writer (name &rest types)
-                    `(satiate
+                    `(%satiate
                       (setf ,name)
                       ,@(loop for type in types collect `(,type standard-generic-function)))))
          (satiate-gf-writer generic-function-method-combination method-combination)
@@ -532,53 +565,53 @@
          (satiate-gf-writer generic-function-methods null cons)
          (satiate-gf-writer generic-function-dependents null cons))
        #+(or) ; done in function-to-method
-       (satiate compute-applicable-methods-using-classes
-                (standard-generic-function cons)
-                (standard-generic-function null))
+       (%satiate compute-applicable-methods-using-classes
+                 (standard-generic-function cons)
+                 (standard-generic-function null))
        #+(or) ; done in function-to-method
-       (satiate compute-applicable-methods
-                (standard-generic-function cons)
-                (standard-generic-function null))
+       (%satiate compute-applicable-methods
+                 (standard-generic-function cons)
+                 (standard-generic-function null))
        #+(or) ; done in function-to-method
-       (satiate compute-effective-method
-                (standard-generic-function method-combination cons)
-                (standard-generic-function method-combination null))
-       (satiate make-instance (symbol) (standard-class) (funcallable-standard-class))
-       (satiate allocate-instance (standard-class) (funcallable-standard-class) (structure-class))
-       (satiate add-direct-subclass
-                (standard-class standard-class) (funcallable-standard-class funcallable-standard-class)
-                (built-in-class standard-class) ; for gray streams
-                (structure-class structure-class))
-       (satiate validate-superclass
-                (standard-class standard-class) (funcallable-standard-class funcallable-standard-class)
-                (structure-class structure-class) (standard-class built-in-class))
+       (%satiate compute-effective-method
+                 (standard-generic-function method-combination cons)
+                 (standard-generic-function method-combination null))
+       (%satiate make-instance (symbol) (standard-class) (funcallable-standard-class))
+       (%satiate allocate-instance (standard-class) (funcallable-standard-class) (structure-class))
+       (%satiate add-direct-subclass
+                 (standard-class standard-class) (funcallable-standard-class funcallable-standard-class)
+                 (built-in-class standard-class) ; for gray streams
+                 (structure-class structure-class))
+       (%satiate validate-superclass
+                 (standard-class standard-class) (funcallable-standard-class funcallable-standard-class)
+                 (structure-class structure-class) (standard-class built-in-class))
        (macrolet ((satiate-classdefs (&rest classes)
                     (let ((tail (mapcar #'list classes)))
-                      `(progn (satiate finalize-inheritance ,@tail)
-                              (satiate compute-class-precedence-list ,@tail)
-                              (satiate compute-slots ,@tail)
-                              (satiate class-name ,@tail)
-                              (satiate class-prototype ,@tail)
-                              (satiate compute-default-initargs ,@tail)
-                              (satiate direct-slot-definition-class ,@tail)
-                              (satiate effective-slot-definition-class ,@tail)))))
+                      `(progn (%satiate finalize-inheritance ,@tail)
+                              (%satiate compute-class-precedence-list ,@tail)
+                              (%satiate compute-slots ,@tail)
+                              (%satiate class-name ,@tail)
+                              (%satiate class-prototype ,@tail)
+                              (%satiate compute-default-initargs ,@tail)
+                              (%satiate direct-slot-definition-class ,@tail)
+                              (%satiate effective-slot-definition-class ,@tail)))))
          (satiate-classdefs standard-class funcallable-standard-class structure-class
                             built-in-class core:derivable-cxx-class core:clbind-cxx-class))
-       (satiate compute-effective-slot-definition
-                (standard-class symbol cons) (funcallable-standard-class symbol cons)
-                (structure-class symbol cons))
-       (satiate ensure-class-using-class (standard-class symbol) (null symbol))
-       (satiate function-keywords (standard-method) (standard-reader-method) (standard-writer-method))
-       (satiate add-direct-method
-                (structure-class standard-method) (eql-specializer standard-method)
-                (standard-class standard-method) (funcallable-standard-class standard-method)
-                (standard-class standard-reader-method) (standard-class standard-writer-method)
-                (built-in-class standard-method)
-                (built-in-class standard-writer-method) ; for the new-value argument
-                (funcallable-standard-class standard-reader-method)
-                (funcallable-standard-class standard-writer-method))
-       (satiate ensure-generic-function-using-class
-                (standard-generic-function symbol) (null symbol))
+       (%satiate compute-effective-slot-definition
+                 (standard-class symbol cons) (funcallable-standard-class symbol cons)
+                 (structure-class symbol cons))
+       (%satiate ensure-class-using-class (standard-class symbol) (null symbol))
+       (%satiate function-keywords (standard-method) (standard-reader-method) (standard-writer-method))
+       (%satiate add-direct-method
+                 (structure-class standard-method) (eql-specializer standard-method)
+                 (standard-class standard-method) (funcallable-standard-class standard-method)
+                 (standard-class standard-reader-method) (standard-class standard-writer-method)
+                 (built-in-class standard-method)
+                 (built-in-class standard-writer-method) ; for the new-value argument
+                 (funcallable-standard-class standard-reader-method)
+                 (funcallable-standard-class standard-writer-method))
+       (%satiate ensure-generic-function-using-class
+                 (standard-generic-function symbol) (null symbol))
        ;; these are obviously not complete, but we can throw em in.
        ;; FIXME: No we can't, because the satiation code tries to look up ALL methods, including ones
        ;; for classes that are defined later, at load time.
@@ -586,11 +619,11 @@
        (macrolet ((partly-satiate-initializations (&rest classes)
                     (let ((tail (mapcar #'list classes)))
                       `(progn
-                         (satiate initialize-instance ,@tail)
-                         (satiate shared-initialize
-                                  ,@(loop for class in classes collect `(,class symbol)))
-                         (satiate reinitialize-instance ,@tail)))))
+                         (%satiate initialize-instance ,@tail)
+                         (%satiate shared-initialize
+                                   ,@(loop for class in classes collect `(,class symbol)))
+                         (%satiate reinitialize-instance ,@tail)))))
          (partly-satiate-initializations
           standard-generic-function standard-method standard-class structure-class
           standard-direct-slot-definition standard-effective-slot-definition))
-       (satiate make-instances-obsolete (standard-class) (funcallable-standard-class) (structure-class)))))
+       (%satiate make-instances-obsolete (standard-class) (funcallable-standard-class) (structure-class)))))

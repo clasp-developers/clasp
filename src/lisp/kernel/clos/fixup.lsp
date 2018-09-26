@@ -123,7 +123,7 @@
 ;;; before calling add-direct-method below
 
 (dolist (method-info *early-methods*)
-  (satiation-setup-specializer-profile
+  (setup-specializer-profile
    (fdefinition (car method-info))))
 
 (mlog "About to satiate%N")
