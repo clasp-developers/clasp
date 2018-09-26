@@ -11,15 +11,36 @@
 ;;; Essentially, for some gfs we need in a consistent state for the system to work,
 ;;; during boot we fake a call history so that they can be called without invoking
 ;;; gfs such as themselves that haven't yet been placed in a working state.
+;;; A fake call history is also nice for efficiency - if we install an anticipated
+;;; history beforehand, we can avoid repeatedly compiling new discriminators.
+
+;;; In order to do things both at boot and in an exported interface, we duplicate
+;;; some code. Unfortunate but I don't see a good way to avoid it.
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; UTILITY
+;;;
+
+;;; Put a particular call history into a gf, discarding whatever's there already.
+(defun force-generic-function-call-history (generic-function new-call-history)
+  (loop for call-history = (generic-function-call-history generic-function)
+        for exchange = (generic-function-call-history-compare-exchange
+                        generic-function call-history new-call-history)
+        until (eq exchange new-call-history)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; BOOT-TIME SATIATION
 
 ;;; Satiation should occur before any generic function calls are performed, and
-;;; involve no generic function calls, therefore.
+;;; involve no generic function calls.
 
 ;;; Note that the accessors for call-history and specializer-profile are not accessors,
 ;;; they are C++ functions. So they're okay to use without early-accessors.
 
 ;;; effective-slot-from-accessor-method, but without gfs
-(defun satiation-effective-slot-from-accessor-method (method class)
+(defun early-effective-slot-from-accessor-method (method class)
   (with-early-accessors (+standard-accessor-method-slots+
                          +slot-definition-slots+
                          +class-slots+)
@@ -41,7 +62,7 @@
 ;;; Does handle accessor methods so that they're fast, yet.
 ;;; FIXME: Duplication of other code, in this case
 ;;; compute-effective-method-function-maybe-optimize, sucks.
-(defun satiation-compute-effective-method-function (methods specializers)
+(defun early-compute-effective-method-function (methods specializers)
   (with-early-accessors (+standard-method-slots+
                          +slot-definition-slots+)
     (mapc (lambda (method)
@@ -61,7 +82,7 @@
       ;; paranoia doesn't hurt here.
       (cond ((eq (class-of first) (find-class 'standard-reader-method))
              (let* ((class (first specializers))
-                    (slot (satiation-effective-slot-from-accessor-method
+                    (slot (early-effective-slot-from-accessor-method
                            first (first specializers))))
                (cmp::make-optimized-slot-reader :index (slot-definition-location slot)
                                                 :effective-method-function efm
@@ -70,7 +91,7 @@
                                                 :class class)))
             ((eq (class-of first) (find-class 'standard-writer-method))
              (let* ((class (second specializers))
-                    (slot (satiation-effective-slot-from-accessor-method
+                    (slot (early-effective-slot-from-accessor-method
                            first (first specializers))))
                (cmp::make-optimized-slot-writer :index (slot-definition-location slot)
                                                 :effective-method-function efm
@@ -86,24 +107,18 @@
 ;;; Add fictitious call history entries.
 (defun add-satiation-entries (generic-function lists-of-specializers)
   (with-early-accessors (+standard-generic-function-slots+) ; for -method-combination
-    (let* ((new-entries
-             (loop for specific-specializers in lists-of-specializers
-                   for methods = (std-compute-applicable-methods-using-classes
-                                  generic-function specific-specializers)
-                   ;; Everything should use standard method combination during satiation.
-                   ;; FIXME: Once compute-effective-method is changed, we should do the
-                   ;; reader/writer optimizations here as well.
-                   for effective-method-function = (satiation-compute-effective-method-function
-                                                    methods
-                                                    specific-specializers)
-                   collect (cons (coerce specific-specializers 'vector) effective-method-function))))
-      (loop for call-history = (generic-function-call-history generic-function)
-            for new-call-history = (append new-entries call-history)
-            for exchange = (generic-function-call-history-compare-exchange
-                            generic-function call-history new-call-history)
-            until (eq exchange new-call-history)))))
+    (let ((new-entries
+            (loop for specific-specializers in lists-of-specializers
+                  for methods = (std-compute-applicable-methods-using-classes
+                                 generic-function specific-specializers)
+                  ;; Everything should use standard method combination during satiation.
+                  for effective-method-function = (early-compute-effective-method-function
+                                                   methods
+                                                   specific-specializers)
+                  collect (cons (coerce specific-specializers 'vector) effective-method-function))))
+      (force-generic-function-call-history generic-function new-entries))))
 
-(defun satiate-generic-function (generic-function lists-of-specializers)
+(defun early-satiate (generic-function &rest lists-of-specializers)
   ;; Many generic functions at startup will be missing specializer-profile at startup
   ;;    so we compute one here using the number of required arguments in the lambda-list.
   ;; The call-history may be incorrect because of improper initialization as
@@ -124,11 +139,11 @@
   (macrolet ((satiate-one (gf-name &body lists-of-class-names)
                `(prog2
                     (gf-log ,(concatenate 'string "Satiating " (string gf-name) "%N"))
-                    (satiate-generic-function
+                    (early-satiate
                      (fdefinition ',gf-name)
-                     (list ,@(loop for list in lists-of-class-names
-                                   collect `(list ,@(loop for name in list
-                                                          collect `(find-class ',name))))))
+                     ,@(loop for list in lists-of-class-names
+                             collect `(list ,@(loop for name in list
+                                                    collect `(find-class ',name)))))
                   (gf-log ,(concatenate 'string "Done satiating " (string gf-name) "%N")))))
     (satiate-one class-slots
                  (standard-class)
@@ -182,14 +197,8 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
-;;; COMPILE-TIME VERSION
+;;; GENERAL SATIATION
 
-;;; Put a particular call history into a gf, discarding whatever's there already.
-(defun force-generic-function-call-history (generic-function new-call-history)
-  (loop for call-history = (generic-function-call-history generic-function)
-        for exchange = (generic-function-call-history-compare-exchange
-                        generic-function call-history new-call-history)
-        until (eq exchange new-call-history)))
 
 ;;; This function sets up an initial specializer profile for a gf that doesn't have one.
 ;;; It can only not have one if it was defined unnaturally, i.e. during boot.
