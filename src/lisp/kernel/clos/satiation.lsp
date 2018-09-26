@@ -283,11 +283,14 @@
 ;;; warnings, given that this is just for optimization.
 (defun satiate (generic-function &rest lists-of-specializer-designators)
   (flet ((coerce-specializer-designator (specializer-designator)
+           ;; The fake EQL specializers fastgf uses.
+           ;; (It's getting annoying. FIXME?)
            (etypecase specializer-designator
+             (eql-specializer (list (eql-specializer-object specializer-designator)))
              (specializer specializer-designator)
              (symbol (find-class specializer-designator))
              ((cons (eql eql) (cons t null)) ; (eql thing)
-              (intern-eql-specializer (second specializer-designator))))))
+              (list (second specializer-designator))))))
     (loop with method-combination = (generic-function-method-combination generic-function)
           for list in lists-of-specializer-designators
           for specializers = (mapcar #'coerce-specializer-designator list)
