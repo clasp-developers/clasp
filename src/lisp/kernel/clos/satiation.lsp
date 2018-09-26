@@ -564,7 +564,10 @@
                 (structure-class standard-method) (eql-specializer standard-method)
                 (standard-class standard-method) (funcallable-standard-class standard-method)
                 (standard-class standard-reader-method) (standard-class standard-writer-method)
-                (funcallable-standard-class standard-reader-method) (funcallable-standard-class standard-writer-method))
+                (built-in-class standard-method)
+                (built-in-class standard-writer-method) ; for the new-value argument
+                (funcallable-standard-class standard-reader-method)
+                (funcallable-standard-class standard-writer-method))
        (satiate ensure-generic-function-using-class
                 (standard-generic-function symbol) (null symbol))
        ;; these are obviously not complete, but we can throw em in.
