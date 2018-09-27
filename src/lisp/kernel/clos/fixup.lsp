@@ -74,7 +74,7 @@
           for specializers in satiation-specializers
           collect (cons (map 'vector #'find-class specializers) outcome)
             into new-call-history
-          finally (force-generic-function-call-history f new-call-history))
+          finally (append-generic-function-call-history f new-call-history))
     ;; Finish setup
     (mlog "function-to-method: installed method%N")
     (core:function-lambda-list-set f lambda-list) ; hook up the introspection

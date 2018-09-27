@@ -22,9 +22,17 @@
 ;;; UTILITY
 ;;;
 
-;;; Put a particular call history into a gf, discarding whatever's there already.
-(defun force-generic-function-call-history (generic-function new-call-history)
+;;; Add a call history into a gf's existing call history.
+;;; If any entry to be added duplicates an existing entry, the new entry prevails.
+(defun append-generic-function-call-history (generic-function new-call-history)
   (loop for call-history = (generic-function-call-history generic-function)
+        ;; By keeping the new entry, remove-if will return immediately in the
+        ;; usual case that the existing history is empty.
+        for cleaned-call-history = (remove-if (lambda (entry)
+                                                (call-history-find-key
+                                                 new-call-history (car entry)))
+                                              call-history)
+        for new-history = (append new-call-history cleaned-call-history)
         for exchange = (generic-function-call-history-compare-exchange
                         generic-function call-history new-call-history)
         until (eq exchange new-call-history)))
@@ -116,7 +124,7 @@
                                                    methods
                                                    specific-specializers)
                   collect (cons (coerce specific-specializers 'vector) effective-method-function))))
-      (force-generic-function-call-history generic-function new-entries))))
+      (append-generic-function-call-history generic-function new-entries))))
 
 (defun early-satiate (generic-function &rest lists-of-specializers)
   ;; Many generic functions at startup will be missing specializer-profile at startup
@@ -300,7 +308,7 @@
                          generic-function method-combination
                          applicable-methods specializers)
           collect (cons (coerce specializers 'simple-vector) outcome) into history
-          finally (force-generic-function-call-history generic-function history))))
+          finally (append-generic-function-call-history generic-function history))))
 
 ;;; The less simple part is doing things at compile-time.
 ;;; We can't put discriminating functions into FASLs because they include the class stamps,
@@ -456,7 +464,7 @@
 ;;; Macro version of SATIATE, that the exported function sometimes expands into.
 (defmacro %satiate (generic-function-name &rest lists-of-specializer-names)
   `(let ((gf (fdefinition ',generic-function-name)))
-     (force-generic-function-call-history
+     (append-generic-function-call-history
       gf
       (satiated-call-history ,generic-function-name ,@lists-of-specializer-names))
      ;; put in the actual discriminator
@@ -619,7 +627,10 @@
                       `(progn
                          (%satiate initialize-instance ,@tail)
                          (%satiate shared-initialize
-                                   ,@(loop for class in classes collect `(,class symbol)))
+                                   ,@(loop for class in classes
+                                           collect `(,class symbol)
+                                           collect `(,class cons)
+                                           collect `(,class null)))
                          (%satiate reinitialize-instance ,@tail)))))
          (partly-satiate-initializations
           standard-generic-function standard-method standard-class structure-class
