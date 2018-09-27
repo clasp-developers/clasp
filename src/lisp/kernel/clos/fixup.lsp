@@ -388,6 +388,12 @@ and cannot be added to ~A." method other-gf gf)))
   (declare (ignore class direct-slot initargs))
   (find-class 'standard-writer-method))
 
+(eval-when (:load-toplevel)
+  (%satiate reader-method-class (standard-class standard-direct-slot-definition)
+            (funcallable-standard-class standard-direct-slot-definition))
+  (%satiate writer-method-class (standard-class standard-direct-slot-definition)
+            (funcallable-standard-class standard-direct-slot-definition)))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; Finish initializing classes that we defined in C++ that
