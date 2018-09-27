@@ -266,7 +266,7 @@
           (loop for spec across *foreign-type-spec-table*
                 when spec
                   collect `'((eql ,(%lisp-symbol spec))))))
-    `(progn
+    `(eval-when (:load-toplevel) ; don't need to do it while loading as source
        (clos:satiate #'%lisp-type->type-spec ,@to-satiate)
        (clos:satiate #'%foreign-type-size ,@to-satiate)
        (clos:satiate #'%foreign-type-alignment ,@to-satiate)

@@ -301,7 +301,6 @@
                          applicable-methods specializers)
           collect (cons (coerce specializers 'simple-vector) outcome) into history
           finally (force-generic-function-call-history generic-function history))))
-(export 'satiate)
 
 ;;; The less simple part is doing things at compile-time.
 ;;; We can't put discriminating functions into FASLs because they include the class stamps,
