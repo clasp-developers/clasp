@@ -1000,7 +1000,14 @@ namespace core {
   CL_LISPIFY_NAME(negate);
   CL_DEFUN inline Number_sp clasp_negate(Number_sp num) {
     if (num.fixnump()) {
-      return immediate_fixnum<Number_O>(-num.unsafe_fixnum());
+      gc::Fixnum fixnum = num.unsafe_fixnum();
+      if (fixnum == MOST_NEGATIVE_FIXNUM) {
+          // will overflow to a bignum when negated
+        fixnum = (MOST_POSITIVE_FIXNUM + 1);
+        return Integer_O::create(fixnum);
+      }
+      else
+        return immediate_fixnum<Number_O>(-num.unsafe_fixnum());
     } else if (num.single_floatp()) {
       float fl = num.unsafe_single_float();
       fl = -fl;
