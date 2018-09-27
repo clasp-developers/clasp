@@ -757,6 +757,21 @@ It takes the arguments in two forms, as a vaslist and as a list of arguments."
 (defun not-funcallable-dispatch-function (generic-function valist-args)
   (error "The funcallable-instance ~s is not funcallable" generic-function))
 
+(defun force-dispatcher (generic-function)
+  (let (log-output)
+    #+debug-fastgf
+    (progn
+      (if (eq (class-of generic-function) (find-class 'standard-generic-function))
+          (let ((generic-function-name (core:low-level-standard-generic-function-name generic-function)))
+            (setf log-output (log-cmpgf-filename generic-function-name "func" "ll"))
+            (gf-log "Writing dispatcher to %s%N" log-output))
+          (setf log-output (log-cmpgf-filename (generic-function-name generic-function) "func" "ll")))
+      (incf-debug-fastgf-didx))
+    (set-funcallable-instance-function generic-function
+                                       (calculate-fastgf-dispatch-function
+                                        generic-function
+                                        :output-path log-output))))
+
 (defun invalidated-dispatch-function (generic-function valist-args)
   (declare (optimize (debug 3)))
   ;;; If there is a call history then compile a dispatch function
@@ -770,18 +785,8 @@ It takes the arguments in two forms, as a vaslist and as a list of arguments."
       (gf-log "Entered invalidated-dispatch-function - avoiding generic function calls until return!!!%N"))
   (gf-log "Specializer profile is %s%N" (generic-function-specializer-profile generic-function))
   (if (generic-function-call-history generic-function)
-      (let (log-output)
-        #+debug-fastgf(progn
-                        (if (eq (class-of generic-function) (find-class 'standard-generic-function))
-                            (let ((generic-function-name (core:low-level-standard-generic-function-name generic-function)))
-                              (setf log-output (log-cmpgf-filename generic-function-name "func" "ll"))
-                              (gf-log "Writing dispatcher to %s%N" log-output))
-                            (setf log-output (log-cmpgf-filename (generic-function-name generic-function) "func" "ll")))
-                        (incf-debug-fastgf-didx))
-        (set-funcallable-instance-function generic-function
-                                           (calculate-fastgf-dispatch-function
-                                            generic-function
-                                            :output-path log-output))
+      (progn
+        (force-dispatcher generic-function)
         (apply generic-function valist-args))
       (dispatch-miss generic-function valist-args)))
 

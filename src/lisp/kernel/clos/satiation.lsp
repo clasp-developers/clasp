@@ -455,21 +455,8 @@
      (force-generic-function-call-history
       gf
       (satiated-call-history ,generic-function-name ,@lists-of-specializer-names))
-     ;; copied from invalidated-dispatch-function: put in the actual discriminator
-     ;; (still compiled at load time though, sad)
-     #+(or)
-     (let (log-output)
-       #+debug-fastgf(progn
-                       (if (eq (class-of generic-function) (find-class 'standard-generic-function))
-                           (let ((generic-function-name (core:low-level-standard-generic-function-name generic-function)))
-                             (setf log-output (log-cmpgf-filename generic-function-name "func" "ll"))
-                             (gf-log "Writing dispatcher to %s%N" log-output))
-                           (setf log-output (log-cmpgf-filename (generic-function-name generic-function) "func" "ll")))
-                       (incf-debug-fastgf-didx))
-       (set-funcallable-instance-function generic-function
-                                          (calculate-fastgf-dispatch-function
-                                           generic-function
-                                           :output-path log-output)))))
+     ;; put in the actual discriminator
+     (force-dispatcher gf)))
 
 ;; Used in boot
 (defmacro satiate-clos ()
