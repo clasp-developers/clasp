@@ -5764,9 +5764,10 @@ void clasp_terpri(T_sp s) {
 CL_LAMBDA(&optional output-stream);
 CL_DECLARE();
 CL_DOCSTRING("Send a newline to the output stream");
-CL_DEFUN void cl__terpri(T_sp outputStreamDesig) {
+CL_DEFUN T_sp cl__terpri(T_sp outputStreamDesig) {
   // outputStreamDesign in clasp_terpri
   clasp_terpri(outputStreamDesig);
+  return _Nil<T_O>();
 };
 
 bool clasp_freshLine(T_sp s) {
@@ -5866,17 +5867,19 @@ CL_DEFUN Character_sp cl__write_char(Character_sp chr, T_sp stream) {
 CL_LAMBDA(&optional dstrm);
 CL_DECLARE();
 CL_DOCSTRING("clearInput");
-CL_DEFUN void cl__clear_input(T_sp dstrm) {
+CL_DEFUN T_sp cl__clear_input(T_sp dstrm) {
   dstrm = coerce::inputStreamDesignator(dstrm);
   clasp_clear_input(dstrm);
+  return _Nil<T_O>();
 }
 
 CL_LAMBDA(&optional dstrm);
 CL_DECLARE();
 CL_DOCSTRING("clearOutput");
-CL_DEFUN void cl__clear_output(T_sp dstrm) {
+CL_DEFUN T_sp cl__clear_output(T_sp dstrm) {
   dstrm = coerce::outputStreamDesignator(dstrm);
   clasp_clear_output(dstrm);
+  return _Nil<T_O>();
 }
 
 CL_LAMBDA(&optional dstrm);
@@ -5893,25 +5896,28 @@ CL_DEFUN bool cl__listen(T_sp strm) {
 CL_LAMBDA(&optional strm);
 CL_DECLARE();
 CL_DOCSTRING("force_output");
-CL_DEFUN void cl__force_output(T_sp ostrm) {
+CL_DEFUN T_sp cl__force_output(T_sp ostrm) {
   ostrm = coerce::outputStreamDesignator(ostrm);
   clasp_force_output(ostrm);
+  return _Nil<T_O>();
 };
 
 CL_LAMBDA(&optional strm);
 CL_DECLARE();
 CL_DOCSTRING("finish_output");
-CL_DEFUN void cl__finish_output(T_sp ostrm) {
+CL_DEFUN T_sp cl__finish_output(T_sp ostrm) {
   ostrm = coerce::outputStreamDesignator(ostrm);
   clasp_finish_output(ostrm);
+  return _Nil<T_O>();
 };
 
 CL_LAMBDA(char &optional strm);
 CL_DECLARE();
 CL_DOCSTRING("unread_char");
-CL_DEFUN void cl__unread_char(Character_sp ch, T_sp dstrm) {
+CL_DEFUN T_sp cl__unread_char(Character_sp ch, T_sp dstrm) {
   dstrm = coerce::inputStreamDesignator(dstrm);
   clasp_unread_char(clasp_as_claspCharacter(ch), dstrm);
+  return _Nil<T_O>();
 };
 
 CL_LAMBDA(arg);
