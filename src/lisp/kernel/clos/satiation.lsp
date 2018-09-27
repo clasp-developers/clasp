@@ -614,9 +614,6 @@
        (%satiate ensure-generic-function-using-class
                  (standard-generic-function symbol) (null symbol))
        ;; these are obviously not complete, but we can throw em in.
-       ;; FIXME: No we can't, because the satiation code tries to look up ALL methods, including ones
-       ;; for classes that are defined later, at load time.
-       #+(or)
        (macrolet ((partly-satiate-initializations (&rest classes)
                     (let ((tail (mapcar #'list classes)))
                       `(progn
@@ -626,5 +623,7 @@
                          (%satiate reinitialize-instance ,@tail)))))
          (partly-satiate-initializations
           standard-generic-function standard-method standard-class structure-class
-          standard-direct-slot-definition standard-effective-slot-definition))
+          standard-reader-method standard-writer-method
+          standard-direct-slot-definition standard-effective-slot-definition
+          eql-specializer method-combination funcallable-standard-class))
        (%satiate make-instances-obsolete (standard-class) (funcallable-standard-class) (structure-class)))))
