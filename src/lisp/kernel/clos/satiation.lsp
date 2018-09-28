@@ -385,6 +385,9 @@
                (loop for list-of-specializer-names in lists-of-specializer-names
                      for list-of-specializers = (mapcar (lambda (sname)
                                                           (etypecase sname
+                                                            (class sname)
+                                                            (eql-specializer
+                                                             (list (eql-specializer-object sname)))
                                                             ;; (eql 'something)
                                                             ((cons (eql eql)
                                                                    (cons t null))
@@ -469,6 +472,33 @@
       (satiated-call-history ,generic-function-name ,@lists-of-specializer-names))
      ;; put in the actual discriminator
      (force-dispatcher gf)))
+
+;;; Exported auxiliary version for the common case of wanting to skip recompilations
+;;; of shared-initialize etc. Just pass it a list of class designators and it'll fix
+;;; up the CLOS initialization functions.
+(defun satiate-initialization (&rest class-designators)
+  (let ((tail (mapcar #'list class-designators)))
+    (apply #'satiate #'initialize-instance tail)
+    (apply #'satiate #'reinitialize-instance tail))
+  (apply #'satiate #'shared-initialize
+         (loop for classd in class-designators
+               collect (list classd 'symbol)
+               collect (list classd 'cons)
+               collect (list classd 'null))))
+
+(define-compiler-macro satiate-initialization (&whole form &rest classdfs &environment env)
+  (if (every (lambda (classdf) (constantp classdf env)) classdfs)
+      (let* ((classds (mapcar (lambda (classdf) (ext:constant-form-value classdf env)) classdfs))
+             (tail (mapcar #'list classds)))
+        `(progn
+           (%satiate initialize-instance ,@tail)
+           (%satiate reinitialize-instance ,@tail)
+           (%satiate shared-initialize
+                     ,@(loop for classd in classds
+                             collect `(,classd symbol)
+                             collect `(,classd cons)
+                             collect `(,classd null)))))
+      form))
 
 ;; Used in boot
 (defmacro satiate-clos ()
