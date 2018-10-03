@@ -177,6 +177,7 @@ VALID_OPTIONS = [
 ]
 
 DEBUG_OPTIONS = [
+    "SOURCE_DEBUG", # Allow LOG messages to print - works with CLASP_DEBUG environment variable
     "DEBUG_GUARD", # Add guards around allocated objects
     "DEBUG_GUARD_VALIDATE", # add simple checks of guards (fast)
     "DEBUG_GUARD_EXHAUSTIVE_VALIDATE", #add exhaustive, slow, checks of guards
@@ -789,7 +790,6 @@ def configure(cfg):
     cfg.define("CLASP_VERSION",get_clasp_version(cfg))
     cfg.define("CLBIND_DYNAMIC_LINK",1)
     cfg.define("DEFINE_CL_SYMBOLS",1)
-#    cfg.define("SOURCE_DEBUG",1)
     cfg.define("USE_SOURCE_DATABASE",1)
     cfg.define("USE_COMPILED_CLOSURE",1)  # disable this in the future and switch to ClosureWithSlots
     cfg.define("CLASP_UNICODE",1)
