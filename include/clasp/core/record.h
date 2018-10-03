@@ -495,7 +495,7 @@ public:
         if (CONS_CDR(apair).nilp()) {
           value = _Nil<T_O>();
         } else {
-          value = gc::As<gc::smart_ptr<OT>>(CONS_CDR(apair));
+          value = gc::As_unsafe<gc::smart_ptr<OT>>(CONS_CDR(apair));
         }
         if (this->stage() == initializing)
           this->flagSeen(apair);
