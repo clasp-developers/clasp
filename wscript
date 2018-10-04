@@ -76,9 +76,6 @@ def options(ctx):
 top = '.'
 out = 'build'
 APP_NAME = 'clasp'
-DARWIN_OS = 'darwin'
-LINUX_OS = 'linux'
-FREEBSD_OS = 'freebsd'
 CLANG_VERSION = 6
 
 STAGE_CHARS = [ 'r', 'i', 'a', 'b', 'f', 'c', 'd' ]
@@ -853,6 +850,9 @@ def configure(cfg):
         cfg.env.append_value('LINKFLAGS', ['-lc++'])
         cfg.env.append_value('LINKFLAGS', ['-stdlib=libc++'])
         cfg.env.append_value('INCLUDES', '/usr/local/Cellar/libunwind-headers/35.3/include')  # brew install libunwind-headers
+	# Add macOS SDK paths
+        cfg.env.append_value('INCLUDES', [ ''.join( [ macosx_sdk_path(cfg), '/usr/include' ] ) ] ) 
+        cfg.env.append_value('LINKFLAGS', ''.join( [ '-L', macosx_sdk_path(cfg), '/usr/lib' ] ) ) 
     cfg.env.append_value('INCLUDES', [ run_llvm_config(cfg,"--includedir") ])
     cfg.env.append_value('INCLUDES', ['/usr/include'] )
     cfg.define("ENABLE_BACKTRACE_ARGS",1)
