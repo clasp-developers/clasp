@@ -2,7 +2,7 @@
 #--eval '(set-dispatch-macro-character #\# #\! (lambda (s c n)(declare (ignore c n)) (read-line s) (values)))' \
 #|
 SCRIPT_DIR="$(dirname "$0")"
-exec sbcl --noinform --disable-ldb --lose-on-corruption --disable-debugger \
+exec sbcl --dynamic-space-size 4096 --noinform --disable-ldb --lose-on-corruption --disable-debugger \
 --no-sysinit --no-userinit --noprint \
 --eval '(set-dispatch-macro-character #\# #\! (lambda (s c n)(declare (ignore c n)) (read-line s) (values)))' \
 --eval "(defvar *script-args* '( $# \"$0\" \"$1\" \"$2\" \"$3\" \"$4\" \"$5\" \"$6\" \"$7\" ))" \
@@ -73,7 +73,7 @@ exec sbcl --noinform --disable-ldb --lose-on-corruption --disable-debugger \
       unless (search "COMBINE-METHOD-FUNCTIONS3.LAMBDA" line)
       collect (cleanup-frame line))))
 
-(defun cleanup-dtrace-log (fin fout &key (verbose t))
+#+(or)(defun cleanup-dtrace-log (fin fout &key (verbose t))
   (let ((count 0))
     (let ((header (read-dtrace-header fin)))
       (write-block fout header)
@@ -81,10 +81,11 @@ exec sbcl --noinform --disable-ldb --lose-on-corruption --disable-debugger \
             until (eq backtrace :eof)
             for cleaned = (cleanup-backtrace backtrace)
             when (> (length backtrace) 4000)
-              do (progn
+#|              do (progn
                    (format *debug-io* "------------ input file pos: ~a~%" (file-position fin))
                    (format *debug-io* "Backtrace with ~a frames~%" (length backtrace))
                    (format *debug-io* "~a~%" cleaned #++(last backtrace 5)))
+                    |#
             do (write-block fout cleaned)
             do (incf count)))
     (when verbose (format *debug-io* "Cleaned ~a stacks~%" count))))
@@ -146,7 +147,6 @@ exec sbcl --noinform --disable-ldb --lose-on-corruption --disable-debugger \
     (let ((calls (loop for backtrace = (read-dtrace-backtrace fin nil :eof)
                   for backtrace-times = (if (consp backtrace) (parse-integer (string-trim " " (car (last backtrace)))) nil)
                   do (when (eq backtrace :eof) (loop-finish))
-                 do (format t "Number of times backtrace appears: ~a~%" backtrace-times)
                     when (> (length backtrace) 0)
                     append (loop for times below backtrace-times
                             append (butlast backtrace 1))
@@ -207,6 +207,48 @@ exec sbcl --noinform --disable-ldb --lose-on-corruption --disable-debugger \
                  (write-line (elt backtrace index) fout)))
              (write-line (car (last backtrace)) fout)
              (terpri fout))))
+
+
+(defun cleanup-stacks (fin fout)
+  "Remove useless info from the backtraces like CALL-WITH-VARIABLE-BOUND calls"
+  (format *debug-io* "Running cleanup-stacks~%")
+  (finish-output *debug-io*)
+  (let ((header (read-dtrace-header fin)))
+    (write-dtrace-header fout header))
+  (loop for backtrace = (read-dtrace-backtrace fin nil :eof)
+        until (eq backtrace :eof)
+        when backtrace
+          do (let ((repeat-line (car (last backtrace)))
+                   (reversed-backtrace (reverse (butlast backtrace)))
+                   (new-backtrace nil))
+               (unless repeat-line
+                 (error "The repeat-line is NIL -  backtrace is ~%~s" backtrace))
+               (let ((cleaned-backtrace
+                       (progn
+                         (loop for cur = reversed-backtrace then (cdr cur)
+                               for line = (string-trim " " (car cur))
+                               for start = (or (position #\` line) 0)
+                               for end = (or (search "+0x" line) (length line))
+                               for name = (subseq line (1+ start) end)
+                               while cur
+                               do (cond
+                                    ((search "CALL-WITH-VARIABLE-BOUND" name)
+                                     (setf cur (cdddr cur)))
+                                    ((search "core__call_with_variable_bound" name)
+                                     (setf cur (cddr cur)))
+                                    ((search "cl__apply" name)
+                                     (setf cur (cdr cur)))
+                                    ((search "LAMBDA^COMMON-LISP" name)
+                                     (setf cur (cdr cur)))
+                                    (t (push (concatenate 'base-string "              " name) new-backtrace))))
+                         new-backtrace)))
+                 (loop for line in cleaned-backtrace
+                       if line
+                         do (write-line line fout)
+                       else
+                         do (error "About to write-line NIL - the backtrace is: ~%~s" backtrace ))
+                 (write-line repeat-line fout)
+                 (terpri fout)))))
 
 (defun fraction (fin stop-at)
   (let ((header (read-dtrace-header fin)))
@@ -284,6 +326,7 @@ exec sbcl --noinform --disable-ldb --lose-on-corruption --disable-debugger \
 ;;;      generates a list of callers of callee-name and how often they call
 
 
+(finish-output *debug-io*)
 (let* ((number-args (first *script-args*))
        (cmd (second *script-args*))
        (argv (subseq (cddr *script-args*) 0 number-args))
@@ -306,7 +349,7 @@ exec sbcl --noinform --disable-ldb --lose-on-corruption --disable-debugger \
                           *standard-output*))))
     (cond
       ((search "cleanup-stacks" cmd)
-       (cleanup-dtrace-log in-stream out-stream))
+       (cleanup-stacks in-stream out-stream))
       ((search "count-tips" cmd)
        (count-tips in-stream out-stream))
       ((search "count-calls" cmd)
