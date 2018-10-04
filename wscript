@@ -175,6 +175,7 @@ VALID_OPTIONS = [
 
 DEBUG_OPTIONS = [
     "SOURCE_DEBUG", # Allow LOG messages to print - works with CLASP_DEBUG environment variable
+    "DEBUG_JIT_LOG_SYMBOLS", # Generate a log of JITted symbols in /tmp/clasp-symbols-<pid>
     "DEBUG_GUARD", # Add guards around allocated objects
     "DEBUG_GUARD_VALIDATE", # add simple checks of guards (fast)
     "DEBUG_GUARD_EXHAUSTIVE_VALIDATE", #add exhaustive, slow, checks of guards
