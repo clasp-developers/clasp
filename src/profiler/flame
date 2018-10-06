@@ -11,5 +11,5 @@
 #   cp /tmp/out-$1.user_stacks /tmp/out-symbol-$1.user_stacks
 #fi
 $FLAME_GRAPH_HOME/stackcollapse.pl $1 >/tmp/out-symbol-flame.folded
-$FLAME_GRAPH_HOME/flamegraph.pl --colors java /tmp/out-symbol-flame.folded >/tmp/out-flame.svg
+$FLAME_GRAPH_HOME/flamegraph.pl --colors common-lisp /tmp/out-symbol-flame.folded >/tmp/out-flame.svg
 echo /tmp/out-flame.svg
