@@ -144,8 +144,7 @@ typedef bool _Bool;
 #include <clasp/core/fli.h>
 #include <clasp/gctools/gc_boot.h>
 
-//#include <clasp/core/clc.h>
-//#include <clasp/core/clcenv.h>
+#include <clasp/mpip/claspMpi.h>
 
 #include <clasp/clbind/clbind.h>
 

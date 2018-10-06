@@ -259,6 +259,9 @@ Bundle::Bundle(const string &raw_argv0, const string &appDirName) {
 #else
 #error "There must be a target - only boehm and mps are supported"
 #endif
+#ifdef USE_MPI
+    target = target + "_mpi";
+#endif
   this->_Directories->_LibDir = this->_Directories->_ContentsDir / "build" / target / "fasl";
   if (verbose) {
     printf("%s:%d   Set _LibDir = %s\n", __FILE__, __LINE__, this->_Directories->_LibDir.string().c_str());

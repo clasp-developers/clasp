@@ -333,9 +333,12 @@ static int startup(int argc, char *argv[], bool &mpiEnabled, int &mpiRank, int &
   _lisp->installPackage(&SocketsPkg);
   _lisp->installPackage(&ServeEventPkg);
   _lisp->installPackage(&AsttoolingPkg);
-  
+
+  core::_sym_STARmpi_rankSTAR->defparameter(core::make_fixnum(0));
+  core::_sym_STARmpi_sizeSTAR->defparameter(core::make_fixnum(1));
+
 #ifdef USE_MPI
-  mpip::MpiExposer TheMpiPkg(_lisp);
+  mpip::MpiExposer_O TheMpiPkg(_lisp);
   _lisp->installPackage(&TheMpiPkg);
   if (mpiEnabled) {
     core::Symbol_sp mpi = _lisp->internKeyword("MPI-ENABLED");
@@ -343,12 +346,7 @@ static int startup(int argc, char *argv[], bool &mpiEnabled, int &mpiRank, int &
     cl::_sym_STARfeaturesSTAR->defparameter(core::Cons_O::create(mpi, features));
     core::_sym_STARmpi_rankSTAR->defparameter(core::make_fixnum(mpiRank));
     core::_sym_STARmpi_sizeSTAR->defparameter(core::make_fixnum(mpiSize));
-  } else {
-    SIMPLE_ERROR(BF("USE_MPI is true but mpiEnabled is false!!!!"));
   }
-#else
-  core::_sym_STARmpi_rankSTAR->defparameter(core::make_fixnum(0));
-  core::_sym_STARmpi_sizeSTAR->defparameter(core::make_fixnum(1));
 #endif
   
     // printf("%s:%d About to _lisp->run() - ExitProgram typeid %p;\n",
@@ -423,26 +421,32 @@ int main( int argc, char *argv[] )
              exe_name().c_str(), __FILE__, __LINE__, EXIT_FAILURE, (unsigned long)rl_new.rlim_max );
   }
 
+  
+  // - COMMAND LINE OPTONS HANDLING
+
+  core::CommandLineOptions options(argc, argv);
+
   // - MPI ENABLEMENT
 
 #ifdef USE_MPI
-  try
-  {
-    mpip::Mpi_O::Init(argc, argv, mpiEnabled, mpiRank, mpiSize);
-  }
-  catch ( core::HardError &err )
-  {
-    fprintf( stderr, "**** %s (%s:%d): ERROR: Could not start MPI - ABORTING!\n",
-             exe_name().c_str(), __FILE__, __LINE__ );
-    abort();
+  if (!options._DisableMpi) {
+    printf("%s:%d Enabling MPI\n", __FILE__, __LINE__ );
+    try
+    {
+      mpip::Mpi_O::Init(argc, argv, mpiEnabled, mpiRank, mpiSize);
+    }
+    catch ( HardError &err )
+    {
+      fprintf( stderr, "**** %s (%s:%d): ERROR: Could not start MPI - ABORTING!\n",
+               exe_name().c_str(), __FILE__, __LINE__ );
+      abort();
+    }
+  } else {
+    mpiEnabled = false;
   }
 #endif
 
   fflush( stderr );
-
-  // - COMMAND LINE OPTONS HANDLING
-
-  core::CommandLineOptions options(argc, argv);
 
   // CALL LISP STARTUP
 
@@ -470,7 +474,9 @@ int main( int argc, char *argv[] )
 #endif
   
 #ifdef USE_MPI
-  mpip::Mpi_O::Finalize();
+  if (!options._DisableMpi) {
+    mpip::Mpi_O::Finalize();
+  }
 #endif
 
 //  std::terminate(); // This calls the terminate handler and then exits or aborts!

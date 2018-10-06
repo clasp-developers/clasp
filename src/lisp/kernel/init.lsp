@@ -484,10 +484,10 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
 (defun build-configuration ()
   (let ((gc (cond
               ((member :use-mps *features*) "mps")
-              ((member :use-boehmdc *features*) "boehmdc")
               ((member :use-boehm *features*) "boehm")
-              (t (error "Unknown clasp configuration")))))
-    (bformat nil "%s-%s" (lisp-implementation-type) gc)))
+              (t (error "Unknown clasp configuration"))))
+        (mpi (if (member :use-mpi *features*) "-mpi" "")))
+    (bformat nil "%s-%s%s" (lisp-implementation-type) gc mpi)))
 
 (defun ensure-relative-pathname (input)
   "If the input pathname is absolute then search for src, or generated and return
