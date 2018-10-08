@@ -146,7 +146,6 @@ exec sbcl --noinform --disable-ldb --lose-on-corruption --disable-debugger \
     (let ((calls (loop for backtrace = (read-dtrace-backtrace fin nil :eof)
                   for backtrace-times = (if (consp backtrace) (parse-integer (string-trim " " (car (last backtrace)))) nil)
                   do (when (eq backtrace :eof) (loop-finish))
-                 do (format t "Number of times backtrace appears: ~a~%" backtrace-times)
                     when (> (length backtrace) 0)
                     append (loop for times below backtrace-times
                             append (butlast backtrace 1))

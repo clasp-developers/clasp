@@ -190,10 +190,7 @@
  "src/lisp/kernel/contrib/sicl/Code/Cleavir/Intermediate-representation/graph-modifications"
  "src/lisp/kernel/contrib/sicl/Code/Cleavir/Intermediate-representation/instruction-mixin-classes"
  "src/lisp/kernel/contrib/sicl/Code/Cleavir/Intermediate-representation/graphviz-drawing"
- "src/lisp/kernel/contrib/sicl/Code/Cleavir/Intermediate-representation/map-instructions-arbitrary-order"
- "src/lisp/kernel/contrib/sicl/Code/Cleavir/Intermediate-representation/set-predecessors"
- "src/lisp/kernel/contrib/sicl/Code/Cleavir/Intermediate-representation/map-instructions"
- "src/lisp/kernel/contrib/sicl/Code/Cleavir/Intermediate-representation/map-local-instructions"
+;;; map-instruction files were originally here
  "src/lisp/kernel/contrib/sicl/Code/Cleavir/Intermediate-representation/HIR/data"
  "src/lisp/kernel/contrib/sicl/Code/Cleavir/Intermediate-representation/HIR/general-purpose-instructions"
  "src/lisp/kernel/contrib/sicl/Code/Cleavir/Intermediate-representation/HIR/box-related-instructions"
@@ -205,6 +202,12 @@
  "src/lisp/kernel/contrib/sicl/Code/Cleavir/Intermediate-representation/HIR/multiple-value-related-instructions"
  "src/lisp/kernel/contrib/sicl/Code/Cleavir/Intermediate-representation/HIR/environment-related-instructions"
  "src/lisp/kernel/contrib/sicl/Code/Cleavir/Intermediate-representation/HIR/graphviz-drawing"
+;;; new position
+ "src/lisp/kernel/contrib/sicl/Code/Cleavir/Intermediate-representation/map-instructions-arbitrary-order"
+ "src/lisp/kernel/contrib/sicl/Code/Cleavir/Intermediate-representation/set-predecessors"
+ "src/lisp/kernel/contrib/sicl/Code/Cleavir/Intermediate-representation/map-instructions"
+ "src/lisp/kernel/contrib/sicl/Code/Cleavir/Intermediate-representation/map-local-instructions"
+;;; -end
  "src/lisp/kernel/contrib/sicl/Code/Cleavir/AST-to-HIR/packages"
  "src/lisp/kernel/contrib/sicl/Code/Cleavir/AST-to-HIR/context"
  "src/lisp/kernel/contrib/sicl/Code/Cleavir/AST-to-HIR/conditions"

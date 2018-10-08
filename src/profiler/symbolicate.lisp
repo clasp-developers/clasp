@@ -1,4 +1,14 @@
-#!/usr/local/bin/sbcl --script
+#!/bin/sh
+#--eval '(set-dispatch-macro-character #\# #\! (lambda (s c n)(declare (ignore c n)) (read-line s) (values)))' \
+#|
+SCRIPT_DIR="$(dirname "$0")"
+exec sbcl --noinform --disable-ldb --lose-on-corruption --disable-debugger \
+--no-sysinit --no-userinit --noprint \
+--eval '(set-dispatch-macro-character #\# #\! (lambda (s c n)(declare (ignore c n)) (read-line s) (values)))' \
+--eval "(defvar *script-args* '( $# \"$0\" \"$1\" \"$2\" \"$3\" \"$4\" \"$5\" \"$6\" \"$7\" ))" \
+--eval "(require :asdf)" \
+--load "$0"
+|#
 
 (defstruct symbol-entry
   start end symbol)
@@ -119,15 +129,19 @@ Read the contents of the filename into memory and return a buffer-stream on it."
     (format *debug-io* "Read file~%")
     (symbolicate-buffer (buffer buffer) output symbol-table)))
 
-(let ((output-stream *standard-output*)
+(let* ((output-stream *standard-output*)
       (input-stream *standard-input*)
-      (symbol-table nil))
-  (declare (optimize (debug 3)))
-  (loop for cur = (cddr sb-ext:*posix-argv*) then (cddr cur)
+      (symbol-table nil)
+      (nargs (car *script-args*))
+      (args (subseq (cddr *script-args*) 0 nargs)))
+  (declare (optimize (debug 3)) (ignore nargs))
+  (format t "nargs: ~a args: ~s~%" nargs args)
+  (loop for cur = args then (cddr cur)
         for option = (first cur)
         for value = (second cur)
         while cur
         do (progn
+             (format t "Handling argument ~a ~s~%" option value)
              (cond
                ((string= option "-o")
                 (setf output-stream (open value :direction :output :if-exists :supersede)))
