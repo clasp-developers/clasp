@@ -122,19 +122,6 @@ llvm::Value* llvm_cast_error_ptr;
 
 namespace llvmo {
 
-std::atomic<uint64_t> global_llvm_instructions;
-
-CL_DEFUN void llvm_sys__increment_llvm_instructions()
-{
-  global_llvm_instructions++;
-}
-
-CL_DEFUN Fixnum llvm_sys__llvm_instructions()
-{
-  return global_llvm_instructions;
-}
-
-
 CL_DEFUN bool llvm_sys__llvm_value_p(core::T_sp o) {
   if (o.nilp())
     return false;
