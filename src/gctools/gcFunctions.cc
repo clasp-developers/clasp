@@ -1078,7 +1078,8 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
 
     
   bool debug_jit_log_symbols = false;
-#ifdef DEBUG_MONITOR
+#ifdef DEBUG_JIT_LOG_SYMBOLS
+  printf("%s:%d  Setting JIT-LOG-SYMBOLS *feature*\n", __FILE__, __LINE__ );
   debug_jit_log_symbols = true;
   debugging = true;
   if (setFeatures) features = core::Cons_O::create(_lisp->internKeyword("JIT-LOG-SYMBOLS"),features);
