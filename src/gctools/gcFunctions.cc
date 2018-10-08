@@ -859,7 +859,7 @@ CL_DEFUN void gctools__cleanup(bool verbose) {
   size_t finalizations;
   size_t messages = processMpsMessages(finalizations);
   if (verbose) {
-    write_bf_stream(BF("Processed %d finalization messages and %d total messages\n") % messages % finalizations );
+    core::write_bf_stream(BF("Processed %d finalization messages and %d total messages\n") % messages % finalizations );
   }
 #endif
 }
