@@ -3551,7 +3551,7 @@ CL_DEFMETHOD ModuleHandle_sp ClaspJIT_O::addModule(Module_sp cM) {
 //                                                                      make_unique<SectionMemoryManager>(),
                                                                          std::move(Resolver));
 
-  ObjectFile objectFile = SimpleCompiler(*TM)(optimizeModule(M))
+//  ObjectFile objectFile = SimpleCompiler(*TM)(optimizeModule(M))
     // Here get the start and the size of the objectFile
     // objectFile->getMemoryBuffer()->getSize()
     // objectFile->getMemoryBuffer()->getStart()
