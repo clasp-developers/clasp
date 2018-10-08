@@ -152,6 +152,8 @@
         )
 #+clasp
 (export '(invalidate-generic-functions-with-class-selector
+          satiate
+          satiate-initialization
           ))
 
 (export '*environment-contains-closure-hook*)

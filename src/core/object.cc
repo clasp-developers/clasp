@@ -314,20 +314,22 @@ void General_O::initialize() {
 
 void General_O::initialize(core::List_sp alist) {
   Record_sp record = Record_O::create_initializer(alist);
-  this->fields(record);
+  if (this->fieldsp()) this->fields(record);
   record->errorIfInvalidArguments();
 }
 
 void General_O::fields(Record_sp record) {
-  if (record->stage() == Record_O::saving && record->data().nilp()) {
-    // Signal that the subclass should implement fields
-    // if nothing has been saved yet
-    SUBIMP();
-  } else if ( record->stage() == Record_O::loading && record->seen().nilp() ) {
-    // Signal that the subclass should implement fields
-    // if nothing has been seen
-    SUBIMP();
-  }
+  // Do nothing here
+  // Any subclass that has slots that need to be (de)serialized must, MUST, MUST!
+  // implement fieldsp() and fields(Record_sp node)
+  // subclasses must also invoke their Base::fields(node) method so that base classes can
+  // (de)serialize their fields.
+  // Direct base classes of General_O or CxxObject_O don't need to call Base::fields(Record_sp node)
+  //  because the base methods don't do anything.
+  // But it's convenient to always call the this->Base::fields(node) in case the class hierarchy changes
+  //  you don't want to be caught not calling a this->Base::fields(node) because the system will silently
+  //  fail to (de)serialize any base class fields.
+  // If subclasses don't implement these methods - then serialization will fail SILENTLY!!!!!
 }
 
 List_sp General_O::encode() {
@@ -340,8 +342,10 @@ List_sp General_O::encode() {
 }
 
 void General_O::decode(core::List_sp alist) {
-  Record_sp record = Record_O::create_decoder(alist);
-  this->fields(record);
+  if (this->fieldsp()) {
+    Record_sp record = Record_O::create_decoder(alist);
+    this->fields(record);
+  }
 }
 
 string General_O::className() const {

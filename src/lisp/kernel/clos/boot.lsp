@@ -16,9 +16,6 @@
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (setq *echo-repl-read* t))
 
-(defvar +builtin-classes-pre-array+
-  (make-array (1+ #.(length +builtin-classes-list+))))
-
 ;;; ----------------------------------------------------------------------
 ;;; Building basic classes.
 ;;; We have to work carefully because the system is obviously not yet
@@ -42,9 +39,9 @@
     class))
 
 (defun ensure-boot-class (name &key (metaclass 'standard-class)
-                                 direct-superclasses direct-slots index)
-  (debug-boot "!!ensure-boot-class for ~s metaclass: ~s direct-superclasses: ~s :direct-slots ~s :index ~s~%"
-              name metaclass direct-superclasses direct-slots index)
+                                 direct-superclasses direct-slots)
+  (debug-boot "!!ensure-boot-class for ~s metaclass: ~s direct-superclasses: ~s :direct-slots ~s~%"
+              name metaclass direct-superclasses direct-slots)
   (let* ((the-metaclass (progn
                           (debug-boot "    About to do the~%")
                           (the class (find-class metaclass nil))))
@@ -106,9 +103,6 @@
         (let ((cpl (compute-clos-class-precedence-list class superclasses)))
           (debug-boot "      computed")
           (setf (class-precedence-list class) cpl)))
-      (debug-boot "      maybe add index~%")
-      (when index
-        (setf (aref +builtin-classes-pre-array+ index) class))
       class)))
 
 (defun add-slots (class slots)

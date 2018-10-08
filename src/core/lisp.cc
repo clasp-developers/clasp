@@ -46,6 +46,7 @@ THE SOFTWARE.
 #include <clasp/gctools/gc_interface.h>
 #include <clasp/gctools/source_info.h>
 #include <clasp/gctools/gcFunctions.h>
+#include <clasp/mpip/claspMpi.h>
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 #include <clasp/core/allClSymbols.h>
@@ -679,6 +680,7 @@ void Lisp_O::startupLispEnvironment(Bundle *bundle) {
     _BLOCK_TRACE("Start printing symbols properly");
     this->_PrintSymbolsProperly = true;
   }
+  mpip::Mpi_O::initializeGlobals(_lisp);
 }
 
 /*! Get a Str8Ns buffer string from the BufferStr8NsPool.*/
@@ -1338,12 +1340,11 @@ void Lisp_O::parseCommandLineArguments(int argc, char *argv[], const CommandLine
 #else // _RELEASE_BUILD
   features = Cons_O::create(_lisp->internKeyword("RELEASE-BUILD"), features);
 #endif
-#ifdef USE_BOEHM
-#ifdef USE_CXX_DYNAMIC_CAST
-  features = Cons_O::create(_lisp->internKeyword("USE-BOEHMDC"), features);
-#else
-  features = Cons_O::create(_lisp->internKeyword("USE-BOEHM"), features);
+#ifdef USE_MPI
+  features = Cons_O::create(_lisp->internKeyword("USE-MPI"), features);
 #endif
+#ifdef USE_BOEHM
+  features = Cons_O::create(_lisp->internKeyword("USE-BOEHM"), features);
 #endif
 #ifdef USE_MPS
   // Informs CL that MPS is being used

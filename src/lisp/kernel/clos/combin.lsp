@@ -142,7 +142,7 @@
 
 (defun install-method-combination (name function)
   (mp:with-lock (*method-combinations-lock*)
-                (setf (gethash name *method-combinations*) function))
+    (setf (gethash name *method-combinations*) function))
   name)
 
 (defun make-method-combination (name compiler options)

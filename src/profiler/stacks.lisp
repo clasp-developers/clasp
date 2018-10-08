@@ -2,7 +2,7 @@
 #--eval '(set-dispatch-macro-character #\# #\! (lambda (s c n)(declare (ignore c n)) (read-line s) (values)))' \
 #|
 SCRIPT_DIR="$(dirname "$0")"
-exec sbcl --noinform --disable-ldb --lose-on-corruption --disable-debugger \
+exec sbcl --dynamic-space-size 4096 --noinform --disable-ldb --lose-on-corruption --disable-debugger \
 --no-sysinit --no-userinit --noprint \
 --eval '(set-dispatch-macro-character #\# #\! (lambda (s c n)(declare (ignore c n)) (read-line s) (values)))' \
 --eval "(defvar *script-args* '( $# \"$0\" \"$1\" \"$2\" \"$3\" \"$4\" \"$5\" \"$6\" \"$7\" ))" \
@@ -10,6 +10,33 @@ exec sbcl --noinform --disable-ldb --lose-on-corruption --disable-debugger \
 --load "$0"
 |#
 
+
+
+(defun split-str-1 (string &optional (separator " ") (r nil))
+  (let ((n (position separator string
+                     :from-end t
+                     :test #'(lambda (x y)
+                               (find y x :test #'string=)))))
+    (if n
+        (split-str-1 (subseq string 0 n) separator (cons (subseq string (1+ n)) r))
+        (cons string r))))
+
+(defun split-str (string &optional (separator " "))
+  (split-str-1 string separator))
+
+
+(defparameter *cleanup-options* '("cleavir"))
+
+(defun parse-cleanup-options (string)
+  (let ((split (split-str string ",")))
+    (format t "options split = ~s~%" split)
+    (if (equal split '(nil))
+        nil
+        (mapcar (lambda (opt)
+                  (if (member opt *cleanup-options* :test #'string=)
+                      opt
+                      (error "Illegal option ~a - must be one of ~a" opt *cleanup-options*)))
+                split))))
 
 (defun read-dtrace-header (stream &optional eofp eof)
   (list (read-line stream eofp eof)
@@ -73,7 +100,7 @@ exec sbcl --noinform --disable-ldb --lose-on-corruption --disable-debugger \
       unless (search "COMBINE-METHOD-FUNCTIONS3.LAMBDA" line)
       collect (cleanup-frame line))))
 
-(defun cleanup-dtrace-log (fin fout &key (verbose t))
+#+(or)(defun cleanup-dtrace-log (fin fout &key (verbose t))
   (let ((count 0))
     (let ((header (read-dtrace-header fin)))
       (write-block fout header)
@@ -81,10 +108,11 @@ exec sbcl --noinform --disable-ldb --lose-on-corruption --disable-debugger \
             until (eq backtrace :eof)
             for cleaned = (cleanup-backtrace backtrace)
             when (> (length backtrace) 4000)
-              do (progn
+#|              do (progn
                    (format *debug-io* "------------ input file pos: ~a~%" (file-position fin))
                    (format *debug-io* "Backtrace with ~a frames~%" (length backtrace))
                    (format *debug-io* "~a~%" cleaned #++(last backtrace 5)))
+                    |#
             do (write-block fout cleaned)
             do (incf count)))
     (when verbose (format *debug-io* "Cleaned ~a stacks~%" count))))
@@ -207,6 +235,60 @@ exec sbcl --noinform --disable-ldb --lose-on-corruption --disable-debugger \
              (write-line (car (last backtrace)) fout)
              (terpri fout))))
 
+
+(defun cleanup-stacks (fin fout options)
+  "Remove useless info from the backtraces like CALL-WITH-VARIABLE-BOUND calls"
+  (format *debug-io* "Running cleanup-stacks~%")
+  (finish-output *debug-io*)
+  (let ((header (read-dtrace-header fin))
+        (cleavir-p (member "cleavir" options :test 'string=)))
+    (write-dtrace-header fout header)
+    (loop for backtrace = (read-dtrace-backtrace fin nil :eof)
+          until (eq backtrace :eof)
+          when backtrace
+            do (let ((repeat-line (car (last backtrace)))
+                     (reversed-backtrace (reverse (butlast backtrace)))
+                     (new-backtrace nil))
+                 (unless repeat-line
+                   (error "The repeat-line is NIL -  backtrace is ~%~s" backtrace))
+                 (flet ((push-line (line)
+                          (push (concatenate 'base-string "               " line) new-backtrace))
+                        (pop-lines (num)
+                          (dotimes (i num) (pop new-backtrace))))
+                   (let ((cleaned-backtrace
+                           (progn
+                             (loop for cur = reversed-backtrace then (cdr cur)
+                                   for line = (string-trim " " (car cur))
+                                   for start = (let ((pos (position #\` line)))
+                                                 (if pos pos 0))
+                                   for end = (or (search "+0x" line) (length line))
+                                   for name = (subseq line start end)
+                                   while cur
+                                   do (cond
+                                        ((and cleavir-p (search "ClaspJIT_O::addModule" name))
+                                         (pop-lines 6)
+                                         (push-line "ORC::JIT-compiler")
+                                         (setf cur nil) ; and we are done with this backtrace
+                                         )
+                                        ((search "MAPCAR^" name)
+                                         (setf cur (cddr cur))
+                                         (push-line name))
+                                        ((search "CALL-WITH-VARIABLE-BOUND" name))
+                                        ((search "core__call_with_variable_bound" name))
+                                        ((search "core__funwind_protect" name))
+                                        ((search "core__multiple_value_prog1_function" name))
+                                        ((search "cl__apply" name))
+                                        ((search "LAMBDA^COMMON-LISP" name))
+                                        (t (push-line name))))
+                             new-backtrace)))
+                     (loop for line in cleaned-backtrace
+                           if line
+                             do (write-line line fout)
+                           else
+                             do (error "About to write-line NIL - the backtrace is: ~%~s" backtrace ))
+                     (write-line repeat-line fout)
+                     (terpri fout)))))))
+
 (defun fraction (fin stop-at)
   (let ((header (read-dtrace-header fin)))
     (declare (ignore header))
@@ -268,7 +350,6 @@ exec sbcl --noinform --disable-ldb --lose-on-corruption --disable-debugger \
         (loop for (count . name) in sorted
               do (format out-stream "~5d ~20a~%" count name))))))
 
-
 ;;; ----------------------------------------------------------------------
 ;;;
 ;;;  Invoke functions using either ./stacks.lisp <operation> <arguments>
@@ -283,6 +364,7 @@ exec sbcl --noinform --disable-ldb --lose-on-corruption --disable-debugger \
 ;;;      generates a list of callers of callee-name and how often they call
 
 
+(finish-output *debug-io*)
 (let* ((number-args (first *script-args*))
        (cmd (second *script-args*))
        (argv (subseq (cddr *script-args*) 0 number-args))
@@ -305,7 +387,8 @@ exec sbcl --noinform --disable-ldb --lose-on-corruption --disable-debugger \
                           *standard-output*))))
     (cond
       ((search "cleanup-stacks" cmd)
-       (cleanup-dtrace-log in-stream out-stream))
+       (let ((options (parse-cleanup-options (gethash "-O" args nil))))
+         (cleanup-stacks in-stream out-stream options)))
       ((search "count-tips" cmd)
        (count-tips in-stream out-stream))
       ((search "count-calls" cmd)
