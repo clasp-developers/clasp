@@ -6,8 +6,8 @@
 ;;; if nil == bclasp. Code for the bclasp compiler is in codegen-toplevel.lsp;
 ;;; look for t1expr.
 
-(defvar *compile-verbose* nil)
-(defvar *compile-print* nil)
+(defvar *compile-verbose* t)
+(defvar *compile-print* t)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
