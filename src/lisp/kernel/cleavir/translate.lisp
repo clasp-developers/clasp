@@ -77,6 +77,7 @@ when this is t a lot of graphs will be generated.")
 
 (defmethod translate-simple-instruction :around
     (instruction return-value inputs outputs abi current-function-info)
+  (llvm-sys:increment-llvm-instructions)
   (with-debug-info-source-position (cleavir-ir:origin instruction) (metadata current-function-info)
     (call-next-method)))
 
@@ -85,6 +86,7 @@ when this is t a lot of graphs will be generated.")
 
 (defmethod translate-branch-instruction :around
     (instruction return-value inputs outputs successors abi current-function-info)
+  (llvm-sys:increment-llvm-instructions)
   (with-debug-info-source-position (cleavir-ir:origin instruction) (metadata current-function-info)
     (call-next-method)))
 
