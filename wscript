@@ -191,7 +191,14 @@ def update_dependencies(cfg):
                        "5e0add45b7c6140e4ab07a2cbfd28964e36e6e48")
     fetch_git_revision("src/mps",
                        "https://github.com/Ravenbrook/mps.git",
-                       label = "master", revision = "46e0a8d77ac470282de7300f5eaf471ca2fbee05")
+                       #DLM says this will be faster.
+#                       label = "master", revision = "b1cc9aa5f87f2619ff675c8756e83211865419de")
+                       # Very recent branch - may have problems
+#                       label = "master", revision = "b5be454728c2ac58b9cb2383360ed0366a7e4115")
+                       #First branch that supported fork
+#                       label = "master", revision = "46e0a8d77ac470282de7300f5eaf471ca2fbee05")
+                       # David set up this branch/2018-08-18/exp-strategy-2 for clasp
+                       "b8a05a3846430bc36c8200f24d248c8293801503")
     fetch_git_revision("src/lisp/modules/asdf",
                        "https://gitlab.common-lisp.net/asdf/asdf.git",
                        label = "master", revision = "3.3.1.2")

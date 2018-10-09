@@ -236,6 +236,16 @@ string Function_O::__repr__() const {
   return ss.str();
 }
 
+ObjectFile_sp Function_O::objectFile() const
+{
+  SUBCLASS_MUST_IMPLEMENT();
+}
+
+void Function_O::setf_objectFile(ObjectFile_sp of)
+{
+  SUBCLASS_MUST_IMPLEMENT();
+}
+
 CL_DEFMETHOD Pointer_sp Function_O::function_description_address() const {
   return Pointer_O::create(this->fdesc());
 }
