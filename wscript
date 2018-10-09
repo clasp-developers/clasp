@@ -3,14 +3,30 @@
 # USAGE:
 #   ./waf distclean configure
 #   ./waf [action]_[stage-char][gc-name][_d for debug build]
-#   ./waf build_fboehm             # will build most of clasp, except the most memory hungry linking tasks at the end
+#   [action] is one of ( build | clean | install )
+#   [stage-char] is one of ( i | a | b | c )
+#   [gc-name] is one of ( boehm | mps )  --- mps needs special support
+#   [_d]  Sets up debug build
+#
+#  examples:
+#    ./waf build_cboehm      # build cboehm
+#    ./waf install_cboehm    # build and install cboehm
+#    ./waf build_aboehm      # useful for debugging build system - build only aclasp
+#    ./waf build_iboehm      # useful to build C++ without rebuilding CL code -
+#                            # If done carefully this can be used to quickly test C++ code
+#
 #   ./waf --jobs 2 install_cboehm  # will build and install cclasp
 #   to run with low priority, you can prefix with:
 #     nice -n 19 ionice --class 3 ./waf --jobs 2 ...
 #
+#
+#   ./waf build_fboehm # will build most of clasp,
+#                        except the most memory hungry linking tasks at the end
+#
 # NOTE: please observe the following best practices:
 #
-# - do *not* use waf's ant_glob (you can shoot yourself in the feet with it, leading to tasks getting redone unnecessarily)
+# - do *not* use waf's ant_glob (you can shoot yourself in the feet
+#          with it, leading to tasks getting redone unnecessarily)
 # - in emacs, you may want to: (add-to-list 'auto-mode-alist '("wscript\\'" . python-mode))
 # - waf constructs have strange names; it's better not to assume that you know what something is or does based solely on its name.
 #   e.g. node.change_ext() returns a new node instance... you've been warned!
@@ -53,6 +69,10 @@ def options(ctx):
                    help = 'Skip the running of the scraper.')
     ctx.add_option('--load-cclasp', action = 'store_true', dest = 'LOAD_CCLASP',
                    help = '? Probably some debugging helper to start a REPL with cclasp loaded...')
+    ctx.add_option('--enable-mpi', action = 'store_true', dest = 'enable_mpi',
+                   help = 'Build OpenMPI version of iclasp and cclasp')
+    ctx.add_option('--mpi-path', action = 'store', dest = 'mpi_path',
+                   help = 'Build OpenMPI version of iclasp and cclasp, provide the path to mpicc and mpic++')
 
 #
 # Global variables for the build
@@ -63,11 +83,12 @@ APP_NAME = 'clasp'
 DARWIN_OS = 'darwin'
 LINUX_OS = 'linux'
 FREEBSD_OS = 'freebsd'
-CLANG_VERSION = 5
-CLANG_FULL_VERSION = "5.0.1"
+CLANG_VERSION = 6
 
 STAGE_CHARS = [ 'r', 'i', 'a', 'b', 'f', 'c', 'd' ]
-
+# Full LTO  -flto
+# thin LTO  -flto=thin
+LTO_OPTION = "-flto"
 GCS_NAMES = [ 'boehm',
               'mpsprep',
               'mps' ]
@@ -115,13 +136,10 @@ VALID_OPTIONS = [
     # Default on macOS = /usr/local/opt/llvm@%s/bin/llvm-config'%CLANG_VERSION   - brew installed
     # Default on linux = it searches your path
     "LLVM_CONFIG_BINARY",
+    # To link to the debug versions of the LLVM libraries, set a path here to the llvm-config binary of the LLVM debug build
+    "LLVM_CONFIG_BINARY_FOR_LIBS",
     # point to where you want to install clasp - this has to be defined before ./waf configure
     "PREFIX",
-    # This tells clasp that a special patch has been made to LLVM5 that allows the ORC JIT engine
-    # to notify clasp when JITted symbols are created.  This is not needed as of (June 13, 2018)
-    # and will become completely irrelevant after we switch to llvm6 because ORC should be fixed.
-    # default = False
-    "LLVM5_ORC_NOTIFIER_PATCH",
     # Path to sbcl
     "SBCL",
     # What do you want to call clasp?
@@ -132,17 +150,6 @@ VALID_OPTIONS = [
     # Use lld only on Linux when CLASP_BUILD_MODE is "bitcode" - it's faster than ld
     # default = True
     "USE_LLD",
-    # Turn on memory guards - this allocates space in the header and after every general object
-    # in clasp and writes information into it that can be checked to test for writing outside of
-    # object memory - it slows things down by a few tens percent. This flag also turns on simple
-    # checking of the guard
-    # default = False
-    "DEBUG_GUARD",
-    # In combination with DEBUG_GUARD, this option turns on extensive testing of guards
-    # this adds more runtime cost (maybe it slows down clasp by 2x) but it tests every byte
-    # of the header guard and the tail guard
-    # default = False
-    "DEBUG_GUARD_EXHAUSTIVE_VALIDATE",
     # Add additional includes 
     "INCLUDES",
     # Add additional link flags
@@ -164,7 +171,58 @@ VALID_OPTIONS = [
     # Default = True
     "REQUIRE_LIBFFI",
     # If waf doesn't recognize the OS then use this option (darwin|linux|freebsd)
-    "DEST_OS"
+    "DEST_OS",
+    # Turn on debug options
+    "DEBUG_OPTIONS",
+    # Turn on address sanitizer
+    "ADDRESS_SANITIZER",
+    # Link libraries statically vs dynamically
+    "LINK_STATIC"
+]
+
+DEBUG_OPTIONS = [
+    "SOURCE_DEBUG", # Allow LOG messages to print - works with CLASP_DEBUG environment variable
+    "DEBUG_JIT_LOG_SYMBOLS", # Generate a log of JITted symbols in /tmp/clasp-symbols-<pid>
+    "DEBUG_GUARD", # Add guards around allocated objects
+    "DEBUG_GUARD_VALIDATE", # add simple checks of guards (fast)
+    "DEBUG_GUARD_EXHAUSTIVE_VALIDATE", #add exhaustive, slow, checks of guards
+    "DEBUG_TRACE_INTERPRETED_CLOSURES", # Count how many interpreted closures are evaluated
+    "DEBUG_ENVIRONMENTS",
+    "DEBUG_RELEASE",   # Turn off optimization for a few C++ functions; undef this to optimize everything
+    "DEBUG_CACHE",      # Debug the dispatch caches - see cache.cc
+    "DEBUG_BITUNIT_CONTAINER",  # prints debug info for bitunit containers
+    "DEBUG_LEXICAL_DEPTH", # Generate tests for lexical closure depths
+    "DEBUG_FLOW_TRACKER",  # record small backtraces to track flow
+    "DEBUG_DYNAMIC_BINDING_STACK",  # dynamic variable binding debugging
+    "DEBUG_VALUES",   # turn on printing (values x y z) values when core:*debug-values* is not nil
+    "DEBUG_IHS",
+    "DEBUG_TRACK_UNWINDS",  # Count cc_unwind calls and report in TIME
+    "DEBUG_NO_UNWIND",   # debug intrinsics that say they don't unwind but actually do
+    "DEBUG_STARTUP",
+    ##  Generate per-thread logs in /tmp/dispatch-history/**  of the slow path of fastgf
+    "DEBUG_REHASH_COUNT",   # Keep track of the number of times each hash table has been rehashed
+    "DEBUG_MONITOR",   # generate logging messages to a file in /tmp for non-hot code
+    "DEBUG_MEMORY_PROFILE",  # Profile memory allocations total size and counter
+    "DEBUG_BCLASP_LISP",  # Generate debugging frames for all bclasp code - like declaim
+    "DEBUG_CCLASP_LISP",  # Generate debugging frames for all cclasp code - like declaim
+    "DEBUG_COUNT_ALLOCATIONS", # count per-thread allocations of instances of classes
+    "DEBUG_COMPILER", # Turn on compiler debugging
+    "DEBUG_LONG_CALL_HISTORY",   # The GF call histories used to blow up - this triggers an error if they get too long
+    "DEBUG_BOUNDS_ASSERT",  # check bounds 
+    "DEBUG_GFDISPATCH",  # debug call history manipulation
+    "DEBUG_CMPFASTGF",  # debug dispatch functions by inserting code into them that traces them
+    "DEBUG_FASTGF",   # generate slow gf dispatch logging and write out dispatch functions to /tmp/dispatch-history-**
+    "DEBUG_SLOT_ACCESSORS", # GF accessors have extra debugging added to them
+    "DEBUG_THREADS",
+    "DEBUG_ENSURE_VALID_OBJECT",  #Defines ENSURE_VALID_OBJECT(x)->x macro - sprinkle these around to run checks on objects
+    "DEBUG_QUICK_VALIDATE",    # quick/cheap validate if on and comprehensive validate if not
+    "DEBUG_MPS_SIZE",   # check that the size of the MPS object will be calculated properly by obj_skip
+    "DEBUG_MPS_UNDERSCANNING",   # Very expensive - does a mps_arena_collect/mps_arena_release for each allocation
+    "DEBUG_DONT_OPTIMIZE_BCLASP",  # Optimize bclasp by editing llvm-ir
+    "DEBUG_RECURSIVE_ALLOCATIONS",
+    "DEBUG_LLVM_OPTIMIZATION_LEVEL_0",
+    "DEBUG_SLOW",    # Code runs slower due to checks - undefine to remove checks
+    "CONFIG_VAR_COOL" # mps setting
 ]
 
 def build_extension(bld):
@@ -174,21 +232,63 @@ def build_extension(bld):
 def grovel(bld):
     bld.recurse("extensions")
 
+def fetch_git_revision(path, url, revision = "", label = "master"):
+    log.info("Git repository %s  url: %s\n     revision: %s  label: %s\n" % (path, url, revision, label))
+    ret = os.system("./tools-for-build/fetch-git-revision.sh '%s' '%s' '%s' '%s'" % (path, url, revision, label))
+    if ( ret != 0 ):
+        raise Exception("Failed to fetch git url %s" % url)
+
+def add_cando_extension_dev(cfg):
+    log.pprint('BLUE', 'add_cando_extension_dev')
+    fetch_git_revision("extensions/cando",
+                       "https://github.com/drmeister/cando.git",
+                       label="dev")
+
+def add_cando_extension_testing(cfg):
+    log.pprint('BLUE', 'add_cando_extension_testing')
+    fetch_git_revision("extensions/cando",
+                       "https://github.com/drmeister/cando.git",
+                       label="testing")
+
+def add_cando_extension_preview(cfg):
+    log.pprint('BLUE', 'add_cando_extension_preview')
+    fetch_git_revision("extensions/cando",
+                       "https://github.com/drmeister/cando.git",
+                       label="preview")
+
+def add_cando_extension_master(cfg):
+    log.pprint('BLUE', 'add_cando_extension_master')
+    fetch_git_revision("extensions/cando",
+                       "https://github.com/drmeister/cando.git",
+                       label="master")
+
 def update_dependencies(cfg):
     # Specifying only label = "some-tag" will check out that tag into a "detached head", but
     # specifying both label = "master" and revision = "some-tag" will stay on master and reset to that revision.
-    def fetch_git_revision(path, url, revision = "", label = "master"):
-        ret = os.system("./tools-for-build/fetch-git-revision.sh '%s' '%s' '%s' '%s'" % (path, url, revision, label))
-        if ( ret != 0 ):
-            raise Exception("Failed to fetch git url %s" % url)
-
     log.pprint('BLUE', 'update_dependencies()')
+#    fetch_git_revision("src/lisp/kernel/contrib/sicl",
+#                       "https://github.com/robert-strandh/SICL.git",
+#                       "master")
     fetch_git_revision("src/lisp/kernel/contrib/sicl",
                        "https://github.com/Bike/SICL.git",
-                       "a080c75b0aa17a939b09cb378514cfee7a72a4c0")
+                       "4fedcfc9ae0cfeb4bdee3d030d7c2c4a928c8feb")
+    fetch_git_revision("src/lisp/kernel/contrib/Concrete-Syntax-Tree",
+                       "https://github.com/robert-strandh/Concrete-Syntax-Tree.git",
+                       "8d8c5abf8f1690cb2b765241d81c2eb86d60d77e")
+    fetch_git_revision("src/lisp/kernel/contrib/closer-mop",
+                       "https://github.com/pcostanza/closer-mop.git",
+                       "d4d1c7aa6aba9b4ac8b7bb78ff4902a52126633f")
     fetch_git_revision("src/lisp/kernel/contrib/Acclimation",
-                       "https://github.com/clasp-developers/Acclimation.git",
-                       "5e0add45b7c6140e4ab07a2cbfd28964e36e6e48")
+                       "https://github.com/robert-strandh/Acclimation.git",
+                       "dd15c86b0866fc5d8b474be0da15c58a3c04c45c")
+    fetch_git_revision("src/lisp/kernel/contrib/Eclector",
+                       "https://github.com/robert-strandh/Eclector.git",
+                       "287ce817c0478668bd389051d2cc6b26ddc62ec9")
+    
+#                      "7b63e7bbe6c60d3ad3413a231835be6f5824240a") works with AST clasp
+    fetch_git_revision("src/lisp/kernel/contrib/alexandria",
+                       "https://github.com/clasp-developers/alexandria.git",
+                       "e5c54bc30b0887c237bde2827036d17315f88737")
     fetch_git_revision("src/mps",
                        "https://github.com/Ravenbrook/mps.git",
                        #DLM says this will be faster.
@@ -246,8 +346,13 @@ def configure_common(cfg,variant):
 #    cfg.env.append_value("CFLAGS", ['-I%s' % include_path])
     # These will end up in build/config.h
     cfg.define("EXECUTABLE_NAME",variant.executable_name())
+    if (cfg.env.PREFIX):
+        pass
+    else:
+        cfg.env.PREFIX = "/opt/clasp"
     cfg.define("PREFIX",cfg.env.PREFIX)
     assert os.path.isdir(cfg.env.LLVM_BIN_DIR)
+    log.info("cfg.env.PREFIX is %s" % cfg.env.PREFIX)
     cfg.define("CLASP_CLANG_PATH", os.path.join(cfg.env.LLVM_BIN_DIR, "clang"))
     cfg.define("APP_NAME",APP_NAME)
     cfg.define("BITCODE_NAME",variant.bitcode_name())
@@ -258,6 +363,22 @@ def configure_common(cfg,variant):
     log.debug("cfg.env.LDFLAGS = %s", cfg.env.LDFLAGS)
     cfg.define("BUILD_LINKFLAGS", ' '.join(cfg.env.LINKFLAGS) + ' ' + ' '.join(cfg.env.LDFLAGS))
 
+def setup_clang_compiler(cfg,variant):
+    cfg.env.COMPILER_CC="clang"
+    cfg.env.COMPILER_CXX="clang++"
+    cfg.env.CC = cfg.find_program(cfg.env.COMPILER_CC,quiet=True)
+    cfg.env.CXX = cfg.find_program(cfg.env.COMPILER_CXX,quiet=True)
+    cfg.env.LINK_CC = cfg.env.CC
+    cfg.env.LINK_CXX = cfg.env.CXX
+
+def setup_mpi_compiler(cfg,variant):
+    cfg.env.COMPILER_CC="mpicc"
+    cfg.env.COMPILER_CXX="mpic++"
+    cfg.env.CC = cfg.find_program(cfg.env.COMPILER_CC,quiet=True)
+    cfg.env.CXX = cfg.find_program(cfg.env.COMPILER_CXX,quiet=True)
+    cfg.env.LINK_CC = cfg.env.CC
+    cfg.env.LINK_CXX = cfg.env.CXX
+
 class variant(object):
     build_with_debug_info = False
 
@@ -265,6 +386,10 @@ class variant(object):
         return "-d" if self.build_with_debug_info else ""
     def debug_dir_extension(self):
         return "_d" if self.build_with_debug_info else ""
+    def mpi_extension(self):
+        return "-mpi" if self.enable_mpi else ""
+    def mpi_dir_extension(self):
+        return "_mpi" if self.enable_mpi else ""
     def executable_name(self,stage=None):
         if ( stage == None ):
             use_stage = self.stage_char
@@ -272,7 +397,7 @@ class variant(object):
             use_stage = stage
         if (not (use_stage>='a' and use_stage <= 'z')):
             raise Exception("Bad stage: %s"% use_stage)
-        return '%s%s-%s%s' % (use_stage,APP_NAME,self.gc_name,self.debug_extension())
+        return '%s%s-%s%s%s' % (use_stage,APP_NAME,self.gc_name,self.mpi_extension(),self.debug_extension())
     def fasl_name(self,build,stage=None):
         if ( stage == None ):
             use_stage = self.stage_char
@@ -281,15 +406,15 @@ class variant(object):
         if (not (use_stage>='a' and use_stage <= 'z')):
             raise Exception("Bad stage: %s"% use_stage)
         if (build.env.CLASP_BUILD_MODE == 'fasl'):
-            return build.path.find_or_declare('fasl/%s%s-%s%s-image.lfasl' % (use_stage,APP_NAME,self.gc_name,self.debug_extension()))
+            return build.path.find_or_declare('fasl/%s%s-%s%s%s-image.lfasl' % (use_stage,APP_NAME,self.gc_name,self.mpi_extension(),self.debug_extension()))
         else:
-            return build.path.find_or_declare('fasl/%s%s-%s%s-image.fasl' % (use_stage,APP_NAME,self.gc_name,self.debug_extension()))
+            return build.path.find_or_declare('fasl/%s%s-%s%s%s-image.fasl' % (use_stage,APP_NAME,self.gc_name,self.mpi_extension(),self.debug_extension()))
     def fasl_dir(self, stage=None):
         if ( stage == None ):
             use_stage = self.stage_char
         else:
             use_stage = stage
-        return 'fasl/%s%s-%s-bitcode' % (use_stage,APP_NAME,self.gc_name)
+        return 'fasl/%s%s-%s%s-bitcode' % (use_stage,APP_NAME,self.gc_name,self.mpi_extension())
 
     def common_lisp_output_name_list(self,build,input_files,stage=None,variant=None):
         if ( stage == None ):
@@ -310,11 +435,16 @@ class variant(object):
             else:
                 return [build.path.find_or_declare(name+".bc")]
     def variant_dir(self):
-        return "%s%s"%(self.gc_name,self.debug_dir_extension())
+        return "%s%s%s"%(self.gc_name,self.mpi_dir_extension(),self.debug_dir_extension())
+           
     def variant_name(self):
-        return self.gc_name
+        if (self.enable_mpi):
+            mpi_part = "-mpi"
+        else:
+            mpi_part = ""
+        return "%s%s" % (self.gc_name,mpi_part)
     def bitcode_name(self):
-        return "%s%s"%(self.gc_name,self.debug_extension())
+        return "%s%s"%(self.variant_name(),self.debug_extension())
     def cxx_all_bitcode_name(self):
         return 'fasl/%s-all-cxx.a' % self.bitcode_name()
     def inline_bitcode_archive_name(self,name):
@@ -323,8 +453,9 @@ class variant(object):
         return 'fasl/%s-%s-cxx.bc' % (self.bitcode_name(),name)
     def configure_for_release(self,cfg):
         cfg.define("_RELEASE_BUILD",1)
-        cfg.env.append_value('CXXFLAGS', [ '-O3', '-g' ])
-        cfg.env.append_value('CFLAGS', [ '-O3', '-g' ])
+        cfg.env.append_value('CXXFLAGS', [ '-O3', '-g', '-fPIC' ])
+        cfg.env.append_value('CFLAGS', [ '-O3', '-g', '-fPIC' ])
+        cfg.define("ALWAYS_INLINE_MPS_ALLOCATIONS",1)
         if (os.getenv("CLASP_RELEASE_CXXFLAGS") != None):
             cfg.env.append_value('CXXFLAGS', os.getenv("CLASP_RELEASE_CXXFLAGS").split() )
         if (os.getenv("CLASP_RELEASE_LINKFLAGS") != None):
@@ -340,7 +471,7 @@ class variant(object):
         log.debug("cfg.env.LTO_FLAG = %s", cfg.env.LTO_FLAG)
         if (cfg.env.LTO_FLAG):
             cfg.env.append_value('LDFLAGS', [ '-Wl','-mllvm', '-O0', '-g' ])
-        cfg.env.append_value('CFLAGS', [ '-O0', '-g' ])
+        cfg.env.append_value('CFLAGS', [ '-O0', '-g', '-fPIC' ])
         if (os.getenv("CLASP_DEBUG_CXXFLAGS") != None):
             cfg.env.append_value('CXXFLAGS', os.getenv("CLASP_DEBUG_CXXFLAGS").split() )
         if (os.getenv("CLASP_DEBUG_LINKFLAGS") != None):
@@ -355,9 +486,10 @@ class variant(object):
 
 class boehm_base(variant):
     gc_name = 'boehm'
-
+    enable_mpi = False
     def configure_variant(self,cfg,env_copy):
         cfg.define("USE_BOEHM",1)
+        setup_clang_compiler(cfg,self)
         if (cfg.env['DEST_OS'] == DARWIN_OS ):
             log.debug("boehm_base cfg.env.LTO_FLAG = %s", cfg.env.LTO_FLAG)
             if (cfg.env.LTO_FLAG):
@@ -383,8 +515,10 @@ class boehm_d(boehm_base):
         super(boehm_d,self).configure_variant(cfg,env_copy)
 
 class mps_base(variant):
+    enable_mpi = False
     def configure_variant(self,cfg,env_copy):
         cfg.define("USE_MPS",1)
+        setup_clang_compiler(cfg,self)
         if (cfg.env['DEST_OS'] == DARWIN_OS ):
             if (cfg.env.LTO_FLAG):
                 cfg.env.append_value('LDFLAGS', '-Wl,-object_path_lto,%s_lib.lto.o' % self.executable_name())
@@ -392,7 +526,6 @@ class mps_base(variant):
 
 class mpsprep(mps_base):
     gc_name = 'mpsprep'
-
     def configure_variant(self,cfg,env_copy):
         cfg.setenv("mpsprep", env=env_copy.derive())
         cfg.define("RUNNING_GC_BUILDER",1)
@@ -475,6 +608,138 @@ class bmpsprep_d(mpsprep_d):
 class cmpsprep_d(mpsprep_d):
     stage_char = 'c'
 
+###### MPI versions
+class boehm_mpi_base(variant):
+    gc_name = 'boehm'
+    enable_mpi = True
+    def configure_variant(self,cfg,env_copy):
+        cfg.define("USE_BOEHM",1)
+        cfg.define("USE_MPI",1)
+        setup_mpi_compiler(cfg,self)
+        if (cfg.env['DEST_OS'] == DARWIN_OS ):
+            log.debug("boehm_mpi_base cfg.env.LTO_FLAG = %s", cfg.env.LTO_FLAG)
+            if (cfg.env.LTO_FLAG):
+                cfg.env.append_value('LDFLAGS', '-Wl,-object_path_lto,%s_lib.lto.o' % self.executable_name())
+        log.info("Setting up boehm library cfg.env.STLIB_BOEHM = %s ", cfg.env.STLIB_BOEHM)
+        log.info("Setting up boehm library cfg.env.LIB_BOEHM = %s", cfg.env.LIB_BOEHM)
+        if (cfg.env.LIB_BOEHM == [] ):
+            cfg.env.append_value('STLIB',cfg.env.STLIB_BOEHM)
+        else:
+            cfg.env.append_value('LIB',cfg.env.LIB_BOEHM)
+        self.common_setup(cfg)
+
+class boehm_mpi(boehm_mpi_base):
+    def configure_variant(self,cfg,env_copy):
+        cfg.setenv(self.variant_dir(), env=env_copy.derive())
+        super(boehm_mpi,self).configure_variant(cfg,env_copy)
+
+class boehm_mpi_d(boehm_mpi_base):
+    build_with_debug_info = True
+
+    def configure_variant(self,cfg,env_copy):
+        cfg.setenv("boehm_mpi_d", env=env_copy.derive())
+        super(boehm_mpi_d,self).configure_variant(cfg,env_copy)
+
+class mps_mpi_base(variant):
+    enable_mpi = True
+    def configure_variant(self,cfg,env_copy):
+        cfg.define("USE_MPS",1)
+        cfg.define("USE_MPI",1)
+        setup_mpi_compiler(cfg,self)
+        if (cfg.env['DEST_OS'] == DARWIN_OS ):
+            if (cfg.env.LTO_FLAG):
+                cfg.env.append_value('LDFLAGS', '-Wl,-object_path_lto,%s_lib.lto.o' % self.executable_name())
+        self.common_setup(cfg)
+
+class mpsprep_mpi(mps_mpi_base):
+    gc_name = 'mpsprep'
+
+    def configure_variant(self,cfg,env_copy):
+        cfg.setenv("mpsprep_mpi", env=env_copy.derive())
+        cfg.define("RUNNING_GC_BUILDER",1)
+        super(mpsprep_mpi,self).configure_variant(cfg,env_copy)
+
+class mpsprep_mpi_d(mps_mpi_base):
+    gc_name = 'mpsprep'
+    build_with_debug_info = True
+
+    def configure_variant(self,cfg,env_copy):
+        cfg.setenv("mpsprep_mpi_d", env=env_copy.derive())
+        cfg.define("RUNNING_GC_BUILDER",1)
+        super(mpsprep_mpi_d,self).configure_variant(cfg,env_copy)
+
+class mps_mpi(mps_mpi_base):
+    gc_name = 'mps'
+    def configure_variant(self,cfg,env_copy):
+        cfg.setenv("mps_mpi", env=env_copy.derive())
+        super(mps_mpi,self).configure_variant(cfg,env_copy)
+
+class mps_mpi_d(mps_mpi_base):
+    gc_name = 'mps'
+    build_with_debug_info = True
+
+    def configure_variant(self,cfg,env_copy):
+        cfg.setenv("mps_mpi_d", env=env_copy.derive())
+        super(mps_mpi_d,self).configure_variant(cfg,env_copy)
+
+class iboehm_mpi(boehm_mpi):
+    stage_char = 'i'
+class aboehm_mpi(boehm_mpi):
+    stage_char = 'a'
+class bboehm_mpi(boehm_mpi):
+    stage_char = 'b'
+class cboehm_mpi(boehm_mpi):
+    stage_char = 'c'
+
+class iboehm_mpi_d(boehm_mpi_d):
+    stage_char = 'i'
+class aboehm_mpi_d(boehm_mpi_d):
+    stage_char = 'a'
+class bboehm_mpi_d(boehm_mpi_d):
+    stage_char = 'b'
+class cboehm_mpi_d(boehm_mpi_d):
+    stage_char = 'c'
+
+class imps_mpi(mps_mpi):
+    stage_char = 'i'
+class amps_mpi(mps_mpi):
+    stage_char = 'a'
+class bmps_mpi(mps_mpi):
+    stage_char = 'b'
+class cmps_mpi(mps_mpi):
+    stage_char = 'c'
+
+class imps_mpi_d(mps_mpi_d):
+    stage_char = 'i'
+class amps_mpi_d(mps_mpi_d):
+    stage_char = 'a'
+class bmps_mpi_d(mps_mpi_d):
+    stage_char = 'b'
+class cmps_mpi_d(mps_mpi_d):
+    stage_char = 'c'
+
+class impsprep_mpi(mpsprep_mpi):
+    stage_char = 'i'
+class ampsprep_mpi(mpsprep_mpi):
+    stage_char = 'a'
+class bmpsprep_mpi(mpsprep_mpi):
+    stage_char = 'b'
+class cmpsprep_mpi(mpsprep_mpi):
+    stage_char = 'c'
+
+class impsprep_mpi_d(mpsprep_mpi_d):
+    stage_char = 'i'
+class ampsprep_mpi_d(mpsprep_mpi_d):
+    stage_char = 'a'
+class bmpsprep_mpi_d(mpsprep_mpi_d):
+    stage_char = 'b'
+class cmpsprep_mpi_d(mpsprep_mpi_d):
+    stage_char = 'c'
+
+
+
+
+    
 def configure(cfg):
     def update_exe_search_path(cfg):
         log.info("DEST_OS = %s" % cfg.env['DEST_OS'])
@@ -526,7 +791,7 @@ def configure(cfg):
                 if (not key in VALID_OPTIONS):
                     raise Exception("%s is an INVALID wscript.config option - valid options are: %s" % (key, VALID_OPTIONS))
                 else:
-                    log.debug("wscript.config option %s = %s", key, local_environment[key])
+                    log.info("wscript.config option %s = %s", key, local_environment[key])
             cfg.env.update(local_environment)
         else:
             log.warn("There is no 'wscript.config' file - assuming default configuration. See 'wscript.config.template' for further details.")
@@ -534,6 +799,7 @@ def configure(cfg):
     #
     # This is where configure(cfg) starts
     #
+    log.pprint("BLUE", "cfg.options.enable_mpi = %s" % cfg.options.enable_mpi)
     log.pprint('BLUE', 'configure()')
 
     cfg.env["BUILD_ROOT"] = os.path.abspath(top) # KLUDGE there should be a better way than this
@@ -553,7 +819,10 @@ def configure(cfg):
 
     if (cfg.env.LLVM5_ORC_NOTIFIER_PATCH):
         cfg.define("LLVM5_ORC_NOTIFIER_PATCH",1)
-    if (cfg.env.USE_PARALLEL_BUILD):
+    if (cfg.env.USE_PARALLEL_BUILD == False):
+        pass
+    else:
+        cfg.env.USE_PARALLEL_BUILD = True
         cfg.define("USE_PARALLEL_BUILD",1)
     cfg.env["LLVM_BIN_DIR"] = run_llvm_config(cfg, "--bindir")
     cfg.env["LLVM_AR_BINARY"] = "%s/llvm-ar" % cfg.env.LLVM_BIN_DIR
@@ -563,16 +832,7 @@ def configure(cfg):
     if ((cfg.env['CLASP_BUILD_MODE'] =='bitcode')):
         cfg.define("CLASP_BUILD_MODE",2) # thin-lto
         cfg.env.CLASP_BUILD_MODE = 'bitcode'
-        cfg.env.LTO_FLAG = '-flto=thin'
-        if (cfg.env['DEST_OS'] == LINUX_OS ):
-            if (cfg.env['USE_LLD']):
-                cfg.env.append_value('LINKFLAGS', '-Wl,--thinlto-cache-dir=/tmp/clasp')
-            else:
-                cfg.env.append_value('LINKFLAGS', '-Wl,-plugin-opt,cache-dir=/tmp/clasp')
-        elif (cfg.env['DEST_OS'] == FREEBSD_OS ):
-            cfg.env.append_value('LINKFLAGS', '-Wl,-plugin-opt,cache-dir=/tmp')
-        elif (cfg.env['DEST_OS'] == DARWIN_OS ):
-            cfg.env.append_value('LINKFLAGS', '-Wl,-cache_path_lto,/tmp/clasp')
+        cfg.env.LTO_FLAG = LTO_OPTION
     elif (cfg.env['CLASP_BUILD_MODE']==[] or cfg.env['CLASP_BUILD_MODE']=='object'):
         cfg.define("CLASP_BUILD_MODE",1) # object files
         cfg.env.CLASP_BUILD_MODE = 'object'
@@ -625,7 +885,20 @@ def configure(cfg):
 #        cfg.check_cxx(lib='lzma', cflags='-Wall', uselib_store='LZMA')
     else:
         pass
-    cfg.check_cxx(stlib=BOOST_LIBRARIES, cflags='-Wall', uselib_store='BOOST')
+    # Check the boost libraries one at a time and then all together to put them in uselib_store
+    boost_libs = BOOST_LIBRARIES
+    if (cfg.options.enable_mpi):
+        boost_libs = boost_libs + [ "boost_mpi" ]
+    for onelib in boost_libs:
+        if (cfg.env['LINK_STATIC']):
+            cfg.check_cxx(stlib=onelib, cflags='-Wall', uselib_store='BOOST-%s'%onelib)
+        else:
+            cfg.check_cxx(lib=onelib, cflags='-Wall', uselib_store='BOOST-%s'%onelib)
+    log.info("Checking for all boost libraries together to put them all in one uselib_store")
+    if (cfg.env['LINK_STATIC']):
+        cfg.check_cxx(stlib=boost_libs, cflags='-Wall', uselib_store='BOOST')
+    else:
+        cfg.check_cxx(lib=boost_libs, cflags='-Wall', uselib_store='BOOST')
     cfg.extensions_include_dirs = []
     cfg.extensions_gcinterface_include_files = []
     cfg.extensions_stlib = []
@@ -646,8 +919,8 @@ def configure(cfg):
     cfg.env.append_value('LINKFLAGS', ["-L%s" % llvm_lib_dir])
     llvm_libraries = [ x[2:] for x in run_llvm_config_for_libs(cfg, "--libs").split()] # drop the '-l' prefixes
 #dynamic llvm/clang
-    cfg.check_cxx(lib=llvm_libraries, cflags = '-Wall', uselib_store = 'LLVM', libpath = llvm_lib_dir )
     cfg.check_cxx(lib=CLANG_LIBRARIES, cflags='-Wall', uselib_store='CLANG', libpath = llvm_lib_dir )
+    cfg.check_cxx(lib=llvm_libraries, cflags = '-Wall', uselib_store = 'LLVM', libpath = llvm_lib_dir )
 #static llvm/clang
 #    cfg.check_cxx(stlib=llvm_libraries, cflags = '-Wall', uselib_store = 'LLVM', stlibpath = llvm_lib_dir )
 #    cfg.check_cxx(stlib=CLANG_LIBRARIES, cflags='-Wall', uselib_store='CLANG', stlibpath = llvm_lib_dir )
@@ -658,10 +931,8 @@ def configure(cfg):
     if (cfg.env['DEST_OS'] == LINUX_OS):
         cfg.env.append_value('CXXFLAGS',['-fno-omit-frame-pointer', '-mno-omit-leaf-frame-pointer'])
         cfg.env.append_value('CFLAGS',['-fno-omit-frame-pointer', '-mno-omit-leaf-frame-pointer'])
-    if (cfg.env["PROFILING"] == True):
-        cfg.env.append_value('CXXFLAGS',["-pg"])
-        cfg.env.append_value('CFLAGS',["-pg"])
-        cfg.define("ENABLE_PROFILING",1)
+    cfg.env.append_value('CXXFLAGS',['-fPIC'])
+    cfg.env.append_value('CFLAGS',['-fPIC'])
 #    if ('program_name' in cfg.__dict__):
 #        pass
 #    else:
@@ -689,7 +960,6 @@ def configure(cfg):
     cfg.define("CLASP_VERSION",get_clasp_version(cfg))
     cfg.define("CLBIND_DYNAMIC_LINK",1)
     cfg.define("DEFINE_CL_SYMBOLS",1)
-#    cfg.define("SOURCE_DEBUG",1)
     cfg.define("USE_SOURCE_DATABASE",1)
     cfg.define("USE_COMPILED_CLOSURE",1)  # disable this in the future and switch to ClosureWithSlots
     cfg.define("CLASP_UNICODE",1)
@@ -707,8 +977,6 @@ def configure(cfg):
     cfg.define("__STDC_CONSTANT_MACROS",1)
     cfg.define("__STDC_FORMAT_MACROS",1)
     cfg.define("__STDC_LIMIT_MACROS",1)
-#    cfg.env.append_value('CXXFLAGS', ['-v'] )
-#    cfg.env.append_value('CFLAGS', ['-v'] )
     cfg.env.append_value('LINKFLAGS', ['-v'] )
 #    includes = [ 'include/' ]
 #    includes = includes + cfg.plugins_include_dirs
@@ -725,8 +993,9 @@ def configure(cfg):
         cfg.env.append_value('CFLAGS', cfg.env.LTO_FLAG )
         cfg.env.append_value('LINKFLAGS', cfg.env.LTO_FLAG )
     if (cfg.env['DEST_OS'] == LINUX_OS ):
-        if (cfg.env['USE_LLD']):
-            cfg.env.append_value('LINKFLAGS', '-fuse-ld=lld-5.0')
+        if (cfg.env['USE_LLD'] and cfg.env.CLASP_BUILD_MODE == 'bitcode'):
+            # Only use lld if USE_LLD is set and CLASP_BUILD_MODE is bitcode
+            cfg.env.append_value('LINKFLAGS', '-fuse-ld=lld-%d.0' % CLANG_VERSION)
             log.info("Using the lld linker")
         else:
             cfg.env.append_value('LINKFLAGS', '-fuse-ld=gold')
@@ -734,6 +1003,18 @@ def configure(cfg):
         cfg.env.append_value('LINKFLAGS', ['-stdlib=libstdc++'])
         cfg.env.append_value('LINKFLAGS', ['-lstdc++'])
         cfg.env.append_value('LINKFLAGS', '-pthread')
+    elif (cfg.env['DEST_OS'] == FREEBSD_OS ):
+        #--lto-O0 is not effective for avoiding linker hangs
+        # cfg.env.append_value('LINKFLAGS', ['-Wl,-export_dynamic,--lto-O0'])
+        if (cfg.env['USE_LLD']):
+            cfg.env.append_value('LINKFLAGS', '-fuse-ld=lld-%d.0' % CLANG_VERSION)
+            log.info("Using the lld linker")
+        else:
+            #cfg.env.append_value('LINKFLAGS', '-fuse-ld=/opt/clasp/bin/ld.clasp')
+            #log.info("Using linker frontend /opt/clasp/bin/ld.clasp")
+            cfg.env.append_value('LINKFLAGS', '-fuse-ld=gold')
+        cfg.env.append_value('LINKFLAGS', '-pthread')
+        cfg.env.append_value('LINKFLAGS', '-lexecinfo')
     elif (cfg.env['DEST_OS'] == DARWIN_OS ):
         cfg.env.append_value('LINKFLAGS', ['-Wl,-export_dynamic'])
         lto_library_name = cfg.env.cxxshlib_PATTERN % "LTO"  # libLTO.<os-dep-extension>
@@ -760,51 +1041,17 @@ def configure(cfg):
         cfg.define("DEBUG_GUARD_VALIDATE",1)
     if (cfg.env.DEBUG_GUARD_EXHAUSTIVE_VALIDATE):
         cfg.define("DEBUG_GUARD_EXHAUSTIVE_VALIDATE",1)
-    cfg.define("DEBUG_TRACE_INTERPRETED_CLOSURES",1)
-    cfg.define("DEBUG_ENVIRONMENTS",1)
-#    cfg.define("DEBUG_RELEASE",1)   # Turn off optimization for a few C++ functions; undef this to optimize everything
-#    cfg.define("DEBUG_CACHE",1)      # Debug the dispatch caches - see cache.cc
-#    cfg.define("DEBUG_BITUNIT_CONTAINER",1)  # prints debug info for bitunit containers
-#    cfg.define("DEBUG_ZERO_KIND",1);
-#    cfg.define("DEBUG_FLOW_CONTROL",1)  # broken - probably should be removed unless it can be
-#    cfg.define("DEBUG_RETURN_FROM",1)   # broken
-#    cfg.define("DEBUG_LEXICAL_DEPTH",1) # Generate tests for lexical closure depths
-#    cfg.define("DEBUG_FLOW_TRACKER",1)  # record small backtraces to track flow
-#    cfg.define("DEBUG_DYNAMIC_BINDING_STACK",1)
-#    cfg.define("DEBUG_VALUES",1)   # turn on printing (values x y z) values when core:*debug-values* is not nil
-#    cfg.define("DEBUG_IHS",1)
-    cfg.define("DEBUG_TRACK_UNWINDS",1)  # Count cc_unwind calls and report in TIME
-#    cfg.define("DEBUG_NO_UNWIND",1)
-#    cfg.define("DEBUG_STARTUP",1)
-#    cfg.define("DEBUG_ACCESSORS",1)
-#    cfg.define("DEBUG_GFDISPATCH",1)
-##  Generate per-thread logs in /tmp/dispatch-history/**  of the slow path of fastgf
-#    cfg.define("DEBUG_CMPFASTGF",1)  # debug dispatch functions by inserting code into them that traces them
-#    cfg.define("DEBUG_FASTGF",1)   # generate slow gf dispatch logging and write out dispatch functions to /tmp/dispatch-history-**
-#    cfg.define("DEBUG_REHASH_COUNT",1)   # Keep track of the number of times each hash table has been rehashed
-#    cfg.define("DEBUG_MONITOR",1)   # generate logging messages to a file in /tmp for non-hot code
-#    cfg.define("DEBUG_MEMORY_PROFILE",1)  # Profile memory allocations
-    cfg.define("DEBUG_BCLASP_LISP",1)  # Generate debugging frames for all bclasp code - like declaim
-    cfg.define("DEBUG_CCLASP_LISP",1)  # Generate debugging frames for all cclasp code - like declaim
-#    cfg.define("DEBUG_LONG_CALL_HISTORY",1)
-#    cfg.define("DONT_OPTIMIZE_BCLASP",1)  # Optimize bclasp by editing llvm-ir
-#    cfg.define("DEBUG_BOUNDS_ASSERT",1)
-#    cfg.define("DEBUG_SLOT_ACCESSORS",1)
+    if (cfg.env.DEBUG_OPTIONS):
+        for opt in cfg.env.DEBUG_OPTIONS:
+            if (opt in DEBUG_OPTIONS):
+                cfg.define(opt,1)
+            else:
+                raise Exception("Illegal DEBUG_OPTION %s - allowed options: %s" % (opt, DEBUG_OPTIONS))
+
 #    cfg.define("DISABLE_TYPE_INFERENCE",1)
-#    cfg.define("DEBUG_THREADS",1)
-###  cfg.define("DEBUG_GUARD",1) #<<< this is set in wscript.config
-#    cfg.define("CONFIG_VAR_COOL",1)
-#    cfg.define("DEBUG_ENSURE_VALID_OBJECT",1)  #Defines ENSURE_VALID_OBJECT(x)->x macro - sprinkle these around to run checks on objects
-#    cfg.define("DEBUG_QUICK_VALIDATE",1)    # quick/cheap validate if on and comprehensive validate if not
-#    cfg.define("DEBUG_MPS_SIZE",1)   # check that the size of the MPS object will be calculated properly by obj_skip
     cfg.env.USE_HUMAN_READABLE_BITCODE=True
     if (cfg.env.USE_HUMAN_READABLE_BITCODE):
         cfg.define("USE_HUMAN_READABLE_BITCODE",1)
-    cfg.define("DEBUG_RECURSIVE_ALLOCATIONS",1)
-# -----------------
-# defines that slow down program execution
-#  There are more defined in clasp/include/gctools/configure_memory.h
-    cfg.define("DEBUG_SLOW",1)    # Code runs slower due to checks - undefine to remove checks
 # ----------
 
 # --------------------------------------------------
@@ -826,8 +1073,11 @@ def configure(cfg):
     cfg.env.append_value('LIB', cfg.extensions_lib)
     cfg.env.append_value('STLIB', cfg.env.STLIB_CLANG)
     cfg.env.append_value('STLIB', cfg.env.STLIB_LLVM)
-    cfg.env.append_value('STLIB', cfg.env.STLIB_BOOST)
     cfg.env.append_value('STLIB', cfg.env.STLIB_Z)
+    if (cfg.env['LINK_STATIC']):
+        cfg.env.append_value('STLIB', cfg.env.STLIB_BOOST)
+    else:
+        cfg.env.append_value('LIB', cfg.env.LIB_BOOST)
     log.info("About to check if appending LIB_FFI")
     if (cfg.env['DEST_OS'] == DARWIN_OS ):
         if (cfg.env['REQUIRE_LIBFFI'] == True):
@@ -847,13 +1097,34 @@ def configure(cfg):
     cfg.env.append_value('LIB', cfg.env.LIB_Z)
     log.debug("cfg.env.STLIB = %s", cfg.env.STLIB)
     log.debug("cfg.env.LIB = %s", cfg.env.LIB)
+####### Setup the variants
     env_copy = cfg.env.derive()
+    log.info("About to setup variants - cfg.options.enabl_empi = %s" % cfg.options.enable_mpi)
+    if (cfg.options.enable_mpi):
+        log.info("Enabling MPI")
+        mpi_variants = [False,True]
+        cfg.env.ENABLE_MPI = True
+    else:
+        log.info("Disabling MPI")
+        mpi_variants = [False]
+        cfg.env.ENABLE_MPI = False
     for gc in GCS_NAMES:
-        for debug_build in [True, False]:
-            variant_name = gc + '_d' if debug_build else gc
-            variant_instance = eval("i" + variant_name + "()")
-            log.info("Setting up variant: %s", variant_instance.variant_dir())
-            variant_instance.configure_variant(cfg, env_copy)
+        for enable_mpi in mpi_variants:
+            for debug_build in [True, False]:
+                if (enable_mpi):
+                    mpi_part = "_mpi"
+                else:
+                    mpi_part = ""
+                if (debug_build):
+                    debug_part = "_d"
+                else:
+                    debug_part = ""
+                variant_name = gc+mpi_part+debug_part
+                variant_instance = eval("i" + variant_name + "()")
+                log.pprint("Blue","Setting up variant: %s" % variant_instance.variant_dir())
+                log.pprint("BLUE","variant_name = %s    variant_instance = %s" % (variant_name, variant_instance) )
+                variant_instance.configure_variant(cfg, env_copy)
+###### Final stuff
     if os.getenv("CLASP_SRC_DONTTOUCH") == None:
         update_dependencies(cfg)
     else:
@@ -918,6 +1189,37 @@ def build(bld):
     bld.clasp_aclasp = collect_aclasp_lisp_files(wrappers = False)
     bld.clasp_bclasp = collect_bclasp_lisp_files()
     bld.clasp_cclasp = collect_cclasp_lisp_files()
+
+    def find_lisp(bld,x):
+        find = bld.path.find_node("%s.lsp"%x)
+        if (find):
+            return find.abspath()
+        find = bld.path.find_node("%s.lisp"%x)
+        if (find):
+            return find.abspath()
+        find = bld.path.find_or_declare("%s.lisp"%x)
+        if (find):
+            return find.abspath()
+        return x
+    
+#    fout = open("/tmp/build.lisp", "w")
+#    fout.write('(core:select-package :core)\n')
+#    fout.write('(core:*make-special \'core::*number-of-jobs*)\n')
+#    fout.write('(setq core::*number-of-jobs* 1)\n')
+#    fout.write('(export \'core::*number-of-jobs*)\n')
+#    fout.write('(load "%s" :verbose t)\n' % find_lisp(bld,"src/lisp/kernel/clasp-builder"))
+#    fout.write('(core::remove-stage-features)\n')
+#    fout.write('(setq *features* (cons :aclasp (cons :clasp-min *features*)))\n')
+#    for x in bld.clasp_aclasp:
+#        fout.write('(load "%s" :verbose t)\n' % find_lisp(bld,x))
+#    for x in bld.clasp_aclasp:
+#        fout.write('(load "%s" :verbose t)\n' % find_lisp(bld,x))
+#    fout.write('(core::remove-stage-features)\n')
+#    fout.write('(setq *features* (cons :bclasp (cons :clos *features*)))\n')
+#    for x in bld.clasp_bclasp:
+#        fout.write('(load "%s" :verbose t)\n' % find_lisp(bld,x))
+#    fout.close()
+    
     bld.clasp_cclasp_no_wrappers = collect_cclasp_lisp_files(wrappers = False)
 
     bld.extensions_include_dirs = []
@@ -950,9 +1252,18 @@ def build(bld):
     clasp_c_source_files = bld.clasp_source_files + bld.extensions_source_files
     install('lib/clasp/', clasp_c_source_files)
     install('lib/clasp/', collect_waf_nodes(bld, 'include/clasp/', suffix = ".h"))
-    install('lib/clasp/src/lisp/', collect_waf_nodes(bld, 'src/lisp/', suffix = [".lsp", ".lisp", ".asd"]))
+    # Gather lisp source files - but don't only use files with these extensions or we will miss lisp assets
+    install('lib/clasp/', collect_waf_nodes(bld, 'src/lisp/')) # , suffix = [".lsp", ".lisp", ".asd"]))
 
-    bld.env = bld.all_envs[bld.variant]
+    # If the bld.variant is not in bld.all_envs then we have a legal command but the variant wasn't configured
+    #   this currently only happens if the user used: ./waf configure    without --enable-mp
+    #   and then later did something like ./waf build_iboehm_mpi
+    if (bld.variant in bld.all_envs):
+        bld.env = bld.all_envs[bld.variant]
+    else:
+        log.pprint("RED","The variant %s is not configured - run ./waf configure --enable-mpi" % bld.variant)
+        exit(1)
+        
     include_dirs = ['.']
     include_dirs.append("%s/src/main/" % bld.path.abspath())
     include_dirs.append("%s/include/" % bld.path.abspath())
@@ -963,6 +1274,7 @@ def build(bld):
     # Without this the parallel ASDF load-op's would step on each other's feet
     if (bld.options.RUN_THE_SCRAPER):
         task = precompile_scraper(env = bld.env)
+        # TODO set the inputs to be all of the scraper dir? this would enable proper dependency tracking and recompilation.
         task.set_outputs([bld.path.find_or_declare("scraper-precompile-done")])
         bld.add_to_group(task)
 
@@ -975,6 +1287,13 @@ def build(bld):
     bld.add_to_group(task)
 
     bld.set_group('compiling/c++')
+
+    # Build the fork client
+
+    bld(features='c cprogram', \
+        source="src/fork-server/fork-client.c", \
+        target="fork-client", \
+        install_path="${PREFIX}/bin")
 
     # Always build the C++ code
     intrinsics_bitcode_node = bld.path.find_or_declare(variant.inline_bitcode_archive_name("intrinsics"))
@@ -1172,21 +1491,19 @@ def build(bld):
 
 def init(ctx):
     from waflib.Build import BuildContext, CleanContext, InstallContext, UninstallContext, ListContext, StepContext, EnvContext
-
-    log.pprint('BLUE', "init()")
-
+    log.pprint('BLUE', "Running init() - this constructs the matrix of legal waf operation names")
     for gc in GCS_NAMES:
-        for debug_build in [True, False]:
-            variant_name = gc + '_d' if debug_build else gc
-
-            for ctx in (BuildContext, CleanContext, InstallContext, UninstallContext, ListContext, StepContext, EnvContext):
-                name = ctx.__name__.replace('Context','').lower()
-                for stage_char in STAGE_CHARS:
-                    # This instantiates classes, all with the same name 'tmp'.
-                    class tmp(ctx):
-                        variant = variant_name
-                        cmd = name + '_' + stage_char + variant_name
-                        stage = stage_char
+        for enable_mpi in ["", "_mpi"]:
+            for debug_build in ["", "_d"]:
+                variant_name = "%s%s%s" % (gc,enable_mpi,debug_build)
+                for ctx in (BuildContext, CleanContext, InstallContext, UninstallContext, ListContext, StepContext, EnvContext):
+                    name = ctx.__name__.replace('Context','').lower()
+                    for stage_char in STAGE_CHARS:
+                        # This instantiates classes, all with the same name 'tmp'.
+                        class tmp(ctx):
+                            variant = variant_name
+                            cmd = name + '_' + stage_char + variant_name
+                            stage = stage_char
 
             # NOTE: these are kinda bitrotten, but left here for now as a reference
             class tmp(BuildContext):
@@ -1197,14 +1514,6 @@ def init(ctx):
                 variant = variant_name
                 cmd = 'dangerzone_c' + variant
                 stage = 'dangerzone'
-
-def buildall(ctx):
-    for gc in GCS_NAMES:
-        for debug_build in [True, False]:
-            variant_name = gc + '_d' if debug_build else gc
-            for stage_char in STAGE_CHARS:
-                cmd = 'build_' + stage_char + variant_name
-                waflib.Options.commands.insert(0, cmd)
 
 #
 #
@@ -1273,7 +1582,7 @@ class link_executable(clasp_task):
             lto_object_path_lto = []
         link_options = []
         if (self.env['DEST_OS'] == DARWIN_OS ):
-            link_options = link_options + [ "-flto=thin", "-v", '-Wl,-stack_size,0x1000000']
+            link_options = link_options + [ LTO_OPTION, "-v", '-Wl,-stack_size,0x1000000']
         cmd = [ self.env.CXX[0] ] + \
               waf_nodes_to_paths(self.inputs) + \
               self.env['LINKFLAGS'] + \
@@ -1310,7 +1619,8 @@ class compile_aclasp(clasp_task):
         cmd = self.clasp_command_line(executable,
                                       image = False,
                                       features = ["clasp-min"],
-                                      forms = ['(load "sys:kernel;clasp-builder.lsp")',
+                                      forms = ['(setq *features* (cons :aclasp *features*))',
+                                               '(load "sys:kernel;clasp-builder.lsp")',
                                                #'(load-aclasp)',
                                                '(setq core::*number-of-jobs* %d)' % self.bld.jobs,
                                                '(core:compile-aclasp :output-file #P"%s")' % output_file,
@@ -1327,7 +1637,8 @@ class compile_bclasp(clasp_task):
         cmd = self.clasp_command_line(executable,
                                       image = image_file,
                                       features = [],
-                                      forms = ['(load "sys:kernel;clasp-builder.lsp")',
+                                      forms = ['(setq *features* (cons :bclasp *features*))',
+                                               '(load "sys:kernel;clasp-builder.lsp")',
                                                '(setq core::*number-of-jobs* %d)' % self.bld.jobs,
                                                '(core:compile-bclasp :output-file #P"%s")' % output_file,
                                                '(core:quit)'],
@@ -1341,7 +1652,8 @@ class compile_cclasp(clasp_task):
         image_file = self.inputs[1].abspath()
         output_file = self.outputs[0].abspath()
         log.debug("In compile_cclasp %s --image %s -> %s", executable, image_file, output_file)
-        forms = ['(load "sys:kernel;clasp-builder.lsp")',
+        forms = ['(setq *features* (cons :cclasp *features*))',
+                 '(load "sys:kernel;clasp-builder.lsp")',
                  '(setq core::*number-of-jobs* %d)' % self.bld.jobs]
         if (self.bld.options.LOAD_CCLASP):
             forms += ['(load-cclasp)']
@@ -1366,7 +1678,8 @@ class recompile_cclasp(clasp_task):
         cmd = self.clasp_command_line(other_clasp,
                                       features = ['ignore-extensions'],
                                       resource_dir = os.path.join(self.bld.path.abspath(), out, self.bld.variant_obj.variant_dir()),
-                                      forms = ['(load "sys:kernel;clasp-builder.lsp")',
+                                      forms = ['(setq *features* (cons :cclasp *features*))',
+                                               '(load "sys:kernel;clasp-builder.lsp")',
                                                '(setq core::*number-of-jobs* %d)' % self.bld.jobs,
                                                '(core:recompile-cclasp :output-file #P"%s")' % output_file,
                                                '(core:quit)'],
@@ -1415,6 +1728,7 @@ class link_bitcode(clasp_task):
         for f in self.inputs:
             all_inputs.write(' %s' % f.abspath())
         cmd = "" + self.env.LLVM_AR_BINARY + " ru %s %s" % (self.outputs[0], all_inputs.getvalue())
+        print("link_bitcode command: %s" % cmd);
         return self.exec_command(cmd)
 
 class build_bitcode(clasp_task):
@@ -1471,12 +1785,14 @@ class generate_sif_files(scraper_task):
                        self.colon("FRAMEWORKPATH_ST", "FRAMEWORKPATH") + \
                        self.colon("CPPPATH_ST", "INCPATHS") + \
                        self.colon("DEFINES_ST", "DEFINES")
+        # NOTE if we ever want to turn the scraper into an executable sbcl image, then we will need to pass
+        # every argument on the command line. Passing the preprocessor args is a headache due to escaping and
+        # such, so for now we just pass it as an arg in the --eval form.
         preproc_args_as_string = ' '.join('"' + item + '"' for item in preproc_args)
-        cmd = self.scraper_command_line(["--eval", "(cscrape:generate-sif-files '(%s))" % preproc_args_as_string])
+        cmd = self.scraper_command_line(["--eval", "(cscrape:generate-sif-files \"%s\" '(%s))" % (env.BUILD_ROOT + "/", preproc_args_as_string)])
         for cxx_node, sif_node in zip(self.inputs, self.outputs):
             cmd.append(cxx_node.abspath())
             cmd.append(sif_node.abspath())
-
         return self.exec_command(cmd)
 
 class generate_headers_from_all_sifs(scraper_task):
@@ -1558,6 +1874,10 @@ def postprocess_all_c_tasks(self):
                     builtins_cc = node
                 if ends_with(node.name, 'fastgf.cc'):
                     fastgf_cc = node
+##switch back to old way to create scraper tasks                    
+#                sif_node = node.change_ext('.sif')
+#                self.create_task('generate_one_sif', node, [sif_node])
+#                all_sif_files.append(sif_node)
             for node in task.outputs:
                 all_o_nodes.append(node)
                 if ends_with(node.name, 'intrinsics.cc'):
@@ -1572,10 +1892,18 @@ def postprocess_all_c_tasks(self):
 
     all_sif_nodes = []
 
-    # Start 'jobs' number of scraper processes in parallel, each processing several files
-    #chunks = split_list(all_cxx_nodes, min(self.bld.jobs, len(all_cxx_nodes))) # this splits into the optimal chunk sizes
-    chunk_size = min(20, max(1, len(all_cxx_nodes) // self.bld.jobs)) # this splits into task chunks of at most 20 files
-    chunks = list(list_chunks_of_size(all_cxx_nodes, chunk_size))
+    # Start 'job_count' number of parallel scraper processes, each processing several files at once
+    job_count = self.bld.jobs
+    job_count = 8 # KLUDGE fixed to 8 jobs because waf seems to redo the entire scraping when the task layout changes, e.g. due to a different ./waf --jobs xx
+    if True:
+        # Split into task chunks of at most 20 files each
+        chunk_size = min(20, max(1, len(all_cxx_nodes) // job_count))
+        chunks = list(list_chunks_of_size(all_cxx_nodes, chunk_size))
+    else:
+        # Split into the optimal sized chunks
+        chunks = split_list(all_cxx_nodes, min(job_count, len(all_cxx_nodes)))
+        chunk_size = len(chunks[0])
+
     log.info('Creating %s parallel scraper tasks, each processing %s files, for the total %s cxx files', len(chunks), chunk_size, len(all_cxx_nodes))
     assert len([x for sublist in chunks for x in sublist]) == len(all_cxx_nodes)
     for cxx_nodes in chunks:
