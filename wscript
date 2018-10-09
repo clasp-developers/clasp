@@ -296,7 +296,9 @@ def update_dependencies(cfg):
                        # Very recent branch - may have problems
 #                       label = "master", revision = "b5be454728c2ac58b9cb2383360ed0366a7e4115")
                        #First branch that supported fork
-                       label = "master", revision = "46e0a8d77ac470282de7300f5eaf471ca2fbee05")
+#                       label = "master", revision = "46e0a8d77ac470282de7300f5eaf471ca2fbee05")
+                       #David Lovemore developed this branch for clasp
+                       "b8a05a3846430bc36c8200f24d248c8293801503")
     fetch_git_revision("src/lisp/modules/asdf",
                        "https://gitlab.common-lisp.net/asdf/asdf.git",
                        label = "master", revision = "3.3.1.2")
