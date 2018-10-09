@@ -385,10 +385,8 @@
 (defmethod translate-simple-instruction
     ((instruction cleavir-ir:memref2-instruction) return-value inputs outputs abi function-info)
   (let* ((tptr (%load (first inputs)))
-         (offset (second inputs))
-         (ui-tptr (%ptrtoint tptr cmp:%uintptr_t%))
-         (ui-offset (%bit-cast offset cmp:%uintptr_t%)))
-    (let* ((uiptr (%add ui-tptr ui-offset))
+         (ui-tptr (%ptrtoint tptr cmp:%uintptr_t%)))
+    (let* ((uiptr (%add ui-tptr (%uintptr_t (cleavir-ir:offset instruction))))
            (ptr (%inttoptr uiptr cmp::%t**%))
            (read-val (%load ptr)))
       (%store read-val (first outputs)))))
@@ -396,12 +394,10 @@
 (defmethod translate-simple-instruction
     ((instruction cleavir-ir:memset2-instruction) return-value inputs outputs abi function-info)
   (let* ((tptr (%load (first inputs)))
-         (offset (second inputs))
-         (ui-tptr (%ptrtoint tptr cmp:%uintptr_t%))
-         (ui-offset (%bit-cast offset cmp:%uintptr_t%)))
-    (let* ((uiptr (%add ui-tptr ui-offset))
+         (ui-tptr (%ptrtoint tptr cmp:%uintptr_t%)))
+    (let* ((uiptr (%add ui-tptr (%uintptr_t (cleavir-ir:offset instruction))))
            (dest (%inttoptr uiptr cmp::%t**% "memset2-dest"))
-           (val (%load (third inputs) "memset2-val")))
+           (val (%load (second inputs) "memset2-val")))
       (%store val dest))))
 
 
