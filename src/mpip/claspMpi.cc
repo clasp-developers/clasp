@@ -123,7 +123,7 @@ static boost::mpi::environment *_MpiEnvironment;
 #endif
 static bool _MpiInitialized = false;
 static bool _MpiWorldInitialized = false;
-static Mpi_sp _MpiWorld;
+Mpi_sp _MpiWorld;
 
 /*
   __BEGIN_DOC( mpi.commands, section, MPI Functions)

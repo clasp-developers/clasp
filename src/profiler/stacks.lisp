@@ -378,12 +378,12 @@ exec sbcl --dynamic-space-size 4096 --noinform --disable-ldb --lose-on-corruptio
   (format *debug-io* "cmd = ~a~%" cmd)
   (let ((in-stream (let ((in-file (gethash "-i" args)))
                      (if in-file
-                         (open in-file :direction :input :external-format :latin-1)
+                         (open in-file :direction :input :external-format '(:utf-8 :replacement #\?))
                          *standard-input*)))
         (out-file (gethash "-o" args))
         (out-stream (let ((out-file (gethash "-o" args)))
                       (if out-file
-                          (open out-file :direction :output :if-exists :supersede :external-format :latin-1)
+                          (open out-file :direction :output :if-exists :supersede :external-format '(:utf-8 :replacement #\?))
                           *standard-output*))))
     (cond
       ((search "cleanup-stacks" cmd)
