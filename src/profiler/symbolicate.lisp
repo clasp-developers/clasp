@@ -5,7 +5,7 @@ SCRIPT_DIR="$(dirname "$0")"
 exec sbcl --noinform --disable-ldb --lose-on-corruption --disable-debugger \
 --no-sysinit --no-userinit --noprint \
 --eval '(set-dispatch-macro-character #\# #\! (lambda (s c n)(declare (ignore c n)) (read-line s) (values)))' \
---eval "(defvar *script-args* '( $# \"$0\" \"$1\" \"$2\" \"$3\" \"$4\" \"$5\" \"$6\" \"$7\" ))" \
+--eval "(defvar *script-args* '( $# \"$0\" \"$1\" \"$2\" \"$3\" \"$4\" \"$5\" \"$6\" \"$7\" \"$8\" \"$9\" ))" \
 --eval "(require :asdf)" \
 --load "$0"
 |#
@@ -131,12 +131,18 @@ Read the contents of the filename into memory and return a buffer-stream on it."
 
 (let* ((output-stream *standard-output*)
       (input-stream *standard-input*)
+<<<<<<< HEAD
       (symbol-table nil)
       (nargs (car *script-args*))
       (args (subseq (cddr *script-args*) 0 nargs)))
   (declare (optimize (debug 3)) (ignore nargs))
   (format t "nargs: ~a args: ~s~%" nargs args)
   (loop for cur = args then (cddr cur)
+=======
+      (symbol-table nil))
+  (declare (optimize (debug 3)))
+  (loop for cur = (cddr *script-args*) then (cddr cur)
+>>>>>>> Fix shebang in symbolicate.lisp
         for option = (first cur)
         for value = (second cur)
         while cur
@@ -149,6 +155,7 @@ Read the contents of the filename into memory and return a buffer-stream on it."
                 (setf input-stream (open value :direction :input :external-format '(:utf-8 :replacement #\?))))
                ((string= option "-s")
                 (setf symbol-table (load-symbol-table value)))
+               ((zerop (length option)))
                (t (error "Unknown option ~a - only -o {output} -i {input} -s {symbol-table} are allowed" option)))))
   (or symbol-table (error "The symbol-table must be provided using -s"))
   (format *debug-io* "Starting symbolicate~%")
