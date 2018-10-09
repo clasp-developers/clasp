@@ -1049,7 +1049,7 @@ def configure(cfg):
                 raise Exception("Illegal DEBUG_OPTION %s - allowed options: %s" % (opt, DEBUG_OPTIONS))
 
 #    cfg.define("DISABLE_TYPE_INFERENCE",1)
-    cfg.env.USE_HUMAN_READABLE_BITCODE=True
+    cfg.env.USE_HUMAN_READABLE_BITCODE=False
     if (cfg.env.USE_HUMAN_READABLE_BITCODE):
         cfg.define("USE_HUMAN_READABLE_BITCODE",1)
 # ----------

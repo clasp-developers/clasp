@@ -80,14 +80,16 @@
   (if *use-human-readable-bitcode*
       (let* ((input-name (make-pathname :type "ll" :defaults (pathname filename))))
         (llvm-sys:load-bitcode-ll input-name))
-      (llvm-sys:load-bitcode filename)))
+      (let ((input-name (make-pathname :type "bc" :defaults (pathname filename))))
+        (llvm-sys:load-bitcode input-name))))
 
 (defun parse-bitcode (filename context)
   ;; Load a module from a bitcode or .ll file
   (if *use-human-readable-bitcode*
       (let ((input-name (make-pathname :type "ll" :defaults (pathname filename))))
         (llvm-sys:parse-irfile input-name context))
-      (llvm-sys:parse-bitcode-file filename context)))
+      (let ((input-name (make-pathname :type "bc" :defaults (pathname filename))))
+        (llvm-sys:parse-bitcode-file input-name context))))
 
 (export '(write-bitcode load-bitcode parse-bitcode))
 
