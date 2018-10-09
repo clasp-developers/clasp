@@ -122,7 +122,6 @@ llvm::Value* llvm_cast_error_ptr;
 
 namespace llvmo {
 
-
 CL_DEFUN bool llvm_sys__llvm_value_p(core::T_sp o) {
   if (o.nilp())
     return false;
@@ -3538,6 +3537,13 @@ CL_DEFMETHOD ModuleHandle_sp ClaspJIT_O::addModule(Module_sp cM) {
   Expected<ModuleHandle> expected_ModuleHandle = OptimizeLayer.addModule(std::move(uM), //std::move(Ms),
 //                                                                      make_unique<SectionMemoryManager>(),
                                                                          std::move(Resolver));
+
+//  ObjectFile objectFile = SimpleCompiler(*TM)(optimizeModule(M))
+    // Here get the start and the size of the objectFile
+    // objectFile->getMemoryBuffer()->getSize()
+    // objectFile->getMemoryBuffer()->getStart()
+    // How long will the objectFile->getMemoryBuffer() live?
+    
   ModuleHandle_sp mh;
   if (expected_ModuleHandle) {
     mh = ModuleHandle_O::create(*expected_ModuleHandle);
